@@ -104,7 +104,6 @@
 <translation id="3445925074670675829">Dispositivo USB-C</translation>
 <translation id="3473479545200714844">Lupa</translation>
 <translation id="3510164367642747937">Resaltar el cursor del mouse</translation>
-<translation id="3547954654003013442">Configuración de proxy</translation>
 <translation id="3573179567135747900">Volver a "<ph name="FROM_LOCALE" />" (debes reiniciar).</translation>
 <translation id="3582792037806681688">Se inhabilitó el acceso múltiple para un usuario en esta sesión.</translation>
 <translation id="3595596368722241419">Batería completa</translation>
@@ -195,6 +194,7 @@
 <translation id="615957422585914272">Mostrar el teclado en pantalla</translation>
 <translation id="6165508094623778733">Más información</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Activando...</translation>
+<translation id="6284232397434400372">Se cambió la resolución</translation>
 <translation id="6297287540776456956">Usa la pluma stylus para seleccionar una región</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> se giró a <ph name="ROTATION" />.</translation>
 <translation id="632744581670418035">Superposición de teclado</translation>
@@ -232,10 +232,10 @@ Usa esta función solo con cuentas de confianza.</translation>
 <translation id="7066646422045619941">El administrador inhabilitó esta red.</translation>
 <translation id="7067196344162293536">Rotación automática</translation>
 <translation id="7098389117866926363">Dispositivo USB-C (puerto izquierdo en la parte posterior)</translation>
-<translation id="7135556860107312402">Permitir notificaciones de:</translation>
 <translation id="7165278925115064263">Alt+mayúscula+K</translation>
 <translation id="7168224885072002358">Se revertirá a la resolución anterior en <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="7256634071279256947">Micrófono posterior</translation>
+<translation id="726276584504105859">Arrastra hasta aquí para usar la pantalla dividida</translation>
 <translation id="7348093485538360975">Teclado en pantalla</translation>
 <translation id="735745346212279324">VPN desconectada</translation>
 <translation id="7377169924702866686">Bloq Mayús está activado.</translation>
@@ -248,6 +248,7 @@ Usa esta función solo con cuentas de confianza.</translation>
 <translation id="7562368315689366235">Paleta de emoji</translation>
 <translation id="7569509451529460200">Se habilitaron el braille y ChromeVox</translation>
 <translation id="7593891976182323525">Tecla de búsqueda o Mayús</translation>
+<translation id="7645176681409127223"><ph name="USER_NAME" /> (propietario/a)</translation>
 <translation id="7647488630410863958">Desbloquea el dispositivo para ver tus notificaciones</translation>
 <translation id="7649070708921625228">Ayuda</translation>
 <translation id="7658239707568436148">Cancelar</translation>

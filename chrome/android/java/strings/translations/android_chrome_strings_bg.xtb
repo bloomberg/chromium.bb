@@ -48,7 +48,6 @@
 <translation id="1389236224998445076">Спестени данни:</translation>
 <translation id="1389974829397082527">Тук няма отметки</translation>
 <translation id="1397811292916898096">Търсене чрез <ph name="PRODUCT_NAME" /></translation>
-<translation id="1402229579576898974"><ph name="NUMBER_OF_SUGGESTIONS" /> предложения от Chrome</translation>
 <translation id="1404122904123200417">Вградено в/ъв <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">Заявка „Do Not Track“</translation>
 <translation id="1407135791313364759">Отваряне на всички</translation>
@@ -138,7 +137,6 @@
 <translation id="2268044343513325586">Прецизиране</translation>
 <translation id="2283599456633275070">Пътувания</translation>
 <translation id="2286841657746966508">Адрес за фактуриране</translation>
-<translation id="2301209717432756327">Добавено към началния екран.</translation>
 <translation id="2315043854645842844">Избраният сертификат от страната на клиента не се поддържа от операционната система.</translation>
 <translation id="2321958826496381788">Преместете плъзгача, докато можете да четете удобно това. Текстът трябва да изглежда поне толкова голям след двукратно докосване на абзац.</translation>
 <translation id="2323763861024343754">Данни от сайтове</translation>
@@ -259,7 +257,6 @@
 <translation id="3549657413697417275">Търсене в историята ви</translation>
 <translation id="3552151358455404883">Управлявайте синхронизирането в Chrome и персонализирането от <ph name="BEGIN_LINK1" />настройките<ph name="END_LINK1" /></translation>
 <translation id="3557336313807607643">Добавяне към контактите</translation>
-<translation id="3583454905526475291">Приложението не се отвори</translation>
 <translation id="3587482841069643663">Всички</translation>
 <translation id="3590487821116122040">Съхранявани данни от сайтове, които Chrome не счита за важни (напр. рядко посещавани или сайтове без запазени настройки)</translation>
 <translation id="3599863153486145794">Изчиства историята от всички устройства, на които сте влезли в профила си в Google. В него може да има други видове история на сърфиране, съхранявани на адрес <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
@@ -341,7 +338,6 @@
 <translation id="4269820728363426813">Копиране на адреса на връзката</translation>
 <translation id="4275663329226226506">Медия</translation>
 <translation id="4278390842282768270">Разрешено</translation>
-<translation id="42981349822642051">Разгъване</translation>
 <translation id="4307992518367153382">Основни положения</translation>
 <translation id="4351244548802238354">Затваряне на диалоговия прозорец</translation>
 <translation id="4378154925671717803">Телефон</translation>
@@ -524,6 +520,7 @@
 <translation id="5942872142862698679">За търсене ще се използва Google</translation>
 <translation id="5956665950594638604">Отваряне на Помощния център на Chrome в нов раздел</translation>
 <translation id="5958275228015807058">Намерете файловете и страниците си в „Изтегляния“</translation>
+<translation id="5958994127112619898">Опростяване на страницата</translation>
 <translation id="5962718611393537961">Докоснете за свиване</translation>
 <translation id="6000066717592683814">Запазване на Google</translation>
 <translation id="6023914116273780353">Персонализирани</translation>
@@ -797,7 +794,6 @@
 <translation id="8523928698583292556">Изтриване на съхранената парола</translation>
 <translation id="854522910157234410">Отваряне на тази страница</translation>
 <translation id="8562452229998620586">Запазените пароли ще се покажат тук.</translation>
-<translation id="856481929701340285">Заявка за настолния сайт</translation>
 <translation id="8569404424186215731">от <ph name="DATE" /></translation>
 <translation id="8571213806525832805">Последните 4 седмици</translation>
 <translation id="857509777403223202">Скоро ще се покажат още статии. Приятна вечер!</translation>

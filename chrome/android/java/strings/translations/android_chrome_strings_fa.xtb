@@ -37,6 +37,7 @@
 <translation id="1291207594882862231">پاک کردن سابقه، کوکی‌ها، داده‌های سایت، حافظه پنهان…</translation>
 <translation id="129553762522093515">اخیراً بسته‌شده</translation>
 <translation id="1303671224831497365">هیچ دستگاه بلوتوثی یافت نشد</translation>
+<translation id="1320663236730331991">برای دسترسی آسان به سایت‌ها و مقاله‌های محبوب، بارگیری‌ها و غیره، تند به بالا بکشید</translation>
 <translation id="1326317727527857210">‏برای دسترسی به برگه‌هایتان در دستگاه‌های دیگر، به سیستم Chrome وارد شوید.</translation>
 <translation id="1332501820983677155">‏میان‌برهای ویژه Google Chrome</translation>
 <translation id="1369915414381695676">سایت <ph name="SITE_NAME" /> اضافه شد</translation>
@@ -48,7 +49,6 @@
 <translation id="1389236224998445076">داده صرفه‌جویی‌‌شده:</translation>
 <translation id="1389974829397082527">نشانکی در اینجا وجود ندارد</translation>
 <translation id="1397811292916898096">جستجو با <ph name="PRODUCT_NAME" /></translation>
-<translation id="1402229579576898974">‏<ph name="NUMBER_OF_SUGGESTIONS" /> پیشنهاد Chrome</translation>
 <translation id="1404122904123200417">جاسازی شده در <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">«ردیابی نشود»</translation>
 <translation id="1407135791313364759">باز کردن همه</translation>
@@ -138,7 +138,6 @@
 <translation id="2268044343513325586">فیلتر</translation>
 <translation id="2283599456633275070">سفر</translation>
 <translation id="2286841657746966508">آدرس ارسال صورتحساب</translation>
-<translation id="2301209717432756327">به صفحه اصلی اضافه شد.</translation>
 <translation id="2315043854645842844">انتخاب گواهی سمت کلاینت توسط سیستم‌عامل پشتیبانی نمی‌شود.</translation>
 <translation id="2321958826496381788">لغزنده را بکشید تا زمانی که بتوانید این متن را به راحتی بخوانید. بعد از دو ضربه متوالی روی یک پاراگراف، اندازه نوشتار حداقل باید به این بزرگی باشد.</translation>
 <translation id="2323763861024343754">فضای ذخیره‌سازی سایت</translation>
@@ -231,6 +230,7 @@
 <translation id="3259831549858767975">کوچک‌تر کردن همه‌چیز در صفحه</translation>
 <translation id="3269093882174072735">بارگیری تصویر</translation>
 <translation id="3269956123044984603">‏برای دسترسی به برگه‌ها از دستگاه‌های دیگرتان، «همگام‌سازی خودکار داده‌ها» را در تنظیمات حساب Android روشن کنید.</translation>
+<translation id="3274105979672092244">‏درحال استفاده از Chrome Home هستید</translation>
 <translation id="3282568296779691940">‏ورود به Chrome</translation>
 <translation id="3295602654194328831">پنهان کردن اطلاعات</translation>
 <translation id="3303414029551471755">ادامه می‌دهید و محتوا را بارگیری می‌کنید؟</translation>
@@ -259,7 +259,6 @@
 <translation id="3549657413697417275">جستجو در سابقه</translation>
 <translation id="3552151358455404883">‏«همگام‌سازی Chrome» و شخصی‌سازی را در <ph name="BEGIN_LINK1" />تنظیمات<ph name="END_LINK1" /> مدیریت کنید</translation>
 <translation id="3557336313807607643">افزودن به مخاطبین</translation>
-<translation id="3583454905526475291">برنامه راه‌اندازی نشد</translation>
 <translation id="3587482841069643663">همه</translation>
 <translation id="3590487821116122040">‏فضای ذخیره‌سازی سایت که از نظر Chrome مهم نیست (مثلاً سایت‌هایی که تنظیمات ذخیره‌شده ندارند یا شما مرتب بازدید نمی‌کنید)</translation>
 <translation id="3599863153486145794">‏سابقه را از همه دستگاه‌های به سیستم واردشده پاک می‌کند. ممکن است حساب Google شما اشکال دیگری از سابقه مرور در <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> داشته باشد.</translation>
@@ -341,7 +340,6 @@
 <translation id="4269820728363426813">کپی آدرس پیوند</translation>
 <translation id="4275663329226226506">رسانه</translation>
 <translation id="4278390842282768270">مجاز است</translation>
-<translation id="42981349822642051">گسترده کردن</translation>
 <translation id="4307992518367153382">موارد اصلی</translation>
 <translation id="4351244548802238354">بستن کادر گفتگو</translation>
 <translation id="4378154925671717803">تلفن</translation>
@@ -429,6 +427,7 @@
 <translation id="5164482624172255778">‏آیا مایلید دفعه بعد Google Chrome ترجمه صفحاتی به زبان <ph name="LANGUAGE" /> در این سایت را پیشنهاد دهد؟</translation>
 <translation id="5168917394043976756">بازکردن کشوی پیمایش</translation>
 <translation id="5184329579814168207">‏باز کردن در Chrome</translation>
+<translation id="519793908071017925">‏استفاده از Chrome Home</translation>
 <translation id="5199929503336119739">نمایه کاری</translation>
 <translation id="5209320130288484488">دستگاهی یافت نشد</translation>
 <translation id="5210286577605176222">رفتن به برگه قبلی</translation>
@@ -523,6 +522,7 @@
 <translation id="5942872142862698679">‏استفاده از Google برای جستجو</translation>
 <translation id="5956665950594638604">‏باز کردن مرکز راهنمایی Chrome در برگه جدید</translation>
 <translation id="5958275228015807058">فایل‌ها و صفحه‌هایتان را در «بارگیری‌ها» پیدا کنید</translation>
+<translation id="5958994127112619898">ساده کردن صفحه</translation>
 <translation id="5962718611393537961">برای کوچک کردن ضربه بزنید</translation>
 <translation id="6000066717592683814">‏حفظ Google</translation>
 <translation id="6023914116273780353">شخصی‌سازی شده</translation>
@@ -594,6 +594,7 @@
 <translation id="6583199322650523874">نشانک گذاشتن صفحه کنونی</translation>
 <translation id="6600954340915313787">‏کپی در Chrome</translation>
 <translation id="6612358246767739896">محتوای محافظت‌شده</translation>
+<translation id="6619166911218440149">‏معرفی Chrome Home</translation>
 <translation id="6627583120233659107">ویرایش پوشه</translation>
 <translation id="6643016212128521049">پاک کردن</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{‏<ph name="CONTACT_PREVIEW" />\u2026 و <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> گزینه تماس دیگر}one{‏<ph name="CONTACT_PREVIEW" />\u2026 و <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> گزینه تماس دیگر}other{‏<ph name="CONTACT_PREVIEW" />\u2026 و <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> گزینه تماس دیگر}}</translation>
@@ -704,6 +705,7 @@
 <translation id="7607552448134703340">چیزی را که به دنبالش هستید تایپ کنید</translation>
 <translation id="7612619742409846846">‏ثبت ورودشده در Google به‌عنوان</translation>
 <translation id="7619072057915878432">به‌دلیل نقص‌هایی در شبکه، بارگیری <ph name="FILE_NAME" /> انجام نشد.</translation>
+<translation id="7620146066550602128"><ph name="BEGIN_LINK" />روش مرور آسان‌تری<ph name="END_LINK" /> را امتحان کنید</translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />دریافت راهنمایی<ph name="END_LINK1" /> یا <ph name="BEGIN_LINK2" />اسکن مجدد<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">‏به Chrome خوش آمدید</translation>
 <translation id="7638584964844754484">عبارت عبور نادرست است</translation>
@@ -796,7 +798,6 @@
 <translation id="8523928698583292556">حذف گذرواژه ذخیره‌شده</translation>
 <translation id="854522910157234410">باز کردن این صفحه</translation>
 <translation id="8562452229998620586">گذرواژه‌های ذخیره شده در اینجا ظاهر می‌شود.</translation>
-<translation id="856481929701340285">درخواست نمای رایانه</translation>
 <translation id="8569404424186215731">از <ph name="DATE" /></translation>
 <translation id="8571213806525832805">۴ هفته گذشته</translation>
 <translation id="857509777403223202">مقاله‌های بیشتر به‌زودی نشان داده می‌شوند. از غروبتان لذت ببرید!</translation>

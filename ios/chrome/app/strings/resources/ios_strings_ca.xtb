@@ -79,6 +79,7 @@ Per exemple, pot ser que, per respondre a aquesta sol·licitud, alguns llocs web
 <translation id="2381405137052800939">Informació bàsica</translation>
 <translation id="2386793615875593361">1 seleccionada</translation>
 <translation id="2435457462613246316">Mostra la contrasenya</translation>
+<translation id="2529021024822217800">Obre-les totes</translation>
 <translation id="2572712655377361602">Una política del dispositiu ha bloquejat l'accés a les vostres fotos</translation>
 <translation id="2584132361465095047">Afegiu un compte…</translation>
 <translation id="2593774076813182497">Aquesta pàgina no es pot imprimir.</translation>
@@ -128,7 +129,6 @@ Per exemple, pot ser que, per respondre a aquesta sol·licitud, alguns llocs web
 <translation id="3324193307694657476">Adreça 2</translation>
 <translation id="3329904751041170572">No s'ha pogut connectar amb el servidor.</translation>
 <translation id="3335947283844343239">Torna a obrir la pestanya tancada</translation>
-<translation id="3387752218061326363">Es mostra l'historial dels dispositius en què has iniciat la sessió. <ph name="BEGIN_LINK" />Obtén més informació<ph name="END_LINK" />.</translation>
 <translation id="3393920035788932672">Finestres emergents permeses</translation>
 <translation id="3414292259312108062">Chrome l'emmagatzemarà a les <ph name="BEGIN_LINK" />contrasenyes desades a Google<ph name="END_LINK" /> i l'emplenarà automàticament perquè no us calgui recordar-la.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
@@ -312,6 +312,7 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="6797885426782475225">Cerca per veu</translation>
 <translation id="6807889908376551050">Mostra-ho tot...</translation>
 <translation id="681368974849482173">S'ha creat un element.</translation>
+<translation id="6871663519944855400">Obre en mode d'incògnit</translation>
 <translation id="6896758677409633944">Copia</translation>
 <translation id="6903907808598579934">Activa la sincronització</translation>
 <translation id="6945221475159498467">Selecciona</translation>
@@ -321,7 +322,6 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="7031882061095297553">Sincronitzeu amb</translation>
 <translation id="7062545763355031412">Accepta i canvia de compte</translation>
 <translation id="7108338896283013870">Amaga</translation>
-<translation id="7131892264600713844">Es mostra l'historial d'aquest dispositiu. <ph name="BEGIN_LINK" />Obteniu més informació<ph name="END_LINK" />.</translation>
 <translation id="7133798577887235672">Nom complet</translation>
 <translation id="7136892417564438900">La càmera no està disponible</translation>
 <translation id="7159472599653637159">Sol·licita lloc per a mòbils</translation>
@@ -383,7 +383,7 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="8458397775385147834">1 element suprimit</translation>
 <translation id="8487700953926739672">Disponible sense connexió</translation>
 <translation id="8503813439785031346">Nom d'usuari</translation>
-<translation id="8517375800490286174">Llicències de codi obert</translation>
+<translation id="8517375800490286174">Llicències de programari lliure</translation>
 <translation id="8524799873541103884">Pestanyes <ph name="INCOGNITO" />: de <ph name="FIRST_VISIBLE_TAB" /> a <ph name="LAST_VISIBLE_TAB" /> d'un total de <ph name="NUMBER_OF_OPEN_TABS" /></translation>
 <translation id="8532105204136943229">Any de caducitat</translation>
 <translation id="8534481786647257214">S'ha completat la publicació a Google+.</translation>

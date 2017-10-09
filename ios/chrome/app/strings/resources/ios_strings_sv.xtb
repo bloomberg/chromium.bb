@@ -79,6 +79,7 @@ En del webbplatser kan till exempel svara genom att visa annonser som inte baser
 <translation id="2381405137052800939">Grunderna</translation>
 <translation id="2386793615875593361">1 markerat foto</translation>
 <translation id="2435457462613246316">Visa lösenord</translation>
+<translation id="2529021024822217800">Öppna alla</translation>
 <translation id="2572712655377361602">Åtkomsten till bilderna har blockerats av en enhetspolicy</translation>
 <translation id="2584132361465095047">Lägg till konto …</translation>
 <translation id="2593774076813182497">Sidan kan inte skrivas ut.</translation>
@@ -128,7 +129,6 @@ En del webbplatser kan till exempel svara genom att visa annonser som inte baser
 <translation id="3324193307694657476">Adressrad 2</translation>
 <translation id="3329904751041170572">Det gick inte att ansluta till servern.</translation>
 <translation id="3335947283844343239">Öppna stängd flik igen</translation>
-<translation id="3387752218061326363">Visar historik från enheter som du är inloggad på. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
 <translation id="3393920035788932672">Popup tillåts</translation>
 <translation id="3414292259312108062">Chrome vill spara lösenordet i <ph name="BEGIN_LINK" />lösenord som Google sparat<ph name="END_LINK" /> och fylla i det automatiskt så att du slipper komma ihåg det.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
@@ -312,6 +312,7 @@ Din data krypterades med lösenfrasen den <ph name="TIME" />. Ange den om du vil
 <translation id="6797885426782475225">Röstsökning</translation>
 <translation id="6807889908376551050">Visa alla ...</translation>
 <translation id="681368974849482173">Bokmärket har skapats</translation>
+<translation id="6871663519944855400">Öppna i inkognitoläge</translation>
 <translation id="6896758677409633944">Kopiera</translation>
 <translation id="6903907808598579934">Aktivera synkronisering</translation>
 <translation id="6945221475159498467">Välj</translation>
@@ -321,7 +322,6 @@ Din data krypterades med lösenfrasen den <ph name="TIME" />. Ange den om du vil
 <translation id="7031882061095297553">Synkronisera med</translation>
 <translation id="7062545763355031412">Godkänn och byt konto</translation>
 <translation id="7108338896283013870">Dölj</translation>
-<translation id="7131892264600713844">Historik från den här enheten visas. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" />.</translation>
 <translation id="7133798577887235672">Fullständigt namn</translation>
 <translation id="7136892417564438900">Kameran är inte tillgänglig</translation>
 <translation id="7159472599653637159">Använd mobilversion</translation>

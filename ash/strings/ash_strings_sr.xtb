@@ -104,7 +104,6 @@
 <translation id="3445925074670675829">Уређај са USB прикључком типа C</translation>
 <translation id="3473479545200714844">Лупа екрана</translation>
 <translation id="3510164367642747937">Истакни курсор миша</translation>
-<translation id="3547954654003013442">Подешавања проксија</translation>
 <translation id="3573179567135747900">Врати на „<ph name="FROM_LOCALE" />“ (потребно је поновно покретање)</translation>
 <translation id="3582792037806681688">Вишеструко пријављивање је забрањено за корисника у овој сесији</translation>
 <translation id="3595596368722241419">Батерија је пуна</translation>
@@ -195,6 +194,7 @@
 <translation id="615957422585914272">Прикажи тастатуру на екрану</translation>
 <translation id="6165508094623778733">Сазнајте више</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Активирање...</translation>
+<translation id="6284232397434400372">Резолуција је промењена</translation>
 <translation id="6297287540776456956">Користите писаљку да бисте изабрали област</translation>
 <translation id="6310121235600822547">Екран <ph name="DISPLAY_NAME" /> је промењен у <ph name="ROTATION" /></translation>
 <translation id="632744581670418035">Постављени елемент тастатуре</translation>
@@ -232,10 +232,10 @@
 <translation id="7066646422045619941">Ову мрежу је онемогућио администратор.</translation>
 <translation id="7067196344162293536">Аутоматски ротирај</translation>
 <translation id="7098389117866926363">Уређај са USB прикључком типа C (леви задњи порт)</translation>
-<translation id="7135556860107312402">Дозволи обавештења из следећих извора:</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Враћање на стару резолуцију за <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Задњи микрофон</translation>
+<translation id="726276584504105859">Превуците овде да бисте користили подељени екран</translation>
 <translation id="7348093485538360975">Тастатура на екрану</translation>
 <translation id="735745346212279324">Веза са VPN-ом је прекинута</translation>
 <translation id="7377169924702866686">Caps Lock је укључен.</translation>
@@ -248,6 +248,7 @@
 <translation id="7562368315689366235">Палета емоџија</translation>
 <translation id="7569509451529460200">Брајева азбука и ChromeVox су омогућени</translation>
 <translation id="7593891976182323525">Тастер за претрагу или Shift</translation>
+<translation id="7645176681409127223"><ph name="USER_NAME" /> (власник)</translation>
 <translation id="7647488630410863958">Откључајте уређај да бисте прегледали обавештења</translation>
 <translation id="7649070708921625228">Помоћ</translation>
 <translation id="7658239707568436148">Откажи</translation>

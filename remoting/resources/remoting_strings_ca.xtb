@@ -74,6 +74,7 @@ Per obtenir informació sobre la privadesa, vegeu la Política de privadesa de G
 <translation id="2509394361235492552">Connectat a <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">NOTA: Per assegurar-vos que totes les tecles de drecera estiguin disponibles, podeu configurar l'escriptori remot de Chrome amb l'opció "Obre com a finestra".</translation>
 <translation id="2540992418118313681">Voleu compartir aquest ordinador perquè un altre usuari el pugui veure i controlar?</translation>
+<translation id="2579271889603567289">L'amfitrió s'ha bloquejat o no s'ha pogut iniciar.</translation>
 <translation id="2599300881200251572">Aquest servei permet les connexions entrants de clients de l'escriptori remot de Chrome.</translation>
 <translation id="2647232381348739934">Servei de Chromoting</translation>
 <translation id="2676780859508944670">S'hi està treballant...</translation>
@@ -174,6 +175,7 @@ PC</translation>
 <translation id="4736223761657662401">Historial de connexions</translation>
 <translation id="4741792197137897469">L'autenticació ha fallat. Torneu a iniciar la sessió a Chrome.</translation>
 <translation id="477305884757156764">L'aplicació és massa lenta.</translation>
+<translation id="4784508858340177375">El servidor X s'ha bloquejat o no s'ha pogut iniciar.</translation>
 <translation id="4795786176190567663">No teniu permís per dur a terme aquesta acció.</translation>
 <translation id="4798680868612952294">Opcions del ratolí</translation>
 <translation id="4804818685124855865">Desconnecta</translation>
@@ -248,6 +250,7 @@ PC</translation>
 <translation id="6572345186230665992">Per a Mac (OS X Mavericks 10.9 i versions posteriors)</translation>
 <translation id="6583902294974160967">Assistència</translation>
 <translation id="6612717000975622067">Envia Ctrl-Alt-Supr</translation>
+<translation id="6654753848497929428">Comparteix</translation>
 <translation id="6668065415969892472">S'ha actualitzat el vostre PIN.</translation>
 <translation id="6681800064886881394">Copyright 2013 Google Inc. Tots els drets reservats.</translation>
 <translation id="6705482892455291412">Quan introdueixin el codi, se't demanarà que acceptis la connexió i comencis la sessió compartida.</translation>

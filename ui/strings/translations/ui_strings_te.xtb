@@ -5,7 +5,6 @@
 <translation id="1127811143501539442">{DAYS,plural, =1{1 రోజు క్రితం}other{# రోజుల క్రితం}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{1 నిమిషం క్రితం}other{# నిమిషాల క్రితం}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1ని}other{#ని}}</translation>
-<translation id="1190609913194133056">నోటిఫికేషన్ కేంద్రం</translation>
 <translation id="1243314992276662751">అప్‌లోడ్ చేయి</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">సిఫార్సు చేసిన యాప్‌లు</translation>
@@ -31,6 +30,7 @@
 <translation id="2190355936436201913">(ఖాళీ)</translation>
 <translation id="219905428774326614">లాంచర్, అన్ని యాప్‌లు</translation>
 <translation id="2289052229480071835">మీ స్క్రీన్‌పై ఉన్న స్పర్శ లక్ష్యాలను నొక్కండి.</translation>
+<translation id="2295140143284145483">సర్వే</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="24452542372838207">నోటిఫికేషన్‌ని విస్తరించు</translation>
 <translation id="2497284189126895209">మొత్తం ఫైళ్లు</translation>
@@ -90,6 +90,7 @@
 <translation id="5943826764092288734">{HOURS,plural, =1{1 గంట}other{# గంటలు}}</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="598033046487663418">అన్ని అనువర్తనాలు</translation>
+<translation id="6012623610530968780"><ph name="TOTAL_PAGE_NUM" />లో <ph name="SELECTED_PAGE" />వ పేజీ</translation>
 <translation id="6022924867608035986">శోధన పెట్టె వచనాన్ని క్లియర్ చేయండి</translation>
 <translation id="6040143037577758943">మూసివేయి</translation>
 <translation id="6119846243427417423">ఆక్టివేట్ చెయ్యి</translation>
@@ -103,6 +104,7 @@
 <translation id="6394627529324717982">కామా</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 సెక. క్రితం}other{# సెక. క్రితం}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 సెకను క్రితం}other{# సెకన్ల క్రితం}}</translation>
+<translation id="6567071839949112727">క్లిక్ మూలకం</translation>
 <translation id="6612467943526193239">క్రమాంకనం నుండి నిష్క్రమించేందుకు, Esc నొక్కండి.</translation>
 <translation id="6620110761915583480">ఫైల్‌ను సేవ్ చేయి</translation>
 <translation id="6699343763173986273">మీడియా తదుపరి ట్రాక్</translation>
@@ -120,6 +122,7 @@
 <translation id="7130207228079676353">అత్యంత ఇష్టపడేవి</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 నిమి. మిగిలి ఉంది}other{# నిమి. మిగిలి ఉన్నాయి}}</translation>
+<translation id="7319740667687257810">లాంచర్, పాక్షిక వీక్షణ</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 నిమి. క్రితం}other{# నిమి. క్రితం}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 నిమిషం మిగిలి ఉంది}other{# నిమిషాలు మిగిలి ఉన్నాయి}}</translation>

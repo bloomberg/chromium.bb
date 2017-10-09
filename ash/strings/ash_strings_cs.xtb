@@ -96,7 +96,7 @@
 <translation id="315116470104423982">Mobilní datové přenosy</translation>
 <translation id="3236488194889173876">Není k dispozici žádná mobilní síť</translation>
 <translation id="3294437725009624529">Host</translation>
-<translation id="332587331255250389">Vyměňte baterii</translation>
+<translation id="332587331255250389">Vyměňte prosím baterii</translation>
 <translation id="3364721542077212959">Nástroje pro dotykové pero</translation>
 <translation id="3368922792935385530">Připojeno</translation>
 <translation id="3371140690572404006">Zařízení USB Type-C (pravý přední port)</translation>
@@ -104,7 +104,6 @@
 <translation id="3445925074670675829">Zařízení USB Type-C</translation>
 <translation id="3473479545200714844">Lupa obrazovky</translation>
 <translation id="3510164367642747937">Zvýraznit ukazatel myši</translation>
-<translation id="3547954654003013442">Nastavení proxy serveru</translation>
 <translation id="3573179567135747900">Změnit zpět na jazyk <ph name="FROM_LOCALE" /> (vyžaduje restart)</translation>
 <translation id="3582792037806681688">Některému uživateli v této relaci bylo zakázáno vícenásobné přihlášení.</translation>
 <translation id="3595596368722241419">Baterie je nabitá</translation>
@@ -195,6 +194,7 @@
 <translation id="615957422585914272">Zobrazit softwarovou klávesnici</translation>
 <translation id="6165508094623778733">Další informace</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Probíhá aktivace...</translation>
+<translation id="6284232397434400372">Rozlišení se změnilo</translation>
 <translation id="6297287540776456956">Vyberte pomocí dotykového pera oblast.</translation>
 <translation id="6310121235600822547">Displej <ph name="DISPLAY_NAME" /> byl otočen o <ph name="ROTATION" /></translation>
 <translation id="632744581670418035">Překryvná klávesnice</translation>
@@ -232,10 +232,10 @@ Tuto funkci používejte pouze s účty, kterým důvěřujete.</translation>
 <translation id="7066646422045619941">Tato síť je zakázána vaším administrátorem.</translation>
 <translation id="7067196344162293536">Automatické otáčení</translation>
 <translation id="7098389117866926363">Zařízení USB Type-C (levý zadní port)</translation>
-<translation id="7135556860107312402">Povolit oznámení z následujících zdrojů:</translation>
 <translation id="7165278925115064263">Alt + Shift + K</translation>
 <translation id="7168224885072002358">Původní rozlišení bude obnoveno za <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Zadní mikrofon</translation>
+<translation id="726276584504105859">Chcete-li použít rozdělenou obrazovku, přetáhněte okno sem</translation>
 <translation id="7348093485538360975">Softwarová klávesnice</translation>
 <translation id="735745346212279324">Síť VPN je odpojena</translation>
 <translation id="7377169924702866686">Caps Lock je zapnutý.</translation>
@@ -248,6 +248,7 @@ Tuto funkci používejte pouze s účty, kterým důvěřujete.</translation>
 <translation id="7562368315689366235">Paleta emodži</translation>
 <translation id="7569509451529460200">Jsou zapnuty funkce Braille a ChromeVox</translation>
 <translation id="7593891976182323525">Vyhledávání nebo Shift</translation>
+<translation id="7645176681409127223"><ph name="USER_NAME" /> (vlastník)</translation>
 <translation id="7647488630410863958">Chcete-li zobrazit oznámení, odemkněte zařízení</translation>
 <translation id="7649070708921625228">Nápověda</translation>
 <translation id="7658239707568436148">Zrušit</translation>

@@ -5,7 +5,6 @@
 <translation id="1127811143501539442">{DAYS,plural, =1{fa 1 dia}other{fa # dies}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{Fa 1 minut}other{Fa # minuts}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 m}other{# m}}</translation>
-<translation id="1190609913194133056">Centre de notificacions</translation>
 <translation id="1243314992276662751">Penja</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">APLICACIONS RECOMANADES</translation>
@@ -31,6 +30,7 @@
 <translation id="2190355936436201913">(buit)</translation>
 <translation id="219905428774326614">Menú d'aplicacions, totes les aplicacions</translation>
 <translation id="2289052229480071835">Toca els elements tàctils a la pantalla.</translation>
+<translation id="2295140143284145483">Enquesta</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="24452542372838207">Desplega la notificació</translation>
 <translation id="2497284189126895209">Tots els fitxers</translation>
@@ -90,6 +90,7 @@
 <translation id="5943826764092288734">{HOURS,plural, =1{1 hora}other{# hores}}</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="598033046487663418">Totes les aplicacions</translation>
+<translation id="6012623610530968780">Pàgina <ph name="SELECTED_PAGE" /> de <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Esborra el text del quadre de cerca</translation>
 <translation id="6040143037577758943">Tanca</translation>
 <translation id="6119846243427417423">activa</translation>
@@ -103,6 +104,7 @@
 <translation id="6394627529324717982">Coma</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{fa 1 s}other{fa # s}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{Fa 1 segon}other{Fa # segons}}</translation>
+<translation id="6567071839949112727">fes clic a l'antecedent</translation>
 <translation id="6612467943526193239">Prem Esc per sortir del calibratge.</translation>
 <translation id="6620110761915583480">Desa el fitxer</translation>
 <translation id="6699343763173986273">Fitxer multimèdia: pista següent</translation>
@@ -120,6 +122,7 @@
 <translation id="7130207228079676353">LES MÉS PROBABLES</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 min restant}other{# min restants}}</translation>
+<translation id="7319740667687257810">Launcher, visualització parcial</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{fa 1 min}other{fa # min}}</translation>
 <translation id="7389409599945284130">: <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 minut restant}other{# minuts restants}}</translation>

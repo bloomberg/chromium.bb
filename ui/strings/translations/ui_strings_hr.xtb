@@ -5,7 +5,6 @@
 <translation id="1127811143501539442">{DAYS,plural, =1{Prije 1 dan}one{Prije # dan}few{Prije # dana}other{Prije # dana}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{Prije 1 minute}one{prije # minute}few{prije # minute}other{prije # minuta}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 min}one{# min}few{# min}other{# min}}</translation>
-<translation id="1190609913194133056">Centar za obavijesti</translation>
 <translation id="1243314992276662751">Prenesi</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">PREPORUČENE APLIKACIJE</translation>
@@ -31,6 +30,7 @@
 <translation id="2190355936436201913">(prazno)</translation>
 <translation id="219905428774326614">Pokretač, sve aplikacije</translation>
 <translation id="2289052229480071835">Dodirnite ciljeve dodira na zaslonu.</translation>
+<translation id="2295140143284145483">Anketa</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/s</translation>
 <translation id="24452542372838207">Proširi obavijest</translation>
 <translation id="2497284189126895209">Sve datoteke</translation>
@@ -90,6 +90,7 @@
 <translation id="5943826764092288734">{HOURS,plural, =1{1 sat}one{# sat}few{# sata}other{# sati}}</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="598033046487663418">Sve aplikacije</translation>
+<translation id="6012623610530968780"><ph name="SELECTED_PAGE" />. stranica od <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Brisanje teksta u okviru za pretraživanje</translation>
 <translation id="6040143037577758943">Zatvori</translation>
 <translation id="6119846243427417423">aktiviraj</translation>
@@ -103,6 +104,7 @@
 <translation id="6394627529324717982">Zarez</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{Prije 1 s}one{Prije # s}few{Prije # s}other{Prije # s}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{Prije 1 sekunde}one{Prije # sekunde}few{Prije # sekunde}other{Prije # sekundi}}</translation>
+<translation id="6567071839949112727">klikni nadređeni element</translation>
 <translation id="6612467943526193239">Za izlaz iz kalibracije pritisnite Esc.</translation>
 <translation id="6620110761915583480">Spremi datoteku</translation>
 <translation id="6699343763173986273">Sljedeći zapis Medija</translation>
@@ -120,6 +122,7 @@
 <translation id="7130207228079676353">NAJVJEROJATNIJE</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{Još 1 min}one{Još # min}few{Još # min}other{Još # min}}</translation>
+<translation id="7319740667687257810">Pokretač, djelomični prikaz</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{Prije 1 min}one{Prije # min}few{Prije # min}other{Prije # min}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Još 1 minuta}one{Još # minuta}few{Još # minute}other{Još # minuta}}</translation>

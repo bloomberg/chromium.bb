@@ -1355,6 +1355,7 @@
           Kui määrate reegli, saavad kasutajad selle ajutiselt alistada, lubades või keelates suure kursori. Kasutaja valik pole siiski püsiv ja vaikeväärtus taastatakse, kui kuvatakse uuesti sisselogimisekraan või kui kasutaja jääb sisselogimisekraanile minutiks tegevuseta olekusse.
 
           Kui jätate reegli määramata, on suur kursor sisselogimisekraani esmakuvamisel keelatud. Kasutajad võivad suure kursori igal ajal lubada või keelata ja selle olek on sisselogimisekraanil kasutajati püsiv.</translation>
+<translation id="5932767795525445337">Seda reeglit saab kasutada ka Androidi rakenduste kinnitamiseks.</translation>
 <translation id="5936622343001856595">Sunnib Google'i veebiotsingute tegemisel kasutama SafeSearchi ja takistab kasutajaid seadet muutmast.
 
       Seade lubamisel on Google'i otsingu funktsioon SafeSearch alati aktiivne.
@@ -1407,7 +1408,6 @@
 <translation id="6111936128861357925">Luba dinosauruse üllatusmäng</translation>
 <translation id="6114416803310251055">iganenud</translation>
 <translation id="6133088669883929098">Luba kõikidel saitidel võtmeid luua</translation>
-<translation id="6139485614509308022">Kui reegel „OffHours” on määratud, siis eiratakse määratud ajavahemikes seadme määratud reegleid (kasutage nende reeglite vaikeseadeid). Chrome rakendab seadme reeglid uuesti iga sündmuse korral, kui periood „OffHours” algab või lõpeb. Kui aeg „OffHours” lõpeb ja seadme reeglite seadeid muudetakse, teavitatakse sellest kasutajat ning ta logitakse välja (näiteks kui kasutaja pole sisse logitud lubatud kontoga).</translation>
 <translation id="6145799962557135888">Võimaldab määrata URL-i mustrite nimekirja, mis määrab saidid, millel on lubatud käitada JavaScripti.
 
           Kui jätate selle reegli määramata, siis kasutatakse kõikide saitide puhul globaalset vaikeväärtust, mis pärineb reeglist „DefaultJavaScriptSetting”, kui see on määratud, või kasutaja isiklikku konfigureerimist.</translation>

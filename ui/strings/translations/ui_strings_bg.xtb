@@ -5,7 +5,6 @@
 <translation id="1127811143501539442">{DAYS,plural, =1{Преди 1 ден}other{Преди # дни}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{Преди 1 минута}other{Преди # минути}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 мин}other{# мин}}</translation>
-<translation id="1190609913194133056">Център за известия</translation>
 <translation id="1243314992276662751">Качване</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">ПРЕПОРЪЧАНИ ПРИЛОЖЕНИЯ</translation>
@@ -31,6 +30,7 @@
 <translation id="2190355936436201913">(празно)</translation>
 <translation id="219905428774326614">Стартов панел, всички приложения</translation>
 <translation id="2289052229480071835">Докоснете съответните цели на екрана.</translation>
+<translation id="2295140143284145483">Анкета</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> ТБ/сек</translation>
 <translation id="24452542372838207">Разгъване на известието</translation>
 <translation id="2497284189126895209">Всички файлове</translation>
@@ -90,6 +90,7 @@
 <translation id="5943826764092288734">{HOURS,plural, =1{1 час}other{# часа}}</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="598033046487663418">Всички приложения</translation>
+<translation id="6012623610530968780">Страница <ph name="SELECTED_PAGE" /> от <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Изчистване на текста от полето за търсене</translation>
 <translation id="6040143037577758943">Затваряне</translation>
 <translation id="6119846243427417423">активиране</translation>
@@ -103,6 +104,7 @@
 <translation id="6394627529324717982">Запетая</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{Преди 1 сек}other{Преди # сек}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{Преди 1 секунда}other{Преди # секунди}}</translation>
+<translation id="6567071839949112727">кликване върху елемента предшественик</translation>
 <translation id="6612467943526193239">За изход от калибрирането натиснете Esc.</translation>
 <translation id="6620110761915583480">Запазване на файл</translation>
 <translation id="6699343763173986273">Мултимедия, следващият запис</translation>
@@ -120,6 +122,7 @@
 <translation id="7130207228079676353">НАЙ-ВЕРОЯТЕН ИЗБОР</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{Остава 1 мин}other{Остават # мин}}</translation>
+<translation id="7319740667687257810">Стартов панел, частичен изглед</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{Преди 1 мин}other{Преди # мин}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Остава 1 минута}other{Остават # минути}}</translation>

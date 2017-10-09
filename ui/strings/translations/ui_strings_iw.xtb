@@ -5,7 +5,6 @@
 <translation id="1127811143501539442">{DAYS,plural, =1{לפני יום אחד}two{לפני יומיים}many{לפני # ימים}other{לפני # ימים}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{לפני דקה אחת}two{לפני # דקות}many{לפני # דקות}other{לפני # דקות}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{דקה}two{# דק}many{# דק}other{# דק}}</translation>
-<translation id="1190609913194133056">מרכז התראות</translation>
 <translation id="1243314992276662751">העלה</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">אפליקציות מומלצות</translation>

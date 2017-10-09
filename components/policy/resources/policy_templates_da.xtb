@@ -1282,6 +1282,7 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
           Hvis du angiver denne politik, kan brugerne midlertidigt tilsidesætte den ved at slå den store markør til eller fra. Men brugerens valg er ikke endegyldigt, og standarden gendannes, når loginskærmen vises igen, eller hvis brugeren forbliver inaktiv på loginskærmen i et minut.
 
           Hvis denne politik ikke angives, deaktiveres den store markør, når loginskærmen vises første gang. Brugerne kan når som helst aktivere eller deaktivere den store markør, og dens status på loginskærmen fastholdes hos brugerne.</translation>
+<translation id="5932767795525445337">Denne politik kan også bruges til at fastgøre Android-apps.</translation>
 <translation id="5936622343001856595">Gennemtvinger, at forespørgsler i Google Websøgning bliver udført, mens Beskyttet søgning er indstillet til aktiv, og forhindrer brugere i at ændre denne indstilling.
 
       Hvis du aktiverer denne indstilling, vil Beskyttet søgning i Google Søgning altid være aktiv.
@@ -1324,7 +1325,6 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 <translation id="6111936128861357925">Tillad det ekstra dinosaurspil</translation>
 <translation id="6114416803310251055">frarådet</translation>
 <translation id="6133088669883929098">Tillad alle websites at anvende nøglegenerering</translation>
-<translation id="6139485614509308022">Hvis politikken "OffHours" er angivet, ignoreres de angivne enhedspolitikker (brug standardindstillingerne for disse politikker) i de angivne tidsrum. Enhedspolitikker anvendes igen af Chrome hver gang tidsrummet for "OffHours" starter eller slutter. Brugeren underrettes og tvinges til at logge ud, når tidspunktet for "OffHours" slutter, og indstillinger for enhedspolitikker ændres (dvs. når brugeren ikke er logget ind med en tilladt konto).</translation>
 <translation id="6145799962557135888">Giver dig mulighed for at oprette en liste med webadressemønstre, der angiver websites, der får lov til at køre JavaScript. Hvis denne politik ikke angives, anvendes den globale standardværdi på alle websites, enten fra politikken "DefaultJavaScriptSetting", hvis den er indstillet, eller brugerens personlige konfiguration.</translation>
 <translation id="614662973812186053">Denne politik styrer også indsamling af brugs- og diagnosticeringsdata i Android.</translation>
 <translation id="6155936611791017817">Indstil standardtilstand for den store markør på loginskærmen</translation>

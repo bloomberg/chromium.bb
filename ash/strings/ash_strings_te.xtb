@@ -96,6 +96,7 @@
 <translation id="315116470104423982">మొబైల్ డేటా</translation>
 <translation id="3236488194889173876">మొబైల్ నెట్‌వర్క్ ఏదీ అందుబాటులో లేదు</translation>
 <translation id="3294437725009624529">అతిథి</translation>
+<translation id="332587331255250389">దయచేసి బ్యాటరీని భర్తీ చేయండి</translation>
 <translation id="3364721542077212959">స్టైలస్ సాధనాలు</translation>
 <translation id="3368922792935385530">కనెక్ట్ అయింది</translation>
 <translation id="3371140690572404006">USB-C పరికరం (కుడివైపు ముందు పోర్ట్)</translation>
@@ -103,7 +104,6 @@
 <translation id="3445925074670675829">USB-C పరికరం</translation>
 <translation id="3473479545200714844">స్క్రీన్ మాగ్నిఫైయర్</translation>
 <translation id="3510164367642747937">మౌస్ కర్సర్‌ని హైలైట్ చేయి</translation>
-<translation id="3547954654003013442">ప్రాక్సీ సెట్టింగ్‌లు</translation>
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />"కు వెనుకకి మార్చండి (పునఃప్రారంభం అవసరం)</translation>
 <translation id="3582792037806681688">ఈ సెషన్‌లో వినియోగదారు కోసం బహుళ సైన్-ఇన్ అనుమతించబడలేదు</translation>
 <translation id="3595596368722241419">బ్యాటరీ  నిండింది</translation>
@@ -194,6 +194,7 @@
 <translation id="615957422585914272">స్క్రీన్‌పై కీబోర్డ్‌ను చూపు</translation>
 <translation id="6165508094623778733">మరింత తెలుసుకోండి</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: సక్రియం చేస్తోంది...</translation>
+<translation id="6284232397434400372">రిజల్యూషన్ మార్చబడింది</translation>
 <translation id="6297287540776456956">ప్రాంతాన్ని ఎంచుకోవడానికి స్టైలస్‌ను ఉపయోగించండి</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> <ph name="ROTATION" />కి తిప్పబడింది</translation>
 <translation id="632744581670418035">కీబోర్డ్ అతివ్యాప్తి</translation>
@@ -231,10 +232,10 @@
 <translation id="7066646422045619941">ఈ నెట్‌వర్క్‌ను మీ నిర్వాహకులు నిలిపివేసారు.</translation>
 <translation id="7067196344162293536">స్వయంచాలకంగా తిప్పు</translation>
 <translation id="7098389117866926363">USB-C పరికరం (వెనుక భాగంలో ఎడమ పోర్ట్)</translation>
-<translation id="7135556860107312402">వీటి నుండి నోటిఫికేషన్‌లను అనుమతించు:</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" />లో తిరిగి పాత రిజల్యూషన్‌కి మార్చబడుతోంది</translation>
 <translation id="7256634071279256947">వెనుకవైపు మైక్రోఫోన్</translation>
+<translation id="726276584504105859">విభజన స్క్రీన్‌ను ఉపయోగించడానికి ఇక్కడికి లాగండి</translation>
 <translation id="7348093485538360975">ఆన్-స్క్రీన్ కీబోర్డ్</translation>
 <translation id="735745346212279324">VPN డిస్‌కనెక్ట్ చేయబడింది</translation>
 <translation id="7377169924702866686">Caps Lock ఆన్‌లో ఉంది.</translation>
@@ -247,6 +248,7 @@
 <translation id="7562368315689366235">ఎమోజీ ఫలకం</translation>
 <translation id="7569509451529460200">బ్రెయిలీ మరియు ChromeVox ప్రారంభించబడ్డాయి</translation>
 <translation id="7593891976182323525">Search లేదా Shift</translation>
+<translation id="7645176681409127223"><ph name="USER_NAME" /> (యజమాని)</translation>
 <translation id="7647488630410863958">మీ నోటిఫికేషన్‌లను వీక్షించడానికి పరికరాన్ని అన్‌లాక్ చేయండి</translation>
 <translation id="7649070708921625228">సహాయం</translation>
 <translation id="7658239707568436148">రద్దు చెయ్యి</translation>

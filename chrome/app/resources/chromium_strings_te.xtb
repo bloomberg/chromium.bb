@@ -11,6 +11,7 @@
 <translation id="1396446129537741364">Chromium పాస్‌వర్డ్‌లను చూపడానికి ప్రయత్నిస్తోంది.</translation>
 <translation id="1403254041219632970">భవిష్యత్తు Chromium సంస్కరణల్లో ఇకపై Mac OS X 10.6, 10.7 లేదా 10.8కి మద్దతు ఉండదు.</translation>
 <translation id="1414495520565016063">మీరు Chromiumకు సైన్ ఇన్ చేసారు!</translation>
+<translation id="1440917365206527807">ఈ సైట్ మిమ్మల్ని మరొక పేజీకి తీసుకెళ్లనీయకుండా Chromium అడ్డుకుంది</translation>
 <translation id="1444754455097148408">Chromium ఓపెన్ సోర్స్ లైసెన్స్‌లు</translation>
 <translation id="1502360822835740515">Chromiumని మీ డిఫాల్ట్ బ్రౌజర్‌గా చేయండి</translation>
 <translation id="151962892725702025">మీ డొమైన్ కోసం సమకాలీకరణ అందుబాటులో లేనందున Chromium OS మీ డేటాను సమకాలీకరించలేకపోయింది.</translation>
@@ -62,6 +63,7 @@
 <translation id="3103660991484857065">ఇన్‌స్టాలర్ ఆర్కైవ్‌ని వాస్తవ పరిమాణానికి తీసుకుని రావడంలో విఫలమైంది. దయచేసి Chromiumని మళ్లీ డౌన్‌లోడ్ చేయండి.</translation>
 <translation id="3130323860337406239">Chromium మీ మైక్రోఫోన్‌ని ఉపయోగిస్తోంది.</translation>
 <translation id="3155163173539279776">Chromiumను పునఃప్రారంభించండి</translation>
+<translation id="3179665906251668410">Chromium అజ్ఞా&amp;త విండోలో లింక్‌ని తెరువు</translation>
 <translation id="3190315855212034486">అయ్యో! Chromium క్రాష్ అయ్యింది. ఇప్పుడే మళ్లీ ప్రారంభించాలా?</translation>
 <translation id="3256316712990552818">Chromiumకి కాపీ చేయబడింది</translation>
 <translation id="3258596308407688501">Chromium దీని డేటా డైరెక్టరీని చదవలేదు మరియు దీనిలో వ్రాయలేదు: <ph name="USER_DATA_DIRECTORY" /></translation>
@@ -75,6 +77,7 @@
 <translation id="3549345495227188780">Chromium OSతో ప్రారంభించండి</translation>
 <translation id="3582788516608077514">Chromiumని నవీకరిస్తోంది...</translation>
 <translation id="358997566136285270">Chromium లోగో</translation>
+<translation id="3713809861844741608">కొత్త Chromium &amp;ట్యాబ్‌లో లింక్‌ని తెరువు</translation>
 <translation id="3738139272394829648">శోధించడానికి తాకండి</translation>
 <translation id="3762167353400286894">Chromium OS ఈ భాషలో ప్రదర్శించబడుతోంది</translation>
 <translation id="378917192836375108">Chromium వెబ్‌లో ఫోన్ నంబర్ క్లిక్ చేయడానికి మరియు Skypeతో కాల్ చేయడానికి మిమ్మల్ని అనుమతిస్తుంది!</translation>
@@ -127,6 +130,7 @@
 <translation id="5466153949126434691">Chromium స్వయంచాలకంగా నవీకరించబడుతుంది కనుక మీరు ఎల్లప్పుడూ తాజా సంస్కరణని కలిగి ఉంటారు. ఈ డౌన్‌లోడ్ పూర్తయినప్పుడు, Chromium పునఃప్రారంభించబడుతుంది మరియు మీరు మీ పనిని కొనసాగించవచ్చు.</translation>
 <translation id="5479196819031988440">Chromium OS ఈ పేజీని తెరవలేదు.</translation>
 <translation id="549669000822060376">దయచేసి Chromium తాజా సిస్టమ్ నవీకరణలను ఇన్‌స్టాల్ చేస్తున్నప్పుడు వేచి ఉండండి.</translation>
+<translation id="5524843473235508879">మళ్లింపు బ్లాక్ చేయబడింది.</translation>
 <translation id="5563479599352954471">ఒక టచ్‌తో శోధించండి</translation>
 <translation id="5620765574781326016">పేజీ నుండి నిష్క్రమించకుండానే వెబ్‌సైట్‌ల్లో విషయాల గురించి తెలుసుకోండి.</translation>
 <translation id="5634636535844844681">Chromiumకి Windows 7 లేదా అంతకంటే ఆధునికమైనది ఉండటం ఆవశ్యకం.</translation>
@@ -174,11 +178,11 @@
 <translation id="6883876366448858277">ఒక పదాన్ని మరియు దాని సంబంధిత సందర్భాన్ని Google శోధనకు పంపుతుంది, ప్రతిస్పందనగా దాని నుండి నిర్వచనాలు, చిత్రాలు మరియు ఇతర శోధన ఫలితాలను అందిస్తుంది.</translation>
 <translation id="6893813176749746474">Chromium నవీకరించబడింది, కానీ మీరు దీన్ని గత 30 రోజులుగా ఉపయోగించలేదు.</translation>
 <translation id="6944967875980567883">మాడ్యూల్‌లు Chromiumలో లోడ్ చేయబడ్డాయి</translation>
+<translation id="6964305034639999644">Chromium అజ్ఞా&amp;త విండోలో లింక్‌ని తెరువు</translation>
 <translation id="6970811910055250180">మీ పరికరాన్ని నవీకరిస్తోంది...</translation>
 <translation id="705851970750939768">Chromiumని నవీకరించు</translation>
 <translation id="7066436765290594559">Chromium OS మీ డేటాను సమకాలీకరించలేకపోయింది. దయచేసి మీ సమకాలీకరణ రహస్య పదబంధాన్ని నవీకరించండి.</translation>
 <translation id="707471633328071618">Google చెల్లింపులు (Chromiumకి కాపీ చేయబడింది)</translation>
-<translation id="7138853919861947730">Chromium మీ బ్రౌజింగ్ అనుభవాన్ని మెరుగుపరచడానికి వెబ్ సేవలను ఉపయోగించవచ్చు.</translation>
 <translation id="7162152143154757523">మీరు బ్రౌజర్‌లో టైప్ చేసే వాటిని Google సర్వర్‌లకు పంపడం ద్వారా, Google శోధనలో ఉపయోగించేటటువంటి అక్షరక్రమ తనిఖీ సాంకేతికతను ఉపయోగించడానికి మిమ్మల్ని అనుమతించడం ద్వారా Chromium మరింత మెరుగైన అక్షరక్రమ తనిఖీని అందించగలదు.</translation>
 <translation id="7205698830395646142">Chromium మెనులో దాచండి</translation>
 <translation id="7223968959479464213">విధి నిర్వాహకుడు - Chromium</translation>
@@ -251,6 +255,7 @@
 <translation id="9022552996538154597">Chromiumకి సైన్ ఇన్ చేయండి</translation>
 <translation id="9036189287518468038">Chromium అనువర్తన లాంచర్</translation>
 <translation id="9089354809943900324">Chromium కాలం చెల్లినది</translation>
+<translation id="91086099826398415">కొత్త Chromium &amp;ట్యాబ్‌లో లింక్‌ని తెరువు</translation>
 <translation id="911206726377975832">మీ బ్రౌజింగ్ డేటాని కూడా తొలగించాలా?</translation>
 <translation id="918373042641772655"><ph name="USERNAME" />ని డిస్‌కనెక్ట్ చేయడం వలన ఈ పరికరంలో నిల్వ చేయబడిన మీ చరిత్ర, బుక్‌మార్క్‌లు, సెట్టింగ్‌లు మరియు ఇతర Chromium డేటా క్లియర్ చేయబడతాయి. మీ Google ఖాతాలో నిల్వ చేయబడిన డేటా క్లియర్ చేయబడదు మరియు దాన్ని <ph name="GOOGLE_DASHBOARD_LINK" />Google డాష్‌బోర్డ్<ph name="END_GOOGLE_DASHBOARD_LINK" />లో నిర్వహించవచ్చు.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>

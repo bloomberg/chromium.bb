@@ -48,7 +48,6 @@
 <translation id="1389236224998445076">बचाया गया डेटा:</translation>
 <translation id="1389974829397082527">यहां कोई बुकमार्क नहीं है</translation>
 <translation id="1397811292916898096"><ph name="PRODUCT_NAME" /> के ज़रिए खोजें</translation>
-<translation id="1402229579576898974"><ph name="NUMBER_OF_SUGGESTIONS" /> Chrome सुझाव</translation>
 <translation id="1404122904123200417"><ph name="WEBSITE_URL" /> में एम्बेड किया गया है</translation>
 <translation id="1406000523432664303">“नज़र न रखें”</translation>
 <translation id="1407135791313364759">सभी बुकमार्क खोलें</translation>
@@ -138,7 +137,6 @@
 <translation id="2268044343513325586">परिशोधित करें</translation>
 <translation id="2283599456633275070">यात्रा</translation>
 <translation id="2286841657746966508">बिलिंग पता</translation>
-<translation id="2301209717432756327">होम स्‍क्रीन में जोड़ा गया.</translation>
 <translation id="2315043854645842844">क्लाइंट-साइड प्रमाणपत्र चयन ऑपरेटिंग सिस्टम के द्वारा समर्थित नहीं है.</translation>
 <translation id="2321958826496381788">स्‍लाइडर को तब तक खींचें, जब तक कि आपको इसे पढ़ने में सुविधा न हो. पैराग्राफ़ पर डबल-टैप करने के बाद लेख को इतना बड़ा दिखाई देना चाहिए.</translation>
 <translation id="2323763861024343754">साइट मेमोरी</translation>
@@ -259,7 +257,6 @@
 <translation id="3549657413697417275">अपने इतिहास में खोजें</translation>
 <translation id="3552151358455404883"><ph name="BEGIN_LINK1" />सेटिंग<ph name="END_LINK1" /> में जाकर Chrome सिंक और वैयक्तिकरण प्रबंधित करें</translation>
 <translation id="3557336313807607643">संपर्कों में जोड़ें</translation>
-<translation id="3583454905526475291">ऐप्लिकेशन लॉन्च नहीं हो सका</translation>
 <translation id="3587482841069643663">सभी</translation>
 <translation id="3590487821116122040">ऐसी साइट मेमोरी जो Chrome के विचार में महत्वपूर्ण नहीं है (उदा. ऐसी साइटें जिनमें कोई भी सेटिंग नहीं सहेजी गई है या जिन पर आप अक्सर नहीं जाते हैं)</translation>
 <translation id="3599863153486145794">प्रवेश किए हुए सभी डिवाइसों से इतिहास साफ़ कर देता है. आपके Google खाते में <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> पर अन्य प्रकार के ब्राउज़िंग इतिहास हो सकतेे हैं.</translation>
@@ -341,7 +338,6 @@
 <translation id="4269820728363426813">लिंक पते को कॉपी करें</translation>
 <translation id="4275663329226226506">मीडिया</translation>
 <translation id="4278390842282768270">अनुमति है</translation>
-<translation id="42981349822642051">विस्तृत करें</translation>
 <translation id="4307992518367153382">आधारभूत बातें</translation>
 <translation id="4351244548802238354">संवाद बंद करें</translation>
 <translation id="4378154925671717803">फ़ोन</translation>
@@ -524,6 +520,7 @@
 <translation id="5942872142862698679">खोजने के लिए Google का उपयोग करना</translation>
 <translation id="5956665950594638604">Chrome सहायता केंद्र को नए टैब में खोलें</translation>
 <translation id="5958275228015807058">डाउनलोड में जाकर अपनी फ़ाइलें और पेज पाएं</translation>
+<translation id="5958994127112619898">पृष्‍ठ को सरल बनाएं</translation>
 <translation id="5962718611393537961">संक्षिप्त करने के लिए टैप करें</translation>
 <translation id="6000066717592683814">Google को डिफ़ॉल्ट बनाए रखें</translation>
 <translation id="6023914116273780353">वैयक्तिकृत</translation>
@@ -797,7 +794,6 @@
 <translation id="8523928698583292556">संग्रहित पासवर्ड हटाएं</translation>
 <translation id="854522910157234410">यह पेज खोलें</translation>
 <translation id="8562452229998620586">सहेजे गए पासवर्ड यहां दिखाई देंगे.</translation>
-<translation id="856481929701340285">डेस्‍कटॉप साइट का अनुरोध करें</translation>
 <translation id="8569404424186215731"><ph name="DATE" /> से</translation>
 <translation id="8571213806525832805">पिछले 4 सप्ताह</translation>
 <translation id="857509777403223202">जल्द ही और लेख दिखाई देंगे. अपनी शाम का आनंद लें!</translation>

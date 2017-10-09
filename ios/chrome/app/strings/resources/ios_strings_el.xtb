@@ -79,6 +79,7 @@
 <translation id="2381405137052800939">Βασικές πληροφορίες</translation>
 <translation id="2386793615875593361">Έχει επιλεγεί 1 φωτογραφία</translation>
 <translation id="2435457462613246316">Εμφάνιση κωδικού πρόσβασης</translation>
+<translation id="2529021024822217800">Άνοιγμα όλων</translation>
 <translation id="2572712655377361602">Μια πολιτική συσκευής απέκλεισε την πρόσβαση στις φωτογραφίες σας</translation>
 <translation id="2584132361465095047">Προσθήκη λογαριασμού…</translation>
 <translation id="2593774076813182497">Δεν είναι δυνατή η εκτύπωση αυτής της σελίδας.</translation>
@@ -128,7 +129,6 @@
 <translation id="3324193307694657476">Διεύθυνση 2</translation>
 <translation id="3329904751041170572">Δεν ήταν δυνατή η σύνδεση στο διακομιστή.</translation>
 <translation id="3335947283844343239">Εκ Νέου Άνοιγμα Κλεισμένης Καρτέλας</translation>
-<translation id="3387752218061326363">Εμφάνιση ιστορικού από τις συνδεδεμένες συσκευές σας. <ph name="BEGIN_LINK" />Μάθετε περισσότερα<ph name="END_LINK" /></translation>
 <translation id="3393920035788932672">Επιτρέπ. τα αναδυόμ.</translation>
 <translation id="3414292259312108062">Το Chrome θα αποθηκεύσει αυτόν τον κωδικό στους <ph name="BEGIN_LINK" />αποθηκευμένους κωδικούς πρόσβασης Google<ph name="END_LINK" /> και θα τον συμπληρώνει αυτόματα, έτσι ώστε να μην χρειάζεται να τον απομνημονεύσετε.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> λεπτά</translation>
@@ -312,6 +312,7 @@
 <translation id="6797885426782475225">Φωνητική αναζήτηση</translation>
 <translation id="6807889908376551050">Εμφάνιση όλων…</translation>
 <translation id="681368974849482173">Δημιουργήθηκε ένα στοιχείο</translation>
+<translation id="6871663519944855400">Άνοιγμα σε κατάσταση ανώνυμης περιήγησης</translation>
 <translation id="6896758677409633944">Αντιγραφή</translation>
 <translation id="6903907808598579934">Ενεργοποίηση συγχρονισμού</translation>
 <translation id="6945221475159498467">Επιλογή</translation>
@@ -321,7 +322,6 @@
 <translation id="7031882061095297553">Συγχρονισμός με</translation>
 <translation id="7062545763355031412">Αποδοχή και εναλλαγή λογαριασμών</translation>
 <translation id="7108338896283013870">Απόκρυψη</translation>
-<translation id="7131892264600713844">Εμφάνιση ιστορικού από αυτήν τη συσκευή. <ph name="BEGIN_LINK" />Μάθετε περισσότερα.<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">Ονοματεπώνυμο</translation>
 <translation id="7136892417564438900">Η κάμερα δεν είναι διαθέσιμη</translation>
 <translation id="7159472599653637159">Αίτηση ιστότ. για κινητά</translation>

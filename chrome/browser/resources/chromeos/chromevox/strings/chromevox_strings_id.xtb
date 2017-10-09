@@ -8,7 +8,7 @@
 <translation id="1025074108959230262">Mode lekat dinonaktifkan</translation>
 <translation id="1031961866430398710">kemudian</translation>
 <translation id="1038643060055067718">Baris:</translation>
-<translation id="1038795173450935438">Untuk maju antar-item di laman, tekan Search + Panah Kanan, atau Search + Panah Kiri untuk melompat ke belakang. Untuk menuju baris berikutnya, tekan Search + Panah Bawah. Untuk kembali ke baris sebelumnya, gunakan Search + Panah Atas. Jika Anda mencapai item yang ingin diklik, tekan Search + Spasi.</translation>
+<translation id="1038795173450935438">Untuk maju antar-item di halaman, tekan Search + Panah Kanan, atau Search + Panah Kiri untuk melompat ke belakang. Untuk menuju baris berikutnya, tekan Search + Panah Bawah. Untuk kembali ke baris sebelumnya, gunakan Search + Panah Atas. Jika Anda mencapai item yang ingin diklik, tekan Search + Spasi.</translation>
 <translation id="1044777062731150180">Tanpa judul</translation>
 <translation id="106222400312645156">rwhdr</translation>
 <translation id="1065552602950927991">Input tidak valid</translation>
@@ -153,7 +153,7 @@
 <translation id="2637227747952042642">Matematika</translation>
 <translation id="2639750663247012216">Pengubah ChromeVox</translation>
 <translation id="2644542693584024604">salah eja</translation>
-<translation id="267442004702508783">menyegarkan laman</translation>
+<translation id="267442004702508783">menyegarkan halaman</translation>
 <translation id="2684412629217766642">Tutup Tutorial ChromeVox</translation>
 <translation id="2697408785920771974">autoinl</translation>
 <translation id="2704429362613743330">{COUNT,plural, =1{kurung buka}other{# kurung buka}}</translation>
@@ -169,7 +169,7 @@
 <translation id="2781264313200109999">Awal link</translation>
 <translation id="2800204403141299078">Tidak ada elemen berbeda lainnya.</translation>
 <translation id="2800780099804980316">Tidak ada judul tingkat 1 sebelumnya.</translation>
-<translation id="280499067616661124">ChromeVox ditemukan pada laman</translation>
+<translation id="280499067616661124">ChromeVox ditemukan pada halaman</translation>
 <translation id="2808001342598757276">Terangkan layar</translation>
 <translation id="2811019999044652585">Untuk melompat ke bagian lain pada layar, seperti bilah alat atau baki sistem, tekan Control+Forward. Di Chromebook, tombol Forward berada tepat di atas tombol nomor 2.</translation>
 <translation id="2811204574343810641">Baris</translation>
@@ -329,7 +329,7 @@
 <translation id="3812237531158591503">tempel $1.</translation>
 <translation id="3816633764618089385">Media berikutnya</translation>
 <translation id="3819376190738087562">Tidak ada lompatan.</translation>
-<translation id="385383972552776628">Membuka laman opsi</translation>
+<translation id="385383972552776628">Membuka halaman opsi</translation>
 <translation id="3856075812838139784">Hanya baca</translation>
 <translation id="3887576927692165210">ed</translation>
 <translation id="3897092660631435901">Menu</translation>
@@ -419,7 +419,7 @@
 <translation id="4763480195061959176">video</translation>
 <translation id="4764692524839457597">default</translation>
 <translation id="479989351350248267">search</translation>
-<translation id="481165870889056555">Mengumumkan judul dari laman saat ini</translation>
+<translation id="481165870889056555">Mengumumkan judul dari halaman saat ini</translation>
 <translation id="4826415162591436065">Navigasi ke depan</translation>
 <translation id="4826604887384865800">Lompatan berikutnya</translation>
 <translation id="4827410568042294688">tidak dipilih</translation>
@@ -442,7 +442,7 @@
 <translation id="49787999531187221">ChromeVox tidak aktif.</translation>
 <translation id="4979404613699303341">Tombol sebelumnya</translation>
 <translation id="4982773647088557172"><ph name="VALUE" />, <ph name="NAME" />, kotak daftar</translation>
-<translation id="4983588134362688868">Menuju ke bagian atas laman</translation>
+<translation id="4983588134362688868">Menuju ke bagian atas halaman</translation>
 <translation id="4986606102545753256"><ph name="NAME" />, jendela</translation>
 <translation id="4993152509206108683">Tingkat kecepatan <ph name="PERCENT" /> persen</translation>
 <translation id="4996716799442435517">Visual</translation>
@@ -451,7 +451,7 @@
 <translation id="5000760171916499057">Tidak ada formulir.</translation>
 <translation id="5005670136041063723">Tidak ada elemen serupa lainnya.</translation>
 <translation id="501473567976723023">Januari</translation>
-<translation id="5041394372352067729">Pindahkan layar braille ke bagian atas laman</translation>
+<translation id="5041394372352067729">Pindahkan layar braille ke bagian atas halaman</translation>
 <translation id="5042770794184672516">Meningkatkan volume ucapan</translation>
 <translation id="5050015258024679800">Judul tingkat 4 sebelumnya</translation>
 <translation id="5054047268577924192">Item daftar sebelumnya</translation>
@@ -553,7 +553,7 @@ Untuk membuka menu browser Chrome, tekan Alt+F.</translation>
 <translation id="5826479389509458994">baris <ph name="ROW" /> kolom <ph name="COL" /></translation>
 <translation id="5850707923114094062">Geser ke belakang</translation>
 <translation id="5851548754964597211">Daftar tab</translation>
-<translation id="5859752971144398932">Keluar dari cari di laman.</translation>
+<translation id="5859752971144398932">Keluar dari cari di halaman.</translation>
 <translation id="5866042630553435010">Dicentang sebagian</translation>
 <translation id="5867591286054666064">Selama tutorial ini, tekan tombol apa saja untuk mendengar namanya.</translation>
 <translation id="5869546221129391014">Kisi</translation>
@@ -587,7 +587,7 @@ Untuk membuka menu browser Chrome, tekan Alt+F.</translation>
 <translation id="6142308968191113180">Judul 4</translation>
 <translation id="6164829606128959761">pengukur</translation>
 <translation id="6169420925157477918">Gambar dengan deskripsi panjang</translation>
-<translation id="6186305613600865047">Melompat ke bagian bawah laman</translation>
+<translation id="6186305613600865047">Melompat ke bagian bawah halaman</translation>
 <translation id="6193330012414963395">AM PM</translation>
 <translation id="622484624075952240">Bawah</translation>
 <translation id="6236061028292614533">Judul berikutnya</translation>
@@ -616,7 +616,7 @@ Untuk membuka menu browser Chrome, tekan Alt+F.</translation>
 <translation id="6459511626086141404">Peta tombol datar</translation>
 <translation id="6468049171101508116">Tombol berikutnya</translation>
 <translation id="6493991254603208962">mengurangi Kecerahan</translation>
-<translation id="6508059270146105198">Pindahkan layar braille ke bagian bawah laman</translation>
+<translation id="6508059270146105198">Pindahkan layar braille ke bagian bawah halaman</translation>
 <translation id="6536864053412760904">Token Math ML</translation>
 <translation id="6550720799683018100">Ubah peta tombol saat ini dengan memilih opsi dari daftar di bawah.</translation>
 <translation id="6561818612645211875">Berpindah ke awal baris saat ini</translation>
@@ -715,7 +715,7 @@ Untuk membuka menu browser Chrome, tekan Alt+F.</translation>
 <translation id="7596919493010894443">pilihan yang dihapus</translation>
 <translation id="7604026522577407655">Berpindah ke awal kolom saat ini</translation>
 <translation id="7604451927827590395">hdng</translation>
-<translation id="7609342235116740824">Mengumumkan URL laman saat ini</translation>
+<translation id="7609342235116740824">Mengumumkan URL halaman saat ini</translation>
 <translation id="7609363189280667021">Beralih teks braille</translation>
 <translation id="762020119231868829">Menjeda semua widget media yang sedang diputar</translation>
 <translation id="7625690649919402823">Tabel berikutnya</translation>

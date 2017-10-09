@@ -129,7 +129,6 @@
 <translation id="3324193307694657476">العنوان 2</translation>
 <translation id="3329904751041170572">تعذر الاتصال بالخادم.</translation>
 <translation id="3335947283844343239">إعادة فتح علامة التبويب المغلقة</translation>
-<translation id="3387752218061326363">عرض السجلّ من الأجهزة التي تم تسجيل الدخول إليها. <ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" />.</translation>
 <translation id="3393920035788932672">النوافذ المنبثقة المسموح بها</translation>
 <translation id="3414292259312108062">‏سيخزن Chrome ذلك في <ph name="BEGIN_LINK" />كلمات مرور Chrome المحفوظة<ph name="END_LINK" /> ويكتبها تلقائيًا بالنيابة عنك حتى لا تضطر لحفظها بنفسك.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> دقيقة</translation>
@@ -323,7 +322,6 @@
 <translation id="7031882061095297553">مزامنة لـ</translation>
 <translation id="7062545763355031412">قبول الحسابات وتبديلها</translation>
 <translation id="7108338896283013870">إخفاء</translation>
-<translation id="7131892264600713844">عرض السجل من هذا الجهاز. <ph name="BEGIN_LINK" />مزيد من المعلومات.<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">الاسم بالكامل</translation>
 <translation id="7136892417564438900">الكاميرا غير متاحة</translation>
 <translation id="7159472599653637159">طلب موقع ويب متوافق مع الجوّال</translation>

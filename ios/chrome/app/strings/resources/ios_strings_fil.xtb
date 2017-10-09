@@ -79,6 +79,7 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="2381405137052800939">Mga Pangunahing Kaalaman</translation>
 <translation id="2386793615875593361">1 ang napili</translation>
 <translation id="2435457462613246316">Ipakita ang password</translation>
+<translation id="2529021024822217800">Buksan Lahat</translation>
 <translation id="2572712655377361602">Na-block ng isang patakaran ng device ang access sa iyong mga larawan</translation>
 <translation id="2584132361465095047">Magdagdag ng Account…</translation>
 <translation id="2593774076813182497">Hindi mapi-print ang page na ito.</translation>
@@ -128,7 +129,6 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="3324193307694657476">Address 2</translation>
 <translation id="3329904751041170572">Hindi makakonekta sa server.</translation>
 <translation id="3335947283844343239">Muling buksan ang Nakasarang Tab</translation>
-<translation id="3387752218061326363">Ipinapakita ang history mula sa iyong mga naka-sign in na device. <ph name="BEGIN_LINK" />Matuto pa<ph name="END_LINK" />.</translation>
 <translation id="3393920035788932672">Pinapayagan ang Mga Pop-up</translation>
 <translation id="3414292259312108062">Iiimbak ito ng Chrome sa iyong <ph name="BEGIN_LINK" />mga naka-save na password sa Google<ph name="END_LINK" /> at io-autofill ito para sa iyo nang sa gayon ay hindi mo na ito kailangang tandaan.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> (na) min</translation>
@@ -312,6 +312,7 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync noong <ph name=
 <translation id="6797885426782475225">Paghahanap Gamit ang Boses</translation>
 <translation id="6807889908376551050">Ipakita Lahat...</translation>
 <translation id="681368974849482173">Nagawa ang item</translation>
+<translation id="6871663519944855400">Buksan sa incognito</translation>
 <translation id="6896758677409633944">Copy</translation>
 <translation id="6903907808598579934">I-on ang pag-sync</translation>
 <translation id="6945221475159498467">Pumili</translation>
@@ -321,7 +322,6 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync noong <ph name=
 <translation id="7031882061095297553">I-sync sa</translation>
 <translation id="7062545763355031412">Tanggapin at lumipat ng account</translation>
 <translation id="7108338896283013870">Itago</translation>
-<translation id="7131892264600713844">Ipinapakita ang history mula sa device na ito. <ph name="BEGIN_LINK" />Matuto nang higit pa.<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">Buong Pangalan</translation>
 <translation id="7136892417564438900">Hindi available ang camera</translation>
 <translation id="7159472599653637159">Hilingin ang Pang-mobile na Site</translation>

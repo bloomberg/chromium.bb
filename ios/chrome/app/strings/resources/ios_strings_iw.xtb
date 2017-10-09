@@ -129,7 +129,6 @@
 <translation id="3324193307694657476">כתובת, שורה 2</translation>
 <translation id="3329904751041170572">לא ניתן להתחבר לשרת.</translation>
 <translation id="3335947283844343239">פתח מחדש כרטיסייה שנסגרה</translation>
-<translation id="3387752218061326363">מציג היסטוריה מהמכשירים שבהם אתה מחובר לחשבון. <ph name="BEGIN_LINK" />למידע נוסף<ph name="END_LINK" />.</translation>
 <translation id="3393920035788932672">חלונות קופצים מותרים</translation>
 <translation id="3414292259312108062">‏Chrome יאחסן את הסיסמה ב<ph name="BEGIN_LINK" />סיסמאות Google השמורות<ph name="END_LINK" /> ויזין אותה באופן אוטומטי כדי שלא תצטרך לזכור אותה.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> דק'</translation>
@@ -323,7 +322,6 @@
 <translation id="7031882061095297553">סינכרון עם</translation>
 <translation id="7062545763355031412">קבל והחלף חשבונות</translation>
 <translation id="7108338896283013870">הסתר</translation>
-<translation id="7131892264600713844">מציג היסטוריה מהמכשיר הזה. <ph name="BEGIN_LINK" />למידע נוסף.<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">שם מלא</translation>
 <translation id="7136892417564438900">המצלמה לא זמינה</translation>
 <translation id="7159472599653637159">בקש אתר שמותאם לנייד</translation>
@@ -420,7 +418,7 @@
 <translation id="9100610230175265781">יש להזין ביטוי סיסמה</translation>
 <translation id="9148126808321036104">היכנס שוב</translation>
 <translation id="914898748153555155">‏אפשר לשנות את ההעדפה הזו דרך הגדרות Chrome</translation>
-<translation id="91549621916703028">באפשרותך ליצור כרטיסיות מרובות בשביל כל המשימות שלך</translation>
+<translation id="91549621916703028">ניתן ליצור כרטיסיות מרובות בשביל כל המשימות</translation>
 <translation id="9157836665414082580">הסתר תיבות דו-שיח</translation>
 <translation id="9188680907066685419">צא מהחשבון המנוהל</translation>
 <translation id="9203116392574189331">Handoff</translation>

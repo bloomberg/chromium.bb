@@ -11,6 +11,7 @@
 <translation id="1396446129537741364">Chromium 正尝试显示密码。</translation>
 <translation id="1403254041219632970">Chromium 的后续版本将不再支持 Mac OS X 10.6、10.7 或 10.8。</translation>
 <translation id="1414495520565016063">您已登录 Chromium！</translation>
+<translation id="1440917365206527807">Chromium 已阻止此网站将您重定向至</translation>
 <translation id="1444754455097148408">Chromium开放源代码许可</translation>
 <translation id="1502360822835740515">将 Chromium 设置为您的默认浏览器</translation>
 <translation id="151962892725702025">由于您的网域停用了同步功能，Chromium操作系统无法同步您的数据。</translation>
@@ -62,6 +63,7 @@
 <translation id="3103660991484857065">安装程序解压缩归档失败。请重新下载 Chromium。</translation>
 <translation id="3130323860337406239">Chromium 正在使用您的麦克风。</translation>
 <translation id="3155163173539279776">重新启动 Chromium</translation>
+<translation id="3179665906251668410">在 Chromium 无痕式窗口中打开链接(&amp;G)</translation>
 <translation id="3190315855212034486">哎呀！Chromium 崩溃了。要立即重新启动吗？</translation>
 <translation id="3256316712990552818">已复制到 Chromium</translation>
 <translation id="3258596308407688501">Chromium 无法读写其数据目录：
@@ -77,6 +79,7 @@
 <translation id="3549345495227188780">Chromium 操作系统使用入门</translation>
 <translation id="3582788516608077514">正在更新 Chromium...</translation>
 <translation id="358997566136285270">Chromium 徽标</translation>
+<translation id="3713809861844741608">在 Chromium 新标签页中打开链接(&amp;T)</translation>
 <translation id="3738139272394829648">触摸搜索</translation>
 <translation id="3762167353400286894">Chromium 操作系统界面目前使用的是这种语言</translation>
 <translation id="378917192836375108">您可以在 Chromium 中点击网上的电话号码，然后通过 Skype 拨打！</translation>
@@ -129,6 +132,7 @@
 <translation id="5466153949126434691">Chromium会自动更新，因此您使用的始终都是最新版本。更新内容下载完毕后，Chromium会重新启动，然后您就可以开始使用了。</translation>
 <translation id="5479196819031988440">Chromium 操作系统无法打开此网页。</translation>
 <translation id="549669000822060376">Chromium正在安装最新的系统更新，请稍候。</translation>
+<translation id="5524843473235508879">已阻止重定向。</translation>
 <translation id="5563479599352954471">触摸一下即可启动搜索</translation>
 <translation id="5620765574781326016">无需离开所在页面，即可了解网站上的主题。</translation>
 <translation id="5634636535844844681">Chromium 仅支持 Windows 7 或更高版本的操作系统。</translation>
@@ -176,11 +180,11 @@
 <translation id="6883876366448858277">将某个字词及上下文一起发送至 Google 搜索，后者将返回相应的定义、图片及其他搜索结果。</translation>
 <translation id="6893813176749746474">Chromium 已更新，但您已经至少 30 天未使用它了。</translation>
 <translation id="6944967875980567883">模块已加载到 Chromium 中</translation>
+<translation id="6964305034639999644">在 Chromium 无痕式窗口中打开链接(&amp;G)</translation>
 <translation id="6970811910055250180">正在更新设备...</translation>
 <translation id="705851970750939768">更新 Chromium</translation>
 <translation id="7066436765290594559">Chromium操作系统无法同步您的数据。请更新您的同步密码。</translation>
 <translation id="707471633328071618">Google Payments（已同步到 Chromium）</translation>
-<translation id="7138853919861947730">Chromium 可能会使用网络服务改善您的浏览体验。</translation>
 <translation id="7162152143154757523">Chromium 会将您在浏览器中输入的内容发送到 Google 服务器，并让您使用 Google 搜索所用的拼写检查技术，从而为您提供更智能的拼写检查功能。</translation>
 <translation id="7205698830395646142">在 Chromium 菜单中隐藏</translation>
 <translation id="7223968959479464213">任务管理器 - Chromium</translation>
@@ -255,6 +259,7 @@ Chromium 无法恢复您的设置。</translation>
 <translation id="9022552996538154597">登录 Chromium</translation>
 <translation id="9036189287518468038">Chromium 应用启动器</translation>
 <translation id="9089354809943900324">Chromium版本太旧</translation>
+<translation id="91086099826398415">在 Chromium 新标签页中打开链接(&amp;T)</translation>
 <translation id="911206726377975832">同时删除您的浏览数据吗？</translation>
 <translation id="918373042641772655">取消与<ph name="USERNAME" />的关联将会清除您的历史记录、书签、设置以及存储在此设备上的其他Chromium数据。您的Google帐号中存储的数据将不会被清除，并且您可以通过<ph name="GOOGLE_DASHBOARD_LINK" />Google信息中心<ph name="END_GOOGLE_DASHBOARD_LINK" />管理这些数据。</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>

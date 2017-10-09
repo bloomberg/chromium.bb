@@ -12,11 +12,11 @@
 <translation id="1996252509865389616">Aktifkan?</translation>
 <translation id="2079545284768500474">Urungkan</translation>
 <translation id="2179565792157161713">Buka Deskripsi Panjang di Tab Baru</translation>
-<translation id="2223143012868735942">Filter warna yang disesuaikan diterapkan ke laman web untuk meningkatkan persepsi warna.</translation>
-<translation id="2394933097471027016">Cobalah sekarang - Penjelajahan Caret selalu diaktifkan pada laman ini!</translation>
+<translation id="2223143012868735942">Filter warna yang disesuaikan diterapkan ke halaman web untuk meningkatkan persepsi warna.</translation>
+<translation id="2394933097471027016">Cobalah sekarang - Penjelajahan Caret selalu diaktifkan pada halaman ini!</translation>
 <translation id="2471847333270902538">Skema warna untuk <ph name="SITE" />:</translation>
 <translation id="2648340354586434750">Tahan &lt;span class='key'&gt;Opsi&lt;/span&gt; untuk berpindah berdasarkan kata.</translation>
-<translation id="2795227192542594043">Ekstensi ini memberi Anda kursor yang dapat digerakkan di laman web, memungkinkan Anda memilih teks dengan keyboard.</translation>
+<translation id="2795227192542594043">Ekstensi ini memberi Anda kursor yang dapat digerakkan di halaman web, memungkinkan Anda memilih teks dengan keyboard.</translation>
 <translation id="2808027189040546825">Langkah 1: Pilih baris dengan bintang paling redup:</translation>
 <translation id="2965611304828530558">&lt;p&gt;Saat Anda mengjangkau tautan atau kontrol, tautan atau kontrol tersebut akan otomatis terfokus.   Tekan &lt;span class='key'&gt;Enter&lt;/span&gt; untuk mengeklik tautan atau tombol. &lt;/p&gt; &lt;p&gt;   Saat kontrol terfokus (seperti kotak teks atau kotak daftar) menangkap   tombol panah, tekan &lt;span class='key'&gt;Esc&lt;/span&gt; diikuti dengan   tanda panah kiri atau kanan untuk melanjutkan Penjelajahan Caret. &lt;/p&gt; &lt;p&gt;   Atau, tekan &lt;span class='key'&gt;Tab&lt;/span&gt; untuk berpindah ke   kontrol yang dapat difokuskan berikutnya. &lt;/p&gt;</translation>
 <translation id="3252573918265662711">Penyiapan</translation>
@@ -25,7 +25,7 @@
 <translation id="3622586652998721735">Ditetapkan sebagai skema default</translation>
 <translation id="3812541808639806898">Penampil Teks Alternatif Gambar</translation>
 <translation id="381767806621926835">Klik kanan pada item apa pun yang memiliki atribut "longdesc" atau "aria-describedat" untuk mengakses deskripsi lognya.</translation>
-<translation id="4023902424053835668">Menjelajahi teks laman web menggunakan tombol panah.</translation>
+<translation id="4023902424053835668">Menjelajahi teks halaman web menggunakan tombol panah.</translation>
 <translation id="4388820049312272371">Sorot posisi kursor dengan lampu kilat cepat.</translation>
 <translation id="4394049700291259645">Nonaktifkan</translation>
 <translation id="4769065380738716500">Gambar telah diganti dengan teks alternatif.</translation>
@@ -42,7 +42,7 @@
 <translation id="5594989420907487559">Menjalankan animasi hanya satu kali, atau menonaktifkan animasi sepenuhnya.</translation>
 <translation id="5631241868147802353">Skema warna default:</translation>
 <translation id="5650358096585648000">Masukan Visual</translation>
-<translation id="5710185147685935461">Mengubah atau membalikkan skema warna untuk membuat laman web lebih mudah dibaca.</translation>
+<translation id="5710185147685935461">Mengubah atau membalikkan skema warna untuk membuat halaman web lebih mudah dibaca.</translation>
 <translation id="5939518447894949180">Setel ulang</translation>
 <translation id="595639123821853262">Abu-Abu Terbalik</translation>
 <translation id="6017514345406065928">Hijau</translation>

@@ -15,6 +15,7 @@
 <translation id="1270290102613614947">On-screen keyboard disabled</translation>
 <translation id="1272079795634619415">Stop</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
+<translation id="1290331692326790741">Weak signal</translation>
 <translation id="1293264513303784526">USB-C device (left port)</translation>
 <translation id="1346748346194534595">Right</translation>
 <translation id="1383876407941801731">Search</translation>
@@ -79,6 +80,7 @@
 <translation id="2844169650293029770">USB-C device (left side front port)</translation>
 <translation id="2865888419503095837">Network info</translation>
 <translation id="2872961005593481000">Shut down</translation>
+<translation id="2903844815300039659">Connected to <ph name="NAME" />, <ph name="STRENGTH" /></translation>
 <translation id="2911940648265863620">You are sharing your screen</translation>
 <translation id="2942516765047364088">Shelf position</translation>
 <translation id="2946119680249604491">Add connection</translation>
@@ -104,7 +106,6 @@
 <translation id="3445925074670675829">USB-C device</translation>
 <translation id="3473479545200714844">Screen magnifier</translation>
 <translation id="3510164367642747937">Highlight mouse cursor</translation>
-<translation id="3547954654003013442">Proxy settings</translation>
 <translation id="3573179567135747900">Change back to "<ph name="FROM_LOCALE" />" (requires restart)</translation>
 <translation id="3582792037806681688">Multiple sign-in has been disallowed for a user in this session</translation>
 <translation id="3595596368722241419">Battery full</translation>
@@ -127,6 +128,7 @@
 <translation id="397105322502079400">Calculating...</translation>
 <translation id="3995138139523574647">USB-C device (right-hand-side back port)</translation>
 <translation id="4017989525502048489">Laser pointer</translation>
+<translation id="4072264167173457037">Medium signal</translation>
 <translation id="4279490309300973883">Mirroring</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4338109981321384717">Magnifying glass</translation>
@@ -233,7 +235,6 @@ Only use this feature with accounts that you trust.</translation>
 <translation id="7066646422045619941">This network is disabled by your administrator.</translation>
 <translation id="7067196344162293536">Auto rotate</translation>
 <translation id="7098389117866926363">USB-C device (left port in the back)</translation>
-<translation id="7135556860107312402">Allow notifications from the following:</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Reverting to old resolution in <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Rear microphone</translation>
@@ -250,6 +251,7 @@ Only use this feature with accounts that you trust.</translation>
 <translation id="7562368315689366235">Emoji palette</translation>
 <translation id="7569509451529460200">Braille and ChromeVox are enabled</translation>
 <translation id="7593891976182323525">Search or Shift</translation>
+<translation id="7645176681409127223"><ph name="USER_NAME" /> (owner)</translation>
 <translation id="7647488630410863958">Unlock device to view your notifications</translation>
 <translation id="7649070708921625228">Help</translation>
 <translation id="7658239707568436148">Cancel</translation>
@@ -257,6 +259,7 @@ Only use this feature with accounts that you trust.</translation>
 <translation id="776344839111254542">Click to view update details</translation>
 <translation id="7798302898096527229">Press Search or Shift to cancel.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> and <ph name="MINUTE" /></translation>
+<translation id="7829386189513694949">Strong signal</translation>
 <translation id="7904094684485781019">The administrator for this account has disallowed multiple sign-in.</translation>
 <translation id="7977927628060636163">Searching for mobile networks...</translation>
 <translation id="7982789257301363584">Network</translation>

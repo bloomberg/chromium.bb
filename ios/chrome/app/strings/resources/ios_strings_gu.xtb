@@ -79,6 +79,7 @@
 <translation id="2381405137052800939">મૂળભૂત</translation>
 <translation id="2386793615875593361">1 પસંદ કર્યું છે</translation>
 <translation id="2435457462613246316">પાસવર્ડ બતાવો</translation>
+<translation id="2529021024822217800">બધા ખોલો</translation>
 <translation id="2572712655377361602">ઉપકરણ નીતિએ તમારા ફોટોની ઍક્સેસને અવરોધિત કરી</translation>
 <translation id="2584132361465095047">એકાઉન્ટ ઉમેરો...</translation>
 <translation id="2593774076813182497">આ પૃષ્ઠ છાપી શકાતું નથી.</translation>
@@ -128,7 +129,6 @@
 <translation id="3324193307694657476">સરનામાં 2</translation>
 <translation id="3329904751041170572">સર્વરથી કનેક્ટ કરી શક્યું નથી.</translation>
 <translation id="3335947283844343239">બંધ કરેલું ટૅબ ફરીથી ખોલો</translation>
-<translation id="3387752218061326363">તમારા સાઇન ઇન થયેલ ઉપકરણોમાંથી ઇતિહાસ બતાવી રહ્યાં છે. <ph name="BEGIN_LINK" />વધુ જાણો<ph name="END_LINK" />.</translation>
 <translation id="3393920035788932672">પૉપ-અપ્સ મંજૂર છે</translation>
 <translation id="3414292259312108062">Chrome આને તમારા <ph name="BEGIN_LINK" />Google સાચવેલા પાસવર્ડ્સ<ph name="END_LINK" />માં સંગ્રહિત કરશે અને તમારા માટે સ્વતઃભરણ કરશે તેથી તમારે તેને જાતે યાદ રાખવાનું હોતું નથી.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> મિનિટ</translation>
@@ -312,6 +312,7 @@
 <translation id="6797885426782475225">વૉઇસ શોધ</translation>
 <translation id="6807889908376551050">બધું બતાવો...</translation>
 <translation id="681368974849482173">આઇટમ બનાવી</translation>
+<translation id="6871663519944855400">છુપામાં ખોલો</translation>
 <translation id="6896758677409633944">કૉપિ કરો</translation>
 <translation id="6903907808598579934">સમન્વયન ચાલુ કરો</translation>
 <translation id="6945221475159498467">પસંદ કરો</translation>
@@ -321,7 +322,6 @@
 <translation id="7031882061095297553">આના પર સમન્વયિત કરો</translation>
 <translation id="7062545763355031412">સ્વીકારો અને એકાઉન્ટ્સ સ્વિચ કરો</translation>
 <translation id="7108338896283013870">છુપાવો</translation>
-<translation id="7131892264600713844">આ ઉપકરણમાંથી ઇતિહાસ બતાવી રહ્યાં છે. <ph name="BEGIN_LINK" />વધુ જાણો.<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">આખું નામ</translation>
 <translation id="7136892417564438900">કૅમેરો અનુપલબ્ધ છે</translation>
 <translation id="7159472599653637159">મોબાઇલ સાઇટની વિનંતી કરો</translation>

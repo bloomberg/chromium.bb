@@ -104,7 +104,6 @@
 <translation id="3445925074670675829">Dispositivo USB-C</translation>
 <translation id="3473479545200714844">Ingrandimento dello schermo</translation>
 <translation id="3510164367642747937">Evidenzia il puntatore del mouse</translation>
-<translation id="3547954654003013442">Impostazioni proxy</translation>
 <translation id="3573179567135747900">Torna a "<ph name="FROM_LOCALE" />" (è necessario riavviare)</translation>
 <translation id="3582792037806681688">L'accesso simultaneo è stato vietato per un utente di questa sessione</translation>
 <translation id="3595596368722241419">Batteria carica</translation>
@@ -233,7 +232,6 @@ Utilizza questa funzione solo con gli account che consideri attendibili.</transl
 <translation id="7066646422045619941">Questa rete è stata disattivata dall'amministratore.</translation>
 <translation id="7067196344162293536">Ruota in modo automatico</translation>
 <translation id="7098389117866926363">Dispositivo USB-C (porta posteriore sinistra)</translation>
-<translation id="7135556860107312402">Consenti notifiche da:</translation>
 <translation id="7165278925115064263">ALT + MAIUSC + K</translation>
 <translation id="7168224885072002358">Ripristino della risoluzione precedente tra <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Microfono posteriore</translation>
@@ -250,6 +248,7 @@ Utilizza questa funzione solo con gli account che consideri attendibili.</transl
 <translation id="7562368315689366235">Riquadro di emoji</translation>
 <translation id="7569509451529460200">Braille e ChromeVox attivati</translation>
 <translation id="7593891976182323525">Tasto per la ricerca o Maiusc</translation>
+<translation id="7645176681409127223"><ph name="USER_NAME" /> (proprietario)</translation>
 <translation id="7647488630410863958">Sblocca il dispositivo per visualizzare le notifiche</translation>
 <translation id="7649070708921625228">Guida</translation>
 <translation id="7658239707568436148">Annulla</translation>

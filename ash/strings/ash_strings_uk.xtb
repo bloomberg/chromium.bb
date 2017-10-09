@@ -104,7 +104,6 @@
 <translation id="3445925074670675829">Пристрій із портом USB типу C</translation>
 <translation id="3473479545200714844">Лупа</translation>
 <translation id="3510164367642747937">Підсвічувати курсор миші</translation>
-<translation id="3547954654003013442">Налаштування проксі-сервера</translation>
 <translation id="3573179567135747900">Повернутися до мови "<ph name="FROM_LOCALE" />" (потрібно перезавантажитися)</translation>
 <translation id="3582792037806681688">Паралельний вхід для користувача в цьому сеансі заборонено</translation>
 <translation id="3595596368722241419">Акумулятор заряджено</translation>
@@ -195,6 +194,7 @@
 <translation id="615957422585914272">Показувати екранну клавіатуру</translation>
 <translation id="6165508094623778733">Докладніше</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: активація…</translation>
+<translation id="6284232397434400372">Роздільну здатність змінено</translation>
 <translation id="6297287540776456956">Виберіть область за допомогою стилуса</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> обернено на <ph name="ROTATION" /></translation>
 <translation id="632744581670418035">Накладання клавіатури</translation>
@@ -232,10 +232,10 @@
 <translation id="7066646422045619941">Ваш адміністратор вимкнув цю мережу.</translation>
 <translation id="7067196344162293536">Автоматичне обертання</translation>
 <translation id="7098389117866926363">Пристрій, під’єднаний до порту USB-C (ліворуч на задній панелі)</translation>
-<translation id="7135556860107312402">Дозволити сповіщення з перелічених нижче джерел.</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Попередня роздільна здатність повернеться через <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Мікрофон на задній панелі</translation>
+<translation id="726276584504105859">Перетягніть сюди, щоб розділити екран</translation>
 <translation id="7348093485538360975">Екранна клавіатура</translation>
 <translation id="735745346212279324">VPN від’єднано</translation>
 <translation id="7377169924702866686">Клавішу Caps Lock увімкнено.</translation>
@@ -248,6 +248,7 @@
 <translation id="7562368315689366235">Смайли</translation>
 <translation id="7569509451529460200">Шрифт Брайля та ChromeVox увімкнено</translation>
 <translation id="7593891976182323525">Клавіша пошуку або Shift</translation>
+<translation id="7645176681409127223"><ph name="USER_NAME" /> (власник)</translation>
 <translation id="7647488630410863958">Розблокуйте пристрій, щоб переглянути сповіщення</translation>
 <translation id="7649070708921625228">Довідка</translation>
 <translation id="7658239707568436148">Скасувати</translation>

@@ -11,6 +11,7 @@
 <translation id="1396446129537741364">O Chromium está a tentar mostrar palavras-passe.</translation>
 <translation id="1403254041219632970">As versões futuras do Chromium não suportarão o Mac OS X 10.6, o Mac OS X 10.7 ou o Mac OS X 10.8.</translation>
 <translation id="1414495520565016063">Tem sessão iniciada no Chromium!</translation>
+<translation id="1440917365206527807">O Chromium impediu este site de o redirecionar para</translation>
 <translation id="1444754455097148408">Licenças de código aberto do Chromium</translation>
 <translation id="1502360822835740515">Tornar o Chromium o navegador predefinido</translation>
 <translation id="151962892725702025">O SO Chromium não conseguiu sincronizar os dados porque a sincronização não está disponível para o seu domínio.</translation>
@@ -62,6 +63,7 @@
 <translation id="3103660991484857065">Houve uma falha no programa de instalação ao descompactar o arquivo. Transfira novamente o Chromium.</translation>
 <translation id="3130323860337406239">O Chromium está a utilizar o microfone.</translation>
 <translation id="3155163173539279776">Reiniciar o Chromium</translation>
+<translation id="3179665906251668410">Abrir link numa janela de nave&amp;gação anónima do Chromium</translation>
 <translation id="3190315855212034486">Ups! O Chromium falhou. Reiniciar agora?</translation>
 <translation id="3256316712990552818">Copiado para o Chromium</translation>
 <translation id="3258596308407688501">O Chromium não consegue ler e escrever no respetivo diretório de dados:
@@ -77,6 +79,7 @@
 <translation id="3549345495227188780">Introdução ao SO Chromium</translation>
 <translation id="3582788516608077514">A atualizar o Chromium...</translation>
 <translation id="358997566136285270">Logótipo do Chromium</translation>
+<translation id="3713809861844741608">Abrir link num novo &amp;separador do Chromium</translation>
 <translation id="3738139272394829648">Tocar para pesquisar</translation>
 <translation id="3762167353400286894">O SO Chromium é apresentado neste idioma</translation>
 <translation id="378917192836375108">O Chromium permite-lhe clicar num número de telefone na Web e fazer a chamada com o Skype!</translation>
@@ -129,6 +132,7 @@
 <translation id="5466153949126434691">O Chromium é atualizado automaticamente para que tenha sempre a versão mais recente. Quando a transferência estiver concluída, o Chromium irá reiniciar e o processo estará terminado.</translation>
 <translation id="5479196819031988440">O SO Chromium não consegue abrir esta página.</translation>
 <translation id="549669000822060376">Aguarde até que o Chromium instale as atualizações do sistema mais recentes.</translation>
+<translation id="5524843473235508879">Redirecionamento bloqueado.</translation>
 <translation id="5563479599352954471">Pesquisar com um toque</translation>
 <translation id="5620765574781326016">Saiba mais acerca de tópicos em Sites sem sair da página.</translation>
 <translation id="5634636535844844681">O Chromium requer o Windows 7 ou superior.</translation>
@@ -176,11 +180,11 @@ Algumas funcionalidades podem não estar disponíveis. Especifique um diretório
 <translation id="6883876366448858277">envia uma palavra e o respetivo contexto circundante à Pesquisa Google, que devolve definições, imagens e outros resultados da pesquisa.</translation>
 <translation id="6893813176749746474">O Chromium foi atualizado, mas já não o utiliza há, pelo menos, 30 dias.</translation>
 <translation id="6944967875980567883">Módulos carregados no Chromium</translation>
+<translation id="6964305034639999644">Abrir link numa janela de nave&amp;gação anónima do Chromium</translation>
 <translation id="6970811910055250180">A atualizar o dispositivo...</translation>
 <translation id="705851970750939768">Atualizar o Chromium</translation>
 <translation id="7066436765290594559">O SO Chromium não conseguiu sincronizar os dados. Atualize a frase de acesso de sincronização.</translation>
 <translation id="707471633328071618">Google Payments (copiado para o Chromium)</translation>
-<translation id="7138853919861947730">O Chromium pode utilizar serviços Web para melhorar a sua experiência de navegação.</translation>
 <translation id="7162152143154757523">O Chromium pode disponibilizar uma verificação ortográfica mais inteligente ao enviar o que escreve no navegador para os servidores da Google, o que lhe permite utilizar a mesma tecnologia de verificação ortográfica da Pesquisa Google.</translation>
 <translation id="7205698830395646142">Ocultar no menu do Chromium</translation>
 <translation id="7223968959479464213">Gestor de Tarefas - Chromium</translation>
@@ -255,6 +259,7 @@ Se continuar com este início de sessão, as informações do Chromium, como mar
 <translation id="9022552996538154597">Iniciar sessão no Chromium</translation>
 <translation id="9036189287518468038">Iniciador de Aplicações do Chromium</translation>
 <translation id="9089354809943900324">O Chromium está desatualizado</translation>
+<translation id="91086099826398415">Abrir link num novo &amp;separador do Chromium</translation>
 <translation id="911206726377975832">Eliminar também os seus dados de navegação?</translation>
 <translation id="918373042641772655">Desligar <ph name="USERNAME" /> limpará o seu histórico, os marcadores, as definições e outros dados do Chromium armazenados neste dispositivo. Os dados armazenados na Conta Google não serão limpos e podem ser geridos no <ph name="GOOGLE_DASHBOARD_LINK" />Painel de controlo Google<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>

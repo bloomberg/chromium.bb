@@ -104,7 +104,6 @@
 <translation id="3445925074670675829">USB-C-enhet</translation>
 <translation id="3473479545200714844">Skärmförstorare</translation>
 <translation id="3510164367642747937">Markera muspekaren</translation>
-<translation id="3547954654003013442">Proxyinställningar</translation>
 <translation id="3573179567135747900">Byt tillbaka till "<ph name="FROM_LOCALE" />" (kräver omstart)</translation>
 <translation id="3582792037806681688">Multiinloggning tillåts inte för en användare i den här sessionen</translation>
 <translation id="3595596368722241419">Batteriet är fulladdat</translation>
@@ -195,6 +194,7 @@
 <translation id="615957422585914272">Visa skärmtangentbordet</translation>
 <translation id="6165508094623778733">Läs mer</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Aktiverar ...</translation>
+<translation id="6284232397434400372">Upplösningen har ändrats</translation>
 <translation id="6297287540776456956">Markera ett område med e-pennan</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> byttes till <ph name="ROTATION" /></translation>
 <translation id="632744581670418035">Tangentbordsöverlägg</translation>
@@ -232,10 +232,10 @@ Använd bara den här funktionen med konton som du litar på.</translation>
 <translation id="7066646422045619941">Det här nätverket har inaktiverats av administratören.</translation>
 <translation id="7067196344162293536">Rotera automatiskt</translation>
 <translation id="7098389117866926363">USB-C-enhet (vänstra porten på baksidan)</translation>
-<translation id="7135556860107312402">Tillåt meddelanden från följande:</translation>
 <translation id="7165278925115064263">Alt + Skift + K</translation>
 <translation id="7168224885072002358">Återgår till den gamla upplösningen om <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Mikrofonen på baksidan</translation>
+<translation id="726276584504105859">Dra hit för att dela upp skärmen</translation>
 <translation id="7348093485538360975">Skärmtangentbord</translation>
 <translation id="735745346212279324">VPN frånkopplat</translation>
 <translation id="7377169924702866686">Caps Lock är på.</translation>
@@ -248,6 +248,7 @@ Använd bara den här funktionen med konton som du litar på.</translation>
 <translation id="7562368315689366235">Emoji-palett</translation>
 <translation id="7569509451529460200">Punktskrift och ChromeVox har aktiverats</translation>
 <translation id="7593891976182323525">Sök eller Skift</translation>
+<translation id="7645176681409127223"><ph name="USER_NAME" /> (ägare)</translation>
 <translation id="7647488630410863958">Lås upp enheten om du vill visa aviseringarna</translation>
 <translation id="7649070708921625228">Hjälp</translation>
 <translation id="7658239707568436148">Avbryt</translation>

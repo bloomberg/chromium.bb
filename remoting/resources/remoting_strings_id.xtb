@@ -26,7 +26,7 @@ Untuk informasi tentang privasi, lihat Kebijakan Privasi Google (http://goo.gl/S
 <translation id="1520828917794284345">Ubah ukuran desktop agar sesuai</translation>
 <translation id="154040539590487450">Gagal memulai layanan akses jarak jauh.</translation>
 <translation id="1546934824884762070">Terjadi kesalahan yang tidak terduga. Laporkan masalah ini kepada pengembang.</translation>
-<translation id="1643640058022401035">Dengan meninggalkan laman ini, Anda akan mengakhiri sesi Chromoting.</translation>
+<translation id="1643640058022401035">Dengan meninggalkan halaman ini, Anda akan mengakhiri sesi Chromoting.</translation>
 <translation id="1654128982815600832">Mengaktifkan sambungan jarak jauh untuk komputer ini...</translation>
 <translation id="170207782578677537">Gagal mendaftarkan komputer ini.</translation>
 <translation id="1727412735341161734">Chrome Desktop Jarak Jauh</translation>
@@ -74,6 +74,7 @@ Untuk informasi tentang privasi, lihat Kebijakan Privasi Google (http://goo.gl/S
 <translation id="2509394361235492552">Terhubung ke <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">CATATAN: Untuk memastikan bahwa semua pintasan keyboard tersedia, Anda dapat mengonfigurasi Chrome Desktop Jarak Jauh menjadi ‘Buka sebagai jendela’.</translation>
 <translation id="2540992418118313681">Ingin membagikan komputer ini agar dapat dilihat dan dikontrol oleh pengguna lain?</translation>
+<translation id="2579271889603567289">Host error atau gagal dimulai.</translation>
 <translation id="2599300881200251572">Layanan ini mengaktifkan sambungan masuk dari klien Chrome Desktop Jarak Jauh.</translation>
 <translation id="2647232381348739934">Layanan Chromoting</translation>
 <translation id="2676780859508944670">Sedang bekerja…</translation>
@@ -174,6 +175,7 @@ PC</translation>
 <translation id="4736223761657662401">Riwayat Sambungan</translation>
 <translation id="4741792197137897469">Autentikasi gagal. Masuk ke Chrome lagi.</translation>
 <translation id="477305884757156764">Aplikasi ini terlalu lambat.</translation>
+<translation id="4784508858340177375">Server X error atau gagal dimulai.</translation>
 <translation id="4795786176190567663">Anda tidak memiliki izin untuk melakukan tindakan tersebut.</translation>
 <translation id="4798680868612952294">Opsi mouse</translation>
 <translation id="4804818685124855865">Putuskan</translation>
@@ -194,7 +196,7 @@ PC</translation>
 <translation id="518094545883702183">Informasi ini hanya digunakan untuk mendiagnosis masalah yang Anda laporkan, hanya tersedia untuk orang yang menyelidiki laporan, dan dipertahankan selama tidak lebih dari 30 hari.</translation>
 <translation id="5204575267916639804">FAQ</translation>
 <translation id="5222676887888702881">Logout</translation>
-<translation id="5254120496627797685">Dengan meninggalkan laman ini, Anda akan mengakhiri sesi Chrome Desktop Jarak Jauh.</translation>
+<translation id="5254120496627797685">Dengan meninggalkan halaman ini, Anda akan mengakhiri sesi Chrome Desktop Jarak Jauh.</translation>
 <translation id="5308380583665731573">Sambungkan</translation>
 <translation id="533625276787323658">Perangkat sambungan belum disiapkan</translation>
 <translation id="5363265567587775042">Minta pengguna yang menggunakan komputer yang ingin Anda akses untuk mengeklik “<ph name="SHARE" />” dan memberikan kode akses kepada Anda.</translation>
@@ -248,6 +250,7 @@ PC</translation>
 <translation id="6572345186230665992">Untuk Mac (OS X Mavericks 10.9 dan lebih tinggi)</translation>
 <translation id="6583902294974160967">Dukungan</translation>
 <translation id="6612717000975622067">Kirim Ctrl-Alt-Del</translation>
+<translation id="6654753848497929428">Bagikan</translation>
 <translation id="6668065415969892472">PIN Anda telah diperbarui.</translation>
 <translation id="6681800064886881394">Hak cipta 2013 Google Inc. Semua Hak Dilindungi Undang-Undang.</translation>
 <translation id="6705482892455291412">Setelah kode dimasukkan, Anda akan diminta untuk menerima sambungan dan memulai sesi berbagi.</translation>

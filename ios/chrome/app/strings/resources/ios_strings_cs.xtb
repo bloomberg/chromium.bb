@@ -79,6 +79,7 @@ Některé webové stránky na tento požadavek mohou reagovat například tím, 
 <translation id="2381405137052800939">Základní nastavení</translation>
 <translation id="2386793615875593361">Vybrána 1 fotka</translation>
 <translation id="2435457462613246316">Zobrazit heslo</translation>
+<translation id="2529021024822217800">Otevřít vše</translation>
 <translation id="2572712655377361602">Přístup k vašim fotkám blokují zásady zařízení.</translation>
 <translation id="2584132361465095047">Přidat účet...</translation>
 <translation id="2593774076813182497">Stránku nelze vytisknout.</translation>
@@ -128,7 +129,6 @@ Některé webové stránky na tento požadavek mohou reagovat například tím, 
 <translation id="3324193307694657476">Druhý řádek adresy</translation>
 <translation id="3329904751041170572">Nelze se připojit k serveru.</translation>
 <translation id="3335947283844343239">Znovu otevřít zavřenou kartu</translation>
-<translation id="3387752218061326363">Zobrazuje se historie ze zařízení, na kterých jste přihlášeni. <ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /></translation>
 <translation id="3393920035788932672">Vyskakovací okna povolena</translation>
 <translation id="3414292259312108062">Chrome toto heslo uloží ve vašich <ph name="BEGIN_LINK" />uložených heslech Google<ph name="END_LINK" /> a automaticky vám jej vyplní, abyste si jej nemuseli pamatovat.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
@@ -312,6 +312,7 @@ Vaše data byla <ph name="TIME" /> zašifrována pomocí heslové fráze pro syn
 <translation id="6797885426782475225">Hlasové vyhledávání</translation>
 <translation id="6807889908376551050">Zobrazit vše…</translation>
 <translation id="681368974849482173">Položka byla vytvořena</translation>
+<translation id="6871663519944855400">Otevřít v anonymním okně</translation>
 <translation id="6896758677409633944">Kopírovat</translation>
 <translation id="6903907808598579934">Zapnout synchronizaci</translation>
 <translation id="6945221475159498467">Vybrat</translation>
@@ -321,7 +322,6 @@ Vaše data byla <ph name="TIME" /> zašifrována pomocí heslové fráze pro syn
 <translation id="7031882061095297553">Synchronizace s účty</translation>
 <translation id="7062545763355031412">Přijmout a přepnout účet</translation>
 <translation id="7108338896283013870">Skrýt</translation>
-<translation id="7131892264600713844">Zobrazuje se historie z tohoto zařízení. <ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">Celé jméno</translation>
 <translation id="7136892417564438900">Kamera je nedostupná</translation>
 <translation id="7159472599653637159">Vyžádat web pro mobily</translation>

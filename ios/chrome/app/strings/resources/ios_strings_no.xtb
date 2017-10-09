@@ -79,6 +79,7 @@ Noen nettsteder kan for eksempel svare på forespørselen ved å vise deg annons
 <translation id="2381405137052800939">Grunninnstillinger</translation>
 <translation id="2386793615875593361">1 er valgt</translation>
 <translation id="2435457462613246316">Vis passord</translation>
+<translation id="2529021024822217800">Åpne alle</translation>
 <translation id="2572712655377361602">En enhetsinnstilling har blokkert tilgangen til bildene dine</translation>
 <translation id="2584132361465095047">Legg til en konto …</translation>
 <translation id="2593774076813182497">Denne siden kan ikke skrives ut.</translation>
@@ -128,7 +129,6 @@ Noen nettsteder kan for eksempel svare på forespørselen ved å vise deg annons
 <translation id="3324193307694657476">Adresse 2</translation>
 <translation id="3329904751041170572">Kunne ikke koble til tjeneren.</translation>
 <translation id="3335947283844343239">Åpne lukkede faner igjen</translation>
-<translation id="3387752218061326363">Viser loggen fra de påloggede enhetene dine. <ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" /></translation>
 <translation id="3393920035788932672">Tillat forgrunnsvinduer</translation>
 <translation id="3414292259312108062">Chrome lagrer dette i <ph name="BEGIN_LINK" />Google-lagrede passord<ph name="END_LINK" />. Deretter legges det inn automatisk, slik at du ikke trenger å huske det selv.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
@@ -312,6 +312,7 @@ Dataene dine er kryptert med passordfrasen din for synkronisering <ph name="TIME
 <translation id="6797885426782475225">Talesøk</translation>
 <translation id="6807889908376551050">Vis alle</translation>
 <translation id="681368974849482173">Elementet er opprettet</translation>
+<translation id="6871663519944855400">Åpne i inkognitomodus</translation>
 <translation id="6896758677409633944">Kopiér</translation>
 <translation id="6903907808598579934">Slå på synkronisering</translation>
 <translation id="6945221475159498467">Velg</translation>
@@ -321,7 +322,6 @@ Dataene dine er kryptert med passordfrasen din for synkronisering <ph name="TIME
 <translation id="7031882061095297553">Synkroniser med</translation>
 <translation id="7062545763355031412">Godta og bytt konto</translation>
 <translation id="7108338896283013870">Skjul</translation>
-<translation id="7131892264600713844">Viser loggen fra denne enheten. <ph name="BEGIN_LINK" />Finn ut mer.<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">Fullt navn</translation>
 <translation id="7136892417564438900">Kameraet er utilgjengelig</translation>
 <translation id="7159472599653637159">Be om mobilversjonen av nettstedet</translation>

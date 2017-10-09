@@ -79,6 +79,7 @@ Jotkin verkkosivustot esimerkiksi vastaavat pyyntöön näyttämällä sinulle m
 <translation id="2381405137052800939">Perusasetukset</translation>
 <translation id="2386793615875593361">1 valittu</translation>
 <translation id="2435457462613246316">Näytä salasana</translation>
+<translation id="2529021024822217800">Avaa kaikki</translation>
 <translation id="2572712655377361602">Laitekäytäntö esti pääsyn kuviisi.</translation>
 <translation id="2584132361465095047">Lisää tili…</translation>
 <translation id="2593774076813182497">Tätä sivua ei voi tulostaa.</translation>
@@ -128,7 +129,6 @@ Jotkin verkkosivustot esimerkiksi vastaavat pyyntöön näyttämällä sinulle m
 <translation id="3324193307694657476">Osoite 2</translation>
 <translation id="3329904751041170572">Palvelimeen ei saada yhteyttä.</translation>
 <translation id="3335947283844343239">Avaa suljettu välilehti uudelleen</translation>
-<translation id="3387752218061326363">Näytetään kirjautuneiden laitteiden historia. <ph name="BEGIN_LINK" />Lisätietoja<ph name="END_LINK" /></translation>
 <translation id="3393920035788932672">Ponnahdusikk. sallittu</translation>
 <translation id="3414292259312108062">Chrome tallentaa tämän <ph name="BEGIN_LINK" />Googlen tallennettuihin salasanoihin<ph name="END_LINK" /> ja täyttää sen automaattisesti, joten sinun ei tarvitse muistaa salasanaa itse.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
@@ -312,6 +312,7 @@ Tietosi salattiin tunnuslauseesi avulla <ph name="TIME" />. Aloita synkronointi 
 <translation id="6797885426782475225">Puhehaku</translation>
 <translation id="6807889908376551050">Näytä kaikki...</translation>
 <translation id="681368974849482173">Kohde luotiin</translation>
+<translation id="6871663519944855400">Avaa incognito-tilassa</translation>
 <translation id="6896758677409633944">Kopioi</translation>
 <translation id="6903907808598579934">Ota synkronointi käyttöön</translation>
 <translation id="6945221475159498467">Valitse</translation>
@@ -321,7 +322,6 @@ Tietosi salattiin tunnuslauseesi avulla <ph name="TIME" />. Aloita synkronointi 
 <translation id="7031882061095297553">Synkronoi tilille</translation>
 <translation id="7062545763355031412">Hyväksy ja vaihda tiliä</translation>
 <translation id="7108338896283013870">Piilota</translation>
-<translation id="7131892264600713844">Näytetään tämän laitteen historia. <ph name="BEGIN_LINK" />Lisätietoja<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">Koko nimi</translation>
 <translation id="7136892417564438900">Kamera ei ole käytettävissä</translation>
 <translation id="7159472599653637159">Mobiiliversioon</translation>

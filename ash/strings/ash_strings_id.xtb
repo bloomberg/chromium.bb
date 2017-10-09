@@ -104,7 +104,6 @@
 <translation id="3445925074670675829">Perangkat USB-C</translation>
 <translation id="3473479545200714844">Kaca pembesar layar</translation>
 <translation id="3510164367642747937">Sorot kursor mouse</translation>
-<translation id="3547954654003013442">Setelan proxy</translation>
 <translation id="3573179567135747900">Ubah kembali ke "<ph name="FROM_LOCALE" />" (harus dinyalakan ulang)</translation>
 <translation id="3582792037806681688">Fitur masuk banyak akun telah dilarang untuk pengguna di sesi ini</translation>
 <translation id="3595596368722241419">Baterai penuh</translation>
@@ -195,6 +194,7 @@
 <translation id="615957422585914272">Tampilkan keyboard di layar</translation>
 <translation id="6165508094623778733">Pelajari lebih lanjut</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Mengaktifkan...</translation>
+<translation id="6284232397434400372">Resolusi diubah</translation>
 <translation id="6297287540776456956">Gunakan stilus untuk memilih wilayah</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> diputar ke <ph name="ROTATION" /></translation>
 <translation id="632744581670418035">Hamparan keyboard</translation>
@@ -232,10 +232,10 @@ Hanya gunakan fitur ini dengan akun yang Anda percayai.</translation>
 <translation id="7066646422045619941">Jaringan ini dinonaktifkan oleh administrator Anda.</translation>
 <translation id="7067196344162293536">Putar otomatis</translation>
 <translation id="7098389117866926363">Perangkat USB-C (port belakang sebelah kiri)</translation>
-<translation id="7135556860107312402">Izinkan pemberitahuan dari yang berikut:</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Mengembalikan ke resolusi lama dalam <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Mikrofon belakang</translation>
+<translation id="726276584504105859">Seret ke sini untuk menggunakan layar terpisah</translation>
 <translation id="7348093485538360975">Keyboard di layar</translation>
 <translation id="735745346212279324">VPN terputus</translation>
 <translation id="7377169924702866686">Caps Lock aktif.</translation>
@@ -248,6 +248,7 @@ Hanya gunakan fitur ini dengan akun yang Anda percayai.</translation>
 <translation id="7562368315689366235">Palet emoji</translation>
 <translation id="7569509451529460200">Braille dan ChromeVox diaktifkan</translation>
 <translation id="7593891976182323525">Telusuri atau Shift</translation>
+<translation id="7645176681409127223"><ph name="USER_NAME" /> (pemilik)</translation>
 <translation id="7647488630410863958">Buka kunci perangkat untuk melihat notifikasi</translation>
 <translation id="7649070708921625228">Bantuan</translation>
 <translation id="7658239707568436148">Batal</translation>

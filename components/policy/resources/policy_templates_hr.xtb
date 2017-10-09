@@ -1285,6 +1285,7 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
           Ako postavite to pravilo, korisnici ga mogu privremeno premostiti omogućujući ili onemogućujući veliki pokazivač. Međutim, korisnički odabir nije trajan i zadana se vrijednost vraća svaki put kada se zaslon za prijavu prikaže iznova ili ako taj zaslon miruje jednu minutu.
 
           Ako se to pravilo ne postavi, veliki je pokazivač onemogućen pri prvom prikazivanju zaslona za prijavu. Korisnici mogu omogućiti ili onemogućiti veliki pokazivač u bilo kojem trenutku, a njegov status na zaslonu za prijavu zadržat će se i za sljedeće korisnike.</translation>
+<translation id="5932767795525445337">To se pravilo može koristiti i za prikvačivanje Android aplikacija.</translation>
 <translation id="5936622343001856595">Nameće da se upiti u Google web-pretraživanju provode s aktiviranom funkcijom Sigurno pretraživanje te sprječava korisnike da promijene tu postavku.
 
       Ako omogućite tu postavku, Sigurno pretraživanje uvijek će biti aktivno u Google pretraživanju.
@@ -1337,7 +1338,6 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="6111936128861357925">Dopuštanje skrivene igre s dinosaurom</translation>
 <translation id="6114416803310251055">neodobreno</translation>
 <translation id="6133088669883929098">Dopusti svim web-lokacijama da upotrebljavaju generiranje ključeva</translation>
-<translation id="6139485614509308022">Ako se postavi pravilo "OffHours", navedena pravila za uređaje zanemaruju se (upotreba zadanih postavki tih pravila) tijekom navedenih vremenskih intervala. Chrome ponovo primjenjuje pravila za uređaje na svaki događaj kada razdoblje "OffHours" započne ili završi. Korisnik će dobiti obavijest i morat će se odjaviti kada vrijeme za "OffHours" završi i kada se postavke pravila za uređaje promijene (odnosno kada je korisnik prijavljen računom koji nije dopušten).</translation>
 <translation id="6145799962557135888">Omogućuje postavljanje popisa uzoraka URL-ova koji određuju web-lokacije koje ne smiju pokretati JavaScript. Ako to pravilo nije postavljeno, upotrebljavat će se globalna zadana vrijednost za sve web-lokacije iz pravila "DefaultJavaScriptSetting", ako je postavljeno, odnosno iz osobne konfiguracije korisnika, ako nije.</translation>
 <translation id="614662973812186053">To pravilo kontrolira i prikupljanje podataka o upotrebi i dijagnostici na Androidu.</translation>
 <translation id="6155936611791017817">Postavljanje zadanog stanja velikog pokazivača na zaslonu za prijavu</translation>

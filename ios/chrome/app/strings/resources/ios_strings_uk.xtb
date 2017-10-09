@@ -79,6 +79,7 @@
 <translation id="2381405137052800939">Основні</translation>
 <translation id="2386793615875593361">Вибрано 1</translation>
 <translation id="2435457462613246316">Показати пароль</translation>
+<translation id="2529021024822217800">Відкрити всі</translation>
 <translation id="2572712655377361602">пристрою</translation>
 <translation id="2584132361465095047">Додати обліковий запис…</translation>
 <translation id="2593774076813182497">Не вдається роздрукувати сторінку.</translation>
@@ -128,7 +129,6 @@
 <translation id="3324193307694657476">Адреса 2</translation>
 <translation id="3329904751041170572">Не вдалось під’єднатися до сервера.</translation>
 <translation id="3335947283844343239">Знову відкрити закриту вкладку</translation>
-<translation id="3387752218061326363">Показано історію з пристроїв, на яких ви ввійшли в обліковий запис. <ph name="BEGIN_LINK" />Докладніше<ph name="END_LINK" />.</translation>
 <translation id="3393920035788932672">Спливаючі вікна дозволені</translation>
 <translation id="3414292259312108062">Chrome додасть пароль у розділ <ph name="BEGIN_LINK" />Збережені паролі Google<ph name="END_LINK" /> й автоматично вводитиме його, тож вам не потрібно нічого запам’ятовувати.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> хв</translation>
@@ -249,7 +249,7 @@
 <translation id="5860033963881614850">Вимк.</translation>
 <translation id="5869029295770560994">OK</translation>
 <translation id="5871497086027727873">Переміщено 1 елемент</translation>
-<translation id="5911030830365207728">Перекладач Google</translation>
+<translation id="5911030830365207728">Google Перекладач</translation>
 <translation id="5916664084637901428">Увімкнути</translation>
 <translation id="5948291296578561264">Ви зможете зберігати знімки в бібліотеці фотографій.</translation>
 <translation id="5953603475187800576">Показувати адреси та дані кредитних карток із Google Payments</translation>
@@ -312,6 +312,7 @@
 <translation id="6797885426782475225">Голосовий пошук</translation>
 <translation id="6807889908376551050">Показати всі...</translation>
 <translation id="681368974849482173">Закладку творено</translation>
+<translation id="6871663519944855400">Відкрити в режимі анонімного перегляду</translation>
 <translation id="6896758677409633944">Копіювати</translation>
 <translation id="6903907808598579934">Увімкнути синхронізацію</translation>
 <translation id="6945221475159498467">Вибрати</translation>
@@ -321,7 +322,6 @@
 <translation id="7031882061095297553">Синхронізувати</translation>
 <translation id="7062545763355031412">Прийняти та перейти в інший обліковий запис</translation>
 <translation id="7108338896283013870">Сховати</translation>
-<translation id="7131892264600713844">Показано історію з цього пристрою. <ph name="BEGIN_LINK" />Докладніше<ph name="END_LINK" />.</translation>
 <translation id="7133798577887235672">Повне ім’я</translation>
 <translation id="7136892417564438900">Камера недоступна</translation>
 <translation id="7159472599653637159">Мобільний сайт</translation>

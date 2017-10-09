@@ -5,7 +5,6 @@
 <translation id="1127811143501539442">{DAYS,plural, =1{1 gün önce}other{# gün önce}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{1 dakika önce}other{# dakika önce}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 dk.}other{# dk.}}</translation>
-<translation id="1190609913194133056">Bildirim Merkezi</translation>
 <translation id="1243314992276662751">Yükle</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">ÖNERİLEN UYGULAMALAR</translation>
@@ -31,6 +30,7 @@
 <translation id="2190355936436201913">(boş)</translation>
 <translation id="219905428774326614">Launcher, tüm uygulamalar</translation>
 <translation id="2289052229480071835">Ekranınızda dokunma hedeflerine dokunun.</translation>
+<translation id="2295140143284145483">Anket</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/sn</translation>
 <translation id="24452542372838207">Bildirimi genişlet</translation>
 <translation id="2497284189126895209">Tüm Dosyalar</translation>
@@ -90,6 +90,7 @@
 <translation id="5943826764092288734">{HOURS,plural, =1{1 saat}other{# saat}}</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="598033046487663418">Tüm Uygulamalar</translation>
+<translation id="6012623610530968780">Sayfa <ph name="SELECTED_PAGE" />/<ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Arama kutusu metnini temizle</translation>
 <translation id="6040143037577758943">Kapat</translation>
 <translation id="6119846243427417423">etkinleştir</translation>
@@ -103,6 +104,7 @@
 <translation id="6394627529324717982">Virgül</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 sn. önce}other{# sn. önce}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 saniye önce}other{# saniye önce}}</translation>
+<translation id="6567071839949112727">üst öğeyi tıkla</translation>
 <translation id="6612467943526193239">Kalibrasyondan çıkmak için Esc tuşuna basın.</translation>
 <translation id="6620110761915583480">Dosyayı Kaydet</translation>
 <translation id="6699343763173986273">Medya Sonraki Parça</translation>
@@ -120,6 +122,7 @@
 <translation id="7130207228079676353">BÜYÜK İHTİMALLE</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 dk. kaldı}other{# dk. kaldı}}</translation>
+<translation id="7319740667687257810">Launcher, kısmi görünüm</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 dk. önce}other{# dk. önce}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 dakika kaldı}other{# dakika kaldı}}</translation>

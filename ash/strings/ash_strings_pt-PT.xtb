@@ -3,7 +3,7 @@
 <translationbundle lang="pt-PT">
 <translation id="1012876632442809908">Dispositivo USB-C (porta frontal)</translation>
 <translation id="1013923882670373915">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" necessita de autorização para sincronizar. Introduza este código PIN nesse dispositivo: <ph name="PINCODE" /></translation>
-<translation id="1032891413405719768">A bateria da caneta stylus está fraca</translation>
+<translation id="1032891413405719768">A pilha da caneta stylus está fraca</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
 <translation id="112308213915226829">Ocultar prateleira automaticamente</translation>
 <translation id="1153356358378277386">Dispositivos sincronizados</translation>
@@ -96,7 +96,7 @@
 <translation id="315116470104423982">Dados móveis</translation>
 <translation id="3236488194889173876">Nenhuma rede móvel disponível</translation>
 <translation id="3294437725009624529">Convidado</translation>
-<translation id="332587331255250389">Substitua a bateria.</translation>
+<translation id="332587331255250389">Substitua a bateria</translation>
 <translation id="3364721542077212959">Ferramentas da caneta stylus</translation>
 <translation id="3368922792935385530">Ligado</translation>
 <translation id="3371140690572404006">Dispositivo USB-C (porta frontal do lado direito)</translation>
@@ -104,7 +104,6 @@
 <translation id="3445925074670675829">Dispositivo USB-C</translation>
 <translation id="3473479545200714844">Lupa</translation>
 <translation id="3510164367642747937">Realçar cursor do rato</translation>
-<translation id="3547954654003013442">Definições de proxy</translation>
 <translation id="3573179567135747900">Reverter alteração para <ph name="FROM_LOCALE" /> (requer reinicio)</translation>
 <translation id="3582792037806681688">O início de sessão integrado foi desativado para um utilizador nesta sessão</translation>
 <translation id="3595596368722241419">Bateria carregada</translation>
@@ -195,6 +194,7 @@
 <translation id="615957422585914272">Mostrar teclado no ecrã</translation>
 <translation id="6165508094623778733">Saiba mais</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: a ativar...</translation>
+<translation id="6284232397434400372">Resolução alterada</translation>
 <translation id="6297287540776456956">Utilizar a canela stylus para selecionar uma área</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> foi rodado para <ph name="ROTATION" /></translation>
 <translation id="632744581670418035">Sobreposição de teclado</translation>
@@ -232,10 +232,10 @@ Utilize esta funcionalidade apenas com contas fidedignas.</translation>
 <translation id="7066646422045619941">Esta rede foi desativada pelo administrador.</translation>
 <translation id="7067196344162293536">Rotação automática</translation>
 <translation id="7098389117866926363">Dispositivo USB-C (porta traseira esquerda)</translation>
-<translation id="7135556860107312402">Permitir notificações de:</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">A reverter para a resolução antiga dentro de <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Microfone posterior</translation>
+<translation id="726276584504105859">Arraste para aqui para utilizar o ecrã dividido</translation>
 <translation id="7348093485538360975">Teclado no ecrã</translation>
 <translation id="735745346212279324">VPN desligado</translation>
 <translation id="7377169924702866686">Caps Lock ativado.</translation>
@@ -248,6 +248,7 @@ Utilize esta funcionalidade apenas com contas fidedignas.</translation>
 <translation id="7562368315689366235">Paleta de emoji</translation>
 <translation id="7569509451529460200">O braille e o ChromeVox estão ativados</translation>
 <translation id="7593891976182323525">Pesquisar ou Shift</translation>
+<translation id="7645176681409127223"><ph name="USER_NAME" /> (proprietário)</translation>
 <translation id="7647488630410863958">Desbloquear o dispositivo para ver as notificações</translation>
 <translation id="7649070708921625228">Ajuda</translation>
 <translation id="7658239707568436148">Cancelar</translation>

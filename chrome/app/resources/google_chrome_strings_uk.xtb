@@ -24,6 +24,7 @@
 <translation id="1628000112320670027">Довідка щодо Chrome</translation>
 <translation id="163860049029591106">Початок роботи з ОС Chrome</translation>
 <translation id="1653828314016431939">OK – перезапустити зараз</translation>
+<translation id="1674870198290878346">Відкрити посилання в аноні&amp;мному вікні Chrome</translation>
 <translation id="1682634494516646069">Google Chrome не може читати та записувати у свій каталог даних: <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">Google Chrome – це веб-переглядач, який запускає веб-сторінки та програми з блискавичною швидкістю. Він швидкий, надійний і зручний у користуванні. Вбудований у Google Chrome захист від шкідливих програм і фішингу гарантує ще більшу безпеку під час перегляду веб-сторінок.</translation>
 <translation id="1718131156967340976">Виберіть <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /></translation>
@@ -59,6 +60,7 @@
 <translation id="2580411288591421699">Поки Google Chrome працює, неможливо встановити версію, аналогічну поточній. Закрийте Google Chrome і повторіть спробу.</translation>
 <translation id="2586406160782125153">Дані веб-перегляду буде видалено з цього пристрою. Щоб відновити дані пізніше, увійдіть в обліковий запис Chrome як <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Логотип Chrome</translation>
+<translation id="2652691236519827073">Відкрити посилання в новій &amp;вкладці Chrome</translation>
 <translation id="2664962310688259219">Ліцензії ОС Chrome із відкритим кодом</translation>
 <translation id="2665296953892887393">Допоможіть покращити Google Chrome, надсилаючи звіти про аварійне завершення роботи та <ph name="UMA_LINK" /> в Google</translation>
 <translation id="2689103672227170538">Це розширення змінило сторінку, яка відкривається під час запуску Chrome.</translation>
@@ -96,11 +98,12 @@
 <translation id="3738139272394829648">Пошук дотиком</translation>
 <translation id="3780814664026482060">Chrome – <ph name="PAGE_TITLE" /></translation>
 <translation id="3784527566857328444">Видалити з Chrome…</translation>
-<translation id="3847841918622877581">Google Chrome може використовувати веб-послуги для покращення умов перегляду.</translation>
 <translation id="386202838227397562">Закрийте всі вікна Google Chrome і повторіть спробу.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
+<translation id="3873044882194371212">Відкрити посилання в аноні&amp;мному вікні Chrome</translation>
 <translation id="3889417619312448367">Видалити Google Chrome</translation>
 <translation id="4028693306634653894">Відкривайте Chrome швидше</translation>
+<translation id="4031074602479304239">Chrome заблокував переспрямування з цієї сторінки</translation>
 <translation id="4042449298237264661">На цей комп’ютер не надходитимуть оновлення Google Chrome, оскільки Windows XP та Windows Vista більше не підтримуються.</translation>
 <translation id="4050175100176540509">В останній версії покращено безпеку та додано нові функції.</translation>
 <translation id="4053720452172726777">Налаштування та керування Google Chrome</translation>
@@ -129,6 +132,7 @@
 <translation id="4794050651896644714">Зберігати дані в Chrome</translation>
 <translation id="4804732725083176494">Адміністратор цього пристрою вимкнув вхід у Chrome.</translation>
 <translation id="4891791193823137474">Дозволити Google Chrome працювати у фоновому режимі</translation>
+<translation id="4895437082222824641">Відкрити посилання в новій &amp;вкладці Chrome</translation>
 <translation id="4921569541910214635">Користуєтеся комп’ютером спільно з іншими? Тепер ви можете налаштувати Chrome на свій смак.</translation>
 <translation id="4953650215774548573">Зробити Google Chrome веб-переглядачем за умовчанням</translation>
 <translation id="495931528404527476">У Chrome</translation>
@@ -150,6 +154,7 @@
 <translation id="5430073640787465221">Ваш файл налаштувань пошкоджений або недійсний. Google Chrome не може відновити ваші налаштування.</translation>
 <translation id="5453904507266736060">Дозволити Google Chrome працювати у фоновому режимі</translation>
 <translation id="5495581687705680288">Модулі, завантажені в Google Chrome</translation>
+<translation id="5524843473235508879">Переспрямування заблоковано.</translation>
 <translation id="556024056938947818">Google Chrome намагається показати паролі.</translation>
 <translation id="5563479599352954471">Пошук одним дотиком</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
@@ -209,7 +214,6 @@
 <translation id="7339898014177206373">Нове вікно</translation>
 <translation id="7369650938475876456">Використовуйте надійний пароль, згенерований Chrome</translation>
 <translation id="7398801000654795464">Ви ввійшли в Chrome як <ph name="USER_EMAIL_ADDRESS" />. Скористайтеся тим самим обліковим записом, щоб увійти знову.</translation>
-<translation id="7400722733683201933">Про Google Chrome</translation>
 <translation id="7408085963519505752">Умови ОС Chrome</translation>
 <translation id="7419046106786626209">ОС Chrome не вдалося синхронізувати ваші дані, оскільки синхронізація для вашого домену недоступна.</translation>
 <translation id="7437998757836447326">Вихід із Chrome</translation>

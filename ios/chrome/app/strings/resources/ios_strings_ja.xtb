@@ -79,6 +79,7 @@
 <translation id="2381405137052800939">基本設定</translation>
 <translation id="2386793615875593361">1 枚選択されています</translation>
 <translation id="2435457462613246316">パスワードを表示</translation>
+<translation id="2529021024822217800">すべて開く</translation>
 <translation id="2572712655377361602">端末ポリシーにより写真へのアクセスがブロックされました</translation>
 <translation id="2584132361465095047">アカウントを追加...</translation>
 <translation id="2593774076813182497">ページを印刷できません。</translation>
@@ -128,7 +129,6 @@
 <translation id="3324193307694657476">住所2行目</translation>
 <translation id="3329904751041170572">サーバーに接続できませんでした。</translation>
 <translation id="3335947283844343239">閉じたタブを開く</translation>
-<translation id="3387752218061326363">ログインしている端末の履歴を表示しています。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="3393920035788932672">ポップアップ許可済み</translation>
 <translation id="3414292259312108062">このパスワードは<ph name="BEGIN_LINK" />Googleの保存パスワード<ph name="END_LINK" />として保存され、次回から自動入力されます。</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" />分</translation>
@@ -312,6 +312,7 @@
 <translation id="6797885426782475225">音声検索</translation>
 <translation id="6807889908376551050">すべて表示...</translation>
 <translation id="681368974849482173">作成済みのアイテム</translation>
+<translation id="6871663519944855400">シークレット モードで開く</translation>
 <translation id="6896758677409633944">コピー</translation>
 <translation id="6903907808598579934">同期を有効にする</translation>
 <translation id="6945221475159498467">選択</translation>
@@ -321,7 +322,6 @@
 <translation id="7031882061095297553">同期先</translation>
 <translation id="7062545763355031412">同意してアカウントを切り替える</translation>
 <translation id="7108338896283013870">非表示</translation>
-<translation id="7131892264600713844">この端末の履歴を表示しています。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">氏名</translation>
 <translation id="7136892417564438900">カメラを使用できません</translation>
 <translation id="7159472599653637159">モバイルサイトをリクエスト</translation>

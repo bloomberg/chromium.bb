@@ -24,6 +24,7 @@
 <translation id="1628000112320670027">Chrome ಕುರಿತಾಗಿ ಸಹಾಯ ಪಡೆಯಿರಿ</translation>
 <translation id="163860049029591106">Chrome OS ನೊಂದಿಗೆ ಪ್ರಾರಂಭಗೊಳಿಸಿ</translation>
 <translation id="1653828314016431939">ಸರಿ - ಇದೀಗ ಮರುಪ್ರಾಂಭಿಸಿ</translation>
+<translation id="1674870198290878346">ಲಿಂಕ್‌ ಅನ್ನು ಅ&amp;ದೃಶ್ಯ ವಿಂಡೋದಲ್ಲಿ ತೆರೆಯಿರಿ</translation>
 <translation id="1682634494516646069">Google Chrome ಗೆ ಇದರ ಡೇಟಾ ಡೈರೆಕ್ಟರಿಯನ್ನು ಓದಲಾಗುವುದಿಲ್ಲ ಮತ್ತು ಬರೆಯಲಾಗುವುದಿಲ್ಲ:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
@@ -61,6 +62,7 @@
 <translation id="2580411288591421699">ಪ್ರಸ್ತುತ ಚಾಲನೆಯಲ್ಲಿರುವ ಅದೇ Google Chrome ಆವೃತ್ತಿಯನ್ನು ಸ್ಥಾಪಿಸಲಾಗುವುದಿಲ್ಲ. ದಯವಿಟ್ಟು Google Chrome ಮುಚ್ಚಿ ಹಾಗೂ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="2586406160782125153">ಈ ಸಾಧನದಿಂದ ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್ ಡೇಟಾವನ್ನು ಇದು ಅಳಿಸುತ್ತದೆ. ನಂತರ ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಮರುಪಡೆಯಲು, <ph name="USER_EMAIL" /> ನಂತೆ Chrome ಗೆ ಸೈನ್‌ ಇನ್ ಮಾಡಿ.</translation>
 <translation id="2588322182880276190">Chrome ಲೋಗೊ</translation>
+<translation id="2652691236519827073">ಹೊಸ Chrome &amp;ಟ್ಯಾಬ್‌ನಲ್ಲಿ ಲಿಂಕ್ ಅನ್ನು ತೆರೆಯಿರಿ</translation>
 <translation id="2664962310688259219">Chrome OS ಮುಕ್ತ ಮೂಲ ಪರವಾನಗಿಗಳು</translation>
 <translation id="2665296953892887393">Google ಗೆ ಕ್ರ್ಯಾಶ್ ವರದಿಗಳನ್ನು ಮತ್ತು <ph name="UMA_LINK" /> ಕಳುಹಿಸುವುದರಿಂದ Google Chrome ಅನ್ನು ಉತ್ತಮಗೊಳಿಸಲು ಸಹಾಯ ಮಾಡಿ</translation>
 <translation id="2689103672227170538">ನೀವು Chrome ಪ್ರಾರಂಭಿಸಿದಾಗ ಯಾವ ಪುಟ ತೋರಿಸಬೇಕು ಎಂಬ ಪುಟವನ್ನು ಈ ವಿಸ್ತರಣೆಯು ಬದಲಾಯಿಸಿದೆ.</translation>
@@ -98,11 +100,12 @@
 <translation id="3738139272394829648">ಹುಡುಕಲು ಸ್ಪರ್ಶಿಸು</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
 <translation id="3784527566857328444">Chrome ನಿಂದ ತೆಗೆದುಹಾಕು...</translation>
-<translation id="3847841918622877581">ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್ ಅನುಭವವನ್ನು ಇನ್ನಷ್ಟು ಸುಧಾರಿಸಲು Google Chrome ವೆಬ್ ಸೇವೆಗಳನ್ನು ಬಳಸಿಕೊಳ್ಳಬಹುದು.</translation>
 <translation id="386202838227397562">ದಯವಿಟ್ಟು ಎಲ್ಲಾ Google Chrome ವಿಂಡೋಗಳನ್ನು ಮುಚ್ಚಿ ಹಾಗೂ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
+<translation id="3873044882194371212">ಲಿಂಕ್‌ ಅನ್ನು Chrome ಅ&amp;ದೃಶ್ಯ ವಿಂಡೋದಲ್ಲಿ ತೆರೆಯಿರಿ</translation>
 <translation id="3889417619312448367">Google Chrome ಅನ್ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಿ</translation>
 <translation id="4028693306634653894">ವೇಗವಾಗಿ Chrome ಗೆ ತೆರಳಿ</translation>
+<translation id="4031074602479304239">ನೀವು ಈ ಸೈಟ್‌ಗೆ ಹೋಗದಂತೆ Chrome ನಿಮ್ಮನ್ನು ತಡೆದಿದೆ</translation>
 <translation id="4042449298237264661">Windows XP ಮತ್ತು Windows Vista ಗಳಿಗೆ ಬೆಂಬಲವಿಲ್ಲದೇ ಇರುವುದರಿಂದ ಈ ಕಂಪ್ಯೂಟರ್‌‌ ಇನ್ನು ಮುಂದೆ Google Chrome ಅಪ್‌ಡೇಟ್‌ಗಳನ್ನು ಸ್ವೀಕರಿಸುವುದಿಲ್ಲ.</translation>
 <translation id="4050175100176540509">ಇತ್ತೀಚಿನ ಆವೃತ್ತಿಯಲ್ಲಿ ಪ್ರಮುಖವಾದ ಭದ್ರತಾ ಸುಧಾರಣೆಗಳು ಮತ್ತು ಹೊಸ ವೈಶಿಷ್ಟ್ಯಗಳು ಲಭ್ಯವಿದೆ.</translation>
 <translation id="4053720452172726777">Google Chrome ಅನ್ನು ಕಸ್ಟಮೈಸ್ ಮಾಡಿ ಮತ್ತು ನಿಯಂತ್ರಿಸಿ</translation>
@@ -131,6 +134,7 @@
 <translation id="4794050651896644714">Chrome ನಲ್ಲಿ ವಿವರಣೆಗಳನ್ನು ಉಳಿಸಿ</translation>
 <translation id="4804732725083176494">ಈ ಸಾಧನದ ನಿರ್ವಾಹಕರಿಂದ Chrome ಗೆ ಸೈನ್ ಇನ್ ಮಾಡುವುದನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ.</translation>
 <translation id="4891791193823137474">Google Chrome ಹಿನ್ನೆಲೆಯಲ್ಲಿ ಚಾಲನೆಯಾಗಲು ಅನುಮತಿಸಿ</translation>
+<translation id="4895437082222824641">ಹೊಸ Chrome &amp;ಟ್ಯಾಬ್‌ನಲ್ಲಿ ಲಿಂಕ್ ಅನ್ನು ತೆರೆಯಿರಿ</translation>
 <translation id="4921569541910214635">ಕಂಪ್ಯೂಟರ್‌ ಅನ್ನು ಹಂಚಿಕೊಳ್ಳುವುದೇ? ಇದೀಗ ನೀವು ಇಷ್ಟಪಡುವ ಮಾರ್ಗದ ಮೂಲಕ ಇದೀಗ ನೀವು Chrome ಹೊಂದಿಸಬಹುದು.</translation>
 <translation id="4953650215774548573">Google Chrome ಅನ್ನು ನಿಮ್ಮ ಡಿಫಾಲ್ಟ್ ಬ್ರೌಸರ್‌ ರೂಪದಲ್ಲಿ ಹೊಂದಿಸಿ</translation>
 <translation id="495931528404527476">Chrome ನಲ್ಲಿ</translation>
@@ -152,6 +156,7 @@
 <translation id="5430073640787465221">ನಿಮ್ಮ ಪ್ರಾಶಸ್ತ್ಯಗಳ ಫೈಲ್ ದೋಷಪೂರಿತವಾಗಿದೆ ಅಥವಾ ಅಮಾನ್ಯವಾಗಿದೆ. ನಿಮ್ಮ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಮರುಪಡೆದುಕೊಳ್ಳುವಲ್ಲಿ Google Chrome ವಿಫಲಗೊಂಡಿದೆ.</translation>
 <translation id="5453904507266736060">Google Chrome ಹಿನ್ನೆಲೆಯಲ್ಲಿ ಚಾಲನೆಗೊಳ್ಳಲು ಅನುಮತಿಸಿ</translation>
 <translation id="5495581687705680288">ಮಾಡ್ಯೂಲ್‌ಗಳನ್ನು Google Chrome ನಲ್ಲಿ ಲೋಡ್ ಮಾಡಲಾಗಿದೆ</translation>
+<translation id="5524843473235508879">ಮರುನಿರ್ದೇಶಿಸುವಿಕೆಯನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ.</translation>
 <translation id="556024056938947818">Google Chrome ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ತೋರಿಸಲು ಪ್ರಯತ್ನಿಸುತ್ತಿದೆ.</translation>
 <translation id="5563479599352954471">ಒಂದು ಸ್ಪರ್ಶದಲ್ಲಿ ಹುಡುಕಿ</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
@@ -211,7 +216,6 @@
 <translation id="7339898014177206373">ಹೊಸ ವಿಂಡೊ</translation>
 <translation id="7369650938475876456">Chrome ಸೃಷ್ಟಿಸಿರುವ ಬಲಿಷ್ಠ ಪಾಸ್‌ವರ್ಡ್‌ ಬಳಸಿ</translation>
 <translation id="7398801000654795464"><ph name="USER_EMAIL_ADDRESS" /> ನಂತೆ Chrome ಅನ್ನು ನೀವು ಸೈನ್ ಇನ್ ಮಾಡಿರುವಿರಿ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಸೈನ್ ಇನ್ ಮಾಡಲು ಅದೇ ಖಾತೆಯನ್ನು ಬಳಸಿ.</translation>
-<translation id="7400722733683201933">Google Chrome ಬಗ್ಗೆ</translation>
 <translation id="7408085963519505752">Chrome OS ನಿಯಮಗಳು</translation>
 <translation id="7419046106786626209">ನಿಮ್ಮ ಡೊಮೇನ್‌ನಲ್ಲಿ ಸಿಂಕ್ ಮಾಡುವ ಸೌಲಭ್ಯವಿಲ್ಲದ ಕಾರಣ ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಸಿಂಕ್ ಮಾಡಲು Chrome OS ಗೆ ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ.</translation>
 <translation id="7437998757836447326">Chrome ನಿಂದ ಸೈನ್ ಔಟ್ ಮಾಡಿ</translation>

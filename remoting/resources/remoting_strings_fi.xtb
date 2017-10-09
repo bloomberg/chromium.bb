@@ -74,6 +74,7 @@ Lisätietoja tietosuojasta on Googlen tietosuojakäytännössä (http://goo.gl/S
 <translation id="2509394361235492552">Yhdistetty isäntään <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">Huomaa: voit varmistaa kaikkien pikanäppäinten käytettävyyden, kun määrität Chrome-etäkäytön avautumaan ikkunassa.</translation>
 <translation id="2540992418118313681">Haluatko jakaa tämän tietokoneen niin, että toinen käyttäjä voi käyttää ja valvoa sitä?</translation>
+<translation id="2579271889603567289">Isäntä kaatui tai sen käynnistäminen epäonnistui.</translation>
 <translation id="2599300881200251572">Tämä palvelu mahdollistaa Chrome-etäkäytön asiakkaiden muodostamat yhteydet.</translation>
 <translation id="2647232381348739934">Chromoting-palvelu</translation>
 <translation id="2676780859508944670">Käsitellään…</translation>
@@ -174,6 +175,7 @@ PC</translation>
 <translation id="4736223761657662401">Yhteyshistoria</translation>
 <translation id="4741792197137897469">Todennus epäonnistui. Kirjaudu uudelleen sisään Chromeen.</translation>
 <translation id="477305884757156764">Sovellus on liian hidas.</translation>
+<translation id="4784508858340177375">X-palvelin kaatui tai sen käynnistäminen epäonnistui.</translation>
 <translation id="4795786176190567663">Sinulla ei ole lupaa suorittaa tätä toimintoa.</translation>
 <translation id="4798680868612952294">Hiiriasetukset</translation>
 <translation id="4804818685124855865">Katkaise yhteys</translation>
@@ -248,6 +250,7 @@ PC</translation>
 <translation id="6572345186230665992">Mac (OS X Mavericks 10.9 ja uudemmat)</translation>
 <translation id="6583902294974160967">Tuki</translation>
 <translation id="6612717000975622067">Lähetä Ctrl-Alt-Del</translation>
+<translation id="6654753848497929428">Jaa</translation>
 <translation id="6668065415969892472">PIN-koodi on päivitetty.</translation>
 <translation id="6681800064886881394">Copyright 2013 Google Inc. Kaikki oikeudet pidätetään.</translation>
 <translation id="6705482892455291412">Kun koodi on annettu, sinua pyydetään hyväksymään yhteys ja aloittamaan jakaminen.</translation>

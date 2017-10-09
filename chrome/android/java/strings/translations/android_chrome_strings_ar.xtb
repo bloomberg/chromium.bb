@@ -37,6 +37,7 @@
 <translation id="1291207594882862231">محو السجل وملفات تعريف الارتباط وبيانات المواقع وذاكرة التخزين المؤقت...</translation>
 <translation id="129553762522093515">المغلقة حديثًا</translation>
 <translation id="1303671224831497365">لم يتم العثور على أي أجهزة بلوتوث</translation>
+<translation id="1320663236730331991">مرِّر سريعًا لأعلى للوصول بسهولة إلى المواقع والمقالات والتنزيلات الشائعة، وغيرها</translation>
 <translation id="1326317727527857210">‏للحصول على علامات التبويب من أجهزتك الأخرى، سجّل الدخول إلى Chrome.</translation>
 <translation id="1332501820983677155">‏اختصارات ميزات Google Chrome</translation>
 <translation id="1369915414381695676">تمت إضافة الموقع <ph name="SITE_NAME" /></translation>
@@ -48,7 +49,6 @@
 <translation id="1389236224998445076">البيانات التي تم توفيرها:</translation>
 <translation id="1389974829397082527">ليست هناك إشارات مرجعية هنا</translation>
 <translation id="1397811292916898096">البحث باستخدام <ph name="PRODUCT_NAME" /></translation>
-<translation id="1402229579576898974">‏<ph name="NUMBER_OF_SUGGESTIONS" /> من اقتراحات Chrome</translation>
 <translation id="1404122904123200417">تم التضمين في <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">"عدم التعقب"</translation>
 <translation id="1407135791313364759">فتح الكل</translation>
@@ -138,7 +138,6 @@
 <translation id="2268044343513325586">تحسين</translation>
 <translation id="2283599456633275070">السفر</translation>
 <translation id="2286841657746966508">عنوان الفاتورة</translation>
-<translation id="2301209717432756327">تمت الإضافة إلى الشاشة الرئيسية.</translation>
 <translation id="2315043854645842844">لا يدعم نظام التشغيل تحديد الشهادة من جانب العميل.</translation>
 <translation id="2321958826496381788">يمكنك سحب شريط التمرير حتى تتمكن من قراءة هذا النص بسهولة. يجب أن يظهر النص بهذا الحجم على الأقل بعد النقر مرتين على إحدى الفقرات.</translation>
 <translation id="2323763861024343754">سعة تخزين الموقع</translation>
@@ -231,6 +230,7 @@
 <translation id="3259831549858767975">تصغير كل محتويات الصفحة</translation>
 <translation id="3269093882174072735">تحميل الصورة</translation>
 <translation id="3269956123044984603">‏للحصول على علامات التبويب من أجهزتك الأخرى، شغِّل "المزامنة التلقائية للبيانات" في إعدادات حساب Android.</translation>
+<translation id="3274105979672092244">‏أنت تستخدم ميزة Chrome Home</translation>
 <translation id="3282568296779691940">‏تسجيل الدخول إلى Chrome</translation>
 <translation id="3295602654194328831">إخفاء المعلومات</translation>
 <translation id="3303414029551471755">هل ترغب في الاستمرار في تنزيل المحتوى؟</translation>
@@ -259,7 +259,6 @@
 <translation id="3549657413697417275">البحث في السجل</translation>
 <translation id="3552151358455404883">‏إدارة مزامنة Chrome والتخصيص في <ph name="BEGIN_LINK1" />الإعدادات<ph name="END_LINK1" /></translation>
 <translation id="3557336313807607643">إضافة إلى جهات الاتصال</translation>
-<translation id="3583454905526475291">تعذر تشغيل التطبيق</translation>
 <translation id="3587482841069643663">الكل</translation>
 <translation id="3590487821116122040">‏سعة تخزين الموقع التي لا يعتقد Chrome أنها مهمة (مثل المواقع التي لا تتضمَّن إعدادات محفوظة أو تلك التي لا تزورها مرارًا)</translation>
 <translation id="3599863153486145794">‏يمسح السجل من كل الأجهزة التي تم تسجيل الدخول عليها. وقد يتضمن حسابك في Google نماذج أخرى من سجل التصفح في <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
@@ -341,7 +340,6 @@
 <translation id="4269820728363426813">نسخ عنوان الرابط</translation>
 <translation id="4275663329226226506">الوسائط</translation>
 <translation id="4278390842282768270">مسموح بها</translation>
-<translation id="42981349822642051">توسيع</translation>
 <translation id="4307992518367153382">أساسيّات</translation>
 <translation id="4351244548802238354">إغلاق مربع الحوار</translation>
 <translation id="4378154925671717803">الهاتف</translation>
@@ -430,6 +428,7 @@
 <translation id="5164482624172255778">‏هل تريد أن يعرض Google Chrome ترجمة الصفحات باللغة <ph name="LANGUAGE" /> من هذا الموقع مرة أخرى؟</translation>
 <translation id="5168917394043976756">فتح لائحة التنقل</translation>
 <translation id="5184329579814168207">‏فتح في Chrome</translation>
+<translation id="519793908071017925">‏استخدام Chrome Home</translation>
 <translation id="5199929503336119739">الملف الشخصي للعمل</translation>
 <translation id="5209320130288484488">لم يتم العثور على أية أجهزة</translation>
 <translation id="5210286577605176222">الانتقال السريع إلى علامة التبويب السابقة</translation>
@@ -525,6 +524,7 @@
 <translation id="5942872142862698679">‏استخدام محرك Google للبحث</translation>
 <translation id="5956665950594638604">‏فتح مركز مساعدة Chrome في علامة تبويب جديدة</translation>
 <translation id="5958275228015807058">العثور على الملفات والصفحات في التنزيلات</translation>
+<translation id="5958994127112619898">تبسيط الصفحة</translation>
 <translation id="5962718611393537961">النقر للتصغير</translation>
 <translation id="6000066717592683814">‏الاستمرار في استخدام محرك Google</translation>
 <translation id="6023914116273780353">شخصية</translation>
@@ -596,6 +596,7 @@
 <translation id="6583199322650523874">وضع إشارة مرجعية على الصفحة الحالية</translation>
 <translation id="6600954340915313787">‏تم النسخ إلى Chrome</translation>
 <translation id="6612358246767739896">محتوى محمي</translation>
+<translation id="6619166911218440149">‏تقديم Chrome Home</translation>
 <translation id="6627583120233659107">تعديل مجلد</translation>
 <translation id="6643016212128521049">محو</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{‏<ph name="CONTACT_PREVIEW" />\u2026 وجهة اتصال إضافية واحدة <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}zero{‏<ph name="CONTACT_PREVIEW" />\u2026 و<ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> جهة اتصال إضافية}two{‏<ph name="CONTACT_PREVIEW" />\u2026 وجهتا اتصال إضافيتان (<ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />)}few{‏<ph name="CONTACT_PREVIEW" />\u2026 و<ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> جهات اتصال إضافية}many{‏<ph name="CONTACT_PREVIEW" />\u2026 و<ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> جهة اتصال إضافية}other{‏<ph name="CONTACT_PREVIEW" />\u2026 و<ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> جهة اتصال إضافية}}</translation>
@@ -706,6 +707,7 @@
 <translation id="7607552448134703340">إدخال ما تبحث عنه</translation>
 <translation id="7612619742409846846">‏تسجيل الدخول إلى Google باسم</translation>
 <translation id="7619072057915878432">تعذّر تنزيل الملف <ph name="FILE_NAME" /> بسبب إخفاقات الشبكة.</translation>
+<translation id="7620146066550602128">تجربة <ph name="BEGIN_LINK" />طريقة أسهل للتصفح<ph name="END_LINK" /></translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />الحصول على مساعدة<ph name="END_LINK1" /> أو <ph name="BEGIN_LINK2" />إعادة الفحص<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">‏مرحبًا بك في Chrome‏</translation>
 <translation id="7638584964844754484">عبارة مرور غير صحيحة</translation>
@@ -798,7 +800,6 @@
 <translation id="8523928698583292556">حذف كلمة المرور المخزنة</translation>
 <translation id="854522910157234410">فتح هذه الصفحة</translation>
 <translation id="8562452229998620586">ستظهر هنا كلمات المرور المحفوظة.</translation>
-<translation id="856481929701340285">طلب موقع الكمبيوتر</translation>
 <translation id="8569404424186215731">منذ <ph name="DATE" /></translation>
 <translation id="8571213806525832805">الأسابيع الـ4 الأخيرة</translation>
 <translation id="857509777403223202">ستظهر المزيد من المقالات قريبًا. استمتع بليلتك!</translation>

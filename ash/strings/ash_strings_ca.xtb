@@ -104,7 +104,6 @@
 <translation id="3445925074670675829">Dispositiu USB-C</translation>
 <translation id="3473479545200714844">Lupa</translation>
 <translation id="3510164367642747937">Ressalta el cursor del ratolí</translation>
-<translation id="3547954654003013442">Configuració del servidor intermediari</translation>
 <translation id="3573179567135747900">Torna a canviar a "<ph name="FROM_LOCALE" />" (requereix reiniciar)</translation>
 <translation id="3582792037806681688">S'ha desactivat l'inici de sessió múltiple en aquesta sessió a causa d'un usuari.</translation>
 <translation id="3595596368722241419">Bateria carregada.</translation>
@@ -195,6 +194,7 @@
 <translation id="615957422585914272">Mostra el teclat en pantalla</translation>
 <translation id="6165508094623778733">Més informació</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: s'està activant...</translation>
+<translation id="6284232397434400372">S'ha canviat la resolució</translation>
 <translation id="6297287540776456956">Utilitza el llapis òptic per seleccionar una part</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> s'ha canviat a <ph name="ROTATION" /></translation>
 <translation id="632744581670418035">Superposició de teclat</translation>
@@ -232,10 +232,10 @@ Utilitza aquesta funció només amb comptes de confiança.</translation>
 <translation id="7066646422045619941">L'administrador ha desactivat aquesta xarxa.</translation>
 <translation id="7067196344162293536">Rotació automàtica</translation>
 <translation id="7098389117866926363">Dispositiu USB-C (port posterior esquerre)</translation>
-<translation id="7135556860107312402">Permet notificacions de les fonts següents:</translation>
 <translation id="7165278925115064263">Alt+Maj+K</translation>
 <translation id="7168224885072002358">Es revertirà a la resolució anterior d'aquí a <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Micròfon posterior</translation>
+<translation id="726276584504105859">Arrossega-la aquí per utilitzar la pantalla dividida</translation>
 <translation id="7348093485538360975">Teclat en pantalla</translation>
 <translation id="735745346212279324">VPN desconnectada</translation>
 <translation id="7377169924702866686">Bloq Maj està activat.</translation>
@@ -248,6 +248,7 @@ Utilitza aquesta funció només amb comptes de confiança.</translation>
 <translation id="7562368315689366235">Paleta d'emoji</translation>
 <translation id="7569509451529460200">S'ha activat el braille i ChromeVox</translation>
 <translation id="7593891976182323525">Cerca o Maj</translation>
+<translation id="7645176681409127223"><ph name="USER_NAME" /> (propietari)</translation>
 <translation id="7647488630410863958">Desbloqueja el dispositiu per veure les notificacions</translation>
 <translation id="7649070708921625228">Ajuda</translation>
 <translation id="7658239707568436148">Cancel·la</translation>

@@ -5,7 +5,6 @@
 <translation id="1127811143501539442">{DAYS,plural, =1{för 1 dag sedan}other{för # dagar sedan}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{1 minut sedan}other{# minuter sedan}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 min}other{# min}}</translation>
-<translation id="1190609913194133056">Meddelandecenter</translation>
 <translation id="1243314992276662751">Ladda upp</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">REKOMMENDERADE APPAR</translation>
@@ -31,6 +30,7 @@
 <translation id="2190355936436201913">(tom)</translation>
 <translation id="219905428774326614">Startprogram, alla appar</translation>
 <translation id="2289052229480071835">Tryck på tryckområdena på skärmen.</translation>
+<translation id="2295140143284145483">Enkät</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/sek</translation>
 <translation id="24452542372838207">Utöka avisering</translation>
 <translation id="2497284189126895209">Alla filer</translation>
@@ -90,6 +90,7 @@
 <translation id="5943826764092288734">{HOURS,plural, =1{1 timme}other{# timmar}}</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="598033046487663418">Alla appar</translation>
+<translation id="6012623610530968780">Sida <ph name="SELECTED_PAGE" /> av <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Rensa sökrutan</translation>
 <translation id="6040143037577758943">Stäng</translation>
 <translation id="6119846243427417423">aktivera</translation>
@@ -103,6 +104,7 @@
 <translation id="6394627529324717982">Komma</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{för 1 sek sedan}other{för # sek sedan}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 sekund sedan}other{# sekunder sedan}}</translation>
+<translation id="6567071839949112727">klicka på det överordnade objektet</translation>
 <translation id="6612467943526193239">Tryck på Esc för att avsluta kalibreringen.</translation>
 <translation id="6620110761915583480">Spara fil</translation>
 <translation id="6699343763173986273">Nästa spår</translation>
@@ -120,6 +122,7 @@
 <translation id="7130207228079676353">MEST TROLIGA</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 min kvar}other{# min kvar}}</translation>
+<translation id="7319740667687257810">Översikt, delvy</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{för 1 min sedan}other{för # min sedan}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 minut kvar}other{# minuter kvar}}</translation>

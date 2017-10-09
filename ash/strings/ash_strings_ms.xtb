@@ -104,7 +104,6 @@
 <translation id="3445925074670675829">Peranti USB-C</translation>
 <translation id="3473479545200714844">Penggadang skrin</translation>
 <translation id="3510164367642747937">Serlahkan kursor tetikus</translation>
-<translation id="3547954654003013442">Tetapan proksi</translation>
 <translation id="3573179567135747900">Tukar kembali kepada "<ph name="FROM_LOCALE" />" (perlu dimulakan semula)</translation>
 <translation id="3582792037806681688">Log masuk berbilang tidak dibenarkan untuk pengguna dalam sesi ini</translation>
 <translation id="3595596368722241419">Bateri penuh</translation>
@@ -233,7 +232,6 @@ Gunakan ciri ini dengan akaun yang anda percaya sahaja.</translation>
 <translation id="7066646422045619941">Rangkaian ini dilumpuhkan oleh pentadbir anda.</translation>
 <translation id="7067196344162293536">Auto putar</translation>
 <translation id="7098389117866926363">Peranti USB-C (port kiri di belakang)</translation>
-<translation id="7135556860107312402">Benarkan pemberitahuan daripada yang berikut:</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Kembali kepada peleraian lama dalam <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Mikrofon belakang</translation>
@@ -250,6 +248,7 @@ Gunakan ciri ini dengan akaun yang anda percaya sahaja.</translation>
 <translation id="7562368315689366235">Palet emoji</translation>
 <translation id="7569509451529460200">Braille dan ChromeVox didayakan</translation>
 <translation id="7593891976182323525">Search atau Shift</translation>
+<translation id="7645176681409127223"><ph name="USER_NAME" /> (pemilik)</translation>
 <translation id="7647488630410863958">Buka kunci peranti untuk melihat pemberitahuan anda</translation>
 <translation id="7649070708921625228">Bantuan</translation>
 <translation id="7658239707568436148">Batal</translation>

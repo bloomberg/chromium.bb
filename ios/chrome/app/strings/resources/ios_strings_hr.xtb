@@ -79,6 +79,7 @@ Na primjer, neke web-lokacije mogu reagirati na taj zahtjev prikazivanjem oglasa
 <translation id="2381405137052800939">Osnove</translation>
 <translation id="2386793615875593361">1 odabrana</translation>
 <translation id="2435457462613246316">Pokaži zaporku</translation>
+<translation id="2529021024822217800">Otvori sve</translation>
 <translation id="2572712655377361602">Pravila za uređaje blokirala su pristup fotografijama</translation>
 <translation id="2584132361465095047">Dodaj račun…</translation>
 <translation id="2593774076813182497">Stranicu nije moguće ispisati.</translation>
@@ -128,7 +129,6 @@ Na primjer, neke web-lokacije mogu reagirati na taj zahtjev prikazivanjem oglasa
 <translation id="3324193307694657476">2. adresni redak</translation>
 <translation id="3329904751041170572">Povezivanje s poslužiteljem nije moguće.</translation>
 <translation id="3335947283844343239">Ponovo otvori zatvorenu karticu</translation>
-<translation id="3387752218061326363">Prikazuje se povijest s uređaja na kojima se prijavljujete. <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" />.</translation>
 <translation id="3393920035788932672">Dopušteni skočni</translation>
 <translation id="3414292259312108062">Chrome će to pohraniti u vašim <ph name="BEGIN_LINK" />Googleovim spremljenim zaporkama<ph name="END_LINK" /> i automatski popuniti umjesto vas kako ne biste morali pamtiti.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min</translation>
@@ -312,6 +312,7 @@ Vaši su podaci šifrirani vašom šifrom za sinkronizaciju <ph name="TIME" />. 
 <translation id="6797885426782475225">Glasovno pretraživanje</translation>
 <translation id="6807889908376551050">Prikaži sve...</translation>
 <translation id="681368974849482173">Stavka je stvorena</translation>
+<translation id="6871663519944855400">Otvori u anonimnom načinu</translation>
 <translation id="6896758677409633944">Kopiraj</translation>
 <translation id="6903907808598579934">Uključi sinkronizaciju</translation>
 <translation id="6945221475159498467">Odaberi</translation>
@@ -321,7 +322,6 @@ Vaši su podaci šifrirani vašom šifrom za sinkronizaciju <ph name="TIME" />. 
 <translation id="7031882061095297553">Sinkronizacija s računima</translation>
 <translation id="7062545763355031412">Prihvati i promijeni račun</translation>
 <translation id="7108338896283013870">Sakrij preglednik</translation>
-<translation id="7131892264600713844">Prikazuje se povijest s ovog uređaja. <ph name="BEGIN_LINK" />Saznajte više.<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">Ime i prezime</translation>
 <translation id="7136892417564438900">Fotoaparat nije dostupan</translation>
 <translation id="7159472599653637159">Prikaži mob. str.</translation>

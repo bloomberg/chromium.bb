@@ -24,6 +24,7 @@
 <translation id="1628000112320670027">Nhận trợ giúp về Chrome</translation>
 <translation id="163860049029591106">Bắt đầu với Chrome OS</translation>
 <translation id="1653828314016431939">OK - Khởi động lại ngay bây giờ</translation>
+<translation id="1674870198290878346">Mở liên kết trong cửa sổ ẩn &amp;danh của Chrome</translation>
 <translation id="1682634494516646069">Google Chrome không thể đọc và ghi vào thư mục dữ liệu:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
@@ -61,6 +62,7 @@
 <translation id="2580411288591421699">Không thể cài đặt phiên bản Google Chrome giống với phiên bản hiện đang chạy. Vui lòng đóng Google Chrome và thử lại.</translation>
 <translation id="2586406160782125153">Thao tác này sẽ xóa dữ liệu duyệt web của bạn khỏi thiết bị này. Để truy xuất dữ liệu của bạn sau, hãy đăng nhập vào Chrome dưới dạng <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Biểu trưng Chrome</translation>
+<translation id="2652691236519827073">Mở liên kết trong &amp;tab mới của Chrome</translation>
 <translation id="2664962310688259219">Giấy phép nguồn mở Chrome OS</translation>
 <translation id="2665296953892887393">Giúp cải thiện Google Chrome bằng cách gửi báo cáo sự cố và <ph name="UMA_LINK" /> tới Google</translation>
 <translation id="2689103672227170538">Tiện ích này đã thay đổi trang nào được hiển thị khi bạn khởi động Chrome.</translation>
@@ -98,11 +100,12 @@ Vui lòng xem email của bạn tại <ph name="ACCOUNT_EMAIL" /> để biết t
 <translation id="3738139272394829648">Chạm để tìm kiếm</translation>
 <translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
 <translation id="3784527566857328444">Xóa khỏi Chrome...</translation>
-<translation id="3847841918622877581">Google Chrome có thể sử dụng dịch vụ web để cải thiện trải nghiệm duyệt web của bạn.</translation>
 <translation id="386202838227397562">Vui lòng đóng tất cả cửa sổ của Google Chrome và thử lại.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
+<translation id="3873044882194371212">Mở liên kết trong cửa sổ ẩn &amp;danh của Chrome</translation>
 <translation id="3889417619312448367">Gỡ cài đặt Google Chrome</translation>
 <translation id="4028693306634653894">Truy cập Chrome nhanh hơn</translation>
+<translation id="4031074602479304239">Chrome đã chặn chuyển hướng từ trang web này đến</translation>
 <translation id="4042449298237264661">Máy tính này sẽ không nhận được bản cập nhật Google Chrome nữa do Windows XP và Windows Vista không còn được hỗ trợ.</translation>
 <translation id="4050175100176540509">Cải thiện bảo mật quan trọng và tính năng mới có trong phiên bản mới nhất.</translation>
 <translation id="4053720452172726777">Tùy chỉnh và điều khiển Google Chrome</translation>
@@ -132,6 +135,7 @@ Vui lòng xem email của bạn tại <ph name="ACCOUNT_EMAIL" /> để biết t
 <translation id="4794050651896644714">Lưu chi tiết trong Chrome</translation>
 <translation id="4804732725083176494">Quản trị viên của thiết bị này đã tắt tính năng đăng nhập vào Chrome.</translation>
 <translation id="4891791193823137474">Để Google Chrome chạy trên nền</translation>
+<translation id="4895437082222824641">Mở liên kết trong tab mới của Chrome</translation>
 <translation id="4921569541910214635">Bạn muốn chia sẻ máy tính? Giờ đây, bạn có thể thiết lập Chrome theo cách mình muốn.</translation>
 <translation id="4953650215774548573">Đặt Google Chrome làm trình duyệt mặc định của bạn</translation>
 <translation id="495931528404527476">Trong Chrome</translation>
@@ -155,6 +159,7 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="5430073640787465221">Tệp tùy chọn của bạn bị hỏng hoặc không hợp lệ. Google Chrome không thể khôi phục cài đặt của bạn.</translation>
 <translation id="5453904507266736060">Để Google Chrome chạy trên nền</translation>
 <translation id="5495581687705680288">Mô-đun được tải vào Google Chrome</translation>
+<translation id="5524843473235508879">Đã chặn chuyển hướng.</translation>
 <translation id="556024056938947818">Google Chrome đang cố gắng hiển thị mật khẩu.</translation>
 <translation id="5563479599352954471">Tìm kiếm bằng một lần chạm</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
@@ -214,7 +219,6 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="7339898014177206373">Cửa sổ mới</translation>
 <translation id="7369650938475876456">Sử dụng mật khẩu mạnh do Chrome tạo</translation>
 <translation id="7398801000654795464">Bạn đã đăng nhập vào Chrome là <ph name="USER_EMAIL_ADDRESS" />. Vui lòng sử dụng cùng tài khoản để đăng nhập lại.</translation>
-<translation id="7400722733683201933">Giới thiệu về Google Chrome</translation>
 <translation id="7408085963519505752">Điều khoản của Chrome OS</translation>
 <translation id="7419046106786626209">Chrome OS không thể đồng bộ hóa dữ liệu của bạn vì Đồng bộ hóa không khả dụng với miền của bạn.</translation>
 <translation id="7437998757836447326">Đăng xuất khỏi Chrome</translation>

@@ -1353,6 +1353,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
           Kung itatakda ang patakarang ito, maaaring palitan ito nang pansamantala ng mga user sa pamamagitan ng pag-e-enable o pagdi-disable ng malaking cursor. Gayunpaman, hindi mananaig ang napili ng user at mababalik ang default sa tuwing ipapakitang muli ang screen sa pag-login o kung manatiling idle ang user sa screen sa pag-login sa loob ng isang minuto.
 
           Kung hahayaang hindi nakatakda ang patakarang ito, madi-disable ang malaking cursor kapag unang ipinakita ang screen sa pag-login. Maaaring i-enable o i-disable ng mga user ang malaking cursor anumang oras at mananatili ang katayuan nito sa screen sa pag-login sa pagitan ng mga user.</translation>
+<translation id="5932767795525445337">Maaari ding gamitin ang patakarang ito upang mag-pin ng mga Android app.</translation>
 <translation id="5936622343001856595">Pinupuwersa na gawin ang mga query sa Paghahanap sa Web ng Google nang nakatakda ang SafeSearch sa aktibo at pinipigilan ang mga user na baguhin ang setting na ito.
 
       Kung papaganahin mo ang setting na ito, laging magiging aktibo ang SafeSearch sa Paghahanap sa Google.
@@ -1405,7 +1406,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="6111936128861357925">Pahintulutan ang Dinosaur Easter Egg Game</translation>
 <translation id="6114416803310251055">hindi na ginagamit</translation>
 <translation id="6133088669883929098">Payagan ang lahat ng site na gumamit ng pagbuo ng key</translation>
-<translation id="6139485614509308022">Kung nakatakda ang patakarang "OffHours," mababalewala ang mga tinukoy na patakaran ng device (gagamitin ang default na mga setting ng mga patakarang ito) sa loob ng natukoy na tagal ng panahon. Muling mailalapat ng Chrome ang mga patakaran ng device sa bawat kaganapan kung kailan magsisimula o magwawakas ang yugto ng "OffHours." Maaabisuhan at sapilitang masa-sign out ang user kapag natapos ang panahon ng "OffHours" at kapag nabago ang mga setting ng patakaran ng device (ibig sabihin, kapag naka-log in ang user sa isang hindi pinapayagang account).</translation>
 <translation id="6145799962557135888">Binibigyang-daan kang magtakda ng isang listahan ng mga pattern ng url na tumutukoy ng mga site na pinapayagang magpatakbo ng JavaScript.
 
           Kung hinayaang hindi nakatakda ang patakarang ito gagamitin ang global na default na halaga para sa lahat ng site mula sa patakarang 'DefaultJavaScriptSetting' kung nakatakda ito, o kung hindi man ay sa personal na configuration ng user.</translation>

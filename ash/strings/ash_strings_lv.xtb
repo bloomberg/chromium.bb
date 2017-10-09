@@ -96,7 +96,7 @@
 <translation id="315116470104423982">Mobilie dati</translation>
 <translation id="3236488194889173876">Mobilais tīkls nav pieejams</translation>
 <translation id="3294437725009624529">Viesis</translation>
-<translation id="332587331255250389">Lūdzu, nomainiet akumulatoru.</translation>
+<translation id="332587331255250389">Lūdzu, nomainiet bateriju.</translation>
 <translation id="3364721542077212959">Skārienekrāna pildspalvas rīki</translation>
 <translation id="3368922792935385530">pievienots</translation>
 <translation id="3371140690572404006">USB-C ierīce (pieslēgvieta labajā pusē priekšā)</translation>
@@ -104,7 +104,6 @@
 <translation id="3445925074670675829">USB-C ierīce</translation>
 <translation id="3473479545200714844">Ekrāna lupa</translation>
 <translation id="3510164367642747937">Izcelt peles kursoru</translation>
-<translation id="3547954654003013442">Starpniekservera iestatījumi</translation>
 <translation id="3573179567135747900">Mainīt atpakaļ uz <ph name="FROM_LOCALE" /> (nepieciešama restartēšana)</translation>
 <translation id="3582792037806681688">Lietotāja vairākkārtēja pierakstīšanās šajā sesijā tika aizliegta.</translation>
 <translation id="3595596368722241419">Akumulators pilns</translation>
@@ -195,6 +194,7 @@
 <translation id="615957422585914272">Rādīt ekrāna tastatūru</translation>
 <translation id="6165508094623778733">Uzziniet vairāk</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: notiek aktivizēšana...</translation>
+<translation id="6284232397434400372">Izšķirtspēja nomainīta</translation>
 <translation id="6297287540776456956">Izmantojiet skārienekrāna pildspalvu, lai atlasītu ekrāna daļu.</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> tika pagriezts šādi: <ph name="ROTATION" /></translation>
 <translation id="632744581670418035">Tastatūras pārklājums</translation>
@@ -232,10 +232,10 @@ Izmantojiet šo funkciju tikai uzticamiem kontiem.</translation>
 <translation id="7066646422045619941">Jūsu administrators atspējoja šo tīklu.</translation>
 <translation id="7067196344162293536">Pagriezt automātiski</translation>
 <translation id="7098389117866926363">USB-C ierīce (pieslēgvieta aizmugurē pa kreisi)</translation>
-<translation id="7135556860107312402">Atļaut paziņojumu saņemšanu no:</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Iepriekšējā izšķirtspēja tiks atgriezta pēc <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Aizmugurējais mikrofons</translation>
+<translation id="726276584504105859">Velciet šeit, lai izmantotu ekrāna sadalīšanu.</translation>
 <translation id="7348093485538360975">Ekrāntastatūra</translation>
 <translation id="735745346212279324">VPN ir atvienots</translation>
 <translation id="7377169924702866686">Funkcija Caps Lock ir ieslēgta.</translation>
@@ -248,6 +248,7 @@ Izmantojiet šo funkciju tikai uzticamiem kontiem.</translation>
 <translation id="7562368315689366235">Emocijzīmju palete</translation>
 <translation id="7569509451529460200">Braila raksts un ChromeVox ir iespējoti</translation>
 <translation id="7593891976182323525">Meklēt vai Shift</translation>
+<translation id="7645176681409127223"><ph name="USER_NAME" /> (īpašnieks)</translation>
 <translation id="7647488630410863958">Atbloķējiet ierīci, lai skatītu paziņojumus.</translation>
 <translation id="7649070708921625228">Palīdzība</translation>
 <translation id="7658239707568436148">Atcelt</translation>

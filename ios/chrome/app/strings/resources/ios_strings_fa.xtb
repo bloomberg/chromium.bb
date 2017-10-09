@@ -80,6 +80,7 @@
 <translation id="2381405137052800939">ساده</translation>
 <translation id="2386793615875593361">۱ مورد انتخاب شد</translation>
 <translation id="2435457462613246316">نمایش گذرواژه</translation>
+<translation id="2529021024822217800">باز کردن همه</translation>
 <translation id="2572712655377361602">خط‌مشی دستگاه دسترسی به عکس‌هایتان را مسدود کرد</translation>
 <translation id="2584132361465095047">افزودن حساب…</translation>
 <translation id="2593774076813182497">این صفحه چاپ نمی‌شود.</translation>
@@ -129,7 +130,6 @@
 <translation id="3324193307694657476">آدرس ۲</translation>
 <translation id="3329904751041170572">اتصال به سرور امکان‌پذیر نیست.</translation>
 <translation id="3335947283844343239">باز کردن مجدد برگه بسته شده</translation>
-<translation id="3387752218061326363">درحال نمایش سابقه از دستگاه‌هایی که در آن‌ها به سیستم وارد شده‌اید. <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" />.</translation>
 <translation id="3393920035788932672">پنجره‌های بازشو مجاز است</translation>
 <translation id="3414292259312108062">‏Chrome این گذرواژه را در <ph name="BEGIN_LINK" />گذرواژه‌های ذخیره‌شده Google<ph name="END_LINK" /> شما ذخیره می‌کند و به صورت خودکار آن را برایتان وارد می‌کند، بنابراین نیازی نیست آن را به خاطر بسپارید.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> دقیقه</translation>
@@ -313,6 +313,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="6797885426782475225">جستجوی گفتاری</translation>
 <translation id="6807889908376551050">نمایش همه...</translation>
 <translation id="681368974849482173">مورد ایجاد شد</translation>
+<translation id="6871663519944855400">باز کردن در حالت ناشناس</translation>
 <translation id="6896758677409633944">کپی</translation>
 <translation id="6903907808598579934">روشن کردن همگام‌سازی</translation>
 <translation id="6945221475159498467">انتخاب</translation>
@@ -322,7 +323,6 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="7031882061095297553">همگام‌سازی در</translation>
 <translation id="7062545763355031412">پذیرش و تغییر حساب‌ها</translation>
 <translation id="7108338896283013870">عدم نمایش</translation>
-<translation id="7131892264600713844">درحال نمایش سابقه از این دستگاه. <ph name="BEGIN_LINK" />بیشتر بدانید.<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">نام کامل</translation>
 <translation id="7136892417564438900">دوربین غیرقابل‌ دسترسی است</translation>
 <translation id="7159472599653637159">درخواست سایت ویژه دستگاه همراه</translation>

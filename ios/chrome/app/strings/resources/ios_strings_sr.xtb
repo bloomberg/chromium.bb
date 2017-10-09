@@ -79,6 +79,7 @@
 <translation id="2381405137052800939">Основе</translation>
 <translation id="2386793615875593361">Изабрана је 1 слика</translation>
 <translation id="2435457462613246316">Прикажи лозинку</translation>
+<translation id="2529021024822217800">Отвори све</translation>
 <translation id="2572712655377361602">Смернице за уређај су блокирале приступ сликама</translation>
 <translation id="2584132361465095047">Додај налог…</translation>
 <translation id="2593774076813182497">Није могуће штампати ову страницу.</translation>
@@ -128,7 +129,6 @@
 <translation id="3324193307694657476">2. ред за адресу</translation>
 <translation id="3329904751041170572">Повезивање са сервером није могуће.</translation>
 <translation id="3335947283844343239">Поново отвори затворену картицу</translation>
-<translation id="3387752218061326363">Приказујемо историју са уређаја на које сте пријављени. <ph name="BEGIN_LINK" />Сазнајте више<ph name="END_LINK" />.</translation>
 <translation id="3393920035788932672">Дозвољени искачући прозори</translation>
 <translation id="3414292259312108062">Chrome ће ово сачувати у вашим <ph name="BEGIN_LINK" />Google сачуваним лозинкама<ph name="END_LINK" /> и аутоматски унети тако да не морате да памтите.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> мин</translation>
@@ -312,6 +312,7 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="6797885426782475225">Гласовна претрага</translation>
 <translation id="6807889908376551050">Прикажи све...</translation>
 <translation id="681368974849482173">Ставка је направљена</translation>
+<translation id="6871663519944855400">Отвори у режиму без архивирања</translation>
 <translation id="6896758677409633944">Копирај</translation>
 <translation id="6903907808598579934">Укључи синхронизацију</translation>
 <translation id="6945221475159498467">Изабери</translation>
@@ -321,7 +322,6 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="7031882061095297553">Синхронизујте са</translation>
 <translation id="7062545763355031412">Прихватам, промени налог</translation>
 <translation id="7108338896283013870">Сакриј</translation>
-<translation id="7131892264600713844">Приказујемо историју са овог уређаја. <ph name="BEGIN_LINK" />Сазнајте више<ph name="END_LINK" />.</translation>
 <translation id="7133798577887235672">Име и презиме</translation>
 <translation id="7136892417564438900">Камера је недоступна</translation>
 <translation id="7159472599653637159">Захтевај мобилни сајт</translation>

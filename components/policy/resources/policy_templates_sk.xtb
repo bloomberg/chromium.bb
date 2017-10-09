@@ -1097,48 +1097,6 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 <translation id="4980635395568992380">Typ údajov:</translation>
 <translation id="4983201894483989687">Povoliť spúšťanie zastaraných doplnkov</translation>
 <translation id="4988291787868618635">Akcia po určitej dobe nečinnosti</translation>
-<translation id="5010252829147312914">Určuje skupinu pravidiel, ktoré budú postúpené na spustenie ARC. Hodnota musí mať platný formát JSON.
-
-      Pomocou tohto pravidla je možné konfigurovať, ktoré aplikácie pre Android sa automaticky nainštalujú do zariadenia:
-
-      {
-        "type": "array",
-        "items": {
-          "type": "object",
-          "properties": {
-            "packageName": {
-              "description": "Identifikátor aplikácie pre Android, napr. "com.google.android.gm" pre Gmail",
-              "type": "string"
-            },
-            "installType": {
-              "description": "Určí spôsob inštalácie aplikácie. OPTIONAL (VOLITEĽNÁ): Aplikácia sa nenainštaluje automaticky, ale môže ju nainštalovať používateľ. Ide o predvolené nastavenie, ak pravidlo nie je určené. PRELOAD (PREDINŠTALOVANÁ): Aplikácia sa nainštaluje automaticky, ale používateľ ju môže odinštalovať. FORCE_INSTALLED (VYNÚTENE NAINŠTALOVANÁ): Aplikácia sa nainštaluje automaticky a používateľ ju nemôže odinštalovať. BLOCKED (BLOKOVANÁ): Aplikácia je blokovaná a nedá sa nainštalovať. Ak bola aplikácia nainštalovaná v rámci predchádzajúceho pravidla, odinštaluje sa.",
-              "type": "string",
-              "enum": [
-                "OPTIONAL"
-                "PRELOAD",
-                "FORCE_INSTALLED",
-                "BLOCKED"
-              ]
-            },
-            "defaultPermissionPolicy": {
-              "description": "Pravidlo na udeľovanie žiadostí o povolenie aplikáciám. PERMISSION_POLICY_UNSPECIFIED (PRAVIDLO POVOLENÍ NIE JE URČENÉ): Pravidlo nie je určené. Ak pre povolenie na akejkoľvek úrovni nie je určené žiadne pravidlo, predvolene sa použije nastavenie PROMPT (VYZVAŤ). PROMPT (VYZVAŤ): Používateľ bude vyzvaný udeliť povolenie. GRANT (UDELIŤ): Povolenie bude udelené automaticky. DENY (ZAMIETNUŤ): Povolenie bude automaticky zamietnuté.",
-              "type": "string",
-              "enum": [
-                "PERMISSION_POLICY_UNSPECIFIED",
-                "PROMPT",
-                "GRANT",
-                "DENY"
-              ]
-            },
-            "managedConfiguration": {
-              "description": "Konfiguračný reťazec JSON špecifický pre aplikáciu. Kľúče sú definované v manifeste aplikácie. Zvyčajne vyzerá ako „{ "kľúč" : hodnota }“.",
-              "type": "string"
-            }
-          }
-        }
-      }
-
-      Ak chcete pripnúť aplikácie do spúšťača, pozrite si pravidlo PinnedLauncherApps.</translation>
 <translation id="5047604665028708335">Povoliť prístup ku stránkam mimo balíkov obsahu</translation>
 <translation id="5052081091120171147">Ak je toto pravidlo povolené, história prehliadania bude importovaná z aktuálneho predvoleného prehliadača. Povolenie tohto pravidla má vplyv aj na dialógové okno importu.
 
@@ -1444,7 +1402,6 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 <translation id="6111936128861357925">Povoliť hru s dinosaurom</translation>
 <translation id="6114416803310251055">zamietnuté</translation>
 <translation id="6133088669883929098">Povoliť všetkým webovým stránkam používať generovanie kľúčov</translation>
-<translation id="6139485614509308022">Ak nastavíte pravidlo OffHours, zadané pravidlá zariadenia budú ignorované (použite predvolené nastavenia týchto pravidiel) počas stanovených časových intervalov. Chrome znova začne používať pravidlá zariadenia, keď sa obdobie pravidla OffHours začne alebo skončí. Používateľ bude upozornený a systém vynúti jeho odhlásenie, keď sa časové obdobie pravidla OffHours skončí a nastavenia pravidiel zariadenia sa zmenia (t. j. keď sa používateľ prihlási pomocou účtu, ktorý nie je povolený).</translation>
 <translation id="6145799962557135888">Umožňuje nastaviť zoznam vzorov webových adries určujúcich webové stránky, ktoré môžu spúšťať kód JavaScript.
 
           Ak toto pravidlo ponecháte nenastavené, použije sa v prípade všetkých webových stránok globálna predvolená hodnota buď z pravidla „DefaultJavaScriptSetting“ (ak je nastavené), alebo z osobnej konfigurácie používateľa.</translation>

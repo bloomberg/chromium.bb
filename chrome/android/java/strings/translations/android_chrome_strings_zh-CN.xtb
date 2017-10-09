@@ -37,6 +37,7 @@
 <translation id="1291207594882862231">清除历史记录、Cookie、网站数据、缓存内容…</translation>
 <translation id="129553762522093515">最近关闭的标签页</translation>
 <translation id="1303671224831497365">未找到任何蓝牙设备</translation>
+<translation id="1320663236730331991">向上滑动即可轻松访问热门网站和文章、各项下载内容，等等</translation>
 <translation id="1326317727527857210">要在您的其他设备上访问您的标签页，请登录 Chrome。</translation>
 <translation id="1332501820983677155">Google Chrome 功能快捷键</translation>
 <translation id="1369915414381695676">网站 <ph name="SITE_NAME" /> 已添加</translation>
@@ -48,7 +49,6 @@
 <translation id="1389236224998445076">已节省的流量：</translation>
 <translation id="1389974829397082527">该文件夹中没有书签</translation>
 <translation id="1397811292916898096">使用 <ph name="PRODUCT_NAME" /> 进行搜索</translation>
-<translation id="1402229579576898974"><ph name="NUMBER_OF_SUGGESTIONS" /> 条 Chrome 建议</translation>
 <translation id="1404122904123200417">嵌入位置：<ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">“不跟踪”</translation>
 <translation id="1407135791313364759">全部打开</translation>
@@ -138,7 +138,6 @@
 <translation id="2268044343513325586">优化</translation>
 <translation id="2283599456633275070">旅游</translation>
 <translation id="2286841657746966508">帐单邮寄地址</translation>
-<translation id="2301209717432756327">已添加到主屏幕。</translation>
 <translation id="2315043854645842844">操作系统不支持选择客户端证书。</translation>
 <translation id="2321958826496381788">拖动该滑块，将文字调整到适合您阅读的大小。点按两次某段落后，显示的文字至少应是这么大。</translation>
 <translation id="2323763861024343754">网站存储数据</translation>
@@ -231,6 +230,7 @@
 <translation id="3259831549858767975">缩小网页上的所有内容</translation>
 <translation id="3269093882174072735">加载图片</translation>
 <translation id="3269956123044984603">要获取您在其他设备上的标签页，请在 Android 帐号设置部分开启“自动同步数据”。</translation>
+<translation id="3274105979672092244">您正在使用 Chrome Home</translation>
 <translation id="3282568296779691940">登录 Chrome</translation>
 <translation id="3295602654194328831">隐藏信息</translation>
 <translation id="3303414029551471755">要开始下载该内容吗？</translation>
@@ -259,7 +259,6 @@
 <translation id="3549657413697417275">搜索您的历史记录</translation>
 <translation id="3552151358455404883">在<ph name="BEGIN_LINK1" />设置<ph name="END_LINK1" />中管理 Chrome 同步和个性化</translation>
 <translation id="3557336313807607643">添加到通讯录</translation>
-<translation id="3583454905526475291">无法启动应用</translation>
 <translation id="3587482841069643663">全部</translation>
 <translation id="3590487821116122040">Chrome 认为不重要的网站（例如未保存任何设置的网站或您不常访问的网站）存储的数据</translation>
 <translation id="3599863153486145794">清除所有登录过的设备上的历史记录。您的 Google 帐号在 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> 上可能有其他形式的浏览记录。</translation>
@@ -341,7 +340,6 @@
 <translation id="4269820728363426813">复制链接地址</translation>
 <translation id="4275663329226226506">媒体</translation>
 <translation id="4278390842282768270">允许</translation>
-<translation id="42981349822642051">展开</translation>
 <translation id="4307992518367153382">基本设置</translation>
 <translation id="4351244548802238354">关闭对话框</translation>
 <translation id="4378154925671717803">电话</translation>
@@ -429,6 +427,7 @@
 <translation id="5164482624172255778">下次访问这个网站时，您希望 Google Chrome 翻译此网站的<ph name="LANGUAGE" />网页吗？</translation>
 <translation id="5168917394043976756">打开抽屉式导航栏</translation>
 <translation id="5184329579814168207">在 Chrome 中打开</translation>
+<translation id="519793908071017925">使用 Chrome Home</translation>
 <translation id="5199929503336119739">工作资料</translation>
 <translation id="5209320130288484488">未找到任何设备</translation>
 <translation id="5210286577605176222">跳转到上一个标签页</translation>
@@ -524,6 +523,7 @@
 <translation id="5942872142862698679">目前使用的搜索引擎是 Google</translation>
 <translation id="5956665950594638604">在新标签页中打开 Chrome 帮助中心</translation>
 <translation id="5958275228015807058">在“下载内容”中查找您的文件和网页</translation>
+<translation id="5958994127112619898">简化网页</translation>
 <translation id="5962718611393537961">点按即可收起</translation>
 <translation id="6000066717592683814">继续使用 Google</translation>
 <translation id="6023914116273780353">个性化</translation>
@@ -595,6 +595,7 @@
 <translation id="6583199322650523874">为当前网页添加书签</translation>
 <translation id="6600954340915313787">已复制到 Chrome</translation>
 <translation id="6612358246767739896">受保护的内容</translation>
+<translation id="6619166911218440149">欢迎使用 Chrome Home</translation>
 <translation id="6627583120233659107">修改文件夹</translation>
 <translation id="6643016212128521049">清除</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" />\u2026以及另外 <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> 个联系人}other{<ph name="CONTACT_PREVIEW" />\u2026以及另外 <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> 个联系人}}</translation>
@@ -705,6 +706,7 @@
 <translation id="7607552448134703340">输入您要寻找的内容</translation>
 <translation id="7612619742409846846">已使用以下帐号登录 Google：</translation>
 <translation id="7619072057915878432">未能成功下载 <ph name="FILE_NAME" />，因为出现了网络故障。</translation>
+<translation id="7620146066550602128">体验一种<ph name="BEGIN_LINK" />更轻松的浏览方式<ph name="END_LINK" /></translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />获取帮助<ph name="END_LINK1" />或<ph name="BEGIN_LINK2" />重新扫描<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">欢迎使用 Chrome</translation>
 <translation id="7638584964844754484">密码不正确</translation>
@@ -797,7 +799,6 @@
 <translation id="8523928698583292556">删除存储的密码</translation>
 <translation id="854522910157234410">打开此网页</translation>
 <translation id="8562452229998620586">已保存的密码将显示在这里。</translation>
-<translation id="856481929701340285">请求切换到桌面版网站</translation>
 <translation id="8569404424186215731">自 <ph name="DATE" />以来</translation>
 <translation id="8571213806525832805">近 4 周</translation>
 <translation id="857509777403223202">我们很快将会为您奉上更多文章，伴您度过美好的夜晚时光！</translation>

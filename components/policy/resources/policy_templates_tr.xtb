@@ -1353,6 +1353,7 @@ politikayı geçersiz kılamaz.
           Bu politikayı ayarlarsanız, kullanıcılar büyük imleci etkinleştirip veya devre dışı bırakıp geçici olarak bu politikayı geçersiz kılabilir. Ancak, kullanıcının seçimi kalıcı değildir ve giriş ekranı yeniden gösterildiğinde veya kullanıcı giriş ekranında bir dakika boşta kalırsa varsayılan değer geri yüklenir.
 
           Bu politika ayarlanmadan bırakılırsa, giriş ekranı ilk kez gösterildiğinde büyük imleç devre dışıdır. Kullanıcılar büyük imleci her zaman etkinleştirebilir veya devre dışı bırakabilir ve giriş ekranındaki imlecin durumu kullanıcılar arasında kalıcıdır.</translation>
+<translation id="5932767795525445337">Bu politika, Android uygulamalarını sabitlemek için de kullanılabilir.</translation>
 <translation id="5936622343001856595">Google Web Araması'ndaki sorguların Güvenli Arama etkinleştirilmiş olarak yapılmasını sağlar ve kullanıcıların bu ayarı değiştirmesini önler.
 
       Bu ayarı etkinleştirirseniz, Google Arama'da Güvenli Arama her zaman etkin olur.
@@ -1405,7 +1406,6 @@ politikayı geçersiz kılamaz.
 <translation id="6111936128861357925">Dinozor Paskalya Yumurtası Oyununa İzin Verme</translation>
 <translation id="6114416803310251055">onaylanmadı</translation>
 <translation id="6133088669883929098">Tüm sitelerin anahtar oluşturma işlevini kullanmasına izin ver</translation>
-<translation id="6139485614509308022">"OffHours" politikası ayarlanırsa, belirtilen cihaz politikaları, tanımlanan zaman aralıkları süresince yoksayılır (bu politikaların varsayılan ayarlarını kullanır). Cihaz politikaları, "OffHours" sürecinin başladığı veya bittiği her etkinlikte Chrome tarafından yeniden uygulanır. "OffHours" süresi bittiğinde ve cihaz politikası ayarları değiştirildiğinde (yani kullanıcı izin verilen hesap dışında bir hesapla giriş yaptığında) kullanıcı bilgilendirilir ve oturumu kapatmaya zorlanır.</translation>
 <translation id="6145799962557135888">JavaScript'i çalıştırmasına izin verilen sitelerin belirtildiği bir URL kalıpları listesi ayarlamanıza olanak tanır.
 
           Bu politika ayarlanmadan bırakılırsa, 'DefaultJavaScriptSetting' politikası ayarlandıysa buradaki değer, aksi takdirde kullanıcının kişisel yapılandırması tüm siteler için genel varsayılan değer olarak kullanılır.</translation>

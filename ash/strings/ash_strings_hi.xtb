@@ -104,7 +104,6 @@
 <translation id="3445925074670675829">USB-C डिवाइस</translation>
 <translation id="3473479545200714844">स्क्रीन आवर्द्धक</translation>
 <translation id="3510164367642747937">माउस कर्सर को हाइलाइट करें</translation>
-<translation id="3547954654003013442">प्रॉक्सी सेटिंग</translation>
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />" में पुन: बदलें (फिर से आरंभ करने की आवश्यकता है)</translation>
 <translation id="3582792037806681688">इस सत्र के उपयोगकर्ता के लिए एकाधिक प्रवेश को अक्षम कर दिया गया है</translation>
 <translation id="3595596368722241419">बैटरी पूर्ण</translation>
@@ -195,6 +194,7 @@
 <translation id="615957422585914272">ऑन-स्क्रीन कीबोर्ड दिखाएं</translation>
 <translation id="6165508094623778733">अधिक जानें</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: सक्रिय हो रहा है...</translation>
+<translation id="6284232397434400372">रिज़ॉल्यूशन बदला गया</translation>
 <translation id="6297287540776456956">कोई क्षेत्र चुनने के लिए स्टाइलस का उपयोग करें</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> को <ph name="ROTATION" /> पर घुमाया गया</translation>
 <translation id="632744581670418035">कीबोर्ड ओवरले</translation>
@@ -232,10 +232,10 @@
 <translation id="7066646422045619941">यह नेटवर्क आपके व्यवस्थापक द्वारा अक्षम किया गया है.</translation>
 <translation id="7067196344162293536">स्वत: घुमाएं</translation>
 <translation id="7098389117866926363">USB-C डिवाइस (पीछे बायां पोर्ट)</translation>
-<translation id="7135556860107312402">निम्न से आने वाली नोटिफ़िकेशन की अनुमति दें:</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> में पुराने रिज़ॉल्यूशन में वापस लौट रहा है</translation>
 <translation id="7256634071279256947">पीछे वाला माइक्रोफ़ोन</translation>
+<translation id="726276584504105859">दो स्क्रीन का इस्तेमाल करने के लिए यहां खींचें और छोडें</translation>
 <translation id="7348093485538360975">ऑन-स्‍क्रीन कीबोर्ड</translation>
 <translation id="735745346212279324">VPN डिसकनेक्ट है</translation>
 <translation id="7377169924702866686">Caps Lock चालू है.</translation>
@@ -248,6 +248,7 @@
 <translation id="7562368315689366235">इमोजी पैलेट</translation>
 <translation id="7569509451529460200">ब्रेल और ChromeVox सक्षम हैं</translation>
 <translation id="7593891976182323525">Search या Shift</translation>
+<translation id="7645176681409127223"><ph name="USER_NAME" /> (मालिक)</translation>
 <translation id="7647488630410863958">अपने नोटिफ़िकेशन देखने के लिए डिवाइस अनलॉक करें</translation>
 <translation id="7649070708921625228">सहायता</translation>
 <translation id="7658239707568436148">अभी नहीं</translation>

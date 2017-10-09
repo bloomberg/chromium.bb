@@ -5,7 +5,6 @@
 <translation id="1127811143501539442">{DAYS,plural, =1{1 日前}other{# 日前}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{1 分前}other{# 分前}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1分}other{#分}}</translation>
-<translation id="1190609913194133056">通知センター</translation>
 <translation id="1243314992276662751">アップロード</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">おすすめのアプリ</translation>
@@ -31,6 +30,7 @@
 <translation id="2190355936436201913">(なし)</translation>
 <translation id="219905428774326614">ランチャー、すべてのアプリ</translation>
 <translation id="2289052229480071835">画面に表示されるタップ ターゲットをタップします。</translation>
+<translation id="2295140143284145483">アンケート</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> TB/秒</translation>
 <translation id="24452542372838207">通知を展開</translation>
 <translation id="2497284189126895209">すべてのファイル</translation>
@@ -90,6 +90,7 @@
 <translation id="5943826764092288734">{HOURS,plural, =1{1 時間}other{# 時間}}</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="598033046487663418">すべてのアプリ</translation>
+<translation id="6012623610530968780"><ph name="SELECTED_PAGE" /> / <ph name="TOTAL_PAGE_NUM" /> ページ</translation>
 <translation id="6022924867608035986">検索ボックスのテキストを消去</translation>
 <translation id="6040143037577758943">閉じる</translation>
 <translation id="6119846243427417423">アクティブにする</translation>
@@ -103,6 +104,7 @@
 <translation id="6394627529324717982">カンマ</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 秒前}other{# 秒前}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 秒前}other{# 秒前}}</translation>
+<translation id="6567071839949112727">上位要素をクリック</translation>
 <translation id="6612467943526193239">キャリブレーションを終了するには Esc キーを押します。</translation>
 <translation id="6620110761915583480">ファイルを保存</translation>
 <translation id="6699343763173986273">メディアの次のトラック</translation>
@@ -120,6 +122,7 @@
 <translation id="7130207228079676353">これですか？</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{残り 1 分}other{残り # 分}}</translation>
+<translation id="7319740667687257810">ランチャー、一部のみ表示</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 分前}other{# 分前}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{残り 1 分}other{残り # 分}}</translation>

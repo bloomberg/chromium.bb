@@ -104,7 +104,6 @@
 <translation id="3445925074670675829">USB-C устройство</translation>
 <translation id="3473479545200714844">Екранна лупа</translation>
 <translation id="3510164367642747937">Открояване на курсора на мишката</translation>
-<translation id="3547954654003013442">Настройки за прокси сървър</translation>
 <translation id="3573179567135747900">Връщане към „<ph name="FROM_LOCALE" />“ (изисква рестартиране)</translation>
 <translation id="3582792037806681688">Централизираният вход е забранен за потребител в тази сесия</translation>
 <translation id="3595596368722241419">Батерията е заредена</translation>
@@ -195,6 +194,7 @@
 <translation id="615957422585914272">Показване на екранната клавиатура</translation>
 <translation id="6165508094623778733">Научете повече</translation>
 <translation id="6267036997247669271">„<ph name="NAME" />“: Активира се...</translation>
+<translation id="6284232397434400372">Разделителната способност е променена</translation>
 <translation id="6297287540776456956">Използвайте писалката, за да изберете област</translation>
 <translation id="6310121235600822547">Завъртяхте „<ph name="DISPLAY_NAME" />“ на <ph name="ROTATION" /></translation>
 <translation id="632744581670418035">Наслагване върху клавиатурата</translation>
@@ -232,10 +232,10 @@
 <translation id="7066646422045619941">Тази мрежа е деактивирана от администратора ви.</translation>
 <translation id="7067196344162293536">Автоматично завъртане</translation>
 <translation id="7098389117866926363">Устройство с USB-C (левият порт на гърба)</translation>
-<translation id="7135556860107312402">Разрешаване на известията от следните неща:</translation>
 <translation id="7165278925115064263">Alt + Shift + K</translation>
 <translation id="7168224885072002358">Старата разделителна способност ще се възстанови след <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Заден микрофон</translation>
+<translation id="726276584504105859">Преместете тук с плъзгане, за да използвате режим за разделен екран</translation>
 <translation id="7348093485538360975">Екранна клавиатура</translation>
 <translation id="735745346212279324">Връзката с виртуалната частна мрежа (VPN) е прекъсната</translation>
 <translation id="7377169924702866686">„Caps Lock“ е включен.</translation>
@@ -248,6 +248,7 @@
 <translation id="7562368315689366235">Панел с емотикони</translation>
 <translation id="7569509451529460200">Активирахте функцията за брайлово писмо и ChromeVox</translation>
 <translation id="7593891976182323525">„търсене“ или „Shift“</translation>
+<translation id="7645176681409127223"><ph name="USER_NAME" /> (собственик)</translation>
 <translation id="7647488630410863958">Отключете устройството, за да прегледате известията си</translation>
 <translation id="7649070708921625228">Помощ</translation>
 <translation id="7658239707568436148">Отказ</translation>

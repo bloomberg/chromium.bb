@@ -104,7 +104,6 @@
 <translation id="3445925074670675829">‏جهاز USB-C</translation>
 <translation id="3473479545200714844">مكبّر الشاشة</translation>
 <translation id="3510164367642747937">تمييز مؤشر الماوس</translation>
-<translation id="3547954654003013442">إعدادات الخادم الوكيل</translation>
 <translation id="3573179567135747900">التغيير مرة أخرى إلى "<ph name="FROM_LOCALE" />" (يتطلب إعادة التشغيل)</translation>
 <translation id="3582792037806681688">تم منع الدخول المتعدد لمستخدم في هذه الجلسة</translation>
 <translation id="3595596368722241419">البطارية ممتلئة</translation>
@@ -233,7 +232,6 @@
 <translation id="7066646422045619941">تم تعطيل هذه الشبكة من قِبل مشرفك.</translation>
 <translation id="7067196344162293536">تدوير تلقائي</translation>
 <translation id="7098389117866926363">‏جهاز USB-C (المنفذ الأيسر في الخلف)</translation>
-<translation id="7135556860107312402">السماح بالإشعارات من الجهات التالية:</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">سيتم الرجوع إلى درجة الدقة القديمة في غضون <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">الميكروفون الخلفي</translation>
@@ -250,6 +248,7 @@
 <translation id="7562368315689366235">لوحة ألوان الرموز التعبيرية</translation>
 <translation id="7569509451529460200">‏تم تمكين Braille وChromeVox</translation>
 <translation id="7593891976182323525">‏مفتاح البحث أو Shift</translation>
+<translation id="7645176681409127223"><ph name="USER_NAME" /> (المالك)</translation>
 <translation id="7647488630410863958">إلغاء قفل الجهاز لعرض الإشعارات</translation>
 <translation id="7649070708921625228">مساعدة</translation>
 <translation id="7658239707568436148">إلغاء</translation>

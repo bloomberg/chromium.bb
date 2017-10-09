@@ -79,6 +79,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="2381405137052800939">Setări de bază</translation>
 <translation id="2386793615875593361">1 selectată</translation>
 <translation id="2435457462613246316">Afișați parola</translation>
+<translation id="2529021024822217800">Deschide-le pe toate</translation>
 <translation id="2572712655377361602">O politică a dispozitivului a blocat accesul la fotografii</translation>
 <translation id="2584132361465095047">Adaugă un cont…</translation>
 <translation id="2593774076813182497">Pagina nu se poate printa.</translation>
@@ -128,7 +129,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="3324193307694657476">Adresă 2</translation>
 <translation id="3329904751041170572">Nu s-a putut realiza conexiunea la server.</translation>
 <translation id="3335947283844343239">Redeschide fila închisă</translation>
-<translation id="3387752218061326363">Se afișează istoricul de pe dispozitivele pe care te-ai conectat. <ph name="BEGIN_LINK" />Află mai multe<ph name="END_LINK" />.</translation>
 <translation id="3393920035788932672">Pop-upuri permise</translation>
 <translation id="3414292259312108062">Chrome o va stoca în <ph name="BEGIN_LINK" />parolele Google salvate<ph name="END_LINK" /> și o va completa automat ca să nu mai fie nevoie să o ții minte.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min.</translation>
@@ -312,6 +312,7 @@ Datele au fost criptate cu expresia de acces pentru sincronizare la <ph name="TI
 <translation id="6797885426782475225">Căutare vocală</translation>
 <translation id="6807889908376551050">Afișați toate...</translation>
 <translation id="681368974849482173">Element creat</translation>
+<translation id="6871663519944855400">Deschide în modul incognito</translation>
 <translation id="6896758677409633944">Copiază</translation>
 <translation id="6903907808598579934">Activează sincronizarea</translation>
 <translation id="6945221475159498467">Selectează</translation>
@@ -321,7 +322,6 @@ Datele au fost criptate cu expresia de acces pentru sincronizare la <ph name="TI
 <translation id="7031882061095297553">Sincronizează cu</translation>
 <translation id="7062545763355031412">Acceptă și comută conturile</translation>
 <translation id="7108338896283013870">Ascunde</translation>
-<translation id="7131892264600713844">Se afișează istoricul de pe acest dispozitiv. <ph name="BEGIN_LINK" />Află mai multe<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">Numele complet</translation>
 <translation id="7136892417564438900">Camera foto nu este disponibilă</translation>
 <translation id="7159472599653637159">Site mobil</translation>

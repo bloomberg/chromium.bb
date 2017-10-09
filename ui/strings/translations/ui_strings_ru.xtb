@@ -5,7 +5,6 @@
 <translation id="1127811143501539442">{DAYS,plural, =1{1 день назад}one{# день назад}few{# дня назад}many{# дней назад}other{# дня назад}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{минуту назад}one{# минуту назад}few{# минуты назад}many{# минут назад}other{# минуты назад}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 мин.}one{# мин.}few{# мин.}many{# мин.}other{# мин.}}</translation>
-<translation id="1190609913194133056">Центр оповещений</translation>
 <translation id="1243314992276662751">Загрузить</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">РЕКОМЕНДУЕМЫЕ ПРИЛОЖЕНИЯ</translation>
@@ -31,6 +30,7 @@
 <translation id="2190355936436201913">(пусто)</translation>
 <translation id="219905428774326614">Панель запуска, все приложения</translation>
 <translation id="2289052229480071835">Коснитесь интерактивных элементов на экране.</translation>
+<translation id="2295140143284145483">Опрос</translation>
 <translation id="2297836609126180313"><ph name="QUANTITY" /> ТБ/с</translation>
 <translation id="24452542372838207">Развернуть уведомление</translation>
 <translation id="2497284189126895209">Все файлы</translation>
@@ -90,6 +90,7 @@
 <translation id="5943826764092288734">{HOURS,plural, =1{1 час}one{# час}few{# часа}many{# часов}other{# часа}}</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="598033046487663418">Все приложения</translation>
+<translation id="6012623610530968780">Страница <ph name="SELECTED_PAGE" /> из <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Удалить текст из окна поиска</translation>
 <translation id="6040143037577758943">Закрыть</translation>
 <translation id="6119846243427417423">активировать</translation>
@@ -103,6 +104,7 @@
 <translation id="6394627529324717982">Запятая</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 сек. назад}one{# сек. назад}few{# сек. назад}many{# сек. назад}other{# сек. назад}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{только что}one{# секунду назад}few{# секунды назад}many{# секунд назад}other{# секунды назад}}</translation>
+<translation id="6567071839949112727">нажмите на родительский элемент</translation>
 <translation id="6612467943526193239">Чтобы выйти из режима калибровки, нажмите ESC</translation>
 <translation id="6620110761915583480">Сохранить файл</translation>
 <translation id="6699343763173986273">Следующий трек</translation>
@@ -120,6 +122,7 @@
 <translation id="7130207228079676353">САМЫЕ ПОДХОДЯЩИЕ</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{Осталась 1 мин.}one{Осталась # мин.}few{Осталось # мин.}many{Осталось # мин.}other{Осталось # мин.}}</translation>
+<translation id="7319740667687257810">Панель запуска, частичный список приложений</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 мин. назад}one{# мин. назад}few{# мин. назад}many{# мин. назад}other{# мин. назад}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Осталась 1 минута}one{Осталась # минута}few{Осталось # минуты}many{Осталось # минут}other{Осталось # минуты}}</translation>

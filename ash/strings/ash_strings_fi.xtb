@@ -96,7 +96,7 @@
 <translation id="315116470104423982">Mobiilitiedonsiirto</translation>
 <translation id="3236488194889173876">Mobiiliverkkoja ei ole käytettävissä</translation>
 <translation id="3294437725009624529">Vieras</translation>
-<translation id="332587331255250389">Vaihda paristo</translation>
+<translation id="332587331255250389">Vaihda paristo.</translation>
 <translation id="3364721542077212959">Näyttökynätyökalut</translation>
 <translation id="3368922792935385530">Yhdistetty</translation>
 <translation id="3371140690572404006">C-tyypin USB-laite (oikean sivun etummainen portti)</translation>
@@ -104,7 +104,6 @@
 <translation id="3445925074670675829">C-tyypin USB-laite</translation>
 <translation id="3473479545200714844">Ruudun suurentaminen</translation>
 <translation id="3510164367642747937">Korosta hiiren osoitin</translation>
-<translation id="3547954654003013442">Välityspalvelimen asetukset</translation>
 <translation id="3573179567135747900">Vaihda takaisin kieleksi <ph name="FROM_LOCALE" /> (vaatii uudelleenkäynnistyksen)</translation>
 <translation id="3582792037806681688">Useisiin tileihin kirjautuminen on kielletty yhdeltä tämän istunnon käyttäjistä</translation>
 <translation id="3595596368722241419">Akku täynnä</translation>
@@ -195,6 +194,7 @@
 <translation id="615957422585914272">Näytä ruutunäppäimistö</translation>
 <translation id="6165508094623778733">Lisätietoja</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: aktivoidaan…</translation>
+<translation id="6284232397434400372">Resoluutio vaihdettu</translation>
 <translation id="6297287540776456956">Valitse alue näyttökynällä.</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> käännettiin asentoon <ph name="ROTATION" /></translation>
 <translation id="632744581670418035">Näppäimistön peitto</translation>
@@ -232,10 +232,10 @@ Käytä tätä ominaisuutta vain luotettavien tilien kanssa.</translation>
 <translation id="7066646422045619941">Järjestelmänvalvoja on poistanut tämän verkon käytöstä.</translation>
 <translation id="7067196344162293536">Automaattinen kierto</translation>
 <translation id="7098389117866926363">C-tyypin USB-laite (vasemmanpuoleinen takaportti)</translation>
-<translation id="7135556860107312402">Salli ilmoitukset seuraavista:</translation>
 <translation id="7165278925115064263">Alt+Vaihto+K</translation>
 <translation id="7168224885072002358">Palautetaan vanha tarkkuus, aikaa palautukseen <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Takamikrofoni</translation>
+<translation id="726276584504105859">Jaa näyttö vetämällä tähän.</translation>
 <translation id="7348093485538360975">Virtuaalinäppäimistö</translation>
 <translation id="735745346212279324">VPN-yhteys katkaistu</translation>
 <translation id="7377169924702866686">Caps Lock on päällä.</translation>
@@ -248,6 +248,7 @@ Käytä tätä ominaisuutta vain luotettavien tilien kanssa.</translation>
 <translation id="7562368315689366235">Emojipaletti</translation>
 <translation id="7569509451529460200">Pistekirjoitus ja ChromeVox käytössä</translation>
 <translation id="7593891976182323525">Haku tai Shift</translation>
+<translation id="7645176681409127223"><ph name="USER_NAME" /> (omistaja)</translation>
 <translation id="7647488630410863958">Katso ilmoitukset avaamalla laitteesi lukitus.</translation>
 <translation id="7649070708921625228">Ohje</translation>
 <translation id="7658239707568436148">Peruuta</translation>

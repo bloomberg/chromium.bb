@@ -65,7 +65,7 @@
 <translation id="209018056901015185">ഡെസ്‌ക്‌ടോപ്പ് സൈറ്റ് അഭ്യർത്ഥിക്കുക</translation>
 <translation id="2103075008456228677">history.google.com തുറക്കുക</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> ഇനങ്ങൾ നീക്കി</translation>
-<translation id="213900355088104901">സ്വകാര്യമായി ബ്രൗസുചെയ്യാൻ, ഒരു അദൃശ്യ ടാബ് തുറക്കുക</translation>
+<translation id="213900355088104901">സ്വകാര്യമായി ബ്രൗസ് ചെയ്യാൻ, ഒരു അദൃശ്യ ടാബ് തുറക്കുക</translation>
 <translation id="2149973817440762519">ബുക്മാര്‍ക്ക് എഡിറ്റ് ചെയ്യുക</translation>
 <translation id="2154710561487035718">URL പകര്‍ത്തുക</translation>
 <translation id="2230173723195178503">വെബ്‌പേജ് ലോഡുചെയ്‌തു</translation>
@@ -79,6 +79,7 @@
 <translation id="2381405137052800939">അടിസ്ഥാനങ്ങൾ</translation>
 <translation id="2386793615875593361">1 തിരഞ്ഞെടുത്തു</translation>
 <translation id="2435457462613246316">പാസ്‌വേഡ് കാണിക്കുക</translation>
+<translation id="2529021024822217800">എല്ലാം തുറക്കുക</translation>
 <translation id="2572712655377361602">ഒരു ഉപകരണ നയം, നിങ്ങളുടെ ഫോട്ടോകളിലേക്കുള്ള ആക്‌സസ്സ് ബ്ലോക്കുചെയ്‌തിരിക്കുന്നു</translation>
 <translation id="2584132361465095047">അക്കൗണ്ട് ചേർക്കുക...</translation>
 <translation id="2593774076813182497">ഈ പേജ് പ്രിന്റുചെയ്യാനാവില്ല.</translation>
@@ -128,7 +129,6 @@
 <translation id="3324193307694657476">വിലാസം 2</translation>
 <translation id="3329904751041170572">സെര്‍വറിലേക്ക് കണക്റ്റുചെയ്യാൻ കഴിഞ്ഞില്ല.</translation>
 <translation id="3335947283844343239">അടച്ച ടാബ് വീണ്ടും തുറക്കുക</translation>
-<translation id="3387752218061326363">നിങ്ങളുടെ സൈൻ ഇൻ ചെയ്‌തിരിക്കുന്ന ഉപകരണങ്ങളിൽ നിന്നുള്ള ചരിത്രം കാണിക്കുന്നു. <ph name="BEGIN_LINK" />കൂടുതലറിയുക<ph name="END_LINK" />.</translation>
 <translation id="3393920035788932672">പോപ്പ്-അപ്പുകൾ അനുവദിച്ചു</translation>
 <translation id="3414292259312108062">ഇത് നിങ്ങളുടെ <ph name="BEGIN_LINK" />Google സംരക്ഷിത പാസ്‌വേഡുകളിൽ<ph name="END_LINK" /> Chrome സംരക്ഷിക്കുകയും നിങ്ങൾക്കായി ഓട്ടോഫിൽ ചെയ്യുകയും ചെയ്യുന്നതിനാൽ ഓർക്കേണ്ടതില്ല.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> മി.</translation>
@@ -312,6 +312,7 @@
 <translation id="6797885426782475225">ശബ്ദ തിരയൽ</translation>
 <translation id="6807889908376551050">എല്ലാം കാണിക്കുക...</translation>
 <translation id="681368974849482173">ഇനം സൃഷ്‌ടിച്ചു</translation>
+<translation id="6871663519944855400">ആൾമാറാട്ട മോഡിൽ തുറക്കുക</translation>
 <translation id="6896758677409633944">പകര്‍ത്തുക</translation>
 <translation id="6903907808598579934">സമന്വയിപ്പിക്കൽ ഓണാക്കുക</translation>
 <translation id="6945221475159498467">തിരഞ്ഞെടുക്കുക</translation>
@@ -321,7 +322,6 @@
 <translation id="7031882061095297553">ഇതിലേക്ക് സമന്വയിപ്പിക്കുക</translation>
 <translation id="7062545763355031412">അംഗീകരിച്ചശേഷം, അക്കൗണ്ടുകൾ മാറുക</translation>
 <translation id="7108338896283013870">മറയ്ക്കുക</translation>
-<translation id="7131892264600713844">ഈ ഉപകരണത്തിൽ നിന്നുള്ള ചരിത്രം കാണിക്കുന്നു. <ph name="BEGIN_LINK" />കൂടുതലറിയുക.<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">പൂർണ്ണമായ പേര്</translation>
 <translation id="7136892417564438900">ക്യാമറ ലഭ്യമല്ല</translation>
 <translation id="7159472599653637159">മൊബൈൽ സൈറ്റ് അഭ്യർത്ഥിക്കുക</translation>
@@ -418,7 +418,7 @@
 <translation id="9100610230175265781">പാസ്‌ഫ്രെയ്‌സ് ആവശ്യമാണ്</translation>
 <translation id="9148126808321036104">വീണ്ടും പ്രവേശിക്കുക</translation>
 <translation id="914898748153555155">Chrome ക്രമീകരണത്തിൽ ഏത് സമയത്തും നിങ്ങൾക്ക് ഈ മുൻഗണന മാറ്റാവുന്നതാണ്.</translation>
-<translation id="91549621916703028">നിങ്ങളുടെ എല്ലാ ‌ടാസ്‌ക്കുകൾക്കും വേണ്ടി ഒന്നിലധികം ടാബുകൾ സൃഷ്‌ടിക്കുക</translation>
+<translation id="91549621916703028">നിങ്ങളുടെ എല്ലാ ടാസ്‌ക്കുകൾക്കും ഒന്നിലധികം ടാബുകൾ സൃഷ്ടിക്കുക</translation>
 <translation id="9157836665414082580">ഡയലോഗുകൾ നിയന്ത്രിക്കുക</translation>
 <translation id="9188680907066685419">മാനേജുചെയ്‌ത അക്കൗണ്ടിൽ നിന്ന് സൈൻ ഔട്ട് ചെയ്യുക</translation>
 <translation id="9203116392574189331">ഹാൻഡ്ഓഫ്</translation>

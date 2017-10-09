@@ -74,6 +74,7 @@ Lisateavet privaatsuse kohta vaadake Google'i privaatsuseeskirjadest (http://goo
 <translation id="2509394361235492552">Ühendatud hostiga <ph name="HOSTNAME" /></translation>
 <translation id="2512228156274966424">MÄRKUS: kõigi klaviatuuri otseteede saadavuse tagamiseks saate rakenduse Chrome Remote Desktop seadistada valikule „Ava aknana”.</translation>
 <translation id="2540992418118313681">Kas soovite jagada seda arvutit teise kasutajaga, nii et ta saab seda kasutada ja juhtida?</translation>
+<translation id="2579271889603567289">Host jooksis kokku või selle käivitamine ebaõnnestus.</translation>
 <translation id="2599300881200251572">See teenus lubab sissetulevad ühendused Chrome Remote Desktopi klientidelt.</translation>
 <translation id="2647232381348739934">Chromootimise teenus</translation>
 <translation id="2676780859508944670">Töötab …</translation>
@@ -174,6 +175,7 @@ Lauaarvuti</translation>
 <translation id="4736223761657662401">Ühenduse ajalugu</translation>
 <translation id="4741792197137897469">Autentimine ebaõnnestus. Logige uuesti Chrome'i sisse.</translation>
 <translation id="477305884757156764">Rakendus on liiga aeglane.</translation>
+<translation id="4784508858340177375">X-server jooksis kokku või selle käivitamine ebaõnnestus.</translation>
 <translation id="4795786176190567663">Teil puudub luba selle toimingu tegemiseks.</translation>
 <translation id="4798680868612952294">Hiirevalikud</translation>
 <translation id="4804818685124855865">Katkesta ühendus</translation>
@@ -248,6 +250,7 @@ Lauaarvuti</translation>
 <translation id="6572345186230665992">Macile (OS X Mavericks 10.9 ja uuemad versioonid)</translation>
 <translation id="6583902294974160967">Tugi</translation>
 <translation id="6612717000975622067">Saada klahvikombinatsioon Ctrl + Alt + Del</translation>
+<translation id="6654753848497929428">Jaga</translation>
 <translation id="6668065415969892472">Teie PIN-kood on värskendatud.</translation>
 <translation id="6681800064886881394">Autoriõigus 2013 Google Inc. Kõik õigused kaitstud.</translation>
 <translation id="6705482892455291412">Kui ta sisestab koodi, palutakse teil ühendus vastu võtta ja jagamisseanssi alustada.</translation>

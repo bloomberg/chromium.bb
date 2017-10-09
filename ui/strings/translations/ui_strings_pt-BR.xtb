@@ -5,7 +5,6 @@
 <translation id="1127811143501539442">{DAYS,plural, =1{Um dia atrás}one{# dias atrás}other{# dias atrás}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{1 minuto atrás}one{# minuto atrás}other{# minutos atrás}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 min}one{# min}other{# min}}</translation>
-<translation id="1190609913194133056">Central de Notificações</translation>
 <translation id="1243314992276662751">Fazer upload</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">APPS RECOMENDADOS</translation>
@@ -105,7 +104,7 @@
 <translation id="6394627529324717982">Vírgula</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{Um segundo atrás}one{# segundos atrás}other{# segundos atrás}}</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 segundo atrás}one{# segundo atrás}other{# segundos atrás}}</translation>
-<translation id="6567071839949112727">clique em ancestral</translation>
+<translation id="6567071839949112727">clicar no predecessor</translation>
 <translation id="6612467943526193239">Para sair da calibração pressione Esc.</translation>
 <translation id="6620110761915583480">Salvar arquivo</translation>
 <translation id="6699343763173986273">Próxima faixa da mídia</translation>
@@ -123,7 +122,7 @@
 <translation id="7130207228079676353">MUITO PROVAVELMENTE</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{Um minuto restante}one{# minutos restantes}other{# minutos restantes}}</translation>
-<translation id="7319740667687257810">Tela de início, visualização parcial</translation>
+<translation id="7319740667687257810">Iniciador, visualização parcial</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{Um minuto atrás}one{# minutos atrás}other{# minutos atrás}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Um minuto restante}one{# minutos restantes}other{# minutos restantes}}</translation>

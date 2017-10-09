@@ -79,6 +79,7 @@ Einige Websites reagieren möglicherweise auf die Anfrage, indem sie Anzeigen ei
 <translation id="2381405137052800939">Grundeinstellungen</translation>
 <translation id="2386793615875593361">1 ausgewählt</translation>
 <translation id="2435457462613246316">Passwort anzeigen</translation>
+<translation id="2529021024822217800">Alle öffnen</translation>
 <translation id="2572712655377361602">Eine Geräterichtlinie hat den Zugriff auf Ihre Fotos blockiert</translation>
 <translation id="2584132361465095047">Konto hinzufügen...</translation>
 <translation id="2593774076813182497">Drucken der Seite nicht möglich</translation>
@@ -128,7 +129,6 @@ Einige Websites reagieren möglicherweise auf die Anfrage, indem sie Anzeigen ei
 <translation id="3324193307694657476">Adresse 2</translation>
 <translation id="3329904751041170572">Verbindung zum Server konnte nicht hergestellt werden.</translation>
 <translation id="3335947283844343239">Geschlossenen Tab wieder öffnen</translation>
-<translation id="3387752218061326363">Der Verlauf für alle Geräte, auf denen Sie angemeldet sind, wird angezeigt. <ph name="BEGIN_LINK" />Weitere Informationen.<ph name="END_LINK" /></translation>
 <translation id="3393920035788932672">Pop-ups erlaubt</translation>
 <translation id="3414292259312108062">Chrome speichert dieses Passwort in Ihren <ph name="BEGIN_LINK" />in Google gespeicherten Passwörtern<ph name="END_LINK" /> und fügt es automatisch für Sie ein. Sie müssen es sich also nicht merken.</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> Min.</translation>
@@ -312,6 +312,7 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="6797885426782475225">Sprachsuche</translation>
 <translation id="6807889908376551050">Alle anzeigen...</translation>
 <translation id="681368974849482173">Element erstellt</translation>
+<translation id="6871663519944855400">Im Inkognitomodus öffnen</translation>
 <translation id="6896758677409633944">Kopieren</translation>
 <translation id="6903907808598579934">Synchronisierung aktivieren</translation>
 <translation id="6945221475159498467">Auswählen</translation>
@@ -321,7 +322,6 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="7031882061095297553">Synchronisieren mit</translation>
 <translation id="7062545763355031412">Akzeptieren und Konto wechseln</translation>
 <translation id="7108338896283013870">Ausblenden</translation>
-<translation id="7131892264600713844">Der Verlauf für dieses Gerät wird angezeigt. <ph name="BEGIN_LINK" />Weitere Informationen.<ph name="END_LINK" /></translation>
 <translation id="7133798577887235672">Voller Name</translation>
 <translation id="7136892417564438900">Kamera ist nicht verfügbar</translation>
 <translation id="7159472599653637159">Mobile Version anfordern</translation>
