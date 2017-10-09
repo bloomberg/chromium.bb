@@ -31,11 +31,11 @@ load_library_perf_tests,,
 loading.desktop,"kouhei@chormium.org, ksakamoto@chromium.org",
 loading.mobile,"kouhei@chromium.org, ksakamoto@chromium.org",
 media.android.tough_video_cases,"crouleau@chromium.org, videostack-eng@google.com",Internals>Media
-media.android.tough_video_cases_tbmv2,"johnchen@chromium.org, crouleau@chromium.org",Internals>Media
+media.desktop,"johnchen@chromium.org, crouleau@chromium.org",Internals>Media
 media.media_cns_cases,"crouleau@chromium.org, videostack-eng@google.com",Internals>Media
+media.mobile,"johnchen@chromium.org, crouleau@chromium.org",Internals>Media
 media.mse_cases,"crouleau@chromium.org, videostack-eng@google.com",Internals>Media>Source
 media.tough_video_cases,crouleau@chromium.org,Internals>Media
-media.tough_video_cases_tbmv2,"johnchen@chromium.org, crouleau@chromium.org",Internals>Media
 media_perftests,crouleau@chromium.org,
 memory.desktop,erikchen@chromium.org,
 memory.long_running_idle_gmail_background_tbmv2,ulan@chromium.org,
