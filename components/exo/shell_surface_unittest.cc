@@ -26,6 +26,7 @@
 #include "components/exo/surface.h"
 #include "components/exo/test/exo_test_base.h"
 #include "components/exo/test/exo_test_helper.h"
+#include "components/exo/wm_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -89,7 +90,7 @@ class ShellSurfaceBoundsModeTest
     if (IsClientBoundsMode()) {
       return Display().CreateRemoteShellSurface(
           surface, ash::kShellWindowId_DefaultContainer,
-          true /* scale_by_default_scale_factor */);
+          WMHelper::GetInstance()->GetDefaultDeviceScaleFactor());
     } else {
       return Display().CreateShellSurface(surface);
     }
