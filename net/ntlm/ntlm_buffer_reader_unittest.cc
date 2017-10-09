@@ -322,7 +322,7 @@ TEST(NtlmBufferReaderTest, ReadTargetInfoEolOnly) {
 
   NtlmBufferReader reader(buf, arraysize(buf));
 
-  std::vector<ntlm::AvPair> av_pairs;
+  std::vector<AvPair> av_pairs;
   ASSERT_TRUE(reader.ReadTargetInfo(arraysize(buf), &av_pairs));
   ASSERT_TRUE(reader.IsEndOfBuffer());
   ASSERT_TRUE(av_pairs.empty());
@@ -331,7 +331,7 @@ TEST(NtlmBufferReaderTest, ReadTargetInfoEolOnly) {
 TEST(NtlmBufferReaderTest, ReadTargetInfoEmpty) {
   NtlmBufferReader reader;
 
-  std::vector<ntlm::AvPair> av_pairs;
+  std::vector<AvPair> av_pairs;
   ASSERT_TRUE(reader.ReadTargetInfo(0, &av_pairs));
   ASSERT_TRUE(reader.IsEndOfBuffer());
   ASSERT_TRUE(av_pairs.empty());
@@ -345,13 +345,13 @@ TEST(NtlmBufferReaderTest, ReadTargetInfoTimestampAndEolOnly) {
 
   NtlmBufferReader reader(buf, arraysize(buf));
 
-  std::vector<ntlm::AvPair> av_pairs;
+  std::vector<AvPair> av_pairs;
   ASSERT_TRUE(reader.ReadTargetInfo(arraysize(buf), &av_pairs));
   ASSERT_TRUE(reader.IsEndOfBuffer());
   ASSERT_EQ(1u, av_pairs.size());
 
   // Verify the timestamp av pair.
-  ASSERT_EQ(ntlm::TargetInfoAvId::kTimestamp, av_pairs[0].avid);
+  ASSERT_EQ(TargetInfoAvId::kTimestamp, av_pairs[0].avid);
   ASSERT_EQ(sizeof(uint64_t), av_pairs[0].avlen);
   ASSERT_EQ(sizeof(uint64_t), av_pairs[0].buffer.size());
   ASSERT_EQ(expected_timestamp, av_pairs[0].timestamp);
@@ -363,15 +363,15 @@ TEST(NtlmBufferReaderTest, ReadTargetInfoFlagsAndEolOnly) {
 
   NtlmBufferReader reader(buf, arraysize(buf));
 
-  std::vector<ntlm::AvPair> av_pairs;
+  std::vector<AvPair> av_pairs;
   ASSERT_TRUE(reader.ReadTargetInfo(arraysize(buf), &av_pairs));
   ASSERT_TRUE(reader.IsEndOfBuffer());
   ASSERT_EQ(1u, av_pairs.size());
 
   // Verify the flags av pair.
-  ASSERT_EQ(ntlm::TargetInfoAvId::kFlags, av_pairs[0].avid);
-  ASSERT_EQ(sizeof(ntlm::TargetInfoAvFlags), av_pairs[0].avlen);
-  ASSERT_EQ(ntlm::TargetInfoAvFlags::kMicPresent, av_pairs[0].flags);
+  ASSERT_EQ(TargetInfoAvId::kFlags, av_pairs[0].avid);
+  ASSERT_EQ(sizeof(TargetInfoAvFlags), av_pairs[0].avlen);
+  ASSERT_EQ(TargetInfoAvFlags::kMicPresent, av_pairs[0].flags);
 }
 
 TEST(NtlmBufferReaderTest, ReadTargetInfoTooSmall) {
@@ -380,7 +380,7 @@ TEST(NtlmBufferReaderTest, ReadTargetInfoTooSmall) {
 
   NtlmBufferReader reader(buf, arraysize(buf));
 
-  std::vector<ntlm::AvPair> av_pairs;
+  std::vector<AvPair> av_pairs;
   ASSERT_FALSE(reader.ReadTargetInfo(arraysize(buf), &av_pairs));
 }
 
@@ -392,7 +392,7 @@ TEST(NtlmBufferReaderTest, ReadTargetInfoInvalidTimestampSize) {
 
   NtlmBufferReader reader(buf, arraysize(buf));
 
-  std::vector<ntlm::AvPair> av_pairs;
+  std::vector<AvPair> av_pairs;
   ASSERT_FALSE(reader.ReadTargetInfo(arraysize(buf), &av_pairs));
 }
 
@@ -403,7 +403,7 @@ TEST(NtlmBufferReaderTest, ReadTargetInfoInvalidTimestampPastEob) {
 
   NtlmBufferReader reader(buf, arraysize(buf));
 
-  std::vector<ntlm::AvPair> av_pairs;
+  std::vector<AvPair> av_pairs;
   ASSERT_FALSE(reader.ReadTargetInfo(arraysize(buf), &av_pairs));
 }
 
@@ -415,13 +415,13 @@ TEST(NtlmBufferReaderTest, ReadTargetInfoOtherField) {
 
   NtlmBufferReader reader(buf, arraysize(buf));
 
-  std::vector<ntlm::AvPair> av_pairs;
+  std::vector<AvPair> av_pairs;
   ASSERT_TRUE(reader.ReadTargetInfo(arraysize(buf), &av_pairs));
   ASSERT_TRUE(reader.IsEndOfBuffer());
   ASSERT_EQ(1u, av_pairs.size());
 
   // Verify the domain name AvPair.
-  ASSERT_EQ(ntlm::TargetInfoAvId::kDomainName, av_pairs[0].avid);
+  ASSERT_EQ(TargetInfoAvId::kDomainName, av_pairs[0].avid);
   ASSERT_EQ(8, av_pairs[0].avlen);
   ASSERT_EQ(0, memcmp(buf + 4, av_pairs[0].buffer.data(), 8));
 }
@@ -433,7 +433,7 @@ TEST(NtlmBufferReaderTest, ReadTargetInfoNoTerminator) {
 
   NtlmBufferReader reader(buf, arraysize(buf));
 
-  std::vector<ntlm::AvPair> av_pairs;
+  std::vector<AvPair> av_pairs;
   ASSERT_FALSE(reader.ReadTargetInfo(arraysize(buf), &av_pairs));
 }
 
@@ -446,7 +446,7 @@ TEST(NtlmBufferReaderTest, ReadTargetInfoTerminatorAtLocationOtherThanEnd) {
 
   NtlmBufferReader reader(buf, arraysize(buf));
 
-  std::vector<ntlm::AvPair> av_pairs;
+  std::vector<AvPair> av_pairs;
   ASSERT_FALSE(reader.ReadTargetInfo(arraysize(buf), &av_pairs));
 }
 
@@ -456,7 +456,7 @@ TEST(NtlmBufferReaderTest, ReadTargetInfoTerminatorNonZeroLength) {
 
   NtlmBufferReader reader(buf, arraysize(buf));
 
-  std::vector<ntlm::AvPair> av_pairs;
+  std::vector<AvPair> av_pairs;
   ASSERT_FALSE(reader.ReadTargetInfo(arraysize(buf), &av_pairs));
 }
 
@@ -469,7 +469,7 @@ TEST(NtlmBufferReaderTest, ReadTargetInfoTerminatorNonZeroLength2) {
 
   NtlmBufferReader reader(buf, arraysize(buf));
 
-  std::vector<ntlm::AvPair> av_pairs;
+  std::vector<AvPair> av_pairs;
   ASSERT_FALSE(reader.ReadTargetInfo(arraysize(buf), &av_pairs));
 }
 
@@ -479,7 +479,7 @@ TEST(NtlmBufferReaderTest, ReadTargetInfoEmptyPayload) {
 
   NtlmBufferReader reader(buf, arraysize(buf));
 
-  std::vector<ntlm::AvPair> av_pairs;
+  std::vector<AvPair> av_pairs;
   ASSERT_TRUE(reader.ReadTargetInfoPayload(&av_pairs));
   ASSERT_TRUE(reader.IsEndOfBuffer());
   ASSERT_TRUE(av_pairs.empty());
@@ -492,7 +492,7 @@ TEST(NtlmBufferReaderTest, ReadTargetInfoEolOnlyPayload) {
 
   NtlmBufferReader reader(buf, arraysize(buf));
 
-  std::vector<ntlm::AvPair> av_pairs;
+  std::vector<AvPair> av_pairs;
   ASSERT_TRUE(reader.ReadTargetInfoPayload(&av_pairs));
   ASSERT_FALSE(reader.IsEndOfBuffer());
 
@@ -508,7 +508,7 @@ TEST(NtlmBufferReaderTest, ReadTargetInfoTooShortPayload) {
 
   NtlmBufferReader reader(buf, arraysize(buf));
 
-  std::vector<ntlm::AvPair> av_pairs;
+  std::vector<AvPair> av_pairs;
   ASSERT_FALSE(reader.ReadTargetInfoPayload(&av_pairs));
 }
 
@@ -521,7 +521,7 @@ TEST(NtlmBufferReaderTest, ReadTargetInfoFlagsPayload) {
 
   NtlmBufferReader reader(buf, arraysize(buf));
 
-  std::vector<ntlm::AvPair> av_pairs;
+  std::vector<AvPair> av_pairs;
   ASSERT_TRUE(reader.ReadTargetInfoPayload(&av_pairs));
   ASSERT_FALSE(reader.IsEndOfBuffer());
 
@@ -543,7 +543,7 @@ TEST(NtlmBufferReaderTest, ReadTargetInfoFlagsPayloadWithPaddingBetween) {
                          0x02, 0,    0,    0,    0,    0,    0,    0};
   NtlmBufferReader reader(buf, arraysize(buf));
 
-  std::vector<ntlm::AvPair> av_pairs;
+  std::vector<AvPair> av_pairs;
   ASSERT_TRUE(reader.ReadTargetInfoPayload(&av_pairs));
   ASSERT_FALSE(reader.IsEndOfBuffer());
 
@@ -673,10 +673,10 @@ TEST(NtlmBufferReaderTest, ReadAvPairHeader) {
 
   NtlmBufferReader reader(buf, arraysize(buf));
 
-  ntlm::TargetInfoAvId actual_avid;
+  TargetInfoAvId actual_avid;
   uint16_t actual_avlen;
   ASSERT_TRUE(reader.ReadAvPairHeader(&actual_avid, &actual_avlen));
-  ASSERT_EQ(ntlm::TargetInfoAvId::kFlags, actual_avid);
+  ASSERT_EQ(TargetInfoAvId::kFlags, actual_avid);
   ASSERT_EQ(0x2211, actual_avlen);
   ASSERT_TRUE(reader.IsEndOfBuffer());
   ASSERT_FALSE(reader.ReadAvPairHeader(&actual_avid, &actual_avlen));
@@ -687,7 +687,7 @@ TEST(NtlmBufferReaderTest, ReadAvPairHeaderPastEob) {
 
   NtlmBufferReader reader(buf, arraysize(buf));
 
-  ntlm::TargetInfoAvId avid;
+  TargetInfoAvId avid;
   uint16_t avlen;
   ASSERT_FALSE(reader.ReadAvPairHeader(&avid, &avlen));
 }
