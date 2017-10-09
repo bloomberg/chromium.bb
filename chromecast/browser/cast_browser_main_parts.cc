@@ -69,12 +69,10 @@
 #include "ui/compositor/compositor_switches.h"
 #include "ui/gl/gl_switches.h"
 
-#if !defined(OS_ANDROID)
-#include <signal.h>
-#include <sys/prctl.h>
-#endif
 #if defined(OS_LINUX)
 #include <fontconfig/fontconfig.h>
+#include <signal.h>
+#include <sys/prctl.h>
 #endif
 
 #if defined(OS_ANDROID)
@@ -98,7 +96,7 @@
 
 namespace {
 
-#if !defined(OS_ANDROID)
+#if !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
 int kSignalsToRunClosure[] = { SIGTERM, SIGINT, };
 // Closure to run on SIGTERM and SIGINT.
 base::Closure* g_signal_closure = nullptr;
@@ -189,7 +187,7 @@ void DeregisterKillOnAlarm() {
   }
 }
 
-#endif  // !defined(OS_ANDROID)
+#endif  // !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
 
 }  // namespace
 
@@ -383,10 +381,10 @@ void CastBrowserMainParts::PreMainMessageLoopStart() {
 #if defined(OS_ANDROID)
   net::NetworkChangeNotifier::SetFactory(
       new net::NetworkChangeNotifierFactoryAndroid());
-#else
+#elif !defined(OS_FUCHSIA)
   net::NetworkChangeNotifier::SetFactory(
       new NetworkChangeNotifierFactoryCast());
-#endif  // defined(OS_ANDROID)
+#endif  // !defined(OS_FUCHSIA)
 }
 
 void CastBrowserMainParts::PostMainMessageLoopStart() {
@@ -473,7 +471,7 @@ int CastBrowserMainParts::PreCreateThreads() {
   display::Screen::SetScreenInstance(cast_browser_process_->cast_screen());
   display_configurator_ = base::MakeUnique<CastDisplayConfigurator>(
       cast_browser_process_->cast_screen());
-#endif
+#endif  // defined(USE_AURA)
 
   content::ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeScheme(
       kChromeResourceScheme);
@@ -481,10 +479,9 @@ int CastBrowserMainParts::PreCreateThreads() {
 }
 
 void CastBrowserMainParts::PreMainMessageLoopRun() {
-
-#if !defined(OS_ANDROID)
+#if !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
   memory_pressure_monitor_.reset(new CastMemoryPressureMonitor());
-#endif  // defined(OS_ANDROID)
+#endif  // !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
 
   cast_browser_process_->SetNetLog(net_log_.get());
   url_request_context_factory_->InitializeOnUIThread(net_log_.get());
@@ -558,7 +555,11 @@ bool CastBrowserMainParts::MainMessageLoopRun(int* result_code) {
 #else
   base::RunLoop run_loop;
   base::Closure quit_closure(run_loop.QuitClosure());
+
+#if !defined(OS_FUCHSIA)
+  // Fuchsia doesn't have signals.
   RegisterClosureOnSignal(quit_closure);
+#endif  // !defined(OS_FUCHSIA)
 
   // If parameters_.ui_task is not NULL, we are running browser tests.
   if (parameters_.ui_task) {
@@ -569,11 +570,16 @@ bool CastBrowserMainParts::MainMessageLoopRun(int* result_code) {
 
   run_loop.Run();
 
+#if !defined(OS_FUCHSIA)
   // Once the main loop has stopped running, we give the browser process a few
   // seconds to stop cast service and finalize all resources. If a hang occurs
   // and cast services refuse to terminate successfully, then we SIGKILL the
-  // current process to avoid indefinte hangs.
+  // current process to avoid indefinite hangs.
+  //
+  // TODO(sergeyu): Fuchsia doesn't implement POSIX signals. Implement a
+  // different shutdown watchdog mechanism.
   RegisterKillOnAlarm(kKillOnAlarmTimeoutSec);
+#endif  // !defined(OS_FUCHSIA)
 
   cast_browser_process_->cast_service()->Stop();
   return true;
@@ -591,7 +597,9 @@ void CastBrowserMainParts::PostMainMessageLoopRun() {
   cast_browser_process_->metrics_service_client()->Finalize();
   cast_browser_process_.reset();
 
+#if !defined(OS_FUCHSIA)
   DeregisterKillOnAlarm();
+#endif  // !defined(OS_FUCHSIA)
 #endif
 }
 

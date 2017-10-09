@@ -7,6 +7,9 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/file.h>
+#include <unistd.h>
+
+#include "base/posix/eintr_wrapper.h"
 
 namespace {
 
@@ -14,7 +17,7 @@ namespace {
 // on success, false on failure.
 bool CallFlockOnFileWithFlag(const int fd, int flag) {
   int ret = -1;
-  if ((ret = TEMP_FAILURE_RETRY(flock(fd, flag))) < 0)
+  if ((ret = HANDLE_EINTR(flock(fd, flag))) < 0)
     PLOG(ERROR) << "Error locking " << fd;
 
   return !ret;

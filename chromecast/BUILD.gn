@@ -411,6 +411,12 @@ cast_executable("cast_shell") {
   ]
 }
 
+if (is_fuchsia) {
+  fuchsia_executable_runner("cast_shell_fuchsia") {
+    exe_target = ":cast_shell"
+  }
+}
+
 repack("cast_shell_pak") {
   sources = [
     "$root_gen_dir/blink/public/resources/blink_resources.pak",
