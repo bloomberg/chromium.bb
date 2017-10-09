@@ -952,7 +952,7 @@ bool IsInternalURL(const GURL& url) {
         [ButtonUtils buttonWithTitle:l10n_util::GetNSString(
                                          IDS_PAGE_INFO_CHANGE_PASSWORD_BUTTON)
                               action:@selector(changePasswordDecisions:)
-                              target:securitySectionView_];
+                              target:self];
     [changePasswordButton_ sizeToFit];
     [changePasswordButton_ setKeyEquivalent:kKeyEquivalentReturn];
     [securitySectionView_ addSubview:changePasswordButton_];
@@ -960,8 +960,9 @@ bool IsInternalURL(const GURL& url) {
         buttonWithTitle:l10n_util::GetNSString(
                             IDS_PAGE_INFO_WHITELIST_PASSWORD_REUSE_BUTTON)
                  action:@selector(whitelistPasswordReuseDecisions:)
-                 target:securitySectionView_];
+                 target:self];
     [whitelistPasswordReuseButton_ sizeToFit];
+    [whitelistPasswordReuseButton_ setKeyEquivalent:kKeyEquivalentEscape];
     [securitySectionView_ addSubview:whitelistPasswordReuseButton_];
   }
 
