@@ -920,19 +920,21 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     case 0: mode_context[ref_frame] |= 0;
 #if !CONFIG_OPT_REF_MV
       if (*refmv_count >= 1) mode_context[ref_frame] |= 1;
-#endif
       if (*refmv_count == 1)
         mode_context[ref_frame] |= (1 << REFMV_OFFSET);
       else if (*refmv_count >= 2)
         mode_context[ref_frame] |= (2 << REFMV_OFFSET);
+#endif
       break;
-    case 1:
-      mode_context[ref_frame] |= (newmv_count > 0) ? 2 : 3;
-
+    case 1: mode_context[ref_frame] |= (newmv_count > 0) ? 2 : 3;
+#if CONFIG_OPT_REF_MV
+      mode_context[ref_frame] |= (3 << REFMV_OFFSET);
+#else
       if (*refmv_count == 1)
         mode_context[ref_frame] |= (3 << REFMV_OFFSET);
       else if (*refmv_count >= 2)
         mode_context[ref_frame] |= (4 << REFMV_OFFSET);
+#endif
       break;
 
     case 2:
