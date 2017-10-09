@@ -12,7 +12,6 @@
 #include "base/files/memory_mapped_file.h"
 #include "base/hash.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/pickle.h"
 #include "base/single_thread_task_runner.h"

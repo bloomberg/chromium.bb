@@ -4,9 +4,6 @@
 
 #include "net/url_request/url_request_context.h"
 
-#include <memory>
-
-#include "base/memory/ptr_util.h"
 #include "base/trace_event/memory_dump_request_args.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "net/proxy/proxy_config_service_fixed.h"

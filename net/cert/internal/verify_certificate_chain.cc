@@ -5,10 +5,8 @@
 #include "net/cert/internal/verify_certificate_chain.h"
 
 #include <algorithm>
-#include <memory>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "net/cert/internal/cert_error_params.h"
 #include "net/cert/internal/cert_errors.h"
 #include "net/cert/internal/common_cert_errors.h"

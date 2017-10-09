@@ -4,7 +4,6 @@
 
 #include "net/spdy/chromium/spdy_log_util.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "net/http/http_log_util.h"

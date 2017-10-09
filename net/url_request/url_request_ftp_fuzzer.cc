@@ -7,10 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <memory>
-
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/fuzzed_data_provider.h"
 #include "net/base/request_priority.h"

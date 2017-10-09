@@ -8,7 +8,6 @@
 #include <stdint.h>
 
 #include <iterator>
-#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -16,7 +15,6 @@
 #include "base/bind.h"
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/test/mock_callback.h"
 #include "net/base/completion_callback.h"
@@ -982,8 +980,8 @@ TEST_F(WebSocketDeflateStreamTest,
 // This is a regression test for crbug.com/343506.
 TEST_F(WebSocketDeflateStreamTest, ReadEmptyAsyncFrame) {
   std::vector<std::unique_ptr<ReadFramesStub>> stub_vector;
-  stub_vector.push_back(base::WrapUnique(new ReadFramesStub(ERR_IO_PENDING)));
-  stub_vector.push_back(base::WrapUnique(new ReadFramesStub(ERR_IO_PENDING)));
+  stub_vector.push_back(std::make_unique<ReadFramesStub>(ERR_IO_PENDING));
+  stub_vector.push_back(std::make_unique<ReadFramesStub>(ERR_IO_PENDING));
   base::MockCallback<CompletionCallback> mock_callback;
   std::vector<std::unique_ptr<WebSocketFrame>> frames;
 

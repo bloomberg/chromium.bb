@@ -4,12 +4,13 @@
 
 #include "net/cert/cert_verify_proc_mac.h"
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/cert_verify_result.h"

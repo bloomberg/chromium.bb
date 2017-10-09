@@ -4,13 +4,11 @@
 
 #include "net/spdy/chromium/spdy_proxy_client_socket.h"
 
-#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/address_list.h"

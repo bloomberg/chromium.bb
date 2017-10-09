@@ -62,7 +62,7 @@ std::unique_ptr<SequencedSocketData> BuildSocketData(
 // Builder for a SequencedSocketData that expects nothing. This does not
 // set the connect data, so the calling code must do that explicitly.
 std::unique_ptr<SequencedSocketData> BuildNullSocketData() {
-  return base::WrapUnique(new SequencedSocketData(NULL, 0, NULL, 0));
+  return std::make_unique<SequencedSocketData>(nullptr, 0, nullptr, 0);
 }
 
 class MockWeakTimer : public base::MockTimer,

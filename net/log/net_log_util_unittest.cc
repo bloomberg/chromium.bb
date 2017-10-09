@@ -4,12 +4,10 @@
 
 #include "net/log/net_log_util.h"
 
-#include <memory>
 #include <set>
 #include <vector>
 
 #include "base/files/file_path.h"
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
@@ -98,7 +96,7 @@ TEST(NetLogUtil, CreateNetLogEntriesForActiveObjectsMultipleContexts) {
     std::vector<std::unique_ptr<URLRequest>> requests;
     std::set<URLRequestContext*> context_set;
     for (size_t i = 0; i < num_requests; ++i) {
-      contexts.push_back(base::WrapUnique(new TestURLRequestContext(true)));
+      contexts.push_back(std::make_unique<TestURLRequestContext>(true));
       contexts[i]->set_net_log(&net_log);
       contexts[i]->Init();
       context_set.insert(contexts[i].get());

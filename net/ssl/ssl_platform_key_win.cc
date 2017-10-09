@@ -5,13 +5,13 @@
 #include "net/ssl/ssl_platform_key_win.h"
 
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "crypto/openssl_util.h"
 #include "crypto/scoped_capi_types.h"
 #include "net/base/net_errors.h"

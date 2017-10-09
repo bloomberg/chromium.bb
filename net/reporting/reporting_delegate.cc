@@ -4,7 +4,6 @@
 
 #include "net/reporting/reporting_delegate.h"
 
-#include "base/memory/ptr_util.h"
 #include "net/base/network_delegate.h"
 #include "net/url_request/url_request_context.h"
 

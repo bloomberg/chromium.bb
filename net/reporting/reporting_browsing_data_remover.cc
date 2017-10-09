@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "base/memory/ptr_util.h"
 #include "net/reporting/reporting_cache.h"
 #include "net/reporting/reporting_client.h"
 #include "net/reporting/reporting_context.h"

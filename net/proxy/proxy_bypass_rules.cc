@@ -4,7 +4,6 @@
 
 #include "net/proxy/proxy_bypass_rules.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_tokenizer.h"

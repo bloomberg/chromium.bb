@@ -17225,7 +17225,7 @@ TEST_F(HttpNetworkTransactionTest, ProxyResolutionFailsSync) {
   MockAsyncProxyResolver resolver;
   session_deps_.proxy_service.reset(new ProxyService(
       std::make_unique<ProxyConfigServiceFixed>(proxy_config),
-      base::WrapUnique(new FailingProxyResolverFactory), nullptr));
+      std::make_unique<FailingProxyResolverFactory>(), nullptr));
 
   HttpRequestInfo request;
   request.method = "GET";

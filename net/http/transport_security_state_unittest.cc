@@ -5,13 +5,13 @@
 #include "net/http/transport_security_state.h"
 
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/base64.h"
 #include "base/files/file_path.h"
 #include "base/json/json_reader.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/rand_util.h"
 #include "base/strings/string_piece.h"

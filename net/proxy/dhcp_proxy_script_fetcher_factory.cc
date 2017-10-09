@@ -4,7 +4,6 @@
 
 #include "net/proxy/dhcp_proxy_script_fetcher_factory.h"
 
-#include "base/memory/ptr_util.h"
 #include "net/base/net_errors.h"
 #include "net/proxy/dhcp_proxy_script_fetcher.h"
 

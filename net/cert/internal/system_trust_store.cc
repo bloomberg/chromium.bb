@@ -11,9 +11,10 @@
 #include <Security/Security.h>
 #endif
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "net/cert/internal/cert_errors.h"
 #include "net/cert/internal/parsed_certificate.h"
@@ -203,7 +204,7 @@ class SystemTrustStoreFuchsia : public BaseSystemTrustStore {
 };
 
 std::unique_ptr<SystemTrustStore> CreateSslSystemTrustStore() {
-  return base::MakeUnique<SystemTrustStoreFuchsia>();
+  return std::make_unique<SystemTrustStoreFuchsia>();
 }
 
 #else

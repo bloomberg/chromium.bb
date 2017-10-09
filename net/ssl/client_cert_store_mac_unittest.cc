@@ -4,7 +4,8 @@
 
 #include "net/ssl/client_cert_store_mac.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "net/ssl/client_cert_identity_test_util.h"
 #include "net/ssl/client_cert_store_unittest-inl.h"
 #include "net/ssl/ssl_private_key.h"

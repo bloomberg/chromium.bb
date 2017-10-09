@@ -8,7 +8,6 @@
 
 #include "base/cancelable_callback.h"
 #include "base/files/file_util.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/sys_byteorder.h"
 #include "base/test/test_timeouts.h"

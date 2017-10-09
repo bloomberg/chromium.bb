@@ -4,10 +4,7 @@
 
 #include "net/spdy/chromium/bidirectional_stream_spdy_impl.h"
 
-#include <memory>
-
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"

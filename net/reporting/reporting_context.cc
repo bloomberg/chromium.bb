@@ -4,10 +4,8 @@
 
 #include "net/reporting/reporting_context.h"
 
-#include <memory>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/observer_list.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"

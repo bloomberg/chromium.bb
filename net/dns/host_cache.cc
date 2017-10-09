@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
@@ -424,7 +423,7 @@ std::unique_ptr<HostCache> HostCache::CreateDefaultCache() {
                       &max_entries);
   if ((max_entries == 0) || (max_entries > kSaneMaxEntries))
     max_entries = kDefaultMaxEntries;
-  return base::WrapUnique(new HostCache(max_entries));
+  return std::make_unique<HostCache>(max_entries);
 }
 
 void HostCache::EvictOneEntry(base::TimeTicks now) {

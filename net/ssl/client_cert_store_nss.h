@@ -5,8 +5,6 @@
 #ifndef NET_SSL_CLIENT_CERT_STORE_NSS_H_
 #define NET_SSL_CLIENT_CERT_STORE_NSS_H_
 
-#include <memory>
-
 #include "base/callback.h"
 #include "base/macros.h"
 #include "net/base/net_export.h"

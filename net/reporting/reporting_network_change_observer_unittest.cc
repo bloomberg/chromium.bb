@@ -5,7 +5,6 @@
 #include "net/reporting/reporting_network_change_observer.h"
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/values.h"

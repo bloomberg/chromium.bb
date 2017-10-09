@@ -5,13 +5,11 @@
 #include "net/spdy/chromium/spdy_session.h"
 
 #include <algorithm>
-#include <memory>
 #include <utility>
 
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"

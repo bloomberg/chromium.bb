@@ -10,14 +10,12 @@
 #include <cmath>
 #include <limits>
 #include <map>
-#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/optional.h"
 #include "base/run_loop.h"

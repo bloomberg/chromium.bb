@@ -4,11 +4,11 @@
 
 #include "net/cert_net/cert_net_fetcher_impl.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/compiler_specific.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/synchronization/lock.h"
@@ -46,12 +46,12 @@ class RequestContext : public URLRequestContext {
     ProxyConfig no_proxy;
     storage_.set_host_resolver(
         std::unique_ptr<HostResolver>(new MockHostResolver));
-    storage_.set_cert_verifier(base::WrapUnique(new MockCertVerifier));
+    storage_.set_cert_verifier(std::make_unique<MockCertVerifier>());
     storage_.set_transport_security_state(
-        base::WrapUnique(new TransportSecurityState));
+        std::make_unique<TransportSecurityState>());
     storage_.set_cert_transparency_verifier(
-        base::WrapUnique(new MultiLogCTVerifier));
-    storage_.set_ct_policy_enforcer(base::WrapUnique(new CTPolicyEnforcer));
+        std::make_unique<MultiLogCTVerifier>());
+    storage_.set_ct_policy_enforcer(std::make_unique<CTPolicyEnforcer>());
     storage_.set_proxy_service(ProxyService::CreateFixed(no_proxy));
     storage_.set_ssl_config_service(new SSLConfigServiceDefaults);
     storage_.set_http_server_properties(

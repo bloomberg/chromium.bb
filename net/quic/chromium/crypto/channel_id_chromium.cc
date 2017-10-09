@@ -7,7 +7,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "crypto/ec_private_key.h"
 #include "crypto/ec_signature_creator.h"

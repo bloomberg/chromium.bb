@@ -4,10 +4,10 @@
 
 #include "net/spdy/chromium/header_coalescer.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "net/base/escape.h"
 #include "net/http/http_log_util.h"

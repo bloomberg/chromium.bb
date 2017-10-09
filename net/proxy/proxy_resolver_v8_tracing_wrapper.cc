@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "net/base/net_errors.h"
 #include "net/log/net_log.h"
@@ -126,8 +125,8 @@ int ProxyResolverV8TracingWrapper::GetProxyForURL(
     const NetLogWithSource& net_log) {
   resolver_impl_->GetProxyForURL(
       url, results, callback, request,
-      base::WrapUnique(new BindingsImpl(error_observer_.get(), host_resolver_,
-                                        net_log_, net_log)));
+      std::make_unique<BindingsImpl>(error_observer_.get(), host_resolver_,
+                                     net_log_, net_log));
   return ERR_IO_PENDING;
 }
 
@@ -163,8 +162,8 @@ int ProxyResolverFactoryV8TracingWrapper::CreateProxyResolver(
   ProxyResolverErrorObserver* error_observer_local = error_observer.get();
   factory_impl_->CreateProxyResolverV8Tracing(
       pac_script,
-      base::WrapUnique(new BindingsImpl(error_observer_local, host_resolver_,
-                                        net_log_, NetLogWithSource())),
+      std::make_unique<BindingsImpl>(error_observer_local, host_resolver_,
+                                     net_log_, NetLogWithSource()),
       v8_resolver_local,
       base::Bind(&ProxyResolverFactoryV8TracingWrapper::OnProxyResolverCreated,
                  base::Unretained(this), base::Passed(&v8_resolver), resolver,

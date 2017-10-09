@@ -5,6 +5,7 @@
 #include "net/ssl/client_cert_store_win.h"
 
 #include <algorithm>
+#include <memory>
 #include <string>
 
 #define SECURITY_WIN32  // Needs to be defined before including security.h
@@ -15,7 +16,6 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"

@@ -5,10 +5,11 @@
 #include "net/base/network_activity_monitor.h"
 
 #include <stdint.h>
+
+#include <memory>
 #include <vector>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"

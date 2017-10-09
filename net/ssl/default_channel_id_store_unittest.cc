@@ -5,7 +5,6 @@
 #include "net/ssl/default_channel_id_store.h"
 
 #include <map>
-#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -14,7 +13,6 @@
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -172,9 +170,9 @@ TEST(DefaultChannelIDStoreTest, TestSettingAndGetting) {
             store.GetChannelID("verisign.com", &key,
                                base::Bind(&GetChannelIDCallbackNotCalled)));
   EXPECT_FALSE(key);
-  store.SetChannelID(base::WrapUnique(new ChannelIDStore::ChannelID(
+  store.SetChannelID(std::make_unique<ChannelIDStore::ChannelID>(
       "verisign.com", base::Time::FromInternalValue(123),
-      expected_key->Copy())));
+      expected_key->Copy()));
   EXPECT_EQ(OK, store.GetChannelID("verisign.com", &key,
                                    base::Bind(&GetChannelIDCallbackNotCalled)));
   EXPECT_TRUE(KeysEqual(expected_key.get(), key.get()));

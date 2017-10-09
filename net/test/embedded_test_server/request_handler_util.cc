@@ -13,7 +13,6 @@
 #include "base/base64.h"
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"

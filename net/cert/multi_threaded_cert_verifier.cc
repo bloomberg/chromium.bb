@@ -5,7 +5,6 @@
 #include "net/cert/multi_threaded_cert_verifier.h"
 
 #include <algorithm>
-#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -13,7 +12,6 @@
 #include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/containers/linked_list.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sha1.h"

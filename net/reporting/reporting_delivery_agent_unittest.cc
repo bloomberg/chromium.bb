@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "base/json/json_reader.h"
-#include "base/memory/ptr_util.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/values_test_util.h"
 #include "base/time/time.h"

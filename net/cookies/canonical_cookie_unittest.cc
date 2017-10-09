@@ -4,9 +4,6 @@
 
 #include "net/cookies/canonical_cookie.h"
 
-#include <memory>
-
-#include "base/memory/ptr_util.h"
 #include "base/test/histogram_tester.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_options.h"

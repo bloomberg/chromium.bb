@@ -5,7 +5,6 @@
 #include "net/reporting/reporting_cache.h"
 
 #include <map>
-#include <memory>
 #include <set>
 #include <string>
 #include <unordered_map>
@@ -13,7 +12,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"

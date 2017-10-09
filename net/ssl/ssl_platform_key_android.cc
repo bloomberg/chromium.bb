@@ -15,7 +15,6 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "net/android/keystore.h"
 #include "net/android/legacy_openssl.h"
 #include "net/base/net_errors.h"

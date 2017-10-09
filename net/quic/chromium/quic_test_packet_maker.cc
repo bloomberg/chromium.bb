@@ -7,7 +7,6 @@
 #include <list>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "net/quic/chromium/quic_http_utils.h"
 #include "net/quic/core/quic_framer.h"
 #include "net/quic/core/quic_utils.h"

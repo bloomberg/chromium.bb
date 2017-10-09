@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <memory>
 #include <utility>
 
 // This must be before Windows headers
@@ -812,7 +811,7 @@ class URLRequestTest : public PlatformTest {
 
   virtual void SetUpFactory() {
     job_factory_impl_->SetProtocolHandler(
-        "data", base::WrapUnique(new DataProtocolHandler));
+        "data", std::make_unique<DataProtocolHandler>());
 #if !BUILDFLAG(DISABLE_FILE_SUPPORT)
     job_factory_impl_->SetProtocolHandler(
         "file", std::make_unique<FileProtocolHandler>(
@@ -6087,8 +6086,8 @@ TEST_F(URLRequestTestHTTP, PostFileTest) {
     element_readers.push_back(std::make_unique<UploadFileElementReader>(
         base::ThreadTaskRunnerHandle::Get().get(), path, 0,
         std::numeric_limits<uint64_t>::max(), base::Time()));
-    r->set_upload(base::WrapUnique<UploadDataStream>(
-        new ElementsUploadDataStream(std::move(element_readers), 0)));
+    r->set_upload(std::make_unique<ElementsUploadDataStream>(
+        std::move(element_readers), 0));
 
     r->Start();
     EXPECT_TRUE(r->is_pending());
@@ -6130,8 +6129,8 @@ TEST_F(URLRequestTestHTTP, PostUnreadableFileTest) {
         base::FilePath(FILE_PATH_LITERAL(
             "c:\\path\\to\\non\\existant\\file.randomness.12345")),
         0, std::numeric_limits<uint64_t>::max(), base::Time()));
-    r->set_upload(base::WrapUnique<UploadDataStream>(
-        new ElementsUploadDataStream(std::move(element_readers), 0)));
+    r->set_upload(std::make_unique<ElementsUploadDataStream>(
+        std::move(element_readers), 0));
 
     r->Start();
     EXPECT_TRUE(r->is_pending());
@@ -6212,7 +6211,7 @@ TEST_F(URLRequestTestHTTP, TestPostChunkedDataJustAfterStart) {
         new ChunkedUploadDataStream(0));
     std::unique_ptr<ChunkedUploadDataStream::Writer> writer =
         upload_data_stream->CreateWriter();
-    r->set_upload(base::WrapUnique(upload_data_stream.release()));
+    r->set_upload(std::move(upload_data_stream));
     r->set_method("POST");
     r->Start();
     EXPECT_TRUE(r->is_pending());

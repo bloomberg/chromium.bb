@@ -4,10 +4,10 @@
 
 #include "net/reporting/reporting_browsing_data_remover.h"
 
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "net/reporting/reporting_cache.h"
 #include "net/reporting/reporting_client.h"

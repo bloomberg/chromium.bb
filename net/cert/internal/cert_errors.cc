@@ -5,7 +5,6 @@
 #include "net/cert/internal/cert_errors.h"
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "net/cert/internal/cert_error_params.h"

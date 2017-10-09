@@ -5,8 +5,10 @@
 #include "net/test/embedded_test_server/default_handlers.h"
 
 #include <stdlib.h>
+
 #include <ctime>
 #include <map>
+#include <memory>
 #include <sstream>
 #include <string>
 #include <utility>
@@ -20,7 +22,6 @@
 #include "base/format_macros.h"
 #include "base/macros.h"
 #include "base/md5.h"
-#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"

@@ -5,9 +5,7 @@
 #include "net/cert/cert_verifier.h"
 
 #include <algorithm>
-#include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "net/cert/cert_verify_proc.h"

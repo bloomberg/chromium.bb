@@ -5,7 +5,6 @@
 #include "net/nqe/network_quality_estimator_test_util.h"
 
 #include "base/files/file_path.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "net/base/load_flags.h"
 #include "net/log/net_log_with_source.h"

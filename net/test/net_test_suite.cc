@@ -5,7 +5,6 @@
 #include "net/test/net_test_suite.h"
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "net/base/network_change_notifier.h"
 #include "net/http/http_stream_factory.h"

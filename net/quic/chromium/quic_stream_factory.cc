@@ -5,13 +5,13 @@
 #include "net/quic/chromium/quic_stream_factory.h"
 
 #include <algorithm>
+#include <memory>
 #include <tuple>
 #include <utility>
 
 #include "base/auto_reset.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
@@ -272,8 +272,9 @@ class QuicStreamFactory::CertVerifierJob {
                   const NetLogWithSource& net_log)
       : server_id_(server_id),
         verify_callback_(nullptr),
-        verify_context_(base::WrapUnique(
-            new ProofVerifyContextChromium(cert_verify_flags, net_log))),
+        verify_context_(
+            std::make_unique<ProofVerifyContextChromium>(cert_verify_flags,
+                                                         net_log)),
         start_time_(base::TimeTicks::Now()),
         net_log_(net_log),
         weak_factory_(this) {}
@@ -728,11 +729,11 @@ QuicStreamFactory::QuicStreamFactory(
       config_(InitializeQuicConfig(connection_options,
                                    client_connection_options,
                                    idle_connection_timeout_seconds)),
-      crypto_config_(base::WrapUnique(
-          new ProofVerifierChromium(cert_verifier,
-                                    ct_policy_enforcer,
-                                    transport_security_state,
-                                    cert_transparency_verifier))),
+      crypto_config_(
+          std::make_unique<ProofVerifierChromium>(cert_verifier,
+                                                  ct_policy_enforcer,
+                                                  transport_security_state,
+                                                  cert_transparency_verifier)),
       mark_quic_broken_when_network_blackholes_(
           mark_quic_broken_when_network_blackholes),
       store_server_configs_in_properties_(store_server_configs_in_properties),

@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
@@ -464,7 +463,7 @@ class InfiniteResponse : public BasicHttpResponse {
 
 std::unique_ptr<HttpResponse> HandleInfiniteRequest(
     const HttpRequest& request) {
-  return base::WrapUnique(new InfiniteResponse);
+  return std::make_unique<InfiniteResponse>();
 }
 
 }  // anonymous namespace

@@ -6,11 +6,9 @@
 
 #include <algorithm>
 #include <cstddef>
-#include <memory>
 #include <utility>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "net/spdy/chromium/spdy_buffer.h"
 #include "net/spdy/platform/api/spdy_string.h"
