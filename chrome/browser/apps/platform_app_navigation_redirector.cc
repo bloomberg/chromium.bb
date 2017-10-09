@@ -2,19 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/apps/app_url_redirector.h"
+#include "chrome/browser/apps/platform_app_navigation_redirector.h"
 
 #include "apps/launcher.h"
 #include "base/bind.h"
-#include "base/feature_list.h"
 #include "base/logging.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/extensions/app_launch_params.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/web_applications/web_app.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/api/url_handlers/url_handlers_parser.h"
 #include "components/navigation_interception/intercept_navigation_throttle.h"
 #include "components/navigation_interception/navigation_params.h"
@@ -34,41 +30,11 @@ using extensions::UrlHandlerInfo;
 
 namespace {
 
-bool ShouldOverrideNavigation(
-    const Extension* app,
-    content::WebContents* source,
-    const navigation_interception::NavigationParams& params) {
-  DVLOG(1) << "ShouldOverrideNavigation called for: " << params.url();
-
-  ui::PageTransition transition_type = params.transition_type();
-  if (!(PageTransitionCoreTypeIs(transition_type, ui::PAGE_TRANSITION_LINK))) {
-    DVLOG(1) << "Don't override: Transition type is "
-             << PageTransitionGetCoreTransitionString(transition_type);
-    return false;
-  }
-
-  // Don't redirect same origin navigations. This matches what is done on
-  // Android.
-  if (source->GetLastCommittedURL().GetOrigin() == params.url().GetOrigin()) {
-    DVLOG(1) << "Don't override: Same origin navigation.";
-    return false;
-  }
-
-  return true;
-}
-
-bool LaunchAppWithUrl(
-    const scoped_refptr<const Extension> app,
-    const std::string& handler_id,
-    content::WebContents* source,
-    const navigation_interception::NavigationParams& params) {
+bool LaunchAppWithUrl(const scoped_refptr<const Extension> app,
+                      const std::string& handler_id,
+                      content::WebContents* source,
+                      const navigation_interception::NavigationParams& params) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  // Redirecting for Bookmark Apps is hidden behind a feature flag.
-  if (app->from_bookmark() &&
-      !base::FeatureList::IsEnabled(features::kDesktopPWAWindowing)) {
-    return false;
-  }
 
   // Redirect top-level navigations only. This excludes iframes and webviews
   // in particular.
@@ -85,30 +51,16 @@ bool LaunchAppWithUrl(
     return true;
   }
 
-  // These are guaranteed by CreateThrottleFor below.
+  // These are guaranteed by MaybeCreateThrottleFor below.
   DCHECK(UrlHandlers::CanExtensionHandleUrl(app.get(), params.url()));
   DCHECK(!params.is_post());
 
-  Profile* profile =
-      Profile::FromBrowserContext(source->GetBrowserContext());
+  Profile* profile = Profile::FromBrowserContext(source->GetBrowserContext());
 
-  if (app->from_bookmark()) {
-    if (!ShouldOverrideNavigation(app.get(), source, params))
-      return false;
-
-    AppLaunchParams launch_params(
-        profile, app.get(), extensions::LAUNCH_CONTAINER_WINDOW,
-        WindowOpenDisposition::CURRENT_TAB, extensions::SOURCE_URL_HANDLER);
-    launch_params.override_url = params.url();
-    OpenApplication(launch_params);
-    return true;
-  }
-
-  DVLOG(1) << "Launching app handler with URL: "
-           << params.url().spec() << " -> "
-           << app->name() << "(" << app->id() << "):" << handler_id;
-  apps::LaunchPlatformAppWithUrl(
-      profile, app.get(), handler_id, params.url(), params.referrer().url);
+  DVLOG(1) << "Launching app handler with URL: " << params.url().spec()
+           << " -> " << app->name() << "(" << app->id() << "):" << handler_id;
+  apps::LaunchPlatformAppWithUrl(profile, app.get(), handler_id, params.url(),
+                                 params.referrer().url);
 
   return true;
 }
@@ -117,7 +69,8 @@ bool LaunchAppWithUrl(
 
 // static
 std::unique_ptr<content::NavigationThrottle>
-AppUrlRedirector::MaybeCreateThrottleFor(content::NavigationHandle* handle) {
+PlatformAppNavigationRedirector::MaybeCreateThrottleFor(
+    content::NavigationHandle* handle) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DVLOG(1) << "Considering URL for redirection: " << handle->GetURL().spec();
 
@@ -145,22 +98,24 @@ AppUrlRedirector::MaybeCreateThrottleFor(content::NavigationHandle* handle) {
     return nullptr;
   }
 
-  const extensions::ExtensionSet& enabled_extensions =
-      extensions::ExtensionRegistry::Get(browser_context)->enabled_extensions();
-  for (extensions::ExtensionSet::const_iterator iter =
-           enabled_extensions.begin();
-       iter != enabled_extensions.end(); ++iter) {
-    const UrlHandlerInfo* handler =
-        UrlHandlers::FindMatchingUrlHandler(iter->get(), handle->GetURL());
+  for (const auto& extension_ref :
+       extensions::ExtensionRegistry::Get(browser_context)
+           ->enabled_extensions()) {
+    // BookmarkAppNavigationThrottle handles intercepting links to Hosted Apps
+    // that are Bookmark Apps. Regular Hosted Apps don't intercept links.
+    if (extension_ref->is_hosted_app())
+      continue;
+
+    const UrlHandlerInfo* handler = UrlHandlers::FindMatchingUrlHandler(
+        extension_ref.get(), handle->GetURL());
     if (handler) {
       DVLOG(1) << "Found matching app handler for redirection: "
-               << (*iter)->name() << "(" << (*iter)->id() << "):"
-               << handler->id;
+               << extension_ref->name() << "(" << extension_ref->id()
+               << "):" << handler->id;
       return std::unique_ptr<content::NavigationThrottle>(
           new navigation_interception::InterceptNavigationThrottle(
               handle,
-              base::Bind(&LaunchAppWithUrl,
-                         scoped_refptr<const Extension>(*iter), handler->id)));
+              base::Bind(&LaunchAppWithUrl, extension_ref, handler->id)));
     }
   }
 

@@ -31,7 +31,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/after_startup_task_utils.h"
-#include "chrome/browser/apps/app_url_redirector.h"
 #include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
@@ -343,6 +342,8 @@
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/accessibility/animation_policy_prefs.h"
+#include "chrome/browser/apps/platform_app_navigation_redirector.h"
+#include "chrome/browser/extensions/bookmark_app_navigation_throttle.h"
 #include "chrome/browser/extensions/chrome_content_browser_client_extensions_part.h"
 #include "chrome/browser/speech/extension_api/tts_engine_extension_api.h"
 #include "components/guest_view/browser/guest_view_base.h"
@@ -3228,14 +3229,22 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
         navigation_interception::InterceptNavigationDelegate::CreateThrottleFor(
             handle));
   }
-#else
+#elif BUILDFLAG(ENABLE_EXTENSIONS)
   if (handle->IsInMainFrame()) {
     // Redirect some navigations to apps that have registered matching URL
     // handlers ('url_handlers' in the manifest).
-    std::unique_ptr<content::NavigationThrottle> url_to_app_throttle =
-        AppUrlRedirector::MaybeCreateThrottleFor(handle);
+    auto url_to_app_throttle =
+        PlatformAppNavigationRedirector::MaybeCreateThrottleFor(handle);
     if (url_to_app_throttle)
       throttles.push_back(std::move(url_to_app_throttle));
+  }
+
+  if (base::FeatureList::IsEnabled(features::kDesktopPWAWindowing)) {
+    auto bookmark_app_throttle =
+        extensions::BookmarkAppNavigationThrottle::MaybeCreateThrottleFor(
+            handle);
+    if (bookmark_app_throttle)
+      throttles.push_back(std::move(bookmark_app_throttle));
   }
 #endif
 
