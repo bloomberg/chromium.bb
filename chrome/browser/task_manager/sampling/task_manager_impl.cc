@@ -27,7 +27,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
-#include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/task_manager/providers/arc/arc_process_task_provider.h"
@@ -52,7 +51,6 @@ TaskManagerImpl::TaskManagerImpl()
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
       shared_sampler_(new SharedSampler(blocking_pool_runner_)),
       is_running_(false),
-      waiting_for_memory_dump_(false),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -118,10 +116,6 @@ base::TimeDelta TaskManagerImpl::GetCpuTime(TaskId task_id) const {
   NOTIMPLEMENTED();
   return base::TimeDelta();
 #endif
-}
-
-int64_t TaskManagerImpl::GetMemoryFootprintUsage(TaskId task_id) const {
-  return GetTaskGroupByTaskId(task_id)->footprint_bytes();
 }
 
 int64_t TaskManagerImpl::GetPhysicalMemoryUsage(TaskId task_id) const {
@@ -511,36 +505,11 @@ void TaskManagerImpl::OnVideoMemoryUsageStatsUpdate(
   gpu_memory_stats_ = gpu_memory_stats;
 }
 
-void TaskManagerImpl::OnReceivedMemoryDump(
-    bool success,
-    memory_instrumentation::mojom::GlobalMemoryDumpPtr dump) {
-  waiting_for_memory_dump_ = false;
-  if (!success)
-    return;
-  for (const memory_instrumentation::mojom::ProcessMemoryDumpPtr& pmd :
-       dump->process_dumps) {
-    auto it = task_groups_by_proc_id_.find(pmd->pid);
-    if (it == task_groups_by_proc_id_.end())
-      continue;
-    it->second->set_footprint_bytes(pmd->os_dump->private_footprint_kb * 1024);
-  }
-}
-
 void TaskManagerImpl::Refresh() {
   if (IsResourceRefreshEnabled(REFRESH_TYPE_GPU_MEMORY)) {
     content::GpuDataManager::GetInstance()->RequestVideoMemoryUsageStatsUpdate(
         base::Bind(&TaskManagerImpl::OnVideoMemoryUsageStatsUpdate,
                    weak_ptr_factory_.GetWeakPtr()));
-  }
-
-  if (IsResourceRefreshEnabled(REFRESH_TYPE_MEMORY_FOOTPRINT) &&
-      !waiting_for_memory_dump_) {
-    // The callback keeps this object alive until the callback is invoked.
-    waiting_for_memory_dump_ = true;
-    auto callback = base::Bind(&TaskManagerImpl::OnReceivedMemoryDump,
-                               weak_ptr_factory_.GetWeakPtr());
-    memory_instrumentation::MemoryInstrumentation::GetInstance()
-        ->RequestGlobalDump(std::move(callback));
   }
 
   for (auto& groups_itr : task_groups_by_proc_id_) {
