@@ -51,20 +51,6 @@ using extensions::SyncBundle;
 
 namespace {
 
-void OnWebApplicationInfoLoaded(
-    WebApplicationInfo synced_info,
-    base::WeakPtr<ExtensionService> extension_service,
-    const WebApplicationInfo& loaded_info) {
-  DCHECK_EQ(synced_info.app_url, loaded_info.app_url);
-
-  if (!extension_service)
-    return;
-
-  // Use the old icons if they exist.
-  synced_info.icons = loaded_info.icons;
-  CreateOrUpdateBookmarkApp(extension_service.get(), &synced_info);
-}
-
 // Returns the pref value for "all urls enabled" for the given extension id.
 ExtensionSyncData::OptionalBoolean GetAllowedOnAllUrlsOptionalBoolean(
     const Extension& extension,
@@ -598,18 +584,8 @@ void ExtensionSyncService::ApplyBookmarkAppSyncData(
             << icon.url.spec();
   }
 
-  // If the bookmark app already exists, keep the old icons.
-  if (!extension) {
-    VLOG(1) << "Extension did not exist; calling create or update";
-    CreateOrUpdateBookmarkApp(extension_service(), &web_app_info);
-  } else {
-    VLOG(1) << "Extension already existed, updating it";
-    GetWebApplicationInfoFromApp(profile_,
-                                 extension,
-                                 base::Bind(&OnWebApplicationInfoLoaded,
-                                            web_app_info,
-                                            extension_service()->AsWeakPtr()));
-  }
+  VLOG(1) << "Creating/updating bookmark app";
+  CreateOrUpdateBookmarkApp(extension_service(), &web_app_info);
 }
 
 void ExtensionSyncService::SetSyncStartFlareForTesting(
