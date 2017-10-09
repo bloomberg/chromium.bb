@@ -310,10 +310,9 @@ TableSortDescriptor::TableSortDescriptor(int col_id, bool ascending)
 // TaskManagerTableModel:
 ////////////////////////////////////////////////////////////////////////////////
 
-TaskManagerTableModel::TaskManagerTableModel(int64_t refresh_flags,
-                                             TableViewDelegate* delegate)
+TaskManagerTableModel::TaskManagerTableModel(TableViewDelegate* delegate)
     : TaskManagerObserver(base::TimeDelta::FromMilliseconds(kRefreshTimeMS),
-                          refresh_flags),
+                          REFRESH_TYPE_NONE),
       table_view_delegate_(delegate),
       columns_settings_(new base::DictionaryValue),
       table_model_observer_(nullptr),

@@ -100,7 +100,7 @@ class TaskManagerMac : public ui::TableModelObserver,
 
   // Various test-only functions.
   static TaskManagerMac* GetInstanceForTests() { return instance_; }
-  TaskManagerTableModel* GetTableModelForTests() { return table_model_.get(); }
+  TaskManagerTableModel* GetTableModelForTests() { return &table_model_; }
   TaskManagerWindowController* CocoaControllerForTests() {
     return window_controller_;
   }
@@ -128,7 +128,7 @@ class TaskManagerMac : public ui::TableModelObserver,
                const content::NotificationDetails& details) override;
 
   // Our model.
-  std::unique_ptr<TaskManagerTableModel> table_model_;
+  TaskManagerTableModel table_model_;
 
   // Controller of our window, destroys itself when the task manager window
   // is closed.
