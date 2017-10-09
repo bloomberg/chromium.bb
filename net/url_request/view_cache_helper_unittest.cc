@@ -4,7 +4,8 @@
 
 #include "net/url_request/view_cache_helper.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/pickle.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"

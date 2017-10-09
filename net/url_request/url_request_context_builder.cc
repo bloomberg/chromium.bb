@@ -11,7 +11,6 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
@@ -408,7 +407,7 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
     // builder or resulting context.
     context->set_net_log(net_log_);
   } else {
-    storage->set_net_log(base::WrapUnique(new NetLog));
+    storage->set_net_log(std::make_unique<NetLog>());
   }
 
   if (host_resolver_) {
@@ -465,11 +464,10 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
              base::TaskShutdownBehavior::BLOCK_SHUTDOWN}));
 
     context->set_transport_security_persister(
-        base::WrapUnique<TransportSecurityPersister>(
-            new TransportSecurityPersister(
-                context->transport_security_state(),
-                transport_security_persister_path_, task_runner,
-                transport_security_persister_readonly_)));
+        std::make_unique<TransportSecurityPersister>(
+            context->transport_security_state(),
+            transport_security_persister_path_, task_runner,
+            transport_security_persister_readonly_));
   }
 
   if (http_server_properties_) {
@@ -594,7 +592,7 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
 
   if (data_enabled_)
     job_factory->SetProtocolHandler(url::kDataScheme,
-                                    base::WrapUnique(new DataProtocolHandler));
+                                    std::make_unique<DataProtocolHandler>());
 
 #if !BUILDFLAG(DISABLE_FILE_SUPPORT)
   if (file_enabled_) {

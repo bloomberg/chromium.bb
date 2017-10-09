@@ -16,7 +16,6 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_piece.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/scoped_blocking_call.h"

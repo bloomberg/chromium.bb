@@ -4,7 +4,6 @@
 
 #include "net/quic/chromium/crypto/proof_verifier_chromium.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_status_flags.h"

@@ -11,7 +11,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "net/base/host_port_pair.h"
@@ -446,14 +445,14 @@ class AllowAnyCertCTPolicyEnforcer : public CTPolicyEnforcer {
 SpdyURLRequestContext::SpdyURLRequestContext() : storage_(this) {
   storage_.set_host_resolver(
       std::unique_ptr<HostResolver>(new MockHostResolver));
-  storage_.set_cert_verifier(base::WrapUnique(new MockCertVerifier));
+  storage_.set_cert_verifier(std::make_unique<MockCertVerifier>());
   storage_.set_transport_security_state(
-      base::WrapUnique(new TransportSecurityState));
+      std::make_unique<TransportSecurityState>());
   storage_.set_proxy_service(ProxyService::CreateDirect());
   storage_.set_ct_policy_enforcer(
-      base::WrapUnique(new AllowAnyCertCTPolicyEnforcer()));
+      std::make_unique<AllowAnyCertCTPolicyEnforcer>());
   storage_.set_cert_transparency_verifier(
-      base::WrapUnique(new DoNothingCTVerifier()));
+      std::make_unique<DoNothingCTVerifier>());
   storage_.set_ssl_config_service(new SSLConfigServiceDefaults);
   storage_.set_http_auth_handler_factory(
       HttpAuthHandlerFactory::CreateDefault(host_resolver()));

@@ -9,11 +9,11 @@
 #include <pk11pub.h>
 #include <prerror.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "crypto/nss_crypto_module_delegate.h"
 #include "crypto/scoped_nss_types.h"

@@ -4,11 +4,11 @@
 
 #include "net/ssl/test_ssl_private_key.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "crypto/rsa_private_key.h"
 #include "net/base/net_errors.h"
 #include "net/ssl/ssl_platform_key_util.h"

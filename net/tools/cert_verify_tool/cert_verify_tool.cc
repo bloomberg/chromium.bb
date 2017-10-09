@@ -215,9 +215,9 @@ int main(int argc, char** argv) {
   impls.push_back(
       std::unique_ptr<CertVerifyImplUsingProc>(new CertVerifyImplUsingProc(
           "CertVerifyProc (default)", net::CertVerifyProc::CreateDefault())));
-  impls.push_back(base::MakeUnique<CertVerifyImplUsingProc>(
+  impls.push_back(std::make_unique<CertVerifyImplUsingProc>(
       "CertVerifyProcBuiltin", net::CreateCertVerifyProcBuiltin()));
-  impls.push_back(base::MakeUnique<CertVerifyImplUsingPathBuilder>());
+  impls.push_back(std::make_unique<CertVerifyImplUsingPathBuilder>());
 
   bool all_impls_success = true;
 

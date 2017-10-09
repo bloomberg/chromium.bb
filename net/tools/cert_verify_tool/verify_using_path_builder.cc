@@ -5,8 +5,8 @@
 #include "net/tools/cert_verify_tool/verify_using_path_builder.h"
 
 #include <iostream>
+#include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"

@@ -10,12 +10,12 @@
 #include "net/http/http_response_headers.h"
 
 #include <algorithm>
+#include <memory>
 #include <unordered_map>
 #include <utility>
 
 #include "base/format_macros.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/pickle.h"
 #include "base/strings/string_number_conversions.h"

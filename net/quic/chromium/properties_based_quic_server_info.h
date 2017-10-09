@@ -5,7 +5,6 @@
 #ifndef NET_QUIC_CHROMIUM_PROPERTIES_BASED_QUIC_SERVER_INFO_H_
 #define NET_QUIC_CHROMIUM_PROPERTIES_BASED_QUIC_SERVER_INFO_H_
 
-#include <memory>
 #include <string>
 #include <vector>
 

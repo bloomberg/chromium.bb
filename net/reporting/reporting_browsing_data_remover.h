@@ -5,8 +5,6 @@
 #ifndef NET_REPORTING_REPORTING_BROWSING_DATA_REMOVER_H_
 #define NET_REPORTING_REPORTING_BROWSING_DATA_REMOVER_H_
 
-#include <memory>
-
 #include "base/callback.h"
 #include "base/macros.h"
 #include "net/base/net_export.h"

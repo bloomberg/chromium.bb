@@ -2,14 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/bit_cast.h"
 #include "base/callback.h"
-#include "base/memory/ptr_util.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/test_completion_callback.h"

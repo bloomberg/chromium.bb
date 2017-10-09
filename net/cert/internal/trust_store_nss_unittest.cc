@@ -7,7 +7,8 @@
 #include <cert.h>
 #include <certdb.h>
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/strings/string_number_conversions.h"
 #include "crypto/scoped_test_nss_db.h"
 #include "net/cert/internal/cert_issuer_source_sync_unittest.h"

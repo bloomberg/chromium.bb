@@ -67,8 +67,8 @@ HttpCache::DefaultBackend::~DefaultBackend() {}
 // static
 std::unique_ptr<HttpCache::BackendFactory> HttpCache::DefaultBackend::InMemory(
     int max_bytes) {
-  return base::WrapUnique(new DefaultBackend(
-      MEMORY_CACHE, CACHE_BACKEND_DEFAULT, base::FilePath(), max_bytes));
+  return std::make_unique<DefaultBackend>(MEMORY_CACHE, CACHE_BACKEND_DEFAULT,
+                                          base::FilePath(), max_bytes);
 }
 
 int HttpCache::DefaultBackend::CreateBackend(

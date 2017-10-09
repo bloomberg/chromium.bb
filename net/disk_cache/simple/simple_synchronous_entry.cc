@@ -13,7 +13,6 @@
 #include "base/files/file_util.h"
 #include "base/hash.h"
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
@@ -1239,7 +1238,7 @@ int SimpleSynchronousEntry::ReadAndValidateStream0AndMaybe1(
     RecordWhetherOpenDidPrefetch(cache_type_, false);
   } else {
     RecordWhetherOpenDidPrefetch(cache_type_, true);
-    prefetch_buf = base::MakeUnique<char[]>(file_size);
+    prefetch_buf = std::make_unique<char[]>(file_size);
     if (files_[0].Read(0, prefetch_buf.get(), file_size) != file_size)
       return net::ERR_FAILED;
     file_0_prefetch.set(prefetch_buf.get(), file_size);

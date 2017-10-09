@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "net/base/io_buffer.h"
 #include "net/base/test_completion_callback.h"
@@ -62,7 +61,7 @@ bool ContentDecoderToolProcessInput(std::vector<std::string> content_encodings,
                                     std::istream* input_stream,
                                     std::ostream* output_stream) {
   std::unique_ptr<SourceStream> upstream(
-      base::WrapUnique(new StdinSourceStream(input_stream)));
+      std::make_unique<StdinSourceStream>(input_stream));
   for (std::vector<std::string>::const_reverse_iterator riter =
            content_encodings.rbegin();
        riter != content_encodings.rend(); ++riter) {

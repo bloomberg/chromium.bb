@@ -4,7 +4,6 @@
 
 #include "net/nqe/socket_watcher_factory.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "net/nqe/socket_watcher.h"
 

@@ -4,14 +4,12 @@
 
 #include "net/http/http_server_properties_manager.h"
 
-#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"

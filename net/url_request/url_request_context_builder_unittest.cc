@@ -4,9 +4,6 @@
 
 #include "net/url_request/url_request_context_builder.h"
 
-#include <memory>
-
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "net/base/request_priority.h"

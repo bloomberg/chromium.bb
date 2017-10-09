@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include <algorithm>
-#include <memory>
 #include <ostream>
 #include <string>
 #include <utility>
@@ -11,7 +10,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -4898,20 +4896,20 @@ class QuicURLRequestContext : public URLRequestContext {
     socket_factory_ = socket_factory;
     storage_.set_host_resolver(
         std::unique_ptr<HostResolver>(new MockHostResolver));
-    storage_.set_cert_verifier(base::WrapUnique(new MockCertVerifier));
+    storage_.set_cert_verifier(std::make_unique<MockCertVerifier>());
     storage_.set_transport_security_state(
-        base::WrapUnique(new TransportSecurityState));
+        std::make_unique<TransportSecurityState>());
     storage_.set_proxy_service(ProxyService::CreateDirect());
     storage_.set_ssl_config_service(new SSLConfigServiceDefaults);
     storage_.set_http_auth_handler_factory(
         HttpAuthHandlerFactory::CreateDefault(host_resolver()));
     storage_.set_http_server_properties(
         std::unique_ptr<HttpServerProperties>(new HttpServerPropertiesImpl()));
-    storage_.set_job_factory(base::WrapUnique(new URLRequestJobFactoryImpl()));
+    storage_.set_job_factory(std::make_unique<URLRequestJobFactoryImpl>());
     storage_.set_http_network_session(std::move(session));
-    storage_.set_http_transaction_factory(base::WrapUnique(
-        new HttpCache(storage_.http_network_session(),
-                      HttpCache::DefaultBackend::InMemory(0), false)));
+    storage_.set_http_transaction_factory(std::make_unique<HttpCache>(
+        storage_.http_network_session(), HttpCache::DefaultBackend::InMemory(0),
+        false));
   }
 
   ~QuicURLRequestContext() override { AssertNoURLRequests(); }

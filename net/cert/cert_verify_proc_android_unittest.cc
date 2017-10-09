@@ -4,9 +4,9 @@
 
 #include "net/cert/cert_verify_proc_android.h"
 
+#include <memory>
 #include <vector>
 
-#include "base/memory/ptr_util.h"
 #include "net/cert/cert_net_fetcher.h"
 #include "net/cert/cert_verify_proc_android.h"
 #include "net/cert/cert_verify_result.h"

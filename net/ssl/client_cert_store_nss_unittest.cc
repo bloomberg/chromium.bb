@@ -13,7 +13,6 @@
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "crypto/scoped_test_nss_db.h"

@@ -8,7 +8,6 @@
 #include "base/bit_cast.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "net/base/io_buffer.h"
 #include "third_party/brotli/include/brotli/decode.h"
@@ -197,7 +196,7 @@ class BrotliSourceStream : public FilterSourceStream {
 
 std::unique_ptr<FilterSourceStream> CreateBrotliSourceStream(
     std::unique_ptr<SourceStream> previous) {
-  return base::WrapUnique(new BrotliSourceStream(std::move(previous)));
+  return std::make_unique<BrotliSourceStream>(std::move(previous));
 }
 
 }  // namespace net

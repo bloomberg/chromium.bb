@@ -7,7 +7,6 @@
 #include <cert.h>
 #include <certdb.h>
 
-#include "base/memory/ptr_util.h"
 #include "crypto/nss_util.h"
 #include "net/cert/internal/cert_errors.h"
 #include "net/cert/internal/parsed_certificate.h"

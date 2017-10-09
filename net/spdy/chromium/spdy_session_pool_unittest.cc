@@ -5,10 +5,8 @@
 #include "net/spdy/chromium/spdy_session_pool.h"
 
 #include <cstddef>
-#include <memory>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"

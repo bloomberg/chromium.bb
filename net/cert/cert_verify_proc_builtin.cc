@@ -4,11 +4,11 @@
 
 #include "net/cert/cert_verify_proc_builtin.h"
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/sha1.h"
 #include "base/strings/string_piece.h"
 #include "crypto/sha2.h"

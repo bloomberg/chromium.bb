@@ -8,7 +8,6 @@
 
 #include <algorithm>
 #include <limits>
-#include <memory>
 #include <vector>
 
 #include "base/bind.h"
@@ -16,7 +15,6 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -456,7 +454,7 @@ TEST_F(ElementsUploadDataStreamTest, InitAsyncFailureSync) {
 // Read with a buffer whose size is same as the data.
 TEST_F(ElementsUploadDataStreamTest, ReadAsyncWithExactSizeBuffer) {
   element_readers_.push_back(
-      base::WrapUnique(new UploadBytesElementReader(kTestData, kTestDataSize)));
+      std::make_unique<UploadBytesElementReader>(kTestData, kTestDataSize));
   std::unique_ptr<UploadDataStream> stream(
       new ElementsUploadDataStream(std::move(element_readers_), 0));
 

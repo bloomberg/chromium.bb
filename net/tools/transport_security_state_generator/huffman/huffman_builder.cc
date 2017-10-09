@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 
 namespace net {
 

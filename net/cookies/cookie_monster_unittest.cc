@@ -7,14 +7,12 @@
 #include <stdint.h>
 
 #include <algorithm>
-#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/containers/queue.h"
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_samples.h"
@@ -3299,7 +3297,7 @@ TEST_F(CookieMonsterNotificationTest, GlobalNotBroadcast) {
 
   // Bind it to a CookieMonster
   std::unique_ptr<CookieMonster> monster(
-      base::MakeUnique<CookieMonster>(store.get()));
+      std::make_unique<CookieMonster>(store.get()));
 
   // Trigger load dispatch and confirm it.
   monster->GetAllCookiesAsync(CookieStore::GetCookieListCallback());

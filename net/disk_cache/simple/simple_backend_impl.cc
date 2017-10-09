@@ -9,8 +9,6 @@
 #include <functional>
 #include <limits>
 
-#include "base/memory/ptr_util.h"
-
 #if defined(OS_POSIX)
 #include <sys/resource.h>
 #endif

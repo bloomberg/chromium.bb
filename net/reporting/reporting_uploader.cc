@@ -4,13 +4,11 @@
 
 #include "net/reporting/reporting_uploader.h"
 
-#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/callback_helpers.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/load_flags.h"

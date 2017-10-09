@@ -5,7 +5,6 @@
 #include "net/socket/fuzzed_socket_factory.h"
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/test/fuzzed_data_provider.h"
 #include "net/base/address_list.h"
 #include "net/base/ip_endpoint.h"

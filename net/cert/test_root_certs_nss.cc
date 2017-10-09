@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "crypto/nss_util.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util_nss.h"

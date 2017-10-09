@@ -4,10 +4,10 @@
 
 #include "net/dns/host_resolver_mojo.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/address_list.h"
 #include "net/base/ip_address.h"
@@ -136,8 +136,8 @@ void MockMojoHostResolver::ResolveDns(
                            std::move(actions_[results_returned_].addresses));
       break;
     case HostResolverAction::RETAIN:
-      requests_.push_back(base::WrapUnique(new MockMojoHostResolverRequest(
-          std::move(client), request_connection_error_callback_)));
+      requests_.push_back(std::make_unique<MockMojoHostResolverRequest>(
+          std::move(client), request_connection_error_callback_));
       break;
     case HostResolverAction::DROP:
       client.reset();

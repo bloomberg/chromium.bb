@@ -1085,21 +1085,21 @@ TEST_F(ProxyResolverV8TracingWrapperTest, MultipleResolvers) {
   host_resolver0.rules()->AddRule("*", "133.122.100.200");
   std::unique_ptr<ProxyResolver> resolver0 =
       CreateResolver(nullptr, &host_resolver0,
-                     base::WrapUnique(new MockErrorObserver), "dns.js");
+                     std::make_unique<MockErrorObserver>(), "dns.js");
 
   // ------------------------
   // Setup resolver1
   // ------------------------
   std::unique_ptr<ProxyResolver> resolver1 =
       CreateResolver(nullptr, &host_resolver0,
-                     base::WrapUnique(new MockErrorObserver), "dns.js");
+                     std::make_unique<MockErrorObserver>(), "dns.js");
 
   // ------------------------
   // Setup resolver2
   // ------------------------
   std::unique_ptr<ProxyResolver> resolver2 =
       CreateResolver(nullptr, &host_resolver0,
-                     base::WrapUnique(new MockErrorObserver), "simple.js");
+                     std::make_unique<MockErrorObserver>(), "simple.js");
 
   // ------------------------
   // Setup resolver3
@@ -1108,7 +1108,7 @@ TEST_F(ProxyResolverV8TracingWrapperTest, MultipleResolvers) {
   host_resolver3.rules()->AddRule("foo", "166.155.144.33");
   std::unique_ptr<ProxyResolver> resolver3 =
       CreateResolver(nullptr, &host_resolver3,
-                     base::WrapUnique(new MockErrorObserver), "simple_dns.js");
+                     std::make_unique<MockErrorObserver>(), "simple_dns.js");
 
   // ------------------------
   // Queue up work for each resolver (which will be running in parallel).

@@ -4,6 +4,9 @@
 
 #include "net/quic/chromium/quic_proxy_client_socket.h"
 
+#include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "net/dns/mock_host_resolver.h"

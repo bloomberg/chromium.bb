@@ -6,7 +6,6 @@
 
 #include "base/files/file.h"
 #include "base/files/file_util.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"

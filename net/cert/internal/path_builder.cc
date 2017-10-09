@@ -8,7 +8,6 @@
 #include <unordered_set>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "net/base/net_errors.h"
 #include "net/cert/internal/cert_issuer_source.h"
 #include "net/cert/internal/certificate_policies.h"

@@ -4,7 +4,6 @@
 
 #include "net/nqe/event_creator.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "net/log/net_log_with_source.h"
 #include "net/log/test_net_log.h"

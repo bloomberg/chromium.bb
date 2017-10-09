@@ -4,7 +4,8 @@
 
 #include "net/ssl/client_cert_identity.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "crypto/rsa_private_key.h"
 #include "net/cert/x509_util.h"
 #include "net/ssl/client_cert_identity_test_util.h"

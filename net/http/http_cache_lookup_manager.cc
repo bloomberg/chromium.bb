@@ -4,7 +4,8 @@
 
 #include "net/http/http_cache_lookup_manager.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/values.h"
 #include "net/base/load_flags.h"
 

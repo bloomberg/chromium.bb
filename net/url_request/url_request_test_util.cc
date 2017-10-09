@@ -9,7 +9,6 @@
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
@@ -87,7 +86,7 @@ void TestURLRequestContext::Init() {
   }
   if (!ct_policy_enforcer()) {
     context_storage_.set_ct_policy_enforcer(
-        base::WrapUnique(new CTPolicyEnforcer));
+        std::make_unique<CTPolicyEnforcer>());
   }
   if (!ssl_config_service())
     context_storage_.set_ssl_config_service(new SSLConfigServiceDefaults());

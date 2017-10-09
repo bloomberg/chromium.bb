@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <string>
 
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"

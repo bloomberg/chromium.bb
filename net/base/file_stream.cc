@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "net/base/file_stream_context.h"
 #include "net/base/net_errors.h"
 
