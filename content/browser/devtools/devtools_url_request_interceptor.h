@@ -13,6 +13,7 @@
 #include "base/optional.h"
 #include "content/browser/devtools/protocol/network.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/resource_type.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request_interceptor.h"
 
@@ -110,7 +111,8 @@ class DevToolsURLRequestInterceptor : public net::URLRequestInterceptor {
     void StartInterceptingRequests(
         WebContents* web_contents,
         base::WeakPtr<protocol::NetworkHandler> network_handler,
-        std::vector<std::string> patterns);
+        std::vector<std::string> patterns,
+        base::flat_set<ResourceType> intercepted_resource_types);
 
     // Must be called on the UI thread.
     void StopInterceptingRequests(WebContents* web_contents);
@@ -141,11 +143,14 @@ class DevToolsURLRequestInterceptor : public net::URLRequestInterceptor {
 
     struct InterceptedPage {
       InterceptedPage(base::WeakPtr<protocol::NetworkHandler> network_handler,
-                      std::vector<std::string> patterns);
+                      std::vector<std::string> patterns,
+                      base::flat_set<ResourceType> intercepted_resource_types);
       ~InterceptedPage();
 
       const base::WeakPtr<protocol::NetworkHandler> network_handler;
-      const std::vector<std::string> patterns;
+      const std::vector<std::string> intercepted_url_patterns;
+      // If not empty, only resource types from this set will be intercepted.
+      const base::flat_set<ResourceType> intercepted_resource_types;
     };
 
     void ContinueInterceptedRequestOnIO(
@@ -198,7 +203,13 @@ class DevToolsURLRequestInterceptor : public net::URLRequestInterceptor {
     base::flat_map<std::string, DevToolsURLInterceptorRequestJob*>
         interception_id_to_job_map_;
 
+    // The DevToolsURLInterceptorRequestJob proxies a sub request to actually
+    // fetch the bytes from the network. We don't want to intercept those
+    // requests.
     base::flat_set<const net::URLRequest*> sub_requests_;
+
+    // To simplify handling of redirect chains for the end user, we arrange for
+    // all requests in the chain to have the same interception id.
     base::flat_map<const net::URLRequest*, std::string> expected_redirects_;
     size_t next_id_;
 
