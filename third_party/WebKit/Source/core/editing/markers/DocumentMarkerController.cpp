@@ -29,6 +29,7 @@
 #include "core/editing/markers/DocumentMarkerController.h"
 
 #include <algorithm>
+#include "core/dom/AXObjectCache.h"
 #include "core/dom/Node.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/Text.h"
@@ -106,6 +107,15 @@ void InvalidatePaintForNode(const Node& node) {
 
   node.GetLayoutObject()->SetShouldDoFullPaintInvalidation(
       PaintInvalidationReason::kDocumentMarker);
+
+  // Tell accessibility about the new marker.
+  AXObjectCache* ax_object_cache = node.GetDocument().ExistingAXObjectCache();
+  if (!ax_object_cache)
+    return;
+  // TODO(nektar): Do major refactoring of all AX classes to comply with const
+  // correctness.
+  Node* non_const_node = &const_cast<Node&>(node);
+  ax_object_cache->HandleTextMarkerDataAdded(non_const_node, non_const_node);
 }
 
 }  // namespace
