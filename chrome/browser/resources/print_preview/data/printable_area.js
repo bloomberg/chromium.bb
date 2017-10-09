@@ -5,56 +5,55 @@
 cr.define('print_preview', function() {
   'use strict';
 
-  /**
-   * Object describing the printable area of a page in the document.
-   * @param {!print_preview.Coordinate2d} origin Top left corner of the
-   *     printable area of the document.
-   * @param {!print_preview.Size} size Size of the printable area of the
-   *     document.
-   * @constructor
-   */
-  function PrintableArea(origin, size) {
+  class PrintableArea {
     /**
-     * Top left corner of the printable area of the document.
-     * @type {!print_preview.Coordinate2d}
-     * @private
+     * Object describing the printable area of a page in the document.
+     * @param {!print_preview.Coordinate2d} origin Top left corner of the
+     *     printable area of the document.
+     * @param {!print_preview.Size} size Size of the printable area of the
+     *     document.
      */
-    this.origin_ = origin;
+    constructor(origin, size) {
+      /**
+       * Top left corner of the printable area of the document.
+       * @type {!print_preview.Coordinate2d}
+       * @private
+       */
+      this.origin_ = origin;
 
-    /**
-     * Size of the printable area of the document.
-     * @type {!print_preview.Size}
-     * @private
-     */
-    this.size_ = size;
-  }
+      /**
+       * Size of the printable area of the document.
+       * @type {!print_preview.Size}
+       * @private
+       */
+      this.size_ = size;
+    }
 
-  PrintableArea.prototype = {
     /**
      * @return {!print_preview.Coordinate2d} Top left corner of the printable
      *     area of the document.
      */
     get origin() {
       return this.origin_;
-    },
+    }
 
     /**
      * @return {!print_preview.Size} Size of the printable area of the document.
      */
     get size() {
       return this.size_;
-    },
+    }
 
     /**
      * @param {print_preview.PrintableArea} other Other printable area to check
      *     for equality.
      * @return {boolean} Whether another printable area is equal to this one.
      */
-    equals: function(other) {
+    equals(other) {
       return other != null && this.origin_.equals(other.origin_) &&
           this.size_.equals(other.size_);
     }
-  };
+  }
 
   // Export
   return {PrintableArea: PrintableArea};
