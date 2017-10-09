@@ -356,6 +356,18 @@ def main():
             filter=PrintTarProgress)
   MaybeUpload(args, objdumpdir, platform)
 
+  # On Mac, lld isn't part of the main zip.  Upload it in a separate zip.
+  if sys.platform == 'darwin':
+    llddir = 'lld-' + stamp
+    shutil.rmtree(llddir, ignore_errors=True)
+    os.makedirs(os.path.join(llddir, 'bin'))
+    shutil.copy(os.path.join(LLVM_RELEASE_DIR, 'bin', 'lld'),
+                os.path.join(llddir, 'bin'))
+    with tarfile.open(llddir + '.tgz', 'w:gz') as tar:
+      tar.add(os.path.join(llddir, 'bin'), arcname='bin',
+              filter=PrintTarProgress)
+    MaybeUpload(args, llddir, platform)
+
   # Zip up the translation_unit tool.
   translation_unit_dir = 'translation_unit-' + stamp
   shutil.rmtree(translation_unit_dir, ignore_errors=True)

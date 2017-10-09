@@ -453,7 +453,7 @@ def UpdateClang(args):
     RunCommand(['svn', 'revert', f])
 
   Checkout('Clang', LLVM_REPO_URL + '/cfe/trunk', CLANG_DIR)
-  if sys.platform != 'darwin':
+  if True:
     Checkout('LLD', LLVM_REPO_URL + '/lld/trunk', LLD_DIR)
   elif os.path.exists(LLD_DIR):
     # In case someone sends a tryjob that temporary adds lld to the checkout,
