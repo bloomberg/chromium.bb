@@ -10,6 +10,7 @@ import re
 
 from pylib import constants
 from pylib.results.flakiness_dashboard import results_uploader
+from pylib.utils import logging_utils
 
 
 def _LogToFile(results, test_type, suite_name):
@@ -89,18 +90,32 @@ def LogFull(results, test_type, test_package, annotation=None,
     flakiness_server: If provider, upload the results to flakiness dashboard
                       with this URL.
     """
-  if not results.DidRunPass():
+  # pylint doesn't like how colorama set up its color enums.
+  # pylint: disable=no-member
+  black_on_white = (logging_utils.BACK.WHITE, logging_utils.FORE.BLACK)
+  with logging_utils.OverrideColor(logging.CRITICAL, black_on_white):
+    if not results.DidRunPass():
+      logging.critical('*' * 80)
+      logging.critical('Detailed Logs')
+      logging.critical('*' * 80)
+      for line in results.GetLogs().splitlines():
+        logging.critical(line)
     logging.critical('*' * 80)
-    logging.critical('Detailed Logs')
+    logging.critical('Summary')
     logging.critical('*' * 80)
-    for line in results.GetLogs().splitlines():
-      logging.critical(line)
-  logging.critical('*' * 80)
-  logging.critical('Summary')
-  logging.critical('*' * 80)
-  for line in results.GetGtestForm().splitlines():
-    logging.critical(line)
-  logging.critical('*' * 80)
+    for line in results.GetGtestForm().splitlines():
+      color = black_on_white
+      if 'FAILED' in line:
+        # Red on white, dim.
+        color = (logging_utils.BACK.WHITE, logging_utils.FORE.RED,
+                 logging_utils.STYLE.DIM)
+      elif 'PASSED' in line:
+        # Green on white, dim.
+        color = (logging_utils.BACK.WHITE, logging_utils.FORE.GREEN,
+                 logging_utils.STYLE.DIM)
+      with logging_utils.OverrideColor(logging.CRITICAL, color):
+        logging.critical(line)
+    logging.critical('*' * 80)
 
   if os.environ.get('BUILDBOT_BUILDERNAME'):
     # It is possible to have multiple buildbot steps for the same
