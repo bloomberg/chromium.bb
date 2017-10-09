@@ -409,6 +409,12 @@ void AndroidVideoDecodeAccelerator::StartSurfaceChooser() {
 
   surface_chooser_state_.is_fullscreen = config_.overlay_info.is_fullscreen;
 
+  surface_chooser_->SetClientCallbacks(
+      base::Bind(&AndroidVideoDecodeAccelerator::OnSurfaceTransition,
+                 weak_this_factory_.GetWeakPtr()),
+      base::Bind(&AndroidVideoDecodeAccelerator::OnSurfaceTransition,
+                 weak_this_factory_.GetWeakPtr(), nullptr));
+
   // Handle the sync path, which must use SurfaceTexture anyway.  Note that we
   // check both |during_initialize_| and |deferred_initialization_pending_|,
   // since we might get here during deferred surface creation.  In that case,
@@ -426,6 +432,9 @@ void AndroidVideoDecodeAccelerator::StartSurfaceChooser() {
   if (during_initialize_ && !deferred_initialization_pending_) {
     DCHECK(!config_.overlay_info.HasValidSurfaceId());
     DCHECK(!config_.overlay_info.HasValidRoutingToken());
+    // Note that we might still send feedback to |surface_chooser_|, which might
+    // call us back.  However, it will only ever tell us to use SurfaceTexture,
+    // since we have no overlay factory anyway.
     OnSurfaceTransition(nullptr);
     return;
   }
@@ -448,11 +457,6 @@ void AndroidVideoDecodeAccelerator::StartSurfaceChooser() {
   // the synchronous case.  It will be soon, though.  For pre-M, we rely on the
   // fact that |surface_chooser_| won't tell us to use a SurfaceTexture while
   // waiting for an overlay to become ready, for example.
-  surface_chooser_->SetClientCallbacks(
-      base::Bind(&AndroidVideoDecodeAccelerator::OnSurfaceTransition,
-                 weak_this_factory_.GetWeakPtr()),
-      base::Bind(&AndroidVideoDecodeAccelerator::OnSurfaceTransition,
-                 weak_this_factory_.GetWeakPtr(), nullptr));
   surface_chooser_->UpdateState(std::move(factory), surface_chooser_state_);
 }
 
