@@ -1,0 +1,36 @@
+<!DOCTYPE HTML>
+<style>
+  .full {
+    height: 100%;
+    line-height: 20px;
+  }
+  table {
+    height: 100%;
+    width: 200px;
+  }
+  .container {
+    background: red;
+  }
+</style>
+<p>crbug.com/762330: A table with percent height and nothing to resolve against should be treated as auto .</p>
+<table>
+    <tr class="full">
+        <td class="full">
+          <div class='full container' id="test" data-expected-height=20>
+            <div class='full'>
+              Text
+            </div>
+          </div>
+        </td>
+        <td>
+            <div style="height: 50px; width: 50px;"></div>
+        </td>
+    </tr>
+</table>
+<div id='console'></div>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/check-layout-th.js"></script>
+<script>
+    checkLayout("#test", document.getElementById('console'));
+</script>
