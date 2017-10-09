@@ -28,9 +28,12 @@
 #include "WebCommon.h"
 
 #if INSIDE_BLINK
+template <typename T>
+class scoped_refptr;
+
 namespace WTF {
 template <typename T>
-class RefPtr;
+using RefPtr = scoped_refptr<T>;
 }
 #endif
 
