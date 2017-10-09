@@ -10,6 +10,7 @@
 #include "components/signin/core/browser/fake_signin_manager.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "google_apis/gaia/fake_oauth2_token_service_delegate.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/identity/identity_service.h"
 #include "services/identity/public/cpp/account_state.h"
@@ -537,6 +538,49 @@ TEST_F(IdentityManagerTest, GetPrimaryAccountWhenAvailableOverlappingCalls) {
   EXPECT_EQ(kTestEmail, account_info2.email);
   EXPECT_TRUE(account_state2.has_refresh_token);
   EXPECT_TRUE(account_state2.is_primary_account);
+}
+
+// Check that GetPrimaryAccountWhenAvailable() doesn't return the account as
+// available if the refresh token has an auth error.
+TEST_F(IdentityManagerTest,
+       GetPrimaryAccountWhenAvailableRefreshTokenHasAuthError) {
+  signin_manager()->SetAuthenticatedAccountInfo(kTestGaiaId, kTestEmail);
+  token_service()->UpdateCredentials(
+      signin_manager()->GetAuthenticatedAccountId(), kTestRefreshToken);
+  FakeOAuth2TokenServiceDelegate* delegate =
+      static_cast<FakeOAuth2TokenServiceDelegate*>(
+          token_service()->GetDelegate());
+  delegate->SetLastErrorForAccount(
+      signin_manager()->GetAuthenticatedAccountId(),
+      GoogleServiceAuthError(
+          GoogleServiceAuthError::State::INVALID_GAIA_CREDENTIALS));
+
+  AccountInfo account_info;
+  AccountState account_state;
+  base::RunLoop run_loop;
+  GetIdentityManager()->GetPrimaryAccountWhenAvailable(base::Bind(
+      &IdentityManagerTest::OnPrimaryAccountAvailable, base::Unretained(this),
+      run_loop.QuitClosure(), base::Unretained(&account_info),
+      base::Unretained(&account_state)));
+
+  // Flush the Identity Manager and check that the callback didn't fire.
+  FlushIdentityManagerForTesting();
+  EXPECT_TRUE(account_info.account_id.empty());
+
+  // Clear the auth error, update credentials, and check that the callback
+  // fires.
+  delegate->SetLastErrorForAccount(
+      signin_manager()->GetAuthenticatedAccountId(), GoogleServiceAuthError());
+  token_service()->UpdateCredentials(
+      signin_manager()->GetAuthenticatedAccountId(), kTestRefreshToken);
+  run_loop.Run();
+
+  EXPECT_EQ(signin_manager()->GetAuthenticatedAccountId(),
+            account_info.account_id);
+  EXPECT_EQ(kTestGaiaId, account_info.gaia);
+  EXPECT_EQ(kTestEmail, account_info.email);
+  EXPECT_TRUE(account_state.has_refresh_token);
+  EXPECT_TRUE(account_state.is_primary_account);
 }
 
 // Check that the account info for a given GAIA ID is null if that GAIA ID is

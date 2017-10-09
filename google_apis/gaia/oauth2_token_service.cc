@@ -571,6 +571,11 @@ bool OAuth2TokenService::RefreshTokenIsAvailable(
   return delegate_->RefreshTokenIsAvailable(account_id);
 }
 
+bool OAuth2TokenService::RefreshTokenHasError(
+    const std::string& account_id) const {
+  return delegate_->RefreshTokenHasError(account_id);
+}
+
 void OAuth2TokenService::RevokeAllCredentials() {
   CancelAllRequests();
   ClearCache();
