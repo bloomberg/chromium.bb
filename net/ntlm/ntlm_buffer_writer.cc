@@ -77,9 +77,8 @@ bool NtlmBufferWriter::WriteSecurityBuffer(SecurityBuffer sec_buf) {
          WriteUInt32(sec_buf.offset);
 }
 
-bool NtlmBufferWriter::WriteAvPairHeader(ntlm::TargetInfoAvId avid,
-                                         uint16_t avlen) {
-  if (!CanWrite(ntlm::kAvPairHeaderLen))
+bool NtlmBufferWriter::WriteAvPairHeader(TargetInfoAvId avid, uint16_t avlen) {
+  if (!CanWrite(kAvPairHeaderLen))
     return false;
 
   bool result = WriteUInt16(static_cast<uint16_t>(avid)) && WriteUInt16(avlen);
@@ -89,7 +88,7 @@ bool NtlmBufferWriter::WriteAvPairHeader(ntlm::TargetInfoAvId avid,
 }
 
 bool NtlmBufferWriter::WriteAvPairTerminator() {
-  return WriteAvPairHeader(ntlm::TargetInfoAvId::kEol, 0);
+  return WriteAvPairHeader(TargetInfoAvId::kEol, 0);
 }
 
 bool NtlmBufferWriter::WriteAvPair(const AvPair& pair) {

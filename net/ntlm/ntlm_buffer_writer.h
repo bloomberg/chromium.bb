@@ -98,7 +98,7 @@ class NET_EXPORT_PRIVATE NtlmBufferWriter {
   // The header has the following structure:
   //    uint16 - |avid| The identifier of the following payload.
   //    uint16 - |avlen| The length of the following payload.
-  bool WriteAvPairHeader(ntlm::TargetInfoAvId avid,
+  bool WriteAvPairHeader(TargetInfoAvId avid,
                          uint16_t avlen) WARN_UNUSED_RESULT;
 
   // Writes an AvPair header for an |AvPair|. See [MS-NLMP] Section 2.2.2.1.

@@ -129,7 +129,7 @@ class NET_EXPORT_PRIVATE NtlmBufferReader {
   //    uint16      - AvLen: The length of the following payload.
   //    (variable)  - Payload: Variable length payload. The content and
   //                  format are determined by the AvId.
-  bool ReadAvPairHeader(ntlm::TargetInfoAvId* avid,
+  bool ReadAvPairHeader(TargetInfoAvId* avid,
                         uint16_t* avlen) WARN_UNUSED_RESULT;
 
   // There are 3 message types Negotiate (sent by client), Challenge (sent by
@@ -144,7 +144,7 @@ class NET_EXPORT_PRIVATE NtlmBufferReader {
   // returns false, the content of |av_pairs| is in an undefined state and
   // should be discarded.
   bool ReadTargetInfo(size_t target_info_len,
-                      std::vector<ntlm::AvPair>* av_pairs) WARN_UNUSED_RESULT;
+                      std::vector<AvPair>* av_pairs) WARN_UNUSED_RESULT;
 
   // Reads a security buffer, then parses the security buffer payload as a
   // target info. The target info is returned as a sequence of AvPairs, with
@@ -154,8 +154,7 @@ class NET_EXPORT_PRIVATE NtlmBufferReader {
   // |av_pairs| should be empty on entry to this function. If |ReadTargetInfo|
   // returns false, the content of |av_pairs| is in an undefined state and
   // should be discarded.
-  bool ReadTargetInfoPayload(std::vector<ntlm::AvPair>* av_pairs)
-      WARN_UNUSED_RESULT;
+  bool ReadTargetInfoPayload(std::vector<AvPair>* av_pairs) WARN_UNUSED_RESULT;
 
   // Skips over a security buffer field without reading the fields. This is
   // the equivalent of advancing the cursor 8 bytes. Returns false if there

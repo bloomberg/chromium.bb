@@ -234,16 +234,16 @@ TEST(NtlmBufferWriterTest, WriteAvPairHeader) {
   const uint8_t expected[4] = {0x06, 0x00, 0x11, 0x22};
   NtlmBufferWriter writer(4);
 
-  ASSERT_TRUE(writer.WriteAvPairHeader(ntlm::TargetInfoAvId::kFlags, 0x2211));
+  ASSERT_TRUE(writer.WriteAvPairHeader(TargetInfoAvId::kFlags, 0x2211));
   ASSERT_TRUE(writer.IsEndOfBuffer());
 
   ASSERT_EQ(0, memcmp(expected, GetBufferPtr(writer), arraysize(expected)));
 }
 
 TEST(NtlmBufferWriterTest, WriteAvPairHeaderPastEob) {
-  NtlmBufferWriter writer(ntlm::kAvPairHeaderLen - 1);
+  NtlmBufferWriter writer(kAvPairHeaderLen - 1);
 
-  ASSERT_FALSE(writer.WriteAvPairHeader(ntlm::TargetInfoAvId::kFlags, 0x2211));
+  ASSERT_FALSE(writer.WriteAvPairHeader(TargetInfoAvId::kFlags, 0x2211));
   ASSERT_EQ(0u, writer.GetCursor());
 }
 

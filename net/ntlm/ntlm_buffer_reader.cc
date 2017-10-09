@@ -96,9 +96,8 @@ bool NtlmBufferReader::ReadSecurityBuffer(SecurityBuffer* sec_buf) {
          ReadUInt32(&sec_buf->offset);
 }
 
-bool NtlmBufferReader::ReadAvPairHeader(ntlm::TargetInfoAvId* avid,
-                                        uint16_t* avlen) {
-  if (!CanRead(ntlm::kAvPairHeaderLen))
+bool NtlmBufferReader::ReadAvPairHeader(TargetInfoAvId* avid, uint16_t* avlen) {
+  if (!CanRead(kAvPairHeaderLen))
     return false;
 
   uint16_t raw_avid;
@@ -109,13 +108,13 @@ bool NtlmBufferReader::ReadAvPairHeader(ntlm::TargetInfoAvId* avid,
   // specific ones and it is likely a future version might extend this field.
   // The implementation can ignore and skip over AV Pairs it doesn't
   // understand.
-  *avid = static_cast<ntlm::TargetInfoAvId>(raw_avid);
+  *avid = static_cast<TargetInfoAvId>(raw_avid);
 
   return true;
 }
 
 bool NtlmBufferReader::ReadTargetInfo(size_t target_info_len,
-                                      std::vector<ntlm::AvPair>* av_pairs) {
+                                      std::vector<AvPair>* av_pairs) {
   DCHECK(av_pairs->empty());
 
   // A completely empty target info is allowed.
@@ -123,7 +122,7 @@ bool NtlmBufferReader::ReadTargetInfo(size_t target_info_len,
     return true;
 
   // If there is any content there has to be at least one terminating header.
-  if (!CanRead(target_info_len) || target_info_len < ntlm::kAvPairHeaderLen) {
+  if (!CanRead(target_info_len) || target_info_len < kAvPairHeaderLen) {
     return false;
   }
 
@@ -131,7 +130,7 @@ bool NtlmBufferReader::ReadTargetInfo(size_t target_info_len,
   bool saw_eol = false;
 
   while ((GetCursor() < target_info_end)) {
-    ntlm::AvPair pair;
+    AvPair pair;
     if (!ReadAvPairHeader(&pair.avid, &pair.avlen))
       break;
 
@@ -141,7 +140,7 @@ bool NtlmBufferReader::ReadTargetInfo(size_t target_info_len,
 
     // Take a copy of the payload in the AVPair.
     pair.buffer.assign(GetBufferAtCursor(), pair.avlen);
-    if (pair.avid == ntlm::TargetInfoAvId::kEol) {
+    if (pair.avid == TargetInfoAvId::kEol) {
       // Terminator must have zero length.
       if (pair.avlen != 0)
         return false;
@@ -153,21 +152,21 @@ bool NtlmBufferReader::ReadTargetInfo(size_t target_info_len,
     }
 
     switch (pair.avid) {
-      case ntlm::TargetInfoAvId::kFlags:
+      case TargetInfoAvId::kFlags:
         // For flags also populate the flags field so it doesn't
         // have to be modified through the raw buffer later.
         if (pair.avlen != sizeof(uint32_t) ||
             !ReadUInt32(reinterpret_cast<uint32_t*>(&pair.flags)))
           return false;
         break;
-      case ntlm::TargetInfoAvId::kTimestamp:
+      case TargetInfoAvId::kTimestamp:
         // Populate timestamp so it doesn't need to be read through the
         // raw buffer later.
         if (pair.avlen != sizeof(uint64_t) || !ReadUInt64(&pair.timestamp))
           return false;
         break;
-      case ntlm::TargetInfoAvId::kChannelBindings:
-      case ntlm::TargetInfoAvId::kTargetName:
+      case TargetInfoAvId::kChannelBindings:
+      case TargetInfoAvId::kTargetName:
         // The server should never send these, and with EPA enabled the client
         // will add these to the authenticate message. To avoid issues with
         // duplicates or only one being read, just don't allow them.
@@ -191,11 +190,10 @@ bool NtlmBufferReader::ReadTargetInfo(size_t target_info_len,
   return true;
 }
 
-bool NtlmBufferReader::ReadTargetInfoPayload(
-    std::vector<ntlm::AvPair>* av_pairs) {
+bool NtlmBufferReader::ReadTargetInfoPayload(std::vector<AvPair>* av_pairs) {
   DCHECK(av_pairs->empty());
 
-  ntlm::SecurityBuffer sec_buf;
+  SecurityBuffer sec_buf;
 
   // First read the security buffer.
   if (!ReadSecurityBuffer(&sec_buf))
