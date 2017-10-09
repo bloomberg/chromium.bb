@@ -113,13 +113,6 @@ extern const CGFloat kiPhoneOmniboxPlaceholderColorBrightness;
 // Briefly animate the progress bar when a pre-rendered tab is displayed.
 - (void)showPrerenderingAnimation;
 
-// Hides or shows the toolbar controls. When controls are hidden, the toolbar
-// will be drawn as an empty bar with the usual background.
-- (void)setControlsHidden:(BOOL)hidden;
-
-// Set the alpha of the toolbar controls, for fading while tracking gestures.
-- (void)setControlsAlpha:(CGFloat)alpha;
-
 // Called when the current page starts loading.
 - (void)currentPageLoadStarted;
 
@@ -129,11 +122,6 @@ extern const CGFloat kiPhoneOmniboxPlaceholderColorBrightness;
 // Returns visible omnibox frame in WebToolbarController's view coordinate
 // system.
 - (CGRect)visibleOmniboxFrame;
-
-// Returns a UIImage containing a snapshot of the view at the given width.  If
-// |width| is 0, it uses the view's current width. Returns the cached snapshot
-// if it is up to date.
-- (UIImage*)snapshotWithWidth:(CGFloat)width;
 
 // Returns whether omnibox is a first responder.
 - (BOOL)isOmniboxFirstResponder;

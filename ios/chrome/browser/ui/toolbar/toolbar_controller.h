@@ -181,12 +181,6 @@ extern const CGRect kToolbarFrame[INTERFACE_IDIOM_COUNT];
 // animation.
 - (void)dismissToolsMenuPopup;
 
-// Returns the bound of the share button. Used to position the share menu.
-- (CGRect)shareButtonAnchorRect;
-
-// Returns the share button's view. Used to position the share menu.
-- (UIView*)shareButtonView;
-
 // Returns the stackButton (a.k.a. tabSwitcherButton). Used by subclasses to
 // set display or dismiss target-actions.
 - (UIButton*)stackButton;
@@ -232,11 +226,6 @@ extern const CGRect kToolbarFrame[INTERFACE_IDIOM_COUNT];
 // Sets the standard control to a particular alpha value. Intended for use by
 // subclasses that need to temporarily take over the entire toolbar.
 - (void)setStandardControlsAlpha:(CGFloat)alpha;
-
-// Sets the transform that is applied to the standard controls. Can be
-// animated if called from an animation context. Intended for use by
-// subclasses that need to apply a transform to all toolbar buttons.
-- (void)setStandardControlsTransform:(CGAffineTransform)transform;
 
 // Returns the UIImage from the resources bundle for the |imageEnum| and
 // |state|.  Uses the toolbar's current style.
