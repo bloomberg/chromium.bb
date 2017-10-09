@@ -20,6 +20,9 @@ declare_args() {
 
   # If true, defaults image interpolation to low quality.
   use_low_quality_image_interpolation = is_android
+
+  # If true, ffmpeg will be used for decoding audio.
+  use_webaudio_ffmpeg = !is_mac && !is_android
 }
 
 # Whether Android build uses OpenMAX DL FFT. Currently supported only on
@@ -29,8 +32,6 @@ use_openmax_dl_fft =
     is_android && (current_cpu == "x86" || current_cpu == "x64" ||
                    (current_cpu == "arm" && arm_version >= 7) ||
                    current_cpu == "arm64" || current_cpu == "mipsel")
-
-use_webaudio_ffmpeg = !is_mac && !is_android
 
 # TODO(tkent): Remove this flag after the great mv. crbug.com/760462
 snake_case_source_files = false
