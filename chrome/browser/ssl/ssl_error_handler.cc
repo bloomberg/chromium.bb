@@ -61,8 +61,8 @@
 
 namespace {
 
-const base::Feature kMITMSoftwareInterstitial{
-    "MITMSoftwareInterstitial", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kMITMSoftwareInterstitial{"MITMSoftwareInterstitial",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kCaptivePortalInterstitial{
     "CaptivePortalInterstitial", base::FEATURE_ENABLED_BY_DEFAULT};
