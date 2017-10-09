@@ -225,6 +225,7 @@
 #include "printing/features/features.h"
 #include "services/preferences/public/cpp/in_process_service_factory.h"
 #include "services/preferences/public/interfaces/preferences.mojom.h"
+#include "services/proxy_resolver/public/interfaces/proxy_resolver.mojom.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "third_party/WebKit/public/platform/modules/installedapp/installed_app_provider.mojom.h"
@@ -285,6 +286,8 @@
 #include "components/crash/content/browser/crash_dump_observer_android.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
 #include "content/public/browser/android/java_interfaces.h"
+#include "services/proxy_resolver/proxy_resolver_service.h"
+#include "services/proxy_resolver/public/interfaces/proxy_resolver.mojom.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/WebKit/public/platform/modules/payments/payment_request.mojom.h"
 #include "ui/base/resource/resource_bundle_android.h"
@@ -3049,9 +3052,21 @@ void ChromeContentBrowserClient::RegisterInProcessServices(
         std::make_pair(prefs::mojom::kLocalStateServiceName, info));
   }
 #if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
-  service_manager::EmbeddedServiceInfo info;
-  info.factory = base::Bind(&media::CreateMediaService);
-  services->insert(std::make_pair(media::mojom::kMediaServiceName, info));
+  {
+    service_manager::EmbeddedServiceInfo info;
+    info.factory = base::Bind(&media::CreateMediaService);
+    services->insert(std::make_pair(media::mojom::kMediaServiceName, info));
+  }
+#endif
+
+#if defined(OS_ANDROID)
+  {
+    service_manager::EmbeddedServiceInfo info;
+    info.factory =
+        base::Bind(&proxy_resolver::ProxyResolverService::CreateService);
+    services->insert(
+        std::make_pair(proxy_resolver::mojom::kProxyResolverServiceName, info));
+  }
 #endif
   g_browser_process->platform_part()->RegisterInProcessServices(services);
 }
@@ -3074,6 +3089,9 @@ void ChromeContentBrowserClient::RegisterOutOfProcessServices(
 #if !defined(OS_ANDROID)
   (*services)[chrome::mojom::kProfileImportServiceName] =
       l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_PROFILE_IMPORTER_NAME);
+
+  (*services)[proxy_resolver::mojom::kProxyResolverServiceName] =
+      l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_PROXY_RESOLVER_NAME);
 #endif
 
 #if BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)

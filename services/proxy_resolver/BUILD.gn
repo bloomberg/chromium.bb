@@ -5,29 +5,14 @@
 import("//services/service_manager/public/cpp/service.gni")
 import("//services/service_manager/public/service_manifest.gni")
 
-source_set("lib_browser") {
+source_set("lib") {
   sources = [
-    "proxy_resolver_factory_mojo.cc",
-    "proxy_resolver_factory_mojo.h",
-  ]
-
-  deps = [
-    "//base",
-    "//mojo/public/cpp/bindings",
-    "//net",
-    "//net:net_browser_services",
-  ]
-
-  public_deps = [
-    "//services/proxy_resolver/public/interfaces",
-    "//services/service_manager/public/cpp",
-  ]
-}
-
-source_set("lib_utility") {
-  sources = [
-    "mojo_proxy_resolver_impl.cc",
-    "mojo_proxy_resolver_impl.h",
+    "proxy_resolver_factory_impl.cc",
+    "proxy_resolver_factory_impl.h",
+    "proxy_resolver_impl.cc",
+    "proxy_resolver_impl.h",
+    "proxy_resolver_service.cc",
+    "proxy_resolver_service.h",
   ]
 
   deps = [
@@ -36,6 +21,7 @@ source_set("lib_utility") {
     "//net",
     "//net:net_utility_services",
     "//net:net_with_v8",
+    "//services/service_manager",
   ]
 
   public_deps = [
@@ -48,24 +34,24 @@ source_set("tests") {
   testonly = true
 
   sources = [
-    "mojo_proxy_resolver_factory_impl_unittest.cc",
-    "mojo_proxy_resolver_impl_unittest.cc",
-    "proxy_resolver_factory_mojo_unittest.cc",
-    "proxy_service_mojo_unittest.cc",
+    "proxy_resolver_factory_impl_unittest.cc",
+    "proxy_resolver_impl_unittest.cc",
   ]
 
   deps = [
-    ":lib_browser",
-    ":lib_utility",
+    ":lib",
     "//base",
     "//base/test:test_support",
     "//net:net_browser_services",
     "//net:test_support",
-    "//services/proxy_resolver/public/cpp:cpp_browser",
-    "//services/proxy_resolver/public/cpp:cpp_utility",
     "//testing/gmock",
     "//testing/gtest",
   ]
 
   configs += [ "//v8:external_startup_data" ]
+}
+
+service_manifest("proxy_resolver_manifest") {
+  name = "proxy_resolver"
+  source = "manifest.json"
 }

@@ -54,8 +54,6 @@ static_library("utility") {
     "//media",
     "//net:net_with_v8",
     "//printing/features",
-    "//services/proxy_resolver/public/cpp:cpp_browser",
-    "//services/proxy_resolver/public/cpp:cpp_utility",
     "//services/service_manager/public/cpp",
     "//skia",
     "//sql",
@@ -102,6 +100,7 @@ static_library("utility") {
       "//chrome/common:mojo_bindings",
       "//chrome/common/importer:interfaces",
       "//services/data_decoder:lib",
+      "//services/proxy_resolver:lib",
     ]
   }
 

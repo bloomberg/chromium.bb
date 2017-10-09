@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_PROXY_RESOLVER_PUBLIC_CPP_TEST_MOJO_PROXY_RESOLVER_FACTORY_H_
-#define SERVICES_PROXY_RESOLVER_PUBLIC_CPP_TEST_MOJO_PROXY_RESOLVER_FACTORY_H_
+#ifndef CONTENT_TEST_TEST_MOJO_PROXY_RESOLVER_FACTORY_H_
+#define CONTENT_TEST_TEST_MOJO_PROXY_RESOLVER_FACTORY_H_
 
 #include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "services/proxy_resolver/public/cpp/mojo_proxy_resolver_factory.h"
+#include "content/public/network/mojo_proxy_resolver_factory.h"
 
-namespace proxy_resolver {
+namespace content {
 
 // MojoProxyResolverFactory that runs PAC scripts in-process, for tests.
 class TestMojoProxyResolverFactory : public MojoProxyResolverFactory {
@@ -25,17 +25,18 @@ class TestMojoProxyResolverFactory : public MojoProxyResolverFactory {
   // Overridden from MojoProxyResolverFactory:
   std::unique_ptr<base::ScopedClosureRunner> CreateResolver(
       const std::string& pac_script,
-      mojo::InterfaceRequest<mojom::ProxyResolver> req,
-      mojom::ProxyResolverFactoryRequestClientPtr client) override;
+      mojo::InterfaceRequest<proxy_resolver::mojom::ProxyResolver> req,
+      proxy_resolver::mojom::ProxyResolverFactoryRequestClientPtr client)
+      override;
 
  private:
-  mojom::ProxyResolverFactoryPtr factory_;
+  proxy_resolver::mojom::ProxyResolverFactoryPtr factory_;
 
   bool resolver_created_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestMojoProxyResolverFactory);
 };
 
-}  // namespace proxy_resolver
+}  // namespace content
 
-#endif  // SERVICES_PROXY_RESOLVER_PUBLIC_CPP_TEST_MOJO_PROXY_RESOLVER_FACTORY_H_
+#endif  // CONTENT_TEST_TEST_MOJO_PROXY_RESOLVER_FACTORY_H_

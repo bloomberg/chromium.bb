@@ -2,29 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/proxy_resolver/public/cpp/test_mojo_proxy_resolver_factory.h"
+#include "content/test/test_mojo_proxy_resolver_factory.h"
 
 #include "base/memory/ptr_util.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "services/proxy_resolver/public/cpp/mojo_proxy_resolver_factory_impl.h"
+#include "services/proxy_resolver/proxy_resolver_factory_impl.h"
 
-namespace proxy_resolver {
+namespace content {
 
 std::unique_ptr<base::ScopedClosureRunner>
 TestMojoProxyResolverFactory::CreateResolver(
     const std::string& pac_script,
-    mojo::InterfaceRequest<mojom::ProxyResolver> req,
-    mojom::ProxyResolverFactoryRequestClientPtr client) {
+    mojo::InterfaceRequest<proxy_resolver::mojom::ProxyResolver> req,
+    proxy_resolver::mojom::ProxyResolverFactoryRequestClientPtr client) {
   resolver_created_ = true;
   factory_->CreateResolver(pac_script, std::move(req), std::move(client));
   return nullptr;
 }
 
 TestMojoProxyResolverFactory::TestMojoProxyResolverFactory() {
-  mojo::MakeStrongBinding(std::make_unique<MojoProxyResolverFactoryImpl>(),
-                          mojo::MakeRequest(&factory_));
+  mojo::MakeStrongBinding(
+      std::make_unique<proxy_resolver::ProxyResolverFactoryImpl>(),
+      mojo::MakeRequest(&factory_));
 }
 
 TestMojoProxyResolverFactory::~TestMojoProxyResolverFactory() = default;
 
-}  // namespace proxy_resolver
+}  // namespace content

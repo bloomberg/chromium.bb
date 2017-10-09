@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_PROXY_RESOLVER_MOJO_PROXY_RESOLVER_IMPL_H_
-#define SERVICES_PROXY_RESOLVER_MOJO_PROXY_RESOLVER_IMPL_H_
+#ifndef SERVICES_PROXY_RESOLVER_PROXY_RESOLVER_IMPL_H_
+#define SERVICES_PROXY_RESOLVER_PROXY_RESOLVER_IMPL_H_
 
 #include <map>
 #include <memory>
@@ -19,12 +19,12 @@ class ProxyResolverV8Tracing;
 
 namespace proxy_resolver {
 
-class MojoProxyResolverImpl : public mojom::ProxyResolver {
+class ProxyResolverImpl : public mojom::ProxyResolver {
  public:
-  explicit MojoProxyResolverImpl(
+  explicit ProxyResolverImpl(
       std::unique_ptr<net::ProxyResolverV8Tracing> resolver);
 
-  ~MojoProxyResolverImpl() override;
+  ~ProxyResolverImpl() override;
 
  private:
   class Job;
@@ -38,9 +38,9 @@ class MojoProxyResolverImpl : public mojom::ProxyResolver {
   std::unique_ptr<net::ProxyResolverV8Tracing> resolver_;
   std::map<Job*, std::unique_ptr<Job>> resolve_jobs_;
 
-  DISALLOW_COPY_AND_ASSIGN(MojoProxyResolverImpl);
+  DISALLOW_COPY_AND_ASSIGN(ProxyResolverImpl);
 };
 
 }  // namespace proxy_resolver
 
-#endif  // SERVICES_PROXY_RESOLVER_MOJO_PROXY_RESOLVER_IMPL_H_
+#endif  // SERVICES_PROXY_RESOLVER_PROXY_RESOLVER_IMPL_H_

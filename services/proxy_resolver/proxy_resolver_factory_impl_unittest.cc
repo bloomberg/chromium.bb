@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/proxy_resolver/public/cpp/mojo_proxy_resolver_factory_impl.h"
+#include "services/proxy_resolver/proxy_resolver_factory_impl.h"
 
 #include <utility>
 
@@ -92,15 +92,25 @@ class TestProxyResolverFactory : public net::ProxyResolverV8TracingFactory {
   std::unique_ptr<PendingRequest> pending_request_;
 };
 
+class TestProxyResolverFactoryImpl : public ProxyResolverFactoryImpl {
+ public:
+  explicit TestProxyResolverFactoryImpl(
+      std::unique_ptr<net::ProxyResolverV8TracingFactory>
+          proxy_resolver_factory)
+      : ProxyResolverFactoryImpl(
+            std::unique_ptr<service_manager::ServiceContextRef>(),
+            std::move(proxy_resolver_factory)) {}
+};
+
 }  // namespace
 
-class MojoProxyResolverFactoryImplTest
+class ProxyResolverFactoryImplTest
     : public testing::Test,
       public mojom::ProxyResolverFactoryRequestClient {
  public:
   void SetUp() override {
     mock_factory_ = new TestProxyResolverFactory(&waiter_);
-    mojo::MakeStrongBinding(std::make_unique<MojoProxyResolverFactoryImpl>(
+    mojo::MakeStrongBinding(std::make_unique<TestProxyResolverFactoryImpl>(
                                 base::WrapUnique(mock_factory_)),
                             mojo::MakeRequest(&factory_));
   }
@@ -134,7 +144,7 @@ class MojoProxyResolverFactoryImplTest
   net::EventWaiter<Event> waiter_;
 };
 
-TEST_F(MojoProxyResolverFactoryImplTest, DisconnectProxyResolverClient) {
+TEST_F(ProxyResolverFactoryImplTest, DisconnectProxyResolverClient) {
   mojom::ProxyResolverPtr proxy_resolver;
   mojom::ProxyResolverFactoryRequestClientPtr client_ptr;
   mojo::Binding<ProxyResolverFactoryRequestClient> client_binding(
@@ -142,7 +152,7 @@ TEST_F(MojoProxyResolverFactoryImplTest, DisconnectProxyResolverClient) {
   factory_->CreateResolver(kScriptData, mojo::MakeRequest(&proxy_resolver),
                            std::move(client_ptr));
   proxy_resolver.set_connection_error_handler(
-      base::Bind(&MojoProxyResolverFactoryImplTest::OnConnectionError,
+      base::Bind(&ProxyResolverFactoryImplTest::OnConnectionError,
                  base::Unretained(this)));
   waiter_.WaitForEvent(RESOLVER_CREATED);
   EXPECT_EQ(0, instances_destroyed_);
@@ -150,10 +160,9 @@ TEST_F(MojoProxyResolverFactoryImplTest, DisconnectProxyResolverClient) {
   net::TestCompletionCallback create_callback;
   create_callback_ = create_callback.callback();
   ASSERT_TRUE(mock_factory_->pending_request());
-  mock_factory_->pending_request()->resolver->reset(
-      new FakeProxyResolver(base::Bind(
-          &MojoProxyResolverFactoryImplTest::OnFakeProxyInstanceDestroyed,
-          base::Unretained(this))));
+  mock_factory_->pending_request()->resolver->reset(new FakeProxyResolver(
+      base::Bind(&ProxyResolverFactoryImplTest::OnFakeProxyInstanceDestroyed,
+                 base::Unretained(this))));
   mock_factory_->pending_request()->callback.Run(net::OK);
   EXPECT_THAT(create_callback.WaitForResult(), IsOk());
   proxy_resolver.reset();
@@ -161,7 +170,7 @@ TEST_F(MojoProxyResolverFactoryImplTest, DisconnectProxyResolverClient) {
   EXPECT_EQ(1, instances_destroyed_);
 }
 
-TEST_F(MojoProxyResolverFactoryImplTest, Error) {
+TEST_F(ProxyResolverFactoryImplTest, Error) {
   mojom::ProxyResolverPtr proxy_resolver;
   mojom::ProxyResolverFactoryRequestClientPtr client_ptr;
   mojo::Binding<ProxyResolverFactoryRequestClient> client_binding(
@@ -169,7 +178,7 @@ TEST_F(MojoProxyResolverFactoryImplTest, Error) {
   factory_->CreateResolver(kScriptData, mojo::MakeRequest(&proxy_resolver),
                            std::move(client_ptr));
   proxy_resolver.set_connection_error_handler(
-      base::Bind(&MojoProxyResolverFactoryImplTest::OnConnectionError,
+      base::Bind(&ProxyResolverFactoryImplTest::OnConnectionError,
                  base::Unretained(this)));
   waiter_.WaitForEvent(RESOLVER_CREATED);
   EXPECT_EQ(0, instances_destroyed_);
@@ -182,8 +191,7 @@ TEST_F(MojoProxyResolverFactoryImplTest, Error) {
               IsError(net::ERR_PAC_SCRIPT_FAILED));
 }
 
-TEST_F(MojoProxyResolverFactoryImplTest,
-       DisconnectClientDuringResolverCreation) {
+TEST_F(ProxyResolverFactoryImplTest, DisconnectClientDuringResolverCreation) {
   mojom::ProxyResolverPtr proxy_resolver;
   mojom::ProxyResolverFactoryRequestClientPtr client_ptr;
   mojo::Binding<ProxyResolverFactoryRequestClient> client_binding(
@@ -191,7 +199,7 @@ TEST_F(MojoProxyResolverFactoryImplTest,
   factory_->CreateResolver(kScriptData, mojo::MakeRequest(&proxy_resolver),
                            std::move(client_ptr));
   proxy_resolver.set_connection_error_handler(
-      base::Bind(&MojoProxyResolverFactoryImplTest::OnConnectionError,
+      base::Bind(&ProxyResolverFactoryImplTest::OnConnectionError,
                  base::Unretained(this)));
   waiter_.WaitForEvent(RESOLVER_CREATED);
   EXPECT_EQ(0, instances_destroyed_);
@@ -200,8 +208,7 @@ TEST_F(MojoProxyResolverFactoryImplTest,
   waiter_.WaitForEvent(CONNECTION_ERROR);
 }
 
-TEST_F(MojoProxyResolverFactoryImplTest,
-       DisconnectFactoryDuringResolverCreation) {
+TEST_F(ProxyResolverFactoryImplTest, DisconnectFactoryDuringResolverCreation) {
   mojom::ProxyResolverPtr proxy_resolver;
   mojom::ProxyResolverFactoryRequestClientPtr client_ptr;
   mojo::Binding<ProxyResolverFactoryRequestClient> client_binding(
@@ -209,10 +216,10 @@ TEST_F(MojoProxyResolverFactoryImplTest,
   factory_->CreateResolver(kScriptData, mojo::MakeRequest(&proxy_resolver),
                            std::move(client_ptr));
   proxy_resolver.set_connection_error_handler(
-      base::Bind(&MojoProxyResolverFactoryImplTest::OnConnectionError,
+      base::Bind(&ProxyResolverFactoryImplTest::OnConnectionError,
                  base::Unretained(this)));
   client_binding.set_connection_error_handler(
-      base::Bind(&MojoProxyResolverFactoryImplTest::OnConnectionError,
+      base::Bind(&ProxyResolverFactoryImplTest::OnConnectionError,
                  base::Unretained(this)));
   waiter_.WaitForEvent(RESOLVER_CREATED);
   EXPECT_EQ(0, instances_destroyed_);

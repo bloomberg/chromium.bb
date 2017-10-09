@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/proxy_resolver/mojo_proxy_resolver_impl.h"
+#include "services/proxy_resolver/proxy_resolver_impl.h"
 
 #include <utility>
 
@@ -16,10 +16,10 @@
 
 namespace proxy_resolver {
 
-class MojoProxyResolverImpl::Job {
+class ProxyResolverImpl::Job {
  public:
   Job(mojom::ProxyResolverRequestClientPtr client,
-      MojoProxyResolverImpl* resolver,
+      ProxyResolverImpl* resolver,
       const GURL& url);
   ~Job();
 
@@ -32,7 +32,7 @@ class MojoProxyResolverImpl::Job {
 
   void GetProxyDone(int error);
 
-  MojoProxyResolverImpl* resolver_;
+  ProxyResolverImpl* resolver_;
 
   mojom::ProxyResolverRequestClientPtr client_;
   net::ProxyInfo result_;
@@ -43,13 +43,13 @@ class MojoProxyResolverImpl::Job {
   DISALLOW_COPY_AND_ASSIGN(Job);
 };
 
-MojoProxyResolverImpl::MojoProxyResolverImpl(
+ProxyResolverImpl::ProxyResolverImpl(
     std::unique_ptr<net::ProxyResolverV8Tracing> resolver)
     : resolver_(std::move(resolver)) {}
 
-MojoProxyResolverImpl::~MojoProxyResolverImpl() {}
+ProxyResolverImpl::~ProxyResolverImpl() {}
 
-void MojoProxyResolverImpl::GetProxyForUrl(
+void ProxyResolverImpl::GetProxyForUrl(
     const GURL& url,
     mojom::ProxyResolverRequestClientPtr client) {
   DVLOG(1) << "GetProxyForUrl(" << url << ")";
@@ -60,33 +60,32 @@ void MojoProxyResolverImpl::GetProxyForUrl(
   job_ptr->Start();
 }
 
-void MojoProxyResolverImpl::DeleteJob(Job* job) {
-  auto it = resolve_jobs_.find(job);
-  DCHECK(it != resolve_jobs_.end());
-  resolve_jobs_.erase(it);
+void ProxyResolverImpl::DeleteJob(Job* job) {
+  size_t erased_count = resolve_jobs_.erase(job);
+  DCHECK_EQ(1U, erased_count);
 }
 
-MojoProxyResolverImpl::Job::Job(mojom::ProxyResolverRequestClientPtr client,
-                                MojoProxyResolverImpl* resolver,
-                                const GURL& url)
+ProxyResolverImpl::Job::Job(mojom::ProxyResolverRequestClientPtr client,
+                            ProxyResolverImpl* resolver,
+                            const GURL& url)
     : resolver_(resolver),
       client_(std::move(client)),
       url_(url),
       done_(false) {}
 
-MojoProxyResolverImpl::Job::~Job() {}
+ProxyResolverImpl::Job::~Job() {}
 
-void MojoProxyResolverImpl::Job::Start() {
+void ProxyResolverImpl::Job::Start() {
   resolver_->resolver_->GetProxyForURL(
       url_, &result_, base::Bind(&Job::GetProxyDone, base::Unretained(this)),
       &request_,
       std::make_unique<net::MojoProxyResolverV8TracingBindings<
           mojom::ProxyResolverRequestClient>>(client_.get()));
   client_.set_connection_error_handler(base::Bind(
-      &MojoProxyResolverImpl::Job::OnConnectionError, base::Unretained(this)));
+      &ProxyResolverImpl::Job::OnConnectionError, base::Unretained(this)));
 }
 
-void MojoProxyResolverImpl::Job::GetProxyDone(int error) {
+void ProxyResolverImpl::Job::GetProxyDone(int error) {
   done_ = true;
   DVLOG(1) << "GetProxyForUrl(" << url_ << ") finished with error " << error
            << ". " << result_.proxy_list().size() << " Proxies returned:";
@@ -101,7 +100,7 @@ void MojoProxyResolverImpl::Job::GetProxyDone(int error) {
   resolver_->DeleteJob(this);
 }
 
-void MojoProxyResolverImpl::Job::OnConnectionError() {
+void ProxyResolverImpl::Job::OnConnectionError() {
   resolver_->DeleteJob(this);
 }
 

@@ -13,6 +13,9 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "content/network/proxy_service_mojo.h"
+#include "content/public/network/mojo_proxy_resolver_factory.h"
+#include "content/test/test_mojo_proxy_resolver_factory.h"
 #include "net/base/network_delegate_impl.h"
 #include "net/base/test_completion_callback.h"
 #include "net/dns/mock_host_resolver.h"
@@ -26,9 +29,6 @@
 #include "net/proxy/proxy_service.h"
 #include "net/test/event_waiter.h"
 #include "net/test/gtest_util.h"
-#include "services/proxy_resolver/public/cpp/mojo_proxy_resolver_factory.h"
-#include "services/proxy_resolver/public/cpp/proxy_service_mojo.h"
-#include "services/proxy_resolver/public/cpp/test_mojo_proxy_resolver_factory.h"
 #include "services/proxy_resolver/public/interfaces/proxy_resolver.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -126,14 +126,13 @@ class LoggingMockHostResolver : public net::MockHostResolver {
 
 }  // namespace
 
-class ProxyServiceMojoTest : public testing::Test,
-                             public proxy_resolver::MojoProxyResolverFactory {
+class ProxyServiceMojoTest : public testing::Test, MojoProxyResolverFactory {
  protected:
   void SetUp() override {
     mock_host_resolver_.rules()->AddRule("example.com", "1.2.3.4");
 
     fetcher_ = new net::MockProxyScriptFetcher;
-    proxy_service_ = proxy_resolver::CreateProxyServiceUsingMojoFactory(
+    proxy_service_ = CreateProxyServiceUsingMojoFactory(
         this,
         std::make_unique<net::ProxyConfigServiceFixed>(
             net::ProxyConfig::CreateFromCustomPacURL(GURL(kPacUrl))),
@@ -153,8 +152,7 @@ class ProxyServiceMojoTest : public testing::Test,
   }
 
   base::test::ScopedTaskEnvironment task_environment_;
-  proxy_resolver::TestMojoProxyResolverFactory
-      test_mojo_proxy_resolver_factory_;
+  content::TestMojoProxyResolverFactory test_mojo_proxy_resolver_factory_;
   TestNetworkDelegate network_delegate_;
   LoggingMockHostResolver mock_host_resolver_;
   net::MockProxyScriptFetcher* fetcher_;  // Owned by |proxy_service_|.

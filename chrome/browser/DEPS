@@ -49,6 +49,9 @@ include_rules = [
   "+services/metrics/public",
   "+services/preferences/public/cpp",
   "+services/preferences/public/interfaces",
+  "+services/proxy_resolver",  # Android runs the packaged proxy resolver
+                               # service in process and needs impl access.
+  "+services/proxy_resolver/public/interfaces",
   "+services/resource_coordinator/public/cpp",
   "+services/resource_coordinator/public/interfaces",
   "+services/service_manager",

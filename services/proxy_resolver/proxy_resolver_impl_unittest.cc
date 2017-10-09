@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/proxy_resolver/mojo_proxy_resolver_impl.h"
+#include "services/proxy_resolver/proxy_resolver_impl.h"
 
 #include <string>
 #include <utility>
@@ -193,24 +193,24 @@ void MockProxyResolverV8Tracing::WaitForCancel() {
 
 }  // namespace
 
-class MojoProxyResolverImplTest : public testing::Test {
+class ProxyResolverImplTest : public testing::Test {
  protected:
   void SetUp() override {
     std::unique_ptr<MockProxyResolverV8Tracing> mock_resolver(
         new MockProxyResolverV8Tracing);
     mock_proxy_resolver_ = mock_resolver.get();
-    resolver_impl_.reset(new MojoProxyResolverImpl(std::move(mock_resolver)));
+    resolver_impl_.reset(new ProxyResolverImpl(std::move(mock_resolver)));
     resolver_ = resolver_impl_.get();
   }
 
   base::test::ScopedTaskEnvironment task_environment_;
   MockProxyResolverV8Tracing* mock_proxy_resolver_;
 
-  std::unique_ptr<MojoProxyResolverImpl> resolver_impl_;
+  std::unique_ptr<ProxyResolverImpl> resolver_impl_;
   mojom::ProxyResolver* resolver_;
 };
 
-TEST_F(MojoProxyResolverImplTest, GetProxyForUrl) {
+TEST_F(ProxyResolverImplTest, GetProxyForUrl) {
   mojom::ProxyResolverRequestClientPtr client_ptr;
   TestRequestClient client(mojo::MakeRequest(&client_ptr));
 
@@ -258,7 +258,7 @@ TEST_F(MojoProxyResolverImplTest, GetProxyForUrl) {
   EXPECT_EQ(net::ProxyServer::SCHEME_DIRECT, servers[5].scheme());
 }
 
-TEST_F(MojoProxyResolverImplTest, GetProxyForUrlFailure) {
+TEST_F(ProxyResolverImplTest, GetProxyForUrlFailure) {
   mojom::ProxyResolverRequestClientPtr client_ptr;
   TestRequestClient client(mojo::MakeRequest(&client_ptr));
 
@@ -276,7 +276,7 @@ TEST_F(MojoProxyResolverImplTest, GetProxyForUrlFailure) {
   EXPECT_TRUE(proxy_servers.empty());
 }
 
-TEST_F(MojoProxyResolverImplTest, GetProxyForUrlMultiple) {
+TEST_F(ProxyResolverImplTest, GetProxyForUrlMultiple) {
   mojom::ProxyResolverRequestClientPtr client_ptr1;
   TestRequestClient client1(mojo::MakeRequest(&client_ptr1));
   mojom::ProxyResolverRequestClientPtr client_ptr2;
@@ -318,7 +318,7 @@ TEST_F(MojoProxyResolverImplTest, GetProxyForUrlMultiple) {
   EXPECT_EQ(6789, server2.host_port_pair().port());
 }
 
-TEST_F(MojoProxyResolverImplTest, DestroyClient) {
+TEST_F(ProxyResolverImplTest, DestroyClient) {
   mojom::ProxyResolverRequestClientPtr client_ptr;
   std::unique_ptr<TestRequestClient> client(
       new TestRequestClient(mojo::MakeRequest(&client_ptr)));
@@ -333,7 +333,7 @@ TEST_F(MojoProxyResolverImplTest, DestroyClient) {
   mock_proxy_resolver_->WaitForCancel();
 }
 
-TEST_F(MojoProxyResolverImplTest, DestroyService) {
+TEST_F(ProxyResolverImplTest, DestroyService) {
   mojom::ProxyResolverRequestClientPtr client_ptr;
   TestRequestClient client(mojo::MakeRequest(&client_ptr));
 

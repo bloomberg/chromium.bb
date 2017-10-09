@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/proxy_resolver/public/cpp/mojo_proxy_resolver_factory_impl.h"
+#include "services/proxy_resolver/proxy_resolver_factory_impl.h"
 
 #include <string>
 #include <utility>
@@ -14,13 +14,13 @@
 #include "net/proxy/mojo_proxy_resolver_v8_tracing_bindings.h"
 #include "net/proxy/proxy_resolver_factory.h"
 #include "net/proxy/proxy_resolver_v8_tracing.h"
-#include "services/proxy_resolver/mojo_proxy_resolver_impl.h"
+#include "services/proxy_resolver/proxy_resolver_impl.h"
 
 namespace proxy_resolver {
 
-class MojoProxyResolverFactoryImpl::Job {
+class ProxyResolverFactoryImpl::Job {
  public:
-  Job(MojoProxyResolverFactoryImpl* parent,
+  Job(ProxyResolverFactoryImpl* parent,
       const scoped_refptr<net::ProxyResolverScriptData>& pac_script,
       net::ProxyResolverV8TracingFactory* proxy_resolver_factory,
       mojo::InterfaceRequest<mojom::ProxyResolver> request,
@@ -33,7 +33,7 @@ class MojoProxyResolverFactoryImpl::Job {
 
   void OnProxyResolverCreated(int error);
 
-  MojoProxyResolverFactoryImpl* const parent_;
+  ProxyResolverFactoryImpl* const parent_;
   std::unique_ptr<net::ProxyResolverV8Tracing> proxy_resolver_impl_;
   mojo::InterfaceRequest<mojom::ProxyResolver> proxy_request_;
   net::ProxyResolverV8TracingFactory* factory_;
@@ -43,8 +43,8 @@ class MojoProxyResolverFactoryImpl::Job {
   DISALLOW_COPY_AND_ASSIGN(Job);
 };
 
-MojoProxyResolverFactoryImpl::Job::Job(
-    MojoProxyResolverFactoryImpl* factory,
+ProxyResolverFactoryImpl::Job::Job(
+    ProxyResolverFactoryImpl* factory,
     const scoped_refptr<net::ProxyResolverScriptData>& pac_script,
     net::ProxyResolverV8TracingFactory* proxy_resolver_factory,
     mojo::InterfaceRequest<mojom::ProxyResolver> request,
@@ -54,46 +54,54 @@ MojoProxyResolverFactoryImpl::Job::Job(
       factory_(proxy_resolver_factory),
       client_ptr_(std::move(client)) {
   client_ptr_.set_connection_error_handler(
-      base::Bind(&MojoProxyResolverFactoryImpl::Job::OnConnectionError,
+      base::Bind(&ProxyResolverFactoryImpl::Job::OnConnectionError,
                  base::Unretained(this)));
   factory_->CreateProxyResolverV8Tracing(
       pac_script,
       std::make_unique<net::MojoProxyResolverV8TracingBindings<
           mojom::ProxyResolverFactoryRequestClient>>(client_ptr_.get()),
       &proxy_resolver_impl_,
-      base::Bind(&MojoProxyResolverFactoryImpl::Job::OnProxyResolverCreated,
+      base::Bind(&ProxyResolverFactoryImpl::Job::OnProxyResolverCreated,
                  base::Unretained(this)),
       &request_);
 }
 
-MojoProxyResolverFactoryImpl::Job::~Job() = default;
+ProxyResolverFactoryImpl::Job::~Job() = default;
 
-void MojoProxyResolverFactoryImpl::Job::OnConnectionError() {
+void ProxyResolverFactoryImpl::Job::OnConnectionError() {
   client_ptr_->ReportResult(net::ERR_PAC_SCRIPT_TERMINATED);
   parent_->RemoveJob(this);
 }
 
-void MojoProxyResolverFactoryImpl::Job::OnProxyResolverCreated(int error) {
+void ProxyResolverFactoryImpl::Job::OnProxyResolverCreated(int error) {
   if (error == net::OK) {
-    mojo::MakeStrongBinding(std::make_unique<MojoProxyResolverImpl>(
-                                std::move(proxy_resolver_impl_)),
-                            std::move(proxy_request_));
+    mojo::MakeStrongBinding(
+        std::make_unique<ProxyResolverImpl>(std::move(proxy_resolver_impl_)),
+        std::move(proxy_request_));
   }
   client_ptr_->ReportResult(error);
   parent_->RemoveJob(this);
 }
 
-MojoProxyResolverFactoryImpl::MojoProxyResolverFactoryImpl(
-    std::unique_ptr<net::ProxyResolverV8TracingFactory> proxy_resolver_factory)
-    : proxy_resolver_impl_factory_(std::move(proxy_resolver_factory)) {}
-
-MojoProxyResolverFactoryImpl::MojoProxyResolverFactoryImpl()
-    : MojoProxyResolverFactoryImpl(
+ProxyResolverFactoryImpl::ProxyResolverFactoryImpl()
+    : ProxyResolverFactoryImpl(
+          std::unique_ptr<service_manager::ServiceContextRef>(),
           net::ProxyResolverV8TracingFactory::Create()) {}
 
-MojoProxyResolverFactoryImpl::~MojoProxyResolverFactoryImpl() {}
+ProxyResolverFactoryImpl::ProxyResolverFactoryImpl(
+    std::unique_ptr<service_manager::ServiceContextRef> service_ref)
+    : ProxyResolverFactoryImpl(std::move(service_ref),
+                               net::ProxyResolverV8TracingFactory::Create()) {}
 
-void MojoProxyResolverFactoryImpl::CreateResolver(
+ProxyResolverFactoryImpl::ProxyResolverFactoryImpl(
+    std::unique_ptr<service_manager::ServiceContextRef> service_ref,
+    std::unique_ptr<net::ProxyResolverV8TracingFactory> proxy_resolver_factory)
+    : service_ref_(std::move(service_ref)),
+      proxy_resolver_impl_factory_(std::move(proxy_resolver_factory)) {}
+
+ProxyResolverFactoryImpl::~ProxyResolverFactoryImpl() {}
+
+void ProxyResolverFactoryImpl::CreateResolver(
     const std::string& pac_script,
     mojo::InterfaceRequest<mojom::ProxyResolver> request,
     mojom::ProxyResolverFactoryRequestClientPtr client) {
@@ -107,10 +115,9 @@ void MojoProxyResolverFactoryImpl::CreateResolver(
   jobs_[job_ptr] = std::move(job);
 }
 
-void MojoProxyResolverFactoryImpl::RemoveJob(Job* job) {
-  auto it = jobs_.find(job);
-  DCHECK(it != jobs_.end());
-  jobs_.erase(it);
+void ProxyResolverFactoryImpl::RemoveJob(Job* job) {
+  size_t erased_count = jobs_.erase(job);
+  DCHECK_EQ(1U, erased_count);
 }
 
 }  // namespace proxy_resolver

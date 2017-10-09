@@ -15,7 +15,7 @@ include_rules = [
   "+extensions/common",
   "+extensions/features",
   "+media",
-  "+services/proxy_resolver/public/cpp",
+  "+services/proxy_resolver",
   "+services/service_manager/embedder",
   "+services/service_manager/public/cpp",
   "+services/ui/public",

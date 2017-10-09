@@ -32,7 +32,6 @@
 #include "extensions/features/features.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "printing/features/features.h"
-#include "services/proxy_resolver/public/cpp/mojo_proxy_resolver_factory_impl.h"
 #include "services/service_manager/embedder/embedded_service_info.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "third_party/zlib/google/zip.h"
@@ -44,6 +43,8 @@
 #include "chrome/utility/media_router/dial_device_description_parser_impl.h"
 #include "content/public/network/url_request_context_builder_mojo.h"
 #include "net/proxy/proxy_resolver_v8.h"
+#include "services/proxy_resolver/proxy_resolver_service.h"  // nogncheck
+#include "services/proxy_resolver/public/interfaces/proxy_resolver.mojom.h"  // nogncheck
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
@@ -206,13 +207,6 @@ class SafeArchiveAnalyzerImpl : public chrome::mojom::SafeArchiveAnalyzer {
 #endif  // defined(FULL_SAFE_BROWSING)
 
 #if !defined(OS_ANDROID)
-void CreateProxyResolverFactory(
-    proxy_resolver::mojom::ProxyResolverFactoryRequest request) {
-  mojo::MakeStrongBinding(
-      base::MakeUnique<proxy_resolver::MojoProxyResolverFactoryImpl>(),
-      std::move(request));
-}
-
 class ResourceUsageReporterImpl : public chrome::mojom::ResourceUsageReporter {
  public:
   ResourceUsageReporterImpl() {}
@@ -290,9 +284,6 @@ void ChromeContentUtilityClient::UtilityThreadStarted() {
     registry->AddInterface(base::Bind(&FilePatcherImpl::Create),
                            base::ThreadTaskRunnerHandle::Get());
 #if !defined(OS_ANDROID)
-    registry->AddInterface<proxy_resolver::mojom::ProxyResolverFactory>(
-        base::Bind(CreateProxyResolverFactory),
-        base::ThreadTaskRunnerHandle::Get());
     registry->AddInterface(base::Bind(CreateResourceUsageReporter),
                            base::ThreadTaskRunnerHandle::Get());
     registry->AddInterface(
@@ -359,6 +350,14 @@ void ChromeContentUtilityClient::RegisterServices(
   services->emplace(profiling::mojom::kServiceName, profiling_info);
 
 #if !defined(OS_ANDROID)
+  service_manager::EmbeddedServiceInfo proxy_resolver_info;
+  proxy_resolver_info.task_runner =
+      content::ChildThread::Get()->GetIOTaskRunner();
+  proxy_resolver_info.factory =
+      base::Bind(&proxy_resolver::ProxyResolverService::CreateService);
+  services->emplace(proxy_resolver::mojom::kProxyResolverServiceName,
+                    proxy_resolver_info);
+
   service_manager::EmbeddedServiceInfo profile_import_info;
   profile_import_info.factory =
       base::Bind(&ProfileImportService::CreateService);

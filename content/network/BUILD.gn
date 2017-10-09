@@ -45,6 +45,10 @@ source_set("network_sources") {
     "network_service_impl.h",
     "network_service_url_loader_factory_impl.cc",
     "network_service_url_loader_factory_impl.h",
+    "proxy_resolver_factory_mojo.cc",
+    "proxy_resolver_factory_mojo.h",
+    "proxy_service_mojo.cc",
+    "proxy_service_mojo.h",
     "url_loader_impl.cc",
     "url_loader_impl.h",
   ]
@@ -63,7 +67,9 @@ source_set("network_sources") {
     "//content/public/network:network_sources",
     "//mojo/public/cpp/bindings",
     "//net",
+    "//net:net_browser_services",
     "//services/network/public/cpp",
+    "//services/proxy_resolver/public/interfaces",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/interfaces",
   ]

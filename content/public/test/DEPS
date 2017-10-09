@@ -5,7 +5,6 @@ include_rules = [
   "+components/viz/service",
   "+device/geolocation/android/geolocation_jni_registrar.h",
   "+mojo/android/system/mojo_jni_registrar.h",
-  "+services/proxy_resolver/public/cpp",
   "+services/resource_coordinator",
   "+services/service_manager",
   "+v8/include/v8.h",

@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_PROXY_RESOLVER_PROXY_RESOLVER_FACTORY_MOJO_H_
-#define SERVICES_PROXY_RESOLVER_PROXY_RESOLVER_FACTORY_MOJO_H_
+#ifndef CONTENT_NETWORK_PROXY_RESOLVER_FACTORY_MOJO_H_
+#define CONTENT_NETWORK_PROXY_RESOLVER_FACTORY_MOJO_H_
 
 #include <memory>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/completion_callback.h"
 #include "net/proxy/proxy_resolver_factory.h"
@@ -20,13 +21,14 @@ class ProxyResolverErrorObserver;
 class ProxyResolverScriptData;
 }  // namespace net
 
-namespace proxy_resolver {
+namespace content {
 
 class MojoProxyResolverFactory;
 
 // Implementation of ProxyResolverFactory that connects to a Mojo service to
 // create implementations of a Mojo proxy resolver to back a ProxyResolverMojo.
-class ProxyResolverFactoryMojo : public net::ProxyResolverFactory {
+class CONTENT_EXPORT ProxyResolverFactoryMojo
+    : public net::ProxyResolverFactory {
  public:
   ProxyResolverFactoryMojo(
       MojoProxyResolverFactory* mojo_proxy_factory,
@@ -55,6 +57,6 @@ class ProxyResolverFactoryMojo : public net::ProxyResolverFactory {
   DISALLOW_COPY_AND_ASSIGN(ProxyResolverFactoryMojo);
 };
 
-}  // namespace proxy_resolver
+}  // namespace content
 
-#endif  // SERVICES_PROXY_RESOLVER_PROXY_RESOLVER_FACTORY_MOJO_H_
+#endif  // CONTENT_NETWORK_PROXY_RESOLVER_FACTORY_MOJO_H_
