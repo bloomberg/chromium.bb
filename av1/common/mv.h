@@ -37,10 +37,6 @@ typedef struct mv32 {
   int32_t col;
 } MV32;
 
-#if CONFIG_WARPED_MOTION
-#define WARPED_MOTION_SORT_SAMPLES 1
-#endif  // CONFIG_WARPED_MOTION
-
 #if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
 // Bits of precision used for the model
 #define WARPEDMODEL_PREC_BITS 16

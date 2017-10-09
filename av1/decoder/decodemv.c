@@ -2339,9 +2339,9 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   int16_t mode_ctx = 0;
 #if CONFIG_WARPED_MOTION
   int pts[SAMPLES_ARRAY_SIZE], pts_inref[SAMPLES_ARRAY_SIZE];
-#if WARPED_MOTION_SORT_SAMPLES
+#if CONFIG_EXT_WARPED_MOTION
   int pts_mv[SAMPLES_ARRAY_SIZE];
-#endif  // WARPED_MOTION_SORT_SAMPLES
+#endif  // CONFIG_EXT_WARPED_MOTION
 #endif  // CONFIG_WARPED_MOTION
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
 
@@ -2804,12 +2804,12 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   mbmi->motion_mode = SIMPLE_TRANSLATION;
 #if CONFIG_WARPED_MOTION
   if (mbmi->sb_type >= BLOCK_8X8 && !has_second_ref(mbmi))
-#if WARPED_MOTION_SORT_SAMPLES
+#if CONFIG_EXT_WARPED_MOTION
     mbmi->num_proj_ref[0] =
         findSamples(cm, xd, mi_row, mi_col, pts, pts_inref, pts_mv);
 #else
     mbmi->num_proj_ref[0] = findSamples(cm, xd, mi_row, mi_col, pts, pts_inref);
-#endif  // WARPED_MOTION_SORT_SAMPLES
+#endif  // CONFIG_EXT_WARPED_MOTION
 #endif  // CONFIG_WARPED_MOTION
 #if CONFIG_MOTION_VAR
   av1_count_overlappable_neighbors(cm, xd, mi_row, mi_col);
@@ -2832,11 +2832,11 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
     if (mbmi->motion_mode == WARPED_CAUSAL) {
       mbmi->wm_params[0].wmtype = DEFAULT_WMTYPE;
 
-#if WARPED_MOTION_SORT_SAMPLES
+#if CONFIG_EXT_WARPED_MOTION
       if (mbmi->num_proj_ref[0] > 1)
         mbmi->num_proj_ref[0] = sortSamples(pts_mv, &mbmi->mv[0].as_mv, pts,
                                             pts_inref, mbmi->num_proj_ref[0]);
-#endif  // WARPED_MOTION_SORT_SAMPLES
+#endif  // CONFIG_EXT_WARPED_MOTION
 
       if (find_projection(mbmi->num_proj_ref[0], pts, pts_inref, bsize,
                           mbmi->mv[0].as_mv.row, mbmi->mv[0].as_mv.col,

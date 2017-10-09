@@ -352,6 +352,7 @@ EXPERIMENT_LIST="
     lpf_sb
     opt_ref_mv
     tmv
+    ext_warped_motion
     restrict_compressed_hdr
     horzonly_frame_superres
 "
@@ -591,6 +592,7 @@ post_process_cmdline() {
     enabled ext_skip && enable_feature frame_marker
     enabled ext_skip && enable_feature ext_refs
     enabled horzonly_frame_superres && enable_feature frame_superres
+    enabled ext_warped_motion && enable_feature warped_motion
 
     if enabled rawbits && enabled ans; then
       log_echo "rawbits requires not ans, so disabling rawbits"

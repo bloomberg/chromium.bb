@@ -157,7 +157,7 @@ int av1_find_best_obmc_sub_pixel_tree_up(
 unsigned int av1_compute_motion_cost(const struct AV1_COMP *cpi,
                                      MACROBLOCK *const x, BLOCK_SIZE bsize,
                                      int mi_row, int mi_col, const MV *this_mv);
-#if WARPED_MOTION_SORT_SAMPLES
+#if CONFIG_EXT_WARPED_MOTION
 unsigned int av1_refine_warped_mv(const struct AV1_COMP *cpi,
                                   MACROBLOCK *const x, BLOCK_SIZE bsize,
                                   int mi_row, int mi_col, int *pts0,
@@ -168,7 +168,7 @@ unsigned int av1_refine_warped_mv(const struct AV1_COMP *cpi,
                                   MACROBLOCK *const x, BLOCK_SIZE bsize,
                                   int mi_row, int mi_col, int *pts,
                                   int *pts_inref);
-#endif  // WARPED_MOTION_SORT_SAMPLES
+#endif  // CONFIG_EXT_WARPED_MOTION
 #endif  // CONFIG_WARPED_MOTION
 
 #endif  // AV1_ENCODER_MCOMP_H_

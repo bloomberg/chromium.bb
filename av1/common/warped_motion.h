@@ -29,13 +29,14 @@
 #define LEAST_SQUARES_SAMPLES_MAX_BITS 3
 #define LEAST_SQUARES_SAMPLES_MAX (1 << LEAST_SQUARES_SAMPLES_MAX_BITS)
 
-#if WARPED_MOTION_SORT_SAMPLES
+#if CONFIG_EXT_WARPED_MOTION
 // Search 1 row on the top and 1 column on the left, 1 upper-left block,
 // 1 upper-right block.
 #define SAMPLES_ARRAY_SIZE ((MAX_MIB_SIZE * 2 + 2) * 2)
+#define SCALING_FCT 3
 #else
 #define SAMPLES_ARRAY_SIZE (LEAST_SQUARES_SAMPLES_MAX * 2)
-#endif  // WARPED_MOTION_SORT_SAMPLES
+#endif  // CONFIG_EXT_WARPED_MOTION
 
 #define DEFAULT_WMTYPE AFFINE
 #endif  // CONFIG_WARPED_MOTION
