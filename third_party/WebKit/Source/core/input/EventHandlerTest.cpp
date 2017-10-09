@@ -16,6 +16,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
+#include "core/html/HTMLInputElement.h"
 #include "core/layout/LayoutObject.h"
 #include "core/loader/EmptyClients.h"
 #include "core/page/AutoscrollController.h"
@@ -435,23 +436,20 @@ TEST_F(EventHandlerTest, InputFieldsCanStartSelection) {
 TEST_F(EventHandlerTest, ReadOnlyInputDoesNotInheritUserSelect) {
   SetHtmlInnerHTML(
       "<div style='user-select: none'>"
-      "<input readonly value='blabla'>"
+      "<input id='sample' readonly value='blabla'>"
       "</div>");
-  Element* const field =
-      ToElement(GetDocument().body()->firstChild()->firstChild());
-  ShadowRoot* const shadow_root = field->UserAgentShadowRoot();
+  HTMLInputElement* const input =
+      ToHTMLInputElement(GetDocument().getElementById("sample"));
+  Node* const text = input->InnerEditorElement()->firstChild();
 
-  Element* const text = shadow_root->getElementById("inner-editor");
   LayoutPoint location = text->GetLayoutObject()->VisualRect().Center();
   HitTestResult hit =
       GetDocument().GetFrame()->GetEventHandler().HitTestResultAtPoint(
           location);
   EXPECT_TRUE(text->CanStartSelection());
-
-  // TODO(crbug.com/764661): Show I-beam because field is selectable.
-  // EXPECT_TRUE(
-  //   GetDocument().GetFrame()->GetEventHandler().ShouldShowIBeamForNode(field,
-  //                                                                      hit));
+  EXPECT_TRUE(
+      GetDocument().GetFrame()->GetEventHandler().ShouldShowIBeamForNode(text,
+                                                                         hit));
 }
 
 TEST_F(EventHandlerTest, ImagesCannotStartSelection) {
