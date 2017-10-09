@@ -51,6 +51,16 @@ constexpr char kAdButton[] = "button";
 constexpr char kAdWelcomMessage[] = "welcomeMsg";
 constexpr char kAdAutocompleteRealm[] = "userInput /deep/ #domainLabel";
 
+constexpr char kAdPasswordChangeId[] = "ad-password-change";
+constexpr char kAdAnimatedPages[] = "animatedPages";
+constexpr char kAdOldPasswordInput[] = "oldPassword";
+constexpr char kAdNewPassword1Input[] = "newPassword1";
+constexpr char kAdNewPassword2Input[] = "newPassword2";
+constexpr char kNewPassword[] = "new_password";
+constexpr char kDifferentNewPassword[] = "different_new_password";
+
+constexpr char kCloseButtonId[] = "closeButton";
+
 class TestAuthPolicyClient : public FakeAuthPolicyClient {
  public:
   TestAuthPolicyClient() { FakeAuthPolicyClient::set_started(true); }
@@ -66,22 +76,10 @@ class TestAuthPolicyClient : public FakeAuthPolicyClient {
       else
         account_info.set_account_id(object_guid);
     }
-    if (!auth_closure_.is_null()) {
-      base::SequencedTaskRunnerHandle::Get()->PostNonNestableTask(
-          FROM_HERE, std::move(auth_closure_));
-    }
     base::SequencedTaskRunnerHandle::Get()->PostNonNestableTask(
         FROM_HERE,
         base::BindOnce(std::move(callback), auth_error_, account_info));
   }
-
-  void set_auth_closure(base::OnceClosure auth_closure) {
-    auth_closure_ = std::move(auth_closure);
-  }
-
- protected:
-  // If set called before calling AuthCallback in AuthenticateUser.
-  base::OnceClosure auth_closure_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestAuthPolicyClient);
@@ -132,6 +130,22 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
     loop.Run();
   }
 
+  void TriggerPasswordChangeScreen() {
+    OobeScreenWaiter screen_waiter(
+        OobeScreen::SCREEN_ACTIVE_DIRECTORY_PASSWORD_CHANGE);
+
+    fake_auth_policy_client()->set_auth_error(
+        authpolicy::ERROR_PASSWORD_EXPIRED);
+    SubmitActiveDirectoryCredentials(kTestActiveDirectoryUser, kPassword);
+    screen_waiter.Wait();
+    TestAdPasswordChangeError(std::string());
+  }
+
+  void ClosePasswordChangeScreen() {
+    js_checker().Evaluate(JSElement(kAdPasswordChangeId, kCloseButtonId) +
+                          ".fire('tap')");
+  }
+
   void SetupTestAuthPolicyClient() {
     auto test_client = base::MakeUnique<TestAuthPolicyClient>();
     fake_auth_policy_client_ = test_client.get();
@@ -169,6 +183,17 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
     JSExpect("!Oobe.getInstance().headerHidden");
   }
 
+  // Checks if Active Directory password change screen is shown.
+  void TestPasswordChangeVisible() {
+    // Checks if Gaia signin is hidden.
+    JSExpect("document.querySelector('#signin-frame').hidden");
+    // Checks if Active Directory signin is visible.
+    JSExpect("!document.querySelector('#ad-password-change').hidden");
+    JSExpect(JSElement(kAdPasswordChangeId, kAdAnimatedPages) +
+             ".selected == 0");
+    JSExpect("!" + JSElement(kAdPasswordChangeId, kCloseButtonId) + ".hidden");
+  }
+
   // Checks if user input is marked as invalid.
   void TestUserError() {
     TestLoginVisible();
@@ -201,6 +226,20 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
     JSExpect(JSElement(kAdOfflineAuthId, kAdAutocompleteRealm) + ".hidden");
   }
 
+  // Checks if Active Directory password change screen is shown. Also checks if
+  // |invalid_element| is invalidated and all the other elements are valid.
+  void TestAdPasswordChangeError(const std::string& invalid_element) {
+    TestPasswordChangeVisible();
+    for (const char* element :
+         {kAdOldPasswordInput, kAdNewPassword1Input, kAdNewPassword2Input}) {
+      std::string js_assertion =
+          JSElement(kAdPasswordChangeId, element) + ".isInvalid";
+      if (element != invalid_element)
+        js_assertion = "!" + js_assertion;
+      JSExpect(js_assertion);
+    }
+  }
+
   // Sets username and password for the Active Directory login and submits it.
   void SubmitActiveDirectoryCredentials(const std::string& username,
                                         const std::string& password) {
@@ -209,6 +248,24 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
     js_checker().ExecuteAsync(JSElement(kAdOfflineAuthId, kAdPasswordInput) +
                               ".value='" + password + "'");
     js_checker().Evaluate(JSElement(kAdOfflineAuthId, kAdButton) +
+                          ".fire('tap')");
+  }
+
+  // Sets username and password for the Active Directory login and submits it.
+  void SubmitActiveDirectoryPasswordChangeCredentials(
+      const std::string& old_password,
+      const std::string& new_password1,
+      const std::string& new_password2) {
+    js_checker().ExecuteAsync(
+        JSElement(kAdPasswordChangeId, kAdOldPasswordInput) + ".value='" +
+        old_password + "'");
+    js_checker().ExecuteAsync(
+        JSElement(kAdPasswordChangeId, kAdNewPassword1Input) + ".value='" +
+        new_password1 + "'");
+    js_checker().ExecuteAsync(
+        JSElement(kAdPasswordChangeId, kAdNewPassword2Input) + ".value='" +
+        new_password2 + "'");
+    js_checker().Evaluate(JSElement(kAdPasswordChangeId, kAdButton) +
                           ".fire('tap')");
   }
 
@@ -320,6 +377,88 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest, LoginErrors) {
   // Inputs are not invalidated for the unknown error.
   TestNoError();
   TestDomainVisible();
+}
+
+// Marks as Active Directory enterprise device and OOBE as completed.
+IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest,
+                       PRE_PasswordChange_LoginSuccess) {
+  MarkAsActiveDirectoryEnterprise();
+}
+
+// Test successful Active Directory login from the password change screen.
+IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest, PasswordChange_LoginSuccess) {
+  TestLoginVisible();
+  TestDomainVisible();
+
+  TriggerPasswordChangeScreen();
+
+  // Password accepted by AuthPolicyClient.
+  fake_auth_policy_client()->set_auth_error(authpolicy::ERROR_NONE);
+  content::WindowedNotificationObserver session_start_waiter(
+      chrome::NOTIFICATION_SESSION_STARTED,
+      content::NotificationService::AllSources());
+  SubmitActiveDirectoryPasswordChangeCredentials(kPassword, kNewPassword,
+                                                 kNewPassword);
+  session_start_waiter.Wait();
+}
+
+// Marks as Active Directory enterprise device and OOBE as completed.
+IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest, PRE_PasswordChange_UIErrors) {
+  MarkAsActiveDirectoryEnterprise();
+}
+
+// Test different UI errors for Active Directory password change screen.
+IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest, PasswordChange_UIErrors) {
+  TestLoginVisible();
+  TestDomainVisible();
+
+  TriggerPasswordChangeScreen();
+  // Password rejected by UX.
+  // Empty passwords.
+  SubmitActiveDirectoryPasswordChangeCredentials("", "", "");
+  TestAdPasswordChangeError(kAdOldPasswordInput);
+
+  // Empty new password.
+  SubmitActiveDirectoryPasswordChangeCredentials(kPassword, "", "");
+  TestAdPasswordChangeError(kAdNewPassword1Input);
+
+  // Empty confirmation of the new password.
+  SubmitActiveDirectoryPasswordChangeCredentials(kPassword, kNewPassword, "");
+  TestAdPasswordChangeError(kAdNewPassword2Input);
+
+  // Confirmation of password is different from new password.
+  SubmitActiveDirectoryPasswordChangeCredentials(kPassword, kNewPassword,
+                                                 kDifferentNewPassword);
+  TestAdPasswordChangeError(kAdNewPassword2Input);
+
+  // Password rejected by AuthPolicyClient.
+  fake_auth_policy_client()->set_auth_error(authpolicy::ERROR_BAD_PASSWORD);
+  SubmitActiveDirectoryPasswordChangeCredentials(kPassword, kNewPassword,
+                                                 kNewPassword);
+  TestAdPasswordChangeError(kAdOldPasswordInput);
+}
+
+// Marks as Active Directory enterprise device and OOBE as completed.
+IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest,
+                       PRE_PasswordChange_ReopenClearErrors) {
+  MarkAsActiveDirectoryEnterprise();
+}
+
+// Test reopening Active Directory password change screen clears errors.
+IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest,
+                       PasswordChange_ReopenClearErrors) {
+  TestLoginVisible();
+  TestDomainVisible();
+
+  TriggerPasswordChangeScreen();
+
+  // Empty new password.
+  SubmitActiveDirectoryPasswordChangeCredentials("", "", "");
+  TestAdPasswordChangeError(kAdOldPasswordInput);
+
+  ClosePasswordChangeScreen();
+  TestLoginVisible();
+  TriggerPasswordChangeScreen();
 }
 
 }  // namespace chromeos
