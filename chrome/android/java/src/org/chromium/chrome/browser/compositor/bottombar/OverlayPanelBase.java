@@ -781,7 +781,8 @@ abstract class OverlayPanelBase {
      * @return Whether the Panel height matches the one from the given state.
      */
     protected boolean doesPanelHeightMatchState(PanelState state) {
-        return state == getPanelState() && getHeight() == getPanelHeightFromState(state);
+        return state == getPanelState()
+                && MathUtils.areFloatsEqual(getHeight(), getPanelHeightFromState(state));
     }
 
     // ============================================================================================

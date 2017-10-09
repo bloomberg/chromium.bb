@@ -90,6 +90,11 @@ public class OverlayPanelManagerTest {
         }
 
         @Override
+        protected void animatePanelTo(float height, long duration) {
+            // Do not create animations for tests.
+        }
+
+        @Override
         public void closePanel(StateChangeReason reason, boolean animate) {
             // Immediately call onClosed rather than wait for animation to finish.
             onClosed(reason);

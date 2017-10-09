@@ -141,7 +141,7 @@ public class OverlayPanelEventFilterTest {
     // --------------------------------------------------------------------------------------------
 
     /**
-     * Mocks an OverlayPanel, so it doesn't create ContentViewCore.
+     * Mocks an OverlayPanel, so it doesn't create ContentViewCore or animations.
      */
     public final class MockOverlayPanel extends OverlayPanel {
         private boolean mWasTapDetectedOnPanel = false;
@@ -177,6 +177,11 @@ public class OverlayPanelEventFilterTest {
 
         @Override
         protected void resizePanelContentViewCore(float width, float height) {}
+
+        @Override
+        protected void animatePanelTo(float height, long duration) {
+            // Do not create animations for tests.
+        }
 
         public boolean getWasTapDetected() {
             return mWasTapDetectedOnPanel;

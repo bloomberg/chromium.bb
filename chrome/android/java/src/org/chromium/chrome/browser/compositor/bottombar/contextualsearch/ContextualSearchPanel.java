@@ -152,6 +152,8 @@ public class ContextualSearchPanel extends OverlayPanel {
     @Override
     public SceneOverlayLayer getUpdatedSceneOverlayTree(RectF viewport, RectF visibleViewport,
             LayerTitleCache layerTitleCache, ResourceManager resourceManager, float yOffset) {
+        super.getUpdatedSceneOverlayTree(
+                viewport, visibleViewport, layerTitleCache, resourceManager, yOffset);
         mSceneLayer.update(resourceManager, this,
                 getSearchBarControl(),
                 getPeekPromoControl(),
@@ -430,8 +432,8 @@ public class ContextualSearchPanel extends OverlayPanel {
     // ============================================================================================
 
     @Override
-    protected void onAnimationFinished() {
-        super.onAnimationFinished();
+    protected void onHeightAnimationFinished() {
+        super.onHeightAnimationFinished();
 
         if (mShouldPromoteToTabAfterMaximizing && getPanelState() == PanelState.MAXIMIZED) {
             mShouldPromoteToTabAfterMaximizing = false;
@@ -883,8 +885,7 @@ public class ContextualSearchPanel extends OverlayPanel {
      */
     @VisibleForTesting
     public void simulateTapOnEndButton() {
-        // Finish all currently running animations.
-        onUpdateAnimation(System.currentTimeMillis(), true);
+        endHeightAnimation();
 
         // Determine the x-position for the simulated tap.
         float xPosition;
