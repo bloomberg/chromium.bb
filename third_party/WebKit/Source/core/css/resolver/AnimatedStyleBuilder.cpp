@@ -43,7 +43,9 @@ namespace blink {
 void AnimatedStyleBuilder::ApplyProperty(CSSPropertyID property,
                                          ComputedStyle& style,
                                          const AnimatableValue* value) {
+#if DCHECK_IS_ON()
   DCHECK(CSSPropertyAPI::Get(property).IsInterpolable());
+#endif
   switch (property) {
     case CSSPropertyOpacity:
       // Avoiding a value of 1 forces a layer to be created.

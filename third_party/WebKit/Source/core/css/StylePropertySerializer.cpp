@@ -228,6 +228,7 @@ String StylePropertySerializer::AsText() const {
     StylePropertySerializer::PropertyValueForSerializer property =
         property_set_.PropertyAt(n);
     CSSPropertyID property_id = property.Id();
+#if DCHECK_IS_ON()
     const CSSPropertyAPI& property_api =
         CSSPropertyAPI::Get(resolveCSSPropertyID(property_id));
     // Only enabled properties should be part of the style.
@@ -236,6 +237,7 @@ String StylePropertySerializer::AsText() const {
     DCHECK(property_set_.IsDescriptorContext() ||
            (property_api.IsProperty() && !isShorthandProperty(property_id)));
     DCHECK(!property_set_.IsDescriptorContext() || property_api.IsDescriptor());
+#endif
 
     switch (property_id) {
       case CSSPropertyVariable:

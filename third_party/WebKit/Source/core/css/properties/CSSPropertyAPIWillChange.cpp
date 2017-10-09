@@ -28,8 +28,10 @@ const CSSValue* CSSPropertyAPIWillChange::ParseSingleValue(
         UnresolvedCSSPropertyID(range.Peek().Value());
     if (unresolved_property != CSSPropertyInvalid &&
         unresolved_property != CSSPropertyVariable) {
+#if DCHECK_IS_ON()
       DCHECK(CSSPropertyAPI::Get(resolveCSSPropertyID(unresolved_property))
                  .IsEnabled());
+#endif
       // Now "all" is used by both CSSValue and CSSPropertyValue.
       // Need to return nullptr when currentValue is CSSPropertyAll.
       if (unresolved_property == CSSPropertyWillChange ||

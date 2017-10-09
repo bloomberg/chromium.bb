@@ -113,8 +113,10 @@ static bool IsPropertyMatch(const StylePropertyMetadata& metadata,
   DCHECK_EQ(id, property_id);
   bool result = metadata.property_id_ == id;
   // Only enabled properties should be part of the style.
+#if DCHECK_IS_ON()
   DCHECK(!result ||
          CSSPropertyAPI::Get(resolveCSSPropertyID(property_id)).IsEnabled());
+#endif
   return result;
 }
 
