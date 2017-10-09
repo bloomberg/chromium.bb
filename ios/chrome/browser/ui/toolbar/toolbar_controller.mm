@@ -944,12 +944,6 @@ const CGFloat kPopoverAnchorHorizontalPadding = 10.0;
   [shadowView_ setAlpha:alpha];
 }
 
-- (void)setStandardControlsTransform:(CGAffineTransform)transform {
-  for (UIButton* button in standardButtons_) {
-    [button setTransform:transform];
-  }
-}
-
 - (void)standardButtonPressed:(UIButton*)sender {
   // This check for valid button images assumes that the buttons all have a
   // different image for the highlighted state as for the normal state.
