@@ -1067,21 +1067,6 @@ hooks = [
     ],
   },
 
-  # Download checkstyle for use in PRESUBMIT for Java changes.
-  # TODO(jbudorick): Move this back down to the android section of hooks_os
-  # once it's no longer necessary for the chromium_presubmit bot.
-  {
-    'name': 'checkstyle',
-    'pattern': '.',
-    'action': [ 'python',
-                'src/third_party/depot_tools/download_from_google_storage.py',
-                '--no_resume',
-                '--no_auth',
-                '--bucket', 'chromium-android-tools/checkstyle',
-                '-s', 'src/third_party/checkstyle/checkstyle-8.0-all.jar.sha1'
-    ],
-  },
-
   {
     # This downloads SDK extras and puts them in the
     # third_party/android_tools/sdk/extras directory.
@@ -1104,6 +1089,20 @@ hooks = [
                'download',
                '-b', 'android_system_stubs',
                '-l', 'third_party/android_system_sdk'
+    ],
+  },
+  # Download checkstyle for use in PRESUBMIT for Java changes.
+  {
+    'name': 'checkstyle',
+    'pattern': '.',
+    # Must also be downloaded on linux for use on chromium_presubmit.
+    'condition': 'checkout_android or checkout_linux',
+    'action': [ 'python',
+                'src/third_party/depot_tools/download_from_google_storage.py',
+                '--no_resume',
+                '--no_auth',
+                '--bucket', 'chromium-android-tools/checkstyle',
+                '-s', 'src/third_party/checkstyle/checkstyle-8.0-all.jar.sha1'
     ],
   },
   {
