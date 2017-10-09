@@ -57,6 +57,9 @@ class ActionRunner {
   // Used to post callbacks to the main thread.
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
 
+  // Contains the unpack path for the component associated with the run action.
+  base::FilePath unpack_path_;
+
   Callback run_complete_;
 
   THREAD_CHECKER(thread_checker_);

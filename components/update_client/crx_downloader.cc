@@ -182,6 +182,7 @@ void CrxDownloader::HandleDownloadError(
     const DownloadMetrics& download_metrics) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_NE(0, result.error);
+  DCHECK(result.response.empty());
   DCHECK_NE(0, download_metrics.error);
 
   download_metrics_.push_back(download_metrics);

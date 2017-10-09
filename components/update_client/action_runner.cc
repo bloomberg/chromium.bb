@@ -64,6 +64,7 @@ void ActionRunner::UnpackComplete(const ComponentUnpacker::Result& result) {
     return;
   }
 
+  unpack_path_ = result.unpack_path;
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&ActionRunner::RunCommand, base::Unretained(this),
@@ -73,6 +74,7 @@ void ActionRunner::UnpackComplete(const ComponentUnpacker::Result& result) {
 #if !defined(OS_WIN)
 
 void ActionRunner::RunCommand(const base::CommandLine& cmdline) {
+  base::DeleteFile(unpack_path_, true);
   main_task_runner_->PostTask(FROM_HERE,
                               base::BindOnce(run_complete_, false, -1, 0));
 }

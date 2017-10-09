@@ -949,11 +949,8 @@ TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
         download_metrics.total_bytes = 0;
         download_metrics.download_time_ms = 1000;
 
-        EXPECT_TRUE(MakeTestFile(
-            TestFilePath("jebgalgnebhfojomionfpkfelancnnkf.crx"), &path));
-
+        // The result must not include a file path in the case of errors.
         result.error = -118;
-        result.response = path;
         result.downloaded_bytes = 0;
         result.total_bytes = 0;
       } else if (url.path() ==
@@ -1776,11 +1773,8 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
         download_metrics.total_bytes = 2105;
         download_metrics.download_time_ms = 1000;
 
-        EXPECT_TRUE(MakeTestFile(
-            TestFilePath("ihfokbkgjpifnbbojhneepfflplebdkc_1to2.crx"), &path));
-
+        // The response must not include a file path in the case of errors.
         result.error = -1;
-        result.response = path;
         result.downloaded_bytes = 0;
         result.total_bytes = 2105;
       } else if (url.path() ==
