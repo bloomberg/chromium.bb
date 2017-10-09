@@ -4,20 +4,11 @@
 
 #include "content/app/android/library_loader_hooks.h"
 
-#include "base/android/command_line_android.h"
-#include "base/android/jni_android.h"
-#include "base/android/jni_string.h"
 #include "base/android/library_loader/library_loader_hooks.h"
-#include "base/base_switches.h"
-#include "base/command_line.h"
-#include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/strings/string_util.h"
 #include "base/trace_event/trace_event.h"
 #include "components/tracing/common/trace_startup.h"
 #include "content/common/content_constants_internal.h"
-#include "content/public/common/content_switches.h"
-#include "content/public/common/result_codes.h"
 
 namespace content {
 

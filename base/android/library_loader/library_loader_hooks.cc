@@ -4,7 +4,6 @@
 
 #include "base/android/library_loader/library_loader_hooks.h"
 
-#include "base/android/command_line_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/library_loader/library_load_from_apk_status_codes.h"
 #include "base/android/library_loader/library_prefetcher.h"
@@ -163,13 +162,6 @@ void RecordLibraryLoaderRendererHistograms() {
 
 void SetLibraryLoadedHook(LibraryLoadedHook* func) {
   g_registration_callback = func;
-}
-
-static void InitCommandLine(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& jcaller,
-    const JavaParamRef<jobjectArray>& init_command_line) {
-  InitNativeCommandLineFromJavaArray(env, init_command_line);
 }
 
 static jboolean LibraryLoaded(JNIEnv* env,

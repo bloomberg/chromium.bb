@@ -138,7 +138,6 @@ component("base") {
     "android/callback_android.h",
     "android/child_process_service_impl.cc",
     "android/command_line_android.cc",
-    "android/command_line_android.h",
     "android/content_uri_utils.cc",
     "android/content_uri_utils.h",
     "android/cpu_features.cc",
