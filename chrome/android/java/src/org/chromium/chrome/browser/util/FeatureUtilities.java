@@ -54,9 +54,6 @@ public class FeatureUtilities {
     private static String sCachedHerbFlavor;
     private static boolean sIsHerbFlavorCached;
 
-    /** Used to track if cached command line flags should be refreshed. */
-    private static CommandLine.ResetListener sResetListener;
-
     /**
      * Determines whether or not the {@link RecognizerIntent#ACTION_WEB_SEARCH} {@link Intent}
      * is handled by any {@link android.app.Activity}s in the system.  The result will be cached for

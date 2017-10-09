@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/android/command_line_android.h"
-
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/command_line.h"
@@ -19,23 +17,19 @@ using base::CommandLine;
 namespace {
 
 void AppendJavaStringArrayToCommandLine(JNIEnv* env,
-                                        jobjectArray array,
+                                        const JavaParamRef<jobjectArray>& array,
                                         bool includes_program) {
   std::vector<std::string> vec;
   if (array)
     base::android::AppendJavaStringArrayToStringVector(env, array, &vec);
   if (!includes_program)
-    vec.insert(vec.begin(), "");
+    vec.insert(vec.begin(), std::string());
   CommandLine extra_command_line(vec);
   CommandLine::ForCurrentProcess()->AppendArguments(extra_command_line,
                                                     includes_program);
 }
 
 }  // namespace
-
-static void Reset(JNIEnv* env, const JavaParamRef<jclass>& clazz) {
-  CommandLine::Reset();
-}
 
 static jboolean HasSwitch(JNIEnv* env,
                           const JavaParamRef<jclass>& clazz,
@@ -80,15 +74,11 @@ static void AppendSwitchesAndArguments(
   AppendJavaStringArrayToCommandLine(env, array, false);
 }
 
-namespace base {
-namespace android {
-
-void InitNativeCommandLineFromJavaArray(JNIEnv* env, jobjectArray array) {
+static void Init(JNIEnv* env,
+                 const JavaParamRef<jclass>& jclazz,
+                 const JavaParamRef<jobjectArray>& init_command_line) {
   // TODO(port): Make an overload of Init() that takes StringVector rather than
   // have to round-trip via AppendArguments.
-  CommandLine::Init(0, NULL);
-  AppendJavaStringArrayToCommandLine(env, array, true);
+  CommandLine::Init(0, nullptr);
+  AppendJavaStringArrayToCommandLine(env, init_command_line, true);
 }
-
-}  // namespace android
-}  // namespace base

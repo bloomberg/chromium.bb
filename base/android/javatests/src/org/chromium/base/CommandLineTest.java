@@ -14,6 +14,10 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 
+/**
+ * Tests for {@link CommandLine}.
+ * TODO(bauerb): Convert to local JUnit test
+ */
 @RunWith(BaseJUnit4ClassRunner.class)
 public class CommandLineTest {
     // A reference command line. Note that switch2 is [brea\d], switch3 is [and "butter"],
@@ -80,7 +84,7 @@ public class CommandLineTest {
     }
 
     void checkTokenizer(String[] expected, String toParse) {
-        String[] actual = CommandLine.tokenizeQuotedAruments(toParse.toCharArray());
+        String[] actual = CommandLine.tokenizeQuotedArguments(toParse.toCharArray());
         Assert.assertEquals(expected.length, actual.length);
         for (int i = 0; i < expected.length; ++i) {
             Assert.assertEquals("comparing element " + i, expected[i], actual[i]);
@@ -100,7 +104,7 @@ public class CommandLineTest {
     @SmallTest
     @Feature({"Android-AppBase"})
     public void testBufferInitialization() {
-        CommandLine.init(CommandLine.tokenizeQuotedAruments(INIT_SWITCHES_BUFFER));
+        CommandLine.init(CommandLine.tokenizeQuotedArguments(INIT_SWITCHES_BUFFER));
         checkInitSwitches();
         checkSettingThenGetting();
     }
