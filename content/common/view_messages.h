@@ -10,6 +10,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <set>
+#include <string>
+#include <vector>
+
 #include "base/memory/shared_memory.h"
 #include "base/process/process.h"
 #include "base/strings/string16.h"
@@ -668,13 +672,6 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_DidContentsPreferredSizeChange,
 // Notifies whether there are JavaScript touch event handlers or not.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_HasTouchEventHandlers,
                     bool /* has_handlers */)
-
-// A message from HTML-based UI.  When (trusted) Javascript calls
-// send(message, args), this message is sent to the browser.
-IPC_MESSAGE_ROUTED3(ViewHostMsg_WebUISend,
-                    GURL /* source_url */,
-                    std::string  /* message */,
-                    base::ListValue /* args */)
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 // A renderer sends this to the browser process when it wants to access a PPAPI

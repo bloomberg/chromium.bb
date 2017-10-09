@@ -8,19 +8,22 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/web_ui.h"
-#include "ipc/ipc_listener.h"
+
+namespace IPC {
+class Message;
+}
 
 namespace content {
 class RenderFrameHost;
 
 class CONTENT_EXPORT WebUIImpl : public WebUI,
-                                 public IPC::Listener,
                                  public base::SupportsWeakPtr<WebUIImpl> {
  public:
   WebUIImpl(WebContents* contents);
@@ -76,14 +79,14 @@ class CONTENT_EXPORT WebUIImpl : public WebUI,
   std::vector<std::unique_ptr<WebUIMessageHandler>>* GetHandlersForTesting()
       override;
 
-  // IPC::Listener implementation:
-  bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message, RenderFrameHost* sender);
 
  private:
   class MainFrameNavigationObserver;
 
   // IPC message handling.
-  void OnWebUISend(const GURL& source_url,
+  void OnWebUISend(RenderFrameHost* sender,
+                   const GURL& source_url,
                    const std::string& message,
                    const base::ListValue& args);
 
