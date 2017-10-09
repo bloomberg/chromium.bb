@@ -64,6 +64,10 @@ FrameThrottlingState GetFrameThrottlingState(
 }
 
 FrameOriginState GetFrameOriginState(const WebFrameScheduler& frame_scheduler) {
+  if (frame_scheduler.GetFrameType() ==
+      WebFrameScheduler::FrameType::kMainFrame) {
+    return FrameOriginState::MAIN_FRAME;
+  }
   if (frame_scheduler.IsCrossOrigin())
     return FrameOriginState::CROSS_ORIGIN;
   return FrameOriginState::SAME_ORIGIN;
