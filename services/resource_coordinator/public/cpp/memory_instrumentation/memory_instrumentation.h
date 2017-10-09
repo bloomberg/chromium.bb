@@ -68,11 +68,6 @@ class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT MemoryInstrumentation {
   // The callback will be posted on the same thread of the caller.
   void GetVmRegionsForHeapProfiler(RequestGlobalDumpCallback);
 
-  // TODO(hjd): Add a RequestGlobalDump() helper, not bound to tracing.
-  // here. The mojom interface is about to change soon and right now there is
-  // only one client of this API (process_memory_metrics_emitter.cc). Delay this
-  // API and change that only once the cleaned up interface is ready.
-
  private:
   MemoryInstrumentation(service_manager::Connector* connector,
                         const std::string& service_name);
