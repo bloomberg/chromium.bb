@@ -19,10 +19,6 @@
         "port_name": "linux-trusty",
         "specifiers": ["Trusty", "Debug"]
     },
-    "WebKit Mac10.9": {
-        "port_name": "mac-mac10.9",
-        "specifiers": ["Mac10.9", "Release"]
-    },
     "WebKit Mac10.10": {
         "port_name": "mac-mac10.10",
         "specifiers": ["Mac10.10", "Release"]
@@ -50,11 +46,6 @@
     "linux_trusty_blink_rel": {
         "port_name": "linux-trusty",
         "specifiers": ["Trusty", "Release"],
-        "is_try_builder": true
-    },
-    "mac10.9_blink_rel": {
-        "port_name": "mac-mac10.9",
-        "specifiers": ["Mac10.9", "Release"],
         "is_try_builder": true
     },
     "mac10.10_blink_rel": {
