@@ -66,24 +66,39 @@ class BacktraceStorage {
   void LockStorage();
   void UnlockStorage();
 
-  // Releases all backtraces in the vector assuming the lock_ is already held
-  // and storage is not locked.
-  void ReleaseBacktracesLocked(const std::vector<const Backtrace*>& bts);
+  // Releases all backtraces in the vector assuming |lock| is already held
+  // and |consumer_count| is zero.
+  void ReleaseBacktracesLocked(const std::vector<const Backtrace*>& bts,
+                               size_t shard_index);
 
-  mutable base::Lock lock_;
+  struct ContainerShard {
+    ContainerShard();
+    ~ContainerShard();
 
-  // Protected by the lock_. This indicates the number of consumers that have
-  // raw backtrace pointers owned by backtraces_. As long as this count is
-  // non-zero, Backtraces owned by backtraces_ cannot be modified or destroyed.
-  int storage_lock_count_ = 0;
+    // Container of de-duped, live backtraces. All modifications to |backtraces|
+    // or the Backtrace elements owned by |backtraces| must be protected by
+    // |lock|.
+    Container backtraces;
+    mutable base::Lock lock;
 
-  // List of live backtraces for de-duping. Protected by the lock_.
-  Container backtraces_;
+    // Protected by |lock|. This indicates the number of consumers that have
+    // raw backtrace pointers owned by |backtraces|. As long as this count is
+    // non-zero, Backtraces owned by |backtraces| cannot be modified or
+    // destroyed. Elements can be inserted into |backtraces| even when this is
+    // non-zero because existing raw backtrace pointers are stable.
+    int consumer_count = 0;
 
-  // When the backtrace storage is locked, no backtraces will be deleted from
-  // the storage. Instead, they are accumulated here for releasing after the
-  // lock is released.
-  std::vector<const Backtrace*> release_after_lock_;
+    // When |consumer_count| is non-zero, no backtraces will be deleted from
+    // the storage. Instead, they are accumulated here for releasing after
+    // consumer_count becomes non-zero.
+    std::vector<const Backtrace*> release_after_lock;
+
+    DISALLOW_COPY_AND_ASSIGN(ContainerShard);
+  };
+
+  // Backtraces are sharded by fingerprint to reduce lock contention.
+  std::vector<ContainerShard> shards_;
+  DISALLOW_COPY_AND_ASSIGN(BacktraceStorage);
 };
 
 }  // namespace profiling
