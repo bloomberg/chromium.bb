@@ -33,6 +33,8 @@ class AppListPresenterService : public app_list::mojom::AppListPresenter {
   void EndDragFromShelf(app_list::mojom::AppListState app_list_state) override;
   void ProcessMouseWheelOffset(int y_scroll_offset) override;
 
+  void FlushForTesting();
+
  private:
   app_list::AppListPresenterImpl* GetPresenter();
 
