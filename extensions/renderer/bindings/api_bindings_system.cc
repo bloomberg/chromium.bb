@@ -8,6 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "extensions/renderer/bindings/api_binding_hooks.h"
+#include "extensions/renderer/bindings/api_binding_util.h"
 
 namespace extensions {
 
@@ -136,6 +137,7 @@ void APIBindingsSystem::RegisterCustomType(const std::string& type_name,
 }
 
 void APIBindingsSystem::WillReleaseContext(v8::Local<v8::Context> context) {
+  binding::InvalidateContext(context);
   request_handler_.InvalidateContext(context);
   event_handler_.InvalidateContext(context);
 }
