@@ -23,58 +23,55 @@ cr.define('print_preview', function() {
     return null;
   };
 
-  /**
-   * A set of key parameters describing a destination used to determine
-   * if two destinations are the same.
-   * @param {!Array<!print_preview.DestinationOrigin>} origins Match
-   *     destinations from these origins.
-   * @param {RegExp} idRegExp Match destination's id.
-   * @param {RegExp} displayNameRegExp Match destination's displayName.
-   * @param {boolean} skipVirtualDestinations Whether to ignore virtual
-   *     destinations, for example, Save as PDF.
-   * @constructor
-   */
-  function DestinationMatch(
-      origins, idRegExp, displayNameRegExp, skipVirtualDestinations) {
-    /** @private {!Array<!print_preview.DestinationOrigin>} */
-    this.origins_ = origins;
+  class DestinationMatch {
+    /**
+     * A set of key parameters describing a destination used to determine
+     * if two destinations are the same.
+     * @param {!Array<!print_preview.DestinationOrigin>} origins Match
+     *     destinations from these origins.
+     * @param {RegExp} idRegExp Match destination's id.
+     * @param {RegExp} displayNameRegExp Match destination's displayName.
+     * @param {boolean} skipVirtualDestinations Whether to ignore virtual
+     *     destinations, for example, Save as PDF.
+     */
+    constructor(origins, idRegExp, displayNameRegExp, skipVirtualDestinations) {
+      /** @private {!Array<!print_preview.DestinationOrigin>} */
+      this.origins_ = origins;
 
-    /** @private {RegExp} */
-    this.idRegExp_ = idRegExp;
+      /** @private {RegExp} */
+      this.idRegExp_ = idRegExp;
 
-    /** @private {RegExp} */
-    this.displayNameRegExp_ = displayNameRegExp;
+      /** @private {RegExp} */
+      this.displayNameRegExp_ = displayNameRegExp;
 
-    /** @private {boolean} */
-    this.skipVirtualDestinations_ = skipVirtualDestinations;
-  }
-
-  DestinationMatch.prototype = {
+      /** @private {boolean} */
+      this.skipVirtualDestinations_ = skipVirtualDestinations;
+    }
 
     /**
      * @param {string} origin Origin to match.
      * @return {boolean} Whether the origin is one of the {@code origins_}.
      */
-    matchOrigin: function(origin) {
+    matchOrigin(origin) {
       return arrayContains(this.origins_, origin);
-    },
+    }
 
     /**
      * @param {string} id Id of the destination.
      * @param {string} origin Origin of the destination.
      * @return {boolean} Whether destination is the same as initial.
      */
-    matchIdAndOrigin: function(id, origin) {
+    matchIdAndOrigin(id, origin) {
       return this.matchOrigin(origin) && !!this.idRegExp_ &&
           this.idRegExp_.test(id);
-    },
+    }
 
     /**
      * @param {!print_preview.Destination} destination Destination to match.
      * @return {boolean} Whether {@code destination} matches the last user
      *     selected one.
      */
-    match: function(destination) {
+    match(destination) {
       if (!this.matchOrigin(destination.origin)) {
         return false;
       }
@@ -90,7 +87,7 @@ cr.define('print_preview', function() {
         return false;
       }
       return true;
-    },
+    }
 
     /**
      * @param {!print_preview.Destination} destination Destination to check.
@@ -98,7 +95,7 @@ cr.define('print_preview', function() {
      *     destination selection.
      * @private
      */
-    isVirtualDestination_: function(destination) {
+    isVirtualDestination_(destination) {
       if (destination.origin == print_preview.DestinationOrigin.LOCAL) {
         return arrayContains(
             [print_preview.Destination.GooglePromotedId.SAVE_AS_PDF],
@@ -106,16 +103,16 @@ cr.define('print_preview', function() {
       }
       return arrayContains(
           [print_preview.Destination.GooglePromotedId.DOCS], destination.id);
-    },
+    }
 
     /**
      * @return {?print_preview.PrinterType} The printer type of this
      *     destination match. Will return null for Cloud destinations.
      */
-    getType: function() {
+    getType() {
       return originToType(this.origins_[0]);
     }
-  };
+  }
 
   // Export
   return {originToType: originToType, DestinationMatch: DestinationMatch};
