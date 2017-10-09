@@ -916,6 +916,86 @@ WebInputEvent::Type ToWebMouseEventType(MotionEvent::Action action) {
   return WebInputEvent::kUndefined;
 }
 
+EventType WebEventTypeToEventType(WebInputEvent::Type type) {
+  switch (type) {
+    case WebInputEvent::kMouseDown:
+      return ET_MOUSE_PRESSED;
+    case WebInputEvent::kMouseUp:
+      return ET_MOUSE_RELEASED;
+    case WebInputEvent::kMouseMove:
+      return ET_MOUSE_MOVED;
+    case WebInputEvent::kMouseEnter:
+      return ET_MOUSE_ENTERED;
+    case WebInputEvent::kMouseLeave:
+      return ET_MOUSE_EXITED;
+    case WebInputEvent::kContextMenu:
+      return ET_UNKNOWN;
+    case WebInputEvent::kMouseWheel:
+      return ET_MOUSEWHEEL;
+    case WebInputEvent::kRawKeyDown:
+      return ET_UNKNOWN;
+    case WebInputEvent::kKeyDown:
+      return ET_KEY_PRESSED;
+    case WebInputEvent::kKeyUp:
+      return ET_KEY_RELEASED;
+    case WebInputEvent::kChar:
+      return ET_UNKNOWN;
+    case WebInputEvent::kGestureScrollBegin:
+      return ET_GESTURE_SCROLL_BEGIN;
+    case WebInputEvent::kGestureScrollEnd:
+      return ET_GESTURE_SCROLL_END;
+    case WebInputEvent::kGestureScrollUpdate:
+      return ET_GESTURE_SCROLL_UPDATE;
+    case WebInputEvent::kGestureFlingStart:
+      return ET_SCROLL_FLING_START;
+    case WebInputEvent::kGestureFlingCancel:
+      return ET_SCROLL_FLING_CANCEL;
+    case WebInputEvent::kGesturePinchBegin:
+      return ET_GESTURE_PINCH_BEGIN;
+    case WebInputEvent::kGesturePinchEnd:
+      return ET_GESTURE_PINCH_END;
+    case WebInputEvent::kGesturePinchUpdate:
+      return ET_GESTURE_PINCH_UPDATE;
+    case WebInputEvent::kGestureTapDown:
+      return ET_GESTURE_TAP_DOWN;
+    case WebInputEvent::kGestureShowPress:
+      return ET_GESTURE_SHOW_PRESS;
+    case WebInputEvent::kGestureTap:
+      return ET_GESTURE_TAP;
+    case WebInputEvent::kGestureTapCancel:
+      return ET_GESTURE_TAP_CANCEL;
+    case WebInputEvent::kGestureLongPress:
+      return ET_GESTURE_LONG_PRESS;
+    case WebInputEvent::kGestureLongTap:
+      return ET_GESTURE_LONG_TAP;
+    case WebInputEvent::kGestureTwoFingerTap:
+      return ET_GESTURE_TWO_FINGER_TAP;
+    case WebInputEvent::kGestureTapUnconfirmed:
+      return ET_GESTURE_TAP_UNCONFIRMED;
+    case WebInputEvent::kGestureDoubleTap:
+      return ET_GESTURE_DOUBLE_TAP;
+    case WebInputEvent::kTouchStart:
+      return ET_TOUCH_PRESSED;
+    case WebInputEvent::kTouchMove:
+      return ET_TOUCH_MOVED;
+    case WebInputEvent::kTouchEnd:
+      return ET_TOUCH_RELEASED;
+    case WebInputEvent::kTouchCancel:
+      return ET_TOUCH_CANCELLED;
+    case WebInputEvent::kTouchScrollStarted:
+    case WebInputEvent::kPointerDown:
+      return ET_POINTER_DOWN;
+    case WebInputEvent::kPointerUp:
+      return ET_POINTER_UP;
+    case WebInputEvent::kPointerMove:
+      return ET_POINTER_MOVED;
+    case WebInputEvent::kPointerCancel:
+      return ET_POINTER_CANCELLED;
+    default:
+      return ET_UNKNOWN;
+  }
+}
+
 void SetWebPointerPropertiesFromMotionEventData(
     WebPointerProperties& webPointerProperties,
     int pointer_id,
@@ -1012,6 +1092,24 @@ bool IsContinuousGestureEvent(WebInputEvent::Type type) {
     default:
       return false;
   }
+}
+
+EventPointerType WebPointerTypeToEventPointerType(
+    WebPointerProperties::PointerType type) {
+  switch (type) {
+    case WebPointerProperties::PointerType::kMouse:
+      return EventPointerType::POINTER_TYPE_MOUSE;
+    case WebPointerProperties::PointerType::kPen:
+      return EventPointerType::POINTER_TYPE_PEN;
+    case WebPointerProperties::PointerType::kEraser:
+      return EventPointerType::POINTER_TYPE_ERASER;
+    case WebPointerProperties::PointerType::kTouch:
+      return EventPointerType::POINTER_TYPE_TOUCH;
+    case WebPointerProperties::PointerType::kUnknown:
+      return EventPointerType::POINTER_TYPE_UNKNOWN;
+  }
+  NOTREACHED() << "Invalid pointer type";
+  return EventPointerType::POINTER_TYPE_UNKNOWN;
 }
 
 }  // namespace ui
