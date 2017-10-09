@@ -126,14 +126,10 @@ class ExistingUserController
 
   // Returns the LoginDisplay created and owned by this controller.
   // Used for testing.
-  LoginDisplay* login_display() {
-    return login_display_.get();
-  }
+  LoginDisplay* login_display() { return login_display_.get(); }
 
   // Returns the LoginDisplayHost for this controller.
-  LoginDisplayHost* login_display_host() {
-    return host_;
-  }
+  LoginDisplayHost* login_display_host() { return host_; }
 
   // Returns value of LoginPerformer::auth_mode() (cached if performer is
   // destroyed).

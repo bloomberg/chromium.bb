@@ -28,7 +28,7 @@ namespace {
 const char kTestUser1[] = "test-user1@gmail.com";
 const char kTestUser2[] = "test-user2@gmail.com";
 
-}
+}  // namespace
 
 class LoginUITest : public chromeos::LoginManagerTest {
  public:

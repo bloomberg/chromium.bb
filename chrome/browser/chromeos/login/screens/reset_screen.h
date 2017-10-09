@@ -25,8 +25,7 @@ class ResetView;
 // Representation independent class that controls screen showing reset to users.
 class ResetScreen : public BaseScreen, public UpdateEngineClient::Observer {
  public:
-  ResetScreen(BaseScreenDelegate* base_screen_delegate,
-              ResetView* view);
+  ResetScreen(BaseScreenDelegate* base_screen_delegate, ResetView* view);
   ~ResetScreen() override;
 
   // Called when view is destroyed so there's no dead reference to it.

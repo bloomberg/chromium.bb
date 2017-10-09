@@ -35,7 +35,7 @@ namespace pairing_chromeos {
 class ControllerPairingController;
 class HostPairingController;
 class SharkConnectionListener;
-}
+}  // namespace pairing_chromeos
 
 namespace chromeos {
 
@@ -61,15 +61,11 @@ class WizardController : public BaseScreenDelegate,
   ~WizardController() override;
 
   // Returns the default wizard controller if it has been created.
-  static WizardController* default_controller() {
-    return default_controller_;
-  }
+  static WizardController* default_controller() { return default_controller_; }
 
   // Whether to skip any screens that may normally be shown after login
   // (registration, Terms of Service, user image selection).
-  static bool skip_post_login_screens() {
-    return skip_post_login_screens_;
-  }
+  static bool skip_post_login_screens() { return skip_post_login_screens_; }
 
   // Whether to skip any prompts that may be normally shown during enrollment.
   static bool skip_enrollment_prompts() { return skip_enrollment_prompts_; }
@@ -350,7 +346,7 @@ class WizardController : public BaseScreenDelegate,
   // Screen that was active before, or nullptr for login screen.
   BaseScreen* previous_screen_ = nullptr;
 
-  // True if running official BUILD.
+// True if running official BUILD.
 #if defined(GOOGLE_CHROME_BUILD)
   bool is_official_build_ = true;
 #else

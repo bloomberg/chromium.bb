@@ -105,8 +105,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserPasswordTest,
 
 // Supervised user signs in for second time, and actual password migration takes
 // place.
-IN_PROC_BROWSER_TEST_F(SupervisedUserPasswordTest,
-                       PasswordChangeFromUserTest) {
+IN_PROC_BROWSER_TEST_F(SupervisedUserPasswordTest, PasswordChangeFromUserTest) {
   EXPECT_CALL(*mock_homedir_methods_, MountEx(_, _, _, _)).Times(1);
   EXPECT_CALL(*mock_homedir_methods_, UpdateKeyEx(_, _, _, _, _)).Times(1);
   SigninAsSupervisedUser(false, 0, kTestSupervisedUserDisplayName);
@@ -177,9 +176,8 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserPasswordTest,
   testing::Mock::VerifyAndClearExpectations(mock_homedir_methods_);
 }
 
-IN_PROC_BROWSER_TEST_F(
-    SupervisedUserPasswordTest,
-    PRE_PRE_PRE_PRE_PasswordChangeUserAndManagerTest) {
+IN_PROC_BROWSER_TEST_F(SupervisedUserPasswordTest,
+                       PRE_PRE_PRE_PRE_PasswordChangeUserAndManagerTest) {
   PrepareUsers();
 }
 

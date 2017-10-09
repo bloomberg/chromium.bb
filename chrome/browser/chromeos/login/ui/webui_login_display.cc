@@ -45,7 +45,7 @@ WebUILoginDisplay::WebUILoginDisplay(LoginDisplay::Delegate* delegate)
 
 void WebUILoginDisplay::ClearAndEnablePassword() {
   if (webui_handler_)
-      webui_handler_->ClearAndEnablePassword();
+    webui_handler_->ClearAndEnablePassword();
 }
 
 void WebUILoginDisplay::Init(const user_manager::UserList& users,
@@ -108,7 +108,7 @@ void WebUILoginDisplay::ShowError(int error_msg_id,
                                   HelpAppLauncher::HelpTopic help_topic_id) {
   VLOG(1) << "Show error, error_id: " << error_msg_id
           << ", attempts:" << login_attempts
-          <<  ", help_topic_id: " << help_topic_id;
+          << ", help_topic_id: " << help_topic_id;
   if (!webui_handler_)
     return;
 
@@ -135,15 +135,15 @@ void WebUILoginDisplay::ShowError(int error_msg_id,
         input_method::InputMethodManager::Get();
     if (ime_manager->GetImeKeyboard()->CapsLockIsEnabled()) {
       // TODO(ivankr): use a format string instead of concatenation.
-      error_text += "\n" +
-          l10n_util::GetStringUTF8(IDS_LOGIN_ERROR_CAPS_LOCK_HINT);
+      error_text +=
+          "\n" + l10n_util::GetStringUTF8(IDS_LOGIN_ERROR_CAPS_LOCK_HINT);
     }
 
     // Display a hint to switch keyboards if there are other active input
     // methods.
     if (ime_manager->GetActiveIMEState()->GetNumActiveInputMethods() > 1) {
-      error_text += "\n" +
-          l10n_util::GetStringUTF8(IDS_LOGIN_ERROR_KEYBOARD_SWITCH_HINT);
+      error_text +=
+          "\n" + l10n_util::GetStringUTF8(IDS_LOGIN_ERROR_KEYBOARD_SWITCH_HINT);
     }
   }
 
@@ -287,9 +287,8 @@ void WebUILoginDisplay::SetWebUIHandler(
   SignInScreenController::Get()->SetWebUIHandler(webui_handler_);
 }
 
-void WebUILoginDisplay::ShowSigninScreenForCreds(
-    const std::string& username,
-    const std::string& password) {
+void WebUILoginDisplay::ShowSigninScreenForCreds(const std::string& username,
+                                                 const std::string& password) {
   if (webui_handler_)
     webui_handler_->ShowSigninScreenForCreds(username, password);
 }

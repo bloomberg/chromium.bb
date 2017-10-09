@@ -43,4 +43,3 @@ void WrongHWIDScreen::OnViewDestroyed(WrongHWIDScreenView* view) {
 }
 
 }  // namespace chromeos
-

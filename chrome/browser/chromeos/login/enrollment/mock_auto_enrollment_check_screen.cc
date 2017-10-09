@@ -14,7 +14,7 @@ MockAutoEnrollmentCheckScreen::MockAutoEnrollmentCheckScreen(
     AutoEnrollmentCheckScreenView* view)
     : AutoEnrollmentCheckScreen(base_screen_delegate, view) {}
 
-MockAutoEnrollmentCheckScreen::~MockAutoEnrollmentCheckScreen() { }
+MockAutoEnrollmentCheckScreen::~MockAutoEnrollmentCheckScreen() {}
 
 MockAutoEnrollmentCheckScreenView::MockAutoEnrollmentCheckScreenView()
     : screen_(NULL) {

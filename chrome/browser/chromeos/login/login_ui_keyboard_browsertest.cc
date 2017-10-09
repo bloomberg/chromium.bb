@@ -131,10 +131,9 @@ IN_PROC_BROWSER_TEST_F(LoginUIKeyboardTest, CheckPODScreenDefault) {
   std::vector<std::string> expected_input_methods;
   Append_en_US_InputMethods(&expected_input_methods);
 
-  EXPECT_EQ(expected_input_methods,
-            input_method::InputMethodManager::Get()
-                ->GetActiveIMEState()
-                ->GetActiveInputMethodIds());
+  EXPECT_EQ(expected_input_methods, input_method::InputMethodManager::Get()
+                                        ->GetActiveIMEState()
+                                        ->GetActiveInputMethodIds());
 }
 
 IN_PROC_BROWSER_TEST_F(LoginUIKeyboardTest, PRE_CheckPODScreenWithUsers) {
@@ -150,31 +149,28 @@ IN_PROC_BROWSER_TEST_F(LoginUIKeyboardTest, PRE_CheckPODScreenWithUsers) {
 IN_PROC_BROWSER_TEST_F(LoginUIKeyboardTest, DISABLED_CheckPODScreenWithUsers) {
   js_checker().ExpectEQ("$('pod-row').pods.length", 2);
 
-  EXPECT_EQ(user_input_methods[0],
-            input_method::InputMethodManager::Get()
-                ->GetActiveIMEState()
-                ->GetCurrentInputMethod()
-                .id());
+  EXPECT_EQ(user_input_methods[0], input_method::InputMethodManager::Get()
+                                       ->GetActiveIMEState()
+                                       ->GetCurrentInputMethod()
+                                       .id());
 
   std::vector<std::string> expected_input_methods;
   Append_en_US_InputMethods(&expected_input_methods);
   // Active IM for the first user (active user POD).
   expected_input_methods.push_back(user_input_methods[0]);
 
-  EXPECT_EQ(expected_input_methods,
-            input_method::InputMethodManager::Get()
-                ->GetActiveIMEState()
-                ->GetActiveInputMethodIds());
+  EXPECT_EQ(expected_input_methods, input_method::InputMethodManager::Get()
+                                        ->GetActiveIMEState()
+                                        ->GetActiveInputMethodIds());
 
   FocusPODWaiter waiter;
   js_checker().Evaluate("$('pod-row').focusPod($('pod-row').pods[1])");
   waiter.Wait();
 
-  EXPECT_EQ(user_input_methods[1],
-            input_method::InputMethodManager::Get()
-                ->GetActiveIMEState()
-                ->GetCurrentInputMethod()
-                .id());
+  EXPECT_EQ(user_input_methods[1], input_method::InputMethodManager::Get()
+                                       ->GetActiveIMEState()
+                                       ->GetCurrentInputMethod()
+                                       .id());
 }
 
 class LoginUIKeyboardTestWithUsersAndOwner : public chromeos::LoginManagerTest {
@@ -231,10 +227,9 @@ void LoginUIKeyboardTestWithUsersAndOwner::CheckGaiaKeyboard() {
   // Locale default input methods (the first one also is hardware IM).
   Append_en_US_InputMethods(&expected_input_methods);
 
-  EXPECT_EQ(expected_input_methods,
-            input_method::InputMethodManager::Get()
-                ->GetActiveIMEState()
-                ->GetActiveInputMethodIds());
+  EXPECT_EQ(expected_input_methods, input_method::InputMethodManager::Get()
+                                        ->GetActiveIMEState()
+                                        ->GetActiveInputMethodIds());
 }
 
 IN_PROC_BROWSER_TEST_F(LoginUIKeyboardTestWithUsersAndOwner,
@@ -260,10 +255,9 @@ IN_PROC_BROWSER_TEST_F(LoginUIKeyboardTestWithUsersAndOwner,
   // Active IM for the first user (active user POD).
   expected_input_methods.push_back(user_input_methods[0]);
 
-  EXPECT_EQ(expected_input_methods,
-            input_method::InputMethodManager::Get()
-                ->GetActiveIMEState()
-                ->GetActiveInputMethodIds());
+  EXPECT_EQ(expected_input_methods, input_method::InputMethodManager::Get()
+                                        ->GetActiveIMEState()
+                                        ->GetActiveInputMethodIds());
 
   // Switch to Gaia.
   js_checker().Evaluate("$('add-user-button').click()");
@@ -274,9 +268,8 @@ IN_PROC_BROWSER_TEST_F(LoginUIKeyboardTestWithUsersAndOwner,
   js_checker().Evaluate("$('gaia-signin').cancel()");
   OobeScreenWaiter(OobeScreen::SCREEN_ACCOUNT_PICKER).Wait();
 
-  EXPECT_EQ(expected_input_methods,
-            input_method::InputMethodManager::Get()
-                ->GetActiveIMEState()
-                ->GetActiveInputMethodIds());
+  EXPECT_EQ(expected_input_methods, input_method::InputMethodManager::Get()
+                                        ->GetActiveIMEState()
+                                        ->GetActiveInputMethodIds());
 }
 }  // namespace chromeos

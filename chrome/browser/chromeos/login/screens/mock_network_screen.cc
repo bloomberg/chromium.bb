@@ -12,11 +12,9 @@ using ::testing::_;
 MockNetworkScreen::MockNetworkScreen(BaseScreenDelegate* base_screen_delegate,
                                      Delegate* delegate,
                                      NetworkView* view)
-    : NetworkScreen(base_screen_delegate, delegate, view) {
-}
+    : NetworkScreen(base_screen_delegate, delegate, view) {}
 
-MockNetworkScreen::~MockNetworkScreen() {
-}
+MockNetworkScreen::~MockNetworkScreen() {}
 
 MockNetworkView::MockNetworkView() {
   EXPECT_CALL(*this, MockBind(_)).Times(AtLeast(1));

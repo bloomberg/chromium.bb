@@ -131,7 +131,7 @@ class OAuth2LoginManager : public KeyedService,
   // This enum is used for an UMA histogram, and hence new items should only be
   // appended at the end.
   enum MergeVerificationOutcome {
-    POST_MERGE_UNDEFINED  = 0,
+    POST_MERGE_UNDEFINED = 0,
     POST_MERGE_SUCCESS = 1,
     POST_MERGE_NO_ACCOUNTS = 2,
     POST_MERGE_MISSING_PRIMARY_ACCOUNT = 3,
@@ -211,9 +211,8 @@ class OAuth2LoginManager : public KeyedService,
 
   // Records |outcome| of merge verification check. |is_pre_merge| specifies
   // if this is pre or post merge session verification.
-  static void RecordCookiesCheckOutcome(
-      bool is_pre_merge,
-      MergeVerificationOutcome outcome);
+  static void RecordCookiesCheckOutcome(bool is_pre_merge,
+                                        MergeVerificationOutcome outcome);
 
   // Keeps the track if we have already reported OAuth2 token being loaded
   // by OAuth2TokenService.

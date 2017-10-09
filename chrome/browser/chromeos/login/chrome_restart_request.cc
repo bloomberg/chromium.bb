@@ -221,15 +221,13 @@ void DeriveCommandLine(const GURL& start_url,
     policy::switches::kDeviceManagementUrl,
     wm::switches::kWindowAnimationsDisabled,
   };
-  command_line->CopySwitchesFrom(base_command_line,
-                                 kForwardSwitches,
+  command_line->CopySwitchesFrom(base_command_line, kForwardSwitches,
                                  arraysize(kForwardSwitches));
 
   if (start_url.is_valid())
     command_line->AppendArg(start_url.spec());
 
-  for (base::DictionaryValue::Iterator it(new_switches);
-       !it.IsAtEnd();
+  for (base::DictionaryValue::Iterator it(new_switches); !it.IsAtEnd();
        it.Advance()) {
     std::string value;
     CHECK(it.value().GetAsString(&value));
@@ -286,9 +284,8 @@ void ChromeRestartRequest::Start() {
   // just kills us so settings may be lost. See http://crosbug.com/13102
   g_browser_process->FlushLocalStateAndReply(
       base::BindOnce(&ChromeRestartRequest::RestartJob, AsWeakPtr()));
-  timer_.Start(
-      FROM_HERE, base::TimeDelta::FromSeconds(3), this,
-      &ChromeRestartRequest::RestartJob);
+  timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(3), this,
+               &ChromeRestartRequest::RestartJob);
 }
 
 void ChromeRestartRequest::RestartJob() {

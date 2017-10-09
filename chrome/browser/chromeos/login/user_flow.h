@@ -48,9 +48,7 @@ class UserFlow {
   virtual void LaunchExtraSteps(Profile* profile) = 0;
   void SetHost(LoginDisplayHost* host);
 
-  LoginDisplayHost* host() {
-    return host_;
-  }
+  LoginDisplayHost* host() { return host_; }
 
  private:
   LoginDisplayHost* host_;

@@ -20,18 +20,15 @@
 namespace {
 
 unsigned CalculateCRC32(const std::string& data) {
-  return static_cast<unsigned>(crc32(
-      0,
-      reinterpret_cast<const Bytef*>(data.c_str()),
-      data.length()));
+  return static_cast<unsigned>(
+      crc32(0, reinterpret_cast<const Bytef*>(data.c_str()), data.length()));
 }
 
 std::string CalculateHWIDv2Checksum(const std::string& data) {
   unsigned crc32 = CalculateCRC32(data);
   // We take four least significant decimal digits of CRC-32.
   char checksum[5];
-  int snprintf_result =
-      snprintf(checksum, 5, "%04u", crc32 % 10000);
+  int snprintf_result = snprintf(checksum, 5, "%04u", crc32 % 10000);
   LOG_ASSERT(snprintf_result == 4);
   return checksum;
 }
@@ -100,13 +97,13 @@ bool IsCorrectHWIDv3(const std::string& hwid) {
   return CalculateHWIDv3Checksum(not_checksum) == checksum;
 }
 
-} // anonymous namespace
+}  // anonymous namespace
 
 namespace chromeos {
 
 bool IsHWIDCorrect(const std::string& hwid) {
   return IsCorrectHWIDv2(hwid) || IsCorrectExceptionalHWID(hwid) ||
-      IsCorrectHWIDv3(hwid);
+         IsCorrectHWIDv3(hwid);
 }
 
 bool IsMachineHWIDCorrect() {
@@ -136,4 +133,4 @@ bool IsMachineHWIDCorrect() {
   return true;
 }
 
-} // namespace chromeos
+}  // namespace chromeos

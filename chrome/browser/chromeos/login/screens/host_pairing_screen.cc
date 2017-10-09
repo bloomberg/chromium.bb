@@ -148,8 +148,8 @@ void HostPairingScreen::ConfigureHostRequested(
           << ", keyboard_layout=" << keyboard_layout;
 
   if (delegate_) {
-    delegate_->ConfigureHostRequested(
-        accepted_eula, lang, timezone, send_reports, keyboard_layout);
+    delegate_->ConfigureHostRequested(accepted_eula, lang, timezone,
+                                      send_reports, keyboard_layout);
   }
 }
 

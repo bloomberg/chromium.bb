@@ -40,18 +40,15 @@ const char kPermitTypeLicence[] = "licence";
 
 EasyUnlockKeyManager::EasyUnlockKeyManager() : weak_ptr_factory_(this) {}
 
-EasyUnlockKeyManager::~EasyUnlockKeyManager() {
-}
+EasyUnlockKeyManager::~EasyUnlockKeyManager() {}
 
 void EasyUnlockKeyManager::RefreshKeys(const UserContext& user_context,
                                        const base::ListValue& remote_devices,
                                        const RefreshKeysCallback& callback) {
-  base::Closure do_refresh_keys = base::Bind(
-      &EasyUnlockKeyManager::RefreshKeysWithTpmKeyPresent,
-      weak_ptr_factory_.GetWeakPtr(),
-      user_context,
-      base::Owned(remote_devices.DeepCopy()),
-      callback);
+  base::Closure do_refresh_keys =
+      base::Bind(&EasyUnlockKeyManager::RefreshKeysWithTpmKeyPresent,
+                 weak_ptr_factory_.GetWeakPtr(), user_context,
+                 base::Owned(remote_devices.DeepCopy()), callback);
 
   EasyUnlockTpmKeyManager* tpm_key_manager =
       EasyUnlockTpmKeyManagerFactory::GetInstance()->GetForUser(
@@ -191,8 +188,7 @@ bool EasyUnlockKeyManager::RemoteDeviceListToDeviceDataList(
     EasyUnlockDeviceKeyDataList* data_list) {
   EasyUnlockDeviceKeyDataList parsed_devices;
   for (base::ListValue::const_iterator it = device_list.begin();
-       it != device_list.end();
-       ++it) {
+       it != device_list.end(); ++it) {
     const base::DictionaryValue* dict;
     if (!it->GetAsDictionary(&dict) || !dict)
       return false;

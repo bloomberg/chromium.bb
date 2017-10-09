@@ -50,8 +50,7 @@ ForwardingServer::ForwardingServer(const std::string& ssl_host,
                            SSLOptions(SSLOptions::CERT_AUTO),
                            base::FilePath()),
       ssl_host_(ssl_host),
-      forward_target_(forward_target) {
-}
+      forward_target_(forward_target) {}
 
 bool ForwardingServer::SetPythonPath() const {
   if (!net::LocalTestServer::SetPythonPath())
@@ -72,11 +71,11 @@ bool ForwardingServer::GetTestServerPath(
     return false;
 
   *testserver_path = source_root_dir.Append("chrome")
-                                    .Append("browser")
-                                    .Append("chromeos")
-                                    .Append("login")
-                                    .Append("test")
-                                    .Append("https_forwarder.py");
+                         .Append("browser")
+                         .Append("chromeos")
+                         .Append("login")
+                         .Append("test")
+                         .Append("https_forwarder.py");
   return true;
 }
 
@@ -93,11 +92,9 @@ bool ForwardingServer::GenerateAdditionalArguments(
   return true;
 }
 
-HTTPSForwarder::HTTPSForwarder() {
-}
+HTTPSForwarder::HTTPSForwarder() {}
 
-HTTPSForwarder::~HTTPSForwarder() {
-}
+HTTPSForwarder::~HTTPSForwarder() {}
 
 GURL HTTPSForwarder::GetURLForSSLHost(const std::string& path) const {
   CHECK(forwarding_server_);

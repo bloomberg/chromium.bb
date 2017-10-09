@@ -262,7 +262,7 @@ class ProvisionedEnrollmentScreenTest : public EnrollmentScreenTest {
     EnrollmentScreenTest::SetUpCommandLine(command_line);
     base::FilePath test_data_dir;
     ASSERT_TRUE(chromeos::test_utils::GetTestDataPath(
-                    "app_mode", "kiosk_manifest", &test_data_dir));
+        "app_mode", "kiosk_manifest", &test_data_dir));
     command_line->AppendSwitchPath(
         switches::kAppOemManifestFile,
         test_data_dir.AppendASCII("kiosk_manifest.json"));

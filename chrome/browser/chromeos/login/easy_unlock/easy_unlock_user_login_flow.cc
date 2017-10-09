@@ -54,11 +54,9 @@ bool EasyUnlockUserLoginFlow::HandlePasswordChangeDetected() {
 }
 
 void EasyUnlockUserLoginFlow::HandleOAuthTokenStatusChange(
-    user_manager::User::OAuthTokenStatus status) {
-}
+    user_manager::User::OAuthTokenStatus status) {}
 
-void EasyUnlockUserLoginFlow::LaunchExtraSteps(Profile* profile) {
-}
+void EasyUnlockUserLoginFlow::LaunchExtraSteps(Profile* profile) {}
 
 bool EasyUnlockUserLoginFlow::SupportsEarlyRestartToApplyFlags() {
   return true;

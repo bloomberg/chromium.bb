@@ -60,15 +60,12 @@ const char MultiProfileUserController::kBehaviorOwnerPrimaryOnly[] =
 MultiProfileUserController::MultiProfileUserController(
     MultiProfileUserControllerDelegate* delegate,
     PrefService* local_state)
-    : delegate_(delegate),
-      local_state_(local_state) {
-}
+    : delegate_(delegate), local_state_(local_state) {}
 
 MultiProfileUserController::~MultiProfileUserController() {}
 
 // static
-void MultiProfileUserController::RegisterPrefs(
-    PrefRegistrySimple* registry) {
+void MultiProfileUserController::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(prefs::kCachedMultiProfileUserBehavior);
 }
 
@@ -78,12 +75,10 @@ void MultiProfileUserController::RegisterProfilePrefs(
   registry->RegisterStringPref(prefs::kMultiProfileUserBehavior,
                                kBehaviorUnrestricted);
   registry->RegisterBooleanPref(
-      prefs::kMultiProfileNeverShowIntro,
-      false,
+      prefs::kMultiProfileNeverShowIntro, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(
-      prefs::kMultiProfileWarningShowDismissed,
-      false,
+      prefs::kMultiProfileWarningShowDismissed, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
@@ -119,8 +114,8 @@ MultiProfileUserController::GetPrimaryUserPolicy() {
     return NOT_ALLOWED_PRIMARY_POLICY_CERT_TAINTED;
 
   // No user is allowed if the primary user policy forbids it.
-  const std::string behavior = profile->GetPrefs()->GetString(
-      prefs::kMultiProfileUserBehavior);
+  const std::string behavior =
+      profile->GetPrefs()->GetString(prefs::kMultiProfileUserBehavior);
   if (behavior == kBehaviorNotAllowed)
     return NOT_ALLOWED_PRIMARY_USER_POLICY_FORBIDS;
 
@@ -168,9 +163,9 @@ bool MultiProfileUserController::IsUserAllowedInSession(
 
   // The user must have 'unrestricted' policy to be a secondary user.
   const std::string behavior = GetCachedValue(user_email);
-  return SetUserAllowedReason(
-      reason,
-      behavior == kBehaviorUnrestricted ? ALLOWED : NOT_ALLOWED_POLICY_FORBIDS);
+  return SetUserAllowedReason(reason, behavior == kBehaviorUnrestricted
+                                          ? ALLOWED
+                                          : NOT_ALLOWED_POLICY_FORBIDS);
 }
 
 void MultiProfileUserController::StartObserving(Profile* user_profile) {
@@ -180,11 +175,9 @@ void MultiProfileUserController::StartObserving(Profile* user_profile) {
 
   std::unique_ptr<PrefChangeRegistrar> registrar(new PrefChangeRegistrar);
   registrar->Init(user_profile->GetPrefs());
-  registrar->Add(
-      prefs::kMultiProfileUserBehavior,
-      base::Bind(&MultiProfileUserController::OnUserPrefChanged,
-                 base::Unretained(this),
-                 user_profile));
+  registrar->Add(prefs::kMultiProfileUserBehavior,
+                 base::Bind(&MultiProfileUserController::OnUserPrefChanged,
+                            base::Unretained(this), user_profile));
   pref_watchers_.push_back(std::move(registrar));
 
   OnUserPrefChanged(user_profile);
@@ -209,9 +202,8 @@ std::string MultiProfileUserController::GetCachedValue(
   return std::string(kBehaviorUnrestricted);
 }
 
-void MultiProfileUserController::SetCachedValue(
-    const std::string& user_email,
-    const std::string& behavior) {
+void MultiProfileUserController::SetCachedValue(const std::string& user_email,
+                                                const std::string& behavior) {
   DictionaryPrefUpdate update(local_state_,
                               prefs::kCachedMultiProfileUserBehavior);
   update->SetKey(user_email, base::Value(SanitizeBehaviorValue(behavior)));
@@ -221,8 +213,7 @@ void MultiProfileUserController::CheckSessionUsers() {
   const user_manager::UserList& users =
       user_manager::UserManager::Get()->GetLoggedInUsers();
   for (user_manager::UserList::const_iterator it = users.begin();
-       it != users.end();
-       ++it) {
+       it != users.end(); ++it) {
     if (!IsUserAllowedInSession((*it)->GetAccountId().GetUserEmail(), NULL)) {
       delegate_->OnUserNotAllowed((*it)->GetAccountId().GetUserEmail());
       return;
@@ -230,8 +221,7 @@ void MultiProfileUserController::CheckSessionUsers() {
   }
 }
 
-void MultiProfileUserController::OnUserPrefChanged(
-    Profile* user_profile) {
+void MultiProfileUserController::OnUserPrefChanged(Profile* user_profile) {
   std::string user_email = user_profile->GetProfileUserName();
   CHECK(!user_email.empty());
   user_email = gaia::CanonicalizeEmail(user_email);

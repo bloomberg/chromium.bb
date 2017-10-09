@@ -13,8 +13,7 @@ LoginDisplay::LoginDisplay(Delegate* delegate,
     : delegate_(delegate),
       parent_window_(NULL),
       background_bounds_(background_bounds),
-      is_signin_completed_(false) {
-}
+      is_signin_completed_(false) {}
 
 LoginDisplay::~LoginDisplay() {}
 

@@ -33,7 +33,7 @@ namespace views {
 class View;
 class WebView;
 class Widget;
-}
+}  // namespace views
 
 namespace chromeos {
 

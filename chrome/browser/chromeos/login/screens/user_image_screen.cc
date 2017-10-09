@@ -176,9 +176,9 @@ void UserImageScreen::Show() {
     policy::PolicyService* policy_service =
         policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile)
             ->policy_service();
-    if (policy_service->GetPolicies(
-            policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME,
-                                    std::string()))
+    if (policy_service
+            ->GetPolicies(policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME,
+                                                  std::string()))
             .Get(policy::key::kUserAvatarImage)) {
       // If the user image is managed by policy, skip the screen because the
       // user is not allowed to override a policy-set image.
@@ -213,10 +213,9 @@ void UserImageScreen::Show() {
       }
       sync_observer->AddObserver(this);
       sync_timer_.reset(new base::Timer(
-            FROM_HERE,
-            base::TimeDelta::FromSeconds(kSyncTimeoutSeconds),
-            base::Bind(&UserImageScreen::OnSyncTimeout, base::Unretained(this)),
-            false));
+          FROM_HERE, base::TimeDelta::FromSeconds(kSyncTimeoutSeconds),
+          base::Bind(&UserImageScreen::OnSyncTimeout, base::Unretained(this)),
+          false));
       sync_timer_->Reset();
     }
   }

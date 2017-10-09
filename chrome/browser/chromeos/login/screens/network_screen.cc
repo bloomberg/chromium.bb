@@ -99,7 +99,6 @@ void NetworkScreen::OnViewDestroyed(NetworkView* view) {
   }
 }
 
-
 void NetworkScreen::UpdateLanguageList() {
   ScheduleResolveLanguageList(
       std::unique_ptr<locale_util::LanguageSwitchResult>());
@@ -297,16 +296,16 @@ void NetworkScreen::SetNetworkStateHelperForTest(
 void NetworkScreen::SubscribeNetworkNotification() {
   if (!is_network_subscribed_) {
     is_network_subscribed_ = true;
-    NetworkHandler::Get()->network_state_handler()->AddObserver(
-        this, FROM_HERE);
+    NetworkHandler::Get()->network_state_handler()->AddObserver(this,
+                                                                FROM_HERE);
   }
 }
 
 void NetworkScreen::UnsubscribeNetworkNotification() {
   if (is_network_subscribed_) {
     is_network_subscribed_ = false;
-    NetworkHandler::Get()->network_state_handler()->RemoveObserver(
-        this, FROM_HERE);
+    NetworkHandler::Get()->network_state_handler()->RemoveObserver(this,
+                                                                   FROM_HERE);
   }
 }
 
@@ -372,8 +371,7 @@ void NetworkScreen::WaitForConnection(const base::string16& network_id) {
     connection_timer_.Stop();
     connection_timer_.Start(FROM_HERE,
                             base::TimeDelta::FromSeconds(kConnectionTimeoutSec),
-                            this,
-                            &NetworkScreen::OnConnectionTimeout);
+                            this, &NetworkScreen::OnConnectionTimeout);
   }
 
   network_id_ = network_id;

@@ -50,7 +50,7 @@ class InterstitialPageDelegate : public content::InterstitialPageDelegate {
 
 class SimpleWebViewDialogTest : public LoginManagerTest {
  public:
-  SimpleWebViewDialogTest(): LoginManagerTest(false) {}
+  SimpleWebViewDialogTest() : LoginManagerTest(false) {}
   ~SimpleWebViewDialogTest() override {}
 
   InterstitialPageDelegate* CreateDelegate(CaptivePortalWindowProxy* proxy) {

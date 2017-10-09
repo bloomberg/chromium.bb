@@ -88,7 +88,7 @@ void LoginAttemptObserver::LoginAttempted() {
     base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
 
-}  // anyonymous namespace
+}  // namespace
 
 namespace chromeos {
 
@@ -154,9 +154,8 @@ void WebUIScreenLockerTester::EnterPassword(const std::string& password) {
 
   // Attempt to sign in.
   LoginAttemptObserver login;
-  v = content::ExecuteScriptAndGetValue(
-      RenderViewHost()->GetMainFrame(),
-      "$('pod-row').pods[0].activate();");
+  v = content::ExecuteScriptAndGetValue(RenderViewHost()->GetMainFrame(),
+                                        "$('pod-row').pods[0].activate();");
   ASSERT_TRUE(v->GetAsBoolean(&result));
   ASSERT_TRUE(result);
 
@@ -164,8 +163,7 @@ void WebUIScreenLockerTester::EnterPassword(const std::string& password) {
   login.WaitForAttempt();
 }
 
-void WebUIScreenLockerTester::EmulateWindowManagerReady() {
-}
+void WebUIScreenLockerTester::EmulateWindowManagerReady() {}
 
 views::Widget* WebUIScreenLockerTester::GetWidget() const {
   return webui_screen_locker()->lock_window_;
@@ -191,15 +189,12 @@ content::WebUI* WebUIScreenLockerTester::webui() const {
   return webui;
 }
 
-ScreenLockerTester::ScreenLockerTester() {
-}
+ScreenLockerTester::ScreenLockerTester() {}
 
-ScreenLockerTester::~ScreenLockerTester() {
-}
+ScreenLockerTester::~ScreenLockerTester() {}
 
 bool ScreenLockerTester::IsLocked() {
-  return ScreenLocker::screen_locker_ &&
-      ScreenLocker::screen_locker_->locked_;
+  return ScreenLocker::screen_locker_ && ScreenLocker::screen_locker_->locked_;
 }
 
 void ScreenLockerTester::InjectStubUserContext(

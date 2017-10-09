@@ -166,8 +166,7 @@ class WallpaperManagerPolicyTest : public LoginManagerTest,
         CryptohomeClient::GetStubSanitizedUsername(
             cryptohome::Identification(account_id));
     const base::FilePath user_key_file =
-        user_keys_dir.AppendASCII(sanitized_user_id)
-                     .AppendASCII("policy.pub");
+        user_keys_dir.AppendASCII(sanitized_user_id).AppendASCII("policy.pub");
     std::string user_key_bits =
         user_policy_builder->GetPublicSigningKeyAsString();
     EXPECT_FALSE(user_key_bits.empty());
@@ -269,8 +268,8 @@ class WallpaperManagerPolicyTest : public LoginManagerTest,
     policy::UserPolicyBuilder* builder =
         user_policy_builders_[user_number].get();
     if (!filename.empty()) {
-      builder->payload().
-          mutable_wallpaperimage()->set_value(ConstructPolicy(filename));
+      builder->payload().mutable_wallpaperimage()->set_value(
+          ConstructPolicy(filename));
     } else {
       builder->payload().Clear();
     }

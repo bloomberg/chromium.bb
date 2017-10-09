@@ -18,7 +18,7 @@
 namespace content {
 class InterstitialPage;
 class WebContents;
-}
+}  // namespace content
 
 namespace chromeos {
 
@@ -26,9 +26,8 @@ namespace chromeos {
 // while we are trying to restore session containing tabs with Google properties
 // during the process of exchanging OAuth2 refresh token for user cookies.
 // It deletes itself when the interstitial page is closed.
-class MergeSessionLoadPage
-    : public content::InterstitialPageDelegate,
-      public OAuth2LoginManager::Observer {
+class MergeSessionLoadPage : public content::InterstitialPageDelegate,
+                             public OAuth2LoginManager::Observer {
  public:
   // Create a merge session load delay page for the |web_contents|.
   // The |callback| will be run on the IO thread.

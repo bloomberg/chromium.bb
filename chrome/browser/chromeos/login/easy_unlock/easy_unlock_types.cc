@@ -20,7 +20,6 @@ EasyUnlockDeviceKeyData::EasyUnlockDeviceKeyData()
 EasyUnlockDeviceKeyData::EasyUnlockDeviceKeyData(
     const EasyUnlockDeviceKeyData& other) = default;
 
-EasyUnlockDeviceKeyData::~EasyUnlockDeviceKeyData() {
-}
+EasyUnlockDeviceKeyData::~EasyUnlockDeviceKeyData() {}
 
 }  // namespace chromeos

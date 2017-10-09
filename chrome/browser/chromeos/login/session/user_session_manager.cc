@@ -196,9 +196,8 @@ void InitLocaleAndInputMethodsForNewUser(
     // default input method (e.g. from GaiaScreen), use the hardware input
     // method. Note that the hardware input method can be non-login-able.
     // Refer to the issue chrome-os-partner:48623.
-    if (descriptor &&
-        descriptor->GetPreferredKeyboardLayout() ==
-            preferred_input_method.GetPreferredKeyboardLayout()) {
+    if (descriptor && descriptor->GetPreferredKeyboardLayout() ==
+                          preferred_input_method.GetPreferredKeyboardLayout()) {
       preferred_input_method = *descriptor;
     }
   }
@@ -231,8 +230,8 @@ void InitLocaleAndInputMethodsForNewUser(
   for (size_t i = 0; i < candidates.size(); ++i) {
     const std::string& candidate = candidates[i];
     // Skip if it's already in language_codes.
-    if (std::count(language_codes.begin(), language_codes.end(),
-                   candidate) == 0) {
+    if (std::count(language_codes.begin(), language_codes.end(), candidate) ==
+        0) {
       language_codes.push_back(candidate);
     }
   }
@@ -353,14 +352,11 @@ bool IsRunningTest() {
 
 }  // namespace
 
-UserSessionManagerDelegate::~UserSessionManagerDelegate() {
-}
+UserSessionManagerDelegate::~UserSessionManagerDelegate() {}
 
-void UserSessionStateObserver::PendingUserSessionsRestoreFinished() {
-}
+void UserSessionStateObserver::PendingUserSessionsRestoreFinished() {}
 
-UserSessionStateObserver::~UserSessionStateObserver() {
-}
+UserSessionStateObserver::~UserSessionStateObserver() {}
 
 // static
 UserSessionManager* UserSessionManager::GetInstance() {
@@ -379,8 +375,7 @@ void UserSessionManager::OverrideHomedir() {
           user_manager->GetPrimaryUser()->username_hash());
       // This path has been either created by cryptohome (on real Chrome OS
       // device) or by ProfileManager (on chromeos=1 desktop builds).
-      PathService::OverrideAndCreateIfNeeded(base::DIR_HOME,
-                                             homedir,
+      PathService::OverrideAndCreateIfNeeded(base::DIR_HOME, homedir,
                                              true /* path is absolute */,
                                              false /* don't create */);
     }
@@ -481,12 +476,11 @@ scoped_refptr<Authenticator> UserSessionManager::CreateAuthenticator(
   return authenticator_;
 }
 
-void UserSessionManager::StartSession(
-    const UserContext& user_context,
-    StartSessionType start_session_type,
-    bool has_auth_cookies,
-    bool has_active_session,
-    UserSessionManagerDelegate* delegate) {
+void UserSessionManager::StartSession(const UserContext& user_context,
+                                      StartSessionType start_session_type,
+                                      bool has_auth_cookies,
+                                      bool has_active_session,
+                                      UserSessionManagerDelegate* delegate) {
   easy_unlock_key_ops_finished_ = false;
 
   delegate_ = delegate;
@@ -639,14 +633,14 @@ void UserSessionManager::SetFirstLoginPrefs(
     const std::string& public_session_locale,
     const std::string& public_session_input_method) {
   VLOG(1) << "Setting first login prefs";
-  InitLocaleAndInputMethodsForNewUser(
-      this, profile, public_session_locale, public_session_input_method);
+  InitLocaleAndInputMethodsForNewUser(this, profile, public_session_locale,
+                                      public_session_input_method);
 }
 
 bool UserSessionManager::GetAppModeChromeClientOAuthInfo(
-    std::string* chrome_client_id, std::string* chrome_client_secret) {
-  if (!chrome::IsRunningInForcedAppMode() ||
-      chrome_client_id_.empty() ||
+    std::string* chrome_client_id,
+    std::string* chrome_client_secret) {
+  if (!chrome::IsRunningInForcedAppMode() || chrome_client_id_.empty() ||
       chrome_client_secret_.empty()) {
     return false;
   }
@@ -722,15 +716,14 @@ bool UserSessionManager::RespectLocalePreference(
           << "app_locale='" << pref_app_locale << "', "
           << "bkup_locale='" << pref_bkup_locale << "', "
           << (account_locale != NULL
-              ? (std::string("account_locale='") + (*account_locale) +
-                 "'. ")
-              : (std::string("account_locale - unused. ")))
+                  ? (std::string("account_locale='") + (*account_locale) +
+                     "'. ")
+                  : (std::string("account_locale - unused. ")))
           << " Selected '" << pref_locale << "'";
   profile->ChangeAppLocale(
-      pref_locale,
-      user->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT ?
-          Profile::APP_LOCALE_CHANGED_VIA_PUBLIC_SESSION_LOGIN :
-          Profile::APP_LOCALE_CHANGED_VIA_LOGIN);
+      pref_locale, user->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT
+                       ? Profile::APP_LOCALE_CHANGED_VIA_PUBLIC_SESSION_LOGIN
+                       : Profile::APP_LOCALE_CHANGED_VIA_LOGIN);
 
   // Here we don't enable keyboard layouts for normal users. Input methods
   // are set up when the user first logs in. Then the user may customize the
@@ -881,9 +874,9 @@ void UserSessionManager::OnSessionRestoreStateChanged(
   }
 
   if (exit_after_session_restore_ &&
-      (state  == OAuth2LoginManager::SESSION_RESTORE_DONE ||
-       state  == OAuth2LoginManager::SESSION_RESTORE_FAILED ||
-       state  == OAuth2LoginManager::SESSION_RESTORE_CONNECTION_FAILED)) {
+      (state == OAuth2LoginManager::SESSION_RESTORE_DONE ||
+       state == OAuth2LoginManager::SESSION_RESTORE_FAILED ||
+       state == OAuth2LoginManager::SESSION_RESTORE_CONNECTION_FAILED)) {
     LOG(WARNING) << "Restarting Chrome after session restore finishes, "
                  << "most likely due to custom flags.";
 
@@ -911,8 +904,7 @@ void UserSessionManager::OnNetworkChanged(
   // Need to iterate over all users and their OAuth2 session state.
   const user_manager::UserList& users = user_manager->GetLoggedInUsers();
   for (user_manager::UserList::const_iterator it = users.begin();
-       it != users.end();
-       ++it) {
+       it != users.end(); ++it) {
     if (!(*it)->is_profile_created())
       continue;
 
@@ -1052,8 +1044,7 @@ void UserSessionManager::InitProfilePreferences(
   // migration in wipe mode.
   if (user_manager::UserManager::Get()->IsCurrentUserNew() ||
       profile->IsNewProfile()) {
-    SetFirstLoginPrefs(profile,
-                       user_context.GetPublicSessionLocale(),
+    SetFirstLoginPrefs(profile, user_context.GetPublicSessionLocale(),
                        user_context.GetPublicSessionInputMethod());
   }
 
@@ -1065,8 +1056,8 @@ void UserSessionManager::InitProfilePreferences(
             active_user->GetAccountId().GetUserEmail());
     profile->GetPrefs()->SetString(prefs::kSupervisedUserId,
                                    supervised_user_sync_id);
-  } else if (user_manager::UserManager::Get()->
-      IsLoggedInAsUserWithGaiaAccount()) {
+  } else if (user_manager::UserManager::Get()
+                 ->IsLoggedInAsUserWithGaiaAccount()) {
     // Get the Gaia ID from the user context.  If it's not available, this may
     // not be available when unlocking a previously opened profile, or when
     // creating a supervised users.  However, in these cases the gaia_id should
@@ -1406,13 +1397,13 @@ void UserSessionManager::InitSessionRestoreStrategy() {
   // Are we in kiosk app mode?
   if (in_app_mode) {
     if (command_line->HasSwitch(::switches::kAppModeOAuth2Token)) {
-      user_context_.SetRefreshToken(command_line->GetSwitchValueASCII(
-          ::switches::kAppModeOAuth2Token));
+      user_context_.SetRefreshToken(
+          command_line->GetSwitchValueASCII(::switches::kAppModeOAuth2Token));
     }
 
     if (command_line->HasSwitch(::switches::kAppModeAuthCode)) {
-      user_context_.SetAuthCode(command_line->GetSwitchValueASCII(
-          ::switches::kAppModeAuthCode));
+      user_context_.SetAuthCode(
+          command_line->GetSwitchValueASCII(::switches::kAppModeAuthCode));
     }
 
     DCHECK(!has_auth_cookies_);
@@ -1463,9 +1454,9 @@ void UserSessionManager::RestoreAuthSessionImpl(
   // by RestoreSession() for session restore case.
   if (!auth_request_context &&
       (authenticator_.get() && authenticator_->authentication_context())) {
-    auth_request_context =
-        content::BrowserContext::GetDefaultStoragePartition(
-            authenticator_->authentication_context())->GetURLRequestContext();
+    auth_request_context = content::BrowserContext::GetDefaultStoragePartition(
+                               authenticator_->authentication_context())
+                               ->GetURLRequestContext();
   }
   login_manager->RestoreSession(auth_request_context, session_restore_strategy_,
                                 user_context_.GetRefreshToken(),
@@ -1587,8 +1578,7 @@ void UserSessionManager::RestorePendingUserSessions() {
       user_manager::UserManager::Get()->GetLoggedInUsers();
   bool user_already_logged_in = false;
   for (user_manager::UserList::const_iterator it = logged_in_users.begin();
-       it != logged_in_users.end();
-       ++it) {
+       it != logged_in_users.end(); ++it) {
     const user_manager::User* user = (*it);
     if (user->GetAccountId() == account_id) {
       user_already_logged_in = true;
@@ -1605,8 +1595,7 @@ void UserSessionManager::RestorePendingUserSessions() {
     // Will call OnProfilePrepared() once profile has been loaded.
     // Only handling secondary users here since primary user profile
     // (and session) has been loaded on Chrome startup.
-    StartSession(user_context,
-                 SECONDARY_USER_SESSION_AFTER_CRASH,
+    StartSession(user_context, SECONDARY_USER_SESSION_AFTER_CRASH,
                  false,  // has_auth_cookies
                  true,   // has_active_session, this is restart after crash
                  this);
@@ -1673,8 +1662,8 @@ void UserSessionManager::UpdateEasyUnlockKeys(const UserContext& user_context) {
                  user_context.GetAccountId().GetUserEmail()));
 }
 
-net::URLRequestContextGetter*
-UserSessionManager::GetAuthRequestContext() const {
+net::URLRequestContextGetter* UserSessionManager::GetAuthRequestContext()
+    const {
   content::StoragePartition* signin_partition = login::GetSigninPartition();
   if (!signin_partition)
     return nullptr;
@@ -1716,13 +1705,11 @@ void UserSessionManager::AttemptRestart(Profile* profile) {
   exit_after_session_restore_ = true;
 }
 
-void UserSessionManager::OnEasyUnlockKeyOpsFinished(
-    const std::string& user_id,
-    bool success) {
+void UserSessionManager::OnEasyUnlockKeyOpsFinished(const std::string& user_id,
+                                                    bool success) {
   const user_manager::User* user = user_manager::UserManager::Get()->FindUser(
       AccountId::FromUserEmail(user_id));
-  EasyUnlockService* easy_unlock_service =
-        EasyUnlockService::GetForUser(*user);
+  EasyUnlockService* easy_unlock_service = EasyUnlockService::GetForUser(*user);
   easy_unlock_service->CheckCryptohomeKeysAndMaybeHardlock();
 
   NotifyEasyUnlockKeyOpsFinished();

@@ -39,19 +39,15 @@ const char kPdiffTestMode[] = "pdiff-test";
 namespace chromeos {
 
 ScreenshotTester::ScreenshotTester()
-    : test_mode_(false), pdiff_enabled_(false), weak_factory_(this) {
-}
+    : test_mode_(false), pdiff_enabled_(false), weak_factory_(this) {}
 
-ScreenshotTester::~ScreenshotTester() {
-}
+ScreenshotTester::~ScreenshotTester() {}
 
-ScreenshotTester::Result::Result() {
-}
+ScreenshotTester::Result::Result() {}
 
 ScreenshotTester::Result::Result(const Result& other) = default;
 
-ScreenshotTester::Result::~Result() {
-}
+ScreenshotTester::Result::~Result() {}
 
 bool ScreenshotTester::TryInitialize() {
   base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
@@ -170,8 +166,7 @@ void ScreenshotTester::IgnoreArea(const SkIRect& area) {
 
 void ScreenshotTester::EraseIgnoredAreas(SkBitmap& bitmap) {
   for (std::vector<SkIRect>::iterator it = ignored_areas_.begin();
-       it != ignored_areas_.end();
-       ++it) {
+       it != ignored_areas_.end(); ++it) {
     bitmap.eraseArea((*it), SK_ColorWHITE);
   }
 }
@@ -239,8 +234,7 @@ ScreenshotTester::PNGFile ScreenshotTester::LoadGoldenScreenshot(
   }
   scoped_refptr<base::RefCountedBytes> png_data = new base::RefCountedBytes;
   png_data->data().resize(golden_screenshot_size);
-  base::ReadFile(image_path,
-                 reinterpret_cast<char*>(&(png_data->data()[0])),
+  base::ReadFile(image_path, reinterpret_cast<char*>(&(png_data->data()[0])),
                  golden_screenshot_size);
 
   return png_data;

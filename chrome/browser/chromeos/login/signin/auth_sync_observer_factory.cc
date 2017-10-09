@@ -14,18 +14,16 @@ namespace chromeos {
 
 AuthSyncObserverFactory::AuthSyncObserverFactory()
     : BrowserContextKeyedServiceFactory(
-        "AuthSyncObserver",
-        BrowserContextDependencyManager::GetInstance()) {
+          "AuthSyncObserver",
+          BrowserContextDependencyManager::GetInstance()) {
   DependsOn(ProfileSyncServiceFactory::GetInstance());
   DependsOn(SigninErrorControllerFactory::GetInstance());
 }
 
-AuthSyncObserverFactory::~AuthSyncObserverFactory() {
-}
+AuthSyncObserverFactory::~AuthSyncObserverFactory() {}
 
 // static
-AuthSyncObserver* AuthSyncObserverFactory::GetForProfile(
-    Profile* profile) {
+AuthSyncObserver* AuthSyncObserverFactory::GetForProfile(Profile* profile) {
   if (!AuthSyncObserver::ShouldObserve(profile))
     return nullptr;
 
@@ -34,8 +32,7 @@ AuthSyncObserver* AuthSyncObserverFactory::GetForProfile(
 }
 
 // static
-AuthSyncObserverFactory*
-    AuthSyncObserverFactory::GetInstance() {
+AuthSyncObserverFactory* AuthSyncObserverFactory::GetInstance() {
   return base::Singleton<AuthSyncObserverFactory>::get();
 }
 

@@ -24,12 +24,9 @@ namespace chromeos {
 
 user_manager::UserManager* AppLaunchSigninScreen::test_user_manager_ = NULL;
 
-AppLaunchSigninScreen::AppLaunchSigninScreen(
-    OobeUI* oobe_ui, Delegate* delegate)
-    : oobe_ui_(oobe_ui),
-      delegate_(delegate),
-      webui_handler_(NULL) {
-}
+AppLaunchSigninScreen::AppLaunchSigninScreen(OobeUI* oobe_ui,
+                                             Delegate* delegate)
+    : oobe_ui_(oobe_ui), delegate_(delegate), webui_handler_(NULL) {}
 
 AppLaunchSigninScreen::~AppLaunchSigninScreen() {
   oobe_ui_->ResetSigninScreenHandlerDelegate();
@@ -50,8 +47,7 @@ void AppLaunchSigninScreen::InitOwnerUserList() {
 
   owner_user_list_.clear();
   for (user_manager::UserList::const_iterator it = all_users.begin();
-       it != all_users.end();
-       ++it) {
+       it != all_users.end(); ++it) {
     user_manager::User* user = *it;
     if (user->GetAccountId().GetUserEmail() == owner_email) {
       owner_user_list_.push_back(user);
@@ -100,11 +96,9 @@ void AppLaunchSigninScreen::MigrateUserData(const std::string& old_password) {
 
 void AppLaunchSigninScreen::LoadWallpaper(const AccountId& account_id) {}
 
-void AppLaunchSigninScreen::LoadSigninWallpaper() {
-}
+void AppLaunchSigninScreen::LoadSigninWallpaper() {}
 
-void AppLaunchSigninScreen::OnSigninScreenReady() {
-}
+void AppLaunchSigninScreen::OnSigninScreenReady() {}
 
 void AppLaunchSigninScreen::OnGaiaScreenReady() {}
 
@@ -208,8 +202,7 @@ void AppLaunchSigninScreen::HandleGetUsers() {
   const user_manager::UserList& users = GetUsers();
 
   for (user_manager::UserList::const_iterator it = users.begin();
-       it != users.end();
-       ++it) {
+       it != users.end(); ++it) {
     proximity_auth::mojom::AuthType initial_auth_type =
         UserSelectionScreen::ShouldForceOnlineSignIn(*it)
             ? proximity_auth::mojom::AuthType::ONLINE_SIGN_IN

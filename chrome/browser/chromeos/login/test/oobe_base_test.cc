@@ -61,8 +61,7 @@ OobeBaseTest::OobeBaseTest()
   set_chromeos_user_ = false;
 }
 
-OobeBaseTest::~OobeBaseTest() {
-}
+OobeBaseTest::~OobeBaseTest() {}
 
 void OobeBaseTest::RegisterAdditionalRequestHandlers() {}
 
@@ -154,8 +153,7 @@ void OobeBaseTest::SetUpCommandLine(base::CommandLine* command_line) {
   GURL gaia_url = gaia_https_forwarder_.GetURLForSSLHost(std::string());
   command_line->AppendSwitchASCII(::switches::kGaiaUrl, gaia_url.spec());
   command_line->AppendSwitchASCII(::switches::kLsoUrl, gaia_url.spec());
-  command_line->AppendSwitchASCII(::switches::kGoogleApisUrl,
-                                  gaia_url.spec());
+  command_line->AppendSwitchASCII(::switches::kGoogleApisUrl, gaia_url.spec());
 
   fake_gaia_->Initialize();
   fake_gaia_->set_issue_oauth_code_cookie(true);
@@ -170,8 +168,7 @@ void OobeBaseTest::SimulateNetworkOffline() {
   NetworkPortalDetector::CaptivePortalState offline_state;
   offline_state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_OFFLINE;
   network_portal_detector_->SetDetectionResultsForTesting(
-      FakeShillManagerClient::kFakeEthernetNetworkGuid,
-      offline_state);
+      FakeShillManagerClient::kFakeEthernetNetworkGuid, offline_state);
   network_portal_detector_->NotifyObserversForTesting();
 }
 
@@ -185,8 +182,7 @@ void OobeBaseTest::SimulateNetworkOnline() {
   online_state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE;
   online_state.response_code = 204;
   network_portal_detector_->SetDetectionResultsForTesting(
-      FakeShillManagerClient::kFakeEthernetNetworkGuid,
-      online_state);
+      FakeShillManagerClient::kFakeEthernetNetworkGuid, online_state);
   network_portal_detector_->NotifyObserversForTesting();
 }
 
@@ -199,8 +195,7 @@ void OobeBaseTest::SimulateNetworkPortal() {
   NetworkPortalDetector::CaptivePortalState portal_state;
   portal_state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL;
   network_portal_detector_->SetDetectionResultsForTesting(
-      FakeShillManagerClient::kFakeEthernetNetworkGuid,
-      portal_state);
+      FakeShillManagerClient::kFakeEthernetNetworkGuid, portal_state);
   network_portal_detector_->NotifyObserversForTesting();
 }
 
@@ -221,8 +216,7 @@ WebUILoginDisplay* OobeBaseTest::GetLoginDisplay() {
   ExistingUserController* controller =
       ExistingUserController::current_controller();
   CHECK(controller);
-  return static_cast<WebUILoginDisplay*>(
-      controller->login_display());
+  return static_cast<WebUILoginDisplay*>(controller->login_display());
 }
 
 void OobeBaseTest::WaitForGaiaPageLoad() {

@@ -96,7 +96,8 @@ class DeviceIDTest : public OobeBaseTest,
   void WaitForSessionStart() {
     content::WindowedNotificationObserver(
         chrome::NOTIFICATION_SESSION_STARTED,
-        content::NotificationService::AllSources()).Wait();
+        content::NotificationService::AllSources())
+        .Wait();
   }
 
   void SignInOnline(const std::string& user_id,

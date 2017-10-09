@@ -100,8 +100,8 @@ class SupervisedUserManager {
   // Returns the display email for manager of user |user_id| if it is known
   // (user is actually a managed user).
   // Otherwise, returns an empty string.
-  virtual std::string GetManagerDisplayEmail(const std::string& user_id)
-      const = 0;
+  virtual std::string GetManagerDisplayEmail(
+      const std::string& user_id) const = 0;
 
   // Create a record about starting supervised user creation transaction.
   virtual void StartCreationTransaction(const base::string16& display_name) = 0;

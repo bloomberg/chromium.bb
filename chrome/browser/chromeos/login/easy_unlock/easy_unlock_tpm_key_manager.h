@@ -56,8 +56,7 @@ class EasyUnlockTpmKeyManager : public KeyedService {
   //     signin does not remain permanently broken if something goes wrong.
   // |callback|: If the method cannot return immediately, called when the key
   //     pair presence is confirmed (or a key pair for the user is created).
-  bool PrepareTpmKey(bool check_private_key,
-                     const base::Closure& callback);
+  bool PrepareTpmKey(bool check_private_key, const base::Closure& callback);
 
   // If called, posts a delayed task that cancels |PrepareTpmKey| and all other
   // started timeouts in case getting system slot takes more than |timeout_ms|.
@@ -127,9 +126,8 @@ class EasyUnlockTpmKeyManager : public KeyedService {
   // Called when data signing requested in |SignUsingTpmKey| is done.
   // It runs |callback| with the created |signature|. On error the callback will
   // be run with an empty string.
-  void OnDataSigned(
-      const base::Callback<void(const std::string&)>& callback,
-      const std::string& signature);
+  void OnDataSigned(const base::Callback<void(const std::string&)>& callback,
+                    const std::string& signature);
 
   const AccountId account_id_;
   std::string username_hash_;

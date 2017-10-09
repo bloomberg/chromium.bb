@@ -99,7 +99,6 @@ void RecordKioskLaunchUMA(bool is_auto_launch) {
 
 }  // namespace
 
-
 ////////////////////////////////////////////////////////////////////////////////
 // AppLaunchController::AppWindowWatcher
 
@@ -133,9 +132,7 @@ class AppLaunchController::AppWindowWatcher
     }
   }
 
-  void NotifyAppWindowCreated() {
-    controller_->OnAppWindowCreated();
-  }
+  void NotifyAppWindowCreated() { controller_->OnAppWindowCreated(); }
 
   AppLaunchController* controller_;
   std::string app_id_;
@@ -267,10 +264,9 @@ void AppLaunchController::OnOwnerSigninSuccess() {
   signin_screen_.reset();
 }
 
-void AppLaunchController::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
+void AppLaunchController::Observe(int type,
+                                  const content::NotificationSource& source,
+                                  const content::NotificationDetails& details) {
   DCHECK_EQ(chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE, type);
   DCHECK(!webui_visible_);
   webui_visible_ = true;
@@ -498,10 +494,9 @@ void AppLaunchController::OnReadyToLaunch() {
   if (!skip_splash_wait && time_taken_ms < kAppInstallSplashScreenMinTimeMS) {
     splash_wait_timer_.Start(
         FROM_HERE,
-        base::TimeDelta::FromMilliseconds(
-            kAppInstallSplashScreenMinTimeMS - time_taken_ms),
-        this,
-        &AppLaunchController::OnReadyToLaunch);
+        base::TimeDelta::FromMilliseconds(kAppInstallSplashScreenMinTimeMS -
+                                          time_taken_ms),
+        this, &AppLaunchController::OnReadyToLaunch);
     return;
   }
 
@@ -540,4 +535,4 @@ bool AppLaunchController::IsShowingNetworkConfigScreen() {
   return network_config_requested_;
 }
 
-}   // namespace chromeos
+}  // namespace chromeos

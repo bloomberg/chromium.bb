@@ -162,8 +162,7 @@ ProfileAuthDataTransferer::ProfileAuthDataTransferer(
       completion_callback_(completion_callback),
       first_login_(false),
       waiting_for_auth_cookies_(false),
-      waiting_for_channel_ids_(false) {
-}
+      waiting_for_channel_ids_(false) {}
 
 void ProfileAuthDataTransferer::BeginTransfer() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -201,10 +200,14 @@ void ProfileAuthDataTransferer::BeginTransferOnIOThread() {
 
 void ProfileAuthDataTransferer::TransferProxyAuthCache() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  net::HttpAuthCache* new_cache = to_context_->GetURLRequestContext()->
-      http_transaction_factory()->GetSession()->http_auth_cache();
-  new_cache->UpdateAllFrom(*from_context_->GetURLRequestContext()->
-      http_transaction_factory()->GetSession()->http_auth_cache());
+  net::HttpAuthCache* new_cache = to_context_->GetURLRequestContext()
+                                      ->http_transaction_factory()
+                                      ->GetSession()
+                                      ->http_auth_cache();
+  new_cache->UpdateAllFrom(*from_context_->GetURLRequestContext()
+                                ->http_transaction_factory()
+                                ->GetSession()
+                                ->http_auth_cache());
 }
 
 void ProfileAuthDataTransferer::OnTargetCookieJarContentsRetrieved(
@@ -256,7 +259,7 @@ void ProfileAuthDataTransferer::OnCookiesToTransferRetrieved(
   // their creation times are stored in |saml_start_time_| and
   // |cookies_to_transfer_| and the cookies are deleted.
   for (net::CookieList::iterator it = cookies_to_transfer_.begin();
-       it != cookies_to_transfer_.end(); ) {
+       it != cookies_to_transfer_.end();) {
     if (it->Name() == kSAMLStartCookie) {
       saml_start_time_ = it->CreationDate();
       it = cookies_to_transfer_.erase(it);
@@ -276,9 +279,8 @@ void ProfileAuthDataTransferer::RetrieveChannelIDsToTransfer() {
   net::ChannelIDService* from_service =
       from_context_->GetURLRequestContext()->channel_id_service();
   from_service->GetChannelIDStore()->GetAllChannelIDs(
-      base::Bind(
-          &ProfileAuthDataTransferer::OnChannelIDsToTransferRetrieved,
-          base::Unretained(this)));
+      base::Bind(&ProfileAuthDataTransferer::OnChannelIDsToTransferRetrieved,
+                 base::Unretained(this)));
 }
 
 void ProfileAuthDataTransferer::OnChannelIDsToTransferRetrieved(
@@ -345,11 +347,10 @@ void ProfileAuthData::Transfer(
     const base::Closure& completion_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   (new ProfileAuthDataTransferer(
-       from_context,
-       to_context,
+       from_context, to_context,
        transfer_auth_cookies_and_channel_ids_on_first_login,
-       transfer_saml_auth_cookies_on_subsequent_login,
-       completion_callback))->BeginTransfer();
+       transfer_saml_auth_cookies_on_subsequent_login, completion_callback))
+      ->BeginTransfer();
 }
 
 }  // namespace chromeos

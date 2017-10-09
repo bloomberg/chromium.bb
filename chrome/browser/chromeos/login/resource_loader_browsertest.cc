@@ -123,12 +123,14 @@ IN_PROC_BROWSER_TEST_F(ResourceLoaderBrowserTest, LoadAssetsTest) {
   std::string js_url = CreateResource("stuff.loaded = true;").spec();
 
   // Register the asset bundle.
+  // clang-format off
   JSEval("ResourceLoader.registerAssets({"
          "  id: 'test-bundle',"
          "  html: [ { url: '" + html_url + "', targetID: 'root' } ]," +
          "  css: [ '" + css_url + "' ]," +
          "  js: [ '" + js_url + "' ]," +
          "});");
+  // clang-format on
   JSExpect("!ResourceLoader.alreadyLoadedAssets('test-bundle')");
 
   // Load the assets and make sure everything is properly added to the page.

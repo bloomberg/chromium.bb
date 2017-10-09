@@ -127,15 +127,12 @@ WebUILoginView::WebUILoginView(const WebViewSettings& settings)
   else
     NOTIMPLEMENTED();
 
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
+  registrar_.Add(this, chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
                  content::NotificationService::AllSources());
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN,
+  registrar_.Add(this, chrome::NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN,
                  content::NotificationService::AllSources());
 
-  accel_map_[ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE)] =
-      kAccelNameCancel;
+  accel_map_[ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE)] = kAccelNameCancel;
   accel_map_[ui::Accelerator(ui::VKEY_E,
                              ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN)] =
       kAccelNameEnrollment;
@@ -276,7 +273,7 @@ void WebUILoginView::RequestFocus() {
 }
 
 web_modal::WebContentsModalDialogHost*
-    WebUILoginView::GetWebContentsModalDialogHost() {
+WebUILoginView::GetWebContentsModalDialogHost() {
   return this;
 }
 
@@ -295,8 +292,7 @@ gfx::Size WebUILoginView::GetMaximumDialogSize() {
   return GetWidget()->GetWindowBoundsInScreen().size();
 }
 
-void WebUILoginView::AddObserver(
-    web_modal::ModalDialogHostObserver* observer) {
+void WebUILoginView::AddObserver(web_modal::ModalDialogHostObserver* observer) {
   if (observer && !observer_list_.HasObserver(observer))
     observer_list_.AddObserver(observer);
 }
@@ -306,8 +302,7 @@ void WebUILoginView::RemoveObserver(
   observer_list_.RemoveObserver(observer);
 }
 
-bool WebUILoginView::AcceleratorPressed(
-    const ui::Accelerator& accelerator) {
+bool WebUILoginView::AcceleratorPressed(const ui::Accelerator& accelerator) {
   AccelMap::const_iterator entry = accel_map_.find(accelerator);
   if (entry == accel_map_.end())
     return false;
@@ -464,8 +459,8 @@ void WebUILoginView::OnKeyboardClosed() {}
 
 bool WebUILoginView::HandleContextMenu(
     const content::ContextMenuParams& params) {
-  // Do not show the context menu.
 #ifndef NDEBUG
+  // Do not show the context menu.
   return false;
 #else
   return true;
@@ -624,8 +619,9 @@ void WebUILoginView::OnLoginPromptVisible() {
   TRACE_EVENT0("chromeos", "WebUILoginView::OnLoginPromptVisible");
   if (should_emit_login_prompt_visible_) {
     VLOG(1) << "Login WebUI >> login-prompt-visible";
-    chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->
-        EmitLoginPromptVisible();
+    chromeos::DBusThreadManager::Get()
+        ->GetSessionManagerClient()
+        ->EmitLoginPromptVisible();
   }
 
   webui_visible_ = true;

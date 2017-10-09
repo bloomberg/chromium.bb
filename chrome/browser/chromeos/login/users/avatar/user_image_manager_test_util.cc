@@ -46,11 +46,9 @@ bool AreImagesEqual(const gfx::ImageSkia& first, const gfx::ImageSkia& second) {
   return true;
 }
 
-ImageLoader::ImageLoader(const base::FilePath& path) : path_(path) {
-}
+ImageLoader::ImageLoader(const base::FilePath& path) : path_(path) {}
 
-ImageLoader::~ImageLoader() {
-}
+ImageLoader::~ImageLoader() {}
 
 std::unique_ptr<gfx::ImageSkia> ImageLoader::Load() {
   std::string image_data;

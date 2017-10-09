@@ -21,7 +21,7 @@ class UserContext;
 // index.
 class EasyUnlockRemoveKeysOperation {
  public:
-  typedef base::Callback<void (bool success)> RemoveKeysCallback;
+  typedef base::Callback<void(bool success)> RemoveKeysCallback;
   EasyUnlockRemoveKeysOperation(const UserContext& user_context,
                                 size_t start_index,
                                 const RemoveKeysCallback& callback);

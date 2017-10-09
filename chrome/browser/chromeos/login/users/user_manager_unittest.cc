@@ -127,7 +127,7 @@ class UserManagerTest : public testing::Test {
   }
 
   void SetDeviceSettings(bool ephemeral_users_enabled,
-                         const std::string &owner,
+                         const std::string& owner,
                          bool supervised_users_enabled) {
     settings_helper_.SetBoolean(kAccountsPrefEphemeralUsersEnabled,
                                 ephemeral_users_enabled);

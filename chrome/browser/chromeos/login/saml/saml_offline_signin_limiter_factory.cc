@@ -17,7 +17,7 @@ base::Clock* SAMLOfflineSigninLimiterFactory::clock_for_testing_ = NULL;
 
 // static
 SAMLOfflineSigninLimiterFactory*
-    SAMLOfflineSigninLimiterFactory::GetInstance() {
+SAMLOfflineSigninLimiterFactory::GetInstance() {
   return base::Singleton<SAMLOfflineSigninLimiterFactory>::get();
 }
 
@@ -36,11 +36,9 @@ void SAMLOfflineSigninLimiterFactory::SetClockForTesting(base::Clock* clock) {
 SAMLOfflineSigninLimiterFactory::SAMLOfflineSigninLimiterFactory()
     : BrowserContextKeyedServiceFactory(
           "SAMLOfflineSigninLimiter",
-          BrowserContextDependencyManager::GetInstance()) {
-}
+          BrowserContextDependencyManager::GetInstance()) {}
 
-SAMLOfflineSigninLimiterFactory::~SAMLOfflineSigninLimiterFactory() {
-}
+SAMLOfflineSigninLimiterFactory::~SAMLOfflineSigninLimiterFactory() {}
 
 KeyedService* SAMLOfflineSigninLimiterFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {

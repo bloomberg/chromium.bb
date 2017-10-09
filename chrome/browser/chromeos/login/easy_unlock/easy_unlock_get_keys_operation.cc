@@ -25,11 +25,9 @@ EasyUnlockGetKeysOperation::EasyUnlockGetKeysOperation(
     : user_context_(user_context),
       callback_(callback),
       key_index_(0),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
-EasyUnlockGetKeysOperation::~EasyUnlockGetKeysOperation() {
-}
+EasyUnlockGetKeysOperation::~EasyUnlockGetKeysOperation() {}
 
 void EasyUnlockGetKeysOperation::Start() {
   // Register for asynchronous notification of cryptohome being ready.
@@ -54,8 +52,7 @@ void EasyUnlockGetKeysOperation::OnCryptohomeAvailable(bool available) {
 void EasyUnlockGetKeysOperation::GetKeyData() {
   const cryptohome::Identification id(user_context_.GetAccountId());
   cryptohome::HomedirMethods::GetInstance()->GetKeyDataEx(
-      id,
-      EasyUnlockKeyManager::GetKeyLabel(key_index_),
+      id, EasyUnlockKeyManager::GetKeyLabel(key_index_),
       base::Bind(&EasyUnlockGetKeysOperation::OnGetKeyData,
                  weak_ptr_factory_.GetWeakPtr()));
 }

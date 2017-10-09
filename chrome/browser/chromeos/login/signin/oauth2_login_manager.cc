@@ -39,8 +39,7 @@ OAuth2LoginManager::OAuth2LoginManager(Profile* user_profile)
   }
 }
 
-OAuth2LoginManager::~OAuth2LoginManager() {
-}
+OAuth2LoginManager::~OAuth2LoginManager() {}
 
 void OAuth2LoginManager::AddObserver(OAuth2LoginManager::Observer* observer) {
   observer_list_.AddObserver(observer);
@@ -251,17 +250,16 @@ void OAuth2LoginManager::Shutdown() {
 
 void OAuth2LoginManager::OnSessionMergeSuccess() {
   VLOG(1) << "OAuth2 refresh and/or GAIA token verification succeeded.";
-  RecordSessionRestoreOutcome(SESSION_RESTORE_SUCCESS,
-                              SESSION_RESTORE_DONE);
+  RecordSessionRestoreOutcome(SESSION_RESTORE_SUCCESS, SESSION_RESTORE_DONE);
 }
 
 void OAuth2LoginManager::OnSessionMergeFailure(bool connection_error) {
   LOG(ERROR) << "OAuth2 refresh and GAIA token verification failed!"
              << " connection_error: " << connection_error;
   RecordSessionRestoreOutcome(SESSION_RESTORE_MERGE_SESSION_FAILED,
-                              connection_error ?
-                                  SESSION_RESTORE_CONNECTION_FAILED :
-                                  SESSION_RESTORE_FAILED);
+                              connection_error
+                                  ? SESSION_RESTORE_CONNECTION_FAILED
+                                  : SESSION_RESTORE_FAILED);
 }
 
 void OAuth2LoginManager::OnListAccountsSuccess(
@@ -310,10 +308,9 @@ void OAuth2LoginManager::OnListAccountsSuccess(
 
 void OAuth2LoginManager::OnListAccountsFailure(bool connection_error) {
   bool is_pre_merge = (state_ == SESSION_RESTORE_PREPARING);
-  RecordCookiesCheckOutcome(
-      is_pre_merge,
-      connection_error ? POST_MERGE_CONNECTION_FAILED :
-                         POST_MERGE_VERIFICATION_FAILED);
+  RecordCookiesCheckOutcome(is_pre_merge, connection_error
+                                              ? POST_MERGE_CONNECTION_FAILED
+                                              : POST_MERGE_VERIFICATION_FAILED);
   if (is_pre_merge) {
     if (!connection_error) {
       // If we failed to get account list, our cookies might be stale so we
@@ -329,8 +326,7 @@ void OAuth2LoginManager::OnListAccountsFailure(bool connection_error) {
 void OAuth2LoginManager::RecordSessionRestoreOutcome(
     SessionRestoreOutcome outcome,
     OAuth2LoginManager::SessionRestoreState state) {
-  UMA_HISTOGRAM_ENUMERATION("OAuth2Login.SessionRestore",
-                            outcome,
+  UMA_HISTOGRAM_ENUMERATION("OAuth2Login.SessionRestore", outcome,
                             SESSION_RESTORE_COUNT);
   SetSessionRestoreState(state);
 }
@@ -340,12 +336,10 @@ void OAuth2LoginManager::RecordCookiesCheckOutcome(
     bool is_pre_merge,
     MergeVerificationOutcome outcome) {
   if (is_pre_merge) {
-    UMA_HISTOGRAM_ENUMERATION("OAuth2Login.PreMergeVerification",
-                              outcome,
+    UMA_HISTOGRAM_ENUMERATION("OAuth2Login.PreMergeVerification", outcome,
                               POST_MERGE_COUNT);
   } else {
-    UMA_HISTOGRAM_ENUMERATION("OAuth2Login.PostMergeVerification",
-                              outcome,
+    UMA_HISTOGRAM_ENUMERATION("OAuth2Login.PostMergeVerification", outcome,
                               POST_MERGE_COUNT);
   }
 }

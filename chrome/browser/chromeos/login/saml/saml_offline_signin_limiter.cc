@@ -84,12 +84,9 @@ void SAMLOfflineSigninLimiter::Shutdown() {
 
 SAMLOfflineSigninLimiter::SAMLOfflineSigninLimiter(Profile* profile,
                                                    base::Clock* clock)
-    : profile_(profile),
-      clock_(clock ? clock : &default_clock_) {
-}
+    : profile_(profile), clock_(clock ? clock : &default_clock_) {}
 
-SAMLOfflineSigninLimiter::~SAMLOfflineSigninLimiter() {
-}
+SAMLOfflineSigninLimiter::~SAMLOfflineSigninLimiter() {}
 
 void SAMLOfflineSigninLimiter::UpdateLimit() {
   // Stop the |offline_signin_limit_timer_|.
@@ -129,9 +126,7 @@ void SAMLOfflineSigninLimiter::UpdateLimit() {
   // login when the limit expires.
   offline_signin_limit_timer_.reset(new base::OneShotTimer);
   offline_signin_limit_timer_->Start(
-      FROM_HERE,
-      offline_signin_time_limit - time_since_last_gaia_signin,
-      this,
+      FROM_HERE, offline_signin_time_limit - time_since_last_gaia_signin, this,
       &SAMLOfflineSigninLimiter::ForceOnlineLogin);
 }
 

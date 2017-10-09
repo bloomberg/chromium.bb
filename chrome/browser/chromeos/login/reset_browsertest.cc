@@ -32,11 +32,11 @@ const char kTestUser1[] = "test-user1@gmail.com";
 
 class ResetTest : public LoginManagerTest {
  public:
-  ResetTest() : LoginManagerTest(false),
-      update_engine_client_(NULL),
-      session_manager_client_(NULL),
-      power_manager_client_(NULL) {
-  }
+  ResetTest()
+      : LoginManagerTest(false),
+        update_engine_client_(NULL),
+        session_manager_client_(NULL),
+        power_manager_client_(NULL) {}
   ~ResetTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -204,7 +204,6 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, ShowAfterBootIfRequested) {
   JSExpect("document.querySelector('#reset').hidden");
 }
 
-
 IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, PRE_RollbackUnavailable) {
   PrefService* prefs = g_browser_process->local_state();
   prefs->SetBoolean(prefs::kFactoryResetRequested, true);
@@ -308,8 +307,7 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, ErrorOnRollbackRequested) {
   JSExpect("$('reset').classList.contains('revert-promise-view')");
   UpdateEngineClient::Status error_update_status;
   error_update_status.status = UpdateEngineClient::UPDATE_STATUS_ERROR;
-  update_engine_client_->NotifyObserversThatStatusChanged(
-      error_update_status);
+  update_engine_client_->NotifyObserversThatStatusChanged(error_update_status);
   OobeScreenWaiter(OobeScreen::SCREEN_ERROR_MESSAGE).Wait();
 }
 

@@ -49,11 +49,9 @@ class TokenRevoker : public GaiaAuthConsumer {
 TokenRevoker::TokenRevoker()
     : gaia_fetcher_(this,
                     GaiaConstants::kChromeOSSource,
-                    g_browser_process->system_request_context()) {
-}
+                    g_browser_process->system_request_context()) {}
 
-TokenRevoker::~TokenRevoker() {
-}
+TokenRevoker::~TokenRevoker() {}
 
 void TokenRevoker::Start(const std::string& token) {
   gaia_fetcher_.StartRevokeOAuth2Token(token);

@@ -249,10 +249,9 @@ class UserImageManagerTest : public LoginManagerTest,
             ->profile_downloader_.get();
     ASSERT_TRUE(profile_downloader);
 
-    static_cast<OAuth2TokenService::Consumer*>(profile_downloader)->
-        OnGetTokenSuccess(NULL,
-                          std::string(),
-                          base::Time::Now() + base::TimeDelta::FromDays(1));
+    static_cast<OAuth2TokenService::Consumer*>(profile_downloader)
+        ->OnGetTokenSuccess(NULL, std::string(),
+                            base::Time::Now() + base::TimeDelta::FromDays(1));
   }
 
   // Completes the download of the currently logged-in user's profile image.
@@ -266,9 +265,9 @@ class UserImageManagerTest : public LoginManagerTest,
     std::string profile_image_data;
     base::FilePath test_data_dir;
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
-    EXPECT_TRUE(ReadFileToString(
-        test_data_dir.Append("chromeos").Append("avatar1.jpg"),
-        &profile_image_data));
+    EXPECT_TRUE(
+        ReadFileToString(test_data_dir.Append("chromeos").Append("avatar1.jpg"),
+                         &profile_image_data));
 
     base::RunLoop run_loop;
     PrefChangeRegistrar pref_change_registrar;
@@ -277,8 +276,8 @@ class UserImageManagerTest : public LoginManagerTest,
     net::TestURLFetcher* fetcher = url_fetcher_factory->GetFetcherByID(0);
     ASSERT_TRUE(fetcher);
     fetcher->SetResponseString(profile_image_data);
-    fetcher->set_status(net::URLRequestStatus(net::URLRequestStatus::SUCCESS,
-                                              net::OK));
+    fetcher->set_status(
+        net::URLRequestStatus(net::URLRequestStatus::SUCCESS, net::OK));
     fetcher->set_response_code(200);
     fetcher->delegate()->OnURLFetchComplete(fetcher);
     run_loop.Run();
@@ -606,26 +605,26 @@ class UserImageManagerPolicyTest : public UserImageManagerTest,
     UserImageManagerTest::SetUpOnMainThread();
 
     base::FilePath user_keys_dir;
-    ASSERT_TRUE(PathService::Get(chromeos::DIR_USER_POLICY_KEYS,
-                                 &user_keys_dir));
+    ASSERT_TRUE(
+        PathService::Get(chromeos::DIR_USER_POLICY_KEYS, &user_keys_dir));
     const std::string sanitized_username =
         chromeos::CryptohomeClient::GetStubSanitizedUsername(cryptohome_id_);
     const base::FilePath user_key_file =
-        user_keys_dir.AppendASCII(sanitized_username)
-                     .AppendASCII("policy.pub");
+        user_keys_dir.AppendASCII(sanitized_username).AppendASCII("policy.pub");
     std::vector<uint8_t> user_key_bits;
     ASSERT_TRUE(user_policy_.GetSigningKey()->ExportPublicKey(&user_key_bits));
     ASSERT_TRUE(base::CreateDirectory(user_key_file.DirName()));
-    ASSERT_EQ(base::WriteFile(
-                  user_key_file,
-                  reinterpret_cast<const char*>(user_key_bits.data()),
-                  user_key_bits.size()),
-              static_cast<int>(user_key_bits.size()));
+    ASSERT_EQ(
+        base::WriteFile(user_key_file,
+                        reinterpret_cast<const char*>(user_key_bits.data()),
+                        user_key_bits.size()),
+        static_cast<int>(user_key_bits.size()));
     user_policy_.policy_data().set_username(
         enterprise_account_id_.GetUserEmail());
 
     policy_image_ = test::ImageLoader(test_data_dir_.Append(
-        test::kUserAvatarImage2RelativePath)).Load();
+                                          test::kUserAvatarImage2RelativePath))
+                        .Load();
     ASSERT_TRUE(policy_image_);
   }
 

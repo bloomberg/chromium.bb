@@ -14,8 +14,7 @@ MockEnableDebuggingScreen::MockEnableDebuggingScreen(
     EnableDebuggingScreenView* view)
     : EnableDebuggingScreen(base_screen_delegate, view) {}
 
-MockEnableDebuggingScreen::~MockEnableDebuggingScreen() {
-}
+MockEnableDebuggingScreen::~MockEnableDebuggingScreen() {}
 
 MockEnableDebuggingScreenView::MockEnableDebuggingScreenView() {
   EXPECT_CALL(*this, MockSetDelegate(NotNull())).Times(AtLeast(1));

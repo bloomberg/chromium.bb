@@ -174,8 +174,8 @@ void WebUIScreenLocker::LockScreen() {
   login_display_->set_parent_window(GetNativeWindow());
   login_display_->Init(screen_locker_->users(), false, true, false);
 
-  GetOobeUI()->ShowSigninScreen(
-      LoginScreenContext(), login_display_.get(), login_display_.get());
+  GetOobeUI()->ShowSigninScreen(LoginScreenContext(), login_display_.get(),
+                                login_display_.get());
 
   SetLockScreenAppFocusCyclerDelegate();
 
@@ -189,9 +189,8 @@ void WebUIScreenLocker::SetPasswordInputEnabled(bool enabled) {
 void WebUIScreenLocker::ShowErrorMessage(
     int error_msg_id,
     HelpAppLauncher::HelpTopic help_topic_id) {
-  login_display_->ShowError(error_msg_id,
-                  0 /* login_attempts */,
-                  help_topic_id);
+  login_display_->ShowError(error_msg_id, 0 /* login_attempts */,
+                            help_topic_id);
 }
 
 void WebUIScreenLocker::AnimateAuthenticationSuccess() {
@@ -247,8 +246,7 @@ WebUILoginView::WebViewSettings WebUIScreenLocker::BuildConfigSettings() {
 }
 
 void WebUIScreenLocker::OnLockWebUIReady() {
-  VLOG(1) << "WebUI ready; lock window is "
-          << (lock_ready_ ? "too" : "not");
+  VLOG(1) << "WebUI ready; lock window is " << (lock_ready_ ? "too" : "not");
   webui_ready_ = true;
   if (lock_ready_)
     ScreenLockReady();
@@ -302,7 +300,7 @@ content::WebContents* WebUIScreenLocker::GetWebContents() {
 ////////////////////////////////////////////////////////////////////////////////
 // WebUIScreenLocker, LoginDisplay::Delegate:
 
-void WebUIScreenLocker::CancelPasswordChangedFlow()  {
+void WebUIScreenLocker::CancelPasswordChangedFlow() {
   NOTREACHED();
 }
 

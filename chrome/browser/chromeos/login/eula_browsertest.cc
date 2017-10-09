@@ -29,8 +29,7 @@ const char kFakeOnlineEULA[] = "No obligations at all";
 const char kOfflineEULAWarning[] = "Chrome OS Terms";
 #endif
 
-class TermsOfServiceProcessBrowserTest : public InProcessBrowserTest {
-};
+class TermsOfServiceProcessBrowserTest : public InProcessBrowserTest {};
 
 class TestURLFetcherCallback {
  public:
@@ -45,8 +44,7 @@ class TestURLFetcherCallback {
     OnRequestCreate(url, fetcher.get());
     return fetcher;
   }
-  MOCK_METHOD2(OnRequestCreate,
-               void(const GURL&, net::FakeURLFetcher*));
+  MOCK_METHOD2(OnRequestCreate, void(const GURL&, net::FakeURLFetcher*));
 };
 
 void AddMimeHeader(const GURL& url, net::FakeURLFetcher* fetcher) {
@@ -60,11 +58,10 @@ void AddMimeHeader(const GURL& url, net::FakeURLFetcher* fetcher) {
 IN_PROC_BROWSER_TEST_F(TermsOfServiceProcessBrowserTest, LoadOnline) {
   TestURLFetcherCallback url_callback;
   net::FakeURLFetcherFactory factory(
-      NULL,
-      base::Bind(&TestURLFetcherCallback::CreateURLFetcher,
-                 base::Unretained(&url_callback)));
-  factory.SetFakeResponse(GURL(kEULAURL), kFakeOnlineEULA,
-                          net::HTTP_OK, net::URLRequestStatus::SUCCESS);
+      NULL, base::Bind(&TestURLFetcherCallback::CreateURLFetcher,
+                       base::Unretained(&url_callback)));
+  factory.SetFakeResponse(GURL(kEULAURL), kFakeOnlineEULA, net::HTTP_OK,
+                          net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(url_callback, OnRequestCreate(GURL(kEULAURL), _))
       .Times(Exactly(1))
       .WillRepeatedly(Invoke(AddMimeHeader));
@@ -74,10 +71,7 @@ IN_PROC_BROWSER_TEST_F(TermsOfServiceProcessBrowserTest, LoadOnline) {
       browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_EQ(1, ui_test_utils::FindInPage(web_contents,
                                          base::ASCIIToUTF16(kFakeOnlineEULA),
-                                         true,
-                                         true,
-                                         NULL,
-                                         NULL));
+                                         true, true, NULL, NULL));
 }
 
 // Load chrome://terms with no internet connectivity.
@@ -92,19 +86,14 @@ IN_PROC_BROWSER_TEST_F(TermsOfServiceProcessBrowserTest, LoadOffline) {
       browser()->tab_strip_model()->GetActiveWebContents();
 
 #if defined(GOOGLE_CHROME_BUILD)
-  EXPECT_NE(0,
-            ui_test_utils::FindInPage(web_contents,
-                                      base::ASCIIToUTF16(kOfflineEULAWarning),
-                                      true,
-                                      true,
-                                      NULL,
-                                      NULL));
+  EXPECT_NE(0, ui_test_utils::FindInPage(
+                   web_contents, base::ASCIIToUTF16(kOfflineEULAWarning), true,
+                   true, NULL, NULL));
 #else
   std::string body;
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(
       web_contents,
-      "window.domAutomationController.send(document.body.textContent)",
-      &body));
+      "window.domAutomationController.send(document.body.textContent)", &body));
   EXPECT_NE(std::string(), body);
 #endif
 }

@@ -39,4 +39,3 @@ class UserAddingScreen {
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_UI_USER_ADDING_SCREEN_H_
-

@@ -37,10 +37,10 @@ const int kSignatureLength = 32;
 const int kMasterKeySize = 32;
 
 std::string CreateSalt() {
-    char result[kSaltSize];
-    crypto::RandBytes(&result, sizeof(result));
-    return base::ToLowerASCII(
-        base::HexEncode(reinterpret_cast<const void*>(result), sizeof(result)));
+  char result[kSaltSize];
+  crypto::RandBytes(&result, sizeof(result));
+  return base::ToLowerASCII(
+      base::HexEncode(reinterpret_cast<const void*>(result), sizeof(result)));
 }
 
 std::string BuildRawHMACKey() {
@@ -89,9 +89,7 @@ void OnPasswordDataLoaded(
 
 SupervisedUserAuthentication::SupervisedUserAuthentication(
     SupervisedUserManager* owner)
-      : owner_(owner),
-        stable_schema_(SCHEMA_SALT_HASHED) {
-}
+    : owner_(owner), stable_schema_(SCHEMA_SALT_HASHED) {}
 
 SupervisedUserAuthentication::~SupervisedUserAuthentication() {}
 
@@ -182,8 +180,7 @@ void SupervisedUserAuthentication::StorePasswordData(
 }
 
 SupervisedUserAuthentication::Schema
-SupervisedUserAuthentication::GetPasswordSchema(
-  const std::string& user_id) {
+SupervisedUserAuthentication::GetPasswordSchema(const std::string& user_id) {
   base::DictionaryValue holder;
 
   owner_->GetPasswordInformation(user_id, &holder);
@@ -223,8 +220,8 @@ void SupervisedUserAuthentication::ScheduleSupervisedPasswordChange(
     const base::DictionaryValue* password_data) {
   const user_manager::User* user = user_manager::UserManager::Get()->FindUser(
       AccountId::FromUserEmail(supervised_user_id));
-  base::FilePath profile_path = ProfileHelper::GetProfilePathByUserIdHash(
-      user->username_hash());
+  base::FilePath profile_path =
+      ProfileHelper::GetProfilePathByUserIdHash(user->username_hash());
   JSONFileValueSerializer serializer(profile_path.Append(kPasswordUpdateFile));
   if (!serializer.Serialize(*password_data)) {
     LOG(ERROR) << "Failed to schedule password update for supervised user "

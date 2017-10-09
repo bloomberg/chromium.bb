@@ -203,7 +203,7 @@ bool NetworkStateHelper::IsConnecting() const {
   chromeos::NetworkStateHandler* nsh =
       chromeos::NetworkHandler::Get()->network_state_handler();
   return nsh->ConnectingNetworkByType(
-      chromeos::NetworkTypePattern::Default()) != nullptr;
+             chromeos::NetworkTypePattern::Default()) != nullptr;
 }
 
 void NetworkStateHelper::OnCreateConfiguration(

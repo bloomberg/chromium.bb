@@ -14,8 +14,7 @@ MockWrongHWIDScreen::MockWrongHWIDScreen(
     WrongHWIDScreenView* view)
     : WrongHWIDScreen(base_screen_delegate, view) {}
 
-MockWrongHWIDScreen::~MockWrongHWIDScreen() {
-}
+MockWrongHWIDScreen::~MockWrongHWIDScreen() {}
 
 MockWrongHWIDScreenView::MockWrongHWIDScreenView() : delegate_(nullptr) {
   EXPECT_CALL(*this, MockSetDelegate(NotNull())).Times(AtLeast(1));

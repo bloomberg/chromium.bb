@@ -15,26 +15,23 @@ namespace chromeos {
 
 OAuth2LoginManagerFactory::OAuth2LoginManagerFactory()
     : BrowserContextKeyedServiceFactory(
-        "OAuth2LoginManager",
-        BrowserContextDependencyManager::GetInstance()) {
+          "OAuth2LoginManager",
+          BrowserContextDependencyManager::GetInstance()) {
   DependsOn(SigninManagerFactory::GetInstance());
   DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
   DependsOn(GaiaCookieManagerServiceFactory::GetInstance());
 }
 
-OAuth2LoginManagerFactory::~OAuth2LoginManagerFactory() {
-}
+OAuth2LoginManagerFactory::~OAuth2LoginManagerFactory() {}
 
 // static
-OAuth2LoginManager* OAuth2LoginManagerFactory::GetForProfile(
-    Profile* profile) {
+OAuth2LoginManager* OAuth2LoginManagerFactory::GetForProfile(Profile* profile) {
   return static_cast<OAuth2LoginManager*>(
       GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
-OAuth2LoginManagerFactory*
-    OAuth2LoginManagerFactory::GetInstance() {
+OAuth2LoginManagerFactory* OAuth2LoginManagerFactory::GetInstance() {
   return base::Singleton<OAuth2LoginManagerFactory>::get();
 }
 

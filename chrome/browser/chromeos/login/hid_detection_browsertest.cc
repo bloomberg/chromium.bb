@@ -27,18 +27,17 @@ using testing::_;
 namespace {
 
 void SetUpBluetoothMock(
-    scoped_refptr<
-        testing::NiceMock<device::MockBluetoothAdapter> > mock_adapter,
+    scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>> mock_adapter,
     bool is_present) {
   device::BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter);
 
   EXPECT_CALL(*mock_adapter, IsPresent())
       .WillRepeatedly(testing::Return(is_present));
 
-  EXPECT_CALL(*mock_adapter, IsPowered())
-      .WillRepeatedly(testing::Return(true));
-  EXPECT_CALL(*mock_adapter, GetDevices()).WillRepeatedly(
-      testing::Return(device::BluetoothAdapter::ConstDeviceList()));
+  EXPECT_CALL(*mock_adapter, IsPowered()).WillRepeatedly(testing::Return(true));
+  EXPECT_CALL(*mock_adapter, GetDevices())
+      .WillRepeatedly(
+          testing::Return(device::BluetoothAdapter::ConstDeviceList()));
 }
 
 }  // namespace
@@ -61,9 +60,7 @@ class HidDetectionTest : public OobeBaseTest {
         base::MakeUnique<device::FakeInputServiceLinux>());
   }
 
-  void SetUpOnMainThread() override {
-    OobeBaseTest::SetUpOnMainThread();
-  }
+  void SetUpOnMainThread() override { OobeBaseTest::SetUpOnMainThread(); }
 
   void SetUpInProcessBrowserTestFixture() override {
     OobeBaseTest::SetUpInProcessBrowserTestFixture();
@@ -97,12 +94,11 @@ class HidDetectionTest : public OobeBaseTest {
         ->AddDeviceForTesting(std::move(info));
   }
 
-  scoped_refptr<
-      testing::NiceMock<device::MockBluetoothAdapter> > mock_adapter_;
+  scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>> mock_adapter_;
 
   base::WeakPtrFactory<HidDetectionTest> weak_ptr_factory_;
 
- DISALLOW_COPY_AND_ASSIGN(HidDetectionTest);
+  DISALLOW_COPY_AND_ASSIGN(HidDetectionTest);
 };
 
 class HidDetectionSkipTest : public HidDetectionTest {
@@ -112,9 +108,7 @@ class HidDetectionSkipTest : public HidDetectionTest {
     AddUsbKeyboard("keyboard");
   }
 
-  void SetUpOnMainThread() override {
-    HidDetectionTest::SetUpOnMainThread();
-  }
+  void SetUpOnMainThread() override { HidDetectionTest::SetUpOnMainThread(); }
 };
 
 IN_PROC_BROWSER_TEST_F(HidDetectionTest, NoDevicesConnected) {

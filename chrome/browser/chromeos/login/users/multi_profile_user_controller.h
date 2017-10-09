@@ -106,7 +106,7 @@ class MultiProfileUserController {
   void OnUserPrefChanged(Profile* profile);
 
   MultiProfileUserControllerDelegate* delegate_;  // Not owned.
-  PrefService* local_state_;  // Not owned.
+  PrefService* local_state_;                      // Not owned.
   std::vector<std::unique_ptr<PrefChangeRegistrar>> pref_watchers_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiProfileUserController);

@@ -18,8 +18,7 @@ class OAuth2LoginManager;
 // Singleton that owns all OAuth2LoginManager and associates them with
 // Profiles. Listens for the Profile's destruction notification and cleans up
 // the associated OAuth2LoginManager.
-class OAuth2LoginManagerFactory
-    : public BrowserContextKeyedServiceFactory {
+class OAuth2LoginManagerFactory : public BrowserContextKeyedServiceFactory {
  public:
   // Returns the instance of OAuth2LoginManager associated with this
   // |profile| (creates one if none exists).

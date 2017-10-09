@@ -245,10 +245,10 @@ void AutoEnrollmentController::StartClient(
       connector->device_management_service();
   service->ScheduleInitialization(0);
 
-  int power_initial = GetSanitizedArg(
-      chromeos::switches::kEnterpriseEnrollmentInitialModulus);
-  int power_limit = GetSanitizedArg(
-      chromeos::switches::kEnterpriseEnrollmentModulusLimit);
+  int power_initial =
+      GetSanitizedArg(chromeos::switches::kEnterpriseEnrollmentInitialModulus);
+  int power_limit =
+      GetSanitizedArg(chromeos::switches::kEnterpriseEnrollmentModulusLimit);
   if (power_initial > power_limit) {
     LOG(ERROR) << "Initial auto-enrollment modulus is larger than the limit, "
                   "clamping to the limit.";

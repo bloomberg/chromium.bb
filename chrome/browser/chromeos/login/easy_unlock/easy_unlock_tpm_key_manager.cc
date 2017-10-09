@@ -211,12 +211,10 @@ EasyUnlockTpmKeyManager::EasyUnlockTpmKeyManager(
       get_tpm_slot_weak_ptr_factory_(this),
       weak_ptr_factory_(this) {}
 
-EasyUnlockTpmKeyManager::~EasyUnlockTpmKeyManager() {
-}
+EasyUnlockTpmKeyManager::~EasyUnlockTpmKeyManager() {}
 
-bool EasyUnlockTpmKeyManager::PrepareTpmKey(
-    bool check_private_key,
-    const base::Closure& callback) {
+bool EasyUnlockTpmKeyManager::PrepareTpmKey(bool check_private_key,
+                                            const base::Closure& callback) {
   CHECK(account_id_.is_valid());
   CHECK(!username_hash_.empty());
 
@@ -286,8 +284,7 @@ void EasyUnlockTpmKeyManager::SignUsingTpmKey(
 
   base::Callback<void(crypto::ScopedPK11Slot)> sign_with_system_slot =
       base::Bind(&EasyUnlockTpmKeyManager::SignDataWithSystemSlot,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 key, data, callback);
+                 weak_ptr_factory_.GetWeakPtr(), key, data, callback);
 
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,

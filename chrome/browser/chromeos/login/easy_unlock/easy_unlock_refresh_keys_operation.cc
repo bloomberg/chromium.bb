@@ -18,11 +18,9 @@ EasyUnlockRefreshKeysOperation::EasyUnlockRefreshKeysOperation(
       tpm_public_key_(tpm_public_key),
       devices_(devices),
       callback_(callback),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
-EasyUnlockRefreshKeysOperation::~EasyUnlockRefreshKeysOperation() {
-}
+EasyUnlockRefreshKeysOperation::~EasyUnlockRefreshKeysOperation() {}
 
 void EasyUnlockRefreshKeysOperation::Start() {
   if (devices_.empty()) {
