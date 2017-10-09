@@ -900,6 +900,9 @@ public class ChromeTabbedActivity
         if (FeatureUtilities.isChromeHomeEnabled()) {
             BottomSheet bottomSheet = getBottomSheet();
             assert bottomSheet != null;
+
+            if (bottomSheet.isSheetOpen()) return false;
+
             if (mLayoutManager != null && mLayoutManager.overviewVisible()) {
                 if (reuseOrCreateNewNtp()) {
                     // Since reusing/creating a new NTP when using Chrome Home brings up the bottom
