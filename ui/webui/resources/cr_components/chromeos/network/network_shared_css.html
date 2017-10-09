@@ -8,6 +8,8 @@
     <style include="cr-shared-style md-select">
       :root {
         --network-control-width: 250px;
+        /* Margin for the show/hide password icon */
+        --network-control-margin: 40px;
       }
 
       .md-select {
@@ -17,7 +19,7 @@
       .property-box {
         @apply(--cr-section);
         border-top: none;
-        min-height: var(--cr-section-two-line-min-height);
+        min-height: var(--cr-section-min-height);
         padding: 0;
       }
 
@@ -37,6 +39,10 @@
 
       .property-box.stretch {
         align-items: stretch;
+      }
+
+      .property-box.two-line {
+        min-height: var(--cr-section-two-line-min-height);
       }
 
       .property-box > .start {

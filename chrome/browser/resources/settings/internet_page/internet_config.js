@@ -77,7 +77,16 @@ Polymer({
       Type: this.type_,
     };
 
+    // First focus this page (which will focus a button), then init the config
+    // element which will focus an enabled element if any.
+    this.focus();
     this.$.networkConfig.init();
+  },
+
+  focus() {
+    var e = this.$$('paper-button:not([disabled])');
+    assert(e);  // The 'cancel' button should never be disabled.
+    e.focus();
   },
 
   /** @private */

@@ -13,7 +13,10 @@ Polymer({
   properties: {
     label: String,
 
-    disabled: Boolean,
+    disabled: {
+      type: Boolean,
+      reflectToAttribute: true,
+    },
 
     /** Set to true if |items| is a list of certificates. */
     certList: Boolean,
@@ -38,6 +41,10 @@ Polymer({
   },
 
   observers: ['updateSelected_(items, value)'],
+
+  focus: function() {
+    this.$$('select').focus();
+  },
 
   /**
    * Ensure that the <select> value is updated when |items| or |value| changes.

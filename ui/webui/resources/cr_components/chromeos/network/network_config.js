@@ -333,6 +333,13 @@ Polymer({
           this.guid, this.getPropertiesCallback_.bind(this));
     }
     this.onCertificateListsChanged_();
+    this.async(() => {
+      var e = this.$$(
+          'network-config-input:not([disabled]),' +
+          'network-config-select:not([disabled])');
+      if (e)
+        e.focus();
+    });
   },
 
   saveOrConnect: function() {
@@ -354,6 +361,14 @@ Polymer({
   /** @private */
   close_: function() {
     this.fire('close');
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  hasGuid_: function() {
+    return !!this.guid;
   },
 
   /** @private */
