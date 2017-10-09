@@ -28,13 +28,12 @@ static_library("url_formatter") {
     "//components/url_formatter/top_domains",
     "//net",
     "//third_party/icu",
+    "//ui/gfx",
     "//url",
   ]
 
   if (is_android) {
     deps += [ "android:jni_headers" ]
-  } else {
-    deps += [ "//ui/gfx" ]
   }
 }
 
@@ -55,8 +54,4 @@ source_set("unit_tests") {
     "//ui/gfx",
     "//url",
   ]
-
-  if (is_android) {
-    deps -= [ "//ui/gfx" ]
-  }
 }

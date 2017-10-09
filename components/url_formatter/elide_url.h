@@ -20,6 +20,7 @@ class FontList;
 
 namespace url {
 class Origin;
+struct Parsed;
 }
 
 namespace url_formatter {
@@ -28,7 +29,7 @@ namespace url_formatter {
 // gfx::GetStringWidthF which is not implemented in Android
 #if !defined(OS_ANDROID)
 // This function takes a GURL object and elides it. It returns a string
-// which composed of parts from subdomain, domain, path, filename and query.
+// composed of parts from subdomain, domain, path, filename and query.
 // A "..." is added automatically at the end if the elided string is bigger
 // than the |available_pixel_width|. For |available_pixel_width| == 0, a
 // formatted, but un-elided, string is returned.
@@ -51,6 +52,26 @@ base::string16 ElideHost(const GURL& host_url,
                          const gfx::FontList& font_list,
                          float available_pixel_width);
 #endif  // !defined(OS_ANDROID)
+
+// Similar to ElideUrl, this function shortens a URL to fit a specified width,
+// but does so according to the origin presentation guidance at:
+// https://www.chromium.org/Home/chromium-security/enamel
+//
+// This method differs from ElideUrl in that:
+// - A Parsed structure is returned, allowing regions of the elided URL to be
+//   colored or styled. For example, if a path is completely elided to an
+//   ellipsis, the path component will describe the ellipsis.
+// - When necessary, the host portion is elided from the left, to preserve the
+//   TLD as long as possible. Subdomain is not treated specially.
+// - The path is elided from the right, with no special handling of the last
+//   path element, to avoid potentially long runtimes.
+//
+// This function should be merged with ElideUrl to have a single elision method.
+// See http://crbug.com/772476.
+base::string16 ElideUrlSimple(const GURL& url,
+                              const gfx::FontList& font_list,
+                              float available_pixel_width,
+                              url::Parsed* parsed);
 
 enum class SchemeDisplay {
   SHOW,
