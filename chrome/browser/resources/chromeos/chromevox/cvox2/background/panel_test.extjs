@@ -65,6 +65,7 @@ PanelTest.prototype = {
   */}
 };
 
+// Flaky. http://crbug.com/751046.
 TEST_F('PanelTest', 'DISABLED_ActivateMenu', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(this.linksDoc, function(root) {
@@ -81,6 +82,7 @@ TEST_F('PanelTest', 'DISABLED_ActivateMenu', function() {
   });
 });
 
+// Flaky. http://crbug.com/751046.
 TEST_F('PanelTest', 'DISABLED_LinkMenu', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(this.linksDoc, function(root) {
