@@ -175,11 +175,7 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
       self.tableView.contentInsetAdjustmentBehavior =
           UIScrollViewContentInsetAdjustmentNever;
     }
-    // Use iOS8's self sizing feature to compute row height. However,
-    // this reduces the row height of bookmarks section from 56 to 45
-    // TODO(crbug.com/695749): Fix the bookmark section row height to 56.
     self.tableView.estimatedRowHeight = kCellHeightPt;
-    self.tableView.rowHeight = UITableViewAutomaticDimension;
     // Remove extra rows.
     self.tableView.tableFooterView = [[UIView alloc] initWithFrame:CGRectZero];
     self.tableView.autoresizingMask =
@@ -437,6 +433,14 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
   [self.delegate bookmarkTableView:self
                        didMoveNode:node
                         toPosition:newPosition];
+}
+
+- (CGFloat)tableView:(UITableView*)tableView
+    heightForRowAtIndexPath:(NSIndexPath*)indexPath {
+  if (indexPath.section == self.bookmarksSection) {
+    return kCellHeightPt;
+  }
+  return UITableViewAutomaticDimension;
 }
 
 #pragma mark - UITableViewDelegate
