@@ -119,7 +119,7 @@
       'Browser Side Navigation Linux': 'release_bot',
       'CFI Linux CF': 'cfi_full_cfi_diag_recover_release_static',
       'CFI Linux ToT': 'clang_tot_cfi_full_cfi_diag_thin_lto_release_static_dcheck_always_on',
-      'CFI Linux (icall)': 'cfi_full_diag_recover_icall_release_static',
+      'CFI Linux (icall)': 'cfi_full_diag_icall_release_static_dcheck_always_on',
       'ChromeOS amd64 Chromium Goma Canary': 'cros_chrome_sdk',
       'Chromium Linux Goma Canary': 'release_bot',
       'Chromium Linux Goma Canary': 'release_bot',
@@ -1070,8 +1070,8 @@
       'cfi_full', 'cfi_diag', 'thin_lto', 'release', 'static', 'dcheck_always_on', 'goma',
     ],
 
-    'cfi_full_diag_recover_icall_release_static': [
-      'cfi_full', 'cfi_diag', 'cfi_recover', 'cfi_icall', 'thin_lto', 'release', 'static',
+    'cfi_full_diag_icall_release_static_dcheck_always_on': [
+      'cfi_full', 'cfi_diag', 'cfi_icall', 'thin_lto', 'release', 'static', 'dcheck_always_on',
     ],
 
     'chromeos_asan_lsan_edge_fuzzer_v8_heap_release_bot': [
