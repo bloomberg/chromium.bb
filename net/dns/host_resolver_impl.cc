@@ -2254,7 +2254,8 @@ bool HostResolverImpl::ServeLocalhost(const Key& key,
 void HostResolverImpl::CacheResult(const Key& key,
                                    const HostCache::Entry& entry,
                                    base::TimeDelta ttl) {
-  if (cache_.get())
+  // Don't cache an error unless it has a positive TTL.
+  if (cache_.get() && (entry.error() == OK || ttl > base::TimeDelta()))
     cache_->Set(key, entry, base::TimeTicks::Now(), ttl);
 }
 
