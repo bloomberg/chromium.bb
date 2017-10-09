@@ -7,6 +7,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
+#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -14,9 +15,11 @@
 
 namespace {
 
+using TextAndErrorItemTest = PlatformTest;
+
 // Tests that the error UIImage and UILabels are set properly after a call to
 // |configureCell:|.
-TEST(TextAndErrorItemTest, ImageViewAndLabels) {
+TEST_F(TextAndErrorItemTest, ImageViewAndLabels) {
   TextAndErrorItem* item = [[TextAndErrorItem alloc] initWithType:0];
   item.text = @"Test";
   item.shouldDisplayError = YES;

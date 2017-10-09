@@ -5,12 +5,15 @@
 #include "ios/chrome/browser/install_time_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
+#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-TEST(InstallTimeUtilTest, ComputeInstallationTime) {
+using InstallTimeUtilTest = PlatformTest;
+
+TEST_F(InstallTimeUtilTest, ComputeInstallationTime) {
   const base::Time null_time = base::Time();
   const base::Time now = base::Time::Now();
   const base::Time one_month_ago = now - base::TimeDelta::FromDays(30);

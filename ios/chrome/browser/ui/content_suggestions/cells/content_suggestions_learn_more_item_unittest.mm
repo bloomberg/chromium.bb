@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_learn_more_item.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/gtest_support.h"
 
@@ -14,7 +15,9 @@
 
 namespace {
 
-TEST(ContentSuggestionsLearnMoreItemTest, CellClass) {
+using ContentSuggestionsLearnMoreItemTest = PlatformTest;
+
+TEST_F(ContentSuggestionsLearnMoreItemTest, CellClass) {
   // Setup.
   ContentSuggestionsLearnMoreItem* item =
       [[ContentSuggestionsLearnMoreItem alloc] initWithType:0];
@@ -26,7 +29,7 @@ TEST(ContentSuggestionsLearnMoreItemTest, CellClass) {
   EXPECT_EQ([ContentSuggestionsLearnMoreCell class], [cell class]);
 }
 
-TEST(ContentSuggestionsLearnMoreItemTest, Configure) {
+TEST_F(ContentSuggestionsLearnMoreItemTest, Configure) {
   // Setup.
   ContentSuggestionsLearnMoreItem* item =
       [[ContentSuggestionsLearnMoreItem alloc] initWithType:0];

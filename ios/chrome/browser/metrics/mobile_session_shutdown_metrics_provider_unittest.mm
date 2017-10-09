@@ -19,6 +19,7 @@
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest-param-test.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -67,7 +68,8 @@ class MobileSessionShutdownMetricsProviderForTesting
 };
 
 class MobileSessionShutdownMetricsProviderTest
-    : public testing::TestWithParam<int> {
+    : public PlatformTest,
+      public testing::WithParamInterface<int> {
  public:
   MobileSessionShutdownMetricsProviderTest() {
     metrics::MetricsService::RegisterPrefs(local_state_.registry());

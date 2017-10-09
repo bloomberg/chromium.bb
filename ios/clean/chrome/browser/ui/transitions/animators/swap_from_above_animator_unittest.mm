@@ -7,12 +7,15 @@
 #import "base/test/ios/wait_util.h"
 #import "ios/clean/chrome/browser/ui/transitions/animators/test_transition_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-TEST(SwapFromAboveAnimatorTest, AnimationCallsCompleteTransitionOnContext) {
+using SwapFromAboveAnimatorTest = PlatformTest;
+
+TEST_F(SwapFromAboveAnimatorTest, AnimationCallsCompleteTransitionOnContext) {
   SwapFromAboveAnimator* animator = [[SwapFromAboveAnimator alloc] init];
   TestTransitionContext* context = [[TestTransitionContext alloc] init];
 

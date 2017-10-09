@@ -16,10 +16,12 @@
 #error "This file requires ARC support."
 #endif
 
+using MainApplicationDelegateTest = PlatformTest;
+
 // Tests that the application does not crash if |applicationDidEnterBackground|
 // is called when the application is launched in background.
 // http://crbug.com/437307
-TEST(MainApplicationDelegateTest, CrashIfNotInitialized) {
+TEST_F(MainApplicationDelegateTest, CrashIfNotInitialized) {
   // Save both ChromeBrowserProvider as MainController register new instance.
   ios::ChromeBrowserProvider* stashed_chrome_browser_provider =
       ios::GetChromeBrowserProvider();

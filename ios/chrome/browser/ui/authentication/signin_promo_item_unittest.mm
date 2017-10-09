@@ -7,6 +7,7 @@
 #import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_configurator.h"
 #import "testing/gtest_mac.h"
+#include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
 
@@ -14,8 +15,10 @@
 #error "This file requires ARC support."
 #endif
 
+using SigninPromoItemTest = PlatformTest;
+
 // Tests that SigninPromoItem creates and configures correctly SigninPromoCell.
-TEST(SigninPromoItemTest, ConfigureCell) {
+TEST_F(SigninPromoItemTest, ConfigureCell) {
   SigninPromoViewConfigurator* configurator =
       OCMStrictClassMock([SigninPromoViewConfigurator class]);
   SigninPromoItem* item = [[SigninPromoItem alloc] initWithType:0];

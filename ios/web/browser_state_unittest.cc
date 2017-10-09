@@ -7,6 +7,7 @@
 #include "base/supports_user_data.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 namespace {
 class TestSupportsUserData : public base::SupportsUserData {
@@ -16,18 +17,20 @@ class TestSupportsUserData : public base::SupportsUserData {
 };
 }  // namespace
 
-TEST(BrowserStateTest, FromSupportsUserData_NullPointer) {
+using BrowserStateTest = PlatformTest;
+
+TEST_F(BrowserStateTest, FromSupportsUserData_NullPointer) {
   DCHECK_EQ(static_cast<web::BrowserState*>(nullptr),
             web::BrowserState::FromSupportsUserData(nullptr));
 }
 
-TEST(BrowserStateTest, FromSupportsUserData_NonBrowserState) {
+TEST_F(BrowserStateTest, FromSupportsUserData_NonBrowserState) {
   TestSupportsUserData supports_user_data;
   DCHECK_EQ(static_cast<web::BrowserState*>(nullptr),
             web::BrowserState::FromSupportsUserData(&supports_user_data));
 }
 
-TEST(BrowserStateTest, FromSupportsUserData) {
+TEST_F(BrowserStateTest, FromSupportsUserData) {
   web::TestBrowserState browser_state;
   DCHECK_EQ(&browser_state,
             web::BrowserState::FromSupportsUserData(&browser_state));

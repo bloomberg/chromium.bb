@@ -9,15 +9,18 @@
 #import "ios/clean/chrome/browser/ui/dialogs/dialog_mediator+subclassing.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
+#include "testing/platform_test.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
+using UnavailableFeatureDialogMediatorTest = PlatformTest;
+
 // Tests that an UnavailableFeatureDialogMediator correctly uses the feature
 // name as the message and has one OK button.
-TEST(UnavailableFeatureDialogMediator, Simple) {
+TEST_F(UnavailableFeatureDialogMediatorTest, Simple) {
   NSString* kFeatureName = @"Feature Name";
   DialogMediator* mediator = [[UnavailableFeatureDialogMediator alloc]
       initWithFeatureName:kFeatureName];

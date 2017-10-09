@@ -9,6 +9,7 @@
 #import "base/mac/bind_objc_block.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -16,13 +17,15 @@
 
 namespace web {
 
+using WebViewJsUtilsTest = PlatformTest;
+
 // Tests that ValueResultFromWKResult converts nil value to nullptr.
-TEST(WebViewJsUtilsTest, ValueResultFromUndefinedWKResult) {
+TEST_F(WebViewJsUtilsTest, ValueResultFromUndefinedWKResult) {
   EXPECT_FALSE(ValueResultFromWKResult(nil));
 }
 
 // Tests that ValueResultFromWKResult converts string to Value::Type::STRING.
-TEST(WebViewJsUtilsTest, ValueResultFromStringWKResult) {
+TEST_F(WebViewJsUtilsTest, ValueResultFromStringWKResult) {
   std::unique_ptr<base::Value> value(web::ValueResultFromWKResult(@"test"));
   EXPECT_TRUE(value);
   EXPECT_EQ(base::Value::Type::STRING, value->GetType());
@@ -34,7 +37,7 @@ TEST(WebViewJsUtilsTest, ValueResultFromStringWKResult) {
 // Tests that ValueResultFromWKResult converts inetger to Value::Type::DOUBLE.
 // NOTE: WKWebView API returns all numbers as kCFNumberFloat64Type, so there is
 // no way to tell if the result is integer or double.
-TEST(WebViewJsUtilsTest, ValueResultFromIntegerWKResult) {
+TEST_F(WebViewJsUtilsTest, ValueResultFromIntegerWKResult) {
   std::unique_ptr<base::Value> value(web::ValueResultFromWKResult(@1));
   EXPECT_TRUE(value);
   EXPECT_EQ(base::Value::Type::DOUBLE, value->GetType());
@@ -44,7 +47,7 @@ TEST(WebViewJsUtilsTest, ValueResultFromIntegerWKResult) {
 }
 
 // Tests that ValueResultFromWKResult converts double to Value::Type::DOUBLE.
-TEST(WebViewJsUtilsTest, ValueResultFromDoubleWKResult) {
+TEST_F(WebViewJsUtilsTest, ValueResultFromDoubleWKResult) {
   std::unique_ptr<base::Value> value(web::ValueResultFromWKResult(@3.14));
   EXPECT_TRUE(value);
   EXPECT_EQ(base::Value::Type::DOUBLE, value->GetType());
@@ -54,7 +57,7 @@ TEST(WebViewJsUtilsTest, ValueResultFromDoubleWKResult) {
 }
 
 // Tests that ValueResultFromWKResult converts bool to Value::Type::BOOLEAN.
-TEST(WebViewJsUtilsTest, ValueResultFromBoolWKResult) {
+TEST_F(WebViewJsUtilsTest, ValueResultFromBoolWKResult) {
   std::unique_ptr<base::Value> value(web::ValueResultFromWKResult(@YES));
   EXPECT_TRUE(value);
   EXPECT_EQ(base::Value::Type::BOOLEAN, value->GetType());
@@ -64,7 +67,7 @@ TEST(WebViewJsUtilsTest, ValueResultFromBoolWKResult) {
 }
 
 // Tests that ValueResultFromWKResult converts null to Value::Type::NONE.
-TEST(WebViewJsUtilsTest, ValueResultFromNullWKResult) {
+TEST_F(WebViewJsUtilsTest, ValueResultFromNullWKResult) {
   std::unique_ptr<base::Value> value(
       web::ValueResultFromWKResult([NSNull null]));
   EXPECT_TRUE(value);
@@ -73,7 +76,7 @@ TEST(WebViewJsUtilsTest, ValueResultFromNullWKResult) {
 
 // Tests that ValueResultFromWKResult converts NSDictionaries to properly
 // initialized base::DictionaryValue.
-TEST(WebViewJsUtilsTest, ValueResultFromDictionaryWKResult) {
+TEST_F(WebViewJsUtilsTest, ValueResultFromDictionaryWKResult) {
   NSDictionary* test_dictionary =
       @{ @"Key1" : @"Value1",
          @"Key2" : @{@"Key3" : @42} };
@@ -99,7 +102,7 @@ TEST(WebViewJsUtilsTest, ValueResultFromDictionaryWKResult) {
 
 // Tests that ValueResultFromWKResult converts NSArray to properly
 // initialized base::ListValue.
-TEST(WebViewJsUtilsTest, ValueResultFromArrayWKResult) {
+TEST_F(WebViewJsUtilsTest, ValueResultFromArrayWKResult) {
   NSArray* test_array = @[ @"Value1", @[ @YES ], @42 ];
 
   std::unique_ptr<base::Value> value(web::ValueResultFromWKResult(test_array));
@@ -124,7 +127,7 @@ TEST(WebViewJsUtilsTest, ValueResultFromArrayWKResult) {
 }
 
 // Tests that an NSDictionary with a cycle does not cause infinite recursion.
-TEST(WebViewJsUtilsTest, ValueResultFromDictionaryWithDepthCheckWKResult) {
+TEST_F(WebViewJsUtilsTest, ValueResultFromDictionaryWithDepthCheckWKResult) {
   // Create a dictionary with a cycle.
   NSMutableDictionary* test_dictionary =
       [NSMutableDictionary dictionaryWithCapacity:1];
@@ -162,7 +165,7 @@ TEST(WebViewJsUtilsTest, ValueResultFromDictionaryWithDepthCheckWKResult) {
 }
 
 // Tests that an NSArray with a cycle does not cause infinite recursion.
-TEST(WebViewJsUtilsTest, ValueResultFromArrayWithDepthCheckWKResult) {
+TEST_F(WebViewJsUtilsTest, ValueResultFromArrayWithDepthCheckWKResult) {
   // Create an array with a cycle.
   NSMutableArray* test_array = [NSMutableArray arrayWithCapacity:1];
   NSMutableArray* test_array_2 = [NSMutableArray arrayWithCapacity:1];

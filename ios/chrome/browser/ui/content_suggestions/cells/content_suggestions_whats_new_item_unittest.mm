@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_whats_new_item.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/gtest_support.h"
 
@@ -14,7 +15,9 @@
 
 namespace {
 
-TEST(ContentSuggestionsWhatsNewItemTest, CellClass) {
+using ContentSuggestionsWhatsNewItemTest = PlatformTest;
+
+TEST_F(ContentSuggestionsWhatsNewItemTest, CellClass) {
   // Setup.
   ContentSuggestionsWhatsNewItem* item =
       [[ContentSuggestionsWhatsNewItem alloc] initWithType:0];
@@ -26,7 +29,7 @@ TEST(ContentSuggestionsWhatsNewItemTest, CellClass) {
   EXPECT_EQ([ContentSuggestionsWhatsNewCell class], [cell class]);
 }
 
-TEST(ContentSuggestionsWhatsNewItemTest, Configure) {
+TEST_F(ContentSuggestionsWhatsNewItemTest, Configure) {
   // Setup.
   UIImage* image = [[UIImage alloc] init];
   NSString* text = @"What's new test!";

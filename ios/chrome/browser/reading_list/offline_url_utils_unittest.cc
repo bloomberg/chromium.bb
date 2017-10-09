@@ -14,11 +14,14 @@
 #include "components/reading_list/core/reading_list_entry.h"
 #include "components/reading_list/core/reading_list_model_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 #include "url/gurl.h"
+
+using OfflineURLUtilsTest = PlatformTest;
 
 // Checks the distilled URL for the page with an onlineURL is
 // chrome://offline/MD5/page.html?entryURL=...&virtualURL=...
-TEST(OfflineURLUtilsTest, OfflineURLForPathWithEntryURLAndVirtualURLTest) {
+TEST_F(OfflineURLUtilsTest, OfflineURLForPathWithEntryURLAndVirtualURLTest) {
   base::FilePath page_path("MD5/page.html");
   GURL entry_url = GURL("http://foo.bar");
   GURL virtual_url = GURL("http://foo.bar/virtual");
@@ -33,7 +36,7 @@ TEST(OfflineURLUtilsTest, OfflineURLForPathWithEntryURLAndVirtualURLTest) {
 
 // Checks the parsing of offline URL chrome://offline/MD5/page.html.
 // As entryURL and virtualURL are absent, they should be invalid.
-TEST(OfflineURLUtilsTest, ParseOfflineURLTest) {
+TEST_F(OfflineURLUtilsTest, ParseOfflineURLTest) {
   GURL distilled_url("chrome://offline/MD5/page.html");
   GURL entry_url = reading_list::EntryURLForOfflineURL(distilled_url);
   EXPECT_TRUE(entry_url.is_empty());
@@ -45,7 +48,7 @@ TEST(OfflineURLUtilsTest, ParseOfflineURLTest) {
 // chrome://offline/MD5/page.html?entryURL=encorded%20URL
 // As entryURL is present, it should be returned correctly.
 // As virtualURL is absent, it should return GURL::EmptyGURL().
-TEST(OfflineURLUtilsTest, ParseOfflineURLWithEntryURLTest) {
+TEST_F(OfflineURLUtilsTest, ParseOfflineURLWithEntryURLTest) {
   GURL offline_url(
       "chrome://offline/MD5/page.html?entryURL=http%3A%2F%2Ffoo.bar%2F");
   GURL entry_url = reading_list::EntryURLForOfflineURL(offline_url);
@@ -58,7 +61,7 @@ TEST(OfflineURLUtilsTest, ParseOfflineURLWithEntryURLTest) {
 // chrome://offline/MD5/page.html?virtualURL=encorded%20URL
 // As entryURL is absent, it should return the offline URL.
 // As virtualURL is present, it should be returned correctly.
-TEST(OfflineURLUtilsTest, ParseOfflineURLWithVirtualURLTest) {
+TEST_F(OfflineURLUtilsTest, ParseOfflineURLWithVirtualURLTest) {
   GURL offline_url(
       "chrome://offline/MD5/page.html?virtualURL=http%3A%2F%2Ffoo.bar%2F");
   GURL entry_url = reading_list::EntryURLForOfflineURL(offline_url);
@@ -71,7 +74,7 @@ TEST(OfflineURLUtilsTest, ParseOfflineURLWithVirtualURLTest) {
 // chrome://offline/MD5/page.html?entryURL=...&virtualURL=...
 // As entryURL is present, it should be returned correctly.
 // As virtualURL is present, it should be returned correctly.
-TEST(OfflineURLUtilsTest, ParseOfflineURLWithVirtualAndEntryURLTest) {
+TEST_F(OfflineURLUtilsTest, ParseOfflineURLWithVirtualAndEntryURLTest) {
   GURL offline_url(
       "chrome://offline/MD5/"
       "page.html?virtualURL=http%3A%2F%2Ffoo.bar%2Fvirtual&entryURL=http%3A%2F%"
@@ -86,7 +89,7 @@ TEST(OfflineURLUtilsTest, ParseOfflineURLWithVirtualAndEntryURLTest) {
 // file://profile_path/Offline/MD5/page.html.
 // Checks the resource root for chrome://offline/MD5/page.html is
 // file://profile_path/Offline/MD5
-TEST(OfflineURLUtilsTest, FileURLForDistilledURLTest) {
+TEST_F(OfflineURLUtilsTest, FileURLForDistilledURLTest) {
   base::FilePath offline_path("/profile_path/Offline");
   GURL file_url =
       reading_list::FileURLForDistilledURL(GURL(), offline_path, nullptr);
@@ -108,7 +111,7 @@ TEST(OfflineURLUtilsTest, FileURLForDistilledURLTest) {
 }
 
 // Checks that the offline URLs are correctly detected by |IsOfflineURL|.
-TEST(OfflineURLUtilsTest, IsOfflineURL) {
+TEST_F(OfflineURLUtilsTest, IsOfflineURL) {
   EXPECT_FALSE(reading_list::IsOfflineURL(GURL()));
   EXPECT_FALSE(reading_list::IsOfflineURL(GURL("chrome://")));
   EXPECT_FALSE(reading_list::IsOfflineURL(GURL("chrome://offline-foobar")));
@@ -122,7 +125,7 @@ TEST(OfflineURLUtilsTest, IsOfflineURL) {
 }
 
 // Checks that the offline URLs are correctly detected by |IsOfflineURL|.
-TEST(OfflineURLUtilsTest, IsOfflineURLValid) {
+TEST_F(OfflineURLUtilsTest, IsOfflineURLValid) {
   auto reading_list_model = base::MakeUnique<ReadingListModelImpl>(
       nullptr, nullptr, base::MakeUnique<base::DefaultClock>());
   GURL entry_url("http://entry_url.com");

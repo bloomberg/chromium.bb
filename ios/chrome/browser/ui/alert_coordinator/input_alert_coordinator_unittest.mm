@@ -12,7 +12,9 @@
 #error "This file requires ARC support."
 #endif
 
-TEST(InputAlertCoordinatorTest, AddTextField) {
+using InputAlertCoordinatorTest = PlatformTest;
+
+TEST_F(InputAlertCoordinatorTest, AddTextField) {
   // Setup.
   UIViewController* viewController = [[UIViewController alloc] init];
   InputAlertCoordinator* alertCoordinator =
@@ -33,7 +35,7 @@ TEST(InputAlertCoordinatorTest, AddTextField) {
   EXPECT_OCMOCK_VERIFY(alert);
 }
 
-TEST(InputAlertCoordinatorTest, GetTextFields) {
+TEST_F(InputAlertCoordinatorTest, GetTextFields) {
   // Setup.
   UIViewController* viewController = [[UIViewController alloc] init];
   InputAlertCoordinator* alertCoordinator =

@@ -10,12 +10,15 @@
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
+#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-TEST(UIUtilTest, AlignToPixel) {
+using UIUtilTest = PlatformTest;
+
+TEST_F(UIUtilTest, AlignToPixel) {
   CGFloat scale = [[UIScreen mainScreen] scale];
   // Pick a few interesting values: already aligned, aligned on retina, and
   // some unaligned values that would round differently. Ensure that all are
@@ -43,7 +46,7 @@ TEST(UIUtilTest, AlignToPixel) {
 #define EXPECT_EQ_SIZE(a, b) \
   EXPECT_NSEQ(NSStringFromCGSize(a), NSStringFromCGSize(b))
 
-TEST(UIUtilTest, TestProjectionFill) {
+TEST_F(UIUtilTest, TestProjectionFill) {
   CGSize originalSize, targetSize, expectedRevisedSize, revisedSize;
   CGRect expectedProjection, projection;
 
@@ -78,7 +81,7 @@ TEST(UIUtilTest, TestProjectionFill) {
   EXPECT_EQ_SIZE(expectedRevisedSize, revisedSize);
 }
 
-TEST(UIUtilTest, TestProjectionFit) {
+TEST_F(UIUtilTest, TestProjectionFit) {
   CGSize originalSize, targetSize, expectedRevisedSize, revisedSize;
   CGRect expectedProjection, projection;
 
@@ -143,7 +146,7 @@ TEST(UIUtilTest, TestProjectionFit) {
   EXPECT_EQ_SIZE(expectedRevisedSize, revisedSize);
 }
 
-TEST(UIUtilTest, TestProjectionAspectFill) {
+TEST_F(UIUtilTest, TestProjectionAspectFill) {
   CGSize originalSize, targetSize, expectedRevisedSize, revisedSize;
   CGRect expectedProjection, projection;
 
@@ -208,7 +211,7 @@ TEST(UIUtilTest, TestProjectionAspectFill) {
   EXPECT_EQ_SIZE(expectedRevisedSize, revisedSize);
 }
 
-TEST(UIUtilTest, TestProjectionAspectFillAlignTop) {
+TEST_F(UIUtilTest, TestProjectionAspectFillAlignTop) {
   CGSize originalSize, targetSize, expectedRevisedSize, revisedSize;
   CGRect expectedProjection, projection;
 
@@ -235,7 +238,7 @@ TEST(UIUtilTest, TestProjectionAspectFillAlignTop) {
   EXPECT_EQ_SIZE(expectedRevisedSize, revisedSize);
 }
 
-TEST(UIUtilTest, TestProjectionAspectFillNoClipping) {
+TEST_F(UIUtilTest, TestProjectionAspectFillNoClipping) {
   CGSize originalSize, targetSize, expectedRevisedSize, revisedSize;
   CGRect expectedProjection, projection;
 

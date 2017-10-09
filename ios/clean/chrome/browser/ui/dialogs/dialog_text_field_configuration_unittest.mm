@@ -7,6 +7,7 @@
 #import "ios/clean/chrome/browser/ui/dialogs/dialog_configuration_identifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
+#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -19,9 +20,11 @@ NSString* const kPlaceholderText = @"placeholder text";
 const BOOL kSecure = YES;
 }
 
+using DialogTextFieldConfigurationTest = PlatformTest;
+
 // Tests that the values passed to the factory method are reflected in the
 // returned value.
-TEST(DialogTextFieldConfigurationTest, FactoryMethod) {
+TEST_F(DialogTextFieldConfigurationTest, FactoryMethod) {
   DialogTextFieldConfiguration* config =
       [DialogTextFieldConfiguration configWithDefaultText:kDefaultText
                                           placeholderText:kPlaceholderText
@@ -33,7 +36,7 @@ TEST(DialogTextFieldConfigurationTest, FactoryMethod) {
 
 // Tests that two DialogTextFieldConfigurations created with the same values
 // have unequal identifiers.
-TEST(DialogTextFieldConfigurationTest, Identifiers) {
+TEST_F(DialogTextFieldConfigurationTest, Identifiers) {
   DialogTextFieldConfiguration* config1 =
       [DialogTextFieldConfiguration configWithDefaultText:kDefaultText
                                           placeholderText:kPlaceholderText

@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
+#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -64,8 +65,10 @@ void LogSink(const char* file,
   // No-op.
 }
 
+using CollectionViewModelTest = PlatformTest;
+
 // Test generic model boxing (check done at compilation time).
-TEST(CollectionViewModelTest, GenericModelBoxing) {
+TEST_F(CollectionViewModelTest, GenericModelBoxing) {
   CollectionViewModel<TestCollectionViewItemSubclass*>* specificModel =
       [[CollectionViewModel alloc] init];
 
@@ -76,7 +79,7 @@ TEST(CollectionViewModelTest, GenericModelBoxing) {
   generalModel = nil;
 }
 
-TEST(CollectionViewModelTest, EmptyModel) {
+TEST_F(CollectionViewModelTest, EmptyModel) {
   CollectionViewModel* model = [[CollectionViewModel alloc] init];
 
   // Check there are no items.
@@ -87,7 +90,7 @@ TEST(CollectionViewModelTest, EmptyModel) {
   EXPECT_EQ(0, [model numberOfSections]);
 }
 
-TEST(CollectionViewModelTest, SingleSection) {
+TEST_F(CollectionViewModelTest, SingleSection) {
   CollectionViewModel* model = [[CollectionViewModel alloc] init];
 
   [model addSectionWithIdentifier:SectionIdentifierCheese];
@@ -129,7 +132,7 @@ TEST(CollectionViewModelTest, SingleSection) {
                                                             inSection:0]]);
 }
 
-TEST(CollectionViewModelTest, SingleSectionWithMissingItems) {
+TEST_F(CollectionViewModelTest, SingleSectionWithMissingItems) {
   CollectionViewModel* model = [[CollectionViewModel alloc] init];
 
   [model addSectionWithIdentifier:SectionIdentifierCheese];
@@ -148,7 +151,7 @@ TEST(CollectionViewModelTest, SingleSectionWithMissingItems) {
                                                             inSection:0]]);
 }
 
-TEST(CollectionViewModelTest, MultipleSections) {
+TEST_F(CollectionViewModelTest, MultipleSections) {
   CollectionViewModel* model = [[CollectionViewModel alloc] init];
 
   [model addSectionWithIdentifier:SectionIdentifierCheese];
@@ -185,7 +188,7 @@ TEST(CollectionViewModelTest, MultipleSections) {
                                                             inSection:1]]);
 }
 
-TEST(CollectionViewModelTest, GetIndexPathFromModelCoordinates) {
+TEST_F(CollectionViewModelTest, GetIndexPathFromModelCoordinates) {
   CollectionViewModel* model = [[CollectionViewModel alloc] init];
 
   [model addSectionWithIdentifier:SectionIdentifierCheese];
@@ -212,7 +215,7 @@ TEST(CollectionViewModelTest, GetIndexPathFromModelCoordinates) {
   EXPECT_EQ(0, indexPath.item);
 }
 
-TEST(CollectionViewItemTest, RepeatedItems) {
+TEST_F(CollectionViewModelTest, RepeatedItems) {
   CollectionViewModel* model = [[CollectionViewModel alloc] init];
 
   [model addSectionWithIdentifier:SectionIdentifierCheese];
@@ -245,7 +248,7 @@ TEST(CollectionViewItemTest, RepeatedItems) {
   EXPECT_EQ(2, indexPath.item);
 }
 
-TEST(CollectionViewModelTest, RepeatedItemIndex) {
+TEST_F(CollectionViewModelTest, RepeatedItemIndex) {
   CollectionViewModel* model = [[CollectionViewModel alloc] init];
 
   [model addSectionWithIdentifier:SectionIdentifierCheese];
@@ -280,7 +283,7 @@ TEST(CollectionViewModelTest, RepeatedItemIndex) {
                                                                  inSection:1]]);
 }
 
-TEST(CollectionViewModelTest, RetrieveAddedItem) {
+TEST_F(CollectionViewModelTest, RetrieveAddedItem) {
   CollectionViewModel* model = [[CollectionViewModel alloc] init];
 
   [model addSectionWithIdentifier:SectionIdentifierCheese];
@@ -293,7 +296,7 @@ TEST(CollectionViewModelTest, RetrieveAddedItem) {
                                                                  inSection:0]]);
 }
 
-TEST(CollectionViewModelTest, RetrieveItemsInSection) {
+TEST_F(CollectionViewModelTest, RetrieveItemsInSection) {
   CollectionViewModel* model = [[CollectionViewModel alloc] init];
   [model addSectionWithIdentifier:SectionIdentifierCheese];
   CollectionViewItem* cheddar =
@@ -314,7 +317,7 @@ TEST(CollectionViewModelTest, RetrieveItemsInSection) {
   EXPECT_NSEQ(gouda, cheeseItems[2]);
 }
 
-TEST(CollectionViewModelTest, InvalidIndexPath) {
+TEST_F(CollectionViewModelTest, InvalidIndexPath) {
   CollectionViewModel* model = [[CollectionViewModel alloc] init];
   [model addSectionWithIdentifier:SectionIdentifierCheese];
 
@@ -331,7 +334,7 @@ TEST(CollectionViewModelTest, InvalidIndexPath) {
   EXPECT_TRUE(out_of_bounds_exception_thrown);
 }
 
-TEST(CollectionViewModelTest, RemoveItems) {
+TEST_F(CollectionViewModelTest, RemoveItems) {
   CollectionViewModel* model = [[CollectionViewModel alloc] init];
 
   [model addSectionWithIdentifier:SectionIdentifierCheese];
@@ -383,7 +386,7 @@ TEST(CollectionViewModelTest, RemoveItems) {
   EXPECT_EQ(2, indexPath.item);
 }
 
-TEST(CollectionViewModelTest, RemoveSections) {
+TEST_F(CollectionViewModelTest, RemoveSections) {
   CollectionViewModel* model = [[CollectionViewModel alloc] init];
 
   // Empty section.
@@ -415,7 +418,7 @@ TEST(CollectionViewModelTest, RemoveSections) {
   EXPECT_EQ(0, [model numberOfSections]);
 }
 
-TEST(CollectionViewModelTest, QueryItemsFromModelCoordinates) {
+TEST_F(CollectionViewModelTest, QueryItemsFromModelCoordinates) {
   CollectionViewModel* model = [[CollectionViewModel alloc] init];
 
   EXPECT_FALSE([model hasSectionForSectionIdentifier:SectionIdentifierWeasley]);
@@ -445,7 +448,7 @@ TEST(CollectionViewModelTest, QueryItemsFromModelCoordinates) {
 }
 
 // Tests that inserted sections are added at the correct index.
-TEST(CollectionViewModelTest, InsertSections) {
+TEST_F(CollectionViewModelTest, InsertSections) {
   CollectionViewModel* model = [[CollectionViewModel alloc] init];
 
   [model addSectionWithIdentifier:SectionIdentifierWeasley];
@@ -465,7 +468,7 @@ TEST(CollectionViewModelTest, InsertSections) {
 }
 
 // Tests that inserted items are added at the correct index.
-TEST(CollectionViewModelTest, InsertItemAtIndex) {
+TEST_F(CollectionViewModelTest, InsertItemAtIndex) {
   CollectionViewModel* model = [[CollectionViewModel alloc] init];
 
   [model addSectionWithIdentifier:SectionIdentifierCheese];
@@ -500,7 +503,7 @@ TEST(CollectionViewModelTest, InsertItemAtIndex) {
   EXPECT_EQ(2, goudaIndexPath.item);
 }
 
-TEST(CollectionViewModelTest, IndexPathsForItems) {
+TEST_F(CollectionViewModelTest, IndexPathsForItems) {
   CollectionViewModel* model = [[CollectionViewModel alloc] init];
 
   [model addSectionWithIdentifier:SectionIdentifierWeasley];
@@ -539,7 +542,7 @@ TEST(CollectionViewModelTest, IndexPathsForItems) {
   EXPECT_FALSE([model hasItem:notAddedItem]);
 }
 
-TEST(CollectionViewModelTest, Headers) {
+TEST_F(CollectionViewModelTest, Headers) {
   CollectionViewModel* model = [[CollectionViewModel alloc] init];
 
   [model addSectionWithIdentifier:SectionIdentifierCheese];
@@ -570,7 +573,7 @@ TEST(CollectionViewModelTest, Headers) {
   EXPECT_FALSE([model headerForSection:weasleySection]);
 }
 
-TEST(CollectionViewModelTest, Footers) {
+TEST_F(CollectionViewModelTest, Footers) {
   CollectionViewModel* model = [[CollectionViewModel alloc] init];
 
   [model addSectionWithIdentifier:SectionIdentifierCheese];

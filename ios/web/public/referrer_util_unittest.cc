@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "ios/web/public/referrer.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 #include "url/gurl.h"
 
 namespace {
@@ -23,9 +24,11 @@ const char* const kTestUrls[] = {
 
 namespace web {
 
+using ReferrerUtilTest = PlatformTest;
+
 // Tests that no matter what the transition and policy, the result is always
 // stripped of things that should not be in a referrer (e.g., passwords).
-TEST(ReferrerUtilTest, ReferrerSanitization) {
+TEST_F(ReferrerUtilTest, ReferrerSanitization) {
   for (unsigned int source = 0; source < arraysize(kTestUrls); ++source) {
     for (unsigned int dest = 0; dest < arraysize(kTestUrls); ++dest) {
       for (unsigned int policy = 0; policy <= ReferrerPolicyLast; ++policy) {
@@ -41,7 +44,7 @@ TEST(ReferrerUtilTest, ReferrerSanitization) {
 }
 
 // Tests that the Always policy works as expected.
-TEST(ReferrerUtilTest, AlwaysPolicy) {
+TEST_F(ReferrerUtilTest, AlwaysPolicy) {
   for (unsigned int source = 0; source < arraysize(kTestUrls); ++source) {
     for (unsigned int dest = 1; dest < arraysize(kTestUrls); ++dest) {
       GURL source_url(kTestUrls[source]);
@@ -57,7 +60,7 @@ TEST(ReferrerUtilTest, AlwaysPolicy) {
 
 // Tests that the Default policy works as expected, and matches
 // NoReferrerWhenDowngrade.
-TEST(ReferrerUtilTest, DefaultPolicy) {
+TEST_F(ReferrerUtilTest, DefaultPolicy) {
   for (unsigned int source = 0; source < arraysize(kTestUrls); ++source) {
     for (unsigned int dest = 1; dest < arraysize(kTestUrls); ++dest) {
       GURL source_url(kTestUrls[source]);
@@ -80,7 +83,7 @@ TEST(ReferrerUtilTest, DefaultPolicy) {
 }
 
 // Tests that the Never policy works as expected.
-TEST(ReferrerUtilTest, NeverPolicy) {
+TEST_F(ReferrerUtilTest, NeverPolicy) {
   for (unsigned int source = 0; source < arraysize(kTestUrls); ++source) {
     for (unsigned int dest = 1; dest < arraysize(kTestUrls); ++dest) {
       GURL source_url(kTestUrls[source]);
@@ -95,7 +98,7 @@ TEST(ReferrerUtilTest, NeverPolicy) {
 }
 
 // Tests that the Origin policy works as expected.
-TEST(ReferrerUtilTest, OriginPolicy) {
+TEST_F(ReferrerUtilTest, OriginPolicy) {
   for (unsigned int source = 0; source < arraysize(kTestUrls); ++source) {
     for (unsigned int dest = 1; dest < arraysize(kTestUrls); ++dest) {
       GURL source_url(kTestUrls[source]);
@@ -110,7 +113,7 @@ TEST(ReferrerUtilTest, OriginPolicy) {
 }
 
 // Tests that the OriginWhenCrossOrigin policy works as expected.
-TEST(ReferrerUtilTest, OriginWhenCrossOriginPolicy) {
+TEST_F(ReferrerUtilTest, OriginWhenCrossOriginPolicy) {
   for (unsigned int source = 0; source < arraysize(kTestUrls); ++source) {
     for (unsigned int dest = 1; dest < arraysize(kTestUrls); ++dest) {
       GURL source_url(kTestUrls[source]);
@@ -129,7 +132,7 @@ TEST(ReferrerUtilTest, OriginWhenCrossOriginPolicy) {
 }
 
 // Tests that the same-origin policy works as expected.
-TEST(ReferrerUtilTest, SameOriginPolicy) {
+TEST_F(ReferrerUtilTest, SameOriginPolicy) {
   for (unsigned int source = 0; source < arraysize(kTestUrls); ++source) {
     for (unsigned int dest = 1; dest < arraysize(kTestUrls); ++dest) {
       GURL source_url(kTestUrls[source]);
@@ -147,7 +150,7 @@ TEST(ReferrerUtilTest, SameOriginPolicy) {
 }
 
 // Tests that the strict-origin policy works as expected.
-TEST(ReferrerUtilTest, StrictOriginPolicy) {
+TEST_F(ReferrerUtilTest, StrictOriginPolicy) {
   for (unsigned int source = 0; source < arraysize(kTestUrls); ++source) {
     for (unsigned int dest = 1; dest < arraysize(kTestUrls); ++dest) {
       GURL source_url(kTestUrls[source]);
@@ -166,7 +169,7 @@ TEST(ReferrerUtilTest, StrictOriginPolicy) {
 }
 
 // Tests that the strict-origin-when-cross-origin policy works as expected.
-TEST(ReferrerUtilTest, StrictOriginWhenCrossOriginPolicy) {
+TEST_F(ReferrerUtilTest, StrictOriginWhenCrossOriginPolicy) {
   for (unsigned int source = 0; source < arraysize(kTestUrls); ++source) {
     for (unsigned int dest = 1; dest < arraysize(kTestUrls); ++dest) {
       GURL source_url(kTestUrls[source]);
@@ -188,7 +191,7 @@ TEST(ReferrerUtilTest, StrictOriginWhenCrossOriginPolicy) {
 }
 
 // Tests that PolicyForNavigation gives the right values.
-TEST(ReferrerUtilTest, PolicyForNavigation) {
+TEST_F(ReferrerUtilTest, PolicyForNavigation) {
   // The request and destination URLs are unused in the current implementation,
   // so use a dummy value.
   GURL dummy_url;
@@ -239,7 +242,7 @@ TEST(ReferrerUtilTest, PolicyForNavigation) {
 
 // Tests that all the strings corresponding to web::ReferrerPolicy values are
 // correctly handled.
-TEST(ReferrerUtilTest, PolicyFromString) {
+TEST_F(ReferrerUtilTest, PolicyFromString) {
   // The ordering here must match web::ReferrerPolicy; this makes the test
   // simpler, at the cost of needing to re-order if the enum is re-ordered.
   const char* const kPolicyStrings[] = {

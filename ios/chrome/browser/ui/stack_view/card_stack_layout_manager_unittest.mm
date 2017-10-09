@@ -45,8 +45,7 @@
 
 namespace {
 
-// Create a fixture to get an autorelease pool.
-class CardStackLayoutManagerTest : public PlatformTest {};
+using CardStackLayoutManagerTest = PlatformTest;
 
 const float kMargin = 5;
 const float kMaxStagger = 40;

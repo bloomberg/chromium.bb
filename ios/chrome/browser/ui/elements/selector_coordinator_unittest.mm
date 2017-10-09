@@ -9,6 +9,7 @@
 #import "ios/chrome/browser/ui/elements/selector_view_controller_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
+#include "testing/platform_test.h"
 #include "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
 
@@ -22,9 +23,11 @@
 @property SelectorPickerViewController* selectorPickerViewController;
 @end
 
+using SelectorCoordinatorTest = PlatformTest;
+
 // Tests that invoking start on the coordinator presents the selector view, and
 // that invoking stop dismisses the view and invokes the delegate.
-TEST(SelectorCoordinatorTest, StartAndStop) {
+TEST_F(SelectorCoordinatorTest, StartAndStop) {
   UIWindow* keyWindow = [[UIApplication sharedApplication] keyWindow];
   UIViewController* rootViewController = keyWindow.rootViewController;
   SelectorCoordinator* coordinator = [[SelectorCoordinator alloc]
@@ -47,7 +50,7 @@ TEST(SelectorCoordinatorTest, StartAndStop) {
 
 // Tests that calling the view controller delegate method invokes the
 // SelectorCoordinatorDelegate method and stops the coordinator.
-TEST(SelectorCoordinatorTest, Delegate) {
+TEST_F(SelectorCoordinatorTest, Delegate) {
   UIWindow* keyWindow = [[UIApplication sharedApplication] keyWindow];
   UIViewController* rootViewController = keyWindow.rootViewController;
   SelectorCoordinator* coordinator = [[SelectorCoordinator alloc]

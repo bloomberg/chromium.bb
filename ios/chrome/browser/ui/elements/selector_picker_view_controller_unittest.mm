@@ -8,6 +8,7 @@
 #import "ios/chrome/browser/ui/elements/selector_view_controller_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
+#include "testing/platform_test.h"
 #include "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
 
@@ -22,9 +23,11 @@
 @property(nonatomic, retain) UIPickerView* pickerView;
 @end
 
+using SelectorPickerViewControllerTest = PlatformTest;
+
 // Test that invoking the right bar button action ("Done") invokes the delegate
 // callback with the appropriate selected item.
-TEST(SelectorPickerViewControllerTest, Done) {
+TEST_F(SelectorPickerViewControllerTest, Done) {
   NSString* option1 = @"Option 1";
   NSString* option2 = @"Option 2";
   NSOrderedSet<NSString*>* options =
@@ -56,7 +59,7 @@ TEST(SelectorPickerViewControllerTest, Done) {
 
 // Test that invoking the right bar button action ("Cancel") invokes the
 // delegate callback with the default item.
-TEST(SelectorPickerViewControllerTest, Cancel) {
+TEST_F(SelectorPickerViewControllerTest, Cancel) {
   NSString* option1 = @"Option 1";
   NSString* option2 = @"Option 2";
   NSOrderedSet<NSString*>* options =
@@ -87,7 +90,7 @@ TEST(SelectorPickerViewControllerTest, Cancel) {
 
 // Test that the picker view is styled appropriately based on parameters
 // provided at initialization.
-TEST(SelectorPickerViewControllerTest, DefaultStyling) {
+TEST_F(SelectorPickerViewControllerTest, DefaultStyling) {
   NSString* option1 = @"Option 1";
   NSString* option2 = @"Option 2";
   NSString* option3 = @"Option 3";

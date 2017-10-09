@@ -6,6 +6,7 @@
 
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestions_section_information.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -17,8 +18,10 @@
 @implementation ContentSuggestionIdentifierSubclassTest
 @end
 
+using ContentSuggestionIdentifierTest = PlatformTest;
+
 // Tests different equality scenario.
-TEST(ContentSuggestionIdentifierTest, IsEquals) {
+TEST_F(ContentSuggestionIdentifierTest, IsEquals) {
   // Setup.
   std::string id1("identifier");
   std::string id2("identifier");
@@ -48,7 +51,7 @@ TEST(ContentSuggestionIdentifierTest, IsEquals) {
 }
 
 // Test non-equality between different objects.
-TEST(ContentSuggestionIdentifierTest, IsNotEqualsDifferentObjects) {
+TEST_F(ContentSuggestionIdentifierTest, IsNotEqualsDifferentObjects) {
   // Setup.
   NSObject* object = [[NSObject alloc] init];
   ContentSuggestionIdentifier* suggestionIdentifier =
@@ -59,7 +62,7 @@ TEST(ContentSuggestionIdentifierTest, IsNotEqualsDifferentObjects) {
 }
 
 // Test non-equality.
-TEST(ContentSuggestionIdentifierTest, IsNotEquals) {
+TEST_F(ContentSuggestionIdentifierTest, IsNotEquals) {
   // Setup.
   std::string id1("identifier");
   std::string id2("identifier2");

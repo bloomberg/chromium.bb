@@ -8,6 +8,7 @@
 
 #include "base/macros.h"
 #import "testing/gtest_mac.h"
+#include "testing/platform_test.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -24,7 +25,9 @@ const char* kSchemeTestData[] = {
     "chrome://settings",
 };
 
-TEST(URLSchemeUtilTest, NSURLHasDataScheme) {
+using URLSchemeUtilTest = PlatformTest;
+
+TEST_F(URLSchemeUtilTest, NSURLHasDataScheme) {
   for (unsigned int i = 0; i < arraysize(kSchemeTestData); ++i) {
     const char* url = kSchemeTestData[i];
     bool nsurl_result = UrlHasDataScheme(

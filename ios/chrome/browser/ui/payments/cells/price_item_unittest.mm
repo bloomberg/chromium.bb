@@ -7,6 +7,7 @@
 #import "ios/chrome/browser/ui/collection_view/cells/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
+#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -14,8 +15,10 @@
 
 namespace {
 
+using PaymentRequestPriceItemTest = PlatformTest;
+
 // Tests that the labels are set properly after a call to |configureCell:|.
-TEST(PaymentRequestPriceItemTest, TextLabels) {
+TEST_F(PaymentRequestPriceItemTest, TextLabels) {
   PriceItem* priceItem = [[PriceItem alloc] init];
 
   NSString* item = @"Total";
@@ -41,7 +44,7 @@ TEST(PaymentRequestPriceItemTest, TextLabels) {
 }
 
 // Tests that the labels are provided with the correct amount of space.
-TEST(PaymentRequestPriceItemTest, TextLabelTargetWidths) {
+TEST_F(PaymentRequestPriceItemTest, TextLabelTargetWidths) {
   // Make the cell 164 wide so that after allocating 4 * kHorizontalPadding (16)
   // space for the margins and area between the labels, there is 100 available.
   // Accordingly, in each of the cases below where the sum of the desired label

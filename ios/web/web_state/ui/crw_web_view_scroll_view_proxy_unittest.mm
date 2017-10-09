@@ -8,6 +8,7 @@
 
 #include "base/compiler_specific.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
 
@@ -17,7 +18,7 @@
 
 namespace {
 
-class CRWWebViewScrollViewProxyTest : public ::testing::Test {
+class CRWWebViewScrollViewProxyTest : public PlatformTest {
  protected:
   void SetUp() override {
     mockScrollView_ = [OCMockObject niceMockForClass:[UIScrollView class]];

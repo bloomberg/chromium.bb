@@ -9,6 +9,7 @@
 #include "ios/chrome/browser/metrics/previous_session_info_private.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
+#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -25,7 +26,9 @@ NSString* const kDidSeeMemoryWarningShortlyBeforeTerminating =
 // last session.
 NSString* const kLastRanVersion = @"LastRanVersion";
 
-TEST(PreviousSessionInfoTest, InitializationWithEmptyDefaults) {
+using PreviousSessionInfoTest = PlatformTest;
+
+TEST_F(PreviousSessionInfoTest, InitializationWithEmptyDefaults) {
   [PreviousSessionInfo resetSharedInstanceForTesting];
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
   [defaults removeObjectForKey:kDidSeeMemoryWarningShortlyBeforeTerminating];
@@ -39,7 +42,7 @@ TEST(PreviousSessionInfoTest, InitializationWithEmptyDefaults) {
   EXPECT_TRUE([sharedInstance isFirstSessionAfterUpgrade]);
 }
 
-TEST(PreviousSessionInfoTest, InitializationWithSameVersionNoMemoryWarning) {
+TEST_F(PreviousSessionInfoTest, InitializationWithSameVersionNoMemoryWarning) {
   [PreviousSessionInfo resetSharedInstanceForTesting];
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
   [defaults removeObjectForKey:kDidSeeMemoryWarningShortlyBeforeTerminating];
@@ -58,7 +61,7 @@ TEST(PreviousSessionInfoTest, InitializationWithSameVersionNoMemoryWarning) {
   EXPECT_FALSE([sharedInstance isFirstSessionAfterUpgrade]);
 }
 
-TEST(PreviousSessionInfoTest, InitializationWithSameVersionMemoryWarning) {
+TEST_F(PreviousSessionInfoTest, InitializationWithSameVersionMemoryWarning) {
   [PreviousSessionInfo resetSharedInstanceForTesting];
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
   [defaults removeObjectForKey:kDidSeeMemoryWarningShortlyBeforeTerminating];
@@ -80,7 +83,7 @@ TEST(PreviousSessionInfoTest, InitializationWithSameVersionMemoryWarning) {
   EXPECT_FALSE([sharedInstance isFirstSessionAfterUpgrade]);
 }
 
-TEST(PreviousSessionInfoTest, InitializationDifferentVersionNoMemoryWarning) {
+TEST_F(PreviousSessionInfoTest, InitializationDifferentVersionNoMemoryWarning) {
   [PreviousSessionInfo resetSharedInstanceForTesting];
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
   [defaults removeObjectForKey:kDidSeeMemoryWarningShortlyBeforeTerminating];
@@ -97,7 +100,7 @@ TEST(PreviousSessionInfoTest, InitializationDifferentVersionNoMemoryWarning) {
   EXPECT_TRUE([sharedInstance isFirstSessionAfterUpgrade]);
 }
 
-TEST(PreviousSessionInfoTest, InitializationDifferentVersionMemoryWarning) {
+TEST_F(PreviousSessionInfoTest, InitializationDifferentVersionMemoryWarning) {
   [PreviousSessionInfo resetSharedInstanceForTesting];
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
   [defaults removeObjectForKey:kDidSeeMemoryWarningShortlyBeforeTerminating];
@@ -117,7 +120,7 @@ TEST(PreviousSessionInfoTest, InitializationDifferentVersionMemoryWarning) {
   EXPECT_TRUE([sharedInstance isFirstSessionAfterUpgrade]);
 }
 
-TEST(PreviousSessionInfoTest, BeginRecordingCurrentSession) {
+TEST_F(PreviousSessionInfoTest, BeginRecordingCurrentSession) {
   [PreviousSessionInfo resetSharedInstanceForTesting];
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
   [defaults removeObjectForKey:kDidSeeMemoryWarningShortlyBeforeTerminating];
@@ -137,7 +140,7 @@ TEST(PreviousSessionInfoTest, BeginRecordingCurrentSession) {
       [defaults boolForKey:kDidSeeMemoryWarningShortlyBeforeTerminating]);
 }
 
-TEST(PreviousSessionInfoTest, SetMemoryWarningFlagNoOpUntilRecordingBegins) {
+TEST_F(PreviousSessionInfoTest, SetMemoryWarningFlagNoOpUntilRecordingBegins) {
   [PreviousSessionInfo resetSharedInstanceForTesting];
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
   [defaults removeObjectForKey:kDidSeeMemoryWarningShortlyBeforeTerminating];
@@ -150,7 +153,8 @@ TEST(PreviousSessionInfoTest, SetMemoryWarningFlagNoOpUntilRecordingBegins) {
       [defaults boolForKey:kDidSeeMemoryWarningShortlyBeforeTerminating]);
 }
 
-TEST(PreviousSessionInfoTest, ResetMemoryWarningFlagNoOpUntilRecordingBegins) {
+TEST_F(PreviousSessionInfoTest,
+       ResetMemoryWarningFlagNoOpUntilRecordingBegins) {
   [PreviousSessionInfo resetSharedInstanceForTesting];
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
   [defaults removeObjectForKey:kDidSeeMemoryWarningShortlyBeforeTerminating];
@@ -166,7 +170,7 @@ TEST(PreviousSessionInfoTest, ResetMemoryWarningFlagNoOpUntilRecordingBegins) {
       [defaults boolForKey:kDidSeeMemoryWarningShortlyBeforeTerminating]);
 }
 
-TEST(PreviousSessionInfoTest, MemoryWarningFlagMethodsAfterRecordingBegins) {
+TEST_F(PreviousSessionInfoTest, MemoryWarningFlagMethodsAfterRecordingBegins) {
   [PreviousSessionInfo resetSharedInstanceForTesting];
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
   [defaults removeObjectForKey:kDidSeeMemoryWarningShortlyBeforeTerminating];

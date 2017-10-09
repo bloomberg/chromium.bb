@@ -39,6 +39,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
+#include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/OCMock/OCPartialMockObject.h"
 #include "url/gurl.h"
@@ -1292,9 +1293,11 @@ TEST_F(PasswordControllerTest, CheckIncorrectData) {
   }
 }
 
+using PasswordControllerTestSimple = PlatformTest;
+
 // The test case below does not need the heavy fixture from above, but it
 // needs to use MockWebState.
-TEST(PasswordControllerTestSimple, SaveOnNonHTMLLandingPage) {
+TEST_F(PasswordControllerTestSimple, SaveOnNonHTMLLandingPage) {
   base::test::ScopedTaskEnvironment task_environment;
   TestChromeBrowserState::Builder builder;
   std::unique_ptr<TestChromeBrowserState> browser_state(builder.Build());

@@ -8,12 +8,15 @@
 
 #include "ios/chrome/browser/ui/main/main_view_controller.h"
 #include "testing/gtest_mac.h"
+#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-TEST(MainCoordinatorTest, SizeViewController) {
+using MainCoordinatorTest = PlatformTest;
+
+TEST_F(MainCoordinatorTest, SizeViewController) {
   CGRect rect = [UIScreen mainScreen].bounds;
   UIWindow* window = [UIApplication sharedApplication].keyWindow;
   MainCoordinator* coordinator =

@@ -13,6 +13,7 @@
 #include "ios/chrome/grit/ios_strings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
+#include "testing/platform_test.h"
 #include "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -46,10 +47,12 @@
 
 namespace {
 
+using HistoryEntriesStatusItemTest = PlatformTest;
+
 // Tests that configuring a cell for HistoryEntriesStatusItem with hidden
 // property set to YES results in an empty label, regardless of what
 // showsOtherBrowsingDataNotice is set to.
-TEST(HistoryEntriesStatusItemTest, TestHidden) {
+TEST_F(HistoryEntriesStatusItemTest, TestHidden) {
   HistoryEntriesStatusItem* item =
       [[HistoryEntriesStatusItem alloc] initWithType:0];
   item.hidden = YES;
@@ -62,7 +65,7 @@ TEST(HistoryEntriesStatusItemTest, TestHidden) {
 // Tests that configuring a cell for HistoryEntriesStatusItem with
 // showsOtherBrowsingDataNotice set to YES adds other browsing
 // data text to the label, while set to NO has no text.
-TEST(HistoryEntriesStatusItemTest, TestOtherBrowsingDataNotice) {
+TEST_F(HistoryEntriesStatusItemTest, TestOtherBrowsingDataNotice) {
   HistoryEntriesStatusItem* item =
       [[HistoryEntriesStatusItem alloc] initWithType:0];
   HistoryEntriesStatusCell* cell = [[HistoryEntriesStatusCell alloc] init];
@@ -82,7 +85,7 @@ TEST(HistoryEntriesStatusItemTest, TestOtherBrowsingDataNotice) {
 
 // Tests that tapping on links on a configured cell invokes
 // the HistoryEntriesStatusItemDelegate method.
-TEST(HistoryEntriesStatusItemTest, TestDelegate) {
+TEST_F(HistoryEntriesStatusItemTest, TestDelegate) {
   HistoryEntriesStatusItem* item =
       [[HistoryEntriesStatusItem alloc] initWithType:0];
   HistoryEntriesStatusCell* cell = [[HistoryEntriesStatusCell alloc] init];

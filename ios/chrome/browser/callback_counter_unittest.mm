@@ -14,8 +14,10 @@
 #error "This file requires ARC support."
 #endif
 
+using CallbackCounterTest = PlatformTest;
+
 // Tests that CallbackCounter works with 2 callbacks.
-TEST(CallbackCounterTest, Basic) {
+TEST_F(CallbackCounterTest, Basic) {
   __block BOOL block_was_called = NO;
   scoped_refptr<CallbackCounter> callback_counter =
       new CallbackCounter(base::BindBlockArc(^{

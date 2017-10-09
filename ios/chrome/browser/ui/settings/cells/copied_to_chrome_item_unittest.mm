@@ -9,6 +9,7 @@
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
+#include "testing/platform_test.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -17,8 +18,10 @@
 
 namespace {
 
+using CopiedToChromeItemTest = PlatformTest;
+
 // Tests that the cell created out of a CopiedToChromeItem is set up properly.
-TEST(CopiedToChromeItemTest, InitializeCell) {
+TEST_F(CopiedToChromeItemTest, InitializeCell) {
   CopiedToChromeItem* item = [[CopiedToChromeItem alloc] initWithType:0];
 
   id cell = [[[item cellClass] alloc] init];

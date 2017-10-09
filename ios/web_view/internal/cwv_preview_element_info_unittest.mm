@@ -6,6 +6,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
+#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -13,8 +14,10 @@
 
 namespace ios_web_view {
 
+using CWVPreviewElementInfoTest = PlatformTest;
+
 // Tests CWVPreviewElementInfoTest initialization.
-TEST(CWVPreviewElementInfoTest, Initialization) {
+TEST_F(CWVPreviewElementInfoTest, Initialization) {
   NSURL* const linkURL = [NSURL URLWithString:@"https://chromium.test"];
   CWVPreviewElementInfo* element =
       [[CWVPreviewElementInfo alloc] initWithLinkURL:linkURL];

@@ -6,6 +6,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
+#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -13,8 +14,10 @@
 
 namespace {
 
+using CardMultilineItemTest = PlatformTest;
+
 // Tests that the text is honoured after a call to |configureCell:|.
-TEST(CardMultilineItemTest, ConfigureCell) {
+TEST_F(CardMultilineItemTest, ConfigureCell) {
   CardMultilineItem* item = [[CardMultilineItem alloc] initWithType:0];
   NSString* text = @"Test Disclaimer";
 
@@ -32,7 +35,7 @@ TEST(CardMultilineItemTest, ConfigureCell) {
 
 // Tests that the text label of an CardMultilineCell spans multiple
 // lines.
-TEST(CardMultilineItemTest, MultipleLines) {
+TEST_F(CardMultilineItemTest, MultipleLines) {
   CardMultilineCell* cell = [[CardMultilineCell alloc] init];
   EXPECT_EQ(0, cell.textLabel.numberOfLines);
 }

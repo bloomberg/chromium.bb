@@ -7,6 +7,7 @@
 #import "ios/chrome/browser/ui/collection_view/cells/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
+#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -14,9 +15,11 @@
 
 namespace {
 
+using CollectionViewFooterItemTest = PlatformTest;
+
 // Tests that the text label and the image are set properly after a call to
 // |configureCell:|.
-TEST(CollectionViewFooterItemTest, ConfigureCell) {
+TEST_F(CollectionViewFooterItemTest, ConfigureCell) {
   CollectionViewFooterItem* item =
       [[CollectionViewFooterItem alloc] initWithType:0];
   NSString* text = @"Test Footer";

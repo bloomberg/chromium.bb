@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_footer_item.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/gtest_support.h"
 
@@ -14,8 +15,10 @@
 
 namespace {
 
+using ContentSuggestionsFooterItemTest = PlatformTest;
+
 // Tests that configureCell: sets the title of the button and the action.
-TEST(ContentSuggestionsFooterItemTest, CellIsConfigured) {
+TEST_F(ContentSuggestionsFooterItemTest, CellIsConfigured) {
   // Setup.
   NSString* title = @"testTitle";
   ContentSuggestionsFooterItem* item =
@@ -40,7 +43,7 @@ TEST(ContentSuggestionsFooterItemTest, CellIsConfigured) {
 
 // Tests that the item is the delegate for the cell, and when the cell button is
 // tapped, the callback is called.
-TEST(ContentSuggestionsFooterItemTest, CellTapped) {
+TEST_F(ContentSuggestionsFooterItemTest, CellTapped) {
   NSString* title = @"testTitle";
   __block BOOL hasBeenCalled = NO;
   __block ContentSuggestionsFooterCell* blockCell = nil;

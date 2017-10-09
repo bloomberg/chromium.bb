@@ -449,8 +449,10 @@ TEST_F(AppStateTest, requiresHandlingAfterLaunchWithOptionsForeground) {
   EXPECT_OCMOCK_VERIFY(browserLauncherMock);
 }
 
+using AppStateNoFixtureTest = PlatformTest;
+
 // Test that -willResignActive set cold start to NO and launch record.
-TEST(AppStateNoFixtureTest, willResignActive) {
+TEST_F(AppStateNoFixtureTest, willResignActive) {
   // Setup.
   id tabModel = [OCMockObject mockForClass:[TabModel class]];
   [[tabModel expect] recordSessionMetrics];

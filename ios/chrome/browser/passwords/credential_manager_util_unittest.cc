@@ -47,9 +47,11 @@ base::DictionaryValue BuildExampleValidFederatedCredential() {
 
 }  // namespace
 
+using CredentialManagerUtilTest = PlatformTest;
+
 // Checks that CredentialRequestOptions.password field is parsed
 // correctly.
-TEST(CredentialManagerUtilTest, ParseIncludePasswords) {
+TEST_F(CredentialManagerUtilTest, ParseIncludePasswords) {
   base::DictionaryValue json;
   bool include_passwords = true;
 
@@ -73,7 +75,7 @@ TEST(CredentialManagerUtilTest, ParseIncludePasswords) {
 
 // Checks that CredentialRequestOptions.mediation field is parsed
 // correctly.
-TEST(CredentialManagerUtilTest, ParseMediationRequirement) {
+TEST_F(CredentialManagerUtilTest, ParseMediationRequirement) {
   base::DictionaryValue json;
   CredentialMediationRequirement mediation;
 
@@ -100,7 +102,7 @@ TEST(CredentialManagerUtilTest, ParseMediationRequirement) {
 }
 
 // Checks that Credential.type field is parsed correctly.
-TEST(CredentialManagerUtilTest, ParseCredentialType) {
+TEST_F(CredentialManagerUtilTest, ParseCredentialType) {
   base::DictionaryValue json;
   CredentialType type = CredentialType::CREDENTIAL_TYPE_EMPTY;
 
@@ -128,7 +130,7 @@ TEST(CredentialManagerUtilTest, ParseCredentialType) {
 
 // Checks that common fields of PasswordCredential and FederatedCredential are
 // parsed correctly.
-TEST(CredentialManagerUtilTest, ParseCommonCredentialFields) {
+TEST_F(CredentialManagerUtilTest, ParseCommonCredentialFields) {
   // Building PasswordCredential because ParseCredentialDictionary for
   // Credential containing only common fields would return false.
   base::DictionaryValue json = BuildExampleValidPasswordCredential();
@@ -170,7 +172,7 @@ TEST(CredentialManagerUtilTest, ParseCommonCredentialFields) {
 
 // Checks that |password| and |type| fields of PasswordCredential are parsed
 // correctly.
-TEST(CredentialManagerUtilTest, ParsePasswordCredential) {
+TEST_F(CredentialManagerUtilTest, ParsePasswordCredential) {
   base::DictionaryValue json = BuildExampleValidPasswordCredential();
   CredentialInfo credential;
   std::string reason;
@@ -194,7 +196,7 @@ TEST(CredentialManagerUtilTest, ParsePasswordCredential) {
 
 // Checks that |provider| and |type| fields of FederatedCredential are parsed
 // correctly.
-TEST(CredentialManagerUtilTest, ParseFederatedCredential) {
+TEST_F(CredentialManagerUtilTest, ParseFederatedCredential) {
   base::DictionaryValue json = BuildExampleValidFederatedCredential();
   CredentialInfo credential;
   std::string reason;
@@ -223,7 +225,7 @@ TEST(CredentialManagerUtilTest, ParseFederatedCredential) {
 
 // Checks that |providers| field of FederatedCredentialRequestOptions is
 // parsed correctly.
-TEST(CredentialManagerUtilTest, ParseFederations) {
+TEST_F(CredentialManagerUtilTest, ParseFederations) {
   base::DictionaryValue json;
 
   // Build example valid |providers| list.

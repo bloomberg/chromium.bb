@@ -6,6 +6,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
+#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -13,9 +14,11 @@
 
 namespace {
 
+using EncryptionItemTest = PlatformTest;
+
 // Tests that the text label, enabled status and accessory type are set properly
 // after a call to |configureCell:|.
-TEST(EncryptionItemTest, ConfigureCell) {
+TEST_F(EncryptionItemTest, ConfigureCell) {
   EncryptionItem* item = [[EncryptionItem alloc] initWithType:0];
   EncryptionCell* cell = [[[item cellClass] alloc] init];
   EXPECT_TRUE([cell isMemberOfClass:[EncryptionCell class]]);

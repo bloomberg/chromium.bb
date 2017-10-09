@@ -8,14 +8,17 @@
 #import "ios/chrome/browser/ui/elements/activity_overlay_view_controller.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
+#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
+using ActivityOverlayCoordinatorTest = PlatformTest;
+
 // Tests that invoking start and stop on the coordinator presents and dismisses
 // the activity overlay view, respectively.
-TEST(ActivityOverlayCoordinatorTest, StartAndStop) {
+TEST_F(ActivityOverlayCoordinatorTest, StartAndStop) {
   __weak UIView* overlay_view;
   @autoreleasepool {
     UIViewController* base_view_controller = [[UIViewController alloc] init];

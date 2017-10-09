@@ -18,7 +18,9 @@ namespace {
 
 typedef PlatformTest KeyCommandsProviderTest;
 
-TEST(KeyCommandsProviderTest, NoTabs_EditingText_ReturnsObjects) {
+using KeyCommandsProviderTest = PlatformTest;
+
+TEST_F(KeyCommandsProviderTest, NoTabs_EditingText_ReturnsObjects) {
   KeyCommandsProvider* provider = [[KeyCommandsProvider alloc] init];
   id mockConsumer =
       [OCMockObject mockForProtocol:@protocol(KeyCommandsPlumbing)];
@@ -30,7 +32,7 @@ TEST(KeyCommandsProviderTest, NoTabs_EditingText_ReturnsObjects) {
                                       editingText:YES]);
 }
 
-TEST(KeyCommandsProviderTest, ReturnsKeyCommandsObjects) {
+TEST_F(KeyCommandsProviderTest, ReturnsKeyCommandsObjects) {
   KeyCommandsProvider* provider = [[KeyCommandsProvider alloc] init];
   id mockConsumer =
       [OCMockObject mockForProtocol:@protocol(KeyCommandsPlumbing)];
@@ -45,7 +47,7 @@ TEST(KeyCommandsProviderTest, ReturnsKeyCommandsObjects) {
   }
 }
 
-TEST(KeyCommandsProviderTest, MoreKeyboardCommandsWhenTabs) {
+TEST_F(KeyCommandsProviderTest, MoreKeyboardCommandsWhenTabs) {
   KeyCommandsProvider* provider = [[KeyCommandsProvider alloc] init];
   id mockConsumer =
       [OCMockObject mockForProtocol:@protocol(KeyCommandsPlumbing)];
@@ -68,7 +70,7 @@ TEST(KeyCommandsProviderTest, MoreKeyboardCommandsWhenTabs) {
   EXPECT_GT(numberOfKeyCommandsWithTabs, numberOfKeyCommandsWithoutTabs);
 }
 
-TEST(KeyCommandsProviderTest, LessKeyCommandsWhenTabsAndEditingText) {
+TEST_F(KeyCommandsProviderTest, LessKeyCommandsWhenTabsAndEditingText) {
   KeyCommandsProvider* provider = [[KeyCommandsProvider alloc] init];
   id mockConsumer =
       [OCMockObject mockForProtocol:@protocol(KeyCommandsPlumbing)];

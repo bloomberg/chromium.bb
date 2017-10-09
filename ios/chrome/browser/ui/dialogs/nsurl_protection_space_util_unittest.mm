@@ -55,8 +55,10 @@ NSURLProtectionSpace* GetProtectionSpaceForProxyHost(NSString* host,
 
 }  // namespace
 
+using NSURLProtectionSpaceUtilTest = PlatformTest;
+
 // Tests that dialog can not be shown without valid host.
-TEST(NSURLProtectionSpaceUtilTest, CantShowWithoutValidHost) {
+TEST_F(NSURLProtectionSpaceUtilTest, CantShowWithoutValidHost) {
   NSURLProtectionSpace* protectionSpace =
       GetProtectionSpaceForHost(@"", NSURLProtectionSpaceHTTPS);
 
@@ -64,7 +66,7 @@ TEST(NSURLProtectionSpaceUtilTest, CantShowWithoutValidHost) {
 }
 
 // Tests that dialog can not be shown with invalid port.
-TEST(NSURLProtectionSpaceUtilTest, CantShowWithoutValidPort) {
+TEST_F(NSURLProtectionSpaceUtilTest, CantShowWithoutValidPort) {
   NSURLProtectionSpace* protectionSpace =
       GetProtectionSpaceForHost(kTestHost, NSURLProtectionSpaceHTTPS, INT_MAX);
 
@@ -72,7 +74,7 @@ TEST(NSURLProtectionSpaceUtilTest, CantShowWithoutValidPort) {
 }
 
 // Tests showing the dialog for SOCKS proxy server.
-TEST(NSURLProtectionSpaceUtilTest, ShowForSocksProxy) {
+TEST_F(NSURLProtectionSpaceUtilTest, ShowForSocksProxy) {
   NSURLProtectionSpace* protectionSpace =
       GetProtectionSpaceForProxyHost(kTestHost, NSURLProtectionSpaceSOCKSProxy);
 
@@ -93,7 +95,7 @@ TEST(NSURLProtectionSpaceUtilTest, ShowForSocksProxy) {
 }
 
 // Tests showing the dialog for http proxy server.
-TEST(NSURLProtectionSpaceUtilTest, ShowForHttpProxy) {
+TEST_F(NSURLProtectionSpaceUtilTest, ShowForHttpProxy) {
   NSURLProtectionSpace* protectionSpace =
       GetProtectionSpaceForProxyHost(kTestHost, NSURLProtectionSpaceHTTPProxy);
 
@@ -113,7 +115,7 @@ TEST(NSURLProtectionSpaceUtilTest, ShowForHttpProxy) {
 }
 
 // Tests showing the dialog for https proxy server.
-TEST(NSURLProtectionSpaceUtilTest, ShowForHttpsProxy) {
+TEST_F(NSURLProtectionSpaceUtilTest, ShowForHttpsProxy) {
   NSURLProtectionSpace* protectionSpace =
       GetProtectionSpaceForProxyHost(kTestHost, NSURLProtectionSpaceHTTPSProxy);
 
@@ -144,7 +146,7 @@ TEST(NSURLProtectionSpaceUtilTest, ShowForHttpsProxy) {
 }
 
 // Tests showing the dialog for http server.
-TEST(NSURLProtectionSpaceUtilTest, ShowForHttpServer) {
+TEST_F(NSURLProtectionSpaceUtilTest, ShowForHttpServer) {
   NSURLProtectionSpace* protectionSpace =
       GetProtectionSpaceForHost(kTestHost, NSURLProtectionSpaceHTTP);
 
@@ -163,7 +165,7 @@ TEST(NSURLProtectionSpaceUtilTest, ShowForHttpServer) {
 }
 
 // Tests showing the dialog for https server.
-TEST(NSURLProtectionSpaceUtilTest, ShowForHttpsServer) {
+TEST_F(NSURLProtectionSpaceUtilTest, ShowForHttpsServer) {
   NSURLProtectionSpace* protectionSpace =
       GetProtectionSpaceForHost(kTestHost, NSURLProtectionSpaceHTTPS);
 

@@ -6,6 +6,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include "base/logging.h"
+#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -13,7 +14,9 @@
 
 namespace {
 
-TEST(DropAndNavigateTest, Instantiation) {
+using DropAndNavigateTest = PlatformTest;
+
+TEST_F(DropAndNavigateTest, Instantiation) {
 #if defined(__IPHONE_11_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_11_0)
   if (@available(iOS 11, *)) {
     DropAndNavigateInteraction* interaction =

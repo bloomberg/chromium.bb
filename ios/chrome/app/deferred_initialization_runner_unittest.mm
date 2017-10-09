@@ -12,7 +12,9 @@
 #error "This file requires ARC support."
 #endif
 
-TEST(DeferredInitializationRunnerTest, TestSharedInstance) {
+using DeferredInitializationRunnerTest = PlatformTest;
+
+TEST_F(DeferredInitializationRunnerTest, TestSharedInstance) {
   EXPECT_TRUE([DeferredInitializationRunner sharedInstance]);
   // Cancelling a non-existing block does nothing.
   [[DeferredInitializationRunner sharedInstance]
@@ -20,7 +22,7 @@ TEST(DeferredInitializationRunnerTest, TestSharedInstance) {
 }
 
 // Tests that all blocks added on the queue are executed after a delay.
-TEST(DeferredInitializationRunnerTest, TestRunBlockSequentially) {
+TEST_F(DeferredInitializationRunnerTest, TestRunBlockSequentially) {
   // Setup.
   __block bool firstFlag = NO;
   __block bool secondFlag = NO;
@@ -58,7 +60,7 @@ TEST(DeferredInitializationRunnerTest, TestRunBlockSequentially) {
 
 // Tests that runBlockIfNecessary does not execute the block if it has already
 // been executed and runs synchronously the one not executed.
-TEST(DeferredInitializationRunnerTest, TestRunBlock) {
+TEST_F(DeferredInitializationRunnerTest, TestRunBlock) {
   // Setup.
   __block bool quickFlag = NO;
   __block bool slowFlag = NO;
@@ -98,7 +100,7 @@ TEST(DeferredInitializationRunnerTest, TestRunBlock) {
 
 // Tests that a block is not executed when cancelled and it is removed from the
 // remaining blocks list.
-TEST(DeferredInitializationRunnerTest, TestCancelBlock) {
+TEST_F(DeferredInitializationRunnerTest, TestCancelBlock) {
   // Setup.
   __block BOOL blockFinished = NO;
   DeferredInitializationRunner* runner =
@@ -121,7 +123,7 @@ TEST(DeferredInitializationRunnerTest, TestCancelBlock) {
 }
 
 // Tests that a cancelled block will do nothing when run by name.
-TEST(DeferredInitializationRunnerTest, TestCancelledBlockDoNothing) {
+TEST_F(DeferredInitializationRunnerTest, TestCancelledBlockDoNothing) {
   // Setup.
   __block BOOL blockFinished = NO;
   DeferredInitializationRunner* runner =
@@ -145,7 +147,7 @@ TEST(DeferredInitializationRunnerTest, TestCancelledBlockDoNothing) {
 
 // Tests that adding a block with the same name as an existing block will
 // override the existing one.
-TEST(DeferredInitializationRunnerTest, TestSecondBlockInvalidatesFirst) {
+TEST_F(DeferredInitializationRunnerTest, TestSecondBlockInvalidatesFirst) {
   // Setup.
   __block int blockRunCount = 0;
   ProceduralBlock runBlock = ^() {

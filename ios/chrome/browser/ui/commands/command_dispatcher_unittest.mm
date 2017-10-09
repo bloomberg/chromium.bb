@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/ui/metrics/metrics_recorder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
+#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -153,8 +154,10 @@
 
 #pragma mark - Tests
 
+using CommandDispatcherTest = PlatformTest;
+
 // Tests handler methods with no arguments.
-TEST(CommandDispatcherTest, SimpleTarget) {
+TEST_F(CommandDispatcherTest, SimpleTarget) {
   id dispatcher = [[CommandDispatcher alloc] init];
   CommandDispatcherTestSimpleTarget* target =
       [[CommandDispatcherTestSimpleTarget alloc] init];
@@ -173,7 +176,7 @@ TEST(CommandDispatcherTest, SimpleTarget) {
 }
 
 // Tests handler methods that take arguments.
-TEST(CommandDispatcherTest, TargetWithArguments) {
+TEST_F(CommandDispatcherTest, TargetWithArguments) {
   id dispatcher = [[CommandDispatcher alloc] init];
   CommandDispatcherTestTargetWithArguments* target =
       [[CommandDispatcherTestTargetWithArguments alloc] init];
@@ -207,7 +210,7 @@ TEST(CommandDispatcherTest, TargetWithArguments) {
 
 // Tests that messages are routed to the proper handler when multiple targets
 // are registered.
-TEST(CommandDispatcherTest, MultipleTargets) {
+TEST_F(CommandDispatcherTest, MultipleTargets) {
   id dispatcher = [[CommandDispatcher alloc] init];
   CommandDispatcherTestSimpleTarget* showTarget =
       [[CommandDispatcherTestSimpleTarget alloc] init];
@@ -228,7 +231,7 @@ TEST(CommandDispatcherTest, MultipleTargets) {
 }
 
 // Tests handlers registered via protocols.
-TEST(CommandDispatcherTest, ProtocolRegistration) {
+TEST_F(CommandDispatcherTest, ProtocolRegistration) {
   id dispatcher = [[CommandDispatcher alloc] init];
   CommandDispatcherTestSimpleTarget* target =
       [[CommandDispatcherTestSimpleTarget alloc] init];
@@ -244,7 +247,7 @@ TEST(CommandDispatcherTest, ProtocolRegistration) {
 
 // Tests that handlers are no longer forwarded messages after selector
 // deregistration.
-TEST(CommandDispatcherTest, SelectorDeregistration) {
+TEST_F(CommandDispatcherTest, SelectorDeregistration) {
   id dispatcher = [[CommandDispatcher alloc] init];
   CommandDispatcherTestSimpleTarget* target =
       [[CommandDispatcherTestSimpleTarget alloc] init];
@@ -274,7 +277,7 @@ TEST(CommandDispatcherTest, SelectorDeregistration) {
 
 // Tests that handlers are no longer forwarded messages after protocol
 // deregistration.
-TEST(CommandDispatcherTest, ProtocolDeregistration) {
+TEST_F(CommandDispatcherTest, ProtocolDeregistration) {
   id dispatcher = [[CommandDispatcher alloc] init];
   CommandDispatcherTestSimpleTarget* target =
       [[CommandDispatcherTestSimpleTarget alloc] init];
@@ -320,7 +323,7 @@ TEST(CommandDispatcherTest, ProtocolDeregistration) {
 
 // Tests that handlers are no longer forwarded messages after target
 // deregistration.
-TEST(CommandDispatcherTest, TargetDeregistration) {
+TEST_F(CommandDispatcherTest, TargetDeregistration) {
   id dispatcher = [[CommandDispatcher alloc] init];
   CommandDispatcherTestSimpleTarget* showTarget =
       [[CommandDispatcherTestSimpleTarget alloc] init];
@@ -351,7 +354,7 @@ TEST(CommandDispatcherTest, TargetDeregistration) {
 
 // Tests that an exception is thrown when there is no registered handler for a
 // given selector.
-TEST(CommandDispatcherTest, NoTargetRegisteredForSelector) {
+TEST_F(CommandDispatcherTest, NoTargetRegisteredForSelector) {
   id dispatcher = [[CommandDispatcher alloc] init];
   CommandDispatcherTestSimpleTarget* target =
       [[CommandDispatcherTestSimpleTarget alloc] init];
@@ -372,7 +375,7 @@ TEST(CommandDispatcherTest, NoTargetRegisteredForSelector) {
 // Tests that -respondsToSelector returns YES for methods once they are
 // dispatched for.
 // Tests handler methods with no arguments.
-TEST(CommandDispatcherTest, RespondsToSelector) {
+TEST_F(CommandDispatcherTest, RespondsToSelector) {
   id dispatcher = [[CommandDispatcher alloc] init];
 
   EXPECT_FALSE([dispatcher respondsToSelector:@selector(show)]);
@@ -395,7 +398,7 @@ TEST(CommandDispatcherTest, RespondsToSelector) {
 
 // Tests that a registered MetricsRecorder is successfully
 // notified when commands with no arguments are invoked on the dispatcher.
-TEST(CommandDispatcherTest, MetricsRecorderNoArguments) {
+TEST_F(CommandDispatcherTest, MetricsRecorderNoArguments) {
   id dispatcher = [[CommandDispatcher alloc] init];
   CommandDispatcherTestSimpleTarget* target =
       [[CommandDispatcherTestSimpleTarget alloc] init];
@@ -418,7 +421,7 @@ TEST(CommandDispatcherTest, MetricsRecorderNoArguments) {
 
 // Tests that a registered MetricsRecorder is successfully
 // notified when commands with arguments are invoked on the dispatcher.
-TEST(CommandDispatcherTest, MetricsRecorderWithArguments) {
+TEST_F(CommandDispatcherTest, MetricsRecorderWithArguments) {
   id dispatcher = [[CommandDispatcher alloc] init];
   CommandDispatcherTestTargetWithArguments* target =
       [[CommandDispatcherTestTargetWithArguments alloc] init];
@@ -460,7 +463,7 @@ TEST(CommandDispatcherTest, MetricsRecorderWithArguments) {
 
 // Tests that the correct MetricsRecorders are notified for an invocation
 // when multiple recorders are registered.
-TEST(CommandDispatcherTest, MetricsRecorderMultipleRecorders) {
+TEST_F(CommandDispatcherTest, MetricsRecorderMultipleRecorders) {
   id dispatcher = [[CommandDispatcher alloc] init];
   CommandDispatcherTestSimpleTarget* showTarget =
       [[CommandDispatcherTestSimpleTarget alloc] init];
@@ -490,7 +493,7 @@ TEST(CommandDispatcherTest, MetricsRecorderMultipleRecorders) {
 // Tests that if a selector registered to a MetricsRecorder is deregistered,
 // the MetricsRecorder is no longer notified when the selector is invoked on the
 // dispatcher.
-TEST(CommandDispatcherTest, DeregisterMetricsRecorder) {
+TEST_F(CommandDispatcherTest, DeregisterMetricsRecorder) {
   id dispatcher = [[CommandDispatcher alloc] init];
   CommandDispatcherTestSimpleTarget* target =
       [[CommandDispatcherTestSimpleTarget alloc] init];

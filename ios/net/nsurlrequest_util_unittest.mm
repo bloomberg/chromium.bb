@@ -5,6 +5,7 @@
 #include "ios/net/nsurlrequest_util.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -12,9 +13,11 @@
 
 namespace {
 
+using NSURLRequestUtilTest = PlatformTest;
+
 // Tests that FormatUrlRequestForLogging outputs the string in the form:
 // request:<url> request.mainDocURL:<mainDocumentURL>.
-TEST(NSURLRequestUtilTest, FormatUrlRequestForLogging) {
+TEST_F(NSURLRequestUtilTest, FormatUrlRequestForLogging) {
   NSMutableURLRequest* request = [[NSMutableURLRequest alloc] init];
   request.URL = [NSURL URLWithString:@"http://www.google.com"];
   request.mainDocumentURL = [NSURL URLWithString:@"http://www.google1.com"];

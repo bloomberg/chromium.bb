@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -14,8 +15,10 @@
 
 namespace web {
 
+using ViewportLengthTest = PlatformTest;
+
 // Verifies viewport length construction for "device-width" and "device-height".
-TEST(ViewportLengthTest, DeviceDimension) {
+TEST_F(ViewportLengthTest, DeviceDimension) {
   ViewportLength device_width(@"device-width");
   EXPECT_TRUE(device_width.use_device_length());
   EXPECT_TRUE(isnan(device_width.value()));
@@ -25,21 +28,23 @@ TEST(ViewportLengthTest, DeviceDimension) {
 }
 
 // Verifies viewport length construction for a hardcoded length value.
-TEST(ViewportLengthTest, HardcodedDimension) {
+TEST_F(ViewportLengthTest, HardcodedDimension) {
   ViewportLength hardcoded_length(@"1024.0");
   EXPECT_FALSE(hardcoded_length.use_device_length());
   EXPECT_EQ(1024.0, hardcoded_length.value());
 }
 
 // Tests that malformed strings are handled correctly.
-TEST(ViewportLengthTest, MalformedInput) {
+TEST_F(ViewportLengthTest, MalformedInput) {
   ViewportLength length(@"malformed input");
   EXPECT_FALSE(length.use_device_length());
   EXPECT_TRUE(isnan(length.value()));
 }
 
+using PageViewportStateTest = PlatformTest;
+
 // Tests that a well-formed viewport tag is successfully parsed.
-TEST(PageViewportStateTest, ValidInputParsing) {
+TEST_F(PageViewportStateTest, ValidInputParsing) {
   NSString* const kViewportContent =
       @"width=device-width, initial-scale=1.0, minimum-scale=1.0,"
        "maximum-scale=5.0,user-scalable=no";
@@ -53,7 +58,7 @@ TEST(PageViewportStateTest, ValidInputParsing) {
 }
 
 // Tests that malformed strings are handled correctly.
-TEST(PageViewportStateTest, MalformedInput) {
+TEST_F(PageViewportStateTest, MalformedInput) {
   NSString* const kViewportContent =
       @"width=, initial-scale=not a valid value,, maximum-scale = ";
   PageViewportState state(kViewportContent);
@@ -64,7 +69,7 @@ TEST(PageViewportStateTest, MalformedInput) {
 }
 
 // Tests parsing of the user-scalable property.
-TEST(PageViewportStateTest, UserScalableParsing) {
+TEST_F(PageViewportStateTest, UserScalableParsing) {
   PageViewportState state(@"user-scalable=yes");
   EXPECT_TRUE(state.user_scalable());
   state = PageViewportState(@"user-scalable=1");

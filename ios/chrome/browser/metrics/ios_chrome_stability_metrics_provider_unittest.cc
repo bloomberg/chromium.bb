@@ -10,10 +10,11 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 namespace {
 
-class IOSChromeStabilityMetricsProviderTest : public testing::Test {
+class IOSChromeStabilityMetricsProviderTest : public PlatformTest {
  protected:
   IOSChromeStabilityMetricsProviderTest()
       : prefs_(new TestingPrefServiceSimple) {

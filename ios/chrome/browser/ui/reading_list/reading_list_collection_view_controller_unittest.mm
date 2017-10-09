@@ -37,7 +37,7 @@ using testing::_;
 
 #pragma mark - ReadingListCollectionViewControllerTest
 
-class ReadingListCollectionViewControllerTest : public testing::Test {
+class ReadingListCollectionViewControllerTest : public PlatformTest {
  public:
   ReadingListCollectionViewControllerTest() {}
   ~ReadingListCollectionViewControllerTest() override {}
@@ -51,7 +51,7 @@ class ReadingListCollectionViewControllerTest : public testing::Test {
   id mock_delegate_;
 
   void SetUp() override {
-    testing::Test::SetUp();
+    PlatformTest::SetUp();
 
     EXPECT_CALL(mock_favicon_service_,
                 GetLargestRawFaviconForPageURL(_, _, _, _, _))

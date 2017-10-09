@@ -94,7 +94,9 @@
 
 @end
 
-TEST(PhasedStepRunnerTest, TestUnexecutedSteps) {
+using PhasedStepRunnerTest = PlatformTest;
+
+TEST_F(PhasedStepRunnerTest, TestUnexecutedSteps) {
   TestStep* step1 = [[TestStep alloc] init];
   step1.providedFeature = @"feature_a";
 
@@ -125,7 +127,7 @@ TEST(PhasedStepRunnerTest, TestUnexecutedSteps) {
 }
 
 // Simple dependency chain A-> B-> C
-TEST(PhasedStepRunnerTest, TestSimpleDependencies) {
+TEST_F(PhasedStepRunnerTest, TestSimpleDependencies) {
   TestStep* step1 = [[TestStep alloc] init];
   step1.providedFeature = @"feature_a";
 
@@ -157,7 +159,7 @@ TEST(PhasedStepRunnerTest, TestSimpleDependencies) {
 }
 
 // Dependency graph: A->B; B->C; B->D, C->D.
-TEST(PhasedStepRunnerTest, TestDependencyGraph) {
+TEST_F(PhasedStepRunnerTest, TestDependencyGraph) {
   TestStep* step1 = [[TestStep alloc] init];
   step1.providedFeature = @"feature_a";
 
@@ -194,7 +196,7 @@ TEST(PhasedStepRunnerTest, TestDependencyGraph) {
   EXPECT_TRUE(task4.hasRun);
 }
 
-TEST(PhasedStepRunnerTest, TestOneAsyncAction) {
+TEST_F(PhasedStepRunnerTest, TestOneAsyncAction) {
   AsyncTestStep* step1 = [[AsyncTestStep alloc] init];
   step1.providedFeature = @"feature_a";
   NSUInteger testPhase = 1;
@@ -209,7 +211,7 @@ TEST(PhasedStepRunnerTest, TestOneAsyncAction) {
   EXPECT_TRUE(step1.hasRun);
 }
 
-TEST(PhasedStepRunnerTest, TestAsyncDependencies) {
+TEST_F(PhasedStepRunnerTest, TestAsyncDependencies) {
   AsyncTestStep* step1 = [[AsyncTestStep alloc] init];
   step1.providedFeature = @"feature_a";
 
@@ -240,7 +242,7 @@ TEST(PhasedStepRunnerTest, TestAsyncDependencies) {
   EXPECT_TRUE(task3.hasRun);
 }
 
-TEST(PhasedStepRunnerTest, TestManyDependencies) {
+TEST_F(PhasedStepRunnerTest, TestManyDependencies) {
   NSMutableArray<TestStep*>* tasks = [[NSMutableArray alloc] init];
   AsyncTestStep* root_task = [[AsyncTestStep alloc] init];
   root_task.providedFeature = @"feature_a";
@@ -305,7 +307,7 @@ TEST(PhasedStepRunnerTest, TestManyDependencies) {
 }
 
 // Simple phase change
-TEST(PhasedStepRunnerTest, TestPhaseChangeInStep) {
+TEST_F(PhasedStepRunnerTest, TestPhaseChangeInStep) {
   TestStep* step1 = [[TestStep alloc] init];
   step1.providedFeature = @"feature_a";
 
@@ -346,7 +348,7 @@ TEST(PhasedStepRunnerTest, TestPhaseChangeInStep) {
 }
 
 // Sync phase change with async tasks
-TEST(PhasedStepRunnerTest, TestPhaseChangeInStepWithAsync) {
+TEST_F(PhasedStepRunnerTest, TestPhaseChangeInStepWithAsync) {
   TestStep* step1 = [[AsyncTestStep alloc] init];
   step1.providedFeature = @"feature_a";
 

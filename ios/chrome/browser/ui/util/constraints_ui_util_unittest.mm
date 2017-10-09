@@ -14,9 +14,11 @@
 
 namespace {
 
+using ConstraintsUIUtilTest = PlatformTest;
+
 // Tests that SafeAreaLayoutGuideForView returns and attach a single
 // safeAreaLayoutGuide before iOS 11.
-TEST(ConstraintsUIUtilTest, SafeAreaLayoutGuideForView) {
+TEST_F(ConstraintsUIUtilTest, SafeAreaLayoutGuideForView) {
   if (@available(iOS 11, *)) {
   } else {
     UIView* view = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)];

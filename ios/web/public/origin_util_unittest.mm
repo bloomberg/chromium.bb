@@ -7,6 +7,7 @@
 #import <WebKit/WebKit.h>
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -29,8 +30,10 @@
 
 namespace web {
 
+using OriginUtilTest = PlatformTest;
+
 // Tests calling GURLOriginWithWKSecurityOrigin with nil.
-TEST(OriginUtilTest, GURLOriginWithNilWKSecurityOrigin) {
+TEST_F(OriginUtilTest, GURLOriginWithNilWKSecurityOrigin) {
   GURL url(GURLOriginWithWKSecurityOrigin(nil));
 
   EXPECT_FALSE(url.is_valid());
@@ -38,7 +41,7 @@ TEST(OriginUtilTest, GURLOriginWithNilWKSecurityOrigin) {
 }
 
 // Tests calling GURLOriginWithWKSecurityOrigin with valid origin.
-TEST(OriginUtilTest, GURLOriginWithValidWKSecurityOrigin) {
+TEST_F(OriginUtilTest, GURLOriginWithValidWKSecurityOrigin) {
   WKSecurityOriginStub* origin = [[WKSecurityOriginStub alloc] init];
   [origin setProtocol:@"http"];
   [origin setHost:@"chromium.org"];

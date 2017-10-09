@@ -9,15 +9,18 @@
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "testing/platform_test.h"
 
 using base::test::ScopedFeatureList;
 using testing::Eq;
 using testing::IsNull;
 using testing::Not;
 
+using LanguageModelFactoryTest = PlatformTest;
+
 // Check that the language model is not returned unless the experiment is
 // enabled.
-TEST(LanguageModelFactoryTest, Disabled) {
+TEST_F(LanguageModelFactoryTest, Disabled) {
   ScopedFeatureList disable_feature;
   disable_feature.InitAndDisableFeature(language::kUseBaselineLanguageModel);
   web::TestWebThreadBundle thread_bundle;
@@ -35,7 +38,7 @@ TEST(LanguageModelFactoryTest, Disabled) {
 }
 
 // Check that Incognito language modeling is inherited from the user's profile.
-TEST(LanguageModelFactoryTest, SharedWithIncognito) {
+TEST_F(LanguageModelFactoryTest, SharedWithIncognito) {
   ScopedFeatureList enable_feature;
   enable_feature.InitAndEnableFeature(language::kUseBaselineLanguageModel);
   web::TestWebThreadBundle thread_bundle;

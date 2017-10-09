@@ -7,6 +7,7 @@
 #import "ios/chrome/browser/ui/collection_view/cells/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
+#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -14,9 +15,11 @@
 
 namespace {
 
+using PaymentRequestPaymentMethodItemTest = PlatformTest;
+
 // Tests that the labels and image are set properly after a call to
 // |configureCell:|.
-TEST(PaymentRequestPaymentMethodItemTest, TextLabels) {
+TEST_F(PaymentRequestPaymentMethodItemTest, TextLabels) {
   PaymentMethodItem* item = [[PaymentMethodItem alloc] init];
 
   NSString* methodID = @"BobPay - ****-6789";

@@ -9,6 +9,7 @@
 #include "ios/chrome/grit/ios_strings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
+#include "testing/platform_test.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -22,7 +23,9 @@ void StringToTypeTestHelper(NSString* activityString,
   EXPECT_EQ(activity_type_util::TypeFromString(activityString), expectedType);
 }
 
-TEST(ActivityTypeUtilTest, StringToTypeTest) {
+using ActivityTypeUtilTest = PlatformTest;
+
+TEST_F(ActivityTypeUtilTest, StringToTypeTest) {
   StringToTypeTestHelper(@"", activity_type_util::UNKNOWN);
   StringToTypeTestHelper(@"foo", activity_type_util::UNKNOWN);
   StringToTypeTestHelper(@"com.google", activity_type_util::UNKNOWN);
@@ -45,7 +48,7 @@ void TypeToMessageTestHelper(activity_type_util::ActivityType type,
               expectedMessage);
 }
 
-TEST(ActivityTypeUtilTest, TypeToMessageTest) {
+TEST_F(ActivityTypeUtilTest, TypeToMessageTest) {
   TypeToMessageTestHelper(activity_type_util::UNKNOWN, nil);
   TypeToMessageTestHelper(activity_type_util::PRINT, nil);
   TypeToMessageTestHelper(
@@ -56,7 +59,7 @@ TEST(ActivityTypeUtilTest, TypeToMessageTest) {
       l10n_util::GetNSString(IDS_IOS_APPEX_PASSWORD_FORM_FILLED_SUCCESS));
 }
 
-TEST(ActivityTypeUtilTest, IsPasswordAppExtensionTest) {
+TEST_F(ActivityTypeUtilTest, IsPasswordAppExtensionTest) {
   // Verifies that known Bundle ID for 1Password requires exact match.
   EXPECT_EQ(activity_type_util::APPEX_PASSWORD_MANAGEMENT,
             activity_type_util::TypeFromString(

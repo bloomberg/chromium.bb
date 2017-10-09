@@ -9,6 +9,7 @@
 #include "components/favicon_base/favicon_types.h"
 #include "skia/ext/skia_utils_ios.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 #include "ui/gfx/codec/png_codec.h"
 
 namespace {
@@ -38,7 +39,7 @@ favicon_base::FaviconRawBitmapResult CreateTestBitmap(int w,
   return result;
 }
 
-class LargeIconCacheTest : public testing::Test {
+class LargeIconCacheTest : public PlatformTest {
  public:
   LargeIconCacheTest() {
     expected_fallback_icon_style_.reset(new favicon_base::FallbackIconStyle());

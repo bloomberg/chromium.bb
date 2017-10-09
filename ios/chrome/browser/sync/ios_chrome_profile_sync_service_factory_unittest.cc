@@ -17,10 +17,11 @@
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 using syncer::DataTypeController;
 
-class IOSChromeProfileSyncServiceFactoryTest : public testing::Test {
+class IOSChromeProfileSyncServiceFactoryTest : public PlatformTest {
  public:
   IOSChromeProfileSyncServiceFactoryTest() {
     TestChromeBrowserState::Builder browser_state_builder;

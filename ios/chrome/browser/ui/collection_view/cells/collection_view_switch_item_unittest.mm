@@ -6,6 +6,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
+#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -13,9 +14,11 @@
 
 namespace {
 
+using CollectionViewSwitchItemTest = PlatformTest;
+
 // Tests that the label and switch values are set properly after a call to
 // |configureCell:|.
-TEST(CollectionViewSwitchItemTest, ConfigureCell) {
+TEST_F(CollectionViewSwitchItemTest, ConfigureCell) {
   CollectionViewSwitchItem* item =
       [[CollectionViewSwitchItem alloc] initWithType:0];
   NSString* text = @"Test Switch";
@@ -38,7 +41,7 @@ TEST(CollectionViewSwitchItemTest, ConfigureCell) {
 
 // Tests that the text color and enabled state of the switch are set correctly
 // by a call to |configureCell:|.
-TEST(CollectionViewSwitchItemTest, EnabledAndDisabled) {
+TEST_F(CollectionViewSwitchItemTest, EnabledAndDisabled) {
   CollectionViewSwitchCell* cell = [[CollectionViewSwitchCell alloc] init];
   CollectionViewSwitchItem* item =
       [[CollectionViewSwitchItem alloc] initWithType:0];
@@ -80,7 +83,7 @@ TEST(CollectionViewSwitchItemTest, EnabledAndDisabled) {
   EXPECT_NSEQ(disabledColor, cell.textLabel.textColor);
 }
 
-TEST(CollectionViewSwitchItemTest, PrepareForReuseClearsActions) {
+TEST_F(CollectionViewSwitchItemTest, PrepareForReuseClearsActions) {
   CollectionViewSwitchCell* cell = [[CollectionViewSwitchCell alloc] init];
   UISwitch* switchView = cell.switchView;
   NSArray* target = [NSArray array];

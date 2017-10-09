@@ -9,6 +9,7 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "net/base/mac/url_conversions.h"
 #import "testing/gtest_mac.h"
+#include "testing/platform_test.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -17,7 +18,9 @@
 
 namespace {
 
-TEST(ChromeURLUtilTest, TestIsExternalFileReference) {
+using ChromeURLUtilTest = PlatformTest;
+
+TEST_F(ChromeURLUtilTest, TestIsExternalFileReference) {
   GURL external_url("chrome://external-file/foo/bar");
   GURL not_external_url("chrome://foo/bar");
   GURL still_not_external_url("http://external-file/foo/bar");
@@ -35,7 +38,7 @@ const char* kSchemeTestData[] = {
 };
 
 // Tests UrlHasChromeScheme with NSURL* parameter.
-TEST(ChromeURLUtilTest, NSURLHasChromeScheme) {
+TEST_F(ChromeURLUtilTest, NSURLHasChromeScheme) {
   for (unsigned int i = 0; i < arraysize(kSchemeTestData); ++i) {
     const char* url = kSchemeTestData[i];
     NSURL* nsurl = [NSURL URLWithString:base::SysUTF8ToNSString(url)];
@@ -46,7 +49,7 @@ TEST(ChromeURLUtilTest, NSURLHasChromeScheme) {
 }
 
 // Tests UrlHasChromeScheme with const GURL& paramter.
-TEST(ChromeURLUtilTest, GURLHasChromeScheme) {
+TEST_F(ChromeURLUtilTest, GURLHasChromeScheme) {
   for (unsigned int i = 0; i < arraysize(kSchemeTestData); ++i) {
     GURL gurl(kSchemeTestData[i]);
     bool result = UrlHasChromeScheme(gurl);
@@ -55,7 +58,7 @@ TEST(ChromeURLUtilTest, GURLHasChromeScheme) {
   }
 }
 
-TEST(ChromeURLUtilTest, GetBundleURLScheme) {
+TEST_F(ChromeURLUtilTest, GetBundleURLScheme) {
   // Verifies that there is some default values.
   ChromeAppConstants* constants = [ChromeAppConstants sharedInstance];
   NSString* originalScheme = [constants getBundleURLScheme];

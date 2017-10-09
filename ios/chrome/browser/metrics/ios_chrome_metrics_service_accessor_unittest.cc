@@ -13,8 +13,9 @@
 #include "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
 #include "ios/chrome/test/testing_application_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
-class IOSChromeMetricsServiceAccessorTest : public testing::Test {
+class IOSChromeMetricsServiceAccessorTest : public PlatformTest {
  public:
   IOSChromeMetricsServiceAccessorTest() {}
 

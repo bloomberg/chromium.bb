@@ -9,14 +9,17 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
+#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
+using AccountControlCollectionViewItemTest = PlatformTest;
+
 // Tests that the UIImageView and UILabels are set properly after a call to
 // |configureCell:|.
-TEST(AccountControlCollectionViewItemTest, ImageViewAndTextLabels) {
+TEST_F(AccountControlCollectionViewItemTest, ImageViewAndTextLabels) {
   CollectionViewAccountItem* item =
       [[CollectionViewAccountItem alloc] initWithType:0];
   UIImage* image = [[UIImage alloc] init];

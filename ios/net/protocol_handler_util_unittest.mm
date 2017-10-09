@@ -24,6 +24,7 @@
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
+#include "testing/platform_test.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -108,7 +109,7 @@ class NetProtocolHandler : public URLRequestJobFactory::ProtocolHandler {
   }
 };
 
-class ProtocolHandlerUtilTest : public testing::Test,
+class ProtocolHandlerUtilTest : public PlatformTest,
                                 public URLRequest::Delegate {
  public:
   ProtocolHandlerUtilTest() : request_context_(new TestURLRequestContext) {

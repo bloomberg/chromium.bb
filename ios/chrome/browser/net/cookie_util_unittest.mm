@@ -7,6 +7,7 @@
 #import <Foundation/Foundation.h>
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -19,7 +20,9 @@ NSString* const kLastCookieDeletionDate = @"LastCookieDeletionDate";
 
 }  // namespace
 
-TEST(CookieUtil, ShouldClearSessionCookies) {
+using CookieUtil = PlatformTest;
+
+TEST_F(CookieUtil, ShouldClearSessionCookies) {
   time_t start_test_time;
   time(&start_test_time);
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];

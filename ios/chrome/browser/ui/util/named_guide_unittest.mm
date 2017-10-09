@@ -6,13 +6,16 @@
 
 #include "base/logging.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
+using NamedGuideTest = PlatformTest;
+
 // Tests that guides are reachable after being added to a view.
-TEST(NamedGuideTest, TestAddAndFind) {
+TEST_F(NamedGuideTest, TestAddAndFind) {
   GuideName* test_guide = @"NamedGuideTest";
 
   UIView* view = [[UIView alloc] init];
@@ -24,7 +27,7 @@ TEST(NamedGuideTest, TestAddAndFind) {
 }
 
 // Tests that guides added to a child view are not reachable from the parent.
-TEST(NamedGuideTest, TestGuideOnChild) {
+TEST_F(NamedGuideTest, TestGuideOnChild) {
   GuideName* test_guide = @"NamedGuideTest";
 
   UIView* view = [[UIView alloc] init];
@@ -38,7 +41,7 @@ TEST(NamedGuideTest, TestGuideOnChild) {
 }
 
 // Tests that children can reach guides that are added to ancestors.
-TEST(NamedGuideTest, TestGuideOnAncestor) {
+TEST_F(NamedGuideTest, TestGuideOnAncestor) {
   GuideName* test_guide = @"NamedGuideTest";
 
   UIView* view = [[UIView alloc] init];

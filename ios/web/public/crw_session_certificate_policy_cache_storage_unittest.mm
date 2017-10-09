@@ -73,9 +73,11 @@ TEST_F(CRWSessionCertificatePolicyCacheStorageTest, EncodeDecode) {
   EXPECT_TRUE(CacheStoragesAreEqual(cache_storage_.get(), decoded));
 }
 
+using CRWSessionCertificateStorageTest = PlatformTest;
+
 // Tests that unarchiving a CRWSessionCertificateStorage returns nil if the
 // certificate data does not correctly decode to a certificate.
-TEST(CRWSessionCertificateStorageTest, InvalidCertData) {
+TEST_F(CRWSessionCertificateStorageTest, InvalidCertData) {
   NSMutableData* data = [[NSMutableData alloc] init];
   NSKeyedArchiver* archiver =
       [[NSKeyedArchiver alloc] initForWritingWithMutableData:data];

@@ -7,13 +7,16 @@
 #import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
+#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
+using AutofillDataItemTest = PlatformTest;
+
 // Tests that the UILabels are set properly after a call to |configureCell:|.
-TEST(AutofillDataItemTest, TextLabels) {
+TEST_F(AutofillDataItemTest, TextLabels) {
   AutofillDataItem* item = [[AutofillDataItem alloc] initWithType:0];
   NSString* mainText = @"Main text";
   NSString* leadingDetailText = @"Leading detail text";

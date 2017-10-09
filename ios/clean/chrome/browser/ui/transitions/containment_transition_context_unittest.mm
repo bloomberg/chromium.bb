@@ -5,6 +5,7 @@
 #import "ios/clean/chrome/browser/ui/transitions/containment_transition_context.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -77,9 +78,11 @@
 
 @end
 
+using ContainmentTransitionContextTest = PlatformTest;
+
 // Tests that the view controllers are properly returned by the context after
 // initialization.
-TEST(ContainmentTransitionContextTest, InitializationChildViewControllers) {
+TEST_F(ContainmentTransitionContextTest, InitializationChildViewControllers) {
   UIViewController* fromViewController = [[UIViewController alloc] init];
   UIViewController* toViewController = [[UIViewController alloc] init];
   UIViewController* parentViewController = [[UIViewController alloc] init];
@@ -108,7 +111,7 @@ TEST(ContainmentTransitionContextTest, InitializationChildViewControllers) {
 
 // Tests that the container view is properly returned by the context after
 // initialization.
-TEST(ContainmentTransitionContextTest, InitializationContainerView) {
+TEST_F(ContainmentTransitionContextTest, InitializationContainerView) {
   UIView* containerView = [[UIView alloc] init];
   ContainmentTransitionContext* context = [[ContainmentTransitionContext alloc]
       initWithFromViewController:nil
@@ -122,7 +125,7 @@ TEST(ContainmentTransitionContextTest, InitializationContainerView) {
 // Tests that the view controllers receive the appropriate calls to perform a
 // containment transition when prepareTransitionWithAnimator: and
 // completeTransition: are called.
-TEST(ContainmentTransitionContextTest, PrepareAndTransition) {
+TEST_F(ContainmentTransitionContextTest, PrepareAndTransition) {
   TestViewController* fromViewController = [[TestViewController alloc] init];
   TestViewController* toViewController = [[TestViewController alloc] init];
   UIViewController* parentViewController = [[UIViewController alloc] init];
@@ -171,7 +174,7 @@ TEST(ContainmentTransitionContextTest, PrepareAndTransition) {
   EXPECT_EQ(parentViewController, toViewController.didMoveToParentArgument);
 }
 
-TEST(ContainmentTransitionContextTest, CompletionBlockCalledOnCompletion) {
+TEST_F(ContainmentTransitionContextTest, CompletionBlockCalledOnCompletion) {
   __block NSUInteger count = 0;
   __block BOOL didComplete = NO;
   ContainmentTransitionContext* context = [[ContainmentTransitionContext alloc]
@@ -188,7 +191,7 @@ TEST(ContainmentTransitionContextTest, CompletionBlockCalledOnCompletion) {
   EXPECT_EQ(YES, didComplete);
 }
 
-TEST(ContainmentTransitionContextTest, CompletionBlockCalledOnCancellation) {
+TEST_F(ContainmentTransitionContextTest, CompletionBlockCalledOnCancellation) {
   __block NSUInteger count = 0;
   __block BOOL didComplete = NO;
   ContainmentTransitionContext* context = [[ContainmentTransitionContext alloc]
@@ -205,7 +208,7 @@ TEST(ContainmentTransitionContextTest, CompletionBlockCalledOnCancellation) {
   EXPECT_EQ(NO, didComplete);
 }
 
-TEST(ContainmentTransitionContextTest, AnimationEndedCalledOnCompletion) {
+TEST_F(ContainmentTransitionContextTest, AnimationEndedCalledOnCompletion) {
   ContainmentTransitionContext* context = [[ContainmentTransitionContext alloc]
       initWithFromViewController:nil
                 toViewController:nil
@@ -229,7 +232,7 @@ TEST(ContainmentTransitionContextTest, AnimationEndedCalledOnCompletion) {
   EXPECT_FALSE(animator.animateTransitionCalled);
 }
 
-TEST(ContainmentTransitionContextTest, AnimationEndedCalledOnCancellation) {
+TEST_F(ContainmentTransitionContextTest, AnimationEndedCalledOnCancellation) {
   ContainmentTransitionContext* context = [[ContainmentTransitionContext alloc]
       initWithFromViewController:nil
                 toViewController:nil

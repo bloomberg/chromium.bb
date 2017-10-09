@@ -7,6 +7,7 @@
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_footer_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -32,7 +33,9 @@
 
 namespace {
 
-TEST(MDCCollectionViewCellChrome, PreferredHeightCallsConfigureCell) {
+using MDCCollectionViewCellChrome = PlatformTest;
+
+TEST_F(MDCCollectionViewCellChrome, PreferredHeightCallsConfigureCell) {
   FakeCollectionViewItem* item =
       [[FakeCollectionViewItem alloc] initWithType:0];
   item.cellClass = [FakeCollectionViewCell class];
@@ -43,7 +46,7 @@ TEST(MDCCollectionViewCellChrome, PreferredHeightCallsConfigureCell) {
   EXPECT_EQ(1, item.configureCount);
 }
 
-TEST(MDCCollectionViewCellChrome, PreferredHeight) {
+TEST_F(MDCCollectionViewCellChrome, PreferredHeight) {
   CollectionViewFooterItem* footerItem =
       [[CollectionViewFooterItem alloc] initWithType:0];
   footerItem.text = @"This is a pretty lengthy sentence.";

@@ -5,13 +5,16 @@
 #import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
 
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
+#include "testing/platform_test.h"
 #include "third_party/ocmock/gtest_support.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-TEST(SigninPromoViewTest, ChromiumLogoImage) {
+using SigninPromoViewTest = PlatformTest;
+
+TEST_F(SigninPromoViewTest, ChromiumLogoImage) {
   SigninPromoView* view =
       [[SigninPromoView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)];
   view.mode = SigninPromoViewModeColdState;
@@ -28,7 +31,7 @@ TEST(SigninPromoViewTest, ChromiumLogoImage) {
   EXPECT_NE(customImage, view.imageView.image);
 }
 
-TEST(SigninPromoViewTest, SecondaryButtonVisibility) {
+TEST_F(SigninPromoViewTest, SecondaryButtonVisibility) {
   SigninPromoView* view =
       [[SigninPromoView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)];
   view.mode = SigninPromoViewModeColdState;

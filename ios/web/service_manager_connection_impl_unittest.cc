@@ -12,6 +12,7 @@
 #include "services/service_manager/public/interfaces/constants.mojom.h"
 #include "services/service_manager/public/interfaces/service_factory.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 namespace web {
 namespace {
@@ -26,7 +27,9 @@ std::unique_ptr<service_manager::Service> LaunchService(
 
 }  // namespace
 
-TEST(ServiceManagerConnectionImplTest, ServiceLaunchThreading) {
+using ServiceManagerConnectionImplTest = PlatformTest;
+
+TEST_F(ServiceManagerConnectionImplTest, ServiceLaunchThreading) {
   TestWebThreadBundle thread_bundle(
       TestWebThreadBundle::Options::REAL_IO_THREAD);
   // base::MessageLoop message_loop;

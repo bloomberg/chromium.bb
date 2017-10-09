@@ -7,6 +7,7 @@
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/third_party/material_components_ios/src/components/ActivityIndicator/src/MaterialActivityIndicator.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -14,9 +15,11 @@
 
 namespace {
 
+using ActivityIndicatorItemTest = PlatformTest;
+
 // Tests that when an ActivityIndicatorCell is configured, it has a
 // MDCActivityIndicator that is animating.
-TEST(ActivityIndicatorItemTest, CellDisplaysActivityIndicator) {
+TEST_F(ActivityIndicatorItemTest, CellDisplaysActivityIndicator) {
   CollectionViewItem* item = [[CollectionViewItem alloc] initWithType:0];
   item.cellClass = [ActivityIndicatorCell class];
   ActivityIndicatorCell* cell =

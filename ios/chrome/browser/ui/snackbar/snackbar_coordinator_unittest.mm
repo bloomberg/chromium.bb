@@ -7,6 +7,7 @@
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/snackbar_commands.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
 
@@ -14,8 +15,10 @@
 #error "This file requires ARC support."
 #endif
 
+using SnackbarCoordinatorTest = PlatformTest;
+
 // Tests that the coordinator handles snackbar commands.
-TEST(SnackbarCoordinatorTest, RegistersDispatching) {
+TEST_F(SnackbarCoordinatorTest, RegistersDispatching) {
   id dispatcher = OCMClassMock([CommandDispatcher class]);
   SnackbarCoordinator* coordinator = [[SnackbarCoordinator alloc] init];
   coordinator.dispatcher = dispatcher;

@@ -11,6 +11,7 @@
 #include "components/history/core/browser/browsing_history_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
+#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -37,10 +38,12 @@ HistoryEntryItem* GetHistoryEntryItem(const GURL& url,
   return item;
 }
 
+using HistoryEntryItemTest = PlatformTest;
+
 // Tests that -[HistoryEntryItem configureCell:] sets the cell's textLabel text
 // to the item title, the detailTextLabel text to the URL, and the timeLabel
 // text to the timestamp.
-TEST(HistoryEntryItemTest, ConfigureCell) {
+TEST_F(HistoryEntryItemTest, ConfigureCell) {
   base::Time timestamp = base::Time::Now();
   HistoryEntryItem* item =
       GetHistoryEntryItem(GURL(kTestUrl), kTestTitle, timestamp);
@@ -56,7 +59,7 @@ TEST(HistoryEntryItemTest, ConfigureCell) {
 
 // Tests that -[HistoryItem isEqualToHistoryItem:] returns YES if the two items
 // have the same URL and timestamp, and NO otherwise.
-TEST(HistoryEntryItemTest, IsEqual) {
+TEST_F(HistoryEntryItemTest, IsEqual) {
   base::Time timestamp = base::Time::Now();
   base::Time timestamp2 = timestamp - base::TimeDelta::FromMinutes(1);
   HistoryEntryItem* history_entry =

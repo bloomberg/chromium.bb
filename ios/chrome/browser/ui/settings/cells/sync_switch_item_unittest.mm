@@ -6,6 +6,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
+#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -13,9 +14,11 @@
 
 namespace {
 
+using SyncSwitchItemTest = PlatformTest;
+
 // Tests that the text label and showing status are set properly after a call to
 // |configureCell:|.
-TEST(SyncSwitchItemTest, ConfigureCell) {
+TEST_F(SyncSwitchItemTest, ConfigureCell) {
   SyncSwitchItem* item = [[SyncSwitchItem alloc] initWithType:0];
   SyncSwitchCell* cell = [[[item cellClass] alloc] init];
   EXPECT_TRUE([cell isMemberOfClass:[SyncSwitchCell class]]);
@@ -42,7 +45,7 @@ TEST(SyncSwitchItemTest, ConfigureCell) {
 
 // Tests that the text color and enabled state of the switch are set correctly
 // by a call to |configureCell:|.
-TEST(SyncSwitchItemTest, EnabledAndDisabled) {
+TEST_F(SyncSwitchItemTest, EnabledAndDisabled) {
   SyncSwitchCell* cell = [[SyncSwitchCell alloc] init];
   SyncSwitchItem* item = [[SyncSwitchItem alloc] initWithType:0];
   item.text = @"Test Switch";
@@ -82,7 +85,7 @@ TEST(SyncSwitchItemTest, EnabledAndDisabled) {
   EXPECT_NSEQ(disabledColor, cell.textLabel.textColor);
 }
 
-TEST(SyncSwitchItemTest, PrepareForReuseClearsActions) {
+TEST_F(SyncSwitchItemTest, PrepareForReuseClearsActions) {
   SyncSwitchCell* cell = [[SyncSwitchCell alloc] init];
   UISwitch* switchView = cell.switchView;
   NSArray* target = [NSArray array];
