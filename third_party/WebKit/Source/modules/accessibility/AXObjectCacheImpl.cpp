@@ -1064,15 +1064,13 @@ void AXObjectCacheImpl::HandleTextFormControlChanged(Node* node) {
 }
 
 void AXObjectCacheImpl::HandleTextMarkerDataAdded(Node* start, Node* end) {
-  AXObject* start_object = Get(start);
-  AXObject* end_object = Get(end);
-  if (!start_object || !end_object)
+  if (!start || !end)
     return;
 
   // Notify the client of new text marker data.
-  PostNotification(start_object, kAXChildrenChanged);
-  if (start_object != end_object) {
-    PostNotification(end_object, kAXChildrenChanged);
+  ChildrenChanged(start);
+  if (start != end) {
+    ChildrenChanged(end);
   }
 }
 
