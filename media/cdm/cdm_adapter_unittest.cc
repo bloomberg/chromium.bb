@@ -95,7 +95,11 @@ class CdmAdapterTest : public testing::Test {
          media::kSupportExperimentalCdmInterface},
         {});
 
+#if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
+    CdmModule::GetInstance()->Initialize(helper_.LibraryPath(), {});
+#else
     CdmModule::GetInstance()->Initialize(helper_.LibraryPath());
+#endif  // BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
   }
 
   ~CdmAdapterTest() override { CdmModule::ResetInstanceForTesting(); }
@@ -261,8 +265,15 @@ TEST_F(CdmAdapterTest, Initialize) {
 
 TEST_F(CdmAdapterTest, BadLibraryPath) {
   CdmModule::ResetInstanceForTesting();
+
+#if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
+  CdmModule::GetInstance()->Initialize(
+      base::FilePath(FILE_PATH_LITERAL("no_library_here")), {});
+#else
   CdmModule::GetInstance()->Initialize(
       base::FilePath(FILE_PATH_LITERAL("no_library_here")));
+#endif  // BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
+
   InitializeAndExpect(FAILURE);
 }
 
