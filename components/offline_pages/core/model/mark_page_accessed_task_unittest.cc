@@ -38,17 +38,20 @@ class MarkPageAccessedTaskTest : public testing::Test {
   OfflinePageMetadataStoreTestUtil* store_test_util() {
     return &store_test_util_;
   }
+  TestTaskRunner* runner() { return &runner_; }
 
  private:
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
   OfflinePageMetadataStoreTestUtil store_test_util_;
+  TestTaskRunner runner_;
 };
 
 MarkPageAccessedTaskTest::MarkPageAccessedTaskTest()
     : task_runner_(new base::TestSimpleTaskRunner()),
       task_runner_handle_(task_runner_),
-      store_test_util_(task_runner_) {}
+      store_test_util_(task_runner_),
+      runner_(task_runner_) {}
 
 MarkPageAccessedTaskTest::~MarkPageAccessedTaskTest() {}
 
@@ -68,7 +71,7 @@ TEST_F(MarkPageAccessedTaskTest, MarkPageAccessed) {
   base::Time current_time = base::Time::Now();
   auto task = base::MakeUnique<MarkPageAccessedTask>(store(), kTestOfflineId,
                                                      current_time);
-  std::move(task)->Run();
+  runner()->RunTask(std::move(task));
 
   auto offline_page = store_test_util()->GetPageByOfflineId(kTestOfflineId);
   EXPECT_EQ(kTestUrl, offline_page->url);
@@ -86,7 +89,7 @@ TEST_F(MarkPageAccessedTaskTest, MarkPageAccessedTwice) {
   base::Time current_time = base::Time::Now();
   auto task = base::MakeUnique<MarkPageAccessedTask>(store(), kTestOfflineId,
                                                      current_time);
-  std::move(task)->Run();
+  runner()->RunTask(std::move(task));
 
   auto offline_page = store_test_util()->GetPageByOfflineId(kTestOfflineId);
   EXPECT_EQ(kTestOfflineId, offline_page->offline_id);
@@ -98,7 +101,7 @@ TEST_F(MarkPageAccessedTaskTest, MarkPageAccessedTwice) {
 
   task = base::MakeUnique<MarkPageAccessedTask>(store(), kTestOfflineId,
                                                 base::Time::Now());
-  std::move(task)->Run();
+  runner()->RunTask(std::move(task));
 
   offline_page = store_test_util()->GetPageByOfflineId(kTestOfflineId);
   EXPECT_EQ(kTestOfflineId, offline_page->offline_id);

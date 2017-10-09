@@ -6,6 +6,7 @@
 #define COMPONENTS_OFFLINE_PAGES_CORE_MODEL_MARK_PAGE_ACCESSED_TASK_H_
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "components/offline_pages/core/task.h"
 
 namespace base {
@@ -30,12 +31,15 @@ class MarkPageAccessedTask : public Task {
   void Run() override;
 
  private:
+  void OnMarkPageAccessedDone(bool result);
+
   // The metadata store used to update the page. Not owned.
   OfflinePageMetadataStoreSQL* store_;
 
   int64_t offline_id_;
   base::Time access_time_;
 
+  base::WeakPtrFactory<MarkPageAccessedTask> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(MarkPageAccessedTask);
 };
 

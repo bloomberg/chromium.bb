@@ -30,8 +30,8 @@ OfflinePageItem OfflinePageItemGenerator::CreateItem() {
 }
 
 OfflinePageItem OfflinePageItemGenerator::CreateItemWithTempFile() {
-  // If hitting this DCHECK, please call SetTempDirectory before calling this
-  // method for creating files with page.
+  // If hitting this DCHECK, please call SetArchiveDirectory before calling
+  // this method for creating files with page.
   DCHECK(!archive_dir_.empty());
   OfflinePageItem item = CreateItem();
   base::FilePath path;
