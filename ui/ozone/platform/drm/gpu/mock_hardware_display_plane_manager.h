@@ -33,6 +33,7 @@ class MockHardwareDisplayPlaneManager
   void SetPlaneProperties(const std::vector<FakePlaneInfo>& planes);
   void SetCrtcInfo(const std::vector<uint32_t>& crtcs);
 
+  bool DisableOverlayPlanes(HardwareDisplayPlaneList* plane_list) override;
   bool SetPlaneData(HardwareDisplayPlaneList* plane_list,
                     HardwareDisplayPlane* hw_plane,
                     const OverlayPlane& overlay,

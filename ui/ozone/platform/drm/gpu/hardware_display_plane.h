@@ -45,6 +45,7 @@ class HardwareDisplayPlane {
   uint32_t plane_id() const { return plane_id_; }
 
   Type type() const { return type_; }
+  void set_type(const Type type) { type_ = type; }
 
   void set_owning_crtc(uint32_t crtc) { owning_crtc_ = crtc; }
   uint32_t owning_crtc() const { return owning_crtc_; }

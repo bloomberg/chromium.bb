@@ -20,6 +20,7 @@ class HardwareDisplayPlaneManagerAtomic : public HardwareDisplayPlaneManager {
   // HardwareDisplayPlaneManager:
   bool Commit(HardwareDisplayPlaneList* plane_list,
               bool test_only) override;
+  bool DisableOverlayPlanes(HardwareDisplayPlaneList* plane_list) override;
 
  private:
   bool SetPlaneData(HardwareDisplayPlaneList* plane_list,
