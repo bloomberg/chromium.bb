@@ -34,21 +34,24 @@ enum class PrefetchBackgroundTaskRescheduleType {
   SUSPEND
 };
 
-// Status for sending prefetch request to the server.
+// Status for sending prefetch request to the server. This has a matching type
+// in enums.xml which must be adjusted if we add any new values here.
 enum class PrefetchRequestStatus {
   // Request completed successfully.
-  SUCCESS,
+  SUCCESS = 0,
   // Request failed due to to local network problem, unrelated to server load
   // levels. The caller will simply reschedule the retry in the next available
   // WiFi window after 15 minutes have passed.
-  SHOULD_RETRY_WITHOUT_BACKOFF,
+  SHOULD_RETRY_WITHOUT_BACKOFF = 1,
   // Request failed probably related to transient server problems. The caller
   // will reschedule the retry with backoff included.
-  SHOULD_RETRY_WITH_BACKOFF,
+  SHOULD_RETRY_WITH_BACKOFF = 2,
   // Request failed with error indicating that the server no longer knows how
   // to service a request. The caller will prevent network requests for the
   // period of 1 day.
-  SHOULD_SUSPEND
+  SHOULD_SUSPEND = 3,
+  // MAX should always be the last type
+  COUNT = SHOULD_SUSPEND + 1
 };
 
 // Status indicating the page rendering status in the server.

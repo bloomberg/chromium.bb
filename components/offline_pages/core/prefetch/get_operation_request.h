@@ -34,7 +34,9 @@ class GetOperationRequest {
   ~GetOperationRequest();
 
  private:
-  void OnCompleted(PrefetchRequestStatus status, const std::string& data);
+  void OnCompleted(const std::string& operation_name,
+                   PrefetchRequestStatus status,
+                   const std::string& data);
 
   PrefetchRequestFinishedCallback callback_;
   std::unique_ptr<PrefetchRequestFetcher> fetcher_;

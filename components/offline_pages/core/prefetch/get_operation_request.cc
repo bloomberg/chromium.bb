@@ -25,27 +25,30 @@ GetOperationRequest::GetOperationRequest(
       GetOperationRequestURL(name, channel), request_context_getter,
       base::Bind(&GetOperationRequest::OnCompleted,
                  // Fetcher is owned by this instance.
-                 base::Unretained(this)));
+                 base::Unretained(this), name));
 }
 
 GetOperationRequest::~GetOperationRequest() {}
 
-void GetOperationRequest::OnCompleted(PrefetchRequestStatus status,
-                                      const std::string& data) {
+void GetOperationRequest::OnCompleted(
+    const std::string& assigned_operation_name,
+    PrefetchRequestStatus status,
+    const std::string& data) {
   if (status != PrefetchRequestStatus::SUCCESS) {
-    callback_.Run(status, std::string(), std::vector<RenderPageInfo>());
+    callback_.Run(status, assigned_operation_name,
+                  std::vector<RenderPageInfo>());
     return;
   }
 
   std::vector<RenderPageInfo> pages;
-  std::string operation_name = ParseOperationResponse(data, &pages);
-  if (operation_name.empty()) {
+  std::string found_operation_name = ParseOperationResponse(data, &pages);
+  if (found_operation_name.empty()) {
     callback_.Run(PrefetchRequestStatus::SHOULD_RETRY_WITH_BACKOFF,
-                  std::string(), std::vector<RenderPageInfo>());
+                  assigned_operation_name, std::vector<RenderPageInfo>());
     return;
   }
 
-  callback_.Run(PrefetchRequestStatus::SUCCESS, operation_name, pages);
+  callback_.Run(PrefetchRequestStatus::SUCCESS, assigned_operation_name, pages);
 }
 
 }  // offline_pages

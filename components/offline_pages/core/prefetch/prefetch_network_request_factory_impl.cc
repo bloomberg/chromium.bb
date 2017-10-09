@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "components/offline_pages/core/prefetch/generate_page_bundle_request.h"
 #include "components/offline_pages/core/prefetch/get_operation_request.h"
 
@@ -19,6 +20,18 @@ const int kMaxConcurrentRequests = 10;
 }  // namespace
 
 namespace offline_pages {
+
+void RecordGetOperationStatusUma(PrefetchRequestStatus status) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "OfflinePages.Prefetching.ServiceGetOperationStatus", status,
+      PrefetchRequestStatus::COUNT);
+}
+
+void RecordGeneratePageBundleStatusUma(PrefetchRequestStatus status) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "OfflinePages.Prefetching.ServiceGetPageBundleStatus", status,
+      PrefetchRequestStatus::COUNT);
+}
 
 PrefetchNetworkRequestFactoryImpl::PrefetchNetworkRequestFactoryImpl(
     net::URLRequestContextGetter* request_context,
@@ -85,6 +98,7 @@ void PrefetchNetworkRequestFactoryImpl::GeneratePageBundleRequestDone(
   callback.Run(status, operation_name, pages);
   generate_page_bundle_requests_.erase(request_id);
   ReleaseConcurrentRequest();
+  RecordGeneratePageBundleStatusUma(status);
 }
 
 void PrefetchNetworkRequestFactoryImpl::GetOperationRequestDone(
@@ -95,6 +109,7 @@ void PrefetchNetworkRequestFactoryImpl::GetOperationRequestDone(
   callback.Run(status, operation_name, pages);
   get_operation_requests_.erase(operation_name);
   ReleaseConcurrentRequest();
+  RecordGetOperationStatusUma(status);
 }
 
 GetOperationRequest*

@@ -28785,6 +28785,14 @@ from previous Chrome versions.
   <int value="4" label="Offline item already exists"/>
 </enum>
 
+<enum name="OfflinePrefetchRequestStatus">
+  <summary>Return status of calls to the Offline Page Service.</summary>
+  <int value="0" label="Success"/>
+  <int value="1" label="Should retry without backoff"/>
+  <int value="2" label="Should retry with backoff"/>
+  <int value="3" label="Should suspend"/>
+</enum>
+
 <enum name="OfflineStatus">
   <obsolete>
     Deprecated 4/2015.

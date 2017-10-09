@@ -51808,6 +51808,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="OfflinePages.Prefetching.ServiceGetOperationStatus"
+    enum="OfflinePrefetchRequestStatus">
+  <owner>petewil@chromium.org</owner>
+  <summary>
+    Status returned by a request to the Offline Page Service's GetOperation
+    method.
+  </summary>
+</histogram>
+
+<histogram name="OfflinePages.Prefetching.ServiceGetPageBundleStatus"
+    enum="OfflinePrefetchRequestStatus">
+  <owner>petewil@chromium.org</owner>
+  <summary>
+    Status returned by a request to the Offline Page Service's GetPageBundle
+    method.
+  </summary>
+</histogram>
+
 <histogram name="OfflinePages.Prefetching.StateCounts."
     enum="OfflinePrefetchItemState">
   <owner>petewil@chromium.org</owner>
