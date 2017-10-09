@@ -9,6 +9,7 @@
 #import "ios/chrome/browser/ui/favicon/favicon_view.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/gtest_support.h"
 
@@ -18,7 +19,9 @@
 
 namespace {
 
-TEST(ContentSuggestionsMostVisitedItemTest, CellClass) {
+using ContentSuggestionsMostVisitedItemTest = PlatformTest;
+
+TEST_F(ContentSuggestionsMostVisitedItemTest, CellClass) {
   // Setup.
   ContentSuggestionsMostVisitedItem* item =
       [[ContentSuggestionsMostVisitedItem alloc] initWithType:0];
@@ -30,7 +33,7 @@ TEST(ContentSuggestionsMostVisitedItemTest, CellClass) {
   ASSERT_EQ([ContentSuggestionsMostVisitedCell class], [cell class]);
 }
 
-TEST(ContentSuggestionsMostVisitedItemTest, Configure) {
+TEST_F(ContentSuggestionsMostVisitedItemTest, Configure) {
   // Setup.
   NSString* title = @"Test title.";
   ContentSuggestionsMostVisitedItem* item =

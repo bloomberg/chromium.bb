@@ -9,6 +9,7 @@
 #import "ios/web/public/test/fakes/test_web_state.h"
 #import "ios/web/public/test/web_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -16,9 +17,11 @@
 
 using web::TestWebState;
 
+using NetworkActivityIndicatorTabHelperTest = PlatformTest;
+
 // Tests that the network activity for a single WebState correctly manages
 // the state of the network activity indicator.
-TEST(NetworkActivityIndicatorTabHelperTest, SingleWebStateActivity) {
+TEST_F(NetworkActivityIndicatorTabHelperTest, SingleWebStateActivity) {
   std::unique_ptr<TestWebState> web_state(new TestWebState());
   NetworkActivityIndicatorTabHelper::CreateForWebState(web_state.get(),
                                                        @"web_state1");
@@ -37,7 +40,7 @@ TEST(NetworkActivityIndicatorTabHelperTest, SingleWebStateActivity) {
 
 // Tests that the network activity for multiple WebStates correctly manage
 // the state of the network activity indicator.
-TEST(NetworkActivityIndicatorTabHelperTest, MultipleWebStateActivity) {
+TEST_F(NetworkActivityIndicatorTabHelperTest, MultipleWebStateActivity) {
   std::unique_ptr<TestWebState> web_state1(new TestWebState());
   NetworkActivityIndicatorTabHelper::CreateForWebState(web_state1.get(),
                                                        @"web_state1");
@@ -65,7 +68,7 @@ TEST(NetworkActivityIndicatorTabHelperTest, MultipleWebStateActivity) {
 
 // Tests that the network activity for a single WebState correctly stops when
 // the WebState is deallocated.
-TEST(NetworkActivityIndicatorTabHelperTest, WebStateDeallocated) {
+TEST_F(NetworkActivityIndicatorTabHelperTest, WebStateDeallocated) {
   std::unique_ptr<TestWebState> web_state(new TestWebState());
   NetworkActivityIndicatorTabHelper::CreateForWebState(web_state.get(),
                                                        @"web_state1");

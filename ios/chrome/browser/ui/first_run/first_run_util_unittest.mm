@@ -6,6 +6,7 @@
 
 #include "ios/chrome/browser/ui/first_run/first_run_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -13,7 +14,9 @@
 
 namespace {
 
-TEST(UICommonTest, TestFixOrphanWord) {
+using UICommonTest = PlatformTest;
+
+TEST_F(UICommonTest, TestFixOrphanWord) {
   NSString* englishString =
       @"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec tempus"
        " dignissim congue. Morbi pulvinar vitae purus at mollis. Sed laoreet "

@@ -6,6 +6,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
+#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -13,9 +14,11 @@
 
 namespace {
 
+using AutofillEditItemTest = PlatformTest;
+
 // Tests that the label and text field are set properly after a call to
 // |configureCell:|.
-TEST(AutofillEditItemTest, ConfigureCell) {
+TEST_F(AutofillEditItemTest, ConfigureCell) {
   AutofillEditItem* item = [[AutofillEditItem alloc] initWithType:0];
   NSString* name = @"Name";
   NSString* value = @"Value";

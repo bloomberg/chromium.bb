@@ -8,6 +8,7 @@
 #import "ios/clean/chrome/browser/ui/dialogs/dialog_configuration_identifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
+#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -19,9 +20,11 @@ NSString* const kButtonText = @"button text";
 const DialogButtonStyle kButtonStyle = DialogButtonStyle::DESTRUCTIVE;
 }
 
+using DialogButtonConfigurationTest = PlatformTest;
+
 // Tests that the values passed to the factory method are reflected in the
 // returned value.
-TEST(DialogButtonConfigurationTest, FactoryMethod) {
+TEST_F(DialogButtonConfigurationTest, FactoryMethod) {
   DialogButtonConfiguration* config =
       [DialogButtonConfiguration configWithText:kButtonText style:kButtonStyle];
   EXPECT_NSEQ(kButtonText, config.text);
@@ -30,7 +33,7 @@ TEST(DialogButtonConfigurationTest, FactoryMethod) {
 
 // Tests that two DialogButtonConfigurations created with the same values have
 // unequal identifiers.
-TEST(DialogButtonConfigurationTest, Identifiers) {
+TEST_F(DialogButtonConfigurationTest, Identifiers) {
   DialogButtonConfiguration* config1 =
       [DialogButtonConfiguration configWithText:kButtonText style:kButtonStyle];
   DialogButtonConfiguration* config2 =

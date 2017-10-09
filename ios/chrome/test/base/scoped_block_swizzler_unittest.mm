@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/mac/foundation_util.h"
 #include "ios/chrome/test/base/scoped_block_swizzler.h"
+#include "base/mac/foundation_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -29,8 +29,10 @@ NSString* const kSwizzledClassValue = @"Foo";
 NSString* const kOriginalInstanceValue = @"Bizz";
 NSString* const kSwizzledInstanceValue = @"Buzz";
 
+using ScopedBlockSwizzlerTest = PlatformTest;
+
 // Tests that swizzling a class method works properly.
-TEST(ScopedBlockSwizzlerTest, SwizzlingClassMethods) {
+TEST_F(ScopedBlockSwizzlerTest, SwizzlingClassMethods) {
   EXPECT_NSEQ(kOriginalClassValue,
               [ScopedBlockSwizzlerTestClass classMethodToSwizzle]);
 
@@ -47,7 +49,7 @@ TEST(ScopedBlockSwizzlerTest, SwizzlingClassMethods) {
 }
 
 // Tests that swizzling an instance method works properly.
-TEST(ScopedBlockSwizzlerTest, SwizzlingInstanceMethod) {
+TEST_F(ScopedBlockSwizzlerTest, SwizzlingInstanceMethod) {
   ScopedBlockSwizzlerTestClass* target =
       [[ScopedBlockSwizzlerTestClass alloc] init];
   target.value = kSwizzledInstanceValue;
@@ -71,7 +73,7 @@ TEST(ScopedBlockSwizzlerTest, SwizzlingInstanceMethod) {
 
 // Tests that calling |ScopedBlockSwizzler::reset()| properly unswizzles the
 // method.
-TEST(ScopedBlockSwizzlerTest, TestReset) {
+TEST_F(ScopedBlockSwizzlerTest, TestReset) {
   EXPECT_NSEQ(kOriginalClassValue,
               [ScopedBlockSwizzlerTestClass classMethodToSwizzle]);
 

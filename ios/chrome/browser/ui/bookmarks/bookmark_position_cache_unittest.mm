@@ -5,6 +5,7 @@
 #include "ios/chrome/browser/ui/bookmarks/bookmark_position_cache.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
+#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -12,7 +13,9 @@
 
 namespace {
 
-TEST(BookmarkPositionCacheTest, TestMenuItemFolderCoding) {
+using BookmarkPositionCacheTest = PlatformTest;
+
+TEST_F(BookmarkPositionCacheTest, TestMenuItemFolderCoding) {
   BookmarkPositionCache* cache =
       [BookmarkPositionCache cacheForMenuItemFolderWithPosition:1010101
                                                        folderId:6363];

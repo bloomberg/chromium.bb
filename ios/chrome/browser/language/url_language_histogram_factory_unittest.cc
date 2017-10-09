@@ -8,11 +8,12 @@
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 using testing::IsNull;
 using testing::Not;
 
-class UrlLanguageHistogramFactoryTest : public testing::Test {
+class UrlLanguageHistogramFactoryTest : public PlatformTest {
  public:
   UrlLanguageHistogramFactoryTest() {
     TestChromeBrowserState::Builder browser_state_builder;

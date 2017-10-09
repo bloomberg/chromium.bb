@@ -11,13 +11,16 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 namespace web {
 
 // PaymentRequest parsing tests.
 
+using PaymentRequestTest = PlatformTest;
+
 // Tests that populating a PaymentRequest from an empty dictionary fails.
-TEST(PaymentRequestTest, ParsingEmptyRequestDictionaryFails) {
+TEST_F(PaymentRequestTest, ParsingEmptyRequestDictionaryFails) {
   PaymentRequest output_request;
   base::DictionaryValue request_dict;
   EXPECT_FALSE(output_request.FromDictionaryValue(request_dict));
@@ -25,7 +28,7 @@ TEST(PaymentRequestTest, ParsingEmptyRequestDictionaryFails) {
 
 // Tests that populating a PaymentRequest from a dictionary without all
 // required values fails.
-TEST(PaymentRequestTest, ParsingPartiallyPopulatedRequestDictionaryFails) {
+TEST_F(PaymentRequestTest, ParsingPartiallyPopulatedRequestDictionaryFails) {
   PaymentRequest expected_request;
   PaymentRequest output_request;
   base::DictionaryValue request_dict;
@@ -58,7 +61,7 @@ TEST(PaymentRequestTest, ParsingPartiallyPopulatedRequestDictionaryFails) {
 
 // Tests that populating a PaymentRequest from a dictionary with all required
 // elements succeeds and produces the expected result.
-TEST(PaymentRequestTest, ParsingFullyPopulatedRequestDictionarySucceeds) {
+TEST_F(PaymentRequestTest, ParsingFullyPopulatedRequestDictionarySucceeds) {
   PaymentRequest expected_request;
   PaymentRequest output_request;
   base::DictionaryValue request_dict;
@@ -127,7 +130,7 @@ TEST(PaymentRequestTest, ParsingFullyPopulatedRequestDictionarySucceeds) {
 // PaymentRequest serialization tests.
 
 // Tests that serializing a default PaymentResponse yields the expected result.
-TEST(PaymentRequestTest, EmptyResponseDictionary) {
+TEST_F(PaymentRequestTest, EmptyResponseDictionary) {
   base::DictionaryValue expected_value;
 
   expected_value.SetString("requestId", "");
@@ -146,7 +149,7 @@ TEST(PaymentRequestTest, EmptyResponseDictionary) {
 
 // Tests that serializing a populated PaymentResponse yields the expected
 // result.
-TEST(PaymentRequestTest, PopulatedResponseDictionary) {
+TEST_F(PaymentRequestTest, PopulatedResponseDictionary) {
   base::DictionaryValue expected_value;
 
   std::unique_ptr<base::DictionaryValue> details(new base::DictionaryValue);
@@ -226,7 +229,7 @@ TEST(PaymentRequestTest, PopulatedResponseDictionary) {
 
 // Tests that two payment options objects are not equal if their property values
 // differ and equal otherwise.
-TEST(PaymentRequestTest, PaymentOptionsEquality) {
+TEST_F(PaymentRequestTest, PaymentOptionsEquality) {
   PaymentOptions options1;
   PaymentOptions options2;
   EXPECT_EQ(options1, options2);
@@ -265,7 +268,7 @@ TEST(PaymentRequestTest, PaymentOptionsEquality) {
 // differ or one is missing a value present in the other, and equal otherwise.
 // Doesn't test all properties of child objects, relying instead on their
 // respective tests.
-TEST(PaymentRequestTest, PaymentRequestEquality) {
+TEST_F(PaymentRequestTest, PaymentRequestEquality) {
   PaymentRequest request1;
   PaymentRequest request2;
   EXPECT_EQ(request1, request2);
@@ -332,7 +335,7 @@ TEST(PaymentRequestTest, PaymentRequestEquality) {
 // values differ or one is missing a value present in the other, and equal
 // otherwise. Doesn't test all properties of child objects, relying instead on
 // their respective tests.
-TEST(PaymentRequestTest, PaymentResponseEquality) {
+TEST_F(PaymentRequestTest, PaymentResponseEquality) {
   PaymentResponse response1;
   PaymentResponse response2;
   EXPECT_EQ(response1, response2);

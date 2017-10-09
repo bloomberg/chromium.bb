@@ -12,14 +12,17 @@
 #import "ios/web/public/web_state/context_menu_params.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
+#include "testing/platform_test.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
+using ContextMenuDialogMediatorTest = PlatformTest;
+
 // Tests context menu setup for a request with no URLs.
-TEST(ContextMenuDialogMediatorTest, NoURLs) {
+TEST_F(ContextMenuDialogMediatorTest, NoURLs) {
   // Create a context with |kMenuTitle|.
   NSString* kMenuTitle = @"Menu Title";
   web::ContextMenuParams params;
@@ -39,7 +42,7 @@ TEST(ContextMenuDialogMediatorTest, NoURLs) {
 }
 
 // Tests that the script button is shown for javacript: scheme URLs.
-TEST(ContextMenuDialogMediatorTest, ScriptItem) {
+TEST_F(ContextMenuDialogMediatorTest, ScriptItem) {
   // Create a context with |kJavaScriptURL|.
   GURL kJavaScriptURL("javascript:alert('test');");
   web::ContextMenuParams params;
@@ -56,7 +59,7 @@ TEST(ContextMenuDialogMediatorTest, ScriptItem) {
 }
 
 // Tests that the link options are shown for valid link URLs.
-TEST(ContextMenuDialogMediatorTest, LinkItems) {
+TEST_F(ContextMenuDialogMediatorTest, LinkItems) {
   // Create a context with a valid link URL.
   web::ContextMenuParams params;
   params.link_url = GURL("http://valid.url.com");
@@ -80,7 +83,7 @@ TEST(ContextMenuDialogMediatorTest, LinkItems) {
 }
 
 // Tests that the image options are shown for valid image URLs.
-TEST(ContextMenuDialogMediatorTest, ImageItems) {
+TEST_F(ContextMenuDialogMediatorTest, ImageItems) {
   // Create a context with a valid image URL.
   web::ContextMenuParams params;
   params.src_url = GURL("http://valid.url.com");

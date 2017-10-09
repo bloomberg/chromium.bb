@@ -16,8 +16,10 @@ namespace {
 
 // TODO(crbug.com/601772): Add tests for other core_text_util tests.
 
+using CoreTextUtilTest = PlatformTest;
+
 // Tests that the minimum line height attribute is reflected in GetLineHeight().
-TEST(CoreTextUtilTest, MinLineHeightText) {
+TEST_F(CoreTextUtilTest, MinLineHeightText) {
   CGFloat min_line_height = 30.0;
   NSMutableParagraphStyle* style = [[NSMutableParagraphStyle alloc] init];
   [style setMinimumLineHeight:min_line_height];
@@ -29,7 +31,7 @@ TEST(CoreTextUtilTest, MinLineHeightText) {
 }
 
 // Tests that the maximum line height attribute is reflected in GetLineHeight().
-TEST(CoreTextUtilTest, MaxLineHeightText) {
+TEST_F(CoreTextUtilTest, MaxLineHeightText) {
   CGFloat max_line_height = 10.0;
   NSMutableParagraphStyle* style = [[NSMutableParagraphStyle alloc] init];
   [style setMaximumLineHeight:max_line_height];
@@ -42,7 +44,7 @@ TEST(CoreTextUtilTest, MaxLineHeightText) {
 
 // Tests that the line height multiple attribute is reflected in
 // GetLineHeight().
-TEST(CoreTextUtilTest, LineHeightMultipleTest) {
+TEST_F(CoreTextUtilTest, LineHeightMultipleTest) {
   UIFont* font = [UIFont systemFontOfSize:20.0];
   CGFloat font_line_height = font.ascender - font.descender;
   CGFloat line_height_multiple = 2.0;

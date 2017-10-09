@@ -16,6 +16,7 @@
 #import "ios/net/cookies/cookie_store_ios_test_util.h"
 #include "net/cookies/cookie_store_unittest.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -52,7 +53,7 @@ namespace {
 // Test fixture to exercise net::CookieStoreIOSPersistent created with
 // TestPersistentCookieStore back-end and not synchronized with
 // SystemCookieStore.
-class CookieStoreIOSPersistentTest : public testing::Test {
+class CookieStoreIOSPersistentTest : public PlatformTest {
  public:
   CookieStoreIOSPersistentTest()
       : kTestCookieURL("http://foo.google.com/bar"),

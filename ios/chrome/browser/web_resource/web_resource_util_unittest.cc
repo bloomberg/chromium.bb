@@ -15,10 +15,11 @@
 #include "base/values.h"
 #include "ios/web/public/web_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 namespace web_resource {
 
-class WebResourceUtilTest : public testing::Test {
+class WebResourceUtilTest : public PlatformTest {
  protected:
   WebResourceUtilTest() : error_called_(false), success_called_(false) {}
   ~WebResourceUtilTest() override {}

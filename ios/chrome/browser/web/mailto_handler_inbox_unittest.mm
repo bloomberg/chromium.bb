@@ -6,12 +6,15 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
+#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-TEST(MailtoHandlerInboxTest, TestConstructor) {
+using MailtoHandlerInboxTest = PlatformTest;
+
+TEST_F(MailtoHandlerInboxTest, TestConstructor) {
   MailtoHandlerInbox* handler = [[MailtoHandlerInbox alloc] init];
   EXPECT_NSEQ(@"Inbox by Gmail", [handler appName]);
   EXPECT_NSEQ(@"905060486", [handler appStoreID]);

@@ -6,6 +6,7 @@
 
 #include "base/strings/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 namespace {
 
@@ -20,7 +21,9 @@ struct XCallbackURLEncodeTestCase {
   const char* expected;
 };
 
-TEST(XCallbackURLTest, IsXCallbackURL) {
+using XCallbackURLTest = PlatformTest;
+
+TEST_F(XCallbackURLTest, IsXCallbackURL) {
   EXPECT_TRUE(IsXCallbackURL(GURL("chrome://x-callback-url")));
   EXPECT_TRUE(IsXCallbackURL(GURL("https://x-callback-url")));
   EXPECT_TRUE(IsXCallbackURL(GURL("exotic-scheme://x-callback-url")));
@@ -34,7 +37,7 @@ TEST(XCallbackURLTest, IsXCallbackURL) {
   EXPECT_FALSE(IsXCallbackURL(GURL("https://www.google.com")));
 }
 
-TEST(XCallbackURLTest, URLWithScheme) {
+TEST_F(XCallbackURLTest, URLWithScheme) {
   const XCallbackURLEncodeTestCase test_cases[] = {
       {
           "chrome",
@@ -121,7 +124,7 @@ struct XCallbackURLDecodeTestCase {
   std::map<std::string, std::string> expected;
 };
 
-TEST(XCallbackURLTest, QueryParameters) {
+TEST_F(XCallbackURLTest, QueryParameters) {
   const XCallbackURLDecodeTestCase test_cases[] = {
       {
           GURL("chrome://x-callback-url/"),

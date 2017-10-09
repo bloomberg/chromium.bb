@@ -16,6 +16,7 @@
 #import "ios/web/public/web_client.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -50,7 +51,7 @@ class AppSpecificURLTestWebClient : public WebClient {
   }
 };
 
-class WebHTTPProtocolHandlerDelegateTest : public testing::Test {
+class WebHTTPProtocolHandlerDelegateTest : public PlatformTest {
  public:
   WebHTTPProtocolHandlerDelegateTest()
       : context_getter_(new net::TestURLRequestContextGetter(

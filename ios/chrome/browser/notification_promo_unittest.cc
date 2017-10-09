@@ -21,6 +21,7 @@
 #include "components/variations/variations_associated_data.h"
 #include "ios/chrome/browser/notification_promo.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 #include "third_party/icu/source/i18n/unicode/smpdtfmt.h"
 
 namespace ios {
@@ -47,7 +48,7 @@ bool YearFromNow(double* date_epoch, std::string* date_string) {
 
 }  // namespace
 
-class NotificationPromoTest : public testing::Test {
+class NotificationPromoTest : public PlatformTest {
  public:
   NotificationPromoTest()
       : notification_promo_(&local_state_),

@@ -6,14 +6,17 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
+#include "testing/platform_test.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
+using MailtoHandlerTest = PlatformTest;
+
 // Tests constructor.
-TEST(MailtoHandlerTest, TestConstructor) {
+TEST_F(MailtoHandlerTest, TestConstructor) {
   MailtoHandler* handler =
       [[MailtoHandler alloc] initWithName:@"Some App" appStoreID:@"12345"];
   EXPECT_NSEQ(@"Some App", [handler appName]);
@@ -22,7 +25,7 @@ TEST(MailtoHandlerTest, TestConstructor) {
 }
 
 // Tests mailto URL with and without a subject.
-TEST(MailtoHandlerTest, TestRewriteGood) {
+TEST_F(MailtoHandlerTest, TestRewriteGood) {
   MailtoHandler* handler =
       [[MailtoHandler alloc] initWithName:@"Some App" appStoreID:@"12345"];
   NSString* result = [handler rewriteMailtoURL:GURL("mailto:user@domain.com")];
@@ -34,7 +37,7 @@ TEST(MailtoHandlerTest, TestRewriteGood) {
 }
 
 // Tests mailto URL with unrecognized query parameters.
-TEST(MailtoHandlerTest, TestRewriteUnrecognizedParams) {
+TEST_F(MailtoHandlerTest, TestRewriteUnrecognizedParams) {
   MailtoHandler* handler =
       [[MailtoHandler alloc] initWithName:@"Some App" appStoreID:@"12345"];
   NSString* result = [handler
@@ -44,7 +47,7 @@ TEST(MailtoHandlerTest, TestRewriteUnrecognizedParams) {
 }
 
 // Tests mailto URL with a body that includes a = sign.
-TEST(MailtoHandlerTest, TestRewriteBodyWithUrl) {
+TEST_F(MailtoHandlerTest, TestRewriteBodyWithUrl) {
   MailtoHandler* handler =
       [[MailtoHandler alloc] initWithName:@"Some App" appStoreID:@"12345"];
   NSString* result = [handler
@@ -54,7 +57,7 @@ TEST(MailtoHandlerTest, TestRewriteBodyWithUrl) {
 }
 
 // Tests mailto URL with parameters that are mixed upper/lower cases.
-TEST(MailtoHandlerTest, TestRewriteWithMixedCase) {
+TEST_F(MailtoHandlerTest, TestRewriteWithMixedCase) {
   MailtoHandler* handler =
       [[MailtoHandler alloc] initWithName:@"Some App" appStoreID:@"12345"];
   NSString* result =
@@ -63,7 +66,7 @@ TEST(MailtoHandlerTest, TestRewriteWithMixedCase) {
 }
 
 // Tests that non-mailto URLs returns nil.
-TEST(MailtoHandlerTest, TestRewriteNotMailto) {
+TEST_F(MailtoHandlerTest, TestRewriteNotMailto) {
   MailtoHandler* handler =
       [[MailtoHandler alloc] initWithName:@"Some App" appStoreID:@"12345"];
   NSString* result = [handler rewriteMailtoURL:GURL("http://www.google.com")];

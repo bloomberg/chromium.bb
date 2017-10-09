@@ -6,6 +6,7 @@
 
 #include "base/mac/foundation_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -13,9 +14,11 @@
 
 namespace {
 
+using StorageSwitchItemTest = PlatformTest;
+
 // Tests that the label and switch values are set properly after a call to
 // |configureCell:|.
-TEST(StorageSwitchItemTest, ConfigureCell) {
+TEST_F(StorageSwitchItemTest, ConfigureCell) {
   StorageSwitchItem* item = [[StorageSwitchItem alloc] initWithType:0];
   item.on = YES;
 
@@ -31,7 +34,7 @@ TEST(StorageSwitchItemTest, ConfigureCell) {
   EXPECT_TRUE(switchCell.switchView.on);
 }
 
-TEST(StorageSwitchItemTest, PrepareForReuseClearsActions) {
+TEST_F(StorageSwitchItemTest, PrepareForReuseClearsActions) {
   StorageSwitchCell* cell = [[StorageSwitchCell alloc] init];
   UIButton* tooltipButton = cell.tooltipButton;
   UISwitch* switchView = cell.switchView;

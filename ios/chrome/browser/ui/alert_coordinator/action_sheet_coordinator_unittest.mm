@@ -14,8 +14,10 @@
 #error "This file requires ARC support."
 #endif
 
+using ActionSheetCoordinatorTest = PlatformTest;
+
 // Tests that if there is a popover, it uses the CGRect passed in init.
-TEST(ActionSheetCoordinatorTest, CGRectUsage) {
+TEST_F(ActionSheetCoordinatorTest, CGRectUsage) {
   ScopedKeyWindow scoped_key_window;
   UIViewController* viewController = [[UIViewController alloc] init];
   [scoped_key_window.Get() setRootViewController:viewController];

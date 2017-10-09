@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_header_item.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -12,7 +13,9 @@
 
 namespace {
 
-TEST(ContentSuggestionsHeaderItemTest, CellClass) {
+using ContentSuggestionsHeaderItemTest = PlatformTest;
+
+TEST_F(ContentSuggestionsHeaderItemTest, CellClass) {
   // Setup.
   ContentSuggestionsHeaderItem* item =
       [[ContentSuggestionsHeaderItem alloc] initWithType:0];
@@ -24,7 +27,7 @@ TEST(ContentSuggestionsHeaderItemTest, CellClass) {
   EXPECT_EQ([ContentSuggestionsHeaderCell class], [cell class]);
 }
 
-TEST(ContentSuggestionsHeaderItemTest, Configure) {
+TEST_F(ContentSuggestionsHeaderItemTest, Configure) {
   // Setup.
   UIView* view = [[UIView alloc] init];
   ContentSuggestionsHeaderItem* item =

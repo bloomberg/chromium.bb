@@ -7,6 +7,7 @@
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 namespace net {
 
@@ -25,7 +26,9 @@ CanonicalCookie MakeCookie(const GURL& url,
 
 }  // namespace
 
-TEST(CookieCacheTest, UpdateAddsCookieAllowsnullptr) {
+using CookieCacheTest = PlatformTest;
+
+TEST_F(CookieCacheTest, UpdateAddsCookieAllowsnullptr) {
   CookieCache cache;
   const GURL test_url("http://www.google.com");
   std::vector<CanonicalCookie> cookies;
@@ -34,7 +37,7 @@ TEST(CookieCacheTest, UpdateAddsCookieAllowsnullptr) {
   EXPECT_FALSE(cache.Update(test_url, "abc", cookies, nullptr, nullptr));
 }
 
-TEST(CookieCacheTest, UpdateAddsCookie) {
+TEST_F(CookieCacheTest, UpdateAddsCookie) {
   CookieCache cache;
   const GURL test_url("http://www.google.com");
   std::vector<CanonicalCookie> cookies;
@@ -55,7 +58,7 @@ TEST(CookieCacheTest, UpdateAddsCookie) {
   EXPECT_TRUE(changed.empty());
 }
 
-TEST(CookieCacheTest, UpdateAddsDistinctCookie) {
+TEST_F(CookieCacheTest, UpdateAddsDistinctCookie) {
   CookieCache cache;
   const GURL test_url("http://www.google.com");
   const GURL test_url_path("http://www.google.com/foo");
@@ -87,7 +90,7 @@ TEST(CookieCacheTest, UpdateAddsDistinctCookie) {
   EXPECT_EQ(1U, changed.size());
 }
 
-TEST(CookieCacheTest, UpdateValueChanged) {
+TEST_F(CookieCacheTest, UpdateValueChanged) {
   CookieCache cache;
   const GURL test_url("http://www.google.com");
   std::vector<CanonicalCookie> cookies;
@@ -108,7 +111,7 @@ TEST(CookieCacheTest, UpdateValueChanged) {
   EXPECT_EQ("ghi", changed[0].Value());
 }
 
-TEST(CookieCacheTest, UpdateDeletedCookie) {
+TEST_F(CookieCacheTest, UpdateDeletedCookie) {
   CookieCache cache;
   const GURL test_url("http://www.google.com");
   std::vector<CanonicalCookie> cookies;
@@ -123,7 +126,7 @@ TEST(CookieCacheTest, UpdateDeletedCookie) {
   EXPECT_TRUE(changed.empty());
 }
 
-TEST(CookieCacheTest, UpdatePathChanged) {
+TEST_F(CookieCacheTest, UpdatePathChanged) {
   CookieCache cache;
   const GURL test_url("http://www.google.com");
   const GURL test_url_path("http://www.google.com/foo");
@@ -139,7 +142,7 @@ TEST(CookieCacheTest, UpdatePathChanged) {
   EXPECT_EQ(1U, changed.size());
 }
 
-TEST(CookieCacheTest, MultipleDomains) {
+TEST_F(CookieCacheTest, MultipleDomains) {
   CookieCache cache;
   const GURL test_url_a("http://www.google.com");
   const GURL test_url_b("http://test.google.com");
@@ -152,7 +155,7 @@ TEST(CookieCacheTest, MultipleDomains) {
   EXPECT_FALSE(cache.Update(test_url_b, "abc", cookies, nullptr, nullptr));
 }
 
-TEST(CookieCacheTest, MultipleNames) {
+TEST_F(CookieCacheTest, MultipleNames) {
   CookieCache cache;
   const GURL cookieurl("http://google.com");
   std::vector<CanonicalCookie> cookies;

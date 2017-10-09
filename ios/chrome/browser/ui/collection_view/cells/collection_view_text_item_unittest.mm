@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/ui/collection_view/cells/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
+#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -18,8 +19,10 @@
 
 namespace {
 
+using CollectionViewTextItemTest = PlatformTest;
+
 // Test that accessory type is copied over to the cell from the item.
-TEST(CollectionViewTextItemTest, ConfigureCellPortsAccessoryType) {
+TEST_F(CollectionViewTextItemTest, ConfigureCellPortsAccessoryType) {
   CollectionViewTextItem* item =
       [[CollectionViewTextItem alloc] initWithType:0];
   item.accessoryType = MDCCollectionViewCellAccessoryCheckmark;
@@ -31,7 +34,7 @@ TEST(CollectionViewTextItemTest, ConfigureCellPortsAccessoryType) {
 }
 
 // Test that text properties are copied over to the cell from the item.
-TEST(CollectionViewTextItemTest, ConfigureCellPortsTextCellProperties) {
+TEST_F(CollectionViewTextItemTest, ConfigureCellPortsTextCellProperties) {
   CollectionViewTextItem* item =
       [[CollectionViewTextItem alloc] initWithType:0];
   item.text = @"some text";
@@ -47,7 +50,7 @@ TEST(CollectionViewTextItemTest, ConfigureCellPortsTextCellProperties) {
 
 // Test that if the item has no accessibilityLabel, the cell gets one composed
 // of the text and detailText.
-TEST(CollectionViewTextItemTest, ConfigureCellDerivesAccessibilityLabel) {
+TEST_F(CollectionViewTextItemTest, ConfigureCellDerivesAccessibilityLabel) {
   CollectionViewTextItem* item =
       [[CollectionViewTextItem alloc] initWithType:0];
   item.text = @"some text";
@@ -61,7 +64,7 @@ TEST(CollectionViewTextItemTest, ConfigureCellDerivesAccessibilityLabel) {
 
 // Test that if the item has a non-empty accessibilityLabel, this is copied
 // over to the cell.
-TEST(CollectionViewTextItemTest, ConfigureCellPortsAccessibilityLabel) {
+TEST_F(CollectionViewTextItemTest, ConfigureCellPortsAccessibilityLabel) {
   CollectionViewTextItem* item =
       [[CollectionViewTextItem alloc] initWithType:0];
   item.accessibilityLabel = @"completely different label";

@@ -8,6 +8,7 @@
 #import "ios/third_party/material_components_ios/src/components/ActivityIndicator/src/MaterialActivityIndicator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
+#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -15,9 +16,11 @@
 
 namespace {
 
+using StatusItemTest = PlatformTest;
+
 // Tests that the cell subviews are set properly after a call to
 // |configureCell:| in the different states.
-TEST(StatusItemTest, ConfigureCell) {
+TEST_F(StatusItemTest, ConfigureCell) {
   StatusItem* item = [[StatusItem alloc] initWithType:0];
   NSString* text = @"Test Text";
   item.text = text;

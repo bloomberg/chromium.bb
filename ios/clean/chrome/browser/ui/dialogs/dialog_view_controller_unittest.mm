@@ -10,13 +10,16 @@
 #import "ios/clean/chrome/browser/ui/dialogs/test_helpers/dialog_test_util.h"
 #import "ios/clean/chrome/browser/ui/dialogs/test_helpers/test_dialog_view_controller.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
+using DialogViewControllerTest = PlatformTest;
+
 // Tests that the dialog is properly set up via the DialogConsumer API.
-TEST(DialogViewControllerTest, VerifySetup) {
+TEST_F(DialogViewControllerTest, VerifySetup) {
   NSString* const kTitle = @"Title";
   NSString* const kMessage = @"message";
   NSArray* const kButtonConfigs = @[ [DialogButtonConfiguration

@@ -8,6 +8,7 @@
 #include "components/grit/components_scaled_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
+#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -19,9 +20,11 @@
 
 namespace {
 
+using CVCItemTest = PlatformTest;
+
 // Tests that the cell subviews are set properly after a call to
 // |configureCell:| in the different states possible.
-TEST(CVCItemTest, ConfigureCell) {
+TEST_F(CVCItemTest, ConfigureCell) {
   CVCItem* item = [[CVCItem alloc] initWithType:0];
   NSString* instructionsText = @"Instructions Test Text";
   NSString* errorMessage = @"Test Error Message";

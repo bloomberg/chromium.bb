@@ -6,6 +6,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
+#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -13,8 +14,10 @@
 
 namespace {
 
+using PasswordDetailsItemTest = PlatformTest;
+
 // Tests that the text label is set properly after a call to |configureCell:|.
-TEST(PasswordDetailsItemTest, ConfigureCell) {
+TEST_F(PasswordDetailsItemTest, ConfigureCell) {
   PassphraseErrorItem* item = [[PassphraseErrorItem alloc] initWithType:0];
   PassphraseErrorCell* cell = [[[item cellClass] alloc] init];
   EXPECT_TRUE([cell isMemberOfClass:[PassphraseErrorCell class]]);

@@ -526,7 +526,9 @@ TEST_F(TouchToSearchPermissionsMediatorTest, AudienceRemovedNotifications) {
 
 #pragma mark - Unit tests for availability class method.
 
-TEST(TouchToSearchPermissionsAvailabilityTest, CommandLinePermissions) {
+using TouchToSearchPermissionsAvailabilityTest = PlatformTest;
+
+TEST_F(TouchToSearchPermissionsAvailabilityTest, CommandLinePermissions) {
   const struct {
     bool set_disable;
     bool set_enable;
@@ -555,7 +557,7 @@ TEST(TouchToSearchPermissionsAvailabilityTest, CommandLinePermissions) {
   }
 }
 
-TEST(TouchToSearchPermissionsAvailabilityTest, FieldTrial) {
+TEST_F(TouchToSearchPermissionsAvailabilityTest, FieldTrial) {
   // Field trial support is not currently supported, so it is expected
   // that under all field trial configs, the feature will remain disabled.
   // If field trial support is added back in, this test should be updated.
@@ -586,7 +588,9 @@ TEST(TouchToSearchPermissionsAvailabilityTest, FieldTrial) {
 
 #pragma mark - Unit tests for mock class
 
-TEST(MockTouchToSearchPermissionsTest, Mocking) {
+using MockTouchToSearchPermissionsTest = PlatformTest;
+
+TEST_F(MockTouchToSearchPermissionsTest, Mocking) {
   MockTouchToSearchPermissionsMediator* scoped_permissions =
       [[MockTouchToSearchPermissionsMediator alloc]
           initWithBrowserState:nullptr];

@@ -6,6 +6,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
+#include "testing/platform_test.h"
 #include "third_party/ocmock/OCMock/OCMock.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -14,7 +15,9 @@
 
 namespace {
 
-TEST(BookmarkTextFieldItemTest, DelegateGetsTextFieldEvents) {
+using BookmarkTextFieldItemTest = PlatformTest;
+
+TEST_F(BookmarkTextFieldItemTest, DelegateGetsTextFieldEvents) {
   BookmarkTextFieldItem* item = [[BookmarkTextFieldItem alloc] initWithType:0];
   BookmarkTextFieldCell* cell =
       [[BookmarkTextFieldCell alloc] initWithFrame:CGRectZero];
@@ -29,7 +32,7 @@ TEST(BookmarkTextFieldItemTest, DelegateGetsTextFieldEvents) {
   cell.textField.text = @"Foo";
 }
 
-TEST(BookmarkTextFieldItemTest, TextFieldGetsText) {
+TEST_F(BookmarkTextFieldItemTest, TextFieldGetsText) {
   BookmarkTextFieldItem* item = [[BookmarkTextFieldItem alloc] initWithType:0];
   BookmarkTextFieldCell* cell =
       [[BookmarkTextFieldCell alloc] initWithFrame:CGRectZero];

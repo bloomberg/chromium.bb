@@ -7,6 +7,7 @@
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/ui/ui_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -29,10 +30,12 @@ void ExpectInterpolatedColor(UIColor* firstColor,
   EXPECT_FLOAT_EQ(1.0, a);
 }
 
+using UIKitUIUtilTest = PlatformTest;
+
 // Verify the assumption about UIViewController that on iPad all orientations
 // are supported, and all orientations but Portrait Upside-Down on iPhone and
 // iPod Touch.
-TEST(UIKitUIUtilTest, UIViewControllerSupportedOrientationsTest) {
+TEST_F(UIKitUIUtilTest, UIViewControllerSupportedOrientationsTest) {
   UIViewController* viewController =
       [[UIViewController alloc] initWithNibName:nil bundle:nil];
   if (IsIPadIdiom()) {
@@ -44,13 +47,13 @@ TEST(UIKitUIUtilTest, UIViewControllerSupportedOrientationsTest) {
   }
 }
 
-TEST(UIKitUIUtilTest, TestGetUiFont) {
+TEST_F(UIKitUIUtilTest, TestGetUiFont) {
   EXPECT_TRUE(GetUIFont(FONT_HELVETICA, false, 15.0));
   EXPECT_TRUE(GetUIFont(FONT_HELVETICA_NEUE, true, 15.0));
 }
 
 // Verifies that greyImage never returns retina-scale images.
-TEST(UIKitUIUtilTest, TestGreyImage) {
+TEST_F(UIKitUIUtilTest, TestGreyImage) {
   // Create an image using the device's scale factor.
   const CGSize kSize = CGSizeMake(100, 100);
   UIGraphicsBeginImageContextWithOptions(kSize, NO, 0.0);
@@ -78,7 +81,7 @@ UIImage* testImage(CGSize imageSize) {
   return image;
 }
 
-TEST(UIKitUIUtilTest, TestResizeImageOpacity) {
+TEST_F(UIKitUIUtilTest, TestResizeImageOpacity) {
   UIImage* actual;
   UIImage* image = testImage(CGSizeMake(100, 100));
   actual =
@@ -92,7 +95,7 @@ TEST(UIKitUIUtilTest, TestResizeImageOpacity) {
   EXPECT_TRUE(ImageHasAlphaChannel(actual));
 }
 
-TEST(UIKitUIUtilTest, TestResizeImageInvalidInput) {
+TEST_F(UIKitUIUtilTest, TestResizeImageInvalidInput) {
   UIImage* actual;
   UIImage* image = testImage(CGSizeMake(100, 50));
   actual = ResizeImage(image, CGSizeZero, ProjectionMode::kAspectFit);
@@ -109,7 +112,7 @@ TEST(UIKitUIUtilTest, TestResizeImageInvalidInput) {
   EXPECT_FALSE(actual);
 }
 
-TEST(UIKitUIUtilTest, TintImageKeepsImageProperties) {
+TEST_F(UIKitUIUtilTest, TintImageKeepsImageProperties) {
   UIImage* image = testImage(CGSizeMake(100, 75));
   UIImage* tintedImage = TintImage(image, [UIColor blueColor]);
   EXPECT_EQ(image.size.width, tintedImage.size.width);
@@ -123,7 +126,7 @@ TEST(UIKitUIUtilTest, TintImageKeepsImageProperties) {
             tintedImage.flipsForRightToLeftLayoutDirection);
 }
 
-TEST(UIKitUIUtilTest, TestInterpolateFromColorToColor) {
+TEST_F(UIKitUIUtilTest, TestInterpolateFromColorToColor) {
   CGFloat colorOne = 50.0f / 255.0f;
   CGFloat colorTwo = 100.0f / 255.0f;
   CGFloat expectedOne = 50.0f / 255.0f;
@@ -142,7 +145,7 @@ TEST(UIKitUIUtilTest, TestInterpolateFromColorToColor) {
 }
 
 // Tests that InterpolateFromColorToColor() works for monochrome colors.
-TEST(UIKitUIUtilTest, TestInterpolateFromColorToColorMonochrome) {
+TEST_F(UIKitUIUtilTest, TestInterpolateFromColorToColorMonochrome) {
   CGFloat kRGBComponent = 0.2;
   UIColor* rgb = [UIColor colorWithRed:kRGBComponent
                                  green:kRGBComponent

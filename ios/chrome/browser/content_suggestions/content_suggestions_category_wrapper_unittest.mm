@@ -6,6 +6,7 @@
 
 #include "components/ntp_snippets/category.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -21,9 +22,11 @@
 
 #pragma mark - Tests.
 
+using ContentSuggestionsCategoryWrapperTest = PlatformTest;
+
 // Tests that the category returned by the wrapper is the one given in the
 // initializer.
-TEST(ContentSuggestionsCategoryWrapperTest, GetCategory) {
+TEST_F(ContentSuggestionsCategoryWrapperTest, GetCategory) {
   // Setup.
   ntp_snippets::Category category = ntp_snippets::Category::FromIDValue(2);
   ContentSuggestionsCategoryWrapper* wrapper =
@@ -34,7 +37,7 @@ TEST(ContentSuggestionsCategoryWrapperTest, GetCategory) {
 }
 
 // Tests that two wrappers created with equal categories are equal.
-TEST(ContentSuggestionsCategoryWrapperTest, AreWrappersEqual) {
+TEST_F(ContentSuggestionsCategoryWrapperTest, AreWrappersEqual) {
   // Setup.
   ntp_snippets::Category category = ntp_snippets::Category::FromIDValue(2);
   ContentSuggestionsCategoryWrapper* wrapper =
@@ -50,7 +53,7 @@ TEST(ContentSuggestionsCategoryWrapperTest, AreWrappersEqual) {
 }
 
 // Tests that two wrappers created with different categories are not equal.
-TEST(ContentSuggestionsCategoryWrapperTest, AreWrappersDifferent) {
+TEST_F(ContentSuggestionsCategoryWrapperTest, AreWrappersDifferent) {
   // Setup.
   ntp_snippets::Category category = ntp_snippets::Category::FromIDValue(2);
   ContentSuggestionsCategoryWrapper* wrapper =
@@ -65,7 +68,7 @@ TEST(ContentSuggestionsCategoryWrapperTest, AreWrappersDifferent) {
 }
 
 // Tests the equality between a wrapper an different type of objects.
-TEST(ContentSuggestionsCategoryWrapperTest, DifferentObject) {
+TEST_F(ContentSuggestionsCategoryWrapperTest, DifferentObject) {
   // Setup.
   ntp_snippets::Category category = ntp_snippets::Category::FromIDValue(2);
   ContentSuggestionsCategoryWrapper* wrapper =

@@ -11,6 +11,7 @@
 #include "net/cookies/cookie_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
+#include "testing/platform_test.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -60,7 +61,9 @@ void CheckSystemCookie(const base::Time& expires, bool secure, bool httponly) {
 
 }  // namespace
 
-TEST(CookieUtil, CanonicalCookieFromSystemCookie) {
+using CookieUtil = PlatformTest;
+
+TEST_F(CookieUtil, CanonicalCookieFromSystemCookie) {
   base::Time creation_time = base::Time::Now();
   base::Time expire_date = creation_time + base::TimeDelta::FromHours(2);
   NSDate* system_expire_date =
@@ -106,7 +109,7 @@ TEST(CookieUtil, CanonicalCookieFromSystemCookie) {
   EXPECT_TRUE(chrome_cookie.IsSecure());
 }
 
-TEST(CookieUtil, SystemCookieFromCanonicalCookie) {
+TEST_F(CookieUtil, SystemCookieFromCanonicalCookie) {
   base::Time expire_date = base::Time::Now() + base::TimeDelta::FromHours(2);
 
   // Test various combinations of session, secure and httponly attributes.
@@ -116,7 +119,7 @@ TEST(CookieUtil, SystemCookieFromCanonicalCookie) {
   CheckSystemCookie(base::Time(), true, true);
 }
 
-TEST(CookieUtil, SystemCookieFromBadCanonicalCookie) {
+TEST_F(CookieUtil, SystemCookieFromBadCanonicalCookie) {
   // Generate a bad canonical cookie (value is invalid utf8).
   net::CanonicalCookie bad_canonical_cookie(
       kCookieName, kCookieValueInvalidUtf8, kCookieDomain, kCookiePath,

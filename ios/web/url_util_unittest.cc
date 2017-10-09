@@ -5,10 +5,13 @@
 #include "ios/web/public/url_util.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 namespace web {
 
-TEST(URLUtilTest, GURLByRemovingRefFromGURL) {
+using URLUtilTest = PlatformTest;
+
+TEST_F(URLUtilTest, GURLByRemovingRefFromGURL) {
   GURL url("http://foo.com/bar#baz");
   EXPECT_EQ(GURL("http://foo.com/bar"), GURLByRemovingRefFromGURL(url));
 }

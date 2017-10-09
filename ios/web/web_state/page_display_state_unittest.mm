@@ -7,14 +7,17 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #define EXPECT_NAN(value) EXPECT_NE(value, value)
+#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
+using PageDisplayStateTest = PlatformTest;
+
 // Tests that the empty constructor creates an invalid PageDisplayState with all
 // NAN values.
-TEST(PageDisplayStateTest, EmptyConstructor) {
+TEST_F(PageDisplayStateTest, EmptyConstructor) {
   web::PageDisplayState state;
   EXPECT_NAN(state.scroll_state().offset_x());
   EXPECT_NAN(state.scroll_state().offset_y());
@@ -26,7 +29,7 @@ TEST(PageDisplayStateTest, EmptyConstructor) {
 
 // Tests that the constructor with input states correctly populates the display
 // state.
-TEST(PageDisplayStateTest, StatesConstructor) {
+TEST_F(PageDisplayStateTest, StatesConstructor) {
   web::PageScrollState scroll_state(0.0, 1.0);
   EXPECT_EQ(0.0, scroll_state.offset_x());
   EXPECT_EQ(1.0, scroll_state.offset_y());
@@ -48,7 +51,7 @@ TEST(PageDisplayStateTest, StatesConstructor) {
 }
 
 // Tests the constructor with value inputs.
-TEST(PageDisplayStateTest, ValuesConstructor) {
+TEST_F(PageDisplayStateTest, ValuesConstructor) {
   web::PageDisplayState state(0.0, 1.0, 1.0, 5.0, 1.0);
   EXPECT_EQ(0.0, state.scroll_state().offset_x());
   EXPECT_EQ(1.0, state.scroll_state().offset_y());
@@ -59,7 +62,7 @@ TEST(PageDisplayStateTest, ValuesConstructor) {
 }
 
 // Tests converting between a PageDisplayState, its serialization, and back.
-TEST(PageDisplayStateTest, Serialization) {
+TEST_F(PageDisplayStateTest, Serialization) {
   web::PageDisplayState state(0.0, 1.0, 1.0, 5.0, 1.0);
   web::PageDisplayState new_state(state.GetSerialization());
   EXPECT_EQ(state, new_state);

@@ -6,14 +6,17 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
+#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
+using DialogConfigurationIdentifierTest = PlatformTest;
+
 // Tests that two DialogConfigurationIdentifiers created sequentially are not
 // equal to each other.
-TEST(DialogConfigurationIdentifierTest, NotEqual) {
+TEST_F(DialogConfigurationIdentifierTest, NotEqual) {
   DialogConfigurationIdentifier* ID1 =
       [[DialogConfigurationIdentifier alloc] init];
   DialogConfigurationIdentifier* ID2 =
@@ -23,7 +26,7 @@ TEST(DialogConfigurationIdentifierTest, NotEqual) {
 
 // Tests that copying a DialogConfigurationIdentifier creates one that is equal
 // to the original.
-TEST(DialogConfigurationIdentifierTest, EqualCopies) {
+TEST_F(DialogConfigurationIdentifierTest, EqualCopies) {
   DialogConfigurationIdentifier* identifier =
       [[DialogConfigurationIdentifier alloc] init];
   DialogConfigurationIdentifier* copy = [identifier copy];

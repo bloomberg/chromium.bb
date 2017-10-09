@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/logging.h"
 #import "ios/chrome/browser/ui/native_content_controller.h"
+#include "base/logging.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -13,7 +14,9 @@
 
 namespace {
 
-TEST(NativeContentControllerTest, TestInitWithURL) {
+using NativeContentControllerTest = PlatformTest;
+
+TEST_F(NativeContentControllerTest, TestInitWithURL) {
   GURL url("http://foo.bar.com");
   NativeContentController* controller =
       [[NativeContentController alloc] initWithURL:url];
@@ -23,7 +26,7 @@ TEST(NativeContentControllerTest, TestInitWithURL) {
   EXPECT_EQ(nil, controller.view);
 }
 
-TEST(NativeContentControllerTest, TestInitWithEmptyNibNameAndURL) {
+TEST_F(NativeContentControllerTest, TestInitWithEmptyNibNameAndURL) {
   GURL url("http://foo.bar.com");
   NativeContentController* controller =
       [[NativeContentController alloc] initWithNibName:nil url:url];
@@ -33,7 +36,7 @@ TEST(NativeContentControllerTest, TestInitWithEmptyNibNameAndURL) {
   EXPECT_EQ(nil, controller.view);
 }
 
-TEST(NativeContentControllerTest, TestInitWithNibAndURL) {
+TEST_F(NativeContentControllerTest, TestInitWithNibAndURL) {
   GURL url("http://foo.bar.com");
   NSString* nibName = @"native_content_controller_test";
   NativeContentController* controller =

@@ -8,12 +8,15 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-TEST(SafeModeCoordinatorTest, RootVC) {
+using SafeModeCoordinatorTest = PlatformTest;
+
+TEST_F(SafeModeCoordinatorTest, RootVC) {
   // Expect that starting a safe mode coordinator will populate the root view
   // controller.
   base::scoped_nsobject<UIWindow> window(

@@ -12,6 +12,7 @@
 #import "ios/web/web_state/web_state_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
+#include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "ui/base/test/ios/ui_image_test_utils.h"
 
@@ -47,8 +48,10 @@ using web::WebStateImpl;
 }
 @end
 
+using ShareToDataBuilderTest = PlatformTest;
+
 // Verifies that ShareToData is constructed properly for a given Tab.
-TEST(ShareToDataBuilderTest, TestSharePageCommandHandling) {
+TEST_F(ShareToDataBuilderTest, TestSharePageCommandHandling) {
   GURL expected_url("http://www.testurl.net");
   NSString* expected_title = @"title";
 
@@ -94,7 +97,7 @@ TEST(ShareToDataBuilderTest, TestSharePageCommandHandling) {
 
 // Verifies that |ShareToDataForTab()| returns nil if the Tab is in the process
 // of being closed.
-TEST(ShareToDataBuilderTest, TestReturnsNilWhenClosing) {
+TEST_F(ShareToDataBuilderTest, TestReturnsNilWhenClosing) {
   GURL expected_url("http://www.testurl.net");
   NSString* expected_title = @"title";
 

@@ -5,6 +5,7 @@
 #include "ios/chrome/browser/app_startup_parameters.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -19,7 +20,9 @@ struct UniversalLinkDecodeTestCase {
   bool expected_complete_payment_request;
 };
 
-TEST(AppStartupParameters, QueryParametersPaymentRequest) {
+using AppStartupParametersTest = PlatformTest;
+
+TEST_F(AppStartupParametersTest, QueryParametersPaymentRequest) {
   const UniversalLinkDecodeTestCase test_cases[] = {
       {
           GURL("https://goo.gl/ioschrome/"), {}, false,

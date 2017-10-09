@@ -13,6 +13,7 @@
 #include "components/version_info/version_info.h"
 #include "ios/chrome/common/channel_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 using base::StringPrintf;
 
@@ -48,7 +49,9 @@ void TestParams(update_client::UpdateQueryParams::ProdId prod_id) {
                    IOSChromeUpdateQueryParamsDelegate::GetLang().c_str())));
 }
 
-TEST(IOSChromeUpdateQueryParamsDelegateTest, GetParams) {
+using IOSChromeUpdateQueryParamsDelegateTest = PlatformTest;
+
+TEST_F(IOSChromeUpdateQueryParamsDelegateTest, GetParams) {
   base::ScopedClosureRunner runner(
       base::Bind(update_client::UpdateQueryParams::SetDelegate, nullptr));
   update_client::UpdateQueryParams::SetDelegate(

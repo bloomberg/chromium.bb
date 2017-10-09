@@ -7,6 +7,7 @@
 #import <Foundation/Foundation.h>
 
 #import "testing/gtest_mac.h"
+#include "testing/platform_test.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -15,7 +16,9 @@
 
 namespace web {
 
-TEST(URLSchemeUtilTest, UrlHasWebScheme) {
+using URLSchemeUtilTest = PlatformTest;
+
+TEST_F(URLSchemeUtilTest, UrlHasWebScheme) {
   EXPECT_TRUE(UrlHasWebScheme(GURL("http://foo.com")));
   EXPECT_TRUE(UrlHasWebScheme(GURL("https://foo.com")));
   EXPECT_TRUE(UrlHasWebScheme(GURL("data:text/html;charset=utf-8,Hello")));
@@ -23,7 +26,7 @@ TEST(URLSchemeUtilTest, UrlHasWebScheme) {
   EXPECT_FALSE(UrlHasWebScheme(GURL("chrome://settings")));
 }
 
-TEST(URLSchemeUtilTest, NSURLHasWebScheme) {
+TEST_F(URLSchemeUtilTest, NSURLHasWebScheme) {
   EXPECT_TRUE(UrlHasWebScheme([NSURL URLWithString:@"http://foo.com"]));
   EXPECT_TRUE(UrlHasWebScheme([NSURL URLWithString:@"https://foo.com"]));
   EXPECT_TRUE(UrlHasWebScheme(

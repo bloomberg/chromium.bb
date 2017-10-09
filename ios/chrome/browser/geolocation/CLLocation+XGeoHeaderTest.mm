@@ -6,6 +6,7 @@
 
 #import "ios/chrome/browser/geolocation/CLLocation+XGeoHeader.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -18,7 +19,9 @@ NSString* const kEncoded550BatterySt =
      "zdGFtcDogMTM4OTAwMDAwMDAwMDAwMApyYWRpdXM6IDEwMDAwCmxhdGxuZyA8CiAgbGF0aXR1"
      "ZGVfZTc6IDM3Nzk2MzIyMAogIGxvbmdpdHVkZV9lNzogLTEyMjQwMDI5MTAKPg==";
 
-TEST(CLLocationXGeoHeaderTest, TestXGeoString) {
+using CLLocationXGeoHeaderTest = PlatformTest;
+
+TEST_F(CLLocationXGeoHeaderTest, TestXGeoString) {
   CLLocationCoordinate2D coordinate =
       CLLocationCoordinate2DMake(37.796322, -122.400291);
   // Picked a fixed timestamp. This one is 2014-01-06 09:20:00 +0000.

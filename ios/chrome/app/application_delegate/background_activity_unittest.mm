@@ -18,9 +18,11 @@
 #error "This file requires ARC support."
 #endif
 
+using BackgroundActivityTest = PlatformTest;
+
 // Verifies that -application:performFetchWithCompletionHandler: calls the
 // browser launcher in background state and uploads the report.
-TEST(BackgroundActivityTest, performFetchWithCompletionHandler) {
+TEST_F(BackgroundActivityTest, performFetchWithCompletionHandler) {
   // Setup.
   [[PreviousSessionInfo sharedInstance] setIsFirstSessionAfterUpgrade:NO];
 
@@ -58,7 +60,7 @@ TEST(BackgroundActivityTest, performFetchWithCompletionHandler) {
 
 // Verifies that -handleEventsForBackgroundURLSession:completionHandler: calls
 // the browser launcher in background state.
-TEST(BackgroundActivityTest, handleEventsForBackgroundURLSession) {
+TEST_F(BackgroundActivityTest, handleEventsForBackgroundURLSession) {
   // Setup.
   // BrowserLauncher mock.
   id browser_launcher =

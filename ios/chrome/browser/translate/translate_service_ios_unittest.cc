@@ -7,9 +7,12 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/public/provider/chrome/browser/test_chrome_provider_initializer.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 #include "url/gurl.h"
 
-TEST(TranslateServiceIOSTest, CheckTranslatableURL) {
+using TranslateServiceIOSTest = PlatformTest;
+
+TEST_F(TranslateServiceIOSTest, CheckTranslatableURL) {
   GURL empty_url = GURL(std::string());
   EXPECT_FALSE(TranslateServiceIOS::IsTranslatableURL(empty_url));
 

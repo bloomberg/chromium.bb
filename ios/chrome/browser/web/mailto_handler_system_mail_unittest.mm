@@ -6,13 +6,16 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
+#include "testing/platform_test.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-TEST(MailtoHandlerSystemMailTest, TestConstructor) {
+using MailtoHandlerSystemMailTest = PlatformTest;
+
+TEST_F(MailtoHandlerSystemMailTest, TestConstructor) {
   MailtoHandler* handler = [[MailtoHandlerSystemMail alloc] init];
   EXPECT_TRUE(handler);
   EXPECT_NSEQ(@"Mail", [handler appName]);
@@ -20,7 +23,7 @@ TEST(MailtoHandlerSystemMailTest, TestConstructor) {
   EXPECT_TRUE([handler isAvailable]);
 }
 
-TEST(MailtoHandlerSystemMailTest, TestRewrite) {
+TEST_F(MailtoHandlerSystemMailTest, TestRewrite) {
   MailtoHandler* handler = [[MailtoHandlerSystemMail alloc] init];
   NSString* result = [handler rewriteMailtoURL:GURL("mailto:user@domain.com")];
   EXPECT_NSEQ(@"mailto:user@domain.com", result);

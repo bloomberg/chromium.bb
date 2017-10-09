@@ -7,6 +7,7 @@
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_detail_item.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
+#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -14,9 +15,11 @@
 
 namespace {
 
+using ImportDataMultilineDetailItemTest = PlatformTest;
+
 // Tests that the text and detail text are honoured after a call to
 // |configureCell:|.
-TEST(ImportDataMultilineDetailItemTest, ConfigureCell) {
+TEST_F(ImportDataMultilineDetailItemTest, ConfigureCell) {
   CollectionViewDetailItem* item =
       [[CollectionViewDetailItem alloc] initWithType:0];
   item.cellClass = [ImportDataMultilineDetailCell class];
@@ -43,7 +46,7 @@ TEST(ImportDataMultilineDetailItemTest, ConfigureCell) {
 
 // Tests that the text label of an ImportDataMultilineDetailCell only has one
 // line but the detail text label spans multiple lines.
-TEST(ImportDataMultilineDetailItemTest, MultipleLines) {
+TEST_F(ImportDataMultilineDetailItemTest, MultipleLines) {
   ImportDataMultilineDetailCell* cell =
       [[ImportDataMultilineDetailCell alloc] init];
   EXPECT_EQ(1, cell.textLabel.numberOfLines);

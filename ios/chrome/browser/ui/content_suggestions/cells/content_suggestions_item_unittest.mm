@@ -8,6 +8,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_cell.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/gtest_support.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -19,9 +20,11 @@
 
 namespace {
 
+using ContentSuggestionsItemTest = PlatformTest;
+
 // Tests that configureCell: sets all the fields of the cell except the image
 // and fetches the image through the delegate.
-TEST(ContentSuggestionsItemTest, CellIsConfiguredWithoutImage) {
+TEST_F(ContentSuggestionsItemTest, CellIsConfiguredWithoutImage) {
   // Setup.
   NSString* title = @"testTitle";
   GURL url = GURL("http://chromium.org");
@@ -60,7 +63,7 @@ TEST(ContentSuggestionsItemTest, CellIsConfiguredWithoutImage) {
 
 // Tests that configureCell: does not call the delegate if it fetched the image
 // once.
-TEST(ContentSuggestionsItemTest, DontFetchImageIfImageIsBeingFetched) {
+TEST_F(ContentSuggestionsItemTest, DontFetchImageIfImageIsBeingFetched) {
   // Setup.
   NSString* title = @"testTitle";
   GURL url = GURL("http://chromium.org");
@@ -96,7 +99,7 @@ TEST(ContentSuggestionsItemTest, DontFetchImageIfImageIsBeingFetched) {
 
 // Tests that the delegate is not called when |hasImage| is set to NO. If the
 // delegate is called an exception is raised.
-TEST(ContentSuggestionsItemTest, NoDelegateCallWhenHasNotImage) {
+TEST_F(ContentSuggestionsItemTest, NoDelegateCallWhenHasNotImage) {
   // Setup.
   NSString* title = @"testTitle";
   GURL url = GURL("http://chromium.org");
@@ -116,7 +119,7 @@ TEST(ContentSuggestionsItemTest, NoDelegateCallWhenHasNotImage) {
 }
 
 // Tests that the display of the image is animated only for the first time.
-TEST(ContentSuggestionsItemTest, ImageAnimatedOnlyTheFirstTime) {
+TEST_F(ContentSuggestionsItemTest, ImageAnimatedOnlyTheFirstTime) {
   // Setup.
   NSString* title = @"testTitle";
   GURL url = GURL("http://chromium.org");
@@ -143,7 +146,7 @@ TEST(ContentSuggestionsItemTest, ImageAnimatedOnlyTheFirstTime) {
 }
 
 // Tests the custom actions when there is no read later actions.
-TEST(ContentSuggestionsItemTest, NoReadLaterAction) {
+TEST_F(ContentSuggestionsItemTest, NoReadLaterAction) {
   // Setup.
   NSString* title = @"testTitle";
   GURL url = GURL("http://chromium.org");

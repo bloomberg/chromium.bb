@@ -6,6 +6,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
+#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -13,8 +14,10 @@
 
 namespace {
 
+using CollectionViewDetailItemTest = PlatformTest;
+
 // Tests that the UILabels are set properly after a call to |configureCell:|.
-TEST(CollectionViewDetailItemTest, TextLabels) {
+TEST_F(CollectionViewDetailItemTest, TextLabels) {
   CollectionViewDetailItem* item =
       [[CollectionViewDetailItem alloc] initWithType:0];
   NSString* mainText = @"Main text";
@@ -35,9 +38,11 @@ TEST(CollectionViewDetailItemTest, TextLabels) {
   EXPECT_NSEQ(detailText, detailCell.detailTextLabel.text);
 }
 
+using CollectionViewDetailCellTest = PlatformTest;
+
 // Tests that each of the two text labels is provided with the correct amount
 // of space.
-TEST(CollectionViewDetailCellTest, TextLabelTargetWidths) {
+TEST_F(CollectionViewDetailCellTest, TextLabelTargetWidths) {
   // Make the cell 148 wide so that after allocating 3 * kHorizontalPadding (16)
   // space for the margins and area between the labels, there is 100 available.
   // Accordingly, in each of the cases below where the sum of the desired label

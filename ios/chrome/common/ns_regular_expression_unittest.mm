@@ -64,13 +64,15 @@ NSRegularExpression* MakeRegularExpression(NSString* pattern) {
                                                      error:&error];
 }
 
-TEST(NSRegularExpressionTest, TestSimpleRegex) {
+using NSRegularExpressionTest = PlatformTest;
+
+TEST_F(NSRegularExpressionTest, TestSimpleRegex) {
   NSRegularExpression* regex = MakeRegularExpression(@"foo(.*)bar(.*)");
   ExpectRegexMatched(regex, @"fooONEbarTWO", @"first $1, second $2",
                      @"first ONE, second TWO");
 }
 
-TEST(NSRegularExpressionTest, TestComplexRegex) {
+TEST_F(NSRegularExpressionTest, TestComplexRegex) {
   NSString* expression = @"^http[s]?://"
                           "(?:"
                           "(?:youtu\\.be/)|"
@@ -89,7 +91,7 @@ TEST(NSRegularExpressionTest, TestComplexRegex) {
   ExpectRegexNotMatched(regex, @"http://www.youtube.com/embed/GkOZ8DfO248");
 }
 
-TEST(NSRegularExpressionTest, TestSimpleAlternation) {
+TEST_F(NSRegularExpressionTest, TestSimpleAlternation) {
   // This test verifies how NSRegularExpression works.
   // Regex 'ab|c' matches 'ab', 'ac', or 'c'. Does not match 'abc', 'a', or 'b'.
   NSRegularExpression* regex = MakeRegularExpression(@"^ab|c$");
@@ -115,7 +117,7 @@ TEST(NSRegularExpressionTest, TestSimpleAlternation) {
   ExpectRegexNotMatched(regex, @"abc");
 }
 
-TEST(NSRegularExpressionTest, TestUberCaptureGroup) {
+TEST_F(NSRegularExpressionTest, TestUberCaptureGroup) {
   // The absence of an uber-capture group caused NSRegularExpression to crash on
   // iOS 5.x. This tests to make sure that it is not happening on iOS 6+
   // environments.

@@ -18,7 +18,7 @@
 #error "This file requires ARC support."
 #endif
 
-class PaymentRequestErrorCoordinatorTest : public PlatformTest {};
+using PaymentRequestErrorCoordinatorTest = PlatformTest;
 
 // Tests that invoking start and stop on the coordinator presents and dismisses
 // the payment request error view controller, respectively.

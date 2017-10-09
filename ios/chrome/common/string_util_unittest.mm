@@ -16,7 +16,9 @@
 
 namespace {
 
-TEST(StringUtilTest, ParseStringWithLink) {
+using StringUtilTest = PlatformTest;
+
+TEST_F(StringUtilTest, ParseStringWithLink) {
   NSArray* const all_test_data = @[
     @{
       @"input" : @"Text without link.",
@@ -60,7 +62,7 @@ TEST(StringUtilTest, ParseStringWithLink) {
   }
 }
 
-TEST(StringUtilTest, CleanNSStringForDisplay) {
+TEST_F(StringUtilTest, CleanNSStringForDisplay) {
   NSArray* const all_test_data = @[
     @{
       @"input" : @"Clean String",
@@ -99,7 +101,9 @@ TEST(StringUtilTest, CleanNSStringForDisplay) {
   }
 }
 
-TEST(StringUnitTest, SubstringOfWidth) {
+using StringUnitTest = PlatformTest;
+
+TEST_F(StringUnitTest, SubstringOfWidth) {
   // returns nil for zero-length strings
   EXPECT_NSEQ(SubstringOfWidth(@"", @{}, 100, NO), nil);
   EXPECT_NSEQ(SubstringOfWidth(nil, @{}, 100, NO), nil);

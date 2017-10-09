@@ -7,14 +7,17 @@
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
+#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
+using AccountControlItemTest = PlatformTest;
+
 // Tests that the cell is properly configured with image and texts after a call
 // to |configureCell:|. All other cell decorations are default.
-TEST(AccountControlItemTest, ConfigureCellDefault) {
+TEST_F(AccountControlItemTest, ConfigureCellDefault) {
   AccountControlItem* item = [[AccountControlItem alloc] initWithType:0];
   UIImage* image = [[UIImage alloc] init];
   NSString* mainText = @"Main text";
@@ -47,7 +50,7 @@ TEST(AccountControlItemTest, ConfigureCellDefault) {
 
 // Tests that the cell is properly configured with error and an accessory after
 // a call to |configureCell:|.
-TEST(AccountControlItemTest, ConfigureCellWithErrorAndAccessory) {
+TEST_F(AccountControlItemTest, ConfigureCellWithErrorAndAccessory) {
   AccountControlItem* item = [[AccountControlItem alloc] initWithType:0];
   UIImage* image = [[UIImage alloc] init];
   NSString* mainText = @"Main text";
