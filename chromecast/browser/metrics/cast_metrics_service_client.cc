@@ -59,8 +59,11 @@ const char kMetricsOldClientID[] = "user_experience_metrics.client_id";
 #if defined(OS_ANDROID)
 const char kClientIdName[] = "Client ID";
 #else
+
+#if defined(OS_LINUX)
 const char kExternalUmaEventsRelativePath[] = "metrics/uma-events";
 const char kPlatformUmaEventsPath[] = "/data/share/chrome/metrics/uma-events";
+#endif  // defined(OS_LINUX)
 
 const struct ChannelMap {
   const char* chromecast_channel;

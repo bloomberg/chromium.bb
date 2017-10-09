@@ -1,9 +1,9 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_BROWSER_CAST_CONTENT_WINDOW_LINUX_H_
-#define CHROMECAST_BROWSER_CAST_CONTENT_WINDOW_LINUX_H_
+#ifndef CHROMECAST_BROWSER_CAST_CONTENT_WINDOW_AURA_H_
+#define CHROMECAST_BROWSER_CAST_CONTENT_WINDOW_AURA_H_
 
 #include <memory>
 
@@ -13,15 +13,14 @@
 
 namespace content {
 class WebContents;
-}
+}  // namespace content
 
 namespace chromecast {
 namespace shell {
 
-class CastContentWindowLinux : public CastContentWindow {
+class CastContentWindowAura : public CastContentWindow {
  public:
-  // Removes the window from the screen.
-  ~CastContentWindowLinux() override;
+  ~CastContentWindowAura() override;
 
   // CastContentWindow implementation.
   void SetTransparent() override;
@@ -32,14 +31,12 @@ class CastContentWindowLinux : public CastContentWindow {
   friend class CastContentWindow;
 
   // This class should only be instantiated by CastContentWindow::Create.
-  CastContentWindowLinux();
+  CastContentWindowAura();
 
-  bool transparent_;
-
-  DISALLOW_COPY_AND_ASSIGN(CastContentWindowLinux);
+  DISALLOW_COPY_AND_ASSIGN(CastContentWindowAura);
 };
 
 }  // namespace shell
 }  // namespace chromecast
 
-#endif  // CHROMECAST_BROWSER_CAST_CONTENT_WINDOW_LINUX_H_
+#endif  // CHROMECAST_BROWSER_CAST_CONTENT_WINDOW_AURA_H_

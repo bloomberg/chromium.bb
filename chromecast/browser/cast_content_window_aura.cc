@@ -1,42 +1,36 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/browser/cast_content_window_linux.h"
+#include "chromecast/browser/cast_content_window_aura.h"
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "chromecast/graphics/cast_window_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "ipc/ipc_message.h"
+#include "ui/aura/window.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
-
-#if defined(USE_AURA)
-#include "ui/aura/window.h"
-#endif  // defined(USE_AURA)
 
 namespace chromecast {
 namespace shell {
 
 // static
 std::unique_ptr<CastContentWindow> CastContentWindow::Create(
-    CastContentWindow::Delegate* delegate, bool is_headless) {
+    CastContentWindow::Delegate* delegate,
+    bool is_headless) {
   DCHECK(delegate);
-  return base::WrapUnique(new CastContentWindowLinux());
+  return base::WrapUnique(new CastContentWindowAura());
 }
 
-CastContentWindowLinux::CastContentWindowLinux() : transparent_(false) {}
+CastContentWindowAura::CastContentWindowAura() {}
+CastContentWindowAura::~CastContentWindowAura() {}
 
-CastContentWindowLinux::~CastContentWindowLinux() {}
+void CastContentWindowAura::SetTransparent() {}
 
-void CastContentWindowLinux::SetTransparent() {
-  transparent_ = true;
-}
-
-void CastContentWindowLinux::ShowWebContents(
-    content::WebContents* web_contents,
-    CastWindowManager* window_manager) {
+void CastContentWindowAura::ShowWebContents(content::WebContents* web_contents,
+                                            CastWindowManager* window_manager) {
   DCHECK(window_manager);
   gfx::NativeView window = web_contents->GetNativeView();
   window_manager->SetWindowId(window, CastWindowManager::APP);

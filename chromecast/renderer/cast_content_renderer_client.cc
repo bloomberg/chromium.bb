@@ -11,7 +11,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "chromecast/base/chromecast_switches.h"
-#include "chromecast/crash/cast_crash_keys.h"
 #include "chromecast/media/base/media_caps.h"
 #include "chromecast/media/base/media_codec_support.h"
 #include "chromecast/media/base/supported_codec_profile_levels_memo.h"
@@ -38,6 +37,10 @@
 #else
 #include "chromecast/renderer/memory_pressure_observer_impl.h"
 #endif  // OS_ANDROID
+
+#if !defined(OS_FUCHSIA)
+#include "chromecast/crash/cast_crash_keys.h"
+#endif  // !defined(OS_FUCHSIA)
 
 namespace chromecast {
 namespace shell {
@@ -70,8 +73,6 @@ CastContentRendererClient::~CastContentRendererClient() {
 }
 
 void CastContentRendererClient::RenderThreadStarted() {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-
   // Register as observer for media capabilities
   content::RenderThread* thread = content::RenderThread::Get();
   media::mojom::MediaCapsPtr media_caps;
@@ -96,6 +97,10 @@ void CastContentRendererClient::RenderThreadStarted() {
   prescient_networking_dispatcher_.reset(
       new network_hints::PrescientNetworkingDispatcher());
 
+#if !defined(OS_FUCHSIA)
+  // TODO(crbug.com/753619): Enable crash reporting on Fuchsia.
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+
   std::string last_launched_app =
       command_line->GetSwitchValueNative(switches::kLastLaunchedApp);
   if (!last_launched_app.empty())
@@ -105,6 +110,7 @@ void CastContentRendererClient::RenderThreadStarted() {
       command_line->GetSwitchValueNative(switches::kPreviousApp);
   if (!previous_app.empty())
     base::debug::SetCrashKeyValue(crash_keys::kPreviousApp, previous_app);
+#endif  // !defined(OS_FUCHSIA)
 }
 
 void CastContentRendererClient::RenderViewCreated(
