@@ -140,8 +140,6 @@ source_set("common_sources") {
     "content_switches.h",
     "context_menu_params.cc",
     "context_menu_params.h",
-    "cookie_manager_struct_traits.cc",
-    "cookie_manager_struct_traits.h",
     "cursor_info.h",
     "drop_data.cc",
     "drop_data.h",
@@ -355,7 +353,6 @@ mojom("interfaces") {
   ]
 
   sources = [
-    "cookie_manager.mojom",
     "download_stream.mojom",
     "mutable_network_traffic_annotation_tag.mojom",
     "network_service.mojom",
@@ -368,6 +365,7 @@ mojom("interfaces") {
 
   public_deps = [
     "//mojo/common:common_custom_types",
+    "//services/network/public/interfaces",
     "//url/mojo:url_mojom_gurl",
     "//url/mojo:url_mojom_origin",
   ]

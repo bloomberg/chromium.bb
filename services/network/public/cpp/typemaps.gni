@@ -2,4 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-typemaps = [ "//services/network/public/cpp/http_request_headers.typemap" ]
+typemaps = [
+  "//services/network/public/cpp/cookie_manager.typemap",
+  "//services/network/public/cpp/http_request_headers.typemap",
+]

@@ -132,6 +132,6 @@ blink_core_sources("loader") {
   ]
 
   public_deps = [
-    "//services/network/public/interfaces:interfaces_blink",
+    "//third_party/WebKit/Source/platform",
   ]
 }

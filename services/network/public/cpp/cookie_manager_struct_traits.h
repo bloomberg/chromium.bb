@@ -2,45 +2,44 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_COOKIE_MANAGER_STRUCT_TRAITS_H_
-#define CONTENT_COMMON_COOKIE_MANAGER_STRUCT_TRAITS_H_
+#ifndef SERVICES_NETWORK_PUBLIC_CPP_COOKIE_MANAGER_STRUCT_TRAITS_H_
+#define SERVICES_NETWORK_PUBLIC_CPP_COOKIE_MANAGER_STRUCT_TRAITS_H_
 
-#include "content/public/common/cookie_manager.mojom.h"
 #include "ipc/ipc_message_utils.h"
 #include "mojo/public/cpp/bindings/enum_traits.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_options.h"
-#include "net/cookies/cookie_store.h"
+#include "services/network/public/interfaces/cookie_manager.mojom.h"
 
 namespace mojo {
 
 template <>
-struct EnumTraits<content::mojom::CookiePriority, net::CookiePriority> {
-  static content::mojom::CookiePriority ToMojom(net::CookiePriority input);
-  static bool FromMojom(content::mojom::CookiePriority input,
+struct EnumTraits<network::mojom::CookiePriority, net::CookiePriority> {
+  static network::mojom::CookiePriority ToMojom(net::CookiePriority input);
+  static bool FromMojom(network::mojom::CookiePriority input,
                         net::CookiePriority* output);
 };
 
 template <>
-struct EnumTraits<content::mojom::CookieSameSite, net::CookieSameSite> {
-  static content::mojom::CookieSameSite ToMojom(net::CookieSameSite input);
-  static bool FromMojom(content::mojom::CookieSameSite input,
+struct EnumTraits<network::mojom::CookieSameSite, net::CookieSameSite> {
+  static network::mojom::CookieSameSite ToMojom(net::CookieSameSite input);
+  static bool FromMojom(network::mojom::CookieSameSite input,
                         net::CookieSameSite* output);
 };
 
 template <>
-struct EnumTraits<content::mojom::CookieSameSiteFilter,
+struct EnumTraits<network::mojom::CookieSameSiteFilter,
                   net::CookieOptions::SameSiteCookieMode> {
-  static content::mojom::CookieSameSiteFilter ToMojom(
+  static network::mojom::CookieSameSiteFilter ToMojom(
       net::CookieOptions::SameSiteCookieMode input);
 
-  static bool FromMojom(content::mojom::CookieSameSiteFilter input,
+  static bool FromMojom(network::mojom::CookieSameSiteFilter input,
                         net::CookieOptions::SameSiteCookieMode* output);
 };
 
 template <>
-struct StructTraits<content::mojom::CookieOptionsDataView, net::CookieOptions> {
+struct StructTraits<network::mojom::CookieOptionsDataView, net::CookieOptions> {
   static bool exclude_httponly(const net::CookieOptions& o) {
     return o.exclude_httponly();
   }
@@ -57,12 +56,12 @@ struct StructTraits<content::mojom::CookieOptionsDataView, net::CookieOptions> {
     return base::Optional<base::Time>(o.server_time());
   }
 
-  static bool Read(content::mojom::CookieOptionsDataView mojo_options,
+  static bool Read(network::mojom::CookieOptionsDataView mojo_options,
                    net::CookieOptions* cookie_options);
 };
 
 template <>
-struct StructTraits<content::mojom::CanonicalCookieDataView,
+struct StructTraits<network::mojom::CanonicalCookieDataView,
                     net::CanonicalCookie> {
   static const std::string& name(const net::CanonicalCookie& c) {
     return c.Name();
@@ -100,10 +99,10 @@ struct StructTraits<content::mojom::CanonicalCookieDataView,
     return c.Priority();
   }
 
-  static bool Read(content::mojom::CanonicalCookieDataView cookie,
+  static bool Read(network::mojom::CanonicalCookieDataView cookie,
                    net::CanonicalCookie* out);
 };
 
 }  // namespace mojo
 
-#endif  // CONTENT_COMMON_COOKIE_MANAGER_STRUCT_TRAITS_H_
+#endif  // SERVICES_NETWORK_PUBLIC_CPP_COOKIE_MANAGER_STRUCT_TRAITS_H_

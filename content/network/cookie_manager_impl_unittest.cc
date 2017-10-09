@@ -9,18 +9,18 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
-#include "content/public/common/cookie_manager.mojom.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_store.h"
 #include "net/cookies/cookie_store_test_callbacks.h"
+#include "services/network/public/interfaces/cookie_manager.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Test infrastructure outline:
 //      # Classes
-//      * SynchronousMojoCookieWrapper: Takes a mojom::CookieManager at
+//      * SynchronousMojoCookieWrapper: Takes a network::mojom::CookieManager at
 //        construction; exposes synchronous interfaces that wrap the
-//        mojom::CookieManager async interfaces to make testing easier.
+//        network::mojom::CookieManager async interfaces to make testing easier.
 //      * CookieChangeNotificationImpl: Test class implementing
 //        the CookieChangeNotification interface and recording
 //        incoming messages on it.
@@ -31,17 +31,18 @@
 //
 //      # Functions
 //      * CompareCanonicalCookies: Comparison function to make it easy to
-//        sort cookie list responses from the mojom::CookieManager.
+//        sort cookie list responses from the network::mojom::CookieManager.
 
 namespace content {
 
-// Wraps a mojom::CookieManager in synchronous, blocking calls to make it easier
-// to test.
+// Wraps a network::mojom::CookieManager in synchronous, blocking calls to make
+// it easier to test.
 class SynchronousCookieManager {
  public:
   // Caller must guarantee that |*cookie_service| outlives the
   // SynchronousCookieManager.
-  explicit SynchronousCookieManager(mojom::CookieManager* cookie_service)
+  explicit SynchronousCookieManager(
+      network::mojom::CookieManager* cookie_service)
       : cookie_service_(cookie_service) {}
   ~SynchronousCookieManager() {}
 
@@ -80,11 +81,11 @@ class SynchronousCookieManager {
     return result;
   }
 
-  uint32_t DeleteCookies(mojom::CookieDeletionFilter filter) {
+  uint32_t DeleteCookies(network::mojom::CookieDeletionFilter filter) {
     base::RunLoop run_loop;
     uint32_t num_deleted = 0u;
-    mojom::CookieDeletionFilterPtr filter_ptr =
-        mojom::CookieDeletionFilter::New(filter);
+    network::mojom::CookieDeletionFilterPtr filter_ptr =
+        network::mojom::CookieDeletionFilter::New(filter);
 
     cookie_service_->DeleteCookies(
         std::move(filter_ptr),
@@ -121,13 +122,13 @@ class SynchronousCookieManager {
 
   static void RequestNotificationCallback(
       base::RunLoop* run_loop,
-      content::mojom::CookieChangeNotificationRequest* request_out,
-      content::mojom::CookieChangeNotificationRequest request) {
+      network::mojom::CookieChangeNotificationRequest* request_out,
+      network::mojom::CookieChangeNotificationRequest request) {
     *request_out = std::move(request);
     run_loop->Quit();
   }
 
-  mojom::CookieManager* cookie_service_;
+  network::mojom::CookieManager* cookie_service_;
 
   DISALLOW_COPY_AND_ASSIGN(SynchronousCookieManager);
 };
@@ -208,7 +209,7 @@ class CookieManagerImplTest : public testing::Test {
   CookieManagerImpl* service_impl() const { return cookie_service_.get(); }
 
   // Return the cookie service at the client end of the mojo pipe.
-  mojom::CookieManager* cookie_service_client() {
+  network::mojom::CookieManager* cookie_service_client() {
     return cookie_service_ptr_.get();
   }
 
@@ -227,7 +228,7 @@ class CookieManagerImplTest : public testing::Test {
   base::MessageLoopForIO message_loop_;
   net::CookieMonster cookie_monster_;
   std::unique_ptr<content::CookieManagerImpl> cookie_service_;
-  mojom::CookieManagerPtr cookie_service_ptr_;
+  network::mojom::CookieManagerPtr cookie_service_ptr_;
   std::unique_ptr<SynchronousCookieManager> service_wrapper_;
   base::Time setup_time_;
 
@@ -323,7 +324,7 @@ TEST_F(CookieManagerImplTest, GetCookieList) {
 
 TEST_F(CookieManagerImplTest, GetCookieListHttpOnly) {
   // Clean out the cookies.
-  mojom::CookieDeletionFilter filter;
+  network::mojom::CookieDeletionFilter filter;
   EXPECT_EQ(4u, service_wrapper()->DeleteCookies(filter));
 
   // Create an httponly and a non-httponly cookie.
@@ -364,7 +365,7 @@ TEST_F(CookieManagerImplTest, GetCookieListHttpOnly) {
 
 TEST_F(CookieManagerImplTest, GetCookieListSameSite) {
   // Clean out the cookies.
-  mojom::CookieDeletionFilter filter;
+  network::mojom::CookieDeletionFilter filter;
   EXPECT_EQ(4u, service_wrapper()->DeleteCookies(filter));
 
   // Create an unrestricted, a lax, and a strict cookie.
@@ -424,7 +425,7 @@ TEST_F(CookieManagerImplTest, GetCookieListSameSite) {
 
 TEST_F(CookieManagerImplTest, GetCookieListAccessTime) {
   // Clean out the cookies and set a new, clean cookie.
-  mojom::CookieDeletionFilter filter;
+  network::mojom::CookieDeletionFilter filter;
   EXPECT_EQ(4u, service_wrapper()->DeleteCookies(filter));
   bool result;
   result = SetCanonicalCookie(
@@ -557,7 +558,7 @@ TEST_F(CookieManagerImplTest, ConfirmHttpOnlyOverwriteFails) {
 }
 
 TEST_F(CookieManagerImplTest, DeleteEverything) {
-  mojom::CookieDeletionFilter filter;
+  network::mojom::CookieDeletionFilter filter;
   EXPECT_EQ(4u, service_wrapper()->DeleteCookies(filter));
 
   std::vector<net::CanonicalCookie> cookies =
@@ -566,7 +567,7 @@ TEST_F(CookieManagerImplTest, DeleteEverything) {
 }
 
 TEST_F(CookieManagerImplTest, DeleteByTime) {
-  mojom::CookieDeletionFilter filter;
+  network::mojom::CookieDeletionFilter filter;
   EXPECT_EQ(4u, service_wrapper()->DeleteCookies(filter));
   base::Time now(base::Time::Now());
 
@@ -604,7 +605,7 @@ TEST_F(CookieManagerImplTest, DeleteByTime) {
 }
 
 TEST_F(CookieManagerImplTest, DeleteByExcludingDomains) {
-  mojom::CookieDeletionFilter filter;
+  network::mojom::CookieDeletionFilter filter;
   EXPECT_EQ(4u, service_wrapper()->DeleteCookies(filter));
 
   // Create three cookies and delete the middle one.
@@ -639,7 +640,7 @@ TEST_F(CookieManagerImplTest, DeleteByExcludingDomains) {
 }
 
 TEST_F(CookieManagerImplTest, DeleteByIncludingDomains) {
-  mojom::CookieDeletionFilter filter;
+  network::mojom::CookieDeletionFilter filter;
   EXPECT_EQ(4u, service_wrapper()->DeleteCookies(filter));
 
   // Create three cookies and delete the middle one.
@@ -675,7 +676,7 @@ TEST_F(CookieManagerImplTest, DeleteByIncludingDomains) {
 }
 
 TEST_F(CookieManagerImplTest, DeleteBySessionStatus) {
-  mojom::CookieDeletionFilter filter;
+  network::mojom::CookieDeletionFilter filter;
   EXPECT_EQ(4u, service_wrapper()->DeleteCookies(filter));
   base::Time now(base::Time::Now());
 
@@ -703,7 +704,7 @@ TEST_F(CookieManagerImplTest, DeleteBySessionStatus) {
       true, true));
 
   filter.session_control =
-      mojom::CookieDeletionSessionControl::PERSISTENT_COOKIES;
+      network::mojom::CookieDeletionSessionControl::PERSISTENT_COOKIES;
   EXPECT_EQ(1u, service_wrapper()->DeleteCookies(filter));
   std::vector<net::CanonicalCookie> cookies =
       service_wrapper()->GetAllCookies();
@@ -714,7 +715,7 @@ TEST_F(CookieManagerImplTest, DeleteBySessionStatus) {
 }
 
 TEST_F(CookieManagerImplTest, DeleteByAll) {
-  mojom::CookieDeletionFilter filter;
+  network::mojom::CookieDeletionFilter filter;
   EXPECT_EQ(4u, service_wrapper()->DeleteCookies(filter));
   base::Time now(base::Time::Now());
 
@@ -739,7 +740,7 @@ TEST_F(CookieManagerImplTest, DeleteByAll) {
   filter.excluding_domains->push_back("no.com");
   filter.excluding_domains->push_back("yes.com");
   filter.session_control =
-      mojom::CookieDeletionSessionControl::PERSISTENT_COOKIES;
+      network::mojom::CookieDeletionSessionControl::PERSISTENT_COOKIES;
 
   // Architectypal cookie:
   EXPECT_TRUE(SetCanonicalCookie(
@@ -806,21 +807,23 @@ TEST_F(CookieManagerImplTest, DeleteByAll) {
   EXPECT_EQ("A6", cookies[4].Name());
 }
 
-// Class to receive and record notifications from the mojom::CookieManager.
-class CookieChangeNotificationImpl : public mojom::CookieChangeNotification {
+// Receives and records notifications from the network::mojom::CookieManager.
+class CookieChangeNotificationImpl
+    : public network::mojom::CookieChangeNotification {
  public:
   struct Notification {
     Notification(const net::CanonicalCookie& cookie_in,
-                 mojom::CookieChangeCause cause_in) {
+                 network::mojom::CookieChangeCause cause_in) {
       cookie = cookie_in;
       cause = cause_in;
     }
 
     net::CanonicalCookie cookie;
-    mojom::CookieChangeCause cause;
+    network::mojom::CookieChangeCause cause;
   };
 
-  CookieChangeNotificationImpl(mojom::CookieChangeNotificationRequest request)
+  CookieChangeNotificationImpl(
+      network::mojom::CookieChangeNotificationRequest request)
       : run_loop_(nullptr), binding_(this, std::move(request)) {}
 
   void WaitForSomeNotification() {
@@ -839,9 +842,9 @@ class CookieChangeNotificationImpl : public mojom::CookieChangeNotification {
     notifications_.clear();
   }
 
-  // mojom::CookieChangesNotification
+  // network::mojom::CookieChangesNotification
   void OnCookieChanged(const net::CanonicalCookie& cookie,
-                       mojom::CookieChangeCause cause) override {
+                       network::mojom::CookieChangeCause cause) override {
     notifications_.push_back(Notification(cookie, cause));
     if (run_loop_)
       run_loop_->Quit();
@@ -853,14 +856,16 @@ class CookieChangeNotificationImpl : public mojom::CookieChangeNotification {
   // Loop to signal on receiving a notification if not null.
   base::RunLoop* run_loop_;
 
-  mojo::Binding<mojom::CookieChangeNotification> binding_;
+  mojo::Binding<network::mojom::CookieChangeNotification> binding_;
 };
 
 TEST_F(CookieManagerImplTest, Notification) {
   GURL notification_url("http://www.testing.com/pathele");
   std::string notification_name("Cookie_Name");
-  mojom::CookieChangeNotificationPtr ptr;
-  mojom::CookieChangeNotificationRequest request(mojo::MakeRequest(&ptr));
+  network::mojom::CookieChangeNotificationPtr ptr;
+  network::mojom::CookieChangeNotificationRequest request(
+      mojo::MakeRequest(&ptr));
+
   CookieChangeNotificationImpl notification_impl(std::move(request));
 
   cookie_service_client()->RequestNotification(
@@ -920,13 +925,14 @@ TEST_F(CookieManagerImplTest, Notification) {
   EXPECT_EQ(1u, notifications.size());
   EXPECT_EQ(notification_name, notifications[0].cookie.Name());
   EXPECT_EQ(notification_url.host(), notifications[0].cookie.Domain());
-  EXPECT_EQ(mojom::CookieChangeCause::INSERTED, notifications[0].cause);
+  EXPECT_EQ(network::mojom::CookieChangeCause::INSERTED,
+            notifications[0].cause);
   notifications.clear();
 
   // Delete all cookies matching the domain.  This includes one for which
   // a notification will be generated, and one for which a notification
   // will not be generated.
-  mojom::CookieDeletionFilter filter;
+  network::mojom::CookieDeletionFilter filter;
   filter.including_domains = std::vector<std::string>();
   filter.including_domains->push_back(notification_url.host());
   EXPECT_EQ(2u, service_wrapper()->DeleteCookies(filter));
@@ -937,7 +943,8 @@ TEST_F(CookieManagerImplTest, Notification) {
   ASSERT_EQ(1u, notifications.size());
   EXPECT_EQ(notification_name, notifications[0].cookie.Name());
   EXPECT_EQ(notification_url.host(), notifications[0].cookie.Domain());
-  EXPECT_EQ(mojom::CookieChangeCause::EXPLICIT, notifications[0].cause);
+  EXPECT_EQ(network::mojom::CookieChangeCause::EXPLICIT,
+            notifications[0].cause);
 }
 
 // Confirm the service operates properly if a returned notification interface
@@ -947,15 +954,17 @@ TEST_F(CookieManagerImplTest, NotificationRequestDestroyed) {
   GURL notification_url("http://www.testing.com/pathele");
   std::string notification_name("Cookie_Name");
 
-  mojom::CookieChangeNotificationPtr ptr1;
-  mojom::CookieChangeNotificationRequest request1(mojo::MakeRequest(&ptr1));
+  network::mojom::CookieChangeNotificationPtr ptr1;
+  network::mojom::CookieChangeNotificationRequest request1(
+      mojo::MakeRequest(&ptr1));
   std::unique_ptr<CookieChangeNotificationImpl> notification_impl1(
       base::MakeUnique<CookieChangeNotificationImpl>(std::move(request1)));
   cookie_service_client()->RequestNotification(
       notification_url, notification_name, std::move(ptr1));
 
-  mojom::CookieChangeNotificationPtr ptr2;
-  mojom::CookieChangeNotificationRequest request2(mojo::MakeRequest(&ptr2));
+  network::mojom::CookieChangeNotificationPtr ptr2;
+  network::mojom::CookieChangeNotificationRequest request2(
+      mojo::MakeRequest(&ptr2));
   std::unique_ptr<CookieChangeNotificationImpl> notification_impl2(
       base::MakeUnique<CookieChangeNotificationImpl>(std::move(request2)));
   cookie_service_client()->RequestNotification(
@@ -994,7 +1003,7 @@ TEST_F(CookieManagerImplTest, NotificationRequestDestroyed) {
   notification_impl1.reset();
 
   // Confirm the second interface can still receive notifications.
-  mojom::CookieDeletionFilter filter;
+  network::mojom::CookieDeletionFilter filter;
   EXPECT_EQ(5u, service_wrapper()->DeleteCookies(filter));
 
   notification_impl2->WaitForSomeNotification();
@@ -1018,7 +1027,7 @@ TEST_F(CookieManagerImplTest, CloningAndClientDestructVisible) {
   EXPECT_EQ(1u, service_impl()->GetClientsBoundForTesting());
 
   // Clone the interface.
-  mojom::CookieManagerPtr new_ptr;
+  network::mojom::CookieManagerPtr new_ptr;
   cookie_service_client()->CloneInterface(mojo::MakeRequest(&new_ptr));
 
   SynchronousCookieManager new_wrapper(new_ptr.get());

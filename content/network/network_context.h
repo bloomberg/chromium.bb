@@ -84,7 +84,7 @@ class CONTENT_EXPORT NetworkContext : public mojom::NetworkContext {
                               uint32_t process_id) override;
   void HandleViewCacheRequest(const GURL& url,
                               mojom::URLLoaderClientPtr client) override;
-  void GetCookieManager(mojom::CookieManagerRequest request) override;
+  void GetCookieManager(network::mojom::CookieManagerRequest request) override;
   void ClearNetworkingHistorySince(
       base::Time time,
       base::OnceClosure completion_callback) override;
