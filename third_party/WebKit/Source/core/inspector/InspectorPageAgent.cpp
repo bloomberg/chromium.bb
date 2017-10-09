@@ -714,19 +714,17 @@ void InspectorPageAgent::DidClearDocumentOfWindowObject(LocalFrame* frame) {
 }
 
 void InspectorPageAgent::DomContentLoadedEventFired(LocalFrame* frame) {
-  if (frame != inspected_frames_->Root())
-    return;
   double timestamp = MonotonicallyIncreasingTime();
-  GetFrontend()->domContentEventFired(timestamp);
-  GetFrontend()->lifecycleEvent("DOMContentLoaded", timestamp);
+  if (frame == inspected_frames_->Root())
+    GetFrontend()->domContentEventFired(timestamp);
+  GetFrontend()->lifecycleEvent(FrameId(frame), "DOMContentLoaded", timestamp);
 }
 
 void InspectorPageAgent::LoadEventFired(LocalFrame* frame) {
-  if (frame != inspected_frames_->Root())
-    return;
   double timestamp = MonotonicallyIncreasingTime();
-  GetFrontend()->loadEventFired(timestamp);
-  GetFrontend()->lifecycleEvent("load", timestamp);
+  if (frame == inspected_frames_->Root())
+    GetFrontend()->loadEventFired(timestamp);
+  GetFrontend()->lifecycleEvent(FrameId(frame), "load", timestamp);
 }
 
 void InspectorPageAgent::WillCommitLoad(LocalFrame*, DocumentLoader* loader) {
@@ -734,8 +732,9 @@ void InspectorPageAgent::WillCommitLoad(LocalFrame*, DocumentLoader* loader) {
     FinishReload();
     script_to_evaluate_on_load_once_ = pending_script_to_evaluate_on_load_once_;
     pending_script_to_evaluate_on_load_once_ = String();
-    GetFrontend()->lifecycleEvent("commit", MonotonicallyIncreasingTime());
   }
+  GetFrontend()->lifecycleEvent(FrameId(loader->GetFrame()), "commit",
+                                MonotonicallyIncreasingTime());
   GetFrontend()->frameNavigated(BuildObjectForFrame(loader->GetFrame()));
 }
 
@@ -803,14 +802,16 @@ void InspectorPageAgent::DidChangeViewport() {
   PageLayoutInvalidated(false);
 }
 
-void InspectorPageAgent::LifecycleEvent(const char* name, double timestamp) {
-  GetFrontend()->lifecycleEvent(name, timestamp);
+void InspectorPageAgent::LifecycleEvent(LocalFrame* frame,
+                                        const char* name,
+                                        double timestamp) {
+  GetFrontend()->lifecycleEvent(FrameId(frame), name, timestamp);
 }
 
 void InspectorPageAgent::PaintTiming(Document* document,
                                      const char* name,
                                      double timestamp) {
-  GetFrontend()->lifecycleEvent(name, timestamp);
+  GetFrontend()->lifecycleEvent(FrameId(document->GetFrame()), name, timestamp);
 }
 
 void InspectorPageAgent::Will(const probe::UpdateLayout&) {}

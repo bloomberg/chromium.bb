@@ -161,6 +161,6 @@ interface CoreProbes {
   void shouldForceCORSPreflight(ExecutionContext*, bool* result);
   void shouldBlockRequest(ExecutionContext*, const KURL&, bool* result);
   void consoleTimeStamp(ExecutionContext*, const String& title);
-  void lifecycleEvent(Document* document, const char* name, double timestamp);
-  void paintTiming([Keep] Document* document, const char* name, double timestamp);
+  void lifecycleEvent([Keep] LocalFrame*, const char* name, double timestamp);
+  void paintTiming([Keep] Document*, const char* name, double timestamp);
 }
