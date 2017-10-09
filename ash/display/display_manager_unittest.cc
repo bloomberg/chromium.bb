@@ -3027,6 +3027,45 @@ TEST_F(DisplayManagerTest, DisconnectedInternalDisplayShouldUpdateDisplayInfo) {
   EXPECT_TRUE(has_default);
 }
 
+// It's difficult to test with full stack due to crbug.com/771178.
+// Improve the coverage once it is fixed.
+TEST_F(DisplayManagerTest, ForcedMirrorMode) {
+  constexpr int64_t id1 = 1;
+  constexpr int64_t id2 = 2;
+  display::Screen* screen = display::Screen::GetScreen();
+  DCHECK(screen);
+  Shell* shell = Shell::Get();
+  display::DisplayChangeObserver observer(shell->display_configurator(),
+                                          display_manager());
+  display::DisplayConfigurator::DisplayStateList outputs;
+  std::unique_ptr<display::DisplaySnapshot> snapshot1 =
+      display::FakeDisplaySnapshot::Builder()
+          .SetId(id1)
+          .SetNativeMode(MakeDisplayMode())
+          .Build();
+  std::unique_ptr<display::DisplaySnapshot> snapshot2 =
+      display::FakeDisplaySnapshot::Builder()
+          .SetId(id2)
+          .SetNativeMode(MakeDisplayMode())
+          .Build();
+
+  outputs.push_back(snapshot1.get());
+  outputs.push_back(snapshot2.get());
+
+  EXPECT_EQ(display::MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED,
+            observer.GetStateForDisplayIds(outputs));
+
+  display_manager()->layout_store()->set_forced_mirror_mode(true);
+
+  EXPECT_EQ(display::MULTIPLE_DISPLAY_STATE_DUAL_MIRROR,
+            observer.GetStateForDisplayIds(outputs));
+
+  display_manager()->layout_store()->set_forced_mirror_mode(false);
+
+  EXPECT_EQ(display::MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED,
+            observer.GetStateForDisplayIds(outputs));
+}
+
 namespace {
 
 class DisplayManagerOrientationTest : public DisplayManagerTest {
