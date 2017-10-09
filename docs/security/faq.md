@@ -144,7 +144,9 @@ and we do appreciate such reports.
 
 The XSSAuditor is not able to defend against persistent XSS or DOM-based XSS.
 There will also be a number of infrequently occurring reflected XSS corner
-cases, however, that it will never be able to cover.
+cases, however, that it will never be able to cover. Among these are:
+*    Multiple unsanitized variables injected into the page.
+*    Unexpected server side transformation or decoding of the payload.
 
 <a name="TOC-Why-aren-t-physically-local-attacks-in-Chrome-s-threat-model-"></a>
 ## Why aren't physically-local attacks in Chrome's threat model?
