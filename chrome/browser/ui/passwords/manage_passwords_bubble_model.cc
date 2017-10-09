@@ -294,6 +294,9 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
         interaction_stats.dismissal_count = stats->dismissal_count;
       }
     }
+    hide_eye_icon_ = delegate_->BubbleIsManualFallbackForSaving()
+                         ? pending_password_.form_has_autofilled_value
+                         : display_reason == USER_ACTION;
     UpdatePendingStateTitle();
   } else if (state_ == password_manager::ui::CONFIRMATION_STATE) {
     title_ =

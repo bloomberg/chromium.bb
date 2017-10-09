@@ -460,7 +460,8 @@ ManagePasswordsBubbleView::PendingView::PendingView(
   CreatePasswordField();
 
   if (base::FeatureList::IsEnabled(
-          password_manager::features::kEnablePasswordSelection)) {
+          password_manager::features::kEnablePasswordSelection) &&
+      !parent_->model()->hide_eye_icon()) {
     password_view_button_ = CreatePasswordViewButton(this).release();
   }
 

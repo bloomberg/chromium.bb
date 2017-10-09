@@ -620,3 +620,51 @@ TEST_F(ManagePasswordsBubbleModelTest, RecordUKMs) {
     }
   }
 }
+
+TEST_F(ManagePasswordsBubbleModelTest, EyeIcon) {
+  for (bool is_manual_fallback_for_saving : {false, true}) {
+    for (bool form_has_autofilled_value : {false, true}) {
+      for (ManagePasswordsBubbleModel::DisplayReason display_reason :
+           {ManagePasswordsBubbleModel::AUTOMATIC,
+            ManagePasswordsBubbleModel::USER_ACTION}) {
+        if (is_manual_fallback_for_saving &&
+            (display_reason == ManagePasswordsBubbleModel::AUTOMATIC))
+          continue;
+
+        SCOPED_TRACE(testing::Message()
+                     << "is_manual_fallback_for_saving = "
+                     << is_manual_fallback_for_saving
+                     << " form_has_autofilled_value = "
+                     << form_has_autofilled_value << " display_reason = "
+                     << (display_reason == ManagePasswordsBubbleModel::AUTOMATIC
+                             ? "AUTOMATIC"
+                             : "USER_ACTION"));
+
+        autofill::PasswordForm form = GetPendingPassword();
+        form.form_has_autofilled_value = form_has_autofilled_value;
+        EXPECT_CALL(*controller(), GetPendingPassword())
+            .WillOnce(ReturnRef(form));
+        password_manager::InteractionsStats stats = GetTestStats();
+        EXPECT_CALL(*controller(), GetCurrentInteractionStats())
+            .WillOnce(Return(&stats));
+        if (display_reason == ManagePasswordsBubbleModel::AUTOMATIC)
+          EXPECT_CALL(*GetStore(), AddSiteStatsImpl(_));
+
+        EXPECT_CALL(*controller(), BubbleIsManualFallbackForSaving())
+            .WillOnce(Return(is_manual_fallback_for_saving));
+        SetUpWithState(password_manager::ui::PENDING_PASSWORD_STATE,
+                       display_reason);
+        EXPECT_EQ(
+            is_manual_fallback_for_saving
+                ? form_has_autofilled_value
+                : display_reason == ManagePasswordsBubbleModel::USER_ACTION,
+            model()->hide_eye_icon());
+
+        DestroyModel();
+        // Flush async calls on password store.
+        base::RunLoop().RunUntilIdle();
+        testing::Mock::VerifyAndClearExpectations(GetStore());
+      }
+    }
+  }
+}
