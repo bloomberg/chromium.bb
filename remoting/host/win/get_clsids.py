@@ -12,18 +12,15 @@
 import uuid
 import sys
 
-if len(sys.argv) != 4:
-  print """Expecting 3 args:
-<daemon_controller_guid> <rdp_desktop_session_guid> <version>"""
+if len(sys.argv) != 3:
+  print """Expecting 2 args:
+<rdp_desktop_session_guid> <version>"""
   sys.exit(1)
 
-daemon_controller_guid = sys.argv[1]
-rdp_desktop_session_guid = sys.argv[2]
-version_full = sys.argv[3]
+rdp_desktop_session_guid = sys.argv[1]
+version_full = sys.argv[2]
 
-# Output a GN list of 2 strings.
+# Output a GN list of 1 strings.
 print '["' + \
-    str(uuid.uuid5(uuid.UUID(daemon_controller_guid), version_full)) + '", '
-print '"' + \
     str(uuid.uuid5(uuid.UUID(rdp_desktop_session_guid), version_full)) + '"]'
 

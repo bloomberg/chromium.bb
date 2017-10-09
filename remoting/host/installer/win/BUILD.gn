@@ -107,7 +107,6 @@ action("remoting_me2me_host_archive") {
            # Defs
            "--defs",
            "BRANDING=$_branding",
-           "DAEMON_CONTROLLER_CLSID={$daemon_controller_clsid}",
            "RDP_DESKTOP_SESSION_CLSID={$rdp_desktop_session_clsid}",
            "VERSION=$chrome_version_full",
            "OFFICIAL_BUILD=$_official_build",

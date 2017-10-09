@@ -185,8 +185,6 @@ action("generate_idl") {
 
   args = [
     "-e",
-    "DAEMON_CONTROLLER_CLSID='$daemon_controller_clsid'",
-    "-e",
     "RDP_DESKTOP_SESSION_CLSID='$rdp_desktop_session_clsid'",
     rebase_path(inputs[0], root_build_dir),
     rebase_path(outputs[0], root_build_dir),
@@ -328,7 +326,6 @@ shared_library("remoting_core") {
               "_ATL_NO_AUTOMATIC_NAMESPACE",
               "_ATL_NO_EXCEPTIONS",
               "REMOTING_HOST_BINARY=BINARY_CORE",
-              "DAEMON_CONTROLLER_CLSID=\"$daemon_controller_clsid\"",
               "RDP_DESKTOP_SESSION_CLSID=\"$rdp_desktop_session_clsid\"",
               "HOST_IMPLEMENTATION",
               "ISOLATION_AWARE_ENABLED=1",

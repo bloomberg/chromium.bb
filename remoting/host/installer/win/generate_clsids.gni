@@ -10,10 +10,8 @@ import("//remoting/build/config/remoting_build.gni")
 # IDL file with the values.
 clsids = exec_script("//remoting/host/win/get_clsids.py",
                      [
-                       daemon_controller_guid,
                        rdp_desktop_session_guid,
                        chrome_version_full,
                      ],
                      "value")
-daemon_controller_clsid = clsids[0]
-rdp_desktop_session_clsid = clsids[1]
+rdp_desktop_session_clsid = clsids[0]
