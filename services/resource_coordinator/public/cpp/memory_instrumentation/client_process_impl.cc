@@ -117,6 +117,13 @@ void ClientProcessImpl::RequestGlobalMemoryDump_NoCallback(
       args, mojom::Coordinator::RequestGlobalMemoryDumpCallback());
 }
 
+void ClientProcessImpl::EnableHeapProfiling(
+    base::trace_event::HeapProfilingMode mode,
+    const EnableHeapProfilingCallback& callback) {
+  callback.Run(base::trace_event::MemoryDumpManager::GetInstance()->
+                   EnableHeapProfiling(mode));
+}
+
 void ClientProcessImpl::RequestOSMemoryDump(
     bool want_mmaps,
     const std::vector<base::ProcessId>& pids,

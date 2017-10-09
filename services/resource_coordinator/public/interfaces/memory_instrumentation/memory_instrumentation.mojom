@@ -31,6 +31,14 @@ enum ProcessType {
   PLUGIN
 };
 
+enum HeapProfilingMode {
+  PSEUDO_STACK,
+  NATIVE_STACK,
+  NO_STACK,
+  TASK_PROFILER,
+  DISABLED
+};
+
 struct RequestArgs {
   uint64 dump_guid;
   DumpType dump_type;
@@ -180,6 +188,10 @@ interface ClientProcess {
   // returned in case of success.
   RequestChromeMemoryDump(RequestArgs args) =>
       (bool success, uint64 dump_id, RawProcessMemoryDump? raw_process_memory_dump);
+
+  // Enable heap profiler in the client process.
+  EnableHeapProfiling(HeapProfilingMode mode) =>
+      (bool success);
 
   // Requests an OSMemDump for each pid in |pids|.
   // The Memory-infra service deals with two kinds of information:

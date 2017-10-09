@@ -8,6 +8,7 @@ public_headers = [
   "//base/trace_event/memory_dump_request_args.h",
   "//base/trace_event/process_memory_dump.h",
   "//base/trace_event/memory_allocator_dump.h",
+  "//base/trace_event/memory_dump_manager.h",
 ]
 traits_headers = [ "//services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation_struct_traits.h" ]
 deps = [
@@ -15,6 +16,7 @@ deps = [
 ]
 type_mappings = [
   "memory_instrumentation.mojom.DumpType=base::trace_event::MemoryDumpType",
+  "memory_instrumentation.mojom.HeapProfilingMode=base::trace_event::HeapProfilingMode",
   "memory_instrumentation.mojom.LevelOfDetail=base::trace_event::MemoryDumpLevelOfDetail",
   "memory_instrumentation.mojom.RequestArgs=base::trace_event::MemoryDumpRequestArgs",
   "memory_instrumentation.mojom.RawAllocatorDumpEdge=base::trace_event::ProcessMemoryDump::MemoryAllocatorDumpEdge",

@@ -150,6 +150,10 @@ class MockClientProcess : public mojom::ClientProcess {
                     const std::vector<base::ProcessId>& args,
                     const RequestOSMemoryDumpCallback& callback));
 
+  MOCK_METHOD2(EnableHeapProfiling,
+               void(base::trace_event::HeapProfilingMode mode,
+                    const EnableHeapProfilingCallback& callback));
+
  private:
   mojo::Binding<mojom::ClientProcess> binding_;
 };
