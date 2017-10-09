@@ -14,7 +14,9 @@ import android.widget.CompoundButton;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.SysUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.PromoDialog;
@@ -101,6 +103,12 @@ public class ChromeHomePromoDialog extends PromoDialog {
                 }
             }
         }
+
+        ChromeActivity activity = (ChromeActivity) getOwnerActivity();
+        Tab tab = activity.getActivityTab();
+
+        // Detach the foreground tab and. It will be reattached when the activity is restarted.
+        tab.detachAndStartReparenting(null, null, null);
 
         getOwnerActivity().recreate();
     }
