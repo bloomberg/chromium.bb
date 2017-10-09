@@ -801,8 +801,9 @@ CommandHandler.onCommand = function(command) {
           };
           scrollable.addEventListener(
               EventType.SCROLL_POSITION_CHANGED, innerCallback, true);
+        } else {
+          ChromeVoxState.instance.navigateToRange(current, false, speechProps);
         }
-        ChromeVoxState.instance.navigateToRange(current, false, speechProps);
       };
 
       if (dir == Dir.FORWARD)
