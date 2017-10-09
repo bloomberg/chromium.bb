@@ -14,15 +14,19 @@ _COLORAMA_PATH = os.path.join(
 with host_paths.SysPath(_COLORAMA_PATH, position=0):
   import colorama
 
+BACK = colorama.Back
+FORE = colorama.Fore
+STYLE = colorama.Style
+
 
 class _ColorFormatter(logging.Formatter):
   # pylint does not see members added dynamically in the constructor.
   # pylint: disable=no-member
   color_map = {
-    logging.DEBUG: colorama.Fore.CYAN,
-    logging.WARNING: colorama.Fore.YELLOW,
-    logging.ERROR: colorama.Fore.RED,
-    logging.CRITICAL: colorama.Back.RED,
+    logging.DEBUG: (FORE.CYAN),
+    logging.WARNING: (FORE.YELLOW),
+    logging.ERROR: (FORE.RED),
+    logging.CRITICAL: (BACK.RED),
   }
 
   def __init__(self, wrapped_formatter=None):
@@ -37,7 +41,8 @@ class _ColorFormatter(logging.Formatter):
 
   def Colorize(self, message, log_level):
     try:
-      return self.color_map[log_level] + message + colorama.Style.RESET_ALL
+      return (''.join(self.color_map[log_level]) + message +
+              colorama.Style.RESET_ALL)
     except KeyError:
       return message
 
@@ -87,6 +92,26 @@ class ColorStreamHandler(logging.StreamHandler):
      # If the existing handlers aren't removed, messages are duplicated
      logging.getLogger().handlers = []
      logging.getLogger().addHandler(ColorStreamHandler(force_color))
+
+
+@contextlib.contextmanager
+def OverrideColor(level, color):
+  """Temporarily override the logging color for a specified level.
+
+  Args:
+    level: logging level whose color gets overridden.
+    color: tuple of formats to apply to log lines.
+  """
+  prev_colors = {}
+  for handler in logging.getLogger().handlers:
+    if isinstance(handler.formatter, _ColorFormatter):
+      prev_colors[handler.formatter] = handler.formatter.color_map[level]
+      handler.formatter.color_map[level] = color
+  try:
+    yield
+  finally:
+    for formatter, prev_color in prev_colors.iteritems():
+      formatter.color_map[level] = prev_color
 
 
 @contextlib.contextmanager
