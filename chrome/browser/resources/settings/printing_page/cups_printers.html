@@ -51,8 +51,9 @@
         justify-content: space-around;
       }
 
-      #addPrinterErrorMessage a[is='action-link'] {
-        text-transform: uppercase;
+      #addPrinterFailedMessage {
+        padding: 0 15px;
+        text-align: justify;
       }
     </style>
 
@@ -95,9 +96,6 @@
         <span id="addPrinterFailedMessage">
           $i18n{printerAddedFailedMessage}
         </span>
-        <a is="action-link" on-tap="onAddPrinterTap_">
-          $i18n{printerAddedTryAgainMessage}
-        </a>
       </div>
     </div>
   </template>
