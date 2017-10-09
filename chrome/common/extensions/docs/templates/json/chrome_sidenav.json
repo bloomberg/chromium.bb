@@ -88,7 +88,7 @@
       },
       {
         "title": "Performance & Profiling",
-        "href": "/devtools/docs/network", 
+        "href": "/devtools/docs/network",
         "items": [
           {
             "title": "Evaluating Network Performance",
@@ -137,7 +137,7 @@
           {
             "title": "Integrating with DevTools & Chrome",
             "href": "/devtools/docs/integrating"
-          },  
+          },
           {
             "title": "DevTools Extensions API",
             "href": "/extensions/devtools",
@@ -399,7 +399,7 @@
               {
                 "title": "Native Messaging",
                 "href": "/apps/nativeMessaging"
-              },  
+              },
               {
                 "title": "Rich Notifications",
                 "href": "/apps/richNotifications"
@@ -571,7 +571,7 @@
           },
           {
             "title": "Develop Extensions",
-            "href": "/extensions",
+            "href": "/extensions/devguide",
             "items": [
               {
                 "title": "Accessibility",
@@ -613,7 +613,7 @@
                 "title": "Options",
                 "href": "/extensions/options"
               },
-              { 
+              {
                 "title": "Options Version 2",
                 "href": "/extensions/optionsV2"
               }
