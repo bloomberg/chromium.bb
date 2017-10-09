@@ -49,8 +49,6 @@ class PLATFORM_EXPORT RawData : public ThreadSafeRefCounted<RawData> {
  public:
   static RefPtr<RawData> Create() { return WTF::AdoptRef(new RawData()); }
 
-  void DetachFromCurrentThread();
-
   const char* data() const { return data_.data(); }
   size_t length() const { return data_.size(); }
   Vector<char>* MutableData() { return &data_; }
