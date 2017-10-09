@@ -791,6 +791,9 @@ void PageInfoBubbleView::SetIdentityInfo(const IdentityInfo& identity_info) {
       certificate_viewer_link->SetTooltipText(l10n_util::GetStringFUTF16(
           IDS_PAGE_INFO_CERTIFICATE_VALID_LINK_TOOLTIP,
           base::UTF8ToUTF16(certificate_->issuer().GetDisplayName())));
+    } else {
+      certificate_viewer_link->SetTooltipText(l10n_util::GetStringUTF16(
+          IDS_PAGE_INFO_CERTIFICATE_INVALID_LINK_TOOLTIP));
     }
 
     // Add the Certificate Section.
