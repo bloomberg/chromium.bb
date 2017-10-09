@@ -22,9 +22,7 @@ namespace {
 class MockDelegate : public MessageCenterTrayDelegate {
  public:
   MockDelegate()
-      : show_popups_success_(true),
-        show_message_center_success_(true),
-        enable_context_menu_(true) {}
+      : show_popups_success_(true), show_message_center_success_(true) {}
   ~MockDelegate() override {}
   void OnMessageCenterTrayChanged() override {}
   bool ShowPopups() override { return show_message_center_success_; }
@@ -34,13 +32,11 @@ class MockDelegate : public MessageCenterTrayDelegate {
   }
   void HideMessageCenter() override {}
   bool ShowNotifierSettings() override { return true; }
-  bool IsContextMenuEnabled() const override { return enable_context_menu_; }
 
   MessageCenterTray* GetMessageCenterTray() override { return NULL; }
 
   bool show_popups_success_;
   bool show_message_center_success_;
-  bool enable_context_menu_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockDelegate);
@@ -288,18 +284,12 @@ TEST_F(MessageCenterTrayTest, ContextMenuTestWithMessageCenter) {
   EXPECT_EQ(1u, notifications.size());
   EXPECT_EQ(id2, (*notifications.begin())->id());
 
-  // Disables the context menu.
-  delegate_->enable_context_menu_ = false;
-
   // id2 doesn't have the display source, so it don't have the menu item for
   // disabling notifications.
   model = message_center_tray_->CreateNotificationMenuModel(
       notifier_id2, base::string16());
   EXPECT_EQ(1, model->GetItemCount());
   EXPECT_EQ(second_command, model->GetCommandIdAt(0));
-
-  // The command itself is disabled because delegate disables context menu.
-  EXPECT_FALSE(model->IsEnabledAt(0));
 }
 
 #else
@@ -344,38 +334,11 @@ TEST_F(MessageCenterTrayTest, ContextMenuTestPopupsOnly) {
   EXPECT_EQ(1u, notifications.size());
   EXPECT_EQ(id2, (*notifications.begin())->id());
 
-  // Disables the context menu.
-  delegate_->enable_context_menu_ = false;
-
   // id2 doesn't have the display source, so it don't have the menu item for
   // disabling notifications.
   EXPECT_EQ(nullptr, message_center_tray_->CreateNotificationMenuModel(
                          notifier_id2, base::string16()));
 }
 #endif
-
-TEST_F(MessageCenterTrayTest, DelegateDisabledContextMenu) {
-  const std::string id1 = "id1";
-  base::string16 display_source = ASCIIToUTF16("www.test.org");
-  AddNotification(id1);
-  NotifierId notifier_id(GURL("www.test.org"));
-
-  delegate_->enable_context_menu_ = false;
-  // id2 doesn't have the display source, so it don't have the menu item for
-  // disabling notifications.
-  std::unique_ptr<ui::MenuModel> model(
-      message_center_tray_->CreateNotificationMenuModel(notifier_id,
-                                                        display_source));
-
-// The commands are disabled because delegate disables context menu.
-#ifndef OS_CHROMEOS
-  EXPECT_EQ(1, model->GetItemCount());
-#else
-  EXPECT_EQ(2, model->GetItemCount());
-  EXPECT_FALSE(model->IsEnabledAt(1));
-#endif
-
-  EXPECT_FALSE(model->IsEnabledAt(0));
-}
 
 }  // namespace message_center

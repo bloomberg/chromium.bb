@@ -37,10 +37,6 @@ bool FakeMessageCenterTrayDelegate::ShowNotifierSettings() {
   return false;
 }
 
-bool FakeMessageCenterTrayDelegate::IsContextMenuEnabled() const {
-  return false;
-}
-
 MessageCenterTray* FakeMessageCenterTrayDelegate::GetMessageCenterTray() {
   return tray_.get();
 }
