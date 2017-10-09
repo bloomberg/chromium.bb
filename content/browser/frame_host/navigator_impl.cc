@@ -975,6 +975,9 @@ void NavigatorImpl::OnBeforeUnloadACK(FrameTreeNode* frame_tree_node,
 
   // Send the request to the IO thread.
   navigation_request->BeginNavigation();
+  // DO NOT USE |navigation_request| BEYOND THIS POINT. It might have been
+  // destroyed in BeginNavigation().
+  // See https://crbug.com/770157.
 }
 
 // PlzNavigate
@@ -1044,6 +1047,9 @@ void NavigatorImpl::OnBeginNavigation(
   // |DidStartMainFrameNavigation|, so it receives the most up to date pending
   // entry from the NavigationController.
   navigation_request->BeginNavigation();
+  // DO NOT USE |navigation_request| BEYOND THIS POINT. It might have been
+  // destroyed in BeginNavigation().
+  // See https://crbug.com/770157.
 }
 
 void NavigatorImpl::OnAbortNavigation(FrameTreeNode* frame_tree_node) {
@@ -1208,6 +1214,10 @@ void NavigatorImpl::RequestNavigation(
         true, reload_type != ReloadType::NONE);
   } else {
     navigation_request->BeginNavigation();
+    // DO NOT USE |navigation_request| BEYOND THIS POINT. It might have been
+    // destroyed in BeginNavigation().
+    // See https://crbug.com/770157.
+    return;
   }
 }
 

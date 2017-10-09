@@ -428,11 +428,21 @@ void NavigationRequest::BeginNavigation() {
   state_ = STARTED;
 
 #if defined(OS_ANDROID)
-  if (GetContentClient()->browser()->ShouldOverrideUrlLoading(
+  base::WeakPtr<NavigationRequest> this_ptr(weak_factory_.GetWeakPtr());
+  bool should_override_url_loading =
+      GetContentClient()->browser()->ShouldOverrideUrlLoading(
           frame_tree_node_->frame_tree_node_id(), browser_initiated_,
           request_params_.original_url, request_params_.original_method,
           request_params_.has_user_gesture, false,
-          frame_tree_node_->IsMainFrame(), common_params_.transition)) {
+          frame_tree_node_->IsMainFrame(), common_params_.transition);
+
+  // The content/ embedder might cause |this| to be deleted while
+  // |ShouldOverrideUrlLoading| is called.
+  // See https://crbug.com/770157.
+  if (!this_ptr)
+    return;
+
+  if (should_override_url_loading) {
     // Don't create a NavigationHandle here to simulate what happened with the
     // old navigation code path (i.e. doesn't fire onPageFinished notification
     // for aborted loads).
@@ -677,13 +687,24 @@ void NavigationRequest::OnRequestRedirected(
 // |this| may be deleted.
 
 #if defined(OS_ANDROID)
-  if (this_ptr &&
+  if (!this_ptr)
+    return;
+
+  bool should_override_url_loading =
       GetContentClient()->browser()->ShouldOverrideUrlLoading(
           frame_tree_node_->frame_tree_node_id(), browser_initiated_,
           redirect_info.new_url, redirect_info.new_method,
           // Redirects are always not counted as from user gesture.
           false, true, frame_tree_node_->IsMainFrame(),
-          common_params_.transition)) {
+          common_params_.transition);
+
+  // The content/ embedder might cause |this| to be deleted while
+  // |ShouldOverrideUrlLoading| is called.
+  // See https://crbug.com/770157.
+  if (!this_ptr)
+    return;
+
+  if (should_override_url_loading) {
     navigation_handle_->set_net_error_code(net::ERR_ABORTED);
     frame_tree_node_->ResetNavigationRequest(false, true);
     return;
