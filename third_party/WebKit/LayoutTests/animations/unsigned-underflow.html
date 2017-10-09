@@ -4,7 +4,7 @@
     height: 100px;
     width: 100px;
     border: solid blue 0px;
-    animation-duration: 1s;
+    animation-duration: 10s;
     animation-timing-function: cubic-bezier(0,-1,1,-1);
     animation-name: anim;
 }
@@ -30,10 +30,10 @@ if (window.testRunner)
 
 const expectedValues = [
   // [time, element-id, property, expected-value, tolerance]
-  [0.5, 'target', 'border-top-width', 0, 0],
-  [0.5, 'target', 'outline-width', 0, 0],
-  [0.5, 'target', 'column-count', 1, 0],
-  [0.5, 'target', 'column-rule-width', 0, 0],
+  [5, 'target', 'border-top-width', 0, 0],
+  [5, 'target', 'outline-width', 0, 0],
+  [5, 'target', 'column-count', 1, 0],
+  [5, 'target', 'column-rule-width', 0, 0],
 ];
 
 runAnimationTest(expectedValues);

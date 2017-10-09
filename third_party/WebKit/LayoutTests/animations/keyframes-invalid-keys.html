@@ -28,7 +28,7 @@
         height: 100px;
         width: 100px;
         background-color: blue;
-        animation-duration: 1s;
+        animation-duration: 10s;
         animation-timing-function: linear;
         animation-name: anim;
     }
@@ -39,8 +39,8 @@
 
     const expectedValues = [
       // [time, element-id, property, expected-value, tolerance]
-      [0.2, "box", "left", 3, 1],
-      [0.8, "box", "left", 3, 1],
+      [2, "box", "left", 3, 0],
+      [8, "box", "left", 3, 0],
     ];
 
     runAnimationTest(expectedValues);

@@ -7,7 +7,7 @@
     width: 100px;
     border-top-width: 300px;
     border-style: solid;
-    animation-duration: 1s;
+    animation-duration: 10s;
     animation-timing-function: ease-in-out;
     animation-name: anim;
 }
@@ -24,7 +24,7 @@
 
     const expectedValues = [
       // [time, element-id, property, expected-value, tolerance]
-      [0.1, "box", "border-top-width", 200, 20],
+      [1, "box", "border-top-width", 196, 1],
     ];
 
     runAnimationTest(expectedValues);
