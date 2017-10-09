@@ -14,11 +14,6 @@ config("compiler") {
   defines = [
     # To force full builds after SDK updates in case of ABI changes.
     "FUCHSIA_SDK_VERSION=$sdk_version",
-
-    # TODO(scottmg): Temporary during 3-sided rolls. https://crbug.com/765754.
-    # When this is set, defines/typedefs are in effect to convert "mx_"s to
-    # "zx_"s.
-    "CHROMIUM_ROLLING_MAGENTA_TO_ZIRCON=1",
   ]
   cflags = []
   ldflags = []
@@ -26,17 +21,7 @@ config("compiler") {
     cflags += [ "--target=aarch64-fuchsia" ]
     ldflags += [ "--target=aarch64-fuchsia" ]
   } else if (current_cpu == "x64") {
-    cflags += [
-      "--target=x86_64-fuchsia",
-
-      # TODO(scottmg): I screwed up in
-      # https://chromium.googlesource.com/v8/v8.git/+/aabb893a3259c72a78920771280d0832411c92c1
-      # (and put #undef mx_ zx_ rather than just #undef mx_). It took 4 days to
-      # get that landed upstream, so instead of fixing and waiting again (since
-      # that code will be deleted right after this lands), simply turn off
-      # this warning temporarily. https://crbug.com/765754.
-      "-Wno-extra-tokens",
-    ]
+    cflags += [ "--target=x86_64-fuchsia" ]
     ldflags += [ "--target=x86_64-fuchsia" ]
   } else {
     assert(false, "Unsupported architecture")
