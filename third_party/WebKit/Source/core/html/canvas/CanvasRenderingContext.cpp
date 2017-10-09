@@ -39,7 +39,7 @@ CanvasRenderingContext::CanvasRenderingContext(
     : host_(host),
       color_params_(kLegacyCanvasColorSpace, kRGBA8CanvasPixelFormat),
       creation_attributes_(attrs) {
-  color_params_.SetCanvasColorSpace(kSRGBCanvasColorSpace);
+  color_params_.SetCanvasColorSpace(kLegacyCanvasColorSpace);
   if (RuntimeEnabledFeatures::ColorCanvasExtensionsEnabled()) {
     if (creation_attributes_.colorSpace() == kRec2020CanvasColorSpaceName)
       color_params_.SetCanvasColorSpace(kRec2020CanvasColorSpace);
