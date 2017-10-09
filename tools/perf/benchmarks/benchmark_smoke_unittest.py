@@ -30,6 +30,9 @@ from benchmarks import speedometer
 from benchmarks import v8_browsing
 
 
+MAX_NUM_VALUES = 20e3
+
+
 def SmokeTestGenerator(benchmark, num_pages=1):
   """Generates a benchmark that includes first N pages from pageset.
 
@@ -70,6 +73,17 @@ def SmokeTestGenerator(benchmark, num_pages=1):
     benchmark_module.AddCommandLineArgs(parser)
     benchmark.SetArgumentDefaults(parser)
     options.MergeDefaultValues(parser.get_default_values())
+
+    # Prevent benchmarks from accidentally trying to upload too much data to the
+    # chromeperf dashboard. The number of values uploaded is equal to (the
+    # average number of values produced by a single story) * (1 + (the number of
+    # stories)). The "1 + " accounts for values summarized across all stories.
+    # We can approximate "the average number of values produced by a single
+    # story" as the number of values produced by the first story.
+    # pageset_repeat doesn't matter because values are summarized across
+    # repetitions before uploading.
+    story_set = benchmark().CreateStorySet(options)
+    SinglePageBenchmark.MAX_NUM_VALUES = MAX_NUM_VALUES / len(story_set.stories)
 
     benchmark.ProcessCommandLineArgs(None, options)
     benchmark_module.ProcessCommandLineArgs(None, options)
