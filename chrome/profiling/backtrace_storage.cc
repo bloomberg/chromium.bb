@@ -9,6 +9,10 @@
 
 namespace profiling {
 
+namespace {
+constexpr size_t kShardCount = 64;
+}  // namespace
+
 BacktraceStorage::Lock::Lock() : storage_(nullptr) {}
 
 BacktraceStorage::Lock::Lock(BacktraceStorage* storage) : storage_(storage) {
@@ -32,65 +36,96 @@ BacktraceStorage::Lock& BacktraceStorage::Lock::operator=(Lock&& other) {
   return *this;
 }
 
-BacktraceStorage::BacktraceStorage() {}
+BacktraceStorage::BacktraceStorage() : shards_(kShardCount) {}
 
 BacktraceStorage::~BacktraceStorage() {}
 
 const Backtrace* BacktraceStorage::Insert(std::vector<Address>&& bt) {
-  base::AutoLock lock(lock_);
+  Backtrace backtrace(std::move(bt));
+  size_t shard_index = backtrace.fingerprint() % kShardCount;
+  ContainerShard& shard = shards_[shard_index];
 
-  auto iter = backtraces_.insert(Backtrace(std::move(bt))).first;
+  base::AutoLock lock(shard.lock);
+  auto iter = shard.backtraces.insert(std::move(backtrace)).first;
   iter->AddRef();
   return &*iter;
 }
 
 void BacktraceStorage::Free(const Backtrace* bt) {
-  base::AutoLock lock(lock_);
+  size_t shard_index = bt->fingerprint() % kShardCount;
+  ContainerShard& shard = shards_[shard_index];
+  base::AutoLock lock(shard.lock);
 
-  if (storage_lock_count_) {
-    release_after_lock_.push_back(bt);
+  if (shard.consumer_count) {
+    shard.release_after_lock.push_back(bt);
   } else {
     if (!bt->Release())
-      backtraces_.erase(backtraces_.find(*bt));
+      shard.backtraces.erase(*bt);
   }
 }
 
 void BacktraceStorage::Free(const std::vector<const Backtrace*>& bts) {
-  base::AutoLock lock(lock_);
+  // Separate backtraces by shard using the fingerprint.
+  std::vector<const Backtrace*> backtraces_by_shard[kShardCount];
+  for (size_t i = 0; i < kShardCount; ++i) {
+    backtraces_by_shard[i].reserve(bts.size() / kShardCount + 1);
+  }
+  for (const Backtrace* bt : bts) {
+    size_t shard_index = bt->fingerprint() % kShardCount;
+    backtraces_by_shard[shard_index].push_back(bt);
+  }
 
-  if (storage_lock_count_) {
-    release_after_lock_.insert(release_after_lock_.end(), bts.begin(),
-                               bts.end());
-  } else {
-    ReleaseBacktracesLocked(bts);
+  for (size_t i = 0; i < kShardCount; ++i) {
+    ContainerShard& shard = shards_[i];
+    base::AutoLock lock(shard.lock);
+
+    if (shard.consumer_count) {
+      shard.release_after_lock.insert(shard.release_after_lock.end(),
+                                      backtraces_by_shard[i].begin(),
+                                      backtraces_by_shard[i].end());
+    } else {
+      ReleaseBacktracesLocked(backtraces_by_shard[i], i);
+    }
   }
 }
 
 void BacktraceStorage::LockStorage() {
-  base::AutoLock lock(lock_);
-  storage_lock_count_++;
+  for (size_t i = 0; i < kShardCount; ++i) {
+    base::AutoLock lock(shards_[i].lock);
+    shards_[i].consumer_count++;
+  }
 }
 
 void BacktraceStorage::UnlockStorage() {
-  base::AutoLock lock(lock_);
-  DCHECK(storage_lock_count_ > 0);
-  storage_lock_count_--;
+  for (size_t i = 0; i < kShardCount; ++i) {
+    ContainerShard& shard = shards_[i];
+    base::AutoLock lock(shard.lock);
+    DCHECK(shard.consumer_count > 0);
+    shard.consumer_count--;
 
-  if (storage_lock_count_ == 0) {
-    ReleaseBacktracesLocked(release_after_lock_);
-    release_after_lock_.clear();
-    release_after_lock_.shrink_to_fit();
+    if (shard.consumer_count == 0) {
+      ReleaseBacktracesLocked(shard.release_after_lock, i);
+      shard.release_after_lock.clear();
+      shard.release_after_lock.shrink_to_fit();
+    }
   }
 }
 
 void BacktraceStorage::ReleaseBacktracesLocked(
-    const std::vector<const Backtrace*>& bts) {
-  lock_.AssertAcquired();
-  DCHECK_EQ(0, storage_lock_count_);
-  for (size_t i = 0; i < bts.size(); i++) {
-    if (!bts[i]->Release())
-      backtraces_.erase(backtraces_.find(*bts[i]));
+    const std::vector<const Backtrace*>& bts,
+    size_t shard_index) {
+  ContainerShard& shard = shards_[shard_index];
+
+  shard.lock.AssertAcquired();
+  DCHECK_EQ(0, shard.consumer_count);
+
+  for (const Backtrace* bt : bts) {
+    if (!bt->Release())
+      shard.backtraces.erase(*bt);
   }
 }
+
+BacktraceStorage::ContainerShard::ContainerShard() = default;
+BacktraceStorage::ContainerShard::~ContainerShard() = default;
 
 }  // namespace profiling
