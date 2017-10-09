@@ -89,10 +89,7 @@ const long long BlobDataItem::kToEndOfFile = -1;
 
 RawData::RawData() {}
 
-void RawData::DetachFromCurrentThread() {}
-
 void BlobDataItem::DetachFromCurrentThread() {
-  data->DetachFromCurrentThread();
   path = path.IsolatedCopy();
   file_system_url = file_system_url.Copy();
 }
