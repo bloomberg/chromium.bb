@@ -21,6 +21,8 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.tab.EmptyTabObserver;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content.browser.test.util.Criteria;
@@ -91,7 +93,7 @@ public class PictureInPictureControllerTest {
     @MinAndroidSdkLevel(Build.VERSION_CODES.O)
     public void testEnterPip() throws Throwable {
         enterFullscreen();
-        mActivityTestRule.getInstrumentation().callActivityOnUserLeaving(mActivity);
+        triggerAutoPiP();
 
         CriteriaHelper.pollUiThread(Criteria.equals(true, mActivity::isInPictureInPictureMode));
     }
@@ -150,17 +152,26 @@ public class PictureInPictureControllerTest {
         });
     }
 
-    /**
-     * A test to determine if PiP is left when navigation happens on a different frame to the video.
-     * This is the current behaviour, but is a bug. When this is fixed, this test should be updated.
-     * https://crbug.com/718415.
-     */
+    /** Tests that a navigation in an iframe other than the fullscreen one does not exit PiP. */
     @Test
     @MediumTest
     @MinAndroidSdkLevel(Build.VERSION_CODES.O)
-    public void testExitOnIframeNavigation() throws Throwable {
-        testExitOn(() -> JavaScriptUtils.executeJavaScript(getWebContents(),
-                "document.getElementById('iframe').src = 'https://www.example.com/'"));
+    public void testNoExitOnIframeNavigation() throws Throwable {
+        // Add a TabObserver so we know when the iFrame navigation has occurred before we check that
+        // we are still in PiP.
+        final NavigationObserver navigationObserver = new NavigationObserver();
+        mActivity.getActivityTab().addObserver(navigationObserver);
+
+        enterFullscreen();
+        triggerAutoPiP();
+        CriteriaHelper.pollUiThread(Criteria.equals(true, mActivity::isInPictureInPictureMode));
+
+        JavaScriptUtils.executeJavaScript(getWebContents(),
+                "document.getElementById('iframe').src = 'https://www.example.com/'");
+
+        CriteriaHelper.pollUiThread(Criteria.equals(true, navigationObserver::didNavigationOccur));
+
+        Assert.assertTrue(ThreadUtils.runOnUiThreadBlocking(mActivity::isInPictureInPictureMode));
     }
 
     /** Tests that we can resume PiP after it has been cancelled. */
@@ -169,19 +180,24 @@ public class PictureInPictureControllerTest {
     @MinAndroidSdkLevel(Build.VERSION_CODES.O)
     public void testReenterPip() throws Throwable {
         enterFullscreen();
-        mActivityTestRule.getInstrumentation().callActivityOnUserLeaving(mActivity);
+        triggerAutoPiP();
         CriteriaHelper.pollUiThread(Criteria.equals(true, mActivity::isInPictureInPictureMode));
 
         mActivityTestRule.startMainActivityFromLauncher();
         CriteriaHelper.pollUiThread(Criteria.equals(false, mActivity::isInPictureInPictureMode));
 
         enterFullscreen(false);
-        mActivityTestRule.getInstrumentation().callActivityOnUserLeaving(mActivity);
+        triggerAutoPiP();
         CriteriaHelper.pollUiThread(Criteria.equals(true, mActivity::isInPictureInPictureMode));
     }
 
     private WebContents getWebContents() {
         return mActivity.getCurrentContentViewCore().getWebContents();
+    }
+
+    private void triggerAutoPiP() throws Throwable{
+        mUiThreadTestRule.runOnUiThread(() ->
+                mActivityTestRule.getInstrumentation().callActivityOnUserLeaving(mActivity));
     }
 
     private void enterFullscreen() throws Throwable {
@@ -204,11 +220,28 @@ public class PictureInPictureControllerTest {
 
     private void testExitOn(Runnable runnable) throws Throwable {
         enterFullscreen();
-        mActivityTestRule.getInstrumentation().callActivityOnUserLeaving(mActivity);
+        triggerAutoPiP();
         CriteriaHelper.pollUiThread(Criteria.equals(true, mActivity::isInPictureInPictureMode));
 
         runnable.run();
 
         CriteriaHelper.pollUiThread(Criteria.equals(false, mActivity::isInPictureInPictureMode));
+    }
+
+    /** A TabObserver that tracks whether a navigation has occurred. */
+    private static class NavigationObserver extends EmptyTabObserver {
+        private boolean mNavigationOccurred;
+
+        public boolean didNavigationOccur() {
+            return mNavigationOccurred;
+        }
+
+        @Override
+        public void onDidFinishNavigation(Tab tab, String url, boolean isInMainFrame,
+                boolean isErrorPage, boolean hasCommitted, boolean isSameDocument,
+                boolean isFragmentNavigation, Integer pageTransition, int errorCode,
+                int httpStatusCode) {
+            mNavigationOccurred = true;
+        }
     }
 }
