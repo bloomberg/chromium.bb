@@ -8312,6 +8312,7 @@ void av1_update_neighbors(TX_SIZE tx_size, const int16_t *scan,
   neighbors[tx2d_size * MAX_NEIGHBORS + 1] = scan[0];
 }
 
+#if USE_LIMIT_SCAN_DISTANCE
 typedef struct SCAN_NB_QUEUE {
   int nb_ci_queue[COEFF_IDX_SIZE + 1];
   int pr_si_queue[COEFF_IDX_SIZE + 1];
@@ -8376,6 +8377,7 @@ static void limit_nb_scan_distance(TX_SIZE tx_size, int16_t *scan,
   }
   assert(new_si == tx2d_size);
 }
+#endif  // USE_LIMIT_SCAN_DISTANCE
 
 #if USE_TOPOLOGICAL_SORT
 void av1_update_sort_order(TX_SIZE tx_size, TX_TYPE tx_type,
@@ -8488,7 +8490,9 @@ static void update_scan_order_facade(AV1_COMMON *cm, TX_SIZE tx_size,
 #else
   av1_update_scan_order(tx_size, tx_type, non_zero_prob, scan, iscan);
 #endif
+#if USE_LIMIT_SCAN_DISTANCE
   limit_nb_scan_distance(tx_size, scan, iscan);
+#endif  // USE_LIMIT_SCAN_DISTANCE
   av1_update_neighbors(tx_size, scan, iscan, nb);
 }
 
