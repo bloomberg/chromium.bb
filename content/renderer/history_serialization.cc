@@ -5,6 +5,7 @@
 #include "content/renderer/history_serialization.h"
 
 #include <stddef.h>
+#include <algorithm>
 
 #include "base/strings/nullable_string16.h"
 #include "content/child/web_url_request_util.h"

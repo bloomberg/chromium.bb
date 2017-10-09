@@ -4,6 +4,8 @@
 
 #include "content/common/cursors/webcursor.h"
 
+#include <algorithm>
+
 #include "base/logging.h"
 #include "base/pickle.h"
 #include "build/build_config.h"

@@ -33,14 +33,13 @@
 
 #include "WebCommon.h"
 
-#include <algorithm>
-
 #if INSIDE_BLINK
 #include "platform/geometry/FloatSize.h"
 #else
-#include <cmath>
 #include <ui/gfx/geometry/size_f.h>
 #include <ui/gfx/geometry/vector2d_f.h>
+#include <algorithm>
+#include <cmath>
 #endif
 
 namespace blink {

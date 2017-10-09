@@ -5,12 +5,8 @@
 #ifndef WebFrameOwnerProperties_h
 #define WebFrameOwnerProperties_h
 
-#include "public/platform/WebFeaturePolicy.h"
 #include "public/platform/WebScrollbar.h"
 #include "public/platform/WebString.h"
-#include "public/platform/WebVector.h"
-
-#include <algorithm>
 
 namespace blink {
 

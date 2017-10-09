@@ -4,6 +4,8 @@
 
 #include "components/autofill/content/renderer/html_based_username_detector.h"
 
+#include <algorithm>
+
 #include "base/i18n/case_conversion.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
