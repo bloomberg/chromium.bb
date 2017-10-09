@@ -230,6 +230,8 @@ static_library("test_support") {
     "test_content_browser_client.h",
     "test_content_client.cc",
     "test_content_client.h",
+    "test_mojo_proxy_resolver_factory.cc",
+    "test_mojo_proxy_resolver_factory.h",
     "test_navigation_url_loader.cc",
     "test_navigation_url_loader.h",
     "test_navigation_url_loader_delegate.cc",
@@ -303,6 +305,7 @@ static_library("test_support") {
     "//mojo/edk/system",
     "//net:test_support",
     "//services/network/public/interfaces:interfaces",
+    "//services/proxy_resolver:lib",
     "//services/service_manager/public/cpp",
     "//services/viz/public/interfaces",
     "//skia",
@@ -1500,6 +1503,7 @@ test("content_unittests") {
     "../network/cookie_manager_impl_unittest.cc",
     "../network/network_context_unittest.cc",
     "../network/network_service_unittest.cc",
+    "../network/proxy_resolver_factory_mojo_unittest.cc",
     "../network/url_loader_unittest.cc",
     "../public/common/simple_url_loader_unittest.cc",
     "../public/common/url_utils_unittest.cc",
@@ -1546,7 +1550,9 @@ test("content_unittests") {
     "image_decoder_test.cc",
     "image_decoder_test.h",
     "navigation_simulator_unittest.cc",
+    "proxy_service_mojo_unittest.cc",
     "run_all_unittests.cc",
+    "url_request_context_builder_mojo_unittest.cc",
   ]
 
   # Chromecasts do not have extended attributes enabled; even if it were
@@ -1652,8 +1658,7 @@ test("content_unittests") {
     "//services/file/public/interfaces",
     "//services/metrics/public/interfaces",
     "//services/network/public/interfaces:interfaces",
-    "//services/proxy_resolver/public/cpp:cpp_browser",
-    "//services/proxy_resolver/public/cpp:cpp_utility",
+    "//services/proxy_resolver/:lib",
     "//services/service_manager/public/cpp:service_test_support",
     "//services/video_capture/public/interfaces",
     "//skia",
@@ -1696,8 +1701,6 @@ test("content_unittests") {
   }
 
   if (enable_net_mojo) {
-    sources += [ "../public/test/url_request_context_builder_mojo_unittest.cc" ]
-
     deps += [ "//net:net_utility_services" ]
   }
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/proxy_resolver/public/cpp/proxy_service_mojo.h"
+#include "content/network/proxy_service_mojo.h"
 
 #include <memory>
 #include <utility>
@@ -10,14 +10,13 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "content/network/proxy_resolver_factory_mojo.h"
 #include "net/dns/mojo_host_resolver_impl.h"
 #include "net/proxy/network_delegate_error_observer.h"
 #include "net/proxy/proxy_resolver_factory.h"
 #include "net/proxy/proxy_service.h"
-#include "services/proxy_resolver/proxy_resolver_factory_mojo.h"
-#include "services/proxy_resolver/public/cpp/mojo_proxy_resolver_factory.h"
 
-namespace proxy_resolver {
+namespace content {
 
 std::unique_ptr<net::ProxyService> CreateProxyServiceUsingMojoFactory(
     MojoProxyResolverFactory* mojo_proxy_factory,
@@ -48,4 +47,4 @@ std::unique_ptr<net::ProxyService> CreateProxyServiceUsingMojoFactory(
   return proxy_service;
 }
 
-}  // namespace proxy_resolver
+}  // namespace content

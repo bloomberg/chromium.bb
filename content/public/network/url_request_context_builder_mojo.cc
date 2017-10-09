@@ -6,9 +6,9 @@
 
 #include "base/logging.h"
 #include "build/build_config.h"
+#include "content/network/proxy_service_mojo.h"  // nogncheck
 #include "net/proxy/proxy_config_service.h"
 #include "net/proxy/proxy_script_fetcher_impl.h"
-#include "services/proxy_resolver/public/cpp/proxy_service_mojo.h"
 
 namespace content {
 
@@ -37,7 +37,7 @@ URLRequestContextBuilderMojo::CreateProxyService(
       dhcp_fetcher_factory_->Create(url_request_context);
   std::unique_ptr<net::ProxyScriptFetcher> proxy_script_fetcher =
       std::make_unique<net::ProxyScriptFetcherImpl>(url_request_context);
-  return proxy_resolver::CreateProxyServiceUsingMojoFactory(
+  return content::CreateProxyServiceUsingMojoFactory(
       mojo_proxy_resolver_factory_, std::move(proxy_config_service),
       proxy_script_fetcher.release(), std::move(dhcp_proxy_script_fetcher),
       host_resolver, net_log, network_delegate);

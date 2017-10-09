@@ -381,6 +381,7 @@ static_library("test_support") {
 chrome_packaged_services = [
   ":chrome_manifest",
   "//chrome/profiling:manifest",
+  "//services/proxy_resolver:proxy_resolver_manifest",
   "//services/preferences:local_state_manifest",
 ]
 

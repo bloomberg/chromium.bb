@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/proxy_resolver/proxy_resolver_factory_mojo.h"
+#include "content/network/proxy_resolver_factory_mojo.h"
 
 #include <set>
 #include <utility>
@@ -16,6 +16,7 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "content/public/network/mojo_proxy_resolver_factory.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/load_states.h"
 #include "net/base/net_errors.h"
@@ -29,9 +30,9 @@
 #include "net/proxy/proxy_resolver.h"
 #include "net/proxy/proxy_resolver_error_observer.h"
 #include "net/proxy/proxy_resolver_script_data.h"
-#include "services/proxy_resolver/public/cpp/mojo_proxy_resolver_factory.h"  // nogncheck
+#include "services/proxy_resolver/public/interfaces/proxy_resolver.mojom.h"
 
-namespace proxy_resolver {
+namespace content {
 
 namespace {
 
@@ -116,7 +117,7 @@ class ProxyResolverMojo : public net::ProxyResolver {
   // communicate with it. When deleted, the closure contained within
   // |on_delete_callback_runner| will be run.
   ProxyResolverMojo(
-      mojom::ProxyResolverPtr resolver_ptr,
+      proxy_resolver::mojom::ProxyResolverPtr resolver_ptr,
       net::HostResolver* host_resolver,
       std::unique_ptr<base::ScopedClosureRunner> on_delete_callback_runner,
       std::unique_ptr<net::ProxyResolverErrorObserver> error_observer,
@@ -139,7 +140,7 @@ class ProxyResolverMojo : public net::ProxyResolver {
   void OnConnectionError();
 
   // Connection to the Mojo proxy resolver.
-  mojom::ProxyResolverPtr mojo_proxy_resolver_ptr_;
+  proxy_resolver::mojom::ProxyResolverPtr mojo_proxy_resolver_ptr_;
 
   net::HostResolver* host_resolver_;
 
@@ -154,7 +155,7 @@ class ProxyResolverMojo : public net::ProxyResolver {
 
 class ProxyResolverMojo::Job
     : public ProxyResolver::Request,
-      public ClientMixin<mojom::ProxyResolverRequestClient> {
+      public ClientMixin<proxy_resolver::mojom::ProxyResolverRequestClient> {
  public:
   Job(ProxyResolverMojo* resolver,
       const GURL& url,
@@ -170,7 +171,7 @@ class ProxyResolverMojo::Job
   // Mojo error handler.
   void OnConnectionError();
 
-  // Overridden from mojom::ProxyResolverRequestClient:
+  // Overridden from proxy_resolver::mojom::ProxyResolverRequestClient:
   void ReportResult(int32_t error, const net::ProxyInfo& proxy_info) override;
 
   // Completes a request with a result code.
@@ -181,7 +182,7 @@ class ProxyResolverMojo::Job
   net::CompletionCallback callback_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-  mojo::Binding<mojom::ProxyResolverRequestClient> binding_;
+  mojo::Binding<proxy_resolver::mojom::ProxyResolverRequestClient> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(Job);
 };
@@ -191,7 +192,7 @@ ProxyResolverMojo::Job::Job(ProxyResolverMojo* resolver,
                             net::ProxyInfo* results,
                             const net::CompletionCallback& callback,
                             const net::NetLogWithSource& net_log)
-    : ClientMixin<mojom::ProxyResolverRequestClient>(
+    : ClientMixin<proxy_resolver::mojom::ProxyResolverRequestClient>(
           resolver->host_resolver_,
           resolver->error_observer_.get(),
           resolver->net_log_,
@@ -200,7 +201,7 @@ ProxyResolverMojo::Job::Job(ProxyResolverMojo* resolver,
       results_(results),
       callback_(callback),
       binding_(this) {
-  mojom::ProxyResolverRequestClientPtr client;
+  proxy_resolver::mojom::ProxyResolverRequestClientPtr client;
   binding_.Bind(mojo::MakeRequest(&client));
   resolver->mojo_proxy_resolver_ptr_->GetProxyForUrl(url_, std::move(client));
   binding_.set_connection_error_handler(base::Bind(
@@ -242,7 +243,7 @@ void ProxyResolverMojo::Job::ReportResult(int32_t error,
 }
 
 ProxyResolverMojo::ProxyResolverMojo(
-    mojom::ProxyResolverPtr resolver_ptr,
+    proxy_resolver::mojom::ProxyResolverPtr resolver_ptr,
     net::HostResolver* host_resolver,
     std::unique_ptr<base::ScopedClosureRunner> on_delete_callback_runner,
     std::unique_ptr<net::ProxyResolverErrorObserver> error_observer,
@@ -291,7 +292,8 @@ int ProxyResolverMojo::GetProxyForURL(const GURL& url,
 // there is no per-request logging to be done (any netlog events are only sent
 // globally) so this always uses an empty NetLogWithSource.
 class ProxyResolverFactoryMojo::Job
-    : public ClientMixin<mojom::ProxyResolverFactoryRequestClient>,
+    : public ClientMixin<
+          proxy_resolver::mojom::ProxyResolverFactoryRequestClient>,
       public ProxyResolverFactory::Request {
  public:
   Job(ProxyResolverFactoryMojo* factory,
@@ -299,7 +301,7 @@ class ProxyResolverFactoryMojo::Job
       std::unique_ptr<net::ProxyResolver>* resolver,
       const net::CompletionCallback& callback,
       std::unique_ptr<net::ProxyResolverErrorObserver> error_observer)
-      : ClientMixin<mojom::ProxyResolverFactoryRequestClient>(
+      : ClientMixin<proxy_resolver::mojom::ProxyResolverFactoryRequestClient>(
             factory->host_resolver_,
             error_observer.get(),
             factory->net_log_,
@@ -309,7 +311,7 @@ class ProxyResolverFactoryMojo::Job
         callback_(callback),
         binding_(this),
         error_observer_(std::move(error_observer)) {
-    mojom::ProxyResolverFactoryRequestClientPtr client;
+    proxy_resolver::mojom::ProxyResolverFactoryRequestClientPtr client;
     binding_.Bind(mojo::MakeRequest(&client));
     on_delete_callback_runner_ = factory_->mojo_proxy_factory_->CreateResolver(
         base::UTF16ToUTF8(pac_script->utf16()),
@@ -341,8 +343,9 @@ class ProxyResolverFactoryMojo::Job
   ProxyResolverFactoryMojo* const factory_;
   std::unique_ptr<net::ProxyResolver>* resolver_;
   const net::CompletionCallback callback_;
-  mojom::ProxyResolverPtr resolver_ptr_;
-  mojo::Binding<mojom::ProxyResolverFactoryRequestClient> binding_;
+  proxy_resolver::mojom::ProxyResolverPtr resolver_ptr_;
+  mojo::Binding<proxy_resolver::mojom::ProxyResolverFactoryRequestClient>
+      binding_;
   std::unique_ptr<base::ScopedClosureRunner> on_delete_callback_runner_;
   std::unique_ptr<net::ProxyResolverErrorObserver> error_observer_;
 };
@@ -380,4 +383,4 @@ int ProxyResolverFactoryMojo::CreateProxyResolver(
   return net::ERR_IO_PENDING;
 }
 
-}  // namespace proxy_resolver
+}  // namespace content

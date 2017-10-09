@@ -2,14 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_PROXY_RESOLVER_PUBLIC_CPP_MOJO_PROXY_RESOLVER_FACTORY_IMPL_H_
-#define SERVICES_PROXY_RESOLVER_PUBLIC_CPP_MOJO_PROXY_RESOLVER_FACTORY_IMPL_H_
+#ifndef SERVICES_PROXY_RESOLVER_PUBLIC_CPP_PROXY_RESOLVER_FACTORY_IMPL_H_
+#define SERVICES_PROXY_RESOLVER_PUBLIC_CPP_PROXY_RESOLVER_FACTORY_IMPL_H_
 
 #include <map>
+#include <memory>
+#include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "services/proxy_resolver/public/interfaces/proxy_resolver.mojom.h"
+#include "services/service_manager/public/cpp/service_context_ref.h"
 
 namespace net {
 class ProxyResolverV8TracingFactory;
@@ -17,14 +20,23 @@ class ProxyResolverV8TracingFactory;
 
 namespace proxy_resolver {
 
-class MojoProxyResolverFactoryImpl : public mojom::ProxyResolverFactory {
+class ProxyResolverFactoryImpl : public mojom::ProxyResolverFactory {
  public:
-  MojoProxyResolverFactoryImpl();
-  explicit MojoProxyResolverFactoryImpl(
+  ProxyResolverFactoryImpl();
+  explicit ProxyResolverFactoryImpl(
+      std::unique_ptr<service_manager::ServiceContextRef> service_ref);
+
+  ~ProxyResolverFactoryImpl() override;
+
+ protected:
+  // Visible for tests.
+  ProxyResolverFactoryImpl(
+      std::unique_ptr<service_manager::ServiceContextRef> service_ref,
       std::unique_ptr<net::ProxyResolverV8TracingFactory>
           proxy_resolver_factory);
 
-  ~MojoProxyResolverFactoryImpl() override;
+ private:
+  class Job;
 
   // mojom::ProxyResolverFactory override.
   void CreateResolver(
@@ -32,19 +44,18 @@ class MojoProxyResolverFactoryImpl : public mojom::ProxyResolverFactory {
       mojom::ProxyResolverRequest request,
       mojom::ProxyResolverFactoryRequestClientPtr client) override;
 
- private:
-  class Job;
-
   void RemoveJob(Job* job);
+
+  const std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
 
   const std::unique_ptr<net::ProxyResolverV8TracingFactory>
       proxy_resolver_impl_factory_;
 
   std::map<Job*, std::unique_ptr<Job>> jobs_;
 
-  DISALLOW_COPY_AND_ASSIGN(MojoProxyResolverFactoryImpl);
+  DISALLOW_COPY_AND_ASSIGN(ProxyResolverFactoryImpl);
 };
 
 }  // namespace proxy_resolver
 
-#endif  // SERVICES_PROXY_RESOLVER_PUBLIC_CPP_MOJO_PROXY_RESOLVER_FACTORY_IMPL_H_
+#endif  // SERVICES_PROXY_RESOLVER_PUBLIC_CPP_PROXY_RESOLVER_FACTORY_IMPL_H_

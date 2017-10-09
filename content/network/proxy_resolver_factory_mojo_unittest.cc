@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/proxy_resolver/proxy_resolver_factory_mojo.h"
+#include "content/network/proxy_resolver_factory_mojo.h"
 
 #include <list>
 #include <map>
@@ -19,6 +19,7 @@
 #include "base/stl_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/values.h"
+#include "content/public/network/mojo_proxy_resolver_factory.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/load_states.h"
 #include "net/base/net_errors.h"
@@ -34,7 +35,7 @@
 #include "net/proxy/proxy_resolver_script_data.h"
 #include "net/test/event_waiter.h"
 #include "net/test/gtest_util.h"
-#include "services/proxy_resolver/public/cpp/mojo_proxy_resolver_factory.h"
+#include "services/proxy_resolver/public/interfaces/proxy_resolver.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -42,7 +43,7 @@
 using net::test::IsError;
 using net::test::IsOk;
 
-namespace proxy_resolver {
+namespace content {
 
 namespace {
 
@@ -178,7 +179,7 @@ struct GetProxyForUrlAction {
   GURL expected_url;
 };
 
-class MockMojoProxyResolver : public mojom::ProxyResolver {
+class MockMojoProxyResolver : public proxy_resolver::mojom::ProxyResolver {
  public:
   MockMojoProxyResolver();
   ~MockMojoProxyResolver() override;
@@ -189,12 +190,14 @@ class MockMojoProxyResolver : public mojom::ProxyResolver {
 
   void ClearBlockedClients();
 
-  void AddConnection(mojo::InterfaceRequest<mojom::ProxyResolver> req);
+  void AddConnection(
+      mojo::InterfaceRequest<proxy_resolver::mojom::ProxyResolver> req);
 
  private:
-  // Overridden from mojom::ProxyResolver:
-  void GetProxyForUrl(const GURL& url,
-                      mojom::ProxyResolverRequestClientPtr client) override;
+  // Overridden from proxy_resolver::mojom::ProxyResolver:
+  void GetProxyForUrl(
+      const GURL& url,
+      proxy_resolver::mojom::ProxyResolverRequestClientPtr client) override;
 
   void WakeWaiter();
 
@@ -204,9 +207,10 @@ class MockMojoProxyResolver : public mojom::ProxyResolver {
 
   base::Closure quit_closure_;
 
-  std::vector<std::unique_ptr<mojom::ProxyResolverRequestClientPtr>>
+  std::vector<
+      std::unique_ptr<proxy_resolver::mojom::ProxyResolverRequestClientPtr>>
       blocked_clients_;
-  mojo::Binding<mojom::ProxyResolver> binding_;
+  mojo::Binding<proxy_resolver::mojom::ProxyResolver> binding_;
 };
 
 MockMojoProxyResolver::~MockMojoProxyResolver() {
@@ -237,7 +241,7 @@ void MockMojoProxyResolver::ClearBlockedClients() {
 }
 
 void MockMojoProxyResolver::AddConnection(
-    mojo::InterfaceRequest<mojom::ProxyResolver> req) {
+    mojo::InterfaceRequest<proxy_resolver::mojom::ProxyResolver> req) {
   if (binding_.is_bound())
     binding_.Close();
   binding_.Bind(std::move(req));
@@ -245,7 +249,7 @@ void MockMojoProxyResolver::AddConnection(
 
 void MockMojoProxyResolver::GetProxyForUrl(
     const GURL& url,
-    mojom::ProxyResolverRequestClientPtr client) {
+    proxy_resolver::mojom::ProxyResolverRequestClientPtr client) {
   ASSERT_FALSE(get_proxy_actions_.empty());
   GetProxyForUrlAction action = get_proxy_actions_.front();
   get_proxy_actions_.pop();
@@ -282,7 +286,8 @@ void MockMojoProxyResolver::GetProxyForUrl(
       mojo::MakeRequest(&dns_client);
       client->ResolveDns(std::move(request), std::move(dns_client));
       blocked_clients_.push_back(
-          std::make_unique<mojom::ProxyResolverRequestClientPtr>(
+          std::make_unique<
+              proxy_resolver::mojom::ProxyResolverRequestClientPtr>(
               std::move(client)));
       break;
     }
@@ -331,11 +336,12 @@ int Request::WaitForResult() {
   return error_;
 }
 
-class MockMojoProxyResolverFactory : public mojom::ProxyResolverFactory {
+class MockMojoProxyResolverFactory
+    : public proxy_resolver::mojom::ProxyResolverFactory {
  public:
   MockMojoProxyResolverFactory(
       MockMojoProxyResolver* resolver,
-      mojo::InterfaceRequest<mojom::ProxyResolverFactory> req);
+      mojo::InterfaceRequest<proxy_resolver::mojom::ProxyResolverFactory> req);
   ~MockMojoProxyResolverFactory() override;
 
   void AddCreateProxyResolverAction(CreateProxyResolverAction action);
@@ -345,11 +351,12 @@ class MockMojoProxyResolverFactory : public mojom::ProxyResolverFactory {
   void ClearBlockedClients();
 
  private:
-  // Overridden from mojom::ProxyResolver:
+  // Overridden from proxy_resolver::mojom::ProxyResolver:
   void CreateResolver(
       const std::string& pac_url,
-      mojo::InterfaceRequest<mojom::ProxyResolver> request,
-      mojom::ProxyResolverFactoryRequestClientPtr client) override;
+      mojo::InterfaceRequest<proxy_resolver::mojom::ProxyResolver> request,
+      proxy_resolver::mojom::ProxyResolverFactoryRequestClientPtr client)
+      override;
 
   void WakeWaiter();
 
@@ -358,16 +365,18 @@ class MockMojoProxyResolverFactory : public mojom::ProxyResolverFactory {
 
   base::Closure quit_closure_;
 
-  std::vector<std::unique_ptr<mojom::ProxyResolverFactoryRequestClientPtr>>
+  std::vector<std::unique_ptr<
+      proxy_resolver::mojom::ProxyResolverFactoryRequestClientPtr>>
       blocked_clients_;
-  std::vector<std::unique_ptr<mojo::InterfaceRequest<mojom::ProxyResolver>>>
+  std::vector<std::unique_ptr<
+      mojo::InterfaceRequest<proxy_resolver::mojom::ProxyResolver>>>
       blocked_resolver_requests_;
-  mojo::Binding<mojom::ProxyResolverFactory> binding_;
+  mojo::Binding<proxy_resolver::mojom::ProxyResolverFactory> binding_;
 };
 
 MockMojoProxyResolverFactory::MockMojoProxyResolverFactory(
     MockMojoProxyResolver* resolver,
-    mojo::InterfaceRequest<mojom::ProxyResolverFactory> req)
+    mojo::InterfaceRequest<proxy_resolver::mojom::ProxyResolverFactory> req)
     : resolver_(resolver), binding_(this, std::move(req)) {}
 
 MockMojoProxyResolverFactory::~MockMojoProxyResolverFactory() {
@@ -398,8 +407,8 @@ void MockMojoProxyResolverFactory::ClearBlockedClients() {
 
 void MockMojoProxyResolverFactory::CreateResolver(
     const std::string& pac_script,
-    mojo::InterfaceRequest<mojom::ProxyResolver> request,
-    mojom::ProxyResolverFactoryRequestClientPtr client) {
+    mojo::InterfaceRequest<proxy_resolver::mojom::ProxyResolver> request,
+    proxy_resolver::mojom::ProxyResolverFactoryRequestClientPtr client) {
   ASSERT_FALSE(create_resolver_actions_.empty());
   CreateProxyResolverAction action = create_resolver_actions_.front();
   create_resolver_actions_.pop();
@@ -417,14 +426,16 @@ void MockMojoProxyResolverFactory::CreateResolver(
     case CreateProxyResolverAction::DROP_CLIENT: {
       // Save |request| so its pipe isn't closed.
       blocked_resolver_requests_.push_back(
-          std::make_unique<mojo::InterfaceRequest<mojom::ProxyResolver>>(
+          std::make_unique<
+              mojo::InterfaceRequest<proxy_resolver::mojom::ProxyResolver>>(
               std::move(request)));
       break;
     }
     case CreateProxyResolverAction::DROP_RESOLVER: {
       // Save |client| so its pipe isn't closed.
       blocked_clients_.push_back(
-          std::make_unique<mojom::ProxyResolverFactoryRequestClientPtr>(
+          std::make_unique<
+              proxy_resolver::mojom::ProxyResolverFactoryRequestClientPtr>(
               std::move(client)));
       break;
     }
@@ -448,7 +459,8 @@ void MockMojoProxyResolverFactory::CreateResolver(
       mojo::MakeRequest(&dns_client);
       client->ResolveDns(std::move(request), std::move(dns_client));
       blocked_clients_.push_back(
-          std::make_unique<mojom::ProxyResolverFactoryRequestClientPtr>(
+          std::make_unique<
+              proxy_resolver::mojom::ProxyResolverFactoryRequestClientPtr>(
               std::move(client)));
       break;
     }
@@ -534,8 +546,9 @@ class ProxyResolverFactoryMojoTest : public testing::Test,
 
   std::unique_ptr<base::ScopedClosureRunner> CreateResolver(
       const std::string& pac_script,
-      mojo::InterfaceRequest<mojom::ProxyResolver> req,
-      mojom::ProxyResolverFactoryRequestClientPtr client) override {
+      mojo::InterfaceRequest<proxy_resolver::mojom::ProxyResolver> req,
+      proxy_resolver::mojom::ProxyResolverFactoryRequestClientPtr client)
+      override {
     factory_ptr_->CreateResolver(pac_script, std::move(req), std::move(client));
     return std::make_unique<base::ScopedClosureRunner>(
         on_delete_callback_.closure());
@@ -572,7 +585,7 @@ class ProxyResolverFactoryMojoTest : public testing::Test,
   MockHostResolver host_resolver_;
   net::TestNetLog net_log_;
   std::unique_ptr<MockMojoProxyResolverFactory> mock_proxy_resolver_factory_;
-  mojom::ProxyResolverFactoryPtr factory_ptr_;
+  proxy_resolver::mojom::ProxyResolverFactoryPtr factory_ptr_;
   std::unique_ptr<net::ProxyResolverFactory> proxy_resolver_factory_mojo_;
 
   MockMojoProxyResolver mock_proxy_resolver_;
@@ -911,4 +924,4 @@ TEST_F(ProxyResolverFactoryMojoTest, DeleteResolver) {
   proxy_resolver_mojo_.reset();
   on_delete_callback_.WaitForResult();
 }
-}  // namespace proxy_resolver
+}  // namespace content

@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_PROX_RESOLVER_PUBLIC_CPP_PROXY_SERVICE_MOJO_H_
-#define SERVICES_PROX_RESOLVER_PUBLIC_CPP_PROXY_SERVICE_MOJO_H_
+#ifndef CONTENT_NETWORK_PROXY_SERVICE_MOJO_H_
+#define CONTENT_NETWORK_PROXY_SERVICE_MOJO_H_
 
 #include <memory>
 
+#include "content/common/content_export.h"
 #include "net/proxy/dhcp_proxy_script_fetcher.h"
 
 namespace net {
@@ -18,7 +19,7 @@ class ProxyScriptFetcher;
 class ProxyService;
 }  // namespace net
 
-namespace proxy_resolver {
+namespace content {
 
 class MojoProxyResolverFactory;
 
@@ -35,7 +36,8 @@ class MojoProxyResolverFactory;
 // |host_resolver| points to the host resolving dependency the PAC script
 // should use for any DNS queries. It must remain valid throughout the
 // lifetime of the ProxyService.
-std::unique_ptr<net::ProxyService> CreateProxyServiceUsingMojoFactory(
+std::unique_ptr<net::ProxyService> CONTENT_EXPORT
+CreateProxyServiceUsingMojoFactory(
     MojoProxyResolverFactory* mojo_proxy_factory,
     std::unique_ptr<net::ProxyConfigService> proxy_config_service,
     net::ProxyScriptFetcher* proxy_script_fetcher,
@@ -44,6 +46,6 @@ std::unique_ptr<net::ProxyService> CreateProxyServiceUsingMojoFactory(
     net::NetLog* net_log,
     net::NetworkDelegate* network_delegate);
 
-}  // namespace proxy_resolver
+}  // namespace content
 
-#endif  // SERVICES_PROX_RESOLVER_PUBLIC_CPP_PROXY_SERVICE_MOJO_H_
+#endif  // CONTENT_NETWORK_PROXY_SERVICE_MOJO_H_

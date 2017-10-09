@@ -2,6 +2,5 @@ include_rules = [
   "+components/data_use_measurement",
   # For nss_context_chromeos_browsertest.cc.
   "+components/user_manager",
-  "+services/proxy_resolver/public/cpp",
 ]
 
