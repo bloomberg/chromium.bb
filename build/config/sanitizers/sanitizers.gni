@@ -161,6 +161,11 @@ using_sanitizer =
     is_asan || is_lsan || is_tsan || is_msan || is_ubsan || is_ubsan_null ||
     is_ubsan_vptr || is_ubsan_security || use_sanitizer_coverage || use_cfi_diag
 
+# Whether we are doing a fuzzer build. Normally this should be checked instead
+# of checking "use_libfuzzer || use_afl" because often developers forget to
+# check for "use_afl".
+use_fuzzing_engine = use_libfuzzer || use_afl
+
 assert(!using_sanitizer || is_clang,
        "Sanitizers (is_*san) require setting is_clang = true in 'gn args'")
 
