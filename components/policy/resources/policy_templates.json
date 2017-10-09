@@ -10326,7 +10326,7 @@
             }
           },
           'timezone': { 'type': 'string' },
-          'ignored_policies_proto_tags': {
+          'ignored_policy_proto_tags': {
             'type': 'array',
             'items': { 'type':'integer' }
           }
@@ -10362,14 +10362,12 @@
           }
         ],
         'timezone': 'GMT',
-        # proto tag = 3 corresponds to the DeviceAllowNewUsers policy,
-        # proto tag = 8 corresponds to the DeviceGuestModeEnabled policy.
         'ignored_policy_proto_tags': [3, 8]
       },
       'id': 380,
       'caption': '''Off hours intervals when device OffHours |ignored_policy_proto_tags| are released''',
       'tags': [],
-      'desc': '''If "OffHours" policy is set, then the specified device policies are ignored (use the default settings of these policies) during the defined time intervals. Device policies are re-applied by Chrome on every event when "OffHours" period starts or ends. User will be notified and forced to sign out when "OffHours" time end and device policy settings are changed (i.e. when user is logged in not with an allowed account).''',
+      'desc': '''If "OffHours" policy is set, then the specified device policies are ignored (use the default settings of these policies) during the defined time intervals. Device policies are re-applied by Chrome on every event when "OffHours" period starts or ends. User will be notified and forced to sign out when "OffHours" time end and device policy settings are changed (e.g. when user is logged in not with an allowed account).''',
     },
     {
       'name': 'CloudPolicyOverridesMachinePolicy',

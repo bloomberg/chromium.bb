@@ -12,6 +12,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/policy/device_off_hours_controller.h"
 #include "chrome/browser/supervised_user/supervised_user_service_observer.h"
 #include "components/session_manager/core/session_manager_observer.h"
 #include "components/user_manager/user_manager.h"
@@ -39,7 +40,8 @@ class SessionControllerClient
       public user_manager::UserManager::Observer,
       public session_manager::SessionManagerObserver,
       public SupervisedUserServiceObserver,
-      public content::NotificationObserver {
+      public content::NotificationObserver,
+      public policy::DeviceOffHoursController::Observer {
  public:
   SessionControllerClient();
   ~SessionControllerClient() override;
@@ -99,6 +101,9 @@ class SessionControllerClient
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
+  // DeviceOffHoursController::Observer:
+  void OnOffHoursEndTimeChanged() override;
+
   // TODO(xiyuan): Remove after SessionStateDelegateChromeOS is gone.
   static bool CanLockScreen();
   static bool ShouldLockScreenAutomatically();
@@ -135,7 +140,13 @@ class SessionControllerClient
   // Sends the order of user sessions to ash.
   void SendUserSessionOrder();
 
-  // Sends the session length time limit to ash.
+  // Sends the session length time limit to ash considering two policies which
+  // restrict session length: "SessionLengthLimit" and "OffHours". Send limit
+  // from "SessionLengthLimit" policy if "OffHours" mode is off now or if
+  // "SessionLengthLimit" policy will be ended earlier than "OffHours" mode.
+  // Send limit from "OffHours" policy if "SessionLengthLimit" policy is unset
+  // or if "OffHours" mode will be ended earlier than "SessionLengthLimit"
+  // policy.
   void SendSessionLengthLimit();
 
   // Binds to the client interface.

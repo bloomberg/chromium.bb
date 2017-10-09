@@ -19,6 +19,8 @@
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
 #include "chrome/browser/chromeos/policy/policy_cert_verifier.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/common/pref_names.h"
@@ -180,6 +182,9 @@ class SessionControllerClientTest : public testing::Test {
     profile_manager_.reset(
         new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
     ASSERT_TRUE(profile_manager_->SetUp());
+    test_device_settings_service_.reset(
+        new chromeos::ScopedTestDeviceSettingsService);
+    test_cros_settings_.reset(new chromeos::ScopedTestCrosSettings());
   }
 
   void TearDown() override {
@@ -251,6 +256,10 @@ class SessionControllerClientTest : public testing::Test {
 
   // Owned by |user_manager_enabler_|.
   TestChromeUserManager* user_manager_ = nullptr;
+
+  std::unique_ptr<chromeos::ScopedTestDeviceSettingsService>
+      test_device_settings_service_;
+  std::unique_ptr<chromeos::ScopedTestCrosSettings> test_cros_settings_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionControllerClientTest);
 };
