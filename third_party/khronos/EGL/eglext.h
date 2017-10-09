@@ -1265,49 +1265,6 @@ EGLAPI EGLuint64NV EGLAPIENTRY eglGetSystemTimeNV (void);
 #define EGL_NATIVE_SURFACE_TIZEN          0x32A1
 #endif /* EGL_TIZEN_image_native_surface */
 
-/* Chromium-specific support for EGL_EXT_image_flush_external extension */
-#ifndef EGL_EXT_image_flush_external
-#define EGL_EXT_image_flush_external 1
-#ifdef EGL_EGLEXT_PROTOTYPES
-EGLAPI EGLBoolean EGLAPIENTRY
-eglImageFlushExternalEXT(EGLDisplay dpy,
-                         EGLImageKHR image,
-                         const EGLint* attrib_list);
-#else
-typedef EGLBoolean(EGLAPIENTRYP PFNGLEGLIMAGEFLUSHEXTERNALEXT)(
-    EGLDisplay dpy,
-    EGLImageKHR image,
-    const EGLint* attrib_list);
-#endif
-#endif
-
-/* Chromium-specific support for EGL_ANGLE_stream_producer_d3d_texture_nv12 */
-#ifndef EGL_ANGLE_stream_producer_d3d_texture_nv12
-#define EGL_ANGLE_stream_producer_d3d_texture_nv12
-#define EGL_D3D_TEXTURE_SUBRESOURCE_ID_ANGLE 0x33AB
-typedef EGLBoolean(
-    EGLAPIENTRYP PFNEGLCREATESTREAMPRODUCERD3DTEXTURENV12ANGLEPROC)(
-    EGLDisplay dpy,
-    EGLStreamKHR stream,
-    const EGLAttrib* attrib_list);
-typedef EGLBoolean(EGLAPIENTRYP PFNEGLSTREAMPOSTD3DTEXTURENV12ANGLEPROC)(
-    EGLDisplay dpy,
-    EGLStreamKHR stream,
-    void* texture,
-    const EGLAttrib* attrib_list);
-#ifdef EGL_EGLEXT_PROTOTYPES
-EGLAPI EGLBoolean EGLAPIENTRY
-eglCreateStreamProducerD3DTextureNV12ANGLE(EGLDisplay dpy,
-                                           EGLStreamKHR stream,
-                                           const EGLAttrib* attrib_list);
-EGLAPI EGLBoolean EGLAPIENTRY
-eglStreamPostD3DTextureNV12ANGLE(EGLDisplay dpy,
-                                 EGLStreamKHR stream,
-                                 void* texture,
-                                 const EGLAttrib* attrib_list);
-#endif
-#endif
-
 #ifdef __cplusplus
 }
 #endif
