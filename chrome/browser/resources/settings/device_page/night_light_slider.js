@@ -22,6 +22,7 @@ Polymer({
   behaviors: [
     PrefsBehavior,
     Polymer.IronA11yKeysBehavior,
+    Polymer.IronResizableBehavior,
     Polymer.PaperInkyFocusBehavior,
   ],
 
@@ -44,6 +45,10 @@ Polymer({
      * @private
      */
     shouldUse24Hours_: Boolean,
+  },
+
+  listeners: {
+    'iron-resize': 'onResize_',
   },
 
   observers: [
@@ -85,6 +90,15 @@ Polymer({
       // rendered.
       this.isReady_ = true;
     });
+  },
+
+  /**
+   * Invoked when the element is resized and the knobs positions need to be
+   * updated.
+   * @private
+   */
+  onResize_: function() {
+    this.updateKnobs_();
   },
 
   /**
