@@ -141,7 +141,6 @@ class MockMagnificationObserver {
   DISALLOW_COPY_AND_ASSIGN(MockMagnificationObserver);
 };
 
-
 class MagnificationManagerTest : public InProcessBrowserTest {
  protected:
   MagnificationManagerTest() {}

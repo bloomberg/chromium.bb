@@ -71,7 +71,7 @@ IN_PROC_BROWSER_TEST_F(StickyKeysBrowserTest, OpenTrayMenu) {
   EnableStickyKeys();
 
   // Open system tray bubble with shortcut.
-  SendKeyPress(ui::VKEY_MENU); // alt key.
+  SendKeyPress(ui::VKEY_MENU);  // alt key.
   SendKeyPress(ui::VKEY_SHIFT);
   SendKeyPress(ui::VKEY_S);
   EXPECT_TRUE(GetSystemTray()->HasSystemBubble());
@@ -86,7 +86,7 @@ IN_PROC_BROWSER_TEST_F(StickyKeysBrowserTest, OpenTrayMenu) {
 
   // With sticky keys disabled, we will fail to perform the shortcut.
   DisableStickyKeys();
-  SendKeyPress(ui::VKEY_MENU); // alt key.
+  SendKeyPress(ui::VKEY_MENU);  // alt key.
   SendKeyPress(ui::VKEY_SHIFT);
   SendKeyPress(ui::VKEY_S);
   EXPECT_FALSE(GetSystemTray()->HasSystemBubble());
@@ -194,10 +194,8 @@ IN_PROC_BROWSER_TEST_F(StickyKeysBrowserTest, SearchLeftOmnibox) {
 }
 
 IN_PROC_BROWSER_TEST_F(StickyKeysBrowserTest, OverlayShown) {
-  const ui::KeyboardCode modifier_keys[] = { ui::VKEY_CONTROL,
-                                             ui::VKEY_SHIFT,
-                                             ui::VKEY_MENU,
-                                             ui::VKEY_COMMAND };
+  const ui::KeyboardCode modifier_keys[] = {ui::VKEY_CONTROL, ui::VKEY_SHIFT,
+                                            ui::VKEY_MENU, ui::VKEY_COMMAND};
 
   // Overlay should not be visible if sticky keys is not enabled.
   ash::StickyKeysController* controller =

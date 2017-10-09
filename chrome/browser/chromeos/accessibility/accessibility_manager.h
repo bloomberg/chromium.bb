@@ -406,7 +406,8 @@ class AccessibilityManager
 
   bool braille_display_connected_;
   ScopedObserver<extensions::api::braille_display_private::BrailleController,
-                 AccessibilityManager> scoped_braille_observer_;
+                 AccessibilityManager>
+      scoped_braille_observer_;
 
   bool braille_ime_current_;
 

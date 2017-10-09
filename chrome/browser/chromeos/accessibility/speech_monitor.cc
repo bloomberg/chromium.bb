@@ -59,17 +59,14 @@ bool SpeechMonitor::PlatformImplAvailable() {
   return true;
 }
 
-bool SpeechMonitor::Speak(
-    int utterance_id,
-    const std::string& utterance,
-    const std::string& lang,
-    const VoiceData& voice,
-    const UtteranceContinuousParameters& params) {
-  TtsController::GetInstance()->OnTtsEvent(
-      utterance_id,
-      TTS_EVENT_END,
-      static_cast<int>(utterance.size()),
-      std::string());
+bool SpeechMonitor::Speak(int utterance_id,
+                          const std::string& utterance,
+                          const std::string& lang,
+                          const VoiceData& voice,
+                          const UtteranceContinuousParameters& params) {
+  TtsController::GetInstance()->OnTtsEvent(utterance_id, TTS_EVENT_END,
+                                           static_cast<int>(utterance.size()),
+                                           std::string());
   return true;
 }
 
