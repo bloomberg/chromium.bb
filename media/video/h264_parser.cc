@@ -366,6 +366,7 @@ bool H264Parser::LocateNALU(off_t* nalu_size, off_t* start_code_size) {
   return true;
 }
 
+// static
 bool H264Parser::FindStartCodeInClearRanges(
     const uint8_t* data,
     off_t data_size,
@@ -403,6 +404,7 @@ bool H264Parser::FindStartCodeInClearRanges(
   return true;
 }
 
+// static
 VideoCodecProfile H264Parser::ProfileIDCToVideoCodecProfile(int profile_idc) {
   switch (profile_idc) {
     case H264SPS::kProfileIDCBaseline:
@@ -428,6 +430,30 @@ VideoCodecProfile H264Parser::ProfileIDCToVideoCodecProfile(int profile_idc) {
   }
   DVLOG(1) << "unknown video profile: " << profile_idc;
   return VIDEO_CODEC_PROFILE_UNKNOWN;
+}
+
+// static
+bool H264Parser::ParseNALUs(const uint8_t* stream,
+                            size_t stream_size,
+                            std::vector<H264NALU>* nalus) {
+  DCHECK(nalus);
+  H264Parser parser;
+  parser.SetStream(stream, stream_size);
+
+  while (true) {
+    H264NALU nalu;
+    const H264Parser::Result result = parser.AdvanceToNextNALU(&nalu);
+    if (result == H264Parser::kOk) {
+      nalus->push_back(nalu);
+    } else if (result == media::H264Parser::kEOStream) {
+      return true;
+    } else {
+      DLOG(ERROR) << "Unexpected H264 parser result";
+      return false;
+    }
+  }
+  NOTREACHED();
+  return false;
 }
 
 H264Parser::Result H264Parser::ReadUE(int* val) {

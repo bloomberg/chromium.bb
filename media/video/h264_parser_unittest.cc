@@ -4,6 +4,7 @@
 
 #include <limits>
 #include <memory>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/files/memory_mapped_file.h"
@@ -151,6 +152,20 @@ TEST(H264ParserTest, StreamFileParsing) {
         break;
     }
   }
+}
+
+TEST(H264ParserTest, ParseNALUsFromStreamFile) {
+  base::FilePath file_path = GetTestDataFilePath("test-25fps.h264");
+  // Number of NALUs in the test stream to be parsed.
+  const size_t num_nalus = 759;
+
+  base::MemoryMappedFile stream;
+  ASSERT_TRUE(stream.Initialize(file_path))
+      << "Couldn't open stream file: " << file_path.MaybeAsASCII();
+
+  std::vector<H264NALU> nalus;
+  ASSERT_TRUE(H264Parser::ParseNALUs(stream.data(), stream.length(), &nalus));
+  ASSERT_EQ(num_nalus, nalus.size());
 }
 
 }  // namespace media
