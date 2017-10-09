@@ -291,7 +291,9 @@ IN_PROC_BROWSER_TEST_F(WebRtcApprtcBrowserTest, MANUAL_WorksOnApprtc) {
 }
 
 #if defined(OS_LINUX)
-#define MAYBE_MANUAL_FirefoxApprtcInteropTest MANUAL_FirefoxApprtcInteropTest
+// Disabled due to failure, see http://crbug.com/751211.
+#define MAYBE_MANUAL_FirefoxApprtcInteropTest \
+  DISABLED_MANUAL_FirefoxApprtcInteropTest
 #else
 // Not implemented yet on Windows and Mac.
 #define MAYBE_MANUAL_FirefoxApprtcInteropTest \
@@ -300,7 +302,6 @@ IN_PROC_BROWSER_TEST_F(WebRtcApprtcBrowserTest, MANUAL_WorksOnApprtc) {
 
 IN_PROC_BROWSER_TEST_F(WebRtcApprtcBrowserTest,
                        MAYBE_MANUAL_FirefoxApprtcInteropTest) {
-  base::ScopedAllowBlockingForTesting allow_blocking;
   DetectErrorsInJavaScript();
   ASSERT_TRUE(LaunchApprtcInstanceOnLocalhost("9999"));
   ASSERT_TRUE(LaunchColliderOnLocalHost("http://localhost:9999", "8089"));
