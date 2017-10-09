@@ -349,7 +349,7 @@ class BuilderStage(object):
     """Get message summarizing failures of this build from CIDB.
 
     Args:
-      build_id: The build id of the master build.
+      build_id: The build id of the build being inspected.
       db: An instance of cidb.CIDBConnection.
 
     Returns:
@@ -359,12 +359,17 @@ class BuilderStage(object):
     failure_msg_manager = failure_message_lib.FailureMessageManager()
     failure_messages = failure_msg_manager.ConstructStageFailureMessages(
         stage_failures)
+    master_build_id = next(failure.master_build_id for
+                           failure in stage_failures)
+    aborted = builder_status_lib.BuilderStatusManager.AbortedBySelfDestruction(
+        db, build_id, master_build_id)
 
     return builder_status_lib.BuilderStatusManager.CreateBuildFailureMessage(
         self._run.config.name,
         self._run.config.overlays,
         self._run.ConstructDashboardURL(),
-        failure_messages)
+        failure_messages,
+        aborted_by_self_destruction=aborted)
 
   def GetBuildFailureMessageFromResults(self):
     """Get message summarizing failures of this build from result_lib.Results.

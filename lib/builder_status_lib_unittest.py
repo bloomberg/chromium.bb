@@ -11,7 +11,6 @@ import mock
 
 from chromite.cbuildbot import build_status_unittest
 from chromite.lib.const import waterfall
-from chromite.lib import auth
 from chromite.lib import buildbucket_lib
 from chromite.lib import builder_status_lib
 from chromite.lib import config_lib
@@ -79,6 +78,37 @@ class BuilderStatusManagerTest(cros_test_lib.MockTestCase):
 
     self.assertTrue('cbuildbot failed' in build_msg.message_summary)
     self.assertFalse(build_msg.internal)
+    self.assertEqual(build_msg.builder, slave)
+
+  def testCreateBuildFailureMessageWhenCanceled(self):
+    """Test CreateBuildFailureMessage with no stage failure and canceled"""
+    overlays = constants.PRIVATE_OVERLAYS
+    dashboard_url = 'http://fake_dashboard_url'
+    slave = 'cyan-paladin'
+
+    build_msg = (
+        builder_status_lib.BuilderStatusManager.CreateBuildFailureMessage(
+            slave, overlays, dashboard_url, None,
+            aborted_by_self_destruction=True))
+
+    self.assertTrue('aborted by self-destruction' in build_msg.message_summary)
+    self.assertFalse('cbuildbot failed' in build_msg.message_summary)
+    self.assertEqual(build_msg.builder, slave)
+
+  def testCreateBuildFailureMessageSupersedesCancellation(self):
+    """Test CreateBuildFailureMessage with a stage failure when canceled"""
+    overlays = constants.PRIVATE_OVERLAYS
+    dashboard_url = 'http://fake_dashboard_url'
+    slave = 'cyan-paladin'
+    failure_messages = ConstructFailureMessages(slave)
+
+    build_msg = (
+        builder_status_lib.BuilderStatusManager.CreateBuildFailureMessage(
+            slave, overlays, dashboard_url, failure_messages,
+            aborted_by_self_destruction=True))
+
+    self.assertFalse('canceled by master' in build_msg.message_summary)
+    self.assertFalse('cbuildbot failed' in build_msg.message_summary)
     self.assertEqual(build_msg.builder, slave)
 
   def testGetBuilderStatusFromCIDBOnFailedStatus(self):
@@ -492,3 +522,43 @@ class SlaveBuilderStatusTest(cros_test_lib.MockTestCase):
     builder_status_lib.CancelBuilds(buildbucket_ids, buildbucket_client)
 
     self.assertEqual(send_request_mock.call_count, 1)
+
+  def testAbortedBySelfDestruction(self):
+    """Test that self-destructive aborts in CIDB are recognized."""
+    slave = 'cyan-paladin'
+    master_id = 'master_id'
+    builder_number = 37
+
+    slave_id = self.db.InsertBuild(slave, waterfall.WATERFALL_INTERNAL,
+                                   builder_number, slave, 'bot_hostname',
+                                   master_build_id=master_id)
+    self.db.InsertBuildMessage(
+        master_id,
+        message_type=constants.MESSAGE_TYPE_IGNORED_REASON,
+        message_subtype=constants.MESSAGE_SUBTYPE_SELF_DESTRUCTION,
+        message_value=str(slave_id))
+
+    self.assertTrue(
+        builder_status_lib.BuilderStatusManager.AbortedBySelfDestruction(
+            self.db, slave_id, master_id))
+
+  def testNotAbortedBySelfDestruction(self):
+    """Test that aborts in CIDB are only flagged if they happened."""
+    slave = 'cyan-paladin'
+    master_id = 'master_id'
+    builder_number = 37
+
+    slave_id = self.db.InsertBuild(slave, waterfall.WATERFALL_INTERNAL,
+                                   builder_number, slave, 'bot_hostname',
+                                   master_build_id=master_id)
+    self.db.InsertBuildMessage(master_id,
+                               message_value=slave_id)
+    builder_number = 1
+
+    self.db.InsertBuild(slave, waterfall.WATERFALL_INTERNAL,
+                        builder_number, slave, 'bot_hostname')
+    self.db.InsertBuildMessage(slave)
+
+    self.assertFalse(
+        builder_status_lib.BuilderStatusManager.AbortedBySelfDestruction(
+            self.db, slave_id, master_id))

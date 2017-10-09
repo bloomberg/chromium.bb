@@ -197,8 +197,9 @@ class FakeCIDBConnection(object):
     self.failureTable[failure_id] = values
     return failure_id
 
-  def InsertBuildMessage(self, build_id, message_type=None,
-                         message_subtype=None, message_value=None, board=None):
+  def InsertBuildMessage(self, build_id,
+                         message_type=None, message_subtype=None,
+                         message_value=None, board=None):
     """Insert a build message.
 
     Args:

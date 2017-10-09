@@ -345,6 +345,7 @@ class ReportStageTest(AbstractReportStageTestCase):
     self.PatchObject(results_lib.Results, 'BuildSucceededSoFar',
                      return_value=False)
     stage = self.ConstructStage()
+    self.PatchObject(stage, 'GetBuildFailureMessage')
     stage.Run()
     calls = [mock.call(mock.ANY, mock.ANY, 'metadata.json', False,
                        update_list=True, acl=mock.ANY)]

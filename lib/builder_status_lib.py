@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import collections
+import constants
 import cPickle
 
 from chromite.lib import buildbucket_lib
@@ -143,8 +144,9 @@ class BuilderStatusManager(object):
   """Operations to manage BuilderStatus."""
 
   @classmethod
-  def CreateBuildFailureMessage(cls, build_config, overlays, dashboard_url,
-                                failure_messages):
+  def CreateBuildFailureMessage(cls, build_config, overlays,
+                                dashboard_url, failure_messages,
+                                aborted_by_self_destruction=False):
     """Creates a message summarizing the failures.
 
     Args:
@@ -153,6 +155,7 @@ class BuilderStatusManager(object):
       dashboard_url: The URL of the build.
       failure_messages: A list of stage failure messages (instances of
         StageFailureMessage or its sub-classes) of the given build.
+      aborted_by_self_destruction: Whether the build was canceled by master.
 
     Returns:
       A build_failure_message.BuildFailureMessage object.
@@ -168,6 +171,8 @@ class BuilderStatusManager(object):
 
     if not details:
       details = ['cbuildbot failed']
+      if aborted_by_self_destruction:
+        details = ['aborted by self-destruction']
 
     # reason does not include builder name or URL. This is mainly for
     # populating the "failure message" column in the stats sheet.
@@ -177,6 +182,30 @@ class BuilderStatusManager(object):
 
     return build_failure_message.BuildFailureMessage(
         msg_summary, failure_messages, internal, reason, build_config)
+
+  @classmethod
+  def AbortedBySelfDestruction(cls, db, build_id, master_build_id):
+    """Check CIDB for whether a specified build was aborted by master.
+
+    Args:
+      db: An instance of cidb.CIDBConnection.
+      build_id: The build ID (int) of the build to get status of
+      master_build_id: The build ID (int) of the master build which may
+        have aborted it.
+    Retuns:
+      A boolean for whether the build was canceled by master
+        during self-destruction.
+    """
+    build_messages = db.GetBuildMessages(master_build_id)
+    build_messages = (
+        message for message in build_messages if message['message_value'] ==
+        str(build_id))
+    return any((
+        message['message_type'] ==
+        constants.MESSAGE_TYPE_IGNORED_REASON and
+        message['message_subtype'] ==
+        constants.MESSAGE_SUBTYPE_SELF_DESTRUCTION) for
+               message in build_messages)
 
   @classmethod
   def GetBuilderStatusFromCIDB(cls, db, build_config, version):
@@ -208,8 +237,12 @@ class BuilderStatusManager(object):
         stage_failure_messages = (
             failure_message_mgr.ConstructStageFailureMessages(stage_failures))
         overlays = site_config[build_config].overlays
+        aborted = BuilderStatusManager.AbortedBySelfDestruction(
+            db, build_id, build['master_build_id'])
         failure_message = BuilderStatusManager.CreateBuildFailureMessage(
-            build_config, overlays, dashboard_url, stage_failure_messages)
+            build_config, overlays, dashboard_url, stage_failure_messages,
+            aborted_by_self_destruction=aborted
+        )
 
       return BuilderStatus(status, failure_message,
                            dashboard_url=dashboard_url)
