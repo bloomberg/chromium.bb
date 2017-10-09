@@ -63,8 +63,8 @@ JavaScriptDialogTabHelper::~JavaScriptDialogTabHelper() {
 }
 
 void JavaScriptDialogTabHelper::SetDialogShownCallbackForTesting(
-    base::Closure callback) {
-  dialog_shown_ = callback;
+    base::OnceClosure callback) {
+  dialog_shown_ = std::move(callback);
 }
 
 bool JavaScriptDialogTabHelper::IsShowingDialogForTesting() const {
@@ -169,10 +169,8 @@ void JavaScriptDialogTabHelper::RunJavaScriptDialog(
   // was doing, but now the user can just close the page.
   *did_suppress_message = false;
 
-  if (!dialog_shown_.is_null()) {
-    dialog_shown_.Run();
-    dialog_shown_.Reset();
-  }
+  if (!dialog_shown_.is_null())
+    std::move(dialog_shown_).Run();
 
   if (did_suppress_message) {
     UMA_HISTOGRAM_COUNTS("JSDialogs.CharacterCountUserSuppressed",
