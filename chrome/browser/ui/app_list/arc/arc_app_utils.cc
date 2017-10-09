@@ -8,7 +8,6 @@
 #include <string>
 
 #include "ash/shell.h"
-#include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -34,7 +33,6 @@
 #include "ui/display/screen.h"
 #include "ui/events/event_constants.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/geometry/size.h"
 
 // Helper macro which returns the AppInstance.
 #define GET_APP_INSTANCE(method_name)                                    \
@@ -56,10 +54,6 @@
 namespace arc {
 
 namespace {
-
-// Default app sizes on ARC M.
-constexpr gfx::Size kNexus7Size(960, 600);
-constexpr gfx::Size kNexus5Size(410, 690);
 
 // Intent helper strings.
 constexpr char kIntentHelperClassName[] =
@@ -85,37 +79,6 @@ constexpr char const* kAppIdsHiddenInLauncher[] = {
     kAndroidClockAppId, kSettingsAppId,
 };
 
-// Find a proper size and position for a given rectangle on the screen.
-// TODO(skuhne): This needs more consideration, but it is lacking
-// WindowPositioner functionality since we do not have an Aura::Window yet.
-gfx::Rect GetTargetRect(const gfx::Size& size) {
-  // Make sure that the window will fit into our workspace.
-  // Note that ARC will always be on the primary screen (for now).
-  // Note that Android's coordinate system is only valid inside the working
-  // area. We can therefore ignore the provided left / top offsets.
-  aura::Window* root = ash::Shell::GetPrimaryRootWindow();
-  gfx::Rect work_area =
-      display::Screen::GetScreen()->GetDisplayNearestWindow(root).work_area();
-
-  gfx::Rect result(size);
-
-  // We do not adjust sizes to fit the window into the work area here.
-  // The reason is that the used DP<->pix transformation is different on
-  // ChromeOS and ARC dependent on the device and zoom factor being used.
-  // As such the real size cannot be determined here (yet). However - ARC
-  // will adjust the bounds to not exceed the visible screen later.
-
-  // ChromeOS does not give us much logic at this time, so we emulate what
-  // WindowPositioner::GetDefaultWindowBounds does for now.
-  // Note: Android's positioning will not overlap the shelf - as such we can
-  // ignore the given workspace inset.
-  // TODO(skuhne): Replace this with some more useful logic from the
-  // WindowPositioner.
-  result.set_x((work_area.width() - result.width()) / 2);
-  result.set_y((work_area.height() - result.height()) / 2);
-  return result;
-}
-
 // Returns true if |event_flags| came from a mouse or touch event.
 bool IsMouseOrTouchEventFromFlags(int event_flags) {
   return (event_flags & (ui::EF_LEFT_MOUSE_BUTTON | ui::EF_MIDDLE_MOUSE_BUTTON |
@@ -127,7 +90,6 @@ bool Launch(content::BrowserContext* context,
             const std::string& app_id,
             const base::Optional<std::string>& intent,
             int event_flags,
-            const gfx::Rect& bounds,
             int64_t display_id) {
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(context);
   CHECK(prefs);
@@ -165,7 +127,7 @@ bool Launch(content::BrowserContext* context,
     if (auto* app_instance = GET_APP_INSTANCE(LaunchIntent)) {
       app_instance->LaunchIntent(intent_uri, display_id);
     } else if (auto* app_instance = GET_APP_INSTANCE(LaunchIntentDeprecated)) {
-      app_instance->LaunchIntentDeprecated(intent_uri, bounds);
+      app_instance->LaunchIntentDeprecated(intent_uri, gfx::Rect());
     } else {
       return false;
     }
@@ -175,7 +137,7 @@ bool Launch(content::BrowserContext* context,
                               display_id);
     } else if (auto* app_instance = GET_APP_INSTANCE(LaunchAppDeprecated)) {
       app_instance->LaunchAppDeprecated(app_info->package_name,
-                                        app_info->activity, bounds);
+                                        app_info->activity, gfx::Rect());
     } else {
       return false;
     }
@@ -184,73 +146,6 @@ bool Launch(content::BrowserContext* context,
 
   return true;
 }
-
-// A class which handles the asynchronous ARC runtime callback to figure out if
-// an app can handle a certain resolution or not.
-// After LaunchAndRelease() is called, the object will destroy itself once done.
-class AppLauncher {
- public:
-  AppLauncher(content::BrowserContext* context,
-              const std::string& app_id,
-              const base::Optional<std::string>& launch_intent,
-              int event_flags)
-      : context_(context),
-        app_id_(app_id),
-        launch_intent_(launch_intent),
-        event_flags_(event_flags) {}
-
-  // This will launch the request and after the return the creator does not
-  // need to delete the object anymore.
-  bool LaunchAndRelease() {
-    std::unique_ptr<AppLauncher> instance(this);
-
-    if (!ash::Shell::HasInstance()) {
-      // Skip this if there is no Ash shell.
-      LaunchAppWithRect(gfx::Rect(kNexus7Size));
-      return true;
-    }
-
-    const ArcAppListPrefs* prefs = ArcAppListPrefs::Get(context_);
-    DCHECK(prefs);
-    std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(app_id_);
-    if (!app_info) {
-      VLOG(2) << "Cannot launch unavailable app: " << app_id_;
-      return false;
-    }
-
-    arc::mojom::AppInstance* app_instance =
-        GET_APP_INSTANCE(CanHandleResolutionDeprecated);
-    if (!app_instance)
-      return false;
-
-    // base::Unretained is safe because this object is responsible for its own
-    // deletion.
-    app_instance->CanHandleResolutionDeprecated(
-        app_info->package_name, app_info->activity, gfx::Rect(kNexus7Size),
-        base::Bind(&AppLauncher::CanHandleResolutionCallback,
-                   base::Unretained(instance.release())));
-    return true;
-  }
-
- private:
-  content::BrowserContext* const context_;
-  const std::string app_id_;
-  const base::Optional<std::string> launch_intent_;
-  const int event_flags_;
-
-  void CanHandleResolutionCallback(bool can_handle) {
-    LaunchAppWithRect(GetTargetRect(can_handle ? kNexus7Size : kNexus5Size));
-    // Now that we are done, we can delete ourselves.
-    delete this;
-  }
-
-  void LaunchAppWithRect(const gfx::Rect& bounds) {
-    Launch(context_, app_id_, launch_intent_, event_flags_, bounds,
-           display::kInvalidDisplayId);
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(AppLauncher);
-};
 
 }  // namespace
 
@@ -385,14 +280,7 @@ bool LaunchAppWithIntent(content::BrowserContext* context,
   }
   arc::ArcBootPhaseMonitorBridge::RecordFirstAppLaunchDelayUMA(context);
 
-  arc::mojom::AppInstance* app_instance = GET_APP_INSTANCE(LaunchApp);
-  if (!app_instance) {
-    return (new AppLauncher(context, app_id, launch_intent, event_flags))
-        ->LaunchAndRelease();
-  }
-
-  return Launch(context, app_id, launch_intent, event_flags, gfx::Rect(),
-                display_id);
+  return Launch(context, app_id, launch_intent, event_flags, display_id);
 }
 
 void SetTaskActive(int task_id) {
@@ -475,13 +363,12 @@ bool ShowPackageInfo(const std::string& package_name,
 
   if (auto* app_instance = GET_APP_INSTANCE(ShowPackageInfoOnPageDeprecated)) {
     app_instance->ShowPackageInfoOnPageDeprecated(package_name, page,
-                                                  GetTargetRect(kNexus7Size));
+                                                  gfx::Rect());
     return true;
   }
 
   if (auto* app_instance = GET_APP_INSTANCE(ShowPackageInfoDeprecated)) {
-    app_instance->ShowPackageInfoDeprecated(package_name,
-                                            GetTargetRect(kNexus7Size));
+    app_instance->ShowPackageInfoDeprecated(package_name, gfx::Rect());
     return true;
   }
 
