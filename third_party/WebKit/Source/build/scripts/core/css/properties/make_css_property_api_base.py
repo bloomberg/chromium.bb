@@ -91,7 +91,6 @@ class CSSPropertyAPIWriter(css_properties.CSSProperties):
     def generate_property_api_header(self):
         return {
             'input_files': self._input_files,
-            'api_classnames': self._api_classes,
             'api_classes_by_property_id': self._api_classes_by_property_id,
         }
 

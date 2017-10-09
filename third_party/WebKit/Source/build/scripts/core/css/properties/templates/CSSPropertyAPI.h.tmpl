@@ -24,7 +24,12 @@ class CSSPropertyAPI {
  public:
   CORE_EXPORT static const CSSPropertyAPI& Get(CSSPropertyID);
 
-  constexpr CSSPropertyAPI() {}
+  constexpr CSSPropertyAPI(CSSPropertyID id) : id_(id) {}
+
+  // For backwards compatibility when passing around CSSPropertyAPI references.
+  // in case we need to call a function that hasn't been converted to using APIs
+  // yet.
+  CSSPropertyID PropertyID() const { return id_; }
 
   // Parses and consumes a longhand property value from the token range.
   // Returns nullptr if the input is invalid.
@@ -61,6 +66,9 @@ class CSSPropertyAPI {
     NOTREACHED();
   }
   virtual bool IsAffectedByAll() const { return IsEnabled() && IsProperty(); }
+
+ private:
+  const CSSPropertyID id_;
 };
 
 {% for api_class_data in api_classes_by_property_id %}

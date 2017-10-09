@@ -16,14 +16,14 @@ namespace blink {
 
 namespace {
 
-{% for api_class in api_classnames %}
-static constexpr {{api_class}} api_{{api_class.lower()}};
+{% for _, property_id, classname in api_classes_by_property_id %}
+static constexpr {{classname}} api_{{property_id.lower()}}({{property_id}});
 {% endfor %}
 
 const CSSPropertyAPI& GetAPI(CSSPropertyID id) {
   static constexpr const CSSPropertyAPI* const property_apis[] = {
     {% for api_class_data in api_classes_by_property_id %}
-    &api_{{api_class_data.classname.lower()}},  // {{api_class_data.property_id}}
+    &api_{{api_class_data.property_id.lower()}},  // {{api_class_data.property_id}}
     {% endfor %}
   };
   // Subtract 1 because CSSPropertyInvalid does not appear in the array.
@@ -34,7 +34,7 @@ const CSSPropertyAPI& GetAPI(CSSPropertyID id) {
 
 {% for api_class_data in api_classes_by_property_id %}
 const CSSPropertyAPI& Get{{api_class_data.property_id}}API() {
-  return api_{{api_class_data.classname.lower()}};
+  return api_{{api_class_data.property_id.lower()}};
 }
 {% endfor %}
 
