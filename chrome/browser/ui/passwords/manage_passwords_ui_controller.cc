@@ -310,6 +310,10 @@ ManagePasswordsUIController::GetCurrentInteractionStats() const {
       form_manager->pending_credentials().username_value);
 }
 
+bool ManagePasswordsUIController::BubbleIsManualFallbackForSaving() const {
+  return save_fallback_timer_.IsRunning();
+}
+
 void ManagePasswordsUIController::OnBubbleShown() {
   bubble_status_ = SHOWN;
 }

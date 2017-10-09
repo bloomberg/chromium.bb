@@ -112,6 +112,8 @@ class ManagePasswordsBubbleModel {
     return title_brand_link_range_;
   }
 
+  bool hide_eye_icon() const { return hide_eye_icon_; }
+
   Profile* GetProfile() const;
   content::WebContents* GetWebContents() const;
 
@@ -159,6 +161,9 @@ class ManagePasswordsBubbleModel {
 
   // A bridge to ManagePasswordsUIController instance.
   base::WeakPtr<PasswordsModelDelegate> delegate_;
+
+  // True iff the eye icon should be hidden for privacy reasons.
+  bool hide_eye_icon_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagePasswordsBubbleModel);
 };
