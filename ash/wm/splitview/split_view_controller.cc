@@ -4,6 +4,8 @@
 
 #include "ash/wm/splitview/split_view_controller.h"
 
+#include <memory>
+
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/screen_util.h"
@@ -89,7 +91,7 @@ void SplitViewController::SnapWindow(aura::Window* window,
 
     divider_position_ = GetDefaultDividerPosition(window);
     split_view_divider_ =
-        base::MakeUnique<SplitViewDivider>(this, window->GetRootWindow());
+        std::make_unique<SplitViewDivider>(this, window->GetRootWindow());
   }
 
   State previous_state = state_;
@@ -487,7 +489,7 @@ void SplitViewController::UpdateBlackScrim(
 
   if (!black_scrim_layer_) {
     // Create an invisible black scrim layer.
-    black_scrim_layer_ = base::MakeUnique<ui::Layer>(ui::LAYER_SOLID_COLOR);
+    black_scrim_layer_ = std::make_unique<ui::Layer>(ui::LAYER_SOLID_COLOR);
     black_scrim_layer_->SetColor(SK_ColorBLACK);
     GetDefaultSnappedWindow()->GetRootWindow()->layer()->Add(
         black_scrim_layer_.get());

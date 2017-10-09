@@ -4,6 +4,8 @@
 
 #include "ash/rotator/screen_rotation_animator.h"
 
+#include <memory>
+
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/rotator/screen_rotation_animation.h"
@@ -11,7 +13,6 @@
 #include "ash/shell.h"
 #include "ash/utility/transformer_util.h"
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
@@ -134,10 +135,10 @@ bool RootWindowChangedForDisplayId(aura::Window* root_window,
 std::unique_ptr<ui::LayerTreeOwner> CreateMaskLayerTreeOwner(
     const gfx::Rect& rect) {
   std::unique_ptr<ui::Layer> mask_layer =
-      base::MakeUnique<ui::Layer>(ui::LAYER_SOLID_COLOR);
+      std::make_unique<ui::Layer>(ui::LAYER_SOLID_COLOR);
   mask_layer->SetBounds(rect);
   mask_layer->SetColor(SK_ColorBLACK);
-  return base::MakeUnique<ui::LayerTreeOwner>(std::move(mask_layer));
+  return std::make_unique<ui::LayerTreeOwner>(std::move(mask_layer));
 }
 
 class ScreenRotationAnimationMetricsReporter
@@ -161,7 +162,7 @@ ScreenRotationAnimator::ScreenRotationAnimator(aura::Window* root_window)
       screen_rotation_state_(IDLE),
       rotation_request_id_(0),
       metrics_reporter_(
-          base::MakeUnique<ScreenRotationAnimationMetricsReporter>()),
+          std::make_unique<ScreenRotationAnimationMetricsReporter>()),
       disable_animation_timers_for_test_(false),
       // TODO(wutao): remove the flag. http://crbug.com/707800.
       has_switch_ash_disable_smooth_screen_rotation_(
@@ -349,11 +350,11 @@ std::unique_ptr<ui::LayerTreeOwner> ScreenRotationAnimator::CopyLayerTree(
   DCHECK(texture_mailbox.IsTexture());
   const gfx::Rect rect(
       GetScreenRotationContainer(root_window_)->layer()->size());
-  std::unique_ptr<ui::Layer> copy_layer = base::MakeUnique<ui::Layer>();
+  std::unique_ptr<ui::Layer> copy_layer = std::make_unique<ui::Layer>();
   copy_layer->SetBounds(rect);
   copy_layer->SetTextureMailbox(texture_mailbox, std::move(release_callback),
                                 rect.size());
-  return base::MakeUnique<ui::LayerTreeOwner>(std::move(copy_layer));
+  return std::make_unique<ui::LayerTreeOwner>(std::move(copy_layer));
 }
 
 void ScreenRotationAnimator::AnimateRotation(
@@ -386,7 +387,7 @@ void ScreenRotationAnimator::AnimateRotation(
   }
 
   std::unique_ptr<ScreenRotationAnimation> new_layer_screen_rotation =
-      base::MakeUnique<ScreenRotationAnimation>(
+      std::make_unique<ScreenRotationAnimation>(
           new_root_layer, kRotationDegrees * rotation_factor,
           0 /* end_degrees */, new_root_layer->opacity(),
           new_root_layer->opacity() /* target_opacity */, pivot, duration,
@@ -396,7 +397,7 @@ void ScreenRotationAnimator::AnimateRotation(
   new_layer_animator->set_preemption_strategy(
       ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
   std::unique_ptr<ui::LayerAnimationSequence> new_layer_animation_sequence =
-      base::MakeUnique<ui::LayerAnimationSequence>(
+      std::make_unique<ui::LayerAnimationSequence>(
           std::move(new_layer_screen_rotation));
 
   ui::Layer* old_root_layer = old_layer_tree_owner_->root();
@@ -412,7 +413,7 @@ void ScreenRotationAnimator::AnimateRotation(
   old_root_layer->SetTransform(translate_transform);
 
   std::unique_ptr<ScreenRotationAnimation> old_layer_screen_rotation =
-      base::MakeUnique<ScreenRotationAnimation>(
+      std::make_unique<ScreenRotationAnimation>(
           old_root_layer, old_layer_initial_rotation_degrees * rotation_factor,
           (old_layer_initial_rotation_degrees - kRotationDegrees) *
               rotation_factor,
@@ -423,7 +424,7 @@ void ScreenRotationAnimator::AnimateRotation(
   old_layer_animator->set_preemption_strategy(
       ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
   std::unique_ptr<ui::LayerAnimationSequence> old_layer_animation_sequence =
-      base::MakeUnique<ui::LayerAnimationSequence>(
+      std::make_unique<ui::LayerAnimationSequence>(
           std::move(old_layer_screen_rotation));
 
   // In unit tests, we can use ash::ScreenRotationAnimatorTestApi to control the
@@ -462,7 +463,7 @@ void ScreenRotationAnimator::Rotate(
   const int64_t display_id =
       display::Screen::GetScreen()->GetDisplayNearestWindow(root_window_).id();
   std::unique_ptr<ScreenRotationRequest> rotation_request =
-      base::MakeUnique<ScreenRotationRequest>(rotation_request_id_, display_id,
+      std::make_unique<ScreenRotationRequest>(rotation_request_id_, display_id,
                                               new_rotation, source, mode);
   target_rotation_ = new_rotation;
   switch (screen_rotation_state_) {

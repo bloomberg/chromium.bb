@@ -5,6 +5,7 @@
 #include "ash/test/ash_test_helper.h"
 
 #include <algorithm>
+#include <memory>
 #include <set>
 
 #include "ash/accelerators/accelerator_controller_delegate_classic.h"
@@ -23,7 +24,6 @@
 #include "ash/test/ash_test_views_delegate.h"
 #include "ash/test_screenshot_delegate.h"
 #include "ash/test_shell_delegate.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
 #include "base/test/sequenced_worker_pool_owner.h"
@@ -75,7 +75,7 @@ AshTestHelper::AshTestHelper(AshTestEnvironment* ash_test_environment)
 AshTestHelper::~AshTestHelper() {}
 
 void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
-  command_line_ = base::MakeUnique<base::test::ScopedCommandLine>();
+  command_line_ = std::make_unique<base::test::ScopedCommandLine>();
   // TODO(jamescook): Can we do this without changing command line?
   // Use the origin (1,1) so that it doesn't over
   // lap with the native mouse cursor.
@@ -98,14 +98,14 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
   }
 
   if (config_ == Config::MUS)
-    input_device_client_ = base::MakeUnique<ui::InputDeviceClient>();
+    input_device_client_ = std::make_unique<ui::InputDeviceClient>();
 
   display::ResetDisplayIdForTest();
   if (config_ != Config::CLASSIC)
     aura::test::EnvTestHelper().SetAlwaysUseLastMouseLocation(true);
   // WindowManager creates WMState for mash.
   if (config_ == Config::CLASSIC)
-    wm_state_ = base::MakeUnique<::wm::WMState>();
+    wm_state_ = std::make_unique<::wm::WMState>();
   test_views_delegate_ = ash_test_environment_->CreateViewsDelegate();
 
   // Disable animations during tests.
@@ -163,7 +163,7 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
 
   Shell* shell = Shell::Get();
   if (provide_local_state) {
-    auto pref_service = base::MakeUnique<TestingPrefServiceSimple>();
+    auto pref_service = std::make_unique<TestingPrefServiceSimple>();
     Shell::RegisterLocalStatePrefs(pref_service->registry());
     Shell::Get()->OnLocalStatePrefServiceInitialized(std::move(pref_service));
   }
@@ -276,7 +276,7 @@ display::Display AshTestHelper::GetSecondaryDisplay() {
 void AshTestHelper::CreateMashWindowManager() {
   CHECK(config_ != Config::CLASSIC);
   const bool show_primary_root_on_connect = false;
-  window_manager_app_ = base::MakeUnique<mus::WindowManagerApplication>(
+  window_manager_app_ = std::make_unique<mus::WindowManagerApplication>(
       show_primary_root_on_connect);
 
   window_manager_app_->window_manager_.reset(
@@ -299,7 +299,7 @@ void AshTestHelper::CreateMashWindowManager() {
   aura::WindowTreeClient* window_tree_client =
       window_manager_app_->window_manager()->window_tree_client();
   window_tree_client_private_ =
-      base::MakeUnique<aura::WindowTreeClientPrivate>(window_tree_client);
+      std::make_unique<aura::WindowTreeClientPrivate>(window_tree_client);
   window_tree_client_private_->CallOnConnect();
 }
 

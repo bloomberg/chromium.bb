@@ -4,6 +4,8 @@
 
 #include "ash/shelf/shelf_layout_manager.h"
 
+#include <memory>
+
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/accelerators/accelerator_table.h"
 #include "ash/app_list/test_app_list_presenter_impl.h"
@@ -29,7 +31,6 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"

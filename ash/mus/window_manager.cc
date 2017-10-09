@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <limits>
+#include <memory>
 #include <utility>
 
 #include "ash/drag_drop/drag_image_view.h"
@@ -35,7 +36,6 @@
 #include "ash/wayland/wayland_server_controller.h"
 #include "ash/wm/ash_focus_rules.h"
 #include "ash/wm/window_state.h"
-#include "base/memory/ptr_util.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/common/accelerator_util.h"
 #include "services/ui/common/types.h"
@@ -81,8 +81,8 @@ WindowManager::WindowManager(service_manager::Connector* connector,
     : connector_(connector),
       config_(config),
       show_primary_host_on_connect_(show_primary_host_on_connect),
-      wm_state_(base::MakeUnique<::wm::WMState>()),
-      property_converter_(base::MakeUnique<aura::PropertyConverter>()) {
+      wm_state_(std::make_unique<::wm::WMState>()),
+      property_converter_(std::make_unique<aura::PropertyConverter>()) {
   property_converter_->RegisterPrimitiveProperty(
       kPanelAttachedKey, ui::mojom::WindowManager::kPanelAttached_Property,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
@@ -119,7 +119,7 @@ void WindowManager::Init(
   // Only create InputDeviceClient in MASH mode. For MUS mode WindowManager is
   // created by chrome, which creates InputDeviceClient.
   if (config_ == Config::MASH) {
-    input_device_client_ = base::MakeUnique<ui::InputDeviceClient>();
+    input_device_client_ = std::make_unique<ui::InputDeviceClient>();
 
     // |connector_| can be nullptr in tests.
     if (connector_) {
@@ -140,7 +140,7 @@ void WindowManager::Init(
   ash::Shell::set_window_tree_client(window_tree_client_.get());
 
   pointer_watcher_event_router_ =
-      base::MakeUnique<views::PointerWatcherEventRouter>(
+      std::make_unique<views::PointerWatcherEventRouter>(
           window_tree_client_.get());
 
   // Notify PointerWatcherEventRouter and CaptureSynchronizer that the capture
@@ -393,14 +393,14 @@ void WindowManager::OnWmBuildDragImage(const gfx::Point& screen_location,
           ? ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE
           : ui::DragDropTypes::DRAG_EVENT_SOURCE_TOUCH;
   std::unique_ptr<DragImageView> drag_view =
-      base::MakeUnique<DragImageView>(root_window, ui_source);
+      std::make_unique<DragImageView>(root_window, ui_source);
   drag_view->SetImage(gfx::ImageSkia::CreateFrom1xBitmap(drag_image));
   gfx::Size size = drag_view->GetPreferredSize();
   gfx::Rect drag_image_bounds(screen_location - drag_image_offset, size);
   drag_view->SetBoundsInScreen(drag_image_bounds);
   drag_view->SetWidgetVisible(true);
 
-  drag_state_ = base::MakeUnique<DragState>();
+  drag_state_ = std::make_unique<DragState>();
   drag_state_->view = std::move(drag_view);
   drag_state_->image_offset = drag_image_offset;
 }

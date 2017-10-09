@@ -4,8 +4,9 @@
 
 #include "ash/public/cpp/shelf_prefs.h"
 
+#include <memory>
+
 #include "ash/public/cpp/ash_pref_names.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "components/prefs/pref_service.h"
@@ -108,7 +109,7 @@ void SetPerDisplayPref(PrefService* prefs,
   base::DictionaryValue* shelf_prefs = update.Get();
   base::DictionaryValue* display_prefs_weak = nullptr;
   if (!shelf_prefs->GetDictionary(display_key, &display_prefs_weak)) {
-    auto display_prefs = base::MakeUnique<base::DictionaryValue>();
+    auto display_prefs = std::make_unique<base::DictionaryValue>();
     display_prefs_weak = display_prefs.get();
     shelf_prefs->Set(display_key, std::move(display_prefs));
   }

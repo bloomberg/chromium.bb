@@ -5,6 +5,7 @@
 #include "ash/login/ui/lock_debug_view.h"
 
 #include <algorithm>
+#include <memory>
 #include <string>
 
 #include "ash/login/ui/layout_util.h"
@@ -171,7 +172,7 @@ class LockDebugView::DebugDataDispatcherTransformer
 
 LockDebugView::LockDebugView(mojom::TrayActionState initial_note_action_state,
                              LoginDataDispatcher* data_dispatcher)
-    : debug_data_dispatcher_(base::MakeUnique<DebugDataDispatcherTransformer>(
+    : debug_data_dispatcher_(std::make_unique<DebugDataDispatcherTransformer>(
           initial_note_action_state,
           data_dispatcher)) {
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal));

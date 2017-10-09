@@ -4,11 +4,12 @@
 
 #include "ash/system/power/peripheral_battery_notifier.h"
 
+#include <memory>
+
 #include "ash/public/cpp/config.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "ui/events/devices/touchscreen_device.h"
 #include "ui/events/test/device_data_manager_test_api.h"
@@ -33,7 +34,7 @@ class PeripheralBatteryNotifierTest : public ash::AshTestBase {
 
   void SetUp() override {
     ash::AshTestBase::SetUp();
-    observer_ = base::MakeUnique<PeripheralBatteryNotifier>();
+    observer_ = std::make_unique<PeripheralBatteryNotifier>();
   }
 
   void TearDown() override {

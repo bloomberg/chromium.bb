@@ -11,7 +11,6 @@
 #include "ash/test/ash_test_base.h"
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"

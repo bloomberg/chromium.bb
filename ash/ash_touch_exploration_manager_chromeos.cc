@@ -4,6 +4,7 @@
 
 #include "ash/ash_touch_exploration_manager_chromeos.h"
 
+#include <memory>
 #include <vector>
 
 #include "ash/accessibility/accessibility_delegate.h"
@@ -15,7 +16,6 @@
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "chromeos/audio/chromeos_sounds.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/chromeos_switches.h"
@@ -191,7 +191,7 @@ void AshTouchExplorationManager::UpdateTouchExplorationState() {
   if (spoken_feedback_enabled) {
     if (!touch_exploration_controller_.get()) {
       touch_exploration_controller_ =
-          base::MakeUnique<ui::TouchExplorationController>(
+          std::make_unique<ui::TouchExplorationController>(
               root_window_controller_->GetRootWindow(), this,
               touch_accessibility_enabler_->GetWeakPtr());
     }

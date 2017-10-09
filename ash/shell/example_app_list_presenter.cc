@@ -39,8 +39,8 @@ namespace shell {
 ExampleAppListPresenter::ExampleAppListPresenter()
     : binding_(this),
       app_list_presenter_impl_(
-          base::MakeUnique<AppListPresenterDelegateFactory>(
-              base::MakeUnique<ExampleAppListViewDelegateFactory>())) {
+          std::make_unique<AppListPresenterDelegateFactory>(
+              std::make_unique<ExampleAppListViewDelegateFactory>())) {
   // Note: This example |app_list_presenter_impl_| does not report visibility
   // changes to the app_list::mojom::AppList implementation owned by ShellPort.
 }

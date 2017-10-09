@@ -5,6 +5,7 @@
 #include "ash/wm/workspace/workspace_layout_manager.h"
 
 #include <algorithm>
+#include <memory>
 
 #include "ash/keyboard/keyboard_observer_register.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -49,7 +50,7 @@ WorkspaceLayoutManager::WorkspaceLayoutManager(aura::Window* window)
   root_window_->AddObserver(this);
   display::Screen::GetScreen()->AddObserver(this);
   DCHECK(window->GetProperty(kSnapChildrenToPixelBoundary));
-  backdrop_controller_ = base::MakeUnique<BackdropController>(window_);
+  backdrop_controller_ = std::make_unique<BackdropController>(window_);
 }
 
 WorkspaceLayoutManager::~WorkspaceLayoutManager() {

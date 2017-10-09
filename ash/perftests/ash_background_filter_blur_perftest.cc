@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "base/memory/ptr_util.h"
 #include "cc/base/lap_timer.h"
 #include "testing/perf/perf_test.h"
 #include "ui/aura/window.h"
@@ -63,7 +64,7 @@ void AshBackgroundFilterBlurPerfTest::SetUp() {
 std::unique_ptr<ui::Layer>
 AshBackgroundFilterBlurPerfTest::CreateSolidColorLayer(SkColor color) {
   std::unique_ptr<ui::Layer> layer =
-      base::MakeUnique<ui::Layer>(ui::LAYER_SOLID_COLOR);
+      std::make_unique<ui::Layer>(ui::LAYER_SOLID_COLOR);
   layer->SetBounds(root_layer_->bounds());
   layer->SetColor(color);
   root_layer_->Add(layer.get());

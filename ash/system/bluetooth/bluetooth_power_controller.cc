@@ -4,6 +4,8 @@
 
 #include "ash/system/bluetooth/bluetooth_power_controller.h"
 
+#include <memory>
+
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
@@ -68,7 +70,7 @@ void BluetoothPowerController::StartWatchingActiveUserPrefsChanges() {
   DCHECK(active_user_pref_service_);
   DCHECK(Shell::Get()->session_controller()->IsUserPrimary());
 
-  active_user_pref_change_registrar_ = base::MakeUnique<PrefChangeRegistrar>();
+  active_user_pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
   active_user_pref_change_registrar_->Init(active_user_pref_service_);
   active_user_pref_change_registrar_->Add(
       prefs::kUserBluetoothAdapterEnabled,
@@ -80,7 +82,7 @@ void BluetoothPowerController::StartWatchingActiveUserPrefsChanges() {
 void BluetoothPowerController::StartWatchingLocalStatePrefsChanges() {
   DCHECK(local_state_pref_service_);
 
-  local_state_pref_change_registrar_ = base::MakeUnique<PrefChangeRegistrar>();
+  local_state_pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
   local_state_pref_change_registrar_->Init(local_state_pref_service_);
   local_state_pref_change_registrar_->Add(
       prefs::kSystemBluetoothAdapterEnabled,

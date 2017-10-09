@@ -4,7 +4,8 @@
 
 #include "ash/rotator/window_rotation.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/time/time.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/rect.h"
@@ -78,20 +79,20 @@ void WindowRotation::InitTransform(ui::Layer* layer) {
   current_transform.TransformPoint(&new_origin_);
 
   std::unique_ptr<ui::InterpolatedTransform> rotation =
-      base::MakeUnique<ui::InterpolatedTransformAboutPivot>(
-          old_pivot, base::MakeUnique<ui::InterpolatedRotation>(0, degrees_));
+      std::make_unique<ui::InterpolatedTransformAboutPivot>(
+          old_pivot, std::make_unique<ui::InterpolatedRotation>(0, degrees_));
 
   std::unique_ptr<ui::InterpolatedTransform> translation =
-      base::MakeUnique<ui::InterpolatedTranslation>(
+      std::make_unique<ui::InterpolatedTranslation>(
           gfx::PointF(), gfx::PointF(new_pivot.x() - old_pivot.x(),
                                      new_pivot.y() - old_pivot.y()));
 
   float scale_factor = 0.9f;
   std::unique_ptr<ui::InterpolatedTransform> scale_down =
-      base::MakeUnique<ui::InterpolatedScale>(1.0f, scale_factor, 0.0f, 0.5f);
+      std::make_unique<ui::InterpolatedScale>(1.0f, scale_factor, 0.0f, 0.5f);
 
   std::unique_ptr<ui::InterpolatedTransform> scale_up =
-      base::MakeUnique<ui::InterpolatedScale>(1.0f, 1.0f / scale_factor, 0.5f,
+      std::make_unique<ui::InterpolatedScale>(1.0f, 1.0f / scale_factor, 0.5f,
                                               1.0f);
 
   interpolated_transform_.reset(

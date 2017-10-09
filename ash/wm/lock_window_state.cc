@@ -15,7 +15,6 @@
 #include "ash/wm/window_state_delegate.h"
 #include "ash/wm/window_state_util.h"
 #include "ash/wm/wm_event.h"
-#include "base/memory/ptr_util.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/keyboard/keyboard_controller.h"
@@ -109,7 +108,7 @@ void LockWindowState::DetachState(wm::WindowState* window_state) {}
 // static
 wm::WindowState* LockWindowState::SetLockWindowState(aura::Window* window) {
   std::unique_ptr<wm::WindowState::State> lock_state =
-      base::MakeUnique<LockWindowState>(window, false);
+      std::make_unique<LockWindowState>(window, false);
   wm::WindowState* window_state = wm::GetWindowState(window);
   std::unique_ptr<wm::WindowState::State> old_state(
       window_state->SetStateObject(std::move(lock_state)));
@@ -120,7 +119,7 @@ wm::WindowState* LockWindowState::SetLockWindowState(aura::Window* window) {
 wm::WindowState* LockWindowState::SetLockWindowStateWithShelfExcluded(
     aura::Window* window) {
   std::unique_ptr<wm::WindowState::State> lock_state =
-      base::MakeUnique<LockWindowState>(window, true);
+      std::make_unique<LockWindowState>(window, true);
   wm::WindowState* window_state = wm::GetWindowState(window);
   std::unique_ptr<wm::WindowState::State> old_state(
       window_state->SetStateObject(std::move(lock_state)));

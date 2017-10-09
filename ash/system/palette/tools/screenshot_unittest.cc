@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "ash/shell.h"
 #include "ash/shell_test_api.h"
 #include "ash/system/palette/mock_palette_tool_delegate.h"
@@ -12,7 +14,6 @@
 #include "ash/system/palette/tools/capture_screen_action.h"
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 
 namespace ash {
 
@@ -27,9 +28,9 @@ class ScreenshotToolTest : public AshTestBase {
   void SetUp() override {
     AshTestBase::SetUp();
 
-    ShellTestApi().SetPaletteDelegate(base::MakeUnique<TestPaletteDelegate>());
+    ShellTestApi().SetPaletteDelegate(std::make_unique<TestPaletteDelegate>());
 
-    palette_tool_delegate_ = base::MakeUnique<MockPaletteToolDelegate>();
+    palette_tool_delegate_ = std::make_unique<MockPaletteToolDelegate>();
   }
 
   TestPaletteDelegate* test_palette_delegate() {
@@ -49,7 +50,7 @@ class ScreenshotToolTest : public AshTestBase {
 // method. Invoking the callback passed to the delegate disables the tool.
 TEST_F(ScreenshotToolTest, EnablingCaptureRegionCallsDelegateAndDisablesTool) {
   std::unique_ptr<PaletteTool> tool =
-      base::MakeUnique<CaptureRegionMode>(palette_tool_delegate_.get());
+      std::make_unique<CaptureRegionMode>(palette_tool_delegate_.get());
 
   // Starting a partial screenshot calls the calls the palette delegate to start
   // a screenshot session and hides the palette.
@@ -69,7 +70,7 @@ TEST_F(ScreenshotToolTest, EnablingCaptureRegionCallsDelegateAndDisablesTool) {
 // disables the tool, and hides the palette.
 TEST_F(ScreenshotToolTest, EnablingCaptureScreenCallsDelegateAndDisablesTool) {
   std::unique_ptr<PaletteTool> tool =
-      base::MakeUnique<CaptureScreenAction>(palette_tool_delegate_.get());
+      std::make_unique<CaptureScreenAction>(palette_tool_delegate_.get());
   EXPECT_CALL(*palette_tool_delegate_.get(),
               DisableTool(PaletteToolId::CAPTURE_SCREEN));
   EXPECT_CALL(*palette_tool_delegate_.get(), HidePaletteImmediately());

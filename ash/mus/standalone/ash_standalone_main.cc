@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "ash/mus/window_manager_application.h"
 #include "ash/shell.h"
 #include "ash/shell/example_app_list_presenter.h"
@@ -13,7 +15,6 @@
 #include "ash/shell_observer.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/memory/ptr_util.h"
 #include "services/service_manager/public/c/main.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service_runner.h"
@@ -34,7 +35,7 @@ void ShowViewsExamples() {
 class ShellInit : public shell::ShellDelegateImpl, public ShellObserver {
  public:
   ShellInit()
-      : input_device_client_(base::MakeUnique<ui::InputDeviceClient>()) {}
+      : input_device_client_(std::make_unique<ui::InputDeviceClient>()) {}
   ~ShellInit() override = default;
 
   void set_window_manager_app(mus::WindowManagerApplication* app) {
@@ -60,16 +61,16 @@ class ShellInit : public shell::ShellDelegateImpl, public ShellObserver {
     // Initialize session controller client and create fake user sessions. The
     // fake user sessions makes ash into the logged in state.
     example_session_controller_client_ =
-        base::MakeUnique<shell::ExampleSessionControllerClient>(
+        std::make_unique<shell::ExampleSessionControllerClient>(
             Shell::Get()->session_controller());
     example_session_controller_client_->Initialize();
 
-    window_watcher_ = base::MakeUnique<shell::WindowWatcher>();
+    window_watcher_ = std::make_unique<shell::WindowWatcher>();
     shell::InitWindowTypeLauncher(base::Bind(&ShowViewsExamples));
 
     // Initialize the example app list presenter.
     example_app_list_presenter_ =
-        base::MakeUnique<shell::ExampleAppListPresenter>();
+        std::make_unique<shell::ExampleAppListPresenter>();
     Shell::Get()->app_list()->SetAppListPresenter(
         example_app_list_presenter_->CreateInterfacePtrAndBind());
 
@@ -95,7 +96,7 @@ MojoResult ServiceMain(MojoHandle service_request_handle) {
   ash::shell::ShellViewsDelegate shell_views_delegate;
   const bool show_primary_host_on_connect = false;
   std::unique_ptr<ash::ShellInit> shell_init_ptr =
-      base::MakeUnique<ash::ShellInit>();
+      std::make_unique<ash::ShellInit>();
   ash::ShellInit* shell_init = shell_init_ptr.get();
   ash::mus::WindowManagerApplication* window_manager_app =
       new ash::mus::WindowManagerApplication(show_primary_host_on_connect,

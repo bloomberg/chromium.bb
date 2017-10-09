@@ -4,6 +4,7 @@
 
 #include "ash/wm/tablet_mode/touchpad_and_keyboard_disabler.h"
 
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -69,7 +70,7 @@ TouchpadAndKeyboardDisabler::TouchpadAndKeyboardDisabler(
     std::unique_ptr<Delegate> delegate)
     : delegate_(std::move(delegate)), weak_ptr_factory_(this) {
   if (!delegate_)
-    delegate_ = base::MakeUnique<DefaultDelegateImpl>();
+    delegate_ = std::make_unique<DefaultDelegateImpl>();
   Shell::Get()->AddShellObserver(this);
   delegate_->Disable(base::BindOnce(&TouchpadAndKeyboardDisabler::OnDisableAck,
                                     weak_ptr_factory_.GetWeakPtr()));

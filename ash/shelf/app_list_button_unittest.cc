@@ -4,6 +4,8 @@
 
 #include "ash/shelf/app_list_button.h"
 
+#include <memory>
+
 #include "ash/public/cpp/config.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
@@ -36,7 +38,7 @@ class AppListButtonTest : public AshTestBase {
 
   // AshTestBase:
   void SetUp() override {
-    command_line_ = base::MakeUnique<base::test::ScopedCommandLine>();
+    command_line_ = std::make_unique<base::test::ScopedCommandLine>();
     SetupCommandLine(command_line_->GetProcessCommandLine());
     AshTestBase::SetUp();
     app_list_button_ =

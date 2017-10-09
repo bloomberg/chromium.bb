@@ -4,6 +4,8 @@
 
 #include "ash/wm/tablet_mode/tablet_mode_window_manager.h"
 
+#include <memory>
+
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
@@ -19,7 +21,6 @@
 #include "ash/wm/wm_event.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/display/screen.h"
@@ -315,7 +316,7 @@ void TabletModeWindowManager::EnableBackdropBehindTopWindowOnEachDisplay(
   // the topmost window of its container.
   for (auto* controller : Shell::GetAllRootWindowControllers()) {
     controller->workspace_controller()->SetBackdropDelegate(
-        enable ? base::MakeUnique<TabletModeBackdropDelegateImpl>() : nullptr);
+        enable ? std::make_unique<TabletModeBackdropDelegateImpl>() : nullptr);
   }
 }
 

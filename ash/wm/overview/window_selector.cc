@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <functional>
+#include <memory>
 #include <set>
 #include <utility>
 #include <vector>
@@ -270,12 +271,12 @@ WindowSelector::~WindowSelector() {
 void WindowSelector::Init(const WindowList& windows,
                           const WindowList& hide_windows) {
   hide_overview_windows_ =
-      base::MakeUnique<ScopedHideOverviewWindows>(std::move(hide_windows));
+      std::make_unique<ScopedHideOverviewWindows>(std::move(hide_windows));
   if (restore_focus_window_)
     restore_focus_window_->AddObserver(this);
 
   if (SplitViewController::ShouldAllowSplitView())
-    split_view_overview_overlay_ = base::MakeUnique<SplitViewOverviewOverlay>();
+    split_view_overview_overlay_ = std::make_unique<SplitViewOverviewOverlay>();
 
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   std::sort(root_windows.begin(), root_windows.end(),

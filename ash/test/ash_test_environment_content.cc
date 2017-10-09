@@ -4,9 +4,10 @@
 
 #include "ash/test/ash_test_environment_content.h"
 
+#include <memory>
+
 #include "ash/test/ash_test_views_delegate.h"
 #include "ash/test/content/test_shell_content_state.h"
-#include "base/memory/ptr_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/web_contents_tester.h"
 
@@ -34,7 +35,7 @@ class AshTestViewsDelegateContent : public AshTestViewsDelegate {
 
 // static
 std::unique_ptr<AshTestEnvironment> AshTestEnvironment::Create() {
-  return base::MakeUnique<AshTestEnvironmentContent>();
+  return std::make_unique<AshTestEnvironmentContent>();
 }
 
 // static
@@ -43,7 +44,7 @@ std::string AshTestEnvironment::Get100PercentResourceFileName() {
 }
 
 AshTestEnvironmentContent::AshTestEnvironmentContent()
-    : thread_bundle_(base::MakeUnique<content::TestBrowserThreadBundle>()) {}
+    : thread_bundle_(std::make_unique<content::TestBrowserThreadBundle>()) {}
 
 AshTestEnvironmentContent::~AshTestEnvironmentContent() {}
 
@@ -62,7 +63,7 @@ void AshTestEnvironmentContent::TearDown() {
 
 std::unique_ptr<AshTestViewsDelegate>
 AshTestEnvironmentContent::CreateViewsDelegate() {
-  return base::MakeUnique<AshTestViewsDelegateContent>();
+  return std::make_unique<AshTestViewsDelegateContent>();
 }
 
 }  // namespace ash

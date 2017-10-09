@@ -5,6 +5,7 @@
 #include "ash/shell.h"
 
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -597,32 +598,32 @@ void Shell::NotifyVoiceInteractionSetupCompleted(bool completed) {
 Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
              std::unique_ptr<ShellPort> shell_port)
     : shell_port_(std::move(shell_port)),
-      ash_display_controller_(base::MakeUnique<AshDisplayController>()),
+      ash_display_controller_(std::make_unique<AshDisplayController>()),
       brightness_control_delegate_(
-          base::MakeUnique<system::BrightnessControllerChromeos>()),
-      cast_config_(base::MakeUnique<CastConfigController>()),
-      focus_cycler_(base::MakeUnique<FocusCycler>()),
-      ime_controller_(base::MakeUnique<ImeController>()),
-      immersive_context_(base::MakeUnique<ImmersiveContextAsh>()),
+          std::make_unique<system::BrightnessControllerChromeos>()),
+      cast_config_(std::make_unique<CastConfigController>()),
+      focus_cycler_(std::make_unique<FocusCycler>()),
+      ime_controller_(std::make_unique<ImeController>()),
+      immersive_context_(std::make_unique<ImmersiveContextAsh>()),
       keyboard_brightness_control_delegate_(
-          base::MakeUnique<KeyboardBrightnessController>()),
+          std::make_unique<KeyboardBrightnessController>()),
       locale_notification_controller_(
-          base::MakeUnique<LocaleNotificationController>()),
-      lock_screen_controller_(base::MakeUnique<LockScreenController>()),
-      media_controller_(base::MakeUnique<MediaController>()),
-      new_window_controller_(base::MakeUnique<NewWindowController>()),
-      session_controller_(base::MakeUnique<SessionController>(
+          std::make_unique<LocaleNotificationController>()),
+      lock_screen_controller_(std::make_unique<LockScreenController>()),
+      media_controller_(std::make_unique<MediaController>()),
+      new_window_controller_(std::make_unique<NewWindowController>()),
+      session_controller_(std::make_unique<SessionController>(
           shell_delegate->GetShellConnector())),
       shell_delegate_(std::move(shell_delegate)),
-      shutdown_controller_(base::MakeUnique<ShutdownController>()),
-      system_tray_controller_(base::MakeUnique<SystemTrayController>()),
-      system_tray_notifier_(base::MakeUnique<SystemTrayNotifier>()),
-      tray_action_(base::MakeUnique<TrayAction>()),
-      vpn_list_(base::MakeUnique<VpnList>()),
-      window_cycle_controller_(base::MakeUnique<WindowCycleController>()),
-      window_selector_controller_(base::MakeUnique<WindowSelectorController>()),
-      app_list_(base::MakeUnique<app_list::AppList>()),
-      tray_bluetooth_helper_(base::MakeUnique<TrayBluetoothHelper>()),
+      shutdown_controller_(std::make_unique<ShutdownController>()),
+      system_tray_controller_(std::make_unique<SystemTrayController>()),
+      system_tray_notifier_(std::make_unique<SystemTrayNotifier>()),
+      tray_action_(std::make_unique<TrayAction>()),
+      vpn_list_(std::make_unique<VpnList>()),
+      window_cycle_controller_(std::make_unique<WindowCycleController>()),
+      window_selector_controller_(std::make_unique<WindowSelectorController>()),
+      app_list_(std::make_unique<app_list::AppList>()),
+      tray_bluetooth_helper_(std::make_unique<TrayBluetoothHelper>()),
       display_configurator_(new display::DisplayConfigurator()),
       native_cursor_manager_(nullptr),
       simulate_modal_window_open_for_testing_(false),
@@ -634,8 +635,8 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
   gpu_support_.reset(shell_delegate_->CreateGPUSupport());
 
   display_manager_.reset(ScreenAsh::CreateDisplayManager());
-  window_tree_host_manager_ = base::MakeUnique<WindowTreeHostManager>();
-  user_metrics_recorder_ = base::MakeUnique<UserMetricsRecorder>();
+  window_tree_host_manager_ = std::make_unique<WindowTreeHostManager>();
+  user_metrics_recorder_ = std::make_unique<UserMetricsRecorder>();
 
   PowerStatus::Initialize();
 
@@ -843,11 +844,11 @@ void Shell::Init(const ShellInitParams& init_params) {
   const Config config = shell_port_->GetAshConfig();
 
   if (NightLightController::IsFeatureEnabled())
-    night_light_controller_ = base::MakeUnique<NightLightController>();
+    night_light_controller_ = std::make_unique<NightLightController>();
 
   touch_devices_controller_ = std::make_unique<TouchDevicesController>();
 
-  bluetooth_power_controller_ = base::MakeUnique<BluetoothPowerController>();
+  bluetooth_power_controller_ = std::make_unique<BluetoothPowerController>();
 
   wallpaper_delegate_ = shell_delegate_->CreateWallpaperDelegate();
 
@@ -868,32 +869,32 @@ void Shell::Init(const ShellInitParams& init_params) {
   // Some delegates access ShellPort during their construction. Create them here
   // instead of the ShellPort constructor.
   accessibility_delegate_.reset(shell_delegate_->CreateAccessibilityDelegate());
-  accessibility_controller_ = base::MakeUnique<AccessibilityController>(
+  accessibility_controller_ = std::make_unique<AccessibilityController>(
       shell_delegate_->GetShellConnector());
   palette_delegate_ = shell_delegate_->CreatePaletteDelegate();
-  toast_manager_ = base::MakeUnique<ToastManager>();
+  toast_manager_ = std::make_unique<ToastManager>();
 
   // Install the custom factory early on so that views::FocusManagers for Tray,
   // Shelf, and WallPaper could be created by the factory.
   views::FocusManagerFactory::Install(new AshFocusManagerFactory);
 
-  wallpaper_controller_ = base::MakeUnique<WallpaperController>();
+  wallpaper_controller_ = std::make_unique<WallpaperController>();
 
-  app_list_delegate_impl_ = base::MakeUnique<AppListDelegateImpl>();
+  app_list_delegate_impl_ = std::make_unique<AppListDelegateImpl>();
 
   // TODO(sky): move creation to ShellPort.
   if (config != Config::MASH)
-    immersive_handler_factory_ = base::MakeUnique<ImmersiveHandlerFactoryAsh>();
+    immersive_handler_factory_ = std::make_unique<ImmersiveHandlerFactoryAsh>();
 
-  window_positioner_ = base::MakeUnique<WindowPositioner>();
+  window_positioner_ = std::make_unique<WindowPositioner>();
 
   if (config == Config::CLASSIC) {
     native_cursor_manager_ = new NativeCursorManagerAshClassic;
-    cursor_manager_ = base::MakeUnique<CursorManager>(
+    cursor_manager_ = std::make_unique<CursorManager>(
         base::WrapUnique(native_cursor_manager_));
   } else if (config == Config::MUS) {
     native_cursor_manager_ = new NativeCursorManagerAshMus;
-    cursor_manager_ = base::MakeUnique<CursorManager>(
+    cursor_manager_ = std::make_unique<CursorManager>(
         base::WrapUnique(native_cursor_manager_));
   }
 
@@ -905,7 +906,7 @@ void Shell::Init(const ShellInitParams& init_params) {
     display_configurator_->set_configure_display(true);
   }
   display_configuration_controller_ =
-      base::MakeUnique<DisplayConfigurationController>(
+      std::make_unique<DisplayConfigurationController>(
           display_manager_.get(), window_tree_host_manager_.get());
   display_configurator_->Init(shell_port_->CreateNativeDisplayDelegate(),
                               !gpu_support_->IsPanelFittingDisabled());
@@ -920,11 +921,11 @@ void Shell::Init(const ShellInitParams& init_params) {
 
   if (!display_initialized &&
       (config != Config::CLASSIC || chromeos::IsRunningAsSystemCompositor())) {
-    display_change_observer_ = base::MakeUnique<display::DisplayChangeObserver>(
+    display_change_observer_ = std::make_unique<display::DisplayChangeObserver>(
         display_configurator_.get(), display_manager_.get());
 
     shutdown_observer_ =
-        base::MakeUnique<ShutdownObserver>(display_configurator_.get());
+        std::make_unique<ShutdownObserver>(display_configurator_.get());
 
     // Register |display_change_observer_| first so that the rest of
     // observer gets invoked after the root windows are configured.
@@ -937,7 +938,7 @@ void Shell::Init(const ShellInitParams& init_params) {
     display_initialized = true;
   }
   display_color_manager_ =
-      base::MakeUnique<DisplayColorManager>(display_configurator_.get());
+      std::make_unique<DisplayColorManager>(display_configurator_.get());
 
   if (!display_initialized)
     display_manager_->InitDefaultDisplay();
@@ -960,7 +961,7 @@ void Shell::Init(const ShellInitParams& init_params) {
 
   // FocusController takes ownership of AshFocusRules.
   focus_controller_ =
-      base::MakeUnique<::wm::FocusController>(new wm::AshFocusRules());
+      std::make_unique<::wm::FocusController>(new wm::AshFocusRules());
   focus_controller_->AddObserver(this);
   if (config != Config::CLASSIC) {
     window_tree_client_->focus_synchronizer()->SetSingletonFocusClient(
@@ -976,7 +977,7 @@ void Shell::Init(const ShellInitParams& init_params) {
   root_window_for_new_windows_ = GetPrimaryRootWindow();
 
   resolution_notification_controller_ =
-      base::MakeUnique<ResolutionNotificationController>();
+      std::make_unique<ResolutionNotificationController>();
 
   if (cursor_manager_) {
     cursor_manager_->SetDisplay(
@@ -984,8 +985,8 @@ void Shell::Init(const ShellInitParams& init_params) {
   }
 
   accelerator_controller_ = shell_port_->CreateAcceleratorController();
-  tablet_mode_controller_ = base::MakeUnique<TabletModeController>();
-  shelf_controller_ = base::MakeUnique<ShelfController>();
+  tablet_mode_controller_ = std::make_unique<TabletModeController>();
+  shelf_controller_ = std::make_unique<ShelfController>();
 
   magnifier_key_scroll_handler_ = MagnifierKeyScroller::CreateHandler();
   AddPreTargetHandler(magnifier_key_scroll_handler_.get());
@@ -1010,7 +1011,7 @@ void Shell::Init(const ShellInitParams& init_params) {
   AddPreTargetHandler(event_transformation_handler_.get());
 
   toplevel_window_event_handler_ =
-      base::MakeUnique<ToplevelWindowEventHandler>();
+      std::make_unique<ToplevelWindowEventHandler>();
 
   if (config != Config::MASH) {
     system_gesture_filter_.reset(new SystemGestureEventFilter);
@@ -1018,10 +1019,10 @@ void Shell::Init(const ShellInitParams& init_params) {
   }
 
   sticky_keys_controller_.reset(new StickyKeysController);
-  screen_pinning_controller_ = base::MakeUnique<ScreenPinningController>();
+  screen_pinning_controller_ = std::make_unique<ScreenPinningController>();
 
   lock_state_controller_ =
-      base::MakeUnique<LockStateController>(shutdown_controller_.get());
+      std::make_unique<LockStateController>(shutdown_controller_.get());
   power_button_controller_ = std::make_unique<PowerButtonController>();
   // Pass the initial display state to PowerButtonController.
   power_button_controller_->OnDisplayModeChanged(
@@ -1034,20 +1035,20 @@ void Shell::Init(const ShellInitParams& init_params) {
     ui::mojom::UserActivityMonitorPtr user_activity_monitor;
     shell_delegate_->GetShellConnector()->BindInterface(ui::mojom::kServiceName,
                                                         &user_activity_monitor);
-    user_activity_forwarder_ = base::MakeUnique<aura::UserActivityForwarder>(
+    user_activity_forwarder_ = std::make_unique<aura::UserActivityForwarder>(
         std::move(user_activity_monitor), user_activity_detector_.get());
   }
 
   // In mash drag and drop is handled by mus.
   if (config != Config::MASH)
-    drag_drop_controller_ = base::MakeUnique<DragDropController>();
+    drag_drop_controller_ = std::make_unique<DragDropController>();
 
   // |screenshot_controller_| needs to be created (and prepended as a
   // pre-target handler) at this point, because |mouse_cursor_filter_| needs to
   // process mouse events prior to screenshot session.
   // See http://crbug.com/459214
   screenshot_controller_.reset(new ScreenshotController());
-  mouse_cursor_filter_ = base::MakeUnique<MouseCursorEventFilter>();
+  mouse_cursor_filter_ = std::make_unique<MouseCursorEventFilter>();
   PrependPreTargetHandler(mouse_cursor_filter_.get());
 
   // Create Controllers that may need root window.
@@ -1060,7 +1061,7 @@ void Shell::Init(const ShellInitParams& init_params) {
   highlighter_controller_.reset(new HighlighterController());
 
   magnification_controller_.reset(MagnificationController::CreateInstance());
-  mru_window_tracker_ = base::MakeUnique<MruWindowTracker>();
+  mru_window_tracker_ = std::make_unique<MruWindowTracker>();
 
   autoclick_controller_.reset(AutoclickController::CreateInstance());
 
@@ -1084,7 +1085,7 @@ void Shell::Init(const ShellInitParams& init_params) {
   shadow_controller_.reset(new ::wm::ShadowController(focus_controller_.get()));
 
   logout_confirmation_controller_ =
-      base::MakeUnique<LogoutConfirmationController>();
+      std::make_unique<LogoutConfirmationController>();
 
   // May trigger initialization of the Bluetooth adapter.
   tray_bluetooth_helper_->Initialize();
@@ -1093,7 +1094,7 @@ void Shell::Init(const ShellInitParams& init_params) {
   // WindowTreeHostManager::InitDisplays()
   // since AshTouchTransformController listens on
   // WindowTreeHostManager::Observer::OnDisplaysInitialized().
-  touch_transformer_controller_ = base::MakeUnique<AshTouchTransformController>(
+  touch_transformer_controller_ = std::make_unique<AshTouchTransformController>(
       display_configurator_.get(), display_manager_.get(),
       shell_port_->CreateTouchTransformDelegate());
 
@@ -1120,7 +1121,7 @@ void Shell::Init(const ShellInitParams& init_params) {
     cursor_manager_->SetCursor(ui::CursorType::kPointer);
   }
 
-  peripheral_battery_notifier_ = base::MakeUnique<PeripheralBatteryNotifier>();
+  peripheral_battery_notifier_ = std::make_unique<PeripheralBatteryNotifier>();
   power_event_observer_.reset(new PowerEventObserver());
   user_activity_notifier_.reset(
       new ui::UserActivityPowerManagerNotifier(user_activity_detector_.get()));
@@ -1128,7 +1129,7 @@ void Shell::Init(const ShellInitParams& init_params) {
       new VideoActivityNotifier(video_detector_.get()));
   bluetooth_notification_controller_.reset(new BluetoothNotificationController);
   screen_orientation_controller_ =
-      base::MakeUnique<ScreenOrientationController>();
+      std::make_unique<ScreenOrientationController>();
   screen_layout_observer_.reset(new ScreenLayoutObserver());
   sms_observer_.reset(new SmsObserver());
 
@@ -1139,7 +1140,7 @@ void Shell::Init(const ShellInitParams& init_params) {
   // is started.
   display_manager_->CreateMirrorWindowAsyncIfAny();
 
-  message_center_controller_ = base::MakeUnique<MessageCenterController>();
+  message_center_controller_ = std::make_unique<MessageCenterController>();
 
   for (auto& observer : shell_observers_)
     observer.OnShellInitialized();
@@ -1268,7 +1269,7 @@ void Shell::InitializeShelf() {
   DCHECK_GT(session_controller()->NumberOfLoggedInUsers(), 0);
 
   if (!shelf_window_watcher_)
-    shelf_window_watcher_ = base::MakeUnique<ShelfWindowWatcher>(shelf_model());
+    shelf_window_watcher_ = std::make_unique<ShelfWindowWatcher>(shelf_model());
 
   for (RootWindowController* root : GetAllRootWindowControllers())
     root->InitializeShelf();

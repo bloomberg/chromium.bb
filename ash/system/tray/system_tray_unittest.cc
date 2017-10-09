@@ -4,6 +4,7 @@
 
 #include "ash/system/tray/system_tray.h"
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -456,9 +457,8 @@ TEST_F(SystemTrayTest, NotRecordedtemsAreNotRecorded) {
   SystemTray* tray = GetPrimarySystemTray();
   ASSERT_TRUE(tray->GetWidget());
 
-  TestSystemTrayItem* test_item =
-      new TestSystemTrayItem(SystemTrayItem::UMA_NOT_RECORDED);
-  tray->AddTrayItem(base::WrapUnique(test_item));
+  tray->AddTrayItem(
+      std::make_unique<TestSystemTrayItem>(SystemTrayItem::UMA_NOT_RECORDED));
 
   base::HistogramTester histogram_tester;
 
@@ -478,9 +478,9 @@ TEST_F(SystemTrayTest, NullDefaultViewIsNotRecorded) {
   SystemTray* tray = GetPrimarySystemTray();
   ASSERT_TRUE(tray->GetWidget());
 
-  TestSystemTrayItem* test_item = new TestSystemTrayItem();
+  auto test_item = std::make_unique<TestSystemTrayItem>();
   test_item->set_has_views(false);
-  tray->AddTrayItem(base::WrapUnique(test_item));
+  tray->AddTrayItem(std::move(test_item));
 
   base::HistogramTester histogram_tester;
 
@@ -824,8 +824,7 @@ TEST_F(SystemTrayTest, PersistentBubble) {
   SystemTray* tray = GetPrimarySystemTray();
   ASSERT_TRUE(tray->GetWidget());
 
-  TestSystemTrayItem* test_item = new TestSystemTrayItem();
-  tray->AddTrayItem(base::WrapUnique(test_item));
+  tray->AddTrayItem(std::make_unique<TestSystemTrayItem>());
 
   std::unique_ptr<views::Widget> widget(CreateTestWidget(
       nullptr, kShellWindowId_DefaultContainer, gfx::Rect(0, 0, 100, 100)));

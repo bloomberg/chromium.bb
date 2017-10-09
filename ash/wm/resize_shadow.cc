@@ -4,6 +4,8 @@
 
 #include "ash/wm/resize_shadow.h"
 
+#include <memory>
+
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
@@ -76,7 +78,7 @@ ResizeShadow::ResizeShadow(aura::Window* window)
 
   if (!g_shadow_image.Get()) {
     auto* source = new ResizeShadowImageSource();
-    g_shadow_image.Get() = base::MakeUnique<gfx::ImageSkia>(
+    g_shadow_image.Get() = std::make_unique<gfx::ImageSkia>(
         base::WrapUnique(source), source->size());
   }
   layer_->UpdateNinePatchLayerImage(*g_shadow_image.Get());

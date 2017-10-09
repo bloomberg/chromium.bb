@@ -4,8 +4,9 @@
 
 #include "ash/app_list/app_list_presenter_delegate_factory.h"
 
+#include <memory>
+
 #include "ash/app_list/app_list_presenter_delegate.h"
-#include "base/memory/ptr_util.h"
 #include "ui/app_list/presenter/app_list_view_delegate_factory.h"
 
 namespace ash {
@@ -19,7 +20,7 @@ AppListPresenterDelegateFactory::~AppListPresenterDelegateFactory() {}
 std::unique_ptr<app_list::AppListPresenterDelegate>
 AppListPresenterDelegateFactory::GetDelegate(
     app_list::AppListPresenterImpl* presenter) {
-  return base::MakeUnique<AppListPresenterDelegate>(
+  return std::make_unique<AppListPresenterDelegate>(
       presenter, view_delegate_factory_.get());
 }
 

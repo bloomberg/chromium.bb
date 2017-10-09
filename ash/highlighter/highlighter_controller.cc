@@ -4,6 +4,8 @@
 
 #include "ash/highlighter/highlighter_controller.h"
 
+#include <memory>
+
 #include "ash/highlighter/highlighter_gesture_util.h"
 #include "ash/highlighter/highlighter_result_view.h"
 #include "ash/highlighter/highlighter_selection_observer.h"
@@ -96,7 +98,7 @@ void HighlighterController::CreatePointerView(
     base::TimeDelta presentation_delay,
     aura::Window* root_window) {
   highlighter_view_ =
-      base::MakeUnique<HighlighterView>(presentation_delay, root_window);
+      std::make_unique<HighlighterView>(presentation_delay, root_window);
   result_view_.reset();
 }
 
@@ -127,7 +129,7 @@ void HighlighterController::UpdatePointerView(ui::TouchEvent* event) {
   // a little to give the pen a chance to re-enter the screen.
   highlighter_view_->AddGap();
 
-  interrupted_stroke_timer_ = base::MakeUnique<base::OneShotTimer>();
+  interrupted_stroke_timer_ = std::make_unique<base::OneShotTimer>();
   interrupted_stroke_timer_->Start(
       FROM_HERE, base::TimeDelta::FromMilliseconds(kInterruptedStrokeTimeoutMs),
       base::Bind(&HighlighterController::RecognizeGesture,
@@ -177,7 +179,7 @@ void HighlighterController::RecognizeGesture() {
           gfx::ScaleRect(box, GetScreenshotScale(current_window))));
     }
 
-    result_view_ = base::MakeUnique<HighlighterResultView>(current_window);
+    result_view_ = std::make_unique<HighlighterResultView>(current_window);
     result_view_->Animate(box, gesture_type,
                           base::Bind(&HighlighterController::DestroyResultView,
                                      base::Unretained(this)));

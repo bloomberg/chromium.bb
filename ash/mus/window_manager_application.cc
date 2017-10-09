@@ -4,6 +4,7 @@
 
 #include "ash/mus/window_manager_application.h"
 
+#include <memory>
 #include <utility>
 
 #include "ash/mojo_interface_factory.h"
@@ -14,7 +15,6 @@
 #include "ash/shell_delegate.h"
 #include "ash/system/power/power_status.h"
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/audio/cras_audio_handler.h"
@@ -138,11 +138,11 @@ void WindowManagerApplication::OnStart() {
     context()->QuitNow();
     return;
   }
-  window_manager_ = base::MakeUnique<WindowManager>(
+  window_manager_ = std::make_unique<WindowManager>(
       context()->connector(), ash_config_, show_primary_host_on_connect_);
 
   std::unique_ptr<aura::WindowTreeClient> window_tree_client =
-      base::MakeUnique<aura::WindowTreeClient>(
+      std::make_unique<aura::WindowTreeClient>(
           context()->connector(), window_manager_.get(), window_manager_.get());
   const bool automatically_create_display_roots = false;
   window_tree_client->ConnectAsWindowManager(

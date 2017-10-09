@@ -4,6 +4,8 @@
 
 #include "ash/laser/laser_pointer_controller.h"
 
+#include <memory>
+
 #include "ash/laser/laser_pointer_view.h"
 #include "ash/system/palette/palette_utils.h"
 #include "ui/display/screen.h"
@@ -45,7 +47,7 @@ views::View* LaserPointerController::GetPointerView() const {
 void LaserPointerController::CreatePointerView(
     base::TimeDelta presentation_delay,
     aura::Window* root_window) {
-  laser_pointer_view_ = base::MakeUnique<LaserPointerView>(
+  laser_pointer_view_ = std::make_unique<LaserPointerView>(
       base::TimeDelta::FromMilliseconds(kPointLifeDurationMs),
       presentation_delay,
       base::TimeDelta::FromMilliseconds(kAddStationaryPointsDelayMs),

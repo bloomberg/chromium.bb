@@ -4,6 +4,8 @@
 
 #include "ash/shelf/login_shelf_view.h"
 
+#include <memory>
+
 #include "ash/ash_constants.h"
 #include "ash/focus_cycler.h"
 #include "ash/login/lock_screen_controller.h"
@@ -77,7 +79,7 @@ class LoginShelfButton : public views::LabelButton {
   // views::InkDropHostView:
   std::unique_ptr<views::InkDrop> CreateInkDrop() override {
     std::unique_ptr<views::InkDropImpl> ink_drop =
-        base::MakeUnique<views::InkDropImpl>(this, size());
+        std::make_unique<views::InkDropImpl>(this, size());
     ink_drop->SetShowHighlightOnHover(false);
     ink_drop->SetShowHighlightOnFocus(false);
     return std::move(ink_drop);

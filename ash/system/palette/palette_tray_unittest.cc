@@ -4,6 +4,8 @@
 
 #include "ash/system/palette/palette_tray.h"
 
+#include <memory>
+
 #include "ash/highlighter/highlighter_controller.h"
 #include "ash/highlighter/highlighter_controller_test_api.h"
 #include "ash/public/cpp/ash_pref_names.h"
@@ -50,11 +52,11 @@ class PaletteTrayTest : public AshTestBase {
 
     palette_tray_ =
         StatusAreaWidgetTestHelper::GetStatusAreaWidget()->palette_tray();
-    test_api_ = base::MakeUnique<PaletteTray::TestApi>(palette_tray_);
+    test_api_ = std::make_unique<PaletteTray::TestApi>(palette_tray_);
 
     // Set the test palette delegate here, since this requires an instance of
     // shell to be available.
-    ShellTestApi().SetPaletteDelegate(base::MakeUnique<TestPaletteDelegate>());
+    ShellTestApi().SetPaletteDelegate(std::make_unique<TestPaletteDelegate>());
     // Initialize the palette tray again since this test requires information
     // from the palette delegate. (It was initialized without the delegate in
     // AshTestBase::SetUp()).
@@ -222,7 +224,7 @@ class PaletteTrayTestWithVoiceInteraction : public PaletteTrayTest {
     // ui takes ownership of the tick clock.
     ui::SetEventTickClockForTesting(base::WrapUnique(simulated_clock_));
 
-    highlighter_test_api_ = base::MakeUnique<HighlighterControllerTestApi>(
+    highlighter_test_api_ = std::make_unique<HighlighterControllerTestApi>(
         Shell::Get()->highlighter_controller());
   }
 

@@ -16,7 +16,6 @@
 #include "base/files/file_path.h"
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/string_search.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -261,7 +260,7 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
       if (base::i18n::StringSearchIgnoringCaseAndAccents(query, title, NULL,
                                                          NULL)) {
         model_->results()->Add(
-            base::MakeUnique<ExampleSearchResult>(type, query));
+            std::make_unique<ExampleSearchResult>(type, query));
       }
     }
   }

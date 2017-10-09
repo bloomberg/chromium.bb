@@ -4,6 +4,7 @@
 
 #include "ash/shell_port_classic.h"
 
+#include <memory>
 #include <utility>
 
 #include "ash/accelerators/accelerator_controller.h"
@@ -56,7 +57,7 @@ Config ShellPortClassic::GetAshConfig() const {
 
 std::unique_ptr<display::TouchTransformSetter>
 ShellPortClassic::CreateTouchTransformDelegate() {
-  return base::MakeUnique<display::DefaultTouchTransformSetter>();
+  return std::make_unique<display::DefaultTouchTransformSetter>();
 }
 
 void ShellPortClassic::LockCursor() {
@@ -106,22 +107,22 @@ std::unique_ptr<WindowResizer> ShellPortClassic::CreateDragWindowResizer(
 
 std::unique_ptr<WindowCycleEventFilter>
 ShellPortClassic::CreateWindowCycleEventFilter() {
-  return base::MakeUnique<WindowCycleEventFilterClassic>();
+  return std::make_unique<WindowCycleEventFilterClassic>();
 }
 
 std::unique_ptr<wm::TabletModeEventHandler>
 ShellPortClassic::CreateTabletModeEventHandler() {
-  return base::WrapUnique(new wm::TabletModeEventHandlerClassic);
+  return std::make_unique<wm::TabletModeEventHandlerClassic>();
 }
 
 std::unique_ptr<WorkspaceEventHandler>
 ShellPortClassic::CreateWorkspaceEventHandler(aura::Window* workspace_window) {
-  return base::MakeUnique<WorkspaceEventHandlerClassic>(workspace_window);
+  return std::make_unique<WorkspaceEventHandlerClassic>(workspace_window);
 }
 
 std::unique_ptr<ImmersiveFullscreenController>
 ShellPortClassic::CreateImmersiveFullscreenController() {
-  return base::MakeUnique<ImmersiveFullscreenController>();
+  return std::make_unique<ImmersiveFullscreenController>();
 }
 
 std::unique_ptr<KeyboardUI> ShellPortClassic::CreateKeyboardUI() {
@@ -155,7 +156,7 @@ void ShellPortClassic::SetPartialMagnifierEnabled(bool enabled) {
 }
 
 void ShellPortClassic::CreatePointerWatcherAdapter() {
-  pointer_watcher_adapter_ = base::MakeUnique<PointerWatcherAdapterClassic>();
+  pointer_watcher_adapter_ = std::make_unique<PointerWatcherAdapterClassic>();
 }
 
 std::unique_ptr<AshWindowTreeHost> ShellPortClassic::CreateAshWindowTreeHost(
@@ -180,8 +181,8 @@ std::unique_ptr<AcceleratorController>
 ShellPortClassic::CreateAcceleratorController() {
   DCHECK(!accelerator_controller_delegate_);
   accelerator_controller_delegate_ =
-      base::MakeUnique<AcceleratorControllerDelegateClassic>();
-  return base::MakeUnique<AcceleratorController>(
+      std::make_unique<AcceleratorControllerDelegateClassic>();
+  return std::make_unique<AcceleratorController>(
       accelerator_controller_delegate_.get(), nullptr);
 }
 

@@ -6,6 +6,7 @@
 
 #include <math.h>
 #include <algorithm>
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -16,7 +17,6 @@
 #include "base/i18n/rtl.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
@@ -116,11 +116,11 @@ void AddLayerAnimationsForMinimize(aura::Window* window, bool show) {
   float scale_y = static_cast<float>(target_bounds.height()) / bounds.height();
 
   std::unique_ptr<ui::InterpolatedTransform> scale =
-      base::MakeUnique<ui::InterpolatedScale>(
+      std::make_unique<ui::InterpolatedScale>(
           gfx::Point3F(1, 1, 1), gfx::Point3F(scale_x, scale_y, 1));
 
   std::unique_ptr<ui::InterpolatedTransform> translation =
-      base::MakeUnique<ui::InterpolatedTranslation>(
+      std::make_unique<ui::InterpolatedTranslation>(
           gfx::PointF(), gfx::PointF(target_bounds.x() - bounds.x(),
                                      target_bounds.y() - bounds.y()));
 
@@ -420,9 +420,9 @@ CreateBrightnessGrayscaleAnimationSequence(float target_value,
                                            base::TimeDelta duration) {
   gfx::Tween::Type animation_type = gfx::Tween::EASE_OUT;
   std::unique_ptr<ui::LayerAnimationSequence> brightness_sequence =
-      base::MakeUnique<ui::LayerAnimationSequence>();
+      std::make_unique<ui::LayerAnimationSequence>();
   std::unique_ptr<ui::LayerAnimationSequence> grayscale_sequence =
-      base::MakeUnique<ui::LayerAnimationSequence>();
+      std::make_unique<ui::LayerAnimationSequence>();
 
   std::unique_ptr<ui::LayerAnimationElement> brightness_element =
       ui::LayerAnimationElement::CreateBrightnessElement(target_value,

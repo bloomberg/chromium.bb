@@ -5,6 +5,7 @@
 #include "ash/display/display_util.h"
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "ash/display/extended_mouse_warp_controller.h"
@@ -16,7 +17,6 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/system_notifier.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
@@ -80,12 +80,12 @@ std::unique_ptr<MouseWarpController> CreateMouseWarpController(
     display::DisplayManager* manager,
     aura::Window* drag_source) {
   if (manager->IsInUnifiedMode() && manager->num_connected_displays() >= 2)
-    return base::MakeUnique<UnifiedMouseWarpController>();
+    return std::make_unique<UnifiedMouseWarpController>();
   // Extra check for |num_connected_displays()| is for SystemDisplayApiTest
   // that injects MockScreen.
   if (manager->GetNumDisplays() < 2 || manager->num_connected_displays() < 2)
-    return base::MakeUnique<NullMouseWarpController>();
-  return base::MakeUnique<ExtendedMouseWarpController>(drag_source);
+    return std::make_unique<NullMouseWarpController>();
+  return std::make_unique<ExtendedMouseWarpController>(drag_source);
 }
 
 gfx::Rect GetNativeEdgeBounds(AshWindowTreeHost* ash_host,

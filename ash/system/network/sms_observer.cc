@@ -4,10 +4,11 @@
 
 #include "ash/system/network/sms_observer.h"
 
+#include <memory>
+
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/system/system_notifier.h"
 #include "ash/system/tray/tray_constants.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_handler.h"

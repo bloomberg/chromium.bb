@@ -7,10 +7,10 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <memory>
 
 #include "ash/accessibility/focus_ring_layer.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 
 namespace ash {
 
@@ -113,7 +113,7 @@ void AccessibilityFocusRingController::UpdateFocusRingsFromFocusRects() {
 
   for (size_t i = 0; i < focus_rings_.size(); ++i) {
     if (!focus_layers_[i])
-      focus_layers_[i] = base::MakeUnique<AccessibilityFocusRingLayer>(this);
+      focus_layers_[i] = std::make_unique<AccessibilityFocusRingLayer>(this);
   }
 
   if (focus_ring_behavior_ == PERSIST_FOCUS_RING &&

@@ -4,10 +4,11 @@
 
 #include "ash/display/touch_calibrator_controller.h"
 
+#include <memory>
+
 #include "ash/display/touch_calibrator_view.h"
 #include "ash/shell.h"
 #include "ash/touch/ash_touch_transform_controller.h"
-#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/display/screen.h"
 #include "ui/events/devices/device_data_manager.h"
@@ -91,7 +92,7 @@ void TouchCalibratorController::StartCalibration(
     for (const display::Display& display : displays) {
       bool is_primary_view = display.id() == target_display_.id();
       touch_calibrator_views_[display.id()] =
-          base::MakeUnique<TouchCalibratorView>(display, is_primary_view);
+          std::make_unique<TouchCalibratorView>(display, is_primary_view);
     }
   }
 

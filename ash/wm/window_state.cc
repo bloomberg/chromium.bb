@@ -4,6 +4,7 @@
 
 #include "ash/wm/window_state.h"
 
+#include <memory>
 #include <utility>
 
 #include "ash/public/cpp/window_properties.h"
@@ -20,7 +21,6 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "base/auto_reset.h"
-#include "base/memory/ptr_util.h"
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/layout_manager.h"
@@ -340,7 +340,7 @@ void WindowState::set_bounds_changed_by_user(bool bounds_changed_by_user) {
 void WindowState::CreateDragDetails(const gfx::Point& point_in_parent,
                                     int window_component,
                                     ::wm::WindowMoveSource source) {
-  drag_details_ = base::MakeUnique<DragDetails>(window_, point_in_parent,
+  drag_details_ = std::make_unique<DragDetails>(window_, point_in_parent,
                                                 window_component, source);
 }
 

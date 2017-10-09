@@ -32,7 +32,6 @@
 #include "ash/system/tray/tri_view.h"
 #include "base/i18n/number_formatting.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -486,7 +485,7 @@ void NetworkListView::UpdateNetworks(
   for (const auto* network : networks) {
     if (!NetworkTypePattern::NonVirtual().MatchesType(network->type()))
       continue;
-    network_list_.push_back(base::MakeUnique<NetworkInfo>(network->guid()));
+    network_list_.push_back(std::make_unique<NetworkInfo>(network->guid()));
   }
 }
 

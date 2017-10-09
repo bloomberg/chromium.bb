@@ -4,6 +4,8 @@
 
 #include "ash/mus/frame/detached_title_area_renderer.h"
 
+#include <memory>
+
 #include "ash/frame/header_view.h"
 #include "ash/mus/property_util.h"
 #include "ash/mus/window_manager.h"
@@ -39,7 +41,7 @@ enum class Source {
 std::unique_ptr<views::Widget::InitParams> CreateInitParams(
     const char* debug_name) {
   std::unique_ptr<views::Widget::InitParams> params =
-      base::MakeUnique<views::Widget::InitParams>(
+      std::make_unique<views::Widget::InitParams>(
           views::Widget::InitParams::TYPE_POPUP);
   params->name = debug_name;
   params->activatable = views::Widget::InitParams::ACTIVATABLE_NO;
@@ -74,7 +76,7 @@ void CreateHeaderView(views::Widget* frame,
 
 DetachedTitleAreaRendererForInternal::DetachedTitleAreaRendererForInternal(
     views::Widget* frame)
-    : widget_(base::MakeUnique<views::Widget>()) {
+    : widget_(std::make_unique<views::Widget>()) {
   std::unique_ptr<views::Widget::InitParams> params =
       CreateInitParams("DetachedTitleAreaRendererForInternal");
   params->ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;

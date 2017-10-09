@@ -69,7 +69,7 @@ TouchpadAndKeyboardDisabler* CreateDisablerAndDelegate(
     CallCounts* counts,
     TestDelegate** test_delegate) {
   std::unique_ptr<TestDelegate> owned_test_delegate =
-      base::MakeUnique<TestDelegate>(
+      std::make_unique<TestDelegate>(
           &(counts->delegate_destroyed), &(counts->hide_cursor_call_count),
           &(counts->enable_call_count), &(counts->disable_call_count));
   *test_delegate = owned_test_delegate.get();
@@ -210,7 +210,7 @@ TEST_F(TouchpadAndKeyboardDisablerTest2,
   std::unique_ptr<AshTestEnvironment> ash_test_environment =
       AshTestEnvironment::Create();
   std::unique_ptr<AshTestHelper> ash_test_helper =
-      base::MakeUnique<AshTestHelper>(ash_test_environment.get());
+      std::make_unique<AshTestHelper>(ash_test_environment.get());
   const bool start_session = true;
   ash_test_helper->SetUp(start_session);
 

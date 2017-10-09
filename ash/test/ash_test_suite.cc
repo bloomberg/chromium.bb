@@ -4,6 +4,7 @@
 
 #include "ash/test/ash_test_suite.h"
 
+#include <memory>
 #include <set>
 
 #include "ash/public/cpp/config.h"
@@ -67,11 +68,11 @@ class AshTestContextFactory : public ui::FakeContextFactory {
     scoped_refptr<cc::TestContextProvider> context_provider =
         cc::TestContextProvider::Create();
     std::unique_ptr<FrameSinkClient> frame_sink_client =
-        base::MakeUnique<FrameSinkClient>(context_provider);
+        std::make_unique<FrameSinkClient>(context_provider);
     constexpr bool synchronous_composite = false;
     constexpr bool disable_display_vsync = false;
     const double refresh_rate = GetRefreshRate();
-    auto frame_sink = base::MakeUnique<viz::TestLayerTreeFrameSink>(
+    auto frame_sink = std::make_unique<viz::TestLayerTreeFrameSink>(
         context_provider, cc::TestContextProvider::CreateWorker(), nullptr,
         GetGpuMemoryBufferManager(), renderer_settings(),
         base::ThreadTaskRunnerHandle::Get().get(), synchronous_composite,
@@ -138,7 +139,7 @@ void AshTestSuite::Initialize() {
                                                      : aura::Env::Mode::LOCAL);
 
   if (is_mus || is_mash) {
-    context_factory_ = base::MakeUnique<AshTestContextFactory>();
+    context_factory_ = std::make_unique<AshTestContextFactory>();
     env_->set_context_factory(context_factory_.get());
     env_->set_context_factory_private(nullptr);
   }

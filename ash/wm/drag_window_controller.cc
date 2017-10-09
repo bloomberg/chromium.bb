@@ -5,11 +5,11 @@
 #include "ash/wm/drag_window_controller.h"
 
 #include <algorithm>
+#include <memory>
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
-#include "base/memory/ptr_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window.h"
@@ -189,7 +189,7 @@ DragWindowController::DragWindowController(aura::Window* window)
     if (current.id() == display.id())
       continue;
     drag_windows_.push_back(
-        base::MakeUnique<DragWindowDetails>(display, window_));
+        std::make_unique<DragWindowDetails>(display, window_));
   }
 }
 

@@ -20,7 +20,6 @@
 #include "ash/system/status_area_layout_manager.h"
 #include "ash/system/status_area_widget.h"
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "chromeos/chromeos_switches.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"

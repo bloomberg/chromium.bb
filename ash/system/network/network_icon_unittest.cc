@@ -4,9 +4,10 @@
 
 #include "ash/system/network/network_icon.h"
 
+#include <memory>
+
 #include "ash/strings/grit/ash_strings.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
@@ -38,23 +39,23 @@ class NetworkIconTest : public chromeos::NetworkStateTest {
     handler_ = chromeos::NetworkHandler::Get()->network_state_handler();
 
     tether_network_ =
-        base::MakeUnique<chromeos::NetworkState>("tetherNetworkPath");
+        std::make_unique<chromeos::NetworkState>("tetherNetworkPath");
     tether_network_->set_type(chromeos::kTypeTether);
 
-    wifi_network_ = base::MakeUnique<chromeos::NetworkState>("wifiServicePath");
+    wifi_network_ = std::make_unique<chromeos::NetworkState>("wifiServicePath");
     wifi_network_->set_type(shill::kTypeWifi);
 
     cellular_network_ =
-        base::MakeUnique<chromeos::NetworkState>("cellularServicePath");
+        std::make_unique<chromeos::NetworkState>("cellularServicePath");
     cellular_network_->set_type(shill::kTypeCellular);
 
     wifi_tether_network_ =
-        base::MakeUnique<chromeos::NetworkState>("wifiTetherServicePath");
+        std::make_unique<chromeos::NetworkState>("wifiTetherServicePath");
     wifi_tether_network_->set_type(shill::kTypeWifi);
     wifi_tether_network_.get()->set_tether_guid("tetherNetworkGuid");
 
     ethernet_network_ =
-        base::MakeUnique<chromeos::NetworkState>("ethernetNetworkPath");
+        std::make_unique<chromeos::NetworkState>("ethernetNetworkPath");
     ethernet_network_->set_type(shill::kTypeEthernet);
   }
 

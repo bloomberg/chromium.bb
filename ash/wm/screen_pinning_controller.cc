@@ -5,6 +5,7 @@
 #include "ash/wm/screen_pinning_controller.h"
 
 #include <algorithm>
+#include <memory>
 #include <vector>
 
 #include "ash/public/cpp/shell_window_ids.h"
@@ -15,7 +16,6 @@
 #include "ash/wm/window_state.h"
 #include "base/auto_reset.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/wm/core/window_util.h"
@@ -142,15 +142,15 @@ class ScreenPinningController::SystemModalContainerWindowObserver
 };
 
 ScreenPinningController::ScreenPinningController()
-    : window_dimmers_(base::MakeUnique<WindowUserData<WindowDimmer>>()),
+    : window_dimmers_(std::make_unique<WindowUserData<WindowDimmer>>()),
       pinned_container_window_observer_(
-          base::MakeUnique<PinnedContainerWindowObserver>(this)),
+          std::make_unique<PinnedContainerWindowObserver>(this)),
       pinned_container_child_window_observer_(
-          base::MakeUnique<PinnedContainerChildWindowObserver>(this)),
+          std::make_unique<PinnedContainerChildWindowObserver>(this)),
       system_modal_container_window_observer_(
-          base::MakeUnique<SystemModalContainerWindowObserver>(this)),
+          std::make_unique<SystemModalContainerWindowObserver>(this)),
       system_modal_container_child_window_observer_(
-          base::MakeUnique<SystemModalContainerChildWindowObserver>(this)) {
+          std::make_unique<SystemModalContainerChildWindowObserver>(this)) {
   Shell::Get()->window_tree_host_manager()->AddObserver(this);
 }
 
@@ -262,7 +262,7 @@ void ScreenPinningController::OnSystemModalContainerWindowStackingChanged(
 aura::Window* ScreenPinningController::CreateWindowDimmer(
     aura::Window* container) {
   std::unique_ptr<WindowDimmer> window_dimmer =
-      base::MakeUnique<WindowDimmer>(container);
+      std::make_unique<WindowDimmer>(container);
   window_dimmer->SetDimOpacity(1);  // Fully opaque.
   ::wm::SetWindowFullscreen(window_dimmer->window(), true);
   window_dimmer->window()->Show();

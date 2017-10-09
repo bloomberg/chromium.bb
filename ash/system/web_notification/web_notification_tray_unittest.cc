@@ -4,6 +4,7 @@
 
 #include "ash/system/web_notification/web_notification_tray.h"
 
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -23,7 +24,6 @@
 #include "ash/system/web_notification/ash_popup_alignment_delegate.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_state.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/display/display.h"
@@ -283,8 +283,7 @@ TEST_F(WebNotificationTrayTest, PopupShownOnBothDisplays) {
 // RootWindow's bound can be bigger than display::Display's work area so that
 // openingsystem tray doesn't affect at all the work area of popups.
 TEST_F(WebNotificationTrayTest, PopupAndSystemTray) {
-  TestItem* test_item = new TestItem;
-  GetSystemTray()->AddTrayItem(base::WrapUnique(test_item));
+  GetSystemTray()->AddTrayItem(std::make_unique<TestItem>());
 
   AddNotification("test_id");
   EXPECT_TRUE(GetTray()->IsPopupVisible());
@@ -321,8 +320,7 @@ TEST_F(WebNotificationTrayTest, PopupAndAutoHideShelf) {
 
   // Create the system tray during auto-hide.
   widget = CreateTestWidget();
-  TestItem* test_item = new TestItem;
-  GetSystemTray()->AddTrayItem(base::WrapUnique(test_item));
+  GetSystemTray()->AddTrayItem(std::make_unique<TestItem>());
   GetSystemTray()->ShowDefaultView(BUBBLE_CREATE_NEW,
                                    false /* show_by_click */);
   UpdateAutoHideStateNow();

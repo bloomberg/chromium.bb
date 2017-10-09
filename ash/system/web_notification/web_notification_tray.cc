@@ -4,6 +4,8 @@
 
 #include "ash/system/web_notification/web_notification_tray.h"
 
+#include <memory>
+
 #include "ash/accessibility/accessibility_delegate.h"
 #include "ash/message_center/message_center_bubble.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -538,7 +540,7 @@ void WebNotificationTray::UpdateTrayContent() {
     if (visible_small_icons_.count(notification->id()) != 0)
       continue;
 
-    auto item = base::MakeUnique<WebNotificationImage>(
+    auto item = std::make_unique<WebNotificationImage>(
         image.AsImageSkia(), animation_container_.get(), this);
     tray_container()->AddChildViewAt(item.get(), 0);
     item->SetVisible(true);

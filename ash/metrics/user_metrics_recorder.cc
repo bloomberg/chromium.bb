@@ -4,6 +4,8 @@
 
 #include "ash/metrics/user_metrics_recorder.h"
 
+#include <memory>
+
 #include "ash/metrics/desktop_task_switch_metric_recorder.h"
 #include "ash/metrics/pointer_metrics_recorder.h"
 #include "ash/public/cpp/shelf_item.h"
@@ -15,7 +17,6 @@
 #include "ash/shelf/shelf_view.h"
 #include "ash/shell.h"
 #include "ash/wm/window_state.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "ui/aura/window.h"
@@ -421,7 +422,7 @@ void UserMetricsRecorder::OnShellInitialized() {
     desktop_task_switch_metric_recorder_.reset(
         new DesktopTaskSwitchMetricRecorder());
   }
-  pointer_metrics_recorder_ = base::MakeUnique<PointerMetricsRecorder>();
+  pointer_metrics_recorder_ = std::make_unique<PointerMetricsRecorder>();
 }
 
 void UserMetricsRecorder::OnShellShuttingDown() {

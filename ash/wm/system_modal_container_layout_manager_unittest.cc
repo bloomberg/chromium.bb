@@ -16,7 +16,6 @@
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_window_delegate.h"
@@ -813,7 +812,7 @@ TEST_F(SystemModalContainerLayoutManagerTest, VisibilityChange) {
 
   // Make sure that a child visibility change should not cause
   // inconsistent state.
-  std::unique_ptr<aura::Window> child = base::MakeUnique<aura::Window>(nullptr);
+  std::unique_ptr<aura::Window> child = std::make_unique<aura::Window>(nullptr);
   child->SetType(aura::client::WINDOW_TYPE_CONTROL);
   child->Init(ui::LAYER_TEXTURED);
   modal_window->AddChild(child.get());

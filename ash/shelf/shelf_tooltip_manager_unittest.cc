@@ -4,6 +4,8 @@
 
 #include "ash/shelf/shelf_tooltip_manager.h"
 
+#include <memory>
+
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/shelf/app_list_button.h"
@@ -12,7 +14,6 @@
 #include "ash/shelf/shelf_view_test_api.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "base/memory/ptr_util.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
@@ -36,7 +37,7 @@ class ShelfTooltipManagerTest : public AshTestBase {
   views::Widget* GetTooltip() { return tooltip_manager_->bubble_->GetWidget(); }
 
   std::unique_ptr<views::Widget> CreateTestWidget() {
-    std::unique_ptr<views::Widget> widget = base::MakeUnique<views::Widget>();
+    std::unique_ptr<views::Widget> widget = std::make_unique<views::Widget>();
     views::Widget::InitParams params;
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.context = CurrentContext();

@@ -5,6 +5,7 @@
 #include "ash/wm/overview/scoped_transform_overview_window.h"
 
 #include <algorithm>
+#include <memory>
 #include <vector>
 
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
@@ -14,7 +15,6 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/aura/client/aura_constants.h"
@@ -202,7 +202,7 @@ void ScopedTransformOverviewWindow::BeginScopedAnimation(
     ScopedAnimationSettings* animation_settings) {
   for (auto* window : GetTransientTreeIterator(GetOverviewWindow())) {
     animation_settings->push_back(
-        base::MakeUnique<ScopedOverviewAnimationSettings>(animation_type,
+        std::make_unique<ScopedOverviewAnimationSettings>(animation_type,
                                                           window));
   }
 }
@@ -350,7 +350,7 @@ void ScopedTransformOverviewWindow::SetTransform(
     determined_original_window_shape_ = true;
     const ShapeRects* window_shape = window()->layer()->alpha_shape();
     if (!original_window_shape_ && window_shape)
-      original_window_shape_ = base::MakeUnique<ShapeRects>(*window_shape);
+      original_window_shape_ = std::make_unique<ShapeRects>(*window_shape);
   }
 
   gfx::Point target_origin(GetTargetBoundsInScreen().origin());
@@ -383,11 +383,11 @@ void ScopedTransformOverviewWindow::HideHeader() {
     std::unique_ptr<ShapeRects> shape;
     if (original_window_shape_) {
       // When the |window| has a shape, use the new bounds to clip that shape.
-      shape = base::MakeUnique<ShapeRects>(*original_window_shape_);
+      shape = std::make_unique<ShapeRects>(*original_window_shape_);
       for (auto& rect : *shape)
         rect.Intersect(bounds);
     } else {
-      shape = base::MakeUnique<ShapeRects>();
+      shape = std::make_unique<ShapeRects>();
       shape->push_back(bounds);
     }
     aura::Window* window = GetOverviewWindow();
@@ -398,7 +398,7 @@ void ScopedTransformOverviewWindow::HideHeader() {
 
 void ScopedTransformOverviewWindow::ShowHeader() {
   ui::Layer* layer = window()->layer();
-  layer->SetAlphaShape(original_window_shape_ ? base::MakeUnique<ShapeRects>(
+  layer->SetAlphaShape(original_window_shape_ ? std::make_unique<ShapeRects>(
                                                     *original_window_shape_)
                                               : nullptr);
   layer->SetMasksToBounds(false);
@@ -528,7 +528,7 @@ void ScopedTransformOverviewWindow::CreateMirrorWindowForMinimizedState() {
   params.activatable = views::Widget::InitParams::Activatable::ACTIVATABLE_NO;
   params.accept_events = true;
   params.parent = window_->parent();
-  minimized_widget_ = base::MakeUnique<views::Widget>();
+  minimized_widget_ = std::make_unique<views::Widget>();
   minimized_widget_->set_focus_on_creation(false);
   minimized_widget_->Init(params);
 

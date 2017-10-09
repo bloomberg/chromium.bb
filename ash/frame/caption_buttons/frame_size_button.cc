@@ -4,12 +4,13 @@
 
 #include "ash/frame/caption_buttons/frame_size_button.h"
 
+#include <memory>
+
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
 #include "ash/wm/workspace/phantom_window_controller.h"
 #include "base/i18n/rtl.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/user_metrics.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/geometry/vector2d.h"
@@ -215,7 +216,7 @@ void FrameSizeButton::UpdateSnapType(const ui::LocatedEvent& event) {
     aura::Window* window = frame_->GetNativeWindow();
     if (!phantom_window_controller_.get()) {
       phantom_window_controller_ =
-          base::MakeUnique<PhantomWindowController>(window);
+          std::make_unique<PhantomWindowController>(window);
     }
     gfx::Rect phantom_bounds_in_screen =
         (snap_type_ == SNAP_LEFT)

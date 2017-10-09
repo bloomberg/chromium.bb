@@ -4,9 +4,10 @@
 
 #include "ash/first_run/desktop_cleaner.h"
 
+#include <memory>
+
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
-#include "base/memory/ptr_util.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_observer.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -96,7 +97,7 @@ DesktopCleaner::DesktopCleaner() {
   for (size_t i = 0; i < arraysize(kContainerIdsToHide); ++i) {
     aura::Window* container =
         Shell::GetContainer(root_window, kContainerIdsToHide[i]);
-    container_hiders_.push_back(base::MakeUnique<ContainerHider>(container));
+    container_hiders_.push_back(std::make_unique<ContainerHider>(container));
   }
   notification_blocker_.reset(new NotificationBlocker());
 }

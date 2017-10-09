@@ -4,10 +4,11 @@
 
 #include "ash/touch_hud/mus/touch_hud_application.h"
 
+#include <utility>
+
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/touch_hud/touch_hud_renderer.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "services/service_manager/public/cpp/connector.h"

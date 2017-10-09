@@ -4,7 +4,8 @@
 
 #include "ash/rotator/screen_rotation_animation.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/time/time.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_delegate.h"
@@ -30,8 +31,8 @@ ScreenRotationAnimation::ScreenRotationAnimation(ui::Layer* layer,
       initial_opacity_(initial_opacity),
       target_opacity_(target_opacity) {
   std::unique_ptr<ui::InterpolatedTransform> rotation =
-      base::MakeUnique<ui::InterpolatedTransformAboutPivot>(
-          pivot, base::MakeUnique<ui::InterpolatedRotation>(start_degrees,
+      std::make_unique<ui::InterpolatedTransformAboutPivot>(
+          pivot, std::make_unique<ui::InterpolatedRotation>(start_degrees,
                                                             end_degrees));
 
   // Use the target transform/bounds in case the layer is already animating.
