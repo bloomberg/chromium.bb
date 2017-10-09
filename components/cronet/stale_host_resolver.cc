@@ -237,7 +237,7 @@ int StaleHostResolver::RequestImpl::Start(
   handle_ = new Handle(this);
   *out_req = std::unique_ptr<net::HostResolver::Request>(handle_);
 
-  if (cache_rv != net::ERR_DNS_CACHE_MISS && usable_callback.Run(stale_info)) {
+  if (cache_rv == net::OK && usable_callback.Run(stale_info)) {
     stale_error_ = cache_rv;
     stale_addresses_ = cache_addresses;
     // |stale_timer_| is deleted when the Request is deleted, so it's safe to

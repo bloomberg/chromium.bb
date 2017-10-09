@@ -151,13 +151,16 @@ class StaleHostResolverTest : public testing::Test {
   }
 
   // Creates a cache entry for |kHostname| that is |age_sec| seconds old.
-  void CreateCacheEntry(int age_sec) {
+  void CreateCacheEntry(int age_sec, int error) {
     DCHECK(resolver_);
     DCHECK(resolver_->GetHostCache());
 
     base::TimeDelta ttl(base::TimeDelta::FromSeconds(kCacheEntryTTLSec));
     net::HostCache::Key key(kHostname, net::ADDRESS_FAMILY_IPV4, 0);
-    net::HostCache::Entry entry(net::OK, MakeAddressList(kCacheAddress), ttl);
+    net::HostCache::Entry entry(
+        error,
+        error == net::OK ? MakeAddressList(kCacheAddress) : net::AddressList(),
+        ttl);
     base::TimeDelta age = base::TimeDelta::FromSeconds(age_sec);
     base::TimeTicks then = base::TimeTicks::Now() - age;
     resolver_->GetHostCache()->Set(key, entry, then, ttl);
@@ -299,7 +302,7 @@ TEST_F(StaleHostResolverTest, Network) {
 
 TEST_F(StaleHostResolverTest, FreshCache) {
   CreateResolver();
-  CreateCacheEntry(kAgeFreshSec);
+  CreateCacheEntry(kAgeFreshSec, net::OK);
 
   Resolve();
 
@@ -314,7 +317,7 @@ TEST_F(StaleHostResolverTest, FreshCache) {
 TEST_F(StaleHostResolverTest, StaleCache) {
   SetStaleDelay(kNoStaleDelaySec);
   CreateResolver();
-  CreateCacheEntry(kAgeExpiredSec);
+  CreateCacheEntry(kAgeExpiredSec, net::OK);
 
   Resolve();
   WaitForResolve();
@@ -328,7 +331,7 @@ TEST_F(StaleHostResolverTest, StaleCache) {
 TEST_F(StaleHostResolverTest, NetworkWithStaleCache) {
   SetStaleDelay(kLongStaleDelaySec);
   CreateResolver();
-  CreateCacheEntry(kAgeExpiredSec);
+  CreateCacheEntry(kAgeExpiredSec, net::OK);
 
   Resolve();
   WaitForResolve();
@@ -356,7 +359,7 @@ TEST_F(StaleHostResolverTest, CancelWithNoCache) {
 TEST_F(StaleHostResolverTest, CancelWithStaleCache) {
   SetStaleDelay(kLongStaleDelaySec);
   CreateResolver();
-  CreateCacheEntry(kAgeExpiredSec);
+  CreateCacheEntry(kAgeExpiredSec, net::OK);
 
   Resolve();
 
@@ -380,39 +383,50 @@ TEST_F(StaleHostResolverTest, StaleUsability) {
     int age_sec;
     int stale_use;
     int network_changes;
+    int error;
 
     bool usable;
   } kUsabilityTestCases[] = {
       // Fresh data always accepted.
-      {0, 0, true, -1, 1, 0, true},
-      {1, 1, false, -1, 1, 0, true},
+      {0, 0, true, -1, 1, 0, net::OK, true},
+      {1, 1, false, -1, 1, 0, net::OK, true},
 
       // Unlimited expired time accepts non-zero time.
-      {0, 0, true, 1, 1, 0, true},
+      {0, 0, true, 1, 1, 0, net::OK, true},
 
       // Limited expired time accepts before but not after limit.
-      {2, 0, true, 1, 1, 0, true},
-      {2, 0, true, 3, 1, 0, false},
+      {2, 0, true, 1, 1, 0, net::OK, true},
+      {2, 0, true, 3, 1, 0, net::OK, false},
 
       // Unlimited stale uses accepts first and later uses.
-      {2, 0, true, 1, 1, 0, true},
-      {2, 0, true, 1, 9, 0, true},
+      {2, 0, true, 1, 1, 0, net::OK, true},
+      {2, 0, true, 1, 9, 0, net::OK, true},
 
       // Limited stale uses accepts up to and including limit.
-      {2, 2, true, 1, 1, 0, true},
-      {2, 2, true, 1, 2, 0, true},
-      {2, 2, true, 1, 3, 0, false},
-      {2, 2, true, 1, 9, 0, false},
+      {2, 2, true, 1, 1, 0, net::OK, true},
+      {2, 2, true, 1, 2, 0, net::OK, true},
+      {2, 2, true, 1, 3, 0, net::OK, false},
+      {2, 2, true, 1, 9, 0, net::OK, false},
 
       // Allowing other networks accepts zero or more network changes.
-      {2, 0, true, 1, 1, 0, true},
-      {2, 0, true, 1, 1, 1, true},
-      {2, 0, true, 1, 1, 9, true},
+      {2, 0, true, 1, 1, 0, net::OK, true},
+      {2, 0, true, 1, 1, 1, net::OK, true},
+      {2, 0, true, 1, 1, 9, net::OK, true},
 
       // Disallowing other networks only accepts zero network changes.
-      {2, 0, false, 1, 1, 0, true},
-      {2, 0, false, 1, 1, 1, false},
-      {2, 0, false, 1, 1, 9, false},
+      {2, 0, false, 1, 1, 0, net::OK, true},
+      {2, 0, false, 1, 1, 1, net::OK, false},
+      {2, 0, false, 1, 1, 9, net::OK, false},
+
+      // Errors are only accepted if fresh.
+      {0, 0, true, -1, 1, 0, net::ERR_NAME_NOT_RESOLVED, true},
+      {1, 1, false, -1, 1, 0, net::ERR_NAME_NOT_RESOLVED, true},
+      {0, 0, true, 1, 1, 0, net::ERR_NAME_NOT_RESOLVED, false},
+      {2, 0, true, 1, 1, 0, net::ERR_NAME_NOT_RESOLVED, false},
+      {2, 0, true, 1, 1, 0, net::ERR_NAME_NOT_RESOLVED, false},
+      {2, 2, true, 1, 2, 0, net::ERR_NAME_NOT_RESOLVED, false},
+      {2, 0, true, 1, 1, 1, net::ERR_NAME_NOT_RESOLVED, false},
+      {2, 0, false, 1, 1, 0, net::ERR_NAME_NOT_RESOLVED, false},
   };
 
   SetStaleDelay(kNoStaleDelaySec);
@@ -424,7 +438,7 @@ TEST_F(StaleHostResolverTest, StaleUsability) {
     SetStaleUsability(test_case.max_expired_time_sec, test_case.max_stale_uses,
                       test_case.allow_other_network);
     CreateResolver();
-    CreateCacheEntry(kCacheEntryTTLSec + test_case.age_sec);
+    CreateCacheEntry(kCacheEntryTTLSec + test_case.age_sec, test_case.error);
     for (int j = 0; j < test_case.network_changes; ++j)
       OnNetworkChange();
     for (int j = 0; j < test_case.stale_use - 1; ++j)
@@ -433,11 +447,24 @@ TEST_F(StaleHostResolverTest, StaleUsability) {
     Resolve();
     WaitForResolve();
     EXPECT_TRUE(resolve_complete()) << i;
-    EXPECT_EQ(net::OK, resolve_error()) << i;
-    EXPECT_EQ(1u, resolve_addresses().size()) << i;
-    {
-      const char* expected = test_case.usable ? kCacheAddress : kNetworkAddress;
-      EXPECT_EQ(expected, resolve_addresses()[0].ToStringWithoutPort()) << i;
+
+    if (test_case.error == net::OK) {
+      EXPECT_EQ(test_case.error, resolve_error()) << i;
+      EXPECT_EQ(1u, resolve_addresses().size()) << i;
+      {
+        const char* expected =
+            test_case.usable ? kCacheAddress : kNetworkAddress;
+        EXPECT_EQ(expected, resolve_addresses()[0].ToStringWithoutPort()) << i;
+      }
+    } else {
+      if (test_case.usable) {
+        EXPECT_EQ(test_case.error, resolve_error()) << i;
+      } else {
+        EXPECT_EQ(net::OK, resolve_error()) << i;
+        EXPECT_EQ(1u, resolve_addresses().size()) << i;
+        EXPECT_EQ(kNetworkAddress, resolve_addresses()[0].ToStringWithoutPort())
+            << i;
+      }
     }
 
     DestroyResolver();
@@ -492,7 +519,7 @@ TEST_F(StaleHostResolverTest, CreatedByContext) {
 
   // Note: Experimental config above sets 0ms stale delay.
   SetResolver(context->host_resolver());
-  CreateCacheEntry(kAgeExpiredSec);
+  CreateCacheEntry(kAgeExpiredSec, net::OK);
 
   Resolve();
   EXPECT_FALSE(resolve_complete());
