@@ -3694,13 +3694,13 @@ TEST_F(NavigationControllerTest, DontShowRendererURLInNewTabAfterCommit) {
   EXPECT_EQ(url1, controller.GetVisibleEntry()->GetURL());
 }
 
-// Tests that IsInPageNavigation returns appropriate results.  Prevents
-// regression for bug 1126349.
-TEST_F(NavigationControllerTest, IsInPageNavigation) {
+// Tests that IsURLSameDocumentNavigation returns appropriate results.
+// Prevents regression for bug 1126349.
+TEST_F(NavigationControllerTest, IsSameDocumentNavigation) {
   NavigationControllerImpl& controller = controller_impl();
   const GURL url("http://www.google.com/home.html");
 
-  // If the renderer claims it performed an in-page navigation from
+  // If the renderer claims it performed an same-document navigation from
   // about:blank, trust the renderer.
   // This can happen when an iframe is created and populated via
   // document.write(), then tries to perform a fragment navigation.
@@ -3712,67 +3712,68 @@ TEST_F(NavigationControllerTest, IsInPageNavigation) {
   const GURL blank_url(url::kAboutBlankURL);
   const url::Origin blank_origin;
   main_test_rfh()->NavigateAndCommitRendererInitiated(true, blank_url);
-  EXPECT_TRUE(controller.IsURLInPageNavigation(url, url::Origin(url), true,
-                                               main_test_rfh()));
+  EXPECT_TRUE(controller.IsURLSameDocumentNavigation(url, url::Origin(url),
+                                                     true, main_test_rfh()));
 
   // Navigate to URL with no refs.
   NavigationSimulator::NavigateAndCommitFromDocument(url, main_test_rfh());
 
-  // Reloading the page is not an in-page navigation.
-  EXPECT_FALSE(controller.IsURLInPageNavigation(url, url::Origin(url), false,
-                                                main_test_rfh()));
+  // Reloading the page is not a same-document navigation.
+  EXPECT_FALSE(controller.IsURLSameDocumentNavigation(url, url::Origin(url),
+                                                      false, main_test_rfh()));
   const GURL other_url("http://www.google.com/add.html");
-  EXPECT_FALSE(controller.IsURLInPageNavigation(
+  EXPECT_FALSE(controller.IsURLSameDocumentNavigation(
       other_url, url::Origin(other_url), false, main_test_rfh()));
   const GURL url_with_ref("http://www.google.com/home.html#my_ref");
-  EXPECT_TRUE(controller.IsURLInPageNavigation(
+  EXPECT_TRUE(controller.IsURLSameDocumentNavigation(
       url_with_ref, url::Origin(url_with_ref), true, main_test_rfh()));
 
   // Navigate to URL with refs.
   NavigationSimulator::NavigateAndCommitFromDocument(url_with_ref,
                                                      main_test_rfh());
 
-  // Reloading the page is not an in-page navigation.
-  EXPECT_FALSE(controller.IsURLInPageNavigation(
+  // Reloading the page is not a same-document navigation.
+  EXPECT_FALSE(controller.IsURLSameDocumentNavigation(
       url_with_ref, url::Origin(url_with_ref), false, main_test_rfh()));
-  EXPECT_FALSE(controller.IsURLInPageNavigation(url, url::Origin(url), false,
-                                                main_test_rfh()));
-  EXPECT_FALSE(controller.IsURLInPageNavigation(
+  EXPECT_FALSE(controller.IsURLSameDocumentNavigation(url, url::Origin(url),
+                                                      false, main_test_rfh()));
+  EXPECT_FALSE(controller.IsURLSameDocumentNavigation(
       other_url, url::Origin(other_url), false, main_test_rfh()));
   const GURL other_url_with_ref("http://www.google.com/home.html#my_other_ref");
-  EXPECT_TRUE(controller.IsURLInPageNavigation(other_url_with_ref,
-                                               url::Origin(other_url_with_ref),
-                                               true, main_test_rfh()));
+  EXPECT_TRUE(controller.IsURLSameDocumentNavigation(
+      other_url_with_ref, url::Origin(other_url_with_ref), true,
+      main_test_rfh()));
 
-  // Going to the same url again will be considered in-page
-  // if the renderer says it is even if the navigation type isn't IN_PAGE.
-  EXPECT_TRUE(controller.IsURLInPageNavigation(
+  // Going to the same url again will be considered same-document navigation
+  // if the renderer says it is even if the navigation type isn't SAME_DOCUMENT.
+  EXPECT_TRUE(controller.IsURLSameDocumentNavigation(
       url_with_ref, url::Origin(url_with_ref), true, main_test_rfh()));
 
-  // Going back to the non ref url will be considered in-page if the navigation
-  // type is IN_PAGE.
-  EXPECT_TRUE(controller.IsURLInPageNavigation(url, url::Origin(url), true,
-                                               main_test_rfh()));
+  // Going back to the non ref url will be considered same-document navigation
+  // if the navigation type is SAME_DOCUMENT.
+  EXPECT_TRUE(controller.IsURLSameDocumentNavigation(url, url::Origin(url),
+                                                     true, main_test_rfh()));
 
-  // If the renderer says this is a same-origin in-page navigation, believe it.
-  // This is the pushState/replaceState case.
-  EXPECT_TRUE(controller.IsURLInPageNavigation(
+  // If the renderer says this is a same-origin same-document navigation,
+  // believe it. This is the pushState/replaceState case.
+  EXPECT_TRUE(controller.IsURLSameDocumentNavigation(
       other_url, url::Origin(other_url), true, main_test_rfh()));
 
   // Don't believe the renderer if it claims a cross-origin navigation is
-  // in-page.
+  // a same-document navigation.
   const GURL different_origin_url("http://www.example.com");
   MockRenderProcessHost* rph = main_test_rfh()->GetProcess();
   EXPECT_EQ(0, rph->bad_msg_count());
-  EXPECT_FALSE(controller.IsURLInPageNavigation(
+  EXPECT_FALSE(controller.IsURLSameDocumentNavigation(
       different_origin_url, url::Origin(different_origin_url), true,
       main_test_rfh()));
   EXPECT_EQ(1, rph->bad_msg_count());
 }
 
-// Tests that IsInPageNavigation behaves properly with the
+// Tests that IsURLSameDocumentNavigation behaves properly with the
 // allow_universal_access_from_file_urls flag.
-TEST_F(NavigationControllerTest, IsInPageNavigationWithUniversalFileAccess) {
+TEST_F(NavigationControllerTest,
+       IsSameDocumentNavigationWithUniversalFileAccess) {
   NavigationControllerImpl& controller = controller_impl();
 
   // Test allow_universal_access_from_file_urls flag.
@@ -3784,14 +3785,15 @@ TEST_F(NavigationControllerTest, IsInPageNavigationWithUniversalFileAccess) {
   prefs = test_rvh()->GetWebkitPreferences();
   EXPECT_TRUE(prefs.allow_universal_access_from_file_urls);
 
-  // Allow in page navigation to be cross-origin if existing URL is file scheme.
+  // Allow same-document navigation to be cross-origin if existing URL is file
+  // scheme.
   const GURL file_url("file:///foo/index.html");
   const url::Origin file_origin(file_url);
   main_test_rfh()->NavigateAndCommitRendererInitiated(true, file_url);
   EXPECT_TRUE(
       file_origin.IsSameOriginWith(main_test_rfh()->GetLastCommittedOrigin()));
   EXPECT_EQ(0, rph->bad_msg_count());
-  EXPECT_TRUE(controller.IsURLInPageNavigation(
+  EXPECT_TRUE(controller.IsURLSameDocumentNavigation(
       different_origin_url, url::Origin(different_origin_url), true,
       main_test_rfh()));
   EXPECT_EQ(0, rph->bad_msg_count());
@@ -3814,18 +3816,19 @@ TEST_F(NavigationControllerTest, IsInPageNavigationWithUniversalFileAccess) {
   contents()->GetMainFrame()->SendNavigateWithParams(&params);
 
   // At this point, we should still consider the current origin to be file://,
-  // so that a file URL would still be in-page.  See https://crbug.com/553418.
+  // so that a file URL would still be a same-document navigation.  See
+  // https://crbug.com/553418.
   EXPECT_TRUE(
       file_origin.IsSameOriginWith(main_test_rfh()->GetLastCommittedOrigin()));
-  EXPECT_TRUE(controller.IsURLInPageNavigation(file_url, url::Origin(file_url),
-                                               true, main_test_rfh()));
+  EXPECT_TRUE(controller.IsURLSameDocumentNavigation(
+      file_url, url::Origin(file_url), true, main_test_rfh()));
   EXPECT_EQ(0, rph->bad_msg_count());
 
   // Don't honor allow_universal_access_from_file_urls if actual URL is
   // not file scheme.
   const GURL url("http://www.google.com/home.html");
   main_test_rfh()->NavigateAndCommitRendererInitiated(true, url);
-  EXPECT_FALSE(controller.IsURLInPageNavigation(
+  EXPECT_FALSE(controller.IsURLSameDocumentNavigation(
       different_origin_url, url::Origin(different_origin_url), true,
       main_test_rfh()));
   EXPECT_EQ(1, rph->bad_msg_count());

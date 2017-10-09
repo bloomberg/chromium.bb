@@ -542,18 +542,18 @@ void NavigatorImpl::DidNavigate(
   FrameTreeNode* frame_tree_node = render_frame_host->frame_tree_node();
   FrameTree* frame_tree = frame_tree_node->frame_tree();
 
-  bool is_navigation_within_page = controller_->IsURLInPageNavigation(
+  bool is_same_document_navigation = controller_->IsURLSameDocumentNavigation(
       params.url, params.origin, params.was_within_same_document,
       render_frame_host);
 
-  // If a frame claims it navigated within page, it must be the current frame,
-  // not a pending one.
-  if (is_navigation_within_page &&
+  // If a frame claims the navigation was same-document, it must be the current
+  // frame, not a pending one.
+  if (is_same_document_navigation &&
       render_frame_host !=
           frame_tree_node->render_manager()->current_frame_host()) {
     bad_message::ReceivedBadMessage(render_frame_host->GetProcess(),
                                     bad_message::NI_IN_PAGE_NAVIGATION);
-    is_navigation_within_page = false;
+    is_same_document_navigation = false;
   }
 
   if (ui::PageTransitionIsMainFrame(params.transition)) {
@@ -574,7 +574,7 @@ void NavigatorImpl::DidNavigate(
       }
 
       // Run tasks that must execute just before the commit.
-      delegate_->DidNavigateMainFramePreCommit(is_navigation_within_page);
+      delegate_->DidNavigateMainFramePreCommit(is_same_document_navigation);
     }
   }
 
@@ -592,7 +592,7 @@ void NavigatorImpl::DidNavigate(
 
   // Navigating to a new location means a new, fresh set of http headers and/or
   // <meta> elements - we need to reset CSP and Feature Policy.
-  if (!is_navigation_within_page) {
+  if (!is_same_document_navigation) {
     render_frame_host->ResetContentSecurityPolicies();
     frame_tree_node->ResetCspHeaders();
     frame_tree_node->ResetFeaturePolicyHeader();
@@ -628,7 +628,7 @@ void NavigatorImpl::DidNavigate(
   int old_entry_count = controller_->GetEntryCount();
   LoadCommittedDetails details;
   bool did_navigate = controller_->RendererDidNavigate(
-      render_frame_host, params, &details, is_navigation_within_page,
+      render_frame_host, params, &details, is_same_document_navigation,
       navigation_handle.get());
 
   // If the history length and/or offset changed, update other renderers in the
@@ -662,7 +662,7 @@ void NavigatorImpl::DidNavigate(
 
   // After setting the last committed origin, reset the feature policy in the
   // RenderFrameHost to a blank policy based on the parent frame.
-  if (!is_navigation_within_page)
+  if (!is_same_document_navigation)
     render_frame_host->ResetFeaturePolicy();
 
   // Send notification about committed provisional loads. This notification is

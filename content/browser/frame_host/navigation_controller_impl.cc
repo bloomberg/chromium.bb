@@ -1600,27 +1600,27 @@ int NavigationControllerImpl::GetIndexOfEntry(
   return -1;
 }
 
-// There are two general cases where a navigation is "in page":
+// There are two general cases where a navigation is "same-document":
 // 1. A fragment navigation, in which the url is kept the same except for the
 //    reference fragment.
 // 2. A history API navigation (pushState and replaceState). This case is
-//    always in-page, but the urls are not guaranteed to match excluding the
-//    fragment. The relevant spec allows pushState/replaceState to any URL on
-//    the same origin.
+//    always same-document, but the urls are not guaranteed to match excluding
+//    the fragment. The relevant spec allows pushState/replaceState to any URL
+//    on the same origin.
 // However, due to reloads, even identical urls are *not* guaranteed to be
-// in-page navigations, we have to trust the renderer almost entirely.
+// same-document navigations, we have to trust the renderer almost entirely.
 // The one thing we do know is that cross-origin navigations will *never* be
-// in-page. Therefore, trust the renderer if the URLs are on the same origin,
-// and assume the renderer is malicious if a cross-origin navigation claims to
-// be in-page.
+// same-document. Therefore, trust the renderer if the URLs are on the same
+// origin, and assume the renderer is malicious if a cross-origin navigation
+// claims to be same-document.
 //
 // TODO(creis): Clean up and simplify the about:blank and origin checks below,
 // which are likely redundant with each other.  Be careful about data URLs vs
 // about:blank, both of which are unique origins and thus not considered equal.
-bool NavigationControllerImpl::IsURLInPageNavigation(
+bool NavigationControllerImpl::IsURLSameDocumentNavigation(
     const GURL& url,
     const url::Origin& origin,
-    bool renderer_says_in_page,
+    bool renderer_says_same_document,
     RenderFrameHost* rfh) const {
   RenderFrameHostImpl* rfhi = static_cast<RenderFrameHostImpl*>(rfh);
   GURL last_committed_url;
@@ -1656,11 +1656,11 @@ bool NavigationControllerImpl::IsURLInPageNavigation(
                         !prefs.web_security_enabled ||
                         (prefs.allow_universal_access_from_file_urls &&
                          committed_origin.scheme() == url::kFileScheme);
-  if (!is_same_origin && renderer_says_in_page) {
+  if (!is_same_origin && renderer_says_same_document) {
     bad_message::ReceivedBadMessage(rfh->GetProcess(),
                                     bad_message::NC_IN_PAGE_NAVIGATION);
   }
-  return is_same_origin && renderer_says_in_page;
+  return is_same_origin && renderer_says_same_document;
 }
 
 void NavigationControllerImpl::CopyStateFrom(const NavigationController& temp,
