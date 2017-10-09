@@ -353,9 +353,16 @@
   <message name="IDS_SETTINGS_SET_WALLPAPER" desc="Name of the control which allows the user to set the wallpaper.">
     Wallpaper
   </message>
-  <message name="IDS_SETTINGS_THEMES" desc="Name of the control which allows the user to get a theme for the browser.">
-    Themes
-  </message>
+  <if expr="chromeos">
+    <message name="IDS_SETTINGS_THEMES" desc="Name of the control which allows the user to get a theme for the browser.">
+      Browser themes
+    </message>
+  </if>
+  <if expr="not chromeos">
+    <message name="IDS_SETTINGS_THEMES" desc="Name of the control which allows the user to get a theme for the browser.">
+      Themes
+    </message>
+  </if>
   <if expr="is_linux and not chromeos">
     <message name="IDS_SETTINGS_SYSTEM_THEME" desc="Text of the label describing the system (GTK+) browser theme on Linux">
       GTK+
