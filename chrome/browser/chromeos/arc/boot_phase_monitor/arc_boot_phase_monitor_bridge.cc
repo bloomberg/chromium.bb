@@ -267,9 +267,4 @@ void ArcBootPhaseMonitorBridge::SetDelegateForTesting(
   delegate_ = std::move(delegate);
 }
 
-void ArcBootPhaseMonitorBridge::SetThrottleForTesting(
-    std::unique_ptr<ArcInstanceThrottle> throttle) {
-  throttle_ = std::move(throttle);
-}
-
 }  // namespace arc

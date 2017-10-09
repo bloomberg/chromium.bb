@@ -9,7 +9,6 @@
 #include "base/command_line.h"
 #include "base/threading/platform_thread.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
-#include "chrome/browser/chromeos/arc/boot_phase_monitor/arc_instance_throttle.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/test/base/testing_profile.h"
@@ -319,17 +318,22 @@ TEST_F(ArcBootPhaseMonitorBridgeTest,
   EXPECT_EQ(1U, disable_cpu_restriction_counter());
 }
 
-// Does the same but with a throttle object. This emulates the situation where
-// ARC instance finishes booting before other conditions (|extentions_ready_|
-// and |enabled_by_policy_|) are met. |disable_cpu_restriction_counter| should
-// stay 0 in this case because the throttle already has the control.
-TEST_F(ArcBootPhaseMonitorBridgeTest, TestOnExtensionsReady_WithThrottle) {
-  boot_phase_monitor_bridge()->SetThrottleForTesting(
-      std::make_unique<ArcInstanceThrottle>());
-  boot_phase_monitor_bridge()->OnExtensionsReadyForTesting();
+// Does the same but after ARC boot is completed. This emulates the
+// situation where ARC instance finishes booting before other conditions
+// (|extentions_ready_| and |enabled_by_policy_|) are met.
+// |disable_cpu_restriction_counter| should stay 0 in this case because
+// ArcInstanceThrottle already has the control.
+TEST_F(ArcBootPhaseMonitorBridgeTest,
+       TestOnExtensionsReady_AfterBootCompleted) {
+  // Tell |arc_session_manager_| that this is not opt-in boot.
+  arc_session_manager()->set_directly_started_for_testing(true);
+
   GetPrefs()->SetManagedPref(prefs::kArcEnabled,
                              std::make_unique<base::Value>(true));
   boot_phase_monitor_bridge()->OnArcPlayStoreEnabledChanged(true);
+
+  boot_phase_monitor_bridge()->OnBootCompleted();
+  boot_phase_monitor_bridge()->OnExtensionsReadyForTesting();
   EXPECT_EQ(0U, disable_cpu_restriction_counter());
 }
 
