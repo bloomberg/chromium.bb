@@ -104,6 +104,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   ~NavigationRequest() override;
 
   // Called on the UI thread by the Navigator to start the navigation.
+  // The NavigationRequest can be deleted while BeginNavigation() is called.
   void BeginNavigation();
 
   const CommonNavigationParams& common_params() const { return common_params_; }
