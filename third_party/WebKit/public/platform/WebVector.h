@@ -34,7 +34,6 @@
 #include "WebCommon.h"
 #include "base/logging.h"
 
-#include <algorithm>
 #include <vector>
 
 namespace blink {
