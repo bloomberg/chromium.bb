@@ -712,19 +712,23 @@ hooks = [
     # official chrome builds or cross compiling.
     'name': 'sysroot',
     'pattern': '.',
+    'condition': 'checkout_linux',
     'action': ['python', 'src/build/linux/sysroot_scripts/install-sysroot.py',
                '--running-as-hook'],
   },
   {
-    # Update the Windows toolchain if necessary.
+    # Update the Windows toolchain if necessary.  Must run before 'clang' below.
     'name': 'win_toolchain',
     'pattern': '.',
+    # TODO(thakis): Put some condition here. Not just host_os == 'win', because
+    # we also need this for (mac|linux) -> win cross builds.
     'action': ['python', 'src/build/vs_toolchain.py', 'update'],
   },
   {
     # Update the Mac toolchain if necessary.
     'name': 'mac_toolchain',
     'pattern': '.',
+    'condition': 'checkout_mac',
     'action': ['python', 'src/build/mac_toolchain.py'],
   },
   # Pull binutils for linux, enabled debug fission for faster linking /
@@ -733,17 +737,17 @@ hooks = [
   {
     'name': 'binutils',
     'pattern': 'src/third_party/binutils',
+    'condition': 'host_os == "linux"',
     'action': [
         'python',
         'src/third_party/binutils/download.py',
     ],
   },
   {
-    # Pull clang if needed or requested via GYP_DEFINES.
     # Note: On Win, this should run after win_toolchain, as it may use it.
     'name': 'clang',
     'pattern': '.',
-    'action': ['python', 'src/tools/clang/scripts/update.py', '--if-needed'],
+    'action': ['python', 'src/tools/clang/scripts/update.py'],
   },
   {
     # Update LASTCHANGE.
@@ -899,6 +903,7 @@ hooks = [
   {
     'name': 'syzygy-binaries',
     'pattern': '.',
+    'condition': 'host_os == "win"',
     'action': ['python',
                'src/build/get_syzygy_binaries.py',
                '--output-dir=src/third_party/syzygy/binaries',
