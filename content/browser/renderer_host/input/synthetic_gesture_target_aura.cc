@@ -15,6 +15,7 @@
 #include "ui/aura/event_injector.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/events/blink/blink_event_util.h"
 #include "ui/events/event_sink.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
@@ -98,74 +99,14 @@ void SyntheticGestureTargetAura::DispatchWebMouseWheelEventToPlatform(
     return;
 }
 
-namespace {
-
-ui::EventType
-WebMouseEventTypeToEventType(blink::WebInputEvent::Type web_type) {
-  switch (web_type) {
-    case blink::WebInputEvent::kMouseDown:
-      return ui::ET_MOUSE_PRESSED;
-
-    case blink::WebInputEvent::kMouseUp:
-      return ui::ET_MOUSE_RELEASED;
-
-    case blink::WebInputEvent::kMouseMove:
-      return ui::ET_MOUSE_MOVED;
-
-    case blink::WebInputEvent::kMouseEnter:
-      return ui::ET_MOUSE_ENTERED;
-
-    case blink::WebInputEvent::kMouseLeave:
-      return ui::ET_MOUSE_EXITED;
-
-    case blink::WebInputEvent::kContextMenu:
-      NOTREACHED() << "WebInputEvent::ContextMenu not supported by"
-          "SyntheticGestureTargetAura";
-
-    default:
-      NOTREACHED();
-  }
-
-  return ui::ET_UNKNOWN;
-}
-
-int WebEventModifiersToEventFlags(int modifiers) {
-  int flags = 0;
-
-  if (modifiers & blink::WebInputEvent::kLeftButtonDown)
-    flags |= ui::EF_LEFT_MOUSE_BUTTON;
-  if (modifiers & blink::WebInputEvent::kMiddleButtonDown)
-    flags |= ui::EF_MIDDLE_MOUSE_BUTTON;
-  if (modifiers & blink::WebInputEvent::kRightButtonDown)
-    flags |= ui::EF_RIGHT_MOUSE_BUTTON;
-  if (modifiers & blink::WebInputEvent::kBackButtonDown)
-    flags |= ui::EF_BACK_MOUSE_BUTTON;
-  if (modifiers & blink::WebInputEvent::kForwardButtonDown)
-    flags |= ui::EF_FORWARD_MOUSE_BUTTON;
-
-  return flags;
-}
-
-ui::EventPointerType WebMousePointerTypeToEventPointerType(
-    blink::WebPointerProperties::PointerType type) {
-  if (type == blink::WebPointerProperties::PointerType::kMouse)
-    return ui::EventPointerType::POINTER_TYPE_MOUSE;
-  if (type == blink::WebPointerProperties::PointerType::kPen)
-    return ui::EventPointerType::POINTER_TYPE_PEN;
-  NOTREACHED() << "Unexpected mouse event pointer type";
-  return ui::EventPointerType::POINTER_TYPE_UNKNOWN;
-}
-
-}  // namespace
-
 void SyntheticGestureTargetAura::DispatchWebMouseEventToPlatform(
     const blink::WebMouseEvent& web_mouse_event,
     const ui::LatencyInfo& latency_info) {
   ui::EventType event_type =
-      WebMouseEventTypeToEventType(web_mouse_event.GetType());
-  int flags = WebEventModifiersToEventFlags(web_mouse_event.GetModifiers());
+      ui::WebEventTypeToEventType(web_mouse_event.GetType());
+  int flags = ui::WebEventModifiersToEventFlags(web_mouse_event.GetModifiers());
   ui::PointerDetails pointer_details(
-      WebMousePointerTypeToEventPointerType(web_mouse_event.pointer_type));
+      ui::WebPointerTypeToEventPointerType(web_mouse_event.pointer_type));
   ui::MouseEvent mouse_event(event_type, gfx::Point(), gfx::Point(),
                              ui::EventTimeForNow(), flags, flags,
                              pointer_details);
