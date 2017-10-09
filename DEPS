@@ -26,6 +26,11 @@
 #  git commit -a
 #  git cl upload
 
+gclient_gn_args_file = 'src/build/config/gclient_args.gni'
+gclient_gn_args = [
+  'checkout_nacl',
+]
+
 
 vars = {
   # By default, we should check out everything needed to run on the main
@@ -33,6 +38,10 @@ vars = {
   # to skip things are not strictly needed to build chromium for development
   # purposes.
   'checkout_configuration': 'default',
+
+  # Check out and download nacl by default. This can be disabled e.g. with
+  # custom_vars.
+  'checkout_nacl': 'True',
 
   # By default, do not check out src-internal. This can be overridden e.g. with
   # custom_vars.
@@ -204,8 +213,10 @@ deps = {
   'src/media/cdm/api':
     Var('chromium_git') + '/chromium/cdm.git' + '@' + '1f49c55d3151a4e1eec088befee5f578fea81f4b',
 
-  'src/native_client':
-    Var('chromium_git') + '/native_client/src/native_client.git' + '@' + Var('nacl_revision'),
+  'src/native_client': {
+      'url': Var('chromium_git') + '/native_client/src/native_client.git' + '@' + Var('nacl_revision'),
+      'condition': 'checkout_nacl',
+  },
 
   'src/third_party/SPIRV-Tools/src':
     Var('chromium_git') + '/external/github.com/KhronosGroup/SPIRV-Tools.git' + '@' + '9166854ac93ef81b026e943ccd230fed6c8b8d3c',
@@ -342,7 +353,7 @@ deps = {
   # GNU binutils assembler for x86-32.
   'src/third_party/gnu_binutils': {
       'url': Var('chromium_git') + '/native_client/deps/third_party/gnu_binutils.git' + '@' + 'f4003433b61b25666565690caf3d7a7a1a4ec436',
-      'condition': 'checkout_win',
+      'condition': 'checkout_nacl and checkout_win',
   },
 
   'src/third_party/gperf': {
@@ -454,7 +465,7 @@ deps = {
   # GNU binutils assembler for x86-64.
   'src/third_party/mingw-w64/mingw/bin': {
       'url': Var('chromium_git') + '/native_client/deps/third_party/mingw-w64/mingw/bin.git' + '@' + '3cc8b140b883a9fe4986d12cfd46c16a093d3527',
-      'condition': 'checkout_win',
+      'condition': 'checkout_nacl and checkout_win',
   },
 
   # Graphics buffer allocator for Chrome OS.
@@ -477,7 +488,7 @@ deps = {
   # Binaries for nacl sdk.
   'src/third_party/nacl_sdk_binaries': {
       'url': Var('chromium_git') + '/chromium/deps/nacl_sdk_binaries.git' + '@' + '759dfca03bdc774da7ecbf974f6e2b84f43699a5',
-      'condition': 'checkout_win',
+      'condition': 'checkout_nacl and checkout_win',
   },
 
   'src/third_party/netty-tcnative/src': {
@@ -698,6 +709,7 @@ hooks = [
     # anywhere from 30 minutes to 4 hours depending on platform to build.
     'name': 'nacltools',
     'pattern': '.',
+    'condition': 'checkout_nacl',
     'action': [
         'python',
         'src/build/download_nacl_toolchains.py',
