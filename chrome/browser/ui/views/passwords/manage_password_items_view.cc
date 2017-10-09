@@ -127,6 +127,8 @@ std::unique_ptr<views::Textfield> CreateUsernameEditable(
     const autofill::PasswordForm& form) {
   auto editable = base::MakeUnique<views::Textfield>();
   editable->SetText(form.username_value);
+  editable->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_USERNAME_LABEL));
   return editable;
 }
 
@@ -144,6 +146,7 @@ std::unique_ptr<views::Label> CreatePasswordLabel(
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   if (form.federation_origin.unique() && !is_password_visible)
     label->SetObscured(true);
+  label->SetFocusBehavior(views::View::FocusBehavior::ACCESSIBLE_ONLY);
   return label;
 }
 
