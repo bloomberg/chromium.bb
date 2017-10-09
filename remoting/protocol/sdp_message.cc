@@ -5,6 +5,7 @@
 #include "remoting/protocol/sdp_message.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
@@ -48,8 +49,8 @@ bool SdpMessage::PreferVideoCodec(const std::string& codec) {
   if (!has_video_) {
     return false;
   }
-  std::string payload_type;
-  if (!FindCodec(codec, nullptr, &payload_type)) {
+  std::vector<std::pair<int, std::string>> payload_types = FindCodec(codec);
+  if (payload_types.empty()) {
     return false;
   }
 
@@ -71,15 +72,19 @@ bool SdpMessage::PreferVideoCodec(const std::string& codec) {
     }
 
     const auto first_codec_pos = fields.begin() + kSkipFields;
-    auto pos = std::find(first_codec_pos,
-                         fields.end(),
-                         base::StringPiece(payload_type));
-    // The codec has not been found in codec list.
-    if (pos == fields.end()) {
-      return false;
+
+    for (const auto& payload : payload_types) {
+      auto pos = std::find(first_codec_pos,
+                           fields.end(),
+                           base::StringPiece(payload.second));
+      // The codec has not been found in codec list.
+      if (pos == fields.end()) {
+        continue;
+      }
+
+      std::rotate(first_codec_pos, pos, pos + 1);
     }
 
-    std::rotate(first_codec_pos, pos, pos + 1);
     sdp_lines_[i] = base::JoinString(fields, " ");
     return true;
   }
@@ -93,27 +98,41 @@ bool SdpMessage::PreferVideoCodec(const std::string& codec) {
 bool SdpMessage::FindCodec(const std::string& codec,
                            int* line_num,
                            std::string* payload_type) const {
+  std::vector<std::pair<int, std::string>> payload_types = FindCodec(codec);
+  if (payload_types.empty()) {
+    return false;
+  }
+
+  if (line_num) {
+    *line_num = payload_types[0].first;
+  }
+  if (payload_type) {
+    *payload_type = std::move(payload_types[0].second);
+  }
+  return true;
+}
+
+std::vector<std::pair<int, std::string>> SdpMessage::FindCodec(
+    const std::string& codec) const {
   const std::string kRtpMapPrefix = "a=rtpmap:";
+  std::vector<std::pair<int, std::string>> results;
   for (size_t i = 0; i < sdp_lines_.size(); ++i) {
     const auto& line = sdp_lines_[i];
-    if (!base::StartsWith(line, kRtpMapPrefix, base::CompareCase::SENSITIVE))
+    if (!base::StartsWith(line, kRtpMapPrefix, base::CompareCase::SENSITIVE)) {
       continue;
+    }
     size_t space_pos = line.find(' ');
-    if (space_pos == std::string::npos)
+    if (space_pos == std::string::npos) {
       continue;
+    }
     if (line.substr(space_pos + 1, codec.size()) == codec &&
         line[space_pos + 1 + codec.size()] == '/') {
-      if (line_num) {
-        *line_num = i;
-      }
-      if (payload_type) {
-        *payload_type =
-            line.substr(kRtpMapPrefix.size(), space_pos - kRtpMapPrefix.size());
-      }
-      return true;
+      std::string payload_type =
+          line.substr(kRtpMapPrefix.size(), space_pos - kRtpMapPrefix.size());
+      results.push_back(std::make_pair(i, std::move(payload_type)));
     }
   }
-  return false;
+  return results;
 }
 
 }  // namespace protocol
