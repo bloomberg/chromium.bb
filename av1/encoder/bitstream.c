@@ -4711,22 +4711,6 @@ static void write_uncompressed_header_frame(AV1_COMP *cpi,
 #endif  // CONFIG_REFERENCE_BUFFER
       }
 
-#if CONFIG_FRAME_SIGN_BIAS
-#define FRAME_SIGN_BIAS_DEBUG 0
-#if FRAME_SIGN_BIAS_DEBUG
-      {
-        printf("\n\nENCODER: Frame=%d, show_frame=%d:", cm->current_video_frame,
-               cm->show_frame);
-        for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
-          printf(" sign_bias[%d]=%d", ref_frame,
-                 cm->ref_frame_sign_bias[ref_frame]);
-        }
-        printf("\n");
-      }
-#endif  // FRAME_SIGN_BIAS_DEBUG
-#undef FRAME_SIGN_BIAS_DEBUG
-#endif  // CONFIG_FRAME_SIGN_BIAS
-
 #if CONFIG_FRAME_SIZE
       if (cm->error_resilient_mode == 0) {
         write_frame_size_with_refs(cpi, wb);

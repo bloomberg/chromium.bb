@@ -4996,20 +4996,6 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
   if (cm->frame_type != S_FRAME)
 #endif  // CONFIG_OBU
     av1_setup_frame_sign_bias(cm);
-#define FRAME_SIGN_BIAS_DEBUG 0
-#if FRAME_SIGN_BIAS_DEBUG
-  {
-    printf("\n\nDECODER: Frame=%d, show_frame=%d:", cm->current_video_frame,
-           cm->show_frame);
-    MV_REFERENCE_FRAME ref_frame;
-    for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
-      printf(" sign_bias[%d]=%d", ref_frame,
-             cm->ref_frame_sign_bias[ref_frame]);
-    }
-    printf("\n");
-  }
-#endif  // FRAME_SIGN_BIAS_DEBUG
-#undef FRAME_SIGN_BIAS_DEBUG
 #endif  // CONFIG_FRAME_SIGN_BIAS
 #endif  // CONFIG_FRAME_MARKER
 
