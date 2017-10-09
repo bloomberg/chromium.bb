@@ -6,9 +6,7 @@ mojom = "//chrome/common/search.mojom"
 public_headers = [
   "//chrome/common/search/instant_types.h",
   "//chrome/common/search/ntp_logging_events.h",
-  "//components/ntp_tiles/tile_title_source.h",
-  "//components/ntp_tiles/tile_source.h",
-  "//components/ntp_tiles/tile_visual_type.h",
+  "//components/ntp_tiles/ntp_tile_impression.h",
   "//components/omnibox/common/omnibox_focus_state.h",
 ]
 traits_headers = [ "//chrome/common/instant_struct_traits.h" ]
@@ -18,9 +16,7 @@ deps = [
 ]
 type_mappings = [
   "chrome.mojom.NTPLoggingEventType=::NTPLoggingEventType",
-  "chrome.mojom.TileTitleSource=::ntp_tiles::TileTitleSource",
-  "chrome.mojom.TileSource=::ntp_tiles::TileSource",
-  "chrome.mojom.TileVisualType=::ntp_tiles::TileVisualType",
+  "chrome.mojom.NTPTileImpression=::ntp_tiles::NTPTileImpression",
   "chrome.mojom.OmniboxFocusState=::OmniboxFocusState",
   "chrome.mojom.OmniboxFocusChangeReason=::OmniboxFocusChangeReason",
   "chrome.mojom.InstantMostVisitedItem=::InstantMostVisitedItem",

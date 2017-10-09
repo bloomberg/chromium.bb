@@ -15,9 +15,7 @@
 #include "chrome/common/search/instant_types.h"
 #include "chrome/common/search/ntp_logging_events.h"
 #include "chrome/renderer/instant_restricted_id_cache.h"
-#include "components/ntp_tiles/tile_source.h"
-#include "components/ntp_tiles/tile_title_source.h"
-#include "components/ntp_tiles/tile_visual_type.h"
+#include "components/ntp_tiles/ntp_tile_impression.h"
 #include "components/omnibox/common/omnibox_focus_state.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
@@ -56,16 +54,10 @@ class SearchBox : public content::RenderFrameObserver,
   void LogEvent(NTPLoggingEventType event);
 
   // Sends LogMostVisitedImpression to the browser.
-  void LogMostVisitedImpression(int position,
-                                ntp_tiles::TileTitleSource tile_title_source,
-                                ntp_tiles::TileSource tile_source,
-                                ntp_tiles::TileVisualType tile_type);
+  void LogMostVisitedImpression(const ntp_tiles::NTPTileImpression& impression);
 
   // Sends LogMostVisitedNavigation to the browser.
-  void LogMostVisitedNavigation(int position,
-                                ntp_tiles::TileTitleSource tile_title_source,
-                                ntp_tiles::TileSource tile_source,
-                                ntp_tiles::TileVisualType tile_type);
+  void LogMostVisitedNavigation(const ntp_tiles::NTPTileImpression& impression);
 
   // Sends ChromeIdentityCheck to the browser.
   void CheckIsUserSignedInToChromeAs(const base::string16& identity);

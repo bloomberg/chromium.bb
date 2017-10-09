@@ -14,6 +14,7 @@
 #include "components/ntp_tiles/metrics.h"
 #include "components/ntp_tiles/most_visited_sites.h"
 #include "components/ntp_tiles/ntp_tile.h"
+#include "components/ntp_tiles/ntp_tile_impression.h"
 #include "components/rappor/rappor_service_impl.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/template_url_service_observer.h"
@@ -401,8 +402,8 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
       _browserState, new_tab_page_uma::ACTION_OPENED_MOST_VISITED_ENTRY);
   base::RecordAction(UserMetricsAction("MobileNTPMostVisited"));
   const ntp_tiles::NTPTile& tile = _mostVisitedData[visitedIndex];
-  ntp_tiles::metrics::RecordTileClick(visitedIndex, tile.title_source,
-                                      tile.source, tileType);
+  ntp_tiles::metrics::RecordTileClick(ntp_tiles::NTPTileImpression(
+      visitedIndex, tile.source, tile.title_source, tileType, GURL()));
 }
 
 - (ReadingListModel*)readingListModel {
@@ -468,7 +469,8 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
     ntp_tiles::NTPTile& ntpTile = _mostVisitedDataForLogging[i];
     if (ntpTile.url == URL) {
       ntp_tiles::metrics::RecordTileImpression(
-          i, ntpTile.title_source, ntpTile.source, tileType, URL,
+          ntp_tiles::NTPTileImpression(i, ntpTile.source, ntpTile.title_source,
+                                       tileType, URL),
           GetApplicationContext()->GetRapporServiceImpl());
       // Reset the URL to be sure to log the impression only once.
       ntpTile.url = GURL();

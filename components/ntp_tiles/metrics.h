@@ -5,14 +5,7 @@
 #ifndef COMPONENTS_NTP_TILES_METRICS_H_
 #define COMPONENTS_NTP_TILES_METRICS_H_
 
-#include <utility>
-#include <vector>
-
-#include "components/ntp_tiles/ntp_tile.h"
-#include "components/ntp_tiles/tile_source.h"
-#include "components/ntp_tiles/tile_title_source.h"
-#include "components/ntp_tiles/tile_visual_type.h"
-#include "url/gurl.h"
+#include "components/ntp_tiles/ntp_tile_impression.h"
 
 namespace rappor {
 class RapporService;
@@ -24,23 +17,16 @@ namespace metrics {
 // Records an NTP impression, after all tiles have loaded.
 void RecordPageImpression(int number_of_tiles);
 
-// Records a tile impression at |index| (zero based) created by |source|. This
-// should be called only after the visual |type| of the tile has been
-// determined. If |rappor_service| is null, no rappor metrics will be reported.
-void RecordTileImpression(int index,
-                          TileTitleSource tile_source,
-                          TileSource source,
-                          TileVisualType type,
-                          const GURL& url,
+// Records an individual tile impression, which should be called only after the
+// visual type of the tile has been determined. If |rappor_service| is null, no
+// rappor metrics will be reported.
+void RecordTileImpression(const NTPTileImpression& impression,
                           rappor::RapporService* rappor_service);
 
 // Records a click on a tile.
-void RecordTileClick(int index,
-                     TileTitleSource tile_source,
-                     TileSource source,
-                     TileVisualType tile_type);
+void RecordTileClick(const NTPTileImpression& impression);
 
 }  // namespace metrics
 }  // namespace ntp_tiles
 
-#endif
+#endif  // COMPONENTS_NTP_TILES_METRICS_H_

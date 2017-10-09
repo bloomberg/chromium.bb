@@ -94,86 +94,90 @@ void RecordPageImpression(int number_of_tiles) {
   UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.NumberOfTiles", number_of_tiles);
 }
 
-void RecordTileImpression(int index,
-                          TileTitleSource title_source,
-                          TileSource source,
-                          TileVisualType type,
-                          const GURL& url,
+void RecordTileImpression(const NTPTileImpression& impression,
                           rappor::RapporService* rappor_service) {
-  UMA_HISTOGRAM_ENUMERATION("NewTabPage.SuggestionsImpression", index,
-                            kMaxNumTiles);
+  UMA_HISTOGRAM_ENUMERATION("NewTabPage.SuggestionsImpression",
+                            impression.index, kMaxNumTiles);
 
-  std::string source_name = GetSourceHistogramName(source);
+  std::string source_name = GetSourceHistogramName(impression.source);
   std::string impression_histogram = base::StringPrintf(
       "NewTabPage.SuggestionsImpression.%s", source_name.c_str());
-  LogHistogramEvent(impression_histogram, index, kMaxNumTiles);
+  LogHistogramEvent(impression_histogram, impression.index, kMaxNumTiles);
 
   UMA_HISTOGRAM_ENUMERATION("NewTabPage.TileTitle",
-                            static_cast<int>(title_source),
+                            static_cast<int>(impression.title_source),
                             kLastTitleSource + 1);
-  std::string title_source_histogram = base::StringPrintf(
-      "NewTabPage.TileTitle.%s", GetSourceHistogramName(source).c_str());
-  LogHistogramEvent(title_source_histogram, static_cast<int>(title_source),
+  std::string title_source_histogram =
+      base::StringPrintf("NewTabPage.TileTitle.%s",
+                         GetSourceHistogramName(impression.source).c_str());
+  LogHistogramEvent(title_source_histogram,
+                    static_cast<int>(impression.title_source),
                     kLastTitleSource + 1);
 
-  if (type > LAST_RECORDED_TILE_TYPE) {
+  if (impression.visual_type > LAST_RECORDED_TILE_TYPE) {
     return;
   }
 
-  UMA_HISTOGRAM_ENUMERATION("NewTabPage.TileType", type,
+  UMA_HISTOGRAM_ENUMERATION("NewTabPage.TileType", impression.visual_type,
                             LAST_RECORDED_TILE_TYPE + 1);
 
   std::string tile_type_histogram =
       base::StringPrintf("NewTabPage.TileType.%s", source_name.c_str());
-  LogHistogramEvent(tile_type_histogram, type, LAST_RECORDED_TILE_TYPE + 1);
+  LogHistogramEvent(tile_type_histogram, impression.visual_type,
+                    LAST_RECORDED_TILE_TYPE + 1);
 
-  const char* tile_type_suffix = GetTileTypeSuffix(type);
+  const char* tile_type_suffix = GetTileTypeSuffix(impression.visual_type);
   if (tile_type_suffix) {
-    // Note: This handles a null |rappor_service|.
-    rappor::SampleDomainAndRegistryFromGURL(
-        rappor_service,
-        base::StringPrintf("NTP.SuggestionsImpressions.%s", tile_type_suffix),
-        url);
+    if (!impression.url_for_rappor.is_empty()) {
+      // Note: This handles a null |rappor_service|.
+      rappor::SampleDomainAndRegistryFromGURL(
+          rappor_service,
+          base::StringPrintf("NTP.SuggestionsImpressions.%s", tile_type_suffix),
+          impression.url_for_rappor);
+    }
 
     std::string icon_impression_histogram = base::StringPrintf(
         "NewTabPage.SuggestionsImpression.%s", tile_type_suffix);
-    LogHistogramEvent(icon_impression_histogram, index, kMaxNumTiles);
+    LogHistogramEvent(icon_impression_histogram, impression.index,
+                      kMaxNumTiles);
   }
 }
 
-void RecordTileClick(int index,
-                     TileTitleSource title_source,
-                     TileSource source,
-                     TileVisualType tile_type) {
-  UMA_HISTOGRAM_ENUMERATION("NewTabPage.MostVisited", index, kMaxNumTiles);
+void RecordTileClick(const NTPTileImpression& impression) {
+  UMA_HISTOGRAM_ENUMERATION("NewTabPage.MostVisited", impression.index,
+                            kMaxNumTiles);
 
-  std::string histogram = base::StringPrintf(
-      "NewTabPage.MostVisited.%s", GetSourceHistogramName(source).c_str());
-  LogHistogramEvent(histogram, index, kMaxNumTiles);
+  std::string histogram =
+      base::StringPrintf("NewTabPage.MostVisited.%s",
+                         GetSourceHistogramName(impression.source).c_str());
+  LogHistogramEvent(histogram, impression.index, kMaxNumTiles);
 
-  const char* tile_type_suffix = GetTileTypeSuffix(tile_type);
+  const char* tile_type_suffix = GetTileTypeSuffix(impression.visual_type);
   if (tile_type_suffix) {
     std::string tile_type_histogram =
         base::StringPrintf("NewTabPage.MostVisited.%s", tile_type_suffix);
-    LogHistogramEvent(tile_type_histogram, index, kMaxNumTiles);
+    LogHistogramEvent(tile_type_histogram, impression.index, kMaxNumTiles);
   }
 
   UMA_HISTOGRAM_ENUMERATION("NewTabPage.TileTitleClicked",
-                            static_cast<int>(title_source),
+                            static_cast<int>(impression.title_source),
                             kLastTitleSource + 1);
-  std::string name_histogram = base::StringPrintf(
-      "NewTabPage.TileTitleClicked.%s", GetSourceHistogramName(source).c_str());
-  LogHistogramEvent(name_histogram, static_cast<int>(title_source),
+  std::string name_histogram =
+      base::StringPrintf("NewTabPage.TileTitleClicked.%s",
+                         GetSourceHistogramName(impression.source).c_str());
+  LogHistogramEvent(name_histogram, static_cast<int>(impression.title_source),
                     kLastTitleSource + 1);
 
-  if (tile_type <= LAST_RECORDED_TILE_TYPE) {
-    UMA_HISTOGRAM_ENUMERATION("NewTabPage.TileTypeClicked", tile_type,
+  if (impression.visual_type <= LAST_RECORDED_TILE_TYPE) {
+    UMA_HISTOGRAM_ENUMERATION("NewTabPage.TileTypeClicked",
+                              impression.visual_type,
                               LAST_RECORDED_TILE_TYPE + 1);
 
     std::string type_histogram =
         base::StringPrintf("NewTabPage.TileTypeClicked.%s",
-                           GetSourceHistogramName(source).c_str());
-    LogHistogramEvent(type_histogram, tile_type, LAST_RECORDED_TILE_TYPE + 1);
+                           GetSourceHistogramName(impression.source).c_str());
+    LogHistogramEvent(type_histogram, impression.visual_type,
+                      LAST_RECORDED_TILE_TYPE + 1);
   }
 }
 

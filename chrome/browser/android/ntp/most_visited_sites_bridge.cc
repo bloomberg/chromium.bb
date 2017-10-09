@@ -258,9 +258,9 @@ void MostVisitedSitesBridge::RecordTileImpression(
   TileSource source = static_cast<TileSource>(jsource);
   TileVisualType type = static_cast<TileVisualType>(jtype);
 
-  ntp_tiles::metrics::RecordTileImpression(jindex, title_source, source, type,
-                                           url,
-                                           g_browser_process->rappor_service());
+  ntp_tiles::metrics::RecordTileImpression(
+      ntp_tiles::NTPTileImpression(jindex, source, title_source, type, url),
+      g_browser_process->rappor_service());
 }
 
 void MostVisitedSitesBridge::RecordOpenedMostVisitedItem(
@@ -271,8 +271,10 @@ void MostVisitedSitesBridge::RecordOpenedMostVisitedItem(
     jint title_source,
     jint source) {
   ntp_tiles::metrics::RecordTileClick(
-      index, static_cast<TileTitleSource>(title_source),
-      static_cast<TileSource>(source), static_cast<TileVisualType>(tile_type));
+      ntp_tiles::NTPTileImpression(index, static_cast<TileSource>(source),
+                                   static_cast<TileTitleSource>(title_source),
+                                   static_cast<TileVisualType>(tile_type),
+                                   /*url_for_rappor=*/GURL()));
 }
 
 static jlong Init(JNIEnv* env,

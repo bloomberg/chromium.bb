@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_SEARCH_SEARCH_IPC_ROUTER_H_
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
@@ -14,9 +15,7 @@
 #include "chrome/common/search.mojom.h"
 #include "chrome/common/search/instant_types.h"
 #include "chrome/common/search/ntp_logging_events.h"
-#include "components/ntp_tiles/tile_source.h"
-#include "components/ntp_tiles/tile_title_source.h"
-#include "components/ntp_tiles/tile_visual_type.h"
+#include "components/ntp_tiles/ntp_tile_impression.h"
 #include "components/omnibox/common/omnibox_focus_state.h"
 #include "content/public/browser/web_contents_binding_set.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -58,17 +57,11 @@ class SearchIPCRouter : public content::WebContentsObserver,
 
     // Called to log an impression from a given provider on the New Tab Page.
     virtual void OnLogMostVisitedImpression(
-        int position,
-        ntp_tiles::TileTitleSource tile_title_source,
-        ntp_tiles::TileSource tile_source,
-        ntp_tiles::TileVisualType tile_type) = 0;
+        const ntp_tiles::NTPTileImpression& impression) = 0;
 
     // Called to log a navigation from a given provider on the New Tab Page.
     virtual void OnLogMostVisitedNavigation(
-        int position,
-        ntp_tiles::TileTitleSource tile_title_source,
-        ntp_tiles::TileSource tile_source,
-        ntp_tiles::TileVisualType tile_type) = 0;
+        const ntp_tiles::NTPTileImpression& impression) = 0;
 
     // Called when the page wants to paste the |text| (or the clipboard contents
     // if the |text| is empty) into the omnibox.
@@ -154,16 +147,12 @@ class SearchIPCRouter : public content::WebContentsObserver,
   void LogEvent(int page_seq_no,
                 NTPLoggingEventType event,
                 base::TimeDelta time) override;
-  void LogMostVisitedImpression(int page_seq_no,
-                                int position,
-                                ntp_tiles::TileTitleSource tile_title_source,
-                                ntp_tiles::TileSource tile_source,
-                                ntp_tiles::TileVisualType tile_type) override;
-  void LogMostVisitedNavigation(int page_seq_no,
-                                int position,
-                                ntp_tiles::TileTitleSource tile_title_source,
-                                ntp_tiles::TileSource tile_source,
-                                ntp_tiles::TileVisualType tile_type) override;
+  void LogMostVisitedImpression(
+      int page_seq_no,
+      const ntp_tiles::NTPTileImpression& impression) override;
+  void LogMostVisitedNavigation(
+      int page_seq_no,
+      const ntp_tiles::NTPTileImpression& impression) override;
   void PasteAndOpenDropdown(int page_seq_no,
                             const base::string16& text) override;
   void ChromeIdentityCheck(int page_seq_no,

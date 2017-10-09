@@ -15,9 +15,7 @@
 #include "chrome/browser/ui/search/search_ipc_router.h"
 #include "chrome/common/search/instant_types.h"
 #include "chrome/common/search/ntp_logging_events.h"
-#include "components/ntp_tiles/tile_source.h"
-#include "components/ntp_tiles/tile_title_source.h"
-#include "components/ntp_tiles/tile_visual_type.h"
+#include "components/ntp_tiles/ntp_tile_impression.h"
 #include "components/omnibox/common/omnibox_focus_state.h"
 #include "content/public/browser/reload_type.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -100,14 +98,10 @@ class SearchTabHelper : public content::WebContentsObserver,
   void OnUndoMostVisitedDeletion(const GURL& url) override;
   void OnUndoAllMostVisitedDeletions() override;
   void OnLogEvent(NTPLoggingEventType event, base::TimeDelta time) override;
-  void OnLogMostVisitedImpression(int position,
-                                  ntp_tiles::TileTitleSource tile_title_source,
-                                  ntp_tiles::TileSource tile_source,
-                                  ntp_tiles::TileVisualType tile_type) override;
-  void OnLogMostVisitedNavigation(int position,
-                                  ntp_tiles::TileTitleSource tile_title_source,
-                                  ntp_tiles::TileSource tile_source,
-                                  ntp_tiles::TileVisualType tile_type) override;
+  void OnLogMostVisitedImpression(
+      const ntp_tiles::NTPTileImpression& impression) override;
+  void OnLogMostVisitedNavigation(
+      const ntp_tiles::NTPTileImpression& impression) override;
   void PasteIntoOmnibox(const base::string16& text) override;
   bool ChromeIdentityCheck(const base::string16& identity) override;
   bool HistorySyncCheck() override;
