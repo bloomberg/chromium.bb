@@ -9,23 +9,32 @@
 #ifndef {{api_classname}}_h
 #define {{api_classname}}_h
 
-// TODO(jiameng): every property API header file needs to include a subset of
-// headers below. Ideally each property header should include required headers
-// only. Once all properties have their StyleBuilderFunctions moved to APIs,
-// we will need to revisit this issue.
-#include "core/CSSPropertyNames.h"
-#include "core/css/CSSIdentifierValue.h"
-#include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/properties/CSSPropertyAPI.h"
-#include "core/css/resolver/StyleBuilderConverter.h"
 #include "core/css/resolver/StyleResolverState.h"
+{# conditional includes - only used in some APIs #}
+{% if property.converter == "CSSPrimitiveValue" %}
+#include "core/css/CSSPrimitiveValue.h"
+{% elif property.converter == "CSSIdentifierValue" %}
+#include "core/css/CSSIdentifierValue.h"
+{% elif property.converter %}
+#include "core/css/resolver/StyleBuilderConverter.h"
+{% endif %}
+{% if property.font %}
+#include "core/css/resolver/FontBuilder.h"
+{% else %}
 #include "core/style/ComputedStyle.h"
 #include "core/style/SVGComputedStyle.h"
+{% endif %}
 {% if property.runtime_flag %}
 #include "platform/runtime_enabled_features.h"
 {% endif %}
-#include "platform/heap/HeapAllocator.h"
+{% if property.svg %}
+#include "core/style/SVGComputedStyle.h"
+{% endif %}
+{% if property.runtime_flag %}
+#include "platform/runtime_enabled_features.h"
+{% endif %}
 
 namespace blink {
 

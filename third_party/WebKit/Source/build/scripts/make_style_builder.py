@@ -41,6 +41,18 @@ def apply_property_naming_defaults(property_):
         if property_[key] is None:
             property_[key] = value
 
+    # These values are converted using CSSPrimitiveValue in the setter function,
+    # if applicable.
+    primitive_types = [
+        'short',
+        'unsigned short',
+        'int',
+        'unsigned int',
+        'unsigned',
+        'float',
+        'LineClampValue'
+    ]
+
     # TODO(meade): Delete this once all methods are moved to CSSPropertyAPIs.
     upper_camel = upper_camel_case(property_['name'])
     set_if_none(
@@ -53,6 +65,10 @@ def apply_property_naming_defaults(property_):
     set_if_none(property_, 'setter', 'Set' + name)
     set_if_none(property_, 'inherited', False)
     set_if_none(property_, 'initial', 'Initial' + name)
+    if property_['type_name'] in primitive_types:
+        set_if_none(property_, 'converter', 'CSSPrimitiveValue')
+    else:
+        set_if_none(property_, 'converter', 'CSSIdentifierValue')
 
     if property_['custom_all']:
         property_['custom_initial'] = True

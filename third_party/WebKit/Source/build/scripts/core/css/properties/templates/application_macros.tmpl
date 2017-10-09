@@ -13,16 +13,11 @@ state.Style()->{{property.setter}}
 {% endmacro %}
 
 {% macro convert_and_set_value(property) %}
-  {% if property.converter %}
-{{set_value(property)}}(StyleBuilderConverter::{{property.converter}}(state, value));
-  {# TODO(sashab): Remove this list from this file. #}
-  {% elif property.type_name in ['short', 'unsigned short', 'int', 'unsigned int', 'unsigned', 'float', 'LineClampValue'] %}
+  {% if property.converter == 'CSSPrimitiveValue' %}
 {{set_value(property)}}(ToCSSPrimitiveValue(value).ConvertTo<{{property.type_name}}>());
-  {%- else %}
+  {%- elif property.converter == 'CSSIdentifierValue' %}
 {{set_value(property)}}(ToCSSIdentifierValue(value).ConvertTo<{{property.type_name}}>());
+  {% elif property.converter %}
+{{set_value(property)}}(StyleBuilderConverter::{{property.converter}}(state, value));
   {%- endif %}
-{% endmacro %}
-
-{% macro set_is_inherited(property) %}
-state.Style()->{{property.is_inherited_setter}}
 {% endmacro %}

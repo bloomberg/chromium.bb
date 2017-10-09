@@ -27,6 +27,18 @@ def apply_computed_style_builder_function_parameters(property_):
         if property_[key] is None:
             property_[key] = value
 
+    # These values are converted using CSSPrimitiveValue in the setter function,
+    # if applicable.
+    primitive_types = [
+        'short',
+        'unsigned short',
+        'int',
+        'unsigned int',
+        'unsigned',
+        'float',
+        'LineClampValue'
+    ]
+
     # Functions should only be declared on the API classes if they are
     # implemented and not shared (denoted by api_class = true. Shared classes
     # are denoted by api_class = "some string").
@@ -50,12 +62,17 @@ def apply_computed_style_builder_function_parameters(property_):
     if not name:
         name = upper_camel_case(property_['name']).replace('Webkit', '')
     simple_type_name = str(property_['type_name']).split('::')[-1]
-
     set_if_none(property_, 'name_for_methods', name)
+
     set_if_none(property_, 'type_name', 'E' + name)
+    set_if_none(property_, 'setter', 'Set' + name)
+    if property_['type_name'] in primitive_types:
+        set_if_none(property_, 'converter', 'CSSPrimitiveValue')
+    else:
+        set_if_none(property_, 'converter', 'CSSIdentifierValue')
+
     set_if_none(
         property_, 'getter', name if simple_type_name != name else 'Get' + name)
-    set_if_none(property_, 'setter', 'Set' + name)
     set_if_none(property_, 'inherited', False)
     set_if_none(property_, 'initial', 'Initial' + name)
 
