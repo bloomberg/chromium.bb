@@ -258,6 +258,8 @@ std::unique_ptr<views::Combobox> CreatePasswordDropdownView(
   } else {
     combobox->SetSelectedIndex(index);
   }
+  combobox->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_PASSWORD_LABEL));
   return combobox;
 }
 
