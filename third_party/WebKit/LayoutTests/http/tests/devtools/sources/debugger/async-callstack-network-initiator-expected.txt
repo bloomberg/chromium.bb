@@ -1,18 +1,18 @@
 Tests asynchronous call stacks printed in console for a Network.Initiator.
 
 Set timer for test function.
-async-callstack-netw…k-initiator.html:11 Console was cleared
-async-callstack-netw…k-initiator.html:29 POST http://127.0.0.1:8000/failure/foo 404 (Not Found)
+async-callstack-network-initiator.js:14 Console was cleared
+async-callstack-network-initiator.js:32 POST http://127.0.0.1:8000/failure/foo 404 (Not Found)
 
-sendXHR @ async-callstack-netw…k-initiator.html:29
+sendXHR @ async-callstack-network-initiator.js:32
 
-timeout2 @ async-callstack-netw…k-initiator.html:22
-
-setTimeout (async)
-
-timeout1 @ async-callstack-netw…k-initiator.html:17
+timeout2 @ async-callstack-network-initiator.js:25
 
 setTimeout (async)
 
-testFunction @ async-callstack-netw…k-initiator.html:12
+timeout1 @ async-callstack-network-initiator.js:20
+
+setTimeout (async)
+
+testFunction @ async-callstack-network-initiator.js:15
 

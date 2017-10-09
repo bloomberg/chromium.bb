@@ -1,4 +1,3 @@
-CONSOLE MESSAGE: line 4: 0
 Tests resolving variable names via source maps.
 
 Set timer for test function.

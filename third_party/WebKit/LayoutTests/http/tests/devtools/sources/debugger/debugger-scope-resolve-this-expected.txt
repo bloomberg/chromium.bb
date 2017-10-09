@@ -1,4 +1,3 @@
-CONSOLE MESSAGE: line 7: [object Object]
 Tests resolving this object name via source maps.
 
 Set timer for test function.

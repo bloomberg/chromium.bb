@@ -1,12 +1,8 @@
-CONSOLE MESSAGE: line 30: Done.
 Tests that scripts for dynamically added script elements are shown in sources panel if loaded with inspector open.
 
-Bug 99324
 UISourceCodes:
-    debugger-test.js
     dynamic-script.js
-    dynamic-scripts.html
+    dynamic-scripts.js
     evalSourceURL.js
-    inspector-test.js
     scriptElementContentSourceURL.js
 
