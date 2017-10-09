@@ -290,6 +290,13 @@ static void loop_filter_rows_mt(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
                                 int start, int stop, int y_only,
                                 AVxWorker *workers, int nworkers,
                                 AV1LfSync *lf_sync) {
+#if CONFIG_EXT_PARTITION
+  printf(
+      "STOPPING: This code has not been modified to work with the "
+      "extended coding unit size experiment");
+  exit(EXIT_FAILURE);
+#endif  // CONFIG_EXT_PARTITION
+
   const AVxWorkerInterface *const winterface = aom_get_worker_interface();
   // Number of superblock rows and cols
   const int sb_rows = mi_rows_aligned_to_sb(cm) >> cm->mib_size_log2;
@@ -298,13 +305,6 @@ static void loop_filter_rows_mt(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
   const int tile_cols = cm->tile_cols;
   const int num_workers = AOMMIN(nworkers, tile_cols);
   int i;
-
-#if CONFIG_EXT_PARTITION
-  printf(
-      "STOPPING: This code has not been modified to work with the "
-      "extended coding unit size experiment");
-  exit(EXIT_FAILURE);
-#endif  // CONFIG_EXT_PARTITION
 
   if (!lf_sync->sync_range || sb_rows != lf_sync->rows ||
       num_workers > lf_sync->num_workers) {

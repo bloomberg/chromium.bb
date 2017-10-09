@@ -1708,6 +1708,9 @@ static void update_tile_boundary_filter_mask(AV1_COMMON *const cm,
 void av1_setup_mask(AV1_COMMON *const cm, const int mi_row, const int mi_col,
                     MODE_INFO **mi, const int mode_info_stride,
                     LOOP_FILTER_MASK *lfm) {
+#if CONFIG_EXT_PARTITION
+  assert(0 && "Not yet updated");
+#endif  // CONFIG_EXT_PARTITION
   int idx_32, idx_16, idx_8;
   const loop_filter_info_n *const lfi_n = &cm->lf_info;
   MODE_INFO **mip = mi;
@@ -1735,9 +1738,6 @@ void av1_setup_mask(AV1_COMMON *const cm, const int mi_row, const int mi_col,
   int i;
   const int max_rows = AOMMIN(cm->mi_rows - mi_row, MAX_MIB_SIZE);
   const int max_cols = AOMMIN(cm->mi_cols - mi_col, MAX_MIB_SIZE);
-#if CONFIG_EXT_PARTITION
-  assert(0 && "Not yet updated");
-#endif  // CONFIG_EXT_PARTITION
 
   av1_zero(*lfm);
   assert(mip[0] != NULL);
