@@ -2,12 +2,14 @@
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
 <script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script src="../../../resources/bluetooth/web-bluetooth-test.js"></script>
+<script src="../../../resources/mojo-helpers.js"></script>
 <script>
 'use strict';
 let test_desc = 'A device disconnecting while connected should fire the ' +
     'gattserverdisconnected event.';
 let device, fake_peripheral;
-bluetooth_test(() => getHealthThermometerDevice()
+promise_test(() => getHealthThermometerDevice()
   .then(_ => ({device, fake_peripheral} = _))
   .then(() => {
     fake_peripheral.simulateGATTDisconnection();

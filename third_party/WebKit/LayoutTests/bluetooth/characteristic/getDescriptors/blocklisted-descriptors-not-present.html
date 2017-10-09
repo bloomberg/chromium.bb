@@ -4,7 +4,7 @@
 <script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
 <script>
 'use strict';
-bluetooth_test(() => {
+promise_test(() => {
   // DisconnectingHealthThermometerAdapter's measurement_interval contains
   // one blocklisted descriptor.  Make sure that it isn't returned in the result
   // of getDescriptors().

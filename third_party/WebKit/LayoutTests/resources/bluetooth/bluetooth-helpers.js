@@ -20,12 +20,8 @@ function loadScripts(paths) {
 function loadChromiumResources() {
   let root = window.location.pathname.match(/.*LayoutTests/);
   let resource_prefix = `${root}/resources`;
-  let gen_prefix = 'file:///gen/';
   return loadScripts([
-    `${gen_prefix}/layout_test_data/mojo/public/js/mojo_bindings.js`,
-    `${gen_prefix}/content/test/data/mojo_layouttest_test.mojom.js`,
-    `${gen_prefix}/device/bluetooth/public/interfaces/uuid.mojom.js`,
-    `${gen_prefix}/device/bluetooth/public/interfaces/test/fake_bluetooth.mojom.js`,
+    `${resource_prefix}/mojo-helpers.js`,
     `${resource_prefix}/bluetooth/web-bluetooth-test.js`,
   ]);
 }

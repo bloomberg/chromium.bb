@@ -10,7 +10,7 @@ mojom("interfaces") {
   ]
 
   # TODO(crbug.com/699569): Convert to use the new JS bindings.
-  js_bindings_mode = "both"
+  use_new_js_bindings = false
 }
 
 mojom("fake_bluetooth_interfaces") {
@@ -23,6 +23,9 @@ mojom("fake_bluetooth_interfaces") {
   ]
 
   use_once_callback = true
+
+  # TODO(crbug.com/699569): Convert to use the new JS bindings.
+  use_new_js_bindings = false
 }
 
 mojom("experimental_interfaces") {

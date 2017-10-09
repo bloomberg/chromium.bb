@@ -55,7 +55,7 @@ let connection_test_specs = [{
                           'NetworkError')
 }];
 
-bluetooth_test(() => {
+promise_test(() => {
   return setBluetoothFakeAdapter('FailingConnectionsAdapter')
       .then(() => {
         let test_promises = Promise.resolve();

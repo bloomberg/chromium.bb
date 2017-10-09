@@ -2,9 +2,11 @@
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
 <script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script src="../../../resources/mojo-helpers.js"></script>
+<script src="../../../resources/bluetooth/web-bluetooth-test.js"></script>
 <script>
 'use strict';
-bluetooth_test(() => {
+promise_test(() => {
   const DEVICE_NAME = 'a_device_name_that_is_longer_than_29_bytes_but_shorter_than_248_bytes';
 
   return setUpPreconnectedDevice({name: DEVICE_NAME})
