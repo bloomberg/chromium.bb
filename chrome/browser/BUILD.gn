@@ -2480,6 +2480,8 @@ split_static_library("browser") {
       "page_load_metrics/observers/session_restore_page_load_metrics_observer.h",
       "pdf/pdf_extension_util.cc",
       "pdf/pdf_extension_util.h",
+      "picture_in_picture/picture_in_picture_window_controller.cc",
+      "picture_in_picture/picture_in_picture_window_controller.h",
       "policy/local_sync_policy_handler.cc",
       "policy/local_sync_policy_handler.h",
       "process_singleton_modal_dialog_lock.cc",
