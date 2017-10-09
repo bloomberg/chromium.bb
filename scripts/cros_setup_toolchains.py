@@ -704,8 +704,12 @@ def UpdateToolchains(usepkg, deleteold, hostonly, reconfig,
     # Those that were not initialized may need a config update.
     Crossdev.UpdateTargets(reconfig_targets, usepkg, config_only=True)
 
-    # Since we have cross-compilers now, we can update these packages.
-    targets['host-post-cross'] = {}
+    # If we're building a subset of toolchains for a board, we might not have
+    # all the tuples that the packages expect.  We don't define the "full" set
+    # of tuples currently other than "whatever the full sdk has normally".
+    if usepkg or set(('all', 'sdk')) & targets_wanted:
+      # Since we have cross-compilers now, we can update these packages.
+      targets['host-post-cross'] = {}
 
   # We want host updated.
   targets['host'] = {}
