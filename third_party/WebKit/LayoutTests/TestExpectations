@@ -3464,6 +3464,9 @@ crbug.com/686118 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/
 
 crbug.com/757868 [ Linux ] virtual/threaded/animations/animations-parsing.html [ Pass Failure ]
 
+# To roll in https://skia.googlesource.com/skia.git/+/3cd0bef0fd9d062bbcc313c329b4f31925e8ded7
+skbug.com/5060 fast/block/float/overhanging-tall-block.html [ NeedsManualRebaseline ]
+
 # Tests currently failing on Windows when run on Swarming
 crbug.com/757165 [ Win ] compositing/culling/filter-occlusion-blur.html [ Skip ]
 crbug.com/757165 [ Win ] css3/blending/mix-blend-mode-with-filters.html [ Skip ]
