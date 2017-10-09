@@ -25,23 +25,14 @@ class MseCasesPageSet(story.StorySet):
 
     urls_list = [
       'file://mse_cases/startup_test.html?testType=AV',
-      'file://mse_cases/startup_test.html?testType=AV&useAppendStream=true',
       # pylint: disable=line-too-long
       'file://mse_cases/startup_test.html?testType=AV&doNotWaitForBodyOnLoad=true',
-      # pylint: disable=line-too-long
-      'file://mse_cases/startup_test.html?testType=AV&useAppendStream=true&doNotWaitForBodyOnLoad=true',
       'file://mse_cases/startup_test.html?testType=V',
-      'file://mse_cases/startup_test.html?testType=V&useAppendStream=true',
       # pylint: disable=line-too-long
       'file://mse_cases/startup_test.html?testType=V&doNotWaitForBodyOnLoad=true',
-      # pylint: disable=line-too-long
-      'file://mse_cases/startup_test.html?testType=V&useAppendStream=true&doNotWaitForBodyOnLoad=true',
       'file://mse_cases/startup_test.html?testType=A',
-      'file://mse_cases/startup_test.html?testType=A&useAppendStream=true',
       # pylint: disable=line-too-long
       'file://mse_cases/startup_test.html?testType=A&doNotWaitForBodyOnLoad=true',
-      # pylint: disable=line-too-long
-      'file://mse_cases/startup_test.html?testType=A&useAppendStream=true&doNotWaitForBodyOnLoad=true',
     ]
 
     for url in urls_list:

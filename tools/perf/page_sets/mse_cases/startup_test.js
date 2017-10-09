@@ -34,7 +34,6 @@
     var queryParameters = parseQueryParameters();
     testParams = {};
     testParams.testType = queryParameters["testType"] || "AV";
-    testParams.useAppendStream = (queryParameters["useAppendStream"] == "true");
     testParams.doNotWaitForBodyOnLoad =
         (queryParameters["doNotWaitForBodyOnLoad"] == "true");
     testParams.startOffset = 0;
@@ -165,8 +164,6 @@
       }
     }
 
-    document.getElementById("useAppendStream").checked =
-        testParams.useAppendStream;
     document.getElementById("doNotWaitForBodyOnLoad").checked =
         testParams.doNotWaitForBodyOnLoad;
     document.getElementById("appendSize").value = testParams.appendSize;
@@ -211,14 +208,9 @@
 
     this.appendStartTime = getPerfTimestamp();
 
-    if (this.sourceBuffer.appendBuffer) {
-      this.sourceBuffer.addEventListener('updateend',
-                                         this.onUpdateEnd.bind(this));
-      this.sourceBuffer.appendBuffer(this.xhr.response);
-    } else {
-      this.sourceBuffer.append(new Uint8Array(this.xhr.response));
-      this.appendEndTime = getPerfTimestamp();
-    }
+    this.sourceBuffer.addEventListener('updateend',
+                                       this.onUpdateEnd.bind(this));
+    this.sourceBuffer.appendBuffer(this.xhr.response);
 
     this.xhr = null;
   };
@@ -243,87 +235,6 @@
   };
 
   BufferAppender.prototype.getAppendDuration = function() {
-    return this.appendEndTime - this.appendStartTime;
-  };
-
-  function StreamAppender(mimetype, url, id, startOffset, appendSize) {
-    this.mimetype = mimetype;
-    this.url = url;
-    this.id = id;
-    this.startOffset = startOffset;
-    this.appendSize = appendSize;
-    this.xhr = new XMLHttpRequest();
-    this.sourceBuffer = null;
-    this.appendStarted = false;
-  }
-
-  StreamAppender.prototype.start = function() {
-    this.xhr.addEventListener('readystatechange',
-                              this.attemptAppend.bind(this));
-    this.xhr.addEventListener('loadend', this.onLoadEnd.bind(this));
-    this.xhr.open('GET', this.url);
-    this.xhr.setRequestHeader('Range', 'bytes=' + this.startOffset + '-' +
-                              (this.startOffset + this.appendSize - 1));
-    this.xhr.responseType = 'stream';
-    if (this.xhr.responseType != 'stream') {
-      EndTest("XHR does not support 'stream' responses.");
-    }
-    this.xhr.send();
-
-    this.xhrStartTime = getPerfTimestamp();
-  };
-
-  StreamAppender.prototype.onLoadEnd = function() {
-    this.xhrEndTime = getPerfTimestamp();
-    this.attemptAppend();
-  };
-
-  StreamAppender.prototype.onSourceOpen = function(mediaSource) {
-    if (this.sourceBuffer)
-      return;
-    this.sourceBuffer = mediaSource.addSourceBuffer(this.mimetype);
-  };
-
-  StreamAppender.prototype.attemptAppend = function() {
-    if (this.xhr.readyState < this.xhr.LOADING) {
-      return;
-    }
-
-    if (!this.xhr.response || !this.sourceBuffer || this.appendStarted)
-      return;
-
-    this.appendStartTime = getPerfTimestamp();
-    this.appendStarted = true;
-    this.sourceBuffer.addEventListener('updateend',
-                                       this.onUpdateEnd.bind(this));
-    this.sourceBuffer.appendStream(this.xhr.response);
-  };
-
-  StreamAppender.prototype.onUpdateEnd = function() {
-    this.appendEndTime = getPerfTimestamp();
-  };
-
-  StreamAppender.prototype.onPlaybackStarted = function() {
-    var now = getPerfTimestamp();
-    this.playbackStartTime = now;
-    if (this.sourceBuffer.updating) {
-      // Still appending but playback has already started so just abort the XHR
-      // and append.
-      this.sourceBuffer.abort();
-      this.xhr.abort();
-      if (!this.appendEndTime)
-        this.appendEndTime = now;
-
-      if (!this.xhrEndTime)
-        this.xhrEndTime = now;
-    }
-  };
-
-  StreamAppender.prototype.getXHRLoadDuration = function() {
-    return this.xhrEndTime - this.xhrStartTime;
-  };
-
-  StreamAppender.prototype.getAppendDuration = function() {
     return this.appendEndTime - this.appendStartTime;
   };
 
@@ -354,14 +265,8 @@
       mediaElement.play();
     }
 
-    var mediaSource;
-    if (window['MediaSource']) {
-      mediaSource = new window.MediaSource();
-      mediaSource.addEventListener('sourceopen', onSourceOpen);
-    } else {
-      mediaSource = new window.WebKitMediaSource();
-      mediaSource.addEventListener('webkitsourceopen', onSourceOpen);
-    }
+    var mediaSource = new window.MediaSource();
+    mediaSource.addEventListener('sourceopen', onSourceOpen);
 
     var listener;
     var timeout;
@@ -457,15 +362,9 @@
 
     var appenders = [];
 
-    if (testParams.useAppendStream && !window.MediaSource)
-      EndTest("Can't use appendStream() because the unprefixed MediaSource " +
-              "object is not present.");
-
-    var Appender = testParams.useAppendStream ? StreamAppender : BufferAppender;
-
     if (testParams.testType.indexOf("A") != -1) {
       appenders.push(
-          new Appender("audio/mp4; codecs=\"mp4a.40.2\"",
+          new BufferAppender("audio/mp4; codecs=\"mp4a.40.2\"",
                        "audio.mp4",
                        "a",
                        testParams.startOffset,
@@ -474,7 +373,7 @@
 
     if (testParams.testType.indexOf("V") != -1) {
       appenders.push(
-          new Appender("video/mp4; codecs=\"avc1.640028\"",
+          new BufferAppender("video/mp4; codecs=\"avc1.640028\"",
                        "video.mp4",
                        "v",
                        testParams.startOffset,
@@ -502,10 +401,7 @@
 
   function getTestID() {
     var id = testParams.testType;
-    if (testParams.useAppendStream)
-      id += "_stream"
-    else
-      id += "_buffer"
+    id += "_buffer"
     if (testParams.doNotWaitForBodyOnLoad)
       id += "_pre_load"
     else
