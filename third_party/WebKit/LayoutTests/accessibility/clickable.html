@@ -93,6 +93,7 @@ if (window.testRunner && window.accessibilityController) {
     shouldBe("isAXElementClickable('mousedown-listener')", "true");
     shouldBe("isAXElementClickable('click-listener-on-ancestor')", "false");
 
+    shouldBe("axRole('ancestor-with-click-listener')", "'AXRole: AXGenericContainer'");
     shouldBe("axRole('empty-anchor')", "'AXRole: AXAnchor'");
     shouldBe("axRole('href-anchor')", "'AXRole: AXLink'");
     shouldBe("axRole('onclick-anchor')", "'AXRole: AXLink'");
