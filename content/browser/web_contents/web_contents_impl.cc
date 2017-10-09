@@ -770,13 +770,6 @@ RenderFrameHostManager* WebContentsImpl::GetRenderManagerForTesting() {
 
 bool WebContentsImpl::OnMessageReceived(RenderViewHostImpl* render_view_host,
                                         const IPC::Message& message) {
-  RenderFrameHost* main_frame = render_view_host->GetMainFrame();
-  if (main_frame) {
-    WebUIImpl* web_ui = static_cast<RenderFrameHostImpl*>(main_frame)->web_ui();
-    if (web_ui && web_ui->OnMessageReceived(message))
-      return true;
-  }
-
   for (auto& observer : observers_) {
     // TODO(nick, creis): https://crbug.com/758026: Replace all uses of this
     // variant of OnMessageReceived with the version that takes a
@@ -816,6 +809,12 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHostImpl* render_view_host,
 
 bool WebContentsImpl::OnMessageReceived(RenderFrameHostImpl* render_frame_host,
                                         const IPC::Message& message) {
+  {
+    WebUIImpl* web_ui = render_frame_host->web_ui();
+    if (web_ui && web_ui->OnMessageReceived(message, render_frame_host))
+      return true;
+  }
+
   for (auto& observer : observers_) {
     if (observer.OnMessageReceived(message, render_frame_host))
       return true;

@@ -9,7 +9,7 @@
 
 #include "base/strings/string_util.h"
 #include "base/values.h"
-#include "content/common/view_messages.h"
+#include "content/common/frame_messages.h"
 #include "content/public/child/v8_value_converter.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/url_constants.h"
@@ -33,13 +33,9 @@ namespace content {
 namespace {
 
 bool ShouldRespondToRequest(blink::WebLocalFrame** frame_ptr,
-                            RenderView** render_view_ptr) {
+                            RenderFrame** render_frame_ptr) {
   blink::WebLocalFrame* frame = blink::WebLocalFrame::FrameForCurrentContext();
   if (!frame || !frame->View())
-    return false;
-
-  RenderView* render_view = RenderView::FromWebView(frame->View());
-  if (!render_view)
     return false;
 
   GURL frame_url = frame->GetDocument().Url();
@@ -57,7 +53,7 @@ bool ShouldRespondToRequest(blink::WebLocalFrame** frame_ptr,
     return false;
 
   *frame_ptr = frame;
-  *render_view_ptr = render_view;
+  *render_frame_ptr = render_frame;
   return true;
 }
 
@@ -92,8 +88,8 @@ void WebUIExtension::Install(blink::WebLocalFrame* frame) {
 // static
 void WebUIExtension::Send(gin::Arguments* args) {
   blink::WebLocalFrame* frame;
-  RenderView* render_view;
-  if (!ShouldRespondToRequest(&frame, &render_view))
+  RenderFrame* render_frame;
+  if (!ShouldRespondToRequest(&frame, &render_frame))
     return;
 
   std::string message;
@@ -127,19 +123,19 @@ void WebUIExtension::Send(gin::Arguments* args) {
   }
 
   // Send the message up to the browser.
-  render_view->Send(new ViewHostMsg_WebUISend(render_view->GetRoutingID(),
-                                              frame->GetDocument().Url(),
-                                              message, *content));
+  render_frame->Send(new FrameHostMsg_WebUISend(render_frame->GetRoutingID(),
+                                                frame->GetDocument().Url(),
+                                                message, *content));
 }
 
 // static
 std::string WebUIExtension::GetVariableValue(const std::string& name) {
   blink::WebLocalFrame* frame;
-  RenderView* render_view;
-  if (!ShouldRespondToRequest(&frame, &render_view))
+  RenderFrame* render_frame;
+  if (!ShouldRespondToRequest(&frame, &render_frame))
     return std::string();
 
-  return WebUIExtensionData::Get(render_view)->GetValue(name);
+  return WebUIExtensionData::Get(render_frame->GetRenderView())->GetValue(name);
 }
 
 }  // namespace content
