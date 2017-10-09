@@ -4491,7 +4491,7 @@ static int dimension_is_ok(int orig_dim, int resized_dim, int denom) {
 
 static int dimensions_are_ok(int owidth, int oheight, size_params_type *rsz) {
   return dimension_is_ok(owidth, rsz->resize_width, rsz->superres_denom) &&
-         (SCALE_HORIZONTAL_ONLY ||
+         (CONFIG_HORZONLY_FRAME_SUPERRES ||
           dimension_is_ok(oheight, rsz->resize_height, rsz->superres_denom));
 }
 
@@ -4505,14 +4505,14 @@ static int validate_size_scales(RESIZE_MODE resize_mode,
   }
 
 // Calculate current resize scale.
-#if SCALE_HORIZONTAL_ONLY
+#if CONFIG_HORZONLY_FRAME_SUPERRES
   int resize_denom =
       DIVIDE_AND_ROUND(owidth * SCALE_NUMERATOR, rsz->resize_width);
 #else
   int resize_denom =
       AOMMAX(DIVIDE_AND_ROUND(owidth * SCALE_NUMERATOR, rsz->resize_width),
              DIVIDE_AND_ROUND(oheight * SCALE_NUMERATOR, rsz->resize_height));
-#endif  // SCALE_HORIZONTAL_ONLY
+#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
 
   if (resize_mode != RESIZE_RANDOM && superres_mode == SUPERRES_RANDOM) {
     // Alter superres scale as needed to enforce conformity.

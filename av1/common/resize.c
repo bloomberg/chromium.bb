@@ -1172,12 +1172,12 @@ void av1_calculate_scaled_size(int *width, int *height, int denom) {
   if (denom != SCALE_NUMERATOR) {
     *width = *width * SCALE_NUMERATOR / denom;
     *width += *width & 1;  // Make it even.
-#if SCALE_HORIZONTAL_ONLY
+#if CONFIG_HORZONLY_FRAME_SUPERRES
     (void)height;
 #else
     *height = *height * SCALE_NUMERATOR / denom;
     *height += *height & 1;  // Make it even.
-#endif  // !SCALE_HORIZONTAL_ONLY
+#endif  // !CONFIG_HORZONLY_FRAME_SUPERRES
   }
 }
 
@@ -1186,11 +1186,11 @@ void av1_calculate_unscaled_size(int *width, int *height, int denom) {
     // Note: av1_calculate_scaled_size() rounds *up* after division when the
     // resulting dimensions are odd. So here, we round *down*.
     *width = *width * denom / SCALE_NUMERATOR;
-#if SCALE_HORIZONTAL_ONLY
+#if CONFIG_HORZONLY_FRAME_SUPERRES
     (void)height;
 #else
     *height = *height * denom / SCALE_NUMERATOR;
-#endif  // !SCALE_HORIZONTAL_ONLY
+#endif  // !CONFIG_HORZONLY_FRAME_SUPERRES
   }
 }
 

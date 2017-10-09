@@ -128,6 +128,12 @@ macro (fix_experiment_configs)
       change_config_and_warn(CONFIG_VAR_TX 0 CONFIG_PVQ)
     endif ()
   endif ()
+
+  if (CONFIG_HORZONLY_FRAME_SUPERRES)
+    if (NOT CONFIG_FRAME_SUPERRES)
+      change_config_and_warn(CONFIG_FRAME_SUPERRES 1 CONFIG_HORZONLY_FRAME_SUPERRES)
+    endif ()
+  endif ()
 endmacro ()
 
 endif ()  # AOM_BUILD_CMAKE_AOM_EXPERIMENT_DEPS_CMAKE_
