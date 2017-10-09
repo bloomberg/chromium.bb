@@ -34,9 +34,7 @@
 #include "content/browser/indexed_db/leveldb/leveldb_write_batch.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
-#include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
-#include "third_party/leveldatabase/src/include/leveldb/env.h"
 #include "third_party/leveldatabase/src/include/leveldb/filter_policy.h"
 #include "third_party/leveldatabase/src/include/leveldb/slice.h"
 
@@ -336,7 +334,7 @@ std::unique_ptr<LevelDBDatabase> LevelDBDatabase::OpenInMemory(
   std::unique_ptr<ComparatorAdapter> comparator_adapter(
       base::MakeUnique<ComparatorAdapter>(comparator));
   std::unique_ptr<leveldb::Env> in_memory_env(
-      leveldb::NewMemEnv(LevelDBEnv::Get()));
+      leveldb_chrome::NewMemEnv(LevelDBEnv::Get()));
 
   std::unique_ptr<leveldb::DB> db;
   std::unique_ptr<const leveldb::FilterPolicy> filter_policy;

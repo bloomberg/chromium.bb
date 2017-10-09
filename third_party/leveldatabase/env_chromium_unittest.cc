@@ -18,6 +18,7 @@
 #include "base/trace_event/process_memory_dump.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/env_chromium.h"
+#include "third_party/leveldatabase/leveldb_chrome.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 
 #define FPL FILE_PATH_LITERAL
@@ -432,6 +433,11 @@ TEST_F(ChromiumEnvDBTrackerTest, IsTrackedDB) {
   EXPECT_TRUE(DBTracker::GetInstance()->IsTrackedDB(tracked_db.get()));
 
   delete untracked_db;
+}
+
+TEST_F(ChromiumEnvDBTrackerTest, CreateMemEnv) {
+  std::unique_ptr<leveldb::Env> env(leveldb_chrome::NewMemEnv(Env::Default()));
+  EXPECT_TRUE(env.get());
 }
 
 }  // namespace leveldb_env

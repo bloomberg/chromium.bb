@@ -12,11 +12,10 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/string_split.h"
 #include "base/threading/thread_checker.h"
+#include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
-#include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
 #include "third_party/leveldatabase/src/include/leveldb/cache.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
-#include "third_party/leveldatabase/src/include/leveldb/env.h"
 #include "third_party/leveldatabase/src/include/leveldb/iterator.h"
 #include "third_party/leveldatabase/src/include/leveldb/options.h"
 #include "third_party/leveldatabase/src/include/leveldb/slice.h"
@@ -51,7 +50,7 @@ bool LevelDB::Init(const base::FilePath& database_dir,
   leveldb_env::Options open_options = options;
 
   if (database_dir.empty()) {
-    env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
+    env_.reset(leveldb_chrome::NewMemEnv(leveldb::Env::Default()));
     open_options.env = env_.get();
   }
 

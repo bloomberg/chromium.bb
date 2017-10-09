@@ -22,8 +22,7 @@
 #include "storage/common/fileapi/file_system_types.h"
 #include "storage/common/quota/quota_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
-#include "third_party/leveldatabase/src/include/leveldb/env.h"
+#include "third_party/leveldatabase/leveldb_chrome.h"
 
 using content::SandboxFileSystemTestHelper;
 using storage::FileSystemContext;
@@ -38,7 +37,7 @@ namespace sync_file_system {
 class SyncableFileSystemTest : public testing::Test {
  public:
   SyncableFileSystemTest()
-      : in_memory_env_(leveldb::NewMemEnv(leveldb::Env::Default())),
+      : in_memory_env_(leveldb_chrome::NewMemEnv(leveldb::Env::Default())),
         file_system_(GURL("http://example.com/"),
                      in_memory_env_.get(),
                      base::ThreadTaskRunnerHandle::Get().get(),

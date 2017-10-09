@@ -6,6 +6,7 @@
 #define THIRD_PARTY_LEVELDATABASE_LEVELDB_CHROME_H_
 
 #include "leveldb/cache.h"
+#include "leveldb/env.h"
 
 namespace leveldb_chrome {
 
@@ -16,6 +17,9 @@ extern leveldb::Cache* GetSharedWebBlockCache();
 // Return the shared leveldb block cache for browser (non web) APIs. The caller
 // *does not* own the returned instance.
 extern leveldb::Cache* GetSharedBrowserBlockCache();
+
+// Creates an in-memory Env for which all files are stored in the heap.
+extern leveldb::Env* NewMemEnv(leveldb::Env* base_env);
 
 }  // namespace leveldb_chrome
 

@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/sys_info.h"
+#include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
 
 using MemoryPressureLevel = base::MemoryPressureListener::MemoryPressureLevel;
 using leveldb::Cache;
@@ -83,6 +84,10 @@ Cache* GetSharedWebBlockCache() {
 
 Cache* GetSharedBrowserBlockCache() {
   return Globals::GetInstance()->browser_block_cache();
+}
+
+leveldb::Env* NewMemEnv(leveldb::Env* base_env) {
+  return leveldb::NewMemEnv(base_env);
 }
 
 }  // namespace leveldb_chrome
