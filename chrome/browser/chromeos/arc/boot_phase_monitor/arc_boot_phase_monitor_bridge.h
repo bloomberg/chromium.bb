@@ -82,7 +82,6 @@ class ArcBootPhaseMonitorBridge
   void OnSessionRestoreFinishedLoadingTabs() override;
 
   void SetDelegateForTesting(std::unique_ptr<Delegate> delegate);
-  void SetThrottleForTesting(std::unique_ptr<ArcInstanceThrottle> throttle);
   void RecordFirstAppLaunchDelayUMAForTesting() {
     RecordFirstAppLaunchDelayUMAInternal();
   }
