@@ -6,21 +6,19 @@ cr.exportPath('extensions');
 
 cr.define('extensions', function() {
   /** @interface */
-  const ToolbarDelegate = function() {};
-
-  ToolbarDelegate.prototype = {
+  class ToolbarDelegate {
     /**
      * Toggles whether or not the profile is in developer mode.
      * @param {boolean} inDevMode
      */
-    setProfileInDevMode: assertNotReached,
+    setProfileInDevMode(inDevMode) {}
 
     /** Opens the dialog to load unpacked extensions. */
-    loadUnpacked: assertNotReached,
+    loadUnpacked() {}
 
     /** Updates all extensions. */
-    updateAllExtensions: assertNotReached,
-  };
+    updateAllExtensions() {}
+  }
 
   const Toolbar = Polymer({
     is: 'extensions-toolbar',

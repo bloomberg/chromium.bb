@@ -6,15 +6,13 @@ cr.define('extensions', function() {
   'use strict';
 
   /** @interface */
-  function LoadErrorDelegate() {}
-
-  LoadErrorDelegate.prototype = {
+  class LoadErrorDelegate {
     /**
      * Attempts to load the previously-attempted unpacked extension.
      * @param {string} retryId
      */
-    retryLoadUnpacked: assertNotReached,
-  };
+    retryLoadUnpacked(retryId) {}
+  }
 
   const LoadError = Polymer({
     is: 'extensions-load-error',
