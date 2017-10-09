@@ -45,54 +45,64 @@ CertPrincipal::~CertPrincipal() {
 }
 
 #if BUILDFLAG(USE_BYTE_CERTS)
-bool CertPrincipal::ParseDistinguishedName(const void* ber_name_data,
-                                           size_t length) {
+bool CertPrincipal::ParseDistinguishedName(
+    const void* ber_name_data,
+    size_t length,
+    PrintableStringHandling printable_string_handling) {
   RDNSequence rdns;
   if (!ParseName(
           der::Input(reinterpret_cast<const uint8_t*>(ber_name_data), length),
           &rdns))
     return false;
 
+  auto string_handling =
+      printable_string_handling == PrintableStringHandling::kAsUTF8Hack
+          ? X509NameAttribute::PrintableStringHandling::kAsUTF8Hack
+          : X509NameAttribute::PrintableStringHandling::kDefault;
   for (const RelativeDistinguishedName& rdn : rdns) {
     for (const X509NameAttribute& name_attribute : rdn) {
       if (name_attribute.type == TypeCommonNameOid()) {
         if (common_name.empty() &&
-            !name_attribute.ValueAsString(&common_name)) {
+            !name_attribute.ValueAsStringWithUnsafeOptions(string_handling,
+                                                           &common_name)) {
           return false;
         }
       } else if (name_attribute.type == TypeLocalityNameOid()) {
         if (locality_name.empty() &&
-            !name_attribute.ValueAsString(&locality_name)) {
+            !name_attribute.ValueAsStringWithUnsafeOptions(string_handling,
+                                                           &locality_name)) {
           return false;
         }
       } else if (name_attribute.type == TypeStateOrProvinceNameOid()) {
         if (state_or_province_name.empty() &&
-            !name_attribute.ValueAsString(&state_or_province_name)) {
+            !name_attribute.ValueAsStringWithUnsafeOptions(
+                string_handling, &state_or_province_name)) {
           return false;
         }
       } else if (name_attribute.type == TypeCountryNameOid()) {
         if (country_name.empty() &&
-            !name_attribute.ValueAsString(&country_name)) {
+            !name_attribute.ValueAsStringWithUnsafeOptions(string_handling,
+                                                           &country_name)) {
           return false;
         }
       } else if (name_attribute.type == TypeStreetAddressOid()) {
         std::string s;
-        if (!name_attribute.ValueAsString(&s))
+        if (!name_attribute.ValueAsStringWithUnsafeOptions(string_handling, &s))
           return false;
         street_addresses.push_back(s);
       } else if (name_attribute.type == TypeOrganizationNameOid()) {
         std::string s;
-        if (!name_attribute.ValueAsString(&s))
+        if (!name_attribute.ValueAsStringWithUnsafeOptions(string_handling, &s))
           return false;
         organization_names.push_back(s);
       } else if (name_attribute.type == TypeOrganizationUnitNameOid()) {
         std::string s;
-        if (!name_attribute.ValueAsString(&s))
+        if (!name_attribute.ValueAsStringWithUnsafeOptions(string_handling, &s))
           return false;
         organization_unit_names.push_back(s);
       } else if (name_attribute.type == TypeDomainComponentOid()) {
         std::string s;
-        if (!name_attribute.ValueAsString(&s))
+        if (!name_attribute.ValueAsStringWithUnsafeOptions(string_handling, &s))
           return false;
         domain_components.push_back(s);
       }

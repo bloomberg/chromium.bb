@@ -15,10 +15,9 @@
 #include "base/memory/ref_counted.h"
 #include "net/base/hash_value.h"
 #include "net/base/net_export.h"
+#include "net/cert/x509_certificate.h"
 
 namespace net {
-
-class X509Certificate;
 
 namespace x509_util {
 
@@ -50,6 +49,14 @@ NET_EXPORT scoped_refptr<X509Certificate>
 CreateX509CertificateFromSecCertificate(
     SecCertificateRef sec_cert,
     const std::vector<SecCertificateRef>& sec_chain);
+
+// Creates an X509Certificate with non-standard parsing options.
+// Do not use without consulting //net owners.
+NET_EXPORT scoped_refptr<X509Certificate>
+CreateX509CertificateFromSecCertificate(
+    SecCertificateRef sec_cert,
+    const std::vector<SecCertificateRef>& sec_chain,
+    X509Certificate::UnsafeCreateOptions options);
 
 // Returns true if the certificate is self-signed.
 NET_EXPORT bool IsSelfSigned(SecCertificateRef cert_handle);

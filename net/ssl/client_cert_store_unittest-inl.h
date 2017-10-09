@@ -10,7 +10,10 @@
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/memory/ref_counted.h"
+#include "net/cert/pem_tokenizer.h"
+#include "net/cert/x509_util.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
@@ -127,10 +130,47 @@ TYPED_TEST_P(ClientCertStoreTest, DISABLED_CertAuthorityFiltering) {
   EXPECT_TRUE(selected_identities[0]->certificate()->Equals(cert_1.get()));
 }
 
+TYPED_TEST_P(ClientCertStoreTest, PrintableStringContainingUTF8) {
+  base::FilePath certs_dir =
+      GetTestNetDataDirectory().AppendASCII("parse_certificate_unittest");
+
+  std::string file_data;
+  ASSERT_TRUE(base::ReadFileToString(
+      certs_dir.AppendASCII(
+          "subject_printable_string_containing_utf8_client_cert.pem"),
+      &file_data));
+
+  net::PEMTokenizer pem_tokenizer(file_data, {"CERTIFICATE"});
+  ASSERT_TRUE(pem_tokenizer.GetNext());
+  std::string cert_der(pem_tokenizer.data());
+  ASSERT_FALSE(pem_tokenizer.GetNext());
+
+  bssl::UniquePtr<CRYPTO_BUFFER> cert_handle =
+      x509_util::CreateCryptoBuffer(cert_der);
+  ASSERT_TRUE(cert_handle);
+
+  X509Certificate::UnsafeCreateOptions options;
+  options.printable_string_is_utf8 = true;
+  scoped_refptr<X509Certificate> cert =
+      X509Certificate::CreateFromHandleUnsafeOptions(cert_handle.get(), {},
+                                                     options);
+  ASSERT_TRUE(cert);
+
+  scoped_refptr<SSLCertRequestInfo> request(new SSLCertRequestInfo());
+
+  ClientCertIdentityList selected_identities;
+  bool rv = this->delegate_.SelectClientCerts({cert}, *request.get(),
+                                              &selected_identities);
+  EXPECT_TRUE(rv);
+  ASSERT_EQ(1u, selected_identities.size());
+  EXPECT_TRUE(selected_identities[0]->certificate()->Equals(cert.get()));
+}
+
 REGISTER_TYPED_TEST_CASE_P(ClientCertStoreTest,
                            EmptyQuery,
                            AllIssuersAllowed,
-                           DISABLED_CertAuthorityFiltering);
+                           DISABLED_CertAuthorityFiltering,
+                           PrintableStringContainingUTF8);
 
 }  // namespace net
 

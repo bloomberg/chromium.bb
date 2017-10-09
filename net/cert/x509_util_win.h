@@ -14,10 +14,9 @@
 #include "crypto/wincrypt_shim.h"
 #include "net/base/hash_value.h"
 #include "net/base/net_export.h"
+#include "net/cert/x509_certificate.h"
 
 namespace net {
-
-class X509Certificate;
 
 struct FreeCertContextFunctor {
   void operator()(PCCERT_CONTEXT context) const {
@@ -36,6 +35,12 @@ namespace x509_util {
 NET_EXPORT scoped_refptr<X509Certificate> CreateX509CertificateFromCertContexts(
     PCCERT_CONTEXT os_cert,
     const std::vector<PCCERT_CONTEXT>& os_chain);
+// Creates an X509Certificate with non-standard parsing options.
+// Do not use without consulting //net owners.
+NET_EXPORT scoped_refptr<X509Certificate> CreateX509CertificateFromCertContexts(
+    PCCERT_CONTEXT os_cert,
+    const std::vector<PCCERT_CONTEXT>& os_chain,
+    X509Certificate::UnsafeCreateOptions options);
 
 // Returns a new PCCERT_CONTEXT containing the certificate and its
 // intermediate certificates, or NULL on failure. This function is only

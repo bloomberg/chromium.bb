@@ -238,6 +238,17 @@ bool X509NameAttribute::ValueAsString(std::string* out) const {
   }
 }
 
+bool X509NameAttribute::ValueAsStringWithUnsafeOptions(
+    PrintableStringHandling printable_string_handling,
+    std::string* out) const {
+  if (printable_string_handling == PrintableStringHandling::kAsUTF8Hack &&
+      value_tag == der::kPrintableString) {
+    *out = value.AsString();
+    return true;
+  }
+  return ValueAsString(out);
+}
+
 bool X509NameAttribute::ValueAsStringUnsafe(std::string* out) const {
   switch (value_tag) {
     case der::kIA5String:

@@ -73,6 +73,19 @@ scoped_refptr<X509Certificate> X509Certificate::CreateFromHandle(
 }
 
 // static
+scoped_refptr<X509Certificate> X509Certificate::CreateFromHandleUnsafeOptions(
+    OSCertHandle cert_handle,
+    const OSCertHandles& intermediates,
+    UnsafeCreateOptions options) {
+  DCHECK(cert_handle);
+  scoped_refptr<X509Certificate> cert(
+      new X509Certificate(cert_handle, intermediates, options));
+  if (!cert->os_cert_handle())
+    return nullptr;  // Initialize() failed.
+  return cert;
+}
+
+// static
 scoped_refptr<X509Certificate> X509Certificate::CreateFromDERCertChain(
     const std::vector<base::StringPiece>& der_certs) {
   TRACE_EVENT0("io", "X509Certificate::CreateFromDERCertChain");
@@ -526,6 +539,11 @@ SHA256HashValue X509Certificate::CalculateChainFingerprint256(
 
 X509Certificate::X509Certificate(OSCertHandle cert_handle,
                                  const OSCertHandles& intermediates)
+    : X509Certificate(cert_handle, intermediates, {}) {}
+
+X509Certificate::X509Certificate(OSCertHandle cert_handle,
+                                 const OSCertHandles& intermediates,
+                                 UnsafeCreateOptions options)
     : cert_handle_(DupOSCertHandle(cert_handle)) {
   for (size_t i = 0; i < intermediates.size(); ++i) {
     // Duplicate the incoming certificate, as the caller retains ownership
@@ -533,7 +551,7 @@ X509Certificate::X509Certificate(OSCertHandle cert_handle,
     intermediate_ca_certs_.push_back(DupOSCertHandle(intermediates[i]));
   }
   // Platform-specific initialization.
-  if (!Initialize() && cert_handle_) {
+  if (!Initialize(options) && cert_handle_) {
     // Signal initialization failure by clearing cert_handle_.
     FreeOSCertHandle(cert_handle_);
     cert_handle_ = nullptr;
