@@ -2672,7 +2672,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
     ('kevin',          None,             'bob'),           # gru (RK3399)
     ('reef',           None,             None),            # reef (APL)
     ('coral',          None,             None),            # coral (APL)
-    (None,             None,             None),            # poppy (KBL)
+    (None,             'eve',            'soraka'),        # poppy (KBL)
   ])
 
   sharded_hw_tests = hw_test_list.DefaultListCQ()
