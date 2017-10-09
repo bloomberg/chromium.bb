@@ -3532,8 +3532,7 @@ static void av1_filter_block_plane_horz(
 #endif  // CONFIG_PARALLEL_DEBLOCKING
 
 void av1_loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
-                          struct macroblockd_plane planes[MAX_MB_PLANE],
-                          int start, int stop,
+                          struct macroblockd_plane *planes, int start, int stop,
 #if CONFIG_LPF_SB
                           int col_start, int col_end,
 #endif
@@ -3774,9 +3773,10 @@ void av1_loop_filter_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
 #endif
 }
 
-void av1_loop_filter_data_reset(
-    LFWorkerData *lf_data, YV12_BUFFER_CONFIG *frame_buffer,
-    struct AV1Common *cm, const struct macroblockd_plane planes[MAX_MB_PLANE]) {
+void av1_loop_filter_data_reset(LFWorkerData *lf_data,
+                                YV12_BUFFER_CONFIG *frame_buffer,
+                                struct AV1Common *cm,
+                                const struct macroblockd_plane *planes) {
   lf_data->frame_buffer = frame_buffer;
   lf_data->cm = cm;
   lf_data->start = 0;
