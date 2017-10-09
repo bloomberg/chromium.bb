@@ -10,6 +10,40 @@
 #include "base/values.h"
 #include "build/build_config.h"
 
+#if defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_AIX)
+namespace {
+int CalculateEventsPerSecond(uint64_t event_count,
+                             uint64_t* last_event_count,
+                             base::TimeTicks* last_calculated) {
+  base::TimeTicks time = base::TimeTicks::Now();
+
+  if (*last_event_count == 0) {
+    // First call, just set the last values.
+    *last_calculated = time;
+    *last_event_count = event_count;
+    return 0;
+  }
+
+  int64_t events_delta = event_count - *last_event_count;
+  int64_t time_delta = (time - *last_calculated).InMicroseconds();
+  if (time_delta == 0) {
+    NOTREACHED();
+    return 0;
+  }
+
+  *last_calculated = time;
+  *last_event_count = event_count;
+
+  int64_t events_delta_for_ms =
+      events_delta * base::Time::kMicrosecondsPerSecond;
+  // Round the result up by adding 1/2 (the second term resolves to 1/2 without
+  // dropping down into floating point).
+  return (events_delta_for_ms + time_delta / 2) / time_delta;
+}
+
+}  // namespace
+#endif  // defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_AIX)
+
 namespace base {
 
 SystemMemoryInfoKB::SystemMemoryInfoKB() = default;
@@ -62,35 +96,24 @@ std::unique_ptr<ProcessMetrics> ProcessMetrics::CreateCurrentProcessMetrics() {
 #if defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_AIX)
 int ProcessMetrics::CalculateIdleWakeupsPerSecond(
     uint64_t absolute_idle_wakeups) {
-  TimeTicks time = TimeTicks::Now();
-
-  if (last_absolute_idle_wakeups_ == 0) {
-    // First call, just set the last values.
-    last_idle_wakeups_time_ = time;
-    last_absolute_idle_wakeups_ = absolute_idle_wakeups;
-    return 0;
-  }
-
-  int64_t wakeups_delta = absolute_idle_wakeups - last_absolute_idle_wakeups_;
-  int64_t time_delta = (time - last_idle_wakeups_time_).InMicroseconds();
-  if (time_delta == 0) {
-    NOTREACHED();
-    return 0;
-  }
-
-  last_idle_wakeups_time_ = time;
-  last_absolute_idle_wakeups_ = absolute_idle_wakeups;
-
-  int64_t wakeups_delta_for_ms = wakeups_delta * Time::kMicrosecondsPerSecond;
-  // Round the result up by adding 1/2 (the second term resolves to 1/2 without
-  // dropping down into floating point).
-  return (wakeups_delta_for_ms + time_delta / 2) / time_delta;
+  return CalculateEventsPerSecond(absolute_idle_wakeups,
+                                  &last_absolute_idle_wakeups_,
+                                  &last_idle_wakeups_time_);
 }
 #else
 int ProcessMetrics::GetIdleWakeupsPerSecond() {
   NOTIMPLEMENTED();  // http://crbug.com/120488
   return 0;
 }
-#endif  // defined(OS_MACOSX) || defined(OS_LINUX)
+#endif  // defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_AIX)
 
+#if defined(OS_MACOSX)
+int ProcessMetrics::CalculatePackageIdleWakeupsPerSecond(
+    uint64_t absolute_package_idle_wakeups) {
+  return CalculateEventsPerSecond(absolute_package_idle_wakeups,
+                                  &last_absolute_package_idle_wakeups_,
+                                  &last_package_idle_wakeups_time_);
+}
+
+#endif  // defined(OS_MACOSX)
 }  // namespace base
