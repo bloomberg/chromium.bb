@@ -74,6 +74,10 @@
   [self showAlert:@"showSignin"];
 }
 
+- (void)showAddAccount {
+  [self showAlert:@"showAddAccount"];
+}
+
 #pragma mark - ApplicationSettingsCommands
 
 - (void)showAccountsSettings {
