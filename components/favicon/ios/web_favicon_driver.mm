@@ -117,11 +117,15 @@ void WebFaviconDriver::OnFaviconUpdated(
   // On iOS, the active URL can change between calls to FetchFavicon(). For
   // instance, FetchFavicon() is not synchronously called when the active URL
   // changes as a result of CRWSessionController::goToEntry().
-  if (GetActiveURL() != page_url)
+  if (GetActiveURL() != page_url && !page_url.is_empty()) {
     return;
+  }
 
-  web::FaviconStatus& favicon_status =
-      web_state()->GetNavigationManager()->GetLastCommittedItem()->GetFavicon();
+  web::NavigationItem* item =
+      web_state()->GetNavigationManager()->GetVisibleItem();
+  DCHECK(item);
+
+  web::FaviconStatus& favicon_status = item->GetFavicon();
   favicon_status.valid = true;
   favicon_status.image = image;
 
