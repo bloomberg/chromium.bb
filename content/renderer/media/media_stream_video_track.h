@@ -42,6 +42,11 @@ class CONTENT_EXPORT MediaStreamVideoTrack : public MediaStreamTrack {
       const MediaStreamVideoSource::ConstraintsCallback& callback,
       bool enabled);
   static blink::WebMediaStreamTrack CreateVideoTrack(
+      const blink::WebString& id,
+      MediaStreamVideoSource* source,
+      const MediaStreamVideoSource::ConstraintsCallback& callback,
+      bool enabled);
+  static blink::WebMediaStreamTrack CreateVideoTrack(
       MediaStreamVideoSource* source,
       const VideoTrackAdapterSettings& adapter_settings,
       const base::Optional<bool>& noise_reduction,
