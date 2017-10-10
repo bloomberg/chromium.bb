@@ -23,6 +23,7 @@
 #include "base/task_scheduler/post_task.h"
 #include "base/task_scheduler/task_traits.h"
 #include "base/test/scoped_path_override.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/browser_process.h"
@@ -55,6 +56,7 @@ void WaitForAutomaticRebootManagerInit(system::AutomaticRebootManager* manager,
                                        const base::TimeDelta& timeout,
                                        const base::Closure& quit_closure,
                                        bool* success_out) {
+  base::ScopedAllowBaseSyncPrimitivesForTesting allow_base_sync_primitives;
   *success_out = manager->WaitForInitForTesting(timeout);
   quit_closure.Run();
 }
@@ -107,8 +109,8 @@ class KioskAppUpdateServiceTest
     // Wait for |automatic_reboot_manager_| to finish initializing.
     bool initialized = false;
     base::RunLoop run_loop;
-    base::PostTaskWithTraits(
-        FROM_HERE, {base::WithBaseSyncPrimitives()},
+    base::PostTask(
+        FROM_HERE,
         base::BindOnce(&WaitForAutomaticRebootManagerInit,
                        base::Unretained(automatic_reboot_manager_),
                        kAutomaticRebootManagerInitTimeout,
