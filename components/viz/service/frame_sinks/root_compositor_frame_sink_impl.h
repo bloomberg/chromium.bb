@@ -14,7 +14,7 @@
 #include "components/viz/service/hit_test/hit_test_aggregator.h"
 #include "components/viz/service/hit_test/hit_test_aggregator_delegate.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
-#include "services/viz/privileged/interfaces/compositing/frame_sink_manager.mojom.h"
+#include "services/viz/privileged/interfaces/compositing/display_private.mojom.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 
 namespace viz {
@@ -43,7 +43,8 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
 
   // mojom::DisplayPrivate:
   void SetDisplayVisible(bool visible) override;
-  void SetDisplayColorSpace(const gfx::ColorSpace& color_space) override;
+  void SetDisplayColorSpace(const gfx::ColorSpace& blending_color_space,
+                            const gfx::ColorSpace& device_color_space) override;
   void SetOutputIsSecure(bool secure) override;
 
   // mojom::CompositorFrameSink:
