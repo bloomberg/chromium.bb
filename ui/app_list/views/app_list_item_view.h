@@ -95,8 +95,8 @@ class APP_LIST_EXPORT AppListItemView : public views::Button,
 
  private:
   enum UIState {
-    UI_STATE_NORMAL,    // Normal UI (icon + label)
-    UI_STATE_DRAGGING,  // Dragging UI (scaled icon only)
+    UI_STATE_NORMAL,              // Normal UI (icon + label)
+    UI_STATE_DRAGGING,            // Dragging UI (scaled icon only)
     UI_STATE_DROPPING_IN_FOLDER,  // Folder dropping preview UI
   };
 
@@ -114,7 +114,8 @@ class APP_LIST_EXPORT AppListItemView : public views::Button,
 
   // Sets |touch_dragging_| flag and updates UI.
   void SetTouchDragging(bool touch_dragging);
-  // Sets |mouse_dragging_| flag and updates UI.
+  // Sets |mouse_dragging_| flag and updates UI. Only to be called on
+  // |mouse_drag_timer_|.
   void SetMouseDragging(bool mouse_dragging);
 
   // Invoked when |mouse_drag_timer_| fires to show dragging UI.
@@ -157,9 +158,9 @@ class APP_LIST_EXPORT AppListItemView : public views::Button,
 
   AppListItem* item_weak_;  // Owned by AppListModel. Can be NULL.
 
-  AppsGridView* apps_grid_view_;   // Parent view, owns this.
-  views::ImageView* icon_;         // Strongly typed child view.
-  views::Label* title_;            // Strongly typed child view.
+  AppsGridView* apps_grid_view_;      // Parent view, owns this.
+  views::ImageView* icon_;            // Strongly typed child view.
+  views::Label* title_;               // Strongly typed child view.
   views::ProgressBar* progress_bar_;  // Strongly typed child view.
 
   std::unique_ptr<views::MenuRunner> context_menu_runner_;
