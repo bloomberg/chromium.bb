@@ -32,15 +32,10 @@
 
 #include "wayland-egl.h"
 #include "wayland-egl-backend.h"
+#include "wayland-util.h"
 
-/* GCC visibility */
-#if defined(__GNUC__)
-#define WL_EGL_EXPORT __attribute__ ((visibility("default")))
-#else
-#define WL_EGL_EXPORT
-#endif
 
-WL_EGL_EXPORT void
+WL_EXPORT void
 wl_egl_window_resize(struct wl_egl_window *egl_window,
 		     int width, int height,
 		     int dx, int dy)
@@ -57,7 +52,7 @@ wl_egl_window_resize(struct wl_egl_window *egl_window,
 		egl_window->resize_callback(egl_window, egl_window->private);
 }
 
-WL_EGL_EXPORT struct wl_egl_window *
+WL_EXPORT struct wl_egl_window *
 wl_egl_window_create(struct wl_surface *surface,
 		     int width, int height)
 {
@@ -90,7 +85,7 @@ wl_egl_window_create(struct wl_surface *surface,
 	return egl_window;
 }
 
-WL_EGL_EXPORT void
+WL_EXPORT void
 wl_egl_window_destroy(struct wl_egl_window *egl_window)
 {
 	if (egl_window->destroy_window_callback)
@@ -98,7 +93,7 @@ wl_egl_window_destroy(struct wl_egl_window *egl_window)
 	free(egl_window);
 }
 
-WL_EGL_EXPORT void
+WL_EXPORT void
 wl_egl_window_get_attached_size(struct wl_egl_window *egl_window,
 				int *width, int *height)
 {
