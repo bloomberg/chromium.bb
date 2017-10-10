@@ -381,7 +381,7 @@ public class PaymentManifestVerifier
             Set<URI> downloadedSupportedOrigins = new HashSet<>();
             for (int i = 0; i < supportedOrigins.length; i++) {
                 downloadedSupportedOrigins.add(supportedOrigins[i]);
-                mAppIdentifiersToCache.add(downloadedSupportedOrigins.toString());
+                mAppIdentifiersToCache.add(supportedOrigins[i].toString());
             }
             if (mIsManifestCacheStaleOrUnusable) {
                 downloadedSupportedOrigins.retainAll(mSupportedOrigins);
