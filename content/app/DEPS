@@ -13,4 +13,5 @@ include_rules = [
   "+mojo/android/system/mojo_jni_registrar.h",
   "+services/service_manager/embedder",
   "+services/service_manager/runner/common",
+  "+services/service_manager/sandbox/sandbox_type.h",
 ]

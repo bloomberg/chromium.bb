@@ -50,6 +50,9 @@ enum SandboxType {
   // The pdf compositor service process.
   SANDBOX_TYPE_PDF_COMPOSITOR,
 
+  // The profiling service process.
+  SANDBOX_TYPE_PROFILING,
+
   SANDBOX_TYPE_AFTER_LAST_TYPE,  // Placeholder to ease iteration.
 };
 

@@ -76,6 +76,8 @@ SandboxTypeToResourceIDMapping kDefaultSandboxTypeToResourceIDMapping[] = {
      service_manager::kSeatbeltPolicyString_nacl_loader},
     {service_manager::SANDBOX_TYPE_PDF_COMPOSITOR,
      service_manager::kSeatbeltPolicyString_ppapi},
+    {service_manager::SANDBOX_TYPE_PROFILING,
+     service_manager::kSeatbeltPolicyString_utility},
 };
 
 static_assert(arraysize(kDefaultSandboxTypeToResourceIDMapping) ==

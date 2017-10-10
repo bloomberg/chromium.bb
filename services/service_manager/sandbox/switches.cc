@@ -19,6 +19,7 @@ const char kPpapiSandbox[] = "ppapi";
 const char kUtilitySandbox[] = "utility";
 const char kCdmSandbox[] = "cdm";
 const char kPdfCompositorSandbox[] = "pdf_compositor";
+const char kProfilingSandbox[] = "profiling";
 
 // Flags spied upon from other layers.
 const char kGpuProcess[] = "gpu-process";

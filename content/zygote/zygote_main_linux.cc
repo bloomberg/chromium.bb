@@ -169,6 +169,7 @@ static void ProxyLocaltimeCallToBrowser(time_t input, struct tm* output,
 }
 
 static bool g_am_zygote_or_renderer = false;
+static bool g_use_localtime_override = true;
 
 // Sandbox interception of libc calls.
 //
@@ -193,9 +194,9 @@ static bool g_am_zygote_or_renderer = false;
 //
 // Our replacement functions can check this global and either proxy
 // the call to the browser over the sandbox IPC
-// (https://chromium.googlesource.com/chromium/src/+/master/docs/linux_sandbox_ipc.md) or they can use
-// dlsym with RTLD_NEXT to resolve the symbol, ignoring any symbols in the
-// current module.
+// (https://chromium.googlesource.com/chromium/src/+/master/docs/linux_sandbox_ipc.md)
+// or they can use dlsym with RTLD_NEXT to resolve the symbol, ignoring any
+// symbols in the current module.
 //
 // Other avenues:
 //
@@ -257,7 +258,7 @@ struct tm* localtime_override(const time_t* timep) __asm__ ("localtime");
 
 __attribute__ ((__visibility__("default")))
 struct tm* localtime_override(const time_t* timep) {
-  if (g_am_zygote_or_renderer) {
+  if (g_am_zygote_or_renderer && g_use_localtime_override) {
     static struct tm time_struct;
     static char timezone_string[64];
     ProxyLocaltimeCallToBrowser(*timep, &time_struct, timezone_string,
@@ -281,7 +282,7 @@ struct tm* localtime64_override(const time_t* timep) __asm__ ("localtime64");
 
 __attribute__ ((__visibility__("default")))
 struct tm* localtime64_override(const time_t* timep) {
-  if (g_am_zygote_or_renderer) {
+  if (g_am_zygote_or_renderer && g_use_localtime_override) {
     static struct tm time_struct;
     static char timezone_string[64];
     ProxyLocaltimeCallToBrowser(*timep, &time_struct, timezone_string,
@@ -305,7 +306,7 @@ struct tm* localtime_r_override(const time_t* timep,
 
 __attribute__ ((__visibility__("default")))
 struct tm* localtime_r_override(const time_t* timep, struct tm* result) {
-  if (g_am_zygote_or_renderer) {
+  if (g_am_zygote_or_renderer && g_use_localtime_override) {
     ProxyLocaltimeCallToBrowser(*timep, result, NULL, 0);
     return result;
   }
@@ -326,7 +327,7 @@ struct tm* localtime64_r_override(const time_t* timep,
 
 __attribute__ ((__visibility__("default")))
 struct tm* localtime64_r_override(const time_t* timep, struct tm* result) {
-  if (g_am_zygote_or_renderer) {
+  if (g_am_zygote_or_renderer && g_use_localtime_override) {
     ProxyLocaltimeCallToBrowser(*timep, result, NULL, 0);
     return result;
   }
@@ -601,6 +602,10 @@ bool ZygoteMain(
                 extra_fds);
   // This function call can return multiple times, once per fork().
   return zygote.ProcessRequests();
+}
+
+void DisableLocaltimeOverride() {
+  g_use_localtime_override = false;
 }
 
 }  // namespace content

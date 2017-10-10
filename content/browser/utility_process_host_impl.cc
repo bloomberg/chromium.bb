@@ -67,6 +67,7 @@ class UtilitySandboxedProcessLauncherDelegate
            sandbox_type_ == service_manager::SANDBOX_TYPE_NETWORK ||
            sandbox_type_ == service_manager::SANDBOX_TYPE_CDM ||
            sandbox_type_ == service_manager::SANDBOX_TYPE_PDF_COMPOSITOR ||
+           sandbox_type_ == service_manager::SANDBOX_TYPE_PROFILING ||
            sandbox_type_ == service_manager::SANDBOX_TYPE_PPAPI);
   }
 
