@@ -22,6 +22,7 @@
 #include "media/audio/mac/audio_auhal_mac.h"
 #include "media/audio/mac/audio_input_mac.h"
 #include "media/audio/mac/audio_low_latency_input_mac.h"
+#include "media/audio/mac/coreaudio_dispatch_override.h"
 #include "media/audio/mac/scoped_audio_unit.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/bind_to_current_loop.h"
@@ -891,6 +892,7 @@ AudioParameters AudioManagerMac::GetPreferredOutputStreamParameters(
 
 void AudioManagerMac::InitializeOnAudioThread() {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
+  InitializeCoreAudioDispatchOverride();
   power_observer_.reset(new AudioPowerObserver());
 }
 
