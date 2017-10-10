@@ -14,9 +14,6 @@ test(() => {
     div.style = 'image-orientation: 0;';
     div.style = 'rotate: 0;';
     div.style = 'offset-path: ray(0 closest-side);';
-    div.style = 'background-image: conic-gradient(from 0 at left top, red 0deg, green 180deg);';
-    div.style = 'background-image: conic-gradient(from 0deg at left top, red 0, green 180deg);';
-
     // These properties have their own counters.
     div.style = 'filter: hue-rotate(0);';
     div.style = 'offset-rotate: 0;';
@@ -31,5 +28,5 @@ test(() => {
     div.style = 'background-image: linear-gradient(0, red, black);';
     assert_true(isCounted(),
                 '0 should be counted');
-}, 'angle 0 is use counted for linear gradient');
+}, 'angle 0 is use counted for gradient');
 </script>
