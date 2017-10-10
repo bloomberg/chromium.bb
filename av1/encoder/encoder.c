@@ -5352,12 +5352,12 @@ static void dump_filtered_recon_frames(AV1_COMP *cpi) {
 }
 #endif  // DUMP_RECON_FRAMES
 
-static void make_update_tile_list_enc(AV1_COMP *cpi, const int tile_rows,
-                                      const int tile_cols,
+static void make_update_tile_list_enc(AV1_COMP *cpi, const int start_tile,
+                                      const int num_tiles,
                                       FRAME_CONTEXT *ec_ctxs[]) {
   int i;
-  for (i = 0; i < tile_rows * tile_cols; ++i)
-    ec_ctxs[i] = &cpi->tile_data[i].tctx;
+  for (i = start_tile; i < start_tile + num_tiles; ++i)
+    ec_ctxs[i - start_tile] = &cpi->tile_data[i].tctx;
 }
 
 static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
@@ -5366,11 +5366,16 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
   AV1_COMMON *const cm = &cpi->common;
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
   struct segmentation *const seg = &cm->seg;
-  FRAME_CONTEXT **tile_ctxs = aom_malloc(cm->tile_rows * cm->tile_cols *
-                                         sizeof(&cpi->tile_data[0].tctx));
-  aom_cdf_prob **cdf_ptrs =
-      aom_malloc(cm->tile_rows * cm->tile_cols *
-                 sizeof(&cpi->tile_data[0].tctx.partition_cdf[0][0]));
+#if CONFIG_SIMPLE_BWD_ADAPT
+  const int num_bwd_ctxs = 1;
+#else
+  const int num_bwd_ctxs = cm->tile_rows * cm->tile_cols;
+#endif
+
+  FRAME_CONTEXT **tile_ctxs =
+      aom_malloc(num_bwd_ctxs * sizeof(&cpi->tile_data[0].tctx));
+  aom_cdf_prob **cdf_ptrs = aom_malloc(
+      num_bwd_ctxs * sizeof(&cpi->tile_data[0].tctx.partition_cdf[0][0]));
 #if CONFIG_XIPHRC
   int frame_type;
   int drop_this_frame = 0;
@@ -5691,14 +5696,17 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
     av1_adapt_coef_probs(cm);
 #endif  // CONFIG_LV_MAP
     av1_adapt_intra_frame_probs(cm);
-    make_update_tile_list_enc(cpi, cm->tile_rows, cm->tile_cols, tile_ctxs);
+#if CONFIG_SIMPLE_BWD_ADAPT
+    make_update_tile_list_enc(cpi, cm->largest_tile_id, 1, tile_ctxs);
+#else
+    make_update_tile_list_enc(cpi, 0, num_bwd_ctxs, tile_ctxs);
+#endif
     av1_average_tile_coef_cdfs(cpi->common.fc, tile_ctxs, cdf_ptrs,
-                               cm->tile_rows * cm->tile_cols);
+                               num_bwd_ctxs);
     av1_average_tile_intra_cdfs(cpi->common.fc, tile_ctxs, cdf_ptrs,
-                                cm->tile_rows * cm->tile_cols);
+                                num_bwd_ctxs);
 #if CONFIG_PVQ
-    av1_average_tile_pvq_cdfs(cpi->common.fc, tile_ctxs,
-                              cm->tile_rows * cm->tile_cols);
+    av1_average_tile_pvq_cdfs(cpi->common.fc, tile_ctxs, num_bwd_ctxs);
 #endif  // CONFIG_PVQ
 #if CONFIG_ADAPT_SCAN
     av1_adapt_scan_order(cm);
@@ -5710,9 +5718,9 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
       av1_adapt_inter_frame_probs(cm);
       av1_adapt_mv_probs(cm, cm->allow_high_precision_mv);
       av1_average_tile_inter_cdfs(&cpi->common, cpi->common.fc, tile_ctxs,
-                                  cdf_ptrs, cm->tile_rows * cm->tile_cols);
+                                  cdf_ptrs, num_bwd_ctxs);
       av1_average_tile_mv_cdfs(cpi->common.fc, tile_ctxs, cdf_ptrs,
-                               cm->tile_rows * cm->tile_cols);
+                               num_bwd_ctxs);
     }
   }
 

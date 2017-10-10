@@ -3665,6 +3665,10 @@ static void get_tile_buffers(AV1Decoder *pbi, const uint8_t *data,
   int tile_group_start_row = 0;
 #endif
 
+#if CONFIG_SIMPLE_BWD_ADAPT
+  size_t max_tile_size = 0;
+  cm->largest_tile_id = 0;
+#endif
   for (r = 0; r < tile_rows; ++r) {
     for (c = 0; c < tile_cols; ++c, ++tc) {
       TileBufferDec *const buf = &tile_buffers[r][c];
@@ -3699,6 +3703,12 @@ static void get_tile_buffers(AV1Decoder *pbi, const uint8_t *data,
 #if CONFIG_DEPENDENT_HORZTILES
       cm->tile_group_start_row[r][c] = tile_group_start_row;
       cm->tile_group_start_col[r][c] = tile_group_start_col;
+#endif
+#if CONFIG_SIMPLE_BWD_ADAPT
+      if (buf->size > max_tile_size) {
+        max_tile_size = buf->size;
+        cm->largest_tile_id = r * tile_cols + c;
+      }
 #endif
     }
   }
@@ -5461,11 +5471,11 @@ BITSTREAM_PROFILE av1_read_profile(struct aom_read_bit_buffer *rb) {
   return (BITSTREAM_PROFILE)profile;
 }
 
-static void make_update_tile_list_dec(AV1Decoder *pbi, int tile_rows,
-                                      int tile_cols, FRAME_CONTEXT *ec_ctxs[]) {
+static void make_update_tile_list_dec(AV1Decoder *pbi, int start_tile,
+                                      int num_tile, FRAME_CONTEXT *ec_ctxs[]) {
   int i;
-  for (i = 0; i < tile_rows * tile_cols; ++i)
-    ec_ctxs[i] = &pbi->tile_data[i].tctx;
+  for (i = start_tile; i < start_tile + num_tile; ++i)
+    ec_ctxs[i - start_tile] = &pbi->tile_data[i].tctx;
 }
 
 #if CONFIG_FRAME_SUPERRES
@@ -5766,12 +5776,21 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
 
   if (!xd->corrupted) {
     if (cm->refresh_frame_context == REFRESH_FRAME_CONTEXT_BACKWARD) {
-      FRAME_CONTEXT **tile_ctxs = aom_malloc(cm->tile_rows * cm->tile_cols *
-                                             sizeof(&pbi->tile_data[0].tctx));
-      aom_cdf_prob **cdf_ptrs =
-          aom_malloc(cm->tile_rows * cm->tile_cols *
-                     sizeof(&pbi->tile_data[0].tctx.partition_cdf[0][0]));
-      make_update_tile_list_dec(pbi, cm->tile_rows, cm->tile_cols, tile_ctxs);
+#if CONFIG_SIMPLE_BWD_ADAPT
+      const int num_bwd_ctxs = 1;
+#else
+      const int num_bwd_ctxs = cm->tile_rows * cm->tile_cols;
+#endif
+      FRAME_CONTEXT **tile_ctxs =
+          aom_malloc(num_bwd_ctxs * sizeof(&pbi->tile_data[0].tctx));
+      aom_cdf_prob **cdf_ptrs = aom_malloc(
+          num_bwd_ctxs * sizeof(&pbi->tile_data[0].tctx.partition_cdf[0][0]));
+#if CONFIG_SIMPLE_BWD_ADAPT
+      make_update_tile_list_dec(pbi, cm->largest_tile_id, num_bwd_ctxs,
+                                tile_ctxs);
+#else
+      make_update_tile_list_dec(pbi, 0, num_bwd_ctxs, tile_ctxs);
+#endif
 #if CONFIG_LV_MAP
       av1_adapt_coef_probs(cm);
 #endif  // CONFIG_LV_MAP
@@ -5780,12 +5799,11 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
 #endif
       av1_adapt_intra_frame_probs(cm);
       av1_average_tile_coef_cdfs(pbi->common.fc, tile_ctxs, cdf_ptrs,
-                                 cm->tile_rows * cm->tile_cols);
+                                 num_bwd_ctxs);
       av1_average_tile_intra_cdfs(pbi->common.fc, tile_ctxs, cdf_ptrs,
-                                  cm->tile_rows * cm->tile_cols);
+                                  num_bwd_ctxs);
 #if CONFIG_PVQ
-      av1_average_tile_pvq_cdfs(pbi->common.fc, tile_ctxs,
-                                cm->tile_rows * cm->tile_cols);
+      av1_average_tile_pvq_cdfs(pbi->common.fc, tile_ctxs, num_bwd_ctxs);
 #endif  // CONFIG_PVQ
 #if CONFIG_ADAPT_SCAN
       av1_adapt_scan_order(cm);
@@ -5797,9 +5815,9 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
         av1_adapt_mv_probs(cm, cm->allow_high_precision_mv);
 #endif
         av1_average_tile_inter_cdfs(&pbi->common, pbi->common.fc, tile_ctxs,
-                                    cdf_ptrs, cm->tile_rows * cm->tile_cols);
+                                    cdf_ptrs, num_bwd_ctxs);
         av1_average_tile_mv_cdfs(pbi->common.fc, tile_ctxs, cdf_ptrs,
-                                 cm->tile_rows * cm->tile_cols);
+                                 num_bwd_ctxs);
       }
       aom_free(tile_ctxs);
       aom_free(cdf_ptrs);

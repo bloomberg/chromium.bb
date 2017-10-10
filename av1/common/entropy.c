@@ -2215,6 +2215,9 @@ void av1_average_tile_coef_cdfs(FRAME_CONTEXT *fc, FRAME_CONTEXT *ec_ctxs[],
   int i, cdf_size;
 
   aom_cdf_prob *fc_cdf_ptr;
+#if CONFIG_SIMPLE_BWD_ADAPT
+  assert(num_tiles == 1);
+#endif
 
 #if CONFIG_LV_MAP
   AVERAGE_TILE_CDFS(txb_skip_cdf)
@@ -2243,6 +2246,10 @@ void av1_average_tile_mv_cdfs(FRAME_CONTEXT *fc, FRAME_CONTEXT *ec_ctxs[],
 
   aom_cdf_prob *fc_cdf_ptr;
 
+#if CONFIG_SIMPLE_BWD_ADAPT
+  assert(num_tiles == 1);
+#endif
+
   int j;
   for (j = 0; j < NMV_CONTEXTS; ++j) {
     AVERAGE_TILE_CDFS(nmvc[j].joint_cdf)
@@ -2265,6 +2272,9 @@ void av1_average_tile_intra_cdfs(FRAME_CONTEXT *fc, FRAME_CONTEXT *ec_ctxs[],
                                  aom_cdf_prob *cdf_ptr[], int num_tiles) {
   int i, cdf_size;
 
+#if CONFIG_SIMPLE_BWD_ADAPT
+  assert(num_tiles == 1);
+#endif
   aom_cdf_prob *fc_cdf_ptr;
 
   AVERAGE_TILE_CDFS(tx_size_cdf)
@@ -2325,6 +2335,9 @@ void av1_average_tile_inter_cdfs(AV1_COMMON *cm, FRAME_CONTEXT *fc,
                                  aom_cdf_prob *cdf_ptr[], int num_tiles) {
   int i, cdf_size;
 
+#if CONFIG_SIMPLE_BWD_ADAPT
+  assert(num_tiles == 1);
+#endif
   aom_cdf_prob *fc_cdf_ptr;
 
 #if CONFIG_NEW_MULTISYMBOL

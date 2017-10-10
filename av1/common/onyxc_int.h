@@ -231,6 +231,9 @@ typedef struct AV1Common {
   // support additional planes.
   int subsampling_x;
   int subsampling_y;
+#if CONFIG_SIMPLE_BWD_ADAPT
+  int largest_tile_id;
+#endif
 
 #if CONFIG_HIGHBITDEPTH
   // Marks if we need to use 16bit frame buffers (1: yes, 0: no).

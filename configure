@@ -355,6 +355,7 @@ EXPERIMENT_LIST="
     ext_warped_motion
     restrict_compressed_hdr
     horzonly_frame_superres
+    simple_bwd_adapt
 "
 CONFIG_LIST="
     dependency_tracking
@@ -545,6 +546,7 @@ post_process_cmdline() {
       soft_enable ext_comp_refs
       soft_enable ext_delta_q
       soft_enable parallel_deblocking
+      soft_enable simple_bwd_adapt
     fi
 
     # Enable low-bitdepth pixel pipeline by default
