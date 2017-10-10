@@ -533,7 +533,6 @@ void LockContentsView::OnAuthenticate(bool auth_success) {
   if (auth_success) {
     unlock_attempt_ = 0;
     error_bubble_->Close();
-    LockScreen::Get()->Destroy();
   } else {
     ShowErrorMessage();
     ++unlock_attempt_;
