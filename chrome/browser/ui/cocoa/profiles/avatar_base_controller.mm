@@ -138,7 +138,7 @@ bool ProfileUpdateObserver::HasAvatarError() {
       ProfileChooserController* profileChooserController =
           base::mac::ObjCCastStrict<ProfileChooserController>(
               menuController_);
-      [profileChooserController initMenuContentsWithView:viewMode];
+      [profileChooserController showMenuWithViewMode:viewMode];
     }
     return;
   }

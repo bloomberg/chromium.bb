@@ -368,7 +368,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     if (viewMode == profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT ||
         viewMode == profiles::BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT ||
         viewMode == profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH) {
-      [controller_ initMenuContentsWithView:
+      [controller_ showMenuWithViewMode:
                        signin::IsAccountConsistencyMirrorEnabled()
                            ? profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT
                            : profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER];
@@ -379,8 +379,8 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     // Tokens can only be removed from the account management view. Refresh it
     // to show the update.
     if ([controller_ viewMode] == profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT)
-      [controller_ initMenuContentsWithView:
-          profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT];
+      [controller_
+          showMenuWithViewMode:profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT];
   }
 
   // AvatarMenuObserver:
@@ -388,7 +388,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     profiles::BubbleViewMode viewMode = [controller_ viewMode];
     if (viewMode == profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER ||
         viewMode == profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT) {
-      [controller_ initMenuContentsWithView:viewMode];
+      [controller_ showMenuWithViewMode:viewMode];
     }
   }
 
@@ -811,11 +811,11 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 }
 
 - (IBAction)showAccountManagement:(id)sender {
-  [self initMenuContentsWithView:profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT];
+  [self showMenuWithViewMode:profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT];
 }
 
 - (IBAction)hideAccountManagement:(id)sender {
-  [self initMenuContentsWithView:profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER];
+  [self showMenuWithViewMode:profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER];
 }
 
 - (IBAction)lockProfile:(id)sender {
@@ -828,7 +828,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     browser_->signin_view_controller()->ShowModalSignin(mode, browser_,
                                                         accessPoint_);
   } else {
-    [self initMenuContentsWithView:mode];
+    [self showMenuWithViewMode:mode];
   }
 }
 
@@ -846,9 +846,9 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
       browser_->profile())->GetAuthenticatedAccountId();
   bool hasAccountManagement =
       !primaryAccount.empty() && signin::IsAccountConsistencyMirrorEnabled();
-  [self initMenuContentsWithView:hasAccountManagement ?
-      profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT :
-      profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER];
+  [self showMenuWithViewMode:hasAccountManagement
+                                 ? profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT
+                                 : profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER];
 }
 
 - (IBAction)showAccountRemovalView:(id)sender {
@@ -865,7 +865,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     accountIdToRemove_ = currentProfileAccounts_[tag];
   }
 
-  [self initMenuContentsWithView:profiles::BUBBLE_VIEW_MODE_ACCOUNT_REMOVAL];
+  [self showMenuWithViewMode:profiles::BUBBLE_VIEW_MODE_ACCOUNT_REMOVAL];
 }
 
 - (IBAction)showSignoutView:(id)sender {
@@ -902,11 +902,11 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   [self postActionPerformed:ProfileMetrics::PROFILE_DESKTOP_MENU_REMOVE_ACCT];
   accountIdToRemove_.clear();
 
-  [self initMenuContentsWithView:profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT];
+  [self showMenuWithViewMode:profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT];
 }
 
 - (IBAction)showSwitchUserView:(id)sender {
-  [self initMenuContentsWithView:profiles::BUBBLE_VIEW_MODE_SWITCH_USER];
+  [self showMenuWithViewMode:profiles::BUBBLE_VIEW_MODE_SWITCH_USER];
   ProfileMetrics::LogProfileNewAvatarMenuUpgrade(
       ProfileMetrics::PROFILE_AVATAR_MENU_UPGRADE_NOT_YOU);
 }
@@ -927,7 +927,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
       SyncConfirmationUIClosed(LoginUIService::SYNC_WITH_DEFAULT_SETTINGS);
   ProfileMetrics::LogProfileNewAvatarMenuSignin(
       ProfileMetrics::PROFILE_AVATAR_MENU_SIGNIN_OK);
-  [self initMenuContentsWithView:profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER];
+  [self showMenuWithViewMode:profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER];
 }
 
 - (IBAction)disconnectProfile:(id)sender {
@@ -937,7 +937,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 }
 
 - (IBAction)navigateBackFromSwitchUserView:(id)sender {
-  [self initMenuContentsWithView:profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER];
+  [self showMenuWithViewMode:profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER];
   ProfileMetrics::LogProfileNewAvatarMenuNotYou(
       ProfileMetrics::PROFILE_AVATAR_MENU_NOT_YOU_BACK);
 }
@@ -1013,13 +1013,13 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
                          : info_bubble::kAlignTrailingEdgeToAnchorEdge];
     [[self bubble] setArrowLocation:info_bubble::kNoArrow];
     [[self bubble] setBackgroundColor:GetDialogBackgroundColor()];
-    [self initMenuContentsWithView:viewMode_];
+    [self showMenuWithViewMode:viewMode_];
   }
 
   return self;
 }
 
-- (void)initMenuContentsWithView:(profiles::BubbleViewMode)viewToDisplay {
+- (void)showMenuWithViewMode:(profiles::BubbleViewMode)viewToDisplay {
   if (browser_->profile()->IsSupervised() &&
       (viewToDisplay == profiles::BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT ||
        viewToDisplay == profiles::BUBBLE_VIEW_MODE_ACCOUNT_REMOVAL)) {
