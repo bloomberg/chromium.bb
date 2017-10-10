@@ -77,8 +77,8 @@ void AppWindowContentsImpl::NativeWindowChanged(
 }
 
 void AppWindowContentsImpl::NativeWindowClosed() {
-  content::RenderViewHost* rvh = web_contents_->GetRenderViewHost();
-  rvh->Send(new ExtensionMsg_AppWindowClosed(rvh->GetRoutingID()));
+  content::RenderFrameHost* rfh = web_contents_->GetMainFrame();
+  rfh->Send(new ExtensionMsg_AppWindowClosed(rfh->GetRoutingID()));
 }
 
 void AppWindowContentsImpl::OnWindowReady() {

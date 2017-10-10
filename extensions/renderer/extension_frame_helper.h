@@ -130,6 +130,7 @@ class ExtensionFrameHelper
                                 const std::string& function_name,
                                 const base::ListValue& args);
   void OnSetFrameName(const std::string& name);
+  void OnAppWindowClosed();
 
   // Type of view associated with the RenderFrame.
   ViewType view_type_;
