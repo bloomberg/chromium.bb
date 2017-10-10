@@ -203,7 +203,8 @@ class EventRouterFilterTest : public ExtensionsTest {
   EventRouter* event_router() { return EventRouter::Get(browser_context()); }
 
   const DictionaryValue* GetFilteredEvents(const std::string& extension_id) {
-    return event_router()->GetFilteredEvents(extension_id);
+    return event_router()->GetFilteredEvents(
+        extension_id, EventRouter::RegisteredEventType::kLazy);
   }
 
   bool ContainsFilter(const std::string& extension_id,

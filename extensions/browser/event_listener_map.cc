@@ -248,7 +248,7 @@ void EventListenerMap::LoadUnfilteredWorkerListeners(
         name, extension_id, nullptr,
         // TODO(lazyboy): We need to store correct scopes of each worker into
         // ExtensionPrefs for events. This currently assumes all workers are
-        // registered in the '/' scope.
+        // registered in the '/' scope. https://crbug.com/773103.
         Extension::GetBaseURLFromExtensionId(extension_id), kMainThreadId,
         nullptr));
   }
@@ -256,6 +256,7 @@ void EventListenerMap::LoadUnfilteredWorkerListeners(
 
 void EventListenerMap::LoadFilteredLazyListeners(
     const std::string& extension_id,
+    bool is_for_service_worker,
     const DictionaryValue& filtered) {
   for (DictionaryValue::Iterator it(filtered); !it.IsAtEnd(); it.Advance()) {
     // We skip entries if they are malformed.
@@ -266,11 +267,19 @@ void EventListenerMap::LoadFilteredLazyListeners(
       const DictionaryValue* filter = nullptr;
       if (!filter_list->GetDictionary(i, &filter))
         continue;
-      // Currently this is only used for lazy background page events.
-      // TODO(lazyboy): Add extension SW lazy events.
-      AddListener(
-          EventListener::ForExtension(it.key(), extension_id, nullptr,
-                                      base::WrapUnique(filter->DeepCopy())));
+      if (is_for_service_worker) {
+        AddListener(EventListener::ForExtensionServiceWorker(
+            it.key(), extension_id, nullptr,
+            // TODO(lazyboy): We need to store correct scopes of each worker
+            // into ExtensionPrefs for events. This currently assumes all
+            // workers are registered in the '/' scope.
+            // https://crbug.com/773103.
+            Extension::GetBaseURLFromExtensionId(extension_id), kMainThreadId,
+            nullptr));
+      } else {
+        AddListener(EventListener::ForExtension(it.key(), extension_id, nullptr,
+                                                filter->CreateDeepCopy()));
+      }
     }
   }
 }
