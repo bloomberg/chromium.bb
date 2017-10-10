@@ -30,10 +30,9 @@
 
 // Designated initializer, creates the widget view with a |target| for user
 // actions. |compactHeight| indicates the size to use in compact display.
-// |initiallyCompact| indicates which mode to display on initialization.
 - (instancetype)initWithActionTarget:(id<SearchWidgetViewActionTarget>)target
                        compactHeight:(CGFloat)compactHeight
-                    initiallyCompact:(BOOL)compact NS_DESIGNATED_INITIALIZER;
+    NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;
 - (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
 

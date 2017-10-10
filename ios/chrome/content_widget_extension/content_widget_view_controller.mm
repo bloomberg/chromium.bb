@@ -87,8 +87,7 @@ const CGFloat widgetCompactHeightIOS9 = 110;
   ContentWidgetView* widgetView =
       [[ContentWidgetView alloc] initWithDelegate:self
                                     compactHeight:height
-                                            width:width
-                                 initiallyCompact:self.isCompact];
+                                            width:width];
   self.widgetView = widgetView;
   [self.view addSubview:self.widgetView];
 
@@ -106,6 +105,10 @@ const CGFloat widgetCompactHeightIOS9 = 110;
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
   [self registerWidgetDisplay];
+
+  // |widgetActiveDisplayMode| does not contain a valid value in viewDidLoad. By
+  // the time viewWillAppear is called, it is correct, so set the mode here.
+  [self.widgetView showMode:self.isCompact];
 }
 
 - (void)widgetPerformUpdateWithCompletionHandler:

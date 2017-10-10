@@ -34,9 +34,8 @@ const CGFloat kMaxContentSize = 421;
 // section's height.
 @property(nonatomic, strong) NSLayoutConstraint* actionsSectionHeightConstraint;
 
-// Sets up the widget UI for an expanded or compact appearance based on
-// |compact|.
-- (void)createUI:(BOOL)compact;
+// Sets up the widget UI in compact mode.
+- (void)createUI;
 
 // Creates the views for the action buttons.
 - (void)createActionsView;
@@ -63,21 +62,20 @@ const CGFloat kMaxContentSize = 421;
 @synthesize actionsSectionHeightConstraint = _actionsSectionHeightConstraint;
 
 - (instancetype)initWithActionTarget:(id<SearchWidgetViewActionTarget>)target
-                       compactHeight:(CGFloat)compactHeight
-                    initiallyCompact:(BOOL)compact {
+                       compactHeight:(CGFloat)compactHeight {
   self = [super initWithFrame:CGRectZero];
   if (self) {
     DCHECK(target);
     _target = target;
     _compactHeight = compactHeight;
-    [self createUI:compact];
+    [self createUI];
   }
   return self;
 }
 
 #pragma mark - UI creation
 
-- (void)createUI:(BOOL)compact {
+- (void)createUI {
   [self createActionsView];
   _actionsSection.translatesAutoresizingMaskIntoConstraints = NO;
   [self addSubview:_actionsSection];
@@ -88,7 +86,7 @@ const CGFloat kMaxContentSize = 421;
   [self addSubview:_copiedURLSection];
 
   _actionsSectionHeightConstraint = [self.actionsSection.heightAnchor
-      constraintEqualToConstant:[self actionSectionHeight:compact]];
+      constraintEqualToConstant:[self actionSectionHeight:YES]];
 
   [NSLayoutConstraint activateConstraints:@[
     [_actionsSection.topAnchor constraintEqualToAnchor:self.topAnchor],
