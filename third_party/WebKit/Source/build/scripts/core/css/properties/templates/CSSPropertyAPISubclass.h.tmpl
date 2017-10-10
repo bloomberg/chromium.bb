@@ -125,6 +125,12 @@ class {{api_classname}} : public CSSPropertyAPI {
   {% if not property.affected_by_all %}
   bool IsAffectedByAll() const override { return false; }
   {% endif %}
+
+  {% if property.direction_aware %}
+  const CSSPropertyAPI& ResolveDirectionAwareProperty(
+      TextDirection,
+      WritingMode) const override;
+  {% endif %}
 };
 
 }  // namespace blink

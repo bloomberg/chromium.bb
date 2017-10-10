@@ -56,7 +56,11 @@ void StyleBuilder::ApplyProperty(CSSPropertyID property,
     case {{property_id}}:
     {% endfor %}
     {
-      CSSPropertyID resolvedProperty = CSSProperty::ResolveDirectionAwareProperty(property, state.Style()->Direction(), state.Style()->GetWritingMode());
+      CSSPropertyID resolvedProperty =
+          CSSPropertyAPI::Get(property)
+              .ResolveDirectionAwareProperty(state.Style()->Direction(),
+                                             state.Style()->GetWritingMode())
+              .PropertyID();
       DCHECK_NE(resolvedProperty, property);
       ApplyProperty(resolvedProperty, state, value);
       return;

@@ -10,7 +10,9 @@
 #define CSSPropertyAPI_h
 
 #include "core/CSSPropertyNames.h"
-#include "core/css/parser/CSSParserTokenRange.h"
+#include "platform/heap/HeapAllocator.h"
+#include "platform/text/TextDirection.h"
+#include "platform/text/WritingMode.h"
 
 namespace blink {
 
@@ -19,6 +21,12 @@ class CSSParserLocalContext;
 class CSSProperty;
 class CSSValue;
 class StyleResolverState;
+class StylePropertyShorthand;
+class CSSParserTokenRange;
+
+enum LogicalBoxSide { kBeforeSide, kEndSide, kAfterSide, kStartSide };
+enum LogicalExtent { kLogicalWidth, kLogicalHeight };
+enum PhysicalBoxSide { kTopSide, kRightSide, kBottomSide, kLeftSide };
 
 class CSSPropertyAPI {
  public:
@@ -66,6 +74,23 @@ class CSSPropertyAPI {
     NOTREACHED();
   }
   virtual bool IsAffectedByAll() const { return IsEnabled() && IsProperty(); }
+  virtual const CSSPropertyAPI& ResolveDirectionAwareProperty(
+      TextDirection,
+      WritingMode) const {
+    return *this;
+  }
+
+ protected:
+  static const CSSPropertyAPI& ResolveToPhysicalPropertyAPI(
+      TextDirection,
+      WritingMode,
+      LogicalBoxSide,
+      const StylePropertyShorthand&);
+  static const CSSPropertyAPI& ResolveToPhysicalPropertyAPI(
+      WritingMode,
+      LogicalExtent,
+      const CSSPropertyID*);
+  static const StylePropertyShorthand& BorderDirections();
 
  private:
   const CSSPropertyID id_;
