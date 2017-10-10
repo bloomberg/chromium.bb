@@ -727,6 +727,8 @@ void ShapeResult::CopyRange(unsigned start_offset,
             std::min(end_offset, EndIndexForResult()) -
                 std::max(start_offset, StartIndexForResult()));
   target->num_characters_ = index;
+
+  target->has_vertical_offsets_ |= has_vertical_offsets_;
 }
 
 RefPtr<ShapeResult> ShapeResult::CreateForTabulationCharacters(
