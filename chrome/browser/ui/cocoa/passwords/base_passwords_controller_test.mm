@@ -59,6 +59,9 @@ void ManagePasswordsControllerTest::SetUpSavePendingState(bool empty_username) {
   if (!empty_username) {
     form.username_value = base::ASCIIToUTF16("username");
   }
+  form.all_possible_passwords = {base::ASCIIToUTF16("000"),
+                                 base::ASCIIToUTF16("111")};
+  form.password_value = base::ASCIIToUTF16("000");
   EXPECT_CALL(*ui_controller_, GetPendingPassword()).WillOnce(ReturnRef(form));
   GURL origin(kSiteOrigin);
   EXPECT_CALL(*ui_controller_, GetOrigin()).WillOnce(ReturnRef(origin));
