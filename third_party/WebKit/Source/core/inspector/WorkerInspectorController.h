@@ -59,7 +59,7 @@ class WorkerInspectorController final
 
   CoreProbeSink* GetProbeSink() const { return probe_sink_.Get(); }
 
-  void ConnectFrontend(int session_id);
+  void ConnectFrontend(int session_id, const String& host_id);
   void DisconnectFrontend(int session_id);
   void DispatchMessageFromFrontend(int session_id, const String& message);
   void Dispose();
