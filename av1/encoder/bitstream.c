@@ -4783,8 +4783,7 @@ static void write_uncompressed_header_frame(AV1_COMP *cpi,
       }
     }
 
-    if (cm->delta_q_present_flag)
-      assert(segment_quantizer_active == 0 && cm->base_qindex > 0);
+    if (cm->delta_q_present_flag) assert(cm->base_qindex > 0);
     if (segment_quantizer_active == 0 && cm->base_qindex > 0) {
       aom_wb_write_bit(wb, cm->delta_q_present_flag);
       if (cm->delta_q_present_flag) {
