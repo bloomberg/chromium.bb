@@ -6,23 +6,14 @@ module viz.mojom;
 
 import "gpu/ipc/common/surface_handle.mojom";
 import "mojo/common/time.mojom";
+import "services/viz/privileged/interfaces/compositing/display_private.mojom";
+import "services/viz/privileged/interfaces/compositing/renderer_settings.mojom";
 import "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom";
 import "services/viz/public/interfaces/compositing/frame_sink_id.mojom";
 import "services/viz/public/interfaces/compositing/local_surface_id.mojom";
 import "services/viz/public/interfaces/compositing/surface_id.mojom";
 import "services/viz/public/interfaces/compositing/surface_info.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
-import "ui/gfx/mojo/color_space.mojom";
-import "services/viz/privileged/interfaces/compositing/renderer_settings.mojom";
-
-// See ui/compositor/compositor.h: ContextFactoryPrivate.
-// The DisplayPrivate is used by privileged clients to talk to Display.
-// DisplayPrivate would eventually replace or be used by ContextFactoryPrivate.
-interface DisplayPrivate {
-  SetDisplayVisible(bool visible);
-  SetDisplayColorSpace(gfx.mojom.ColorSpace color_space);
-  SetOutputIsSecure(bool secure);
-};
 
 // The FrameSinkManager interface is a privileged interface that allows the
 // frame sink manager host (browser or window server) to create

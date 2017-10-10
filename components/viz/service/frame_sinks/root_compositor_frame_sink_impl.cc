@@ -53,8 +53,9 @@ void RootCompositorFrameSinkImpl::SetDisplayVisible(bool visible) {
 }
 
 void RootCompositorFrameSinkImpl::SetDisplayColorSpace(
-    const gfx::ColorSpace& color_space) {
-  display_->SetColorSpace(color_space, color_space);
+    const gfx::ColorSpace& blending_color_space,
+    const gfx::ColorSpace& device_color_space) {
+  display_->SetColorSpace(blending_color_space, device_color_space);
 }
 
 void RootCompositorFrameSinkImpl::SetOutputIsSecure(bool secure) {
