@@ -2553,6 +2553,35 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Ash.DisplayColorManager.HasColorCorrectionMatrix"
+    enum="Boolean">
+  <owner>mcasas@chromium.org</owner>
+  <owner>dcastagna@chromium.org</owner>
+  <summary>
+    Whether a display has a &quot;CTM&quot; matrix properties that can be used
+    to set a color transform matrix. Recorded every time there is a display
+    configuration update.
+  </summary>
+</histogram>
+
+<histogram name="Ash.DisplayColorManager.IccFileFound" enum="Boolean">
+  <owner>mcasas@chromium.org</owner>
+  <owner>dcastagna@chromium.org</owner>
+  <summary>
+    This boolean keeps track if a request for an ICC for a specific product id
+    has been successful or not.
+  </summary>
+</histogram>
+
+<histogram name="Ash.DisplayColorManager.ValidProductId" enum="Boolean">
+  <owner>mcasas@chromium.org</owner>
+  <owner>dcastagna@chromium.org</owner>
+  <summary>
+    Whether we could parse a valid product id from a display EDID. Recorded
+    every time there is a display configuration update.
+  </summary>
+</histogram>
+
 <histogram name="Ash.Dock.Action" enum="DockedAction">
   <owner>kuscher@google.com</owner>
   <owner>varkha@chromium.org</owner>
