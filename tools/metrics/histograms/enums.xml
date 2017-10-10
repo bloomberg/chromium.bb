@@ -40551,6 +40551,17 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="3" label="Dismiss to open a newly installed WebAPK"/>
 </enum>
 
+<enum name="WebAppDisplayMode">
+  <summary>
+    The display mode of a web app (as defined in the Web App Manifest spec).
+  </summary>
+  <int value="0" label="Undefined"/>
+  <int value="1" label="Browser"/>
+  <int value="2" label="Minimal UI"/>
+  <int value="3" label="Standalone"/>
+  <int value="4" label="Fullscreen"/>
+</enum>
+
 <enum name="WebAudioAutoplayStatus">
   <int value="0" label="The AudioContext failed to autoplay"/>
   <int value="1" label="Failed to autoplay but start() called on user gesture"/>

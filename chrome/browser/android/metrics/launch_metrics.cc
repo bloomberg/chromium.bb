@@ -15,23 +15,21 @@
 #include "components/rappor/rappor_service_impl.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/LaunchMetrics_jni.h"
+#include "third_party/WebKit/public/platform/WebDisplayMode.h"
 #include "url/gurl.h"
 
 using base::android::JavaParamRef;
 
 namespace metrics {
 
-enum HomeScreenLaunch {
-  HOME_SCREEN_LAUNCH_STANDALONE = 0,
-  HOME_SCREEN_LAUNCH_SHORTCUT = 1,
-  HOME_SCREEN_LAUNCH_COUNT = 2
-};
+enum class HomeScreenLaunchType { STANDALONE = 0, SHORTCUT = 1, COUNT = 2 };
 
 static void RecordLaunch(JNIEnv* env,
                          const JavaParamRef<jclass>& caller,
-                         jboolean standalone,
+                         jboolean is_shortcut,
                          const JavaParamRef<jstring>& jurl,
                          int source,
+                         int display_mode,
                          const JavaParamRef<jobject>& jweb_contents) {
   // Interpolate the legacy ADD_TO_HOMESCREEN source into standalone/shortcut.
   // Unfortunately, we cannot concretely determine whether a standalone add to
@@ -39,10 +37,10 @@ static void RecordLaunch(JNIEnv* env,
   // a manifest with display: standalone.
   int histogram_source = source;
   if (histogram_source == ShortcutInfo::SOURCE_ADD_TO_HOMESCREEN_DEPRECATED) {
-    if (standalone)
-      histogram_source = ShortcutInfo::SOURCE_ADD_TO_HOMESCREEN_STANDALONE;
-    else
+    if (is_shortcut)
       histogram_source = ShortcutInfo::SOURCE_ADD_TO_HOMESCREEN_SHORTCUT;
+    else
+      histogram_source = ShortcutInfo::SOURCE_ADD_TO_HOMESCREEN_STANDALONE;
   }
 
   GURL url(base::android::ConvertJavaStringToUTF8(env, jurl));
@@ -97,16 +95,23 @@ static void RecordLaunch(JNIEnv* env,
                             static_cast<ShortcutInfo::Source>(histogram_source),
                             ShortcutInfo::SOURCE_COUNT);
 
+  if (!is_shortcut) {
+    UMA_HISTOGRAM_ENUMERATION("Launch.WebAppDisplayMode",
+                              static_cast<blink::WebDisplayMode>(display_mode),
+                              blink::WebDisplayMode::kWebDisplayModeLast + 1);
+  }
+
   rappor::SampleDomainAndRegistryFromGURL(g_browser_process->rappor_service(),
                                           rappor_metric_source, url);
 
-  HomeScreenLaunch action =
-      standalone ? HOME_SCREEN_LAUNCH_STANDALONE : HOME_SCREEN_LAUNCH_SHORTCUT;
-  std::string rappor_metric_action = standalone ? "Launch.HomeScreen.Standalone"
-                                                : "Launch.HomeScreen.Shortcut";
+  HomeScreenLaunchType action = is_shortcut ? HomeScreenLaunchType::SHORTCUT
+                                            : HomeScreenLaunchType::STANDALONE;
+  std::string rappor_metric_action = is_shortcut
+                                         ? "Launch.HomeScreen.Shortcut"
+                                         : "Launch.HomeScreen.Standalone";
 
   UMA_HISTOGRAM_ENUMERATION("Launch.HomeScreen", action,
-                            HOME_SCREEN_LAUNCH_COUNT);
+                            HomeScreenLaunchType::COUNT);
 
   rappor::SampleDomainAndRegistryFromGURL(g_browser_process->rappor_service(),
                                           rappor_metric_action, url);

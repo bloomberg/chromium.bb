@@ -93,7 +93,8 @@ public class WebappLauncherActivity extends Activity {
             if (validWebApk && (webappSource == ShortcutSource.UNKNOWN)) {
                 source = getWebApkSource(webappInfo);
             }
-            LaunchMetrics.recordHomeScreenLaunchIntoStandaloneActivity(webappUrl, source);
+            LaunchMetrics.recordHomeScreenLaunchIntoStandaloneActivity(
+                    webappUrl, source, webappInfo.displayMode());
 
             // Add all information needed to launch WebappActivity without {@link
             // WebappActivity#sWebappInfoMap} to launch intent. When the Android OS has killed a
