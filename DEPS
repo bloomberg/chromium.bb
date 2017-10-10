@@ -48,16 +48,8 @@ vars = {
   'checkout_src_internal': False,
 
   # TODO(dpranke): change to != "small" once != is supported.
-  # Download the instrumented libraries needed for the two MSAN configurations.
-  'checkout_instrumented_libraries': 'checkout_linux and checkout_configuration == "default"',
-
-  # Download the additional packages needed to run telemetry_unittests,
-  # telemetry_perf_unittests and the actual benchmarks.
-  'checkout_telemetry_binary_dependencies': 'checkout_configuration == "default"',
-
-  # Download the additional tools needed to verify that all of our network
-  # operations are correctly annotationed.
   'checkout_traffic_annotation_tools': 'checkout_configuration == "default"',
+  'checkout_instrumented_libraries': 'checkout_linux and checkout_configuration == "default"',
 
   'chromium_git': 'https://chromium.googlesource.com',
   'swiftshader_git': 'https://swiftshader.googlesource.com',
@@ -1055,8 +1047,9 @@ hooks = [
   {
     'name': 'fetch_telemetry_binary_dependencies',
     'pattern': '.',
-    'condition': 'checkout_telemetry_binary_dependencies',
     'action': [ 'python',
+                'src/tools/perf/conditionally_execute',
+                '--gyp-condition', 'fetch_telemetry_dependencies=1',
                 'src/third_party/catapult/telemetry/bin/fetch_telemetry_binary_dependencies',
     ],
   },
