@@ -161,6 +161,12 @@ DownloadArchivesTask::DownloadArchivesTask(
 DownloadArchivesTask::~DownloadArchivesTask() = default;
 
 void DownloadArchivesTask::Run() {
+  // Don't schedule any downloads if the download service can't be used at all.
+  if (prefetch_downloader_->IsDownloadServiceUnavailable()) {
+    TaskComplete();
+    return;
+  }
+
   prefetch_store_->Execute(
       base::BindOnce(SelectAndMarkItemsForDownloadSync),
       base::BindOnce(&DownloadArchivesTask::SendItemsToPrefetchDownloader,

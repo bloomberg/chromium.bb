@@ -51870,11 +51870,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="OfflinePages.Prefetching.StateCounts."
+<histogram name="OfflinePages.Prefetching.StateCounts"
     enum="OfflinePrefetchItemState">
   <owner>petewil@chromium.org</owner>
   <summary>
     A prefetch item was seen in this state when starting the background task.
+  </summary>
+</histogram>
+
+<histogram name="OfflinePages.Prefetching.UniqueUrlsAddedCount" units="urls">
+  <owner>dewittj@chromium.org</owner>
+  <summary>
+    When receiving suggestions in the prefetch pipeline, emits the number of new
+    suggestions added to the database. If there is an error, nothing is emitted.
   </summary>
 </histogram>
 
