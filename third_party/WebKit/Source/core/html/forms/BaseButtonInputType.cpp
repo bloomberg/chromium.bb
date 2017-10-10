@@ -33,8 +33,8 @@
 
 #include "core/dom/ShadowRoot.h"
 #include "core/dom/Text.h"
-#include "core/html/HTMLInputElement.h"
 #include "core/html/forms/HTMLFormElement.h"
+#include "core/html/forms/HTMLInputElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html_names.h"
 #include "core/layout/LayoutButton.h"

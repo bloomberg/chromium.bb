@@ -51,7 +51,7 @@
 #include "core/editing/spellcheck/TextCheckingParagraph.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
-#include "core/html/HTMLInputElement.h"
+#include "core/html/forms/HTMLInputElement.h"
 #include "core/html_names.h"
 #include "core/input_type_names.h"
 #include "core/layout/LayoutTextControl.h"

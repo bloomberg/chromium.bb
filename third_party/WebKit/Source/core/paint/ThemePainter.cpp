@@ -23,9 +23,9 @@
 
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/UseCounter.h"
-#include "core/html/HTMLInputElement.h"
 #include "core/html/forms/HTMLDataListElement.h"
 #include "core/html/forms/HTMLDataListOptionsCollection.h"
+#include "core/html/forms/HTMLInputElement.h"
 #include "core/html/forms/HTMLOptionElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/shadow/ShadowElementNames.h"

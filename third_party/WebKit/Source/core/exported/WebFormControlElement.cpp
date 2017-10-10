@@ -33,8 +33,8 @@
 #include "core/dom/NodeComputedStyle.h"
 #include "core/dom/events/Event.h"
 #include "core/html/HTMLFormControlElement.h"
-#include "core/html/HTMLInputElement.h"
 #include "core/html/forms/HTMLFormElement.h"
+#include "core/html/forms/HTMLInputElement.h"
 #include "core/html/forms/HTMLSelectElement.h"
 #include "core/html/forms/HTMLTextAreaElement.h"
 

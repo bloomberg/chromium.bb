@@ -62,7 +62,7 @@
 #include "core/html/HTMLDialogElement.h"
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/html/HTMLFrameSetElement.h"
-#include "core/html/HTMLInputElement.h"
+#include "core/html/forms/HTMLInputElement.h"
 #include "core/html_names.h"
 #include "core/input/EventHandlingUtil.h"
 #include "core/input/InputDeviceCapabilities.h"

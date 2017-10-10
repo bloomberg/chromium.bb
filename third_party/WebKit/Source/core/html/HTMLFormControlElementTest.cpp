@@ -7,7 +7,7 @@
 #include <memory>
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrameView.h"
-#include "core/html/HTMLInputElement.h"
+#include "core/html/forms/HTMLInputElement.h"
 #include "core/layout/LayoutObject.h"
 #include "core/loader/EmptyClients.h"
 #include "core/page/ScopedPageSuspender.h"

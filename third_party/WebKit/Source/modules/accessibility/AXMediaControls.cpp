@@ -28,7 +28,7 @@
 
 #include "modules/accessibility/AXMediaControls.h"
 
-#include "core/html/HTMLInputElement.h"
+#include "core/html/forms/HTMLInputElement.h"
 #include "core/layout/LayoutObject.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
 #include "modules/media_controls/elements/MediaControlElementsHelper.h"

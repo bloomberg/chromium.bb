@@ -5,7 +5,7 @@
 #ifndef MediaControlInputElement_h
 #define MediaControlInputElement_h
 
-#include "core/html/HTMLInputElement.h"
+#include "core/html/forms/HTMLInputElement.h"
 #include "modules/ModulesExport.h"
 #include "modules/media_controls/elements/MediaControlElementBase.h"
 

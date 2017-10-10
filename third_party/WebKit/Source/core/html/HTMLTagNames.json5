@@ -239,6 +239,7 @@
     {
       name: "input",
       constructorNeedsCreatedByParser: true,
+      interfaceHeaderDir: "core/html/forms",
     },
     {
       name: "ins",

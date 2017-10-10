@@ -7,7 +7,7 @@
 #include "core/html/forms/PasswordInputType.h"
 
 #include "core/frame/LocalFrameView.h"
-#include "core/html/HTMLInputElement.h"
+#include "core/html/forms/HTMLInputElement.h"
 #include "core/testing/DummyPageHolder.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "platform/testing/UnitTestHelpers.h"

@@ -34,7 +34,7 @@
 #include "core/css/StylePropertySet.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/Element.h"
-#include "core/html/HTMLInputElement.h"
+#include "core/html/forms/HTMLInputElement.h"
 #include "platform/Timer.h"
 #include "platform/scheduler/child/web_scheduler.h"
 #include "platform/wtf/HashFunctions.h"

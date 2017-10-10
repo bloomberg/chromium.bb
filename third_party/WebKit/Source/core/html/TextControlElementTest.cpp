@@ -9,7 +9,7 @@
 #include "core/editing/FrameSelection.h"
 #include "core/editing/Position.h"
 #include "core/frame/LocalFrameView.h"
-#include "core/html/HTMLInputElement.h"
+#include "core/html/forms/HTMLInputElement.h"
 #include "core/html/forms/HTMLTextAreaElement.h"
 #include "core/loader/EmptyClients.h"
 #include "core/testing/DummyPageHolder.h"

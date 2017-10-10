@@ -32,9 +32,9 @@
 
 #include "core/dom/ElementShadow.h"
 #include "core/dom/ShadowRoot.h"
-#include "core/html/HTMLInputElement.h"
 #include "core/html/forms/HTMLDataListElement.h"
 #include "core/html/forms/HTMLDataListOptionsCollection.h"
+#include "core/html/forms/HTMLInputElement.h"
 #include "core/html/forms/TextControlInnerElements.h"
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/html_names.h"

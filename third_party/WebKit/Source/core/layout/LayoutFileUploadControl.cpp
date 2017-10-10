@@ -24,7 +24,7 @@
 #include "core/dom/ShadowRoot.h"
 #include "core/editing/PositionWithAffinity.h"
 #include "core/fileapi/FileList.h"
-#include "core/html/HTMLInputElement.h"
+#include "core/html/forms/HTMLInputElement.h"
 #include "core/html_names.h"
 #include "core/input_type_names.h"
 #include "core/layout/LayoutTheme.h"
