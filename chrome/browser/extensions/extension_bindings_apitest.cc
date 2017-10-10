@@ -326,6 +326,11 @@ IN_PROC_BROWSER_TEST_P(ExtensionBindingsApiTest, ValidationInterception) {
   EXPECT_TRUE(caught);
 }
 
+IN_PROC_BROWSER_TEST_P(ExtensionBindingsApiTest, UncaughtExceptionLogging) {
+  ASSERT_TRUE(RunExtensionTest("bindings/uncaught_exception_logging"))
+      << message_;
+}
+
 // Run core bindings API tests with both native and JS-based bindings. This
 // ensures we have some minimum level of coverage while in the experimental
 // phase, when native bindings may be enabled on trunk but not at 100% stable.

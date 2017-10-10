@@ -420,12 +420,9 @@ source_set("unit_tests") {
     "//content/test:test_support",
     "//extensions:extensions_renderer_resources",
     "//extensions:test_support",
-    "//gin:gin_test",
-
-    # TODO(brettw) these tests should not be including headers from browser.
-    "//extensions/browser",
     "//extensions/common",
     "//gin",
+    "//gin:gin_test",
     "//ipc:test_support",
     "//mojo/edk/js",
     "//testing/gmock",
