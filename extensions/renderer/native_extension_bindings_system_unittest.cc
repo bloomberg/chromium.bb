@@ -2,13 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/renderer/native_extension_bindings_system_unittest.h"
+#include "extensions/renderer/native_extension_bindings_system_test_base.h"
 
-#include "base/memory/ptr_util.h"
-#include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "components/crx_file/id_util.h"
-#include "content/public/test/mock_render_thread.h"
 #include "extensions/common/extension_api.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/extension_messages.h"
@@ -18,13 +15,8 @@
 #include "extensions/renderer/bindings/api_binding_test_util.h"
 #include "extensions/renderer/bindings/api_invocation_errors.h"
 #include "extensions/renderer/message_target.h"
-#include "extensions/renderer/module_system.h"
 #include "extensions/renderer/native_extension_bindings_system.h"
-#include "extensions/renderer/safe_builtins.h"
 #include "extensions/renderer/script_context.h"
-#include "extensions/renderer/script_context_set.h"
-#include "extensions/renderer/test_extensions_renderer_client.h"
-#include "extensions/renderer/test_v8_extension_configuration.h"
 
 namespace extensions {
 
@@ -40,91 +32,6 @@ bool PropertyExists(v8::Local<v8::Context> context,
 };
 
 }  // namespace
-
-TestIPCMessageSender::TestIPCMessageSender() {}
-TestIPCMessageSender::~TestIPCMessageSender() {}
-void TestIPCMessageSender::SendRequestIPC(
-    ScriptContext* context,
-    std::unique_ptr<ExtensionHostMsg_Request_Params> params,
-    binding::RequestThread thread) {
-  last_params_ = std::move(params);
-}
-
-NativeExtensionBindingsSystemUnittest::NativeExtensionBindingsSystemUnittest() {
-}
-
-NativeExtensionBindingsSystemUnittest::
-    ~NativeExtensionBindingsSystemUnittest() {}
-
-v8::ExtensionConfiguration*
-NativeExtensionBindingsSystemUnittest::GetV8ExtensionConfiguration() {
-  return TestV8ExtensionConfiguration::GetConfiguration();
-}
-
-void NativeExtensionBindingsSystemUnittest::SetUp() {
-  render_thread_ = std::make_unique<content::MockRenderThread>();
-  script_context_set_ = std::make_unique<ScriptContextSet>(&extension_ids_);
-  auto ipc_message_sender = std::make_unique<TestIPCMessageSender>();
-  ipc_message_sender_ = ipc_message_sender.get();
-  bindings_system_ = std::make_unique<NativeExtensionBindingsSystem>(
-      std::move(ipc_message_sender));
-  APIBindingTest::SetUp();
-}
-
-void NativeExtensionBindingsSystemUnittest::TearDown() {
-  // Dispose all contexts now so we call WillReleaseScriptContext() on the
-  // bindings system.
-  DisposeAllContexts();
-
-  // ScriptContexts are deleted asynchronously by the ScriptContextSet, so we
-  // need spin here to ensure we don't leak. See also
-  // ScriptContextSet::Remove().
-  base::RunLoop().RunUntilIdle();
-
-  ASSERT_TRUE(raw_script_contexts_.empty());
-  script_context_set_.reset();
-  bindings_system_.reset();
-  render_thread_.reset();
-  APIBindingTest::TearDown();
-}
-
-ScriptContext* NativeExtensionBindingsSystemUnittest::CreateScriptContext(
-    v8::Local<v8::Context> v8_context,
-    Extension* extension,
-    Feature::Context context_type) {
-  auto script_context = std::make_unique<ScriptContext>(
-      v8_context, nullptr, extension, context_type, extension, context_type);
-  script_context->set_module_system(
-      std::make_unique<ModuleSystem>(script_context.get(), source_map()));
-  ScriptContext* raw_script_context = script_context.get();
-  raw_script_contexts_.push_back(raw_script_context);
-  script_context_set_->AddForTesting(std::move(script_context));
-  bindings_system_->DidCreateScriptContext(raw_script_context);
-  return raw_script_context;
-}
-
-void NativeExtensionBindingsSystemUnittest::OnWillDisposeContext(
-    v8::Local<v8::Context> context) {
-  auto iter =
-      std::find_if(raw_script_contexts_.begin(), raw_script_contexts_.end(),
-                   [context](ScriptContext* script_context) {
-                     return script_context->v8_context() == context;
-                   });
-  ASSERT_TRUE(iter != raw_script_contexts_.end());
-  bindings_system_->WillReleaseScriptContext(*iter);
-  script_context_set_->Remove(*iter);
-  raw_script_contexts_.erase(iter);
-}
-
-void NativeExtensionBindingsSystemUnittest::RegisterExtension(
-    scoped_refptr<const Extension> extension) {
-  extension_ids_.insert(extension->id());
-  RendererExtensionRegistry::Get()->Insert(extension);
-}
-
-bool NativeExtensionBindingsSystemUnittest::UseStrictIPCMessageSender() {
-  return false;
-}
 
 TEST_F(NativeExtensionBindingsSystemUnittest, Basic) {
   scoped_refptr<Extension> extension =

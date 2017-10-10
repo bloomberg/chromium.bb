@@ -14,7 +14,7 @@
 #include "extensions/renderer/bindings/api_binding_test_util.h"
 #include "extensions/renderer/message_target.h"
 #include "extensions/renderer/native_extension_bindings_system.h"
-#include "extensions/renderer/native_extension_bindings_system_unittest.h"
+#include "extensions/renderer/native_extension_bindings_system_test_base.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_context_set.h"
 

@@ -9,11 +9,14 @@
 #include <string>
 
 #include "base/macros.h"
+#include "extensions/common/api/messaging/message.h"
+#include "extensions/common/api/messaging/port_id.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/renderer/bindings/api_binding_test.h"
 #include "extensions/renderer/bindings/api_binding_types.h"
 #include "extensions/renderer/ipc_message_sender.h"
+#include "extensions/renderer/message_target.h"
 #include "extensions/renderer/string_source_map.h"
 #include "extensions/renderer/test_extensions_renderer_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -36,9 +39,8 @@ namespace extensions {
 class NativeExtensionBindingsSystem;
 class ScriptContext;
 class ScriptContextSet;
-struct PortId;
-struct Message;
 
+// A mocked-up IPC message sender for use in testing.
 class TestIPCMessageSender : public IPCMessageSender {
  public:
   TestIPCMessageSender();
