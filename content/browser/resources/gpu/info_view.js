@@ -232,6 +232,11 @@ cr.define('gpu', function() {
         else
           this.setTable_('gpu-memory-buffer-info', []);
 
+        if (gpuInfo.displayInfo)
+          this.setTable_('display-info', gpuInfo.displayInfo);
+        else
+          this.setTable_('display-info', []);
+
         if (gpuInfo.diagnostics) {
           diagnosticsDiv.hidden = false;
           diagnosticsLoadingDiv.hidden = true;
