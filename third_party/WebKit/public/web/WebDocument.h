@@ -32,7 +32,6 @@
 #define WebDocument_h
 
 #include "WebDraggableRegion.h"
-#include "WebExceptionCode.h"
 #include "WebFrame.h"
 #include "WebNode.h"
 #include "public/platform/WebColor.h"
@@ -125,8 +124,7 @@ class WebDocument : public WebNode {
 
   BLINK_EXPORT v8::Local<v8::Value> RegisterEmbedderCustomElement(
       const WebString& name,
-      v8::Local<v8::Value> options,
-      WebExceptionCode&);
+      v8::Local<v8::Value> options);
 
   BLINK_EXPORT WebURL ManifestURL() const;
   BLINK_EXPORT bool ManifestUseCredentials() const;
