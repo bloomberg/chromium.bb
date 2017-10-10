@@ -20,6 +20,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_runner_util.h"
@@ -679,6 +680,9 @@ int HeadlessShellMain(int argc, const char** argv) {
 // Crash reporting in headless mode is enabled by default in official builds.
 #if defined(GOOGLE_CHROME_BUILD)
   builder.SetCrashReporterEnabled(true);
+  base::FilePath dumps_path;
+  base::PathService::Get(base::DIR_TEMP, &dumps_path);
+  builder.SetCrashDumpsDir(dumps_path);
 #endif
 
   if (command_line.HasSwitch(switches::kEnableCrashReporter))
