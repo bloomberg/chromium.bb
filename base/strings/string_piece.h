@@ -175,13 +175,13 @@ template <typename STRING_TYPE> class BasicStringPiece {
   // We provide non-explicit singleton constructors so users can pass
   // in a "const char*" or a "string" wherever a "StringPiece" is
   // expected (likewise for char16, string16, StringPiece16).
-  BasicStringPiece() : ptr_(NULL), length_(0) {}
+  constexpr BasicStringPiece() : ptr_(NULL), length_(0) {}
   BasicStringPiece(const value_type* str)
       : ptr_(str),
         length_((str == NULL) ? 0 : STRING_TYPE::traits_type::length(str)) {}
   BasicStringPiece(const STRING_TYPE& str)
       : ptr_(str.data()), length_(str.size()) {}
-  BasicStringPiece(const value_type* offset, size_type len)
+  constexpr BasicStringPiece(const value_type* offset, size_type len)
       : ptr_(offset), length_(len) {}
   BasicStringPiece(const typename STRING_TYPE::const_iterator& begin,
                    const typename STRING_TYPE::const_iterator& end) {
@@ -201,9 +201,9 @@ template <typename STRING_TYPE> class BasicStringPiece {
   // returned buffer may or may not be null terminated.  Therefore it is
   // typically a mistake to pass data() to a routine that expects a NUL
   // terminated string.
-  const value_type* data() const { return ptr_; }
-  size_type size() const { return length_; }
-  size_type length() const { return length_; }
+  constexpr const value_type* data() const { return ptr_; }
+  constexpr size_type size() const { return length_; }
+  constexpr size_type length() const { return length_; }
   bool empty() const { return length_ == 0; }
 
   void clear() {
@@ -219,18 +219,16 @@ template <typename STRING_TYPE> class BasicStringPiece {
     length_ = str ? STRING_TYPE::traits_type::length(str) : 0;
   }
 
-  value_type operator[](size_type i) const { return ptr_[i]; }
+  constexpr value_type operator[](size_type i) const { return ptr_[i]; }
   value_type front() const { return ptr_[0]; }
   value_type back() const { return ptr_[length_ - 1]; }
 
-  void remove_prefix(size_type n) {
+  constexpr void remove_prefix(size_type n) {
     ptr_ += n;
     length_ -= n;
   }
 
-  void remove_suffix(size_type n) {
-    length_ -= n;
-  }
+  constexpr void remove_suffix(size_type n) { length_ -= n; }
 
   int compare(const BasicStringPiece<STRING_TYPE>& x) const {
     int r = wordmemcmp(

@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/strings/string_piece.h"
 #include "components/viz/service/viz_service_export.h"
 
 namespace gfx {
@@ -233,7 +234,7 @@ class VIZ_SERVICE_EXPORT FragmentShader {
   virtual std::string GetShaderSource() const;
   bool has_blend_mode() const { return blend_mode_ != BLEND_MODE_NONE; }
 
-  std::string SetBlendModeFunctions(const std::string& shader_string) const;
+  void SetBlendModeFunctions(std::string* shader_string) const;
 
   // Settings that are modified by sub-classes.
   AAMode aa_mode_ = NO_AA;
@@ -313,10 +314,10 @@ class VIZ_SERVICE_EXPORT FragmentShader {
  private:
   friend class Program;
 
-  std::string GetHelperFunctions() const;
-  std::string GetBlendFunction() const;
-  std::string GetBlendFunctionBodyForAlpha() const;
-  std::string GetBlendFunctionBodyForRGB() const;
+  void AppendHelperFunctions(std::string* buffer) const;
+  void AppendBlendFunction(std::string* buffer) const;
+  base::StringPiece GetBlendFunctionBodyForAlpha() const;
+  base::StringPiece GetBlendFunctionBodyForRGB() const;
 
   DISALLOW_COPY_AND_ASSIGN(FragmentShader);
 };
