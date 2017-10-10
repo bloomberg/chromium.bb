@@ -89,14 +89,15 @@ std::ostream& operator<<(std::ostream& out, const Http2PushPromiseFields& v) {
 // Http2PingFields:
 
 bool operator==(const Http2PingFields& a, const Http2PingFields& b) {
-  static_assert((sizeof a.opaque_data) == Http2PingFields::EncodedSize(),
+  static_assert((sizeof a.opaque_bytes) == Http2PingFields::EncodedSize(),
                 "Why not the same size?");
-  return 0 == std::memcmp(a.opaque_data, b.opaque_data, sizeof a.opaque_data);
+  return 0 ==
+         std::memcmp(a.opaque_bytes, b.opaque_bytes, sizeof a.opaque_bytes);
 }
 
 std::ostream& operator<<(std::ostream& out, const Http2PingFields& v) {
-  return out << "opaque_data=0x"
-             << Http2HexEncode(v.opaque_data, sizeof v.opaque_data);
+  return out << "opaque_bytes=0x"
+             << Http2HexEncode(v.opaque_bytes, sizeof v.opaque_bytes);
 }
 
 // Http2GoAwayFields:

@@ -35,7 +35,7 @@ void Randomize(Http2PushPromiseFields* p, RandomBase* rng) {
 }
 void Randomize(Http2PingFields* p, RandomBase* rng) {
   for (int ndx = 0; ndx < 8; ++ndx) {
-    p->opaque_data[ndx] = rng->Rand8();
+    p->opaque_bytes[ndx] = rng->Rand8();
   }
 }
 void Randomize(Http2GoAwayFields* p, RandomBase* rng) {

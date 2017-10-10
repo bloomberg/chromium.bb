@@ -380,7 +380,7 @@ TEST_F(Http2PingFieldsDecoderTest, DecodesLiteral) {
         0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
     };
     ASSERT_TRUE(DecodeLeadingStructure(kData));
-    EXPECT_EQ(ToStringPiece(kData), ToStringPiece(structure_.opaque_data));
+    EXPECT_EQ(ToStringPiece(kData), ToStringPiece(structure_.opaque_bytes));
   }
   {
     // All zeros, detect problems handling NULs.
@@ -388,14 +388,14 @@ TEST_F(Http2PingFieldsDecoderTest, DecodesLiteral) {
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     };
     ASSERT_TRUE(DecodeLeadingStructure(kData));
-    EXPECT_EQ(ToStringPiece(kData), ToStringPiece(structure_.opaque_data));
+    EXPECT_EQ(ToStringPiece(kData), ToStringPiece(structure_.opaque_bytes));
   }
   {
     const unsigned char kData[] = {
         0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
     };
     ASSERT_TRUE(DecodeLeadingStructure(kData));
-    EXPECT_EQ(ToStringPiece(kData), ToStringPiece(structure_.opaque_data));
+    EXPECT_EQ(ToStringPiece(kData), ToStringPiece(structure_.opaque_bytes));
   }
 }
 

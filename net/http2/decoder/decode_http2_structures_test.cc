@@ -294,7 +294,7 @@ TEST_F(PingFieldsDecoderTest, DecodesLiteral) {
     DecodeLeadingStructure(kData);
     if (!HasFailure()) {
       EXPECT_EQ(Http2StringPiece(kData, 8),
-                ToStringPiece(structure_.opaque_data));
+                ToStringPiece(structure_.opaque_bytes));
     }
   }
   {
@@ -305,7 +305,7 @@ TEST_F(PingFieldsDecoderTest, DecodesLiteral) {
     DecodeLeadingStructure(kData);
     if (!HasFailure()) {
       EXPECT_EQ(Http2StringPiece(kData, 8),
-                ToStringPiece(structure_.opaque_data));
+                ToStringPiece(structure_.opaque_bytes));
     }
   }
   {
@@ -315,7 +315,7 @@ TEST_F(PingFieldsDecoderTest, DecodesLiteral) {
     DecodeLeadingStructure(kData);
     if (!HasFailure()) {
       EXPECT_EQ(Http2StringPiece(kData, 8),
-                ToStringPiece(structure_.opaque_data));
+                ToStringPiece(structure_.opaque_bytes));
     }
   }
 }

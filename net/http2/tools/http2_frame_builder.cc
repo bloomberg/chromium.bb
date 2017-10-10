@@ -124,7 +124,7 @@ void Http2FrameBuilder::Append(const Http2PushPromiseFields& v) {
 }
 
 void Http2FrameBuilder::Append(const Http2PingFields& v) {
-  AppendBytes(v.opaque_data, sizeof Http2PingFields::opaque_data);
+  AppendBytes(v.opaque_bytes, sizeof Http2PingFields::opaque_bytes);
 }
 
 void Http2FrameBuilder::Append(const Http2GoAwayFields& v) {
