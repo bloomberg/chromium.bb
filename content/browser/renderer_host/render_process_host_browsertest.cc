@@ -389,8 +389,16 @@ class ObserverLogger : public RenderProcessHostObserver {
   bool host_destroyed_;
 };
 
+// Flaky on Android. http://crbug.com/759514.
+#if defined(OS_ANDROID)
+#define MAYBE_AllProcessExitedCallsBeforeAnyHostDestroyedCalls \
+  DISABLED_AllProcessExitedCallsBeforeAnyHostDestroyedCalls
+#else
+#define MAYBE_AllProcessExitedCallsBeforeAnyHostDestroyedCalls \
+  AllProcessExitedCallsBeforeAnyHostDestroyedCalls
+#endif
 IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
-                       AllProcessExitedCallsBeforeAnyHostDestroyedCalls) {
+                       MAYBE_AllProcessExitedCallsBeforeAnyHostDestroyedCalls) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL test_url = embedded_test_server()->GetURL("/simple_page.html");
