@@ -102,7 +102,7 @@ def _FindSymbolInfosAtOffset(offset_to_symbol_infos, offset):
     raise SymbolNotFoundException(offset)
 
 
-def _GetObjectFileNames(obj_dir):
+def GetObjectFileNames(obj_dir):
   """Returns the list of object files in a directory."""
   obj_files = []
   for (dirpath, _, filenames) in os.walk(obj_dir):
@@ -155,7 +155,7 @@ def GetSymbolToSectionsMapFromObjectFiles(obj_dir):
   Returns:
     A map {symbol_name: [section_name1, section_name2...]}
   """
-  object_files = _GetObjectFileNames(obj_dir)
+  object_files = GetObjectFileNames(obj_dir)
   symbol_to_sections_map = {}
   symbol_warnings = cygprofile_utils.WarningCollector(300)
   symbol_infos = _AllSymbolInfos(object_files)
