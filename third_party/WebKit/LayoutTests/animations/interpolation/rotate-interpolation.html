@@ -49,6 +49,19 @@ assertInterpolation({
 
 assertInterpolation({
   property: 'rotate',
+  from: 'inherit',
+  to: '270deg',
+}, [
+  {at: -1, is: '-90deg'},
+  {at: 0, is: '90deg'},
+  {at: 0.25, is: '135deg'},
+  {at: 0.75, is: '225deg'},
+  {at: 1, is: '270deg'},
+  {at: 2, is: '450deg'},
+]);
+
+assertInterpolation({
+  property: 'rotate',
   from: 'unset',
   to: '30deg',
 }, [
@@ -58,19 +71,6 @@ assertInterpolation({
   {at: 0.75, is: '22.5deg'},
   {at: 1, is: '30deg'},
   {at: 2, is: '60deg'},
-]);
-
-assertInterpolation({
-  property: 'rotate',
-  from: '100deg',
-  to: '-100deg',
-}, [
-  {at: -1, is: '300deg'},
-  {at: 0, is: '100deg'},
-  {at: 0.25, is: '50deg'},
-  {at: 0.75, is: '-50deg'},
-  {at: 1, is: '-100deg'},
-  {at: 2, is: '-300deg'},
 ]);
 
 assertInterpolation({
