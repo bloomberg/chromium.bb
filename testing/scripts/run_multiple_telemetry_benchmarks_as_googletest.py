@@ -47,7 +47,7 @@ import run_telemetry_benchmark_as_googletest
 
 def sharding_map_path():
   return os.path.join(
-      os.path.dirname(__file__), '..', '..', 'tools', 'perf', 'benchmarks',
+      os.path.dirname(__file__), '..', '..', 'tools', 'perf', 'core',
       'benchmark_sharding_map.json')
 
 def main():
@@ -78,7 +78,8 @@ def main():
   return_code = 0
 
   for benchmark in sharding:
-    per_benchmark_args = [benchmark] + rest_args[:]
+    # Insert benchmark name as first argument to run_benchmark call
+    per_benchmark_args = rest_args[:1] + [benchmark] + rest_args[1:]
     # We don't care exactly what these are. In particular, the perf results
     # could be any format (chartjson, legacy, histogram). We just pass these
     # through, and expose these as results for this task.
