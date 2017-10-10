@@ -15,9 +15,9 @@
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_positioner.h"
 #import "ios/chrome/browser/ui/bubble/bubble_view_anchor_point_provider.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
+#import "ios/chrome/browser/ui/toolbar/toolbar_view.h"
 #import "ios/chrome/browser/ui/tools_menu/tools_popup_controller.h"
 #include "ios/chrome/browser/ui/ui_util.h"
-#import "ios/chrome/browser/ui/util/relaxed_bounds_constraints_hittest.h"
 
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
@@ -86,23 +86,6 @@ typedef enum {
 
 // Toolbar frames shared with subclasses.
 extern const CGRect kToolbarFrame[INTERFACE_IDIOM_COUNT];
-
-// Create a thin wrapper around UIImageView to catch frame change and window
-// events.
-@protocol ToolbarFrameDelegate<NSObject>
-- (void)frameDidChangeFrame:(CGRect)newFrame fromFrame:(CGRect)oldFrame;
-- (void)windowDidChange;
-- (void)traitCollectionDidChange;
-@end
-
-@interface ToolbarView : UIView<RelaxedBoundsConstraintsHitTestSupport>
-// The delegate used to handle frame changes and windows events.
-@property(nonatomic, weak) id<ToolbarFrameDelegate> delegate;
-// Records whether or not the toolbar is currently involved in a transition
-// animation.
-@property(nonatomic, assign, getter=isAnimatingTransition)
-    BOOL animatingTransition;
-@end
 
 // Base class for a toolbar, containing the standard button set that is
 // common across different types of toolbars and action handlers for those
