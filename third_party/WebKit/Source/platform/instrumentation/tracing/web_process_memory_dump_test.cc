@@ -59,8 +59,10 @@ TEST(WebProcessMemoryDumpTest, IntegrationTest) {
   MemoryAllocatorDump::Entry expected("attr_name", "bytes", 42);
   ASSERT_THAT(mad->entries(), Contains(Eq(ByRef(expected))));
 
-  // Check that AsValueInto() doesn't cause a crash.
-  wpmd2->process_memory_dump()->AsValueInto(traced_value.get());
+  // Check that calling serialization routines doesn't cause a crash.
+  wpmd2->process_memory_dump()->SerializeAllocatorDumpsInto(traced_value.get());
+  wpmd2->process_memory_dump()->SerializeHeapProfilerDumpsInto(
+      traced_value.get());
 
   // Free the |wpmd2| to check that the memory ownership of the two MAD(s)
   // has been transferred to |wpmd1|.
@@ -80,9 +82,11 @@ TEST(WebProcessMemoryDumpTest, IntegrationTest) {
   ASSERT_NE(null_wmad, wpmd1->GetMemoryAllocatorDump("2/1"));
   ASSERT_NE(null_wmad, wpmd1->GetMemoryAllocatorDump("2/2"));
 
-  // Check that AsValueInto() doesn't cause a crash.
+  // Check that calling serialization routines doesn't cause a crash.
   traced_value.reset(new base::trace_event::TracedValue);
-  wpmd1->process_memory_dump()->AsValueInto(traced_value.get());
+  wpmd1->process_memory_dump()->SerializeAllocatorDumpsInto(traced_value.get());
+  wpmd1->process_memory_dump()->SerializeHeapProfilerDumpsInto(
+      traced_value.get());
 
   // Check that clear() actually works.
   wpmd1->Clear();
@@ -90,9 +94,11 @@ TEST(WebProcessMemoryDumpTest, IntegrationTest) {
   ASSERT_EQ(nullptr, wpmd1->process_memory_dump()->GetAllocatorDump("1/1"));
   ASSERT_EQ(nullptr, wpmd1->process_memory_dump()->GetAllocatorDump("2/1"));
 
-  // Check that AsValueInto() doesn't cause a crash.
+  // Check that calling serialization routines doesn't cause a crash.
   traced_value.reset(new base::trace_event::TracedValue);
-  wpmd1->process_memory_dump()->AsValueInto(traced_value.get());
+  wpmd1->process_memory_dump()->SerializeAllocatorDumpsInto(traced_value.get());
+  wpmd1->process_memory_dump()->SerializeHeapProfilerDumpsInto(
+      traced_value.get());
 
   // Check if a WebMemoryAllocatorDump created with guid, has correct guid.
   blink::WebMemoryAllocatorDumpGuid guid =

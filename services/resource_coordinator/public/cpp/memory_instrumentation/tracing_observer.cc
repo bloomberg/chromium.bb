@@ -136,7 +136,7 @@ bool TracingObserver::AddChromeDumpToTraceIfEnabled(
     return false;
 
   std::unique_ptr<TracedValue> traced_value = base::MakeUnique<TracedValue>();
-  process_memory_dump->AsValueInto(traced_value.get());
+  process_memory_dump->SerializeAllocatorDumpsInto(traced_value.get());
 
   AddToTrace(args, base::kNullProcessId, std::move(traced_value));
 

@@ -222,8 +222,12 @@ class BASE_EXPORT ProcessMemoryDump {
   // of the MemoryDumpProvider::OnMemoryDump(ProcessMemoryDump*) callback.
   void TakeAllDumpsFrom(ProcessMemoryDump* other);
 
-  // Called at trace generation time to populate the TracedValue.
-  void AsValueInto(TracedValue* value) const;
+  // Populate the traced value with information about the memory allocator
+  // dumps.
+  void SerializeAllocatorDumpsInto(TracedValue* value) const;
+
+  // Populate the traced value with information about the heap profiler.
+  void SerializeHeapProfilerDumpsInto(TracedValue* value) const;
 
   const HeapDumpsMap& heap_dumps() const { return heap_dumps_; }
 

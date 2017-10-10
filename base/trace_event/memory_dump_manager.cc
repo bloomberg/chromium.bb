@@ -47,6 +47,9 @@ namespace trace_event {
 
 namespace {
 
+const char* const kTraceEventArgNames[] = {"dumps"};
+const unsigned char kTraceEventArgTypes[] = {TRACE_VALUE_TYPE_CONVERTABLE};
+
 MemoryDumpManager* g_instance_for_testing = nullptr;
 
 // Temporary (until peak detector and scheduler are moved outside of here)
@@ -753,6 +756,33 @@ void MemoryDumpManager::FinishAsyncProcessDump(
   }
 
   TRACE_EVENT0(kTraceCategory, "MemoryDumpManager::FinishAsyncProcessDump");
+
+  // In the general case (allocators and edges) the serialization into the trace
+  // buffer is handled by the memory-infra service (see tracing_observer.cc).
+  // This special case below deals only with serialization of the heap profiler
+  // and is temporary given the upcoming work on the out-of-process heap
+  // profiler.
+  const auto& args = pmd_async_state->req_args;
+  if (args.level_of_detail == MemoryDumpLevelOfDetail::DETAILED) {
+    std::unique_ptr<TracedValue> traced_value = base::MakeUnique<TracedValue>();
+    pmd_async_state->process_memory_dump->SerializeHeapProfilerDumpsInto(
+        traced_value.get());
+
+    traced_value->SetString("level_of_detail",
+                            base::trace_event::MemoryDumpLevelOfDetailToString(
+                                args.level_of_detail));
+    std::unique_ptr<base::trace_event::ConvertableToTraceFormat> event_value(
+        std::move(traced_value));
+    TRACE_EVENT_API_ADD_TRACE_EVENT_WITH_PROCESS_ID(
+        TRACE_EVENT_PHASE_MEMORY_DUMP,
+        base::trace_event::TraceLog::GetCategoryGroupEnabled(
+            base::trace_event::MemoryDumpManager::kTraceCategory),
+        base::trace_event::MemoryDumpTypeToString(args.dump_type),
+        trace_event_internal::kGlobalScope, args.dump_guid,
+        base::kNullProcessId, 1 /* num_args */, kTraceEventArgNames,
+        kTraceEventArgTypes, nullptr /* arg_values */, &event_value,
+        TRACE_EVENT_FLAG_HAS_ID);
+  }
 
   if (!pmd_async_state->callback.is_null()) {
     pmd_async_state->callback.Run(
