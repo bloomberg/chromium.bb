@@ -557,6 +557,14 @@ bool operator==(const GURL& x, const base::StringPiece& spec) {
   return x.possibly_invalid_spec() == spec;
 }
 
+bool operator==(const base::StringPiece& spec, const GURL& x) {
+  return x == spec;
+}
+
 bool operator!=(const GURL& x, const base::StringPiece& spec) {
+  return !(x == spec);
+}
+
+bool operator!=(const base::StringPiece& spec, const GURL& x) {
   return !(x == spec);
 }
