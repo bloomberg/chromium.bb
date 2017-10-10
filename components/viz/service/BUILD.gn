@@ -119,7 +119,7 @@ viz_component("service") {
     "surfaces/surface.cc",
     "surfaces/surface.h",
     "surfaces/surface_client.h",
-    "surfaces/surface_deadline_observer.h",
+    "surfaces/surface_deadline_client.h",
     "surfaces/surface_dependency_deadline.cc",
     "surfaces/surface_dependency_deadline.h",
     "surfaces/surface_dependency_tracker.cc",

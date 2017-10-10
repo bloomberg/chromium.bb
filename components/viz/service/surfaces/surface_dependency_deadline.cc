@@ -7,8 +7,10 @@
 namespace viz {
 
 SurfaceDependencyDeadline::SurfaceDependencyDeadline(
+    SurfaceDeadlineClient* client,
     BeginFrameSource* begin_frame_source)
-    : begin_frame_source_(begin_frame_source) {
+    : client_(client), begin_frame_source_(begin_frame_source) {
+  DCHECK(client_);
   DCHECK(begin_frame_source_);
 }
 
@@ -63,8 +65,8 @@ void SurfaceDependencyDeadline::OnBeginFrame(const BeginFrameArgs& args) {
     return;
 
   Cancel();
-  for (auto& observer : observer_list_)
-    observer.OnDeadline();
+
+  client_->OnDeadline();
 }
 
 const BeginFrameArgs& SurfaceDependencyDeadline::LastUsedBeginFrameArgs()
