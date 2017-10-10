@@ -119,6 +119,7 @@ BUILT_SOURCES =					\
 
 CLEANFILES = $(BUILT_SOURCES) doc/doxygen/doxygen_sqlite3.db
 DISTCLEANFILES = src/wayland-version.h
+EXTRA_DIST =
 
 
 
@@ -143,6 +144,16 @@ libwayland_cursor_la_CFLAGS =			\
 	-I$(top_srcdir)/src			\
 	-DICONDIR=\"$(ICONDIR)\"
 
+lib_LTLIBRARIES += libwayland-egl.la
+
+libwayland_egl_la_SOURCES = egl/wayland-egl.c
+libwayland_egl_la_LDFLAGS = -version-info 1
+
+pkgconfig_DATA += egl/wayland-egl.pc
+
+## XXX: backend interface
+include_HEADERS += egl/wayland-egl-backend.h
+pkgconfig_DATA += egl/wayland-egl-backend.pc
 
 built_test_programs =				\
 	array-test				\
@@ -164,7 +175,13 @@ built_test_programs =				\
 	message-test				\
 	headers-test				\
 	compositor-introspection-test		\
-	protocol-logger-test
+	protocol-logger-test			\
+	wayland-egl-abi-check
+
+EXTRA_DIST += egl/wayland-egl-symbols-check
+
+check_PROGRAMS = wayland-egl-abi-check
+wayland_egl_abi_check_SOURCES = egl/wayland-egl-abi-check.c
 
 if ENABLE_CPP_TEST
 built_test_programs += cpp-compile-test
@@ -178,6 +195,7 @@ AM_TESTS_ENVIRONMENT =							\
 	;
 
 TESTS = $(built_test_programs)			\
+	egl/wayland-egl-symbols-check		\
 	tests/scanner-test.sh
 
 noinst_PROGRAMS =				\
@@ -263,7 +281,7 @@ os_wrappers_test_LDADD = libtest-runner.la
 exec_fd_leak_checker_SOURCES = tests/exec-fd-leak-checker.c
 exec_fd_leak_checker_LDADD = libtest-runner.la
 
-EXTRA_DIST = tests/scanner-test.sh			\
+EXTRA_DIST += tests/scanner-test.sh			\
 	protocol/tests.xml				\
 	tests/data/example.xml				\
 	tests/data/example-client.h			\
