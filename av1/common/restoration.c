@@ -1799,8 +1799,8 @@ int av1_loop_restoration_corners_in_sb(const struct AV1Common *cm, int plane,
 
   int rtile_w, rtile_h, nvtiles;
   av1_get_rest_ntiles(ss_frame_w, ss_frame_h,
-                      cm->rst_info[0].restoration_tilesize, &rtile_w, &rtile_h,
-                      nhtiles, &nvtiles);
+                      cm->rst_info[plane].restoration_tilesize, &rtile_w,
+                      &rtile_h, nhtiles, &nvtiles);
 
   const int rnd_w = rtile_w * denom - 1;
   const int rnd_h = rtile_h * denom - 1;
