@@ -166,19 +166,6 @@ TEST(VectorTest, ReverseIterator) {
   EXPECT_TRUE(end == it);
 }
 
-class DestructCounter {
- public:
-  explicit DestructCounter(int i, int* destruct_number)
-      : i_(i), destruct_number_(destruct_number) {}
-
-  ~DestructCounter() { ++(*destruct_number_); }
-  int Get() const { return i_; }
-
- private:
-  int i_;
-  int* destruct_number_;
-};
-
 typedef WTF::Vector<std::unique_ptr<DestructCounter>> OwnPtrVector;
 
 TEST(VectorTest, OwnPtr) {
