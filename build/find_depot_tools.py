@@ -29,7 +29,9 @@ def add_depot_tools_to_path():
   # First, check if we have a DEPS'd in "depot_tools".
   deps_depot_tools = os.path.join(SRC, 'third_party', 'depot_tools')
   if IsRealDepotTools(deps_depot_tools):
-    sys.path.append(deps_depot_tools)
+    # Put the pinned version at the start of the sys.path, in case there
+    # are other non-pinned versions already on the sys.path.
+    sys.path.insert(0, deps_depot_tools)
     return deps_depot_tools
 
   # Then look if depot_tools is already in PYTHONPATH.
