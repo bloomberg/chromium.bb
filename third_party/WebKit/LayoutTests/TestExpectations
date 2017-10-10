@@ -3695,7 +3695,6 @@ crbug.com/762486 virtual/mojo-loading/http/tests/security/xss-DENIED-iframe-src-
 crbug.com/763208 http/tests/devtools/sources/debugger-ui/source-frame-count.html [ Pass Failure ]
 crbug.com/763208 virtual/mojo-loading/http/tests/devtools/sources/debugger-ui/source-frame-count.html [ Pass Failure ]
 
-crbug.com/763666 external/wpt/infrastructure/assumptions/ahem.html [ Failure ]
 crbug.com/763667 external/wpt/upgrade-insecure-requests/iframe-redirect-upgrade.https.html [ Timeout ]
 
 # Sheriff failures 2017-09-11
