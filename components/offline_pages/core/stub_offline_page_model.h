@@ -65,6 +65,8 @@ class StubOfflinePageModel : public OfflinePageModel, public KeyedService {
       const MultipleOfflinePageItemCallback& callback) override;
   void GetPagesSupportedByDownloads(
       const MultipleOfflinePageItemCallback& callback) override;
+  const base::FilePath& GetArchiveDirectory(
+      const std::string& name_space) const override;
   ClientPolicyController* GetPolicyController() override;
   bool is_loaded() const override;
   OfflineEventLogger* GetLogger() override;
@@ -72,6 +74,7 @@ class StubOfflinePageModel : public OfflinePageModel, public KeyedService {
  private:
   ClientPolicyController policy_controller_;
   std::vector<int64_t> offline_ids_;
+  base::FilePath archive_directory_;
 };
 
 }  // namespace offline_pages
