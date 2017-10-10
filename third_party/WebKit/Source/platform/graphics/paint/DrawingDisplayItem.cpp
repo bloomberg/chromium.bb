@@ -110,7 +110,10 @@ bool DrawingDisplayItem::Equals(const DisplayItem& other) const {
 
   // Sometimes the client may produce different records for the same visual
   // result, which should be treated as equal.
-  return BitmapsEqual(std::move(record), std::move(other_record), bounds);
+  return BitmapsEqual(
+      std::move(record), std::move(other_record),
+      // Limit the bounds to prevent OOM.
+      Intersection(bounds, FloatRect(bounds.X(), bounds.Y(), 6000, 6000)));
 }
 
 }  // namespace blink
