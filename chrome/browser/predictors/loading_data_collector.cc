@@ -138,12 +138,11 @@ PageRequestSummary::PageRequestSummary(const PageRequestSummary& other) =
 
 void PageRequestSummary::UpdateOrAddToOrigins(
     const URLRequestSummary& request_summary) {
-  const GURL& request_url = request_summary.request_url;
-  DCHECK(request_url.is_valid());
-  if (!request_url.is_valid())
+  GURL origin = request_summary.request_url.GetOrigin();
+  DCHECK(origin.is_valid());
+  if (!origin.is_valid())
     return;
 
-  GURL origin = request_url.GetOrigin();
   auto it = origins.find(origin);
   if (it == origins.end()) {
     OriginRequestSummary summary;
@@ -159,6 +158,7 @@ void PageRequestSummary::UpdateOrAddToOrigins(
 
 PageRequestSummary::~PageRequestSummary() {}
 
+// static
 content::ResourceType LoadingDataCollector::GetResourceTypeFromMimeType(
     const std::string& mime_type,
     content::ResourceType fallback) {
@@ -182,6 +182,7 @@ content::ResourceType LoadingDataCollector::GetResourceTypeFromMimeType(
   return fallback;
 }
 
+// static
 content::ResourceType LoadingDataCollector::GetResourceType(
     content::ResourceType resource_type,
     const std::string& mime_type) {
@@ -235,6 +236,14 @@ bool LoadingDataCollector::ShouldRecordRedirect(net::URLRequest* response) {
 }
 
 // static
+bool LoadingDataCollector::ShouldRecordResourceFromMemoryCache(
+    const GURL& url,
+    content::ResourceType resource_type,
+    const std::string& mime_type) {
+  return IsHandledUrl(url) && IsHandledResourceType(resource_type, mime_type);
+}
+
+// static
 bool LoadingDataCollector::IsHandledMainPage(net::URLRequest* request) {
   const GURL& url = request->url();
   bool bad_port = !g_allow_port_in_urls && url.has_port();
@@ -245,12 +254,8 @@ bool LoadingDataCollector::IsHandledMainPage(net::URLRequest* request) {
 bool LoadingDataCollector::IsHandledSubresource(
     net::URLRequest* response,
     content::ResourceType resource_type) {
-  const GURL& url = response->url();
-  bool bad_port = !g_allow_port_in_urls && url.has_port();
-  if (!response->site_for_cookies().SchemeIsHTTPOrHTTPS() ||
-      !url.SchemeIsHTTPOrHTTPS() || bad_port) {
+  if (!response->site_for_cookies().SchemeIsHTTPOrHTTPS())
     return false;
-  }
 
   std::string mime_type;
   response->GetMimeType(&mime_type);
@@ -260,8 +265,8 @@ bool LoadingDataCollector::IsHandledSubresource(
   if (response->method() != "GET")
     return false;
 
-  if (response->original_url().spec().length() >
-      ResourcePrefetchPredictorTables::kMaxStringLength) {
+  if (!IsHandledUrl(response->url()) ||
+      !IsHandledUrl(response->original_url())) {
     return false;
   }
 
@@ -281,6 +286,18 @@ bool LoadingDataCollector::IsHandledResourceType(
          actual_resource_type == content::RESOURCE_TYPE_SCRIPT ||
          actual_resource_type == content::RESOURCE_TYPE_IMAGE ||
          actual_resource_type == content::RESOURCE_TYPE_FONT_RESOURCE;
+}
+
+// static
+bool LoadingDataCollector::IsHandledUrl(const GURL& url) {
+  bool bad_port = !g_allow_port_in_urls && url.has_port();
+  if (!url.is_valid() || !url.SchemeIsHTTPOrHTTPS() || bad_port)
+    return false;
+
+  if (url.spec().length() > ResourcePrefetchPredictorTables::kMaxStringLength)
+    return false;
+
+  return true;
 }
 
 // static
