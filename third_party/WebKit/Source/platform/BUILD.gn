@@ -2010,6 +2010,7 @@ test("blink_platform_perftests") {
     "//base/test:test_support",
     "//testing/gtest",
     "//testing/perf",
+    "//third_party/WebKit/Source/platform/scheduler:perf_tests",
   ]
 }
 
