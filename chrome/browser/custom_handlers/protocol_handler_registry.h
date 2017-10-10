@@ -52,6 +52,8 @@ class ProtocolHandlerRegistry : public KeyedService {
     virtual void RegisterWithOSAsDefaultClient(
         const std::string& protocol,
         ProtocolHandlerRegistry* registry);
+    virtual void CheckDefaultClientWithOS(const std::string& protocol,
+                                          ProtocolHandlerRegistry* registry);
   };
 
   // Forward declaration of the internal implementation class.

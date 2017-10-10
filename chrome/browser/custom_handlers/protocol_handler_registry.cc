@@ -259,6 +259,17 @@ void ProtocolHandlerRegistry::Delegate::RegisterWithOSAsDefaultClient(
       ->StartSetAsDefault();
 }
 
+void ProtocolHandlerRegistry::Delegate::CheckDefaultClientWithOS(
+    const std::string& protocol,
+    ProtocolHandlerRegistry* registry) {
+  // The worker pointer is reference counted. While it is running, the
+  // sequence it runs on will hold references it will be automatically freed
+  // once all its tasks have finished.
+  base::MakeRefCounted<shell_integration::DefaultProtocolClientWorker>(
+      registry->GetDefaultWebClientCallback(protocol), protocol)
+      ->StartCheckIsDefault();
+}
+
 // ProtocolHandlerRegistry -----------------------------------------------------
 
 ProtocolHandlerRegistry::ProtocolHandlerRegistry(
@@ -409,8 +420,7 @@ void ProtocolHandlerRegistry::InitProtocolSettings() {
   if (ShouldRemoveHandlersNotInOS()) {
     for (ProtocolHandlerMap::const_iterator p = default_handlers_.begin();
          p != default_handlers_.end(); ++p) {
-      ProtocolHandler handler = p->second;
-      delegate_->RegisterWithOSAsDefaultClient(handler.protocol(), this);
+      delegate_->CheckDefaultClientWithOS(p->second.protocol(), this);
     }
   }
 }
