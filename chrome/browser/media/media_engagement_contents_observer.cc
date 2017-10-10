@@ -159,6 +159,7 @@ void MediaEngagementContentsObserver::MediaStartedPlaying(
   PlayerState& state = GetPlayerState(media_player_id);
   state.playing = true;
   state.has_audio = media_player_info.has_audio;
+  state.has_video = media_player_info.has_video;
 
   MaybeInsertRemoveSignificantPlayer(media_player_id);
   UpdateTimer();
@@ -173,7 +174,8 @@ void MediaEngagementContentsObserver::
 
   PlayerState& state = GetPlayerState(id);
   if (!state.playing.value_or(false) || state.muted.value_or(true) ||
-      !state.has_audio.value_or(false) || state.score_recorded)
+      !state.has_audio.value_or(false) || !state.has_video.value_or(false) ||
+      state.score_recorded)
     return;
 
   int percentage = round(service_->GetEngagementScore(url) * 100);
@@ -229,7 +231,8 @@ MediaEngagementContentsObserver::GetInsignificantPlayerReasons(
                           InsignificantPlaybackReason::kMediaPaused);
   }
 
-  if (!state.significant_size.value_or(false)) {
+  if (!state.significant_size.value_or(false) &&
+      state.has_video.value_or(false)) {
     reasons.push_back(MediaEngagementContentsObserver::
                           InsignificantPlaybackReason::kFrameSizeTooSmall);
   }
@@ -245,7 +248,9 @@ MediaEngagementContentsObserver::GetInsignificantPlayerReasons(
 bool MediaEngagementContentsObserver::IsPlayerStateComplete(
     const PlayerState& state) {
   return state.muted.has_value() && state.playing.has_value() &&
-         state.significant_size.has_value() && state.has_audio.has_value();
+         state.has_audio.has_value() && state.has_video.has_value() &&
+         (!state.has_video.value_or(false) ||
+          state.significant_size.has_value());
 }
 
 void MediaEngagementContentsObserver::OnSignificantMediaPlaybackTime() {

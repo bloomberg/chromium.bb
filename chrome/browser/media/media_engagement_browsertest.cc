@@ -193,9 +193,22 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest, RecordEngagement) {
   ExpectScores(1, 1);
 }
 
+IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest, RecordEngagement_AudioOnly) {
+  LoadTestPageAndWaitForPlayAndAudible("engagement_test_audio.html");
+  AdvanceMeaningfulPlaybackTime();
+  ExpectScores(1, 1);
+}
+
 IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
                        DoNotRecordEngagement_NotTime) {
   LoadTestPageAndWaitForPlayAndAudible("engagement_test.html");
+  Advance(base::TimeDelta::FromSeconds(1));
+  ExpectScores(1, 0);
+}
+
+IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
+                       DoNotRecordEngagement_NotTime_AudioOnly) {
+  LoadTestPageAndWaitForPlayAndAudible("engagement_test_audio.html");
   Advance(base::TimeDelta::FromSeconds(1));
   ExpectScores(1, 0);
 }
@@ -209,8 +222,23 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
+                       DoNotRecordEngagement_TabMuted_AudioOnly) {
+  GetWebContents()->SetAudioMuted(true);
+  LoadTestPageAndWaitForPlayAndAudible("engagement_test_audio.html");
+  AdvanceMeaningfulPlaybackTime();
+  ExpectScores(1, 0);
+}
+
+IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
                        DoNotRecordEngagement_PlayerMuted) {
   LoadTestPageAndWaitForPlay("engagement_test_muted.html");
+  AdvanceMeaningfulPlaybackTime();
+  ExpectScores(1, 0);
+}
+
+IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
+                       DoNotRecordEngagement_PlayerMuted_AudioOnly) {
+  LoadTestPageAndWaitForPlay("engagement_test_audio_muted.html");
   AdvanceMeaningfulPlaybackTime();
   ExpectScores(1, 0);
 }
@@ -219,7 +247,16 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
                        DoNotRecordEngagement_PlaybackStopped) {
   LoadTestPageAndWaitForPlayAndAudible("engagement_test.html");
   Advance(base::TimeDelta::FromSeconds(1));
-  ExecuteScript("document.getElementById(\"video\").pause();");
+  ExecuteScript("document.getElementById(\"media\").pause();");
+  AdvanceMeaningfulPlaybackTime();
+  ExpectScores(1, 0);
+}
+
+IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
+                       DoNotRecordEngagement_PlaybackStopped_AudioOnly) {
+  LoadTestPageAndWaitForPlayAndAudible("engagement_test_audio.html");
+  Advance(base::TimeDelta::FromSeconds(1));
+  ExecuteScript("document.getElementById(\"media\").pause();");
   AdvanceMeaningfulPlaybackTime();
   ExpectScores(1, 0);
 }
@@ -227,6 +264,14 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
 IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
                        DoNotRecordEngagement_NotVisible) {
   LoadTestPageAndWaitForPlayAndAudible("engagement_test.html");
+  OpenTab();
+  AdvanceMeaningfulPlaybackTime();
+  ExpectScores(1, 0);
+}
+
+IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
+                       DoNotRecordEngagement_NotVisible_AudioOnly) {
+  LoadTestPageAndWaitForPlayAndAudible("engagement_test_audio.html");
   OpenTab();
   AdvanceMeaningfulPlaybackTime();
   ExpectScores(1, 0);
@@ -253,9 +298,28 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
   ExpectScores(1, 0);
 }
 
+IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
+                       DoNotRecordEngagement_SilentAudioTrack_AudioOnly) {
+  LoadTestPageAndWaitForPlay("engagement_test_silent_audio_track_audio.html");
+  AdvanceMeaningfulPlaybackTime();
+  ExpectScores(1, 0);
+}
+
 IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest, IFrameDelegation) {
   LoadTestPage("engagement_test_iframe.html");
   LoadSubFrame("engagement_test_iframe_child.html");
+
+  WaitForPlay();
+  WaitForWasRecentlyAudible();
+  AdvanceMeaningfulPlaybackTime();
+
+  ExpectScores(1, 1);
+  ExpectScoresSecondOrigin(0, 0);
+}
+
+IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest, IFrameDelegation_AudioOnly) {
+  LoadTestPage("engagement_test_iframe.html");
+  LoadSubFrame("engagement_test_iframe_audio_child.html");
 
   WaitForPlay();
   WaitForWasRecentlyAudible();

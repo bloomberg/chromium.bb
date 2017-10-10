@@ -110,6 +110,7 @@ class MediaEngagementContentsObserver : public content::WebContentsObserver {
     base::Optional<bool> significant_size;  // The video track has at least
                                             // a certain frame size.
     base::Optional<bool> has_audio;         // The media has an audio track.
+    base::Optional<bool> has_video;         // The media has a video track.
 
     // The engagement score of the origin at playback has been recorded
     // to a histogram.
