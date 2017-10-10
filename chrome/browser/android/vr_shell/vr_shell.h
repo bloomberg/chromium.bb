@@ -184,6 +184,7 @@ class VrShell : device::GvrGamepadDataProvider,
 
   void ProcessContentGesture(std::unique_ptr<blink::WebInputEvent> event);
 
+  void SetWebVRSecureOrigin(bool secure_origin);
   void ConnectPresentingService(
       device::mojom::VRSubmitFrameClientPtr submit_client,
       device::mojom::VRPresentationProviderRequest request,

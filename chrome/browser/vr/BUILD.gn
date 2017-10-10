@@ -146,8 +146,6 @@ static_library("vr_common") {
     "//components/url_formatter",
     "//components/vector_icons",
     "//components/vector_icons",
-    "//content/public/browser",
-    "//content/public/common",
     "//skia",
     "//ui/base",
     "//ui/display",

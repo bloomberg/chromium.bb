@@ -9,11 +9,9 @@
 
 #include "base/macros.h"
 
-#include "content/public/browser/web_contents_observer.h"
 #include "device/vr/vr_device.h"
 #include "device/vr/vr_service.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace vr {
 
@@ -24,13 +22,13 @@ class VRDisplayHost;
 // It instantiates a VRDisplayImpl for each newly connected VRDisplay and sends
 // the display's info to the render process through its connected
 // mojom::VRServiceClient.
-class VRServiceImpl : public device::mojom::VRService,
-                      content::WebContentsObserver {
+class VRServiceImpl : public device::mojom::VRService {
  public:
-  explicit VRServiceImpl(content::RenderFrameHost* render_frame_host);
+  VRServiceImpl(int render_frame_process_id, int render_frame_routing_id);
   ~VRServiceImpl() override;
 
-  static void Create(content::RenderFrameHost* render_frame_host,
+  static void Create(int render_frame_process_id,
+                     int render_frame_routing_id,
                      device::mojom::VRServiceRequest request);
 
   // device::mojom::VRService implementation
@@ -41,27 +39,17 @@ class VRServiceImpl : public device::mojom::VRService,
   // Tells the render process that a new VR device is available.
   void ConnectDevice(device::VRDevice* device);
 
- protected:
-  // Constructor for tests.
-  VRServiceImpl();
-
  private:
-  void SetBinding(mojo::StrongBindingPtr<VRService> binding);
-
-  // device::mojom::VRService implementation
   void SetListeningForActivate(bool listening) override;
 
-  // content::WebContentsObserver implementation
-  void OnWebContentsFocused(content::RenderWidgetHost* host) override;
-  void OnWebContentsLostFocus(content::RenderWidgetHost* host) override;
-  void RenderFrameDeleted(content::RenderFrameHost* host) override;
-
-  void OnWebContentsFocusChanged(content::RenderWidgetHost* host, bool focused);
-
   std::map<device::VRDevice*, std::unique_ptr<VRDisplayHost>> displays_;
+
   device::mojom::VRServiceClientPtr client_;
-  content::RenderFrameHost* render_frame_host_;
-  mojo::StrongBindingPtr<VRService> binding_;
+
+  const int render_frame_process_id_;
+  const int render_frame_routing_id_;
+
+  base::WeakPtrFactory<VRServiceImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(VRServiceImpl);
 };
