@@ -164,13 +164,24 @@ class CONTENT_EXPORT AudioInputSyncWriter
   // It should ideally be rare, but we need to guarantee that the data arrives
   // since audio processing such as echo cancelling requires that to perform
   // properly.
-  std::vector<std::unique_ptr<media::AudioBus>> overflow_buses_;
-  struct OverflowParams {
-    double volume;
-    bool key_pressed;
-    base::TimeTicks capture_time;
+  struct OverflowData {
+    OverflowData(double volume,
+                 bool key_pressed,
+                 base::TimeTicks capture_time,
+                 std::unique_ptr<media::AudioBus> audio_bus);
+    ~OverflowData();
+    OverflowData(OverflowData&&);
+    OverflowData& operator=(OverflowData&& other);
+    double volume_;
+    bool key_pressed_;
+    base::TimeTicks capture_time_;
+    std::unique_ptr<media::AudioBus> audio_bus_;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(OverflowData);
   };
-  base::circular_deque<OverflowParams> overflow_params_;
+
+  std::vector<OverflowData> overflow_data_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(AudioInputSyncWriter);
 };
