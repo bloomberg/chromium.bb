@@ -110,8 +110,14 @@ BrowserSideControllerServiceWorker::BrowserSideControllerServiceWorker(
   DCHECK(receiver_version_);
 }
 
-BrowserSideControllerServiceWorker::~BrowserSideControllerServiceWorker() =
-    default;
+BrowserSideControllerServiceWorker::~BrowserSideControllerServiceWorker() {
+  for (base::IDMap<std::unique_ptr<DispatchFetchEventCallback>>::iterator iter(
+           &fetch_event_callbacks_);
+       !iter.IsAtEnd(); iter.Advance()) {
+    std::move(*iter.GetCurrentValue())
+        .Run(blink::mojom::ServiceWorkerEventStatus::ABORTED, base::Time());
+  }
+}
 
 void BrowserSideControllerServiceWorker::AddBinding(
     mojom::ControllerServiceWorkerRequest request) {
