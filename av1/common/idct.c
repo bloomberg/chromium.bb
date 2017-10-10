@@ -352,7 +352,7 @@ int idx_selfloop_wrt_mode(PREDICTION_MODE mode, int is_col) {
     case SMOOTH_PRED:
       // predition is good for both directions: large SLs for row and col
       return 3;
-    case TM_PRED: return 0;
+    case PAETH_PRED: return 0;
 #if CONFIG_SMOOTH_HV
     case SMOOTH_H_PRED:
 #endif
@@ -422,8 +422,8 @@ void get_lgt4_from_pred(const TxfmParam *txfm_param, int is_col,
     // typically yields very smooth residues so having the break point
     // does not usually improve the RD result.
     return;
-  } else if (mode == TM_PRED) {
-    // TM_PRED: use both 1D top boundary and 1D left boundary
+  } else if (mode == PAETH_PRED) {
+    // PAETH_PRED: use both 1D top boundary and 1D left boundary
     if (is_col)
       for (int i = 0; i < 4; ++i) arr[i] = dst[i * stride];
     else
@@ -455,7 +455,7 @@ void get_lgt4_from_pred(const TxfmParam *txfm_param, int is_col,
   } else if (mode == D135_PRED || mode == D153_PRED || mode == D207_PRED) {
     // directional modes closer to horizontal
     if (is_col) get_discontinuity_2d(dst, stride, 4, 1, &bp, ntx);
-  } else if (mode > TM_PRED) {
+  } else if (mode > PAETH_PRED) {
     // inter
     get_discontinuity_2d(dst, stride, 4, is_col, &bp, ntx);
   }
@@ -495,7 +495,7 @@ void get_lgt8_from_pred(const TxfmParam *txfm_param, int is_col,
 
   if (mode == DC_PRED || mode == SMOOTH_PRED) {
     return;
-  } else if (mode == TM_PRED) {
+  } else if (mode == PAETH_PRED) {
     if (is_col)
       for (int i = 0; i < 8; ++i) arr[i] = dst[i * stride];
     else
@@ -523,7 +523,7 @@ void get_lgt8_from_pred(const TxfmParam *txfm_param, int is_col,
     if (!is_col) get_discontinuity_2d(dst, stride, 8, 0, &bp, ntx);
   } else if (mode == D135_PRED || mode == D153_PRED || mode == D207_PRED) {
     if (is_col) get_discontinuity_2d(dst, stride, 8, 1, &bp, ntx);
-  } else if (mode > TM_PRED) {
+  } else if (mode > PAETH_PRED) {
     get_discontinuity_2d(dst, stride, 8, is_col, &bp, ntx);
   }
 
@@ -551,7 +551,7 @@ void get_lgt16up_from_pred(const TxfmParam *txfm_param, int is_col,
 
   switch (mode) {
     case DC_PRED:
-    case TM_PRED:
+    case PAETH_PRED:
     case SMOOTH_PRED:
       // prediction from both top and left -> ADST
       lgtmtx[0] = adstmtx;

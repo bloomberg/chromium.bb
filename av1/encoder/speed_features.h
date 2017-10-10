@@ -25,7 +25,7 @@ enum {
 #if CONFIG_SMOOTH_HV
               (1 << SMOOTH_V_PRED) | (1 << SMOOTH_H_PRED) |
 #endif  // CONFIG_SMOOTH_HV
-              (1 << TM_PRED),
+              (1 << PAETH_PRED),
 #if CONFIG_CFL
   UV_INTRA_ALL = (1 << UV_DC_PRED) | (1 << UV_V_PRED) | (1 << UV_H_PRED) |
                  (1 << UV_D45_PRED) | (1 << UV_D135_PRED) |
@@ -35,26 +35,26 @@ enum {
 #if CONFIG_SMOOTH_HV
                  (1 << UV_SMOOTH_V_PRED) | (1 << UV_SMOOTH_H_PRED) |
 #endif  // CONFIG_SMOOTH_HV
-                 (1 << UV_TM_PRED) | (1 << UV_CFL_PRED),
+                 (1 << UV_PAETH_PRED) | (1 << UV_CFL_PRED),
   UV_INTRA_DC = (1 << UV_DC_PRED),
   UV_INTRA_DC_CFL = (1 << UV_DC_PRED) | (1 << UV_CFL_PRED),
-  UV_INTRA_DC_TM = (1 << UV_DC_PRED) | (1 << UV_TM_PRED),
-  UV_INTRA_DC_TM_CFL =
-      (1 << UV_DC_PRED) | (1 << UV_TM_PRED) | (1 << UV_CFL_PRED),
+  UV_INTRA_DC_TM = (1 << UV_DC_PRED) | (1 << UV_PAETH_PRED),
+  UV_INTRA_DC_PAETH_CFL =
+      (1 << UV_DC_PRED) | (1 << UV_PAETH_PRED) | (1 << UV_CFL_PRED),
   UV_INTRA_DC_H_V = (1 << UV_DC_PRED) | (1 << UV_V_PRED) | (1 << UV_H_PRED),
   UV_INTRA_DC_H_V_CFL = (1 << UV_DC_PRED) | (1 << UV_V_PRED) |
                         (1 << UV_H_PRED) | (1 << UV_CFL_PRED),
-  UV_INTRA_DC_TM_H_V = (1 << UV_DC_PRED) | (1 << UV_TM_PRED) |
-                       (1 << UV_V_PRED) | (1 << UV_H_PRED),
-  UV_INTRA_DC_TM_H_V_CFL = (1 << UV_DC_PRED) | (1 << UV_TM_PRED) |
-                           (1 << UV_V_PRED) | (1 << UV_H_PRED) |
-                           (1 << UV_CFL_PRED),
+  UV_INTRA_DC_PAETH_H_V = (1 << UV_DC_PRED) | (1 << UV_PAETH_PRED) |
+                          (1 << UV_V_PRED) | (1 << UV_H_PRED),
+  UV_INTRA_DC_PAETH_H_V_CFL = (1 << UV_DC_PRED) | (1 << UV_PAETH_PRED) |
+                              (1 << UV_V_PRED) | (1 << UV_H_PRED) |
+                              (1 << UV_CFL_PRED),
 #endif  // CONFIG_CFL
   INTRA_DC = (1 << DC_PRED),
-  INTRA_DC_TM = (1 << DC_PRED) | (1 << TM_PRED),
+  INTRA_DC_TM = (1 << DC_PRED) | (1 << PAETH_PRED),
   INTRA_DC_H_V = (1 << DC_PRED) | (1 << V_PRED) | (1 << H_PRED),
-  INTRA_DC_TM_H_V =
-      (1 << DC_PRED) | (1 << TM_PRED) | (1 << V_PRED) | (1 << H_PRED)
+  INTRA_DC_PAETH_H_V =
+      (1 << DC_PRED) | (1 << PAETH_PRED) | (1 << V_PRED) | (1 << H_PRED)
 };
 
 enum {

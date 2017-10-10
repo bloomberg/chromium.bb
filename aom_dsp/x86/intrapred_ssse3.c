@@ -15,7 +15,7 @@
 #include "aom_dsp/intrapred_common.h"
 
 // -----------------------------------------------------------------------------
-// TM_PRED
+// PAETH_PRED
 
 // Return 8 16-bit pixels in one row
 static INLINE __m128i paeth_8x1_pred(const __m128i *left, const __m128i *top,

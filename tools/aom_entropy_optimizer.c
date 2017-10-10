@@ -32,8 +32,8 @@
 const aom_tree_index av1_intra_mode_tree[TREE_SIZE(INTRA_MODES)] = {
   -DC_PRED,
   2, /* 0 = DC_NODE */
-  -TM_PRED,
-  4, /* 1 = TM_NODE */
+  -PAETH_PRED,
+  4, /* 1 = PAETH_NODE */
   -V_PRED,
   6, /* 2 = V_NODE */
   8,
@@ -57,16 +57,16 @@ const aom_tree_index av1_intra_mode_tree[TREE_SIZE(INTRA_MODES)] = {
 };
 #else
 const aom_tree_index av1_intra_mode_tree[TREE_SIZE(INTRA_MODES)] = {
-  -DC_PRED,   2,            /* 0 = DC_NODE */
-  -TM_PRED,   4,            /* 1 = TM_NODE */
-  -V_PRED,    6,            /* 2 = V_NODE */
-  8,          12,           /* 3 = COM_NODE */
-  -H_PRED,    10,           /* 4 = H_NODE */
-  -D135_PRED, -D117_PRED,   /* 5 = D135_NODE */
-  -D45_PRED,  14,           /* 6 = D45_NODE */
-  -D63_PRED,  16,           /* 7 = D63_NODE */
-  -D153_PRED, 18,           /* 8 = D153_NODE */
-  -D207_PRED, -SMOOTH_PRED, /* 9 = D207_NODE */
+  -DC_PRED,    2,            /* 0 = DC_NODE */
+  -PAETH_PRED, 4,            /* 1 = PAETH_NODE */
+  -V_PRED,     6,            /* 2 = V_NODE */
+  8,           12,           /* 3 = COM_NODE */
+  -H_PRED,     10,           /* 4 = H_NODE */
+  -D135_PRED,  -D117_PRED,   /* 5 = D135_NODE */
+  -D45_PRED,   14,           /* 6 = D45_NODE */
+  -D63_PRED,   16,           /* 7 = D63_NODE */
+  -D153_PRED,  18,           /* 8 = D153_NODE */
+  -D207_PRED,  -SMOOTH_PRED, /* 9 = D207_NODE */
 };
 #endif  // CONFIG_SMOOTH_HV
 

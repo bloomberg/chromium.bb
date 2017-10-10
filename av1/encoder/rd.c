@@ -1314,7 +1314,7 @@ void av1_set_rd_speed_thresholds(AV1_COMP *cpi) {
   rd->thresh_mult[THR_ZEROG] += 2000;
   rd->thresh_mult[THR_ZEROA] += 2000;
 
-  rd->thresh_mult[THR_TM] += 1000;
+  rd->thresh_mult[THR_PAETH] += 1000;
 
 #if CONFIG_COMPOUND_SINGLEREF
   rd->thresh_mult[THR_SR_NEAREST_NEARMV] += 1200;

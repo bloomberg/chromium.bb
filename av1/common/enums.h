@@ -498,7 +498,7 @@ typedef enum ATTRIBUTE_PACKED {
   SMOOTH_V_PRED,  // Vertical interpolation
   SMOOTH_H_PRED,  // Horizontal interpolation
 #endif            // CONFIG_SMOOTH_HV
-  TM_PRED,        // True-motion
+  PAETH_PRED,     // Predict from the direction of smallest gradient
   NEARESTMV,
   NEARMV,
   ZEROMV,
@@ -521,7 +521,7 @@ typedef enum ATTRIBUTE_PACKED {
   ZERO_ZEROMV,
   NEW_NEWMV,
   MB_MODE_COUNT,
-  INTRA_MODES = TM_PRED + 1,     // TM_PRED has to be the last intra mode.
+  INTRA_MODES = PAETH_PRED + 1,  // PAETH_PRED has to be the last intra mode.
   INTRA_INVALID = MB_MODE_COUNT  // For uv_mode in inter blocks
 } PREDICTION_MODE;
 
@@ -543,7 +543,7 @@ typedef enum ATTRIBUTE_PACKED {
   UV_SMOOTH_V_PRED,  // Vertical interpolation
   UV_SMOOTH_H_PRED,  // Horizontal interpolation
 #endif               // CONFIG_SMOOTH_HV
-  UV_TM_PRED,        // True-motion
+  UV_PAETH_PRED,     // Predict from the direction of smallest gradient
   UV_CFL_PRED,       // Chroma-from-Luma
   UV_INTRA_MODES,
   UV_MODE_INVALID,  // For uv_mode in inter blocks
@@ -606,7 +606,7 @@ typedef enum {
   FILTER_D153_PRED,
   FILTER_D207_PRED,
   FILTER_D63_PRED,
-  FILTER_TM_PRED,
+  FILTER_PAETH_PRED,
   FILTER_INTRA_MODES,
 } FILTER_INTRA_MODE;
 #endif  // CONFIG_FILTER_INTRA

@@ -295,7 +295,7 @@ static const MODE_DEFINITION av1_mode_order[MAX_MODES] = {
 #endif  // CONFIG_EXT_COMP_REFS
 #endif  // CONFIG_EXT_REFS
 
-  { TM_PRED, { INTRA_FRAME, NONE_FRAME } },
+  { PAETH_PRED, { INTRA_FRAME, NONE_FRAME } },
 
   { SMOOTH_PRED, { INTRA_FRAME, NONE_FRAME } },
 #if CONFIG_SMOOTH_HV
@@ -487,17 +487,17 @@ static const MODE_DEFINITION av1_mode_order[MAX_MODES] = {
 };
 
 static const PREDICTION_MODE intra_rd_search_mode_order[INTRA_MODES] = {
-  DC_PRED,       H_PRED,        V_PRED,    SMOOTH_PRED, TM_PRED,
+  DC_PRED,       H_PRED,        V_PRED,    SMOOTH_PRED, PAETH_PRED,
 #if CONFIG_SMOOTH_HV
   SMOOTH_V_PRED, SMOOTH_H_PRED,
 #endif  // CONFIG_SMOOTH_HV
-  D135_PRED,     D207_PRED,     D153_PRED, D63_PRED,    D117_PRED, D45_PRED,
+  D135_PRED,     D207_PRED,     D153_PRED, D63_PRED,    D117_PRED,  D45_PRED,
 };
 
 #if CONFIG_CFL
 static const UV_PREDICTION_MODE uv_rd_search_mode_order[UV_INTRA_MODES] = {
   UV_DC_PRED,       UV_CFL_PRED,      UV_H_PRED,
-  UV_V_PRED,        UV_SMOOTH_PRED,   UV_TM_PRED,
+  UV_V_PRED,        UV_SMOOTH_PRED,   UV_PAETH_PRED,
 #if CONFIG_SMOOTH_HV
   UV_SMOOTH_V_PRED, UV_SMOOTH_H_PRED,
 #endif  // CONFIG_SMOOTH_HV
@@ -3293,7 +3293,7 @@ static int64_t rd_pick_intra_sub_8x8_y_subblock_mode(
 #if CONFIG_PVQ
     od_encode_checkpoint(&x->daala_enc, &pre_buf);
 #endif
-    for (mode = DC_PRED; mode <= TM_PRED; ++mode) {
+    for (mode = DC_PRED; mode <= PAETH_PRED; ++mode) {
       int64_t this_rd;
       int ratey = 0;
       int64_t distortion = 0;
@@ -3502,7 +3502,7 @@ static int64_t rd_pick_intra_sub_8x8_y_subblock_mode(
   od_encode_checkpoint(&x->daala_enc, &pre_buf);
 #endif  // CONFIG_PVQ
 
-  for (mode = DC_PRED; mode <= TM_PRED; ++mode) {
+  for (mode = DC_PRED; mode <= PAETH_PRED; ++mode) {
     int64_t this_rd;
     int ratey = 0;
     int64_t distortion = 0;
@@ -4286,7 +4286,7 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   const MODE_INFO *left_mi = xd->left_mi;
   const PREDICTION_MODE A = av1_above_block_mode(mic, above_mi, 0);
   const PREDICTION_MODE L = av1_left_block_mode(mic, left_mi, 0);
-  const PREDICTION_MODE FINAL_MODE_SEARCH = TM_PRED + 1;
+  const PREDICTION_MODE FINAL_MODE_SEARCH = PAETH_PRED + 1;
 #if CONFIG_PVQ
   od_rollback_buffer pre_buf, post_buf;
 
@@ -10944,7 +10944,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
         // Only search the oblique modes if the best so far is
         // one of the neighboring directional modes
         if ((mode_search_skip_flags & FLAG_SKIP_INTRA_BESTINTER) &&
-            (this_mode >= D45_PRED && this_mode <= TM_PRED)) {
+            (this_mode >= D45_PRED && this_mode <= PAETH_PRED)) {
           if (best_mode_index >= 0 && best_mbmode.ref_frame[0] > INTRA_FRAME)
             continue;
         }
@@ -11151,7 +11151,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
               mbmi->filter_intra_mode_info.filter_intra_mode[1]);
       }
 #endif  // CONFIG_FILTER_INTRA
-      if (mbmi->mode != DC_PRED && mbmi->mode != TM_PRED)
+      if (mbmi->mode != DC_PRED && mbmi->mode != PAETH_PRED)
         rate2 += intra_cost_penalty;
       distortion2 = distortion_y + distortion_uv;
     } else {

@@ -574,10 +574,11 @@ void av1_d63_filter_predictor_sse4_1(uint8_t *dst, ptrdiff_t stride, int bs,
   FilterPrediction(above, left, bs, prm, dst, stride);
 }
 
-void av1_tm_filter_predictor_sse4_1(uint8_t *dst, ptrdiff_t stride, int bs,
-                                    const uint8_t *above, const uint8_t *left) {
+void av1_paeth_filter_predictor_sse4_1(uint8_t *dst, ptrdiff_t stride, int bs,
+                                       const uint8_t *above,
+                                       const uint8_t *left) {
   __m128i prm[5];
-  GetIntraFilterParams(bs, TM_PRED, &prm[0]);
+  GetIntraFilterParams(bs, PAETH_PRED, &prm[0]);
   FilterPrediction(above, left, bs, prm, dst, stride);
 }
 
@@ -886,11 +887,11 @@ void av1_highbd_d63_filter_predictor_sse4_1(uint16_t *dst, ptrdiff_t stride,
   HighbdFilterPrediction(above, left, bs, bd, prm, dst, stride);
 }
 
-void av1_highbd_tm_filter_predictor_sse4_1(uint16_t *dst, ptrdiff_t stride,
-                                           int bs, const uint16_t *above,
-                                           const uint16_t *left, int bd) {
+void av1_highbd_paeth_filter_predictor_sse4_1(uint16_t *dst, ptrdiff_t stride,
+                                              int bs, const uint16_t *above,
+                                              const uint16_t *left, int bd) {
   __m128i prm[5];
-  GetIntraFilterParams(bs, TM_PRED, &prm[0]);
+  GetIntraFilterParams(bs, PAETH_PRED, &prm[0]);
   HighbdFilterPrediction(above, left, bs, bd, prm, dst, stride);
 }
 #endif  // CONFIG_HIGHBITDEPTH

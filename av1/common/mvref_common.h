@@ -58,7 +58,7 @@ static const int mode_2_counter[] = {
   9,    // SMOOTH_V_PRED
   9,    // SMOOTH_H_PRED
 #endif  // CONFIG_SMOOTH_HV
-  9,    // TM_PRED
+  9,    // PAETH_PRED
   0,    // NEARESTMV
   0,    // NEARMV
   3,    // ZEROMV

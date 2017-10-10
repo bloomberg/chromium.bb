@@ -191,7 +191,7 @@ if (aom_config("CONFIG_FILTER_INTRA") eq "yes") {
   add_proto qw/void av1_d153_filter_predictor/, "uint8_t *dst, ptrdiff_t stride, TX_SIZE tx_size, const uint8_t *above, const uint8_t *left";
   add_proto qw/void av1_d207_filter_predictor/, "uint8_t *dst, ptrdiff_t stride, TX_SIZE tx_size, const uint8_t *above, const uint8_t *left";
   add_proto qw/void av1_d63_filter_predictor/, "uint8_t *dst, ptrdiff_t stride, TX_SIZE tx_size, const uint8_t *above, const uint8_t *left";
-  add_proto qw/void av1_tm_filter_predictor/, "uint8_t *dst, ptrdiff_t stride, TX_SIZE tx_size, const uint8_t *above, const uint8_t *left";
+  add_proto qw/void av1_paeth_filter_predictor/, "uint8_t *dst, ptrdiff_t stride, TX_SIZE tx_size, const uint8_t *above, const uint8_t *left";
   # High bitdepth functions
   if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
     add_proto qw/void av1_highbd_dc_filter_predictor/, "uint16_t *dst, ptrdiff_t stride, TX_SIZE tx_size, const uint16_t *above, const uint16_t *left, int bd";
@@ -203,7 +203,7 @@ if (aom_config("CONFIG_FILTER_INTRA") eq "yes") {
     add_proto qw/void av1_highbd_d153_filter_predictor/, "uint16_t *dst, ptrdiff_t stride, TX_SIZE tx_size, const uint16_t *above, const uint16_t *left, int bd";
     add_proto qw/void av1_highbd_d207_filter_predictor/, "uint16_t *dst, ptrdiff_t stride, TX_SIZE tx_size, const uint16_t *above, const uint16_t *left, int bd";
     add_proto qw/void av1_highbd_d63_filter_predictor/, "uint16_t *dst, ptrdiff_t stride, TX_SIZE tx_size, const uint16_t *above, const uint16_t *left, int bd";
-    add_proto qw/void av1_highbd_tm_filter_predictor/, "uint16_t *dst, ptrdiff_t stride, TX_SIZE tx_size, const uint16_t *above, const uint16_t *left, int bd";
+    add_proto qw/void av1_highbd_paeth_filter_predictor/, "uint16_t *dst, ptrdiff_t stride, TX_SIZE tx_size, const uint16_t *above, const uint16_t *left, int bd";
   }
 }
 

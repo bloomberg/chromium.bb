@@ -37,7 +37,7 @@ const int kNumAv1IntraFuncs = INTRA_MODES + 3;  // 4 DC predictor variants.
 const char *kAv1IntraPredNames[kNumAv1IntraFuncs] = {
   "DC_PRED",       "DC_LEFT_PRED",  "DC_TOP_PRED", "DC_128_PRED", "V_PRED",
   "H_PRED",        "D45_PRED",      "D135_PRED",   "D117_PRED",   "D153_PRED",
-  "D207_PRED",     "D63_PRED",      "TM_PRED",     "SMOOTH_PRED",
+  "D207_PRED",     "D63_PRED",      "PAETH_PRED",  "SMOOTH_PRED",
 #if CONFIG_SMOOTH_HV
   "SMOOTH_V_PRED", "SMOOTH_H_PRED",
 #endif  // CONFIG_SMOOTH_HV
@@ -367,15 +367,15 @@ void TestIntraPred32(const char *block_name, AvxPredFunc const *pred_funcs) {
 
 // Defines a test case for |arch| (e.g., C, SSE2, ...) passing the predictors
 // to |test_func|. The test name is 'arch.test_func', e.g., C.TestIntraPred4.
-#define INTRA_PRED_TEST(arch, test_func, blk, dc, dc_left, dc_top, dc_128, v, \
-                        h, d45e, d135, d117, d153, d207e, d63e, tm, smooth,   \
-                        smooth_v, smooth_h)                                   \
-  TEST(arch, DISABLED_##test_func) {                                          \
-    static const AvxPredFunc aom_intra_pred[] = {                             \
-      dc,   dc_left, dc_top, dc_128, v,  h,      d45e,     d135,              \
-      d117, d153,    d207e,  d63e,   tm, smooth, smooth_v, smooth_h           \
-    };                                                                        \
-    test_func(blk, aom_intra_pred);                                           \
+#define INTRA_PRED_TEST(arch, test_func, blk, dc, dc_left, dc_top, dc_128, v,  \
+                        h, d45e, d135, d117, d153, d207e, d63e, paeth, smooth, \
+                        smooth_v, smooth_h)                                    \
+  TEST(arch, DISABLED_##test_func) {                                           \
+    static const AvxPredFunc aom_intra_pred[] = {                              \
+      dc,   dc_left, dc_top, dc_128, v,     h,      d45e,     d135,            \
+      d117, d153,    d207e,  d63e,   paeth, smooth, smooth_v, smooth_h         \
+    };                                                                         \
+    test_func(blk, aom_intra_pred);                                            \
   }
 
 // -----------------------------------------------------------------------------
@@ -1106,15 +1106,15 @@ void TestHighbdIntraPred32(const char *block_name,
 
 }  // namespace
 
-#define HIGHBD_INTRA_PRED_TEST(arch, test_func, block_size, dc, dc_left,     \
-                               dc_top, dc_128, v, h, d45e, d135, d117, d153, \
-                               d207e, d63e, tm, smooth, smooth_v, smooth_h)  \
-  TEST(arch, DISABLED_##test_func) {                                         \
-    static const AvxHighbdPredFunc aom_intra_pred[] = {                      \
-      dc,   dc_left, dc_top, dc_128, v,  h,      d45e,     d135,             \
-      d117, d153,    d207e,  d63e,   tm, smooth, smooth_v, smooth_h          \
-    };                                                                       \
-    test_func(block_size, aom_intra_pred);                                   \
+#define HIGHBD_INTRA_PRED_TEST(arch, test_func, block_size, dc, dc_left,       \
+                               dc_top, dc_128, v, h, d45e, d135, d117, d153,   \
+                               d207e, d63e, paeth, smooth, smooth_v, smooth_h) \
+  TEST(arch, DISABLED_##test_func) {                                           \
+    static const AvxHighbdPredFunc aom_intra_pred[] = {                        \
+      dc,   dc_left, dc_top, dc_128, v,     h,      d45e,     d135,            \
+      d117, d153,    d207e,  d63e,   paeth, smooth, smooth_v, smooth_h         \
+    };                                                                         \
+    test_func(block_size, aom_intra_pred);                                     \
   }
 
 // -----------------------------------------------------------------------------

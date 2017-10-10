@@ -63,7 +63,7 @@ static const uint8_t extend_modes[INTRA_MODES] = {
   NEED_LEFT | NEED_ABOVE,                   // SMOOTH_V
   NEED_LEFT | NEED_ABOVE,                   // SMOOTH_H
 #endif                                      // CONFIG_SMOOTH_HV
-  NEED_LEFT | NEED_ABOVE | NEED_ABOVELEFT,  // TM
+  NEED_LEFT | NEED_ABOVE | NEED_ABOVELEFT,  // PAETH
 };
 
 static const uint16_t orders_128x128[1] = { 0 };
@@ -727,7 +727,7 @@ static void av1_init_intra_predictors_internal(void) {
   INIT_ALL_SIZES(pred[D135_PRED], d135);
   INIT_ALL_SIZES(pred[D153_PRED], d153);
 
-  INIT_ALL_SIZES(pred[TM_PRED], paeth);
+  INIT_ALL_SIZES(pred[PAETH_PRED], paeth);
   INIT_ALL_SIZES(pred[SMOOTH_PRED], smooth);
 #if CONFIG_SMOOTH_HV
   INIT_ALL_SIZES(pred[SMOOTH_V_PRED], smooth_v);
@@ -749,7 +749,7 @@ static void av1_init_intra_predictors_internal(void) {
   INIT_ALL_SIZES(pred_high[D135_PRED], highbd_d135);
   INIT_ALL_SIZES(pred_high[D153_PRED], highbd_d153);
 
-  INIT_ALL_SIZES(pred_high[TM_PRED], highbd_paeth);
+  INIT_ALL_SIZES(pred_high[PAETH_PRED], highbd_paeth);
   INIT_ALL_SIZES(pred_high[SMOOTH_PRED], highbd_smooth);
 #if CONFIG_SMOOTH_HV
   INIT_ALL_SIZES(pred_high[SMOOTH_V_PRED], highbd_smooth_v);
@@ -1867,14 +1867,15 @@ void av1_d63_filter_predictor_c(uint8_t *dst, ptrdiff_t stride, TX_SIZE tx_size,
 #endif
 }
 
-void av1_tm_filter_predictor_c(uint8_t *dst, ptrdiff_t stride, TX_SIZE tx_size,
-                               const uint8_t *above, const uint8_t *left) {
+void av1_paeth_filter_predictor_c(uint8_t *dst, ptrdiff_t stride,
+                                  TX_SIZE tx_size, const uint8_t *above,
+                                  const uint8_t *left) {
 #if USE_3TAP_INTRA_FILTER
   filter_intra_predictors_3tap(dst, stride, tx_size, above, left,
-                               FILTER_TM_PRED);
+                               FILTER_PAETH_PRED);
 #else
   filter_intra_predictors_4tap(dst, stride, tx_size, above, left,
-                               FILTER_TM_PRED);
+                               FILTER_PAETH_PRED);
 #endif
 }
 
@@ -1909,8 +1910,8 @@ static void filter_intra_predictors(FILTER_INTRA_MODE mode, uint8_t *dst,
     case FILTER_D63_PRED:
       av1_d63_filter_predictor(dst, stride, tx_size, above, left);
       break;
-    case FILTER_TM_PRED:
-      av1_tm_filter_predictor(dst, stride, tx_size, above, left);
+    case FILTER_PAETH_PRED:
+      av1_paeth_filter_predictor(dst, stride, tx_size, above, left);
       break;
     default: assert(0);
   }
@@ -2121,15 +2122,15 @@ void av1_highbd_d63_filter_predictor_c(uint16_t *dst, ptrdiff_t stride,
 #endif
 }
 
-void av1_highbd_tm_filter_predictor_c(uint16_t *dst, ptrdiff_t stride,
-                                      TX_SIZE tx_size, const uint16_t *above,
-                                      const uint16_t *left, int bd) {
+void av1_highbd_paeth_filter_predictor_c(uint16_t *dst, ptrdiff_t stride,
+                                         TX_SIZE tx_size, const uint16_t *above,
+                                         const uint16_t *left, int bd) {
 #if USE_3TAP_INTRA_FILTER
   highbd_filter_intra_predictors_3tap(dst, stride, tx_size, above, left,
-                                      FILTER_TM_PRED, bd);
+                                      FILTER_PAETH_PRED, bd);
 #else
   highbd_filter_intra_predictors_4tap(dst, stride, tx_size, above, left,
-                                      FILTER_TM_PRED, bd);
+                                      FILTER_PAETH_PRED, bd);
 #endif
 }
 
@@ -2166,8 +2167,8 @@ static void highbd_filter_intra_predictors(FILTER_INTRA_MODE mode,
     case FILTER_D63_PRED:
       av1_highbd_d63_filter_predictor(dst, stride, tx_size, above, left, bd);
       break;
-    case FILTER_TM_PRED:
-      av1_highbd_tm_filter_predictor(dst, stride, tx_size, above, left, bd);
+    case FILTER_PAETH_PRED:
+      av1_highbd_paeth_filter_predictor(dst, stride, tx_size, above, left, bd);
       break;
     default: assert(0);
   }

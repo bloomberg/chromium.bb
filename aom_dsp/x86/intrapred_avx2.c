@@ -219,7 +219,7 @@ void aom_v_predictor_32x16_avx2(uint8_t *dst, ptrdiff_t stride,
 }
 
 // -----------------------------------------------------------------------------
-// TM_PRED
+// PAETH_PRED
 
 // Return 16 16-bit pixels in one row (__m256i)
 static INLINE __m256i paeth_pred(const __m256i *left, const __m256i *top,

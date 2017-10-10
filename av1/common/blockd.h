@@ -160,7 +160,7 @@ static INLINE PREDICTION_MODE compound_ref0_mode(PREDICTION_MODE mode) {
     MB_MODE_COUNT,  // SMOOTH_V_PRED
     MB_MODE_COUNT,  // SMOOTH_H_PRED
 #endif              // CONFIG_SMOOTH_HV
-    MB_MODE_COUNT,  // TM_PRED
+    MB_MODE_COUNT,  // PAETH_PRED
     MB_MODE_COUNT,  // NEARESTMV
     MB_MODE_COUNT,  // NEARMV
     MB_MODE_COUNT,  // ZEROMV
@@ -206,7 +206,7 @@ static INLINE PREDICTION_MODE compound_ref1_mode(PREDICTION_MODE mode) {
     MB_MODE_COUNT,  // SMOOTH_V_PRED
     MB_MODE_COUNT,  // SMOOTH_H_PRED
 #endif              // CONFIG_SMOOTH_HV
-    MB_MODE_COUNT,  // TM_PRED
+    MB_MODE_COUNT,  // PAETH_PRED
     MB_MODE_COUNT,  // NEARESTMV
     MB_MODE_COUNT,  // NEARMV
     MB_MODE_COUNT,  // ZEROMV
@@ -511,7 +511,7 @@ static INLINE PREDICTION_MODE get_uv_mode(UV_PREDICTION_MODE mode) {
     SMOOTH_V_PRED,  // UV_SMOOTH_V_PRED
     SMOOTH_H_PRED,  // UV_SMOOTH_H_PRED
 #endif              // CONFIG_SMOOTH_HV
-    TM_PRED,        // UV_TM_PRED
+    PAETH_PRED,     // UV_PAETH_PRED
     DC_PRED,        // CFL_PRED
   };
   return uv2y[mode];
@@ -878,7 +878,7 @@ static const TX_TYPE intra_mode_to_tx_type_context[INTRA_MODES] = {
   ADST_DCT,   // SMOOTH_V
   DCT_ADST,   // SMOOTH_H
 #endif        // CONFIG_SMOOTH_HV
-  ADST_ADST,  // TM
+  ADST_ADST,  // PAETH
 };
 
 #if CONFIG_SUPERTX
@@ -1080,7 +1080,7 @@ static INLINE int is_lgt_allowed(PREDICTION_MODE mode, TX_SIZE tx_size) {
       return tx_size_high[tx_size] <= 8;
     case DC_PRED:
     case SMOOTH_PRED: return 0;
-    case TM_PRED:
+    case PAETH_PRED:
     default: return tx_size_wide[tx_size] <= 8 || tx_size_high[tx_size] <= 8;
   }
 }

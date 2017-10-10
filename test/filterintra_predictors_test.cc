@@ -284,8 +284,8 @@ const PredFuncMode kPredFuncMdArray[] = {
              D207_PRED),
   make_tuple(av1_d63_filter_predictor_c, av1_d63_filter_predictor_sse4_1,
              D63_PRED),
-  make_tuple(av1_tm_filter_predictor_c, av1_tm_filter_predictor_sse4_1,
-             TM_PRED),
+  make_tuple(av1_paeth_filter_predictor_c, av1_paeth_filter_predictor_sse4_1,
+             PAETH_PRED),
 };
 
 const int kBlkSize[] = { 4, 8, 16, 32 };
@@ -315,8 +315,8 @@ const HbdPredFuncMode kHbdPredFuncMdArray[] = {
              av1_highbd_d207_filter_predictor_sse4_1, D207_PRED),
   make_tuple(av1_highbd_d63_filter_predictor_c,
              av1_highbd_d63_filter_predictor_sse4_1, D63_PRED),
-  make_tuple(av1_highbd_tm_filter_predictor_c,
-             av1_highbd_tm_filter_predictor_sse4_1, TM_PRED),
+  make_tuple(av1_highbd_paeth_filter_predictor_c,
+             av1_highbd_paeth_filter_predictor_sse4_1, PAETH_PRED),
 };
 
 const int kBd[] = { 10, 12 };

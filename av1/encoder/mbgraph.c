@@ -144,7 +144,7 @@ static int find_best_16x16_intra(AV1_COMP *cpi, PREDICTION_MODE *pbest_mode) {
 
   // calculate SATD for each intra prediction mode;
   // we're intentionally not doing 4x4, we just want a rough estimate
-  for (mode = DC_PRED; mode <= TM_PRED; mode++) {
+  for (mode = DC_PRED; mode <= PAETH_PRED; mode++) {
     unsigned int err;
 
     xd->mi[0]->mbmi.mode = mode;

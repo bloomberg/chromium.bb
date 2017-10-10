@@ -162,7 +162,7 @@ typedef enum {
 #endif  // CONFIG_EXT_COMP_REFS
 #endif  // CONFIG_EXT_REFS
 
-  THR_TM,
+  THR_PAETH,
 
   THR_SMOOTH,
 #if CONFIG_SMOOTH_HV
