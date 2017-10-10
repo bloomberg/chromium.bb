@@ -17,6 +17,9 @@ import find_depot_tools  # pylint: disable=W0611
 from testing_support.super_mox import SuperMoxTestBase
 
 
+_DECLARATION_METHODS = 'const', 'let', 'var'
+
+
 class JsCheckerTest(SuperMoxTestBase):
   def setUp(self):
     SuperMoxTestBase.setUp(self)
@@ -208,46 +211,48 @@ class JsCheckerTest(SuperMoxTestBase):
     for line in lines:
       self.ShouldPassPolymerLocalIdCheck(line)
 
-  def ShouldFailVarNameCheck(self, line):
+  def ShouldFailVariableNameCheck(self, line):
     """Checks that var unix_hacker, $dollar are style errors."""
-    error = self.checker.VarNameCheck(1, line)
+    error = self.checker.VariableNameCheck(1, line)
     self.assertNotEqual('', error,
         msg='Should be flagged as style error: ' + line)
     highlight = test_util.GetHighlight(line, error)
-    self.assertFalse('var ' in highlight);
+    self.assertFalse(any(dm in highlight for dm in _DECLARATION_METHODS))
 
-  def ShouldPassVarNameCheck(self, line):
+  def ShouldPassVariableNameCheck(self, line):
     """Checks that variableNamesLikeThis aren't style errors."""
-    self.assertEqual('', self.checker.VarNameCheck(1, line),
+    self.assertEqual('', self.checker.VariableNameCheck(1, line),
         msg='Should not be flagged as style error: ' + line)
 
-  def testVarNameFails(self):
+  def testVariableNameFails(self):
     lines = [
-        "var private_;",
-        "var hostName_ = 'https://google.com';",
-        " var _super_private",
-        "  var unix_hacker = someFunc();",
+        "%s private_;",
+        "%s hostName_ = 'https://google.com';",
+        " %s _super_private",
+        "  %s unix_hacker = someFunc();",
     ]
     for line in lines:
-      self.ShouldFailVarNameCheck(line)
+      for declaration_method in _DECLARATION_METHODS:
+        self.ShouldFailVariableNameCheck(line % declaration_method)
 
-  def testVarNamePasses(self):
+  def testVariableNamePasses(self):
     lines = [
-        "  var namesLikeThis = [];",
-        " for (var i = 0; i < 10; ++i) { ",
-        "for (var i in obj) {",
-        " var one, two, three;",
-        "  var magnumPI = {};",
-        " var g_browser = 'da browzer';",
-        "/** @const */ var Bla = options.Bla;",  # goog.scope() replacement.
-        " var $ = function() {",                 # For legacy reasons.
-        "  var StudlyCaps = cr.define('bla')",   # Classes.
-        " var SCARE_SMALL_CHILDREN = [",         # TODO(dbeam): add @const in
+        "  %s namesLikeThis = [];",
+        " for (%s i = 0; i < 10; ++i) { ",
+        "for (%s i in obj) {",
+        " %s one, two, three;",
+        "  %s magnumPI = {};",
+        " %s g_browser = 'da browzer';",
+        "/** @const */ %s Bla = options.Bla;",  # goog.scope() replacement.
+        " %s $ = function() {",                 # For legacy reasons.
+        "  %s StudlyCaps = cr.define('bla')",   # Classes.
+        " %s SCARE_SMALL_CHILDREN = [",         # TODO(dbeam): add @const in
                                                  # front of all these vars like
-        "/** @const */ CONST_VAR = 1;",          # this line has (<--).
+        # "/** @const */ %s CONST_VAR = 1;",          # this line has (<--).
     ]
     for line in lines:
-      self.ShouldPassVarNameCheck(line)
+      for declaration_method in _DECLARATION_METHODS:
+        self.ShouldPassVariableNameCheck(line % declaration_method)
 
 
 if __name__ == '__main__':

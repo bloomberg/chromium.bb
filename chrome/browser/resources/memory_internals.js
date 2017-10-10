@@ -59,19 +59,19 @@ function returnProcessList(data) {
   for (let proc of processes) {
     let procId = proc[0];
 
-    let save_button = document.createElement('button');
-    save_button.innerText = '\u21e9 Save dump';
-    save_button.onclick = () => dumpProcess(procId);
+    let saveButton = document.createElement('button');
+    saveButton.innerText = '\u21e9 Save dump';
+    saveButton.onclick = () => dumpProcess(procId);
 
-    let report_button = document.createElement('button');
-    report_button.innerText = '\uD83D\uDC1E Report';
-    report_button.onclick = () => reportProcess(procId);
+    let reportButton = document.createElement('button');
+    reportButton.innerText = '\uD83D\uDC1E Report';
+    reportButton.onclick = () => reportProcess(procId);
 
     let procIdText = document.createTextNode(procId.toString());
     let description = document.createTextNode(proc[1]);
 
     addListRow(
-        table, 'td', [save_button, report_button, procIdText, description]);
+        table, 'td', [saveButton, reportButton, procIdText, description]);
   }
 
   proclist.appendChild(table);
