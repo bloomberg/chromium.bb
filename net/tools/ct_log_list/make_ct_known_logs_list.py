@@ -202,7 +202,7 @@ def generate_cpp_file(input_file, f):
     # Write the list of all disqualified logs.
     _write_disqualified_log_info_struct_definition(f)
     f.write("// The set of all disqualified logs, sorted by |log_id|.\n")
-    f.write("const DisqualifiedCTLogInfo kDisqualifiedCTLogList[] = {\n")
+    f.write("constexpr DisqualifiedCTLogInfo kDisqualifiedCTLogList[] = {\n")
     f.write(",\n".join(
             _get_disqualified_log_definitions(
                     _sorted_disqualified_logs(logs))))
