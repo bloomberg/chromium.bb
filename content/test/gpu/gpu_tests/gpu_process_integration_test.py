@@ -320,7 +320,7 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         elif name == 'webgl':
           result = result and status == 'enabled_readback'
         elif name == 'webgl2':
-          result = result and status == 'enabled_readback'
+          result = result and status == 'unavailable_software'
         elif name == 'checker_imaging':
           pass
         else:

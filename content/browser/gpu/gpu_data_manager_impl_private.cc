@@ -360,7 +360,7 @@ bool GpuDataManagerImplPrivate::IsWebGLEnabled() const {
 }
 
 bool GpuDataManagerImplPrivate::IsWebGL2Enabled() const {
-  return use_swiftshader_ ||
+  return /*use_swiftshader_ ||*/ // Uncomment to enable WebGL 2 with SwiftShader
          !blacklisted_features_.count(gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL2);
 }
 
