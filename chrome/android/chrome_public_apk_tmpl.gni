@@ -37,6 +37,10 @@ default_chrome_public_jinja_variables = [
   "enable_vr=$enable_vr",
 ]
 
+if (use_order_profiling) {
+  default_chrome_public_jinja_variables += [ "use_order_profiling=1" ]
+}
+
 template("chrome_public_apk_tmpl") {
   android_apk(target_name) {
     forward_variables_from(invoker, "*")

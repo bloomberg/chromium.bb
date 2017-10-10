@@ -732,12 +732,20 @@ by a child template that "extends" this file.
             android:exported="false">
         </service>
 
-        <!-- Service for decoding images in a sandboxed process. -->
+        <!-- Service for decoding images in a sandboxed process.  When
+             use_order_profiling is set, all processes need to be able to write
+             profiling information and thus cannot be sandboxed. Order profiling
+             is used only on bots to optimize binary layout, and is never used
+             for a released version of chrome. -->
         <service
             android:description="@string/decoder_description"
             android:name="org.chromium.chrome.browser.photo_picker.DecoderService"
             android:exported="false"
+            {% if use_order_profiling is defined %}
+            android:isolatedProcess="false"
+            {% else %}
             android:isolatedProcess="true"
+            {% endif %}
             android:process=":decoder_service" />
 
         <!-- Providers for chrome data. -->
@@ -979,10 +987,18 @@ by a child template that "extends" this file.
             android:value="org.chromium.content.app.SandboxedProcessService"/>
 
         {% for i in range(num_sandboxed_services) %}
+        <!-- When use_order_profiling is set, the renderer processes need to be
+             able to write profiling information and thus cannot be
+             sandboxed. Order profiling is used only on bots to optimize binary
+             layout, and is never used for a released version of chrome. -->
         <service android:name="org.chromium.content.app.SandboxedProcessService{{ i }}"
             android:process=":sandboxed_process{{ i }}"
             android:permission="{{ manifest_package }}.permission.CHILD_SERVICE"
+            {% if use_order_profiling is defined %}
+            android:isolatedProcess="false"
+            {% else %}
             android:isolatedProcess="true"
+            {% endif %}
             android:exported="{{sandboxed_service_exported|default(false)}}"
             {% if (sandboxed_service_exported|default(false)) == 'true' %}
             android:externalService="true"
