@@ -2927,8 +2927,9 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
       base::Bind(&PermissionServiceContext::CreateService,
                  base::Unretained(permission_service_context_.get())));
 
-  registry_->AddInterface(base::Bind(
-      &PresentationServiceImpl::CreateMojoService, base::Unretained(this)));
+  registry_->AddInterface(
+      base::Bind(&RenderFrameHostImpl::BindPresentationServiceRequest,
+                 base::Unretained(this)));
 
   registry_->AddInterface(
       base::Bind(&MediaSessionServiceImpl::Create, base::Unretained(this)));
@@ -4089,6 +4090,14 @@ void RenderFrameHostImpl::BindNFCRequest(device::mojom::NFCRequest request) {
     delegate_->GetNFC(std::move(request));
 }
 #endif
+
+void RenderFrameHostImpl::BindPresentationServiceRequest(
+    blink::mojom::PresentationServiceRequest request) {
+  if (!presentation_service_)
+    presentation_service_ = PresentationServiceImpl::Create(this);
+
+  presentation_service_->Bind(std::move(request));
+}
 
 void RenderFrameHostImpl::GetInterface(
     const std::string& interface_name,

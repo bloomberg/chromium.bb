@@ -15,7 +15,7 @@ internals.settings.setPresentationReceiver(true);
 const pageUrl = 'http://example.com/a.html';
 const id = 'fakeSessionId';
 
-presentationServiceMock.onSetClient = () => {
+presentationServiceMock.onSetReceiver = () => {
   presentationServiceMock.onReceiverConnectionAvailable(
       pageUrl, id, controllerConnectionPtr, receiverConnectionRequest);
 };
@@ -28,7 +28,7 @@ navigator.presentation.receiver.connectionList.then(list => {
     setTimeout(() => {
       assert_equals(list.connections.length, 0);
       opener.postMessage('receiver connection closed', '*');
-    } ,0);
+    }, 0);
   };
   opener.postMessage('receiver connection ready', '*');
   if (shouldCallClose) {

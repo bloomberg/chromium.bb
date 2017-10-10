@@ -295,8 +295,6 @@ target(link_target_type, "renderer") {
     "pepper/fullscreen_container.h",
     "peripheral_content_heuristic.cc",
     "peripheral_content_heuristic.h",
-    "presentation/presentation_connection_proxy.cc",
-    "presentation/presentation_connection_proxy.h",
     "presentation/presentation_dispatcher.cc",
     "presentation/presentation_dispatcher.h",
     "push_messaging/push_messaging_client.cc",

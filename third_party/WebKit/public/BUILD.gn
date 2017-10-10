@@ -416,7 +416,6 @@ source_set("blink_headers") {
     "platform/modules/presentation/WebPresentationClient.h",
     "platform/modules/presentation/WebPresentationConnection.h",
     "platform/modules/presentation/WebPresentationConnectionCallbacks.h",
-    "platform/modules/presentation/WebPresentationConnectionProxy.h",
     "platform/modules/presentation/WebPresentationController.h",
     "platform/modules/presentation/WebPresentationError.h",
     "platform/modules/presentation/WebPresentationInfo.h",

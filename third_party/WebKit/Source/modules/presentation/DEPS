@@ -5,4 +5,5 @@ include_rules = [
     "+modules/ModulesExport.h",
     "+modules/event_target_modules_names.h",
     "+modules/presentation",
+    "+mojo/public",
 ]

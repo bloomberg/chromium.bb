@@ -1536,7 +1536,6 @@ test("content_unittests") {
     "../renderer/media/video_capture_impl_manager_unittest.cc",
     "../renderer/media/video_capture_impl_unittest.cc",
     "../renderer/peripheral_content_heuristic_unittest.cc",
-    "../renderer/presentation/presentation_connection_proxy_unittest.cc",
     "../renderer/presentation/presentation_dispatcher_unittest.cc",
     "../renderer/presentation/test_presentation_connection.cc",
     "../renderer/presentation/test_presentation_connection.h",

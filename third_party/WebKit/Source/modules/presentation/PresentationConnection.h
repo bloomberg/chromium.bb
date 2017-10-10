@@ -11,13 +11,14 @@
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/FileError.h"
 #include "core/typed_arrays/ArrayBufferViewHelpers.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/modules/presentation/WebPresentationConnection.h"
-#include "public/platform/modules/presentation/WebPresentationConnectionProxy.h"
 #include "public/platform/modules/presentation/WebPresentationController.h"
 #include "public/platform/modules/presentation/WebPresentationInfo.h"
+#include "public/platform/modules/presentation/presentation.mojom-blink.h"
 
 namespace WTF {
 class AtomicString;
@@ -31,22 +32,13 @@ class PresentationController;
 class PresentationReceiver;
 class PresentationRequest;
 
-class PresentationConnection final : public EventTargetWithInlineData,
-                                     public ContextClient,
-                                     public WebPresentationConnection {
+class PresentationConnection : public EventTargetWithInlineData,
+                               public ContextLifecycleObserver,
+                               public mojom::blink::PresentationConnection {
   USING_GARBAGE_COLLECTED_MIXIN(PresentationConnection);
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  // For CallbackPromiseAdapter.
-  static PresentationConnection* Take(ScriptPromiseResolver*,
-                                      const WebPresentationInfo&,
-                                      PresentationRequest*);
-  static PresentationConnection* Take(PresentationController*,
-                                      const WebPresentationInfo&,
-                                      PresentationRequest*);
-  static PresentationConnection* Take(PresentationReceiver*,
-                                      const WebPresentationInfo&);
   ~PresentationConnection() override;
 
   // EventTarget implementation.
@@ -85,23 +77,37 @@ class PresentationConnection final : public EventTargetWithInlineData,
   // Notifies the connection about its state change to 'closed'.
   void DidClose(WebPresentationConnectionCloseReason, const String& message);
 
-  // WebPresentationConnection implementation.
-  void BindProxy(std::unique_ptr<WebPresentationConnectionProxy>) override;
-  void DidReceiveTextMessage(const WebString& message) override;
-  void DidReceiveBinaryMessage(const uint8_t* data, size_t length) override;
-  void DidChangeState(WebPresentationConnectionState) override;
-  void DidClose() override;
+  // mojom::blink::PresentationConnection implementation.
+  void OnMessage(mojom::blink::PresentationConnectionMessagePtr,
+                 OnMessageCallback) override;
+  void DidChangeState(mojom::blink::PresentationConnectionState) override;
+  void RequestClose() override;
 
-  WebPresentationConnectionState GetState();
-  void DidChangeState(WebPresentationConnectionState,
-                      bool should_dispatch_event);
-  // Notify target connection about connection state change.
-  void NotifyTargetConnection(WebPresentationConnectionState);
+  mojom::blink::PresentationConnectionState GetState() const;
 
  protected:
+  static void DispatchEventAsync(EventTarget*, Event*);
+
+  PresentationConnection(LocalFrame&, const String& id, const KURL&);
+
   // EventTarget implementation.
   void AddedEventListener(const AtomicString& event_type,
                           RegisteredEventListener&) override;
+
+  // ContextLifecycleObserver implementation.
+  void ContextDestroyed(ExecutionContext*) override;
+
+  String id_;
+  KURL url_;
+  mojom::blink::PresentationConnectionState state_;
+
+  mojo::Binding<mojom::blink::PresentationConnection> connection_binding_;
+
+  // The other end of a PresentationConnection. For controller connections, this
+  // can point to the browser (2-UA) or another renderer (1-UA). For receiver
+  // connections, this currently only points to another renderer. This ptr can
+  // be used to send messages directly to the other end.
+  mojom::blink::PresentationConnectionPtr target_connection_;
 
  private:
   class BlobLoader;
@@ -116,7 +122,10 @@ class PresentationConnection final : public EventTargetWithInlineData,
 
   class Message;
 
-  PresentationConnection(LocalFrame*, const String& id, const KURL&);
+  // Implemented by controller/receiver subclasses to perform additional
+  // operations.
+  virtual void DoClose() = 0;
+  virtual void DoTerminate() = 0;
 
   bool CanSendMessage(ExceptionState&);
   void HandleMessageQueue();
@@ -125,24 +134,97 @@ class PresentationConnection final : public EventTargetWithInlineData,
   void DidFinishLoadingBlob(DOMArrayBuffer*);
   void DidFailLoadingBlob(FileError::ErrorCode);
 
+  void SendMessageToTargetConnection(
+      mojom::blink::PresentationConnectionMessagePtr);
+  void DidReceiveTextMessage(const WebString&);
+  void DidReceiveBinaryMessage(const uint8_t*, size_t length);
+
+  // Notifies the presentation about its state change to 'closed', with
+  // "closed" being the reason and empty string as the message.
+  void DidClose();
+
   // Internal helper function to dispatch state change events asynchronously.
   void DispatchStateChangeEvent(Event*);
-  static void DispatchEventAsync(EventTarget*, Event*);
 
   // Cancel loads and pending messages when the connection is closed.
   void TearDown();
-
-  String id_;
-  KURL url_;
-  WebPresentationConnectionState state_;
 
   // For Blob data handling.
   Member<BlobLoader> blob_loader_;
   HeapDeque<Member<Message>> messages_;
 
   BinaryType binary_type_;
+};
 
-  std::unique_ptr<WebPresentationConnectionProxy> proxy_;
+// Represents the controller side of a connection of either a 1-UA or 2-UA
+// presentation.
+class ControllerPresentationConnection final
+    : public PresentationConnection,
+      public WebPresentationConnection {
+ public:
+  // For CallbackPromiseAdapter.
+  static ControllerPresentationConnection* Take(ScriptPromiseResolver*,
+                                                const WebPresentationInfo&,
+                                                PresentationRequest*);
+  static ControllerPresentationConnection* Take(PresentationController*,
+                                                const WebPresentationInfo&,
+                                                PresentationRequest*);
+
+  ControllerPresentationConnection(LocalFrame&,
+                                   PresentationController*,
+                                   const String& id,
+                                   const KURL&);
+  ~ControllerPresentationConnection() override;
+
+  DECLARE_VIRTUAL_TRACE();
+
+  // WebPresentationConnection implementation.
+  void Init() override;
+
+ private:
+  // PresentationConnection implementation.
+  void DoClose() override;
+  void DoTerminate() override;
+
+  Member<PresentationController> controller_;
+};
+
+// Represents the receiver side connection of a 1-UA presentation. Instances of
+// this class are created as a result of
+// PresentationReceiver::OnReceiverConnectionAvailable, which in turn is a
+// result of creating the controller side connection of a 1-UA presentation.
+class ReceiverPresentationConnection final : public PresentationConnection {
+ public:
+  static ReceiverPresentationConnection* Take(
+      PresentationReceiver*,
+      const mojom::blink::PresentationInfo&,
+      mojom::blink::PresentationConnectionPtr controller_connection,
+      mojom::blink::PresentationConnectionRequest receiver_connection_request);
+
+  ReceiverPresentationConnection(LocalFrame&,
+                                 PresentationReceiver*,
+                                 const String& id,
+                                 const KURL&);
+  ~ReceiverPresentationConnection() override;
+
+  DECLARE_VIRTUAL_TRACE();
+
+  void Init(
+      mojom::blink::PresentationConnectionPtr controller_connection_ptr,
+      mojom::blink::PresentationConnectionRequest receiver_connection_request);
+
+  // PresentationConnection override
+  void DidChangeState(mojom::blink::PresentationConnectionState) override;
+
+  // Changes |state_| to TERMINATED and notifies |target_connection_|.
+  void OnReceiverTerminated();
+
+ private:
+  // PresentationConnection implementation.
+  void DoClose() override;
+  void DoTerminate() override;
+
+  Member<PresentationReceiver> receiver_;
 };
 
 }  // namespace blink

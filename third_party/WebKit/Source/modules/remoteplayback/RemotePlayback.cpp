@@ -22,7 +22,6 @@
 #include "platform/MemoryCoordinator.h"
 #include "platform/wtf/text/Base64.h"
 #include "public/platform/modules/presentation/WebPresentationClient.h"
-#include "public/platform/modules/presentation/WebPresentationConnectionProxy.h"
 #include "public/platform/modules/presentation/WebPresentationError.h"
 #include "public/platform/modules/presentation/WebPresentationInfo.h"
 
@@ -81,12 +80,14 @@ RemotePlayback* RemotePlayback::Create(HTMLMediaElement& element) {
 }
 
 RemotePlayback::RemotePlayback(HTMLMediaElement& element)
-    : state_(element.IsPlayingRemotely()
+    : ContextLifecycleObserver(element.GetExecutionContext()),
+      state_(element.IsPlayingRemotely()
                  ? WebRemotePlaybackState::kConnected
                  : WebRemotePlaybackState::kDisconnected),
       availability_(WebRemotePlaybackAvailability::kUnknown),
       media_element_(&element),
-      is_listening_(false) {}
+      is_listening_(false),
+      presentation_connection_binding_(this) {}
 
 const AtomicString& RemotePlayback::InterfaceName() const {
   return EventTargetNames::RemotePlayback;
@@ -222,6 +223,10 @@ String RemotePlayback::state() const {
 bool RemotePlayback::HasPendingActivity() const {
   return HasEventListeners() || !availability_callbacks_.IsEmpty() ||
          prompt_promise_resolver_;
+}
+
+void RemotePlayback::ContextDestroyed(ExecutionContext*) {
+  presentation_connection_binding_.Close();
 }
 
 void RemotePlayback::PromptInternal() {
@@ -437,11 +442,11 @@ void RemotePlayback::RemotePlaybackDisabled() {
     return;
 
   if (RuntimeEnabledFeatures::NewRemotePlaybackPipelineEnabled()) {
-    WebPresentationClient* client =
-        PresentationController::ClientFromContext(GetExecutionContext());
-    if (client) {
-      client->CloseConnection(presentation_url_, presentation_id_,
-                              connection_proxy_.get());
+    auto* controller =
+        PresentationController::FromContext(GetExecutionContext());
+    if (controller) {
+      controller->GetPresentationService()->CloseConnection(presentation_url_,
+                                                            presentation_id_);
     }
   } else {
     media_element_->RequestRemotePlaybackStop();
@@ -508,33 +513,41 @@ void RemotePlayback::OnConnectionError(const WebPresentationError& error) {
   StateChanged(WebRemotePlaybackState::kDisconnected);
 }
 
-void RemotePlayback::BindProxy(
-    std::unique_ptr<WebPresentationConnectionProxy> proxy) {
-  DCHECK(proxy);
-  connection_proxy_ = std::move(proxy);
+void RemotePlayback::Init() {
+  DCHECK(!presentation_connection_binding_.is_bound());
+  auto* presentation_controller =
+      PresentationController::FromContext(GetExecutionContext());
+  if (!presentation_controller)
+    return;
+
+  mojom::blink::PresentationConnectionPtr connection_ptr;
+  presentation_connection_binding_.Bind(mojo::MakeRequest(&connection_ptr));
+  presentation_controller->GetPresentationService()->SetPresentationConnection(
+      mojom::blink::PresentationInfo::New(presentation_url_, presentation_id_),
+      std::move(connection_ptr),
+      mojo::MakeRequest(&target_presentation_connection_));
 }
 
-void RemotePlayback::DidReceiveTextMessage(const WebString& message) {
-  NOTREACHED();
+void RemotePlayback::OnMessage(
+    mojom::blink::PresentationConnectionMessagePtr message,
+    OnMessageCallback callback) {
+  // Messages are ignored.
+  std::move(callback).Run(true);
 }
 
-void RemotePlayback::DidReceiveBinaryMessage(const uint8_t* data,
-                                             size_t length) {
-  NOTREACHED();
-}
-
-void RemotePlayback::DidChangeState(WebPresentationConnectionState state) {
+void RemotePlayback::DidChangeState(
+    mojom::blink::PresentationConnectionState state) {
   WebRemotePlaybackState remote_playback_state =
       WebRemotePlaybackState::kDisconnected;
-  if (state == WebPresentationConnectionState::kConnecting)
+  if (state == mojom::blink::PresentationConnectionState::CONNECTING)
     remote_playback_state = WebRemotePlaybackState::kConnecting;
-  else if (state == WebPresentationConnectionState::kConnected)
+  else if (state == mojom::blink::PresentationConnectionState::CONNECTED)
     remote_playback_state = WebRemotePlaybackState::kConnected;
 
   StateChanged(remote_playback_state);
 }
 
-void RemotePlayback::DidClose() {
+void RemotePlayback::RequestClose() {
   StateChanged(WebRemotePlaybackState::kDisconnected);
 }
 
@@ -582,6 +595,7 @@ DEFINE_TRACE(RemotePlayback) {
   visitor->Trace(prompt_promise_resolver_);
   visitor->Trace(media_element_);
   EventTargetWithInlineData::Trace(visitor);
+  ContextLifecycleObserver::Trace(visitor);
 }
 
 DEFINE_TRACE_WRAPPERS(RemotePlayback) {

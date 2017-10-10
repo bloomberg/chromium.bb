@@ -57,6 +57,7 @@
 #include "third_party/WebKit/public/platform/WebInsecureRequestPolicy.h"
 #include "third_party/WebKit/public/platform/WebSuddenTerminationDisablerType.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/web_bluetooth.mojom.h"
+#include "third_party/WebKit/public/platform/modules/presentation/presentation.mojom.h"
 #include "third_party/WebKit/public/web/WebTextDirection.h"
 #include "third_party/WebKit/public/web/WebTreeScopeType.h"
 #include "ui/accessibility/ax_modes.h"
@@ -100,6 +101,7 @@ class KeepAliveHandleFactory;
 class MediaInterfaceProxy;
 class NavigationHandleImpl;
 class PermissionServiceContext;
+class PresentationServiceImpl;
 class RenderFrameHostDelegate;
 class RenderFrameProxyHost;
 class RenderProcessHost;
@@ -958,6 +960,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void BindNFCRequest(device::mojom::NFCRequest request);
 #endif
 
+  void BindPresentationServiceRequest(
+      blink::mojom::PresentationServiceRequest request);
+
   // service_manager::mojom::InterfaceProvider:
   void GetInterface(const std::string& interface_name,
                     mojo::ScopedMessagePipeHandle interface_pipe) override;
@@ -1274,6 +1279,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Hosts media::mojom::InterfaceFactory for the RenderFrame and forwards
   // media::mojom::InterfaceFactory calls to the remote "media" service.
   std::unique_ptr<MediaInterfaceProxy> media_interface_proxy_;
+
+  // Hosts blink::mojom::PresentationService for the RenderFrame.
+  std::unique_ptr<PresentationServiceImpl> presentation_service_;
 
   std::unique_ptr<AssociatedInterfaceProviderImpl>
       remote_associated_interfaces_;

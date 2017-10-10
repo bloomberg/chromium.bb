@@ -44,35 +44,6 @@ class MockWebPresentationClient : public WebPresentationClient {
                     const WebString& presentationId,
                     std::unique_ptr<WebPresentationConnectionCallbacks>&));
 
-  MOCK_METHOD4(SendString,
-               void(const WebURL& presentationUrl,
-                    const WebString& presentationId,
-                    const WebString& message,
-                    const WebPresentationConnectionProxy* proxy));
-
-  MOCK_METHOD5(SendArrayBuffer,
-               void(const WebURL& presentationUrl,
-                    const WebString& presentationId,
-                    const uint8_t* data,
-                    size_t length,
-                    const WebPresentationConnectionProxy* proxy));
-
-  MOCK_METHOD5(SendBlobData,
-               void(const WebURL& presentationUrl,
-                    const WebString& presentationId,
-                    const uint8_t* data,
-                    size_t length,
-                    const WebPresentationConnectionProxy* proxy));
-
-  MOCK_METHOD3(CloseConnection,
-               void(const WebURL& presentationUrl,
-                    const WebString& presentationId,
-                    const WebPresentationConnectionProxy*));
-
-  MOCK_METHOD2(TerminatePresentation,
-               void(const WebURL& presentationUrl,
-                    const WebString& presentationId));
-
   MOCK_METHOD2(getAvailability_,
                void(const WebVector<WebURL>& availabilityUrls,
                     std::unique_ptr<WebPresentationAvailabilityCallbacks>&));

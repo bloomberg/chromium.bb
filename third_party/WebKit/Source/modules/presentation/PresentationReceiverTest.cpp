@@ -16,7 +16,6 @@
 #include "platform/testing/URLTestHelpers.h"
 #include "public/platform/modules/presentation/WebPresentationClient.h"
 #include "public/platform/modules/presentation/WebPresentationConnectionCallbacks.h"
-#include "public/platform/modules/presentation/WebPresentationConnectionProxy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "v8/include/v8.h"
@@ -37,12 +36,26 @@ class MockEventListenerForPresentationReceiver : public EventListener {
 
 class PresentationReceiverTest : public ::testing::Test {
  public:
+  PresentationReceiverTest()
+      : connection_info_(KURL(NullURL(), "http://example.com"), "id") {}
   void AddConnectionavailableEventListener(EventListener*,
                                            const PresentationReceiver*);
   void VerifyConnectionListPropertyState(ScriptPromisePropertyBase::State,
                                          const PresentationReceiver*);
   void VerifyConnectionListSize(size_t expected_size,
                                 const PresentationReceiver*);
+
+ protected:
+  void SetUp() override {
+    controller_connection_request_ = mojo::MakeRequest(&controller_connection_);
+    receiver_connection_request_ = mojo::MakeRequest(&receiver_connection_);
+  }
+
+  mojom::blink::PresentationInfo connection_info_;
+  mojom::blink::PresentationConnectionRequest controller_connection_request_;
+  mojom::blink::PresentationConnectionPtr controller_connection_;
+  mojom::blink::PresentationConnectionRequest receiver_connection_request_;
+  mojom::blink::PresentationConnectionPtr receiver_connection_;
 };
 
 void PresentationReceiverTest::AddConnectionavailableEventListener(
@@ -95,7 +108,8 @@ TEST_F(PresentationReceiverTest, OneConnectionResolvedConnectionListNoEvent) {
 
   // Receive first connection.
   receiver->OnReceiverConnectionAvailable(
-      WebPresentationInfo(KURL(NullURL(), "http://example.com"), "id"));
+      connection_info_.Clone(), std::move(controller_connection_),
+      std::move(receiver_connection_request_));
 
   VerifyConnectionListPropertyState(ScriptPromisePropertyBase::kResolved,
                                     receiver);
@@ -113,12 +127,22 @@ TEST_F(PresentationReceiverTest, TwoConnectionsFireOnconnectionavailableEvent) {
 
   receiver->connectionList(scope.GetScriptState());
 
-  WebPresentationInfo presentation_info(KURL(NullURL(), "http://example.com"),
-                                        "id");
   // Receive first connection.
-  receiver->OnReceiverConnectionAvailable(presentation_info);
+  receiver->OnReceiverConnectionAvailable(
+      connection_info_.Clone(), std::move(controller_connection_),
+      std::move(receiver_connection_request_));
+
+  mojom::blink::PresentationConnectionPtr controller_connection_2;
+  mojom::blink::PresentationConnectionPtr receiver_connection_2;
+  mojom::blink::PresentationConnectionRequest controller_connection_request_2 =
+      mojo::MakeRequest(&controller_connection_2);
+  mojom::blink::PresentationConnectionRequest receiver_connection_request_2 =
+      mojo::MakeRequest(&receiver_connection_2);
+
   // Receive second connection.
-  receiver->OnReceiverConnectionAvailable(presentation_info);
+  receiver->OnReceiverConnectionAvailable(
+      connection_info_.Clone(), std::move(controller_connection_2),
+      std::move(receiver_connection_request_2));
 
   VerifyConnectionListSize(2, receiver);
 }
@@ -132,17 +156,22 @@ TEST_F(PresentationReceiverTest, TwoConnectionsNoEvent) {
   AddConnectionavailableEventListener(event_handler, receiver);
   EXPECT_CALL(*event_handler, handleEvent(::testing::_, ::testing::_)).Times(0);
 
-  WebPresentationInfo presentation_info(KURL(NullURL(), "http://example.com"),
-                                        "id");
   // Receive first connection.
-  auto* connection1 =
-      receiver->OnReceiverConnectionAvailable(presentation_info);
-  EXPECT_TRUE(connection1);
+  receiver->OnReceiverConnectionAvailable(
+      connection_info_.Clone(), std::move(controller_connection_),
+      std::move(receiver_connection_request_));
+
+  mojom::blink::PresentationConnectionPtr controller_connection_2;
+  mojom::blink::PresentationConnectionPtr receiver_connection_2;
+  mojom::blink::PresentationConnectionRequest controller_connection_request_2 =
+      mojo::MakeRequest(&controller_connection_2);
+  mojom::blink::PresentationConnectionRequest receiver_connection_request_2 =
+      mojo::MakeRequest(&receiver_connection_2);
 
   // Receive second connection.
-  auto* connection2 =
-      receiver->OnReceiverConnectionAvailable(presentation_info);
-  EXPECT_TRUE(connection2);
+  receiver->OnReceiverConnectionAvailable(
+      connection_info_.Clone(), std::move(controller_connection_2),
+      std::move(receiver_connection_request_2));
 
   receiver->connectionList(scope.GetScriptState());
   VerifyConnectionListPropertyState(ScriptPromisePropertyBase::kResolved,
@@ -152,35 +181,13 @@ TEST_F(PresentationReceiverTest, TwoConnectionsNoEvent) {
 
 TEST_F(PresentationReceiverTest, CreateReceiver) {
   MockWebPresentationClient client;
-  EXPECT_CALL(client, SetReceiver(::testing::_));
+  EXPECT_CALL(client, SetReceiver(::testing::NotNull()));
 
   V8TestingScope scope;
   new PresentationReceiver(&scope.GetFrame(), &client);
-}
+  EXPECT_TRUE(::testing::Mock::VerifyAndClearExpectations(&client));
 
-TEST_F(PresentationReceiverTest, TestRemoveConnection) {
-  V8TestingScope scope;
-  auto receiver = new PresentationReceiver(&scope.GetFrame(), nullptr);
-
-  // Receive first connection.
-  WebPresentationInfo presentation_info1(KURL(NullURL(), "http://example1.com"),
-                                         "id1");
-  auto* connection1 =
-      receiver->OnReceiverConnectionAvailable(presentation_info1);
-  EXPECT_TRUE(connection1);
-
-  // Receive second connection.
-  WebPresentationInfo presentation_info2(KURL(NullURL(), "http://example2.com"),
-                                         "id2");
-  auto* connection2 =
-      receiver->OnReceiverConnectionAvailable(presentation_info2);
-  EXPECT_TRUE(connection2);
-
-  receiver->connectionList(scope.GetScriptState());
-  VerifyConnectionListSize(2, receiver);
-
-  receiver->RemoveConnection(connection1);
-  VerifyConnectionListSize(1, receiver);
+  EXPECT_CALL(client, SetReceiver(::testing::IsNull()));
 }
 
 }  // namespace blink

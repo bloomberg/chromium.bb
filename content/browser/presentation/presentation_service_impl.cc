@@ -54,14 +54,14 @@ PresentationServiceImpl::PresentationServiceImpl(
       controller_delegate_(controller_delegate),
       receiver_delegate_(receiver_delegate),
       start_presentation_request_id_(kInvalidRequestId),
+      // TODO(imcheng): Consider using RenderFrameHost* directly instead of IDs.
+      render_process_id_(render_frame_host->GetProcess()->GetID()),
+      render_frame_id_(render_frame_host->GetRoutingID()),
+      is_main_frame_(!render_frame_host->GetParent()),
       weak_factory_(this) {
-  DCHECK(render_frame_host);
+  DCHECK(render_frame_host_);
   DCHECK(web_contents);
-  CHECK(render_frame_host->IsRenderFrameLive());
-
-  render_process_id_ = render_frame_host->GetProcess()->GetID();
-  render_frame_id_ = render_frame_host->GetRoutingID();
-  is_main_frame_ = !render_frame_host->GetParent();
+  CHECK(render_frame_host_->IsRenderFrameLive());
 
   DVLOG(2) << "PresentationServiceImpl: " << render_process_id_ << ", "
            << render_frame_id_ << " is main frame: " << is_main_frame_;
@@ -74,15 +74,18 @@ PresentationServiceImpl::~PresentationServiceImpl() {
   DVLOG(2) << __FUNCTION__ << ": " << render_process_id_ << ", "
            << render_frame_id_;
 
+  // Call Reset() to inform the PresentationServiceDelegate to clean up.
+  Reset();
+
   if (auto* delegate = GetPresentationServiceDelegate())
     delegate->RemoveObserver(render_process_id_, render_frame_id_);
 }
 
 // static
-void PresentationServiceImpl::CreateMojoService(
-    RenderFrameHost* render_frame_host,
-    blink::mojom::PresentationServiceRequest request) {
-  DVLOG(2) << "CreateMojoService";
+std::unique_ptr<PresentationServiceImpl> PresentationServiceImpl::Create(
+    RenderFrameHost* render_frame_host) {
+  DVLOG(2) << __func__ << render_frame_host->GetProcess()->GetID() << ", "
+           << render_frame_host->GetRoutingID();
   WebContents* web_contents =
       WebContents::FromRenderFrameHost(render_frame_host);
   DCHECK(web_contents);
@@ -98,30 +101,42 @@ void PresentationServiceImpl::CreateMojoService(
           ? nullptr
           : browser->GetControllerPresentationServiceDelegate(web_contents);
 
-  // This object will be deleted when the RenderFrameHost is about to be
-  // deleted (RenderFrameDeleted).
-  PresentationServiceImpl* impl = new PresentationServiceImpl(
-      render_frame_host, web_contents, controller_delegate, receiver_delegate);
-  impl->Bind(std::move(request));
+  return base::WrapUnique(new PresentationServiceImpl(
+      render_frame_host, web_contents, controller_delegate, receiver_delegate));
 }
 
 void PresentationServiceImpl::Bind(
     blink::mojom::PresentationServiceRequest request) {
-  binding_.reset(new mojo::Binding<blink::mojom::PresentationService>(
-      this, std::move(request)));
+  bindings_.AddBinding(this, std::move(request));
 }
 
 void PresentationServiceImpl::SetClient(
     blink::mojom::PresentationServiceClientPtr client) {
   DCHECK(!client_.get());
-  // TODO(imcheng): Set ErrorHandler to listen for errors.
   client_ = std::move(client);
+}
 
-  if (receiver_delegate_ && is_main_frame_) {
-    receiver_delegate_->RegisterReceiverConnectionAvailableCallback(
-        base::Bind(&PresentationServiceImpl::OnReceiverConnectionAvailable,
-                   weak_factory_.GetWeakPtr()));
+void PresentationServiceImpl::SetReceiver(
+    blink::mojom::PresentationReceiverPtr receiver) {
+  // The render frame should register a PresentationReceiver only once, and
+  // this should be done when the navigator.presentation.receiver is
+  // initialized.
+  if (!receiver_delegate_ || !is_main_frame_) {
+    mojo::ReportBadMessage(
+        "SetReceiver can only be called from a "
+        "presentation receiver main frame.");
+    return;
   }
+
+  if (receiver_) {
+    mojo::ReportBadMessage("SetReceiver can only be called once.");
+    return;
+  }
+
+  receiver_ = std::move(receiver);
+  receiver_delegate_->RegisterReceiverConnectionAvailableCallback(
+      base::Bind(&PresentationServiceImpl::OnReceiverConnectionAvailable,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void PresentationServiceImpl::ListenForScreenAvailability(const GURL& url) {
@@ -391,7 +406,7 @@ void PresentationServiceImpl::OnReceiverConnectionAvailable(
     PresentationConnectionRequest receiver_connection_request) {
   DVLOG(2) << "PresentationServiceImpl::OnReceiverConnectionAvailable";
 
-  client_->OnReceiverConnectionAvailable(
+  receiver_->OnReceiverConnectionAvailable(
       presentation_info, std::move(controller_connection_ptr),
       std::move(receiver_connection_request));
 }
@@ -404,39 +419,15 @@ void PresentationServiceImpl::DidFinishNavigation(
     return;
   }
 
-  std::string prev_url_host = navigation_handle->GetPreviousURL().host();
-  std::string curr_url_host = navigation_handle->GetURL().host();
-
   // If a frame navigation is same-document (e.g. navigating to a fragment in
   // same page) then we do not unregister listeners.
   DVLOG(2) << "DidNavigateAnyFrame: "
-           << "prev host: " << prev_url_host << ", curr host: " << curr_url_host
            << ", is_same_document: " << navigation_handle->IsSameDocument();
   if (navigation_handle->IsSameDocument())
     return;
 
   // Reset if the frame actually navigated.
   Reset();
-}
-
-void PresentationServiceImpl::RenderFrameDeleted(
-    content::RenderFrameHost* render_frame_host) {
-  DVLOG(2) << "PresentationServiceImpl::RenderFrameDeleted";
-  if (!FrameMatches(render_frame_host))
-    return;
-
-  // RenderFrameDeleted means the associated RFH is going to be deleted soon.
-  // This object should also be deleted.
-  Reset();
-  delete this;
-}
-
-void PresentationServiceImpl::WebContentsDestroyed() {
-  LOG(ERROR) << "PresentationServiceImpl is being deleted in "
-             << "WebContentsDestroyed()! This shouldn't happen since it "
-             << "should've been deleted during RenderFrameDeleted().";
-  Reset();
-  delete this;
 }
 
 void PresentationServiceImpl::Reset() {

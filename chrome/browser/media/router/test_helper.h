@@ -100,7 +100,7 @@ class MockPresentationConnectionProxy
                     OnMessageCallback&));
   MOCK_METHOD1(DidChangeState,
                void(content::PresentationConnectionState state));
-  MOCK_METHOD0(OnClose, void());
+  MOCK_METHOD0(RequestClose, void());
 };
 
 }  // namespace media_router

@@ -6,9 +6,11 @@
 #define RemotePlayback_h
 
 #include "bindings/core/v8/ScriptPromise.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/events/EventTarget.h"
 #include "modules/ModulesExport.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "platform/bindings/ActiveScriptWrappable.h"
 #include "platform/bindings/TraceWrapperMember.h"
 #include "platform/heap/Handle.h"
@@ -20,7 +22,7 @@
 #include "public/platform/WebVector.h"
 #include "public/platform/modules/presentation/WebPresentationAvailabilityObserver.h"
 #include "public/platform/modules/presentation/WebPresentationConnection.h"
-#include "public/platform/modules/presentation/WebPresentationConnectionProxy.h"
+#include "public/platform/modules/presentation/presentation.mojom-blink.h"
 #include "public/platform/modules/remoteplayback/WebRemotePlaybackAvailability.h"
 #include "public/platform/modules/remoteplayback/WebRemotePlaybackClient.h"
 #include "public/platform/modules/remoteplayback/WebRemotePlaybackState.h"
@@ -32,16 +34,22 @@ class HTMLMediaElement;
 class ScriptPromiseResolver;
 class ScriptState;
 class V8RemotePlaybackAvailabilityCallback;
-class WebPresentationConnectionProxy;
 struct WebPresentationError;
 struct WebPresentationInfo;
 
+// Remote playback for HTMLMediaElements.
+// The new RemotePlayback pipeline is implemented on top of Presentation.
+// - This class uses PresentationAvailability to detect potential devices to
+//   initiate remote playback for a media element.
+// - A remote playback session is implemented as a PresentationConnection.
 class MODULES_EXPORT RemotePlayback final
     : public EventTargetWithInlineData,
+      public ContextLifecycleObserver,
       public ActiveScriptWrappable<RemotePlayback>,
       public WebRemotePlaybackClient,
       public WebPresentationAvailabilityObserver,
-      public WebPresentationConnection {
+      public WebPresentationConnection,
+      public mojom::blink::PresentationConnection {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(RemotePlayback);
 
@@ -99,11 +107,13 @@ class MODULES_EXPORT RemotePlayback final
   const WebVector<WebURL>& Urls() const override;
 
   // WebPresentationConnection implementation.
-  void BindProxy(std::unique_ptr<WebPresentationConnectionProxy>) override;
-  void DidReceiveTextMessage(const WebString& message) override;
-  void DidReceiveBinaryMessage(const uint8_t* data, size_t length) override;
-  void DidChangeState(WebPresentationConnectionState) override;
-  void DidClose() override;
+  void Init() override;
+
+  // mojom::blink::PresentationConnection implementation.
+  void OnMessage(mojom::blink::PresentationConnectionMessagePtr,
+                 OnMessageCallback) override;
+  void DidChangeState(mojom::blink::PresentationConnectionState) override;
+  void RequestClose() override;
 
   // WebRemotePlaybackClient implementation.
   void StateChanged(WebRemotePlaybackState) override;
@@ -114,6 +124,9 @@ class MODULES_EXPORT RemotePlayback final
 
   // ScriptWrappable implementation.
   bool HasPendingActivity() const final;
+
+  // ContextLifecycleObserver implementation.
+  void ContextDestroyed(ExecutionContext*) override;
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(connecting);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(connect);
@@ -151,10 +164,12 @@ class MODULES_EXPORT RemotePlayback final
   WebVector<WebURL> availability_urls_;
   bool is_listening_;
 
-  // WebPresentationConnection implementation.
   String presentation_id_;
   KURL presentation_url_;
-  std::unique_ptr<WebPresentationConnectionProxy> connection_proxy_;
+
+  mojo::Binding<mojom::blink::PresentationConnection>
+      presentation_connection_binding_;
+  mojom::blink::PresentationConnectionPtr target_presentation_connection_;
 };
 
 }  // namespace blink
