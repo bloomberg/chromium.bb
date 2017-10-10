@@ -443,6 +443,20 @@ void RenderWidgetHostViewGuest::SelectionBoundsChanged(
   rwhv->SelectionBoundsChanged(guest_params);
 }
 
+void RenderWidgetHostViewGuest::DidStopFlinging() {
+  RenderWidgetHostViewBase* rwhv = this;
+  // If we're a pdf in a WebView, we could have nested guest views here.
+  while (rwhv && rwhv->IsRenderWidgetHostViewGuest()) {
+    rwhv = static_cast<RenderWidgetHostViewGuest*>(rwhv)
+               ->GetOwnerRenderWidgetHostView();
+  }
+  // DidStopFlinging() is used by TouchSelection to correctly detect the end of
+  // scroll events, so we forward this to the top-level RenderWidgetHostViewBase
+  // so it can be passed along to its TouchSelectionController.
+  if (rwhv)
+    rwhv->DidStopFlinging();
+}
+
 bool RenderWidgetHostViewGuest::LockMouse() {
   return platform_view_->LockMouse();
 }
