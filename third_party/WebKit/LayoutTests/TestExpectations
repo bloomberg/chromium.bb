@@ -3758,3 +3758,6 @@ crbug.com/773122 [ Win7 ] fast/text/international/unicode-bidi-plaintext-in-text
 crbug.com/773122 [ Win7 ] fast/text/whitespace/022.html [ Failure Pass ]
 crbug.com/773122 [ Win7 ] fast/text/word-break.html [ Failure Pass ]
 crbug.com/773122 [ Win7 ] virtual/gpu/fast/canvas/canvas-lost-gpu-context.html [ Failure Pass ]
+
+# Sheriff failures 2017-10-10
+crbug.com/773434 [ Win7 ] fast/text/monospace-width-cache.html [ Failure ]
