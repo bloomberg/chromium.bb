@@ -1020,7 +1020,7 @@ std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
 
   // If enabled, suppress disused address profiles when triggered from an empty
   // field.
-  if (field_contents.empty() &&
+  if (field_contents_canon.empty() &&
       base::FeatureList::IsEnabled(kAutofillSuppressDisusedAddresses)) {
     const base::Time min_last_used =
         AutofillClock::Now() - kDisusedProfileTimeDelta;
