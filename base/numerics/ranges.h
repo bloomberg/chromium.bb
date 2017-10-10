@@ -6,12 +6,19 @@
 #define BASE_NUMERICS_RANGES_H_
 
 #include <algorithm>
+#include <cmath>
 
 namespace base {
 
 template <typename T>
 T ClampToRange(T value, T min, T max) {
   return std::min(std::max(value, min), max);
+}
+
+template <typename T>
+constexpr bool IsApproximatelyEqual(T lhs, T rhs, T tolerance) {
+  static_assert(std::is_arithmetic<T>::value, "Argument must be arithmetic");
+  return std::abs(rhs - lhs) <= tolerance;
 }
 
 }  // namespace base

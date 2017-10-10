@@ -7,6 +7,7 @@
 #include <cmath>
 
 #include "base/memory/ptr_util.h"
+#include "base/numerics/ranges.h"
 #include "chrome/browser/vr/elements/draw_phase.h"
 #include "chrome/browser/vr/test/animation_utils.h"
 #include "chrome/browser/vr/test/constants.h"
@@ -22,22 +23,18 @@ namespace {
 const float kThreshold = ViewportAwareRoot::kViewportRotationTriggerDegrees;
 const int kFramesPerSecond = 60;
 
-bool FloatNearlyEqual(float a, float b) {
-  return std::abs(a - b) < kEpsilon;
-}
-
 bool Point3FAreNearlyEqual(const gfx::Point3F& lhs, const gfx::Point3F& rhs) {
-  return FloatNearlyEqual(lhs.x(), rhs.x()) &&
-         FloatNearlyEqual(lhs.y(), rhs.y()) &&
-         FloatNearlyEqual(lhs.z(), rhs.z());
+  return base::IsApproximatelyEqual(lhs.x(), rhs.x(), kEpsilon) &&
+         base::IsApproximatelyEqual(lhs.y(), rhs.y(), kEpsilon) &&
+         base::IsApproximatelyEqual(lhs.z(), rhs.z(), kEpsilon);
 }
 
 bool MatricesAreNearlyEqual(const gfx::Transform& lhs,
                             const gfx::Transform& rhs) {
   for (int row = 0; row < 4; ++row) {
     for (int col = 0; col < 4; ++col) {
-      if (!FloatNearlyEqual(lhs.matrix().get(row, col),
-                            rhs.matrix().get(row, col))) {
+      if (!base::IsApproximatelyEqual(lhs.matrix().get(row, col),
+                                      rhs.matrix().get(row, col), kEpsilon)) {
         return false;
       }
     }
