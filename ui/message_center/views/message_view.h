@@ -81,8 +81,6 @@ class MESSAGE_CENTER_EXPORT MessageView
 
   void set_scroller(views::ScrollView* scroller) { scroller_ = scroller; }
   std::string notification_id() const { return notification_id_; }
-  NotifierId notifier_id() const { return notifier_id_; }
-  const base::string16& display_source() const { return display_source_; }
   void set_controller(MessageCenterController* controller) {
     controller_ = controller;
   }
@@ -109,13 +107,10 @@ class MESSAGE_CENTER_EXPORT MessageView
  private:
   MessageCenterController* controller_;  // Weak, lives longer then views.
   std::string notification_id_;
-  NotifierId notifier_id_;
   views::View* background_view_ = nullptr;  // Owned by views hierarchy.
   views::ScrollView* scroller_ = nullptr;
 
   base::string16 accessible_name_;
-
-  base::string16 display_source_;
 
   // Flag if the notification is set to pinned or not.
   bool pinned_ = false;

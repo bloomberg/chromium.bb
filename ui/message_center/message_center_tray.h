@@ -55,8 +55,7 @@ class MESSAGE_CENTER_EXPORT MessageCenterTray : public MessageCenterObserver {
 
   // Creates a model for the context menu for a notification card.
   std::unique_ptr<ui::MenuModel> CreateNotificationMenuModel(
-      const NotifierId& notifier_id,
-      const base::string16& display_source);
+      const Notification& notification);
 
   bool message_center_visible() { return message_center_visible_; }
   bool popups_visible() { return popups_visible_; }

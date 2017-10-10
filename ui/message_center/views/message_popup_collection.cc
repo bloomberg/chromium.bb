@@ -104,9 +104,8 @@ void MessagePopupCollection::RemoveNotification(
 }
 
 std::unique_ptr<ui::MenuModel> MessagePopupCollection::CreateMenuModel(
-    const NotifierId& notifier_id,
-    const base::string16& display_source) {
-  return tray_->CreateNotificationMenuModel(notifier_id, display_source);
+    const Notification& notification) {
+  return tray_->CreateNotificationMenuModel(notification);
 }
 
 bool MessagePopupCollection::HasClickedListener(

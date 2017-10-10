@@ -5,6 +5,7 @@
 #include "ui/message_center/views/message_view_context_menu_controller.h"
 
 #include "ui/base/models/menu_model.h"
+#include "ui/message_center/message_center.h"
 #include "ui/message_center/views/message_center_controller.h"
 #include "ui/message_center/views/message_view.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
@@ -27,8 +28,10 @@ void MessageViewContextMenuController::ShowContextMenuForView(
     ui::MenuSourceType source_type) {
   // Assumes that the target view has to be MessageView.
   MessageView* message_view = static_cast<MessageView*>(source);
-  menu_model_ = controller_->CreateMenuModel(message_view->notifier_id(),
-                                             message_view->display_source());
+  Notification* notification =
+      MessageCenter::Get()->FindVisibleNotificationById(
+          message_view->notification_id());
+  menu_model_ = controller_->CreateMenuModel(*notification);
 
   if (!menu_model_ || menu_model_->GetItemCount() == 0)
     return;

@@ -24,8 +24,7 @@ class MessageCenterController {
   virtual void RemoveNotification(const std::string& notification_id,
                                   bool by_user) = 0;
   virtual std::unique_ptr<ui::MenuModel> CreateMenuModel(
-      const NotifierId& notifier_id,
-      const base::string16& display_source) = 0;
+      const Notification& notification) = 0;
   virtual bool HasClickedListener(const std::string& notification_id) = 0;
   virtual void ClickOnNotificationButton(const std::string& notification_id,
                                          int button_index) = 0;

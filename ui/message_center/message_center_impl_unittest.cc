@@ -675,31 +675,6 @@ TEST_F(MessageCenterImplTest, CachedUnreadCount) {
 }
 #endif  // OS_CHROMEOS
 
-TEST_F(MessageCenterImplTest, DisableNotificationsByNotifier) {
-  ASSERT_EQ(0u, message_center()->NotificationCount());
-  message_center()->AddNotification(std::unique_ptr<Notification>(
-      CreateSimpleNotificationWithNotifierId("id1-1", "app1")));
-  message_center()->AddNotification(std::unique_ptr<Notification>(
-      CreateSimpleNotificationWithNotifierId("id1-2", "app1")));
-  message_center()->AddNotification(std::unique_ptr<Notification>(
-      CreateSimpleNotificationWithNotifierId("id2-1", "app2")));
-  message_center()->AddNotification(std::unique_ptr<Notification>(
-      CreateSimpleNotificationWithNotifierId("id2-2", "app2")));
-  message_center()->AddNotification(std::unique_ptr<Notification>(
-      CreateSimpleNotificationWithNotifierId("id2-3", "app2")));
-  ASSERT_EQ(5u, message_center()->NotificationCount());
-
-  // Removing all of app1's notifications should only leave app2's.
-  message_center()->DisableNotificationsByNotifier(
-      NotifierId(NotifierId::APPLICATION, "app1"));
-  ASSERT_EQ(3u, message_center()->NotificationCount());
-
-  // Now we remove the remaining notifications.
-  message_center()->DisableNotificationsByNotifier(
-      NotifierId(NotifierId::APPLICATION, "app2"));
-  ASSERT_EQ(0u, message_center()->NotificationCount());
-}
-
 TEST_F(MessageCenterImplTest, NotifierEnabledChanged) {
   ASSERT_EQ(0u, message_center()->NotificationCount());
   message_center()->AddNotification(std::unique_ptr<Notification>(

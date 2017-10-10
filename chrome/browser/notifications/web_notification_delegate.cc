@@ -7,11 +7,11 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/nullable_string16.h"
+#include "chrome/browser/notifications/desktop_notification_profile_util.h"
 #include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-
 
 WebNotificationDelegate::WebNotificationDelegate(
     NotificationCommon::Type notification_type,
@@ -36,6 +36,11 @@ bool WebNotificationDelegate::SettingsClick() {
 
 bool WebNotificationDelegate::ShouldDisplaySettingsButton() {
   return notification_type_ != NotificationCommon::EXTENSION;
+}
+
+void WebNotificationDelegate::DisableNotification() {
+  DCHECK_NE(notification_type_, NotificationCommon::EXTENSION);
+  DesktopNotificationProfileUtil::DenyPermission(profile_, origin_);
 }
 
 bool WebNotificationDelegate::ShouldDisplayOverFullscreen() const {

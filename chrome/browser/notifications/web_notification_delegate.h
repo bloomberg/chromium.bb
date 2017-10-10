@@ -32,6 +32,7 @@ class WebNotificationDelegate : public message_center::NotificationDelegate {
   // NotificationDelegate implementation.
   bool SettingsClick() override;
   bool ShouldDisplaySettingsButton() override;
+  void DisableNotification() override;
   bool ShouldDisplayOverFullscreen() const override;
   void Close(bool by_user) override;
   void Click() override;

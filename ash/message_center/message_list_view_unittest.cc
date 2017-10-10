@@ -175,8 +175,7 @@ class MessageListViewTest : public AshTestBase,
   void RemoveNotification(const std::string& notification_id,
                           bool by_user) override {}
   std::unique_ptr<ui::MenuModel> CreateMenuModel(
-      const NotifierId& notifier_id,
-      const base::string16& display_source) override {
+      const Notification& notification) override {
     NOTREACHED();
     return nullptr;
   }

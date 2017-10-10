@@ -33,6 +33,8 @@ bool NotificationDelegate::ShouldDisplaySettingsButton() {
   return false;
 }
 
+void NotificationDelegate::DisableNotification() {}
+
 // HandleNotificationClickedDelegate:
 
 HandleNotificationClickedDelegate::HandleNotificationClickedDelegate(

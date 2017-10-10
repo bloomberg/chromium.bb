@@ -381,18 +381,6 @@ void MessageCenterImpl::SetNotificationButtonIcon(
   }
 }
 
-void MessageCenterImpl::DisableNotificationsByNotifier(
-    const NotifierId& notifier_id) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (settings_provider_) {
-    settings_provider_->SetNotifierEnabled(notifier_id, false);
-    // The settings provider will call back to remove the notifications
-    // belonging to the notifier id.
-  } else {
-    RemoveNotificationsForNotifierId(notifier_id);
-  }
-}
-
 void MessageCenterImpl::ClickOnNotification(const std::string& id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (FindVisibleNotificationById(id) == NULL)
