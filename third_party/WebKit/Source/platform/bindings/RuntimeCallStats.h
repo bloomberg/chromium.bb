@@ -226,7 +226,8 @@ class PLATFORM_EXPORT RuntimeCallStats {
   BINDINGS_METHOD(V, NodeRemoveChild)              \
   BINDINGS_METHOD(V, WindowSetTimeout)             \
   BINDINGS_ATTRIBUTE(V, DocumentCookie)            \
-  BINDINGS_ATTRIBUTE(V, ElementInnerHTML)
+  BINDINGS_ATTRIBUTE(V, ElementInnerHTML)          \
+  BINDINGS_READ_ONLY_ATTRIBUTE(V, NodeName)
 
 #define EXTRA_COUNTERS(V)                                               \
   V(V8)                                                                 \
