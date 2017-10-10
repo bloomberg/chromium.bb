@@ -199,11 +199,6 @@ bool ImageAnimationController::AnimationState::ShouldAnimate() const {
         return false;
   }
 
-  // If we have all data for this image and the policy allows it, we can
-  // continue animating it.
-  if (completion_state_ == PaintImage::CompletionState::DONE)
-    return true;
-
   // If we have not yet received all data for this image, we can not advance to
   // an incomplete frame.
   if (!frames_[NextFrameIndex()].complete)
@@ -212,7 +207,8 @@ bool ImageAnimationController::AnimationState::ShouldAnimate() const {
   // If we don't have all data for this image, we can not trust the frame count
   // and loop back to the first frame.
   size_t last_frame_index = frames_.size() - 1;
-  if (pending_index_ == last_frame_index)
+  if (completion_state_ != PaintImage::CompletionState::DONE &&
+      pending_index_ == last_frame_index)
     return false;
 
   return true;

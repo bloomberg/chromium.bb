@@ -405,17 +405,15 @@ TEST_F(ImageAnimationControllerTest, DisplayCompleteFrameOnly) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(invalidation_count_, 0);
 
-  // The frame is still incomplete but the image has been marked complete, which
-  // should push the animation forward.
+  // Completely load the image but the frame is still incomplete. It should not
+  // be advanced.
   data.completion_state = PaintImage::CompletionState::DONE;
   controller_->UpdateAnimatedImage(data);
   controller_->UpdateStateFromDrivers(now_);
 
-  // There is no delay for advancing to this frame since we advanced the time
-  // in the loop iteration above.
-  task_runner_->VerifyDelay(base::TimeDelta());
+  // No invalidation is scheduled since the last frame is still incomplete.
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(invalidation_count_, 1);
+  EXPECT_EQ(invalidation_count_, 0);
 
   controller_->UnregisterAnimationDriver(data.paint_image_id, &driver);
 }

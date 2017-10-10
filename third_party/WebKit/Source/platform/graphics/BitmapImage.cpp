@@ -519,7 +519,7 @@ Optional<size_t> BitmapImage::StartAnimationInternal(const double time) {
 
   // Don't advance the animation to an incomplete frame.
   size_t next_frame = (current_frame_index_ + 1) % FrameCount();
-  if (!all_data_received_ && !FrameIsReceivedAtIndex(next_frame))
+  if (!FrameIsReceivedAtIndex(next_frame))
     return WTF::nullopt;
 
   // Don't advance past the last frame if we haven't decoded the whole image
