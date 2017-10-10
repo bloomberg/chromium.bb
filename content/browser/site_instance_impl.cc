@@ -507,24 +507,24 @@ void SiteInstanceImpl::LockToOriginIfNeeded() {
   bool was_unused = process_->IsUnused();
   process_->SetIsUsed();
 
-  // TODO(nick): When all sites are isolated, this operation provides strong
-  // protection. If only some sites are isolated, we need additional logic to
-  // prevent the non-isolated sites from requesting resources for isolated
-  // sites. https://crbug.com/509125
+  ChildProcessSecurityPolicyImpl* policy =
+      ChildProcessSecurityPolicyImpl::GetInstance();
+  auto lock_state = policy->CheckOriginLock(process_->GetID(), site_);
   if (ShouldLockToOrigin(GetBrowserContext(), process_, site_)) {
-    ChildProcessSecurityPolicyImpl* policy =
-        ChildProcessSecurityPolicyImpl::GetInstance();
-
     // Sanity check that this won't try to assign an origin lock to a <webview>
     // process, which can't be locked.
     CHECK(!process_->IsForGuestsOnly());
 
-    auto lock_state = policy->CheckOriginLock(process_->GetID(), site_);
     switch (lock_state) {
       case ChildProcessSecurityPolicyImpl::CheckOriginLockResult::NO_LOCK: {
         // TODO(alexmos): Turn this into a CHECK once https://crbug.com/738634
         // is fixed.
         DCHECK(was_unused);
+
+        // TODO(nick): When all sites are isolated, this operation provides
+        // strong protection. If only some sites are isolated, we need
+        // additional logic to prevent the non-isolated sites from requesting
+        // resources for isolated sites. https://crbug.com/509125
         policy->LockToOrigin(process_->GetID(), site_);
         break;
       }
@@ -542,6 +542,12 @@ void SiteInstanceImpl::LockToOriginIfNeeded() {
       default:
         NOTREACHED();
     }
+  } else {
+    // If the site that we've just committed doesn't require a dedicated
+    // process, make sure we aren't putting it in a process for a site that
+    // does.
+    CHECK_EQ(lock_state,
+             ChildProcessSecurityPolicyImpl::CheckOriginLockResult::NO_LOCK);
   }
 }
 
