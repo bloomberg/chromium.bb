@@ -64,8 +64,6 @@ include_HEADERS =				\
 	src/wayland-server-core.h		\
 	src/wayland-client.h			\
 	src/wayland-client-core.h		\
-	src/wayland-egl.h			\
-	src/wayland-egl-core.h			\
 	src/wayland-version.h
 
 nodist_include_HEADERS =			\
@@ -145,6 +143,9 @@ libwayland_cursor_la_CFLAGS =			\
 	-DICONDIR=\"$(ICONDIR)\"
 
 lib_LTLIBRARIES += libwayland-egl.la
+
+include_HEADERS += egl/wayland-egl.h
+include_HEADERS += egl/wayland-egl-core.h
 
 libwayland_egl_la_SOURCES = egl/wayland-egl.c
 libwayland_egl_la_LDFLAGS = -version-info 1
