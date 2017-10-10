@@ -120,7 +120,11 @@ template("test_runner_script") {
 #   }
 template("fuchsia_executable_runner") {
   generate_runner_script(target_name) {
-    forward_variables_from(invoker, [ "exe_target" ])
+    forward_variables_from(invoker,
+                           [
+                             "testonly",
+                             "exe_target",
+                           ])
     runner_script = "exe_runner.py"
     data_deps = [
       exe_target,
