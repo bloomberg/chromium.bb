@@ -347,6 +347,7 @@ base::TimeDelta CrossFadeAnimation(
     settings.SetTweenType(tween_type);
     // Only add reporter to |old_layer|.
     settings.SetAnimationMetricsReporter(g_reporter_cross_fade.Pointer());
+    settings.DeferPaint();
     if (old_on_top) {
       // Only caching render surface when there is an opacity animation and
       // multiple layers.
@@ -391,6 +392,7 @@ base::TimeDelta CrossFadeAnimation(
     ui::ScopedLayerAnimationSettings settings(new_layer->GetAnimator());
     settings.SetTransitionDuration(duration);
     settings.SetTweenType(tween_type);
+    settings.DeferPaint();
     if (!old_on_top) {
       // Only caching render surface when there is an opacity animation and
       // multiple layers.
