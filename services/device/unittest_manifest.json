@@ -12,6 +12,7 @@
         "device": [
           "device:battery_monitor",
           "device:generic_sensor",
+          "device:hid",
           "device:power_monitor",
           "device:vibration",
           "device:wake_lock"

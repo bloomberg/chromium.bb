@@ -94,7 +94,7 @@ class HidService {
 
   bool enumeration_ready_ = false;
   std::vector<GetDevicesCallback> pending_enumerations_;
-  base::ObserverList<Observer, true> observer_list_;
+  base::ObserverList<Observer> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(HidService);
 };

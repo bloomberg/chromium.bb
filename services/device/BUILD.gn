@@ -123,8 +123,13 @@ source_set("tests") {
       "//services/device/vibration/android:vibration_jni_headers",
     ]
   } else {
-    sources += [ "battery/battery_monitor_impl_unittest.cc" ]
+    sources += [
+      "battery/battery_monitor_impl_unittest.cc",
+      "hid/hid_manager_unittest.cc",
+    ]
     deps += [
+      "//device/hid",
+      "//device/hid:mocks",
       "//services/device/battery",
       "//services/device/vibration",
     ]

@@ -33,6 +33,7 @@ void HidService::Observer::OnDeviceRemoved(
 // static
 constexpr base::TaskTraits HidService::kBlockingTaskTraits;
 
+// static
 std::unique_ptr<HidService> HidService::Create() {
 #if defined(OS_LINUX) && defined(USE_UDEV)
   return base::WrapUnique(new HidServiceLinux());
