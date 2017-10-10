@@ -248,13 +248,15 @@ bookmarkHomeViewControllerWantsDismissal:(BookmarkHomeViewController*)controller
   [self bookmarkHomeViewControllerWantsDismissal:controller
                                 navigationToUrls:urls
                                      inIncognito:_currentBrowserState
-                                                     ->IsOffTheRecord()];
+                                                     ->IsOffTheRecord()
+                                          newTab:NO];
 }
 
 - (void)bookmarkHomeViewControllerWantsDismissal:
             (BookmarkHomeViewController*)controller
                                 navigationToUrls:(const std::vector<GURL>&)urls
-                                     inIncognito:(BOOL)inIncognito {
+                                     inIncognito:(BOOL)inIncognito
+                                          newTab:(BOOL)newTab {
   [self dismissBookmarkBrowserAnimated:YES];
 
   if (urls.empty())
@@ -277,13 +279,14 @@ bookmarkHomeViewControllerWantsDismissal:(BookmarkHomeViewController*)controller
       base::RecordAction(
           base::UserMetricsAction("MobileBookmarkManagerEntryOpened"));
 
-      if (inIncognito == _currentBrowserState->IsOffTheRecord()) {
-        // Open in current tab if target tab mode is same as current tab mode.
-        [self openURLInCurrentTab:url];
-      } else {
-        // Open in new tab if target tab mode is different from current tab
-        // mode.
+      if (newTab ||
+          ((!!inIncognito) != _currentBrowserState->IsOffTheRecord())) {
+        // Open in new tab if it is specified or target tab mode is different
+        // from current tab mode.
         [self openURLInNewTab:url inIncognito:inIncognito inBackground:NO];
+      } else {
+        // Open in current tab otherwise.
+        [self openURLInCurrentTab:url];
       }
     } else {
       // Open other URLs (if any) in background tabs.
