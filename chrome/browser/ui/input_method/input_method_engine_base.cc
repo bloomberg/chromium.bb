@@ -335,12 +335,13 @@ void InputMethodEngineBase::Enable(const std::string& component_id) {
 }
 
 void InputMethodEngineBase::Disable() {
+  std::string last_component_id{active_component_id_};
   active_component_id_.clear();
   if (ui::IMEBridge::Get()->GetInputContextHandler())
     ui::IMEBridge::Get()->GetInputContextHandler()->CommitText(
         base::UTF16ToUTF8(composition_text_->text));
   composition_text_.reset(new ui::CompositionText());
-  observer_->OnDeactivated(active_component_id_);
+  observer_->OnDeactivated(last_component_id);
 }
 
 void InputMethodEngineBase::Reset() {
