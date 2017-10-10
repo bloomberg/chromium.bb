@@ -28,10 +28,8 @@ Surface::Surface(const SurfaceInfo& surface_info,
     : surface_info_(surface_info),
       surface_manager_(surface_manager),
       surface_client_(std::move(surface_client)),
-      deadline_(begin_frame_source),
-      needs_sync_tokens_(needs_sync_tokens) {
-  deadline_.AddObserver(this);
-}
+      deadline_(this, begin_frame_source),
+      needs_sync_tokens_(needs_sync_tokens) {}
 
 Surface::~Surface() {
   ClearCopyRequests();
@@ -41,7 +39,6 @@ Surface::~Surface() {
   UnrefFrameResourcesAndRunDrawCallback(std::move(active_frame_data_));
 
   deadline_.Cancel();
-  deadline_.RemoveObserver(this);
 }
 
 void Surface::ResetSeenFirstFrameActivation() {

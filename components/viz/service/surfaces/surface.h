@@ -68,7 +68,7 @@ class SurfaceManager;
 // deadline passes, then the CompositorFrame will activate despite missing
 // dependencies. The activated CompositorFrame can specify fallback behavior in
 // the event of missing dependencies at display time.
-class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineObserver {
+class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
  public:
   using WillDrawCallback =
       base::RepeatingCallback<void(const LocalSurfaceId&, const gfx::Rect&)>;
@@ -200,7 +200,7 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineObserver {
     return HasActiveFrame() && active_frame_data_->draw_callback;
   }
 
-  // SurfaceDeadlineObserver implementation:
+  // SurfaceDeadlineClient implementation:
   void OnDeadline() override;
 
  private:
