@@ -505,15 +505,21 @@ public class WebappActivity extends SingleTabActivity {
                     boolean isFragmentNavigation, Integer pageTransition, int errorCode,
                     int httpStatusCode) {
                 if (hasCommitted && isInMainFrame) {
-                    // Updates the URL.
-                    mNotificationManager.maybeShowNotification();
-
                     // Notify the renderer to permanently hide the top controls since they do
                     // not apply to fullscreen content views.
                     tab.updateBrowserControlsState(tab.getBrowserControlsStateConstraints(), true);
 
                     RecordHistogram.recordBooleanHistogram(
                             HISTOGRAM_NAVIGATION_STATUS, !isErrorPage);
+                }
+            }
+
+            @Override
+            public void onUrlUpdated(Tab tab) {
+                if (ApplicationStatus.getStateForActivity(WebappActivity.this)
+                        == ActivityState.RESUMED) {
+                    // Updates the URL on the notification.
+                    mNotificationManager.maybeShowNotification();
                 }
             }
 
