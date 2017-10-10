@@ -11,7 +11,6 @@
 
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
-#include "base/memory/manual_constructor.h"
 #include "base/strings/string_piece_forward.h"
 #include "content/common/content_export.h"
 
@@ -88,10 +87,10 @@ class CONTENT_EXPORT CBORValue {
 
   union {
     uint64_t unsigned_value_;
-    base::ManualConstructor<BinaryValue> bytestring_value_;
-    base::ManualConstructor<std::string> string_value_;
-    base::ManualConstructor<ArrayValue> array_value_;
-    base::ManualConstructor<MapValue> map_value_;
+    BinaryValue bytestring_value_;
+    std::string string_value_;
+    ArrayValue array_value_;
+    MapValue map_value_;
   };
 
   void InternalMoveConstructFrom(CBORValue&& that);
