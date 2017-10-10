@@ -5590,12 +5590,16 @@ def CMDtry_results(parser, args):
                       'or "-" for stdout.'))
   parser.add_option_group(group)
   auth.add_auth_options(parser)
+  _add_codereview_issue_select_options(parser)
   options, args = parser.parse_args(args)
+  _process_codereview_issue_select_options(parser, options)
   if args:
     parser.error('Unrecognized args: %s' % ' '.join(args))
 
   auth_config = auth.extract_auth_config_from_options(options)
-  cl = Changelist(auth_config=auth_config)
+  cl = Changelist(
+      issue=options.issue, codereview=options.forced_codereview,
+      auth_config=auth_config)
   if not cl.GetIssue():
     parser.error('Need to upload first')
 
