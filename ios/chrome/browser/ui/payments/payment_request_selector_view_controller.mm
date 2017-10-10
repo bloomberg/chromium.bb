@@ -65,7 +65,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     // Set up leading (back) button.
     UIBarButtonItem* backButton =
         [ChromeIcon templateBarButtonItemWithImage:[ChromeIcon backIcon]
-                                            target:nil
+                                            target:self
                                             action:@selector(onBack)];
     backButton.accessibilityLabel = l10n_util::GetNSString(IDS_ACCNAME_BACK);
     self.navigationItem.leftBarButtonItem = backButton;

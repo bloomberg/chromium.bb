@@ -193,7 +193,7 @@ PaymentsTextItem* ErrorMessageItemForError(NSString* errorMessage) {
     UIBarButtonItem* cancelButton = [[UIBarButtonItem alloc]
         initWithTitle:l10n_util::GetNSString(IDS_CANCEL)
                 style:UIBarButtonItemStylePlain
-               target:nil
+               target:self
                action:@selector(onCancel)];
     [cancelButton setTitleTextAttributes:@{
       NSForegroundColorAttributeName : [UIColor lightGrayColor]

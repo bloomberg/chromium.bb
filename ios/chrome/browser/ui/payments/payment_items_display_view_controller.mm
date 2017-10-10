@@ -65,7 +65,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     // Set up leading (return) button.
     UIBarButtonItem* returnButton =
         [ChromeIcon templateBarButtonItemWithImage:[ChromeIcon backIcon]
-                                            target:nil
+                                            target:self
                                             action:@selector(onReturn)];
     [returnButton
         setAccessibilityLabel:l10n_util::GetNSString(IDS_ACCNAME_BACK)];
@@ -81,7 +81,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     [_payButton setTitleColor:[UIColor whiteColor]
                      forState:UIControlStateDisabled];
     [_payButton setInkColor:[UIColor colorWithWhite:1 alpha:0.2]];
-    [_payButton addTarget:nil
+    [_payButton addTarget:self
                    action:@selector(onConfirm)
          forControlEvents:UIControlEventTouchUpInside];
     [_payButton sizeToFit];

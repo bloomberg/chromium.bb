@@ -76,7 +76,7 @@ NSString* const kPaymentRequestPickerSearchBarAccessibilityID =
     // Set up leading (back) button.
     UIBarButtonItem* backButton =
         [ChromeIcon templateBarButtonItemWithImage:[ChromeIcon backIcon]
-                                            target:nil
+                                            target:self
                                             action:@selector(onBack)];
     self.appBar.navigationBar.backItem = backButton;
   }

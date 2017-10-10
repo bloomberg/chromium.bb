@@ -59,7 +59,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     _okButton =
         [[UIBarButtonItem alloc] initWithTitle:l10n_util::GetNSString(IDS_OK)
                                          style:UIBarButtonItemStylePlain
-                                        target:nil
+                                        target:self
                                         action:@selector(onOk)];
     [_okButton setTitleTextAttributes:@{
       NSForegroundColorAttributeName : [UIColor lightGrayColor]
