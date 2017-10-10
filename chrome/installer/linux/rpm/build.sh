@@ -14,6 +14,7 @@ gen_spec() {
   rm -f "${SPEC}"
   # Different channels need to install to different locations so they
   # don't conflict with each other.
+  local PACKAGE_ORIG="${PACKAGE}"
   local PACKAGE_FILENAME="${PACKAGE}-${CHANNEL}"
   if [ "$CHANNEL" != "stable" ]; then
     local INSTALLDIR="${INSTALLDIR}-${CHANNEL}"
