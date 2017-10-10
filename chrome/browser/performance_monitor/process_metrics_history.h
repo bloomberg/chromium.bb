@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/process/process_handle.h"
+#include "build/build_config.h"
 #include "content/public/browser/background_tracing_manager.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/common/process_type.h"
@@ -68,6 +69,11 @@ class ProcessMetricsHistory {
   int last_update_sequence_;
 
   double cpu_usage_;
+
+  int idle_wakeups_;
+#if defined(OS_MACOSX)
+  int package_idle_wakeups_;
+#endif
 
   content::BackgroundTracingManager::TriggerHandle trace_trigger_handle_;
 

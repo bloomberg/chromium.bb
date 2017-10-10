@@ -57458,6 +57458,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PerformanceMonitor.IdleWakeups" units="WakeupsPerSecond">
+  <owner>lgrey@chromium.org</owner>
+  <summary>
+    The average CPU idle wakeups per second, sampled every two minutes.
+  </summary>
+</histogram>
+
+<histogram name="PerformanceMonitor.PackageExitIdleWakeups"
+    units="WakeupsPerSecond">
+  <owner>lgrey@chromium.org</owner>
+  <summary>
+    (Mac only) The average package exit idle wakeups per second, sampled every
+    two minutes. This is a subset of wakeups that indicate that the processor
+    complex was taken out of low-power state. For more info, see the
+    powermetrics man page on macOS.
+  </summary>
+</histogram>
+
 <histogram name="Permissions.Action" enum="PermissionAction">
   <owner>dominickn@chromium.org</owner>
   <owner>kcarattini@chromium.org</owner>
@@ -101981,6 +101999,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="WorkerProcess"/>
   <affected-histogram name="PerformanceMonitor.AverageCPU"/>
   <affected-histogram name="PerformanceMonitor.HighCPU"/>
+  <affected-histogram name="PerformanceMonitor.IdleWakeups"/>
+  <affected-histogram name="PerformanceMonitor.PackageExitIdleWakeups"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="PermissionRequestGesture" separator=".">
