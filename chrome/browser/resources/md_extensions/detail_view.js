@@ -71,6 +71,16 @@ cr.define('extensions', function() {
     },
 
     /**
+     * @return {boolean}
+     * @private
+     */
+    hasWarnings_: function() {
+      return this.data.disableReasons.corruptInstall ||
+          this.data.disableReasons.suspiciousInstall ||
+          this.data.disableReasons.updateRequired || !!this.data.blacklistText;
+    },
+
+    /**
      * @return {string}
      * @private
      */
@@ -140,6 +150,11 @@ cr.define('extensions', function() {
     /** @private */
     onRemoveTap_: function() {
       this.delegate.deleteItem(this.data.id);
+    },
+
+    /** @private */
+    onRepairTap_: function() {
+      this.delegate.repairItem(this.data.id);
     },
 
     /** @private */

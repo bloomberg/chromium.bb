@@ -5,6 +5,7 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toggle/cr_toggle.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_tooltip_icon.html">
 <link rel="import" href="chrome://resources/html/action_link.html">
 <link rel="import" href="chrome://resources/html/action_link_css.html">
@@ -20,7 +21,8 @@
 
 <dom-module id="extensions-detail-view">
   <template>
-    <style include="iron-flex cr-shared-style cr-icons action-link">
+    <style include="iron-flex cr-shared-style cr-icons action-link
+        paper-button-style">
       :host {
         --iron-icon-fill-color: var(--paper-grey-600);
         display: block;
@@ -92,6 +94,11 @@
         border-top: none;
       }
 
+      .section.continuation.warning {
+        padding-left: 21px;
+        padding-right: 8px;
+      }
+
       .section:first-child {
         border: none;
       }
@@ -113,6 +120,29 @@
         color: var(--google-blue-700);
         height: 20px;
         width: auto;  /* override the default button size of 24x24 */
+      }
+
+      .warning .action-button {
+        background: white;
+        color: var(--google-blue-500);
+        margin-left: 14px;
+        width: 78px;
+      }
+
+      .warning div {
+        display: flex;
+      }
+
+      .warning span {
+        color: var(--paper-red-700);
+        width: 484px;
+      }
+
+      .warning-icon {
+        --iron-icon-fill-color: var(--paper-red-700);
+        --iron-icon-height: 19px;
+        --iron-icon-width: 19px;
+        margin-right: 16px;
       }
 
       ul {
@@ -147,6 +177,40 @@
                   on-change="onEnableChange_"
                   disabled="[[!isEnableToggleEnabled_(data.*)]]">
               </cr-toggle>
+            </div>
+          </div>
+        </div>
+        <div id="warnings" hidden$="[[!hasWarnings_(data.*)]]">
+          <div class="section continuation warning" id="suspicious-warning"
+              hidden$="[[!data.disableReasons.suspiciousInstall]]">
+            <div>
+              <iron-icon class="warning-icon" icon="cr:warning"></iron-icon>
+              <span>$i18n{itemSuspiciousInstall}</span>
+            </div>
+          </div>
+          <div class="section continuation warning" id="corrupted-warning"
+              hidden$="[[!data.disableReasons.corruptInstall]]">
+            <div>
+              <iron-icon class="warning-icon" icon="cr:warning"></iron-icon>
+              <span>$i18n{itemCorruptInstall}</span>
+            </div>
+            <paper-button id="repair-button" class="action-button"
+                on-tap="onRepairTap_">
+              $i18n{itemRepair}
+            </paper-button>
+          </div>
+          <div class="section continuation warning" id="blacklisted-warning"
+              hidden$="[[!data.blacklistText]]">
+            <div>
+              <iron-icon class="warning-icon" icon="cr:warning"></iron-icon>
+              <span>[[data.blacklistText]]</span>
+            </div>
+          </div>
+          <div class="section continuation warning" id="update-required-warning"
+              hidden$="[[!data.disableReasons.updateRequired]]">
+            <div>
+              <iron-icon class="warning-icon" icon="cr:warning"></iron-icon>
+              <span>$i18n{updateRequiredByPolicy}</span>
             </div>
           </div>
         </div>

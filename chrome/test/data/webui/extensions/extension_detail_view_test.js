@@ -9,6 +9,7 @@ cr.define('extension_detail_view_tests', function() {
     Layout: 'layout',
     ClickableElements: 'clickable elements',
     Indicator: 'indicator',
+    Warnings: 'warnings',
   };
 
   suite('ExtensionItemTest', function() {
@@ -148,6 +149,62 @@ cr.define('extension_detail_view_tests', function() {
       item.set('data.controlledInfo', {type: 'POLICY', text: 'policy'});
       Polymer.dom.flush();
       expectFalse(indicator.hidden);
+    });
+
+    test(assert(TestNames.Warnings), function() {
+      var testWarningVisible = function(id, isVisible) {
+        var f = isVisible ? expectTrue : expectFalse;
+        f(extension_test_util.isVisible(item, id));
+      }
+
+      testWarningVisible('#corrupted-warning', false);
+      testWarningVisible('#suspicious-warning', false);
+      testWarningVisible('#blacklisted-warning', false);
+      testWarningVisible('#update-required-warning', false);
+
+      item.set('data.disableReasons.corruptInstall', true);
+      Polymer.dom.flush();
+      testWarningVisible('#corrupted-warning', true);
+      testWarningVisible('#suspicious-warning', false);
+      testWarningVisible('#blacklisted-warning', false);
+      testWarningVisible('#update-required-warning', false);
+
+      item.set('data.disableReasons.suspiciousInstall', true);
+      Polymer.dom.flush();
+      testWarningVisible('#corrupted-warning', true);
+      testWarningVisible('#suspicious-warning', true);
+      testWarningVisible('#blacklisted-warning', false);
+      testWarningVisible('#update-required-warning', false);
+
+      item.set('data.blacklistText', 'This item is blacklisted');
+      Polymer.dom.flush();
+      testWarningVisible('#corrupted-warning', true);
+      testWarningVisible('#suspicious-warning', true);
+      testWarningVisible('#blacklisted-warning', true);
+      testWarningVisible('#update-required-warning', false);
+
+      item.set('data.blacklistText', undefined);
+      Polymer.dom.flush();
+      testWarningVisible('#corrupted-warning', true);
+      testWarningVisible('#suspicious-warning', true);
+      testWarningVisible('#blacklisted-warning', false);
+      testWarningVisible('#update-required-warning', false);
+
+      item.set('data.disableReasons.updateRequired', true);
+      Polymer.dom.flush();
+      testWarningVisible('#corrupted-warning', true);
+      testWarningVisible('#suspicious-warning', true);
+      testWarningVisible('#blacklisted-warning', false);
+      testWarningVisible('#update-required-warning', true);
+
+      item.set('data.disableReasons.corruptInstall', false);
+      item.set('data.disableReasons.suspiciousInstall', false);
+      item.set('data.disableReasons.updateRequired', false);
+      Polymer.dom.flush();
+      testWarningVisible('#corrupted-warning', false);
+      testWarningVisible('#suspicious-warning', false);
+      testWarningVisible('#blacklisted-warning', false);
+      testWarningVisible('#update-required-warning', false);
     });
   });
 

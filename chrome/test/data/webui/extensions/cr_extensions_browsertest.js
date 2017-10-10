@@ -190,6 +190,14 @@ TEST_F(
           .run();
     });
 
+TEST_F(
+    'CrExtensionsDetailViewTest', 'Warnings',
+    function() {
+      mocha
+          .grep(assert(extension_detail_view_tests.TestNames.Warnings))
+          .run();
+    });
+
 ////////////////////////////////////////////////////////////////////////////////
 // Extension Item List Tests
 
