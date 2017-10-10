@@ -18,6 +18,7 @@
 namespace input_method {
 namespace {
 const char kTestExtensionId[] = "test_extension";
+const char kTestImeComponentId[] = "test_engine_id";
 
 enum CallsBitmap {
   NONE = 0U,
@@ -72,6 +73,7 @@ class TestObserver : public InputMethodEngineBase::Observer {
   // InputMethodEngineBase::Observer:
   void OnActivate(const std::string& engine_id) override {
     calls_bitmap_ |= ONACTIVATE;
+    engine_id_ = engine_id;
   }
   void OnFocus(
       const ui::IMEEngineHandlerInterface::InputContext& context) override {
@@ -83,13 +85,16 @@ class TestObserver : public InputMethodEngineBase::Observer {
       const InputMethodEngineBase::KeyboardEvent& event,
       ui::IMEEngineHandlerInterface::KeyEventDoneCallback& key_data) override {
     calls_bitmap_ |= ONKEYEVENT;
+    engine_id_ = engine_id;
     key_event_ = event;
   }
   void OnReset(const std::string& engine_id) override {
     calls_bitmap_ |= ONRESET;
+    engine_id_ = engine_id;
   }
   void OnDeactivated(const std::string& engine_id) override {
     calls_bitmap_ |= ONDEACTIVATED;
+    engine_id_ = engine_id;
   }
   void OnCompositionBoundsChanged(
       const std::vector<gfx::Rect>& bounds) override {
@@ -103,6 +108,7 @@ class TestObserver : public InputMethodEngineBase::Observer {
                                 int anchor_pos,
                                 int offset) override {
     calls_bitmap_ |= ONSURROUNDINGTEXTCHANGED;
+    engine_id_ = engine_id;
     surrounding_info_.text = text;
     surrounding_info_.focus = cursor_pos;
     surrounding_info_.anchor = anchor_pos;
@@ -117,6 +123,12 @@ class TestObserver : public InputMethodEngineBase::Observer {
     return ret;
   }
 
+  std::string GetEngineIdAndReset() {
+    std::string engine_id{engine_id_};
+    engine_id_.clear();
+    return engine_id;
+  }
+
   const InputMethodEngineBase::KeyboardEvent& GetKeyEvent() {
     return key_event_;
   }
@@ -129,6 +141,7 @@ class TestObserver : public InputMethodEngineBase::Observer {
 
  private:
   unsigned char calls_bitmap_;
+  std::string engine_id_;
   InputMethodEngineBase::KeyboardEvent key_event_;
   std::vector<gfx::Rect> composition_bounds_;
   SurroundingInfo surrounding_info_;
@@ -182,23 +195,26 @@ class InputMethodEngineTest : public testing::Test {
 // Tests input.ime.onActivate/onDeactivate/onFocus/onBlur API.
 TEST_F(InputMethodEngineTest, TestActivateAndFocus) {
   // Enables the extension with focus.
-  engine_->Enable("");
+  engine_->Enable(kTestImeComponentId);
   FocusIn(ui::TEXT_INPUT_TYPE_URL);
   EXPECT_EQ(ONACTIVATE | ONFOCUS, observer_->GetCallsBitmapAndReset());
+  EXPECT_EQ(kTestImeComponentId, observer_->GetEngineIdAndReset());
   // Focus out.
   engine_->FocusOut();
   EXPECT_EQ(ONBLUR, observer_->GetCallsBitmapAndReset());
   // Disables the extension.
   engine_->Disable();
   EXPECT_EQ(ONDEACTIVATED, observer_->GetCallsBitmapAndReset());
+  EXPECT_EQ(kTestImeComponentId, observer_->GetEngineIdAndReset());
 }
 
 // Tests input.ime.onKeyEvent API.
 TEST_F(InputMethodEngineTest, TestKeyEvent) {
   // Enables the extension with focus.
-  engine_->Enable("");
+  engine_->Enable(kTestImeComponentId);
   FocusIn(ui::TEXT_INPUT_TYPE_URL);
   EXPECT_EQ(ONACTIVATE | ONFOCUS, observer_->GetCallsBitmapAndReset());
+  EXPECT_EQ(kTestImeComponentId, observer_->GetEngineIdAndReset());
   // Sends key events.
   ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
   KeyEventDoneCallback callback(false);
@@ -206,6 +222,7 @@ TEST_F(InputMethodEngineTest, TestKeyEvent) {
       base::Bind(&KeyEventDoneCallback::Run, base::Unretained(&callback));
   engine_->ProcessKeyEvent(key_event, keyevent_callback);
   EXPECT_EQ(ONKEYEVENT, observer_->GetCallsBitmapAndReset());
+  EXPECT_EQ(kTestImeComponentId, observer_->GetEngineIdAndReset());
   EXPECT_EQ("keydown", observer_->GetKeyEvent().type);
   EXPECT_EQ("a", observer_->GetKeyEvent().key);
   EXPECT_EQ("KeyA", observer_->GetKeyEvent().code);
@@ -219,21 +236,24 @@ TEST_F(InputMethodEngineTest, TestKeyEvent) {
 // Tests input.ime.onReset API.
 TEST_F(InputMethodEngineTest, TestReset) {
   // Enables the extension with focus.
-  engine_->Enable("");
+  engine_->Enable(kTestImeComponentId);
   FocusIn(ui::TEXT_INPUT_TYPE_URL);
   EXPECT_EQ(ONACTIVATE | ONFOCUS, observer_->GetCallsBitmapAndReset());
+  EXPECT_EQ(kTestImeComponentId, observer_->GetEngineIdAndReset());
 
   // Resets the engine.
   engine_->Reset();
   EXPECT_EQ(ONRESET, observer_->GetCallsBitmapAndReset());
+  EXPECT_EQ(kTestImeComponentId, observer_->GetEngineIdAndReset());
 }
 
 // Tests input.ime.onCompositionBoundsChanged API.
 TEST_F(InputMethodEngineTest, TestCompositionBoundsChanged) {
   // Enables the extension with focus.
-  engine_->Enable("");
+  engine_->Enable(kTestImeComponentId);
   FocusIn(ui::TEXT_INPUT_TYPE_URL);
   EXPECT_EQ(ONACTIVATE | ONFOCUS, observer_->GetCallsBitmapAndReset());
+  EXPECT_EQ(kTestImeComponentId, observer_->GetEngineIdAndReset());
   // Sets the composition to trigger the composition bounds changed event.
   std::vector<gfx::Rect> rects;
   rects.push_back(gfx::Rect());
@@ -245,14 +265,16 @@ TEST_F(InputMethodEngineTest, TestCompositionBoundsChanged) {
 // Tests input.ime.onSurroundingTextChanged API.
 TEST_F(InputMethodEngineTest, TestSurroundingTextChanged) {
   // Enables the extension with focus.
-  engine_->Enable("");
+  engine_->Enable(kTestImeComponentId);
   FocusIn(ui::TEXT_INPUT_TYPE_URL);
   EXPECT_EQ(ONACTIVATE | ONFOCUS, observer_->GetCallsBitmapAndReset());
+  EXPECT_EQ(kTestImeComponentId, observer_->GetEngineIdAndReset());
   // Sets the surrounding text.
   engine_->SetSurroundingText("text" /* Surrounding text*/,
                               0 /*focused position*/, 1 /*anchor position*/,
                               0 /*offset position*/);
   EXPECT_EQ(ONSURROUNDINGTEXTCHANGED, observer_->GetCallsBitmapAndReset());
+  EXPECT_EQ(kTestImeComponentId, observer_->GetEngineIdAndReset());
   EXPECT_EQ("text", observer_->GetSurroundingInfo().text);
   EXPECT_EQ(0, observer_->GetSurroundingInfo().focus);
   EXPECT_EQ(1, observer_->GetSurroundingInfo().anchor);
