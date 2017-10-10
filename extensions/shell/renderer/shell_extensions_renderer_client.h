@@ -12,7 +12,6 @@
 
 namespace extensions {
 class Dispatcher;
-class DispatcherDelegate;
 
 class ShellExtensionsRendererClient : public ExtensionsRendererClient {
  public:
@@ -25,7 +24,6 @@ class ShellExtensionsRendererClient : public ExtensionsRendererClient {
   Dispatcher* GetDispatcher() override;
 
  private:
-  std::unique_ptr<DispatcherDelegate> dispatcher_delegate_;
   std::unique_ptr<Dispatcher> dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellExtensionsRendererClient);

@@ -169,13 +169,11 @@ void ChromeRenderViewTest::RegisterMainFrameRemoteInterfaces() {}
 void ChromeRenderViewTest::InitChromeContentRendererClient(
     ChromeContentRendererClient* client) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  extension_dispatcher_delegate_.reset(
-      new ChromeExtensionsDispatcherDelegate());
   ChromeExtensionsRendererClient* ext_client =
       ChromeExtensionsRendererClient::GetInstance();
   ext_client->SetExtensionDispatcherForTest(
       base::MakeUnique<extensions::Dispatcher>(
-          extension_dispatcher_delegate_.get()));
+          std::make_unique<ChromeExtensionsDispatcherDelegate>()));
 #endif
 #if BUILDFLAG(ENABLE_SPELLCHECK)
   client->SetSpellcheck(new SpellCheck());

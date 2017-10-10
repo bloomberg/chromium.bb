@@ -13,7 +13,6 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "ui/base/page_transition_types.h"
 
-class ChromeExtensionsDispatcherDelegate;
 class GURL;
 
 namespace blink {
@@ -87,8 +86,6 @@ class ChromeExtensionsRendererClient
   }
 
  private:
-  std::unique_ptr<ChromeExtensionsDispatcherDelegate>
-      extension_dispatcher_delegate_;
   std::unique_ptr<extensions::Dispatcher> extension_dispatcher_;
   std::unique_ptr<extensions::RendererPermissionsPolicyDelegate>
       permissions_policy_delegate_;
