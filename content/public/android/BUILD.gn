@@ -238,6 +238,7 @@ android_library("content_java") {
     "java/src/org/chromium/content_public/browser/SelectionClient.java",
     "java/src/org/chromium/content_public/browser/SmartClipCallback.java",
     "java/src/org/chromium/content_public/browser/WebContents.java",
+    "java/src/org/chromium/content_public/browser/WebContentsInternals.java",
     "java/src/org/chromium/content_public/browser/WebContentsObserver.java",
     "java/src/org/chromium/content_public/browser/WebContentsStatics.java",
     "java/src/org/chromium/content_public/common/BrowserSideNavigationPolicy.java",

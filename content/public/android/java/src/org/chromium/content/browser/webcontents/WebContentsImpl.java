@@ -14,6 +14,7 @@ import android.os.Parcel;
 import android.os.ParcelUuid;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
+import android.util.Pair;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
@@ -35,13 +36,18 @@ import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.SmartClipCallback;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.WebContentsInternals;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.ui.OverscrollRefreshHandler;
 import org.chromium.ui.base.EventForwarder;
 import org.chromium.ui.base.WindowAndroid;
 
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -142,10 +148,41 @@ import java.util.UUID;
 
     private EventForwarder mEventForwarder;
 
+    private static class DefaultInternalsHolder implements InternalsHolder {
+        private WebContentsInternals mInternals;
+
+        @Override
+        public void set(WebContentsInternals internals) {
+            mInternals = internals;
+        }
+
+        @Override
+        public WebContentsInternals get() {
+            return mInternals;
+        }
+    }
+
+    private InternalsHolder mInternalsHolder;
+
+    private static class WebContentsInternalsImpl implements WebContentsInternals {
+        public HashSet<Object> retainedObjects;
+        public HashMap<String, Pair<Object, Class>> injectedObjects;
+    }
+
     private WebContentsImpl(
             long nativeWebContentsAndroid, NavigationController navigationController) {
         mNativeWebContentsAndroid = nativeWebContentsAndroid;
         mNavigationController = navigationController;
+
+        // Initialize |mInternalsHolder| with a default one that keeps all the internals
+        // inside WebContentsImpl. It holds a strong reference until an embedder invokes
+        // |setInternalsHolder| to get the internals handed over to it.
+        WebContentsInternalsImpl internals = new WebContentsInternalsImpl();
+        internals.retainedObjects = new HashSet<Object>();
+        internals.injectedObjects = new HashMap<String, Pair<Object, Class>>();
+        nativeCreateJavaBridgeDispatcherHost(mNativeWebContentsAndroid, internals.retainedObjects);
+        mInternalsHolder = new DefaultInternalsHolder();
+        mInternalsHolder.set(internals);
     }
 
     @CalledByNative
@@ -162,6 +199,14 @@ import java.util.UUID;
             mObserverProxy.destroy();
             mObserverProxy = null;
         }
+    }
+
+    @Override
+    public void setInternalsHolder(InternalsHolder internalsHolder) {
+        // Ensure |setInternalsHolder()| is be called at most once.
+        assert mInternalsHolder instanceof DefaultInternalsHolder;
+        internalsHolder.set(mInternalsHolder.get());
+        mInternalsHolder = internalsHolder;
     }
 
     // =================== RenderFrameHostDelegate overrides ===================
@@ -640,12 +685,50 @@ import java.util.UUID;
         return new Rect(0, 0, width, height);
     }
 
+    @Override
+    public Map<String, Pair<Object, Class>> getJavascriptInterfaces() {
+        WebContentsInternals internals = mInternalsHolder.get();
+        if (internals == null) return null;
+        return ((WebContentsInternalsImpl) internals).injectedObjects;
+    }
+
+    @Override
+    public void setAllowJavascriptInterfacesInspection(boolean allow) {
+        nativeSetAllowJavascriptInterfacesInspection(mNativeWebContentsAndroid, allow);
+    }
+
+    @Override
+    public void addPossiblyUnsafeJavascriptInterface(
+            Object object, String name, Class<? extends Annotation> requiredAnnotation) {
+        if (mNativeWebContentsAndroid != 0 && object != null) {
+            Map<String, Pair<Object, Class>> jsInterface = getJavascriptInterfaces();
+            // The interface map is available as long as the callsite is alive, which should
+            // hold true since it is the callsite that is invoking this API.
+            assert jsInterface != null;
+            jsInterface.put(name, new Pair<Object, Class>(object, requiredAnnotation));
+            nativeAddJavascriptInterface(
+                    mNativeWebContentsAndroid, object, name, requiredAnnotation);
+        }
+    }
+
+    @Override
+    public void removeJavascriptInterface(String name) {
+        Map<String, Pair<Object, Class>> jsInterface = getJavascriptInterfaces();
+        assert jsInterface != null;
+        jsInterface.remove(name);
+        if (mNativeWebContentsAndroid != 0) {
+            nativeRemoveJavascriptInterface(mNativeWebContentsAndroid, name);
+        }
+    }
+
     // This is static to avoid exposing a public destroy method on the native side of this class.
     private static native void nativeDestroyWebContents(long webContentsAndroidPtr);
 
     private static native WebContents nativeFromNativePtr(long webContentsAndroidPtr);
 
     private native WindowAndroid nativeGetTopLevelNativeWindow(long nativeWebContentsAndroid);
+    private native void nativeCreateJavaBridgeDispatcherHost(
+            long nativeWebContentsAndroid, Object retainedJavascriptObjects);
     private native RenderFrameHost nativeGetMainFrame(long nativeWebContentsAndroid);
     private native String nativeGetTitle(long nativeWebContentsAndroid);
     private native String nativeGetVisibleURL(long nativeWebContentsAndroid);
@@ -711,4 +794,9 @@ import java.util.UUID;
     private native Rect nativeGetFullscreenVideoSize(long nativeWebContentsAndroid);
     private native void nativeSetSize(long nativeWebContentsAndroid, int width, int height);
     private native EventForwarder nativeGetOrCreateEventForwarder(long nativeWebContentsAndroid);
+    private native void nativeSetAllowJavascriptInterfacesInspection(
+            long nativeWebContentsAndroid, boolean allow);
+    private native void nativeAddJavascriptInterface(
+            long nativeWebContentsAndroid, Object object, String name, Class requiredAnnotation);
+    private native void nativeRemoveJavascriptInterface(long nativeWebContentsAndroid, String name);
 }

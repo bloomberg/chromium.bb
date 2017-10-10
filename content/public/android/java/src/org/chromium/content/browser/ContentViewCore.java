@@ -14,7 +14,6 @@ import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
-import android.util.Pair;
 import android.view.ActionMode;
 import android.view.HapticFeedbackConstants;
 import android.view.InputDevice;
@@ -66,13 +65,9 @@ import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.display.DisplayAndroid;
 import org.chromium.ui.display.DisplayAndroid.DisplayAndroidObserver;
 
-import java.lang.annotation.Annotation;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Provides a Java-side 'wrapper' around a WebContent (native) instance.
@@ -91,29 +86,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
     // Used to avoid enabling zooming in / out if resulting zooming will
     // produce little visible difference.
     private static final float ZOOM_CONTROLS_EPSILON = 0.007f;
-
-    // If the embedder adds a JavaScript interface object that contains an indirect reference to
-    // the ContentViewCore, then storing a strong ref to the interface object on the native
-    // side would prevent garbage collection of the ContentViewCore (as that strong ref would
-    // create a new GC root).
-    // For that reason, we store only a weak reference to the interface object on the
-    // native side. However we still need a strong reference on the Java side to
-    // prevent garbage collection if the embedder doesn't maintain their own ref to the
-    // interface object - the Java side ref won't create a new GC root.
-    // This map stores those references. We put into the map on addJavaScriptInterface()
-    // and remove from it in removeJavaScriptInterface(). The annotation class is stored for
-    // the purpose of migrating injected objects from one instance of CVC to another, which
-    // is used by Android WebView to support WebChromeClient.onCreateWindow scenario.
-    private final Map<String, Pair<Object, Class>> mJavaScriptInterfaces =
-            new HashMap<String, Pair<Object, Class>>();
-
-    // Additionally, we keep track of all Java bound JS objects that are in use on the
-    // current page to ensure that they are not garbage collected until the page is
-    // navigated. This includes interface objects that have been removed
-    // via the removeJavaScriptInterface API and transient objects returned from methods
-    // on the interface object. Note we use HashSet rather than Set as the native side
-    // expects HashSet (no bindings for interfaces).
-    private final HashSet<Object> mRetainedJavaScriptObjects = new HashSet<Object>();
 
     /**
      * A {@link WebContentsObserver} that listens to frame navigation events.
@@ -467,8 +439,8 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
         mRenderCoordinates.reset();
         mRenderCoordinates.setDeviceScaleFactor(dipScale, windowAndroid.getContext());
 
-        mNativeContentViewCore = nativeInit(webContents, mViewAndroidDelegate, windowNativePointer,
-                dipScale, mRetainedJavaScriptObjects);
+        mNativeContentViewCore =
+                nativeInit(webContents, mViewAndroidDelegate, windowNativePointer, dipScale);
         mWebContents = nativeGetWebContentsAndroid(mNativeContentViewCore);
 
         setContainerViewInternals(internalDispatcher);
@@ -633,8 +605,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
         mImeAdapter.resetAndHideKeyboard();
         mWebContents = null;
         mNativeContentViewCore = 0;
-        mJavaScriptInterfaces.clear();
-        mRetainedJavaScriptObjects.clear();
         for (mGestureStateListenersIterator.rewind(); mGestureStateListenersIterator.hasNext();) {
             mGestureStateListenersIterator.next().onDestroyed();
         }
@@ -1712,103 +1682,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
         return true;
     }
 
-    /**
-     * Enables or disables inspection of JavaScript objects added via
-     * {@link #addJavascriptInterface(Object, String)} by means of Object.keys() method and
-     * &quot;for .. in&quot; loop. Being able to inspect JavaScript objects is useful
-     * when debugging hybrid Android apps, but can't be enabled for legacy applications due
-     * to compatibility risks.
-     *
-     * @param allow Whether to allow JavaScript objects inspection.
-     */
-    public void setAllowJavascriptInterfacesInspection(boolean allow) {
-        nativeSetAllowJavascriptInterfacesInspection(mNativeContentViewCore, allow);
-    }
-
-    /**
-     * Returns JavaScript interface objects previously injected via
-     * {@link #addJavascriptInterface(Object, String)}.
-     *
-     * @return the mapping of names to interface objects and corresponding annotation classes
-     */
-    public Map<String, Pair<Object, Class>> getJavascriptInterfaces() {
-        return mJavaScriptInterfaces;
-    }
-
-    /**
-     * This will mimic {@link #addPossiblyUnsafeJavascriptInterface(Object, String, Class)}
-     * and automatically pass in {@link JavascriptInterface} as the required annotation.
-     *
-     * @param object The Java object to inject into the ContentViewCore's JavaScript context.  Null
-     *               values are ignored.
-     * @param name   The name used to expose the instance in JavaScript.
-     */
-    public void addJavascriptInterface(Object object, String name) {
-        addPossiblyUnsafeJavascriptInterface(object, name, JavascriptInterface.class);
-    }
-
-    /**
-     * This method injects the supplied Java object into the ContentViewCore.
-     * The object is injected into the JavaScript context of the main frame,
-     * using the supplied name. This allows the Java object to be accessed from
-     * JavaScript. Note that that injected objects will not appear in
-     * JavaScript until the page is next (re)loaded. For example:
-     * <pre> view.addJavascriptInterface(new Object(), "injectedObject");
-     * view.loadData("<!DOCTYPE html><title></title>", "text/html", null);
-     * view.loadUrl("javascript:alert(injectedObject.toString())");</pre>
-     * <p><strong>IMPORTANT:</strong>
-     * <ul>
-     * <li> addJavascriptInterface() can be used to allow JavaScript to control
-     * the host application. This is a powerful feature, but also presents a
-     * security risk. Use of this method in a ContentViewCore containing
-     * untrusted content could allow an attacker to manipulate the host
-     * application in unintended ways, executing Java code with the permissions
-     * of the host application. Use extreme care when using this method in a
-     * ContentViewCore which could contain untrusted content. Particular care
-     * should be taken to avoid unintentional access to inherited methods, such
-     * as {@link Object#getClass()}. To prevent access to inherited methods,
-     * pass an annotation for {@code requiredAnnotation}.  This will ensure
-     * that only methods with {@code requiredAnnotation} are exposed to the
-     * Javascript layer.  {@code requiredAnnotation} will be passed to all
-     * subsequently injected Java objects if any methods return an object.  This
-     * means the same restrictions (or lack thereof) will apply.  Alternatively,
-     * {@link #addJavascriptInterface(Object, String)} can be called, which
-     * automatically uses the {@link JavascriptInterface} annotation.
-     * <li> JavaScript interacts with Java objects on a private, background
-     * thread of the ContentViewCore. Care is therefore required to maintain
-     * thread safety.</li>
-     * </ul></p>
-     *
-     * @param object             The Java object to inject into the
-     *                           ContentViewCore's JavaScript context. Null
-     *                           values are ignored.
-     * @param name               The name used to expose the instance in
-     *                           JavaScript.
-     * @param requiredAnnotation Restrict exposed methods to ones with this
-     *                           annotation.  If {@code null} all methods are
-     *                           exposed.
-     *
-     */
-    public void addPossiblyUnsafeJavascriptInterface(Object object, String name,
-            Class<? extends Annotation> requiredAnnotation) {
-        if (mNativeContentViewCore != 0 && object != null) {
-            mJavaScriptInterfaces.put(name, new Pair<Object, Class>(object, requiredAnnotation));
-            nativeAddJavascriptInterface(mNativeContentViewCore, object, name, requiredAnnotation);
-        }
-    }
-
-    /**
-     * Removes a previously added JavaScript interface with the given name.
-     *
-     * @param name The name of the interface to remove.
-     */
-    public void removeJavascriptInterface(String name) {
-        mJavaScriptInterfaces.remove(name);
-        if (mNativeContentViewCore != 0) {
-            nativeRemoveJavascriptInterface(mNativeContentViewCore, name);
-        }
-    }
-
     @Override
     public void onAccessibilityStateChanged(boolean enabled) {
         setAccessibilityState(enabled);
@@ -2164,7 +2037,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
     }
 
     private native long nativeInit(WebContents webContents, ViewAndroidDelegate viewAndroidDelegate,
-            long windowAndroidPtr, float dipScale, HashSet<Object> retainedObjectSet);
+            long windowAndroidPtr, float dipScale);
     private static native ContentViewCore nativeFromWebContentsAndroid(WebContents webContents);
 
     private native void nativeUpdateWindowAndroid(
@@ -2221,14 +2094,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
     private native int nativeGetCurrentRenderProcessId(long nativeContentViewCore);
 
     private native boolean nativeUsingSynchronousCompositing(long nativeContentViewCore);
-
-    private native void nativeSetAllowJavascriptInterfacesInspection(
-            long nativeContentViewCore, boolean allow);
-
-    private native void nativeAddJavascriptInterface(
-            long nativeContentViewCore, Object object, String name, Class requiredAnnotation);
-
-    private native void nativeRemoveJavascriptInterface(long nativeContentViewCore, String name);
 
     private native void nativeWasResized(long nativeContentViewCore);
 

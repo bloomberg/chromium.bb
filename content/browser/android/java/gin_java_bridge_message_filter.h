@@ -54,8 +54,7 @@ class GinJavaBridgeMessageFilter : public BrowserMessageFilter {
   friend class BrowserThread;
   friend class base::DeleteHelper<GinJavaBridgeMessageFilter>;
 
-  // ContentViewCore (who owns GinJavaBridgeDispatcherHost) outlives
-  // WebContents, and GinJavaBridgeDispatcherHost removes itself from the map on
+  // GinJavaBridgeDispatcherHost removes itself from the map on
   // WebContents destruction, so there is no risk that the pointer would become
   // stale.
   //

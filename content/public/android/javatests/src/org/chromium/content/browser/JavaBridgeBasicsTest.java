@@ -151,7 +151,7 @@ public class JavaBridgeBasicsTest {
         InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                mActivityTestRule.getContentViewCore().addPossiblyUnsafeJavascriptInterface(
+                mActivityTestRule.getWebContents().addPossiblyUnsafeJavascriptInterface(
                         new Object(), "testObject", null);
             }
         });
@@ -175,7 +175,7 @@ public class JavaBridgeBasicsTest {
         InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                mActivityTestRule.getContentViewCore().removeJavascriptInterface("testObject");
+                mActivityTestRule.getWebContents().removeJavascriptInterface("testObject");
             }
         });
         // Check that the Java object is being held by the Java bridge, thus it's not
@@ -199,11 +199,8 @@ public class JavaBridgeBasicsTest {
         InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                mActivityTestRule.getContentViewCore().removeJavascriptInterface("foo");
-                mActivityTestRule.getContentViewCore()
-                        .getWebContents()
-                        .getNavigationController()
-                        .reload(true);
+                mActivityTestRule.getWebContents().removeJavascriptInterface("foo");
+                mActivityTestRule.getWebContents().getNavigationController().reload(true);
             }
         });
         onPageFinishedHelper.waitForCallback(currentCallCount);
@@ -921,48 +918,6 @@ public class JavaBridgeBasicsTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView", "Android-JavaBridge"})
-    public void testAddJavascriptInterfaceIsSafeByDefault() throws Throwable {
-        class Test {
-            public String blocked() {
-                return "bar";
-            }
-
-            @JavascriptInterface
-            public String allowed() {
-                return "bar";
-            }
-        }
-
-        // Manually inject the Test object, making sure to use the
-        // ContentViewCore#addJavascriptInterface, not the possibly unsafe version.
-        TestCallbackHelperContainer.OnPageFinishedHelper onPageFinishedHelper =
-                mActivityTestRule.getTestCallBackHelperContainer().getOnPageFinishedHelper();
-        int currentCallCount = onPageFinishedHelper.getCallCount();
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                mActivityTestRule.getContentViewCore().addJavascriptInterface(
-                        new Test(), "testObject");
-                mActivityTestRule.getContentViewCore()
-                        .getWebContents()
-                        .getNavigationController()
-                        .reload(true);
-            }
-        });
-        onPageFinishedHelper.waitForCallback(currentCallCount);
-
-        // Test#allowed() should pass, as it is annotated with JavascriptInterface.
-        Assert.assertEquals("bar", executeJavaScriptAndGetStringResult("testObject.allowed()"));
-
-        // Test#blocked() should fail, as it isn't annotated with JavascriptInterface.
-        assertRaisesException("testObject.blocked()");
-        Assert.assertEquals(
-                "undefined", executeJavaScriptAndGetStringResult("typeof testObject.blocked"));
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testObjectsInspection() throws Throwable {
         class Test {
             @JavascriptInterface
@@ -1003,8 +958,7 @@ public class JavaBridgeBasicsTest {
         InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                mActivityTestRule.getContentViewCore().setAllowJavascriptInterfacesInspection(
-                        false);
+                mActivityTestRule.getWebContents().setAllowJavascriptInterfacesInspection(false);
             }
         });
 

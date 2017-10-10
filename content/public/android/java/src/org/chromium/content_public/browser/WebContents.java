@@ -8,12 +8,16 @@ import android.graphics.Rect;
 import android.os.Handler;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
+import android.util.Pair;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.content.browser.RenderCoordinates;
 import org.chromium.ui.OverscrollRefreshHandler;
 import org.chromium.ui.base.EventForwarder;
 import org.chromium.ui.base.WindowAndroid;
+
+import java.lang.annotation.Annotation;
+import java.util.Map;
 
 /**
  * The WebContents Java wrapper to allow communicating with the native WebContents object.
@@ -40,6 +44,34 @@ import org.chromium.ui.base.WindowAndroid;
  * webContents = bundle.get("WEBCONTENTSKEY");
  */
 public interface WebContents extends Parcelable {
+    /**
+     * Interface used to transfer the internal objects (but callers should own) from WebContents.
+     */
+    interface InternalsHolder {
+        /**
+         * Called when WebContents sets the internals to the caller.
+         *
+         * @param internals a {@link WebContentsInternals} object.
+         */
+        void set(WebContentsInternals internals);
+
+        /**
+         * Returns {@link WebContentsInternals} object. Can be {@code null}.
+         */
+        WebContentsInternals get();
+    }
+
+    /**
+     * Sets holder of the objects used internally by WebContents for various features.
+     * This transfers the ownership of the objects to the caller since they will have the same
+     * lifecycle as that of the caller. The caller doesn't have to care about the objects inside
+     * the holder but should hold a reference to it and manage its lifetime.
+     *
+     * @param holder {@link #InternalsHolder} used to transfer the internal objects
+     *        from WebContents to the caller.
+     */
+    void setInternalsHolder(InternalsHolder holder);
+
     /**
      * @return The top level WindowAndroid associated with this WebContents.  This can be null.
      */
@@ -241,7 +273,7 @@ public interface WebContents extends Parcelable {
      * @param endAdjust The amount to adjust the end of the selection.
      * @param showSelectionMenu if true, show selection menu after adjustment.
      */
-    public void adjustSelectionByCharacterOffset(
+    void adjustSelectionByCharacterOffset(
             int startAdjust, int endAdjust, boolean showSelectionMenu);
 
     /**
@@ -393,12 +425,12 @@ public interface WebContents extends Parcelable {
      * @param callback May be called synchronously, or at a later point, to deliver the bitmap
      *                 result (or a failure code).
      */
-    public void getContentBitmapAsync(int width, int height, ContentBitmapCallback callback);
+    void getContentBitmapAsync(int width, int height, ContentBitmapCallback callback);
 
     /**
      * Reloads all the Lo-Fi images in this WebContents.
      */
-    public void reloadLoFiImages();
+    void reloadLoFiImages();
 
     /**
      * Sends a request to download the given image {@link url}.
@@ -417,8 +449,8 @@ public interface WebContents extends Parcelable {
      *                 renderer.
      * @return The unique id of the download request
      */
-    public int downloadImage(String url, boolean isFavicon, int maxBitmapSize,
-            boolean bypassCache, ImageDownloadCallback callback);
+    int downloadImage(String url, boolean isFavicon, int maxBitmapSize, boolean bypassCache,
+            ImageDownloadCallback callback);
 
     /**
      * Whether the WebContents has an active fullscreen video with native or custom controls.
@@ -426,7 +458,7 @@ public interface WebContents extends Parcelable {
      * moment to register. This should only be called if AppHooks.shouldDetectVideoFullscreen()
      * returns true.
      */
-    public boolean hasActiveEffectivelyFullscreenVideo();
+    boolean hasActiveEffectivelyFullscreenVideo();
 
     /**
      * Gets a Rect containing the size of the currently playing fullscreen video. The position of
@@ -434,7 +466,8 @@ public interface WebContents extends Parcelable {
      * may take a moment to register. This should only be called if
      * AppHooks.shouldDetectVideoFullscreen() returns true.
      */
-    public @Nullable Rect getFullscreenVideoSize();
+    @Nullable
+    Rect getFullscreenVideoSize();
 
     /**
      * Issues a fake notification about the renderer being killed.
@@ -442,7 +475,7 @@ public interface WebContents extends Parcelable {
      * @param wasOomProtected True if the renderer was protected from the OS out-of-memory killer
      *                        (e.g. renderer for the currently selected tab)
      */
-    public void simulateRendererKilledForTesting(boolean wasOomProtected);
+    void simulateRendererKilledForTesting(boolean wasOomProtected);
 
     /**
      * Notifies the WebContents about the new persistent video status. It should be called whenever
@@ -450,7 +483,7 @@ public interface WebContents extends Parcelable {
      *
      * @param value Whether there is a persistent video associated with this WebContents.
      */
-    public void setHasPersistentVideo(boolean value);
+    void setHasPersistentVideo(boolean value);
 
     /**
      * Set the view size of WebContents. The size is in physical pixel.
@@ -459,4 +492,75 @@ public interface WebContents extends Parcelable {
      * @param height The height of the view.
      */
     void setSize(int width, int height);
+
+    /**
+     * Returns JavaScript interface objects previously injected via
+     * {@link #addJavascriptInterface(Object, String)}.
+     *
+     * @return the mapping of names to interface objects and corresponding annotation classes
+     */
+    Map<String, Pair<Object, Class>> getJavascriptInterfaces();
+
+    /**
+     * Enables or disables inspection of JavaScript objects added via
+     * {@link #addJavascriptInterface(Object, String)} by means of Object.keys() method and
+     * &quot;for .. in&quot; loop. Being able to inspect JavaScript objects is useful
+     * when debugging hybrid Android apps, but can't be enabled for legacy applications due
+     * to compatibility risks.
+     *
+     * @param allow Whether to allow JavaScript objects inspection.
+     */
+    void setAllowJavascriptInterfacesInspection(boolean allow);
+
+    /**
+     * This method injects the supplied Java object into the WebContents.
+     * The object is injected into the JavaScript context of the main frame,
+     * using the supplied name. This allows the Java object to be accessed from
+     * JavaScript. Note that that injected objects will not appear in
+     * JavaScript until the page is next (re)loaded. For example:
+     * <pre> view.addJavascriptInterface(new Object(), "injectedObject");
+     * view.loadData("<!DOCTYPE html><title></title>", "text/html", null);
+     * view.loadUrl("javascript:alert(injectedObject.toString())");</pre>
+     * <p><strong>IMPORTANT:</strong>
+     * <ul>
+     * <li> addJavascriptInterface() can be used to allow JavaScript to control
+     * the host application. This is a powerful feature, but also presents a
+     * security risk. Use of this method in a WebContents containing
+     * untrusted content could allow an attacker to manipulate the host
+     * application in unintended ways, executing Java code with the permissions
+     * of the host application. Use extreme care when using this method in a
+     * WebContents which could contain untrusted content. Particular care
+     * should be taken to avoid unintentional access to inherited methods, such
+     * as {@link Object#getClass()}. To prevent access to inherited methods,
+     * pass an annotation for {@code requiredAnnotation}.  This will ensure
+     * that only methods with {@code requiredAnnotation} are exposed to the
+     * Javascript layer.  {@code requiredAnnotation} will be passed to all
+     * subsequently injected Java objects if any methods return an object.  This
+     * means the same restrictions (or lack thereof) will apply.  Alternatively,
+     * {@link #addJavascriptInterface(Object, String)} can be called, which
+     * automatically uses the {@link JavascriptInterface} annotation.
+     * <li> JavaScript interacts with Java objects on a private, background
+     * thread of the WebContents. Care is therefore required to maintain
+     * thread safety.</li>
+     * </ul></p>
+     *
+     * @param object             The Java object to inject into the
+     *                           WebContents's JavaScript context. Null
+     *                           values are ignored.
+     * @param name               The name used to expose the instance in
+     *                           JavaScript.
+     * @param requiredAnnotation Restrict exposed methods to ones with this
+     *                           annotation.  If {@code null} all methods are
+     *                           exposed.
+     *
+     */
+    void addPossiblyUnsafeJavascriptInterface(
+            Object object, String name, Class<? extends Annotation> requiredAnnotation);
+
+    /**
+     * Removes a previously added JavaScript interface with the given name.
+     *
+     * @param name The name of the interface to remove.
+     */
+    void removeJavascriptInterface(String name);
 }

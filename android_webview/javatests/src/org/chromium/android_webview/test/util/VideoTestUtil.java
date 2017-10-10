@@ -34,7 +34,7 @@ public class VideoTestUtil {
             AwSettings awSettings = awContents.getSettings();
             awSettings.setJavaScriptEnabled(true);
             awSettings.setMediaPlaybackRequiresUserGesture(requiredUserGesture);
-            observer.register(awContents.getContentViewCore(), "javaObserver");
+            observer.register(awContents.getWebContents(), "javaObserver");
         });
         VideoTestWebServer webServer = new VideoTestWebServer();
         try {

@@ -709,7 +709,7 @@ public class JavaBridgeCoercionTest {
         mActivityTestRule.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mActivityTestRule.getContentViewCore().addPossiblyUnsafeJavascriptInterface(
+                mActivityTestRule.getWebContents().addPossiblyUnsafeJavascriptInterface(
                         selfConsuming, "selfConsuming", null);
             }
         });
