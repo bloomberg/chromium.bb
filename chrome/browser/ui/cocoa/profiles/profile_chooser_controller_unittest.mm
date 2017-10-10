@@ -328,8 +328,8 @@ TEST_F(ProfileChooserControllerTest, AccountManagementLayout) {
   SuppressSyncConfirmationError();
 
   StartProfileChooserController();
-  [controller() initMenuContentsWithView:
-      profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT];
+  [controller()
+      showMenuWithViewMode:profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT];
 
   NSArray* subviews = [[[controller() window] contentView] subviews];
   ASSERT_EQ(2U, [subviews count]);
