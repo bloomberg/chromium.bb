@@ -2782,7 +2782,6 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
   def CMDPatchWithParsedIssue(self, parsed_issue_arg, reject, nocommit,
                               directory, force):
     assert not reject
-    assert not nocommit
     assert not directory
     assert parsed_issue_arg.valid
 
@@ -2817,6 +2816,9 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       RunGit(['reset', '--hard', 'FETCH_HEAD'])
       print('Checked out commit for change %i patchset %i locally' %
             (parsed_issue_arg.issue, patchset))
+    elif nocommit:
+      RunGit(['cherry-pick', '--no-commit', 'FETCH_HEAD'])
+      print('Patch applied to index.')
     else:
       RunGit(['cherry-pick', 'FETCH_HEAD'])
       print('Committed patch for change %i patchset %i locally.' %
@@ -5408,8 +5410,6 @@ def CMDpatch(parser, args):
   if cl.IsGerrit():
     if options.reject:
       parser.error('--reject is not supported with Gerrit codereview.')
-    if options.nocommit:
-      parser.error('--nocommit is not supported with Gerrit codereview.')
     if options.directory:
       parser.error('--directory is not supported with Gerrit codereview.')
 
