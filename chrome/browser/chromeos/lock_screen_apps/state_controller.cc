@@ -6,8 +6,8 @@
 
 #include <utility>
 
+#include "ash/public/cpp/stylus_utils.h"
 #include "ash/public/interfaces/constants.mojom.h"
-#include "ash/system/palette/palette_utils.h"
 #include "ash/wm/window_animations.h"
 #include "base/base64.h"
 #include "base/bind.h"
@@ -256,7 +256,7 @@ void StateController::InitializeWithCryptoKey(Profile* profile,
   // screen notes apps are geared towards stylus.
   // State controller will observe inpt device changes and continue
   // initialization if stylus input is found.
-  if (!ash::palette_utils::HasStylusInput()) {
+  if (!ash::stylus_utils::HasStylusInput()) {
     stylus_input_missing_ = true;
 
     if (!ready_callback_.is_null())
@@ -374,7 +374,7 @@ void StateController::OnStylusStateChanged(ui::StylusState state) {
 }
 
 void StateController::OnTouchscreenDeviceConfigurationChanged() {
-  if (stylus_input_missing_ && ash::palette_utils::HasStylusInput())
+  if (stylus_input_missing_ && ash::stylus_utils::HasStylusInput())
     InitializeWithStylusInputPresent();
 }
 

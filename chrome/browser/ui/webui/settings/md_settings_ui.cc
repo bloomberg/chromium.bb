@@ -61,7 +61,7 @@
 #endif  // defined(OS_WIN) || defined(OS_CHROMEOS)
 
 #if defined(OS_CHROMEOS)
-#include "ash/system/palette/palette_utils.h"
+#include "ash/public/cpp/stylus_utils.h"
 #include "ash/system/power/power_status.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
@@ -240,7 +240,7 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
   html_source->AddBoolean("fingerprintUnlockEnabled",
                           chromeos::quick_unlock::IsFingerprintEnabled());
   html_source->AddBoolean("hasInternalStylus",
-                          ash::palette_utils::HasInternalStylus());
+                          ash::stylus_utils::HasInternalStylus());
 
   // We have 2 variants of Android apps settings. Default case, when the Play
   // Store app exists we show expandable section that allows as to

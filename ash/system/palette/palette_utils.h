@@ -14,17 +14,6 @@ class Point;
 namespace ash {
 namespace palette_utils {
 
-// Returns true if the flag to force stylus input is set to true.
-ASH_EXPORT bool HasForcedStylusInput();
-
-// Returns true if there is a stylus input device on the internal display. This
-// will return false even if there is a stylus input device until hardware
-// probing is complete (see ui::InputDeviceEventObserver).
-ASH_EXPORT bool HasStylusInput();
-
-// Returns true if the palette should be shown on every display.
-ASH_EXPORT bool IsPaletteEnabledOnEveryDisplay();
-
 // Returns true if the palette should be shown to the user. This happens when:
 // there is a stylus input, there is an internal display, and the user has not
 // disabled it in settings. This can be overridden by passing switches.
@@ -33,12 +22,6 @@ ASH_EXPORT bool ShouldShowPalette();
 // Returns true if either the palette icon or the palette widget contain the
 // given point (in screen space).
 ASH_EXPORT bool PaletteContainsPointInScreen(const gfx::Point& point);
-
-// Returns true if the device has an internal stylus.
-ASH_EXPORT bool HasInternalStylus();
-
-// Forcibly say the device is has stylus input for testing purposes.
-ASH_EXPORT void SetHasStylusInputForTesting();
 
 // Returns true if we are in a user session that can show the stylus tools.
 ASH_EXPORT bool IsInUserSession();

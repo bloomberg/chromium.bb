@@ -8,7 +8,7 @@
 #include <utility>
 #include <vector>
 
-#include "ash/system/palette/palette_utils.h"
+#include "ash/public/cpp/stylus_utils.h"
 #include "base/bind.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -149,7 +149,7 @@ void StylusHandler::HandleInitialize(const base::ListValue* args) {
 void StylusHandler::SendHasStylus() {
   DCHECK(ui::InputDeviceManager::GetInstance()->AreDeviceListsComplete());
   FireWebUIListener("has-stylus-changed",
-                    base::Value(ash::palette_utils::HasStylusInput()));
+                    base::Value(ash::stylus_utils::HasStylusInput()));
 }
 
 void StylusHandler::HandleShowPlayStoreApps(const base::ListValue* args) {

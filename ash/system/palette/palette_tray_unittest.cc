@@ -11,6 +11,7 @@
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/config.h"
+#include "ash/public/cpp/stylus_utils.h"
 #include "ash/public/cpp/voice_interaction_state.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
@@ -46,7 +47,7 @@ class PaletteTrayTest : public AshTestBase {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kAshEnablePaletteOnAllDisplays);
 
-    palette_utils::SetHasStylusInputForTesting();
+    stylus_utils::SetHasStylusInputForTesting();
 
     AshTestBase::SetUp();
 

@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "ash/laser/laser_pointer_view.h"
-#include "ash/system/palette/palette_utils.h"
 #include "ui/display/screen.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/views/widget/widget.h"
