@@ -2525,6 +2525,25 @@
             ]
         }
     ],
+    "PreviewsClientLoFi": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_2G_Replace_Server_Placeholders",
+                    "params": {
+                        "max_allowed_effective_connection_type": "2G",
+                        "replace_server_placeholders": "true"
+                    },
+                    "enable_features": [
+                        "ClientLoFi"
+                    ]
+                }
+            ]
+        }
+    ],
     "PrintPdfAsImage": [
         {
             "platforms": [
