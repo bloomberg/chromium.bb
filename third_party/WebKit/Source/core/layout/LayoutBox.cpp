@@ -673,8 +673,6 @@ void LayoutBox::ScrollRectToVisibleRecursive(
     new_rect = GetScrollableArea()->ScrollIntoView(
         rect_to_scroll, align_x, align_y, is_smooth, scroll_type,
         is_for_scroll_sequence);
-    if (new_rect.IsEmpty())
-      return;
   } else if (!parent_box && CanBeProgramaticallyScrolled()) {
     if (LocalFrameView* frame_view = this->GetFrameView()) {
       HTMLFrameOwnerElement* owner_element = GetDocument().LocalOwner();
