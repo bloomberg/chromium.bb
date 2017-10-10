@@ -31,7 +31,11 @@ extern "C" {
 // TODO(jingning): Use unified inter predictor for encoder and
 // decoder during the development process. Revisit the frame border
 // to improve the decoder performance.
+#if CONFIG_EXT_PARTITION && CONFIG_FRAME_SUPERRES
+#define AOM_BORDER_IN_PIXELS 288
+#else
 #define AOM_BORDER_IN_PIXELS 160
+#endif  // CONFIG_EXT_PARTITION
 
 typedef struct yv12_buffer_config {
   union {

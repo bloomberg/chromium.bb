@@ -1336,10 +1336,10 @@ static INLINE void build_inter_predictors(
             pos_x += SCALE_EXTRA_OFF;
             pos_y += SCALE_EXTRA_OFF;
 
-            const int top = -((AOM_INTERP_EXTEND + bh) << SCALE_SUBPEL_BITS);
+            const int top = -AOM_LEFT_TOP_MARGIN_SCALED;
+            const int left = -AOM_LEFT_TOP_MARGIN_SCALED;
             const int bottom = (pre_buf->height + AOM_INTERP_EXTEND)
                                << SCALE_SUBPEL_BITS;
-            const int left = -((AOM_INTERP_EXTEND + bw) << SCALE_SUBPEL_BITS);
             const int right = (pre_buf->width + AOM_INTERP_EXTEND)
                               << SCALE_SUBPEL_BITS;
             pos_y = clamp(pos_y, top, bottom);
@@ -1494,10 +1494,10 @@ static INLINE void build_inter_predictors(
 
         // Clamp against the reference frame borders, with enough extension
         // that we don't force the reference block to be partially onscreen.
-        const int top = -((AOM_INTERP_EXTEND + bh) << SCALE_SUBPEL_BITS);
+        const int top = -AOM_LEFT_TOP_MARGIN_SCALED;
+        const int left = -AOM_LEFT_TOP_MARGIN_SCALED;
         const int bottom = (pre_buf->height + AOM_INTERP_EXTEND)
                            << SCALE_SUBPEL_BITS;
-        const int left = -((AOM_INTERP_EXTEND + bw) << SCALE_SUBPEL_BITS);
         const int right = (pre_buf->width + AOM_INTERP_EXTEND)
                           << SCALE_SUBPEL_BITS;
         pos_y = clamp(pos_y, top, bottom);
@@ -3227,10 +3227,10 @@ static void build_inter_predictors_single_buf(MACROBLOCKD *xd, int plane,
     pos_x += SCALE_EXTRA_OFF;
     pos_y += SCALE_EXTRA_OFF;
 
-    const int top = -((AOM_INTERP_EXTEND + bh) << SCALE_SUBPEL_BITS);
+    const int top = -AOM_LEFT_TOP_MARGIN_SCALED;
+    const int left = -AOM_LEFT_TOP_MARGIN_SCALED;
     const int bottom = (pre_buf->height + AOM_INTERP_EXTEND)
                        << SCALE_SUBPEL_BITS;
-    const int left = -((AOM_INTERP_EXTEND + bw) << SCALE_SUBPEL_BITS);
     const int right = (pre_buf->width + AOM_INTERP_EXTEND) << SCALE_SUBPEL_BITS;
     pos_y = clamp(pos_y, top, bottom);
     pos_x = clamp(pos_x, left, right);
