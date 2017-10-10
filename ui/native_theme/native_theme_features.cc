@@ -20,11 +20,9 @@ constexpr base::FeatureState kOverlayScrollbarFeatureState =
 const base::Feature kOverlayScrollbar{"OverlayScrollbar",
                                       kOverlayScrollbarFeatureState};
 
-// Experiment: Enables will flash all scrollbars in page after any scroll
-// update.
+// Enables will flash all scrollbars in page after any scroll update.
 const base::Feature kOverlayScrollbarFlashAfterAnyScrollUpdate{
-    "OverlayScrollbarFlashAfterAnyScrollUpdate",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    "OverlayScrollbarFlashAfterAnyScrollUpdate", kOverlayScrollbarFeatureState};
 
 // Experiment: Enables will flash scorllbar when user move mouse enter a
 // scrollable area.
