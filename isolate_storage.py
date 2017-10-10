@@ -388,8 +388,10 @@ class IsolateServer(StorageApi):
             data={
                 'upload_ticket': push_state.preupload_status['upload_ticket'],
             })
-        if not response or not response['ok']:
-          raise IOError('Failed to finalize file with hash %s.' % item.digest)
+        if not response or not response.get('ok'):
+          raise IOError(
+              'Failed to finalize file with hash %s\n%r' %
+              (item.digest, response))
       push_state.finalized = True
     finally:
       with self._lock:
