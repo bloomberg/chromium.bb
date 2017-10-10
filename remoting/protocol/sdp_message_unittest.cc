@@ -49,6 +49,37 @@ TEST(SdpMessages, AddCodecParameterMissingCodec) {
   EXPECT_EQ(kSourceSdp, sdp_message.ToString());
 }
 
+TEST(SdpMessages, AddCodecParameter_MultipleTypes) {
+  const std::string kSourceSdp =
+      "a=group:BUNDLE video\n"
+      "m=video 9 UDP/TLS/RTP/SAVPF 96 97 98 99\n"
+      "a=rtpmap:96 VP8/90000\n"
+      "a=rtcp-fb:96 transport-cc\n"
+      "a=rtpmap:97 VP9/90000\n"
+      "a=rtcp-fb:97 transport-cc\n"
+      "a=rtpmap:98 VP8/90000\n"
+      "a=rtcp-fb:98 transport-cc\n"
+      "a=rtpmap:99 VP8/90000\n"
+      "a=rtcp-fb:99 transport-cc\n";
+  SdpMessage sdp_message(kSourceSdp);
+  EXPECT_TRUE(sdp_message.AddCodecParameter("VP8", "test_param=1"));
+  EXPECT_EQ(
+      "a=group:BUNDLE video\n"
+      "m=video 9 UDP/TLS/RTP/SAVPF 96 97 98 99\n"
+      "a=rtpmap:96 VP8/90000\n"
+      "a=fmtp:96 test_param=1\n"
+      "a=rtcp-fb:96 transport-cc\n"
+      "a=rtpmap:97 VP9/90000\n"
+      "a=rtcp-fb:97 transport-cc\n"
+      "a=rtpmap:98 VP8/90000\n"
+      "a=fmtp:98 test_param=1\n"
+      "a=rtcp-fb:98 transport-cc\n"
+      "a=rtpmap:99 VP8/90000\n"
+      "a=fmtp:99 test_param=1\n"
+      "a=rtcp-fb:99 transport-cc\n",
+      sdp_message.ToString());
+}
+
 TEST(SdpMessages, PreferVideoCodec_SdpIsUnchanged) {
   static const std::string kSourceSdp =
       "m=video 98 UDP/TLS/RTP/SAVPF 96 97 98 99 100\n"

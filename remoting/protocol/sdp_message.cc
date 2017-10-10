@@ -34,14 +34,16 @@ std::string SdpMessage::ToString() const {
 
 bool SdpMessage::AddCodecParameter(const std::string& codec,
                                    const std::string& parameters_to_add) {
-  int line_num;
-  std::string payload_type;
-  bool codec_found = FindCodec(codec, &line_num, &payload_type);
-  if (!codec_found) {
+  std::vector<std::pair<int, std::string>> payload_types = FindCodec(codec);
+  if (payload_types.empty()) {
     return false;
   }
-  sdp_lines_.insert(sdp_lines_.begin() + line_num + 1,
-                    "a=fmtp:" + payload_type + ' ' + parameters_to_add);
+
+  for (size_t i = 0; i < payload_types.size(); i++) {
+    sdp_lines_.insert(
+        sdp_lines_.begin() + payload_types[i].first + i + 1,
+        "a=fmtp:" + payload_types[i].second + ' ' + parameters_to_add);
+  }
   return true;
 }
 
@@ -93,23 +95,6 @@ bool SdpMessage::PreferVideoCodec(const std::string& codec) {
   // should always return within the for-loop above.
   NOTREACHED();
   return false;
-}
-
-bool SdpMessage::FindCodec(const std::string& codec,
-                           int* line_num,
-                           std::string* payload_type) const {
-  std::vector<std::pair<int, std::string>> payload_types = FindCodec(codec);
-  if (payload_types.empty()) {
-    return false;
-  }
-
-  if (line_num) {
-    *line_num = payload_types[0].first;
-  }
-  if (payload_type) {
-    *payload_type = std::move(payload_types[0].second);
-  }
-  return true;
 }
 
 std::vector<std::pair<int, std::string>> SdpMessage::FindCodec(
