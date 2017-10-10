@@ -454,6 +454,7 @@ class InputApi(object):
                                      fopen=file, os_path=self.os_path)
     self.owners_finder = owners_finder.OwnersFinder
     self.verbose = verbose
+    self.is_windows = sys.platform == 'win32'
     self.Command = CommandData
 
     # Replace <hash_map> and <hash_set> as headers that need to be included

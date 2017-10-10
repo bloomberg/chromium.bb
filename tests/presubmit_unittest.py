@@ -973,6 +973,7 @@ class InputApiUnittest(PresubmitTestsBase):
         'glob',
         'host_url',
         'is_committing',
+        'is_windows',
         'json',
         'logging',
         'marshal',
@@ -1660,6 +1661,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
         return 'foo'
     input_api.subprocess.CalledProcessError = fake_CalledProcessError
     input_api.verbose = False
+    input_api.is_windows = False
 
     input_api.change = change
     input_api.host_url = 'http://localhost'
@@ -1705,6 +1707,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
       'GetCodereviewOwnerAndReviewers',
       'GetPythonUnitTests', 'GetPylint',
       'GetUnitTests', 'GetUnitTestsInDirectory', 'GetUnitTestsRecursively',
+      'CheckCIPDManifest', 'CheckCIPDPackages',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(presubmit_canned_checks, members)
@@ -2728,6 +2731,49 @@ class CannedChecksUnittest(PresubmitTestsBase):
     self.assertEqual(
         'Found line ending with white spaces in:', results[0]._message)
     self.checkstdout('')
+
+  def testCheckCIPDManifest_file(self):
+    input_api = self.MockInputApi(None, False)
+    self.mox.ReplayAll()
+
+    command = presubmit_canned_checks.CheckCIPDManifest(
+        input_api, presubmit.OutputApi, path='/path/to/foo')
+    self.assertEquals(command.cmd,
+        ['cipd', 'ensure-file-verify', '-ensure-file', '/path/to/foo'])
+    self.assertEquals(command.kwargs, {})
+
+  def testCheckCIPDManifest_content(self):
+    input_api = self.MockInputApi(None, False)
+    input_api.verbose = True
+    self.mox.ReplayAll()
+
+    command = presubmit_canned_checks.CheckCIPDManifest(
+        input_api, presubmit.OutputApi, content='manifest_content')
+    self.assertEquals(command.cmd,
+        ['cipd', 'ensure-file-verify', '-log-level', 'debug', '-ensure-file=-'])
+    self.assertEquals(command.kwargs, {'stdin': 'manifest_content'})
+
+  def testCheckCIPDPackages(self):
+    content = '\n'.join([
+        '$VerifiedPlatform foo-bar',
+        '$VerifiedPlatform baz-qux',
+        'foo/bar/baz/${platform} version:ohaithere',
+        'qux version:kthxbye',
+    ])
+
+    input_api = self.MockInputApi(None, False)
+    self.mox.ReplayAll()
+
+    command = presubmit_canned_checks.CheckCIPDPackages(
+        input_api, presubmit.OutputApi,
+        platforms=['foo-bar', 'baz-qux'],
+        packages={
+          'foo/bar/baz/${platform}': 'version:ohaithere',
+          'qux': 'version:kthxbye',
+        })
+    self.assertEquals(command.cmd,
+        ['cipd', 'ensure-file-verify', '-ensure-file=-'])
+    self.assertEquals(command.kwargs, {'stdin': content})
 
 
 if __name__ == '__main__':
