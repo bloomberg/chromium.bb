@@ -1054,8 +1054,7 @@ void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
   // fetch of the initial CrosSettings DeviceRebootOnShutdown policy.
   shutdown_policy_forwarder_ = base::MakeUnique<ShutdownPolicyForwarder>();
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ash::switches::kAshEnableNightLight)) {
+  if (ash::switches::IsNightLightEnabled()) {
     night_light_client_ = base::MakeUnique<NightLightClient>(
         g_browser_process->system_request_context());
     night_light_client_->Start();

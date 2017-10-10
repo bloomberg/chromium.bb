@@ -13,6 +13,7 @@
 #include "ash/login/lock_screen_controller.h"
 #include "ash/media_controller.h"
 #include "ash/new_window_controller.h"
+#include "ash/public/cpp/ash_switches.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/shelf_controller.h"
 #include "ash/shell.h"
@@ -146,7 +147,7 @@ void RegisterInterfaces(
   registry->AddInterface(
       base::Bind(&BindNewWindowControllerRequestOnMainThread),
       main_thread_task_runner);
-  if (NightLightController::IsFeatureEnabled()) {
+  if (switches::IsNightLightEnabled()) {
     registry->AddInterface(
         base::Bind(&BindNightLightControllerRequestOnMainThread),
         main_thread_task_runner);

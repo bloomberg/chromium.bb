@@ -34,8 +34,8 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/public/cpp/ash_switches.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "ash/system/night_light/night_light_controller.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -646,7 +646,7 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
           chromeos::switches::kEnableTouchCalibrationSetting));
 
   html_source->AddBoolean("nightLightFeatureEnabled",
-                          ash::NightLightController::IsFeatureEnabled());
+                          ash::switches::IsNightLightEnabled());
 
   LocalizedString storage_strings[] = {
       {"storageTitle", IDS_SETTINGS_STORAGE_TITLE},

@@ -72,9 +72,6 @@ class ASH_EXPORT NightLightController : public mojom::NightLightController,
   NightLightController();
   ~NightLightController() override;
 
-  // Returns true if the NightLight feature is enabled in the flags.
-  static bool IsFeatureEnabled();
-
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   AnimationDuration animation_duration() const { return animation_duration_; }

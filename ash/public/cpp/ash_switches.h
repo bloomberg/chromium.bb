@@ -59,6 +59,8 @@ ASH_PUBLIC_EXPORT extern const char kSpuriousPowerButtonKeyboardAccel[];
 ASH_PUBLIC_EXPORT extern const char kSpuriousPowerButtonLidAngleChange[];
 ASH_PUBLIC_EXPORT extern const char kUseIMEService[];
 
+ASH_PUBLIC_EXPORT bool IsNightLightEnabled();
+
 }  // namespace switches
 }  // namespace ash
 

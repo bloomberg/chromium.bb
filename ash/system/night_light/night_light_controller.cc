@@ -11,7 +11,6 @@
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
-#include "base/command_line.h"
 #include "base/i18n/time_formatting.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -129,12 +128,6 @@ NightLightController::NightLightController()
 
 NightLightController::~NightLightController() {
   Shell::Get()->session_controller()->RemoveObserver(this);
-}
-
-// static
-bool NightLightController::IsFeatureEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      ash::switches::kAshEnableNightLight);
 }
 
 // static
