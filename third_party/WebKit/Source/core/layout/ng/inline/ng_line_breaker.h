@@ -101,14 +101,14 @@ class CORE_EXPORT NGLineBreaker {
     kForcedBreak
   };
 
-  LineBreakState HandleText(const NGLineInfo&,
+  LineBreakState HandleText(NGLineInfo*,
                             const NGInlineItem&,
                             NGInlineItemResult*);
   void BreakText(NGInlineItemResult*,
                  const NGInlineItem&,
                  LayoutUnit available_width,
-                 const NGLineInfo&);
-  static void AppendHyphen(const ComputedStyle&, ShapeResult*);
+                 NGLineInfo*);
+  static void AppendHyphen(const ComputedStyle&, NGLineInfo*);
 
   LineBreakState HandleControlItem(const NGInlineItem&, NGInlineItemResult*);
   LineBreakState HandleAtomicInline(const NGInlineItem&,
@@ -120,7 +120,12 @@ class CORE_EXPORT NGLineBreaker {
   LineBreakState HandleCloseTag(const NGInlineItem&, NGInlineItemResults*);
 
   void HandleOverflow(NGLineInfo*);
+  void HandleOverflow(NGLineInfo*,
+                      LayoutUnit available_width,
+                      bool force_break_anywhere);
   void Rewind(NGLineInfo*, unsigned new_end);
+
+  void TruncateOverflowingText(NGLineInfo*);
 
   void SetCurrentStyle(const ComputedStyle&);
   bool IsFirstBreakOpportunity(unsigned, const NGLineInfo&) const;

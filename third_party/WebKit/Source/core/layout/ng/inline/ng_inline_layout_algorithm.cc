@@ -167,6 +167,12 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
   // Items are already bidi-reordered to the visual order.
   LayoutUnit position;
 
+  if (IsRtl(line_info->BaseDirection()) && line_info->LineEndShapeResult()) {
+    PlaceGeneratedContent(std::move(line_info->LineEndShapeResult()),
+                          std::move(line_info->LineEndStyle()), &position, box,
+                          &text_builder, &line_box);
+  }
+
   for (auto& item_result : *line_items) {
     DCHECK(item_result.item);
     const NGInlineItem& item = *item_result.item;
@@ -219,7 +225,7 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
         if (quirks_mode_)
           box->ActivateTextMetrics();
       }
-      box = box_states_.OnCloseTag(item, &line_box, box, baseline_type_);
+      box = box_states_.OnCloseTag(&line_box, box, baseline_type_);
       continue;
     } else if (item.Type() == NGInlineItem::kAtomicInline) {
       box = PlaceAtomicInline(item, &item_result, *line_info, position,
@@ -245,6 +251,12 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
     }
 
     position += item_result.inline_size;
+  }
+
+  if (line_info->LineEndShapeResult()) {
+    PlaceGeneratedContent(std::move(line_info->LineEndShapeResult()),
+                          std::move(line_info->LineEndStyle()), &position, box,
+                          &text_builder, &line_box);
   }
 
   if (line_box.Children().IsEmpty()) {
@@ -300,6 +312,46 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
   return true;
 }
 
+// Place a generated content that does not exist in DOM nor in LayoutObject
+// tree.
+void NGInlineLayoutAlgorithm::PlaceGeneratedContent(
+    RefPtr<const ShapeResult> shape_result,
+    RefPtr<const ComputedStyle> style,
+    LayoutUnit* position,
+    NGInlineBoxState* box,
+    NGTextFragmentBuilder* text_builder,
+    NGLineBoxFragmentBuilder* line_box) {
+  if (box->CanAddTextOfStyle(*style)) {
+    PlaceText(std::move(shape_result), std::move(style), position, box,
+              text_builder, line_box);
+  } else {
+    RefPtr<ComputedStyle> text_style =
+        ComputedStyle::CreateAnonymousStyleWithDisplay(*style,
+                                                       EDisplay::kInline);
+    NGInlineBoxState* box = box_states_.OnOpenTag(*text_style, line_box);
+    box->ComputeTextMetrics(*text_style, baseline_type_, false);
+    PlaceText(std::move(shape_result), std::move(style), position, box,
+              text_builder, line_box);
+    box_states_.OnCloseTag(line_box, box, baseline_type_);
+  }
+}
+
+void NGInlineLayoutAlgorithm::PlaceText(RefPtr<const ShapeResult> shape_result,
+                                        RefPtr<const ComputedStyle> style,
+                                        LayoutUnit* position,
+                                        NGInlineBoxState* box,
+                                        NGTextFragmentBuilder* text_builder,
+                                        NGLineBoxFragmentBuilder* line_box) {
+  LayoutUnit inline_size = shape_result->SnappedWidth();
+  text_builder->SetStyle(std::move(style));
+  text_builder->SetSize({inline_size, box->text_metrics.LineHeight()});
+  text_builder->SetShapeResult(std::move(shape_result));
+  RefPtr<NGPhysicalTextFragment> text_fragment =
+      text_builder->ToTextFragment(std::numeric_limits<unsigned>::max(), 0, 0);
+  line_box->AddChild(std::move(text_fragment), {*position, box->text_top});
+  *position += inline_size;
+}
+
 NGInlineBoxState* NGInlineLayoutAlgorithm::PlaceAtomicInline(
     const NGInlineItem& item,
     NGInlineItemResult* item_result,
@@ -318,7 +370,7 @@ NGInlineBoxState* NGInlineLayoutAlgorithm::PlaceAtomicInline(
 
   PlaceLayoutResult(item_result, position, box, line_box);
 
-  return box_states_.OnCloseTag(item, line_box, box, baseline_type_);
+  return box_states_.OnCloseTag(line_box, box, baseline_type_);
 }
 
 // Place a NGLayoutResult into the line box.
@@ -383,6 +435,8 @@ bool NGInlineLayoutAlgorithm::ApplyJustify(NGLineInfo* line_info) {
   for (const NGInlineItemResult& item_result : line_info->Results())
     inline_size += item_result.inline_size;
   LayoutUnit available_width = line_info->AvailableWidth();
+  if (line_info->LineEndShapeResult())
+    available_width -= line_info->LineEndShapeResult()->SnappedWidth();
   LayoutUnit expansion = available_width - inline_size;
   if (expansion <= 0)
     return false;  // no expansion is needed.

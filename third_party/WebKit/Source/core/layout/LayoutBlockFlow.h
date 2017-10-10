@@ -742,6 +742,8 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
   static void UpdateAncestorShouldPaintFloatingObject(
       const LayoutBox& float_box);
 
+  bool ShouldTruncateOverflowingText() const;
+
   int GetLayoutPassCountForTesting();
 
  protected:
@@ -878,8 +880,6 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
 
   bool IsSelfCollapsingBlock() const override;
   bool CheckIfIsSelfCollapsingBlock() const;
-
-  bool ShouldTruncateOverflowingText(const LayoutBlockFlow*) const;
 
  protected:
   std::unique_ptr<LayoutBlockFlowRareData> rare_data_;

@@ -41,6 +41,17 @@ void NGInlineBoxState::AccumulateUsedFonts(const ShapeResult* shape_result,
   }
 }
 
+bool NGInlineBoxState::CanAddTextOfStyle(
+    const ComputedStyle& text_style) const {
+  if (text_style.VerticalAlign() != EVerticalAlign::kBaseline)
+    return false;
+  DCHECK(style);
+  if (style == &text_style || &style->GetFont() == &text_style.GetFont() ||
+      style->GetFont().PrimaryFont() == text_style.GetFont().PrimaryFont())
+    return true;
+  return false;
+}
+
 NGInlineBoxState* NGInlineLayoutStateStack::OnBeginPlaceItems(
     const ComputedStyle* line_style,
     FontBaseline baseline_type,
@@ -84,11 +95,9 @@ NGInlineBoxState* NGInlineLayoutStateStack::OnOpenTag(
     const NGInlineItemResult& item_result,
     NGLineBoxFragmentBuilder* line_box,
     LayoutUnit position) {
-  stack_.resize(stack_.size() + 1);
-  NGInlineBoxState* box = &stack_.back();
-  box->fragment_start = line_box->Children().size();
+  DCHECK(item.Style());
+  NGInlineBoxState* box = OnOpenTag(*item.Style(), line_box);
   box->item = &item;
-  box->style = item.Style();
 
   // Compute box properties regardless of needs_box_fragment since close tag may
   // also set needs_box_fragment.
@@ -99,8 +108,17 @@ NGInlineBoxState* NGInlineLayoutStateStack::OnOpenTag(
   return box;
 }
 
+NGInlineBoxState* NGInlineLayoutStateStack::OnOpenTag(
+    const ComputedStyle& style,
+    NGLineBoxFragmentBuilder* line_box) {
+  stack_.resize(stack_.size() + 1);
+  NGInlineBoxState* box = &stack_.back();
+  box->fragment_start = line_box->Children().size();
+  box->style = &style;
+  return box;
+}
+
 NGInlineBoxState* NGInlineLayoutStateStack::OnCloseTag(
-    const NGInlineItem& item,
     NGLineBoxFragmentBuilder* line_box,
     NGInlineBoxState* box,
     FontBaseline baseline_type) {
@@ -147,6 +165,7 @@ void NGInlineLayoutStateStack::EndBoxState(NGInlineBoxState* box,
 void NGInlineBoxState::SetNeedsBoxFragment(bool when_empty) {
   needs_box_fragment_when_empty = when_empty;
   if (!needs_box_fragment) {
+    DCHECK(item);
     needs_box_fragment = true;
     // We have left edge on open tag, and if the box is not a continuation.
     // TODO(kojii): Needs review when we change SplitInlines().
@@ -218,6 +237,7 @@ void NGInlineLayoutStateStack::AddBoxFragmentPlaceholder(
   // The "null" is added to the list to compute baseline shift of the box
   // separately from text fragments.
   unsigned fragment_end = line_box->Children().size();
+  DCHECK(box->item);
   box_placeholders_.push_back(BoxFragmentPlaceholder{
       box->fragment_start, fragment_end, box->item, size, box->border_edges});
   line_box->AddChild(nullptr, offset);

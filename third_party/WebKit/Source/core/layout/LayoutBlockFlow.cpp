@@ -520,7 +520,7 @@ void LayoutBlockFlow::ResetLayout() {
   // in the middle of doing layout), so we only handle the simple case of an
   // anonymous block truncating when its parent is clipped.
   // Walk all the lines and delete our ellipsis line boxes if they exist.
-  if (ChildrenInline() && ShouldTruncateOverflowingText(this))
+  if (ChildrenInline() && ShouldTruncateOverflowingText())
     DeleteEllipsisLineBoxes();
 
   RebuildFloatsFromIntruding();

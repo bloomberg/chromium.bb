@@ -1912,10 +1912,10 @@ static bool IsInlineWithOutlineAndContinuation(const LayoutObject& o) {
          !o.IsElementContinuation() && ToLayoutInline(o).Continuation();
 }
 
-bool LayoutBlockFlow::ShouldTruncateOverflowingText(const LayoutBlockFlow* block) const {
-  const LayoutObject* object_to_check = block;
-  if (block->IsAnonymousBlock()) {
-    const LayoutObject* parent = block->Parent();
+bool LayoutBlockFlow::ShouldTruncateOverflowingText() const {
+  const LayoutObject* object_to_check = this;
+  if (IsAnonymousBlock()) {
+    const LayoutObject* parent = Parent();
     if (!parent || !parent->BehavesLikeBlockContainer())
       return false;
     object_to_check = parent;
@@ -2026,7 +2026,7 @@ void LayoutBlockFlow::LayoutInlineChildren(bool relayout_children,
                    IsHorizontalWritingMode() ? kHorizontalLine : kVerticalLine,
                    kPositionOfInteriorLineBoxes));
 
-  if (ShouldTruncateOverflowingText(this))
+  if (ShouldTruncateOverflowingText())
     CheckLinesForTextOverflow();
 
   // Ensure the new line boxes will be painted.
