@@ -263,11 +263,14 @@ void AppBannerInfoBarDelegateAndroid::SendBannerAccepted() {
 
   weak_manager_->SendBannerAccepted();
 
-  // Send the appinstalled event. Note that this is fired *before* the
-  // installation actually takes place (which can be a significant amount of
-  // time later, especially if using WebAPKs).
+  // Send the appinstalled event and perform install time logging. Note that
+  // this is fired *before* the installation actually takes place (which can be
+  // a significant amount of time later, especially if using WebAPKs).
   // TODO(mgiuca): Fire the event *after* the installation is completed.
-  weak_manager_->OnInstall();
+  weak_manager_->OnInstall(!native_app_data_.is_null() /* is_native */,
+                           native_app_data_.is_null()
+                               ? blink::kWebDisplayModeUndefined
+                               : shortcut_info_->display);
 }
 
 infobars::InfoBarDelegate::InfoBarIdentifier
