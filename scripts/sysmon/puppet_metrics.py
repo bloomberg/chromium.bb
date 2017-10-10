@@ -87,7 +87,7 @@ class _PuppetRunSummary(object):
   @property
   def times(self):
     """Return mapping of time information."""
-    times = self._data.get('time', {})
+    times = self._data.get('time', {}).copy()
     times.pop('last_run', None)
     total = times.pop('total', None)
     times['other'] = max(0, total - sum(times.itervalues()))

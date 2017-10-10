@@ -128,8 +128,9 @@ class TestPuppetMetrics(cros_test_lib.TempDirTestCase):
   def test_collect(self):
     with open(self.tempfile, 'w') as f:
       f.write(_SUMMARY)
-    with mock.patch.object(puppet_metrics, 'LAST_RUN_FILE', self.tempfile):
-      puppet_metrics.collect_puppet_summary()
+    with mock.patch('time.time', return_value=1500000000):
+      with mock.patch.object(puppet_metrics, 'LAST_RUN_FILE', self.tempfile):
+        puppet_metrics.collect_puppet_summary()
 
     setter = self.store.set
     calls = [
@@ -187,6 +188,8 @@ class TestPuppetMetrics(cros_test_lib.TempDirTestCase):
                   0.001235189, enforce_ge=mock.ANY),
         mock.call('puppet/times', ('filebucket',), None,
                   0.000341392, enforce_ge=mock.ANY),
+        mock.call('puppet/age', (), None,
+                  20329.0, enforce_ge=mock.ANY),
     ]
     setter.assert_has_calls(calls)
     self.assertEqual(len(setter.mock_calls), len(calls))
