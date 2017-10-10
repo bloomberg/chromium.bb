@@ -11,9 +11,9 @@
 #include "content/public/renderer/render_frame_observer_tracker.h"
 #include "content/public/renderer/render_thread.h"
 #include "extensions/common/extensions_client.h"
+#include "extensions/renderer/api/automation/automation_api_helper.h"
 #include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/extension_frame_helper.h"
-#include "extensions/renderer/extension_helper.h"
 #include "extensions/renderer/guest_view/extensions_guest_view_container.h"
 #include "extensions/renderer/guest_view/extensions_guest_view_container_dispatcher.h"
 #include "extensions/renderer/guest_view/mime_handler_view/mime_handler_view_container.h"
@@ -72,8 +72,8 @@ void ShellContentRendererClient::RenderFrameCreated(
 
 void ShellContentRendererClient::RenderViewCreated(
     content::RenderView* render_view) {
-  new ExtensionHelper(render_view,
-                      extensions_renderer_client_->GetDispatcher());
+  // Manages its own lifetime.
+  new AutomationApiHelper(render_view);
 }
 
 bool ShellContentRendererClient::OverrideCreatePlugin(

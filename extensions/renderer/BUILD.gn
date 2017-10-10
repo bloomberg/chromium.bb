@@ -100,8 +100,6 @@ source_set("renderer") {
     "extension_bindings_system.h",
     "extension_frame_helper.cc",
     "extension_frame_helper.h",
-    "extension_helper.cc",
-    "extension_helper.h",
     "extension_injection_host.cc",
     "extension_injection_host.h",
     "extension_port.cc",

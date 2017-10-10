@@ -20,6 +20,7 @@
 #include "extensions/renderer/extension_bindings_system.h"
 #include "extensions/renderer/renderer_messaging_service.h"
 #include "extensions/renderer/script_context.h"
+#include "extensions/renderer/script_context_set.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -258,6 +259,7 @@ bool ExtensionFrameHelper::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ExtensionMsg_Response, OnExtensionResponse)
     IPC_MESSAGE_HANDLER(ExtensionMsg_MessageInvoke, OnExtensionMessageInvoke)
     IPC_MESSAGE_HANDLER(ExtensionMsg_SetFrameName, OnSetFrameName)
+    IPC_MESSAGE_HANDLER(ExtensionMsg_AppWindowClosed, OnAppWindowClosed)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -337,6 +339,20 @@ void ExtensionFrameHelper::OnExtensionMessageInvoke(
 
 void ExtensionFrameHelper::OnSetFrameName(const std::string& name) {
   render_frame()->GetWebFrame()->SetName(blink::WebString::FromUTF8(name));
+}
+
+void ExtensionFrameHelper::OnAppWindowClosed() {
+  DCHECK(render_frame()->IsMainFrame());
+
+  v8::HandleScope scope(v8::Isolate::GetCurrent());
+  v8::Local<v8::Context> v8_context =
+      render_frame()->GetWebFrame()->MainWorldScriptContext();
+  ScriptContext* script_context =
+      ScriptContextSet::GetContextByV8Context(v8_context);
+  if (!script_context)
+    return;
+  script_context->module_system()->CallModuleMethodSafe("app.window",
+                                                        "onAppWindowClosed");
 }
 
 void ExtensionFrameHelper::OnDestruct() {
