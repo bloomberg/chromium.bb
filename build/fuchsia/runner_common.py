@@ -131,7 +131,7 @@ def _StripBinary(dry_run, bin_path):
   return strip_path
 
 
-def _StripBinaries(dry_run, file_mapping):
+def _StripBinaries(dry_run, file_mapping, target_cpu):
   """Updates the supplied manifest |file_mapping|, by stripping any executables
   and updating their entries to point to the stripped location. Returns a
   mapping from target executables to their un-stripped paths, for use during
@@ -142,7 +142,9 @@ def _StripBinaries(dry_run, file_mapping):
       file_tag = f.read(4)
     if file_tag == '\x7fELF':
       symbols_mapping[target] = source
-      file_mapping[target] = _StripBinary(dry_run, source)
+      # TODO(wez): Strip ARM64 binaries as well. See crbug.com/773444.
+      if target_cpu == 'x64':
+        file_mapping[target] = _StripBinary(dry_run, source)
   return symbols_mapping
 
 
@@ -163,19 +165,35 @@ def ReadRuntimeDeps(deps_path, output_directory):
   return result
 
 
+def _TargetCpuToArch(target_cpu):
+  """Returns the Fuchsia SDK architecture name for the |target_cpu|."""
+  if target_cpu == 'arm64':
+    return 'aarch64'
+  elif target_cpu == 'x64':
+    return 'x86_64'
+  raise Exception('Unknown target_cpu:' + target_cpu)
+
+
+def _TargetCpuToSdkBinPath(target_cpu):
+  """Returns the path to the kernel & bootfs .bin files for |target_cpu|."""
+  return os.path.join(SDK_ROOT, 'target', _TargetCpuToArch(target_cpu))
+
+
 class BootfsData(object):
   """Results from BuildBootfs().
 
   bootfs: Local path to .bootfs image file.
   symbols_mapping: A dict mapping executables to their unstripped originals.
+  target_cpu: GN's target_cpu setting for the image.
   """
-  def __init__(self, bootfs_name, symbols_mapping):
+  def __init__(self, bootfs_name, symbols_mapping, target_cpu):
     self.bootfs = bootfs_name
     self.symbols_mapping = symbols_mapping
+    self.target_cpu = target_cpu
 
 
 def BuildBootfs(output_directory, runtime_deps, bin_name, child_args, dry_run,
-                summary_output, power_off):
+                summary_output, power_off, target_cpu):
   # |runtime_deps| already contains (target, source) pairs for the runtime deps,
   # so we can initialize |file_mapping| from it directly.
   file_mapping = dict(runtime_deps)
@@ -229,7 +247,7 @@ def BuildBootfs(output_directory, runtime_deps, bin_name, child_args, dry_run,
       lambda x: _MakeTargetImageName(DIR_SOURCE_ROOT, output_directory, x))
 
   # Strip any binaries in the file list, and generate a manifest mapping.
-  symbols_mapping = _StripBinaries(dry_run, file_mapping)
+  symbols_mapping = _StripBinaries(dry_run, file_mapping, target_cpu)
 
   # Write the target, source mappings to a file suitable for bootfs.
   manifest_file = open(bin_name + '.bootfs_manifest', 'w')
@@ -245,11 +263,11 @@ def BuildBootfs(output_directory, runtime_deps, bin_name, child_args, dry_run,
       [mkbootfs_path, '-o', bootfs_name,
        # TODO(wez): Parameterize this on the |target_cpu| from GN.
        '--target=boot', os.path.join(
-           SDK_ROOT, 'target', 'x86_64', 'bootdata.bin'),
+           _TargetCpuToSdkBinPath(target_cpu), 'bootdata.bin'),
        '--target=system', manifest_file.name]) != 0:
     return None
 
-  return BootfsData(bootfs_name, symbols_mapping)
+  return BootfsData(bootfs_name, symbols_mapping, target_cpu)
 
 
 def _SymbolizeEntries(entries):
@@ -364,7 +382,8 @@ def _GetResultsFromImg(dry_run, test_launcher_summary_output):
 
 def RunFuchsia(bootfs_data, use_device, dry_run, test_launcher_summary_output):
   # TODO(wez): Parameterize this on the |target_cpu| from GN.
-  kernel_path = os.path.join(SDK_ROOT, 'target', 'x86_64', 'zircon.bin')
+  kernel_path = os.path.join(_TargetCpuToSdkBinPath(bootfs_data.target_cpu),
+                             'zircon.bin')
 
   if use_device:
     # TODO(fuchsia): This doesn't capture stdout as there's no way to do so
@@ -374,16 +393,15 @@ def RunFuchsia(bootfs_data, use_device, dry_run, test_launcher_summary_output):
                           bootfs_data.bootfs]
     return _RunAndCheck(dry_run, bootserver_command)
 
-  qemu_path = os.path.join(SDK_ROOT, 'qemu', 'bin', 'qemu-system-x86_64')
+  qemu_path = os.path.join(
+      SDK_ROOT, 'qemu', 'bin',
+      'qemu-system-' + _TargetCpuToArch(bootfs_data.target_cpu))
   qemu_command = [qemu_path,
       '-m', '2048',
       '-nographic',
-      '-machine', 'q35',
       '-kernel', kernel_path,
       '-initrd', bootfs_data.bootfs,
       '-smp', '4',
-      '-enable-kvm',
-      '-cpu', 'host,migratable=no',
 
       # Configure virtual network. It is used in the tests to connect to
       # testserver running on the host.
@@ -400,6 +418,19 @@ def RunFuchsia(bootfs_data, use_device, dry_run, test_launcher_summary_output):
       # noisy ANSI spew from the user's terminal emulator.
       '-append', 'TERM=dumb kernel.halt_on_panic=true',
     ]
+
+  # Configure the machine & CPU to emulate, based on the target architecture.
+  if bootfs_data.target_cpu == 'arm64':
+    qemu_command.extend([
+        '-machine','virt',
+        '-cpu', 'cortex-a53',
+    ])
+  else:
+    qemu_command.extend([
+        '-enable-kvm',
+        '-machine', 'q35',
+        '-cpu', 'host,migratable=no',
+    ])
 
   if test_launcher_summary_output:
     # Make and mount a 100M minfs formatted image that is used to copy the

@@ -63,6 +63,8 @@ template("generate_runner_script") {
       runner_script,
       "--output-directory",
       rebase_path(root_build_dir, root_build_dir),
+      "--target-cpu",
+      target_cpu,
     ]
 
     deps += [
