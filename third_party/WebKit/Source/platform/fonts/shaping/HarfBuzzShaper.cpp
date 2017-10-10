@@ -885,7 +885,8 @@ RefPtr<ShapeResult> HarfBuzzShaper::Shape(const Font* font,
   }
 
 #if DCHECK_IS_ON()
-  CheckShapeResultRange(result.get(), start, end, text_, font);
+  if (result)
+    CheckShapeResultRange(result.get(), start, end, text_, font);
 #endif
 
   return result;
