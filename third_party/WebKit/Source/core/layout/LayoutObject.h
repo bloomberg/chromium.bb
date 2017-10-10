@@ -69,6 +69,7 @@ class LayoutBlock;
 class LayoutFlowThread;
 class LayoutGeometryMap;
 class LayoutMultiColumnSpannerPlaceholder;
+class LayoutNGBlockFlow;
 class LayoutView;
 class ObjectPaintProperties;
 class PaintLayer;
@@ -299,6 +300,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   LayoutBoxModelObject* EnclosingBoxModelObject() const;
 
   LayoutBox* EnclosingScrollableBox() const;
+
+  // Returns |EnclosingBox()| if it's a LayoutNGBlockFlow, or nullptr otherwise.
+  LayoutNGBlockFlow* EnclosingNGBlockFlow() const;
 
   // Function to return our enclosing flow thread if we are contained inside
   // one. This function follows the containing block chain.
