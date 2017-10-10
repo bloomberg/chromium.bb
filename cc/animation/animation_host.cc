@@ -168,9 +168,6 @@ void AnimationHost::SetMutatorHostClient(MutatorHostClient* client) {
     return;
 
   mutator_host_client_ = client;
-
-  if (needs_push_properties() && mutator_host_client())
-    SetNeedsPushProperties();
 }
 
 void AnimationHost::SetNeedsCommit() {
@@ -231,23 +228,18 @@ void AnimationHost::PushPropertiesToImplThread(AnimationHost* host_impl) {
   // to happen before the element animations are synced below.
   for (auto& kv : id_to_timeline_map_) {
     AnimationTimeline* timeline = kv.second.get();
-    if (timeline->needs_push_properties()) {
-      AnimationTimeline* timeline_impl =
-          host_impl->GetTimelineById(timeline->id());
-      if (timeline_impl)
-        timeline->PushPropertiesTo(timeline_impl);
+    if (AnimationTimeline* timeline_impl =
+            host_impl->GetTimelineById(timeline->id())) {
+      timeline->PushPropertiesTo(timeline_impl);
     }
   }
 
   // Sync properties for created ElementAnimations.
   for (auto& kv : element_to_animations_map_) {
     const auto& element_animations = kv.second;
-    if (element_animations->needs_push_properties()) {
-      auto element_animations_impl =
-          host_impl->GetElementAnimationsForElementId(kv.first);
-      if (element_animations_impl)
-        element_animations->PushPropertiesTo(
-            std::move(element_animations_impl));
+    if (auto element_animations_impl =
+            host_impl->GetElementAnimationsForElementId(kv.first)) {
+      element_animations->PushPropertiesTo(std::move(element_animations_impl));
     }
   }
 
