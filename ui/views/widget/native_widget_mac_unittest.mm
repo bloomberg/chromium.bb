@@ -803,6 +803,28 @@ TEST_F(NativeWidgetMacTest, VisibleAfterNativeParentShow) {
   [native_parent close];
 }
 
+// Tests visibility for a child of a native NSWindow, reshowing after a
+// deminiaturize on the parent window (after attempting to show the child while
+// the parent was miniaturized).
+TEST_F(NativeWidgetMacTest, VisibleAfterNativeParentDeminiaturize) {
+  NSWindow* native_parent = MakeNativeParent();
+  [native_parent makeKeyAndOrderFront:nil];
+  [native_parent miniaturize:nil];
+  Widget* child = AttachPopupToNativeParent(native_parent);
+
+  child->Show();
+  EXPECT_FALSE([native_parent isVisible]);
+  EXPECT_FALSE(child->IsVisible());  // Parent is hidden so child is also.
+
+  [native_parent deminiaturize:nil];
+  EXPECT_TRUE([native_parent isVisible]);
+  // Don't WaitForVisibleCounts() here: deminiaturize is synchronous, so any
+  // spurious _occlusion_ state change would have already occurred. Further
+  // occlusion changes are not guaranteed to be triggered by the deminiaturize.
+  EXPECT_TRUE(child->IsVisible());
+  [native_parent close];
+}
+
 // Use Native APIs to query the tooltip text that would be shown once the
 // tooltip delay had elapsed.
 base::string16 TooltipTextForWidget(Widget* widget) {
