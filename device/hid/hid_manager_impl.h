@@ -26,6 +26,11 @@ class HidManagerImpl : public device::mojom::HidManager,
   HidManagerImpl();
   ~HidManagerImpl() override;
 
+  // SetHidServiceForTesting only effects the next call to HidManagerImpl's
+  // constructor in which the HidManagerImpl will take over the ownership of
+  // passed |hid_service|.
+  static void SetHidServiceForTesting(std::unique_ptr<HidService> hid_service);
+
   void AddBinding(device::mojom::HidManagerRequest request);
 
   // device::mojom::HidManager implementation:
@@ -48,7 +53,7 @@ class HidManagerImpl : public device::mojom::HidManager,
   void OnDeviceAdded(device::mojom::HidDeviceInfoPtr device_info) override;
   void OnDeviceRemoved(device::mojom::HidDeviceInfoPtr device_info) override;
 
-  std::unique_ptr<device::HidService> hid_service_;
+  std::unique_ptr<HidService> hid_service_;
   mojo::BindingSet<device::mojom::HidManager> bindings_;
   mojo::AssociatedInterfacePtrSet<device::mojom::HidManagerClient> clients_;
   ScopedObserver<device::HidService, device::HidService::Observer>
