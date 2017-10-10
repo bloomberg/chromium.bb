@@ -2550,7 +2550,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
 
 // TODO(crbug.com/695749): Add egtests for:
 // 1. Spinner background.
-// 2. Reorder bookmarks.
+// 2. Reorder bookmarks. (make sure it won't clear the row selection on table)
 // 3. Current root node removed: Verify that the New Folder, Select button are
 //    disabled and empty background appears when _currentRootNode becomes NULL
 //    (maybe programmatically remove the current root node from model, and
