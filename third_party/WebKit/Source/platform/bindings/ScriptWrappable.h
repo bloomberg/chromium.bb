@@ -116,7 +116,7 @@ class PLATFORM_EXPORT ScriptWrappable : public TraceWrapperBase {
     wrapper_type_info->ConfigureWrapper(&main_world_wrapper_);
     main_world_wrapper_.SetWeak();
     DCHECK(ContainsWrapper());
-    ScriptWrappableVisitor::WriteBarrier(isolate, &main_world_wrapper_);
+    ScriptWrappableVisitor::WriteBarrier(isolate, main_world_wrapper_);
     return true;
   }
 
