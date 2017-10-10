@@ -36210,7 +36210,6 @@
     { "name": "wordpress.com", "include_subdomains": false, "mode": "force-https" },
     { "name": "www.wordpress.com", "include_subdomains": false, "mode": "force-https" },
     { "name": "rugk.dedyn.io", "include_subdomains": true, "mode": "force-https" },
-    { "name": "login.gov", "include_subdomains": true, "mode": "force-https" },
     { "name": "bicycle-events.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "aramado.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "bebefofuxo.com.br", "include_subdomains": true, "mode": "force-https" },
@@ -36349,6 +36348,7 @@
     // eTLD owners who are working towards wide HSTS adoption can request to
     // preload entries at registration time.
     // START OF ETLD-OWNER REQUESTED ENTRIES
+    { "name": "login.gov", "include_subdomains": true, "mode": "force-https" },
     { "name": "digital.gov", "include_subdomains": true, "mode": "force-https" },
     { "name": "cdcpartners.gov", "include_subdomains": true, "mode": "force-https" },
     { "name": "smarterskies.gov", "include_subdomains": true, "mode": "force-https" },
@@ -36361,6 +36361,12 @@
     { "name": "earthsystemprediction.gov", "include_subdomains": true, "mode": "force-https" },
     { "name": "militaryconsumer.gov", "include_subdomains": true, "mode": "force-https" },
     { "name": "osdls.gov", "include_subdomains": true, "mode": "force-https" },
+    { "name": "identitysandbox.gov", "include_subdomains": true, "mode": "force-https" },
+    { "name": "employer.gov", "include_subdomains": true, "mode": "force-https" },
+    { "name": "digitaldashboard.gov", "include_subdomains": true, "mode": "force-https" },
+    { "name": "reporting.gov", "include_subdomains": true, "mode": "force-https" },
+    { "name": "hirevets.gov", "include_subdomains": true, "mode": "force-https" },
+    { "name": "search.gov", "include_subdomains": true, "mode": "force-https" },
     // END OF ETLD-OWNER REQUESTED ENTRIES
 
     // To avoid trailing comma changes from showing up in diffs, we place a
