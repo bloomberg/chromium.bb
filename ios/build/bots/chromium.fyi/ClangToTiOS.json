@@ -16,7 +16,7 @@
     "all"
   ],
   "env": {
-    "LLVM_FORCE_HEAD_REVISION": "YES"
+    "LLVM_FORCE_HEAD_REVISION": "1"
   },
   "configuration": "Release",
   "sdk": "iphoneos11.0",
