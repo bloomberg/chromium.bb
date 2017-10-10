@@ -113,6 +113,7 @@
 #include "ui/display/screen.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event_constants.h"
+#include "ui/gfx/image/image_unittest_util.h"
 #include "ui/views/widget/widget.h"
 
 using base::ASCIIToUTF16;
@@ -282,6 +283,7 @@ class TestShelfController : public ash::mojom::ShelfController {
   size_t removed_count() const { return removed_count_; }
   size_t updated_count() const { return updated_count_; }
   size_t set_delegate_count() const { return set_delegate_count_; }
+  const ash::ShelfItem& last_item() const { return last_item_; }
 
   ash::mojom::ShelfControllerPtr CreateInterfacePtrAndBind() {
     ash::mojom::ShelfControllerPtr ptr;
@@ -294,10 +296,16 @@ class TestShelfController : public ash::mojom::ShelfController {
       ash::mojom::ShelfObserverAssociatedPtrInfo observer) override {
     observer_.Bind(std::move(observer));
   }
-  void AddShelfItem(int32_t, const ash::ShelfItem&) override { added_count_++; }
+  void AddShelfItem(int32_t, const ash::ShelfItem& item) override {
+    added_count_++;
+    last_item_ = item;
+  }
   void RemoveShelfItem(const ash::ShelfID&) override { removed_count_++; }
   void MoveShelfItem(const ash::ShelfID&, int32_t) override {}
-  void UpdateShelfItem(const ash::ShelfItem&) override { updated_count_++; }
+  void UpdateShelfItem(const ash::ShelfItem& item) override {
+    updated_count_++;
+    last_item_ = item;
+  }
   void SetShelfItemDelegate(const ash::ShelfID&,
                             ash::mojom::ShelfItemDelegatePtr) override {
     set_delegate_count_++;
@@ -308,6 +316,7 @@ class TestShelfController : public ash::mojom::ShelfController {
   size_t removed_count_ = 0;
   size_t updated_count_ = 0;
   size_t set_delegate_count_ = 0;
+  ash::ShelfItem last_item_;
 
   ash::mojom::ShelfObserverAssociatedPtr observer_;
   mojo::Binding<ash::mojom::ShelfController> binding_;
@@ -334,13 +343,19 @@ void SelectItem(ash::ShelfItemDelegate* delegate) {
 class TestChromeLauncherController : public ChromeLauncherController {
  public:
   TestChromeLauncherController(Profile* profile, ash::ShelfModel* model)
-      : ChromeLauncherController(profile, model) {}
+      : ChromeLauncherController(profile, model) {
+    // Connect to the shelf controller, the base ctor can't call overrides.
+    EXPECT_TRUE(ConnectToShelfController());
+    ash::mojom::ShelfObserverAssociatedPtrInfo ptr_info;
+    observer_binding_.Bind(mojo::MakeRequest(&ptr_info));
+    shelf_controller_->AddObserver(std::move(ptr_info));
+  }
 
   // ChromeLauncherController:
   using ChromeLauncherController::AttachProfile;
   using ChromeLauncherController::ReleaseProfile;
   bool ConnectToShelfController() override {
-    // Set the shelf controller pointer to a test instance; this is run in init.
+    // Set the shelf controller pointer to a test instance.
     if (!shelf_controller_.is_bound())
       shelf_controller_ = test_shelf_controller_.CreateInterfacePtrAndBind();
     return true;
@@ -4309,11 +4324,8 @@ TEST_F(ChromeLauncherControllerTest, SyncOffLocalUpdate) {
   EXPECT_EQ("AppList, Chrome, App1, App2", GetPinnedAppStatus());
 }
 
-// Ensure Ash and Chrome ShelfModel changes are synchronized correctly in Mash.
-TEST_F(ChromeLauncherControllerTest, ShelfModelSyncMash) {
-  if (chromeos::GetAshConfig() != ash::Config::MASH)
-    return;
-
+// Ensure Ash and Chrome ShelfModel changes are synchronized correctly.
+TEST_F(ChromeLauncherControllerTest, ShelfModelSync) {
   // ShelfModel creates an app list item, ShelfController creates its delegate.
   TestChromeLauncherController* launcher_controller =
       RecreateLauncherController();
@@ -4359,13 +4371,65 @@ TEST_F(ChromeLauncherControllerTest, ShelfModelSyncMash) {
   model_->Add(item);
   EXPECT_EQ(3, model_->item_count());
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(2u, shelf_controller->added_count());
+  EXPECT_EQ(3u, shelf_controller->added_count());
   EXPECT_EQ(1u, shelf_controller->removed_count());
 
   // Remove an item from Chrome's model; ShelfController should be notified.
   model_->RemoveItemAt(2);
   EXPECT_EQ(2, model_->item_count());
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(2u, shelf_controller->added_count());
+  EXPECT_EQ(3u, shelf_controller->added_count());
   EXPECT_EQ(2u, shelf_controller->removed_count());
+}
+
+// Ensure Ash and Chrome ShelfModel changes are synchronized correctly.
+TEST_F(ChromeLauncherControllerTest, ShelfItemImageSync) {
+  InitLauncherController();
+  base::RunLoop().RunUntilIdle();
+  TestShelfController* shelf_controller =
+      launcher_controller_->test_shelf_controller();
+
+  // Create a ShelfItem struct with a valid image icon.
+  ash::ShelfItem item;
+  item.type = ash::TYPE_PINNED_APP;
+  item.id = ash::ShelfID(kDummyAppId);
+  item.title = base::ASCIIToUTF16("Title");
+  item.status = ash::STATUS_CLOSED;
+  item.image = gfx::test::CreateImageSkia(1, 1);
+
+  const size_t added_count = shelf_controller->added_count();
+  const size_t updated_count = shelf_controller->updated_count();
+
+  // Adding an item to Chrome's model notifies ShelfController with the image.
+  launcher_controller_->shelf_model()->Add(item);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(added_count + 1, shelf_controller->added_count());
+  EXPECT_EQ(updated_count, shelf_controller->updated_count());
+  EXPECT_EQ(item.id, shelf_controller->last_item().id);
+  EXPECT_FALSE(shelf_controller->last_item().image.isNull());
+
+  // Updating the item's status notifies ShelfController with a null image.
+  // This avoids some image transport costs for the unrelated item change.
+  launcher_controller_->SetItemStatus(item.id, ash::STATUS_RUNNING);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(added_count + 1, shelf_controller->added_count());
+  EXPECT_EQ(updated_count + 1, shelf_controller->updated_count());
+  EXPECT_EQ(ash::STATUS_RUNNING, shelf_controller->last_item().status);
+  EXPECT_TRUE(shelf_controller->last_item().image.isNull());
+
+  // Calling SetLauncherItemImage will pass the new image to ShelfController.
+  launcher_controller_->SetLauncherItemImage(item.id,
+                                             gfx::test::CreateImageSkia(2, 2));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(added_count + 1, shelf_controller->added_count());
+  EXPECT_EQ(updated_count + 2, shelf_controller->updated_count());
+  EXPECT_EQ(gfx::Size(2, 2), shelf_controller->last_item().image.size());
+
+  // Calling OnAppImageUpdated will pass the new image to ShelfController.
+  launcher_controller_->OnAppImageUpdated(item.id.app_id,
+                                          gfx::test::CreateImageSkia(3, 3));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(added_count + 1, shelf_controller->added_count());
+  EXPECT_EQ(updated_count + 3, shelf_controller->updated_count());
+  EXPECT_EQ(gfx::Size(3, 3), shelf_controller->last_item().image.size());
 }

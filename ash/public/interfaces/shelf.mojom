@@ -79,6 +79,7 @@ interface ShelfController {
   // not exceeding the item count. Bails if |id| is unknown or for the AppList.
   MoveShelfItem(ShelfID id, int32 target_index);
   // Updates |item| via ShelfID. Bails if the id is unknown or for the AppList.
+  // Clients may pass null images to signal no change and avoid transport costs.
   UpdateShelfItem(ShelfItem item);
   // Sets the |delegate| for the item with |id|.
   SetShelfItemDelegate(ShelfID id, ShelfItemDelegate delegate);
@@ -87,12 +88,14 @@ interface ShelfController {
 // A Shelf observer, used to persist profile settings and cache a ShelfModel.
 interface ShelfObserver {
   // Called when the |item| has been added at |index|.
+  // This passes null images to avoid transport costs; clients don't use images.
   OnShelfItemAdded(int32 index, ShelfItem item);
   // Called when the item with |id| has been removed.
   OnShelfItemRemoved(ShelfID id);
   // Called when the item with |id| has been moved to |index|.
   OnShelfItemMoved(ShelfID id, int32 index);
   // Called when the |item| with matching ShelfID has been updated.
+  // This passes null images to avoid transport costs; clients don't use images.
   OnShelfItemUpdated(ShelfItem item);
   // Called when |delegate| for the item with |id| has been changed.
   OnShelfItemDelegateChanged(ShelfID id, ShelfItemDelegate delegate);
@@ -155,7 +158,8 @@ struct ShelfID {
 // This structure matches ash::ShelfItem.
 struct ShelfItem {
   ShelfItemType type;          // The type of the shelf item.
-  gfx.mojom.ImageSkia? image;  // An icon image Bitmap, shown on the shelf.
+  gfx.mojom.ImageSkia? image;  // The icon shown on the shelf; null for updates
+                               // with no icon change, null for ShelfObservers.
   ShelfItemStatus status;      // The running/closed/etc. status of the item.
   ShelfID shelf_id;            // The id for the shelf item and its windows.
   mojo.common.mojom.String16 title;  // The title to display for tooltips, etc.
