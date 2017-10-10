@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.webapps;
 import android.net.Uri;
 import android.support.customtabs.CustomTabsIntent;
 
+import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.tab.InterceptNavigationDelegateImpl;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.UrlUtilities;
@@ -39,6 +40,8 @@ public class WebappInterceptNavigationDelegate extends InterceptNavigationDelega
             }
             CustomTabsIntent customTabIntent = intentBuilder.build();
             customTabIntent.intent.setPackage(mActivity.getPackageName());
+            customTabIntent.intent.putExtra(
+                    CustomTabIntentDataProvider.EXTRA_SEND_TO_EXTERNAL_DEFAULT_HANDLER, true);
             customTabIntent.launchUrl(mActivity, Uri.parse(navigationParams.url));
             return true;
         }

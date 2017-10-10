@@ -31,9 +31,11 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
+import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.tab.InterceptNavigationDelegateImpl;
+import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.chrome.test.util.browser.contextmenu.ContextMenuUtils;
@@ -70,6 +72,11 @@ public class WebappNavigationTest {
                 mActivityTestRule.getActivity().getActivityTab().getContentViewCore(), "testId");
 
         CustomTabActivity customTab = assertCustomTabActivityLaunchedForOffOriginUrl();
+
+        Assert.assertTrue(
+                "Sending to external handlers needs to be enabled for redirect back (e.g. OAuth).",
+                IntentUtils.safeGetBooleanExtra(customTab.getIntent(),
+                        CustomTabIntentDataProvider.EXTRA_SEND_TO_EXTERNAL_DEFAULT_HANDLER, false));
 
         Assert.assertEquals(
                 "CCT Toolbar should use default primary color if theme color is not specified",
