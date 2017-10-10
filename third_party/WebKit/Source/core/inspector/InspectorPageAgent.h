@@ -175,6 +175,11 @@ class CORE_EXPORT InspectorPageAgent final
   void Will(const probe::RecalculateStyle&);
   void Did(const probe::RecalculateStyle&);
   void WindowCreated(LocalFrame*);
+  void WindowOpen(Document*,
+                  const String&,
+                  const AtomicString&,
+                  const String&,
+                  bool);
 
   // Inspector Controller API
   void Restore() override;

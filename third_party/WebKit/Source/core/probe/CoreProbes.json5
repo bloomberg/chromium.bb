@@ -145,6 +145,7 @@
         "UpdateLayout",
         "willRunJavaScriptDialog",
         "windowCreated",
+        "windowOpen",
       ]
     },
     Performance: {
