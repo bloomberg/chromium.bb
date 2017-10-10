@@ -170,6 +170,9 @@ class CONTENT_EXPORT ThrottlingURLLoader : public mojom::URLLoaderClient {
   std::set<URLLoaderThrottle*> deferring_throttles_;
   std::set<URLLoaderThrottle*> pausing_reading_body_from_net_throttles_;
 
+  // NOTE: This may point to a native implementation (instead of a Mojo proxy
+  // object). And it is possible that the implementation of |forwarding_client_|
+  // destroys this object synchronously when this object is calling into it.
   mojom::URLLoaderClient* forwarding_client_;
   mojo::Binding<mojom::URLLoaderClient> client_binding_;
 
@@ -235,6 +238,8 @@ class CONTENT_EXPORT ThrottlingURLLoader : public mojom::URLLoaderClient {
   std::unique_ptr<PriorityInfo> priority_info_;
 
   const net::NetworkTrafficAnnotationTag traffic_annotation_;
+
+  uint32_t inside_delegate_calls_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(ThrottlingURLLoader);
 };
