@@ -141,7 +141,7 @@ cr.define('extension_item_tests', function() {
 
       // Setup for testing navigation buttons.
       var currentPage = null;
-      extensions.navigation.onRouteChanged(newPage => {
+      extensions.navigation.addListener(newPage => {
         currentPage = newPage;
       });
 

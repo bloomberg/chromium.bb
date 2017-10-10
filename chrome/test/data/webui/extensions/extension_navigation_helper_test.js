@@ -25,9 +25,12 @@ cr.define('extension_navigation_helper_tests', function() {
   }
 
   suite('ExtensionNavigationHelperTest', function() {
+    let navigationHelper;
+
     setup(function() {
       PolymerTest.clearBody();
       Polymer.dom.flush();
+      navigationHelper = new extensions.NavigationHelper();
     });
 
     test(assert(TestNames.Basic), function() {
@@ -37,19 +40,19 @@ cr.define('extension_navigation_helper_tests', function() {
         mock.recordCall([state]);
       };
 
-      extensions.navigation.onRouteChanged(changePage);
+      navigationHelper.addListener(changePage);
 
       expectEquals('chrome://extensions/navigation_helper.html', location.href);
       expectDeepEquals(
           {page: Page.LIST, type: extensions.ShowingType.EXTENSIONS},
-          extensions.navigation.getCurrentPage());
+          navigationHelper.getCurrentPage());
 
       var currentLength = history.length;
-      extensions.navigation.updateHistory(
+      navigationHelper.updateHistory(
           {page: Page.DETAILS, extensionId: id});
       expectEquals(++currentLength, history.length);
 
-      extensions.navigation.updateHistory({page: Page.ERRORS, extensionId: id});
+      navigationHelper.updateHistory({page: Page.ERRORS, extensionId: id});
       expectEquals(++currentLength, history.length);
 
       mock.addExpectation({page: Page.DETAILS, extensionId: id});
@@ -108,13 +111,13 @@ cr.define('extension_navigation_helper_tests', function() {
         let entry = stateUrlPairs[key];
         history.pushState({}, '', entry.url);
         expectDeepEquals(
-            entry.state, extensions.navigation.getCurrentPage(), key);
+            entry.state, navigationHelper.getCurrentPage(), key);
       }
 
       // Test state -> url.
       for (let key in stateUrlPairs) {
         let entry = stateUrlPairs[key];
-        extensions.navigation.updateHistory(entry.state);
+        navigationHelper.updateHistory(entry.state);
         expectEquals(entry.url, location.href, key);
       }
     });
@@ -126,39 +129,39 @@ cr.define('extension_navigation_helper_tests', function() {
       history.pushState({}, '', 'chrome://extensions/');
       expectDeepEquals(
           {page: Page.LIST, type: extensions.ShowingType.EXTENSIONS},
-          extensions.navigation.getCurrentPage());
+          navigationHelper.getCurrentPage());
 
       var expectedLength = history.length;
 
       // Navigating to a new page pushes new state.
-      extensions.navigation.updateHistory(
+      navigationHelper.updateHistory(
           {page: Page.DETAILS, extensionId: id1});
       expectEquals(++expectedLength, history.length);
 
       // Navigating to a subpage (like the options page) just opens a dialog,
       // and shouldn't push new state.
-      extensions.navigation.updateHistory(
+      navigationHelper.updateHistory(
           {page: Page.DETAILS, extensionId: id1, subpage: Dialog.OPTIONS});
       expectEquals(expectedLength, history.length);
 
       // Navigating away from a subpage also shouldn't push state (it just
       // closes the dialog).
-      extensions.navigation.updateHistory(
+      navigationHelper.updateHistory(
           {page: Page.DETAILS, extensionId: id1});
       expectEquals(expectedLength, history.length);
 
       // Navigating away should push new state.
-      extensions.navigation.updateHistory({page: Page.LIST});
+      navigationHelper.updateHistory({page: Page.LIST});
       expectEquals(++expectedLength, history.length);
 
       // Navigating to a subpage of a different page should push state.
-      extensions.navigation.updateHistory(
+      navigationHelper.updateHistory(
           {page: Page.DETAILS, extensionId: id1, subpage: Dialog.OPTIONS});
       expectEquals(++expectedLength, history.length);
 
       // Navigating away from a subpage to a page for a different item should
       // push state.
-      extensions.navigation.updateHistory(
+      navigationHelper.updateHistory(
           {page: Page.DETAILS, extensionId: id2});
       expectEquals(++expectedLength, history.length);
     });

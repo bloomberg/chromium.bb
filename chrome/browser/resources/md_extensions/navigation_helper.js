@@ -43,8 +43,11 @@ cr.define('extensions', function() {
    */
   class NavigationHelper {
     constructor() {
-      /** @private {!Array<function(!PageState)>} */
-      this.listeners_ = [];
+      /** @private {number} */
+      this.nextListenerId_ = 1;
+
+      /** @private {!Map<number, function(!PageState)>} */
+      this.listeners_ = new Map();
 
       window.addEventListener('popstate', () => {
         this.notifyRouteChanged_(this.getCurrentPage());
@@ -79,9 +82,22 @@ cr.define('extensions', function() {
     /**
      * Function to add subscribers.
      * @param {!function(!PageState)} listener
+     * @return {number} A numerical ID to be used for removing the listener.
      */
-    onRouteChanged(listener) {
-      this.listeners_.push(listener);
+    addListener(listener) {
+      const nextListenerId = this.nextListenerId_++;
+      this.listeners_.set(nextListenerId, listener);
+      return nextListenerId;
+    }
+
+    /**
+     * Remove a previously registered listener.
+     * @param {number} id
+     * @return {boolean} Whether a listener with the given ID was actually found
+     *     and removed.
+     */
+    removeListener(id) {
+      return this.listeners_.delete(id);
     }
 
     /**
@@ -89,9 +105,9 @@ cr.define('extensions', function() {
      * @private
      */
     notifyRouteChanged_(newPage) {
-      for (const listener of this.listeners_) {
+      this.listeners_.forEach((listener, id) => {
         listener(newPage);
-      }
+      });
     }
 
     /**
@@ -158,6 +174,8 @@ cr.define('extensions', function() {
   const navigation = new NavigationHelper();
 
   return {
+    // Constructor exposed for testing purposes.
+    NavigationHelper: NavigationHelper,
     navigation: navigation,
   };
 });
