@@ -83,8 +83,9 @@ TEST_P(FaceDetectionImplMacTest, ScanOneFace) {
   ASSERT_EQ(kJpegImageHeight, image->height());
 
   const gfx::Size size(image->width(), image->height());
-  const int num_bytes = size.GetArea() * 4 /* bytes per pixel */;
-  ASSERT_EQ(num_bytes, image->computeSize64());
+  const size_t num_bytes = size.GetArea() * 4 /* bytes per pixel */;
+  // This assert assumes there is no padding in the bitmap's rowbytes
+  ASSERT_EQ(num_bytes, image->computeByteSize());
 
   base::RunLoop run_loop;
   base::Closure quit_closure = run_loop.QuitClosure();

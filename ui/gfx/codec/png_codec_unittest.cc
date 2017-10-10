@@ -781,7 +781,7 @@ TEST(PNGCodec, EncodeBGRASkBitmapStridePadded) {
   // The encoder should ignore the pad area.
   uint32_t* src_data = original_bitmap.getAddr32(0, 0);
   const int count =
-      original_bitmap.getSafeSize() / original_bitmap.bytesPerPixel();
+      original_bitmap.computeByteSize() / original_bitmap.bytesPerPixel();
   for (int i = 0; i < count; i++) {
     src_data[i] = SkPreMultiplyARGB(i % 255, i % 250, i % 245, i % 240);
   }

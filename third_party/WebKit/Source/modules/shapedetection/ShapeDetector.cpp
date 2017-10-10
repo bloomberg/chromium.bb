@@ -117,7 +117,7 @@ ScriptPromise ShapeDetector::detect(
       image->PaintImageForCurrentFrame().GetSkImage()->makeNonTextureImage();
   if (sk_image && sk_image->peekPixels(&pixmap)) {
     pixel_data_ptr = static_cast<uint8_t*>(pixmap.writable_addr());
-    allocation_size = pixmap.getSafeSize();
+    allocation_size = pixmap.computeByteSize();
   } else {
     // TODO(mcasas): retrieve the pixels from elsewhere.
     NOTREACHED();
@@ -195,7 +195,7 @@ ScriptPromise ShapeDetector::DetectShapesOnImageElement(
       SkImageInfo::MakeN32(image->width(), image->height(), image->alphaType());
   size_t rowBytes = skia_info.minRowBytes();
 
-  Vector<uint8_t> bitmap_data(skia_info.getSafeSize(rowBytes));
+  Vector<uint8_t> bitmap_data(skia_info.computeByteSize(rowBytes));
   const SkPixmap pixmap(skia_info, bitmap_data.data(), rowBytes);
 
   if (!image->readPixels(pixmap, 0, 0)) {

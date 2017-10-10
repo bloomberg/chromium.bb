@@ -995,7 +995,7 @@ String AXLayoutObject::ImageDataUrl(const IntSize& max_size) const {
   SkImageInfo info = SkImageInfo::Make(width, height, kRGBA_8888_SkColorType,
                                        kUnpremul_SkAlphaType);
   size_t row_bytes = info.minRowBytes();
-  Vector<char> pixel_storage(info.getSafeSize(row_bytes));
+  Vector<char> pixel_storage(info.computeByteSize(row_bytes));
   SkPixmap pixmap(info, pixel_storage.data(), row_bytes);
   if (!SkImage::MakeFromBitmap(bitmap)->readPixels(pixmap, 0, 0))
     return String();

@@ -1295,7 +1295,7 @@ GpuImageDecodeCache::CreateImageData(const DrawImage& draw_image) {
     // Can't upload image, too large or other failure. Try to use SW fallback.
     SkImageInfo image_info =
         CreateImageInfoForDrawImage(draw_image, upload_scale_mip_level);
-    data_size = image_info.getSafeSize(image_info.minRowBytes());
+    data_size = image_info.computeMinByteSize();
     mode = DecodedDataMode::CPU;
   } else {
     mode = DecodedDataMode::GPU;

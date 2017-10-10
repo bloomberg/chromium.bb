@@ -11,10 +11,9 @@ FakePaintImageGenerator::FakePaintImageGenerator(
     std::vector<FrameMetadata> frames,
     bool allocate_discardable_memory)
     : PaintImageGenerator(info, std::move(frames)),
-      image_backing_memory_(allocate_discardable_memory
-                                ? info.getSafeSize(info.minRowBytes())
-                                : 0,
-                            0),
+      image_backing_memory_(
+          allocate_discardable_memory ? info.computeMinByteSize() : 0,
+          0),
       image_pixmap_(info, image_backing_memory_.data(), info.minRowBytes()) {}
 
 FakePaintImageGenerator::~FakePaintImageGenerator() = default;

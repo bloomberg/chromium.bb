@@ -233,9 +233,9 @@ bool SynchronousCompositorHost::DemandDrawSw(SkCanvas* canvas) {
       SkImageInfo::MakeN32Premul(params.size.width(), params.size.height());
   DCHECK_EQ(kRGBA_8888_SkColorType, info.colorType());
   size_t stride = info.minRowBytes();
-  size_t buffer_size = info.getSafeSize(stride);
-  if (!buffer_size)
-    return false;  // Overflow.
+  size_t buffer_size = info.computeByteSize(stride);
+  if (SkImageInfo::ByteSizeOverflowed(buffer_size))
+    return false;
 
   SetSoftwareDrawSharedMemoryIfNeeded(stride, buffer_size);
   if (!software_draw_shm_)

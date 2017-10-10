@@ -412,9 +412,8 @@ void GetResourcePixels(DisplayResourceProvider* resource_provider,
     case ResourceProvider::RESOURCE_TYPE_BITMAP: {
       DisplayResourceProvider::ScopedReadLockSoftware lock_software(
           resource_provider, id);
-      memcpy(pixels,
-             lock_software.sk_bitmap()->getPixels(),
-             lock_software.sk_bitmap()->getSize());
+      memcpy(pixels, lock_software.sk_bitmap()->getPixels(),
+             lock_software.sk_bitmap()->computeByteSize());
       break;
     }
   }

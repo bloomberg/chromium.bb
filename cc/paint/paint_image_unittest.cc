@@ -57,7 +57,7 @@ TEST(PaintImageTest, DecodesCorrectFrames) {
 
   // The recorded index is 0u but ask for 1u frame.
   SkImageInfo info = SkImageInfo::MakeN32Premul(10, 10);
-  std::vector<size_t> memory(info.getSafeSize(info.minRowBytes()));
+  std::vector<size_t> memory(info.computeMinByteSize());
   image.Decode(memory.data(), &info, nullptr, 1u);
   ASSERT_EQ(generator->frames_decoded().size(), 1u);
   EXPECT_EQ(generator->frames_decoded().count(1u), 1u);
@@ -75,7 +75,7 @@ TEST(PaintImageTest, DecodesCorrectFrames) {
 
   // Not N32 color type.
   info.makeColorType(kRGB_565_SkColorType);
-  memory = std::vector<size_t>(info.getSafeSize(info.minRowBytes()));
+  memory = std::vector<size_t>(info.computeMinByteSize());
   image.Decode(memory.data(), &info, nullptr, 1u);
   ASSERT_EQ(generator->frames_decoded().size(), 1u);
   EXPECT_EQ(generator->frames_decoded().count(1u), 1u);

@@ -14,7 +14,7 @@ bool StructTraits<arc::mojom::ArcBitmapDataView, SkBitmap>::
   SkImageInfo info = SkImageInfo::Make(
       data.width(), data.height(),
       kRGBA_8888_SkColorType, kPremul_SkAlphaType);
-  if (info.getSafeSize(info.minRowBytes()) > pixel_data.size()) {
+  if (info.computeByteSize(info.minRowBytes()) > pixel_data.size()) {
     // Insufficient buffer size.
     return false;
   }

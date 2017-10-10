@@ -167,7 +167,7 @@ bool NotificationBitmapToGfxImage(
     return false;
 
   // Ensure that our bitmap and our data now refer to the same number of pixels.
-  if (rgba_data_length != bitmap.getSafeSize())
+  if (rgba_data_length != bitmap.computeByteSize())
     return false;
 
   uint32_t* pixels = bitmap.getAddr32(0, 0);
