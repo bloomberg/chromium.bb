@@ -861,8 +861,25 @@ void gen_txb_cache(TxbCache *txb_cache, TxbInfo *txb_info) {
     const int coeff_idx = scan[c];  // raster order
     const int row = coeff_idx >> bwl;
     const int col = coeff_idx - (row << bwl);
+#if REDUCE_CONTEXT_DEPENDENCY
+    int prev_coeff_idx;
+    int prev_row;
+    int prev_col;
+    if (c > MIN_SCAN_IDX_REDUCE_CONTEXT_DEPENDENCY) {
+      prev_coeff_idx = scan[c - 1];  // raster order
+      prev_row = prev_coeff_idx >> bwl;
+      prev_col = prev_coeff_idx - (prev_row << bwl);
+    } else {
+      prev_coeff_idx = -1;
+      prev_row = -1;
+      prev_col = -1;
+    }
+    txb_cache->nz_count_arr[coeff_idx] =
+        get_nz_count(qcoeff, bwl, height, row, col, prev_row, prev_col);
+#else
     txb_cache->nz_count_arr[coeff_idx] =
         get_nz_count(qcoeff, bwl, height, row, col);
+#endif
     const int nz_count = txb_cache->nz_count_arr[coeff_idx];
     txb_cache->nz_ctx_arr[coeff_idx] =
         get_nz_map_ctx_from_count(nz_count, coeff_idx, bwl, txb_info->tx_type);

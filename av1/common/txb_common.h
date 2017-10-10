@@ -11,6 +11,10 @@
 
 #ifndef AV1_COMMON_TXB_COMMON_H_
 #define AV1_COMMON_TXB_COMMON_H_
+
+#define REDUCE_CONTEXT_DEPENDENCY 0
+#define MIN_SCAN_IDX_REDUCE_CONTEXT_DEPENDENCY 0
+
 extern const int16_t av1_coeff_band_4x4[16];
 
 extern const int16_t av1_coeff_band_8x8[64];
@@ -267,6 +271,22 @@ static int sig_ref_offset[SIG_REF_OFFSET_NUM][2] = {
   { -1, 0 },  { 0, -2 }, { 0, -1 },
 };
 
+#if REDUCE_CONTEXT_DEPENDENCY
+static INLINE int get_nz_count(const tran_low_t *tcoeffs, int bwl, int height,
+                               int row, int col, int prev_row, int prev_col) {
+  int count = 0;
+  for (int idx = 0; idx < SIG_REF_OFFSET_NUM; ++idx) {
+    const int ref_row = row + sig_ref_offset[idx][0];
+    const int ref_col = col + sig_ref_offset[idx][1];
+    if (ref_row < 0 || ref_col < 0 || ref_row >= height ||
+        ref_col >= (1 << bwl) || (prev_row == ref_row && prev_col == ref_col))
+      continue;
+    const int nb_pos = (ref_row << bwl) + ref_col;
+    count += (tcoeffs[nb_pos] != 0);
+  }
+  return count;
+}
+#else
 static INLINE int get_nz_count(const tran_low_t *tcoeffs, int bwl, int height,
                                int row, int col) {
   int count = 0;
@@ -281,6 +301,7 @@ static INLINE int get_nz_count(const tran_low_t *tcoeffs, int bwl, int height,
   }
   return count;
 }
+#endif
 
 static INLINE TX_CLASS get_tx_class(TX_TYPE tx_type) {
   switch (tx_type) {
@@ -359,7 +380,23 @@ static INLINE int get_nz_map_ctx(const tran_low_t *tcoeffs, const int scan_idx,
   const int coeff_idx = scan[scan_idx];
   const int row = coeff_idx >> bwl;
   const int col = coeff_idx - (row << bwl);
+#if REDUCE_CONTEXT_DEPENDENCY
+  int prev_coeff_idx;
+  int prev_row;
+  int prev_col;
+  if (scan_idx > MIN_SCAN_IDX_REDUCE_CONTEXT_DEPENDENCY) {
+    prev_coeff_idx = scan[scan_idx - 1];  // raster order
+    prev_row = prev_coeff_idx >> bwl;
+    prev_col = prev_coeff_idx - (prev_row << bwl);
+  } else {
+    prev_coeff_idx = -1;
+    prev_row = -1;
+    prev_col = -1;
+  }
+  int count = get_nz_count(tcoeffs, bwl, height, row, col, prev_row, prev_col);
+#else
   int count = get_nz_count(tcoeffs, bwl, height, row, col);
+#endif
   return get_nz_map_ctx_from_count(count, coeff_idx, bwl, tx_type);
 }
 
