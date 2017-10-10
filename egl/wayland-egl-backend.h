@@ -34,6 +34,10 @@
 extern "C" {
 #endif
 
+/*
+ * NOTE: This version must be kept in sync with the Version field in the
+ * wayland-egl-backend.pc.in file.
+ */
 #define WL_EGL_WINDOW_VERSION 3
 
 struct wl_surface;
