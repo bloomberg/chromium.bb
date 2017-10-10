@@ -436,12 +436,19 @@ void av1_pick_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
     const int max_filter_level = av1_get_max_filter_level(cpi);
     const int q = av1_ac_quant(cm->base_qindex, 0, cm->bit_depth);
 // These values were determined by linear fitting the result of the
-// searched level, filt_guess = q * 0.316206 + 3.87252
+// searched level for 8 bit depth:
+// Keyframes: filt_guess = q * 0.06699 - 1.60817
+// Other frames: filt_guess = q * 0.02295 + 2.48225
+//
+// And high bit depth separately:
+// filt_guess = q * 0.316206 + 3.87252
 #if CONFIG_HIGHBITDEPTH
     int filt_guess;
     switch (cm->bit_depth) {
       case AOM_BITS_8:
-        filt_guess = ROUND_POWER_OF_TWO(q * 20723 + 1015158, 18);
+        filt_guess = (cm->frame_type == KEY_FRAME)
+                         ? ROUND_POWER_OF_TWO(q * 17563 - 421574, 18)
+                         : ROUND_POWER_OF_TWO(q * 6017 + 650707, 18);
         break;
       case AOM_BITS_10:
         filt_guess = ROUND_POWER_OF_TWO(q * 20723 + 4060632, 20);
@@ -456,9 +463,12 @@ void av1_pick_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
         return;
     }
 #else
-    int filt_guess = ROUND_POWER_OF_TWO(q * 20723 + 1015158, 18);
+    int filt_guess = (cm->frame_type == KEY_FRAME)
+                         ? ROUND_POWER_OF_TWO(q * 17563 - 421574, 18)
+                         : ROUND_POWER_OF_TWO(q * 6017 + 650707, 18);
 #endif  // CONFIG_HIGHBITDEPTH
-    if (cm->frame_type == KEY_FRAME) filt_guess -= 4;
+    if (cm->bit_depth != AOM_BITS_8 && cm->frame_type == KEY_FRAME)
+      filt_guess -= 4;
 #if CONFIG_LOOPFILTER_LEVEL
     lf->filter_level[0] = clamp(filt_guess, min_filter_level, max_filter_level);
     lf->filter_level[1] = clamp(filt_guess, min_filter_level, max_filter_level);
