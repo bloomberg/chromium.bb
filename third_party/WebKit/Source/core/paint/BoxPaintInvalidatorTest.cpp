@@ -4,7 +4,6 @@
 
 #include "core/paint/BoxPaintInvalidator.h"
 
-#include "core/frame/FrameTestHelpers.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html_names.h"
@@ -137,11 +136,11 @@ TEST_P(BoxPaintInvalidatorTest, SlowMapToVisualRectInAncestorSpaceLayoutView) {
       "</div>");
 
   auto& target = *GetDocument().getElementById("target");
-  EXPECT_RECT_EQ(IntRect(2, 202, 318, 168),
-                 EnclosingIntRect(ToHTMLFrameOwnerElement(target)
-                                      .contentDocument()
-                                      ->GetLayoutView()
-                                      ->VisualRect()));
+  EXPECT_EQ(IntRect(2, 202, 318, 168),
+            EnclosingIntRect(ToHTMLFrameOwnerElement(target)
+                                 .contentDocument()
+                                 ->GetLayoutView()
+                                 ->VisualRect()));
 }
 
 TEST_P(BoxPaintInvalidatorTest, ComputePaintInvalidationReasonPaintingNothing) {
