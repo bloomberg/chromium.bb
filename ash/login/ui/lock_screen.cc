@@ -49,7 +49,8 @@ LockScreen* instance_ = nullptr;
 
 }  // namespace
 
-LockScreen::LockScreen() : tray_action_observer_(this) {
+LockScreen::LockScreen()
+    : tray_action_observer_(this), session_observer_(this) {
   tray_action_observer_.Add(ash::Shell::Get()->tray_action());
 }
 
@@ -112,13 +113,18 @@ void LockScreen::ToggleBlurForDebug() {
   }
 }
 
+LoginDataDispatcher* LockScreen::data_dispatcher() {
+  return window_->data_dispatcher();
+}
+
 void LockScreen::OnLockScreenNoteStateChanged(mojom::TrayActionState state) {
   if (data_dispatcher())
     data_dispatcher()->SetLockScreenNoteState(state);
 }
 
-LoginDataDispatcher* LockScreen::data_dispatcher() const {
-  return window_->data_dispatcher();
+void LockScreen::OnLockStateChanged(bool locked) {
+  if (!locked)
+    Destroy();
 }
 
 }  // namespace ash

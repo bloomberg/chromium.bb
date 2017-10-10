@@ -8,6 +8,7 @@
 #include <unordered_map>
 
 #include "ash/ash_export.h"
+#include "ash/session/session_observer.h"
 #include "ash/tray_action/tray_action_observer.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
@@ -22,7 +23,7 @@ class LockWindow;
 class LoginDataDispatcher;
 class TrayAction;
 
-class LockScreen : public TrayActionObserver {
+class LockScreen : public TrayActionObserver, public SessionObserver {
  public:
   // Fetch the global lock screen instance. |Show()| must have been called
   // before this.
@@ -41,11 +42,14 @@ class LockScreen : public TrayActionObserver {
   // Enables/disables background blur. Used for debugging purpose.
   void ToggleBlurForDebug();
 
+  // Returns the active data dispatcher.
+  LoginDataDispatcher* data_dispatcher();
+
   // TrayActionObserver:
   void OnLockScreenNoteStateChanged(mojom::TrayActionState state) override;
 
-  // Returns the active data dispatcher.
-  LoginDataDispatcher* data_dispatcher() const;
+  // SessionObserver:
+  void OnLockStateChanged(bool locked) override;
 
  private:
   LockScreen();
@@ -58,6 +62,7 @@ class LockScreen : public TrayActionObserver {
   std::unordered_map<ui::Layer*, float> initial_blur_;
 
   ScopedObserver<TrayAction, TrayActionObserver> tray_action_observer_;
+  ScopedSessionObserver session_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(LockScreen);
 };
