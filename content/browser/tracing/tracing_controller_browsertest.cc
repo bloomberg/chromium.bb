@@ -12,15 +12,18 @@
 #include "base/run_loop.h"
 #include "base/strings/pattern.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "content/browser/tracing/tracing_controller_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/trace_uploader.h"
+#include "content/public/browser/tracing_controller.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/test_content_browser_client.h"
+#include "services/resource_coordinator/public/cpp/tracing/chrome_trace_event_agent.h"
 
 using base::trace_event::RECORD_CONTINUOUSLY;
 using base::trace_event::RECORD_UNTIL_FULL;
@@ -59,7 +62,8 @@ bool IsTraceEventArgsWhitelisted(
 
 }  // namespace
 
-class TracingControllerTestEndpoint : public TraceDataEndpoint {
+class TracingControllerTestEndpoint
+    : public TracingController::TraceDataEndpoint {
  public:
   TracingControllerTestEndpoint(
       base::Callback<void(std::unique_ptr<const base::DictionaryValue>,
@@ -127,6 +131,10 @@ class TracingControllerTest : public ContentBrowserTest {
     NavigateToURL(shell, GetTestUrl("", "title.html"));
   }
 
+  std::unique_ptr<base::DictionaryValue> GenerateMetadataDict() {
+    return std::move(metadata_);
+  }
+
   void GetCategoriesDoneCallbackTest(base::Closure quit_callback,
                                      const std::set<std::string>& categories) {
     get_categories_done_callback_count_++;
@@ -144,7 +152,7 @@ class TracingControllerTest : public ContentBrowserTest {
       std::unique_ptr<const base::DictionaryValue> metadata,
       base::RefCountedString* data) {
     disable_recording_done_callback_count_++;
-    last_metadata_.reset(metadata.release());
+    last_metadata_ = std::move(metadata);
     last_data_ = data->data();
     EXPECT_TRUE(data->size() > 0);
     quit_callback.Run();
@@ -214,7 +222,7 @@ class TracingControllerTest : public ContentBrowserTest {
               &TracingControllerTest::StopTracingStringDoneCallbackTest,
               base::Unretained(this), run_loop.QuitClosure());
       bool result = controller->StopTracing(
-          TracingController::CreateStringSink(callback));
+          TracingController::CreateStringEndpoint(callback));
       ASSERT_TRUE(result);
       run_loop.Run();
       EXPECT_EQ(disable_recording_done_callback_count(), 1);
@@ -230,6 +238,9 @@ class TracingControllerTest : public ContentBrowserTest {
         base::Bind(&IsTraceEventArgsWhitelisted));
 
     TracingController* controller = TracingController::GetInstance();
+    tracing::ChromeTraceEventAgent::GetInstance()->AddMetadataGeneratorFunction(
+        base::Bind(&TracingControllerTest::GenerateMetadataDict,
+                   base::Unretained(this)));
 
     {
       base::RunLoop run_loop;
@@ -255,14 +266,13 @@ class TracingControllerTest : public ContentBrowserTest {
               &TracingControllerTest::StopTracingStringDoneCallbackTest,
               base::Unretained(this), run_loop.QuitClosure());
 
-      scoped_refptr<TracingController::TraceDataSink> trace_data_sink =
-          TracingController::CreateStringSink(callback);
+      scoped_refptr<TracingController::TraceDataEndpoint> trace_data_endpoint =
+          TracingController::CreateStringEndpoint(callback);
 
-      base::DictionaryValue metadata;
-      metadata.SetString("not-whitelisted", "this_not_found");
-      controller->AddMetadata(metadata);
+      metadata_ = base::MakeUnique<base::DictionaryValue>();
+      metadata_->SetString("not-whitelisted", "this_not_found");
 
-      bool result = controller->StopTracing(trace_data_sink);
+      bool result = controller->StopTracing(trace_data_endpoint);
       ASSERT_TRUE(result);
       run_loop.Run();
       EXPECT_EQ(disable_recording_done_callback_count(), 1);
@@ -294,7 +304,7 @@ class TracingControllerTest : public ContentBrowserTest {
               &TracingControllerTest::StopTracingStringDoneCallbackTest,
               base::Unretained(this), run_loop.QuitClosure());
       bool result = controller->StopTracing(
-          TracingControllerImpl::CreateCompressedStringSink(
+          TracingControllerImpl::CreateCompressedStringEndpoint(
               new TracingControllerTestEndpoint(callback),
               true /* compress_with_background_priority */));
       ASSERT_TRUE(result);
@@ -329,7 +339,7 @@ class TracingControllerTest : public ContentBrowserTest {
           run_loop.QuitClosure(),
           result_file_path);
       bool result = controller->StopTracing(
-          TracingController::CreateFileSink(result_file_path, callback));
+          TracingController::CreateFileEndpoint(result_file_path, callback));
       ASSERT_TRUE(result);
       run_loop.Run();
       EXPECT_EQ(disable_recording_done_callback_count(), 1);
@@ -341,6 +351,7 @@ class TracingControllerTest : public ContentBrowserTest {
   int enable_recording_done_callback_count_;
   int disable_recording_done_callback_count_;
   base::FilePath last_actual_recording_file_path_;
+  std::unique_ptr<base::DictionaryValue> metadata_;
   std::unique_ptr<const base::DictionaryValue> last_metadata_;
   std::string last_data_;
 };
@@ -446,15 +457,21 @@ IN_PROC_BROWSER_TEST_F(TracingControllerTest,
 }
 
 IN_PROC_BROWSER_TEST_F(TracingControllerTest,
-                       EnableAndStopTracingWithEmptyFileAndNullCallback) {
+                       EnableAndStopTracingWithEmptyFile) {
   Navigate(shell());
 
+  base::RunLoop run_loop;
   TracingController* controller = TracingController::GetInstance();
   EXPECT_TRUE(controller->StartTracing(
       TraceConfig(),
       TracingController::StartTracingDoneCallback()));
-  EXPECT_TRUE(controller->StopTracing(NULL));
-  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(controller->StopTracing(
+      TracingControllerImpl::CreateCallbackEndpoint(base::BindRepeating(
+          [](base::Closure quit_closure,
+             std::unique_ptr<const base::DictionaryValue> metadata,
+             base::RefCountedString* trace_str) { quit_closure.Run(); },
+          run_loop.QuitClosure()))));
+  run_loop.Run();
 }
 
 }  // namespace content

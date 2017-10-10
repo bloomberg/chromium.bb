@@ -3,11 +3,15 @@
 // found in the LICENSE file.
 
 #include <stddef.h>
+#include <memory>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/run_loop.h"
 #include "base/strings/pattern.h"
@@ -20,8 +24,30 @@
 #include "content/public/test/test_utils.h"
 #include "third_party/zlib/zlib.h"
 
+using base::trace_event::TraceLog;
+
 namespace content {
 namespace {
+
+class TestEnabledStateObserver : public TraceLog::EnabledStateObserver {
+ public:
+  TestEnabledStateObserver(base::Closure tracing_enabled_callback)
+      : tracing_enabled_callback_(tracing_enabled_callback) {
+    TraceLog::GetInstance()->AddEnabledStateObserver(this);
+  }
+
+  ~TestEnabledStateObserver() override {
+    EXPECT_TRUE(TraceLog::GetInstance()->IsEnabled());
+    TraceLog::GetInstance()->RemoveEnabledStateObserver(this);
+  }
+
+  void OnTraceLogEnabled() override { tracing_enabled_callback_.Run(); }
+
+  void OnTraceLogDisabled() override { EXPECT_TRUE(false); }
+
+ private:
+  base::Closure tracing_enabled_callback_;
+};
 
 class TestBackgroundTracingObserver
     : public BackgroundTracingManagerImpl::EnabledStateObserver {
@@ -314,7 +340,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
                        MAYBE_NoWhitelistedArgsStripped) {
   SetupBackgroundTracingManager();
 
-  base::trace_event::TraceLog::GetInstance()->SetArgumentFilterPredicate(
+  TraceLog::GetInstance()->SetArgumentFilterPredicate(
       base::Bind(&IsTraceEventArgsWhitelisted));
 
   base::RunLoop wait_for_upload;
@@ -334,6 +360,17 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
       BackgroundTracingManager::ANONYMIZE_DATA));
 
   wait_for_activated.Run();
+
+  if (!TraceLog::GetInstance()->IsEnabled()) {
+    // Sometimes the chrome tracing agent of the current process is registered
+    // after start tracing is already sent. In those cases, the scenario will be
+    // started before tracing is enabled on the current process. We need to wait
+    // for tracing to be enabled on the current process before we try to add
+    // trace events.
+    base::RunLoop wait_for_tracing;
+    TestEnabledStateObserver tracing_observer(wait_for_tracing.QuitClosure());
+    wait_for_tracing.Run();
+  }
 
   TRACE_EVENT1("benchmark", "whitelisted", "find_this", 1);
   TRACE_EVENT1("benchmark", "not_whitelisted", "this_not_found", 1);
@@ -364,7 +401,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
                        MAYBE_TraceMetadataInTrace) {
   SetupBackgroundTracingManager();
 
-  base::trace_event::TraceLog::GetInstance()->SetArgumentFilterPredicate(
+  TraceLog::GetInstance()->SetArgumentFilterPredicate(
       base::Bind(&IsTraceEventArgsWhitelisted));
 
   base::RunLoop wait_for_upload;
@@ -409,7 +446,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
                        DISABLED_CrashWhenSubprocessWithoutArgumentFilter) {
   SetupBackgroundTracingManager();
 
-  base::trace_event::TraceLog::GetInstance()->SetArgumentFilterPredicate(
+  TraceLog::GetInstance()->SetArgumentFilterPredicate(
       base::Bind(&IsTraceEventArgsWhitelisted));
 
   base::RunLoop wait_for_upload;
@@ -530,8 +567,9 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
     SetupBackgroundTracingManager();
 
     base::RunLoop run_loop;
+    TestBackgroundTracingObserver observer(run_loop.QuitClosure());
     BackgroundTracingManagerUploadConfigWrapper upload_config_wrapper(
-        run_loop.QuitClosure());
+        (base::Closure()));
 
     base::DictionaryValue dict;
     dict.SetString("mode", "PREEMPTIVE_TRACING_MODE");
@@ -568,6 +606,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
     EXPECT_EQ(
         command_line->GetSwitchValueASCII(switches::kDisableBlinkFeatures),
         "SlowerWeb1,SlowerWeb2");
+    run_loop.Run();
   }
 }
 
@@ -745,6 +784,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
     SetupBackgroundTracingManager();
 
     base::RunLoop run_loop;
+    TestBackgroundTracingObserver observer(run_loop.QuitClosure());
     BackgroundTracingManagerUploadConfigWrapper upload_config_wrapper(
         (base::Closure()));
 
@@ -762,8 +802,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
         base::Bind(&DisableScenarioWhenIdle));
 
     BackgroundTracingManager::GetInstance()->TriggerNamedEvent(
-        handle,
-        base::Bind(&StartedFinalizingCallback, run_loop.QuitClosure(), false));
+        handle, base::Bind(&StartedFinalizingCallback, base::Closure(), false));
 
     run_loop.Run();
 
@@ -786,6 +825,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
     SetupBackgroundTracingManager();
 
     base::RunLoop run_loop;
+    TestBackgroundTracingObserver observer(run_loop.QuitClosure());
     BackgroundTracingManagerUploadConfigWrapper upload_config_wrapper(
         (base::Closure()));
 
@@ -806,8 +846,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
         base::Bind(&DisableScenarioWhenIdle));
 
     BackgroundTracingManager::GetInstance()->TriggerNamedEvent(
-        handle,
-        base::Bind(&StartedFinalizingCallback, run_loop.QuitClosure(), false));
+        handle, base::Bind(&StartedFinalizingCallback, base::Closure(), false));
 
     run_loop.Run();
 
@@ -831,6 +870,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
     SetupBackgroundTracingManager();
 
     base::RunLoop run_loop;
+    TestBackgroundTracingObserver observer(run_loop.QuitWhenIdleClosure());
     BackgroundTracingManagerUploadConfigWrapper upload_config_wrapper(
         (base::Closure()));
 
@@ -867,8 +907,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
         base::Bind(&DisableScenarioWhenIdle));
 
     BackgroundTracingManager::GetInstance()->TriggerNamedEvent(
-        handle,
-        base::Bind(&StartedFinalizingCallback, run_loop.QuitClosure(), false));
+        handle, base::Bind(&StartedFinalizingCallback, base::Closure(), false));
 
     run_loop.Run();
 
@@ -1069,9 +1108,9 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
     SetupBackgroundTracingManager();
 
     base::RunLoop run_loop;
-
+    TestBackgroundTracingObserver observer(run_loop.QuitWhenIdleClosure());
     BackgroundTracingManagerUploadConfigWrapper upload_config_wrapper(
-        run_loop.QuitClosure());
+        (base::Closure()));
 
     base::DictionaryValue dict;
     dict.SetString("mode", "PREEMPTIVE_TRACING_MODE");
@@ -1105,7 +1144,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
     // the reference value above.
     LOCAL_HISTOGRAM_COUNTS("fake", 0);
 
-    run_loop.RunUntilIdle();
+    run_loop.Run();
 
     EXPECT_TRUE(upload_config_wrapper.get_receive_count() == 0);
   }
@@ -1127,9 +1166,9 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
     SetupBackgroundTracingManager();
 
     base::RunLoop run_loop;
-
+    TestBackgroundTracingObserver observer(run_loop.QuitWhenIdleClosure());
     BackgroundTracingManagerUploadConfigWrapper upload_config_wrapper(
-        run_loop.QuitClosure());
+        (base::Closure()));
 
     base::DictionaryValue dict;
     dict.SetString("mode", "PREEMPTIVE_TRACING_MODE");
@@ -1164,7 +1203,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
     // the upper reference value above.
     LOCAL_HISTOGRAM_COUNTS("fake", 0);
 
-    run_loop.RunUntilIdle();
+    run_loop.Run();
 
     EXPECT_TRUE(upload_config_wrapper.get_receive_count() == 0);
   }

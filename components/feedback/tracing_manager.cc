@@ -44,7 +44,7 @@ int TracingManager::RequestTrace() {
   current_trace_id_ = g_next_trace_id;
   ++g_next_trace_id;
   content::TracingController::GetInstance()->StopTracing(
-      content::TracingController::CreateStringSink(
+      content::TracingController::CreateStringEndpoint(
           base::Bind(&TracingManager::OnTraceDataCollected,
                      weak_ptr_factory_.GetWeakPtr())));
   return current_trace_id_;

@@ -124,6 +124,7 @@ source_set("browser") {
     "//services/network/public/interfaces",
     "//services/resource_coordinator:lib",
     "//services/resource_coordinator/public/cpp:resource_coordinator_cpp",
+    "//services/resource_coordinator/tracing:lib",
     "//services/service_manager",
     "//services/service_manager/embedder",
     "//services/service_manager/public/cpp",
@@ -1571,7 +1572,7 @@ source_set("browser") {
     "tracing/trace_message_filter.h",
     "tracing/tracing_controller_impl.cc",
     "tracing/tracing_controller_impl.h",
-    "tracing/tracing_controller_impl_data_sinks.cc",
+    "tracing/tracing_controller_impl_data_endpoint.cc",
     "tracing/tracing_ui.cc",
     "tracing/tracing_ui.h",
     "url_loader_factory_getter.cc",
@@ -1662,6 +1663,10 @@ source_set("browser") {
     sources += [
       "memory/memory_monitor_chromeos.cc",
       "memory/memory_monitor_chromeos.h",
+      "tracing/arc_tracing_agent_impl.cc",
+      "tracing/arc_tracing_agent_impl.h",
+      "tracing/cros_tracing_agent.cc",
+      "tracing/cros_tracing_agent.h",
     ]
   } else {
     sources += [

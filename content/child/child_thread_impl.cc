@@ -506,6 +506,9 @@ void ChildThreadImpl::Init(const Options& options) {
     channel_->AddFilter(new tracing::ChildTraceMessageFilter(
         ChildProcess::current()->io_task_runner()));
 
+    chrome_trace_event_agent_ =
+        base::MakeUnique<tracing::ChromeTraceEventAgent>(GetConnector());
+
     if (service_manager_connection_) {
       std::string process_type_str =
           base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(

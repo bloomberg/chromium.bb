@@ -31,7 +31,6 @@ class BackgroundTracingManager {
   // Example:
   //
   // void Upload(const scoped_refptr<base::RefCountedString>& data,
-  //             std::unique_ptr<base::DictionaryValue>,
   //             base::Closure done_callback) {
   //   base::PostTaskWithTraitsAndReply(
   //       FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},

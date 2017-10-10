@@ -28,6 +28,7 @@
 #include "ipc/message_router.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
+#include "services/resource_coordinator/public/cpp/tracing/chrome_trace_event_agent.h"
 
 namespace base {
 class MessageLoop;
@@ -284,6 +285,8 @@ class CONTENT_EXPORT ChildThreadImpl
   std::unique_ptr<base::PowerMonitor> power_monitor_;
 
   scoped_refptr<base::SingleThreadTaskRunner> browser_process_io_runner_;
+
+  std::unique_ptr<tracing::ChromeTraceEventAgent> chrome_trace_event_agent_;
 
   std::unique_ptr<variations::ChildProcessFieldTrialSyncer> field_trial_syncer_;
 

@@ -16,6 +16,7 @@
 #include "base/trace_event/trace_config_memory_test_util.h"
 #include "base/trace_event/trace_log.h"
 #include "build/build_config.h"
+#include "content/browser/tracing/tracing_controller_impl.h"
 #include "content/public/browser/tracing_controller.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
@@ -132,9 +133,15 @@ class MemoryTracingTest : public ContentBrowserTest {
   }
 
   void DisableTracing() {
-    bool success = TracingController::GetInstance()->StopTracing(NULL);
+    base::RunLoop run_loop;
+    bool success = TracingController::GetInstance()->StopTracing(
+        TracingControllerImpl::CreateCallbackEndpoint(base::BindRepeating(
+            [](base::Closure quit_closure,
+               std::unique_ptr<const base::DictionaryValue> metadata,
+               base::RefCountedString* trace_str) { quit_closure.Run(); },
+            run_loop.QuitClosure())));
     EXPECT_TRUE(success);
-    base::RunLoop().RunUntilIdle();
+    run_loop.Run();
   }
 
   void RequestGlobalDumpAndWait(

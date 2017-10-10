@@ -94,6 +94,7 @@
 #include "chrome/browser/resource_coordinator/tab_manager.h"
 #include "chrome/browser/sessions/chrome_serialized_navigation_driver.h"
 #include "chrome/browser/shell_integration.h"
+#include "chrome/browser/tracing/background_tracing_field_trial.h"
 #include "chrome/browser/tracing/navigation_tracing.h"
 #include "chrome/browser/translate/translate_service.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
@@ -1170,6 +1171,11 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
 
 void ChromeBrowserMainParts::ServiceManagerConnectionStarted(
     content::ServiceManagerConnection* connection) {
+  // This should be called after the creation of the tracing controller. The
+  // tracing controller is created when the service manager connection is
+  // started.
+  tracing::SetupBackgroundTracingFieldTrial();
+
   for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
     chrome_extra_parts_[i]->ServiceManagerConnectionStarted(connection);
 }

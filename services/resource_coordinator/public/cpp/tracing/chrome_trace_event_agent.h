@@ -35,8 +35,7 @@ class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT ChromeTraceEventAgent
 
   static ChromeTraceEventAgent* GetInstance();
 
-  explicit ChromeTraceEventAgent(service_manager::Connector* connector,
-                                 const std::string& service_name);
+  explicit ChromeTraceEventAgent(service_manager::Connector* connector);
 
   void AddMetadataGeneratorFunction(MetadataGeneratorFunction generator);
 

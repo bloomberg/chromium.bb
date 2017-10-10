@@ -333,11 +333,9 @@ void BrowserTestBase::ProxyRunTestOnMainThreadLoop() {
     // Wait for tracing to collect results from the renderers.
     base::RunLoop run_loop;
     TracingController::GetInstance()->StopTracing(
-        TracingControllerImpl::CreateFileSink(
-            trace_file,
-            base::Bind(&TraceStopTracingComplete,
-                       run_loop.QuitClosure(),
-                       trace_file)));
+        TracingControllerImpl::CreateFileEndpoint(
+            trace_file, base::Bind(&TraceStopTracingComplete,
+                                   run_loop.QuitClosure(), trace_file)));
     run_loop.Run();
   }
 }

@@ -69,6 +69,15 @@ Coordinator::Coordinator()
 }
 
 Coordinator::~Coordinator() {
+  if (!stop_and_flush_callback_.is_null())
+    stop_and_flush_callback_.Run(base::MakeUnique<base::DictionaryValue>());
+  if (!start_tracing_callback_.is_null())
+    base::ResetAndReturn(&start_tracing_callback_).Run(false);
+  if (!request_buffer_usage_callback_.is_null())
+    base::ResetAndReturn(&request_buffer_usage_callback_).Run(false, 0, 0);
+  if (!get_categories_callback_.is_null())
+    base::ResetAndReturn(&get_categories_callback_).Run(false, "");
+
   g_coordinator = nullptr;
 }
 
@@ -362,7 +371,7 @@ void Coordinator::StreamMetadata() {
 void Coordinator::OnFlushDone() {
   recorders_.clear();
   stream_.reset();
-  stop_and_flush_callback_.Run(std::move(metadata_));
+  base::ResetAndReturn(&stop_and_flush_callback_).Run(std::move(metadata_));
   is_tracing_ = false;
 }
 

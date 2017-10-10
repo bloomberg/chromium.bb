@@ -4,6 +4,8 @@
 
 #include "android_webview/browser/tracing/aw_tracing_delegate.h"
 
+#include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/trace_uploader.h"
@@ -19,10 +21,11 @@ std::unique_ptr<content::TraceUploader> AwTracingDelegate::GetTraceUploader(
   return NULL;
 }
 
-void AwTracingDelegate::GenerateMetadataDict(
-    base::DictionaryValue* metadata_dict) {
-  DCHECK(metadata_dict);
+std::unique_ptr<base::DictionaryValue>
+AwTracingDelegate::GenerateMetadataDict() {
+  auto metadata_dict = base::MakeUnique<base::DictionaryValue>();
   metadata_dict->SetString("revision", version_info::GetLastChange());
+  return metadata_dict;
 }
 
 }  // namespace android_webview

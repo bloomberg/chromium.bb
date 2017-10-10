@@ -16,6 +16,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_log.h"
 #include "base/values.h"
+#include "services/resource_coordinator/public/interfaces/service_constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace {
@@ -34,8 +35,7 @@ ChromeTraceEventAgent* ChromeTraceEventAgent::GetInstance() {
 }
 
 ChromeTraceEventAgent::ChromeTraceEventAgent(
-    service_manager::Connector* connector,
-    const std::string& service_name)
+    service_manager::Connector* connector)
     : binding_(this), enabled_tracing_modes_(0) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!g_chrome_trace_event_agent);
@@ -46,7 +46,8 @@ ChromeTraceEventAgent::ChromeTraceEventAgent(
 
   // Connecto to the agent registry interface.
   tracing::mojom::AgentRegistryPtr agent_registry;
-  connector->BindInterface(service_name, &agent_registry);
+  connector->BindInterface(resource_coordinator::mojom::kServiceName,
+                           &agent_registry);
 
   mojom::AgentPtr agent;
   binding_.Bind(mojo::MakeRequest(&agent));
