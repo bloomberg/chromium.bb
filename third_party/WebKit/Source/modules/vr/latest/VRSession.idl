@@ -17,5 +17,7 @@
   attribute EventHandler onresetpose;
   attribute EventHandler onend;
 
-  [CallWith=ScriptState] Promise end();
+  [CallWith=ScriptState] Promise<VRFrameOfReference> requestFrameOfReference(VRFrameOfReferenceType type, [PermissiveDictionaryConversion] optional VRFrameOfReferenceOptions options);
+
+  [CallWith=ScriptState] Promise<void> end();
 };
