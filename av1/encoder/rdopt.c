@@ -5796,6 +5796,51 @@ static int check_best_zero_mv(
   return 1;
 }
 
+#if CONFIG_JNT_COMP
+static void jnt_comp_weight_assign(const AV1_COMMON *cm,
+                                   const MB_MODE_INFO *mbmi, int order_idx,
+                                   uint8_t *second_pred) {
+  int bck_idx = cm->frame_refs[mbmi->ref_frame[0] - LAST_FRAME].idx;
+  int fwd_idx = cm->frame_refs[mbmi->ref_frame[1] - LAST_FRAME].idx;
+  int bck_frame_index = 0, fwd_frame_index = 0;
+  int cur_frame_index = cm->cur_frame->cur_frame_offset;
+
+  if (bck_idx >= 0) {
+    bck_frame_index = cm->buffer_pool->frame_bufs[bck_idx].cur_frame_offset;
+  }
+
+  if (fwd_idx >= 0) {
+    fwd_frame_index = cm->buffer_pool->frame_bufs[fwd_idx].cur_frame_offset;
+  }
+
+  const double fwd = abs(fwd_frame_index - cur_frame_index);
+  const double bck = abs(cur_frame_index - bck_frame_index);
+  int order;
+  double ratio;
+
+  if (COMPOUND_WEIGHT_MODE == DIST) {
+    if (fwd > bck) {
+      ratio = (bck != 0) ? fwd / bck : 5.0;
+      order = 0;
+    } else {
+      ratio = (fwd != 0) ? bck / fwd : 5.0;
+      order = 1;
+    }
+    int quant_dist_idx;
+    for (quant_dist_idx = 0; quant_dist_idx < 4; ++quant_dist_idx) {
+      if (ratio < quant_dist_category[quant_dist_idx]) break;
+    }
+    second_pred[4096] =
+        quant_dist_lookup_table[order_idx][quant_dist_idx][order];
+    second_pred[4097] =
+        quant_dist_lookup_table[order_idx][quant_dist_idx][1 - order];
+  } else {
+    second_pred[4096] = (DIST_PRECISION >> 1);
+    second_pred[4097] = (DIST_PRECISION >> 1);
+  }
+}
+#endif  // CONFIG_JNT_COMP
+
 static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
                                 BLOCK_SIZE bsize, int_mv *frame_mv,
 #if CONFIG_COMPOUND_SINGLEREF
@@ -5864,9 +5909,14 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
 
 // Prediction buffer from second frame.
 #if CONFIG_HIGHBITDEPTH
-  DECLARE_ALIGNED(16, uint16_t, second_pred_alloc_16[MAX_SB_SQUARE]);
+#if CONFIG_JNT_COMP
+  DECLARE_ALIGNED(16, uint16_t, second_pred_alloc_16[MAX_SB_SQUARE + 2]);
   uint8_t *second_pred;
 #else
+  DECLARE_ALIGNED(16, uint16_t, second_pred_alloc_16[MAX_SB_SQUARE]);
+  uint8_t *second_pred;
+#endif  // CONFIG_JNT_COMP
+#else   // CONFIG_HIGHBITDEPTH
   DECLARE_ALIGNED(16, uint8_t, second_pred[MAX_SB_SQUARE]);
 #endif  // CONFIG_HIGHBITDEPTH
   (void)ref_mv_sub8x8;
@@ -5942,6 +5992,10 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
                        // found for the 'other' reference frame is factored in.
     const int plane = 0;
     ConvolveParams conv_params = get_conv_params(!id, 0, plane);
+#if CONFIG_JNT_COMP
+    conv_params.fwd_offset = -1;
+    conv_params.bck_offset = -1;
+#endif
 #if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
     WarpTypesAllowed warp_types;
 #if CONFIG_GLOBAL_MOTION
@@ -5962,6 +6016,9 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
                                  ? &frame_mv[refs[!id]].as_mv
                                  : &frame_comp_mv[refs[0]].as_mv;
 #endif  // CONFIG_COMPOUND_SINGLEREF
+#if CONFIG_JNT_COMP
+    InterpFilters interp_filters = EIGHTTAP_REGULAR;
+#endif  // CONFIG_JNT_COMP
 
 #if CONFIG_HIGHBITDEPTH
     if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
@@ -5973,7 +6030,11 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
 #else   // !(CONFIG_COMPOUND_SINGLEREF)
           &frame_mv[refs[!id]].as_mv,
 #endif  // CONFIG_COMPOUND_SINGLEREF
+#if CONFIG_JNT_COMP
+          &sf, pw, ph, 0, interp_filters,
+#else
           &sf, pw, ph, 0, mbmi->interp_filters,
+#endif  // CONFIG_JNT_COMP
 #if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
           &warp_types, p_col, p_row,
 #endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
@@ -5988,7 +6049,11 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
 #else   // !(CONFIG_COMPOUND_SINGLEREF)
         &frame_mv[refs[!id]].as_mv,
 #endif  // CONFIG_COMPOUND_SINGLEREF
-          &sf, pw, ph, &conv_params, mbmi->interp_filters,
+#if CONFIG_JNT_COMP
+          &sf, pw, ph, &conv_params, interp_filters,
+#else
+        &sf, pw, ph, &conv_params, mbmi->interp_filters,
+#endif  // CONFIG_JNT_COMP
 #if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
           &warp_types, p_col, p_row, plane, !id,
 #endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
@@ -5996,6 +6061,11 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
 #if CONFIG_HIGHBITDEPTH
     }
 #endif  // CONFIG_HIGHBITDEPTH
+
+#if CONFIG_JNT_COMP
+    const int order_idx = id != 0;
+    jnt_comp_weight_assign(cm, mbmi, order_idx, second_pred);
+#endif  // CONFIG_JNT_COMP
 
     // Do compound motion search on the current reference frame.
     if (id) xd->plane[plane].pre[0] = ref_yv12[id];
@@ -6744,6 +6814,10 @@ static void build_second_inter_pred(const AV1_COMP *cpi, MACROBLOCK *x,
   }
 #endif  // CONFIG_HIGHBITDEPTH
 
+#if CONFIG_JNT_COMP
+  jnt_comp_weight_assign(cm, mbmi, 0, second_pred);
+#endif  // CONFIG_JNT_COMP
+
   if (scaled_ref_frame) {
     // Restore the prediction frame pointers to their unscaled versions.
     int i;
@@ -6910,7 +6984,11 @@ static void compound_single_motion_search_interinter(
 
 // Prediction buffer from second frame.
 #if CONFIG_HIGHBITDEPTH
+#if CONFIG_JNT_COMP
+  DECLARE_ALIGNED(16, uint16_t, second_pred_alloc_16[MAX_SB_SQUARE + 2]);
+#else
   DECLARE_ALIGNED(16, uint16_t, second_pred_alloc_16[MAX_SB_SQUARE]);
+#endif  // CONFIG_JNT_COMP
   uint8_t *second_pred;
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
     second_pred = CONVERT_TO_BYTEPTR(second_pred_alloc_16);

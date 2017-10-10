@@ -275,11 +275,23 @@ MSE(8, 8)
 void aom_comp_avg_pred_c(uint8_t *comp_pred, const uint8_t *pred, int width,
                          int height, const uint8_t *ref, int ref_stride) {
   int i, j;
+#if CONFIG_JNT_COMP
+  int bck_offset = pred[4096];
+  int fwd_offset = pred[4097];
+  double sum = bck_offset + fwd_offset;
+#endif  // CONFIG_JNT_COMP
 
   for (i = 0; i < height; ++i) {
     for (j = 0; j < width; ++j) {
+#if CONFIG_JNT_COMP
+      int tmp = pred[j] * fwd_offset + ref[j] * bck_offset;
+      tmp = (int)(0.5 + tmp / sum);
+      if (tmp > 255) tmp = 255;
+      comp_pred[j] = (uint8_t)tmp;
+#else
       const int tmp = pred[j] + ref[j];
       comp_pred[j] = ROUND_POWER_OF_TWO(tmp, 1);
+#endif  // CONFIG_JNT_COMP
     }
     comp_pred += width;
     pred += width;
@@ -340,12 +352,30 @@ void aom_comp_avg_upsampled_pred_c(uint8_t *comp_pred, const uint8_t *pred,
                                    int subpel_y_q3, const uint8_t *ref,
                                    int ref_stride) {
   int i, j;
+#if CONFIG_JNT_COMP
+  int bck_offset = pred[4096];
+  int fwd_offset = pred[4097];
+  double sum = bck_offset + fwd_offset;
+#endif  // CONFIG_JNT_COMP
 
+#if CONFIG_JNT_COMP
+  aom_upsampled_pred_c(comp_pred, width, height, subpel_x_q3, subpel_y_q3, ref,
+                       ref_stride);
+#else
   aom_upsampled_pred(comp_pred, width, height, subpel_x_q3, subpel_y_q3, ref,
                      ref_stride);
+#endif  // CONFIG_JNT_COMP
+
   for (i = 0; i < height; i++) {
     for (j = 0; j < width; j++) {
+#if CONFIG_JNT_COMP
+      int tmp = pred[j] * fwd_offset + comp_pred[j] * bck_offset;
+      tmp = (int)(0.5 + tmp / sum);
+      if (tmp > 255) tmp = 255;
+      comp_pred[j] = (uint8_t)tmp;
+#else
       comp_pred[j] = ROUND_POWER_OF_TWO(comp_pred[j] + pred[j], 1);
+#endif  // CONFIG_JNT_COMP
     }
     comp_pred += width;
     pred += width;

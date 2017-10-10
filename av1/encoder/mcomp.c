@@ -349,7 +349,11 @@ static unsigned int setup_center_error(
         aom_comp_mask_pred(comp_pred, second_pred, w, h, y + offset, y_stride,
                            mask, mask_stride, invert_mask);
       else
+#if CONFIG_JNT_COMP
+        aom_comp_avg_pred_c(comp_pred, second_pred, w, h, y + offset, y_stride);
+#else
         aom_comp_avg_pred(comp_pred, second_pred, w, h, y + offset, y_stride);
+#endif  // CONFIG_JNT_COMP
       besterr = vfp->vf(comp_pred, w, src, src_stride, sse1);
     }
   } else {
@@ -365,7 +369,11 @@ static unsigned int setup_center_error(
       aom_comp_mask_pred(comp_pred, second_pred, w, h, y + offset, y_stride,
                          mask, mask_stride, invert_mask);
     else
+#if CONFIG_JNT_COMP
+      aom_comp_avg_pred_c(comp_pred, second_pred, w, h, y + offset, y_stride);
+#else
       aom_comp_avg_pred(comp_pred, second_pred, w, h, y + offset, y_stride);
+#endif  // CONFIG_JNT_COMP
     besterr = vfp->vf(comp_pred, w, src, src_stride, sse1);
   } else {
     besterr = vfp->vf(y + offset, y_stride, src, src_stride, sse1);
@@ -663,8 +671,13 @@ static int upsampled_pref_error(const MACROBLOCKD *xd,
                                      subpel_y_q3, y, y_stride, mask,
                                      mask_stride, invert_mask);
       else
-        aom_comp_avg_upsampled_pred(pred, second_pred, w, h, subpel_x_q3,
-                                    subpel_y_q3, y, y_stride);
+#if CONFIG_JNT_COMP
+        aom_comp_avg_upsampled_pred_c(pred, second_pred, w, h, subpel_x_q3,
+                                      subpel_y_q3, y, y_stride);
+#else
+      aom_comp_avg_upsampled_pred(pred, second_pred, w, h, subpel_x_q3,
+                                  subpel_y_q3, y, y_stride);
+#endif  // CONFIG_JNT_COMP
     } else {
       aom_upsampled_pred(pred, w, h, subpel_x_q3, subpel_y_q3, y, y_stride);
     }
