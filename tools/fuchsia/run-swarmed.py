@@ -19,11 +19,68 @@ results/*` to find the tests that failed or otherwise process the log files.
 """
 
 import argparse
+import multiprocessing
 import os
 import shutil
 import subprocess
 import sys
-import tempfile
+
+
+INTERNAL_ERROR_EXIT_CODE = -1000
+
+
+def _Spawn(args):
+  """Triggers a swarming job. The arguments passed are:
+  - The index of the job;
+  - The command line arguments object;
+  - The hash of the isolate job used to trigger.
+
+  The return value is passed to a collect-style map() and consists of:
+  - The index of the job;
+  - The json file created by triggering and used to collect results;
+  - The command line arguments object.
+  """
+  index, args, isolated_hash = args
+  json_file = os.path.join(args.results, '%d.json' % index)
+  trigger_args = [
+      'tools/swarming_client/swarming.py', 'trigger',
+      '-S', 'https://chromium-swarm.appspot.com',
+      '-I', 'https://isolateserver.appspot.com',
+      '-d', 'os', 'Linux',
+      '-d', 'pool', 'Chrome',
+      '-d', 'kvm', '1',
+      '-s', isolated_hash,
+      '--dump-json', json_file,
+      '--',
+      '--test-launcher-summary-output=${ISOLATED_OUTDIR}/output.json']
+  filter_file = \
+      'testing/buildbot/filters/fuchsia.' + args.test_name + '.filter'
+  if os.path.isfile(filter_file):
+    trigger_args.append('--test-launcher-filter-file=../../' + filter_file)
+  with open(os.devnull, 'w') as nul:
+    subprocess.check_call(trigger_args, stdout=nul)
+  return (index, json_file, args)
+
+
+def _Collect(spawn_result):
+  index, json_file, args = spawn_result
+  p = subprocess.Popen([
+    'tools/swarming_client/swarming.py', 'collect',
+    '-S', 'https://chromium-swarm.appspot.com',
+    '--json', json_file,
+    '--task-output-stdout=console'],
+    stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+  stdout = p.communicate()[0]
+  if p.returncode != 0 and len(stdout) < 2**10 and 'Internal error!' in stdout:
+    exit_code = INTERNAL_ERROR_EXIT_CODE
+    file_suffix = '.INTERNAL_ERROR'
+  else:
+    exit_code = p.returncode
+    file_suffix = '' if exit_code == 0 else '.FAILED'
+  filename = '%d%s.stdout.txt' % (index, file_suffix)
+  with open(os.path.join(args.results, filename), 'w') as f:
+    f.write(stdout)
+  return exit_code
 
 
 def main():
@@ -50,42 +107,37 @@ def main():
        '-i', os.path.join(args.out_dir, args.test_name + '.isolate'),
        '-s', os.path.join(args.out_dir, args.test_name + '.isolated')])
   isolated_hash = archive_output.split()[0]
-  json_files = []
-  for i in range(args.copies):
-    cur_json = tempfile.NamedTemporaryFile()
-    json_files.append(cur_json)
-    trigger_args = ['tools/swarming_client/swarming.py', 'trigger',
-        '-S', 'https://chromium-swarm.appspot.com',
-        '-I', 'https://isolateserver.appspot.com',
-        '-d', 'os', 'Linux',
-        '-d', 'pool', 'Chrome',
-        '-d', 'kvm', '1',
-        '-s', isolated_hash,
-        '--dump-json', cur_json.name,
-        '--',
-        '--test-launcher-summary-output=${ISOLATED_OUTDIR}/output.json']
-    filter_file = \
-        'testing/buildbot/filters/fuchsia.' + args.test_name + '.filter'
-    if os.path.isfile(filter_file):
-      trigger_args.append('--test-launcher-filter-file=../../' + filter_file)
-    subprocess.check_call(trigger_args)
 
   if os.path.isdir(args.results):
     shutil.rmtree(args.results)
   os.makedirs(args.results)
 
-  print 'Waiting for run%s to complete...' % ('' if args.copies == 1 else 's')
-  for i, json in enumerate(json_files):
-    p = subprocess.Popen(['tools/swarming_client/swarming.py', 'collect',
-      '-S', 'https://chromium-swarm.appspot.com',
-      '--json', json.name,
-      '--task-output-stdout=console'], stdout=subprocess.PIPE)
-    stdout = p.communicate()[0]
-    filename = str(i) + ('' if p.returncode == 0 else '.FAILED') + '.stdout.txt'
-    with open(os.path.join(args.results, filename), 'w') as f:
-      f.write(stdout)
+  try:
+    print 'Triggering %d tasks...' % args.copies
+    pool = multiprocessing.Pool()
+    spawn_args = zip(range(args.copies),
+                     [args] * args.copies,
+                     [isolated_hash] * args.copies)
+    spawn_results = pool.imap_unordered(_Spawn, spawn_args)
 
-  print 'Results logs collected into', args.results + '.'
+    exit_codes = []
+    collect_results = pool.imap_unordered(_Collect, spawn_results)
+    for result in collect_results:
+      exit_codes.append(result)
+      successes = sum(1 for x in exit_codes if x == 0)
+      errors = sum(1 for x in exit_codes if x == INTERNAL_ERROR_EXIT_CODE)
+      failures = len(exit_codes) - successes - errors
+      clear_to_eol = '\033[K'
+      print('\r[%d/%d] collected: '
+            '%d successes, %d failures, %d bot errors...%s' % (len(exit_codes),
+                args.copies, successes, failures, errors, clear_to_eol)),
+      sys.stdout.flush()
+
+    print
+    print 'Results logs collected into', os.path.abspath(args.results) + '.'
+  finally:
+    pool.close()
+    pool.join()
   return 0
 
 
