@@ -4,6 +4,8 @@
 
 #include "ash/public/cpp/ash_switches.h"
 
+#include "base/command_line.h"
+
 namespace ash {
 namespace switches {
 
@@ -146,6 +148,11 @@ const char kSpuriousPowerButtonLidAngleChange[] =
 // By default we use classic IME (i.e. InputMethodChromeOS) in kMus. This flag
 // enables the IME service (i.e. InputMethodMus) instead.
 const char kUseIMEService[] = "use-ime-service";
+
+bool IsNightLightEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      kAshEnableNightLight);
+}
 
 }  // namespace switches
 }  // namespace ash

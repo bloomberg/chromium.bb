@@ -6,6 +6,7 @@
 
 #include "ash/metrics/user_metrics_action.h"
 #include "ash/metrics/user_metrics_recorder.h"
+#include "ash/public/cpp/ash_switches.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
@@ -87,7 +88,7 @@ void TilesDefaultView::Init() {
   AddChildView(help_button_);
   AddChildView(TrayPopupUtils::CreateVerticalSeparator());
 
-  if (NightLightController::IsFeatureEnabled()) {
+  if (switches::IsNightLightEnabled()) {
     night_light_button_ = new NightLightToggleButton(this);
     night_light_button_->SetEnabled(can_show_web_ui);
     AddChildView(night_light_button_);
@@ -123,8 +124,7 @@ void TilesDefaultView::ButtonPressed(views::Button* sender,
   } else if (sender == help_button_) {
     Shell::Get()->metrics()->RecordUserMetricsAction(UMA_TRAY_HELP);
     Shell::Get()->system_tray_controller()->ShowHelp();
-  } else if (NightLightController::IsFeatureEnabled() &&
-             sender == night_light_button_) {
+  } else if (switches::IsNightLightEnabled() && sender == night_light_button_) {
     Shell::Get()->metrics()->RecordUserMetricsAction(UMA_TRAY_NIGHT_LIGHT);
     night_light_button_->Toggle();
   } else if (sender == lock_button_) {
