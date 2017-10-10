@@ -17,6 +17,7 @@
 #include "net/dns/dns_protocol.h"
 #include "net/dns/dns_query.h"
 #include "net/dns/dns_util.h"
+#include "net/dns/record_rdata.h"
 #include "net/socket/socket_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -40,29 +41,53 @@ class DnsChangeNotifier : public net::NetworkChangeNotifier {
   }
 };
 
+std::vector<char> AsVector(const net::IOBufferWithSize& buf) {
+  return std::vector<char>(buf.data(), buf.data() + buf.size());
+}
+
 // Always return min, to simplify testing.
 // This should result in the DNS query ID always being 0.
 int FakeRandInt(int min, int max) {
   return min;
 }
 
-bool CreateDnsTxtRequest(base::StringPiece qname, std::vector<char>* request) {
+std::unique_ptr<net::DnsQuery> CreateDnsTxtQuery(base::StringPiece qname) {
   std::string encoded_qname;
   if (!net::DNSDomainFromDot(qname, &encoded_qname)) {
-    // |qname| is an invalid domain name.
-    return false;
+    // qname is an invalid domain name.
+    return nullptr;
   }
 
+  // Expect EDNS option that disables client subnet extension:
+  // https://tools.ietf.org/html/rfc7871
+  const uint16_t kClientSubnetExtensionCode = 8;
+  net::OptRecordRdata opt_rdata;
+  opt_rdata.AddOpt(net::OptRecordRdata::Opt(
+      kClientSubnetExtensionCode, base::StringPiece("\x00\x01\x00\x00", 4)));
+
   const uint16_t kQueryId = 0;
-  net::DnsQuery query(kQueryId, encoded_qname, net::dns_protocol::kTypeTXT);
-  request->assign(query.io_buffer()->data(),
-                  query.io_buffer()->data() + query.io_buffer()->size());
-  return true;
+  return std::make_unique<net::DnsQuery>(
+      kQueryId, encoded_qname, net::dns_protocol::kTypeTXT, &opt_rdata);
 }
 
-bool CreateDnsTxtResponse(const std::vector<char>& request,
+bool CreateDnsTxtResponse(const net::DnsQuery& query,
                           base::StringPiece answer,
                           std::vector<char>* response) {
+  *response = AsVector(*query.io_buffer());
+
+  // Modify the header.
+  net::dns_protocol::Header* header =
+      reinterpret_cast<net::dns_protocol::Header*>(response->data());
+  header->ancount = base::HostToNet16(1);
+  header->flags |= base::HostToNet16(net::dns_protocol::kFlagResponse);
+
+  // The qname is at the start of the query section (just after the header).
+  const uint8_t qname_ptr = sizeof(*header);
+
+  // The answers section starts after the header and question section.
+  const size_t answers_section_offset =
+      sizeof(*header) + query.question().size();
+
   // DNS answers section:
   // 2 bytes - qname pointer
   // 2 bytes - record type
@@ -74,21 +99,13 @@ bool CreateDnsTxtResponse(const std::vector<char>& request,
   const size_t answers_section_size = 12 + answer.size();
   constexpr uint32_t ttl = 86400;  // seconds
 
-  response->resize(request.size() + answers_section_size);
-  std::copy(request.begin(), request.end(), response->begin());
+  // Make space for the answers section.
+  response->insert(response->begin() + answers_section_offset,
+                   answers_section_size, 0);
 
-  // Modify the header
-  net::dns_protocol::Header* header =
-      reinterpret_cast<net::dns_protocol::Header*>(response->data());
-  header->ancount = base::HostToNet16(1);
-  header->flags |= base::HostToNet16(net::dns_protocol::kFlagResponse);
-
-  // The qname is at the start of the query section (just after the header).
-  const uint8_t qname_ptr = sizeof(*header);
-
-  // Write the answer section
-  base::BigEndianWriter writer(response->data() + request.size(),
-                               response->size() - request.size());
+  // Write the answers section.
+  base::BigEndianWriter writer(response->data() + answers_section_offset,
+                               answers_section_size);
   if (!writer.WriteU8(net::dns_protocol::kLabelPointer) ||
       !writer.WriteU8(qname_ptr) ||
       !writer.WriteU16(net::dns_protocol::kTypeTXT) ||
@@ -106,10 +123,11 @@ bool CreateDnsTxtResponse(const std::vector<char>& request,
   return true;
 }
 
-bool CreateDnsErrorResponse(const std::vector<char>& request,
+bool CreateDnsErrorResponse(const net::DnsQuery& query,
                             uint8_t rcode,
                             std::vector<char>* response) {
-  *response = request;
+  *response = AsVector(*query.io_buffer());
+
   // Modify the header
   net::dns_protocol::Header* header =
       reinterpret_cast<net::dns_protocol::Header*>(response->data());
@@ -198,38 +216,38 @@ MockLogDnsTraffic::~MockLogDnsTraffic() {}
 
 bool MockLogDnsTraffic::ExpectRequestAndErrorResponse(base::StringPiece qname,
                                                       uint8_t rcode) {
-  std::vector<char> request;
-  if (!CreateDnsTxtRequest(qname, &request)) {
+  std::unique_ptr<net::DnsQuery> query = CreateDnsTxtQuery(qname);
+  if (!query) {
     return false;
   }
 
   std::vector<char> response;
-  if (!CreateDnsErrorResponse(request, rcode, &response)) {
+  if (!CreateDnsErrorResponse(*query, rcode, &response)) {
     return false;
   }
 
-  EmplaceMockSocketData(request, response);
+  EmplaceMockSocketData(AsVector(*query->io_buffer()), response);
   return true;
 }
 
 bool MockLogDnsTraffic::ExpectRequestAndSocketError(base::StringPiece qname,
                                                     net::Error error) {
-  std::vector<char> request;
-  if (!CreateDnsTxtRequest(qname, &request)) {
+  std::unique_ptr<net::DnsQuery> query = CreateDnsTxtQuery(qname);
+  if (!query) {
     return false;
   }
 
-  EmplaceMockSocketData(request, error);
+  EmplaceMockSocketData(AsVector(*query->io_buffer()), error);
   return true;
 }
 
 bool MockLogDnsTraffic::ExpectRequestAndTimeout(base::StringPiece qname) {
-  std::vector<char> request;
-  if (!CreateDnsTxtRequest(qname, &request)) {
+  std::unique_ptr<net::DnsQuery> query = CreateDnsTxtQuery(qname);
+  if (!query) {
     return false;
   }
 
-  EmplaceMockSocketData(request);
+  EmplaceMockSocketData(AsVector(*query->io_buffer()));
 
   // Speed up timeout tests.
   SetDnsTimeout(TestTimeouts::tiny_timeout());
@@ -247,17 +265,17 @@ bool MockLogDnsTraffic::ExpectRequestAndResponse(
     str.AppendToString(&answer);
   }
 
-  std::vector<char> request;
-  if (!CreateDnsTxtRequest(qname, &request)) {
+  std::unique_ptr<net::DnsQuery> query = CreateDnsTxtQuery(qname);
+  if (!query) {
     return false;
   }
 
   std::vector<char> response;
-  if (!CreateDnsTxtResponse(request, answer, &response)) {
+  if (!CreateDnsTxtResponse(*query, answer, &response)) {
     return false;
   }
 
-  EmplaceMockSocketData(request, response);
+  EmplaceMockSocketData(AsVector(*query->io_buffer()), response);
   return true;
 }
 
