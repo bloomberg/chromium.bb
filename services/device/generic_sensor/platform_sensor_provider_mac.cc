@@ -65,7 +65,6 @@ void PlatformSensorProviderMac::CreateSensorInternal(
       break;
     }
     default:
-      NOTIMPLEMENTED();
       callback.Run(nullptr);
   }
 }
