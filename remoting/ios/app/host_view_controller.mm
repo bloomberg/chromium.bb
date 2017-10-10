@@ -314,11 +314,6 @@ static const CGFloat kMoveFABAnimationTime = 0.3;
 
 #pragma mark - RemotingSettingsViewControllerDelegate
 
-- (void)setShrinkToFit:(BOOL)shrinkToFit {
-  // TODO(nicholss): I don't think this option makes sense for mobile.
-  NSLog(@"TODO: shrinkToFit %d", shrinkToFit);
-}
-
 - (void)setResizeToFit:(BOOL)resizeToFit {
   // TODO(yuweih): Maybe we add a native screen size mimimum before enabling
   // this option? This doesn't work well for smaller screens. Ask Jon.

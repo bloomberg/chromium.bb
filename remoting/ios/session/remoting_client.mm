@@ -336,13 +336,14 @@ NSString* const kHostSessionPin = @"kHostSessionPin";
 }
 
 - (void)setCapabilities:(NSString*)capabilities {
-  NSLog(@"TODO(nicholss): implement this, setCapabilities. %@", capabilities);
+  DCHECK(capabilities.length == 0) << "No capability has been implemented on "
+                                   << "iOS yet";
 }
 
 - (void)handleExtensionMessageOfType:(NSString*)type
                              message:(NSString*)message {
-  NSLog(@"TODO(nicholss): implement this, handleExtensionMessageOfType %@:%@.",
-        type, message);
+  NOTREACHED() << "handleExtensionMessageOfType is unimplemented. " << type
+               << ":" << message;
 }
 
 - (void)setHostResolution:(CGSize)dipsResolution scale:(int)scale {
