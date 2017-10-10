@@ -107,6 +107,9 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
       const MultipleOfflinePageItemCallback& callback) override;
   void GetPagesSupportedByDownloads(
       const MultipleOfflinePageItemCallback& callback) override;
+  const base::FilePath& GetArchiveDirectory(
+      const std::string& name_space) const override;
+
   ClientPolicyController* GetPolicyController() override;
 
   // Methods for testing only:
@@ -261,10 +264,6 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
 
   // Post task to clear storage.
   void PostClearStorageIfNeededTask(bool delayed);
-
-  // Get the archive directory based on client policy of the namespace.
-  const base::FilePath& GetArchiveDirectory(
-      const std::string& name_space) const;
 
   void RunWhenLoaded(const base::Closure& job);
 

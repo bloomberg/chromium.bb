@@ -81,8 +81,12 @@ PrefetchImporterImpl::~PrefetchImporterImpl() = default;
 void PrefetchImporterImpl::ImportArchive(const PrefetchArchiveInfo& archive) {
   // The target file name will be auto generated based on GUID to prevent any
   // name collision.
+  OfflinePageModel* offline_page_model =
+      OfflinePageModelFactory::GetForBrowserContext(context_);
+  DCHECK(offline_page_model);
+
   base::FilePath archives_dir =
-      context_->GetPath().Append(chrome::kOfflinePageArchivesDirname);
+      offline_page_model->GetArchiveDirectory(archive.client_id.name_space);
   base::FilePath dest_path =
       archives_dir.Append(base::GenerateGUID()).AddExtension(kMHTMLExtension);
 

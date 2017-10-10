@@ -4,9 +4,12 @@
 
 #include "components/offline_pages/core/stub_offline_page_model.h"
 
+#include "base/files/file_path.h"
+
 namespace offline_pages {
 
-StubOfflinePageModel::StubOfflinePageModel() {}
+StubOfflinePageModel::StubOfflinePageModel()
+    : archive_directory_(base::FilePath(FILE_PATH_LITERAL("/archive_dir/"))) {}
 StubOfflinePageModel::~StubOfflinePageModel() {}
 
 void StubOfflinePageModel::AddObserver(Observer* observer) {}
@@ -55,6 +58,11 @@ void StubOfflinePageModel::GetPagesByNamespace(
     const MultipleOfflinePageItemCallback& callback) {}
 void StubOfflinePageModel::GetPagesSupportedByDownloads(
     const MultipleOfflinePageItemCallback& callback) {}
+const base::FilePath& StubOfflinePageModel::GetArchiveDirectory(
+    const std::string& name_space) const {
+  return archive_directory_;
+}
+
 ClientPolicyController* StubOfflinePageModel::GetPolicyController() {
   return &policy_controller_;
 }
