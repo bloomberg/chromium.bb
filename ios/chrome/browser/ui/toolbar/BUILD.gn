@@ -29,6 +29,8 @@ source_set("toolbar") {
     "tools_menu_button_observer_bridge.mm",
     "web_toolbar_controller.h",
     "web_toolbar_controller.mm",
+    "web_toolbar_controller_constants.h",
+    "web_toolbar_controller_constants.mm",
   ]
   deps = [
     ":resource_macros",

@@ -30,14 +30,6 @@ namespace web {
 class WebState;
 }
 
-// Notification when the tab history popup is shown.
-extern NSString* const kTabHistoryPopupWillShowNotification;
-// Notification when the tab history popup is hidden.
-extern NSString* const kTabHistoryPopupWillHideNotification;
-// The brightness of the omnibox placeholder text in regular mode,
-// on an iPhone.
-extern const CGFloat kiPhoneOmniboxPlaceholderColorBrightness;
-
 // Delegate interface, to be implemented by the controller's delegate.
 @protocol WebToolbarDelegate<NSObject>
 @required
