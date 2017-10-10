@@ -5,6 +5,7 @@
 #import <Foundation/Foundation.h>
 
 #include "base/format_macros.h"
+#import "ios/chrome/browser/ui/toolbar/toolbar_controller+protected.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_controller.h"
 #import "ios/chrome/browser/ui/ui_util.h"
 #include "testing/gtest_mac.h"

@@ -253,15 +253,6 @@ const CGFloat kPopoverAnchorHorizontalPadding = 10.0;
 @synthesize style = style_;
 @synthesize dispatcher = dispatcher_;
 
-- (void)setReadingListModel:(ReadingListModel*)readingListModel {
-  readingListModel_ = readingListModel;
-  if (readingListModel_) {
-    toolsMenuButtonObserverBridge_ =
-        [[ToolsMenuButtonObserverBridge alloc] initWithModel:readingListModel_
-                                               toolbarButton:toolsMenuButton_];
-  }
-}
-
 - (instancetype)initWithStyle:(ToolbarControllerStyle)style
                    dispatcher:
                        (id<ApplicationCommands, BrowserCommands>)dispatcher {
@@ -403,48 +394,12 @@ const CGFloat kPopoverAnchorHorizontalPadding = 10.0;
   return self;
 }
 
-- (instancetype)init {
-  NOTREACHED();
-  return nil;
-}
-
-- (UIFont*)fontForSize:(NSInteger)size {
-  return [[MDCTypography fontLoader] boldFontOfSize:size];
-}
-
 - (void)dealloc {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   [toolsPopupController_ setDelegate:nil];
 }
 
-- (CGFloat)statusBarOffset {
-  return StatusBarHeight();
-}
-
-- (NSMutableArray*)transitionLayers {
-  return transitionLayers_;
-}
-
-- (BOOL)imageShouldFlipForRightToLeftLayoutDirection:(int)imageEnum {
-  // None of the images this class knows about should flip.
-  return NO;
-}
-
-- (void)updateStandardButtons {
-  BOOL shareButtonShouldBeVisible = [self shareButtonShouldBeVisible];
-  [shareButton_ setHidden:!shareButtonShouldBeVisible];
-  NSMutableArray* standardButtons = [NSMutableArray array];
-  [standardButtons addObject:toolsMenuButton_];
-  if (stackButton_)
-    [standardButtons addObject:stackButton_];
-  if (shareButtonShouldBeVisible)
-    [standardButtons addObject:shareButton_];
-  standardButtons_ = standardButtons;
-}
-
-- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
-  [self updateStandardButtons];
-}
+#pragma mark - Public API
 
 - (void)applicationDidEnterBackground:(NSNotification*)notify {
   if (toolsPopupController_) {
@@ -457,54 +412,108 @@ const CGFloat kPopoverAnchorHorizontalPadding = 10.0;
   }
 }
 
-- (BOOL)shareButtonShouldBeVisible {
-  // The share button only exists on iPad, and when some tabs are visible
-  // (i.e. when not in DarkMode), and when the width is greater than
-  // the tablet mini view.
-  if (!IsIPadIdiom() || style_ == ToolbarControllerStyleDarkMode ||
-      IsCompactTablet(self.view))
-    return NO;
+- (void)setReadingListModel:(ReadingListModel*)readingListModel {
+  readingListModel_ = readingListModel;
+  if (readingListModel_) {
+    toolsMenuButtonObserverBridge_ =
+        [[ToolsMenuButtonObserverBridge alloc] initWithModel:readingListModel_
+                                               toolbarButton:toolsMenuButton_];
+  }
+}
 
-  return YES;
+#pragma mark ToolsMenuPopUp
+
+- (void)showToolsMenuPopupWithConfiguration:
+    (ToolsMenuConfiguration*)configuration {
+  // Because an animation hides and shows the tools popup menu it is possible to
+  // tap the tools button multiple times before the tools menu is shown. Ignore
+  // repeated taps between animations.
+  if (toolsPopupController_)
+    return;
+
+  base::RecordAction(UserMetricsAction("ShowAppMenu"));
+
+  // Keep the button pressed.
+  [toolsMenuButton_ setToolsMenuIsVisible:YES];
+
+  [configuration setToolsMenuButton:toolsMenuButton_];
+  toolsPopupController_ =
+      [[ToolsPopupController alloc] initWithConfiguration:configuration
+                                               dispatcher:self.dispatcher];
+
+  [toolsPopupController_ setDelegate:self];
+
+  [[NSNotificationCenter defaultCenter]
+      postNotificationName:kMenuWillShowNotification
+                    object:nil];
+}
+
+- (void)dismissToolsMenuPopup {
+  if (!toolsPopupController_)
+    return;
+  ToolsPopupController* tempTPC = toolsPopupController_;
+  [tempTPC containerView].userInteractionEnabled = NO;
+  [tempTPC dismissAnimatedWithCompletion:^{
+    // Unpress the tools menu button by restoring the normal and
+    // highlighted images to their usual state.
+    [toolsMenuButton_ setToolsMenuIsVisible:NO];
+    // Reference tempTPC so the block retains it.
+    [tempTPC self];
+  }];
+  // reset tabHistoryPopupController_ to prevent -applicationDidEnterBackground
+  // from posting another kMenuWillHideNotification.
+  toolsPopupController_ = nil;
+
+  [[NSNotificationCenter defaultCenter]
+      postNotificationName:kMenuWillHideNotification
+                    object:nil];
+}
+
+#pragma mark Appearance
+
+- (void)setBackgroundAlpha:(CGFloat)alpha {
+  [backgroundView_ setAlpha:alpha];
+  [shadowView_ setAlpha:alpha];
+}
+
+- (void)setTabCount:(NSInteger)tabCount {
+  if (!stackButton_)
+    return;
+  // Enable or disable the stack view icon based on the number of tabs. This
+  // locks the user in the stack view when there are no tabs.
+  [stackButton_ setEnabled:tabCount > 0 ? YES : NO];
+
+  // Update the text shown in the |stackButton_|. Note that the button's title
+  // may be empty or contain an easter egg, but the accessibility value will
+  // always be equal to |tabCount|. Also, the text of |stackButton_| is shifted
+  // up, via |kEasterEggTitleInsets|, to avoid overlapping with the button's
+  // outline.
+  NSString* stackButtonValue =
+      [NSString stringWithFormat:@"%" PRIdNS, tabCount];
+  NSString* stackButtonTitle;
+  if (tabCount <= 0) {
+    stackButtonTitle = @"";
+  } else if (tabCount > kStackButtonMaxTabCount) {
+    stackButtonTitle = @":)";
+    [[stackButton_ titleLabel]
+        setFont:[self fontForSize:kFontSizeFewerThanTenTabs]];
+  } else {
+    stackButtonTitle = stackButtonValue;
+    if (tabCount < 10) {
+      [[stackButton_ titleLabel]
+          setFont:[self fontForSize:kFontSizeFewerThanTenTabs]];
+    } else {
+      [[stackButton_ titleLabel]
+          setFont:[self fontForSize:kFontSizeTenTabsOrMore]];
+    }
+  }
+
+  [stackButton_ setTitle:stackButtonTitle forState:UIControlStateNormal];
+  [stackButton_ setAccessibilityValue:stackButtonValue];
 }
 
 - (void)setShareButtonEnabled:(BOOL)enabled {
   [shareButton_ setEnabled:enabled];
-}
-
-- (UIImage*)imageForImageEnum:(int)imageEnum
-                     forState:(ToolbarButtonUIState)state {
-  int imageID =
-      [self imageIdForImageEnum:imageEnum style:[self style] forState:state];
-  return NativeReversableImage(
-      imageID, [self imageShouldFlipForRightToLeftLayoutDirection:imageEnum]);
-}
-
-- (int)imageEnumForButton:(UIButton*)button {
-  if (button == stackButton_)
-    return ToolbarButtonNameStack;
-  return NumberOfToolbarButtonNames;
-}
-
-- (int)imageIdForImageEnum:(int)index
-                     style:(ToolbarControllerStyle)style
-                  forState:(ToolbarButtonUIState)state {
-  DCHECK(index < NumberOfToolbarButtonNames);
-  DCHECK(style < ToolbarControllerStyleMaxStyles);
-  DCHECK(state < NumberOfToolbarButtonUIStates);
-  // Incognito mode gets dark buttons.
-  if (style == ToolbarControllerStyleIncognitoMode)
-    style = ToolbarControllerStyleDarkMode;
-
-  // Name, style [light, dark], UIControlState [normal, pressed, disabled]
-  static int buttonImageIds[NumberOfToolbarButtonNames][2]
-                           [NumberOfToolbarButtonUIStates] = {
-                               TOOLBAR_IDR_THREE_STATE(OVERVIEW),
-                               TOOLBAR_IDR_THREE_STATE(SHARE),
-                           };
-
-  DCHECK(buttonImageIds[index][style][state]);
-  return buttonImageIds[index][style][state];
 }
 
 - (void)setUpButton:(UIButton*)button
@@ -553,303 +562,17 @@ const CGFloat kPopoverAnchorHorizontalPadding = 10.0;
   }
 }
 
-- (void)registerEventsForButton:(UIButton*)button {
-  if (button != toolsMenuButton_) {
-    // |target| must be |self| (as opposed to |nil|) because |self| isn't in the
-    // responder chain.
-    [button addTarget:self
-                  action:@selector(standardButtonPressed:)
-        forControlEvents:UIControlEventTouchUpInside];
-  }
-  [button addTarget:self
-                action:@selector(recordUserMetrics:)
-      forControlEvents:UIControlEventTouchUpInside];
+- (BOOL)imageShouldFlipForRightToLeftLayoutDirection:(int)imageEnum {
+  // None of the images this class knows about should flip.
+  return NO;
 }
 
-- (CGRect)shareButtonAnchorRect {
-  // Shrink the padding around the shareButton so the popovers are anchored
-  // correctly.
-  return CGRectInset([shareButton_ bounds], kPopoverAnchorHorizontalPadding, 0);
+- (void)hideViewsForNewTabPage:(BOOL)hide {
+  DCHECK(!IsIPadIdiom());
+  [shadowView_ setHidden:hide];
 }
 
-- (UIView*)shareButtonView {
-  return shareButton_;
-}
-
-- (void)showToolsMenuPopupWithConfiguration:
-    (ToolsMenuConfiguration*)configuration {
-  // Because an animation hides and shows the tools popup menu it is possible to
-  // tap the tools button multiple times before the tools menu is shown. Ignore
-  // repeated taps between animations.
-  if (toolsPopupController_)
-    return;
-
-  base::RecordAction(UserMetricsAction("ShowAppMenu"));
-
-  // Keep the button pressed.
-  [toolsMenuButton_ setToolsMenuIsVisible:YES];
-
-  [configuration setToolsMenuButton:toolsMenuButton_];
-  toolsPopupController_ =
-      [[ToolsPopupController alloc] initWithConfiguration:configuration
-                                               dispatcher:self.dispatcher];
-
-  [toolsPopupController_ setDelegate:self];
-
-  [[NSNotificationCenter defaultCenter]
-      postNotificationName:kMenuWillShowNotification
-                    object:nil];
-}
-
-- (void)dismissToolsMenuPopup {
-  if (!toolsPopupController_)
-    return;
-  ToolsPopupController* tempTPC = toolsPopupController_;
-  [tempTPC containerView].userInteractionEnabled = NO;
-  [tempTPC dismissAnimatedWithCompletion:^{
-    // Unpress the tools menu button by restoring the normal and
-    // highlighted images to their usual state.
-    [toolsMenuButton_ setToolsMenuIsVisible:NO];
-    // Reference tempTPC so the block retains it.
-    [tempTPC self];
-  }];
-  // reset tabHistoryPopupController_ to prevent -applicationDidEnterBackground
-  // from posting another kMenuWillHideNotification.
-  toolsPopupController_ = nil;
-
-  [[NSNotificationCenter defaultCenter]
-      postNotificationName:kMenuWillHideNotification
-                    object:nil];
-}
-
-- (UIImage*)getBackgroundImageForStyle:(ToolbarControllerStyle)style {
-  int backgroundImageID;
-  if (style == ToolbarControllerStyleLightMode)
-    backgroundImageID = IDR_IOS_TOOLBAR_LIGHT_BACKGROUND;
-  else
-    backgroundImageID = IDR_IOS_TOOLBAR_DARK_BACKGROUND;
-
-  return NativeImage(backgroundImageID);
-}
-
-- (CGRect)specificControlsArea {
-  // Return the rect to the leading side of the leading-most trailing control.
-  UIView* trailingControl = toolsMenuButton_;
-  if (!IsIPadIdiom())
-    trailingControl = stackButton_;
-  if ([self shareButtonShouldBeVisible])
-    trailingControl = shareButton_;
-  LayoutRect trailing =
-      LayoutRectForRectInBoundingRect(trailingControl.frame, self.view.bounds);
-  LayoutRect controlsArea = LayoutRectGetLeadingLayout(trailing);
-  controlsArea.size.height = self.view.bounds.size.height;
-  controlsArea.position.originY = self.view.bounds.origin.y;
-  CGRect controlsFrame = LayoutRectGetRect(controlsArea);
-
-  if (!IsIPadIdiom()) {
-    controlsFrame.origin.y += StatusBarHeight();
-    controlsFrame.size.height -= StatusBarHeight();
-  }
-  return controlsFrame;
-}
-
-- (void)animateStandardControlsForOmniboxExpansion:(BOOL)growOmnibox {
-  if (growOmnibox)
-    [self fadeOutStandardControls];
-  else
-    [self fadeInStandardControls];
-}
-
-- (void)fadeOutStandardControls {
-  // The opacity animation has a different duration from the position animation.
-  // Thus they require separate CATransations.
-
-  // Animate the opacity of the buttons to 0.
-  [CATransaction begin];
-  [CATransaction setAnimationDuration:ios::material::kDuration2];
-  [CATransaction
-      setAnimationTimingFunction:TimingFunction(ios::material::CurveEaseIn)];
-  CABasicAnimation* fadeButtons =
-      [CABasicAnimation animationWithKeyPath:@"opacity"];
-  fadeButtons.fromValue = @1;
-  fadeButtons.toValue = @0;
-
-  for (UIButton* button in standardButtons_) {
-    if (![button isHidden]) {
-      [button layer].opacity = 0;
-      [[button layer] addAnimation:fadeButtons forKey:@"fade"];
-    }
-  }
-  [CATransaction commit];
-
-  // Animate the buttons 10 pixels in the leading-to-trailing direction
-  [CATransaction begin];
-  [CATransaction setAnimationDuration:ios::material::kDuration1];
-  [CATransaction
-      setAnimationTimingFunction:TimingFunction(ios::material::CurveEaseIn)];
-
-  for (UIButton* button in standardButtons_) {
-    CABasicAnimation* shiftButton =
-        [CABasicAnimation animationWithKeyPath:@"position"];
-    CGPoint startPosition = [button layer].position;
-    CGPoint endPosition =
-        CGPointLayoutOffset(startPosition, kButtonFadeOutXOffset);
-    shiftButton.fromValue = [NSValue valueWithCGPoint:startPosition];
-    shiftButton.toValue = [NSValue valueWithCGPoint:endPosition];
-    [[button layer] addAnimation:shiftButton forKey:@"shiftButton"];
-  }
-
-  [CATransaction commit];
-
-  // Fade to the full bleed shadow.
-  [UIView animateWithDuration:ios::material::kDuration1
-                   animations:^{
-                     [shadowView_ setAlpha:0];
-                     [fullBleedShadowView_ setAlpha:1];
-                   }];
-}
-
-- (void)fadeInStandardControls {
-  for (UIButton* button in standardButtons_) {
-    [self fadeInView:button
-        fromLeadingOffset:10
-             withDuration:ios::material::kDuration2
-               afterDelay:ios::material::kDuration1];
-  }
-
-  // Fade to the normal shadow.
-  [UIView animateWithDuration:ios::material::kDuration1
-                   animations:^{
-                     [shadowView_ setAlpha:self.backgroundView.alpha];
-                     [fullBleedShadowView_ setAlpha:0];
-                   }];
-}
-
-- (void)animationDidStart:(CAAnimation*)anim {
-  // Once the buttons start fading in, set their opacity to 1 so there's no
-  // flicker at the end of the animation.
-  for (UIButton* button in standardButtons_) {
-    if (anim == [[button layer] animationForKey:@"fadeIn"]) {
-      [button layer].opacity = 1;
-      return;
-    }
-  }
-}
-
-- (void)fadeInView:(UIView*)view
-    fromLeadingOffset:(LayoutOffset)leadingOffset
-         withDuration:(NSTimeInterval)duration
-           afterDelay:(NSTimeInterval)delay {
-  [CATransaction begin];
-  [CATransaction setDisableActions:YES];
-  [CATransaction setCompletionBlock:^{
-    [view.layer removeAnimationForKey:@"fadeIn"];
-  }];
-  view.alpha = 1.0;
-
-  // Animate the position of |view| |leadingOffset| pixels after |delay|.
-  CGRect shiftedFrame = CGRectLayoutOffset(view.frame, leadingOffset);
-  CAAnimation* shiftAnimation =
-      FrameAnimationMake(view.layer, shiftedFrame, view.frame);
-  shiftAnimation.duration = duration;
-  shiftAnimation.beginTime = delay;
-  shiftAnimation.timingFunction = TimingFunction(ios::material::CurveEaseInOut);
-
-  // Animate the opacity of |view| to 1 after |delay|.
-  CAAnimation* fadeAnimation = OpacityAnimationMake(0.0, 1.0);
-  fadeAnimation.duration = duration;
-  fadeAnimation.beginTime = delay;
-  shiftAnimation.timingFunction = TimingFunction(ios::material::CurveEaseInOut);
-
-  // Add group animation to layer.
-  CAAnimation* group = AnimationGroupMake(@[ shiftAnimation, fadeAnimation ]);
-  [view.layer addAnimation:group forKey:@"fadeIn"];
-
-  [CATransaction commit];
-}
-
-- (CAAnimation*)transitionAnimationForButton:(UIButton*)button
-                        containerBeginBounds:(CGRect)containerBeginBounds
-                          containerEndBounds:(CGRect)containerEndBounds
-                                   withStyle:(ToolbarTransitionStyle)style {
-  BOOL toStackView = style == TOOLBAR_TRANSITION_STYLE_TO_STACK_VIEW;
-  CGRect cardBounds = toStackView ? containerEndBounds : containerBeginBounds;
-  CGRect toolbarBounds =
-      toStackView ? containerBeginBounds : containerEndBounds;
-
-  // |button|'s model layer frame is the button's frame within |toolbarBounds|.
-  CGRect toolbarButtonFrame = button.layer.frame;
-  LayoutRect toolbarButtonLayout =
-      LayoutRectForRectInBoundingRect(toolbarButtonFrame, toolbarBounds);
-
-  // |button|'s leading or trailing padding is maintained depending on its
-  // resizing mask.  Its vertical positioning should be centered within the
-  // container view's card bounds.
-  LayoutRect cardButtonLayout = toolbarButtonLayout;
-  cardButtonLayout.boundingWidth = CGRectGetWidth(cardBounds);
-  BOOL flexibleLeading =
-      button.autoresizingMask & UIViewAutoresizingFlexibleLeadingMargin();
-  if (flexibleLeading) {
-    CGFloat trailingPadding =
-        LayoutRectGetTrailingLayout(toolbarButtonLayout).size.width;
-    cardButtonLayout.position.leading = cardButtonLayout.boundingWidth -
-                                        trailingPadding -
-                                        cardButtonLayout.size.width;
-  }
-  cardButtonLayout.position.originY =
-      CGRectGetMidY(cardBounds) - 0.5 * cardButtonLayout.size.height;
-  cardButtonLayout.position =
-      AlignLayoutRectPositionToPixel(cardButtonLayout.position);
-  CGRect cardButtonFrame = LayoutRectGetRect(cardButtonLayout);
-
-  CGRect beginFrame = toStackView ? toolbarButtonFrame : cardButtonFrame;
-  CGRect endFrame = toStackView ? cardButtonFrame : toolbarButtonFrame;
-
-  // Create animations.
-  CAAnimation* frameAnimation =
-      FrameAnimationMake(button.layer, beginFrame, endFrame);
-  frameAnimation.duration = ios::material::kDuration1;
-  frameAnimation.timingFunction = TimingFunction(ios::material::CurveEaseInOut);
-  CAAnimation* fadeAnimation =
-      OpacityAnimationMake(toStackView ? 1.0 : 0.0, toStackView ? 0.0 : 1.0);
-  fadeAnimation.duration = ios::material::kDuration8;
-  fadeAnimation.timingFunction = TimingFunction(ios::material::CurveEaseIn);
-  return AnimationGroupMake(@[ frameAnimation, fadeAnimation ]);
-}
-
-- (void)animateTransitionForButtonsInView:(UIView*)containerView
-                     containerBeginBounds:(CGRect)containerBeginBounds
-                       containerEndBounds:(CGRect)containerEndBounds
-                          transitionStyle:(ToolbarTransitionStyle)style {
-  [containerView.subviews enumerateObjectsUsingBlock:^(
-                              UIButton* button, NSUInteger idx, BOOL* stop) {
-    if ([button isKindOfClass:[UIButton class]] && button.alpha > 0.0) {
-      CAAnimation* buttonAnimation =
-          [self transitionAnimationForButton:button
-                        containerBeginBounds:containerBeginBounds
-                          containerEndBounds:containerEndBounds
-                                   withStyle:style];
-      [self.transitionLayers addObject:button.layer];
-      [button.layer addAnimation:buttonAnimation
-                          forKey:kToolbarTransitionAnimationKey];
-    }
-  }];
-}
-
-- (void)reverseTransitionAnimations {
-  ReverseAnimationsForKeyForLayers(kToolbarTransitionAnimationKey,
-                                   [self transitionLayers]);
-}
-
-- (UIButton*)stackButton {
-  return stackButton_;
-}
-
-- (void)cleanUpTransitionAnimations {
-  RemoveAnimationForKeyFromLayers(kToolbarTransitionAnimationKey,
-                                  self.transitionLayers);
-  [self.transitionLayers removeAllObjects];
-}
+#pragma mark Animations
 
 - (void)animateTransitionWithBeginFrame:(CGRect)beginFrame
                                endFrame:(CGRect)endFrame
@@ -915,9 +638,73 @@ const CGFloat kPopoverAnchorHorizontalPadding = 10.0;
                           transitionStyle:style];
 }
 
-- (void)hideViewsForNewTabPage:(BOOL)hide {
-  DCHECK(!IsIPadIdiom());
-  [shadowView_ setHidden:hide];
+- (void)reverseTransitionAnimations {
+  ReverseAnimationsForKeyForLayers(kToolbarTransitionAnimationKey,
+                                   [self transitionLayers]);
+}
+
+- (void)cleanUpTransitionAnimations {
+  RemoveAnimationForKeyFromLayers(kToolbarTransitionAnimationKey,
+                                  self.transitionLayers);
+  [self.transitionLayers removeAllObjects];
+}
+
+- (void)triggerToolsMenuButtonAnimation {
+  [toolsMenuButton_ triggerAnimation];
+}
+
+#pragma mark - Protected API
+
+- (void)updateStandardButtons {
+  BOOL shareButtonShouldBeVisible = [self shareButtonShouldBeVisible];
+  [shareButton_ setHidden:!shareButtonShouldBeVisible];
+  NSMutableArray* standardButtons = [NSMutableArray array];
+  [standardButtons addObject:toolsMenuButton_];
+  if (stackButton_)
+    [standardButtons addObject:stackButton_];
+  if (shareButtonShouldBeVisible)
+    [standardButtons addObject:shareButton_];
+  standardButtons_ = standardButtons;
+}
+
+- (CGFloat)statusBarOffset {
+  return StatusBarHeight();
+}
+
+- (IBAction)recordUserMetrics:(id)sender {
+  if (sender == toolsMenuButton_)
+    base::RecordAction(UserMetricsAction("MobileToolbarShowMenu"));
+  else if (sender == stackButton_)
+    base::RecordAction(UserMetricsAction("MobileToolbarShowStackView"));
+  else if (sender == shareButton_)
+    base::RecordAction(UserMetricsAction("MobileToolbarShareMenu"));
+  else
+    NOTREACHED();
+}
+
+- (UIButton*)stackButton {
+  return stackButton_;
+}
+
+- (CGRect)specificControlsArea {
+  // Return the rect to the leading side of the leading-most trailing control.
+  UIView* trailingControl = toolsMenuButton_;
+  if (!IsIPadIdiom())
+    trailingControl = stackButton_;
+  if ([self shareButtonShouldBeVisible])
+    trailingControl = shareButton_;
+  LayoutRect trailing =
+      LayoutRectForRectInBoundingRect(trailingControl.frame, self.view.bounds);
+  LayoutRect controlsArea = LayoutRectGetLeadingLayout(trailing);
+  controlsArea.size.height = self.view.bounds.size.height;
+  controlsArea.position.originY = self.view.bounds.origin.y;
+  CGRect controlsFrame = LayoutRectGetRect(controlsArea);
+
+  if (!IsIPadIdiom()) {
+    controlsFrame.origin.y += StatusBarHeight();
+    controlsFrame.size.height -= StatusBarHeight();
+  }
+  return controlsFrame;
 }
 
 - (void)setStandardControlsVisible:(BOOL)visible {
@@ -939,9 +726,248 @@ const CGFloat kPopoverAnchorHorizontalPadding = 10.0;
   }
 }
 
-- (void)setBackgroundAlpha:(CGFloat)alpha {
-  [backgroundView_ setAlpha:alpha];
-  [shadowView_ setAlpha:alpha];
+- (UIImage*)imageForImageEnum:(int)imageEnum
+                     forState:(ToolbarButtonUIState)state {
+  int imageID =
+      [self imageIdForImageEnum:imageEnum style:[self style] forState:state];
+  return NativeReversableImage(
+      imageID, [self imageShouldFlipForRightToLeftLayoutDirection:imageEnum]);
+}
+
+- (int)imageEnumForButton:(UIButton*)button {
+  if (button == stackButton_)
+    return ToolbarButtonNameStack;
+  return NumberOfToolbarButtonNames;
+}
+
+- (int)imageIdForImageEnum:(int)index
+                     style:(ToolbarControllerStyle)style
+                  forState:(ToolbarButtonUIState)state {
+  DCHECK(index < NumberOfToolbarButtonNames);
+  DCHECK(style < ToolbarControllerStyleMaxStyles);
+  DCHECK(state < NumberOfToolbarButtonUIStates);
+  // Incognito mode gets dark buttons.
+  if (style == ToolbarControllerStyleIncognitoMode)
+    style = ToolbarControllerStyleDarkMode;
+
+  // Name, style [light, dark], UIControlState [normal, pressed, disabled]
+  static int buttonImageIds[NumberOfToolbarButtonNames][2]
+                           [NumberOfToolbarButtonUIStates] = {
+                               TOOLBAR_IDR_THREE_STATE(OVERVIEW),
+                               TOOLBAR_IDR_THREE_STATE(SHARE),
+                           };
+
+  DCHECK(buttonImageIds[index][style][state]);
+  return buttonImageIds[index][style][state];
+}
+
+- (uint32_t)snapshotHash {
+  // Only the 3 lowest bits are used by UIControlState.
+  uint32_t hash = [toolsMenuButton_ state] & 0x07;
+  // When the tools popup controller is valid, it means that the images
+  // representing the tools menu button have been swapped. Factor that in by
+  // adding in whether or not the tools popup menu is a valid object, rather
+  // than trying to figure out which image is currently visible.
+  hash |= toolsPopupController_ ? (1 << 4) : 0;
+  // The label of the stack button changes with the number of tabs open.
+  hash ^= [[stackButton_ titleForState:UIControlStateNormal] hash];
+  return hash;
+}
+
+- (NSMutableArray*)transitionLayers {
+  return transitionLayers_;
+}
+
+#pragma mark Animations
+
+- (void)animateTransitionForButtonsInView:(UIView*)containerView
+                     containerBeginBounds:(CGRect)containerBeginBounds
+                       containerEndBounds:(CGRect)containerEndBounds
+                          transitionStyle:(ToolbarTransitionStyle)style {
+  [containerView.subviews enumerateObjectsUsingBlock:^(
+                              UIButton* button, NSUInteger idx, BOOL* stop) {
+    if ([button isKindOfClass:[UIButton class]] && button.alpha > 0.0) {
+      CAAnimation* buttonAnimation =
+          [self transitionAnimationForButton:button
+                        containerBeginBounds:containerBeginBounds
+                          containerEndBounds:containerEndBounds
+                                   withStyle:style];
+      [self.transitionLayers addObject:button.layer];
+      [button.layer addAnimation:buttonAnimation
+                          forKey:kToolbarTransitionAnimationKey];
+    }
+  }];
+}
+
+- (void)fadeInView:(UIView*)view
+    fromLeadingOffset:(LayoutOffset)leadingOffset
+         withDuration:(NSTimeInterval)duration
+           afterDelay:(NSTimeInterval)delay {
+  [CATransaction begin];
+  [CATransaction setDisableActions:YES];
+  [CATransaction setCompletionBlock:^{
+    [view.layer removeAnimationForKey:@"fadeIn"];
+  }];
+  view.alpha = 1.0;
+
+  // Animate the position of |view| |leadingOffset| pixels after |delay|.
+  CGRect shiftedFrame = CGRectLayoutOffset(view.frame, leadingOffset);
+  CAAnimation* shiftAnimation =
+      FrameAnimationMake(view.layer, shiftedFrame, view.frame);
+  shiftAnimation.duration = duration;
+  shiftAnimation.beginTime = delay;
+  shiftAnimation.timingFunction = TimingFunction(ios::material::CurveEaseInOut);
+
+  // Animate the opacity of |view| to 1 after |delay|.
+  CAAnimation* fadeAnimation = OpacityAnimationMake(0.0, 1.0);
+  fadeAnimation.duration = duration;
+  fadeAnimation.beginTime = delay;
+  shiftAnimation.timingFunction = TimingFunction(ios::material::CurveEaseInOut);
+
+  // Add group animation to layer.
+  CAAnimation* group = AnimationGroupMake(@[ shiftAnimation, fadeAnimation ]);
+  [view.layer addAnimation:group forKey:@"fadeIn"];
+
+  [CATransaction commit];
+}
+
+- (void)animateStandardControlsForOmniboxExpansion:(BOOL)growOmnibox {
+  if (growOmnibox)
+    [self fadeOutStandardControls];
+  else
+    [self fadeInStandardControls];
+}
+
+#pragma mark - Private Methods
+#pragma mark Animations
+- (void)fadeOutStandardControls {
+  // The opacity animation has a different duration from the position animation.
+  // Thus they require separate CATransations.
+
+  // Animate the opacity of the buttons to 0.
+  [CATransaction begin];
+  [CATransaction setAnimationDuration:ios::material::kDuration2];
+  [CATransaction
+      setAnimationTimingFunction:TimingFunction(ios::material::CurveEaseIn)];
+  CABasicAnimation* fadeButtons =
+      [CABasicAnimation animationWithKeyPath:@"opacity"];
+  fadeButtons.fromValue = @1;
+  fadeButtons.toValue = @0;
+
+  for (UIButton* button in standardButtons_) {
+    if (![button isHidden]) {
+      [button layer].opacity = 0;
+      [[button layer] addAnimation:fadeButtons forKey:@"fade"];
+    }
+  }
+  [CATransaction commit];
+
+  // Animate the buttons 10 pixels in the leading-to-trailing direction
+  [CATransaction begin];
+  [CATransaction setAnimationDuration:ios::material::kDuration1];
+  [CATransaction
+      setAnimationTimingFunction:TimingFunction(ios::material::CurveEaseIn)];
+
+  for (UIButton* button in standardButtons_) {
+    CABasicAnimation* shiftButton =
+        [CABasicAnimation animationWithKeyPath:@"position"];
+    CGPoint startPosition = [button layer].position;
+    CGPoint endPosition =
+        CGPointLayoutOffset(startPosition, kButtonFadeOutXOffset);
+    shiftButton.fromValue = [NSValue valueWithCGPoint:startPosition];
+    shiftButton.toValue = [NSValue valueWithCGPoint:endPosition];
+    [[button layer] addAnimation:shiftButton forKey:@"shiftButton"];
+  }
+
+  [CATransaction commit];
+
+  // Fade to the full bleed shadow.
+  [UIView animateWithDuration:ios::material::kDuration1
+                   animations:^{
+                     [shadowView_ setAlpha:0];
+                     [fullBleedShadowView_ setAlpha:1];
+                   }];
+}
+
+- (void)fadeInStandardControls {
+  for (UIButton* button in standardButtons_) {
+    [self fadeInView:button
+        fromLeadingOffset:10
+             withDuration:ios::material::kDuration2
+               afterDelay:ios::material::kDuration1];
+  }
+
+  // Fade to the normal shadow.
+  [UIView animateWithDuration:ios::material::kDuration1
+                   animations:^{
+                     [shadowView_ setAlpha:self.backgroundView.alpha];
+                     [fullBleedShadowView_ setAlpha:0];
+                   }];
+}
+
+- (CAAnimation*)transitionAnimationForButton:(UIButton*)button
+                        containerBeginBounds:(CGRect)containerBeginBounds
+                          containerEndBounds:(CGRect)containerEndBounds
+                                   withStyle:(ToolbarTransitionStyle)style {
+  BOOL toStackView = style == TOOLBAR_TRANSITION_STYLE_TO_STACK_VIEW;
+  CGRect cardBounds = toStackView ? containerEndBounds : containerBeginBounds;
+  CGRect toolbarBounds =
+      toStackView ? containerBeginBounds : containerEndBounds;
+
+  // |button|'s model layer frame is the button's frame within |toolbarBounds|.
+  CGRect toolbarButtonFrame = button.layer.frame;
+  LayoutRect toolbarButtonLayout =
+      LayoutRectForRectInBoundingRect(toolbarButtonFrame, toolbarBounds);
+
+  // |button|'s leading or trailing padding is maintained depending on its
+  // resizing mask.  Its vertical positioning should be centered within the
+  // container view's card bounds.
+  LayoutRect cardButtonLayout = toolbarButtonLayout;
+  cardButtonLayout.boundingWidth = CGRectGetWidth(cardBounds);
+  BOOL flexibleLeading =
+      button.autoresizingMask & UIViewAutoresizingFlexibleLeadingMargin();
+  if (flexibleLeading) {
+    CGFloat trailingPadding =
+        LayoutRectGetTrailingLayout(toolbarButtonLayout).size.width;
+    cardButtonLayout.position.leading = cardButtonLayout.boundingWidth -
+                                        trailingPadding -
+                                        cardButtonLayout.size.width;
+  }
+  cardButtonLayout.position.originY =
+      CGRectGetMidY(cardBounds) - 0.5 * cardButtonLayout.size.height;
+  cardButtonLayout.position =
+      AlignLayoutRectPositionToPixel(cardButtonLayout.position);
+  CGRect cardButtonFrame = LayoutRectGetRect(cardButtonLayout);
+
+  CGRect beginFrame = toStackView ? toolbarButtonFrame : cardButtonFrame;
+  CGRect endFrame = toStackView ? cardButtonFrame : toolbarButtonFrame;
+
+  // Create animations.
+  CAAnimation* frameAnimation =
+      FrameAnimationMake(button.layer, beginFrame, endFrame);
+  frameAnimation.duration = ios::material::kDuration1;
+  frameAnimation.timingFunction = TimingFunction(ios::material::CurveEaseInOut);
+  CAAnimation* fadeAnimation =
+      OpacityAnimationMake(toStackView ? 1.0 : 0.0, toStackView ? 0.0 : 1.0);
+  fadeAnimation.duration = ios::material::kDuration8;
+  fadeAnimation.timingFunction = TimingFunction(ios::material::CurveEaseIn);
+  return AnimationGroupMake(@[ frameAnimation, fadeAnimation ]);
+}
+
+#pragma mark Helpers
+
+- (UIFont*)fontForSize:(NSInteger)size {
+  return [[MDCTypography fontLoader] boldFontOfSize:size];
+}
+
+- (BOOL)shareButtonShouldBeVisible {
+  // The share button only exists on iPad, and when some tabs are visible
+  // (i.e. when not in DarkMode), and when the width is greater than
+  // the tablet mini view.
+  if (!IsIPadIdiom() || style_ == ToolbarControllerStyleDarkMode ||
+      IsCompactTablet(self.view))
+    return NO;
+  return YES;
 }
 
 - (void)standardButtonPressed:(UIButton*)sender {
@@ -960,72 +986,42 @@ const CGFloat kPopoverAnchorHorizontalPadding = 10.0;
   }
 }
 
-- (void)setTabCount:(NSInteger)tabCount {
-  if (!stackButton_)
-    return;
-  // Enable or disable the stack view icon based on the number of tabs. This
-  // locks the user in the stack view when there are no tabs.
-  [stackButton_ setEnabled:tabCount > 0 ? YES : NO];
-
-  // Update the text shown in the |stackButton_|. Note that the button's title
-  // may be empty or contain an easter egg, but the accessibility value will
-  // always be equal to |tabCount|. Also, the text of |stackButton_| is shifted
-  // up, via |kEasterEggTitleInsets|, to avoid overlapping with the button's
-  // outline.
-  NSString* stackButtonValue =
-      [NSString stringWithFormat:@"%" PRIdNS, tabCount];
-  NSString* stackButtonTitle;
-  if (tabCount <= 0) {
-    stackButtonTitle = @"";
-  } else if (tabCount > kStackButtonMaxTabCount) {
-    stackButtonTitle = @":)";
-    [[stackButton_ titleLabel]
-        setFont:[self fontForSize:kFontSizeFewerThanTenTabs]];
-  } else {
-    stackButtonTitle = stackButtonValue;
-    if (tabCount < 10) {
-      [[stackButton_ titleLabel]
-          setFont:[self fontForSize:kFontSizeFewerThanTenTabs]];
-    } else {
-      [[stackButton_ titleLabel]
-          setFont:[self fontForSize:kFontSizeTenTabsOrMore]];
-    }
+- (void)registerEventsForButton:(UIButton*)button {
+  if (button != toolsMenuButton_) {
+    // |target| must be |self| (as opposed to |nil|) because |self| isn't in the
+    // responder chain.
+    [button addTarget:self
+                  action:@selector(standardButtonPressed:)
+        forControlEvents:UIControlEventTouchUpInside];
   }
-
-  [stackButton_ setTitle:stackButtonTitle forState:UIControlStateNormal];
-  [stackButton_ setAccessibilityValue:stackButtonValue];
+  [button addTarget:self
+                action:@selector(recordUserMetrics:)
+      forControlEvents:UIControlEventTouchUpInside];
 }
 
-- (IBAction)recordUserMetrics:(id)sender {
-  if (sender == toolsMenuButton_)
-    base::RecordAction(UserMetricsAction("MobileToolbarShowMenu"));
-  else if (sender == stackButton_)
-    base::RecordAction(UserMetricsAction("MobileToolbarShowStackView"));
-  else if (sender == shareButton_)
-    base::RecordAction(UserMetricsAction("MobileToolbarShareMenu"));
+- (UIImage*)getBackgroundImageForStyle:(ToolbarControllerStyle)style {
+  int backgroundImageID;
+  if (style == ToolbarControllerStyleLightMode)
+    backgroundImageID = IDR_IOS_TOOLBAR_LIGHT_BACKGROUND;
   else
-    NOTREACHED();
+    backgroundImageID = IDR_IOS_TOOLBAR_DARK_BACKGROUND;
+
+  return NativeImage(backgroundImageID);
 }
 
-- (uint32_t)snapshotHash {
-  // Only the 3 lowest bits are used by UIControlState.
-  uint32_t hash = [toolsMenuButton_ state] & 0x07;
-  // When the tools popup controller is valid, it means that the images
-  // representing the tools menu button have been swapped. Factor that in by
-  // adding in whether or not the tools popup menu is a valid object, rather
-  // than trying to figure out which image is currently visible.
-  hash |= toolsPopupController_ ? (1 << 4) : 0;
-  // The label of the stack button changes with the number of tabs open.
-  hash ^= [[stackButton_ titleForState:UIControlStateNormal] hash];
-  return hash;
+#pragma mark - ActivityServicePositioner
+
+- (CGRect)shareButtonAnchorRect {
+  // Shrink the padding around the shareButton so the popovers are anchored
+  // correctly.
+  return CGRectInset([shareButton_ bounds], kPopoverAnchorHorizontalPadding, 0);
 }
 
-- (void)triggerToolsMenuButtonAnimation {
-  [toolsMenuButton_ triggerAnimation];
+- (UIView*)shareButtonView {
+  return shareButton_;
 }
 
-#pragma mark -
-#pragma mark PopupMenuDelegate methods.
+#pragma mark - PopupMenuDelegate methods.
 
 - (void)dismissPopupMenu:(PopupMenuController*)controller {
   if ([controller isKindOfClass:[ToolsPopupController class]] &&
@@ -1033,8 +1029,7 @@ const CGFloat kPopoverAnchorHorizontalPadding = 10.0;
     [self dismissToolsMenuPopup];
 }
 
-#pragma mark -
-#pragma mark BubbleViewAnchorPointProvider methods.
+#pragma mark - BubbleViewAnchorPointProvider methods.
 
 - (CGPoint)anchorPointForTabSwitcherButton:(BubbleArrowDirection)direction {
   // Shrink the padding around the tab switcher button so popovers are anchored
@@ -1054,6 +1049,19 @@ const CGFloat kPopoverAnchorHorizontalPadding = 10.0;
   CGPoint anchorPoint = bubble_util::AnchorPoint(unpaddedRect, direction);
   return [toolsMenuButton_.superview convertPoint:anchorPoint
                                            toView:toolsMenuButton_.window];
+}
+
+#pragma mark - CAAnimationDelegate
+// WebToolbarController conforms to CAAnimationDelegate.
+- (void)animationDidStart:(CAAnimation*)anim {
+  // Once the buttons start fading in, set their opacity to 1 so there's no
+  // flicker at the end of the animation.
+  for (UIButton* button in standardButtons_) {
+    if (anim == [[button layer] animationForKey:@"fadeIn"]) {
+      [button layer].opacity = 1;
+      return;
+    }
+  }
 }
 
 @end
