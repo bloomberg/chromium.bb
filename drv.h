@@ -115,6 +115,8 @@ void *drv_bo_map(struct bo *bo, uint32_t x, uint32_t y, uint32_t width, uint32_t
 
 int drv_bo_unmap(struct bo *bo, struct map_info *data);
 
+int drv_bo_invalidate(struct bo *bo, struct map_info *data);
+
 int drv_bo_flush(struct bo *bo, struct map_info *data);
 
 uint32_t drv_bo_get_width(struct bo *bo);

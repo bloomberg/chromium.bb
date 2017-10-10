@@ -423,6 +423,7 @@ void *drv_bo_map(struct bo *bo, uint32_t x, uint32_t y, uint32_t width, uint32_t
 	drmHashInsert(bo->drv->map_table, bo->handles[plane].u32, (void *)data);
 
 success:
+	drv_bo_invalidate(bo, data);
 	*map_data = data;
 	offset = drv_bo_get_plane_stride(bo, plane) * y;
 	offset += drv_stride_from_format(bo->format, x, plane);
@@ -448,6 +449,18 @@ int drv_bo_unmap(struct bo *bo, struct map_info *data)
 	}
 
 	pthread_mutex_unlock(&bo->drv->driver_lock);
+
+	return ret;
+}
+
+int drv_bo_invalidate(struct bo *bo, struct map_info *data)
+{
+	int ret = 0;
+	assert(data);
+	assert(data->refcount >= 0);
+
+	if (bo->drv->backend->bo_invalidate)
+		ret = bo->drv->backend->bo_invalidate(bo, data);
 
 	return ret;
 }
