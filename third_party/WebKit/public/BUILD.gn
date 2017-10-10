@@ -844,9 +844,6 @@ mojom("mojo_bindings") {
   export_class_attribute_blink = "BLINK_PLATFORM_EXPORT"
   export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"
   export_header_blink = "third_party/WebKit/public/platform/WebCommon.h"
-
-  # TODO(crbug.com/699569): Convert to use the new JS bindings.
-  js_bindings_mode = "both"
 }
 
 mojom("android_mojo_bindings") {
@@ -878,9 +875,6 @@ mojom("android_mojo_bindings") {
   export_class_attribute_blink = "BLINK_PLATFORM_EXPORT"
   export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"
   export_header_blink = "third_party/WebKit/public/platform/WebCommon.h"
-
-  # TODO(crbug.com/699569): Convert to use the new JS bindings.
-  js_bindings_mode = "both"
 }
 
 # The offscreen_canvas_mojo_bindings is separated from the rest of mojom files
