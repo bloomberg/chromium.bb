@@ -45,8 +45,11 @@ void OverviewWindowDragController::InitiateDrag(
   previous_event_location_ = location_in_screen;
   item_ = item;
 
-  window_selector_->SetSplitViewOverviewOverlayVisible(true,
-                                                       location_in_screen);
+  window_selector_->SetSplitViewOverviewOverlayIndicatorType(
+      wm::GetWindowState(item_->GetWindow())->CanSnap()
+          ? IndicatorType::DRAG_AREA
+          : IndicatorType::CANNOT_SNAP,
+      location_in_screen);
 }
 
 void OverviewWindowDragController::Drag(const gfx::Point& location_in_screen) {
@@ -70,13 +73,16 @@ void OverviewWindowDragController::Drag(const gfx::Point& location_in_screen) {
   // snappable.
   if (wm::GetWindowState(item_->GetWindow())->CanSnap())
     UpdatePhantomWindowAndWindowGrid(location_in_screen);
-  window_selector_->SetSplitViewOverviewOverlayVisible(false,
-                                                       location_in_screen);
+
+  // TODO(crbug.com/772201): The indicator should probably remain a bit longer.
+  window_selector_->SetSplitViewOverviewOverlayIndicatorType(
+      IndicatorType::NONE, gfx::Point());
 }
 
 void OverviewWindowDragController::CompleteDrag() {
   phantom_window_controller_.reset();
-  window_selector_->SetSplitViewOverviewOverlayVisible(false, gfx::Point());
+  window_selector_->SetSplitViewOverviewOverlayIndicatorType(
+      IndicatorType::NONE, gfx::Point());
 
   if (!did_move_) {
     // If no drag was initiated (e.g., a click/tap on the overview window),

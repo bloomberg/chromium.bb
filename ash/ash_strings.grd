@@ -1075,8 +1075,11 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_SCALE_SLIDER" desc="The accessible text for the scale slider">Display scale</message>
 
-      <message name="IDS_ASH_SPLIT_VIEW_GUIDANCE" desc="Message that shows up on overview mode telling users where to drag the window to use split view">
+      <message name="IDS_ASH_SPLIT_VIEW_GUIDANCE" desc="Message that shows up on overview mode telling users where to drag the window to use split view.">
         Drag here to use split screen
+      </message>
+      <message name="IDS_ASH_SPLIT_VIEW_CANNOT_SNAP" desc="Message that shows up on overview mode telling users the window they are trying to drag cannot be snapped and thus cannot be used in split view mode.">
+        App does not support split-screen.
       </message>
 
       <!-- Lockscreen strings -->
