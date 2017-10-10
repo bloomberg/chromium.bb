@@ -12,9 +12,7 @@
 #include <sstream>
 #include <utility>
 
-#include "ash/ime/ime_controller.h"
 #include "ash/public/interfaces/ime_info.mojom.h"
-#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/hash.h"
