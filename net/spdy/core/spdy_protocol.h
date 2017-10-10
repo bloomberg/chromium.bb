@@ -278,7 +278,7 @@ const size_t kRstStreamFrameSize = kFrameHeaderSize + 4;
 const size_t kSettingsFrameMinimumSize = kFrameHeaderSize;
 // PUSH_PROMISE frame has promised_stream_id (4 octet) field.
 const size_t kPushPromiseFrameMinimumSize = kFrameHeaderSize + 4;
-// PING frame has opaque_data (8 octet) field.
+// PING frame has opaque_bytes (8 octet) field.
 const size_t kPingFrameSize = kFrameHeaderSize + 8;
 // GOAWAY frame has last_stream_id (4 octet) and error_code (4 octet) fields.
 const size_t kGoawayFrameMinimumSize = kFrameHeaderSize + 8;

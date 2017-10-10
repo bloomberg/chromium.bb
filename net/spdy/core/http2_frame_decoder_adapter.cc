@@ -57,7 +57,7 @@ SpdyFrameType ToSpdyFrameType(Http2FrameType type) {
 
 uint64_t ToSpdyPingId(const Http2PingFields& ping) {
   uint64_t v;
-  std::memcpy(&v, ping.opaque_data, Http2PingFields::EncodedSize());
+  std::memcpy(&v, ping.opaque_bytes, Http2PingFields::EncodedSize());
   return base::NetToHost64(v);
 }
 

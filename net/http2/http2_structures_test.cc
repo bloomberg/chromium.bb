@@ -416,7 +416,7 @@ TEST(Http2PingFieldsTest, Misc) {
   Http2PingFields v{{'8', ' ', 'b', 'y', 't', 'e', 's', '\0'}};
   std::stringstream s;
   s << v;
-  EXPECT_EQ("opaque_data=0x3820627974657300", s.str());
+  EXPECT_EQ("opaque_bytes=0x3820627974657300", s.str());
 }
 
 TEST(Http2GoAwayFieldsTest, Misc) {

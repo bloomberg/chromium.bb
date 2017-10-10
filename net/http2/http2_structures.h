@@ -247,8 +247,7 @@ HTTP2_EXPORT_PRIVATE std::ostream& operator<<(std::ostream& out,
 struct Http2PingFields {
   static constexpr size_t EncodedSize() { return 8; }
 
-  // TODO(jamessynge): Rename opaque_data to opaque_bytes.
-  uint8_t opaque_data[8];
+  uint8_t opaque_bytes[8];
 };
 
 HTTP2_EXPORT_PRIVATE bool operator==(const Http2PingFields& a,

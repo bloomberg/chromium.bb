@@ -74,7 +74,7 @@ void DoDecode(Http2PingFields* out, DecodeBuffer* b) {
   DCHECK_NE(nullptr, out);
   DCHECK_NE(nullptr, b);
   DCHECK_LE(Http2PingFields::EncodedSize(), b->Remaining());
-  memcpy(out->opaque_data, b->cursor(), Http2PingFields::EncodedSize());
+  memcpy(out->opaque_bytes, b->cursor(), Http2PingFields::EncodedSize());
   b->AdvanceCursor(Http2PingFields::EncodedSize());
 }
 
