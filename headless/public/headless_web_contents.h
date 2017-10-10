@@ -122,6 +122,9 @@ class HEADLESS_EXPORT HeadlessWebContents::Builder {
   // Specify whether or not TabSockets are allowed.
   Builder& SetAllowTabSockets(bool tab_sockets_allowed);
 
+  // Specify whether BeginFrames should be controlled via DevTools commands.
+  Builder& SetEnableBeginFrameControl(bool enable_begin_frame_control);
+
   // The returned object is owned by HeadlessBrowser. Call
   // HeadlessWebContents::Close() to dispose it.
   HeadlessWebContents* Build();
@@ -154,6 +157,7 @@ class HEADLESS_EXPORT HeadlessWebContents::Builder {
   gfx::Size window_size_;
   std::list<MojoService> mojo_services_;
   bool tab_sockets_allowed_ = false;
+  bool enable_begin_frame_control_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(Builder);
 };

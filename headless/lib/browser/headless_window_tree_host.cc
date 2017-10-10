@@ -4,6 +4,7 @@
 
 #include "headless/lib/browser/headless_window_tree_host.h"
 
+#include "components/viz/common/surfaces/frame_sink_id.h"
 #include "headless/lib/browser/headless_focus_client.h"
 #include "headless/lib/browser/headless_window_parenting_client.h"
 #include "ui/aura/window.h"
@@ -11,9 +12,11 @@
 
 namespace headless {
 
-HeadlessWindowTreeHost::HeadlessWindowTreeHost(const gfx::Rect& bounds)
+HeadlessWindowTreeHost::HeadlessWindowTreeHost(
+    const gfx::Rect& bounds,
+    bool external_begin_frames_enabled)
     : bounds_(bounds) {
-  CreateCompositor();
+  CreateCompositor(viz::FrameSinkId(), false, external_begin_frames_enabled);
   OnAcceleratedWidgetAvailable();
 
   focus_client_.reset(new HeadlessFocusClient());

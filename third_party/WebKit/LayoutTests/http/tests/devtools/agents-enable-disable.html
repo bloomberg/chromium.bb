@@ -24,9 +24,11 @@ function test() {
     var agentNames = Object.keys(target._agents)
                          .filter(function(agentName) {
                            var agent = target._agents[agentName];
-                           return agent['enable'] && agent['disable'] && agentName !== 'ServiceWorker' &&
-                               agentName !== 'Security' && agentName !== 'Inspector' &&
-                               agentName !== 'Target';  // async wrt others.
+                           return agent['enable'] && agent['disable']
+                               && agentName !== 'ServiceWorker'
+                               && agentName !== 'Security'
+                               && agentName !== 'Inspector'
+                               && agentName !== 'HeadlessExperimental';
                          })
                          .sort();
 

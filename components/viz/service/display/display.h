@@ -107,6 +107,7 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   }
 
   void ForceImmediateDrawAndSwapIfPossible();
+  void SetNeedsOneBeginFrame();
 
  private:
   void InitializeRenderer();

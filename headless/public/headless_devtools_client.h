@@ -57,6 +57,9 @@ class Domain;
 namespace emulation {
 class Domain;
 }
+namespace headless_experimental {
+class Domain;
+}
 namespace heap_profiler {
 class Domain;
 }
@@ -133,6 +136,7 @@ class HEADLESS_EXPORT HeadlessDevToolsClient {
   virtual dom_snapshot::Domain* GetDOMSnapshot() = 0;
   virtual dom_storage::Domain* GetDOMStorage() = 0;
   virtual emulation::Domain* GetEmulation() = 0;
+  virtual headless_experimental::Domain* GetHeadlessExperimental() = 0;
   virtual heap_profiler::Domain* GetHeapProfiler() = 0;
   virtual indexeddb::Domain* GetIndexedDB() = 0;
   virtual input::Domain* GetInput() = 0;

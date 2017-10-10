@@ -51,36 +51,73 @@ class HeadlessDevToolsManagerDelegate
   std::string GetDiscoveryPageHTML() override;
   std::string GetFrontendResource(const std::string& path) override;
 
+  void SessionDestroyed(content::DevToolsAgentHost* agent_host,
+                        int session_id) override;
+
  private:
   std::unique_ptr<base::DictionaryValue> CreateTarget(
+      content::DevToolsAgentHost* agent_host,
+      int session_id,
       int command_id,
       const base::DictionaryValue* params);
   std::unique_ptr<base::DictionaryValue> CloseTarget(
+      content::DevToolsAgentHost* agent_host,
+      int session_id,
       int command_id,
       const base::DictionaryValue* params);
   std::unique_ptr<base::DictionaryValue> CreateBrowserContext(
+      content::DevToolsAgentHost* agent_host,
+      int session_id,
       int command_id,
       const base::DictionaryValue* params);
   std::unique_ptr<base::DictionaryValue> DisposeBrowserContext(
+      content::DevToolsAgentHost* agent_host,
+      int session_id,
       int command_id,
       const base::DictionaryValue* params);
   std::unique_ptr<base::DictionaryValue> GetWindowForTarget(
+      content::DevToolsAgentHost* agent_host,
+      int session_id,
       int command_id,
       const base::DictionaryValue* params);
   std::unique_ptr<base::DictionaryValue> GetWindowBounds(
+      content::DevToolsAgentHost* agent_host,
+      int session_id,
       int command_id,
       const base::DictionaryValue* params);
   std::unique_ptr<base::DictionaryValue> SetWindowBounds(
+      content::DevToolsAgentHost* agent_host,
+      int session_id,
+      int command_id,
+      const base::DictionaryValue* params);
+  std::unique_ptr<base::DictionaryValue> EnableHeadlessExperimental(
+      content::DevToolsAgentHost* agent_host,
+      int session_id,
+      int command_id,
+      const base::DictionaryValue* params);
+  std::unique_ptr<base::DictionaryValue> DisableHeadlessExperimental(
+      content::DevToolsAgentHost* agent_host,
+      int session_id,
       int command_id,
       const base::DictionaryValue* params);
   std::unique_ptr<base::DictionaryValue> EmulateNetworkConditions(
+      content::DevToolsAgentHost* agent_host,
+      int session_id,
       int command_id,
       const base::DictionaryValue* params);
   std::unique_ptr<base::DictionaryValue> NetworkDisable(
+      content::DevToolsAgentHost* agent_host,
+      int session_id,
       int command_id,
       const base::DictionaryValue* params);
 
   void PrintToPDF(content::DevToolsAgentHost* agent_host,
+                  int session_id,
+                  int command_id,
+                  const base::DictionaryValue* params,
+                  const CommandCallback& callback);
+  void BeginFrame(content::DevToolsAgentHost* agent_host,
+                  int session_id,
                   int command_id,
                   const base::DictionaryValue* params,
                   const CommandCallback& callback);
@@ -89,10 +126,13 @@ class HeadlessDevToolsManagerDelegate
 
   using CommandMemberCallback =
       base::Callback<std::unique_ptr<base::DictionaryValue>(
+          content::DevToolsAgentHost* agent_host,
+          int session_id,
           int command_id,
           const base::DictionaryValue* params)>;
   using AsyncCommandMemberCallback =
       base::Callback<void(content::DevToolsAgentHost* agent_host,
+                          int session_id,
                           int command_id,
                           const base::DictionaryValue* params,
                           const CommandCallback& callback)>;

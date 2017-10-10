@@ -11,7 +11,9 @@
 #include <unordered_map>
 
 #include "base/observer_list.h"
+#include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "content/public/browser/devtools_agent_host_observer.h"
+#include "content/public/browser/readback_types.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "headless/lib/browser/headless_window_tree_host.h"
@@ -19,6 +21,9 @@
 #include "headless/public/headless_export.h"
 #include "headless/public/headless_web_contents.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
+#include "ui/compositor/external_begin_frame_client.h"
+
+class SkBitmap;
 
 namespace content {
 class DevToolsAgentHost;
@@ -40,7 +45,8 @@ class HEADLESS_EXPORT HeadlessWebContentsImpl
       public HeadlessDevToolsTarget,
       public content::DevToolsAgentHostObserver,
       public content::RenderProcessHostObserver,
-      public content::WebContentsObserver {
+      public content::WebContentsObserver,
+      public ui::ExternalBeginFrameClient {
  public:
   ~HeadlessWebContentsImpl() override;
 
@@ -91,10 +97,15 @@ class HEADLESS_EXPORT HeadlessWebContentsImpl
   void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
   void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
   void RenderViewReady() override;
+  void DidReceiveCompositorFrame() override;
   void OnInterfaceRequestFromFrame(
       content::RenderFrameHost* render_frame_host,
       const std::string& interface_name,
       mojo::ScopedMessagePipeHandle* interface_pipe) override;
+
+  // ui::ExternalBeginFrameClient implementation:
+  void OnDisplayDidFinishFrame(const viz::BeginFrameAck& ack) override;
+  void OnNeedsExternalBeginFrames(bool needs_begin_frames) override;
 
   content::WebContents* web_contents() const;
   bool OpenURL(const GURL& url);
@@ -125,7 +136,28 @@ class HEADLESS_EXPORT HeadlessWebContentsImpl
 
   void CreateTabSocketMojoService(mojo::ScopedMessagePipeHandle handle);
 
+  bool begin_frame_control_enabled() const {
+    return begin_frame_control_enabled_;
+  }
+
+  bool needs_external_begin_frames() const {
+    return needs_external_begin_frames_;
+  }
+
+  void SetBeginFrameEventsEnabled(int session_id, bool enabled);
+
+  using FrameFinishedCallback =
+      base::Callback<void(bool /*has_damage*/, std::unique_ptr<SkBitmap>)>;
+  void BeginFrame(const base::TimeTicks& frame_timeticks,
+                  const base::TimeTicks& deadline,
+                  const base::TimeDelta& interval,
+                  bool capture_screenshot,
+                  const FrameFinishedCallback& frame_finished_callback);
+  bool HasPendingFrame() const { return !pending_frames_.empty(); }
+
  private:
+  struct PendingFrame;
+
   // Takes ownership of |web_contents|.
   HeadlessWebContentsImpl(content::WebContents* web_contents,
                           HeadlessBrowserContextImpl* browser_context);
@@ -136,6 +168,20 @@ class HEADLESS_EXPORT HeadlessWebContentsImpl
   void CreateMojoService(
       const MojoService::ServiceFactoryCallback& service_factory,
       mojo::ScopedMessagePipeHandle handle);
+
+  void SendNeedsBeginFramesEvent(int session_id);
+  void PendingFrameReadbackComplete(PendingFrame* pending_frame,
+                                    const SkBitmap& bitmap,
+                                    content::ReadbackResponse response);
+
+  uint32_t begin_frame_source_id_ = viz::BeginFrameArgs::kManualSourceId;
+  uint64_t begin_frame_sequence_number_ =
+      viz::BeginFrameArgs::kStartingFrameNumber;
+  bool begin_frame_control_enabled_ = false;
+  std::list<int> begin_frame_events_enabled_sessions_;
+  bool needs_external_begin_frames_ = false;
+  std::list<std::unique_ptr<PendingFrame>> pending_frames_;
+  bool first_compositor_frame_received_ = false;
 
   class Delegate;
   std::unique_ptr<Delegate> web_contents_delegate_;
