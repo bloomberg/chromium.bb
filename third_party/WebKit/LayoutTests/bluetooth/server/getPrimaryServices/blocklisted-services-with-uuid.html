@@ -2,11 +2,9 @@
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
 <script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
-<script src="../../../resources/bluetooth/web-bluetooth-test.js"></script>
-<script src="../../../resources/mojo-helpers.js"></script>
 <script>
 'use strict';
-promise_test(() => {
+bluetooth_test(() => {
   return getHIDDevice({
       filters: [{services: ['device_information']}],
       optionalServices: ['human_interface_device']})

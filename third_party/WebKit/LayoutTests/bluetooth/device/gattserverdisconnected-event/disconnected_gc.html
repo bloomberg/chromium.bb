@@ -2,14 +2,12 @@
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
 <script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
-<script src="../../../resources/bluetooth/web-bluetooth-test.js"></script>
-<script src="../../../resources/mojo-helpers.js"></script>
 <script>
 'use strict';
 let test_desc = 'A device disconnecting after the BluetoothDevice object has ' +
     'been gced should not access freed memory.';
 let fake_peripheral;
-promise_test(() => getHealthThermometerDevice()
+bluetooth_test(() => getHealthThermometerDevice()
   .then(_ => ({fake_peripheral} = _))
   .then(() => {
     // 1. Disconnect.

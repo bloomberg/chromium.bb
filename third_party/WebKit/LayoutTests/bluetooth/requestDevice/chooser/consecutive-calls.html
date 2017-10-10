@@ -4,7 +4,7 @@
 <script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
 <script>
 'use strict';
-promise_test(() => {
+bluetooth_test(() => {
   function assert_expected_events(events) {
     assert_equals(events.length, 4);
     assert_equals(events[0], 'chooser-opened(file://)');

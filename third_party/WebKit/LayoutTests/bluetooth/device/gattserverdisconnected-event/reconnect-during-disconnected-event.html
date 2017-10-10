@@ -2,15 +2,13 @@
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
 <script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
-<script src="../../../resources/bluetooth/web-bluetooth-test.js"></script>
-<script src="../../../resources/mojo-helpers.js"></script>
 <script>
 'use strict';
 let test_desc = 'A device that reconnects during the gattserverdisconnected ' +
     'event should still receive gattserverdisconnected events after ' +
     're-connection.';
 let device, fake_peripheral;
-promise_test(() => getHealthThermometerDevice()
+bluetooth_test(() => getHealthThermometerDevice()
   .then(_ => ({device, fake_peripheral} = _))
   // 1. Disconnect.
   .then(() => new Promise(resolve => {

@@ -4,7 +4,7 @@
 <script src="../../../resources/testharnessreport.js"></script>
 <script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
 <script>
-promise_test(() => {
+bluetooth_test(() => {
   let val = new Uint8Array([1]);
   return setBluetoothFakeAdapter('StopNotifySessionFinishesAfterReconnectionAdapter')
     .then(() => requestDeviceWithKeyDown({

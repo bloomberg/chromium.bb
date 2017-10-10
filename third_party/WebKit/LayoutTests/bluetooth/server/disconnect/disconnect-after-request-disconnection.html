@@ -7,7 +7,7 @@
 var device;
 var server;
 var numEvents = 0;
-promise_test(() => {
+bluetooth_test(() => {
   return setBluetoothFakeAdapter('DisconnectingHealthThermometerAdapter')
     .then(() => requestDeviceWithKeyDown({
       filters: [{services: ['health_thermometer']}],
