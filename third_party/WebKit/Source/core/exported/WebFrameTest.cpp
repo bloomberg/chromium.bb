@@ -3766,31 +3766,31 @@ TEST_P(ParameterizedWebFrameTest, BlockBoundTest) {
 
   block_bound = IntRect(
       web_view_helper.WebView()->ComputeBlockBound(WebPoint(9, 9), true));
-  EXPECT_RECT_EQ(rect_back, block_bound);
+  EXPECT_EQ(rect_back, block_bound);
 
   block_bound = IntRect(
       web_view_helper.WebView()->ComputeBlockBound(WebPoint(10, 10), true));
-  EXPECT_RECT_EQ(rect_left_top, block_bound);
+  EXPECT_EQ(rect_left_top, block_bound);
 
   block_bound = IntRect(
       web_view_helper.WebView()->ComputeBlockBound(WebPoint(50, 50), true));
-  EXPECT_RECT_EQ(rect_left_top, block_bound);
+  EXPECT_EQ(rect_left_top, block_bound);
 
   block_bound = IntRect(
       web_view_helper.WebView()->ComputeBlockBound(WebPoint(89, 89), true));
-  EXPECT_RECT_EQ(rect_left_top, block_bound);
+  EXPECT_EQ(rect_left_top, block_bound);
 
   block_bound = IntRect(
       web_view_helper.WebView()->ComputeBlockBound(WebPoint(90, 90), true));
-  EXPECT_RECT_EQ(rect_back, block_bound);
+  EXPECT_EQ(rect_back, block_bound);
 
   block_bound = IntRect(
       web_view_helper.WebView()->ComputeBlockBound(WebPoint(109, 109), true));
-  EXPECT_RECT_EQ(rect_back, block_bound);
+  EXPECT_EQ(rect_back, block_bound);
 
   block_bound = IntRect(
       web_view_helper.WebView()->ComputeBlockBound(WebPoint(110, 110), true));
-  EXPECT_RECT_EQ(rect_right_bottom, block_bound);
+  EXPECT_EQ(rect_right_bottom, block_bound);
 }
 
 TEST_P(ParameterizedWebFrameTest, DivMultipleTargetZoomMultipleDivsTest) {
@@ -6395,16 +6395,15 @@ TEST_P(ParameterizedWebFrameTest, DisambiguationPopupVisualViewport) {
 
   // Scroll main frame to the bottom of the document
   web_view_impl->MainFrameImpl()->SetScrollOffset(WebSize(0, 400));
-  EXPECT_SIZE_EQ(
-      ScrollOffset(0, 400),
-      frame->View()->LayoutViewportScrollableArea()->GetScrollOffset());
+  EXPECT_EQ(ScrollOffset(0, 400),
+            frame->View()->LayoutViewportScrollableArea()->GetScrollOffset());
 
   web_view_impl->SetPageScaleFactor(2.0);
 
   // Scroll visual viewport to the top of the main frame.
   VisualViewport& visual_viewport = frame->GetPage()->GetVisualViewport();
   visual_viewport.SetLocation(FloatPoint(0, 0));
-  EXPECT_SIZE_EQ(ScrollOffset(0, 0), visual_viewport.GetScrollOffset());
+  EXPECT_EQ(ScrollOffset(0, 0), visual_viewport.GetScrollOffset());
 
   // Tap at the top: there is nothing there.
   client.ResetTriggered();
@@ -6413,7 +6412,7 @@ TEST_P(ParameterizedWebFrameTest, DisambiguationPopupVisualViewport) {
 
   // Scroll visual viewport to the bottom of the main frame.
   visual_viewport.SetLocation(FloatPoint(0, 200));
-  EXPECT_SIZE_EQ(ScrollOffset(0, 200), visual_viewport.GetScrollOffset());
+  EXPECT_EQ(ScrollOffset(0, 200), visual_viewport.GetScrollOffset());
 
   // Now the tap with the same coordinates should hit two elements.
   client.ResetTriggered();
@@ -7951,9 +7950,9 @@ TEST_P(ParameterizedWebFrameTest, FrameViewMoveWithSetFrameRect) {
   web_view_helper.WebView()->UpdateAllLifecyclePhases();
 
   LocalFrameView* frame_view = web_view_helper.LocalMainFrame()->GetFrameView();
-  EXPECT_RECT_EQ(IntRect(0, 0, 200, 200), frame_view->FrameRect());
+  EXPECT_EQ(IntRect(0, 0, 200, 200), frame_view->FrameRect());
   frame_view->SetFrameRect(IntRect(100, 100, 200, 200));
-  EXPECT_RECT_EQ(IntRect(100, 100, 200, 200), frame_view->FrameRect());
+  EXPECT_EQ(IntRect(100, 100, 200, 200), frame_view->FrameRect());
 }
 
 TEST_P(ParameterizedWebFrameTest, FrameViewScrollAccountsForBrowserControls) {
@@ -7973,30 +7972,28 @@ TEST_P(ParameterizedWebFrameTest, FrameViewScrollAccountsForBrowserControls) {
   web_view->UpdateAllLifecyclePhases();
 
   web_view->MainFrameImpl()->SetScrollOffset(WebSize(0, 2000));
-  EXPECT_SIZE_EQ(ScrollOffset(0, 1900),
-                 frame_view->LayoutViewportScrollableArea()->GetScrollOffset());
+  EXPECT_EQ(ScrollOffset(0, 1900),
+            frame_view->LayoutViewportScrollableArea()->GetScrollOffset());
 
   // Simulate the browser controls showing by 20px, thus shrinking the viewport
   // and allowing it to scroll an additional 20px.
   web_view->ApplyViewportDeltas(WebFloatSize(), WebFloatSize(), WebFloatSize(),
                                 1.0f, 20.0f / browser_controls_height);
-  EXPECT_SIZE_EQ(
-      ScrollOffset(0, 1920),
-      frame_view->LayoutViewportScrollableArea()->MaximumScrollOffset());
+  EXPECT_EQ(ScrollOffset(0, 1920),
+            frame_view->LayoutViewportScrollableArea()->MaximumScrollOffset());
 
   // Show more, make sure the scroll actually gets clamped.
   web_view->ApplyViewportDeltas(WebFloatSize(), WebFloatSize(), WebFloatSize(),
                                 1.0f, 20.0f / browser_controls_height);
   web_view->MainFrameImpl()->SetScrollOffset(WebSize(0, 2000));
-  EXPECT_SIZE_EQ(ScrollOffset(0, 1940),
-                 frame_view->LayoutViewportScrollableArea()->GetScrollOffset());
+  EXPECT_EQ(ScrollOffset(0, 1940),
+            frame_view->LayoutViewportScrollableArea()->GetScrollOffset());
 
   // Hide until there's 10px showing.
   web_view->ApplyViewportDeltas(WebFloatSize(), WebFloatSize(), WebFloatSize(),
                                 1.0f, -30.0f / browser_controls_height);
-  EXPECT_SIZE_EQ(
-      ScrollOffset(0, 1910),
-      frame_view->LayoutViewportScrollableArea()->MaximumScrollOffset());
+  EXPECT_EQ(ScrollOffset(0, 1910),
+            frame_view->LayoutViewportScrollableArea()->MaximumScrollOffset());
 
   // Simulate a LayoutEmbeddedContent::resize. The frame is resized to
   // accomodate the browser controls and Blink's view of the browser controls
@@ -8005,16 +8002,14 @@ TEST_P(ParameterizedWebFrameTest, FrameViewScrollAccountsForBrowserControls) {
                                 1.0f, 30.0f / browser_controls_height);
   web_view->ResizeWithBrowserControls(WebSize(100, 60), 40.0f, 0, true);
   web_view->UpdateAllLifecyclePhases();
-  EXPECT_SIZE_EQ(
-      ScrollOffset(0, 1940),
-      frame_view->LayoutViewportScrollableArea()->MaximumScrollOffset());
+  EXPECT_EQ(ScrollOffset(0, 1940),
+            frame_view->LayoutViewportScrollableArea()->MaximumScrollOffset());
 
   // Now simulate hiding.
   web_view->ApplyViewportDeltas(WebFloatSize(), WebFloatSize(), WebFloatSize(),
                                 1.0f, -10.0f / browser_controls_height);
-  EXPECT_SIZE_EQ(
-      ScrollOffset(0, 1930),
-      frame_view->LayoutViewportScrollableArea()->MaximumScrollOffset());
+  EXPECT_EQ(ScrollOffset(0, 1930),
+            frame_view->LayoutViewportScrollableArea()->MaximumScrollOffset());
 
   // Reset to original state: 100px widget height, browser controls fully
   // hidden.
@@ -8023,9 +8018,8 @@ TEST_P(ParameterizedWebFrameTest, FrameViewScrollAccountsForBrowserControls) {
   web_view->ResizeWithBrowserControls(WebSize(100, 100),
                                       browser_controls_height, 0, false);
   web_view->UpdateAllLifecyclePhases();
-  EXPECT_SIZE_EQ(
-      ScrollOffset(0, 1900),
-      frame_view->LayoutViewportScrollableArea()->MaximumScrollOffset());
+  EXPECT_EQ(ScrollOffset(0, 1900),
+            frame_view->LayoutViewportScrollableArea()->MaximumScrollOffset());
 
   // Show the browser controls by just 1px, since we're zoomed in to 2X, that
   // should allow an extra 0.5px of scrolling in the visual viewport. Make
@@ -8033,15 +8027,13 @@ TEST_P(ParameterizedWebFrameTest, FrameViewScrollAccountsForBrowserControls) {
   // main frame.
   web_view->ApplyViewportDeltas(WebFloatSize(), WebFloatSize(), WebFloatSize(),
                                 1.0f, 1.0f / browser_controls_height);
-  EXPECT_SIZE_EQ(
-      ScrollOffset(0, 1901),
-      frame_view->LayoutViewportScrollableArea()->MaximumScrollOffset());
+  EXPECT_EQ(ScrollOffset(0, 1901),
+            frame_view->LayoutViewportScrollableArea()->MaximumScrollOffset());
 
   web_view->ApplyViewportDeltas(WebFloatSize(), WebFloatSize(), WebFloatSize(),
                                 1.0f, 2.0f / browser_controls_height);
-  EXPECT_SIZE_EQ(
-      ScrollOffset(0, 1903),
-      frame_view->LayoutViewportScrollableArea()->MaximumScrollOffset());
+  EXPECT_EQ(ScrollOffset(0, 1903),
+            frame_view->LayoutViewportScrollableArea()->MaximumScrollOffset());
 }
 
 TEST_P(ParameterizedWebFrameTest, MaximumScrollPositionCanBeNegative) {

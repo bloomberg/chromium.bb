@@ -1191,9 +1191,9 @@ TEST_F(WebPluginContainerTest, ClippedRectsForIframedElement) {
   IntRect window_rect, clip_rect, unobscured_rect;
   CalculateGeometry(plugin_container_impl, window_rect, clip_rect,
                     unobscured_rect);
-  EXPECT_RECT_EQ(IntRect(20, 220, 40, 40), window_rect);
-  EXPECT_RECT_EQ(IntRect(0, 0, 40, 40), clip_rect);
-  EXPECT_RECT_EQ(IntRect(0, 0, 40, 40), unobscured_rect);
+  EXPECT_EQ(IntRect(20, 220, 40, 40), window_rect);
+  EXPECT_EQ(IntRect(0, 0, 40, 40), clip_rect);
+  EXPECT_EQ(IntRect(0, 0, 40, 40), unobscured_rect);
 
   // Cause the plugin's frame to be detached.
   web_view_helper.Reset();
@@ -1220,9 +1220,9 @@ TEST_F(WebPluginContainerTest, ClippedRectsForSubpixelPositionedPlugin) {
   IntRect window_rect, clip_rect, unobscured_rect;
   CalculateGeometry(plugin_container_impl, window_rect, clip_rect,
                     unobscured_rect);
-  EXPECT_RECT_EQ(IntRect(0, 0, 40, 40), window_rect);
-  EXPECT_RECT_EQ(IntRect(0, 0, 40, 40), clip_rect);
-  EXPECT_RECT_EQ(IntRect(0, 0, 40, 40), unobscured_rect);
+  EXPECT_EQ(IntRect(0, 0, 40, 40), window_rect);
+  EXPECT_EQ(IntRect(0, 0, 40, 40), clip_rect);
+  EXPECT_EQ(IntRect(0, 0, 40, 40), unobscured_rect);
 
   // Cause the plugin's frame to be detached.
   web_view_helper.Reset();

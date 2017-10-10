@@ -165,7 +165,7 @@ TEST_F(BrowserControlsTest, MAYBE(HideOnScrollDown)) {
   web_view->HandleInputEvent(
       GenerateEvent(WebInputEvent::kGestureScrollUpdate, 0, -25.f));
   EXPECT_FLOAT_EQ(25.f, web_view->GetBrowserControls().ContentOffset());
-  EXPECT_SIZE_EQ(
+  EXPECT_EQ(
       ScrollOffset(0, 0),
       GetFrame()->View()->LayoutViewportScrollableArea()->GetScrollOffset());
 
@@ -175,7 +175,7 @@ TEST_F(BrowserControlsTest, MAYBE(HideOnScrollDown)) {
   web_view->HandleInputEvent(
       GenerateEvent(WebInputEvent::kGestureScrollUpdate, 0, -40.f));
   EXPECT_FLOAT_EQ(0.f, web_view->GetBrowserControls().ContentOffset());
-  EXPECT_SIZE_EQ(
+  EXPECT_EQ(
       ScrollOffset(0, 15),
       GetFrame()->View()->LayoutViewportScrollableArea()->GetScrollOffset());
 
@@ -183,7 +183,7 @@ TEST_F(BrowserControlsTest, MAYBE(HideOnScrollDown)) {
   web_view->HandleInputEvent(
       GenerateEvent(WebInputEvent::kGestureScrollUpdate, 0, -20.f));
   EXPECT_FLOAT_EQ(0.f, web_view->GetBrowserControls().ContentOffset());
-  EXPECT_SIZE_EQ(
+  EXPECT_EQ(
       ScrollOffset(0, 35),
       GetFrame()->View()->LayoutViewportScrollableArea()->GetScrollOffset());
 }
@@ -204,7 +204,7 @@ TEST_F(BrowserControlsTest, MAYBE(HideBottomControlsOnScrollDown)) {
       GenerateEvent(WebInputEvent::kGestureScrollUpdate, 0, -25.f));
   EXPECT_FLOAT_EQ(0.f, web_view->GetBrowserControls().ContentOffset());
   EXPECT_FLOAT_EQ(0.5f, web_view->GetBrowserControls().ShownRatio());
-  EXPECT_SIZE_EQ(
+  EXPECT_EQ(
       ScrollOffset(0, 25.f),
       GetFrame()->View()->LayoutViewportScrollableArea()->GetScrollOffset());
 
@@ -215,7 +215,7 @@ TEST_F(BrowserControlsTest, MAYBE(HideBottomControlsOnScrollDown)) {
   web_view->HandleInputEvent(GenerateEvent(WebInputEvent::kGestureScrollEnd));
   EXPECT_FLOAT_EQ(0.f, web_view->GetBrowserControls().ContentOffset());
   EXPECT_FLOAT_EQ(0.f, web_view->GetBrowserControls().ShownRatio());
-  EXPECT_SIZE_EQ(
+  EXPECT_EQ(
       ScrollOffset(0, 65.f),
       GetFrame()->View()->LayoutViewportScrollableArea()->GetScrollOffset());
 }
@@ -233,14 +233,14 @@ TEST_F(BrowserControlsTest, MAYBE(ShowOnScrollUp)) {
   web_view->HandleInputEvent(
       GenerateEvent(WebInputEvent::kGestureScrollUpdate, 0, 10.f));
   EXPECT_FLOAT_EQ(10.f, web_view->GetBrowserControls().ContentOffset());
-  EXPECT_SIZE_EQ(
+  EXPECT_EQ(
       ScrollOffset(0, 0),
       GetFrame()->View()->LayoutViewportScrollableArea()->GetScrollOffset());
 
   web_view->HandleInputEvent(
       GenerateEvent(WebInputEvent::kGestureScrollUpdate, 0, 50.f));
   EXPECT_FLOAT_EQ(50.f, web_view->GetBrowserControls().ContentOffset());
-  EXPECT_SIZE_EQ(
+  EXPECT_EQ(
       ScrollOffset(0, 0),
       GetFrame()->View()->LayoutViewportScrollableArea()->GetScrollOffset());
 }
@@ -267,7 +267,7 @@ TEST_F(BrowserControlsTest, MAYBE(ShowBottomControlsOnScrollUp)) {
   web_view->HandleInputEvent(GenerateEvent(WebInputEvent::kGestureScrollEnd));
   EXPECT_FLOAT_EQ(0.f, web_view->GetBrowserControls().ContentOffset());
   EXPECT_FLOAT_EQ(0.5f, web_view->GetBrowserControls().ShownRatio());
-  EXPECT_SIZE_EQ(
+  EXPECT_EQ(
       ScrollOffset(0, 25),
       GetFrame()->View()->LayoutViewportScrollableArea()->GetScrollOffset());
 }
@@ -290,7 +290,7 @@ TEST_F(BrowserControlsTest, MAYBE(ScrollDownThenUp)) {
   web_view->HandleInputEvent(
       GenerateEvent(WebInputEvent::kGestureScrollUpdate, 0, -150.f));
   EXPECT_FLOAT_EQ(0.f, web_view->GetBrowserControls().ContentOffset());
-  EXPECT_SIZE_EQ(
+  EXPECT_EQ(
       ScrollOffset(0, 200),
       GetFrame()->View()->LayoutViewportScrollableArea()->GetScrollOffset());
 
@@ -299,14 +299,14 @@ TEST_F(BrowserControlsTest, MAYBE(ScrollDownThenUp)) {
   web_view->HandleInputEvent(
       GenerateEvent(WebInputEvent::kGestureScrollUpdate, 0, 40.f));
   EXPECT_FLOAT_EQ(0.f, web_view->GetBrowserControls().ContentOffset());
-  EXPECT_SIZE_EQ(
+  EXPECT_EQ(
       ScrollOffset(0, 160),
       GetFrame()->View()->LayoutViewportScrollableArea()->GetScrollOffset());
 
   web_view->HandleInputEvent(
       GenerateEvent(WebInputEvent::kGestureScrollUpdate, 0, 60.f));
   EXPECT_FLOAT_EQ(0.f, web_view->GetBrowserControls().ContentOffset());
-  EXPECT_SIZE_EQ(
+  EXPECT_EQ(
       ScrollOffset(0, 100),
       GetFrame()->View()->LayoutViewportScrollableArea()->GetScrollOffset());
 
@@ -315,7 +315,7 @@ TEST_F(BrowserControlsTest, MAYBE(ScrollDownThenUp)) {
   web_view->HandleInputEvent(
       GenerateEvent(WebInputEvent::kGestureScrollUpdate, 0, 30.f));
   EXPECT_FLOAT_EQ(30.f, web_view->GetBrowserControls().ContentOffset());
-  EXPECT_SIZE_EQ(
+  EXPECT_EQ(
       ScrollOffset(0, 100),
       GetFrame()->View()->LayoutViewportScrollableArea()->GetScrollOffset());
 
@@ -323,7 +323,7 @@ TEST_F(BrowserControlsTest, MAYBE(ScrollDownThenUp)) {
   web_view->HandleInputEvent(
       GenerateEvent(WebInputEvent::kGestureScrollUpdate, 0, 70.f));
   EXPECT_FLOAT_EQ(50.f, web_view->GetBrowserControls().ContentOffset());
-  EXPECT_SIZE_EQ(
+  EXPECT_EQ(
       ScrollOffset(0, 50),
       GetFrame()->View()->LayoutViewportScrollableArea()->GetScrollOffset());
 }
@@ -346,7 +346,7 @@ TEST_F(BrowserControlsTest, MAYBE(ScrollUpThenDown)) {
   web_view->HandleInputEvent(
       GenerateEvent(WebInputEvent::kGestureScrollUpdate, 0, 100.f));
   EXPECT_FLOAT_EQ(50.f, web_view->GetBrowserControls().ContentOffset());
-  EXPECT_SIZE_EQ(
+  EXPECT_EQ(
       ScrollOffset(0, 50),
       GetFrame()->View()->LayoutViewportScrollableArea()->GetScrollOffset());
 
@@ -354,14 +354,14 @@ TEST_F(BrowserControlsTest, MAYBE(ScrollUpThenDown)) {
   web_view->HandleInputEvent(
       GenerateEvent(WebInputEvent::kGestureScrollUpdate, 0, -40.f));
   EXPECT_FLOAT_EQ(10.f, web_view->GetBrowserControls().ContentOffset());
-  EXPECT_SIZE_EQ(
+  EXPECT_EQ(
       ScrollOffset(0, 50),
       GetFrame()->View()->LayoutViewportScrollableArea()->GetScrollOffset());
 
   web_view->HandleInputEvent(
       GenerateEvent(WebInputEvent::kGestureScrollUpdate, 0, -60.f));
   EXPECT_FLOAT_EQ(0.f, web_view->GetBrowserControls().ContentOffset());
-  EXPECT_SIZE_EQ(
+  EXPECT_EQ(
       ScrollOffset(0, 100),
       GetFrame()->View()->LayoutViewportScrollableArea()->GetScrollOffset());
 }
@@ -380,14 +380,14 @@ TEST_F(BrowserControlsTest, MAYBE(HorizontalScroll)) {
   web_view->HandleInputEvent(
       GenerateEvent(WebInputEvent::kGestureScrollUpdate, -110.f, -100.f));
   EXPECT_FLOAT_EQ(0.f, web_view->GetBrowserControls().ContentOffset());
-  EXPECT_SIZE_EQ(
+  EXPECT_EQ(
       ScrollOffset(110, 50),
       GetFrame()->View()->LayoutViewportScrollableArea()->GetScrollOffset());
 
   web_view->HandleInputEvent(
       GenerateEvent(WebInputEvent::kGestureScrollUpdate, -40.f, 0));
   EXPECT_FLOAT_EQ(0.f, web_view->GetBrowserControls().ContentOffset());
-  EXPECT_SIZE_EQ(
+  EXPECT_EQ(
       ScrollOffset(150, 50),
       GetFrame()->View()->LayoutViewportScrollableArea()->GetScrollOffset());
 }
@@ -409,16 +409,16 @@ TEST_F(BrowserControlsTest, MAYBE(PageScaleHasNoImpact)) {
   web_view->HandleInputEvent(
       GenerateEvent(WebInputEvent::kGestureScrollUpdate, 0, -20.f));
   EXPECT_FLOAT_EQ(30.f, web_view->GetBrowserControls().ContentOffset());
-  EXPECT_SIZE_EQ(ScrollOffset(0, 0),
-                 GetFrame()->View()->GetScrollableArea()->GetScrollOffset());
+  EXPECT_EQ(ScrollOffset(0, 0),
+            GetFrame()->View()->GetScrollableArea()->GetScrollOffset());
 
   // Browser controls should consume 30px and become hidden. Excess scroll
   // should be consumed by the page at 2x scale.
   web_view->HandleInputEvent(
       GenerateEvent(WebInputEvent::kGestureScrollUpdate, 0, -70.f));
   EXPECT_FLOAT_EQ(0.f, web_view->GetBrowserControls().ContentOffset());
-  EXPECT_SIZE_EQ(ScrollOffset(0, 20),
-                 GetFrame()->View()->GetScrollableArea()->GetScrollOffset());
+  EXPECT_EQ(ScrollOffset(0, 20),
+            GetFrame()->View()->GetScrollableArea()->GetScrollOffset());
 
   web_view->HandleInputEvent(GenerateEvent(WebInputEvent::kGestureScrollEnd));
 
@@ -427,21 +427,21 @@ TEST_F(BrowserControlsTest, MAYBE(PageScaleHasNoImpact)) {
 
   web_view->HandleInputEvent(GenerateEvent(WebInputEvent::kGestureScrollBegin));
   EXPECT_FLOAT_EQ(0.f, web_view->GetBrowserControls().ContentOffset());
-  EXPECT_SIZE_EQ(ScrollOffset(0, 20),
-                 GetFrame()->View()->GetScrollableArea()->GetScrollOffset());
+  EXPECT_EQ(ScrollOffset(0, 20),
+            GetFrame()->View()->GetScrollableArea()->GetScrollOffset());
 
   web_view->HandleInputEvent(
       GenerateEvent(WebInputEvent::kGestureScrollUpdate, 0, 50.f));
   EXPECT_FLOAT_EQ(50.f, web_view->GetBrowserControls().ContentOffset());
-  EXPECT_SIZE_EQ(ScrollOffset(0, 20),
-                 GetFrame()->View()->GetScrollableArea()->GetScrollOffset());
+  EXPECT_EQ(ScrollOffset(0, 20),
+            GetFrame()->View()->GetScrollableArea()->GetScrollOffset());
 
   // At 0.5x scale scrolling 10px should take us to the top of the page.
   web_view->HandleInputEvent(
       GenerateEvent(WebInputEvent::kGestureScrollUpdate, 0, 10.f));
   EXPECT_FLOAT_EQ(50.f, web_view->GetBrowserControls().ContentOffset());
-  EXPECT_SIZE_EQ(ScrollOffset(0, 0),
-                 GetFrame()->View()->GetScrollableArea()->GetScrollOffset());
+  EXPECT_EQ(ScrollOffset(0, 0),
+            GetFrame()->View()->GetScrollableArea()->GetScrollOffset());
 }
 
 // Some scroll deltas result in a shownRatio that can't be realized in a
@@ -481,7 +481,7 @@ TEST_F(BrowserControlsTest, MAYBE(ScrollableSubregionScrollFirst)) {
   // main frame should not scroll.
   VerticalScroll(-800.f);
   EXPECT_FLOAT_EQ(50.f, web_view->GetBrowserControls().ContentOffset());
-  EXPECT_SIZE_EQ(
+  EXPECT_EQ(
       ScrollOffset(0, 50),
       GetFrame()->View()->LayoutViewportScrollableArea()->GetScrollOffset());
 
@@ -489,14 +489,14 @@ TEST_F(BrowserControlsTest, MAYBE(ScrollableSubregionScrollFirst)) {
   // should not scroll.
   VerticalScroll(-40.f);
   EXPECT_FLOAT_EQ(10.f, web_view->GetBrowserControls().ContentOffset());
-  EXPECT_SIZE_EQ(
+  EXPECT_EQ(
       ScrollOffset(0, 50),
       GetFrame()->View()->LayoutViewportScrollableArea()->GetScrollOffset());
 
   // Continued scroll down should scroll down the main frame
   VerticalScroll(-40.f);
   EXPECT_FLOAT_EQ(0.f, web_view->GetBrowserControls().ContentOffset());
-  EXPECT_SIZE_EQ(
+  EXPECT_EQ(
       ScrollOffset(0, 80),
       GetFrame()->View()->LayoutViewportScrollableArea()->GetScrollOffset());
 
@@ -504,7 +504,7 @@ TEST_F(BrowserControlsTest, MAYBE(ScrollableSubregionScrollFirst)) {
   // scroll up should scroll overflow div first
   VerticalScroll(800.f);
   EXPECT_FLOAT_EQ(0.f, web_view->GetBrowserControls().ContentOffset());
-  EXPECT_SIZE_EQ(
+  EXPECT_EQ(
       ScrollOffset(0, 80),
       GetFrame()->View()->LayoutViewportScrollableArea()->GetScrollOffset());
 
@@ -512,14 +512,14 @@ TEST_F(BrowserControlsTest, MAYBE(ScrollableSubregionScrollFirst)) {
   // should not scroll.
   VerticalScroll(40.f);
   EXPECT_FLOAT_EQ(40.f, web_view->GetBrowserControls().ContentOffset());
-  EXPECT_SIZE_EQ(
+  EXPECT_EQ(
       ScrollOffset(0, 80),
       GetFrame()->View()->LayoutViewportScrollableArea()->GetScrollOffset());
 
   // Continued scroll down up scroll up the main frame
   VerticalScroll(40.f);
   EXPECT_FLOAT_EQ(50.f, web_view->GetBrowserControls().ContentOffset());
-  EXPECT_SIZE_EQ(
+  EXPECT_EQ(
       ScrollOffset(0, 50),
       GetFrame()->View()->LayoutViewportScrollableArea()->GetScrollOffset());
 }
@@ -537,7 +537,7 @@ TEST_F(BrowserControlsTest, MAYBE(ScrollableIframeScrollFirst)) {
   // frame should not scroll.
   VerticalScroll(-800.f);
   EXPECT_FLOAT_EQ(50.f, web_view->GetBrowserControls().ContentOffset());
-  EXPECT_SIZE_EQ(
+  EXPECT_EQ(
       ScrollOffset(0, 50),
       GetFrame()->View()->LayoutViewportScrollableArea()->GetScrollOffset());
 
@@ -545,14 +545,14 @@ TEST_F(BrowserControlsTest, MAYBE(ScrollableIframeScrollFirst)) {
   // should not scroll.
   VerticalScroll(-40.f);
   EXPECT_FLOAT_EQ(10.f, web_view->GetBrowserControls().ContentOffset());
-  EXPECT_SIZE_EQ(
+  EXPECT_EQ(
       ScrollOffset(0, 50),
       GetFrame()->View()->LayoutViewportScrollableArea()->GetScrollOffset());
 
   // Continued scroll down should scroll down the main frame
   VerticalScroll(-40.f);
   EXPECT_FLOAT_EQ(0.f, web_view->GetBrowserControls().ContentOffset());
-  EXPECT_SIZE_EQ(
+  EXPECT_EQ(
       ScrollOffset(0, 80),
       GetFrame()->View()->LayoutViewportScrollableArea()->GetScrollOffset());
 
@@ -560,7 +560,7 @@ TEST_F(BrowserControlsTest, MAYBE(ScrollableIframeScrollFirst)) {
   // scroll up should scroll iframe first
   VerticalScroll(800.f);
   EXPECT_FLOAT_EQ(0.f, web_view->GetBrowserControls().ContentOffset());
-  EXPECT_SIZE_EQ(
+  EXPECT_EQ(
       ScrollOffset(0, 80),
       GetFrame()->View()->LayoutViewportScrollableArea()->GetScrollOffset());
 
@@ -568,14 +568,14 @@ TEST_F(BrowserControlsTest, MAYBE(ScrollableIframeScrollFirst)) {
   // should not scroll.
   VerticalScroll(40.f);
   EXPECT_FLOAT_EQ(40.f, web_view->GetBrowserControls().ContentOffset());
-  EXPECT_SIZE_EQ(
+  EXPECT_EQ(
       ScrollOffset(0, 80),
       GetFrame()->View()->LayoutViewportScrollableArea()->GetScrollOffset());
 
   // Continued scroll down up scroll up the main frame
   VerticalScroll(40.f);
   EXPECT_FLOAT_EQ(50.f, web_view->GetBrowserControls().ContentOffset());
-  EXPECT_SIZE_EQ(
+  EXPECT_EQ(
       ScrollOffset(0, 50),
       GetFrame()->View()->LayoutViewportScrollableArea()->GetScrollOffset());
 }
@@ -614,13 +614,13 @@ TEST_F(BrowserControlsTest, MAYBE(ZeroHeightMeansNoEffect)) {
 
   VerticalScroll(20.f);
   EXPECT_FLOAT_EQ(0.f, web_view->GetBrowserControls().ContentOffset());
-  EXPECT_SIZE_EQ(
+  EXPECT_EQ(
       ScrollOffset(0, 80),
       GetFrame()->View()->LayoutViewportScrollableArea()->GetScrollOffset());
 
   VerticalScroll(-30.f);
   EXPECT_FLOAT_EQ(0.f, web_view->GetBrowserControls().ContentOffset());
-  EXPECT_SIZE_EQ(
+  EXPECT_EQ(
       ScrollOffset(0, 110),
       GetFrame()->View()->LayoutViewportScrollableArea()->GetScrollOffset());
 
@@ -677,7 +677,7 @@ TEST_F(BrowserControlsTest, MAYBE(StateConstraints)) {
   // Only shown state is permitted so controls cannot hide
   VerticalScroll(-20.f);
   EXPECT_FLOAT_EQ(50, web_view->GetBrowserControls().ContentOffset());
-  EXPECT_SIZE_EQ(
+  EXPECT_EQ(
       ScrollOffset(0, 120),
       GetFrame()->View()->LayoutViewportScrollableArea()->GetScrollOffset());
 
@@ -690,7 +690,7 @@ TEST_F(BrowserControlsTest, MAYBE(StateConstraints)) {
   // Only hidden state is permitted so controls cannot show
   VerticalScroll(30.f);
   EXPECT_FLOAT_EQ(0, web_view->GetBrowserControls().ContentOffset());
-  EXPECT_SIZE_EQ(
+  EXPECT_EQ(
       ScrollOffset(0, 90),
       GetFrame()->View()->LayoutViewportScrollableArea()->GetScrollOffset());
 
@@ -702,13 +702,13 @@ TEST_F(BrowserControlsTest, MAYBE(StateConstraints)) {
   // Both states are permitted so controls can either show or hide
   VerticalScroll(50.f);
   EXPECT_FLOAT_EQ(50, web_view->GetBrowserControls().ContentOffset());
-  EXPECT_SIZE_EQ(
+  EXPECT_EQ(
       ScrollOffset(0, 90),
       GetFrame()->View()->LayoutViewportScrollableArea()->GetScrollOffset());
 
   VerticalScroll(-50.f);
   EXPECT_FLOAT_EQ(0, web_view->GetBrowserControls().ContentOffset());
-  EXPECT_SIZE_EQ(
+  EXPECT_EQ(
       ScrollOffset(0, 90),
       GetFrame()->View()->LayoutViewportScrollableArea()->GetScrollOffset());
 
