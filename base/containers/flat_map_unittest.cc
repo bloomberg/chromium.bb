@@ -38,8 +38,7 @@ TEST(FlatMap, RangeConstructor) {
   flat_map<int, int>::value_type input_vals[] = {
       {1, 1}, {1, 2}, {1, 3}, {2, 1}, {2, 2}, {2, 3}, {3, 1}, {3, 2}, {3, 3}};
 
-  flat_map<int, int> first(std::begin(input_vals), std::end(input_vals),
-                           KEEP_FIRST_OF_DUPES);
+  flat_map<int, int> first(std::begin(input_vals), std::end(input_vals));
   EXPECT_THAT(first, ElementsAre(std::make_pair(1, 1), std::make_pair(2, 1),
                                  std::make_pair(3, 1)));
 
@@ -71,7 +70,7 @@ TEST(FlatMap, VectorConstructor) {
   using IntMap = flat_map<int, int>;
   {
     std::vector<IntPair> vect{{1, 1}, {1, 2}, {2, 1}};
-    IntMap map(std::move(vect), KEEP_FIRST_OF_DUPES);
+    IntMap map(std::move(vect));
     EXPECT_THAT(map, ElementsAre(IntPair(1, 1), IntPair(2, 1)));
   }
   {
@@ -84,8 +83,7 @@ TEST(FlatMap, VectorConstructor) {
 TEST(FlatMap, InitializerListConstructor) {
   {
     flat_map<int, int> cont(
-        {{1, 1}, {2, 2}, {3, 3}, {4, 4}, {5, 5}, {1, 2}, {10, 10}, {8, 8}},
-        KEEP_FIRST_OF_DUPES);
+        {{1, 1}, {2, 2}, {3, 3}, {4, 4}, {5, 5}, {1, 2}, {10, 10}, {8, 8}});
     EXPECT_THAT(cont, ElementsAre(std::make_pair(1, 1), std::make_pair(2, 2),
                                   std::make_pair(3, 3), std::make_pair(4, 4),
                                   std::make_pair(5, 5), std::make_pair(8, 8),
@@ -100,6 +98,12 @@ TEST(FlatMap, InitializerListConstructor) {
                                   std::make_pair(5, 5), std::make_pair(8, 8),
                                   std::make_pair(10, 10)));
   }
+}
+
+TEST(FlatMap, InitializerListAssignment) {
+  flat_map<int, int> cont;
+  cont = {{1, 1}, {2, 2}};
+  EXPECT_THAT(cont, ElementsAre(std::make_pair(1, 1), std::make_pair(2, 2)));
 }
 
 TEST(FlatMap, InsertFindSize) {
