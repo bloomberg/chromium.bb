@@ -23,6 +23,7 @@ SERVICE_MANAGER_SANDBOX_EXPORT extern const char kPpapiSandbox[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kUtilitySandbox[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kCdmSandbox[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kPdfCompositorSandbox[];
+SERVICE_MANAGER_SANDBOX_EXPORT extern const char kProfilingSandbox[];
 
 // Flags spied upon from other layers.
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kGpuProcess[];

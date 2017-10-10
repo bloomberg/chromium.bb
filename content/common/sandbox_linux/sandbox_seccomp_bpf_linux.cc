@@ -198,6 +198,7 @@ bool StartBPFSandbox(service_manager::SandboxType sandbox_type,
       policy = std::make_unique<PpapiProcessPolicy>();
       break;
     case service_manager::SANDBOX_TYPE_UTILITY:
+    case service_manager::SANDBOX_TYPE_PROFILING:
       policy = std::make_unique<UtilityProcessPolicy>();
       break;
     case service_manager::SANDBOX_TYPE_CDM:

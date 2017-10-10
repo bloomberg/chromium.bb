@@ -58,6 +58,7 @@
 #include "media/media_features.h"
 #include "ppapi/features/features.h"
 #include "services/service_manager/embedder/switches.h"
+#include "services/service_manager/sandbox/sandbox_type.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
 
@@ -346,6 +347,11 @@ int RunZygote(const MainFunctionParams& main_function_params,
 
   std::unique_ptr<base::FieldTrialList> field_trial_list;
   InitializeFieldTrialAndFeatureList(&field_trial_list);
+
+  service_manager::SandboxType sandbox_type =
+      service_manager::SandboxTypeFromCommandLine(command_line);
+  if (sandbox_type == service_manager::SANDBOX_TYPE_PROFILING)
+    content::DisableLocaltimeOverride();
 
   for (size_t i = 0; i < arraysize(kMainFunctions); ++i) {
     if (process_type == kMainFunctions[i].name)
