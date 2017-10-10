@@ -48,6 +48,7 @@ class TestPrefetchDispatcher : public PrefetchDispatcher {
   std::vector<std::string> operation_list;
   std::vector<PrefetchDownloadResult> download_results;
 
+  int cleanup_downloads_count = 0;
   int new_suggestions_count = 0;
   int processing_schedule_count = 0;
   int remove_all_suggestions_count = 0;
