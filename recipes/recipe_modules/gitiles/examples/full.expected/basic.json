@@ -530,6 +530,24 @@
     "name": "fetch master:OWNERS"
   },
   {
+    "cmd": [
+      "python",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gitiles]/resources/gerrit_client.py",
+      "--json-file",
+      "/path/to/tmp/json",
+      "--url",
+      "https://chromium.googlesource.com/chromium/src/+/master/NONEXISTENT",
+      "--format",
+      "text",
+      "--attempts",
+      "1",
+      "--accept-statuses",
+      "404"
+    ],
+    "name": "fetch master:NONEXISTENT"
+  },
+  {
     "name": "$result",
     "recipe_result": null,
     "status_code": 0

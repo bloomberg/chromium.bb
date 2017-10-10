@@ -32,6 +32,11 @@ class Gitiles(recipe_api.RecipeApi):
       args.extend(['--log-limit', log_limit])
     if log_start is not None:
       args.extend(['--log-start', log_start])
+    accept_statuses = kwargs.pop('accept_statuses', None)
+    if accept_statuses:
+      args.extend([
+          '--accept-statuses',
+          ','.join([str(s) for s in accept_statuses])])
     a = self.m.python(
         step_name, self.resource('gerrit_client.py'), args, **kwargs)
     return a

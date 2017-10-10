@@ -113,19 +113,22 @@ def main(arguments):
                  'instead.')
   query_params['format'] = args.format
 
+  kwargs = {}
+  accept_statuses = frozenset([int(s) for s in args.accept_statuses.split(',')])
+  if accept_statuses:
+    kwargs['accept_statuses'] = accept_statuses
+
   # Choose handler.
   if args.format == 'json':
     def handler(conn):
-      return ReadHttpJsonResponse(conn)
+      return ReadHttpJsonResponse(conn, **kwargs)
   elif args.format == 'text':
     # Text fetching will pack the text into structured JSON.
     def handler(conn):
-      result = ReadHttpResponse(conn).read()
-      if not result:
-        return None
+      result = ReadHttpResponse(conn, **kwargs).read()
       # Wrap in a structured JSON for export to recipe module.
       return {
-          'value': result,
+          'value': result or None,
       }
 
   if args.log_start:
@@ -183,6 +186,10 @@ def create_argparser():
            'This value can be typically be taken from json result of previous '
            'call to log, which returns next page start commit as "next" key. '
            'Only for https://<hostname>/<repo>/+log/... gitiles request.')
+  parser.add_argument(
+      '--accept-statuses', type=str, default='200',
+      help='Comma-separated list of Status codes to accept as "successful" '
+           'HTTP responses.')
   return parser
 
 

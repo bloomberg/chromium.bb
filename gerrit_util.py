@@ -358,9 +358,15 @@ def ReadHttpResponse(conn, accept_statuses=frozenset([200])):
     # If response.status < 500 then the result is final; break retry loop.
     # If the response is 404, it might be because of replication lag, so
     # keep trying anyway.
-    if response.status < 500 and response.status != 404:
+    if ((response.status < 500 and response.status != 404)
+        or response.status in accept_statuses):
       LOGGER.debug('got response %d for %s %s', response.status,
                    conn.req_params['method'], conn.req_params['uri'])
+      # If 404 was in accept_statuses, then it's expected that the file might
+      # not exist, so don't return the gitiles error page because that's not the
+      # "content" that was actually requested.
+      if response.status == 404:
+        contents = ''
       break
     # A status >=500 is assumed to be a possible transient error; retry.
     http_version = 'HTTP/%s' % ('1.1' if response.version == 11 else '1.0')
