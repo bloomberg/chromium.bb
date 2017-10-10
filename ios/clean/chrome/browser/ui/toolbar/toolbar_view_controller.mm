@@ -7,6 +7,7 @@
 #import "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/commands/history_popup_commands.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
+#import "ios/chrome/browser/ui/toolbar/toolbar_controller_constants.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/clean/chrome/browser/ui/commands/navigation_commands.h"
 #import "ios/clean/chrome/browser/ui/commands/tab_grid_commands.h"

@@ -7,85 +7,16 @@
 
 #import <UIKit/UIKit.h>
 
-#include <stdint.h>
-
-#include <map>
-
-#import "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_positioner.h"
 #import "ios/chrome/browser/ui/bubble/bubble_view_anchor_point_provider.h"
-#include "ios/chrome/browser/ui/rtl_geometry.h"
+#import "ios/chrome/browser/ui/toolbar/toolbar_controller_constants.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_view.h"
 #import "ios/chrome/browser/ui/tools_menu/tools_popup_controller.h"
-#include "ios/chrome/browser/ui/ui_util.h"
 
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
 class ReadingListModel;
 @class ToolsMenuConfiguration;
-
-// The time delay before non-initial button images are loaded.
-extern const int64_t kNonInitialImageAdditionDelayNanosec;
-// Notification that the tools menu has been requested to be shown.
-extern NSString* const kMenuWillShowNotification;
-// Notification that the tools menu is closed.
-extern NSString* const kMenuWillHideNotification;
-// Accessibility identifier of the toolbar view (for use by integration tests).
-extern NSString* const kToolbarIdentifier;
-// Accessibility identifier of the incognito toolbar view (for use by
-// integration tests).
-extern NSString* const kIncognitoToolbarIdentifier;
-// Accessibility identifier of the tools menu button (for use by integration
-// tests).
-extern NSString* const kToolbarToolsMenuButtonIdentifier;
-// Accessibility identifier of the stack button (for use by integration
-// tests).
-extern NSString* const kToolbarStackButtonIdentifier;
-// The maximum number to display in the tab switcher button.
-extern NSInteger const kStackButtonMaxTabCount;
-
-// Toolbar style.  Determines which button images are used.
-enum ToolbarControllerStyle {
-  ToolbarControllerStyleLightMode = 0,
-  ToolbarControllerStyleDarkMode,
-  ToolbarControllerStyleIncognitoMode,
-  ToolbarControllerStyleMaxStyles
-};
-
-enum ToolbarButtonMode {
-  ToolbarButtonModeNormal,
-  ToolbarButtonModeReversed,
-};
-
-enum ToolbarButtonUIState {
-  ToolbarButtonUIStateNormal = 0,
-  ToolbarButtonUIStatePressed,
-  ToolbarButtonUIStateDisabled,
-  NumberOfToolbarButtonUIStates,
-};
-
-// This enumerates the different buttons used by the toolbar and is used to map
-// the resource IDs for the button's icons.  Subclasses with additional buttons
-// should extend these values.  The first new enum should be set to
-// |NumberOfToolbarButtonNames|.  Note that functions that use these values use
-// an int rather than the |ToolbarButtonName| to accommodate additional values.
-// Also, if this enum is extended by a subclass, the subclass must also override
-// -imageIdForImageEnum:style:forState: to provide mapping from enum to resource
-// ID for the various states.
-enum ToolbarButtonName {
-  ToolbarButtonNameStack = 0,
-  ToolbarButtonNameShare,
-  NumberOfToolbarButtonNames,
-};
-
-// Style used to specify the direction of the toolbar transition animations.
-typedef enum {
-  TOOLBAR_TRANSITION_STYLE_TO_STACK_VIEW,
-  TOOLBAR_TRANSITION_STYLE_TO_BVC
-} ToolbarTransitionStyle;
-
-// Toolbar frames shared with subclasses.
-extern const CGRect kToolbarFrame[INTERFACE_IDIOM_COUNT];
 
 // Base class for a toolbar, containing the standard button set that is
 // common across different types of toolbars and action handlers for those

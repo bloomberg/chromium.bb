@@ -49,6 +49,7 @@
 #import "ios/chrome/browser/ui/stack_view/stack_view_toolbar_controller.h"
 #import "ios/chrome/browser/ui/stack_view/title_label.h"
 #import "ios/chrome/browser/ui/toolbar/new_tab_button.h"
+#import "ios/chrome/browser/ui/toolbar/toolbar_controller_constants.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_owner.h"
 #import "ios/chrome/browser/ui/tools_menu/tools_menu_configuration.h"
 #import "ios/chrome/browser/ui/tools_menu/tools_menu_view_item.h"

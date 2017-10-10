@@ -7,6 +7,7 @@
 #import <QuartzCore/CAAnimation.h>
 #import <QuartzCore/CAMediaTimingFunction.h>
 
+#include "base/logging.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_button_tints.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

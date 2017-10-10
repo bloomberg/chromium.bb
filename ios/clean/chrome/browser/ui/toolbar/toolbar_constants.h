@@ -42,8 +42,4 @@ extern const CGFloat kIncognitoToolbarButtonTitleHighlightedColor;
 // Maximum number of tabs displayed by the button containing the tab count.
 extern const NSInteger kShowTabStripButtonMaxTabCount;
 
-// Font sizes for the button containing the tab count.
-extern const NSInteger kFontSizeFewerThanTenTabs;
-extern const NSInteger kFontSizeTenTabsOrMore;
-
 #endif  // IOS_CLEAN_CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_CONSTANTS_H_

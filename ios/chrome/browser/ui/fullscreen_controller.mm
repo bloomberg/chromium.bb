@@ -13,6 +13,7 @@
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
 #import "ios/chrome/browser/ui/page_info/page_info_legacy_coordinator.h"
 #import "ios/chrome/browser/ui/tabs/requirements/tab_strip_constants.h"
+#import "ios/chrome/browser/ui/toolbar/toolbar_controller_constants.h"
 #import "ios/chrome/browser/ui/voice/voice_search_notification_names.h"
 #include "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
