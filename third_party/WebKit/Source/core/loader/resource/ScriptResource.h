@@ -80,8 +80,6 @@ class CORE_EXPORT ScriptResource final : public TextResource {
 
   const String& SourceText();
 
-  static bool MimeTypeAllowedByNosniff(const ResourceResponse&);
-
   AccessControlStatus CalculateAccessControlStatus() const;
 
  private:

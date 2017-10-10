@@ -31,6 +31,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/inspector/ConsoleMessage.h"
+#include "core/loader/AllowedByNosniff.h"
 #include "core/loader/WorkerThreadableLoader.h"
 #include "core/loader/resource/ScriptResource.h"
 #include "core/origin_trials/OriginTrialContext.h"
@@ -141,12 +142,7 @@ void WorkerScriptLoader::DidReceiveResponse(
     NotifyError();
     return;
   }
-  if (!ScriptResource::MimeTypeAllowedByNosniff(response)) {
-    execution_context_->AddConsoleMessage(ConsoleMessage::Create(
-        kSecurityMessageSource, kErrorMessageLevel,
-        "Refused to execute script from '" + url_.ElidedString() +
-            "' because its MIME type ('" + response.HttpContentType() +
-            "') is not executable, and strict MIME type checking is enabled."));
+  if (!AllowedByNosniff::MimeTypeAsScript(execution_context_, response)) {
     NotifyError();
     return;
   }

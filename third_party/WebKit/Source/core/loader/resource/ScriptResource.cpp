@@ -101,16 +101,6 @@ void ScriptResource::DestroyDecodedDataForFailedRevalidation() {
   SetDecodedSize(0);
 }
 
-// static
-bool ScriptResource::MimeTypeAllowedByNosniff(
-    const ResourceResponse& response) {
-  return ParseContentTypeOptionsHeader(
-             response.HttpHeaderField(HTTPNames::X_Content_Type_Options)) !=
-             kContentTypeOptionsNosniff ||
-         MIMETypeRegistry::IsSupportedJavaScriptMIMEType(
-             response.HttpContentType());
-}
-
 AccessControlStatus ScriptResource::CalculateAccessControlStatus() const {
   if (GetCORSStatus() == CORSStatus::kServiceWorkerOpaque)
     return kOpaqueResource;
