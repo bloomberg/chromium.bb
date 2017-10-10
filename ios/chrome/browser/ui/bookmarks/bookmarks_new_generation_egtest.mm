@@ -595,7 +595,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
 
   // Select Copy URL.
   [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
-                                          IDS_IOS_BOOKMARK_CONTEXT_MENU_COPY)]
+                                          IDS_IOS_CONTENT_CONTEXT_COPY)]
       performAction:grey_tap()];
 
   // Wait so that the string is copied to clipboard.
@@ -752,7 +752,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   [BookmarksNewGenTestCase openBookmarks];
   [BookmarksNewGenTestCase openMobileBookmarks];
 
-  // Open a bookmark in a normal session.
+  // Open a bookmark in current tab in a normal session.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"First URL")]
       performAction:grey_tap()];
 
@@ -763,22 +763,18 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
 
   [BookmarksNewGenTestCase openBookmarks];
 
-  // Open a incognito tab from a normal session (through a long press).
+  // Open a bookmark in new tab from a normal session (through a long press).
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
       performAction:grey_longPress()];
-  [[EarlGrey selectElementWithMatcher:
-                 ButtonWithAccessibilityLabelId(
-                     IDS_IOS_BOOKMARK_CONTEXT_MENU_OPEN_INCOGNITO)]
+  [[EarlGrey
+      selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                   IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWTAB)]
       performAction:grey_tap()];
 
-  // Verify there is 1 incognito tab created and no new normal tab created.
-  [ChromeEarlGrey waitForIncognitoTabCount:1];
-  GREYAssertTrue(chrome_test_util::GetMainTabCount() == 1,
-                 @"Main tab count should be 1");
-
-  // Verify the current tab is an incognito tab.
-  GREYAssertTrue(chrome_test_util::IsIncognitoMode(),
-                 @"Failed to switch to incognito mode");
+  // Verify there is 1 new normal tab created and no new incognito tab created.
+  [ChromeEarlGrey waitForMainTabCount:2];
+  GREYAssertTrue(chrome_test_util::GetIncognitoTabCount() == 0,
+                 @"Incognito tab count should be 0");
 
   // Verify "Second URL" appears in the omnibox.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
@@ -787,50 +783,99 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
 
   [BookmarksNewGenTestCase openBookmarks];
 
-  // Open a bookmark from a incognito session.
+  // Open a bookmark in an incognito tab from a normal session (through a long
+  // press).
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"French URL")]
+      performAction:grey_longPress()];
+  [[EarlGrey selectElementWithMatcher:
+                 ButtonWithAccessibilityLabelId(
+                     IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWINCOGNITOTAB)]
       performAction:grey_tap()];
+
+  // Verify there is 1 incognito tab created and no new normal tab created.
+  [ChromeEarlGrey waitForIncognitoTabCount:1];
+  GREYAssertTrue(chrome_test_util::GetMainTabCount() == 2,
+                 @"Main tab count should be 2");
 
   // Verify the current tab is an incognito tab.
   GREYAssertTrue(chrome_test_util::IsIncognitoMode(),
-                 @"Failed to staying at incognito mode");
+                 @"Failed to switch to incognito mode");
 
   // Verify "French URL" appears in the omnibox.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                           getFrenchURL().GetContent())]
       assertWithMatcher:grey_notNil()];
 
-  // Verify no new tabs created.
-  GREYAssertTrue(chrome_test_util::GetIncognitoTabCount() == 1,
-                 @"Incognito tab count should be 1");
-  GREYAssertTrue(chrome_test_util::GetMainTabCount() == 1,
-                 @"Main tab count should be 1");
-
   [BookmarksNewGenTestCase openBookmarks];
 
-  // Open a bookmark in incognito from a incognito session (through a long
-  // press).
+  // Open a bookmark in current tab from a incognito session.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"First URL")]
-      performAction:grey_longPress()];
-  [[EarlGrey selectElementWithMatcher:
-                 ButtonWithAccessibilityLabelId(
-                     IDS_IOS_BOOKMARK_CONTEXT_MENU_OPEN_INCOGNITO)]
       performAction:grey_tap()];
-
-  // Verify the current tab is an incognito tab.
-  GREYAssertTrue(chrome_test_util::IsIncognitoMode(),
-                 @"Failed to stayling at incognito mode");
 
   // Verify "First URL" appears in the omnibox.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                           getFirstURL().GetContent())]
       assertWithMatcher:grey_notNil()];
 
+  // Verify the current tab is an incognito tab.
+  GREYAssertTrue(chrome_test_util::IsIncognitoMode(),
+                 @"Failed to staying at incognito mode");
+
   // Verify no new tabs created.
   GREYAssertTrue(chrome_test_util::GetIncognitoTabCount() == 1,
                  @"Incognito tab count should be 1");
-  GREYAssertTrue(chrome_test_util::GetMainTabCount() == 1,
-                 @"Main tab count should be 1");
+  GREYAssertTrue(chrome_test_util::GetMainTabCount() == 2,
+                 @"Main tab count should be 2");
+
+  [BookmarksNewGenTestCase openBookmarks];
+
+  // Open a bookmark in new incognito tab from a incognito session (through a
+  // long press).
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
+      performAction:grey_longPress()];
+  [[EarlGrey selectElementWithMatcher:
+                 ButtonWithAccessibilityLabelId(
+                     IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWINCOGNITOTAB)]
+      performAction:grey_tap()];
+
+  // Verify a new incognito tab is created.
+  [ChromeEarlGrey waitForIncognitoTabCount:2];
+  GREYAssertTrue(chrome_test_util::GetMainTabCount() == 2,
+                 @"Main tab count should be 2");
+
+  // Verify the current tab is an incognito tab.
+  GREYAssertTrue(chrome_test_util::IsIncognitoMode(),
+                 @"Failed to staying at incognito mode");
+
+  // Verify "Second URL" appears in the omnibox.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
+                                          getSecondURL().GetContent())]
+      assertWithMatcher:grey_notNil()];
+
+  [BookmarksNewGenTestCase openBookmarks];
+
+  // Open a bookmark in a new normal tab from a incognito session (through a
+  // long press).
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"French URL")]
+      performAction:grey_longPress()];
+  [[EarlGrey
+      selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                   IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWTAB)]
+      performAction:grey_tap()];
+
+  // Verify a new normal tab is created and no incognito tab is created.
+  [ChromeEarlGrey waitForMainTabCount:3];
+  GREYAssertTrue(chrome_test_util::GetIncognitoTabCount() == 2,
+                 @"Incognito tab count should be 2");
+
+  // Verify the current tab is a normal tab.
+  GREYAssertFalse(chrome_test_util::IsIncognitoMode(),
+                  @"Failed to switch to normal mode");
+
+  // Verify "French URL" appears in the omnibox.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
+                                          getFrenchURL().GetContent())]
+      assertWithMatcher:grey_notNil()];
 }
 
 - (void)testContextBarForSingleFolderSelection {
@@ -2336,13 +2381,18 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
                                           IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
-  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
-                                          IDS_IOS_BOOKMARK_CONTEXT_MENU_COPY)]
+  [[EarlGrey
+      selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                   IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWTAB)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   [[EarlGrey selectElementWithMatcher:
                  ButtonWithAccessibilityLabelId(
-                     IDS_IOS_BOOKMARK_CONTEXT_MENU_OPEN_INCOGNITO)]
+                     IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWINCOGNITOTAB)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                          IDS_IOS_CONTENT_CONTEXT_COPY)]
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 

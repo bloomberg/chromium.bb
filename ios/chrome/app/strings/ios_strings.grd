@@ -1592,7 +1592,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
         Open All
       </message>
       <message name="IDS_IOS_BOOKMARK_CONTEXT_MENU_OPEN_INCOGNITO" desc="Text on the bookmarks context menu to open selected bookmark in incognito">
-        Open in incognito
+        Open in Incognito
       </message>
       <message name="IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE" desc="Text on the bookmarks context menu to move selected bookmark">
         Move
@@ -1602,9 +1602,6 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
       </message>
        <message name="IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT_FOLDER" desc="Text on the bookmarks context menu to edit selected bookmark folder">
         Edit Folder
-      </message>
-      <message name="IDS_IOS_BOOKMARK_CONTEXT_MENU_COPY" desc="Text on the bookmarks context menu to copy selected bookmark URL">
-        Copy URL
       </message>
    </messages>
   </release>

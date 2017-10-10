@@ -37,7 +37,8 @@ class BookmarkNode;
 - (void)bookmarkHomeViewControllerWantsDismissal:
             (BookmarkHomeViewController*)controller
                                 navigationToUrls:(const std::vector<GURL>&)urls
-                                     inIncognito:(BOOL)inIncognito;
+                                     inIncognito:(BOOL)inIncognito
+                                          newTab:(BOOL)newTab;
 
 @end
 
