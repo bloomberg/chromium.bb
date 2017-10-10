@@ -24,6 +24,8 @@ class SystemHealthDesktopCommonExpectations(expectations.StoryExpectations):
                       [expectations.ALL_MAC], 'crbug.com/728576')
     self.DisableStory('browse_accessibility:tools:gmail_compose',
                       [expectations.ALL], 'crbug.com/769809')
+    self.DisableStory('browse:tools:maps', [expectations.ALL_MAC],
+                      'crbug.com/773084')
 
 
 class SystemHealthDesktopMemoryExpectations(expectations.StoryExpectations):
@@ -51,6 +53,8 @@ class SystemHealthDesktopMemoryExpectations(expectations.StoryExpectations):
                       [expectations.ALL_MAC], 'crbug.com/742475')
     self.DisableStory('browse_accessibility:tools:gmail_compose',
                       [expectations.ALL], 'crbug.com/769809')
+    self.DisableStory('browse:tools:maps', [expectations.ALL_MAC],
+                      'crbug.com/773084')
 
 
 class SystemHealthMobileCommonExpectations(expectations.StoryExpectations):
@@ -121,6 +125,8 @@ class V8BrowsingDesktopExpecations(expectations.StoryExpectations):
                       'crbug.com/759777')
     self.DisableStory('browse:news:cnn', [expectations.ALL_DESKTOP],
                       'mac:crbug.com/728576, all:crbug.com/759777')
+    self.DisableStory('browse:tools:maps', [expectations.ALL_MAC],
+                      'crbug.com/773084')
 
 
 # Should only include browse:*:* stories.
