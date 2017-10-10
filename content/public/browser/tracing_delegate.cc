@@ -4,6 +4,8 @@
 
 #include "content/public/browser/tracing_delegate.h"
 
+#include "base/values.h"
+
 namespace content {
 
 bool TracingDelegate::IsAllowedToBeginBackgroundScenario(
@@ -16,6 +18,14 @@ bool TracingDelegate::IsAllowedToEndBackgroundScenario(
     const content::BackgroundTracingConfig& config,
     bool requires_anonymized_data) {
   return false;
+}
+
+bool TracingDelegate::IsProfileLoaded() {
+  return false;
+}
+
+std::unique_ptr<base::DictionaryValue> TracingDelegate::GenerateMetadataDict() {
+  return nullptr;
 }
 
 MetadataFilterPredicate TracingDelegate::GetMetadataFilterPredicate() {

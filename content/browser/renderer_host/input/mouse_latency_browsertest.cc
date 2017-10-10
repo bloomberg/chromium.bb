@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+#include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -122,7 +125,7 @@ class MouseLatencyBrowserTest : public ContentBrowserTest {
 
   const base::Value& StopTracing() {
     bool success = TracingController::GetInstance()->StopTracing(
-        TracingController::CreateStringSink(
+        TracingController::CreateStringEndpoint(
             base::Bind(&MouseLatencyBrowserTest::OnTraceDataCollected,
                        base::Unretained(this))));
     EXPECT_TRUE(success);

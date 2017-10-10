@@ -3,42 +3,40 @@
 // found in the LICENSE file.
 #include "content/browser/tracing/tracing_controller_impl.h"
 
-#include <algorithm>
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/cpu.h"
-#include "base/files/file_util.h"
-#include "base/guid.h"
-#include "base/json/string_escape.h"
-#include "base/macros.h"
+#include "base/files/file_tracing.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/ref_counted_memory.h"
-#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
+#include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
-#include "base/task_scheduler/post_task.h"
-#include "base/threading/sequenced_worker_pool.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "base/trace_event/trace_event.h"
+#include "base/trace_event/trace_config.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "content/browser/tracing/file_tracing_provider_impl.h"
-#include "content/browser/tracing/trace_message_filter.h"
+#include "content/browser/tracing/power_tracing_agent.h"
 #include "content/browser/tracing/tracing_ui.h"
-#include "content/common/child_process_messages.h"
-#include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/gpu_data_manager.h"
+#include "content/public/browser/tracing_controller.h"
 #include "content/public/browser/tracing_delegate.h"
-#include "content/public/common/child_process_host.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/content_switches.h"
+#include "content/public/common/service_manager_connection.h"
 #include "gpu/config/gpu_info.h"
+#include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/network_change_notifier.h"
+#include "services/resource_coordinator/public/cpp/tracing/chrome_trace_event_agent.h"
+#include "services/resource_coordinator/public/interfaces/service_constants.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "v8/include/v8-version-string.h"
 
 #if (defined(OS_POSIX) && defined(USE_UDEV)) || defined(OS_WIN) || \
@@ -53,31 +51,19 @@
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon_client.h"
-#include "content/public/browser/arc_tracing_agent.h"
+#include "content/browser/tracing/arc_tracing_agent_impl.h"
+#include "content/browser/tracing/cros_tracing_agent.h"
 #endif
 
 #if defined(OS_WIN)
 #include "content/browser/tracing/etw_tracing_agent_win.h"
 #endif
 
-using base::trace_event::TraceLog;
-using base::trace_event::TraceConfig;
-
 namespace content {
 
 namespace {
 
-base::LazyInstance<TracingControllerImpl>::Leaky g_controller =
-    LAZY_INSTANCE_INITIALIZER;
-
-const char kChromeTracingAgentName[] = "chrome";
-const char kETWTracingAgentName[] = "etw";
-const char kArcTracingAgentName[] = "arc";
-const char kChromeTraceLabel[] = "traceEvents";
-
-const int kStartTracingTimeoutSeconds = 30;
-const int kIssueClockSyncTimeoutSeconds = 30;
-const int kStopTracingRetryTimeMilliseconds = 100;
+TracingControllerImpl* g_controller = nullptr;
 
 std::string GetNetworkTypeString() {
   switch (net::NetworkChangeNotifier::GetConnectionType()) {
@@ -122,686 +108,8 @@ std::string GetClockString() {
   return std::string();
 }
 
-}  // namespace
-
-TracingController* TracingController::GetInstance() {
-  return TracingControllerImpl::GetInstance();
-}
-
-TracingControllerImpl::TracingControllerImpl()
-    : pending_start_tracing_ack_count_(0),
-      pending_stop_tracing_ack_count_(0),
-      pending_trace_log_status_ack_count_(0),
-      maximum_trace_buffer_usage_(0),
-      approximate_event_count_(0),
-      pending_clock_sync_ack_count_(0),
-      enabled_tracing_modes_(0),
-      background_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::TaskPriority::BACKGROUND})) {
-  // Deliberately leaked, like this class.
-  base::FileTracing::SetProvider(new FileTracingProviderImpl);
-}
-
-TracingControllerImpl::~TracingControllerImpl() {
-  // This is a Leaky instance.
-  NOTREACHED();
-}
-
-TracingControllerImpl* TracingControllerImpl::GetInstance() {
-  return g_controller.Pointer();
-}
-
-bool TracingControllerImpl::GetCategories(
-    const GetCategoriesDoneCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  // Known categories come back from child processes with the EndTracingAck
-  // message. So to get known categories, just begin and end tracing immediately
-  // afterwards. This will ping all the child processes for categories.
-  pending_get_categories_done_callback_ = callback;
-  if (!StartTracing(TraceConfig("*", ""), StartTracingDoneCallback())) {
-    pending_get_categories_done_callback_.Reset();
-    return false;
-  }
-
-  bool ok = StopTracing(NULL);
-  DCHECK(ok);
-  return true;
-}
-
-void TracingControllerImpl::SetEnabledOnBackgroundThread(
-    const TraceConfig& trace_config,
-    const base::Closure& callback) {
-  TraceLog::GetInstance()->SetEnabled(trace_config, enabled_tracing_modes_);
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, callback);
-}
-
-void TracingControllerImpl::SetDisabledOnBackgroundThread(
-    const base::Closure& callback) {
-  DCHECK(enabled_tracing_modes_);
-  TraceLog::GetInstance()->SetDisabled(enabled_tracing_modes_);
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, callback);
-}
-
-bool TracingControllerImpl::StartTracing(
-    const TraceConfig& trace_config,
-    const StartTracingDoneCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(additional_tracing_agents_.empty());
-
-  // TODO(ssid): Introduce a priority for tracing agents to handle multiple
-  // start and stop requests, crbug.com/705087.
-  if (!can_start_tracing())
-    return false;
-  start_tracing_done_callback_ = callback;
-  trace_config_.reset(new base::trace_event::TraceConfig(trace_config));
-  enabled_tracing_modes_ = TraceLog::RECORDING_MODE;
-  if (!trace_config_->event_filters().empty())
-    enabled_tracing_modes_ |= TraceLog::FILTERING_MODE;
-  metadata_.reset(new base::DictionaryValue());
-  pending_start_tracing_ack_count_ = 0;
-
-#if defined(OS_ANDROID)
-  if (pending_get_categories_done_callback_.is_null())
-    TraceLog::GetInstance()->AddClockSyncMetadataEvent();
-#endif
-
-  if (trace_config.IsSystraceEnabled()) {
-#if defined(ENABLE_POWER_TRACING)
-    PowerTracingAgent::GetInstance()->StartAgentTracing(
-        trace_config,
-        base::Bind(&TracingControllerImpl::OnStartAgentTracingAcked,
-                   base::Unretained(this)));
-    ++pending_start_tracing_ack_count_;
-#endif
-
-#if defined(OS_CHROMEOS)
-    chromeos::DebugDaemonClient* debug_daemon =
-        chromeos::DBusThreadManager::Get()->GetDebugDaemonClient();
-    if (debug_daemon) {
-      debug_daemon->StartAgentTracing(
-          trace_config,
-          base::Bind(&TracingControllerImpl::OnStartAgentTracingAcked,
-                     base::Unretained(this)));
-      ++pending_start_tracing_ack_count_;
-    }
-
-    ArcTracingAgent::GetInstance()->StartAgentTracing(
-        trace_config,
-        base::Bind(&TracingControllerImpl::OnStartAgentTracingAcked,
-                   base::Unretained(this)));
-    ++pending_start_tracing_ack_count_;
-#elif defined(OS_WIN)
-    EtwTracingAgent::GetInstance()->StartAgentTracing(
-        trace_config,
-        base::Bind(&TracingControllerImpl::OnStartAgentTracingAcked,
-                   base::Unretained(this)));
-    ++pending_start_tracing_ack_count_;
-#endif
-  }
-
-  // TraceLog may have been enabled in startup tracing before threads are ready.
-  if (TraceLog::GetInstance()->IsEnabled())
-    return true;
-
-  StartAgentTracing(trace_config,
-                    base::Bind(&TracingControllerImpl::OnStartAgentTracingAcked,
-                               base::Unretained(this)));
-  ++pending_start_tracing_ack_count_;
-
-  // Set a deadline to ensure all agents ack within a reasonable time frame.
-  start_tracing_timer_.Start(
-      FROM_HERE, base::TimeDelta::FromSeconds(kStartTracingTimeoutSeconds),
-      base::Bind(&TracingControllerImpl::OnAllTracingAgentsStarted,
-                 base::Unretained(this)));
-
-  return true;
-}
-
-void TracingControllerImpl::OnAllTracingAgentsStarted() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  TRACE_EVENT_API_ADD_METADATA_EVENT(
-      TraceLog::GetCategoryGroupEnabled("__metadata"),
-      "IsTimeTicksHighResolution", "value",
-      base::TimeTicks::IsHighResolution());
-
-  // Notify all child processes.
-  for (TraceMessageFilterSet::iterator it = trace_message_filters_.begin();
-      it != trace_message_filters_.end(); ++it) {
-    it->get()->SendBeginTracing(*trace_config_);
-  }
-
-  if (!start_tracing_done_callback_.is_null())
-    start_tracing_done_callback_.Run();
-
-  start_tracing_done_callback_.Reset();
-}
-
-void TracingControllerImpl::AddMetadata(const base::DictionaryValue& data) {
-  if (metadata_)
-    metadata_->MergeDictionary(&data);
-}
-
-bool TracingControllerImpl::StopTracing(
-    const scoped_refptr<TraceDataSink>& trace_data_sink) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  if (!can_stop_tracing())
-    return false;
-
-  // If we're still waiting to start tracing, try again after a delay.
-  if (start_tracing_timer_.IsRunning()) {
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE,
-        base::BindOnce(base::IgnoreResult(&TracingControllerImpl::StopTracing),
-                       base::Unretained(this), trace_data_sink),
-        base::TimeDelta::FromMilliseconds(kStopTracingRetryTimeMilliseconds));
-    return true;
-  }
-
-  if (trace_data_sink) {
-    MetadataFilterPredicate metadata_filter;
-    if (TraceLog::GetInstance()->GetCurrentTraceConfig()
-        .IsArgumentFilterEnabled()) {
-      std::unique_ptr<TracingDelegate> delegate(
-          GetContentClient()->browser()->GetTracingDelegate());
-      if (delegate)
-        metadata_filter = delegate->GetMetadataFilterPredicate();
-    }
-    AddFilteredMetadata(trace_data_sink.get(), GenerateTracingMetadataDict(),
-                        metadata_filter);
-    AddFilteredMetadata(trace_data_sink.get(), std::move(metadata_),
-                        metadata_filter);
-  } else {
-    metadata_.reset();
-  }
-
-  trace_data_sink_ = trace_data_sink;
-  trace_config_.reset();
-
-  // Issue clock sync marker before actually stopping tracing.
-  // StopTracingAfterClockSync() will be called after clock sync is done.
-  IssueClockSyncMarker();
-
-  return true;
-}
-
-void TracingControllerImpl::StopTracingAfterClockSync() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  // |pending_clock_sync_ack_count_| could be non-zero if clock sync times out.
-  pending_clock_sync_ack_count_ = 0;
-
-  // Disable local trace early to avoid traces during end-tracing process from
-  // interfering with the process.
-  base::Closure on_stop_tracing_done_callback = base::Bind(
-      &TracingControllerImpl::OnStopTracingDone, base::Unretained(this));
-  background_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&TracingControllerImpl::SetDisabledOnBackgroundThread,
-                     base::Unretained(this), on_stop_tracing_done_callback));
-}
-
-void TracingControllerImpl::OnStopTracingDone() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-#if defined(OS_ANDROID)
-  if (pending_get_categories_done_callback_.is_null())
-    TraceLog::GetInstance()->AddClockSyncMetadataEvent();
-#endif
-
-  // Count myself (local trace) in pending_stop_tracing_ack_count_,
-  // acked below.
-  pending_stop_tracing_ack_count_ = trace_message_filters_.size() + 1;
-  pending_stop_tracing_filters_ = trace_message_filters_;
-
-  pending_stop_tracing_ack_count_ += additional_tracing_agents_.size();
-  for (auto* it : additional_tracing_agents_) {
-    it->StopAgentTracing(
-        base::Bind(&TracingControllerImpl::OnEndAgentTracingAcked,
-                   base::Unretained(this)));
-  }
-  additional_tracing_agents_.clear();
-
-  StopAgentTracing(StopAgentTracingCallback());
-}
-
-bool TracingControllerImpl::GetTraceBufferUsage(
-    const GetTraceBufferUsageCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  if (!can_get_trace_buffer_usage() || callback.is_null())
-    return false;
-
-  pending_trace_buffer_usage_callback_ = callback;
-
-  // Count myself in pending_trace_log_status_ack_count_, acked below.
-  pending_trace_log_status_ack_count_ = trace_message_filters_.size() + 1;
-  pending_trace_log_status_filters_ = trace_message_filters_;
-  maximum_trace_buffer_usage_ = 0;
-  approximate_event_count_ = 0;
-
-  base::trace_event::TraceLogStatus status =
-      TraceLog::GetInstance()->GetStatus();
-  // Call OnTraceLogStatusReply unconditionally for the browser process.
-  // This will result in immediate execution of the callback if there are no
-  // child processes.
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&TracingControllerImpl::OnTraceLogStatusReply,
-                     base::Unretained(this), nullptr, status));
-
-  // Notify all child processes.
-  for (TraceMessageFilterSet::iterator it = trace_message_filters_.begin();
-      it != trace_message_filters_.end(); ++it) {
-    it->get()->SendGetTraceLogStatus();
-  }
-  return true;
-}
-
-bool TracingControllerImpl::IsTracing() const {
-  return !!enabled_tracing_modes_;
-}
-
-void TracingControllerImpl::AddTraceMessageFilter(
-    TraceMessageFilter* trace_message_filter) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  trace_message_filters_.insert(trace_message_filter);
-  if (can_stop_tracing()) {
-    trace_message_filter->SendBeginTracing(
-        TraceLog::GetInstance()->GetCurrentTraceConfig());
-  }
-}
-
-void TracingControllerImpl::RemoveTraceMessageFilter(
-    TraceMessageFilter* trace_message_filter) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  // If a filter is removed while a response from that filter is pending then
-  // simulate the response. Otherwise the response count will be wrong and the
-  // completion callback will never be executed.
-  if (pending_stop_tracing_ack_count_ > 0) {
-    TraceMessageFilterSet::const_iterator it =
-        pending_stop_tracing_filters_.find(trace_message_filter);
-    if (it != pending_stop_tracing_filters_.end()) {
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
-          base::BindOnce(&TracingControllerImpl::OnStopTracingAcked,
-                         base::Unretained(this),
-                         base::RetainedRef(trace_message_filter),
-                         std::vector<std::string>()));
-    }
-  }
-  if (pending_trace_log_status_ack_count_ > 0) {
-    TraceMessageFilterSet::const_iterator it =
-        pending_trace_log_status_filters_.find(trace_message_filter);
-    if (it != pending_trace_log_status_filters_.end()) {
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
-          base::BindOnce(&TracingControllerImpl::OnTraceLogStatusReply,
-                         base::Unretained(this),
-                         base::RetainedRef(trace_message_filter),
-                         base::trace_event::TraceLogStatus()));
-    }
-  }
-  trace_message_filters_.erase(trace_message_filter);
-}
-
-void TracingControllerImpl::AddTracingAgent(const std::string& agent_name) {
-#if defined(OS_CHROMEOS)
-  auto* debug_daemon =
-      chromeos::DBusThreadManager::Get()->GetDebugDaemonClient();
-  if (agent_name == debug_daemon->GetTracingAgentName()) {
-    additional_tracing_agents_.push_back(debug_daemon);
-    debug_daemon->SetStopAgentTracingTaskRunner(
-        base::CreateSequencedTaskRunnerWithTraits(
-            {base::MayBlock(), base::TaskPriority::BACKGROUND}));
-    return;
-  }
-
-  if (agent_name == kArcTracingAgentName) {
-    additional_tracing_agents_.push_back(ArcTracingAgent::GetInstance());
-    return;
-  }
-#elif defined(OS_WIN)
-  auto* etw_agent = EtwTracingAgent::GetInstance();
-  if (agent_name == etw_agent->GetTracingAgentName()) {
-    additional_tracing_agents_.push_back(etw_agent);
-    return;
-  }
-#endif
-
-#if defined(ENABLE_POWER_TRACING)
-  auto* power_agent = PowerTracingAgent::GetInstance();
-  if (agent_name == power_agent->GetTracingAgentName()) {
-    additional_tracing_agents_.push_back(power_agent);
-    return;
-  }
-#endif
-
-  DCHECK(agent_name == kChromeTracingAgentName);
-}
-
-void TracingControllerImpl::OnStartAgentTracingAcked(
-    const std::string& agent_name,
-    bool success) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  // Don't taken any further action if the ack came after the deadline.
-  if (!start_tracing_timer_.IsRunning())
-    return;
-
-  if (success)
-    AddTracingAgent(agent_name);
-
-  if (--pending_start_tracing_ack_count_ == 0) {
-    start_tracing_timer_.Stop();
-    OnAllTracingAgentsStarted();
-  }
-}
-
-void TracingControllerImpl::OnStopTracingAcked(
-    TraceMessageFilter* trace_message_filter,
-    const std::vector<std::string>& known_category_groups) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::BindOnce(
-            &TracingControllerImpl::OnStopTracingAcked, base::Unretained(this),
-            base::RetainedRef(trace_message_filter), known_category_groups));
-    return;
-  }
-
-  // Merge known_category_groups with known_category_groups_
-  known_category_groups_.insert(known_category_groups.begin(),
-                                known_category_groups.end());
-
-  if (pending_stop_tracing_ack_count_ == 0)
-    return;
-
-  if (trace_message_filter &&
-      !pending_stop_tracing_filters_.erase(trace_message_filter)) {
-    // The response from the specified message filter has already been received.
-    return;
-  }
-
-  if (--pending_stop_tracing_ack_count_ == 1) {
-    // All acks from subprocesses have been received. Now flush the local trace.
-    // During or after this call, our OnLocalTraceDataCollected will be
-    // called with the last of the local trace data.
-    if (trace_data_sink_) {
-    TraceLog::GetInstance()->Flush(
-        base::Bind(&TracingControllerImpl::OnLocalTraceDataCollected,
-                   base::Unretained(this)),
-        true);
-    } else {
-      TraceLog::GetInstance()->CancelTracing(
-          base::Bind(&TracingControllerImpl::OnLocalTraceDataCollected,
-                     base::Unretained(this)));
-    }
-    return;
-  }
-
-  if (pending_stop_tracing_ack_count_ != 0)
-    return;
-
-  // All acks (including from the subprocesses and the local trace) have been
-  // received.
-  enabled_tracing_modes_ = 0;
-
-  // Trigger callback if one is set.
-  if (!pending_get_categories_done_callback_.is_null()) {
-    pending_get_categories_done_callback_.Run(known_category_groups_);
-    pending_get_categories_done_callback_.Reset();
-  } else if (trace_data_sink_.get()) {
-    trace_data_sink_->Close();
-    trace_data_sink_ = NULL;
-  }
-}
-
-void TracingControllerImpl::OnEndAgentTracingAcked(
-    const std::string& agent_name,
-    const std::string& events_label,
-    const scoped_refptr<base::RefCountedString>& events_str_ptr) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  if (trace_data_sink_.get() && events_str_ptr &&
-      !events_str_ptr->data().empty()) {
-    if (agent_name == kETWTracingAgentName) {
-      // The Windows kernel events are kept into a JSON format stored as string
-      // and must not be escaped.
-      trace_data_sink_->AddAgentTrace(events_label, events_str_ptr->data());
-    } else if (agent_name == kArcTracingAgentName) {
-      // The ARC events are kept into a JSON format stored as string
-      // and must not be escaped.
-      trace_data_sink_->AddTraceChunk(events_str_ptr->data());
-    } else {
-      trace_data_sink_->AddAgentTrace(
-          events_label, base::GetQuotedJSONString(events_str_ptr->data()));
-    }
-  }
-  std::vector<std::string> category_groups;
-  OnStopTracingAcked(NULL, category_groups);
-}
-
-void TracingControllerImpl::OnTraceDataCollected(
-    const scoped_refptr<base::RefCountedString>& events_str_ptr) {
-  // OnTraceDataCollected may be called from any browser thread, either by the
-  // local event trace system or from child processes via TraceMessageFilter.
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::BindOnce(&TracingControllerImpl::OnTraceDataCollected,
-                       base::Unretained(this), events_str_ptr));
-    return;
-  }
-
-  if (trace_data_sink_.get())
-    trace_data_sink_->AddTraceChunk(events_str_ptr->data());
-}
-
-void TracingControllerImpl::OnLocalTraceDataCollected(
-    const scoped_refptr<base::RefCountedString>& events_str_ptr,
-    bool has_more_events) {
-  if (events_str_ptr->data().size())
-    OnTraceDataCollected(events_str_ptr);
-
-  if (has_more_events)
-    return;
-
-  // Simulate an StopTracingAcked for the local trace.
-  std::vector<std::string> category_groups;
-  TraceLog::GetInstance()->GetKnownCategoryGroups(&category_groups);
-  OnStopTracingAcked(NULL, category_groups);
-}
-
-void TracingControllerImpl::OnTraceLogStatusReply(
-    TraceMessageFilter* trace_message_filter,
-    const base::trace_event::TraceLogStatus& status) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::BindOnce(&TracingControllerImpl::OnTraceLogStatusReply,
-                       base::Unretained(this),
-                       base::RetainedRef(trace_message_filter), status));
-    return;
-  }
-
-  if (pending_trace_log_status_ack_count_ == 0)
-    return;
-
-  if (trace_message_filter &&
-      !pending_trace_log_status_filters_.erase(trace_message_filter)) {
-    // The response from the specified message filter has already been received.
-    return;
-  }
-
-  float percent_full = static_cast<float>(
-      static_cast<double>(status.event_count) / status.event_capacity);
-  maximum_trace_buffer_usage_ =
-      std::max(maximum_trace_buffer_usage_, percent_full);
-  approximate_event_count_ += status.event_count;
-
-  if (--pending_trace_log_status_ack_count_ == 0) {
-    // Trigger callback if one is set.
-    pending_trace_buffer_usage_callback_.Run(maximum_trace_buffer_usage_,
-                                             approximate_event_count_);
-    pending_trace_buffer_usage_callback_.Reset();
-  }
-}
-
-void TracingControllerImpl::RegisterTracingUI(TracingUI* tracing_ui) {
-  DCHECK(tracing_uis_.find(tracing_ui) == tracing_uis_.end());
-  tracing_uis_.insert(tracing_ui);
-}
-
-void TracingControllerImpl::UnregisterTracingUI(TracingUI* tracing_ui) {
-  std::set<TracingUI*>::iterator it = tracing_uis_.find(tracing_ui);
-  DCHECK(it != tracing_uis_.end());
-  tracing_uis_.erase(it);
-}
-
-std::string TracingControllerImpl::GetTracingAgentName() {
-  return kChromeTracingAgentName;
-}
-
-std::string TracingControllerImpl::GetTraceEventLabel() {
-  return kChromeTraceLabel;
-}
-
-void TracingControllerImpl::StartAgentTracing(
-    const base::trace_event::TraceConfig& trace_config,
-    const StartAgentTracingCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  base::Closure on_agent_started =
-      base::Bind(callback, kChromeTracingAgentName, true);
-  background_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&TracingControllerImpl::SetEnabledOnBackgroundThread,
-                 base::Unretained(this), trace_config, on_agent_started));
-}
-
-void TracingControllerImpl::StopAgentTracing(
-    const StopAgentTracingCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // Handle special case of zero child processes by immediately flushing the
-  // trace log. Once the flush has completed the caller will be notified that
-  // tracing has ended.
-  if (pending_stop_tracing_ack_count_ == 1) {
-    // Flush/cancel asynchronously now, because we don't have any children to
-    // wait for.
-    if (trace_data_sink_) {
-      TraceLog::GetInstance()->Flush(
-          base::Bind(&TracingControllerImpl::OnLocalTraceDataCollected,
-                     base::Unretained(this)),
-          true);
-    } else {
-      TraceLog::GetInstance()->CancelTracing(
-          base::Bind(&TracingControllerImpl::OnLocalTraceDataCollected,
-                     base::Unretained(this)));
-    }
-  }
-
-  // Notify all child processes.
-  for (auto it : trace_message_filters_) {
-    if (trace_data_sink_)
-      it->SendEndTracing();
-    else
-      it->SendCancelTracing();
-  }
-}
-
-bool TracingControllerImpl::SupportsExplicitClockSync() {
-  return true;
-}
-
-void TracingControllerImpl::RecordClockSyncMarker(
-    const std::string& sync_id,
-    const RecordClockSyncMarkerCallback& callback) {
-  DCHECK(SupportsExplicitClockSync());
-
-  TRACE_EVENT_CLOCK_SYNC_RECEIVER(sync_id);
-}
-
-void TracingControllerImpl::IssueClockSyncMarker() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK_EQ(0, pending_clock_sync_ack_count_);
-
-  for (auto* it : additional_tracing_agents_) {
-    if (it->SupportsExplicitClockSync()) {
-      it->RecordClockSyncMarker(
-          base::GenerateGUID(),
-          base::Bind(&TracingControllerImpl::OnClockSyncMarkerRecordedByAgent,
-                     base::Unretained(this)));
-      pending_clock_sync_ack_count_++;
-    }
-  }
-
-  // If no clock sync is needed, stop tracing right away. Otherwise, schedule
-  // to stop tracing after timeout.
-  if (pending_clock_sync_ack_count_ == 0) {
-    StopTracingAfterClockSync();
-  } else {
-    clock_sync_timer_.Start(
-        FROM_HERE, base::TimeDelta::FromSeconds(kIssueClockSyncTimeoutSeconds),
-        this, &TracingControllerImpl::StopTracingAfterClockSync);
-  }
-}
-
-void TracingControllerImpl::OnClockSyncMarkerRecordedByAgent(
-    const std::string& sync_id,
-    const base::TimeTicks& issue_ts,
-    const base::TimeTicks& issue_end_ts) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  // TODO(charliea): Change this function so that it can accept a boolean
-  // success indicator instead of having to rely on sentinel issue_ts and
-  // issue_end_ts values to signal failure.
-  if (!(issue_ts == base::TimeTicks() || issue_end_ts == base::TimeTicks()))
-    TRACE_EVENT_CLOCK_SYNC_ISSUER(sync_id, issue_ts, issue_end_ts);
-
-  // Timer is not running means that clock sync already timed out.
-  if (!clock_sync_timer_.IsRunning())
-    return;
-
-  // Stop tracing only if all agents report back.
-  if (--pending_clock_sync_ack_count_ == 0) {
-    clock_sync_timer_.Stop();
-    StopTracingAfterClockSync();
-  }
-}
-
-void TracingControllerImpl::AddFilteredMetadata(
-    TracingController::TraceDataSink* sink,
-    std::unique_ptr<base::DictionaryValue> metadata,
-    const MetadataFilterPredicate& filter) {
-  if (filter.is_null()) {
-    sink->AddMetadata(std::move(metadata));
-    return;
-  }
-  std::unique_ptr<base::DictionaryValue> filtered_metadata(
-      new base::DictionaryValue);
-  for (base::DictionaryValue::Iterator it(*metadata); !it.IsAtEnd();
-       it.Advance()) {
-    if (filter.Run(it.key()))
-      filtered_metadata->Set(it.key(),
-                             base::MakeUnique<base::Value>(it.value().Clone()));
-    else
-      filtered_metadata->SetString(it.key(), "__stripped__");
-  }
-  sink->AddMetadata(std::move(filtered_metadata));
-}
-
-std::unique_ptr<base::DictionaryValue>
-TracingControllerImpl::GenerateTracingMetadataDict() const {
-  // It's important that this function creates a new metadata dict and returns
-  // it rather than directly populating the metadata_ member, as the data may
-  // need filtering in some cases.
-  std::unique_ptr<base::DictionaryValue> metadata_dict(
-      new base::DictionaryValue());
+std::unique_ptr<base::DictionaryValue> GenerateSystemMetadataDict() {
+  auto metadata_dict = base::MakeUnique<base::DictionaryValue>();
 
   metadata_dict->SetString("network-type", GetNetworkTypeString());
   metadata_dict->SetString("product-version", GetContentClient()->GetProduct());
@@ -865,16 +173,9 @@ TracingControllerImpl::GenerateTracingMetadataDict() const {
   metadata_dict->SetString("gpu-gl-renderer", gpu_info.gl_renderer);
 #endif
 
-  std::unique_ptr<TracingDelegate> delegate(
-      GetContentClient()->browser()->GetTracingDelegate());
-  if (delegate)
-    delegate->GenerateMetadataDict(metadata_dict.get());
-
   metadata_dict->SetString("clock-domain", GetClockString());
   metadata_dict->SetBoolean("highres-ticks",
                             base::TimeTicks::IsHighResolution());
-
-  metadata_dict->SetString("trace-config", trace_config_->ToString());
 
   metadata_dict->SetString(
       "command_line",
@@ -888,6 +189,226 @@ TracingControllerImpl::GenerateTracingMetadataDict() const {
   metadata_dict->SetString("trace-capture-datetime", time_string);
 
   return metadata_dict;
+}
+
+}  // namespace
+
+TracingController* TracingController::GetInstance() {
+  return TracingControllerImpl::GetInstance();
+}
+
+TracingControllerImpl::TracingControllerImpl()
+    : delegate_(GetContentClient()->browser()->GetTracingDelegate()) {
+  DCHECK(!g_controller);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  // Deliberately leaked, like this class.
+  base::FileTracing::SetProvider(new FileTracingProviderImpl);
+  AddAgents();
+  g_controller = this;
+}
+
+TracingControllerImpl::~TracingControllerImpl() = default;
+
+void TracingControllerImpl::AddAgents() {
+  auto* connector =
+      content::ServiceManagerConnection::GetForProcess()->GetConnector();
+  connector->BindInterface(resource_coordinator::mojom::kServiceName,
+                           &coordinator_);
+
+// Register tracing agents.
+#if defined(ENABLE_POWER_TRACING)
+  agents_.push_back(base::MakeUnique<PowerTracingAgent>(connector));
+#endif
+
+#if defined(OS_CHROMEOS)
+  agents_.push_back(base::MakeUnique<CrOSTracingAgent>(connector));
+  agents_.push_back(base::MakeUnique<ArcTracingAgentImpl>(connector));
+#elif defined(OS_WIN)
+  agents_.push_back(base::MakeUnique<EtwTracingAgent>(connector));
+#endif
+
+  auto chrome_agent =
+      base::MakeUnique<tracing::ChromeTraceEventAgent>(connector);
+  // For adding general CPU, network, OS, and other system information to the
+  // metadata.
+  chrome_agent->AddMetadataGeneratorFunction(
+      base::BindRepeating(&GenerateSystemMetadataDict));
+  // For adding controller information to the metadata.
+  chrome_agent->AddMetadataGeneratorFunction(base::BindRepeating(
+      &TracingControllerImpl::GenerateMetadataDict, base::Unretained(this)));
+  if (delegate_) {
+    chrome_agent->AddMetadataGeneratorFunction(
+        base::BindRepeating(&TracingDelegate::GenerateMetadataDict,
+                            base::Unretained(delegate_.get())));
+  }
+  agents_.push_back(std::move(chrome_agent));
+}
+
+std::unique_ptr<base::DictionaryValue>
+TracingControllerImpl::GenerateMetadataDict() const {
+  auto metadata_dict = base::MakeUnique<base::DictionaryValue>();
+  metadata_dict->SetString("trace-config", trace_config_->ToString());
+  return metadata_dict;
+}
+
+TracingControllerImpl* TracingControllerImpl::GetInstance() {
+  DCHECK(g_controller);
+  return g_controller;
+}
+
+bool TracingControllerImpl::GetCategories(
+    const GetCategoriesDoneCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  coordinator_->GetCategories(base::BindRepeating(
+      [](const GetCategoriesDoneCallback& callback, bool success,
+         const std::string& categories) {
+        const std::vector<std::string> split = base::SplitString(
+            categories, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+        std::set<std::string> category_set;
+        for (const auto& category : split) {
+          category_set.insert(category);
+        }
+        callback.Run(category_set);
+      },
+      callback));
+  // TODO(chiniforooshan): The actual success value should be sent by the
+  // callback asynchronously.
+  return true;
+}
+
+bool TracingControllerImpl::StartTracing(
+    const base::trace_event::TraceConfig& trace_config,
+    const StartTracingDoneCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  trace_config_ =
+      base::MakeUnique<base::trace_event::TraceConfig>(trace_config);
+  coordinator_->StartTracing(
+      trace_config.ToString(),
+      base::BindRepeating(
+          [](const StartTracingDoneCallback& callback, bool success) {
+            if (!callback.is_null())
+              callback.Run();
+          },
+          callback));
+  // TODO(chiniforooshan): The actual success value should be sent by the
+  // callback asynchronously.
+  return true;
+}
+
+bool TracingControllerImpl::StopTracing(
+    const scoped_refptr<TraceDataEndpoint>& trace_data_endpoint) {
+  return StopTracing(std::move(trace_data_endpoint), "");
+}
+
+bool TracingControllerImpl::StopTracing(
+    const scoped_refptr<TraceDataEndpoint>& trace_data_endpoint,
+    const std::string& agent_label) {
+  if (!IsTracing())
+    return false;
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  trace_data_endpoint_ = std::move(trace_data_endpoint);
+  is_data_complete_ = false;
+  is_metadata_available_ = false;
+  mojo::DataPipe data_pipe;
+  drainer_.reset(new mojo::common::DataPipeDrainer(
+      this, std::move(data_pipe.consumer_handle)));
+  if (agent_label.empty()) {
+    // Stop and flush all agents.
+    coordinator_->StopAndFlush(
+        std::move(data_pipe.producer_handle),
+        base::BindRepeating(&TracingControllerImpl::OnMetadataAvailable,
+                            base::Unretained(this)));
+  } else {
+    // Stop all and flush a particular agent.
+    coordinator_->StopAndFlushAgent(
+        std::move(data_pipe.producer_handle), agent_label,
+        base::BindRepeating(&TracingControllerImpl::OnMetadataAvailable,
+                            base::Unretained(this)));
+  }
+  // TODO(chiniforooshan): Is the return value used anywhere?
+  return true;
+}
+
+bool TracingControllerImpl::GetTraceBufferUsage(
+    const GetTraceBufferUsageCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  coordinator_->RequestBufferUsage(base::BindRepeating(
+      [](const GetTraceBufferUsageCallback& callback, bool success,
+         float percent_full, uint32_t approximate_count) {
+        callback.Run(percent_full, approximate_count);
+      },
+      callback));
+  // TODO(chiniforooshan): The actual success value should be sent by the
+  // callback asynchronously.
+  return true;
+}
+
+bool TracingControllerImpl::IsTracing() const {
+  return trace_config_ != nullptr;
+}
+
+void TracingControllerImpl::RegisterTracingUI(TracingUI* tracing_ui) {
+  DCHECK(tracing_uis_.find(tracing_ui) == tracing_uis_.end());
+  tracing_uis_.insert(tracing_ui);
+}
+
+void TracingControllerImpl::UnregisterTracingUI(TracingUI* tracing_ui) {
+  std::set<TracingUI*>::iterator it = tracing_uis_.find(tracing_ui);
+  DCHECK(it != tracing_uis_.end());
+  tracing_uis_.erase(it);
+}
+
+void TracingControllerImpl::OnDataAvailable(const void* data,
+                                            size_t num_bytes) {
+  if (trace_data_endpoint_) {
+    const std::string chunk(static_cast<const char*>(data), num_bytes);
+    trace_data_endpoint_->ReceiveTraceChunk(
+        base::MakeUnique<std::string>(chunk));
+  }
+}
+
+void TracingControllerImpl::CompleteFlush() {
+  if (trace_data_endpoint_) {
+    trace_data_endpoint_->ReceiveTraceFinalContents(
+        std::move(filtered_metadata_));
+  }
+  trace_data_endpoint_ = nullptr;
+  trace_config_ = nullptr;
+}
+
+void TracingControllerImpl::OnDataComplete() {
+  is_data_complete_ = true;
+  if (is_metadata_available_)
+    CompleteFlush();
+}
+
+void TracingControllerImpl::OnMetadataAvailable(
+    std::unique_ptr<base::DictionaryValue> metadata) {
+  DCHECK(!filtered_metadata_);
+  is_metadata_available_ = true;
+  MetadataFilterPredicate metadata_filter;
+  if (trace_config_->IsArgumentFilterEnabled()) {
+    if (delegate_)
+      metadata_filter = delegate_->GetMetadataFilterPredicate();
+  }
+  if (metadata_filter.is_null()) {
+    filtered_metadata_ = std::move(metadata);
+  } else {
+    filtered_metadata_ = base::MakeUnique<base::DictionaryValue>();
+    for (base::DictionaryValue::Iterator it(*metadata); !it.IsAtEnd();
+         it.Advance()) {
+      if (metadata_filter.Run(it.key())) {
+        filtered_metadata_->Set(
+            it.key(), base::MakeUnique<base::Value>(it.value().Clone()));
+      } else {
+        filtered_metadata_->SetString(it.key(), "__stripped__");
+      }
+    }
+  }
+  if (is_data_complete_)
+    CompleteFlush();
 }
 
 }  // namespace content

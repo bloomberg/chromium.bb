@@ -31,39 +31,32 @@ class TracingController {
   CONTENT_EXPORT static TracingController* GetInstance();
 
   // An interface for trace data consumer. An implementation of this interface
-  // is passed to DisableTracing() and receives the trace data
-  // followed by a notification that all child processes
-  // have completed tracing and the data collection is over.
-  // All methods are called on the UI thread.
-  // Close method will be called exactly once and no methods will be
-  // called after that.
-  class CONTENT_EXPORT TraceDataSink
-      : public base::RefCountedThreadSafe<TraceDataSink> {
+  // is passed to StopTracing() and receives the trace data followed by a
+  // notification that all child processes have completed tracing and the data
+  // collection is over. All methods are called on the UI thread.
+  // ReceiveTraceFinalContents method will be called exactly once and no methods
+  // will be called after that.
+  class CONTENT_EXPORT TraceDataEndpoint
+      : public base::RefCountedThreadSafe<TraceDataEndpoint> {
    public:
-    TraceDataSink();
+    virtual void ReceiveTraceChunk(std::unique_ptr<std::string> chunk) = 0;
+    virtual void ReceiveTraceFinalContents(
+        std::unique_ptr<const base::DictionaryValue> metadata) = 0;
 
    protected:
-    friend class TracingControllerImpl;
-    friend class base::RefCountedThreadSafe<TraceDataSink>;
-
-    virtual void AddTraceChunk(const std::string& chunk) = 0;
-    // Add a TracingAgent's trace to the data sink.
-    virtual void AddAgentTrace(const std::string& trace_label,
-                               const std::string& trace_data) {}
-    virtual void AddMetadata(std::unique_ptr<base::DictionaryValue> data) {}
-    virtual void Close() {}
-    virtual ~TraceDataSink();
+    friend class base::RefCountedThreadSafe<TraceDataEndpoint>;
+    virtual ~TraceDataEndpoint() {}
   };
 
-  // Create a trace sink that may be supplied to StopTracing
+  // Create a trace endpoint that may be supplied to StopTracing
   // to capture the trace data as a string.
-  CONTENT_EXPORT static scoped_refptr<TraceDataSink> CreateStringSink(
+  CONTENT_EXPORT static scoped_refptr<TraceDataEndpoint> CreateStringEndpoint(
       const base::Callback<void(std::unique_ptr<const base::DictionaryValue>,
                                 base::RefCountedString*)>& callback);
 
-  // Create a trace sink that may be supplied to StopTracing
+  // Create a trace endpoint that may be supplied to StopTracing
   // to dump the trace data to a file.
-  CONTENT_EXPORT static scoped_refptr<TraceDataSink> CreateFileSink(
+  CONTENT_EXPORT static scoped_refptr<TraceDataEndpoint> CreateFileEndpoint(
       const base::FilePath& file_path,
       const base::Closure& callback);
 
@@ -113,19 +106,15 @@ class TracingController {
   // TracingFileResultCallback will be called back with a file that contains
   // the traced data.
   //
-  // If |trace_data_sink| is not null, it will receive chunks of trace data
-  // as a comma-separated sequences of JSON-stringified events, followed by
-  // a notification that the trace collection is finished.
+  // If |trace_data_endpoint| is not null, it will receive chunks of trace data
+  // as JSON-stringified events, followed by a notification that the trace
+  // collection is finished.
   //
   virtual bool StopTracing(
-      const scoped_refptr<TraceDataSink>& trace_data_sink) = 0;
-
-  // Appends metadata to the current tracing session. The metadata are
-  // subject to filtering according to current trace config.
-  // Note that TracingController adds some default metadata when
-  // StopTracing is called, which may override metadata that you would
-  // set beforehand in case of key collision.
-  virtual void AddMetadata(const base::DictionaryValue& metadata) = 0;
+      const scoped_refptr<TraceDataEndpoint>& trace_data_endpoint) = 0;
+  virtual bool StopTracing(
+      const scoped_refptr<TraceDataEndpoint>& trace_data_endpoint,
+      const std::string& agent_label) = 0;
 
   // Get the maximum across processes of trace buffer percent full state.
   // When the TraceBufferUsage value is determined, the callback is

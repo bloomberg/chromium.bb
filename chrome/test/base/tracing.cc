@@ -4,6 +4,8 @@
 
 #include "chrome/test/base/tracing.h"
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
@@ -12,36 +14,42 @@
 #include "base/strings/string_util.h"
 #include "base/timer/timer.h"
 #include "base/trace_event/trace_event.h"
+#include "base/values.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/tracing_controller.h"
 #include "content/public/test/test_utils.h"
+#include "services/resource_coordinator/public/interfaces/tracing/tracing_constants.mojom.h"
 
 namespace {
 
 using content::BrowserThread;
 
-class StringTraceSink : public content::TracingController::TraceDataSink {
+class StringTraceEndpoint
+    : public content::TracingController::TraceDataEndpoint {
  public:
-  StringTraceSink(std::string* result, const base::Closure& callback)
+  StringTraceEndpoint(std::string* result, const base::Closure& callback)
       : result_(result), completion_callback_(callback) {}
 
-  void AddTraceChunk(const std::string& chunk) override {
-    *result_ += result_->empty() ? "[" : ",";
-    *result_ += chunk;
+  void ReceiveTraceChunk(std::unique_ptr<std::string> chunk) override {
+    *result_ += result_->empty() ? "[" : "";
+    DCHECK(chunk);
+    *result_ += *chunk;
   }
-  void Close() override {
+
+  void ReceiveTraceFinalContents(
+      std::unique_ptr<const base::DictionaryValue> metadata) override {
     if (!result_->empty())
       *result_ += "]";
     completion_callback_.Run();
   }
 
  private:
-  ~StringTraceSink() override {}
+  ~StringTraceEndpoint() override {}
 
   std::string* result_;
   base::Closure completion_callback_;
 
-  DISALLOW_COPY_AND_ASSIGN(StringTraceSink);
+  DISALLOW_COPY_AND_ASSIGN(StringTraceEndpoint);
 };
 
 class InProcessTraceController {
@@ -66,10 +74,11 @@ class InProcessTraceController {
     using namespace base::debug;
 
     if (!content::TracingController::GetInstance()->StopTracing(
-            new StringTraceSink(
+            new StringTraceEndpoint(
                 json_trace_output,
                 base::Bind(&InProcessTraceController::OnTracingComplete,
-                           base::Unretained(this))))) {
+                           base::Unretained(this))),
+            tracing::mojom::kChromeTraceEventLabel)) {
       return false;
     }
     // Wait for OnEndTracingComplete() to quit the message loop.

@@ -318,6 +318,7 @@ source_set("browser_sources") {
     "//ipc",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
+    "//services/resource_coordinator/public/cpp:resource_coordinator_cpp",
     "//services/service_manager/public/cpp",
 
     # We expose skia headers in the public API.
@@ -372,10 +373,7 @@ source_set("browser_sources") {
   }
 
   if (is_chromeos) {
-    sources += [
-      "arc_tracing_agent.cc",
-      "arc_tracing_agent.h",
-    ]
+    sources += [ "arc_tracing_agent.h" ]
   }
 
   if (enable_webrtc) {

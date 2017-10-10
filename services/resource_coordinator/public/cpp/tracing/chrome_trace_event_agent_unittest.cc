@@ -81,7 +81,7 @@ class ChromeTraceEventAgentTest : public testing::Test {
  public:
   void SetUp() override {
     message_loop_.reset(new base::MessageLoop());
-    agent_.reset(new ChromeTraceEventAgent(nullptr, ""));
+    agent_.reset(new ChromeTraceEventAgent(nullptr));
   }
 
   void TearDown() override {

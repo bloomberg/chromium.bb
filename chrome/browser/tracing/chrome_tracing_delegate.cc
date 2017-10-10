@@ -4,10 +4,13 @@
 
 #include "chrome/browser/tracing/chrome_tracing_delegate.h"
 
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
@@ -67,17 +70,20 @@ namespace {
 
 enum PermitMissingProfile { PROFILE_REQUIRED, PROFILE_NOT_REQUIRED };
 
-bool ProfileAllowsScenario(const content::BackgroundTracingConfig& config,
-                           PermitMissingProfile profile_permission) {
+Profile* GetProfile() {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   if (!profile_manager)
-    return false;
+    return nullptr;
 
-  Profile* profile = profile_manager->GetProfileByPath(
+  return profile_manager->GetProfileByPath(
       profile_manager->GetLastUsedProfileDir(profile_manager->user_data_dir()));
+}
 
+bool ProfileAllowsScenario(const content::BackgroundTracingConfig& config,
+                           PermitMissingProfile profile_permission) {
   // If the profile hasn't loaded or been created yet, we allow the scenario
   // to start up, but not be finalized.
+  Profile* profile = GetProfile();
   if (!profile) {
     if (profile_permission == PROFILE_REQUIRED)
       return false;
@@ -165,9 +171,13 @@ bool ChromeTracingDelegate::IsAllowedToEndBackgroundScenario(
   return true;
 }
 
-void ChromeTracingDelegate::GenerateMetadataDict(
-    base::DictionaryValue* metadata_dict) {
-  DCHECK(metadata_dict);
+bool ChromeTracingDelegate::IsProfileLoaded() {
+  return GetProfile() != nullptr;
+}
+
+std::unique_ptr<base::DictionaryValue>
+ChromeTracingDelegate::GenerateMetadataDict() {
+  auto metadata_dict = base::MakeUnique<base::DictionaryValue>();
   std::vector<std::string> variations;
   variations::GetFieldTrialActiveGroupIdsAsStrings(base::StringPiece(),
                                                    &variations);
@@ -178,6 +188,7 @@ void ChromeTracingDelegate::GenerateMetadataDict(
 
   metadata_dict->Set("field-trials", std::move(variations_list));
   metadata_dict->SetString("revision", version_info::GetLastChange());
+  return metadata_dict;
 }
 
 content::MetadataFilterPredicate

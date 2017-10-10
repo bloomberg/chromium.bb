@@ -18,6 +18,7 @@
 #include "base/format_macros.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -128,12 +129,12 @@ bool OnBeginJSONRequest(const std::string& path,
   if (path == "json/end_recording_compressed") {
     if (!TracingController::GetInstance()->IsTracing())
       return false;
-    scoped_refptr<TracingControllerImpl::TraceDataSink> data_sink =
-        TracingControllerImpl::CreateCompressedStringSink(
+    scoped_refptr<TracingController::TraceDataEndpoint> data_endpoint =
+        TracingControllerImpl::CreateCompressedStringEndpoint(
             TracingControllerImpl::CreateCallbackEndpoint(
                 base::Bind(TracingCallbackWrapperBase64, callback)),
             false /* compress_with_background_priority */);
-    return TracingController::GetInstance()->StopTracing(data_sink);
+    return TracingController::GetInstance()->StopTracing(data_endpoint);
   }
 
   LOG(ERROR) << "Unhandled request to " << path;

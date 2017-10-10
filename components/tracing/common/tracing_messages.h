@@ -8,11 +8,9 @@
 #include <stdint.h>
 
 #include <string>
-#include <vector>
 
 #include "base/metrics/histogram.h"
 #include "base/sync_socket.h"
-#include "base/trace_event/trace_event_impl.h"
 #include "components/tracing/tracing_export.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
@@ -23,25 +21,9 @@
 #define IPC_MESSAGE_EXPORT TRACING_EXPORT
 #define IPC_MESSAGE_START TracingMsgStart
 
-IPC_STRUCT_TRAITS_BEGIN(base::trace_event::TraceLogStatus)
-IPC_STRUCT_TRAITS_MEMBER(event_capacity)
-IPC_STRUCT_TRAITS_MEMBER(event_count)
-IPC_STRUCT_TRAITS_END()
-
-// Sent to all child processes to enable trace event recording.
-IPC_MESSAGE_CONTROL3(TracingMsg_BeginTracing,
-                     std::string /*  trace_config_str */,
-                     base::TimeTicks /* browser_time */,
+// Sent to all child processes to set tracing process id.
+IPC_MESSAGE_CONTROL1(TracingMsg_SetTracingProcessId,
                      uint64_t /* Tracing process id (hash of child id) */)
-
-// Sent to all child processes to disable trace event recording.
-IPC_MESSAGE_CONTROL0(TracingMsg_EndTracing)
-
-// Sent to all child processes to cancel trace event recording.
-IPC_MESSAGE_CONTROL0(TracingMsg_CancelTracing)
-
-// Sent to all child processes to get trace buffer fullness.
-IPC_MESSAGE_CONTROL0(TracingMsg_GetTraceLogStatus)
 
 IPC_MESSAGE_CONTROL4(TracingMsg_SetUMACallback,
                      std::string /* histogram_name */,
@@ -54,20 +36,6 @@ IPC_MESSAGE_CONTROL1(TracingMsg_ClearUMACallback,
 
 // Notify the browser that this child process supports tracing.
 IPC_MESSAGE_CONTROL0(TracingHostMsg_ChildSupportsTracing)
-
-// Reply from child processes acking TracingMsg_EndTracing.
-IPC_MESSAGE_CONTROL1(TracingHostMsg_EndTracingAck,
-                     std::vector<std::string> /* known_categories */)
-
-// Child processes send back trace data in JSON chunks.
-IPC_MESSAGE_CONTROL1(TracingHostMsg_TraceDataCollected,
-                     std::string /*json trace data*/)
-
-// Reply to TracingMsg_GetTraceLogStatus.
-IPC_MESSAGE_CONTROL1(
-    TracingHostMsg_TraceLogStatusReply,
-    base::trace_event::TraceLogStatus /*status of the trace log*/)
-
 
 IPC_MESSAGE_CONTROL1(TracingHostMsg_TriggerBackgroundTrace,
                      std::string /* name */)

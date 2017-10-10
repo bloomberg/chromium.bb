@@ -11,20 +11,24 @@
 #include "base/base64.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/lazy_instance.h"
-#include "base/memory/singleton.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_config.h"
 #include "base/trace_event/trace_event_impl.h"
 #include "base/values.h"
 #include "content/public/browser/browser_thread.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
+#include "services/resource_coordinator/public/interfaces/service_constants.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace content {
 
 namespace {
 
-const char kETWTracingAgentName[] = "etw";
+EtwTracingAgent* g_etw_tracing_agent = nullptr;
+
 const char kETWTraceLabel[] = "systemTraceEvents";
 
 const int kEtwBufferSizeInKBytes = 16;
@@ -40,65 +44,89 @@ std::string GuidToString(const GUID& guid) {
 
 }  // namespace
 
-EtwTracingAgent::EtwTracingAgent()
-    : thread_("EtwConsumerThread") {
+EtwTracingAgent::EtwTracingAgent(service_manager::Connector* connector)
+    : binding_(this), thread_("EtwConsumerThread"), is_tracing_(false) {
+  DCHECK(!g_etw_tracing_agent);
+  // Connect to the agent registry interface.
+  tracing::mojom::AgentRegistryPtr agent_registry;
+  connector->BindInterface(resource_coordinator::mojom::kServiceName,
+                           &agent_registry);
+
+  // Register this agent.
+  tracing::mojom::AgentPtr agent;
+  binding_.Bind(mojo::MakeRequest(&agent));
+  agent_registry->RegisterAgent(std::move(agent), kETWTraceLabel,
+                                tracing::mojom::TraceDataType::OBJECT,
+                                false /* supports_explicit_clock_sync */);
+  g_etw_tracing_agent = this;
 }
 
 EtwTracingAgent::~EtwTracingAgent() {
+  if (is_tracing_)
+    StopKernelSessionTracing();
+  g_etw_tracing_agent = nullptr;
 }
 
-std::string EtwTracingAgent::GetTracingAgentName() {
-  return kETWTracingAgentName;
-}
-
-std::string EtwTracingAgent::GetTraceEventLabel() {
-  return kETWTraceLabel;
-}
-
-void EtwTracingAgent::StartAgentTracing(
-    const base::trace_event::TraceConfig& trace_config,
-    const StartAgentTracingCallback& callback) {
+void EtwTracingAgent::StartTracing(
+    const std::string& config,
+    base::TimeTicks coordinator_time,
+    const Agent::StartTracingCallback& callback) {
+  base::trace_event::TraceConfig trace_config(config);
   // Activate kernel tracing.
-  if (!StartKernelSessionTracing()) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(callback, GetTracingAgentName(), false /* success */));
+  if (!trace_config.IsSystraceEnabled() || !StartKernelSessionTracing()) {
+    callback.Run(false /* success */);
     return;
   }
+  is_tracing_ = true;
 
   // Start the consumer thread and start consuming events.
   thread_.Start();
+
+  // Tracing agents, e.g. this, live as long as BrowserMainLoop lives and so
+  // using base::Unretained here is safe.
   thread_.task_runner()->PostTask(
       FROM_HERE, base::Bind(&EtwTracingAgent::TraceAndConsumeOnThread,
                             base::Unretained(this)));
-
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(callback, GetTracingAgentName(), true /* success */));
+  callback.Run(true /* success */);
 }
 
-void EtwTracingAgent::StopAgentTracing(
-    const StopAgentTracingCallback& callback) {
+void EtwTracingAgent::StopAndFlush(tracing::mojom::RecorderPtr recorder) {
+  if (!is_tracing_)
+    return;
   // Deactivate kernel tracing.
   if (!StopKernelSessionTracing()) {
     LOG(FATAL) << "Could not stop system tracing.";
   }
-
-  // Stop consuming and flush events.
-  thread_.task_runner()->PostTask(FROM_HERE,
-                                  base::Bind(&EtwTracingAgent::FlushOnThread,
-                                             base::Unretained(this), callback));
+  recorder_ = std::move(recorder);
+  // Stop consuming and flush events. Tracing agents, e.g. this, live as long as
+  // BrowserMainLoop lives and so using base::Unretained here is safe.
+  thread_.task_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(&EtwTracingAgent::FlushOnThread, base::Unretained(this)));
 }
 
-void EtwTracingAgent::OnStopSystemTracingDone(
-    const StopAgentTracingCallback& callback,
-    const scoped_refptr<base::RefCountedString>& result) {
+void EtwTracingAgent::RequestClockSyncMarker(
+    const std::string& sync_id,
+    const Agent::RequestClockSyncMarkerCallback& callback) {
+  NOTREACHED();
+}
 
+void EtwTracingAgent::GetCategories(
+    const Agent::GetCategoriesCallback& callback) {
+  callback.Run("");
+}
+
+void EtwTracingAgent::RequestBufferStatus(
+    const Agent::RequestBufferStatusCallback& callback) {
+  callback.Run(0, 0);
+}
+
+void EtwTracingAgent::OnStopSystemTracingDone(const std::string& output) {
+  recorder_->AddChunk(output);
+  recorder_.reset();
   // Stop the consumer thread.
   thread_.Stop();
-
-  // Pass the serialized events.
-  callback.Run(GetTracingAgentName(), GetTraceEventLabel(), result);
+  is_tracing_ = false;
 }
 
 bool EtwTracingAgent::StartKernelSessionTracing() {
@@ -150,12 +178,15 @@ bool EtwTracingAgent::StopKernelSessionTracing() {
 
 // static
 EtwTracingAgent* EtwTracingAgent::GetInstance() {
-  return base::Singleton<EtwTracingAgent>::get();
+  return g_etw_tracing_agent;
 }
 
 // static
 void EtwTracingAgent::ProcessEvent(EVENT_TRACE* event) {
-  EtwTracingAgent::GetInstance()->AppendEventToBuffer(event);
+  auto* instance = EtwTracingAgent::GetInstance();
+  // Ignore events that are received after the browser is closed.
+  if (instance)
+    instance->AppendEventToBuffer(event);
 }
 
 void EtwTracingAgent::AddSyncEventToBuffer() {
@@ -223,8 +254,7 @@ void EtwTracingAgent::TraceAndConsumeOnThread() {
   Close();
 }
 
-void EtwTracingAgent::FlushOnThread(
-    const StopAgentTracingCallback& callback) {
+void EtwTracingAgent::FlushOnThread() {
   // Add the header information to the stream.
   auto header = base::MakeUnique<base::DictionaryValue>();
   header->SetString("name", "ETW");
@@ -236,16 +266,18 @@ void EtwTracingAgent::FlushOnThread(
   std::string output;
   JSONStringValueSerializer serializer(&output);
   serializer.Serialize(*header.get());
+  // TODO(chiniforooshan): Find a way to eliminate the extra string copy here.
+  // This is not too bad for now, since it happens only once when tracing is
+  // stopped.
+  DCHECK_EQ('{', output.front());
+  DCHECK_EQ('}', output.back());
+  output = output.substr(1, output.size() - 2);
 
-  // Pass the result to the UI Thread.
-  scoped_refptr<base::RefCountedString> result =
-      base::RefCountedString::TakeString(&output);
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&EtwTracingAgent::OnStopSystemTracingDone,
-                 base::Unretained(this),
-                 callback,
-                 result));
+  // Tracing agents, e.g. this, live as long as BrowserMainLoop lives and so
+  // using base::Unretained here is safe.
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(&EtwTracingAgent::OnStopSystemTracingDone,
+                                     base::Unretained(this), output));
 }
 
 }  // namespace content

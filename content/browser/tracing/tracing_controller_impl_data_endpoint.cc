@@ -8,20 +8,20 @@
 #include "base/json/json_writer.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/ref_counted_memory.h"
+#include "base/sequenced_task_runner.h"
 #include "base/strings/pattern.h"
 #include "base/task_scheduler/post_task.h"
 #include "content/browser/tracing/tracing_controller_impl.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/tracing_controller.h"
 #include "third_party/zlib/zlib.h"
 
 namespace content {
 
 namespace {
 
-const char kChromeTraceLabel[] = "traceEvents";
-const char kMetadataTraceLabel[] = "metadata";
-
-class StringTraceDataEndpoint : public TraceDataEndpoint {
+class StringTraceDataEndpoint : public TracingController::TraceDataEndpoint {
  public:
   typedef base::Callback<void(std::unique_ptr<const base::DictionaryValue>,
                               base::RefCountedString*)>
@@ -57,7 +57,7 @@ class StringTraceDataEndpoint : public TraceDataEndpoint {
   DISALLOW_COPY_AND_ASSIGN(StringTraceDataEndpoint);
 };
 
-class FileTraceDataEndpoint : public TraceDataEndpoint {
+class FileTraceDataEndpoint : public TracingController::TraceDataEndpoint {
  public:
   explicit FileTraceDataEndpoint(const base::FilePath& trace_file_path,
                                  const base::Closure& callback)
@@ -89,7 +89,7 @@ class FileTraceDataEndpoint : public TraceDataEndpoint {
   }
 
   bool OpenFileIfNeededOnBlockingThread() {
-    base::ThreadRestrictions::AssertIOAllowed();
+    base::AssertBlockingAllowed();
     if (file_ != NULL)
       return true;
     file_ = base::OpenFile(file_path_, "w");
@@ -123,75 +123,8 @@ class FileTraceDataEndpoint : public TraceDataEndpoint {
   DISALLOW_COPY_AND_ASSIGN(FileTraceDataEndpoint);
 };
 
-class TraceDataSinkImplBase : public TracingController::TraceDataSink {
- public:
-  void AddAgentTrace(const std::string& trace_label,
-                     const std::string& trace_data) override;
-  void AddMetadata(std::unique_ptr<base::DictionaryValue> data) override;
-
- protected:
-  TraceDataSinkImplBase() : metadata_(new base::DictionaryValue()) {}
-  ~TraceDataSinkImplBase() override {}
-
-  // Get a map of TracingAgent's data, which is previously added by
-  // AddAgentTrace(). The map's key is the trace label and the map's value is
-  // the trace data.
-  const std::map<std::string, std::string>& GetAgentTrace() const;
-  std::unique_ptr<base::DictionaryValue> TakeMetadata();
-
- private:
-  std::map<std::string, std::string> additional_tracing_agent_trace_;
-  std::unique_ptr<base::DictionaryValue> metadata_;
-
-  DISALLOW_COPY_AND_ASSIGN(TraceDataSinkImplBase);
-};
-
-class JSONTraceDataSink : public TraceDataSinkImplBase {
- public:
-  explicit JSONTraceDataSink(scoped_refptr<TraceDataEndpoint> endpoint)
-      : endpoint_(endpoint), had_received_first_chunk_(false) {}
-
-  void AddTraceChunk(const std::string& chunk) override {
-    std::string trace_string;
-    if (had_received_first_chunk_)
-      trace_string = ",";
-    else
-      trace_string = "{\"" + std::string(kChromeTraceLabel) + "\":[";
-    trace_string += chunk;
-    had_received_first_chunk_ = true;
-
-    endpoint_->ReceiveTraceChunk(base::MakeUnique<std::string>(trace_string));
-  }
-
-  void Close() override {
-    endpoint_->ReceiveTraceChunk(base::MakeUnique<std::string>("]"));
-
-    for (auto const &it : GetAgentTrace())
-      endpoint_->ReceiveTraceChunk(
-          base::MakeUnique<std::string>(",\"" + it.first + "\": " + it.second));
-
-    std::unique_ptr<base::DictionaryValue> metadata(TakeMetadata());
-    std::string metadataJSON;
-
-    if (base::JSONWriter::Write(*metadata, &metadataJSON) &&
-        !metadataJSON.empty()) {
-      endpoint_->ReceiveTraceChunk(base::MakeUnique<std::string>(
-          ",\"" + std::string(kMetadataTraceLabel) + "\": " + metadataJSON));
-    }
-
-    endpoint_->ReceiveTraceChunk(base::MakeUnique<std::string>("}"));
-    endpoint_->ReceiveTraceFinalContents(std::move(metadata));
-  }
-
- private:
-  ~JSONTraceDataSink() override {}
-
-  scoped_refptr<TraceDataEndpoint> endpoint_;
-  bool had_received_first_chunk_;
-  DISALLOW_COPY_AND_ASSIGN(JSONTraceDataSink);
-};
-
-class CompressedTraceDataEndpoint : public TraceDataEndpoint {
+class CompressedTraceDataEndpoint
+    : public TracingController::TraceDataEndpoint {
  public:
   CompressedTraceDataEndpoint(scoped_refptr<TraceDataEndpoint> endpoint,
                               bool compress_with_background_priority)
@@ -295,61 +228,32 @@ class CompressedTraceDataEndpoint : public TraceDataEndpoint {
 
 }  // namespace
 
-TracingController::TraceDataSink::TraceDataSink() {}
-TracingController::TraceDataSink::~TraceDataSink() {}
-
-void TraceDataSinkImplBase::AddAgentTrace(const std::string& trace_label,
-                                          const std::string& trace_data) {
-  DCHECK(additional_tracing_agent_trace_.find(trace_label) ==
-         additional_tracing_agent_trace_.end());
-  additional_tracing_agent_trace_[trace_label] = trace_data;
-}
-
-const std::map<std::string, std::string>& TraceDataSinkImplBase::GetAgentTrace()
-    const {
-  return additional_tracing_agent_trace_;
-}
-
-void TraceDataSinkImplBase::AddMetadata(
-    std::unique_ptr<base::DictionaryValue> data) {
-  metadata_->MergeDictionary(data.get());
-}
-
-std::unique_ptr<base::DictionaryValue> TraceDataSinkImplBase::TakeMetadata() {
-  return std::move(metadata_);
-}
-
-scoped_refptr<TracingController::TraceDataSink>
-TracingController::CreateStringSink(
-    const base::Callback<void(std::unique_ptr<const base::DictionaryValue>,
-                              base::RefCountedString*)>& callback) {
-  return new JSONTraceDataSink(new StringTraceDataEndpoint(callback));
-}
-
-scoped_refptr<TracingController::TraceDataSink>
-TracingController::CreateFileSink(const base::FilePath& file_path,
-                                  const base::Closure& callback) {
-  return new JSONTraceDataSink(new FileTraceDataEndpoint(file_path, callback));
-}
-
-scoped_refptr<TracingController::TraceDataSink>
-TracingControllerImpl::CreateCompressedStringSink(
-    scoped_refptr<TraceDataEndpoint> endpoint,
-    bool compress_with_background_priority) {
-  return new JSONTraceDataSink(new CompressedTraceDataEndpoint(
-      endpoint, compress_with_background_priority));
-}
-
-scoped_refptr<TraceDataEndpoint> TracingControllerImpl::CreateCallbackEndpoint(
+scoped_refptr<TracingController::TraceDataEndpoint>
+TracingController::CreateStringEndpoint(
     const base::Callback<void(std::unique_ptr<const base::DictionaryValue>,
                               base::RefCountedString*)>& callback) {
   return new StringTraceDataEndpoint(callback);
 }
 
-scoped_refptr<TracingController::TraceDataSink>
-TracingControllerImpl::CreateJSONSink(
-    scoped_refptr<TraceDataEndpoint> endpoint) {
-  return new JSONTraceDataSink(endpoint);
+scoped_refptr<TracingController::TraceDataEndpoint>
+TracingController::CreateFileEndpoint(const base::FilePath& file_path,
+                                      const base::Closure& callback) {
+  return new FileTraceDataEndpoint(file_path, callback);
+}
+
+scoped_refptr<TracingController::TraceDataEndpoint>
+TracingControllerImpl::CreateCompressedStringEndpoint(
+    scoped_refptr<TraceDataEndpoint> endpoint,
+    bool compress_with_background_priority) {
+  return new CompressedTraceDataEndpoint(endpoint,
+                                         compress_with_background_priority);
+}
+
+scoped_refptr<TracingController::TraceDataEndpoint>
+TracingControllerImpl::CreateCallbackEndpoint(
+    const base::Callback<void(std::unique_ptr<const base::DictionaryValue>,
+                              base::RefCountedString*)>& callback) {
+  return new StringTraceDataEndpoint(callback);
 }
 
 }  // namespace content

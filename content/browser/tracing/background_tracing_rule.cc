@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 #include "content/browser/tracing/background_tracing_rule.h"
 
+#include <limits>
 #include <string>
 
 #include "base/bind.h"
@@ -153,7 +154,8 @@ class HistogramRule
       : histogram_name_(histogram_name),
         histogram_lower_value_(histogram_lower_value),
         histogram_upper_value_(histogram_upper_value),
-        repeat_(repeat) {}
+        repeat_(repeat),
+        installed_(false) {}
 
  public:
   static std::unique_ptr<BackgroundTracingRule> Create(
@@ -193,8 +195,10 @@ class HistogramRule
 
   ~HistogramRule() override {
     base::StatisticsRecorder::ClearCallback(histogram_name_);
-    BackgroundTracingManagerImpl::GetInstance()
-        ->RemoveTraceMessageFilterObserver(this);
+    if (installed_) {
+      BackgroundTracingManagerImpl::GetInstance()
+          ->RemoveTraceMessageFilterObserver(this);
+    }
   }
 
   // BackgroundTracingRule implementation
@@ -207,6 +211,7 @@ class HistogramRule
 
     BackgroundTracingManagerImpl::GetInstance()->AddTraceMessageFilterObserver(
         this);
+    installed_ = true;
   }
 
   void IntoDict(base::DictionaryValue* dict) const override {
@@ -274,6 +279,7 @@ class HistogramRule
   int histogram_lower_value_;
   int histogram_upper_value_;
   bool repeat_;
+  bool installed_;
 };
 
 class TraceForNSOrTriggerOrFullRule : public BackgroundTracingRule {

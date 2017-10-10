@@ -4,6 +4,8 @@
 
 #include "content/browser/android/tracing_controller_android.h"
 
+#include <string>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/json/json_writer.h"
@@ -58,10 +60,9 @@ void TracingControllerAndroid::StopTracing(
   base::FilePath file_path(
       base::android::ConvertJavaStringToUTF8(env, jfilepath));
   if (!TracingController::GetInstance()->StopTracing(
-          TracingController::CreateFileSink(
-              file_path,
-              base::Bind(&TracingControllerAndroid::OnTracingStopped,
-                         weak_factory_.GetWeakPtr())))) {
+          TracingController::CreateFileEndpoint(
+              file_path, base::Bind(&TracingControllerAndroid::OnTracingStopped,
+                                    weak_factory_.GetWeakPtr())))) {
     LOG(ERROR) << "EndTracingAsync failed, forcing an immediate stop";
     OnTracingStopped();
   }
