@@ -29611,6 +29611,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>The different ways Chrome is launched.</summary>
 </histogram>
 
+<histogram name="Launch.WebAppDisplayMode" enum="WebAppDisplayMode">
+  <owner>piotrs@chromium.org</owner>
+  <summary>
+    Records the display mode (as defined in the Web App Manifest spec) at the
+    launch of the Added to Home screen or installed Web App (including WebAPKs).
+  </summary>
+</histogram>
+
 <histogram name="Layout.MicroSecondsPerComplexText" units="microseconds">
   <owner>benjhayden@chromium.org</owner>
   <summary>
