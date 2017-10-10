@@ -93,13 +93,11 @@ void MailboxTextureHolder::Sync(MailboxSyncMode mode) {
 
   if (!sync_token_.HasData()) {
     const GLuint64 fence_sync = gl->InsertFenceSyncCHROMIUM();
-    // TODO(junov): This could be OrderingBarrierCHROMIUM when used for the
-    // ImageBitmap transfer case.
     if (mode == kVerifiedSyncToken) {
-      gl->Flush();
+      gl->ShallowFlushCHROMIUM();
       gl->GenSyncTokenCHROMIUM(fence_sync, sync_token_.GetData());
     } else {
-      gl->ShallowFlushCHROMIUM();
+      gl->OrderingBarrierCHROMIUM();
       gl->GenUnverifiedSyncTokenCHROMIUM(fence_sync, sync_token_.GetData());
     }
     return;
@@ -112,7 +110,7 @@ void MailboxTextureHolder::Sync(MailboxSyncMode mode) {
     int8_t* token_data = sync_token_.GetData();
     // TODO(junov): Batch this verification in the case where there are multiple
     // offscreen canvases being committed.
-    gl->Flush();
+    gl->ShallowFlushCHROMIUM();
     gl->VerifySyncTokensCHROMIUM(&token_data, 1);
     sync_token_.SetVerifyFlush();
   }
