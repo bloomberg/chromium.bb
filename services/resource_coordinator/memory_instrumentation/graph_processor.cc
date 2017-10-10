@@ -43,9 +43,30 @@ void AddEntryToNode(Node* node, const MemoryAllocatorDump::Entry& entry) {
   }
 }
 
-void CollectAllocatorDumps(const base::trace_event::ProcessMemoryDump& source,
-                           GlobalDumpGraph* global_graph,
-                           Process* process_graph) {
+}  // namespace
+
+std::unique_ptr<GlobalDumpGraph> GraphProcessor::ComputeMemoryGraph(
+    const std::map<ProcessId, ProcessMemoryDump>& process_dumps) {
+  auto global_graph = std::make_unique<GlobalDumpGraph>();
+
+  // First pass: collects allocator dumps into a graph and populate
+  // with entries.
+  for (auto& pid_to_dump : process_dumps) {
+    auto* graph = global_graph->CreateGraphForProcess(pid_to_dump.first);
+    CollectAllocatorDumps(pid_to_dump.second, global_graph.get(), graph);
+  }
+
+  // Second pass: generate the graph of edges between the nodes.
+  for (auto& pid_to_dump : process_dumps) {
+    AddEdges(pid_to_dump.second, global_graph.get());
+  }
+  return global_graph;
+}
+
+void GraphProcessor::CollectAllocatorDumps(
+    const base::trace_event::ProcessMemoryDump& source,
+    GlobalDumpGraph* global_graph,
+    Process* process_graph) {
   for (const auto& path_to_dump : source.allocator_dumps()) {
     const std::string& path = path_to_dump.first;
     const MemoryAllocatorDump& dump = *path_to_dump.second;
@@ -75,8 +96,9 @@ void CollectAllocatorDumps(const base::trace_event::ProcessMemoryDump& source,
   }
 }
 
-void AddEdges(const base::trace_event::ProcessMemoryDump& source,
-              GlobalDumpGraph* global_graph) {
+void GraphProcessor::AddEdges(
+    const base::trace_event::ProcessMemoryDump& source,
+    GlobalDumpGraph* global_graph) {
   const auto& nodes_by_guid = global_graph->nodes_by_guid();
   for (const auto& guid_to_edge : source.allocator_dumps_edges()) {
     auto& edge = guid_to_edge.second;
@@ -102,26 +124,6 @@ void AddEdges(const base::trace_event::ProcessMemoryDump& source,
                                          edge.importance);
     }
   }
-}
-
-}  // namespace
-
-std::unique_ptr<GlobalDumpGraph> ComputeMemoryGraph(
-    const std::map<ProcessId, ProcessMemoryDump>& process_dumps) {
-  auto global_graph = std::make_unique<GlobalDumpGraph>();
-
-  // First pass: collects allocator dumps into a graph and populate
-  // with entries.
-  for (auto& pid_to_dump : process_dumps) {
-    auto* graph = global_graph->CreateGraphForProcess(pid_to_dump.first);
-    CollectAllocatorDumps(pid_to_dump.second, global_graph.get(), graph);
-  }
-
-  // Second pass: generate the graph of edges between the nodes.
-  for (auto& pid_to_dump : process_dumps) {
-    AddEdges(pid_to_dump.second, global_graph.get());
-  }
-  return global_graph;
 }
 
 }  // namespace memory_instrumentation

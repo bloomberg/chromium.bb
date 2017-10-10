@@ -13,11 +13,23 @@
 
 namespace memory_instrumentation {
 
-// Processes memory dumps to compute the memory dump graph which allows
-// subsequent computation of metrics such as effective sizes.
-std::unique_ptr<GlobalDumpGraph> ComputeMemoryGraph(
-    const std::map<base::ProcessId, base::trace_event::ProcessMemoryDump>&
-        process_dumps);
+class GraphProcessor {
+ public:
+  // Processes memory dumps to compute the memory dump graph which allows
+  // subsequent computation of metrics such as effective sizes.
+  static std::unique_ptr<GlobalDumpGraph> ComputeMemoryGraph(
+      const std::map<base::ProcessId, base::trace_event::ProcessMemoryDump>&
+          process_dumps);
+
+ private:
+  static void CollectAllocatorDumps(
+      const base::trace_event::ProcessMemoryDump& source,
+      GlobalDumpGraph* global_graph,
+      GlobalDumpGraph::Process* process_graph);
+
+  static void AddEdges(const base::trace_event::ProcessMemoryDump& source,
+                       GlobalDumpGraph* global_graph);
+};
 
 }  // namespace memory_instrumentation
 #endif
