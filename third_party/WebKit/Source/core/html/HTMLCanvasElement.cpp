@@ -514,7 +514,7 @@ void HTMLCanvasElement::Reset() {
       !GetOrCreateImageBuffer()->IsRecording()) {
     if (!image_buffer_is_clear_) {
       image_buffer_is_clear_ = true;
-      context_->clearRect(0, 0, width(), height());
+      context_->ClearRect(0, 0, width(), height());
     }
     return;
   }
@@ -549,9 +549,9 @@ bool HTMLCanvasElement::PaintsIntoCanvasBuffer() const {
   return true;
 }
 
-CanvasColorParams HTMLCanvasElement::GetCanvasColorParams() const {
+CanvasColorParams HTMLCanvasElement::ColorParams() const {
   if (context_)
-    return context_->color_params();
+    return context_->ColorParams();
   return CanvasColorParams();
 }
 
@@ -941,7 +941,7 @@ bool HTMLCanvasElement::ShouldUseDisplayList() {
   // Rasterization of web contents will blend in the output space. Only embed
   // the canvas as a display list if it intended to do output space blending as
   // well.
-  if (GetCanvasColorParams().LinearPixelMath())
+  if (ColorParams().LinearPixelMath())
     return false;
 
   if (RuntimeEnabledFeatures::ForceDisplayList2dCanvasEnabled())
@@ -971,7 +971,7 @@ HTMLCanvasElement::CreateWebGLImageBufferSurface(OpacityMode opacity_mode) {
   // then make a non-accelerated ImageBuffer. This means copying the internal
   // Image will require a pixel readback, but that is unavoidable in this case.
   auto surface = WTF::MakeUnique<AcceleratedImageBufferSurface>(
-      Size(), opacity_mode, GetCanvasColorParams());
+      Size(), opacity_mode, ColorParams());
   if (surface->IsValid())
     return std::move(surface);
   return nullptr;
@@ -987,7 +987,7 @@ HTMLCanvasElement::CreateAcceleratedImageBufferSurface(OpacityMode opacity_mode,
 
   auto surface = WTF::MakeUnique<Canvas2DLayerBridge>(
       Size(), *msaa_sample_count, opacity_mode,
-      Canvas2DLayerBridge::kEnableAcceleration, GetCanvasColorParams());
+      Canvas2DLayerBridge::kEnableAcceleration, ColorParams());
   if (!surface->IsValid()) {
     CanvasMetrics::CountCanvasContextUsage(
         CanvasMetrics::kGPUAccelerated2DCanvasImageBufferCreationFailed);
@@ -1008,7 +1008,7 @@ HTMLCanvasElement::CreateUnacceleratedImageBufferSurface(
   if (ShouldUseDisplayList()) {
     auto surface = WTF::MakeUnique<RecordingImageBufferSurface>(
         Size(), RecordingImageBufferSurface::kAllowFallback, opacity_mode,
-        GetCanvasColorParams());
+        ColorParams());
     if (surface->IsValid()) {
       CanvasMetrics::CountCanvasContextUsage(
           CanvasMetrics::kDisplayList2DCanvasImageBufferCreated);
@@ -1020,7 +1020,7 @@ HTMLCanvasElement::CreateUnacceleratedImageBufferSurface(
 
   auto surface = WTF::MakeUnique<Canvas2DLayerBridge>(
       Size(), 0, opacity_mode, Canvas2DLayerBridge::kDisableAcceleration,
-      GetCanvasColorParams());
+      ColorParams());
   if (surface->IsValid()) {
     CanvasMetrics::CountCanvasContextUsage(
         CanvasMetrics::kUnaccelerated2DCanvasImageBufferCreated);
@@ -1130,7 +1130,7 @@ void HTMLCanvasElement::UpdateExternallyAllocatedMemory() const {
 
   // Multiplying number of buffers by bytes per pixel
   CheckedNumeric<intptr_t> checked_externally_allocated_memory =
-      buffer_count * GetCanvasColorParams().BytesPerPixel();
+      buffer_count * ColorParams().BytesPerPixel();
   if (Is3d()) {
     checked_externally_allocated_memory +=
         context_->ExternallyAllocatedBytesPerPixel();
@@ -1177,8 +1177,8 @@ ImageBuffer* HTMLCanvasElement::GetOrCreateImageBuffer() {
 void HTMLCanvasElement::CreateImageBufferUsingSurfaceForTesting(
     std::unique_ptr<ImageBufferSurface> surface) {
   DiscardImageBuffer();
-  SetIntegralAttribute(widthAttr, surface->size().Width());
-  SetIntegralAttribute(heightAttr, surface->size().Height());
+  SetIntegralAttribute(widthAttr, surface->Size().Width());
+  SetIntegralAttribute(heightAttr, surface->Size().Height());
   CreateImageBufferInternal(std::move(surface));
 }
 

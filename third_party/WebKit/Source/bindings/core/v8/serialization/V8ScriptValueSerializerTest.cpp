@@ -1030,8 +1030,8 @@ TEST(V8ScriptValueSerializerTest, RoundTripImageBitmapWithColorSpaceInfo) {
 
   // Check the color settings.
   CanvasColorParams color_params = new_image_bitmap->GetCanvasColorParams();
-  EXPECT_EQ(kP3CanvasColorSpace, color_params.color_space());
-  EXPECT_EQ(kF16CanvasPixelFormat, color_params.pixel_format());
+  EXPECT_EQ(kP3CanvasColorSpace, color_params.ColorSpace());
+  EXPECT_EQ(kF16CanvasPixelFormat, color_params.PixelFormat());
 
   // Check that the pixel at (3, 3) is red. We expect red in P3 to be
   // {0x94, 0x3A, 0x3F, 0x28, 0x5F, 0x24, 0x00, 0x3C} when each color
@@ -1111,8 +1111,8 @@ TEST(V8ScriptValueSerializerTest, DecodeImageBitmapV18) {
 
   // Check the color settings.
   CanvasColorParams color_params = new_image_bitmap->GetCanvasColorParams();
-  EXPECT_EQ(kP3CanvasColorSpace, color_params.color_space());
-  EXPECT_EQ(kF16CanvasPixelFormat, color_params.pixel_format());
+  EXPECT_EQ(kP3CanvasColorSpace, color_params.ColorSpace());
+  EXPECT_EQ(kF16CanvasPixelFormat, color_params.PixelFormat());
 
   // Check that the pixel at (1, 0) is red.
   uint8_t pixel[8] = {};

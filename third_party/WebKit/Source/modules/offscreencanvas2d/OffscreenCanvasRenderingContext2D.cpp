@@ -57,18 +57,18 @@ ScriptPromise OffscreenCanvasRenderingContext2D::commit(
   bool is_web_gl_software_rendering = false;
   SkIRect damage_rect(dirty_rect_for_commit_);
   dirty_rect_for_commit_.setEmpty();
-  return host()->Commit(TransferToStaticBitmapImage(), damage_rect,
+  return Host()->Commit(TransferToStaticBitmapImage(), damage_rect,
                         is_web_gl_software_rendering, script_state,
                         exception_state);
 }
 
 // BaseRenderingContext2D implementation
 bool OffscreenCanvasRenderingContext2D::OriginClean() const {
-  return host()->OriginClean();
+  return Host()->OriginClean();
 }
 
 void OffscreenCanvasRenderingContext2D::SetOriginTainted() {
-  return host()->SetOriginTainted();
+  return Host()->SetOriginTainted();
 }
 
 bool OffscreenCanvasRenderingContext2D::WouldTaintOrigin(
@@ -86,24 +86,24 @@ bool OffscreenCanvasRenderingContext2D::WouldTaintOrigin(
 }
 
 int OffscreenCanvasRenderingContext2D::Width() const {
-  return host()->Size().Width();
+  return Host()->Size().Width();
 }
 
 int OffscreenCanvasRenderingContext2D::Height() const {
-  return host()->Size().Height();
+  return Host()->Size().Height();
 }
 
 bool OffscreenCanvasRenderingContext2D::HasImageBuffer() const {
-  return host()->GetImageBuffer();
+  return Host()->GetImageBuffer();
 }
 
 void OffscreenCanvasRenderingContext2D::Reset() {
-  host()->DiscardImageBuffer();
+  Host()->DiscardImageBuffer();
   BaseRenderingContext2D::Reset();
 }
 
 ImageBuffer* OffscreenCanvasRenderingContext2D::GetImageBuffer() const {
-  return const_cast<CanvasRenderingContextHost*>(host())
+  return const_cast<CanvasRenderingContextHost*>(Host())
       ->GetOrCreateImageBuffer();
 }
 
@@ -131,7 +131,7 @@ ImageBitmap* OffscreenCanvasRenderingContext2D::TransferToImageBitmap(
     image->PaintImageForCurrentFrame().GetSkImage()->getTextureHandle(
         true);  // Flush pending ops.
   }
-  host()->DiscardImageBuffer();  // "Transfer" means no retained buffer.
+  Host()->DiscardImageBuffer();  // "Transfer" means no retained buffer.
   return ImageBitmap::Create(std::move(image));
 }
 
@@ -153,7 +153,7 @@ ImageData* OffscreenCanvasRenderingContext2D::ToImageData(
       GetImageBuffer()->NewImageSnapshot(kPreferNoAcceleration, reason);
   ImageData* image_data = nullptr;
   if (snapshot) {
-    image_data = ImageData::Create(host()->Size());
+    image_data = ImageData::Create(Host()->Size());
     SkImageInfo image_info =
         SkImageInfo::Make(this->Width(), this->Height(), kRGBA_8888_SkColorType,
                           kUnpremul_SkAlphaType);
@@ -201,11 +201,11 @@ void OffscreenCanvasRenderingContext2D::DidDraw(const SkIRect& dirty_rect) {
 }
 
 bool OffscreenCanvasRenderingContext2D::StateHasFilter() {
-  return GetState().HasFilterForOffscreenCanvas(host()->Size());
+  return GetState().HasFilterForOffscreenCanvas(Host()->Size());
 }
 
 sk_sp<SkImageFilter> OffscreenCanvasRenderingContext2D::StateGetFilter() {
-  return GetState().GetFilterForOffscreenCanvas(host()->Size());
+  return GetState().GetFilterForOffscreenCanvas(Host()->Size());
 }
 
 void OffscreenCanvasRenderingContext2D::ValidateStateStack() const {
@@ -226,7 +226,7 @@ bool OffscreenCanvasRenderingContext2D::IsPaintable() const {
 }
 
 CanvasColorSpace OffscreenCanvasRenderingContext2D::ColorSpace() const {
-  return color_params().color_space();
+  return ColorParams().ColorSpace();
 }
 
 String OffscreenCanvasRenderingContext2D::ColorSpaceAsString() const {
@@ -234,7 +234,7 @@ String OffscreenCanvasRenderingContext2D::ColorSpaceAsString() const {
 }
 
 CanvasPixelFormat OffscreenCanvasRenderingContext2D::PixelFormat() const {
-  return color_params().pixel_format();
+  return ColorParams().PixelFormat();
 }
 
 bool OffscreenCanvasRenderingContext2D::IsAccelerated() const {
@@ -293,7 +293,7 @@ void OffscreenCanvasRenderingContext2D::setFont(const String& new_font) {
   FontDescription desc = FontStyleResolver::ComputeFont(*style);
 
   Font font = Font(desc);
-  ModifiableState().SetFont(font, host()->GetFontSelector());
+  ModifiableState().SetFont(font, Host()->GetFontSelector());
   ModifiableState().SetUnparsedFont(new_font);
 }
 

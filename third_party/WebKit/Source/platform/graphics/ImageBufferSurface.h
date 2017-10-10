@@ -104,8 +104,8 @@ class PLATFORM_EXPORT ImageBufferSurface {
                                                      SnapshotReason) = 0;
 
   OpacityMode GetOpacityMode() const { return opacity_mode_; }
-  const IntSize& size() const { return size_; }
-  const CanvasColorParams& color_params() const { return color_params_; }
+  const IntSize& Size() const { return size_; }
+  const CanvasColorParams& ColorParams() const { return color_params_; }
   void NotifyIsValidChanged(bool is_valid) const;
 
  protected:

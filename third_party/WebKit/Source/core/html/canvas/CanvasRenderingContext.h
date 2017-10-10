@@ -87,12 +87,12 @@ class CORE_EXPORT CanvasRenderingContext
   static ContextType ContextTypeFromId(const String& id);
   static ContextType ResolveContextTypeAliases(ContextType);
 
-  CanvasRenderingContextHost* host() const { return host_; }
+  CanvasRenderingContextHost* Host() const { return host_; }
 
   WTF::String ColorSpaceAsString() const;
   WTF::String PixelFormatAsString() const;
 
-  const CanvasColorParams& color_params() const { return color_params_; }
+  const CanvasColorParams& ColorParams() const { return color_params_; }
 
   virtual RefPtr<StaticBitmapImage> GetImage(AccelerationHint,
                                              SnapshotReason) const = 0;
@@ -148,7 +148,7 @@ class CORE_EXPORT CanvasRenderingContext
   virtual bool Is2d() const { return false; }
   virtual void RestoreCanvasMatrixClipStack(PaintCanvas*) const {}
   virtual void Reset() {}
-  virtual void clearRect(double x, double y, double width, double height) {}
+  virtual void ClearRect(double x, double y, double width, double height) {}
   virtual void DidSetSurfaceSize() {}
   virtual void SetShouldAntialias(bool) {}
   virtual unsigned HitRegionsCount() const { return 0; }

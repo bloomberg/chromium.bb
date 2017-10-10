@@ -93,8 +93,8 @@ TEST_F(RecordingImageBufferSurfaceTest, testClearRect) {
   TestSurface()->GetRecord();
   PaintFlags clear_flags;
   clear_flags.setBlendMode(SkBlendMode::kClear);
-  Canvas()->drawRect(SkRect::MakeWH(TestSurface()->size().Width(),
-                                    TestSurface()->size().Height()),
+  Canvas()->drawRect(SkRect::MakeWH(TestSurface()->Size().Width(),
+                                    TestSurface()->Size().Height()),
                      clear_flags);
   TestSurface()->DidDraw(FloatRect(0, 0, 1, 1));
   TestSurface()->GetRecord();

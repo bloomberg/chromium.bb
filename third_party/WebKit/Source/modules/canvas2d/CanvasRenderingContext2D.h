@@ -93,8 +93,8 @@ class MODULES_EXPORT CanvasRenderingContext2D final
   ~CanvasRenderingContext2D() override;
 
   HTMLCanvasElement* canvas() const {
-    DCHECK(!host() || !host()->IsOffscreenCanvas());
-    return static_cast<HTMLCanvasElement*>(host());
+    DCHECK(!Host() || !Host()->IsOffscreenCanvas());
+    return static_cast<HTMLCanvasElement*>(Host());
   }
   void SetCanvasGetContextResult(RenderingContext&) final;
 
@@ -106,7 +106,10 @@ class MODULES_EXPORT CanvasRenderingContext2D final
   void scrollPathIntoView();
   void scrollPathIntoView(Path2D*);
 
-  void clearRect(double x, double y, double width, double height) override;
+  void clearRect(double x, double y, double width, double height);
+  void ClearRect(double x, double y, double width, double height) override {
+    clearRect(x, y, width, height);
+  }
 
   void Reset() override;
 
@@ -265,8 +268,8 @@ class MODULES_EXPORT CanvasRenderingContext2D final
 DEFINE_TYPE_CASTS(CanvasRenderingContext2D,
                   CanvasRenderingContext,
                   context,
-                  context->Is2d() && context->host(),
-                  context.Is2d() && context.host());
+                  context->Is2d() && context->Host(),
+                  context.Is2d() && context.Host());
 
 }  // namespace blink
 

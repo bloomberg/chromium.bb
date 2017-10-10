@@ -775,8 +775,8 @@ bool ImageData::ImageDataInCanvasColorSettings(
 bool ImageData::ImageDataInCanvasColorSettings(
     const CanvasColorParams& canvas_color_params,
     std::unique_ptr<uint8_t[]>& converted_pixels) {
-  return ImageDataInCanvasColorSettings(canvas_color_params.color_space(),
-                                        canvas_color_params.pixel_format(),
+  return ImageDataInCanvasColorSettings(canvas_color_params.ColorSpace(),
+                                        canvas_color_params.PixelFormat(),
                                         converted_pixels);
 }
 

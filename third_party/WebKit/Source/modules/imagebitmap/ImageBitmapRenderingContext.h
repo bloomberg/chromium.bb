@@ -41,8 +41,8 @@ class MODULES_EXPORT ImageBitmapRenderingContext final
   void transferFromImageBitmap(ImageBitmap*, ExceptionState&);
 
   HTMLCanvasElement* canvas() {
-    DCHECK(!host() || !host()->IsOffscreenCanvas());
-    return static_cast<HTMLCanvasElement*>(host());
+    DCHECK(!Host() || !Host()->IsOffscreenCanvas());
+    return static_cast<HTMLCanvasElement*>(Host());
   }
 
   // CanvasRenderingContext implementation

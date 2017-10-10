@@ -188,7 +188,7 @@ void CanvasRenderingContext2D::LoseContext(LostContextMode lost_mode) {
     return;
   context_lost_mode_ = lost_mode;
   if (context_lost_mode_ == kSyntheticLostContext && canvas()) {
-    host()->DiscardImageBuffer();
+    Host()->DiscardImageBuffer();
   }
   dispatch_context_lost_event_timer_.StartOneShot(0, BLINK_FROM_HERE);
 }
@@ -253,7 +253,7 @@ void CanvasRenderingContext2D::TryRestoreContextEvent(TimerBase* timer) {
 
   if (++try_restore_context_attempt_count_ > kMaxTryRestoreContextAttempts) {
     // final attempt: allocate a brand new image buffer instead of restoring
-    host()->DiscardImageBuffer();
+    Host()->DiscardImageBuffer();
     try_restore_context_event_timer_.Stop();
     if (GetImageBuffer())
       DispatchContextRestoredEvent(nullptr);
@@ -276,7 +276,7 @@ void CanvasRenderingContext2D::WillDrawImage(CanvasImageSource* source) const {
 }
 
 CanvasColorSpace CanvasRenderingContext2D::ColorSpace() const {
-  return color_params().color_space();
+  return ColorParams().ColorSpace();
 }
 
 String CanvasRenderingContext2D::ColorSpaceAsString() const {
@@ -284,7 +284,7 @@ String CanvasRenderingContext2D::ColorSpaceAsString() const {
 }
 
 CanvasPixelFormat CanvasRenderingContext2D::PixelFormat() const {
-  return color_params().pixel_format();
+  return ColorParams().PixelFormat();
 }
 
 void CanvasRenderingContext2D::Reset() {
@@ -473,7 +473,7 @@ void CanvasRenderingContext2D::setFont(const String& new_font) {
       DCHECK(font_lru_list_.Contains(new_font));
       font_lru_list_.erase(new_font);
       font_lru_list_.insert(new_font);
-      ModifiableState().SetFont(i->value, host()->GetFontSelector());
+      ModifiableState().SetFont(i->value, Host()->GetFontSelector());
     } else {
       MutableStylePropertySet* parsed_style =
           canvas_font_cache->ParseFont(new_font);
@@ -507,13 +507,13 @@ void CanvasRenderingContext2D::setFont(const String& new_font) {
       font_lru_list_.insert(new_font);
       PruneLocalFontCache(canvas_font_cache->HardMaxFonts());  // hard limit
       should_prune_local_font_cache_ = true;  // apply soft limit
-      ModifiableState().SetFont(final_font, host()->GetFontSelector());
+      ModifiableState().SetFont(final_font, Host()->GetFontSelector());
     }
   } else {
     Font resolved_font;
     if (!canvas_font_cache->GetFontUsingDefaultStyle(new_font, resolved_font))
       return;
-    ModifiableState().SetFont(resolved_font, host()->GetFontSelector());
+    ModifiableState().SetFont(resolved_font, Host()->GetFontSelector());
   }
 
   // The parse succeeded.
@@ -585,27 +585,27 @@ void CanvasRenderingContext2D::ResourceElementChanged() {
 }
 
 bool CanvasRenderingContext2D::OriginClean() const {
-  return host()->OriginClean();
+  return Host()->OriginClean();
 }
 
 void CanvasRenderingContext2D::SetOriginTainted() {
-  return host()->SetOriginTainted();
+  return Host()->SetOriginTainted();
 }
 
 int CanvasRenderingContext2D::Width() const {
-  return host()->Size().Width();
+  return Host()->Size().Width();
 }
 
 int CanvasRenderingContext2D::Height() const {
-  return host()->Size().Height();
+  return Host()->Size().Height();
 }
 
 bool CanvasRenderingContext2D::HasImageBuffer() const {
-  return host()->GetImageBuffer();
+  return Host()->GetImageBuffer();
 }
 
 ImageBuffer* CanvasRenderingContext2D::GetImageBuffer() const {
-  return const_cast<CanvasRenderingContextHost*>(host())
+  return const_cast<CanvasRenderingContextHost*>(Host())
       ->GetOrCreateImageBuffer();
 }
 
@@ -931,7 +931,7 @@ void CanvasRenderingContext2D::getContextAttributes(
   settings.setAlpha(CreationAttributes().alpha());
   settings.setColorSpace(ColorSpaceAsString());
   settings.setPixelFormat(PixelFormatAsString());
-  settings.setLinearPixelMath(color_params().LinearPixelMath());
+  settings.setLinearPixelMath(ColorParams().LinearPixelMath());
 }
 
 void CanvasRenderingContext2D::drawFocusIfNeeded(Element* element) {

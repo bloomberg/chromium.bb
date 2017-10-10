@@ -42,8 +42,8 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
   };
 
   OffscreenCanvas* offscreenCanvasForBinding() const {
-    DCHECK(!host() || host()->IsOffscreenCanvas());
-    return static_cast<OffscreenCanvas*>(host());
+    DCHECK(!Host() || Host()->IsOffscreenCanvas());
+    return static_cast<OffscreenCanvas*>(Host());
   }
   ScriptPromise commit(ScriptState*, ExceptionState&);
 
@@ -57,7 +57,7 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
   void SetIsHidden(bool) final { NOTREACHED(); }
   void Stop() final { NOTREACHED(); }
   void SetCanvasGetContextResult(RenderingContext&) final {}
-  void clearRect(double x, double y, double width, double height) override {
+  void ClearRect(double x, double y, double width, double height) override {
     BaseRenderingContext2D::clearRect(x, y, width, height);
   }
   RefPtr<StaticBitmapImage> GetImage(AccelerationHint,
@@ -144,8 +144,8 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
 DEFINE_TYPE_CASTS(OffscreenCanvasRenderingContext2D,
                   CanvasRenderingContext,
                   context,
-                  context->Is2d() && context->host(),
-                  context.Is2d() && context.host());
+                  context->Is2d() && context->Host(),
+                  context.Is2d() && context.Host());
 
 }  // namespace blink
 

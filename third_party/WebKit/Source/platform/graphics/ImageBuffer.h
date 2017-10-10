@@ -86,7 +86,7 @@ class PLATFORM_EXPORT ImageBuffer {
   void SetClient(ImageBufferClient* client) { client_ = client; }
 
   static bool CanCreateImageBuffer(const IntSize&);
-  const IntSize& size() const { return surface_->size(); }
+  const IntSize& Size() const { return surface_->Size(); }
   bool IsAccelerated() const { return surface_->IsAccelerated(); }
   bool IsRecording() const { return surface_->IsRecording(); }
   void SetHasExpensiveOp() { surface_->SetHasExpensiveOp(); }

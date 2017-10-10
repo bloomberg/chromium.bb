@@ -276,7 +276,7 @@ ImageBuffer* OffscreenCanvas::GetOrCreateImageBuffer() {
     if (!surface || !surface->IsValid()) {
       surface.reset(new UnacceleratedImageBufferSurface(
           surface_size, opacity_mode, kInitializeImagePixels,
-          context_->color_params()));
+          context_->ColorParams()));
     }
 
     image_buffer_ = ImageBuffer::Create(std::move(surface));
