@@ -382,8 +382,6 @@ RemoteSuggestionsProviderImpl::RemoteSuggestionsProviderImpl(
       database_(std::move(database)),
       image_fetcher_(std::move(image_fetcher), pref_service, database_.get()),
       status_service_(std::move(status_service)),
-      fetch_when_ready_(false),
-      fetch_when_ready_interactive_(false),
       clear_history_dependent_state_when_initialized_(false),
       clock_(base::MakeUnique<base::DefaultClock>()),
       prefetched_pages_tracker_(std::move(prefetched_pages_tracker)),
@@ -465,13 +463,6 @@ void RemoteSuggestionsProviderImpl::RefetchWhileDisplaying(
     debug_logger_->Log(
         FROM_HERE,
         "fallback because the articles category is not displayed yet");
-    // TODO(jkrcal): If the provider is not ready() we fallback to
-    // RefetchInTheBackground which post-pones the FetchSuggestions() task until
-    // the provider gets ready. When the provider gets ready, the provider calls
-    // FetchSuggestions() directly, without flipping the category status as
-    // implemented in this function. We should postpone the
-    // RefetchWhileDisplaying task here, instead (or deal with postponing in the
-    // scheduler only).
     RefetchInTheBackground(std::move(callback));
     return;
   }
@@ -528,14 +519,17 @@ bool RemoteSuggestionsProviderImpl::IsDisabled() const {
   return state_ == State::DISABLED;
 }
 
+bool RemoteSuggestionsProviderImpl::ready() const {
+  return state_ == State::READY;
+}
+
 void RemoteSuggestionsProviderImpl::FetchSuggestions(
     bool interactive_request,
     FetchStatusCallback callback) {
   debug_logger_->Log(FROM_HERE, /*message=*/std::string());
   if (!ready()) {
-    fetch_when_ready_ = true;
-    fetch_when_ready_interactive_ = interactive_request;
-    fetch_when_ready_callback_ = std::move(callback);
+    std::move(callback).Run(Status(StatusCode::TEMPORARY_ERROR,
+                                   "RemoteSuggestionsProvider is not ready!"));
     return;
   }
 
@@ -1346,43 +1340,6 @@ void RemoteSuggestionsProviderImpl::FetchSuggestionImage(
                                       std::move(callback));
 }
 
-void RemoteSuggestionsProviderImpl::EnterStateReady() {
-  if (clear_history_dependent_state_when_initialized_) {
-    clear_history_dependent_state_when_initialized_ = false;
-    ClearHistoryDependentState();
-  }
-
-  auto article_category_it = category_contents_.find(articles_category_);
-  DCHECK(article_category_it != category_contents_.end());
-  if (fetch_when_ready_) {
-    FetchSuggestions(fetch_when_ready_interactive_,
-                     std::move(fetch_when_ready_callback_));
-    fetch_when_ready_ = false;
-  }
-
-  for (const auto& item : category_contents_) {
-    Category category = item.first;
-    const CategoryContent& content = item.second;
-    // FetchSuggestions has set the status to |AVAILABLE_LOADING| if relevant,
-    // otherwise we transition to |AVAILABLE| here.
-    if (content.status != CategoryStatus::AVAILABLE_LOADING) {
-      UpdateCategoryStatus(category, CategoryStatus::AVAILABLE);
-    }
-  }
-}
-
-void RemoteSuggestionsProviderImpl::EnterStateDisabled() {
-  ClearSuggestions();
-  if (breaking_news_raw_data_provider_ &&
-      breaking_news_raw_data_provider_->IsListening()) {
-    breaking_news_raw_data_provider_->StopListening();
-  }
-}
-
-void RemoteSuggestionsProviderImpl::EnterStateError() {
-  status_service_.reset();
-}
-
 void RemoteSuggestionsProviderImpl::
     UpdatePushedSuggestionsSubscriptionDueToStatusChange(
         RemoteSuggestionsStatus new_status) {
@@ -1421,13 +1378,6 @@ void RemoteSuggestionsProviderImpl::
 }
 
 void RemoteSuggestionsProviderImpl::FinishInitialization() {
-  if (clear_history_dependent_state_when_initialized_) {
-    // We clear here in addition to EnterStateReady, so that it happens even if
-    // we enter the DISABLED state below.
-    clear_history_dependent_state_when_initialized_ = false;
-    ClearHistoryDependentState();
-  }
-
   // Note: Initializing the status service will run the callback right away with
   // the current state.
   status_service_->Init(base::Bind(
@@ -1457,7 +1407,6 @@ void RemoteSuggestionsProviderImpl::OnStatusChanged(
         // no suggestions).
         ClearSuggestions();
       } else {
-        // Do not change the status. That will be done in EnterStateReady().
         EnterState(State::READY);
       }
       break;
@@ -1469,14 +1418,12 @@ void RemoteSuggestionsProviderImpl::OnStatusChanged(
         // no suggestions).
         ClearSuggestions();
       } else {
-        // Do not change the status. That will be done in EnterStateReady().
         EnterState(State::READY);
       }
       break;
 
     case RemoteSuggestionsStatus::EXPLICITLY_DISABLED:
       EnterState(State::DISABLED);
-      UpdateAllCategoryStatus(CategoryStatus::CATEGORY_EXPLICITLY_DISABLED);
       break;
   }
 
@@ -1503,30 +1450,47 @@ void RemoteSuggestionsProviderImpl::EnterState(State state) {
 
       DVLOG(1) << "Entering state: READY";
       state_ = State::READY;
+
+      DCHECK(category_contents_.find(articles_category_) !=
+             category_contents_.end());
+
+      UpdateAllCategoryStatus(CategoryStatus::AVAILABLE);
+      if (clear_history_dependent_state_when_initialized_) {
+        clear_history_dependent_state_when_initialized_ = false;
+        ClearHistoryDependentState();
+      }
+      // This notification may cause the scheduler to ask the provider to do a
+      // refetch. We want to do it as the last step, when the state change here
+      // in the provider is completed.
       NotifyStateChanged();
-      EnterStateReady();
       break;
 
     case State::DISABLED:
       DCHECK(state_ == State::NOT_INITED || state_ == State::READY);
 
       DVLOG(1) << "Entering state: DISABLED";
-      // TODO(jkrcal): Fix the fragility of the following code. Currently, it is
-      // important that we first change the state and notify the scheduler (as
-      // it will update its state) and only at last we EnterStateDisabled()
-      // which clears suggestions. Clearing suggestions namely notifies the
-      // scheduler to fetch them again, which is ignored because the scheduler
-      // is disabled. crbug/695447
       state_ = State::DISABLED;
+      // Notify the state change to disable the scheduler. Clearing history /
+      // suggestions below tells the scheduler to fetch them again if the
+      // scheduler is not disabled. It is disabled; thus the calls are ignored.
       NotifyStateChanged();
-      EnterStateDisabled();
+      if (clear_history_dependent_state_when_initialized_) {
+        clear_history_dependent_state_when_initialized_ = false;
+        ClearHistoryDependentState();
+      }
+      ClearSuggestions();
+      if (breaking_news_raw_data_provider_ &&
+          breaking_news_raw_data_provider_->IsListening()) {
+        breaking_news_raw_data_provider_->StopListening();
+      }
+      UpdateAllCategoryStatus(CategoryStatus::CATEGORY_EXPLICITLY_DISABLED);
       break;
 
     case State::ERROR_OCCURRED:
       DVLOG(1) << "Entering state: ERROR_OCCURRED";
       state_ = State::ERROR_OCCURRED;
       NotifyStateChanged();
-      EnterStateError();
+      status_service_.reset();
       break;
 
     case State::COUNT:

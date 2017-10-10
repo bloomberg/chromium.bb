@@ -112,6 +112,7 @@ class MockRemoteSuggestionsProvider : public RemoteSuggestionsProvider {
   MOCK_CONST_METHOD1(GetUrlWithFavicon,
                      GURL(const ContentSuggestion::ID& suggestion_id));
   MOCK_CONST_METHOD0(IsDisabled, bool());
+  MOCK_CONST_METHOD0(ready, bool());
   MOCK_METHOD1(GetCategoryStatus, CategoryStatus(Category));
   MOCK_METHOD1(GetCategoryInfo, CategoryInfo(Category));
   MOCK_METHOD3(ClearHistory,
@@ -240,10 +241,19 @@ class RemoteSuggestionsSchedulerImplTest : public ::testing::Test {
 
   void ActivateProviderAndEula() {
     SetEulaAcceptedPref();
+    EXPECT_CALL(*provider(), ready()).WillRepeatedly(Return(true));
     scheduler_->OnProviderActivated();
   }
 
-  void DeactivateProvider() { scheduler_->OnProviderDeactivated(); }
+  void ActivateProvider() {
+    EXPECT_CALL(*provider(), ready()).WillRepeatedly(Return(true));
+    scheduler_->OnProviderActivated();
+  }
+
+  void DeactivateProvider() {
+    scheduler_->OnProviderDeactivated();
+    EXPECT_CALL(*provider(), ready()).WillRepeatedly(Return(true));
+  }
 
   void ExpectOneRetiringRefetchInTheBackground() {
     // After a successful fetch, the client updates it's schedule, so we expect
@@ -279,6 +289,10 @@ class RemoteSuggestionsSchedulerImplTest : public ::testing::Test {
 };
 
 TEST_F(RemoteSuggestionsSchedulerImplTest, ShouldIgnoreSignalsWhenNotEnabled) {
+  // The signals should be ignored even if the provider itself claims it is
+  // ready.
+  EXPECT_CALL(*provider(), ready()).WillRepeatedly(Return(true));
+
   scheduler()->OnPersistentSchedulerWakeUp();
   scheduler()->OnSuggestionsSurfaceOpened();
   scheduler()->OnBrowserForegrounded();
@@ -294,7 +308,7 @@ TEST_F(RemoteSuggestionsSchedulerImplTest,
 
   // Activating the provider should schedule the persistent background fetches.
   EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
-  scheduler()->OnProviderActivated();
+  ActivateProvider();
 
   // Verify fetches get triggered.
   ExpectOneRetiringRefetchInTheBackground();
@@ -309,7 +323,7 @@ TEST_F(RemoteSuggestionsSchedulerImplTest,
   }
   // Activating the provider should schedule the persistent background fetches.
   EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
-  scheduler()->OnProviderActivated();
+  ActivateProvider();
 
   // All signals are ignored because of Eula not being accepted.
   scheduler()->OnPersistentSchedulerWakeUp();
@@ -325,7 +339,7 @@ TEST_F(RemoteSuggestionsSchedulerImplTest, ShouldFetchWhenEulaGetsAccepted) {
   }
   // Activating the provider should schedule the persistent background fetches.
   EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
-  scheduler()->OnProviderActivated();
+  ActivateProvider();
 
   // Make one (ignored) call to make sure we are interested in eula state.
   scheduler()->OnPersistentSchedulerWakeUp();
@@ -342,15 +356,38 @@ TEST_F(RemoteSuggestionsSchedulerImplTest,
     return;
   }
   // Eula is not ready -- no fetch. But request should get queued.
+  EXPECT_CALL(*provider(), ready()).WillRepeatedly(Return(false));
   scheduler()->OnPersistentSchedulerWakeUp();
   EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
   // Activate provider -- this should set up the schedule but cannot trigger a
   // fetch due to Eula missing.
-  scheduler()->OnProviderActivated();
+  ActivateProvider();
 
   // Accepting Eula picks up the queued fetch.
   ExpectOneRetiringRefetchInTheBackground();
   SetEulaAcceptedPref();
+}
+
+TEST_F(RemoteSuggestionsSchedulerImplTest,
+       ShouldQueueBackgroundRequestBeforeActivated) {
+  // Set the Eula bit to be sure we queue them because of not being activated.
+  SetEulaAcceptedPref();
+
+  // Activate provider -- this should set up the schedule and store it to prefs.
+  EXPECT_CALL(*persistent_scheduler(), Schedule(_, _)).RetiresOnSaturation();
+  ActivateProvider();
+
+  // Reset the provider after we have the schedule stored in prefs.
+  ResetProvider();
+
+  // Provider is not active -- no fetch. But request should get queued.
+  EXPECT_CALL(*provider(), ready()).WillRepeatedly(Return(false));
+  scheduler()->OnPersistentSchedulerWakeUp();
+
+  ExpectOneRetiringRefetchInTheBackground();
+  // Activate provider -- this should trigger the fetch (the schedule was set up
+  // previously).
+  ActivateProvider();
 }
 
 TEST_F(RemoteSuggestionsSchedulerImplTest,
@@ -498,8 +535,8 @@ TEST_F(RemoteSuggestionsSchedulerImplTest,
 
   // On activation, the Schedule should get updated and the queued background
   // fetch should get propagated.
+  EXPECT_CALL(*provider(), ready()).WillRepeatedly(Return(false));
   scheduler()->OnPersistentSchedulerWakeUp();
-
   EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
   ExpectOneRetiringRefetchInTheBackground();
   ActivateProviderAndEula();
@@ -513,6 +550,7 @@ TEST_F(RemoteSuggestionsSchedulerImplTest,
 
   // On activation, the Schedule should get updated and the queued background
   // fetch should get propagated.
+  EXPECT_CALL(*provider(), ready()).WillRepeatedly(Return(false));
   scheduler()->OnSuggestionsSurfaceOpened();
   EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
   ExpectOneRetiringRefetchInTheBackground();
@@ -527,6 +565,7 @@ TEST_F(RemoteSuggestionsSchedulerImplTest,
 
   // On activation, the Schedule should get updated and the queued background
   // fetch should get propagated.
+  EXPECT_CALL(*provider(), ready()).WillRepeatedly(Return(false));
   scheduler()->OnBrowserForegrounded();
   EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
   ExpectOneRetiringRefetchInTheBackground();
@@ -541,6 +580,7 @@ TEST_F(RemoteSuggestionsSchedulerImplTest,
 
   // On activation, the Schedule should get updated and the queued background
   // fetch should get propagated.
+  EXPECT_CALL(*provider(), ready()).WillRepeatedly(Return(false));
   scheduler()->OnBrowserColdStart();
   EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
   ExpectOneRetiringRefetchInTheBackground();
@@ -579,6 +619,7 @@ TEST_F(RemoteSuggestionsSchedulerImplTest,
   ResetProvider();  // Also resets the scheduler and test clock.
 
   test_clock()->Advance(base::TimeDelta::FromHours(13));
+  EXPECT_CALL(*provider(), ready()).WillRepeatedly(Return(false));
   scheduler()->OnSuggestionsSurfaceOpened();
   scheduler()->OnBrowserColdStart();
   ExpectOneRetiringRefetchInTheBackground();
@@ -1087,7 +1128,7 @@ TEST_F(RemoteSuggestionsSchedulerImplTest, ShouldIgnoreSignalsWhenOffline) {
 
   // Activating the provider should schedule the persistent background fetches.
   EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
-  scheduler()->OnProviderActivated();
+  ActivateProviderAndEula();
 
   // All signals are ignored because of being offline.
   EXPECT_CALL(*provider(), RefetchInTheBackground(_)).Times(0);
