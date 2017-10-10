@@ -574,7 +574,7 @@ cc::PaintCanvas* Canvas::CreateOwnedCanvas(const Size& size, bool is_opaque) {
   bitmap_.emplace();
   bitmap_->allocPixels(info);
   // Ensure that the bitmap is zeroed, since the code expects that.
-  memset(bitmap_->getPixels(), 0, bitmap_->getSafeSize());
+  memset(bitmap_->getPixels(), 0, bitmap_->computeByteSize());
 
   owned_canvas_.emplace(bitmap_.value());
   return &owned_canvas_.value();

@@ -114,7 +114,7 @@ std::unique_ptr<ActivityIconLoader::ActivityToIconsMap> ResizeAndEncodeIcons(
     bitmap.allocPixels(SkImageInfo::MakeN32Premul(icon->width, icon->height));
     if (!bitmap.getPixels())
       continue;
-    DCHECK_GE(bitmap.getSafeSize(), icon->icon.size());
+    DCHECK_GE(bitmap.computeByteSize(), icon->icon.size());
     memcpy(bitmap.getPixels(), &icon->icon.front(), icon->icon.size());
 
     gfx::ImageSkia original(gfx::ImageSkia::CreateFrom1xBitmap(bitmap));

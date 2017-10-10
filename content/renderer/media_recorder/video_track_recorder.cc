@@ -304,18 +304,19 @@ void VideoTrackRecorder::Encoder::RetrieveFrameOnMainThread(
     const uint32 source_pixel_format =
         (kN32_SkColorType == kRGBA_8888_SkColorType) ? libyuv::FOURCC_ABGR
                                                      : libyuv::FOURCC_ARGB;
-    if (libyuv::ConvertToI420(
-            static_cast<uint8*>(pixmap.writable_addr()), pixmap.getSafeSize(),
-            frame->visible_data(media::VideoFrame::kYPlane),
-            frame->stride(media::VideoFrame::kYPlane),
-            frame->visible_data(media::VideoFrame::kUPlane),
-            frame->stride(media::VideoFrame::kUPlane),
-            frame->visible_data(media::VideoFrame::kVPlane),
-            frame->stride(media::VideoFrame::kVPlane), 0 /* crop_x */,
-            0 /* crop_y */, pixmap.width(), pixmap.height(),
-            old_visible_size.width(), old_visible_size.height(),
-            MediaVideoRotationToRotationMode(video_rotation),
-            source_pixel_format) != 0) {
+    if (libyuv::ConvertToI420(static_cast<uint8*>(pixmap.writable_addr()),
+                              pixmap.computeByteSize(),
+                              frame->visible_data(media::VideoFrame::kYPlane),
+                              frame->stride(media::VideoFrame::kYPlane),
+                              frame->visible_data(media::VideoFrame::kUPlane),
+                              frame->stride(media::VideoFrame::kUPlane),
+                              frame->visible_data(media::VideoFrame::kVPlane),
+                              frame->stride(media::VideoFrame::kVPlane),
+                              0 /* crop_x */, 0 /* crop_y */, pixmap.width(),
+                              pixmap.height(), old_visible_size.width(),
+                              old_visible_size.height(),
+                              MediaVideoRotationToRotationMode(video_rotation),
+                              source_pixel_format) != 0) {
       DLOG(ERROR) << "Error converting frame to I420";
       return;
     }

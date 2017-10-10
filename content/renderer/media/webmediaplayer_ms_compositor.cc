@@ -75,16 +75,14 @@ scoped_refptr<media::VideoFrame> CopyFrame(
         (kN32_SkColorType == kRGBA_8888_SkColorType) ? libyuv::FOURCC_ABGR
                                                      : libyuv::FOURCC_ARGB;
     libyuv::ConvertToI420(
-        static_cast<const uint8*>(pixmap.addr(0, 0)),
-        pixmap.getSafeSize64(),
+        static_cast<const uint8*>(pixmap.addr(0, 0)), pixmap.computeByteSize(),
         new_frame->visible_data(media::VideoFrame::kYPlane),
         new_frame->stride(media::VideoFrame::kYPlane),
         new_frame->visible_data(media::VideoFrame::kUPlane),
         new_frame->stride(media::VideoFrame::kUPlane),
         new_frame->visible_data(media::VideoFrame::kVPlane),
-        new_frame->stride(media::VideoFrame::kVPlane),
-        0 /* crop_x */, 0 /* crop_y */,
-        pixmap.width(), pixmap.height(),
+        new_frame->stride(media::VideoFrame::kVPlane), 0 /* crop_x */,
+        0 /* crop_y */, pixmap.width(), pixmap.height(),
         new_frame->visible_rect().width(), new_frame->visible_rect().height(),
         libyuv::kRotate0, source_pixel_format);
   } else {

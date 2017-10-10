@@ -272,8 +272,8 @@ void TestRunnerForSpecificView::CapturePixelsCallback(
   const SkImageInfo bufferInfo =
       snapshot.info().makeColorType(kRGBA_8888_SkColorType);
   const size_t bufferRowBytes = bufferInfo.minRowBytes();
-  blink::WebArrayBuffer buffer =
-      blink::WebArrayBuffer::Create(bufferInfo.getSafeSize(bufferRowBytes), 1);
+  blink::WebArrayBuffer buffer = blink::WebArrayBuffer::Create(
+      bufferInfo.computeByteSize(bufferRowBytes), 1);
   if (!snapshot.readPixels(bufferInfo, buffer.Data(), bufferRowBytes, 0, 0)) {
     // We only expect readPixels to fail for null bitmaps.
     DCHECK(snapshot.isNull());

@@ -180,22 +180,23 @@ int CountNodes(BookmarkModel* model, BookmarkNode::Type node_type) {
 // Returns true if they match.
 bool FaviconRawBitmapsMatch(const SkBitmap& bitmap_a,
                             const SkBitmap& bitmap_b) {
-  if (bitmap_a.getSize() == 0U && bitmap_b.getSize() == 0U)
+  if (bitmap_a.computeByteSize() == 0U && bitmap_b.computeByteSize() == 0U)
     return true;
-  if ((bitmap_a.getSize() != bitmap_b.getSize()) ||
+  if ((bitmap_a.computeByteSize() != bitmap_b.computeByteSize()) ||
       (bitmap_a.width() != bitmap_b.width()) ||
       (bitmap_a.height() != bitmap_b.height())) {
-    LOG(ERROR) << "Favicon size mismatch: " << bitmap_a.getSize() << " ("
-               << bitmap_a.width() << "x" << bitmap_a.height() << ") vs. "
-               << bitmap_b.getSize() << " (" << bitmap_b.width() << "x"
-               << bitmap_b.height() << ")";
+    LOG(ERROR) << "Favicon size mismatch: " << bitmap_a.computeByteSize()
+               << " (" << bitmap_a.width() << "x" << bitmap_a.height()
+               << ") vs. " << bitmap_b.computeByteSize() << " ("
+               << bitmap_b.width() << "x" << bitmap_b.height() << ")";
     return false;
   }
   void* node_pixel_addr_a = bitmap_a.getPixels();
   EXPECT_TRUE(node_pixel_addr_a);
   void* node_pixel_addr_b = bitmap_b.getPixels();
   EXPECT_TRUE(node_pixel_addr_b);
-  if (memcmp(node_pixel_addr_a, node_pixel_addr_b, bitmap_a.getSize()) !=  0) {
+  if (memcmp(node_pixel_addr_a, node_pixel_addr_b,
+             bitmap_a.computeByteSize()) != 0) {
     LOG(ERROR) << "Favicon bitmap mismatch";
     return false;
   } else {

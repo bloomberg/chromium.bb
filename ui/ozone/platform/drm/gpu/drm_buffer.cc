@@ -55,7 +55,7 @@ bool DrmBuffer::Initialize(const SkImageInfo& info,
     return false;
   }
 
-  mmap_size_ = info.getSafeSize(stride_);
+  mmap_size_ = info.computeByteSize(stride_);
   if (!drm_->MapDumbBuffer(handle_, mmap_size_, &mmap_base_)) {
     PLOG(ERROR) << "DrmBuffer: MapDumbBuffer: handle " << handle_;
     return false;

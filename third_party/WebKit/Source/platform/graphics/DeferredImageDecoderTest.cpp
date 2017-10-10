@@ -339,7 +339,7 @@ TEST_F(DeferredImageDecoderTest, frameOpacity) {
     SkImageInfo pix_info = SkImageInfo::MakeN32Premul(1, 1);
 
     size_t row_bytes = pix_info.minRowBytes();
-    size_t size = pix_info.getSafeSize(row_bytes);
+    size_t size = pix_info.computeByteSize(row_bytes);
 
     Vector<char> storage(size);
     SkPixmap pixmap(pix_info, storage.data(), row_bytes);

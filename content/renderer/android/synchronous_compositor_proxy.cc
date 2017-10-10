@@ -306,7 +306,7 @@ void SynchronousCompositorProxy::DoDemandDrawSw(
   SkImageInfo info =
       SkImageInfo::MakeN32Premul(params.size.width(), params.size.height());
   size_t stride = info.minRowBytes();
-  size_t buffer_size = info.getSafeSize(stride);
+  size_t buffer_size = info.computeByteSize(stride);
   DCHECK_EQ(software_draw_shm_->buffer_size, buffer_size);
 
   SkBitmap bitmap;

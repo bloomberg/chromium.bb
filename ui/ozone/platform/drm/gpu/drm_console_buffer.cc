@@ -36,7 +36,7 @@ bool DrmConsoleBuffer::Initialize() {
   stride_ = fb->pitch;
   SkImageInfo info = SkImageInfo::MakeN32Premul(fb->width, fb->height);
 
-  mmap_size_ = info.getSafeSize(stride_);
+  mmap_size_ = info.computeByteSize(stride_);
 
   if (!drm_->MapDumbBuffer(fb->handle, mmap_size_, &mmap_base_)) {
     mmap_base_ = NULL;

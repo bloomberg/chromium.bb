@@ -53,7 +53,7 @@ bool DrmCreateDumbBuffer(int fd,
   // The driver may choose to align the last row as well. We don't care about
   // the last alignment bits since they aren't used for display purposes, so
   // just check that the expected size is <= to what the driver allocated.
-  DCHECK_LE(info.getSafeSize(request.pitch), request.size);
+  DCHECK_LE(info.computeByteSize(request.pitch), request.size);
 
   *handle = request.handle;
   *stride = request.pitch;

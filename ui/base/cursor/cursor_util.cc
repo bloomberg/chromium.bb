@@ -27,11 +27,13 @@ bool ConvertSkBitmapAlphaType(SkBitmap* bitmap, SkAlphaType alpha_type) {
   // Copy the bitmap into a temporary buffer. This will convert alpha type.
   SkImageInfo image_info =
       SkImageInfo::MakeN32(bitmap->width(), bitmap->height(), alpha_type);
-  std::vector<char> buffer(bitmap->getSize());
-  bitmap->readPixels(image_info, &buffer[0], image_info.minRowBytes(), 0, 0);
+  size_t info_row_bytes = image_info.minRowBytes();
+  std::vector<char> buffer(image_info.computeByteSize(info_row_bytes));
+  bitmap->readPixels(image_info, &buffer[0], info_row_bytes, 0, 0);
   // Read the temporary buffer back into the original bitmap.
   bitmap->reset();
   bitmap->allocPixels(image_info);
+  // this memcpy call assumes bitmap->rowBytes() == info_row_bytes
   memcpy(bitmap->getPixels(), &buffer[0], buffer.size());
 
   return true;

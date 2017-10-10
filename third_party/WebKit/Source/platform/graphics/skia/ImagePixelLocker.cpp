@@ -47,7 +47,7 @@ ImagePixelLocker::ImagePixelLocker(sk_sp<const SkImage> image,
   SkImageInfo info = SkImageInfo::Make(image_->width(), image_->height(),
                                        color_type, alpha_type);
   size_t row_bytes = info.minRowBytes();
-  size_t size = info.getSafeSize(row_bytes);
+  size_t size = info.computeByteSize(row_bytes);
   if (0 == size)
     return;
 
