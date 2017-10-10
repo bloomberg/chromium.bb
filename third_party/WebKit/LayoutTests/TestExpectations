@@ -3738,3 +3738,10 @@ crbug.com/770691 [ Win7 Linux Mac10.11 ] media/controls/lazy-loaded-style.html [
 crbug.com/770691 [ Win7 Linux Mac10.11 ] virtual/new-remote-playback-pipeline/media/controls/lazy-loaded-style.html [ Failure Pass ]
 crbug.com/771518 [ Win7 ] http/tests/devtools/persistence/persistence-move-breakpoints-on-reload.html [ Pass Failure ]
 crbug.com/771518 [ Win7 ] virtual/mojo-loading/http/tests/devtools/persistence/persistence-move-breakpoints-on-reload.html [ Pass Failure ]
+
+# Text rendering on Win7 failing image diffs, flakily.
+crbug.com/773122 [ Win7 ] fast/text/font-ascent-mac.html [ Failure Pass ]
+crbug.com/773122 [ Win7 ] fast/text/international/unicode-bidi-plaintext-in-textarea.html [ Failure Pass ]
+crbug.com/773122 [ Win7 ] fast/text/whitespace/022.html [ Failure Pass ]
+crbug.com/773122 [ Win7 ] fast/text/word-break.html [ Failure Pass ]
+crbug.com/773122 [ Win7 ] virtual/gpu/fast/canvas/canvas-lost-gpu-context.html [ Failure Pass ]
