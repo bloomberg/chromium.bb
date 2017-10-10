@@ -131,6 +131,14 @@ mr.Init.addEventListeners_ = function() {
   mr.Init.getAllListeners_().forEach(
       eventListener => eventListener.addOnStartup());
   mr.InitHelper.addEventListeners();
+
+  // Listen for an event that always get invoked on browser startup. This is
+  // necessary because Media Router must know the extension ID in order to wake
+  // the extension up, and MR gets the ID when the event page activates for the
+  // first time. If the event page never activates, then MR will never be able
+  // to connect to it.
+
+  chrome.runtime.onStartup.addListener(() => {});
 };
 
 

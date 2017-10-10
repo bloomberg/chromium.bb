@@ -144,6 +144,10 @@ mr.UnitTestUtils.mockChromeApi = function() {
         addListener: jasmine.createSpy(
             'chrome.runtime.onMessageExternal.addListener spy')
       },
+      onStartup: {
+        addListener:
+            jasmine.createSpy('chrome.runtime.onStartup.addListener spy')
+      },
       onSuspend: {
         addListener:
             jasmine.createSpy('chrome.runtime.onSuspend.addListener spy')
