@@ -9,7 +9,7 @@
   await TestRunner.evaluateInPagePromise(`
       function startWorker()
       {
-          var worker = new Worker(relativeToTest("resources/importScripts-1.js"));
+          var worker = new Worker("resources/importScripts-1.js");
       }
   `);
 

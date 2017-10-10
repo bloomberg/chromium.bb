@@ -11,7 +11,7 @@
 
       function startWorker()
       {
-          worker = new Worker(relativeToTest("resources/worker-with-unhandled-promises.js"));
+          worker = new Worker("resources/worker-with-unhandled-promises.js");
           worker.postMessage("");
       }
   `);

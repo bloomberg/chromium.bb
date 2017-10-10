@@ -11,7 +11,7 @@
       function testFunction()
       {
           var image = document.createElement("img");
-          image.src = relativeToTest("resources/image.png");
+          image.src = "resources/image.png";
           document.body.appendChild(image);
       }
   `);

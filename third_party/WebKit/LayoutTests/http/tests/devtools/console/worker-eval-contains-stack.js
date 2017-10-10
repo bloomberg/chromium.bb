@@ -9,7 +9,7 @@
   await TestRunner.evaluateInPagePromise(`
       function startWorker()
       {
-          var worker = new Worker(relativeToTest("resources/worker.js"));
+          var worker = new Worker("resources/worker.js");
       }
   `);
 
