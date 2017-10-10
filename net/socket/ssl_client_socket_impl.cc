@@ -1558,6 +1558,11 @@ int SSLClientSocketImpl::VerifyCT() {
     server_cert_verify_result_.cert_status &= ~CERT_STATUS_IS_EV;
   }
 
+  UMA_HISTOGRAM_ENUMERATION(
+      "Net.CertificateTransparency.ConnectionComplianceStatus.SSL",
+      ct_verify_result_.cert_policy_compliance,
+      ct::CertPolicyCompliance::CERT_POLICY_MAX);
+
   if (transport_security_state_->CheckCTRequirements(
           host_and_port_, server_cert_verify_result_.is_issued_by_known_root,
           server_cert_verify_result_.public_key_hashes,

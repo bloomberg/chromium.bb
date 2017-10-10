@@ -5,6 +5,7 @@
 #include "net/quic/chromium/crypto/proof_verifier_chromium.h"
 
 #include "base/memory/ref_counted.h"
+#include "base/test/histogram_tester.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/cert_verifier.h"
@@ -530,6 +531,47 @@ TEST_F(ProofVerifierChromiumTest, PKPAndCTBothTested) {
               CERT_STATUS_PINNED_KEY_MISSING);
   EXPECT_TRUE(verify_details->cert_verify_result.cert_status &
               CERT_STATUS_CERTIFICATE_TRANSPARENCY_REQUIRED);
+}
+
+// Test that CT compliance status is recorded in a histogram.
+TEST_F(ProofVerifierChromiumTest, CTComplianceStatusHistogram) {
+  const char kHistogramName[] =
+      "Net.CertificateTransparency.ConnectionComplianceStatus.QUIC";
+  base::HistogramTester histograms;
+
+  scoped_refptr<X509Certificate> test_cert = GetTestServerCertificate();
+  ASSERT_TRUE(test_cert);
+
+  CertVerifyResult dummy_result;
+  dummy_result.verified_cert = test_cert;
+  dummy_result.is_issued_by_known_root = true;
+  dummy_result.cert_status = 0;
+
+  MockCertVerifier dummy_verifier;
+  dummy_verifier.AddResultForCert(test_cert.get(), dummy_result, OK);
+
+  // Set up CT.
+  EXPECT_CALL(ct_policy_enforcer_, DoesConformToCertPolicy(_, _, _))
+      .WillRepeatedly(
+          Return(ct::CertPolicyCompliance::CERT_POLICY_NOT_DIVERSE_SCTS));
+
+  ProofVerifierChromium proof_verifier(&dummy_verifier, &ct_policy_enforcer_,
+                                       &transport_security_state_,
+                                       ct_verifier_.get());
+
+  std::unique_ptr<DummyProofVerifierCallback> callback(
+      new DummyProofVerifierCallback);
+  QuicAsyncStatus status = proof_verifier.VerifyProof(
+      kTestHostname, kTestPort, kTestConfig, QUIC_VERSION_35, kTestChloHash,
+      certs_, kTestEmptySCT, GetTestSignature(), verify_context_.get(),
+      &error_details_, &details_, std::move(callback));
+  ASSERT_EQ(QUIC_SUCCESS, status);
+
+  // The histogram should have been recorded with the CT compliance status.
+  histograms.ExpectUniqueSample(
+      kHistogramName,
+      static_cast<int>(ct::CertPolicyCompliance::CERT_POLICY_NOT_DIVERSE_SCTS),
+      1);
 }
 
 // Tests that the VerifyCertChain verifies certificates.

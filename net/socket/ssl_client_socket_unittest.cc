@@ -17,6 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -3458,6 +3459,42 @@ TEST_F(SSLClientSocketTest, CTIsRequired) {
   EXPECT_TRUE(ssl_info.cert_status &
               CERT_STATUS_CERTIFICATE_TRANSPARENCY_REQUIRED);
   EXPECT_TRUE(sock_->IsConnected());
+}
+
+// Test that the CT compliance status is recorded in a histogram.
+TEST_F(SSLClientSocketTest, CTComplianceStatusHistogram) {
+  const char kHistogramName[] =
+      "Net.CertificateTransparency.ConnectionComplianceStatus.SSL";
+  base::HistogramTester histograms;
+
+  SpawnedTestServer::SSLOptions ssl_options;
+  ASSERT_TRUE(StartTestServer(ssl_options));
+  scoped_refptr<X509Certificate> server_cert =
+      spawned_test_server()->GetCertificate();
+
+  // Certificate is trusted.
+  CertVerifyResult verify_result;
+  verify_result.is_issued_by_known_root = true;
+  verify_result.verified_cert = server_cert;
+  cert_verifier_->AddResultForCert(server_cert.get(), verify_result, OK);
+
+  // Set up CT.
+  EXPECT_CALL(*ct_policy_enforcer_,
+              DoesConformToCertPolicy(server_cert.get(), _, _))
+      .WillRepeatedly(
+          Return(ct::CertPolicyCompliance::CERT_POLICY_NOT_DIVERSE_SCTS));
+
+  SSLConfig ssl_config;
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
+  SSLInfo ssl_info;
+  ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
+
+  // The histogram should have been recorded with the CT compliance status.
+  histograms.ExpectUniqueSample(
+      kHistogramName,
+      static_cast<int>(ct::CertPolicyCompliance::CERT_POLICY_NOT_DIVERSE_SCTS),
+      1);
 }
 
 // Test that when CT is required (in this case, by an Expect-CT opt-in), the

@@ -404,6 +404,11 @@ int ProofVerifierChromium::Job::DoVerifyCertComplete(int result) {
       verify_details_->cert_verify_result.cert_status &= ~CERT_STATUS_IS_EV;
     }
 
+    UMA_HISTOGRAM_ENUMERATION(
+        "Net.CertificateTransparency.ConnectionComplianceStatus.QUIC",
+        verify_details_->ct_verify_result.cert_policy_compliance,
+        ct::CertPolicyCompliance::CERT_POLICY_MAX);
+
     int ct_result = OK;
     if (transport_security_state_->CheckCTRequirements(
             HostPortPair(hostname_, port_),
