@@ -48,9 +48,8 @@ const int kRows = 2;
 // The delegate for actions in the view.
 @property(nonatomic, weak) id<ContentWidgetViewDelegate> delegate;
 
-// Sets up the widget UI for an expanded or compact appearance based on
-// |compact|.
-- (void)createUI:(BOOL)compact;
+// Sets up the widget UI in compact mode.
+- (void)createUI;
 
 // Arranges |tiles| horizontally in a view and returns the view.
 - (UIView*)createRowFromTiles:(NSArray<MostVisitedTileView*>*)tiles;
@@ -80,8 +79,7 @@ const int kRows = 2;
 
 - (instancetype)initWithDelegate:(id<ContentWidgetViewDelegate>)delegate
                    compactHeight:(CGFloat)compactHeight
-                           width:(CGFloat)width
-                initiallyCompact:(BOOL)compact {
+                           width:(CGFloat)width {
   self = [super initWithFrame:CGRectZero];
   if (self) {
     DCHECK(delegate);
@@ -92,7 +90,7 @@ const int kRows = 2;
     _iconsPerRow =
         MIN(4, MAX(width / (MostVisitedTileView.tileWidth + kTileSpacing), 1));
 
-    [self createUI:compact];
+    [self createUI];
   }
   return self;
 }
@@ -109,7 +107,7 @@ const int kRows = 2;
 
 #pragma mark - UI creation
 
-- (void)createUI:(BOOL)compact {
+- (void)createUI {
   NSMutableArray* tiles = [[NSMutableArray alloc] init];
   for (int i = 0; i < _iconsPerRow * kRows; i++) {
     [tiles addObject:[[MostVisitedTileView alloc] init]];
@@ -127,7 +125,7 @@ const int kRows = 2;
   [self addSubview:_secondRow];
 
   _firstRowHeightConstraint = [_firstRow.heightAnchor
-      constraintEqualToConstant:[self firstRowHeight:compact]];
+      constraintEqualToConstant:[self firstRowHeight:YES]];
 
   [NSLayoutConstraint activateConstraints:@[
     [_firstRow.topAnchor constraintEqualToAnchor:self.topAnchor],

@@ -30,12 +30,10 @@
 
 // Designated initializer, creates the widget view with a |delegate| for user
 // actions. |compactHeight| indicates the size to use in compact display.
-// |width| is the width of the widget. |initiallyCompact| indicates which mode
-// to display on initialization.
+// |width| is the width of the widget.
 - (instancetype)initWithDelegate:(id<ContentWidgetViewDelegate>)delegate
                    compactHeight:(CGFloat)compactHeight
-                           width:(CGFloat)width
-                initiallyCompact:(BOOL)compact NS_DESIGNATED_INITIALIZER;
+                           width:(CGFloat)width NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;
 - (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
 - (instancetype)init NS_UNAVAILABLE;
