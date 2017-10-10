@@ -256,14 +256,17 @@ def GenerateSetEnvCmd(target_dir):
   ])
   # Common to x86 and x64
   env = collections.OrderedDict([
-    # Yuck: These two have a trailing \ character. No good way to represent this
-    # in an OS-independent way.
+    # Yuck: These have a trailing \ character. No good way to represent this in
+    # an OS-independent way.
     ('VSINSTALLDIR', [['..', '..\\']]),
     ('VCINSTALLDIR', [['..', '..', 'VC\\']]),
     ('INCLUDE', include_dirs),
   ])
   # x86. Always use amd64_x86 cross, not x86 on x86.
   if VS_VERSION == '2017':
+    env['VCToolsInstallDir'] = [['..', '..'] + vc_tools_parts[:]]
+    # Yuck: This one ends in a slash as well.
+    env['VCToolsInstallDir'][0][-1] += '\\'
     env_x86 = collections.OrderedDict([
       ('PATH', [
         ['..', '..', 'win_sdk', 'bin', WIN_VERSION, 'x64'],
