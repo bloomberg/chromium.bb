@@ -33,6 +33,8 @@ Local Modifications:
  - Remove all uint128 declaration and implementation.
  - Remove corresponding comments.
  - Remove unnecessary dependencies.
+ - Add Log2Floor_Portable impl.
+ - Add FindLSBSetNonZero_Portable impl.
 - Remove absl dependency:
   - Change uint8 -> uint8_t
   - Change uint16 -> uint16_t
@@ -44,16 +46,20 @@ Local Modifications:
   - Remove absl/base/macros.h and use chromium base/macros.h
 - Change glog to use chromium base/logging.h
 - Remove s2/base/strings/stringprintf.h to use chromium base/strings/stringprintf.h
-- Remove base/casts.h and change implicit_cast to static_cast  
+- Remove base/casts.h and change implicit_cast to static_cast.
 - Append std:: to string type.
 - Under s2cellid:
   - Remove Encode declaration and implementation.
   - Remove Decode declaration and implementation.
   - Remove util/coding/coder.h dependency.
-  - Change StringPrintf format from "Invalid: %016llx" to "Invalid: %016lx".
+  - Change StringPrintf format from "Invalid: %016llx" to "Invalid: %016" PRIu64.
+  - Disable 4146 warning on Windows (unary minus operator applied to unsigned type).
+  - Disable 4018 warning on Windows ('<' : signed/unsigned mismatch).
 - Under s2point.h
   - Remove s2/util/math/vector3_hash.h
   - Remove S2PointHash and comments.
+- Under s1angle.h
+  - Add _USE_MATH_DEFINES macro for _WIN32
 - Add BUILD.gn file.
 - Add DEPS file.
 - Remove CMakeList.txt file.

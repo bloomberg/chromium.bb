@@ -24,10 +24,15 @@
 #include <vector>
 
 #include <mutex>
+#include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "s2/r1interval.h"
 #include "s2/s2latlng.h"
+
+#ifdef _MSC_VER
+#pragma warning(disable : 4018) /* '<' : signed/unsigned mismatch */
+#endif
 
 using S2::internal::kSwapMask;
 using S2::internal::kInvertMask;
@@ -587,7 +592,7 @@ void S2CellId::AppendAllNeighbors(int nbr_level,
 
 std::string S2CellId::ToString() const {
   if (!is_valid()) {
-    return base::StringPrintf("Invalid: %016lx", id());
+    return base::StringPrintf("Invalid: %016" PRIu64, id());
   }
   std::string out = base::StringPrintf("%d/", face());
   for (int current_level = 1; current_level <= level(); ++current_level) {
