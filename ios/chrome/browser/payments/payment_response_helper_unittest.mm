@@ -41,7 +41,7 @@
 @implementation PaymentResponseHelperConsumerMock
 
 typedef void (^mock_payment_response_helper_did_complete_with_payment_response)(
-    const web::PaymentResponse&);
+    const payments::PaymentResponse&);
 
 - (void)paymentResponseHelperDidReceivePaymentMethodDetails {
 }
@@ -50,7 +50,7 @@ typedef void (^mock_payment_response_helper_did_complete_with_payment_response)(
 }
 
 - (void)paymentResponseHelperDidCompleteWithPaymentResponse:
-    (const web::PaymentResponse&)paymentResponse {
+    (const payments::PaymentResponse&)paymentResponse {
   return static_cast<
       mock_payment_response_helper_did_complete_with_payment_response>(
       [self blockForSelector:_cmd])(paymentResponse);
@@ -114,7 +114,7 @@ TEST_F(PaymentRequestPaymentResponseHelperTest, PaymentResponse) {
   SEL selector =
       @selector(paymentResponseHelperDidCompleteWithPaymentResponse:);
   [consumer_mock onSelector:selector
-       callBlockExpectation:^(const web::PaymentResponse& response) {
+       callBlockExpectation:^(const PaymentResponse& response) {
          // Check if all the expected values were set.
          EXPECT_EQ(GetMethodName(), response.method_name);
          EXPECT_EQ(GetStringifiedDetails(), response.details);
@@ -166,7 +166,7 @@ TEST_F(PaymentRequestPaymentResponseHelperTest, PaymentResponseNoShipping) {
   SEL selector =
       @selector(paymentResponseHelperDidCompleteWithPaymentResponse:);
   [consumer_mock onSelector:selector
-       callBlockExpectation:^(const web::PaymentResponse& response) {
+       callBlockExpectation:^(const PaymentResponse& response) {
          EXPECT_FALSE(!!response.shipping_address);
          EXPECT_EQ(base::ASCIIToUTF16("John H. Doe"), response.payer_name);
          EXPECT_EQ(base::ASCIIToUTF16("+16502111111"), response.payer_phone);
@@ -192,7 +192,7 @@ TEST_F(PaymentRequestPaymentResponseHelperTest, PaymentResponseNoContact) {
   SEL selector =
       @selector(paymentResponseHelperDidCompleteWithPaymentResponse:);
   [consumer_mock onSelector:selector
-       callBlockExpectation:^(const web::PaymentResponse& response) {
+       callBlockExpectation:^(const PaymentResponse& response) {
          EXPECT_EQ(base::string16(), response.payer_name);
          EXPECT_EQ(base::string16(), response.payer_phone);
          EXPECT_EQ(base::string16(), response.payer_email);
@@ -218,7 +218,7 @@ TEST_F(PaymentRequestPaymentResponseHelperTest, PaymentResponseOneContact) {
   SEL selector =
       @selector(paymentResponseHelperDidCompleteWithPaymentResponse:);
   [consumer_mock onSelector:selector
-       callBlockExpectation:^(const web::PaymentResponse& response) {
+       callBlockExpectation:^(const PaymentResponse& response) {
          EXPECT_EQ(base::ASCIIToUTF16("John H. Doe"), response.payer_name);
          EXPECT_EQ(base::string16(), response.payer_phone);
          EXPECT_EQ(base::string16(), response.payer_email);
@@ -243,7 +243,7 @@ TEST_F(PaymentRequestPaymentResponseHelperTest, PaymentResponseSomeContact) {
   SEL selector =
       @selector(paymentResponseHelperDidCompleteWithPaymentResponse:);
   [consumer_mock onSelector:selector
-       callBlockExpectation:^(const web::PaymentResponse& response) {
+       callBlockExpectation:^(const PaymentResponse& response) {
          EXPECT_EQ(base::ASCIIToUTF16("John H. Doe"), response.payer_name);
          EXPECT_EQ(base::ASCIIToUTF16("johndoe@hades.com"),
                    response.payer_email);
@@ -269,7 +269,7 @@ TEST_F(PaymentRequestPaymentResponseHelperTest,
   SEL selector =
       @selector(paymentResponseHelperDidCompleteWithPaymentResponse:);
   [consumer_mock onSelector:selector
-       callBlockExpectation:^(const web::PaymentResponse& response) {
+       callBlockExpectation:^(const PaymentResponse& response) {
          EXPECT_EQ(base::ASCIIToUTF16("+15151231234"), response.payer_phone);
        }];
 

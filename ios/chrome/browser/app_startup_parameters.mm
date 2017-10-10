@@ -6,7 +6,7 @@
 
 #include "base/stl_util.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
-#include "ios/web/public/payments/payment_request.h"
+#include "ios/chrome/browser/payments/payment_request_constants.h"
 #import "net/base/mac/url_conversions.h"
 #include "net/base/url_util.h"
 #include "url/gurl.h"
@@ -52,8 +52,8 @@
     }
 
     // Currently only Payment Request parameters are supported.
-    if (base::ContainsKey(parameters, web::kPaymentRequestIDExternal) &&
-        base::ContainsKey(parameters, web::kPaymentRequestDataExternal)) {
+    if (base::ContainsKey(parameters, payments::kPaymentRequestIDExternal) &&
+        base::ContainsKey(parameters, payments::kPaymentRequestDataExternal)) {
       _externalURLParams = parameters;
       _completePaymentRequest = YES;
     }

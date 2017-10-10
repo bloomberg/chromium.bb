@@ -120,6 +120,7 @@ source_set("browser") {
     "//ios/chrome/browser/bookmarks:features",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/drag_and_drop",
+    "//ios/chrome/browser/payments:constants",
     "//ios/chrome/browser/ssl:features",
     "//ios/chrome/browser/sync/glue",
     "//ios/chrome/browser/ui/main:feature_flags",

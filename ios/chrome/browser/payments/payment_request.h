@@ -21,9 +21,9 @@
 #include "components/payments/core/payment_options_provider.h"
 #include "components/payments/core/payment_request_base_delegate.h"
 #include "components/payments/core/payments_profile_comparator.h"
+#include "components/payments/core/web_payment_request.h"
 #import "ios/chrome/browser/payments/ios_payment_instrument_finder.h"
 #import "ios/chrome/browser/payments/payment_response_helper.h"
-#include "ios/web/public/payments/payment_request.h"
 #include "url/gurl.h"
 
 namespace autofill {
@@ -72,10 +72,10 @@ requestFullCreditCard:(const autofill::CreditCard&)creditCard
 
 namespace payments {
 
-// Has a copy of web::PaymentRequest as provided by the page invoking the
-// PaymentRequest API. Also caches credit cards and addresses provided by the
-// |personal_data_manager| and manages shared resources and user selections for
-// the current PaymentRequest flow. It must be initialized with non-null
+// Has a copy of payments::WebPaymentRequest as provided by the page invoking
+// the PaymentRequest API. Also caches credit cards and addresses provided by
+// the |personal_data_manager| and manages shared resources and user selections
+// for the current PaymentRequest flow. It must be initialized with non-null
 // instances of |browser_state|, |web_state|, and |personal_data_manager| that
 // outlive this class.
 class PaymentRequest : public PaymentOptionsProvider,
@@ -94,7 +94,7 @@ class PaymentRequest : public PaymentOptionsProvider,
   };
 
   // |personal_data_manager| should not be null and should outlive this object.
-  PaymentRequest(const web::PaymentRequest& web_payment_request,
+  PaymentRequest(const payments::WebPaymentRequest& web_payment_request,
                  ios::ChromeBrowserState* browser_state,
                  web::WebState* web_state,
                  autofill::PersonalDataManager* personal_data_manager,
@@ -132,8 +132,9 @@ class PaymentRequest : public PaymentOptionsProvider,
 
   void set_updating(bool updating) { updating_ = updating; }
 
-  // Returns the web::PaymentRequest that was used to build this PaymentRequest.
-  const web::PaymentRequest& web_payment_request() const {
+  // Returns the payments::WebPaymentRequest that was used to build this
+  // instance.
+  const payments::WebPaymentRequest& web_payment_request() const {
     return web_payment_request_;
   }
 
@@ -337,9 +338,9 @@ class PaymentRequest : public PaymentOptionsProvider,
   // Whether there is a pending updateWith() call to update the payment request.
   bool updating_;
 
-  // The web::PaymentRequest object as provided by the page invoking the Payment
-  // Request API, owned by this object.
-  web::PaymentRequest web_payment_request_;
+  // The payments::WebPaymentRequest object as provided by the page invoking the
+  // Payment Request API, owned by this object.
+  payments::WebPaymentRequest web_payment_request_;
 
   // Never null and outlives this object.
   ios::ChromeBrowserState* browser_state_;

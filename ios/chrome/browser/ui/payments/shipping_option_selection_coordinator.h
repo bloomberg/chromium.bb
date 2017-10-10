@@ -40,9 +40,9 @@ class PaymentShippingOption;
 @interface ShippingOptionSelectionCoordinator
     : ChromeCoordinator<PaymentRequestSelectorViewControllerDelegate>
 
-// The PaymentRequest object having a copy of web::PaymentRequest as provided by
-// the page invoking the Payment Request API. This pointer is not owned by this
-// class and should outlive it.
+// The PaymentRequest object having a copy of payments::WebPaymentRequest as
+// provided by the page invoking the Payment Request API. This pointer is not
+// owned by this class and should outlive it.
 @property(nonatomic, assign) payments::PaymentRequest* paymentRequest;
 
 // The delegate to be notified when the user selects a shipping option or

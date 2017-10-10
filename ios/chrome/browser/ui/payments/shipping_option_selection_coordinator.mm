@@ -7,10 +7,10 @@
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/payments/core/payment_shipping_option.h"
+#include "components/payments/core/web_payment_request.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 #import "ios/chrome/browser/payments/payment_request_util.h"
 #include "ios/chrome/browser/ui/payments/shipping_option_selection_mediator.h"
-#include "ios/web/public/payments/payment_request.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

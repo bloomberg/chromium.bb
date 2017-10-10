@@ -26,8 +26,8 @@ PaymentShippingOption::~PaymentShippingOption() = default;
 
 bool PaymentShippingOption::operator==(
     const PaymentShippingOption& other) const {
-  return this->id == other.id && this->label == other.label &&
-         this->amount == other.amount && this->selected == other.selected;
+  return id == other.id && label == other.label && amount == other.amount &&
+         selected == other.selected;
 }
 
 bool PaymentShippingOption::operator!=(
@@ -37,11 +37,11 @@ bool PaymentShippingOption::operator!=(
 
 bool PaymentShippingOption::FromDictionaryValue(
     const base::DictionaryValue& value) {
-  if (!value.GetString(kPaymentShippingOptionId, &this->id)) {
+  if (!value.GetString(kPaymentShippingOptionId, &id)) {
     return false;
   }
 
-  if (!value.GetString(kPaymentShippingOptionLabel, &this->label)) {
+  if (!value.GetString(kPaymentShippingOptionLabel, &label)) {
     return false;
   }
 
@@ -49,12 +49,12 @@ bool PaymentShippingOption::FromDictionaryValue(
   if (!value.GetDictionary(kPaymentShippingOptionAmount, &amount_dict)) {
     return false;
   }
-  if (!this->amount.FromDictionaryValue(*amount_dict)) {
+  if (!amount.FromDictionaryValue(*amount_dict)) {
     return false;
   }
 
   // Selected is optional.
-  value.GetBoolean(kPaymentShippingOptionSelected, &this->selected);
+  value.GetBoolean(kPaymentShippingOptionSelected, &selected);
 
   return true;
 }

@@ -11,11 +11,11 @@
 #include "components/payments/core/currency_formatter.h"
 #include "components/payments/core/payment_shipping_option.h"
 #include "components/payments/core/strings_util.h"
+#include "components/payments/core/web_payment_request.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 #import "ios/chrome/browser/ui/payments/cells/payments_text_item.h"
 #include "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
-#include "ios/web/public/payments/payment_request.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -27,8 +27,8 @@ using payments::GetShippingOptionSectionString;
 
 @interface ShippingOptionSelectionMediator ()
 
-// The PaymentRequest object owning an instance of web::PaymentRequest as
-// provided by the page invoking the Payment Request API. This is a weak
+// The PaymentRequest object owning an instance of payments::WebPaymentRequest
+// as provided by the page invoking the Payment Request API. This is a weak
 // pointer and should outlive this class.
 @property(nonatomic, assign) payments::PaymentRequest* paymentRequest;
 

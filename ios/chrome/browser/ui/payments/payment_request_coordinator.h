@@ -85,9 +85,9 @@ class PaymentShippingOption;
                         ShippingAddressSelectionCoordinatorDelegate,
                         ShippingOptionSelectionCoordinatorDelegate>
 
-// The PaymentRequest object having a copy of web::PaymentRequest as provided by
-// the page invoking the Payment Request API. This pointer is not owned by this
-// class and should outlive it.
+// The PaymentRequest object having a copy of payments::WebPaymentRequest as
+// provided by the page invoking the Payment Request API. This pointer is not
+// owned by this class and should outlive it.
 @property(nonatomic, assign) payments::PaymentRequest* paymentRequest;
 
 // An instance of autofill::AutofillManager used for credit card unmasking. This

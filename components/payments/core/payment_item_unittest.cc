@@ -4,7 +4,6 @@
 
 #include "components/payments/core/payment_item.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -20,7 +19,7 @@ TEST(PaymentRequestTest, PaymentItemFromDictionaryValueSuccess) {
 
   base::DictionaryValue item_dict;
   item_dict.SetString("label", "Payment Total");
-  std::unique_ptr<base::DictionaryValue> amount_dict(new base::DictionaryValue);
+  auto amount_dict = std::make_unique<base::DictionaryValue>();
   amount_dict->SetString("currency", "NZD");
   amount_dict->SetString("value", "2,242,093.00");
   item_dict.Set("amount", std::move(amount_dict));
@@ -42,7 +41,7 @@ TEST(PaymentRequestTest, PaymentItemFromDictionaryValueFailure) {
   EXPECT_FALSE(actual.FromDictionaryValue(item_dict));
 
   // Even with both present, the label must be a string.
-  std::unique_ptr<base::DictionaryValue> amount_dict(new base::DictionaryValue);
+  auto amount_dict = std::make_unique<base::DictionaryValue>();
   amount_dict->SetString("currency", "NZD");
   amount_dict->SetString("value", "2,242,093.00");
   item_dict.Set("amount", std::move(amount_dict));
@@ -85,7 +84,7 @@ TEST(PaymentRequestTest, EmptyPaymentItemDictionary) {
 
   expected_value.SetString("label", "");
   std::unique_ptr<base::DictionaryValue> amount_dict =
-      base::MakeUnique<base::DictionaryValue>();
+      std::make_unique<base::DictionaryValue>();
   amount_dict->SetString("currency", "");
   amount_dict->SetString("value", "");
   amount_dict->SetString("currencySystem", "urn:iso:std:iso:4217");
@@ -102,7 +101,7 @@ TEST(PaymentRequestTest, PopulatedPaymentItemDictionary) {
 
   expected_value.SetString("label", "Payment Total");
   std::unique_ptr<base::DictionaryValue> amount_dict =
-      base::MakeUnique<base::DictionaryValue>();
+      std::make_unique<base::DictionaryValue>();
   amount_dict->SetString("currency", "NZD");
   amount_dict->SetString("value", "2,242,093.00");
   amount_dict->SetString("currencySystem", "urn:iso:std:iso:4217");

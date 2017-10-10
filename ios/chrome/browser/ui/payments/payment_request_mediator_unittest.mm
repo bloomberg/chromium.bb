@@ -159,7 +159,7 @@ TEST_F(PaymentRequestMediatorTest, TestPaymentSummaryItem) {
   EXPECT_EQ(nil, payment_summary_item.notification);
 
   // Remove the display items.
-  web::PaymentRequest web_payment_request =
+  payments::WebPaymentRequest web_payment_request =
       payment_request()->web_payment_request();
   web_payment_request.details.display_items.clear();
   payment_request()->UpdatePaymentDetails(web_payment_request.details);

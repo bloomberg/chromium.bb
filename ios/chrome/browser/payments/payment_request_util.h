@@ -7,6 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/strings/string16.h"
@@ -16,12 +17,21 @@ namespace autofill {
 class AutofillProfile;
 }  // namespace autofill
 
+namespace base {
+class DictionaryValue;
+}  // namespace base
+
 namespace payments {
 class PaymentInstrument;
 class PaymentRequest;
+class PaymentResponse;
 }  // namespace payments
 
 namespace payment_request_util {
+
+// Returns a base::DictionaryValue populated with the properties of |response|.
+std::unique_ptr<base::DictionaryValue> PaymentResponseToDictionaryValue(
+    const payments::PaymentResponse& response);
 
 // Helper function to create a name label from an autofill profile. Returns nil
 // if the resulting label is empty.

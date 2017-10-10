@@ -10,13 +10,10 @@
 #import "ios/web/public/web_state/js/crw_js_injection_manager.h"
 
 namespace payments {
-class PaymentShippingOption;
 struct PaymentAddress;
-}  // namespace payments
-
-namespace web {
 class PaymentResponse;
-}  // namespace web
+class PaymentShippingOption;
+}  // namespace payments
 
 // Injects the JavaScript that implements the Payment Request API and provides
 // an app-side interface for interacting with it.
@@ -41,7 +38,7 @@ class PaymentResponse;
 // not nil, it will be invoked with YES after the operation has completed
 // successfully or with NO otherwise.
 - (void)resolveRequestPromiseWithPaymentResponse:
-            (const web::PaymentResponse&)paymentResponse
+            (const payments::PaymentResponse&)paymentResponse
                                completionHandler:
                                    (ProceduralBlockWithBool)completionHandler;
 

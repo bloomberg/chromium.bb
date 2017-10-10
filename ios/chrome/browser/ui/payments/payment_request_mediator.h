@@ -19,8 +19,8 @@ class PaymentRequest;
 @property(nonatomic, assign) BOOL totalValueChanged;
 
 // Initializes this object with an instance of PaymentRequest which has a copy
-// of web::PaymentRequest as provided by the page invoking the Payment Request
-// API. This object will not take ownership of |paymentRequest|.
+// of payments::WebPaymentRequest as provided by the page invoking the Payment
+// Request API. This object will not take ownership of |paymentRequest|.
 - (instancetype)initWithPaymentRequest:(payments::PaymentRequest*)paymentRequest
     NS_DESIGNATED_INITIALIZER;
 

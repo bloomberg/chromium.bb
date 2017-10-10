@@ -29,7 +29,7 @@ class PaymentCurrencyAmount {
 
   // Populates the properties of this PaymentCurrencyAmount from |value|.
   // Returns true if the required values are present.
-  bool FromDictionaryValue(const base::DictionaryValue& value);
+  bool FromDictionaryValue(const base::DictionaryValue& dictionary_value);
 
   // Creates a base::DictionaryValue with the properties of this
   // PaymentCurrencyAmount.

@@ -8,8 +8,8 @@
 #include "components/autofill/core/browser/region_data_loader.h"
 #include "components/payments/core/payment_request_data_util.h"
 #include "components/payments/core/payments_profile_comparator.h"
+#include "components/payments/core/web_payment_request.h"
 #include "components/prefs/pref_service.h"
-#include "ios/web/public/payments/payment_request.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

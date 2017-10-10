@@ -30,9 +30,9 @@ class PaymentRequest;
 @property(nonatomic, assign) autofill::AutofillProfile* billingProfile;
 
 // Initializes this object with an instance of PaymentRequest which has a copy
-// of web::PaymentRequest as provided by the page invoking the Payment Request
-// API as well as |creditCard| which is the credit card to be edited, if any.
-// This object will not take ownership of |paymentRequest| or |creditCard|.
+// of payments::WebPaymentRequest as provided by the page invoking the Payment
+// Request API as well as |creditCard| which is the credit card to be edited, if
+// any. This object will not take ownership of |paymentRequest| or |creditCard|.
 - (instancetype)initWithPaymentRequest:(payments::PaymentRequest*)paymentRequest
                             creditCard:(autofill::CreditCard*)creditCard
     NS_DESIGNATED_INITIALIZER;

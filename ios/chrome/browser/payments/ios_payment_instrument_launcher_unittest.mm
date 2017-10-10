@@ -15,10 +15,10 @@
 #include "base/values.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/payments/core/payment_instrument.h"
+#include "components/payments/core/web_payment_request.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/payments/payment_request_test_util.h"
 #include "ios/chrome/browser/payments/test_payment_request.h"
-#include "ios/web/public/payments/payment_request.h"
 #include "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -98,7 +98,7 @@ class PaymentRequestIOSPaymentInstrumentLauncherTest : public PlatformTest {
 // result.
 TEST_F(PaymentRequestIOSPaymentInstrumentLauncherTest,
        EmptyStringifiedMethodDataDictionary) {
-  web::PaymentRequest web_payment_request;
+  WebPaymentRequest web_payment_request;
   autofill::TestPersonalDataManager personal_data_manager;
   TestPaymentRequest payment_request(web_payment_request,
                                      chrome_browser_state_.get(), &web_state_,
@@ -115,7 +115,7 @@ TEST_F(PaymentRequestIOSPaymentInstrumentLauncherTest,
 // result.
 TEST_F(PaymentRequestIOSPaymentInstrumentLauncherTest,
        PopulatedStringifiedMethodDataDictionary) {
-  web::PaymentRequest web_payment_request;
+  WebPaymentRequest web_payment_request;
   PaymentMethodData method_datum1;
   method_datum1.supported_methods.push_back("https://jefpay.com");
   method_datum1.supported_methods.push_back("https://bobpay.com");
@@ -174,7 +174,7 @@ TEST_F(PaymentRequestIOSPaymentInstrumentLauncherTest,
         base::MakeUnique<web::TestNavigationManager>();
     web_state_.SetNavigationManager(std::move(navigation_manager));
 
-    web::PaymentRequest web_payment_request =
+    WebPaymentRequest web_payment_request =
         payment_request_test_util::CreateTestWebPaymentRequest();
     autofill::TestPersonalDataManager personal_data_manager;
     TestPaymentRequest payment_request(web_payment_request,

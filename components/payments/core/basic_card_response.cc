@@ -4,8 +4,6 @@
 
 #include "components/payments/core/basic_card_response.h"
 
-#include "base/memory/ptr_util.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 
 namespace payments {
@@ -28,12 +26,12 @@ BasicCardResponse::BasicCardResponse(const BasicCardResponse& other) = default;
 BasicCardResponse::~BasicCardResponse() = default;
 
 bool BasicCardResponse::operator==(const BasicCardResponse& other) const {
-  return this->cardholder_name == other.cardholder_name &&
-         this->card_number == other.card_number &&
-         this->expiry_month == other.expiry_month &&
-         this->expiry_year == other.expiry_year &&
-         this->card_security_code == other.card_security_code &&
-         this->billing_address == other.billing_address;
+  return cardholder_name == other.cardholder_name &&
+         card_number == other.card_number &&
+         expiry_month == other.expiry_month &&
+         expiry_year == other.expiry_year &&
+         card_security_code == other.card_security_code &&
+         billing_address == other.billing_address;
 }
 
 bool BasicCardResponse::operator!=(const BasicCardResponse& other) const {
@@ -42,15 +40,13 @@ bool BasicCardResponse::operator!=(const BasicCardResponse& other) const {
 
 std::unique_ptr<base::DictionaryValue> BasicCardResponse::ToDictionaryValue()
     const {
-  std::unique_ptr<base::DictionaryValue> result =
-      base::MakeUnique<base::DictionaryValue>();
-
-  result->SetString(kCardCardholderName, this->cardholder_name);
-  result->SetString(kCardCardNumber, this->card_number);
-  result->SetString(kCardExpiryMonth, this->expiry_month);
-  result->SetString(kCardExpiryYear, this->expiry_year);
-  result->SetString(kCardCardSecurityCode, this->card_security_code);
-  result->Set(kCardBillingAddress, this->billing_address.ToDictionaryValue());
+  auto result = std::make_unique<base::DictionaryValue>();
+  result->SetString(kCardCardholderName, cardholder_name);
+  result->SetString(kCardCardNumber, card_number);
+  result->SetString(kCardExpiryMonth, expiry_month);
+  result->SetString(kCardExpiryYear, expiry_year);
+  result->SetString(kCardCardSecurityCode, card_security_code);
+  result->Set(kCardBillingAddress, billing_address.ToDictionaryValue());
 
   return result;
 }

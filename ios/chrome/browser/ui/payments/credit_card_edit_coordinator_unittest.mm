@@ -42,7 +42,7 @@ class MockTestPersonalDataManager : public autofill::TestPersonalDataManager {
 
 class MockPaymentRequest : public payments::TestPaymentRequest {
  public:
-  MockPaymentRequest(web::PaymentRequest web_payment_request,
+  MockPaymentRequest(payments::WebPaymentRequest web_payment_request,
                      ios::ChromeBrowserState* browser_state,
                      web::WebState* web_state,
                      autofill::PersonalDataManager* personal_data_manager)

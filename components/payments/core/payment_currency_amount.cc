@@ -4,7 +4,6 @@
 
 #include "components/payments/core/payment_currency_amount.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 
 namespace payments {
@@ -30,7 +29,7 @@ PaymentCurrencyAmount::~PaymentCurrencyAmount() = default;
 
 bool PaymentCurrencyAmount::operator==(
     const PaymentCurrencyAmount& other) const {
-  return this->currency == other.currency && this->value == other.value;
+  return currency == other.currency && value == other.value;
 }
 
 bool PaymentCurrencyAmount::operator!=(
@@ -39,31 +38,29 @@ bool PaymentCurrencyAmount::operator!=(
 }
 
 bool PaymentCurrencyAmount::FromDictionaryValue(
-    const base::DictionaryValue& value) {
-  if (!value.GetString(kPaymentCurrencyAmountCurrency, &this->currency)) {
+    const base::DictionaryValue& dictionary_value) {
+  if (!dictionary_value.GetString(kPaymentCurrencyAmountCurrency, &currency)) {
     return false;
   }
 
-  if (!value.GetString(kPaymentCurrencyAmountValue, &this->value)) {
+  if (!dictionary_value.GetString(kPaymentCurrencyAmountValue, &value)) {
     return false;
   }
 
   // Currency_system is optional
-  value.GetString(kPaymentCurrencyAmountCurrencySystem, &this->currency_system);
+  dictionary_value.GetString(kPaymentCurrencyAmountCurrencySystem,
+                             &currency_system);
 
   return true;
 }
 
 std::unique_ptr<base::DictionaryValue>
 PaymentCurrencyAmount::ToDictionaryValue() const {
-  std::unique_ptr<base::DictionaryValue> result =
-      base::MakeUnique<base::DictionaryValue>();
-
-  result->SetString(kPaymentCurrencyAmountCurrency, this->currency);
-  result->SetString(kPaymentCurrencyAmountValue, this->value);
-  if (!this->currency_system.empty())
-    result->SetString(kPaymentCurrencyAmountCurrencySystem,
-                      this->currency_system);
+  auto result = std::make_unique<base::DictionaryValue>();
+  result->SetString(kPaymentCurrencyAmountCurrency, currency);
+  result->SetString(kPaymentCurrencyAmountValue, value);
+  if (!currency_system.empty())
+    result->SetString(kPaymentCurrencyAmountCurrencySystem, currency_system);
 
   return result;
 }

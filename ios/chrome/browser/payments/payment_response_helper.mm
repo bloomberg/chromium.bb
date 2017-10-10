@@ -66,7 +66,7 @@ void PaymentResponseHelper::OnInstrumentDetailsError() {
 }
 
 void PaymentResponseHelper::AddressNormalizationCompleted() {
-  web::PaymentResponse response;
+  payments::PaymentResponse response;
 
   response.payment_request_id =
       payment_request_->web_payment_request().payment_request_id;

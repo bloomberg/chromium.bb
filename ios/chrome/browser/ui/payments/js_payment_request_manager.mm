@@ -10,8 +10,10 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
 #include "components/payments/core/payment_address.h"
+#include "components/payments/core/payment_response.h"
 #include "components/payments/core/payment_shipping_option.h"
-#include "ios/web/public/payments/payment_request.h"
+#include "components/payments/core/web_payment_request.h"
+#import "ios/chrome/browser/payments/payment_request_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -64,11 +66,11 @@ NSString* JSONEscape(NSString* JSON) {
 }
 
 - (void)resolveRequestPromiseWithPaymentResponse:
-            (const web::PaymentResponse&)paymentResponse
+            (const payments::PaymentResponse&)paymentResponse
                                completionHandler:
                                    (ProceduralBlockWithBool)completionHandler {
   std::unique_ptr<base::DictionaryValue> paymentResponseData =
-      paymentResponse.ToDictionaryValue();
+      payment_request_util::PaymentResponseToDictionaryValue(paymentResponse);
   std::string paymentResponseDataJSON;
   base::JSONWriter::Write(*paymentResponseData, &paymentResponseDataJSON);
   NSString* script = [NSString

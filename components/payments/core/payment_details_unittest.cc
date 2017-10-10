@@ -4,9 +4,6 @@
 
 #include "components/payments/core/payment_details.h"
 
-#include <memory>
-
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -24,14 +21,14 @@ TEST(PaymentRequestTest, PaymentDetailsFromDictionaryValueSuccess) {
       actual.FromDictionaryValue(details_dict, /*requires_total=*/false));
   EXPECT_EQ(expected, actual);
 
-  expected.total = base::MakeUnique<PaymentItem>();
+  expected.total = std::make_unique<PaymentItem>();
   expected.total->label = "TOTAL";
   expected.total->amount.currency = "GBP";
   expected.total->amount.value = "6.66";
 
-  std::unique_ptr<base::DictionaryValue> total_dict(new base::DictionaryValue);
+  auto total_dict = std::make_unique<base::DictionaryValue>();
   total_dict->SetString("label", "TOTAL");
-  std::unique_ptr<base::DictionaryValue> amount_dict(new base::DictionaryValue);
+  auto amount_dict = std::make_unique<base::DictionaryValue>();
   amount_dict->SetString("currency", "GBP");
   amount_dict->SetString("value", "6.66");
   total_dict->Set("amount", std::move(amount_dict));
@@ -49,7 +46,7 @@ TEST(PaymentRequestTest, PaymentDetailsFromDictionaryValueSuccess) {
 // Tests the failure case when populating a PaymentDetails from a dictionary.
 TEST(PaymentRequestTest, PaymentDetailsFromDictionaryValueFailure) {
   PaymentDetails expected;
-  expected.total = base::MakeUnique<PaymentItem>();
+  expected.total = std::make_unique<PaymentItem>();
   expected.total->label = "TOTAL";
   expected.total->amount.currency = "GBP";
   expected.total->amount.value = "6.66";
@@ -79,10 +76,10 @@ TEST(PaymentRequestTest, PaymentDetailsEquality) {
   details2.id = details1.id;
   EXPECT_EQ(details1, details2);
 
-  details1.total = base::MakeUnique<PaymentItem>();
+  details1.total = std::make_unique<PaymentItem>();
   details1.total->label = "Total";
   EXPECT_NE(details1, details2);
-  details2.total = base::MakeUnique<PaymentItem>();
+  details2.total = std::make_unique<PaymentItem>();
   details2.total->label = "Shipping";
   EXPECT_NE(details1, details2);
   details2.total->label = "Total";
@@ -125,7 +122,7 @@ TEST(PaymentRequestTest, PaymentDetailsEquality) {
 
   PaymentDetailsModifier details_modifier;
 
-  details_modifier.total = base::MakeUnique<PaymentItem>();
+  details_modifier.total = std::make_unique<PaymentItem>();
   details_modifier.total->label = "Total";
   details1.modifiers.push_back(details_modifier);
   EXPECT_NE(details1, details2);
