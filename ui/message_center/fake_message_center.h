@@ -50,7 +50,6 @@ class FakeMessageCenter : public MessageCenter {
   void SetNotificationButtonIcon(const std::string& notification_id,
                                  int button_index,
                                  const gfx::Image& image) override;
-  void DisableNotificationsByNotifier(const NotifierId& notifier_id) override;
   void ClickOnNotification(const std::string& id) override;
   void ClickOnNotificationButton(const std::string& id,
                                  int button_index) override;

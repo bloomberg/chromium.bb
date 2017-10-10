@@ -57,6 +57,9 @@ class MESSAGE_CENTER_EXPORT NotificationDelegate
   // is also used for controlling settings).
   virtual bool ShouldDisplaySettingsButton();
 
+  // Called when the user attempts to disable the notification.
+  virtual void DisableNotification();
+
 #if defined(TOOLKIT_VIEWS) && !defined(OS_MACOSX)
   // To be called to construct the message view for notifications whose type is
   // NOTIFICATION_TYPE_CUSTOM.

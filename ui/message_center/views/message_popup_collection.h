@@ -62,8 +62,7 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   void RemoveNotification(const std::string& notification_id,
                           bool by_user) override;
   std::unique_ptr<ui::MenuModel> CreateMenuModel(
-      const NotifierId& notifier_id,
-      const base::string16& display_source) override;
+      const Notification& notification) override;
   bool HasClickedListener(const std::string& notification_id) override;
   void ClickOnNotificationButton(const std::string& notification_id,
                                  int button_index) override;

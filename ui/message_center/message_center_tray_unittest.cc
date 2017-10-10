@@ -19,10 +19,19 @@ using base::ASCIIToUTF16;
 namespace message_center {
 namespace {
 
+class TestNotificationDelegate : public message_center::NotificationDelegate {
+ public:
+  TestNotificationDelegate() = default;
+
+ private:
+  ~TestNotificationDelegate() override = default;
+
+  DISALLOW_COPY_AND_ASSIGN(TestNotificationDelegate);
+};
+
 class MockDelegate : public MessageCenterTrayDelegate {
  public:
-  MockDelegate()
-      : show_popups_success_(true), show_message_center_success_(true) {}
+  MockDelegate() {}
   ~MockDelegate() override {}
   void OnMessageCenterTrayChanged() override {}
   bool ShowPopups() override { return show_message_center_success_; }
@@ -33,10 +42,10 @@ class MockDelegate : public MessageCenterTrayDelegate {
   void HideMessageCenter() override {}
   bool ShowNotifierSettings() override { return true; }
 
-  MessageCenterTray* GetMessageCenterTray() override { return NULL; }
+  MessageCenterTray* GetMessageCenterTray() override { return nullptr; }
 
-  bool show_popups_success_;
-  bool show_message_center_success_;
+  bool show_popups_success_ = true;
+  bool show_message_center_success_ = true;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockDelegate);
@@ -69,18 +78,21 @@ class MessageCenterTrayTest : public testing::Test {
     return NotifierId();
   }
 
-  void AddNotification(const std::string& id) {
-    AddNotification(id, DummyNotifierId());
+  Notification* AddNotification(const std::string& id) {
+    return AddNotification(id, DummyNotifierId());
   }
 
-  void AddNotification(const std::string& id, NotifierId notifier_id) {
-    std::unique_ptr<Notification> notification(new Notification(
-        message_center::NOTIFICATION_TYPE_SIMPLE, id,
-        ASCIIToUTF16("Test Web Notification"),
-        ASCIIToUTF16("Notification message body."), gfx::Image(),
-        ASCIIToUTF16("www.test.org"), GURL(), notifier_id,
-        message_center::RichNotificationData(), NULL /* delegate */));
+  Notification* AddNotification(const std::string& id, NotifierId notifier_id) {
+    std::unique_ptr<Notification> notification(
+        new Notification(message_center::NOTIFICATION_TYPE_SIMPLE, id,
+                         ASCIIToUTF16("Test Web Notification"),
+                         ASCIIToUTF16("Notification message body."),
+                         gfx::Image(), ASCIIToUTF16("www.test.org"), GURL(),
+                         notifier_id, message_center::RichNotificationData(),
+                         new TestNotificationDelegate()));
+    Notification* notification_ptr = notification.get();
     message_center_->AddNotification(std::move(notification));
+    return notification_ptr;
   }
   std::unique_ptr<MockDelegate> delegate_;
   std::unique_ptr<MessageCenterTray> message_center_tray_;
@@ -241,12 +253,11 @@ TEST_F(MessageCenterTrayTest, ShowBubbleFails) {
   ASSERT_FALSE(message_center_tray_->message_center_visible());
 }
 
-#ifdef OS_CHROMEOS
 TEST_F(MessageCenterTrayTest, ContextMenuTestWithMessageCenter) {
   const std::string id1 = "id1";
   const std::string id2 = "id2";
   const std::string id3 = "id3";
-  AddNotification(id1);
+  Notification* notification1 = AddNotification(id1);
 
   base::string16 display_source = ASCIIToUTF16("www.test.org");
   NotifierId notifier_id = DummyNotifierId();
@@ -255,90 +266,34 @@ TEST_F(MessageCenterTrayTest, ContextMenuTestWithMessageCenter) {
   std::unique_ptr<Notification> notification(new Notification(
       message_center::NOTIFICATION_TYPE_SIMPLE, id2,
       ASCIIToUTF16("Test Web Notification"),
-      ASCIIToUTF16("Notification message body."), gfx::Image(),
-      base::string16() /* empty display source */, GURL(), notifier_id2,
-      message_center::RichNotificationData(), NULL /* delegate */));
+      ASCIIToUTF16("Notification message body."), gfx::Image(), display_source,
+      GURL(), notifier_id2, message_center::RichNotificationData(),
+      new TestNotificationDelegate()));
   message_center_->AddNotification(std::move(notification));
 
   AddNotification(id3);
 
   std::unique_ptr<ui::MenuModel> model(
-      message_center_tray_->CreateNotificationMenuModel(notifier_id,
-                                                        display_source));
+      message_center_tray_->CreateNotificationMenuModel(*notification1));
+#if defined(OS_CHROMEOS)
   EXPECT_EQ(2, model->GetItemCount());
-  const int second_command = model->GetCommandIdAt(1);
 
   // The second item is to open the settings.
   EXPECT_TRUE(model->IsEnabledAt(0));
   EXPECT_TRUE(model->IsEnabledAt(1));
   model->ActivatedAt(1);
   EXPECT_TRUE(message_center_tray_->message_center_visible());
+#else
+  EXPECT_EQ(1, model->GetItemCount());
+#endif
 
   message_center_tray_->HideMessageCenterBubble();
 
   // The first item is to disable notifications from the notifier id. It also
-  // removes all notifications from the same notifier, i.e. id1 and id3.
+  // removes the notification.
+  EXPECT_EQ(3u, message_center_->GetVisibleNotifications().size());
   model->ActivatedAt(0);
-  NotificationList::Notifications notifications =
-      message_center_->GetVisibleNotifications();
-  EXPECT_EQ(1u, notifications.size());
-  EXPECT_EQ(id2, (*notifications.begin())->id());
-
-  // id2 doesn't have the display source, so it don't have the menu item for
-  // disabling notifications.
-  model = message_center_tray_->CreateNotificationMenuModel(
-      notifier_id2, base::string16());
-  EXPECT_EQ(1, model->GetItemCount());
-  EXPECT_EQ(second_command, model->GetCommandIdAt(0));
+  EXPECT_EQ(2u, message_center_->GetVisibleNotifications().size());
 }
-
-#else
-TEST_F(MessageCenterTrayTest, ContextMenuTestPopupsOnly) {
-  const std::string id1 = "id1";
-  const std::string id2 = "id2";
-  const std::string id3 = "id3";
-
-  base::string16 display_source = ASCIIToUTF16("https://www.test.org");
-  NotifierId notifier_id(GURL("https://www.test.org"));
-
-  AddNotification(id1, notifier_id);
-
-  NotifierId notifier_id2(NotifierId::APPLICATION, "sample-app");
-  std::unique_ptr<Notification> notification(new Notification(
-      message_center::NOTIFICATION_TYPE_SIMPLE, id2,
-      ASCIIToUTF16("Test Web Notification"),
-      ASCIIToUTF16("Notification message body."), gfx::Image(),
-      base::string16() /* empty display source */, GURL(), notifier_id2,
-      message_center::RichNotificationData(), NULL /* delegate */));
-  message_center_->AddNotification(std::move(notification));
-
-  AddNotification(id3, notifier_id);
-
-  // The dummy notifier is SYSTEM_COMPONENT so no context menu is visible.
-  std::unique_ptr<ui::MenuModel> model(
-      message_center_tray_->CreateNotificationMenuModel(DummyNotifierId(),
-                                                        display_source));
-  EXPECT_EQ(nullptr, model.get());
-
-  model = message_center_tray_->CreateNotificationMenuModel(notifier_id,
-                                                            display_source);
-  EXPECT_EQ(1, model->GetItemCount());
-
-  // The first item is to disable notifications from the notifier id. It also
-  // removes all notifications from the same notifier, i.e. id1 and id3.
-  EXPECT_TRUE(model->IsEnabledAt(0));
-  model->ActivatedAt(0);
-
-  NotificationList::Notifications notifications =
-      message_center_->GetVisibleNotifications();
-  EXPECT_EQ(1u, notifications.size());
-  EXPECT_EQ(id2, (*notifications.begin())->id());
-
-  // id2 doesn't have the display source, so it don't have the menu item for
-  // disabling notifications.
-  EXPECT_EQ(nullptr, message_center_tray_->CreateNotificationMenuModel(
-                         notifier_id2, base::string16()));
-}
-#endif
 
 }  // namespace message_center

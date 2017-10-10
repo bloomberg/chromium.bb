@@ -122,8 +122,7 @@ class TestMessageCenterController
   }
 
   std::unique_ptr<ui::MenuModel> CreateMenuModel(
-      const message_center::NotifierId& notifier_id,
-      const base::string16& display_source) override {
+      const message_center::Notification& notification) override {
     // For this test, this method should not be invoked.
     NOTREACHED();
     return nullptr;

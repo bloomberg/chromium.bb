@@ -198,8 +198,7 @@ class MessageCenterViewTest : public AshTestBase,
   void RemoveNotification(const std::string& notification_id,
                           bool by_user) override;
   std::unique_ptr<ui::MenuModel> CreateMenuModel(
-      const NotifierId& notifier_id,
-      const base::string16& display_source) override;
+      const Notification& notification) override;
   bool HasClickedListener(const std::string& notification_id) override;
   void ClickOnNotificationButton(const std::string& notification_id,
                                  int button_index) override;
@@ -382,8 +381,7 @@ void MessageCenterViewTest::RemoveNotification(
 }
 
 std::unique_ptr<ui::MenuModel> MessageCenterViewTest::CreateMenuModel(
-    const NotifierId& notifier_id,
-    const base::string16& display_source) {
+    const Notification& notification) {
   // For this test, this method should not be invoked.
   NOTREACHED();
   return nullptr;

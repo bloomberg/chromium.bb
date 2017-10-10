@@ -64,7 +64,6 @@ MessageView::MessageView(MessageCenterController* controller,
                          const Notification& notification)
     : controller_(controller),
       notification_id_(notification.id()),
-      notifier_id_(notification.notifier_id()),
       slide_out_controller_(this, this) {
   SetFocusBehavior(FocusBehavior::ALWAYS);
 
@@ -88,7 +87,6 @@ MessageView::~MessageView() {
 }
 
 void MessageView::UpdateWithNotification(const Notification& notification) {
-  display_source_ = notification.display_source();
   pinned_ = notification.pinned();
   accessible_name_ = CreateAccessibleName(notification);
   slide_out_controller_.set_enabled(!GetPinned());
