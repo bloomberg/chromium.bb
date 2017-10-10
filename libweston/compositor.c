@@ -4443,6 +4443,7 @@ weston_head_init(struct weston_head *head, const char *name)
 	memset(head, 0, sizeof *head);
 
 	wl_list_init(&head->compositor_link);
+	wl_signal_init(&head->destroy_signal);
 	wl_list_init(&head->output_link);
 	wl_list_init(&head->resource_list);
 	head->name = strdup(name);
@@ -4708,6 +4709,8 @@ weston_head_detach(struct weston_head *head)
 WL_EXPORT void
 weston_head_release(struct weston_head *head)
 {
+	wl_signal_emit(&head->destroy_signal, head);
+
 	weston_head_detach(head);
 
 	free(head->make);
@@ -4898,6 +4901,48 @@ WL_EXPORT struct weston_output *
 weston_head_get_output(struct weston_head *head)
 {
 	return head->output;
+}
+
+/** Add destroy callback for a head
+ *
+ * \param head The head to watch for.
+ * \param listener The listener to add. The \c notify member must be set.
+ *
+ * Heads may get destroyed for various reasons by the backends. If a head is
+ * attached to an output, the compositor should listen for head destruction
+ * and reconfigure or destroy the output if necessary.
+ *
+ * The destroy callbacks will be called on weston_head destruction before any
+ * automatic detaching from an associated weston_output and before any
+ * weston_head information is lost.
+ *
+ * The \c data argument to the notify callback is the weston_head being
+ * destroyed.
+ */
+WL_EXPORT void
+weston_head_add_destroy_listener(struct weston_head *head,
+				 struct wl_listener *listener)
+{
+	wl_signal_add(&head->destroy_signal, listener);
+}
+
+/** Look up destroy listener for a head
+ *
+ * \param head The head to query.
+ * \param notify The notify function used used for the added destroy listener.
+ * \return The listener, or NULL if not found.
+ *
+ * This looks up the previously added destroy listener struct based on the
+ * notify function it has. The listener can be used to access user data
+ * through \c container_of().
+ *
+ * \sa wl_signal_get()
+ */
+WL_EXPORT struct wl_listener *
+weston_head_get_destroy_listener(struct weston_head *head,
+				 wl_notify_func_t notify)
+{
+	return wl_signal_get(&head->destroy_signal, notify);
 }
 
 /* Move other outputs when one is resized so the space remains contiguous. */

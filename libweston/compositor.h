@@ -155,6 +155,7 @@ enum dpms_enum {
 struct weston_head {
 	struct weston_compositor *compositor;	/**< owning compositor */
 	struct wl_list compositor_link;	/**< in weston_compositor::head_list */
+	struct wl_signal destroy_signal;	/**< destroy callbacks */
 
 	struct weston_output *output;	/**< the output driving this head */
 	struct wl_list output_link;	/**< in weston_output::head_list */
@@ -2051,6 +2052,14 @@ weston_head_get_output(struct weston_head *head);
 
 void
 weston_head_detach(struct weston_head *head);
+
+void
+weston_head_add_destroy_listener(struct weston_head *head,
+				 struct wl_listener *listener);
+
+struct wl_listener *
+weston_head_get_destroy_listener(struct weston_head *head,
+				 wl_notify_func_t notify);
 
 struct weston_head *
 weston_compositor_iterate_heads(struct weston_compositor *compositor,
