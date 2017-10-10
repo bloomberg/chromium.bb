@@ -46,7 +46,7 @@ cr.define('extension_sidebar_tests', function() {
       testVisible('#more-extensions', true);
 
       var currentPage;
-      extensions.navigation.onRouteChanged(newPage => {
+      extensions.navigation.addListener(newPage => {
         currentPage = newPage;
       });
 
