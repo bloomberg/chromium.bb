@@ -28,6 +28,7 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.firstrun.FirstRunUtils;
+import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.omnibox.OmniboxPlaceholderFieldTrial;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -45,6 +46,10 @@ public class FeatureUtilities {
     private static final String TAG = "FeatureUtilities";
     private static final String HERB_EXPERIMENT_NAME = "TabManagementExperiment";
     private static final String HERB_EXPERIMENT_FLAVOR_PARAM = "type";
+
+    private static final String SYNTHETIC_CHROME_HOME_EXPERIMENT_NAME = "SyntheticChromeHome";
+    private static final String ENABLED_EXPERIMENT_GROUP = "Enabled";
+    private static final String DISABLED_EXPERIMENT_GROUP = "Disabled";
 
     private static Boolean sHasGoogleAccountAuthenticator;
     private static Boolean sHasRecognitionIntentHandler;
@@ -262,6 +267,9 @@ public class FeatureUtilities {
                 && manager.isChromeHomeUserPreferenceSet()) {
             manager.clearChromeHomeUserPreference();
         }
+
+        UmaSessionStats.registerSyntheticFieldTrial(SYNTHETIC_CHROME_HOME_EXPERIMENT_NAME,
+                isChromeHomeEnabled() ? ENABLED_EXPERIMENT_GROUP : DISABLED_EXPERIMENT_GROUP);
     }
 
     /**
