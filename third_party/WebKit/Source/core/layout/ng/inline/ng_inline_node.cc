@@ -68,7 +68,11 @@ void CreateBidiRuns(BidiRunList<BidiRun>* bidi_runs,
     const auto& child = children[child_index];
     if (child->Type() == NGPhysicalFragment::kFragmentText) {
       const auto& physical_fragment = ToNGPhysicalTextFragment(*child);
-      const NGInlineItem& item = items[physical_fragment.ItemIndexDeprecated()];
+      unsigned item_index = physical_fragment.ItemIndexDeprecated();
+      // Skip generated content added by PlaceGeneratedContent().
+      if (item_index == std::numeric_limits<unsigned>::max())
+        continue;
+      const NGInlineItem& item = items[item_index];
       BidiRun* run;
       if (item.Type() == NGInlineItem::kText ||
           item.Type() == NGInlineItem::kControl) {
@@ -77,8 +81,7 @@ void CreateBidiRuns(BidiRunList<BidiRun>* bidi_runs,
           DCHECK(layout_object->IsLayoutNGListItem());
           continue;
         }
-        unsigned text_offset =
-            text_offsets[physical_fragment.ItemIndexDeprecated()];
+        unsigned text_offset = text_offsets[item_index];
         run = new BidiRun(physical_fragment.StartOffset() - text_offset,
                           physical_fragment.EndOffset() - text_offset,
                           item.BidiLevel(), LineLayoutItem(layout_object));

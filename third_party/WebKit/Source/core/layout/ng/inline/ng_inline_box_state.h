@@ -82,6 +82,11 @@ struct NGInlineBoxState {
   void SetLineRightForBoxFragment(const NGInlineItem&,
                                   const NGInlineItemResult&,
                                   LayoutUnit position);
+
+  // Returns if the text style can be added without open-tag.
+  // Text with different font or vertical-align needs to be wrapped with an
+  // inline box.
+  bool CanAddTextOfStyle(const ComputedStyle&) const;
 };
 
 // Represents the inline tree structure. This class provides:
@@ -102,10 +107,11 @@ class NGInlineLayoutStateStack {
                               const NGInlineItemResult&,
                               NGLineBoxFragmentBuilder*,
                               LayoutUnit position);
+  NGInlineBoxState* OnOpenTag(const ComputedStyle&,
+                              NGLineBoxFragmentBuilder* line_box);
 
   // Pop a box state stack.
-  NGInlineBoxState* OnCloseTag(const NGInlineItem&,
-                               NGLineBoxFragmentBuilder*,
+  NGInlineBoxState* OnCloseTag(NGLineBoxFragmentBuilder*,
                                NGInlineBoxState*,
                                FontBaseline);
 
