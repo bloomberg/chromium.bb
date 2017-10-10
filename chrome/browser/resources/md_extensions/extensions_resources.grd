@@ -35,6 +35,9 @@
       <structure name="IDR_MD_EXTENSIONS_DRAG_AND_DROP_HANDLER_HTML"
                  file="drag_and_drop_handler.html"
                  type="chrome_html" />
+      <structure name="IDR_MD_EXTENSIONS_DRAG_AND_DROP_HANDLER_JS"
+                 file="drag_and_drop_handler.js"
+                 type="chrome_html" />
       <structure name="IDR_MD_EXTENSIONS_DROP_OVERLAY_HTML"
                  file="drop_overlay.html"
                  type="chrome_html" />
@@ -143,6 +146,9 @@
                  type="chrome_html" />
       <structure name="IDR_MD_EXTENSIONS_SHORTCUT_UTIL_HTML"
                  file="shortcut_util.html"
+                 type="chrome_html" />
+      <structure name="IDR_MD_EXTENSIONS_SHORTCUT_UTIL_JS"
+                 file="shortcut_util.js"
                  type="chrome_html" />
       <structure name="IDR_MD_EXTENSIONS_SIDEBAR_HTML"
                  file="sidebar.html"

@@ -4,23 +4,6 @@
 {
   'targets': [
     {
-      'target_name': 'shortcut_util',
-      'dependencies': [
-        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
-        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
-      ],
-      'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
-    },
-    {
-      'target_name': 'drag_and_drop_handler',
-      'dependencies': [
-        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
-        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
-        '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:drag_wrapper',
-      ],
-      'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
-    },
-    {
       'target_name': 'extensions',
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:webui_listener_tracker',
@@ -67,12 +50,12 @@
           'extension_command_list.js',
           '<(DEPTH)/ui/webui/resources/js/cr/ui/controlled_indicator.js',
           'extension_error_overlay.js',
-          'drag_and_drop_handler.js',
+          '../md_extensions/drag_and_drop_handler.js',
           '<(DEPTH)/ui/webui/resources/js/cr/ui/list_selection_model.js',
           '<(DEPTH)/third_party/jstemplate/jstemplate.js',
           'chromeos/kiosk_app_list.js',
           '<(DEPTH)/third_party/closure_compiler/externs/developer_private.js',
-          'shortcut_util.js',
+          '../md_extensions/shortcut_util.js',
           'pack_extension_overlay.js',
         ],
       },

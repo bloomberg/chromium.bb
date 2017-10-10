@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// <include src="shortcut_util.js">
+// <include src="../md_extensions/shortcut_util.js">
 
 cr.define('extensions', function() {
   'use strict';
@@ -378,8 +378,8 @@ cr.define('extensions', function() {
      */
     handleSetCommandScope_: function(event) {
       var parsed = this.parseElementId_('setCommandScope', event.target.id);
-      var element = document.getElementById(
-          'setCommandScope-' + parsed.extensionId + '-' + parsed.commandName);
+      var element =
+          $('setCommandScope-' + parsed.extensionId + '-' + parsed.commandName);
       var scope = element.selectedIndex == 1 ?
           chrome.developerPrivate.CommandScope.GLOBAL :
           chrome.developerPrivate.CommandScope.CHROME;
