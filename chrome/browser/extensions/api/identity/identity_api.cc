@@ -159,13 +159,12 @@ void IdentityAPI::Shutdown() {
   account_tracker_.Shutdown();
 }
 
-static base::LazyInstance<
-    BrowserContextKeyedAPIFactory<IdentityAPI>>::DestructorAtExit g_factory =
-    LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<BrowserContextKeyedAPIFactory<IdentityAPI>>::
+    DestructorAtExit g_identity_api_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
 BrowserContextKeyedAPIFactory<IdentityAPI>* IdentityAPI::GetFactoryInstance() {
-  return g_factory.Pointer();
+  return g_identity_api_factory.Pointer();
 }
 
 void IdentityAPI::OnAccountSignInChanged(const gaia::AccountIds& ids,

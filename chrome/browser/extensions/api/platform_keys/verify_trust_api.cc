@@ -25,7 +25,7 @@ namespace extensions {
 namespace {
 
 base::LazyInstance<BrowserContextKeyedAPIFactory<VerifyTrustAPI>>::Leaky
-    g_factory = LAZY_INSTANCE_INITIALIZER;
+    g_verify_trust_api_factory = LAZY_INSTANCE_INITIALIZER;
 
 const char kErrorEmptyCertificateChain[] =
     "Server certificate chain must not be empty.";
@@ -78,7 +78,7 @@ class VerifyTrustAPI::IOPart {
 // static
 BrowserContextKeyedAPIFactory<VerifyTrustAPI>*
 VerifyTrustAPI::GetFactoryInstance() {
-  return g_factory.Pointer();
+  return g_verify_trust_api_factory.Pointer();
 }
 
 template <>

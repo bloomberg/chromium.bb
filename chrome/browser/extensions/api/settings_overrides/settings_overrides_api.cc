@@ -32,7 +32,8 @@ namespace extensions {
 namespace {
 
 base::LazyInstance<BrowserContextKeyedAPIFactory<SettingsOverridesAPI>>::
-    DestructorAtExit g_factory = LAZY_INSTANCE_INITIALIZER;
+    DestructorAtExit g_settings_overrides_api_factory =
+        LAZY_INSTANCE_INITIALIZER;
 
 const char kManyStartupPagesWarning[] = "* specifies more than 1 startup URL. "
     "All but the first will be ignored.";
@@ -120,7 +121,7 @@ SettingsOverridesAPI::~SettingsOverridesAPI() {
 
 BrowserContextKeyedAPIFactory<SettingsOverridesAPI>*
 SettingsOverridesAPI::GetFactoryInstance() {
-  return g_factory.Pointer();
+  return g_settings_overrides_api_factory.Pointer();
 }
 
 void SettingsOverridesAPI::SetPref(const std::string& extension_id,

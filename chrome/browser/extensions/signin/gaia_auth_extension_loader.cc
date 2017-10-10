@@ -108,12 +108,12 @@ GaiaAuthExtensionLoader* GaiaAuthExtensionLoader::Get(BrowserContext* context) {
 
 static base::LazyInstance<
     BrowserContextKeyedAPIFactory<GaiaAuthExtensionLoader>>::DestructorAtExit
-    g_factory = LAZY_INSTANCE_INITIALIZER;
+    g_gaia_auth_extension_loader_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
 BrowserContextKeyedAPIFactory<GaiaAuthExtensionLoader>*
 GaiaAuthExtensionLoader::GetFactoryInstance() {
-  return g_factory.Pointer();
+  return g_gaia_auth_extension_loader_factory.Pointer();
 }
 
 } // namespace extensions

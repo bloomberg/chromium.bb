@@ -538,12 +538,11 @@ void SetActivityHandlers() {
 
 // SET THINGS UP. --------------------------------------------------------------
 
-static base::LazyInstance<
-    BrowserContextKeyedAPIFactory<ActivityLog>>::DestructorAtExit g_factory =
-    LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<BrowserContextKeyedAPIFactory<ActivityLog>>::
+    DestructorAtExit g_activity_log_factory = LAZY_INSTANCE_INITIALIZER;
 
 BrowserContextKeyedAPIFactory<ActivityLog>* ActivityLog::GetFactoryInstance() {
-  return g_factory.Pointer();
+  return g_activity_log_factory.Pointer();
 }
 
 // static

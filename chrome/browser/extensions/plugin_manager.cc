@@ -37,14 +37,13 @@ PluginManager::PluginManager(content::BrowserContext* context)
 PluginManager::~PluginManager() {
 }
 
-static base::LazyInstance<
-    BrowserContextKeyedAPIFactory<PluginManager>>::DestructorAtExit g_factory =
-    LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<BrowserContextKeyedAPIFactory<PluginManager>>::
+    DestructorAtExit g_plugin_manager_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
 BrowserContextKeyedAPIFactory<PluginManager>*
 PluginManager::GetFactoryInstance() {
-  return g_factory.Pointer();
+  return g_plugin_manager_factory.Pointer();
 }
 
 void PluginManager::OnExtensionLoaded(content::BrowserContext* browser_context,

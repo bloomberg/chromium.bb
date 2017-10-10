@@ -270,12 +270,12 @@ void BookmarkManagerPrivateAPI::Shutdown() {
 
 static base::LazyInstance<
     BrowserContextKeyedAPIFactory<BookmarkManagerPrivateAPI>>::DestructorAtExit
-    g_factory = LAZY_INSTANCE_INITIALIZER;
+    g_bookmark_manager_private_api_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
 BrowserContextKeyedAPIFactory<BookmarkManagerPrivateAPI>*
 BookmarkManagerPrivateAPI::GetFactoryInstance() {
-  return g_factory.Pointer();
+  return g_bookmark_manager_private_api_factory.Pointer();
 }
 
 void BookmarkManagerPrivateAPI::OnListenerAdded(

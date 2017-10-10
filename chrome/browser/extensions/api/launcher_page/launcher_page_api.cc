@@ -16,12 +16,12 @@
 namespace extensions {
 
 static base::LazyInstance<BrowserContextKeyedAPIFactory<LauncherPageAPI>>::
-    DestructorAtExit g_factory = LAZY_INSTANCE_INITIALIZER;
+    DestructorAtExit g_launcher_api_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
 BrowserContextKeyedAPIFactory<LauncherPageAPI>*
 LauncherPageAPI::GetFactoryInstance() {
-  return g_factory.Pointer();
+  return g_launcher_api_factory.Pointer();
 }
 
 LauncherPageAPI::LauncherPageAPI(content::BrowserContext* context)

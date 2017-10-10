@@ -314,12 +314,12 @@ void MediaGalleriesEventRouter::Shutdown() {
 
 static base::LazyInstance<
     BrowserContextKeyedAPIFactory<MediaGalleriesEventRouter>>::DestructorAtExit
-    g_factory = LAZY_INSTANCE_INITIALIZER;
+    g_media_galleries_api_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
 BrowserContextKeyedAPIFactory<MediaGalleriesEventRouter>*
 MediaGalleriesEventRouter::GetFactoryInstance() {
-  return g_factory.Pointer();
+  return g_media_galleries_api_factory.Pointer();
 }
 
 // static

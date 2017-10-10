@@ -575,12 +575,12 @@ void WebNavigationAPI::Shutdown() {
 }
 
 static base::LazyInstance<BrowserContextKeyedAPIFactory<WebNavigationAPI>>::
-    DestructorAtExit g_factory = LAZY_INSTANCE_INITIALIZER;
+    DestructorAtExit g_web_navigation_api_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
 BrowserContextKeyedAPIFactory<WebNavigationAPI>*
 WebNavigationAPI::GetFactoryInstance() {
-  return g_factory.Pointer();
+  return g_web_navigation_api_factory.Pointer();
 }
 
 void WebNavigationAPI::OnListenerAdded(const EventListenerInfo& details) {

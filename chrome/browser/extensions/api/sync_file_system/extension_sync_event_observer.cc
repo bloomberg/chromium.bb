@@ -29,12 +29,12 @@ namespace extensions {
 
 static base::LazyInstance<
     BrowserContextKeyedAPIFactory<ExtensionSyncEventObserver>>::DestructorAtExit
-    g_factory = LAZY_INSTANCE_INITIALIZER;
+    g_extension_sync_event_observer_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
 BrowserContextKeyedAPIFactory<ExtensionSyncEventObserver>*
 ExtensionSyncEventObserver::GetFactoryInstance() {
-  return g_factory.Pointer();
+  return g_extension_sync_event_observer_factory.Pointer();
 }
 
 ExtensionSyncEventObserver::ExtensionSyncEventObserver(

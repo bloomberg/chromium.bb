@@ -437,12 +437,12 @@ AutotestPrivateSetPlayStoreEnabledFunction::Run() {
 }
 
 static base::LazyInstance<BrowserContextKeyedAPIFactory<AutotestPrivateAPI>>::
-    DestructorAtExit g_factory = LAZY_INSTANCE_INITIALIZER;
+    DestructorAtExit g_autotest_private_api_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
 BrowserContextKeyedAPIFactory<AutotestPrivateAPI>*
 AutotestPrivateAPI::GetFactoryInstance() {
-  return g_factory.Pointer();
+  return g_autotest_private_api_factory.Pointer();
 }
 
 template <>

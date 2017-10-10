@@ -291,12 +291,12 @@ bool IncognitoConnectability::IsInMap(const Extension* extension,
 
 static base::LazyInstance<
     BrowserContextKeyedAPIFactory<IncognitoConnectability>>::DestructorAtExit
-    g_factory = LAZY_INSTANCE_INITIALIZER;
+    g_incognito_connectability_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
 BrowserContextKeyedAPIFactory<IncognitoConnectability>*
 IncognitoConnectability::GetFactoryInstance() {
-  return g_factory.Pointer();
+  return g_incognito_connectability_factory.Pointer();
 }
 
 }  // namespace extensions
