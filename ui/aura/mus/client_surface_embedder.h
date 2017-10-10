@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef UI_AURA_MUS_CLIENT_SURFACE_EMBEDDER_H_
+#define UI_AURA_MUS_CLIENT_SURFACE_EMBEDDER_H_
+
 #include <memory>
 
 #include "base/macros.h"
@@ -73,3 +76,5 @@ class ClientSurfaceEmbedder {
 };
 
 }  // namespace aura
+
+#endif  // UI_AURA_MUS_CLIENT_SURFACE_EMBEDDER_H_
