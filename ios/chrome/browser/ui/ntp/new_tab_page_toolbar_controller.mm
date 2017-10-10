@@ -13,6 +13,7 @@
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/ntp/google_landing_data_source.h"
 #import "ios/chrome/browser/ui/rtl_geometry.h"
+#import "ios/chrome/browser/ui/toolbar/toolbar_controller+protected.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_resource_macros.h"
 #import "ios/chrome/browser/ui/toolbar/web_toolbar_controller.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -157,9 +158,7 @@ enum {
   return self;
 }
 
-- (CGFloat)statusBarOffset {
-  return 0;
-}
+#pragma mark - Overridden superclass public methods.
 
 - (BOOL)imageShouldFlipForRightToLeftLayoutDirection:(int)imageEnum {
   DCHECK(imageEnum < NumberOfNTPToolbarButtonNames);
@@ -170,6 +169,21 @@ enum {
     return YES;
   }
   return NO;
+}
+
+- (void)hideViewsForNewTabPage:(BOOL)hide {
+  [super hideViewsForNewTabPage:hide];
+  // Show the back/forward buttons if there is forward history.
+  BOOL forwardEnabled = self.canGoForward;
+  [_backButton setHidden:!forwardEnabled && hide];
+  [_backButton setEnabled:self.canGoBack];
+  [_forwardButton setHidden:!forwardEnabled && hide];
+}
+
+#pragma mark - Overridden superclass protected methods.
+
+- (CGFloat)statusBarOffset {
+  return 0;
 }
 
 - (int)imageEnumForButton:(UIButton*)button {
@@ -213,6 +227,8 @@ enum {
   }
 }
 
+#pragma mark - Private methods.
+
 - (void)handleLongPress:(UILongPressGestureRecognizer*)gesture {
   if (gesture.state != UIGestureRecognizerStateBegan)
     return;
@@ -222,15 +238,6 @@ enum {
   } else if (gesture.view == _forwardButton) {
     [self.dispatcher showTabHistoryPopupForForwardHistory];
   }
-}
-
-- (void)hideViewsForNewTabPage:(BOOL)hide {
-  [super hideViewsForNewTabPage:hide];
-  // Show the back/forward buttons if there is forward history.
-  BOOL forwardEnabled = self.canGoForward;
-  [_backButton setHidden:!forwardEnabled && hide];
-  [_backButton setEnabled:self.canGoBack];
-  [_forwardButton setHidden:!forwardEnabled && hide];
 }
 
 - (void)focusOmnibox:(id)sender {

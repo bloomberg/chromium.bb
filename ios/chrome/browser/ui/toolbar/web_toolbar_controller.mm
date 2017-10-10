@@ -683,14 +683,6 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
   return self;
 }
 
-- (void)browserStateDestroyed {
-  // The location bar has a browser state reference, so must be destroyed at
-  // this point. The popup has to be destroyed before the location bar.
-  _popupView.reset();
-  _locationBar.reset();
-  _browserState = nullptr;
-}
-
 - (void)dealloc {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
@@ -712,6 +704,14 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
 
 #pragma mark -
 #pragma mark Public methods.
+
+- (void)browserStateDestroyed {
+  // The location bar has a browser state reference, so must be destroyed at
+  // this point. The popup has to be destroyed before the location bar.
+  _popupView.reset();
+  _locationBar.reset();
+  _browserState = nullptr;
+}
 
 - (void)updateToolbarState {
   ToolbarModelIOS* toolbarModelIOS = [self.delegate toolbarModelIOS];
@@ -824,31 +824,8 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
   return omniboxViewIOS->IsPopupOpen();
 }
 
-- (void)updateToolbarButtons {
-  [super updateStandardButtons];
-  _lastKnownTraitCollection = [UITraitCollection
-      traitCollectionWithTraitsFromCollections:@[ self.view.traitCollection ]];
-  if (IsIPadIdiom()) {
-    // Update toolbar accessory views.
-    BOOL isCompactTabletView = IsCompactTablet(self.view);
-    [_voiceSearchButton setHidden:isCompactTabletView];
-    [_starButton setHidden:isCompactTabletView];
-    [_reloadButton setHidden:isCompactTabletView];
-    [_stopButton setHidden:isCompactTabletView];
-    [self updateToolbarState];
-
-    if ([_omniBox isFirstResponder]) {
-      [_omniBox reloadInputViews];
-    }
-
-    // Re-layout toolbar and omnibox.
-    [_webToolbar setFrame:[self specificControlsArea]];
-    [self layoutOmnibox];
-  }
-}
-
 #pragma mark -
-#pragma mark Overridden superclass methods.
+#pragma mark Overridden public superclass methods.
 
 - (void)setUpButton:(UIButton*)button
        withImageEnum:(int)imageEnum
@@ -880,29 +857,6 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
   }
 }
 
-- (void)standardButtonPressed:(UIButton*)sender {
-  [super standardButtonPressed:sender];
-  [self cancelOmniboxEdit];
-}
-
-- (IBAction)recordUserMetrics:(id)sender {
-  if (sender == _backButton) {
-    base::RecordAction(UserMetricsAction("MobileToolbarBack"));
-  } else if (sender == _forwardButton) {
-    base::RecordAction(UserMetricsAction("MobileToolbarForward"));
-  } else if (sender == _reloadButton) {
-    base::RecordAction(UserMetricsAction("MobileToolbarReload"));
-  } else if (sender == _stopButton) {
-    base::RecordAction(UserMetricsAction("MobileToolbarStop"));
-  } else if (sender == _voiceSearchButton) {
-    base::RecordAction(UserMetricsAction("MobileToolbarVoiceSearch"));
-  } else if (sender == _starButton) {
-    base::RecordAction(UserMetricsAction("MobileToolbarToggleBookmark"));
-  } else {
-    [super recordUserMetrics:sender];
-  }
-}
-
 - (BOOL)imageShouldFlipForRightToLeftLayoutDirection:(int)imageEnum {
   DCHECK(imageEnum < NumberOfWebToolbarButtonNames);
   if (imageEnum < NumberOfToolbarButtonNames)
@@ -916,70 +870,15 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
   return NO;
 }
 
-- (int)imageEnumForButton:(UIButton*)button {
-  if (button == _voiceSearchButton)
-    return _isTTSPlaying ? WebToolbarButtonNameTTS : WebToolbarButtonNameVoice;
-  if (button == _starButton)
-    return WebToolbarButtonNameStar;
-  if (button == _stopButton)
-    return WebToolbarButtonNameStop;
-  if (button == _reloadButton)
-    return WebToolbarButtonNameReload;
-  if (button == _backButton)
-    return WebToolbarButtonNameBack;
-  if (button == _forwardButton)
-    return WebToolbarButtonNameForward;
-  return [super imageEnumForButton:button];
-}
-
-- (int)imageIdForImageEnum:(int)index
-                     style:(ToolbarControllerStyle)style
-                  forState:(ToolbarButtonUIState)state {
-  DCHECK(style < ToolbarControllerStyleMaxStyles);
-  DCHECK(state < NumberOfToolbarButtonUIStates);
-  // Additional checking.  These three buttons should only ever be used on iPad.
-  DCHECK(IsIPadIdiom() || index != WebToolbarButtonNameStar);
-  DCHECK(IsIPadIdiom() || index != WebToolbarButtonNameTTS);
-  DCHECK(IsIPadIdiom() || index != WebToolbarButtonNameVoice);
-
-  if (index >= NumberOfWebToolbarButtonNames)
-    NOTREACHED();
-  if (index < NumberOfToolbarButtonNames)
-    return [super imageIdForImageEnum:index style:style forState:state];
-
-  // Incognito mode gets dark buttons.
-  if (style == ToolbarControllerStyleIncognitoMode)
-    style = ToolbarControllerStyleDarkMode;
-
-  // Some images can be overridden by the branded image provider.
-  if (index == WebToolbarButtonNameVoice) {
-    int image_id;
-    if (ios::GetChromeBrowserProvider()
-            ->GetBrandedImageProvider()
-            ->GetToolbarVoiceSearchButtonImageId(&image_id)) {
-      return image_id;
-    }
-    // Otherwise fall through to the default voice search button images below.
+- (void)hideViewsForNewTabPage:(BOOL)hide {
+  [super hideViewsForNewTabPage:hide];
+  if (_incognito) {
+    CGFloat alpha = hide ? 0 : 1;
+    [self.backgroundView setAlpha:alpha];
   }
-
-  // Rebase |index| so that it properly indexes into the array below.
-  index -= NumberOfToolbarButtonNames;
-  const int numberOfAddedNames =
-      NumberOfWebToolbarButtonNames - NumberOfToolbarButtonNames;
-  // Name, style [light, dark], UIControlState [normal, pressed, disabled]
-  static int buttonImageIds[numberOfAddedNames][2]
-                           [NumberOfToolbarButtonUIStates] = {
-                               TOOLBAR_IDR_THREE_STATE(BACK),
-                               TOOLBAR_IDR_LIGHT_ONLY_TWO_STATE(CALLINGAPP),
-                               TOOLBAR_IDR_THREE_STATE(FORWARD),
-                               TOOLBAR_IDR_THREE_STATE(RELOAD),
-                               TOOLBAR_IDR_TWO_STATE(STAR),
-                               TOOLBAR_IDR_THREE_STATE(STOP),
-                               TOOLBAR_IDR_TWO_STATE(TTS),
-                               TOOLBAR_IDR_TWO_STATE(VOICE),
-                           };
-  return buttonImageIds[index][style][state];
 }
+
+#pragma mark Animations.
 
 - (void)animateTransitionWithBeginFrame:(CGRect)beginFrame
                                endFrame:(CGRect)endFrame
@@ -1158,12 +1057,95 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
   [_omniBox cleanUpFadeAnimations];
 }
 
-- (void)hideViewsForNewTabPage:(BOOL)hide {
-  [super hideViewsForNewTabPage:hide];
-  if (_incognito) {
-    CGFloat alpha = hide ? 0 : 1;
-    [self.backgroundView setAlpha:alpha];
+#pragma mark -
+#pragma mark Overridden protected superclass methods.
+
+- (void)standardButtonPressed:(UIButton*)sender {
+  [super standardButtonPressed:sender];
+  [self cancelOmniboxEdit];
+}
+
+- (IBAction)recordUserMetrics:(id)sender {
+  if (sender == _backButton) {
+    base::RecordAction(UserMetricsAction("MobileToolbarBack"));
+  } else if (sender == _forwardButton) {
+    base::RecordAction(UserMetricsAction("MobileToolbarForward"));
+  } else if (sender == _reloadButton) {
+    base::RecordAction(UserMetricsAction("MobileToolbarReload"));
+  } else if (sender == _stopButton) {
+    base::RecordAction(UserMetricsAction("MobileToolbarStop"));
+  } else if (sender == _voiceSearchButton) {
+    base::RecordAction(UserMetricsAction("MobileToolbarVoiceSearch"));
+  } else if (sender == _starButton) {
+    base::RecordAction(UserMetricsAction("MobileToolbarToggleBookmark"));
+  } else {
+    [super recordUserMetrics:sender];
   }
+}
+
+- (int)imageEnumForButton:(UIButton*)button {
+  if (button == _voiceSearchButton)
+    return _isTTSPlaying ? WebToolbarButtonNameTTS : WebToolbarButtonNameVoice;
+  if (button == _starButton)
+    return WebToolbarButtonNameStar;
+  if (button == _stopButton)
+    return WebToolbarButtonNameStop;
+  if (button == _reloadButton)
+    return WebToolbarButtonNameReload;
+  if (button == _backButton)
+    return WebToolbarButtonNameBack;
+  if (button == _forwardButton)
+    return WebToolbarButtonNameForward;
+  return [super imageEnumForButton:button];
+}
+
+- (int)imageIdForImageEnum:(int)index
+                     style:(ToolbarControllerStyle)style
+                  forState:(ToolbarButtonUIState)state {
+  DCHECK(style < ToolbarControllerStyleMaxStyles);
+  DCHECK(state < NumberOfToolbarButtonUIStates);
+  // Additional checking.  These three buttons should only ever be used on iPad.
+  DCHECK(IsIPadIdiom() || index != WebToolbarButtonNameStar);
+  DCHECK(IsIPadIdiom() || index != WebToolbarButtonNameTTS);
+  DCHECK(IsIPadIdiom() || index != WebToolbarButtonNameVoice);
+
+  if (index >= NumberOfWebToolbarButtonNames)
+    NOTREACHED();
+  if (index < NumberOfToolbarButtonNames)
+    return [super imageIdForImageEnum:index style:style forState:state];
+
+  // Incognito mode gets dark buttons.
+  if (style == ToolbarControllerStyleIncognitoMode)
+    style = ToolbarControllerStyleDarkMode;
+
+  // Some images can be overridden by the branded image provider.
+  if (index == WebToolbarButtonNameVoice) {
+    int image_id;
+    if (ios::GetChromeBrowserProvider()
+            ->GetBrandedImageProvider()
+            ->GetToolbarVoiceSearchButtonImageId(&image_id)) {
+      return image_id;
+    }
+    // Otherwise fall through to the default voice search button images below.
+  }
+
+  // Rebase |index| so that it properly indexes into the array below.
+  index -= NumberOfToolbarButtonNames;
+  const int numberOfAddedNames =
+      NumberOfWebToolbarButtonNames - NumberOfToolbarButtonNames;
+  // Name, style [light, dark], UIControlState [normal, pressed, disabled]
+  static int buttonImageIds[numberOfAddedNames][2]
+                           [NumberOfToolbarButtonUIStates] = {
+                               TOOLBAR_IDR_THREE_STATE(BACK),
+                               TOOLBAR_IDR_LIGHT_ONLY_TWO_STATE(CALLINGAPP),
+                               TOOLBAR_IDR_THREE_STATE(FORWARD),
+                               TOOLBAR_IDR_THREE_STATE(RELOAD),
+                               TOOLBAR_IDR_TWO_STATE(STAR),
+                               TOOLBAR_IDR_THREE_STATE(STOP),
+                               TOOLBAR_IDR_TWO_STATE(TTS),
+                               TOOLBAR_IDR_TWO_STATE(VOICE),
+                           };
+  return buttonImageIds[index][style][state];
 }
 
 #pragma mark -
@@ -1441,59 +1423,18 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
 }
 
 #pragma mark -
-#pragma mark Private methods.
-
-- (UIButton*)cancelButton {
-  if (_cancelButton)
-    return _cancelButton;
-  _cancelButton = [UIButton buttonWithType:UIButtonTypeCustom];
-  NSString* collapseName = _incognito ? @"collapse_incognito" : @"collapse";
-  [_cancelButton setImage:[UIImage imageNamed:collapseName]
-                 forState:UIControlStateNormal];
-  NSString* collapsePressedName =
-      _incognito ? @"collapse_pressed_incognito" : @"collapse_pressed";
-  [_cancelButton setImage:[UIImage imageNamed:collapsePressedName]
-                 forState:UIControlStateHighlighted];
-  [_cancelButton setAccessibilityLabel:l10n_util::GetNSString(IDS_CANCEL)];
-  [_cancelButton setAutoresizingMask:UIViewAutoresizingFlexibleLeadingMargin() |
-                                     UIViewAutoresizingFlexibleHeight];
-  [_cancelButton addTarget:self
-                    action:@selector(cancelButtonPressed:)
-          forControlEvents:UIControlEventTouchUpInside];
-
-  [_webToolbar addSubview:_cancelButton];
-  return _cancelButton;
-}
-
-- (void)cancelButtonPressed:(id)sender {
-  [self cancelOmniboxEdit];
-}
-
-- (void)toolbarVoiceSearchButtonPressed:(id)sender {
-  if (ios::GetChromeBrowserProvider()
-          ->GetVoiceSearchProvider()
-          ->IsVoiceSearchEnabled()) {
-    UIView* view = base::mac::ObjCCastStrict<UIView>(sender);
-    StartVoiceSearchCommand* command =
-        [[StartVoiceSearchCommand alloc] initWithOriginView:view];
-    [self.dispatcher startVoiceSearch:command];
+#pragma mark CAAnimationDelegate
+- (void)animationDidStop:(CAAnimation*)anim finished:(BOOL)flag {
+  if ([[anim valueForKey:@"id"] isEqual:@"resizeOmnibox"] &&
+      ![_omniBox isFirstResponder]) {
+    [_omniBox setRightView:nil];
   }
 }
 
-- (void)layoutCancelButton {
-  CGFloat height = CGRectGetHeight([self specificControlsArea]) -
-                   kCancelButtonTopMargin - kCancelButtonBottomMargin;
-  LayoutRect cancelButtonLayout;
-  cancelButtonLayout.position.leading =
-      CGRectGetWidth([_webToolbar bounds]) - height;
-  cancelButtonLayout.boundingWidth = CGRectGetWidth([_webToolbar bounds]);
-  cancelButtonLayout.position.originY = kCancelButtonTopMargin;
-  cancelButtonLayout.size = CGSizeMake(kCancelButtonWidth, height);
+#pragma mark -
+#pragma mark Private methods.
 
-  CGRect frame = LayoutRectGetRect(cancelButtonLayout);
-  // Use the property to force creation.
-  [self.cancelButton setFrame:frame];
-}
+#pragma mark Layout.
 
 - (void)layoutIncognitoIcon {
   LayoutRect iconLayout = LayoutRectForRectInBoundingRect(
@@ -1586,6 +1527,109 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
       }];
 }
 
+// TODO(crbug.com/525943): refactor this method and related code to not resize
+// |_webToolbar| and buttons as a side effect.
+- (CGRect)newOmniboxFrame {
+  InterfaceIdiom idiom = IsIPadIdiom() ? IPAD_IDIOM : IPHONE_IDIOM;
+  LayoutRect newOmniboxLayout;
+  // Grow the omnibox if focused.
+  BOOL growOmnibox = [_omniBox isFirstResponder];
+  if (idiom == IPAD_IDIOM) {
+    // When the omnibox is focused, the star button is hidden.
+    [_starButton setAlpha:(growOmnibox ? 0 : 1)];
+
+    newOmniboxLayout =
+        LayoutRectForRectInBoundingRect([_omniBox frame], [_webToolbar bounds]);
+    CGFloat omniboxLeading = [self omniboxLeading];
+    CGFloat omniboxLeadingDiff =
+        omniboxLeading - newOmniboxLayout.position.leading;
+
+    newOmniboxLayout.position.leading = omniboxLeading;
+    newOmniboxLayout.size.width -= omniboxLeadingDiff;
+  } else {
+    // If the omnibox is growing, take over the whole toolbar area (standard
+    // toolbar controls will be hidden below). Temporarily suppress autoresizing
+    // to avoid interfering with the omnibox animation.
+    [_webToolbar setAutoresizesSubviews:NO];
+    CGRect expandedFrame =
+        RectShiftedDownAndResizedForStatusBar(self.view.bounds);
+    [_webToolbar
+        setFrame:growOmnibox ? expandedFrame : [self specificControlsArea]];
+    [_webToolbar setAutoresizesSubviews:YES];
+
+    // Compute new omnibox layout after the web toolbar is resized.
+    newOmniboxLayout =
+        LayoutRectForRectInBoundingRect([_omniBox frame], [_webToolbar bounds]);
+
+    if (growOmnibox) {
+      // If the omnibox is expanded, there is padding on both the left and right
+      // sides.
+      newOmniboxLayout.position.leading = kExpandedOmniboxPadding;
+      // When the |_webToolbar| is resized without autoresizes subviews enabled
+      // the cancel button does not pin to the trailing side and is out of
+      // place. Lazily allocate and force a layout here.
+      [self layoutCancelButton];
+      LayoutRect cancelButtonLayout = LayoutRectForRectInBoundingRect(
+          [self cancelButton].frame, [_webToolbar bounds]);
+      newOmniboxLayout.size.width = cancelButtonLayout.position.leading -
+                                    kExpandedOmniboxPadding -
+                                    newOmniboxLayout.position.leading;
+      // Likewise the incognito icon will not be pinned to the leading side, so
+      // force a layout here.
+      if (_incognitoIcon)
+        [self layoutIncognitoIcon];
+    } else {
+      newOmniboxLayout.position.leading = [self omniboxLeading];
+      newOmniboxLayout.size.width = CGRectGetWidth([_webToolbar frame]) -
+                                    newOmniboxLayout.position.leading;
+    }
+  }
+
+  CGRect newOmniboxFrame = LayoutRectGetRect(newOmniboxLayout);
+  DCHECK(!CGRectEqualToRect(newOmniboxFrame, CGRectZero));
+
+  return newOmniboxFrame;
+}
+
+- (CGFloat)omniboxLeading {
+  // Compute what the leading (x-origin) position for the omniboox should be
+  // based on what other controls are active.
+  InterfaceIdiom idiom = IsIPadIdiom() ? IPAD_IDIOM : IPHONE_IDIOM;
+
+  CGFloat trailingPadding = 0.0;
+
+  LayoutRect leadingControlLayout = LayoutRectForRectInBoundingRect(
+      [_backButton frame], [_webToolbar bounds]);
+  LayoutRect forwardButtonLayout =
+      LayoutRectGetTrailingLayout(leadingControlLayout);
+  forwardButtonLayout.position.leading += trailingPadding;
+  forwardButtonLayout.position.originY = [_forwardButton frame].origin.y;
+  forwardButtonLayout.size = [_forwardButton frame].size;
+
+  LayoutRect reloadButtonLayout =
+      LayoutRectGetTrailingLayout(forwardButtonLayout);
+  reloadButtonLayout.position.originY = [_reloadButton frame].origin.y;
+  reloadButtonLayout.size = [_reloadButton frame].size;
+
+  LayoutRect omniboxReferenceLayout;
+  if (idiom == IPAD_IDIOM && !IsCompactTablet(self.view)) {
+    omniboxReferenceLayout = reloadButtonLayout;
+    omniboxReferenceLayout.size.width += kReloadButtonTrailingPadding;
+  } else if ([_forwardButton isEnabled]) {
+    omniboxReferenceLayout = forwardButtonLayout;
+    omniboxReferenceLayout.size.width += kForwardButtonTrailingPadding;
+  } else {
+    omniboxReferenceLayout = kBackButtonFrame[idiom];
+    omniboxReferenceLayout.size.width += kBackButtonTrailingPadding;
+  }
+  DCHECK(!(omniboxReferenceLayout.position.leading == 0 &&
+           CGSizeEqualToSize(omniboxReferenceLayout.size, CGSizeZero)));
+
+  return LayoutRectGetTrailingEdge(omniboxReferenceLayout);
+}
+
+#pragma mark Toolbar Appearance.
+
 - (void)setBackButtonEnabled:(BOOL)enabled {
   [_backButton setEnabled:enabled];
 }
@@ -1658,43 +1702,6 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
   }
 }
 
-- (uint32_t)snapshotHashWithWidth:(CGFloat)width {
-  uint32_t hash = [super snapshotHash];
-  // Take only the lower 3 bits of the UIButton state, as they are the only
-  // ones that change per enabled, highlighted, or nomal.
-  const uint32_t kButtonStateMask = 0x07;
-  hash ^= ([_backButton state] & kButtonStateMask) |
-          (([_forwardButton state] & kButtonStateMask) << 3) |
-          (([_cancelButton state] & kButtonStateMask) << 6);
-  // Omnibox size & text it contains.
-  hash ^= [[_omniBox text] hash];
-  hash ^= static_cast<uint32_t>([_omniBox frame].size.width) << 16;
-  hash ^= static_cast<uint32_t>([_omniBox frame].size.height) << 24;
-  // Also note progress bar state.
-  float progress = 0;
-  if (_determinateProgressView && ![_determinateProgressView isHidden])
-    progress = [_determinateProgressView progress];
-  // The progress is in the range 0 to 1, so static_cast<uint32_t> won't work.
-  // Normally, static_cast does the right thing: truncates the float to an int.
-  // Here, that would not provide the necessary granularity.
-  hash ^= *(reinterpret_cast<uint32_t*>(&progress));
-  // Size changes matter.
-  hash ^= static_cast<uint32_t>(width) << 15;
-  hash ^= static_cast<uint32_t>([self view].frame.size.height) << 23;
-  return hash;
-}
-
-- (void)handleLongPress:(UILongPressGestureRecognizer*)gesture {
-  if (gesture.state != UIGestureRecognizerStateBegan)
-    return;
-
-  if (gesture.view == _backButton) {
-    [self.dispatcher showTabHistoryPopupForBackwardHistory];
-  } else if (gesture.view == _forwardButton) {
-    [self.dispatcher showTabHistoryPopupForForwardHistory];
-  }
-}
-
 - (void)setImagesForNavButton:(UIButton*)button
         withTabHistoryVisible:(BOOL)tabHistoryVisible {
   BOOL isBackButton = button == _backButton;
@@ -1715,21 +1722,53 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
     _forwardButtonMode = newMode;
 }
 
-+ (const std::map<__strong NSString*, SEL>&)selectorsForTTSNotificationNames {
-  static std::map<__strong NSString*, SEL> selectorsForNotifications;
-  static dispatch_once_t onceToken;
-  dispatch_once(&onceToken, ^{
-    selectorsForNotifications[kTTSAudioReadyForPlaybackNotification] =
-        @selector(audioReadyForPlayback:);
-    selectorsForNotifications[kTTSWillStartPlayingNotification] =
-        @selector(updateIsTTSPlaying:);
-    selectorsForNotifications[kTTSDidStopPlayingNotification] =
-        @selector(updateIsTTSPlaying:);
-    selectorsForNotifications[kVoiceSearchWillHideNotification] =
-        @selector(moveVoiceOverToVoiceSearchButton);
-  });
-  return selectorsForNotifications;
+- (void)updateToolbarAlphaForFrame:(CGRect)frame {
+  // Don't update the toolbar buttons if we are animating for a transition.
+  if (self.view.animatingTransition)
+    return;
+
+  CGFloat distanceOffscreen =
+      IsIPadIdiom()
+          ? fmax((kIPadToolbarY - frame.origin.y) - kScrollFadeDistance, 0)
+          : -1 * frame.origin.y;
+  CGFloat fraction = 1 - fmin(distanceOffscreen / kScrollFadeDistance, 1);
+  if (![_omniBox isFirstResponder])
+    [self setStandardControlsAlpha:fraction];
+
+  [_backButton setAlpha:fraction];
+  if ([_forwardButton isEnabled])
+    [_forwardButton setAlpha:fraction];
+  [_reloadButton setAlpha:fraction];
+  [_omniboxBackground setAlpha:fraction];
+  [_omniBox setAlpha:fraction];
+  [_starButton setAlpha:fraction];
+  [_voiceSearchButton setAlpha:fraction];
 }
+
+- (void)updateToolbarButtons {
+  [super updateStandardButtons];
+  _lastKnownTraitCollection = [UITraitCollection
+      traitCollectionWithTraitsFromCollections:@[ self.view.traitCollection ]];
+  if (IsIPadIdiom()) {
+    // Update toolbar accessory views.
+    BOOL isCompactTabletView = IsCompactTablet(self.view);
+    [_voiceSearchButton setHidden:isCompactTabletView];
+    [_starButton setHidden:isCompactTabletView];
+    [_reloadButton setHidden:isCompactTabletView];
+    [_stopButton setHidden:isCompactTabletView];
+    [self updateToolbarState];
+
+    if ([_omniBox isFirstResponder]) {
+      [_omniBox reloadInputViews];
+    }
+
+    // Re-layout toolbar and omnibox.
+    [_webToolbar setFrame:[self specificControlsArea]];
+    [self layoutOmnibox];
+  }
+}
+
+#pragma mark TTS.
 
 - (void)startObservingTTSNotifications {
   // The toolbar is only used to play text-to-speech search results on iPads.
@@ -1772,9 +1811,10 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
       [notify.name isEqualToString:kTTSWillStartPlayingNotification];
   if (wasTTSPlaying != _isTTSPlaying && IsIPadIdiom()) {
     [self setUpButton:_voiceSearchButton
-           withImageEnum:(_isTTSPlaying ? WebToolbarButtonNameTTS
-                                        : WebToolbarButtonNameVoice)
-         forInitialState:UIControlStateNormal
+           withImageEnum:(_isTTSPlaying
+                              ? WebToolbarButtonNameTTS
+                              : WebToolbarButtonNameVoice)forInitialState
+                        :UIControlStateNormal
         hasDisabledImage:NO
            synchronously:NO];
   }
@@ -1793,164 +1833,28 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
   }
 }
 
++ (const std::map<__strong NSString*, SEL>&)selectorsForTTSNotificationNames {
+  static std::map<__strong NSString*, SEL> selectorsForNotifications;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    selectorsForNotifications[kTTSAudioReadyForPlaybackNotification] =
+        @selector(audioReadyForPlayback:);
+    selectorsForNotifications[kTTSWillStartPlayingNotification] =
+        @selector(updateIsTTSPlaying:);
+    selectorsForNotifications[kTTSDidStopPlayingNotification] =
+        @selector(updateIsTTSPlaying:);
+    selectorsForNotifications[kVoiceSearchWillHideNotification] =
+        @selector(moveVoiceOverToVoiceSearchButton);
+  });
+  return selectorsForNotifications;
+}
+
 - (void)moveVoiceOverToVoiceSearchButton {
   UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification,
                                   _voiceSearchButton);
 }
 
-- (void)updateToolbarAlphaForFrame:(CGRect)frame {
-  // Don't update the toolbar buttons if we are animating for a transition.
-  if (self.view.animatingTransition)
-    return;
-
-  CGFloat distanceOffscreen =
-      IsIPadIdiom()
-          ? fmax((kIPadToolbarY - frame.origin.y) - kScrollFadeDistance, 0)
-          : -1 * frame.origin.y;
-  CGFloat fraction = 1 - fmin(distanceOffscreen / kScrollFadeDistance, 1);
-  if (![_omniBox isFirstResponder])
-    [self setStandardControlsAlpha:fraction];
-
-  [_backButton setAlpha:fraction];
-  if ([_forwardButton isEnabled])
-    [_forwardButton setAlpha:fraction];
-  [_reloadButton setAlpha:fraction];
-  [_omniboxBackground setAlpha:fraction];
-  [_omniBox setAlpha:fraction];
-  [_starButton setAlpha:fraction];
-  [_voiceSearchButton setAlpha:fraction];
-}
-
-- (void)loadURLForQuery:(NSString*)query {
-  GURL searchURL;
-  metrics::OmniboxInputType type = AutocompleteInput::Parse(
-      base::SysNSStringToUTF16(query), std::string(),
-      AutocompleteSchemeClassifierImpl(), nullptr, nullptr, &searchURL);
-  if (type != metrics::OmniboxInputType::URL || !searchURL.is_valid()) {
-    searchURL = GetDefaultSearchURLForSearchTerms(
-        ios::TemplateURLServiceFactory::GetForBrowserState(_browserState),
-        base::SysNSStringToUTF16(query));
-  }
-  if (searchURL.is_valid()) {
-    // It is necessary to include PAGE_TRANSITION_FROM_ADDRESS_BAR in the
-    // transition type is so that query-in-the-omnibox is triggered for the
-    // URL.
-    ui::PageTransition transition = ui::PageTransitionFromInt(
-        ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
-    [self.urlLoader loadURL:GURL(searchURL)
-                   referrer:web::Referrer()
-                 transition:transition
-          rendererInitiated:NO];
-  }
-}
-
-- (void)preloadVoiceSearch:(id)sender {
-  DCHECK(ios::GetChromeBrowserProvider()
-             ->GetVoiceSearchProvider()
-             ->IsVoiceSearchEnabled());
-  [self.dispatcher preloadVoiceSearch];
-}
-
-- (CGFloat)omniboxLeading {
-  // Compute what the leading (x-origin) position for the omniboox should be
-  // based on what other controls are active.
-  InterfaceIdiom idiom = IsIPadIdiom() ? IPAD_IDIOM : IPHONE_IDIOM;
-
-  CGFloat trailingPadding = 0.0;
-
-  LayoutRect leadingControlLayout = LayoutRectForRectInBoundingRect(
-      [_backButton frame], [_webToolbar bounds]);
-  LayoutRect forwardButtonLayout =
-      LayoutRectGetTrailingLayout(leadingControlLayout);
-  forwardButtonLayout.position.leading += trailingPadding;
-  forwardButtonLayout.position.originY = [_forwardButton frame].origin.y;
-  forwardButtonLayout.size = [_forwardButton frame].size;
-
-  LayoutRect reloadButtonLayout =
-      LayoutRectGetTrailingLayout(forwardButtonLayout);
-  reloadButtonLayout.position.originY = [_reloadButton frame].origin.y;
-  reloadButtonLayout.size = [_reloadButton frame].size;
-
-  LayoutRect omniboxReferenceLayout;
-  if (idiom == IPAD_IDIOM && !IsCompactTablet(self.view)) {
-    omniboxReferenceLayout = reloadButtonLayout;
-    omniboxReferenceLayout.size.width += kReloadButtonTrailingPadding;
-  } else if ([_forwardButton isEnabled]) {
-    omniboxReferenceLayout = forwardButtonLayout;
-    omniboxReferenceLayout.size.width += kForwardButtonTrailingPadding;
-  } else {
-    omniboxReferenceLayout = kBackButtonFrame[idiom];
-    omniboxReferenceLayout.size.width += kBackButtonTrailingPadding;
-  }
-  DCHECK(!(omniboxReferenceLayout.position.leading == 0 &&
-           CGSizeEqualToSize(omniboxReferenceLayout.size, CGSizeZero)));
-
-  return LayoutRectGetTrailingEdge(omniboxReferenceLayout);
-}
-
-// TODO(crbug.com/525943): refactor this method and related code to not resize
-// |_webToolbar| and buttons as a side effect.
-- (CGRect)newOmniboxFrame {
-  InterfaceIdiom idiom = IsIPadIdiom() ? IPAD_IDIOM : IPHONE_IDIOM;
-  LayoutRect newOmniboxLayout;
-  // Grow the omnibox if focused.
-  BOOL growOmnibox = [_omniBox isFirstResponder];
-  if (idiom == IPAD_IDIOM) {
-    // When the omnibox is focused, the star button is hidden.
-    [_starButton setAlpha:(growOmnibox ? 0 : 1)];
-
-    newOmniboxLayout =
-        LayoutRectForRectInBoundingRect([_omniBox frame], [_webToolbar bounds]);
-    CGFloat omniboxLeading = [self omniboxLeading];
-    CGFloat omniboxLeadingDiff =
-        omniboxLeading - newOmniboxLayout.position.leading;
-
-    newOmniboxLayout.position.leading = omniboxLeading;
-    newOmniboxLayout.size.width -= omniboxLeadingDiff;
-  } else {
-    // If the omnibox is growing, take over the whole toolbar area (standard
-    // toolbar controls will be hidden below). Temporarily suppress autoresizing
-    // to avoid interfering with the omnibox animation.
-    [_webToolbar setAutoresizesSubviews:NO];
-    CGRect expandedFrame =
-        RectShiftedDownAndResizedForStatusBar(self.view.bounds);
-    [_webToolbar
-        setFrame:growOmnibox ? expandedFrame : [self specificControlsArea]];
-    [_webToolbar setAutoresizesSubviews:YES];
-
-    // Compute new omnibox layout after the web toolbar is resized.
-    newOmniboxLayout =
-        LayoutRectForRectInBoundingRect([_omniBox frame], [_webToolbar bounds]);
-
-    if (growOmnibox) {
-      // If the omnibox is expanded, there is padding on both the left and right
-      // sides.
-      newOmniboxLayout.position.leading = kExpandedOmniboxPadding;
-      // When the |_webToolbar| is resized without autoresizes subviews enabled
-      // the cancel button does not pin to the trailing side and is out of
-      // place. Lazily allocate and force a layout here.
-      [self layoutCancelButton];
-      LayoutRect cancelButtonLayout = LayoutRectForRectInBoundingRect(
-          [self cancelButton].frame, [_webToolbar bounds]);
-      newOmniboxLayout.size.width = cancelButtonLayout.position.leading -
-                                    kExpandedOmniboxPadding -
-                                    newOmniboxLayout.position.leading;
-      // Likewise the incognito icon will not be pinned to the leading side, so
-      // force a layout here.
-      if (_incognitoIcon)
-        [self layoutIncognitoIcon];
-    } else {
-      newOmniboxLayout.position.leading = [self omniboxLeading];
-      newOmniboxLayout.size.width = CGRectGetWidth([_webToolbar frame]) -
-                                    newOmniboxLayout.position.leading;
-    }
-  }
-
-  CGRect newOmniboxFrame = LayoutRectGetRect(newOmniboxLayout);
-  DCHECK(!CGRectEqualToRect(newOmniboxFrame, CGRectZero));
-
-  return newOmniboxFrame;
-}
+#pragma mark Omnibox Animation.
 
 - (void)animateMaterialOmnibox {
   // The iPad omnibox does not animate.
@@ -2218,6 +2122,8 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
   [CATransaction commit];
 }
 
+#pragma mark Toolbar Buttons Animation.
+
 - (void)fadeInIncognitoIcon {
   DCHECK(_incognito);
   DCHECK(!IsIPadIdiom());
@@ -2324,12 +2230,50 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
   [CATransaction commit];
 }
 
-- (void)animationDidStop:(CAAnimation*)anim finished:(BOOL)flag {
-  if ([[anim valueForKey:@"id"] isEqual:@"resizeOmnibox"] &&
-      ![_omniBox isFirstResponder]) {
-    [_omniBox setRightView:nil];
-  }
+#pragma mark Omnibox Cancel Button.
+
+- (UIButton*)cancelButton {
+  if (_cancelButton)
+    return _cancelButton;
+  _cancelButton = [UIButton buttonWithType:UIButtonTypeCustom];
+  NSString* collapseName = _incognito ? @"collapse_incognito" : @"collapse";
+  [_cancelButton setImage:[UIImage imageNamed:collapseName]
+                 forState:UIControlStateNormal];
+  NSString* collapsePressedName =
+      _incognito ? @"collapse_pressed_incognito" : @"collapse_pressed";
+  [_cancelButton setImage:[UIImage imageNamed:collapsePressedName]
+                 forState:UIControlStateHighlighted];
+  [_cancelButton setAccessibilityLabel:l10n_util::GetNSString(IDS_CANCEL)];
+  [_cancelButton setAutoresizingMask:UIViewAutoresizingFlexibleLeadingMargin() |
+                                     UIViewAutoresizingFlexibleHeight];
+  [_cancelButton addTarget:self
+                    action:@selector(cancelButtonPressed:)
+          forControlEvents:UIControlEventTouchUpInside];
+
+  [_webToolbar addSubview:_cancelButton];
+  return _cancelButton;
 }
+
+- (void)cancelButtonPressed:(id)sender {
+  [self cancelOmniboxEdit];
+}
+
+- (void)layoutCancelButton {
+  CGFloat height = CGRectGetHeight([self specificControlsArea]) -
+                   kCancelButtonTopMargin - kCancelButtonBottomMargin;
+  LayoutRect cancelButtonLayout;
+  cancelButtonLayout.position.leading =
+      CGRectGetWidth([_webToolbar bounds]) - height;
+  cancelButtonLayout.boundingWidth = CGRectGetWidth([_webToolbar bounds]);
+  cancelButtonLayout.position.originY = kCancelButtonTopMargin;
+  cancelButtonLayout.size = CGSizeMake(kCancelButtonWidth, height);
+
+  CGRect frame = LayoutRectGetRect(cancelButtonLayout);
+  // Use the property to force creation.
+  [self.cancelButton setFrame:frame];
+}
+
+#pragma mark Snapshot.
 
 - (void)updateSnapshotWithWidth:(CGFloat)width forced:(BOOL)force {
   // If |width| is 0, the current view's width is acceptable.
@@ -2387,6 +2331,56 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
   _snapshotHash = [self snapshotHashWithWidth:width];
 }
 
+- (uint32_t)snapshotHashWithWidth:(CGFloat)width {
+  uint32_t hash = [super snapshotHash];
+  // Take only the lower 3 bits of the UIButton state, as they are the only
+  // ones that change per enabled, highlighted, or nomal.
+  const uint32_t kButtonStateMask = 0x07;
+  hash ^= ([_backButton state] & kButtonStateMask) |
+          (([_forwardButton state] & kButtonStateMask) << 3) |
+          (([_cancelButton state] & kButtonStateMask) << 6);
+  // Omnibox size & text it contains.
+  hash ^= [[_omniBox text] hash];
+  hash ^= static_cast<uint32_t>([_omniBox frame].size.width) << 16;
+  hash ^= static_cast<uint32_t>([_omniBox frame].size.height) << 24;
+  // Also note progress bar state.
+  float progress = 0;
+  if (_determinateProgressView && ![_determinateProgressView isHidden])
+    progress = [_determinateProgressView progress];
+  // The progress is in the range 0 to 1, so static_cast<uint32_t> won't work.
+  // Normally, static_cast does the right thing: truncates the float to an int.
+  // Here, that would not provide the necessary granularity.
+  hash ^= *(reinterpret_cast<uint32_t*>(&progress));
+  // Size changes matter.
+  hash ^= static_cast<uint32_t>(width) << 15;
+  hash ^= static_cast<uint32_t>([self view].frame.size.height) << 23;
+  return hash;
+}
+
+#pragma mark Helpers
+
+- (void)toolbarVoiceSearchButtonPressed:(id)sender {
+  if (ios::GetChromeBrowserProvider()
+          ->GetVoiceSearchProvider()
+          ->IsVoiceSearchEnabled()) {
+    UIView* view = base::mac::ObjCCastStrict<UIView>(sender);
+    StartVoiceSearchCommand* command =
+        [[StartVoiceSearchCommand alloc] initWithOriginView:view];
+    [self.dispatcher startVoiceSearch:command];
+  }
+}
+
+- (void)handleLongPress:(UILongPressGestureRecognizer*)gesture {
+  if (gesture.state != UIGestureRecognizerStateBegan)
+    return;
+
+  if (gesture.view == _backButton) {
+    [self.dispatcher showTabHistoryPopupForBackwardHistory];
+  } else if (gesture.view == _forwardButton) {
+    [self.dispatcher showTabHistoryPopupForForwardHistory];
+  }
+}
+
 - (NSString*)updateTextForDotCom:(NSString*)text {
   if ([text isEqualToString:kDotComTLD]) {
     UITextRange* textRange = [_omniBox selectedTextRange];
@@ -2398,7 +2392,39 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
   return text;
 }
 
+- (void)loadURLForQuery:(NSString*)query {
+  GURL searchURL;
+  metrics::OmniboxInputType type = AutocompleteInput::Parse(
+      base::SysNSStringToUTF16(query), std::string(),
+      AutocompleteSchemeClassifierImpl(), nullptr, nullptr, &searchURL);
+  if (type != metrics::OmniboxInputType::URL || !searchURL.is_valid()) {
+    searchURL = GetDefaultSearchURLForSearchTerms(
+        ios::TemplateURLServiceFactory::GetForBrowserState(_browserState),
+        base::SysNSStringToUTF16(query));
+  }
+  if (searchURL.is_valid()) {
+    // It is necessary to include PAGE_TRANSITION_FROM_ADDRESS_BAR in the
+    // transition type is so that query-in-the-omnibox is triggered for the
+    // URL.
+    ui::PageTransition transition = ui::PageTransitionFromInt(
+        ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
+    [self.urlLoader loadURL:GURL(searchURL)
+                   referrer:web::Referrer()
+                 transition:transition
+          rendererInitiated:NO];
+  }
+}
+
+- (void)preloadVoiceSearch:(id)sender {
+  DCHECK(ios::GetChromeBrowserProvider()
+             ->GetVoiceSearchProvider()
+             ->IsVoiceSearchEnabled());
+  [self.dispatcher preloadVoiceSearch];
+}
+
 @end
+
+#pragma mark - Testing only.
 
 @implementation WebToolbarController (Testing)
 
