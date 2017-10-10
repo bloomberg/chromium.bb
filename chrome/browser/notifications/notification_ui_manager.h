@@ -65,12 +65,6 @@ class NotificationUIManager {
   virtual bool CancelById(const std::string& delegate_id,
                           ProfileID profile_id) = 0;
 
-  // Returns the set of all delegate IDs for notifications from the passed
-  // |profile_id| and |source|.
-  virtual std::set<std::string> GetAllIdsByProfileAndSourceOrigin(
-      ProfileID profile_id,
-      const GURL& source) = 0;
-
   // Returns the set of all delegate IDs for notifications from |profile_id|.
   virtual std::set<std::string> GetAllIdsByProfile(ProfileID profile_id) = 0;
 

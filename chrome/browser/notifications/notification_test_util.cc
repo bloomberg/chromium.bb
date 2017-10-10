@@ -110,18 +110,6 @@ bool StubNotificationUIManager::CancelById(const std::string& delegate_id,
   return false;
 }
 
-std::set<std::string>
-StubNotificationUIManager::GetAllIdsByProfileAndSourceOrigin(
-    ProfileID profile_id,
-    const GURL& source) {
-  std::set<std::string> delegate_ids;
-  for (const auto& pair : notifications_) {
-    if (pair.second == profile_id && pair.first.origin_url() == source)
-      delegate_ids.insert(pair.first.id());
-  }
-  return delegate_ids;
-}
-
 std::set<std::string> StubNotificationUIManager::GetAllIdsByProfile(
     ProfileID profile_id) {
   std::set<std::string> delegate_ids;

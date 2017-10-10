@@ -28,12 +28,17 @@ class ProfileNotification {
 
   ProfileID profile_id() const { return profile_id_; }
   const Notification& notification() const { return notification_; }
+  const std::string& original_id() const { return original_id_; }
 
  private:
   // Used for equality comparision in notification maps.
   ProfileID profile_id_;
 
   Notification notification_;
+
+  // The ID as it existed for |notification| before being prepended with a
+  // profile identifier.
+  std::string original_id_;
 
   std::unique_ptr<ScopedKeepAlive> keep_alive_;
 

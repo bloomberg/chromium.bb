@@ -46,9 +46,6 @@ class StubNotificationUIManager : public NotificationUIManager {
                                ProfileID profile_id) const override;
   bool CancelById(const std::string& delegate_id,
                   ProfileID profile_id) override;
-  std::set<std::string> GetAllIdsByProfileAndSourceOrigin(
-      ProfileID profile_id,
-      const GURL& source) override;
   std::set<std::string> GetAllIdsByProfile(ProfileID profile_id) override;
   bool CancelAllBySourceOrigin(const GURL& source_origin) override;
   bool CancelAllByProfile(ProfileID profile_id) override;

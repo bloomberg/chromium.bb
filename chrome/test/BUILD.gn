@@ -844,6 +844,10 @@ if (!is_android) {
       deps += [ "//ash:interactive_ui_test_support" ]
     }
 
+    if (!enable_native_notifications) {
+      sources += [ "../browser/notifications/message_center_notification_manager_interactive_uitest.cc" ]
+    }
+
     if (is_android) {
       sources -= [
         # Android does not use the message center-based Notification system.
