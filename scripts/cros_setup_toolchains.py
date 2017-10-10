@@ -73,7 +73,6 @@ HOST_POST_CROSS_PACKAGES = (
 # so we have to list them here and wait.  Once it completes, entries here can
 # be removed so they'll end up on bots & dev's systems.
 NEW_PACKAGES = (
-    'dev-lang/rust',
 )
 
 # Enable the Go compiler for these targets.
