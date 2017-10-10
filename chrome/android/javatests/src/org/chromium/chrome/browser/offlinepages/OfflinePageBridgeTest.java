@@ -367,10 +367,6 @@ public class OfflinePageBridgeTest {
                 Assert.assertNotNull("WebContents is null",
                         mActivityTestRule.getActivity().getActivityTab().getWebContents());
 
-                // Use Downloadbridge, because scheduler does not work in test.
-                OfflinePageDownloadBridge downloadBridge =
-                        new OfflinePageDownloadBridge(Profile.getLastUsedProfile());
-
                 mOfflinePageBridge.addObserver(new OfflinePageModelObserver() {
                     @Override
                     public void offlinePageAdded(OfflinePageItem newPage) {
@@ -379,7 +375,7 @@ public class OfflinePageBridgeTest {
                     }
                 });
 
-                downloadBridge.startDownload(
+                OfflinePageDownloadBridge.startDownload(
                         mActivityTestRule.getActivity().getActivityTab(), origin);
             }
         });

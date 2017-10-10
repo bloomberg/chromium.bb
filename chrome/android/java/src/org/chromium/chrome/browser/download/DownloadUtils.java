@@ -243,10 +243,7 @@ public class DownloadUtils {
                     tab.getUrl(), DownloadUiActionFlags.PROMPT_DUPLICATE, origin);
         } else {
             // Otherwise, the download can be started immediately.
-            final OfflinePageDownloadBridge bridge =
-                    new OfflinePageDownloadBridge(tab.getProfile());
-            bridge.startDownload(tab, origin);
-            bridge.destroy();
+            OfflinePageDownloadBridge.startDownload(tab, origin);
             DownloadUtils.recordDownloadPageMetrics(tab);
         }
 

@@ -29,7 +29,6 @@ import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
-import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
@@ -79,11 +78,6 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
         DownloadBackendProvider(DiscardableReferencePool referencePool) {
             mSelectionDelegate = new DownloadItemSelectionDelegate();
             mThumbnailProvider = new ThumbnailProviderImpl(referencePool);
-
-            // Create a OfflinePageDownloadBridge in order to initialize and register the offline
-            // pages backend to the offline content aggregator.
-            // TODO(shaktisahu): Find an explicit way of doing this.
-            new OfflinePageDownloadBridge(Profile.getLastUsedProfile().getOriginalProfile());
         }
 
         @Override

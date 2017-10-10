@@ -26,11 +26,24 @@ import org.chromium.content_public.browser.LoadUrlParams;
  */
 @JNINamespace("offline_pages::android")
 public class OfflinePageDownloadBridge {
+    private static OfflinePageDownloadBridge sInstance;
     private static boolean sIsTesting;
     private long mNativeOfflinePageDownloadBridge;
     private boolean mIsLoaded;
 
-    public OfflinePageDownloadBridge(Profile profile) {
+    /**
+     * @return An {@link OfflinePageDownloadBridge} instance singleton.  If one
+     *         is not available this will create a new one.
+     */
+    public static OfflinePageDownloadBridge getInstance() {
+        if (sInstance == null) {
+            sInstance = new OfflinePageDownloadBridge(
+                    Profile.getLastUsedProfile().getOriginalProfile());
+        }
+        return sInstance;
+    }
+
+    private OfflinePageDownloadBridge(Profile profile) {
         // If |profile| is incognito profile, switch to the regular one since
         // downloads are shared between them.
         mNativeOfflinePageDownloadBridge =
@@ -75,8 +88,8 @@ public class OfflinePageDownloadBridge {
      * @param tab a tab contents of which will be saved locally.
      * @param origin the object encapsulating application origin of the request.
      */
-    public void startDownload(Tab tab, OfflinePageOrigin origin) {
-        nativeStartDownload(mNativeOfflinePageDownloadBridge, tab, origin.encodeAsJsonString());
+    public static void startDownload(Tab tab, OfflinePageOrigin origin) {
+        nativeStartDownload(tab, origin.encodeAsJsonString());
     }
 
     /**
@@ -101,5 +114,5 @@ public class OfflinePageDownloadBridge {
 
     private native long nativeInit(Profile profile);
     private native void nativeDestroy(long nativeOfflinePageDownloadBridge);
-    native void nativeStartDownload(long nativeOfflinePageDownloadBridge, Tab tab, String origin);
+    private static native void nativeStartDownload(Tab tab, String origin);
 }
