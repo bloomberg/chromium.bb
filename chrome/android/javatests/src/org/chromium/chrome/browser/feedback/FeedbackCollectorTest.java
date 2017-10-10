@@ -234,6 +234,7 @@ public class FeedbackCollectorTest {
         Assert.assertEquals(bitmap, mCollector.getScreenshot());
         Assert.assertEquals("false",
                 bundle.getString(DataReductionProxySettings.DATA_REDUCTION_PROXY_ENABLED_KEY));
+        Assert.assertEquals("Disabled", bundle.getString(FeedbackCollector.CHROME_HOME_STATE_KEY));
     }
 
     @Test
