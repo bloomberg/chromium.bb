@@ -58,13 +58,6 @@ extern NSString* const kWarningMessageAccessibilityID;
 @interface PaymentRequestEditViewController
     : CollectionViewController<PaymentRequestEditConsumer>
 
-// Validates each field. If there is a validation error, displays an error
-// message item in the same section as the field, sets the focus on the invalid
-// textfield, if applicable, and returns NO. Otherwise removes the error message
-// item in that section if one exists and sets the value on the field. Returns
-// YES if all the fields are validated successfully.
-- (BOOL)validateForm;
-
 // The data source for this view controller.
 @property(nonatomic, weak) id<PaymentRequestEditViewControllerDataSource>
     dataSource;

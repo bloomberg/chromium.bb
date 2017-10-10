@@ -66,15 +66,6 @@ using ::AutofillTypeFromAutofillUIType;
   [self.editViewController setDataSource:self.mediator];
   [self.editViewController loadModel];
 
-  // Validate the form so that the first field with an invalid value gets focus.
-  // Notify the view controller asynchronously to allow for the view to update.
-  __weak AddressEditCoordinator* weakSelf = self;
-  if (self.address) {
-    dispatch_async(dispatch_get_main_queue(), ^{
-      [weakSelf.editViewController validateForm];
-    });
-  }
-
   self.viewController = [[PaymentRequestNavigationController alloc]
       initWithRootViewController:self.editViewController];
   self.viewController.modalPresentationStyle = UIModalPresentationFormSheet;

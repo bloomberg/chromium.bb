@@ -151,6 +151,16 @@ PaymentsTextItem* ErrorMessageItemForError(NSString* errorMessage) {
 // value on the field.
 - (BOOL)validateField:(EditorField*)field;
 
+// Validates each field. If there is a validation error, displays an error
+// message item in the same section as the field, sets the focus on the invalid
+// textfield, if applicable, and returns NO. Otherwise removes the error message
+// item in that section if one exists and sets the value on the field. Returns
+// YES if all the fields are validated successfully.
+- (BOOL)validateForm;
+
+// Returns whether the given field is valid. Does not update the error message.
+- (BOOL)isFieldValid:(EditorField*)field;
+
 // Returns whether all the fields in the form are valid or not. Does not update
 // error messages.
 - (BOOL)isFormValid;
@@ -353,6 +363,15 @@ PaymentsTextItem* ErrorMessageItemForError(NSString* errorMessage) {
 
 - (void)viewDidLoad {
   [super viewDidLoad];
+
+  // Validate the form so that the first field with an invalid value gets focus.
+  // Perform validation asynchronously to allow for the view to update.
+  if (_dataSource.state == EditViewControllerStateEdit) {
+    __weak PaymentRequestEditViewController* weakSelf = self;
+    dispatch_async(dispatch_get_main_queue(), ^{
+      [weakSelf validateForm];
+    });
+  }
 
   self.collectionView.accessibilityIdentifier =
       kPaymentRequestEditCollectionViewAccessibilityID;
@@ -810,12 +829,17 @@ PaymentsTextItem* ErrorMessageItemForError(NSString* errorMessage) {
   return YES;
 }
 
+- (BOOL)isFieldValid:(EditorField*)field {
+  NSString* errorMessage =
+      [_validatorDelegate paymentRequestEditViewController:self
+                                             validateField:field];
+  return errorMessage.length == 0;
+}
+
 - (BOOL)isFormValid {
   for (EditorField* field in self.fields) {
-    if ([_validatorDelegate paymentRequestEditViewController:self
-                                               validateField:field]) {
+    if (![self isFieldValid:field])
       return NO;
-    }
   }
   return YES;
 }
@@ -871,9 +895,6 @@ PaymentsTextItem* ErrorMessageItemForError(NSString* errorMessage) {
 
 - (void)onDone {
   [_currentEditingCell.textField resignFirstResponder];
-
-  if (![self validateForm])
-    return;
 
   [self.delegate paymentRequestEditViewController:self
                            didFinishEditingFields:self.fields];
