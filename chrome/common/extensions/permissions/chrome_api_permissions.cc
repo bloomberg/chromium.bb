@@ -84,7 +84,6 @@ ChromeAPIPermissions::GetAllPermissions() const {
       {APIPermission::kInput, "input"},
       {APIPermission::kManagement, "management"},
       {APIPermission::kMDns, "mdns", APIPermissionInfo::kFlagCannotBeOptional},
-      {APIPermission::kNativeMessaging, "nativeMessaging"},
       {APIPermission::kPlatformKeys, "platformKeys"},
       {APIPermission::kPrivacy, "privacy"},
       {APIPermission::kProcesses, "processes"},

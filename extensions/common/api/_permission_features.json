@@ -403,6 +403,12 @@
       "0136FCB13DB29FD5CD442F56E59E53B61F1DF96F"   // http://crbug.com/642141
     ]
   },
+  "nativeMessaging": {
+    "channel": "stable",
+    "extension_types": [
+      "extension", "legacy_packaged_app", "platform_app"
+    ]
+  },
   "networking.config": {
     "channel": "stable",
     "platforms": ["chromeos"],
