@@ -6,11 +6,6 @@
 
 namespace net {
 
-EffectiveConnectionType NetworkQualityProvider::GetEffectiveConnectionType()
-    const {
-  return EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
-}
-
 base::Optional<base::TimeDelta> NetworkQualityProvider::GetHttpRTT() const {
   return base::Optional<base::TimeDelta>();
 }

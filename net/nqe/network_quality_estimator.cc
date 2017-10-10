@@ -267,10 +267,10 @@ NetworkQualityEstimator::NetworkQualityEstimator(
   current_network_id_ = GetCurrentNetworkID();
 
   throughput_analyzer_.reset(new nqe::internal::ThroughputAnalyzer(
-      this, params_.get(), base::ThreadTaskRunnerHandle::Get(),
+      params_.get(), base::ThreadTaskRunnerHandle::Get(),
       base::Bind(&NetworkQualityEstimator::OnNewThroughputObservationAvailable,
                  base::Unretained(this)),
-      tick_clock_.get(), net_log_));
+      net_log_));
 
   watcher_factory_.reset(new nqe::internal::SocketWatcherFactory(
       base::ThreadTaskRunnerHandle::Get(),
@@ -412,12 +412,6 @@ void NetworkQualityEstimator::NotifyHeadersReceived(const URLRequest& request) {
                                    tick_clock_->NowTicks(), signal_strength_,
                                    NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP);
   AddAndNotifyObserversOfRTT(http_rtt_observation);
-  throughput_analyzer_->NotifyBytesRead(request);
-}
-
-void NetworkQualityEstimator::NotifyBytesRead(const URLRequest& request) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  throughput_analyzer_->NotifyBytesRead(request);
 }
 
 void NetworkQualityEstimator::RecordAccuracyAfterMainFrame(
@@ -1611,7 +1605,6 @@ void NetworkQualityEstimator::SetTickClockForTesting(
     std::unique_ptr<base::TickClock> tick_clock) {
   DCHECK(thread_checker_.CalledOnValidThread());
   tick_clock_ = std::move(tick_clock);
-  throughput_analyzer_->SetTickClockForTesting(tick_clock_.get());
 }
 
 double NetworkQualityEstimator::RandDouble() const {
