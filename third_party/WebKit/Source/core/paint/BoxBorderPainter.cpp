@@ -599,6 +599,15 @@ BoxBorderPainter::BoxBorderPainter(const LayoutRect& border_rect,
   inner_ = style_.GetRoundedInnerBorderFor(
       border_rect, include_logical_left_edge, include_logical_right_edge);
 
+  // Make sure that the border width isn't larger than the border box, which
+  // can pixel snap smaller.
+  float max_width = outer_.Rect().Width();
+  float max_height = outer_.Rect().Height();
+  edges_[kBSTop].ClampWidth(max_height);
+  edges_[kBSRight].ClampWidth(max_width);
+  edges_[kBSBottom].ClampWidth(max_height);
+  edges_[kBSLeft].ClampWidth(max_width);
+
   is_rounded_ = outer_.IsRounded();
 }
 

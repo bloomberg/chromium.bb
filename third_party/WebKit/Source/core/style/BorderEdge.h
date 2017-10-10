@@ -41,6 +41,11 @@ struct BorderEdge {
 
   float Width() const { return width_; }
 
+  void ClampWidth(float width) {
+    if (width_ > width)
+      width_ = width;
+  }
+
   Color color;
   bool is_present;
 
