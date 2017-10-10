@@ -2810,155 +2810,11 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
         <message name="IDS_CERTIFICATE_MANAGER_TITLE" desc="String to be displayed in the title bar of the certificate manager dialog">
           Certificate manager
         </message>
-        <message name="IDS_CERT_MANAGER_PERSONAL_CERTS_TAB_LABEL" desc="Title of the notebook page displaying the user's own certificates">
-          Your Certificates
-        </message>
-        <message name="IDS_CERT_MANAGER_SERVER_CERTS_TAB_LABEL" desc="Title of the notebook page displaying server certificates">
-          Servers
-        </message>
-        <message name="IDS_CERT_MANAGER_OTHER_TAB_LABEL" desc="Title of the notebook page displaying certificates that don't fall under any of the other categories">
-          Others
-        </message>
-        <message name="IDS_CERT_MANAGER_USER_TREE_DESCRIPTION" desc="Description label above the tree showing the user's own certificates">
-          You have certificates from these organizations that identify you:
-        </message>
-        <message name="IDS_CERT_MANAGER_SERVER_TREE_DESCRIPTION" desc="Description label above the tree showing server certificates">
-          You have certificates on file that identify these servers:
-        </message>
-        <message name="IDS_CERT_MANAGER_OTHER_TREE_DESCRIPTION" desc="Description label above the tree showing certificates that don't fall under any of the other categories">
-          You have certificates on file that do not fit in any of the other categories:
-        </message>
-        <message name="IDS_CERT_MANAGER_VIEW_CERT_BUTTON" desc="Label for the button in the certificate manager which launches the certificate viewer for the selected certificate">
-          View...
-        </message>
-        <message name="IDS_CERT_MANAGER_IMPORT_BUTTON" desc="Label for the button in the certificate manager which allows you to import certificates">
-          Import...
-        </message>
-        <message name="IDS_CERT_MANAGER_EXPORT_BUTTON" desc="Label for the button in the certificate manager which allows you to export certificates">
-          Export...
-        </message>
-        <message name="IDS_CERT_MANAGER_EDIT_BUTTON" desc="Label for the button in the certificate manager which allows you to edit certificate trust">
-          Edit...
-        </message>
-        <message name="IDS_CERT_MANAGER_DELETE_BUTTON" desc="Label for the button in the certificate manager which allows you to delete certificates">
-          Delete...
-        </message>
-        <message name="IDS_CERT_MANAGER_DELETE_USER_FORMAT" desc="Confirmation in certificate manager dialog for deleting a user certificate">
-          Delete certificate "<ph name="CERTIFICATE_NAME">$1<ex>VeriSign Browser Certificate</ex></ph>"?
-        </message>
-        <message name="IDS_CERT_MANAGER_DELETE_USER_DESCRIPTION" desc="Description of impact of deleting a user certificate">
-          If you delete one of your own certificates, you can no longer use it to identify yourself.
-        </message>
-        <message name="IDS_CERT_MANAGER_DELETE_SERVER_FORMAT" desc="Confirmation in certificate manager dialog for deleting a server certificate">
-          Delete server certificate "<ph name="CERTIFICATE_NAME">$1<ex>www.example.com</ex></ph>"?
-        </message>
-        <message name="IDS_CERT_MANAGER_DELETE_SERVER_DESCRIPTION" desc="Description of impact of deleting a server certificate">
-          If you delete a server certificate, you restore the usual security checks for that server and require it uses a valid certificate.
-        </message>
-        <message name="IDS_CERT_MANAGER_DELETE_CA_FORMAT" desc="Confirmation in certificate manager dialog for deleting a certification authority certificate">
-          Delete CA certificate "<ph name="CERTIFICATE_NAME">$1<ex>Verisign Class 1 Public Primary Certification Authority</ex></ph>"?
-        </message>
-        <message name="IDS_CERT_MANAGER_DELETE_CA_DESCRIPTION" desc="Description of impact of deleting a certification authority certificate">
-          If you delete a Certification Authority (CA) certificate, your browser will no longer trust any certificates issued by that CA.
-        </message>
-        <message name="IDS_CERT_MANAGER_DELETE_OTHER_FORMAT" desc="Confirmation in certificate manager dialog for deleting a certificate of other type">
-          Delete certificate "<ph name="CERTIFICATE_NAME">$1<ex>Example Certificate</ex></ph>"?
-        </message>
-        <message name="IDS_CERT_MANAGER_EXPORT_PASSWORD_DESC" desc="Description of password prompt in certificate manager for exporting a personal certificate">
-          Please enter a password to encrypt this certificate file.
-        </message>
-        <message name="IDS_CERT_MANAGER_EXPORT_PASSWORD_HELP" desc="Text in password prompt of certificate manager for exporting a personal certificate, reminding user that if they forget the password they're screwed.">
-          The password you choose will be required to restore this file later.  Please record it in a safe location.
-        </message>
-        <message name="IDS_CERT_MANAGER_RESTORE_PASSWORD_DESC" desc="Description of password prompt in certificate manager for restoring a personal certificate">
-          Please enter the password that was used to encrypt this certificate file.
-        </message>
-        <message name="IDS_CERT_MANAGER_PASSWORD_LABEL" desc="The label of the password field in the certificate manager for restoring or exporting a personal certificate">
-          Password:
-        </message>
-        <message name="IDS_CERT_MANAGER_CONFIRM_PASSWORD_LABEL" desc="The label of the field in the certificate manager for re-entering the password when creating a export.">
-          Confirm Password:
-        </message>
         <message name="IDS_CERT_MANAGER_PKCS12_FILES" desc="The label in the file selector dialog for PKCS #12 file type.">
           PKCS #12 Files
         </message>
         <message name="IDS_CERT_MANAGER_PKCS12_EXPORT_ERROR_TITLE" desc="The title in the error dialog for PKCS #12 file export errors.">
           PKCS #12 Export Error
-        </message>
-        <message name="IDS_CERT_MANAGER_UNTRUSTED" desc="This text is displayed next to untrusted certificates in a red box. Untrusted certificates are sometimes added in order to explicitly distrust them. Thus, they will be listed but it's important that the user note that they serve a different purpose from the rest.">
-          Untrusted
-        </message>
-        <message name="IDS_CERT_MANAGER_POLICY_INSTALLED" desc="The text of the popup bubble shown when the user clicks the controlled setting indicator next to a certificate entry.">
-          This certificate has been installed by your system administrator.
-        </message>
-        <message name="IDS_CERT_MANAGER_IMPORT_ERROR_TITLE" desc="The title in the error dialog for certificate file import errors.">
-          Certificate Import Error
-        </message>
-        <message name="IDS_CERT_MANAGER_IMPORT_INVALID_MAC" desc="The message in the error dialog for certificate files with invalid MAC.">
-          Incorrect password or corrupt file.
-        </message>
-        <message name="IDS_CERT_MANAGER_IMPORT_INVALID_FILE" desc="The message in the error dialog for corrupt certificate files.">
-          Invalid or corrupt file.
-        </message>
-        <message name="IDS_CERT_MANAGER_IMPORT_MISSING_KEY" desc="The message in the error dialog for certificates without a local private key.">
-          The Private Key for this Client Certificate is missing or invalid.
-        </message>
-        <message name="IDS_CERT_MANAGER_IMPORT_UNSUPPORTED" desc="The message in the error dialog for unsupported certificate files.">
-          File uses unsupported features.
-        </message>
-        <message name="IDS_CERT_MANAGER_READ_ERROR_FORMAT" desc="The text in the error dialog for certificate file read errors.">
-          There was an error while trying to read the file: <ph name="ERROR_TEXT">$1<ex>File not found.</ex></ph>.
-        </message>
-        <message name="IDS_CERT_MANAGER_UNKNOWN_ERROR" desc="The text in the error dialog when an unknown error occurs during an operation on the certificate database.">
-          Unknown error.
-        </message>
-        <message name="IDS_CERT_MANAGER_ERROR_NOT_CA" desc="The error message when trying to import certificate authorities and a certificate is not a certification authority">
-          Not a Certification Authority.
-        </message>
-        <message name="IDS_CERT_MANAGER_ERROR_CERT_ALREADY_EXISTS" desc="The error message when trying to import certificate which already exists.">
-          Certificate already exists.
-        </message>
-        <message name="IDS_CERT_MANAGER_DELETE_CERT_ERROR_TITLE" desc="The title in the error dialog for certificate delete errors.">
-          Certificate Deletion Error
-        </message>
-        <message name="IDS_CERT_MANAGER_EDIT_CA_TITLE" desc="Title of the certificate manager edit trust dialog">
-          Certificate authority
-        </message>
-        <message name="IDS_CERT_MANAGER_EDIT_TRUST_LABEL" desc="Line displayed in certificate manager edit trust dialog before the checkboxes for setting certificate trust flags">
-          Edit trust settings:
-        </message>
-        <message name="IDS_CERT_MANAGER_EDIT_CA_TRUST_DESCRIPTION_FORMAT" desc="Description in dialog for editing Certification Authority trust flags">
-          The certificate "<ph name="CERTIFICATE_NAME">$1<ex>Verisign Class 1 Public Primary Certification Authority</ex></ph>" represents a Certification Authority.
-        </message>
-        <message name="IDS_CERT_MANAGER_EDIT_CA_TRUST_SSL_LABEL" desc="Description in Certification Authority trust dialog for the SSL trust checkbox.">
-          Trust this certificate for identifying websites.
-        </message>
-        <message name="IDS_CERT_MANAGER_EDIT_CA_TRUST_EMAIL_LABEL" desc="Description in Certification Authority trust dialog for the Email trust checkbox.">
-          Trust this certificate for identifying email users.
-        </message>
-        <message name="IDS_CERT_MANAGER_EDIT_CA_TRUST_OBJSIGN_LABEL" desc="Description in Certification Authority trust dialog for the Code Signing trust checkbox.">
-          Trust this certificate for identifying software makers.
-        </message>
-        <message name="IDS_CERT_MANAGER_SET_TRUST_ERROR_TITLE" desc="The title in the error dialog for certificate trust editing errors.">
-          Error Setting Certificate Trust
-        </message>
-        <message name="IDS_CERT_MANAGER_IMPORT_CA_DESCRIPTION_FORMAT" desc="Description in dialog for importing a Certification Authority and setting its trust flags">
-          Do you want to trust "<ph name="CERTIFICATE_NAME">$1<ex>Verisign Class 1 Public Primary Certification Authority</ex></ph>" as a Certification Authority?
-        </message>
-        <message name="IDS_CERT_MANAGER_IMPORT_ERROR_FORMAT" desc="The format of per-certificate error messages in import failure dialog">
-          <ph name="CERTIFICATE_NAME">$1<ex>www.example.com</ex></ph>: <ph name="ERROR">$2<ex>Not a Certification Authority</ex></ph>
-        </message>
-        <message name="IDS_CERT_MANAGER_IMPORT_SINGLE_NOT_IMPORTED" desc="The header in certificate manager error dialog for single certificates that could not be imported.">
-          The file contained one certificate, which was not imported:
-        </message>
-        <message name="IDS_CERT_MANAGER_IMPORT_ALL_NOT_IMPORTED" desc="The header in certificate manager error dialog for list of certificates that could not be imported, when none were successfully imported.">
-          The file contained multiple certificates, none of which were imported:
-        </message>
-        <message name="IDS_CERT_MANAGER_IMPORT_SOME_NOT_IMPORTED" desc="The header in certificate manager error dialog for list of certificates that could not be imported, even though others were.">
-          The file contained multiple certificates, some of which were not imported:
-        </message>
-        <message name="IDS_CERT_MANAGER_SERVER_IMPORT_ERROR_TITLE" desc="The title in the error dialog for Certification Authority file import errors.">
-          Server Certificate Import Error
         </message>
         <message name="IDS_CERT_MANAGER_HARDWARE_BACKED_KEY_FORMAT" desc="A format used to create label for hardware-backed keys.">
           <ph name="KEY_NAME">$1<ex>John Doe</ex></ph> (<ph name="DEVICE">$2<ex>hardware-backed</ex></ph>)
@@ -2972,9 +2828,6 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
       </if>
 
       <if expr="chromeos">
-        <message name="IDS_CERT_MANAGER_IMPORT_AND_BIND_BUTTON" desc="Label for the button in the certificate manager which allows you to import certificates and bind to your device.">
-          Import and Bind to Device...
-        </message>
         <message name="IDS_CERT_MANAGER_KEY_FORMAT_LONG" desc="A longer format for keys in the wifi / vpn config dialogs.">
           <ph name="ISSUED_BY">$1<ex>Google Inc</ex></ph> [<ph name="ISSUED_TO">$2<ex>John Doe</ex></ph>]
         </message>
