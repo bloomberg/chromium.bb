@@ -728,14 +728,14 @@ ScriptPromise WebGLRenderingContextBase::commit(
   int height = GetDrawingBuffer()->Size().Height();
   if (!GetDrawingBuffer()) {
     bool is_web_gl_software_rendering = false;
-    return host()->Commit(nullptr, SkIRect::MakeWH(width, height),
+    return Host()->Commit(nullptr, SkIRect::MakeWH(width, height),
                           is_web_gl_software_rendering, script_state,
                           exception_state);
   }
 
   RefPtr<StaticBitmapImage> image = GetStaticBitmapImage();
 
-  return host()->Commit(
+  return Host()->Commit(
       std::move(image), SkIRect::MakeWH(width, height),
       GetDrawingBuffer()->ContextProvider()->IsSoftwareRendering(),
       script_state, exception_state);
@@ -1087,14 +1087,14 @@ RefPtr<DrawingBuffer> WebGLRenderingContextBase::CreateDrawingBuffer(
   // non-WebGLImageChromium for OffscreenCanvas.
   // See detailed discussion in crbug.com/649668.
   DrawingBuffer::ChromiumImageUsage chromium_image_usage =
-      host()->IsOffscreenCanvas() ? DrawingBuffer::kDisallowChromiumImage
+      Host()->IsOffscreenCanvas() ? DrawingBuffer::kDisallowChromiumImage
                                   : DrawingBuffer::kAllowChromiumImage;
 
   return DrawingBuffer::Create(
       std::move(context_provider), this, ClampedCanvasSize(),
       premultiplied_alpha, want_alpha_channel, want_depth_buffer,
       want_stencil_buffer, want_antialiasing, preserve, web_gl_version,
-      chromium_image_usage, color_params());
+      chromium_image_usage, ColorParams());
 }
 
 void WebGLRenderingContextBase::InitializeNewContext() {
@@ -4092,7 +4092,7 @@ void WebGLRenderingContextBase::ReadPixelsHelper(GLint x,
     return;
   // Due to WebGL's same-origin restrictions, it is not possible to
   // taint the origin using the WebGL API.
-  DCHECK(host()->OriginClean());
+  DCHECK(Host()->OriginClean());
 
   // Validate input parameters.
   if (!pixels) {
@@ -7454,7 +7454,7 @@ bool WebGLRenderingContextBase::ValidateDrawElements(const char* function_name,
 void WebGLRenderingContextBase::DispatchContextLostEvent(TimerBase*) {
   WebGLContextEvent* event = WebGLContextEvent::Create(
       EventTypeNames::webglcontextlost, false, true, "");
-  host()->HostDispatchEvent(event);
+  Host()->HostDispatchEvent(event);
   restore_allowed_ = event->defaultPrevented();
   if (restore_allowed_ && !is_hidden_) {
     if (auto_recovery_method_ == kAuto)
@@ -7496,13 +7496,13 @@ void WebGLRenderingContextBase::MaybeRestoreContext(TimerBase*) {
     drawing_buffer_ = nullptr;
   }
 
-  auto execution_context = host()->GetTopExecutionContext();
+  auto execution_context = Host()->GetTopExecutionContext();
   Platform::ContextAttributes attributes = ToPlatformContextAttributes(
       CreationAttributes(), Version(),
       SupportOwnOffscreenSurface(execution_context));
   Platform::GraphicsInfo gl_info;
   std::unique_ptr<WebGraphicsContext3DProvider> context_provider;
-  const auto& url = host()->GetExecutionContextUrl();
+  const auto& url = Host()->GetExecutionContextUrl();
 
   if (IsMainThread()) {
     context_provider =
@@ -7544,7 +7544,7 @@ void WebGLRenderingContextBase::MaybeRestoreContext(TimerBase*) {
   MarkContextChanged(kCanvasContextChanged);
   WebGLContextEvent* event = WebGLContextEvent::Create(
       EventTypeNames::webglcontextrestored, false, true, "");
-  host()->HostDispatchEvent(event);
+  Host()->HostDispatchEvent(event);
 }
 
 String WebGLRenderingContextBase::EnsureNotNull(const String& text) const {
@@ -7565,7 +7565,7 @@ ImageBuffer* WebGLRenderingContextBase::LRUImageBufferCache::GetImageBuffer(
     ImageBuffer* buf = buffers_[i].get();
     if (!buf)
       break;
-    if (buf->size() != size)
+    if (buf->Size() != size)
       continue;
     BubbleToFront(i);
     return buf;
@@ -7665,8 +7665,8 @@ void WebGLRenderingContextBase::EnableOrDisable(GLenum capability,
 }
 
 IntSize WebGLRenderingContextBase::ClampedCanvasSize() const {
-  int width = host()->Size().Width();
-  int height = host()->Size().Height();
+  int width = Host()->Size().Width();
+  int height = Host()->Size().Height();
   return IntSize(Clamp(width, 1, max_viewport_dims_[0]),
                  Clamp(height, 1, max_viewport_dims_[1]));
 }
@@ -7825,9 +7825,9 @@ void WebGLRenderingContextBase::RestoreUnpackParameters() {
 void WebGLRenderingContextBase::getHTMLOrOffscreenCanvas(
     HTMLCanvasElementOrOffscreenCanvas& result) const {
   if (canvas()) {
-    result.SetHTMLCanvasElement(static_cast<HTMLCanvasElement*>(host()));
+    result.SetHTMLCanvasElement(static_cast<HTMLCanvasElement*>(Host()));
   } else {
-    result.SetOffscreenCanvas(static_cast<OffscreenCanvas*>(host()));
+    result.SetOffscreenCanvas(static_cast<OffscreenCanvas*>(Host()));
   }
 }
 

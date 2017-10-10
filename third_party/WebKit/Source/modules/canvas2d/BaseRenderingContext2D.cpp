@@ -1702,7 +1702,7 @@ void BaseRenderingContext2D::putImageData(ImageData* data,
   dest_rect.Intersect(IntRect(0, 0, data->width(), data->height()));
   IntSize dest_offset(static_cast<int>(dx), static_cast<int>(dy));
   dest_rect.Move(dest_offset);
-  dest_rect.Intersect(IntRect(IntPoint(), buffer->size()));
+  dest_rect.Intersect(IntRect(IntPoint(), buffer->Size()));
   if (dest_rect.IsEmpty())
     return;
 
@@ -1732,8 +1732,8 @@ void BaseRenderingContext2D::putImageData(ImageData* data,
 
   // Color / format convert ImageData to canvas settings if needed
   CanvasColorParams data_color_params = data->GetCanvasColorParams();
-  if ((ColorSpace() != data_color_params.color_space() ||
-       PixelFormat() != data_color_params.pixel_format() ||
+  if ((ColorSpace() != data_color_params.ColorSpace() ||
+       PixelFormat() != data_color_params.PixelFormat() ||
        PixelFormat() == kF16CanvasPixelFormat)) {
     unsigned data_length = data->width() * data->height() * 4;
     if (PixelFormat() == kF16CanvasPixelFormat)

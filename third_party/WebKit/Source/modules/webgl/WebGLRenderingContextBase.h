@@ -128,9 +128,9 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   ~WebGLRenderingContextBase() override;
 
   HTMLCanvasElement* canvas() const {
-    if (host()->IsOffscreenCanvas())
+    if (Host()->IsOffscreenCanvas())
       return nullptr;
-    return static_cast<HTMLCanvasElement*>(host());
+    return static_cast<HTMLCanvasElement*>(Host());
   }
 
   virtual String ContextName() const = 0;

@@ -308,7 +308,7 @@ class CORE_EXPORT HTMLCanvasElement final
   void SetSurfaceSize(const IntSize&);
 
   bool PaintsIntoCanvasBuffer() const;
-  CanvasColorParams GetCanvasColorParams() const;
+  CanvasColorParams ColorParams() const;
 
   ImageData* ToImageData(SourceDrawingBuffer, SnapshotReason) const;
 

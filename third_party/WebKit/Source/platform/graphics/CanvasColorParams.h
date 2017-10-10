@@ -35,8 +35,8 @@ class PLATFORM_EXPORT CanvasColorParams {
   CanvasColorParams();
   CanvasColorParams(CanvasColorSpace, CanvasPixelFormat);
   explicit CanvasColorParams(const SkImageInfo&);
-  CanvasColorSpace color_space() const { return color_space_; }
-  CanvasPixelFormat pixel_format() const { return pixel_format_; }
+  CanvasColorSpace ColorSpace() const { return color_space_; }
+  CanvasPixelFormat PixelFormat() const { return pixel_format_; }
 
   void SetCanvasColorSpace(CanvasColorSpace);
   void SetCanvasPixelFormat(CanvasPixelFormat);

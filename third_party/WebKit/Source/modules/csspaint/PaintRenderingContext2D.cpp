@@ -31,12 +31,12 @@ PaintRenderingContext2D::PaintRenderingContext2D(
 
 int PaintRenderingContext2D::Width() const {
   DCHECK(image_buffer_);
-  return image_buffer_->size().Width();
+  return image_buffer_->Size().Width();
 }
 
 int PaintRenderingContext2D::Height() const {
   DCHECK(image_buffer_);
-  return image_buffer_->size().Height();
+  return image_buffer_->Size().Height();
 }
 
 bool PaintRenderingContext2D::ParseColorOrCurrentColor(
