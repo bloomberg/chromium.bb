@@ -271,7 +271,7 @@ Press any key to continue exploring.
     Use a shorter name
   </message>
   <message name="IDS_FILE_BROWSER_ERROR_EXTERNAL_DRIVE_LONG_NAME" desc="Error message displayed when user tries to enter too long name for an external drive.">
-    Use a name that's $1 characters or less
+    Use a name that's <ph name="MAX_LENGTH">$1<ex>11</ex></ph> characters or less
   </message>
   <message name="IDS_FILE_BROWSER_EMPTY_FOLDER" desc="Label shown in an empty folder.">
     Nothing to see here...
