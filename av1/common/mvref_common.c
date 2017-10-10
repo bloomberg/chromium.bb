@@ -22,9 +22,8 @@ void av1_copy_frame_mvs(const AV1_COMMON *const cm, MODE_INFO *mi, int mi_row,
                         int mi_col, int x_mis, int y_mis) {
 #if CONFIG_TMV
   const int frame_mvs_stride = ROUND_POWER_OF_TWO(cm->mi_cols, 1);
-  MV_REF *frame_mvs = cm->cur_frame->mvs +
-                      ((mi_row & 0xfffe) >> 1) * frame_mvs_stride +
-                      ((mi_col & 0xfffe) >> 1);
+  MV_REF *frame_mvs =
+      cm->cur_frame->mvs + (mi_row >> 1) * frame_mvs_stride + (mi_col >> 1);
   x_mis = ROUND_POWER_OF_TWO(x_mis, 1);
   y_mis = ROUND_POWER_OF_TWO(y_mis, 1);
 #else
