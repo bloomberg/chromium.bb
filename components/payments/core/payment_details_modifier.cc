@@ -4,7 +4,6 @@
 
 #include "components/payments/core/payment_details_modifier.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 
 namespace payments {
@@ -30,21 +29,21 @@ PaymentDetailsModifier::PaymentDetailsModifier(
 
 PaymentDetailsModifier& PaymentDetailsModifier::operator=(
     const PaymentDetailsModifier& other) {
-  this->method_data = other.method_data;
+  method_data = other.method_data;
   if (other.total)
-    this->total = base::MakeUnique<PaymentItem>(*other.total);
+    total = std::make_unique<PaymentItem>(*other.total);
   else
-    this->total.reset(nullptr);
-  this->additional_display_items = other.additional_display_items;
+    total.reset(nullptr);
+  additional_display_items = other.additional_display_items;
   return *this;
 }
 
 bool PaymentDetailsModifier::operator==(
     const PaymentDetailsModifier& other) const {
-  return this->method_data == other.method_data &&
-         ((!this->total && !other.total) ||
-          (this->total && other.total && *this->total == *other.total)) &&
-         this->additional_display_items == other.additional_display_items;
+  return method_data == other.method_data &&
+         ((!total && !other.total) ||
+          (total && other.total && *total == *other.total)) &&
+         additional_display_items == other.additional_display_items;
 }
 
 bool PaymentDetailsModifier::operator!=(
@@ -54,20 +53,18 @@ bool PaymentDetailsModifier::operator!=(
 
 std::unique_ptr<base::DictionaryValue>
 PaymentDetailsModifier::ToDictionaryValue() const {
-  std::unique_ptr<base::DictionaryValue> result =
-      base::MakeUnique<base::DictionaryValue>();
-
+  auto result = std::make_unique<base::DictionaryValue>();
   std::unique_ptr<base::ListValue> methods =
-      base::MakeUnique<base::ListValue>();
-  size_t numMethods = this->method_data.supported_methods.size();
+      std::make_unique<base::ListValue>();
+  size_t numMethods = method_data.supported_methods.size();
   for (size_t i = 0; i < numMethods; i++) {
-    methods->GetList().emplace_back(this->method_data.supported_methods[i]);
+    methods->GetList().emplace_back(method_data.supported_methods[i]);
   }
   result->SetList(kPaymentDetailsModifierSupportedMethods, std::move(methods));
-  result->SetString(kPaymentDetailsModifierData, this->method_data.data);
-  if (this->total) {
+  result->SetString(kPaymentDetailsModifierData, method_data.data);
+  if (total) {
     result->SetDictionary(kPaymentDetailsModifierTotal,
-                          this->total->ToDictionaryValue());
+                          total->ToDictionaryValue());
   }
 
   return result;

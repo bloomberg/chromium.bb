@@ -9,7 +9,7 @@
 #include "components/payments/core/payment_item.h"
 #include "components/payments/core/payment_method_data.h"
 #include "components/payments/core/payment_shipping_option.h"
-#include "ios/web/public/payments/payment_request.h"
+#include "components/payments/core/web_payment_request.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -17,8 +17,8 @@
 
 namespace payment_request_test_util {
 
-web::PaymentRequest CreateTestWebPaymentRequest() {
-  web::PaymentRequest web_payment_request;
+payments::WebPaymentRequest CreateTestWebPaymentRequest() {
+  payments::WebPaymentRequest web_payment_request;
   payments::PaymentMethodData method_datum;
   method_datum.supported_methods.push_back("visa");
   method_datum.supported_methods.push_back("amex");

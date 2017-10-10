@@ -4,7 +4,6 @@
 
 #include "components/payments/core/payment_item.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 
 namespace payments {
@@ -23,8 +22,8 @@ PaymentItem::PaymentItem() : pending(false) {}
 PaymentItem::~PaymentItem() = default;
 
 bool PaymentItem::operator==(const PaymentItem& other) const {
-  return this->label == other.label && this->amount == other.amount &&
-         this->pending == other.pending;
+  return label == other.label && amount == other.amount &&
+         pending == other.pending;
 }
 
 bool PaymentItem::operator!=(const PaymentItem& other) const {
@@ -32,7 +31,7 @@ bool PaymentItem::operator!=(const PaymentItem& other) const {
 }
 
 bool PaymentItem::FromDictionaryValue(const base::DictionaryValue& value) {
-  if (!value.GetString(kPaymentItemLabel, &this->label)) {
+  if (!value.GetString(kPaymentItemLabel, &label)) {
     return false;
   }
 
@@ -40,23 +39,21 @@ bool PaymentItem::FromDictionaryValue(const base::DictionaryValue& value) {
   if (!value.GetDictionary(kPaymentItemAmount, &amount_dict)) {
     return false;
   }
-  if (!this->amount.FromDictionaryValue(*amount_dict)) {
+  if (!amount.FromDictionaryValue(*amount_dict)) {
     return false;
   }
 
   // Pending is optional.
-  value.GetBoolean(kPaymentItemPending, &this->pending);
+  value.GetBoolean(kPaymentItemPending, &pending);
 
   return true;
 }
 
 std::unique_ptr<base::DictionaryValue> PaymentItem::ToDictionaryValue() const {
-  std::unique_ptr<base::DictionaryValue> result =
-      base::MakeUnique<base::DictionaryValue>();
-
-  result->SetString(kPaymentItemLabel, this->label);
-  result->SetDictionary(kPaymentItemAmount, this->amount.ToDictionaryValue());
-  result->SetBoolean(kPaymentItemPending, this->pending);
+  auto result = std::make_unique<base::DictionaryValue>();
+  result->SetString(kPaymentItemLabel, label);
+  result->SetDictionary(kPaymentItemAmount, amount.ToDictionaryValue());
+  result->SetBoolean(kPaymentItemPending, pending);
 
   return result;
 }

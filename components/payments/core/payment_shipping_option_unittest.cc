@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -25,7 +24,7 @@ TEST(PaymentRequestTest, PaymentShippingOptionFromDictionaryValueSuccess) {
   base::DictionaryValue shipping_option_dict;
   shipping_option_dict.SetString("id", "123");
   shipping_option_dict.SetString("label", "Ground Shipping");
-  std::unique_ptr<base::DictionaryValue> amount_dict(new base::DictionaryValue);
+  auto amount_dict = std::make_unique<base::DictionaryValue>();
   amount_dict->SetString("currency", "BRL");
   amount_dict->SetString("value", "4,000.32");
   shipping_option_dict.Set("amount", std::move(amount_dict));
@@ -58,7 +57,7 @@ TEST(PaymentRequestTest, PaymentShippingOptionFromDictionaryValueFailure) {
   EXPECT_FALSE(actual.FromDictionaryValue(shipping_option_dict));
 
   // Id must be a string.
-  std::unique_ptr<base::DictionaryValue> amount_dict(new base::DictionaryValue);
+  auto amount_dict = std::make_unique<base::DictionaryValue>();
   amount_dict->SetString("currency", "BRL");
   amount_dict->SetString("value", "4,000.32");
   shipping_option_dict.Set("amount", std::move(amount_dict));

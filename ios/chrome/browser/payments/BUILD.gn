@@ -29,6 +29,7 @@ source_set("payments") {
     "payment_response_helper.mm",
   ]
   deps = [
+    ":constants",
     "//base",
     "//components/autofill/core/browser",
     "//components/image_fetcher/ios",
@@ -50,6 +51,14 @@ source_set("payments") {
   libs = [ "UIKit.framework" ]
 }
 
+source_set("constants") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "payment_request_constants.cc",
+    "payment_request_constants.h",
+  ]
+}
+
 source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
@@ -57,6 +66,7 @@ source_set("unit_tests") {
     "ios_payment_instrument_finder_unittest.mm",
     "ios_payment_instrument_launcher_unittest.mm",
     "payment_request_unittest.mm",
+    "payment_request_util_unittest.mm",
     "payment_response_helper_unittest.mm",
   ]
   deps = [

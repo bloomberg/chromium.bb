@@ -13,7 +13,8 @@
 #include "base/memory/weak_ptr.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/payments/core/payment_instrument.h"
-#include "ios/web/public/payments/payment_request.h"
+#include "components/payments/core/payment_response.h"
+#include "components/payments/core/web_payment_request.h"
 
 @protocol PaymentResponseHelperConsumer
 
@@ -26,7 +27,7 @@
 // Called when the payment method details have been successfully received and
 // the shipping address and the contact info are normalized, if applicable.
 - (void)paymentResponseHelperDidCompleteWithPaymentResponse:
-    (const web::PaymentResponse&)paymentResponse;
+    (const payments::PaymentResponse&)paymentResponse;
 
 @end
 

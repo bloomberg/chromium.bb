@@ -29,9 +29,9 @@ class PaymentRequest;
 - (void)loadItems;
 
 // Initializes this object with an instance of PaymentRequest which has a copy
-// of web::PaymentRequest as provided by the page invoking the Payment Request
-// API as well as the selected billing profile. This object will not take
-// ownership of |paymentRequest| or |selectedBillingProfile|.
+// of payments::WebPaymentRequest as provided by the page invoking the Payment
+// Request API as well as the selected billing profile. This object will not
+// take ownership of |paymentRequest| or |selectedBillingProfile|.
 - (instancetype)initWithPaymentRequest:(payments::PaymentRequest*)paymentRequest
                 selectedBillingProfile:
                     (autofill::AutofillProfile*)selectedBillingProfile

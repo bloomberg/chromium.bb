@@ -5,14 +5,14 @@
 #ifndef IOS_CHROME_BROWSER_PAYMENTS_PAYMENT_REQUEST_TEST_UTIL_H_
 #define IOS_CHROME_BROWSER_PAYMENTS_PAYMENT_REQUEST_TEST_UTIL_H_
 
-namespace web {
-class PaymentRequest;
-}  // namespace web
+namespace payments {
+class WebPaymentRequest;
+}  // namespace payments
 
 namespace payment_request_test_util {
 
 // Returns an instance of web::PaymentRequest for testing purposes.
-web::PaymentRequest CreateTestWebPaymentRequest();
+payments::WebPaymentRequest CreateTestWebPaymentRequest();
 
 }  // namespace payment_request_test_util
 

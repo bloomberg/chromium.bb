@@ -28,8 +28,8 @@ class PaymentRequest;
 @property(nonatomic, weak) id<PaymentRequestEditConsumer> consumer;
 
 // Initializes this object with an instance of PaymentRequest which has a copy
-// of web::PaymentRequest as provided by the page invoking the Payment Request
-// API as well as |profile| which is the profile to be edited, if any.
+// of payments::WebPaymentRequest as provided by the page invoking the Payment
+// Request API as well as |profile| which is the profile to be edited, if any.
 // This object will not take ownership of |paymentRequest| or |profile|.
 - (instancetype)initWithPaymentRequest:(payments::PaymentRequest*)paymentRequest
                                profile:(autofill::AutofillProfile*)profile

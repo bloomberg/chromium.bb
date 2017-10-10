@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 
 namespace payments {
@@ -34,25 +33,24 @@ PaymentDetails::PaymentDetails(const PaymentDetails& other) {
 }
 
 PaymentDetails& PaymentDetails::operator=(const PaymentDetails& other) {
-  this->id = other.id;
+  id = other.id;
   if (other.total)
-    this->total = base::MakeUnique<PaymentItem>(*other.total);
+    total = std::make_unique<PaymentItem>(*other.total);
   else
-    this->total.reset(nullptr);
-  this->display_items = std::vector<PaymentItem>(other.display_items);
-  this->shipping_options =
-      std::vector<PaymentShippingOption>(other.shipping_options);
-  this->modifiers = std::vector<PaymentDetailsModifier>(other.modifiers);
+    total.reset(nullptr);
+  display_items = std::vector<PaymentItem>(other.display_items);
+  shipping_options = std::vector<PaymentShippingOption>(other.shipping_options);
+  modifiers = std::vector<PaymentDetailsModifier>(other.modifiers);
   return *this;
 }
 
 bool PaymentDetails::operator==(const PaymentDetails& other) const {
-  return this->id == other.id &&
-         ((!this->total && !other.total) ||
-          (this->total && other.total && *this->total == *other.total)) &&
-         this->display_items == other.display_items &&
-         this->shipping_options == other.shipping_options &&
-         this->modifiers == other.modifiers && this->error == other.error;
+  return id == other.id &&
+         ((!total && !other.total) ||
+          (total && other.total && *total == *other.total)) &&
+         display_items == other.display_items &&
+         shipping_options == other.shipping_options &&
+         modifiers == other.modifiers && error == other.error;
 }
 
 bool PaymentDetails::operator!=(const PaymentDetails& other) const {
@@ -61,12 +59,12 @@ bool PaymentDetails::operator!=(const PaymentDetails& other) const {
 
 bool PaymentDetails::FromDictionaryValue(const base::DictionaryValue& value,
                                          bool requires_total) {
-  this->display_items.clear();
-  this->shipping_options.clear();
-  this->modifiers.clear();
+  display_items.clear();
+  shipping_options.clear();
+  modifiers.clear();
 
   // ID is optional.
-  value.GetString(kPaymentDetailsId, &this->id);
+  value.GetString(kPaymentDetailsId, &id);
 
   const base::DictionaryValue* total_dict = nullptr;
   if (!value.GetDictionary(kPaymentDetailsTotal, &total_dict) &&
@@ -74,8 +72,8 @@ bool PaymentDetails::FromDictionaryValue(const base::DictionaryValue& value,
     return false;
   }
   if (total_dict) {
-    this->total = base::MakeUnique<PaymentItem>();
-    if (!this->total->FromDictionaryValue(*total_dict))
+    total = std::make_unique<PaymentItem>();
+    if (!total->FromDictionaryValue(*total_dict))
       return false;
   }
 
@@ -90,7 +88,7 @@ bool PaymentDetails::FromDictionaryValue(const base::DictionaryValue& value,
       if (!payment_item.FromDictionaryValue(*payment_item_dict)) {
         return false;
       }
-      this->display_items.push_back(payment_item);
+      display_items.push_back(payment_item);
     }
   }
 
@@ -105,7 +103,7 @@ bool PaymentDetails::FromDictionaryValue(const base::DictionaryValue& value,
       if (!shipping_option.FromDictionaryValue(*shipping_option_dict)) {
         return false;
       }
-      this->shipping_options.push_back(shipping_option);
+      shipping_options.push_back(shipping_option);
     }
   }
 
@@ -121,7 +119,7 @@ bool PaymentDetails::FromDictionaryValue(const base::DictionaryValue& value,
       const base::DictionaryValue* modifier_total_dict = nullptr;
       if (modifier_dict->GetDictionary(kPaymentDetailsTotal,
                                        &modifier_total_dict)) {
-        modifier.total = base::MakeUnique<PaymentItem>();
+        modifier.total = std::make_unique<PaymentItem>();
         if (!modifier.total->FromDictionaryValue(*modifier_total_dict))
           return false;
       }
@@ -140,12 +138,12 @@ bool PaymentDetails::FromDictionaryValue(const base::DictionaryValue& value,
           modifier.additional_display_items.push_back(additional_display_item);
         }
       }
-      this->modifiers.push_back(modifier);
+      modifiers.push_back(modifier);
     }
   }
 
   // Error is optional.
-  value.GetString(kPaymentDetailsError, &this->error);
+  value.GetString(kPaymentDetailsError, &error);
 
   return true;
 }

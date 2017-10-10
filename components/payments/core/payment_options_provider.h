@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_PAYMENTS_CORE_PAYMENT_OPTIONS_PROVIDER_H_
 #define COMPONENTS_PAYMENTS_CORE_PAYMENT_OPTIONS_PROVIDER_H_
 
+#include <stdint.h>
+
 namespace payments {
 
 // See PaymentOptionsProvider::shipping_type() below.

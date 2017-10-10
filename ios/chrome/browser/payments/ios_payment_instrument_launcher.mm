@@ -16,9 +16,9 @@
 #include "base/values.h"
 #include "components/payments/core/payment_details.h"
 #include "components/payments/core/payment_instrument.h"
+#import "ios/chrome/browser/payments/payment_request_constants.h"
 #include "ios/web/public/navigation_item.h"
 #include "ios/web/public/navigation_manager.h"
-#include "ios/web/public/payments/payment_request.h"
 #include "ios/web/public/ssl_status.h"
 #include "ios/web/public/web_state/web_state.h"
 #include "net/base/mac/url_conversions.mm"
@@ -119,9 +119,9 @@ bool IOSPaymentInstrumentLauncher::LaunchIOSPaymentInstrument(
       payment_request->web_payment_request().payment_request_id;
 
   universal_link = net::AppendQueryParameter(
-      universal_link, web::kPaymentRequestIDExternal, payment_request_id_);
+      universal_link, payments::kPaymentRequestIDExternal, payment_request_id_);
   universal_link = net::AppendQueryParameter(
-      universal_link, web::kPaymentRequestDataExternal, base_64_params);
+      universal_link, payments::kPaymentRequestDataExternal, base_64_params);
   NSURL* url = net::NSURLWithGURL(universal_link);
 
   if (@available(iOS 10, *)) {

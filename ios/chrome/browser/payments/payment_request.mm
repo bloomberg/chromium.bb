@@ -24,6 +24,7 @@
 #include "components/payments/core/payment_details.h"
 #include "components/payments/core/payment_request_data_util.h"
 #include "components/payments/core/payment_shipping_option.h"
+#include "components/payments/core/web_payment_request.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "ios/chrome/browser/application_context.h"
@@ -32,7 +33,6 @@
 #import "ios/chrome/browser/payments/ios_payment_instrument.h"
 #import "ios/chrome/browser/payments/payment_request_util.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
-#include "ios/web/public/payments/payment_request.h"
 #include "ios/web/public/web_state/web_state.h"
 #include "third_party/libaddressinput/chromium/chrome_metadata_source.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/source.h"
@@ -60,7 +60,7 @@ std::unique_ptr<::i18n::addressinput::Storage> GetAddressInputStorage() {
 namespace payments {
 
 PaymentRequest::PaymentRequest(
-    const web::PaymentRequest& web_payment_request,
+    const payments::WebPaymentRequest& web_payment_request,
     ios::ChromeBrowserState* browser_state,
     web::WebState* web_state,
     autofill::PersonalDataManager* personal_data_manager,

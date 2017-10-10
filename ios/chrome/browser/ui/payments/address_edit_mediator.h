@@ -34,8 +34,8 @@ class PaymentRequest;
 @property(nonatomic, strong) NSString* selectedCountryCode;
 
 // Initializes this object with an instance of PaymentRequest which has a copy
-// of web::PaymentRequest as provided by the page invoking the Payment Request
-// API as well as |address| which is the address to be edited, if any.
+// of payments::WebPaymentRequest as provided by the page invoking the Payment
+// Request API as well as |address| which is the address to be edited, if any.
 // This object will not take ownership of |paymentRequest| or |address|.
 - (instancetype)initWithPaymentRequest:(payments::PaymentRequest*)paymentRequest
                                address:(autofill::AutofillProfile*)address

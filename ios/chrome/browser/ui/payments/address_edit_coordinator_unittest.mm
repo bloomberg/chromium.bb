@@ -54,7 +54,7 @@ class MockPaymentsProfileComparator
 
 class MockTestPaymentRequest : public payments::TestPaymentRequest {
  public:
-  MockTestPaymentRequest(web::PaymentRequest web_payment_request,
+  MockTestPaymentRequest(payments::WebPaymentRequest web_payment_request,
                          ios::ChromeBrowserState* browser_state,
                          web::WebState* web_state,
                          autofill::PersonalDataManager* personal_data_manager)

@@ -4,7 +4,6 @@
 
 #include "components/payments/core/payment_details_modifier.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "components/payments/core/payment_method_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -17,7 +16,7 @@ TEST(PaymentRequestTest, EmptyPaymentDetailsModifierDictionary) {
   base::DictionaryValue expected_value;
 
   std::unique_ptr<base::ListValue> supported_methods_list =
-      base::MakeUnique<base::ListValue>();
+      std::make_unique<base::ListValue>();
   expected_value.SetList("supportedMethods", std::move(supported_methods_list));
   expected_value.SetString("data", "");
 
@@ -32,17 +31,17 @@ TEST(PaymentRequestTest, PopulatedDetailsModifierDictionary) {
   base::DictionaryValue expected_value;
 
   std::unique_ptr<base::ListValue> supported_methods_list =
-      base::MakeUnique<base::ListValue>();
+      std::make_unique<base::ListValue>();
   supported_methods_list->GetList().emplace_back("basic-card");
   supported_methods_list->GetList().emplace_back("amex");
   expected_value.SetList("supportedMethods", std::move(supported_methods_list));
   expected_value.SetString("data",
                            "{\"supportedNetworks\":[\"visa\",\"mastercard\"]}");
   std::unique_ptr<base::DictionaryValue> item_dict =
-      base::MakeUnique<base::DictionaryValue>();
+      std::make_unique<base::DictionaryValue>();
   item_dict->SetString("label", "Gratuity");
   std::unique_ptr<base::DictionaryValue> amount_dict =
-      base::MakeUnique<base::DictionaryValue>();
+      std::make_unique<base::DictionaryValue>();
   amount_dict->SetString("currency", "USD");
   amount_dict->SetString("value", "139.99");
   amount_dict->SetString("currencySystem", "urn:iso:std:iso:4217");
@@ -56,7 +55,7 @@ TEST(PaymentRequestTest, PopulatedDetailsModifierDictionary) {
   payment_details_modifier.method_data.supported_methods.push_back("amex");
   payment_details_modifier.method_data.data =
       "{\"supportedNetworks\":[\"visa\",\"mastercard\"]}";
-  payment_details_modifier.total = base::MakeUnique<PaymentItem>();
+  payment_details_modifier.total = std::make_unique<PaymentItem>();
   payment_details_modifier.total->label = "Gratuity";
   payment_details_modifier.total->amount.currency = "USD";
   payment_details_modifier.total->amount.value = "139.99";
@@ -93,10 +92,10 @@ TEST(PaymentRequestTest, PaymentDetailsModifierEquality) {
       "{\"supportedNetworks\":[\"visa\",\"mastercard\"]}";
   EXPECT_EQ(details_modifier1, details_modifier2);
 
-  details_modifier1.total = base::MakeUnique<PaymentItem>();
+  details_modifier1.total = std::make_unique<PaymentItem>();
   details_modifier1.total->label = "Total";
   EXPECT_NE(details_modifier1, details_modifier2);
-  details_modifier2.total = base::MakeUnique<PaymentItem>();
+  details_modifier2.total = std::make_unique<PaymentItem>();
   details_modifier2.total->label = "Gratuity";
   EXPECT_NE(details_modifier1, details_modifier2);
   details_modifier2.total->label = "Total";

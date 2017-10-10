@@ -110,7 +110,6 @@ source_set("web") {
     "net/request_tracker_impl.mm",
     "net/web_http_protocol_handler_delegate.h",
     "net/web_http_protocol_handler_delegate.mm",
-    "payments/payment_request.cc",
     "public/block_types.h",
     "public/browser_state.h",
     "public/browser_url_rewriter.h",
@@ -138,7 +137,6 @@ source_set("web") {
     "public/navigation_manager.h",
     "public/origin_util.h",
     "public/origin_util.mm",
-    "public/payments/payment_request.h",
     "public/referrer.h",
     "public/referrer_util.cc",
     "public/referrer_util.h",
@@ -451,7 +449,6 @@ source_set("ios_web_general_unittests") {
   sources = [
     "browser_state_unittest.cc",
     "history_state_util_unittest.mm",
-    "payments/payment_request_unittest.cc",
     "service_manager_connection_impl_unittest.cc",
     "test/web_test_unittest.mm",
     "url_scheme_util_unittest.mm",

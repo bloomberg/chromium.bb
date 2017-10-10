@@ -36,7 +36,9 @@
 #include "components/payments/core/payment_prefs.h"
 #include "components/payments/core/payment_request_base_delegate.h"
 #include "components/payments/core/payment_request_data_util.h"
+#include "components/payments/core/payment_response.h"
 #include "components/payments/core/payment_shipping_option.h"
+#include "components/payments/core/web_payment_request.h"
 #include "components/prefs/pref_service.h"
 #include "components/url_formatter/elide_url.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
@@ -58,7 +60,6 @@
 #include "ios/web/public/navigation_item.h"
 #include "ios/web/public/navigation_manager.h"
 #include "ios/web/public/origin_util.h"
-#include "ios/web/public/payments/payment_request.h"
 #include "ios/web/public/ssl_status.h"
 #import "ios/web/public/url_scheme_util.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
@@ -468,17 +469,18 @@ struct PendingPaymentResponse {
   return NO;
 }
 
-// Extracts a web::PaymentRequest from |message|. Creates and returns an
+// Extracts a payments::WebPaymentRequest from |message|. Creates and returns an
 // instance of payments::PaymentRequest which is initialized with the
-// web::PaymentRequest object. Returns nullptr and populates |errorMessage| with
-// the appropriate error message if it cannot extract a web::PaymentRequest from
-// |message| or the web::PaymentRequest instance is invalid.
+// payments::WebPaymentRequest object. Returns nullptr and populates
+// |errorMessage| with the appropriate error message if it cannot extract a
+// payments::WebPaymentRequest from |message| or the payments::WebPaymentRequest
+// instance is invalid.
 - (payments::PaymentRequest*)
 newPaymentRequestFromMessage:(const base::DictionaryValue&)message
                 errorMessage:(std::string*)errorMessage {
   DCHECK(errorMessage);
   const base::DictionaryValue* paymentRequestData;
-  web::PaymentRequest webPaymentRequest;
+  payments::WebPaymentRequest webPaymentRequest;
   if (!message.GetDictionary("payment_request", &paymentRequestData)) {
     *errorMessage = "JS message parameter 'payment_request' is missing";
     return nullptr;
@@ -498,20 +500,20 @@ newPaymentRequestFromMessage:(const base::DictionaryValue&)message
                            _personalDataManager, self));
 }
 
-// Extracts a web::PaymentRequest from |message|. Returns the cached instance of
-// payments::PaymentRequest that corresponds to the extracted
-// web::PaymentRequest object, if one exists. Otherwise, creates and returns a
-// new one which is initialized with the web::PaymentRequest object. Returns
-// nullptr and populates |errorMessage| with the appropriate error message if it
-// cannot extract a web::PaymentRequest from |message|, cannot find the
-// payments::PaymentRequest instance or the web::PaymentRequest instance is
-// invalid.
+// Extracts a payments::WebPaymentRequest from |message|. Returns the cached
+// instance of payments::PaymentRequest that corresponds to the extracted
+// payments::WebPaymentRequest object, if one exists. Otherwise, creates and
+// returns a new one which is initialized with the payments::WebPaymentRequest
+// object. Returns nullptr and populates |errorMessage| with the appropriate
+// error message if it cannot extract a payments::WebPaymentRequest from
+// |message|, cannot find the payments::PaymentRequest instance or the
+// payments::WebPaymentRequest instance is invalid.
 - (payments::PaymentRequest*)
 paymentRequestFromMessage:(const base::DictionaryValue&)message
              errorMessage:(std::string*)errorMessage {
   DCHECK(errorMessage);
   const base::DictionaryValue* paymentRequestData;
-  web::PaymentRequest webPaymentRequest;
+  payments::WebPaymentRequest webPaymentRequest;
   if (!message.GetDictionary("payment_request", &paymentRequestData)) {
     *errorMessage = "JS message parameter 'payment_request' is missing";
     return nullptr;
@@ -1078,7 +1080,7 @@ requestFullCreditCard:(const autofill::CreditCard&)creditCard
 }
 
 - (void)paymentResponseHelperDidCompleteWithPaymentResponse:
-    (const web::PaymentResponse&)paymentResponse {
+    (const payments::PaymentResponse&)paymentResponse {
   if (!_pendingPaymentRequest ||
       _pendingPaymentRequest->state() !=
           payments::PaymentRequest::State::INTERACTIVE ||

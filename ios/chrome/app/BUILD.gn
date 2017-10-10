@@ -170,6 +170,7 @@ source_set("app_internal") {
     "//ios/chrome/browser/ntp_snippets",
     "//ios/chrome/browser/omaha",
     "//ios/chrome/browser/payments",
+    "//ios/chrome/browser/payments:constants",
     "//ios/chrome/browser/prefs",
     "//ios/chrome/browser/reading_list",
     "//ios/chrome/browser/search_engines",

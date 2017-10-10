@@ -25,7 +25,6 @@ class PaymentsProfileComparator;
 }  // namespace payments
 
 namespace web {
-class PaymentRequest;
 class WebState;
 }  // namespace web
 
@@ -38,7 +37,7 @@ class TestPaymentRequest : public PaymentRequest {
  public:
   // |browser_state|, |web_state|, and |personal_data_manager| should not be
   // null and should outlive this object.
-  TestPaymentRequest(const web::PaymentRequest& web_payment_request,
+  TestPaymentRequest(const payments::WebPaymentRequest& web_payment_request,
                      ios::ChromeBrowserState* browser_state,
                      web::WebState* web_state,
                      autofill::PersonalDataManager* personal_data_manager,
@@ -53,7 +52,7 @@ class TestPaymentRequest : public PaymentRequest {
         pref_service_(nullptr),
         profile_comparator_(nullptr) {}
 
-  TestPaymentRequest(const web::PaymentRequest& web_payment_request,
+  TestPaymentRequest(const payments::WebPaymentRequest& web_payment_request,
                      ios::ChromeBrowserState* browser_state,
                      web::WebState* web_state,
                      autofill::PersonalDataManager* personal_data_manager)
@@ -77,9 +76,11 @@ class TestPaymentRequest : public PaymentRequest {
     profile_comparator_ = profile_comparator;
   }
 
-  // Returns the web::PaymentRequest instance that was used to build this
-  // object.
-  web::PaymentRequest& web_payment_request() { return web_payment_request_; }
+  // Returns the payments::WebPaymentRequest instance that was used to build
+  // this object.
+  payments::WebPaymentRequest& web_payment_request() {
+    return web_payment_request_;
+  }
 
   // Removes all the shipping profiles.
   void ClearShippingProfiles();
