@@ -213,12 +213,10 @@ def RequestGsAuthentication():
 
 def DownloadHermeticBuild(target_os, toolchain_version, toolchain_filename):
   if not _UseHermeticToolchain(target_os):
-    print 'Using local toolchain for %s.' % target_os
     return 0
 
   toolchain_output_path = TOOLCHAIN_BUILD_DIR % target_os
   if ReadStampFile(target_os) == toolchain_version:
-    print 'Toolchain (%s) is already up to date.' % toolchain_version
     FinalizeUnpack(toolchain_output_path, target_os)
     return 0
 
