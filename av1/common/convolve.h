@@ -35,6 +35,10 @@ typedef struct ConvolveParams {
   int round_1;
   int plane;
   int do_post_rounding;
+#if CONFIG_JNT_COMP
+  int fwd_offset;
+  int bck_offset;
+#endif
 } ConvolveParams;
 
 static INLINE ConvolveParams get_conv_params(int ref, int do_average,

@@ -103,6 +103,16 @@ extern "C" {
 #define USE_LOOP_FILTER_SUPERBLOCK 1
 #endif  // CONFIG_LPF_SB
 
+#if CONFIG_JNT_COMP
+typedef enum COMPOUND_DIST_WEIGHT_MODE {
+  DIST,
+} COMPOUND_DIST_WEIGHT_MODE;
+
+#define COMPOUND_WEIGHT_MODE DIST
+#define DIST_PRECISION_BITS 4
+#define DIST_PRECISION (1 << DIST_PRECISION_BITS)  // 16
+#endif                                             // CONFIG_JNT_COMP
+
 // Bitstream profiles indicated by 2-3 bits in the uncompressed header.
 // 00: Profile 0.  8-bit 4:2:0 only.
 // 10: Profile 1.  8-bit 4:4:4, 4:2:2, and 4:4:0.
