@@ -13,6 +13,7 @@ import android.os.ResultReceiver;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 import android.support.test.filters.SmallTest;
+import android.webkit.JavascriptInterface;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -240,6 +241,54 @@ public class AwContentsGarbageCollectionTest {
             removeAllViews();
         }
 
+        gcAndCheckAllAwContentsDestroyed();
+    }
+
+    @Test
+    @DisableHardwareAccelerationForTest
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testGcAfterUsingJavascriptObject() throws Throwable {
+        // Javascript object with a reference to WebView.
+        class Test {
+            Test(int value, AwContents awContents) {
+                mValue = value;
+                mAwContents = awContents;
+            }
+            @SuppressFBWarnings("UMAC_UNCALLABLE_METHOD_OF_ANONYMOUS_CLASS")
+            @JavascriptInterface
+            public int getValue() {
+                return mValue;
+            }
+            public AwContents getAwContents() {
+                return mAwContents;
+            }
+            private int mValue;
+            private AwContents mAwContents;
+        }
+        String html = "<html>Hello World</html>";
+        AwTestContainerView[] containerViews = new AwTestContainerView[MAX_IDLE_INSTANCES + 1];
+
+        TestAwContentsClient contentsClient = new TestAwContentsClient();
+        for (int i = 0; i < MAX_IDLE_INSTANCES + 1; ++i) {
+            containerViews[i] =
+                    mActivityTestRule.createAwTestContainerViewOnMainSync(contentsClient);
+            mActivityTestRule.enableJavaScriptOnUiThread(containerViews[i].getAwContents());
+            final AwContents awContents = containerViews[i].getAwContents();
+            final Test jsObject = new Test(i, awContents);
+            InstrumentationRegistry.getInstrumentation().runOnMainSync(
+                    () -> awContents.addJavascriptInterface(jsObject, "test"));
+            mActivityTestRule.loadDataSync(
+                    awContents, contentsClient.getOnPageFinishedHelper(), html, "text/html", false);
+            Assert.assertEquals(String.valueOf(i),
+                    mActivityTestRule.executeJavaScriptAndWaitForResult(
+                            awContents, contentsClient, "test.getValue()"));
+        }
+
+        containerViews[0] = null;
+        containerViews[1] = null;
+        containerViews = null;
+        removeAllViews();
         gcAndCheckAllAwContentsDestroyed();
     }
 

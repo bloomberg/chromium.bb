@@ -23,7 +23,6 @@
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "content/browser/android/gesture_event_type.h"
 #include "content/browser/android/interstitial_page_delegate_android.h"
-#include "content/browser/android/java/gin_java_bridge_dispatcher_host.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/media/media_web_contents_observer.h"
 #include "content/browser/renderer_host/compositor_impl_android.h"
@@ -179,12 +178,10 @@ ContentViewCore* ContentViewCore::FromWebContents(
   return data ? data->get() : NULL;
 }
 
-ContentViewCore::ContentViewCore(
-    JNIEnv* env,
-    const JavaRef<jobject>& obj,
-    WebContents* web_contents,
-    float dpi_scale,
-    const JavaRef<jobject>& java_bridge_retained_object_set)
+ContentViewCore::ContentViewCore(JNIEnv* env,
+                                 const JavaRef<jobject>& obj,
+                                 WebContents* web_contents,
+                                 float dpi_scale)
     : WebContentsObserver(web_contents),
       java_ref_(env, obj),
       web_contents_(static_cast<WebContentsImpl*>(web_contents)),
@@ -201,9 +198,6 @@ ContentViewCore::ContentViewCore(
   std::string spoofed_ua =
       BuildUserAgentFromOSAndProduct(kLinuxInfoStr, product);
   web_contents->SetUserAgentOverride(spoofed_ua);
-
-  java_bridge_dispatcher_host_ = new GinJavaBridgeDispatcherHost(
-      web_contents, java_bridge_retained_object_set);
 
   InitWebContents();
 }
@@ -853,31 +847,6 @@ void ContentViewCore::OnTouchDown(
   Java_ContentViewCore_onTouchDown(env, obj, event);
 }
 
-void ContentViewCore::SetAllowJavascriptInterfacesInspection(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    jboolean allow) {
-  java_bridge_dispatcher_host_->SetAllowObjectContentsInspection(allow);
-}
-
-void ContentViewCore::AddJavascriptInterface(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& /* obj */,
-    const JavaParamRef<jobject>& object,
-    const JavaParamRef<jstring>& name,
-    const JavaParamRef<jclass>& safe_annotation_clazz) {
-  java_bridge_dispatcher_host_->AddNamedObject(
-      ConvertJavaStringToUTF8(env, name), object, safe_annotation_clazz);
-}
-
-void ContentViewCore::RemoveJavascriptInterface(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& /* obj */,
-    const JavaParamRef<jstring>& name) {
-  java_bridge_dispatcher_host_->RemoveNamedObject(
-      ConvertJavaStringToUTF8(env, name));
-}
-
 void ContentViewCore::WasResized(JNIEnv* env,
                                  const JavaParamRef<jobject>& obj) {
   SendScreenRectsAndResizeWidget();
@@ -974,8 +943,7 @@ jlong Init(JNIEnv* env,
            const JavaParamRef<jobject>& jweb_contents,
            const JavaParamRef<jobject>& jview_android_delegate,
            jlong jwindow_android,
-           jfloat dip_scale,
-           const JavaParamRef<jobject>& retained_objects_set) {
+           jfloat dip_scale) {
   WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
       WebContents::FromJavaWebContents(jweb_contents));
   CHECK(web_contents)
@@ -988,8 +956,8 @@ jlong Init(JNIEnv* env,
   DCHECK(window_android);
   window_android->AddChild(view_android);
 
-  ContentViewCore* view = new ContentViewCore(env, obj, web_contents, dip_scale,
-                                              retained_objects_set);
+  ContentViewCore* view =
+      new ContentViewCore(env, obj, web_contents, dip_scale);
   return reinterpret_cast<intptr_t>(view);
 }
 

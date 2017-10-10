@@ -448,7 +448,7 @@ public class AwContentsClientFullScreenTest {
     private JavascriptEventObserver registerObserver(final String observerName) throws Throwable {
         final JavascriptEventObserver observer = new JavascriptEventObserver();
         InstrumentationRegistry.getInstrumentation().runOnMainSync(
-                () -> observer.register(mContentViewCore, observerName));
+                () -> observer.register(mContentViewCore.getWebContents(), observerName));
         return observer;
     }
 

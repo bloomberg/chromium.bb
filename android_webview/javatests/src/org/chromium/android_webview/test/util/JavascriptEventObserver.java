@@ -4,13 +4,13 @@
 
 package org.chromium.android_webview.test.util;
 
-import org.chromium.content.browser.ContentViewCore;
+import org.chromium.content_public.browser.WebContents;
 
 /**
  * This class is used to be notified when a javascript event happened. It add itself as
  * a javascript interface, so it could be notified by javascript when needed.
  *
- * 1. Call register() is to add a javascript interface into ContentViewCore.
+ * 1. Call register() is to add a javascript interface into WebContents.
  * 2. Using waitForEnvent() to wait javascript event.
  * 3. In javascript call notifyJava() when you want Java side know something is done.
  */
@@ -21,11 +21,11 @@ public class JavascriptEventObserver {
     /**
      * Register into javascript, must be called in UI thread.
      *
-     * @param contentViewCore
+     * @param webContents {@link WebContents} to inject javascript object to.
      * @param name the name of object used in javascript
      */
-    public void register(ContentViewCore contentViewCore, String name) {
-        contentViewCore.addPossiblyUnsafeJavascriptInterface(this, name, null);
+    public void register(WebContents webContents, String name) {
+        webContents.addPossiblyUnsafeJavascriptInterface(this, name, null);
     }
 
     /**

@@ -112,7 +112,7 @@ class GinJavaBridgeDispatcherHost
   // this set so that it doesn't get garbage collected while it's still
   // potentially in use. Although the set is managed native side, it's owned
   // and defined in Java so that pushing refs into it does not create new GC
-  // roots that would prevent ContentViewCore from being garbage collected.
+  // roots that would prevent WebContents from being garbage collected.
   JavaObjectWeakGlobalRef retained_object_set_;
   // Note that retained_object_set_ does not need to be consistent
   // with objects_.

@@ -75,6 +75,7 @@ import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationHistory;
 import org.chromium.content_public.browser.SelectionClient;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.WebContentsInternals;
 import org.chromium.content_public.browser.navigation_controller.LoadURLType;
 import org.chromium.content_public.browser.navigation_controller.UserAgentOverrideOption;
 import org.chromium.content_public.common.BrowserSideNavigationPolicy;
@@ -90,6 +91,7 @@ import org.chromium.ui.display.DisplayAndroid.DisplayAndroidObserver;
 
 import java.io.File;
 import java.lang.annotation.Annotation;
+import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
@@ -387,6 +389,38 @@ public class AwContents implements SmartClipProvider {
     private static String sCurrentLocales = "";
 
     private Paint mPaintForNWorkaround;
+
+    // A holder of objects passed from WebContents and should be owned by AwContents that may
+    // have direct or indirect reference back to WebView. They are used internally by
+    // WebContents but all the references can create a new gc root that can keep WebView
+    // instances from being freed when they are detached from view tree, hence lead to
+    // memory leak. To avoid the issue, it is possible to use |WebContents.setInternalHolder|
+    // to move the holder of those internal objects to AwContents. Note that they are still
+    // used by WebContents, and AwContents doesn't have to know what's inside the holder.
+    private WebContentsInternals mWebContentsInternals;
+
+    private static class WebContentsInternalsHolder implements WebContents.InternalsHolder {
+        private final WeakReference<AwContents> mAwContentsRef;
+
+        private WebContentsInternalsHolder(AwContents awContents) {
+            mAwContentsRef = new WeakReference<>(awContents);
+        }
+
+        @Override
+        public void set(WebContentsInternals internals) {
+            AwContents awContents = mAwContentsRef.get();
+            if (awContents == null) {
+                throw new IllegalStateException("AwContents should be available at this time");
+            }
+            awContents.mWebContentsInternals = internals;
+        }
+
+        @Override
+        public WebContentsInternals get() {
+            AwContents awContents = mAwContentsRef.get();
+            return awContents == null ? null : awContents.mWebContentsInternals;
+        }
+    }
 
     private static final class AwContentsDestroyRunnable implements Runnable {
         private final long mNativeAwContents;
@@ -1069,6 +1103,7 @@ public class AwContents implements SmartClipProvider {
             destroyNatives();
             mContentViewCore = null;
             mWebContents = null;
+            mWebContentsInternals = null;
             mNavigationController = null;
         }
 
@@ -1092,6 +1127,8 @@ public class AwContents implements SmartClipProvider {
         nativeSetJavaPeers(mNativeAwContents, this, mWebContentsDelegate, mContentsClientBridge,
                 mIoThreadClient, mInterceptNavigationDelegate, mAutofillProvider);
         mWebContents = mContentViewCore.getWebContents();
+        mWebContents.setInternalsHolder(new WebContentsInternalsHolder(this));
+
         mNavigationController = mWebContents.getNavigationController();
         installWebContentsObserver();
         mSettings.setWebContents(webContents);
@@ -1160,7 +1197,7 @@ public class AwContents implements SmartClipProvider {
         Map<String, Pair<Object, Class>> javascriptInterfaces =
                 new HashMap<String, Pair<Object, Class>>();
         if (mContentViewCore != null) {
-            javascriptInterfaces.putAll(mContentViewCore.getJavascriptInterfaces());
+            javascriptInterfaces.putAll(mWebContents.getJavascriptInterfaces());
         }
 
         setNewAwContents(popupNativeAwContents);
@@ -1186,10 +1223,8 @@ public class AwContents implements SmartClipProvider {
         for (Map.Entry<String, Pair<Object, Class>> entry : javascriptInterfaces.entrySet()) {
             @SuppressWarnings("unchecked")
             Class<? extends Annotation> requiredAnnotation = entry.getValue().second;
-            mContentViewCore.addPossiblyUnsafeJavascriptInterface(
-                    entry.getValue().first,
-                    entry.getKey(),
-                    requiredAnnotation);
+            mWebContents.addPossiblyUnsafeJavascriptInterface(
+                    entry.getValue().first, entry.getKey(), requiredAnnotation);
         }
     }
 
@@ -1259,6 +1294,7 @@ public class AwContents implements SmartClipProvider {
             mContentViewCore = null;
             mNativeAwContents = 0;
             mWebContents = null;
+            mWebContentsInternals = null;
             mNavigationController = null;
 
             mCleanupReference.cleanupNow();
@@ -1355,7 +1391,7 @@ public class AwContents implements SmartClipProvider {
      */
     public void disableJavascriptInterfacesInspection() {
         if (!isDestroyedOrNoOperation(WARN)) {
-            mContentViewCore.setAllowJavascriptInterfacesInspection(false);
+            mWebContents.setAllowJavascriptInterfacesInspection(false);
         }
     }
 
@@ -2593,7 +2629,7 @@ public class AwContents implements SmartClipProvider {
     }
 
     /**
-     * @see ContentViewCore#addPossiblyUnsafeJavascriptInterface(Object, String, Class)
+     * @see WebContents#addPossiblyUnsafeJavascriptInterface(Object, String, Class)
      */
     @SuppressLint("NewApi")  // JavascriptInterface requires API level 17.
     public void addJavascriptInterface(Object object, String name) {
@@ -2603,7 +2639,8 @@ public class AwContents implements SmartClipProvider {
         if (mAppTargetSdkVersion >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
             requiredAnnotation = JavascriptInterface.class;
         }
-        mContentViewCore.addPossiblyUnsafeJavascriptInterface(object, name, requiredAnnotation);
+
+        mWebContents.addPossiblyUnsafeJavascriptInterface(object, name, requiredAnnotation);
     }
 
     /**
@@ -2611,9 +2648,9 @@ public class AwContents implements SmartClipProvider {
      */
     public void removeJavascriptInterface(String interfaceName) {
         if (TRACE) Log.i(TAG, "%s removeJavascriptInterface=%s", this, interfaceName);
-        if (!isDestroyedOrNoOperation(WARN)) {
-            mContentViewCore.removeJavascriptInterface(interfaceName);
-        }
+        if (isDestroyedOrNoOperation(WARN)) return;
+
+        mWebContents.removeJavascriptInterface(interfaceName);
     }
 
     /**

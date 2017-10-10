@@ -304,7 +304,7 @@ public class VisualStateTest {
         // JS will notify this observer once it has changed the background color of the page.
         final JavascriptEventObserver jsObserver = new JavascriptEventObserver();
         InstrumentationRegistry.getInstrumentation().runOnMainSync(
-                () -> jsObserver.register(contentViewCore, "jsObserver"));
+                () -> jsObserver.register(awContents.getWebContents(), "jsObserver"));
 
         mActivityTestRule.loadUrlSync(
                 awContents, awContentsClient.getOnPageFinishedHelper(), WAIT_FOR_JS_TEST_URL);
@@ -372,7 +372,7 @@ public class VisualStateTest {
         // JS will notify this observer once it has entered fullscreen.
         final JavascriptEventObserver jsObserver = new JavascriptEventObserver();
         InstrumentationRegistry.getInstrumentation().runOnMainSync(
-                () -> jsObserver.register(contentViewCore, "jsObserver"));
+                () -> jsObserver.register(awContents.getWebContents(), "jsObserver"));
 
         mActivityTestRule.loadUrlSync(
                 awContents, awContentsClient.getOnPageFinishedHelper(), FULLSCREEN_TEST_URL);
@@ -421,7 +421,6 @@ public class VisualStateTest {
         final AwTestContainerView testView =
                 createDetachedTestContainerViewOnMainSync(awContentsClient);
         final AwContents awContents = testView.getAwContents();
-        final ContentViewCore contentViewCore = testView.getContentViewCore();
 
         mActivityTestRule.enableJavaScriptOnUiThread(awContents);
 
@@ -443,7 +442,7 @@ public class VisualStateTest {
         };
 
         InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
-            contentViewCore.addPossiblyUnsafeJavascriptInterface(
+            awContents.getWebContents().addPossiblyUnsafeJavascriptInterface(
                     pageChangeNotifier, "pageChangeNotifier", null);
             awContents.loadUrl(WAIT_FOR_JS_DETACHED_TEST_URL);
         });

@@ -29,6 +29,10 @@ public class AwJavaBridgeTest {
     private TestAwContentsClient mContentsClient = new TestAwContentsClient();
     private AwTestContainerView mTestContainerView;
 
+    // The system retains a strong ref to the last focused view (in InputMethodManager)
+    // so allow for 1 'leaked' instance.
+    private static final int MAX_IDLE_INSTANCES = 1;
+
     @Before
     public void setUp() throws Exception {
         mTestContainerView = mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
