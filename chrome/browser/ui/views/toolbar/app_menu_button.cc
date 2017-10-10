@@ -67,6 +67,16 @@ void AppMenuButton::SetSeverity(AppMenuIconController::IconType type,
   UpdateIcon(animate);
 }
 
+void AppMenuButton::SetIsProminent(bool is_prominent) {
+  if (is_prominent) {
+    SetBackground(views::CreateSolidBackground(GetNativeTheme()->GetSystemColor(
+        ui::NativeTheme::kColorId_ProminentButtonColor)));
+  } else {
+    SetBackground(nullptr);
+  }
+  SchedulePaint();
+}
+
 void AppMenuButton::ShowMenu(bool for_drop) {
   if (menu_ && menu_->IsShowing())
     return;

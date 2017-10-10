@@ -39,6 +39,8 @@ class AppMenuButton : public views::MenuButton, public TabStripModelObserver {
                    AppMenuIconController::Severity severity,
                    bool animate);
 
+  AppMenuIconController::Severity severity() { return severity_; }
+
   // Shows the app menu. |for_drop| indicates whether the menu is opened for a
   // drag-and-drop operation.
   void ShowMenu(bool for_drop);
@@ -47,6 +49,10 @@ class AppMenuButton : public views::MenuButton, public TabStripModelObserver {
   void CloseMenu();
 
   AppMenu* app_menu_for_testing() { return menu_.get(); }
+
+  // Sets the background to a prominent color if |is_prominent| is true. This is
+  // used for an experimental UI for In-Product Help.
+  void SetIsProminent(bool is_prominent);
 
   // Whether the app/hotdogs menu is currently showing.
   bool IsMenuShowing() const;
