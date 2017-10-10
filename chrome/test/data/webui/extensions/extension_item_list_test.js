@@ -58,6 +58,10 @@ cr.define('extension_item_list_tests', function() {
       itemList.filter = 'lph';
       itemLengthEquals(1);
       expectEquals('Alpha', itemList.$$('extensions-item').data.name);
+      // Test trailing/leading spaces.
+      itemList.filter = '   Alpha  ';
+      itemLengthEquals(1);
+      expectEquals('Alpha', itemList.$$('extensions-item').data.name);
       // Test string with no matching items.
       itemList.filter = 'z';
       itemLengthEquals(0);

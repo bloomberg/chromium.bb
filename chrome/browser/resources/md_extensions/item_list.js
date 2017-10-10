@@ -37,9 +37,9 @@ cr.define('extensions', function() {
      * @private
      */
     computeShownItems_: function(changeRecord, filter) {
-      return this.items.filter(function(item) {
-        return item.name.toLowerCase().includes(this.filter.toLowerCase());
-      }, this);
+      const formattedFilter = this.filter.trim().toLowerCase();
+      return this.items.filter(
+          item => item.name.toLowerCase().includes(formattedFilter));
     },
 
     shouldShowEmptyItemsMessage_: function() {
