@@ -73,6 +73,7 @@ process_template() (
   TMPLINCL="$(process_template_includes "$TMPLIN")"
   sed \
     -e "s#@@PACKAGE@@#${PACKAGE}#g" \
+    -e "s#@@PACKAGE_ORIG@@#${PACKAGE_ORIG}#g" \
     -e "s#@@PACKAGE_FILENAME@@#${PACKAGE_FILENAME}#g" \
     -e "s#@@PROGNAME@@#${PROGNAME}#g" \
     -e "s#@@CHANNEL@@#${CHANNEL}#g" \
