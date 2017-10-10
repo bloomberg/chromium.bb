@@ -53,8 +53,7 @@ def sharding_map_path():
 def main():
   parser = argparse.ArgumentParser()
   parser.add_argument(
-      '--isolated-script-test-output', type=argparse.FileType('w'),
-      required=True)
+      '--isolated-script-test-output', required=True)
   parser.add_argument(
       '--isolated-script-test-chartjson-output', required=False)
   parser.add_argument(
