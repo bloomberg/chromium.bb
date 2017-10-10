@@ -676,6 +676,12 @@ LayoutBoxModelObject* LayoutObject::EnclosingBoxModelObject() const {
   return nullptr;
 }
 
+LayoutNGBlockFlow* LayoutObject::EnclosingNGBlockFlow() const {
+  LayoutBox* box = EnclosingBox();
+  DCHECK(box);
+  return box->IsLayoutNGBlockFlow() ? ToLayoutNGBlockFlow(box) : nullptr;
+}
+
 LayoutBox* LayoutObject::EnclosingScrollableBox() const {
   for (LayoutObject* ancestor = Parent(); ancestor;
        ancestor = ancestor->Parent()) {

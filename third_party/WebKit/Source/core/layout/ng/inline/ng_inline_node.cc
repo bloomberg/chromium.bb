@@ -787,12 +787,11 @@ Optional<NGInlineNode> GetNGInlineNodeFor(const Node& node, unsigned offset) {
   const LayoutObject* layout_object = AssociatedLayoutObjectOf(node, offset);
   if (!layout_object || !layout_object->IsInline())
     return WTF::nullopt;
-  LayoutBox* box = layout_object->EnclosingBox();
-  if (!box->IsLayoutNGBlockFlow())
+  LayoutNGBlockFlow* ng_block_flow = layout_object->EnclosingNGBlockFlow();
+  if (!ng_block_flow)
     return WTF::nullopt;
-  DCHECK(box);
-  DCHECK(box->ChildrenInline());
-  return NGInlineNode(ToLayoutNGBlockFlow(box));
+  DCHECK(ng_block_flow->ChildrenInline());
+  return NGInlineNode(ng_block_flow);
 }
 
 const NGOffsetMappingUnit* NGInlineNode::GetMappingUnitForDOMOffset(
