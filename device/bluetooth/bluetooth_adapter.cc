@@ -423,7 +423,7 @@ void BluetoothAdapter::RecordBluetoothDiscoverySessionStopOutcome(
 }
 
 // static
-const base::TimeDelta BluetoothAdapter::timeoutSec =
+constexpr base::TimeDelta BluetoothAdapter::timeoutSec =
     base::TimeDelta::FromSeconds(180);
 
 }  // namespace device
