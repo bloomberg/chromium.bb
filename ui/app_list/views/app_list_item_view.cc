@@ -198,9 +198,6 @@ void AppListItemView::SetTouchDragging(bool touch_dragging) {
 }
 
 void AppListItemView::SetMouseDragging(bool mouse_dragging) {
-  if (mouse_dragging_ == mouse_dragging)
-    return;
-
   mouse_dragging_ = mouse_dragging;
 
   if (!mouse_dragging_) {
