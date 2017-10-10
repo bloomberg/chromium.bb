@@ -16,13 +16,29 @@ TEST(GlobalDumpGraphTest, CreateContainerForProcess) {
   GlobalDumpGraph global_dump_graph;
 
   Process* dump = global_dump_graph.CreateGraphForProcess(10);
-  ASSERT_TRUE(dump != nullptr);
+  ASSERT_NE(dump, nullptr);
 
   auto* map = global_dump_graph.process_dump_graphs().find(10)->second.get();
   ASSERT_EQ(dump, map);
 }
 
-TEST(DumpGraphTest, CreateAndFindNode) {
+TEST(GlobalDumpGraphTest, AddNodeOwnershipEdge) {
+  GlobalDumpGraph global_dump_graph;
+  Node owner(global_dump_graph.shared_memory_graph());
+  Node owned(global_dump_graph.shared_memory_graph());
+
+  global_dump_graph.AddNodeOwnershipEdge(&owner, &owned, 1);
+
+  auto& edges = global_dump_graph.edges();
+  ASSERT_NE(edges.begin(), edges.end());
+
+  auto& edge = *edges.begin();
+  ASSERT_EQ(edge.source(), &owner);
+  ASSERT_EQ(edge.target(), &owned);
+  ASSERT_EQ(edge.priority(), 1);
+}
+
+TEST(ProcessTest, CreateAndFindNode) {
   GlobalDumpGraph global_dump_graph;
   Process graph(&global_dump_graph);
 
