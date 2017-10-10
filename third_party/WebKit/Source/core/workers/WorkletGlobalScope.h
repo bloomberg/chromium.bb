@@ -46,10 +46,10 @@ class CORE_EXPORT WorkletGlobalScope
     return const_cast<WorkletGlobalScope*>(this);
   }
 
-  void EvaluateClassicScript(const KURL& script_url,
-                             String source_code,
-                             std::unique_ptr<Vector<char>> cached_meta_data,
-                             V8CacheOptions) final;
+  void EvaluateClassicScript(
+      const KURL& script_url,
+      String source_code,
+      std::unique_ptr<Vector<char>> cached_meta_data) final;
 
   // Always returns false here as worklets don't have a #close() method on
   // the global.

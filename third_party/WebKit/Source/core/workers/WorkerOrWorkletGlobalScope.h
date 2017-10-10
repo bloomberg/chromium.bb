@@ -40,8 +40,7 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public ExecutionContext {
   virtual void EvaluateClassicScript(
       const KURL& script_url,
       String source_code,
-      std::unique_ptr<Vector<char>> cached_meta_data,
-      V8CacheOptions) = 0;
+      std::unique_ptr<Vector<char>> cached_meta_data) = 0;
 
   // Returns true when the WorkerOrWorkletGlobalScope is closing (e.g. via
   // WorkerGlobalScope#close() method). If this returns true, the worker is

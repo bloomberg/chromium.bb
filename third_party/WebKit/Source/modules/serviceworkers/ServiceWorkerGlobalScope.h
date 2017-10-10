@@ -66,10 +66,10 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final : public WorkerGlobalScope {
   bool IsServiceWorkerGlobalScope() const override { return true; }
 
   // Implements WorkerGlobalScope.
-  void EvaluateClassicScript(const KURL& script_url,
-                             String source_code,
-                             std::unique_ptr<Vector<char>> cached_meta_data,
-                             V8CacheOptions) override;
+  void EvaluateClassicScript(
+      const KURL& script_url,
+      String source_code,
+      std::unique_ptr<Vector<char>> cached_meta_data) override;
 
   // Counts an evaluated script and its size. Called for the main worker script.
   void CountWorkerScript(size_t script_size, size_t cached_metadata_size);
@@ -120,12 +120,9 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final : public WorkerGlobalScope {
       const AddEventListenerOptionsResolved&) override;
 
  private:
-  ServiceWorkerGlobalScope(const KURL&,
-                           const String& user_agent,
+  ServiceWorkerGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,
                            ServiceWorkerThread*,
-                           double time_origin,
-                           std::unique_ptr<SecurityOrigin::PrivilegeData>,
-                           WorkerClients*);
+                           double time_origin);
   void importScripts(const Vector<String>& urls, ExceptionState&) override;
   CachedMetadataHandler* CreateWorkerScriptCachedMetadataHandler(
       const KURL& script_url,
@@ -138,10 +135,10 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final : public WorkerGlobalScope {
 
   Member<ServiceWorkerClients> clients_;
   Member<ServiceWorkerRegistration> registration_;
-  bool did_evaluate_script_;
-  size_t script_count_;
-  size_t script_total_size_;
-  size_t script_cached_metadata_total_size_;
+  bool did_evaluate_script_ = false;
+  size_t script_count_ = 0;
+  size_t script_total_size_ = 0;
+  size_t script_cached_metadata_total_size_ = 0;
 };
 
 DEFINE_TYPE_CASTS(ServiceWorkerGlobalScope,

@@ -404,8 +404,6 @@ void WorkerThread::InitializeOnWorkerThread(
   // TODO(nhiroki): Rename WorkerThreadStartMode to GlobalScopeStartMode.
   // (https://crbug.com/710364)
   WorkerThreadStartMode start_mode = global_scope_creation_params->start_mode;
-  V8CacheOptions v8_cache_options =
-      global_scope_creation_params->v8_cache_options;
 
   // TODO(nhiroki): Separate these fields from GlobalScopeCreationParams because
   // these are used not for creating a global scope but for evaluating a script.
@@ -461,8 +459,7 @@ void WorkerThread::InitializeOnWorkerThread(
   if (GlobalScope()->IsWorkletGlobalScope())
     return;
   GlobalScope()->EvaluateClassicScript(script_url, std::move(source_code),
-                                       std::move(cached_meta_data),
-                                       v8_cache_options);
+                                       std::move(cached_meta_data));
 }
 
 void WorkerThread::PrepareForShutdownOnWorkerThread() {

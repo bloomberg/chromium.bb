@@ -36,9 +36,7 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/WorkerThreadDebugger.h"
-#include "core/origin_trials/OriginTrialContext.h"
 #include "core/workers/SharedWorkerThread.h"
-#include "core/workers/WorkerClients.h"
 #include "platform/wtf/CurrentTime.h"
 
 namespace blink {
@@ -50,45 +48,15 @@ MessageEvent* CreateConnectEvent(MessagePort* port) {
   return event;
 }
 
-// static
-SharedWorkerGlobalScope* SharedWorkerGlobalScope::Create(
-    const String& name,
-    SharedWorkerThread* thread,
-    std::unique_ptr<GlobalScopeCreationParams> creation_params,
-    double time_origin) {
-  SharedWorkerGlobalScope* context = new SharedWorkerGlobalScope(
-      name, creation_params->script_url, creation_params->user_agent, thread,
-      std::move(creation_params->starter_origin_privilege_data),
-      creation_params->worker_clients, time_origin);
-  context->ApplyContentSecurityPolicyFromVector(
-      *creation_params->content_security_policy_parsed_headers);
-  context->SetWorkerSettings(std::move(creation_params->worker_settings));
-  if (!creation_params->referrer_policy.IsNull())
-    context->ParseAndSetReferrerPolicy(creation_params->referrer_policy);
-  context->SetAddressSpace(creation_params->address_space);
-  OriginTrialContext::AddTokens(context,
-                                creation_params->origin_trial_tokens.get());
-  return context;
-}
-
 SharedWorkerGlobalScope::SharedWorkerGlobalScope(
     const String& name,
-    const KURL& url,
-    const String& user_agent,
+    std::unique_ptr<GlobalScopeCreationParams> creation_params,
     SharedWorkerThread* thread,
-    std::unique_ptr<SecurityOrigin::PrivilegeData>
-        starter_origin_privilege_data,
-    WorkerClients* worker_clients,
     double time_origin)
-    : WorkerGlobalScope(url,
-                        user_agent,
-                        thread,
-                        time_origin,
-                        std::move(starter_origin_privilege_data),
-                        worker_clients),
+    : WorkerGlobalScope(std::move(creation_params), thread, time_origin),
       name_(name) {}
 
-SharedWorkerGlobalScope::~SharedWorkerGlobalScope() {}
+SharedWorkerGlobalScope::~SharedWorkerGlobalScope() = default;
 
 const AtomicString& SharedWorkerGlobalScope::InterfaceName() const {
   return EventTargetNames::SharedWorkerGlobalScope;
