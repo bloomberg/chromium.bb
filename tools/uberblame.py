@@ -442,7 +442,8 @@ def visualize_uberblame(data, blame):
           text-decoration: none;
         }
         span {
-          box-shadow: 0 0 0pt 0.5pt rgba(0, 0, 0, 0.25) inset;
+          outline: 1pt solid #00000030;
+          outline-offset: -1pt;
         }
         #linenums {
           text-align: right;
