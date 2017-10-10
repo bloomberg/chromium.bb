@@ -195,10 +195,15 @@ class ChildProcessSecurityPolicy {
   virtual void GrantSendMidiSysExMessage(int child_id) = 0;
 
   // Returns true if the process is permitted to read and modify the data for
-  // the given origin. This is currently used for cookies and passwords.
-  // Does not affect cookies attached to or set by network requests.
-  // Only might return false if the --site-per-process flag is used.
-  virtual bool CanAccessDataForOrigin(int child_id, const GURL& gurl) = 0;
+  // the origin of |url|. This is currently used to protect data such as
+  // cookies, passwords, and local storage. Does not affect cookies attached to
+  // or set by network requests.
+  //
+  // This can only return false for processes locked to a particular origin,
+  // which can happen for any origin when the --site-per-process flag is used,
+  // or for isolated origins that require a dedicated process (see
+  // AddIsolatedOrigin).
+  virtual bool CanAccessDataForOrigin(int child_id, const GURL& url) = 0;
 
   // Returns true if GrantOrigin was called earlier with the same parameters.
   //
