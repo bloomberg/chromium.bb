@@ -15,8 +15,7 @@ piman@chromium.org
 # per-file rules:
 # These are for the common case of adding or renaming files. If you're doing
 # structural changes, please get a review from a reviewer in this file.
-per-file *.gypi=*
-per-file content_nacl_nonsfi.gyp=*
+per-file BUILD.gn=*
 
 # Mac Sandbox profiles.
 per-file *.sb=set noparent
