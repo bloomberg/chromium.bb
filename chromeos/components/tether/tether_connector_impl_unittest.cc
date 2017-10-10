@@ -268,14 +268,12 @@ class TetherConnectorImplTest : public NetworkStateTest {
               fake_active_host_->GetTetherNetworkGuid());
     EXPECT_TRUE(fake_active_host_->GetWifiNetworkGuid().empty());
 
-    EXPECT_EQ(
-        setup_required,
+    EXPECT_FALSE(
         fake_notification_presenter_->is_setup_required_notification_shown());
 
     fake_tether_host_fetcher_->InvokePendingCallbacks();
 
-    EXPECT_EQ(
-        setup_required,
+    EXPECT_FALSE(
         fake_notification_presenter_->is_setup_required_notification_shown());
     EXPECT_EQ(
         setup_required,
@@ -614,12 +612,12 @@ TEST_F(TetherConnectorImplTest, TestSuccessfulConnection_SetupRequired) {
 
   CallConnect(GetTetherNetworkGuid(test_devices_[1].GetDeviceId()));
 
-  EXPECT_TRUE(
+  EXPECT_FALSE(
       fake_notification_presenter_->is_setup_required_notification_shown());
 
   fake_tether_host_fetcher_->InvokePendingCallbacks();
 
-  EXPECT_TRUE(
+  EXPECT_FALSE(
       fake_notification_presenter_->is_setup_required_notification_shown());
   EXPECT_TRUE(
       fake_operation_factory_->created_operations()[0]->setup_required());
