@@ -34,8 +34,6 @@ class SdpMessage {
 
   // Adds specified parameters for the |codec|. Returns false if the |codec| is
   // not listed anywhere in the SDP message.
-  // TODO(zijiehe): The |parameters_to_add| should be added to each payload
-  // types instead of the first one.
   bool AddCodecParameter(const std::string& codec,
                          const std::string& parameters_to_add);
 
@@ -44,16 +42,6 @@ class SdpMessage {
   bool PreferVideoCodec(const std::string& codec);
 
  private:
-  // Finds the first line of the form "a=rtpmap:<payload_type> <codec>/.." with
-  // the specified |codec|. Sets |line_num| to line number and |payload_type| to
-  // the payload type from that line. Returns false if the codec wasn't found.
-  // |line_num| and |payload_type| are both optional.
-  // TODO(zijiehe): This function overload should be removed, several payload
-  // types may be generated for one codec.
-  bool FindCodec(const std::string& codec,
-                 int* line_num,
-                 std::string* payload_type) const;
-
   // Finds the lines of the form "a=rtpmap:<payload_type> <codec>/.." with the
   // specified |codec| and returns a list of the matching payload types with
   // their line numbers.
