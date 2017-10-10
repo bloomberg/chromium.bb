@@ -341,6 +341,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   DCHECK_GE(nodes.size(), 1u);
   bookmark_utils_ios::DeleteBookmarksWithUndoToast(nodes, self.bookmarks,
                                                    self.browserState);
+  [self setTableViewEditing:NO];
 }
 
 // Opens the editor on the given node.
@@ -1183,6 +1184,13 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   return controller;
 }
 
+// Sets the editing mode for tableView, update context bar state accordingly.
+- (void)setTableViewEditing:(BOOL)editing {
+  [self.bookmarksTableView setEditing:editing];
+  [self setContextBarState:editing ? BookmarksContextBarBeginSelection
+                                   : BookmarksContextBarDefault];
+}
+
 #pragma mark - ContextBarDelegate implementation
 
 // Called when the leading button is clicked.
@@ -1267,10 +1275,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 // Called when the trailing button, "Select" or "Cancel" is clicked.
 - (void)trailingButtonClicked {
   // Toggle edit mode.
-  [self.bookmarksTableView setEditing:!self.bookmarksTableView.editing];
-  [self setContextBarState:self.bookmarksTableView.editing
-                               ? BookmarksContextBarBeginSelection
-                               : BookmarksContextBarDefault];
+  [self setTableViewEditing:!self.bookmarksTableView.editing];
 }
 
 #pragma mark - ContextBarStates
