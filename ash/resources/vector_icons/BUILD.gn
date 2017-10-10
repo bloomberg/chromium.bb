@@ -134,6 +134,7 @@ aggregate_vector_icons("ash_vector_icons") {
     "shelf_sign_out_button.icon",
     "shelf_unlock_button.1x.icon",
     "shelf_unlock_button.icon",
+    "splitview_nosnap_warning.icon",
     "system_menu_accessibility.1x.icon",
     "system_menu_accessibility.icon",
     "system_menu_accessibility_auto_click.1x.icon",

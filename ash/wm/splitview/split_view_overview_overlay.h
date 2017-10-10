@@ -18,6 +18,8 @@ class Widget;
 
 namespace ash {
 
+enum class IndicatorType { NONE, DRAG_AREA, CANNOT_SNAP };
+
 // An overlay in overview mode which guides users while they are attempting to
 // enter splitview.
 class ASH_EXPORT SplitViewOverviewOverlay {
@@ -28,16 +30,22 @@ class ASH_EXPORT SplitViewOverviewOverlay {
   // Sets visiblity. The correct indicators will become visible based on the
   // split view controllers state. If |event_location| is located on a different
   // root window than |widget_|, |widget_| will reparent.
-  void SetVisible(bool visible, const gfx::Point& event_location);
-  bool visible() const;
+  void SetIndicatorType(IndicatorType indicator_type,
+                        const gfx::Point& event_location);
+  IndicatorType current_indicator_type() const {
+    return current_indicator_type_;
+  }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SplitViewWindowSelectorTest,
                            SplitViewOverviewOverlayWidgetReparenting);
+  class RotatedImageLabelView;
   class SplitViewOverviewOverlayView;
 
   // The root content view of |widget_|.
   SplitViewOverviewOverlayView* overlay_view_ = nullptr;
+
+  IndicatorType current_indicator_type_ = IndicatorType::NONE;
 
   // The SplitViewOverviewOverlay widget. It covers the entire root window
   // and displays regions and text indicating where users should drag windows

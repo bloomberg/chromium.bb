@@ -2187,10 +2187,14 @@ TEST_F(SplitViewWindowSelectorTest, SplitViewOverviewOverlayVisibility) {
       GetWindowItemForWindow(grid_index, window1.get());
   gfx::Point start_location(selector_item->target_bounds().CenterPoint());
   window_selector()->InitiateDrag(selector_item, start_location);
-  EXPECT_TRUE(window_selector()->split_view_overview_overlay()->visible());
+  EXPECT_EQ(IndicatorType::DRAG_AREA, window_selector()
+                                          ->split_view_overview_overlay()
+                                          ->current_indicator_type());
   const gfx::Point end_location1(0, 0);
   window_selector()->Drag(selector_item, end_location1);
-  EXPECT_FALSE(window_selector()->split_view_overview_overlay()->visible());
+  EXPECT_EQ(IndicatorType::NONE, window_selector()
+                                     ->split_view_overview_overlay()
+                                     ->current_indicator_type());
 
   // Snap window to the left.
   window_selector()->CompleteDrag(selector_item);
@@ -2202,7 +2206,40 @@ TEST_F(SplitViewWindowSelectorTest, SplitViewOverviewOverlayVisibility) {
   selector_item = GetWindowItemForWindow(grid_index, window2.get());
   start_location = selector_item->target_bounds().CenterPoint();
   window_selector()->InitiateDrag(selector_item, start_location);
-  EXPECT_FALSE(window_selector()->split_view_overview_overlay()->visible());
+  EXPECT_EQ(IndicatorType::NONE, window_selector()
+                                     ->split_view_overview_overlay()
+                                     ->current_indicator_type());
+  window_selector()->CompleteDrag(selector_item);
+}
+
+// Verify that the split view overview overlay is shown when expected when
+// attempting to drag a unsnappable window.
+TEST_F(SplitViewWindowSelectorTest,
+       SplitViewOverviewOverlayVisibilityUnsnappableWindow) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kAshEnableTabletSplitView);
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+
+  const gfx::Rect bounds(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> unsnappable_window(CreateWindow(bounds));
+  unsnappable_window->SetProperty(aura::client::kResizeBehaviorKey,
+                                  ui::mojom::kResizeBehaviorNone);
+  ToggleOverview();
+  ASSERT_TRUE(window_selector_controller()->IsSelecting());
+
+  const int grid_index = 0;
+  WindowSelectorItem* selector_item =
+      GetWindowItemForWindow(grid_index, unsnappable_window.get());
+  gfx::Point start_location(selector_item->target_bounds().CenterPoint());
+  window_selector()->InitiateDrag(selector_item, start_location);
+  EXPECT_EQ(IndicatorType::CANNOT_SNAP, window_selector()
+                                            ->split_view_overview_overlay()
+                                            ->current_indicator_type());
+  const gfx::Point end_location1(0, 0);
+  window_selector()->Drag(selector_item, end_location1);
+  EXPECT_EQ(IndicatorType::NONE, window_selector()
+                                     ->split_view_overview_overlay()
+                                     ->current_indicator_type());
   window_selector()->CompleteDrag(selector_item);
 }
 
@@ -2230,7 +2267,9 @@ TEST_F(SplitViewWindowSelectorTest, SplitViewOverviewOverlayWidgetReparenting) {
       GetWindowItemForWindow(0, primary_screen_window.get());
   gfx::Point start_location(selector_item->target_bounds().CenterPoint());
   window_selector()->InitiateDrag(selector_item, start_location);
-  EXPECT_TRUE(window_selector()->split_view_overview_overlay()->visible());
+  EXPECT_EQ(IndicatorType::DRAG_AREA, window_selector()
+                                          ->split_view_overview_overlay()
+                                          ->current_indicator_type());
   EXPECT_EQ(root_windows[0], window_selector()
                                  ->split_view_overview_overlay()
                                  ->widget_->GetNativeView()
@@ -2247,7 +2286,9 @@ TEST_F(SplitViewWindowSelectorTest, SplitViewOverviewOverlayWidgetReparenting) {
   selector_item = GetWindowItemForWindow(1, secondary_screen_window.get());
   start_location = gfx::Point(selector_item->target_bounds().CenterPoint());
   window_selector()->InitiateDrag(selector_item, start_location);
-  EXPECT_TRUE(window_selector()->split_view_overview_overlay()->visible());
+  EXPECT_EQ(IndicatorType::DRAG_AREA, window_selector()
+                                          ->split_view_overview_overlay()
+                                          ->current_indicator_type());
   EXPECT_EQ(root_windows[1], window_selector()
                                  ->split_view_overview_overlay()
                                  ->widget_->GetNativeView()
