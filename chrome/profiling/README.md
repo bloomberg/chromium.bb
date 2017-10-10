@@ -39,17 +39,15 @@ Communication Model
 -------------------
 When profiling is enabled, the browser process will spawn the profiling service.
 The services lives in a sandboxed, utility process, and its interface is at
-`chrome/common/profiling/memlog.mojom`.
+`chrome/common/profiling/memlog_service.mojom`.
 
-All other processes, including the browser process, are MemlogClients. See
-`memlog_client.mojom`. Depending on the profiling mode, the browser process will
-start profiling for just itself [`--memlog=browser`] , or itself and all child
-processes [`--memlog=all`].
+All other processes, including the browser process, are ProfilingClients. See
+`profiling_client.mojom`. Depending on the profiling mode, the browser process
+will start profiling for just itself and the GPU process [`--memlog=minimal`],
+or itself and all child processes [`--memlog=all`].
 
-The browser process creates a pair of pipes for each MemlogClient. The sending
-pipe is sent to the MemlogClient, and the receiving pipe is sent to the
-profiling service. Each MemlogClient then sends memory allocation information
-via its endpoint to the profiling service.
+The browser process creates a pipe for each ProfilingClient that allows the
+client processes to communicate memory events to the profiling process.
 
 Code Locations
 --------------

@@ -16,7 +16,7 @@
 #include "base/synchronization/lock.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/common/profiling/memlog.mojom.h"
+#include "chrome/common/profiling/profiling_service.mojom.h"
 #include "chrome/profiling/allocation_event.h"
 #include "chrome/profiling/allocation_tracker.h"
 #include "chrome/profiling/backtrace_storage.h"
@@ -78,7 +78,7 @@ class MemlogConnectionManager {
 
     // File to dump the output to.
     base::File file;
-    mojom::Memlog::DumpProcessCallback callback;
+    mojom::ProfilingService::DumpProcessCallback callback;
   };
 
   // Dumping is asynchronous so will not be complete when this function
@@ -86,12 +86,13 @@ class MemlogConnectionManager {
   // fired.
   void DumpProcess(DumpProcessArgs args);
   void DumpProcessesForTracing(
-      mojom::Memlog::DumpProcessesForTracingCallback callback,
+      mojom::ProfilingService::DumpProcessesForTracingCallback callback,
       memory_instrumentation::mojom::GlobalMemoryDumpPtr dump);
 
   void OnNewConnection(base::ProcessId pid,
-                       mojom::MemlogClientPtr client,
-                       mojo::edk::ScopedPlatformHandle handle);
+                       mojom::ProfilingClientPtr client,
+                       mojo::ScopedHandle sender_pipe_end,
+                       mojo::ScopedHandle receiver_pipe_end);
 
  private:
   struct Connection;

@@ -26,8 +26,8 @@
           "metrics::mojom::CallStackProfileCollector"
         ],
         "ime:ime_driver": [],
-        "memlog_client": [
-          "profiling::mojom::MemlogClient"
+        "profiling_client": [
+          "profiling::mojom::ProfilingClient"
         ]
       },
       "requires": {
@@ -37,7 +37,7 @@
         "ash_pref_connector": [ "pref_connector" ],
         // Only used in classic ash case.
         "chrome": [ "input_device_controller" ],
-        "content_browser": [ "memlog_client" ],
+        "content_browser": [ "profiling_client" ],
         "device": [ "device:fingerprint" ],
         "identity": [ "identity_manager" ],
         // Only used in classic ash case.
@@ -45,7 +45,7 @@
         "nacl_broker": [ "browser" ],
         "nacl_loader": [ "browser" ],
         "profile_import": [ "import" ],
-        "profiling": [ "memlog" ],
+        "profiling": [ "profiling" ],
         "proxy_resolver": [ "factory" ],
         "pdf_to_pwg_raster_converter": [ "converter" ],
         "preferences": [ "pref_client", "pref_control" ],

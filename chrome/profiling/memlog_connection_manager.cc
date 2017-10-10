@@ -10,12 +10,13 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread.h"
-#include "chrome/common/profiling/memlog_client.h"
+#include "chrome/common/profiling/profiling_client.h"
 #include "chrome/profiling/allocation_tracker.h"
 #include "chrome/profiling/json_exporter.h"
 #include "chrome/profiling/memlog_receiver_pipe.h"
 #include "chrome/profiling/memlog_stream_parser.h"
 #include "mojo/public/cpp/system/buffer.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 #include "third_party/zlib/zlib.h"
 
 #if defined(OS_WIN)
@@ -62,7 +63,7 @@ struct MemlogConnectionManager::DumpProcessesForTracingTracking
   size_t waiting_responses = 0;
 
   // Callback to issue when dumps are complete.
-  mojom::Memlog::DumpProcessesForTracingCallback callback;
+  mojom::ProfilingService::DumpProcessesForTracingCallback callback;
 
   // Info about the request.
   memory_instrumentation::mojom::GlobalMemoryDumpPtr dump;
@@ -79,7 +80,7 @@ struct MemlogConnectionManager::Connection {
   Connection(AllocationTracker::CompleteCallback complete_cb,
              BacktraceStorage* backtrace_storage,
              base::ProcessId pid,
-             mojom::MemlogClientPtr client,
+             mojom::ProfilingClientPtr client,
              scoped_refptr<MemlogReceiverPipe> p)
       : thread(base::StringPrintf("Sender %lld thread",
                                   static_cast<long long>(pid))),
@@ -95,7 +96,7 @@ struct MemlogConnectionManager::Connection {
 
   base::Thread thread;
 
-  mojom::MemlogClientPtr client;
+  mojom::ProfilingClientPtr client;
   scoped_refptr<MemlogReceiverPipe> pipe;
   scoped_refptr<MemlogStreamParser> parser;
 
@@ -109,13 +110,20 @@ MemlogConnectionManager::~MemlogConnectionManager() = default;
 
 void MemlogConnectionManager::OnNewConnection(
     base::ProcessId pid,
-    mojom::MemlogClientPtr client,
-    mojo::edk::ScopedPlatformHandle handle) {
+    mojom::ProfilingClientPtr client,
+    mojo::ScopedHandle sender_pipe_end,
+    mojo::ScopedHandle receiver_pipe_end) {
   base::AutoLock lock(connections_lock_);
+
+  // Shouldn't be asked to profile a process more than once.
   DCHECK(connections_.find(pid) == connections_.end());
 
+  base::PlatformFile receiver_handle;
+  CHECK_EQ(MOJO_RESULT_OK, mojo::UnwrapPlatformFile(
+                               std::move(receiver_pipe_end), &receiver_handle));
   scoped_refptr<MemlogReceiverPipe> new_pipe =
-      new MemlogReceiverPipe(std::move(handle));
+      new MemlogReceiverPipe(mojo::edk::ScopedPlatformHandle(
+          mojo::edk::PlatformHandle(receiver_handle)));
 
   // The allocation tracker will call this on a background thread, so thunk
   // back to the current thread with weak pointers.
@@ -127,6 +135,7 @@ void MemlogConnectionManager::OnNewConnection(
   auto connection =
       base::MakeUnique<Connection>(std::move(complete_cb), &backtrace_storage_,
                                    pid, std::move(client), new_pipe);
+
   base::Thread::Options options;
   options.message_loop_type = base::MessageLoop::TYPE_IO;
   connection->thread.StartWithOptions(options);
@@ -134,11 +143,14 @@ void MemlogConnectionManager::OnNewConnection(
   connection->parser = new MemlogStreamParser(&connection->tracker);
   new_pipe->SetReceiver(connection->thread.task_runner(), connection->parser);
 
-  connections_[pid] = std::move(connection);
-
-  connections_[pid]->thread.task_runner()->PostTask(
+  connection->thread.task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&MemlogReceiverPipe::StartReadingOnIOThread, new_pipe));
+
+  // Request the client start sending us data.
+  connection->client->StartProfiling(std::move(sender_pipe_end));
+
+  connections_[pid] = std::move(connection);  // Transfers ownership.
 }
 
 void MemlogConnectionManager::OnConnectionComplete(base::ProcessId pid) {
@@ -166,7 +178,7 @@ void MemlogConnectionManager::DumpProcess(DumpProcessArgs args) {
 }
 
 void MemlogConnectionManager::DumpProcessesForTracing(
-    mojom::Memlog::DumpProcessesForTracingCallback callback,
+    mojom::ProfilingService::DumpProcessesForTracingCallback callback,
     memory_instrumentation::mojom::GlobalMemoryDumpPtr dump) {
   base::AutoLock lock(connections_lock_);
 
@@ -191,7 +203,7 @@ void MemlogConnectionManager::DumpProcessesForTracing(
         barrier_id, task_runner,
         base::BindOnce(&MemlogConnectionManager::DoDumpOneProcessForTracing,
                        weak_factory_.GetWeakPtr(), tracking, pid));
-    connection->client->FlushPipe(barrier_id);
+    connection->client->FlushMemlogPipe(barrier_id);
   }
 }
 
@@ -219,7 +231,7 @@ void MemlogConnectionManager::SynchronizeOnPid(
   Connection* connection = it->second.get();
   connection->tracker.SnapshotOnBarrier(barrier_id, std::move(task_runner),
                                         std::move(callback));
-  connection->client->FlushPipe(barrier_id);
+  connection->client->FlushMemlogPipe(barrier_id);
 }
 
 void MemlogConnectionManager::DoDumpProcess(

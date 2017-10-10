@@ -7,7 +7,7 @@
           "chrome::mojom::ResourceUsageReporter",
           "chrome::mojom::SearchBouncer",
           "spellcheck::mojom::SpellChecker",
-          "profiling::mojom::MemlogClient"
+          "profiling::mojom::ProfilingClient"
         ]
       },
       "requires": {

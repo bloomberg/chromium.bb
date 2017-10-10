@@ -63,36 +63,36 @@ const size_t kMaxTraceSizeUploadInBytes = 10 * 1024 * 1024;
 const char kNoTriggerName[] = "";
 
 // This helper class cleans up initialization boilerplate for the callers who
-// need to create MemlogClients bound to various different things.
-class MemlogClientBinder {
+// need to create ProfilingClients bound to various different things.
+class ProfilingClientBinder {
  public:
-  // Binds to a non-renderer-child-process' MemlogClient.
-  explicit MemlogClientBinder(content::BrowserChildProcessHost* host)
-      : MemlogClientBinder() {
+  // Binds to a non-renderer-child-process' ProfilingClient.
+  explicit ProfilingClientBinder(content::BrowserChildProcessHost* host)
+      : ProfilingClientBinder() {
     content::BindInterface(host->GetHost(), std::move(request_));
   }
 
-  // Binds to a renderer's MemlogClient.
-  explicit MemlogClientBinder(content::RenderProcessHost* host)
-      : MemlogClientBinder() {
+  // Binds to a renderer's ProfilingClient.
+  explicit ProfilingClientBinder(content::RenderProcessHost* host)
+      : ProfilingClientBinder() {
     content::BindInterface(host, std::move(request_));
   }
 
-  // Binds to the local connector to get the browser process' MemlogClient.
-  explicit MemlogClientBinder(service_manager::Connector* connector)
-      : MemlogClientBinder() {
+  // Binds to the local connector to get the browser process' ProfilingClient.
+  explicit ProfilingClientBinder(service_manager::Connector* connector)
+      : ProfilingClientBinder() {
     connector->BindInterface(content::mojom::kBrowserServiceName,
                              std::move(request_));
   }
 
-  mojom::MemlogClientPtr take() { return std::move(memlog_client_); }
+  mojom::ProfilingClientPtr take() { return std::move(memlog_client_); }
 
  private:
-  MemlogClientBinder()
+  ProfilingClientBinder()
       : memlog_client_(), request_(mojo::MakeRequest(&memlog_client_)) {}
 
-  mojom::MemlogClientPtr memlog_client_;
-  mojom::MemlogClientRequest request_;
+  mojom::ProfilingClientPtr memlog_client_;
+  mojom::ProfilingClientRequest request_;
 };
 
 void OnTraceUploadComplete(TraceCrashServiceUploader* uploader,
@@ -198,11 +198,8 @@ void ProfilingProcessHost::BrowserChildProcessLaunchedAndConnected(
     return;
 
   // Tell the child process to start profiling.
-  MemlogClientBinder client_for_browser(host);
-  MemlogClientBinder client_for_profiling(host);
-  base::ProcessId pid = base::GetProcId(data.handle);
-  SendPipeToProfilingService(client_for_browser.take(),
-                             client_for_profiling.take(), pid);
+  ProfilingClientBinder client(host);
+  AddClientToProfilingService(client.take(), base::GetProcId(data.handle));
 }
 
 void ProfilingProcessHost::Observe(
@@ -228,17 +225,15 @@ void ProfilingProcessHost::Observe(
   // Tell the child process to start profiling.
   content::RenderProcessHost* host =
       content::Source<content::RenderProcessHost>(source).ptr();
-  MemlogClientBinder client_for_browser(host);
-  MemlogClientBinder client_for_profiling(host);
-  SendPipeToProfilingService(client_for_browser.take(),
-                             client_for_profiling.take(),
-                             base::GetProcId(host->GetHandle()));
+  ProfilingClientBinder client(host);
+  AddClientToProfilingService(client.take(),
+                              base::GetProcId(host->GetHandle()));
 }
 
 bool ProfilingProcessHost::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
-  memlog_->DumpProcessesForTracing(
+  profiling_service_->DumpProcessesForTracing(
       base::BindOnce(&ProfilingProcessHost::OnDumpProcessesForTracingCallback,
                      base::Unretained(this), args.dump_guid));
   return true;
@@ -282,9 +277,8 @@ void ProfilingProcessHost::OnDumpProcessesForTracingCallback(
   }
 }
 
-void ProfilingProcessHost::SendPipeToProfilingService(
-    profiling::mojom::MemlogClientPtr client_for_browser,
-    profiling::mojom::MemlogClientPtr client_for_profiling,
+void ProfilingProcessHost::AddClientToProfilingService(
+    profiling::mojom::ProfilingClientPtr client,
     base::ProcessId pid) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
@@ -300,19 +294,10 @@ void ProfilingProcessHost::SendPipeToProfilingService(
   // This code doesn't actually hang onto the client_for_browser interface
   // poiner beyond sending this message to start since there are no other
   // messages we need to send.
-  memlog_->AddSender(
-      pid, std::move(client_for_profiling),
-      mojo::WrapPlatformFile(data_channel.PassServerHandle().release().handle),
-      base::BindOnce(&ProfilingProcessHost::SendPipeToClientProcess,
-                     base::Unretained(this), std::move(client_for_browser),
-                     mojo::WrapPlatformFile(
-                         data_channel.PassClientHandle().release().handle)));
-}
-
-void ProfilingProcessHost::SendPipeToClientProcess(
-    profiling::mojom::MemlogClientPtr memlog_client,
-    mojo::ScopedHandle handle) {
-  memlog_client->StartProfiling(std::move(handle));
+  profiling_service_->AddProfilingClient(
+      pid, std::move(client),
+      mojo::WrapPlatformFile(data_channel.PassClientHandle().release().handle),
+      mojo::WrapPlatformFile(data_channel.PassServerHandle().release().handle));
 }
 
 // static
@@ -432,13 +417,10 @@ void ProfilingProcessHost::LaunchAsService() {
 
   // Bind to the memlog service. This will start it if it hasn't started
   // already.
-  connector_->BindInterface(mojom::kServiceName, &memlog_);
+  connector_->BindInterface(mojom::kServiceName, &profiling_service_);
 
-  MemlogClientBinder client_for_browser(connector_.get());
-  MemlogClientBinder client_for_profiling(connector_.get());
-  SendPipeToProfilingService(client_for_browser.take(),
-                             client_for_profiling.take(),
-                             base::Process::Current().Pid());
+  ProfilingClientBinder client(connector_.get());
+  AddClientToProfilingService(client.take(), base::Process::Current().Pid());
 }
 
 void ProfilingProcessHost::GetOutputFileOnBlockingThread(
@@ -473,7 +455,7 @@ void ProfilingProcessHost::HandleDumpProcessOnIOThread(base::ProcessId pid,
                                                        bool upload,
                                                        base::OnceClosure done) {
   mojo::ScopedHandle handle = mojo::WrapPlatformFile(file.TakePlatformFile());
-  memlog_->DumpProcess(
+  profiling_service_->DumpProcess(
       pid, std::move(handle), GetMetadataJSONForTrace(),
       base::BindOnce(&ProfilingProcessHost::OnProcessDumpComplete,
                      base::Unretained(this), std::move(file_path),
