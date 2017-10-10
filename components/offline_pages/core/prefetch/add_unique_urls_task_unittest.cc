@@ -92,6 +92,8 @@ TEST_F(AddUniqueUrlsTaskTest, AddTaskInEmptyStore) {
   EXPECT_EQ(kTestNamespace, items[kClientId2].client_id.name_space);
   EXPECT_EQ(kTestTitle2, items[kClientId2].title);
 
+  EXPECT_GT(items[kClientId1].creation_time, items[kClientId2].creation_time);
+
   EXPECT_EQ(1, dispatcher()->task_schedule_count);
 }
 

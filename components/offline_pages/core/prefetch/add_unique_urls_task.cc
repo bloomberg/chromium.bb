@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "components/offline_pages/core/offline_time_utils.h"
 #include "components/offline_pages/core/prefetch/prefetch_dispatcher.h"
@@ -24,6 +25,8 @@
 #include "url/gurl.h"
 
 namespace offline_pages {
+
+using Result = AddUniqueUrlsTask::Result;
 
 namespace {
 
@@ -49,7 +52,8 @@ FindExistingPrefetchItemsInNamespaceSync(sql::Connection* db,
 
 bool CreatePrefetchItemSync(sql::Connection* db,
                             const std::string& name_space,
-                            const PrefetchURL& prefetch_url) {
+                            const PrefetchURL& prefetch_url,
+                            int64_t now_db_time) {
   static const char kSql[] =
       "INSERT INTO prefetch_items"
       " (offline_id, requested_url, client_namespace, client_id, creation_time,"
@@ -57,7 +61,6 @@ bool CreatePrefetchItemSync(sql::Connection* db,
       " VALUES"
       " (?, ?, ?, ?, ?, ?, ?)";
 
-  int64_t now_db_time = ToDatabaseTime(base::Time::Now());
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt64(0, PrefetchStoreUtils::GenerateOfflineId());
   statement.BindString(1, prefetch_url.url.spec());
@@ -75,27 +78,37 @@ bool CreatePrefetchItemSync(sql::Connection* db,
 // entries in the Zombie state from the client's |name_space| except for the
 // ones whose URL is contained in |candidate_prefetch_urls|.
 // Returns the number of added prefecth items.
-AddUniqueUrlsTask::Result AddUrlsAndCleanupZombiesSync(
+Result AddUrlsAndCleanupZombiesSync(
     const std::string& name_space,
     const std::vector<PrefetchURL>& candidate_prefetch_urls,
     sql::Connection* db) {
   if (!db)
-    return AddUniqueUrlsTask::Result::STORE_ERROR;
+    return Result::STORE_ERROR;
 
   sql::Transaction transaction(db);
   if (!transaction.Begin())
-    return AddUniqueUrlsTask::Result::STORE_ERROR;
+    return Result::STORE_ERROR;
 
   std::map<std::string, std::pair<int64_t, PrefetchItemState>> existing_items =
       FindExistingPrefetchItemsInNamespaceSync(db, name_space);
 
-  AddUniqueUrlsTask::Result result(AddUniqueUrlsTask::Result::NOTHING_ADDED);
-  for (const auto& prefetch_url : candidate_prefetch_urls) {
+  int added_row_count = 0;
+  base::Time now = base::Time::Now();
+  // Insert rows in reverse order to ensure that the beginning of the list has
+  // the newest timestamp.  This will cause it to be prefetched first.
+  for (auto candidate_iter = candidate_prefetch_urls.rbegin();
+       candidate_iter != candidate_prefetch_urls.rend(); ++candidate_iter) {
+    PrefetchURL prefetch_url = *candidate_iter;
     auto iter = existing_items.find(prefetch_url.url.spec());
     if (iter == existing_items.end()) {
-      if (!CreatePrefetchItemSync(db, name_space, prefetch_url))
-        return AddUniqueUrlsTask::Result::STORE_ERROR;  // Transaction rollback.
-      result = AddUniqueUrlsTask::Result::URLS_ADDED;
+      if (!CreatePrefetchItemSync(db, name_space, prefetch_url,
+                                  ToDatabaseTime(now)))
+        return Result::STORE_ERROR;  // Transaction rollback.
+      added_row_count++;
+
+      // We artificially add a microsecond to ensure that the timestamp is
+      // different (and guarantee a particular order when sorting by timestamp).
+      now += base::TimeDelta::FromMicroseconds(1);
     } else {
       // Removing from the list of existing items if it was requested again, to
       // prevent it from being removed in the next step.
@@ -109,14 +122,16 @@ AddUniqueUrlsTask::Result AddUrlsAndCleanupZombiesSync(
       continue;
     if (!PrefetchStoreUtils::DeletePrefetchItemByOfflineIdSync(
             db, existing_item.second.first)) {
-      return AddUniqueUrlsTask::Result::STORE_ERROR;  // Transaction rollback.
+      return Result::STORE_ERROR;  // Transaction rollback.
     }
   }
 
   if (!transaction.Commit())
-    return AddUniqueUrlsTask::Result::STORE_ERROR;  // Transaction rollback.
+    return Result::STORE_ERROR;  // Transaction rollback.
 
-  return result;
+  UMA_HISTOGRAM_COUNTS_100("OfflinePages.Prefetching.UniqueUrlsAddedCount",
+                           added_row_count);
+  return added_row_count > 0 ? Result::URLS_ADDED : Result::NOTHING_ADDED;
 }
 }
 

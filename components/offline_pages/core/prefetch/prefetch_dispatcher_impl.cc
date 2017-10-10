@@ -163,13 +163,10 @@ void PrefetchDispatcherImpl::QueueActionTasks() {
 
   service_->GetLogger()->RecordActivity("Dispatcher: Adding action tasks.");
 
-  // Don't schedule any downloads if the download service can't be used at all.
-  if (!service_->GetPrefetchDownloader()->IsDownloadServiceUnavailable()) {
-    std::unique_ptr<Task> download_archives_task =
-        base::MakeUnique<DownloadArchivesTask>(
-            service_->GetPrefetchStore(), service_->GetPrefetchDownloader());
-    task_queue_.AddTask(std::move(download_archives_task));
-  }
+  std::unique_ptr<Task> download_archives_task =
+      base::MakeUnique<DownloadArchivesTask>(service_->GetPrefetchStore(),
+                                             service_->GetPrefetchDownloader());
+  task_queue_.AddTask(std::move(download_archives_task));
 
   std::unique_ptr<Task> get_operation_task = base::MakeUnique<GetOperationTask>(
       service_->GetPrefetchStore(),
