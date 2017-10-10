@@ -102,23 +102,25 @@ void WorkerInspectorProxy::AddConsoleMessageFromWorker(
 }
 
 static void ConnectToWorkerGlobalScopeInspectorTask(WorkerThread* worker_thread,
-                                                    int session_id) {
+                                                    int session_id,
+                                                    const String& host_id) {
   if (WorkerInspectorController* inspector =
           worker_thread->GetWorkerInspectorController()) {
-    inspector->ConnectFrontend(session_id);
+    inspector->ConnectFrontend(session_id, host_id);
   }
 }
 
 void WorkerInspectorProxy::ConnectToInspector(
     int session_id,
+    const String& host_id,
     WorkerInspectorProxy::PageInspector* page_inspector) {
   if (!worker_thread_)
     return;
   DCHECK(page_inspectors_.find(session_id) == page_inspectors_.end());
   page_inspectors_.insert(session_id, page_inspector);
-  worker_thread_->AppendDebuggerTask(
-      CrossThreadBind(ConnectToWorkerGlobalScopeInspectorTask,
-                      CrossThreadUnretained(worker_thread_), session_id));
+  worker_thread_->AppendDebuggerTask(CrossThreadBind(
+      ConnectToWorkerGlobalScopeInspectorTask,
+      CrossThreadUnretained(worker_thread_), session_id, host_id));
 }
 
 static void DisconnectFromWorkerGlobalScopeInspectorTask(

@@ -375,6 +375,7 @@ InspectorSession* WebDevToolsAgentImpl::InitializeSession(int session_id,
 
   tracing_agent->SetLayerTreeId(layer_tree_id_);
   network_agent->SetHostId(host_id);
+  worker_agent->SetHostId(host_id);
 
   if (include_view_agents_) {
     // TODO(dgozman): we should actually pass the view instead of frame, but

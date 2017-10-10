@@ -70,6 +70,7 @@ class CORE_EXPORT InspectorWorkerAgent final
       protocol::Maybe<String> session_id,
       protocol::Maybe<String> target_id) override;
 
+  void SetHostId(const String&);
   void SetTracingSessionId(const String&);
 
  private:
@@ -88,6 +89,7 @@ class CORE_EXPORT InspectorWorkerAgent final
   HeapHashMap<int, Member<WorkerInspectorProxy>> connected_proxies_;
   HashMap<int, String> connection_to_session_id_;
   HashMap<String, int> session_id_to_connection_;
+  String host_id_;
   String tracing_session_id_;
   static int s_last_connection_;
 };

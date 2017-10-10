@@ -716,10 +716,11 @@ void InspectorNetworkAgent::WillSendRequest(
   WillSendRequestInternal(execution_context, identifier, loader, request,
                           redirect_response, initiator_info);
 
-  if (!host_id_.IsEmpty())
+  if (!host_id_.IsEmpty()) {
     request.AddHTTPHeaderField(
         HTTPNames::X_DevTools_Emulate_Network_Conditions_Client_Id,
         AtomicString(host_id_));
+  }
 }
 
 void InspectorNetworkAgent::MarkResourceAsCached(unsigned long identifier) {
