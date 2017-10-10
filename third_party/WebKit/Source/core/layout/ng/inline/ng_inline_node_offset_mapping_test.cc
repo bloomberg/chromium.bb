@@ -34,7 +34,7 @@ class NGInlineNodeOffsetMappingTest : public RenderingTest {
     style_ = layout_object_->Style();
   }
 
-  const NGOffsetMappingResult& GetOffsetMapping() {
+  const NGOffsetMappingResult& GetOffsetMapping() const {
     return NGInlineNode(layout_block_flow_).ComputeOffsetMappingIfNeeded();
   }
 
@@ -49,12 +49,11 @@ class NGInlineNodeOffsetMappingTest : public RenderingTest {
 
   const NGOffsetMappingUnit* GetUnitForDOMOffset(const Node& node,
                                                  unsigned offset) const {
-    return NGInlineNode(layout_block_flow_)
-        .GetMappingUnitForDOMOffset(node, offset);
+    return GetOffsetMapping().GetMappingUnitForDOMOffset(node, offset);
   }
 
   size_t GetTextContentOffset(const Node& node, unsigned offset) const {
-    return NGInlineNode(layout_block_flow_).GetTextContentOffset(node, offset);
+    return GetOffsetMapping().GetTextContentOffset(node, offset);
   }
 
   RefPtr<const ComputedStyle> style_;
@@ -459,18 +458,18 @@ TEST_F(NGInlineNodeOffsetMappingTest, FirstLetterInDifferentBlock) {
   TEST_RANGE(remaining_text_result.GetRanges(), text_node, 0u, 1u);
 
   EXPECT_EQ(&first_letter_result.GetUnits()[0],
-            inline_node0->GetMappingUnitForDOMOffset(*text_node, 0));
+            first_letter_result.GetMappingUnitForDOMOffset(*text_node, 0));
   EXPECT_EQ(&remaining_text_result.GetUnits()[0],
-            inline_node1->GetMappingUnitForDOMOffset(*text_node, 1));
+            remaining_text_result.GetMappingUnitForDOMOffset(*text_node, 1));
   EXPECT_EQ(&remaining_text_result.GetUnits()[0],
-            inline_node1->GetMappingUnitForDOMOffset(*text_node, 2));
+            remaining_text_result.GetMappingUnitForDOMOffset(*text_node, 2));
   EXPECT_EQ(&remaining_text_result.GetUnits()[0],
-            inline_node1->GetMappingUnitForDOMOffset(*text_node, 3));
+            remaining_text_result.GetMappingUnitForDOMOffset(*text_node, 3));
 
-  EXPECT_EQ(0u, inline_node0->GetTextContentOffset(*text_node, 0));
-  EXPECT_EQ(1u, inline_node1->GetTextContentOffset(*text_node, 1));
-  EXPECT_EQ(2u, inline_node1->GetTextContentOffset(*text_node, 2));
-  EXPECT_EQ(3u, inline_node1->GetTextContentOffset(*text_node, 3));
+  EXPECT_EQ(0u, first_letter_result.GetTextContentOffset(*text_node, 0));
+  EXPECT_EQ(1u, remaining_text_result.GetTextContentOffset(*text_node, 1));
+  EXPECT_EQ(2u, remaining_text_result.GetTextContentOffset(*text_node, 2));
+  EXPECT_EQ(3u, remaining_text_result.GetTextContentOffset(*text_node, 3));
 }
 
 }  // namespace blink

@@ -5,6 +5,7 @@
 #ifndef NGOffsetMappingResult_h
 #define NGOffsetMappingResult_h
 
+#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/HashMap.h"
@@ -30,7 +31,7 @@ enum class NGOffsetMappingUnitType { kIdentity, kCollapsed, kExpanded };
 //   |text_content_end > text_content_start + 1|, indicating that the character
 //   in the dom range is expanded into multiple characters.
 // See design doc https://goo.gl/CJbxky for details.
-class NGOffsetMappingUnit {
+class CORE_EXPORT NGOffsetMappingUnit {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
@@ -82,7 +83,7 @@ class NGMappingUnitRange {
 // order in a vector. For each text node, the index range of the units owned by
 // the node is also stored.
 // See design doc https://goo.gl/CJbxky for details.
-class NGOffsetMappingResult {
+class CORE_EXPORT NGOffsetMappingResult {
  public:
   using UnitVector = Vector<NGOffsetMappingUnit>;
   using RangeMap =
@@ -105,6 +106,11 @@ class NGOffsetMappingResult {
   NGMappingUnitRange GetMappingUnitsForDOMOffsetRange(const Node&,
                                                       unsigned,
                                                       unsigned) const;
+
+  // Returns the text content offset corresponding to the given DOM offset.
+  size_t GetTextContentOffset(const Node&, unsigned) const;
+
+  // TODO(xiaochengh): Add APIs for reverse mapping.
 
  private:
   UnitVector units_;

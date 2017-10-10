@@ -797,27 +797,4 @@ Optional<NGInlineNode> GetNGInlineNodeFor(const Node& node, unsigned offset) {
   return NGInlineNode(ng_block_flow);
 }
 
-const NGOffsetMappingUnit* NGInlineNode::GetMappingUnitForDOMOffset(
-    const Node& node,
-    unsigned offset) {
-  const auto& result = ComputeOffsetMappingIfNeeded();
-  return result.GetMappingUnitForDOMOffset(node, offset);
-}
-
-NGMappingUnitRange NGInlineNode::GetMappingUnitsForDOMOffsetRange(
-    const Node& node,
-    unsigned start_offset,
-    unsigned end_offset) {
-  const auto& result = ComputeOffsetMappingIfNeeded();
-  return result.GetMappingUnitsForDOMOffsetRange(node, start_offset,
-                                                 end_offset);
-}
-
-size_t NGInlineNode::GetTextContentOffset(const Node& node, unsigned offset) {
-  const NGOffsetMappingUnit* unit = GetMappingUnitForDOMOffset(node, offset);
-  if (!unit)
-    return kNotFound;
-  return unit->ConvertDOMOffsetToTextContent(offset);
-}
-
 }  // namespace blink
