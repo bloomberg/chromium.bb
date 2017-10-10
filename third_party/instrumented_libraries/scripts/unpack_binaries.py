@@ -10,11 +10,13 @@ import subprocess
 import shutil
 import sys
 
-import download_binaries
-
 
 def get_archive_name(archive_prefix):
-  return '%s-%s.tgz' % (archive_prefix, download_binaries.get_ubuntu_release())
+  supported_releases = ['trusty']
+  release = subprocess.check_output(['lsb_release', '-cs']).strip()
+  if release not in supported_releases:
+    raise Exception("Supported Ubuntu versions: %s", str(supported_releases))
+  return '%s-%s.tgz' % (archive_prefix, release)
 
 
 def main(archive_prefix, archive_dir, target_dir, stamp_dir=None):
