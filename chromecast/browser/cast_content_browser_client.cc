@@ -133,6 +133,18 @@ void CreateMediaDrmStorage(content::RenderFrameHost* render_frame_host,
                                std::move(request));
 }
 #endif  // defined(OS_ANDROID) && !BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
+
+// Gets the URL request context getter for the single Cast browser context.
+// Must be called on the UI thread.
+scoped_refptr<net::URLRequestContextGetter>
+GetRequestContextGetterFromBrowserContext() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  return scoped_refptr<net::URLRequestContextGetter>(
+      content::BrowserContext::GetDefaultStoragePartition(
+          CastBrowserProcess::GetInstance()->browser_context())
+          ->GetURLRequestContext());
+}
+
 }  // namespace
 
 CastContentBrowserClient::CastContentBrowserClient()
@@ -418,6 +430,15 @@ void CastContentBrowserClient::ResourceDispatcherHostCreated() {
 std::string CastContentBrowserClient::GetApplicationLocale() {
   const std::string locale(base::i18n::GetConfiguredLocale());
   return locale.empty() ? "en-US" : locale;
+}
+
+void CastContentBrowserClient::GetGeolocationRequestContext(
+    base::OnceCallback<void(scoped_refptr<net::URLRequestContextGetter>)>
+        callback) {
+  content::BrowserThread::PostTaskAndReplyWithResult(
+      content::BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&GetRequestContextGetterFromBrowserContext),
+      std::move(callback));
 }
 
 content::QuotaPermissionContext*

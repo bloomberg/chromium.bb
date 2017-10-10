@@ -62,7 +62,7 @@ class NetworkLocationProvider : public LocationProvider {
   };
 
   DEVICE_GEOLOCATION_EXPORT NetworkLocationProvider(
-      const scoped_refptr<net::URLRequestContextGetter>& context,
+      scoped_refptr<net::URLRequestContextGetter> context,
       const std::string& api_key);
   ~NetworkLocationProvider() override;
 

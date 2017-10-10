@@ -206,6 +206,23 @@ class NullServiceProcessLauncherFactory
   DISALLOW_COPY_AND_ASSIGN(NullServiceProcessLauncherFactory);
 };
 
+// Helper to invoke GetGeolocationRequestContext on the currently-set
+// ContentBrowserClient.
+void GetGeolocationRequestContextFromContentClient(
+    base::OnceCallback<void(scoped_refptr<net::URLRequestContextGetter>)>
+        callback) {
+  // TODO(amoylan): Confirm whether either of the following can be replaced with
+  // DCHECKs owing to lifetime guarantees on ContentClient or
+  // ContentBrowserClient:
+  if (GetContentClient() && GetContentClient()->browser()) {
+    GetContentClient()->browser()->GetGeolocationRequestContext(
+        std::move(callback));
+  } else {
+    std::move(callback).Run(
+        scoped_refptr<net::URLRequestContextGetter>(nullptr));
+  }
+}
+
 }  // namespace
 
 // State which lives on the IO thread and drives the ServiceManager.
@@ -358,8 +375,10 @@ ServiceManagerContext::ServiceManagerContext() {
 
   // Pipe embedder-supplied API key through to GeolocationProvider.
   // TODO(amoylan): Once GeolocationProvider hangs off DeviceService
-  // (https://crbug.com/709301), pass this via CreateDeviceService above
+  // (https://crbug.com/709301), pass these via CreateDeviceService above
   // instead.
+  device::GeolocationProvider::SetRequestContextProducer(
+      base::BindRepeating(&GetGeolocationRequestContextFromContentClient));
   device::GeolocationProvider::SetApiKey(
       GetContentClient()->browser()->GetGeolocationApiKey());
 
