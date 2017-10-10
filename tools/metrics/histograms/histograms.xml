@@ -87825,6 +87825,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Time to convert asm.js code to WebAssembly.</summary>
 </histogram>
 
+<histogram name="V8.AsmWasmTranslationThroughput" units="MB/s">
+  <owner>bradnelson@chromium.org</owner>
+  <owner>titzer@chromium.org</owner>
+  <owner>aseemgarg@chromium.org</owner>
+  <summary>
+    Throughput of translation of asm.js code to WebAssembly in MB/s.
+  </summary>
+</histogram>
+
 <histogram name="V8.ASTOptimization">
   <obsolete>
     This histogram is no longer present in V8.
