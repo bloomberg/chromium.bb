@@ -251,6 +251,7 @@
     { "name": "foo", "include_subdomains": true, "mode": "force-https" },
     { "name": "page", "include_subdomains": true, "mode": "force-https" },
     { "name": "app", "include_subdomains": true, "mode": "force-https" },
+    { "name": "chrome", "include_subdomains": true, "mode": "force-https" },
 
     // Google domains using Expect-CT.
     { "name": "mail.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google", "expect_ct": true, "expect_ct_report_uri": "https://clients3.google.com/ct_upload" },
