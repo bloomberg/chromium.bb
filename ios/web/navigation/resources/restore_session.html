@@ -49,9 +49,9 @@
     /**
      * Manipulates the current session history to mimic the provided serialized
      * history.
-     * @param {string} encodedSessionHistory An escaped string serialization of
-     *    a JSON object that represents the session history to recreate. It
-     *    contains three fields:
+     * @param {string} sessionHistory An string serialization of a JSON object
+     *    that represents the session history to recreate. It contains three
+     *    fields:
      *    urls: A list of strings that represent the URLs visited in the session
      *        in order.
      *    titles: A list of strings that represent the page title of each URL in
@@ -64,14 +64,14 @@
      *    target URL encoded in the query parameter. A user is redirected to the
      *    target URL when they navigates to the restored entry.
      */
-    function restoreSession(baseUrl, encodedSessionHistory) {
+    function restoreSession(baseUrl, sessionHistory) {
       function getRestoreURL(targetUrl) {
         return baseUrl + '?targetUrl=' + encodeURIComponent(targetUrl);
       }
 
       var sessionHistory = [];
       try {
-        sessionHistory = JSON.parse(decodeURIComponent(encodedSessionHistory));
+        sessionHistory = JSON.parse(sessionHistory);
 
         if (sessionHistory.urls.length < 1) {
           handleError("sessionHistory is empty");

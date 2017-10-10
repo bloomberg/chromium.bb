@@ -80,13 +80,20 @@ WebStateImpl::WebStateImpl(const CreateParams& params,
       interstitial_(nullptr),
       created_with_opener_(params.created_with_opener),
       weak_factory_(this) {
-  // Create or deserialize the NavigationManager.
   if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
     navigation_manager_ = base::MakeUnique<WKBasedNavigationManagerImpl>();
   } else {
     navigation_manager_ = base::MakeUnique<LegacyNavigationManagerImpl>();
   }
 
+  navigation_manager_->SetDelegate(this);
+  navigation_manager_->SetBrowserState(params.browser_state);
+  // Send creation event and create the web controller.
+  GlobalWebStateEventTracker::GetInstance()->OnWebStateCreated(this);
+  web_controller_.reset([[CRWWebController alloc] initWithWebState:this]);
+
+  // Restore session history last because WKBasedNavigationManagerImpl relies on
+  // CRWWebController to restore history into the web view.
   if (session_storage) {
     SessionStorageBuilder session_storage_builder;
     session_storage_builder.ExtractSessionState(this, session_storage);
@@ -94,11 +101,6 @@ WebStateImpl::WebStateImpl(const CreateParams& params,
     certificate_policy_cache_ =
         base::MakeUnique<SessionCertificatePolicyCacheImpl>();
   }
-  navigation_manager_->SetDelegate(this);
-  navigation_manager_->SetBrowserState(params.browser_state);
-  // Send creation event and create the web controller.
-  GlobalWebStateEventTracker::GetInstance()->OnWebStateCreated(this);
-  web_controller_.reset([[CRWWebController alloc] initWithWebState:this]);
 }
 
 WebStateImpl::~WebStateImpl() {
