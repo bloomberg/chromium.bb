@@ -868,7 +868,8 @@ TEST_F(MessageCenterViewTest,
 }
 
 TEST_F(MessageCenterViewTest, LockScreen) {
-  const int kLockedMessageCenterViewHeight = 51;
+  // Plain button bar height (56) + border (2)
+  const int kLockedMessageCenterViewHeight = 58;
 
   EXPECT_TRUE(GetNotificationView(kNotificationId1)->IsDrawn());
   EXPECT_TRUE(GetNotificationView(kNotificationId2)->IsDrawn());
@@ -945,7 +946,8 @@ TEST_F(MessageCenterViewTest, LockScreen) {
 }
 
 TEST_F(MessageCenterViewTest, NoNotification) {
-  const int kEmptyMessageCenterViewHeight = 51;
+  // Plain button bar height (56) + border (2)
+  const int kEmptyMessageCenterViewHeight = 58;
 
   GetMessageCenterView()->SizeToPreferredSize();
   EXPECT_NE(kEmptyMessageCenterViewHeight, GetMessageCenterView()->height());

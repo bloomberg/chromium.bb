@@ -84,8 +84,8 @@ class MessageCenterButtonBar : public views::View,
   views::ToggleImageButton* title_arrow_;
   views::Label* notification_label_;
   views::View* button_container_;
-  views::ToggleImageButton* close_all_button_;
-  views::ToggleImageButton* settings_button_;
+  views::ImageButton* close_all_button_;
+  views::ImageButton* settings_button_;
   views::ToggleImageButton* quiet_mode_button_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageCenterButtonBar);
