@@ -7,6 +7,8 @@ var cherriesButton;
 var otherButton;
 var tooltip;
 
+var previousFocus = null;
+
 function waitForMutation(target) {
   return new Promise(function(fulfill, reject) {
     var observer = new MutationObserver(function(mutations) {
@@ -15,6 +17,23 @@ function waitForMutation(target) {
     });
     observer.observe(target, {attributes: true});
   });
+}
+
+function moveFocus(target) {
+  if (previousFocus && previousFocus != target) {
+    // Emulate blur event which would be issued in actual usage.
+    // previousFocus.blur();
+    // does not work here because it's not actually focused in this test.
+    var blurEvent = new UIEvent('blur', {target: previousFocus});
+    previousFocus.dispatchEvent(blurEvent);
+  }
+  previousFocus = target;
+  // Emulate focus event which would be issued in actual usage.
+  // target.focus();
+  // does not work here because it doesn't fill sourceCapabilities in Event.
+  var focusEvent =
+      new UIEvent('focus', {sourceCapabilities: new InputDeviceCapabilities()});
+  target.dispatchEvent(focusEvent);
 }
 
 function setUp() {
@@ -26,7 +45,7 @@ function setUp() {
 }
 
 function testFocus(callback) {
-  chocolateButton.focus();
+  moveFocus(chocolateButton);
 
   return reportPromise(
     waitForMutation(tooltip).then(function() {
@@ -35,7 +54,7 @@ function testFocus(callback) {
       assertEquals('4px', tooltip.style.left);
       assertEquals('70px', tooltip.style.top);
 
-      cherriesButton.focus();
+      moveFocus(cherriesButton);
       return waitForMutation(tooltip);
     }).then(function() {
       assertEquals('Cherries!', tooltip.textContent.trim());
@@ -44,7 +63,7 @@ function testFocus(callback) {
       assertEquals(expectedLeft, tooltip.style.left);
       assertEquals('70px', tooltip.style.top);
 
-      otherButton.focus();
+      moveFocus(otherButton);
       return waitForMutation(tooltip);
     }).then(function() {
       assertFalse(!!tooltip.getAttribute('visible'));
