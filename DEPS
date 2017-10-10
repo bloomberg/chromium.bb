@@ -371,7 +371,7 @@ deps = {
     Var('chromium_git') + '/chromium/deps/hunspell_dictionaries.git' + '@' + 'dc6e7c25bf47cbfb466e0701fd2728b4a12e79d5',
 
   'src/third_party/icu':
-    Var('chromium_git') + '/chromium/deps/icu.git' + '@' + '08cb956852a5ccdba7f9c941728bb833529ba3c6',
+    Var('chromium_git') + '/chromium/deps/icu.git' + '@' + '7f873c45c23fa1baf1a1d90f449c5c4c34bd8ba6',
 
   'src/third_party/jsoncpp/source':
     Var('chromium_git') + '/external/github.com/open-source-parsers/jsoncpp.git' + '@' + 'f572e8e42e22cfcf5ab0aea26574f408943edfa4', # from svn 248
