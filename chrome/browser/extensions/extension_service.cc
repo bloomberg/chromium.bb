@@ -1404,11 +1404,11 @@ void ExtensionService::AddComponentExtension(const Extension* extension) {
         << extension->id() << ") installing/upgrading from '"
         << old_version_string << "' to " << extension->version()->GetString();
 
-    // TODO(crbug.com/696822): If needed, add support for Declarative Net
-    // Request to component extensions and pass the ruleset checksum here.
-    AddNewOrUpdatedExtension(
-        extension, Extension::ENABLED, extensions::kInstallFlagNone,
-        syncer::StringOrdinal(), std::string(), base::nullopt);
+    AddNewOrUpdatedExtension(extension,
+                             Extension::ENABLED,
+                             extensions::kInstallFlagNone,
+                             syncer::StringOrdinal(),
+                             std::string());
     return;
   }
 
@@ -1574,8 +1574,7 @@ void ExtensionService::UpdateActiveExtensionsInCrashReporter() {
 void ExtensionService::OnExtensionInstalled(
     const Extension* extension,
     const syncer::StringOrdinal& page_ordinal,
-    int install_flags,
-    const base::Optional<int>& dnr_ruleset_checksum) {
+    int install_flags) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   const std::string& id = extension->id();
@@ -1683,13 +1682,12 @@ void ExtensionService::OnExtensionInstalled(
   switch (action) {
     case extensions::InstallGate::INSTALL:
       AddNewOrUpdatedExtension(extension, initial_state, install_flags,
-                               page_ordinal, install_parameter,
-                               dnr_ruleset_checksum);
+                               page_ordinal, install_parameter);
       return;
     case extensions::InstallGate::DELAY:
-      extension_prefs_->SetDelayedInstallInfo(
-          extension, initial_state, install_flags, delay_reason, page_ordinal,
-          install_parameter, dnr_ruleset_checksum);
+      extension_prefs_->SetDelayedInstallInfo(extension, initial_state,
+                                              install_flags, delay_reason,
+                                              page_ordinal, install_parameter);
 
       // Transfer ownership of |extension|.
       delayed_installs_.Insert(extension);
@@ -1738,12 +1736,10 @@ void ExtensionService::AddNewOrUpdatedExtension(
     Extension::State initial_state,
     int install_flags,
     const syncer::StringOrdinal& page_ordinal,
-    const std::string& install_parameter,
-    const base::Optional<int>& dnr_ruleset_checksum) {
+    const std::string& install_parameter) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  extension_prefs_->OnExtensionInstalled(extension, initial_state, page_ordinal,
-                                         install_flags, install_parameter,
-                                         dnr_ruleset_checksum);
+  extension_prefs_->OnExtensionInstalled(
+      extension, initial_state, page_ordinal, install_flags, install_parameter);
   delayed_installs_.Remove(extension->id());
   if (InstallVerifier::NeedsVerification(*extension))
     InstallVerifier::Get(GetBrowserContext())->VerifyExtension(extension->id());

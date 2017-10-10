@@ -16,7 +16,6 @@
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
-#include "chrome/browser/profiles/profile.h"
 #include "components/version_info/version_info.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
 #include "extensions/browser/api/declarative_net_request/parse_info.h"
@@ -95,7 +94,7 @@ class RuleIndexingTest
     extension_ = loader_->LoadExtension(extension_dir_);
     ASSERT_TRUE(extension_.get());
 
-    EXPECT_TRUE(HasValidIndexedRuleset(*extension_, profile()));
+    EXPECT_TRUE(HasValidIndexedRuleset(*extension_));
 
     // Ensure no load errors were reported.
     EXPECT_TRUE(error_reporter()->GetErrors()->empty());

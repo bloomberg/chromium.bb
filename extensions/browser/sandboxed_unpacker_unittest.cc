@@ -44,13 +44,11 @@ class MockSandboxedUnpackerClient : public SandboxedUnpackerClient {
  private:
   ~MockSandboxedUnpackerClient() override {}
 
-  void OnUnpackSuccess(
-      const base::FilePath& temp_dir,
-      const base::FilePath& extension_root,
-      std::unique_ptr<base::DictionaryValue> original_manifest,
-      const Extension* extension,
-      const SkBitmap& install_icon,
-      const base::Optional<int>& dnr_ruleset_checksum) override {
+  void OnUnpackSuccess(const base::FilePath& temp_dir,
+                       const base::FilePath& extension_root,
+                       std::unique_ptr<base::DictionaryValue> original_manifest,
+                       const Extension* extension,
+                       const SkBitmap& install_icon) override {
     temp_dir_ = temp_dir;
     quit_closure_.Run();
   }
