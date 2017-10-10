@@ -585,6 +585,8 @@ crbug.com/667560 virtual/mojo-loading/http/tests/devtools/elements/styles-3/styl
 
 # ====== DevTools test migration failures until here ======
 
+crbug.com/773353 [ Mac ] http/tests/devtools/coverage/coverage-view.html [ Pass Failure ]
+
 crbug.com/767269 [ Win ] inspector-protocol/layout-fonts/cjk-ideograph-fallback-by-lang.js [ Pass Failure ]
 
 # Run these tests with under virtual/scalefactor... only.
