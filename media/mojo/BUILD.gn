@@ -88,6 +88,7 @@ source_set("unit_tests") {
     "mojo_video_encode_accelerator_integration_test.cc",
     "services/mojo_audio_output_stream_unittest.cc",
     "services/video_decode_perf_history_unittest.cc",
+    "services/video_decode_stats_db_unittest.cc",
     "services/watch_time_recorder_unittest.cc",
   ]
 
@@ -98,6 +99,7 @@ source_set("unit_tests") {
   deps = [
     "//base",
     "//base/test:test_support",
+    "//components/leveldb_proto:test_support",
     "//components/ukm:test_support",
     "//media:test_support",
     "//media/mojo/clients",
@@ -106,6 +108,7 @@ source_set("unit_tests") {
     "//media/mojo/interfaces",
     "//media/mojo/interfaces:test_interfaces",
     "//media/mojo/services",
+    "//media/mojo/services:video_decode_stats_proto",
     "//services/metrics/public/cpp:ukm_builders",
     "//services/service_manager/tests:interfaces",
     "//testing/gmock",

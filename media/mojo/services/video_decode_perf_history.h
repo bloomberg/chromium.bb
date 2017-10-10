@@ -13,8 +13,8 @@
 #include "base/sequence_checker.h"
 #include "media/base/video_codecs.h"
 #include "media/mojo/interfaces/video_decode_perf_history.mojom.h"
-#include "media/mojo/services/media_capabilities_database.h"
 #include "media/mojo/services/media_mojo_export.h"
+#include "media/mojo/services/video_decode_stats_db.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -39,7 +39,7 @@ class MEDIA_MOJO_EXPORT VideoDecodePerfHistory
   // Provides |db_instance| for use once VideoDecodePerfHistory is lazily (upon
   // first BindRequest) instantiated. Database lifetime should match/exceed that
   // of the VideoDecodePerfHistory singleton.
-  static void Initialize(MediaCapabilitiesDatabase* db_instance);
+  static void Initialize(VideoDecodeStatsDB* db_instance);
 
   // Bind the request to singleton instance.
   static void BindRequest(mojom::VideoDecodePerfHistoryRequest request);
@@ -67,10 +67,11 @@ class MEDIA_MOJO_EXPORT VideoDecodePerfHistory
 
   // Internal callback for |database_| queries. Will assess performance history
   // from database and pass results on to |mojo_cb|.
-  void OnGotPerfInfo(const MediaCapabilitiesDatabase::Entry& entry,
-                     GetPerfInfoCallback mojo_cb,
-                     bool database_success,
-                     std::unique_ptr<MediaCapabilitiesDatabase::Info> info);
+  void OnGotStatsEntry(
+      const VideoDecodeStatsDB::VideoDescKey& key,
+      GetPerfInfoCallback mojo_cb,
+      bool database_success,
+      std::unique_ptr<VideoDecodeStatsDB::DecodeStatsEntry> entry);
 
   // Maps bindings from several render-processes to this single browser-process
   // service.
