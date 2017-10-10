@@ -1328,27 +1328,40 @@ void PaintLayerScrollableArea::ComputeScrollbarExistence(
     if (option == kForbidAddingAutoBars)
       needs_horizontal_scrollbar &= HasHorizontalScrollbar();
     needs_horizontal_scrollbar &=
-        Box().IsRooted() && this->HasHorizontalOverflow() &&
+        Box().IsRooted() && HasHorizontalOverflow() &&
         VisibleContentRect(kIncludeScrollbars).Height();
   }
 
   if (Box().HasAutoVerticalScrollbar()) {
     if (option == kForbidAddingAutoBars)
       needs_vertical_scrollbar &= HasVerticalScrollbar();
-    needs_vertical_scrollbar &= Box().IsRooted() &&
-                                this->HasVerticalOverflow() &&
+    needs_vertical_scrollbar &= Box().IsRooted() && HasVerticalOverflow() &&
                                 VisibleContentRect(kIncludeScrollbars).Width();
   }
 
-  // Look for the scrollbarModes and reset the needs Horizontal & vertical
-  // Scrollbar values based on scrollbarModes, as during force style change
-  // StyleResolver::styleForDocument returns documentStyle with no overflow
-  // values, due to which we are destroying the scrollbars that were already
-  // present.
   if (Box().IsLayoutView()) {
     ScrollbarMode h_mode;
     ScrollbarMode v_mode;
     ToLayoutView(Box()).CalculateScrollbarModes(h_mode, v_mode);
+
+    // Avoid adding auto scrollbars in the first layout pass if the content is
+    // entirely inside the scroll area. This prevents the situation where a
+    // horizontal scrollbar is added due to the initial vertical scrollbar.
+    IntSize visible_size_with_scrollbars =
+        VisibleContentRect(kIncludeScrollbars).Size();
+    bool attempt_to_remove_scrollbars =
+        !in_overflow_relayout_ &&
+        ScrollWidth() <= visible_size_with_scrollbars.Width() &&
+        ScrollHeight() <= visible_size_with_scrollbars.Height() &&
+        h_mode == kScrollbarAuto && v_mode == kScrollbarAuto;
+    if (attempt_to_remove_scrollbars)
+      needs_horizontal_scrollbar = needs_vertical_scrollbar = false;
+
+    // Look for the scrollbarModes and reset the needs Horizontal & vertical
+    // Scrollbar values based on scrollbarModes, as during force style change
+    // StyleResolver::styleForDocument returns documentStyle with no overflow
+    // values, due to which we are destroying the scrollbars that were already
+    // present.
     if (h_mode == kScrollbarAlwaysOn)
       needs_horizontal_scrollbar = true;
     else if (h_mode == kScrollbarAlwaysOff)
