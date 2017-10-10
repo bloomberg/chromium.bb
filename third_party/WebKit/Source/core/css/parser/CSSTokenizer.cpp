@@ -26,10 +26,6 @@ CSSTokenizer::CSSTokenizer(const String& string, size_t offset)
   // * Do not count white spaces
   // * CSSTokenizerInputStream::NextInputChar() replaces NULLs for replacement
   //   characters
-
-  if (string.IsEmpty())
-    return;
-
   input_.Advance(offset);
 }
 
@@ -38,13 +34,19 @@ Vector<CSSParserToken, 32> CSSTokenizer::TokenizeToEOF() {
   // Most strings we tokenize have about 3.5 to 5 characters per token.
   Vector<CSSParserToken, 32> tokens;
   tokens.ReserveInitialCapacity((input_.length() - Offset()) / 3);
+
   while (true) {
-    const CSSParserToken token = TokenizeSingle();
-    if (token.IsEOF())
-      break;
-    tokens.push_back(token);
+    const CSSParserToken token = NextToken();
+    switch (token.GetType()) {
+      case kCommentToken:
+        continue;
+      case kEOFToken:
+        return tokens;
+      default:
+        tokens.push_back(token);
+        break;
+    }
   }
-  return tokens;
 }
 
 CSSParserToken CSSTokenizer::TokenizeSingle() {
