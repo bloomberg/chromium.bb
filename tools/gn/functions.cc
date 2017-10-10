@@ -668,7 +668,7 @@ Value RunNotNeeded(Scope* scope,
                    const ListNode* args_list,
                    Err* err) {
   const auto& args_vector = args_list->contents();
-  if (args_vector.size() < 1 && args_vector.size() > 3) {
+  if (args_vector.size() < 1 || args_vector.size() > 3) {
     *err = Err(function, "Wrong number of arguments.",
                "Expecting one, two or three arguments.");
     return Value();
