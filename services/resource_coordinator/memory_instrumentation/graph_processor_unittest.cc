@@ -30,7 +30,8 @@ TEST(GraphProcessorTest, ComputeMemoryGraph) {
 
   process_dumps.emplace(1, std::move(pmd));
 
-  auto global_dump = ComputeMemoryGraph(std::move(process_dumps));
+  auto global_dump =
+      GraphProcessor::ComputeMemoryGraph(std::move(process_dumps));
 
   ASSERT_EQ(1u, global_dump->process_dump_graphs().size());
 
