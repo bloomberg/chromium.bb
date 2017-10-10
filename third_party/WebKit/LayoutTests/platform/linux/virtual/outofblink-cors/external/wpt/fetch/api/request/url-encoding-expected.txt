@@ -1,0 +1,5 @@
+This is a testharness.js-based test.
+FAIL URL encoding and Request assert_equals: expected "http://web-platform.test:8001/fetch/api/request/url-encoding.html?%C3%9F" but got "http://web-platform.test:8001/fetch/api/request/url-encoding.html?%DF"
+FAIL URL encoding and fetch() assert_equals: expected "http://web-platform.test:8001/fetch/api/request/url-encoding.html?%C3%9F" but got "http://web-platform.test:8001/fetch/api/request/url-encoding.html?%DF"
+Harness: the test ran to completion.
+
