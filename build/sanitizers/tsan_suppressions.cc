@@ -89,9 +89,6 @@ char kTSanDefaultSuppressions[] =
     // http://crbug.com/246968
     "race:webrtc::VideoCodingModuleImpl::RegisterPacketRequestCallback\n"
 
-    // http://crbug.com/246974
-    "race:content::GpuWatchdogThread::CheckArmed\n"
-
     // http://crbug.com/257396
     "race:base::trace_event::"
     "TraceEventTestFixture_TraceSamplingScope_Test::TestBody\n"
