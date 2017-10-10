@@ -173,8 +173,8 @@ class BlobRegistryImplTest : public testing::Test {
 
   mojom::BytesProviderPtr CreateBytesProvider(const std::string& bytes) {
     if (!bytes_provider_runner_) {
-      bytes_provider_runner_ = base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::WithBaseSyncPrimitives()});
+      bytes_provider_runner_ =
+          base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()});
     }
     mojom::BytesProviderPtr result;
     auto provider = base::MakeUnique<MockBytesProvider>(
@@ -189,8 +189,8 @@ class BlobRegistryImplTest : public testing::Test {
   void CreateBytesProvider(const std::string& bytes,
                            mojom::BytesProviderRequest request) {
     if (!bytes_provider_runner_) {
-      bytes_provider_runner_ = base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::WithBaseSyncPrimitives()});
+      bytes_provider_runner_ =
+          base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()});
     }
     auto provider = base::MakeUnique<MockBytesProvider>(
         std::vector<uint8_t>(bytes.begin(), bytes.end()), &reply_request_count_,
