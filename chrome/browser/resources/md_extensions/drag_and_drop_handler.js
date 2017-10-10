@@ -34,7 +34,7 @@ cr.define('extensions', function() {
       // not.
       // See: http://www.w3.org/TR/2011/WD-html5-20110113/dnd.html#concept-dnd-p
       return !!e.dataTransfer.types &&
-             e.dataTransfer.types.indexOf('Files') > -1;
+          e.dataTransfer.types.indexOf('Files') > -1;
     },
 
     /** @override */
@@ -61,10 +61,10 @@ cr.define('extensions', function() {
       if (e.dataTransfer.files.length != 1)
         return;
 
-      var toSend = '';
+      let toSend = '';
       // Files lack a check if they're a directory, but we can find out through
       // its item entry.
-      for (var i = 0; i < e.dataTransfer.items.length; ++i) {
+      for (let i = 0; i < e.dataTransfer.items.length; ++i) {
         if (e.dataTransfer.items[i].kind == 'file' &&
             e.dataTransfer.items[i].webkitGetAsEntry().isDirectory) {
           toSend = 'installDroppedDirectory';
@@ -84,7 +84,7 @@ cr.define('extensions', function() {
       }
     },
 
-     /** @private */
+    /** @private */
     fireDragEnded_: function() {
       this.eventTarget_.dispatchEvent(new CustomEvent('extension-drag-ended'));
     }

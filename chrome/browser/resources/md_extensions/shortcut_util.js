@@ -5,10 +5,8 @@
 cr.define('extensions', function() {
   'use strict';
 
-  /**
-   * @enum {number}
-   */
-  var Key = {
+  /** @enum {number} */
+  const Key = {
     Comma: 188,
     Del: 46,
     Down: 40,
@@ -34,10 +32,7 @@ cr.define('extensions', function() {
    * Enum for whether we require modifiers of a keycode.
    * @enum {number}
    */
-  var ModifierPolicy = {
-    NOT_ALLOWED: 0,
-    REQUIRED: 1
-  };
+  const ModifierPolicy = {NOT_ALLOWED: 0, REQUIRED: 1};
 
   /**
    * Gets the ModifierPolicy. Currently only "MediaNextTrack", "MediaPrevTrack",
@@ -67,11 +62,10 @@ cr.define('extensions', function() {
    */
   function hasModifier(e, countShiftAsModifier) {
     return e.ctrlKey || e.altKey ||
-           // Meta key is only relevant on Mac and CrOS, where we treat Command
-           // and Search (respectively) as modifiers.
-           (cr.isMac && e.metaKey) ||
-           (cr.isChromeOS && e.metaKey) ||
-           (countShiftAsModifier && e.shiftKey);
+        // Meta key is only relevant on Mac and CrOS, where we treat Command
+        // and Search (respectively) as modifiers.
+        (cr.isMac && e.metaKey) || (cr.isChromeOS && e.metaKey) ||
+        (countShiftAsModifier && e.shiftKey);
   }
 
   /**
@@ -82,12 +76,12 @@ cr.define('extensions', function() {
   function isValidKeyCode(keyCode) {
     if (keyCode == Key.Escape)
       return false;
-    for (var k in Key) {
+    for (let k in Key) {
       if (Key[k] == keyCode)
         return true;
     }
     return (keyCode >= 'A'.charCodeAt(0) && keyCode <= 'Z'.charCodeAt(0)) ||
-           (keyCode >= '0'.charCodeAt(0) && keyCode <= '9'.charCodeAt(0));
+        (keyCode >= '0'.charCodeAt(0) && keyCode <= '9'.charCodeAt(0));
   }
 
   /**
@@ -97,7 +91,7 @@ cr.define('extensions', function() {
    * @return {string} The keystroke as a string.
    */
   function keystrokeToString(e) {
-    var output = [];
+    let output = [];
     // TODO(devlin): Should this be i18n'd?
     if (cr.isMac && e.metaKey)
       output.push('Command');
@@ -110,7 +104,7 @@ cr.define('extensions', function() {
     if (e.shiftKey)
       output.push('Shift');
 
-    var keyCode = e.keyCode;
+    let keyCode = e.keyCode;
     if (isValidKeyCode(keyCode)) {
       if ((keyCode >= 'A'.charCodeAt(0) && keyCode <= 'Z'.charCodeAt(0)) ||
           (keyCode >= '0'.charCodeAt(0) && keyCode <= '9'.charCodeAt(0))) {
@@ -118,41 +112,59 @@ cr.define('extensions', function() {
       } else {
         switch (keyCode) {
           case Key.Comma:
-            output.push('Comma'); break;
+            output.push('Comma');
+            break;
           case Key.Del:
-            output.push('Delete'); break;
+            output.push('Delete');
+            break;
           case Key.Down:
-            output.push('Down'); break;
+            output.push('Down');
+            break;
           case Key.End:
-            output.push('End'); break;
+            output.push('End');
+            break;
           case Key.Home:
-            output.push('Home'); break;
+            output.push('Home');
+            break;
           case Key.Ins:
-            output.push('Insert'); break;
+            output.push('Insert');
+            break;
           case Key.Left:
-            output.push('Left'); break;
+            output.push('Left');
+            break;
           case Key.MediaNextTrack:
-            output.push('MediaNextTrack'); break;
+            output.push('MediaNextTrack');
+            break;
           case Key.MediaPlayPause:
-            output.push('MediaPlayPause'); break;
+            output.push('MediaPlayPause');
+            break;
           case Key.MediaPrevTrack:
-            output.push('MediaPrevTrack'); break;
+            output.push('MediaPrevTrack');
+            break;
           case Key.MediaStop:
-            output.push('MediaStop'); break;
+            output.push('MediaStop');
+            break;
           case Key.PageDown:
-            output.push('PageDown'); break;
+            output.push('PageDown');
+            break;
           case Key.PageUp:
-            output.push('PageUp'); break;
+            output.push('PageUp');
+            break;
           case Key.Period:
-            output.push('Period'); break;
+            output.push('Period');
+            break;
           case Key.Right:
-            output.push('Right'); break;
+            output.push('Right');
+            break;
           case Key.Space:
-            output.push('Space'); break;
+            output.push('Space');
+            break;
           case Key.Tab:
-            output.push('Tab'); break;
+            output.push('Tab');
+            break;
           case Key.Up:
-            output.push('Up'); break;
+            output.push('Up');
+            break;
         }
       }
     }

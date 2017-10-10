@@ -4,7 +4,7 @@
 
 // <include src="../../../../ui/webui/resources/js/cr/ui/focus_row.js">
 // <include src="../../../../ui/webui/resources/js/cr/ui/focus_grid.js">
-// <include src="drag_and_drop_handler.js">
+// <include src="../md_extensions/drag_and_drop_handler.js">
 // <include src="extension_code.js">
 // <include src="extension_commands_overlay.js">
 // <include src="extension_error_overlay.js">
