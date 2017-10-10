@@ -180,7 +180,8 @@ bool TaskQueueImpl::PostImmediateTaskImpl(TaskQueue::PostedTask task) {
   EnqueueOrder sequence_number =
       any_thread().task_queue_manager->GetNextSequenceNumber();
 
-  PushOntoImmediateIncomingQueueLocked(Task(std::move(task), base::TimeTicks(),
+  PushOntoImmediateIncomingQueueLocked(Task(std::move(task),
+                                            any_thread().time_domain->Now(),
                                             sequence_number, sequence_number));
   return true;
 }
