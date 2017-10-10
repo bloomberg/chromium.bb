@@ -239,7 +239,7 @@ crbug.com/551843 [ Linux ] fast/text/fallback-traits-fixup.html [ WontFix ]
 crbug.com/551843 [ Linux Win ] fast/text/emoji-font-weight-mac.html [ WontFix ]
 
 # Variable system font only supported on Mac atm.
-crbug.com/670246 [ Linux Android Win Mac10.9 Mac10.10 ] fast/text/variable-fonts/variable-mac-system-font.html [ WontFix ]
+crbug.com/670246 [ Linux Android Win Mac10.10 ] fast/text/variable-fonts/variable-mac-system-font.html [ WontFix ]
 
 # prefer_compositing_to_lcd_text causes things to get composited regardless of their opaqueness, causing the test to fail
 crbug.com/381840 virtual/prefer_compositing_to_lcd_text/compositing/overflow/overflow-scroll-background-opaque-to-transparent.html [ WontFix ]
