@@ -1959,7 +1959,7 @@ bool GLES2DecoderPassthroughImpl::IsEmulatedFramebufferBound(
       sizeof(cmds::name) / sizeof(CommandBufferEntry) - 1,               \
   }, /* NOLINT */
 
-const GLES2DecoderPassthroughImpl::CommandInfo
+constexpr GLES2DecoderPassthroughImpl::CommandInfo
     GLES2DecoderPassthroughImpl::command_info[] = {
         GLES2_COMMAND_LIST(GLES2_CMD_OP)};
 
