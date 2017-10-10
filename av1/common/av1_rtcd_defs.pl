@@ -676,4 +676,3 @@ if (aom_config("CONFIG_INTRA_EDGE") eq "yes") {
   }
 }
 
-1;
