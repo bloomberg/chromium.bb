@@ -135,9 +135,10 @@ TEST(MemoryAllocatorDumpTest, DumpIntoProcessMemoryDump) {
 
   EXPECT_THAT(empty_sub_heap->entries(), IsEmpty());
 
-  // Check that the AsValueInfo doesn't hit any DCHECK.
+  // Check that calling serialization routines doesn't cause a crash.
   std::unique_ptr<TracedValue> traced_value(new TracedValue);
-  pmd.AsValueInto(traced_value.get());
+  pmd.SerializeAllocatorDumpsInto(traced_value.get());
+  pmd.SerializeHeapProfilerDumpsInto(traced_value.get());
 }
 
 TEST(MemoryAllocatorDumpTest, GetSize) {

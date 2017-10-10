@@ -341,19 +341,12 @@ void ProcessMemoryDump::TakeAllDumpsFrom(ProcessMemoryDump* other) {
   other->heap_dumps_.clear();
 }
 
-void ProcessMemoryDump::AsValueInto(TracedValue* value) const {
+void ProcessMemoryDump::SerializeAllocatorDumpsInto(TracedValue* value) const {
   if (allocator_dumps_.size() > 0) {
     value->BeginDictionary("allocators");
     for (const auto& allocator_dump_it : allocator_dumps_)
       allocator_dump_it.second->AsValueInto(value);
     value->EndDictionary();
-  }
-
-  if (heap_dumps_.size() > 0) {
-    value->BeginDictionary("heaps");
-    for (const auto& name_and_dump : heap_dumps_)
-      value->SetValueWithCopiedName(name_and_dump.first, *name_and_dump.second);
-    value->EndDictionary();  // "heaps"
   }
 
   value->BeginArray("allocators_graph");
@@ -367,6 +360,16 @@ void ProcessMemoryDump::AsValueInto(TracedValue* value) const {
     value->EndDictionary();
   }
   value->EndArray();
+}
+
+void ProcessMemoryDump::SerializeHeapProfilerDumpsInto(
+    TracedValue* value) const {
+  if (heap_dumps_.size() == 0)
+    return;
+  value->BeginDictionary("heaps");
+  for (const auto& name_and_dump : heap_dumps_)
+    value->SetValueWithCopiedName(name_and_dump.first, *name_and_dump.second);
+  value->EndDictionary();  // "heaps"
 }
 
 void ProcessMemoryDump::AddOwnershipEdge(const MemoryAllocatorDumpGuid& source,

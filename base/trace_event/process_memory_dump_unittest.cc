@@ -86,9 +86,10 @@ TEST(ProcessMemoryDumpTest, MoveConstructor) {
   EXPECT_EQ(1u, pmd2.allocator_dumps_edges().size());
   EXPECT_EQ(heap_state.get(), pmd2.heap_profiler_serialization_state().get());
 
-  // Check that calling AsValueInto() doesn't cause a crash.
+  // Check that calling serialization routines doesn't cause a crash.
   auto traced_value = MakeUnique<TracedValue>();
-  pmd2.AsValueInto(traced_value.get());
+  pmd2.SerializeAllocatorDumpsInto(traced_value.get());
+  pmd2.SerializeHeapProfilerDumpsInto(traced_value.get());
 }
 
 TEST(ProcessMemoryDumpTest, MoveAssignment) {
@@ -114,9 +115,10 @@ TEST(ProcessMemoryDumpTest, MoveAssignment) {
   EXPECT_EQ(1u, pmd2.allocator_dumps_edges().size());
   EXPECT_EQ(heap_state.get(), pmd2.heap_profiler_serialization_state().get());
 
-  // Check that calling AsValueInto() doesn't cause a crash.
+  // Check that calling serialization routines doesn't cause a crash.
   auto traced_value = MakeUnique<TracedValue>();
-  pmd2.AsValueInto(traced_value.get());
+  pmd2.SerializeAllocatorDumpsInto(traced_value.get());
+  pmd2.SerializeHeapProfilerDumpsInto(traced_value.get());
 }
 
 TEST(ProcessMemoryDumpTest, Clear) {
@@ -142,9 +144,10 @@ TEST(ProcessMemoryDumpTest, Clear) {
   ASSERT_EQ(nullptr, pmd1->GetSharedGlobalAllocatorDump(shared_mad_guid1));
   ASSERT_EQ(nullptr, pmd1->GetSharedGlobalAllocatorDump(shared_mad_guid2));
 
-  // Check that calling AsValueInto() doesn't cause a crash.
-  std::unique_ptr<TracedValue> traced_value(new TracedValue);
-  pmd1->AsValueInto(traced_value.get());
+  // Check that calling serialization routines doesn't cause a crash.
+  auto traced_value = MakeUnique<TracedValue>();
+  pmd1->SerializeAllocatorDumpsInto(traced_value.get());
+  pmd1->SerializeHeapProfilerDumpsInto(traced_value.get());
 
   // Check that the pmd can be reused and behaves as expected.
   auto* mad1 = pmd1->CreateAllocatorDump("mad1");
@@ -162,7 +165,8 @@ TEST(ProcessMemoryDumpTest, Clear) {
   ASSERT_EQ(MemoryAllocatorDump::Flags::WEAK, shared_mad2->flags());
 
   traced_value.reset(new TracedValue);
-  pmd1->AsValueInto(traced_value.get());
+  pmd1->SerializeAllocatorDumpsInto(traced_value.get());
+  pmd1->SerializeHeapProfilerDumpsInto(traced_value.get());
 
   pmd1.reset();
 }
@@ -213,8 +217,9 @@ TEST(ProcessMemoryDumpTest, TakeAllDumpsFrom) {
   pmd2->AddOwnershipEdge(MemoryAllocatorDumpGuid(42),
                          MemoryAllocatorDumpGuid(4242));
 
-  // Check that calling AsValueInto() doesn't cause a crash.
-  pmd2->AsValueInto(traced_value.get());
+  // Check that calling serialization routines doesn't cause a crash.
+  pmd2->SerializeAllocatorDumpsInto(traced_value.get());
+  pmd2->SerializeHeapProfilerDumpsInto(traced_value.get());
 
   // Free the |pmd2| to check that the memory ownership of the two MAD(s)
   // has been transferred to |pmd1|.
@@ -236,9 +241,10 @@ TEST(ProcessMemoryDumpTest, TakeAllDumpsFrom) {
   ASSERT_TRUE(GetHeapDump(*pmd1, "pmd2/heap_dump1") != nullptr);
   ASSERT_TRUE(GetHeapDump(*pmd1, "pmd2/heap_dump2") != nullptr);
 
-  // Check that calling AsValueInto() doesn't cause a crash.
+  // Check that calling serialization routines doesn't cause a crash.
   traced_value.reset(new TracedValue);
-  pmd1->AsValueInto(traced_value.get());
+  pmd1->SerializeAllocatorDumpsInto(traced_value.get());
+  pmd1->SerializeHeapProfilerDumpsInto(traced_value.get());
 
   pmd1.reset();
 }
@@ -347,9 +353,10 @@ TEST(ProcessMemoryDumpTest, Suballocations) {
   ASSERT_TRUE(found_edge[0]);
   ASSERT_TRUE(found_edge[1]);
 
-  // Check that calling AsValueInto() doesn't cause a crash.
+  // Check that calling serialization routines doesn't cause a crash.
   std::unique_ptr<TracedValue> traced_value(new TracedValue);
-  pmd->AsValueInto(traced_value.get());
+  pmd->SerializeAllocatorDumpsInto(traced_value.get());
+  pmd->SerializeHeapProfilerDumpsInto(traced_value.get());
 
   pmd.reset();
 }

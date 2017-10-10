@@ -174,7 +174,7 @@ IN_PROC_BROWSER_TEST_F(MemoryTracingBrowserTest, TestHeapProfilingNoStack) {
       base::trace_event::TraceConfig(
           base::trace_event::TraceConfigMemoryTestUtil::
               GetTraceConfig_BackgroundTrigger(200)),
-      base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND, &json_events);
+      base::trace_event::MemoryDumpLevelOfDetail::DETAILED, &json_events);
   // LOG(ERROR) << "ssid \n" << json_events;
   EXPECT_NE(std::string::npos, json_events.find("stackFrames"));
   EXPECT_NE(std::string::npos, json_events.find("[Thread:"));
