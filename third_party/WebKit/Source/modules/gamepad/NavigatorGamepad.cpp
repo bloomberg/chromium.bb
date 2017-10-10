@@ -104,14 +104,13 @@ DEFINE_TRACE(NavigatorGamepad) {
   visitor->Trace(pending_events_);
   visitor->Trace(dispatch_one_event_runner_);
   Supplement<Navigator>::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  DOMWindowClient::Trace(visitor);
   PlatformEventController::Trace(visitor);
 }
 
 bool NavigatorGamepad::StartUpdatingIfAttached() {
-  Document* document = static_cast<Document*>(GetExecutionContext());
   // The frame must be attached to start updating.
-  if (document && document->GetFrame()) {
+  if (GetFrame()) {
     StartUpdating();
     return true;
   }
@@ -120,32 +119,26 @@ bool NavigatorGamepad::StartUpdatingIfAttached() {
 
 void NavigatorGamepad::DidUpdateData() {
   // We should stop listening once we detached.
-  Document* document = static_cast<Document*>(GetExecutionContext());
-  DCHECK(document->GetFrame());
-  DCHECK(document->GetFrame()->DomWindow());
+  DCHECK(GetFrame());
+  DCHECK(DomWindow());
 
   // We register to the dispatcher before sampling gamepads so we need to check
   // if we actually have an event listener.
   if (!has_event_listener_)
     return;
 
-  if (document->IsContextDestroyed() || document->IsContextSuspended())
-    return;
-
   SampleAndCheckConnectedGamepads();
 }
 
 void NavigatorGamepad::DispatchOneEvent() {
-  Document* document = static_cast<Document*>(GetExecutionContext());
-  DCHECK(document->GetFrame());
-  DCHECK(document->GetFrame()->DomWindow());
+  DCHECK(DomWindow());
   DCHECK(!pending_events_.IsEmpty());
 
   Gamepad* gamepad = pending_events_.TakeFirst();
   const AtomicString& event_name = gamepad->connected()
                                        ? EventTypeNames::gamepadconnected
                                        : EventTypeNames::gamepaddisconnected;
-  document->GetFrame()->DomWindow()->DispatchEvent(
+  DomWindow()->DispatchEvent(
       GamepadEvent::Create(event_name, false, true, gamepad));
 
   if (!pending_events_.IsEmpty())
@@ -154,25 +147,20 @@ void NavigatorGamepad::DispatchOneEvent() {
 
 NavigatorGamepad::NavigatorGamepad(Navigator& navigator)
     : Supplement<Navigator>(navigator),
-      ContextLifecycleObserver(
-          navigator.GetFrame() ? navigator.GetFrame()->GetDocument() : nullptr),
+      DOMWindowClient(navigator.DomWindow()),
       PlatformEventController(
           navigator.GetFrame() ? navigator.GetFrame()->GetDocument() : nullptr),
       dispatch_one_event_runner_(AsyncMethodRunner<NavigatorGamepad>::Create(
           this,
           &NavigatorGamepad::DispatchOneEvent)) {
-  if (navigator.GetFrame())
-    navigator.GetFrame()->DomWindow()->RegisterEventListenerObserver(this);
+  if (navigator.DomWindow())
+    navigator.DomWindow()->RegisterEventListenerObserver(this);
 }
 
 NavigatorGamepad::~NavigatorGamepad() {}
 
 const char* NavigatorGamepad::SupplementName() {
   return "NavigatorGamepad";
-}
-
-void NavigatorGamepad::ContextDestroyed(ExecutionContext*) {
-  StopUpdating();
 }
 
 void NavigatorGamepad::RegisterWithDispatcher() {
@@ -227,6 +215,7 @@ void NavigatorGamepad::DidRemoveGamepadEventListeners() {
   has_event_listener_ = false;
   dispatch_one_event_runner_->Stop();
   pending_events_.clear();
+  StopUpdating();
 }
 
 void NavigatorGamepad::SampleAndCheckConnectedGamepads() {
