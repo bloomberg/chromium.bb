@@ -6,6 +6,8 @@ import("//third_party/WebKit/Source/core/core.gni")
 
 blink_core_sources("loader") {
   sources = [
+    "AllowedByNosniff.cpp",
+    "AllowedByNosniff.h",
     "BaseFetchContext.cpp",
     "BaseFetchContext.h",
     "CookieJar.cpp",

@@ -1584,6 +1584,7 @@ jumbo_source_set("unit_tests") {
     "layout/shapes/BoxShapeTest.cpp",
     "layout/svg/LayoutSVGForeignObjectTest.cpp",
     "layout/svg/LayoutSVGRootTest.cpp",
+    "loader/AllowedByNosniffTest.cpp",
     "loader/BaseFetchContextTest.cpp",
     "loader/DocumentLoadTimingTest.cpp",
     "loader/DocumentLoaderTest.cpp",
