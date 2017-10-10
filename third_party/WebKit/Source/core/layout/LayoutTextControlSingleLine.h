@@ -24,7 +24,7 @@
 #ifndef LayoutTextControlSingleLine_h
 #define LayoutTextControlSingleLine_h
 
-#include "core/html/HTMLInputElement.h"
+#include "core/html/forms/HTMLInputElement.h"
 #include "core/layout/LayoutTextControl.h"
 
 namespace blink {

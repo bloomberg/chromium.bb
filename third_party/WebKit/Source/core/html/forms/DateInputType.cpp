@@ -32,8 +32,8 @@
 
 #include "core/dom/Document.h"
 #include "core/frame/WebFeature.h"
-#include "core/html/HTMLInputElement.h"
 #include "core/html/forms/DateTimeFieldsState.h"
+#include "core/html/forms/HTMLInputElement.h"
 #include "core/html_names.h"
 #include "core/input_type_names.h"
 #include "platform/DateComponents.h"

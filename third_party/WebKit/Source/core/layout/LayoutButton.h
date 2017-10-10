@@ -22,7 +22,7 @@
 #define LayoutButton_h
 
 #include "core/editing/EditingUtilities.h"
-#include "core/html/HTMLInputElement.h"
+#include "core/html/forms/HTMLInputElement.h"
 #include "core/layout/LayoutFlexibleBox.h"
 
 namespace blink {

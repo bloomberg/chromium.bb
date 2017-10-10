@@ -44,7 +44,7 @@
 #include "core/editing/state_machines/ForwardCodePointStateMachine.h"
 #include "core/events/CompositionEvent.h"
 #include "core/frame/LocalFrame.h"
-#include "core/html/HTMLInputElement.h"
+#include "core/html/forms/HTMLInputElement.h"
 #include "core/html/forms/HTMLTextAreaElement.h"
 #include "core/input/EventHandler.h"
 #include "core/input_mode_names.h"

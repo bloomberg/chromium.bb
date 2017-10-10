@@ -28,7 +28,7 @@
  *
  */
 
-#include "core/html/HTMLInputElement.h"
+#include "core/html/forms/HTMLInputElement.h"
 
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
@@ -772,10 +772,11 @@ void HTMLInputElement::ParseAttribute(
     if (!value.IsEmpty() && ParseHTMLInteger(value, value_as_integer) &&
         value_as_integer > 0)
       size_ = value_as_integer;
-    if (size_ != old_size && GetLayoutObject())
+    if (size_ != old_size && GetLayoutObject()) {
       GetLayoutObject()
           ->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
               LayoutInvalidationReason::kAttributeChanged);
+    }
   } else if (name == altAttr) {
     input_type_view_->AltAttributeChanged();
   } else if (name == srcAttr) {
@@ -1297,16 +1298,18 @@ void HTMLInputElement::DefaultEventHandler(Event* evt) {
         input_type_view_->FormForSubmission();
     // Form may never have been present, or may have been destroyed by code
     // responding to the change event.
-    if (form_for_submission)
+    if (form_for_submission) {
       form_for_submission->SubmitImplicitly(evt,
                                             CanTriggerImplicitSubmission());
+    }
     evt->SetDefaultHandled();
     return;
   }
 
-  if (evt->IsBeforeTextInsertedEvent())
+  if (evt->IsBeforeTextInsertedEvent()) {
     input_type_view_->HandleBeforeTextInsertedEvent(
         static_cast<BeforeTextInsertedEvent*>(evt));
+  }
 
   if (evt->IsMouseEvent() && evt->type() == EventTypeNames::mousedown) {
     input_type_view_->HandleMouseDownEvent(ToMouseEvent(evt));
@@ -1418,11 +1421,12 @@ void HTMLInputElement::setSize(unsigned size) {
 }
 
 void HTMLInputElement::setSize(unsigned size, ExceptionState& exception_state) {
-  if (!size)
+  if (size == 0) {
     exception_state.ThrowDOMException(
         kIndexSizeError, "The value provided is 0, which is an invalid size.");
-  else
+  } else {
     setSize(size);
+  }
 }
 
 KURL HTMLInputElement::Src() const {
@@ -1638,11 +1642,12 @@ void HTMLInputElement::SetListAttributeTargetObserver(
 }
 
 void HTMLInputElement::ResetListAttributeTargetObserver() {
-  if (isConnected())
+  if (isConnected()) {
     SetListAttributeTargetObserver(
         ListAttributeTargetObserver::Create(FastGetAttribute(listAttr), this));
-  else
+  } else {
     SetListAttributeTargetObserver(nullptr);
+  }
 }
 
 void HTMLInputElement::ListAttributeTargetChanged() {

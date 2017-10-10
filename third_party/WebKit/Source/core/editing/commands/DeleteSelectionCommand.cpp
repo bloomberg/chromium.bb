@@ -39,9 +39,9 @@
 #include "core/editing/VisibleUnits.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLBRElement.h"
-#include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLStyleElement.h"
 #include "core/html/HTMLTableRowElement.h"
+#include "core/html/forms/HTMLInputElement.h"
 #include "core/html_names.h"
 #include "core/layout/LayoutTableCell.h"
 

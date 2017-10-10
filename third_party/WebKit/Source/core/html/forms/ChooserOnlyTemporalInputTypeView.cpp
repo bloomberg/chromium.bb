@@ -30,7 +30,7 @@
 #include "core/dom/ShadowRoot.h"
 #include "core/dom/UserGestureIndicator.h"
 #include "core/html/HTMLDivElement.h"
-#include "core/html/HTMLInputElement.h"
+#include "core/html/forms/HTMLInputElement.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 

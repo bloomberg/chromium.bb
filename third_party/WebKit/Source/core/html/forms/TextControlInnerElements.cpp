@@ -34,7 +34,7 @@
 #include "core/events/TextEvent.h"
 #include "core/events/TextEventInputType.h"
 #include "core/frame/LocalFrame.h"
-#include "core/html/HTMLInputElement.h"
+#include "core/html/forms/HTMLInputElement.h"
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/html_names.h"
 #include "core/input/EventHandler.h"

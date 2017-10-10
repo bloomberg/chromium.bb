@@ -32,8 +32,8 @@
 #include "core/html/forms/HiddenInputType.h"
 
 #include "core/html/FormData.h"
-#include "core/html/HTMLInputElement.h"
 #include "core/html/forms/FormController.h"
+#include "core/html/forms/HTMLInputElement.h"
 #include "core/html_names.h"
 #include "core/input_type_names.h"
 

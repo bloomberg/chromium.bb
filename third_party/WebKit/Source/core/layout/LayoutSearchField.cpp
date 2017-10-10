@@ -25,7 +25,7 @@
 #include "core/layout/LayoutSearchField.h"
 
 #include "core/dom/ShadowRoot.h"
-#include "core/html/HTMLInputElement.h"
+#include "core/html/forms/HTMLInputElement.h"
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/input_type_names.h"
 

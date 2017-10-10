@@ -32,7 +32,7 @@
 
 #include "core/dom/ExecutionContext.h"
 #include "core/fileapi/FileList.h"
-#include "core/html/HTMLInputElement.h"
+#include "core/html/forms/HTMLInputElement.h"
 #include "modules/filesystem/DOMFilePath.h"
 #include "modules/filesystem/DOMFileSystem.h"
 #include "modules/filesystem/DirectoryEntry.h"

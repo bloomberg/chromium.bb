@@ -31,8 +31,8 @@
 #include "core/html/forms/BaseTemporalInputType.h"
 
 #include <limits>
-#include "core/html/HTMLInputElement.h"
 #include "core/html/forms/ChooserOnlyTemporalInputTypeView.h"
+#include "core/html/forms/HTMLInputElement.h"
 #include "core/html/forms/MultipleFieldsTemporalInputTypeView.h"
 #include "platform/text/PlatformLocale.h"
 #include "platform/wtf/CurrentTime.h"
