@@ -53,7 +53,7 @@ void BackgroundMemoryTracingObserver::OnScenarioActivated(
       // TODO(ssid): Add ability to enable profiling on all processes,
       // crbug.com/700245.
       MemoryDumpManager::GetInstance()->EnableHeapProfiling(
-          base::trace_event::kHeapProfilingModeNoStack);
+          base::trace_event::kHeapProfilingModeBackground);
     }
   }
 }
