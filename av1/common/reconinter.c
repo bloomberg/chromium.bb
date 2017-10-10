@@ -1155,6 +1155,11 @@ static void jnt_comp_weight_assign(const AV1_COMMON *cm,
       conv_params->fwd_offset = (DIST_PRECISION >> 1);
       conv_params->bck_offset = (DIST_PRECISION >> 1);
     }
+
+    if (mbmi->compound_idx) {
+      conv_params->fwd_offset = -1;
+      conv_params->bck_offset = -1;
+    }
   } else {
     conv_params->bck_offset = -1;
     conv_params->fwd_offset = -1;

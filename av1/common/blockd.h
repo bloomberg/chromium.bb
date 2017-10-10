@@ -422,6 +422,10 @@ typedef struct MB_MODE_INFO {
   int sign;
   int delta;
 #endif
+
+#if CONFIG_JNT_COMP
+  int compound_idx;
+#endif
 } MB_MODE_INFO;
 
 typedef struct MODE_INFO {
