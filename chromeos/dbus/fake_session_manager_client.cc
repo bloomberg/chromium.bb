@@ -257,12 +257,6 @@ void FakeSessionManagerClient::GetServerBackedStateKeys(
       FROM_HERE, base::Bind(callback, server_backed_state_keys_));
 }
 
-void FakeSessionManagerClient::CheckArcAvailability(
-    const ArcCallback& callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, arc_available_));
-}
-
 void FakeSessionManagerClient::StartArcInstance(
     ArcStartupMode startup_mode,
     const cryptohome::Identification& cryptohome_id,

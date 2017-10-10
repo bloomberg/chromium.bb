@@ -76,7 +76,6 @@ class FakeSessionManagerClient : public SessionManagerClient {
                        const std::vector<std::string>& flags) override;
   void GetServerBackedStateKeys(const StateKeysCallback& callback) override;
 
-  void CheckArcAvailability(const ArcCallback& callback) override;
   void StartArcInstance(ArcStartupMode startup_mode,
                         const cryptohome::Identification& cryptohome_id,
                         bool disable_boot_completed_broadcast,
