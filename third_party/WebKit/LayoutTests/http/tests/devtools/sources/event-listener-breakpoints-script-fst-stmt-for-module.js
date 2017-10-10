@@ -11,7 +11,7 @@
       {
           var module = document.createElement("script");
           module.type = "module";
-          module.src = relativeToTest("./resources/empty-module.js");
+          module.src = "./resources/empty-module.js";
           document.body.appendChild(module);
           module.remove();
       }

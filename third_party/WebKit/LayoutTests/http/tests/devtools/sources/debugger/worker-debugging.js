@@ -10,7 +10,7 @@
   await TestRunner.evaluateInPagePromise(`
       function installWorker()
       {
-          new Worker(relativeToTest("resources/worker-source.js"));
+          new Worker("resources/worker-source.js");
       }
   `);
 

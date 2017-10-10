@@ -15,7 +15,7 @@
       function loadIframe()
       {
           var iframe = document.createElement("iframe");
-          iframe.src = relativeToTest("resources/uncaught-in-iframe.html");
+          iframe.src = "resources/uncaught-in-iframe.html";
           document.body.appendChild(iframe);
       }
   `);

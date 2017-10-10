@@ -11,9 +11,9 @@
 
   await TestRunner.evaluateInPagePromise(`
     function setup() {
-      window.worker = new Worker(relativeToTest('resources/worker-pause.js'));
+      window.worker = new Worker('resources/worker-pause.js');
       window.iframe = document.createElement('iframe');
-      window.iframe.src = relativeToTest('../resources/inspected-page.html');
+      window.iframe.src = '../resources/inspected-page.html';
       window.iframe.name = 'myframe';
       document.body.appendChild(window.iframe);
       return new Promise(f => window.iframe.onload = f);

@@ -19,7 +19,7 @@
     {
         var callback;
         var promise = new Promise((fulfill) => callback = fulfill);
-        var es = new EventSource(relativeToTest("resources/event-stream.asis"));
+        var es = new EventSource("resources/event-stream.asis");
         es.onmessage = onMessage;
         es.onerror = onError;
         return promise;

@@ -23,7 +23,7 @@
         image = new Image();
         image.onload = firstImageLoaded;
         document.body.appendChild(image);
-        image.src = relativeToTest("resources/resource.php?type=image&random=1&size=400");
+        image.src = "resources/resource.php?type=image&random=1&size=400";
     };
     function firstImageLoaded()
     {
@@ -31,7 +31,7 @@
     };
     function loadSecondImage() {
         image.onload = secondImageLoaded;
-        image.src = relativeToTest("resources/resource.php?type=image&random=1&size=200");
+        image.src = "resources/resource.php?type=image&random=1&size=200";
     };
     function secondImageLoaded()
     {

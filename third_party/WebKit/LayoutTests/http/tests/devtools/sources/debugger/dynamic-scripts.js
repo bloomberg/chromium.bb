@@ -17,7 +17,7 @@
       {
           var scriptElement = document.createElement("script");
           if (src)
-              scriptElement.src = relativeToTest(src);
+              scriptElement.src = src;
           else
               scriptElement.textContent = content;
           document.head.appendChild(scriptElement);

@@ -12,7 +12,7 @@
       {
           var head = document.getElementsByTagName('head')[0];
           var script = document.createElement('script');
-          script.setAttribute('src', relativeToTest(url));
+          script.setAttribute('src', url);
           head.appendChild(script);
       }
   `);

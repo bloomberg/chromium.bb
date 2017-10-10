@@ -11,7 +11,7 @@
 
       function createPromise()
       {
-          worker = new Worker(relativeToTest("resources/worker-with-defer-handled-promise.js"));
+          worker = new Worker("resources/worker-with-defer-handled-promise.js");
       }
 
       function handlePromiseRejection()

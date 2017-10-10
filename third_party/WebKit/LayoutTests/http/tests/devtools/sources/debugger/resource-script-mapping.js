@@ -10,7 +10,7 @@
       function loadIframe()
       {
           var iframe = document.createElement("iframe");
-          iframe.setAttribute("src", relativeToTest("resources/multiple-scripts.html"));
+          iframe.setAttribute("src", "resources/multiple-scripts.html");
           document.body.appendChild(iframe);
       }
   `);
