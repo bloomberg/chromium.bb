@@ -304,3 +304,11 @@ D. Local Modifications
     http://unicode.org/cldr/trac/ticket/10539
 
   - patches/han_script.patch
+
+11. Clean up a few callers of uloc_getKeywordValue or Locale::getKeywordValue()
+
+    https://ssl.icu-project.org/trac/ticket/13327 (fixed in ToT)
+    https://ssl.icu-project.org/trac/ticket/13394
+    http://crbug.com/770452
+
+  - patches/loc_keyvaleu.patch

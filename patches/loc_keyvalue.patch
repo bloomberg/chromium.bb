@@ -1,0 +1,87 @@
+diff --git a/source/common/locdispnames.cpp b/source/common/locdispnames.cpp
+index 1aa3ca70..a80ba67c 100644
+--- a/source/common/locdispnames.cpp
++++ b/source/common/locdispnames.cpp
+@@ -821,6 +821,8 @@ uloc_getDisplayKeywordValue(   const char* locale,
+     /* get the keyword value */
+     keywordValue[0]=0;
+     keywordValueLen = uloc_getKeywordValue(locale, keyword, keywordValue, capacity, status);
++    if (*status == U_STRING_NOT_TERMINATED_WARNING)
++      *status = U_BUFFER_OVERFLOW_ERROR;
+ 
+     /* 
+      * if the keyword is equal to currency .. then to get the display name 
+diff --git a/source/common/locdspnm.cpp b/source/common/locdspnm.cpp
+index 39934dc6..6af5f2a8 100644
+--- a/source/common/locdspnm.cpp
++++ b/source/common/locdspnm.cpp
+@@ -636,8 +636,9 @@ LocaleDisplayNamesImpl::localeDisplayName(const Locale& locale,
+     char value[ULOC_KEYWORD_AND_VALUES_CAPACITY]; // sigh, no ULOC_VALUE_CAPACITY
+     const char* key;
+     while ((key = e->next((int32_t *)0, status)) != NULL) {
++      value[0] = 0;
+       locale.getKeywordValue(key, value, ULOC_KEYWORD_AND_VALUES_CAPACITY, status);
+-      if (U_FAILURE(status)) {
++      if (U_FAILURE(status) || status == U_STRING_NOT_TERMINATED_WARNING) {
+         return result;
+       }
+       keyDisplayName(key, temp, TRUE);
+diff --git a/source/common/ucurr.cpp b/source/common/ucurr.cpp
+index f2cae13c..40e69588 100644
+--- a/source/common/ucurr.cpp
++++ b/source/common/ucurr.cpp
+@@ -2221,6 +2221,7 @@ ucurr_countCurrencies(const char* locale,
+         UErrorCode localStatus = U_ZERO_ERROR;
+         char id[ULOC_FULLNAME_CAPACITY];
+         uloc_getKeywordValue(locale, "currency", id, ULOC_FULLNAME_CAPACITY, &localStatus);
++
+         // get country or country_variant in `id'
+         /*uint32_t variantType =*/ idForLocale(locale, id, sizeof(id), ec);
+ 
+diff --git a/source/i18n/numsys.cpp b/source/i18n/numsys.cpp
+index a05c7e09..253a68eb 100644
+--- a/source/i18n/numsys.cpp
++++ b/source/i18n/numsys.cpp
+@@ -25,6 +25,7 @@
+ #include "unicode/schriter.h"
+ #include "unicode/numsys.h"
+ #include "cstring.h"
++#include "uassert.h"
+ #include "uresimp.h"
+ #include "numsys_impl.h"
+ 
+@@ -115,7 +116,12 @@ NumberingSystem::createInstance(const Locale & inLocale, UErrorCode& status) {
+     UBool usingFallback = FALSE;
+     char buffer[ULOC_KEYWORDS_CAPACITY];
+     int32_t count = inLocale.getKeywordValue("numbers",buffer, sizeof(buffer),status);
++    if (U_FAILURE(status) || status == U_STRING_NOT_TERMINATED_WARNING) {
++      count = 0;
++      status = U_ZERO_ERROR;
++    }
+     if ( count > 0 ) { // @numbers keyword was specified in the locale
++        U_ASSERT(count < ULOC_KEYWORDS_CAPACITY);
+         buffer[count] = '\0'; // Make sure it is null terminated.
+         if ( !uprv_strcmp(buffer,gDefault) || !uprv_strcmp(buffer,gNative) || 
+              !uprv_strcmp(buffer,gTraditional) || !uprv_strcmp(buffer,gFinance)) {
+diff --git a/source/i18n/ucol_sit.cpp b/source/i18n/ucol_sit.cpp
+index ad064f2a..f0e5bdae 100644
+--- a/source/i18n/ucol_sit.cpp
++++ b/source/i18n/ucol_sit.cpp
+@@ -465,8 +465,15 @@ ucol_prepareShortStringOpen( const char *definition,
+     UResourceBundle *collElem = NULL;
+     char keyBuffer[256];
+     // if there is a keyword, we pick it up and try to get elements
+-    if(!uloc_getKeywordValue(buffer, "collation", keyBuffer, 256, status)) {
+-      // no keyword. we try to find the default setting, which will give us the keyword value
++    int32_t keyLen = uloc_getKeywordValue(buffer, "collation", keyBuffer, sizeof(keyBuffer), status);
++    // Treat too long a value as no keyword.
++    if(keyLen >= sizeof(keyBuffer)) {
++      keyLen = 0;
++      *status = U_ZERO_ERROR;
++    }
++    if(keyLen == 0) {
++      // no keyword
++      // we try to find the default setting, which will give us the keyword value
+       UResourceBundle *defaultColl = ures_getByKeyWithFallback(collations, "default", NULL, status);
+       if(U_SUCCESS(*status)) {
+         int32_t defaultKeyLen = 0;
