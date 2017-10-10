@@ -535,12 +535,6 @@
       "3407516021EA3669C0EC8E65E6B9837E5A521B9C"
     ]
   },
-  "nativeMessaging": {
-    "channel": "stable",
-    "extension_types": [
-      "extension", "legacy_packaged_app", "platform_app"
-    ]
-  },
   "notifications": {
     // The chrome.notifications functionality listed in notifications.idl is
     // available only to extension/platform_app types. The implementation of
