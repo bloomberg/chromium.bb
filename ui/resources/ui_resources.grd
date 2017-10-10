@@ -125,10 +125,6 @@
         <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_ADVANCED_SETTINGS" file="common/notification_advanced_settings.png"/>
         <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_ADVANCED_SETTINGS_HOVER" file="common/notification_advanced_settings_hover.png"/>
         <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_ADVANCED_SETTINGS_PRESSED" file="common/notification_advanced_settings_pressed.png"/>
-        <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_CLEAR_ALL" file="common/notification_clear_all.png"/>
-        <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_CLEAR_ALL_DISABLED" file="common/notification_clear_all_disabled.png"/>
-        <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_CLEAR_ALL_HOVER" file="common/notification_clear_all_hover.png"/>
-        <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_CLEAR_ALL_PRESSED" file="common/notification_clear_all_pressed.png"/>
         <if expr="is_win">
           <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_CLOSE" file="win/notification_close.png"/>
           <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_CLOSE_HOVER" file="win/notification_close_hover.png"/>
@@ -139,15 +135,10 @@
           <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_CLOSE_HOVER" file="common/notification_close_hover.png"/>
           <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_CLOSE_PRESSED" file="common/notification_close_pressed.png"/>
         </if>
-        <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_DO_NOT_DISTURB" file="common/notification_do_not_disturb.png"/>
-        <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_DO_NOT_DISTURB_HOVER" file="common/notification_do_not_disturb_hover.png"/>
-        <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_DO_NOT_DISTURB_PRESSED" file="common/notification_do_not_disturb_pressed.png"/>
         <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_SETTINGS" file="common/notification_settings.png"/>
         <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_SETTINGS_BUTTON_ICON" file="common/notification_settings_button.png"/>
         <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_SETTINGS_BUTTON_ICON_HOVER" file="common/notification_settings_button_hover.png"/>
         <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_SETTINGS_BUTTON_ICON_PRESSED" file="common/notification_settings_button_pressed.png"/>
-        <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_SETTINGS_HOVER" file="common/notification_settings_hover.png"/>
-        <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_SETTINGS_PRESSED" file="common/notification_settings_pressed.png"/>
       </if>
       <if expr="not is_android and not is_ios">
         <structure type="chrome_scaled_image" name="IDR_NTP_DEFAULT_FAVICON" file="common/ntp_default_favicon.png" />
