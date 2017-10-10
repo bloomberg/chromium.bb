@@ -113,7 +113,6 @@ source_set("common") {
     "cursors/webcursor_aurax11.cc",
     "cursors/webcursor_mac.mm",
     "cursors/webcursor_ozone.cc",
-    "database_messages.h",
     "date_time_suggestion.h",
     "devtools/devtools_network_conditions.cc",
     "devtools/devtools_network_conditions.h",

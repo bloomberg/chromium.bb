@@ -291,8 +291,6 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
     web_idb_factory_.reset(new WebIDBFactoryImpl(
         sync_message_filter_,
         RenderThreadImpl::current()->GetIOTaskRunner().get()));
-    web_database_observer_impl_.reset(
-        new WebDatabaseObserverImpl(sync_message_filter_.get()));
   } else {
     service_manager::mojom::ConnectorRequest request;
     connector_ = service_manager::Connector::Create(&request);
@@ -728,6 +726,11 @@ unsigned RendererBlinkPlatformImpl::AudioHardwareOutputChannels() {
 }
 
 WebDatabaseObserver* RendererBlinkPlatformImpl::DatabaseObserver() {
+  if (!web_database_observer_impl_) {
+    InitializeWebDatabaseHostIfNeeded();
+    web_database_observer_impl_ =
+        std::make_unique<WebDatabaseObserverImpl>(web_database_host_);
+  }
   return web_database_observer_impl_.get();
 }
 
@@ -1342,13 +1345,17 @@ void RendererBlinkPlatformImpl::RequestPurgeMemory() {
   base::MemoryCoordinatorClientRegistry::GetInstance()->PurgeMemory();
 }
 
-mojom::WebDatabaseHost& RendererBlinkPlatformImpl::GetWebDatabaseHost() {
+void RendererBlinkPlatformImpl::InitializeWebDatabaseHostIfNeeded() {
   if (!web_database_host_) {
     web_database_host_ = content::mojom::ThreadSafeWebDatabaseHostPtr::Create(
         std::move(web_database_host_info_),
         base::CreateSequencedTaskRunnerWithTraits(
             {base::WithBaseSyncPrimitives()}));
   }
+}
+
+mojom::WebDatabaseHost& RendererBlinkPlatformImpl::GetWebDatabaseHost() {
+  InitializeWebDatabaseHostIfNeeded();
   return **web_database_host_;
 }
 
