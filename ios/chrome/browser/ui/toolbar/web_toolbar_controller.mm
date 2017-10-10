@@ -55,6 +55,7 @@
 #import "ios/chrome/browser/ui/toolbar/keyboard_assist/toolbar_assistive_keyboard_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/keyboard_assist/toolbar_assistive_keyboard_views.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_controller+protected.h"
+#import "ios/chrome/browser/ui/toolbar/toolbar_frame_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_model_ios.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_resource_macros.h"
 #include "ios/chrome/browser/ui/ui_util.h"
