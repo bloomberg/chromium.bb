@@ -61,6 +61,7 @@ void HoverHighlightView::SetRightViewVisible(bool visible) {
   if (!right_view_)
     return;
 
+  tri_view_->SetContainerVisible(TriView::Container::END, visible);
   right_view_->SetVisible(visible);
   Layout();
 }
