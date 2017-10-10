@@ -8,6 +8,13 @@ import("//services/service_manager/public/cpp/service.gni")
 import("//services/service_manager/public/service_manifest.gni")
 import("//services/service_manager/public/tools/test/service_test.gni")
 import("//testing/test.gni")
+import("//third_party/protobuf/proto_library.gni")
+
+proto_library("video_decode_stats_proto") {
+  sources = [
+    "video_decode_stats.proto",
+  ]
+}
 
 component("services") {
   output_name = "media_mojo_services"
@@ -16,8 +23,6 @@ component("services") {
     "gpu_mojo_media_client.h",
     "interface_factory_impl.cc",
     "interface_factory_impl.h",
-    "media_capabilities_database.cc",
-    "media_capabilities_database.h",
     "media_interface_provider.cc",
     "media_interface_provider.h",
     "media_mojo_export.h",
@@ -61,6 +66,10 @@ component("services") {
     "test_mojo_media_client.h",
     "video_decode_perf_history.cc",
     "video_decode_perf_history.h",
+    "video_decode_stats_db.cc",
+    "video_decode_stats_db.h",
+    "video_decode_stats_db_impl.cc",
+    "video_decode_stats_db_impl.h",
     "video_decode_stats_recorder.cc",
     "video_decode_stats_recorder.h",
     "watch_time_recorder.cc",
@@ -74,6 +83,7 @@ component("services") {
 
   public_deps = [
     "//base",
+    "//components/leveldb_proto",
     "//media",
     "//media/gpu",
     "//media/gpu/ipc/common",
@@ -86,6 +96,7 @@ component("services") {
   ]
 
   deps = [
+    ":video_decode_stats_proto",
     "//media:shared_memory_support",
     "//media/cdm:cdm_manager",
     "//media/gpu",

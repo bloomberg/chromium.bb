@@ -7,55 +7,60 @@
 #include <string>
 
 #include "base/memory/ptr_util.h"
-#include "media/mojo/services/media_capabilities_database.h"
 #include "media/mojo/services/video_decode_perf_history.h"
+#include "media/mojo/services/video_decode_stats_db.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
 
-class FakeCapabilitiesDatabase : public MediaCapabilitiesDatabase {
+class FakeVideoDecodeStatsDB : public VideoDecodeStatsDB {
  public:
-  FakeCapabilitiesDatabase() = default;
-  ~FakeCapabilitiesDatabase() override {}
+  FakeVideoDecodeStatsDB() = default;
+  ~FakeVideoDecodeStatsDB() override {}
 
-  void AppendInfoToEntry(const Entry& entry, const Info& info) override {
-    std::string key = MakeEntryKey(entry);
-    if (entries_.find(key) == entries_.end()) {
-      entries_.emplace(std::make_pair(key, info));
+  void AppendDecodeStats(const VideoDescKey& key,
+                         const DecodeStatsEntry& entry) override {
+    std::string key_str = MakeKeyString(key);
+    if (entries_.find(key_str) == entries_.end()) {
+      entries_.emplace(std::make_pair(key_str, entry));
     } else {
-      const Info& known_info = entries_.at(key);
-      uint32_t frames_decoded = known_info.frames_decoded + info.frames_decoded;
-      uint32_t frames_dropped = known_info.frames_dropped + info.frames_dropped;
-      entries_.at(key) = Info(frames_decoded, frames_dropped);
+      const DecodeStatsEntry& known_entry = entries_.at(key_str);
+      uint32_t frames_decoded =
+          known_entry.frames_decoded + known_entry.frames_decoded;
+      uint32_t frames_dropped =
+          known_entry.frames_dropped + known_entry.frames_dropped;
+      entries_.at(key_str) = DecodeStatsEntry(frames_decoded, frames_dropped);
     }
   }
 
-  void GetInfo(const Entry& entry, GetInfoCallback callback) override {
-    auto entry_it = entries_.find(MakeEntryKey(entry));
+  void GetDecodeStats(const VideoDescKey& key,
+                      GetDecodeStatsCB callback) override {
+    auto entry_it = entries_.find(MakeKeyString(key));
     if (entry_it == entries_.end()) {
       std::move(callback).Run(true, nullptr);
     } else {
-      std::move(callback).Run(true, base::MakeUnique<Info>(entry_it->second));
+      std::move(callback).Run(
+          true, base::MakeUnique<DecodeStatsEntry>(entry_it->second));
     }
   }
 
  private:
-  static std::string MakeEntryKey(const Entry& entry) {
+  static std::string MakeKeyString(const VideoDescKey& key) {
     std::stringstream ss;
-    ss << entry.codec_profile() << "|" << entry.size().ToString() << "|"
-       << entry.frame_rate();
+    ss << key.codec_profile << "|" << key.size.ToString() << "|"
+       << key.frame_rate;
     return ss.str();
   }
 
-  std::map<std::string, Info> entries_;
+  std::map<std::string, DecodeStatsEntry> entries_;
 };
 
 class VideoDecodePerfHistoryTest : public ::testing::Test {
  public:
   void SetUp() override {
     // Sniff the database pointer so tests can inject entries.
-    database_ = base::MakeUnique<FakeCapabilitiesDatabase>();
+    database_ = base::MakeUnique<FakeVideoDecodeStatsDB>();
     VideoDecodePerfHistory::Initialize(database_.get());
 
     // Make tests hermetic by creating a new instance. Cannot use unique_ptr
@@ -72,11 +77,12 @@ class VideoDecodePerfHistoryTest : public ::testing::Test {
 
   // Tests may set this as the callback for VideoDecodePerfHistory::GetPerfInfo
   // to check the results of the call.
-  MOCK_METHOD2(MockPerfInfoCb, void(bool is_smooth, bool is_power_efficient));
+  MOCK_METHOD2(MockGetPerfInfoCB,
+               void(bool is_smooth, bool is_power_efficient));
 
  protected:
-  using Entry = media::MediaCapabilitiesDatabase::Entry;
-  using Info = media::MediaCapabilitiesDatabase::Info;
+  using VideoDescKey = VideoDecodeStatsDB::VideoDescKey;
+  using DecodeStatsEntry = VideoDecodeStatsDB::DecodeStatsEntry;
 
   static constexpr double kMaxSmoothDroppedFramesPercent =
       VideoDecodePerfHistory::kMaxSmoothDroppedFramesPercent;
@@ -85,7 +91,7 @@ class VideoDecodePerfHistoryTest : public ::testing::Test {
   VideoDecodePerfHistory* perf_history_;
 
   // The database |perf_history_| uses to store/query performance stats.
-  std::unique_ptr<FakeCapabilitiesDatabase> database_;
+  std::unique_ptr<FakeVideoDecodeStatsDB> database_;
 };
 
 TEST_F(VideoDecodePerfHistoryTest, GetPerfInfo_Smooth) {
@@ -104,38 +110,38 @@ TEST_F(VideoDecodePerfHistoryTest, GetPerfInfo_Smooth) {
       kFramesDecoded * kMaxSmoothDroppedFramesPercent + 1;
 
   // Add the entries.
-  database_->AppendInfoToEntry(
-      Entry(kKnownProfile, kKownSize, kSmoothFrameRate),
-      Info(kFramesDecoded, kSmoothFramesDropped));
-  database_->AppendInfoToEntry(
-      Entry(kKnownProfile, kKownSize, kNotSmoothFrameRate),
-      Info(kFramesDecoded, kNotSmoothFramesDropped));
+  database_->AppendDecodeStats(
+      VideoDescKey(kKnownProfile, kKownSize, kSmoothFrameRate),
+      DecodeStatsEntry(kFramesDecoded, kSmoothFramesDropped));
+  database_->AppendDecodeStats(
+      VideoDescKey(kKnownProfile, kKownSize, kNotSmoothFrameRate),
+      DecodeStatsEntry(kFramesDecoded, kNotSmoothFramesDropped));
 
   // Verify perf history returns is_smooth = true for the smooth entry.
   bool is_smooth = true;
   bool is_power_efficient = true;
-  EXPECT_CALL(*this, MockPerfInfoCb(is_smooth, is_power_efficient));
+  EXPECT_CALL(*this, MockGetPerfInfoCB(is_smooth, is_power_efficient));
   perf_history_->GetPerfInfo(
       kKnownProfile, kKownSize, kSmoothFrameRate,
-      base::BindOnce(&VideoDecodePerfHistoryTest::MockPerfInfoCb,
+      base::BindOnce(&VideoDecodePerfHistoryTest::MockGetPerfInfoCB,
                      base::Unretained(this)));
 
   // Verify perf history returns is_smooth = false for the NOT smooth entry.
   is_smooth = false;
-  EXPECT_CALL(*this, MockPerfInfoCb(is_smooth, is_power_efficient));
+  EXPECT_CALL(*this, MockGetPerfInfoCB(is_smooth, is_power_efficient));
   perf_history_->GetPerfInfo(
       kKnownProfile, kKownSize, kNotSmoothFrameRate,
-      base::BindOnce(&VideoDecodePerfHistoryTest::MockPerfInfoCb,
+      base::BindOnce(&VideoDecodePerfHistoryTest::MockGetPerfInfoCB,
                      base::Unretained(this)));
 
   // Verify perf history optimistically returns is_smooth = true when no entry
   // can be found with the given configuration.
   const VideoCodecProfile kUnknownProfile = VP9PROFILE_PROFILE2;
   is_smooth = true;
-  EXPECT_CALL(*this, MockPerfInfoCb(is_smooth, is_power_efficient));
+  EXPECT_CALL(*this, MockGetPerfInfoCB(is_smooth, is_power_efficient));
   perf_history_->GetPerfInfo(
       kUnknownProfile, kKownSize, kNotSmoothFrameRate,
-      base::BindOnce(&VideoDecodePerfHistoryTest::MockPerfInfoCb,
+      base::BindOnce(&VideoDecodePerfHistoryTest::MockGetPerfInfoCB,
                      base::Unretained(this)));
 }
 
