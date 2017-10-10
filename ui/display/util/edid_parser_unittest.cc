@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/numerics/ranges.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
 #include "ui/gfx/geometry/size.h"
@@ -155,23 +156,21 @@ const static float kPrimariesPrecision = 0.001f;
     const char* rhs_expr,
     const SkColorSpacePrimaries& lhs,
     const SkColorSpacePrimaries& rhs) {
-  // TODO(mcasas): consider using MathUtil::ApproximatelyEqual() when and if
-  // this is available in //base, https://crbug.com/771345
-  if (std::fabs(lhs.fRX - rhs.fRX) > kPrimariesPrecision)
+  if (!base::IsApproximatelyEqual(lhs.fRX, rhs.fRX, kPrimariesPrecision))
     return AssertionFailure() << "fRX: " << lhs.fRX << " != " << rhs.fRX;
-  if (std::fabs(lhs.fRY - rhs.fRY) > kPrimariesPrecision)
+  if (!base::IsApproximatelyEqual(lhs.fRY, rhs.fRY, kPrimariesPrecision))
     return AssertionFailure() << "fRY: " << lhs.fRY << " != " << rhs.fRY;
-  if (std::fabs(lhs.fGX - rhs.fGX) > kPrimariesPrecision)
+  if (!base::IsApproximatelyEqual(lhs.fGX, rhs.fGX, kPrimariesPrecision))
     return AssertionFailure() << "fGX: " << lhs.fGX << " != " << rhs.fGX;
-  if (std::fabs(lhs.fGY - rhs.fGY) > kPrimariesPrecision)
+  if (!base::IsApproximatelyEqual(lhs.fGY, rhs.fGY, kPrimariesPrecision))
     return AssertionFailure() << "fGY: " << lhs.fGY << " != " << rhs.fGY;
-  if (std::fabs(lhs.fBX - rhs.fBX) > kPrimariesPrecision)
+  if (!base::IsApproximatelyEqual(lhs.fBX, rhs.fBX, kPrimariesPrecision))
     return AssertionFailure() << "fBX: " << lhs.fBX << " != " << rhs.fBX;
-  if (std::fabs(lhs.fBY - rhs.fBY) > kPrimariesPrecision)
+  if (!base::IsApproximatelyEqual(lhs.fBY, rhs.fBY, kPrimariesPrecision))
     return AssertionFailure() << "fBY: " << lhs.fBY << " != " << rhs.fBY;
-  if (std::fabs(lhs.fWX - rhs.fWX) > kPrimariesPrecision)
+  if (!base::IsApproximatelyEqual(lhs.fWX, rhs.fWX, kPrimariesPrecision))
     return AssertionFailure() << "fWX: " << lhs.fWX << " != " << rhs.fWX;
-  if (std::fabs(lhs.fWY - rhs.fWY) > kPrimariesPrecision)
+  if (!base::IsApproximatelyEqual(lhs.fWY, rhs.fWY, kPrimariesPrecision))
     return AssertionFailure() << "fWY: " << lhs.fWY << " != " << rhs.fWY;
   return AssertionSuccess();
 }
