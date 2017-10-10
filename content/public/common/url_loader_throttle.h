@@ -30,6 +30,9 @@ class CONTENT_EXPORT URLLoaderThrottle {
   // cancel the resource load. Please note that these methods could be called
   // in-band (i.e., inside URLLoaderThrottle notification methods such as
   // WillStartRequest), or out-of-band.
+  //
+  // It is guaranteed that throttles calling these methods won't be destroyed
+  // synchronously.
   class CONTENT_EXPORT Delegate {
    public:
     // Cancels the resource load with the specified error code.
