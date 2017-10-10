@@ -509,7 +509,6 @@ source_set("blink_headers") {
     "web/WebElementCollection.h",
     "web/WebEmbeddedWorker.h",
     "web/WebEmbeddedWorkerStartData.h",
-    "web/WebExceptionCode.h",
     "web/WebExternalPopupMenu.h",
     "web/WebExternalPopupMenuClient.h",
     "web/WebFileChooserCompletion.h",

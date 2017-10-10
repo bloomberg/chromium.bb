@@ -23,7 +23,6 @@
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebElementCollection.h"
-#include "third_party/WebKit/public/web/WebExceptionCode.h"
 #include "third_party/WebKit/public/web/WebFormControlElement.h"
 #include "third_party/WebKit/public/web/WebFormElement.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
@@ -33,7 +32,6 @@
 using base::ASCIIToUTF16;
 using blink::WebDocument;
 using blink::WebElement;
-using blink::WebExceptionCode;
 using blink::WebFormControlElement;
 using blink::WebFormElement;
 using blink::WebInputElement;

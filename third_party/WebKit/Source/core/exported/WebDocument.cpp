@@ -228,8 +228,7 @@ WebVector<WebDraggableRegion> WebDocument::DraggableRegions() const {
 
 v8::Local<v8::Value> WebDocument::RegisterEmbedderCustomElement(
     const WebString& name,
-    v8::Local<v8::Value> options,
-    WebExceptionCode& ec) {
+    v8::Local<v8::Value> options) {
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
   Document* document = Unwrap<Document>();
   DummyExceptionStateForTesting exception_state;
@@ -241,7 +240,6 @@ v8::Local<v8::Value> WebDocument::RegisterEmbedderCustomElement(
   ScriptValue constructor = document->registerElement(
       ScriptState::Current(isolate), name, registration_options,
       exception_state, V0CustomElement::kEmbedderNames);
-  ec = exception_state.Code();
   if (exception_state.HadException())
     return v8::Local<v8::Value>();
   return constructor.V8Value();
