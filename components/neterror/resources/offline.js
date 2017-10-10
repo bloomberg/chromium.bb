@@ -868,7 +868,8 @@ Runner.prototype = {
     // height minus the game container height.
     var translateY = Math.ceil(Math.max(0, (windowHeight - scaledCanvasHeight -
         Runner.config.ARCADE_MODE_INITIAL_TOP_POSITION) *
-        Runner.config.ARCADE_MODE_TOP_POSITION_PERCENT));
+        Runner.config.ARCADE_MODE_TOP_POSITION_PERCENT)) *
+        window.devicePixelRatio;
     this.containerEl.style.transform = 'scale(' + scale + ') translateY(' +
         translateY + 'px)';
   },
