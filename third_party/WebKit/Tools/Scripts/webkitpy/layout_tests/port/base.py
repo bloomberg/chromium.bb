@@ -84,6 +84,7 @@ class Port(object):
         # work until we need to test and support baselines across multiple OS versions.
         ('retina', 'x86'),
 
+        ('mac10.9', 'x86'),
         ('mac10.10', 'x86'),
         ('mac10.11', 'x86'),
         ('mac10.12', 'x86'),
@@ -99,7 +100,7 @@ class Port(object):
     )
 
     CONFIGURATION_SPECIFIER_MACROS = {
-        'mac': ['retina', 'mac10.10', 'mac10.11', 'mac10.12'],
+        'mac': ['retina', 'mac10.9', 'mac10.10', 'mac10.11', 'mac10.12'],
         'win': ['win7', 'win10'],
         'linux': ['trusty'],
         'android': ['kitkat'],
