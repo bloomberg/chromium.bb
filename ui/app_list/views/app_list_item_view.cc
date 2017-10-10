@@ -292,6 +292,9 @@ void AppListItemView::SetItemPercentDownloaded(int percent_downloaded) {
 void AppListItemView::ShowContextMenuForView(views::View* source,
                                              const gfx::Point& point,
                                              ui::MenuSourceType source_type) {
+  if (context_menu_runner_ && context_menu_runner_->IsRunning())
+    return;
+
   ui::MenuModel* menu_model =
       item_weak_ ? item_weak_->GetContextMenuModel() : NULL;
   if (!menu_model)
@@ -299,8 +302,9 @@ void AppListItemView::ShowContextMenuForView(views::View* source,
 
   if (!apps_grid_view_->IsSelectedView(this))
     apps_grid_view_->ClearAnySelectedView();
-  context_menu_runner_.reset(
-      new views::MenuRunner(menu_model, views::MenuRunner::HAS_MNEMONICS));
+  int run_types = views::MenuRunner::HAS_MNEMONICS |
+                  views::MenuRunner::SEND_GESTURE_EVENTS_TO_OWNER;
+  context_menu_runner_.reset(new views::MenuRunner(menu_model, run_types));
   context_menu_runner_->RunMenuAt(GetWidget(), NULL,
                                   gfx::Rect(point, gfx::Size()),
                                   views::MENU_ANCHOR_TOPLEFT, source_type);
@@ -492,15 +496,13 @@ void AppListItemView::OnGestureEvent(ui::GestureEvent* event) {
   switch (event->type()) {
     case ui::ET_GESTURE_SCROLL_BEGIN:
       if (touch_dragging_) {
+        CancelContextMenu();
         apps_grid_view_->StartDragAndDropHostDragAfterLongPress(
             AppsGridView::TOUCH);
         event->SetHandled();
       } else {
         touch_drag_timer_.Stop();
       }
-      break;
-    case ui::ET_GESTURE_LONG_PRESS:
-      event->SetHandled();
       break;
     case ui::ET_GESTURE_SCROLL_UPDATE:
       if (touch_dragging_ && apps_grid_view_->IsDraggedView(this)) {
