@@ -143,6 +143,7 @@ interface CoreProbes {
   void didCreateAnimation(Document*, unsigned);
   void animationPlayStateChanged(Document*, Animation*, Animation::AnimationPlayState oldPlayState, Animation::AnimationPlayState newPlayState);
   void windowCreated(LocalFrame* opener, LocalFrame* created);
+  void windowOpen([Keep] Document*, const String& url, const AtomicString& windowName, const String& windowFeatures, bool userGestrue);
   void consoleMessageAdded(ExecutionContext*, ConsoleMessage*);
   void willRunJavaScriptDialog(LocalFrame* frame);
   void didRunJavaScriptDialog(LocalFrame* frame);

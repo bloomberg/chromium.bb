@@ -837,6 +837,15 @@ void InspectorPageAgent::WindowCreated(LocalFrame* created) {
     client_->WaitForCreateWindow(created);
 }
 
+void InspectorPageAgent::WindowOpen(Document* document,
+                                    const String& url,
+                                    const AtomicString& window_name,
+                                    const String& window_features,
+                                    bool user_gesture) {
+  GetFrontend()->windowOpen(document->CompleteURL(url).GetString(), window_name,
+                            window_features, user_gesture);
+}
+
 std::unique_ptr<protocol::Page::Frame> InspectorPageAgent::BuildObjectForFrame(
     LocalFrame* frame) {
   DocumentLoader* loader = frame->Loader().GetDocumentLoader();
