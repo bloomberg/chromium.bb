@@ -293,8 +293,8 @@ class MoblabVm(object):
     next_num += 10
     kvm_pid = _StartKvm(
         os.path.join(self.workspace, _WORKSPACE_MOBLAB_DIR),
-        ssh_port,
         self._config[_CONFIG_MOBLAB_IMAGE],
+        ssh_port,
         self._config[_CONFIG_MOBLAB_TAP_DEV],
         tap_mac_addr,
         is_moblab=True,
@@ -323,8 +323,8 @@ class MoblabVm(object):
     tap_mac_addr = '02:00:00:99:99:51'
     kvm_pid = _StartKvm(
         os.path.join(self.workspace, _WORKSPACE_DUT_DIR),
-        ssh_port,
         self._config[_CONFIG_DUT_IMAGE],
+        ssh_port,
         self._config[_CONFIG_DUT_TAP_DEV],
         tap_mac_addr,
         is_moblab=False,
@@ -468,8 +468,8 @@ def _StartKvm(workdir, image_path, ssh_port, tap_dev, tap_mac_addr, is_moblab,
 
   Args:
     workdir: A directory to drop temporary files in.
-    ssh_port: (str) port to use for SSH.
     image_path: Path to the OS image to use.
+    ssh_port: (str) port to use for SSH.
     tap_dev: Name of the tap device to use for secondary network.
     tap_mac_addr: The MAC address of the secondary network device.
     is_moblab: Whether we're starting a moblab VM.

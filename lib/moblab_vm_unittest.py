@@ -176,18 +176,18 @@ class MoblabVmTestCase(cros_test_lib.MockTempDirTestCase):
         ])
 
     kvm_calls = [mock.call(
-        self.moblab_workdir_path, mock.ANY, self.moblab_image_path,
+        self.moblab_workdir_path, self.moblab_image_path, mock.ANY,
         self.moblab_tap_dev, mock.ANY, is_moblab=True, qemu_args=mock.ANY)]
     if with_dut:
       kvm_calls.append(mock.call(
-          self.dut_workdir_path, mock.ANY, self.dut_image_path,
+          self.dut_workdir_path, self.dut_image_path, mock.ANY,
           self.dut_tap_dev, mock.ANY, is_moblab=False))
     self.assertEqual(self._mock_start_kvm.call_args_list, kvm_calls)
     if with_dut:
       # Different SSH ports are used for the two VMs
       self.assertNotEqual(
-          self._mock_start_kvm.call_args_list[0][0][1],
-          self._mock_start_kvm.call_args_list[1][0][1],
+          self._mock_start_kvm.call_args_list[0][0][2],
+          self._mock_start_kvm.call_args_list[1][0][2],
       )
       # Different MAC addresses are used for secondary networks of two VMs.
       self.assertNotEqual(
