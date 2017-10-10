@@ -187,12 +187,12 @@ FontSettingsAPI::~FontSettingsAPI() {
 }
 
 static base::LazyInstance<BrowserContextKeyedAPIFactory<FontSettingsAPI>>::
-    DestructorAtExit g_factory = LAZY_INSTANCE_INITIALIZER;
+    DestructorAtExit g_font_settings_api_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
 BrowserContextKeyedAPIFactory<FontSettingsAPI>*
 FontSettingsAPI::GetFactoryInstance() {
-  return g_factory.Pointer();
+  return g_font_settings_api_factory.Pointer();
 }
 
 ExtensionFunction::ResponseAction FontSettingsClearFontFunction::Run() {

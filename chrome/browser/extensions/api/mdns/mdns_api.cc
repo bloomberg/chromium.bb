@@ -57,13 +57,12 @@ MDnsAPI* MDnsAPI::Get(content::BrowserContext* context) {
   return BrowserContextKeyedAPIFactory<MDnsAPI>::Get(context);
 }
 
-static base::LazyInstance<
-    BrowserContextKeyedAPIFactory<MDnsAPI>>::DestructorAtExit g_factory =
-    LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<BrowserContextKeyedAPIFactory<MDnsAPI>>::
+    DestructorAtExit g_mdns_api_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
 BrowserContextKeyedAPIFactory<MDnsAPI>* MDnsAPI::GetFactoryInstance() {
-  return g_factory.Pointer();
+  return g_mdns_api_factory.Pointer();
 }
 
 void MDnsAPI::SetDnsSdRegistryForTesting(DnsSdRegistry* dns_sd_registry) {

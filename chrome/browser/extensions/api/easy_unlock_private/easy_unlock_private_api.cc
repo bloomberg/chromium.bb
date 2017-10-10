@@ -66,7 +66,8 @@ namespace easy_unlock_private = api::easy_unlock_private;
 namespace {
 
 static base::LazyInstance<BrowserContextKeyedAPIFactory<EasyUnlockPrivateAPI>>::
-    DestructorAtExit g_factory = LAZY_INSTANCE_INITIALIZER;
+    DestructorAtExit g_easy_unlock_private_api_factory =
+        LAZY_INSTANCE_INITIALIZER;
 
 // Utility method for getting the API's crypto delegate.
 EasyUnlockPrivateCryptoDelegate* GetCryptoDelegate(
@@ -115,7 +116,7 @@ ScreenlockState ToScreenlockState(easy_unlock_private::State state) {
 // static
 BrowserContextKeyedAPIFactory<EasyUnlockPrivateAPI>*
     EasyUnlockPrivateAPI::GetFactoryInstance() {
-  return g_factory.Pointer();
+  return g_easy_unlock_private_api_factory.Pointer();
 }
 
 EasyUnlockPrivateAPI::EasyUnlockPrivateAPI(content::BrowserContext* context)

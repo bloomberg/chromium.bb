@@ -147,13 +147,13 @@ void ScreenlockPrivateEventRouter::DispatchEvent(
 }
 
 static base::LazyInstance<BrowserContextKeyedAPIFactory<
-    ScreenlockPrivateEventRouter>>::DestructorAtExit g_factory =
-    LAZY_INSTANCE_INITIALIZER;
+    ScreenlockPrivateEventRouter>>::DestructorAtExit
+    g_screenlock_private_api_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
 BrowserContextKeyedAPIFactory<ScreenlockPrivateEventRouter>*
 ScreenlockPrivateEventRouter::GetFactoryInstance() {
-  return g_factory.Pointer();
+  return g_screenlock_private_api_factory.Pointer();
 }
 
 void ScreenlockPrivateEventRouter::Shutdown() {

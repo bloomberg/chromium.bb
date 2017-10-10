@@ -593,13 +593,12 @@ void SessionsAPI::Shutdown() {
   EventRouter::Get(browser_context_)->UnregisterObserver(this);
 }
 
-static base::LazyInstance<
-    BrowserContextKeyedAPIFactory<SessionsAPI>>::DestructorAtExit g_factory =
-    LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<BrowserContextKeyedAPIFactory<SessionsAPI>>::
+    DestructorAtExit g_sessions_api_factory = LAZY_INSTANCE_INITIALIZER;
 
 BrowserContextKeyedAPIFactory<SessionsAPI>*
 SessionsAPI::GetFactoryInstance() {
-  return g_factory.Pointer();
+  return g_sessions_api_factory.Pointer();
 }
 
 void SessionsAPI::OnListenerAdded(const EventListenerInfo& details) {

@@ -197,7 +197,8 @@ namespace PackDirectory = api::developer_private::PackDirectory;
 namespace Reload = api::developer_private::Reload;
 
 static base::LazyInstance<BrowserContextKeyedAPIFactory<DeveloperPrivateAPI>>::
-    DestructorAtExit g_factory = LAZY_INSTANCE_INITIALIZER;
+    DestructorAtExit g_developer_private_api_factory =
+        LAZY_INSTANCE_INITIALIZER;
 
 class DeveloperPrivateAPI::WebContentsTracker
     : public content::WebContentsObserver {
@@ -223,7 +224,7 @@ class DeveloperPrivateAPI::WebContentsTracker
 // static
 BrowserContextKeyedAPIFactory<DeveloperPrivateAPI>*
 DeveloperPrivateAPI::GetFactoryInstance() {
-  return g_factory.Pointer();
+  return g_developer_private_api_factory.Pointer();
 }
 
 // static

@@ -182,12 +182,12 @@ void StreamsPrivateAbortFunction::OnClose() {
 }
 
 static base::LazyInstance<BrowserContextKeyedAPIFactory<StreamsPrivateAPI>>::
-    DestructorAtExit g_factory = LAZY_INSTANCE_INITIALIZER;
+    DestructorAtExit g_streams_private_api_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
 BrowserContextKeyedAPIFactory<StreamsPrivateAPI>*
 StreamsPrivateAPI::GetFactoryInstance() {
-  return g_factory.Pointer();
+  return g_streams_private_api_factory.Pointer();
 }
 
 }  // namespace extensions

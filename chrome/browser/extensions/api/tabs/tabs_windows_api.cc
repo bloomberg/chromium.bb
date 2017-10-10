@@ -68,13 +68,12 @@ void TabsWindowsAPI::Shutdown() {
   EventRouter::Get(browser_context_)->UnregisterObserver(this);
 }
 
-static base::LazyInstance<
-    BrowserContextKeyedAPIFactory<TabsWindowsAPI>>::DestructorAtExit g_factory =
-    LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<BrowserContextKeyedAPIFactory<TabsWindowsAPI>>::
+    DestructorAtExit g_tabs_windows_api_factory = LAZY_INSTANCE_INITIALIZER;
 
 BrowserContextKeyedAPIFactory<TabsWindowsAPI>*
 TabsWindowsAPI::GetFactoryInstance() {
-  return g_factory.Pointer();
+  return g_tabs_windows_api_factory.Pointer();
 }
 
 void TabsWindowsAPI::OnListenerAdded(const EventListenerInfo& details) {

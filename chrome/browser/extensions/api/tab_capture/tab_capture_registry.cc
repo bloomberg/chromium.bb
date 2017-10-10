@@ -258,12 +258,12 @@ TabCaptureRegistry* TabCaptureRegistry::Get(content::BrowserContext* context) {
 }
 
 static base::LazyInstance<BrowserContextKeyedAPIFactory<TabCaptureRegistry>>::
-    DestructorAtExit g_factory = LAZY_INSTANCE_INITIALIZER;
+    DestructorAtExit g_tab_capture_registry_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
 BrowserContextKeyedAPIFactory<TabCaptureRegistry>*
 TabCaptureRegistry::GetFactoryInstance() {
-  return g_factory.Pointer();
+  return g_tab_capture_registry_factory.Pointer();
 }
 
 void TabCaptureRegistry::GetCapturedTabs(

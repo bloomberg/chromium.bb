@@ -579,13 +579,12 @@ void CookiesAPI::Shutdown() {
   EventRouter::Get(browser_context_)->UnregisterObserver(this);
 }
 
-static base::LazyInstance<
-    BrowserContextKeyedAPIFactory<CookiesAPI>>::DestructorAtExit g_factory =
-    LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<BrowserContextKeyedAPIFactory<CookiesAPI>>::
+    DestructorAtExit g_cookies_api_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
 BrowserContextKeyedAPIFactory<CookiesAPI>* CookiesAPI::GetFactoryInstance() {
-  return g_factory.Pointer();
+  return g_cookies_api_factory.Pointer();
 }
 
 void CookiesAPI::OnListenerAdded(const EventListenerInfo& details) {
