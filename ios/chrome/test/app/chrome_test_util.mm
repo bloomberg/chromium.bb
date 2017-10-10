@@ -21,8 +21,6 @@
 #import "ios/chrome/browser/metrics/previous_session_info_private.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/ui/browser_view_controller.h"
-#import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
-#import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
 #import "ios/chrome/browser/ui/main/main_view_controller.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher.h"
@@ -152,10 +150,6 @@ id<ApplicationCommands, BrowserCommands> DispatcherForActiveViewController() {
     return tabSwitcher.dispatcher;
   }
   return nil;
-}
-
-void RunCommandWithActiveViewController(GenericChromeCommand* command) {
-  [GetActiveViewController() chromeExecuteCommand:command];
 }
 
 void RemoveAllInfoBars() {
