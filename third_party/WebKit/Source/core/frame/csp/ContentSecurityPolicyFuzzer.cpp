@@ -17,8 +17,10 @@ namespace blink {
 DummyPageHolder* g_page_holder = nullptr;
 
 int LLVMFuzzerInitialize(int* argc, char*** argv) {
-  LEAK_SANITIZER_DISABLED_SCOPE;
   static BlinkFuzzerTestSupport test_support = BlinkFuzzerTestSupport();
+  // Scope cannot be created before BlinkFuzzerTestSupport because it requires
+  // that Oilpan be initialized to access blink::ThreadState::Current.
+  LEAK_SANITIZER_DISABLED_SCOPE;
   g_page_holder = DummyPageHolder::Create().release();
   return 0;
 }
