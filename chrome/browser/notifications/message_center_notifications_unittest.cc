@@ -115,4 +115,15 @@ TEST_F(MessageCenterNotificationManagerTest, UpdateNotification) {
   EXPECT_TRUE(message_center()->NotificationCount() == 1);
 }
 
+// Regression test for crbug.com/767868
+TEST_F(MessageCenterNotificationManagerTest, GetAllIdsReturnsOriginalId) {
+  TestingProfile profile;
+  EXPECT_TRUE(message_center()->NotificationCount() == 0);
+  notification_manager()->Add(GetANotification("test"), &profile);
+  std::set<std::string> ids = notification_manager()->GetAllIdsByProfile(
+      NotificationUIManager::GetProfileID(&profile));
+  ASSERT_EQ(1u, ids.size());
+  EXPECT_EQ(*ids.begin(), "test");
+}
+
 }  // namespace message_center

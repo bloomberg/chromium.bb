@@ -178,28 +178,12 @@ bool MessageCenterNotificationManager::CancelById(
   return true;
 }
 
-std::set<std::string>
-MessageCenterNotificationManager::GetAllIdsByProfileAndSourceOrigin(
-    ProfileID profile_id,
-    const GURL& source) {
-  std::set<std::string> delegate_ids;
-  for (const auto& pair : profile_notifications_) {
-    const Notification& notification = pair.second->notification();
-    if (pair.second->profile_id() == profile_id &&
-        notification.origin_url() == source) {
-      delegate_ids.insert(notification.id());
-    }
-  }
-
-  return delegate_ids;
-}
-
 std::set<std::string> MessageCenterNotificationManager::GetAllIdsByProfile(
     ProfileID profile_id) {
   std::set<std::string> delegate_ids;
   for (const auto& pair : profile_notifications_) {
     if (pair.second->profile_id() == profile_id)
-      delegate_ids.insert(pair.second->notification().id());
+      delegate_ids.insert(pair.second->original_id());
   }
 
   return delegate_ids;

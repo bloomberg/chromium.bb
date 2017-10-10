@@ -32,6 +32,7 @@ ProfileNotification::ProfileNotification(Profile* profile,
               notification.id(),
               NotificationUIManager::GetProfileID(profile)),
           notification),
+      original_id_(notification.id()),
       keep_alive_(new ScopedKeepAlive(KeepAliveOrigin::NOTIFICATION,
                                       KeepAliveRestartOption::DISABLED)) {
   DCHECK(profile);
