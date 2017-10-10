@@ -12,6 +12,7 @@
 #include "base/json/json_reader.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/values.h"
 #include "components/safe_browsing/db/metadata.pb.h"
 #include "components/safe_browsing/db/util.h"
@@ -33,9 +34,12 @@ enum UmaThreatSubType {
   UMA_THREAT_SUB_TYPE_SOCIAL_ENGINEERING_ADS = 4,
   UMA_THREAT_SUB_TYPE_SOCIAL_ENGINEERING_LANDING = 5,
   UMA_THREAT_SUB_TYPE_PHISHING = 6,
+
+  // DEPRECATED.
   UMA_THREAT_SUB_TYPE_BETTER_ADS = 7,
-  UMA_THREAT_SUB_TYPE_ABUSIVE_ADS = 8,
+  UMA_THREAT_SUB_TYPE_ABUSIVE = 8,
   UMA_THREAT_SUB_TYPE_ALL_ADS = 9,
+
   UMA_THREAT_SUB_TYPE_MAX_VALUE
 };
 
@@ -55,14 +59,13 @@ void ReportUmaThreatSubType(SBThreatType threat_type,
 // Returns NONE if no pattern type was found.
 ThreatPatternType ParseThreatSubType(const base::DictionaryValue* match,
                                      SBThreatType threat_type) {
-  if (threat_type == SB_THREAT_TYPE_URL_UNWANTED)
+  if (threat_type == SB_THREAT_TYPE_URL_UNWANTED ||
+      threat_type == SB_THREAT_TYPE_SUBRESOURCE_FILTER) {
     return ThreatPatternType::NONE;
+  }
 
   std::string pattern_key;
   switch (threat_type) {
-    case SB_THREAT_TYPE_SUBRESOURCE_FILTER:
-      pattern_key = "sf_pattern_type";
-      break;
     case SB_THREAT_TYPE_URL_MALWARE:
       pattern_key = "pha_pattern_type";
       break;
@@ -80,21 +83,7 @@ ThreatPatternType ParseThreatSubType(const base::DictionaryValue* match,
     return ThreatPatternType::NONE;
   }
 
-  if (threat_type == SB_THREAT_TYPE_SUBRESOURCE_FILTER) {
-    if (pattern_type == "BETTER_ADS") {
-      ReportUmaThreatSubType(threat_type, UMA_THREAT_SUB_TYPE_BETTER_ADS);
-      return ThreatPatternType::SUBRESOURCE_FILTER_BETTER_ADS;
-    } else if (pattern_type == "ABUSIVE_ADS") {
-      ReportUmaThreatSubType(threat_type, UMA_THREAT_SUB_TYPE_ABUSIVE_ADS);
-      return ThreatPatternType::SUBRESOURCE_FILTER_ABUSIVE_ADS;
-    } else if (pattern_type == "ALL_ADS") {
-      ReportUmaThreatSubType(threat_type, UMA_THREAT_SUB_TYPE_ALL_ADS);
-      return ThreatPatternType::SUBRESOURCE_FILTER_ALL_ADS;
-    } else {
-      ReportUmaThreatSubType(threat_type, UMA_THREAT_SUB_TYPE_UNKNOWN);
-      return ThreatPatternType::NONE;
-    }
-  } else if (threat_type == SB_THREAT_TYPE_URL_MALWARE) {
+  if (threat_type == SB_THREAT_TYPE_URL_MALWARE) {
     if (pattern_type == "LANDING") {
       ReportUmaThreatSubType(
           threat_type, UMA_THREAT_SUB_TYPE_POTENTIALLY_HALMFUL_APP_LANDING);
@@ -138,12 +127,25 @@ std::string ParseUserPopulation(const base::DictionaryValue* match) {
     return population_id;
 }
 
-bool ParseWarning(const base::DictionaryValue* match) {
-  if (const base::Value* value =
-          match->FindPathOfType({"warning"}, base::Value::Type::STRING)) {
-    return value->GetString() == "true";
+SubresourceFilterMatch ParseSubresourceFilterMatch(
+    const base::DictionaryValue* match) {
+  SubresourceFilterMatch subresource_filter_match;
+
+  auto get_enforcement = [](const std::string& value) {
+    return value == "warn" ? SubresourceFilterLevel::WARN
+                           : SubresourceFilterLevel::ENFORCE;
+  };
+  std::string absv_value;
+  if (match->GetString("sf_absv", &absv_value)) {
+    subresource_filter_match[SubresourceFilterType::ABUSIVE] =
+        get_enforcement(absv_value);
   }
-  return false;
+  std::string bas_value;
+  if (match->GetString("sf_bas", &bas_value)) {
+    subresource_filter_match[SubresourceFilterType::BETTER_ADS] =
+        get_enforcement(bas_value);
+  }
+  return subresource_filter_match;
 }
 
 // Returns the severity level for a given SafeBrowsing list. The lowest value is
@@ -242,7 +244,10 @@ UmaRemoteCallResult ParseJsonFromGMSCore(const std::string& metadata_str,
   metadata->threat_pattern_type =
       ParseThreatSubType(worst_match, *worst_sb_threat_type);
   metadata->population_id = ParseUserPopulation(worst_match);
-  metadata->warning = ParseWarning(worst_match);
+  if (*worst_sb_threat_type == SB_THREAT_TYPE_SUBRESOURCE_FILTER) {
+    metadata->subresource_filter_match =
+        ParseSubresourceFilterMatch(worst_match);
+  }
 
   return UMA_STATUS_MATCH;  // success
 }

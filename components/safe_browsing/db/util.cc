@@ -50,7 +50,8 @@ ThreatMetadata::~ThreatMetadata() {}
 bool ThreatMetadata::operator==(const ThreatMetadata& other) const {
   return threat_pattern_type == other.threat_pattern_type &&
          api_permissions == other.api_permissions &&
-         population_id == other.population_id && warning == other.warning;
+         subresource_filter_match == other.subresource_filter_match &&
+         population_id == other.population_id;
 }
 
 bool ThreatMetadata::operator!=(const ThreatMetadata& other) const {

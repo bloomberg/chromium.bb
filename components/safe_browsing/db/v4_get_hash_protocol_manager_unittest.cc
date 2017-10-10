@@ -10,6 +10,7 @@
 #include "base/base64.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
@@ -495,46 +496,82 @@ TEST_F(V4GetHashProtocolManagerTest, TestParseHashThreatPatternType) {
 }
 
 TEST_F(V4GetHashProtocolManagerTest, TestParseSubresourceFilterMetadata) {
-  std::unique_ptr<V4GetHashProtocolManager> pm(CreateProtocolManager());
+  typedef SubresourceFilterLevel Level;
+  typedef SubresourceFilterType Type;
+  const struct {
+    const char* abusive_type;
+    const char* bas_type;
+    SubresourceFilterMatch expected_match;
+  } test_cases[] = {
+      {"warn",
+       "enforce",
+       {{{Type::ABUSIVE, Level::WARN}, {Type::BETTER_ADS, Level::ENFORCE}},
+        base::KEEP_FIRST_OF_DUPES}},
+      {nullptr,
+       "warn",
+       {{{Type::BETTER_ADS, Level::WARN}}, base::KEEP_FIRST_OF_DUPES}},
+      {"asdf",
+       "",
+       {{{Type::ABUSIVE, Level::ENFORCE}, {Type::BETTER_ADS, Level::ENFORCE}},
+        base::KEEP_FIRST_OF_DUPES}},
+      {"warn",
+       nullptr,
+       {{{Type::ABUSIVE, Level::WARN}}, base::KEEP_FIRST_OF_DUPES}},
+      {nullptr, nullptr, {}},
+      {"",
+       "",
+       {{{Type::ABUSIVE, Level::ENFORCE}, {Type::BETTER_ADS, Level::ENFORCE}},
+        base::KEEP_FIRST_OF_DUPES}},
+  };
 
-  base::Time now = base::Time::UnixEpoch();
-  SetTestClock(now, pm.get());
-  FindFullHashesResponse sf_res;
-  sf_res.mutable_negative_cache_duration()->set_seconds(600);
-  ThreatMatch* sf = sf_res.add_matches();
-  sf->set_threat_type(SUBRESOURCE_FILTER);
-  sf->set_platform_type(CHROME_PLATFORM);
-  sf->set_threat_entry_type(URL);
-  FullHash full_hash("Everything's shiny, Cap'n.");
-  sf->mutable_threat()->set_hash(full_hash);
+  for (const auto& test_case : test_cases) {
+    SCOPED_TRACE(testing::Message() << "abusive: " << test_case.abusive_type
+                                    << " better ads: " << test_case.bas_type);
+    std::unique_ptr<V4GetHashProtocolManager> pm(CreateProtocolManager());
 
-  // sf_pattern_type
-  ThreatEntryMetadata::MetadataEntry* sf_pattern_meta =
-      sf->mutable_threat_entry_metadata()->add_entries();
-  sf_pattern_meta->set_key("sf_pattern_type");
-  sf_pattern_meta->set_value("ALL_ADS");
-  // warning
-  ThreatEntryMetadata::MetadataEntry* sf_warning_meta =
-      sf->mutable_threat_entry_metadata()->add_entries();
-  sf_warning_meta->set_key("warning");
-  sf_warning_meta->set_value("true");
+    base::Time now = base::Time::UnixEpoch();
+    SetTestClock(now, pm.get());
+    FindFullHashesResponse sf_res;
+    sf_res.mutable_negative_cache_duration()->set_seconds(600);
+    ThreatMatch* sf = sf_res.add_matches();
+    sf->set_threat_type(SUBRESOURCE_FILTER);
+    sf->set_platform_type(CHROME_PLATFORM);
+    sf->set_threat_entry_type(URL);
+    FullHash full_hash("Everything's shiny, Cap'n.");
+    sf->mutable_threat()->set_hash(full_hash);
 
-  std::string sf_data;
-  sf_res.SerializeToString(&sf_data);
+    // sf_absv.
+    if (test_case.abusive_type != nullptr) {
+      ThreatEntryMetadata::MetadataEntry* sf_absv =
+          sf->mutable_threat_entry_metadata()->add_entries();
+      sf_absv->set_key("sf_absv");
+      sf_absv->set_value(test_case.abusive_type);
+    }
 
-  std::vector<FullHashInfo> full_hash_infos;
-  base::Time cache_expire;
-  EXPECT_TRUE(pm->ParseHashResponse(sf_data, &full_hash_infos, &cache_expire));
-  EXPECT_EQ(now + base::TimeDelta::FromSeconds(600), cache_expire);
+    // sf_bas
+    if (test_case.bas_type != nullptr) {
+      ThreatEntryMetadata::MetadataEntry* sf_bas =
+          sf->mutable_threat_entry_metadata()->add_entries();
+      sf_bas->set_key("sf_bas");
+      sf_bas->set_value(test_case.bas_type);
+    }
 
-  ASSERT_EQ(1ul, full_hash_infos.size());
-  const FullHashInfo& fhi = full_hash_infos[0];
-  EXPECT_EQ(full_hash, fhi.full_hash);
-  const ListIdentifier list_id(CHROME_PLATFORM, URL, SUBRESOURCE_FILTER);
-  EXPECT_EQ(list_id, fhi.list_id);
-  EXPECT_EQ(ThreatPatternType::SUBRESOURCE_FILTER_ALL_ADS,
-            fhi.metadata.threat_pattern_type);
-  EXPECT_TRUE(fhi.metadata.warning);
+    std::string sf_data;
+    sf_res.SerializeToString(&sf_data);
+
+    std::vector<FullHashInfo> full_hash_infos;
+    base::Time cache_expire;
+    EXPECT_TRUE(
+        pm->ParseHashResponse(sf_data, &full_hash_infos, &cache_expire));
+    EXPECT_EQ(now + base::TimeDelta::FromSeconds(600), cache_expire);
+
+    ASSERT_EQ(1ul, full_hash_infos.size());
+    const FullHashInfo& fhi = full_hash_infos[0];
+    EXPECT_EQ(full_hash, fhi.full_hash);
+    const ListIdentifier list_id(CHROME_PLATFORM, URL, SUBRESOURCE_FILTER);
+    EXPECT_EQ(list_id, fhi.list_id);
+    EXPECT_EQ(test_case.expected_match, fhi.metadata.subresource_filter_match);
+  }
 }
 
 // Adds metadata with a key value that is not "permission".
