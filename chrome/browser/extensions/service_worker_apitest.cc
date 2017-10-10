@@ -1114,6 +1114,66 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerTest, FilteredEvents) {
   ASSERT_TRUE(RunExtensionTest("service_worker/filtered_events"));
 }
 
+IN_PROC_BROWSER_TEST_P(ServiceWorkerLazyBackgroundTest,
+                       PRE_FilteredEventsAfterRestart) {
+  LazyBackgroundObserver lazy_observer;
+  ResultCatcher catcher;
+  const Extension* extension = LoadExtensionWithFlags(
+      test_data_dir_.AppendASCII(
+          "service_worker/filtered_events_after_restart"),
+      kFlagNone);
+  ASSERT_TRUE(extension);
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+
+  // |extension|'s background page opens a tab to its resource.
+  content::WebContents* extension_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(content::WaitForLoadStop(extension_web_contents));
+  EXPECT_EQ(extension->GetResourceURL("page.html").spec(),
+            extension_web_contents->GetURL().spec());
+  {
+    // Let the service worker start and register a filtered listener to
+    // chrome.webNavigation.onCommitted event.
+    ExtensionTestMessageListener add_listener_done("listener-added", false);
+    add_listener_done.set_failure_message("FAILURE");
+    content::ExecuteScriptAsync(extension_web_contents,
+                                "window.runServiceWorkerAsync()");
+    EXPECT_TRUE(add_listener_done.WaitUntilSatisfied());
+
+    base::RunLoop run_loop;
+    content::StoragePartition* storage_partition =
+        content::BrowserContext::GetDefaultStoragePartition(
+            browser()->profile());
+    content::StopServiceWorkerForPattern(
+        storage_partition->GetServiceWorkerContext(),
+        // The service worker is registered at the top level scope.
+        extension->url(), run_loop.QuitClosure());
+    run_loop.Run();
+  }
+
+  // Close the tab to |extension|'s resource. This will also close the
+  // extension's event page.
+  browser()->tab_strip_model()->CloseWebContentsAt(
+      browser()->tab_strip_model()->active_index(), TabStripModel::CLOSE_NONE);
+  lazy_observer.Wait();
+}
+
+IN_PROC_BROWSER_TEST_P(ServiceWorkerLazyBackgroundTest,
+                       FilteredEventsAfterRestart) {
+  // Create a tab to a.html, expect it to navigate to b.html. The service worker
+  // will see two webNavigation.onCommitted events.
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  GURL page_url = embedded_test_server()->GetURL(
+      "/extensions/api_test/service_worker/filtered_events_after_restart/"
+      "a.html");
+  ExtensionTestMessageListener worker_filtered_event_listener(
+      "PASS_FROM_WORKER", false);
+  worker_filtered_event_listener.set_failure_message("FAIL_FROM_WORKER");
+  content::WebContents* web_contents = AddTab(browser(), page_url);
+  EXPECT_TRUE(web_contents);
+  EXPECT_TRUE(worker_filtered_event_listener.WaitUntilSatisfied());
+}
+
 // Run with both native and JS-based bindings. This ensures that both stable
 // (JS) and experimental (native) phases work correctly with worker scripts
 // while we launch native bindings to stable.

@@ -199,11 +199,13 @@ class EventListenerMap {
                                      const std::set<std::string>& event_names);
 
   // Adds filtered lazy listeners as described their serialised descriptions.
+  // |is_for_service_worker| is true for extension service worker event
+  // listeners.
   // |filtered| contains a map from event names to filters, each pairing
   // defining a lazy filtered listener.
-  void LoadFilteredLazyListeners(
-      const std::string& extension_id,
-      const base::DictionaryValue& filtered);
+  void LoadFilteredLazyListeners(const std::string& extension_id,
+                                 bool is_for_service_worker,
+                                 const base::DictionaryValue& filtered);
 
  private:
   // The key here is an event name.

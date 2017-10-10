@@ -255,8 +255,7 @@ void EventBindings::AttachFilteredEvent(
   base::DictionaryValue* filter_weak = matcher->value();
   const ExtensionId& extension_id = context()->GetExtensionID();
   if (bookkeeper->AddFilter(event_name, extension_id, *filter_weak)) {
-    bool lazy = supports_lazy_listeners &&
-                ExtensionFrameHelper::IsContextForEventPage(context());
+    bool lazy = supports_lazy_listeners && IsLazyContext(context());
     ipc_message_sender_->SendAddFilteredEventListenerIPC(context(), event_name,
                                                          *filter_weak, lazy);
   }
@@ -289,8 +288,7 @@ void EventBindings::DetachFilteredEvent(int matcher_id,
   const ExtensionId& extension_id = context()->GetExtensionID();
   if (bookkeeper->RemoveFilter(event_name, extension_id,
                                event_matcher->value())) {
-    bool remove_lazy = remove_lazy_event &&
-                       ExtensionFrameHelper::IsContextForEventPage(context());
+    bool remove_lazy = remove_lazy_event && IsLazyContext(context());
     ipc_message_sender_->SendRemoveFilteredEventListenerIPC(
         context(), event_name, *event_matcher->value(), remove_lazy);
   }

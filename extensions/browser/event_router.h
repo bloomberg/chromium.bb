@@ -301,17 +301,20 @@ class EventRouter : public KeyedService,
   // Adds a filter to an event.
   void AddFilterToEvent(const std::string& event_name,
                         const std::string& extension_id,
+                        bool is_for_service_worker,
                         const base::DictionaryValue* filter);
 
   // Removes a filter from an event.
   void RemoveFilterFromEvent(const std::string& event_name,
                              const std::string& extension_id,
+                             bool is_for_service_worker,
                              const base::DictionaryValue* filter);
 
   // Returns the dictionary of event filters that the given extension has
   // registered.
   const base::DictionaryValue* GetFilteredEvents(
-      const std::string& extension_id);
+      const std::string& extension_id,
+      RegisteredEventType type);
 
   // Track the dispatched events that have not yet sent an ACK from the
   // renderer.

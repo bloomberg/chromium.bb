@@ -355,7 +355,7 @@ TEST_F(EventListenerMapTest, AddLazyListenersFromPreferences) {
 
   DictionaryValue filtered_listeners;
   filtered_listeners.Set(kEvent1Name, std::move(filter_list));
-  listeners_->LoadFilteredLazyListeners(kExt1Id, filtered_listeners);
+  listeners_->LoadFilteredLazyListeners(kExt1Id, false, filtered_listeners);
 
   std::unique_ptr<Event> event(
       CreateEvent(kEvent1Name, GURL("http://www.google.com")));
@@ -371,7 +371,7 @@ TEST_F(EventListenerMapTest, CorruptedExtensionPrefsShouldntCrash) {
   // kEvent1Name should be associated with a list, not a dictionary.
   filtered_listeners.Set(kEvent1Name, CreateHostSuffixFilter("google.com"));
 
-  listeners_->LoadFilteredLazyListeners(kExt1Id, filtered_listeners);
+  listeners_->LoadFilteredLazyListeners(kExt1Id, false, filtered_listeners);
 
   std::unique_ptr<Event> event(
       CreateEvent(kEvent1Name, GURL("http://www.google.com")));
