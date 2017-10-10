@@ -103,7 +103,7 @@ inline int Bits::FindLSBSetNonZero64(uint64_t n) {
 
 #elif defined(_MSC_VER)
 
-inline int Bits::FindLSBSetNonZero(uint64_t n) {
+inline int Bits::FindLSBSetNonZero(uint32_t n) {
   return Bits::FindLSBSetNonZero_Portable(n);
 }
 
@@ -176,6 +176,23 @@ inline int Bits::FindLSBSetNonZero64(uint64_t n) {
 
 #endif
 
+inline int Bits::Log2Floor_Portable(uint32_t n) {
+  if (n == 0)
+    return -1;
+  int log = 0;
+  uint32_t value = n;
+  for (int i = 4; i >= 0; --i) {
+    int shift = (1 << i);
+    uint32_t x = value >> shift;
+    if (x != 0) {
+      value = x;
+      log += shift;
+    }
+  }
+  assert(value == 1);
+  return log;
+}
+
 inline int Bits::Log2FloorNonZero_Portable(uint32_t n) {
   // Just use the common routine
   return Log2Floor(n);
@@ -201,6 +218,19 @@ inline int Bits::Log2FloorNonZero64_Portable(uint64_t n) {
   } else {
     return 32 + Log2FloorNonZero(topbits);
   }
+}
+
+inline int Bits::FindLSBSetNonZero_Portable(uint32_t n) {
+  int rc = 31;
+  for (int i = 4, shift = 1 << 4; i >= 0; --i) {
+    const uint32_t x = n << shift;
+    if (x != 0) {
+      n = x;
+      rc -= shift;
+    }
+    shift >>= 1;
+  }
+  return rc;
 }
 
 // FindLSBSetNonZero64() is defined in terms of FindLSBSetNonZero()

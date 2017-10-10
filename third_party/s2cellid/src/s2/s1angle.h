@@ -15,10 +15,15 @@
 
 // Author: ericv@google.com (Eric Veach)
 
+// Needed on Windows to get |M_PI| from math.h.
+#ifdef _WIN32
+#define _USE_MATH_DEFINES
+#endif
+
 #ifndef S2_S1ANGLE_H_
 #define S2_S1ANGLE_H_
 
-#include <cmath>
+#include <math.h>
 #include <limits>
 #include <ostream>
 #include <type_traits>
