@@ -13,6 +13,7 @@
 #include "ash/shell.h"
 #include "ash/tray_action/test_tray_action_client.h"
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
@@ -53,6 +54,14 @@ class NoteActionLaunchButtonTest : public LoginTestBase {
     ui::test::EventGenerator& generator = GetEventGenerator();
     generator.MoveMouseTo(point.x(), point.y());
     generator.ClickLeftButton();
+
+    Shell::Get()->tray_action()->FlushMojoForTesting();
+  }
+
+  void GestureFling(const gfx::Point& start, const gfx::Point& end) {
+    ui::test::EventGenerator& generator = GetEventGenerator();
+    generator.GestureScrollSequence(start, end,
+                                    base::TimeDelta::FromMilliseconds(10), 2);
 
     Shell::Get()->tray_action()->FlushMojoForTesting();
   }
@@ -161,10 +170,9 @@ TEST_F(NoteActionLaunchButtonTest, ClickTest) {
 
   const gfx::Size action_size = note_action_button->GetPreferredSize();
   EXPECT_EQ(gfx::Size(kLargeButtonRadiusDp, kLargeButtonRadiusDp), action_size);
-  ASSERT_EQ(gfx::Rect(gfx::Point(), action_size),
-            note_action_button->GetBoundsInScreen());
 
   const gfx::Rect view_bounds = note_action_button->GetBoundsInScreen();
+  ASSERT_EQ(gfx::Rect(gfx::Point(), action_size), view_bounds);
   const std::vector<mojom::LockScreenNoteOrigin> expected_actions = {
       mojom::LockScreenNoteOrigin::kLockScreenButtonTap};
 
@@ -265,4 +273,132 @@ TEST_F(NoteActionLaunchButtonTest, ClickTest) {
   tray_action_client()->ClearRecordedRequests();
 }
 
+// Tests tap gesture in and outside of the note action launch button.
+TEST_F(NoteActionLaunchButtonTest, TapTest) {
+  auto* note_action_button = new NoteActionLaunchButton(
+      mojom::TrayActionState::kAvailable, data_dispatcher());
+  std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(
+      login_layout_util::WrapViewForPreferredSize(note_action_button));
+
+  const gfx::Size action_size = note_action_button->GetPreferredSize();
+  EXPECT_EQ(gfx::Size(kLargeButtonRadiusDp, kLargeButtonRadiusDp), action_size);
+
+  const gfx::Rect view_bounds = note_action_button->GetBoundsInScreen();
+  ASSERT_EQ(gfx::Rect(gfx::Point(), action_size), view_bounds);
+  const std::vector<mojom::LockScreenNoteOrigin> expected_actions = {
+      mojom::LockScreenNoteOrigin::kLockScreenButtonTap};
+
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  // Tap in actionable area of the button requests action:
+  generator.GestureTapAt(view_bounds.top_right() +
+                         gfx::Vector2d(-kSmallButtonRadiusDp / kSqrt2 + 2,
+                                       kSmallButtonRadiusDp / kSqrt2 - 2));
+  Shell::Get()->tray_action()->FlushMojoForTesting();
+  EXPECT_EQ(expected_actions, tray_action_client()->note_origins());
+  tray_action_client()->ClearRecordedRequests();
+
+  // Tap in non-actionable area of the button does not request action:
+  generator.GestureTapAt(view_bounds.top_right() +
+                         gfx::Vector2d(-kSmallButtonRadiusDp / kSqrt2 - 2,
+                                       kSmallButtonRadiusDp / kSqrt2 + 2));
+  Shell::Get()->tray_action()->FlushMojoForTesting();
+  EXPECT_TRUE(tray_action_client()->note_origins().empty());
+  tray_action_client()->ClearRecordedRequests();
+}
+
+// Tests a number of fling gestures that interact with the note action button.
+// Verifies that only a fling from the button's actionable area to bottom right
+// direction generate an action request.
+TEST_F(NoteActionLaunchButtonTest, FlingGesture) {
+  auto* note_action_button = new NoteActionLaunchButton(
+      mojom::TrayActionState::kAvailable, data_dispatcher());
+  std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(
+      login_layout_util::WrapViewForPreferredSize(note_action_button));
+
+  const gfx::Size action_size = note_action_button->GetPreferredSize();
+  EXPECT_EQ(gfx::Size(kLargeButtonRadiusDp, kLargeButtonRadiusDp), action_size);
+
+  // Offset note action button closer to the center of the test widget, to give
+  // extra space for performing gestures.
+  gfx::Rect view_bounds = note_action_button->GetBoundsInScreen();
+  view_bounds.Offset(200, 200);
+  note_action_button->SetBoundsRect(view_bounds);
+
+  ASSERT_EQ(gfx::Rect(gfx::Point(200, 200), action_size),
+            note_action_button->GetBoundsInScreen());
+
+  const std::vector<mojom::LockScreenNoteOrigin> expected_actions = {
+      mojom::LockScreenNoteOrigin::kLockScreenButtonSwipe};
+
+  // Point in the center of the note action element's actionable area:
+  gfx::Point start =
+      view_bounds.top_right() +
+      gfx::Vector2d(-kSmallButtonRadiusDp / 2, kSmallButtonRadiusDp / 2);
+
+  // Fling from the center of the actionable area to bottom left:
+  GestureFling(start, view_bounds.bottom_left() + gfx::Vector2d(-50, 50));
+  EXPECT_EQ(expected_actions, tray_action_client()->note_origins());
+  tray_action_client()->ClearRecordedRequests();
+
+  // Fling from the center of the actionable area to bottom right:
+  GestureFling(start, view_bounds.bottom_right() + gfx::Vector2d(0, 50));
+  EXPECT_TRUE(tray_action_client()->note_origins().empty());
+
+  // Fling from the center of the actionable area to top left:
+  GestureFling(start, view_bounds.origin() + gfx::Vector2d(-50, 0));
+  EXPECT_TRUE(tray_action_client()->note_origins().empty());
+
+  // Fling accross the button:
+  GestureFling(view_bounds.top_right() + gfx::Vector2d(25, -25),
+               view_bounds.bottom_left() + gfx::Vector2d(-25, 25));
+  EXPECT_TRUE(tray_action_client()->note_origins().empty());
+
+  // Fling from non-actionable area of the button:
+  GestureFling(view_bounds.top_right() +
+                   gfx::Vector2d(-kSmallButtonRadiusDp / kSqrt2 - 2,
+                                 kSmallButtonRadiusDp / kSqrt2 + 2),
+               view_bounds.bottom_left() + gfx::Vector2d(-25, 25));
+  EXPECT_TRUE(tray_action_client()->note_origins().empty());
+}
+
+// Generates multi-finger fling in the direction that would be accepted for
+// single finger fling, and verifies no action is requested.
+TEST_F(NoteActionLaunchButtonTest, MultiFingerFling) {
+  auto* note_action_button = new NoteActionLaunchButton(
+      mojom::TrayActionState::kAvailable, data_dispatcher());
+  std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(
+      login_layout_util::WrapViewForPreferredSize(note_action_button));
+
+  const gfx::Size action_size = note_action_button->GetPreferredSize();
+  EXPECT_EQ(gfx::Size(kLargeButtonRadiusDp, kLargeButtonRadiusDp), action_size);
+
+  // Offset note action button closer to the center of the test widget, to give
+  // extra space for performing gestures:
+  gfx::Rect view_bounds = note_action_button->GetBoundsInScreen();
+  view_bounds.Offset(200, 200);
+  note_action_button->SetBoundsRect(view_bounds);
+
+  ASSERT_EQ(gfx::Rect(gfx::Point(200, 200), action_size),
+            note_action_button->GetBoundsInScreen());
+
+  const int kTouchPoints = 3;
+  const gfx::Point start_points[kTouchPoints] = {
+      view_bounds.top_right() + gfx::Vector2d(-2, 2),
+      view_bounds.top_right() + gfx::Vector2d(-20, 15),
+      view_bounds.top_right() + gfx::Vector2d(-35, 40)};
+  const gfx::Vector2d deltas[kTouchPoints] = {gfx::Vector2d(-100, 100),
+                                              gfx::Vector2d(-100, 100),
+                                              gfx::Vector2d(-100, 100)};
+  int delays_adding_fingers_ms[kTouchPoints] = {0, 4, 8};
+  int delays_releasing_fingers_ms[kTouchPoints] = {20, 16, 18};
+
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  generator.GestureMultiFingerScrollWithDelays(
+      kTouchPoints, start_points, deltas, delays_adding_fingers_ms,
+      delays_releasing_fingers_ms, 4 /* event_separaation_time_ms*/,
+      5 /*steps*/);
+
+  Shell::Get()->tray_action()->FlushMojoForTesting();
+  EXPECT_TRUE(tray_action_client()->note_origins().empty());
+}
 }  // namespace ash

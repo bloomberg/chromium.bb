@@ -231,6 +231,42 @@ class NoteActionLaunchButton::ActionButton : public views::ImageButton,
     ImageButton::OnBlur();
     UpdateBubbleRadiusAndOpacity();
   }
+  void OnGestureEvent(ui::GestureEvent* event) override {
+    switch (event->type()) {
+      case ui::ET_GESTURE_SCROLL_BEGIN:
+        // Mark scroll begin handled, so the view starts receiving scroll
+        // events (in particular) fling/swipe.
+        // Ignore multi-finger gestures - the note action requests are
+        // restricted to single finger gestures.
+        if (event->details().touch_points() == 1) {
+          SetTrackingPotentialActivationGesture(true);
+          event->SetHandled();
+        }
+        break;
+      case ui::ET_GESTURE_SCROLL_UPDATE:
+        // If the user has added fingers to the gesture, cancel the fling
+        // detection - the note action requests are restricted to single finger
+        // gestures.
+        if (event->details().touch_points() != 1)
+          SetTrackingPotentialActivationGesture(false);
+        break;
+      case ui::ET_GESTURE_END:
+      case ui::ET_GESTURE_SCROLL_END:
+      case ui::ET_SCROLL_FLING_CANCEL:
+        SetTrackingPotentialActivationGesture(false);
+        break;
+      case ui::ET_SCROLL_FLING_START:
+        MaybeActivateActionOnFling(event);
+        SetTrackingPotentialActivationGesture(false);
+        event->StopPropagation();
+        break;
+      default:
+        break;
+    }
+
+    if (!event->handled())
+      views::ImageButton::OnGestureEvent(event);
+  }
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override {
@@ -247,17 +283,44 @@ class NoteActionLaunchButton::ActionButton : public views::ImageButton,
   // Updates the background view size and opacity depending on the current note
   // action button state.
   void UpdateBubbleRadiusAndOpacity() {
-    bool show_large_bubble =
-        HasFocus() || state() == STATE_HOVERED || state() == STATE_PRESSED;
+    bool show_large_bubble = HasFocus() || state() == STATE_HOVERED ||
+                             state() == STATE_PRESSED ||
+                             tracking_activation_gesture_;
     background_->SetBubbleRadiusAndOpacity(
         show_large_bubble ? kLargeBubbleRadiusDp : kSmallBubbleRadiusDp,
         show_large_bubble ? kLargeBubbleOpacity : kSmallBubbleOpacity);
+  }
+
+  // Called when a fling is detected - if the gesture direction was bottom-left,
+  // it requests a new lock screen note.
+  void MaybeActivateActionOnFling(ui::GestureEvent* event) {
+    int adjust_x_for_rtl = base::i18n::IsRTL() ? -1 : 1;
+    if (!tracking_activation_gesture_ || event->details().touch_points() != 1 ||
+        adjust_x_for_rtl * event->details().velocity_x() > 0 ||
+        event->details().velocity_y() < 0) {
+      return;
+    }
+
+    Shell::Get()->tray_action()->RequestNewLockScreenNote(
+        mojom::LockScreenNoteOrigin::kLockScreenButtonSwipe);
+  }
+
+  // Sets a flag indicating that the button is tracking a potential note
+  // activation gesture, updating the background view appearance (as the
+  // background bubble should be expanded if a gesture is tracked.
+  void SetTrackingPotentialActivationGesture(bool tracking_activation_gesture) {
+    tracking_activation_gesture_ = tracking_activation_gesture;
+    UpdateBubbleRadiusAndOpacity();
   }
 
   // The background view, which paints the note action bubble.
   NoteActionLaunchButton::BackgroundView* background_;
 
   BubbleTargeterDelegate event_targeter_delegate_;
+
+  // Set when a potention note activation gesture is tracked - i.e. while a
+  // scroll gesture (which could lead to a fling) is in progress.
+  bool tracking_activation_gesture_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ActionButton);
 };
