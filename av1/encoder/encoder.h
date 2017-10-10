@@ -766,8 +766,9 @@ void av1_set_temporal_mv_prediction(AV1_COMP *cpi, int allow_tempmv_prediction);
 
 void av1_apply_encoding_flags(AV1_COMP *cpi, aom_enc_frame_flags_t flags);
 
+#define ALT_MIN_LAG 3
 static INLINE int is_altref_enabled(const AV1_COMP *const cpi) {
-  return cpi->oxcf.lag_in_frames > 0 && cpi->oxcf.enable_auto_arf;
+  return cpi->oxcf.lag_in_frames >= ALT_MIN_LAG && cpi->oxcf.enable_auto_arf;
 }
 
 // TODO(zoeliu): To set up cpi->oxcf.enable_auto_brf
