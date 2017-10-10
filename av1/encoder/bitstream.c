@@ -1605,6 +1605,14 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
     int16_t mode_ctx;
     write_ref_frames(cm, xd, w);
 
+#if CONFIG_JNT_COMP
+    if (has_second_ref(mbmi)) {
+      const int comp_index_ctx = get_comp_index_context(cm, xd);
+      aom_write(w, mbmi->compound_idx,
+                ec_ctx->compound_index_probs[comp_index_ctx]);
+    }
+#endif  // CONFIG_JNT_COMP
+
 #if CONFIG_COMPOUND_SINGLEREF
     if (!segfeature_active(seg, segment_id, SEG_LVL_REF_FRAME)) {
       // NOTE: Handle single ref comp mode
@@ -4570,6 +4578,11 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
 
 #if !CONFIG_NEW_MULTISYMBOL
   update_skip_probs(cm, header_bc, counts);
+#if CONFIG_JNT_COMP
+  for (int k = 0; k < COMP_INDEX_CONTEXTS; ++k)
+    av1_cond_prob_diff_update(header_bc, &cm->fc->compound_index_probs[k],
+                              counts->compound_index[k], probwt);
+#endif  // CONFIG_JNT_COMP
 #endif
 
   if (!frame_is_intra_only(cm)) {

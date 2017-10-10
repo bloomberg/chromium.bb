@@ -2221,6 +2221,16 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   read_ref_frames(cm, xd, r, mbmi->segment_id, mbmi->ref_frame);
   is_compound = has_second_ref(mbmi);
 
+#if CONFIG_JNT_COMP
+  if (is_compound) {
+    const int comp_index_ctx = get_comp_index_context(cm, xd);
+    mbmi->compound_idx =
+        aom_read(r, ec_ctx->compound_index_probs[comp_index_ctx], ACCT_STR);
+    if (xd->counts)
+      ++xd->counts->compound_index[comp_index_ctx][mbmi->compound_idx];
+  }
+#endif  // CONFIG_JNT_COMP
+
 #if CONFIG_EXT_COMP_REFS
 #if !USE_UNI_COMP_REFS
   // NOTE: uni-directional comp refs disabled

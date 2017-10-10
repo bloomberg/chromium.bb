@@ -8462,6 +8462,14 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   }
 #endif  // CONFIG_COMPOUND_SINGLEREF
 
+#if CONFIG_JNT_COMP
+  if (is_comp_pred) {
+    const int comp_index_ctx = get_comp_index_context(cm, xd);
+    rd_stats->rate += av1_cost_bit(cm->fc->compound_index_probs[comp_index_ctx],
+                                   mbmi->compound_idx);
+  }
+#endif  // CONFIG_JNT_COMP
+
   if (this_mode == NEAREST_NEARESTMV) {
     if (mbmi_ext->ref_mv_count[ref_frame_type] > 0) {
       cur_mv[0] = mbmi_ext->ref_mv_stack[ref_frame_type][0].this_mv;

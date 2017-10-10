@@ -2354,6 +2354,12 @@ static const aom_cdf_prob default_skip_cdfs[SKIP_CONTEXTS][CDF_SIZE(2)] = {
 static const aom_prob default_skip_probs[SKIP_CONTEXTS] = { 192, 128, 64 };
 #endif  // CONFIG_NEW_MULTISYMBOL
 
+#if CONFIG_JNT_COMP
+static const aom_prob default_compound_idx_probs[COMP_INDEX_CONTEXTS] = {
+  192, 128, 64, 192, 128, 64, 192, 128, 64,
+};
+#endif  // CONFIG_JNT_COMP
+
 #if CONFIG_LGT_FROM_PRED
 static const aom_prob default_intra_lgt_prob[LGT_SIZES][INTRA_MODES] = {
   { 255, 208, 208, 180, 230, 208, 194, 214, 220, 255,
@@ -6224,6 +6230,9 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
 #if CONFIG_NEW_MULTISYMBOL
   av1_copy(fc->txfm_partition_cdf, default_txfm_partition_cdf);
 #endif
+#if CONFIG_JNT_COMP
+  av1_copy(fc->compound_index_probs, default_compound_idx_probs);
+#endif  // CONFIG_JNT_COMP
   av1_copy(fc->newmv_prob, default_newmv_prob);
   av1_copy(fc->zeromv_prob, default_zeromv_prob);
   av1_copy(fc->refmv_prob, default_refmv_prob);
@@ -6455,6 +6464,12 @@ void av1_adapt_inter_frame_probs(AV1_COMMON *cm) {
     }
   }
 #endif  // CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE
+
+#if CONFIG_JNT_COMP
+  for (i = 0; i < COMP_INDEX_CONTEXTS; ++i)
+    fc->compound_index_probs[i] = av1_mode_mv_merge_probs(
+        pre_fc->compound_index_probs[i], counts->compound_index[i]);
+#endif  // CONFIG_JNT_COMP
 }
 
 void av1_adapt_intra_frame_probs(AV1_COMMON *cm) {

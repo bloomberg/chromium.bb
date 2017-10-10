@@ -3531,6 +3531,11 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
       av1_diff_update_prob(&r, &fc->txfm_partition_prob[i], ACCT_STR);
   for (int i = 0; i < SKIP_CONTEXTS; ++i)
     av1_diff_update_prob(&r, &fc->skip_probs[i], ACCT_STR);
+
+#if CONFIG_JNT_COMP
+  for (int i = 0; i < COMP_INDEX_CONTEXTS; ++i)
+    av1_diff_update_prob(&r, &fc->compound_index_probs[i], ACCT_STR);
+#endif  // CONFIG_JNT_COMP
 #endif
 
   if (!frame_is_intra_only(cm)) {

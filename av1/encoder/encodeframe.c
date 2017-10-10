@@ -590,6 +590,13 @@ static void update_state(const AV1_COMP *const cpi, ThreadData *td,
   const int x_mis = AOMMIN(bw, cm->mi_cols - mi_col);
   const int y_mis = AOMMIN(bh, cm->mi_rows - mi_row);
   av1_copy_frame_mvs(cm, mi, mi_row, mi_col, x_mis, y_mis);
+
+#if CONFIG_JNT_COMP
+  if (has_second_ref(mbmi)) {
+    const int comp_index_ctx = get_comp_index_context(cm, xd);
+    ++td->counts->compound_index[comp_index_ctx][mbmi->compound_idx];
+  }
+#endif  // CONFIG_JNT_COMP
 }
 
 #if CONFIG_MOTION_VAR && NC_MODE_INFO
@@ -3443,7 +3450,7 @@ static void init_encode_frame_mb_context(AV1_COMP *cpi) {
   av1_setup_block_planes(xd, cm->subsampling_x, cm->subsampling_y);
 }
 
-#if !CONFIG_REF_ADAPT
+#if !CONFIG_REF_ADAPT && !CONFIG_JNT_COMP
 static int check_dual_ref_flags(AV1_COMP *cpi) {
   const int ref_flags = cpi->ref_frame_flags;
 
@@ -4162,12 +4169,14 @@ void av1_encode_frame(AV1_COMP *cpi) {
     if (is_alt_ref || !cpi->allow_comp_inter_inter)
 #endif  // CONFIG_BGSPRITE
       cm->reference_mode = SINGLE_REFERENCE;
+#if !CONFIG_JNT_COMP
     else if (mode_thrs[COMPOUND_REFERENCE] > mode_thrs[SINGLE_REFERENCE] &&
              mode_thrs[COMPOUND_REFERENCE] > mode_thrs[REFERENCE_MODE_SELECT] &&
              check_dual_ref_flags(cpi) && cpi->static_mb_pct == 100)
       cm->reference_mode = COMPOUND_REFERENCE;
     else if (mode_thrs[SINGLE_REFERENCE] > mode_thrs[REFERENCE_MODE_SELECT])
       cm->reference_mode = SINGLE_REFERENCE;
+#endif  // CONFIG_JNT_COMP
     else
       cm->reference_mode = REFERENCE_MODE_SELECT;
 #endif  // CONFIG_REF_ADAPT
