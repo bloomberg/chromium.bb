@@ -105,6 +105,7 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   void ProcessTouchEvent(const blink::WebTouchEvent& event,
                          const ui::LatencyInfo& latency) override;
 
+  void DidStopFlinging() override;
   bool LockMouse() override;
   void UnlockMouse() override;
   viz::LocalSurfaceId GetLocalSurfaceId() const override;
