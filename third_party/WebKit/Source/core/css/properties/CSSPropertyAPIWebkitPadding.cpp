@@ -2,17 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/properties/CSSPropertyAPIWebkitPaddingBefore.h"
+#include "core/css/properties/CSSPropertyAPIWebkitPadding.h"
 
-#include "core/StylePropertyShorthand.h"
-#include "core/css/CSSProperty.h"
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSParserTokenRange.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 
 namespace blink {
 
-const CSSValue* CSSPropertyAPIWebkitPaddingBefore::ParseSingleValue(
+const CSSValue* CSSPropertyAPIWebkitPadding::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
@@ -21,11 +19,4 @@ const CSSValue* CSSPropertyAPIWebkitPaddingBefore::ParseSingleValue(
       CSSPropertyParserHelpers::UnitlessQuirk::kForbid);
 }
 
-const CSSPropertyAPI&
-CSSPropertyAPIWebkitPaddingBefore::ResolveDirectionAwareProperty(
-    TextDirection direction,
-    WritingMode writing_mode) const {
-  return ResolveToPhysicalPropertyAPI(direction, writing_mode, kBeforeSide,
-                                      paddingShorthand());
-}
 }  // namespace blink
