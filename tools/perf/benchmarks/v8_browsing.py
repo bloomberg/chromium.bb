@@ -215,6 +215,10 @@ class V8RuntimeStatsMobileBrowsingBenchmark(
             'browse:news:cnn',
             [story.expectations.ALL_MOBILE],
             'crbug.com/767970')
+        self.DisableStory(
+            'browse:chrome:newtab',
+            [story.expectations.ANDROID_WEBVIEW],
+            'crbug.com/773077')
     return StoryExpectations()
 
   @classmethod
