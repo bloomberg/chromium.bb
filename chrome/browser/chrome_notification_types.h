@@ -233,11 +233,6 @@ enum NotificationType {
 
   // Non-history storage services --------------------------------------------
 
-  // A safe browsing database update completed.  Source is the
-  // SafeBrowsingService and the details are a bool indicating whether the
-  // update was successful.
-  NOTIFICATION_SAFE_BROWSING_UPDATE_COMPLETE,
-
   // Autocomplete ------------------------------------------------------------
 
   // Sent by the autocomplete controller when done.  The source is the

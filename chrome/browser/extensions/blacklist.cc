@@ -15,11 +15,11 @@
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/blacklist_factory.h"
 #include "chrome/browser/extensions/blacklist_state_fetcher.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/db/notification_types.h"
 #include "components/safe_browsing/db/util.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -162,7 +162,7 @@ Blacklist::Blacklist(ExtensionPrefs* prefs) {
       g_database_manager.Get().get();
   if (database_manager.get()) {
     registrar_.Add(
-        this, chrome::NOTIFICATION_SAFE_BROWSING_UPDATE_COMPLETE,
+        this, safe_browsing::NOTIFICATION_SAFE_BROWSING_UPDATE_COMPLETE,
         content::Source<SafeBrowsingDatabaseManager>(database_manager.get()));
   }
 
@@ -347,9 +347,9 @@ scoped_refptr<SafeBrowsingDatabaseManager> Blacklist::GetDatabaseManager() {
 }
 
 void Blacklist::Observe(int type,
-                        const content::NotificationSource& source,
-                        const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_SAFE_BROWSING_UPDATE_COMPLETE, type);
+                        const content::NotificationSource& unused_source,
+                        const content::NotificationDetails& unused_details) {
+  DCHECK_EQ(safe_browsing::NOTIFICATION_SAFE_BROWSING_UPDATE_COMPLETE, type);
   for (auto& observer : observers_)
     observer.OnBlacklistUpdated();
 }
