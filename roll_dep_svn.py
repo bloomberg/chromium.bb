@@ -223,6 +223,8 @@ def update_node(deps_lines, deps_ast, node, git_revision):
     return update_binop(deps_lines, deps_ast, node, git_revision)
   elif node.__class__ is ast.Call:
     return update_call(deps_lines, deps_ast, node, git_revision)
+  elif node.__class__ is ast.Dict:
+    return update_dict(deps_lines, deps_ast, node, git_revision)
   else:
     assert False, ast_err_msg(node)
 
@@ -260,6 +262,13 @@ def update_call(deps_lines, deps_ast, call_node, git_revision):
   return update_var(deps_lines, deps_ast, call_node.args[0].s, git_revision)
 
 
+def update_dict(deps_lines, deps_ast, dict_node, git_revision):
+  """Update a dict node in the AST with the new git revision."""
+  for key, value in zip(dict_node.keys, dict_node.values):
+    if key.__class__ is ast.Str and key.s == 'url':
+      return update_node(deps_lines, deps_ast, value, git_revision)
+
+
 def update_var(deps_lines, deps_ast, var_name, git_revision):
   """Update an entry in the vars section of the DEPS file with the new
   git revision."""
@@ -278,7 +287,11 @@ def short_rev(rev, dep_path):
 
 
 def generate_commit_message(deps_section, dep_path, dep_name, new_rev):
-  (url, _, old_rev) = deps_section[dep_name].partition('@')
+  dep_url = deps_section[dep_name]
+  if isinstance(dep_url, dict):
+    dep_url = dep_url['url']
+
+  (url, _, old_rev) = dep_url.partition('@')
   if url.endswith('.git'):
     url = url[:-4]
   old_rev_short = short_rev(old_rev, dep_path)
