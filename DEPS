@@ -41,7 +41,7 @@ vars = {
 
   # Check out and download nacl by default. This can be disabled e.g. with
   # custom_vars.
-  'checkout_nacl': 'True',
+  'checkout_nacl': True,
 
   # By default, do not check out src-internal. This can be overridden e.g. with
   # custom_vars.
