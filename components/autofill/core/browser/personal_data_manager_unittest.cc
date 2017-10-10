@@ -3636,6 +3636,14 @@ TEST_F(PersonalDataManagerTest,
     EXPECT_EQ(1U, suggestions.size());
   }
 
+  // Query with non-alpha-numeric string only returns profile2.
+  {
+    std::vector<Suggestion> suggestions = personal_data_->GetProfileSuggestions(
+        AutofillType(ADDRESS_HOME_STREET_ADDRESS), base::ASCIIToUTF16("--"),
+        false, std::vector<ServerFieldType>());
+    EXPECT_EQ(1U, suggestions.size());
+  }
+
   // Query with prefix for profile1 returns profile1.
   {
     std::vector<Suggestion> suggestions = personal_data_->GetProfileSuggestions(
