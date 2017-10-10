@@ -3552,6 +3552,7 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
 
   site_config.AddWithoutTemplate(
       'config-updater',
+      site_config.templates.internal,
       site_config.templates.no_hwtest_builder,
       site_config.templates.no_vmtest_builder,
       important=True,
@@ -3562,6 +3563,7 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       builder_class_name='config_builders.UpdateConfigBuilder',
       active_waterfall=waterfall.WATERFALL_INFRA,
       buildslave_type=constants.GCE_WIMPY_BUILD_SLAVE_TYPE,
+      binhost_test=True,
   )
 
   site_config.AddWithoutTemplate(

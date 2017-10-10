@@ -6539,6 +6539,7 @@
     },
     "config-updater": {
         "active_waterfall": "chromeos.infra",
+        "binhost_test": true,
         "boards": [],
         "build_type": "generic",
         "builder_class_name": "config_builders.UpdateConfigBuilder",
@@ -6546,6 +6547,9 @@
         "description": "Build Config Updater reads updated GE config files from GS, and commits them to chromite after running tests.",
         "hw_tests_override": [],
         "important": true,
+        "internal": true,
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
         "vm_tests": []
     },
     "coral-chrome-pfq": {

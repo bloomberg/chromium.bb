@@ -7,66 +7,92 @@
 
 from __future__ import print_function
 
+import errno
 import os
 import re
 import traceback
+
+from chromite.cbuildbot import repository
 from chromite.cbuildbot.stages import generic_stages
+from chromite.cbuildbot.stages import test_stages
 from chromite.lib import config_lib
 from chromite.lib import constants
-from chromite.cbuildbot import repository
 from chromite.lib import cros_logging as logging
 from chromite.lib import cros_build_lib
 from chromite.lib import git
 from chromite.lib import gs
 from chromite.lib import osutils
 
+
 GS_GE_TEMPLATE_BUCKET = 'gs://chromeos-build-release-console/'
 GS_GE_TEMPLATE_TOT = GS_GE_TEMPLATE_BUCKET + 'build_config.ToT.json'
 GS_GE_TEMPLATE_RELEASE = GS_GE_TEMPLATE_BUCKET + 'build_config.release-R*'
 GE_BUILD_CONFIG_FILE = 'ge_build_config.json'
 
+
 class UpdateConfigException(Exception):
   """Failed to update configs."""
+
 
 class BranchNotFoundException(Exception):
   """Didn't find the corresponding branch."""
 
-def GetWorkDir(project):
-  """Return temporary work directory."""
+
+def GetProjectTmpDir(project):
+  """Return the project tmp directory inside chroot.
+
+  Args:
+    project: The name of the project to create tmp dir.
+  """
   return os.path.join('tmp', 'tmp_%s' % project)
 
-def CreateTmpGitRepo(project, project_url):
-  """Create a temporary git repo locally.
+
+def GetProjectWorkDir(project):
+  """Return the project work directory.
+
+  Args:
+    project: The name of the project to create work dir.
+  """
+  project_work_dir = GetProjectTmpDir(project)
+
+  if not cros_build_lib.IsInsideChroot():
+    project_work_dir = os.path.join(constants.SOURCE_ROOT,
+                                    constants.DEFAULT_CHROOT_DIR,
+                                    project_work_dir)
+
+  return project_work_dir
+
+
+def GetProjectRepoDir(project, project_url, clean_old_dir=False):
+  """Clone the project repo locally and return the repo directory.
 
   Args:
     project: git project name to clone.
     project_url: git project url to clone.
+    clean_old_dir: Boolean to indicate whether to clean old work_dir. Default
+      to False.
 
   Returns:
     project_dir: local project directory.
   """
+  work_dir = GetProjectWorkDir(project)
 
-  work_dir = GetWorkDir(project)
+  if clean_old_dir:
+    # Delete the work_dir built by previous runs.
+    osutils.RmDir(work_dir, ignore_missing=True, sudo=True)
 
-  if not cros_build_lib.IsInsideChroot():
-    work_dir = os.path.join(constants.SOURCE_ROOT,
-                            constants.DEFAULT_CHROOT_DIR,
-                            work_dir)
-
-  # Delete the work_dir built by previous runs.
-  osutils.RmDir(work_dir, ignore_missing=True, sudo=True)
-
-  # Safely create work_dir
   osutils.SafeMakedirs(work_dir)
 
   project_dir = os.path.join(work_dir, project)
-  ref = os.path.join(constants.SOURCE_ROOT, project)
+  if not os.path.exists(project_dir):
+    ref = os.path.join(constants.SOURCE_ROOT, project)
+    logging.info('Cloning %s %s to %s', project_url, ref, project_dir)
+    repository.CloneWorkingRepo(dest=project_dir,
+                                url=project_url,
+                                reference=ref)
 
-  logging.info('Cloning %s %s to %s', project_url, ref, project_dir)
-  repository.CloneWorkingRepo(dest=project_dir,
-                              url=project_url,
-                              reference=ref)
   return project_dir
+
 
 def GetBranchName(template_file):
   """Parse the template gs path and return the right branch name"""
@@ -82,6 +108,7 @@ def GetBranchName(template_file):
       return match.group(1)
   else:
     return None
+
 
 class CheckTemplateStage(generic_stages.BuilderStage):
   """Stage that checks template files from GE bucket.
@@ -119,15 +146,28 @@ class CheckTemplateStage(generic_stages.BuilderStage):
       return [i[1] for i in milestone_path_pairs[0: 3]]
 
   def _ListTemplates(self):
-    template_gs_paths = []
-    tot_gs_path = self.ctx.LS(GS_GE_TEMPLATE_TOT)
-    if tot_gs_path:
-      template_gs_paths.extend(tot_gs_path)
+    """List and return template files from GS bucket.
 
-    release_gs_paths = self.SortAndGetReleasePaths(
-        self.ctx.LS(GS_GE_TEMPLATE_RELEASE))
-    if release_gs_paths:
-      template_gs_paths.extend(release_gs_paths)
+    Returns:
+      A list of template files.
+    """
+    template_gs_paths = []
+
+    try:
+      tot_gs_path = self.ctx.LS(GS_GE_TEMPLATE_TOT)
+      if tot_gs_path:
+        template_gs_paths.extend(tot_gs_path)
+    except gs.GSNoSuchKey as e:
+      logging.warning('No matching objects for %s: %s', GS_GE_TEMPLATE_TOT, e)
+
+    try:
+      release_gs_paths = self.SortAndGetReleasePaths(
+          self.ctx.LS(GS_GE_TEMPLATE_RELEASE))
+      if release_gs_paths:
+        template_gs_paths.extend(release_gs_paths)
+    except gs.GSNoSuchKey as e:
+      logging.warning('No matching objects for %s: %s',
+                      GS_GE_TEMPLATE_RELEASE, e)
 
     return template_gs_paths
 
@@ -138,7 +178,8 @@ class CheckTemplateStage(generic_stages.BuilderStage):
       logging.info('No template files found. No need to update configs.')
       return
 
-    chromite_dir = CreateTmpGitRepo('chromite', constants.CHROMITE_URL)
+    chromite_dir = GetProjectRepoDir(
+        'chromite', constants.CHROMITE_URL, clean_old_dir=True)
     successful = True
     failed_templates = []
     for template_gs_path in template_gs_paths:
@@ -146,7 +187,8 @@ class CheckTemplateStage(generic_stages.BuilderStage):
         branch = GetBranchName(os.path.basename(template_gs_path))
         if branch:
           UpdateConfigStage(self._run, template_gs_path, branch,
-                            chromite_dir, suffix='_' + branch).Run()
+                            chromite_dir, self._run.options.debug,
+                            suffix='_' + branch).Run()
       except Exception as e:
         successful = False
         failed_templates.append(template_gs_path)
@@ -158,6 +200,7 @@ class CheckTemplateStage(generic_stages.BuilderStage):
     if not successful:
       raise UpdateConfigException('Failed to update config for %s' %
                                   failed_templates)
+
 
 class UpdateConfigStage(generic_stages.BuilderStage):
   """Stage that verifies and updates configs.
@@ -172,15 +215,19 @@ class UpdateConfigStage(generic_stages.BuilderStage):
   WATERFALL_DUMP_PATH = os.path.join('cbuildbot', 'waterfall_layout_dump.txt')
   GE_CONFIG_LOCAL_PATH = os.path.join('cbuildbot', GE_BUILD_CONFIG_FILE)
 
+  CONFIG_PATHS = (GE_CONFIG_LOCAL_PATH,
+                  CONFIG_DUMP_PATH,
+                  WATERFALL_DUMP_PATH)
+
   def __init__(self, builder_run, template_gs_path,
-               branch, chromite_dir, **kwargs):
+               branch, chromite_dir, dry_run, **kwargs):
     super(UpdateConfigStage, self).__init__(builder_run, **kwargs)
     self.template_gs_path = template_gs_path
     self.chromite_dir = chromite_dir
     self.branch = branch
 
     self.ctx = gs.GSContext(init_boto=True)
-    self.dryrun = self._run.options.debug
+    self.dry_run = dry_run
 
   def _CheckoutBranch(self):
     """Checkout to the corresponding branch in the temp repository.
@@ -204,18 +251,17 @@ class UpdateConfigStage(generic_stages.BuilderStage):
                              GE_BUILD_CONFIG_FILE)
     self.ctx.Copy(self.template_gs_path, dest_path)
 
-  def _ContainsUpdates(self, mod_files):
+  def _ContainsConfigUpdates(self):
     """Check if updates exist and requires a push.
-
-    Args:
-      mod_files: files to check updates.
 
     Returns:
       True if updates exist; otherwise False.
     """
-    modifications = git.RunGit(self.chromite_dir,
-                               ['status', '--porcelain', '--'] + mod_files,
-                               capture_output=True, print_cmd=True).output
+    modifications = git.RunGit(
+        self.chromite_dir,
+        ['status', '--porcelain', '--'] + list(self.CONFIG_PATHS),
+        capture_output=True,
+        print_cmd=True).output
     if modifications:
       logging.info('Changed files: %s ' % modifications)
       return True
@@ -250,41 +296,67 @@ class UpdateConfigStage(generic_stages.BuilderStage):
   def _RunUnitTest(self):
     """Run chromeos_config_unittest on top of the changes."""
     logging.debug("Running chromeos_config_unittest")
-    rel_path = os.path.join('..', '..', 'chroot', GetWorkDir('chromite'))
+    rel_path = os.path.join('..', '..', 'chroot', GetProjectTmpDir('chromite'))
     unit_test_paths = [os.path.join(rel_path, 'chromite', 'cbuildbot',
                                     'chromeos_config_unittest')]
     cmd = ['cros_sdk', '--'] + unit_test_paths
     cros_build_lib.RunCommand(cmd, cwd=os.path.dirname(self.chromite_dir))
 
-  def _PushCommits(self, candidate_files):
-    """Commit and push changes to current branch.
+  def _CreateConfigPatch(self):
+    """Create and return a diff patch file for config changes."""
+    config_change_patch = os.path.join(self.chromite_dir, 'config_change.patch')
+    try:
+      os.remove(config_change_patch)
+    except OSError as e:
+      if e.errno != errno.ENOENT:
+        raise
 
-    Args:
-      candidate_files: candidate files to commit and update.
-    """
+    result = git.RunGit(self.chromite_dir, ['diff'] + list(self.CONFIG_PATHS),
+                        print_cmd=True)
+    with open(config_change_patch, 'w') as f:
+      f.write(result.output)
 
-    git.RunGit(self.chromite_dir, ['add'] + candidate_files)
+    return config_change_patch
+
+  def _RunBinhostTest(self):
+    """Run BinhostTest stage for master branch."""
+    config_change_patch = self._CreateConfigPatch()
+
+    # Apply config patch.
+    git.RunGit(constants.CHROMITE_DIR, ['apply', config_change_patch],
+               print_cmd=True)
+
+    test_stages.BinhostTestStage(self._run, suffix='_' + self.branch).Run()
+
+    # Clean config patch.
+    git.RunGit(constants.CHROMITE_DIR, ['checkout'] + list(self.CONFIG_PATHS),
+               print_cmd=True)
+
+  def _PushCommits(self):
+    """Commit and push changes to current branch."""
+    git.RunGit(self.chromite_dir, ['add'] + list(self.CONFIG_PATHS),
+               print_cmd=True)
     commit_msg = "Update config settings by config-updater."
     git.RunGit(self.chromite_dir,
                ['commit', '-m', commit_msg],
                print_cmd=True)
 
-    git.RunGit(self.chromite_dir, ['config', 'push.default', 'tracking'])
-    git.PushWithRetry(self.branch, self.chromite_dir, dryrun=self.dryrun)
+    git.RunGit(self.chromite_dir, ['config', 'push.default', 'tracking'],
+               print_cmd=True)
+    git.PushWithRetry(self.branch, self.chromite_dir, dryrun=self.dry_run)
 
   def PerformStage(self):
     logging.info('Update configs for branch %s, template gs path %s',
                  self.branch, self.template_gs_path)
-    candidate_files = [self.GE_CONFIG_LOCAL_PATH,
-                       self.CONFIG_DUMP_PATH,
-                       self.WATERFALL_DUMP_PATH]
     try:
       self._CheckoutBranch()
       self._DownloadTemplate()
       self._UpdateConfigDump()
       self._RunUnitTest()
-      if self._ContainsUpdates(candidate_files):
-        self._PushCommits(candidate_files)
+      if self._ContainsConfigUpdates():
+        if self.branch == 'master':
+          self._RunBinhostTest()
+        self._PushCommits()
       else:
         logging.info('Nothing changed. No need to update configs for %s',
                      self.template_gs_path)
