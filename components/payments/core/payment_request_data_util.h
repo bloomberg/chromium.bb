@@ -51,12 +51,13 @@ BasicCardResponse GetBasicCardResponseFromAutofillCreditCard(
 // expected to only contain basic-card card network names (the list is at
 // https://www.w3.org/Payments/card-network-ids).
 // |out_url_payment_method_identifiers| is filled with a list of all the
-// payment method identifiers specicied by the merchant that are URL-based.
+// payment method identifiers specified by the merchant that are URL-based.
 void ParseSupportedMethods(
     const std::vector<PaymentMethodData>& method_data,
     std::vector<std::string>* out_supported_networks,
     std::set<std::string>* out_basic_card_supported_networks,
-    std::vector<GURL>* out_url_payment_method_identifiers);
+    std::vector<GURL>* out_url_payment_method_identifiers,
+    std::set<std::string>* out_payment_method_identifiers);
 
 // Parses the supported card types (e.g., credit, debit, prepaid) from
 // supportedTypes. |out_supported_card_types_set| is expected to be empty. It

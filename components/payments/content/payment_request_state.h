@@ -28,9 +28,10 @@ class RegionDataLoader;
 
 namespace payments {
 
+class ContentPaymentRequestDelegate;
 class JourneyLogger;
+class ManifestVerifier;
 class PaymentInstrument;
-class PaymentRequestDelegate;
 
 // Keeps track of the information currently selected by the user and whether the
 // user is ready to pay. Uses information from the PaymentRequestSpec, which is
@@ -81,7 +82,7 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
                       Delegate* delegate,
                       const std::string& app_locale,
                       autofill::PersonalDataManager* personal_data_manager,
-                      PaymentRequestDelegate* payment_request_delegate,
+                      ContentPaymentRequestDelegate* payment_request_delegate,
                       JourneyLogger* journey_logger);
   ~PaymentRequestState() override;
 
@@ -236,14 +237,12 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
                                  const GURL& frame_origin,
                                  content::PaymentAppProvider::PaymentApps apps);
 
-  // Creates ServiceWorkerPaymentInstrument according to requested payment
-  // methods of the payment request.
-  void CreateServiceWorkerPaymentApps(
-      content::BrowserContext* context,
-      const GURL& top_level_origin,
-      const GURL& frame_origin,
-      content::PaymentAppProvider::PaymentApps& apps,
-      std::vector<GURL>& requested_method_urls);
+  // The ManifestVerifier::VerifyCallback.
+  void OnPaymentAppsVerified(content::BrowserContext* context,
+                             const GURL& top_level_origin,
+                             const GURL& frame_origin,
+                             content::PaymentAppProvider::PaymentApps apps);
+  void OnPaymentAppsVerifierFinishedUsingResources();
 
   // Checks whether the user has at least one instrument that satisfies the
   // specified supported payment methods and call the |callback| to return the
@@ -281,13 +280,15 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
   // Credit cards are directly owned by the instruments in this list.
   std::vector<std::unique_ptr<PaymentInstrument>> available_instruments_;
 
-  PaymentRequestDelegate* payment_request_delegate_;
+  ContentPaymentRequestDelegate* payment_request_delegate_;
 
   std::unique_ptr<PaymentResponseHelper> response_helper_;
 
   PaymentsProfileComparator profile_comparator_;
 
   base::ObserverList<Observer> observers_;
+
+  std::unique_ptr<ManifestVerifier> payment_app_manifest_verifier_;
 
   base::WeakPtrFactory<PaymentRequestState> weak_ptr_factory_;
 

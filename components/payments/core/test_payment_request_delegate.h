@@ -51,7 +51,7 @@ class TestURLRequestContextGetter : public net::URLRequestContextGetter {
 
 class TestPaymentRequestDelegate : public PaymentRequestDelegate {
  public:
-  TestPaymentRequestDelegate(
+  explicit TestPaymentRequestDelegate(
       autofill::PersonalDataManager* personal_data_manager);
   ~TestPaymentRequestDelegate() override;
 

@@ -13,7 +13,6 @@
 #include "components/payments/content/payment_request_spec.h"
 #include "components/payments/content/payment_request_state.h"
 #include "components/payments/core/journey_logger.h"
-#include "components/payments/core/payment_request_delegate.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "third_party/WebKit/public/platform/modules/payments/payment_request.mojom.h"
@@ -26,6 +25,7 @@ class WebContents;
 
 namespace payments {
 
+class ContentPaymentRequestDelegate;
 class PaymentRequestWebContentsManager;
 
 // This class manages the interaction between the renderer (through the
@@ -52,7 +52,7 @@ class PaymentRequest : public mojom::PaymentRequest,
 
   PaymentRequest(content::RenderFrameHost* render_frame_host,
                  content::WebContents* web_contents,
-                 std::unique_ptr<PaymentRequestDelegate> delegate,
+                 std::unique_ptr<ContentPaymentRequestDelegate> delegate,
                  PaymentRequestWebContentsManager* manager,
                  mojo::InterfaceRequest<mojom::PaymentRequest> request,
                  ObserverForTest* observer_for_testing);
@@ -119,7 +119,7 @@ class PaymentRequest : public mojom::PaymentRequest,
                                     bool warn_localhost_or_file);
 
   content::WebContents* web_contents_;
-  std::unique_ptr<PaymentRequestDelegate> delegate_;
+  std::unique_ptr<ContentPaymentRequestDelegate> delegate_;
   // |manager_| owns this PaymentRequest.
   PaymentRequestWebContentsManager* manager_;
   mojo::Binding<mojom::PaymentRequest> binding_;
