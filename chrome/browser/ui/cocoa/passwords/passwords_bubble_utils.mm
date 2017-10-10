@@ -98,6 +98,13 @@ NSSecureTextField* PasswordLabel(const base::string16& text) {
   return textField.autorelease();
 }
 
+NSTextField* Label(const base::string16& text) {
+  base::scoped_nsobject<NSTextField> textField(
+      [[NSTextField alloc] initWithFrame:NSZeroRect]);
+  InitLabel(textField, text);
+  return textField.autorelease();
+}
+
 NSButton* DialogButton(NSString* title) {
   base::scoped_nsobject<NSButton> button(
       [[NSButton alloc] initWithFrame:NSZeroRect]);

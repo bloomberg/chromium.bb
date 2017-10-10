@@ -46,21 +46,6 @@ NSTextField* EditableUsernameField() {
   return textField.autorelease();
 }
 
-NSTextField* Label(const base::string16& text) {
-  base::scoped_nsobject<NSTextField> textField(
-      [[NSTextField alloc] initWithFrame:NSZeroRect]);
-  InitLabel(textField, text);
-  return textField.autorelease();
-}
-
-NSTextField* UsernameLabel(const base::string16& text) {
-  return Label(text);
-}
-
-NSTextField* FederationLabel(const base::string16& text) {
-  return Label(text);
-}
-
 }  // namespace
 
 @implementation UndoPasswordItemView
@@ -147,7 +132,7 @@ NSTextField* FederationLabel(const base::string16& text) {
     [self addSubview:deleteButton_];
 
     // Add the username.
-    usernameField_.reset([UsernameLabel(GetDisplayUsername(form)) retain]);
+    usernameField_.reset([Label(GetDisplayUsername(form)) retain]);
     [self addSubview:usernameField_];
 
     if (form.federation_origin.unique()) {
@@ -156,7 +141,7 @@ NSTextField* FederationLabel(const base::string16& text) {
       base::string16 text = l10n_util::GetStringFUTF16(
           IDS_PASSWORDS_VIA_FEDERATION,
           base::UTF8ToUTF16(form.federation_origin.host()));
-      passwordField_.reset([FederationLabel(text) retain]);
+      passwordField_.reset([Label(text) retain]);
     }
     [self addSubview:passwordField_];
   }
@@ -225,7 +210,7 @@ NSTextField* FederationLabel(const base::string16& text) {
     if (editMode) {
       usernameField_.reset([EditableUsernameField() retain]);
     } else {
-      usernameField_.reset([UsernameLabel(GetDisplayUsername(form)) retain]);
+      usernameField_.reset([Label(GetDisplayUsername(form)) retain]);
     }
     [self addSubview:usernameField_];
     if (form.federation_origin.unique()) {
@@ -234,27 +219,9 @@ NSTextField* FederationLabel(const base::string16& text) {
       base::string16 text = l10n_util::GetStringFUTF16(
           IDS_PASSWORDS_VIA_FEDERATION,
           base::UTF8ToUTF16(form.federation_origin.host()));
-      passwordField_.reset([FederationLabel(text) retain]);
+      passwordField_.reset([Label(text) retain]);
     }
     [self addSubview:passwordField_];
-    // Add eye icon if password selection experiment is on.
-    if (base::FeatureList::IsEnabled(
-            password_manager::features::kEnablePasswordSelection)) {
-      passwordViewButton_.reset(
-          [[HoverImageButton alloc] initWithFrame:NSZeroRect]);
-      [passwordViewButton_ setBordered:NO];
-      [[passwordViewButton_ cell] setHighlightsBy:NSNoCellMask];
-      ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-      gfx::Image image = bundle.GetImageNamed(IDR_SHOW_PASSWORD_HOVER);
-      [passwordViewButton_
-          setFrameSize:NSMakeSize(image.Width(), image.Height())];
-      [passwordViewButton_ setDefaultImage:image.ToNSImage()];
-      NSString* passwordViewTitle =
-          l10n_util::GetNSString(IDS_MANAGE_PASSWORDS_SHOW_PASSWORD);
-      [passwordViewButton_ setAccessibilityTitle:passwordViewTitle];
-      [passwordViewButton_ setToolTip:passwordViewTitle];
-      [self addSubview:passwordViewButton_];
-    }
   }
   return self;
 }
@@ -263,16 +230,8 @@ NSTextField* FederationLabel(const base::string16& text) {
 
 - (void)layoutWithFirstColumn:(CGFloat)firstWidth
                  secondColumn:(CGFloat)secondWidth {
-  std::pair<CGFloat, CGFloat> sizes;
-  if (passwordViewButton_) {
-    sizes = GetResizedColumns(kDesiredRowWidth -
-                                  NSWidth([passwordViewButton_ frame]) -
-                                  kRelatedControlVerticalSpacing,
-                              std::make_pair(firstWidth, secondWidth));
-  } else {
-    sizes = GetResizedColumns(kDesiredRowWidth,
-                              std::make_pair(firstWidth, secondWidth));
-  }
+  std::pair<CGFloat, CGFloat> sizes = GetResizedColumns(
+      kDesiredRowWidth, std::make_pair(firstWidth, secondWidth));
   [usernameField_
       setFrameSize:NSMakeSize(sizes.first, NSHeight([usernameField_ frame]))];
   [passwordField_
@@ -283,19 +242,7 @@ NSTextField* FederationLabel(const base::string16& text) {
   // Move to the right of the username and add the password.
   curX = NSMaxX([usernameField_ frame]) + kItemLabelSpacing;
   [passwordField_ setFrameOrigin:NSMakePoint(curX, curY)];
-  if (passwordViewButton_) {
-    // The eye icon should be right-aligned.
-    curX = kDesiredRowWidth - NSWidth([passwordViewButton_ frame]);
-    curY += (NSHeight([usernameField_ frame]) -
-             NSHeight([passwordViewButton_ frame])) /
-            2;
-    [passwordViewButton_ setFrameOrigin:NSMakePoint(curX, curY)];
-    // Move to the right of the eye-icon.
-    curX = NSMaxX([passwordViewButton_ frame]);
-  } else {
-    // Move to the right of the password.
-    curX = NSMaxX([passwordField_ frame]);
-  }
+  curX = NSMaxX([passwordField_ frame]);
   curY = NSMaxY([passwordField_ frame]) + kRelatedControlVerticalSpacing;
   // Update the frame.
   [self setFrameSize:NSMakeSize(curX, curY)];

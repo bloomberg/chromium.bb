@@ -47,6 +47,9 @@ std::pair<CGFloat, CGFloat> GetResizedColumns(
 // Returns a password text field initialized with |text|.
 NSSecureTextField* PasswordLabel(const base::string16& text);
 
+// Returns a generic text field initialized with |text|.
+NSTextField* Label(const base::string16& text);
+
 // Returns a button of the standard style for the bubble.
 NSButton* DialogButton(NSString* title);
 
