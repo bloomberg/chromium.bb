@@ -34,6 +34,21 @@ enum AudioGlitchResult {
 
 }  // namespace
 
+AudioInputSyncWriter::OverflowData::OverflowData(
+    double volume,
+    bool key_pressed,
+    base::TimeTicks capture_time,
+    std::unique_ptr<media::AudioBus> audio_bus)
+    : volume_(volume),
+      key_pressed_(key_pressed),
+      capture_time_(capture_time),
+      audio_bus_(std::move(audio_bus)) {}
+AudioInputSyncWriter::OverflowData::~OverflowData() {}
+AudioInputSyncWriter::OverflowData::OverflowData(
+    AudioInputSyncWriter::OverflowData&&) = default;
+AudioInputSyncWriter::OverflowData& AudioInputSyncWriter::OverflowData::
+operator=(AudioInputSyncWriter::OverflowData&& other) = default;
+
 AudioInputSyncWriter::AudioInputSyncWriter(
     std::unique_ptr<base::SharedMemory> shared_memory,
     std::unique_ptr<base::CancelableSyncSocket> socket,
@@ -249,7 +264,7 @@ bool AudioInputSyncWriter::PushDataToFifo(const AudioBus* data,
                                           double volume,
                                           bool key_pressed,
                                           base::TimeTicks capture_time) {
-  if (overflow_buses_.size() == kMaxOverflowBusesSize) {
+  if (overflow_data_.size() == kMaxOverflowBusesSize) {
     // We use |write_error_count_| for capping number of log messages.
     // |write_error_count_| also includes socket Send() errors, but those should
     // be rare.
@@ -267,67 +282,56 @@ bool AudioInputSyncWriter::PushDataToFifo(const AudioBus* data,
     return false;
   }
 
-  if (overflow_buses_.empty()) {
+  if (overflow_data_.empty()) {
     const std::string message = "AISW: Starting to use fifo.";
     DVLOG(1) << message;
     AddToNativeLog(message);
   }
 
-  // Push parameters to fifo.
-  OverflowParams params = {volume, key_pressed, capture_time};
-  overflow_params_.push_back(params);
-
-  // Push audio data to fifo.
+  // Push data to fifo.
   std::unique_ptr<AudioBus> audio_bus =
       AudioBus::Create(data->channels(), data->frames());
   data->CopyTo(audio_bus.get());
-  overflow_buses_.push_back(std::move(audio_bus));
-
-  DCHECK_LE(overflow_buses_.size(), static_cast<size_t>(kMaxOverflowBusesSize));
-  DCHECK_EQ(overflow_params_.size(), overflow_buses_.size());
+  overflow_data_.emplace_back(volume, key_pressed, capture_time,
+                              std::move(audio_bus));
+  DCHECK_LE(overflow_data_.size(), static_cast<size_t>(kMaxOverflowBusesSize));
 
   return true;
 }
 
 bool AudioInputSyncWriter::WriteDataFromFifoToSharedMemory() {
-  if (overflow_buses_.empty())
+  if (overflow_data_.empty())
     return true;
 
   const size_t segment_count = audio_buses_.size();
   bool write_error = false;
-  auto params_it = overflow_params_.begin();
-  auto audio_bus_it = overflow_buses_.begin();
-  DCHECK_EQ(overflow_params_.size(), overflow_buses_.size());
+  auto data_it = overflow_data_.begin();
 
-  while (audio_bus_it != overflow_buses_.end() &&
+  while (data_it != overflow_data_.end() &&
          number_of_filled_segments_ < segment_count) {
     // Write parameters to shared memory.
-    WriteParametersToCurrentSegment((*params_it).volume,
-                                    (*params_it).key_pressed,
-                                    (*params_it).capture_time);
+    WriteParametersToCurrentSegment(data_it->volume_, data_it->key_pressed_,
+                                    data_it->capture_time_);
 
     // Copy data from the fifo into shared memory using pre-allocated audio
     // buses.
-    (*audio_bus_it)->CopyTo(audio_buses_[current_segment_id_].get());
+    data_it->audio_bus_->CopyTo(audio_buses_[current_segment_id_].get());
 
     if (!SignalDataWrittenAndUpdateCounters())
       write_error = true;
 
-    ++params_it;
-    ++audio_bus_it;
+    ++data_it;
   }
 
   // Erase all copied data from fifo.
-  overflow_params_.erase(overflow_params_.begin(), params_it);
-  overflow_buses_.erase(overflow_buses_.begin(), audio_bus_it);
+  overflow_data_.erase(overflow_data_.begin(), data_it);
 
-  if (overflow_buses_.empty()) {
+  if (overflow_data_.empty()) {
     const std::string message = "AISW: Fifo emptied.";
     DVLOG(1) << message;
     AddToNativeLog(message);
   }
 
-  DCHECK_EQ(overflow_params_.size(), overflow_buses_.size());
   return !write_error;
 }
 

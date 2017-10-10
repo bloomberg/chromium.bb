@@ -155,11 +155,11 @@ class AudioInputSyncWriterTest : public testing::Test {
                                      size_t number_of_buffers_in_fifo) {
     EXPECT_EQ(number_of_buffers_in_socket, socket_->NumberOfBuffersFilled());
     EXPECT_EQ(number_of_verifications_in_socket, socket_->Peek());
-    EXPECT_EQ(number_of_buffers_in_fifo, writer_->overflow_buses_.size());
+    EXPECT_EQ(number_of_buffers_in_fifo, writer_->overflow_data_.size());
 
     return number_of_buffers_in_socket == socket_->NumberOfBuffersFilled() &&
            number_of_verifications_in_socket == socket_->Peek() &&
-           number_of_buffers_in_fifo == writer_->overflow_buses_.size();
+           number_of_buffers_in_fifo == writer_->overflow_data_.size();
   }
 
  protected:
