@@ -53,6 +53,14 @@ name are handled together, but that should not be taken to mean that they are th
 same thing. Fixing this possible source of confusion is an open issue
 crbug.com/752745.
 
+### Variable & ApplyAtRule
+
+Variable and the Apply at-rule are not true CSS properties, but they are treated
+as such in places for convience. They do not appear in CSSProperties.json5; thus
+their property API headers needed to be hand-written & manually added to the
+list of api classes by make_css_property_api_base.py. Those hand-written headers
+are in this directory.
+
 ## How to add a new property API
 
 1.  Add a .cpp file to this directory named
