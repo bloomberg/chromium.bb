@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_BANNERS_APP_BANNER_METRICS_H_
 
 #include "chrome/browser/installable/installable_logging.h"
+#include "third_party/WebKit/public/platform/WebDisplayMode.h"
 
 namespace banners {
 
@@ -81,6 +82,7 @@ extern const char kMinutesHistogram[];
 extern const char kUserResponseHistogram[];
 extern const char kBeforeInstallEventHistogram[];
 extern const char kInstallableStatusCodeHistogram[];
+extern const char kInstallDisplayModeHistogram[];
 
 void TrackDismissEvent(int event);
 void TrackDisplayEvent(int event);
@@ -89,6 +91,7 @@ void TrackMinutesFromFirstVisitToBannerShown(int minutes);
 void TrackUserResponse(int event);
 void TrackBeforeInstallEvent(int event);
 void TrackInstallableStatusCode(InstallableStatusCode code);
+void TrackInstallDisplayMode(blink::WebDisplayMode display);
 
 };  // namespace banners
 

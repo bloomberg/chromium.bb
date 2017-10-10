@@ -19,6 +19,7 @@ const char kUserResponseHistogram[] = "AppBanners.UserResponse";
 const char kBeforeInstallEventHistogram[] = "AppBanners.BeforeInstallEvent";
 const char kInstallableStatusCodeHistogram[] =
     "AppBanners.InstallableStatusCode";
+const char kInstallDisplayModeHistogram[] = "Webapp.Install.DisplayMode";
 
 void TrackDismissEvent(int event) {
   DCHECK_LT(DISMISS_EVENT_MIN, event);
@@ -65,6 +66,13 @@ void TrackInstallableStatusCode(InstallableStatusCode code) {
     // Do not log that we are in incognito to UMA.
     UMA_HISTOGRAM_SPARSE_SLOWLY(kInstallableStatusCodeHistogram, code);
   }
+}
+
+void TrackInstallDisplayMode(blink::WebDisplayMode display) {
+  DCHECK_LE(blink::WebDisplayMode::kWebDisplayModeUndefined, display);
+  DCHECK_LE(display, blink::WebDisplayMode::kWebDisplayModeLast);
+  UMA_HISTOGRAM_ENUMERATION(kInstallDisplayModeHistogram, display,
+                            blink::WebDisplayMode::kWebDisplayModeLast + 1);
 }
 
 }  // namespace banners

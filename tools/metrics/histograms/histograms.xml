@@ -89748,6 +89748,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Webapp.Install.DisplayMode" enum="WebAppDisplayMode">
+  <owner>piotrs@chromium.org</owner>
+  <summary>
+    Records the display mode (as defined in the Web App Manifest spec) at the
+    install time of a WebApp (including WebApks).
+  </summary>
+</histogram>
+
 <histogram name="Webapp.InstallabilityCheckStatus.AddToHomescreenTimeout"
     enum="AddToHomescreenTimeoutStatus">
   <owner>dominickn@chromium.org</owner>
