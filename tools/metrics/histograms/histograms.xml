@@ -38692,6 +38692,32 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.CertificateTransparency.ConnectionComplianceStatus.QUIC"
+    enum="CTComplianceStatus">
+  <owner>estark@chromium.org</owner>
+  <summary>
+    The compliance of each QUIC connection with the Certificate Transparency
+    policy, recorded once on connection setup unless CT evaluation has been
+    disabled for that connection or the certificate is invalid. Connections can
+    be compliant, or they can be non-compliant for one of several reasons (not
+    enough Signed Certificate Timestamps [SCTs], not diverse enough SCTs, or the
+    build was old so CT compliance wasn't checked).
+  </summary>
+</histogram>
+
+<histogram name="Net.CertificateTransparency.ConnectionComplianceStatus.SSL"
+    enum="CTComplianceStatus">
+  <owner>estark@chromium.org</owner>
+  <summary>
+    The compliance of each SSL connection with the Certificate Transparency
+    policy, recorded once on connection setup unless CT evaluation has been
+    disabled for that connection or the certificate is invalid. Connections can
+    be compliant, or they can be non-compliant for one of several reasons (not
+    enough Signed Certificate Timestamps [SCTs], not diverse enough SCTs, or the
+    build was old so CT compliance wasn't checked).
+  </summary>
+</histogram>
+
 <histogram name="Net.CertificateTransparency.DnsQueryDuration" units="ms">
   <owner>robpercival@chromium.org</owner>
   <summary>

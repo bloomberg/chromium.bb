@@ -7315,6 +7315,13 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="194" label="TSS Error Unknown Error"/>
 </enum>
 
+<enum name="CTComplianceStatus">
+  <int value="0" label="Compliant"/>
+  <int value="1" label="Non-compliant, not enough SCTs"/>
+  <int value="2" label="Non-compliant, not diverse SCTs"/>
+  <int value="3" label="Compliance not evaluated, build not timely"/>
+</enum>
+
 <enum name="CTLogEntryInclusionCheckResult">
   <int value="0" label="Obtained valid inclusion proof"/>
   <int value="1" label="Failed getting inclusion proof"/>
