@@ -675,12 +675,16 @@ public class PaymentRequestImpl
                 && mIsCurrentPaymentRequestShowing) {
             assert !mPaymentMethodsSection.isEmpty();
 
-            mDidRecordShowEvent = true;
-            mShouldRecordAbortReason = true;
-            mJourneyLogger.setEventOccurred(Event.SKIPPED_SHOW);
+            if (mPaymentMethodsSection.getSize() > 1) {
+                mUI.show();
+            } else {
+                mDidRecordShowEvent = true;
+                mShouldRecordAbortReason = true;
+                mJourneyLogger.setEventOccurred(Event.SKIPPED_SHOW);
 
-            onPayClicked(null /* selectedShippingAddress */, null /* selectedShippingOption */,
-                    mPaymentMethodsSection.getItem(0));
+                onPayClicked(null /* selectedShippingAddress */, null /* selectedShippingOption */,
+                        mPaymentMethodsSection.getItem(0));
+            }
         }
     }
 
