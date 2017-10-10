@@ -103,4 +103,89 @@ TEST_F(InsertTextCommandTest, InsertTabToWhiteSpacePre) {
       GetSelectionTextFromBody(Selection().GetSelectionInDOMTree()));
 }
 
+// http://crbug.com/752860
+TEST_F(InsertTextCommandTest, WhitespaceFixupBeforeParagraph) {
+  Selection().SetSelection(
+      SetSelectionTextToBody("<div contenteditable>qux ^bar|<p>baz</p>"));
+  GetDocument().execCommand("insertText", false, "", ASSERT_NO_EXCEPTION);
+  // The space after "qux" should have been converted to a no-break space
+  // (U+00A0) to prevent it from being collapsed.
+  EXPECT_EQ("<div contenteditable>qux\xC2\xA0|<p>baz</p></div>",
+            GetSelectionTextFromBody(Selection().GetSelectionInDOMTree()));
+
+  Selection().SetSelection(
+      SetSelectionTextToBody("<div contenteditable>qux^ bar|<p>baz</p>"));
+  GetDocument().execCommand("insertText", false, " ", ASSERT_NO_EXCEPTION);
+  // The newly-inserted space should have been converted to a no-break space
+  // (U+00A0) to prevent it from being collapsed.
+  EXPECT_EQ("<div contenteditable>qux\xC2\xA0|<p>baz</p></div>",
+            GetSelectionTextFromBody(Selection().GetSelectionInDOMTree()));
+
+  Selection().SetSelection(
+      SetSelectionTextToBody("<div contenteditable>qux^bar| <p>baz</p>"));
+  GetDocument().execCommand("insertText", false, "", ASSERT_NO_EXCEPTION);
+  // The space after "bar" was already being collapsed before the edit. It
+  // should not have been converted to a no-break space.
+  EXPECT_EQ("<div contenteditable>qux|<p>baz</p></div>",
+            GetSelectionTextFromBody(Selection().GetSelectionInDOMTree()));
+
+  Selection().SetSelection(
+      SetSelectionTextToBody("<div contenteditable>qux^bar |<p>baz</p>"));
+  GetDocument().execCommand("insertText", false, " ", ASSERT_NO_EXCEPTION);
+  // The newly-inserted space should have been converted to a no-break space
+  // (U+00A0) to prevent it from being collapsed.
+  EXPECT_EQ("<div contenteditable>qux\xC2\xA0|<p>baz</p></div>",
+            GetSelectionTextFromBody(Selection().GetSelectionInDOMTree()));
+
+  Selection().SetSelection(
+      SetSelectionTextToBody("<div contenteditable>qux\t^bar|<p>baz</p>"));
+  GetDocument().execCommand("insertText", false, "", ASSERT_NO_EXCEPTION);
+  // The tab should have been converted to a no-break space (U+00A0) to prevent
+  // it from being collapsed.
+  EXPECT_EQ("<div contenteditable>qux\xC2\xA0|<p>baz</p></div>",
+            GetSelectionTextFromBody(Selection().GetSelectionInDOMTree()));
+}
+
+TEST_F(InsertTextCommandTest, WhitespaceFixupAfterParagraph) {
+  Selection().SetSelection(
+      SetSelectionTextToBody("<div contenteditable><p>baz</p>^bar| qux"));
+  GetDocument().execCommand("insertText", false, "", ASSERT_NO_EXCEPTION);
+  // The space before "qux" should have been converted to a no-break space
+  // (U+00A0) to prevent it from being collapsed.
+  EXPECT_EQ("<div contenteditable><p>baz</p>|\xC2\xA0qux</div>",
+            GetSelectionTextFromBody(Selection().GetSelectionInDOMTree()));
+
+  Selection().SetSelection(
+      SetSelectionTextToBody("<div contenteditable><p>baz</p>^bar |qux"));
+  GetDocument().execCommand("insertText", false, " ", ASSERT_NO_EXCEPTION);
+  // The newly-inserted space should have been converted to a no-break space
+  // (U+00A0) to prevent it from being collapsed.
+  EXPECT_EQ("<div contenteditable><p>baz</p>\xC2\xA0|qux</div>",
+            GetSelectionTextFromBody(Selection().GetSelectionInDOMTree()));
+
+  Selection().SetSelection(
+      SetSelectionTextToBody("<div contenteditable><p>baz</p> ^bar|qux"));
+  GetDocument().execCommand("insertText", false, "", ASSERT_NO_EXCEPTION);
+  // The space before "bar" was already being collapsed before the edit. It
+  // should not have been converted to a no-break space.
+  EXPECT_EQ("<div contenteditable><p>baz</p>|qux</div>",
+            GetSelectionTextFromBody(Selection().GetSelectionInDOMTree()));
+
+  Selection().SetSelection(
+      SetSelectionTextToBody("<div contenteditable><p>baz</p>^ bar|qux"));
+  GetDocument().execCommand("insertText", false, " ", ASSERT_NO_EXCEPTION);
+  // The newly-inserted space should have been converted to a no-break space
+  // (U+00A0) to prevent it from being collapsed.
+  EXPECT_EQ("<div contenteditable><p>baz</p>\xC2\xA0|qux</div>",
+            GetSelectionTextFromBody(Selection().GetSelectionInDOMTree()));
+
+  Selection().SetSelection(
+      SetSelectionTextToBody("<div contenteditable><p>baz</p>^bar|\tqux"));
+  GetDocument().execCommand("insertText", false, "", ASSERT_NO_EXCEPTION);
+  // The tab should have been converted to a no-break space (U+00A0) to prevent
+  // it from being collapsed.
+  EXPECT_EQ("<div contenteditable><p>baz</p>|\xC2\xA0qux</div>",
+            GetSelectionTextFromBody(Selection().GetSelectionInDOMTree()));
+}
+
 }  // namespace blink

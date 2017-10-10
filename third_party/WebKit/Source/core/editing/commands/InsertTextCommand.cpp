@@ -94,6 +94,12 @@ void InsertTextCommand::SetEndingSelectionWithoutValidation(
 // layout that typically results from text removal.
 bool InsertTextCommand::PerformTrivialReplace(const String& text,
                                               bool select_inserted_text) {
+  // We may need to manipulate neighboring whitespace if we're deleting text.
+  // This case is tested in
+  // InsertTextCommandTest_InsertEmptyTextAfterWhitespaceThatNeedsFixup.
+  if (text.IsEmpty())
+    return false;
+
   if (!EndingSelection().IsRange())
     return false;
 
