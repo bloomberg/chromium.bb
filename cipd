@@ -35,6 +35,9 @@ case $UNAME in
   s390x)  # best-effort support for IBM s390x: crbug.com/764087
     ARCH=s390x
     ;;
+  aarch64)
+    ARCH=arm64
+    ;;
   arm*)
     ARCH=$UNAME
     ;;
