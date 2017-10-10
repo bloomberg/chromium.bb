@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task_runner_util.h"
 #include "base/task_scheduler/post_task.h"
@@ -176,10 +177,16 @@ void DisplayColorManager::OnDisplayModeChanged(
         state->display_id(), std::vector<display::GammaRampRGBEntry>(),
         std::vector<display::GammaRampRGBEntry>(), std::vector<float>());
 
+    UMA_HISTOGRAM_BOOLEAN("Ash.DisplayColorManager.HasColorCorrectionMatrix",
+                          state->has_color_correction_matrix());
     if (calibration_map_[state->product_id()]) {
       ApplyDisplayColorCalibration(state->display_id(), state->product_id());
     } else {
-      if (state->product_id() != display::DisplaySnapshot::kInvalidProductID)
+      const bool valid_product_id =
+          state->product_id() != display::DisplaySnapshot::kInvalidProductID;
+      UMA_HISTOGRAM_BOOLEAN("Ash.DisplayColorManager.ValidProductId",
+                            valid_product_id);
+      if (valid_product_id)
         LoadCalibrationForDisplay(state);
     }
   }
@@ -226,6 +233,8 @@ void DisplayColorManager::FinishLoadCalibrationForDisplay(
     const base::FilePath& path,
     bool file_downloaded) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  UMA_HISTOGRAM_BOOLEAN("Ash.DisplayColorManager.IccFileFound",
+                        !path.empty() && file_downloaded);
   std::string product_string = quirks::IdToHexString(product_id);
   if (path.empty()) {
     VLOG(1) << "No ICC file found with product id: " << product_string
