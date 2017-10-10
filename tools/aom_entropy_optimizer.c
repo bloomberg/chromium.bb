@@ -791,6 +791,11 @@ int main(int argc, const char **argv) {
   optimize_cdf_table(
       &fc.filter_intra[0][0], probsfile, 2, cts_each_dim,
       "static const aom_cdf_prob default_filter_intra_cdf[2][CDF_SIZE(2)]");
+  cts_each_dim[0] = PLANE_TYPES;
+  cts_each_dim[1] = 10;
+  optimize_cdf_table(&fc.filter_intra_mode[0][0], probsfile, 2, cts_each_dim,
+                     "static const aom_cdf_prob "
+                     "default_filter_intra_mode_cdf[2][CDF_SIZE(10)]");
 #endif
 
 #if CONFIG_LV_MAP
