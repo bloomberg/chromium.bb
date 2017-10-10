@@ -13,6 +13,10 @@
 #include "device/vr/vr_service.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
+namespace content {
+class RenderFrameHost;
+}
+
 namespace device {
 class VRDevice;
 class VRDisplayImpl;
@@ -27,8 +31,7 @@ namespace vr {
 class VRDisplayHost : public device::mojom::VRDisplayHost {
  public:
   VRDisplayHost(device::VRDevice* device,
-                int render_frame_process_id,
-                int render_frame_routing_id,
+                content::RenderFrameHost* render_frame_host,
                 device::mojom::VRServiceClient* service_client,
                 device::mojom::VRDisplayInfoPtr display_info);
   ~VRDisplayHost() override;
@@ -38,10 +41,12 @@ class VRDisplayHost : public device::mojom::VRDisplayHost {
                       RequestPresentCallback callback) override;
   void ExitPresent() override;
   void SetListeningForActivate(bool listening);
+  void SetInFocusedFrame(bool in_focused_frame);
 
  private:
   std::unique_ptr<device::VRDisplayImpl> display_;
 
+  content::RenderFrameHost* render_frame_host_;
   mojo::Binding<device::mojom::VRDisplayHost> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(VRDisplayHost);
