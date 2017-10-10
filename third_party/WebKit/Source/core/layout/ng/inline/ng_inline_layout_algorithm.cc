@@ -103,7 +103,7 @@ void NGInlineLayoutAlgorithm::BidiReorder(NGInlineItemResults* line_items) {
   Vector<UBiDiLevel, 32> levels;
   levels.ReserveInitialCapacity(line_items->size());
   for (const auto& item_result : *line_items)
-    levels.push_back(item_result.item->BidiLevel());
+    levels.push_back(item_result.item->BidiLevelForReorder());
   Vector<int32_t, 32> indices_in_visual_order(line_items->size());
   NGBidiParagraph::IndicesInVisualOrder(levels, &indices_in_visual_order);
 

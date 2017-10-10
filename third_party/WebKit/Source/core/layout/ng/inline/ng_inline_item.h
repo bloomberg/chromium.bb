@@ -68,8 +68,14 @@ class CORE_EXPORT NGInlineItem {
   unsigned StartOffset() const { return start_offset_; }
   unsigned EndOffset() const { return end_offset_; }
   unsigned Length() const { return end_offset_ - start_offset_; }
+
   TextDirection Direction() const { return DirectionFromLevel(BidiLevel()); }
   UBiDiLevel BidiLevel() const { return static_cast<UBiDiLevel>(bidi_level_); }
+  // Resolved bidi level for the reordering algorithm. Certain items have
+  // artificial bidi level for the reordering algorithm without affecting its
+  // direction.
+  UBiDiLevel BidiLevelForReorder() const;
+
   UScriptCode GetScript() const { return script_; }
   const ComputedStyle* Style() const { return style_.get(); }
   LayoutObject* GetLayoutObject() const { return layout_object_; }

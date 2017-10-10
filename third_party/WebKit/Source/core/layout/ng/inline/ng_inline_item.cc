@@ -71,6 +71,12 @@ unsigned NGInlineItem::SetBidiLevel(Vector<NGInlineItem>& items,
   return index + 1;
 }
 
+UBiDiLevel NGInlineItem::BidiLevelForReorder() const {
+  // List markers should not be reordered to protect it from being included into
+  // unclosed inline boxes.
+  return Type() != NGInlineItem::kListMarker ? BidiLevel() : 0;
+}
+
 String NGInlineItem::ToString() const {
   return String::Format("NGInlineItem. Type: '%s'. LayoutObject: '%s'",
                         NGInlineItemTypeToString(Type()),
