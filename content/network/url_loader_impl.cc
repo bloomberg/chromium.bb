@@ -394,26 +394,20 @@ void URLLoaderImpl::ReadMore() {
                      &bytes_read);
   if (url_request_->status().is_io_pending()) {
     // Wait for OnReadCompleted.
-  } else if (url_request_->status().is_success() && bytes_read > 0) {
-    DidRead(static_cast<uint32_t>(bytes_read), true);
   } else {
-    CompletePendingWrite();
-    NotifyCompleted(url_request_->status().ToNetError());
-
-    CloseResponseBodyStreamProducer();
+    DidRead(bytes_read, true);
     // |this| may have been deleted.
-    return;
   }
 }
 
-void URLLoaderImpl::DidRead(uint32_t num_bytes, bool completed_synchronously) {
-  pending_write_buffer_offset_ += num_bytes;
+void URLLoaderImpl::DidRead(int num_bytes, bool completed_synchronously) {
+  if (num_bytes > 0)
+    pending_write_buffer_offset_ += num_bytes;
   if (update_body_read_before_paused_) {
     update_body_read_before_paused_ = false;
     UpdateBodyReadBeforePaused();
   }
 
-  DCHECK(url_request_->status().is_success());
   bool complete_read = true;
   if (consumer_handle_.is_valid()) {
     const std::string& type_hint = response_->head.mime_type;
@@ -433,6 +427,15 @@ void URLLoaderImpl::DidRead(uint32_t num_bytes, bool completed_synchronously) {
     }
   }
 
+  if (!url_request_->status().is_success() || num_bytes == 0) {
+    CompletePendingWrite();
+    NotifyCompleted(url_request_->status().ToNetError());
+
+    CloseResponseBodyStreamProducer();
+    // |this| may have been deleted.
+    return;
+  }
+
   if (complete_read) {
     CompletePendingWrite();
   }
@@ -449,16 +452,8 @@ void URLLoaderImpl::OnReadCompleted(net::URLRequest* url_request,
                                     int bytes_read) {
   DCHECK(url_request == url_request_.get());
 
-  if (!url_request->status().is_success()) {
-    CompletePendingWrite();
-    NotifyCompleted(url_request_->status().ToNetError());
-
-    CloseResponseBodyStreamProducer();
-    // |this| may have been deleted.
-    return;
-  }
-
-  DidRead(static_cast<uint32_t>(bytes_read), false);
+  DidRead(bytes_read, false);
+  // |this| may have been deleted.
 }
 
 base::WeakPtr<URLLoaderImpl> URLLoaderImpl::GetWeakPtrForTests() {

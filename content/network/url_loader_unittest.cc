@@ -527,11 +527,26 @@ TEST_F(URLLoaderImplTest, DoNotSniffHTMLFromImageGIF) {
   ASSERT_EQ(std::string("image/gif"), mime_type());
 }
 
-TEST_F(URLLoaderImplTest, CantSniffEmptyHtml) {
+TEST_F(URLLoaderImplTest, EmptyHtmlIsTextPlain) {
   set_sniff();
   EXPECT_EQ(net::OK,
             Load(test_server()->GetURL("/content-sniffer-test4.html")));
-  ASSERT_TRUE(mime_type().empty());
+  ASSERT_EQ(std::string("text/plain"), mime_type());
+}
+
+TEST_F(URLLoaderImplTest, EmptyHtmlIsTextPlainWithAsyncResponse) {
+  set_sniff();
+
+  const std::string kBody;
+
+  std::list<std::string> packets;
+  packets.push_back(kBody);
+  AddMultipleWritesInterceptor(packets, net::OK, true /*async_reads*/);
+
+  std::string body;
+  EXPECT_EQ(net::OK, Load(MultipleWritesInterceptor::GetURL(), &body));
+  EXPECT_EQ(kBody, body);
+  ASSERT_EQ(std::string("text/plain"), mime_type());
 }
 
 // Tests the case where the first read doesn't have enough data to figure out
