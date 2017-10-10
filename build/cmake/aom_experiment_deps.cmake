@@ -107,6 +107,12 @@ macro (fix_experiment_configs)
     endif ()
   endif ()
 
+  if (CONFIG_FRAME_SIGN_BIAS)
+    if (NOT CONFIG_FRAME_MARKER)
+      change_config_and_warn(CONFIG_FRAME_MARKER 1 CONFIG_FRAME_SIGN_BIAS)
+    endif ()
+  endif ()
+
   if (CONFIG_AMVR)
     change_config_and_warn(CONFIG_HASH_ME 1 CONFIG_AMVR)
   endif ()
