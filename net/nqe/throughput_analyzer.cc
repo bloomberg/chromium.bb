@@ -7,12 +7,15 @@
 #include <cmath>
 
 #include "base/location.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
+#include "base/time/tick_clock.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/network_activity_monitor.h"
 #include "net/base/url_util.h"
 #include "net/nqe/network_quality_estimator_params.h"
 #include "net/nqe/network_quality_estimator_util.h"
+#include "net/nqe/network_quality_provider.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 
@@ -33,19 +36,25 @@ namespace nqe {
 namespace internal {
 
 ThroughputAnalyzer::ThroughputAnalyzer(
+    const NetworkQualityProvider* network_quality_provider,
     const NetworkQualityEstimatorParams* params,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     ThroughputObservationCallback throughput_observation_callback,
+    base::TickClock* tick_clock,
     const NetLogWithSource& net_log)
-    : params_(params),
+    : network_quality_provider_(network_quality_provider),
+      params_(params),
       task_runner_(task_runner),
       throughput_observation_callback_(throughput_observation_callback),
-      last_connection_change_(base::TimeTicks::Now()),
+      tick_clock_(tick_clock),
+      last_connection_change_(tick_clock_->NowTicks()),
       window_start_time_(base::TimeTicks()),
       bits_received_at_window_start_(0),
       disable_throughput_measurements_(false),
       use_localhost_requests_for_tests_(false),
       net_log_(net_log) {
+  DCHECK(tick_clock_);
+  DCHECK(network_quality_provider_);
   DCHECK(params_);
   DCHECK(task_runner_);
   DCHECK(!IsCurrentlyTrackingThroughput());
@@ -70,7 +79,7 @@ void ThroughputAnalyzer::MaybeStartThroughputObservationWindow() {
       requests_.size() < params_->throughput_min_requests_in_flight()) {
     return;
   }
-  window_start_time_ = base::TimeTicks::Now();
+  window_start_time_ = tick_clock_->NowTicks();
   bits_received_at_window_start_ = GetBitsReceived();
 }
 
@@ -81,6 +90,7 @@ void ThroughputAnalyzer::EndThroughputObservationWindow() {
   // parameters.
   window_start_time_ = base::TimeTicks();
   bits_received_at_window_start_ = 0;
+  DCHECK(!IsCurrentlyTrackingThroughput());
 }
 
 bool ThroughputAnalyzer::IsCurrentlyTrackingThroughput() const {
@@ -100,6 +110,12 @@ bool ThroughputAnalyzer::IsCurrentlyTrackingThroughput() const {
   DCHECK_LE(params_->throughput_min_requests_in_flight(), requests_.size());
 
   return true;
+}
+
+void ThroughputAnalyzer::SetTickClockForTesting(base::TickClock* tick_clock) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  tick_clock_ = tick_clock;
+  DCHECK(tick_clock_);
 }
 
 void ThroughputAnalyzer::NotifyStartTransaction(const URLRequest& request) {
@@ -122,9 +138,26 @@ void ThroughputAnalyzer::NotifyStartTransaction(const URLRequest& request) {
     return;
   }
 
-  requests_.insert(&request);
+  EraseHangingRequests(request);
+
+  requests_[&request] = tick_clock_->NowTicks();
   BoundRequestsSize();
   MaybeStartThroughputObservationWindow();
+}
+
+void ThroughputAnalyzer::NotifyBytesRead(const URLRequest& request) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (disable_throughput_measurements_)
+    return;
+
+  EraseHangingRequests(request);
+
+  if (requests_.erase(&request) == 0)
+    return;
+
+  // Update the time when the bytes were received for |request|.
+  requests_[&request] = tick_clock_->NowTicks();
 }
 
 void ThroughputAnalyzer::NotifyRequestCompleted(const URLRequest& request) {
@@ -141,7 +174,9 @@ void ThroughputAnalyzer::NotifyRequestCompleted(const URLRequest& request) {
     return;
   }
 
-  int32_t downstream_kbps;
+  EraseHangingRequests(request);
+
+  int32_t downstream_kbps = -1;
   if (MaybeGetThroughputObservation(&downstream_kbps)) {
     // Notify the provided callback.
     task_runner_->PostTask(
@@ -169,8 +204,7 @@ void ThroughputAnalyzer::NotifyRequestCompleted(const URLRequest& request) {
       EndThroughputObservationWindow();
     return;
   }
-  // |request| must be either in |accuracy_degrading_requests_| or |requests_|.
-  NOTREACHED();
+  MaybeStartThroughputObservationWindow();
 }
 
 bool ThroughputAnalyzer::MaybeGetThroughputObservation(
@@ -190,11 +224,12 @@ bool ThroughputAnalyzer::MaybeGetThroughputObservation(
   DCHECK_GT(requests_.size(), 0U);
   DCHECK_EQ(0U, accuracy_degrading_requests_.size());
 
-  base::TimeTicks now = base::TimeTicks::Now();
+  base::TimeTicks now = tick_clock_->NowTicks();
 
   int64_t bits_received = GetBitsReceived() - bits_received_at_window_start_;
   DCHECK_LE(window_start_time_, now);
-  base::TimeDelta duration = now - window_start_time_;
+  DCHECK_LE(0, bits_received);
+  const base::TimeDelta duration = now - window_start_time_;
 
   // Ignore tiny/short transfers, which will not produce accurate rates. Skip
   // the checks if |use_small_responses_| is true.
@@ -207,6 +242,7 @@ bool ThroughputAnalyzer::MaybeGetThroughputObservation(
       (bits_received * 1.0f) / duration.InMillisecondsF();
   // Round-up |downstream_kbps_double|.
   *downstream_kbps = static_cast<int64_t>(std::ceil(downstream_kbps_double));
+  DCHECK(IsCurrentlyTrackingThroughput());
 
   // Stop the observation window since a throughput measurement has been taken.
   EndThroughputObservationWindow();
@@ -225,13 +261,14 @@ void ThroughputAnalyzer::OnConnectionTypeChanged() {
   // computation are now spanning a connection change event. These requests
   // would now degrade the throughput computation accuracy. So, move them to
   // |accuracy_degrading_requests_|.
-  for (const URLRequest* request : requests_)
-    accuracy_degrading_requests_.insert(request);
+  for (Requests::iterator it = requests_.begin(); it != requests_.end(); ++it) {
+    accuracy_degrading_requests_.insert(it->first);
+  }
   requests_.clear();
   BoundRequestsSize();
   EndThroughputObservationWindow();
 
-  last_connection_change_ = base::TimeTicks::Now();
+  last_connection_change_ = tick_clock_->NowTicks();
 }
 
 void ThroughputAnalyzer::SetUseLocalHostRequestsForTesting(
@@ -243,6 +280,11 @@ void ThroughputAnalyzer::SetUseLocalHostRequestsForTesting(
 int64_t ThroughputAnalyzer::GetBitsReceived() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return NetworkActivityMonitor::GetInstance()->GetBytesReceived() * 8;
+}
+
+size_t ThroughputAnalyzer::CountInFlightRequests() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return requests_.size();
 }
 
 bool ThroughputAnalyzer::DegradesAccuracy(const URLRequest& request) const {
@@ -283,6 +325,66 @@ void ThroughputAnalyzer::BoundRequestsSize() {
 
     // TODO(tbansal): crbug.com/609174 Add UMA to record how frequently this
     // happens.
+  }
+}
+
+void ThroughputAnalyzer::EraseHangingRequests(const URLRequest& request) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (params_->hanging_request_duration_http_rtt_multiplier() <= 0) {
+    // Experiment is not enabled.
+    return;
+  }
+
+  const base::TimeTicks now = tick_clock_->NowTicks();
+
+  const base::TimeDelta http_rtt =
+      network_quality_provider_->GetHttpRTT().value_or(
+          base::TimeDelta::FromSeconds(60));
+
+  size_t count_request_erased = 0;
+  Requests::iterator request_it = requests_.find(&request);
+  if (request_it != requests_.end()) {
+    base::TimeDelta time_since_last_received = now - request_it->second;
+
+    if (time_since_last_received >=
+            params_->hanging_request_duration_http_rtt_multiplier() *
+                http_rtt &&
+        time_since_last_received >= params_->hanging_request_min_duration()) {
+      count_request_erased++;
+      requests_.erase(request_it);
+    }
+  }
+
+  if (now - last_hanging_request_check_ >= base::TimeDelta::FromSeconds(1)) {
+    // Hanging request check is done at most once per second.
+    last_hanging_request_check_ = now;
+
+    for (Requests::iterator it = requests_.begin(); it != requests_.end();) {
+      base::TimeDelta time_since_last_received = now - it->second;
+
+      if (time_since_last_received >=
+              params_->hanging_request_duration_http_rtt_multiplier() *
+                  http_rtt &&
+          time_since_last_received >= params_->hanging_request_min_duration()) {
+        count_request_erased++;
+        requests_.erase(it++);
+      } else {
+        ++it;
+      }
+    }
+  }
+
+  UMA_HISTOGRAM_COUNTS_100("NQE.ThroughputAnalyzer.HangingRequests.Erased",
+                           count_request_erased);
+  UMA_HISTOGRAM_COUNTS_100("NQE.ThroughputAnalyzer.HangingRequests.NotErased",
+                           requests_.size());
+
+  if (count_request_erased > 0) {
+    // End the observation window since there is at least one hanging GET in
+    // flight, which may lead to inaccuracies in the throughput estimate
+    // computation.
+    EndThroughputObservationWindow();
   }
 }
 
