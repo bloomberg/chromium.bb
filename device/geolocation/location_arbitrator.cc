@@ -25,8 +25,10 @@ const int64_t LocationArbitrator::kFixStaleTimeoutMilliseconds =
 
 LocationArbitrator::LocationArbitrator(
     std::unique_ptr<GeolocationDelegate> delegate,
+    GeolocationProvider::RequestContextProducer request_context_producer,
     const std::string& api_key)
     : delegate_(std::move(delegate)),
+      request_context_producer_(request_context_producer),
       api_key_(api_key),
       position_provider_(nullptr),
       is_permission_granted_(false),
@@ -45,7 +47,6 @@ void LocationArbitrator::OnPermissionGranted() {
 }
 
 bool LocationArbitrator::StartProvider(bool enable_high_accuracy) {
-  // Stash options as OnAccessTokenStoresLoaded has not yet been called.
   is_running_ = true;
   enable_high_accuracy_ = enable_high_accuracy;
 
@@ -54,13 +55,17 @@ bool LocationArbitrator::StartProvider(bool enable_high_accuracy) {
 
     // Create a network location provider if the embedder provided an
     // AccessTokenStore.
-    const scoped_refptr<AccessTokenStore> access_token_store =
-        GetAccessTokenStore();
-    if (access_token_store) {
-      token_store_callback_.Reset(
-          base::Bind(&LocationArbitrator::OnAccessTokenStoresLoaded,
+    // TODO(amoylan): Replace this usage of GetAccessTokenStore() (i.e., as a
+    // flag controlling whether to use network location providers) with a check
+    // on whether the return value of |request_context_producer_| is null.
+    if (GetAccessTokenStore() && !request_context_producer_.is_null()) {
+      // Note: .Reset() will cancel any previous callback.
+      request_context_response_callback_.Reset(
+          base::Bind(&LocationArbitrator::OnRequestContextResponse,
                      base::Unretained(this)));
-      access_token_store->LoadAccessTokens(token_store_callback_.callback());
+      // Invoke callback to obtain a URL request context.
+      request_context_producer_.Run(
+          request_context_response_callback_.callback());
       return true;
     }
   }
@@ -94,11 +99,11 @@ void LocationArbitrator::StopProvider() {
   is_running_ = false;
 }
 
-void LocationArbitrator::OnAccessTokenStoresLoaded(
-    AccessTokenStore::AccessTokenMap access_token_map,
-    const scoped_refptr<net::URLRequestContextGetter>& context_getter) {
+void LocationArbitrator::OnRequestContextResponse(
+    scoped_refptr<net::URLRequestContextGetter> context_getter) {
   // Create a NetworkLocationProvider using the provided request context.
-  RegisterProvider(NewNetworkLocationProvider(context_getter, api_key_));
+  RegisterProvider(
+      NewNetworkLocationProvider(std::move(context_getter), api_key_));
   DoStartProviders();
 }
 
@@ -155,13 +160,13 @@ scoped_refptr<AccessTokenStore> LocationArbitrator::GetAccessTokenStore() {
 
 std::unique_ptr<LocationProvider>
 LocationArbitrator::NewNetworkLocationProvider(
-    const scoped_refptr<net::URLRequestContextGetter>& context,
+    scoped_refptr<net::URLRequestContextGetter> context,
     const std::string& api_key) {
 #if defined(OS_ANDROID)
   // Android uses its own SystemLocationProvider.
   return nullptr;
 #else
-  return std::make_unique<NetworkLocationProvider>(context, api_key);
+  return std::make_unique<NetworkLocationProvider>(std::move(context), api_key);
 #endif
 }
 

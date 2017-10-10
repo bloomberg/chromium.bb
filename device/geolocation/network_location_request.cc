@@ -107,10 +107,10 @@ void AddWifiData(const WifiData& wifi_data,
 int NetworkLocationRequest::url_fetcher_id_for_tests = 0;
 
 NetworkLocationRequest::NetworkLocationRequest(
-    const scoped_refptr<net::URLRequestContextGetter>& context,
+    scoped_refptr<net::URLRequestContextGetter> context,
     const std::string& api_key,
     LocationResponseCallback callback)
-    : url_context_(context),
+    : url_context_(std::move(context)),
       api_key_(api_key),
       location_response_callback_(callback) {}
 

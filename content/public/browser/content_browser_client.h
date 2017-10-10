@@ -89,6 +89,7 @@ class SSLCertRequestInfo;
 class SSLInfo;
 class URLRequest;
 class URLRequestContext;
+class URLRequestContextGetter;
 }
 
 namespace rappor {
@@ -455,6 +456,15 @@ class CONTENT_EXPORT ContentBrowserClient {
   // This is called on the IO thread.
   virtual net::URLRequestContext* OverrideRequestContextForURL(
       const GURL& url, ResourceContext* context);
+
+  // Allows the embedder to provide a URLRequestContextGetter to use for network
+  // geolocation queries.
+  // * May be called from any thread. A URLRequestContextGetter is then provided
+  //   by invoking |callback| on the calling thread.
+  // * Default implementation provides nullptr URLRequestContextGetter.
+  virtual void GetGeolocationRequestContext(
+      base::OnceCallback<void(scoped_refptr<net::URLRequestContextGetter>)>
+          callback);
 
   // Allows an embedder to provide a Google API Key to use for network
   // geolocation queries.

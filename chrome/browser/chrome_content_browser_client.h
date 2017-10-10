@@ -190,6 +190,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   net::URLRequestContext* OverrideRequestContextForURL(
       const GURL& url,
       content::ResourceContext* context) override;
+  void GetGeolocationRequestContext(
+      base::OnceCallback<void(scoped_refptr<net::URLRequestContextGetter>)>
+          callback) override;
   std::string GetGeolocationApiKey() override;
   content::QuotaPermissionContext* CreateQuotaPermissionContext() override;
   void GetQuotaSettings(

@@ -39,10 +39,9 @@ class NetworkLocationRequest : private net::URLFetcherDelegate {
                               const WifiData& /* wifi_data */)>
       LocationResponseCallback;
 
-  NetworkLocationRequest(
-      const scoped_refptr<net::URLRequestContextGetter>& context,
-      const std::string& api_key,
-      LocationResponseCallback callback);
+  NetworkLocationRequest(scoped_refptr<net::URLRequestContextGetter> context,
+                         const std::string& api_key,
+                         LocationResponseCallback callback);
   ~NetworkLocationRequest() override;
 
   // Makes a new request. Returns true if the new request was successfully
