@@ -288,13 +288,6 @@ bool MallocDumpProvider::OnMemoryDump(const MemoryDumpArgs& args,
   if (!allocation_register_.is_enabled())
     return true;
 
-  // The dumps of the heap profiler should be created only when heap profiling
-  // was enabled with any mode AND a DETAILED dump is requested or heap
-  // profiling was enabled with NO_STACK mode AND BACKGROUND dump is
-  // requested. However, when enabled, the overhead of the heap profiler should
-  // be always reported to avoid oscillations of the malloc total in LIGHT
-  // dumps.
-
   tid_dumping_heap_ = PlatformThread::CurrentId();
   // At this point the Insert/RemoveAllocation hooks will ignore this thread.
   // Enclosing all the temporary data structures in a scope, so that the heap
@@ -302,10 +295,8 @@ bool MallocDumpProvider::OnMemoryDump(const MemoryDumpArgs& args,
   {
     TraceEventMemoryOverhead overhead;
     std::unordered_map<AllocationContext, AllocationMetrics> metrics_by_context;
-    if (args.level_of_detail == MemoryDumpLevelOfDetail::DETAILED ||
-        (args.level_of_detail == MemoryDumpLevelOfDetail::BACKGROUND &&
-         AllocationContextTracker::capture_mode() ==
-             AllocationContextTracker::CaptureMode::NO_STACK)) {
+    if (AllocationContextTracker::capture_mode() !=
+        AllocationContextTracker::CaptureMode::DISABLED) {
       ShardedAllocationRegister::OutputMetrics shim_metrics =
           allocation_register_.UpdateAndReturnsMetrics(metrics_by_context);
 

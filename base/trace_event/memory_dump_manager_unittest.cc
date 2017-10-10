@@ -914,19 +914,21 @@ TEST_F(MemoryDumpManagerTest, EnableHeapProfilingNoStack) {
   EXPECT_FALSE(
       mdm_->heap_profiler_serialization_state_for_testing()->is_initialized());
 
-  EXPECT_TRUE(mdm_->EnableHeapProfiling(kHeapProfilingModeNoStack));
+  EXPECT_TRUE(mdm_->EnableHeapProfiling(kHeapProfilingModeBackground));
   RunLoop().RunUntilIdle();
-  ASSERT_EQ(AllocationContextTracker::CaptureMode::NO_STACK,
+  ASSERT_EQ(AllocationContextTracker::CaptureMode::PSEUDO_STACK,
             AllocationContextTracker::capture_mode());
-  EXPECT_EQ(mdm_->GetHeapProfilingMode(), kHeapProfilingModeNoStack);
+  EXPECT_EQ(mdm_->GetHeapProfilingMode(), kHeapProfilingModeBackground);
+  EXPECT_EQ(0u, TraceLog::GetInstance()->enabled_modes());
   EXPECT_TRUE(
       mdm_->heap_profiler_serialization_state_for_testing()->is_initialized());
   // Do nothing when already enabled.
-  EXPECT_FALSE(mdm_->EnableHeapProfiling(kHeapProfilingModeNoStack));
+  EXPECT_FALSE(mdm_->EnableHeapProfiling(kHeapProfilingModeBackground));
   EXPECT_FALSE(mdm_->EnableHeapProfiling(kHeapProfilingModePseudo));
-  ASSERT_EQ(AllocationContextTracker::CaptureMode::NO_STACK,
+  ASSERT_EQ(AllocationContextTracker::CaptureMode::PSEUDO_STACK,
             AllocationContextTracker::capture_mode());
-  EXPECT_EQ(mdm_->GetHeapProfilingMode(), kHeapProfilingModeNoStack);
+  EXPECT_EQ(0u, TraceLog::GetInstance()->enabled_modes());
+  EXPECT_EQ(mdm_->GetHeapProfilingMode(), kHeapProfilingModeBackground);
   // Disable will permanently disable heap profiling.
   EXPECT_TRUE(mdm_->EnableHeapProfiling(kHeapProfilingModeDisabled));
   RunLoop().RunUntilIdle();
@@ -1003,7 +1005,7 @@ TEST_F(MemoryDumpManagerTest, EnableHeapProfilingIfNeeded) {
   RunLoop().RunUntilIdle();
   ASSERT_EQ(AllocationContextTracker::CaptureMode::DISABLED,
             AllocationContextTracker::capture_mode());
-  EXPECT_FALSE(mdm_->EnableHeapProfiling(kHeapProfilingModeNoStack));
+  EXPECT_FALSE(mdm_->EnableHeapProfiling(kHeapProfilingModeBackground));
   ASSERT_EQ(AllocationContextTracker::CaptureMode::DISABLED,
             AllocationContextTracker::capture_mode());
 #endif  //  BUILDFLAG(USE_ALLOCATOR_SHIM) && !defined(OS_NACL)

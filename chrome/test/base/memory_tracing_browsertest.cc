@@ -168,7 +168,7 @@ IN_PROC_BROWSER_TEST_F(MemoryTracingBrowserTest, TestHeapProfilingNoStack) {
   // TODO(ssid): Enable heap profiling on all processes once the
   // memory_instrumentation api is available, crbug.com/757747.
   base::trace_event::MemoryDumpManager::GetInstance()->EnableHeapProfiling(
-      base::trace_event::kHeapProfilingModeNoStack);
+      base::trace_event::kHeapProfilingModeBackground);
   std::string json_events;
   PerformDumpMemoryTestActions(
       base::trace_event::TraceConfig(

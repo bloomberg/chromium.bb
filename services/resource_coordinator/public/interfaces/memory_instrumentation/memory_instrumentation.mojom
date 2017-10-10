@@ -32,11 +32,11 @@ enum ProcessType {
 };
 
 enum HeapProfilingMode {
-  PSEUDO_STACK,
-  NATIVE_STACK,
-  NO_STACK,
+  DISABLED,
   TASK_PROFILER,
-  DISABLED
+  BACKGROUND,
+  PSEUDO_STACK,
+  NATIVE_STACK
 };
 
 struct RequestArgs {
