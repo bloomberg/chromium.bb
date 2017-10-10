@@ -287,11 +287,6 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
   using GetArcStartTimeCallback =
       base::Callback<void(bool success, base::TimeTicks ticks)>;
 
-  // Asynchronously checks if starting the ARC instance is available.
-  // The result of the operation is reported through |callback|.
-  // If the operation fails, it is reported as unavailable.
-  virtual void CheckArcAvailability(const ArcCallback& callback) = 0;
-
   // Asynchronously starts the ARC instance for the user whose cryptohome is
   // located by |cryptohome_id|.  Flag |disable_boot_completed_broadcast|
   // blocks Android ACTION_BOOT_COMPLETED broadcast for 3rd party applications.

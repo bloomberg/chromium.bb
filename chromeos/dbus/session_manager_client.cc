@@ -426,17 +426,6 @@ class SessionManagerClientImpl : public SessionManagerClient {
                        weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
-  void CheckArcAvailability(const ArcCallback& callback) override {
-    dbus::MethodCall method_call(
-        login_manager::kSessionManagerInterface,
-        login_manager::kSessionManagerCheckArcAvailability);
-
-    session_manager_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&SessionManagerClientImpl::OnCheckArcAvailability,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
-  }
-
   void StartArcInstance(ArcStartupMode startup_mode,
                         const cryptohome::Identification& cryptohome_id,
                         bool skip_boot_completed_broadcast,
@@ -831,19 +820,6 @@ class SessionManagerClientImpl : public SessionManagerClient {
       callback.Run(state_keys);
   }
 
-  // Called when kSessionManagerCheckArcAvailability method is complete.
-  void OnCheckArcAvailability(const ArcCallback& callback,
-                              dbus::Response* response) {
-    bool available = false;
-    if (response) {
-      dbus::MessageReader reader(response);
-      if (!reader.PopBool(&available))
-        LOG(ERROR) << "Invalid response: " << response->ToString();
-    }
-    if (!callback.is_null())
-      callback.Run(available);
-  }
-
   void OnGetArcStartTime(const GetArcStartTimeCallback& callback,
                          dbus::Response* response) {
     bool success = false;
@@ -1101,10 +1077,6 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
         {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
         base::Bind(&ReadCreateStateKeysStub, state_keys_path),
         base::Bind(&RunStateKeysCallbackStub, callback));
-  }
-
-  void CheckArcAvailability(const ArcCallback& callback) override {
-    callback.Run(false);
   }
 
   void StartArcInstance(ArcStartupMode startup_mode,
