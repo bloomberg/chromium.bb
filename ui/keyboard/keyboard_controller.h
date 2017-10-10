@@ -135,7 +135,7 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   bool IsKeyboardWindowCreated();
 
   // Returns the current keyboard bounds. An empty rectangle will get returned
-  // when the keyboard is not shown or in FLOATING mode.
+  // when the keyboard is not shown.
   const gfx::Rect& current_keyboard_bounds() const {
     return current_keyboard_bounds_;
   }
@@ -201,7 +201,7 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   void CheckStateTransition(KeyboardControllerState prev,
                             KeyboardControllerState next);
 
-  // Changes the current state with validating the transition.
+  // Changes the current state and validates the transition.
   void ChangeState(KeyboardControllerState state);
 
   // Reports error histogram in case lingering in an intermediate state.
