@@ -11,7 +11,7 @@ namespace device {
 
 unsigned int VRDevice::next_id_ = 1;
 
-VRDevice::VRDevice() : presenting_display_(nullptr), id_(next_id_) {
+VRDevice::VRDevice() : id_(next_id_) {
   // Prevent wraparound. Devices with this ID will be treated as invalid.
   if (next_id_ != VR_DEVICE_LAST_ID)
     next_id_++;
@@ -21,14 +21,14 @@ VRDevice::~VRDevice() {}
 
 void VRDevice::AddDisplay(VRDisplayImpl* display) {
   displays_.insert(display);
-  OnDisplayAdded(display);
 }
 
 void VRDevice::RemoveDisplay(VRDisplayImpl* display) {
   if (CheckPresentingDisplay(display))
     ExitPresent();
   displays_.erase(display);
-  OnDisplayRemoved(display);
+  if (listening_for_activate_diplay_ == display)
+    listening_for_activate_diplay_ = nullptr;
 }
 
 bool VRDevice::IsAccessAllowed(VRDisplayImpl* display) {
@@ -56,6 +56,15 @@ void VRDevice::OnExitPresent() {
   SetPresentingDisplay(nullptr);
 }
 
+void VRDevice::OnActivate(mojom::VRDisplayEventReason reason,
+                          const base::Callback<void(bool)>& on_handled) {
+  if (listening_for_activate_diplay_) {
+    listening_for_activate_diplay_->OnActivate(reason, on_handled);
+  } else {
+    std::move(on_handled).Run(true /* will_not_present */);
+  }
+}
+
 void VRDevice::OnBlur() {
   for (VRDisplayImpl* display : displays_)
     display->OnBlur();
@@ -68,6 +77,23 @@ void VRDevice::OnFocus() {
 
 void VRDevice::SetPresentingDisplay(VRDisplayImpl* display) {
   presenting_display_ = display;
+}
+
+void VRDevice::OnListeningForActivateChanged(VRDisplayImpl* display) {
+  UpdateListeningForActivate(display);
+}
+
+void VRDevice::OnFrameFocusChanged(VRDisplayImpl* display) {
+  UpdateListeningForActivate(display);
+}
+
+void VRDevice::UpdateListeningForActivate(VRDisplayImpl* display) {
+  if (display->ListeningForActivate() && display->InFocusedFrame()) {
+    listening_for_activate_diplay_ = display;
+  } else if (listening_for_activate_diplay_ == display) {
+    listening_for_activate_diplay_ = nullptr;
+  }
+  OnListeningForActivateChanged(!!listening_for_activate_diplay_);
 }
 
 }  // namespace device
