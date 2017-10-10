@@ -8,7 +8,7 @@
 #import <UIKit/UIKit.h>
 
 #import "ios/chrome/browser/ui/fancy_ui/colored_button.h"
-#import "ios/chrome/browser/ui/toolbar/toolbar_controller.h"
+#import "ios/chrome/browser/ui/toolbar/toolbar_controller_constants.h"
 
 // ColoredButton specialization that updates the tint color when the tools menu
 // is visible or when the reading list associated with |readingListModel|

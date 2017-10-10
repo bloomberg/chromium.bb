@@ -12,6 +12,8 @@ source_set("toolbar") {
     "toolbar_controller+protected.h",
     "toolbar_controller.h",
     "toolbar_controller.mm",
+    "toolbar_controller_constants.h",
+    "toolbar_controller_constants.mm",
     "toolbar_coordinator.h",
     "toolbar_coordinator.mm",
     "toolbar_frame_delegate.h",

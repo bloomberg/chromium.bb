@@ -31,6 +31,3 @@ const CGFloat kIncognitoToolbarButtonTitleNormalColor = 0xEEEEEE;
 const CGFloat kIncognitoToolbarButtonTitleHighlightedColor = 0x888a8c;
 
 const NSInteger kShowTabStripButtonMaxTabCount = 99;
-
-const NSInteger kFontSizeFewerThanTenTabs = 11;
-const NSInteger kFontSizeTenTabsOrMore = 9;

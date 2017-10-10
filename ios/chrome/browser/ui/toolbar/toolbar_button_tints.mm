@@ -4,6 +4,7 @@
 
 #include "ios/chrome/browser/ui/toolbar/toolbar_button_tints.h"
 
+#include "base/logging.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
