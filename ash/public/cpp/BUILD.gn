@@ -47,6 +47,8 @@ component("ash_public_cpp") {
     "shelf_types.h",
     "shell_window_ids.cc",
     "shell_window_ids.h",
+    "stylus_utils.cc",
+    "stylus_utils.h",
     "voice_interaction_state.h",
     "window_pin_type.cc",
     "window_pin_type.h",
@@ -66,6 +68,7 @@ component("ash_public_cpp") {
     "//skia/public/interfaces",
     "//ui/aura",
     "//ui/display",
+    "//ui/events/devices",
     "//ui/views",
     "//ui/views/mus",
   ]

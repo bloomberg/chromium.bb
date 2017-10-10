@@ -13,7 +13,6 @@
 #include "ash/system/lock_screen_action/lock_screen_action_tray.h"
 #include "ash/system/overview/overview_button_tray.h"
 #include "ash/system/palette/palette_tray.h"
-#include "ash/system/palette/palette_utils.h"
 #include "ash/system/session/logout_button_tray.h"
 #include "ash/system/status_area_widget_delegate.h"
 #include "ash/system/tray/system_tray.h"

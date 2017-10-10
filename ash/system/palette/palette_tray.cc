@@ -9,6 +9,7 @@
 #include "ash/accessibility/accessibility_delegate.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/config.h"
+#include "ash/public/cpp/stylus_utils.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
@@ -75,8 +76,7 @@ bool ShouldShowOnDisplay(PaletteTray* palette_tray) {
   const display::Display& display =
       display::Screen::GetScreen()->GetDisplayNearestWindow(
           palette_tray->GetWidget()->GetNativeWindow());
-  return display.IsInternal() ||
-         palette_utils::IsPaletteEnabledOnEveryDisplay();
+  return display.IsInternal() || stylus_utils::IsPaletteEnabledOnEveryDisplay();
 }
 
 class TitleView : public views::View, public views::ButtonListener {
@@ -232,8 +232,8 @@ void PaletteTray::OnLocalStatePrefServiceInitialized(
 
   // If a device has an internal stylus or the flag to force stylus is set, mark
   // the has seen stylus flag as true since we know the user has a stylus.
-  if (palette_utils::HasInternalStylus() ||
-      palette_utils::HasForcedStylusInput()) {
+  if (stylus_utils::HasInternalStylus() ||
+      stylus_utils::HasForcedStylusInput()) {
     local_state_pref_service_->SetBoolean(prefs::kHasSeenStylus, true);
   }
 
@@ -270,7 +270,7 @@ void PaletteTray::OnTouchscreenDeviceConfigurationChanged() {
 
 void PaletteTray::OnStylusStateChanged(ui::StylusState stylus_state) {
   // Device may have a stylus but it has been forcibly disabled.
-  if (!palette_utils::HasStylusInput())
+  if (!stylus_utils::HasStylusInput())
     return;
 
   PaletteDelegate* palette_delegate = Shell::Get()->palette_delegate();
@@ -542,7 +542,7 @@ bool PaletteTray::DeactivateActiveTool() {
 
 void PaletteTray::UpdateIconVisibility() {
   SetVisible(has_seen_stylus_ && is_palette_enabled_ &&
-             palette_utils::HasStylusInput() && ShouldShowOnDisplay(this) &&
+             stylus_utils::HasStylusInput() && ShouldShowOnDisplay(this) &&
              palette_utils::IsInUserSession());
 }
 
