@@ -3009,7 +3009,7 @@ group("telemetry_perf_tests_new") {
 
 group("angle_perftests") {
   testonly = true
-  if (is_win || is_linux) {
+  if (is_win || is_linux || is_android) {
     data_deps = [
       "//third_party/angle/src/tests:angle_perftests",
     ]
