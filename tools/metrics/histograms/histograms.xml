@@ -88555,6 +88555,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Time to instantiate a WebAssembly module.</summary>
 </histogram>
 
+<histogram name="V8.WasmLazyCompilationMicroSeconds" units="microseconds">
+  <owner>bradnelson@chromium.org</owner>
+  <owner>titzer@chromium.org</owner>
+  <owner>aseemgarg@chromium.org</owner>
+  <summary>
+    Time for lazy compilation of WebAssembly functions. This is recorded per
+    function for the functions that are lazily compiled.
+  </summary>
+</histogram>
+
 <histogram name="V8.WasmMaxMemPagesCount" units="pages">
   <owner>bradnelson@chromium.org</owner>
   <owner>titzer@chromium.org</owner>
