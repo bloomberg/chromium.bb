@@ -3065,6 +3065,10 @@ crbug.com/626703 [ Win7 ] external/wpt/html/semantics/embedded-content/the-img-e
 # For Skia roll
 crbug.com/630695 fast/css/transformed-mask.html [ NeedsManualRebaseline ]
 
+crbug.com/773013 virtual/gpu-rasterization/images/color-profile-background-image-cross-fade-png.html [ NeedsManualRebaseline ]
+crbug.com/773013 virtual/gpu-rasterization/images/color-profile-background-image-cross-fade.html [ NeedsManualRebaseline ]
+crbug.com/773013 virtual/gpu-rasterization/images/color-profile-mask-image-svg.html [ NeedsManualRebaseline ]
+
 # Sheriff failures 2017-07-20
 crbug.com/747163 [ Linux ] imagecapture/MediaStreamTrack-applyConstraints.html [ Pass Crash ]
 crbug.com/747163 [ Linux ] imagecapture/MediaStreamTrack-getSettings.html [ Pass Crash ]
