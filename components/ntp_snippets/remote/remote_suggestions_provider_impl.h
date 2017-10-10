@@ -80,11 +80,6 @@ class RemoteSuggestionsProviderImpl final : public RemoteSuggestionsProvider {
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
-  // Returns whether the service is ready. While this is false, the list of
-  // suggestions will be empty, and all modifications to it (fetch, dismiss,
-  // etc) will be ignored.
-  bool ready() const { return state_ == State::READY; }
-
   // Returns whether the service is successfully initialized. While this is
   // false, some calls may trigger DCHECKs.
   bool initialized() const { return ready() || state_ == State::DISABLED; }
@@ -92,16 +87,14 @@ class RemoteSuggestionsProviderImpl final : public RemoteSuggestionsProvider {
   // RemoteSuggestionsProvider implementation.
   void RefetchInTheBackground(FetchStatusCallback callback) override;
   void RefetchWhileDisplaying(FetchStatusCallback callback) override;
-
   // TODO(fhorschig): Remove this getter when there is an interface for the
   // fetcher that allows better mocks.
   const RemoteSuggestionsFetcher* suggestions_fetcher_for_debugging()
       const override;
-
   GURL GetUrlWithFavicon(
       const ContentSuggestion::ID& suggestion_id) const override;
-
   bool IsDisabled() const override;
+  bool ready() const override;
 
   // ContentSuggestionsProvider implementation.
   CategoryStatus GetCategoryStatus(Category category) override;
@@ -352,16 +345,6 @@ class RemoteSuggestionsProviderImpl final : public RemoteSuggestionsProvider {
   // SetProviderStatusCallback().
   void NotifyStateChanged();
 
-  // Enables the service. Do not call directly, use |EnterState| instead.
-  void EnterStateReady();
-
-  // Disables the service. Do not call directly, use |EnterState| instead.
-  void EnterStateDisabled();
-
-  // Disables the service permanently because an unrecoverable error occurred.
-  // Do not call directly, use |EnterState| instead.
-  void EnterStateError();
-
   // Subscribes or unsubcribes from pushed suggestions depending on the new
   // status.
   void UpdatePushedSuggestionsSubscriptionDueToStatusChange(
@@ -431,20 +414,6 @@ class RemoteSuggestionsProviderImpl final : public RemoteSuggestionsProvider {
 
   // The service that provides events and data about the signin and sync state.
   std::unique_ptr<RemoteSuggestionsStatusService> status_service_;
-
-  // TODO(tschumann): All "fetch-when-available" logic should live in the
-  // RemoteSuggestionsScheduler. Remove this here. Instead, the scheduler should
-  // also call ready() before forwarding requests. If the provider becomes
-  // ready, it calls OnProviderActivated() which will process triggers queued in
-  // the scheduler.
-  // Set to true if FetchSuggestions is called while the service isn't ready.
-  // The fetch will be executed once the service enters the READY state.
-  // TODO(jkrcal): create a struct and have here just one base::Optional<>?
-  bool fetch_when_ready_;
-
-  // The parameters for the fetch to perform later.
-  bool fetch_when_ready_interactive_;
-  FetchStatusCallback fetch_when_ready_callback_;
 
   // Set to true if ClearHistoryDependentState is called while the service isn't
   // ready. The nuke will be executed once the service finishes initialization

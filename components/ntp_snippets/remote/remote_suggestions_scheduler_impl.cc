@@ -475,8 +475,6 @@ RemoteSuggestionsSchedulerImpl::RemoteSuggestionsSchedulerImpl(
   DCHECK(user_classifier);
   DCHECK(profile_prefs);
   DCHECK(debug_logger_);
-
-  LoadLastFetchingSchedule();
 }
 
 RemoteSuggestionsSchedulerImpl::~RemoteSuggestionsSchedulerImpl() = default;
@@ -503,6 +501,7 @@ void RemoteSuggestionsSchedulerImpl::SetProvider(
 }
 
 void RemoteSuggestionsSchedulerImpl::OnProviderActivated() {
+  LoadLastFetchingSchedule();
   StartScheduling();
   RunQueuedTriggersIfReady();
 }
@@ -827,9 +826,9 @@ bool RemoteSuggestionsSchedulerImpl::ShouldRefetchNow(
 }
 
 bool RemoteSuggestionsSchedulerImpl::IsReadyForBackgroundFetches() const {
-  if (!provider_) {
+  if (!provider_ || !provider_->ready()) {
     return false;  // Cannot fetch as remote suggestions provider does not
-                   // exist.
+                   // exist or is not active yet.
   }
 
   if (schedule_.is_empty()) {

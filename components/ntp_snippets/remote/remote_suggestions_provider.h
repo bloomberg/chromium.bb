@@ -29,7 +29,8 @@ class RemoteSuggestionsProvider : public ContentSuggestionsProvider {
   // an background request. Background requests are used for actions not
   // triggered by the user and have lower priority on the server. After the
   // fetch finished, the provided |callback| will be triggered with the status
-  // of the fetch (unless nullptr).
+  // of the fetch (unless nullptr). If the provider is not ready(), the fetch
+  // fails and the callback gets immediately called with an error message.
   virtual void RefetchInTheBackground(FetchStatusCallback callback) = 0;
 
   // Refetches the suggestions in a state ready for display. Similar to
@@ -45,8 +46,12 @@ class RemoteSuggestionsProvider : public ContentSuggestionsProvider {
   virtual GURL GetUrlWithFavicon(
       const ContentSuggestion::ID& suggestion_id) const = 0;
 
-  // Whether the service is explicity disabled.
+  // Whether the provider is explicity disabled.
   virtual bool IsDisabled() const = 0;
+
+  // Whether the provider is ready to fetch suggestions. While the provider is
+  // not ready, all operations on it will fail or get ignored.
+  virtual bool ready() const = 0;
 
  protected:
   RemoteSuggestionsProvider(Observer* observer);
