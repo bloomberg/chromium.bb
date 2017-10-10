@@ -181,7 +181,7 @@ ScriptPromise PresentationRequest::reconnect(ScriptState* script_state,
       PresentationController::FromContext(GetExecutionContext());
   DCHECK(controller);
 
-  PresentationConnection* existing_connection =
+  ControllerPresentationConnection* existing_connection =
       controller->FindExistingConnection(urls_, id);
   if (existing_connection) {
     client->ReconnectPresentation(

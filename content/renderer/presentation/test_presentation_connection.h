@@ -5,8 +5,6 @@
 #ifndef CONTENT_RENDERER_PRESENTATION_PRESENTATION_CONNECTION_TEST_HELPER_H_
 #define CONTENT_RENDERER_PRESENTATION_PRESENTATION_CONNECTION_TEST_HELPER_H_
 
-#include <memory>
-
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/WebKit/public/platform/modules/presentation/WebPresentationConnection.h"
 
@@ -17,19 +15,7 @@ class TestPresentationConnection : public blink::WebPresentationConnection {
   TestPresentationConnection();
   ~TestPresentationConnection();
 
-  void BindProxy(
-      std::unique_ptr<blink::WebPresentationConnectionProxy> proxy) override;
-
-  MOCK_METHOD1(DidReceiveTextMessage, void(const blink::WebString& message));
-  MOCK_METHOD2(DidReceiveBinaryMessage,
-               void(const uint8_t* data, size_t length));
-  MOCK_METHOD1(DidChangeState, void(blink::WebPresentationConnectionState));
-  MOCK_METHOD0(DidClose, void());
-
-  blink::WebPresentationConnectionProxy* proxy();
-
- private:
-  std::unique_ptr<blink::WebPresentationConnectionProxy> proxy_;
+  MOCK_METHOD0(Init, void());
 };
 
 }  // namespace content

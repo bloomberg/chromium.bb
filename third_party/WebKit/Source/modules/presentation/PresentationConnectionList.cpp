@@ -19,7 +19,7 @@ const AtomicString& PresentationConnectionList::InterfaceName() const {
   return EventTargetNames::PresentationConnectionList;
 }
 
-const HeapVector<Member<PresentationConnection>>&
+const HeapVector<Member<ReceiverPresentationConnection>>&
 PresentationConnectionList::connections() const {
   return connections_;
 }
@@ -37,12 +37,12 @@ void PresentationConnectionList::AddedEventListener(
 }
 
 void PresentationConnectionList::AddConnection(
-    PresentationConnection* connection) {
+    ReceiverPresentationConnection* connection) {
   connections_.push_back(connection);
 }
 
 bool PresentationConnectionList::RemoveConnection(
-    WebPresentationConnection* connection) {
+    ReceiverPresentationConnection* connection) {
   for (size_t i = 0; i < connections_.size(); i++) {
     if (connections_[i] == connection) {
       connections_.EraseAt(i);

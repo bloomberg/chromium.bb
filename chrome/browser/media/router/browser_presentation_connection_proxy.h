@@ -69,7 +69,7 @@ class BrowserPresentationConnectionProxy
 
   // Underlying media route is always connected. Media route class does not
   // support state change.
-  void OnClose() override {}
+  void RequestClose() override {}
 
   // RouteMessageObserver implementation.
   void OnMessagesReceived(

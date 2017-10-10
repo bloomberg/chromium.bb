@@ -7,6 +7,7 @@
 
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameClient.h"
 #include "modules/ModulesExport.h"
 #include "modules/presentation/Presentation.h"
 #include "modules/presentation/PresentationRequest.h"
@@ -14,10 +15,12 @@
 #include "platform/heap/Handle.h"
 #include "public/platform/modules/presentation/WebPresentationClient.h"
 #include "public/platform/modules/presentation/WebPresentationController.h"
+#include "public/platform/modules/presentation/presentation.mojom-blink.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace blink {
 
-class PresentationConnection;
+class ControllerPresentationConnection;
 
 // The coordinator between the various page exposed properties and the content
 // layer represented via |WebPresentationClient|.
@@ -66,14 +69,19 @@ class MODULES_EXPORT PresentationController final
   void SetDefaultRequestUrl(const WTF::Vector<KURL>&);
 
   // Handling of running connections.
-  void RegisterConnection(PresentationConnection*);
+  void RegisterConnection(ControllerPresentationConnection*);
 
   // Return a connection in |m_connections| with id equals to |presentationId|,
   // url equals to one of |presentationUrls|, and state is not terminated.
   // Return null if such a connection does not exist.
-  PresentationConnection* FindExistingConnection(
+  ControllerPresentationConnection* FindExistingConnection(
       const blink::WebVector<blink::WebURL>& presentation_urls,
       const blink::WebString& presentation_id);
+
+  // Returns a reference to the PresentationService ptr, requesting the remote
+  // service if needed. May return an invalid ptr if the associated Document is
+  // detached.
+  mojom::blink::PresentationServicePtr& GetPresentationService();
 
  private:
   PresentationController(LocalFrame&, WebPresentationClient*);
@@ -83,7 +91,8 @@ class MODULES_EXPORT PresentationController final
 
   // Return the connection associated with the given |connectionClient| or
   // null if it doesn't exist.
-  PresentationConnection* FindConnection(const WebPresentationInfo&);
+  ControllerPresentationConnection* FindConnection(
+      const WebPresentationInfo&) const;
 
   // The WebPresentationClient which allows communicating with the embedder.
   // It is not owned by the PresentationController but the controller will
@@ -95,7 +104,10 @@ class MODULES_EXPORT PresentationController final
   WeakMember<Presentation> presentation_;
 
   // The presentation connections associated with that frame.
-  HeapHashSet<WeakMember<PresentationConnection>> connections_;
+  HeapHashSet<WeakMember<ControllerPresentationConnection>> connections_;
+
+  // Lazily-initialized pointer to PresentationService.
+  mojom::blink::PresentationServicePtr presentation_service_;
 };
 
 }  // namespace blink

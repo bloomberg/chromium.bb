@@ -12,7 +12,7 @@
 
 namespace blink {
 
-class PresentationConnection;
+class ControllerPresentationConnection;
 class PresentationRequest;
 class ScriptPromiseResolver;
 struct WebPresentationError;
@@ -27,7 +27,7 @@ class PresentationConnectionCallbacks final
  public:
   PresentationConnectionCallbacks(ScriptPromiseResolver*, PresentationRequest*);
   PresentationConnectionCallbacks(ScriptPromiseResolver*,
-                                  PresentationConnection*);
+                                  ControllerPresentationConnection*);
   ~PresentationConnectionCallbacks() override = default;
 
   // WebCallbacks implementation
@@ -40,7 +40,7 @@ class PresentationConnectionCallbacks final
  private:
   Persistent<ScriptPromiseResolver> resolver_;
   Persistent<PresentationRequest> request_;
-  WeakPersistent<PresentationConnection> connection_;
+  WeakPersistent<ControllerPresentationConnection> connection_;
 
   WTF_MAKE_NONCOPYABLE(PresentationConnectionCallbacks);
 };

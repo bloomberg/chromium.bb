@@ -27,7 +27,6 @@
 
 namespace blink {
 class WebPresentationAvailabilityObserver;
-class WebPresentationConnection;
 class WebPresentationReceiver;
 class WebString;
 class WebURL;
@@ -81,12 +80,6 @@ class CONTENT_EXPORT PresentationDispatcher
       const blink::WebString& presentationId,
       std::unique_ptr<blink::WebPresentationConnectionCallbacks> callback)
       override;
-  void TerminatePresentation(const blink::WebURL& presentationUrl,
-                             const blink::WebString& presentationId) override;
-  void CloseConnection(
-      const blink::WebURL& presentationUrl,
-      const blink::WebString& presentationId,
-      const blink::WebPresentationConnectionProxy* connection_proxy) override;
   void GetAvailability(
       const blink::WebVector<blink::WebURL>& availabilityUrls,
       std::unique_ptr<blink::WebPresentationAvailabilityCallbacks> callbacks)
@@ -117,22 +110,6 @@ class CONTENT_EXPORT PresentationDispatcher
       std::unique_ptr<blink::WebPresentationConnectionCallbacks> callback,
       const base::Optional<PresentationInfo>& presentation_info,
       const base::Optional<PresentationError>& error);
-  void OnReceiverConnectionAvailable(
-      const PresentationInfo& presentation_info,
-      blink::mojom::PresentationConnectionPtr /*connection*/,
-      blink::mojom::PresentationConnectionRequest /*connection_request*/)
-      override;
-
-  // Creates ControllerConnectionProxy object |controller_connection_proxy| with
-  // |connection|. Sends mojo interface ptr of |controller_connection_proxy|
-  // and mojo interface request of |controller_connection_proxy|'s
-  // |target_connection_| to PresentationService.
-  // |presentation_info|: |connection|'s id and url;
-  // |connection|: |controller_connection_proxy|'s |source_connection_|. Raw
-  // pointer to Blink connection owning proxy object. It does not take object
-  // ownership.
-  void SetControllerConnection(const PresentationInfo& presentation_info,
-                               blink::WebPresentationConnection* connection);
 
   virtual void ConnectToPresentationServiceIfNeeded();
 

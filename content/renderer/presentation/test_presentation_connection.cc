@@ -4,23 +4,10 @@
 
 #include "content/renderer/presentation/test_presentation_connection.h"
 
-#include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/platform/modules/presentation/WebPresentationConnectionProxy.h"
-#include "third_party/WebKit/public/platform/modules/presentation/WebPresentationController.h"
-
 namespace content {
 
 TestPresentationConnection::TestPresentationConnection() = default;
 
 TestPresentationConnection::~TestPresentationConnection() = default;
-
-void TestPresentationConnection::BindProxy(
-    std::unique_ptr<blink::WebPresentationConnectionProxy> proxy) {
-  proxy_ = std::move(proxy);
-}
-
-blink::WebPresentationConnectionProxy* TestPresentationConnection::proxy() {
-  return proxy_.get();
-}
 
 }  // namespace content

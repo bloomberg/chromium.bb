@@ -4,4 +4,5 @@ include_rules = [
     "+modules/ModulesExport.h",
     "+modules/presentation",
     "+modules/remoteplayback",
+    "+mojo/public",
 ]

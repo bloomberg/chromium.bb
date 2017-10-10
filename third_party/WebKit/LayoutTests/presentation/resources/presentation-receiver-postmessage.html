@@ -18,7 +18,7 @@ var connection = null;
 const pageUrl = 'http://example.com/a.html';
 const id = 'fakeSessionId';
 
-presentationServiceMock.onSetClient = () => {
+presentationServiceMock.onSetReceiver = () => {
   presentationServiceMock.onReceiverConnectionAvailable(
       pageUrl, id, controllerConnectionPtr, receiverConnectionRequest);
 };
