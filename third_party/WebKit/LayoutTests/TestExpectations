@@ -1556,7 +1556,11 @@ crbug.com/654477 [ Mac10.10 Mac10.11 Retina ] http/tests/media/video-buffered-ra
 crbug.com/654477 [ Mac10.10 Mac10.11 Retina ] virtual/mojo-loading/http/tests/media/video-buffered-range-contains-currentTime.html [ Failure ]
 crbug.com/638621 [ Win7 ] http/tests/media/video-buffered-range-contains-currentTime.html [ Failure ]
 crbug.com/638621 [ Win7 ] virtual/mojo-loading/http/tests/media/video-buffered-range-contains-currentTime.html [ Failure ]
+crbug.com/646644 [ Mac10.9 ] http/tests/media/video-buffered-range-contains-currentTime.html [ Failure Timeout ]
+crbug.com/646644 [ Mac10.9 ] virtual/mojo-loading/http/tests/media/video-buffered-range-contains-currentTime.html [ Failure Timeout ]
 
+crbug.com/743068 [ Mac10.9 ] fast/forms/calendar-picker/calendar-picker-appearance-zoom125.html [ Pass Failure ]
+crbug.com/743068 [ Mac10.9 ] fast/forms/calendar-picker/calendar-picker-appearance-zoom200.html [ Pass Failure ]
 
 crbug.com/637930 http/tests/media/video-buffered.html [ Pass Failure ]
 crbug.com/637930 virtual/mojo-loading/http/tests/media/video-buffered.html [ Pass Failure ]
@@ -3021,6 +3025,13 @@ crbug.com/736177 [ Mac10.12 Retina ] tables/mozilla_expected_failures/core/capti
 crbug.com/736177 [ Mac10.12 Retina ] tables/mozilla_expected_failures/core/captions2.html [ Failure Pass ]
 crbug.com/736177 [ Mac10.12 Retina ] virtual/prefer_compositing_to_lcd_text/compositing/overflow/theme-affects-visual-overflow.html [ Failure Pass ]
 crbug.com/736177 [ Mac10.12 Retina ] virtual/scalefactor200/fast/hidpi/static/validation-bubble-appearance-hidpi.html [ Failure Pass ]
+# These tests are failing on Mac-10.9.5 when using no GPU
+crbug.com/736177 [ Mac10.9 ] editing/selection/modify_move/move_left_right_character_in_mixed_bidi.html [ Skip ]
+crbug.com/736177 [ Mac10.9 ] external/wpt/css/css-writing-modes-3/bidi-isolate-override-007.html [ Skip ]
+crbug.com/736177 [ Mac10.9 ] fast/text/international/bidi-LDB-2-formatting-characters.html [ Skip ]
+crbug.com/736177 [ Mac10.9 ] fast/text/international/bidi-neutral-run.html [ Skip ]
+crbug.com/736177 [ Mac10.9 ] http/tests/devtools/elements/bidi-dom-tree.html [ Skip ]
+crbug.com/667560 [ Mac10.9 ] virtual/mojo-loading/http/tests/devtools/elements/bidi-dom-tree.html [ Skip ]
 # fast/css/text-overflow-input.html test is flaky on all Mac platforms
 crbug.com/736177 [ Mac ] fast/css/text-overflow-input.html [ Failure Pass ]
 
