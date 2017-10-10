@@ -53,6 +53,7 @@ void AnnotateDataUse(
     const data_usage::DataUseAnnotator::DataUseConsumerCallback& callback,
     int32_t tab_info) {
   DCHECK(data_use);
+
   data_use->tab_id = tab_info;
   data_use->main_frame_global_request_id =
       data_usage::DataUse::kInvalidMainFrameGlobalRequestID;
@@ -74,7 +75,7 @@ void TabIdAnnotator::Annotate(net::URLRequest* request,
       request->GetUserData(TabIdProvider::kTabIdProviderUserDataKey));
   if (existing_tab_id_provider) {
     existing_tab_id_provider->ProvideTabId(
-        base::Bind(&AnnotateDataUse, base::Passed(&data_use), callback));
+        base::BindOnce(&AnnotateDataUse, base::Passed(&data_use), callback));
     return;
   }
 
@@ -100,10 +101,10 @@ void TabIdAnnotator::Annotate(net::URLRequest* request,
       BrowserThread::GetTaskRunnerForThread(BrowserThread::UI);
   std::unique_ptr<TabIdProvider> tab_id_provider(
       new TabIdProvider(ui_thread_task_runner.get(), FROM_HERE,
-                        base::Bind(&GetTabInfoForRequest, render_process_id,
-                                   render_frame_id, global_request_id)));
+                        base::BindOnce(&GetTabInfoForRequest, render_process_id,
+                                       render_frame_id, global_request_id)));
   tab_id_provider->ProvideTabId(
-      base::Bind(&AnnotateDataUse, base::Passed(&data_use), callback));
+      base::BindOnce(&AnnotateDataUse, base::Passed(&data_use), callback));
 
   request->SetUserData(TabIdProvider::kTabIdProviderUserDataKey,
                        std::move(tab_id_provider));

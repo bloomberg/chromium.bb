@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include "base/callback_forward.h"
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/supports_user_data.h"
@@ -51,13 +51,13 @@ class TabIdProvider : public base::SupportsUserData::Data {
   // |task_runner|.
   TabIdProvider(base::TaskRunner* task_runner,
                 const base::Location& from_here,
-                const base::Callback<int32_t(void)>& tab_id_getter);
+                base::OnceCallback<int32_t(void)> tab_id_getter);
 
   ~TabIdProvider() override;
 
   // Calls |callback| with the tab ID, either immediately if it's already
   // available, or later once it becomes available.
-  void ProvideTabId(const base::Callback<void(int32_t)>& callback);
+  void ProvideTabId(base::OnceCallback<void(int32_t)> callback);
 
   base::WeakPtr<TabIdProvider> GetWeakPtr();
 
