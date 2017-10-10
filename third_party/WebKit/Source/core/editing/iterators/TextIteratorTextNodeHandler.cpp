@@ -107,10 +107,12 @@ void TextIteratorTextNodeHandler::HandleTextNodeWithLayoutNG() {
       return;
     }
 
+    const NGOffsetMappingResult& mapping =
+        inline_node->ComputeOffsetMappingIfNeeded();
     const unsigned initial_offset = offset_;
     for (const NGOffsetMappingUnit& unit :
-         inline_node->GetMappingUnitsForDOMOffsetRange(*text_node_, offset_,
-                                                       end_offset_)) {
+         mapping.GetMappingUnitsForDOMOffsetRange(*text_node_, offset_,
+                                                  end_offset_)) {
       const unsigned run_start = std::max(offset_, unit.DOMStart());
       const unsigned run_end = std::min(end_offset_, unit.DOMEnd());
       if (run_start >= run_end ||

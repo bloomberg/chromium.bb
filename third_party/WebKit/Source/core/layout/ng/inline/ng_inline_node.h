@@ -28,9 +28,7 @@ using NGInlineItemsBuilder =
     NGInlineItemsBuilderTemplate<EmptyOffsetMappingBuilder>;
 struct NGInlineNodeData;
 class NGLayoutResult;
-class NGMappingUnitRange;
 class NGOffsetMappingResult;
-class NGOffsetMappingUnit;
 
 // Represents an anonymous block box to be laid out, that contains consecutive
 // inline nodes and their descendants.
@@ -83,26 +81,6 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   void CheckConsistency() const;
 
   String ToString() const;
-
-  // ------ Offset Mapping APIs -----
-
-  // Returns the NGOffsetMappingUnit that contains the given offset in the DOM
-  // node. If there are multiple qualifying units, returns the last one.
-  const NGOffsetMappingUnit* GetMappingUnitForDOMOffset(const Node&, unsigned);
-
-  // Returns all NGOffsetMappingUnits whose DOM ranges has non-empty (but
-  // possibly collapsed) intersections with the passed in DOM offset range.
-  // Note that the node may be split and laid out in different NGInlineNodes
-  // when ::first-letter is applied and blockified, in which case only units
-  // from this NGInlineNode are returned.
-  NGMappingUnitRange GetMappingUnitsForDOMOffsetRange(const Node&,
-                                                      unsigned,
-                                                      unsigned);
-
-  // Returns the text content offset corresponding to the given DOM offset.
-  size_t GetTextContentOffset(const Node&, unsigned);
-
-  // TODO(xiaochengh): Add APIs for reverse mapping.
 
  protected:
   // Prepare inline and text content for layout. Must be called before

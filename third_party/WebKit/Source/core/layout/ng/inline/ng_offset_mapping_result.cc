@@ -97,4 +97,12 @@ NGMappingUnitRange NGOffsetMappingResult::GetMappingUnitsForDOMOffsetRange(
   return {result_begin, result_end};
 }
 
+size_t NGOffsetMappingResult::GetTextContentOffset(const Node& node,
+                                                   unsigned offset) const {
+  const NGOffsetMappingUnit* unit = GetMappingUnitForDOMOffset(node, offset);
+  if (!unit)
+    return kNotFound;
+  return unit->ConvertDOMOffsetToTextContent(offset);
+}
+
 }  // namespace blink
