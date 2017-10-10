@@ -227,6 +227,7 @@ crbug.com/721408 http/tests/inspector-protocol/network/request-interception-mock
 crbug.com/721408 http/tests/inspector-protocol/network/request-interception-mock404.js [ Timeout ]
 crbug.com/721408 http/tests/inspector-protocol/network/request-interception-modify-get-to-post.js [ Failure ]
 crbug.com/721408 http/tests/inspector-protocol/network/request-interception-patterns.js [ Failure ]
+crbug.com/721408 http/tests/inspector-protocol/network/request-interception-resource-types.js [ Failure ]
 crbug.com/721408 http/tests/inspector-protocol/network/xhr-interception-auth-fail.js [ Failure ]
 crbug.com/721408 http/tests/inspector-protocol/network/xhr-interception.js [ Timeout ]
 crbug.com/721408 http/tests/inspector-protocol/page/frameScheduledNavigation.js [ Crash ]
