@@ -2522,7 +2522,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   DISALLOW_COPY_AND_ASSIGN(GLES2DecoderImpl);
 };
 
-const GLES2DecoderImpl::CommandInfo GLES2DecoderImpl::command_info[] = {
+constexpr GLES2DecoderImpl::CommandInfo GLES2DecoderImpl::command_info[] = {
 #define GLES2_CMD_OP(name)                                   \
   {                                                          \
     &GLES2DecoderImpl::Handle##name, cmds::name::kArgFlags,  \
