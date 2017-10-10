@@ -90,11 +90,7 @@ template <typename Strategy>
 bool SelectionTemplate<Strategy>::IsValidFor(const Document& document) const {
   if (IsNone())
     return true;
-  if (base_.GetDocument() != document)
-    return false;
-  if (extent_.GetDocument() != document)
-    return false;
-  return !base_.IsOrphan() && !extent_.IsOrphan();
+  return base_.IsValidFor(document) && extent_.IsValidFor(document);
 }
 
 template <typename Strategy>

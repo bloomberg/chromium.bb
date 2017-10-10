@@ -585,9 +585,7 @@ bool VisibleSelectionTemplate<Strategy>::IsValidFor(
     const Document& document) const {
   if (IsNone())
     return true;
-
-  return base_.GetDocument() == &document && !base_.IsOrphan() &&
-         extent_.GetDocument() == &document && !extent_.IsOrphan();
+  return base_.IsValidFor(document) && extent_.IsValidFor(document);
 }
 
 // TODO(yosin) This function breaks the invariant of this class.
