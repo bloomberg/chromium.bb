@@ -11,8 +11,8 @@
 namespace extensions {
 
 ShellExtensionsRendererClient::ShellExtensionsRendererClient()
-    : dispatcher_delegate_(std::make_unique<DispatcherDelegate>()),
-      dispatcher_(std::make_unique<Dispatcher>(dispatcher_delegate_.get())) {}
+    : dispatcher_(std::make_unique<Dispatcher>(
+          std::make_unique<DispatcherDelegate>())) {}
 
 ShellExtensionsRendererClient::~ShellExtensionsRendererClient() {
 }

@@ -148,13 +148,11 @@ void ChromeExtensionsRendererClient::OnExtensionUnloaded(
 
 void ChromeExtensionsRendererClient::RenderThreadStarted() {
   content::RenderThread* thread = content::RenderThread::Get();
-  extension_dispatcher_delegate_.reset(
-      new ChromeExtensionsDispatcherDelegate());
   // ChromeRenderViewTest::SetUp() creates its own ExtensionDispatcher and
   // injects it using SetExtensionDispatcher(). Don't overwrite it.
   if (!extension_dispatcher_) {
-    extension_dispatcher_.reset(
-        new extensions::Dispatcher(extension_dispatcher_delegate_.get()));
+    extension_dispatcher_ = std::make_unique<extensions::Dispatcher>(
+        std::make_unique<ChromeExtensionsDispatcherDelegate>());
   }
   permissions_policy_delegate_.reset(
       new extensions::RendererPermissionsPolicyDelegate(
