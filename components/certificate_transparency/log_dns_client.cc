@@ -4,6 +4,7 @@
 
 #include "components/certificate_transparency/log_dns_client.h"
 
+#include "base/big_endian.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/format_macros.h"
@@ -18,6 +19,7 @@
 #include "base/time/time.h"
 #include "components/base32/base32.h"
 #include "crypto/sha2.h"
+#include "net/base/sys_addrinfo.h"
 #include "net/cert/merkle_audit_proof.h"
 #include "net/dns/dns_client.h"
 #include "net/dns/dns_config_service.h"
@@ -51,6 +53,30 @@ void LogQueryStatus(QueryStatus result) {
 void LogQueryDuration(const base::TimeDelta& duration) {
   UMA_HISTOGRAM_MEDIUM_TIMES("Net.CertificateTransparency.DnsQueryDuration",
                              duration);
+}
+
+// Returns an EDNS option that disables the client subnet extension, as
+// described in https://tools.ietf.org/html/rfc7871. This is to avoid the
+// privacy issues caused by this extension being enabled in recursive resolvers
+// used by this DNS client (see the "Privacy Note" in RFC7871).
+net::OptRecordRdata::Opt OptToDisableClientSubnetExtension() {
+  const uint16_t kClientSubnetExtensionCode = 8;
+  // https://www.iana.org/assignments/address-family-numbers/address-family-numbers.xhtml
+  const uint16_t kIanaAddressFamilyIpV4 = 1;
+
+  char buf[4];
+  base::BigEndianWriter writer(buf, arraysize(buf));
+  // family - address is empty so the value of this is irrelevant, so long as
+  // it's valid (see https://tools.ietf.org/html/rfc7871#section-7.1.2).
+  writer.WriteU16(kIanaAddressFamilyIpV4);
+  // source prefix length - 0 to disable this extension.
+  writer.WriteU8(0);
+  // scope prefix length - must be 0 for queries.
+  writer.WriteU8(0);
+  // no address - don't want a client subnet in the query.
+
+  return net::OptRecordRdata::Opt(kClientSubnetExtensionCode,
+                                  base::StringPiece(buf, arraysize(buf)));
 }
 
 // Parses the DNS response and extracts a single string from the TXT RDATA.
@@ -532,6 +558,11 @@ void LogDnsClient::UpdateDnsConfig() {
   net::NetworkChangeNotifier::GetDnsConfig(&config);
   if (config.IsValid())
     dns_client_->SetConfig(config);
+
+  net::DnsTransactionFactory* factory = dns_client_->GetTransactionFactory();
+  if (factory) {
+    factory->AddEDNSOption(OptToDisableClientSubnetExtension());
+  }
 }
 
 }  // namespace certificate_transparency
