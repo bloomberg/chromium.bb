@@ -343,6 +343,49 @@ TEST_F(LoadingDataCollectorTest, ShouldRecordResponseSubresource) {
       LoadingDataCollector::ShouldRecordResponse(font_request_sub_frame.get()));
 }
 
+TEST_F(LoadingDataCollectorTest, ShouldRecordResourceFromMemoryCache) {
+  // Protocol.
+  EXPECT_TRUE(LoadingDataCollector::ShouldRecordResourceFromMemoryCache(
+      GURL("http://www.google.com/cat.png"), content::RESOURCE_TYPE_IMAGE, ""));
+
+  EXPECT_TRUE(LoadingDataCollector::ShouldRecordResourceFromMemoryCache(
+      GURL("https://www.google.com/cat.png"), content::RESOURCE_TYPE_IMAGE,
+      ""));
+
+  EXPECT_FALSE(LoadingDataCollector::ShouldRecordResourceFromMemoryCache(
+      GURL("https://www.google.com:666/cat.png"), content::RESOURCE_TYPE_IMAGE,
+      ""));
+
+  EXPECT_FALSE(LoadingDataCollector::ShouldRecordResourceFromMemoryCache(
+      GURL("file://www.google.com/cat.png"), content::RESOURCE_TYPE_IMAGE, ""));
+
+  // ResourceType.
+  EXPECT_FALSE(LoadingDataCollector::ShouldRecordResourceFromMemoryCache(
+      GURL("http://www.google.com/frame.html"),
+      content::RESOURCE_TYPE_SUB_FRAME, ""));
+
+  EXPECT_TRUE(LoadingDataCollector::ShouldRecordResourceFromMemoryCache(
+      GURL("http://www.google.com/comic-sans-ms.woff"),
+      content::RESOURCE_TYPE_FONT_RESOURCE, ""));
+
+  // From MIME Type.
+  EXPECT_TRUE(LoadingDataCollector::ShouldRecordResourceFromMemoryCache(
+      GURL("http://www.google.com/cat.png"), content::RESOURCE_TYPE_PREFETCH,
+      "image/png"));
+
+  EXPECT_FALSE(LoadingDataCollector::ShouldRecordResourceFromMemoryCache(
+      GURL("http://www.google.com/cat.png"), content::RESOURCE_TYPE_PREFETCH,
+      "image/my-wonderful-format"));
+
+  EXPECT_TRUE(LoadingDataCollector::ShouldRecordResourceFromMemoryCache(
+      GURL("http://www.google.com/comic-sans-ms.woff"),
+      content::RESOURCE_TYPE_PREFETCH, "font/woff"));
+
+  EXPECT_FALSE(LoadingDataCollector::ShouldRecordResourceFromMemoryCache(
+      GURL("http://www.google.com/comic-sans-ms.woff"),
+      content::RESOURCE_TYPE_PREFETCH, "font/woff-woff"));
+}
+
 // Single navigation that will be recorded. Will check for duplicate
 // resources and also for number of resources saved.
 TEST_F(LoadingDataCollectorTest, SimpleNavigation) {
