@@ -844,8 +844,19 @@ void GpuProcessTransportFactory::IssueExternalBeginFrame(
     return;
   PerCompositorData* data = it->second.get();
   DCHECK(data);
-  if (data->external_begin_frame_controller)
+  if (data->external_begin_frame_controller) {
     data->external_begin_frame_controller->IssueExternalBeginFrame(args);
+    // Ensure that Display will receive the BeginFrame (as a missed one), even
+    // if it doesn't currently need it. This way, we ensure that
+    // OnDisplayDidFinishFrame will be called for this BeginFrame.
+    data->display->SetNeedsOneBeginFrame();
+  } else {
+    DLOG(WARNING) << "IssueExternalBeginFrame called for compositor without "
+                     "ExternalBeginFrameController";
+    // Still send an ack back to unblock the client.
+    compositor->OnDisplayDidFinishFrame(
+        viz::BeginFrameAck(args.source_id, args.sequence_number, false));
+  }
 }
 
 void GpuProcessTransportFactory::SetOutputIsSecure(ui::Compositor* compositor,

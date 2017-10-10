@@ -452,6 +452,8 @@ scoped_refptr<CompositorVSyncManager> Compositor::vsync_manager() const {
 }
 
 void Compositor::IssueExternalBeginFrame(const viz::BeginFrameArgs& args) {
+  TRACE_EVENT1("ui", "Compositor::IssueExternalBeginFrame", "args",
+               args.AsValue());
   DCHECK(external_begin_frames_enabled_);
   if (context_factory_private_)
     context_factory_private_->IssueExternalBeginFrame(this, args);
@@ -460,7 +462,7 @@ void Compositor::IssueExternalBeginFrame(const viz::BeginFrameArgs& args) {
 void Compositor::SetExternalBeginFrameClient(ExternalBeginFrameClient* client) {
   DCHECK(external_begin_frames_enabled_);
   external_begin_frame_client_ = client;
-  if (needs_external_begin_frames_)
+  if (needs_external_begin_frames_ && external_begin_frame_client_)
     external_begin_frame_client_->OnNeedsExternalBeginFrames(true);
 }
 

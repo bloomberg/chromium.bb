@@ -19,6 +19,10 @@
 #include "headless/lib/browser/headless_web_contents_impl.h"
 #include "headless/public/headless_export.h"
 
+namespace ui {
+class Compositor;
+}  // namespace ui
+
 namespace headless {
 
 class HeadlessBrowserContextImpl;
@@ -82,6 +86,7 @@ class HEADLESS_EXPORT HeadlessBrowserImpl : public HeadlessBrowser,
   void PlatformInitializeWebContents(HeadlessWebContentsImpl* web_contents);
   void PlatformSetWebContentsBounds(HeadlessWebContentsImpl* web_contents,
                                     const gfx::Rect& bounds);
+  ui::Compositor* PlatformGetCompositor(HeadlessWebContentsImpl* web_contents);
 
  protected:
   base::Callback<void(HeadlessBrowser*)> on_start_callback_;

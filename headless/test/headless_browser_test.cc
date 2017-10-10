@@ -138,10 +138,11 @@ HeadlessBrowserTest::HeadlessBrowserTest() {
 }
 
 void HeadlessBrowserTest::SetUp() {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   // Enable GPU usage (i.e., SwiftShader, hardware GL on macOS) in all tests
   // since that's the default configuration of --headless.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kUseGpuInTests);
+  command_line->AppendSwitch(switches::kUseGpuInTests);
+  SetUpCommandLine(command_line);
   BrowserTestBase::SetUp();
 }
 

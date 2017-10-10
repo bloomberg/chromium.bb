@@ -758,5 +758,37 @@ TEST_F(DisplaySchedulerTest, ScheduleBeginFrameDeadline) {
   EXPECT_EQ(++count, scheduler_.scheduler_begin_frame_deadline_count());
 }
 
+TEST_F(DisplaySchedulerTest, SetNeedsOneBeginFrame) {
+  SurfaceId root_surface_id(
+      kArbitraryFrameSinkId,
+      LocalSurfaceId(1, base::UnguessableToken::Create()));
+
+  scheduler_.SetVisible(true);
+  scheduler_.SetNewRootSurface(root_surface_id);
+
+  // Make system idle.
+  AdvanceTimeAndBeginFrameForTest({root_surface_id});
+  SurfaceDamaged(root_surface_id);
+  scheduler_.BeginFrameDeadlineForTest();
+  AdvanceTimeAndBeginFrameForTest({root_surface_id});
+  scheduler_.BeginFrameDeadlineForTest();
+
+  AdvanceTimeAndBeginFrameForTest(std::vector<SurfaceId>());
+  EXPECT_FALSE(scheduler_.inside_begin_frame_deadline_interval());
+
+  // SetNeedsOneBeginFrame should make DisplayScheduler active for just a single
+  // BeginFrame.
+  scheduler_.SetNeedsOneBeginFrame();
+  EXPECT_TRUE(scheduler_.inside_begin_frame_deadline_interval());
+  scheduler_.BeginFrameDeadlineForTest();
+  EXPECT_EQ(BeginFrameAck(last_begin_frame_args_.source_id,
+                          last_begin_frame_args_.sequence_number, false),
+            client_.last_begin_frame_ack());
+
+  // System should be idle again.
+  AdvanceTimeAndBeginFrameForTest(std::vector<SurfaceId>());
+  EXPECT_FALSE(scheduler_.inside_begin_frame_deadline_interval());
+}
+
 }  // namespace
 }  // namespace viz

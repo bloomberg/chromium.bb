@@ -49,6 +49,7 @@ class VIZ_SERVICE_EXPORT DisplayScheduler : public BeginFrameObserverBase,
   void SetVisible(bool visible);
   void SetRootSurfaceResourcesLocked(bool locked);
   void ForceImmediateSwapIfPossible();
+  void SetNeedsOneBeginFrame();
   virtual void DisplayResized();
   virtual void SetNewRootSurface(const SurfaceId& root_surface_id);
   virtual void ProcessSurfaceDamage(const SurfaceId& surface_id,
@@ -84,6 +85,7 @@ class VIZ_SERVICE_EXPORT DisplayScheduler : public BeginFrameObserverBase,
   bool AttemptDrawAndSwap();
   void OnBeginFrameDeadline();
   bool DrawAndSwap();
+  void MaybeStartObservingBeginFrames();
   void StartObservingBeginFrames();
   void StopObservingBeginFrames();
   bool ShouldDraw();
