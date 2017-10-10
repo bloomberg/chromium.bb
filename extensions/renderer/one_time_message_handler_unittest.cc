@@ -15,7 +15,7 @@
 #include "extensions/renderer/bindings/api_request_handler.h"
 #include "extensions/renderer/message_target.h"
 #include "extensions/renderer/native_extension_bindings_system.h"
-#include "extensions/renderer/native_extension_bindings_system_unittest.h"
+#include "extensions/renderer/native_extension_bindings_system_test_base.h"
 #include "extensions/renderer/script_context.h"
 #include "gin/data_object_builder.h"
 #include "ipc/ipc_message.h"
