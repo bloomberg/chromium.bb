@@ -24,18 +24,16 @@
 
 namespace leveldb_proto {
 
-// static
-bool LevelDB::Destroy(const base::FilePath& database_dir) {
-  const leveldb::Status s =
-      leveldb::DestroyDB(database_dir.AsUTF8Unsafe(), leveldb_env::Options());
-  return s.ok();
-}
-
-LevelDB::LevelDB(const char* client_name) : open_histogram_(nullptr) {
+LevelDB::LevelDB(const char* client_name)
+    : open_histogram_(nullptr), destroy_histogram_(nullptr) {
   // Used in lieu of UMA_HISTOGRAM_ENUMERATION because the histogram name is
   // not a constant.
   open_histogram_ = base::LinearHistogram::FactoryGet(
       std::string("LevelDB.Open.") + client_name, 1,
+      leveldb_env::LEVELDB_STATUS_MAX, leveldb_env::LEVELDB_STATUS_MAX + 1,
+      base::Histogram::kUmaTargetedHistogramFlag);
+  destroy_histogram_ = base::LinearHistogram::FactoryGet(
+      std::string("LevelDB.Destroy.") + client_name, 1,
       leveldb_env::LEVELDB_STATUS_MAX, leveldb_env::LEVELDB_STATUS_MAX + 1,
       base::Histogram::kUmaTargetedHistogramFlag);
 }
@@ -47,22 +45,25 @@ LevelDB::~LevelDB() {
 bool LevelDB::Init(const base::FilePath& database_dir,
                    const leveldb_env::Options& options) {
   DFAKE_SCOPED_LOCK(thread_checker_);
-  leveldb_env::Options open_options = options;
+  database_dir_ = database_dir;
+  open_options_ = options;
 
   if (database_dir.empty()) {
     env_.reset(leveldb_chrome::NewMemEnv(leveldb::Env::Default()));
-    open_options.env = env_.get();
+    open_options_.env = env_.get();
   }
 
-  std::string path = database_dir.AsUTF8Unsafe();
+  const std::string path = database_dir.AsUTF8Unsafe();
 
-  leveldb::Status status = leveldb_env::OpenDB(open_options, path, &db_);
+  leveldb::Status status = leveldb_env::OpenDB(open_options_, path, &db_);
   if (open_histogram_)
     open_histogram_->Add(leveldb_env::GetLevelDBStatusUMAValue(status));
   if (status.IsCorruption()) {
-    // TODO(cmumford): Log this corruption and use leveldb::DestroyDB.
-    base::DeleteFile(database_dir, true);
-    status = leveldb_env::OpenDB(open_options, path, &db_);
+    if (!Destroy())
+      return false;
+    status = leveldb_env::OpenDB(open_options_, path, &db_);
+    // Intentionally do not log the status of the second open. Doing so destroys
+    // the meaning of corruptions/open which is an important statistic.
   }
 
   if (status.ok())
@@ -147,6 +148,17 @@ bool LevelDB::Get(const std::string& key, bool* found, std::string* entry) {
   DLOG(WARNING) << "Failed loading leveldb_proto entry with key \"" << key
                 << "\": " << status.ToString();
   return false;
+}
+
+bool LevelDB::Destroy() {
+  db_.reset();
+  const std::string path = database_dir_.AsUTF8Unsafe();
+  const leveldb::Status s = leveldb::DestroyDB(path, open_options_);
+  if (!s.ok())
+    LOG(WARNING) << "Unable to destroy " << path << ": " << s.ToString();
+  if (destroy_histogram_)
+    destroy_histogram_->Add(leveldb_env::GetLevelDBStatusUMAValue(s));
+  return s.ok();
 }
 
 }  // namespace leveldb_proto

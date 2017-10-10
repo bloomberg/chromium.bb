@@ -52,6 +52,7 @@ class MockDB : public LevelDB {
   MOCK_METHOD2(Save, bool(const KeyValueVector&, const KeyVector&));
   MOCK_METHOD1(Load, bool(std::vector<std::string>*));
   MOCK_METHOD3(Get, bool(const std::string&, bool*, std::string*));
+  MOCK_METHOD0(Destroy, bool());
 
   MockDB() : LevelDB(kTestLevelDBClientName) {}
 };
@@ -195,6 +196,48 @@ TEST_F(ProtoDatabaseImplTest, TestDBInitFailure) {
   db_->InitWithDatabase(
       base::WrapUnique(mock_db), path, options,
       base::Bind(&MockDatabaseCaller::InitCallback, base::Unretained(&caller)));
+
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(ProtoDatabaseImplTest, TestDBDestroySuccess) {
+  base::FilePath path(FILE_PATH_LITERAL("/fake/path"));
+
+  MockDB* mock_db = new MockDB();
+  EXPECT_CALL(*mock_db, Init(path, options_)).WillOnce(Return(true));
+
+  MockDatabaseCaller caller;
+  EXPECT_CALL(caller, InitCallback(true));
+
+  db_->InitWithDatabase(
+      base::WrapUnique(mock_db), path, CreateSimpleOptions(),
+      base::Bind(&MockDatabaseCaller::InitCallback, base::Unretained(&caller)));
+
+  EXPECT_CALL(caller, DestroyCallback(true));
+  db_->Destroy(base::Bind(&MockDatabaseCaller::DestroyCallback,
+                          base::Unretained(&caller)));
+  EXPECT_CALL(*mock_db, Destroy()).WillOnce(Return(true));
+
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(ProtoDatabaseImplTest, TestDBDestroyFailure) {
+  base::FilePath path(FILE_PATH_LITERAL("/fake/path"));
+
+  MockDB* mock_db = new MockDB();
+  EXPECT_CALL(*mock_db, Init(path, options_)).WillOnce(Return(true));
+
+  MockDatabaseCaller caller;
+  EXPECT_CALL(caller, InitCallback(true));
+
+  db_->InitWithDatabase(
+      base::WrapUnique(mock_db), path, CreateSimpleOptions(),
+      base::Bind(&MockDatabaseCaller::InitCallback, base::Unretained(&caller)));
+
+  EXPECT_CALL(caller, DestroyCallback(false));
+  db_->Destroy(base::Bind(&MockDatabaseCaller::DestroyCallback,
+                          base::Unretained(&caller)));
+  EXPECT_CALL(*mock_db, Destroy()).WillOnce(Return(false));
 
   base::RunLoop().RunUntilIdle();
 }
@@ -587,6 +630,9 @@ TEST(ProtoDatabaseImplThreadingTest, TestDBDestroy) {
   db_thread.task_runner()->PostTaskAndReply(
       FROM_HERE, base::Bind(base::DoNothing), run_loop.QuitClosure());
   run_loop.Run();
+
+  // Verify the db is actually destroyed.
+  EXPECT_FALSE(base::PathExists(temp_dir.GetPath()));
 }
 
 // Test that the LevelDB properly saves entries and that load returns the saved
@@ -673,6 +719,42 @@ TEST(ProtoDatabaseImplLevelDBTest, TestMemoryDatabase) {
 
   ASSERT_TRUE(db->Load(&second_load_entries));
   EXPECT_EQ(1u, second_load_entries.size());
+}
+
+TEST(ProtoDatabaseImplLevelDBTest, TestCorruptDBReset) {
+  ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  // Create a database, write some data, and then close the db.
+  {
+    LevelDB db(kTestLevelDBClientName);
+    ASSERT_TRUE(db.Init(temp_dir.GetPath(), CreateSimpleOptions()));
+
+    base::StringPairs pairs_to_save;
+    pairs_to_save.push_back(std::make_pair("TheKey", "KeyValue"));
+    std::vector<std::string> keys_to_remove;
+    ASSERT_TRUE(db.Save(pairs_to_save, keys_to_remove));
+  }
+
+  // Corrupt the database.
+  // TODO(cmumford): Create function in Chrome leveldb code to corrupt a db.
+  base::File current(temp_dir.GetPath().AppendASCII("CURRENT"),
+                     base::File::FLAG_WRITE | base::File::FLAG_OPEN_TRUNCATED);
+  const char kString[] = "StringWithoutEOL";
+  current.Write(0, kString, sizeof(kString));
+  current.Close();
+
+  // Open the corrupt database which should succeed, but will destroy the
+  // existing corrupt database.
+  LevelDB db(kTestLevelDBClientName);
+  leveldb_env::Options options = CreateSimpleOptions();
+  options.paranoid_checks = true;
+  ASSERT_TRUE(db.Init(temp_dir.GetPath(), options));
+  bool found = false;
+  std::string value;
+  ASSERT_TRUE(db.Get("TheKey", &found, &value));
+  ASSERT_EQ("", value);
+  ASSERT_FALSE(found);
 }
 
 }  // namespace leveldb_proto
