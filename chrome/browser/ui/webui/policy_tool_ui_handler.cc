@@ -56,7 +56,7 @@ void PolicyToolUIHandler::OnJavascriptDisallowed() {
 
 base::FilePath PolicyToolUIHandler::GetSessionPath(
     const base::FilePath::StringType& name) const {
-  return sessions_dir_.Append(name).AddExtension(FILE_PATH_LITERAL("json"));
+  return sessions_dir_.Append(name).AddExtension(kPolicyToolSessionExtension);
 }
 
 base::ListValue PolicyToolUIHandler::GetSessionsList() {
