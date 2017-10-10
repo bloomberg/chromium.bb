@@ -4,12 +4,15 @@
 
 #include "net/cert/internal/ocsp.h"
 
+#include "base/base64.h"
 #include "base/logging.h"
+#include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "net/cert/internal/test_helpers.h"
 #include "net/der/encode_values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/boringssl/src/include/openssl/pool.h"
+#include "url/gurl.h"
 
 namespace net {
 
@@ -292,6 +295,76 @@ TEST(OCSPDateTest, VerifyTimeMinusAgeFromBeforeWindowsEpoch) {
 #else
   EXPECT_TRUE(CheckOCSPDateValid(response, verify_time, kOCSPAgeOneWeek));
 #endif
+}
+
+struct GetURLTestParams {
+  const char* responder_url;
+  int index_start_data;
+  int index_end_data;
+};
+
+const GetURLTestParams kGetURLTestParams[] = {
+    {"http://www.example.com/", 23, -1},
+    {"http://www.example.com/path/", 28, -1},
+    {"http://www.example.com/path", 28, -1},
+    // The data will be appended to the path (before the ?query).
+    {"http://www.example.com/path?query", 28, -7},
+    {"http://user:pass@www.example.com/path?query", 38, -7},
+};
+
+class CreateOCSPGetURLTest : public ::testing::TestWithParam<GetURLTestParams> {
+};
+
+INSTANTIATE_TEST_CASE_P(,
+                        CreateOCSPGetURLTest,
+                        ::testing::ValuesIn(kGetURLTestParams));
+
+TEST_P(CreateOCSPGetURLTest, Basic) {
+  std::string ca_data;
+  std::string cert_data;
+  std::string request_data;
+  const PemBlockMapping mappings[] = {
+      {"CA CERTIFICATE", &ca_data},
+      {"CERTIFICATE", &cert_data},
+      {"OCSP REQUEST", &request_data},
+  };
+
+  // Load one of the test files. (Doesn't really matter which one as
+  // constructing the DER is tested elsewhere).
+  ASSERT_TRUE(
+      ReadTestDataFromPemFile(GetFilePath("good_response.pem"), mappings));
+
+  scoped_refptr<ParsedCertificate> cert = ParseCertificate(cert_data);
+  ASSERT_TRUE(cert);
+
+  scoped_refptr<ParsedCertificate> issuer = ParseCertificate(ca_data);
+  ASSERT_TRUE(issuer);
+
+  // Try using a URL that doesn't end with a slash.
+  GURL url = CreateOCSPGetURL(cert.get(), issuer.get(),
+                              GURL(GetParam().responder_url));
+
+  // Try to extract the encoded data and compare against |request_data|.
+  //
+  // A known answer output test would be better as this just reverses the logic
+  // from the implementaiton file.
+  int begin_index = GetParam().index_start_data;
+  int end_index = GetParam().index_end_data;
+  if (end_index < 0)
+    end_index += url.spec().size();
+
+  std::string b64 = url.spec().substr(begin_index, end_index - begin_index + 1);
+
+  // Hex un-escape the data.
+  base::ReplaceSubstringsAfterOffset(&b64, 0, "%2B", "+");
+  base::ReplaceSubstringsAfterOffset(&b64, 0, "%2F", "/");
+  base::ReplaceSubstringsAfterOffset(&b64, 0, "%3D", "=");
+
+  // Base64 decode the data.
+  std::string decoded;
+  ASSERT_TRUE(base::Base64Decode(b64, &decoded));
+
+  EXPECT_EQ(request_data, decoded);
 }
 
 }  // namespace

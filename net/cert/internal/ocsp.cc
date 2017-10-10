@@ -6,6 +6,8 @@
 
 #include <algorithm>
 
+#include "base/base64.h"
+#include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "net/cert/asn1_util.h"
 #include "net/cert/internal/cert_errors.h"
@@ -19,6 +21,7 @@
 #include "third_party/boringssl/src/include/openssl/digest.h"
 #include "third_party/boringssl/src/include/openssl/mem.h"
 #include "third_party/boringssl/src/include/openssl/sha.h"
+#include "url/gurl.h"
 
 namespace net {
 
@@ -921,6 +924,56 @@ bool CreateOCSPRequest(const ParsedCertificate* cert,
 
   request_der->assign(result_bytes, result_bytes + result_bytes_length);
   return true;
+}
+
+// From RFC 2560 section A.1.1:
+//
+//    An OCSP request using the GET method is constructed as follows:
+//
+//    GET {url}/{url-encoding of base-64 encoding of the DER encoding of
+//    the OCSPRequest}
+GURL CreateOCSPGetURL(const ParsedCertificate* cert,
+                      const ParsedCertificate* issuer,
+                      const GURL& ocsp_responder_url) {
+  std::vector<uint8_t> ocsp_request_der;
+  if (!CreateOCSPRequest(cert, issuer, &ocsp_request_der)) {
+    // Unexpected (means BoringSSL failed an operation).
+    return GURL();
+  }
+
+  // Base64 encode the request data.
+  std::string b64_encoded;
+  base::Base64Encode(
+      base::StringPiece(reinterpret_cast<const char*>(ocsp_request_der.data()),
+                        ocsp_request_der.size()),
+      &b64_encoded);
+
+  // In theory +, /, and = are valid in paths and don't need to be escaped.
+  // However from the example in RFC 5019 section 5 it is clear that the intent
+  // is to escape non-alphanumeric characters (the example conclusively escapes
+  // '/' and '=', but doesn't clarify '+').
+  base::ReplaceSubstringsAfterOffset(&b64_encoded, 0, "+", "%2B");
+  base::ReplaceSubstringsAfterOffset(&b64_encoded, 0, "/", "%2F");
+  base::ReplaceSubstringsAfterOffset(&b64_encoded, 0, "=", "%3D");
+
+  // RFC 2560 and RFC 5019 are vague on what is intended for URL concatenation.
+  //
+  //   * If the path doesn't end in a slash, is one implicitly added?
+  //   * Is a straight up string concatenation expected, or only a concatenation
+  //     to the path?
+  //
+  // This code contenates the data to the path portion of the URL, and leaves
+  // the other URL components unmodified.
+  //
+  // TODO(eroman): Confirm whether OCSP responders use query parameters.
+  std::string path = ocsp_responder_url.path();
+  if (!base::StringPiece(path).ends_with("/"))
+    path += "/";
+  path += b64_encoded;
+
+  GURL::Replacements replacements;
+  replacements.SetPath(path.data(), url::Component(0, path.size()));
+  return ocsp_responder_url.ReplaceComponents(replacements);
 }
 
 }  // namespace net

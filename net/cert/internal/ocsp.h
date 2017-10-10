@@ -20,6 +20,8 @@
 #include "net/der/parser.h"
 #include "net/der/tag.h"
 
+class GURL;
+
 namespace base {
 class Time;
 class TimeDelta;
@@ -308,6 +310,11 @@ NET_EXPORT_PRIVATE bool CheckOCSPDateValid(const OCSPSingleResponse& response,
 NET_EXPORT bool CreateOCSPRequest(const ParsedCertificate* cert,
                                   const ParsedCertificate* issuer,
                                   std::vector<uint8_t>* request_der);
+
+// Creates a URL to issue a GET request for OCSP information for |cert|.
+NET_EXPORT GURL CreateOCSPGetURL(const ParsedCertificate* cert,
+                                 const ParsedCertificate* issuer,
+                                 const GURL& ocsp_responder_url);
 
 }  // namespace net
 
