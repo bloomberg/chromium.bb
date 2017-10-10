@@ -93,7 +93,8 @@ class PrefetchDownloaderImpl : public PrefetchDownloader {
       DownloadServiceStatus::INITIALIZING;
 
   // Flag to indicate that the download cleanup can proceed.
-  bool can_do_download_cleanup_ = false;
+  bool cleanup_downloads_when_service_starts_ = false;
+  bool did_download_cleanup_ = false;
 
   std::set<std::string> outstanding_download_ids_;
   std::map<std::string, std::pair<base::FilePath, int64_t>> success_downloads_;
