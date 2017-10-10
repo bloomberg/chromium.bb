@@ -24,7 +24,7 @@
  *
  */
 
-#include "core/html/HTMLTextAreaElement.h"
+#include "core/html/forms/HTMLTextAreaElement.h"
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/CSSValueKeywords.h"
@@ -156,10 +156,11 @@ void HTMLTextAreaElement::ParseAttribute(
       rows = kDefaultRows;
     if (rows_ != rows) {
       rows_ = rows;
-      if (GetLayoutObject())
+      if (GetLayoutObject()) {
         GetLayoutObject()
             ->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
                 LayoutInvalidationReason::kAttributeChanged);
+      }
     }
   } else if (name == colsAttr) {
     unsigned cols = 0;
@@ -168,10 +169,11 @@ void HTMLTextAreaElement::ParseAttribute(
       cols = kDefaultCols;
     if (cols_ != cols) {
       cols_ = cols;
-      if (LayoutObject* layout_object = this->GetLayoutObject())
+      if (LayoutObject* layout_object = this->GetLayoutObject()) {
         layout_object
             ->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
                 LayoutInvalidationReason::kAttributeChanged);
+      }
     }
   } else if (name == wrapAttr) {
     // The virtual/physical values were a Netscape extension of HTML 3.0, now
@@ -188,10 +190,11 @@ void HTMLTextAreaElement::ParseAttribute(
       wrap = kSoftWrap;
     if (wrap != wrap_) {
       wrap_ = wrap;
-      if (LayoutObject* layout_object = this->GetLayoutObject())
+      if (LayoutObject* layout_object = this->GetLayoutObject()) {
         layout_object
             ->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
                 LayoutInvalidationReason::kAttributeChanged);
+      }
     }
   } else if (name == accesskeyAttr) {
     // ignore for the moment
@@ -495,13 +498,15 @@ String HTMLTextAreaElement::validationMessage() const {
   if (ValueMissing())
     return GetLocale().QueryString(WebLocalizedString::kValidationValueMissing);
 
-  if (TooLong())
+  if (TooLong()) {
     return GetLocale().ValidationMessageTooLongText(value().length(),
                                                     maxLength());
+  }
 
-  if (TooShort())
+  if (TooShort()) {
     return GetLocale().ValidationMessageTooShortText(value().length(),
                                                      minLength());
+  }
 
   return String();
 }

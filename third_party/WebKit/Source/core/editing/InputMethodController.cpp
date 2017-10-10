@@ -45,7 +45,7 @@
 #include "core/events/CompositionEvent.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLInputElement.h"
-#include "core/html/HTMLTextAreaElement.h"
+#include "core/html/forms/HTMLTextAreaElement.h"
 #include "core/input/EventHandler.h"
 #include "core/input_mode_names.h"
 #include "core/input_type_names.h"

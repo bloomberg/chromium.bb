@@ -22,7 +22,7 @@
 
 #include "core/layout/LayoutTextControlMultiLine.h"
 
-#include "core/html/HTMLTextAreaElement.h"
+#include "core/html/forms/HTMLTextAreaElement.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutTheme.h"
 
