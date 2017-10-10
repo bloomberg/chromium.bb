@@ -12,9 +12,9 @@
 #include "build/build_config.h"
 #include "chrome/browser/profiling_host/background_profiling_triggers.h"
 #include "chrome/common/chrome_features.h"
-#include "chrome/common/profiling/memlog.mojom.h"
-#include "chrome/common/profiling/memlog_client.h"
-#include "chrome/common/profiling/memlog_client.mojom.h"
+#include "chrome/common/profiling/profiling_client.h"
+#include "chrome/common/profiling/profiling_client.mojom.h"
+#include "chrome/common/profiling/profiling_service.mojom.h"
 #include "content/public/browser/browser_child_process_observer.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/notification_observer.h"
@@ -126,18 +126,9 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
   // Starts the profiling process.
   void LaunchAsService();
 
-  // Sends the receiving end of the data pipe to the profiling service.
-  //
-  // This takes two MemlogClients. One is for the browser (us) to use to
-  // communicate with the client, the other is for sending to the profiling
-  // process for it to communicate with the client.
-  void SendPipeToProfilingService(
-      profiling::mojom::MemlogClientPtr client_for_browser,
-      profiling::mojom::MemlogClientPtr client_for_profiling,
-      base::ProcessId pid);
-  // Sends the sending end of the data pipe to the client process.
-  void SendPipeToClientProcess(profiling::mojom::MemlogClientPtr memlog_client,
-                               mojo::ScopedHandle handle);
+  // Sends the end of the data pipe to the profiling service.
+  void AddClientToProfilingService(profiling::mojom::ProfilingClientPtr client,
+                                   base::ProcessId pid);
 
   void GetOutputFileOnBlockingThread(base::ProcessId pid,
                                      base::FilePath dest,
@@ -162,7 +153,7 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
 
   content::NotificationRegistrar registrar_;
   std::unique_ptr<service_manager::Connector> connector_;
-  mojom::MemlogPtr memlog_;
+  mojom::ProfilingServicePtr profiling_service_;
 
   // Whether or not the host is registered to the |registrar_|.
   bool is_registered_;

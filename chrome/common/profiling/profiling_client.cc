@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/profiling/memlog_client.h"
+#include "chrome/common/profiling/profiling_client.h"
 
 #include "base/files/platform_file.h"
 #include "chrome/common/profiling/memlog_allocator_shim.h"
@@ -15,9 +15,9 @@
 
 namespace profiling {
 
-MemlogClient::MemlogClient() = default;
+ProfilingClient::ProfilingClient() : binding_(this) {}
 
-MemlogClient::~MemlogClient() {
+ProfilingClient::~ProfilingClient() {
   StopAllocatorShimDangerous();
 
   // The allocator shim cannot be synchronously, consistently stopped. We leak
@@ -27,24 +27,24 @@ MemlogClient::~MemlogClient() {
   memlog_sender_pipe_.release();
 }
 
-void MemlogClient::OnServiceManagerConnected(
+void ProfilingClient::OnServiceManagerConnected(
     content::ServiceManagerConnection* connection) {
   std::unique_ptr<service_manager::BinderRegistry> registry(
       new service_manager::BinderRegistry);
-  registry->AddInterface(base::Bind(&profiling::MemlogClient::BindToInterface,
-                                    base::Unretained(this)));
+  registry->AddInterface(base::Bind(
+      &profiling::ProfilingClient::BindToInterface, base::Unretained(this)));
   connection->AddConnectionFilter(
       base::MakeUnique<content::SimpleConnectionFilter>(std::move(registry)));
 }
 
-void MemlogClient::BindToInterface(mojom::MemlogClientRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void ProfilingClient::BindToInterface(mojom::ProfilingClientRequest request) {
+  binding_.Bind(std::move(request));
 }
 
-void MemlogClient::StartProfiling(mojo::ScopedHandle sender_pipe) {
+void ProfilingClient::StartProfiling(mojo::ScopedHandle memlog_sender_pipe) {
   base::PlatformFile platform_file;
-  CHECK_EQ(MOJO_RESULT_OK,
-           mojo::UnwrapPlatformFile(std::move(sender_pipe), &platform_file));
+  CHECK_EQ(MOJO_RESULT_OK, mojo::UnwrapPlatformFile(
+                               std::move(memlog_sender_pipe), &platform_file));
 
   base::ScopedPlatformFile scoped_platform_file(platform_file);
   memlog_sender_pipe_.reset(
@@ -57,7 +57,7 @@ void MemlogClient::StartProfiling(mojo::ScopedHandle sender_pipe) {
   InitAllocatorShim(memlog_sender_pipe_.get());
 }
 
-void MemlogClient::FlushPipe(uint32_t barrier_id) {
+void ProfilingClient::FlushMemlogPipe(uint32_t barrier_id) {
   AllocatorShimFlushPipe(barrier_id);
 }
 

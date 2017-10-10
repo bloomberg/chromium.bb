@@ -17,7 +17,7 @@
           "extensions::mojom::RemovableStorageWriter",
           "extensions::mojom::WiFiCredentialsGetter",
           "payments::mojom::PaymentManifestParser",
-          "profiling::mojom::MemlogClient",
+          "profiling::mojom::ProfilingClient",
           "proxy_resolver::mojom::ProxyResolverFactory",
           "safe_json::mojom::SafeJsonParser"
         ]

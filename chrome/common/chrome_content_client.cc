@@ -33,7 +33,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/pepper_flash.h"
-#include "chrome/common/profiling/memlog_client.h"
+#include "chrome/common/profiling/profiling_client.h"
 #include "chrome/common/secure_origin_whitelist.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/common_resources.h"
@@ -738,7 +738,7 @@ media::MediaDrmBridgeClient* ChromeContentClient::GetMediaDrmBridgeClient() {
 
 void ChromeContentClient::OnServiceManagerConnected(
     content::ServiceManagerConnection* connection) {
-  static base::LazyInstance<profiling::MemlogClient>::Leaky memlog_client =
-      LAZY_INSTANCE_INITIALIZER;
-  memlog_client.Get().OnServiceManagerConnected(connection);
+  static base::LazyInstance<profiling::ProfilingClient>::Leaky
+      profiling_client = LAZY_INSTANCE_INITIALIZER;
+  profiling_client.Get().OnServiceManagerConnected(connection);
 }

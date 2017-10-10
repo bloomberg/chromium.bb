@@ -21,8 +21,6 @@ static_library("profiling") {
     "json_exporter.h",
     "memlog_connection_manager.cc",
     "memlog_connection_manager.h",
-    "memlog_impl.cc",
-    "memlog_impl.h",
     "memlog_receiver.h",
     "memlog_receiver_pipe.cc",
     "memlog_receiver_pipe.h",

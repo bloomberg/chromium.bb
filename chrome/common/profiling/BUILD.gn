@@ -9,14 +9,14 @@ static_library("profiling") {
   sources = [
     "memlog_allocator_shim.cc",
     "memlog_allocator_shim.h",
-    "memlog_client.cc",
-    "memlog_client.h",
     "memlog_sender_pipe.h",
     "memlog_sender_pipe_posix.cc",
     "memlog_sender_pipe_posix.h",
     "memlog_sender_pipe_win.cc",
     "memlog_sender_pipe_win.h",
     "memlog_stream.h",
+    "profiling_client.cc",
+    "profiling_client.h",
     "profiling_constants.cc",
     "profiling_constants.h",
   ]
@@ -37,8 +37,8 @@ static_library("profiling") {
 mojom("interfaces") {
   sources = [
     "constants.mojom",
-    "memlog.mojom",
-    "memlog_client.mojom",
+    "profiling_client.mojom",
+    "profiling_service.mojom",
   ]
   deps = [
     "//mojo/common:common_custom_types",

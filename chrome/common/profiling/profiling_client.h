@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_PROFILING_MEMLOG_CLIENT_H_
-#define CHROME_COMMON_PROFILING_MEMLOG_CLIENT_H_
+#ifndef CHROME_COMMON_PROFILING_PROFILING_CLIENT_H_
+#define CHROME_COMMON_PROFILING_PROFILING_CLIENT_H_
 
-#include "chrome/common/profiling/memlog_client.mojom.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "chrome/common/profiling/profiling_client.mojom.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/handle.h"
 
 namespace content {
@@ -22,23 +22,25 @@ class MemlogSenderPipe;
 // It is also possible to use the MemlogClient to begin profiling the current
 // process without connecting to the service manager interface, if the caller
 // has a |sender_pipe| to pass to StartProfiling.
-class MemlogClient : public mojom::MemlogClient {
+class ProfilingClient : public mojom::ProfilingClient {
  public:
-  MemlogClient();
-  ~MemlogClient() override;
+  ProfilingClient();
+  ~ProfilingClient() override;
 
   // mojom::MemlogClient overrides:
-  void StartProfiling(mojo::ScopedHandle sender_pipe) override;
-  void FlushPipe(uint32_t barrier_id) override;
+  void StartProfiling(mojo::ScopedHandle memlog_sender_pipe) override;
+  void FlushMemlogPipe(uint32_t barrier_id) override;
 
   void OnServiceManagerConnected(content::ServiceManagerConnection* connection);
-  void BindToInterface(profiling::mojom::MemlogClientRequest request);
+  void BindToInterface(profiling::mojom::ProfilingClientRequest request);
 
  private:
-  mojo::BindingSet<mojom::MemlogClient> bindings_;
+  // The most recent client request is bound and kept alive.
+  mojo::Binding<mojom::ProfilingClient> binding_;
+
   std::unique_ptr<MemlogSenderPipe> memlog_sender_pipe_;
 };
 
 }  // namespace profiling
 
-#endif  // CHROME_COMMON_PROFILING_MEMLOG_CLIENT_H_
+#endif  // CHROME_COMMON_PROFILING_PROFILING_CLIENT_H_
