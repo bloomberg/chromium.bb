@@ -271,9 +271,9 @@ int drmModeAddFB(int fd, uint32_t width, uint32_t height, uint8_t depth,
 }
 
 int drmModeAddFB2WithModifiers(int fd, uint32_t width, uint32_t height,
-                               uint32_t pixel_format, uint32_t bo_handles[4],
-                               uint32_t pitches[4], uint32_t offsets[4],
-                               uint64_t modifier[4], uint32_t *buf_id, uint32_t flags)
+                               uint32_t pixel_format, const uint32_t bo_handles[4],
+                               const uint32_t pitches[4], const uint32_t offsets[4],
+                               const uint64_t modifier[4], uint32_t *buf_id, uint32_t flags)
 {
 	struct drm_mode_fb_cmd2 f;
 	int ret;
@@ -297,8 +297,8 @@ int drmModeAddFB2WithModifiers(int fd, uint32_t width, uint32_t height,
 }
 
 int drmModeAddFB2(int fd, uint32_t width, uint32_t height,
-                  uint32_t pixel_format, uint32_t bo_handles[4],
-                  uint32_t pitches[4], uint32_t offsets[4],
+                  uint32_t pixel_format, const uint32_t bo_handles[4],
+                  const uint32_t pitches[4], const uint32_t offsets[4],
                   uint32_t *buf_id, uint32_t flags)
 {
 	return drmModeAddFB2WithModifiers(fd, width, height,

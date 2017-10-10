@@ -369,15 +369,16 @@ extern int drmModeAddFB(int fd, uint32_t width, uint32_t height, uint8_t depth,
 			uint32_t *buf_id);
 /* ...with a specific pixel format */
 extern int drmModeAddFB2(int fd, uint32_t width, uint32_t height,
-			 uint32_t pixel_format, uint32_t bo_handles[4],
-			 uint32_t pitches[4], uint32_t offsets[4],
+			 uint32_t pixel_format, const uint32_t bo_handles[4],
+			 const uint32_t pitches[4], const uint32_t offsets[4],
 			 uint32_t *buf_id, uint32_t flags);
 
 /* ...with format modifiers */
 int drmModeAddFB2WithModifiers(int fd, uint32_t width, uint32_t height,
-			       uint32_t pixel_format, uint32_t bo_handles[4],
-			       uint32_t pitches[4], uint32_t offsets[4],
-			       uint64_t modifier[4], uint32_t *buf_id, uint32_t flags);
+			       uint32_t pixel_format, const uint32_t bo_handles[4],
+			       const uint32_t pitches[4], const uint32_t offsets[4],
+			       const uint64_t modifier[4], uint32_t *buf_id,
+				   uint32_t flags);
 
 /**
  * Destroies the given framebuffer.
