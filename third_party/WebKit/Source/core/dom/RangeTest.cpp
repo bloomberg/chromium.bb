@@ -23,7 +23,7 @@
 #include "core/html/HTMLDocument.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLHtmlElement.h"
-#include "core/html/HTMLTextAreaElement.h"
+#include "core/html/forms/HTMLTextAreaElement.h"
 #include "core/layout/LayoutTestHelper.h"
 #include "platform/heap/Handle.h"
 #include "platform/testing/UnitTestHelpers.h"

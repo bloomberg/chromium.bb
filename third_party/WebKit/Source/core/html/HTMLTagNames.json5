@@ -450,6 +450,7 @@
     {
       name: "textarea",
       interfaceName: "HTMLTextAreaElement",
+      interfaceHeaderDir: "core/html/forms",
     },
     {
       name: "tfoot",
