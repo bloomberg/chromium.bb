@@ -215,7 +215,7 @@ def _validate_tar_file(tar, prefix):
   return all(map(_validate, tar.getmembers()))
 
 def _downloader_worker_thread(thread_num, q, force, base_url,
-                              gsutil, out_q, ret_codes, extract,
+                              gsutil, out_q, ret_codes, verbose, extract,
                               delete=True):
   while True:
     input_sha1_sum, output_filename = q.get()
@@ -341,7 +341,7 @@ class PrinterThread(threading.Thread):
 
 def download_from_google_storage(
     input_filename, base_url, gsutil, num_threads, directory, recursive,
-    force, output, ignore_errors, sha1_file, auto_platform, extract):
+    force, output, ignore_errors, sha1_file, verbose, auto_platform, extract):
   # Start up all the worker threads.
   all_threads = []
   download_start = time.time()
@@ -353,7 +353,7 @@ def download_from_google_storage(
     t = threading.Thread(
         target=_downloader_worker_thread,
         args=[thread_num, work_queue, force, base_url,
-              gsutil, stdout_queue, ret_codes, extract])
+              gsutil, stdout_queue, ret_codes, verbose, extract])
     t.daemon = True
     t.start()
     all_threads.append(t)
@@ -538,7 +538,7 @@ def main(args):
   return download_from_google_storage(
       input_filename, base_url, gsutil, options.num_threads, options.directory,
       options.recursive, options.force, options.output, options.ignore_errors,
-      options.sha1_file, options.auto_platform,
+      options.sha1_file, options.verbose, options.auto_platform,
       options.extract)
 
 
