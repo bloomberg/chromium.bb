@@ -2605,12 +2605,15 @@ pp::VarDictionary PDFiumEngine::TraverseBookmarks(FPDF_BOOKMARK bookmark,
   FPDF_DEST dest = FPDFBookmark_GetDest(doc_, bookmark);
   // Some bookmarks don't have a page to select.
   if (dest) {
-    int page_index = FPDFDest_GetPageIndex(doc_, dest);
-    dict.Set(pp::Var("page"), pp::Var(page_index));
-    PDFiumPage::LinkTarget target;
-    pages_[page_index]->GetPageYTarget(dest, &target);
-    if (target.y_in_pixels)
-      dict.Set(pp::Var("y"), pp::Var(target.y_in_pixels.value()));
+    unsigned long page_index = FPDFDest_GetPageIndex(doc_, dest);
+    if (page_index < pages_.size() &&
+        base::IsValueInRangeForNumericType<int32_t>(page_index)) {
+      dict.Set(pp::Var("page"), pp::Var(static_cast<int32_t>(page_index)));
+      PDFiumPage::LinkTarget target;
+      pages_[page_index]->GetPageYTarget(dest, &target);
+      if (target.y_in_pixels)
+        dict.Set(pp::Var("y"), pp::Var(target.y_in_pixels.value()));
+    }
   } else {
     // Extract URI for bookmarks linking to an external page.
     FPDF_ACTION action = FPDFBookmark_GetAction(bookmark);
