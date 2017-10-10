@@ -14082,6 +14082,7 @@
             "recovery",
             "test"
         ],
+        "important": true,
         "sign_types": [
             "base"
         ],
