@@ -42,6 +42,8 @@
 #include "skia/ext/skia_commit_hash.h"
 #include "third_party/angle/src/common/version.h"
 #include "third_party/skia/include/core/SkMilestone.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/gl/gpu_switching_manager.h"
 
 #if defined(OS_WIN)
@@ -363,6 +365,23 @@ std::unique_ptr<base::ListValue> GpuMemoryBufferInfo() {
   return gpu_memory_buffer_info;
 }
 
+std::unique_ptr<base::ListValue> getDisplayInfo() {
+  auto display_info = base::MakeUnique<base::ListValue>();
+  const std::vector<display::Display> displays =
+      display::Screen::GetScreen()->GetAllDisplays();
+  for (const auto& display : displays) {
+    display_info->Append(NewDescriptionValuePair("Info ", display.ToString()));
+    display_info->Append(NewDescriptionValuePair(
+        "Color space information", display.color_space().ToString()));
+    display_info->Append(NewDescriptionValuePair(
+        "Bits per color component",
+        base::Uint64ToString(display.depth_per_component())));
+    display_info->Append(NewDescriptionValuePair(
+        "Bits per pixel", base::Uint64ToString(display.color_depth())));
+  }
+  return display_info;
+}
+
 // This class receives javascript messages from the renderer.
 // Note that the WebUI infrastructure runs on the UI thread, therefore all of
 // this class's methods are expected to run on the UI thread.
@@ -538,6 +557,7 @@ void GpuMessageHandler::OnGpuInfoUpdate() {
   gpu_info_val->Set("featureStatus", std::move(feature_status));
   gpu_info_val->Set("compositorInfo", CompositorInfo());
   gpu_info_val->Set("gpuMemoryBufferInfo", GpuMemoryBufferInfo());
+  gpu_info_val->Set("displayInfo", getDisplayInfo());
 
   // Send GPU Info to javascript.
   web_ui()->CallJavascriptFunctionUnsafe("browserBridge.onGpuInfoUpdate",

@@ -294,10 +294,8 @@ std::string ColorSpace::ToString() const {
     ss << "[";
     for (size_t i = 0; i < 3; ++i) {
       ss << "[";
-      for (size_t j = 0; j < 3; ++j) {
-        ss << custom_primary_matrix_[3 * i + j];
-        ss << ",";
-      }
+      for (size_t j = 0; j < 3; ++j)
+        ss << custom_primary_matrix_[3 * i + j] << ",";
       ss << "],";
     }
     ss << "]";
@@ -307,10 +305,8 @@ std::string ColorSpace::ToString() const {
   ss << ", transfer:";
   if (transfer_ == TransferID::CUSTOM) {
     ss << "[";
-    for (size_t i = 0; i < 7; ++i) {
-      ss << custom_transfer_params_[i];
-      ss << ",";
-    }
+    for (size_t i = 0; i < 7; ++i)
+      ss << custom_transfer_params_[i] << ",";
     ss << "]";
   } else {
     ss << static_cast<int>(transfer_);
