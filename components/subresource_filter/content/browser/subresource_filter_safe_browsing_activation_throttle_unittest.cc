@@ -139,29 +139,45 @@ struct ActivationListTestData {
   const char* const activation_list;
   ActivationList activation_list_type;
   safe_browsing::SBThreatType threat_type;
-  safe_browsing::ThreatPatternType threat_type_metadata;
+  safe_browsing::ThreatPatternType threat_pattern_type;
+  safe_browsing::SubresourceFilterMatch match;
 };
 
+typedef safe_browsing::SubresourceFilterLevel SBLevel;
+typedef safe_browsing::SubresourceFilterType SBType;
 const ActivationListTestData kActivationListTestData[] = {
     {kActivationListSocialEngineeringAdsInterstitial,
      ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL,
      safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
-     safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS},
-    {kActivationListPhishingInterstitial, ActivationList::PHISHING_INTERSTITIAL,
+     safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS,
+     {}},
+    {kActivationListPhishingInterstitial,
+     ActivationList::PHISHING_INTERSTITIAL,
      safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
-     safe_browsing::ThreatPatternType::NONE},
-    {kActivationListSubresourceFilter, ActivationList::SUBRESOURCE_FILTER,
+     safe_browsing::ThreatPatternType::NONE,
+     {}},
+    {kActivationListSubresourceFilter,
+     ActivationList::SUBRESOURCE_FILTER,
      safe_browsing::SB_THREAT_TYPE_SUBRESOURCE_FILTER,
-     safe_browsing::ThreatPatternType::NONE},
-    {kActivationListBetterAds, ActivationList::BETTER_ADS,
+     safe_browsing::ThreatPatternType::NONE,
+     {}},
+    {kActivationListSubresourceFilter,
+     ActivationList::ABUSIVE_ADS,
      safe_browsing::SB_THREAT_TYPE_SUBRESOURCE_FILTER,
-     safe_browsing::ThreatPatternType::SUBRESOURCE_FILTER_BETTER_ADS},
-    {kActivationListAbusiveAds, ActivationList::ABUSIVE_ADS,
+     safe_browsing::ThreatPatternType::NONE,
+     {{{SBType::ABUSIVE, SBLevel::ENFORCE}}, base::KEEP_FIRST_OF_DUPES}},
+    {kActivationListSubresourceFilter,
+     ActivationList::BETTER_ADS,
      safe_browsing::SB_THREAT_TYPE_SUBRESOURCE_FILTER,
-     safe_browsing::ThreatPatternType::SUBRESOURCE_FILTER_ABUSIVE_ADS},
-    {kActivationListAllAds, ActivationList::ALL_ADS,
+     safe_browsing::ThreatPatternType::NONE,
+     {{{SBType::BETTER_ADS, SBLevel::ENFORCE}}, base::KEEP_FIRST_OF_DUPES}},
+    {kActivationListSubresourceFilter,
+     ActivationList::ALL_ADS,
      safe_browsing::SB_THREAT_TYPE_SUBRESOURCE_FILTER,
-     safe_browsing::ThreatPatternType::SUBRESOURCE_FILTER_ALL_ADS},
+     safe_browsing::ThreatPatternType::NONE,
+     {{{SBType::ABUSIVE, SBLevel::ENFORCE},
+       {SBType::BETTER_ADS, SBLevel::ENFORCE}},
+      base::KEEP_FIRST_OF_DUPES}},
 };
 
 }  //  namespace
@@ -325,8 +341,8 @@ class SubresourceFilterSafeBrowsingActivationThrottleTest
   void ConfigureForMatch(const GURL& url,
                          safe_browsing::SBThreatType pattern_type =
                              safe_browsing::SB_THREAT_TYPE_SUBRESOURCE_FILTER,
-                         safe_browsing::ThreatPatternType metadata =
-                             safe_browsing::ThreatPatternType::NONE) {
+                         const safe_browsing::ThreatMetadata& metadata =
+                             safe_browsing::ThreatMetadata()) {
     fake_safe_browsing_database_->AddBlacklistedUrl(url, pattern_type,
                                                     metadata);
   }
@@ -396,8 +412,10 @@ class SubresourceFilterSafeBrowsingActivationThrottleParamTest
 
   void ConfigureForMatchParam(const GURL& url) {
     const ActivationListTestData& test_data = GetParam();
-    ConfigureForMatch(url, test_data.threat_type,
-                      test_data.threat_type_metadata);
+    safe_browsing::ThreatMetadata metadata;
+    metadata.threat_pattern_type = test_data.threat_pattern_type;
+    metadata.subresource_filter_match = test_data.match;
+    ConfigureForMatch(url, test_data.threat_type, metadata);
   }
 
  private:
@@ -519,8 +537,11 @@ TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest,
   // Should match |config2| and |config3|, the former with the higher priority.
   GURL match_url(kUrlA);
   GURL non_match_url(kUrlB);
+  safe_browsing::ThreatMetadata metadata;
+  metadata.threat_pattern_type =
+      safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS;
   ConfigureForMatch(match_url, safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
-                    safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS);
+                    metadata);
   SimulateNavigateAndCommit({match_url}, main_rfh());
   EXPECT_EQ(ActivationDecision::ACTIVATION_DISABLED,
             *observer()->GetPageActivationForLastCommittedLoad());
@@ -683,8 +704,11 @@ TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest,
         test_data.activation_level, ActivationScope::ACTIVATION_LIST,
         ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL));
     const GURL url(kURLWithParams);
+    safe_browsing::ThreatMetadata metadata;
+    metadata.threat_pattern_type =
+        safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS;
     ConfigureForMatch(url, safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
-                      safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS);
+                      metadata);
     SimulateNavigateAndCommit({url}, main_rfh());
     EXPECT_EQ(test_data.activation_decision,
               *observer()->GetPageActivationForLastCommittedLoad());
@@ -778,8 +802,9 @@ TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest, ActivationList) {
         ActivationLevel::ENABLED, ActivationScope::ACTIVATION_LIST,
         test_case.activation_list));
     ClearAllBlacklistedUrls();
-    ConfigureForMatch(test_url, test_case.threat_type,
-                      test_case.threat_type_metadata);
+    safe_browsing::ThreatMetadata metadata;
+    metadata.threat_pattern_type = test_case.threat_type_metadata;
+    ConfigureForMatch(test_url, test_case.threat_type, metadata);
     SimulateNavigateAndCommit({GURL(kUrlA), GURL(kUrlB), GURL(kUrlC), test_url},
                               main_rfh());
     EXPECT_EQ(test_case.expected_activation_decision,

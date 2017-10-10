@@ -4,6 +4,8 @@
 
 #include "components/subresource_filter/content/browser/content_activation_list_utils.h"
 
+#include <string>
+
 namespace subresource_filter {
 
 ActivationList GetListForThreatTypeAndMetadata(
@@ -22,18 +24,24 @@ ActivationList GetListForThreatTypeAndMetadata(
     }
     return ActivationList::PHISHING_INTERSTITIAL;
   } else if (subresource_filter) {
-    switch (threat_type_metadata.threat_pattern_type) {
-      case safe_browsing::ThreatPatternType::SUBRESOURCE_FILTER_BETTER_ADS:
-        return ActivationList::BETTER_ADS;
-      case safe_browsing::ThreatPatternType::SUBRESOURCE_FILTER_ABUSIVE_ADS:
-        return ActivationList::ABUSIVE_ADS;
-      case safe_browsing::ThreatPatternType::SUBRESOURCE_FILTER_ALL_ADS:
-        return ActivationList::ALL_ADS;
-      case safe_browsing::ThreatPatternType::NONE:
-        return ActivationList::SUBRESOURCE_FILTER;
-      default:
-        break;
+    // TODO(crbug.com/761385): For now, hardcode when we have both ABUSIVE and
+    // BETTER_ADS. In the future these will be separated.
+    bool has_abusive = false;
+    bool has_better_ads = false;
+    for (const auto& match : threat_type_metadata.subresource_filter_match) {
+      if (match.first == safe_browsing::SubresourceFilterType::ABUSIVE)
+        has_abusive = true;
+      else if (match.first == safe_browsing::SubresourceFilterType::BETTER_ADS)
+        has_better_ads = true;
     }
+
+    if (has_abusive && has_better_ads)
+      return ActivationList::ALL_ADS;
+    if (has_abusive)
+      return ActivationList::ABUSIVE_ADS;
+    if (has_better_ads)
+      return ActivationList::BETTER_ADS;
+    return ActivationList::SUBRESOURCE_FILTER;
   }
 
   return ActivationList::NONE;
