@@ -416,10 +416,7 @@ static void *i915_bo_map(struct bo *bo, struct map_info *data, size_t plane, uin
 {
 	int ret;
 	void *addr;
-	struct drm_i915_gem_set_domain set_domain;
 
-	memset(&set_domain, 0, sizeof(set_domain));
-	set_domain.handle = bo->handles[0].u32;
 	if (bo->tiling == I915_TILING_NONE) {
 		struct drm_i915_gem_mmap gem_map;
 		memset(&gem_map, 0, sizeof(gem_map));
@@ -438,9 +435,6 @@ static void *i915_bo_map(struct bo *bo, struct map_info *data, size_t plane, uin
 		}
 
 		addr = (void *)(uintptr_t)gem_map.addr_ptr;
-		set_domain.read_domains = I915_GEM_DOMAIN_CPU;
-		set_domain.write_domain = I915_GEM_DOMAIN_CPU;
-
 	} else {
 		struct drm_i915_gem_mmap_gtt gem_map;
 		memset(&gem_map, 0, sizeof(gem_map));
@@ -455,8 +449,6 @@ static void *i915_bo_map(struct bo *bo, struct map_info *data, size_t plane, uin
 
 		addr = mmap(0, bo->total_size, drv_get_prot(map_flags), MAP_SHARED, bo->drv->fd,
 			    gem_map.offset);
-		set_domain.read_domains = I915_GEM_DOMAIN_GTT;
-		set_domain.write_domain = I915_GEM_DOMAIN_GTT;
 	}
 
 	if (addr == MAP_FAILED) {
@@ -464,14 +456,34 @@ static void *i915_bo_map(struct bo *bo, struct map_info *data, size_t plane, uin
 		return addr;
 	}
 
-	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_I915_GEM_SET_DOMAIN, &set_domain);
-	if (ret) {
-		fprintf(stderr, "drv: DRM_IOCTL_I915_GEM_SET_DOMAIN failed\n");
-		return MAP_FAILED;
-	}
-
 	data->length = bo->total_size;
 	return addr;
+}
+
+static int i915_bo_invalidate(struct bo *bo, struct map_info *data)
+{
+	int ret;
+	struct drm_i915_gem_set_domain set_domain;
+
+	memset(&set_domain, 0, sizeof(set_domain));
+	set_domain.handle = bo->handles[0].u32;
+	if (bo->tiling == I915_TILING_NONE) {
+		set_domain.read_domains = I915_GEM_DOMAIN_CPU;
+		if (data->map_flags & BO_MAP_WRITE)
+			set_domain.write_domain = I915_GEM_DOMAIN_CPU;
+	} else {
+		set_domain.read_domains = I915_GEM_DOMAIN_GTT;
+		if (data->map_flags & BO_MAP_WRITE)
+			set_domain.write_domain = I915_GEM_DOMAIN_GTT;
+	}
+
+	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_I915_GEM_SET_DOMAIN, &set_domain);
+	if (ret) {
+		fprintf(stderr, "drv: DRM_IOCTL_I915_GEM_SET_DOMAIN with %d\n", ret);
+		return ret;
+	}
+
+	return 0;
 }
 
 static int i915_bo_flush(struct bo *bo, struct map_info *data)
@@ -511,6 +523,7 @@ struct backend backend_i915 = {
 	.bo_import = i915_bo_import,
 	.bo_map = i915_bo_map,
 	.bo_unmap = drv_bo_munmap,
+	.bo_invalidate = i915_bo_invalidate,
 	.bo_flush = i915_bo_flush,
 	.resolve_format = i915_resolve_format,
 };
