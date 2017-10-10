@@ -24,6 +24,7 @@
 #include "base/run_loop.h"
 #include "components/prefs/pref_service.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "ui/gfx/image/image_unittest_util.h"
 
 namespace ash {
 namespace {
@@ -39,19 +40,24 @@ class TestShelfObserver : public mojom::ShelfObserver {
   ~TestShelfObserver() override = default;
 
   // mojom::ShelfObserver:
-  void OnShelfItemAdded(int32_t, const ShelfItem&) override { added_count_++; }
+  void OnShelfItemAdded(int32_t, const ShelfItem& item) override {
+    added_count_++;
+    last_item_ = item;
+  }
   void OnShelfItemRemoved(const ShelfID&) override { removed_count_++; }
   void OnShelfItemMoved(const ShelfID&, int32_t) override {}
-  void OnShelfItemUpdated(const ShelfItem&) override {}
+  void OnShelfItemUpdated(const ShelfItem& item) override { last_item_ = item; }
   void OnShelfItemDelegateChanged(const ShelfID&,
                                   mojom::ShelfItemDelegatePtr) override {}
 
   size_t added_count() const { return added_count_; }
   size_t removed_count() const { return removed_count_; }
+  const ShelfItem& last_item() const { return last_item_; }
 
  private:
   size_t added_count_ = 0;
   size_t removed_count_ = 0;
+  ShelfItem last_item_;
 
   DISALLOW_COPY_AND_ASSIGN(TestShelfObserver);
 };
@@ -150,6 +156,63 @@ TEST_F(ShelfControllerTest, ShelfModelChangesWithSync) {
   EXPECT_EQ(1, controller->model()->item_count());
   EXPECT_EQ(2u, observer.added_count());
   EXPECT_EQ(1u, observer.removed_count());
+}
+
+TEST_F(ShelfControllerTest, ShelfItemImageSync) {
+  ShelfController* controller = Shell::Get()->shelf_controller();
+  if (!controller->should_synchronize_shelf_models())
+    return;
+
+  TestShelfObserver observer;
+  mojom::ShelfObserverAssociatedPtr observer_ptr;
+  mojo::AssociatedBinding<mojom::ShelfObserver> binding(
+      &observer, mojo::MakeIsolatedRequest(&observer_ptr));
+  controller->AddObserver(observer_ptr.PassInterface());
+  base::RunLoop().RunUntilIdle();
+
+  // Create a ShelfItem struct with a valid image icon.
+  ShelfItem item;
+  item.type = TYPE_PINNED_APP;
+  item.id = ShelfID("foo");
+  item.image = gfx::test::CreateImageSkia(1, 1);
+
+  // Observers are notifed of added items without images for efficiency.
+  int index = controller->model()->Add(item);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(item.id, controller->model()->items()[index].id);
+  EXPECT_FALSE(controller->model()->items()[index].image.isNull());
+  EXPECT_EQ(item.id, observer.last_item().id);
+  EXPECT_TRUE(observer.last_item().image.isNull());
+
+  // Observers are notifed of updated items without images for efficiency.
+  item.type = TYPE_APP;
+  controller->model()->Set(index, item);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(item.type, controller->model()->items()[index].type);
+  EXPECT_FALSE(controller->model()->items()[index].image.isNull());
+  EXPECT_EQ(item.type, observer.last_item().type);
+  EXPECT_TRUE(observer.last_item().image.isNull());
+
+  // ShelfController should use images from remotely-added items.
+  item.id = ShelfID("bar");
+  controller->AddShelfItem(index, item);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(item.id, controller->model()->items()[index].id);
+  EXPECT_FALSE(controller->model()->items()[index].image.isNull());
+
+  // ShelfController should use images from remotely-updated items.
+  item.image = gfx::test::CreateImageSkia(2, 2);
+  controller->UpdateShelfItem(item);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(gfx::Size(2, 2), controller->model()->items()[index].image.size());
+
+  // ShelfController should retain images when remote updates have no image.
+  // Chrome will generally avoid image transport costs for unrelated updates.
+  item.image = gfx::ImageSkia();
+  controller->UpdateShelfItem(item);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(item.image.isNull());
+  EXPECT_FALSE(controller->model()->items()[index].image.isNull());
 }
 
 class ShelfControllerPrefsTest : public AshTestBase {
