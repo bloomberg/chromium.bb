@@ -1254,3 +1254,344 @@ void aom_highbd_d45e_predictor_8x16_sse2(uint16_t *dst, ptrdiff_t stride,
   y = avg3_epu16(&x0, &x1, &x2);
   _mm_store_si128((__m128i *)dst, y);
 }
+
+// -----------------------------------------------------------------------------
+// D207E_PRED
+
+static INLINE void d207_4x4(const uint16_t *left, uint16_t **dst,
+                            ptrdiff_t stride) {
+  const __m128i x0 = _mm_loadl_epi64((const __m128i *)left);
+  const __m128i x1 = _mm_loadl_epi64((const __m128i *)(left + 1));
+  const __m128i x2 = _mm_loadl_epi64((const __m128i *)(left + 2));
+  const __m128i x3 = _mm_loadl_epi64((const __m128i *)(left + 3));
+
+  const __m128i y0 = _mm_avg_epu16(x0, x1);
+  const __m128i y1 = _mm_avg_epu16(x1, x2);
+
+  const __m128i u0 = avg3_epu16(&x0, &x1, &x2);
+  const __m128i u1 = avg3_epu16(&x1, &x2, &x3);
+  const __m128i v0 = _mm_unpacklo_epi16(y0, u0);
+  const __m128i v1 = _mm_unpacklo_epi16(y1, u1);
+
+  _mm_storel_epi64((__m128i *)*dst, v0);
+  *dst += stride;
+  _mm_storel_epi64((__m128i *)*dst, v1);
+  *dst += stride;
+  _mm_storel_epi64((__m128i *)*dst, _mm_srli_si128(v0, 8));
+  *dst += stride;
+  _mm_storel_epi64((__m128i *)*dst, _mm_srli_si128(v1, 8));
+  *dst += stride;
+}
+
+void aom_highbd_d207e_predictor_4x4_sse2(uint16_t *dst, ptrdiff_t stride,
+                                         const uint16_t *above,
+                                         const uint16_t *left, int bd) {
+  (void)above;
+  (void)bd;
+  d207_4x4(left, &dst, stride);
+}
+
+void aom_highbd_d207e_predictor_4x8_sse2(uint16_t *dst, ptrdiff_t stride,
+                                         const uint16_t *above,
+                                         const uint16_t *left, int bd) {
+  (void)above;
+  (void)bd;
+  d207_4x4(left, &dst, stride);
+  d207_4x4(left + 4, &dst, stride);
+}
+
+static INLINE void d207_8x4(const uint16_t *left, uint16_t **dst,
+                            ptrdiff_t stride) {
+  const __m128i x0 = _mm_loadl_epi64((const __m128i *)left);
+  const __m128i x1 = _mm_loadl_epi64((const __m128i *)(left + 1));
+  const __m128i x2 = _mm_loadl_epi64((const __m128i *)(left + 2));
+  const __m128i x3 = _mm_loadl_epi64((const __m128i *)(left + 3));
+  const __m128i x4 = _mm_loadl_epi64((const __m128i *)(left + 4));
+  const __m128i x5 = _mm_loadl_epi64((const __m128i *)(left + 5));
+
+  const __m128i y0 = _mm_avg_epu16(x0, x1);
+  const __m128i y1 = _mm_avg_epu16(x1, x2);
+  const __m128i y2 = _mm_avg_epu16(x2, x3);
+  const __m128i y3 = _mm_avg_epu16(x3, x4);
+
+  const __m128i u0 = avg3_epu16(&x0, &x1, &x2);
+  const __m128i u1 = avg3_epu16(&x1, &x2, &x3);
+  const __m128i u2 = avg3_epu16(&x2, &x3, &x4);
+  const __m128i u3 = avg3_epu16(&x3, &x4, &x5);
+
+  _mm_store_si128((__m128i *)*dst, _mm_unpacklo_epi16(y0, u0));
+  *dst += stride;
+  _mm_store_si128((__m128i *)*dst, _mm_unpacklo_epi16(y1, u1));
+  *dst += stride;
+  _mm_store_si128((__m128i *)*dst, _mm_unpacklo_epi16(y2, u2));
+  *dst += stride;
+  _mm_store_si128((__m128i *)*dst, _mm_unpacklo_epi16(y3, u3));
+  *dst += stride;
+}
+
+void aom_highbd_d207e_predictor_8x4_sse2(uint16_t *dst, ptrdiff_t stride,
+                                         const uint16_t *above,
+                                         const uint16_t *left, int bd) {
+  (void)above;
+  (void)bd;
+  d207_8x4(left, &dst, stride);
+}
+
+void aom_highbd_d207e_predictor_8x8_sse2(uint16_t *dst, ptrdiff_t stride,
+                                         const uint16_t *above,
+                                         const uint16_t *left, int bd) {
+  (void)above;
+  (void)bd;
+  d207_8x4(left, &dst, stride);
+  d207_8x4(left + 4, &dst, stride);
+}
+
+void aom_highbd_d207e_predictor_8x16_sse2(uint16_t *dst, ptrdiff_t stride,
+                                          const uint16_t *above,
+                                          const uint16_t *left, int bd) {
+  (void)above;
+  (void)bd;
+  d207_8x4(left, &dst, stride);
+  d207_8x4(left + 4, &dst, stride);
+  d207_8x4(left + 8, &dst, stride);
+  d207_8x4(left + 12, &dst, stride);
+}
+
+static INLINE void d207_16x4(const uint16_t *left, uint16_t **dst,
+                             ptrdiff_t stride) {
+  const __m128i x0 = _mm_loadu_si128((const __m128i *)left);
+  const __m128i x1 = _mm_loadu_si128((const __m128i *)(left + 1));
+  const __m128i x2 = _mm_loadu_si128((const __m128i *)(left + 2));
+  const __m128i x3 = _mm_loadu_si128((const __m128i *)(left + 3));
+  const __m128i x4 = _mm_loadu_si128((const __m128i *)(left + 4));
+  const __m128i x5 = _mm_loadu_si128((const __m128i *)(left + 5));
+
+  const __m128i y0 = _mm_avg_epu16(x0, x1);
+  const __m128i y1 = _mm_avg_epu16(x1, x2);
+  const __m128i y2 = _mm_avg_epu16(x2, x3);
+  const __m128i y3 = _mm_avg_epu16(x3, x4);
+
+  const __m128i u0 = avg3_epu16(&x0, &x1, &x2);
+  const __m128i u1 = avg3_epu16(&x1, &x2, &x3);
+  const __m128i u2 = avg3_epu16(&x2, &x3, &x4);
+  const __m128i u3 = avg3_epu16(&x3, &x4, &x5);
+
+  _mm_store_si128((__m128i *)*dst, _mm_unpacklo_epi16(y0, u0));
+  _mm_store_si128((__m128i *)(*dst + 8), _mm_unpackhi_epi16(y0, u0));
+  *dst += stride;
+  _mm_store_si128((__m128i *)*dst, _mm_unpacklo_epi16(y1, u1));
+  _mm_store_si128((__m128i *)(*dst + 8), _mm_unpackhi_epi16(y1, u1));
+  *dst += stride;
+  _mm_store_si128((__m128i *)*dst, _mm_unpacklo_epi16(y2, u2));
+  _mm_store_si128((__m128i *)(*dst + 8), _mm_unpackhi_epi16(y2, u2));
+  *dst += stride;
+  _mm_store_si128((__m128i *)*dst, _mm_unpacklo_epi16(y3, u3));
+  _mm_store_si128((__m128i *)(*dst + 8), _mm_unpackhi_epi16(y3, u3));
+  *dst += stride;
+}
+
+void aom_highbd_d207e_predictor_16x8_sse2(uint16_t *dst, ptrdiff_t stride,
+                                          const uint16_t *above,
+                                          const uint16_t *left, int bd) {
+  (void)above;
+  (void)bd;
+  d207_16x4(left, &dst, stride);
+  d207_16x4(left + 4, &dst, stride);
+}
+
+void aom_highbd_d207e_predictor_16x16_sse2(uint16_t *dst, ptrdiff_t stride,
+                                           const uint16_t *above,
+                                           const uint16_t *left, int bd) {
+  (void)above;
+  (void)bd;
+  d207_16x4(left, &dst, stride);
+  d207_16x4(left + 4, &dst, stride);
+  d207_16x4(left + 8, &dst, stride);
+  d207_16x4(left + 12, &dst, stride);
+}
+
+void aom_highbd_d207e_predictor_16x32_sse2(uint16_t *dst, ptrdiff_t stride,
+                                           const uint16_t *above,
+                                           const uint16_t *left, int bd) {
+  (void)above;
+  (void)bd;
+  int i;
+  for (i = 0; i < 32; i += 4) {
+    d207_16x4(left + i, &dst, stride);
+  }
+}
+
+// -----------------------------------------------------------------------------
+// D63E_PRED
+
+void aom_highbd_d63e_predictor_4x4_sse2(uint16_t *dst, ptrdiff_t stride,
+                                        const uint16_t *above,
+                                        const uint16_t *left, int bd) {
+  (void)left;
+  (void)bd;
+  const __m128i x0 = _mm_loadl_epi64((const __m128i *)above);
+  const __m128i x1 = _mm_loadl_epi64((const __m128i *)(above + 1));
+  const __m128i x2 = _mm_loadl_epi64((const __m128i *)(above + 2));
+  const __m128i x3 = _mm_loadl_epi64((const __m128i *)(above + 3));
+
+  const __m128i y0 = _mm_avg_epu16(x0, x1);
+  const __m128i y1 = _mm_avg_epu16(x1, x2);
+
+  const __m128i u0 = avg3_epu16(&x0, &x1, &x2);
+  const __m128i u1 = avg3_epu16(&x1, &x2, &x3);
+
+  _mm_storel_epi64((__m128i *)dst, y0);
+  dst += stride;
+  _mm_storel_epi64((__m128i *)dst, u0);
+  dst += stride;
+  _mm_storel_epi64((__m128i *)dst, y1);
+  dst += stride;
+  _mm_storel_epi64((__m128i *)dst, u1);
+}
+
+void aom_highbd_d63e_predictor_4x8_sse2(uint16_t *dst, ptrdiff_t stride,
+                                        const uint16_t *above,
+                                        const uint16_t *left, int bd) {
+  (void)left;
+  (void)bd;
+  __m128i x0 = _mm_loadl_epi64((const __m128i *)above);
+  __m128i x1 = _mm_loadl_epi64((const __m128i *)(above + 1));
+  const __m128i x2 = _mm_loadl_epi64((const __m128i *)(above + 2));
+  const __m128i x3 = _mm_loadl_epi64((const __m128i *)(above + 3));
+
+  __m128i y0 = _mm_avg_epu16(x0, x1);
+  __m128i y1 = _mm_avg_epu16(x1, x2);
+
+  __m128i u0 = avg3_epu16(&x0, &x1, &x2);
+  __m128i u1 = avg3_epu16(&x1, &x2, &x3);
+
+  _mm_storel_epi64((__m128i *)dst, y0);
+  dst += stride;
+  _mm_storel_epi64((__m128i *)dst, u0);
+  dst += stride;
+  _mm_storel_epi64((__m128i *)dst, y1);
+  dst += stride;
+  _mm_storel_epi64((__m128i *)dst, u1);
+  dst += stride;
+
+  x0 = _mm_loadl_epi64((const __m128i *)(above + 4));
+  x1 = _mm_loadl_epi64((const __m128i *)(above + 5));
+
+  y0 = _mm_avg_epu16(x2, x3);
+  y1 = _mm_avg_epu16(x3, x0);
+
+  u0 = avg3_epu16(&x2, &x3, &x0);
+  u1 = avg3_epu16(&x3, &x0, &x1);
+
+  _mm_storel_epi64((__m128i *)dst, y0);
+  dst += stride;
+  _mm_storel_epi64((__m128i *)dst, u0);
+  dst += stride;
+  _mm_storel_epi64((__m128i *)dst, y1);
+  dst += stride;
+  _mm_storel_epi64((__m128i *)dst, u1);
+}
+
+#define D63E_STORE_8X4                   \
+  do {                                   \
+    _mm_store_si128((__m128i *)dst, y0); \
+    dst += stride;                       \
+    _mm_store_si128((__m128i *)dst, u0); \
+    dst += stride;                       \
+    _mm_store_si128((__m128i *)dst, y1); \
+    dst += stride;                       \
+    _mm_store_si128((__m128i *)dst, u1); \
+    dst += stride;                       \
+  } while (0)
+
+void aom_highbd_d63e_predictor_8x4_sse2(uint16_t *dst, ptrdiff_t stride,
+                                        const uint16_t *above,
+                                        const uint16_t *left, int bd) {
+  (void)left;
+  (void)bd;
+  const __m128i x0 = _mm_load_si128((const __m128i *)above);
+  const __m128i x1 = _mm_loadu_si128((const __m128i *)(above + 1));
+  const __m128i x2 = _mm_loadu_si128((const __m128i *)(above + 2));
+  const __m128i x3 = _mm_loadu_si128((const __m128i *)(above + 3));
+
+  const __m128i y0 = _mm_avg_epu16(x0, x1);
+  const __m128i y1 = _mm_avg_epu16(x1, x2);
+
+  const __m128i u0 = avg3_epu16(&x0, &x1, &x2);
+  const __m128i u1 = avg3_epu16(&x1, &x2, &x3);
+
+  _mm_store_si128((__m128i *)dst, y0);
+  dst += stride;
+  _mm_store_si128((__m128i *)dst, u0);
+  dst += stride;
+  _mm_store_si128((__m128i *)dst, y1);
+  dst += stride;
+  _mm_store_si128((__m128i *)dst, u1);
+}
+
+void aom_highbd_d63e_predictor_8x8_sse2(uint16_t *dst, ptrdiff_t stride,
+                                        const uint16_t *above,
+                                        const uint16_t *left, int bd) {
+  (void)left;
+  (void)bd;
+  __m128i x0 = _mm_load_si128((const __m128i *)above);
+  __m128i x1 = _mm_loadu_si128((const __m128i *)(above + 1));
+  const __m128i x2 = _mm_loadu_si128((const __m128i *)(above + 2));
+  const __m128i x3 = _mm_loadu_si128((const __m128i *)(above + 3));
+
+  __m128i y0 = _mm_avg_epu16(x0, x1);
+  __m128i y1 = _mm_avg_epu16(x1, x2);
+
+  __m128i u0 = avg3_epu16(&x0, &x1, &x2);
+  __m128i u1 = avg3_epu16(&x1, &x2, &x3);
+
+  D63E_STORE_8X4;
+
+  x0 = _mm_loadu_si128((const __m128i *)(above + 4));
+  x1 = _mm_loadu_si128((const __m128i *)(above + 5));
+
+  y0 = _mm_avg_epu16(x2, x3);
+  y1 = _mm_avg_epu16(x3, x0);
+
+  u0 = avg3_epu16(&x2, &x3, &x0);
+  u1 = avg3_epu16(&x3, &x0, &x1);
+
+  D63E_STORE_8X4;
+}
+
+void aom_highbd_d63e_predictor_8x16_sse2(uint16_t *dst, ptrdiff_t stride,
+                                         const uint16_t *above,
+                                         const uint16_t *left, int bd) {
+  (void)left;
+  (void)bd;
+  __m128i x0, x1, x2, x3;
+  __m128i y0, y1, u0, u1;
+
+  x0 = _mm_load_si128((const __m128i *)above);
+  x1 = _mm_loadu_si128((const __m128i *)(above + 1));
+
+  int i = 2;
+  do {
+    x2 = _mm_loadu_si128((const __m128i *)(above + i++));
+    x3 = _mm_loadu_si128((const __m128i *)(above + i++));
+
+    y0 = _mm_avg_epu16(x0, x1);
+    y1 = _mm_avg_epu16(x1, x2);
+
+    u0 = avg3_epu16(&x0, &x1, &x2);
+    u1 = avg3_epu16(&x1, &x2, &x3);
+
+    D63E_STORE_8X4;
+
+    x0 = _mm_loadu_si128((const __m128i *)(above + i++));
+    x1 = _mm_loadu_si128((const __m128i *)(above + i++));
+
+    y0 = _mm_avg_epu16(x2, x3);
+    y1 = _mm_avg_epu16(x3, x0);
+
+    u0 = avg3_epu16(&x2, &x3, &x0);
+    u1 = avg3_epu16(&x3, &x0, &x1);
+
+    D63E_STORE_8X4;
+  } while (i < 10);
+}
