@@ -34,10 +34,13 @@ class DedicatedWorkerThreadForTest final : public DedicatedWorkerThread {
 
   WorkerOrWorkletGlobalScope* CreateWorkerGlobalScope(
       std::unique_ptr<GlobalScopeCreationParams> creation_params) override {
-    return new DedicatedWorkerGlobalScope(
-        creation_params->script_url, creation_params->user_agent, this,
-        time_origin_, std::move(creation_params->starter_origin_privilege_data),
-        std::move(creation_params->worker_clients));
+    auto global_scope = new DedicatedWorkerGlobalScope(
+        std::move(creation_params), this, time_origin_);
+    // Initializing a global scope with a dummy creation params may emit warning
+    // messages (e.g., invalid CSP directives). Clear them here for tests that
+    // check console messages (i.e., UseCounter tests).
+    GetConsoleMessageStorage()->Clear();
+    return global_scope;
   }
 
   // Emulates API use on DedicatedWorkerGlobalScope.
@@ -54,7 +57,7 @@ class DedicatedWorkerThreadForTest final : public DedicatedWorkerThread {
     EXPECT_TRUE(IsCurrentThread());
     GlobalScope()->CountDeprecation(feature);
 
-    // countDeprecation() should add a warning message.
+    // CountDeprecation() should add a warning message.
     EXPECT_EQ(1u, GetConsoleMessageStorage()->size());
     String console_message = GetConsoleMessageStorage()->at(0)->Message();
     EXPECT_TRUE(console_message.Contains("deprecated"));
@@ -123,13 +126,15 @@ class DedicatedWorkerMessagingProxyForTest
     CSPHeaderAndType header_and_type("contentSecurityPolicy",
                                      kContentSecurityPolicyHeaderTypeReport);
     headers->push_back(header_and_type);
+    auto worker_settings = std::make_unique<WorkerSettings>(
+        ToDocument(GetExecutionContext())->GetSettings());
     InitializeWorkerThread(
         WTF::MakeUnique<GlobalScopeCreationParams>(
-            script_url, "fake user agent", source, nullptr /* cachedMetaData */,
-            kDontPauseWorkerGlobalScopeOnStart, headers.get(),
-            "" /* referrerPolicy */, security_origin_.get(),
-            nullptr /* workerClients */, kWebAddressSpaceLocal,
-            nullptr /* originTrialTokens */, nullptr /* workerSettings */,
+            script_url, "fake user agent", source,
+            nullptr /* cached_meta_data */, kDontPauseWorkerGlobalScopeOnStart,
+            headers.get(), "" /* referrer_policy */, security_origin_.get(),
+            nullptr /* worker_clients */, kWebAddressSpaceLocal,
+            nullptr /* origin_trial_tokens */, std::move(worker_settings),
             kV8CacheOptionsDefault),
         WorkerBackingThreadStartupData(
             WorkerBackingThreadStartupData::HeapLimitMode::kDefault,

@@ -6,6 +6,7 @@
 
 #include <memory>
 #include "bindings/core/v8/V8CacheOptions.h"
+#include "core/frame/Settings.h"
 #include "core/workers/GlobalScopeCreationParams.h"
 #include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkerThreadTestHelper.h"
@@ -306,7 +307,8 @@ TEST_F(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunningOnInitialization) {
           kPauseWorkerGlobalScopeOnStart, headers.get(), "",
           security_origin_.get(), nullptr, /* workerClients */
           kWebAddressSpaceLocal, nullptr /* originTrialToken */,
-          nullptr /* WorkerSettings */, kV8CacheOptionsDefault);
+          std::make_unique<WorkerSettings>(Settings::Create().get()),
+          kV8CacheOptionsDefault);
   worker_thread_->Start(std::move(global_scope_creation_params),
                         WorkerBackingThreadStartupData::CreateDefault(),
                         ParentFrameTaskRunners::Create());

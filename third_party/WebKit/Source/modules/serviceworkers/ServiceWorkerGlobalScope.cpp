@@ -76,15 +76,6 @@ ServiceWorkerGlobalScope* ServiceWorkerGlobalScope::Create(
     ServiceWorkerThread* thread,
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
     double time_origin) {
-  ServiceWorkerGlobalScope* global_scope = new ServiceWorkerGlobalScope(
-      creation_params->script_url, creation_params->user_agent, thread,
-      time_origin, std::move(creation_params->starter_origin_privilege_data),
-      creation_params->worker_clients);
-
-  global_scope->SetV8CacheOptions(creation_params->v8_cache_options);
-  global_scope->SetWorkerSettings(std::move(creation_params->worker_settings));
-  global_scope->SetAddressSpace(creation_params->address_space);
-
   // If the script is being loaded via script streaming, the script is not yet
   // loaded.
   if (RuntimeEnabledFeatures::ServiceWorkerScriptStreamingEnabled() &&
@@ -96,44 +87,23 @@ ServiceWorkerGlobalScope* ServiceWorkerGlobalScope::Create(
     DCHECK(creation_params->content_security_policy_parsed_headers->IsEmpty());
     DCHECK(creation_params->referrer_policy.IsEmpty());
     DCHECK(creation_params->origin_trial_tokens->IsEmpty());
-    return global_scope;
   }
-
-  global_scope->ApplyContentSecurityPolicyFromVector(
-      *creation_params->content_security_policy_parsed_headers);
-  if (!creation_params->referrer_policy.IsNull())
-    global_scope->ParseAndSetReferrerPolicy(creation_params->referrer_policy);
-  OriginTrialContext::AddTokens(global_scope,
-                                creation_params->origin_trial_tokens.get());
-  return global_scope;
+  return new ServiceWorkerGlobalScope(std::move(creation_params), thread,
+                                      time_origin);
 }
 
 ServiceWorkerGlobalScope::ServiceWorkerGlobalScope(
-    const KURL& url,
-    const String& user_agent,
+    std::unique_ptr<GlobalScopeCreationParams> creation_params,
     ServiceWorkerThread* thread,
-    double time_origin,
-    std::unique_ptr<SecurityOrigin::PrivilegeData>
-        starter_origin_privilege_data,
-    WorkerClients* worker_clients)
-    : WorkerGlobalScope(url,
-                        user_agent,
-                        thread,
-                        time_origin,
-                        std::move(starter_origin_privilege_data),
-                        worker_clients),
-      did_evaluate_script_(false),
-      script_count_(0),
-      script_total_size_(0),
-      script_cached_metadata_total_size_(0) {}
+    double time_origin)
+    : WorkerGlobalScope(std::move(creation_params), thread, time_origin) {}
 
 ServiceWorkerGlobalScope::~ServiceWorkerGlobalScope() {}
 
 void ServiceWorkerGlobalScope::EvaluateClassicScript(
     const KURL& script_url,
     String source_code,
-    std::unique_ptr<Vector<char>> cached_meta_data,
-    V8CacheOptions v8_cache_options) {
+    std::unique_ptr<Vector<char>> cached_meta_data) {
   DCHECK(IsContextThread());
 
   // Receive the main script via script streaming if needed.
@@ -185,8 +155,8 @@ void ServiceWorkerGlobalScope::EvaluateClassicScript(
         content_security_policy_raw_headers.value(), referrer_policy);
   }
 
-  WorkerGlobalScope::EvaluateClassicScript(
-      script_url, source_code, std::move(cached_meta_data), v8_cache_options);
+  WorkerGlobalScope::EvaluateClassicScript(script_url, source_code,
+                                           std::move(cached_meta_data));
 }
 
 void ServiceWorkerGlobalScope::CountWorkerScript(size_t script_size,

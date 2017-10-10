@@ -53,6 +53,7 @@ class V8AbstractEventListener;
 class WorkerLocation;
 class WorkerNavigator;
 class WorkerThread;
+struct GlobalScopeCreationParams;
 
 class CORE_EXPORT WorkerGlobalScope
     : public EventTargetWithInlineData,
@@ -80,10 +81,10 @@ class CORE_EXPORT WorkerGlobalScope
   KURL CompleteURL(const String&) const;
 
   // WorkerOrWorkletGlobalScope
-  void EvaluateClassicScript(const KURL& script_url,
-                             String source_code,
-                             std::unique_ptr<Vector<char>> cached_meta_data,
-                             V8CacheOptions) override;
+  void EvaluateClassicScript(
+      const KURL& script_url,
+      String source_code,
+      std::unique_ptr<Vector<char>> cached_meta_data) override;
   bool IsClosing() const final { return closing_; }
   virtual void Dispose();
   WorkerThread* GetThread() const final { return thread_; }
@@ -152,27 +153,21 @@ class CORE_EXPORT WorkerGlobalScope
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
  protected:
-  WorkerGlobalScope(const KURL&,
-                    const String& user_agent,
+  WorkerGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,
                     WorkerThread*,
-                    double time_origin,
-                    std::unique_ptr<SecurityOrigin::PrivilegeData>,
-                    WorkerClients*);
-  void SetWorkerSettings(std::unique_ptr<WorkerSettings>);
+                    double time_origin);
   void ApplyContentSecurityPolicyFromHeaders(
       const ContentSecurityPolicyResponseHeaders&);
-  void ApplyContentSecurityPolicyFromVector(
-      const Vector<CSPHeaderAndType>& headers);
-
-  void SetV8CacheOptions(V8CacheOptions v8_cache_options) {
-    v8_cache_options_ = v8_cache_options;
-  }
 
   // ExecutionContext
   void ExceptionThrown(ErrorEvent*) override;
   void RemoveURLFromMemoryCache(const KURL&) final;
 
  private:
+  void SetWorkerSettings(std::unique_ptr<WorkerSettings>);
+  void ApplyContentSecurityPolicyFromVector(
+      const Vector<CSPHeaderAndType>& headers);
+
   // |kNotHandled| is used when the script was not in
   // InstalledScriptsManager, which means either it was not an installed script
   // or it was already taken.
@@ -210,7 +205,7 @@ class CORE_EXPORT WorkerGlobalScope
 
   const KURL url_;
   const String user_agent_;
-  V8CacheOptions v8_cache_options_;
+  const V8CacheOptions v8_cache_options_;
   std::unique_ptr<WorkerSettings> worker_settings_;
 
   mutable Member<WorkerLocation> location_;

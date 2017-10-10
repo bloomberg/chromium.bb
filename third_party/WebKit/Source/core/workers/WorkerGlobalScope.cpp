@@ -44,7 +44,9 @@
 #include "core/inspector/WorkerInspectorController.h"
 #include "core/inspector/WorkerThreadDebugger.h"
 #include "core/loader/WorkerThreadableLoader.h"
+#include "core/origin_trials/OriginTrialContext.h"
 #include "core/probe/CoreProbes.h"
+#include "core/workers/GlobalScopeCreationParams.h"
 #include "core/workers/InstalledScriptsManager.h"
 #include "core/workers/WorkerLocation.h"
 #include "core/workers/WorkerNavigator.h"
@@ -91,8 +93,7 @@ KURL WorkerGlobalScope::CompleteURL(const String& url) const {
 void WorkerGlobalScope::EvaluateClassicScript(
     const KURL& script_url,
     String source_code,
-    std::unique_ptr<Vector<char>> cached_meta_data,
-    V8CacheOptions v8_cache_options) {
+    std::unique_ptr<Vector<char>> cached_meta_data) {
   DCHECK(IsContextThread());
   CachedMetadataHandler* handler = CreateWorkerScriptCachedMetadataHandler(
       script_url, cached_meta_data.get());
@@ -102,7 +103,7 @@ void WorkerGlobalScope::EvaluateClassicScript(
       cached_meta_data.get() ? cached_meta_data->size() : 0);
   bool success = ScriptController()->Evaluate(
       ScriptSourceCode(source_code, script_url), nullptr /* error_event */,
-      handler, v8_cache_options);
+      handler, v8_cache_options_);
   ReportingProxy().DidEvaluateWorkerScript(success);
 }
 
@@ -363,19 +364,15 @@ ExecutionContext* WorkerGlobalScope::GetExecutionContext() const {
 }
 
 WorkerGlobalScope::WorkerGlobalScope(
-    const KURL& url,
-    const String& user_agent,
+    std::unique_ptr<GlobalScopeCreationParams> creation_params,
     WorkerThread* thread,
-    double time_origin,
-    std::unique_ptr<SecurityOrigin::PrivilegeData>
-        starter_origin_privilage_data,
-    WorkerClients* worker_clients)
+    double time_origin)
     : WorkerOrWorkletGlobalScope(thread->GetIsolate(),
-                                 worker_clients,
+                                 creation_params->worker_clients,
                                  thread->GetWorkerReportingProxy()),
-      url_(url),
-      user_agent_(user_agent),
-      v8_cache_options_(kV8CacheOptionsDefault),
+      url_(creation_params->script_url),
+      user_agent_(creation_params->user_agent),
+      v8_cache_options_(creation_params->v8_cache_options),
       thread_(thread),
       event_queue_(WorkerEventQueue::Create(this)),
       timers_(TaskRunnerHelper::Get(TaskType::kJavascriptTimer, this)),
@@ -383,10 +380,19 @@ WorkerGlobalScope::WorkerGlobalScope(
       font_selector_(OffscreenFontSelector::Create()) {
   InstanceCounters::IncrementCounter(
       InstanceCounters::kWorkerGlobalScopeCounter);
-  SetSecurityOrigin(SecurityOrigin::Create(url));
-  if (starter_origin_privilage_data)
+  SetSecurityOrigin(SecurityOrigin::Create(url_));
+  if (creation_params->starter_origin_privilege_data) {
     GetSecurityOrigin()->TransferPrivilegesFrom(
-        std::move(starter_origin_privilage_data));
+        std::move(creation_params->starter_origin_privilege_data));
+  }
+  ApplyContentSecurityPolicyFromVector(
+      *creation_params->content_security_policy_parsed_headers);
+  SetWorkerSettings(std::move(creation_params->worker_settings));
+  if (!creation_params->referrer_policy.IsNull())
+    ParseAndSetReferrerPolicy(creation_params->referrer_policy);
+  SetAddressSpace(creation_params->address_space);
+  OriginTrialContext::AddTokens(this,
+                                creation_params->origin_trial_tokens.get());
 }
 
 void WorkerGlobalScope::ApplyContentSecurityPolicyFromHeaders(
@@ -397,27 +403,6 @@ void WorkerGlobalScope::ApplyContentSecurityPolicyFromHeaders(
   }
   GetContentSecurityPolicy()->DidReceiveHeaders(headers);
   GetContentSecurityPolicy()->BindToExecutionContext(GetExecutionContext());
-}
-
-void WorkerGlobalScope::ApplyContentSecurityPolicyFromVector(
-    const Vector<CSPHeaderAndType>& headers) {
-  if (!GetContentSecurityPolicy()) {
-    ContentSecurityPolicy* csp = ContentSecurityPolicy::Create();
-    SetContentSecurityPolicy(csp);
-  }
-  for (const auto& policy_and_type : headers)
-    GetContentSecurityPolicy()->DidReceiveHeader(
-        policy_and_type.first, policy_and_type.second,
-        kContentSecurityPolicyHeaderSourceHTTP);
-  GetContentSecurityPolicy()->BindToExecutionContext(GetExecutionContext());
-}
-
-void WorkerGlobalScope::SetWorkerSettings(
-    std::unique_ptr<WorkerSettings> worker_settings) {
-  worker_settings_ = std::move(worker_settings);
-  worker_settings_->MakeGenericFontFamilySettingsAtomic();
-  font_selector_->UpdateGenericFontFamilySettings(
-      worker_settings_->GetGenericFontFamilySettings());
 }
 
 void WorkerGlobalScope::ExceptionThrown(ErrorEvent* event) {
@@ -432,6 +417,28 @@ void WorkerGlobalScope::RemoveURLFromMemoryCache(const KURL& url) {
       ->Get(TaskType::kNetworking)
       ->PostTask(BLINK_FROM_HERE,
                  CrossThreadBind(&RemoveURLFromMemoryCacheInternal, url));
+}
+
+void WorkerGlobalScope::SetWorkerSettings(
+    std::unique_ptr<WorkerSettings> worker_settings) {
+  worker_settings_ = std::move(worker_settings);
+  worker_settings_->MakeGenericFontFamilySettingsAtomic();
+  font_selector_->UpdateGenericFontFamilySettings(
+      worker_settings_->GetGenericFontFamilySettings());
+}
+
+void WorkerGlobalScope::ApplyContentSecurityPolicyFromVector(
+    const Vector<CSPHeaderAndType>& headers) {
+  if (!GetContentSecurityPolicy()) {
+    ContentSecurityPolicy* csp = ContentSecurityPolicy::Create();
+    SetContentSecurityPolicy(csp);
+  }
+  for (const auto& policy_and_type : headers) {
+    GetContentSecurityPolicy()->DidReceiveHeader(
+        policy_and_type.first, policy_and_type.second,
+        kContentSecurityPolicyHeaderSourceHTTP);
+  }
+  GetContentSecurityPolicy()->BindToExecutionContext(GetExecutionContext());
 }
 
 KURL WorkerGlobalScope::VirtualCompleteURL(const String& url) const {

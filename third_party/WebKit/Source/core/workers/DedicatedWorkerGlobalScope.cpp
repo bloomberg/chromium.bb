@@ -44,39 +44,11 @@
 
 namespace blink {
 
-DedicatedWorkerGlobalScope* DedicatedWorkerGlobalScope::Create(
-    DedicatedWorkerThread* thread,
-    std::unique_ptr<GlobalScopeCreationParams> creation_params,
-    double time_origin) {
-  DedicatedWorkerGlobalScope* context = new DedicatedWorkerGlobalScope(
-      creation_params->script_url, creation_params->user_agent, thread,
-      time_origin, std::move(creation_params->starter_origin_privilege_data),
-      creation_params->worker_clients);
-  context->ApplyContentSecurityPolicyFromVector(
-      *creation_params->content_security_policy_parsed_headers);
-  context->SetWorkerSettings(std::move(creation_params->worker_settings));
-  if (!creation_params->referrer_policy.IsNull())
-    context->ParseAndSetReferrerPolicy(creation_params->referrer_policy);
-  context->SetAddressSpace(creation_params->address_space);
-  OriginTrialContext::AddTokens(context,
-                                creation_params->origin_trial_tokens.get());
-  return context;
-}
-
 DedicatedWorkerGlobalScope::DedicatedWorkerGlobalScope(
-    const KURL& url,
-    const String& user_agent,
+    std::unique_ptr<GlobalScopeCreationParams> creation_params,
     DedicatedWorkerThread* thread,
-    double time_origin,
-    std::unique_ptr<SecurityOrigin::PrivilegeData>
-        starter_origin_privilege_data,
-    WorkerClients* worker_clients)
-    : WorkerGlobalScope(url,
-                        user_agent,
-                        thread,
-                        time_origin,
-                        std::move(starter_origin_privilege_data),
-                        worker_clients) {}
+    double time_origin)
+    : WorkerGlobalScope(std::move(creation_params), thread, time_origin) {}
 
 DedicatedWorkerGlobalScope::~DedicatedWorkerGlobalScope() {}
 
