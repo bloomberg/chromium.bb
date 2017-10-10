@@ -142,10 +142,6 @@ class NET_EXPORT NetworkQualityEstimator
   // been received.
   void NotifyHeadersReceived(const URLRequest& request);
 
-  // Notifies NetworkQualityEstimator that unfiltered bytes have been read for
-  // |request|.
-  void NotifyBytesRead(const URLRequest& request);
-
   // Notifies NetworkQualityEstimator that the headers of |request| are about to
   // be sent.
   void NotifyStartTransaction(const URLRequest& request);

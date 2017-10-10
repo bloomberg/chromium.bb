@@ -703,14 +703,10 @@ void URLRequestJob::RecordBytesRead(int bytes_read) {
   // If prefilter_bytes_read_ is equal to bytes_read, it indicates this is the
   // first raw read of the response body. This is used as the signal that
   // response headers have been received.
-  if (request_->context()->network_quality_estimator()) {
-    if (prefilter_bytes_read() == bytes_read) {
-      request_->context()->network_quality_estimator()->NotifyHeadersReceived(
-          *request_);
-    } else {
-      request_->context()->network_quality_estimator()->NotifyBytesRead(
-          *request_);
-    }
+  if (request_->context()->network_quality_estimator() &&
+      prefilter_bytes_read() == bytes_read) {
+    request_->context()->network_quality_estimator()->NotifyHeadersReceived(
+        *request_);
   }
 
   DVLOG(2) << __FUNCTION__ << "() "

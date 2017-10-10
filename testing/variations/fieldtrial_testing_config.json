@@ -1999,8 +1999,6 @@
                 {
                     "name": "Enabled",
                     "params": {
-                        "hanging_request_duration_http_rtt_multiplier": "5",
-                        "hanging_request_min_duration_msec": "3000",
                         "lower_bound_http_rtt_transport_rtt_multiplier": "1",
                         "rssi_weight_per_signal_strength_level": "0.9",
                         "throughput_min_requests_in_flight": "5",
