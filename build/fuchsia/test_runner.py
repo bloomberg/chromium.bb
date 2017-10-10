@@ -114,6 +114,8 @@ def main():
                       default=False,
                       help='Runs the tests and the launcher in the same '
                       'process. Useful for debugging.')
+  parser.add_argument('--target-cpu',
+                      help='GN target_cpu setting for the build.')
   parser.add_argument('--test-launcher-batch-limit',
                       type=int,
                       help='Sets the limit of test batch to run in a single '
@@ -190,7 +192,7 @@ def main():
     bootfs = BuildBootfs(
         args.output_directory, runtime_deps, args.exe_name, child_args,
         args.dry_run, summary_output=args.test_launcher_summary_output,
-        power_off=not args.device)
+        power_off=not args.device, target_cpu=args.target_cpu)
     if not bootfs:
       return 2
 

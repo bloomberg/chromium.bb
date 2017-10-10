@@ -26,6 +26,8 @@ def main():
   parser.add_argument('--runtime-deps-path',
                       type=os.path.realpath,
                       help='Runtime data dependency file from GN.')
+  parser.add_argument('--target-cpu',
+                      help='GN target_cpu setting for the build.')
   parser.add_argument('--exe-name',
                       type=os.path.realpath,
                       help='Name of the the binary executable.')
@@ -37,7 +39,7 @@ def main():
       args.output_directory,
       ReadRuntimeDeps(args.runtime_deps_path, args.output_directory),
       args.exe_name, child_args, args.dry_run, summary_output=None,
-      power_off=False)
+      power_off=False, target_cpu=args.target_cpu)
   if not bootfs:
     return 2
 
