@@ -34,7 +34,8 @@ constexpr int kItemListVerticalSpacing = 16;
 constexpr int kItemListHorizontalSpacing = 12;
 constexpr int kBetweenItemSpacing = 8;
 constexpr int kSeparatorLeftRightPadding = 4;
-constexpr int kSeparatorHeight = 36;
+constexpr int kSeparatorHeight = 46;
+constexpr int kSeparatorTopPadding = 10;
 
 constexpr SkColor kSeparatorColor = SkColorSetARGBMacro(0x1F, 0x00, 0x00, 0x00);
 
@@ -61,8 +62,8 @@ SearchResultTileItemListView::SearchResultTileItemListView(
         views::Separator* separator = new views::Separator;
         separator->SetVisible(false);
         separator->SetBorder(views::CreateEmptyBorder(
-            0, kSeparatorLeftRightPadding, kSearchTileHeight - kSeparatorHeight,
-            kSeparatorLeftRightPadding));
+            kSeparatorTopPadding, kSeparatorLeftRightPadding,
+            kSearchTileHeight - kSeparatorHeight, kSeparatorLeftRightPadding));
         separator->SetColor(kSeparatorColor);
 
         separator_views_.push_back(separator);
