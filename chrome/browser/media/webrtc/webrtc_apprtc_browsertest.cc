@@ -291,9 +291,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcApprtcBrowserTest, MANUAL_WorksOnApprtc) {
 }
 
 #if defined(OS_LINUX)
-// Disabled due to failure, see http://crbug.com/751211.
-#define MAYBE_MANUAL_FirefoxApprtcInteropTest \
-  DISABLED_MANUAL_FirefoxApprtcInteropTest
+#define MAYBE_MANUAL_FirefoxApprtcInteropTest MANUAL_FirefoxApprtcInteropTest
 #else
 // Not implemented yet on Windows and Mac.
 #define MAYBE_MANUAL_FirefoxApprtcInteropTest \
