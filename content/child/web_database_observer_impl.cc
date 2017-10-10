@@ -10,7 +10,6 @@
 #include "base/strings/string16.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/child/storage_util.h"
-#include "content/common/database_messages.h"
 #include "storage/common/database/database_identifier.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -65,16 +64,15 @@ std::string GetIdentifierFromOrigin(const WebSecurityOrigin& origin) {
 
 }  // namespace
 
-WebDatabaseObserverImpl::WebDatabaseObserverImpl(IPC::SyncMessageFilter* sender)
-    : sender_(sender),
+WebDatabaseObserverImpl::WebDatabaseObserverImpl(
+    scoped_refptr<mojom::ThreadSafeWebDatabaseHostPtr> web_database_host)
+    : web_database_host_(std::move(web_database_host)),
       open_connections_(new storage::DatabaseConnectionsWrapper),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
-  DCHECK(sender);
   DCHECK(main_thread_task_runner_);
 }
 
-WebDatabaseObserverImpl::~WebDatabaseObserverImpl() {
-}
+WebDatabaseObserverImpl::~WebDatabaseObserverImpl() = default;
 
 void WebDatabaseObserverImpl::DatabaseOpened(
     const WebSecurityOrigin& origin,
@@ -83,26 +81,21 @@ void WebDatabaseObserverImpl::DatabaseOpened(
     unsigned long estimated_size) {
   open_connections_->AddOpenConnection(GetIdentifierFromOrigin(origin),
                                        database_name.Utf16());
-  sender_->Send(new DatabaseHostMsg_Opened(origin, database_name.Utf16(),
-                                           database_display_name.Utf16(),
-                                           estimated_size));
+  GetWebDatabaseHost().Opened(origin, database_name.Utf16(),
+                              database_display_name.Utf16(), estimated_size);
 }
 
 void WebDatabaseObserverImpl::DatabaseModified(const WebSecurityOrigin& origin,
                                                const WebString& database_name) {
-  sender_->Send(new DatabaseHostMsg_Modified(origin, database_name.Utf16()));
+  GetWebDatabaseHost().Modified(origin, database_name.Utf16());
 }
 
 void WebDatabaseObserverImpl::DatabaseClosed(const WebSecurityOrigin& origin,
                                              const WebString& database_name) {
   DCHECK(!main_thread_task_runner_->RunsTasksInCurrentSequence());
-  base::string16 database_name_utf16 = database_name.Utf16();
-  main_thread_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(base::IgnoreResult(&IPC::SyncMessageFilter::Send), sender_,
-                     new DatabaseHostMsg_Closed(origin, database_name_utf16)));
+  GetWebDatabaseHost().Closed(origin, database_name.Utf16());
   open_connections_->RemoveOpenConnection(GetIdentifierFromOrigin(origin),
-                                          database_name_utf16);
+                                          database_name.Utf16());
 }
 
 void WebDatabaseObserverImpl::ReportOpenDatabaseResult(
@@ -192,9 +185,13 @@ void WebDatabaseObserverImpl::HandleSqliteError(const WebSecurityOrigin& origin,
   // a unnecessary ipc traffic, this method can get called at a fairly
   // high frequency (per-sqlstatement).
   if (error == SQLITE_CORRUPT || error == SQLITE_NOTADB) {
-    sender_->Send(new DatabaseHostMsg_HandleSqliteError(
-        origin, database_name.Utf16(), error));
+    GetWebDatabaseHost().HandleSqliteError(origin, database_name.Utf16(),
+                                           error);
   }
+}
+
+mojom::WebDatabaseHost& WebDatabaseObserverImpl::GetWebDatabaseHost() {
+  return **web_database_host_;
 }
 
 }  // namespace content

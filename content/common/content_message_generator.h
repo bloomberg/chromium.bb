@@ -37,11 +37,6 @@
 #ifndef CONTENT_COMMON_CLIPBOARD_MESSAGES_H_
 #error "Failed to include content/common/clipboard_messages.h"
 #endif
-#undef CONTENT_COMMON_DATABASE_MESSAGES_H_
-#include "content/common/database_messages.h"
-#ifndef CONTENT_COMMON_DATABASE_MESSAGES_H_
-#error "Failed to include content/common/database_messages.h"
-#endif
 #undef CONTENT_COMMON_DEVTOOLS_MESSAGES_H_
 #include "content/common/devtools_messages.h"
 #ifndef CONTENT_COMMON_DEVTOOLS_MESSAGES_H_

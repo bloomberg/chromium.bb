@@ -7,13 +7,17 @@
 #include <string>
 #include <utility>
 
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/common/origin_util.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "storage/browser/database/database_util.h"
 #include "storage/browser/database/vfs_backend.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
+#include "storage/common/database/database_identifier.h"
 #include "storage/common/quota/quota_status_code.h"
 #include "third_party/sqlite/sqlite3.h"
 
@@ -30,25 +34,45 @@ const int kNumDeleteRetries = 2;
 // The delay between each retry to delete the SQLite database.
 const int kDelayDeleteRetryMs = 100;
 
-bool IsOriginValid(const url::Origin& origin) {
-  return !origin.unique();
+bool ValidateOrigin(const url::Origin& origin) {
+  if (origin.unique()) {
+    mojo::ReportBadMessage("Invalid Origin.");
+    return false;
+  }
+  return true;
 }
 
 }  // namespace
 
 WebDatabaseHostImpl::WebDatabaseHostImpl(
+    int process_id,
     scoped_refptr<storage::DatabaseTracker> db_tracker)
-    : db_tracker_(std::move(db_tracker)) {
+    : process_id_(process_id),
+      observer_added_(false),
+      db_tracker_(std::move(db_tracker)) {
   DCHECK(db_tracker_);
 }
 
-WebDatabaseHostImpl::~WebDatabaseHostImpl() = default;
+WebDatabaseHostImpl::~WebDatabaseHostImpl() {
+  DCHECK(db_tracker_->task_runner()->RunsTasksInCurrentSequence());
+
+  if (observer_added_) {
+    db_tracker_->RemoveObserver(this);
+
+    // If the renderer process died without closing all databases,
+    // then we need to manually close those connections
+    db_tracker_->CloseDatabases(database_connections_);
+    database_connections_.RemoveAllConnections();
+  }
+}
 
 void WebDatabaseHostImpl::Create(
+    int process_id,
     scoped_refptr<storage::DatabaseTracker> db_tracker,
     content::mojom::WebDatabaseHostRequest request) {
+  DCHECK(db_tracker->task_runner()->RunsTasksInCurrentSequence());
   mojo::MakeStrongBinding(
-      base::MakeUnique<WebDatabaseHostImpl>(std::move(db_tracker)),
+      base::MakeUnique<WebDatabaseHostImpl>(process_id, std::move(db_tracker)),
       std::move(request));
 }
 
@@ -155,8 +179,7 @@ void WebDatabaseHostImpl::GetSpaceAvailable(
   DCHECK(db_tracker_->task_runner()->RunsTasksInCurrentSequence());
   DCHECK(db_tracker_->quota_manager_proxy());
 
-  if (!IsOriginValid(origin)) {
-    mojo::ReportBadMessage("Invalid Origin.");
+  if (!ValidateOrigin(origin)) {
     std::move(callback).Run(0);
     return;
   }
@@ -222,6 +245,129 @@ void WebDatabaseHostImpl::DatabaseDeleteFile(
   }
 
   std::move(callback).Run(error_code);
+}
+
+void WebDatabaseHostImpl::Opened(const url::Origin& origin,
+                                 const base::string16& database_name,
+                                 const base::string16& database_description,
+                                 int64_t estimated_size) {
+  DCHECK(db_tracker_->task_runner()->RunsTasksInCurrentSequence());
+
+  if (!observer_added_) {
+    observer_added_ = true;
+    db_tracker_->AddObserver(this);
+  }
+
+  if (!ValidateOrigin(origin)) {
+    return;
+  }
+
+  GURL origin_url(origin.Serialize());
+  UMA_HISTOGRAM_BOOLEAN("websql.OpenDatabase", IsOriginSecure(origin_url));
+
+  int64_t database_size = 0;
+  std::string origin_identifier(storage::GetIdentifierFromOrigin(origin_url));
+  db_tracker_->DatabaseOpened(origin_identifier, database_name,
+                              database_description, estimated_size,
+                              &database_size);
+
+  database_connections_.AddConnection(origin_identifier, database_name);
+
+  GetWebDatabase().UpdateSize(origin, database_name, database_size);
+}
+
+void WebDatabaseHostImpl::Modified(const url::Origin& origin,
+                                   const base::string16& database_name) {
+  DCHECK(db_tracker_->task_runner()->RunsTasksInCurrentSequence());
+
+  if (!ValidateOrigin(origin)) {
+    return;
+  }
+
+  std::string origin_identifier(
+      storage::GetIdentifierFromOrigin(origin.GetURL()));
+  if (!database_connections_.IsDatabaseOpened(origin_identifier,
+                                              database_name)) {
+    mojo::ReportBadMessage("Database not opened on modify");
+    return;
+  }
+
+  db_tracker_->DatabaseModified(origin_identifier, database_name);
+}
+
+void WebDatabaseHostImpl::Closed(const url::Origin& origin,
+                                 const base::string16& database_name) {
+  DCHECK(db_tracker_->task_runner()->RunsTasksInCurrentSequence());
+
+  if (!ValidateOrigin(origin)) {
+    return;
+  }
+
+  std::string origin_identifier(
+      storage::GetIdentifierFromOrigin(origin.GetURL()));
+  if (!database_connections_.IsDatabaseOpened(origin_identifier,
+                                              database_name)) {
+    mojo::ReportBadMessage("Database not opened on close");
+    return;
+  }
+
+  database_connections_.RemoveConnection(origin_identifier, database_name);
+  db_tracker_->DatabaseClosed(origin_identifier, database_name);
+}
+
+void WebDatabaseHostImpl::HandleSqliteError(const url::Origin& origin,
+                                            const base::string16& database_name,
+                                            int32_t error) {
+  DCHECK(db_tracker_->task_runner()->RunsTasksInCurrentSequence());
+  if (!ValidateOrigin(origin)) {
+    return;
+  }
+
+  db_tracker_->HandleSqliteError(
+      storage::GetIdentifierFromOrigin(origin.GetURL()), database_name, error);
+}
+
+void WebDatabaseHostImpl::OnDatabaseSizeChanged(
+    const std::string& origin_identifier,
+    const base::string16& database_name,
+    int64_t database_size) {
+  DCHECK(db_tracker_->task_runner()->RunsTasksInCurrentSequence());
+  if (!database_connections_.IsOriginUsed(origin_identifier)) {
+    return;
+  }
+
+  GetWebDatabase().UpdateSize(
+      url::Origin(storage::GetOriginFromIdentifier(origin_identifier)),
+      database_name, database_size);
+}
+
+void WebDatabaseHostImpl::OnDatabaseScheduledForDeletion(
+    const std::string& origin_identifier,
+    const base::string16& database_name) {
+  DCHECK(db_tracker_->task_runner()->RunsTasksInCurrentSequence());
+
+  GetWebDatabase().CloseImmediately(
+      url::Origin(storage::GetOriginFromIdentifier(origin_identifier)),
+      database_name);
+}
+
+content::mojom::WebDatabase& WebDatabaseHostImpl::GetWebDatabase() {
+  DCHECK(db_tracker_->task_runner()->RunsTasksInCurrentSequence());
+  if (!database_provider_) {
+    // The interface binding needs to occur on the UI thread, as we can
+    // only call RenderProcessHost::FromID() on the UI thread.
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(
+            [](int process_id, content::mojom::WebDatabaseRequest request) {
+              RenderProcessHost* host = RenderProcessHost::FromID(process_id);
+              if (host) {
+                content::BindInterface(host, std::move(request));
+              }
+            },
+            process_id_, mojo::MakeRequest(&database_provider_)));
+  }
+  return *database_provider_;
 }
 
 }  // namespace content

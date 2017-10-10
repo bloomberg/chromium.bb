@@ -268,6 +268,9 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   // them to the registered listener.
   void SendFakeDeviceEventDataForTesting(blink::WebPlatformEventType type);
 
+  // Ensure that the WebDatabaseHost has been initialized.
+  void InitializeWebDatabaseHostIfNeeded();
+
   // Return the mojo interface for making WebDatabaseHost calls.
   mojom::WebDatabaseHost& GetWebDatabaseHost();
 

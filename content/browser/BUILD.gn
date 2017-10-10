@@ -1159,8 +1159,6 @@ source_set("browser") {
     "renderer_host/clipboard_message_filter_mac.mm",
     "renderer_host/cursor_manager.cc",
     "renderer_host/cursor_manager.h",
-    "renderer_host/database_message_filter.cc",
-    "renderer_host/database_message_filter.h",
     "renderer_host/dip_util.cc",
     "renderer_host/dip_util.h",
     "renderer_host/dwrite_font_proxy_message_filter_win.cc",

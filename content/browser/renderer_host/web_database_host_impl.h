@@ -5,23 +5,33 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_WEB_DATABASE_HOST_IMPL_H_
 #define CONTENT_BROWSER_RENDERER_HOST_WEB_DATABASE_HOST_IMPL_H_
 
+#include <string>
+
+#include "base/strings/string16.h"
 #include "content/common/web_database.mojom.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "storage/browser/database/database_tracker.h"
 #include "storage/common/quota/quota_types.h"
 
+namespace url {
+class Origin;
+}  // namespace url
+
 namespace content {
 
-class WebDatabaseHostImpl : public content::mojom::WebDatabaseHost {
+class WebDatabaseHostImpl : public content::mojom::WebDatabaseHost,
+                            public storage::DatabaseTracker::Observer {
  public:
-  explicit WebDatabaseHostImpl(
-      scoped_refptr<storage::DatabaseTracker> db_tracker);
+  WebDatabaseHostImpl(int proess_id,
+                      scoped_refptr<storage::DatabaseTracker> db_tracker);
   ~WebDatabaseHostImpl() override;
 
-  static void Create(scoped_refptr<storage::DatabaseTracker> db_tracker,
+  static void Create(int process_id,
+                     scoped_refptr<storage::DatabaseTracker> db_tracker,
                      content::mojom::WebDatabaseHostRequest request);
 
  private:
-  // WebDatabaseHost methods.
+  // content::mojom::WebDatabaseHost:
   void OpenFile(const base::string16& vfs_file_name,
                 int32_t desired_flags,
                 OpenFileCallback callback) override;
@@ -43,10 +53,51 @@ class WebDatabaseHostImpl : public content::mojom::WebDatabaseHost {
   void GetSpaceAvailable(const url::Origin& origin,
                          GetSpaceAvailableCallback callback) override;
 
+  void Opened(const url::Origin& origin,
+              const base::string16& database_name,
+              const base::string16& database_description,
+              int64_t estimated_size) override;
+
+  void Modified(const url::Origin& origin,
+                const base::string16& database_name) override;
+
+  void Closed(const url::Origin& origin,
+              const base::string16& database_name) override;
+
+  void HandleSqliteError(const url::Origin& origin,
+                         const base::string16& database_name,
+                         int32_t error) override;
+
+  // DatabaseTracker::Observer callbacks (tracker sequence)
+  void OnDatabaseSizeChanged(const std::string& origin_identifier,
+                             const base::string16& database_name,
+                             int64_t database_size) override;
+  void OnDatabaseScheduledForDeletion(
+      const std::string& origin_identifier,
+      const base::string16& database_name) override;
+
   void DatabaseDeleteFile(const base::string16& vfs_file_name,
                           bool sync_dir,
                           DeleteFileCallback callback,
                           int reschedule_count);
+
+  // Helper function to get the mojo interface for the WebDatabase on the
+  // render process. Creates the WebDatabase connection if it does not already
+  // exist.
+  content::mojom::WebDatabase& GetWebDatabase();
+
+  // Our render process host ID, used to bind to the correct render process.
+  const int process_id_;
+
+  // True if and only if this instance was added as an observer
+  // to DatabaseTracker.
+  bool observer_added_;
+
+  // Keeps track of all DB connections opened by this renderer
+  storage::DatabaseConnections database_connections_;
+
+  // Interface to the render process WebDatabase.
+  content::mojom::WebDatabasePtr database_provider_;
 
   // The database tracker for the current browser context.
   const scoped_refptr<storage::DatabaseTracker> db_tracker_;
