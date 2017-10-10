@@ -227,17 +227,15 @@ void ScriptWrappableVisitor::MarkWrappersInAllWorlds(
 
 void ScriptWrappableVisitor::WriteBarrier(
     v8::Isolate* isolate,
-    const TraceWrapperV8Reference<v8::Value>* dst_object) {
+    const TraceWrapperV8Reference<v8::Value>& dst_object) {
   ScriptWrappableVisitor* visitor = CurrentVisitor(isolate);
-  if (!dst_object || dst_object->IsEmpty() ||
-      !visitor->WrapperTracingInProgress()) {
+  if (dst_object.IsEmpty() || !visitor->WrapperTracingInProgress())
     return;
-  }
 
   // Conservatively assume that the source object containing |dst_object| is
   // marked.
   visitor->MarkWrapper(
-      &(const_cast<TraceWrapperV8Reference<v8::Value>*>(dst_object)->Get()));
+      &(const_cast<TraceWrapperV8Reference<v8::Value>&>(dst_object).Get()));
 }
 
 void ScriptWrappableVisitor::TraceWrappers(
