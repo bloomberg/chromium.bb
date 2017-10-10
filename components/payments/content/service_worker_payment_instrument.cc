@@ -39,7 +39,16 @@ ServiceWorkerPaymentInstrument::ServiceWorkerPaymentInstrument(
   }
 }
 
-ServiceWorkerPaymentInstrument::~ServiceWorkerPaymentInstrument() {}
+ServiceWorkerPaymentInstrument::~ServiceWorkerPaymentInstrument() {
+  if (delegate_) {
+    // If there's a payment handler in progress, abort it before destroying this
+    // so that it can close its window. Since the PaymentRequest will be
+    // destroyed, pass an empty callback to the payment handler.
+    content::PaymentAppProvider::GetInstance()->AbortPayment(
+        browser_context_, stored_payment_app_info_->registration_id,
+        base::Bind([](bool) {}));
+  }
+}
 
 void ServiceWorkerPaymentInstrument::InvokePaymentApp(Delegate* delegate) {
   delegate_ = delegate;
