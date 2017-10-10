@@ -367,6 +367,9 @@ public class DownloadManagerService
     public void onActivityLaunched() {
         // TODO(jming): Remove this after M-62.
         DownloadNotificationService.clearResumptionAttemptLeft();
+
+        DownloadManagerService.getDownloadManagerService().checkForExternallyRemovedDownloads(
+                /*isOffRecord=*/false);
     }
 
     /**
