@@ -4,7 +4,7 @@
 <script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
 <script>
  'use strict';
- promise_test(t => {
+ bluetooth_test(t => {
    return setBluetoothFakeAdapter('DisconnectingHealthThermometerAdapter')
     .then(() => requestDeviceWithKeyDown({
       filters: [{services: ['health_thermometer']}],

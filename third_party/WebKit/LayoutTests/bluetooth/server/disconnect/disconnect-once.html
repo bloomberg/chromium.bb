@@ -7,7 +7,7 @@
 // TODO(ortuno): Write tests to check that "Disconnect" was actually
 // called on the device.
 // http://crbug.com/569716
-promise_test(() => {
+bluetooth_test(() => {
   return setBluetoothFakeAdapter('HeartRateAdapter')
     .then(() => requestDeviceWithKeyDown({
       filters: [{services: ['heart_rate']}]}))

@@ -4,7 +4,7 @@
 <script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
 <script>
 'use strict';
-promise_test(() => {
+bluetooth_test(() => {
   let char;
   return setBluetoothFakeAdapter('HeartRateAdapter')
     .then(() => requestDeviceWithKeyDown({

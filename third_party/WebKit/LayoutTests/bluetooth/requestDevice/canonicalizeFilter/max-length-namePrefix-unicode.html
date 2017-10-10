@@ -2,11 +2,9 @@
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
 <script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
-<script src="../../../resources/mojo-helpers.js"></script>
-<script src="../../../resources/bluetooth/web-bluetooth-test.js"></script>
 <script>
 'use strict';
-promise_test(() => {
+bluetooth_test(() => {
   // \u00A1's UTF-8 respresentation is 2 bytes long.
   // 124 chars * 2 bytes/char = 248 bytes
   const DEVICE_NAME = '\u00A1'.repeat(124);
