@@ -1,13 +1,5 @@
 # Being ported, https://crbug.com/754861.
 
--URLLoaderImplTest.Basic
--URLLoaderImplTest.BasicSSL
--URLLoaderImplTest.CantSniffEmptyHtml
--URLLoaderImplTest.DoNotSniffHTMLFromImageGIF
--URLLoaderImplTest.DoNotSniffHTMLFromTextPlain
--URLLoaderImplTest.Empty
--URLLoaderImplTest.SSLSentOnlyWhenRequested
--URLLoaderImplTest.SniffMimeType
 
 # Crashes occasionally, possibly related to https://crbug.com/758634.
 -IndexedDBFactoryTest.DataFormatVersion
