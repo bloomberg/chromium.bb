@@ -13511,7 +13511,6 @@
         "boards": [
             "lakitu-gpu"
         ],
-        "buildslave_type": "baremetal",
         "disk_layout": "base",
         "factory": false,
         "factory_install_netboot": false,
@@ -13897,7 +13896,6 @@
         "boards": [
             "lakitu"
         ],
-        "buildslave_type": "baremetal",
         "disk_layout": "base",
         "factory": false,
         "factory_install_netboot": false,
@@ -14105,7 +14103,6 @@
         "boards": [
             "lakitu-st"
         ],
-        "buildslave_type": "baremetal",
         "disk_layout": "base",
         "factory": false,
         "factory_install_netboot": false,
@@ -14349,7 +14346,6 @@
         "boards": [
             "lakitu_next"
         ],
-        "buildslave_type": "baremetal",
         "disk_layout": "base",
         "factory": false,
         "factory_install_netboot": false,
