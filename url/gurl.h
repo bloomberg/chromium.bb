@@ -485,6 +485,8 @@ URL_EXPORT bool operator!=(const GURL& x, const GURL& y);
 // url == GURL(spec) where |spec| is known (i.e. constants). This is to prevent
 // needlessly re-parsing |spec| into a temporary GURL.
 URL_EXPORT bool operator==(const GURL& x, const base::StringPiece& spec);
+URL_EXPORT bool operator==(const base::StringPiece& spec, const GURL& x);
 URL_EXPORT bool operator!=(const GURL& x, const base::StringPiece& spec);
+URL_EXPORT bool operator!=(const base::StringPiece& spec, const GURL& x);
 
 #endif  // URL_GURL_H_

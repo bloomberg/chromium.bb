@@ -521,8 +521,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_UrlWithApiKey) {
   const std::string expected_url =
       "https://www.googleapis.com/geolocation/v1/geolocate?key=" +
       net::EscapeQueryParamValue(google_apis::GetAPIKey(), true);
-  EXPECT_EQ(expected_url,
-            observer.fetcher()->GetOriginalURL().possibly_invalid_spec());
+  EXPECT_EQ(expected_url, observer.fetcher()->GetOriginalURL());
 }
 
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, ErrorOnPermissionDenied) {
