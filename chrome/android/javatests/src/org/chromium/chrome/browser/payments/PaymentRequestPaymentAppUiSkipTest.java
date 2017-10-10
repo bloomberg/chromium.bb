@@ -7,16 +7,21 @@ package org.chromium.chrome.browser.payments;
 import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.DELAYED_CREATION;
 import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.DELAYED_RESPONSE;
 import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.HAVE_INSTRUMENTS;
+import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.IMMEDIATE_CREATION;
 import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.IMMEDIATE_RESPONSE;
 
 import android.support.test.filters.MediumTest;
 
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -32,6 +37,9 @@ import java.util.concurrent.TimeoutException;
 @CommandLineFlags.Add({
         ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
         ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
+        // Speed up the test by not looking up actual apps installed on the device.
+        "disable-features=" + ChromeFeatureList.ANDROID_PAYMENT_APPS,
+        "disable-features=" + ChromeFeatureList.SERVICE_WORKER_PAYMENT_APPS,
 })
 public class PaymentRequestPaymentAppUiSkipTest {
     @Rule
@@ -98,5 +106,34 @@ public class PaymentRequestPaymentAppUiSkipTest {
         mPaymentRequestTestRule.openPageAndClickBuyAndWait(mPaymentRequestTestRule.getDismissed());
         mPaymentRequestTestRule.expectResultContains(
                 new String[] {"https://bobpay.com", "\"transaction\"", "1337"});
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting("PaymentRequest.Events",
+                        Event.REQUEST_METHOD_OTHER | Event.HAD_INITIAL_FORM_OF_PAYMENT
+                                | Event.HAD_NECESSARY_COMPLETE_SUGGESTIONS | Event.SKIPPED_SHOW
+                                | Event.SELECTED_OTHER | Event.PAY_CLICKED
+                                | Event.RECEIVED_INSTRUMENT_DETAILS | Event.COMPLETED));
+    }
+
+    /** Two payments apps with the same payment method name should not skip payments UI. */
+    @Test
+    @MediumTest
+    @Feature({"Payments"})
+    public void testTwoPaymentsAppsWithTheSamePaymentMethodName()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        mPaymentRequestTestRule.installPaymentApp(
+                "https://bobpay.com", HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE, IMMEDIATE_CREATION);
+        mPaymentRequestTestRule.installPaymentApp(
+                "https://bobpay.com", HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE, IMMEDIATE_CREATION);
+        mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
+        mPaymentRequestTestRule.clickAndWait(
+                R.id.button_primary, mPaymentRequestTestRule.getDismissed());
+        mPaymentRequestTestRule.expectResultContains(
+                new String[] {"https://bobpay.com", "\"transaction\"", "1337"});
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting("PaymentRequest.Events",
+                        Event.REQUEST_METHOD_OTHER | Event.HAD_INITIAL_FORM_OF_PAYMENT
+                                | Event.HAD_NECESSARY_COMPLETE_SUGGESTIONS | Event.SHOWN
+                                | Event.SELECTED_OTHER | Event.PAY_CLICKED
+                                | Event.RECEIVED_INSTRUMENT_DETAILS | Event.COMPLETED));
     }
 }
