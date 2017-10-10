@@ -36,7 +36,7 @@ class VRDisplayImplTest : public testing::Test {
 
   std::unique_ptr<VRDisplayImpl> MakeDisplay() {
     return std::make_unique<VRDisplayImpl>(
-        device(), client(), device()->GetVRDisplayInfo(), nullptr, false);
+        device(), 0, 0, client(), device()->GetVRDisplayInfo(), nullptr);
   }
 
   void RequestPresent(VRDisplayImpl* display_impl) {
@@ -73,22 +73,13 @@ TEST_F(VRDisplayImplTest, DevicePresentationIsolation) {
   EXPECT_TRUE(device()->IsAccessAllowed(display_1.get()));
   EXPECT_TRUE(device()->IsAccessAllowed(display_2.get()));
 
-  // Attempt to present without focus.
-  RequestPresent(display_1.get());
-  EXPECT_FALSE(is_request_presenting_success_);
-  EXPECT_FALSE(presenting());
-
   // Begin presenting to the fake device with service 1.
-  display_1->SetInFocusedFrame(true);
   RequestPresent(display_1.get());
   EXPECT_TRUE(is_request_presenting_success_);
   EXPECT_TRUE(presenting());
 
   // Service 2 should not be able to present to the device while service 1
   // is still presenting.
-  RequestPresent(display_2.get());
-  EXPECT_FALSE(is_request_presenting_success_);
-  display_2->SetInFocusedFrame(true);
   RequestPresent(display_2.get());
   EXPECT_FALSE(is_request_presenting_success_);
   EXPECT_TRUE(device()->IsAccessAllowed(display_1.get()));

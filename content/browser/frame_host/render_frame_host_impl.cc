@@ -2958,8 +2958,9 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   registry_->AddInterface(base::Bind(&SharedWorkerConnectorImpl::Create,
                                      process_->GetID(), routing_id_));
 
-  registry_->AddInterface<device::mojom::VRService>(base::Bind(
-      &WebvrServiceProvider::BindWebvrService, base::Unretained(this)));
+  registry_->AddInterface<device::mojom::VRService>(
+      base::Bind(&WebvrServiceProvider::BindWebvrService, GetProcess()->GetID(),
+                 GetRoutingID()));
 
   if (RendererAudioOutputStreamFactoryContextImpl::UseMojoFactories()) {
     registry_->AddInterface(base::BindRepeating(

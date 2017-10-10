@@ -184,16 +184,36 @@ void GvrDevice::ExitPresent() {
 }
 
 void GvrDevice::GetPose(
+    VRDisplayImpl* display,
     mojom::VRMagicWindowProvider::GetPoseCallback callback) {
-  std::move(callback).Run(
-      GvrDelegate::GetVRPosePtrWithNeckModel(gvr_api_.get(), nullptr));
+  GvrDelegateProvider* delegate_provider = GetGvrDelegateProvider();
+  if (!delegate_provider) {
+    std::move(callback).Run(nullptr);
+    return;
+  }
+  delegate_provider->GetNextMagicWindowPose(gvr_api_.get(), display,
+                                            std::move(callback));
 }
 
-void GvrDevice::OnListeningForActivateChanged(bool listening) {
+void GvrDevice::OnDisplayAdded(VRDisplayImpl* display) {
   GvrDelegateProvider* delegate_provider = GetGvrDelegateProvider();
   if (!delegate_provider)
     return;
-  delegate_provider->OnListeningForActivateChanged(listening);
+  delegate_provider->OnDisplayAdded(display);
+}
+
+void GvrDevice::OnDisplayRemoved(VRDisplayImpl* display) {
+  GvrDelegateProvider* delegate_provider = GetGvrDelegateProvider();
+  if (!delegate_provider)
+    return;
+  delegate_provider->OnDisplayRemoved(display);
+}
+
+void GvrDevice::OnListeningForActivateChanged(VRDisplayImpl* display) {
+  GvrDelegateProvider* delegate_provider = GetGvrDelegateProvider();
+  if (!delegate_provider)
+    return;
+  delegate_provider->OnListeningForActivateChanged(display);
 }
 
 void GvrDevice::PauseTracking() {

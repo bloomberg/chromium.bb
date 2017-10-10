@@ -12,11 +12,15 @@
 namespace device {
 
 VRDisplayImpl::VRDisplayImpl(device::VRDevice* device,
+                             int render_frame_process_id,
+                             int render_frame_routing_id,
                              mojom::VRServiceClient* service_client,
                              mojom::VRDisplayInfoPtr display_info,
-                             mojom::VRDisplayHostPtr display_host,
-                             bool in_focused_frame)
-    : binding_(this), device_(device), in_focused_frame_(in_focused_frame) {
+                             mojom::VRDisplayHostPtr display_host)
+    : binding_(this),
+      device_(device),
+      render_frame_process_id_(render_frame_process_id),
+      render_frame_routing_id_(render_frame_routing_id) {
   device_->AddDisplay(this);
   mojom::VRMagicWindowProviderPtr magic_window_provider;
   binding_.Bind(mojo::MakeRequest(&magic_window_provider));
@@ -58,7 +62,7 @@ void VRDisplayImpl::RequestPresent(
     mojom::VRSubmitFrameClientPtr submit_client,
     mojom::VRPresentationProviderRequest request,
     mojom::VRDisplayHost::RequestPresentCallback callback) {
-  if (!device_->IsAccessAllowed(this) || !InFocusedFrame()) {
+  if (!device_->IsAccessAllowed(this)) {
     std::move(callback).Run(false);
     return;
   }
@@ -77,17 +81,12 @@ void VRDisplayImpl::GetPose(GetPoseCallback callback) {
     std::move(callback).Run(nullptr);
     return;
   }
-  device_->GetPose(std::move(callback));
+  device_->GetPose(this, std::move(callback));
 }
 
 void VRDisplayImpl::SetListeningForActivate(bool listening) {
   listening_for_activate_ = listening;
   device_->OnListeningForActivateChanged(this);
-}
-
-void VRDisplayImpl::SetInFocusedFrame(bool in_focused_frame) {
-  in_focused_frame_ = in_focused_frame;
-  device_->OnFrameFocusChanged(this);
 }
 
 }  // namespace device

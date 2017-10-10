@@ -12,12 +12,14 @@ base::LazyInstance<WebvrServiceProvider::BindWebvrServiceCallback>::Leaky
     g_callback = LAZY_INSTANCE_INITIALIZER;
 
 void WebvrServiceProvider::BindWebvrService(
-    RenderFrameHost* render_frame_host,
+    int render_frame_process_id,
+    int render_frame_routing_id,
     mojo::InterfaceRequest<device::mojom::VRService> request) {
   // Ignore the interface request if the callback is unset.
   if (g_callback.Get().is_null())
     return;
-  g_callback.Get().Run(render_frame_host, std::move(request));
+  g_callback.Get().Run(render_frame_process_id, render_frame_routing_id,
+                       std::move(request));
 }
 
 void WebvrServiceProvider::SetWebvrServiceCallback(
