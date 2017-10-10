@@ -101,6 +101,12 @@ const CGFloat kBookmarkTableCellImagePadding = 16.0;
   self.titleText.delegate = self;
 }
 
+- (void)stopEdit {
+  [self.textDelegate textDidChangeTo:self.titleText.text];
+  self.titleText.userInteractionEnabled = NO;
+  [self.titleText endEditing:YES];
+}
+
 + (NSString*)reuseIdentifier {
   return @"BookmarkTableCellIdentifier";
 }
@@ -178,6 +184,7 @@ const CGFloat kBookmarkTableCellImagePadding = 16.0;
 - (BOOL)textFieldShouldReturn:(UITextField*)textField {
   [self.textDelegate textDidChangeTo:self.titleText.text];
   self.titleText.userInteractionEnabled = NO;
+  [textField endEditing:YES];
   return YES;
 }
 

@@ -61,6 +61,10 @@ class BookmarkNode;
 // Start editing the |titleText| of this cell.
 - (void)startEdit;
 
+// Stop editing the |titleText| of this cell. This will call textDidChangeTo:
+// on |textDelegate| with the |titleText| value at the moment.
+- (void)stopEdit;
+
 // Receives the text field events.
 @property(nonatomic, weak) id<BookmarkTableCellTitleEditDelegate> textDelegate;
 
