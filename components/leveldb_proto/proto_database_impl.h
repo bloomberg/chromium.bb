@@ -71,7 +71,6 @@ class ProtoDatabaseImpl : public ProtoDatabase<T> {
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   std::unique_ptr<LevelDB> db_;
-  base::FilePath database_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(ProtoDatabaseImpl);
 };
@@ -128,11 +127,11 @@ inline void InitFromTaskRunner(LevelDB* database,
   *success = database->Init(database_dir, options);
 }
 
-inline void DestroyFromTaskRunner(const base::FilePath& database_dir,
+inline void DestroyFromTaskRunner(std::unique_ptr<LevelDB> leveldb,
                                   bool* success) {
   CHECK(success);
 
-  *success = LevelDB::Destroy(database_dir);
+  *success = leveldb->Destroy();
 }
 
 template <typename T>
@@ -234,7 +233,6 @@ void ProtoDatabaseImpl<T>::Init(
     const leveldb_env::Options& options,
     typename ProtoDatabase<T>::InitCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  database_dir_ = database_dir;
   InitWithDatabase(base::WrapUnique(new LevelDB(client_name)), database_dir,
                    options, std::move(callback));
 }
@@ -244,19 +242,11 @@ void ProtoDatabaseImpl<T>::Destroy(
     typename ProtoDatabase<T>::DestroyCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(db_);
-  DCHECK(!database_dir_.empty());
 
-  // Note that |db_| should be released from task runner.
-  if (!task_runner_->DeleteSoon(FROM_HERE, db_.release())) {
-    DLOG(WARNING) << "Proto database will not be deleted.";
-    std::move(callback).Run(false);
-    return;
-  }
-
-  // After |db_| is released, we can now wipe out the database directory.
   bool* success = new bool(false);
   task_runner_->PostTaskAndReply(
-      FROM_HERE, base::Bind(DestroyFromTaskRunner, database_dir_, success),
+      FROM_HERE,
+      base::Bind(DestroyFromTaskRunner, base::Passed(std::move(db_)), success),
       base::BindOnce(RunDestroyCallback<T>, std::move(callback),
                      base::Owned(success)));
 }
