@@ -121,6 +121,7 @@
 #include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebCache.h"
 #include "third_party/WebKit/public/platform/WebCachePolicy.h"
+#include "third_party/WebKit/public/platform/WebRuntimeFeatures.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
@@ -1572,6 +1573,16 @@ void ChromeContentRendererClient::RunScriptsAtDocumentIdle(
   ChromeExtensionsRendererClient::GetInstance()->RunScriptsAtDocumentIdle(
       render_frame);
   // |render_frame| might be dead by now.
+#endif
+}
+
+void ChromeContentRendererClient::
+    SetRuntimeFeaturesDefaultsBeforeBlinkInitialization() {
+// Web Share is shipped on Android, experimental otherwise. It is enabled here,
+// in chrome/, to avoid it being made available in other clients of content/
+// that do not have a Web Share Mojo implementation.
+#if defined(OS_ANDROID)
+  blink::WebRuntimeFeatures::EnableWebShare(true);
 #endif
 }
 

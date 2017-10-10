@@ -72,11 +72,6 @@ static void SetRuntimeFeatureDefaultsForPlatform() {
   WebRuntimeFeatures::EnableWebBluetooth(true);
 #endif
 
-// Web Share is shipped on Android, experimental otherwise.
-#if defined(OS_ANDROID)
-  WebRuntimeFeatures::EnableWebShare(true);
-#endif
-
 #if defined(OS_CHROMEOS)
   WebRuntimeFeatures::EnableForceTallerSelectPopup(true);
 #endif
