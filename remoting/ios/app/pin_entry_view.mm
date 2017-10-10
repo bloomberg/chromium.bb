@@ -197,7 +197,6 @@ static const int kMinPinLength = 6;
 }
 
 - (BOOL)textFieldShouldReturn:(UITextField*)textField {
-  NSLog(@"textFieldShouldReturn");
   if ([_pinButton isEnabled]) {
     [self didTapPinEntry:textField];
     return YES;

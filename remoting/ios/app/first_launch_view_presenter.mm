@@ -61,7 +61,8 @@
       [RemotingService.instance.authentication.user isAuthenticated];
   if (isAuthenticated && _viewController) {
     if (_navController.topViewController != _viewController) {
-      NSLog(@"Couldn't pop FirstLaunchView due to broken view hierarchy.");
+      LOG(ERROR)
+          << "Couldn't pop FirstLaunchView due to broken view hierarchy.";
       return;
     }
     [_navController popViewControllerAnimated:NO];

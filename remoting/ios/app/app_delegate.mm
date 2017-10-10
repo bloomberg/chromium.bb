@@ -151,7 +151,7 @@ static NSString* const kFAQsUrl =
 }
 
 - (void)emailSetupInstructions {
-  NSLog(@"TODO: emailSetupInstructions");
+  NOTREACHED();
 }
 
 #pragma mark - FirstLaunchViewPresenterDelegate

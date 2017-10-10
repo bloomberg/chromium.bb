@@ -13,8 +13,6 @@
 
 @optional  // Applies to all methods.
 
-// Sets the setting to shrink the display of the host to the client window.
-- (void)setShrinkToFit:(BOOL)shrinkToFit;
 // Sets the setting to resize the host to fix the client window.
 - (void)setResizeToFit:(BOOL)resizeToFit;
 // Use the direct input mode for the current connection.
