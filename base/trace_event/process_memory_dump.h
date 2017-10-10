@@ -193,7 +193,7 @@ class BASE_EXPORT ProcessMemoryDump {
       const UnguessableToken& shared_memory_guid,
       int importance);
 
-  const AllocatorDumpEdgesMap& allocator_dumps_edges_for_testing() const {
+  const AllocatorDumpEdgesMap& allocator_dumps_edges() const {
     return allocator_dumps_edges_;
   }
 

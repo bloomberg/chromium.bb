@@ -441,7 +441,7 @@ TEST(DiscardableSharedMemoryTest, TracingOwnershipEdges) {
       SharedMemoryTracker::GetDumpNameForTracing(memory1.mapped_id()));
   EXPECT_TRUE(shm_dump);
   EXPECT_EQ(shm_dump->GetSizeInternal(), client_dump->GetSizeInternal());
-  const auto edges = pmd.allocator_dumps_edges_for_testing();
+  const auto edges = pmd.allocator_dumps_edges();
   EXPECT_EQ(2u, edges.size());
   EXPECT_NE(edges.end(), edges.find(shm_dump->guid()));
   EXPECT_NE(edges.end(), edges.find(client_dump->guid()));

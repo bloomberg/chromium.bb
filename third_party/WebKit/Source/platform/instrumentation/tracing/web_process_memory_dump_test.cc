@@ -105,7 +105,7 @@ TEST(WebProcessMemoryDumpTest, IntegrationTest) {
   auto wmad4 = wpmd1->CreateMemoryAllocatorDump("1/4");
   wpmd1->AddOwnershipEdge(wmad4->Guid(), guid);
   auto allocator_dumps_edges =
-      wpmd1->process_memory_dump()->allocator_dumps_edges_for_testing();
+      wpmd1->process_memory_dump()->allocator_dumps_edges();
   ASSERT_EQ(1u, allocator_dumps_edges.size());
   auto it = allocator_dumps_edges.begin();
   ASSERT_NE(allocator_dumps_edges.end(), it);

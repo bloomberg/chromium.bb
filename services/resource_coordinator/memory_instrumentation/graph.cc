@@ -11,6 +11,7 @@ namespace memory_instrumentation {
 namespace {
 
 using base::trace_event::MemoryAllocatorDumpGuid;
+using Edge = GlobalDumpGraph::Edge;
 using Process = GlobalDumpGraph::Process;
 using Node = GlobalDumpGraph::Node;
 
@@ -25,6 +26,18 @@ Process* GlobalDumpGraph::CreateGraphForProcess(base::ProcessId process_id) {
       process_dump_graphs_.emplace(process_id, std::make_unique<Process>(this));
   DCHECK(id_to_dump_iterator.second);  // Check for duplicate pids
   return id_to_dump_iterator.first->second.get();
+}
+
+void GlobalDumpGraph::AddNodeOwnershipEdge(Node* owner,
+                                           Node* owned,
+                                           int importance) {
+  // The owner node should not already be associated with an edge.
+  DCHECK(!owner->owns_edge());
+
+  all_edges_.emplace_front(owner, owned, importance);
+  Edge* edge = &*all_edges_.begin();
+  owner->SetOwnsEdge(edge);
+  owned->AddOwnedByEdge(edge);
 }
 
 Node* GlobalDumpGraph::CreateNode(Process* process_graph) {
@@ -72,7 +85,8 @@ Node* Process::FindNode(base::StringPiece path) {
   return current;
 }
 
-Node::Node(Process* dump_graph) : dump_graph_(dump_graph) {}
+Node::Node(Process* dump_graph)
+    : dump_graph_(dump_graph), owns_edge_(nullptr) {}
 Node::~Node() {}
 
 Node* Node::GetChild(base::StringPiece name) {
@@ -88,6 +102,14 @@ void Node::InsertChild(base::StringPiece name, Node* node) {
   DCHECK_EQ(std::string::npos, name.find('/'));
 
   children_.emplace(name.as_string(), node);
+}
+
+void Node::AddOwnedByEdge(Edge* edge) {
+  owned_by_edges_.push_back(edge);
+}
+
+void Node::SetOwnsEdge(Edge* owns_edge) {
+  owns_edge_ = owns_edge;
 }
 
 void Node::AddEntry(std::string name,
@@ -108,5 +130,8 @@ Node::Entry::Entry(std::string value)
       units(Node::Entry::ScalarUnits::kObjects),
       value_string(value),
       value_uint64(0) {}
+
+Edge::Edge(Node* source, Node* target, int priority)
+    : source_(source), target_(target), priority_(priority) {}
 
 }  // namespace memory_instrumentation

@@ -20,6 +20,7 @@ namespace memory_instrumentation {
 class GlobalDumpGraph {
  public:
   class Node;
+  class Edge;
 
   // Graph of dumps either associated with a process or with
   // the shared space.
@@ -93,6 +94,17 @@ class GlobalDumpGraph {
     void AddEntry(std::string name, Entry::ScalarUnits units, uint64_t value);
     void AddEntry(std::string name, std::string value);
 
+    // Adds an edge which indicates that this node is owned by
+    // another node.
+    void AddOwnedByEdge(Edge* edge);
+
+    // Sets the edge indicates that this node owns another node.
+    void SetOwnsEdge(Edge* edge);
+
+    GlobalDumpGraph::Edge* owns_edge() const { return owns_edge_; }
+    const std::vector<GlobalDumpGraph::Edge*>& owned_by_edges() const {
+      return owned_by_edges_;
+    }
     const GlobalDumpGraph::Process* dump_graph() const { return dump_graph_; }
     const std::map<std::string, Entry>& entries() const { return entries_; }
 
@@ -101,7 +113,28 @@ class GlobalDumpGraph {
     std::map<std::string, Entry> entries_;
     std::map<std::string, Node*> children_;
 
+    GlobalDumpGraph::Edge* owns_edge_;
+    std::vector<GlobalDumpGraph::Edge*> owned_by_edges_;
+
     DISALLOW_COPY_AND_ASSIGN(Node);
+  };
+
+  // An edge in the dump graph which indicates ownership between the
+  // source and target nodes.
+  class Edge {
+   public:
+    Edge(GlobalDumpGraph::Node* source,
+         GlobalDumpGraph::Node* target,
+         int priority);
+
+    GlobalDumpGraph::Node* source() const { return source_; }
+    GlobalDumpGraph::Node* target() const { return target_; }
+    int priority() const { return priority_; }
+
+   private:
+    GlobalDumpGraph::Node* const source_;
+    GlobalDumpGraph::Node* const target_;
+    const int priority_;
   };
 
   using ProcessDumpGraphMap =
@@ -116,6 +149,10 @@ class GlobalDumpGraph {
   // by the given |process_id|.
   GlobalDumpGraph::Process* CreateGraphForProcess(base::ProcessId process_id);
 
+  // Adds an edge in the dump graph with the given source and target nodes
+  // and edge priority.
+  void AddNodeOwnershipEdge(Node* owner, Node* owned, int priority);
+
   const GuidNodeMap& nodes_by_guid() const { return nodes_by_guid_; }
   GlobalDumpGraph::Process* shared_memory_graph() const {
     return shared_memory_graph_.get();
@@ -123,6 +160,7 @@ class GlobalDumpGraph {
   const ProcessDumpGraphMap& process_dump_graphs() const {
     return process_dump_graphs_;
   }
+  const std::forward_list<Edge> edges() const { return all_edges_; }
 
  private:
   // Creates a node in the arena which is associated with the given
@@ -130,6 +168,7 @@ class GlobalDumpGraph {
   Node* CreateNode(GlobalDumpGraph::Process* dump_graph);
 
   std::forward_list<Node> all_nodes_;
+  std::forward_list<Edge> all_edges_;
   GuidNodeMap nodes_by_guid_;
   std::unique_ptr<GlobalDumpGraph::Process> shared_memory_graph_;
   ProcessDumpGraphMap process_dump_graphs_;

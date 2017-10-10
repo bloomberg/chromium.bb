@@ -21,9 +21,12 @@ TEST(GraphProcessorTest, ComputeMemoryGraph) {
   MemoryDumpArgs dump_args = {MemoryDumpLevelOfDetail::DETAILED};
   ProcessMemoryDump pmd(new HeapProfilerSerializationState, dump_args);
 
-  auto* allocator_dump = pmd.CreateAllocatorDump("test1/test2/test3");
-  allocator_dump->AddScalar(MemoryAllocatorDump::kNameSize,
-                            MemoryAllocatorDump::kUnitsBytes, 10);
+  auto* source = pmd.CreateAllocatorDump("test1/test2/test3");
+  source->AddScalar(MemoryAllocatorDump::kNameSize,
+                    MemoryAllocatorDump::kUnitsBytes, 10);
+
+  auto* target = pmd.CreateAllocatorDump("target");
+  pmd.AddOwnershipEdge(source->guid(), target->guid(), 10);
 
   process_dumps.emplace(1, std::move(pmd));
 
@@ -33,21 +36,28 @@ TEST(GraphProcessorTest, ComputeMemoryGraph) {
 
   auto id_to_dump_it = global_dump->process_dump_graphs().find(1);
   auto* first_child = id_to_dump_it->second->FindNode("test1");
-  ASSERT_TRUE(first_child != nullptr);
+  ASSERT_NE(first_child, nullptr);
 
   auto* second_child = first_child->GetChild("test2");
-  ASSERT_TRUE(second_child != nullptr);
+  ASSERT_NE(second_child, nullptr);
 
   auto* third_child = second_child->GetChild("test3");
-  ASSERT_TRUE(third_child != nullptr);
+  ASSERT_NE(third_child, nullptr);
 
   auto* direct = id_to_dump_it->second->FindNode("test1/test2/test3");
-  ASSERT_TRUE(third_child == direct);
+  ASSERT_EQ(third_child, direct);
 
   ASSERT_EQ(third_child->entries().size(), 1ul);
 
   auto size = third_child->entries().find(MemoryAllocatorDump::kNameSize);
   ASSERT_EQ(10ul, size->second.value_uint64);
+
+  auto& edges = global_dump->edges();
+  auto edge_it = edges.begin();
+  ASSERT_EQ(std::distance(edges.begin(), edges.end()), 1l);
+  ASSERT_EQ(edge_it->source(), direct);
+  ASSERT_EQ(edge_it->target(), id_to_dump_it->second->FindNode("target"));
+  ASSERT_EQ(edge_it->priority(), 10);
 }
 
 }  // namespace memory_instrumentation

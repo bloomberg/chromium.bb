@@ -195,7 +195,7 @@ TEST_F(StructTraitsTest, ProcessMemoryDump) {
     EXPECT_EQ(1u, mad_it->second->entries().size());
     EXPECT_THAT(mad_it->second->entries(), Contains(Eq(ByRef(expected_entry))));
   }
-  const auto& edges = output->allocator_dumps_edges_for_testing();
+  const auto& edges = output->allocator_dumps_edges();
   {
     auto edge_it = edges.find(mad2_id);
     ASSERT_NE(edges.end(), edge_it);
