@@ -68,10 +68,12 @@ void ParseSupportedMethods(
     const std::vector<PaymentMethodData>& method_data,
     std::vector<std::string>* out_supported_networks,
     std::set<std::string>* out_basic_card_specified_networks,
-    std::vector<GURL>* out_url_payment_method_identifiers) {
+    std::vector<GURL>* out_url_payment_method_identifiers,
+    std::set<std::string>* out_payment_method_identifiers) {
   DCHECK(out_supported_networks->empty());
   DCHECK(out_basic_card_specified_networks->empty());
   DCHECK(out_url_payment_method_identifiers->empty());
+  DCHECK(out_payment_method_identifiers->empty());
 
   const std::set<std::string> kBasicCardNetworks{
       "amex",       "diners", "discover", "jcb",
@@ -83,6 +85,10 @@ void ParseSupportedMethods(
   for (const PaymentMethodData& method_data_entry : method_data) {
     if (method_data_entry.supported_methods.empty())
       return;
+
+    out_payment_method_identifiers->insert(
+        method_data_entry.supported_methods.begin(),
+        method_data_entry.supported_methods.end());
 
     for (const std::string& method : method_data_entry.supported_methods) {
       if (method.empty())

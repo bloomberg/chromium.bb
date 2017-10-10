@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "components/payments/content/can_make_payment_query_factory.h"
+#include "components/payments/content/content_payment_request_delegate.h"
 #include "components/payments/content/origin_security_checker.h"
 #include "components/payments/content/payment_request_converter.h"
 #include "components/payments/content/payment_request_web_contents_manager.h"
@@ -30,7 +31,7 @@ namespace payments {
 PaymentRequest::PaymentRequest(
     content::RenderFrameHost* render_frame_host,
     content::WebContents* web_contents,
-    std::unique_ptr<PaymentRequestDelegate> delegate,
+    std::unique_ptr<ContentPaymentRequestDelegate> delegate,
     PaymentRequestWebContentsManager* manager,
     mojo::InterfaceRequest<mojom::PaymentRequest> request,
     ObserverForTest* observer_for_testing)

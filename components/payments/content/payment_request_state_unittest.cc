@@ -14,8 +14,8 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/payments/content/payment_request_spec.h"
+#include "components/payments/content/test_content_payment_request_delegate.h"
 #include "components/payments/core/journey_logger.h"
-#include "components/payments/core/test_payment_request_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/modules/payments/payment_request.mojom.h"
 
@@ -60,10 +60,10 @@ class PaymentRequestStateTest : public testing::Test,
       mojom::PaymentDetailsPtr details,
       std::vector<mojom::PaymentMethodDataPtr> method_data) {
     // The spec will be based on the |options| and |details| passed in.
-    spec_ = base::MakeUnique<PaymentRequestSpec>(
+    spec_ = std::make_unique<PaymentRequestSpec>(
         std::move(options), std::move(details), std::move(method_data),
         /*observer=*/nullptr, "en-US");
-    state_ = base::MakeUnique<PaymentRequestState>(
+    state_ = std::make_unique<PaymentRequestState>(
         nullptr /* context */, GURL("https://example.com"),
         GURL("https://example.com/pay"), spec_.get(), this, "en-US",
         &test_personal_data_manager_, &test_payment_request_delegate_,
@@ -111,7 +111,7 @@ class PaymentRequestStateTest : public testing::Test,
   }
 
   autofill::AutofillProfile* test_address() { return &address_; }
-  TestPaymentRequestDelegate* test_payment_request_delegate() {
+  TestContentPaymentRequestDelegate* test_payment_request_delegate() {
     return &test_payment_request_delegate_;
   }
 
@@ -122,7 +122,7 @@ class PaymentRequestStateTest : public testing::Test,
   mojom::PaymentResponsePtr payment_response_;
   mojom::PaymentAddressPtr selected_shipping_address_;
   autofill::TestPersonalDataManager test_personal_data_manager_;
-  TestPaymentRequestDelegate test_payment_request_delegate_;
+  TestContentPaymentRequestDelegate test_payment_request_delegate_;
   JourneyLogger journey_logger_;
 
   // Test data.

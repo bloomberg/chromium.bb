@@ -7,9 +7,8 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
+#include "components/payments/content/content_payment_request_delegate.h"
 #include "components/payments/content/payment_request.h"
-#include "components/payments/core/payment_request_delegate.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 
@@ -31,10 +30,10 @@ PaymentRequestWebContentsManager::GetOrCreateForWebContents(
 void PaymentRequestWebContentsManager::CreatePaymentRequest(
     content::RenderFrameHost* render_frame_host,
     content::WebContents* web_contents,
-    std::unique_ptr<PaymentRequestDelegate> delegate,
+    std::unique_ptr<ContentPaymentRequestDelegate> delegate,
     mojo::InterfaceRequest<payments::mojom::PaymentRequest> request,
     PaymentRequest::ObserverForTest* observer_for_testing) {
-  auto new_request = base::MakeUnique<PaymentRequest>(
+  auto new_request = std::make_unique<PaymentRequest>(
       render_frame_host, web_contents, std::move(delegate), this,
       std::move(request), observer_for_testing);
   PaymentRequest* request_ptr = new_request.get();

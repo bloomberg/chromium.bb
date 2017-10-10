@@ -23,7 +23,7 @@ class WebContents;
 
 namespace payments {
 
-class PaymentRequestDelegate;
+class ContentPaymentRequestDelegate;
 
 // This class owns the PaymentRequest associated with a given WebContents.
 //
@@ -49,7 +49,7 @@ class PaymentRequestWebContentsManager
   void CreatePaymentRequest(
       content::RenderFrameHost* render_frame_host,
       content::WebContents* web_contents,
-      std::unique_ptr<PaymentRequestDelegate> delegate,
+      std::unique_ptr<ContentPaymentRequestDelegate> delegate,
       mojo::InterfaceRequest<payments::mojom::PaymentRequest> request,
       PaymentRequest::ObserverForTest* observer_for_testing);
 

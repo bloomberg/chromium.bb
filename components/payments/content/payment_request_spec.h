@@ -96,6 +96,9 @@ class PaymentRequestSpec : public PaymentOptionsProvider {
   const std::vector<GURL>& url_payment_method_identifiers() const {
     return url_payment_method_identifiers_;
   }
+  const std::set<std::string>& payment_method_identifiers_set() const {
+    return payment_method_identifiers_set_;
+  }
   // Returns whether the |method_name| was specified as supported through the
   // "basic-card" payment method. If false, it means either the |method_name| is
   // not supported at all, or specified directly in supportedMethods.
@@ -201,6 +204,9 @@ class PaymentRequestSpec : public PaymentOptionsProvider {
   // identifers, the other being standardized payment method identifiers i.e.,
   // basic-card.
   std::vector<GURL> url_payment_method_identifiers_;
+
+  // The set of all payment method identifiers.
+  std::set<std::string> payment_method_identifiers_set_;
 
   // A mapping of the payment method names to the corresponding JSON-stringified
   // payment method specific data.

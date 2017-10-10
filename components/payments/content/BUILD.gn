@@ -6,6 +6,7 @@ static_library("content") {
   sources = [
     "can_make_payment_query_factory.cc",
     "can_make_payment_query_factory.h",
+    "content_payment_request_delegate.h",
     "payment_request.cc",
     "payment_request.h",
     "payment_request_converter.cc",
@@ -80,6 +81,8 @@ source_set("unit_tests") {
     "payment_request_spec_unittest.cc",
     "payment_request_state_unittest.cc",
     "payment_response_helper_unittest.cc",
+    "test_content_payment_request_delegate.cc",
+    "test_content_payment_request_delegate.h",
     "web_app_manifest_section_table_unittest.cc",
   ]
 

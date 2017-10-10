@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "components/autofill/core/browser/address_normalizer_impl.h"
-#include "components/payments/core/payment_request_delegate.h"
+#include "components/payments/content/content_payment_request_delegate.h"
 
 namespace content {
 class WebContents;
@@ -20,7 +20,7 @@ namespace payments {
 
 class PaymentRequestDialog;
 
-class ChromePaymentRequestDelegate : public PaymentRequestDelegate {
+class ChromePaymentRequestDelegate : public ContentPaymentRequestDelegate {
  public:
   explicit ChromePaymentRequestDelegate(content::WebContents* web_contents);
   ~ChromePaymentRequestDelegate() override;
@@ -44,6 +44,8 @@ class ChromePaymentRequestDelegate : public PaymentRequestDelegate {
   std::string GetAuthenticatedEmail() const override;
   PrefService* GetPrefService() override;
   bool IsBrowserWindowActive() const override;
+  scoped_refptr<PaymentManifestWebDataService>
+  GetPaymentManifestWebDataService() const override;
 
  protected:
   // Reference to the dialog so that we can satisfy calls to CloseDialog(). This
