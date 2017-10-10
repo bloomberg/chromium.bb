@@ -26,11 +26,6 @@ class OfflinePageDownloadBridge {
 
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 
-  void StartDownload(JNIEnv* env,
-                     const base::android::JavaParamRef<jobject>& obj,
-                     const base::android::JavaParamRef<jobject>& j_tab,
-                     const base::android::JavaParamRef<jstring>& j_origin);
-
  private:
   JavaObjectWeakGlobalRef weak_java_ref_;
 
