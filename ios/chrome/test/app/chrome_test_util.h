@@ -50,9 +50,6 @@ id<BrowserCommands> BrowserCommandDispatcherForMainBVC();
 // Returns the dispatcher for the active view controller.
 id<ApplicationCommands, BrowserCommands> DispatcherForActiveViewController();
 
-// Runs |command| using the active view controller.
-void RunCommandWithActiveViewController(GenericChromeCommand* command);
-
 // Removes all presented infobars.
 void RemoveAllInfoBars();
 

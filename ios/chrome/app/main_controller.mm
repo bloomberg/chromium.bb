@@ -1581,9 +1581,6 @@ const int kExternalFilesCleanupDelaySeconds = 60;
       }
       break;
     }
-    case IDC_SHOW_ADD_ACCOUNT:
-      [self showAddAccount];
-      break;
     default:
       // Unknown commands get dropped with a warning.
       NOTREACHED() << "Unknown command id " << command;
