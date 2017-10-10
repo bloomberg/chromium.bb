@@ -186,9 +186,6 @@ const char kCorruptedDisableCount[] = "extensions.corrupted_disable_count";
 // that need to be synced. Default value is false.
 const char kPrefNeedsSync[] = "needs_sync";
 
-// The indexed ruleset checksum for the Declarative Net Request API.
-const char kPrefDNRRulesetChecksum[] = "dnr_ruleset_checksum";
-
 // Provider of write access to a dictionary storing extension prefs.
 class ScopedExtensionPrefUpdate : public prefs::ScopedDictionaryPrefUpdate {
  public:
@@ -1074,14 +1071,13 @@ void ExtensionPrefs::OnExtensionInstalled(
     Extension::State initial_state,
     const syncer::StringOrdinal& page_ordinal,
     int install_flags,
-    const std::string& install_parameter,
-    const base::Optional<int>& dnr_ruleset_checksum) {
+    const std::string& install_parameter) {
   ScopedExtensionPrefUpdate update(prefs_, extension->id());
   auto extension_dict = update.Get();
   const base::Time install_time = clock_->Now();
   PopulateExtensionInfoPrefs(extension, install_time, initial_state,
                              install_flags, install_parameter,
-                             dnr_ruleset_checksum, extension_dict.get());
+                             extension_dict.get());
 
   FinishExtensionInfoPrefs(extension->id(), install_time,
                            extension->RequiresSortOrdinal(), page_ordinal,
@@ -1289,13 +1285,12 @@ void ExtensionPrefs::SetDelayedInstallInfo(
     int install_flags,
     DelayReason delay_reason,
     const syncer::StringOrdinal& page_ordinal,
-    const std::string& install_parameter,
-    const base::Optional<int>& dnr_ruleset_checksum) {
+    const std::string& install_parameter) {
   ScopedDictionaryUpdate update(this, extension->id(), kDelayedInstallInfo);
   auto extension_dict = update.Create();
   PopulateExtensionInfoPrefs(extension, clock_->Now(), initial_state,
                              install_flags, install_parameter,
-                             dnr_ruleset_checksum, extension_dict.get());
+                             extension_dict.get());
 
   // Add transient data that is needed by FinishDelayedInstallInfo(), but
   // should not be in the final extension prefs. All entries here should have
@@ -1704,12 +1699,6 @@ void ExtensionPrefs::SetNeedsSync(const std::string& extension_id,
       needs_sync ? std::make_unique<base::Value>(true) : nullptr);
 }
 
-bool ExtensionPrefs::GetDNRRulesetChecksum(const ExtensionId& extension_id,
-                                           int* dnr_ruleset_checksum) const {
-  return ReadPrefAsInteger(extension_id, kPrefDNRRulesetChecksum,
-                           dnr_ruleset_checksum);
-}
-
 // static
 void ExtensionPrefs::SetRunAlertsInFirstRunForTest() {
   g_run_alerts_in_first_run_for_testing = true;
@@ -1829,7 +1818,6 @@ void ExtensionPrefs::PopulateExtensionInfoPrefs(
     Extension::State initial_state,
     int install_flags,
     const std::string& install_parameter,
-    const base::Optional<int>& dnr_ruleset_checksum,
     prefs::DictionaryValueUpdate* extension_dict) const {
   extension_dict->SetInteger(kPrefState, initial_state);
   extension_dict->SetInteger(kPrefLocation, extension->location());
@@ -1844,8 +1832,6 @@ void ExtensionPrefs::PopulateExtensionInfoPrefs(
       kPrefInstallTime, base::Int64ToString(install_time.ToInternalValue()));
   if (install_flags & kInstallFlagIsBlacklistedForMalware)
     extension_dict->SetBoolean(kPrefBlacklist, true);
-  if (dnr_ruleset_checksum)
-    extension_dict->SetInteger(kPrefDNRRulesetChecksum, *dnr_ruleset_checksum);
 
   base::FilePath::StringType path = MakePathRelative(install_directory_,
                                                      extension->path());

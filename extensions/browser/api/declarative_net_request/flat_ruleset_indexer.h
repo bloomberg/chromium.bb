@@ -25,7 +25,7 @@ struct IndexedRule;
 class FlatRulesetIndexer {
  public:
   // Represents the address and the size of the buffer storing the ruleset.
-  using SerializedData = std::pair<const uint8_t*, size_t>;
+  using SerializedData = std::pair<uint8_t*, size_t>;
 
   FlatRulesetIndexer();
   ~FlatRulesetIndexer();

@@ -9,8 +9,6 @@
 #include "base/files/file_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "extensions/browser/api/declarative_net_request/flat/extension_ruleset_generated.h"
-#include "extensions/browser/api/declarative_net_request/utils.h"
-#include "extensions/browser/extension_prefs.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/file_util.h"
 #include "third_party/flatbuffers/src/include/flatbuffers/flatbuffers.h"
@@ -18,15 +16,8 @@
 namespace extensions {
 namespace declarative_net_request {
 
-bool HasValidIndexedRuleset(const Extension& extension,
-                            content::BrowserContext* browser_context) {
+bool HasValidIndexedRuleset(const Extension& extension) {
   base::AssertBlockingAllowed();
-
-  int expected_checksum;
-  if (!ExtensionPrefs::Get(browser_context)
-           ->GetDNRRulesetChecksum(extension.id(), &expected_checksum)) {
-    return false;
-  }
 
   std::string data;
   if (!base::ReadFileToString(
@@ -34,11 +25,9 @@ bool HasValidIndexedRuleset(const Extension& extension,
     return false;
   }
 
-  const uint8_t* data_ptr = reinterpret_cast<const uint8_t*>(data.c_str());
-  flatbuffers::Verifier verifier(data_ptr, data.size());
-  return expected_checksum ==
-             GetRulesetChecksumForTesting(data_ptr, data.size()) &&
-         flat::VerifyExtensionIndexedRulesetBuffer(verifier);
+  flatbuffers::Verifier verifier(reinterpret_cast<const uint8_t*>(data.c_str()),
+                                 data.size());
+  return flat::VerifyExtensionIndexedRulesetBuffer(verifier);
 }
 
 }  // namespace declarative_net_request

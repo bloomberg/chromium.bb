@@ -63,7 +63,7 @@ class DeclarativeNetRequestBrowserTest
     }
     ASSERT_TRUE(extension);
 
-    EXPECT_TRUE(HasValidIndexedRuleset(*extension, profile()));
+    EXPECT_TRUE(HasValidIndexedRuleset(*extension));
 
     int expected_histogram_count = 1;
     tester.ExpectTotalCount(kIndexRulesTimeHistogram, expected_histogram_count);

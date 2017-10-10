@@ -17,7 +17,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/extensions/blacklist.h"
 #include "chrome/browser/extensions/extension_management.h"
@@ -319,16 +318,12 @@ class ExtensionService
 
   // Informs the service that an extension's files are in place for loading.
   //
-  // |extension|            the extension
-  // |page_ordinal|         the location of the extension in the app launcher
-  // |install_flags|        a bitmask of extensions::InstallFlags
-  // |dnr_ruleset_checksum| Checksum of the indexed ruleset for the Declarative
-  //                        Net Request API.
-  void OnExtensionInstalled(
-      const extensions::Extension* extension,
-      const syncer::StringOrdinal& page_ordinal,
-      int install_flags,
-      const base::Optional<int>& dnr_ruleset_checksum = base::nullopt);
+  // |extension|     the extension
+  // |page_ordinal|  the location of the extension in the app launcher
+  // |install_flags| a bitmask of extensions::InstallFlags
+  void OnExtensionInstalled(const extensions::Extension* extension,
+                            const syncer::StringOrdinal& page_ordinal,
+                            int install_flags);
   void OnExtensionInstalled(const extensions::Extension* extension,
                             const syncer::StringOrdinal& page_ordinal) {
     OnExtensionInstalled(extension,
@@ -523,13 +518,11 @@ class ExtensionService
   // pages; and perform other extension install tasks before calling
   // AddExtension.
   // |install_flags| is a bitmask of extensions::InstallFlags.
-  void AddNewOrUpdatedExtension(
-      const extensions::Extension* extension,
-      extensions::Extension::State initial_state,
-      int install_flags,
-      const syncer::StringOrdinal& page_ordinal,
-      const std::string& install_parameter,
-      const base::Optional<int>& dnr_ruleset_checksum);
+  void AddNewOrUpdatedExtension(const extensions::Extension* extension,
+                                extensions::Extension::State initial_state,
+                                int install_flags,
+                                const syncer::StringOrdinal& page_ordinal,
+                                const std::string& install_parameter);
 
   // Common helper to finish installing the given extension.
   void FinishInstallation(const extensions::Extension* extension);
