@@ -29,14 +29,21 @@ blink_modules_sources("vr") {
     "VRStageParameters.h",
     "latest/VR.cpp",
     "latest/VR.h",
+    "latest/VRCoordinateSystem.cpp",
+    "latest/VRCoordinateSystem.h",
     "latest/VRDevice.cpp",
     "latest/VRDevice.h",
     "latest/VRDeviceEvent.cpp",
     "latest/VRDeviceEvent.h",
+    "latest/VRFrameOfReference.cpp",
+    "latest/VRFrameOfReference.h",
     "latest/VRSession.cpp",
     "latest/VRSession.h",
     "latest/VRSessionEvent.cpp",
     "latest/VRSessionEvent.h",
+    "latest/VRStageBounds.cpp",
+    "latest/VRStageBounds.h",
+    "latest/VRStageBoundsPoint.h",
   ]
 
   deps = [

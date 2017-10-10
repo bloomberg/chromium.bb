@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../resources/fake-vr-displays.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/device/vr/vr_service.mojom.js"></script>
+<script src="../resources/mock-vr-service.js"></script>
+<script src="../resources/test-constants.js"></script>
+<canvas id="webgl-canvas"></canvas>
+<script src="../resources/presentation-setup.js"></script>
+<script>
+let fakeDisplays = fakeVRDisplays();
+
+vr_test( (t) => {
+  return navigator.vr.getDevices().then( (devices) => {
+    let pixel = devices[0];
+    runWithUserGesture( () => {
+      pixel.requestSession({ exclusive: true }).then( (session) => {
+
+        promise_test( function() {
+          return promise_rejects(this, new TypeError(),
+              session.requestFrameOfReference("foo"));
+        }, "requestFrameOfReference rejected for unknown requested type.");
+
+        return Promise.all([
+          session.requestFrameOfReference("headModel").then( (frameOfRef) => {
+            t.step( () => {
+              assert_true(frameOfRef instanceof VRCoordinateSystem);
+              assert_true(frameOfRef instanceof VRFrameOfReference);
+            }, "'headModel' Frame of Reference is the correct type.");
+          }, (err) => {
+            t.step( () => {
+              assert_unreached("requestFrameOfReference 'headModel' rejected");
+            });
+          }),
+
+          session.requestFrameOfReference("eyeLevel").then( (frameOfRef) => {
+            t.step( () => {
+              assert_true(frameOfRef instanceof VRCoordinateSystem);
+              assert_true(frameOfRef instanceof VRFrameOfReference);
+            }, "'eyeLevel' Frame of Reference is the correct type.");
+          }, (err) => {
+            t.step( () => {
+              assert_unreached("requestFrameOfReference 'eyeLevel' rejected");
+            });
+          }),
+
+          session.requestFrameOfReference("stage").then( (frameOfRef) => {
+            t.step( () => {
+              assert_true(frameOfRef instanceof VRCoordinateSystem);
+              assert_true(frameOfRef instanceof VRFrameOfReference);
+            }, "'stage' Frame of Reference is the correct type.");
+          }, (err) => {
+            t.step( () => {
+              assert_unreached("requestFrameOfReference 'stage' rejected");
+            });
+          })
+        ]);
+
+      }, (err) => {
+        t.step( () => {
+          assert_unreached("requestSession rejected");
+        });
+      }).then( () => {
+        t.done();
+      });
+    });
+  }, (err) => {
+    t.step( () => {
+      assert_unreached("getDevices rejected");
+    });
+  });
+}, [fakeDisplays["Pixel"]],
+"requestFrameOfReference returns the expected objects");
+
+</script>

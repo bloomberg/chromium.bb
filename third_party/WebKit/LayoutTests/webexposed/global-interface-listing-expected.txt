@@ -7191,6 +7191,10 @@ interface VR : EventTarget
     method getDevices
     setter ondeviceconnect
     setter ondevicedisconnect
+interface VRCoordinateSystem
+    attribute @@toStringTag
+    method constructor
+    method getTransformTo
 interface VRDevice : EventTarget
     attribute @@toStringTag
     getter deviceName
@@ -7248,6 +7252,11 @@ interface VRFrameData
     getter rightProjectionMatrix
     getter rightViewMatrix
     method constructor
+interface VRFrameOfReference : VRCoordinateSystem
+    attribute @@toStringTag
+    getter bounds
+    getter emulatedHeight
+    method constructor
 interface VRPose
     attribute @@toStringTag
     getter angularAcceleration
@@ -7269,6 +7278,7 @@ interface VRSession : EventTarget
     getter onresetpose
     method constructor
     method end
+    method requestFrameOfReference
     setter depthFar
     setter depthNear
     setter onblur
@@ -7278,6 +7288,15 @@ interface VRSession : EventTarget
 interface VRSessionEvent : Event
     attribute @@toStringTag
     getter session
+    method constructor
+interface VRStageBounds
+    attribute @@toStringTag
+    getter geometry
+    method constructor
+interface VRStageBoundsPoint
+    attribute @@toStringTag
+    getter x
+    getter z
     method constructor
 interface VRStageParameters
     attribute @@toStringTag

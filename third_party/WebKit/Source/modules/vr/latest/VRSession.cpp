@@ -10,6 +10,8 @@
 #include "modules/EventTargetModules.h"
 #include "modules/vr/latest/VR.h"
 #include "modules/vr/latest/VRDevice.h"
+#include "modules/vr/latest/VRFrameOfReference.h"
+#include "modules/vr/latest/VRFrameOfReferenceOptions.h"
 #include "modules/vr/latest/VRSessionEvent.h"
 
 namespace blink {
@@ -17,6 +19,11 @@ namespace blink {
 namespace {
 
 const char kSessionEnded[] = "VRSession has already ended.";
+
+const char kUnknownFrameOfReference[] = "Unknown frame of reference type";
+
+const char kNonEmulatedStageNotSupported[] =
+    "Non-emulated 'stage' frame of reference not yet supported";
 
 }  // namespace
 
@@ -37,6 +44,47 @@ ExecutionContext* VRSession::GetExecutionContext() const {
 
 const AtomicString& VRSession::InterfaceName() const {
   return EventTargetNames::VRSession;
+}
+
+ScriptPromise VRSession::requestFrameOfReference(
+    ScriptState* script_state,
+    const String& type,
+    const VRFrameOfReferenceOptions& options) {
+  if (detached_) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state, DOMException::Create(kInvalidStateError, kSessionEnded));
+  }
+
+  VRFrameOfReference* frameOfRef = nullptr;
+  if (type == "headModel") {
+    frameOfRef =
+        new VRFrameOfReference(this, VRFrameOfReference::kTypeHeadModel);
+  } else if (type == "eyeLevel") {
+    frameOfRef =
+        new VRFrameOfReference(this, VRFrameOfReference::kTypeEyeLevel);
+  } else if (type == "stage") {
+    if (!options.disableStageEmulation()) {
+      frameOfRef = new VRFrameOfReference(this, VRFrameOfReference::kTypeStage);
+      frameOfRef->UseEmulatedHeight(options.stageEmulationHeight());
+    } else {
+      // TODO(bajones): Support native stages using the standing transform.
+      return ScriptPromise::RejectWithDOMException(
+          script_state, DOMException::Create(kNotSupportedError,
+                                             kNonEmulatedStageNotSupported));
+    }
+  }
+
+  if (!frameOfRef) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state,
+        DOMException::Create(kNotSupportedError, kUnknownFrameOfReference));
+  }
+
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
+  resolver->Resolve(frameOfRef);
+
+  return promise;
 }
 
 ScriptPromise VRSession::end(ScriptState* script_state) {

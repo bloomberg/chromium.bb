@@ -13,6 +13,7 @@
 namespace blink {
 
 class VRDevice;
+class VRFrameOfReferenceOptions;
 
 class VRSession final : public EventTargetWithInlineData {
   DEFINE_WRAPPERTYPEINFO();
@@ -35,6 +36,10 @@ class VRSession final : public EventTargetWithInlineData {
   DEFINE_ATTRIBUTE_EVENT_LISTENER(focus);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(resetpose);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(end);
+
+  ScriptPromise requestFrameOfReference(ScriptState*,
+                                        const String& type,
+                                        const VRFrameOfReferenceOptions&);
 
   // Called by JavaScript to manually end the session.
   ScriptPromise end(ScriptState*);
