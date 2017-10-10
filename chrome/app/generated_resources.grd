@@ -10015,7 +10015,7 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
             Please unlock your profile before adding a person.
           </message>
           <message name="IDS_USER_MANAGER_PROMPT_MESSAGE" desc="Prompt message displayed on UserManager when force-sign-in policy is enabled.">
-            Please unlock your profile with your corporate account.
+            Your administrator requires you to sign in to Chrome.
           </message>
           <message name="IDS_LOGIN_POD_USER_REMOVE_WARNING_NONSYNC" desc="Main text shown as a warning when attempting to remove an user.">
             This will permanently delete your browsing data from this device.
