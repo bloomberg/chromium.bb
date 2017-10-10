@@ -40,11 +40,10 @@ ImeObserver::ImeObserver(const std::string& extension_id, Profile* profile)
     : extension_id_(extension_id), profile_(profile) {}
 
 void ImeObserver::OnActivate(const std::string& component_id) {
-  if (extension_id_.empty() ||
-      !HasListener(input_ime::OnActivate::kEventName)) {
-    LOG(ERROR) << "Can't send onActivate event to \"" << extension_id_ << "\"";
+  // Don't check whether the extension listens on onActivate event here.
+  // Send onActivate event to give the IME a chance to add their listeners.
+  if (extension_id_.empty())
     return;
-  }
 
   std::unique_ptr<base::ListValue> args(input_ime::OnActivate::Create(
       component_id, input_ime::ParseScreenType(GetCurrentScreenType())));

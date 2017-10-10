@@ -194,26 +194,33 @@ class ImeObserverChromeOS : public ui::ImeObserver {
       extensions::events::HistogramValue histogram_value,
       const std::string& event_name,
       std::unique_ptr<base::ListValue> args) override {
-    if (event_name != input_ime::OnActivate::kEventName) {
-      // For suspended IME extension (e.g. XKB extension), don't awake it by IME
-      // events except onActivate. The IME extension should be awake by other
-      // events (e.g. runtime.onMessage) from its other pages.
-      // This is to save memory for steady state Chrome OS on which the users
-      // don't want any IME features.
-      extensions::ExtensionSystem* extension_system =
-          extensions::ExtensionSystem::Get(profile_);
-      if (extension_system) {
-        const extensions::Extension* extension =
-            extension_system->extension_service()->GetExtensionById(
-                extension_id_, false /* include_disabled */);
-        if (!extension)
-          return;
-        extensions::ProcessManager* process_manager =
-            extensions::ProcessManager::Get(profile_);
-        if (extensions::BackgroundInfo::HasBackgroundPage(extension) &&
-            !process_manager->GetBackgroundHostForExtension(extension_id_)) {
-          return;
-        }
+    if (event_name == input_ime::OnActivate::kEventName) {
+      // Send onActivate event regardless of it's listened by the IME.
+      auto event = base::MakeUnique<extensions::Event>(
+          histogram_value, event_name, std::move(args), profile_);
+      extensions::EventRouter::Get(profile_)->DispatchEventWithLazyListener(
+          extension_id_, std::move(event));
+      return;
+    }
+
+    // For suspended IME extension (e.g. XKB extension), don't awake it by IME
+    // events except onActivate. The IME extension should be awake by other
+    // events (e.g. runtime.onMessage) from its other pages.
+    // This is to save memory for steady state Chrome OS on which the users
+    // don't want any IME features.
+    extensions::ExtensionSystem* extension_system =
+        extensions::ExtensionSystem::Get(profile_);
+    if (extension_system) {
+      const extensions::Extension* extension =
+          extension_system->extension_service()->GetExtensionById(
+              extension_id_, false /* include_disabled */);
+      if (!extension)
+        return;
+      extensions::ProcessManager* process_manager =
+          extensions::ProcessManager::Get(profile_);
+      if (extensions::BackgroundInfo::HasBackgroundPage(extension) &&
+          !process_manager->GetBackgroundHostForExtension(extension_id_)) {
+        return;
       }
     }
 
