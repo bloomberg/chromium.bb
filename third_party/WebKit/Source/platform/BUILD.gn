@@ -312,6 +312,7 @@ jumbo_component("platform") {
     "Prerender.cpp",
     "Prerender.h",
     "PrerenderClient.h",
+    "ResolutionUnits.h",
     "ScopedOrientationChangeIndicator.cpp",
     "ScopedOrientationChangeIndicator.h",
     "ScriptForbiddenScope.cpp",

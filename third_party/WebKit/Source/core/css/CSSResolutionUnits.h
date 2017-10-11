@@ -19,23 +19,15 @@
  *
  */
 
-#ifndef CSSHelper_h
-#define CSSHelper_h
+#ifndef CSSResolutionUnits_h
+#define CSSResolutionUnits_h
 
+#include "platform/ResolutionUnits.h"
 #include "platform/wtf/Forward.h"
 
 namespace blink {
 
-const double kMillimetersPerCentimeter = 10;
-const double kQuarterMillimetersPerCentimeter = 40;
-const double kCentimetersPerInch = 2.54;
-const double kMillimetersPerInch = 25.4;
-const double kQuarterMillimetersPerInch = 101.6;
-const double kPointsPerInch = 72;
-const double kPicasPerInch = 6;
-
 // These conversions are defined in css-values
-const double kCssPixelsPerInch = 96;
 const double kCssPixelsPerCentimeter = kCssPixelsPerInch / kCentimetersPerInch;
 const double kCssPixelsPerMillimeter =
     kCssPixelsPerCentimeter / kMillimetersPerCentimeter;
@@ -46,4 +38,4 @@ const double kCssPixelsPerPica = kCssPixelsPerInch / kPicasPerInch;
 
 }  // namespace blink
 
-#endif  // CSSHelper_h
+#endif  // CSSResolutionUnits_h

@@ -22,8 +22,8 @@
 
 #include "core/svg/SVGLengthContext.h"
 
-#include "core/css/CSSHelper.h"
 #include "core/css/CSSPrimitiveValue.h"
+#include "core/css/CSSResolutionUnits.h"
 #include "core/css/CSSToLengthConversionData.h"
 #include "core/dom/NodeComputedStyle.h"
 #include "core/frame/LocalFrameView.h"

@@ -4,7 +4,7 @@
 
 #include "core/css/MediaValues.h"
 
-#include "core/css/CSSHelper.h"
+#include "core/css/CSSResolutionUnits.h"
 #include "core/css/MediaValuesCached.h"
 #include "core/css/MediaValuesDynamic.h"
 #include "core/dom/Document.h"

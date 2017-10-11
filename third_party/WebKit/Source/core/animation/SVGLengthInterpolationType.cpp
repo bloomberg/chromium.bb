@@ -7,7 +7,7 @@
 #include <memory>
 #include "core/animation/SVGInterpolationEnvironment.h"
 #include "core/animation/StringKeyframe.h"
-#include "core/css/CSSHelper.h"
+#include "core/css/CSSResolutionUnits.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGLength.h"
 #include "core/svg/SVGLengthContext.h"

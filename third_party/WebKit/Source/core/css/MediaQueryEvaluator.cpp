@@ -30,8 +30,8 @@
 #include "core/css/MediaQueryEvaluator.h"
 
 #include "core/CSSValueKeywords.h"
-#include "core/css/CSSHelper.h"
 #include "core/css/CSSPrimitiveValue.h"
+#include "core/css/CSSResolutionUnits.h"
 #include "core/css/CSSToLengthConversionData.h"
 #include "core/css/MediaFeatures.h"
 #include "core/css/MediaList.h"
