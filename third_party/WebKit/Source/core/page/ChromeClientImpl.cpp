@@ -103,7 +103,6 @@
 #include "public/web/WebInputElement.h"
 #include "public/web/WebKit.h"
 #include "public/web/WebNode.h"
-#include "public/web/WebPageImportanceSignals.h"
 #include "public/web/WebPlugin.h"
 #include "public/web/WebPopupMenuInfo.h"
 #include "public/web/WebSelection.h"
@@ -1090,11 +1089,6 @@ void ChromeClientImpl::NotifyPopupOpeningObservers() const {
 
 FloatSize ChromeClientImpl::ElasticOverscroll() const {
   return web_view_->ElasticOverscroll();
-}
-
-void ChromeClientImpl::DidObserveNonGetFetchFromScript() const {
-  if (web_view_->PageImportanceSignals())
-    web_view_->PageImportanceSignals()->SetIssuedNonGetFetchFromScript();
 }
 
 std::unique_ptr<WebFrameScheduler> ChromeClientImpl::CreateFrameScheduler(
