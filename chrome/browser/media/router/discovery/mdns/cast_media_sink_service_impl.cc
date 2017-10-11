@@ -320,7 +320,7 @@ void CastMediaSinkServiceImpl::OnError(const cast_channel::CastSocket& socket,
   DVLOG(2) << "OnError starts reopening cast channel: "
            << ip_endpoint.ToString();
   // Find existing cast sink from |current_sinks_map_|.
-  auto cast_sink_it = current_sinks_map_.find(ip_endpoint.address());
+  auto cast_sink_it = current_sinks_map_.find(ip_endpoint);
   if (cast_sink_it != current_sinks_map_.end()) {
     OnChannelErrorMayRetry(cast_sink_it->second, std::move(backoff_entry),
                            error_state, SinkSource::kConnectionRetry);
@@ -482,35 +482,38 @@ void CastMediaSinkServiceImpl::OnChannelOpenSucceeded(
   DCHECK(socket);
 
   CastAnalytics::RecordCastChannelConnectResult(true);
-
   media_router::CastSinkExtraData extra_data = cast_sink.cast_data();
-  extra_data.capabilities = cast_channel::CastDeviceCapability::AUDIO_OUT;
-  if (!socket->audio_only())
-    extra_data.capabilities |= cast_channel::CastDeviceCapability::VIDEO_OUT;
+  // Manually set device capabilities for sinks discovered via DIAL as DIAL
+  // discovery does not provide capability info.
+  if (cast_sink.cast_data().discovered_by_dial) {
+    extra_data.capabilities = cast_channel::CastDeviceCapability::AUDIO_OUT;
+    if (!socket->audio_only())
+      extra_data.capabilities |= cast_channel::CastDeviceCapability::VIDEO_OUT;
+  }
   extra_data.cast_channel_id = socket->id();
   cast_sink.set_cast_data(extra_data);
-  DVLOG(2) << "Ading sink to current_sinks_ [name]: "
+
+  DVLOG(2) << "Adding sink to current_sinks_ [name]: "
            << cast_sink.sink().name();
 
   // Add or update existing cast sink.
-  auto& ip_address = cast_sink.cast_data().ip_endpoint.address();
-  auto sink_it = current_sinks_map_.find(ip_address);
+  auto& ip_endpoint = cast_sink.cast_data().ip_endpoint;
+  auto sink_it = current_sinks_map_.find(ip_endpoint);
   if (sink_it == current_sinks_map_.end()) {
     metrics_.RecordResolvedFromSource(sink_source);
   } else if (sink_it->second.cast_data().discovered_by_dial &&
              !cast_sink.cast_data().discovered_by_dial) {
     metrics_.RecordResolvedFromSource(SinkSource::kDialMdns);
   }
-  current_sinks_map_[ip_address] = cast_sink;
+  current_sinks_map_[ip_endpoint] = cast_sink;
 
-  failure_count_map_.erase(cast_sink.cast_data().ip_endpoint);
+  failure_count_map_.erase(ip_endpoint);
   MediaSinkServiceBase::RestartTimer();
 }
 
 void CastMediaSinkServiceImpl::OnChannelOpenFailed(
     const net::IPEndPoint& ip_endpoint) {
-  auto& ip_address = ip_endpoint.address();
-  current_sinks_map_.erase(ip_address);
+  current_sinks_map_.erase(ip_endpoint);
 
   int failure_count = ++failure_count_map_[ip_endpoint];
   failure_count_map_[ip_endpoint] = std::min(failure_count, kMaxFailureCount);
@@ -521,7 +524,7 @@ void CastMediaSinkServiceImpl::OnDialSinkAdded(const MediaSinkInternal& sink) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   net::IPEndPoint ip_endpoint(sink.dial_data().ip_address, kCastControlPort);
 
-  if (base::ContainsKey(current_sinks_map_, ip_endpoint.address())) {
+  if (base::ContainsKey(current_sinks_map_, ip_endpoint)) {
     DVLOG(2) << "Sink discovered by mDNS, skip adding [name]: "
              << sink.sink().name();
     metrics_.RecordResolvedFromSource(SinkSource::kMdnsDial);
@@ -541,7 +544,7 @@ void CastMediaSinkServiceImpl::AttemptConnection(
 
   for (const auto& cast_sink : cast_sinks) {
     const net::IPEndPoint& ip_endpoint = cast_sink.cast_data().ip_endpoint;
-    if (!base::ContainsKey(current_sinks_map_, ip_endpoint.address())) {
+    if (!base::ContainsKey(current_sinks_map_, ip_endpoint)) {
       OpenChannel(ip_endpoint, cast_sink,
                   base::MakeUnique<net::BackoffEntry>(&backoff_policy_),
                   SinkSource::kConnectionRetry);

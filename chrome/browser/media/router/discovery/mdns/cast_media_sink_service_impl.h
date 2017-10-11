@@ -239,9 +239,9 @@ class CastMediaSinkServiceImpl
   // RecordDeviceCounts().
   std::set<net::IPEndPoint> known_ip_endpoints_;
 
-  using MediaSinkInternalMap = std::map<net::IPAddress, MediaSinkInternal>;
+  using MediaSinkInternalMap = std::map<net::IPEndPoint, MediaSinkInternal>;
 
-  // Map of sinks with opened cast channels keyed by IP address.
+  // Map of sinks with opened cast channels keyed by IP endpoint.
   MediaSinkInternalMap current_sinks_map_;
 
   // Raw pointer of leaky singleton CastSocketService, which manages adding and
