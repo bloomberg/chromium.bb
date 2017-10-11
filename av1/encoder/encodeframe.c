@@ -4335,17 +4335,35 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
   const int ext_partition_allowed =
       do_rectangular_split && bsize > BLOCK_8X8 && partition_none_allowed;
 
-#if CONFIG_EXT_PARTITION && CONFIG_EXT_PARTITION_TYPES_AB
-  // Don't allow A/B partitions on 128x128 blocks for now (support for
-  // 128x32 and 32x128 blocks doesn't yet exist).
-  const int ab_partition_allowed =
-      ext_partition_allowed && bsize < BLOCK_128X128;
+  // horz4_partition_allowed and vert4_partition_allowed encode the requirement
+  // that we don't choose a block size that wouldn't be allowed by this
+  // subsampling (stored in the xss and yss variables).
+  //
+  // We definitely can't allow (say) a 16x4 block if yss > xss because it would
+  // subsample to 16x2, which doesn't have an enum. Also, there's no BLOCK_8X2
+  // or BLOCK_2X8, so we can't do 4:1 or 1:4 partitions for BLOCK_16X16 if there
+  // is any subsampling.
+  const int horz4_partition_allowed = ext_partition_allowed &&
+                                      partition_horz_allowed && yss <= xss &&
+                                      (xss == 0 || bsize > BLOCK_16X16);
+  const int vert4_partition_allowed = ext_partition_allowed &&
+                                      partition_vert_allowed && xss <= yss &&
+                                      (yss == 0 || bsize > BLOCK_16X16);
+
+#if CONFIG_EXT_PARTITION_TYPES_AB
+  // The alternative AB partitions are allowed iff the corresponding 4:1
+  // partitions are allowed.
+  const int horzab_partition_allowed = horz4_partition_allowed;
+  const int vertab_partition_allowed = vert4_partition_allowed;
 #else
-  const int ab_partition_allowed = ext_partition_allowed;
+  // The standard AB partitions are allowed whenever ext-partition-types are
+  // allowed
+  const int horzab_partition_allowed = ext_partition_allowed;
+  const int vertab_partition_allowed = ext_partition_allowed;
 #endif
 
   // PARTITION_HORZ_A
-  if (partition_horz_allowed && ab_partition_allowed) {
+  if (partition_horz_allowed && horzab_partition_allowed) {
 #if CONFIG_EXT_PARTITION_TYPES_AB
     rd_test_partition3(
         cpi, td, tile_data, tp, pc_tree, &best_rdc, pc_tree->horizontala,
@@ -4374,7 +4392,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
 #endif  // !CONFIG_PVQ
   }
   // PARTITION_HORZ_B
-  if (partition_horz_allowed && ab_partition_allowed) {
+  if (partition_horz_allowed && horzab_partition_allowed) {
 #if CONFIG_EXT_PARTITION_TYPES_AB
     rd_test_partition3(
         cpi, td, tile_data, tp, pc_tree, &best_rdc, pc_tree->horizontalb,
@@ -4403,7 +4421,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
 #endif  // !CONFIG_PVQ
   }
   // PARTITION_VERT_A
-  if (partition_vert_allowed && ab_partition_allowed) {
+  if (partition_vert_allowed && vertab_partition_allowed) {
 #if CONFIG_EXT_PARTITION_TYPES_AB
     rd_test_partition3(
         cpi, td, tile_data, tp, pc_tree, &best_rdc, pc_tree->verticala,
@@ -4432,7 +4450,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
 #endif  // !CONFIG_PVQ
   }
   // PARTITION_VERT_B
-  if (partition_vert_allowed && ab_partition_allowed) {
+  if (partition_vert_allowed && vertab_partition_allowed) {
 #if CONFIG_EXT_PARTITION_TYPES_AB
     rd_test_partition3(
         cpi, td, tile_data, tp, pc_tree, &best_rdc, pc_tree->verticalb,
@@ -4461,20 +4479,12 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
 #endif  // !CONFIG_PVQ
   }
 
-#if CONFIG_EXT_PARTITION
-  const int can_partition_4 = (bsize == BLOCK_128X128 || bsize == BLOCK_64X64 ||
-                               bsize == BLOCK_32X32 || bsize == BLOCK_16X16);
-#else
-  const int can_partition_4 =
-      (bsize == BLOCK_64X64 || bsize == BLOCK_32X32 || bsize == BLOCK_16X16);
-#endif  // CONFIG_EXT_PARTITION
-
   // PARTITION_HORZ_4
   // TODO(david.barker): For this and PARTITION_VERT_4,
   // * Add support for BLOCK_16X16 once we support 2x8 and 8x2 blocks for the
   //   chroma plane
   // * Add support for supertx
-  if (can_partition_4 && partition_horz_allowed && !force_horz_split &&
+  if (horz4_partition_allowed && !force_horz_split &&
       (do_rectangular_split || av1_active_h_edge(cpi, mi_row, mi_step))) {
     const int quarter_step = mi_size_high[bsize] / 4;
     PICK_MODE_CONTEXT *ctx_prev = ctx_none;
@@ -4511,7 +4521,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
 #endif
   }
   // PARTITION_VERT_4
-  if (can_partition_4 && partition_vert_allowed && !force_vert_split &&
+  if (vert4_partition_allowed && !force_vert_split &&
       (do_rectangular_split || av1_active_v_edge(cpi, mi_row, mi_step))) {
     const int quarter_step = mi_size_wide[bsize] / 4;
     PICK_MODE_CONTEXT *ctx_prev = ctx_none;
