@@ -589,8 +589,9 @@ class SafeBrowsingBlockingPageBrowserTest
   }
 
   bool WaitForReady(Browser* browser) {
-    InterstitialPage* interstitial = InterstitialPage::GetInterstitialPage(
-        browser->tab_strip_model()->GetActiveWebContents());
+    WebContents* contents = browser->tab_strip_model()->GetActiveWebContents();
+    content::WaitForInterstitialAttach(contents);
+    InterstitialPage* interstitial = contents->GetInterstitialPage();
     if (!interstitial)
       return false;
     return content::WaitForRenderFrameReady(interstitial->GetMainFrame());
