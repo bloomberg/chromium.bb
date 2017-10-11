@@ -704,6 +704,22 @@ def GetCLHandlingTime(change, action_history):
   return _MeasureTimestampIntervals(ready_intervals)
 
 
+def GetCLWallClockTime(change, action_history):
+  """Returns the total end-to-end time of the |change|, in seconds.
+
+  This method includes the full time from when the patch was first marked as CQ-ready
+  (and CR+2, V+1) until the time it was submitted.
+
+  Args:
+    change: GerritPatch instance of a submitted change.
+    action_history: List of CL actions.
+  """
+  start = (constants.CL_ACTION_REQUEUED,)
+  stop = (constants.CL_ACTION_SUBMITTED,)
+  intervals = _GetIntervals(change, action_history, start, stop, True)
+  return _MeasureTimestampIntervals(intervals)
+
+
 def GetPreCQTime(change, action_history):
   """Returns the time spent waiting for the pre-cq to finish."""
   ready_intervals = _GetReadyIntervals(change, action_history)
@@ -1056,8 +1072,11 @@ def RecordSubmissionMetrics(action_history, submitted_change_strategies):
     action_history: A CLActionHistory instance for all cl actions for all
         changes in submitted_change_strategies.
   """
+  # TODO(phobbs) move to top level after crbug.com/755415
   handling_time_metric = metrics.SecondsDistribution(
       constants.MON_CL_HANDLE_TIME)
+  wall_clock_time_metric = metrics.SecondsDistribution(
+      constants.MON_CL_WALL_CLOCK_TIME)
   precq_time_metric = metrics.SecondsDistribution(
       constants.MON_CL_PRECQ_TIME)
   wait_time_metric = metrics.SecondsDistribution(
@@ -1096,6 +1115,7 @@ def RecordSubmissionMetrics(action_history, submitted_change_strategies):
   for change, strategy in submitted_change_strategies.iteritems():
     strategy = strategy or ''
     handling_time = GetCLHandlingTime(change, action_history)
+    wall_clock_time = GetCLWallClockTime(change, action_history)
     precq_time = GetPreCQTime(change, action_history)
     wait_time = GetCQWaitTime(change, action_history)
     run_time = GetCQRunTime(change, action_history)
@@ -1104,6 +1124,7 @@ def RecordSubmissionMetrics(action_history, submitted_change_strategies):
     fields = {'submission_strategy': strategy}
 
     handling_time_metric.add(handling_time, fields=fields)
+    wall_clock_time_metric.add(wall_clock_time, fields=fields)
     precq_time_metric.add(precq_time, fields=fields)
     wait_time_metric.add(wait_time, fields=fields)
     cq_run_time_metric.add(run_time, fields=fields)
