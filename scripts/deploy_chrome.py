@@ -318,8 +318,10 @@ class DeployChrome(object):
     self.device.RunCommand(['mkdir', '-p', '--mode', '0775',
                             self.options.mount_dir])
     # Umount the existing mount on mount_dir if present first
-    cmd = 'if mountpoint -q %(dir)s; then umount %(dir)s; fi'
-    self.device.RunCommand(cmd % {'dir': self.options.mount_dir}, shell=True)
+    ret = self.device.RunCommand(['mountpoint', '-q', self.options.mount_dir],
+                                 error_code_ok=True)
+    if ret.returncode == 0:
+      self.device.RunCommand(['umount', self.options.mount_dir])
     self.device.RunCommand(['mount', '--rbind', self.options.target_dir,
                             self.options.mount_dir])
     # Chrome needs partition to have exec and suid flags set
