@@ -67,6 +67,8 @@ static_library("browser") {
     "top_sites_observer.h",
     "typed_url_data_type_controller.cc",
     "typed_url_data_type_controller.h",
+    "typed_url_model_type_controller.cc",
+    "typed_url_model_type_controller.h",
     "typed_url_sync_bridge.cc",
     "typed_url_sync_bridge.h",
     "typed_url_sync_metadata_database.cc",

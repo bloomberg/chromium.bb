@@ -4,6 +4,7 @@
 
 #include "components/history/core/browser/typed_url_sync_bridge.h"
 
+#include "base/auto_reset.h"
 #include "base/big_endian.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -82,6 +83,7 @@ TypedURLSyncBridge::TypedURLSyncBridge(
     const ChangeProcessorFactory& change_processor_factory)
     : ModelTypeSyncBridge(change_processor_factory, syncer::TYPED_URLS),
       history_backend_(history_backend),
+      processing_syncer_changes_(false),
       sync_metadata_database_(sync_metadata_database),
       num_db_accesses_(0),
       num_db_errors_(0),
@@ -136,13 +138,12 @@ base::Optional<ModelError> TypedURLSyncBridge::MergeSyncData(
 
     // Ignore old sync urls that don't have any transition data stored with
     // them, or transition data that does not match the visit data (will be
-    // deleted below).
+    // deleted later by GarbageCollectionDirective).
     if (specifics.visit_transitions_size() == 0 ||
         specifics.visit_transitions_size() != specifics.visits_size()) {
-      // Generate a debug assertion to help track down http://crbug.com/91473,
-      // even though we gracefully handle this case by overwriting this node.
       DCHECK_EQ(specifics.visits_size(), specifics.visit_transitions_size());
-      DVLOG(1) << "Ignoring obsolete sync url with no visit transition info.";
+      DLOG(WARNING)
+          << "Ignoring obsolete sync url with no visit transition info.";
 
       continue;
     }
@@ -151,17 +152,13 @@ base::Optional<ModelError> TypedURLSyncBridge::MergeSyncData(
                      &updated_synced_urls);
   }
 
-  for (const auto& kv : new_db_urls) {
-    SendTypedURLToProcessor(kv.second, local_visit_vectors[kv.first],
-                            metadata_change_list.get());
-  }
-
   base::Optional<ModelError> error = WriteToHistoryBackend(
       &new_synced_urls, &updated_synced_urls, NULL, &new_synced_visits, NULL);
-
   if (error)
     return error;
 
+  // Update storage key here first, and then send updated typed URL to sync
+  // below, otherwise processor will have duplicate entries.
   for (const EntityChange& entity_change : entity_data) {
     DCHECK(entity_change.data().specifics.has_typed_url());
     std::string storage_key =
@@ -173,6 +170,12 @@ base::Optional<ModelError> TypedURLSyncBridge::MergeSyncData(
       change_processor()->UpdateStorageKey(entity_change.data(), storage_key,
                                            metadata_change_list.get());
     }
+  }
+
+  // Send new/updated typed URL to sync.
+  for (const auto& kv : new_db_urls) {
+    SendTypedURLToProcessor(kv.second, local_visit_vectors[kv.first],
+                            metadata_change_list.get());
   }
 
   UMA_HISTOGRAM_PERCENTAGE("Sync.TypedUrlMergeAndStartSyncingErrors",
@@ -229,9 +232,11 @@ base::Optional<ModelError> TypedURLSyncBridge::ApplySyncChanges(
                    &updated_synced_urls, &new_synced_urls);
   }
 
-  WriteToHistoryBackend(&new_synced_urls, &updated_synced_urls,
-                        &pending_deleted_urls, &new_synced_visits,
-                        &deleted_visits);
+  base::Optional<ModelError> error = WriteToHistoryBackend(
+      &new_synced_urls, &updated_synced_urls, &pending_deleted_urls,
+      &new_synced_visits, &deleted_visits);
+  if (error)
+    return error;
 
   // New entities were either ignored or written to history DB and assigned a
   // storage key. Notify processor about updated storage keys.
@@ -249,7 +254,9 @@ base::Optional<ModelError> TypedURLSyncBridge::ApplySyncChanges(
     }
   }
 
-  return {};
+  return static_cast<syncer::SyncMetadataStoreChangeList*>(
+             metadata_change_list.get())
+      ->TakeError();
 }
 
 void TypedURLSyncBridge::GetData(StorageKeyList storage_keys,
@@ -343,6 +350,9 @@ void TypedURLSyncBridge::OnURLVisited(HistoryBackend* history_backend,
                                       base::Time visit_time) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
 
+  if (processing_syncer_changes_)
+    return;  // These are changes originating from us, ignore.
+
   if (!change_processor()->IsTrackingMetadata())
     return;  // Sync processor not yet ready, don't sync.
   if (!ShouldSyncVisit(row.typed_count(), transition))
@@ -357,6 +367,9 @@ void TypedURLSyncBridge::OnURLVisited(HistoryBackend* history_backend,
 void TypedURLSyncBridge::OnURLsModified(HistoryBackend* history_backend,
                                         const URLRows& changed_urls) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
+
+  if (processing_syncer_changes_)
+    return;  // These are changes originating from us, ignore.
 
   if (!change_processor()->IsTrackingMetadata())
     return;  // Sync processor not yet ready, don't sync.
@@ -380,6 +393,10 @@ void TypedURLSyncBridge::OnURLsDeleted(HistoryBackend* history_backend,
                                        const URLRows& deleted_rows,
                                        const std::set<GURL>& favicon_urls) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
+
+  if (processing_syncer_changes_)
+    return;  // These are changes originating from us, ignore.
+
   if (!change_processor()->IsTrackingMetadata())
     return;  // Sync processor not yet ready, don't sync.
 
@@ -912,6 +929,10 @@ base::Optional<ModelError> TypedURLSyncBridge::WriteToHistoryBackend(
     const std::vector<GURL>* deleted_urls,
     const TypedURLVisitVector* new_visits,
     const VisitVector* deleted_visits) {
+  DCHECK_EQ(processing_syncer_changes_, false);
+  // Set flag to stop accepting history change notifications from backend.
+  base::AutoReset<bool> processing_changes(&processing_syncer_changes_, true);
+
   if (deleted_urls && !deleted_urls->empty())
     history_backend_->DeleteURLs(*deleted_urls);
 
