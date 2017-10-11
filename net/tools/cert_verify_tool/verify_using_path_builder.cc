@@ -68,9 +68,9 @@ bool AddPemEncodedCert(const net::ParsedCertificate* cert,
 
 // Dumps a chain of ParsedCertificate objects to a PEM file.
 bool DumpParsedCertificateChain(const base::FilePath& file_path,
-                                const net::CertPath& chain) {
+                                const net::CertPathBuilderResultPath& path) {
   std::vector<std::string> pem_encoded_chain;
-  for (const auto& cert : chain.certs) {
+  for (const auto& cert : path.certs) {
     if (!AddPemEncodedCert(cert.get(), &pem_encoded_chain))
       return false;
   }
@@ -100,7 +100,7 @@ std::string SubjectFromParsedCertificate(const net::ParsedCertificate* cert) {
 }
 
 // Dumps a ResultPath to std::cout.
-void PrintResultPath(const net::CertPathBuilder::ResultPath* result_path,
+void PrintResultPath(const net::CertPathBuilderResultPath* result_path,
                      size_t index,
                      bool is_best) {
   std::cout << "path " << index << " "
@@ -108,14 +108,14 @@ void PrintResultPath(const net::CertPathBuilder::ResultPath* result_path,
             << (is_best ? " (best)" : "") << "\n";
 
   // Print the certificate chain.
-  for (const auto& cert : result_path->path.certs) {
+  for (const auto& cert : result_path->certs) {
     std::cout << " " << FingerPrintParsedCertificate(cert.get()) << " "
               << SubjectFromParsedCertificate(cert.get()) << "\n";
   }
 
   // Print the errors/warnings if there were any.
   std::string errors_str =
-      result_path->errors.ToDebugString(result_path->path.certs);
+      result_path->errors.ToDebugString(result_path->certs);
   if (!errors_str.empty()) {
     std::cout << "Errors:\n";
     std::cout << errors_str << "\n";
@@ -262,7 +262,7 @@ bool VerifyUsingPathBuilder(
     if (!DumpParsedCertificateChain(
             dump_prefix_path.AddExtension(
                 FILE_PATH_LITERAL(".CertPathBuilder.pem")),
-            result.paths[result.best_result_index]->path)) {
+            *result.paths[result.best_result_index])) {
       return false;
     }
   }

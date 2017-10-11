@@ -163,7 +163,7 @@ bool GetCommonNameFromSubject(const net::der::Input& subject_tlv,
 // See the unit-tests VerifyCastDeviceCertTest.Policies* for some
 // concrete examples of how this works.
 void DetermineDeviceCertificatePolicy(
-    const net::CertPathBuilder::ResultPath* result_path,
+    const net::CertPathBuilderResultPath* result_path,
     CastDeviceCertPolicy* policy) {
   // Iterate over all the certificates, including the root certificate. If any
   // certificate contains the audio-only policy, the whole chain is considered
@@ -174,7 +174,7 @@ void DetermineDeviceCertificatePolicy(
   // certificates in the chain do, it won't matter as the chain is already
   // restricted to being audio-only.
   bool audio_only = false;
-  for (const auto& cert : result_path->path.certs) {
+  for (const auto& cert : result_path->certs) {
     if (cert->has_policy_oids()) {
       const std::vector<net::der::Input>& policies = cert->policy_oids();
       if (base::ContainsValue(policies, AudioOnlyPolicyOid())) {
@@ -318,7 +318,7 @@ CastCertError VerifyDeviceCertUsingCustomTrustStore(
     return CastCertError::ERR_CERTS_RESTRICTIONS;
 
   // Check for revocation.
-  if (crl && !crl->CheckRevocation(result.GetBestValidPath()->path, time))
+  if (crl && !crl->CheckRevocation(result.GetBestValidPath()->certs, time))
     return CastCertError::ERR_CERTS_REVOKED;
 
   return CastCertError::OK;

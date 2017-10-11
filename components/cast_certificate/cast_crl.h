@@ -16,7 +16,6 @@
 
 namespace net {
 class TrustStore;
-struct CertPath;
 }
 
 namespace cast_certificate {
@@ -30,14 +29,15 @@ class CastCRL {
   // of X.509 certificates.
   //
   // Inputs:
-  // * |chain| the chain of verified certificates, including trust anchor.
+  // * |trusted_chain| the chain of verified certificates, including trust
+  //   anchor.
   //
   // * |time| is the unix timestamp to use for determining if the certificate
   //   is revoked.
   //
   // Output:
   // Returns true if no certificate in the chain was revoked.
-  virtual bool CheckRevocation(const net::CertPath& chain,
+  virtual bool CheckRevocation(const net::ParsedCertificateList& trusted_chain,
                                const base::Time& time) const = 0;
 };
 

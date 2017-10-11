@@ -65,8 +65,7 @@ SimplePathBuilderDelegate::SimplePathBuilderDelegate(
     : min_rsa_modulus_length_bits_(min_rsa_modulus_length_bits) {}
 
 void SimplePathBuilderDelegate::CheckPathAfterVerification(
-    const CertPath& path,
-    CertPathErrors* errors) {
+    CertPathBuilderResultPath* path) {
   // Do nothing - consider all candidate paths valid.
 }
 
