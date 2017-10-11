@@ -54,8 +54,8 @@ class PolicyToolUITest : public InProcessBrowserTest {
   // Returns 1 if error message is shown, -1 if the error message is not shown,
   // and 0 if the displaying is incorrect (e.g. both error message and the
   // element are shown).
-  int ElementDisabledState(const std::string& element_id,
-                           const std::string& error_message_id);
+  int GetElementDisabledState(const std::string& element_id,
+                              const std::string& error_message_id);
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -194,7 +194,7 @@ void PolicyToolUITest::CreateMultipleSessionFiles(int count) {
   }
 }
 
-int PolicyToolUITest::ElementDisabledState(
+int PolicyToolUITest::GetElementDisabledState(
     const std::string& element_id,
     const std::string& error_message_id) {
   const std::string javascript =
@@ -322,22 +322,26 @@ IN_PROC_BROWSER_TEST_F(PolicyToolUITest, InvalidSessionName) {
 
 IN_PROC_BROWSER_TEST_F(PolicyToolUITest, InvalidJson) {
   ui_test_utils::NavigateToURL(browser(), GURL("chrome://policy-tool"));
-  EXPECT_EQ(ElementDisabledState("main-section", "disable-editing-error"), -1);
+  EXPECT_EQ(GetElementDisabledState("main-section", "disable-editing-error"),
+            -1);
   base::ScopedAllowBlockingForTesting allow_blocking;
   base::WriteFile(
       GetSessionsDir().Append(FILE_PATH_LITERAL("test_session.json")), "{", 1);
   LoadSession("test_session");
-  EXPECT_EQ(ElementDisabledState("main-section", "disable-editing-error"), 1);
+  EXPECT_EQ(GetElementDisabledState("main-section", "disable-editing-error"),
+            1);
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyToolUITest, UnableToCreateDirectoryOrFile) {
+IN_PROC_BROWSER_TEST_F(PolicyToolUITest, SavingToDiskError) {
   ui_test_utils::NavigateToURL(browser(), GURL("chrome://policy-tool"));
+  EXPECT_EQ(GetElementDisabledState("session-choice", "saving"), -1);
   base::ScopedAllowBlockingForTesting allow_blocking;
   base::DeleteFile(GetSessionsDir(), true);
   base::File not_directory(GetSessionsDir(), base::File::Flags::FLAG_CREATE |
                                                  base::File::Flags::FLAG_WRITE);
   not_directory.Close();
-  LoadSessionAndWaitForAlert("test_session");
+  LoadSession("policy");
+  EXPECT_EQ(GetElementDisabledState("session-choice", "saving"), 1);
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyToolUITest, DefaultSession) {

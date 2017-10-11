@@ -35,7 +35,8 @@ class PolicyToolUIHandler : public PolicyUIHandler {
   std::string ReadOrCreateFileCallback();
   void OnFileRead(const std::string& contents);
 
-  void DoUpdateSession(const std::string& contents);
+  bool DoUpdateSession(const std::string& contents);
+  void OnSessionUpdated(bool is_successful);
 
   bool IsValidSessionName(const base::FilePath::StringType& name) const;
 
@@ -50,6 +51,8 @@ class PolicyToolUIHandler : public PolicyUIHandler {
   void OnSessionsListReceived(base::ListValue list);
 
   void SetDefaultSessionName();
+
+  bool is_saving_enabled_ = true;
 
   base::FilePath sessions_dir_;
   base::FilePath::StringType session_name_;
