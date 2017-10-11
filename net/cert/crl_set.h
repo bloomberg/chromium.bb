@@ -72,7 +72,7 @@ class NET_EXPORT CRLSet : public base::RefCountedThreadSafe<CRLSet> {
   // ForTesting returns a CRLSet for testing. If |is_expired| is true, calling
   // IsExpired on the result will return true. If |issuer_spki| is not NULL,
   // the CRLSet will cover certificates issued by that SPKI. If |serial_number|
-  // is not emtpy, then that big-endian serial number will be considered to
+  // is not empty, then that big-endian serial number will be considered to
   // have been revoked by |issuer_spki|.
   static CRLSet* ForTesting(bool is_expired,
                             const SHA256HashValue* issuer_spki,
