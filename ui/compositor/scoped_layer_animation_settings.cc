@@ -150,23 +150,12 @@ void ScopedLayerAnimationSettings::SetTransitionDuration(
   animator_->SetTransitionDuration(duration);
 }
 
-void ScopedLayerAnimationSettings::CacheRenderSurface() {
-  auto observer = base::MakeUnique<CacheRenderSurfaceObserver>(
-      animator_->delegate()->GetLayer());
-  AddObserver(observer.get());
-  animator_->AddOwnedObserver(std::move(observer));
-}
-
-void ScopedLayerAnimationSettings::DeferPaint() {
-  AddDeferredPaintObserverRecursive(animator_->delegate()->GetLayer(), this);
+base::TimeDelta ScopedLayerAnimationSettings::GetTransitionDuration() const {
+  return animator_->GetTransitionDuration();
 }
 
 void ScopedLayerAnimationSettings::LockTransitionDuration() {
   animator_->is_transition_duration_locked_ = true;
-}
-
-base::TimeDelta ScopedLayerAnimationSettings::GetTransitionDuration() const {
-  return animator_->GetTransitionDuration();
 }
 
 void ScopedLayerAnimationSettings::SetTweenType(gfx::Tween::Type tween_type) {
@@ -185,6 +174,17 @@ void ScopedLayerAnimationSettings::SetPreemptionStrategy(
 LayerAnimator::PreemptionStrategy
 ScopedLayerAnimationSettings::GetPreemptionStrategy() const {
   return animator_->preemption_strategy();
+}
+
+void ScopedLayerAnimationSettings::CacheRenderSurface() {
+  auto observer = base::MakeUnique<CacheRenderSurfaceObserver>(
+      animator_->delegate()->GetLayer());
+  AddObserver(observer.get());
+  animator_->AddOwnedObserver(std::move(observer));
+}
+
+void ScopedLayerAnimationSettings::DeferPaint() {
+  AddDeferredPaintObserverRecursive(animator_->delegate()->GetLayer(), this);
 }
 
 }  // namespace ui
