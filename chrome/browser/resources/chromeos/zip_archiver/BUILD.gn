@@ -27,7 +27,6 @@ copy("zip_archiver_css") {
 
 copy("zip_archiver_html") {
   sources = [
-    "html/compressor.html",
     "html/passphrase-dialog.html",
     "html/passphrase.html",
   ]
@@ -56,9 +55,9 @@ copy("zip_archiver_js") {
     "js/app.js",
     "js/background.js",
     "js/build-config.js",
-    "js/compressor-foreground.js",
     "js/compressor.js",
     "js/decompressor.js",
+    "js/file_operation_utils.js",
     "js/main.js",
     "js/passphrase-dialog.js",
     "js/passphrase-manager.js",

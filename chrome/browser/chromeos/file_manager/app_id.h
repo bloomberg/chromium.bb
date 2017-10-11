@@ -28,6 +28,9 @@ const char kTextEditorAppId[] = "mmfbcljfglbokpmkimbfghdkjmjhdgbg";
 // The image loader extension's ID.
 const char kImageLoaderExtensionId[] = "pmfjbimdmchhbnneeidfognadeopoehp";
 
+// Zip Archiver extension's ID.
+const char kZipArchiverId[] = "dmboannefpncccogfdikhmhpmdnddgoe";
+
 }  // namespace file_manager
 
 #endif  // CHROME_BROWSER_CHROMEOS_FILE_MANAGER_APP_ID_H_

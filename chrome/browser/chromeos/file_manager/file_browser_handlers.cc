@@ -135,15 +135,19 @@ FileBrowserHandlerList FindFileBrowserHandlersForURL(
       const FileBrowserHandler* handler = handler_iter->get();
       if (!handler->MatchesURL(lowercase_url))
         continue;
+
       // Filter out Files app from handling ZIP files via a handler, as it's
-      // now handled by new ZIP unpacker extension based on File System Provider
-      // API.
+      // now handled by:
+      // - ZIP unpacker extension based on File System Provider API
+      // - Zip Archiver native extension component
       const URLPattern zip_pattern(URLPattern::SCHEME_EXTENSION,
                                    "chrome-extension://*/*.zip");
       if (handler->extension_id() == kFileManagerAppId &&
           zip_pattern.MatchesURL(selected_file_url) &&
-          !base::CommandLine::ForCurrentProcess()->HasSwitch(
-              chromeos::switches::kDisableNewZIPUnpacker)) {
+          (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+               chromeos::switches::kDisableNewZIPUnpacker) ||
+           base::CommandLine::ForCurrentProcess()->HasSwitch(
+               chromeos::switches::kEnableZipArchiverOnFileManager))) {
         continue;
       }
       results.push_back(handler);

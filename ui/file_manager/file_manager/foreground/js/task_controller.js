@@ -436,9 +436,12 @@ TaskController.prototype.updateContextMenuTaskItems_ = function(
       this.ui_.fileContextMenu.defaultTaskMenuItem.style.backgroundImage = '';
     }
 
-    this.ui_.fileContextMenu.defaultTaskMenuItem.label =
-        defaultTask.taskId === FileTasks.ZIP_UNPACKER_TASK_ID ?
-        str('TASK_OPEN') : defaultTask.title;
+    if (defaultTask.taskId === FileTasks.ZIP_UNPACKER_TASK_ID ||
+        defaultTask.taskId === FileTasks.ZIP_ARCHIVER_UNZIP_TASK_ID)
+      this.ui_.fileContextMenu.defaultTaskMenuItem.label = str('TASK_OPEN');
+    else
+      this.ui_.fileContextMenu.defaultTaskMenuItem.label = defaultTask.title;
+
     this.ui_.fileContextMenu.defaultTaskMenuItem.disabled =
         !!defaultTask.disabled;
     this.ui_.fileContextMenu.defaultTaskMenuItem.taskId = defaultTask.taskId;

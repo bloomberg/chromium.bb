@@ -59,7 +59,8 @@ metrics.FileSystemProviders = {
   plmanjiaoflhcilcfdnjeffklbgejmje: 'Add MY Documents (KA)',
   mljpablpddhocfbnokacjggdbmafjnon: 'Wicked Good Unarchiver (MF)',
   ndjpildffkeodjdaeebdhnncfhopkajk: 'Network File Share for Chrome OS',
-  gmhmnhjihabohahcllfgjooaoecglhpi: 'LanFolder'
+  gmhmnhjihabohahcllfgjooaoecglhpi: 'LanFolder',
+  dmboannefpncccogfdikhmhpmdnddgoe: 'ZipArchiver',
 };
 
 /**

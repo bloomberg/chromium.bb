@@ -14,7 +14,14 @@
     "chrome://resources/",
     "fileSystemProvider",
     "fileManagerPrivate",
-    {"fileSystem": ["retainEntries", "write", "directory"]},
+    {
+      "fileSystem": [
+        "requestFileSystem",
+        "retainEntries",
+        "write",
+        "directory"
+      ]
+    },
     "notifications",
     "storage"
   ],
@@ -47,6 +54,7 @@
         "js/unpacker.js",
         "js/app.js",
         "js/background.js",
+        "js/file_operation_utils.js",
         "js/compressor.js",
         "js/decompressor.js",
         "js/passphrase-manager.js",
