@@ -331,6 +331,7 @@ INSTANTIATE_TEST_CASE_P(AVX2_TO_C_12, HighbdIntraPredTest,
 
 #if HAVE_SSE2
 const IntraPredFunc<IntraPred> LowbdIntraPredTestVector[] = {
+  lowbd_intrapred(d63e, sse2),    lowbd_intrapred(d207e, sse2),
   lowbd_intrapred(dc, sse2),      lowbd_intrapred(dc_top, sse2),
   lowbd_intrapred(dc_left, sse2), lowbd_intrapred(dc_128, sse2),
   lowbd_intrapred(v, sse2),       lowbd_intrapred(h, sse2),
@@ -340,6 +341,17 @@ INSTANTIATE_TEST_CASE_P(SSE2, LowbdIntraPredTest,
                         ::testing::ValuesIn(LowbdIntraPredTestVector));
 
 #endif  // HAVE_SSE2
+
+#if HAVE_SSSE3
+const IntraPredFunc<IntraPred> LowbdIntraPredTestVectorSsse3[] = {
+  lowbd_entry(d63e, 4, 4, ssse3), lowbd_intrapred(d45e, ssse3),
+  lowbd_intrapred(paeth, ssse3), lowbd_intrapred(smooth, ssse3),
+};
+
+INSTANTIATE_TEST_CASE_P(SSSE3, LowbdIntraPredTest,
+                        ::testing::ValuesIn(LowbdIntraPredTestVectorSsse3));
+
+#endif  // HAVE_SSSE3
 
 #if HAVE_AVX2
 const IntraPredFunc<IntraPred> LowbdIntraPredTestVectorAvx2[] = {
@@ -356,16 +368,6 @@ const IntraPredFunc<IntraPred> LowbdIntraPredTestVectorAvx2[] = {
 INSTANTIATE_TEST_CASE_P(AVX2, LowbdIntraPredTest,
                         ::testing::ValuesIn(LowbdIntraPredTestVectorAvx2));
 
-#endif  // HAVE_SSE2
-
-#if HAVE_SSSE3
-const IntraPredFunc<IntraPred> LowbdIntraPredTestVectorSsse3[] = {
-  lowbd_intrapred(paeth, ssse3), lowbd_intrapred(smooth, ssse3),
-};
-
-INSTANTIATE_TEST_CASE_P(SSSE3, LowbdIntraPredTest,
-                        ::testing::ValuesIn(LowbdIntraPredTestVectorSsse3));
-
-#endif  // HAVE_SSSE3
+#endif  // HAVE_AVX2
 
 }  // namespace

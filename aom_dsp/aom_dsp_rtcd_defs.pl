@@ -163,7 +163,6 @@ specialize qw/aom_smooth_predictor_16x32 ssse3/;
 specialize qw/aom_smooth_predictor_32x16 ssse3/;
 specialize qw/aom_smooth_predictor_32x32 ssse3/;
 
-specialize qw/aom_d63e_predictor_4x4 ssse3/;
 specialize qw/aom_d135_predictor_4x4 neon/;
 specialize qw/aom_d153_predictor_4x4 ssse3/;
 specialize qw/aom_dc_predictor_4x4 dspr2 msa neon sse2/;
@@ -180,6 +179,38 @@ specialize qw/aom_d153_predictor_32x32 ssse3/;
 
 specialize qw/aom_dc_predictor_32x16 sse2 avx2/;
 specialize qw/aom_dc_predictor_32x32 msa neon sse2 avx2/;
+specialize qw/aom_d207e_predictor_4x4 sse2/;
+specialize qw/aom_d207e_predictor_4x8 sse2/;
+specialize qw/aom_d207e_predictor_8x4 sse2/;
+specialize qw/aom_d207e_predictor_8x8 sse2/;
+specialize qw/aom_d207e_predictor_8x16 sse2/;
+specialize qw/aom_d207e_predictor_16x8 sse2/;
+specialize qw/aom_d207e_predictor_16x16 sse2/;
+specialize qw/aom_d207e_predictor_16x32 sse2/;
+specialize qw/aom_d207e_predictor_32x16 sse2/;
+specialize qw/aom_d207e_predictor_32x32 sse2/;
+
+specialize qw/aom_d63e_predictor_4x4 sse2 ssse3/;
+specialize qw/aom_d63e_predictor_4x8 sse2/;
+specialize qw/aom_d63e_predictor_8x4 sse2/;
+specialize qw/aom_d63e_predictor_8x8 sse2/;
+specialize qw/aom_d63e_predictor_8x16 sse2/;
+specialize qw/aom_d63e_predictor_16x8 sse2/;
+specialize qw/aom_d63e_predictor_16x16 sse2/;
+specialize qw/aom_d63e_predictor_16x32 sse2/;
+specialize qw/aom_d63e_predictor_32x16 sse2/;
+specialize qw/aom_d63e_predictor_32x32 sse2/;
+
+specialize qw/aom_d45e_predictor_4x4 ssse3/;
+specialize qw/aom_d45e_predictor_4x8 ssse3/;
+specialize qw/aom_d45e_predictor_8x4 ssse3/;
+specialize qw/aom_d45e_predictor_8x8 ssse3/;
+specialize qw/aom_d45e_predictor_8x16 ssse3/;
+specialize qw/aom_d45e_predictor_16x8 ssse3/;
+specialize qw/aom_d45e_predictor_16x16 ssse3/;
+specialize qw/aom_d45e_predictor_16x32 ssse3/;
+specialize qw/aom_d45e_predictor_32x16 ssse3/;
+specialize qw/aom_d45e_predictor_32x32 ssse3/;
 
 if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
   specialize qw/aom_highbd_v_predictor_4x4 sse2/;
