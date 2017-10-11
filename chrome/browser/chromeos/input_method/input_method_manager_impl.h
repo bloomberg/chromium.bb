@@ -222,20 +222,6 @@ class InputMethodManagerImpl : public InputMethodManager,
   void CandidateWindowOpened() override;
   void CandidateWindowClosed() override;
 
-  // Temporarily deactivates all input methods (e.g. Chinese, Japanese, Arabic)
-  // since they are not necessary to input a login password. Users are still
-  // able to use/switch active keyboard layouts (e.g. US qwerty, US dvorak,
-  // French).
-  void OnScreenLocked();
-
-  // Resumes the original state by activating input methods and/or changing the
-  // current input method as needed.
-  void OnScreenUnlocked();
-
-  // Returns true if the given input method config value is a string list
-  // that only contains an input method ID of a keyboard layout.
-  bool ContainsOnlyKeyboardLayout(const std::vector<std::string>& value);
-
   // Creates and initializes |candidate_window_controller_| if it hasn't been
   // done.
   void MaybeInitializeCandidateWindowController();
