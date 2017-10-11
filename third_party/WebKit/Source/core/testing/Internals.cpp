@@ -78,6 +78,7 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
+#include "core/frame/PerformanceMonitor.h"
 #include "core/frame/Settings.h"
 #include "core/frame/VisualViewport.h"
 #include "core/geometry/DOMPoint.h"
@@ -3497,4 +3498,18 @@ void Internals::simulateRasterUnderInvalidations(bool enable) {
   RasterInvalidationTracking::SimulateRasterUnderInvalidations(enable);
 }
 
+void Internals::BypassLongCompileThresholdOnce(
+    ExceptionState& exception_state) {
+  LocalFrame* frame = GetFrame();
+  DCHECK(frame);
+  PerformanceMonitor* performance_monitor = frame->GetPerformanceMonitor();
+  if (!performance_monitor) {
+    exception_state.ThrowDOMException(
+        kInvalidAccessError,
+        "PerformanceObserver should be observing 'longtask' while "
+        "calling BypassLongCompileThresholdOnce.");
+    return;
+  }
+  return performance_monitor->BypassLongCompileThresholdOnceForTesting();
+}
 }  // namespace blink

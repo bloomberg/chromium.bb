@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Performance longtask entries with script-compile attribute are observable. assert_false: script-compile is not captured. expected false got true
+Harness: the test ran to completion.
+

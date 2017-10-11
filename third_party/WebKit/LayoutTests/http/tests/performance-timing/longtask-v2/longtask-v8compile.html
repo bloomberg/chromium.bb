@@ -1,0 +1,52 @@
+<!DOCTYPE HTML>
+<meta charset=utf-8>
+<title>LongTask Timing: validate the long task attributes for script-compile</title>
+<body>
+
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+
+<h1>Long Task Attributes for Script-compile</h1>
+<div id="log"></div>
+<script>
+  async_test(function (t) {
+    const observer = new PerformanceObserver(
+      t.step_func(function (entryList) {
+        const entries = entryList.getEntries();
+        assert_equals(entries.length, 1,
+            'Exactly one entry is expected.');
+        const longtask = entries[0];
+        assert_equals(longtask.entryType, 'longtask');
+        assert_equals(longtask.name, 'self');
+        assert_greater_than(longtask.duration, 50);
+        assert_greater_than_equal(longtask.startTime, 0);
+        const currentTime = performance.now();
+        assert_less_than_equal(longtask.startTime, currentTime);
+
+        const it = longtask.attribution.find(function(it) {
+          return it.name === 'script-compile';
+        });
+        assert_false(!it, 'script-compile is not captured.');
+        assert_greater_than(it.startTime, 0);
+        assert_equals(it.entryType, 'taskattribution');
+        assert_equals(it.containerType, 'iframe');
+        assert_equals(it.containerId, '');
+        assert_equals(it.containerName, '');
+        assert_equals(it.containerSrc, '');
+        assert_true(it.scriptURL.includes('resources/makelongtask.js(0, 0)'));
+        observer.disconnect();
+        t.done();
+      })
+    );
+    observer.observe({entryTypes: ['longtask']});
+
+    internals.BypassLongCompileThresholdOnce();
+
+    var iframe=document.createElement('Script');
+    iframe.src = "resources/makelongtask.js";
+    document.body.appendChild(iframe);
+
+}, 'Performance longtask entries with script-compile attribute are observable.');
+</script>
+
+</body>
