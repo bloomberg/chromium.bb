@@ -70,6 +70,11 @@ BookmarkAppNavigationThrottle::WillStartRequest() {
 }
 
 content::NavigationThrottle::ThrottleCheckResult
+BookmarkAppNavigationThrottle::WillRedirectRequest() {
+  return CheckNavigation();
+}
+
+content::NavigationThrottle::ThrottleCheckResult
 BookmarkAppNavigationThrottle::CheckNavigation() {
   content::WebContents* source = navigation_handle()->GetWebContents();
   ui::PageTransition transition_type = navigation_handle()->GetPageTransition();
