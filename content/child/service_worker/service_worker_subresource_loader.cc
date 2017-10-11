@@ -12,9 +12,120 @@
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/child/child_url_loader_factory_getter.h"
 #include "content/public/common/content_features.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "ui/base/page_transition_types.h"
 
 namespace content {
+
+namespace {
+
+ResourceResponseHead RewriteServiceWorkerTime(
+    base::TimeTicks service_worker_start_time,
+    base::TimeTicks service_worker_ready_time,
+    const ResourceResponseHead& response_head) {
+  ResourceResponseHead new_head = response_head;
+  new_head.service_worker_start_time = service_worker_start_time;
+  new_head.service_worker_ready_time = service_worker_ready_time;
+  return new_head;
+}
+
+// A wrapper URLLoaderClient that invokes given RewriteHeaderCallback whenever
+// response or redirect is received. It self-destruct itself when the Mojo
+// connection is closed.
+class HeaderRewritingURLLoaderClient : public mojom::URLLoaderClient {
+ public:
+  using RewriteHeaderCallback =
+      base::Callback<ResourceResponseHead(const ResourceResponseHead&)>;
+
+  static mojom::URLLoaderClientPtr CreateAndBind(
+      mojom::URLLoaderClientPtr url_loader_client,
+      RewriteHeaderCallback rewrite_header_callback) {
+    return (new HeaderRewritingURLLoaderClient(std::move(url_loader_client),
+                                               rewrite_header_callback))
+        ->CreateInterfacePtrAndBind();
+  }
+
+  ~HeaderRewritingURLLoaderClient() override {}
+
+ private:
+  HeaderRewritingURLLoaderClient(mojom::URLLoaderClientPtr url_loader_client,
+                                 RewriteHeaderCallback rewrite_header_callback)
+      : url_loader_client_(std::move(url_loader_client)),
+        binding_(this),
+        rewrite_header_callback_(rewrite_header_callback) {}
+
+  mojom::URLLoaderClientPtr CreateInterfacePtrAndBind() {
+    DCHECK(!binding_.is_bound());
+    mojom::URLLoaderClientPtr ptr;
+    binding_.Bind(mojo::MakeRequest(&ptr));
+    binding_.set_connection_error_handler(
+        base::Bind(&HeaderRewritingURLLoaderClient::OnClientConnectionError,
+                   base::Unretained(this)));
+    return ptr;
+  }
+
+  void OnClientConnectionError() {
+    base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
+  }
+
+  // mojom::URLLoaderClient implementation:
+  void OnReceiveResponse(
+      const ResourceResponseHead& response_head,
+      const base::Optional<net::SSLInfo>& ssl_info,
+      mojom::DownloadedTempFilePtr downloaded_file) override {
+    DCHECK(url_loader_client_.is_bound());
+    url_loader_client_->OnReceiveResponse(
+        rewrite_header_callback_.Run(response_head), ssl_info,
+        std::move(downloaded_file));
+  }
+
+  void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
+                         const ResourceResponseHead& response_head) override {
+    DCHECK(url_loader_client_.is_bound());
+    url_loader_client_->OnReceiveRedirect(
+        redirect_info, rewrite_header_callback_.Run(response_head));
+  }
+
+  void OnDataDownloaded(int64_t data_len, int64_t encoded_data_len) override {
+    DCHECK(url_loader_client_.is_bound());
+    url_loader_client_->OnDataDownloaded(data_len, encoded_data_len);
+  }
+
+  void OnUploadProgress(int64_t current_position,
+                        int64_t total_size,
+                        OnUploadProgressCallback ack_callback) override {
+    DCHECK(url_loader_client_.is_bound());
+    url_loader_client_->OnUploadProgress(current_position, total_size,
+                                         std::move(ack_callback));
+  }
+
+  void OnReceiveCachedMetadata(const std::vector<uint8_t>& data) override {
+    DCHECK(url_loader_client_.is_bound());
+    url_loader_client_->OnReceiveCachedMetadata(data);
+  }
+
+  void OnTransferSizeUpdated(int32_t transfer_size_diff) override {
+    DCHECK(url_loader_client_.is_bound());
+    url_loader_client_->OnTransferSizeUpdated(transfer_size_diff);
+  }
+
+  void OnStartLoadingResponseBody(
+      mojo::ScopedDataPipeConsumerHandle body) override {
+    DCHECK(url_loader_client_.is_bound());
+    url_loader_client_->OnStartLoadingResponseBody(std::move(body));
+  }
+
+  void OnComplete(const ResourceRequestCompletionStatus& status) override {
+    DCHECK(url_loader_client_.is_bound());
+    url_loader_client_->OnComplete(status);
+  }
+
+  mojom::URLLoaderClientPtr url_loader_client_;
+  mojo::Binding<mojom::URLLoaderClient> binding_;
+  RewriteHeaderCallback rewrite_header_callback_;
+};
+
+}  // namespace
 
 // ServiceWorkerSubresourceLoader -------------------------------------------
 
@@ -46,6 +157,9 @@ ServiceWorkerSubresourceLoader::ServiceWorkerSubresourceLoader(
       default_loader_factory_getter_(std::move(default_loader_factory_getter)),
       weak_factory_(this) {
   DCHECK(controller_connector_);
+  response_head_.request_start = base::TimeTicks::Now();
+  response_head_.load_timing.request_start = base::TimeTicks::Now();
+  response_head_.load_timing.request_start_time = base::Time::Now();
   url_loader_binding_.set_connection_error_handler(base::BindOnce(
       &ServiceWorkerSubresourceLoader::DeleteSoon, weak_factory_.GetWeakPtr()));
   StartRequest(resource_request);
@@ -69,6 +183,12 @@ void ServiceWorkerSubresourceLoader::StartRequest(
   mojom::ServiceWorkerFetchResponseCallbackPtr response_callback_ptr;
   response_callback_binding_.Bind(mojo::MakeRequest(&response_callback_ptr));
 
+  response_head_.service_worker_start_time = base::TimeTicks::Now();
+  // TODO(horo): Reset |service_worker_ready_time| when the the connection to
+  // the service worker is revived.
+  response_head_.service_worker_ready_time = base::TimeTicks::Now();
+  response_head_.load_timing.send_start = base::TimeTicks::Now();
+  response_head_.load_timing.send_end = base::TimeTicks::Now();
   // At this point controller should be non-null.
   // TODO(kinuko): re-start the request if we get connection error before we
   // get response for this.
@@ -147,10 +267,15 @@ void ServiceWorkerSubresourceLoader::OnFallback(
   // Per spec, redirects after this point are not intercepted by the service
   // worker again. (https://crbug.com/517364)
   default_loader_factory_getter_->GetNetworkLoaderFactory()
-      ->CreateLoaderAndStart(url_loader_binding_.Unbind(), routing_id_,
-                             request_id_, options_, resource_request_,
-                             std::move(url_loader_client_),
-                             traffic_annotation_);
+      ->CreateLoaderAndStart(
+          url_loader_binding_.Unbind(), routing_id_, request_id_, options_,
+          resource_request_,
+          HeaderRewritingURLLoaderClient::CreateAndBind(
+              std::move(url_loader_client_),
+              base::Bind(&RewriteServiceWorkerTime,
+                         response_head_.service_worker_start_time,
+                         response_head_.service_worker_ready_time)),
+          traffic_annotation_);
   DeleteSoon();
 }
 
@@ -169,6 +294,8 @@ void ServiceWorkerSubresourceLoader::StartResponse(
   ServiceWorkerLoaderHelpers::SaveResponseHeaders(
       response.status_code, response.status_text, response.headers,
       &response_head_);
+  response_head_.response_start = base::TimeTicks::Now();
+  response_head_.load_timing.receive_headers_end = base::TimeTicks::Now();
 
   // Handle a stream response body.
   if (!body_as_stream.is_null() && body_as_stream->stream.is_valid()) {
