@@ -9,7 +9,7 @@
 #include "bindings/core/v8/V8ArrayBuffer.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/fileapi/Blob.h"
-#include "core/html/FormData.h"
+#include "core/html/forms/FormData.h"
 #include "core/typed_arrays/DOMArrayBuffer.h"
 #include "core/typed_arrays/DOMTypedArray.h"
 #include "core/url/URLSearchParams.h"

@@ -46,7 +46,7 @@
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/HTMLTagCollection.h"
-#include "core/html/RadioNodeList.h"
+#include "core/html/forms/RadioNodeList.h"
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutText.h"

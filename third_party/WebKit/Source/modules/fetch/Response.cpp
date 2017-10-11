@@ -16,7 +16,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/fileapi/Blob.h"
 #include "core/frame/UseCounter.h"
-#include "core/html/FormData.h"
+#include "core/html/forms/FormData.h"
 #include "core/streams/ReadableStreamOperations.h"
 #include "core/typed_arrays/DOMArrayBuffer.h"
 #include "core/typed_arrays/DOMArrayBufferView.h"
