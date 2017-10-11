@@ -565,10 +565,5 @@
     "prefix": "cors-rfc1918",
     "base": "http/tests/security/cors-rfc1918",
     "args": ["--enable-blink-features=CorsRFC1918"]
-  },
-  {
-    "prefix": "dynamic-import",
-    "base": "external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import",
-    "args": ["--enable-features=ModuleScriptsDynamicImport"]
   }
 ]

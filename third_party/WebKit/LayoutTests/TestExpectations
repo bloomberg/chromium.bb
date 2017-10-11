@@ -3055,8 +3055,9 @@ crbug.com/763597 external/wpt/html/semantics/scripting-1/the-script-element/modu
 # module script lacks XHTML support
 crbug.com/717643 external/wpt/html/semantics/scripting-1/the-script-element/module/module-in-xhtml.xhtml [ Failure ]
 
-# dynamic module import is under development
-crbug.com/711706 external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import [ Skip ]
+# known bug: import() inside set{Timeout,Interval}
+crbug.com/773622 external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/string-compilation-base-url-classic.html [ Failure ]
+crbug.com/773622 external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/string-compilation-base-url-module.html [ Failure ]
 
 # Geolocation tests
 crbug.com/745079 external/wpt/geolocation-API/PositionOptions.https.html [ Failure ]
