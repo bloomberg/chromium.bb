@@ -365,11 +365,10 @@ static_library("host") {
       "me2me_desktop_environment.cc",
       "me2me_desktop_environment.h",
     ]
-    deps += [ "//remoting/host/chromeos" ]
-
-    if (use_ash) {
-      deps += [ "//ash" ]
-    }
+    deps += [
+      "//ash",
+      "//remoting/host/chromeos",
+    ]
 
     if (use_ozone) {
       deps += [ "//ui/ozone" ]
@@ -545,7 +544,9 @@ source_set("unit_tests") {
 
   if (enable_me2me_host) {
     sources += [ "evaluate_capability_unittest.cc" ]
-    data_deps = [ "//remoting/test:capability_test_stub" ]
+    data_deps = [
+      "//remoting/test:capability_test_stub",
+    ]
   }
 }
 
