@@ -322,19 +322,7 @@ class CertIssuerIterPath {
 
 }  // namespace
 
-CertPath::CertPath() = default;
-CertPath::~CertPath() = default;
-
-void CertPath::Clear() {
-  last_cert_trust = CertificateTrust::ForUnspecified();
-  certs.clear();
-}
-
-bool CertPath::IsEmpty() const {
-  return certs.empty();
-}
-
-const ParsedCertificate* CertPath::GetTrustedCert() const {
+const ParsedCertificate* CertPathBuilderResultPath::GetTrustedCert() const {
   if (certs.empty())
     return nullptr;
 
@@ -364,9 +352,12 @@ class CertPathIter {
   // CertPathIter.
   void AddCertIssuerSource(CertIssuerSource* cert_issuer_source);
 
-  // Gets the next candidate path, or clears |*out_path| when all paths have
-  // been exhausted.
-  void GetNextPath(CertPath* out_path);
+  // Gets the next candidate path, and fills it into |out_certs| and
+  // |out_last_cert_trust|. Note that the returned path is unverified and must
+  // still be run through a chain validator. Once all paths have been exhausted
+  // returns false.
+  bool GetNextPath(ParsedCertificateList* out_certs,
+                   CertificateTrust* out_last_cert_trust);
 
  private:
   // Stores the next candidate issuer, until it is used during the
@@ -396,13 +387,13 @@ void CertPathIter::AddCertIssuerSource(CertIssuerSource* cert_issuer_source) {
   cert_issuer_sources_.push_back(cert_issuer_source);
 }
 
-void CertPathIter::GetNextPath(CertPath* out_path) {
-  out_path->Clear();
+bool CertPathIter::GetNextPath(ParsedCertificateList* out_certs,
+                               CertificateTrust* out_last_cert_trust) {
   while (true) {
     if (!next_issuer_.cert) {
       if (cur_path_.Empty()) {
         DVLOG(1) << "CertPathIter exhausted all paths...";
-        return;
+        return false;
       }
       cur_path_.back()->GetNextIssuer(&next_issuer_);
       if (!next_issuer_.cert) {
@@ -428,11 +419,11 @@ void CertPathIter::GetNextPath(CertPath* out_path) {
         // If the issuer has a known trust level, can stop building the path.
         DVLOG(1) << "CertPathIter got anchor: "
                  << CertDebugString(next_issuer_.cert.get());
-        cur_path_.CopyPath(&out_path->certs);
-        out_path->certs.push_back(std::move(next_issuer_.cert));
-        out_path->last_cert_trust = next_issuer_.trust;
+        cur_path_.CopyPath(out_certs);
+        out_certs->push_back(std::move(next_issuer_.cert));
+        *out_last_cert_trust = next_issuer_.trust;
         next_issuer_ = IssuerEntry();
-        return;
+        return true;
       }
       case CertificateTrustType::UNSPECIFIED: {
         // Skip this cert if it is already in the chain.
@@ -454,11 +445,11 @@ void CertPathIter::GetNextPath(CertPath* out_path) {
   }
 }
 
-CertPathBuilder::ResultPath::ResultPath() = default;
-CertPathBuilder::ResultPath::~ResultPath() = default;
+CertPathBuilderResultPath::CertPathBuilderResultPath() = default;
+CertPathBuilderResultPath::~CertPathBuilderResultPath() = default;
 
-bool CertPathBuilder::ResultPath::IsValid() const {
-  return path.GetTrustedCert() && !errors.ContainsHighSeverityErrors();
+bool CertPathBuilderResultPath::IsValid() const {
+  return GetTrustedCert() && !errors.ContainsHighSeverityErrors();
 }
 
 CertPathBuilder::Result::Result() = default;
@@ -468,7 +459,7 @@ bool CertPathBuilder::Result::HasValidPath() const {
   return GetBestValidPath() != nullptr;
 }
 
-const CertPathBuilder::ResultPath* CertPathBuilder::Result::GetBestValidPath()
+const CertPathBuilderResultPath* CertPathBuilder::Result::GetBestValidPath()
     const {
   DCHECK((paths.empty() && best_result_index == 0) ||
          best_result_index < paths.size());
@@ -476,7 +467,7 @@ const CertPathBuilder::ResultPath* CertPathBuilder::Result::GetBestValidPath()
   if (best_result_index >= paths.size())
     return nullptr;
 
-  const ResultPath* result_path = paths[best_result_index].get();
+  const CertPathBuilderResultPath* result_path = paths[best_result_index].get();
   if (result_path->IsValid())
     return result_path;
 
@@ -522,29 +513,28 @@ void CertPathBuilder::AddCertIssuerSource(
 }
 
 void CertPathBuilder::Run() {
-  CertPath next_path;
   while (true) {
-    cert_path_iter_->GetNextPath(&next_path);
-    if (next_path.IsEmpty()) {
+    std::unique_ptr<CertPathBuilderResultPath> result_path =
+        std::make_unique<CertPathBuilderResultPath>();
+
+    if (!cert_path_iter_->GetNextPath(&result_path->certs,
+                                      &result_path->last_cert_trust)) {
       // No more paths to check.
       return;
     }
 
     // Verify the entire certificate chain.
-    auto result_path = std::make_unique<ResultPath>();
-    result_path->path = next_path;
     VerifyCertificateChain(
-        result_path->path.certs, result_path->path.last_cert_trust, delegate_,
-        time_, key_purpose_, initial_explicit_policy_, user_initial_policy_set_,
+        result_path->certs, result_path->last_cert_trust, delegate_, time_,
+        key_purpose_, initial_explicit_policy_, user_initial_policy_set_,
         initial_policy_mapping_inhibit_, initial_any_policy_inhibit_,
         &result_path->user_constrained_policy_set, &result_path->errors);
 
     DVLOG(1) << "CertPathBuilder VerifyCertificateChain errors:\n"
-             << result_path->errors.ToDebugString(result_path->path.certs);
+             << result_path->errors.ToDebugString(result_path->certs);
 
     // Give the delegate a chance to add errors to the path.
-    delegate_->CheckPathAfterVerification(result_path->path,
-                                          &result_path->errors);
+    delegate_->CheckPathAfterVerification(result_path.get());
 
     bool path_is_good = result_path->IsValid();
 
@@ -559,7 +549,8 @@ void CertPathBuilder::Run() {
   }
 }
 
-void CertPathBuilder::AddResultPath(std::unique_ptr<ResultPath> result_path) {
+void CertPathBuilder::AddResultPath(
+    std::unique_ptr<CertPathBuilderResultPath> result_path) {
   // TODO(mattm): set best_result_index based on number or severity of errors.
   if (result_path->IsValid())
     out_result_->best_result_index = out_result_->paths.size();

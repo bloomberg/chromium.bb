@@ -41,8 +41,7 @@ class NET_EXPORT SimplePathBuilderDelegate : public CertPathBuilderDelegate {
   bool IsPublicKeyAcceptable(EVP_PKEY* public_key, CertErrors* errors) override;
 
   // No-op implementation.
-  void CheckPathAfterVerification(const CertPath& path,
-                                  CertPathErrors* errors) override;
+  void CheckPathAfterVerification(CertPathBuilderResultPath* path) override;
 
  private:
   const size_t min_rsa_modulus_length_bits_;
