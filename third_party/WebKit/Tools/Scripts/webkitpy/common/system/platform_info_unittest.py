@@ -135,11 +135,13 @@ class TestPlatformInfo(unittest.TestCase):
     def test_os_version(self):
         with self.assertRaises(AssertionError):
             self.make_info(fake_sys('darwin'), fake_platform('10.6.3'))
-        self.assertEqual(self.make_info(fake_sys('darwin'), fake_platform('10.9.0')).os_version, 'mac10.9')
+        self.assertEqual(self.make_info(fake_sys('darwin'), fake_platform('10.9.0')).os_version, 'mac10.10')
         self.assertEqual(self.make_info(fake_sys('darwin'), fake_platform('10.10.0')).os_version, 'mac10.10')
         self.assertEqual(self.make_info(fake_sys('darwin'), fake_platform('10.11.0')).os_version, 'mac10.11')
         self.assertEqual(self.make_info(fake_sys('darwin'), fake_platform('10.12.0')).os_version, 'mac10.12')
-        self.assertEqual(self.make_info(fake_sys('darwin'), fake_platform('10.15.0')).os_version, 'future')
+        self.assertEqual(self.make_info(fake_sys('darwin'), fake_platform('10.13.0')).os_version, 'mac10.12')
+        with self.assertRaises(AssertionError):
+            self.make_info(fake_sys('darwin'), fake_platform('10.20.0'))
 
         self.assertEqual(self.make_info(fake_sys('linux2')).os_version, 'trusty')
         info = self.make_info(fake_sys('linux2'), fake_platform(linux_version='utopic'))
