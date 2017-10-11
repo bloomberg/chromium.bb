@@ -169,7 +169,7 @@ IN_PROC_BROWSER_TEST_F(HostedAppTest, OpenLinkInNewTab) {
 }
 
 // Tests that Ctrl + Clicking a link opens a foreground tab.
-IN_PROC_BROWSER_TEST_F(HostedAppTest, CtrlClickLink) {
+IN_PROC_BROWSER_TEST_F(HostedAppTest, DISABLED_CtrlClickLink) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   ui_test_utils::UrlLoadObserver url_observer(
