@@ -1177,7 +1177,7 @@ Subsequent notifications, windows and dialogs may be split between desktops.
         Unlock device to view your notifications
       </message>
       <message name="IDS_ASH_MESSAGE_CENTER_NO_MESSAGES" desc="The message displayed in the message center when there are no notifications.">
-        You have no notifications
+        All done
       </message>
     </messages>
   </release>

@@ -793,7 +793,7 @@ TEST_F(MessageCenterViewTest, CheckModeWithRemovingAndAddingNotifications) {
 
   // Remove notifications.
   RemoveDefaultNotifications();
-  EXPECT_EQ(Mode::BUTTONS_ONLY, GetMessageCenterViewInternalMode());
+  EXPECT_EQ(Mode::NO_NOTIFICATIONS, GetMessageCenterViewInternalMode());
 
   // Add a notification.
   AddNotification(std::make_unique<Notification>(
@@ -811,13 +811,13 @@ TEST_F(MessageCenterViewTest, CheckModeWithSettingsVisibleAndHiddenOnEmpty) {
   RemoveDefaultNotifications();
 
   // Check the initial state.
-  EXPECT_EQ(Mode::BUTTONS_ONLY, GetMessageCenterViewInternalMode());
+  EXPECT_EQ(Mode::NO_NOTIFICATIONS, GetMessageCenterViewInternalMode());
   // Show the settings.
   GetMessageCenterView()->SetSettingsVisible(true);
   EXPECT_EQ(Mode::SETTINGS, GetMessageCenterViewInternalMode());
   // Hide the settings.
   GetMessageCenterView()->SetSettingsVisible(false);
-  EXPECT_EQ(Mode::BUTTONS_ONLY, GetMessageCenterViewInternalMode());
+  EXPECT_EQ(Mode::NO_NOTIFICATIONS, GetMessageCenterViewInternalMode());
 }
 
 TEST_F(MessageCenterViewTest,
@@ -835,7 +835,7 @@ TEST_F(MessageCenterViewTest,
 
   // Hide the settings.
   GetMessageCenterView()->SetSettingsVisible(false);
-  EXPECT_EQ(Mode::BUTTONS_ONLY, GetMessageCenterViewInternalMode());
+  EXPECT_EQ(Mode::NO_NOTIFICATIONS, GetMessageCenterViewInternalMode());
 }
 
 TEST_F(MessageCenterViewTest,
@@ -844,7 +844,7 @@ TEST_F(MessageCenterViewTest,
   RemoveDefaultNotifications();
 
   // Check the initial state.
-  EXPECT_EQ(Mode::BUTTONS_ONLY, GetMessageCenterViewInternalMode());
+  EXPECT_EQ(Mode::NO_NOTIFICATIONS, GetMessageCenterViewInternalMode());
 
   // Show the settings.
   GetMessageCenterView()->SetSettingsVisible(true);
@@ -863,6 +863,49 @@ TEST_F(MessageCenterViewTest,
   // Hide the settings.
   GetMessageCenterView()->SetSettingsVisible(false);
   EXPECT_EQ(Mode::NOTIFICATIONS, GetMessageCenterViewInternalMode());
+}
+
+TEST_F(MessageCenterViewTest, CheckModeWithLockingAndUnlocking) {
+  // Check the initial state.
+  EXPECT_EQ(Mode::NOTIFICATIONS, GetMessageCenterViewInternalMode());
+
+  // Lock!
+  SetLockedState(true);
+  EXPECT_EQ(Mode::LOCKED, GetMessageCenterViewInternalMode());
+
+  // Unlock!
+  SetLockedState(false);
+  EXPECT_EQ(Mode::NOTIFICATIONS, GetMessageCenterViewInternalMode());
+
+  // Remove all existing notifications.
+  RemoveDefaultNotifications();
+  EXPECT_EQ(Mode::NO_NOTIFICATIONS, GetMessageCenterViewInternalMode());
+
+  // Lock!
+  SetLockedState(true);
+  EXPECT_EQ(Mode::LOCKED, GetMessageCenterViewInternalMode());
+
+  // Unlock!
+  SetLockedState(false);
+  EXPECT_EQ(Mode::NO_NOTIFICATIONS, GetMessageCenterViewInternalMode());
+}
+
+TEST_F(MessageCenterViewTest, CheckModeWithRemovingNotificationDuringLock) {
+  // Check the initial state.
+  EXPECT_EQ(Mode::NOTIFICATIONS, GetMessageCenterViewInternalMode());
+
+  // Lock!
+  SetLockedState(true);
+
+  EXPECT_EQ(Mode::LOCKED, GetMessageCenterViewInternalMode());
+
+  // Remove all existing notifications.
+  RemoveDefaultNotifications();
+
+  // Unlock!
+  SetLockedState(false);
+
+  EXPECT_EQ(Mode::NO_NOTIFICATIONS, GetMessageCenterViewInternalMode());
 }
 
 TEST_F(MessageCenterViewTest, LockScreen) {
@@ -944,8 +987,8 @@ TEST_F(MessageCenterViewTest, LockScreen) {
 }
 
 TEST_F(MessageCenterViewTest, NoNotification) {
-  // Plain button bar height (56) + border (2)
-  const int kEmptyMessageCenterViewHeight = 58;
+  // Plain button bar height (56) + border (2) + Empty view (96)
+  const int kEmptyMessageCenterViewHeight = 154;
 
   GetMessageCenterView()->SizeToPreferredSize();
   EXPECT_NE(kEmptyMessageCenterViewHeight, GetMessageCenterView()->height());
