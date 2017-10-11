@@ -951,6 +951,12 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
             withUsername:(const base::string16&)username
                 password:(const base::string16&)password
        completionHandler:(void (^)(BOOL))completionHandler {
+  if (formData.origin.GetOrigin() != self.lastCommittedURL.GetOrigin()) {
+    if (completionHandler)
+      completionHandler(NO);
+    return;
+  }
+
   // Send JSON over to the web view.
   [passwordJsManager_ fillPasswordForm:SerializePasswordFormFillData(formData)
                           withUsername:base::SysUTF16ToNSString(username)

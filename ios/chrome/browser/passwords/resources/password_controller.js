@@ -255,7 +255,13 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
    */
   __gCrWeb['fillPasswordForm'] = function(formData, username, password,
                                           opt_normalizedOrigin) {
-    return fillPasswordFormWithData_(
+  var normalizedOrigin = opt_normalizedOrigin ||
+      __gCrWeb.common.removeQueryAndReferenceFromURL(window.location.href);
+  var origin = formData['origin'];
+  if (!__gCrWeb.common.isSameOrigin(origin, normalizedOrigin)) {
+    return false;
+  }
+  return fillPasswordFormWithData_(
         formData, username, password, window, opt_normalizedOrigin);
   };
 
@@ -301,13 +307,6 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
   var fillPasswordFormWithData_ = function(
       formData, username, password, win, opt_normalizedOrigin) {
     var doc = win.document;
-    var origin = formData['origin'];
-    var normalizedOrigin = opt_normalizedOrigin ||
-        __gCrWeb.common.removeQueryAndReferenceFromURL(win.location.href);
-    if (origin != normalizedOrigin) {
-      return false;
-    }
-
     var filled = false;
 
     __gCrWeb.findMatchingPasswordForms(formData, doc, opt_normalizedOrigin).
