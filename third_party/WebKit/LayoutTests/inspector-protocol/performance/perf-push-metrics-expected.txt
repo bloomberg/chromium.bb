@@ -1,20 +1,20 @@
 Test that console.timeStamp generates Performance.metrics event
 title: test1
 	Timestamp
-	AudioHandlerCount
-	DocumentCount
-	FrameCount
-	JSEventListenerCount
-	LayoutObjectCount
-	MediaKeySessionCount
-	MediaKeysCount
-	NodeCount
-	ResourceCount
-	ScriptPromiseCount
-	SuspendableObjectCount
-	V8PerContextDataCount
-	WorkerGlobalScopeCount
-	UACSSResourceCount
+	AudioHandlers
+	Documents
+	Frames
+	JSEventListeners
+	LayoutObjects
+	MediaKeySessions
+	MediaKeys
+	Nodes
+	Resources
+	ScriptPromises
+	SuspendableObjects
+	V8PerContextDatas
+	WorkerGlobalScopes
+	UACSSResources
 	LayoutCount
 	RecalcStyleCount
 	LayoutDuration
@@ -28,20 +28,20 @@ title: test1
 	NavigationStart
 title: test1
 	Timestamp
-	AudioHandlerCount
-	DocumentCount
-	FrameCount
-	JSEventListenerCount
-	LayoutObjectCount
-	MediaKeySessionCount
-	MediaKeysCount
-	NodeCount
-	ResourceCount
-	ScriptPromiseCount
-	SuspendableObjectCount
-	V8PerContextDataCount
-	WorkerGlobalScopeCount
-	UACSSResourceCount
+	AudioHandlers
+	Documents
+	Frames
+	JSEventListeners
+	LayoutObjects
+	MediaKeySessions
+	MediaKeys
+	Nodes
+	Resources
+	ScriptPromises
+	SuspendableObjects
+	V8PerContextDatas
+	WorkerGlobalScopes
+	UACSSResources
 	LayoutCount
 	RecalcStyleCount
 	LayoutDuration
@@ -55,20 +55,20 @@ title: test1
 	NavigationStart
 title: 
 	Timestamp
-	AudioHandlerCount
-	DocumentCount
-	FrameCount
-	JSEventListenerCount
-	LayoutObjectCount
-	MediaKeySessionCount
-	MediaKeysCount
-	NodeCount
-	ResourceCount
-	ScriptPromiseCount
-	SuspendableObjectCount
-	V8PerContextDataCount
-	WorkerGlobalScopeCount
-	UACSSResourceCount
+	AudioHandlers
+	Documents
+	Frames
+	JSEventListeners
+	LayoutObjects
+	MediaKeySessions
+	MediaKeys
+	Nodes
+	Resources
+	ScriptPromises
+	SuspendableObjects
+	V8PerContextDatas
+	WorkerGlobalScopes
+	UACSSResources
 	LayoutCount
 	RecalcStyleCount
 	LayoutDuration
