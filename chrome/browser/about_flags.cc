@@ -3488,6 +3488,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDisableTabletAutohideTitlebarsDescription, kOsCrOS,
      SINGLE_DISABLE_VALUE_TYPE(
          ash::switches::kAshDisableTabletAutohideTitlebars)},
+
+    {"enable-tablet-splitview", flag_descriptions::kEnableTabletSplitViewName,
+     flag_descriptions::kEnableTabletSplitViewDescription, kOsCrOS,
+     SINGLE_VALUE_TYPE(ash::switches::kAshEnableTabletSplitView)},
 #endif  // defined(OS_CHROMEOS)
 
     {"enable-parallel-downloading", flag_descriptions::kParallelDownloadingName,

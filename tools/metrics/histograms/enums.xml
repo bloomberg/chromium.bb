@@ -23734,6 +23734,7 @@ from previous Chrome versions.
   <int value="-881447505" label="ash-disable-shelf-model-synchronization"/>
   <int value="-881054479" label="WebAssemblyStreaming:disabled"/>
   <int value="-879031960" label="FetchKeepaliveTimeoutSetting:disabled"/>
+  <int value="-876773752" label="enable-tablet-splitview"/>
   <int value="-876148583" label="ArcBootCompletedBroadcast:disabled"/>
   <int value="-867087281" label="enable-virtual-keyboard"/>
   <int value="-866993841" label="OfflinePagesCTV2:disabled"/>
