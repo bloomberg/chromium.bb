@@ -43,6 +43,10 @@
 #include "public/platform/WebTraceLocation.h"
 #include "v8/include/v8.h"
 
+namespace service_manager {
+class InterfaceProvider;
+}
+
 namespace blink {
 
 class ConsoleMessage;
@@ -184,6 +188,10 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   virtual ReferrerPolicy GetReferrerPolicy() const { return referrer_policy_; }
 
   virtual CoreProbeSink* GetProbeSink() { return nullptr; }
+
+  virtual service_manager::InterfaceProvider* GetInterfaceProvider() {
+    return nullptr;
+  }
 
  protected:
   ExecutionContext();

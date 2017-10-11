@@ -43,6 +43,12 @@
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/CachedMetadataHandler.h"
 #include "platform/wtf/ListHashSet.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
+#include "services/service_manager/public/interfaces/interface_provider.mojom-blink.h"
+
+namespace service_manager {
+class InterfaceProvider;
+}
 
 namespace blink {
 
@@ -133,6 +139,7 @@ class CORE_EXPORT WorkerGlobalScope
   void AddConsoleMessage(ConsoleMessage*) final;
   WorkerEventQueue* GetEventQueue() const final;
   bool IsSecureContext(String& error_message) const override;
+  service_manager::InterfaceProvider* GetInterfaceProvider() final;
 
   OffscreenFontSelector* GetFontSelector() { return font_selector_; }
 
@@ -227,6 +234,8 @@ class CORE_EXPORT WorkerGlobalScope
   int last_pending_error_event_id_ = 0;
 
   Member<OffscreenFontSelector> font_selector_;
+
+  service_manager::InterfaceProvider interface_provider_;
 };
 
 DEFINE_TYPE_CASTS(WorkerGlobalScope,
