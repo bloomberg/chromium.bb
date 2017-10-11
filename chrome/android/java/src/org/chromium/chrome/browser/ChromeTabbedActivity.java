@@ -62,6 +62,7 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutManagerChromeTablet;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior.OverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.phone.StackLayout;
 import org.chromium.chrome.browser.cookies.CookiesFetcher;
+import org.chromium.chrome.browser.crash.PureJavaExceptionHandler;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.document.DocumentUtils;
 import org.chromium.chrome.browser.dom_distiller.ReaderModeManager;
@@ -382,6 +383,10 @@ public class ChromeTabbedActivity
     @Override
     protected @LaunchIntentDispatcher.Action int maybeDispatchLaunchIntent(Intent intent) {
         if (getClass().equals(ChromeTabbedActivity.class)) {
+            // Since Chrome can be launched by ChromeTabbedActivity in addition to
+            // ChromeLauncherActivity, we need to install the handler here too.
+            PureJavaExceptionHandler.installHandler();
+
             // ChromeTabbedActivity can be started via an explicit intent from inside of Chrome,
             // via an implicit MAIN intent, or via a MAIN/LAUNCHER intent. In either case call
             // dispatchToTabbedActivity(), which will either do nothing, or will start a different
