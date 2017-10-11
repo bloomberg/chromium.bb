@@ -145,8 +145,6 @@ void LayoutImage::InvalidatePaintAndMarkForLayoutIfNeeded() {
     return;
 
   bool image_source_has_changed_size = old_intrinsic_size != new_intrinsic_size;
-  if (image_source_has_changed_size)
-    SetPreferredLogicalWidthsDirty();
 
   // If the actual area occupied by the image has changed and it is not
   // constrained by style then a layout is required.
@@ -162,9 +160,9 @@ void LayoutImage::InvalidatePaintAndMarkForLayoutIfNeeded() {
       Style()->LogicalMaxWidth().IsPercentOrCalc() ||
       Style()->LogicalMinWidth().IsPercentOrCalc();
 
-  if (image_source_has_changed_size &&
-      (!image_size_is_constrained ||
-       containing_block_needs_to_recompute_preferred_size)) {
+  if ((image_source_has_changed_size && !image_size_is_constrained) ||
+      containing_block_needs_to_recompute_preferred_size) {
+    SetPreferredLogicalWidthsDirty();
     SetNeedsLayoutAndFullPaintInvalidation(
         LayoutInvalidationReason::kSizeChanged);
     return;
@@ -326,10 +324,8 @@ LayoutReplaced* LayoutImage::EmbeddedReplacedContent() const {
     return nullptr;
 
   ImageResourceContent* cached_image = image_resource_->CachedImage();
-  // TODO(japhet): This shouldn't need to worry about cache validation.
-  // https://crbug.com/761026
-  if (cached_image && !cached_image->IsCacheValidator() &&
-      cached_image->GetImage() && cached_image->GetImage()->IsSVGImage())
+  if (cached_image && cached_image->GetImage() &&
+      cached_image->GetImage()->IsSVGImage())
     return ToSVGImage(cached_image->GetImage())->EmbeddedReplacedContent();
 
   return nullptr;
