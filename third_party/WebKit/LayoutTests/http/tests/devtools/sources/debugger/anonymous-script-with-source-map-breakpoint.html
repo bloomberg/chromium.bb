@@ -1,0 +1,30 @@
+<html>
+<head>
+<script src="../../../inspector/inspector-test.js"></script>
+<script src="../../../inspector/debugger-test.js"></script>
+<script>
+eval(`var a = "Hello, world";
+function foo() { }
+debugger;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiZXhhbXBsZS5qcyIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzIjpbImV4YW1wbGUudHMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUEsSUFBSSxDQUFDLEdBQUcsY0FBYyxDQUFDO0FBQ3ZCLGlCQUFlLENBQUM7QUFDaEIsUUFBUSxDQUFDIiwic291cmNlc0NvbnRlbnQiOlsidmFyIGEgPSBcIkhlbGxvLCB3b3JsZFwiO1xuZnVuY3Rpb24gZm9vKCl7fVxuZGVidWdnZXI7XG4iXX0=`);
+</script>
+<script>
+var test = function() {
+  SourcesTestRunner.startDebuggerTest(step1);
+
+  function step1() {
+    SourcesTestRunner.showScriptSource('example.ts', step2);
+  }
+
+  function step2(sourceFrame) {
+    SourcesTestRunner.setBreakpoint(sourceFrame, 0, '', true);
+    TestRunner.reloadPage();
+    SourcesTestRunner.waitUntilPausedAndDumpStackAndResume(() => SourcesTestRunner.completeDebuggerTest());
+  }
+};
+</script>
+</head>
+<body onload="runTest()">
+Tests breakpoint in anonymous script with source map on reload.
+</body>
+</html>
