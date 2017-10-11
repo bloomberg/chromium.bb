@@ -33,6 +33,12 @@ class VRDeviceManagerForTesting : public VRDeviceManager {
   }
 };
 
+class VRDisplayImplForTesting : public VRServiceImpl {
+ public:
+  VRDisplayImplForTesting() : VRServiceImpl() {}
+  ~VRDisplayImplForTesting() override = default;
+};
+
 }  // namespace
 
 class VRDeviceManagerTest : public testing::Test {
@@ -56,7 +62,7 @@ class VRDeviceManagerTest : public testing::Test {
   std::unique_ptr<VRServiceImpl> BindService() {
     device::mojom::VRServiceClientPtr proxy;
     device::FakeVRServiceClient client(mojo::MakeRequest(&proxy));
-    auto service = base::WrapUnique(new VRServiceImpl(-1, -1));
+    auto service = base::WrapUnique(new VRDisplayImplForTesting());
     service->SetClient(std::move(proxy),
                        base::Bind(&VRDeviceManagerTest::onDisplaySynced,
                                   base::Unretained(this)));

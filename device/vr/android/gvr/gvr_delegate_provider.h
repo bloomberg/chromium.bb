@@ -10,13 +10,7 @@
 #include "device/vr/vr_export.h"
 #include "device/vr/vr_service.mojom.h"
 
-namespace gvr {
-class GvrApi;
-}
-
 namespace device {
-
-class VRDisplayImpl;
 
 // TODO(mthiesse, crbug.com/769373): Remove this interface and replace with a
 // mojo interface.
@@ -29,14 +23,7 @@ class DEVICE_VR_EXPORT GvrDelegateProvider {
                                    mojom::VRDisplayInfoPtr display_info,
                                    base::Callback<void(bool)> callback) = 0;
   virtual void ExitWebVRPresent() = 0;
-  virtual void OnDisplayAdded(VRDisplayImpl* display) = 0;
-  virtual void OnDisplayRemoved(VRDisplayImpl* display) = 0;
-  virtual void OnListeningForActivateChanged(VRDisplayImpl* display) = 0;
-  // TODO(mthiesse): Remove the GvrApi from these calls.
-  virtual void GetNextMagicWindowPose(
-      gvr::GvrApi* gvr_api,
-      VRDisplayImpl* display,
-      mojom::VRMagicWindowProvider::GetPoseCallback callback) = 0;
+  virtual void OnListeningForActivateChanged(bool listening) = 0;
 
  protected:
   virtual ~GvrDelegateProvider() {}

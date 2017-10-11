@@ -31,8 +31,7 @@ class DEVICE_VR_EXPORT FakeVRDevice : public VRDevice {
       mojom::VRPresentationProviderRequest request,
       mojom::VRDisplayHost::RequestPresentCallback callback) override;
   void ExitPresent() override;
-  void GetPose(VRDisplayImpl* display,
-               mojom::VRMagicWindowProvider::GetPoseCallback callback) override;
+  void GetPose(mojom::VRMagicWindowProvider::GetPoseCallback callback) override;
 
  private:
   mojom::VREyeParametersPtr InitEye(float fov, float offset, uint32_t size);

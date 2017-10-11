@@ -453,9 +453,6 @@ void VrShell::OnTabRemoved(JNIEnv* env,
   ui_->RemoveTab(incognito, id);
 }
 
-// TODO(mthiesse): Remove this function.
-void VrShell::SetWebVRSecureOrigin(bool secure_origin) {}
-
 void VrShell::ConnectPresentingService(
     device::mojom::VRSubmitFrameClientPtr submit_client,
     device::mojom::VRPresentationProviderRequest request,

@@ -33,11 +33,8 @@ class DEVICE_VR_EXPORT GvrDevice : public VRDevice {
       mojom::VRPresentationProviderRequest request,
       mojom::VRDisplayHost::RequestPresentCallback callback) override;
   void ExitPresent() override;
-  void GetPose(VRDisplayImpl* display,
-               mojom::VRMagicWindowProvider::GetPoseCallback callback) override;
-  void OnDisplayAdded(VRDisplayImpl* display) override;
-  void OnDisplayRemoved(VRDisplayImpl* display) override;
-  void OnListeningForActivateChanged(VRDisplayImpl* display) override;
+  void GetPose(mojom::VRMagicWindowProvider::GetPoseCallback callback) override;
+  void OnListeningForActivateChanged(bool listening) override;
   void PauseTracking() override;
   void ResumeTracking() override;
 
@@ -49,6 +46,7 @@ class DEVICE_VR_EXPORT GvrDevice : public VRDevice {
       mojom::VRDisplayHost::RequestPresentCallback callback,
       VRDisplayImpl* display,
       bool result);
+  void UpdateListeningForActivate();
 
   GvrDevice();
   GvrDelegateProvider* GetGvrDelegateProvider();

@@ -146,6 +146,8 @@ static_library("vr_common") {
     "//components/url_formatter",
     "//components/vector_icons",
     "//components/vector_icons",
+    "//content/public/browser",
+    "//content/public/common",
     "//skia",
     "//ui/base",
     "//ui/display",
@@ -210,6 +212,11 @@ test("vr_common_unittests") {
     "//skia",
     "//testing/gmock",
     "//testing/gtest",
+
+    # TODO(mthiesse): Figure out why these webrtc deps are necessary for compiling these tests.
+    # Is a dependency missing from some other target?
+    "//third_party/webrtc/api:video_frame_api",
+    "//third_party/webrtc/system_wrappers:metrics_default",
     "//ui/accessibility:ax_gen",
     "//ui/gfx:test_support",
     "//ui/gfx/geometry",
