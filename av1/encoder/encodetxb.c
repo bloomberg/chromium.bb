@@ -58,8 +58,8 @@ void av1_alloc_txb_buf(AV1_COMP *cpi) {
   }
 #else
   AV1_COMMON *cm = &cpi->common;
-  int size = ((cm->mi_rows >> MAX_MIB_SIZE_LOG2) + 1) *
-             ((cm->mi_cols >> MAX_MIB_SIZE_LOG2) + 1);
+  int size = ((cm->mi_rows >> cm->mib_size_log2) + 1) *
+             ((cm->mi_cols >> cm->mib_size_log2) + 1);
 
   av1_free_txb_buf(cpi);
   // TODO(jingning): This should be further reduced.
@@ -81,9 +81,9 @@ void av1_free_txb_buf(AV1_COMP *cpi) {
 
 void av1_set_coeff_buffer(const AV1_COMP *const cpi, MACROBLOCK *const x,
                           int mi_row, int mi_col) {
-  int stride = (cpi->common.mi_cols >> MAX_MIB_SIZE_LOG2) + 1;
-  int offset =
-      (mi_row >> MAX_MIB_SIZE_LOG2) * stride + (mi_col >> MAX_MIB_SIZE_LOG2);
+  int mib_size_log2 = cpi->common.mib_size_log2;
+  int stride = (cpi->common.mi_cols >> mib_size_log2) + 1;
+  int offset = (mi_row >> mib_size_log2) * stride + (mi_col >> mib_size_log2);
   CB_COEFF_BUFFER *coeff_buf = &cpi->coeff_buffer_base[offset];
   const int txb_offset = x->cb_offset / (TX_SIZE_W_MIN * TX_SIZE_H_MIN);
   for (int plane = 0; plane < MAX_MB_PLANE; ++plane) {

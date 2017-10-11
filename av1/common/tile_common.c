@@ -49,10 +49,10 @@ static int tile_log2(int blk_size, int target) {
 }
 
 void av1_get_tile_limits(AV1_COMMON *const cm) {
-  int mi_cols = ALIGN_POWER_OF_TWO(cm->mi_cols, MAX_MIB_SIZE_LOG2);
-  int mi_rows = ALIGN_POWER_OF_TWO(cm->mi_rows, MAX_MIB_SIZE_LOG2);
-  int sb_cols = mi_cols >> MAX_MIB_SIZE_LOG2;
-  int sb_rows = mi_rows >> MAX_MIB_SIZE_LOG2;
+  int mi_cols = ALIGN_POWER_OF_TWO(cm->mi_cols, cm->mib_size_log2);
+  int mi_rows = ALIGN_POWER_OF_TWO(cm->mi_rows, cm->mib_size_log2);
+  int sb_cols = mi_cols >> cm->mib_size_log2;
+  int sb_rows = mi_rows >> cm->mib_size_log2;
 
   cm->min_log2_tile_cols = tile_log2(MAX_TILE_WIDTH_SB, sb_cols);
   cm->max_log2_tile_cols = tile_log2(1, AOMMIN(sb_cols, MAX_TILE_COLS));
@@ -64,10 +64,10 @@ void av1_get_tile_limits(AV1_COMMON *const cm) {
 }
 
 void av1_calculate_tile_cols(AV1_COMMON *const cm) {
-  int mi_cols = ALIGN_POWER_OF_TWO(cm->mi_cols, MAX_MIB_SIZE_LOG2);
-  int mi_rows = ALIGN_POWER_OF_TWO(cm->mi_rows, MAX_MIB_SIZE_LOG2);
-  int sb_cols = mi_cols >> MAX_MIB_SIZE_LOG2;
-  int sb_rows = mi_rows >> MAX_MIB_SIZE_LOG2;
+  int mi_cols = ALIGN_POWER_OF_TWO(cm->mi_cols, cm->mib_size_log2);
+  int mi_rows = ALIGN_POWER_OF_TWO(cm->mi_rows, cm->mib_size_log2);
+  int sb_cols = mi_cols >> cm->mib_size_log2;
+  int sb_rows = mi_rows >> cm->mib_size_log2;
   int i;
 
   if (cm->uniform_tile_spacing_flag) {
@@ -85,7 +85,7 @@ void av1_calculate_tile_cols(AV1_COMMON *const cm) {
     cm->max_tile_height_sb = sb_rows >> cm->min_log2_tile_rows;
   } else {
     int max_tile_area_sb = (sb_rows * sb_cols);
-    int max_tile_width_sb = 0;
+    int max_tile_width_sb = 1;
     cm->log2_tile_cols = tile_log2(1, cm->tile_cols);
     for (i = 0; i < cm->tile_cols; i++) {
       int size_sb = cm->tile_col_start_sb[i + 1] - cm->tile_col_start_sb[i];
@@ -99,8 +99,8 @@ void av1_calculate_tile_cols(AV1_COMMON *const cm) {
 }
 
 void av1_calculate_tile_rows(AV1_COMMON *const cm) {
-  int mi_rows = ALIGN_POWER_OF_TWO(cm->mi_rows, MAX_MIB_SIZE_LOG2);
-  int sb_rows = mi_rows >> MAX_MIB_SIZE_LOG2;
+  int mi_rows = ALIGN_POWER_OF_TWO(cm->mi_rows, cm->mib_size_log2);
+  int sb_rows = mi_rows >> cm->mib_size_log2;
   int start_sb, size_sb, i;
 
   if (cm->uniform_tile_spacing_flag) {
@@ -131,18 +131,20 @@ void av1_calculate_tile_rows(AV1_COMMON *const cm) {
 
 void av1_tile_set_row(TileInfo *tile, const AV1_COMMON *cm, int row) {
   assert(row < cm->tile_rows);
-  int mi_row_start = cm->tile_row_start_sb[row] << MAX_MIB_SIZE_LOG2;
-  int mi_row_end = cm->tile_row_start_sb[row + 1] << MAX_MIB_SIZE_LOG2;
+  int mi_row_start = cm->tile_row_start_sb[row] << cm->mib_size_log2;
+  int mi_row_end = cm->tile_row_start_sb[row + 1] << cm->mib_size_log2;
   tile->mi_row_start = mi_row_start;
   tile->mi_row_end = AOMMIN(mi_row_end, cm->mi_rows);
+  assert(tile->mi_row_end > tile->mi_row_start);
 }
 
 void av1_tile_set_col(TileInfo *tile, const AV1_COMMON *cm, int col) {
   assert(col < cm->tile_cols);
-  int mi_col_start = cm->tile_col_start_sb[col] << MAX_MIB_SIZE_LOG2;
-  int mi_col_end = cm->tile_col_start_sb[col + 1] << MAX_MIB_SIZE_LOG2;
+  int mi_col_start = cm->tile_col_start_sb[col] << cm->mib_size_log2;
+  int mi_col_end = cm->tile_col_start_sb[col + 1] << cm->mib_size_log2;
   tile->mi_col_start = mi_col_start;
   tile->mi_col_end = AOMMIN(mi_col_end, cm->mi_cols);
+  assert(tile->mi_col_end > tile->mi_col_start);
 }
 
 #else

@@ -43,8 +43,17 @@ int ifd_inspect(insp_frame_data *fd, void *decoder) {
   fd->show_frame = cm->show_frame;
   fd->frame_type = cm->frame_type;
   fd->base_qindex = cm->base_qindex;
+#if CONFIG_MAX_TILE
+  // Set width and height of the first tile until generic support can be added
+  TileInfo tile_info;
+  av1_tile_set_row(&tile_info, cm, 0);
+  av1_tile_set_col(&tile_info, cm, 0);
+  fd->tile_mi_cols = tile_info.mi_col_end - tile_info.mi_col_start;
+  fd->tile_mi_rows = tile_info.mi_row_end - tile_info.mi_row_start;
+#else
   fd->tile_mi_cols = cm->tile_width;
   fd->tile_mi_rows = cm->tile_height;
+#endif
   fd->delta_q_present_flag = cm->delta_q_present_flag;
   fd->delta_q_res = cm->delta_q_res;
 #if CONFIG_ACCOUNTING

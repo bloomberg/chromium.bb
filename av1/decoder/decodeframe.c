@@ -1611,10 +1611,10 @@ static int rb_read_uniform(struct aom_read_bit_buffer *const rb, int n) {
 
 static void read_tile_info_max_tile(AV1_COMMON *const cm,
                                     struct aom_read_bit_buffer *const rb) {
-  int width_mi = ALIGN_POWER_OF_TWO(cm->mi_cols, MAX_MIB_SIZE_LOG2);
-  int height_mi = ALIGN_POWER_OF_TWO(cm->mi_rows, MAX_MIB_SIZE_LOG2);
-  int width_sb = width_mi >> MAX_MIB_SIZE_LOG2;
-  int height_sb = height_mi >> MAX_MIB_SIZE_LOG2;
+  int width_mi = ALIGN_POWER_OF_TWO(cm->mi_cols, cm->mib_size_log2);
+  int height_mi = ALIGN_POWER_OF_TWO(cm->mi_rows, cm->mib_size_log2);
+  int width_sb = width_mi >> cm->mib_size_log2;
+  int height_sb = height_mi >> cm->mib_size_log2;
 
   av1_get_tile_limits(cm);
   cm->uniform_tile_spacing_flag = aom_rb_read_bit(rb);
@@ -1737,6 +1737,17 @@ static void read_tile_info(AV1Decoder *const pbi,
       pbi->tile_col_size_bytes = aom_rb_read_literal(rb, 2) + 1;
       pbi->tile_size_bytes = aom_rb_read_literal(rb, 2) + 1;
     }
+#if CONFIG_MAX_TILE
+    int i;
+    for (i = 0; i <= cm->tile_cols; i++) {
+      cm->tile_col_start_sb[i] =
+          ((i * cm->tile_width - 1) >> cm->mib_size_log2) + 1;
+    }
+    for (i = 0; i <= cm->tile_rows; i++) {
+      cm->tile_row_start_sb[i] =
+          ((i * cm->tile_height - 1) >> cm->mib_size_log2) + 1;
+    }
+#endif  // CONFIG_MAX_TILE
   } else {
 #endif  // CONFIG_EXT_TILE
 

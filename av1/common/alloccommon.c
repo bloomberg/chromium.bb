@@ -135,8 +135,9 @@ void av1_alloc_restoration_buffers(AV1_COMMON *cm) {
   int num_stripes = 0;
   for (int i = 0; i < cm->tile_rows; ++i) {
 #if CONFIG_MAX_TILE
-    const int sb_h = cm->tile_row_start_sb[i + 1] - cm->tile_row_start_sb[i];
-    const int mi_h = sb_h << MAX_MIB_SIZE_LOG2;
+    TileInfo tile_info;
+    av1_tile_set_row(&tile_info, cm, i);
+    const int mi_h = tile_info.mi_row_end - tile_info.mi_row_start;
 #else
     const int mi_h = ((i + 1) < cm->tile_rows)
                          ? cm->tile_height

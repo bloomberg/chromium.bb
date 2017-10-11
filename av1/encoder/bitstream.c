@@ -2767,10 +2767,10 @@ static void wb_write_uniform(struct aom_write_bit_buffer *wb, int n, int v) {
 
 static void write_tile_info_max_tile(const AV1_COMMON *const cm,
                                      struct aom_write_bit_buffer *wb) {
-  int width_mi = ALIGN_POWER_OF_TWO(cm->mi_cols, MAX_MIB_SIZE_LOG2);
-  int height_mi = ALIGN_POWER_OF_TWO(cm->mi_rows, MAX_MIB_SIZE_LOG2);
-  int width_sb = width_mi >> MAX_MIB_SIZE_LOG2;
-  int height_sb = height_mi >> MAX_MIB_SIZE_LOG2;
+  int width_mi = ALIGN_POWER_OF_TWO(cm->mi_cols, cm->mib_size_log2);
+  int height_mi = ALIGN_POWER_OF_TWO(cm->mi_rows, cm->mib_size_log2);
+  int width_sb = width_mi >> cm->mib_size_log2;
+  int height_sb = height_mi >> cm->mib_size_log2;
   int size_sb, i;
 
   aom_wb_write_bit(wb, cm->uniform_tile_spacing_flag);
