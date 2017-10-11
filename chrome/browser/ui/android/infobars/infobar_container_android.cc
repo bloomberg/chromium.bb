@@ -83,9 +83,9 @@ void InfoBarContainerAndroid::AttachJavaInfoBar(InfoBarAndroid* android_bar) {
 
   base::android::ScopedJavaLocalRef<jobject> java_infobar =
       android_bar->CreateRenderInfoBar(env);
+  android_bar->SetJavaInfoBar(java_infobar);
   Java_InfoBarContainer_addInfoBar(env, weak_java_infobar_container_.get(env),
                                    java_infobar);
-  android_bar->SetJavaInfoBar(java_infobar);
 }
 
 void InfoBarContainerAndroid::PlatformSpecificReplaceInfoBar(
