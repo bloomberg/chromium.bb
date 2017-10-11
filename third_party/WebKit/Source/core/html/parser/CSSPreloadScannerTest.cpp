@@ -5,6 +5,7 @@
 #include "core/html/parser/CSSPreloadScanner.h"
 
 #include <memory>
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/Settings.h"
 #include "core/html/parser/HTMLResourcePreloader.h"
 #include "core/testing/DummyPageHolder.h"
@@ -143,7 +144,10 @@ TEST_F(CSSPreloadScannerTest, DontReadFromClearedData) {
   const char* data = "@import url('http://127.0.0.1/preload.css');";
   resource->AppendData(data, strlen(data));
   ResourceError error(ResourceError::Domain::kTest, 0, url, "");
-  resource->FinishAsError(error);
+  resource->FinishAsError(
+      error, TaskRunnerHelper::Get(TaskType::kUnspecedLoading,
+                                   &dummy_page_holder->GetDocument())
+                 .get());
 
   // Should not crash.
   PreloadRecordingCSSPreloaderResourceClient* resource_client =

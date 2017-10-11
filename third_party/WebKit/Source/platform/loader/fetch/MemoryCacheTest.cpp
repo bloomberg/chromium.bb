@@ -182,10 +182,10 @@ static void TestResourcePruningAtEndOfTask(Resource* resource1,
 
   const char kData[6] = "abcde";
   resource1->AppendData(kData, 3u);
-  resource1->Finish();
+  resource1->FinishForTest();
   Persistent<MockResourceClient> client = new MockResourceClient(resource2);
   resource2->AppendData(kData, 4u);
-  resource2->Finish();
+  resource2->FinishForTest();
 
   Platform::Current()->CurrentThread()->GetWebTaskRunner()->PostTask(
       BLINK_FROM_HERE, WTF::Bind(&RunTask1, WrapPersistent(resource1),

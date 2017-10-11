@@ -156,7 +156,7 @@ TEST_F(ResourceFetcherTest, Vary) {
   response.SetHTTPHeaderField(HTTPNames::Cache_Control, "max-age=3600");
   response.SetHTTPHeaderField(HTTPNames::Vary, "*");
   resource->ResponseReceived(response, nullptr);
-  resource->Finish();
+  resource->FinishForTest();
   ASSERT_TRUE(resource->MustReloadDueToVaryHeader(ResourceRequest(url)));
 
   ResourceFetcher* fetcher = ResourceFetcher::Create(Context());
@@ -218,7 +218,7 @@ TEST_F(ResourceFetcherTest, VaryOnBack) {
   response.SetHTTPHeaderField(HTTPNames::Cache_Control, "max-age=3600");
   response.SetHTTPHeaderField(HTTPNames::Vary, "*");
   resource->ResponseReceived(response, nullptr);
-  resource->Finish();
+  resource->FinishForTest();
   ASSERT_TRUE(resource->MustReloadDueToVaryHeader(ResourceRequest(url)));
 
   ResourceRequest resource_request(url);
@@ -683,7 +683,7 @@ TEST_F(ResourceFetcherTest, Revalidate304) {
   response.SetHTTPStatusCode(304);
   response.SetHTTPHeaderField("etag", "1234567890");
   resource->ResponseReceived(response, nullptr);
-  resource->Finish();
+  resource->FinishForTest();
 
   ResourceFetcher* fetcher = ResourceFetcher::Create(Context());
   ResourceRequest resource_request(url);

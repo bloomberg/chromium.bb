@@ -84,7 +84,7 @@ class ScriptStreamingTest : public ::testing::Test {
   }
 
   void Finish() {
-    resource_->Finish();
+    resource_->FinishForTest();
     resource_->SetStatus(ResourceStatus::kCached);
   }
 
