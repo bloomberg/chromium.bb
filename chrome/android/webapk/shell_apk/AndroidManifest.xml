@@ -9,6 +9,8 @@
     android:versionCode="{{{version_code}}}"
     android:versionName="{{{version_name}}}" >
 
+    <uses-permission android:name="android.permission.VIBRATE"></uses-permission>
+
     <uses-sdk
         android:minSdkVersion="16"
         android:targetSdkVersion="23" />
