@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/toolbar/toolbar_view.h"
 
+#import "ios/chrome/browser/ui/toolbar/toolbar_controller_base_feature.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_frame_delegate.h"
 
 @implementation ToolbarView
@@ -43,6 +44,13 @@
 - (void)didMoveToWindow {
   [super didMoveToWindow];
   [delegate_ windowDidChange];
+}
+
+- (void)willMoveToSuperview:(UIView*)newSuperview {
+  [super willMoveToSuperview:newSuperview];
+  if (base::FeatureList::IsEnabled(kSafeAreaCompatibleToolbar)) {
+    [self removeConstraints:self.constraints];
+  }
 }
 
 - (id<CAAction>)actionForLayer:(CALayer*)layer forKey:(NSString*)event {

@@ -74,6 +74,11 @@ const char kPhysicalWebDescription[] =
     "When enabled, the omnibox will include suggestions for web pages "
     "broadcast by devices near you.";
 
+extern const char kSafeAreaCompatibleToolbarName[] =
+    "Safe Area Compatible Toolbar";
+extern const char kSafeAreaCompatibleToolbarDescription[] =
+    "When enabled, the toolbar resizes itself when the safe area changes.";
+
 const char kTabSwitcherPresentsBVCName[] = "TabSwitcher Presents BVC";
 const char kTabSwitcherPresentsBVCDescription[] =
     "When enabled, the tab switcher will present the BVC, so that when the "

@@ -7,6 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
+#import "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_positioner.h"
 #import "ios/chrome/browser/ui/bubble/bubble_view_anchor_point_provider.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_controller_constants.h"
@@ -126,6 +127,11 @@ class ReadingListModel;
 // Triggers an animation on the tools menu button to draw the user's
 // attention.
 - (void)triggerToolsMenuButtonAnimation;
+
+// Update the view's layout to take into account the new safe area insets.
+- (void)safeAreaInsetsDidChange;
+
+- (CGFloat)preferredToolbarHeightWhenAlignedToTopOfScreen;
 
 @end
 

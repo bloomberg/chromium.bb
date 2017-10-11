@@ -34,6 +34,7 @@ source_set("ntp_header") {
     "//ios/chrome/browser/ui/content_suggestions:content_suggestions_util",
     "//ios/chrome/browser/ui/toolbar",
     "//ios/chrome/browser/ui/toolbar:resource_macros",
+    "//ios/chrome/browser/ui/toolbar:toolbar_base_feature",
     "//ios/chrome/common",
     "//ui/base",
   ]
