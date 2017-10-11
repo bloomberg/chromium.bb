@@ -65,6 +65,8 @@ source_set("audio") {
   ]
   sources = [
     "agc_audio_stream.h",
+    "alive_checker.cc",
+    "alive_checker.h",
     "audio_debug_file_writer.cc",
     "audio_debug_file_writer.h",
     "audio_debug_recording_helper.cc",
@@ -132,6 +134,8 @@ source_set("audio") {
     "fake_audio_output_stream.h",
     "null_audio_sink.cc",
     "null_audio_sink.h",
+    "power_observer_helper.cc",
+    "power_observer_helper.h",
     "scoped_task_runner_observer.cc",
     "scoped_task_runner_observer.h",
     "simple_sources.cc",
@@ -350,6 +354,7 @@ static_library("test_support") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "alive_checker_unittest.cc",
     "audio_debug_file_writer_unittest.cc",
     "audio_debug_recording_helper_unittest.cc",
     "audio_debug_recording_manager_unittest.cc",
@@ -362,6 +367,7 @@ source_set("unit_tests") {
     "audio_output_proxy_unittest.cc",
     "audio_power_monitor_unittest.cc",
     "audio_system_impl_unittest.cc",
+    "power_observer_helper_unittest.cc",
     "simple_sources_unittest.cc",
     "virtual_audio_input_stream_unittest.cc",
     "virtual_audio_output_stream_unittest.cc",
