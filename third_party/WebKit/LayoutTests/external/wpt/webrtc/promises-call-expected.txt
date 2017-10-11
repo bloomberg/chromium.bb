@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL Can set up a basic WebRTC call with only data using promises. assert_unreached: Error OperationError: TEST_ERROR happened at step Create offer Reached unreachable code
-Harness: the test ran to completion.
-

@@ -11,10 +11,10 @@ PASS new RTCPeerConnection({ certificates: [] })
 PASS new RTCPeerConnection({ certificates: [null] })
 PASS new RTCPeerConnection({ certificates: [undefined] })
 PASS new RTCPeerConnection({ iceCandidatePoolSize: toNumberThrows })
-PASS localDescription initial value
+FAIL localDescription initial value assert_equals: expected null but got object "[object RTCSessionDescription]"
 FAIL currentLocalDescription initial value assert_equals: expected (object) null but got (undefined) undefined
 FAIL pendingLocalDescription initial value assert_equals: expected (object) null but got (undefined) undefined
-PASS remoteDescription initial value
+FAIL remoteDescription initial value assert_equals: expected null but got object "[object RTCSessionDescription]"
 FAIL currentRemoteDescription initial value assert_equals: expected (object) null but got (undefined) undefined
 FAIL pendingRemoteDescription initial value assert_equals: expected (object) null but got (undefined) undefined
 PASS signalingState initial value

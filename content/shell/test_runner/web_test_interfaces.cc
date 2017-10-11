@@ -10,7 +10,6 @@
 #include "content/shell/test_runner/mock_web_audio_device.h"
 #include "content/shell/test_runner/mock_web_media_stream_center.h"
 #include "content/shell/test_runner/mock_web_midi_accessor.h"
-#include "content/shell/test_runner/mock_webrtc_peer_connection_handler.h"
 #include "content/shell/test_runner/test_interfaces.h"
 #include "content/shell/test_runner/test_runner.h"
 #include "content/shell/test_runner/web_frame_test_client.h"
@@ -70,13 +69,6 @@ TestInterfaces* WebTestInterfaces::GetTestInterfaces() {
 std::unique_ptr<WebMediaStreamCenter>
 WebTestInterfaces::CreateMediaStreamCenter(WebMediaStreamCenterClient* client) {
   return base::MakeUnique<MockWebMediaStreamCenter>();
-}
-
-std::unique_ptr<WebRTCPeerConnectionHandler>
-WebTestInterfaces::CreateWebRTCPeerConnectionHandler(
-    WebRTCPeerConnectionHandlerClient* client) {
-  return base::MakeUnique<MockWebRTCPeerConnectionHandler>(client,
-                                                           interfaces_.get());
 }
 
 std::unique_ptr<WebMIDIAccessor> WebTestInterfaces::CreateMIDIAccessor(
