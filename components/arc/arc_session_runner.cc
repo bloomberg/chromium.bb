@@ -116,16 +116,12 @@ void ArcSessionRunner::RequestStart() {
   StartArcSession();
 }
 
-void ArcSessionRunner::RequestStop(bool always_stop_session) {
+void ArcSessionRunner::RequestStop() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  if (!run_requested_) {
-    // Call Stop() to stop an instance for login screen (if any.) If this is
-    // just a consecutive RequestStop() call, Stop() does nothing.
-    if (!always_stop_session || !arc_session_)
-      return;
-  }
-
+  // Unlike RequestStart(), this does not check |run_requested_| here.
+  // Even if |run_requested_| is false, an instance for login screen may be
+  // running, which should stop here.
   VLOG(1) << "Session stop requested";
   run_requested_ = false;
 
