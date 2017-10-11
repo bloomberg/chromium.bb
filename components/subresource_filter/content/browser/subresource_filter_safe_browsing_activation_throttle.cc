@@ -185,11 +185,19 @@ void SubresourceFilterSafeBrowsingActivationThrottle::NotifyResult() {
   // Compute the matched list and notify observers of the check result.
   DCHECK(!database_client_ || !check_results_.empty());
   ActivationList matched_list = ActivationList::NONE;
+  bool warning = false;
   if (!check_results_.empty()) {
     const auto& check_result = check_results_.back();
     DCHECK(check_result.finished);
     matched_list = GetListForThreatTypeAndMetadata(
         check_result.threat_type, check_result.threat_metadata);
+    // TODO(shivanisha): For now warning is true if at least one matching list
+    // has warning mode set. This needs to change to be able to handle per-list
+    // enforcement level.
+    for (const auto& match :
+         check_result.threat_metadata.subresource_filter_match) {
+      warning |= (match.second == safe_browsing::SubresourceFilterLevel::WARN);
+    }
     SubresourceFilterObserverManager::FromWebContents(
         navigation_handle()->GetWebContents())
         ->NotifySafeBrowsingCheckComplete(navigation_handle(),
@@ -227,7 +235,7 @@ void SubresourceFilterSafeBrowsingActivationThrottle::NotifyResult() {
   }
 
   driver_factory->NotifyPageActivationComputed(
-      navigation_handle(), activation_decision, matched_configuration);
+      navigation_handle(), activation_decision, matched_configuration, warning);
 
   base::TimeDelta delay = defer_time_.is_null()
                               ? base::TimeDelta::FromMilliseconds(0)

@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "chrome/browser/subresource_filter/test_ruleset_publisher.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/safe_browsing/db/util.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features_test_support.h"
 #include "components/subresource_filter/core/common/test_ruleset_creator.h"
 #include "components/url_pattern_index/proto/rules.pb.h"
@@ -55,6 +56,10 @@ class SubresourceFilterBrowserTest : public InProcessBrowserTest {
   void ConfigureAsPhishingURL(const GURL& url);
 
   void ConfigureAsSubresourceFilterOnlyURL(const GURL& url);
+
+  void ConfigureURLWithWarning(
+      const GURL& url,
+      std::vector<safe_browsing::SubresourceFilterType> filter_types);
 
   content::WebContents* web_contents() const;
 
@@ -106,6 +111,13 @@ class SubresourceFilterBrowserTest : public InProcessBrowserTest {
   SubresourceFilterContentSettingsManager* settings_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(SubresourceFilterBrowserTest);
+};
+
+// This class automatically syncs the SubresourceFilter SafeBrowsing list
+// without needing a chrome branded build.
+class SubresourceFilterListInsertingBrowserTest
+    : public SubresourceFilterBrowserTest {
+  std::unique_ptr<TestSafeBrowsingDatabaseHelper> CreateTestDatabase() override;
 };
 
 }  // namespace subresource_filter

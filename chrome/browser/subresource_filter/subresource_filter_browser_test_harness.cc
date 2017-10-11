@@ -23,7 +23,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
-#include "components/safe_browsing/db/util.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "content/public/browser/web_contents.h"
@@ -109,6 +108,19 @@ void SubresourceFilterBrowserTest::ConfigureAsPhishingURL(const GURL& url) {
 void SubresourceFilterBrowserTest::ConfigureAsSubresourceFilterOnlyURL(
     const GURL& url) {
   safe_browsing::ThreatMetadata metadata;
+  database_helper_->MarkUrlAsMatchingListIdWithMetadata(
+      url, safe_browsing::GetUrlSubresourceFilterId(), metadata);
+}
+
+void SubresourceFilterBrowserTest::ConfigureURLWithWarning(
+    const GURL& url,
+    std::vector<safe_browsing::SubresourceFilterType> filter_types) {
+  safe_browsing::ThreatMetadata metadata;
+
+  for (auto type : filter_types) {
+    metadata.subresource_filter_match[type] =
+        safe_browsing::SubresourceFilterLevel::WARN;
+  }
   database_helper_->MarkUrlAsMatchingListIdWithMetadata(
       url, safe_browsing::GetUrlSubresourceFilterId(), metadata);
 }
@@ -231,6 +243,13 @@ void SubresourceFilterBrowserTest::ResetConfigurationToEnableOnPhishingSites(
   config.activation_options.should_whitelist_site_on_reload =
       whitelist_site_on_reload;
   ResetConfiguration(std::move(config));
+}
+
+std::unique_ptr<TestSafeBrowsingDatabaseHelper>
+SubresourceFilterListInsertingBrowserTest::CreateTestDatabase() {
+  std::vector<safe_browsing::ListIdentifier> list_ids = {
+      safe_browsing::GetUrlSubresourceFilterId()};
+  return base::MakeUnique<TestSafeBrowsingDatabaseHelper>(std::move(list_ids));
 }
 
 }  // namespace subresource_filter
