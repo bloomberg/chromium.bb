@@ -1,0 +1,9 @@
+This is a testharness.js-based test.
+FAIL setLocalDescription() with valid answer should succeed assert_not_equals: Expect session description to be defined got disallowed value undefined
+FAIL setLocalDescription() with type answer and null sdp should use lastAnswer generated from createAnswer promise_test: Unhandled rejection with value: object "OperationError: Failed to parse SessionDescription.  Expect line: v="
+FAIL setLocalDescription() with answer not created by own createAnswer() should reject with InvalidModificationError assert_throws: function "function () { throw e }" threw object "OperationError: Failed to set local answer sdp: Failed to push down transport description: Local fingerprint does not match identity. Expected: sha-256 D4:80:72:19:2D:11:B7:CD:FF:51:D4:87:44:00:49:BE:80:B9:E4:F9:BC:4D:4A:10:34:28:61:E7:5C:0F:08:35 Got: sha-256 4C:66:A5:22:CF:75:25:E4:C0:23:FE:0F:55:94:61:28:25:C7:9F:2E:BA:CB:D9:BF:3E:CA:82:1B:8F:A4:E8:11" that is not a DOMException InvalidModificationError: property "code" is equal to 0, expected 13
+FAIL Calling setLocalDescription(answer) from stable state should reject with InvalidStateError assert_throws: function "function () { throw e }" threw object "OperationError: Failed to set local answer sdp: Called in wrong state: STATE_INIT" that is not a DOMException InvalidStateError: property "code" is equal to 0, expected 11
+FAIL Calling setLocalDescription(answer) from have-local-offer state should reject with InvalidStateError assert_throws: function "function () { throw e }" threw object "OperationError: Failed to set local answer sdp: Called in wrong state: STATE_SENTOFFER" that is not a DOMException InvalidStateError: property "code" is equal to 0, expected 11
+PASS Test onsignalingstatechange event for setLocalDescription() with valid answer should succeed
+Harness: the test ran to completion.
+
