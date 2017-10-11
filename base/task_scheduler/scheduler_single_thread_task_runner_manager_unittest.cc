@@ -607,15 +607,15 @@ TEST_F(TaskSchedulerSingleThreadTaskRunnerManagerStartTest,
               },
               Unretained(&task_running), Unretained(&manager_started)));
 
-  // Wait a little bit to make sure that the task isn't scheduled before start.
-  // Note: This test won't catch a case where the task is scheduled between
-  // setting |manager_started| and calling Start(). However, we expect the test
-  // to be flaky if the tested code allows that to happen.
+  // Wait a little bit to make sure that the task doesn't run before start.
+  // Note: This test won't catch a case where the task runs between setting
+  // |manager_started| and calling Start(). However, we expect the test to be
+  // flaky if the tested code allows that to happen.
   PlatformThread::Sleep(TestTimeouts::tiny_timeout());
   manager_started.Set();
   single_thread_task_runner_manager_->Start();
 
-  // This should not hang if the task is scheduled after Start().
+  // This should not hang if the task runs after Start().
   task_running.Wait();
 }
 

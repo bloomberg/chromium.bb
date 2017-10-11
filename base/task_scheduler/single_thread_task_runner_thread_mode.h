@@ -14,9 +14,9 @@ enum class SingleThreadTaskRunnerThreadMode {
   // recommended for most code.
   SHARED,
   // Dedicate a single thread for this SingleThreadTaskRunner. No other tasks
-  // from any other source will be scheduled on the thread backing
-  // the SingleThreadTaskRunner. Use sparingly as this reserves an entire
-  // thread for this SingleThreadTaskRunner.
+  // from any other source will run on the thread backing the
+  // SingleThreadTaskRunner. Use sparingly as this reserves an entire thread for
+  // this SingleThreadTaskRunner.
   DEDICATED,
 };
 

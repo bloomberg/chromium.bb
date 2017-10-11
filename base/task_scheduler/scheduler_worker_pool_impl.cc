@@ -826,8 +826,8 @@ bool SchedulerWorkerPoolImpl::
   // scope of a MAY_BLOCK ScopedBlockingCall but haven't cause a capacity
   // increment yet.
   //
-  // - When (1) is false: A newly posted task will be scheduled on one of the
-  //   idle workers that are allowed to do work. There is no hurry to increase
+  // - When (1) is false: A newly posted task will run on one of the idle
+  //   workers that are allowed to do work. There is no hurry to increase
   //   capacity.
   // - When (2) is false: AdjustWorkerCapacity() would be a no-op.
   const int idle_workers_that_can_do_work =
