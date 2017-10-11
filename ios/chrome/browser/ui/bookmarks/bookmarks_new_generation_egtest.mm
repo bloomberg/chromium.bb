@@ -233,6 +233,60 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   [self verifyContextBarInDefaultStateWithSelectEnabled:YES];
 }
 
+- (void)testSwipeToDeleteDisabledInEditMode {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
+
+  [BookmarksNewGenTestCase setupStandardBookmarks];
+  [BookmarksNewGenTestCase openBookmarks];
+  [BookmarksNewGenTestCase openMobileBookmarks];
+
+  // Swipe action on the URL.
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"First URL")]
+      performAction:grey_swipeFastInDirection(kGREYDirectionLeft)];
+
+  // Verify the delete confirmation button shows up.
+  [[[EarlGrey selectElementWithMatcher:BookmarksDeleteSwipeButton()]
+      inRoot:grey_kindOfClass(NSClassFromString(@"UITableView"))]
+      assertWithMatcher:grey_notNil()];
+
+  // Change to edit mode
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          @"context_bar_trailing_button")]
+      performAction:grey_tap()];
+
+  // Verify the delete confirmation button is gone after entering edit mode.
+  [[[EarlGrey selectElementWithMatcher:BookmarksDeleteSwipeButton()]
+      inRoot:grey_kindOfClass(NSClassFromString(@"UITableView"))]
+      assertWithMatcher:grey_nil()];
+
+  // Swipe action on "Second URL".  This should not bring out delete
+  // confirmation button as swipe-to-delete is disabled in edit mode.
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Second URL")]
+      performAction:grey_swipeFastInDirection(kGREYDirectionLeft)];
+
+  // Verify the delete confirmation button doesn't appear.
+  [[[EarlGrey selectElementWithMatcher:BookmarksDeleteSwipeButton()]
+      inRoot:grey_kindOfClass(NSClassFromString(@"UITableView"))]
+      assertWithMatcher:grey_nil()];
+
+  // Cancel edit mode
+  [BookmarksNewGenTestCase closeContextBarEditMode];
+
+  // Swipe action on the URL.
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"French URL")]
+      performAction:grey_swipeFastInDirection(kGREYDirectionLeft)];
+
+  // Verify the delete confirmation button shows up. (swipe-to-delete is
+  // re-enabled).
+  [[[EarlGrey selectElementWithMatcher:BookmarksDeleteSwipeButton()]
+      inRoot:grey_kindOfClass(NSClassFromString(@"UITableView"))]
+      assertWithMatcher:grey_notNil()];
+}
+
 // Tests that the bookmark context bar is shown in MobileBookmarks.
 - (void)testBookmarkContextBarShown {
   base::test::ScopedFeatureList scoped_feature_list;
