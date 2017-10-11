@@ -2,7 +2,7 @@ Tests that XHR request type is detected on send.
 
 
 Request: empty-script.js
-Type: other
+Type: script
 
 Request: empty.html?xhr
 Type: xhr

@@ -37,6 +37,7 @@
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/protocol/Network.h"
 #include "platform/heap/Handle.h"
+#include "platform/loader/fetch/Resource.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {
@@ -84,7 +85,8 @@ class CORE_EXPORT InspectorNetworkAgent final
                        const ResourceRequest&,
                        DocumentLoader*,
                        const FetchInitiatorInfo&,
-                       ResourceRequestBlockedReason);
+                       ResourceRequestBlockedReason,
+                       Resource::Type);
   void DidChangeResourcePriority(unsigned long identifier,
                                  ResourceLoadPriority);
   void WillSendRequest(ExecutionContext*,
@@ -92,7 +94,8 @@ class CORE_EXPORT InspectorNetworkAgent final
                        DocumentLoader*,
                        ResourceRequest&,
                        const ResourceResponse& redirect_response,
-                       const FetchInitiatorInfo&);
+                       const FetchInitiatorInfo&,
+                       Resource::Type);
   void MarkResourceAsCached(unsigned long identifier);
   void DidReceiveResourceResponse(unsigned long identifier,
                                   DocumentLoader*,
@@ -246,7 +249,8 @@ class CORE_EXPORT InspectorNetworkAgent final
                                DocumentLoader*,
                                const ResourceRequest&,
                                const ResourceResponse& redirect_response,
-                               const FetchInitiatorInfo&);
+                               const FetchInitiatorInfo&,
+                               InspectorPageAgent::ResourceType);
   void DelayedRemoveReplayXHR(XMLHttpRequest*);
   void RemoveFinishedReplayXHRFired(TimerBase*);
   void DidFinishXHRInternal(ExecutionContext*,

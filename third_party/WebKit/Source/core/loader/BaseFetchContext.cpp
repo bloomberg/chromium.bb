@@ -58,7 +58,7 @@ ResourceRequestBlockedReason BaseFetchContext::CanRequest(
   if (blocked_reason != ResourceRequestBlockedReason::kNone &&
       reporting_policy == SecurityViolationReportingPolicy::kReport) {
     DispatchDidBlockRequest(resource_request, options.initiator_info,
-                            blocked_reason);
+                            blocked_reason, type);
   }
   return blocked_reason;
 }

@@ -39,7 +39,8 @@ class WorkerFetchContext final : public BaseFetchContext {
   bool ShouldBlockRequestByInspector(const KURL&) const override;
   void DispatchDidBlockRequest(const ResourceRequest&,
                                const FetchInitiatorInfo&,
-                               ResourceRequestBlockedReason) const override;
+                               ResourceRequestBlockedReason,
+                               Resource::Type) const override;
   bool ShouldBypassMainWorldCSP() const override;
   bool IsSVGImageChromeClient() const override;
   void CountUsage(WebFeature) const override;
@@ -72,6 +73,7 @@ class WorkerFetchContext final : public BaseFetchContext {
   void DispatchWillSendRequest(unsigned long,
                                ResourceRequest&,
                                const ResourceResponse&,
+                               Resource::Type,
                                const FetchInitiatorInfo&) override;
   void DispatchDidReceiveResponse(unsigned long identifier,
                                   const ResourceResponse&,

@@ -581,10 +581,14 @@ void InspectorNetworkAgent::DidBlockRequest(
     const ResourceRequest& request,
     DocumentLoader* loader,
     const FetchInitiatorInfo& initiator_info,
-    ResourceRequestBlockedReason reason) {
+    ResourceRequestBlockedReason reason,
+    Resource::Type resource_type) {
   unsigned long identifier = CreateUniqueIdentifier();
+  InspectorPageAgent::ResourceType type =
+      InspectorPageAgent::ToResourceType(resource_type);
+
   WillSendRequestInternal(execution_context, identifier, loader, request,
-                          ResourceResponse(), initiator_info);
+                          ResourceResponse(), initiator_info, type);
 
   String request_id = IdentifiersFactory::RequestId(identifier);
   String protocol_reason = BuildBlockedReason(reason);
@@ -610,19 +614,15 @@ void InspectorNetworkAgent::WillSendRequestInternal(
     DocumentLoader* loader,
     const ResourceRequest& request,
     const ResourceResponse& redirect_response,
-    const FetchInitiatorInfo& initiator_info) {
+    const FetchInitiatorInfo& initiator_info,
+    InspectorPageAgent::ResourceType type) {
   String request_id = IdentifiersFactory::RequestId(identifier);
   String loader_id = loader ? IdentifiersFactory::LoaderId(loader) : "";
   resources_data_->ResourceCreated(request_id, loader_id, request.Url());
-
-  InspectorPageAgent::ResourceType type = InspectorPageAgent::kOtherResource;
-  if (initiator_info.name == FetchInitiatorTypeNames::xmlhttprequest) {
+  if (initiator_info.name == FetchInitiatorTypeNames::xmlhttprequest)
     type = InspectorPageAgent::kXHRResource;
-    resources_data_->SetResourceType(request_id, type);
-  } else if (initiator_info.name == FetchInitiatorTypeNames::document) {
-    type = InspectorPageAgent::kDocumentResource;
-    resources_data_->SetResourceType(request_id, type);
-  }
+
+  resources_data_->SetResourceType(request_id, type);
 
   String frame_id = loader && loader->GetFrame()
                         ? IdentifiersFactory::FrameId(loader->GetFrame())
@@ -678,7 +678,8 @@ void InspectorNetworkAgent::WillSendRequest(
     DocumentLoader* loader,
     ResourceRequest& request,
     const ResourceResponse& redirect_response,
-    const FetchInitiatorInfo& initiator_info) {
+    const FetchInitiatorInfo& initiator_info,
+    Resource::Type resource_type) {
   // Ignore the request initiated internally.
   if (initiator_info.name == FetchInitiatorTypeNames::internal)
     return;
@@ -713,8 +714,11 @@ void InspectorNetworkAgent::WillSendRequest(
   if (state_->booleanProperty(NetworkAgentState::kBypassServiceWorker, false))
     request.SetServiceWorkerMode(WebURLRequest::ServiceWorkerMode::kNone);
 
+  InspectorPageAgent::ResourceType type =
+      InspectorPageAgent::ToResourceType(resource_type);
+
   WillSendRequestInternal(execution_context, identifier, loader, request,
-                          redirect_response, initiator_info);
+                          redirect_response, initiator_info, type);
 
   if (!host_id_.IsEmpty()) {
     request.AddHTTPHeaderField(
@@ -742,8 +746,9 @@ void InspectorNetworkAgent::DidReceiveResourceResponse(
                                      &resource_is_empty);
 
   InspectorPageAgent::ResourceType type =
-      cached_resource ? InspectorPageAgent::CachedResourceType(*cached_resource)
-                      : InspectorPageAgent::kOtherResource;
+      cached_resource
+          ? InspectorPageAgent::ToResourceType(cached_resource->GetType())
+          : InspectorPageAgent::kOtherResource;
   // Override with already discovered resource type.
   InspectorPageAgent::ResourceType saved_type =
       resources_data_->GetResourceType(request_id);

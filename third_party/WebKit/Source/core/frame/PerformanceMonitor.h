@@ -10,6 +10,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/timing/SubTaskAttribution.h"
 #include "platform/heap/Handle.h"
+#include "platform/loader/fetch/Resource.h"
 #include "platform/scheduler/base/task_time_observer.h"
 #include "platform/wtf/text/AtomicString.h"
 #include "public/platform/WebThread.h"

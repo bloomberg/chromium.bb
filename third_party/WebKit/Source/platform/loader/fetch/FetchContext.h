@@ -118,6 +118,7 @@ class PLATFORM_EXPORT FetchContext
       unsigned long identifier,
       ResourceRequest&,
       const ResourceResponse& redirect_response,
+      Resource::Type,
       const FetchInitiatorInfo& = FetchInitiatorInfo());
   virtual void DispatchDidLoadResourceFromMemoryCache(unsigned long identifier,
                                                       const ResourceRequest&,

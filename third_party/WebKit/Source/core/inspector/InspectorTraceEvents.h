@@ -13,6 +13,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/instrumentation/tracing/TracedValue.h"
+#include "platform/loader/fetch/Resource.h"
 #include "platform/loader/fetch/ResourceLoadPriority.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/Functional.h"
@@ -81,7 +82,8 @@ class CORE_EXPORT InspectorTraceEvents : public InspectorAgent {
                        DocumentLoader*,
                        ResourceRequest&,
                        const ResourceResponse& redirect_response,
-                       const FetchInitiatorInfo&);
+                       const FetchInitiatorInfo&,
+                       Resource::Type);
   void DidReceiveResourceResponse(unsigned long identifier,
                                   DocumentLoader*,
                                   const ResourceResponse&,

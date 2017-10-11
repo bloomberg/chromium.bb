@@ -87,9 +87,9 @@ interface CoreProbes {
   void didResizeMainFrame(LocalFrame*);
   void didPaint(LocalFrame*, const GraphicsLayer*, GraphicsContext&, const LayoutRect&);
   void applyUserAgentOverride(ExecutionContext*, String* userAgent);
-  void didBlockRequest([Keep] ExecutionContext*, const ResourceRequest&, DocumentLoader*, const FetchInitiatorInfo&, ResourceRequestBlockedReason);
+  void didBlockRequest([Keep] ExecutionContext*, const ResourceRequest&, DocumentLoader*, const FetchInitiatorInfo&, ResourceRequestBlockedReason, Resource::Type);
   void didChangeResourcePriority(LocalFrame*, unsigned long identifier, ResourceLoadPriority loadPriority);
-  void willSendRequest([Keep] ExecutionContext*, unsigned long identifier, DocumentLoader*, ResourceRequest&, const ResourceResponse& redirectResponse, const FetchInitiatorInfo&);
+  void willSendRequest([Keep] ExecutionContext*, unsigned long identifier, DocumentLoader*, ResourceRequest&, const ResourceResponse& redirectResponse, const FetchInitiatorInfo&, Resource::Type);
   void markResourceAsCached(LocalFrame*, unsigned long identifier);
   void didReceiveResourceResponse(ExecutionContext*, unsigned long identifier, DocumentLoader*, const ResourceResponse&, Resource*);
   void didReceiveData(ExecutionContext*, unsigned long identifier, DocumentLoader*, const char* data, int dataLength);

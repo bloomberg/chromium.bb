@@ -363,9 +363,9 @@ String InspectorPageAgent::ResourceTypeJson(
   return protocol::Page::ResourceTypeEnum::Other;
 }
 
-InspectorPageAgent::ResourceType InspectorPageAgent::CachedResourceType(
-    const Resource& cached_resource) {
-  switch (cached_resource.GetType()) {
+InspectorPageAgent::ResourceType InspectorPageAgent::ToResourceType(
+    const Resource::Type resource_type) {
+  switch (resource_type) {
     case Resource::kImage:
       return InspectorPageAgent::kImageResource;
     case Resource::kFont:
@@ -394,7 +394,7 @@ InspectorPageAgent::ResourceType InspectorPageAgent::CachedResourceType(
 
 String InspectorPageAgent::CachedResourceTypeJson(
     const Resource& cached_resource) {
-  return ResourceTypeJson(CachedResourceType(cached_resource));
+  return ResourceTypeJson(ToResourceType(cached_resource.GetType()));
 }
 
 InspectorPageAgent::InspectorPageAgent(

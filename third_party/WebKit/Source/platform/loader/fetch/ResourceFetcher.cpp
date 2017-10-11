@@ -368,9 +368,9 @@ void ResourceFetcher::DidLoadResourceFromMemoryCache(
       original_resource_request.GetRequestContext());
   Context().DispatchDidLoadResourceFromMemoryCache(identifier, resource_request,
                                                    resource->GetResponse());
-  Context().DispatchWillSendRequest(identifier, resource_request,
-                                    ResourceResponse() /* redirects */,
-                                    resource->Options().initiator_info);
+  Context().DispatchWillSendRequest(
+      identifier, resource_request, ResourceResponse() /* redirects */,
+      resource->GetType(), resource->Options().initiator_info);
   Context().DispatchDidReceiveResponse(
       identifier, resource->GetResponse(), resource_request.GetFrameType(),
       resource_request.GetRequestContext(), resource,
@@ -1430,6 +1430,7 @@ bool ResourceFetcher::StartLoad(Resource* resource) {
                                             resource->Options().initiator_info);
 
     Context().DispatchWillSendRequest(resource->Identifier(), request, response,
+                                      resource->GetType(),
                                       resource->Options().initiator_info);
 
     // Resource requests from suborigins should not be intercepted by the

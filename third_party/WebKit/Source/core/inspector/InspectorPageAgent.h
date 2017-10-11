@@ -35,6 +35,7 @@
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/protocol/Page.h"
 #include "core/page/ChromeClient.h"
+#include "platform/loader/fetch/Resource.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/text/WTFString.h"
 #include "v8/include/v8-inspector.h"
@@ -101,7 +102,7 @@ class CORE_EXPORT InspectorPageAgent final
                                   bool* base64_encoded);
 
   static String ResourceTypeJson(ResourceType);
-  static ResourceType CachedResourceType(const Resource&);
+  static ResourceType ToResourceType(const Resource::Type);
   static String CachedResourceTypeJson(const Resource&);
 
   // Page API for frontend

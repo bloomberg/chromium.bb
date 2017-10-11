@@ -69,6 +69,7 @@ void FetchContext::PrepareRequest(ResourceRequest&, RedirectType) {}
 void FetchContext::DispatchWillSendRequest(unsigned long,
                                            ResourceRequest&,
                                            const ResourceResponse&,
+                                           Resource::Type,
                                            const FetchInitiatorInfo&) {}
 
 void FetchContext::DispatchDidLoadResourceFromMemoryCache(
