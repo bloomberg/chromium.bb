@@ -1,0 +1,7 @@
+Script execution paused.
+Call stack:
+    0)  (example.ts:1)
+    1)  (anonymous-script-with-source-map-breakpoint.html:6)
+
+Script execution resumed.
+Tests breakpoint in anonymous script with source map on reload.
