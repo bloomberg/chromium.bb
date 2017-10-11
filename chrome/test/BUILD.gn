@@ -782,6 +782,7 @@ if (!is_android) {
         "//chrome/app:chrome_dll_resources",
         "//chrome/install_static:install_static_util",
         "//third_party/isimpledom",
+        "//third_party/webrtc/modules/desktop_capture",
         "//third_party/wtl",
         "//ui/resources",
       ]

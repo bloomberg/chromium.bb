@@ -51,6 +51,7 @@ class InteractiveUITestSuite : public ChromeTestSuite {
 #elif defined(USE_AURA)
 #if defined(OS_WIN)
     com_initializer_.reset(new base::win::ScopedCOMInitializer());
+    KillAlwaysOnTopWindows(RunType::BEFORE_TEST);
 #endif
 
 #if defined(OS_LINUX)
@@ -69,6 +70,7 @@ class InteractiveUITestSuite : public ChromeTestSuite {
 
   void Shutdown() override {
 #if defined(OS_WIN)
+    KillAlwaysOnTopWindows(RunType::AFTER_TEST);
     com_initializer_.reset();
 #endif
   }
@@ -87,9 +89,6 @@ class InteractiveUITestSuiteRunner : public ChromeTestSuiteRunner {
 };
 
 int main(int argc, char** argv) {
-#if defined(OS_WIN)
-  KillAlwaysOnTopWindows(RunType::BEFORE_TEST);
-#endif
   // TODO(sky): this causes a crash in an autofill test on macosx, figure out
   // why: http://crbug.com/641969.
 #if !defined(OS_MACOSX)
@@ -108,9 +107,5 @@ int main(int argc, char** argv) {
 
   InteractiveUITestSuiteRunner runner;
   ChromeTestLauncherDelegate delegate(&runner);
-  const int result = LaunchChromeTests(parallel_jobs, &delegate, argc, argv);
-#if defined(OS_WIN)
-  KillAlwaysOnTopWindows(RunType::AFTER_TEST);
-#endif
-  return result;
+  return LaunchChromeTests(parallel_jobs, &delegate, argc, argv);
 }
