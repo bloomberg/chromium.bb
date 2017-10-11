@@ -199,11 +199,13 @@ ScriptValue ModulatorImplBase::ExecuteModule(
   // https://crbug.com/715376
   CHECK(RuntimeEnabledFeatures::ModuleScriptsEnabled());
 
-  // Step 1. "Let settings be the settings object of s." [spec text]
+  // Step 1. "If rethrow errors is not given, let it be false." [spec text]
+
+  // Step 2. "Let settings be the settings object of s." [spec text]
   // The settings object is |this|.
 
-  // Step 2. "Check if we can run script with settings.
-  //          If this returns "do not run" then abort these steps." [spec text]
+  // Step 3. "Check if we can run script with settings.
+  //          If this returns "do not run" then return." [spec text]
   if (!GetExecutionContext()->CanExecuteScripts(kAboutToExecuteScript))
     return ScriptValue();
 
@@ -211,37 +213,42 @@ ScriptValue ModulatorImplBase::ExecuteModule(
   // This is placed here to also cover ScriptModule::ReportException().
   ScriptState::Scope scope(script_state_.get());
 
-  // Step 3. "If s is errored, then report the exception given by s's error for
-  // s and abort these steps." [spec text]
+  // Step 5. "Let evaluationStatus be null." [spec text]
+  // |error| corresponds to "evaluationStatus of [[Type]]: throw".
+  ScriptValue error;
+
+  // Step 6. "If s is errored, then set evaluationStatus to Completion
+  // { [[Type]]: throw, [[Value]]: script's error, [[Target]]: empty }."
+  // [spec text]
   if (module_script->IsErrored()) {
-    ScriptValue error = GetError(module_script);
+    error = GetError(module_script);
+  } else {
+    // Step 7. "Otherwise:" [spec text]
+    // Step 7.1. "Let record be s's module record." [spec text]
+    const ScriptModule& record = module_script->Record();
+    CHECK(!record.IsNull());
+
+    // Step 7.2 "Let evaluationStatus be record.ModuleEvaluate()." [spec text]
+    error = record.Evaluate(script_state_.get(), capture_error);
+  }
+
+  // Step 8. "If evaluationStatus is an abrupt completion, then:" [spec text]
+  if (!error.IsEmpty()) {
+    // Step 8.1. "If rethrow errors is true, rethrow the exception given by
+    // evaluationStatus.[[Value]] for s." [spec text]
+    if (capture_error == CaptureEvalErrorFlag::kCapture)
+      return error;
+
+    // Step 8.2. "Otherwise, report the exception given by
+    // evaluationStatus.[[Value]] for script." [spec text]
     ScriptModule::ReportException(script_state_.get(), error.V8Value());
+
     return ScriptValue();
   }
 
-  // Step 5. "Let record be s's module record." [spec text]
-  const ScriptModule& record = module_script->Record();
-  CHECK(!record.IsNull());
-
-  // Step 6. "Let evaluationStatus be record.ModuleEvaluation()." [spec text]
-  ScriptValue eval_error = record.Evaluate(script_state_.get(), capture_error);
-  // Step 7. "If evaluationStatus is an abrupt completion, then:" [spec text]
-  if (capture_error == CaptureEvalErrorFlag::kCapture) {
-    // Step 7.1. "If rethrow errors is true, rethrow the exception given by
-    // evaluationStatus.[[Value]] for s." [spec text]
-    return eval_error;
-  }
-  DCHECK(eval_error.IsEmpty());
-
-  // Step 7.2. "Otherwise, report the exception given by
-  // evaluationStatus.[[Value]] for script." [spec text]
-  // This is done inside ScriptModule::EvaluateScript if capture_error ==
-  // kReport.
-
-  return ScriptValue();
-
-  // Step 8. "Clean up after running script with settings." [spec text]
+  // Step 9. "Clean up after running script with settings." [spec text]
   // Implemented as the ScriptState::Scope destructor.
+  return ScriptValue();
 }
 
 DEFINE_TRACE(ModulatorImplBase) {
