@@ -255,8 +255,8 @@ class ExtensionRegistrarTest : public ExtensionsTest {
     VerifyMock();
   }
 
-  void DisableExtension() {
-    SCOPED_TRACE("DisableExtension");
+  void DisableEnabledExtension() {
+    SCOPED_TRACE("DisableEnabledExtension");
     EXPECT_CALL(delegate_, PostDeactivateExtension(extension_));
     registrar_->DisableExtension(extension_->id(),
                                  disable_reason::DISABLE_USER_ACTION);
@@ -264,6 +264,38 @@ class ExtensionRegistrarTest : public ExtensionsTest {
     EXPECT_FALSE(IsExtensionReady());
 
     VerifyMock();
+  }
+
+  void DisableTerminatedExtension() {
+    SCOPED_TRACE("DisableTerminatedExtension");
+    // PostDeactivateExtension should not be called.
+    registrar_->DisableExtension(extension_->id(),
+                                 disable_reason::DISABLE_USER_ACTION);
+    ExpectInSet(ExtensionRegistry::DISABLED);
+    EXPECT_FALSE(IsExtensionReady());
+  }
+
+  void TerminateExtension() {
+    SCOPED_TRACE("TerminateExtension");
+    EXPECT_CALL(delegate_, PostDeactivateExtension(extension_));
+    registrar_->TerminateExtension(extension_->id());
+    ExpectInSet(ExtensionRegistry::TERMINATED);
+    EXPECT_FALSE(IsExtensionReady());
+
+    // TODO(michaelpg): This notification may not be necessary, but we need to
+    // clear the notification tracker here. See crbug.com/708230.
+    EXPECT_TRUE(notification_tracker_.Check1AndReset(
+        extensions::NOTIFICATION_EXTENSION_REMOVED));
+
+    VerifyMock();
+  }
+
+  void UntrackTerminatedExtension() {
+    SCOPED_TRACE("UntrackTerminatedExtension");
+    registrar()->UntrackTerminatedExtension(extension()->id());
+    ExpectInSet(ExtensionRegistry::NONE);
+    EXPECT_TRUE(notification_tracker_.Check1AndReset(
+        extensions::NOTIFICATION_EXTENSION_REMOVED));
   }
 
   // Verifies that the extension is in the given set in the ExtensionRegistry
@@ -334,7 +366,7 @@ TEST_F(ExtensionRegistrarTest, Disable) {
   AddEnabledExtension();
 
   // Disable the extension before removing it.
-  DisableExtension();
+  DisableEnabledExtension();
   RemoveDisabledExtension();
 }
 
@@ -342,7 +374,7 @@ TEST_F(ExtensionRegistrarTest, DisableAndEnable) {
   AddEnabledExtension();
 
   // Disable then enable the extension.
-  DisableExtension();
+  DisableEnabledExtension();
   EnableExtension();
 
   RemoveEnabledExtension();
@@ -411,6 +443,36 @@ TEST_F(ExtensionRegistrarTest, AddBlocked) {
   ExpectInSet(ExtensionRegistry::BLOCKED);
 
   RemoveBlockedExtension();
+}
+
+TEST_F(ExtensionRegistrarTest, TerminateExtension) {
+  AddEnabledExtension();
+  TerminateExtension();
+
+  // RemoveExtension only handles enabled or disabled extensions.
+  registrar()->RemoveExtension(extension()->id(),
+                               UnloadedExtensionReason::UNINSTALL);
+  ExpectInSet(ExtensionRegistry::TERMINATED);
+
+  UntrackTerminatedExtension();
+}
+
+TEST_F(ExtensionRegistrarTest, DisableTerminatedExtension) {
+  AddEnabledExtension();
+  TerminateExtension();
+  DisableTerminatedExtension();
+  RemoveDisabledExtension();
+}
+
+TEST_F(ExtensionRegistrarTest, ReloadTerminatedExtension) {
+  AddEnabledExtension();
+  TerminateExtension();
+
+  // Enable the terminated extension.
+  UntrackTerminatedExtension();
+  AddEnabledExtension();
+
+  RemoveEnabledExtension();
 }
 
 }  // namespace extensions
