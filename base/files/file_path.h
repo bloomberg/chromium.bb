@@ -238,7 +238,8 @@ class BASE_EXPORT FilePath {
   // named by this object, stripping away the file component.  If this object
   // only contains one component, returns a FilePath identifying
   // kCurrentDirectory.  If this object already refers to the root directory,
-  // returns a FilePath identifying the root directory.
+  // returns a FilePath identifying the root directory. Please note that this
+  // doesn't resolve directory navigation, e.g. the result for "../a" is "..".
   FilePath DirName() const WARN_UNUSED_RESULT;
 
   // Returns a FilePath corresponding to the last path component of this

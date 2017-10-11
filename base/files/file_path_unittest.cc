@@ -89,6 +89,7 @@ TEST_F(FilePathTest, DirName) {
     { FPL("{:"),            FPL(".") },
     { FPL("\xB3:"),         FPL(".") },
     { FPL("\xC5:"),         FPL(".") },
+    { FPL("/aa/../bb/cc"),  FPL("/aa/../bb")},
 #if defined(OS_WIN)
     { FPL("\x0143:"),       FPL(".") },
 #endif  // OS_WIN
@@ -128,6 +129,7 @@ TEST_F(FilePathTest, DirName) {
     { FPL("\\\\aa\\bb"),    FPL("\\\\aa") },
     { FPL("\\\\aa\\"),      FPL("\\\\") },
     { FPL("\\\\aa"),        FPL("\\\\") },
+    { FPL("aa\\..\\bb\\c"), FPL("aa\\..\\bb")},
 #if defined(FILE_PATH_USES_DRIVE_LETTERS)
     { FPL("c:\\"),          FPL("c:\\") },
     { FPL("c:\\\\"),        FPL("c:\\\\") },
