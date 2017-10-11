@@ -72,7 +72,7 @@ void ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
                                              UpdateCounters* counters) {
   MutableEntry entry(trans, syncable::GET_BY_ID, id);
   // Must be good as the entry won't have been cleaned up.
-  CHECK(entry.good());
+  DCHECK(entry.good());
 
   // This function can only resolve simple conflicts.  Simple conflicts have
   // both IS_UNSYNCED and IS_UNAPPLIED_UDPATE set.
@@ -271,7 +271,7 @@ void ConflictResolver::ResolveConflicts(
        ++it) {
     // We don't resolve conflicts for control types here.
     Entry conflicting_node(trans, syncable::GET_BY_ID, *it);
-    CHECK(conflicting_node.good());
+    DCHECK(conflicting_node.good());
     if (IsControlType(
             GetModelTypeFromSpecifics(conflicting_node.GetSpecifics()))) {
       continue;

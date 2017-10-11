@@ -96,7 +96,7 @@ HttpPostProviderInterface* HttpBridgeFactory::Create() {
   // and at pretty much any time), then we won't have a request_context_getter_.
   // Some external mechanism must ensure that this function is not called after
   // we've been asked to shut down.
-  CHECK(request_context_getter_.get());
+  DCHECK(request_context_getter_.get());
 
   scoped_refptr<HttpBridge> http =
       new HttpBridge(user_agent_, request_context_getter_,

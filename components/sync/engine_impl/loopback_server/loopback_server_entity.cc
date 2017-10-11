@@ -58,11 +58,9 @@ LoopbackServerEntity::CreateEntityFromProto(
     case sync_pb::LoopbackServerEntity_Type_UNIQUE:
       return PersistentUniqueClientEntity::CreateFromEntity(entity.entity());
     case sync_pb::LoopbackServerEntity_Type_UNKNOWN:
-      CHECK(false) << "Unknown type encountered";
-      return std::unique_ptr<LoopbackServerEntity>(nullptr);
+      NOTREACHED() << "Unknown type encountered";
   }
-  NOTREACHED();
-  return std::unique_ptr<LoopbackServerEntity>(nullptr);
+  return std::unique_ptr<LoopbackServerEntity>();
 }
 
 const std::string& LoopbackServerEntity::GetId() const {

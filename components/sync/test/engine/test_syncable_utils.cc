@@ -29,7 +29,7 @@ int CountEntriesWithName(BaseTransaction* rtrans,
   for (Directory::Metahandles::iterator i = child_handles.begin();
        i != child_handles.end(); ++i) {
     Entry e(rtrans, GET_BY_HANDLE, *i);
-    CHECK(e.good());
+    DCHECK(e.good());
     if (e.GetNonUniqueName() == name) {
       ++number_of_entries_with_name;
     }
@@ -46,20 +46,20 @@ Id GetFirstEntryWithName(BaseTransaction* rtrans,
   for (Directory::Metahandles::iterator i = child_handles.begin();
        i != child_handles.end(); ++i) {
     Entry e(rtrans, GET_BY_HANDLE, *i);
-    CHECK(e.good());
+    DCHECK(e.good());
     if (e.GetNonUniqueName() == name) {
       return e.GetId();
     }
   }
 
-  CHECK(false);
+  DCHECK(false);
   return Id();
 }
 
 Id GetOnlyEntryWithName(BaseTransaction* rtrans,
                         const syncable::Id& parent_id,
                         const string& name) {
-  CHECK_EQ(1, CountEntriesWithName(rtrans, parent_id, name));
+  DCHECK_EQ(1, CountEntriesWithName(rtrans, parent_id, name));
   return GetFirstEntryWithName(rtrans, parent_id, name);
 }
 

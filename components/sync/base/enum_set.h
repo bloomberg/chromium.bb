@@ -89,14 +89,14 @@ class EnumSet {
     // Returns the value the iterator currently points to.  Good()
     // must hold.
     E Get() const {
-      CHECK(Good());
+      DCHECK(Good());
       return FromIndex(i_);
     }
 
     // Moves the iterator to the next value in the EnumSet.  Good()
     // must hold.  Takes linear time.
     void Inc() {
-      CHECK(Good());
+      DCHECK(Good());
       i_ = FindNext(i_ + 1);
     }
 

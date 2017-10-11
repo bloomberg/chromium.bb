@@ -112,7 +112,7 @@ class WeakHandleCore : public WeakHandleCoreBase,
 
   // Must be called on |ptr_|'s owner thread.
   base::WeakPtr<T> Get() const {
-    CHECK(IsOnOwnerThread());
+    DCHECK(IsOnOwnerThread());
     return ptr_;
   }
 
@@ -173,8 +173,8 @@ class WeakHandle {
 
   // Must be called only on the underlying object's owner thread.
   base::WeakPtr<T> Get() const {
-    CHECK(IsInitialized());
-    CHECK(core_->IsOnOwnerThread());
+    DCHECK(IsInitialized());
+    DCHECK(core_->IsOnOwnerThread());
     return core_->Get();
   }
 
@@ -184,7 +184,7 @@ class WeakHandle {
   void Call(const base::Location& from_here,
             Method method,
             Args&&... args) const {
-    CHECK(IsInitialized());
+    DCHECK(IsInitialized());
     core_->Call(from_here, method, std::forward<Args>(args)...);
   }
 

@@ -81,6 +81,8 @@ void SetEntrySpecifics(const Entry& meta_entry,
   sync_entry->mutable_specifics()->CopyFrom(meta_entry.GetSpecifics());
   sync_entry->set_folder(meta_entry.GetIsDir());
 
+  // Purposefully crash if we have client only data, as this could result in
+  // sending password in plain text.
   CHECK(!sync_entry->specifics().password().has_client_only_encrypted_data());
   DCHECK_EQ(meta_entry.GetModelType(), GetModelType(*sync_entry));
 }
@@ -102,7 +104,7 @@ void BuildCommitItem(const syncable::Entry& meta_entry,
   sync_entry->set_id_string(SyncableIdToProto(id));
 
   string name = meta_entry.GetNonUniqueName();
-  CHECK(!name.empty());  // Make sure this isn't an update.
+  DCHECK(!name.empty());  // Make sure this isn't an update.
   // Note: Truncation is also performed in WriteNode::SetTitle(..). But this
   // call is still necessary to handle any title changes that might originate
   // elsewhere, or already be persisted in the directory.
@@ -378,7 +380,7 @@ sync_pb::CommitResponse::ResponseType ProcessSingleCommitResponse(
     set<syncable::Id>* deleted_folders) {
   syncable::ModelNeutralMutableEntry local_entry(trans, syncable::GET_BY_HANDLE,
                                                  metahandle);
-  CHECK(local_entry.good());
+  DCHECK(local_entry.good());
   bool dirty_sync_was_set = local_entry.GetDirtySync();
   local_entry.PutDirtySync(false);
   local_entry.PutSyncing(false);

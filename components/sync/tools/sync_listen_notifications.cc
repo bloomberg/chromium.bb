@@ -195,8 +195,9 @@ int SyncListenNotificationsMain(int argc, char* argv[]) {
 
   // Listen for notifications for all known types.
   invalidator->RegisterHandler(&notification_printer);
-  CHECK(invalidator->UpdateRegisteredIds(
-      &notification_printer, ModelTypeSetToObjectIdSet(ModelTypeSet::All())));
+  bool success = invalidator->UpdateRegisteredIds(
+      &notification_printer, ModelTypeSetToObjectIdSet(ModelTypeSet::All()));
+  DCHECK(success);
 
   base::RunLoop().Run();
 

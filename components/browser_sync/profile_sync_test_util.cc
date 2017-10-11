@@ -92,7 +92,7 @@ BundleSyncClient::BundleSyncClient(
       db_thread_(db_thread),
       file_thread_(file_thread),
       history_service_(history_service) {
-  DCHECK_EQ(!!db_thread_, !!file_thread_);
+  EXPECT_EQ(!!db_thread_, !!file_thread_);
 }
 
 BundleSyncClient::~BundleSyncClient() = default;
@@ -126,7 +126,8 @@ scoped_refptr<syncer::ModelSafeWorker>
 BundleSyncClient::CreateModelWorkerForGroup(syncer::ModelSafeGroup group) {
   if (!db_thread_)
     return FakeSyncClient::CreateModelWorkerForGroup(group);
-  DCHECK(file_thread_) << "DB thread was specified but FILE thread was not.";
+  EXPECT_TRUE(file_thread_)
+      << "DB thread was specified but FILE thread was not.";
   switch (group) {
     case syncer::GROUP_DB:
       return new syncer::SequencedModelWorker(db_thread_, syncer::GROUP_DB);
@@ -256,7 +257,7 @@ ProfileSyncService::InitParams ProfileSyncServiceBundle::CreateBasicInitParams(
   init_params.oauth2_token_service = auth_service();
   init_params.network_time_update_callback =
       base::Bind(&EmptyNetworkTimeUpdate);
-  CHECK(base_directory_.CreateUniqueTempDir());
+  EXPECT_TRUE(base_directory_.CreateUniqueTempDir());
   init_params.base_directory = base_directory_.GetPath();
   init_params.url_request_context = url_request_context();
   init_params.debug_identifier = "dummyDebugName";

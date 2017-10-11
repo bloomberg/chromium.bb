@@ -91,7 +91,7 @@ class UpdateSieve {
 
   static UpdateSieve::ModelTypeToVersionMap MessageToVersionMap(
       const sync_pb::GetUpdatesMessage& get_updates_message) {
-    CHECK_GT(get_updates_message.from_progress_marker_size(), 0)
+    DCHECK_GT(get_updates_message.from_progress_marker_size(), 0)
         << "A GetUpdates request must have at least one progress marker.";
     ModelTypeToVersionMap request_version_map;
 
@@ -104,7 +104,7 @@ class UpdateSieve {
       // first request for this type).
       if (marker.has_token() && !marker.token().empty()) {
         bool parsed = base::StringToInt64(marker.token(), &version);
-        CHECK(parsed) << "Unable to parse progress marker token.";
+        DCHECK(parsed) << "Unable to parse progress marker token.";
       }
 
       ModelType model_type =
@@ -220,7 +220,7 @@ void LoopbackServer::HandleCommand(
 
   sync_pb::ClientToServerMessage message;
   bool parsed = message.ParseFromString(request);
-  CHECK(parsed) << "Unable to parse the ClientToServerMessage.";
+  DCHECK(parsed) << "Unable to parse the ClientToServerMessage.";
 
   sync_pb::ClientToServerResponse response_proto;
 
@@ -334,7 +334,7 @@ string LoopbackServer::CommitEntity(
     // NIGORI is the only permanent item type that should be updated by the
     // client.
     EntityMap::const_iterator iter = entities_.find(client_entity.id_string());
-    CHECK(iter != entities_.end());
+    DCHECK(iter != entities_.end());
     entity = PersistentPermanentEntity::CreateUpdatedNigoriEntity(
         client_entity, *iter->second);
   } else if (type == syncer::BOOKMARKS) {
@@ -366,7 +366,7 @@ void LoopbackServer::BuildEntryResponseForSuccessfulCommit(
     const std::string& entity_id,
     sync_pb::CommitResponse_EntryResponse* entry_response) {
   EntityMap::const_iterator iter = entities_.find(entity_id);
-  CHECK(iter != entities_.end());
+  DCHECK(iter != entities_.end());
   const LoopbackServerEntity& entity = *iter->second;
   entry_response->set_response_type(response_type_override_
                                         ? response_type_override_.Run(entity)
@@ -446,7 +446,7 @@ bool LoopbackServer::HandleCommitRequest(
     }
 
     EntityMap::const_iterator iter = entities_.find(entity_id);
-    CHECK(iter != entities_.end());
+    DCHECK(iter != entities_.end());
     committed_model_types.Put(iter->second->GetModelType());
   }
 
@@ -579,7 +579,7 @@ void LoopbackServer::SerializeState(sync_pb::LoopbackServerProto* proto) const {
 bool LoopbackServer::DeSerializeState(
     const sync_pb::LoopbackServerProto& proto) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  CHECK_EQ(proto.version(), kCurrentLoopbackServerProtoVersion);
+  DCHECK_EQ(proto.version(), kCurrentLoopbackServerProtoVersion);
 
   store_birthday_ = proto.store_birthday();
   version_ = proto.last_version_assigned();

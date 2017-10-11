@@ -88,7 +88,7 @@ bool MayEntryCommit(ModelTypeSet requested_types,
   // Extra validity checks.
   syncable::Id id = entry.GetId();
   if (id == entry.GetParentId()) {
-    CHECK(id.IsRoot()) << "Non-root item is self parenting." << entry;
+    DCHECK(id.IsRoot()) << "Non-root item is self parenting." << entry;
     // If the root becomes unsynced it can cause us problems.
     NOTREACHED() << "Root item became unsynced " << entry;
     return false;
@@ -428,7 +428,7 @@ void ExcludeDeletedAncestors(
 
     while (!parent_id.IsRoot()) {
       Entry parent(trans, syncable::GET_BY_ID, parent_id);
-      CHECK(parent.good()) << "Bad user-only parent in item path.";
+      DCHECK(parent.good()) << "Bad user-only parent in item path.";
       int64_t handle = parent.GetMetahandle();
 
       if (!parent.GetIsDel())

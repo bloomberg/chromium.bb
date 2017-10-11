@@ -339,7 +339,11 @@ void ModelNeutralMutableEntry::PutUniqueBookmarkTag(const std::string& tag) {
 void ModelNeutralMutableEntry::PutServerSpecifics(
     const sync_pb::EntitySpecifics& value) {
   DCHECK(kernel_);
+
+  // Purposefully crash if we have client only data, as this could result in
+  // sending password in plain text.
   CHECK(!value.password().has_client_only_encrypted_data());
+
   // TODO(ncarter): This is unfortunately heavyweight.  Can we do
   // better?
   const std::string& serialized_value = value.SerializeAsString();
@@ -379,7 +383,11 @@ void ModelNeutralMutableEntry::PutServerSpecifics(
 void ModelNeutralMutableEntry::PutBaseServerSpecifics(
     const sync_pb::EntitySpecifics& value) {
   DCHECK(kernel_);
+
+  // Purposefully crash if we have client only data, as this could result in
+  // sending password in plain text.
   CHECK(!value.password().has_client_only_encrypted_data());
+
   // TODO(ncarter): This is unfortunately heavyweight.  Can we do
   // better?
   const std::string& serialized_value = value.SerializeAsString();

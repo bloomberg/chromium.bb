@@ -77,10 +77,22 @@ bool MockConnectionManager::PostBufferToPath(PostBufferParams* params,
                                              const string& path,
                                              const string& auth_token) {
   ClientToServerMessage post;
-  CHECK(post.ParseFromString(params->buffer_in));
-  CHECK(post.has_protocol_version());
-  CHECK(post.has_api_key());
-  CHECK(post.has_bag_of_chips());
+  if (!post.ParseFromString(params->buffer_in)) {
+    ADD_FAILURE();
+    return false;
+  }
+  if (!post.has_protocol_version()) {
+    ADD_FAILURE();
+    return false;
+  }
+  if (!post.has_api_key()) {
+    ADD_FAILURE();
+    return false;
+  }
+  if (!post.has_bag_of_chips()) {
+    ADD_FAILURE();
+    return false;
+  }
 
   requests_.push_back(post);
   client_stuck_ = post.sync_problem_detected();
@@ -92,7 +104,10 @@ bool MockConnectionManager::PostBufferToPath(PostBufferParams* params,
     // use this function could take a while to return because it accesses the
     // network. As we can't test this we do the next best thing and hang here
     // when there's an issue.
-    CHECK(directory_->good());
+    if (!directory_->good()) {
+      ADD_FAILURE();
+      return false;
+    }
     WriteTransaction wt(FROM_HERE, syncable::UNITTEST, directory_);
   }
 
@@ -139,12 +154,19 @@ bool MockConnectionManager::PostBufferToPath(PostBufferParams* params,
   store_birthday_sent_ = true;
 
   if (post.message_contents() == ClientToServerMessage::COMMIT) {
-    ProcessCommit(&post, &response);
+    if (!ProcessCommit(&post, &response)) {
+      return false;
+    }
+
   } else if (post.message_contents() == ClientToServerMessage::GET_UPDATES) {
-    ProcessGetUpdates(&post, &response);
+    if (!ProcessGetUpdates(&post, &response)) {
+      return false;
+    }
   } else if (post.message_contents() ==
              ClientToServerMessage::CLEAR_SERVER_DATA) {
-    ProcessClearServerData(&post, &response);
+    if (!ProcessClearServerData(&post, &response)) {
+      return false;
+    }
   } else {
     EXPECT_TRUE(false) << "Unknown/unsupported ClientToServerMessage";
     return false;
@@ -508,11 +530,17 @@ void MockConnectionManager::SetChangesRemaining(int64_t timestamp) {
   GetUpdateResponse()->set_changes_remaining(timestamp);
 }
 
-void MockConnectionManager::ProcessGetUpdates(
+bool MockConnectionManager::ProcessGetUpdates(
     sync_pb::ClientToServerMessage* csm,
     sync_pb::ClientToServerResponse* response) {
-  CHECK(csm->has_get_updates());
-  ASSERT_EQ(csm->message_contents(), ClientToServerMessage::GET_UPDATES);
+  if (!csm->has_get_updates()) {
+    ADD_FAILURE();
+    return false;
+  }
+  if (csm->message_contents() != ClientToServerMessage::GET_UPDATES) {
+    ADD_FAILURE() << "Wrong contents, found " << csm->message_contents();
+    return false;
+  }
   const GetUpdatesMessage& gu = csm->get_updates();
   num_get_updates_requests_++;
   EXPECT_FALSE(gu.has_from_timestamp());
@@ -566,6 +594,7 @@ void MockConnectionManager::ProcessGetUpdates(
   if (gu_client_command_) {
     response->mutable_client_command()->CopyFrom(*gu_client_command_.get());
   }
+  return true;
 }
 
 void MockConnectionManager::SetKeystoreKey(const std::string& key) {
@@ -590,11 +619,17 @@ bool MockConnectionManager::ShouldTransientErrorThisId(syncable::Id id) {
          transient_error_ids_.end();
 }
 
-void MockConnectionManager::ProcessCommit(
+bool MockConnectionManager::ProcessCommit(
     sync_pb::ClientToServerMessage* csm,
     sync_pb::ClientToServerResponse* response_buffer) {
-  CHECK(csm->has_commit());
-  ASSERT_EQ(csm->message_contents(), ClientToServerMessage::COMMIT);
+  if (!csm->has_commit()) {
+    ADD_FAILURE();
+    return false;
+  }
+  if (csm->message_contents() != ClientToServerMessage::COMMIT) {
+    ADD_FAILURE() << "Wrong contents, found " << csm->message_contents();
+    return false;
+  }
   map<string, string> changed_ids;
   const CommitMessage& commit_message = csm->commit();
   CommitResponse* commit_response = response_buffer->mutable_commit();
@@ -603,11 +638,17 @@ void MockConnectionManager::ProcessCommit(
   map<string, sync_pb::CommitResponse_EntryResponse*> response_map;
   for (int i = 0; i < commit_message.entries_size(); i++) {
     const sync_pb::SyncEntity& entry = commit_message.entries(i);
-    CHECK(entry.has_id_string());
+    if (!entry.has_id_string()) {
+      ADD_FAILURE();
+      return false;
+    }
     string id_string = entry.id_string();
-    ASSERT_LT(entry.name().length(), 256ul)
-        << " name probably too long. True "
-           "server name checking not implemented";
+    if (entry.name().length() >= 256ul) {
+      ADD_FAILURE() << "Name probably too long. True server name dchecking not "
+                       "implemented. Found length "
+                    << entry.name().length();
+      return false;
+    }
     syncable::Id id;
     if (entry.version() == 0) {
       // Relies on our new item string id format. (string representation of a
@@ -656,14 +697,22 @@ void MockConnectionManager::ProcessCommit(
     response_buffer->mutable_client_command()->CopyFrom(
         *commit_client_command_.get());
   }
+  return true;
 }
 
-void MockConnectionManager::ProcessClearServerData(
+bool MockConnectionManager::ProcessClearServerData(
     sync_pb::ClientToServerMessage* csm,
     sync_pb::ClientToServerResponse* response) {
-  CHECK(csm->has_clear_server_data());
-  ASSERT_EQ(csm->message_contents(), ClientToServerMessage::CLEAR_SERVER_DATA);
+  if (!csm->has_clear_server_data()) {
+    ADD_FAILURE();
+    return false;
+  }
+  if (csm->message_contents() != ClientToServerMessage::CLEAR_SERVER_DATA) {
+    ADD_FAILURE() << "Wrong contents, found " << csm->message_contents();
+    return false;
+  }
   response->mutable_clear_server_data();
+  return true;
 }
 
 sync_pb::SyncEntity* MockConnectionManager::AddUpdateDirectory(

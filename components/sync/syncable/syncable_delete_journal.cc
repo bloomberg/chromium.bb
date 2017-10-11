@@ -14,7 +14,7 @@ namespace syncer {
 namespace syncable {
 
 DeleteJournal::DeleteJournal(std::unique_ptr<JournalIndex> initial_journal) {
-  CHECK(initial_journal);
+  DCHECK(initial_journal);
   delete_journals_.swap(*initial_journal);
 }
 

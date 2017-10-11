@@ -230,7 +230,7 @@ ChangeProcessor* SyncBackendRegistrar::GetProcessor(ModelType type) const {
 
   // We can only check if |processor| exists, as otherwise the type is
   // mapped to GROUP_PASSIVE.
-  CHECK(IsCurrentThreadSafeForModel(type));
+  DCHECK(IsCurrentThreadSafeForModel(type));
   return processor;
 }
 

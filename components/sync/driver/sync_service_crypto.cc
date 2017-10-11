@@ -295,7 +295,7 @@ void SyncServiceCrypto::OnBootstrapTokenUpdated(
     const std::string& bootstrap_token,
     BootstrapTokenType type) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  CHECK(sync_prefs_);
+  DCHECK(sync_prefs_);
   if (type == PASSPHRASE_BOOTSTRAP_TOKEN) {
     sync_prefs_->SetEncryptionBootstrapToken(bootstrap_token);
   } else {

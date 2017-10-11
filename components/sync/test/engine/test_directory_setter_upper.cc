@@ -39,7 +39,7 @@ void TestDirectorySetterUpper::SetUp() {
 
 void TestDirectorySetterUpper::SetUpWith(
     std::unique_ptr<syncable::DirectoryBackingStore> directory_store) {
-  CHECK(directory_store);
+  DCHECK(directory_store);
   test_transaction_observer_ =
       std::make_unique<syncable::TestTransactionObserver>();
   WeakHandle<syncable::TransactionObserver> transaction_observer =

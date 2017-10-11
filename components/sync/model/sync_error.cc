@@ -76,22 +76,22 @@ bool SyncError::IsSet() const {
 }
 
 const base::Location& SyncError::location() const {
-  CHECK(IsSet());
+  DCHECK(IsSet());
   return *location_;
 }
 
 const std::string& SyncError::message() const {
-  CHECK(IsSet());
+  DCHECK(IsSet());
   return message_;
 }
 
 ModelType SyncError::model_type() const {
-  CHECK(IsSet());
+  DCHECK(IsSet());
   return model_type_;
 }
 
 SyncError::ErrorType SyncError::error_type() const {
-  CHECK(IsSet());
+  DCHECK(IsSet());
   return error_type_;
 }
 

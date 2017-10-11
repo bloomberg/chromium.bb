@@ -199,7 +199,7 @@ ProfileSyncService::~ProfileSyncService() {
     gaia_cookie_manager_service_->RemoveObserver(this);
   sync_prefs_.RemoveSyncPrefObserver(this);
   // Shutdown() should have been called before destruction.
-  CHECK(!engine_initialized_);
+  DCHECK(!engine_initialized_);
 }
 
 bool ProfileSyncService::CanSyncStart() const {

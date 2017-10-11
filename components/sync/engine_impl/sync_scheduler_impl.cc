@@ -255,7 +255,7 @@ void SyncSchedulerImpl::ScheduleConfiguration(
   DCHECK(IsConfigRelatedUpdateSourceValue(params.source));
   DCHECK_EQ(CONFIGURATION_MODE, mode_);
   DCHECK(!params.ready_task.is_null());
-  CHECK(started_) << "Scheduler must be running to configure.";
+  DCHECK(started_) << "Scheduler must be running to configure.";
   SDVLOG(2) << "Reconfiguring syncer.";
 
   // Only one configuration is allowed at a time. Verify we're not waiting
@@ -277,7 +277,7 @@ void SyncSchedulerImpl::ScheduleClearServerData(const ClearParams& params) {
   DCHECK_EQ(CLEAR_SERVER_DATA_MODE, mode_);
   DCHECK(!pending_configure_params_);
   DCHECK(!params.report_success_task.is_null());
-  CHECK(started_) << "Scheduler must be running to clear.";
+  DCHECK(started_) << "Scheduler must be running to clear.";
 
   pending_clear_params_ = std::make_unique<ClearParams>(params);
   TrySyncCycleJob();
@@ -383,7 +383,7 @@ void SyncSchedulerImpl::ScheduleNudgeImpl(
     const TimeDelta& delay,
     const base::Location& nudge_location) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  CHECK(!syncer_->IsSyncing());
+  DCHECK(!syncer_->IsSyncing());
 
   if (!started_) {
     SDVLOG_LOC(nudge_location, 2)
@@ -732,7 +732,7 @@ void SyncSchedulerImpl::TrySyncCycleJobImpl() {
 
 void SyncSchedulerImpl::PollTimerCallback() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  CHECK(!syncer_->IsSyncing());
+  DCHECK(!syncer_->IsSyncing());
 
   TrySyncCycleJob();
 }
