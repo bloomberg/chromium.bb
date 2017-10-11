@@ -193,6 +193,7 @@ action("generate_idl") {
 
 midl("remoting_lib_idl") {
   sources = get_target_outputs(":generate_idl")
+  dynamic_guid = rdp_desktop_session_clsid
   deps = [
     ":generate_idl",
   ]
