@@ -5,6 +5,12 @@
 #ifndef CHROMEOS_COMPONENTS_TETHER_HOST_SCAN_SCHEDULER_H
 #define CHROMEOS_COMPONENTS_TETHER_HOST_SCAN_SCHEDULER_H
 
+#include <memory>
+
+#include "base/memory/weak_ptr.h"
+#include "base/time/clock.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "chromeos/components/tether/host_scanner.h"
 #include "chromeos/network/network_state_handler_observer.h"
 
@@ -18,10 +24,7 @@ namespace tether {
 //
 //   (1) NetworkStateHandler requests a Tether network scan.
 //   (2) The device loses its Internet connection.
-//   (3) The user has just logged in or has just resumed using the device after
-//       it had been sleeping/suspended, and the device does not have an
-//       Internet connection. Note: It is the responsibility of the owner of
-//       HostScanScheduler to inform it of user login via UserLoggedIn().
+//   (3) The scan is explicitly requested via ScheduleScan().
 class HostScanScheduler : public NetworkStateHandlerObserver,
                           public HostScanner::Observer {
  public:
@@ -42,11 +45,22 @@ class HostScanScheduler : public NetworkStateHandlerObserver,
   friend class HostScanSchedulerTest;
 
   void EnsureScan();
-  bool IsNetworkConnectingOrConnected(const NetworkState* network);
   bool IsTetherNetworkConnectingOrConnected();
+  void LogHostScanBatchMetric();
+
+  void SetTestDoubles(std::unique_ptr<base::Timer> test_timer,
+                      std::unique_ptr<base::Clock> test_clock);
 
   NetworkStateHandler* network_state_handler_;
   HostScanner* host_scanner_;
+
+  std::unique_ptr<base::Timer> timer_;
+  std::unique_ptr<base::Clock> clock_;
+
+  base::Time last_scan_batch_start_timestamp_;
+  base::Time last_scan_end_timestamp_;
+
+  base::WeakPtrFactory<HostScanScheduler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HostScanScheduler);
 };
