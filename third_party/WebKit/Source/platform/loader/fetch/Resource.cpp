@@ -353,8 +353,6 @@ void Resource::CheckResourceIntegrity() {
 void Resource::NotifyFinished() {
   DCHECK(IsLoaded());
 
-  TriggerNotificationForFinishObservers();
-
   ResourceClientWalker<ResourceClient> w(clients_);
   while (ResourceClient* c = w.Next()) {
     MarkClientFinished(c);
@@ -395,7 +393,8 @@ void Resource::ClearData() {
   encoded_size_memory_usage_ = 0;
 }
 
-void Resource::TriggerNotificationForFinishObservers() {
+void Resource::TriggerNotificationForFinishObservers(
+    WebTaskRunner* task_runner) {
   if (finish_observers_.IsEmpty())
     return;
 
@@ -403,12 +402,9 @@ void Resource::TriggerNotificationForFinishObservers() {
       std::move(finish_observers_));
   finish_observers_.clear();
 
-  Platform::Current()
-      ->CurrentThread()
-      ->Scheduler()
-      ->LoadingTaskRunner()
-      ->PostTask(BLINK_FROM_HERE, WTF::Bind(&NotifyFinishObservers,
-                                            WrapPersistent(new_collections)));
+  task_runner->PostTask(
+      BLINK_FROM_HERE,
+      WTF::Bind(&NotifyFinishObservers, WrapPersistent(new_collections)));
 
   DidRemoveClientOrObserver();
 }
@@ -420,7 +416,8 @@ void Resource::SetDataBufferingPolicy(
   SetEncodedSize(0);
 }
 
-void Resource::FinishAsError(const ResourceError& error) {
+void Resource::FinishAsError(const ResourceError& error,
+                             WebTaskRunner* task_runner) {
   DCHECK(!error.IsNull());
   error_ = error;
   is_revalidating_ = false;
@@ -434,16 +431,18 @@ void Resource::FinishAsError(const ResourceError& error) {
   ClearData();
   loader_ = nullptr;
   CheckResourceIntegrity();
+  TriggerNotificationForFinishObservers(task_runner);
   NotifyFinished();
 }
 
-void Resource::Finish(double load_finish_time) {
+void Resource::Finish(double load_finish_time, WebTaskRunner* task_runner) {
   DCHECK(!is_revalidating_);
   load_finish_time_ = load_finish_time;
   if (!ErrorOccurred())
     status_ = ResourceStatus::kCached;
   loader_ = nullptr;
   CheckResourceIntegrity();
+  TriggerNotificationForFinishObservers(task_runner);
   NotifyFinished();
 }
 
@@ -720,14 +719,15 @@ void Resource::RemoveClient(ResourceClient* client) {
   DidRemoveClientOrObserver();
 }
 
-void Resource::AddFinishObserver(ResourceFinishObserver* client) {
+void Resource::AddFinishObserver(ResourceFinishObserver* client,
+                                 WebTaskRunner* task_runner) {
   CHECK(!is_add_remove_client_prohibited_);
   DCHECK(!finish_observers_.Contains(client));
 
   WillAddClientOrObserver();
   finish_observers_.insert(client);
   if (IsLoaded())
-    TriggerNotificationForFinishObservers();
+    TriggerNotificationForFinishObservers(task_runner);
 }
 
 void Resource::RemoveFinishObserver(ResourceFinishObserver* client) {

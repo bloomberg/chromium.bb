@@ -83,7 +83,7 @@ TEST(ResourceTest, RevalidateWithFragment) {
   response.SetHTTPStatusCode(200);
   Resource* resource = RawResource::CreateForTest(url, Resource::kRaw);
   resource->ResponseReceived(response, nullptr);
-  resource->Finish();
+  resource->FinishForTest();
 
   // Revalidating with a url that differs by only the fragment
   // shouldn't trigger a securiy check.
@@ -104,7 +104,7 @@ TEST(ResourceTest, Vary) {
 
   Resource* resource = RawResource::CreateForTest(url, Resource::kRaw);
   resource->ResponseReceived(response, nullptr);
-  resource->Finish();
+  resource->FinishForTest();
 
   ResourceRequest new_request(url);
   EXPECT_FALSE(resource->MustReloadDueToVaryHeader(new_request));
@@ -130,7 +130,7 @@ TEST(ResourceTest, Vary) {
   old_request.SetHTTPHeaderField(HTTPNames::Referer, "http://foo.com");
   resource = RawResource::CreateForTest(old_request, Resource::kRaw);
   resource->ResponseReceived(response, nullptr);
-  resource->Finish();
+  resource->FinishForTest();
 
   // Header present on old but not new
   new_request.ClearHTTPHeaderField(HTTPNames::User_Agent);
@@ -161,7 +161,7 @@ TEST(ResourceTest, RevalidationSucceeded) {
   resource->ResponseReceived(response, nullptr);
   const char kData[5] = "abcd";
   resource->AppendData(kData, 4);
-  resource->Finish();
+  resource->FinishForTest();
   GetMemoryCache()->Add(resource);
 
   // Simulate a successful revalidation.
@@ -191,7 +191,7 @@ TEST(ResourceTest, RevalidationSucceededForResourceWithoutBody) {
   ResourceResponse response;
   response.SetHTTPStatusCode(200);
   resource->ResponseReceived(response, nullptr);
-  resource->Finish();
+  resource->FinishForTest();
   GetMemoryCache()->Add(resource);
 
   // Simulate a successful revalidation.
@@ -227,7 +227,7 @@ TEST(ResourceTest, RevalidationSucceededUpdateHeaders) {
   response.AddHTTPHeaderField("proxy-connection", "proxy-connection value");
   response.AddHTTPHeaderField("x-custom", "custom value");
   resource->ResponseReceived(response, nullptr);
-  resource->Finish();
+  resource->FinishForTest();
   GetMemoryCache()->Add(resource);
 
   // Simulate a successful revalidation.
@@ -300,7 +300,7 @@ TEST(ResourceTest, RedirectDuringRevalidation) {
   resource->ResponseReceived(response, nullptr);
   const char kData[5] = "abcd";
   resource->AppendData(kData, 4);
-  resource->Finish();
+  resource->FinishForTest();
   GetMemoryCache()->Add(resource);
 
   EXPECT_FALSE(resource->IsCacheValidator());
@@ -340,7 +340,7 @@ TEST(ResourceTest, RedirectDuringRevalidation) {
   resource->ResponseReceived(revalidating_response, nullptr);
   const char kData2[4] = "xyz";
   resource->AppendData(kData2, 3);
-  resource->Finish();
+  resource->FinishForTest();
   EXPECT_FALSE(resource->IsCacheValidator());
   EXPECT_EQ("https://example.com/1",
             resource->GetResourceRequest().Url().GetString());

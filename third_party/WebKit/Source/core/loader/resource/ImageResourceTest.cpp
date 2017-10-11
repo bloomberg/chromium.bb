@@ -187,7 +187,7 @@ void ReceiveResponse(ImageResource* image_resource,
   image_resource->NotifyStartLoad();
   image_resource->ResponseReceived(response, nullptr);
   image_resource->AppendData(data, data_size);
-  image_resource->Finish();
+  image_resource->FinishForTest();
 }
 
 void TestThatReloadIsStartedThenServeReload(const KURL& test_url,
@@ -539,7 +539,8 @@ TEST(ImageResourceTest, CancelWithImageAndFinishObserver) {
   GetMemoryCache()->Add(image_resource);
 
   Persistent<MockFinishObserver> finish_observer = MockFinishObserver::Create();
-  image_resource->AddFinishObserver(finish_observer);
+  image_resource->AddFinishObserver(
+      finish_observer, fetcher->Context().GetLoadingTaskRunner().get());
 
   // Send the image response.
   image_resource->ResponseReceived(
@@ -582,7 +583,7 @@ TEST(ImageResourceTest, DecodedDataRemainsWhileHasClients) {
   image_resource->AppendData(reinterpret_cast<const char*>(kJpegImage),
                              sizeof(kJpegImage));
   EXPECT_NE(0u, image_resource->EncodedSizeMemoryUsageForTesting());
-  image_resource->Finish();
+  image_resource->FinishForTest();
   EXPECT_EQ(0u, image_resource->EncodedSizeMemoryUsageForTesting());
   EXPECT_FALSE(image_resource->ErrorOccurred());
   ASSERT_TRUE(image_resource->GetContent()->HasImage());
@@ -621,7 +622,7 @@ TEST(ImageResourceTest, UpdateBitmapImages) {
       nullptr);
   image_resource->AppendData(reinterpret_cast<const char*>(kJpegImage),
                              sizeof(kJpegImage));
-  image_resource->Finish();
+  image_resource->FinishForTest();
   EXPECT_FALSE(image_resource->ErrorOccurred());
   ASSERT_TRUE(image_resource->GetContent()->HasImage());
   EXPECT_FALSE(image_resource->GetContent()->GetImage()->IsNull());
@@ -666,7 +667,7 @@ TEST_P(ImageResourceReloadTest, ReloadIfLoFiOrPlaceholderAfterFinished) {
   image_resource->ResponseReceived(resource_response, nullptr);
   image_resource->AppendData(reinterpret_cast<const char*>(kJpegImage),
                              sizeof(kJpegImage));
-  image_resource->Finish();
+  image_resource->FinishForTest();
   EXPECT_FALSE(image_resource->ErrorOccurred());
   ASSERT_TRUE(image_resource->GetContent()->HasImage());
   EXPECT_FALSE(image_resource->GetContent()->GetImage()->IsNull());
@@ -713,7 +714,7 @@ TEST_P(ImageResourceReloadTest,
   image_resource->ResponseReceived(resource_response, nullptr);
   image_resource->AppendData(reinterpret_cast<const char*>(kJpegImage),
                              sizeof(kJpegImage));
-  image_resource->Finish();
+  image_resource->FinishForTest();
   EXPECT_FALSE(image_resource->ErrorOccurred());
   ASSERT_TRUE(image_resource->GetContent()->HasImage());
   EXPECT_FALSE(image_resource->GetContent()->GetImage()->IsNull());
@@ -762,7 +763,7 @@ TEST_P(ImageResourceReloadTest,
       nullptr);
   image_resource->AppendData(reinterpret_cast<const char*>(kJpegImage),
                              sizeof(kJpegImage));
-  image_resource->Finish();
+  image_resource->FinishForTest();
   EXPECT_FALSE(image_resource->ErrorOccurred());
   ASSERT_TRUE(image_resource->GetContent()->HasImage());
   EXPECT_FALSE(image_resource->GetContent()->GetImage()->IsNull());
@@ -1916,7 +1917,7 @@ TEST(ImageResourceTest, PeriodicFlushTest) {
   image_resource->AppendData(
       reinterpret_cast<const char*>(kJpegImage2) + bytes_sent,
       sizeof(kJpegImage2) - bytes_sent);
-  image_resource->Finish();
+  image_resource->FinishForTest();
 
   EXPECT_FALSE(image_resource->ErrorOccurred());
   ASSERT_TRUE(image_resource->GetContent()->HasImage());

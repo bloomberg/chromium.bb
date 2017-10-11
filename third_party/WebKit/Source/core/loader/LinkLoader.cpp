@@ -84,7 +84,8 @@ class LinkLoader::FinishObserver final
  public:
   FinishObserver(LinkLoader* loader, Resource* resource)
       : loader_(loader), resource_(resource) {
-    resource_->AddFinishObserver(this);
+    resource_->AddFinishObserver(
+        this, loader_->client_->GetLoadingTaskRunner().get());
   }
 
   // ResourceFinishObserver implementation

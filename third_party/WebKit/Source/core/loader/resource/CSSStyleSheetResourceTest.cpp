@@ -78,7 +78,7 @@ TEST_F(CSSStyleSheetResourceTest, DuplicateResourceNotCached) {
       CSSStyleSheetResource::CreateForTest(css_url, UTF8Encoding());
   css_resource->ResponseReceived(
       ResourceResponse(css_url, "style/css", 0, g_null_atom), nullptr);
-  css_resource->Finish();
+  css_resource->FinishForTest();
 
   CSSParserContext* parser_context =
       CSSParserContext::Create(kHTMLStandardMode);

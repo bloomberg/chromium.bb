@@ -154,7 +154,7 @@ TEST_F(RawResourceTest, AddClientDuringCallback) {
   ResourceResponse response = raw->GetResponse();
   response.SetURL(KURL(kParsedURLString, "http://600.613/"));
   raw->SetResponse(response);
-  raw->Finish();
+  raw->FinishForTest();
   EXPECT_FALSE(raw->GetResponse().IsNull());
 
   Persistent<DummyClient> dummy_client = new DummyClient();
@@ -199,7 +199,7 @@ TEST_F(RawResourceTest, RemoveClientDuringCallback) {
   ResourceResponse response = raw->GetResponse();
   response.SetURL(KURL(kParsedURLString, "http://600.613/"));
   raw->SetResponse(response);
-  raw->Finish();
+  raw->FinishForTest();
   EXPECT_FALSE(raw->GetResponse().IsNull());
 
   Persistent<DummyClient> dummy_client = new DummyClient();

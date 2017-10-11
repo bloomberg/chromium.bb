@@ -455,7 +455,7 @@ Resource* ResourceFetcher::ResourceForStaticData(
     resource->SetResourceBuffer(data);
   resource->SetIdentifier(CreateUniqueIdentifier());
   resource->SetCacheIdentifier(cache_identifier);
-  resource->Finish();
+  resource->Finish(0.0, Context().GetLoadingTaskRunner().get());
 
   if (ShouldResourceBeAddedToMemoryCache(params, resource) &&
       !substitute_data.IsValid()) {
@@ -474,7 +474,8 @@ Resource* ResourceFetcher::ResourceForBlockedRequest(
   resource->SetStatus(ResourceStatus::kPending);
   resource->NotifyStartLoad();
   resource->FinishAsError(ResourceError::CancelledDueToAccessCheckError(
-      params.Url(), blocked_reason));
+                              params.Url(), blocked_reason),
+                          Context().GetLoadingTaskRunner().get());
   return resource;
 }
 
@@ -1368,7 +1369,7 @@ void ResourceFetcher::HandleLoaderFinish(Resource* resource,
       resource->GetResponse().DecodedBodyLength());
 
   if (type == kDidFinishLoading)
-    resource->Finish(finish_time);
+    resource->Finish(finish_time, Context().GetLoadingTaskRunner().get());
 
   HandleLoadCompletion(resource);
 }
@@ -1390,7 +1391,7 @@ void ResourceFetcher::HandleLoaderError(Resource* resource,
 
   if (error.IsCancellation())
     RemovePreload(resource);
-  resource->FinishAsError(error);
+  resource->FinishAsError(error, Context().GetLoadingTaskRunner().get());
 
   HandleLoadCompletion(resource);
 }

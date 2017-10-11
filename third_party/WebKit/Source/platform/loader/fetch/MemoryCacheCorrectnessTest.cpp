@@ -63,7 +63,7 @@ class MemoryCacheCorrectnessTest : public ::testing::Test {
     ResourceRequest request(response.Url());
     MockResource* resource = MockResource::Create(request);
     resource->SetResponse(response);
-    resource->Finish();
+    resource->FinishForTest();
     GetMemoryCache()->Add(resource);
 
     return resource;
@@ -75,7 +75,7 @@ class MemoryCacheCorrectnessTest : public ::testing::Test {
     MockResource* resource = MockResource::Create(request);
     resource->SetResponse(ResourceResponse(KURL(kParsedURLString, kResourceURL),
                                            "text/html", 0, g_null_atom));
-    resource->Finish();
+    resource->FinishForTest();
     GetMemoryCache()->Add(resource);
 
     return resource;
@@ -377,7 +377,7 @@ TEST_F(MemoryCacheCorrectnessTest, FreshWithFreshRedirect) {
                                        kOneDayAfterOriginalRequest);
 
   first_resource->SetResponse(fresh200_response);
-  first_resource->Finish();
+  first_resource->FinishForTest();
   GetMemoryCache()->Add(first_resource);
 
   AdvanceClock(500.);
@@ -417,7 +417,7 @@ TEST_F(MemoryCacheCorrectnessTest, FreshWithStaleRedirect) {
                                        kOneDayAfterOriginalRequest);
 
   first_resource->SetResponse(fresh200_response);
-  first_resource->Finish();
+  first_resource->FinishForTest();
   GetMemoryCache()->Add(first_resource);
 
   AdvanceClock(500.);
@@ -474,7 +474,7 @@ TEST_F(MemoryCacheCorrectnessTest, 302RedirectNotImplicitlyFresh) {
                                        kOneDayAfterOriginalRequest);
 
   first_resource->SetResponse(fresh200_response);
-  first_resource->Finish();
+  first_resource->FinishForTest();
   GetMemoryCache()->Add(first_resource);
 
   AdvanceClock(500.);
@@ -514,7 +514,7 @@ TEST_F(MemoryCacheCorrectnessTest, 302RedirectExplicitlyFreshMaxAge) {
                                        kOneDayAfterOriginalRequest);
 
   first_resource->SetResponse(fresh200_response);
-  first_resource->Finish();
+  first_resource->FinishForTest();
   GetMemoryCache()->Add(first_resource);
 
   AdvanceClock(500.);
@@ -555,7 +555,7 @@ TEST_F(MemoryCacheCorrectnessTest, 302RedirectExplicitlyFreshExpires) {
                                        kOneDayAfterOriginalRequest);
 
   first_resource->SetResponse(fresh200_response);
-  first_resource->Finish();
+  first_resource->FinishForTest();
   GetMemoryCache()->Add(first_resource);
 
   AdvanceClock(500.);
