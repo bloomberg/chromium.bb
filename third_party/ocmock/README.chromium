@@ -34,3 +34,6 @@ Chromium patches in a fix for crbug.com/731129 to assume that unnamed types
 are equal to named ones (see bug for example of types). This is probably due
 to differences between the type embedded by Chromium version of clang and by
 the introspection used by Xcode 9 SDK.
+
+Chromium patches in https://github.com/erikdoe/ocmock/pull/343 to fix the
+comparison of structure representation as strings (again).
