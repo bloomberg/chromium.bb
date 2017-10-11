@@ -734,6 +734,10 @@ void ChromeLauncherController::SetProfileForTest(Profile* profile) {
   profile_ = profile;
 }
 
+void ChromeLauncherController::FlushForTesting() {
+  observer_binding_.FlushForTesting();
+}
+
 void ChromeLauncherController::PinAppWithID(const std::string& app_id) {
   model_->PinAppWithID(app_id);
 }

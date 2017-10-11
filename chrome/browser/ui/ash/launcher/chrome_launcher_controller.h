@@ -244,6 +244,9 @@ class ChromeLauncherController
 
   void SetProfileForTest(Profile* profile);
 
+  // Flush responses to ash::mojom::ShelfObserver messages.
+  void FlushForTesting();
+
   // Helpers that call through to corresponding ShelfModel functions.
   void PinAppWithID(const std::string& app_id);
   bool IsAppPinned(const std::string& app_id);
