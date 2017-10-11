@@ -269,7 +269,8 @@ void UnpackedInstaller::StartInstallChecks() {
       base::BindOnce(&UnpackedInstaller::OnInstallChecksComplete, this));
 }
 
-void UnpackedInstaller::OnInstallChecksComplete(PreloadCheck::Errors errors) {
+void UnpackedInstaller::OnInstallChecksComplete(
+    const PreloadCheck::Errors& errors) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (errors.empty()) {

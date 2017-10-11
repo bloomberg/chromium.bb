@@ -484,7 +484,7 @@ void ManagementSetEnabledFunction::OnInstallPromptDone(bool did_accept) {
 }
 
 void ManagementSetEnabledFunction::OnRequirementsChecked(
-    PreloadCheck::Errors errors) {
+    const PreloadCheck::Errors& errors) {
   if (errors.empty()) {
     ManagementAPI::GetFactoryInstance()->Get(browser_context())->GetDelegate()->
         EnableExtension(browser_context(), extension_id_);

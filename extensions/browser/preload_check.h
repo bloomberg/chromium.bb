@@ -33,7 +33,7 @@ class PreloadCheck {
   };
 
   using Errors = std::set<Error>;
-  using ResultCallback = base::OnceCallback<void(Errors)>;
+  using ResultCallback = base::OnceCallback<void(const Errors&)>;
 
   explicit PreloadCheck(scoped_refptr<const Extension> extension);
   virtual ~PreloadCheck();

@@ -47,7 +47,7 @@ PreloadCheck::ResultCallback PreloadCheckRunner::GetCallback() {
                     base::Unretained(this));
 }
 
-void PreloadCheckRunner::OnCheckComplete(PreloadCheck::Errors errors) {
+void PreloadCheckRunner::OnCheckComplete(const PreloadCheck::Errors& errors) {
   ASSERT_FALSE(called_);
   called_ = true;
   errors_ = errors;

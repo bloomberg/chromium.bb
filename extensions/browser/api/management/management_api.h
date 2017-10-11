@@ -113,7 +113,7 @@ class ManagementSetEnabledFunction : public UIThreadExtensionFunction {
  private:
   void OnInstallPromptDone(bool did_accept);
 
-  void OnRequirementsChecked(PreloadCheck::Errors errors);
+  void OnRequirementsChecked(const PreloadCheck::Errors& errors);
 
   std::string extension_id_;
 

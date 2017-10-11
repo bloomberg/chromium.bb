@@ -43,7 +43,7 @@ class PreloadCheckRunner {
   bool called() const { return called_; }
 
  private:
-  void OnCheckComplete(PreloadCheck::Errors errors);
+  void OnCheckComplete(const PreloadCheck::Errors& errors);
 
   PreloadCheck::Errors errors_;
   bool called_;
