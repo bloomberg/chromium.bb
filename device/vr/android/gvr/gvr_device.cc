@@ -155,8 +155,10 @@ void GvrDevice::RequestPresent(
     mojom::VRPresentationProviderRequest request,
     mojom::VRDisplayHost::RequestPresentCallback callback) {
   GvrDelegateProvider* delegate_provider = GetGvrDelegateProvider();
-  if (!delegate_provider)
-    return std::move(callback).Run(false);
+  if (!delegate_provider) {
+    std::move(callback).Run(false);
+    return;
+  }
 
   // RequestWebVRPresent is async as we may trigger a DON (Device ON) flow that
   // pauses Chrome.

@@ -1010,6 +1010,7 @@ public class VrShellDelegate
             // This also fixes the issue tracked in crbug.com/767944, so this should not be removed
             // until the root cause of that has been found and fixed.
             mVrDaydreamApi.launchInVr(getEnterVrPendingIntent(mActivity));
+            mProbablyInDon = true;
         } else {
             enterVr(false);
         }
