@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
+#include "gpu/command_buffer/common/command_buffer_id.h"
 #include "gpu/command_buffer/common/scheduling_priority.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/service/sequence_id.h"
@@ -63,6 +64,15 @@ class GPU_EXPORT Scheduler {
   // Disables the sequence.
   void DisableSequence(SequenceId sequence_id);
 
+  // Raise priority of sequence for client wait (WaitForGetOffset/TokenInRange)
+  // on given command buffer.
+  void RaisePriorityForClientWait(SequenceId sequence_id,
+                                  CommandBufferId command_buffer_id);
+
+  // Reset priority of sequence if it was increased for a client wait.
+  void ResetPriorityForClientWait(SequenceId sequence_id,
+                                  CommandBufferId command_buffer_id);
+
   // Schedules task (closure) to run on the sequence. The task is blocked until
   // the sync token fences are released or determined to be invalid. Tasks are
   // run in the order in which they are submitted.
@@ -99,7 +109,7 @@ class GPU_EXPORT Scheduler {
         const;
 
     SequenceId sequence_id;
-    SchedulingPriority priority = SchedulingPriority::kLowest;
+    SchedulingPriority priority = SchedulingPriority::kLow;
     uint32_t order_num = 0;
   };
 
