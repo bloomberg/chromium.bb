@@ -450,7 +450,7 @@ void Unpack<WebGLImageConversion::kDataFormatBGRA8, uint8_t, uint8_t>(
 #endif
 #if HAVE_MIPS_MSA_INTRINSICS
   SIMD::unpackOneRowOfBGRA8LittleToRGBA8MSA(source32, destination32,
-                                            pixelsPerRow);
+                                            pixels_per_row);
 #endif
   for (unsigned i = 0; i < pixels_per_row; ++i) {
     uint32_t bgra = source32[i];
@@ -480,7 +480,7 @@ void Unpack<WebGLImageConversion::kDataFormatRGBA5551, uint16_t, uint8_t>(
   SIMD::UnpackOneRowOfRGBA5551ToRGBA8(source, destination, pixels_per_row);
 #endif
 #if HAVE_MIPS_MSA_INTRINSICS
-  SIMD::unpackOneRowOfRGBA5551ToRGBA8MSA(source, destination, pixelsPerRow);
+  SIMD::unpackOneRowOfRGBA5551ToRGBA8MSA(source, destination, pixels_per_row);
 #endif
 
   for (unsigned i = 0; i < pixels_per_row; ++i) {
@@ -510,7 +510,7 @@ void Unpack<WebGLImageConversion::kDataFormatRGBA4444, uint16_t, uint8_t>(
   SIMD::UnpackOneRowOfRGBA4444ToRGBA8(source, destination, pixels_per_row);
 #endif
 #if HAVE_MIPS_MSA_INTRINSICS
-  SIMD::unpackOneRowOfRGBA4444ToRGBA8MSA(source, destination, pixelsPerRow);
+  SIMD::unpackOneRowOfRGBA4444ToRGBA8MSA(source, destination, pixels_per_row);
 #endif
   for (unsigned i = 0; i < pixels_per_row; ++i) {
     uint16_t packed_value = source[0];
@@ -722,7 +722,7 @@ void Pack<WebGLImageConversion::kDataFormatR8,
   SIMD::PackOneRowOfRGBA8LittleToR8(source, destination, pixels_per_row);
 #endif
 #if HAVE_MIPS_MSA_INTRINSICS
-  SIMD::packOneRowOfRGBA8LittleToR8MSA(source, destination, pixelsPerRow);
+  SIMD::packOneRowOfRGBA8LittleToR8MSA(source, destination, pixels_per_row);
 #endif
   for (unsigned i = 0; i < pixels_per_row; ++i) {
     float scale_factor = source[3] ? 255.0f / source[3] : 1.0f;
@@ -779,7 +779,7 @@ void Pack<WebGLImageConversion::kDataFormatRA8,
   SIMD::PackOneRowOfRGBA8LittleToRA8(source, destination, pixels_per_row);
 #endif
 #if HAVE_MIPS_MSA_INTRINSICS
-  SIMD::packOneRowOfRGBA8LittleToRA8MSA(source, destination, pixelsPerRow);
+  SIMD::packOneRowOfRGBA8LittleToRA8MSA(source, destination, pixels_per_row);
 #endif
   for (unsigned i = 0; i < pixels_per_row; ++i) {
     float scale_factor = source[3] ? 255.0f / source[3] : 1.0f;
@@ -891,7 +891,7 @@ void Pack<WebGLImageConversion::kDataFormatRGBA8,
   SIMD::PackOneRowOfRGBA8LittleToRGBA8(source, destination, pixels_per_row);
 #endif
 #if HAVE_MIPS_MSA_INTRINSICS
-  SIMD::packOneRowOfRGBA8LittleToRGBA8MSA(source, destination, pixelsPerRow);
+  SIMD::packOneRowOfRGBA8LittleToRGBA8MSA(source, destination, pixels_per_row);
 #endif
   for (unsigned i = 0; i < pixels_per_row; ++i) {
     float scale_factor = source[3] ? 255.0f / source[3] : 1.0f;
@@ -923,7 +923,7 @@ void Pack<WebGLImageConversion::kDataFormatRGBA4444,
 #endif
 #if HAVE_MIPS_MSA_INTRINSICS
   SIMD::packOneRowOfRGBA8ToUnsignedShort4444MSA(source, destination,
-                                                pixelsPerRow);
+                                                pixels_per_row);
 #endif
   for (unsigned i = 0; i < pixels_per_row; ++i) {
     *destination = (((source[0] & 0xF0) << 8) | ((source[1] & 0xF0) << 4) |
@@ -991,7 +991,7 @@ void Pack<WebGLImageConversion::kDataFormatRGBA5551,
 #endif
 #if HAVE_MIPS_MSA_INTRINSICS
   SIMD::packOneRowOfRGBA8ToUnsignedShort5551MSA(source, destination,
-                                                pixelsPerRow);
+                                                pixels_per_row);
 #endif
   for (unsigned i = 0; i < pixels_per_row; ++i) {
     *destination = (((source[0] & 0xF8) << 8) | ((source[1] & 0xF8) << 3) |
@@ -1059,7 +1059,7 @@ void Pack<WebGLImageConversion::kDataFormatRGB565,
 #endif
 #if HAVE_MIPS_MSA_INTRINSICS
   SIMD::packOneRowOfRGBA8ToUnsignedShort565MSA(source, destination,
-                                               pixelsPerRow);
+                                               pixels_per_row);
 #endif
   for (unsigned i = 0; i < pixels_per_row; ++i) {
     *destination = (((source[0] & 0xF8) << 8) | ((source[1] & 0xFC) << 3) |
