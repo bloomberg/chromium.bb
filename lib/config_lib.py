@@ -598,6 +598,11 @@ def DefaultSettings():
       # at some point.
       health_threshold=0,
 
+      # If this build_config fails this many times consecutively, trigger a
+      # sanity-check build on this build_config. A sanity-check-pre-cq is a
+      # pre-cq build without patched CLs.
+      sanity_check_threshold=0,
+
       # List of email addresses to send health alerts to for this builder. It
       # supports automatic email address lookup for the following sheriff
       # types:

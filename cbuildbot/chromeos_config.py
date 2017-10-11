@@ -1910,6 +1910,7 @@ def PreCqBuilders(site_config, boards_dict, ge_build_config):
                   'if supported.',
       doc='http://www.chromium.org/chromium-os/build/builder-overview#'
           'TOC-Pre-CQ',
+      sanity_check_threshold=3,
   )
 
   # Pre-CQ targets that only check compilation and unit tests.

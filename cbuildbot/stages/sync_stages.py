@@ -1729,11 +1729,11 @@ class PreCQLauncherStage(SyncStage):
 
     Returns:
       A boolean indicating whether the consecutive failure counter of
-        build_config exceeds its health_threshold.
+        build_config exceeds its sanity_check_threshold.
     """
-    health_threshold = site_config[build_config].health_threshold
+    sanity_check_threshold = site_config[build_config].sanity_check_threshold
 
-    if health_threshold <= 0:
+    if sanity_check_threshold <= 0:
       return False
 
     streak_counter = 0
@@ -1743,7 +1743,7 @@ class PreCQLauncherStage(SyncStage):
       elif build['status'] == constants.BUILDER_STATUS_FAILED:
         streak_counter += 1
 
-      if streak_counter >= health_threshold:
+      if streak_counter >= sanity_check_threshold:
         return True
 
     return False

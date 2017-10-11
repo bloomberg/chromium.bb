@@ -91,6 +91,7 @@
         "push_overlays": null,
         "rootfs_verification": true,
         "sanity_check_slaves": null,
+        "sanity_check_threshold": 0,
         "separate_debug_symbols": true,
         "shared_user_password": null,
         "sign_types": null,
@@ -365,6 +366,7 @@
             "important": true,
             "manifest_version": true,
             "pre_cq": true,
+            "sanity_check_threshold": 3,
             "trybot_list": true,
             "unittests": false,
             "upload_standalone_images": false,
@@ -732,6 +734,7 @@
             "important": true,
             "manifest_version": true,
             "pre_cq": true,
+            "sanity_check_threshold": 3,
             "trybot_list": true,
             "upload_standalone_images": false,
             "vm_tests": []
@@ -829,6 +832,7 @@
             "important": true,
             "manifest_version": true,
             "pre_cq": true,
+            "sanity_check_threshold": 3,
             "trybot_list": true,
             "upload_standalone_images": false,
             "vm_tests": [
@@ -1175,6 +1179,7 @@
             "important": true,
             "manifest_version": true,
             "pre_cq": true,
+            "sanity_check_threshold": 3,
             "trybot_list": true,
             "unittests": false,
             "upload_standalone_images": false,
@@ -4127,6 +4132,7 @@
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "manifest_version": true,
         "pre_cq": true,
+        "sanity_check_threshold": 3,
         "trybot_list": true,
         "upload_standalone_images": false,
         "useflags": [
