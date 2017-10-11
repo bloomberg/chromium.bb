@@ -253,6 +253,18 @@ class RemoteSuggestionsProviderImpl final : public RemoteSuggestionsProvider {
   // status of the fetch.
   void FetchSuggestions(bool interactive_request, FetchStatusCallback callback);
 
+  // Similar To FetchSuggestions, only adds a loading indicator on top of that.
+  // If |enable_loading_indication_timeout| is true, the indicator is hidden if
+  // the fetch does not finish within a certain amount of time (the fetch itself
+  // is not canceled, though).
+  void FetchSuggestionsWithLoadingIndicator(
+      bool interactive_request,
+      FetchStatusCallback callback,
+      bool enable_loading_indication_timeout);
+  void OnFetchSuggestionsWithLoadingIndicatorFinished(
+      FetchStatusCallback callback,
+      Status status);
+
   // Returns the URL of the image of a suggestion if it is among the current or
   // among the archived suggestions in the matching category. Returns an empty
   // URL otherwise.
@@ -377,13 +389,10 @@ class RemoteSuggestionsProviderImpl final : public RemoteSuggestionsProvider {
   RequestParams BuildFetchParams(base::Optional<Category> fetched_category,
                                  int count_to_fetch) const;
 
-  void MarkEmptyCategoriesAsLoading();
-
-  bool AreArticlesAvailable();
-  void NotifyRefetchWhileDisplayingStarted();
-  void NotifyRefetchWhileDisplayingFailedOrTimeouted();
-  void OnRefetchWhileDisplayingFinished(FetchStatusCallback callback,
-                                        Status status);
+  bool AreArticlesEmpty() const;
+  bool AreArticlesAvailable() const;
+  void NotifyFetchWithLoadingIndicatorStarted();
+  void NotifyFetchWithLoadingIndicatorFailedOrTimeouted();
 
   State state_;
 
