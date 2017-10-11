@@ -3209,8 +3209,7 @@ PositionWithAffinity LayoutObject::CreatePositionWithAffinity(
     for (LayoutObject* layout_object = child->NextInPreOrder(parent);
          layout_object; layout_object = layout_object->NextInPreOrder(parent)) {
       if (Node* node = layout_object->NonPseudoNode()) {
-        return PositionWithAffinity(
-            FirstPositionInOrBeforeNodeDeprecated(node));
+        return PositionWithAffinity(FirstPositionInOrBeforeNode(*node));
       }
     }
 
@@ -3220,12 +3219,12 @@ PositionWithAffinity LayoutObject::CreatePositionWithAffinity(
       if (layout_object == parent)
         break;
       if (Node* node = layout_object->NonPseudoNode())
-        return PositionWithAffinity(LastPositionInOrAfterNodeDeprecated(node));
+        return PositionWithAffinity(LastPositionInOrAfterNode(*node));
     }
 
     // Use the parent itself unless it too is anonymous.
     if (Node* node = parent->NonPseudoNode())
-      return PositionWithAffinity(FirstPositionInOrBeforeNodeDeprecated(node));
+      return PositionWithAffinity(FirstPositionInOrBeforeNode(*node));
 
     // Repeat at the next level up.
     child = parent;
