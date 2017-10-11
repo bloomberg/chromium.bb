@@ -374,28 +374,28 @@ if (CONFIG_AV1_ENCODER)
     # Maintain a list of encoder example targets.
     set(AOM_ENCODER_EXAMPLE_TARGETS
         aomenc lossless_encoder set_maps simple_encoder twopass_encoder)
-
-    # Add encoder examples to app target list.
-    set(AOM_APP_TARGETS ${AOM_APP_TARGETS} ${AOM_ENCODER_EXAMPLE_TARGETS})
   endif ()
 
-  if (ENABLE_TOOLS AND CONFIG_ENTROPY_STATS)
-    # TODO(tomfinegan): Sort out why a simple link command with
-    # aom_entropy_optimizer.c won't work on macos, but dragging in all the
-    # helper machinery allows the link to succeed.
-    add_executable(aom_entropy_optimizer
-                   "${AOM_CONFIG_DIR}/usage_exit.c"
-                   "${AOM_ROOT}/tools/aom_entropy_optimizer.c"
-                   $<TARGET_OBJECTS:aom_common_app_util>
-                   $<TARGET_OBJECTS:aom_encoder_app_util>)
+  if (ENABLE_TOOLS)
+    if (CONFIG_ENTROPY_STATS AND NOT BUILD_SHARED_LIBS)
+      # TODO(tomfinegan): Sort out why a simple link command with
+      # aom_entropy_optimizer.c won't work on macos, but dragging in all the
+      # helper machinery allows the link to succeed.
+      add_executable(aom_entropy_optimizer
+                     "${AOM_CONFIG_DIR}/usage_exit.c"
+                     "${AOM_ROOT}/tools/aom_entropy_optimizer.c"
+                     $<TARGET_OBJECTS:aom_common_app_util>
+                     $<TARGET_OBJECTS:aom_encoder_app_util>)
 
-    # Maintain a list of encoder tool targets.
-    set(AOM_ENCODER_TOOL_TARGETS
-        ${AOM_ENCODER_TOOL_TARGETS} aom_entropy_optimizer)
-
-      # Add encoder tools to app target list.
-    set(AOM_APP_TARGETS ${AOM_APP_TARGETS} ${AOM_ENCODER_TOOL_TARGETS})
+      # Maintain a list of encoder tool targets.
+      set(AOM_ENCODER_TOOL_TARGETS
+          ${AOM_ENCODER_TOOL_TARGETS} aom_entropy_optimizer)
+    endif ()
   endif ()
+
+  # Add encoder examples and tools to the targets list.
+  set(AOM_APP_TARGETS ${AOM_APP_TARGETS}
+      ${AOM_ENCODER_EXAMPLE_TARGETS} ${AOM_ENCODER_TOOL_TARGETS})
 endif ()
 
 if (ENABLE_EXAMPLES)
