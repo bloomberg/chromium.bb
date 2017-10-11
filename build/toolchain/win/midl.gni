@@ -17,6 +17,9 @@ import("//build/config/win/visual_studio_version.gni")
 #   out_dir (optional)
 #       Directory to write the generated files to. Defaults to target_gen_dir.
 #
+#   dynamic_guid (optional)
+#       If the GUID is not constant across builds, the current GUID.
+#
 #   deps (optional)
 #   visibility (optional)
 
@@ -30,6 +33,12 @@ template("midl") {
     out_dir = invoker.out_dir
   } else {
     out_dir = target_gen_dir
+  }
+
+  if (defined(invoker.dynamic_guid)) {
+    dynamic_guid = invoker.dynamic_guid
+  } else {
+    dynamic_guid = "none"
   }
 
   header_file = "{{source_name_part}}.h"
@@ -66,6 +75,7 @@ template("midl") {
     args = [
       win_tool_arch,
       rebase_path(out_dir, root_build_dir),
+      dynamic_guid,
       type_library_file,
       header_file,
       dlldata_file,
