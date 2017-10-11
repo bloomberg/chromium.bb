@@ -742,6 +742,8 @@ QuicStreamFactory::QuicStreamFactory(
           QuicTime::Delta::FromSeconds(reduced_ping_timeout_seconds)),
       most_recent_path_degrading_timestamp_(base::TimeTicks()),
       most_recent_network_disconnected_timestamp_(base::TimeTicks()),
+      most_recent_write_error_(0),
+      most_recent_write_error_timestamp_(base::TimeTicks()),
       yield_after_packets_(kQuicYieldAfterPacketsRead),
       yield_after_duration_(QuicTime::Delta::FromMilliseconds(
           kQuicYieldAfterDurationMilliseconds)),
@@ -1250,6 +1252,20 @@ void QuicStreamFactory::OnNetworkDisconnected(NetworkHandle network) {
         base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromMinutes(10),
         100);
   }
+  if (most_recent_write_error_timestamp_ != base::TimeTicks()) {
+    base::TimeDelta write_error_to_disconnection_gap =
+        most_recent_network_disconnected_timestamp_ -
+        most_recent_write_error_timestamp_;
+    UMA_HISTOGRAM_CUSTOM_TIMES(
+        "Net.QuicNetworkGapBetweenWriteErrorAndDisconnection",
+        write_error_to_disconnection_gap, base::TimeDelta::FromMilliseconds(1),
+        base::TimeDelta::FromMinutes(10), 100);
+    UMA_HISTOGRAM_SPARSE_SLOWLY(
+        "Net.QuicSession.WriteError.NetworkDisconnected",
+        -most_recent_write_error_);
+    most_recent_write_error_ = 0;
+    most_recent_write_error_timestamp_ = base::TimeTicks();
+  }
 
   if (!migrate_sessions_on_network_change_)
     return;
@@ -1345,23 +1361,60 @@ void QuicStreamFactory::MaybeMigrateOrCloseSessions(
   }
 }
 
-MigrationResult QuicStreamFactory::MaybeMigrateSingleSession(
+MigrationResult QuicStreamFactory::MaybeMigrateSingleSessionOnWriteError(
     QuicChromiumClientSession* session,
-    MigrationCause migration_cause) {
-  if (migration_cause == EARLY_MIGRATION &&
-      most_recent_path_degrading_timestamp_ == base::TimeTicks())
+    int error_code) {
+  most_recent_write_error_timestamp_ = base::TimeTicks::Now();
+  most_recent_write_error_ = error_code;
+
+  const NetLogWithSource migration_net_log = NetLogWithSource::Make(
+      net_log_, NetLogSourceType::QUIC_CONNECTION_MIGRATION);
+  migration_net_log.BeginEvent(
+      NetLogEventType::QUIC_CONNECTION_MIGRATION_TRIGGERED,
+      base::Bind(&NetLogQuicConnectionMigrationTriggerCallback, "WriteError"));
+
+  MigrationResult result =
+      MaybeMigrateSingleSession(session, false, migration_net_log);
+  migration_net_log.EndEvent(
+      NetLogEventType::QUIC_CONNECTION_MIGRATION_TRIGGERED);
+  return result;
+}
+
+MigrationResult QuicStreamFactory::MaybeMigrateSingleSessionOnPathDegrading(
+    QuicChromiumClientSession* session) {
+  if (most_recent_path_degrading_timestamp_ == base::TimeTicks())
     most_recent_path_degrading_timestamp_ = base::TimeTicks::Now();
 
-  ScopedConnectionMigrationEventLog scoped_event_log(
-      net_log_,
-      migration_cause == EARLY_MIGRATION ? "EarlyMigration" : "WriteError");
+  const NetLogWithSource migration_net_log = NetLogWithSource::Make(
+      net_log_, NetLogSourceType::QUIC_CONNECTION_MIGRATION);
+  migration_net_log.BeginEvent(
+      NetLogEventType::QUIC_CONNECTION_MIGRATION_TRIGGERED,
+      base::Bind(&NetLogQuicConnectionMigrationTriggerCallback,
+                 "PathDegrading"));
+
+  MigrationResult result = MigrationResult::FAILURE;
+  if (migrate_sessions_early_) {
+    result = MaybeMigrateSingleSession(session, true, migration_net_log);
+  } else {
+    HistogramAndLogMigrationFailure(
+        migration_net_log, MIGRATION_STATUS_DISABLED, session->connection_id(),
+        "Migration disabled");
+  }
+  migration_net_log.EndEvent(
+      NetLogEventType::QUIC_CONNECTION_MIGRATION_TRIGGERED);
+  return result;
+}
+
+MigrationResult QuicStreamFactory::MaybeMigrateSingleSession(
+    QuicChromiumClientSession* session,
+    bool close_session_on_error,
+    const NetLogWithSource& net_log) {
   if (!migrate_sessions_on_network_change_ ||
-      (migration_cause == EARLY_MIGRATION && !migrate_sessions_early_) ||
       session->HasNonMigratableStreams() ||
       session->config()->DisableConnectionMigration()) {
-    HistogramAndLogMigrationFailure(
-        scoped_event_log.net_log(), MIGRATION_STATUS_DISABLED,
-        session->connection_id(), "Migration disabled");
+    HistogramAndLogMigrationFailure(net_log, MIGRATION_STATUS_DISABLED,
+                                    session->connection_id(),
+                                    "Migration disabled");
     return MigrationResult::FAILURE;
   }
   NetworkHandle new_network =
@@ -1369,14 +1422,13 @@ MigrationResult QuicStreamFactory::MaybeMigrateSingleSession(
   if (new_network == NetworkChangeNotifier::kInvalidNetworkHandle) {
     // No alternate network found.
     HistogramAndLogMigrationFailure(
-        scoped_event_log.net_log(), MIGRATION_STATUS_NO_ALTERNATE_NETWORK,
+        net_log, MIGRATION_STATUS_NO_ALTERNATE_NETWORK,
         session->connection_id(), "No alternate network found");
     return MigrationResult::NO_NEW_NETWORK;
   }
   OnSessionGoingAway(session);
   return MigrateSessionToNewNetwork(session, new_network,
-                                    migration_cause != WRITE_ERROR,
-                                    scoped_event_log.net_log());
+                                    close_session_on_error, net_log);
 }
 
 void QuicStreamFactory::MigrateSessionToNewPeerAddress(

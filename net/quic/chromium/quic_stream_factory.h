@@ -76,12 +76,6 @@ class QuicStreamFactoryPeer;
 // When a connection is idle for 30 seconds it will be closed.
 const int kIdleConnectionTimeoutSeconds = 30;
 
-// Indicates cause when connection migration is triggered.
-enum MigrationCause {
-  EARLY_MIGRATION,  // Migration due to path degradation.
-  WRITE_ERROR       // Migration due to socket write error.
-};
-
 // Result of a session migration attempt.
 enum class MigrationResult {
   SUCCESS,         // Migration succeeded.
@@ -316,11 +310,18 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       bool close_if_cannot_migrate,
       const NetLogWithSource& net_log);
 
-  // Method that initiates migration of |session| if |session| is
-  // active and if there is an alternate network than the one to which
+  // Method that attempts migration of |session| on write error with
+  // |error_code| if |session| is active and if there is an alternate network
+  // than the one to which |session| is currently bound.
+  MigrationResult MaybeMigrateSingleSessionOnWriteError(
+      QuicChromiumClientSession* session,
+      int error_code);
+
+  // Method that attempts migration of |session| on path degrading if |session|
+  // is active and if there is an alternate network than the one to which
   // |session| is currently bound.
-  MigrationResult MaybeMigrateSingleSession(QuicChromiumClientSession* session,
-                                            MigrationCause migration_cause);
+  MigrationResult MaybeMigrateSingleSessionOnPathDegrading(
+      QuicChromiumClientSession* session);
 
   // Migrates |session| over to using |network|. If |network| is
   // kInvalidNetworkHandle, default network is used.
@@ -423,6 +424,13 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
                     QuicChromiumClientSession** session);
   void ActivateSession(const QuicSessionKey& key,
                        QuicChromiumClientSession* session);
+
+  // Method that initiates migration of |session| if |session| is
+  // active and if there is an alternate network than the one to which
+  // |session| is currently bound.
+  MigrationResult MaybeMigrateSingleSession(QuicChromiumClientSession* session,
+                                            bool close_session_on_error,
+                                            const NetLogWithSource& net_log);
 
   void ConfigureInitialRttEstimate(const QuicServerId& server_id,
                                    QuicConfig* config);
@@ -536,6 +544,9 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
 
   base::TimeTicks most_recent_path_degrading_timestamp_;
   base::TimeTicks most_recent_network_disconnected_timestamp_;
+
+  int most_recent_write_error_;
+  base::TimeTicks most_recent_write_error_timestamp_;
 
   // If more than |yield_after_packets_| packets have been read or more than
   // |yield_after_duration_| time has passed, then

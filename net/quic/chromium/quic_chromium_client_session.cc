@@ -1403,7 +1403,7 @@ int QuicChromiumClientSession::HandleWriteError(
   task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&QuicChromiumClientSession::MigrateSessionOnWriteError,
-                 weak_factory_.GetWeakPtr()));
+                 weak_factory_.GetWeakPtr(), error_code));
 
   // Store packet in the session since the actual migration and packet rewrite
   // can happen via this posted task or via an async network notification.
@@ -1416,14 +1416,15 @@ int QuicChromiumClientSession::HandleWriteError(
   return ERR_IO_PENDING;
 }
 
-void QuicChromiumClientSession::MigrateSessionOnWriteError() {
+void QuicChromiumClientSession::MigrateSessionOnWriteError(int error_code) {
   // If migration_pending_ is false, an earlier task completed migration.
   if (!migration_pending_)
     return;
 
   MigrationResult result = MigrationResult::FAILURE;
   if (stream_factory_ != nullptr)
-    result = stream_factory_->MaybeMigrateSingleSession(this, WRITE_ERROR);
+    result = stream_factory_->MaybeMigrateSingleSessionOnWriteError(this,
+                                                                    error_code);
 
   if (result == MigrationResult::SUCCESS)
     return;
@@ -1526,7 +1527,7 @@ void QuicChromiumClientSession::OnWriteUnblocked() {
 
 void QuicChromiumClientSession::OnPathDegrading() {
   if (stream_factory_) {
-    stream_factory_->MaybeMigrateSingleSession(this, EARLY_MIGRATION);
+    stream_factory_->MaybeMigrateSingleSessionOnPathDegrading(this);
   }
 }
 
