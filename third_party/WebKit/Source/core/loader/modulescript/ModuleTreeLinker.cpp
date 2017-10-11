@@ -97,8 +97,8 @@ const char* ModuleTreeLinker::StateToString(ModuleTreeLinker::State state) {
 void ModuleTreeLinker::AdvanceState(State new_state) {
 #if DCHECK_IS_ON()
   RESOURCE_LOADING_DVLOG(1)
-      << "ModuleTreeLinker[" << this << "]::advanceState("
-      << StateToString(state_) << " -> " << StateToString(new_state) << ")";
+      << *this << "::advanceState(" << StateToString(state_) << " -> "
+      << StateToString(new_state) << ")";
 #endif
 
   switch (state_) {
@@ -126,13 +126,14 @@ void ModuleTreeLinker::AdvanceState(State new_state) {
   state_ = new_state;
 
   if (state_ == State::kFinished) {
+#if DCHECK_IS_ON()
     if (result_) {
-      RESOURCE_LOADING_DVLOG(1) << "ModuleTreeLinker[" << this
-                                << "] finished with final result " << *result_;
-    } else {
       RESOURCE_LOADING_DVLOG(1)
-          << "ModuleTreeLinker[" << this << "] finished with nullptr.";
+          << *this << " finished with final result " << *result_;
+    } else {
+      RESOURCE_LOADING_DVLOG(1) << *this << " finished with nullptr.";
     }
+#endif
 
     registry_->ReleaseFinishedFetcher(this);
 
@@ -145,6 +146,10 @@ void ModuleTreeLinker::AdvanceState(State new_state) {
 
 void ModuleTreeLinker::FetchRoot(const ModuleScriptFetchRequest& request) {
   // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-module-script-tree
+#if DCHECK_IS_ON()
+  url_ = request.Url();
+  root_is_inline_ = false;
+#endif
 
   AdvanceState(State::kFetchingSelf);
 
@@ -158,6 +163,11 @@ void ModuleTreeLinker::FetchRoot(const ModuleScriptFetchRequest& request) {
 
 void ModuleTreeLinker::FetchRootInline(ModuleScript* module_script) {
   // Top-level entry point for [FDaI] for an inline module script.
+  DCHECK(module_script);
+#if DCHECK_IS_ON()
+  url_ = module_script->BaseURL();
+  root_is_inline_ = true;
+#endif
 
   AdvanceState(State::kFetchingSelf);
 
@@ -206,15 +216,15 @@ void ModuleTreeLinker::NotifyModuleLoadFinished(ModuleScript* module_script) {
   CHECK_GT(num_incomplete_fetches_, 0u);
   --num_incomplete_fetches_;
 
+#if DCHECK_IS_ON()
   if (module_script) {
     RESOURCE_LOADING_DVLOG(1)
-        << "ModuleTreeLinker[" << this << "]::NotifyModuleLoadFinished() with "
-        << *module_script;
+        << *this << "::NotifyModuleLoadFinished() with " << *module_script;
   } else {
     RESOURCE_LOADING_DVLOG(1)
-        << "ModuleTreeLinker[" << this << "]::NotifyModuleLoadFinished() with "
-        << "nullptr.";
+        << *this << "::NotifyModuleLoadFinished() with nullptr.";
   }
+#endif
 
   if (state_ == State::kFetchingSelf) {
     // Corresponds to top-level calls to
@@ -512,5 +522,14 @@ bool ModuleTreeLinker::FindFirstParseError(
   // [FFPE] Step 9. Return null.
   return false;
 }
+
+#if DCHECK_IS_ON()
+std::ostream& operator<<(std::ostream& stream, const ModuleTreeLinker& linker) {
+  stream << "ModuleTreeLinker[" << &linker
+         << ", url=" << linker.url_.GetString()
+         << ", inline=" << linker.root_is_inline_ << "]";
+  return stream;
+}
+#endif
 
 }  // namespace blink

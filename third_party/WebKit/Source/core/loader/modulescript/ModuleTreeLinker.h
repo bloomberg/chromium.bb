@@ -109,7 +109,19 @@ class CORE_EXPORT ModuleTreeLinker final : public SingleModuleClient {
   bool found_error_ = false;
 
   size_t num_incomplete_fetches_ = 0;
+
+#if DCHECK_IS_ON()
+  KURL url_;
+  bool root_is_inline_;
+
+  friend CORE_EXPORT std::ostream& operator<<(std::ostream&,
+                                              const ModuleTreeLinker&);
+#endif
 };
+
+#if DCHECK_IS_ON()
+CORE_EXPORT std::ostream& operator<<(std::ostream&, const ModuleTreeLinker&);
+#endif
 
 }  // namespace blink
 
