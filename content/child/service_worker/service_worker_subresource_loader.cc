@@ -125,6 +125,24 @@ void ServiceWorkerSubresourceLoader::OnResponseStream(
 void ServiceWorkerSubresourceLoader::OnFallback(
     base::Time dispatch_event_time) {
   DCHECK(default_loader_factory_getter_);
+  // When the request mode is CORS or CORS-with-forced-preflight and the origin
+  // of the request URL is different from the security origin of the document,
+  // we can't simply fallback to the network here. It is because the CORS
+  // preflight logic is implemented in Blink. So we return a "fallback required"
+  // response to Blink.
+  if ((resource_request_.fetch_request_mode == FETCH_REQUEST_MODE_CORS ||
+       resource_request_.fetch_request_mode ==
+           FETCH_REQUEST_MODE_CORS_WITH_FORCED_PREFLIGHT) &&
+      (!resource_request_.request_initiator.has_value() ||
+       !resource_request_.request_initiator->IsSameOriginWith(
+           url::Origin(resource_request_.url)))) {
+    response_head_.was_fetched_via_service_worker = true;
+    response_head_.was_fallback_required_by_service_worker = true;
+    CommitResponseHeaders();
+    CommitCompleted(net::OK);
+    return;
+  }
+
   // Hand over to the network loader.
   // Per spec, redirects after this point are not intercepted by the service
   // worker again. (https://crbug.com/517364)

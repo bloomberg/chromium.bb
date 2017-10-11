@@ -121,6 +121,13 @@ class WebServiceWorkerNetworkProviderForFrame
       return nullptr;
 
     // S13nServiceWorker:
+    // If the service worker mode is not all, no need to intercept the request.
+    if (request.GetServiceWorkerMode() !=
+        blink::WebURLRequest::ServiceWorkerMode::kAll) {
+      return nullptr;
+    }
+
+    // S13nServiceWorker:
     // Create our own SubresourceLoader to route the request
     // to the controller ServiceWorker.
     return base::MakeUnique<WebURLLoaderImpl>(
@@ -239,11 +246,6 @@ int ServiceWorkerNetworkProvider::provider_id() const {
 }
 
 bool ServiceWorkerNetworkProvider::IsControlledByServiceWorker() const {
-  if (ServiceWorkerUtils::IsServicificationEnabled()) {
-    // Interception for subresource loading is not working (yet)
-    // when servicification is enabled.
-    return false;
-  }
   return context() && context()->controller();
 }
 
