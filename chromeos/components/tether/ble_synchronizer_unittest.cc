@@ -296,7 +296,9 @@ class BleSynchronizerTest : public testing::Test {
                    base::Unretained(this)));
   }
 
-  void InvokeUnregisterCallback(bool success, size_t unreg_arg_index) {
+  void InvokeUnregisterCallback(bool success,
+                                size_t unreg_arg_index,
+                                size_t expected_unregistration_result_count) {
     EXPECT_TRUE(unregister_args_list_.size() >= unreg_arg_index);
 
     BleSynchronizer::BluetoothAdvertisementResult expected_result;
@@ -313,7 +315,7 @@ class BleSynchronizerTest : public testing::Test {
 
     histogram_tester_.ExpectBucketCount(
         "InstantTethering.BluetoothAdvertisementUnregistrationResult",
-        expected_result, 1);
+        expected_result, expected_unregistration_result_count);
 
     // Reset to make sure that this callback is never double-invoked.
     unregister_args_list_[unreg_arg_index].reset();
@@ -335,7 +337,9 @@ class BleSynchronizerTest : public testing::Test {
                    base::Unretained(this)));
   }
 
-  void InvokeStartDiscoveryCallback(bool success, size_t start_arg_index) {
+  void InvokeStartDiscoveryCallback(bool success,
+                                    size_t start_arg_index,
+                                    size_t expected_discovery_result_count) {
     EXPECT_TRUE(start_discovery_args_list_.size() >= start_arg_index);
 
     if (success) {
@@ -347,7 +351,7 @@ class BleSynchronizerTest : public testing::Test {
 
     histogram_tester_.ExpectUniqueSample(
         "InstantTethering.BluetoothDiscoverySessionStarted", success ? 1 : 0,
-        1);
+        expected_discovery_result_count);
 
     // Reset to make sure that this callback is never double-invoked.
     start_discovery_args_list_[start_arg_index].reset();
@@ -463,25 +467,29 @@ TEST_F(BleSynchronizerTest, TestRegisterError) {
 
 TEST_F(BleSynchronizerTest, TestUnregisterSuccess) {
   UnregisterAdvertisement();
-  InvokeUnregisterCallback(true /* success */, 0u /* reg_arg_index */);
+  InvokeUnregisterCallback(true /* success */, 0u /* reg_arg_index */,
+                           1 /* expected_unregistration_result_count */);
   EXPECT_EQ(1, num_unregister_success_);
 }
 
 TEST_F(BleSynchronizerTest, TestUnregisterError) {
   UnregisterAdvertisement();
-  InvokeUnregisterCallback(false /* success */, 0u /* reg_arg_index */);
+  InvokeUnregisterCallback(false /* success */, 0u /* reg_arg_index */,
+                           1 /* expected_unregistration_result_count */);
   EXPECT_EQ(1, num_unregister_error_);
 }
 
 TEST_F(BleSynchronizerTest, TestStartSuccess) {
   StartDiscoverySession();
-  InvokeStartDiscoveryCallback(true /* success */, 0u /* reg_arg_index */);
+  InvokeStartDiscoveryCallback(true /* success */, 0u /* reg_arg_index */,
+                               1 /* expected_discovery_result_count */);
   EXPECT_EQ(1, num_start_success_);
 }
 
 TEST_F(BleSynchronizerTest, TestStartError) {
   StartDiscoverySession();
-  InvokeStartDiscoveryCallback(false /* success */, 0u /* reg_arg_index */);
+  InvokeStartDiscoveryCallback(false /* success */, 0u /* reg_arg_index */,
+                               1 /* expected_discovery_result_count */);
   EXPECT_EQ(1, num_start_error_);
 }
 
@@ -532,7 +540,8 @@ TEST_F(BleSynchronizerTest, TestThrottling) {
   test_clock_->Advance(TimeDeltaMillis(kTimeBetweenEachCommandMs));
   mock_timer_->Fire();
 
-  InvokeUnregisterCallback(true /* success */, 0u /* reg_arg_index */);
+  InvokeUnregisterCallback(true /* success */, 0u /* reg_arg_index */,
+                           1 /* expected_unregistration_result_count */);
   EXPECT_EQ(1, num_unregister_success_);
 
   // Now, register 2 advertisements at the same time.
@@ -568,7 +577,8 @@ TEST_F(BleSynchronizerTest, TestThrottling) {
   test_clock_->Advance(TimeDeltaMillis(kTimeBetweenEachCommandMs));
 
   UnregisterAdvertisement();
-  InvokeUnregisterCallback(false /* success */, 1u /* reg_arg_index */);
+  InvokeUnregisterCallback(false /* success */, 1u /* reg_arg_index */,
+                           1 /* expected_unregistration_result_count */);
   EXPECT_EQ(1, num_unregister_error_);
 }
 

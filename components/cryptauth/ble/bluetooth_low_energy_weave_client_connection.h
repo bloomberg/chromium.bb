@@ -104,10 +104,29 @@ class BluetoothLowEnergyWeaveClientConnection
   std::string GetDeviceAddress() override;
 
  protected:
+  enum BleWeaveConnectionResult {
+    BLE_WEAVE_CONNECTION_RESULT_CLOSED_NORMALLY = 0,
+    BLE_WEAVE_CONNECTION_RESULT_TIMEOUT_SETTING_CONNECTION_LATENCY = 1,
+    BLE_WEAVE_CONNECTION_RESULT_TIMEOUT_CREATING_GATT_CONNECTION = 2,
+    BLE_WEAVE_CONNECTION_RESULT_TIMEOUT_STARTING_NOTIFY_SESSION = 3,
+    BLE_WEAVE_CONNECTION_RESULT_TIMEOUT_FINDING_GATT_CHARACTERISTICS = 4,
+    BLE_WEAVE_CONNECTION_RESULT_TIMEOUT_WAITING_FOR_CONNECTION_RESPONSE = 5,
+    BLE_WEAVE_CONNECTION_RESULT_ERROR_BLUETOOTH_DEVICE_NOT_AVAILABLE = 6,
+    BLE_WEAVE_CONNECTION_RESULT_ERROR_CREATING_GATT_CONNECTION = 7,
+    BLE_WEAVE_CONNECTION_RESULT_ERROR_STARTING_NOTIFY_SESSION = 8,
+    BLE_WEAVE_CONNECTION_RESULT_ERROR_FINDING_GATT_CHARACTERISTICS = 9,
+    BLE_WEAVE_CONNECTION_RESULT_ERROR_WRITING_GATT_CHARACTERISTIC = 10,
+    BLE_WEAVE_CONNECTION_RESULT_ERROR_GATT_CHARACTERISTIC_NOT_AVAILABLE = 11,
+    BLE_WEAVE_CONNECTION_RESULT_ERROR_WRITE_QUEUE_OUT_OF_SYNC = 12,
+    BLE_WEAVE_CONNECTION_RESULT_ERROR_DEVICE_LOST = 13,
+    BLE_WEAVE_CONNECTION_RESULT_ERROR_CONNECTION_DROPPED = 14,
+    BLE_WEAVE_CONNECTION_RESULT_MAX
+  };
+
   // Destroys the connection immediately; if there was an active connection, it
   // will be disconnected after this call. Note that this function may notify
   // observers of a connection status change.
-  void DestroyConnection();
+  void DestroyConnection(BleWeaveConnectionResult result);
 
   SubStatus sub_status() { return sub_status_; }
 
@@ -143,6 +162,69 @@ class BluetoothLowEnergyWeaveClientConnection
 
  private:
   friend class CryptAuthBluetoothLowEnergyWeaveClientConnectionTest;
+  FRIEND_TEST_ALL_PREFIXES(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
+                           CreateAndDestroyWithoutConnectCallDoesntCrash);
+  FRIEND_TEST_ALL_PREFIXES(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
+                           DisconnectWithoutConnectDoesntCrash);
+  FRIEND_TEST_ALL_PREFIXES(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
+                           ConnectSuccess);
+  FRIEND_TEST_ALL_PREFIXES(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
+                           ConnectSuccessDisconnect);
+  FRIEND_TEST_ALL_PREFIXES(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
+                           ConnectSuccessDisconnect_DoNotSetLowLatency);
+  FRIEND_TEST_ALL_PREFIXES(
+      CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
+      ConnectIncompleteDisconnectFromWaitingCharacteristicsState);
+  FRIEND_TEST_ALL_PREFIXES(
+      CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
+      ConnectIncompleteDisconnectFromWaitingNotifySessionState);
+  FRIEND_TEST_ALL_PREFIXES(
+      CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
+      ConnectIncompleteDisconnectFromWaitingConnectionResponseState);
+  FRIEND_TEST_ALL_PREFIXES(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
+                           ConnectFailsCharacteristicsNotFound);
+  FRIEND_TEST_ALL_PREFIXES(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
+                           ConnectFailsCharacteristicsFoundThenUnavailable);
+  FRIEND_TEST_ALL_PREFIXES(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
+                           ConnectFailsNotifySessionError);
+  FRIEND_TEST_ALL_PREFIXES(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
+                           ConnectFailsErrorSendingConnectionRequest);
+  FRIEND_TEST_ALL_PREFIXES(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
+                           ReceiveMessageSmallerThanCharacteristicSize);
+  FRIEND_TEST_ALL_PREFIXES(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
+                           ReceiveMessageLargerThanCharacteristicSize);
+  FRIEND_TEST_ALL_PREFIXES(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
+                           SendMessageSmallerThanCharacteristicSize);
+  FRIEND_TEST_ALL_PREFIXES(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
+                           SendMessageLargerThanCharacteristicSize);
+  FRIEND_TEST_ALL_PREFIXES(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
+                           SendMessageKeepsFailing);
+  FRIEND_TEST_ALL_PREFIXES(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
+                           ReceiveCloseConnectionTest);
+  FRIEND_TEST_ALL_PREFIXES(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
+                           ReceiverErrorTest);
+  FRIEND_TEST_ALL_PREFIXES(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
+                           ReceiverErrorWithPendingWritesTest);
+  FRIEND_TEST_ALL_PREFIXES(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
+                           ObserverDeletesConnectionOnDisconnect);
+  FRIEND_TEST_ALL_PREFIXES(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
+                           ObserverDeletesConnectionOnMessageSent);
+  FRIEND_TEST_ALL_PREFIXES(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
+                           WriteConnectionCloseMaxNumberOfTimes);
+  FRIEND_TEST_ALL_PREFIXES(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
+                           ConnectAfterADelayWhenThrottled);
+  FRIEND_TEST_ALL_PREFIXES(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
+                           SetConnectionLatencyError);
+  FRIEND_TEST_ALL_PREFIXES(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
+                           Timeout_ConnectionLatency);
+  FRIEND_TEST_ALL_PREFIXES(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
+                           Timeout_GattConnection);
+  FRIEND_TEST_ALL_PREFIXES(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
+                           Timeout_GattCharacteristics);
+  FRIEND_TEST_ALL_PREFIXES(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
+                           Timeout_NotifySession);
+  FRIEND_TEST_ALL_PREFIXES(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
+                           Timeout_ConnectionResponse);
 
   enum WriteRequestType {
     REGULAR,
@@ -151,6 +233,8 @@ class BluetoothLowEnergyWeaveClientConnection
     CONNECTION_CLOSE
   };
 
+  // GATT_CONNECTION_RESULT_UNKNOWN indicates that the Bluetooth platform
+  // returned a code that is not recognized.
   enum GattConnectionResult {
     GATT_CONNECTION_RESULT_SUCCESS = 0,
     GATT_CONNECTION_RESULT_ERROR_AUTH_CANCELED = 1,
@@ -161,9 +245,12 @@ class BluetoothLowEnergyWeaveClientConnection
     GATT_CONNECTION_RESULT_ERROR_INPROGRESS = 6,
     GATT_CONNECTION_RESULT_ERROR_UNKNOWN = 7,
     GATT_CONNECTION_RESULT_ERROR_UNSUPPORTED_DEVICE = 8,
+    GATT_CONNECTION_RESULT_UNKNOWN = 9,
     GATT_CONNECTION_RESULT_MAX
   };
 
+  // GATT_SERVICE_OPERATION_RESULT_UNKNOWN indicates that the Bluetooth
+  // platform returned a code that is not recognized.
   enum GattServiceOperationResult {
     GATT_SERVICE_OPERATION_RESULT_SUCCESS = 0,
     GATT_SERVICE_OPERATION_RESULT_GATT_ERROR_UNKNOWN = 1,
@@ -174,6 +261,7 @@ class BluetoothLowEnergyWeaveClientConnection
     GATT_SERVICE_OPERATION_RESULT_GATT_ERROR_NOT_AUTHORIZED = 6,
     GATT_SERVICE_OPERATION_RESULT_GATT_ERROR_NOT_PAIRED = 7,
     GATT_SERVICE_OPERATION_RESULT_GATT_ERROR_NOT_SUPPORTED = 8,
+    GATT_SERVICE_OPERATION_RESULT_UNKNOWN = 9,
     GATT_SERVICE_OPERATION_RESULT_MAX
   };
 
@@ -242,6 +330,7 @@ class BluetoothLowEnergyWeaveClientConnection
       device::BluetoothRemoteGattService::GattErrorCode error);
   void ClearQueueAndSendConnectionClose();
 
+  void RecordBleWeaveConnectionResult(BleWeaveConnectionResult result);
   void RecordGattConnectionResult(GattConnectionResult result);
   GattConnectionResult BluetoothDeviceConnectErrorCodeToGattConnectionResult(
       device::BluetoothDevice::ConnectErrorCode error_code);
@@ -250,7 +339,6 @@ class BluetoothLowEnergyWeaveClientConnection
   GattServiceOperationResult
   BluetoothRemoteDeviceGattServiceGattErrorCodeToGattServiceOperationResult(
       device::BluetoothRemoteGattService::GattErrorCode error_code);
-  void RecordSetSubStatus(bool success);
 
   // Private getters for the Bluetooth classes corresponding to this connection.
   device::BluetoothRemoteGattService* GetRemoteService();
@@ -266,6 +354,11 @@ class BluetoothLowEnergyWeaveClientConnection
   device::BluetoothDevice* bluetooth_device_;
 
   bool should_set_low_connection_latency_;
+
+  // Tracks if the result of this connection has been recorded (using
+  // BleWeaveConnectionResult). The result of a connection should only be
+  // recorded once.
+  bool has_recorded_connection_result_ = false;
 
   scoped_refptr<device::BluetoothAdapter> adapter_;
   RemoteAttribute remote_service_;

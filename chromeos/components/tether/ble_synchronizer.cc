@@ -266,10 +266,9 @@ BleSynchronizer::BluetoothAdvertisementErrorCodeToResult(
         INVALID_ADVERTISEMENT_ERROR_CODE:
       return BluetoothAdvertisementResult::INVALID_ADVERTISEMENT_ERROR_CODE;
     default:
-      break;
+      return BluetoothAdvertisementResult::
+          BLUETOOTH_ADVERTISEMENT_RESULT_UNKNOWN;
   }
-
-  return BluetoothAdvertisementResult::BLUETOOTH_ADVERTISEMENT_RESULT_MAX;
 }
 
 void BleSynchronizer::RecordDiscoverySessionStarted(bool success) {

@@ -28734,6 +28734,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Provides a breakdown of how many times each possible Bluetooth advertisement
     registration result occurs.
+
+    The bucket &quot;Unknown result&quot; indicates that the Bluetooth platform
+    returned an unknown error code; if it has any counts, the client code should
+    be changed to account for the new error code.
   </summary>
 </histogram>
 
@@ -28743,6 +28747,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Provides a breakdown of how many times each possible Bluetooth advertisement
     unregistration result occurs.
+
+    The bucket &quot;Unknown result&quot; indicates that the Bluetooth platform
+    returned an unknown error code; if it has any counts, the client code should
+    be changed to account for the new error code.
   </summary>
 </histogram>
 
@@ -64786,12 +64794,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ProximityAuth.BleWeaveConnectionResult"
+    enum="ProximityAuth_BleWeaveConnectionResult">
+  <owner>hansberry@chromium.com</owner>
+  <summary>
+    Provides a breakdown of how often each BLE weave connection result occurs.
+  </summary>
+</histogram>
+
 <histogram name="ProximityAuth.BluetoothGattConnectionResult"
     enum="ProximityAuth_BluetoothGattConnectionResult">
   <owner>hansberry@chromium.com</owner>
   <summary>
     Provides a breakdown of how many times each possible Bluetooth GATT
     connection result occurs.
+
+    The bucket &quot;Unknown result&quot; indicates that the Bluetooth platform
+    returned an unknown error code; if it has any counts, the client code should
+    be changed to account for the new error code.
   </summary>
 </histogram>
 
@@ -64801,6 +64821,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Provides a breakdown of how many times each possible Bluetooth GATT
     &quot;notify session&quot; attempt result occurs.
+
+    The bucket &quot;Unknown result&quot; indicates that the Bluetooth platform
+    returned an unknown error code; if it has any counts, the client code should
+    be changed to account for the new error code.
   </summary>
 </histogram>
 
@@ -64810,14 +64834,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Provides a breakdown of how many times each possible Bluetooth GATT
     &quot;write characteristic&quot; attempt result occurs.
-  </summary>
-</histogram>
-
-<histogram name="ProximityAuth.BluetoothSetSubStatus" enum="BooleanTimedOut">
-  <owner>hansberry@chromium.com</owner>
-  <summary>
-    Provides the success rate of setting connection &quot;sub status&quot;.
-    Timeout indicates a Bluetooth failure.
   </summary>
 </histogram>
 
