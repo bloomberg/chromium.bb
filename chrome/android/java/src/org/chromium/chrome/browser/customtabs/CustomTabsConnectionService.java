@@ -91,7 +91,7 @@ public class CustomTabsConnectionService extends CustomTabsService {
     @Override
     protected boolean validateRelationship(
             CustomTabsSessionToken sessionToken, int relation, Uri origin, Bundle extras) {
-        return false;
+        return mConnection.validateRelationship(sessionToken, relation, origin, extras);
     }
 
     @Override

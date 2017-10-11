@@ -694,6 +694,14 @@ public class CustomTabsConnection {
         return null;
     }
 
+    /**
+     * See {@link ClientManager#canSessionLaunchInTrustedWebActivity(CustomTabsSessionToken, Uri)}
+     */
+    protected boolean canSessionLaunchInTrustedWebActivity(
+            CustomTabsSessionToken session, Uri origin) {
+        return mClientManager.canSessionLaunchInTrustedWebActivity(session, origin);
+    }
+
     public int postMessage(CustomTabsSessionToken session, String message, Bundle extras) {
         int result;
         if (!mWarmupHasBeenCalled.get()) result = CustomTabsService.RESULT_FAILURE_DISALLOWED;
@@ -705,6 +713,11 @@ public class CustomTabsConnection {
         result = mClientManager.postMessage(session, message);
         logCall("postMessage", result);
         return result;
+    }
+
+    public boolean validateRelationship(
+            CustomTabsSessionToken sessionToken, int relation, Uri origin, Bundle extras) {
+        return mClientManager.validateRelationship(sessionToken, relation, origin, extras);
     }
 
     /**
