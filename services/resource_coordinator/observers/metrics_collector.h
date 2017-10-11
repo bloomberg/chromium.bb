@@ -88,13 +88,9 @@ class MetricsCollector : public CoordinationUnitGraphObserver {
         first_title_updated;
   };
 
+  // TODO(lpy): Move the FrameData to the FrameCoordinationUnitImpl
   struct FrameData {
     base::TimeTicks last_audible_time;
-  };
-
-  struct PageData {
-    base::TimeTicks last_invisible_time;
-    base::TimeTicks navigation_finished_time;
   };
 
   struct UkmCPUUsageCollectionState {
@@ -119,7 +115,6 @@ class MetricsCollector : public CoordinationUnitGraphObserver {
   base::DefaultTickClock default_tick_clock_;
   base::TickClock* const clock_;
   std::map<CoordinationUnitID, FrameData> frame_data_map_;
-  std::map<CoordinationUnitID, PageData> page_data_map_;
   // The metrics_report_record_map_ is used to record whether a metric was
   // already reported to avoid reporting multiple metrics.
   std::map<CoordinationUnitID, MetricsReportRecord> metrics_report_record_map_;
