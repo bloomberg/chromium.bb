@@ -111,6 +111,13 @@ void LockScreenController::AuthenticateUser(
   if (!lock_screen_client_)
     return;
 
+  // If auth is disabled by the debug overlay bypass the mojo call entirely, as
+  // it will dismiss the lock screen if the password is correct.
+  if (force_fail_auth_for_debug_overlay_) {
+    std::move(callback).Run(false);
+    return;
+  }
+
   // We cannot execute auth requests directly via GetSystemSalt because it
   // expects a base::Callback instance, but |callback| is a base::OnceCallback.
   // Instead, we store |callback| on this object and invoke it locally once we

@@ -8,11 +8,13 @@
 #include <memory>
 #include <string>
 
+#include "ash/login/lock_screen_controller.h"
 #include "ash/login/ui/layout_util.h"
 #include "ash/login/ui/lock_contents_view.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/login_data_dispatcher.h"
 #include "ash/login/ui/non_accessible_view.h"
+#include "ash/shell.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/layout/box_layout.h"
@@ -35,14 +37,6 @@ struct UserMetadata {
   bool enable_pin = false;
   views::View* view = nullptr;
 };
-
-// Creates a button with |text| that cannot be focused.
-views::MdTextButton* CreateButton(views::ButtonListener* listener,
-                                  const std::string& text) {
-  auto* view = views::MdTextButton::Create(listener, base::ASCIIToUTF16(text));
-  view->SetFocusBehavior(views::View::FocusBehavior::NEVER);
-  return view;
-}
 
 }  // namespace
 
@@ -181,29 +175,25 @@ LockDebugView::LockDebugView(mojom::TrayActionState initial_note_action_state,
                                debug_data_dispatcher_->debug_dispatcher());
   AddChildView(lock_);
 
-  debug_ = new NonAccessibleView();
-  debug_->SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal));
-  AddChildView(debug_);
+  debug_row_ = new NonAccessibleView();
+  debug_row_->SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kHorizontal));
+  AddChildView(debug_row_);
 
-  toggle_blur_ = CreateButton(this, "Blur");
-  debug_->AddChildView(
-      login_layout_util::WrapViewForPreferredSize(toggle_blur_));
-
-  toggle_note_action_ = CreateButton(this, "Toggle note action");
-  debug_->AddChildView(
-      login_layout_util::WrapViewForPreferredSize(toggle_note_action_));
-
-  add_user_ = CreateButton(this, "Add");
-  debug_->AddChildView(login_layout_util::WrapViewForPreferredSize(add_user_));
-
-  remove_user_ = CreateButton(this, "Remove");
-  debug_->AddChildView(
-      login_layout_util::WrapViewForPreferredSize(remove_user_));
-
-  user_column_ = new NonAccessibleView();
-  user_column_->SetLayoutManager(
+  per_user_action_column_ = new NonAccessibleView();
+  per_user_action_column_->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kVertical));
-  debug_->AddChildView(user_column_);
+  debug_row_->AddChildView(per_user_action_column_);
+
+  auto* margin = new NonAccessibleView();
+  margin->SetPreferredSize(gfx::Size(10, 10));
+  debug_row_->AddChildView(margin);
+
+  toggle_blur_ = AddButton("Blur");
+  toggle_note_action_ = AddButton("Toggle note action");
+  add_user_ = AddButton("Add user");
+  remove_user_ = AddButton("Remove user");
+  toggle_auth_ = AddButton("Force fail auth");
 
   RebuildDebugUserColumn();
 }
@@ -213,8 +203,8 @@ LockDebugView::~LockDebugView() = default;
 void LockDebugView::Layout() {
   views::View::Layout();
   lock_->SetBoundsRect(GetLocalBounds());
-  debug_->SetPosition(gfx::Point());
-  debug_->SizeToPreferredSize();
+  debug_row_->SetPosition(gfx::Point());
+  debug_row_->SizeToPreferredSize();
 }
 
 void LockDebugView::ButtonPressed(views::Button* sender,
@@ -244,22 +234,47 @@ void LockDebugView::ButtonPressed(views::Button* sender,
     return;
   }
 
+  // Enable/disable auth. This is useful for testing auth failure scenarios on
+  // Linux Desktop builds, where the cryptohome dbus stub accepts all passwords
+  // as valid.
+  if (sender == toggle_auth_) {
+    force_fail_auth_ = !force_fail_auth_;
+    toggle_auth_->SetText(base::ASCIIToUTF16(
+        force_fail_auth_ ? "Allow auth" : "Force fail auth"));
+    Shell::Get()
+        ->lock_screen_controller()
+        ->set_force_fail_auth_for_debug_overlay(force_fail_auth_);
+    return;
+  }
+
   // Enable or disable PIN.
-  for (size_t i = 0u; i < user_column_entries_toggle_pin_.size(); ++i) {
-    if (user_column_entries_toggle_pin_[i] == sender)
+  for (size_t i = 0u; i < per_user_action_column_toggle_pin_.size(); ++i) {
+    if (per_user_action_column_toggle_pin_[i] == sender)
       debug_data_dispatcher_->TogglePinStateForUserIndex(i);
   }
 }
 
 void LockDebugView::RebuildDebugUserColumn() {
-  user_column_->RemoveAllChildViews(true /*delete_children*/);
-  user_column_entries_toggle_pin_.clear();
+  per_user_action_column_->RemoveAllChildViews(true /*delete_children*/);
+  per_user_action_column_toggle_pin_.clear();
 
   for (size_t i = 0u; i < num_users_; ++i) {
-    views::View* toggle_pin = CreateButton(this, "Toggle PIN");
-    user_column_entries_toggle_pin_.push_back(toggle_pin);
-    user_column_->AddChildView(toggle_pin);
+    views::View* toggle_pin =
+        AddButton("Toggle PIN", false /*add_to_debug_row*/);
+    per_user_action_column_toggle_pin_.push_back(toggle_pin);
+    per_user_action_column_->AddChildView(toggle_pin);
   }
+}
+
+views::MdTextButton* LockDebugView::AddButton(const std::string& text,
+                                              bool add_to_debug_row) {
+  // Creates a button with |text| that cannot be focused.
+  auto* button = views::MdTextButton::Create(this, base::ASCIIToUTF16(text));
+  button->SetFocusBehavior(views::View::FocusBehavior::NEVER);
+  if (add_to_debug_row)
+    debug_row_->AddChildView(
+        login_layout_util::WrapViewForPreferredSize(button));
+  return button;
 }
 
 }  // namespace ash

@@ -11,6 +11,10 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 
+namespace views {
+class MdTextButton;
+}
+
 namespace ash {
 
 class LoginDataDispatcher;
@@ -20,7 +24,7 @@ namespace mojom {
 enum class TrayActionState;
 }
 
-// Contains the debug UI strip (ie, add user, toggle PIN buttons).
+// Contains the debug UI row (ie, add user, toggle PIN buttons).
 class LockDebugView : public views::View, public views::ButtonListener {
  public:
   LockDebugView(mojom::TrayActionState initial_note_action_state,
@@ -39,19 +43,28 @@ class LockDebugView : public views::View, public views::ButtonListener {
   // Rebuilds the debug user column which contains per-user actions.
   void RebuildDebugUserColumn();
 
+  // Creates a button on the debug row that cannot be focused.
+  views::MdTextButton* AddButton(const std::string& text,
+                                 bool add_to_debug_row = true);
+
+  LockContentsView* lock_ = nullptr;
+
+  // User column which contains per-user actions.
+  views::View* per_user_action_column_ = nullptr;
+  std::vector<views::View*> per_user_action_column_toggle_pin_;
+
+  // Debug row which contains buttons that affect the entire UI.
+  views::View* debug_row_ = nullptr;
+  views::MdTextButton* toggle_blur_ = nullptr;
+  views::MdTextButton* toggle_note_action_;
+  views::MdTextButton* add_user_ = nullptr;
+  views::MdTextButton* remove_user_ = nullptr;
+  views::MdTextButton* toggle_auth_ = nullptr;
+
+  // Debug dispatcher and cached data for the UI.
   std::unique_ptr<DebugDataDispatcherTransformer> const debug_data_dispatcher_;
   size_t num_users_ = 1u;
-
-  LockContentsView* lock_;
-
-  views::View* debug_;
-  views::View* toggle_blur_;
-  views::View* toggle_note_action_;
-  views::View* add_user_;
-  views::View* remove_user_;
-
-  views::View* user_column_;
-  std::vector<views::View*> user_column_entries_toggle_pin_;
+  bool force_fail_auth_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(LockDebugView);
 };
