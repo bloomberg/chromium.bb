@@ -29,9 +29,7 @@ VRServiceImpl::VRServiceImpl(content::RenderFrameHost* render_frame_host)
 }
 
 // Constructor for testing.
-VRServiceImpl::VRServiceImpl() : render_frame_host_(nullptr) {
-  CHECK(DCHECK_IS_ON());
-}
+VRServiceImpl::VRServiceImpl() : render_frame_host_(nullptr) {}
 
 void VRServiceImpl::SetBinding(mojo::StrongBindingPtr<VRService> binding) {
   binding_ = std::move(binding);
