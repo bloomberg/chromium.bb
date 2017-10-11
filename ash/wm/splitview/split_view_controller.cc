@@ -262,6 +262,7 @@ void SplitViewController::Resize(const gfx::Point& location_in_screen) {
   // Update |divider_position_|.
   const int previous_divider_position = divider_position_;
   UpdateDividerPosition(modified_location_in_screen);
+  NotifyDividerPositionChanged();
 
   // Restack windows order if necessary.
   RestackWindows(previous_divider_position, divider_position_);
@@ -287,6 +288,7 @@ void SplitViewController::EndResize(const gfx::Point& location_in_screen) {
       GetBoundedPosition(location_in_screen, work_area_bounds);
   UpdateDividerPosition(modified_location_in_screen);
   MoveDividerToClosestFixedPostion();
+  NotifyDividerPositionChanged();
 
   // Check if one of the snapped windows needs to be closed.
   if (ShouldEndSplitViewAfterResizing()) {
@@ -459,6 +461,7 @@ void SplitViewController::OnDisplayMetricsChanged(
   if (!is_resizing_)
     MoveDividerToClosestFixedPostion();
 
+  NotifyDividerPositionChanged();
   UpdateSnappedWindowsAndDividerBounds();
 }
 
@@ -485,6 +488,11 @@ void SplitViewController::NotifySplitViewStateChanged(State previous_state,
   // should notify its observers.
   for (Observer& observer : observers_)
     observer.OnSplitViewStateChanged(previous_state, state);
+}
+
+void SplitViewController::NotifyDividerPositionChanged() {
+  for (Observer& observer : observers_)
+    observer.OnSplitViewDividerPositionChanged();
 }
 
 int SplitViewController::GetDefaultDividerPosition(aura::Window* window) const {

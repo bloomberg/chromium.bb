@@ -630,13 +630,11 @@ void WindowSelector::OnDisplayRemoved(const display::Display& display) {
 
 void WindowSelector::OnDisplayMetricsChanged(const display::Display& display,
                                              uint32_t metrics) {
-  // Re-calculate the bounds for the window grids and position all the windows.
-  for (std::unique_ptr<WindowGrid>& grid : grid_list_) {
-    SetBoundsForWindowGridsInScreen(
-        GetGridBoundsInScreen(const_cast<aura::Window*>(grid->root_window())));
-  }
-  PositionWindows(/* animate */ false);
-  RepositionTextFilterOnDisplayMetricsChange();
+  // For metrics changes that happen when the split view mode is active, the
+  // display bounds will be adjusted in OnSplitViewDividerPositionChanged().
+  if (Shell::Get()->IsSplitViewModeActive())
+    return;
+  OnDisplayBoundsChanged();
 }
 
 void WindowSelector::OnWindowHierarchyChanged(
@@ -770,6 +768,11 @@ void WindowSelector::OnSplitViewStateChanged(
   }
 }
 
+void WindowSelector::OnSplitViewDividerPositionChanged() {
+  DCHECK(Shell::Get()->IsSplitViewModeActive());
+  OnDisplayBoundsChanged();
+}
+
 aura::Window* WindowSelector::GetTextFilterWidgetWindow() {
   return text_filter_widget_->GetNativeWindow();
 }
@@ -824,6 +827,16 @@ void WindowSelector::Move(Direction direction, bool animate) {
         (selected_grid_index_ + display_direction + grid_list_.size()) %
         grid_list_.size();
   }
+}
+
+void WindowSelector::OnDisplayBoundsChanged() {
+  // Re-calculate the bounds for the window grids and position all the windows.
+  for (std::unique_ptr<WindowGrid>& grid : grid_list_) {
+    SetBoundsForWindowGridsInScreen(
+        GetGridBoundsInScreen(const_cast<aura::Window*>(grid->root_window())));
+  }
+  PositionWindows(/* animate */ false);
+  RepositionTextFilterOnDisplayMetricsChange();
 }
 
 }  // namespace ash

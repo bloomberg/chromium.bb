@@ -52,6 +52,9 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
     virtual void OnSplitViewStateChanged(
         SplitViewController::State previous_state,
         SplitViewController::State state) {}
+
+    // Called when split view divider's position has changed.
+    virtual void OnSplitViewDividerPositionChanged() {}
   };
 
   SplitViewController();
@@ -144,6 +147,9 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
 
   // Notifies observers that the split view state has been changed.
   void NotifySplitViewStateChanged(State previous_state, State state);
+
+  // Notifies observers that the split view divider pisition has been changed.
+  void NotifyDividerPositionChanged();
 
   // Gets the default value of |divider_position_|.
   int GetDefaultDividerPosition(aura::Window* window) const;
