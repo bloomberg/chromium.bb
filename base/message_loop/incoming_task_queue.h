@@ -18,6 +18,7 @@
 namespace base {
 
 class MessageLoop;
+class PostTaskTest;
 
 namespace internal {
 
@@ -27,6 +28,41 @@ namespace internal {
 class BASE_EXPORT IncomingTaskQueue
     : public RefCountedThreadSafe<IncomingTaskQueue> {
  public:
+  // Provides a read and remove only view into a task queue.
+  class ReadAndRemoveOnlyQueue {
+   public:
+    ReadAndRemoveOnlyQueue() = default;
+    virtual ~ReadAndRemoveOnlyQueue() = default;
+
+    // Returns the next task. HasTasks() is assumed to be true.
+    virtual const PendingTask& Peek() = 0;
+
+    // Removes and returns the next task. HasTasks() is assumed to be true.
+    virtual PendingTask Pop() = 0;
+
+    // Whether this queue has tasks.
+    virtual bool HasTasks() = 0;
+
+    // Removes all tasks.
+    virtual void Clear() = 0;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(ReadAndRemoveOnlyQueue);
+  };
+
+  // Provides a read-write task queue.
+  class Queue : public ReadAndRemoveOnlyQueue {
+   public:
+    Queue() = default;
+    ~Queue() override = default;
+
+    // Adds the task to the end of the queue.
+    virtual void Push(PendingTask pending_task) = 0;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Queue);
+  };
+
   explicit IncomingTaskQueue(MessageLoop* message_loop);
 
   // Appends a task to the incoming queue. Posting of all tasks is routed though
@@ -44,11 +80,6 @@ class BASE_EXPORT IncomingTaskQueue
   // Returns true if the message loop is "idle". Provided for testing.
   bool IsIdleForTesting();
 
-  // Loads tasks from the |incoming_queue_| into |*work_queue|. Must be called
-  // from the thread that is running the loop. Returns the number of tasks that
-  // require high resolution timers.
-  int ReloadWorkQueue(TaskQueue* work_queue);
-
   // Disconnects |this| from the parent message loop.
   void WillDestroyCurrentMessageLoop();
 
@@ -59,8 +90,104 @@ class BASE_EXPORT IncomingTaskQueue
   // Runs |pending_task|.
   void RunTask(PendingTask* pending_task);
 
+  ReadAndRemoveOnlyQueue& triage_tasks() { return triage_tasks_; }
+
+  Queue& delayed_tasks() { return delayed_tasks_; }
+
+  Queue& deferred_tasks() { return deferred_tasks_; }
+
+  bool HasPendingHighResolutionTasks() {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return pending_high_res_tasks_ > 0;
+  }
+
  private:
+  friend class base::PostTaskTest;
   friend class RefCountedThreadSafe<IncomingTaskQueue>;
+
+  // These queues below support the previous MessageLoop behavior of
+  // maintaining three queue queues to process tasks:
+  //
+  // TriageQueue
+  // The first queue to receive all tasks for the processing sequence. Tasks are
+  // generally either dispatched immediately or sent to the queues below.
+  //
+  // DelayedQueue
+  // The queue for holding tasks that should be run later and sorted by expected
+  // run time.
+  //
+  // DeferredQueue
+  // The queue for holding tasks that couldn't be run while the MessageLoop was
+  // nested. These are generally processed during the idle stage.
+  //
+  // Many of these do not share implementations even though they look like they
+  // could because of small quirks (reloading semantics) or differing underlying
+  // data strucutre (TaskQueue vs DelayedTaskQueue).
+
+  // The starting point for all tasks on the sequence processing the tasks.
+  class TriageQueue : public ReadAndRemoveOnlyQueue {
+   public:
+    TriageQueue(IncomingTaskQueue* outer);
+    ~TriageQueue() override;
+
+    // ReadAndRemoveOnlyQueue:
+    // In general, the methods below will attempt to reload from the incoming
+    // queue if the queue itself is empty except for Clear(). See Clear() for
+    // why it doesn't reload.
+    const PendingTask& Peek() override;
+    PendingTask Pop() override;
+    // Whether this queue has tasks after reloading from the incoming queue.
+    bool HasTasks() override;
+    void Clear() override;
+
+   private:
+    void ReloadFromIncomingQueueIfEmpty();
+
+    IncomingTaskQueue* const outer_;
+    TaskQueue queue_;
+
+    DISALLOW_COPY_AND_ASSIGN(TriageQueue);
+  };
+
+  class DelayedQueue : public Queue {
+   public:
+    DelayedQueue(IncomingTaskQueue* outer);
+    ~DelayedQueue() override;
+
+    // Queue:
+    const PendingTask& Peek() override;
+    PendingTask Pop() override;
+    // Whether this queue has tasks after sweeping the cancelled ones in front.
+    bool HasTasks() override;
+    void Clear() override;
+    void Push(PendingTask pending_task) override;
+
+   private:
+    IncomingTaskQueue* const outer_;
+    DelayedTaskQueue queue_;
+
+    DISALLOW_COPY_AND_ASSIGN(DelayedQueue);
+  };
+
+  class DeferredQueue : public Queue {
+   public:
+    DeferredQueue(IncomingTaskQueue* outer);
+    ~DeferredQueue() override;
+
+    // Queue:
+    const PendingTask& Peek() override;
+    PendingTask Pop() override;
+    bool HasTasks() override;
+    void Clear() override;
+    void Push(PendingTask pending_task) override;
+
+   private:
+    IncomingTaskQueue* const outer_;
+    TaskQueue queue_;
+
+    DISALLOW_COPY_AND_ASSIGN(DeferredQueue);
+  };
+
   virtual ~IncomingTaskQueue();
 
   // Adds a task to |incoming_queue_|. The caller retains ownership of
@@ -73,8 +200,10 @@ class BASE_EXPORT IncomingTaskQueue
   // should call ScheduleWork() on the message loop.
   bool PostPendingTaskLockRequired(PendingTask* pending_task);
 
-  // Wakes up the message loop and schedules work.
-  void ScheduleWork();
+  // Loads tasks from the |incoming_queue_| into |*work_queue|. Must be called
+  // from the sequence processing the tasks. Returns the number of tasks that
+  // require high resolution timers in |work_queue|.
+  int ReloadWorkQueue(TaskQueue* work_queue);
 
   // Checks calls made only on the MessageLoop thread.
   SEQUENCE_CHECKER(sequence_checker_);
@@ -84,6 +213,18 @@ class BASE_EXPORT IncomingTaskQueue
   // True if we always need to call ScheduleWork when receiving a new task, even
   // if the incoming queue was not empty.
   const bool always_schedule_work_;
+
+  // Queue for initial triaging of tasks on the |sequence_checker_| sequence.
+  TriageQueue triage_tasks_;
+
+  // Queue for delayed tasks on the |sequence_checker_| sequence.
+  DelayedQueue delayed_tasks_;
+
+  // Queue for non-nestable deferred tasks on the |sequence_checker_| sequence.
+  DeferredQueue deferred_tasks_;
+
+  // Number of high resolution tasks in the sequence affine queues above.
+  int pending_high_res_tasks_ = 0;
 
   // Lock that protects |message_loop_| to prevent it from being deleted while
   // a request is made to schedule work.

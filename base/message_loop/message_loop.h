@@ -344,21 +344,9 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate,
   // cannot be run right now.  Returns true if the task was run.
   bool DeferOrRunPendingTask(PendingTask pending_task);
 
-  // Adds the pending task to delayed_work_queue_.
-  void AddToDelayedWorkQueue(PendingTask pending_task);
-
-  // Sweeps any cancelled tasks from the front of the delayed work queue and
-  // returns true if there is remaining work.
-  bool SweepDelayedWorkQueueAndReturnTrueIfStillHasWork();
-
   // Delete tasks that haven't run yet without running them.  Used in the
-  // destructor to make sure all the task's destructors get called.  Returns
-  // true if some work was done.
-  bool DeletePendingTasks();
-
-  // Loads tasks from the incoming queue to |work_queue_| if the latter is
-  // empty.
-  void ReloadWorkQueue();
+  // destructor to make sure all the task's destructors get called.
+  void DeletePendingTasks();
 
   // Wakes up the message pump. Can be called on any thread. The caller is
   // responsible for synchronizing ScheduleWork() calls.
@@ -371,34 +359,14 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate,
 
   const Type type_;
 
-  // A list of tasks that need to be processed by this instance.  Note that
-  // this queue is only accessed (push/pop) by our current thread.
-  TaskQueue work_queue_;
-
 #if defined(OS_WIN)
-  // Helper to decrement the high resolution task count if |pending_task| is a
-  // high resolution task.
-  void DecrementHighResTaskCountIfNeeded(const PendingTask& pending_Task);
-
-  // How many high resolution tasks are in the pending task queue. This value
-  // increases by N every time we call ReloadWorkQueue() and decreases by 1
-  // every time we call RunTask() if the task needs a high resolution timer.
-  int pending_high_res_tasks_;
   // Tracks if we have requested high resolution timers. Its only use is to
   // turn off the high resolution timer upon loop destruction.
   bool in_high_res_mode_;
 #endif
 
-  // Contains delayed tasks, sorted by their 'delayed_run_time' property.
-  DelayedTaskQueue delayed_work_queue_;
-
   // A recent snapshot of Time::Now(), used to check delayed_work_queue_.
   TimeTicks recent_time_;
-
-  // A queue of non-nestable tasks that we had to defer because when it came
-  // time to execute them we were in a nested run loop.  They will execute
-  // once we're out of nested run loops.
-  TaskQueue deferred_non_nestable_work_queue_;
 
   ObserverList<DestructionObserver> destruction_observers_;
 
