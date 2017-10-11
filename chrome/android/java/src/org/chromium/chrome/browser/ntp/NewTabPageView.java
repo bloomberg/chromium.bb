@@ -651,12 +651,7 @@ public class NewTabPageView extends FrameLayout implements TileGroup.Observer {
         mSearchProviderHasLogo = hasLogo;
         mSearchProviderIsGoogle = isGoogle;
 
-        // Set a bit more top padding on the tile grid if there is no logo.
-        int paddingTop = getResources().getDimensionPixelSize(shouldShowLogo()
-                        ? R.dimen.tile_grid_layout_padding_top
-                        : R.dimen.tile_grid_layout_no_logo_padding_top);
-        mSiteSectionViewHolder.itemView.setPadding(
-                0, paddingTop, 0, mSiteSectionViewHolder.itemView.getPaddingBottom());
+        updateTileGridPadding();
 
         // Hide or show the views above the tile grid as needed, including logo, search box, and
         // spacers.
@@ -690,6 +685,24 @@ public class NewTabPageView extends FrameLayout implements TileGroup.Observer {
         updateSearchBoxLogo();
 
         mSnapshotTileGridChanged = true;
+    }
+
+    /**
+     * Updates the padding for the tile grid based on what is shown above it.
+     */
+    private void updateTileGridPadding() {
+        final int paddingTop;
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_PROMO)) {
+            // The Chrome Home promo has enough whitespace.
+            paddingTop = 0;
+        } else {
+            // Set a bit more top padding on the tile grid if there is no logo.
+            paddingTop = getResources().getDimensionPixelSize(shouldShowLogo()
+                            ? R.dimen.tile_grid_layout_padding_top
+                            : R.dimen.tile_grid_layout_no_logo_padding_top);
+        }
+        mSiteSectionViewHolder.itemView.setPadding(
+                0, paddingTop, 0, mSiteSectionViewHolder.itemView.getPaddingBottom());
     }
 
     /**

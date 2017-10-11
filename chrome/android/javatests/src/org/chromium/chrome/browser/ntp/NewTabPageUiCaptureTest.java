@@ -19,12 +19,12 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.test.ScreenShooter;
-import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.NewTabPageTestUtils;
@@ -36,7 +36,6 @@ import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependencies
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({
         ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG,
 })
 @RetryOnFailure
 public class NewTabPageUiCaptureTest {
@@ -71,10 +70,12 @@ public class NewTabPageUiCaptureTest {
 
     @Test
     @MediumTest
-    @Feature({"NewTabPageTest", "UiCatalogue"})
+    @Feature({"NewTabPage", "UiCatalogue"})
+    @CommandLineFlags.Add({
+        "disable-features=" + ChromeFeatureList.CHROME_HOME_PROMO,
+    })
     @ScreenShooter.Directory("New Tab Page")
     public void testCaptureNewTabPage() {
-        waitForWindowUpdates();
         mScreenShooter.shoot("New Tab Page");
         // Scroll to search bar
         final NewTabPageRecyclerView recyclerView = mNtp.getNewTabPageView().getRecyclerView();
@@ -85,7 +86,7 @@ public class NewTabPageUiCaptureTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                recyclerView.smoothScrollBy(0, scrollHeight);
+                recyclerView.scrollBy(0, scrollHeight);
             }
         });
         waitForWindowUpdates();
@@ -93,7 +94,7 @@ public class NewTabPageUiCaptureTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                recyclerView.smoothScrollBy(0, scrollHeight);
+                recyclerView.scrollBy(0, scrollHeight);
             }
         });
         waitForWindowUpdates();
@@ -101,10 +102,22 @@ public class NewTabPageUiCaptureTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                recyclerView.smoothScrollBy(0, scrollHeight);
+                recyclerView.scrollBy(0, scrollHeight);
             }
         });
         waitForWindowUpdates();
         mScreenShooter.shoot("New Tab Page scrolled thrice");
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"NewTabPage", "UiCatalogue"})
+    @CommandLineFlags.Add({
+        "enable-features=" + ChromeFeatureList.CHROME_HOME_PROMO,
+    })
+    @ScreenShooter.Directory("New Tab Page")
+    public void testCaptureNewTabPageWithChromeHomePromo() {
+        Assert.assertTrue(ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_PROMO));
+        mScreenShooter.shoot("New Tab Page with Chrome Home Promo");
     }
 }
