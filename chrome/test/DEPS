@@ -28,4 +28,5 @@ include_rules = [
   "+mojo/edk/embedder",
   "+sandbox/win/tests",
   "+third_party/ocmock",
+  "+third_party/webrtc",
 ]
