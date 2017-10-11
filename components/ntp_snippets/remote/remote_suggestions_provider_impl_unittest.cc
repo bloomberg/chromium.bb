@@ -562,6 +562,20 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
     return snippets_callback;
   }
 
+  RemoteSuggestionsFetcher::SnippetsAvailableCallback
+  ReloadSuggestionsAndGetResponseCallback(
+      RemoteSuggestionsProviderImpl* provider) {
+    EXPECT_CALL(*scheduler(), AcquireQuotaForInteractiveFetch())
+        .WillOnce(Return(true))
+        .RetiresOnSaturation();
+    RemoteSuggestionsFetcher::SnippetsAvailableCallback snippets_callback;
+    EXPECT_CALL(*mock_suggestions_fetcher(), FetchSnippets(_, _))
+        .WillOnce(MoveSecondArgumentPointeeTo(&snippets_callback))
+        .RetiresOnSaturation();
+    provider->ReloadSuggestions();
+    return snippets_callback;
+  }
+
   void PushArticleSuggestionToTheFront(
       std::unique_ptr<RemoteSuggestion> suggestion) {
     ASSERT_TRUE(fake_breaking_news_listener_);
@@ -4359,6 +4373,33 @@ TEST_F(RemoteSuggestionsProviderImplTest,
           Property(&ContentSuggestion::id,
                    MakeArticleID("http://prefetched.com")),
           Property(&ContentSuggestion::id, MakeArticleID("http://other.com"))));
+}
+
+TEST_F(RemoteSuggestionsProviderImplTest,
+       ShouldToggleStatusIfReloadSuggestionsFails) {
+  auto provider = MakeSuggestionsProvider(
+      /*use_mock_prefetched_pages_tracker=*/false,
+      /*use_fake_breaking_news_listener=*/false,
+      /*use_mock_remote_suggestions_status_service=*/false);
+
+  ASSERT_EQ(CategoryStatus::AVAILABLE,
+            observer().StatusForCategory(articles_category()));
+
+  auto response_callback =
+      ReloadSuggestionsAndGetResponseCallback(provider.get());
+
+  // Before the results come, the status is flipped to AVAILABLE_LOADING.
+  ASSERT_EQ(CategoryStatus::AVAILABLE_LOADING,
+            observer().StatusForCategory(articles_category()));
+
+  // After the results come, the status is flipped back to AVAILABLE.
+  std::move(response_callback)
+      .Run(Status(StatusCode::TEMPORARY_ERROR, "some error"), base::nullopt);
+  // The category is available, with no suggestions.
+  EXPECT_EQ(CategoryStatus::AVAILABLE,
+            observer().StatusForCategory(articles_category()));
+  EXPECT_THAT(observer().SuggestionsForCategory(articles_category()),
+              IsEmpty());
 }
 
 }  // namespace ntp_snippets
