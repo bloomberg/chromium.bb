@@ -96,6 +96,20 @@ ash::mojom::UpdateSeverity GetUpdateSeverity(UpgradeDetector* detector) {
   return ash::mojom::UpdateSeverity::CRITICAL;
 }
 
+const chromeos::NetworkState* GetNetworkState(const std::string& network_id) {
+  if (network_id.empty())
+    return nullptr;
+  return chromeos::NetworkHandler::Get()
+      ->network_state_handler()
+      ->GetNetworkStateFromGuid(network_id);
+}
+
+bool IsArcVpn(const std::string& network_id) {
+  const chromeos::NetworkState* network_state = GetNetworkState(network_id);
+  return network_state && network_state->type() == shill::kTypeVPN &&
+         network_state->vpn_provider_type() == shill::kProviderArcVpn;
+}
+
 }  // namespace
 
 SystemTrayClient::SystemTrayClient() : binding_(this) {
@@ -365,10 +379,7 @@ void SystemTrayClient::ShowNetworkConfigure(const std::string& network_id) {
     return;
 
   DCHECK(chromeos::NetworkHandler::IsInitialized());
-  const chromeos::NetworkState* network_state =
-      chromeos::NetworkHandler::Get()
-          ->network_state_handler()
-          ->GetNetworkStateFromGuid(network_id);
+  const chromeos::NetworkState* network_state = GetNetworkState(network_id);
   if (!network_state) {
     LOG(ERROR) << "Network not found: " << network_id;
     return;
@@ -440,20 +451,14 @@ void SystemTrayClient::ShowNetworkSettingsHelper(const std::string& network_id,
   if (session_manager::SessionManager::Get()->IsInSecondaryLoginScreen())
     return;
   if (!LoginState::Get()->IsUserLoggedIn()) {
-    DCHECK(!network_id.empty());
     chromeos::LoginDisplayHost::default_host()->OpenInternetDetailDialog(
         network_id);
     return;
   }
 
-  // Special case: clicking on a connected ARCVPN will ask Android to
-  // show the settings dialog.
-  const chromeos::NetworkState* network_state =
-      chromeos::NetworkHandler::Get()
-          ->network_state_handler()
-          ->GetNetworkStateFromGuid(network_id);
-  if (network_state && network_state->type() == shill::kTypeVPN &&
-      network_state->vpn_provider_type() == shill::kProviderArcVpn) {
+  if (IsArcVpn(network_id)) {
+    // Special case: clicking on a connected ARCVPN will ask Android to
+    // show the settings dialog.
     auto* net_instance = ARC_GET_INSTANCE_FOR_METHOD(
         arc::ArcServiceManager::Get()->arc_bridge_service()->net(),
         ConfigureAndroidVpn);
