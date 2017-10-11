@@ -3424,7 +3424,7 @@ static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   twopass->modified_error_left -= kf_group_err;
 }
 
-#if USE_GF16_MULTI_LAYER
+#if CONFIG_EXT_REFS && USE_GF16_MULTI_LAYER
 // === GF Group of 16 ===
 void av1_ref_frame_map_idx_updates(AV1_COMP *cpi, int gf_frame_index) {
   TWO_PASS *const twopass = &cpi->twopass;
@@ -3569,7 +3569,7 @@ static void configure_buffer_updates_16(AV1_COMP *cpi) {
     default: break;
   }
 }
-#endif  // USE_GF16_MULTI_LAYER
+#endif  // CONFIG_EXT_REFS && USE_GF16_MULTI_LAYER
 
 // Define the reference buffers that will be updated post encode.
 static void configure_buffer_updates(AV1_COMP *cpi) {

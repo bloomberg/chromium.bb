@@ -289,7 +289,9 @@ void av1_make_masked_inter_predictor(
 #if CONFIG_SUPERTX
     int wedge_offset_x, int wedge_offset_y,
 #endif  // CONFIG_SUPERTX
+#if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION || CONFIG_COMPOUND_SEGMENT
     int plane,
+#endif
 #if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
     const WarpTypesAllowed *warp_types, int p_col, int p_row, int ref,
 #endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION

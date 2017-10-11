@@ -3554,8 +3554,10 @@ void av1_loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
   const int plane_end = num_planes;
 #endif  // CONFIG_LOOPFILTER_LEVEL
 #if !CONFIG_LPF_SB
+#if CONFIG_PARALLEL_DEBLOCKING
   const int col_start = 0;
   const int col_end = cm->mi_cols;
+#endif
 #endif  // CONFIG_LPF_SB
   int mi_row, mi_col;
   int plane;

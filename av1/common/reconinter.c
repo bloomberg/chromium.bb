@@ -949,7 +949,9 @@ void av1_make_masked_inter_predictor(
 #if CONFIG_SUPERTX
     int wedge_offset_x, int wedge_offset_y,
 #endif  // CONFIG_SUPERTX
+#if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION || CONFIG_COMPOUND_SEGMENT
     int plane,
+#endif
 #if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
     const WarpTypesAllowed *warp_types, int p_col, int p_row, int ref,
 #endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
@@ -991,10 +993,8 @@ void av1_make_masked_inter_predictor(
   uint8_t *tmp_dst = (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
                          ? CONVERT_TO_BYTEPTR(tmp_buf)
                          : tmp_buf;
-  const int bd = xd->bd;
 #else
   uint8_t *tmp_dst = tmp_buf;
-  const int bd = 8;
 #endif
 
 #if CONFIG_CONVOLVE_ROUND
@@ -1025,16 +1025,17 @@ void av1_make_masked_inter_predictor(
   if (!plane && comp_data.interinter_compound_type == COMPOUND_SEG) {
 #if CONFIG_CONVOLVE_ROUND
     if (is_conv_no_round) {
-      build_compound_seg_mask_d32(
-          comp_data.seg_mask, comp_data.mask_type, org_dst, org_dst_stride,
-          tmp_buf32, tmp_buf_stride, mi->mbmi.sb_type, h, w, conv_params, bd);
+      build_compound_seg_mask_d32(comp_data.seg_mask, comp_data.mask_type,
+                                  org_dst, org_dst_stride, tmp_buf32,
+                                  tmp_buf_stride, mi->mbmi.sb_type, h, w,
+                                  conv_params, xd->bd);
     } else {
 #endif  // CONFIG_CONVOLVE_ROUND
 #if CONFIG_HIGHBITDEPTH
       if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
         build_compound_seg_mask_highbd(comp_data.seg_mask, comp_data.mask_type,
                                        dst, dst_stride, tmp_dst, MAX_SB_SIZE,
-                                       mi->mbmi.sb_type, h, w, bd);
+                                       mi->mbmi.sb_type, h, w, xd->bd);
       } else {
 #endif
         build_compound_seg_mask(comp_data.seg_mask, comp_data.mask_type, dst,
@@ -1095,10 +1096,6 @@ void av1_make_masked_inter_predictor(
   }
 #endif  // CONFIG_CONVOLVE_ROUND
 #endif  // CONFIG_SUPERTX
-
-#if CONFIG_COMPOUND_SEGMENT
-  (void)plane;
-#endif  // CONFIG_COMPOUND_SEGMENT
 }
 
 // TODO(sarahparker) av1_highbd_build_inter_predictor and
@@ -1381,7 +1378,9 @@ static INLINE void build_inter_predictors(
 #if CONFIG_SUPERTX
                 wedge_offset_x, wedge_offset_y,
 #endif  // CONFIG_SUPERTX
+#if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION || CONFIG_COMPOUND_SEGMENT
                 plane,
+#endif
 #if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
                 &warp_types, (mi_x >> pd->subsampling_x) + x,
                 (mi_y >> pd->subsampling_y) + y, ref,
@@ -1576,7 +1575,9 @@ static INLINE void build_inter_predictors(
 #if CONFIG_SUPERTX
             wedge_offset_x, wedge_offset_y,
 #endif  // CONFIG_SUPERTX
+#if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION || CONFIG_COMPOUND_SEGMENT
             plane,
+#endif
 #if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
             &warp_types, (mi_x >> pd->subsampling_x) + x,
             (mi_y >> pd->subsampling_y) + y, ref,
