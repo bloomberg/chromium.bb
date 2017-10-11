@@ -23,6 +23,7 @@
 #include "components/dom_distiller/core/dom_distiller_features.h"
 #include "components/history/core/browser/history_delete_directives_data_type_controller.h"
 #include "components/history/core/browser/typed_url_data_type_controller.h"
+#include "components/history/core/browser/typed_url_model_type_controller.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/sync/browser/password_data_type_controller.h"
 #include "components/prefs/pref_service.h"
@@ -211,8 +212,9 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
     // disabled.
     if (!disabled_types.Has(syncer::TYPED_URLS)) {
       if (base::FeatureList::IsEnabled(switches::kSyncUSSTypedURL)) {
-        // TODO(gangwu): Register controller here once typed url controller
-        // implemented.
+        sync_service->RegisterDataTypeController(
+            std::make_unique<history::TypedURLModelTypeController>(
+                sync_client_, history_disabled_pref_));
       } else {
         sync_service->RegisterDataTypeController(
             std::make_unique<TypedUrlDataTypeController>(

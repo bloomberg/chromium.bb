@@ -357,10 +357,13 @@ IOSChromeSyncClient::GetSyncBridgeForModelType(syncer::ModelType type) {
       return autofill::AutocompleteSyncBridge::FromWebDataService(
                  web_data_service_.get())
           ->AsWeakPtr();
-    case syncer::TYPED_URLS:
-      // TODO(gangwu):implement TypedURLSyncBridge and return real
-      // TypedURLSyncBridge here.
-      return base::WeakPtr<syncer::ModelTypeSyncBridge>();
+    case syncer::TYPED_URLS: {
+      history::HistoryService* history =
+          ios::HistoryServiceFactory::GetForBrowserState(
+              browser_state_, ServiceAccessType::EXPLICIT_ACCESS);
+      return history ? history->GetTypedURLSyncBridge()->AsWeakPtr()
+                     : base::WeakPtr<syncer::ModelTypeSyncBridge>();
+    }
     case syncer::USER_EVENTS:
       return IOSUserEventServiceFactory::GetForBrowserState(browser_state_)
           ->GetSyncBridge()

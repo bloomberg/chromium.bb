@@ -16,7 +16,6 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/files/file_enumerator.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -55,7 +54,6 @@
 #include "base/ios/scoped_critical_action.h"
 #endif
 
-using base::debug::DumpWithoutCrashing;
 using base::Time;
 using base::TimeDelta;
 using base::TimeTicks;
@@ -224,10 +222,8 @@ void HistoryBackend::Init(
   if (base::FeatureList::IsEnabled(switches::kSyncUSSTypedURL)) {
     typed_url_sync_bridge_ = base::MakeUnique<TypedURLSyncBridge>(
         this, db_.get(),
-        base::BindRepeating(
-            &ModelTypeChangeProcessor::Create,
-            // TODO(gangwu): use ReportUnrecoverableError before launch.
-            base::BindRepeating(base::IgnoreResult(&DumpWithoutCrashing))));
+        base::BindRepeating(&ModelTypeChangeProcessor::Create,
+                            base::RepeatingClosure()));
     typed_url_sync_bridge_->Init();
   } else {
     typed_url_syncable_service_ =
