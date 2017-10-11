@@ -6,7 +6,7 @@
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
 
-<h1>Long Task Attributes for Execute-Script</h1>
+<h1>Long Task Attributes for Execute Script</h1>
 <div id="log"></div>
 <script>
   async_test(function (t) {
@@ -23,16 +23,18 @@
         const currentTime = performance.now();
         assert_less_than_equal(longtask.startTime, currentTime);
 
-        const exist = longtask.attribution.find(function(it) {
-          return it.name === 'script-run' &&
-              it.duration >= 51 &&
-              it.startTime === 0 &&
-              it.entryType === 'taskattribution' &&
-              it.containerId === '' &&
-              it.containerName === '' &&
-              it.containerSrc === '';
+        const it = longtask.attribution.find(function(it) {
+          return it.name === 'script-run';
         });
-        assert_false(!exist);
+        assert_false(!it, 'script-run is not captured.');
+        assert_greater_than(it.duration, 51);
+        assert_greater_than(it.startTime, 0);
+        assert_equals(it.entryType, 'taskattribution');
+        assert_equals(it.containerType, 'iframe');
+        assert_equals(it.containerId, '');
+        assert_equals(it.containerName, '');
+        assert_equals(it.containerSrc, '');
+        assert_true(it.scriptURL.includes('longtask-executescript.html'));
         observer.disconnect();
         t.done();
       })
