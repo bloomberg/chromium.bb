@@ -43730,6 +43730,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Net.ResourceLoader.ExpectedContentSizeResult"
     enum="ResourceLoaderExpectedContentSizeResult">
+  <obsolete>
+    Removed 10/2017.
+  </obsolete>
   <owner>maksim.sisov@intel.com</owner>
   <owner>mmenke@chromium.org</owner>
   <summary>
@@ -87893,6 +87896,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="UrlFetcher.StringResponseSize" units="KB">
+  <obsolete>
+    Removed 10/2017.
+  </obsolete>
   <owner>mmenke@chromium.org</owner>
   <summary>
     Size (in kilobytes) of response bodies retrieved as strings from URLFetcher.

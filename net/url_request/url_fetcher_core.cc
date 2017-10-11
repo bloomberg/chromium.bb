@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -370,8 +369,6 @@ bool URLFetcherCore::GetResponseAsString(
     return false;
 
   *out_response_string = string_writer->data();
-  UMA_HISTOGRAM_MEMORY_KB("UrlFetcher.StringResponseSize",
-                          (string_writer->data().length() / 1024));
   return true;
 }
 
