@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/profiler/stack_sampling_profiler.h"
 #include "content/public/gpu/content_gpu_client.h"
 
 #if defined(OS_CHROMEOS)
@@ -36,9 +35,6 @@ class ChromeContentGpuClient : public content::ContentGpuClient {
   void CreateArcVideoEncodeAccelerator(
       ::arc::mojom::VideoEncodeAcceleratorRequest request);
 #endif
-
-  // Used to profile process startup.
-  base::StackSamplingProfiler stack_sampling_profiler_;
 
 #if defined(OS_CHROMEOS)
   gpu::GpuPreferences gpu_preferences_;

@@ -8,12 +8,19 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace metrics {
+namespace {
+
+base::LazyInstance<ChildCallStackProfileCollector>::Leaky g_collector =
+    LAZY_INSTANCE_INITIALIZER;
+
+}  // namespace
 
 ChildCallStackProfileCollector::ProfilesState::ProfilesState() = default;
 ChildCallStackProfileCollector::ProfilesState::ProfilesState(ProfilesState&&) =
@@ -63,6 +70,11 @@ void ChildCallStackProfileCollector::SetParentProfileCollector(
     }
   }
   profiles_.clear();
+}
+
+// static
+ChildCallStackProfileCollector* ChildCallStackProfileCollector::Get() {
+  return g_collector.Pointer();
 }
 
 base::Optional<base::StackSamplingProfiler::SamplingParams>
