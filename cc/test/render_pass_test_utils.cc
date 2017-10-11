@@ -105,7 +105,7 @@ static void EmptyReleaseCallback(const gpu::SyncToken& sync_token,
                                  bool lost_resource) {}
 
 void AddOneOfEveryQuadType(viz::RenderPass* to_pass,
-                           ResourceProvider* resource_provider,
+                           LayerTreeResourceProvider* resource_provider,
                            viz::RenderPassId child_pass_id,
                            gpu::SyncToken* sync_token_for_mailbox_tebxture) {
   gfx::Rect rect(0, 0, 100, 100);
