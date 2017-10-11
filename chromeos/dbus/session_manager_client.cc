@@ -495,7 +495,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
                        weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
-  void GetArcStartTime(const GetArcStartTimeCallback& callback) override {
+  void GetArcStartTime(DBusMethodCallback<base::TimeTicks> callback) override {
     dbus::MethodCall method_call(
         login_manager::kSessionManagerInterface,
         login_manager::kSessionManagerGetArcStartTimeTicks);
@@ -503,7 +503,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
     session_manager_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&SessionManagerClientImpl::OnGetArcStartTime,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   void RemoveArcData(const cryptohome::Identification& cryptohome_id,
@@ -820,21 +820,22 @@ class SessionManagerClientImpl : public SessionManagerClient {
       callback.Run(state_keys);
   }
 
-  void OnGetArcStartTime(const GetArcStartTimeCallback& callback,
+  void OnGetArcStartTime(DBusMethodCallback<base::TimeTicks> callback,
                          dbus::Response* response) {
-    bool success = false;
-    base::TimeTicks arc_start_time;
-    if (response) {
-      dbus::MessageReader reader(response);
-      int64_t ticks = 0;
-      if (reader.PopInt64(&ticks)) {
-        success = true;
-        arc_start_time = base::TimeTicks::FromInternalValue(ticks);
-      } else {
-        LOG(ERROR) << "Invalid response: " << response->ToString();
-      }
+    if (!response) {
+      std::move(callback).Run(base::nullopt);
+      return;
     }
-    callback.Run(success, arc_start_time);
+
+    dbus::MessageReader reader(response);
+    int64_t ticks = 0;
+    if (!reader.PopInt64(&ticks)) {
+      LOG(ERROR) << "Invalid response: " << response->ToString();
+      std::move(callback).Run(base::nullopt);
+      return;
+    }
+
+    std::move(callback).Run(base::TimeTicks::FromInternalValue(ticks));
   }
 
   void OnStartArcInstanceSucceeded(const StartArcInstanceCallback& callback,
@@ -1104,8 +1105,8 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
     callback.Run(false);
   }
 
-  void GetArcStartTime(const GetArcStartTimeCallback& callback) override {
-    callback.Run(false, base::TimeTicks::Now());
+  void GetArcStartTime(DBusMethodCallback<base::TimeTicks> callback) override {
+    std::move(callback).Run(base::nullopt);
   }
 
   void RemoveArcData(const cryptohome::Identification& cryptohome_id,

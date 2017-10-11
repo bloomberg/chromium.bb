@@ -297,9 +297,12 @@ void FakeSessionManagerClient::EmitArcBooted(
 }
 
 void FakeSessionManagerClient::GetArcStartTime(
-    const GetArcStartTimeCallback& callback) {
+    DBusMethodCallback<base::TimeTicks> callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, arc_available_, base::TimeTicks::Now()));
+      FROM_HERE, base::BindOnce(std::move(callback),
+                                arc_available_ ? base::make_optional(
+                                                     base::TimeTicks::Now())
+                                               : base::nullopt));
 }
 
 void FakeSessionManagerClient::RemoveArcData(

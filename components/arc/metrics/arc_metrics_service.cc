@@ -95,8 +95,8 @@ void ArcMetricsService::OnInstanceReady() {
   chromeos::SessionManagerClient* session_manager_client =
       chromeos::DBusThreadManager::Get()->GetSessionManagerClient();
   session_manager_client->GetArcStartTime(
-      base::Bind(&ArcMetricsService::OnArcStartTimeRetrieved,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&ArcMetricsService::OnArcStartTimeRetrieved,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ArcMetricsService::OnInstanceClosed() {
@@ -154,10 +154,9 @@ void ArcMetricsService::ParseProcessList(
 }
 
 void ArcMetricsService::OnArcStartTimeRetrieved(
-    bool success,
-    base::TimeTicks arc_start_time) {
+    base::Optional<base::TimeTicks> arc_start_time) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (!success) {
+  if (!arc_start_time.has_value()) {
     LOG(ERROR) << "Failed to retrieve ARC start timeticks.";
     return;
   }
@@ -174,7 +173,7 @@ void ArcMetricsService::OnArcStartTimeRetrieved(
     binding_.Bind(mojo::MakeRequest(&host_ptr));
     instance->Init(std::move(host_ptr));
   }
-  arc_start_time_ = arc_start_time;
+  arc_start_time_ = arc_start_time.value();
   VLOG(2) << "ARC start @" << arc_start_time_;
 }
 

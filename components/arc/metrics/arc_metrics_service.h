@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "components/arc/common/metrics.mojom.h"
@@ -74,7 +75,7 @@ class ArcMetricsService
   void ParseProcessList(std::vector<mojom::RunningAppProcessInfoPtr> processes);
 
   // DBus callbacks.
-  void OnArcStartTimeRetrieved(bool success, base::TimeTicks arc_start_time);
+  void OnArcStartTimeRetrieved(base::Optional<base::TimeTicks> arc_start_time);
 
   THREAD_CHECKER(thread_checker_);
 

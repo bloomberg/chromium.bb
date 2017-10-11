@@ -88,7 +88,7 @@ class FakeSessionManagerClient : public SessionManagerClient {
       const ArcCallback& callback) override;
   void EmitArcBooted(const cryptohome::Identification& cryptohome_id,
                      const ArcCallback& callback) override;
-  void GetArcStartTime(const GetArcStartTimeCallback& callback) override;
+  void GetArcStartTime(DBusMethodCallback<base::TimeTicks> callback) override;
   void RemoveArcData(const cryptohome::Identification& cryptohome_id,
                      const ArcCallback& callback) override;
 
