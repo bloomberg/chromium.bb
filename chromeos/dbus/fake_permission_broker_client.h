@@ -7,7 +7,9 @@
 
 #include <stdint.h>
 
+#include <set>
 #include <string>
+#include <utility>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -42,7 +44,33 @@ class CHROMEOS_EXPORT FakePermissionBrokerClient
                       const std::string& interface,
                       const ResultCallback& callback) override;
 
+  // Add a rule to have RequestTcpPortAccess fail.
+  void AddTcpDenyRule(uint16_t port, const std::string& interface);
+
+  // Add a rule to have RequestTcpPortAccess fail.
+  void AddUdpDenyRule(uint16_t port, const std::string& interface);
+
+  // Returns true if TCP port has a hole.
+  bool HasTcpHole(uint16_t port, const std::string& interface);
+
+  // Returns true if UDP port has a hole.
+  bool HasUdpHole(uint16_t port, const std::string& interface);
+
  private:
+  using RuleSet =
+      std::set<std::pair<uint16_t /* port */, std::string /* interface */>>;
+
+  bool RequestPortImpl(uint16_t port,
+                       const std::string& interface,
+                       const RuleSet& deny_rule_set,
+                       RuleSet* hole_set);
+
+  RuleSet tcp_hole_set_;
+  RuleSet udp_hole_set_;
+
+  RuleSet tcp_deny_rule_set_;
+  RuleSet udp_deny_rule_set_;
+
   DISALLOW_COPY_AND_ASSIGN(FakePermissionBrokerClient);
 };
 

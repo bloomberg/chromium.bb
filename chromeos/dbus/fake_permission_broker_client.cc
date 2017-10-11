@@ -74,7 +74,8 @@ void FakePermissionBrokerClient::RequestTcpPortAccess(
     const std::string& interface,
     int lifeline_fd,
     const ResultCallback& callback) {
-  callback.Run(true);
+  callback.Run(
+      RequestPortImpl(port, interface, tcp_deny_rule_set_, &tcp_hole_set_));
 }
 
 void FakePermissionBrokerClient::RequestUdpPortAccess(
@@ -82,21 +83,62 @@ void FakePermissionBrokerClient::RequestUdpPortAccess(
     const std::string& interface,
     int lifeline_fd,
     const ResultCallback& callback) {
-  callback.Run(true);
+  callback.Run(
+      RequestPortImpl(port, interface, udp_deny_rule_set_, &udp_hole_set_));
 }
 
 void FakePermissionBrokerClient::ReleaseTcpPort(
     uint16_t port,
     const std::string& interface,
     const ResultCallback& callback) {
-  callback.Run(true);
+  callback.Run(tcp_hole_set_.erase(std::make_pair(port, interface)));
 }
 
 void FakePermissionBrokerClient::ReleaseUdpPort(
     uint16_t port,
     const std::string& interface,
     const ResultCallback& callback) {
-  callback.Run(true);
+  callback.Run(udp_hole_set_.erase(std::make_pair(port, interface)));
+}
+
+void FakePermissionBrokerClient::AddTcpDenyRule(uint16_t port,
+                                                const std::string& interface) {
+  tcp_deny_rule_set_.insert(std::make_pair(port, interface));
+}
+
+void FakePermissionBrokerClient::AddUdpDenyRule(uint16_t port,
+                                                const std::string& interface) {
+  udp_deny_rule_set_.insert(std::make_pair(port, interface));
+}
+
+bool FakePermissionBrokerClient::HasTcpHole(uint16_t port,
+                                            const std::string& interface) {
+  auto rule = std::make_pair(port, interface);
+  return tcp_hole_set_.find(rule) != tcp_hole_set_.end();
+}
+
+bool FakePermissionBrokerClient::HasUdpHole(uint16_t port,
+                                            const std::string& interface) {
+  auto rule = std::make_pair(port, interface);
+  return udp_hole_set_.find(rule) != udp_hole_set_.end();
+}
+
+bool FakePermissionBrokerClient::RequestPortImpl(uint16_t port,
+                                                 const std::string& interface,
+                                                 const RuleSet& deny_rule_set,
+                                                 RuleSet* hole_set) {
+  auto rule = std::make_pair(port, interface);
+
+  // If there is already a hole, returns true.
+  if (hole_set->find(rule) != hole_set->end())
+    return true;
+
+  // If it is denied to make a hole, returns false.
+  if (deny_rule_set.find(rule) != deny_rule_set.end())
+    return false;
+
+  hole_set->insert(rule);
+  return true;
 }
 
 }  // namespace chromeos
