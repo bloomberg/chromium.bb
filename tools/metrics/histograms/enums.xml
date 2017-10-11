@@ -21406,6 +21406,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="5" label="Error: Invalid advertisement interval"/>
   <int value="6" label="Error: Reset advertising"/>
   <int value="7" label="Invalid advertisement error code"/>
+  <int value="8" label="Unknown result"/>
 </enum>
 
 <enum name="InstantTethering_ConnectionToHostResult_Failure">
@@ -32529,6 +32530,24 @@ from previous Chrome versions.
   <int value="7" label="SAVING_ON_HTTP_AFTER_HTTPS"/>
 </enum>
 
+<enum name="ProximityAuth_BleWeaveConnectionResult">
+  <int value="0" label="Closed normally"/>
+  <int value="1" label="Timeout: Setting connection latency"/>
+  <int value="2" label="Timeout: Creating GATT connection"/>
+  <int value="3" label="Timeout: Starting notify session"/>
+  <int value="4" label="Timeout: Finding GATT characteristics"/>
+  <int value="5" label="Timeout: Waiting for connection response"/>
+  <int value="6" label="Error: Bluetooth device not available"/>
+  <int value="7" label="Error: Creating GATT connection"/>
+  <int value="8" label="Error: Starting notify session"/>
+  <int value="9" label="Error: Finding GATT characteristics"/>
+  <int value="10" label="Error: Writing GATT characteristics"/>
+  <int value="11" label="Error: GATT characteristics not available"/>
+  <int value="12" label="Error: Write queue out of sync"/>
+  <int value="13" label="Error: Device lost"/>
+  <int value="14" label="Error: Connection dropped"/>
+</enum>
+
 <enum name="ProximityAuth_BluetoothGattConnectionResult">
   <int value="0" label="Success"/>
   <int value="1" label="Error: Auth canceled"/>
@@ -32539,6 +32558,7 @@ from previous Chrome versions.
   <int value="6" label="Error: In progress"/>
   <int value="7" label="Error: Unknown"/>
   <int value="8" label="Error: Unsupported device"/>
+  <int value="9" label="Unknown result"/>
 </enum>
 
 <enum name="ProximityAuth_BluetoothGattServiceOperationResult">
@@ -32551,6 +32571,7 @@ from previous Chrome versions.
   <int value="6" label="Error: Not authorized"/>
   <int value="7" label="Error: Not paired"/>
   <int value="8" label="Error: Not supported"/>
+  <int value="9" label="Unknown result"/>
 </enum>
 
 <enum name="ProxyStatus">

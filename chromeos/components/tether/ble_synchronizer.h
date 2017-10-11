@@ -39,6 +39,8 @@ class BleSynchronizer : public BleSynchronizerBase {
  private:
   friend class BleSynchronizerTest;
 
+  // BLUETOOTH_ADVERTISEMENT_RESULT_UNKNOWN indicates that the Bluetooth
+  // platform returned a code that is not recognized.
   enum BluetoothAdvertisementResult {
     SUCCESS = 0,
     ERROR_UNSUPPORTED_PLATFORM = 1,
@@ -48,6 +50,7 @@ class BleSynchronizer : public BleSynchronizerBase {
     ERROR_INVALID_ADVERTISEMENT_INTERVAL = 5,
     ERROR_RESET_ADVERTISING = 6,
     INVALID_ADVERTISEMENT_ERROR_CODE = 7,
+    BLUETOOTH_ADVERTISEMENT_RESULT_UNKNOWN = 8,
     BLUETOOTH_ADVERTISEMENT_RESULT_MAX
   };
 
