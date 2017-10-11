@@ -1091,7 +1091,8 @@ static int set_plane(struct device *dev, struct plane_arg *p)
 		if (!format_support(ovr, p->fourcc))
 			continue;
 
-		if ((ovr->possible_crtcs & (1 << pipe)) && !ovr->crtc_id) {
+		if ((ovr->possible_crtcs & (1 << pipe)) &&
+		    (ovr->crtc_id == 0 || ovr->crtc_id == p->crtc_id)) {
 			plane_id = ovr->plane_id;
 			break;
 		}
