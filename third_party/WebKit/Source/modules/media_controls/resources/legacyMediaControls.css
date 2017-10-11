@@ -690,9 +690,9 @@ video::-internal-media-controls-overflow-menu-list-item, audio::-internal-media-
     user-select: none;
 }
 
-label[pseudo="-internal-media-controls-overflow-menu-list-item"] input{
+label[pseudo="-internal-media-controls-overflow-menu-list-item"] input {
     margin-left: -22px;
-    margin-right: 2px;
+    margin-right: 6px;
 }
 
 video::-webkit-media-text-track-container {
