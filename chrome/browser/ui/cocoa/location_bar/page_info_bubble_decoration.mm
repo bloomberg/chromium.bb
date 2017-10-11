@@ -152,6 +152,7 @@ void PageInfoBubbleDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
   CGFloat text_right_offset = NSMaxX(decoration_frame);
   const BOOL is_rtl = cocoa_l10n_util::ShouldDoExperimentalRTLLayout();
   focus_ring_right_inset_ = 0;
+  focus_ring_left_inset_ = 0;
   if (image_) {
     // The image should fade in if we're animating in.
     CGFloat image_alpha =
@@ -239,6 +240,16 @@ void PageInfoBubbleDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
       // still present to separate the button from the location bar text.
       focus_ring_right_inset_ = DividerPadding();
     }
+  } else {
+    // When there's no label, the page info bubble decoration is just an icon.
+    // In this case, this decoration is hard up against the location bar text,
+    // so the focus ring needs to be inset to avoid overlapping the location bar
+    // text. The focus ring also has to be inset symmetrically, since this
+    // decoration is symmetric. This causes the focus ring to overlap the
+    // location bar's border by different amounts depending on the page info
+    // decoration's style, which is a bummer.
+    focus_ring_right_inset_ = 2;
+    focus_ring_left_inset_ = 2;
   }
 }
 
@@ -325,7 +336,8 @@ NSString* PageInfoBubbleDecoration::GetAccessibilityLabel() {
 }
 
 NSRect PageInfoBubbleDecoration::GetRealFocusRingBounds(NSRect bounds) const {
-  bounds.size.width -= focus_ring_right_inset_;
+  bounds.size.width -= (focus_ring_right_inset_ + focus_ring_left_inset_);
+  bounds.origin.x += focus_ring_left_inset_;
   return bounds;
 }
 
