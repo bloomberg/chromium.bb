@@ -10,6 +10,14 @@ FATE_MAPCHAN-$(CONFIG_CHANNELMAP_FILTER) += fate-mapchan-silent-mono
 fate-mapchan-silent-mono: tests/data/asynth-22050-1.wav
 fate-mapchan-silent-mono: CMD = md5 -i $(TARGET_PATH)/tests/data/asynth-22050-1.wav -map_channel -1 -map_channel 0.0.0 -fflags +bitexact -f wav
 
+FATE_MAPCHAN-$(CONFIG_CHANNELMAP_FILTER) += fate-mapchan-2ch-extract-ch0-ch2-trailing
+fate-mapchan-2ch-extract-ch0-ch2-trailing: tests/data/asynth-44100-2.wav
+fate-mapchan-2ch-extract-ch0-ch2-trailing: CMD = md5 -i $(TARGET_PATH)/tests/data/asynth-44100-2.wav -map_channel 0.0.0 -map_channel 0.0.2? -fflags +bitexact -f wav
+
+FATE_MAPCHAN-$(CONFIG_CHANNELMAP_FILTER) += fate-mapchan-3ch-extract-ch0-ch2-trailing
+fate-mapchan-3ch-extract-ch0-ch2-trailing: tests/data/asynth-44100-3.wav
+fate-mapchan-3ch-extract-ch0-ch2-trailing: CMD = md5 -i $(TARGET_PATH)/tests/data/asynth-44100-3.wav -map_channel 0.0.0 -map_channel 0.0.2? -fflags +bitexact -f wav
+
 FATE_MAPCHAN = $(FATE_MAPCHAN-yes)
 
 FATE_FFMPEG += $(FATE_MAPCHAN)
@@ -50,6 +58,12 @@ fate-unknown_layout-ac3: $(AREF)
 fate-unknown_layout-ac3: CMD = md5 \
   -guess_layout_max 0 -f s16le -ac 1 -ar 44100 -i $(TARGET_PATH)/$(AREF) \
   -f ac3 -flags +bitexact -c ac3_fixed
+
+
+FATE_STREAMCOPY-$(call ALLYES, EAC3_DEMUXER MOV_MUXER) += fate-copy-trac3074
+fate-copy-trac3074: $(TARGET_SAMPLES)/eac3/csi_miami_stereo_128_spx.eac3
+fate-copy-trac3074: CMD = transcode eac3 $(TARGET_SAMPLES)/eac3/csi_miami_stereo_128_spx.eac3\
+                     mp4 "-codec copy -map 0" "-codec copy"
 
 FATE_STREAMCOPY-$(call ALLYES, MOV_DEMUXER MOV_MUXER) += fate-copy-trac236
 fate-copy-trac236: $(TARGET_SAMPLES)/mov/fcp_export8-236.mov
@@ -118,3 +132,9 @@ fate-ffmpeg-bsf-remove-e: CMD = transcode "mpeg" $(TARGET_SAMPLES)/mpeg2/matrixb
 
 
 FATE_SAMPLES_FFMPEG-yes += $(FATE_STREAMCOPY-yes)
+
+FATE_TIME_BASE-$(call ALLYES, MPEGPS_DEMUXER MXF_MUXER) += fate-time_base
+fate-time_base: $(TARGET_SAMPLES)/mpeg2/dvd_single_frame.vob
+fate-time_base: CMD = md5 -i $(TARGET_SAMPLES)/mpeg2/dvd_single_frame.vob -an -sn -c:v copy -r 25 -time_base 1001:30000 -fflags +bitexact -f mxf
+
+FATE_SAMPLES_FFMPEG-yes += $(FATE_TIME_BASE-yes)

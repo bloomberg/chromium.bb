@@ -47,10 +47,6 @@ Current patches:
     Remove "#define UNCHECKED_BITSTREAM_READER 1" from all codecs.
     In Chromium, all codecs should use the safe bitstream reader.
 
-  libavcodec/decode.c
-    Check expanded side data properly.
-    https://trac.ffmpeg.org/ticket/6439
-
   libavcodec/flacdsp.c
     #define SUINT for better overflow detection
 
@@ -67,10 +63,6 @@ Current patches:
 
   libavformat/mov.c
     Always use av_realloc() for |extradata|. https://crbug.com/721872
-
-    Fix ctts processing when sidx processing is enabled. http://crbug.com/738595
-
-    Fix issues with mov_read_trun(). http://crbug.com/750009
 
   libavformat/matroskadec.c
     Add CONFIG_LZO and CONFIG_SIPR_DECODER (and other CONFIG_*) checks to remove

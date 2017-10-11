@@ -15,6 +15,79 @@ libavutil:     2015-08-28
 
 API changes, most recent first:
 
+2017-09-13 - xxxxxxx - lavc 57.106.100 - avcodec.h
+  Add AV_PKT_FLAG_TRUSTED.
+
+2017-09-13 - xxxxxxx - lavu 55.75.100 - hwcontext.h hwcontext_drm.h
+  Add AV_HWDEVICE_TYPE_DRM and implementation.
+
+2017-09-08 - xxxxxxx - lavfi 6.103.100 - buffersrc.h
+  Add av_buffersrc_close().
+
+2017-09-04 - xxxxxxx - lavc 57.105.100 - avcodec.h
+  Add AV_HWACCEL_CODEC_CAP_EXPERIMENTAL, replacing the deprecated
+  HWACCEL_CODEC_CAP_EXPERIMENTAL flag.
+
+2017-09-01 - xxxxxxx - lavf 57.81.100 - avio.h
+  Add avio_read_partial().
+
+2017-09-01 - xxxxxxx - lavf 57.80.100 / 57.11.0 - avio.h
+  Add avio_context_free(). From now on it must be used for freeing AVIOContext.
+
+2017-08-08 - xxxxxxx - lavu 55.74.100 - pixdesc.h
+  Add AV_PIX_FMT_FLAG_FLOAT pixel format flag.
+
+2017-08-08 - xxxxxxx - lavu 55.72.100 - imgutils.h
+  Add av_image_fill_black().
+
+2017-08-08 - xxxxxxx - lavu 55.71.100 - frame.h
+  Add av_frame_apply_cropping().
+
+2017-07-25 - 24de4fddca - lavu 55.69.100 - frame.h
+  Add AV_FRAME_DATA_ICC_PROFILE side data type.
+
+2017-xx-xx - xxxxxxx - lavc 57.100.100 - avcodec.h
+  DXVA2 and D3D11 hardware accelerated decoding now supports the new hwaccel API,
+  which can create the decoder context and allocate hardware frame automatically.
+  See AVCodecContext.hw_device_ctx and AVCodecContext.hw_frames_ctx. For D3D11,
+  the new AV_PIX_FMT_D3D11 pixfmt must be used with the new API.
+
+2017-xx-xx - xxxxxxx - lavu 56.67.100 - hwcontext.h
+  Add AV_HWDEVICE_TYPE_D3D11VA and AV_PIX_FMT_D3D11.
+
+2017-06-24 - xxxxxxx - lavf 57.75.100 - avio.h
+  Add AVIO_DATA_MARKER_FLUSH_POINT to signal preferred flush points to aviobuf.
+
+2017-06-14 - xxxxxxx - lavu 55.66.100 - hwcontext.h
+  av_hwframe_ctx_create_derived() now takes some AV_HWFRAME_MAP_* combination
+  as its flags argument (which was previously unused).
+
+2017-06-14 - xxxxxxx - lavc 57.99.100 - avcodec.h
+  Add AV_HWACCEL_FLAG_ALLOW_PROFILE_MISMATCH.
+
+2017-06-14 - xxxxxxx - lavu 55.65.100 - hwcontext.h
+  Add AV_HWDEVICE_TYPE_NONE, av_hwdevice_find_type_by_name(),
+  av_hwdevice_get_type_name() and av_hwdevice_iterate_types().
+
+2017-06-14 - xxxxxxx - lavu 55.64.100 - hwcontext.h
+  Add av_hwdevice_ctx_create_derived().
+
+2017-05-15 - xxxxxxxxxx - lavc 57.96.100 - avcodec.h
+  VideoToolbox hardware-accelerated decoding now supports the new hwaccel API,
+  which can create the decoder context and allocate hardware frames automatically.
+  See AVCodecContext.hw_device_ctx and AVCodecContext.hw_frames_ctx.
+
+2017-05-15 - xxxxxxxxxx - lavu 57.63.100 - hwcontext.h
+  Add AV_HWDEVICE_TYPE_VIDEOTOOLBOX and implementation.
+
+2017-xx-xx - xxxxxxx - lavc 57.95.100 / 57.31.0 - avcodec.h
+  Add AVCodecContext.apply_cropping to control whether cropping
+  is handled by libavcodec or the caller.
+
+2017-xx-xx - xxxxxxx - lavu 55.62.100 / 55.30.0 - frame.h
+  Add AVFrame.crop_left/right/top/bottom fields for attaching cropping
+  information to video frames.
+
 2017-xx-xx - xxxxxxxxxx
   Change av_sha_update(), av_sha512_update() and av_md5_sum()/av_md5_update() length
   parameter type to size_t at next major bump.

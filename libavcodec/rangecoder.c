@@ -58,9 +58,10 @@ av_cold void ff_init_range_decoder(RangeCoder *c, const uint8_t *buf,
 
     c->low         = AV_RB16(c->bytestream);
     c->bytestream += 2;
+    c->overread    = 0;
     if (c->low >= 0xFF00) {
         c->low = 0xFF00;
-        c->bytestream_end = c->bytestream + 2;
+        c->bytestream_end = c->bytestream;
     }
 }
 

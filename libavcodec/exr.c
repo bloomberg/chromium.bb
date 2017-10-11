@@ -37,6 +37,7 @@
 #include <float.h>
 #include <zlib.h>
 
+#include "libavutil/avassert.h"
 #include "libavutil/common.h"
 #include "libavutil/imgutils.h"
 #include "libavutil/intfloat.h"
@@ -50,6 +51,7 @@
 #include "bswapdsp.h"
 #endif
 
+#include "exrdsp.h"
 #include "get_bits.h"
 #include "internal.h"
 #include "mathops.h"
@@ -120,6 +122,7 @@ typedef struct EXRContext {
     AVClass *class;
     AVFrame *picture;
     AVCodecContext *avctx;
+    ExrDSPContext dsp;
 
 #if HAVE_BIGENDIAN
     BswapDSPContext bbdsp;
@@ -274,27 +277,7 @@ static void predictor(uint8_t *src, int size)
     }
 }
 
-static void reorder_pixels(uint8_t *src, uint8_t *dst, int size)
-{
-    const int8_t *t1 = src;
-    const int8_t *t2 = src + (size + 1) / 2;
-    int8_t *s        = dst;
-    int8_t *stop     = s + size;
-
-    while (1) {
-        if (s < stop)
-            *(s++) = *(t1++);
-        else
-            break;
-
-        if (s < stop)
-            *(s++) = *(t2++);
-        else
-            break;
-    }
-}
-
-static int zip_uncompress(const uint8_t *src, int compressed_size,
+static int zip_uncompress(EXRContext *s, const uint8_t *src, int compressed_size,
                           int uncompressed_size, EXRThreadData *td)
 {
     unsigned long dest_len = uncompressed_size;
@@ -303,13 +286,15 @@ static int zip_uncompress(const uint8_t *src, int compressed_size,
         dest_len != uncompressed_size)
         return AVERROR_INVALIDDATA;
 
+    av_assert1(uncompressed_size % 2 == 0);
+
     predictor(td->tmp, uncompressed_size);
-    reorder_pixels(td->tmp, td->uncompressed_data, uncompressed_size);
+    s->dsp.reorder_pixels(td->uncompressed_data, td->tmp, uncompressed_size);
 
     return 0;
 }
 
-static int rle_uncompress(const uint8_t *src, int compressed_size,
+static int rle_uncompress(EXRContext *ctx, const uint8_t *src, int compressed_size,
                           int uncompressed_size, EXRThreadData *td)
 {
     uint8_t *d      = td->tmp;
@@ -348,8 +333,10 @@ static int rle_uncompress(const uint8_t *src, int compressed_size,
     if (dend != d)
         return AVERROR_INVALIDDATA;
 
+    av_assert1(uncompressed_size % 2 == 0);
+
     predictor(td->tmp, uncompressed_size);
-    reorder_pixels(td->tmp, td->uncompressed_data, uncompressed_size);
+    ctx->dsp.reorder_pixels(td->uncompressed_data, td->tmp, uncompressed_size);
 
     return 0;
 }
@@ -1063,7 +1050,7 @@ static int decode_block(AVCodecContext *avctx, void *tdata,
     uint8_t *ptr;
     uint32_t data_size;
     uint64_t line, col = 0;
-    uint64_t tileX, tileY, tileLevelX, tileLevelY;
+    uint64_t tile_x, tile_y, tile_level_x, tile_level_y;
     const uint8_t *src;
     int axmax = (avctx->width - (s->xmax + 1)) * 2 * s->desc->nb_components; /* nb pixel to add at the right of the datawindow */
     int bxmin = s->xmin * 2 * s->desc->nb_components; /* nb pixel to add at the left of the datawindow */
@@ -1081,16 +1068,16 @@ static int decode_block(AVCodecContext *avctx, void *tdata,
 
         src  = buf + line_offset + 20;
 
-        tileX = AV_RL32(src - 20);
-        tileY = AV_RL32(src - 16);
-        tileLevelX = AV_RL32(src - 12);
-        tileLevelY = AV_RL32(src - 8);
+        tile_x = AV_RL32(src - 20);
+        tile_y = AV_RL32(src - 16);
+        tile_level_x = AV_RL32(src - 12);
+        tile_level_y = AV_RL32(src - 8);
 
         data_size = AV_RL32(src - 4);
         if (data_size <= 0 || data_size > buf_size)
             return AVERROR_INVALIDDATA;
 
-        if (tileLevelX || tileLevelY) { /* tile level, is not the full res level */
+        if (tile_level_x || tile_level_y) { /* tile level, is not the full res level */
             avpriv_report_missing_feature(s->avctx, "Subres tile before full res tile");
             return AVERROR_PATCHWELCOME;
         }
@@ -1100,15 +1087,15 @@ static int decode_block(AVCodecContext *avctx, void *tdata,
             return AVERROR_PATCHWELCOME;
         }
 
-        line = s->tile_attr.ySize * tileY;
-        col = s->tile_attr.xSize * tileX;
+        line = s->tile_attr.ySize * tile_y;
+        col = s->tile_attr.xSize * tile_x;
 
         if (line < s->ymin || line > s->ymax ||
             col  < s->xmin || col  > s->xmax)
             return AVERROR_INVALIDDATA;
 
-        td->ysize = FFMIN(s->tile_attr.ySize, s->ydelta - tileY * s->tile_attr.ySize);
-        td->xsize = FFMIN(s->tile_attr.xSize, s->xdelta - tileX * s->tile_attr.xSize);
+        td->ysize = FFMIN(s->tile_attr.ySize, s->ydelta - tile_y * s->tile_attr.ySize);
+        td->xsize = FFMIN(s->tile_attr.xSize, s->xdelta - tile_x * s->tile_attr.xSize);
 
         if (col) { /* not the first tile of the line */
             bxmin = 0; /* doesn't add pixel at the left of the datawindow */
@@ -1155,7 +1142,7 @@ static int decode_block(AVCodecContext *avctx, void *tdata,
 
     if (data_size < uncompressed_size) {
         av_fast_padded_malloc(&td->uncompressed_data,
-                              &td->uncompressed_size, uncompressed_size);
+                              &td->uncompressed_size, uncompressed_size + 64);/* Force 64 padding for AVX2 reorder_pixels dst */
 
         if (!td->uncompressed_data)
             return AVERROR(ENOMEM);
@@ -1164,7 +1151,7 @@ static int decode_block(AVCodecContext *avctx, void *tdata,
         switch (s->compression) {
         case EXR_ZIP1:
         case EXR_ZIP16:
-            ret = zip_uncompress(src, data_size, uncompressed_size, td);
+            ret = zip_uncompress(s, src, data_size, uncompressed_size, td);
             break;
         case EXR_PIZ:
             ret = piz_uncompress(s, src, data_size, uncompressed_size, td);
@@ -1173,7 +1160,7 @@ static int decode_block(AVCodecContext *avctx, void *tdata,
             ret = pxr24_uncompress(s, src, data_size, uncompressed_size, td);
             break;
         case EXR_RLE:
-            ret = rle_uncompress(src, data_size, uncompressed_size, td);
+            ret = rle_uncompress(s, src, data_size, uncompressed_size, td);
             break;
         case EXR_B44:
         case EXR_B44A:
@@ -1806,6 +1793,8 @@ static av_cold int decode_init(AVCodecContext *avctx)
     avpriv_trc_function trc_func = NULL;
 
     s->avctx              = avctx;
+
+    ff_exrdsp_init(&s->dsp);
 
 #if HAVE_BIGENDIAN
     ff_bswapdsp_init(&s->bbdsp);

@@ -214,6 +214,10 @@ def BuildFFmpeg(target_os, target_arch, host_os, host_arch, parallel_jobs,
       os.path.join(config_dir, 'config.h'),
       r'(#define HAVE_VALGRIND_VALGRIND_H [01])',
       (r'#define HAVE_VALGRIND_VALGRIND_H 0 /* \1 -- forced to 0. See https://crbug.com/590440 */'))
+  RewriteFile(
+      os.path.join(config_dir, 'config.asm'),
+      r'(%define HAVE_VALGRIND_VALGRIND_H [01])',
+      (r'%define HAVE_VALGRIND_VALGRIND_H 0 ; \1 -- forced to 0. See https://crbug.com/590440'))
 
   if target_os == 'android':
       RewriteFile(
@@ -341,23 +345,17 @@ def main(argv):
       '--disable-lzo',
       '--disable-network',
       '--disable-schannel',
-      '--disable-sdl',
+      '--disable-sdl2',
       '--disable-symver',
       '--disable-xlib',
       '--disable-zlib',
       '--disable-securetransport',
 
-      # Disable hardware decoding options which will sometimes turn on
-      # via autodetect.
-      '--disable-d3d11va',
-      '--disable-dxva2',
-      '--disable-vaapi',
-      '--disable-vda',
-      '--disable-vdpau',
-      '--disable-videotoolbox',
-      '--disable-nvenc',
-      '--disable-cuda',
-      '--disable-cuvid',
+      # Disable automatically detected external libraries. This prevents
+      # automatic inclusion of things like hardware decoders. Each roll should
+      # audit new [autodetect] configure options and add any desired options to
+      # this file.
+      '--disable-autodetect',
 
       # Common codecs.
       '--enable-decoder=vorbis,libopus,flac',
@@ -368,7 +366,11 @@ def main(argv):
 
       # Setup include path so Chromium's libopus can be used.
       '--extra-cflags=-I' + os.path.join(CHROMIUM_ROOT_DIR,
-                                         'third_party/opus/src/include')
+                                         'third_party/opus/src/include'),
+
+      # Disable usage of Linux Performance API. Not used in production code, but
+      # missing system headers break some Android builds.
+      '--disable-linux-perf',
   ])
 
   if target_os == 'android':

@@ -1103,9 +1103,9 @@ static int dvbsub_parse_clut_segment(AVCodecContext *avctx,
                 return AVERROR_INVALIDDATA;
         }
 
-        if (depth & 0x80)
+        if (depth & 0x80 && entry_id < 4)
             clut->clut4[entry_id] = RGBA(r,g,b,255 - alpha);
-        else if (depth & 0x40)
+        else if (depth & 0x40 && entry_id < 16)
             clut->clut16[entry_id] = RGBA(r,g,b,255 - alpha);
         else if (depth & 0x20)
             clut->clut256[entry_id] = RGBA(r,g,b,255 - alpha);
@@ -1157,7 +1157,11 @@ static int dvbsub_parse_region_segment(AVCodecContext *avctx,
     region->height = AV_RB16(buf);
     buf += 2;
 
-    ret = av_image_check_size(region->width, region->height, 0, avctx);
+    ret = av_image_check_size2(region->width, region->height, avctx->max_pixels, AV_PIX_FMT_PAL8, 0, avctx);
+    if (ret >= 0 && region->width * region->height * 2 > 320 * 1024 * 8) {
+        ret = AVERROR_INVALIDDATA;
+        av_log(avctx, AV_LOG_ERROR, "Pixel buffer memory constraint violated\n");
+    }
     if (ret < 0) {
         region->width= region->height= 0;
         return ret;
@@ -1297,6 +1301,15 @@ static int dvbsub_parse_page_segment(AVCodecContext *avctx,
     while (buf + 5 < buf_end) {
         region_id = *buf++;
         buf += 1;
+
+        display = ctx->display_list;
+        while (display && display->region_id != region_id) {
+            display = display->next;
+        }
+        if (display) {
+            av_log(avctx, AV_LOG_ERROR, "duplicate region\n");
+            break;
+        }
 
         display = tmp_display_list;
         tmp_ptr = &tmp_display_list;

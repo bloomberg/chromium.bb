@@ -35,6 +35,7 @@
 #include "libavutil/hwcontext.h"
 #include "libavutil/imgutils.h"
 #include "libavutil/internal.h"
+#include "libavutil/intmath.h"
 
 #include "avcodec.h"
 #include "bytestream.h"
@@ -461,7 +462,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
                 frame->sample_rate = avctx->sample_rate;
         }
 
-        side= av_packet_get_side_data(&tmp, AV_PKT_DATA_SKIP_SAMPLES, &side_size);
+        side= av_packet_get_side_data(avci->last_pkt_props, AV_PKT_DATA_SKIP_SAMPLES, &side_size);
         if(side && side_size>=10) {
             avctx->internal->skip_samples = AV_RL32(side) * avctx->internal->skip_samples_multiplier;
             discard_padding = AV_RL32(side + 4);
@@ -682,6 +683,33 @@ int attribute_align_arg avcodec_send_packet(AVCodecContext *avctx, const AVPacke
     return 0;
 }
 
+static int apply_cropping(AVCodecContext *avctx, AVFrame *frame)
+{
+    /* make sure we are noisy about decoders returning invalid cropping data */
+    if (frame->crop_left >= INT_MAX - frame->crop_right        ||
+        frame->crop_top  >= INT_MAX - frame->crop_bottom       ||
+        (frame->crop_left + frame->crop_right) >= frame->width ||
+        (frame->crop_top + frame->crop_bottom) >= frame->height) {
+        av_log(avctx, AV_LOG_WARNING,
+               "Invalid cropping information set by a decoder: "
+               "%"SIZE_SPECIFIER"/%"SIZE_SPECIFIER"/%"SIZE_SPECIFIER"/%"SIZE_SPECIFIER" "
+               "(frame size %dx%d). This is a bug, please report it\n",
+               frame->crop_left, frame->crop_right, frame->crop_top, frame->crop_bottom,
+               frame->width, frame->height);
+        frame->crop_left   = 0;
+        frame->crop_right  = 0;
+        frame->crop_top    = 0;
+        frame->crop_bottom = 0;
+        return 0;
+    }
+
+    if (!avctx->apply_cropping)
+        return 0;
+
+    return av_frame_apply_cropping(frame, avctx->flags & AV_CODEC_FLAG_UNALIGNED ?
+                                          AV_FRAME_CROP_UNALIGNED : 0);
+}
+
 int attribute_align_arg avcodec_receive_frame(AVCodecContext *avctx, AVFrame *frame)
 {
     AVCodecInternal *avci = avctx->internal;
@@ -702,6 +730,14 @@ int attribute_align_arg avcodec_receive_frame(AVCodecContext *avctx, AVFrame *fr
         ret = decode_receive_frame_internal(avctx, frame);
         if (ret < 0)
             return ret;
+    }
+
+    if (avctx->codec_type == AVMEDIA_TYPE_VIDEO) {
+        ret = apply_cropping(avctx, frame);
+        if (ret < 0) {
+            av_frame_unref(frame);
+            return ret;
+        }
     }
 
     avctx->frame_number++;
@@ -1114,7 +1150,7 @@ static int setup_hwaccel(AVCodecContext *avctx,
         return AVERROR(ENOENT);
     }
 
-    if (hwa->capabilities & HWACCEL_CODEC_CAP_EXPERIMENTAL &&
+    if (hwa->capabilities & AV_HWACCEL_CODEC_CAP_EXPERIMENTAL &&
         avctx->strict_std_compliance > FF_COMPLIANCE_EXPERIMENTAL) {
         av_log(avctx, AV_LOG_WARNING, "Ignoring experimental hwaccel: %s\n",
                hwa->name);
@@ -1127,15 +1163,15 @@ static int setup_hwaccel(AVCodecContext *avctx,
             return AVERROR(ENOMEM);
     }
 
+    avctx->hwaccel = hwa;
     if (hwa->init) {
         ret = hwa->init(avctx);
         if (ret < 0) {
             av_freep(&avctx->internal->hwaccel_priv_data);
+            avctx->hwaccel = NULL;
             return ret;
         }
     }
-
-    avctx->hwaccel = hwa;
 
     return 0;
 }
@@ -1407,8 +1443,12 @@ int avcodec_default_get_buffer2(AVCodecContext *avctx, AVFrame *frame, int flags
 {
     int ret;
 
-    if (avctx->hw_frames_ctx)
-        return av_hwframe_get_buffer(avctx->hw_frames_ctx, frame, 0);
+    if (avctx->hw_frames_ctx) {
+        ret = av_hwframe_get_buffer(avctx->hw_frames_ctx, frame, 0);
+        frame->width  = avctx->coded_width;
+        frame->height = avctx->coded_height;
+        return ret;
+    }
 
     if ((ret = update_frame_pool(avctx, frame)) < 0)
         return ret;
@@ -1611,7 +1651,8 @@ static int get_buffer_internal(AVCodecContext *avctx, AVFrame *frame, int flags)
         validate_avframe_allocation(avctx, frame);
 
 end:
-    if (avctx->codec_type == AVMEDIA_TYPE_VIDEO && !override_dimensions) {
+    if (avctx->codec_type == AVMEDIA_TYPE_VIDEO && !override_dimensions &&
+        !(avctx->codec->caps_internal & FF_CODEC_CAP_EXPORTS_CROPPING)) {
         frame->width  = avctx->width;
         frame->height = avctx->height;
     }

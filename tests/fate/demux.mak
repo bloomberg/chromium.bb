@@ -1,8 +1,9 @@
 FATE_SAMPLES_DEMUX-$(call DEMDEC, AVI, FRAPS) += fate-avio-direct
 fate-avio-direct: CMD = framecrc -avioflags direct -i $(TARGET_SAMPLES)/fraps/fraps-v5-bouncing-balls-partial.avi -avioflags direct
 
-FATE_SAMPLES_DEMUX-$(DEMDEC, AAC, AAC) += fate-adts-demux
+FATE_SAMPLES_DEMUX-$(call DEMDEC, AAC, AAC) += fate-adts-demux fate-adts-id3v1-demux
 fate-adts-demux: CMD = crc -i $(TARGET_SAMPLES)/aac/ct_faac-adts.aac -acodec copy
+fate-adts-id3v1-demux: CMD = framecrc -f aac -i $(TARGET_SAMPLES)/aac/id3v1.aac -acodec copy
 
 FATE_SAMPLES_DEMUX-$(CONFIG_AEA_DEMUXER) += fate-aea-demux
 fate-aea-demux: CMD = crc -i $(TARGET_SAMPLES)/aea/chirp.aea -acodec copy
@@ -34,6 +35,10 @@ fate-d-cinema-demux: CMD = framecrc -i $(TARGET_SAMPLES)/d-cinema/THX_Science_FL
 
 FATE_SAMPLES_DEMUX-$(CONFIG_EA_DEMUXER) += fate-d-eavp6-demux
 fate-d-eavp6-demux: CMD = framecrc -i $(TARGET_SAMPLES)/ea-vp6/SmallRing.vp6 -map 0 -vcodec copy
+
+FATE_SAMPLES_DEMUX-$(CONFIG_FITS_DEMUXER) += fate-fits-demux
+fate-fits-demux: tests/data/fits-multi.fits
+fate-fits-demux: CMD = framecrc -i $(TARGET_PATH)/tests/data/fits-multi.fits -vcodec copy
 
 FATE_SAMPLES_DEMUX-$(CONFIG_FLV_DEMUXER) += fate-flv-demux
 fate-flv-demux: CMD = framecrc -i $(TARGET_SAMPLES)/flv/Enigma_Principles_of_Lust-part.flv -codec copy
