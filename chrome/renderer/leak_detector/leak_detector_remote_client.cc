@@ -44,10 +44,6 @@ void LeakDetectorRemoteClient::OnLeaksFound(
   remote_service_->SendLeakReports(std::move(result));
 }
 
-void LeakDetectorRemoteClient::OnRenderProcessShutdown() {
-  remote_service_.reset();
-}
-
 void LeakDetectorRemoteClient::OnParamsReceived(
     mojo::StructPtr<metrics::mojom::LeakDetectorParams> result) {
   metrics::MemoryLeakReportProto::Params params;

@@ -44,7 +44,6 @@ class PrerenderDispatcher : public content::RenderThreadObserver,
 
   // From RenderThreadObserver:
   bool OnControlMessageReceived(const IPC::Message& message) override;
-  void OnRenderProcessShutdown() override;
 
   // From WebPrerenderingSupport:
   void Add(const blink::WebPrerender& prerender) override;

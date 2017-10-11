@@ -296,13 +296,6 @@ void ChromeRenderThreadObserver::UnregisterMojoInterfaces(
       chrome::mojom::RendererConfiguration::Name_);
 }
 
-void ChromeRenderThreadObserver::OnRenderProcessShutdown() {
-  visited_link_slave_.reset();
-
-  // Workaround for http://crbug.com/672646
-  renderer_configuration_bindings_.CloseAllBindings();
-}
-
 void ChromeRenderThreadObserver::SetInitialConfiguration(
     bool is_incognito_process) {
   is_incognito_process_ = is_incognito_process;

@@ -157,7 +157,6 @@ class Dispatcher : public content::RenderThreadObserver,
   // RenderThreadObserver implementation:
   bool OnControlMessageReceived(const IPC::Message& message) override;
   void IdleNotification() override;
-  void OnRenderProcessShutdown() override;
 
   void OnActivateExtension(const std::string& extension_id);
   void OnCancelSuspend(const std::string& extension_id);

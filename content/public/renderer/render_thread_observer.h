@@ -31,9 +31,6 @@ class CONTENT_EXPORT RenderThreadObserver {
   // Allows filtering of control messages.
   virtual bool OnControlMessageReceived(const IPC::Message& message);
 
-  // Notification that the render process is shutting down.
-  virtual void OnRenderProcessShutdown() {}
-
   // Called when the renderer cache of the plugin list has changed.
   virtual void PluginListChanged() {}
 

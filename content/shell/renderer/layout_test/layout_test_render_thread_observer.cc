@@ -41,10 +41,6 @@ LayoutTestRenderThreadObserver::~LayoutTestRenderThreadObserver() {
   g_instance = NULL;
 }
 
-void LayoutTestRenderThreadObserver::OnRenderProcessShutdown() {
-  test_interfaces_.reset();
-}
-
 bool LayoutTestRenderThreadObserver::OnControlMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
