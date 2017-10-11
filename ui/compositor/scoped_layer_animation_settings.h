@@ -30,15 +30,9 @@ class COMPOSITOR_EXPORT ScopedLayerAnimationSettings {
   void AddObserver(ImplicitAnimationObserver* observer);
 
   void SetAnimationMetricsReporter(AnimationMetricsReporter* reporter);
+
   void SetTransitionDuration(base::TimeDelta duration);
-  // This will request render surface caching on the animating layer. The cache
-  // request will be removed at the end of the animation.
-  void CacheRenderSurface();
-  // This will defer painting on the animating layer. The deferred paint
-  // request will be removed at the end of the animation.
-  void DeferPaint();
   base::TimeDelta GetTransitionDuration() const;
-  LayerAnimator* GetAnimator() { return animator_.get(); }
 
   // Locks transition duration in |animator_|. When transition duration
   // is locked any subsequent changes to it are ignored until the
@@ -51,6 +45,16 @@ class COMPOSITOR_EXPORT ScopedLayerAnimationSettings {
 
   void SetPreemptionStrategy(LayerAnimator::PreemptionStrategy strategy);
   LayerAnimator::PreemptionStrategy GetPreemptionStrategy() const;
+
+  // This will request render surface caching on the animating layer. The cache
+  // request will be removed at the end of the animation.
+  void CacheRenderSurface();
+
+  // This will defer painting on the animating layer. The deferred paint
+  // request will be removed at the end of the animation.
+  void DeferPaint();
+
+  LayerAnimator* GetAnimator() { return animator_.get(); }
 
  private:
   scoped_refptr<LayerAnimator> animator_;
