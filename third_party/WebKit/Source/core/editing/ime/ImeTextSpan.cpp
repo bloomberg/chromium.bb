@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/ImeTextSpan.h"
+#include "core/editing/ime/ImeTextSpan.h"
 
 #include <algorithm>
 #include "public/web/WebImeTextSpan.h"

@@ -24,7 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/editing/InputMethodController.h"
+#include "core/editing/ime/InputMethodController.h"
 
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"

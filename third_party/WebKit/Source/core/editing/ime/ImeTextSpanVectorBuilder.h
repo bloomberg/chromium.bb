@@ -28,18 +28,28 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/editing/ImeTextSpanVectorBuilder.h"
+#ifndef ImeTextSpanVectorBuilder_h
+#define ImeTextSpanVectorBuilder_h
+
+#include "core/CoreExport.h"
+#include "core/editing/ime/ImeTextSpan.h"
+#include "platform/wtf/Vector.h"
+#include "public/platform/WebVector.h"
+#include "public/web/WebImeTextSpan.h"
 
 namespace blink {
 
-Vector<ImeTextSpan> ImeTextSpanVectorBuilder::Build(
-    const WebVector<WebImeTextSpan>& ime_text_spans) {
-  Vector<ImeTextSpan> result;
-  size_t size = ime_text_spans.size();
-  result.ReserveCapacity(size);
-  for (size_t i = 0; i < size; ++i)
-    result.push_back(ime_text_spans[i]);
-  return result;
-}
+// This class is used for converting from WebVector<WebImeTextSpan>
+// to Vector<ImeTextSpan>.
+
+class ImeTextSpanVectorBuilder {
+  STATIC_ONLY(ImeTextSpanVectorBuilder);
+
+ public:
+  CORE_EXPORT static Vector<ImeTextSpan> Build(
+      const WebVector<WebImeTextSpan>&);
+};
 
 }  // namespace blink
+
+#endif
