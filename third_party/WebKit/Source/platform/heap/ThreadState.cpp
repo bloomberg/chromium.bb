@@ -523,12 +523,8 @@ void ThreadState::ScheduleGCIfNeeded() {
 
   // Allocation is allowed during sweeping, but those allocations should not
   // trigger nested GCs.
-  if (IsGCForbidden())
+  if (IsGCForbidden() || SweepForbidden())
     return;
-
-  if (IsSweepingInProgress())
-    return;
-  DCHECK(!SweepForbidden());
 
   ReportMemoryToV8();
 
