@@ -339,7 +339,7 @@ TEST_F(NGAbsoluteUtilsTest, Vertical) {
   auto_height = LayoutUnit(60);
   ComputeFullAbsoluteWithChildBlockSize(*ltr_space_, *style_, static_position,
                                         auto_height, WTF::nullopt, &p);
-  EXPECT_EQ(*auto_height + border_padding, p.size.height);
+  EXPECT_EQ(*auto_height, p.size.height);
   EXPECT_EQ(LayoutUnit(0), p.inset.top);
 
   // All auto, static position bottom
@@ -391,7 +391,7 @@ TEST_F(NGAbsoluteUtilsTest, Vertical) {
   auto_height = LayoutUnit(60);
   ComputeFullAbsoluteWithChildBlockSize(*ltr_space_, *style_, static_position,
                                         auto_height, WTF::nullopt, &p);
-  EXPECT_EQ(*auto_height + border_padding, p.size.height);
+  EXPECT_EQ(*auto_height, p.size.height);
 
   // Rule 2: top and bottom are unknown.
   SetVerticalStyle(NGAuto, margin_top, height, margin_bottom, NGAuto);
@@ -408,7 +408,7 @@ TEST_F(NGAbsoluteUtilsTest, Vertical) {
   auto_height = LayoutUnit(20);
   ComputeFullAbsoluteWithChildBlockSize(*ltr_space_, *style_, static_position,
                                         auto_height, WTF::nullopt, &p);
-  EXPECT_EQ(border_padding + *auto_height, p.size.height);
+  EXPECT_EQ(border_padding, p.size.height);
 
   // Rule 3: height and bottom are unknown.
   SetVerticalStyle(top, margin_top, NGAuto, margin_bottom, NGAuto);
@@ -416,7 +416,7 @@ TEST_F(NGAbsoluteUtilsTest, Vertical) {
   auto_height = LayoutUnit(70);
   ComputeFullAbsoluteWithChildBlockSize(*ltr_space_, *style_, static_position,
                                         auto_height, WTF::nullopt, &p);
-  EXPECT_EQ(*auto_height + border_padding, p.size.height);
+  EXPECT_EQ(*auto_height, p.size.height);
 
   // Rule 4: top is unknown.
   SetVerticalStyle(NGAuto, margin_top, height, margin_bottom, bottom);

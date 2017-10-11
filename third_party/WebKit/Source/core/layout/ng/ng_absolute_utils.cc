@@ -468,7 +468,7 @@ void ComputeFullAbsoluteWithChildBlockSize(
   }
   if (style.IsHorizontalWritingMode()) {
     if (child_minmax) {
-      LayoutUnit border_padding = HorizontalBorderPadding(space, style);
+      LayoutUnit border_padding = VerticalBorderPadding(space, style);
       child_minmax.value().min_size -= border_padding;
       child_minmax.value().max_size -= border_padding;
     }
@@ -483,7 +483,7 @@ void ComputeFullAbsoluteWithChildBlockSize(
                             position);
   } else {
     if (child_minmax) {
-      LayoutUnit border_padding = VerticalBorderPadding(space, style);
+      LayoutUnit border_padding = HorizontalBorderPadding(space, style);
       child_minmax.value().min_size -= border_padding;
       child_minmax.value().max_size -= border_padding;
     }
