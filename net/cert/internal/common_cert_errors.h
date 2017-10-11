@@ -112,6 +112,9 @@ NET_EXPORT extern const CertErrorId kUnacceptablePublicKey;
 // Crypto is present instead.
 NET_EXPORT extern const CertErrorId kEkuLacksServerAuthButHasGatedCrypto;
 
+// The certificate has been revoked.
+NET_EXPORT extern const CertErrorId kCertificateRevoked;
+
 }  // namespace cert_errors
 
 }  // namespace net
