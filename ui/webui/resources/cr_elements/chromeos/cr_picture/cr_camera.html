@@ -84,6 +84,7 @@
 
       #cameraControls > div {
         margin: 0 4px;
+        text-align: center;
         width: 32px;
       }
 
@@ -114,6 +115,15 @@
       :host([videomode]) #switchMode {
         background-image: url(camera_alt_icon.svg);
       }
+
+      cr-policy-indicator {
+        --iron-icon-fill-color: white;
+        -webkit-margin-end: 8px;
+      }
+
+      :host-context([dir=rtl]) cr-policy-indicator {
+        float: left;
+      }
     </style>
     <div id="perspectiveBox">
       <div id="userImageStreamCrop">
@@ -132,10 +142,18 @@
         </button>
       </div>
       <div>
-        <button is="paper-icon-button-light" id="switchMode" tabindex="2"
-            title="[[switchModeLabel]]" on-tap="onTapSwitchMode_"
-            disabled="[[!cameraOnline_]]">
-        </button>
+        <template is="dom-if" if="[[allowVideoMode]]">
+          <button is="paper-icon-button-light" id="switchMode" tabindex="2"
+              title="[[switchModeLabel]]" on-tap="onTapSwitchMode_"
+              disabled="[[!cameraOnline_]]">
+          </button>
+        </template>
+        <template is="dom-if" if="[[!allowVideoMode]]">
+          <cr-policy-indicator
+              id="allow-user-avatar-videos-policy-indicator"
+              indicator-type="devicePolicy">
+          </cr-policy-indicator>
+        </template>
       </div>
     </div>
   </template>

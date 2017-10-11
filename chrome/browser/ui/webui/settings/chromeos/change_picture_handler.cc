@@ -14,6 +14,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/camera_presence_notifier.h"
@@ -26,6 +27,7 @@
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
@@ -82,7 +84,11 @@ const char kProfileDownloadReason[] = "Preferences";
 ChangePictureHandler::ChangePictureHandler()
     : previous_image_index_(user_manager::User::USER_IMAGE_INVALID),
       user_manager_observer_(this),
-      camera_observer_(this) {
+      camera_observer_(this),
+      device_settings_observer_(CrosSettings::Get()->AddSettingsObserver(
+          kAllowUserAvatarVideos,
+          base::Bind(&ChangePictureHandler::UpdateAllowVideoMode,
+                     base::Unretained(this)))) {
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   media::SoundsManager* manager = media::SoundsManager::Get();
   manager->Initialize(SOUND_OBJECT_DELETE,
@@ -198,6 +204,7 @@ void ChangePictureHandler::HandlePageInitialized(const base::ListValue* args) {
   SendDefaultImages();
   SendSelectedImage();
   UpdateProfileImage();
+  UpdateAllowVideoMode();
 }
 
 void ChangePictureHandler::SendSelectedImage() {
@@ -424,6 +431,12 @@ const user_manager::User* ChangePictureHandler::GetUser() const {
   if (!user)
     return user_manager::UserManager::Get()->GetActiveUser();
   return user;
+}
+
+void ChangePictureHandler::UpdateAllowVideoMode() {
+  bool allow_video_mode = false;
+  CrosSettings::Get()->GetBoolean(kAllowUserAvatarVideos, &allow_video_mode);
+  FireWebUIListener("allow-video-mode-changed", base::Value(allow_video_mode));
 }
 
 }  // namespace settings

@@ -3280,6 +3280,15 @@
     ]
   },
 
+  "DeviceUserAvatarSettings": {
+    "os": ["chromeos"],
+    "test_policy": {
+      "allow-videos": true
+    },
+    "pref_mappings": [
+      { "pref": "cros.allow_user_avatar_videos"}
+    ]
+  },
 
   "----- Chrome Frame policies -------------------------------------------": {},
 
