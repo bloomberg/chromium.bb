@@ -54,6 +54,13 @@ constexpr char kActivationConsoleMessage[] =
     "issues as soon as possible and submit your site for another review. Learn "
     "more at https://www.chromestatus.com/feature/5738264052891648";
 
+constexpr char kActivationWarningConsoleMessage[] =
+    "Chrome might start blocking ads on this site in the future because this "
+    "site tends to show ads that interrupt, distract, or prevent user control. "
+    "You should fix the issues as soon as possible and submit your site for "
+    "another review. Learn more more at "
+    "https://www.chromestatus.com/feature/5738264052891648";
+
 // Console message to be displayed on disallowing subframe.
 constexpr char kDisallowSubframeConsoleMessagePrefix[] =
     "Chrome blocked resource ";
@@ -69,6 +76,11 @@ constexpr char kLearnMoreLink[] =
 constexpr char kDisallowNewWindowMessage[] =
     "Chrome prevented this site from opening a new tab or window. Learn more "
     "at https://www.chromestatus.com/feature/5243055179300864";
+
+constexpr char kDisallowNewWindowWarningMessage[] =
+    "Chrome might start preventing this site from opening new tabs or windows "
+    "in the future. Learn more at "
+    "https://www.chromestatus.com/feature/5243055179300864";
 
 }  // namespace subresource_filter
 
