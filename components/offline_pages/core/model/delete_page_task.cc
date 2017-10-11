@@ -8,10 +8,10 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "build/build_config.h"
-#include "components/offline_pages/core/model/offline_store_utils.h"
 #include "components/offline_pages/core/offline_page_metadata_store_sql.h"
 #include "components/offline_pages/core/offline_page_model.h"
 #include "components/offline_pages/core/offline_page_types.h"
+#include "components/offline_pages/core/offline_store_utils.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
@@ -110,7 +110,7 @@ bool GetDeletedPageInfoWrapperByOfflineIdSync(
     info_wrapper->client_id.name_space = statement.ColumnString(0);
     info_wrapper->client_id.id = statement.ColumnString(1);
     info_wrapper->file_path =
-        base::FilePath::FromUTF8Unsafe(statement.ColumnString(2));
+        store_utils::FromDatabaseFilePath(statement.ColumnString(2));
     info_wrapper->request_origin = statement.ColumnString(3);
     return true;
   }
@@ -166,7 +166,7 @@ std::vector<DeletedPageInfoWrapper> GetDeletedPageInfoWrappersByClientIdSync(
     info_wrapper.client_id = client_id;
     info_wrapper.offline_id = statement.ColumnInt64(0);
     info_wrapper.file_path =
-        base::FilePath::FromUTF8Unsafe(statement.ColumnString(1));
+        store_utils::FromDatabaseFilePath(statement.ColumnString(1));
     info_wrapper.request_origin = statement.ColumnString(2);
     info_wrappers.push_back(info_wrapper);
   }
@@ -230,7 +230,7 @@ GetCachedDeletedPageInfoWrappersByUrlPredicateSync(
     info_wrapper.client_id.name_space = statement.ColumnString(1);
     info_wrapper.client_id.id = statement.ColumnString(2);
     info_wrapper.file_path =
-        base::FilePath::FromUTF8Unsafe(statement.ColumnString(3));
+        store_utils::FromDatabaseFilePath(statement.ColumnString(3));
     info_wrapper.request_origin = statement.ColumnString(4);
     info_wrappers.push_back(info_wrapper);
   }

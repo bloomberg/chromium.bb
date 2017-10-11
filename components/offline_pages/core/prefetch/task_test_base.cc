@@ -7,6 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/test/mock_callback.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/offline_pages/core/offline_store_utils.h"
 #include "components/offline_pages/core/prefetch/prefetch_item.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store_test_util.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store_utils.h"
@@ -78,7 +79,7 @@ int64_t TaskTestBase::InsertPrefetchItemInStateWithOperation(
     PrefetchItemState state) {
   PrefetchItem item;
   item.state = state;
-  item.offline_id = PrefetchStoreUtils::GenerateOfflineId();
+  item.offline_id = store_utils::GenerateOfflineId();
   std::string offline_id_string = std::to_string(item.offline_id);
   item.url = GURL("http://www.example.com/?id=" + offline_id_string);
   item.operation_name = operation_name;

@@ -6,7 +6,7 @@
 
 #include "base/time/clock.h"
 #include "base/time/time.h"
-#include "components/offline_pages/core/offline_time_utils.h"
+#include "components/offline_pages/core/offline_store_utils.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
 
@@ -55,7 +55,8 @@ int64_t PrefetchDownloaderQuota::GetAvailableQuotaBytes() {
     return kMaxDailyQuotaBytes;
   }
 
-  base::Time update_time = FromDatabaseTime(statement.ColumnInt64(0));
+  base::Time update_time =
+      store_utils::FromDatabaseTime(statement.ColumnInt64(0));
   int64_t available_quota = statement.ColumnInt64(1);
 
   int64_t remaining_quota =
@@ -79,7 +80,7 @@ bool PrefetchDownloaderQuota::SetAvailableQuotaBytes(int64_t quota) {
   quota = NormalizeQuota(quota);
 
   sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
-  statement.BindInt64(0, ToDatabaseTime(clock_->Now()));
+  statement.BindInt64(0, store_utils::ToDatabaseTime(clock_->Now()));
   statement.BindInt64(1, quota);
   return statement.Run();
 }

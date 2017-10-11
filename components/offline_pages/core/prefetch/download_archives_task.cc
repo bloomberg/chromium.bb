@@ -10,7 +10,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
-#include "components/offline_pages/core/offline_time_utils.h"
+#include "components/offline_pages/core/offline_store_utils.h"
 #include "components/offline_pages/core/prefetch/prefetch_downloader.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_downloader_quota.h"
@@ -72,7 +72,7 @@ bool MarkItemAsDownloading(sql::Connection* db,
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt(0, static_cast<int>(PrefetchItemState::DOWNLOADING));
   statement.BindString(1, guid);
-  statement.BindInt64(2, ToDatabaseTime(base::Time::Now()));
+  statement.BindInt64(2, store_utils::ToDatabaseTime(base::Time::Now()));
   statement.BindInt64(3, offline_id);
   return statement.Run();
 }

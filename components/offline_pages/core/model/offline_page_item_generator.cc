@@ -7,7 +7,7 @@
 #include "base/files/file_util.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "components/offline_pages/core/model/offline_store_utils.h"
+#include "components/offline_pages/core/offline_store_utils.h"
 #include "url/gurl.h"
 
 namespace offline_pages {
@@ -18,7 +18,7 @@ OfflinePageItemGenerator::~OfflinePageItemGenerator() {}
 
 OfflinePageItem OfflinePageItemGenerator::CreateItem() {
   OfflinePageItem item;
-  item.offline_id = OfflineStoreUtils::GenerateOfflineId();
+  item.offline_id = store_utils::GenerateOfflineId();
   item.client_id.name_space = namespace_;
   item.client_id.id = base::Int64ToString(item.offline_id);
   item.request_origin = request_origin_;

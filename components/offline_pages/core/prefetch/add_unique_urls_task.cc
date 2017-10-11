@@ -14,7 +14,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
-#include "components/offline_pages/core/offline_time_utils.h"
+#include "components/offline_pages/core/offline_store_utils.h"
 #include "components/offline_pages/core/prefetch/prefetch_dispatcher.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store.h"
@@ -62,7 +62,7 @@ bool CreatePrefetchItemSync(sql::Connection* db,
       " (?, ?, ?, ?, ?, ?, ?)";
 
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
-  statement.BindInt64(0, PrefetchStoreUtils::GenerateOfflineId());
+  statement.BindInt64(0, store_utils::GenerateOfflineId());
   statement.BindString(1, prefetch_url.url.spec());
   statement.BindString(2, name_space);
   statement.BindString(3, prefetch_url.id);
@@ -102,7 +102,7 @@ Result AddUrlsAndCleanupZombiesSync(
     auto iter = existing_items.find(prefetch_url.url.spec());
     if (iter == existing_items.end()) {
       if (!CreatePrefetchItemSync(db, name_space, prefetch_url,
-                                  ToDatabaseTime(now)))
+                                  store_utils::ToDatabaseTime(now)))
         return Result::STORE_ERROR;  // Transaction rollback.
       added_row_count++;
 

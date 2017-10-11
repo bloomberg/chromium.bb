@@ -6,7 +6,7 @@
 
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/offline_pages/core/offline_time_utils.h"
+#include "components/offline_pages/core/offline_store_utils.h"
 #include "components/offline_pages/core/prefetch/mock_prefetch_item_generator.h"
 #include "components/offline_pages/core/prefetch/prefetch_item.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
@@ -58,8 +58,8 @@ TEST_F(PrefetchStoreTest, WriteAndLoadOneItem) {
   item1.generate_bundle_attempts = 10;
   item1.get_operation_attempts = 11;
   item1.download_initiation_attempts = 12;
-  item1.creation_time = FromDatabaseTime(1000L);
-  item1.freshness_time = FromDatabaseTime(2000L);
+  item1.creation_time = store_utils::FromDatabaseTime(1000L);
+  item1.freshness_time = store_utils::FromDatabaseTime(2000L);
   item1.error_code = PrefetchItemErrorCode::TOO_MANY_NEW_URLS;
   item1.file_size = item1.archive_body_length + 1;
 
