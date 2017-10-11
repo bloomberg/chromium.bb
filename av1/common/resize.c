@@ -33,6 +33,7 @@
 #define SUBPEL_BITS_RS 6
 #define SUBPEL_MASK_RS ((1 << SUBPEL_BITS_RS) - 1)
 #define INTERP_PRECISION_BITS 16
+#define INTERP_PRECISION_MASK ((1 << INTERP_PRECISION_BITS) - 1)
 #define SUBPEL_INTERP_EXTRA_BITS (INTERP_PRECISION_BITS - SUBPEL_BITS_RS)
 #define SUBPEL_INTERP_EXTRA_OFF (1 << (SUBPEL_INTERP_EXTRA_BITS - 1))
 
@@ -219,10 +220,17 @@ static const interp_kernel filteredinterp_filters1000[(1 << SUBPEL_BITS_RS)] = {
 };
 
 #if CONFIG_FRAME_SUPERRES && CONFIG_LOOP_RESTORATION
-#define INTERP_SIMPLE_TAPS 6
-static const int16_t filter_simple[(1
-                                    << SUBPEL_BITS_RS)][INTERP_SIMPLE_TAPS] = {
-#if INTERP_SIMPLE_TAPS == 2
+
+#if CONFIG_HORZONLY_FRAME_SUPERRES
+#define UPSCALE_NORMATIVE_TAPS 8
+#else
+#define UPSCALE_NORMATIVE_TAPS 6
+#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
+
+static const int16_t filter_normative[(
+    1 << SUBPEL_BITS_RS)][UPSCALE_NORMATIVE_TAPS] = {
+#if UPSCALE_NORMATIVE_TAPS == 2
+>>>>>>> Implement 1D upscaler differently
   { 128, 0 },  { 126, 2 },  { 124, 4 },  { 122, 6 },  { 120, 8 },  { 118, 10 },
   { 116, 12 }, { 114, 14 }, { 112, 16 }, { 110, 18 }, { 108, 20 }, { 106, 22 },
   { 104, 24 }, { 102, 26 }, { 100, 28 }, { 98, 30 },  { 96, 32 },  { 94, 34 },
@@ -234,65 +242,97 @@ static const int16_t filter_simple[(1
   { 32, 96 },  { 30, 98 },  { 28, 100 }, { 26, 102 }, { 24, 104 }, { 22, 106 },
   { 20, 108 }, { 18, 110 }, { 16, 112 }, { 14, 114 }, { 12, 116 }, { 10, 118 },
   { 8, 120 },  { 6, 122 },  { 4, 124 },  { 2, 126 },
-#elif INTERP_SIMPLE_TAPS == 4
-  { 0, 128, 0, 0 },      { -1, 128, 2, -1 },    { -2, 127, 4, -1 },
-  { -3, 126, 7, -2 },    { -4, 125, 9, -2 },    { -5, 125, 11, -3 },
-  { -6, 124, 13, -3 },   { -7, 123, 16, -4 },   { -7, 122, 18, -5 },
-  { -8, 121, 20, -5 },   { -9, 120, 23, -6 },   { -9, 118, 25, -6 },
-  { -10, 117, 28, -7 },  { -11, 116, 30, -7 },  { -11, 114, 33, -8 },
-  { -12, 113, 35, -8 },  { -12, 111, 38, -9 },  { -13, 109, 41, -9 },
-  { -13, 108, 43, -10 }, { -13, 106, 45, -10 }, { -13, 104, 48, -11 },
-  { -14, 102, 51, -11 }, { -14, 100, 53, -11 }, { -14, 98, 56, -12 },
-  { -14, 96, 58, -12 },  { -14, 94, 61, -13 },  { -15, 92, 64, -13 },
-  { -15, 90, 66, -13 },  { -15, 87, 69, -13 },  { -14, 85, 71, -14 },
-  { -14, 83, 73, -14 },  { -14, 80, 76, -14 },  { -14, 78, 78, -14 },
-  { -14, 76, 80, -14 },  { -14, 73, 83, -14 },  { -14, 71, 85, -14 },
-  { -13, 69, 87, -15 },  { -13, 66, 90, -15 },  { -13, 64, 92, -15 },
-  { -13, 61, 94, -14 },  { -12, 58, 96, -14 },  { -12, 56, 98, -14 },
-  { -11, 53, 100, -14 }, { -11, 51, 102, -14 }, { -11, 48, 104, -13 },
-  { -10, 45, 106, -13 }, { -10, 43, 108, -13 }, { -9, 41, 109, -13 },
-  { -9, 38, 111, -12 },  { -8, 35, 113, -12 },  { -8, 33, 114, -11 },
-  { -7, 30, 116, -11 },  { -7, 28, 117, -10 },  { -6, 25, 118, -9 },
-  { -6, 23, 120, -9 },   { -5, 20, 121, -8 },   { -5, 18, 122, -7 },
-  { -4, 16, 123, -7 },   { -3, 13, 124, -6 },   { -3, 11, 125, -5 },
-  { -2, 9, 125, -4 },    { -2, 7, 126, -3 },    { -1, 4, 127, -2 },
-  { -1, 2, 128, -1 },
-#elif INTERP_SIMPLE_TAPS == 6
-  { 0, 0, 128, 0, 0, 0 },      { 0, -1, 128, 2, -1, 0 },
-  { 1, -3, 127, 4, -2, 1 },    { 1, -4, 127, 6, -3, 1 },
-  { 2, -6, 126, 8, -3, 1 },    { 2, -7, 125, 11, -4, 1 },
-  { 2, -9, 125, 13, -5, 2 },   { 3, -10, 124, 15, -6, 2 },
-  { 3, -11, 123, 18, -7, 2 },  { 3, -12, 122, 20, -8, 3 },
-  { 4, -13, 121, 22, -9, 3 },  { 4, -14, 119, 25, -9, 3 },
-  { 4, -15, 118, 27, -10, 4 }, { 4, -16, 117, 30, -11, 4 },
-  { 5, -17, 116, 32, -12, 4 }, { 5, -17, 114, 35, -13, 4 },
-  { 5, -18, 112, 37, -13, 5 }, { 5, -19, 111, 40, -14, 5 },
-  { 6, -19, 109, 42, -15, 5 }, { 6, -20, 107, 45, -15, 5 },
-  { 6, -20, 105, 48, -16, 5 }, { 6, -21, 103, 51, -17, 6 },
-  { 6, -21, 101, 53, -17, 6 }, { 6, -21, 99, 56, -18, 6 },
-  { 7, -22, 97, 58, -18, 6 },  { 7, -22, 95, 61, -19, 6 },
-  { 7, -22, 93, 63, -19, 6 },  { 7, -22, 91, 66, -20, 6 },
-  { 7, -22, 88, 69, -20, 6 },  { 7, -22, 86, 71, -21, 7 },
-  { 7, -22, 83, 74, -21, 7 },  { 7, -22, 81, 76, -21, 7 },
-  { 7, -22, 79, 79, -22, 7 },  { 7, -21, 76, 81, -22, 7 },
-  { 7, -21, 74, 83, -22, 7 },  { 7, -21, 71, 86, -22, 7 },
-  { 6, -20, 69, 88, -22, 7 },  { 6, -20, 66, 91, -22, 7 },
-  { 6, -19, 63, 93, -22, 7 },  { 6, -19, 61, 95, -22, 7 },
-  { 6, -18, 58, 97, -22, 7 },  { 6, -18, 56, 99, -21, 6 },
-  { 6, -17, 53, 101, -21, 6 }, { 6, -17, 51, 103, -21, 6 },
-  { 5, -16, 48, 105, -20, 6 }, { 5, -15, 45, 107, -20, 6 },
-  { 5, -15, 42, 109, -19, 6 }, { 5, -14, 40, 111, -19, 5 },
-  { 5, -13, 37, 112, -18, 5 }, { 4, -13, 35, 114, -17, 5 },
-  { 4, -12, 32, 116, -17, 5 }, { 4, -11, 30, 117, -16, 4 },
-  { 4, -10, 27, 118, -15, 4 }, { 3, -9, 25, 119, -14, 4 },
-  { 3, -9, 22, 121, -13, 4 },  { 3, -8, 20, 122, -12, 3 },
-  { 2, -7, 18, 123, -11, 3 },  { 2, -6, 15, 124, -10, 3 },
-  { 2, -5, 13, 125, -9, 2 },   { 1, -4, 11, 125, -7, 2 },
-  { 1, -3, 8, 126, -6, 2 },    { 1, -3, 6, 127, -4, 1 },
-  { 1, -2, 4, 127, -3, 1 },    { 0, -1, 2, 128, -1, 0 },
+#elif UPSCALE_NORMATIVE_TAPS == 4
+{ 0, 128, 0, 0 }, { -1, 128, 2, -1 }, { -2, 127, 4, -1 }, { -3, 126, 7, -2 },
+    { -4, 125, 9, -2 }, { -5, 125, 11, -3 }, { -6, 124, 13, -3 },
+    { -7, 123, 16, -4 }, { -7, 122, 18, -5 }, { -8, 121, 20, -5 },
+    { -9, 120, 23, -6 }, { -9, 118, 25, -6 }, { -10, 117, 28, -7 },
+    { -11, 116, 30, -7 }, { -11, 114, 33, -8 }, { -12, 113, 35, -8 },
+    { -12, 111, 38, -9 }, { -13, 109, 41, -9 }, { -13, 108, 43, -10 },
+    { -13, 106, 45, -10 }, { -13, 104, 48, -11 }, { -14, 102, 51, -11 },
+    { -14, 100, 53, -11 }, { -14, 98, 56, -12 }, { -14, 96, 58, -12 },
+    { -14, 94, 61, -13 }, { -15, 92, 64, -13 }, { -15, 90, 66, -13 },
+    { -15, 87, 69, -13 }, { -14, 85, 71, -14 }, { -14, 83, 73, -14 },
+    { -14, 80, 76, -14 }, { -14, 78, 78, -14 }, { -14, 76, 80, -14 },
+    { -14, 73, 83, -14 }, { -14, 71, 85, -14 }, { -13, 69, 87, -15 },
+    { -13, 66, 90, -15 }, { -13, 64, 92, -15 }, { -13, 61, 94, -14 },
+    { -12, 58, 96, -14 }, { -12, 56, 98, -14 }, { -11, 53, 100, -14 },
+    { -11, 51, 102, -14 }, { -11, 48, 104, -13 }, { -10, 45, 106, -13 },
+    { -10, 43, 108, -13 }, { -9, 41, 109, -13 }, { -9, 38, 111, -12 },
+    { -8, 35, 113, -12 }, { -8, 33, 114, -11 }, { -7, 30, 116, -11 },
+    { -7, 28, 117, -10 }, { -6, 25, 118, -9 }, { -6, 23, 120, -9 },
+    { -5, 20, 121, -8 }, { -5, 18, 122, -7 }, { -4, 16, 123, -7 },
+    { -3, 13, 124, -6 }, { -3, 11, 125, -5 }, { -2, 9, 125, -4 },
+    { -2, 7, 126, -3 }, { -1, 4, 127, -2 }, { -1, 2, 128, -1 },
+#elif UPSCALE_NORMATIVE_TAPS == 6
+{ 0, 0, 128, 0, 0, 0 }, { 0, -1, 128, 2, -1, 0 }, { 1, -3, 127, 4, -2, 1 },
+    { 1, -4, 127, 6, -3, 1 }, { 2, -6, 126, 8, -3, 1 },
+    { 2, -7, 125, 11, -4, 1 }, { 2, -9, 125, 13, -5, 2 },
+    { 3, -10, 124, 15, -6, 2 }, { 3, -11, 123, 18, -7, 2 },
+    { 3, -12, 122, 20, -8, 3 }, { 4, -13, 121, 22, -9, 3 },
+    { 4, -14, 119, 25, -9, 3 }, { 4, -15, 118, 27, -10, 4 },
+    { 4, -16, 117, 30, -11, 4 }, { 5, -17, 116, 32, -12, 4 },
+    { 5, -17, 114, 35, -13, 4 }, { 5, -18, 112, 37, -13, 5 },
+    { 5, -19, 111, 40, -14, 5 }, { 6, -19, 109, 42, -15, 5 },
+    { 6, -20, 107, 45, -15, 5 }, { 6, -20, 105, 48, -16, 5 },
+    { 6, -21, 103, 51, -17, 6 }, { 6, -21, 101, 53, -17, 6 },
+    { 6, -21, 99, 56, -18, 6 }, { 7, -22, 97, 58, -18, 6 },
+    { 7, -22, 95, 61, -19, 6 }, { 7, -22, 93, 63, -19, 6 },
+    { 7, -22, 91, 66, -20, 6 }, { 7, -22, 88, 69, -20, 6 },
+    { 7, -22, 86, 71, -21, 7 }, { 7, -22, 83, 74, -21, 7 },
+    { 7, -22, 81, 76, -21, 7 }, { 7, -22, 79, 79, -22, 7 },
+    { 7, -21, 76, 81, -22, 7 }, { 7, -21, 74, 83, -22, 7 },
+    { 7, -21, 71, 86, -22, 7 }, { 6, -20, 69, 88, -22, 7 },
+    { 6, -20, 66, 91, -22, 7 }, { 6, -19, 63, 93, -22, 7 },
+    { 6, -19, 61, 95, -22, 7 }, { 6, -18, 58, 97, -22, 7 },
+    { 6, -18, 56, 99, -21, 6 }, { 6, -17, 53, 101, -21, 6 },
+    { 6, -17, 51, 103, -21, 6 }, { 5, -16, 48, 105, -20, 6 },
+    { 5, -15, 45, 107, -20, 6 }, { 5, -15, 42, 109, -19, 6 },
+    { 5, -14, 40, 111, -19, 5 }, { 5, -13, 37, 112, -18, 5 },
+    { 4, -13, 35, 114, -17, 5 }, { 4, -12, 32, 116, -17, 5 },
+    { 4, -11, 30, 117, -16, 4 }, { 4, -10, 27, 118, -15, 4 },
+    { 3, -9, 25, 119, -14, 4 }, { 3, -9, 22, 121, -13, 4 },
+    { 3, -8, 20, 122, -12, 3 }, { 2, -7, 18, 123, -11, 3 },
+    { 2, -6, 15, 124, -10, 3 }, { 2, -5, 13, 125, -9, 2 },
+    { 1, -4, 11, 125, -7, 2 }, { 1, -3, 8, 126, -6, 2 },
+    { 1, -3, 6, 127, -4, 1 }, { 1, -2, 4, 127, -3, 1 },
+    { 0, -1, 2, 128, -1, 0 },
+#elif UPSCALE_NORMATIVE_TAPS == 8
+{ 0, 0, 0, 128, 0, 0, 0, 0 }, { 0, 0, -1, 128, 2, -1, 0, 0 },
+    { 0, 1, -3, 127, 4, -2, 1, 0 }, { 0, 1, -4, 127, 6, -3, 1, 0 },
+    { 0, 2, -6, 126, 8, -3, 1, 0 }, { 0, 2, -7, 125, 11, -4, 1, 0 },
+    { -1, 2, -8, 125, 13, -5, 2, 0 }, { -1, 3, -9, 124, 15, -6, 2, 0 },
+    { -1, 3, -10, 123, 18, -6, 2, -1 }, { -1, 3, -11, 122, 20, -7, 3, -1 },
+    { -1, 4, -12, 121, 22, -8, 3, -1 }, { -1, 4, -13, 120, 25, -9, 3, -1 },
+    { -1, 4, -14, 118, 28, -9, 3, -1 }, { -1, 4, -15, 117, 30, -10, 4, -1 },
+    { -1, 5, -16, 116, 32, -11, 4, -1 }, { -1, 5, -16, 114, 35, -12, 4, -1 },
+    { -1, 5, -17, 112, 38, -12, 4, -1 }, { -1, 5, -18, 111, 40, -13, 5, -1 },
+    { -1, 5, -18, 109, 43, -14, 5, -1 }, { -1, 6, -19, 107, 45, -14, 5, -1 },
+    { -1, 6, -19, 105, 48, -15, 5, -1 }, { -1, 6, -19, 103, 51, -16, 5, -1 },
+    { -1, 6, -20, 101, 53, -16, 6, -1 }, { -1, 6, -20, 99, 56, -17, 6, -1 },
+    { -1, 6, -20, 97, 58, -17, 6, -1 }, { -1, 6, -20, 95, 61, -18, 6, -1 },
+    { -2, 7, -20, 93, 64, -18, 6, -2 }, { -2, 7, -20, 91, 66, -19, 6, -1 },
+    { -2, 7, -20, 88, 69, -19, 6, -1 }, { -2, 7, -20, 86, 71, -19, 6, -1 },
+    { -2, 7, -20, 84, 74, -20, 7, -2 }, { -2, 7, -20, 81, 76, -20, 7, -1 },
+    { -2, 7, -20, 79, 79, -20, 7, -2 }, { -1, 7, -20, 76, 81, -20, 7, -2 },
+    { -2, 7, -20, 74, 84, -20, 7, -2 }, { -1, 6, -19, 71, 86, -20, 7, -2 },
+    { -1, 6, -19, 69, 88, -20, 7, -2 }, { -1, 6, -19, 66, 91, -20, 7, -2 },
+    { -2, 6, -18, 64, 93, -20, 7, -2 }, { -1, 6, -18, 61, 95, -20, 6, -1 },
+    { -1, 6, -17, 58, 97, -20, 6, -1 }, { -1, 6, -17, 56, 99, -20, 6, -1 },
+    { -1, 6, -16, 53, 101, -20, 6, -1 }, { -1, 5, -16, 51, 103, -19, 6, -1 },
+    { -1, 5, -15, 48, 105, -19, 6, -1 }, { -1, 5, -14, 45, 107, -19, 6, -1 },
+    { -1, 5, -14, 43, 109, -18, 5, -1 }, { -1, 5, -13, 40, 111, -18, 5, -1 },
+    { -1, 4, -12, 38, 112, -17, 5, -1 }, { -1, 4, -12, 35, 114, -16, 5, -1 },
+    { -1, 4, -11, 32, 116, -16, 5, -1 }, { -1, 4, -10, 30, 117, -15, 4, -1 },
+    { -1, 3, -9, 28, 118, -14, 4, -1 }, { -1, 3, -9, 25, 120, -13, 4, -1 },
+    { -1, 3, -8, 22, 121, -12, 4, -1 }, { -1, 3, -7, 20, 122, -11, 3, -1 },
+    { -1, 2, -6, 18, 123, -10, 3, -1 }, { 0, 2, -6, 15, 124, -9, 3, -1 },
+    { 0, 2, -5, 13, 125, -8, 2, -1 }, { 0, 1, -4, 11, 125, -7, 2, 0 },
+    { 0, 1, -3, 8, 126, -6, 2, 0 }, { 0, 1, -3, 6, 127, -4, 1, 0 },
+    { 0, 1, -2, 4, 127, -3, 1, 0 }, { 0, 0, -1, 2, 128, -1, 0, 0 },
 #else
-#error "Invalid value of INTERP_SIMPLE_TAPS"
-#endif  // INTERP_SIMPLE_TAPS == 2
+#error "Invalid value of UPSCALE_NORMATIVE_TAPS"
+#endif  // UPSCALE_NORMATIVE_TAPS == 2
 };
 #endif  // CONFIG_FRAME_SUPERRES && CONFIG_LOOP_RESTORATION
 
@@ -300,34 +340,36 @@ static const int16_t filter_simple[(1
 static const int16_t av1_down2_symeven_half_filter[] = { 56, 12, -3, -1 };
 static const int16_t av1_down2_symodd_half_filter[] = { 64, 35, 0, -3 };
 
-static const interp_kernel *choose_interp_filter(int inlength, int outlength) {
-  int outlength16 = outlength * 16;
-  if (outlength16 >= inlength * 16)
+static const interp_kernel *choose_interp_filter(int in_length,
+                                                 int out_length) {
+  int out_length16 = out_length * 16;
+  if (out_length16 >= in_length * 16)
     return filteredinterp_filters1000;
-  else if (outlength16 >= inlength * 13)
+  else if (out_length16 >= in_length * 13)
     return filteredinterp_filters875;
-  else if (outlength16 >= inlength * 11)
+  else if (out_length16 >= in_length * 11)
     return filteredinterp_filters750;
-  else if (outlength16 >= inlength * 9)
+  else if (out_length16 >= in_length * 9)
     return filteredinterp_filters625;
   else
     return filteredinterp_filters500;
 }
 
-static void interpolate_core(const uint8_t *const input, int inlength,
-                             uint8_t *output, int outlength,
+static void interpolate_core(const uint8_t *const input, int in_length,
+                             uint8_t *output, int out_length,
                              const int16_t *interp_filters, int interp_taps) {
   const int32_t delta =
-      (((uint32_t)inlength << INTERP_PRECISION_BITS) + outlength / 2) /
-      outlength;
-  const int32_t offset =
-      inlength > outlength
-          ? (((int32_t)(inlength - outlength) << (INTERP_PRECISION_BITS - 1)) +
-             outlength / 2) /
-                outlength
-          : -(((int32_t)(outlength - inlength) << (INTERP_PRECISION_BITS - 1)) +
-              outlength / 2) /
-                outlength;
+      (((uint32_t)in_length << INTERP_PRECISION_BITS) + out_length / 2) /
+      out_length;
+  const int32_t offset = in_length > out_length
+                             ? (((int32_t)(in_length - out_length)
+                                 << (INTERP_PRECISION_BITS - 1)) +
+                                out_length / 2) /
+                                   out_length
+                             : -(((int32_t)(out_length - in_length)
+                                  << (INTERP_PRECISION_BITS - 1)) +
+                                 out_length / 2) /
+                                   out_length;
   uint8_t *optr = output;
   int x, x1, x2, sum, k, int_pel, sub_pel;
   int32_t y;
@@ -339,16 +381,16 @@ static void interpolate_core(const uint8_t *const input, int inlength,
     y += delta;
   }
   x1 = x;
-  x = outlength - 1;
+  x = out_length - 1;
   y = delta * x + offset + SUBPEL_INTERP_EXTRA_OFF;
   while ((y >> INTERP_PRECISION_BITS) + (int32_t)(interp_taps / 2) >=
-         inlength) {
+         in_length) {
     x--;
     y -= delta;
   }
   x2 = x;
   if (x1 > x2) {
-    for (x = 0, y = offset + SUBPEL_INTERP_EXTRA_OFF; x < outlength;
+    for (x = 0, y = offset + SUBPEL_INTERP_EXTRA_OFF; x < out_length;
          ++x, y += delta) {
       int_pel = y >> INTERP_PRECISION_BITS;
       sub_pel = (y >> SUBPEL_INTERP_EXTRA_BITS) & SUBPEL_MASK_RS;
@@ -356,7 +398,7 @@ static void interpolate_core(const uint8_t *const input, int inlength,
       sum = 0;
       for (k = 0; k < interp_taps; ++k) {
         const int pk = int_pel - interp_taps / 2 + 1 + k;
-        sum += filter[k] * input[AOMMAX(AOMMIN(pk, inlength - 1), 0)];
+        sum += filter[k] * input[AOMMAX(AOMMIN(pk, in_length - 1), 0)];
       }
       *optr++ = clip_pixel(ROUND_POWER_OF_TWO(sum, FILTER_BITS));
     }
@@ -382,33 +424,100 @@ static void interpolate_core(const uint8_t *const input, int inlength,
       *optr++ = clip_pixel(ROUND_POWER_OF_TWO(sum, FILTER_BITS));
     }
     // End part.
-    for (; x < outlength; ++x, y += delta) {
+    for (; x < out_length; ++x, y += delta) {
       int_pel = y >> INTERP_PRECISION_BITS;
       sub_pel = (y >> SUBPEL_INTERP_EXTRA_BITS) & SUBPEL_MASK_RS;
       const int16_t *filter = &interp_filters[sub_pel * interp_taps];
       sum = 0;
       for (k = 0; k < interp_taps; ++k)
         sum += filter[k] *
-               input[AOMMIN(int_pel - interp_taps / 2 + 1 + k, inlength - 1)];
+               input[AOMMIN(int_pel - interp_taps / 2 + 1 + k, in_length - 1)];
       *optr++ = clip_pixel(ROUND_POWER_OF_TWO(sum, FILTER_BITS));
     }
   }
 }
 
-static void interpolate(const uint8_t *const input, int inlength,
-                        uint8_t *output, int outlength) {
+static void interpolate(const uint8_t *const input, int in_length,
+                        uint8_t *output, int out_length) {
   const interp_kernel *interp_filters =
-      choose_interp_filter(inlength, outlength);
+      choose_interp_filter(in_length, out_length);
 
-  interpolate_core(input, inlength, output, outlength, &interp_filters[0][0],
+  interpolate_core(input, in_length, output, out_length, &interp_filters[0][0],
                    INTERP_TAPS);
 }
 
 #if CONFIG_FRAME_SUPERRES && CONFIG_LOOP_RESTORATION
-static void interpolate_simple(const uint8_t *const input, int inlength,
-                               uint8_t *output, int outlength) {
-  interpolate_core(input, inlength, output, outlength, &filter_simple[0][0],
-                   INTERP_SIMPLE_TAPS);
+
+#define UPSCALE_PROC_UNIT 64  // Source step (roughly)
+#define UPSCALE_PROC_UNIT_SCALE (UPSCALE_PROC_UNIT / SCALE_NUMERATOR)
+
+static int get_upscale_convolve_params(int in_length, int out_length,
+                                       int out_start, int32_t *x0_qn,
+                                       int32_t *x_step_qn) {
+  assert(out_length >= in_length);
+  *x_step_qn =
+      ((in_length << INTERP_PRECISION_BITS) + out_length / 2) / out_length;
+  *x0_qn = (-((out_length - in_length) << (INTERP_PRECISION_BITS - 1)) +
+            out_length / 2) /
+               out_length +
+           out_start * (*x_step_qn) + SUBPEL_INTERP_EXTRA_OFF;
+  const int off = (*x0_qn >> INTERP_PRECISION_BITS);
+  *x0_qn = (int32_t)((uint32_t)(*x0_qn) & INTERP_PRECISION_MASK);
+  return off;
+}
+
+static void convolve_horiz_superres_c(const uint8_t *src, uint8_t *dst,
+                                      const int16_t *x_filters, int interp_taps,
+                                      int x0_qn, int x_step_qn, int w) {
+  int x;
+  src -= interp_taps / 2 - 1;
+  int x_qn = x0_qn;
+  for (x = 0; x < w; ++x) {
+    const uint8_t *const src_x = &src[x_qn >> INTERP_PRECISION_BITS];
+    const int x_filter_idx =
+        (x_qn & INTERP_PRECISION_MASK) >> SUBPEL_INTERP_EXTRA_BITS;
+    assert(x_filter_idx <= SUBPEL_MASK_RS);
+    const int16_t *const x_filter = &x_filters[x_filter_idx * interp_taps];
+    int k, sum = 0;
+    for (k = 0; k < interp_taps; ++k) sum += src_x[k] * x_filter[k];
+    dst[x] = clip_pixel(ROUND_POWER_OF_TWO(sum, FILTER_BITS));
+    x_qn += x_step_qn;
+  }
+}
+
+static void interpolate_normative_core(const uint8_t *const src, int in_length,
+                                       uint8_t *dst, int out_length,
+                                       int superres_denom,
+                                       const int16_t *interp_filters,
+                                       int interp_taps) {
+  const int oproc_unit = UPSCALE_PROC_UNIT_SCALE * superres_denom;
+  int32_t x_step_qn, x0_qn;
+  int olen = oproc_unit;
+  for (int op = 0; op < out_length; op += olen) {
+    const uint8_t *srcp =
+        src + get_upscale_convolve_params(in_length, out_length, op, &x0_qn,
+                                          &x_step_qn);
+    olen = AOMMIN(oproc_unit, out_length - op);
+    convolve_horiz_superres_c(srcp, dst + op, interp_filters, interp_taps,
+                              x0_qn, x_step_qn, olen);
+  }
+}
+
+static void interpolate_normative(const uint8_t *const input, int in_length,
+                                  uint8_t *output, int out_length,
+                                  int superres_denom) {
+  uint8_t *intbuf_alloc = (uint8_t *)aom_malloc(
+      sizeof(uint8_t) * (in_length + UPSCALE_NORMATIVE_TAPS + 2));
+  uint8_t *intbuf = intbuf_alloc + UPSCALE_NORMATIVE_TAPS / 2 + 1;
+  memcpy(intbuf, input, sizeof(*intbuf) * in_length);
+  for (int k = 0; k < UPSCALE_NORMATIVE_TAPS / 2 + 1; ++k) {
+    intbuf[-k - 1] = intbuf[0];
+    intbuf[in_length + k] = intbuf[in_length - 1];
+  }
+  interpolate_normative_core(intbuf, in_length, output, out_length,
+                             superres_denom, &filter_normative[0][0],
+                             UPSCALE_NORMATIVE_TAPS);
+  aom_free(intbuf_alloc);
 }
 #endif  // CONFIG_FRAME_SUPERRES && CONFIG_LOOP_RESTORATION
 
@@ -625,12 +734,12 @@ Error:
 }
 
 #if CONFIG_FRAME_SUPERRES
-static void upscale_normative(const uint8_t *const input, int length,
-                              uint8_t *output, int olength,
-                              int superres_denom) {
+static void upscale_normative_1D(const uint8_t *const input, int length,
+                                 uint8_t *output, int olength,
+                                 int superres_denom) {
   (void)superres_denom;
 #if CONFIG_LOOP_RESTORATION
-  interpolate_simple(input, length, output, olength);
+  interpolate_normative(input, length, output, olength, superres_denom);
 #else
   interpolate(input, length, output, olength);
 #endif  // CONFIG_LOOP_RESTORATION
@@ -650,19 +759,19 @@ static void upscale_normative_plane(const uint8_t *const input, int height,
   (void)height2;
   assert(height2 == height);
   for (i = 0; i < height; ++i)
-    upscale_normative(input + in_stride * i, width, output + out_stride * i,
-                      width2, superres_denom);
+    upscale_normative_1D(input + in_stride * i, width, output + out_stride * i,
+                         width2, superres_denom);
 #else
   uint8_t *intbuf = (uint8_t *)aom_malloc(sizeof(uint8_t) * width2 * height);
   uint8_t *arrbuf = (uint8_t *)aom_malloc(sizeof(uint8_t) * height);
   uint8_t *arrbuf2 = (uint8_t *)aom_malloc(sizeof(uint8_t) * height2);
   if (intbuf == NULL || arrbuf == NULL || arrbuf2 == NULL) goto Error;
   for (i = 0; i < height; ++i)
-    upscale_normative(input + in_stride * i, width, intbuf + width2 * i, width2,
-                      superres_denom);
+    upscale_normative_1D(input + in_stride * i, width, intbuf + width2 * i,
+                         width2, superres_denom);
   for (i = 0; i < width2; ++i) {
     fill_col_to_arr(intbuf + i, width2, height, arrbuf);
-    upscale_normative(arrbuf, height, arrbuf2, height2, superres_denom);
+    upscale_normative_1D(arrbuf, height, arrbuf2, height2, superres_denom);
     fill_arr_to_col(output + i, out_stride, height2, arrbuf2);
   }
 
@@ -675,21 +784,22 @@ Error:
 #endif  // CONFIG_FRAME_SUPERRES
 
 #if CONFIG_HIGHBITDEPTH
-static void highbd_interpolate_core(const uint16_t *const input, int inlength,
-                                    uint16_t *output, int outlength, int bd,
+static void highbd_interpolate_core(const uint16_t *const input, int in_length,
+                                    uint16_t *output, int out_length, int bd,
                                     const int16_t *interp_filters,
                                     int interp_taps) {
   const int32_t delta =
-      (((uint32_t)inlength << INTERP_PRECISION_BITS) + outlength / 2) /
-      outlength;
-  const int32_t offset =
-      inlength > outlength
-          ? (((int32_t)(inlength - outlength) << (INTERP_PRECISION_BITS - 1)) +
-             outlength / 2) /
-                outlength
-          : -(((int32_t)(outlength - inlength) << (INTERP_PRECISION_BITS - 1)) +
-              outlength / 2) /
-                outlength;
+      (((uint32_t)in_length << INTERP_PRECISION_BITS) + out_length / 2) /
+      out_length;
+  const int32_t offset = in_length > out_length
+                             ? (((int32_t)(in_length - out_length)
+                                 << (INTERP_PRECISION_BITS - 1)) +
+                                out_length / 2) /
+                                   out_length
+                             : -(((int32_t)(out_length - in_length)
+                                  << (INTERP_PRECISION_BITS - 1)) +
+                                 out_length / 2) /
+                                   out_length;
   uint16_t *optr = output;
   int x, x1, x2, sum, k, int_pel, sub_pel;
   int32_t y;
@@ -701,16 +811,16 @@ static void highbd_interpolate_core(const uint16_t *const input, int inlength,
     y += delta;
   }
   x1 = x;
-  x = outlength - 1;
+  x = out_length - 1;
   y = delta * x + offset + SUBPEL_INTERP_EXTRA_OFF;
   while ((y >> INTERP_PRECISION_BITS) + (int32_t)(interp_taps / 2) >=
-         inlength) {
+         in_length) {
     x--;
     y -= delta;
   }
   x2 = x;
   if (x1 > x2) {
-    for (x = 0, y = offset + SUBPEL_INTERP_EXTRA_OFF; x < outlength;
+    for (x = 0, y = offset + SUBPEL_INTERP_EXTRA_OFF; x < out_length;
          ++x, y += delta) {
       int_pel = y >> INTERP_PRECISION_BITS;
       sub_pel = (y >> SUBPEL_INTERP_EXTRA_BITS) & SUBPEL_MASK_RS;
@@ -718,7 +828,7 @@ static void highbd_interpolate_core(const uint16_t *const input, int inlength,
       sum = 0;
       for (k = 0; k < interp_taps; ++k) {
         const int pk = int_pel - interp_taps / 2 + 1 + k;
-        sum += filter[k] * input[AOMMAX(AOMMIN(pk, inlength - 1), 0)];
+        sum += filter[k] * input[AOMMAX(AOMMIN(pk, in_length - 1), 0)];
       }
       *optr++ = clip_pixel_highbd(ROUND_POWER_OF_TWO(sum, FILTER_BITS), bd);
     }
@@ -744,33 +854,84 @@ static void highbd_interpolate_core(const uint16_t *const input, int inlength,
       *optr++ = clip_pixel_highbd(ROUND_POWER_OF_TWO(sum, FILTER_BITS), bd);
     }
     // End part.
-    for (; x < outlength; ++x, y += delta) {
+    for (; x < out_length; ++x, y += delta) {
       int_pel = y >> INTERP_PRECISION_BITS;
       sub_pel = (y >> SUBPEL_INTERP_EXTRA_BITS) & SUBPEL_MASK_RS;
       const int16_t *filter = &interp_filters[sub_pel * interp_taps];
       sum = 0;
       for (k = 0; k < interp_taps; ++k)
         sum += filter[k] *
-               input[AOMMIN(int_pel - interp_taps / 2 + 1 + k, inlength - 1)];
+               input[AOMMIN(int_pel - interp_taps / 2 + 1 + k, in_length - 1)];
       *optr++ = clip_pixel_highbd(ROUND_POWER_OF_TWO(sum, FILTER_BITS), bd);
     }
   }
 }
 
-static void highbd_interpolate(const uint16_t *const input, int inlength,
-                               uint16_t *output, int outlength, int bd) {
+static void highbd_interpolate(const uint16_t *const input, int in_length,
+                               uint16_t *output, int out_length, int bd) {
   const interp_kernel *interp_filters =
-      choose_interp_filter(inlength, outlength);
+      choose_interp_filter(in_length, out_length);
 
-  highbd_interpolate_core(input, inlength, output, outlength, bd,
+  highbd_interpolate_core(input, in_length, output, out_length, bd,
                           &interp_filters[0][0], INTERP_TAPS);
 }
 
 #if CONFIG_FRAME_SUPERRES && CONFIG_LOOP_RESTORATION
-static void highbd_interpolate_simple(const uint16_t *const input, int inlength,
-                                      uint16_t *output, int outlength, int bd) {
-  highbd_interpolate_core(input, inlength, output, outlength, bd,
-                          &filter_simple[0][0], INTERP_SIMPLE_TAPS);
+static void highbd_convolve_horiz_superres_c(const uint16_t *src, uint16_t *dst,
+                                             const int16_t *x_filters,
+                                             int interp_taps, int x0_qn,
+                                             int x_step_qn, int w, int bd) {
+  int x;
+  src -= interp_taps / 2 - 1;
+  int x_qn = x0_qn;
+  for (x = 0; x < w; ++x) {
+    const uint16_t *const src_x = &src[x_qn >> INTERP_PRECISION_BITS];
+    const int x_filter_idx =
+        (x_qn & INTERP_PRECISION_MASK) >> SUBPEL_INTERP_EXTRA_BITS;
+    assert(x_filter_idx <= SUBPEL_MASK_RS);
+    const int16_t *const x_filter = &x_filters[x_filter_idx * interp_taps];
+    int k, sum = 0;
+    for (k = 0; k < interp_taps; ++k) sum += src_x[k] * x_filter[k];
+    dst[x] = clip_pixel_highbd(ROUND_POWER_OF_TWO(sum, FILTER_BITS), bd);
+    x_qn += x_step_qn;
+  }
+}
+
+static void highbd_interpolate_normative_core(const uint16_t *const src,
+                                              int in_length, uint16_t *dst,
+                                              int out_length,
+                                              int superres_denom, int bd,
+                                              const int16_t *interp_filters,
+                                              int interp_taps) {
+  const int oproc_unit = UPSCALE_PROC_UNIT_SCALE * superres_denom;
+  int32_t x_step_qn, x0_qn;
+  int olen = oproc_unit;
+  for (int op = 0; op < out_length; op += olen) {
+    const uint16_t *srcp =
+        src + get_upscale_convolve_params(in_length, out_length, op, &x0_qn,
+                                          &x_step_qn);
+    olen = AOMMIN(oproc_unit, out_length - op);
+    highbd_convolve_horiz_superres_c(srcp, dst + op, interp_filters,
+                                     interp_taps, x0_qn, x_step_qn, olen, bd);
+  }
+}
+
+static void highbd_interpolate_normative(const uint16_t *const input,
+                                         int in_length, uint16_t *output,
+                                         int out_length, int bd,
+                                         int superres_denom) {
+  uint16_t *intbuf_alloc = (uint16_t *)aom_malloc(
+      sizeof(uint16_t) * (in_length + UPSCALE_NORMATIVE_TAPS));
+  uint16_t *intbuf = intbuf_alloc + UPSCALE_NORMATIVE_TAPS / 2;
+  memcpy(intbuf, input, sizeof(*intbuf) * in_length);
+  for (int k = 0; k < UPSCALE_NORMATIVE_TAPS / 2; ++k) {
+    intbuf[-k - 1] = intbuf[0];
+    intbuf[in_length + k] = intbuf[in_length - 1];
+  }
+  highbd_interpolate_normative_core(intbuf, in_length, output, out_length,
+                                    superres_denom, bd, &filter_normative[0][0],
+                                    UPSCALE_NORMATIVE_TAPS);
+  aom_free(intbuf_alloc);
 }
 #endif  // CONFIG_FRAME_SUPERRES && CONFIG_LOOP_RESTORATION
 
@@ -971,12 +1132,13 @@ Error:
 }
 
 #if CONFIG_FRAME_SUPERRES
-static void highbd_upscale_normative(const uint16_t *const input, int length,
-                                     uint16_t *output, int olength,
-                                     int superres_denom, int bd) {
+static void highbd_upscale_normative_1D(const uint16_t *const input, int length,
+                                        uint16_t *output, int olength,
+                                        int superres_denom, int bd) {
   (void)superres_denom;
 #if CONFIG_LOOP_RESTORATION
-  highbd_interpolate_simple(input, length, output, olength, bd);
+  highbd_interpolate_normative(input, length, output, olength, bd,
+                               superres_denom);
 #else
   highbd_interpolate(input, length, output, olength, bd);
 #endif  // CONFIG_LOOP_RESTORATION
@@ -997,22 +1159,24 @@ static void highbd_upscale_normative_plane(const uint8_t *const input,
   (void)height2;
   assert(height2 == height);
   for (i = 0; i < height; ++i)
-    highbd_upscale_normative(CONVERT_TO_SHORTPTR(input + in_stride * i), width,
-                             CONVERT_TO_SHORTPTR(output + out_stride * i),
-                             width2, superres_denom, bd);
+    highbd_upscale_normative_1D(CONVERT_TO_SHORTPTR(input + in_stride * i),
+                                width,
+                                CONVERT_TO_SHORTPTR(output + out_stride * i),
+                                width2, superres_denom, bd);
 #else
   uint16_t *intbuf = (uint16_t *)aom_malloc(sizeof(uint16_t) * width2 * height);
   uint16_t *arrbuf = (uint16_t *)aom_malloc(sizeof(uint16_t) * height);
   uint16_t *arrbuf2 = (uint16_t *)aom_malloc(sizeof(uint16_t) * height2);
   if (intbuf == NULL || arrbuf == NULL || arrbuf2 == NULL) goto Error;
   for (i = 0; i < height; ++i) {
-    highbd_upscale_normative(CONVERT_TO_SHORTPTR(input + in_stride * i), width,
-                             intbuf + width2 * i, width2, superres_denom, bd);
+    highbd_upscale_normative_1D(CONVERT_TO_SHORTPTR(input + in_stride * i),
+                                width, intbuf + width2 * i, width2,
+                                superres_denom, bd);
   }
   for (i = 0; i < width2; ++i) {
     highbd_fill_col_to_arr(intbuf + i, width2, height, arrbuf);
-    highbd_upscale_normative(arrbuf, height, arrbuf2, height2, superres_denom,
-                             bd);
+    highbd_upscale_normative_1D(arrbuf, height, arrbuf2, height2,
+                                superres_denom, bd);
     highbd_fill_arr_to_col(CONVERT_TO_SHORTPTR(output + i), out_stride, height2,
                            arrbuf2);
   }
