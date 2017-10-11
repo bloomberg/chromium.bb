@@ -23,7 +23,7 @@
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_view.h"
 #import "ios/chrome/browser/ui/ntp/whats_new_header_view.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
-#import "ios/chrome/browser/ui/toolbar/web_toolbar_controller.h"
+#import "ios/chrome/browser/ui/toolbar/omnibox_focuser.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/url_loader.h"

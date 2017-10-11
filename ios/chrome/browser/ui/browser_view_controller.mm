@@ -162,6 +162,7 @@
 #include "ios/chrome/browser/ui/toolbar/toolbar_coordinator.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_model_delegate_ios.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_model_ios.h"
+#import "ios/chrome/browser/ui/toolbar/web_toolbar_controller.h"
 #import "ios/chrome/browser/ui/tools_menu/tools_menu_configuration.h"
 #import "ios/chrome/browser/ui/tools_menu/tools_menu_view_item.h"
 #import "ios/chrome/browser/ui/tools_menu/tools_popup_controller.h"

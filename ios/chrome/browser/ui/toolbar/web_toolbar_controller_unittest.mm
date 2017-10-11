@@ -15,6 +15,7 @@
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/ui/toolbar/test_toolbar_model_ios.h"
 #import "ios/chrome/browser/ui/toolbar/web_toolbar_controller_private.h"
+#import "ios/chrome/browser/ui/toolbar/web_toolbar_delegate.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/test/block_cleanup_test.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"

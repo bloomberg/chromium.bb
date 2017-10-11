@@ -10,11 +10,12 @@
 #import "ios/chrome/browser/chrome_coordinator.h"
 #import "ios/chrome/browser/ui/bubble/bubble_view_anchor_point_provider.h"
 #import "ios/chrome/browser/ui/ntp/incognito_view_controller_delegate.h"
-#import "ios/chrome/browser/ui/toolbar/web_toolbar_controller.h"
+#import "ios/chrome/browser/ui/toolbar/omnibox_focuser.h"
 
 @class TabModel;
 @class ToolsMenuConfiguration;
 @class ToolsPopupController;
+@class WebToolbarController;
 
 @interface LegacyToolbarCoordinator
     : ChromeCoordinator<BubbleViewAnchorPointProvider,

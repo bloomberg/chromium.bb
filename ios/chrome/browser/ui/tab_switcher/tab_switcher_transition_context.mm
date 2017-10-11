@@ -7,6 +7,7 @@
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/ui/browser_view_controller.h"
 #include "ios/chrome/browser/ui/tab_switcher/tab_switcher_transition_context.h"
+#import "ios/chrome/browser/ui/toolbar/web_toolbar_controller.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
