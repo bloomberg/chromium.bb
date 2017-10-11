@@ -230,11 +230,15 @@ std::string DevToolsAgentHostImpl::GetId() {
 }
 
 std::string DevToolsAgentHostImpl::GetParentId() {
-  return "";
+  return std::string();
+}
+
+std::string DevToolsAgentHostImpl::GetOpenerId() {
+  return std::string();
 }
 
 std::string DevToolsAgentHostImpl::GetDescription() {
-  return "";
+  return std::string();
 }
 
 GURL DevToolsAgentHostImpl::GetFaviconURL() {
