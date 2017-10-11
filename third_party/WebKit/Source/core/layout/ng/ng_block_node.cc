@@ -295,7 +295,24 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
     box_->SetMargin(ComputePhysicalMargins(constraint_space, Style()));
   }
 
-  PlaceChildrenInLayoutBox(constraint_space, physical_fragment);
+  if (GetFlowThread(*box_)) {
+    PlaceChildrenInFlowThread(constraint_space, physical_fragment);
+  } else {
+    NGPhysicalOffset offset_from_start;
+    if (constraint_space.HasBlockFragmentation()) {
+      // Need to include any block space that this container has used in
+      // previous fragmentainers. The offset of children will be relative to
+      // the container, in flow thread coordinates, i.e. the model where
+      // everything is represented as one single strip, rather than being
+      // sliced and translated into columns.
+
+      // TODO(mstensho): writing modes
+      offset_from_start.top =
+          PreviouslyUsedBlockSpace(constraint_space, physical_fragment);
+    }
+    PlaceChildrenInLayoutBox(constraint_space, physical_fragment,
+                             offset_from_start);
+  }
 
   if (box_->IsLayoutBlock() && IsLastFragment(physical_fragment)) {
     LayoutBlock* block = ToLayoutBlock(box_);
@@ -332,25 +349,8 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
 
 void NGBlockNode::PlaceChildrenInLayoutBox(
     const NGConstraintSpace& constraint_space,
-    const NGPhysicalBoxFragment& physical_fragment) {
-  if (GetFlowThread(*box_)) {
-    PlaceChildrenInFlowThread(constraint_space, physical_fragment);
-    return;
-  }
-
-  NGPhysicalOffset offset_from_start;
-  if (constraint_space.HasBlockFragmentation()) {
-    // Need to include any block space that this container has used in previous
-    // fragmentainers. The offset of children will be relative to the
-    // container, in flow thread coordinates, i.e. the model where everything
-    // is represented as one single strip, rather than being sliced and
-    // translated into columns.
-
-    // TODO(mstensho): writing modes
-    offset_from_start.top =
-        PreviouslyUsedBlockSpace(constraint_space, physical_fragment);
-  }
-
+    const NGPhysicalBoxFragment& physical_fragment,
+    const NGPhysicalOffset& offset_from_start) {
   for (const auto& child_fragment : physical_fragment.Children()) {
     auto* child_object = child_fragment->GetLayoutObject();
     DCHECK(child_fragment->IsPlaced());
@@ -389,17 +389,14 @@ void NGBlockNode::PlaceChildrenInFlowThread(
     // Each anonymous child of a multicol container constitutes one column.
     DCHECK(child->IsPlaced());
     DCHECK(child->GetLayoutObject() == box_);
+
+    // TODO(mstensho): writing modes
+    NGPhysicalOffset offset(LayoutUnit(), flowthread_offset);
+
+    // Position each child node in the first column that they occur, relatively
+    // to the block-start of the flow thread.
     const auto* column = ToNGPhysicalBoxFragment(child.get());
-    for (const auto& actual_child : column->Children()) {
-      // Position each child node in the first column that they occur,
-      // relatively to the block-start of the flow thread.
-      const auto& box_fragment = *ToNGPhysicalBoxFragment(actual_child.get());
-      if (!IsFirstFragment(constraint_space, box_fragment))
-        continue;
-      // TODO(mstensho): writing modes
-      NGPhysicalOffset offset(LayoutUnit(), flowthread_offset);
-      CopyChildFragmentPosition(box_fragment, offset);
-    }
+    PlaceChildrenInLayoutBox(constraint_space, *column, offset);
     const auto* token = ToNGBlockBreakToken(column->BreakToken());
     flowthread_offset = token->UsedBlockSize();
   }
