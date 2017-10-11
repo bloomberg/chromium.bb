@@ -877,10 +877,10 @@ TEST_F(RenderViewImplTest, DetachingProxyAlsoDestroysProvisionalFrame) {
   mojom::CreateFrameWidgetParams widget_params;
   widget_params.routing_id = MSG_ROUTING_NONE;
   widget_params.hidden = false;
-  RenderFrameImpl::CreateFrame(routing_id, kProxyRoutingId, MSG_ROUTING_NONE,
-                               frame()->GetRoutingID(), MSG_ROUTING_NONE,
-                               replication_state, nullptr, widget_params,
-                               FrameOwnerProperties());
+  RenderFrameImpl::CreateFrame(
+      routing_id, kProxyRoutingId, MSG_ROUTING_NONE, frame()->GetRoutingID(),
+      MSG_ROUTING_NONE, base::UnguessableToken::Create(), replication_state,
+      nullptr, widget_params, FrameOwnerProperties());
   {
     TestRenderFrame* provisional_frame = static_cast<TestRenderFrame*>(
         RenderFrameImpl::FromRoutingID(routing_id));

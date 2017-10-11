@@ -8,6 +8,7 @@ import "content/common/native_types.mojom";
 import "content/common/service_worker/embedded_worker.mojom";
 import "ipc/constants.mojom";
 import "mojo/common/time.mojom";
+import "mojo/common/unguessable_token.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/gfx/mojo/icc_profile.mojom";
 
@@ -42,6 +43,14 @@ struct CreateViewParams {
   // views when in --site-per-process mode, or a RenderFrame in all other
   // cases.
   FrameReplicationState replicated_frame_state;
+
+  // Used for devtools instrumentation and trace-ability. The token is
+  // propagated to Blink's LocalFrame and both Blink and content/
+  // can tag calls and requests with this instrumentation token in order to
+  // attribute them to the context frame.
+  // |devtools_main_frame_token| is only defined by the browser and is never
+  // sent back from the renderer in the control calls.
+  mojo.common.mojom.UnguessableToken devtools_main_frame_token;
 
   // The ID of the proxy object for the main frame in this view. It is only
   // used if |swapped_out| is true.
@@ -109,6 +118,14 @@ struct CreateFrameParams {
   // properties replicated from the process rendering the parent frame, such as
   // the new frame's sandbox flags.
   FrameReplicationState replication_state;
+
+  // Used for devtools instrumentation and trace-ability. The token is
+  // propagated to Blink's LocalFrame and both Blink and content/
+  // can tag calls and requests with this instrumentation token in order to
+  // attribute them to the context frame.
+  // |devtools_frame_token| is only defined by the browser and is never
+  // sent back from the renderer in the control calls.
+  mojo.common.mojom.UnguessableToken devtools_frame_token;
 
   // When the new frame has a parent, |frame_owner_properties| holds the
   // properties of the HTMLFrameOwnerElement from the parent process.

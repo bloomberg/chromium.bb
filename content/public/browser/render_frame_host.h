@@ -26,6 +26,7 @@ enum class WebFeaturePolicyFeature;
 }
 
 namespace base {
+class UnguessableToken;
 class Value;
 }
 
@@ -121,6 +122,14 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // the same FrameTreeNode ID may refer to a different RenderFrameHost after a
   // navigation.
   virtual int GetFrameTreeNodeId() = 0;
+
+  // Used for devtools instrumentation and trace-ability. The token is
+  // propagated to Blink's LocalFrame and both Blink and content/
+  // can tag calls and requests with this token in order to attribute them
+  // to the context frame. The token is only defined by the browser process and
+  // is never sent back from the renderer in the control calls. It should be
+  // never used to look up the FrameTreeNode instance.
+  virtual base::UnguessableToken GetDevToolsFrameToken() = 0;
 
   // Returns the assigned name of the frame, the name of the iframe tag
   // declaring it. For example, <iframe name="framename">[...]</iframe>. It is

@@ -44,6 +44,8 @@ class CORE_EXPORT IdentifiersFactory {
 
   static String RequestId(unsigned long identifier);
 
+  // Returns embedder-provided frame token that is consistent across processes
+  // and can be used for request / call attribution to the context frame.
   static String FrameId(LocalFrame*);
   static LocalFrame* FrameById(InspectedFrames*, const String&);
 

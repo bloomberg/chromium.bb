@@ -60,24 +60,6 @@ bool DevToolsAgentHost::IsSupportedProtocolVersion(const std::string& version) {
 }
 
 // static
-std::string DevToolsAgentHost::GetUntrustedDevToolsFrameIdForFrameTreeNodeId(
-    int process_id,
-    int frame_tree_node_id) {
-  FrameTreeNode* frame_tree_node =
-      FrameTreeNode::GloballyFindByID(frame_tree_node_id);
-  if (!frame_tree_node)
-    return "";
-  // Make sure |process_id| hasn't changed.
-  RenderFrameHostImpl* render_frame_host_impl =
-      frame_tree_node->current_frame_host();
-  if (!render_frame_host_impl ||
-      render_frame_host_impl->GetProcess()->GetID() != process_id) {
-    return "";
-  }
-  return render_frame_host_impl->untrusted_devtools_frame_id();
-}
-
-// static
 DevToolsAgentHost::List DevToolsAgentHost::GetOrCreateAll() {
   List result;
   SharedWorkerDevToolsAgentHost::List shared_list;

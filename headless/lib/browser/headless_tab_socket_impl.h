@@ -47,15 +47,6 @@ class HeadlessTabSocketImpl : public HeadlessTabSocket, public TabSocket {
  private:
   friend class TabSocketInstallationController;
 
-  // Called by WebContents::ForEachFrame. If |render_frame_host| matches
-  // |target_devtools_frame_id|, then the RenderFrameController is used to
-  // install TabSocket bindings in |world_id|, otherwise it does nothing.
-  void MaybeInstallTabSocketBindings(
-      std::string target_devtools_frame_id,
-      int v8_execution_context_id,
-      base::Callback<void(bool)> callback,
-      content::RenderFrameHost* render_frame_host);
-
   void OnInstallMainWorldTabSocket(
       base::Callback<void(base::Optional<int>)> callback,
       int world_id);

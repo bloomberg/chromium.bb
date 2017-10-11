@@ -97,8 +97,9 @@ TestRenderFrameHost* TestRenderFrameHost::AppendChild(
   std::string frame_unique_name = base::GenerateGUID();
   OnCreateChildFrame(GetProcess()->GetNextRoutingID(),
                      blink::WebTreeScopeType::kDocument, frame_name,
-                     frame_unique_name, blink::WebSandboxFlags::kNone,
-                     ParsedFeaturePolicyHeader(), FrameOwnerProperties());
+                     frame_unique_name, base::UnguessableToken::Create(),
+                     blink::WebSandboxFlags::kNone, ParsedFeaturePolicyHeader(),
+                     FrameOwnerProperties());
   return static_cast<TestRenderFrameHost*>(
       child_creation_observer_.last_created_frame());
 }

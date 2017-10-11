@@ -262,12 +262,14 @@ bool TestRenderViewHost::CreateTestRenderView(
   FrameReplicationState replicated_state;
   replicated_state.name = base::UTF16ToUTF8(frame_name);
   return CreateRenderView(opener_frame_route_id, proxy_route_id,
-                          replicated_state, window_was_created_with_opener);
+                          base::UnguessableToken::Create(), replicated_state,
+                          window_was_created_with_opener);
 }
 
 bool TestRenderViewHost::CreateRenderView(
     int opener_frame_route_id,
     int proxy_route_id,
+    const base::UnguessableToken& devtools_frame_token,
     const FrameReplicationState& replicated_frame_state,
     bool window_was_created_with_opener) {
   DCHECK(!IsRenderViewLive());

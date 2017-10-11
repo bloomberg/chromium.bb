@@ -20,6 +20,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
@@ -617,10 +618,9 @@ WebContentsView* InterstitialPageImpl::CreateWebContentsView() {
   render_view_host_->GetMainFrame()->AllowBindings(
       BINDINGS_POLICY_DOM_AUTOMATION);
 
-  render_view_host_->CreateRenderView(MSG_ROUTING_NONE,
-                                      MSG_ROUTING_NONE,
-                                      FrameReplicationState(),
-                                      false);
+  render_view_host_->CreateRenderView(MSG_ROUTING_NONE, MSG_ROUTING_NONE,
+                                      base::UnguessableToken::Create(),
+                                      FrameReplicationState(), false);
   controller_->delegate()->RenderFrameForInterstitialPageCreated(
       frame_tree_->root()->current_frame_host());
   view->SetSize(web_contents()->GetContainerBounds().size());

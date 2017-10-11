@@ -7,7 +7,6 @@
 #include <tuple>
 #include <utility>
 
-#include "base/guid.h"
 #include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
@@ -440,7 +439,7 @@ void RenderFrameDevToolsAgentHost::WebContentsCreated(
 
 RenderFrameDevToolsAgentHost::RenderFrameDevToolsAgentHost(
     FrameTreeNode* frame_tree_node)
-    : DevToolsAgentHostImpl(base::GenerateGUID()),
+    : DevToolsAgentHostImpl(frame_tree_node->devtools_frame_token().ToString()),
       frame_trace_recorder_(nullptr),
       handlers_frame_host_(nullptr),
       current_frame_crashed_(false),

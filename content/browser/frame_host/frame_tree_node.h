@@ -66,6 +66,7 @@ class CONTENT_EXPORT FrameTreeNode {
                 blink::WebTreeScopeType scope,
                 const std::string& name,
                 const std::string& unique_name,
+                const base::UnguessableToken& devtools_frame_token,
                 const FrameOwnerProperties& frame_owner_properties);
 
   ~FrameTreeNode();
@@ -105,6 +106,11 @@ class CONTENT_EXPORT FrameTreeNode {
 
   const std::string& unique_name() const {
     return replication_state_.unique_name;
+  }
+
+  // See comment on the member declaration.
+  const base::UnguessableToken& devtools_frame_token() const {
+    return devtools_frame_token_;
   }
 
   size_t child_count() const {
@@ -431,6 +437,15 @@ class CONTENT_EXPORT FrameTreeNode {
   // the updated policy for the frame is stored here, and transferred into
   // replication_state_.container_policy on the next frame navigation.
   ParsedFeaturePolicyHeader pending_container_policy_;
+
+  // Used for devtools instrumentation and trace-ability. The token is
+  // propagated to Blink's LocalFrame and both Blink and content/
+  // can tag calls and requests with this token in order to attribute them
+  // to the context frame.
+  // |devtools_frame_token_| is only defined by the browser process and is never
+  // sent back from the renderer in the control calls. It should be never used
+  // to look up the FrameTreeNode instance.
+  base::UnguessableToken devtools_frame_token_;
 
   // Tracks the scrolling and margin properties for this frame.  These
   // properties affect the child renderer but are stored on its parent's

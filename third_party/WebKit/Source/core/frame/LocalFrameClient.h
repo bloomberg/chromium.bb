@@ -345,8 +345,6 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
 
   virtual void SetHasReceivedUserGesture(bool received_previously) {}
 
-  virtual void SetDevToolsFrameId(const String& devtools_frame_id) {}
-
   virtual void AbortClientNavigation() {}
 
   virtual WebSpellCheckPanelHostClient* SpellCheckPanelHostClient() const = 0;
@@ -359,6 +357,8 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   virtual void AnnotatedRegionsChanged() = 0;
 
   virtual void DidBlockFramebust(const KURL&) {}
+
+  virtual String GetDevToolsFrameToken() = 0;
 };
 
 }  // namespace blink
