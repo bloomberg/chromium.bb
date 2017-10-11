@@ -45,6 +45,7 @@ public class ChannelDefinitions {
     public static final String CHANNEL_ID_MEDIA = "media";
     public static final String CHANNEL_ID_SCREEN_CAPTURE = "screen_capture";
     public static final String CHANNEL_ID_CONTENT_SUGGESTIONS = "content_suggestions";
+    public static final String CHANNEL_ID_WEBAPP_ACTIONS = "webapp_actions";
     // TODO(crbug.com/700377): Deprecate the 'sites' channel.
     public static final String CHANNEL_ID_SITES = "sites";
     public static final String CHANNEL_ID_PREFIX_SITES = "web:";
@@ -65,7 +66,8 @@ public class ChannelDefinitions {
      * See the README in this directory for more detailed instructions.
      */
     @StringDef({CHANNEL_ID_BROWSER, CHANNEL_ID_DOWNLOADS, CHANNEL_ID_INCOGNITO, CHANNEL_ID_MEDIA,
-            CHANNEL_ID_SCREEN_CAPTURE, CHANNEL_ID_CONTENT_SUGGESTIONS, CHANNEL_ID_SITES})
+            CHANNEL_ID_SCREEN_CAPTURE, CHANNEL_ID_CONTENT_SUGGESTIONS, CHANNEL_ID_WEBAPP_ACTIONS,
+            CHANNEL_ID_SITES})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ChannelId {}
 
@@ -141,6 +143,13 @@ public class ChannelDefinitions {
                     new PredefinedChannel(CHANNEL_ID_CONTENT_SUGGESTIONS,
                             R.string.notification_category_content_suggestions,
                             NotificationManager.IMPORTANCE_LOW, CHANNEL_GROUP_ID_GENERAL));
+
+            // Not adding to startup channels because we want CHANNEL_ID_WEBAPP_ACTIONS to be
+            // created on the first use, as not all users use installed web apps.
+            map.put(CHANNEL_ID_WEBAPP_ACTIONS,
+                    new PredefinedChannel(CHANNEL_ID_WEBAPP_ACTIONS,
+                            R.string.notification_category_fullscreen_controls,
+                            NotificationManager.IMPORTANCE_MIN, CHANNEL_GROUP_ID_GENERAL));
 
             MAP = Collections.unmodifiableMap(map);
             STARTUP = Collections.unmodifiableSet(startup);
