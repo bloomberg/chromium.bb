@@ -677,7 +677,6 @@ crbug.com/518989 [ Mac ] external/wpt/css/css-writing-modes-3/writing-mode-verti
 crbug.com/432129 html/marquee/marquee-scroll.html [ Failure Pass ]
 crbug.com/326139 crbug.com/390125 media/video-frame-accurate-seek.html [ Failure Pass ]
 crbug.com/248938 virtual/threaded/animations/stability/animation-iteration-event-destroy-renderer.html [ Pass Timeout ]
-crbug.com/248938 [ Linux Win7 Debug ] virtual/threaded/animations/display-none-terminates-animation.html [ Pass Failure ]
 crbug.com/421283 html/marquee/marquee-scrollamount.html [ Pass Failure ]
 
 # TODO(oshima): Mac Android are currently not supported.
