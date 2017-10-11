@@ -40,13 +40,6 @@ HitTestAggregator::HitTestAggregator(const HitTestManager* hit_test_manager,
 
 HitTestAggregator::~HitTestAggregator() = default;
 
-void HitTestAggregator::PostTaskAggregate(const SurfaceId& display_surface_id) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&HitTestAggregator::Aggregate,
-                     weak_ptr_factory_.GetWeakPtr(), display_surface_id));
-}
-
 void HitTestAggregator::Aggregate(const SurfaceId& display_surface_id) {
   AppendRoot(display_surface_id);
   Swap();
