@@ -15,14 +15,18 @@
 
 namespace base {
 
+enum class Nestable {
+  kNonNestable,
+  kNestable,
+};
+
 // Contains data about a pending task. Stored in TaskQueue and DelayedTaskQueue
 // for use by classes that queue and execute tasks.
 struct BASE_EXPORT PendingTask {
-  PendingTask(const Location& posted_from, OnceClosure task);
   PendingTask(const Location& posted_from,
               OnceClosure task,
-              TimeTicks delayed_run_time,
-              bool nestable);
+              TimeTicks delayed_run_time = TimeTicks(),
+              Nestable nestable = Nestable::kNestable);
   PendingTask(PendingTask&& other);
   ~PendingTask();
 
@@ -47,7 +51,7 @@ struct BASE_EXPORT PendingTask {
   int sequence_num;
 
   // OK to dispatch from a nested loop.
-  bool nestable;
+  Nestable nestable;
 
   // Needs high resolution timers.
   bool is_high_res;

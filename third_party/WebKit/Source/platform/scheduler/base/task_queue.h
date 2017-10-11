@@ -57,13 +57,13 @@ class PLATFORM_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
   struct PLATFORM_EXPORT PostedTask {
     PostedTask(base::OnceClosure callback,
                base::Location posted_from,
-               base::TimeDelta delay,
-               bool nestable);
+               base::TimeDelta delay = base::TimeDelta(),
+               base::Nestable nestable = base::Nestable::kNestable);
 
     base::OnceClosure callback;
     base::Location posted_from;
     base::TimeDelta delay;
-    bool nestable;
+    base::Nestable nestable;
   };
 
   // Unregisters the task queue after which no tasks posted to it will run and

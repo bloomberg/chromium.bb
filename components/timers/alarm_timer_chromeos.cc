@@ -74,7 +74,7 @@ void AlarmTimer::Reset() {
       delay.is_zero() ? base::TimeTicks() : base::TimeTicks::Now() + delay);
   pending_task_ = base::MakeUnique<base::PendingTask>(
       base::Timer::posted_from(), base::Timer::user_task(),
-      base::Timer::desired_run_time(), true /* nestable */);
+      base::Timer::desired_run_time());
 
   // Set |alarm_fd_| to be signaled when the delay expires. If the delay is
   // zero, |alarm_fd_| will never be signaled. This overrides the previous
