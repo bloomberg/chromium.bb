@@ -1,87 +1,87 @@
-layer at (0,0) size 480x360
-  LayoutView at (0,0) size 480x360
-layer at (0,0) size 480x360
-  LayoutSVGRoot {svg} at (0,0) size 480x360
-    LayoutSVGText {text} at (10,304) size 264x46 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (10,304) size 264x46
-        chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 264.00: "$Revision: 1.7 $"
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutSVGRoot {svg} at (0,0) size 800x600
+    LayoutSVGText {text} at (10,304) size 268.19x45.59 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (10,304) size 268.19x45.59
+        chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 268.20: "$Revision: 1.7 $"
     LayoutSVGRect {rect} at (1,1) size 478x358 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]
-    LayoutSVGText {text} at (173.78,10) size 132.44x19 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (173.78,10) size 132.44x19
-        chunk 1 (middle anchor) text run 1 at (173.78,25.00) startOffset 0 endOffset 18 width 132.44: "<animateTransform>"
+    LayoutSVGText {text} at (170.38,10.61) size 139.23x18.59 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (170.38,10.61) size 139.23x18.59
+        chunk 1 (middle anchor) text run 1 at (170.38,25.00) startOffset 0 endOffset 18 width 139.24: "<animateTransform>"
     LayoutSVGHiddenContainer {defs} at (-45,-45) size 90x90
       LayoutSVGContainer {g} at (-45,-45) size 90x90
         LayoutSVGEllipse {circle} at (-40,-40) size 80x80 [stroke={[type=SOLID] [color=#C0C0C0] [stroke width=2.00]}] [cx=0.00] [cy=0.00] [r=40.00]
         LayoutSVGPath {line} at (-45,0) size 90x0 [stroke={[type=SOLID] [color=#C0C0C0]}] [x1=-45.00] [y1=0.00] [x2=45.00] [y2=0.00]
         LayoutSVGPath {line} at (0,-45) size 0x90 [stroke={[type=SOLID] [color=#C0C0C0]}] [x1=0.00] [y1=-45.00] [x2=0.00] [y2=45.00]
     LayoutSVGContainer {g} at (15,35) size 480x300
-      LayoutSVGContainer {g} at (-42,-21.21) size 84x100.21 [transform={m=((1.00,0.00)(0.00,1.00)) t=(60.00,90.00)}]
+      LayoutSVGContainer {g} at (-45,-21.21) size 90x100.42 [transform={m=((1.00,0.00)(0.00,1.00)) t=(60.00,90.00)}]
         LayoutSVGRect {rect} at (-15,-15) size 30x30 [transform={m=((0.71,0.71)(-0.71,0.71)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#808080] [stroke width=4.00]}] [fill={[type=SOLID] [color=#E6E6E6]}] [x=-15.00] [y=-15.00] [width=30.00] [height=30.00]
         LayoutSVGRect {rect} at (-15,-15) size 30x30 [transform={m=((0.71,0.71)(-0.71,0.71)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#FFB400] [stroke width=4.00]}] [x=-15.00] [y=-15.00] [width=30.00] [height=30.00]
         LayoutSVGRect {rect} at (-15,-15) size 30x30 [transform={m=((0.38,0.92)(-0.92,0.38)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#FFB400]}] [x=-15.00] [y=-15.00] [width=30.00] [height=30.00]
         LayoutSVGRect {rect} at (-15,-15) size 30x30 [transform={m=((0.00,1.00)(-1.00,0.00)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#FFB400]}] [x=-15.00] [y=-15.00] [width=30.00] [height=30.00]
-        LayoutSVGText {text} at (-42,45) size 84x19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-42,45) size 84x19
-            chunk 1 (middle anchor) text run 1 at (-42.00,60.00) startOffset 0 endOffset 13 width 84.00: "same rotation"
-        LayoutSVGText {text} at (-19,60) size 39x19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-19,60) size 39x19
-            chunk 1 (middle anchor) text run 1 at (-19.00,75.00) startOffset 0 endOffset 6 width 38.00: "center"
-      LayoutSVGContainer {g} at (-52.34,-21.21) size 104.70x100.21 [transform={m=((1.00,0.00)(0.00,1.00)) t=(180.00,90.00)}]
+        LayoutSVGText {text} at (-45,45.61) size 90x18.59 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-45,45.61) size 90x18.59
+            chunk 1 (middle anchor) text run 1 at (-45.00,60.00) startOffset 0 endOffset 13 width 90.00: "same rotation"
+        LayoutSVGText {text} at (-20.09,60.61) size 40.80x18.59 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-20.09,60.61) size 40.80x18.59
+            chunk 1 (middle anchor) text run 1 at (-20.10,75.00) startOffset 0 endOffset 6 width 40.20: "center"
+      LayoutSVGContainer {g} at (-56.55,-21.21) size 113.11x100.42 [transform={m=((1.00,0.00)(0.00,1.00)) t=(180.00,90.00)}]
         LayoutSVGRect {rect} at (-15,-15) size 30x30 [transform={m=((0.71,0.71)(-0.71,0.71)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#808080] [stroke width=4.00]}] [fill={[type=SOLID] [color=#E6E6E6]}] [x=-15.00] [y=-15.00] [width=30.00] [height=30.00]
         LayoutSVGRect {rect} at (-15,-15) size 30x30 [transform={m=((0.71,0.71)(-0.71,0.71)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#FFB400] [stroke width=4.00]}] [x=-15.00] [y=-15.00] [width=30.00] [height=30.00]
         LayoutSVGRect {rect} at (-15,-15) size 30x30 [transform={m=((0.38,0.92)(-0.92,0.38)) t=(-11.56,2.30)}] [stroke={[type=SOLID] [color=#FFB400]}] [x=-15.00] [y=-15.00] [width=30.00] [height=30.00]
         LayoutSVGRect {rect} at (-15,-15) size 30x30 [transform={m=((0.00,1.00)(-1.00,0.00)) t=(-30.00,0.00)}] [stroke={[type=SOLID] [color=#FFB400]}] [x=-15.00] [y=-15.00] [width=30.00] [height=30.00]
-        LayoutSVGText {text} at (-52.34,45) size 104.70x19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-52.34,45) size 104.70x19
-            chunk 1 (middle anchor) text run 1 at (-52.36,60.00) startOffset 0 endOffset 18 width 104.71: "different rotation"
-        LayoutSVGText {text} at (-22,60) size 44x19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-22,60) size 44x19
-            chunk 1 (middle anchor) text run 1 at (-22.00,75.00) startOffset 0 endOffset 7 width 44.00: "centers"
-      LayoutSVGContainer {g} at (-55,-55) size 110x134 [transform={m=((1.00,0.00)(0.00,1.00)) t=(300.00,90.00)}]
+        LayoutSVGText {text} at (-56.55,45.61) size 113.11x18.59 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-56.55,45.61) size 113.11x18.59
+            chunk 1 (middle anchor) text run 1 at (-56.56,60.00) startOffset 0 endOffset 18 width 113.11: "different rotation"
+        LayoutSVGText {text} at (-23.39,60.61) size 46.80x18.59 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-23.39,60.61) size 46.80x18.59
+            chunk 1 (middle anchor) text run 1 at (-23.40,75.00) startOffset 0 endOffset 7 width 46.80: "centers"
+      LayoutSVGContainer {g} at (-57.30,-55) size 114x134.20 [transform={m=((1.00,0.00)(0.00,1.00)) t=(300.00,90.00)}]
         LayoutSVGRect {rect} at (-15,-15) size 30x30 [transform={m=((1.00,0.00)(0.00,1.00)) t=(-40.00,40.00)}] [stroke={[type=SOLID] [color=#808080] [stroke width=4.00]}] [fill={[type=SOLID] [color=#E6E6E6]}] [x=-15.00] [y=-15.00] [width=30.00] [height=30.00]
         LayoutSVGRect {rect} at (-15,-15) size 30x30 [transform={m=((1.00,0.00)(0.00,1.00)) t=(-40.00,40.00)}] [stroke={[type=SOLID] [color=#FFB400] [stroke width=4.00]}] [x=-15.00] [y=-15.00] [width=30.00] [height=30.00]
         LayoutSVGRect {rect} at (-15,-15) size 30x30 [stroke={[type=SOLID] [color=#FFB400]}] [x=-15.00] [y=-15.00] [width=30.00] [height=30.00]
         LayoutSVGRect {rect} at (-15,-15) size 30x30 [transform={m=((1.00,0.00)(0.00,1.00)) t=(40.00,-40.00)}] [stroke={[type=SOLID] [color=#FFB400]}] [x=-15.00] [y=-15.00] [width=30.00] [height=30.00]
-        LayoutSVGText {text} at (-54,60) size 107x19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-54,60) size 107x19
-            chunk 1 (middle anchor) text run 1 at (-53.00,75.00) startOffset 0 endOffset 17 width 106.00: "paced translation"
-      LayoutSVGContainer {g} at (-55,-55) size 110x134 [transform={m=((1.00,0.00)(0.00,1.00)) t=(420.00,90.00)}]
+        LayoutSVGText {text} at (-57.30,60.61) size 114x18.59 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-57.30,60.61) size 114x18.59
+            chunk 1 (middle anchor) text run 1 at (-56.70,75.00) startOffset 0 endOffset 17 width 113.40: "paced translation"
+      LayoutSVGContainer {g} at (-56.39,-55) size 112.80x134.20 [transform={m=((1.00,0.00)(0.00,1.00)) t=(420.00,90.00)}]
         LayoutSVGRect {rect} at (-15,-15) size 30x30 [transform={m=((1.00,0.00)(0.00,1.00)) t=(-40.00,40.00)}] [stroke={[type=SOLID] [color=#808080] [stroke width=4.00]}] [fill={[type=SOLID] [color=#E6E6E6]}] [x=-15.00] [y=-15.00] [width=30.00] [height=30.00]
         LayoutSVGRect {rect} at (-15,-15) size 30x30 [transform={m=((1.00,0.00)(0.00,1.00)) t=(-40.00,40.00)}] [stroke={[type=SOLID] [color=#FFB400] [stroke width=4.00]}] [x=-15.00] [y=-15.00] [width=30.00] [height=30.00]
         LayoutSVGRect {rect} at (-15,-15) size 30x30 [transform={m=((1.00,0.00)(0.00,1.00)) t=(-20.00,-20.00)}] [stroke={[type=SOLID] [color=#FFB400]}] [x=-15.00] [y=-15.00] [width=30.00] [height=30.00]
         LayoutSVGRect {rect} at (-15,-15) size 30x30 [transform={m=((1.00,0.00)(0.00,1.00)) t=(40.00,-40.00)}] [stroke={[type=SOLID] [color=#FFB400]}] [x=-15.00] [y=-15.00] [width=30.00] [height=30.00]
-        LayoutSVGText {text} at (-52,60) size 104x19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-52,60) size 104x19
-            chunk 1 (middle anchor) text run 1 at (-52.00,75.00) startOffset 0 endOffset 18 width 104.00: "linear translation"
-      LayoutSVGContainer {g} at (-45,-30) size 90x94 [transform={m=((1.00,0.00)(0.00,1.00)) t=(60.00,220.00)}]
+        LayoutSVGText {text} at (-56.39,60.61) size 112.80x18.59 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-56.39,60.61) size 112.80x18.59
+            chunk 1 (middle anchor) text run 1 at (-56.40,75.00) startOffset 0 endOffset 18 width 112.80: "linear translation"
+      LayoutSVGContainer {g} at (-45,-30) size 90x94.20 [transform={m=((1.00,0.00)(0.00,1.00)) t=(60.00,220.00)}]
         LayoutSVGRect {rect} at (-15,-15) size 30x30 [transform={m=((1.00,0.00)(0.00,2.00)) t=(0.00,0.00)}] [fill={[type=SOLID] [color=#E6E6E6]}] [x=-15.00] [y=-15.00] [width=30.00] [height=30.00]
         LayoutSVGRect {rect} at (-15,-30) size 30x60 [stroke={[type=SOLID] [color=#FFB400] [stroke width=4.00]}] [x=-15.00] [y=-30.00] [width=30.00] [height=60.00]
         LayoutSVGRect {rect} at (-45,-22.50) size 90x45 [stroke={[type=SOLID] [color=#FFB400]}] [x=-45.00] [y=-22.50] [width=90.00] [height=45.00]
         LayoutSVGRect {rect} at (-15,-15) size 30x30 [stroke={[type=SOLID] [color=#FFB400]}] [x=-15.00] [y=-15.00] [width=30.00] [height=30.00]
-        LayoutSVGText {text} at (-37,45) size 73x19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-37,45) size 73x19
-            chunk 1 (middle anchor) text run 1 at (-36.00,60.00) startOffset 0 endOffset 11 width 72.00: "paced scale"
-      LayoutSVGContainer {g} at (-45,-30) size 90x94 [transform={m=((1.00,0.00)(0.00,1.00)) t=(180.00,220.00)}]
+        LayoutSVGText {text} at (-38.39,45.61) size 76.19x18.59 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-38.39,45.61) size 76.19x18.59
+            chunk 1 (middle anchor) text run 1 at (-37.80,60.00) startOffset 0 endOffset 11 width 75.60: "paced scale"
+      LayoutSVGContainer {g} at (-45,-30) size 90x94.20 [transform={m=((1.00,0.00)(0.00,1.00)) t=(180.00,220.00)}]
         LayoutSVGRect {rect} at (-15,-15) size 30x30 [transform={m=((1.00,0.00)(0.00,2.00)) t=(0.00,0.00)}] [fill={[type=SOLID] [color=#E6E6E6]}] [x=-15.00] [y=-15.00] [width=30.00] [height=30.00]
         LayoutSVGRect {rect} at (-15,-30) size 30x60 [stroke={[type=SOLID] [color=#FFB400] [stroke width=4.00]}] [x=-15.00] [y=-30.00] [width=30.00] [height=60.00]
         LayoutSVGRect {rect} at (-45,-30) size 90x60 [stroke={[type=SOLID] [color=#FFB400]}] [x=-45.00] [y=-30.00] [width=90.00] [height=60.00]
         LayoutSVGRect {rect} at (-15,-15) size 30x30 [stroke={[type=SOLID] [color=#FFB400]}] [x=-15.00] [y=-15.00] [width=30.00] [height=30.00]
-        LayoutSVGText {text} at (-35,45) size 70x19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-35,45) size 70x19
-            chunk 1 (middle anchor) text run 1 at (-35.00,60.00) startOffset 0 endOffset 12 width 70.00: "linear scale"
-      LayoutSVGContainer {g} at (-45.50,-15) size 120.50x130 [transform={m=((1.00,0.00)(0.00,1.00)) t=(300.00,220.00)}]
+        LayoutSVGText {text} at (-37.50,45.61) size 75x18.59 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-37.50,45.61) size 75x18.59
+            chunk 1 (middle anchor) text run 1 at (-37.50,60.00) startOffset 0 endOffset 12 width 75.00: "linear scale"
+      LayoutSVGContainer {g} at (-48,-15) size 123x130 [transform={m=((1.00,0.00)(0.00,1.00)) t=(300.00,220.00)}]
         LayoutSVGRect {rect} at (-15,-15) size 30x30 [stroke={[type=SOLID] [color=#808080] [stroke width=4.00]}] [fill={[type=SOLID] [color=#E6E6E6]}] [x=-15.00] [y=-15.00] [width=30.00] [height=30.00]
         LayoutSVGRect {rect} at (-15,-15) size 30x30 [stroke={[type=SOLID] [color=#FFB400] [stroke width=4.00]}] [x=-15.00] [y=-15.00] [width=30.00] [height=30.00]
         LayoutSVGRect {rect} at (-15,-15) size 30x30 [transform={m=((0.00,1.00)(-1.00,0.00)) t=(5.00,5.00)}] [stroke={[type=SOLID] [color=#FFB400]}] [x=-15.00] [y=-15.00] [width=30.00] [height=30.00]
         LayoutSVGRect {rect} at (-15,-15) size 30x30 [transform={m=((-1.00,0.00)(-0.00,-1.00)) t=(60.00,100.00)}] [stroke={[type=SOLID] [color=#FFB400]}] [x=-15.00] [y=-15.00] [width=30.00] [height=30.00]
-        LayoutSVGText {text} at (-45.50,60) size 90x19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-45.50,60) size 90x19
-            chunk 1 (middle anchor) text run 1 at (-44.50,75.00) startOffset 0 endOffset 14 width 89.00: "paced rotation"
-      LayoutSVGContainer {g} at (-43.50,-16.46) size 118.50x131.46 [transform={m=((1.00,0.00)(0.00,1.00)) t=(420.00,220.00)}]
+        LayoutSVGText {text} at (-48,60.61) size 95.39x18.59 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-48,60.61) size 95.39x18.59
+            chunk 1 (middle anchor) text run 1 at (-47.40,75.00) startOffset 0 endOffset 14 width 94.80: "paced rotation"
+      LayoutSVGContainer {g} at (-47.09,-16.46) size 122.09x131.46 [transform={m=((1.00,0.00)(0.00,1.00)) t=(420.00,220.00)}]
         LayoutSVGRect {rect} at (-15,-15) size 30x30 [stroke={[type=SOLID] [color=#808080] [stroke width=4.00]}] [fill={[type=SOLID] [color=#E6E6E6]}] [x=-15.00] [y=-15.00] [width=30.00] [height=30.00]
         LayoutSVGRect {rect} at (-15,-15) size 30x30 [stroke={[type=SOLID] [color=#FFB400] [stroke width=4.00]}] [x=-15.00] [y=-15.00] [width=30.00] [height=30.00]
         LayoutSVGRect {rect} at (-15,-15) size 30x30 [transform={m=((0.71,0.71)(-0.71,0.71)) t=(-18.54,4.75)}] [stroke={[type=SOLID] [color=#FFB400]}] [x=-15.00] [y=-15.00] [width=30.00] [height=30.00]
         LayoutSVGRect {rect} at (-15,-15) size 30x30 [transform={m=((-1.00,0.00)(-0.00,-1.00)) t=(60.00,100.00)}] [stroke={[type=SOLID] [color=#FFB400]}] [x=-15.00] [y=-15.00] [width=30.00] [height=30.00]
-        LayoutSVGText {text} at (-43.50,60) size 87x19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-43.50,60) size 87x19
-            chunk 1 (middle anchor) text run 1 at (-43.50,75.00) startOffset 0 endOffset 15 width 87.00: "linear rotation"
+        LayoutSVGText {text} at (-47.09,60.61) size 94.19x18.59 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-47.09,60.61) size 94.19x18.59
+            chunk 1 (middle anchor) text run 1 at (-47.10,75.00) startOffset 0 endOffset 15 width 94.20: "linear rotation"

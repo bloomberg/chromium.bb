@@ -1,32 +1,32 @@
-layer at (0,0) size 480x360
-  LayoutView at (0,0) size 480x360
-layer at (0,0) size 480x360
-  LayoutSVGRoot {svg} at (0,0) size 480x360
-    LayoutSVGContainer {g} at (19.52,28) size 313.31x268
-      LayoutSVGContainer {g} at (19.52,28) size 313.31x268
-        LayoutSVGText {text} at (19.52,58) size 196.36x27 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (19.52,58) size 196.36x27
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutSVGRoot {svg} at (0,0) size 800x600
+    LayoutSVGContainer {g} at (19.52,28.41) size 313.31x267.59
+      LayoutSVGContainer {g} at (19.52,28.41) size 313.31x267.59
+        LayoutSVGText {text} at (19.52,57.81) size 196.36x27.59 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (19.52,57.81) size 196.36x27.59
             chunk 1 text run 1 at (20.00,80.00) startOffset 0 endOffset 17 width 195.89: "A serifed face \x{753B}\x{50CF}"
-        LayoutSVGText {text} at (19.95,138) size 233.44x27 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (19.95,138) size 233.44x27
+        LayoutSVGText {text} at (19.95,138.41) size 233.44x26.39 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (19.95,138.41) size 233.44x26.39
             chunk 1 text run 1 at (20.00,160.00) startOffset 0 endOffset 20 width 233.40: "A sans-serif face \x{753B}\x{50CF}"
-        LayoutSVGText {text} at (20,220) size 292.83x27 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (20,220) size 292.83x27
+        LayoutSVGText {text} at (20,220.20) size 292.83x27 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (20,220.20) size 292.83x27
             chunk 1 text run 1 at (20.00,240.00) startOffset 0 endOffset 19 width 292.84: "A mono (iW) face \x{753B}\x{50CF}"
-        LayoutSVGContainer {g} at (39.97,28) size 292.86x188
-          LayoutSVGText {text} at (40,28) size 188.58x28 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (40,28) size 188.58x28
+        LayoutSVGContainer {g} at (39.97,28.41) size 292.86x187.59
+          LayoutSVGText {text} at (40,28.41) size 188.58x27.59 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (40,28.41) size 188.58x27.59
               chunk 1 text run 1 at (40.00,50.00) startOffset 0 endOffset 17 width 188.58: "A serifed face \x{753B}\x{50CF}"
-          LayoutSVGText {text} at (40,108) size 233.39x28 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (40,108) size 233.39x28
+          LayoutSVGText {text} at (40,107.81) size 233.39x27.59 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (40,107.81) size 233.39x27.59
               chunk 1 text run 1 at (40.00,130.00) startOffset 0 endOffset 20 width 233.40: "A sans-serif face \x{753B}\x{50CF}"
-          LayoutSVGText {text} at (39.97,188) size 292.86x28 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (39.97,188) size 292.86x28
+          LayoutSVGText {text} at (39.97,188.41) size 292.86x27.59 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (39.97,188.41) size 292.86x27.59
               chunk 1 text run 1 at (40.00,210.00) startOffset 0 endOffset 19 width 292.84: "A mono (iW) face \x{753B}\x{50CF}"
-        LayoutSVGText {text} at (40,268) size 221.97x28 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (40,268) size 221.97x28
+        LayoutSVGText {text} at (40,268.41) size 221.97x27.59 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (40,268.41) size 221.97x27.59
             chunk 1 text run 1 at (40.00,290.00) startOffset 0 endOffset 22 width 221.98: "This must be displayed"
-    LayoutSVGText {text} at (10,304) size 263.33x46 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (10,304) size 263.33x46
-        chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 263.34: "$Revision: 1.5 $"
+    LayoutSVGText {text} at (10,304) size 263.31x46.19 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (10,304) size 263.31x46.19
+        chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 263.31: "$Revision: 1.5 $"
     LayoutSVGRect {rect} at (1,1) size 478x358 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]

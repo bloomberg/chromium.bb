@@ -1,9 +1,9 @@
-layer at (0,0) size 480x360
-  LayoutView at (0,0) size 480x360
-layer at (0,0) size 480x360
-  LayoutSVGRoot {svg} at (0,0) size 480x360
-    LayoutSVGContainer {g} at (17,25) size 416x273
-      LayoutSVGContainer {g} at (17,25) size 416x273
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutSVGRoot {svg} at (0,0) size 800x600
+    LayoutSVGContainer {g} at (20.39,25) size 409.19x272.81
+      LayoutSVGContainer {g} at (20.39,25) size 409.19x272.81
         LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
           LayoutSVGResourceFilter {filter} [id="Turb1"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
             [feTurbulence type="TURBULENCE" baseFrequency="0.05, 0.05" seed="0.00" numOctaves="2" stitchTiles="0"]
@@ -19,71 +19,71 @@ layer at (0,0) size 480x360
             [feTurbulence type="NOISE" baseFrequency="0.10, 0.10" seed="0.00" numOctaves="1" stitchTiles="0"]
         LayoutSVGRect {rect} at (25,25) size 100x75 [fill={[type=SOLID] [color=#000000]}] [x=25.00] [y=25.00] [width=100.00] [height=75.00]
           [filter="Turb1"] LayoutSVGResourceFilter {filter} at (25,25) size 100x75
-        LayoutSVGText {text} at (30.02,107) size 89.94x12 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (30.02,107) size 89.94x12
-            chunk 1 (middle anchor) text run 1 at (30.02,117.00) startOffset 0 endOffset 15 width 89.95: "type=turbulence"
-        LayoutSVGText {text} at (17,119) size 116x12 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (17,119) size 116x12
-            chunk 1 (middle anchor) text run 1 at (17.00,129.00) startOffset 0 endOffset 18 width 116.00: "baseFrequency=0.05"
-        LayoutSVGText {text} at (33.08,131) size 83.83x12 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (33.08,131) size 83.83x12
-            chunk 1 (middle anchor) text run 1 at (33.08,141.00) startOffset 0 endOffset 12 width 83.83: "numOctaves=2"
+        LayoutSVGText {text} at (31.81,106.81) size 86.34x12 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (31.81,106.81) size 86.34x12
+            chunk 1 (middle anchor) text run 1 at (31.82,117.00) startOffset 0 endOffset 15 width 86.35: "type=turbulence"
+        LayoutSVGText {text} at (20.39,118.81) size 109.19x12 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (20.39,118.81) size 109.19x12
+            chunk 1 (middle anchor) text run 1 at (20.40,129.00) startOffset 0 endOffset 18 width 109.20: "baseFrequency=0.05"
+        LayoutSVGText {text} at (35.47,130.81) size 79.03x12 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (35.47,130.81) size 79.03x12
+            chunk 1 (middle anchor) text run 1 at (35.48,141.00) startOffset 0 endOffset 12 width 79.03: "numOctaves=2"
         LayoutSVGRect {rect} at (175,25) size 100x75 [fill={[type=SOLID] [color=#000000]}] [x=175.00] [y=25.00] [width=100.00] [height=75.00]
           [filter="Turb2"] LayoutSVGResourceFilter {filter} at (175,25) size 100x75
-        LayoutSVGText {text} at (180.02,107) size 89.94x12 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (180.02,107) size 89.94x12
-            chunk 1 (middle anchor) text run 1 at (180.02,117.00) startOffset 0 endOffset 15 width 89.95: "type=turbulence"
-        LayoutSVGText {text} at (170.50,119) size 109x12 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (170.50,119) size 109x12
-            chunk 1 (middle anchor) text run 1 at (170.50,129.00) startOffset 0 endOffset 17 width 109.00: "baseFrequency=0.1"
-        LayoutSVGText {text} at (183.08,131) size 83.83x12 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (183.08,131) size 83.83x12
-            chunk 1 (middle anchor) text run 1 at (183.08,141.00) startOffset 0 endOffset 12 width 83.83: "numOctaves=2"
+        LayoutSVGText {text} at (181.81,106.81) size 86.34x12 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (181.81,106.81) size 86.34x12
+            chunk 1 (middle anchor) text run 1 at (181.82,117.00) startOffset 0 endOffset 15 width 86.35: "type=turbulence"
+        LayoutSVGText {text} at (173.69,118.81) size 102.59x12 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (173.69,118.81) size 102.59x12
+            chunk 1 (middle anchor) text run 1 at (173.70,129.00) startOffset 0 endOffset 17 width 102.60: "baseFrequency=0.1"
+        LayoutSVGText {text} at (185.47,130.81) size 79.03x12 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (185.47,130.81) size 79.03x12
+            chunk 1 (middle anchor) text run 1 at (185.48,141.00) startOffset 0 endOffset 12 width 79.03: "numOctaves=2"
         LayoutSVGRect {rect} at (325,25) size 100x75 [fill={[type=SOLID] [color=#000000]}] [x=325.00] [y=25.00] [width=100.00] [height=75.00]
           [filter="Turb3"] LayoutSVGResourceFilter {filter} at (325,25) size 100x75
-        LayoutSVGText {text} at (330.02,107) size 89.94x12 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (330.02,107) size 89.94x12
-            chunk 1 (middle anchor) text run 1 at (330.02,117.00) startOffset 0 endOffset 15 width 89.95: "type=turbulence"
-        LayoutSVGText {text} at (317,119) size 116x12 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (317,119) size 116x12
-            chunk 1 (middle anchor) text run 1 at (317.00,129.00) startOffset 0 endOffset 18 width 116.00: "baseFrequency=0.05"
-        LayoutSVGText {text} at (333.08,131) size 83.83x12 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (333.08,131) size 83.83x12
-            chunk 1 (middle anchor) text run 1 at (333.08,141.00) startOffset 0 endOffset 12 width 83.83: "numOctaves=8"
+        LayoutSVGText {text} at (331.81,106.81) size 86.34x12 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (331.81,106.81) size 86.34x12
+            chunk 1 (middle anchor) text run 1 at (331.82,117.00) startOffset 0 endOffset 15 width 86.35: "type=turbulence"
+        LayoutSVGText {text} at (320.39,118.81) size 109.19x12 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (320.39,118.81) size 109.19x12
+            chunk 1 (middle anchor) text run 1 at (320.40,129.00) startOffset 0 endOffset 18 width 109.20: "baseFrequency=0.05"
+        LayoutSVGText {text} at (335.47,130.81) size 79.03x12 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (335.47,130.81) size 79.03x12
+            chunk 1 (middle anchor) text run 1 at (335.48,141.00) startOffset 0 endOffset 12 width 79.03: "numOctaves=8"
         LayoutSVGRect {rect} at (25,180) size 100x75 [fill={[type=SOLID] [color=#000000]}] [x=25.00] [y=180.00] [width=100.00] [height=75.00]
           [filter="Turb4"] LayoutSVGResourceFilter {filter} at (25,180) size 100x75
-        LayoutSVGText {text} at (27.11,262) size 95.77x12 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (27.11,262) size 95.77x12
-            chunk 1 (middle anchor) text run 1 at (27.11,272.00) startOffset 0 endOffset 17 width 95.78: "type=fractalNoise"
-        LayoutSVGText {text} at (20.50,274) size 109x12 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (20.50,274) size 109x12
-            chunk 1 (middle anchor) text run 1 at (20.50,284.00) startOffset 0 endOffset 17 width 109.00: "baseFrequency=0.1"
-        LayoutSVGText {text} at (33.08,286) size 83.83x12 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (33.08,286) size 83.83x12
-            chunk 1 (middle anchor) text run 1 at (33.08,296.00) startOffset 0 endOffset 12 width 83.83: "numOctaves=4"
+        LayoutSVGText {text} at (29.20,261.81) size 91.56x12 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (29.20,261.81) size 91.56x12
+            chunk 1 (middle anchor) text run 1 at (29.21,272.00) startOffset 0 endOffset 17 width 91.58: "type=fractalNoise"
+        LayoutSVGText {text} at (23.69,273.81) size 102.59x12 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (23.69,273.81) size 102.59x12
+            chunk 1 (middle anchor) text run 1 at (23.70,284.00) startOffset 0 endOffset 17 width 102.60: "baseFrequency=0.1"
+        LayoutSVGText {text} at (35.47,285.81) size 79.03x12 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (35.47,285.81) size 79.03x12
+            chunk 1 (middle anchor) text run 1 at (35.48,296.00) startOffset 0 endOffset 12 width 79.03: "numOctaves=4"
         LayoutSVGRect {rect} at (175,180) size 100x75 [fill={[type=SOLID] [color=#000000]}] [x=175.00] [y=180.00] [width=100.00] [height=75.00]
           [filter="Turb5"] LayoutSVGResourceFilter {filter} at (175,180) size 100x75
-        LayoutSVGText {text} at (177.11,262) size 95.77x12 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (177.11,262) size 95.77x12
-            chunk 1 (middle anchor) text run 1 at (177.11,272.00) startOffset 0 endOffset 17 width 95.78: "type=fractalNoise"
-        LayoutSVGText {text} at (170.50,274) size 109x12 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (170.50,274) size 109x12
-            chunk 1 (middle anchor) text run 1 at (170.50,284.00) startOffset 0 endOffset 17 width 109.00: "baseFrequency=0.4"
-        LayoutSVGText {text} at (183.08,286) size 83.83x12 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (183.08,286) size 83.83x12
-            chunk 1 (middle anchor) text run 1 at (183.08,296.00) startOffset 0 endOffset 12 width 83.83: "numOctaves=4"
+        LayoutSVGText {text} at (179.20,261.81) size 91.56x12 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (179.20,261.81) size 91.56x12
+            chunk 1 (middle anchor) text run 1 at (179.21,272.00) startOffset 0 endOffset 17 width 91.58: "type=fractalNoise"
+        LayoutSVGText {text} at (173.69,273.81) size 102.59x12 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (173.69,273.81) size 102.59x12
+            chunk 1 (middle anchor) text run 1 at (173.70,284.00) startOffset 0 endOffset 17 width 102.60: "baseFrequency=0.4"
+        LayoutSVGText {text} at (185.47,285.81) size 79.03x12 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (185.47,285.81) size 79.03x12
+            chunk 1 (middle anchor) text run 1 at (185.48,296.00) startOffset 0 endOffset 12 width 79.03: "numOctaves=4"
         LayoutSVGRect {rect} at (325,180) size 100x75 [fill={[type=SOLID] [color=#000000]}] [x=325.00] [y=180.00] [width=100.00] [height=75.00]
           [filter="Turb6"] LayoutSVGResourceFilter {filter} at (325,180) size 100x75
-        LayoutSVGText {text} at (327.11,262) size 95.77x12 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (327.11,262) size 95.77x12
-            chunk 1 (middle anchor) text run 1 at (327.11,272.00) startOffset 0 endOffset 17 width 95.78: "type=fractalNoise"
-        LayoutSVGText {text} at (320.50,274) size 109x12 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (320.50,274) size 109x12
-            chunk 1 (middle anchor) text run 1 at (320.50,284.00) startOffset 0 endOffset 17 width 109.00: "baseFrequency=0.1"
-        LayoutSVGText {text} at (333.08,286) size 83.83x12 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (333.08,286) size 83.83x12
-            chunk 1 (middle anchor) text run 1 at (333.08,296.00) startOffset 0 endOffset 12 width 83.83: "numOctaves=1"
-    LayoutSVGText {text} at (10,304) size 261x46 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (10,304) size 261x46
-        chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 261.00: "$Revision: 1.1 $"
+        LayoutSVGText {text} at (329.20,261.81) size 91.56x12 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (329.20,261.81) size 91.56x12
+            chunk 1 (middle anchor) text run 1 at (329.21,272.00) startOffset 0 endOffset 17 width 91.58: "type=fractalNoise"
+        LayoutSVGText {text} at (323.69,273.81) size 102.59x12 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (323.69,273.81) size 102.59x12
+            chunk 1 (middle anchor) text run 1 at (323.70,284.00) startOffset 0 endOffset 17 width 102.60: "baseFrequency=0.1"
+        LayoutSVGText {text} at (335.47,285.81) size 79.03x12 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (335.47,285.81) size 79.03x12
+            chunk 1 (middle anchor) text run 1 at (335.48,296.00) startOffset 0 endOffset 12 width 79.03: "numOctaves=1"
+    LayoutSVGText {text} at (10,304) size 265.80x45.59 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (10,304) size 265.80x45.59
+        chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 265.80: "$Revision: 1.1 $"
     LayoutSVGRect {rect} at (1,1) size 478x358 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]

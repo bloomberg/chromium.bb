@@ -1,21 +1,21 @@
-layer at (0,0) size 480x360
-  LayoutView at (0,0) size 480x360
-layer at (0,0) size 480x360
-  LayoutSVGRoot {svg} at (0,0) size 480x360
-    LayoutSVGContainer {g} at (128,73) size 224x134
-      LayoutSVGContainer {g} at (128,73) size 224x134
-        LayoutSVGText {text} at (148.50,73) size 183x34 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (148.50,73) size 183x34
-            chunk 1 (middle anchor) text run 1 at (148.50,100.00) startOffset 0 endOffset 13 width 183.00: "Good morning!"
-        LayoutSVGText {text} at (128,172) size 224x35 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (128,173) size 86x34
-            chunk 1 (middle anchor) text run 1 at (128.00,200.00) startOffset 0 endOffset 6 width 86.00: "Bonne "
-          LayoutSVGTSpan {tspan} at (128,172) size 224x35
-            LayoutSVGInlineText {#text} at (214,172) size 129x35
-              chunk 1 (middle anchor) text run 1 at (214.00,200.00) startOffset 0 endOffset 10 width 129.00: "avant-midi"
-          LayoutSVGInlineText {#text} at (343,173) size 9x34
-            chunk 1 (middle anchor) text run 1 at (343.00,200.00) startOffset 0 endOffset 1 width 9.00: "!"
-    LayoutSVGText {text} at (10,304) size 261x46 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (10,304) size 261x46
-        chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 261.00: "$Revision: 1.5 $"
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutSVGRoot {svg} at (0,0) size 800x600
+    LayoutSVGContainer {g} at (127.50,73) size 224.98x134.19
+      LayoutSVGContainer {g} at (127.50,73) size 224.98x134.19
+        LayoutSVGText {text} at (147.89,73) size 184.19x34.19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (147.89,73) size 184.19x34.19
+            chunk 1 (middle anchor) text run 1 at (147.90,100.00) startOffset 0 endOffset 13 width 184.20: "Good morning!"
+        LayoutSVGText {text} at (127.50,173) size 224.98x34.19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (127.50,173) size 85.19x34.19
+            chunk 1 (middle anchor) text run 1 at (127.50,200.00) startOffset 0 endOffset 6 width 85.20: "Bonne "
+          LayoutSVGTSpan {tspan} at (127.50,173) size 224.98x34.19
+            LayoutSVGInlineText {#text} at (212.69,173) size 130.19x34.19
+              chunk 1 (middle anchor) text run 1 at (212.70,200.00) startOffset 0 endOffset 10 width 130.20: "avant-midi"
+          LayoutSVGInlineText {#text} at (342.89,173) size 9.59x34.19
+            chunk 1 (middle anchor) text run 1 at (342.90,200.00) startOffset 0 endOffset 1 width 9.60: "!"
+    LayoutSVGText {text} at (10,304) size 265.80x45.59 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (10,304) size 265.80x45.59
+        chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 265.80: "$Revision: 1.5 $"
     LayoutSVGRect {rect} at (1,1) size 478x358 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]

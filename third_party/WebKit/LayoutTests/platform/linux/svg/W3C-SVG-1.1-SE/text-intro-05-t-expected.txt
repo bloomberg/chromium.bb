@@ -1,20 +1,20 @@
-layer at (0,0) size 480x360
-  LayoutView at (0,0) size 480x360
-layer at (0,0) size 480x360
-  LayoutSVGRoot {svg} at (0,0) size 480x360
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutSVGRoot {svg} at (0,0) size 800x600
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
-    LayoutSVGContainer {g} at (45,49.13) size 417x197.88
-      LayoutSVGText {text} at (113,49.13) size 349x37.88 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (113,49.13) size 349x37.88
-          chunk 1 text run 1 at (113.00,80.00) startOffset 0 endOffset 37 width 347.00 RTL: "\x{644}\x{645}\x{627}\x{630}\x{627} \x{644}\x{627} \x{64A}\x{62A}\x{643}\x{644}\x{645}\x{648}\x{646} \x{627}\x{644}\x{644}\x{651}\x{63A}\x{629} \x{627}\x{644}\x{639}\x{631}\x{628}\x{64A}\x{629} \x{641}\x{62D}\x{633}\x{628}\x{61F}"
-      LayoutSVGText {text} at (45,123.75) size 416x45.25 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (45,123.75) size 416x45.25
-          chunk 1 text run 1 at (45.00,160.00) startOffset 0 endOffset 37 width 415.00 RTL: "\x{644}\x{645}\x{627}\x{630}\x{627} \x{644}\x{627} \x{64A}\x{62A}\x{643}\x{644}\x{645}\x{648}\x{646} \x{627}\x{644}\x{644}\x{651}\x{63A}\x{629} \x{627}\x{644}\x{639}\x{631}\x{628}\x{64A}\x{629} \x{641}\x{62D}\x{633}\x{628}\x{61F}"
-      LayoutSVGText {text} at (113,209.13) size 349x37.88 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (113,209.13) size 349x37.88
-          chunk 1 text run 1 at (113.00,240.00) startOffset 0 endOffset 37 width 347.00 RTL: "\x{644}\x{645}\x{627}\x{630}\x{627} \x{644}\x{627} \x{64A}\x{62A}\x{643}\x{644}\x{645}\x{648}\x{646} \x{627}\x{644}\x{644}\x{651}\x{63A}\x{629} \x{627}\x{644}\x{639}\x{631}\x{628}\x{64A}\x{629} \x{641}\x{62D}\x{633}\x{628}\x{61F}"
-    LayoutSVGContainer {g} at (10,311) size 231x36
-      LayoutSVGText {text} at (10,311) size 231x36 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (10,311) size 231x36
-          chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 231.00: "$Revision: 1.7 $"
+    LayoutSVGContainer {g} at (43,49.31) size 418.80x197.88
+      LayoutSVGText {text} at (113.19,49.31) size 348.59x37.88 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (113.19,49.31) size 348.59x37.88
+          chunk 1 text run 1 at (113.20,80.00) startOffset 0 endOffset 37 width 346.80 RTL: "\x{644}\x{645}\x{627}\x{630}\x{627} \x{644}\x{627} \x{64A}\x{62A}\x{643}\x{644}\x{645}\x{648}\x{646} \x{627}\x{644}\x{644}\x{651}\x{63A}\x{629} \x{627}\x{644}\x{639}\x{631}\x{628}\x{64A}\x{629} \x{641}\x{62D}\x{633}\x{628}\x{61F}"
+      LayoutSVGText {text} at (43,123.55) size 418.80x44.84 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (43,123.55) size 418.80x44.84
+          chunk 1 text run 1 at (43.00,160.00) startOffset 0 endOffset 37 width 417.00 RTL: "\x{644}\x{645}\x{627}\x{630}\x{627} \x{644}\x{627} \x{64A}\x{62A}\x{643}\x{644}\x{645}\x{648}\x{646} \x{627}\x{644}\x{644}\x{651}\x{63A}\x{629} \x{627}\x{644}\x{639}\x{631}\x{628}\x{64A}\x{629} \x{641}\x{62D}\x{633}\x{628}\x{61F}"
+      LayoutSVGText {text} at (113.19,209.31) size 348.59x37.88 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (113.19,209.31) size 348.59x37.88
+          chunk 1 text run 1 at (113.20,240.00) startOffset 0 endOffset 37 width 346.80 RTL: "\x{644}\x{645}\x{627}\x{630}\x{627} \x{644}\x{627} \x{64A}\x{62A}\x{643}\x{644}\x{645}\x{648}\x{646} \x{627}\x{644}\x{644}\x{651}\x{63A}\x{629} \x{627}\x{644}\x{639}\x{631}\x{628}\x{64A}\x{629} \x{641}\x{62D}\x{633}\x{628}\x{61F}"
+    LayoutSVGContainer {g} at (10,311.20) size 227.39x36
+      LayoutSVGText {text} at (10,311.20) size 227.39x36 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (10,311.20) size 227.39x36
+          chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 227.40: "$Revision: 1.7 $"
     LayoutSVGRect {rect} at (1,1) size 478x358 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]

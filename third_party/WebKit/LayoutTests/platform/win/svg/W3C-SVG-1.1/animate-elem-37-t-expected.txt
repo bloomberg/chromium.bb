@@ -1,47 +1,47 @@
-layer at (0,0) size 480x360
-  LayoutView at (0,0) size 480x360
-layer at (0,0) size 480x360
-  LayoutSVGRoot {svg} at (0,0) size 480x360
-    LayoutSVGText {text} at (10,304) size 261x46 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (10,304) size 261x46
-        chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 261.00: "$Revision: 1.8 $"
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutSVGRoot {svg} at (0,0) size 800x600
+    LayoutSVGText {text} at (10,304) size 265.80x45.59 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (10,304) size 265.80x45.59
+        chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 265.80: "$Revision: 1.8 $"
     LayoutSVGRect {rect} at (1,1) size 478x358 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]
-    LayoutSVGText {text} at (129.78,10) size 220.44x19 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (129.78,10) size 220.44x19
-        chunk 1 (middle anchor) text run 1 at (129.78,25.00) startOffset 0 endOffset 33 width 220.44: "<animateTransform> shape elements"
-    LayoutSVGContainer {g} at (30,60) size 430x224
-      LayoutSVGContainer {g} at (-30,-30) size 60x94 [transform={m=((1.00,0.00)(0.00,1.00)) t=(60.00,90.00)}]
+    LayoutSVGText {text} at (120.58,10.61) size 238.83x18.59 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (120.58,10.61) size 238.83x18.59
+        chunk 1 (middle anchor) text run 1 at (120.58,25.00) startOffset 0 endOffset 33 width 238.84: "<animateTransform> shape elements"
+    LayoutSVGContainer {g} at (30,60) size 430x224.20
+      LayoutSVGContainer {g} at (-30,-30) size 60x94.20 [transform={m=((1.00,0.00)(0.00,1.00)) t=(60.00,90.00)}]
         LayoutSVGPath {path} at (-30,-30) size 60x60 [stroke={[type=SOLID] [color=#FFB400]}] [fill={[type=SOLID] [color=#E6E6E6]}] [data="M 0 0 Q 30 0 30 -30 Q 0 -30 0 0 Q 0 -30 -30 -30 Q -30 0 0 0 Q -30 0 -30 30 Q 0 30 0 0 Q 0 30 30 30 Q 30 0 0 0 Z"]
-        LayoutSVGText {text} at (-22,45) size 44x19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-22,45) size 44x19
-            chunk 1 (middle anchor) text run 1 at (-22.00,60.00) startOffset 0 endOffset 6 width 44.00: "<path>"
-      LayoutSVGContainer {g} at (-30,-20) size 60x84 [transform={m=((1.00,0.00)(0.00,1.00)) t=(180.00,90.00)}]
+        LayoutSVGText {text} at (-23.39,45.61) size 46.80x18.59 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-23.39,45.61) size 46.80x18.59
+            chunk 1 (middle anchor) text run 1 at (-23.40,60.00) startOffset 0 endOffset 6 width 46.80: "<path>"
+      LayoutSVGContainer {g} at (-30,-20) size 60x84.20 [transform={m=((1.00,0.00)(0.00,1.00)) t=(180.00,90.00)}]
         LayoutSVGRect {rect} at (-30,-20) size 60x40 [stroke={[type=SOLID] [color=#FFB400]}] [fill={[type=SOLID] [color=#E6E6E6]}] [x=-30.00] [y=-20.00] [width=60.00] [height=40.00]
-        LayoutSVGText {text} at (-20.50,45) size 41x19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-20.50,45) size 41x19
-            chunk 1 (middle anchor) text run 1 at (-20.50,60.00) startOffset 0 endOffset 6 width 41.00: "<rect>"
-      LayoutSVGContainer {g} at (-30,-30) size 60x94 [transform={m=((1.00,0.00)(0.00,1.00)) t=(300.00,90.00)}]
+        LayoutSVGText {text} at (-21.30,45.61) size 42.59x18.59 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-21.30,45.61) size 42.59x18.59
+            chunk 1 (middle anchor) text run 1 at (-21.30,60.00) startOffset 0 endOffset 6 width 42.60: "<rect>"
+      LayoutSVGContainer {g} at (-30,-30) size 60x94.20 [transform={m=((1.00,0.00)(0.00,1.00)) t=(300.00,90.00)}]
         LayoutSVGEllipse {circle} at (-30,-30) size 60x60 [stroke={[type=SOLID] [color=#FFB400]}] [fill={[type=SOLID] [color=#E6E6E6]}] [cx=0.00] [cy=0.00] [r=30.00]
-        LayoutSVGText {text} at (-25,45) size 50x19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-25,45) size 50x19
-            chunk 1 (middle anchor) text run 1 at (-25.00,60.00) startOffset 0 endOffset 8 width 50.00: "<circle>"
-      LayoutSVGContainer {g} at (-40,-20) size 80x84 [transform={m=((1.00,0.00)(0.00,1.00)) t=(420.00,90.00)}]
+        LayoutSVGText {text} at (-27,45.61) size 54x18.59 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-27,45.61) size 54x18.59
+            chunk 1 (middle anchor) text run 1 at (-27.00,60.00) startOffset 0 endOffset 8 width 54.00: "<circle>"
+      LayoutSVGContainer {g} at (-40,-20) size 80x84.20 [transform={m=((1.00,0.00)(0.00,1.00)) t=(420.00,90.00)}]
         LayoutSVGEllipse {ellipse} at (-40,-20) size 80x40 [stroke={[type=SOLID] [color=#FFB400]}] [fill={[type=SOLID] [color=#E6E6E6]}] [cx=0.00] [cy=0.00] [rx=40.00] [ry=20.00]
-        LayoutSVGText {text} at (-27.50,45) size 55x19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-27.50,45) size 55x19
-            chunk 1 (middle anchor) text run 1 at (-27.50,60.00) startOffset 0 endOffset 9 width 55.00: "<ellipse>"
-      LayoutSVGContainer {g} at (-30,-20) size 60x84 [transform={m=((1.00,0.00)(0.00,1.00)) t=(60.00,220.00)}]
+        LayoutSVGText {text} at (-30.30,45.61) size 60.59x18.59 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-30.30,45.61) size 60.59x18.59
+            chunk 1 (middle anchor) text run 1 at (-30.30,60.00) startOffset 0 endOffset 9 width 60.60: "<ellipse>"
+      LayoutSVGContainer {g} at (-30,-20) size 60x84.20 [transform={m=((1.00,0.00)(0.00,1.00)) t=(60.00,220.00)}]
         LayoutSVGPath {line} at (-30,-20) size 60x40 [stroke={[type=SOLID] [color=#FFB400] [stroke width=10.00] [line cap=ROUND]}] [fill={[type=SOLID] [color=#000000]}] [x1=-30.00] [y1=-20.00] [x2=30.00] [y2=20.00]
-        LayoutSVGText {text} at (-19,45) size 38x19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-19,45) size 38x19
-            chunk 1 (middle anchor) text run 1 at (-19.00,60.00) startOffset 0 endOffset 6 width 38.00: "<line>"
-      LayoutSVGContainer {g} at (-32,-20) size 64x84 [transform={m=((1.00,0.00)(0.00,1.00)) t=(180.00,220.00)}]
+        LayoutSVGText {text} at (-21.30,45.61) size 42.59x18.59 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-21.30,45.61) size 42.59x18.59
+            chunk 1 (middle anchor) text run 1 at (-21.30,60.00) startOffset 0 endOffset 6 width 42.60: "<line>"
+      LayoutSVGContainer {g} at (-36,-20) size 72x84.20 [transform={m=((1.00,0.00)(0.00,1.00)) t=(180.00,220.00)}]
         LayoutSVGPath {polyline} at (-30,-20) size 60x40 [stroke={[type=SOLID] [color=#FFB400] [stroke width=10.00] [line cap=ROUND] [line join=ROUND]}] [points="-30 20 -30 -20 30 20 30 -20"]
-        LayoutSVGText {text} at (-32,45) size 64x19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-32,45) size 64x19
-            chunk 1 (middle anchor) text run 1 at (-32.00,60.00) startOffset 0 endOffset 10 width 64.00: "<polyline>"
-      LayoutSVGContainer {g} at (-33,-20) size 66x84 [transform={m=((1.00,0.00)(0.00,1.00)) t=(300.00,220.00)}]
+        LayoutSVGText {text} at (-36,45.61) size 72x18.59 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-36,45.61) size 72x18.59
+            chunk 1 (middle anchor) text run 1 at (-36.00,60.00) startOffset 0 endOffset 10 width 72.00: "<polyline>"
+      LayoutSVGContainer {g} at (-35.69,-20) size 71.39x84.20 [transform={m=((1.00,0.00)(0.00,1.00)) t=(300.00,220.00)}]
         LayoutSVGPath {polygon} at (-30,-20) size 60x40 [stroke={[type=SOLID] [color=#FFB400]}] [fill={[type=SOLID] [color=#E6E6E6]}] [points="-30 20 -30 -20 30 20 30 -20"]
-        LayoutSVGText {text} at (-33,45) size 66x19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-33,45) size 66x19
-            chunk 1 (middle anchor) text run 1 at (-33.00,60.00) startOffset 0 endOffset 9 width 66.00: "<polygon>"
+        LayoutSVGText {text} at (-35.69,45.61) size 71.39x18.59 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-35.69,45.61) size 71.39x18.59
+            chunk 1 (middle anchor) text run 1 at (-35.70,60.00) startOffset 0 endOffset 9 width 71.40: "<polygon>"

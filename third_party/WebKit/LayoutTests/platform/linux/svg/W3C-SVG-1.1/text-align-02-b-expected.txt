@@ -1,43 +1,43 @@
-layer at (0,0) size 480x360
-  LayoutView at (0,0) size 480x360
-layer at (0,0) size 480x360
-  LayoutSVGRoot {svg} at (0,0) size 480x360
-    LayoutSVGContainer {g} at (5,8) size 463.22x276.50
-      LayoutSVGText {text} at (5,8) size 463.22x39 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (5,8) size 463.22x39
-          chunk 1 text run 1 at (5.00,40.00) startOffset 0 endOffset 34 width 463.23: "Test 'baseline-shift' (horizontal)"
-      LayoutSVGContainer {g} at (0,-35) size 405x199.50 [transform={m=((1.00,0.00)(0.00,1.00)) t=(15.00,120.00)}]
-        LayoutSVGText {text} at (0,-35) size 351x42 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,-28) size 98x35
-            chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 6 width 98.00: "Normal"
-          LayoutSVGTSpan {tspan} at (0,-35) size 351x42
-            LayoutSVGInlineText {#text} at (98,-35) size 204x35
-              chunk 1 text run 1 at (98.00,-7.00) startOffset 0 endOffset 16 width 204.00: "baseline-shift:7"
-          LayoutSVGInlineText {#text} at (302,-28) size 49x35
-            chunk 1 text run 1 at (302.00,0.00) startOffset 0 endOffset 4 width 48.00: "text"
-        LayoutSVGText {text} at (0,42) size 405x56 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,42) size 98x35
-            chunk 1 text run 1 at (0.00,70.00) startOffset 0 endOffset 6 width 98.00: "Normal"
-          LayoutSVGTSpan {tspan} at (0,42) size 405x56
-            LayoutSVGInlineText {#text} at (98,63) size 258x35
-              chunk 1 text run 1 at (98.00,91.00) startOffset 0 endOffset 19 width 258.00: "baseline-shift:-70%"
-          LayoutSVGInlineText {#text} at (356,42) size 49x35
-            chunk 1 text run 1 at (356.00,70.00) startOffset 0 endOffset 4 width 48.00: "text"
-        LayoutSVGText {text} at (0,94.50) size 272x70 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (0,112) size 98x35
-            chunk 1 text run 1 at (0.00,140.00) startOffset 0 endOffset 6 width 98.00: "Normal"
-          LayoutSVGTSpan {tspan} at (0,94.50) size 272x70
-            LayoutSVGInlineText {#text} at (98,129.50) size 49x35
-              chunk 1 text run 1 at (98.00,157.50) startOffset 0 endOffset 3 width 49.00: "sub"
-          LayoutSVGTSpan {tspan} at (0,94.50) size 272x70
-            LayoutSVGInlineText {#text} at (147,94.50) size 77x35
-              chunk 1 text run 1 at (147.00,122.50) startOffset 0 endOffset 5 width 76.00: "super"
-          LayoutSVGTSpan {tspan} at (0,94.50) size 272x70
-            LayoutSVGInlineText {#text} at (223,112) size 25x35
-              chunk 1 text run 1 at (223.00,140.00) startOffset 0 endOffset 2 width 25.00: "te"
-          LayoutSVGInlineText {#text} at (248,112) size 24x35
-            chunk 1 text run 1 at (248.00,140.00) startOffset 0 endOffset 2 width 23.00: "xt"
-    LayoutSVGText {text} at (10,304) size 264x46 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (10,304) size 264x46
-        chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 264.00: "$Revision: 1.5 $"
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutSVGRoot {svg} at (0,0) size 800x600
+    LayoutSVGContainer {g} at (5,8.81) size 472.63x275.28
+      LayoutSVGText {text} at (5,8.81) size 472.63x39 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (5,8.81) size 472.63x39
+          chunk 1 text run 1 at (5.00,40.00) startOffset 0 endOffset 34 width 472.63: "Test 'baseline-shift' (horizontal)"
+      LayoutSVGContainer {g} at (0,-34.59) size 401.98x198.69 [transform={m=((1.00,0.00)(0.00,1.00)) t=(15.00,120.00)}]
+        LayoutSVGText {text} at (0,-34.59) size 348.59x41.19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,-27.59) size 97.19x34.19
+            chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 6 width 97.20: "Normal"
+          LayoutSVGTSpan {tspan} at (0,-34.59) size 348.59x41.19
+            LayoutSVGInlineText {#text} at (97.19,-34.59) size 202.80x34.19
+              chunk 1 text run 1 at (97.20,-7.00) startOffset 0 endOffset 16 width 202.80: "baseline-shift:7"
+          LayoutSVGInlineText {#text} at (300,-27.59) size 48.59x34.19
+            chunk 1 text run 1 at (300.00,0.00) startOffset 0 endOffset 4 width 48.60: "text"
+        LayoutSVGText {text} at (0,42.41) size 401.98x55.19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,42.41) size 97.19x34.19
+            chunk 1 text run 1 at (0.00,70.00) startOffset 0 endOffset 6 width 97.20: "Normal"
+          LayoutSVGTSpan {tspan} at (0,42.41) size 401.98x55.19
+            LayoutSVGInlineText {#text} at (97.19,63.41) size 256.19x34.19
+              chunk 1 text run 1 at (97.20,91.00) startOffset 0 endOffset 19 width 256.20: "baseline-shift:-70%"
+          LayoutSVGInlineText {#text} at (353.39,42.41) size 48.59x34.19
+            chunk 1 text run 1 at (353.40,70.00) startOffset 0 endOffset 4 width 48.60: "text"
+        LayoutSVGText {text} at (0,94.91) size 269.98x69.19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,112.41) size 97.19x34.19
+            chunk 1 text run 1 at (0.00,140.00) startOffset 0 endOffset 6 width 97.20: "Normal"
+          LayoutSVGTSpan {tspan} at (0,94.91) size 269.98x69.19
+            LayoutSVGInlineText {#text} at (97.19,129.91) size 48.59x34.19
+              chunk 1 text run 1 at (97.20,157.50) startOffset 0 endOffset 3 width 48.60: "sub"
+          LayoutSVGTSpan {tspan} at (0,94.91) size 269.98x69.19
+            LayoutSVGInlineText {#text} at (145.80,94.91) size 76.19x34.19
+              chunk 1 text run 1 at (145.80,122.50) startOffset 0 endOffset 5 width 75.60: "super"
+          LayoutSVGTSpan {tspan} at (0,94.91) size 269.98x69.19
+            LayoutSVGInlineText {#text} at (221.39,112.41) size 25.19x34.19
+              chunk 1 text run 1 at (221.40,140.00) startOffset 0 endOffset 2 width 25.20: "te"
+          LayoutSVGInlineText {#text} at (246.59,112.41) size 23.39x34.19
+            chunk 1 text run 1 at (246.60,140.00) startOffset 0 endOffset 2 width 23.40: "xt"
+    LayoutSVGText {text} at (10,304) size 268.19x45.59 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (10,304) size 268.19x45.59
+        chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 268.20: "$Revision: 1.5 $"
     LayoutSVGRect {rect} at (1,1) size 478x358 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]

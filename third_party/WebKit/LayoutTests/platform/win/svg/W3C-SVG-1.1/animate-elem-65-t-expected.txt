@@ -1,51 +1,51 @@
-layer at (0,0) size 480x360
-  LayoutView at (0,0) size 480x360
-layer at (0,0) size 480x360
-  LayoutSVGRoot {svg} at (0,0) size 480x360
-    LayoutSVGText {text} at (10,304) size 261x46 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (10,304) size 261x46
-        chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 261.00: "$Revision: 1.7 $"
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutSVGRoot {svg} at (0,0) size 800x600
+    LayoutSVGText {text} at (10,304) size 265.80x45.59 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (10,304) size 265.80x45.59
+        chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 265.80: "$Revision: 1.7 $"
     LayoutSVGRect {rect} at (1,1) size 478x358 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]
-    LayoutSVGText {text} at (225.50,13) size 29x22 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (225.50,13) size 29x22
-        chunk 1 (middle anchor) text run 1 at (225.50,30.00) startOffset 0 endOffset 3 width 29.00: "min"
-    LayoutSVGContainer {g} at (-23.44,12) size 279.44x216 [transform={m=((1.00,0.00)(0.00,1.00)) t=(100.00,50.00)}]
-      LayoutSVGContainer {g} at (-143.44,-13) size 143.44x196 [transform={m=((1.00,0.00)(0.00,1.00)) t=(120.00,45.00)}]
-        LayoutSVGText {text} at (-84,-13) size 84x16 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-84,-13) size 84x16
+    LayoutSVGText {text} at (225,12.61) size 30x22.19 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (225,12.61) size 30x22.19
+        chunk 1 (middle anchor) text run 1 at (225.00,30.00) startOffset 0 endOffset 3 width 30.00: "min"
+    LayoutSVGContainer {g} at (-21.63,13) size 277.63x215.59 [transform={m=((1.00,0.00)(0.00,1.00)) t=(100.00,50.00)}]
+      LayoutSVGContainer {g} at (-141.63,-12) size 142.22x195.59 [transform={m=((1.00,0.00)(0.00,1.00)) t=(120.00,45.00)}]
+        LayoutSVGText {text} at (-84,-12) size 84.59x15.59 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-84,-12) size 84.59x15.59
             chunk 1 (end anchor) text run 1 at (-84.00,0.00) startOffset 0 endOffset 14 width 84.00: "no min / media"
-        LayoutSVGText {text} at (-61,12) size 61x16 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-61,12) size 61x16
-            chunk 1 (end anchor) text run 1 at (-61.00,25.00) startOffset 0 endOffset 11 width 61.00: "invalid min"
-        LayoutSVGText {text} at (-93,37) size 93x16 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-93,37) size 93x16
-            chunk 1 (end anchor) text run 1 at (-93.00,50.00) startOffset 0 endOffset 16 width 93.00: "min < active dur"
-        LayoutSVGText {text} at (-93,62) size 93x16 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-93,62) size 93x16
-            chunk 1 (end anchor) text run 1 at (-93.00,75.00) startOffset 0 endOffset 16 width 93.00: "min > active dur"
-        LayoutSVGText {text} at (-94,87) size 94x16 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-94,87) size 94x16
-            chunk 1 (end anchor) text run 1 at (-94.00,100.00) startOffset 0 endOffset 16 width 94.00: "min < repeat dur"
-        LayoutSVGText {text} at (-143.44,112) size 143.44x16 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-143.44,112) size 143.44x16
-            chunk 1 (end anchor) text run 1 at (-143.44,125.00) startOffset 0 endOffset 24 width 143.44: "min > repeat dur, remove"
-        LayoutSVGText {text} at (-135.44,167) size 135.44x16 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-135.44,167) size 135.44x16
-            chunk 1 (end anchor) text run 1 at (-135.44,180.00) startOffset 0 endOffset 24 width 135.44: "min > repeat dur, freeze"
-      LayoutSVGContainer {g} at (-15.50,-13) size 111x196 [transform={m=((1.00,0.00)(0.00,1.00)) t=(150.00,25.00)}]
-        LayoutSVGText {text} at (-12.50,-13) size 25x16 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-12.50,-13) size 25x16
-            chunk 1 (middle anchor) text run 1 at (-12.50,0.00) startOffset 0 endOffset 4 width 25.00: "> 5s"
-        LayoutSVGText {text} at (64.50,-13) size 31x16 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (64.50,-13) size 31x16
-            chunk 1 (middle anchor) text run 1 at (64.50,0.00) startOffset 0 endOffset 5 width 31.00: "0s-5s"
-        LayoutSVGContainer {g} at (-15.50,-13) size 108x16 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,180.00)}]
-          LayoutSVGText {text} at (-15.50,-13) size 31x16 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (-15.50,-13) size 31x16
-              chunk 1 (middle anchor) text run 1 at (-15.50,0.00) startOffset 0 endOffset 5 width 31.00: "never"
-          LayoutSVGText {text} at (67.50,-13) size 25x16 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (67.50,-13) size 25x16
-              chunk 1 (middle anchor) text run 1 at (67.50,0.00) startOffset 0 endOffset 4 width 25.00: "> 0s"
+        LayoutSVGText {text} at (-63.59,13) size 63.59x15.59 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-63.59,13) size 63.59x15.59
+            chunk 1 (end anchor) text run 1 at (-63.60,25.00) startOffset 0 endOffset 11 width 63.60: "invalid min"
+        LayoutSVGText {text} at (-91.80,38) size 91.80x15.59 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-91.80,38) size 91.80x15.59
+            chunk 1 (end anchor) text run 1 at (-91.80,50.00) startOffset 0 endOffset 16 width 91.80: "min < active dur"
+        LayoutSVGText {text} at (-91.80,63) size 91.80x15.59 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-91.80,63) size 91.80x15.59
+            chunk 1 (end anchor) text run 1 at (-91.80,75.00) startOffset 0 endOffset 16 width 91.80: "min > active dur"
+        LayoutSVGText {text} at (-93,88) size 93x15.59 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-93,88) size 93x15.59
+            chunk 1 (end anchor) text run 1 at (-93.00,100.00) startOffset 0 endOffset 16 width 93.00: "min < repeat dur"
+        LayoutSVGText {text} at (-141.63,113) size 141.63x15.59 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-141.63,113) size 141.63x15.59
+            chunk 1 (end anchor) text run 1 at (-141.64,125.00) startOffset 0 endOffset 24 width 141.64: "min > repeat dur, remove"
+        LayoutSVGText {text} at (-132.63,168) size 132.63x15.59 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-132.63,168) size 132.63x15.59
+            chunk 1 (end anchor) text run 1 at (-132.64,180.00) startOffset 0 endOffset 24 width 132.64: "min > repeat dur, freeze"
+      LayoutSVGContainer {g} at (-15.59,-12) size 109.98x195.59 [transform={m=((1.00,0.00)(0.00,1.00)) t=(150.00,25.00)}]
+        LayoutSVGText {text} at (-11.69,-12) size 23.39x15.59 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-11.69,-12) size 23.39x15.59
+            chunk 1 (middle anchor) text run 1 at (-11.70,0.00) startOffset 0 endOffset 4 width 23.40: "> 5s"
+        LayoutSVGText {text} at (65.59,-12) size 28.80x15.59 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (65.59,-12) size 28.80x15.59
+            chunk 1 (middle anchor) text run 1 at (65.60,0.00) startOffset 0 endOffset 5 width 28.80: "0s-5s"
+        LayoutSVGContainer {g} at (-15.59,-12) size 107.28x15.59 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,180.00)}]
+          LayoutSVGText {text} at (-15.59,-12) size 31.19x15.59 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (-15.59,-12) size 31.19x15.59
+              chunk 1 (middle anchor) text run 1 at (-15.60,0.00) startOffset 0 endOffset 5 width 31.20: "never"
+          LayoutSVGText {text} at (68.30,-12) size 23.39x15.59 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (68.30,-12) size 23.39x15.59
+              chunk 1 (middle anchor) text run 1 at (68.30,0.00) startOffset 0 endOffset 4 width 23.40: "> 0s"
       LayoutSVGContainer {g} at (-6,-6) size 112x192 [transform={m=((1.00,0.00)(0.00,1.00)) t=(150.00,40.00)}]
         LayoutSVGHiddenContainer {defs} at (-6,-6) size 12x12
           LayoutSVGRect {rect} at (-6,-6) size 12x12 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#CCCCCC]}] [x=-6.00] [y=-6.00] [width=12.00] [height=12.00]

@@ -1,33 +1,33 @@
-layer at (0,0) size 480x360
-  LayoutView at (0,0) size 480x360
-layer at (0,0) size 480x360
-  LayoutSVGRoot {svg} at (0,0) size 480x360
-    LayoutSVGContainer {g} at (5,50) size 460.58x242
-      LayoutSVGContainer {g} at (5,83) size 460.58x209
-        LayoutSVGText {text} at (5,83) size 27.56x9 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (5,83) size 27.56x9
-            chunk 1 text run 1 at (5.00,90.00) startOffset 0 endOffset 7 width 27.57: "Stroked"
-        LayoutSVGText {text} at (5,188) size 36.45x9 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (5,188) size 36.45x9
-            chunk 1 text run 1 at (5.00,195.00) startOffset 0 endOffset 9 width 36.46: "Unstroked"
-        LayoutSVGText {text} at (50,128) size 52.91x9 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (50,128) size 52.91x9
-            chunk 1 text run 1 at (50.00,135.00) startOffset 0 endOffset 15 width 52.91: "Zero width rect"
-        LayoutSVGText {text} at (130,128) size 56.02x9 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (130,128) size 56.02x9
-            chunk 1 text run 1 at (130.00,135.00) startOffset 0 endOffset 16 width 56.03: "Zero height rect"
-        LayoutSVGText {text} at (210,128) size 61.34x9 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (210,128) size 61.34x9
-            chunk 1 text run 1 at (210.00,135.00) startOffset 0 endOffset 18 width 61.35: "Zero radius circle"
-        LayoutSVGText {text} at (315,128) size 71.58x9 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (315,128) size 71.58x9
-            chunk 1 text run 1 at (315.00,135.00) startOffset 0 endOffset 21 width 71.59: "Zero x radius ellipse"
-        LayoutSVGText {text} at (394,128) size 71.58x9 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (394,128) size 71.58x9
-            chunk 1 text run 1 at (394.00,135.00) startOffset 0 endOffset 21 width 71.59: "Zero y radius ellipse"
-        LayoutSVGText {text} at (210,283) size 55.14x9 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (210,283) size 55.14x9
-            chunk 1 text run 1 at (210.00,290.00) startOffset 0 endOffset 16 width 55.14: "Zero length line"
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutSVGRoot {svg} at (0,0) size 800x600
+    LayoutSVGContainer {g} at (5,50) size 460.56x241.81
+      LayoutSVGContainer {g} at (5,82.81) size 460.56x209
+        LayoutSVGText {text} at (5,82.81) size 27.56x9 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (5,82.81) size 27.56x9
+            chunk 1 text run 1 at (5.00,90.00) startOffset 0 endOffset 7 width 27.56: "Stroked"
+        LayoutSVGText {text} at (5,187.81) size 36.44x9 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (5,187.81) size 36.44x9
+            chunk 1 text run 1 at (5.00,195.00) startOffset 0 endOffset 9 width 36.45: "Unstroked"
+        LayoutSVGText {text} at (50,127.81) size 52.89x9 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (50,127.81) size 52.89x9
+            chunk 1 text run 1 at (50.00,135.00) startOffset 0 endOffset 15 width 52.89: "Zero width rect"
+        LayoutSVGText {text} at (130,127.81) size 56x9 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (130,127.81) size 56x9
+            chunk 1 text run 1 at (130.00,135.00) startOffset 0 endOffset 16 width 56.01: "Zero height rect"
+        LayoutSVGText {text} at (210,127.81) size 61.33x9 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (210,127.81) size 61.33x9
+            chunk 1 text run 1 at (210.00,135.00) startOffset 0 endOffset 18 width 61.34: "Zero radius circle"
+        LayoutSVGText {text} at (315,127.81) size 71.56x9 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (315,127.81) size 71.56x9
+            chunk 1 text run 1 at (315.00,135.00) startOffset 0 endOffset 21 width 71.57: "Zero x radius ellipse"
+        LayoutSVGText {text} at (394,127.81) size 71.56x9 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (394,127.81) size 71.56x9
+            chunk 1 text run 1 at (394.00,135.00) startOffset 0 endOffset 21 width 71.57: "Zero y radius ellipse"
+        LayoutSVGText {text} at (210,282.81) size 55.13x9 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (210,282.81) size 55.13x9
+            chunk 1 text run 1 at (210.00,290.00) startOffset 0 endOffset 16 width 55.13: "Zero length line"
       LayoutSVGContainer {g} at (50,50) size 379x220
         LayoutSVGRect {rect} at (50,50) size 35x60 [stroke={[type=SOLID] [color=#000000]}] [x=50.00] [y=50.00] [width=35.00] [height=60.00]
         LayoutSVGRect {rect} at (50,155) size 35x60 [stroke={[type=SOLID] [color=#000000]}] [x=50.00] [y=155.00] [width=35.00] [height=60.00]
@@ -51,7 +51,7 @@ layer at (0,0) size 480x360
       LayoutSVGEllipse {ellipse} at (399,80) size 24x0 [stroke={[type=SOLID] [color=#0000FF]}] [fill={[type=SOLID] [color=#00FF00]}] [cx=411.00] [cy=80.00] [rx=12.00] [ry=0.00]
       LayoutSVGEllipse {ellipse} at (399,185) size 24x0 [fill={[type=SOLID] [color=#FF0000]}] [cx=411.00] [cy=185.00] [rx=12.00] [ry=0.00]
       LayoutSVGPath {line} at (240,265) size 0x0 [stroke={[type=SOLID] [color=#0000FF]}] [fill={[type=SOLID] [color=#000000]}] [x1=240.00] [y1=265.00] [x2=240.00] [y2=265.00]
-    LayoutSVGText {text} at (10,304) size 283.33x46 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (10,304) size 283.33x46
-        chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 17 width 283.34: "$Revision: 1.16 $"
+    LayoutSVGText {text} at (10,304) size 283.30x46.19 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (10,304) size 283.30x46.19
+        chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 17 width 283.31: "$Revision: 1.16 $"
     LayoutSVGRect {rect} at (1,1) size 478x358 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]

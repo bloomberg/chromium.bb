@@ -1,32 +1,32 @@
-layer at (0,0) size 480x360
-  LayoutView at (0,0) size 480x360
-layer at (0,0) size 480x360
-  LayoutSVGRoot {svg} at (0,0) size 480x360
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutSVGRoot {svg} at (0,0) size 800x600
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
-    LayoutSVGContainer {g} at (10,13) size 365.67x177
-      LayoutSVGText {text} at (10,13) size 365.67x21 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (10,13) size 365.67x21
-          chunk 1 text run 1 at (10.00,30.00) startOffset 0 endOffset 47 width 365.68: "Test side effects of assigning to valueAsString"
+    LayoutSVGContainer {g} at (10,13.20) size 361.88x176.80
+      LayoutSVGText {text} at (10,13.20) size 361.88x21 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (10,13.20) size 361.88x21
+          chunk 1 text run 1 at (10.00,30.00) startOffset 0 endOffset 47 width 361.88: "Test side effects of assigning to valueAsString"
       LayoutSVGRect {rect} at (10,40) size 30x30 [fill={[type=SOLID] [color=#008000]}] [x=10.00] [y=40.00] [width=30.00] [height=30.00]
       LayoutSVGRect {rect} at (10,80) size 30x30 [fill={[type=SOLID] [color=#008000]}] [x=10.00] [y=80.00] [width=30.00] [height=30.00]
       LayoutSVGRect {rect} at (10,120) size 30x30 [fill={[type=SOLID] [color=#008000]}] [x=10.00] [y=120.00] [width=30.00] [height=30.00]
       LayoutSVGRect {rect} at (10,160) size 30x30 [fill={[type=SOLID] [color=#008000]}] [x=10.00] [y=160.00] [width=30.00] [height=30.00]
-      LayoutSVGContainer {g} at (50,46) size 178x137
-        LayoutSVGText {text} at (50,46) size 167.88x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (50,46) size 167.88x17
-            chunk 1 text run 1 at (50.00,60.00) startOffset 0 endOffset 25 width 167.89: "Valid string on SVGLength"
-        LayoutSVGText {text} at (50,86) size 178x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (50,86) size 178x17
-            chunk 1 text run 1 at (50.00,100.00) startOffset 0 endOffset 27 width 178.00: "Invalid string on SVGLength"
-        LayoutSVGText {text} at (50,126) size 159.88x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (50,126) size 159.88x17
-            chunk 1 text run 1 at (50.00,140.00) startOffset 0 endOffset 24 width 159.89: "Valid string on SVGAngle"
-        LayoutSVGText {text} at (50,166) size 170x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (50,166) size 170x17
-            chunk 1 text run 1 at (50.00,180.00) startOffset 0 endOffset 26 width 170.00: "Invalid string on SVGAngle"
+      LayoutSVGContainer {g} at (50,46.20) size 187.19x136.80
+        LayoutSVGText {text} at (50,46.20) size 177.67x16.80 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (50,46.20) size 177.67x16.80
+            chunk 1 text run 1 at (50.00,60.00) startOffset 0 endOffset 25 width 177.69: "Valid string on SVGLength"
+        LayoutSVGText {text} at (50,86.20) size 187.19x16.80 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (50,86.20) size 187.19x16.80
+            chunk 1 text run 1 at (50.00,100.00) startOffset 0 endOffset 27 width 187.20: "Invalid string on SVGLength"
+        LayoutSVGText {text} at (50,126.20) size 170.48x16.80 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (50,126.20) size 170.48x16.80
+            chunk 1 text run 1 at (50.00,140.00) startOffset 0 endOffset 24 width 170.49: "Valid string on SVGAngle"
+        LayoutSVGText {text} at (50,166.20) size 180x16.80 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (50,166.20) size 180x16.80
+            chunk 1 text run 1 at (50.00,180.00) startOffset 0 endOffset 26 width 180.00: "Invalid string on SVGAngle"
       LayoutSVGResourceMarker {marker} [id="m"] [markerUnits=strokeWidth] [ref at (0,0)] [angle=1.80]
-    LayoutSVGContainer {g} at (10,311) size 228x36
-      LayoutSVGText {text} at (10,311) size 228x36 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (10,311) size 228x36
-          chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 228.00: "$Revision: 1.6 $"
+    LayoutSVGContainer {g} at (10,311.20) size 225.59x36
+      LayoutSVGText {text} at (10,311.20) size 225.59x36 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (10,311.20) size 225.59x36
+          chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 225.60: "$Revision: 1.6 $"
     LayoutSVGRect {rect} at (1,1) size 478x358 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]

@@ -1,7 +1,7 @@
-layer at (0,0) size 480x360
-  LayoutView at (0,0) size 480x360
-layer at (0,0) size 480x360
-  LayoutSVGRoot {svg} at (0,0) size 480x360
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutSVGRoot {svg} at (0,0) size 800x600
     LayoutSVGRect {rect} at (100,100) size 50x50 [fill={[type=SOLID] [color=#DC143C]}] [x=100.00] [y=100.00] [width=50.00] [height=50.00]
     LayoutSVGRect {rect} at (150,150) size 50x50 [fill={[type=SOLID] [color=#DC143C]}] [x=150.00] [y=150.00] [width=50.00] [height=50.00]
     LayoutSVGEllipse {circle} at (100,150) size 50x50 [fill={[type=SOLID] [color=#FFD700]}] [cx=125.00] [cy=175.00] [r=25.00]

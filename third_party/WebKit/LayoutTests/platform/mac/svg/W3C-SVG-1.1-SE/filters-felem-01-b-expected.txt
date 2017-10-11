@@ -1,40 +1,40 @@
-layer at (0,0) size 480x360
-  LayoutView at (0,0) size 480x360
-layer at (0,0) size 480x360
-  LayoutSVGRoot {svg} at (0,0) size 480x360
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutSVGRoot {svg} at (0,0) size 800x600
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
-    LayoutSVGContainer {g} at (90,20) size 356.13x265
+    LayoutSVGContainer {g} at (90,20) size 356.13x264.80
       LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
         LayoutSVGResourceFilter {filter} [id="null"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
         LayoutSVGResourceFilter {filter} [id="nullreg"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
-      LayoutSVGContainer {g} at (90,20) size 80x115
+      LayoutSVGContainer {g} at (90,20) size 80x114.80
         LayoutSVGEllipse {circle} at (100,30) size 60x60 [fill={[type=SOLID] [color=#FF0000]}] [cx=130.00] [cy=60.00] [r=30.00]
         LayoutSVGEllipse {circle} at (90,20) size 80x80 [fill={[type=SOLID] [color=#00FF00]}] [cx=130.00] [cy=60.00] [r=40.00]
-        LayoutSVGText {text} at (95.55,112) size 68.91x23 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (95.55,112) size 68.91x23
-            chunk 1 (middle anchor) text run 1 at (95.55,130.00) startOffset 0 endOffset 9 width 68.91: "No filter"
-      LayoutSVGContainer {g} at (90,170) size 80x115
+        LayoutSVGText {text} at (95.55,111.41) size 68.89x23.39 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (95.55,111.41) size 68.89x23.39
+            chunk 1 (middle anchor) text run 1 at (95.55,130.00) startOffset 0 endOffset 9 width 68.90: "No filter"
+      LayoutSVGContainer {g} at (90,170) size 80x114.80
         LayoutSVGEllipse {circle} at (100,180) size 60x60 [fill={[type=SOLID] [color=#00FF00]}] [cx=130.00] [cy=210.00] [r=30.00]
         LayoutSVGEllipse {circle} at (90,170) size 80x80 [fill={[type=SOLID] [color=#FF0000]}] [cx=130.00] [cy=210.00] [r=40.00]
           [filter="null"] LayoutSVGResourceFilter {filter} at (82,162) size 96x96
-        LayoutSVGText {text} at (91.09,262) size 77.78x23 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (91.09,262) size 77.78x23
-            chunk 1 (middle anchor) text run 1 at (91.10,280.00) startOffset 0 endOffset 11 width 77.79: "Null filter"
-      LayoutSVGContainer {g} at (252.19,20) size 155.61x115
+        LayoutSVGText {text} at (91.09,261.41) size 77.78x23.39 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (91.09,261.41) size 77.78x23.39
+            chunk 1 (middle anchor) text run 1 at (91.11,280.00) startOffset 0 endOffset 11 width 77.79: "Null filter"
+      LayoutSVGContainer {g} at (252.19,20) size 155.59x114.80
         LayoutSVGEllipse {circle} at (300,30) size 60x60 [fill={[type=SOLID] [color=#00FF00]}] [cx=330.00] [cy=60.00] [r=30.00]
         LayoutSVGEllipse {circle} at (290,20) size 80x80 [fill={[type=SOLID] [color=#FF0000]}] [cx=330.00] [cy=60.00] [r=40.00]
-        LayoutSVGText {text} at (252.19,112) size 155.61x23 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (252.19,112) size 155.61x23
-            chunk 1 (middle anchor) text run 1 at (252.19,130.00) startOffset 0 endOffset 19 width 155.62: "Non-existent filter"
-      LayoutSVGContainer {g} at (213.84,170) size 232.28x115
+        LayoutSVGText {text} at (252.19,111.41) size 155.59x23.39 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (252.19,111.41) size 155.59x23.39
+            chunk 1 (middle anchor) text run 1 at (252.20,130.00) startOffset 0 endOffset 19 width 155.60: "Non-existent filter"
+      LayoutSVGContainer {g} at (213.86,170) size 232.27x114.80
         LayoutSVGEllipse {circle} at (300,180) size 60x60 [fill={[type=SOLID] [color=#00FF00]}] [cx=330.00] [cy=210.00] [r=30.00]
         LayoutSVGEllipse {circle} at (290,170) size 80x80 [fill={[type=SOLID] [color=#FF0000]}] [cx=330.00] [cy=210.00] [r=40.00]
           [filter="nullreg"] LayoutSVGResourceFilter {filter} at (322,202) size 16x16
-        LayoutSVGText {text} at (213.84,262) size 232.28x23 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (213.84,262) size 232.28x23
-            chunk 1 (middle anchor) text run 1 at (213.85,280.00) startOffset 0 endOffset 29 width 232.29: "Null with small region filter"
-    LayoutSVGContainer {g} at (10,310) size 229.47x37
-      LayoutSVGText {text} at (10,310) size 229.47x37 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (10,310) size 229.47x37
-          chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 229.47: "$Revision: 1.7 $"
+        LayoutSVGText {text} at (213.86,261.41) size 232.27x23.39 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (213.86,261.41) size 232.27x23.39
+            chunk 1 (middle anchor) text run 1 at (213.86,280.00) startOffset 0 endOffset 29 width 232.27: "Null with small region filter"
+    LayoutSVGContainer {g} at (10,310.61) size 229.45x36.59
+      LayoutSVGText {text} at (10,310.61) size 229.45x36.59 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (10,310.61) size 229.45x36.59
+          chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 229.45: "$Revision: 1.7 $"
     LayoutSVGRect {rect} at (1,1) size 478x358 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]
