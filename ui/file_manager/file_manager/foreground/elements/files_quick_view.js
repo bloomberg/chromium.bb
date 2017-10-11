@@ -8,6 +8,7 @@ var FilesQuickView = Polymer({
   properties: {
     // File media type, e.g. image, video.
     type: String,
+    subtype: String,
     filePath: String,
     // If there is a task to open the file.
     hasTask: Boolean,
@@ -17,8 +18,8 @@ var FilesQuickView = Polymer({
     videoPoster: String,
     audioArtwork: String,
     autoplay: Boolean,
-    // True if this file is not image, audio nor video but supported on Chrome,
-    // i.e. preview-able by directly src-ing the file path to webview.
+    // True if this file is not image, audio, video nor HTML but supported on
+    // Chrome, i.e. preview-able by directly src-ing the file path to webview.
     // Example: pdf, text.
     browsable: Boolean,
 
@@ -42,6 +43,7 @@ var FilesQuickView = Polymer({
   // Clears fields.
   clear: function() {
     this.type = '';
+    this.subtype = '';
     this.filePath = '';
     this.hasTask = false;
     this.contentUrl = '';
@@ -121,6 +123,17 @@ var FilesQuickView = Polymer({
 
   /**
    * @param {string} type
+   * @param {string} subtype
+   * @return {boolean}
+   *
+   * @private
+   */
+  isHtml_: function(type, subtype) {
+    return type === 'document' && subtype === 'HTML';
+  },
+
+  /**
+   * @param {string} type
    * @return {boolean}
    *
    * @private
@@ -166,9 +179,9 @@ var FilesQuickView = Polymer({
    *
    * @private
    */
-  isUnsupported_: function(type, browsable) {
+  isUnsupported_: function(type, subtype, browsable) {
     return !this.isImage_(type) && !this.isVideo_(type) &&
-        !this.isAudio_(type) && !browsable;
+        !this.isAudio_(type) && !this.isHtml_(type, subtype) && !browsable;
   },
 
 });
