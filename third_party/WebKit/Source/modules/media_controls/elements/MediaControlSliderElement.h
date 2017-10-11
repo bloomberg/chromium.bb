@@ -44,6 +44,8 @@ class MODULES_EXPORT MediaControlSliderElement
   int Width();
 
  private:
+  float ZoomFactor() const;
+
   Position before_segment_position_;
   Position after_segment_position_;
 

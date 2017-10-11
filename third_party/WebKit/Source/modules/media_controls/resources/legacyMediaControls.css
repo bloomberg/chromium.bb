@@ -437,6 +437,7 @@ input[pseudo="-webkit-media-controls-volume-slider" i]::-internal-track-segment-
     left: 18px;
     right: 18px;
     top: 50%;
+    overflow: hidden;
 }
 
 input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-highlight-after,
