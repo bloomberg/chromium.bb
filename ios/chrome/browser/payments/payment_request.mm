@@ -395,7 +395,6 @@ void PaymentRequest::ParsePaymentMethodData() {
     }
   }
 
-  // TODO(crbug.com/709036): Validate method data.
   std::set<std::string> payment_method_identifiers_set;
   data_util::ParseSupportedMethods(
       web_payment_request_.method_data, &supported_card_networks_,
