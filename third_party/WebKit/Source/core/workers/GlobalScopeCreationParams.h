@@ -20,6 +20,7 @@
 #include "platform/wtf/Optional.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebAddressSpace.h"
+#include "services/service_manager/public/interfaces/interface_provider.mojom-blink.h"
 
 namespace blink {
 
@@ -45,7 +46,8 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
       WebAddressSpace,
       const Vector<String>* origin_trial_tokens,
       std::unique_ptr<WorkerSettings>,
-      V8CacheOptions);
+      V8CacheOptions,
+      service_manager::mojom::blink::InterfaceProviderPtrInfo = {});
 
   ~GlobalScopeCreationParams() = default;
 
@@ -92,6 +94,8 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
   std::unique_ptr<WorkerSettings> worker_settings;
 
   V8CacheOptions v8_cache_options;
+
+  service_manager::mojom::blink::InterfaceProviderPtrInfo interface_provider;
 };
 
 }  // namespace blink

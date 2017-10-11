@@ -359,6 +359,10 @@ bool WorkerGlobalScope::IsSecureContext(String& error_message) const {
   return false;
 }
 
+service_manager::InterfaceProvider* WorkerGlobalScope::GetInterfaceProvider() {
+  return &interface_provider_;
+}
+
 ExecutionContext* WorkerGlobalScope::GetExecutionContext() const {
   return const_cast<WorkerGlobalScope*>(this);
 }
@@ -393,6 +397,14 @@ WorkerGlobalScope::WorkerGlobalScope(
   SetAddressSpace(creation_params->address_space);
   OriginTrialContext::AddTokens(this,
                                 creation_params->origin_trial_tokens.get());
+  // TODO(sammc): Require a valid |creation_params->interface_provider| once all
+  // worker types provide a valid |creation_params->interface_provider|.
+  if (creation_params->interface_provider.is_valid()) {
+    interface_provider_.Bind(
+        mojo::MakeProxy(service_manager::mojom::InterfaceProviderPtrInfo(
+            creation_params->interface_provider.PassHandle(),
+            service_manager::mojom::InterfaceProvider::Version_)));
+  }
 }
 
 void WorkerGlobalScope::ApplyContentSecurityPolicyFromHeaders(
