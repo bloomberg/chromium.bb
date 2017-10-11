@@ -192,12 +192,19 @@ std::unique_ptr<em::ChromeDeviceSettingsProto> ApplyOffHoursPolicyToProto(
   return policies;
 }
 
-DeviceOffHoursController::DeviceOffHoursController() {
+DeviceOffHoursController::DeviceOffHoursController() : weak_ptr_factory_(this) {
   // IsInitialized() check is used for testing. Otherwise it has to be already
   // initialized.
   if (chromeos::DBusThreadManager::IsInitialized()) {
     chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
         this);
+    chromeos::DBusThreadManager::Get()->GetSystemClockClient()->AddObserver(
+        this);
+    chromeos::DBusThreadManager::Get()
+        ->GetSystemClockClient()
+        ->WaitForServiceToBeAvailable(
+            base::Bind(&DeviceOffHoursController::SystemClockInitiallyAvailable,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
@@ -206,6 +213,8 @@ DeviceOffHoursController::~DeviceOffHoursController() {
   // initialized.
   if (chromeos::DBusThreadManager::IsInitialized()) {
     chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
+        this);
+    chromeos::DBusThreadManager::Get()->GetSystemClockClient()->RemoveObserver(
         this);
   }
 }
@@ -253,7 +262,11 @@ void DeviceOffHoursController::OffHoursModeIsChanged() const {
 }
 
 void DeviceOffHoursController::UpdateOffHoursMode() {
-  if (off_hours_intervals_.empty()) {
+  if (off_hours_intervals_.empty() || !network_synchronized_) {
+    if (!network_synchronized_) {
+      VLOG(1) << "The system time isn't network synchronized. OffHours mode is "
+                 "unavailable.";
+    }
     StopOffHoursTimer();
     SetOffHoursMode(false);
     return;
@@ -298,11 +311,39 @@ void DeviceOffHoursController::StartOffHoursTimer(base::TimeDelta delay) {
   DVLOG(1) << "OffHours mode timer starts for " << delay;
   timer_.Start(FROM_HERE, delay,
                base::Bind(&DeviceOffHoursController::UpdateOffHoursMode,
-                          base::Unretained(this)));
+                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DeviceOffHoursController::StopOffHoursTimer() {
   timer_.Stop();
+}
+
+void DeviceOffHoursController::SystemClockUpdated() {
+  // Triggered when the device time is changed. When it happens the "OffHours"
+  // mode could be changed too, because "OffHours" mode directly depends on the
+  // current device time. Ask SystemClockClient to update information about the
+  // system time synchronization with the network time asynchronously.
+  // Information will be received by NetworkSynchronizationUpdated method.
+  chromeos::DBusThreadManager::Get()->GetSystemClockClient()->GetLastSyncInfo(
+      base::Bind(&DeviceOffHoursController::NetworkSynchronizationUpdated,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void DeviceOffHoursController::SystemClockInitiallyAvailable(
+    bool service_is_available) {
+  if (!service_is_available)
+    return;
+  chromeos::DBusThreadManager::Get()->GetSystemClockClient()->GetLastSyncInfo(
+      base::Bind(&DeviceOffHoursController::NetworkSynchronizationUpdated,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void DeviceOffHoursController::NetworkSynchronizationUpdated(
+    bool network_synchronized) {
+  // Triggered when information about the system time synchronization with
+  // network is received.
+  network_synchronized_ = network_synchronized;
+  UpdateOffHoursMode();
 }
 
 }  // namespace policy

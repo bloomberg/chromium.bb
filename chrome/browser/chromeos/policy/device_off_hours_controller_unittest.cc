@@ -10,6 +10,8 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/fake_system_clock_client.h"
 
 namespace em = enterprise_management;
 
@@ -34,6 +36,14 @@ constexpr base::TimeDelta kDay = base::TimeDelta::FromDays(1);
 class DeviceOffHoursControllerTest : public DeviceSettingsTestBase {
  protected:
   DeviceOffHoursControllerTest() {}
+
+  void SetUp() override {
+    DeviceSettingsTestBase::SetUp();
+    system_clock_client_ = new chromeos::FakeSystemClockClient();
+    dbus_setter_->SetSystemClockClient(base::WrapUnique(system_clock_client_));
+    device_settings_service_.SetDeviceOffHoursControllerForTesting(
+        base::MakeUnique<policy::DeviceOffHoursController>());
+  }
 
   void SetDeviceSettings() {
     device_policy_.Build();
@@ -107,14 +117,23 @@ class DeviceOffHoursControllerTest : public DeviceSettingsTestBase {
     SetOffHoursProto(intervals, "GMT", ignored_policy_proto_tags);
   }
 
+  chromeos::FakeSystemClockClient* system_clock_client() {
+    return system_clock_client_;
+  }
+
  private:
   std::unique_ptr<policy::DeviceOffHoursController>
       device_off_hours_controller_;
+
+  // The object is owned by DeviceSettingsTestBase class.
+  chromeos::FakeSystemClockClient* system_clock_client_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceOffHoursControllerTest);
 };
 
 TEST_F(DeviceOffHoursControllerTest, CheckOffHoursUnset) {
+  system_clock_client()->set_network_synchronized(true);
+  system_clock_client()->NotifyObserversSystemClockUpdated();
   enterprise_management::ChromeDeviceSettingsProto& proto(
       device_policy_.payload());
   proto.mutable_guest_mode_enabled()->set_guest_mode_enabled(false);
@@ -129,6 +148,9 @@ TEST_F(DeviceOffHoursControllerTest, CheckOffHoursUnset) {
 }
 
 TEST_F(DeviceOffHoursControllerTest, CheckOffHoursModeOff) {
+  system_clock_client()->set_network_synchronized(true);
+  system_clock_client()->NotifyObserversSystemClockUpdated();
+
   enterprise_management::ChromeDeviceSettingsProto& proto(
       device_policy_.payload());
   proto.mutable_guest_mode_enabled()->set_guest_mode_enabled(false);
@@ -143,6 +165,8 @@ TEST_F(DeviceOffHoursControllerTest, CheckOffHoursModeOff) {
 }
 
 TEST_F(DeviceOffHoursControllerTest, CheckOffHoursModeOn) {
+  system_clock_client()->set_network_synchronized(true);
+  system_clock_client()->NotifyObserversSystemClockUpdated();
   enterprise_management::ChromeDeviceSettingsProto& proto(
       device_policy_.payload());
   proto.mutable_guest_mode_enabled()->set_guest_mode_enabled(false);
@@ -154,6 +178,22 @@ TEST_F(DeviceOffHoursControllerTest, CheckOffHoursModeOn) {
   EXPECT_TRUE(device_settings_service_.device_settings()
                   ->guest_mode_enabled()
                   .guest_mode_enabled());
+}
+
+TEST_F(DeviceOffHoursControllerTest, NoNetworkSynchronization) {
+  system_clock_client()->set_network_synchronized(false);
+  system_clock_client()->NotifyObserversSystemClockUpdated();
+  enterprise_management::ChromeDeviceSettingsProto& proto(
+      device_policy_.payload());
+  proto.mutable_guest_mode_enabled()->set_guest_mode_enabled(false);
+  SetDeviceSettings();
+  EXPECT_FALSE(device_settings_service_.device_settings()
+                   ->guest_mode_enabled()
+                   .guest_mode_enabled());
+  CreateAndSetOffHours(base::TimeDelta(), kHour);
+  EXPECT_FALSE(device_settings_service_.device_settings()
+                   ->guest_mode_enabled()
+                   .guest_mode_enabled());
 }
 
 // TODO(yakovleva): Add tests for PowerManagerClient observer, SuspendDone

@@ -434,6 +434,12 @@ void DBusThreadManagerSetter::SetSessionManagerClient(
       std::move(client);
 }
 
+void DBusThreadManagerSetter::SetSystemClockClient(
+    std::unique_ptr<SystemClockClient> client) {
+  DBusThreadManager::Get()->clients_common_->system_clock_client_ =
+      std::move(client);
+}
+
 void DBusThreadManagerSetter::SetUpdateEngineClient(
     std::unique_ptr<UpdateEngineClient> client) {
   DBusThreadManager::Get()->clients_common_->update_engine_client_ =
