@@ -165,11 +165,14 @@ public class ColorUtils {
     /**
      * Test if the toolbar is using the default color.
      * @param resources The resources to get the toolbar primary color.
+     * @param useModernDesign Whether to use the "modern" visual design.
+     * @param isIncognito Whether to retrieve the default theme color for incognito mode.
      * @param color The color that the toolbar is using.
      * @return If the color is the default toolbar color.
      */
-    public static boolean isUsingDefaultToolbarColor(Resources resources, int color) {
-        return color == ApiCompatibilityUtils.getColor(resources, R.color.default_primary_color);
+    public static boolean isUsingDefaultToolbarColor(
+            Resources resources, boolean useModernDesign, boolean isIncognito, int color) {
+        return color == getDefaultThemeColor(resources, useModernDesign, isIncognito);
     }
 
     /**
