@@ -4944,7 +4944,6 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushValidCrossOrigin) {
       spdy_session_pool->FindAvailableSession(
           key, /* enable_ip_based_pooling = */ true, log_);
 
-  EXPECT_FALSE(spdy_session->unclaimed_pushed_streams_.empty());
   EXPECT_EQ(1u, spdy_session->unclaimed_pushed_streams_.size());
   EXPECT_EQ(1u,
             spdy_session->unclaimed_pushed_streams_.count(GURL(url_to_push)));
@@ -4959,7 +4958,6 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushValidCrossOrigin) {
   EXPECT_THAT(rv, IsOk());
 
   EXPECT_TRUE(spdy_session->unclaimed_pushed_streams_.empty());
-  EXPECT_EQ(0u, spdy_session->unclaimed_pushed_streams_.size());
 
   HttpResponseInfo response = *trans0->GetResponseInfo();
   EXPECT_TRUE(response.headers);
@@ -5085,7 +5083,6 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushValidCrossOriginWithOpenSession) {
           key0, /* enable_ip_based_pooling = */ true, log_);
 
   EXPECT_TRUE(spdy_session0->unclaimed_pushed_streams_.empty());
-  EXPECT_EQ(0u, spdy_session0->unclaimed_pushed_streams_.size());
 
   HostPortPair host_port_pair1("docs.example.org", 443);
   SpdySessionKey key1(host_port_pair1, ProxyServer::Direct(),
@@ -5094,7 +5091,6 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushValidCrossOriginWithOpenSession) {
       spdy_session_pool->FindAvailableSession(
           key1, /* enable_ip_based_pooling = */ true, log_);
 
-  EXPECT_FALSE(spdy_session1->unclaimed_pushed_streams_.empty());
   EXPECT_EQ(1u, spdy_session1->unclaimed_pushed_streams_.size());
   EXPECT_EQ(1u,
             spdy_session1->unclaimed_pushed_streams_.count(GURL(url_to_push)));
@@ -5110,10 +5106,7 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushValidCrossOriginWithOpenSession) {
   EXPECT_THAT(rv, IsOk());
 
   EXPECT_TRUE(spdy_session0->unclaimed_pushed_streams_.empty());
-  EXPECT_EQ(0u, spdy_session0->unclaimed_pushed_streams_.size());
-
   EXPECT_TRUE(spdy_session1->unclaimed_pushed_streams_.empty());
-  EXPECT_EQ(0u, spdy_session1->unclaimed_pushed_streams_.size());
 
   HttpResponseInfo response0 = *trans0->GetResponseInfo();
   EXPECT_TRUE(response0.headers);

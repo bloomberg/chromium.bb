@@ -149,6 +149,8 @@ class NET_EXPORT ProxyServer {
            host_port_pair_.Equals(other.host_port_pair_);
   }
 
+  bool operator!=(const ProxyServer& other) const { return !(*this == other); }
+
   // Comparator function so this can be placed in a std::map.
   bool operator<(const ProxyServer& other) const {
     return std::tie(scheme_, host_port_pair_) <
