@@ -38,6 +38,10 @@ using AudioOutputStreamFactoryRequest =
 using AudioOutputStream = media::mojom::AudioOutputStream;
 using AudioOutputStreamPtr = mojo::InterfacePtr<AudioOutputStream>;
 using AudioOutputStreamRequest = mojo::InterfaceRequest<AudioOutputStream>;
+using AudioOutputStreamClient = media::mojom::AudioOutputStreamClient;
+using AudioOutputStreamClientPtr = mojo::InterfacePtr<AudioOutputStreamClient>;
+using AudioOutputStreamClientRequest =
+    mojo::InterfaceRequest<AudioOutputStreamClient>;
 using AudioOutputStreamProvider = media::mojom::AudioOutputStreamProvider;
 using AudioOutputStreamProviderPtr =
     mojo::InterfacePtr<AudioOutputStreamProvider>;
@@ -161,10 +165,10 @@ class MockContext : public RendererAudioOutputStreamFactoryContext {
   DISALLOW_COPY_AND_ASSIGN(MockContext);
 };
 
-class MockClient {
+class MockClient : public AudioOutputStreamClient {
  public:
   MockClient() {}
-  ~MockClient() {}
+  ~MockClient() override {}
 
   void StreamCreated(mojo::ScopedSharedBufferHandle handle1,
                      mojo::ScopedHandle handle2) {
@@ -172,6 +176,8 @@ class MockClient {
   }
 
   bool was_called() { return was_called_; }
+
+  MOCK_METHOD0(OnError, void());
 
  private:
   bool was_called_ = false;
@@ -201,6 +207,9 @@ TEST(RenderFrameAudioOutputStreamFactoryTest, CreateStream) {
   AudioOutputStreamProviderPtr provider;
   AudioOutputStreamPtr output_stream;
   MockClient client;
+  AudioOutputStreamClientPtr client_ptr;
+  mojo::Binding<AudioOutputStreamClient> client_binding(
+      &client, mojo::MakeRequest(&client_ptr));
   media::AudioOutputDelegate::EventHandler* event_handler = nullptr;
   auto factory_context = base::MakeUnique<MockContext>(true);
   factory_context->PrepareDelegateForCreation(
@@ -221,7 +230,7 @@ TEST(RenderFrameAudioOutputStreamFactoryTest, CreateStream) {
   EXPECT_TRUE(id.empty());
 
   provider->Acquire(
-      mojo::MakeRequest(&output_stream), params,
+      mojo::MakeRequest(&output_stream), std::move(client_ptr), params,
       base::BindOnce(&MockClient::StreamCreated, base::Unretained(&client)));
   base::RunLoop().RunUntilIdle();
   ASSERT_NE(event_handler, nullptr);
@@ -263,6 +272,9 @@ TEST(RenderFrameAudioOutputStreamFactoryTest, ConnectionError_DeletesStream) {
   AudioOutputStreamProviderPtr provider;
   AudioOutputStreamPtr output_stream;
   MockClient client;
+  AudioOutputStreamClientPtr client_ptr;
+  mojo::Binding<AudioOutputStreamClient> client_binding(
+      &client, mojo::MakeRequest(&client_ptr));
   bool delegate_is_destructed = false;
   media::AudioOutputDelegate::EventHandler* event_handler = nullptr;
   auto factory_context = base::MakeUnique<MockContext>(true);
@@ -281,7 +293,8 @@ TEST(RenderFrameAudioOutputStreamFactoryTest, ConnectionError_DeletesStream) {
   base::RunLoop().RunUntilIdle();
 
   provider->Acquire(
-      mojo::MakeRequest(&output_stream), GetTestAudioParameters(),
+      mojo::MakeRequest(&output_stream), std::move(client_ptr),
+      GetTestAudioParameters(),
       base::BindOnce(&MockClient::StreamCreated, base::Unretained(&client)));
   base::RunLoop().RunUntilIdle();
   ASSERT_NE(event_handler, nullptr);
@@ -296,6 +309,9 @@ TEST(RenderFrameAudioOutputStreamFactoryTest, DelegateError_DeletesStream) {
   AudioOutputStreamProviderPtr provider;
   AudioOutputStreamPtr output_stream;
   MockClient client;
+  AudioOutputStreamClientPtr client_ptr;
+  mojo::Binding<AudioOutputStreamClient> client_binding(
+      &client, mojo::MakeRequest(&client_ptr));
   bool delegate_is_destructed = false;
   media::AudioOutputDelegate::EventHandler* event_handler = nullptr;
   auto factory_context = base::MakeUnique<MockContext>(true);
@@ -314,7 +330,8 @@ TEST(RenderFrameAudioOutputStreamFactoryTest, DelegateError_DeletesStream) {
   base::RunLoop().RunUntilIdle();
 
   provider->Acquire(
-      mojo::MakeRequest(&output_stream), GetTestAudioParameters(),
+      mojo::MakeRequest(&output_stream), std::move(client_ptr),
+      GetTestAudioParameters(),
       base::BindOnce(&MockClient::StreamCreated, base::Unretained(&client)));
   base::RunLoop().RunUntilIdle();
   ASSERT_NE(event_handler, nullptr);

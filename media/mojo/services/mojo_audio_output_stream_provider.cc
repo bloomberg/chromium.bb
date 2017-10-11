@@ -29,6 +29,7 @@ MojoAudioOutputStreamProvider::~MojoAudioOutputStreamProvider() {
 
 void MojoAudioOutputStreamProvider::Acquire(
     mojom::AudioOutputStreamRequest stream_request,
+    mojom::AudioOutputStreamClientPtr client,
     const AudioParameters& params,
     AcquireCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -41,7 +42,7 @@ void MojoAudioOutputStreamProvider::Acquire(
 
   // Unretained is safe since |this| owns |audio_output_|.
   audio_output_.emplace(
-      std::move(stream_request),
+      std::move(stream_request), std::move(client),
       base::BindOnce(std::move(create_delegate_callback_), params),
       std::move(callback),
       base::BindOnce(&MojoAudioOutputStreamProvider::OnError,
