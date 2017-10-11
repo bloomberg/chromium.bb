@@ -51260,6 +51260,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="OfflinePages.AccessEntryPoint"
+    enum="OfflinePagesAccessEntryPoint">
+  <owner>jianli@chromium.org</owner>
+  <summary>
+    Logs the UI location from which an offline page was launched.
+  </summary>
+</histogram>
+
 <histogram name="OfflinePages.AggregatedRequestResult"
     enum="OfflinePagesAggregatedRequestResult">
   <obsolete>
@@ -100987,6 +100995,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="ntp_suggestions" label="NTP suggestions offlined by the user"/>
   <suffix name="suggested_articles" label="Prefetched NTP suggestions"/>
   <suffix name="browser_actions" label="Offline Browser Actions pages"/>
+  <affected-histogram name="OfflinePages.AccessEntryPoint"/>
   <affected-histogram
       name="OfflinePages.Background.BackgroundLoadingFailedCode"/>
   <affected-histogram

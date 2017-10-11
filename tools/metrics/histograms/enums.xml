@@ -28390,6 +28390,16 @@ from previous Chrome versions.
   <int value="3" label="User clicked notification settings (disabled on O+)"/>
 </enum>
 
+<enum name="OfflinePagesAccessEntryPoint">
+  <int value="0" label="Other"/>
+  <int value="1" label="NTP suggestions or bookmarks"/>
+  <int value="2" label="Downloads home"/>
+  <int value="3" label="Omnibox"/>
+  <int value="4" label="CCT"/>
+  <int value="5" label="Clicking link"/>
+  <int value="6" label="Reloading page"/>
+</enum>
+
 <enum name="OfflinePagesAggregatedRequestResult">
   <int value="0" label="Show offline page on disconnected network"/>
   <int value="1" label="Page not found on disconnected network"/>

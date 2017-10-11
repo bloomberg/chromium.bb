@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_scheduler/post_task.h"
@@ -33,6 +34,7 @@
 #include "net/http/http_util.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_redirect_job.h"
+#include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
 namespace offline_pages {
@@ -250,12 +252,13 @@ OfflinePageModel* GetOfflinePageModel(
 }
 
 void NotifyOfflineFilePathOnIO(base::WeakPtr<OfflinePageRequestJob> job,
+                               const std::string& name_space,
                                const base::FilePath& offline_file_path) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   if (!job)
     return;
-  job->OnOfflineFilePathAvailable(offline_file_path);
+  job->OnOfflineFilePathAvailable(name_space, offline_file_path);
 }
 
 void NotifyOfflineRedirectOnIO(base::WeakPtr<OfflinePageRequestJob> job,
@@ -270,15 +273,15 @@ void NotifyOfflineRedirectOnIO(base::WeakPtr<OfflinePageRequestJob> job,
 // Notifies OfflinePageRequestJob about the offline file path. Note that the
 // file path may be empty if not found or on error.
 void NotifyOfflineFilePathOnUI(base::WeakPtr<OfflinePageRequestJob> job,
+                               const std::string& name_space,
                                const base::FilePath& offline_file_path) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Delegates to IO thread since OfflinePageRequestJob should only be accessed
   // from IO thread.
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&NotifyOfflineFilePathOnIO, job, offline_file_path));
+  content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
+                                   base::Bind(&NotifyOfflineFilePathOnIO, job,
+                                              name_space, offline_file_path));
 }
 
 // Notifies OfflinePageRequestJob about the redirected URL. Note that
@@ -380,7 +383,9 @@ void SucceededToFindOfflinePage(
   // NotifyOfflineFilePathOnUI should always be called regardless the failure
   // result and empty file path such that OfflinePageRequestJob will be notified
   // on failure.
-  NotifyOfflineFilePathOnUI(job, offline_file_path);
+  NotifyOfflineFilePathOnUI(
+      job, offline_page ? offline_page->client_id.name_space : std::string(),
+      offline_file_path);
 }
 
 void FailedToFindOfflinePage(base::WeakPtr<OfflinePageRequestJob> job) {
@@ -389,7 +394,7 @@ void FailedToFindOfflinePage(base::WeakPtr<OfflinePageRequestJob> job) {
   // Proceed with empty file path in order to notify the OfflinePageRequestJob
   // about the failure.
   base::FilePath empty_file_path;
-  NotifyOfflineFilePathOnUI(job, empty_file_path);
+  NotifyOfflineFilePathOnUI(job, std::string(), empty_file_path);
 }
 
 // Tries to find the offline page to serve for |url|.
@@ -501,6 +506,14 @@ void SelectPage(
 
   SelectPageForURL(url, offline_header, network_state, web_contents_getter,
                    tab_id_getter, job);
+}
+
+void ReportAccessEntryPoint(
+    const std::string& name_space,
+    OfflinePageRequestJob::AccessEntryPoint entry_point) {
+  base::UmaHistogramEnumeration("OfflinePages.AccessEntryPoint." + name_space,
+                                entry_point,
+                                OfflinePageRequestJob::AccessEntryPoint::COUNT);
 }
 
 }  // namespace
@@ -670,6 +683,7 @@ void OfflinePageRequestJob::FallbackToDefault() {
 }
 
 void OfflinePageRequestJob::OnOfflineFilePathAvailable(
+    const std::string& name_space,
     const base::FilePath& offline_file_path) {
   // If offline file path is empty, it means that offline page cannot be found
   // and we want to restart the job to fall back to the default handling.
@@ -677,6 +691,8 @@ void OfflinePageRequestJob::OnOfflineFilePathAvailable(
     FallbackToDefault();
     return;
   }
+
+  ReportAccessEntryPoint(name_space, GetAccessEntryPoint());
 
   // Sets the file path and lets URLRequestFileJob start to read from the file.
   file_path_ = offline_file_path;
@@ -717,6 +733,44 @@ bool OfflinePageRequestJob::CanAccessFile(const base::FilePath& original_path,
 void OfflinePageRequestJob::SetDelegateForTesting(
     std::unique_ptr<Delegate> delegate) {
   delegate_ = std::move(delegate);
+}
+
+OfflinePageRequestJob::AccessEntryPoint
+OfflinePageRequestJob::GetAccessEntryPoint() const {
+  const content::ResourceRequestInfo* info =
+      content::ResourceRequestInfo::ForRequest(request());
+  if (!info)
+    return AccessEntryPoint::UNKNOWN;
+
+  std::string offline_header_value;
+  request()->extra_request_headers().GetHeader(kOfflinePageHeader,
+                                               &offline_header_value);
+  OfflinePageHeader offline_header(offline_header_value);
+  if (offline_header.reason == OfflinePageHeader::Reason::DOWNLOAD)
+    return AccessEntryPoint::DOWNLOADS;
+
+  ui::PageTransition transition = info->GetPageTransition();
+  if (ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_LINK)) {
+    return PageTransitionGetQualifier(transition) ==
+                   static_cast<int>(ui::PAGE_TRANSITION_FROM_API)
+               ? AccessEntryPoint::CCT
+               : AccessEntryPoint::LINK;
+  } else if (ui::PageTransitionCoreTypeIs(transition,
+                                          ui::PAGE_TRANSITION_TYPED) ||
+             ui::PageTransitionCoreTypeIs(transition,
+                                          ui::PAGE_TRANSITION_GENERATED)) {
+    return AccessEntryPoint::OMNIBOX;
+  } else if (ui::PageTransitionCoreTypeIs(transition,
+                                          ui::PAGE_TRANSITION_AUTO_BOOKMARK)) {
+    // Note that this also includes launching from bookmark which tends to be
+    // less likely. For now we don't separate these two.
+    return AccessEntryPoint::NTP_SUGGESTIONS_OR_BOOKMARKS;
+  } else if (ui::PageTransitionCoreTypeIs(transition,
+                                          ui::PAGE_TRANSITION_RELOAD)) {
+    return AccessEntryPoint::RELOAD;
+  }
+
+  return AccessEntryPoint::UNKNOWN;
 }
 
 }  // namespace offline_pages

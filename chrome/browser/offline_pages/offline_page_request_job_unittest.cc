@@ -67,6 +67,7 @@ const char kAggregatedRequestResultHistogram[] =
     "OfflinePages.AggregatedRequestResult2";
 const char kOpenFileErrorCodeHistogram[] =
     "OfflinePages.RequestJob.OpenFileErrorCode";
+const char kAccessEntryPointHistogram[] = "OfflinePages.AccessEntryPoint.";
 
 class OfflinePageRequestJobTestDelegate :
     public OfflinePageRequestJob::Delegate {
@@ -283,6 +284,11 @@ class OfflinePageRequestJobTest : public testing::Test {
       OfflinePageRequestJob::AggregatedRequestResult result);
 
   void ExpectOpenFileErrorCode(int result);
+
+  void ExpectAccessEntryPoint(
+      const ClientId& client_id,
+      OfflinePageRequestJob::AccessEntryPoint entry_point);
+  void ExpectNoAccessEntryPoint();
 
   net::TestURLRequestContext* url_request_context() {
     return test_url_request_context_.get();
@@ -559,6 +565,20 @@ void OfflinePageRequestJobTest::ExpectOpenFileErrorCode(int result) {
   histogram_tester_.ExpectUniqueSample(kOpenFileErrorCodeHistogram, -result, 1);
 }
 
+void OfflinePageRequestJobTest::ExpectAccessEntryPoint(
+    const ClientId& client_id,
+    OfflinePageRequestJob::AccessEntryPoint entry_point) {
+  histogram_tester_.ExpectUniqueSample(
+      kAccessEntryPointHistogram + client_id.name_space,
+      static_cast<int>(entry_point), 1);
+}
+
+void OfflinePageRequestJobTest::ExpectNoAccessEntryPoint() {
+  EXPECT_TRUE(
+      histogram_tester_.GetTotalCountsForPrefix(kAccessEntryPointHistogram)
+          .empty());
+}
+
 void OfflinePageRequestJobTest::SavePage(
     const GURL& url,
     const ClientId& client_id,
@@ -725,6 +745,8 @@ TEST_F(OfflinePageRequestJobTest, LoadOfflinePageOnDisconnectedNetwork) {
   ExpectOneUniqueSampleForAggregatedRequestResult(
       OfflinePageRequestJob::AggregatedRequestResult::
           SHOW_OFFLINE_ON_DISCONNECTED_NETWORK);
+  ExpectAccessEntryPoint(kTestClientId2,
+                         OfflinePageRequestJob::AccessEntryPoint::LINK);
 }
 
 TEST_F(OfflinePageRequestJobTest, PageNotFoundOnDisconnectedNetwork) {
@@ -738,6 +760,7 @@ TEST_F(OfflinePageRequestJobTest, PageNotFoundOnDisconnectedNetwork) {
   ExpectOneUniqueSampleForAggregatedRequestResult(
       OfflinePageRequestJob::AggregatedRequestResult::
           PAGE_NOT_FOUND_ON_DISCONNECTED_NETWORK);
+  ExpectNoAccessEntryPoint();
 }
 
 TEST_F(OfflinePageRequestJobTest, LoadOfflinePageOnProhibitivelySlowNetwork) {
@@ -755,6 +778,8 @@ TEST_F(OfflinePageRequestJobTest, LoadOfflinePageOnProhibitivelySlowNetwork) {
   ExpectOneUniqueSampleForAggregatedRequestResult(
       OfflinePageRequestJob::AggregatedRequestResult::
           SHOW_OFFLINE_ON_PROHIBITIVELY_SLOW_NETWORK);
+  ExpectAccessEntryPoint(kTestClientId2,
+                         OfflinePageRequestJob::AccessEntryPoint::LINK);
 }
 
 TEST_F(OfflinePageRequestJobTest, PageNotFoundOnProhibitivelySlowNetwork) {
@@ -770,6 +795,7 @@ TEST_F(OfflinePageRequestJobTest, PageNotFoundOnProhibitivelySlowNetwork) {
   ExpectOneUniqueSampleForAggregatedRequestResult(
       OfflinePageRequestJob::AggregatedRequestResult::
           PAGE_NOT_FOUND_ON_PROHIBITIVELY_SLOW_NETWORK);
+  ExpectNoAccessEntryPoint();
 }
 
 TEST_F(OfflinePageRequestJobTest, LoadOfflinePageOnFlakyNetwork) {
@@ -793,6 +819,8 @@ TEST_F(OfflinePageRequestJobTest, LoadOfflinePageOnFlakyNetwork) {
   ExpectOneUniqueSampleForAggregatedRequestResult(
       OfflinePageRequestJob::AggregatedRequestResult::
           SHOW_OFFLINE_ON_FLAKY_NETWORK);
+  ExpectAccessEntryPoint(kTestClientId2,
+                         OfflinePageRequestJob::AccessEntryPoint::LINK);
 }
 
 TEST_F(OfflinePageRequestJobTest, PageNotFoundOnFlakyNetwork) {
@@ -814,6 +842,7 @@ TEST_F(OfflinePageRequestJobTest, PageNotFoundOnFlakyNetwork) {
   ExpectOneUniqueSampleForAggregatedRequestResult(
       OfflinePageRequestJob::AggregatedRequestResult::
           PAGE_NOT_FOUND_ON_FLAKY_NETWORK);
+  ExpectNoAccessEntryPoint();
 }
 
 TEST_F(OfflinePageRequestJobTest, ForceLoadOfflinePageOnConnectedNetwork) {
@@ -836,6 +865,8 @@ TEST_F(OfflinePageRequestJobTest, ForceLoadOfflinePageOnConnectedNetwork) {
   ExpectOneUniqueSampleForAggregatedRequestResult(
       OfflinePageRequestJob::AggregatedRequestResult::
           SHOW_OFFLINE_ON_CONNECTED_NETWORK);
+  ExpectAccessEntryPoint(kTestClientId2,
+                         OfflinePageRequestJob::AccessEntryPoint::DOWNLOADS);
 }
 
 TEST_F(OfflinePageRequestJobTest, PageNotFoundOnConnectedNetwork) {
@@ -856,6 +887,7 @@ TEST_F(OfflinePageRequestJobTest, PageNotFoundOnConnectedNetwork) {
   ExpectOneUniqueSampleForAggregatedRequestResult(
       OfflinePageRequestJob::AggregatedRequestResult::
           PAGE_NOT_FOUND_ON_CONNECTED_NETWORK);
+  ExpectNoAccessEntryPoint();
 }
 
 TEST_F(OfflinePageRequestJobTest, DoNotLoadOfflinePageOnConnectedNetwork) {
@@ -866,6 +898,7 @@ TEST_F(OfflinePageRequestJobTest, DoNotLoadOfflinePageOnConnectedNetwork) {
 
   EXPECT_EQ(0, bytes_read());
   EXPECT_FALSE(offline_page_tab_helper()->GetOfflinePageForTest());
+  ExpectNoAccessEntryPoint();
 }
 
 TEST_F(OfflinePageRequestJobTest, LoadOfflinePageByOfflineID) {
@@ -887,6 +920,8 @@ TEST_F(OfflinePageRequestJobTest, LoadOfflinePageByOfflineID) {
   ExpectOneUniqueSampleForAggregatedRequestResult(
       OfflinePageRequestJob::AggregatedRequestResult::
           SHOW_OFFLINE_ON_CONNECTED_NETWORK);
+  ExpectAccessEntryPoint(kTestClientId,
+                         OfflinePageRequestJob::AccessEntryPoint::DOWNLOADS);
 }
 
 TEST_F(OfflinePageRequestJobTest,
@@ -910,6 +945,7 @@ TEST_F(OfflinePageRequestJobTest,
   ExpectOneUniqueSampleForAggregatedRequestResult(
       OfflinePageRequestJob::AggregatedRequestResult::
           PAGE_NOT_FOUND_ON_CONNECTED_NETWORK);
+  ExpectNoAccessEntryPoint();
 }
 
 TEST_F(OfflinePageRequestJobTest, LoadOfflinePageForUrlWithFragment) {
@@ -978,6 +1014,8 @@ TEST_F(OfflinePageRequestJobTest, LoadOfflinePageAfterRedirect) {
   ExpectOneNonuniqueSampleForAggregatedRequestResult(
       OfflinePageRequestJob::AggregatedRequestResult::
           SHOW_OFFLINE_ON_DISCONNECTED_NETWORK);
+  ExpectAccessEntryPoint(kTestClientId3,
+                         OfflinePageRequestJob::AccessEntryPoint::LINK);
 }
 
 TEST_F(OfflinePageRequestJobTest, NoRedirectForOfflinePageWithSameOriginalURL) {
@@ -994,6 +1032,8 @@ TEST_F(OfflinePageRequestJobTest, NoRedirectForOfflinePageWithSameOriginalURL) {
   ExpectOneUniqueSampleForAggregatedRequestResult(
       OfflinePageRequestJob::AggregatedRequestResult::
           SHOW_OFFLINE_ON_DISCONNECTED_NETWORK);
+  ExpectAccessEntryPoint(kTestClientId5,
+                         OfflinePageRequestJob::AccessEntryPoint::LINK);
 }
 
 TEST_F(OfflinePageRequestJobTest, LoadOfflinePageFromNonExistentFile) {
@@ -1010,6 +1050,8 @@ TEST_F(OfflinePageRequestJobTest, LoadOfflinePageFromNonExistentFile) {
       OfflinePageRequestJob::AggregatedRequestResult::
           SHOW_OFFLINE_ON_DISCONNECTED_NETWORK);
   ExpectOpenFileErrorCode(net::ERR_FILE_NOT_FOUND);
+  ExpectAccessEntryPoint(kTestClientId4,
+                         OfflinePageRequestJob::AccessEntryPoint::LINK);
 }
 
 }  // namespace offline_pages
