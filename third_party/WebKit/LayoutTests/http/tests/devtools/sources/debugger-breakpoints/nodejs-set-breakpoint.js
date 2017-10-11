@@ -1,15 +1,18 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/debugger-test.js"></script>
-<script>
-function test() {
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+(async function() {
+  TestRunner.addResult(`Verify that front-end is able to set breakpoint for node.js scripts.\n`);
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.showPanel('sources');
+
   SDK.targetManager.mainTarget().setIsNodeJSForTest();
   SourcesTestRunner.startDebuggerTest();
 
   var functionText = 'function foobar() { \nconsole.log(\'foobar execute!\');\n}';
   var sourceURL = '\n//# sourceURL=/usr/local/home/prog/foobar.js';
-  TestRunner.evaluateInPage(functionText + sourceURL, function() {});
+  await TestRunner.evaluateInPageAnonymously(functionText + sourceURL);
   SourcesTestRunner.showScriptSource('foobar.js', didShowScriptSource);
 
   function didShowScriptSource(sourceFrame) {
@@ -28,10 +31,4 @@ function test() {
     TestRunner.addResult('Successfully paused on breakpoint');
     SourcesTestRunner.completeDebuggerTest();
   }
-}
-</script>
-</head>
-<body onload="runTest()">
-<p>Verify that front-end is able to set breakpoint for node.js scripts.</p>
-</body>
-</html>
+})();

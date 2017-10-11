@@ -1,19 +1,22 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/debugger-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function testFunction()
-{
-    foo();
-}
+(async function() {
+  TestRunner.addResult(`Tests Debugger.setBreakpointByUrl with isRegex set to true.\n`);
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.showPanel('sources');
+  await TestRunner.evaluateInPagePromise(`
+      function testFunction()
+      {
+          foo();
+      }
 
-function foo()
-{
-}
+      function foo()
+      {
+      }
+  `);
 
-function test() {
   SourcesTestRunner.runDebuggerTestSuite([
     async function testSetNoneOfURLAndRegex(next) {
       var response = await TestRunner.DebuggerAgent.invoke_setBreakpointByUrl({lineNumber: 1});
@@ -30,21 +33,11 @@ function test() {
     },
 
     async function testSetByRegex(next) {
-      await TestRunner.DebuggerAgent.invoke_setBreakpointByUrl({urlRegex: 'debugger-set-breakpoint.*', lineNumber: 8});
+      await TestRunner.DebuggerAgent.invoke_setBreakpointByUrl({urlRegex: 'debugger-set-breakpoint.*', lineNumber: 11});
       SourcesTestRunner.runTestFunctionAndWaitUntilPaused(callFrames => {
         SourcesTestRunner.captureStackTrace(callFrames);
         next();
       });
     }
   ]);
-}
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Tests Debugger.setBreakpointByUrl with isRegex set to true.
-</p>
-</body>
-</html>
+})();

@@ -1,22 +1,28 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/debugger-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function testElementClicked()
-{
-    return 0;
-}
+(async function() {
+  TestRunner.addResult(`Tests event listener breakpoints.\n`);
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.showPanel('sources');
+  await TestRunner.loadHTML(`
+      <input type="button" id="test">
+    `);
+  await TestRunner.evaluateInPagePromise(`
+      function testElementClicked()
+      {
+          return 0;
+      }
 
-function addListenerAndClick()
-{
-    var element = document.getElementById("test");
-    element.addEventListener("click", testElementClicked, true);
-    element.click();
-}
+      function addListenerAndClick()
+      {
+          var element = document.getElementById("test");
+          element.addEventListener("click", testElementClicked, true);
+          element.click();
+      }
+  `);
 
-function test() {
   SourcesTestRunner.startDebuggerTest(start);
 
   function start() {
@@ -55,16 +61,4 @@ function test() {
     else
       TestRunner.addResult('FAIL: No event target name received!');
   }
-}
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Tests event listener breakpoints.
-</p>
-
-<input type=button id="test"></input>
-</body>
-</html>
+})();

@@ -1,76 +1,83 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/debugger-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function testElementEventListener()
-{
-    return 0;
-}
+(async function() {
+  TestRunner.addResult(`Tests event listener breakpoints.\n`);
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.showPanel('sources');
+  await TestRunner.loadHTML(`
+      <input type="button" id="test">
+      <video id="video" src="../../../media/resources/test.ogv"></video>
+    `);
+  await TestRunner.evaluateInPagePromise(`
+      function testElementEventListener()
+      {
+          return 0;
+      }
 
-function addListenerAndClick()
-{
-    var element = document.getElementById("test");
-    element.addEventListener("click", testElementEventListener, true);
-    element.click();
-}
+      function addListenerAndClick()
+      {
+          var element = document.getElementById("test");
+          element.addEventListener("click", testElementEventListener, true);
+          element.click();
+      }
 
-function addListenerAndAuxclick()
-{
-    var element = document.getElementById("test");
-    element.addEventListener("auxclick", testElementEventListener, true);
-    element.dispatchEvent(new MouseEvent("auxclick", {button: 1}));
-}
+      function addListenerAndAuxclick()
+      {
+          var element = document.getElementById("test");
+          element.addEventListener("auxclick", testElementEventListener, true);
+          element.dispatchEvent(new MouseEvent("auxclick", {button: 1}));
+      }
 
-function addListenerAndPointerDown()
-{
-    var element = document.getElementById("test");
-    element.addEventListener("pointerdown", testElementEventListener, true);
-    element.dispatchEvent(new PointerEvent("pointerdown"));
-}
+      function addListenerAndPointerDown()
+      {
+          var element = document.getElementById("test");
+          element.addEventListener("pointerdown", testElementEventListener, true);
+          element.dispatchEvent(new PointerEvent("pointerdown"));
+      }
 
-function timerFired()
-{
-    return 0;
-}
+      function timerFired()
+      {
+          return 0;
+      }
 
-function addLoadListeners()
-{
-    var xhr = new XMLHttpRequest();
-    xhr.onload = loadCallback;
-    xhr.onerror = loadCallback;
-    xhr.open("GET", "/", true);
+      function addLoadListeners()
+      {
+          var xhr = new XMLHttpRequest();
+          xhr.onload = loadCallback;
+          xhr.onerror = loadCallback;
+          xhr.open("GET", "/", true);
 
-    var img = new Image();
-    img.onload = sendXHR;
-    img.onerror = sendXHR;
-    img.src = "foo/bar/dummy";
+          var img = new Image();
+          img.onload = sendXHR;
+          img.onerror = sendXHR;
+          img.src = "foo/bar/dummy";
 
-    function sendXHR()
-    {
-        xhr.send();
-    }
-}
+          function sendXHR()
+          {
+              xhr.send();
+          }
+      }
 
-function loadCallback()
-{
-    return 0;
-}
+      function loadCallback()
+      {
+          return 0;
+      }
 
-function playVideo()
-{
-    var video = document.getElementById("video");
-    video.addEventListener("play", onVideoPlay, false);
-    video.play();
-}
+      function playVideo()
+      {
+          var video = document.getElementById("video");
+          video.addEventListener("play", onVideoPlay, false);
+          video.play();
+      }
 
-function onVideoPlay()
-{
-    return 0;
-}
+      function onVideoPlay()
+      {
+          return 0;
+      }
+  `);
 
-function test() {
   var testFunctions = [
     function testClickBreakpoint(next) {
       SourcesTestRunner.setEventListenerBreakpoint('listener:click', true);
@@ -179,18 +186,4 @@ function test() {
     else
       TestRunner.addResult('FAIL: No event target name received!');
   }
-}
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Tests event listener breakpoints.
-</p>
-
-<input type=button id="test"></input>
-<video id="video" src="../../../media/resources/test.ogv"></video>
-
-</body>
-</html>
+})();

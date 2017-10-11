@@ -1,12 +1,11 @@
 Tests event listener breakpoints.
 
- 
 
 Running: testClickBreakpoint
 Script execution paused.
 Call stack:
-    0) testElementEventListener (event-listener-breakpoints.html:7)
-    1) addListenerAndClick (event-listener-breakpoints.html:16)
+    0) testElementEventListener (event-listener-breakpoints.js:14)
+    1) addListenerAndClick (event-listener-breakpoints.js:23)
     2)  (:1)
 Event target: INPUT
 Script execution resumed.
@@ -14,8 +13,8 @@ Script execution resumed.
 Running: testAuxclickBreakpoint
 Script execution paused.
 Call stack:
-    0) testElementEventListener (event-listener-breakpoints.html:7)
-    1) addListenerAndAuxclick (event-listener-breakpoints.html:23)
+    0) testElementEventListener (event-listener-breakpoints.js:14)
+    1) addListenerAndAuxclick (event-listener-breakpoints.js:30)
     2)  (:1)
 Event target: INPUT
 Script execution resumed.
@@ -23,28 +22,28 @@ Script execution resumed.
 Running: testTimerFiredBreakpoint
 Script execution paused.
 Call stack:
-    0) timerFired (event-listener-breakpoints.html:33)
+    0) timerFired (event-listener-breakpoints.js:40)
 Script execution resumed.
 
 Running: testLoadBreakpointOnXHR
 Script execution paused.
 Call stack:
-    0) loadCallback (event-listener-breakpoints.html:56)
+    0) loadCallback (event-listener-breakpoints.js:63)
 Event target: XMLHttpRequest
 Script execution resumed.
 
 Running: testMediaEventBreakpoint
 Script execution paused.
 Call stack:
-    0) onVideoPlay (event-listener-breakpoints.html:68)
+    0) onVideoPlay (event-listener-breakpoints.js:75)
 Event target: VIDEO
 Script execution resumed.
 
 Running: testPointerEventBreakpoint
 Script execution paused.
 Call stack:
-    0) testElementEventListener (event-listener-breakpoints.html:7)
-    1) addListenerAndPointerDown (event-listener-breakpoints.html:30)
+    0) testElementEventListener (event-listener-breakpoints.js:14)
+    1) addListenerAndPointerDown (event-listener-breakpoints.js:37)
     2)  (:1)
 Event target: INPUT
 Script execution resumed.

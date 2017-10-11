@@ -1,6 +1,5 @@
 Tests event listener breakpoints.
 
-
 Script execution paused.
 Event target: INPUT
 Script execution resumed.

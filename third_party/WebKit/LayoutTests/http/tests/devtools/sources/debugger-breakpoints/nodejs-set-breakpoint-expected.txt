@@ -1,4 +1,3 @@
-CONSOLE MESSAGE: line 2: foobar execute!
 Verify that front-end is able to set breakpoint for node.js scripts.
 
 Setting breakpoint:

@@ -1,111 +1,110 @@
-CONSOLE WARNING: line 65: Synchronous XMLHttpRequest on the main thread is deprecated because of its detrimental effects to the end user's experience. For more help, check https://xhr.spec.whatwg.org/.
 Tests asynchronous call stacks for XHRs.
 
 Set timer for test function.
 Captured call stacks in no particular order:
 Call stack:
-    0) downloadEnd1 (async-callstack-xhrs.html:36)
-    1) sendXHR (async-callstack-xhrs.html:66)
-    2) sendSyncXHR (async-callstack-xhrs.html:21)
-    3) timeout (async-callstack-xhrs.html:16)
+    0) downloadEnd1 (async-callstack-xhrs.js:39)
+    1) sendXHR (async-callstack-xhrs.js:69)
+    2) sendSyncXHR (async-callstack-xhrs.js:24)
+    3) timeout (async-callstack-xhrs.js:19)
     [setTimeout]
-    0) testFunction (async-callstack-xhrs.html:11)
+    0) testFunction (async-callstack-xhrs.js:14)
     [setTimeout]
-    0) scheduleTestFunction (debugger-test.js:3)
+    0) scheduleTestFunction <omitted>
     <... skipped remaining frames ...>
 
 Call stack:
-    0) downloadEnd1 (async-callstack-xhrs.html:36)
+    0) downloadEnd1 (async-callstack-xhrs.js:39)
     [XMLHttpRequest.send]
-    0) sendXHR (async-callstack-xhrs.html:66)
-    1) sendAsyncXHR (async-callstack-xhrs.html:20)
-    2) timeout (async-callstack-xhrs.html:17)
+    0) sendXHR (async-callstack-xhrs.js:69)
+    1) sendAsyncXHR (async-callstack-xhrs.js:23)
+    2) timeout (async-callstack-xhrs.js:20)
     [setTimeout]
-    0) testFunction (async-callstack-xhrs.html:11)
+    0) testFunction (async-callstack-xhrs.js:14)
     [setTimeout]
-    0) scheduleTestFunction (debugger-test.js:3)
+    0) scheduleTestFunction <omitted>
     <... skipped remaining frames ...>
 
 Call stack:
-    0) downloadEnd2 (async-callstack-xhrs.html:41)
-    1) sendXHR (async-callstack-xhrs.html:66)
-    2) sendSyncXHR (async-callstack-xhrs.html:21)
-    3) timeout (async-callstack-xhrs.html:16)
+    0) downloadEnd2 (async-callstack-xhrs.js:44)
+    1) sendXHR (async-callstack-xhrs.js:69)
+    2) sendSyncXHR (async-callstack-xhrs.js:24)
+    3) timeout (async-callstack-xhrs.js:19)
     [setTimeout]
-    0) testFunction (async-callstack-xhrs.html:11)
+    0) testFunction (async-callstack-xhrs.js:14)
     [setTimeout]
-    0) scheduleTestFunction (debugger-test.js:3)
+    0) scheduleTestFunction <omitted>
     <... skipped remaining frames ...>
 
 Call stack:
-    0) downloadEnd2 (async-callstack-xhrs.html:41)
+    0) downloadEnd2 (async-callstack-xhrs.js:44)
     [XMLHttpRequest.send]
-    0) sendXHR (async-callstack-xhrs.html:66)
-    1) sendAsyncXHR (async-callstack-xhrs.html:20)
-    2) timeout (async-callstack-xhrs.html:17)
+    0) sendXHR (async-callstack-xhrs.js:69)
+    1) sendAsyncXHR (async-callstack-xhrs.js:23)
+    2) timeout (async-callstack-xhrs.js:20)
     [setTimeout]
-    0) testFunction (async-callstack-xhrs.html:11)
+    0) testFunction (async-callstack-xhrs.js:14)
     [setTimeout]
-    0) scheduleTestFunction (debugger-test.js:3)
+    0) scheduleTestFunction <omitted>
     <... skipped remaining frames ...>
 
 Call stack:
-    0) downloadProgress (async-callstack-xhrs.html:50)
+    0) downloadProgress (async-callstack-xhrs.js:53)
     [XMLHttpRequest.send]
-    0) sendXHR (async-callstack-xhrs.html:66)
-    1) sendAsyncXHR (async-callstack-xhrs.html:20)
-    2) timeout (async-callstack-xhrs.html:17)
+    0) sendXHR (async-callstack-xhrs.js:69)
+    1) sendAsyncXHR (async-callstack-xhrs.js:23)
+    2) timeout (async-callstack-xhrs.js:20)
     [setTimeout]
-    0) testFunction (async-callstack-xhrs.html:11)
+    0) testFunction (async-callstack-xhrs.js:14)
     [setTimeout]
-    0) scheduleTestFunction (debugger-test.js:3)
+    0) scheduleTestFunction <omitted>
     <... skipped remaining frames ...>
 
 Call stack:
-    0) uploadEnd (async-callstack-xhrs.html:46)
+    0) uploadEnd (async-callstack-xhrs.js:49)
     [XMLHttpRequest.send]
-    0) sendXHR (async-callstack-xhrs.html:66)
-    1) sendAsyncXHR (async-callstack-xhrs.html:20)
-    2) timeout (async-callstack-xhrs.html:17)
+    0) sendXHR (async-callstack-xhrs.js:69)
+    1) sendAsyncXHR (async-callstack-xhrs.js:23)
+    2) timeout (async-callstack-xhrs.js:20)
     [setTimeout]
-    0) testFunction (async-callstack-xhrs.html:11)
+    0) testFunction (async-callstack-xhrs.js:14)
     [setTimeout]
-    0) scheduleTestFunction (debugger-test.js:3)
+    0) scheduleTestFunction <omitted>
     <... skipped remaining frames ...>
 
 Call stack:
-    0) uploadProgress (async-callstack-xhrs.html:55)
+    0) uploadProgress (async-callstack-xhrs.js:58)
     [XMLHttpRequest.send]
-    0) sendXHR (async-callstack-xhrs.html:66)
-    1) sendAsyncXHR (async-callstack-xhrs.html:20)
-    2) timeout (async-callstack-xhrs.html:17)
+    0) sendXHR (async-callstack-xhrs.js:69)
+    1) sendAsyncXHR (async-callstack-xhrs.js:23)
+    2) timeout (async-callstack-xhrs.js:20)
     [setTimeout]
-    0) testFunction (async-callstack-xhrs.html:11)
+    0) testFunction (async-callstack-xhrs.js:14)
     [setTimeout]
-    0) scheduleTestFunction (debugger-test.js:3)
+    0) scheduleTestFunction <omitted>
     <... skipped remaining frames ...>
 
 Call stack:
-    0) xhr.onreadystatechange (async-callstack-xhrs.html:30)
-    1) sendXHR (async-callstack-xhrs.html:66)
-    2) sendSyncXHR (async-callstack-xhrs.html:21)
-    3) timeout (async-callstack-xhrs.html:16)
+    0) xhr.onreadystatechange (async-callstack-xhrs.js:33)
+    1) sendXHR (async-callstack-xhrs.js:69)
+    2) sendSyncXHR (async-callstack-xhrs.js:24)
+    3) timeout (async-callstack-xhrs.js:19)
     [setTimeout]
-    0) testFunction (async-callstack-xhrs.html:11)
+    0) testFunction (async-callstack-xhrs.js:14)
     [setTimeout]
-    0) scheduleTestFunction (debugger-test.js:3)
+    0) scheduleTestFunction <omitted>
     <... skipped remaining frames ...>
 
 Call stack:
-    0) xhr.onreadystatechange (async-callstack-xhrs.html:30)
+    0) xhr.onreadystatechange (async-callstack-xhrs.js:33)
     [XMLHttpRequest.send]
-    0) sendXHR (async-callstack-xhrs.html:66)
-    1) sendAsyncXHR (async-callstack-xhrs.html:20)
-    2) timeout (async-callstack-xhrs.html:17)
+    0) sendXHR (async-callstack-xhrs.js:69)
+    1) sendAsyncXHR (async-callstack-xhrs.js:23)
+    2) timeout (async-callstack-xhrs.js:20)
     [setTimeout]
-    0) testFunction (async-callstack-xhrs.html:11)
+    0) testFunction (async-callstack-xhrs.js:14)
     [setTimeout]
-    0) scheduleTestFunction (debugger-test.js:3)
+    0) scheduleTestFunction <omitted>
     <... skipped remaining frames ...>
 
 

@@ -1,6 +1,3 @@
-CONSOLE MESSAGE: line 9: Done.
-CONSOLE MESSAGE: line 9: Done.
-CONSOLE MESSAGE: line 9: Done.
 Tests disabling breakpoints.
 
 
@@ -9,9 +6,9 @@ Script source was shown.
 Set timer for test function.
 Script execution paused.
 Call stack:
-    0) testFunction (disable-breakpoints.html:8)
+    0) testFunction (disable-breakpoints.js:13)
 Breakpoint sidebar pane 
-disable-breakpoints.html:8    var x = Math.sqrt(10);
+disable-breakpoints.js:13          var x = Math.sqrt(10);
 Script execution resumed.
 Test function finished.
 Disabling breakpoints...
@@ -25,13 +22,13 @@ Running test function...
 Set timer for test function.
 Script execution paused.
 Call stack:
-    0) testFunction (disable-breakpoints.html:8)
+    0) testFunction (disable-breakpoints.js:13)
 Breakpoint sidebar pane 
-disable-breakpoints.html:8    var x = Math.sqrt(10);
+disable-breakpoints.js:13          var x = Math.sqrt(10);
 Script execution resumed.
 Test function finished.
 Breakpoint sidebar pane 
-disable-breakpoints.html:8    var x = Math.sqrt(10);
+disable-breakpoints.js:13          var x = Math.sqrt(10);
 Breakpoints removed.
 Breakpoint sidebar pane 
 No breakpoints
