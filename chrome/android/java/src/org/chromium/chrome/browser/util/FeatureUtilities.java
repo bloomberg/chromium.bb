@@ -332,14 +332,6 @@ public class FeatureUtilities {
     }
 
     /**
-     * @return Whether or not the expand button for Chrome Home is enabled.
-     */
-    public static boolean isChromeHomeExpandButtonEnabled() {
-        if (!ChromeFeatureList.isInitialized()) return false;
-        return ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_EXPAND_BUTTON);
-    }
-
-    /**
      * @return The type of swipe logic used for opening the bottom sheet in Chrome Home. Null is
      *         returned if the command line is not initialized or no experiment is specified.
      */
