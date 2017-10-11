@@ -3711,8 +3711,7 @@
         "boards": [
             "betty-arc64"
         ],
-        "buildslave_type": "baremetal",
-        "important": true
+        "buildslave_type": "baremetal"
     },
     "betty-arc64-release-afdo": {
         "_template": "release_afdo_generate",
