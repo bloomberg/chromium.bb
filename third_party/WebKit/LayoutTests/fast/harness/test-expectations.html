@@ -829,6 +829,7 @@ const Filters = {
       return false;
     switch (test.actualFinal) {
       case "SKIP":
+        return false;
       case "CRASH":
       case "TIMEOUT":
         if (test.expected.indexOf(test.actualFinal) != -1)
