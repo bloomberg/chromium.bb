@@ -95,8 +95,7 @@ void BreakBlockquoteCommand::DoApply(EditingState* editing_state) {
 
   // Delete the current selection.
   if (EndingSelection().IsRange()) {
-    DeleteSelection(editing_state, false, false);
-    if (editing_state->IsAborted())
+    if (!DeleteSelection(editing_state, false, false))
       return;
   }
 

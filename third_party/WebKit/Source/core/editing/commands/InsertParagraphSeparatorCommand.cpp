@@ -194,8 +194,7 @@ void InsertParagraphSeparatorCommand::DoApply(EditingState* editing_state) {
   if (EndingSelection().IsRange()) {
     GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
     CalculateStyleBeforeInsertion(insertion_position);
-    DeleteSelection(editing_state, false, true);
-    if (editing_state->IsAborted())
+    if (!DeleteSelection(editing_state, false, true))
       return;
     const VisibleSelection& visble_selection_after_delete =
         EndingVisibleSelection();

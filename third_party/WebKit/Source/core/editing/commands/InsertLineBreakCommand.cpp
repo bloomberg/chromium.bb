@@ -64,8 +64,7 @@ bool InsertLineBreakCommand::ShouldUseBreakElement(
 }
 
 void InsertLineBreakCommand::DoApply(EditingState* editing_state) {
-  DeleteSelection(editing_state);
-  if (editing_state->IsAborted())
+  if (!DeleteSelection(editing_state))
     return;
 
   GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();

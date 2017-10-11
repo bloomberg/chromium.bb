@@ -614,17 +614,27 @@ void CompositeEditCommand::InsertNodeAtTabSpanPosition(
   InsertNodeAt(node, PositionOutsideTabSpan(pos), editing_state);
 }
 
-void CompositeEditCommand::DeleteSelection(EditingState* editing_state,
+bool CompositeEditCommand::DeleteSelection(EditingState* editing_state,
                                            bool smart_delete,
                                            bool merge_blocks_after_delete,
                                            bool expand_for_special_elements,
                                            bool sanitize_markup) {
-  if (EndingSelection().IsRange())
-    ApplyCommandToComposite(
-        DeleteSelectionCommand::Create(
-            GetDocument(), smart_delete, merge_blocks_after_delete,
-            expand_for_special_elements, sanitize_markup),
-        editing_state);
+  if (!EndingSelection().IsRange())
+    return true;
+
+  ApplyCommandToComposite(
+      DeleteSelectionCommand::Create(
+          GetDocument(), smart_delete, merge_blocks_after_delete,
+          expand_for_special_elements, sanitize_markup),
+      editing_state);
+  if (editing_state->IsAborted())
+    return false;
+
+  if (!EndingSelection().IsValidFor(GetDocument())) {
+    editing_state->Abort();
+    return false;
+  }
+  return true;
 }
 
 void CompositeEditCommand::RemoveCSSProperty(Element* element,
@@ -1312,8 +1322,7 @@ void CompositeEditCommand::MoveParagraphWithClones(
 
   SetEndingSelection(
       SelectionInDOMTree::Builder().Collapse(start).Extend(end).Build());
-  DeleteSelection(editing_state, false, false, false);
-  if (editing_state->IsAborted())
+  if (!DeleteSelection(editing_state, false, false, false))
     return;
 
   // There are bugs in deletion when it removes a fully selected table/list.
@@ -1493,8 +1502,7 @@ void CompositeEditCommand::MoveParagraphs(
   const SelectionInDOMTree& selection_to_delete =
       SelectionInDOMTree::Builder().Collapse(start).Extend(end).Build();
   SetEndingSelection(selection_to_delete);
-  DeleteSelection(editing_state, false, false, false);
-  if (editing_state->IsAborted())
+  if (!DeleteSelection(editing_state, false, false, false))
     return;
 
   DCHECK(destination.DeepEquivalent().IsConnected()) << destination;
