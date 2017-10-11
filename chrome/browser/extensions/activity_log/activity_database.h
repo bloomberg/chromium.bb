@@ -135,11 +135,6 @@ class ActivityDatabase {
                               const char* const field_types[],
                               const int num_content_fields);
 
-  // Runs the given callback, passing it a handle to the database connection.
-  // If the database is not valid, the callback is run (to allow it to do any
-  // needed cleanup) but passed a NULL value.
-  void RunOnDatabase(const base::Callback<void(sql::Connection*)>& callback);
-
  private:
   // This should never be invoked by another class. Use Close() to order a
   // suicide.
