@@ -26,7 +26,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "core/CoreExport.h"
-#include "core/html/TextControlElement.h"
+#include "core/html/forms/TextControlElement.h"
 
 namespace blink {
 

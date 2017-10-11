@@ -33,7 +33,7 @@
 #include "core/editing/Position.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/iterators/TextIterator.h"
-#include "core/html/HTMLFormControlElement.h"
+#include "core/html/forms/HTMLFormControlElement.h"
 #include "core/layout/LayoutTextFragment.h"
 
 namespace blink {

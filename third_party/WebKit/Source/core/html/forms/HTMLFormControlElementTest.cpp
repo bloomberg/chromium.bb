@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/HTMLFormControlElement.h"
+#include "core/html/forms/HTMLFormControlElement.h"
 
 #include <memory>
 #include "core/dom/Document.h"
@@ -57,7 +57,7 @@ class MockFormValidationMessageClient
   Member<const Element> anchor_;
   int operation_count_ = 0;
 };
-}
+}  // namespace
 
 class HTMLFormControlElementTest : public ::testing::Test {
  protected:

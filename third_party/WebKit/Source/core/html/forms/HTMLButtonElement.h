@@ -24,7 +24,7 @@
 #ifndef HTMLButtonElement_h
 #define HTMLButtonElement_h
 
-#include "core/html/HTMLFormControlElement.h"
+#include "core/html/forms/HTMLFormControlElement.h"
 
 namespace blink {
 

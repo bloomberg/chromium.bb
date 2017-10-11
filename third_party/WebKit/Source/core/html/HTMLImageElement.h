@@ -25,10 +25,10 @@
 #define HTMLImageElement_h
 
 #include "core/CoreExport.h"
-#include "core/html/FormAssociated.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLImageLoader.h"
 #include "core/html/canvas/ImageElementBase.h"
+#include "core/html/forms/FormAssociated.h"
 #include "platform/bindings/ActiveScriptWrappable.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/heap/HeapAllocator.h"

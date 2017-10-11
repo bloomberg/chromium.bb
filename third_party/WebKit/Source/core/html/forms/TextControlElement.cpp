@@ -22,7 +22,7 @@
  *
  */
 
-#include "core/html/TextControlElement.h"
+#include "core/html/forms/TextControlElement.h"
 
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"

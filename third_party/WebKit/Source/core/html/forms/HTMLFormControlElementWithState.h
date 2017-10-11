@@ -26,7 +26,7 @@
 #define HTMLFormControlElementWithState_h
 
 #include "core/CoreExport.h"
-#include "core/html/HTMLFormControlElement.h"
+#include "core/html/forms/HTMLFormControlElement.h"
 
 namespace blink {
 

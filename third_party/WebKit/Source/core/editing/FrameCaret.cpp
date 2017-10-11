@@ -35,7 +35,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
-#include "core/html/TextControlElement.h"
+#include "core/html/forms/TextControlElement.h"
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/api/LayoutEmbeddedContentItem.h"

@@ -22,13 +22,13 @@
  *
  */
 
-#include "core/html/ListedElement.h"
+#include "core/html/forms/ListedElement.h"
 
 #include "core/dom/IdTargetObserver.h"
 #include "core/dom/NodeTraversal.h"
-#include "core/html/HTMLFormControlElement.h"
 #include "core/html/HTMLObjectElement.h"
 #include "core/html/ValidityState.h"
+#include "core/html/forms/HTMLFormControlElement.h"
 #include "core/html/forms/HTMLFormElement.h"
 #include "core/html_names.h"
 
