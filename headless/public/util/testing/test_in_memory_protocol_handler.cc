@@ -26,9 +26,9 @@ class TestInMemoryProtocolHandler::MockURLFetcher : public URLFetcher {
     GURL url = request->GetURLRequest()->url();
     DCHECK_EQ("GET", request->GetURLRequest()->method());
 
-    int frame_tree_node_id = request->GetFrameTreeNodeId();
-    DCHECK_NE(frame_tree_node_id, -1) << " For url " << url;
-    protocol_handler_->RegisterUrl(url.spec(), frame_tree_node_id);
+    std::string devtools_frame_id = request->GetDevToolsFrameId();
+    DCHECK_NE(devtools_frame_id, "") << " For url " << url;
+    protocol_handler_->RegisterUrl(url.spec(), devtools_frame_id);
 
     if (protocol_handler_->simulate_slow_fetch()) {
       io_thread_task_runner_->PostDelayedTask(

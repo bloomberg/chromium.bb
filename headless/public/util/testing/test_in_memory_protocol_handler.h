@@ -44,8 +44,8 @@ class TestInMemoryProtocolHandler
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const override;
 
-  const std::map<std::string, int>& url_to_frame_tree_node_id() const {
-    return url_to_frame_tree_node_id_;
+  const std::map<std::string, std::string>& url_to_devtools_frame_id() const {
+    return url_to_devtools_frame_id_;
   }
 
   const std::vector<std::string>& urls_requested() const {
@@ -55,9 +55,9 @@ class TestInMemoryProtocolHandler
  private:
   const Response* GetResponse(const std::string& url) const;
 
-  void RegisterUrl(const std::string& url, int frame_tree_node_id) {
+  void RegisterUrl(const std::string& url, std::string& devtools_frame_id) {
     urls_requested_.push_back(url);
-    url_to_frame_tree_node_id_[url] = frame_tree_node_id;
+    url_to_devtools_frame_id_[url] = devtools_frame_id;
   }
 
   bool simulate_slow_fetch() const { return simulate_slow_fetch_; }
@@ -71,7 +71,7 @@ class TestInMemoryProtocolHandler
   std::unique_ptr<ExpeditedDispatcher> dispatcher_;
   std::map<std::string, Response> response_map_;
   HeadlessBrowserContext* headless_browser_context_;
-  std::map<std::string, int> url_to_frame_tree_node_id_;
+  std::map<std::string, std::string> url_to_devtools_frame_id_;
   std::vector<std::string> urls_requested_;
   bool simulate_slow_fetch_;
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner_;

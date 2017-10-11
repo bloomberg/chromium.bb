@@ -45,7 +45,7 @@ class HEADLESS_EXPORT Request {
   virtual const net::HttpRequestHeaders& GetHttpRequestHeaders() const = 0;
 
   // The frame from which the request came from.
-  virtual int GetFrameTreeNodeId() const = 0;
+  virtual std::string GetDevToolsFrameId() const = 0;
 
   // The devtools agent host id for the page where the request came from.
   virtual std::string GetDevToolsAgentHostId() const = 0;
@@ -153,7 +153,7 @@ class HEADLESS_EXPORT GenericURLRequestJob
   uint64_t GetRequestId() const override;
   const net::HttpRequestHeaders& GetHttpRequestHeaders() const override;
   const net::URLRequest* GetURLRequest() const override;
-  int GetFrameTreeNodeId() const override;
+  std::string GetDevToolsFrameId() const override;
   std::string GetDevToolsAgentHostId() const override;
   std::string GetPostData() const override;
   uint64_t GetPostDataSize() const override;

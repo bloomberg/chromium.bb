@@ -129,7 +129,8 @@ class FrameIdTest : public HeadlessAsyncDevTooledBrowserTest,
 
   // page::Observer implementation:
   void OnLoadEventFired(const page::LoadEventFiredParams& params) override {
-    EXPECT_EQ(6u, url_to_frame_id_.size());
+    EXPECT_THAT(url_to_frame_id_,
+                ContainerEq(http_handler_->url_to_devtools_frame_id()));
     FinishAsynchronousTest();
   }
 
