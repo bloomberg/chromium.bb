@@ -14,10 +14,13 @@
 #include "base/metrics/histogram.h"
 #include "base/rand_util.h"
 #include "base/strings/safe_sprintf.h"
+#include "base/strings/stringprintf.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/simple_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
+
+namespace base {
 
 namespace {
 
@@ -26,9 +29,19 @@ const uint32_t TEST_MEMORY_PAGE = 64 << 10;  // 64 KiB
 const uint32_t TEST_ID = 12345;
 const char TEST_NAME[] = "TestAllocator";
 
-}  // namespace
+void SetFileLength(const base::FilePath& path, size_t length) {
+  {
+    File file(path, File::FLAG_OPEN | File::FLAG_READ | File::FLAG_WRITE);
+    DCHECK(file.IsValid());
+    ASSERT_TRUE(file.SetLength(static_cast<int64_t>(length)));
+  }
 
-namespace base {
+  int64_t actual_length;
+  DCHECK(GetFileSize(path, &actual_length));
+  DCHECK_EQ(length, static_cast<size_t>(actual_length));
+}
+
+}  // namespace
 
 typedef PersistentMemoryAllocator::Reference Reference;
 
@@ -914,6 +927,75 @@ TEST(FilePersistentMemoryAllocatorTest, AcceptableTest) {
     }
   }
 }
+
+TEST_F(PersistentMemoryAllocatorTest, TruncateTest) {
+  ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  FilePath file_path = temp_dir.GetPath().AppendASCII("truncate_test");
+
+  // Start with a small but valid file of persistent data. Keep the "used"
+  // amount for both allocations.
+  Reference a1_ref;
+  Reference a2_ref;
+  size_t a1_used;
+  size_t a2_used;
+  ASSERT_FALSE(PathExists(file_path));
+  {
+    LocalPersistentMemoryAllocator allocator(TEST_MEMORY_SIZE, TEST_ID, "");
+    a1_ref = allocator.Allocate(100 << 10, 1);
+    allocator.MakeIterable(a1_ref);
+    a1_used = allocator.used();
+    a2_ref = allocator.Allocate(200 << 10, 11);
+    allocator.MakeIterable(a2_ref);
+    a2_used = allocator.used();
+
+    File writer(file_path, File::FLAG_CREATE | File::FLAG_WRITE);
+    ASSERT_TRUE(writer.IsValid());
+    writer.Write(0, static_cast<const char*>(allocator.data()),
+                 allocator.size());
+  }
+  ASSERT_TRUE(PathExists(file_path));
+  EXPECT_LE(a1_used, a2_ref);
+
+  // Truncate the file to include everything and make sure it can be read, both
+  // with read-write and read-only access.
+  for (size_t file_length : {a2_used, a1_used, a1_used / 2}) {
+    SCOPED_TRACE(StringPrintf("file_length=%zu", file_length));
+    SetFileLength(file_path, file_length);
+
+    for (bool read_only : {false, true}) {
+      SCOPED_TRACE(StringPrintf("read_only=%s", read_only ? "true" : "false"));
+
+      std::unique_ptr<MemoryMappedFile> mmfile(new MemoryMappedFile());
+      mmfile->Initialize(
+          File(file_path, File::FLAG_OPEN |
+                              (read_only ? File::FLAG_READ
+                                         : File::FLAG_READ | File::FLAG_WRITE)),
+          read_only ? MemoryMappedFile::READ_ONLY
+                    : MemoryMappedFile::READ_WRITE);
+      ASSERT_TRUE(
+          FilePersistentMemoryAllocator::IsFileAcceptable(*mmfile, read_only));
+
+      FilePersistentMemoryAllocator allocator(std::move(mmfile), 0, 0, "",
+                                              read_only);
+
+      PersistentMemoryAllocator::Iterator iter(&allocator);
+      uint32_t type_id;
+      EXPECT_EQ(file_length >= a1_used ? a1_ref : 0U, iter.GetNext(&type_id));
+      EXPECT_EQ(file_length >= a2_used ? a2_ref : 0U, iter.GetNext(&type_id));
+      EXPECT_EQ(0U, iter.GetNext(&type_id));
+
+      // Ensure that short files are detected as corrupt and full files are not.
+      EXPECT_EQ(file_length < a2_used, allocator.IsCorrupt());
+    }
+
+    // Ensure that file length was not adjusted.
+    int64_t actual_length;
+    ASSERT_TRUE(GetFileSize(file_path, &actual_length));
+    EXPECT_EQ(file_length, static_cast<size_t>(actual_length));
+  }
+}
+
 #endif  // !defined(OS_NACL)
 
 }  // namespace base
