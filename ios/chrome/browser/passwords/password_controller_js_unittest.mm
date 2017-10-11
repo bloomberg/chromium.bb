@@ -381,4 +381,41 @@ TEST_F(PasswordControllerJsTest, TouchendAsSubmissionIndicator) {
       ExecuteJavaScriptWithFormat(@"__gCrWeb.stringify(invokeOnHostArgument)"));
 };
 
+// Check that a form is filled if url of a page and url in form fill data are
+// different only in pathes.
+TEST_F(PasswordControllerJsTest, OriginsAreDifferentInPathes) {
+  LoadHtmlAndInject(
+      @"<html><body>"
+       "<form name='login_form' action='action1'>"
+       "  Name: <input type='text' name='name' id='name'>"
+       "  Password: <input type='password' name='password' id='password'>"
+       "  <input type='submit' value='Submit'>"
+       "</form>"
+       "</body></html>");
+
+  NSString* const username = @"john.doe@gmail.com";
+  NSString* const password = @"super!secret";
+  std::string page_origin = BaseUrl() + "origin1";
+  std::string form_fill_data_origin = BaseUrl() + "origin2";
+
+  NSString* form_fill_data =
+      [NSString stringWithFormat:
+                    @"{"
+                     "  \"action\":\"%s\","
+                     "  \"origin\":\"%s\","
+                     "  \"fields\":["
+                     "    {\"name\":\"name\", \"value\":\"name\"},"
+                     "    {\"name\":\"password\",\"value\":\"password\"}"
+                     "  ]"
+                     "}",
+                    page_origin.c_str(), form_fill_data_origin.c_str()];
+  EXPECT_NSEQ(@YES,
+              ExecuteJavaScriptWithFormat(
+                  @"__gCrWeb.fillPasswordForm(%@, '%@', '%@', '%s')",
+                  form_fill_data, username, password, page_origin.c_str()));
+  // Verifies that the sign-in form has been filled with username/password.
+  ExecuteJavaScriptOnElementsAndCheck(@"document.getElementById('%@').value",
+                                      @[ @"name", @"password" ],
+                                      @[ username, password ]);
+}
 }  // namespace
