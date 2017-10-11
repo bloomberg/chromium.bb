@@ -240,8 +240,8 @@
   <message name="IDS_POLICY_TOOL_SESSION_NAME_PLACEHOLDER" desc="Placeholder for the input field that lets the user change policy management sessions.">
     Session name
   </message>
-  <message name="IDS_POLICY_TOOL_LOGGING_DISABLED" desc="A message that is shown to the user when there is some problem that prevents saving the current policy editing session to disk.">
-    There seems to be a problem. Saving the session to disk might not work properly.
+  <message name="IDS_POLICY_TOOL_SAVING_DISABLED" desc="A message that is shown to the user when there is some problem that prevents saving the session to disk.">
+    There was a problem accessing the session files. Saving to disk is currently disabled. Please reload the page to try again.
   </message>
   <message name="IDS_POLICY_TOOL_INVALID_SESSION_NAME" desc="A message that is shown to the user when the entered session name is invalid.">
     Please enter a valid session name.
