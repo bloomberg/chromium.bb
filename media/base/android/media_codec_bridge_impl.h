@@ -106,7 +106,8 @@ class MEDIA_EXPORT MediaCodecBridgeImpl : public MediaCodecBridge {
  private:
   MediaCodecBridgeImpl(const std::string& mime,
                        CodecType codec_type,
-                       MediaCodecDirection direction);
+                       MediaCodecDirection direction,
+                       const base::android::JavaRef<jobject>& media_crypto);
 
   // Calls MediaCodec#start(). Returns whether it was successful.
   bool Start();

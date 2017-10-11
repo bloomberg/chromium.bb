@@ -197,7 +197,7 @@ std::unique_ptr<MediaCodecBridge> MediaCodecBridgeImpl::CreateAudioDecoder(
     return nullptr;
 
   auto bridge = base::WrapUnique(new MediaCodecBridgeImpl(
-      mime, CodecType::kAny, MediaCodecDirection::DECODER));
+      mime, CodecType::kAny, MediaCodecDirection::DECODER, media_crypto));
   if (bridge->j_bridge_.is_null())
     return nullptr;
 
@@ -248,8 +248,8 @@ std::unique_ptr<MediaCodecBridge> MediaCodecBridgeImpl::CreateVideoDecoder(
   if (mime.empty())
     return nullptr;
 
-  std::unique_ptr<MediaCodecBridgeImpl> bridge(
-      new MediaCodecBridgeImpl(mime, codec_type, MediaCodecDirection::DECODER));
+  std::unique_ptr<MediaCodecBridgeImpl> bridge(new MediaCodecBridgeImpl(
+      mime, codec_type, MediaCodecDirection::DECODER, media_crypto));
   if (bridge->j_bridge_.is_null())
     return nullptr;
 
@@ -297,7 +297,7 @@ std::unique_ptr<MediaCodecBridge> MediaCodecBridgeImpl::CreateVideoEncoder(
     return nullptr;
 
   std::unique_ptr<MediaCodecBridgeImpl> bridge(new MediaCodecBridgeImpl(
-      mime, CodecType::kAny, MediaCodecDirection::ENCODER));
+      mime, CodecType::kAny, MediaCodecDirection::ENCODER, nullptr));
   if (bridge->j_bridge_.is_null())
     return nullptr;
 
@@ -317,14 +317,17 @@ std::unique_ptr<MediaCodecBridge> MediaCodecBridgeImpl::CreateVideoEncoder(
   return bridge->Start() ? std::move(bridge) : nullptr;
 }
 
-MediaCodecBridgeImpl::MediaCodecBridgeImpl(const std::string& mime,
-                                           CodecType codec_type,
-                                           MediaCodecDirection direction) {
+MediaCodecBridgeImpl::MediaCodecBridgeImpl(
+    const std::string& mime,
+    CodecType codec_type,
+    MediaCodecDirection direction,
+    const JavaRef<jobject>& media_crypto) {
   JNIEnv* env = AttachCurrentThread();
   DCHECK(!mime.empty());
   ScopedJavaLocalRef<jstring> j_mime = ConvertUTF8ToJavaString(env, mime);
-  j_bridge_.Reset(Java_MediaCodecBridge_create(
-      env, j_mime, static_cast<int>(codec_type), static_cast<int>(direction)));
+  j_bridge_.Reset(
+      Java_MediaCodecBridge_create(env, j_mime, static_cast<int>(codec_type),
+                                   static_cast<int>(direction), media_crypto));
 }
 
 MediaCodecBridgeImpl::~MediaCodecBridgeImpl() {
