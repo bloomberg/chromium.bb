@@ -104,6 +104,10 @@ class SigninClient : public KeyedService {
   virtual void PreSignOut(const base::Callback<void()>& sign_out,
                           signin_metrics::ProfileSignout signout_source_metric);
 
+  // Called before calling the GAIA logout endpoint.
+  // For iOS, cookies should be cleaned up.
+  virtual void PreGaiaLogout(base::OnceClosure callback);
+
   virtual bool IsFirstRun() const = 0;
   virtual base::Time GetInstallDate() = 0;
 

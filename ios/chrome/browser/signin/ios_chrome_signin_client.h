@@ -33,6 +33,7 @@ class IOSChromeSigninClient : public IOSSigninClient {
       GaiaAuthConsumer* consumer,
       const std::string& source,
       net::URLRequestContextGetter* getter) override;
+  void PreGaiaLogout(base::OnceClosure callback) override;
 
   // SigninErrorController::Observer implementation.
   void OnErrorChanged() override;

@@ -232,9 +232,6 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
 
   void SetPendingFetch(bool pending_fetch);
 
-  // Set the headers to use during the Logout call.
-  void SetLogoutHeaders(const std::string& headers);
-
  private:
   // The format of the POST body for IssueAuthToken.
   static const char kIssueAuthTokenFormat[];
@@ -437,9 +434,6 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
   std::string requested_service_;
   bool fetch_pending_ = false;
   bool fetch_token_from_auth_code_ = false;
-
-  // Headers used during the Logout call.
-  std::string logout_headers_;
 
   friend class GaiaAuthFetcherTest;
   FRIEND_TEST_ALL_PREFIXES(GaiaAuthFetcherTest, CaptchaParse);
