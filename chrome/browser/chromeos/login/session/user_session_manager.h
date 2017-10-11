@@ -320,8 +320,7 @@ class UserSessionManager
   void PrepareTpmDeviceAndFinalizeProfile(Profile* profile);
 
   // Called on UI thread once Cryptohome operation completes.
-  void OnCryptohomeOperationCompleted(Profile* profile,
-                                      DBusMethodCallStatus call_status);
+  void OnCryptohomeOperationCompleted(Profile* profile, bool result);
 
   // Finalized profile preparation.
   void FinalizePrepareProfile(Profile* profile);

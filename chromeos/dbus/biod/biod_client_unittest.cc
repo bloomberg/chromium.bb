@@ -291,20 +291,20 @@ TEST_F(BiodClientTest, TestDestroyAllRecords) {
   // Create an empty response to simulate success.
   AddMethodExpectation(biod::kBiometricsManagerDestroyAllRecordsMethod,
                        std::move(response));
-  DBusMethodCallStatus returned_status = static_cast<DBusMethodCallStatus>(-1);
+  bool result = false;
   client_->DestroyAllRecords(
-      base::Bind(&test_utils::CopyDBusMethodCallStatus, &returned_status));
+      base::BindOnce(&test_utils::CopyDBusMethodCallResult, &result));
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(DBUS_METHOD_CALL_SUCCESS, returned_status);
+  EXPECT_TRUE(result);
 
   // Return a null response to simulate failure.
   AddMethodExpectation(biod::kBiometricsManagerDestroyAllRecordsMethod,
                        nullptr);
-  returned_status = static_cast<DBusMethodCallStatus>(-1);
+  result = false;
   client_->DestroyAllRecords(
-      base::Bind(&test_utils::CopyDBusMethodCallStatus, &returned_status));
+      base::BindOnce(&test_utils::CopyDBusMethodCallResult, &result));
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(DBUS_METHOD_CALL_FAILURE, returned_status);
+  EXPECT_FALSE(result);
 }
 
 TEST_F(BiodClientTest, TestStartAuthentication) {

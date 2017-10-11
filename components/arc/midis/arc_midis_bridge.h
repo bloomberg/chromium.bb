@@ -9,7 +9,7 @@
 
 #include <vector>
 
-#include "chromeos/dbus/dbus_method_call_status.h"
+#include "base/macros.h"
 #include "components/arc/common/midis.mojom.h"
 #include "components/arc/instance_holder.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -45,7 +45,7 @@ class ArcMidisBridge : public KeyedService,
  private:
   void OnBootstrapMojoConnection(mojom::MidisServerRequest request,
                                  mojom::MidisClientPtr client_ptr,
-                                 chromeos::DBusMethodCallStatus result);
+                                 bool result);
 
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
   mojo::Binding<mojom::MidisHost> binding_;

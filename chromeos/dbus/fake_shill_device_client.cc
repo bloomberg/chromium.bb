@@ -131,11 +131,11 @@ void FakeShillDeviceClient::ClearProperty(const dbus::ObjectPath& device_path,
   base::DictionaryValue* device_properties = NULL;
   if (!stub_devices_.GetDictionaryWithoutPathExpansion(device_path.value(),
                                                        &device_properties)) {
-    PostVoidCallback(std::move(callback), DBUS_METHOD_CALL_FAILURE);
+    PostVoidCallback(std::move(callback), false);
     return;
   }
   device_properties->RemoveWithoutPathExpansion(name, NULL);
-  PostVoidCallback(std::move(callback), DBUS_METHOD_CALL_SUCCESS);
+  PostVoidCallback(std::move(callback), true);
 }
 
 void FakeShillDeviceClient::RequirePin(const dbus::ObjectPath& device_path,
@@ -617,9 +617,9 @@ void FakeShillDeviceClient::PassStubDeviceProperties(
 
 // Posts a task to run a void callback with status code |status|.
 void FakeShillDeviceClient::PostVoidCallback(VoidDBusMethodCallback callback,
-                                             DBusMethodCallStatus status) {
+                                             bool result) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), status));
+      FROM_HERE, base::BindOnce(std::move(callback), result));
 }
 
 void FakeShillDeviceClient::NotifyObserversPropertyChanged(

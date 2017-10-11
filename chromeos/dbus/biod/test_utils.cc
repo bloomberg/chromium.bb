@@ -28,10 +28,9 @@ void CopyString(std::string* dest_str, const std::string& src_str) {
   *dest_str = src_str;
 }
 
-void CopyDBusMethodCallStatus(DBusMethodCallStatus* dest_status,
-                              DBusMethodCallStatus src_status) {
-  CHECK(dest_status);
-  *dest_status = src_status;
+void CopyDBusMethodCallResult(bool* dest_result, bool src_result) {
+  CHECK(dest_result);
+  *dest_result = src_result;
 }
 
 TestBiodObserver::TestBiodObserver() {}

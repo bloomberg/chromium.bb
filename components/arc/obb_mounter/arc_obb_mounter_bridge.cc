@@ -17,12 +17,6 @@ namespace arc {
 
 namespace {
 
-// Used to convert mojo Callback to VoidDBusMethodCallback.
-void RunObbCallback(base::OnceCallback<void(bool)> callback,
-                    chromeos::DBusMethodCallStatus result) {
-  std::move(callback).Run(result == chromeos::DBUS_METHOD_CALL_SUCCESS);
-}
-
 // Singleton factory for ArcObbMounterBridge.
 class ArcObbMounterBridgeFactory
     : public internal::ArcBrowserContextKeyedServiceFactoryBase<
@@ -74,14 +68,13 @@ void ArcObbMounterBridge::MountObb(const std::string& obb_file,
                                    int32_t owner_gid,
                                    MountObbCallback callback) {
   chromeos::DBusThreadManager::Get()->GetArcObbMounterClient()->MountObb(
-      obb_file, target_path, owner_gid,
-      base::BindOnce(&RunObbCallback, std::move(callback)));
+      obb_file, target_path, owner_gid, std::move(callback));
 }
 
 void ArcObbMounterBridge::UnmountObb(const std::string& target_path,
                                      UnmountObbCallback callback) {
   chromeos::DBusThreadManager::Get()->GetArcObbMounterClient()->UnmountObb(
-      target_path, base::BindOnce(&RunObbCallback, std::move(callback)));
+      target_path, std::move(callback));
 }
 
 }  // namespace arc

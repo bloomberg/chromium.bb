@@ -16,12 +16,6 @@ namespace {
 
 constexpr int64_t kFingerprintSessionTimeoutMs = 150;
 
-// Used to convert mojo Callback to VoidDbusMethodCallback.
-void RunFingerprintCallback(base::OnceCallback<void(bool)> callback,
-                            chromeos::DBusMethodCallStatus result) {
-  std::move(callback).Run(result == chromeos::DBUS_METHOD_CALL_SUCCESS);
-}
-
 chromeos::BiodClient* GetBiodClient() {
   return chromeos::DBusThreadManager::Get()->GetBiodClient();
 }
@@ -64,8 +58,8 @@ void FingerprintChromeOS::StartEnrollSession(const std::string& user_id,
 void FingerprintChromeOS::OnCloseAuthSessionForEnroll(
     const std::string& user_id,
     const std::string& label,
-    chromeos::DBusMethodCallStatus result) {
-  if (result != chromeos::DBUS_METHOD_CALL_SUCCESS)
+    bool result) {
+  if (!result)
     return;
 
   // TODO(xiaoyinh@): Timeout should be removed after we resolve
@@ -88,8 +82,7 @@ void FingerprintChromeOS::ScheduleStartEnroll(const std::string& user_id,
 void FingerprintChromeOS::CancelCurrentEnrollSession(
     CancelCurrentEnrollSessionCallback callback) {
   if (opened_session_ == FingerprintSession::ENROLL) {
-    GetBiodClient()->CancelEnrollSession(
-        base::Bind(&RunFingerprintCallback, base::Passed(&callback)));
+    GetBiodClient()->CancelEnrollSession(std::move(callback));
     opened_session_ = FingerprintSession::NONE;
   } else {
     std::move(callback).Run(true);
@@ -107,16 +100,14 @@ void FingerprintChromeOS::RequestRecordLabel(
 void FingerprintChromeOS::SetRecordLabel(const std::string& new_label,
                                          const std::string& record_path,
                                          SetRecordLabelCallback callback) {
-  GetBiodClient()->SetRecordLabel(
-      dbus::ObjectPath(record_path), new_label,
-      base::Bind(&RunFingerprintCallback, base::Passed(&callback)));
+  GetBiodClient()->SetRecordLabel(dbus::ObjectPath(record_path), new_label,
+                                  std::move(callback));
 }
 
 void FingerprintChromeOS::RemoveRecord(const std::string& record_path,
                                        RemoveRecordCallback callback) {
-  GetBiodClient()->RemoveRecord(
-      dbus::ObjectPath(record_path),
-      base::Bind(&RunFingerprintCallback, base::Passed(&callback)));
+  GetBiodClient()->RemoveRecord(dbus::ObjectPath(record_path),
+                                std::move(callback));
 }
 
 void FingerprintChromeOS::StartAuthSession() {
@@ -128,9 +119,8 @@ void FingerprintChromeOS::StartAuthSession() {
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void FingerprintChromeOS::OnCloseEnrollSessionForAuth(
-    chromeos::DBusMethodCallStatus result) {
-  if (result != chromeos::DBUS_METHOD_CALL_SUCCESS)
+void FingerprintChromeOS::OnCloseEnrollSessionForAuth(bool result) {
+  if (!result)
     return;
 
   // TODO(xiaoyinh@): Timeout should be removed after we resolve
@@ -151,8 +141,7 @@ void FingerprintChromeOS::ScheduleStartAuth() {
 void FingerprintChromeOS::EndCurrentAuthSession(
     EndCurrentAuthSessionCallback callback) {
   if (opened_session_ == FingerprintSession::AUTH) {
-    GetBiodClient()->EndAuthSession(
-        base::Bind(&RunFingerprintCallback, base::Passed(&callback)));
+    GetBiodClient()->EndAuthSession(std::move(callback));
     opened_session_ = FingerprintSession::NONE;
   } else {
     std::move(callback).Run(true);
@@ -161,8 +150,7 @@ void FingerprintChromeOS::EndCurrentAuthSession(
 
 void FingerprintChromeOS::DestroyAllRecords(
     DestroyAllRecordsCallback callback) {
-  GetBiodClient()->DestroyAllRecords(
-      base::Bind(&RunFingerprintCallback, base::Passed(&callback)));
+  GetBiodClient()->DestroyAllRecords(std::move(callback));
 }
 
 void FingerprintChromeOS::RequestType(RequestTypeCallback callback) {

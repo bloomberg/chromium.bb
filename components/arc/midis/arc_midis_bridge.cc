@@ -74,8 +74,8 @@ void ArcMidisBridge::OnInstanceReady() {
 void ArcMidisBridge::OnBootstrapMojoConnection(
     mojom::MidisServerRequest request,
     mojom::MidisClientPtr client_ptr,
-    chromeos::DBusMethodCallStatus result) {
-  if (result != chromeos::DBUS_METHOD_CALL_SUCCESS) {
+    bool result) {
+  if (!result) {
     LOG(ERROR) << "ArcMidisBridge had a failure in D-Bus with the daemon.";
     midis_host_ptr_.reset();
     return;

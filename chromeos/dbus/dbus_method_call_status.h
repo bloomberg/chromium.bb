@@ -22,6 +22,8 @@ class ObjectPath;
 
 namespace chromeos {
 
+// DEPRECATED. Migrating to DBusMethodCallback style.
+// TODO(hidehiko): Remove this when migration is completed.
 // An enum to describe whether or not a DBus method call succeeded.
 enum DBusMethodCallStatus {
   DBUS_METHOD_CALL_FAILURE,
@@ -29,14 +31,16 @@ enum DBusMethodCallStatus {
 };
 
 // Callback to handle response of methods with result.
+// If the method returns multiple values, std::tuple<...> will be used.
 // In case of error, nullopt should be passed.
 template <typename ResultType>
 using DBusMethodCallback =
     base::OnceCallback<void(base::Optional<ResultType> result)>;
 
-// A callback to handle responses of methods without results.
-using VoidDBusMethodCallback =
-    base::OnceCallback<void(DBusMethodCallStatus call_status)>;
+// Callback to handle response of methods without result.
+// |result| is true if the method call is successfully completed, otherwise
+// false.
+using VoidDBusMethodCallback = base::OnceCallback<void(bool result)>;
 
 // TODO(crbug.com/739622): Use OnceCallback in following definition, too.
 

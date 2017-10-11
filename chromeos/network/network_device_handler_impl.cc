@@ -67,11 +67,9 @@ void HandleShillCallFailure(
       shill_error_message);
 }
 
-void IPConfigRefreshCallback(const std::string& ipconfig_path,
-                             DBusMethodCallStatus call_status) {
-  if (call_status != DBUS_METHOD_CALL_SUCCESS) {
-    NET_LOG(ERROR) << "IPConfigs.Refresh Failed: " << call_status << ": "
-                   << ipconfig_path;
+void IPConfigRefreshCallback(const std::string& ipconfig_path, bool result) {
+  if (!result) {
+    NET_LOG(ERROR) << "IPConfigs.Refresh Failed: " << ipconfig_path;
   } else {
     NET_LOG(EVENT) << "IPConfigs.Refresh Succeeded: " << ipconfig_path;
   }
