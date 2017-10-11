@@ -56,6 +56,9 @@ bool EditingStyleUtilities::HasAncestorVerticalAlignStyle(Node& node,
 EditingStyle*
 EditingStyleUtilities::CreateWrappingStyleForAnnotatedSerialization(
     ContainerNode* context) {
+  // TODO(editing-dev): Change this function to take |const ContainerNode&|.
+  // Tracking bug for this is crbug.com/766448.
+  DCHECK(context);
   EditingStyle* wrapping_style =
       EditingStyle::Create(context, EditingStyle::kEditingPropertiesInEffect);
 
@@ -64,8 +67,8 @@ EditingStyleUtilities::CreateWrappingStyleForAnnotatedSerialization(
   // has applied. This helps us get the color of content pasted into
   // blockquotes right.
   wrapping_style->RemoveStyleAddedByElement(ToHTMLElement(EnclosingNodeOfType(
-      FirstPositionInOrBeforeNodeDeprecated(context),
-      IsMailHTMLBlockquoteElement, kCanCrossEditingBoundary)));
+      FirstPositionInOrBeforeNode(*context), IsMailHTMLBlockquoteElement,
+      kCanCrossEditingBoundary)));
 
   // Call collapseTextDecorationProperties first or otherwise it'll copy the
   // value over from in-effect to text-decorations.

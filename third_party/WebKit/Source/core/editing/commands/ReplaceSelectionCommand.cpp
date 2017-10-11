@@ -857,7 +857,7 @@ static void HandleStyleSpansBeforeInsertion(ReplacementFragment& fragment,
   // Handling the case where we are doing Paste as Quotation or pasting into
   // quoted content is more complicated (see handleStyleSpans) and doesn't
   // receive the optimization.
-  if (EnclosingNodeOfType(FirstPositionInOrBeforeNodeDeprecated(top_node),
+  if (EnclosingNodeOfType(FirstPositionInOrBeforeNode(*top_node),
                           IsMailHTMLBlockquoteElement,
                           kCanCrossEditingBoundary))
     return;

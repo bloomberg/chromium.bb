@@ -343,7 +343,7 @@ static Position PositionForIndex(HTMLElement* inner_editor, unsigned index) {
   for (Node& node : NodeTraversal::DescendantsOf(*inner_editor)) {
     if (node.HasTagName(brTag)) {
       if (remaining_characters_to_move_forward == 0)
-        return Position::BeforeNode(*&node);
+        return Position::BeforeNode(node);
       --remaining_characters_to_move_forward;
       last_br_or_text = &node;
       continue;
@@ -360,7 +360,8 @@ static Position PositionForIndex(HTMLElement* inner_editor, unsigned index) {
 
     NOTREACHED();
   }
-  return LastPositionInOrAfterNodeDeprecated(last_br_or_text);
+  DCHECK(last_br_or_text);
+  return LastPositionInOrAfterNode(*last_br_or_text);
 }
 
 unsigned TextControlElement::IndexForPosition(HTMLElement* inner_editor,
