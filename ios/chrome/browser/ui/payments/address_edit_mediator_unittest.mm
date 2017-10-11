@@ -7,7 +7,7 @@
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/strings/grit/components_strings.h"
-#import "ios/chrome/browser/ui/payments/payment_request_unittest_base.h"
+#import "ios/chrome/browser/payments/payment_request_unittest_base.h"
 #include "testing/platform_test.h"
 #include "third_party/ocmock/gtest_support.h"
 #include "ui/base/l10n/l10n_util.h"

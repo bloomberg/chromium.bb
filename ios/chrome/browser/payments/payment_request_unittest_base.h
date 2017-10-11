@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_PAYMENTS_PAYMENT_REQUEST_UNITTEST_BASE_H_
-#define IOS_CHROME_BROWSER_UI_PAYMENTS_PAYMENT_REQUEST_UNITTEST_BASE_H_
+#ifndef IOS_CHROME_BROWSER_PAYMENTS_PAYMENT_REQUEST_UNITTEST_BASE_H_
+#define IOS_CHROME_BROWSER_PAYMENTS_PAYMENT_REQUEST_UNITTEST_BASE_H_
 
 #import <Foundation/Foundation.h>
 
@@ -50,7 +50,11 @@ class PaymentRequestUnitTestBase {
   payments::TestPaymentRequest* payment_request() {
     return payment_request_.get();
   }
+  web::TestWebState* web_state() { return &web_state_; }
   PrefService* pref_service() { return pref_service_.get(); }
+  autofill::TestPersonalDataManager* personal_data_manager() {
+    return &personal_data_manager_;
+  }
   TestChromeBrowserState* browser_state() {
     return chrome_browser_state_.get();
   }
@@ -75,4 +79,4 @@ class PaymentRequestUnitTestBase {
   std::unique_ptr<payments::TestPaymentRequest> payment_request_;
 };
 
-#endif  // IOS_CHROME_BROWSER_UI_PAYMENTS_PAYMENT_REQUEST_UNITTEST_BASE_H_
+#endif  // IOS_CHROME_BROWSER_PAYMENTS_PAYMENT_REQUEST_UNITTEST_BASE_H_

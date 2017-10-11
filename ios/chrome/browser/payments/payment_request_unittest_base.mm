@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/ui/payments/payment_request_unittest_base.h"
+#include "ios/chrome/browser/payments/payment_request_unittest_base.h"
 
 #include "base/memory/ptr_util.h"
 #include "components/payments/core/payment_prefs.h"
@@ -26,6 +26,7 @@ void PaymentRequestUnitTestBase::SetUp() {
   test_cbs_builder.AddTestingFactory(ios::SigninManagerFactory::GetInstance(),
                                      &ios::BuildFakeSigninManager);
   chrome_browser_state_ = test_cbs_builder.Build();
+  web_state_.SetBrowserState(chrome_browser_state_.get());
   personal_data_manager_.SetTestingPrefService(pref_service_.get());
 }
 

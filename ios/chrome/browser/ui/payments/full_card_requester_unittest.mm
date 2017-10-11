@@ -6,26 +6,21 @@
 
 #include <string>
 
-#include "base/json/json_reader.h"
-#include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/strings/string16.h"
-#include "base/strings/utf_string_conversions.h"
-#include "base/test/ios/wait_util.h"
+#import "base/test/ios/wait_util.h"
+#include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
-#include "components/autofill/core/browser/credit_card.h"
 #import "components/autofill/ios/browser/autofill_agent.h"
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
-#include "components/payments/core/basic_card_response.h"
-#include "components/payments/core/payment_request_data_util.h"
 #import "ios/chrome/browser/autofill/autofill_controller.h"
-#include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
+#include "ios/chrome/browser/payments/payment_request_unittest_base.h"
 #include "ios/chrome/browser/ui/autofill/card_unmask_prompt_view_bridge.h"
-#import "ios/chrome/browser/web/chrome_web_test.h"
 #import "ios/chrome/test/scoped_key_window.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 #include "third_party/ocmock/gtest_support.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -55,36 +50,35 @@ class FakeResultDelegate
   DISALLOW_COPY_AND_ASSIGN(FakeResultDelegate);
 };
 
-class PaymentRequestFullCardRequesterTest : public ChromeWebTest {
+class PaymentRequestFullCardRequesterTest : public PaymentRequestUnitTestBase,
+                                            public PlatformTest {
  protected:
-  PaymentRequestFullCardRequesterTest()
-      : credit_card_(autofill::test::GetCreditCard()),
-        chrome_browser_state_(TestChromeBrowserState::Builder().Build()) {}
+  PaymentRequestFullCardRequesterTest() {}
 
   void SetUp() override {
-    ChromeWebTest::SetUp();
+    PaymentRequestUnitTestBase::SetUp();
+
+    AddCreditCard(autofill::test::GetCreditCard());  // Visa.
 
     // Set up what is needed to have an instance of autofill::AutofillManager.
-    AutofillAgent* autofill_agent = [[AutofillAgent alloc]
-        initWithPrefService:chrome_browser_state_->GetPrefs()
-                   webState:web_state()];
+    AutofillAgent* autofill_agent =
+        [[AutofillAgent alloc] initWithPrefService:browser_state()->GetPrefs()
+                                          webState:web_state()];
     InfoBarManagerImpl::CreateForWebState(web_state());
-    autofill_controller_ = [[AutofillController alloc]
-             initWithBrowserState:chrome_browser_state_.get()
-                         webState:web_state()
-                    autofillAgent:autofill_agent
-        passwordGenerationManager:nullptr
-                  downloadEnabled:NO];
+    autofill_controller_ =
+        [[AutofillController alloc] initWithBrowserState:browser_state()
+                                                webState:web_state()
+                                           autofillAgent:autofill_agent
+                               passwordGenerationManager:nullptr
+                                         downloadEnabled:NO];
   }
 
   void TearDown() override {
     [autofill_controller_ detachFromWebState];
 
-    ChromeWebTest::TearDown();
+    PaymentRequestUnitTestBase::TearDown();
   }
 
-  autofill::CreditCard credit_card_;
-  std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   // Manages autofill for a single page.
   AutofillController* autofill_controller_;
 };
@@ -97,8 +91,7 @@ TEST_F(PaymentRequestFullCardRequesterTest, PresentAndDismiss) {
   ScopedKeyWindow scoped_key_window_;
   [scoped_key_window_.Get() setRootViewController:base_view_controller];
 
-  FullCardRequester full_card_requester(base_view_controller,
-                                        chrome_browser_state_.get());
+  FullCardRequester full_card_requester(base_view_controller, browser_state());
 
   EXPECT_EQ(nil, base_view_controller.presentedViewController);
 
@@ -106,7 +99,7 @@ TEST_F(PaymentRequestFullCardRequesterTest, PresentAndDismiss) {
       autofill::AutofillDriverIOS::FromWebState(web_state())
           ->autofill_manager();
   FakeResultDelegate* fake_result_delegate = new FakeResultDelegate;
-  full_card_requester.GetFullCard(credit_card_, autofill_manager,
+  full_card_requester.GetFullCard(*credit_cards()[0], autofill_manager,
                                   fake_result_delegate->GetWeakPtr());
 
   // Spin the run loop to trigger the animation.
@@ -119,8 +112,10 @@ TEST_F(PaymentRequestFullCardRequesterTest, PresentAndDismiss) {
 
   // Wait until the view controller is ordered to be dismissed and the animation
   // completes.
-  WaitForCondition(^bool() {
-    return !base_view_controller.presentedViewController;
-  });
+  base::test::ios::WaitUntilCondition(
+      ^bool {
+        return !base_view_controller.presentedViewController;
+      },
+      true, base::TimeDelta::FromSeconds(10));
   EXPECT_EQ(nil, base_view_controller.presentedViewController);
 }

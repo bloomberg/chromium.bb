@@ -96,6 +96,8 @@ source_set("test_support") {
   sources = [
     "payment_request_test_util.h",
     "payment_request_test_util.mm",
+    "payment_request_unittest_base.h",
+    "payment_request_unittest_base.mm",
     "test_payment_request.h",
     "test_payment_request.mm",
   ]
@@ -107,6 +109,12 @@ source_set("test_support") {
     "//components/payments/core",
     "//components/payments/core:test_support",
     "//components/prefs",
+    "//components/signin/core/browser",
+    "//ios/chrome/browser/browser_state:test_support",
+    "//ios/chrome/browser/signin",
+    "//ios/chrome/browser/signin:test_support",
     "//ios/web",
+    "//ios/web/public/test",
+    "//ios/web/public/test/fakes",
   ]
 }
