@@ -392,8 +392,7 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
   // We enable the swipe-to-delete gesture and reordering control for nodes of
   // type URL or Folder, and not the permanent ones.
   const BookmarkNode* node = [self nodeAtIndexPath:indexPath];
-  return node->type() == BookmarkNode::URL ||
-         node->type() == BookmarkNode::FOLDER;
+  return [self isUrlOrFolder:node];
 }
 
 - (void)tableView:(UITableView*)tableView
@@ -639,7 +638,9 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
   }
 
   const BookmarkNode* node = [self nodeAtIndexPath:indexPath];
-  if (!node) {
+  // Disable the long press gesture if it is a permanent node (not an URL or
+  // Folder).
+  if (!node || ![self isUrlOrFolder:node]) {
     return;
   }
 
@@ -938,6 +939,11 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
                                         base::BindBlockArc(faviconBlock),
                                         &_faviconTaskTracker);
   _faviconLoadTasks[IntegerPair(indexPath.section, indexPath.item)] = taskId;
+}
+
+- (BOOL)isUrlOrFolder:(const BookmarkNode*)node {
+  return node->type() == BookmarkNode::URL ||
+         node->type() == BookmarkNode::FOLDER;
 }
 
 #pragma mark - Keyboard

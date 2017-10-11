@@ -1069,6 +1069,26 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
                                           IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE)]
       assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Dismiss the context menu.
+  [[EarlGrey
+      selectElementWithMatcher:ButtonWithAccessibilityLabelId(IDS_CANCEL)]
+      performAction:grey_tap()];
+
+  // Come back to the root.
+  [[EarlGrey selectElementWithMatcher:BookmarksBackButton()]
+      performAction:grey_tap()];
+
+  // Long press on Mobile Bookmarks.
+  [[EarlGrey selectElementWithMatcher:TappableBookmarkNodeWithLabel(
+                                          @"Mobile Bookmarks")]
+      performAction:grey_longPress()];
+
+  // Verify it doesn't show the context menu. (long press is disabled on
+  // permanent node.)
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(@"bookmark_context_menu")]
+      assertWithMatcher:grey_nil()];
 }
 
 // Verify Edit functionality for single folder selection.
