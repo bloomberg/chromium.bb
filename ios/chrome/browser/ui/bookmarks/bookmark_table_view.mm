@@ -258,6 +258,12 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
 }
 
 - (void)setEditing:(BOOL)editing {
+  // If not in editing mode but the tableView's editing is ON, it means the
+  // table is waiting for a swipe-to-delete confirmation.  In this case, we need
+  // to close the confirmation by setting tableView.editing to NO.
+  if (!_editing && self.tableView.editing) {
+    self.tableView.editing = NO;
+  }
   _editing = editing;
   [self resetEditNodes];
   [self.tableView setEditing:editing animated:YES];
