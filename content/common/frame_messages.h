@@ -1092,9 +1092,12 @@ IPC_MESSAGE_ROUTED4(FrameHostMsg_DidAddMessageToConsole,
 //
 // Each of these messages will have a corresponding FrameHostMsg_Detach message
 // sent when the frame is detached from the DOM.
-IPC_SYNC_MESSAGE_CONTROL1_1(FrameHostMsg_CreateChildFrame,
+// Note that |new_render_frame_id| and |devtools_frame_token| are out
+// parameters. Browser process defines them for the renderer process.
+IPC_SYNC_MESSAGE_CONTROL1_2(FrameHostMsg_CreateChildFrame,
                             FrameHostMsg_CreateChildFrame_Params,
-                            int32_t /* new_routing_id */)
+                            int32_t /* new_routing_id */,
+                            base::UnguessableToken /* devtools_frame_token */)
 
 // Sent by the renderer to the parent RenderFrameHost when a child frame is
 // detached from the DOM.
@@ -1462,10 +1465,6 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_SetIsInert, bool /* inert */)
 // Indicates that this frame recieved a user gesture, so that the state can be
 // propagated to any remote frames.
 IPC_MESSAGE_ROUTED0(FrameHostMsg_SetHasReceivedUserGesture)
-
-// Used to tell the browser what the DevTools FrameId is. Needed by Headless
-// Chrome.
-IPC_MESSAGE_ROUTED1(FrameHostMsg_SetDevToolsFrameId, std::string)
 
 // Used to tell the parent that the user right clicked on an area of the
 // content area, and a context menu should be shown for it. The params

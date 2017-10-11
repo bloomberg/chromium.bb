@@ -391,20 +391,6 @@ void HeadlessWebContentsImpl::RenderViewReady() {
     observer.DevToolsTargetReady();
 }
 
-std::string
-HeadlessWebContentsImpl::GetUntrustedDevToolsFrameIdForFrameTreeNodeId(
-    int process_id,
-    int frame_tree_node_id) const {
-  return content::DevToolsAgentHost::
-      GetUntrustedDevToolsFrameIdForFrameTreeNodeId(process_id,
-                                                    frame_tree_node_id);
-}
-
-int HeadlessWebContentsImpl::GetFrameTreeNodeIdForDevToolsFrameId(
-    const std::string& devtools_id) const {
-  return browser_context_->GetFrameTreeNodeIdForDevToolsFrameId(devtools_id);
-}
-
 int HeadlessWebContentsImpl::GetMainFrameRenderProcessId() const {
   return web_contents()->GetMainFrame()->GetProcess()->GetID();
 }

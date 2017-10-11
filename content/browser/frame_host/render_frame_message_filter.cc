@@ -8,6 +8,7 @@
 #include "base/debug/alias.h"
 #include "base/macros.h"
 #include "base/strings/string_util.h"
+#include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
@@ -64,6 +65,7 @@ void CreateChildFrameOnUI(int process_id,
                           blink::WebTreeScopeType scope,
                           const std::string& frame_name,
                           const std::string& frame_unique_name,
+                          const base::UnguessableToken& devtools_frame_token,
                           blink::WebSandboxFlags sandbox_flags,
                           const ParsedFeaturePolicyHeader& container_policy,
                           const FrameOwnerProperties& frame_owner_properties,
@@ -75,8 +77,9 @@ void CreateChildFrameOnUI(int process_id,
   // processing a subframe creation message.
   if (render_frame_host) {
     render_frame_host->OnCreateChildFrame(
-        new_routing_id, scope, frame_name, frame_unique_name, sandbox_flags,
-        container_policy, frame_owner_properties);
+        new_routing_id, scope, frame_name, frame_unique_name,
+        devtools_frame_token, sandbox_flags, container_policy,
+        frame_owner_properties);
   }
 }
 
@@ -338,15 +341,17 @@ void RenderFrameMessageFilter::DownloadUrl(int render_view_id,
 
 void RenderFrameMessageFilter::OnCreateChildFrame(
     const FrameHostMsg_CreateChildFrame_Params& params,
-    int* new_routing_id) {
+    int* new_routing_id,
+    base::UnguessableToken* devtools_frame_token) {
   *new_routing_id = render_widget_helper_->GetNextRoutingID();
+  *devtools_frame_token = base::UnguessableToken::Create();
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&CreateChildFrameOnUI, render_process_id_,
                      params.parent_routing_id, params.scope, params.frame_name,
-                     params.frame_unique_name, params.sandbox_flags,
-                     params.container_policy, params.frame_owner_properties,
-                     *new_routing_id));
+                     params.frame_unique_name, *devtools_frame_token,
+                     params.sandbox_flags, params.container_policy,
+                     params.frame_owner_properties, *new_routing_id));
 }
 
 void RenderFrameMessageFilter::OnCookiesEnabled(int render_frame_id,

@@ -239,6 +239,7 @@ class TestRenderViewHost
 
   bool CreateRenderView(int opener_frame_route_id,
                         int proxy_route_id,
+                        const base::UnguessableToken& devtools_frame_token,
                         const FrameReplicationState& replicated_frame_state,
                         bool window_was_created_with_opener) override;
   void OnWebkitPreferencesChanged() override;

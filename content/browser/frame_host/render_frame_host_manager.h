@@ -124,6 +124,7 @@ class CONTENT_EXPORT RenderFrameHostManager
         RenderViewHost* render_view_host,
         int opener_frame_routing_id,
         int proxy_routing_id,
+        const base::UnguessableToken& devtools_frame_token,
         const FrameReplicationState& replicated_frame_state) = 0;
     virtual void CreateRenderWidgetHostViewForRenderManager(
         RenderViewHost* render_view_host) = 0;

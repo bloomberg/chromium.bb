@@ -129,20 +129,6 @@ class FrameIdTest : public HeadlessAsyncDevTooledBrowserTest,
 
   // page::Observer implementation:
   void OnLoadEventFired(const page::LoadEventFiredParams& params) override {
-    std::map<std::string, std::string> protocol_handler_url_to_frame_id_;
-    for (const auto& pair : http_handler_->url_to_frame_tree_node_id()) {
-      // TODO(alexclarke): This will probably break with OOPIF, fix this.
-      // See https://bugs.chromium.org/p/chromium/issues/detail?id=715924
-      protocol_handler_url_to_frame_id_[pair.first] =
-          web_contents_->GetUntrustedDevToolsFrameIdForFrameTreeNodeId(
-              web_contents_->GetMainFrameRenderProcessId(), pair.second);
-
-      EXPECT_EQ(pair.second,
-                web_contents_->GetFrameTreeNodeIdForDevToolsFrameId(
-                    protocol_handler_url_to_frame_id_[pair.first]));
-    }
-
-    EXPECT_THAT(url_to_frame_id_, protocol_handler_url_to_frame_id_);
     EXPECT_EQ(6u, url_to_frame_id_.size());
     FinishAsynchronousTest();
   }

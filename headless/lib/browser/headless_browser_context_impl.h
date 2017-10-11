@@ -97,11 +97,6 @@ class HeadlessBrowserContextImpl : public HeadlessBrowserContext,
   // if it can't be found. Can be called on any thread.
   int GetFrameTreeNodeId(int render_process_id, int render_frame_id) const;
 
-  // Returns the FrameTreeNode id corresponding to |devtools_id| or -1 if it
-  // can't be found. Must be called on the IO thread.
-  int GetFrameTreeNodeIdForDevToolsFrameId(
-      const std::string& devtools_id) const;
-
   void NotifyChildContentsCreated(HeadlessWebContentsImpl* parent,
                                   HeadlessWebContentsImpl* child);
 

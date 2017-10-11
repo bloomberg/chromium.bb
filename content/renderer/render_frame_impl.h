@@ -193,6 +193,7 @@ class CONTENT_EXPORT RenderFrameImpl
       const ScreenInfo& screen_info,
       CompositorDependencies* compositor_deps,
       blink::WebFrame* opener,
+      const base::UnguessableToken& devtools_frame_token,
       const FrameReplicationState& replicated_state);
 
   // Creates a new RenderFrame with |routing_id|.  If |proxy_routing_id| is
@@ -201,17 +202,25 @@ class CONTENT_EXPORT RenderFrameImpl
   // |previous_sibling_routing_id|, or as the first child if
   // |previous_sibling_routing_id| is MSG_ROUTING_NONE. Otherwise, the frame is
   // semi-orphaned until it commits, at which point it replaces the proxy
-  // identified by |proxy_routing_id|.  The frame's opener is set to the frame
-  // identified by |opener_routing_id|.  The frame is created as a child of the
-  // RenderFrame identified by |parent_routing_id| or as the top-level frame if
-  // the latter is MSG_ROUTING_NONE.  Note: This is called only when
-  // RenderFrame is being created in response to IPC message from the browser
-  // process. All other frame creation is driven through Blink and Create.
+  // identified by |proxy_routing_id|.
+  // The frame's opener is set to the frame identified by |opener_routing_id|.
+  // The frame is created as a child of the RenderFrame identified by
+  // |parent_routing_id| or as the top-level frame if
+  // the latter is MSG_ROUTING_NONE.
+  // |devtools_frame_token| is passed from the browser and corresponds to the
+  // owner FrameTreeNode.  It can only be used for tagging requests and calls
+  // for context frame attribution. It should never be passed back to the
+  // browser as a frame identifier in the control flows calls.
+  //
+  // Note: This is called only when RenderFrame is being created in response
+  // to IPC message from the browser process. All other frame creation is driven
+  // through Blink and Create.
   static void CreateFrame(int routing_id,
                           int proxy_routing_id,
                           int opener_routing_id,
                           int parent_routing_id,
                           int previous_sibling_routing_id,
+                          const base::UnguessableToken& devtools_frame_token,
                           const FrameReplicationState& replicated_state,
                           CompositorDependencies* compositor_deps,
                           const mojom::CreateFrameWidgetParams& params,
@@ -226,12 +235,17 @@ class CONTENT_EXPORT RenderFrameImpl
   // Used by content_layouttest_support to hook into the creation of
   // RenderFrameImpls.
   struct CreateParams {
-    CreateParams(RenderViewImpl* render_view, int32_t routing_id)
-        : render_view(render_view), routing_id(routing_id) {}
+    CreateParams(RenderViewImpl* render_view,
+                 int32_t routing_id,
+                 const base::UnguessableToken& devtools_frame_token)
+        : render_view(render_view),
+          routing_id(routing_id),
+          devtools_frame_token(devtools_frame_token) {}
     ~CreateParams() {}
 
     RenderViewImpl* render_view;
     int32_t routing_id;
+    base::UnguessableToken devtools_frame_token;
   };
 
   using CreateRenderFrameImplFunction =
@@ -555,7 +569,6 @@ class CONTENT_EXPORT RenderFrameImpl
       const blink::WebVector<blink::WebString>& stopped_matching_selectors)
       override;
   void SetHasReceivedUserGesture() override;
-  void SetDevToolsFrameId(const blink::WebString& devtools_frame_id) override;
   bool ShouldReportDetailedMessageForSource(
       const blink::WebString& source) override;
   void DidAddMessageToConsole(const blink::WebConsoleMessage& message,
@@ -603,6 +616,7 @@ class CONTENT_EXPORT RenderFrameImpl
   bool IsClientLoFiActiveForFrame() override;
   bool ShouldUseClientLoFiForRequest(const blink::WebURLRequest&) override;
   void DidBlockFramebust(const blink::WebURL& url) override;
+  blink::WebString GetDevToolsFrameToken() override;
   void AbortClientNavigation() override;
   void DidChangeSelection(bool is_empty_selection) override;
   bool HandleCurrentKeyboardEvent() override;
@@ -874,8 +888,10 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // Creates a new RenderFrame. |render_view| is the RenderView object that this
   // frame belongs to.
-  static RenderFrameImpl* Create(RenderViewImpl* render_view,
-                                 int32_t routing_id);
+  static RenderFrameImpl* Create(
+      RenderViewImpl* render_view,
+      int32_t routing_id,
+      const base::UnguessableToken& devtools_frame_token);
 
   // Functions to add and remove observers for this object.
   void AddObserver(RenderFrameObserver* observer);
@@ -1504,6 +1520,13 @@ class CONTENT_EXPORT RenderFrameImpl
   std::vector<media::RoutingTokenCallback> pending_routing_token_callbacks_;
 
   RenderThreadImpl::RendererMemoryMetrics peak_memory_metrics_;
+
+  // Used for devtools instrumentation and trace-ability. This token is
+  // used to tag calls and requests in order to attribute them to the context
+  // frame.
+  // |devtools_frame_token_| is only defined by the browser and is never
+  // sent back from the renderer in the control calls.
+  blink::WebString devtools_frame_token_;
 
   base::WeakPtrFactory<RenderFrameImpl> weak_factory_;
 

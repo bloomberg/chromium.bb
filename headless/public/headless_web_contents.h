@@ -84,17 +84,6 @@ class HEADLESS_EXPORT HeadlessWebContents {
   // sockets are not allowed.
   virtual HeadlessTabSocket* GetHeadlessTabSocket() const = 0;
 
-  // Returns the devtools frame id corresponding to the |frame_tree_node_id|, if
-  // any. Note this relies on an IPC sent from blink during navigation.
-  virtual std::string GetUntrustedDevToolsFrameIdForFrameTreeNodeId(
-      int process_id,
-      int frame_tree_node_id) const = 0;
-
-  // Returns the FrameTreeNode id corresponding to |devtools_id| or -1 if it
-  // can't be found. Must be called on the IO thread.
-  virtual int GetFrameTreeNodeIdForDevToolsFrameId(
-      const std::string& devtools_id) const = 0;
-
   virtual int GetMainFrameRenderProcessId() const = 0;
 
   virtual int GetMainFrameTreeNodeId() const = 0;

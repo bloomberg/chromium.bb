@@ -626,7 +626,7 @@ void RenderViewImpl::Initialize(
     main_render_frame_ = RenderFrameImpl::CreateMainFrame(
         this, params.main_frame_routing_id, params.main_frame_widget_routing_id,
         params.hidden, screen_info(), compositor_deps_, opener_frame,
-        params.replicated_frame_state);
+        params.devtools_main_frame_token, params.replicated_frame_state);
   }
 
   // TODO(dcheng): Shouldn't these be mutually exclusive at this point? See

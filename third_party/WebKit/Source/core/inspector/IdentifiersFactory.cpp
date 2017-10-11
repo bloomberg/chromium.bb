@@ -27,6 +27,7 @@
 
 #include "core/dom/WeakIdentifierMap.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameClient.h"
 #include "core/inspector/InspectedFrames.h"
 #include "core/loader/DocumentLoader.h"
 #include "platform/wtf/Assertions.h"
@@ -54,18 +55,19 @@ String IdentifiersFactory::RequestId(unsigned long identifier) {
 
 // static
 String IdentifiersFactory::FrameId(LocalFrame* frame) {
-  return AddProcessIdPrefixTo(WeakIdentifierMap<LocalFrame>::Identifier(frame));
+  if (!frame || !frame->Client())
+    return String();
+  return frame->Client()->GetDevToolsFrameToken();
 }
 
 // static
 LocalFrame* IdentifiersFactory::FrameById(InspectedFrames* inspected_frames,
                                           const String& frame_id) {
-  bool ok;
-  int id = RemoveProcessIdPrefixFrom(frame_id, &ok);
-  if (!ok)
-    return nullptr;
-  LocalFrame* frame = WeakIdentifierMap<LocalFrame>::Lookup(id);
-  return frame && inspected_frames->Contains(frame) ? frame : nullptr;
+  for (auto* frame : *inspected_frames) {
+    if (frame->Client() && frame->Client()->GetDevToolsFrameToken() == frame_id)
+      return frame;
+  }
+  return nullptr;
 }
 
 // static
