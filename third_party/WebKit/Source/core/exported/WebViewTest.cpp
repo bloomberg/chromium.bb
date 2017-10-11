@@ -41,7 +41,7 @@
 #include "core/dom/NodeComputedStyle.h"
 #include "core/dom/UserGestureIndicator.h"
 #include "core/editing/FrameSelection.h"
-#include "core/editing/InputMethodController.h"
+#include "core/editing/ime/InputMethodController.h"
 #include "core/editing/markers/DocumentMarkerController.h"
 #include "core/exported/FakeWebPlugin.h"
 #include "core/exported/WebSettingsImpl.h"
