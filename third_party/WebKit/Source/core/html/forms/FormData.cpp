@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/FormData.h"
+#include "core/html/forms/FormData.h"
 
 #include "core/dom/ExecutionContext.h"
 #include "core/fileapi/Blob.h"
@@ -218,12 +218,13 @@ RefPtr<EncodedFormData> FormData::EncodeFormData(
     EncodedFormData::EncodingType encoding_type) {
   RefPtr<EncodedFormData> form_data = EncodedFormData::Create();
   Vector<char> encoded_data;
-  for (const auto& entry : Entries())
+  for (const auto& entry : Entries()) {
     FormDataEncoder::AddKeyValuePairAsFormData(
         encoded_data, entry->name(),
         entry->isFile() ? EncodeAndNormalize(entry->GetFile()->name())
                         : entry->Value(),
         encoding_type);
+  }
   form_data->AppendData(encoded_data.data(), encoded_data.size());
   return form_data;
 }

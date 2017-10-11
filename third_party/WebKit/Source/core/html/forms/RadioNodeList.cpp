@@ -23,7 +23,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/RadioNodeList.h"
+#include "core/html/forms/RadioNodeList.h"
 
 #include "core/dom/Element.h"
 #include "core/dom/NodeRareData.h"

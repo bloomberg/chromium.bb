@@ -4,7 +4,7 @@
 
 #include "modules/fetch/FormDataBytesConsumer.h"
 
-#include "core/html/FormData.h"
+#include "core/html/forms/FormData.h"
 #include "core/testing/DummyPageHolder.h"
 #include "core/typed_arrays/DOMArrayBuffer.h"
 #include "core/typed_arrays/DOMTypedArray.h"
