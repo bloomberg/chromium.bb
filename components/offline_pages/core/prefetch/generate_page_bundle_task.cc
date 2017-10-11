@@ -9,6 +9,8 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
+#include "base/time/default_clock.h"
+#include "components/offline_pages/core/offline_store_utils.h"
 #include "components/offline_pages/core/prefetch/prefetch_gcm_handler.h"
 #include "components/offline_pages/core/prefetch/prefetch_network_request_factory.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store.h"
@@ -37,15 +39,21 @@ struct FetchedUrl {
 // This is maximum URLs that Offline Page Service can take in one request.
 const int kMaxUrlsToSend = 100;
 
-bool UpdateStateSync(sql::Connection* db, const FetchedUrl& url) {
+bool UpdateStateSync(sql::Connection* db,
+                     const int64_t offline_id,
+                     base::Clock* clock) {
   static const char kSql[] =
-      "UPDATE prefetch_items SET state = ?, generate_bundle_attempts = ?"
+      "UPDATE prefetch_items"
+      " SET state = ?,"
+      "     freshness_time = CASE WHEN generate_bundle_attempts = 0 THEN ?"
+      "                           ELSE freshness_time END,"
+      "     generate_bundle_attempts = generate_bundle_attempts + 1"
       " WHERE offline_id = ?";
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt(
       0, static_cast<int>(PrefetchItemState::SENT_GENERATE_PAGE_BUNDLE));
-  statement.BindInt(1, url.generate_bundle_attempts + 1);
-  statement.BindInt64(2, url.offline_id);
+  statement.BindInt64(1, store_utils::ToDatabaseTime(clock->Now()));
+  statement.BindInt64(2, offline_id);
   return statement.Run();
 }
 
@@ -82,6 +90,7 @@ bool MarkUrlFinishedWithError(sql::Connection* db, const FetchedUrl& url) {
 }
 
 std::unique_ptr<std::vector<std::string>> SelectUrlsToPrefetchSync(
+    base::Clock* clock,
     sql::Connection* db) {
   if (!db)
     return nullptr;
@@ -106,7 +115,7 @@ std::unique_ptr<std::vector<std::string>> SelectUrlsToPrefetchSync(
 
   auto url_specs = base::MakeUnique<std::vector<std::string>>();
   for (const auto& url : *urls) {
-    if (!UpdateStateSync(db, url))
+    if (!UpdateStateSync(db, url.offline_id, clock))
       return nullptr;
     url_specs->push_back(std::move(url.requested_url));
   }
@@ -123,7 +132,8 @@ GeneratePageBundleTask::GeneratePageBundleTask(
     PrefetchGCMHandler* gcm_handler,
     PrefetchNetworkRequestFactory* request_factory,
     const PrefetchRequestFinishedCallback& callback)
-    : prefetch_store_(prefetch_store),
+    : clock_(new base::DefaultClock()),
+      prefetch_store_(prefetch_store),
       gcm_handler_(gcm_handler),
       request_factory_(request_factory),
       callback_(callback),
@@ -133,9 +143,14 @@ GeneratePageBundleTask::~GeneratePageBundleTask() {}
 
 void GeneratePageBundleTask::Run() {
   prefetch_store_->Execute(
-      base::BindOnce(&SelectUrlsToPrefetchSync),
+      base::BindOnce(&SelectUrlsToPrefetchSync, clock_.get()),
       base::BindOnce(&GeneratePageBundleTask::StartGeneratePageBundle,
                      weak_factory_.GetWeakPtr()));
+}
+
+void GeneratePageBundleTask::SetClockForTesting(
+    std::unique_ptr<base::Clock> clock) {
+  clock_ = std::move(clock);
 }
 
 void GeneratePageBundleTask::StartGeneratePageBundle(

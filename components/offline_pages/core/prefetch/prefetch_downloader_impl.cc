@@ -180,7 +180,7 @@ void PrefetchDownloaderImpl::OnDownloadFailed(const std::string& download_id) {
   NotifyDispatcher(prefetch_service_, result);
 }
 
-void PrefetchDownloaderImpl::SetClockForTest(
+void PrefetchDownloaderImpl::SetClockForTesting(
     std::unique_ptr<base::Clock> clock) {
   clock_ = std::move(clock);
 }

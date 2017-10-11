@@ -51,7 +51,7 @@ class PrefetchDownloaderImpl : public PrefetchDownloader {
                            int64_t file_size) override;
   void OnDownloadFailed(const std::string& download_id) override;
 
-  void SetClockForTest(std::unique_ptr<base::Clock> clock);
+  void SetClockForTesting(std::unique_ptr<base::Clock> clock);
 
  private:
   friend class PrefetchServiceTestTaco;

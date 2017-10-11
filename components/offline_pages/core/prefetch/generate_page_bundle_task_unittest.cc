@@ -6,6 +6,8 @@
 
 #include "base/logging.h"
 #include "base/test/mock_callback.h"
+#include "base/test/simple_test_clock.h"
+#include "base/time/time.h"
 #include "components/offline_pages/core/prefetch/prefetch_item.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store.h"
@@ -65,11 +67,21 @@ TEST_F(GeneratePageBundleTaskTest, EmptyTask) {
 TEST_F(GeneratePageBundleTaskTest, TaskMakesNetworkRequest) {
   base::MockCallback<PrefetchRequestFinishedCallback> request_callback;
 
+  base::SimpleTestClock* clock = new base::SimpleTestClock();
+
   PrefetchItem item1 =
       item_generator()->CreateItem(PrefetchItemState::NEW_REQUEST);
+  item1.freshness_time = clock->Now();
+  item1.creation_time = item1.freshness_time;
   EXPECT_TRUE(store_util()->InsertPrefetchItem(item1));
+
+  clock->Advance(base::TimeDelta::FromSeconds(1));
+
   PrefetchItem item2 =
       item_generator()->CreateItem(PrefetchItemState::NEW_REQUEST);
+  item1.freshness_time = clock->Now();
+  item1.creation_time = item1.freshness_time;
+  item2.generate_bundle_attempts = 1;
   EXPECT_TRUE(store_util()->InsertPrefetchItem(item2));
   EXPECT_NE(item1.offline_id, item2.offline_id);
 
@@ -80,9 +92,12 @@ TEST_F(GeneratePageBundleTaskTest, TaskMakesNetworkRequest) {
 
   EXPECT_EQ(3, store_util()->CountPrefetchItems());
 
+  clock->Advance(base::TimeDelta::FromHours(1));
+
   GeneratePageBundleTask task(store(), gcm_handler(),
                               prefetch_request_factory(),
                               request_callback.Get());
+  task.SetClockForTesting(base::WrapUnique(clock));
   ExpectTaskCompletes(&task);
   task.Run();
   RunUntilIdle();
@@ -98,13 +113,24 @@ TEST_F(GeneratePageBundleTaskTest, TaskMakesNetworkRequest) {
 
   EXPECT_EQ(3, store_util()->CountPrefetchItems());
 
-  ASSERT_TRUE(store_util()->GetPrefetchItem(item1.offline_id));
-  ASSERT_TRUE(store_util()->GetPrefetchItem(item2.offline_id));
+  std::unique_ptr<PrefetchItem> updated_item1 =
+      store_util()->GetPrefetchItem(item1.offline_id);
+  std::unique_ptr<PrefetchItem> updated_item2 =
+      store_util()->GetPrefetchItem(item2.offline_id);
+  ASSERT_TRUE(updated_item1);
+  ASSERT_TRUE(updated_item2);
 
-  EXPECT_EQ(store_util()->GetPrefetchItem(item1.offline_id)->state,
-            PrefetchItemState::SENT_GENERATE_PAGE_BUNDLE);
-  EXPECT_EQ(store_util()->GetPrefetchItem(item2.offline_id)->state,
-            PrefetchItemState::SENT_GENERATE_PAGE_BUNDLE);
+  EXPECT_EQ(PrefetchItemState::SENT_GENERATE_PAGE_BUNDLE, updated_item1->state);
+  EXPECT_EQ(1, updated_item1->generate_bundle_attempts);
+  // Item #1 should have had it's freshness date updated during the task
+  // execution.
+  EXPECT_EQ(clock->Now(), updated_item1->freshness_time);
+
+  EXPECT_EQ(PrefetchItemState::SENT_GENERATE_PAGE_BUNDLE, updated_item2->state);
+  EXPECT_EQ(2, updated_item2->generate_bundle_attempts);
+  // As item #2 has already an attempt to GPB it should not have its
+  // freshness_time updated.
+  EXPECT_EQ(item2.freshness_time, updated_item2->freshness_time);
 }
 
 }  // namespace offline_pages
