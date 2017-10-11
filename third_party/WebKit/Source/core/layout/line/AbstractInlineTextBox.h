@@ -79,7 +79,7 @@ class CORE_EXPORT AbstractInlineTextBox
   LayoutRect LocalBounds() const;
   unsigned Len() const;
   Direction GetDirection() const;
-  Node* GetNode() const { return line_layout_item_.GetNode(); }
+  Node* GetNode() const;
   void CharacterWidths(Vector<float>&) const;
   void GetWordBoundaries(Vector<WordBoundaries>&) const;
   String GetText() const;

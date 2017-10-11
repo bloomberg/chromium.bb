@@ -124,6 +124,12 @@ AbstractInlineTextBox::Direction AbstractInlineTextBox::GetDirection() const {
                                                                : kTopToBottom);
 }
 
+Node* AbstractInlineTextBox::GetNode() const {
+  if (!line_layout_item_)
+    return nullptr;
+  return line_layout_item_.GetNode();
+}
+
 void AbstractInlineTextBox::CharacterWidths(Vector<float>& widths) const {
   if (!inline_text_box_)
     return;
