@@ -102,14 +102,10 @@
       'CFI Linux CF': 'cfi_full_cfi_diag_recover_release_static',
       'CFI Linux ToT': 'clang_tot_cfi_full_cfi_diag_thin_lto_release_static_dcheck_always_on',
       'CFI Linux (icall)': 'cfi_full_diag_icall_release_static_dcheck_always_on',
-      'CrWinClangGoma': 'clang_official_optimize_release_bot_minimal_symbols_x86',
-      'CrWinGoma': 'release_bot_x86_minimal_symbols',
-      'CrWinGoma(dll)': 'shared_release_bot_x86',
-      'CrWinGoma(loc)': 'shared_release_bot_x86',
       'CrWinAsan': 'asan_clang_fuzzer_static_v8_heap_x86_full_symbols_release',
       'CrWinAsan(dll)': 'asan_clang_shared_v8_heap_x86_full_symbols_release',
       'CrWinAsanCov': 'asan_clang_edge_fuzzer_static_v8_heap_x86_full_symbols_release',
- 
+
       # If CrWinClang is modified, please update CrWinClangGoma on chromium.fyi
       # in the same way.
       'CrWinClang': 'clang_official_release_bot_minimal_symbols_x86',
@@ -193,6 +189,10 @@
       'CrWin7Goma(clbr)': 'shared_release_bot_x86',
       'CrWin7Goma(dbg)': 'debug_bot_x86_minimal_symbols',
       'CrWin7Goma(dll)': 'shared_release_bot_x86',
+      'CrWinGoma': 'release_bot_x86_minimal_symbols',
+      'CrWinGoma(dll)': 'shared_release_bot_x86',
+      'CrWinGoma(loc)': 'shared_release_bot_x86',
+      'CrWinClangGoma': 'clang_official_optimize_release_bot_minimal_symbols_x86',
 
       'EarlGreyiOS': 'ios',
       'Fuchsia': 'release_bot_fuchsia',
