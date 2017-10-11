@@ -61,17 +61,6 @@ void InitializeResourceBufferConstants() {
   GetNumericArg("resource-buffer-max-allocation-size", &kMaxAllocationSize);
 }
 
-// This enum is used for logging a histogram and should not be reordered.
-enum ExpectedContentSizeResult {
-  EQ_RESPONSE_BODY = 0,
-  EQ_RESPONSE_BODY_GT_EQ_BUFFER_SIZE = 1,
-  GT_EQ_BUFFER_SIZE = 2,
-  LT_RESPONSE_BODY = 3,
-  GT_RESPONSE_BODY = 4,
-  UNKNOWN = 5,
-  EXPECTED_CONTENT_MAX,
-};
-
 }  // namespace
 
 class DependentIOBuffer : public net::WrappedIOBuffer {
@@ -445,34 +434,6 @@ void AsyncResourceHandler::RecordHistogram() {
         "Net.ResourceLoader.ResponseStartToEnd.Over_512kB",
         elapsed_time, 1, 100000, 100);
   }
-
-  // Record if content size was known in advance.
-  int64_t expected_content_size = request()->GetExpectedContentSize();
-  ExpectedContentSizeResult expected_content_size_result =
-      ExpectedContentSizeResult::UNKNOWN;
-  if (expected_content_size >= 0) {
-    // Compare response body size to expected content size.
-    if (expected_content_size == total_read_body_bytes_ &&
-        expected_content_size >= kBufferSize) {
-      expected_content_size_result =
-          ExpectedContentSizeResult::EQ_RESPONSE_BODY_GT_EQ_BUFFER_SIZE;
-    } else if (expected_content_size >= kBufferSize) {
-      expected_content_size_result =
-          ExpectedContentSizeResult::GT_EQ_BUFFER_SIZE;
-    } else if (expected_content_size == total_read_body_bytes_) {
-      expected_content_size_result =
-          ExpectedContentSizeResult::EQ_RESPONSE_BODY;
-    } else if (expected_content_size < total_read_body_bytes_) {
-      expected_content_size_result =
-          ExpectedContentSizeResult::LT_RESPONSE_BODY;
-    } else {
-      expected_content_size_result =
-          ExpectedContentSizeResult::GT_RESPONSE_BODY;
-    }
-  }
-  UMA_HISTOGRAM_ENUMERATION("Net.ResourceLoader.ExpectedContentSizeResult",
-                            expected_content_size_result,
-                            ExpectedContentSizeResult::EXPECTED_CONTENT_MAX);
 }
 
 void AsyncResourceHandler::SendUploadProgress(

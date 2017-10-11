@@ -33672,6 +33672,9 @@ from previous Chrome versions.
 </enum>
 
 <enum name="ResourceLoaderExpectedContentSizeResult">
+  <obsolete>
+    Removed 10/2017.
+  </obsolete>
   <int value="0" label="EQ_RESPONSE_BODY"/>
   <int value="1" label="EQ_RESPONSE_BODY_GT_EQ_BUFFER_SIZE"/>
   <int value="2" label="GT_EQ_BUFFER_SIZE"/>
