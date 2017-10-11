@@ -6,6 +6,7 @@
 #define CanvasColorParams_h
 
 #include "platform/PlatformExport.h"
+#include "platform/graphics/GraphicsTypes.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 
@@ -33,13 +34,15 @@ class PLATFORM_EXPORT CanvasColorParams {
  public:
   // The default constructor will create an output-blended 8-bit surface.
   CanvasColorParams();
-  CanvasColorParams(CanvasColorSpace, CanvasPixelFormat);
+  CanvasColorParams(CanvasColorSpace, CanvasPixelFormat, OpacityMode);
   explicit CanvasColorParams(const SkImageInfo&);
   CanvasColorSpace ColorSpace() const { return color_space_; }
   CanvasPixelFormat PixelFormat() const { return pixel_format_; }
+  OpacityMode GetOpacityMode() const { return opacity_mode_; }
 
   void SetCanvasColorSpace(CanvasColorSpace);
   void SetCanvasPixelFormat(CanvasPixelFormat);
+  void SetOpacityMode(OpacityMode);
 
   // Returns true if the canvas does all blending and interpolation in linear
   // color space. If false, then the canvas does blending and interpolation in
@@ -63,10 +66,13 @@ class PLATFORM_EXPORT CanvasColorParams {
   // Return the color space of the underlying data for the canvas.
   gfx::ColorSpace GetStorageGfxColorSpace() const;
   sk_sp<SkColorSpace> GetSkColorSpace() const;
+  SkAlphaType GetSkAlphaType() const;
+  const SkSurfaceProps* GetSkSurfaceProps() const;
 
  private:
   CanvasColorSpace color_space_ = kLegacyCanvasColorSpace;
   CanvasPixelFormat pixel_format_ = kRGBA8CanvasPixelFormat;
+  OpacityMode opacity_mode_ = kNonOpaque;
 };
 
 }  // namespace blink

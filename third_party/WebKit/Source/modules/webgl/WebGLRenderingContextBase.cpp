@@ -748,10 +748,8 @@ RefPtr<StaticBitmapImage> WebGLRenderingContextBase::GetStaticBitmapImage() {
   if (CreationAttributes().preserveDrawingBuffer()) {
     int width = GetDrawingBuffer()->Size().Width();
     int height = GetDrawingBuffer()->Size().Height();
-    SkImageInfo image_info =
-        SkImageInfo::Make(width, height, kRGBA_8888_SkColorType,
-                          CreationAttributes().alpha() ? kPremul_SkAlphaType
-                                                       : kOpaque_SkAlphaType);
+    SkImageInfo image_info = SkImageInfo::Make(
+        width, height, kRGBA_8888_SkColorType, ColorParams().GetSkAlphaType());
     return MakeImageSnapshot(image_info);
   }
   return GetDrawingBuffer()->TransferToStaticBitmapImage();
@@ -765,10 +763,8 @@ RefPtr<StaticBitmapImage> WebGLRenderingContextBase::GetImage(
 
   GetDrawingBuffer()->ResolveAndBindForReadAndDraw();
   IntSize size = ClampedCanvasSize();
-  OpacityMode opacity_mode =
-      CreationAttributes().hasAlpha() ? kNonOpaque : kOpaque;
   std::unique_ptr<AcceleratedImageBufferSurface> surface =
-      WTF::MakeUnique<AcceleratedImageBufferSurface>(size, opacity_mode);
+      WTF::MakeUnique<AcceleratedImageBufferSurface>(size, ColorParams());
   if (!surface->IsValid())
     return nullptr;
   std::unique_ptr<ImageBuffer> buffer = ImageBuffer::Create(std::move(surface));

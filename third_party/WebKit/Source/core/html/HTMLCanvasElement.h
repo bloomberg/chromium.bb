@@ -293,13 +293,10 @@ class CORE_EXPORT HTMLCanvasElement final
 
   void Reset();
 
-  std::unique_ptr<ImageBufferSurface> CreateWebGLImageBufferSurface(
-      OpacityMode);
+  std::unique_ptr<ImageBufferSurface> CreateWebGLImageBufferSurface();
   std::unique_ptr<ImageBufferSurface> CreateAcceleratedImageBufferSurface(
-      OpacityMode,
       int* msaa_sample_count);
-  std::unique_ptr<ImageBufferSurface> CreateUnacceleratedImageBufferSurface(
-      OpacityMode);
+  std::unique_ptr<ImageBufferSurface> CreateUnacceleratedImageBufferSurface();
   void CreateImageBuffer();
   void CreateImageBufferInternal(
       std::unique_ptr<ImageBufferSurface> external_surface);

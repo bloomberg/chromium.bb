@@ -136,14 +136,11 @@ struct Canvas2DLayerBridge::ImageInfo : public RefCounted<ImageInfo> {
 static sk_sp<SkSurface> CreateSkSurface(GrContext* gr,
                                         const IntSize& size,
                                         int msaa_sample_count,
-                                        OpacityMode opacity_mode,
                                         const CanvasColorParams& color_params,
                                         bool* surface_is_accelerated) {
   if (gr)
     gr->resetContext();
 
-  SkAlphaType alpha_type =
-      (kOpaque == opacity_mode) ? kOpaque_SkAlphaType : kPremul_SkAlphaType;
   // If we need color correction for all color spaces, we set the proper color
   // space when creating the surface. If color correct rendering is only toward
   // SRGB, we leave the surface with no color space. The painting canvas will
@@ -151,27 +148,26 @@ static sk_sp<SkSurface> CreateSkSurface(GrContext* gr,
   sk_sp<SkColorSpace> color_space = nullptr;
   if (RuntimeEnabledFeatures::ColorCanvasExtensionsEnabled())
     color_space = color_params.GetSkColorSpaceForSkSurfaces();
-  SkImageInfo info =
-      SkImageInfo::Make(size.Width(), size.Height(),
-                        color_params.GetSkColorType(), alpha_type, color_space);
+  SkImageInfo info = SkImageInfo::Make(
+      size.Width(), size.Height(), color_params.GetSkColorType(),
+      color_params.GetSkAlphaType(), color_space);
   SkSurfaceProps disable_lcd_props(0, kUnknown_SkPixelGeometry);
   sk_sp<SkSurface> surface;
 
   if (gr) {
     *surface_is_accelerated = true;
-    surface = SkSurface::MakeRenderTarget(
-        gr, SkBudgeted::kNo, info, msaa_sample_count,
-        kOpaque == opacity_mode ? 0 : &disable_lcd_props);
+    surface = SkSurface::MakeRenderTarget(gr, SkBudgeted::kNo, info,
+                                          msaa_sample_count,
+                                          color_params.GetSkSurfaceProps());
   }
 
   if (!surface) {
     *surface_is_accelerated = false;
-    surface = SkSurface::MakeRaster(
-        info, kOpaque == opacity_mode ? 0 : &disable_lcd_props);
+    surface = SkSurface::MakeRaster(info, color_params.GetSkSurfaceProps());
   }
 
   if (surface) {
-    if (opacity_mode == kOpaque) {
+    if (color_params.GetOpacityMode() == kOpaque) {
       surface->getCanvas()->clear(SK_ColorBLACK);
     } else {
       surface->getCanvas()->clear(SK_ColorTRANSPARENT);
@@ -182,11 +178,10 @@ static sk_sp<SkSurface> CreateSkSurface(GrContext* gr,
 
 Canvas2DLayerBridge::Canvas2DLayerBridge(const IntSize& size,
                                          int msaa_sample_count,
-                                         OpacityMode opacity_mode,
                                          AccelerationMode acceleration_mode,
                                          const CanvasColorParams& color_params,
                                          bool is_unit_test)
-    : ImageBufferSurface(size, opacity_mode, color_params),
+    : ImageBufferSurface(size, color_params),
       logger_(WTF::WrapUnique(new Logger)),
       weak_ptr_factory_(this),
       image_buffer_(0),
@@ -201,7 +196,6 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(const IntSize& size,
       last_image_id_(0),
       last_filter_(GL_LINEAR),
       acceleration_mode_(acceleration_mode),
-      opacity_mode_(opacity_mode),
       size_(size),
       color_params_(color_params) {
   if (acceleration_mode != kDisableAcceleration) {
@@ -599,8 +593,8 @@ SkSurface* Canvas2DLayerBridge::GetOrCreateSurface(AccelerationHint hint) {
           : nullptr;
 
   bool surface_is_accelerated;
-  surface_ = CreateSkSurface(gr, size_, msaa_sample_count_, opacity_mode_,
-                             color_params_, &surface_is_accelerated);
+  surface_ = CreateSkSurface(gr, size_, msaa_sample_count_, color_params_,
+                             &surface_is_accelerated);
   if (!surface_)
     return nullptr;
   if (!color_params_.LinearPixelMath()) {
@@ -623,8 +617,8 @@ SkSurface* Canvas2DLayerBridge::GetOrCreateSurface(AccelerationHint hint) {
     layer_ =
         Platform::Current()->CompositorSupport()->CreateExternalTextureLayer(
             this);
-    layer_->SetOpaque(opacity_mode_ == kOpaque);
-    layer_->SetBlendBackgroundColor(opacity_mode_ != kOpaque);
+    layer_->SetOpaque(ColorParams().GetOpacityMode() == kOpaque);
+    layer_->SetBlendBackgroundColor(ColorParams().GetOpacityMode() != kOpaque);
     GraphicsLayer::RegisterContentsLayer(layer_->Layer());
     layer_->SetNearestNeighbor(filter_quality_ == kNone_SkFilterQuality);
   }
@@ -931,7 +925,7 @@ bool Canvas2DLayerBridge::Restore() {
         context_provider_wrapper_->ContextProvider()->GetGrContext();
     bool surface_is_accelerated;
     sk_sp<SkSurface> surface(CreateSkSurface(gr_ctx, size_, msaa_sample_count_,
-                                             opacity_mode_, color_params_,
+                                             color_params_,
                                              &surface_is_accelerated));
     if (!surface_)
       ReportSurfaceCreationFailure();

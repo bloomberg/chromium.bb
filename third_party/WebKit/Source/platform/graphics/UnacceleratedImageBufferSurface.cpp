@@ -40,14 +40,12 @@ namespace blink {
 
 UnacceleratedImageBufferSurface::UnacceleratedImageBufferSurface(
     const IntSize& size,
-    OpacityMode opacity_mode,
     ImageInitializationMode initialization_mode,
     const CanvasColorParams& color_params)
-    : ImageBufferSurface(size, opacity_mode, color_params) {
-  SkAlphaType alpha_type =
-      (kOpaque == opacity_mode) ? kOpaque_SkAlphaType : kPremul_SkAlphaType;
-  SkImageInfo info = SkImageInfo::Make(
-      size.Width(), size.Height(), color_params.GetSkColorType(), alpha_type);
+    : ImageBufferSurface(size, color_params) {
+  SkImageInfo info = SkImageInfo::Make(size.Width(), size.Height(),
+                                       color_params.GetSkColorType(),
+                                       color_params.GetSkAlphaType());
   // In legacy mode the backing SkSurface should not have any color space.
   // If color correct rendering is enabled only for SRGB, still the backing
   // surface should not have any color space and the treatment of legacy data
@@ -57,9 +55,7 @@ UnacceleratedImageBufferSurface::UnacceleratedImageBufferSurface(
   if (RuntimeEnabledFeatures::ColorCanvasExtensionsEnabled())
     info = info.makeColorSpace(color_params.GetSkColorSpaceForSkSurfaces());
 
-  SkSurfaceProps disable_lcd_props(0, kUnknown_SkPixelGeometry);
-  surface_ = SkSurface::MakeRaster(
-      info, kOpaque == opacity_mode ? 0 : &disable_lcd_props);
+  surface_ = SkSurface::MakeRaster(info, color_params.GetSkSurfaceProps());
   if (!surface_)
     return;
 

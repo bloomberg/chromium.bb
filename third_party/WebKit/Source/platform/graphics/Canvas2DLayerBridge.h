@@ -87,7 +87,6 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient,
 
   Canvas2DLayerBridge(const IntSize&,
                       int msaa_sample_count,
-                      OpacityMode,
                       AccelerationMode,
                       const CanvasColorParams&,
                       bool is_unit_test = false);
@@ -120,7 +119,6 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient,
                    int y) override;
   void Flush(FlushReason) override;
   void FlushGpu(FlushReason) override;
-  OpacityMode GetOpacityMode() { return opacity_mode_; }
   void DontUseIdleSchedulingForTesting() {
     dont_use_idle_scheduling_for_testing_ = true;
   }
@@ -264,10 +262,8 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient,
   friend class HTMLCanvasPainterTestForSPv2;
 
   uint32_t last_image_id_;
-
   GLenum last_filter_;
   AccelerationMode acceleration_mode_;
-  OpacityMode opacity_mode_;
   const IntSize size_;
   CanvasColorParams color_params_;
   CheckedNumeric<int> recording_pixel_count_;
