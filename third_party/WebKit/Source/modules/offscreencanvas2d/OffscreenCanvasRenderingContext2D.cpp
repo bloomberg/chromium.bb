@@ -290,7 +290,8 @@ void OffscreenCanvasRenderingContext2D::setFont(const String& new_font) {
     return;
   CSSParser::ParseValue(style, CSSPropertyFont, new_font, true);
 
-  FontDescription desc = FontStyleResolver::ComputeFont(*style);
+  FontDescription desc =
+      FontStyleResolver::ComputeFont(*style, Host()->GetFontSelector());
 
   Font font = Font(desc);
   ModifiableState().SetFont(font, Host()->GetFontSelector());
