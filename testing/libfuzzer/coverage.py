@@ -24,7 +24,8 @@ server (e.g. "python -m SimpleHTTPServer").
 
 In order to generate code coverage report, you need to build the target program
 with "use_clang_coverage=true" GN flag. This flag is not compatible with
-sanitizer flags: "is_asan", "is_msan", etc and also with "optimize_for_fuzzing".
+sanitizer flags: "is_asan", "is_msan", etc. It is also incompatible with
+"optimize_for_fuzzing" and with "is_component_build=true".
 
 If you are building a fuzz target, you need to add "use_libfuzzer=true" GN flag
 as well.
