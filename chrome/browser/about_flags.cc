@@ -372,8 +372,6 @@ const FeatureEntry::Choice kChromeHomeSwipeLogicChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
     {flag_descriptions::kChromeHomeSwipeLogicRestrictArea,
      switches::kChromeHomeSwipeLogicType, "restrict-area"},
-    {flag_descriptions::kChromeHomeSwipeLogicButtonOnly,
-     switches::kChromeHomeSwipeLogicType, "button-only"},
 };
 
 #endif  // OS_ANDROID
@@ -1925,10 +1923,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-chrome-home-doodle", flag_descriptions::kChromeHomeDoodleName,
      flag_descriptions::kChromeHomeDoodleDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kChromeHomeDoodle)},
-    {"enable-chrome-home-expand-button",
-     flag_descriptions::kChromeHomeExpandButtonName,
-     flag_descriptions::kChromeHomeExpandButtonDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kChromeHomeExpandButton)},
     {"enable-chrome-home-personalized-omnibox-suggestions",
      flag_descriptions::kChromeHomePersonalizedOmniboxSuggestionsName,
      flag_descriptions::kChromeHomePersonalizedOmniboxSuggestionsDescription,

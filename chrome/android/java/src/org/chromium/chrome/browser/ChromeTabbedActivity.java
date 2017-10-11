@@ -814,7 +814,7 @@ public class ChromeTabbedActivity
         int accessibilityStringId = R.string.iph_download_home_accessibility_text;
         if (FeatureUtilities.isChromeHomeEnabled()) {
             accessibilityStringId = R.string.iph_download_home_accessibility_text_chrome_home;
-            if (FeatureUtilities.isChromeHomeExpandButtonEnabled()) {
+            if (getBottomSheet().isUsingExpandButton()) {
                 accessibilityStringId =
                         R.string.iph_download_home_accessibility_text_chrome_home_expand;
             }
@@ -831,8 +831,9 @@ public class ChromeTabbedActivity
 
         turnOnHighlightForDownloadHomeTextBubble();
 
-        boolean isChromeHomeExpandButtonEnabled = FeatureUtilities.isChromeHomeEnabled()
-                && FeatureUtilities.isChromeHomeExpandButtonEnabled();
+        boolean isChromeHomeExpandButtonEnabled =
+                FeatureUtilities.isChromeHomeEnabled() && getBottomSheet().isUsingExpandButton();
+
         int yInsetPx =
                 getResources().getDimensionPixelOffset(R.dimen.text_bubble_menu_anchor_y_inset);
         textBubble.setInsetPx(0, isChromeHomeExpandButtonEnabled ? yInsetPx : 0, 0,
@@ -842,7 +843,7 @@ public class ChromeTabbedActivity
 
     private View getToolbarAnchorViewForDownloadHomeTextBubble() {
         if (FeatureUtilities.isChromeHomeEnabled()) {
-            return FeatureUtilities.isChromeHomeExpandButtonEnabled()
+            return getBottomSheet().isUsingExpandButton()
                     ? mControlContainer.findViewById(R.id.expand_sheet_button)
                     : mControlContainer.findViewById(R.id.toolbar_handle);
         } else {
@@ -853,7 +854,7 @@ public class ChromeTabbedActivity
     private void turnOnHighlightForDownloadHomeTextBubble() {
         if (FeatureUtilities.isChromeHomeEnabled()) {
             getBottomSheetContentController().setHighlightItemId(R.id.action_downloads);
-            if (FeatureUtilities.isChromeHomeExpandButtonEnabled()) {
+            if (getBottomSheet().isUsingExpandButton()) {
                 ViewHighlighter.turnOnHighlight(findViewById(R.id.expand_sheet_button), true);
             }
         } else {
@@ -865,7 +866,7 @@ public class ChromeTabbedActivity
         if (FeatureUtilities.isChromeHomeEnabled()) {
             if (getBottomSheetContentController() == null) return;
             getBottomSheetContentController().setHighlightItemId(null);
-            if (FeatureUtilities.isChromeHomeExpandButtonEnabled()) {
+            if (getBottomSheet().isUsingExpandButton()) {
                 ViewHighlighter.turnOffHighlight(findViewById(R.id.expand_sheet_button));
             }
         } else {

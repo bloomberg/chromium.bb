@@ -60,7 +60,6 @@ import org.chromium.chrome.browser.toolbar.ViewShiftingActionBarDelegate;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.MathUtils;
-import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.FadingBackgroundView;
 import org.chromium.chrome.browser.widget.ViewHighlighter;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContentController.ContentType;
@@ -472,25 +471,12 @@ public class BottomSheet
         float startX = mVisibleViewportRect.left;
         float endX = mDefaultToolbarView.getWidth() + mVisibleViewportRect.left;
 
-        if (ChromeSwitches.CHROME_HOME_SWIPE_LOGIC_RESTRICT_AREA.equals(logicType)
-                && !FeatureUtilities.isChromeHomeExpandButtonEnabled()) {
+        if (ChromeSwitches.CHROME_HOME_SWIPE_LOGIC_RESTRICT_AREA.equals(logicType)) {
             // Determine an area in the middle of the toolbar that is swipable. This will only
             // trigger if the expand button is disabled.
             float allowedSwipeWidth = mContainerWidth * SWIPE_ALLOWED_FRACTION;
             startX = mVisibleViewportRect.left + (mContainerWidth - allowedSwipeWidth) / 2;
             endX = startX + allowedSwipeWidth;
-        } else if (ChromeSwitches.CHROME_HOME_SWIPE_LOGIC_BUTTON_ONLY.equals(logicType)
-                && FeatureUtilities.isChromeHomeExpandButtonEnabled()) {
-            // In order for this logic to trigger, the expand button must be enabled.
-            View expandButton = mDefaultToolbarView.getExpandButton();
-            ViewUtils.getRelativeLayoutPosition(mDefaultToolbarView, expandButton, mLocationArray);
-            startX = mVisibleViewportRect.left + mLocationArray[0];
-            endX = startX + expandButton.getWidth();
-        } else if (FeatureUtilities.isChromeHomeExpandButtonEnabled()) {
-            // If no swipe logic experiments are running and the expand button is enabled, the bar
-            // cannot be swiped in the peeking state.
-            startX = 0;
-            endX = 0;
         }
 
         return e.getRawX() > startX && e.getRawX() < endX || getSheetState() != SHEET_STATE_PEEK;
@@ -1833,5 +1819,12 @@ public class BottomSheet
      */
     public int getToolbarShadowHeight() {
         return mToolbarShadowHeight;
+    }
+
+    /**
+     * @return Whether or not the bottom sheet's toolbar is using the expand button.
+     */
+    public boolean isUsingExpandButton() {
+        return mDefaultToolbarView.isUsingExpandButton();
     }
 }

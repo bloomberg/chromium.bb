@@ -1594,10 +1594,6 @@ const char kChromeHomeDoodleName[] = "Chrome Home Doodle.";
 const char kChromeHomeDoodleDescription[] =
     "Enables showing the Doodle on the NTP for Chrome Home.";
 
-const char kChromeHomeExpandButtonName[] = "Chrome Home Expand Button";
-const char kChromeHomeExpandButtonDescription[] =
-    "Enables the expand button for Chrome Home.";
-
 const char kChromeHomePersonalizedOmniboxSuggestionsName[] =
     "Chrome Home Personalized Omnibox Suggestions";
 const char kChromeHomePersonalizedOmniboxSuggestionsDescription[] =
@@ -1611,7 +1607,6 @@ const char kChromeHomeSwipeLogicName[] = "Chrome Home Swipe Logic";
 const char kChromeHomeSwipeLogicDescription[] =
     "Various swipe logic options for Chrome Home for sheet expansion.";
 const char kChromeHomeSwipeLogicRestrictArea[] = "Restrict swipable area";
-const char kChromeHomeSwipeLogicButtonOnly[] = "Swipe on expand button";
 
 const char kChromeHomeName[] = "Chrome Home";
 const char kChromeHomeDescription[] =
