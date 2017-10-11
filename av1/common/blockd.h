@@ -261,6 +261,10 @@ typedef struct {
   uint8_t use_filter_intra_mode[PLANE_TYPES];
   FILTER_INTRA_MODE filter_intra_mode[PLANE_TYPES];
 } FILTER_INTRA_MODE_INFO;
+
+static const PREDICTION_MODE fimode_to_intradir[FILTER_INTRA_MODES] = {
+  DC_PRED, V_PRED, H_PRED, D117_PRED, D153_PRED, DC_PRED
+};
 #endif  // CONFIG_FILTER_INTRA
 
 #if CONFIG_RD_DEBUG

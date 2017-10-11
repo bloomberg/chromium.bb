@@ -143,10 +143,8 @@ void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
                              NULL);
 
 #if CONFIG_FILTER_INTRA
-  for (i = 0; i < 2; ++i) {
-    av1_cost_tokens_from_cdf(x->filter_intra_mode_cost[i],
-                             fc->filter_intra_mode_cdf[i], NULL);
-  }
+  av1_cost_tokens_from_cdf(x->filter_intra_mode_cost[0],
+                           fc->filter_intra_mode_cdf[0], NULL);
 #endif
 
   for (i = 0; i < SWITCHABLE_FILTER_CONTEXTS; ++i)

@@ -4245,23 +4245,12 @@ static void sum_intra_stats(FRAME_COUNTS *counts, MACROBLOCKD *xd,
     const int use_filter_intra_mode =
         mbmi->filter_intra_mode_info.use_filter_intra_mode[0];
     ++counts->filter_intra[0][use_filter_intra_mode];
+#if CONFIG_ENTROPY_STATS
     ++counts->filter_intra_mode[0][mbmi->filter_intra_mode_info
                                        .filter_intra_mode[0]];
+#endif  // CONFIG_ENTROPY_STATS
     update_cdf(fc->filter_intra_mode_cdf[0],
                mbmi->filter_intra_mode_info.filter_intra_mode[0],
-               FILTER_INTRA_MODES);
-  }
-  if (mbmi->uv_mode == UV_DC_PRED &&
-      is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
-                          xd->plane[1].subsampling_y) &&
-      mbmi->palette_mode_info.palette_size[1] == 0) {
-    const int use_filter_intra_mode =
-        mbmi->filter_intra_mode_info.use_filter_intra_mode[1];
-    ++counts->filter_intra[1][use_filter_intra_mode];
-    ++counts->filter_intra_mode[1][mbmi->filter_intra_mode_info
-                                       .filter_intra_mode[1]];
-    update_cdf(fc->filter_intra_mode_cdf[1],
-               mbmi->filter_intra_mode_info.filter_intra_mode[1],
                FILTER_INTRA_MODES);
   }
 #endif  // CONFIG_FILTER_INTRA
@@ -4506,6 +4495,22 @@ void av1_update_tx_type_count(const AV1_COMMON *cm, MACROBLOCKD *xd,
         ++counts->inter_ext_tx[eset][txsize_sqr_map[tx_size]][tx_type];
 #endif  // CONFIG_ENTROPY_STATS
       } else {
+#if CONFIG_FILTER_INTRA
+        PREDICTION_MODE intra_dir;
+        if (mbmi->filter_intra_mode_info.use_filter_intra_mode[0])
+          intra_dir = fimode_to_intradir[mbmi->filter_intra_mode_info
+                                             .filter_intra_mode[0]];
+        else
+          intra_dir = mbmi->mode;
+#if CONFIG_ENTROPY_STATS
+        ++counts
+              ->intra_ext_tx[eset][txsize_sqr_map[tx_size]][intra_dir][tx_type];
+#endif  // CONFIG_ENTROPY_STATS
+        update_cdf(
+            fc->intra_ext_tx_cdf[eset][txsize_sqr_map[tx_size]][intra_dir],
+            av1_ext_tx_ind[tx_set_type][tx_type],
+            av1_num_ext_tx_set[tx_set_type]);
+#else
 #if CONFIG_ENTROPY_STATS
         ++counts->intra_ext_tx[eset][txsize_sqr_map[tx_size]][mbmi->mode]
                               [tx_type];
@@ -4514,6 +4519,7 @@ void av1_update_tx_type_count(const AV1_COMMON *cm, MACROBLOCKD *xd,
             fc->intra_ext_tx_cdf[eset][txsize_sqr_map[tx_size]][mbmi->mode],
             av1_ext_tx_ind[tx_set_type][tx_type],
             av1_num_ext_tx_set[tx_set_type]);
+#endif
       }
 #else
       (void)tx_type;

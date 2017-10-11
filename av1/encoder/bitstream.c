@@ -1048,7 +1048,6 @@ static void write_ref_frames(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 static void write_filter_intra_mode_info(const AV1_COMMON *const cm,
                                          const MACROBLOCKD *xd,
                                          const MB_MODE_INFO *const mbmi,
-                                         int mi_row, int mi_col,
                                          aom_writer *w) {
   if (mbmi->mode == DC_PRED && mbmi->palette_mode_info.palette_size[0] == 0) {
     aom_write(w, mbmi->filter_intra_mode_info.use_filter_intra_mode[0],
@@ -1057,23 +1056,6 @@ static void write_filter_intra_mode_info(const AV1_COMMON *const cm,
       const FILTER_INTRA_MODE mode =
           mbmi->filter_intra_mode_info.filter_intra_mode[0];
       aom_write_symbol(w, mode, xd->tile_ctx->filter_intra_mode_cdf[0],
-                       FILTER_INTRA_MODES);
-    }
-  }
-
-  if (!is_chroma_reference(mi_row, mi_col, mbmi->sb_type,
-                           xd->plane[1].subsampling_x,
-                           xd->plane[1].subsampling_y))
-    return;
-
-  if (mbmi->uv_mode == UV_DC_PRED &&
-      mbmi->palette_mode_info.palette_size[1] == 0) {
-    aom_write(w, mbmi->filter_intra_mode_info.use_filter_intra_mode[1],
-              cm->fc->filter_intra_probs[1]);
-    if (mbmi->filter_intra_mode_info.use_filter_intra_mode[1]) {
-      const FILTER_INTRA_MODE mode =
-          mbmi->filter_intra_mode_info.filter_intra_mode[1];
-      aom_write_symbol(w, mode, xd->tile_ctx->filter_intra_mode_cdf[1],
                        FILTER_INTRA_MODES);
     }
   }
@@ -1389,10 +1371,23 @@ void av1_write_tx_type(const AV1_COMMON *const cm, const MACROBLOCKD *xd,
                          ec_ctx->inter_ext_tx_cdf[eset][square_tx_size],
                          av1_num_ext_tx_set[tx_set_type]);
       } else if (ALLOW_INTRA_EXT_TX) {
+#if CONFIG_FILTER_INTRA
+        PREDICTION_MODE intra_dir;
+        if (mbmi->filter_intra_mode_info.use_filter_intra_mode[0])
+          intra_dir = fimode_to_intradir[mbmi->filter_intra_mode_info
+                                             .filter_intra_mode[0]];
+        else
+          intra_dir = mbmi->mode;
+        aom_write_symbol(
+            w, av1_ext_tx_ind[tx_set_type][tx_type],
+            ec_ctx->intra_ext_tx_cdf[eset][square_tx_size][intra_dir],
+            av1_num_ext_tx_set[tx_set_type]);
+#else
         aom_write_symbol(
             w, av1_ext_tx_ind[tx_set_type][tx_type],
             ec_ctx->intra_ext_tx_cdf[eset][square_tx_size][mbmi->mode],
             av1_num_ext_tx_set[tx_set_type]);
+#endif
       }
 #else
       // only signal tx_type when lgt is not allowed or not selected
@@ -1618,7 +1613,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
     if (av1_allow_palette(cm->allow_screen_content_tools, bsize))
       write_palette_mode_info(cm, xd, mi, w);
 #if CONFIG_FILTER_INTRA
-    write_filter_intra_mode_info(cm, xd, mbmi, mi_row, mi_col, w);
+    write_filter_intra_mode_info(cm, xd, mbmi, w);
 #endif  // CONFIG_FILTER_INTRA
   } else {
     int16_t mode_ctx;
@@ -1937,7 +1932,7 @@ static void write_mb_modes_kf(AV1_COMMON *cm, MACROBLOCKD *xd,
   if (av1_allow_palette(cm->allow_screen_content_tools, bsize))
     write_palette_mode_info(cm, xd, mi, w);
 #if CONFIG_FILTER_INTRA
-  write_filter_intra_mode_info(cm, xd, mbmi, mi_row, mi_col, w);
+  write_filter_intra_mode_info(cm, xd, mbmi, w);
 #endif  // CONFIG_FILTER_INTRA
 
 #if !CONFIG_TXK_SEL
