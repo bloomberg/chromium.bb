@@ -30858,6 +30858,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.Audio.CoreAudioDispatchOverrideInitResult"
+    enum="CoreAudioDispatchOverrideInitResult">
+  <owner>ossu@chromium.org</owner>
+  <summary>
+    Tracks support and initialization success/failure of the CoreAudio dispatch
+    override hotfix. Logged during initialization of AudioManagerMac. The fix is
+    not supported on macOS earlier than version 10.10.
+  </summary>
+</histogram>
+
+<histogram name="Media.Audio.CoreAudioDispatchOverrideLookupEvent"
+    enum="CoreAudioDispatchOverrideLookupEvent">
+  <owner>ossu@chromium.org</owner>
+  <summary>
+    Logged whenever the CoreAudio dispatch override hotfix needs to look up the
+    calling function using dladdr(). Once ResumeIO and PauseIO have been
+    identified, no more lookups should be performed during the session.
+  </summary>
+</histogram>
+
 <histogram name="Media.Audio.InputBufferSizeWasChangedAudioWorkedMac"
     enum="BooleanChanged">
   <owner>henrika@chromium.org</owner>

@@ -11,6 +11,7 @@
 #include "base/atomicops.h"
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
+#include "base/metrics/histogram_macros.h"
 
 namespace {
 struct dyld_interpose_tuple {
@@ -32,6 +33,35 @@ extern "C" void dyld_dynamic_interpose(
 
 namespace media {
 namespace {
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum DispatchOverrideInitResult {
+  RESULT_NOT_SUPPORTED = 0,
+  RESULT_INITIALIZED = 1,
+  RESULT_DYNAMIC_INTERPOSE_NOT_FOUND = 2,
+  RESULT_COREAUDIO_DLOPEN_FAILED = 3,
+  RESULT_COREAUDIO_SYMBOL_NOT_FOUND = 4,
+  RESULT_COREAUDIO_MACH_HEADER_NOT_FOUND = 5,
+  RESULT_MAX = RESULT_COREAUDIO_MACH_HEADER_NOT_FOUND
+};
+
+void LogInitResult(DispatchOverrideInitResult result) {
+  UMA_HISTOGRAM_ENUMERATION("Media.Audio.CoreAudioDispatchOverrideInitResult",
+                            result, RESULT_MAX + 1);
+}
+
+enum CallsiteLookupEvent {
+  LOOKUP_MISS = 0,
+  LOOKUP_RESUMEIO_CALLSITE_FOUND = 1,
+  LOOKUP_PAUSEIO_CALLSITE_FOUND = 2,
+  LOOKUP_MAX = LOOKUP_PAUSEIO_CALLSITE_FOUND
+};
+
+void LogCallsiteLookupEvent(CallsiteLookupEvent event) {
+  UMA_HISTOGRAM_ENUMERATION("Media.Audio.CoreAudioDispatchOverrideLookupEvent",
+                            event, LOOKUP_MAX + 1);
+}
+
 const char kCoreAudioPath[] =
     "/System/Library/Frameworks/CoreAudio.framework/Versions/A/CoreAudio";
 
@@ -69,12 +99,15 @@ bool AddressIsPauseOrResume(intptr_t address) {
     resumeio_callsite = address;
     base::subtle::NoBarrier_CompareAndSwap(&g_resumeio_callsite, 0,
                                            resumeio_callsite);
-  }
-  if (!pauseio_callsite && info.dli_sname &&
-      strcmp(info.dli_sname, "HALC_IOContext_PauseIO") == 0) {
+    LogCallsiteLookupEvent(LOOKUP_RESUMEIO_CALLSITE_FOUND);
+  } else if (!pauseio_callsite && info.dli_sname &&
+             strcmp(info.dli_sname, "HALC_IOContext_PauseIO") == 0) {
     pauseio_callsite = address;
     base::subtle::NoBarrier_CompareAndSwap(&g_pauseio_callsite, 0,
                                            pauseio_callsite);
+    LogCallsiteLookupEvent(LOOKUP_PAUSEIO_CALLSITE_FOUND);
+  } else {
+    LogCallsiteLookupEvent(LOOKUP_MISS);
   }
 
   return address == pauseio_callsite || address == resumeio_callsite;
@@ -104,12 +137,14 @@ bool InitializeCoreAudioDispatchOverride() {
   DCHECK_EQ(g_pause_resume_queue, nullptr);
 
   if (!base::mac::IsAtLeastOS10_10()) {
+    LogInitResult(RESULT_NOT_SUPPORTED);
     return false;
   }
 
   // This function should be available in macOS > 10.10.
   if (dyld_dynamic_interpose == nullptr) {
     LOG(ERROR) << "Unable to resolve dyld_dynamic_interpose()";
+    LogInitResult(RESULT_DYNAMIC_INTERPOSE_NOT_FOUND);
     return false;
   }
   // Get CoreAudio handle
@@ -117,6 +152,7 @@ bool InitializeCoreAudioDispatchOverride() {
   if (!coreaudio) {
     LOG(ERROR) << "Could not load CoreAudio while trying to initialize "
                   "dispatch override";
+    LogInitResult(RESULT_COREAUDIO_DLOPEN_FAILED);
     return false;
   }
   // Retrieve the base address (also address of Mach header). For this
@@ -125,6 +161,7 @@ bool InitializeCoreAudioDispatchOverride() {
   if (!symbol) {
     LOG(ERROR) << "Unable to resolve AudioObjectGetPropertyData in "
                   "CoreAudio library";
+    LogInitResult(RESULT_COREAUDIO_SYMBOL_NOT_FOUND);
     return false;
   }
   // From the address of that symbol, we can get the address of the library's
@@ -132,6 +169,7 @@ bool InitializeCoreAudioDispatchOverride() {
   Dl_info info = {};
   if (!dladdr(symbol, &info)) {
     LOG(ERROR) << "Unable to find Mach header for CoreAudio library.";
+    LogInitResult(RESULT_COREAUDIO_MACH_HEADER_NOT_FOUND);
     return false;
   }
   const auto* header = reinterpret_cast<const mach_header*>(info.dli_fbase);
@@ -141,6 +179,7 @@ bool InitializeCoreAudioDispatchOverride() {
                                      &dispatch_get_global_queue);
   dyld_dynamic_interpose(header, &interposition, 1);
   g_dispatch_override_installed = true;
+  LogInitResult(RESULT_INITIALIZED);
   return true;
 }
 
