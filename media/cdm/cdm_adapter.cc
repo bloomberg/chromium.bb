@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "media/base/audio_decoder_config.h"
@@ -445,6 +446,16 @@ CdmWrapper* CdmAdapter::CreateCdmInstance(const std::string& key_system) {
                                        key_system.size(), GetCdmHost, this);
   DVLOG(1) << "CDM instance for " + key_system + (cdm ? "" : " could not be") +
                   " created.";
+
+  if (cdm) {
+    // The interface version is relatively small. So using normal histogram
+    // instead of a sparse histogram is okay. The following DCHECK asserts this.
+    DCHECK(cdm->GetInterfaceVersion() <= 30);
+    UMA_HISTOGRAM_ENUMERATION("Media.EME.CdmInterfaceVersion",
+                              cdm->GetInterfaceVersion(),
+                              cdm::ContentDecryptionModule::kVersion + 1);
+  }
+
   return cdm;
 }
 
