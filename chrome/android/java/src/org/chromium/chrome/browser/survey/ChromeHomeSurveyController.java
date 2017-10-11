@@ -19,6 +19,7 @@ import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.components.variations.VariationsAssociatedData;
 import org.chromium.content_public.browser.WebContents;
@@ -76,9 +77,10 @@ public class ChromeHomeSurveyController {
     }
 
     private boolean doesUserQualifyForSurvey() {
-        if (!FeatureUtilities.isChromeHomeEnabled()) return true;
         if (CommandLine.getInstance().hasSwitch(SURVEY_FORCE_ENABLE_SWITCH)) return true;
+        if (AccessibilityUtil.isAccessibilityEnabled()) return false;
         if (hasInfoBarBeenDisplayed()) return false;
+        if (!FeatureUtilities.isChromeHomeEnabled()) return true;
 
         try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
             SharedPreferences sharedPreferences = ContextUtils.getAppSharedPreferences();
@@ -131,7 +133,6 @@ public class ChromeHomeSurveyController {
     }
 
     private boolean hasInfoBarBeenDisplayed() {
-        // TODO(danielpark) Refine logic for whether user has seen a survey (crbug.com/772081).
         try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
             SharedPreferences sharedPreferences = ContextUtils.getAppSharedPreferences();
             return sharedPreferences.getBoolean(SURVEY_INFO_BAR_DISPLAYED, false);
