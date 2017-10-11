@@ -18,6 +18,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/payments/payment_request_unittest_base.h"
 #include "ios/chrome/browser/payments/payment_request_util.h"
 #include "ios/chrome/browser/payments/test_payment_request.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_detail_item.h"
@@ -26,7 +27,6 @@
 #import "ios/chrome/browser/ui/payments/cells/payment_method_item.h"
 #import "ios/chrome/browser/ui/payments/cells/payments_text_item.h"
 #import "ios/chrome/browser/ui/payments/cells/price_item.h"
-#import "ios/chrome/browser/ui/payments/payment_request_unittest_base.h"
 #include "testing/platform_test.h"
 #include "ui/base/l10n/l10n_util.h"
 

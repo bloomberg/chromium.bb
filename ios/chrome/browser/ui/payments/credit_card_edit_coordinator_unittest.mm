@@ -9,19 +9,17 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/ios/wait_util.h"
-#include "base/test/scoped_task_environment.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/payments/core/autofill_payment_instrument.h"
 #include "components/payments/core/payment_instrument.h"
-#include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/payments/payment_request_test_util.h"
+#include "ios/chrome/browser/payments/payment_request_unittest_base.h"
 #include "ios/chrome/browser/payments/test_payment_request.h"
 #import "ios/chrome/browser/ui/autofill/autofill_ui_type.h"
 #import "ios/chrome/browser/ui/payments/payment_request_editor_field.h"
 #import "ios/chrome/browser/ui/payments/payment_request_navigation_controller.h"
 #import "ios/chrome/test/scoped_key_window.h"
-#import "ios/web/public/test/fakes/test_web_state.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -114,20 +112,23 @@ NSArray<EditorField*>* GetEditorFields(bool save_card) {
 using ::testing::_;
 }  // namespace
 
-class PaymentRequestCreditCardEditCoordinatorTest : public PlatformTest {
+class PaymentRequestCreditCardEditCoordinatorTest
+    : public PaymentRequestUnitTestBase,
+      public PlatformTest {
  protected:
-  PaymentRequestCreditCardEditCoordinatorTest()
-      : chrome_browser_state_(TestChromeBrowserState::Builder().Build()) {
+  PaymentRequestCreditCardEditCoordinatorTest() {}
+
+  void SetUp() override {
+    PaymentRequestUnitTestBase::SetUp();
+
     payment_request_ = base::MakeUnique<MockPaymentRequest>(
         payment_request_test_util::CreateTestWebPaymentRequest(),
-        chrome_browser_state_.get(), &web_state_, &personal_data_manager_);
+        browser_state(), web_state(), &personal_data_manager_);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_evironment_;
+  void TearDown() override { PaymentRequestUnitTestBase::TearDown(); }
 
-  web::TestWebState web_state_;
   MockTestPersonalDataManager personal_data_manager_;
-  std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   std::unique_ptr<MockPaymentRequest> payment_request_;
 };
 
