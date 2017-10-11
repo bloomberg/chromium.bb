@@ -4,6 +4,8 @@
 
 #include "chrome/common/media_router/discovery/media_sink_internal.h"
 
+#include <new>
+
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 
@@ -11,15 +13,11 @@ namespace media_router {
 
 MediaSinkInternal::MediaSinkInternal(const MediaSink& sink,
                                      const DialSinkExtraData& dial_data)
-    : sink_(sink), sink_type_(SinkType::DIAL) {
-  dial_data_.Init(dial_data);
-}
+    : sink_(sink), sink_type_(SinkType::DIAL), dial_data_(dial_data) {}
 
 MediaSinkInternal::MediaSinkInternal(const MediaSink& sink,
                                      const CastSinkExtraData& cast_data)
-    : sink_(sink), sink_type_(SinkType::CAST) {
-  cast_data_.Init(cast_data);
-}
+    : sink_(sink), sink_type_(SinkType::CAST), cast_data_(cast_data) {}
 
 MediaSinkInternal::MediaSinkInternal() : sink_type_(SinkType::GENERIC) {}
 
@@ -34,14 +32,9 @@ MediaSinkInternal::~MediaSinkInternal() {
 MediaSinkInternal& MediaSinkInternal::operator=(
     const MediaSinkInternal& other) {
   if (this != &other) {
-    if (sink_type_ == other.sink_type_) {
-      InternalCopyAssignFrom(other);
-    } else {
-      InternalCleanup();
-      InternalCopyConstructFrom(other);
-    }
+    InternalCleanup();
+    InternalCopyConstructFrom(other);
   }
-
   return *this;
 }
 
@@ -54,9 +47,9 @@ bool MediaSinkInternal::operator==(const MediaSinkInternal& other) const {
 
   switch (sink_type_) {
     case SinkType::DIAL:
-      return *dial_data_ == *(other.dial_data_);
+      return dial_data_ == other.dial_data_;
     case SinkType::CAST:
-      return *cast_data_ == *(other.cast_data_);
+      return cast_data_ == other.cast_data_;
     case SinkType::GENERIC:
       return true;
   }
@@ -81,12 +74,12 @@ void MediaSinkInternal::set_dial_data(const DialSinkExtraData& dial_data) {
   InternalCleanup();
 
   sink_type_ = SinkType::DIAL;
-  dial_data_.Init(dial_data);
+  new (&dial_data_) DialSinkExtraData(dial_data);
 }
 
 const DialSinkExtraData& MediaSinkInternal::dial_data() const {
   DCHECK(is_dial_sink());
-  return *dial_data_;
+  return dial_data_;
 }
 
 void MediaSinkInternal::set_cast_data(const CastSinkExtraData& cast_data) {
@@ -94,12 +87,12 @@ void MediaSinkInternal::set_cast_data(const CastSinkExtraData& cast_data) {
   InternalCleanup();
 
   sink_type_ = SinkType::CAST;
-  cast_data_.Init(cast_data);
+  new (&cast_data_) CastSinkExtraData(cast_data);
 }
 
 const CastSinkExtraData& MediaSinkInternal::cast_data() const {
   DCHECK(is_cast_sink());
-  return *cast_data_;
+  return cast_data_;
 }
 
 // static
@@ -112,23 +105,6 @@ bool MediaSinkInternal::IsValidSinkId(const std::string& sink_id) {
   return true;
 }
 
-void MediaSinkInternal::InternalCopyAssignFrom(const MediaSinkInternal& other) {
-  sink_ = other.sink_;
-  sink_type_ = other.sink_type_;
-
-  switch (sink_type_) {
-    case SinkType::DIAL:
-      *dial_data_ = *other.dial_data_;
-      return;
-    case SinkType::CAST:
-      *cast_data_ = *other.cast_data_;
-      return;
-    case SinkType::GENERIC:
-      return;
-  }
-  NOTREACHED();
-}
-
 void MediaSinkInternal::InternalCopyConstructFrom(
     const MediaSinkInternal& other) {
   sink_ = other.sink_;
@@ -136,10 +112,10 @@ void MediaSinkInternal::InternalCopyConstructFrom(
 
   switch (sink_type_) {
     case SinkType::DIAL:
-      dial_data_.Init(*other.dial_data_);
+      new (&dial_data_) DialSinkExtraData(other.dial_data_);
       return;
     case SinkType::CAST:
-      cast_data_.Init(*other.cast_data_);
+      new (&cast_data_) CastSinkExtraData(other.cast_data_);
       return;
     case SinkType::GENERIC:
       return;
@@ -150,10 +126,10 @@ void MediaSinkInternal::InternalCopyConstructFrom(
 void MediaSinkInternal::InternalCleanup() {
   switch (sink_type_) {
     case SinkType::DIAL:
-      dial_data_.Destroy();
+      dial_data_.~DialSinkExtraData();
       return;
     case SinkType::CAST:
-      cast_data_.Destroy();
+      cast_data_.~CastSinkExtraData();
       return;
     case SinkType::GENERIC:
       return;

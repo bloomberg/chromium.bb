@@ -7,7 +7,6 @@
 
 #include <utility>
 
-#include "base/memory/manual_constructor.h"
 #include "chrome/common/media_router/media_sink.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
@@ -111,7 +110,6 @@ class MediaSinkInternal {
   static bool IsValidSinkId(const std::string& sink_id);
 
  private:
-  void InternalCopyAssignFrom(const MediaSinkInternal& other);
   void InternalCopyConstructFrom(const MediaSinkInternal& other);
   void InternalCleanup();
 
@@ -123,10 +121,10 @@ class MediaSinkInternal {
 
   union {
     // Set if sink is DIAL sink.
-    base::ManualConstructor<DialSinkExtraData> dial_data_;
+    DialSinkExtraData dial_data_;
 
     // Set if sink is Cast sink.
-    base::ManualConstructor<CastSinkExtraData> cast_data_;
+    CastSinkExtraData cast_data_;
   };
 };
 
