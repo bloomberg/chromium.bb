@@ -72765,6 +72765,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Search.ContextualSearchIPHShown" enum="Boolean">
+  <owner>donnd@chromium.org</owner>
+  <owner>mahmoudi@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    The number of times the Contextual Search panel is opened, categorized by
+    whether In-Product Help for Contextual Search was shown before. Logged when
+    the panel is opened. Implemented for Android.
+  </summary>
+</histogram>
+
 <histogram name="Search.ContextualSearchLiteralSearchDuration" units="ms">
   <owner>donnd@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
@@ -72812,6 +72823,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The time from opening the panel beyond peek until the panel is closed.
     Implemented for Android.
+  </summary>
+</histogram>
+
+<histogram name="Search.ContextualSearchPanelOpenedIPHShown" enum="Boolean">
+  <owner>donnd@chromium.org</owner>
+  <owner>mahmoudi@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    The number of times the Contextual Search panel is opened, categorized by
+    whether In-Product Help for opening the panel was shown before. Logged when
+    the panel is opened. Implemented for Android.
   </summary>
 </histogram>
 
@@ -73260,6 +73282,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     The duration of a tap that triggered a Contextual Search when the user does
     open the panel. Implemented for Android.  Logged when the panel closes after
     being triggered by a tap and subsequently opened.
+  </summary>
+</histogram>
+
+<histogram name="Search.ContextualSearchTapIPHShown" enum="Boolean">
+  <owner>donnd@chromium.org</owner>
+  <owner>mahmoudi@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    The number of times the Contextual Search is triggered by tapping,
+    categorized by whether In-Product Help for tapping was shown before. Logged
+    when Contextual Search is triggered by tapping. Implemented for Android.
   </summary>
 </histogram>
 

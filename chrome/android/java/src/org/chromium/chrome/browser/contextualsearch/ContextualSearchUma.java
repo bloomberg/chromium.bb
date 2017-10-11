@@ -669,6 +669,34 @@ public class ContextualSearchUma {
     }
 
     /**
+     * When Contextual Search panel is opened, logs whether In-Product Help for opening the panel
+     * was ever shown.
+     * @param wasIPHShown Whether In-Product help was shown.
+     */
+    public static void logPanelOpenedIPH(boolean wasIPHShown) {
+        RecordHistogram.recordBooleanHistogram(
+                "Search.ContextualSearchPanelOpenedIPHShown", wasIPHShown);
+    }
+
+    /**
+     * When Contextual Search panel is opened, logs whether In-Product Help for Contextual Search
+     * was ever shown.
+     * @param wasIPHShown Whether In-Product help was shown.
+     */
+    public static void logContextualSearchIPH(boolean wasIPHShown) {
+        RecordHistogram.recordBooleanHistogram("Search.ContextualSearchIPHShown", wasIPHShown);
+    }
+
+    /**
+     * When Contextual Search is triggered by tapping, logs whether In-Product Help for tapping was
+     * ever shown.
+     * @param wasIPHShown Whether In-Product help was shown.
+     */
+    public static void logTapIPH(boolean wasIPHShown) {
+        RecordHistogram.recordBooleanHistogram("Search.ContextualSearchTapIPHShown", wasIPHShown);
+    }
+
+    /**
      * Logs a user action for the duration of viewing the panel that describes the amount of time
      * the user viewed the bar and panel overall.
      * @param durationMs The duration to record.

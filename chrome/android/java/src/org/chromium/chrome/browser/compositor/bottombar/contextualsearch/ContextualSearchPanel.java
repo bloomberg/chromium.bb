@@ -24,10 +24,13 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.compositor.scene_layer.ContextualSearchSceneLayer;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneOverlayLayer;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManagementDelegate;
+import org.chromium.chrome.browser.contextualsearch.ContextualSearchUma;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.components.feature_engagement.EventConstants;
+import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.feature_engagement.Tracker;
+import org.chromium.components.feature_engagement.TriggerState;
 import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.resources.ResourceManager;
 
@@ -218,6 +221,16 @@ public class ContextualSearchPanel extends OverlayPanel {
             Tracker tracker =
                     TrackerFactory.getTrackerForProfile(mActivity.getActivityTab().getProfile());
             tracker.notifyEvent(EventConstants.CONTEXTUAL_SEARCH_PANEL_OPENED);
+
+            // Log whether IPH for opening the panel has been shown before.
+            ContextualSearchUma.logPanelOpenedIPH(
+                    tracker.getTriggerState(FeatureConstants.CONTEXTUAL_SEARCH_PANEL_FEATURE)
+                    == TriggerState.HAS_BEEN_DISPLAYED);
+
+            // Log whether IPH for Contextual Search has been shown before.
+            ContextualSearchUma.logContextualSearchIPH(
+                    tracker.getTriggerState(FeatureConstants.CONTEXTUAL_SEARCH_FEATURE)
+                    == TriggerState.HAS_BEEN_DISPLAYED);
         }
 
         super.setPanelState(toState, reason);
