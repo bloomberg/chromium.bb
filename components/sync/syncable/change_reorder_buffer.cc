@@ -47,7 +47,7 @@ class ChangeReorderBuffer::Traversal {
       int64_t node_parent = 0;
 
       syncable::Entry node(trans, syncable::GET_BY_HANDLE, node_to_include);
-      CHECK(node.good());
+      DCHECK(node.good());
       if (node.GetId().IsRoot()) {
         // If we've hit the root, and the root isn't already in the tree
         // (it would have to be |top_| if it were), start a new expansion
@@ -66,7 +66,7 @@ class ChangeReorderBuffer::Traversal {
                                             ? node.GetParentId()
                                             : syncable::Id::GetRoot();
         syncable::Entry parent(trans, syncable::GET_BY_ID, parent_id);
-        CHECK(parent.good());
+        DCHECK(parent.good());
         node_parent = parent.GetMetahandle();
 
         ParentChildLink link(node_parent, node_to_include);
@@ -208,7 +208,7 @@ bool ChangeReorderBuffer::GetAllChangesInTreeOrder(
     Traversal::LinkSet::const_iterator j = traversal.begin_children(next);
     Traversal::LinkSet::const_iterator end = traversal.end_children(next);
     for (; j != end; ++j) {
-      CHECK(j->first == next);
+      DCHECK(j->first == next);
       to_visit.push(j->second);
     }
   }

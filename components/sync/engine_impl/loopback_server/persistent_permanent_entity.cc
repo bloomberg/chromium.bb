@@ -27,16 +27,17 @@ std::unique_ptr<LoopbackServerEntity> PersistentPermanentEntity::CreateNew(
     const string& server_tag,
     const string& name,
     const string& parent_server_tag) {
-  CHECK(model_type != syncer::UNSPECIFIED) << "The entity's ModelType is "
-                                           << "invalid.";
-  CHECK(!server_tag.empty())
+  DCHECK(model_type != syncer::UNSPECIFIED) << "The entity's ModelType is "
+                                            << "invalid.";
+  DCHECK(!server_tag.empty())
       << "A PersistentPermanentEntity must have a server tag.";
-  CHECK(!name.empty()) << "The entity must have a non-empty name.";
-  CHECK(!parent_server_tag.empty())
+  DCHECK(!name.empty()) << "The entity must have a non-empty name.";
+  DCHECK(!parent_server_tag.empty())
       << "A PersistentPermanentEntity must have a parent "
       << "server tag.";
-  CHECK(parent_server_tag != kRootParentTag) << "Top-level entities should not "
-                                             << "be created with this factory.";
+  DCHECK(parent_server_tag != kRootParentTag)
+      << "Top-level entities should not "
+      << "be created with this factory.";
 
   string id = LoopbackServerEntity::CreateId(model_type, server_tag);
   string parent_id =
@@ -50,8 +51,8 @@ std::unique_ptr<LoopbackServerEntity> PersistentPermanentEntity::CreateNew(
 // static
 std::unique_ptr<LoopbackServerEntity> PersistentPermanentEntity::CreateTopLevel(
     const ModelType& model_type) {
-  CHECK(model_type != syncer::UNSPECIFIED) << "The entity's ModelType is "
-                                           << "invalid.";
+  DCHECK(model_type != syncer::UNSPECIFIED) << "The entity's ModelType is "
+                                            << "invalid.";
   string server_tag = syncer::ModelTypeToRootTag(model_type);
   string name = syncer::ModelTypeToString(model_type);
   string id = LoopbackServerEntity::GetTopLevelId(model_type);
@@ -67,8 +68,8 @@ PersistentPermanentEntity::CreateUpdatedNigoriEntity(
     const sync_pb::SyncEntity& client_entity,
     const LoopbackServerEntity& current_server_entity) {
   ModelType model_type = current_server_entity.GetModelType();
-  CHECK(model_type == syncer::NIGORI) << "This factory only supports NIGORI "
-                                      << "entities.";
+  DCHECK(model_type == syncer::NIGORI) << "This factory only supports NIGORI "
+                                       << "entities.";
 
   return base::WrapUnique<LoopbackServerEntity>(new PersistentPermanentEntity(
       current_server_entity.GetId(), current_server_entity.GetVersion(),

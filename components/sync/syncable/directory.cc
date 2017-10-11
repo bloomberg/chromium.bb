@@ -1599,7 +1599,7 @@ void Directory::AppendChildHandles(const ScopedKernelLock& lock,
 }
 
 void Directory::UnmarkDirtyEntry(WriteTransaction* trans, Entry* entry) {
-  CHECK(trans);
+  DCHECK(trans);
   entry->kernel_->clear_dirty(&kernel_->dirty_metahandles);
 }
 

@@ -99,7 +99,7 @@ SyncManagerImpl::SyncManagerImpl(const std::string& name)
 
 SyncManagerImpl::~SyncManagerImpl() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  CHECK(!initialized_);
+  DCHECK(!initialized_);
 }
 
 SyncManagerImpl::NotificationInfo::NotificationInfo() : total_count(0) {}
@@ -202,7 +202,7 @@ void SyncManagerImpl::ConfigureSyncer(
 }
 
 void SyncManagerImpl::Init(InitArgs* args) {
-  CHECK(!initialized_);
+  DCHECK(!initialized_);
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(args->post_factory.get());
   if (!args->enable_local_sync_backend) {

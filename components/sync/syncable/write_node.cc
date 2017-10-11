@@ -155,7 +155,11 @@ void WriteNode::SetPasswordSpecifics(
 
 void WriteNode::SetEntitySpecifics(const sync_pb::EntitySpecifics& new_value) {
   ModelType new_specifics_type = GetModelTypeFromSpecifics(new_value);
+
+  // Purposefully crash if we have client only data, as this could result in
+  // sending password in plain text.
   CHECK(!new_value.password().has_client_only_encrypted_data());
+
   DCHECK_NE(new_specifics_type, UNSPECIFIED);
   DVLOG(1) << "Writing entity specifics of type "
            << ModelTypeToString(new_specifics_type);

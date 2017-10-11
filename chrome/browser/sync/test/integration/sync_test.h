@@ -294,7 +294,7 @@ class SyncTest : public InProcessBrowserTest {
  private:
   // Handles Profile creation for given index. Profile's path and type is
   // determined at runtime based on server type.
-  void CreateProfile(int index);
+  bool CreateProfile(int index);
 
   // Callback for MakeProfileForUISignin() method. It runs the quit_closure once
   // profile is created successfully.

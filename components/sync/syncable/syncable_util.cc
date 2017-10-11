@@ -49,7 +49,7 @@ void ChangeEntryIDAndUpdateChildren(BaseWriteTransaction* trans,
   Id old_id = entry->GetId();
   if (!entry->PutId(new_id)) {
     Entry old_entry(trans, GET_BY_ID, new_id);
-    CHECK(old_entry.good());
+    DCHECK(old_entry.good());
     LOG(FATAL) << "Attempt to change ID to " << new_id
                << " conflicts with existing entry.\n\n"
                << *entry << "\n\n"
@@ -62,7 +62,7 @@ void ChangeEntryIDAndUpdateChildren(BaseWriteTransaction* trans,
     Directory::Metahandles::iterator i = children.begin();
     while (i != children.end()) {
       ModelNeutralMutableEntry child_entry(trans, GET_BY_HANDLE, *i++);
-      CHECK(child_entry.good());
+      DCHECK(child_entry.good());
       // Change the parent ID of the entry unless it was unset (implicit)
       if (!child_entry.GetParentId().IsNull()) {
         // Use the unchecked setter here to avoid touching the child's

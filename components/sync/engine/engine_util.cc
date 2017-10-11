@@ -56,7 +56,7 @@ void SyncAPINameToServerName(const std::string& syncer_name, std::string* out) {
 // server-illegal name followed by one or more spaces, remove the trailing
 // space.
 void ServerNameToSyncAPIName(const std::string& server_name, std::string* out) {
-  CHECK(out);
+  DCHECK(out);
   int length_to_copy = server_name.length();
   if (IsNameServerIllegalAfterTrimming(server_name) &&
       EndsWithSpace(server_name)) {

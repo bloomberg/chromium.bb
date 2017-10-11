@@ -86,7 +86,7 @@ class UserEventEqualityChecker : public SingleClientStatusChangeChecker {
       auto iter = copied_expected_.find(server_specifics.event_time_usec());
       // We don't expect to encounter id matching events with different values,
       // this isn't going to recover so fail the test case now.
-      CHECK(copied_expected_.end() != iter);
+      EXPECT_TRUE(copied_expected_.end() != iter);
       // TODO(skym): This may need to change if we start updating navigation_id
       // based on what sessions data is committed, and end up committing the
       // same event multiple times.

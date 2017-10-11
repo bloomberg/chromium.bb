@@ -28,7 +28,7 @@ std::unique_ptr<LoopbackServerEntity> PersistentBookmarkEntity::CreateNew(
     const string& client_guid) {
   DLOG_IF(WARNING, client_entity.version() == 0)
       << "Possible roaming store corruption. Should self heal.";
-  CHECK(IsBookmark(client_entity)) << "The given entity must be a bookmark.";
+  DCHECK(IsBookmark(client_entity)) << "The given entity must be a bookmark.";
 
   const string id =
       LoopbackServerEntity::CreateId(syncer::BOOKMARKS, base::GenerateGUID());
@@ -48,9 +48,9 @@ PersistentBookmarkEntity::CreateUpdatedVersion(
     const sync_pb::SyncEntity& client_entity,
     const LoopbackServerEntity& current_server_entity,
     const string& parent_id) {
-  CHECK(client_entity.version() != 0) << "Existing entities must not have a "
-                                      << "version = 0.";
-  CHECK(IsBookmark(client_entity)) << "The given entity must be a bookmark.";
+  DCHECK(client_entity.version() != 0) << "Existing entities must not have a "
+                                       << "version = 0.";
+  DCHECK(IsBookmark(client_entity)) << "The given entity must be a bookmark.";
 
   const PersistentBookmarkEntity& current_bookmark_entity =
       static_cast<const PersistentBookmarkEntity&>(current_server_entity);
@@ -70,7 +70,7 @@ PersistentBookmarkEntity::CreateUpdatedVersion(
 std::unique_ptr<LoopbackServerEntity>
 PersistentBookmarkEntity::CreateFromEntity(
     const sync_pb::SyncEntity& client_entity) {
-  CHECK(IsBookmark(client_entity)) << "The given entity must be a bookmark.";
+  DCHECK(IsBookmark(client_entity)) << "The given entity must be a bookmark.";
 
   return std::unique_ptr<LoopbackServerEntity>(new PersistentBookmarkEntity(
       client_entity.id_string(), client_entity.version(), client_entity.name(),

@@ -175,7 +175,7 @@ UpdateAttemptResponse AttemptToUpdateEntry(
     syncable::WriteTransaction* const trans,
     syncable::MutableEntry* const entry,
     Cryptographer* cryptographer) {
-  CHECK(entry->good());
+  DCHECK(entry->good());
   if (!entry->GetIsUnappliedUpdate())
     return SUCCESS;  // No work to do.
   syncable::Id id = entry->GetId();
@@ -472,7 +472,7 @@ void UpdateLocalDataFromServerData(syncable::WriteTransaction* trans,
 VerifyCommitResult ValidateCommitEntry(syncable::Entry* entry) {
   syncable::Id id = entry->GetId();
   if (id == entry->GetParentId()) {
-    CHECK(id.IsRoot()) << "Non-root item is self parenting." << *entry;
+    DCHECK(id.IsRoot()) << "Non-root item is self parenting." << *entry;
     // If the root becomes unsynced it can cause us problems.
     LOG(ERROR) << "Root item became unsynced " << *entry;
     return VERIFY_UNSYNCABLE;
@@ -548,7 +548,7 @@ VerifyResult VerifyUpdateConsistency(
     const bool is_directory,
     ModelType model_type,
     syncable::ModelNeutralMutableEntry* target) {
-  CHECK(target->good());
+  DCHECK(target->good());
   const syncable::Id& update_id = SyncableIdFromProto(update.id_string());
 
   // If the update is a delete, we don't really need to worry at this stage.
@@ -625,7 +625,7 @@ VerifyResult VerifyUndelete(syncable::ModelNeutralWriteTransaction* trans,
   // should be deprecated in favor of client-tag style undeletion
   // (where items go to version 0 when they're deleted), or else
   // removed entirely (if this type of undeletion is indeed impossible).
-  CHECK(target->good());
+  DCHECK(target->good());
   DVLOG(1) << "Server update is attempting undelete. " << *target
            << "Update:" << SyncerProtoUtil::SyncEntityDebugString(update);
   // Move the old one aside and start over.  It's too tricky to get the old one

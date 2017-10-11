@@ -16,8 +16,8 @@ PersistentTombstoneEntity::~PersistentTombstoneEntity() {}
 std::unique_ptr<LoopbackServerEntity>
 PersistentTombstoneEntity::CreateFromEntity(const sync_pb::SyncEntity& entity) {
   const ModelType model_type = GetModelTypeFromId(entity.id_string());
-  CHECK_NE(model_type, syncer::UNSPECIFIED) << "Invalid ID was given: "
-                                            << entity.id_string();
+  DCHECK_NE(model_type, syncer::UNSPECIFIED)
+      << "Invalid ID was given: " << entity.id_string();
   return std::unique_ptr<LoopbackServerEntity>(new PersistentTombstoneEntity(
       entity.id_string(), entity.version(), model_type,
       entity.client_defined_unique_tag()));
@@ -28,7 +28,7 @@ std::unique_ptr<LoopbackServerEntity> PersistentTombstoneEntity::CreateNew(
     const std::string& id,
     const std::string& client_defined_unique_tag) {
   const ModelType model_type = GetModelTypeFromId(id);
-  CHECK_NE(model_type, syncer::UNSPECIFIED) << "Invalid ID was given: " << id;
+  DCHECK_NE(model_type, syncer::UNSPECIFIED) << "Invalid ID was given: " << id;
   return std::unique_ptr<LoopbackServerEntity>(new PersistentTombstoneEntity(
       id, 0, model_type, client_defined_unique_tag));
 }

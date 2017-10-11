@@ -359,7 +359,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
             base::Bind(ReturnEmptyString))),
         local_merge_result_(syncer::BOOKMARKS),
         syncer_merge_result_(syncer::BOOKMARKS) {
-    CHECK(data_dir_.CreateUniqueTempDir());
+    EXPECT_TRUE(data_dir_.CreateUniqueTempDir());
     ProfileSyncServiceBundle::SyncClientBuilder builder(
         &profile_sync_service_bundle_);
     builder.SetBookmarkModelCallback(base::Bind(
@@ -544,7 +544,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
   }
 
   bool AssociateModels() {
-    DCHECK(!model_associator_);
+    EXPECT_TRUE(!model_associator_);
 
     // Set up model associator.
     model_associator_ = std::make_unique<BookmarkModelAssociator>(
@@ -1762,9 +1762,9 @@ void ProfileSyncServiceBookmarkTestWithData::PopulateFromTestData(
     const TestData* data,
     int size,
     int* running_count) {
-  DCHECK(node);
-  DCHECK(data);
-  DCHECK(node->is_folder());
+  ASSERT_TRUE(node);
+  ASSERT_TRUE(data);
+  ASSERT_TRUE(node->is_folder());
   for (int i = 0; i < size; ++i) {
     const TestData& item = data[i];
     if (item.url) {
@@ -1785,9 +1785,9 @@ void ProfileSyncServiceBookmarkTestWithData::CompareWithTestData(
     const TestData* data,
     int size,
     int* running_count) {
-  DCHECK(node);
-  DCHECK(data);
-  DCHECK(node->is_folder());
+  ASSERT_TRUE(node);
+  ASSERT_TRUE(data);
+  ASSERT_TRUE(node->is_folder());
   ASSERT_EQ(size, node->child_count());
   for (int i = 0; i < size; ++i) {
     const BookmarkNode* child_node = node->GetChild(i);

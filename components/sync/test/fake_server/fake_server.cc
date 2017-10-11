@@ -88,7 +88,7 @@ void FakeServer::HandleCommand(const string& request,
   } else {
     sync_pb::ClientToServerMessage message;
     bool parsed = message.ParseFromString(request);
-    CHECK(parsed) << "Unable to parse the ClientToServerMessage.";
+    DCHECK(parsed) << "Unable to parse the ClientToServerMessage.";
     switch (message.message_contents()) {
       case sync_pb::ClientToServerMessage::GET_UPDATES:
         last_getupdates_message_ = message;
