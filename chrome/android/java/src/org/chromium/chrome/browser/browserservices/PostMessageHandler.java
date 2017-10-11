@@ -8,7 +8,6 @@ import android.content.Context;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.customtabs.CustomTabsService;
-import android.support.customtabs.CustomTabsService.Relation;
 import android.support.customtabs.CustomTabsSessionToken;
 import android.support.customtabs.PostMessageServiceConnection;
 
@@ -29,14 +28,12 @@ import org.chromium.content_public.browser.WebContentsObserver;
 public class PostMessageHandler
         extends PostMessageServiceConnection implements OriginVerificationListener {
     private final MessageCallback mMessageCallback;
-    private OriginVerifier mOriginVerifier;
     private WebContents mWebContents;
     private boolean mMessageChannelCreated;
     private boolean mBoundToService;
     private AppWebMessagePort[] mChannel;
     private Uri mOrigin;
     private String mPackageName;
-    private @Relation int mRelation;
 
     /**
      * Basic constructor. Everytime the given {@link CustomTabsSessionToken} is associated with a
@@ -153,23 +150,6 @@ public class PostMessageHandler
     }
 
     /**
-     * Asynchronously verify the postMessage origin for the given package name and initialize with
-     * it if the result is a success. Can be called multiple times. If so, the previous requests
-     * will be overridden.
-     * @param origin The origin to verify for.
-     */
-    public void verifyAndInitializeWithOrigin(final Uri origin, @Relation int relation) {
-        mRelation = relation;
-        mOriginVerifier = new OriginVerifier(this, mPackageName, mRelation);
-        ThreadUtils.postOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mOriginVerifier.start(origin);
-            }
-        });
-    }
-
-    /**
      * Relay a postMessage request through the current channel assigned to this session.
      * @param message The message to be sent.
      * @return The result of the postMessage request. Returning true means the request was accepted,
@@ -230,6 +210,5 @@ public class PostMessageHandler
      */
     public void cleanup(Context context) {
         if (mBoundToService) super.unbindFromContext(context);
-        if (mOriginVerifier != null) mOriginVerifier.cleanUp();
     }
 }
