@@ -207,6 +207,13 @@ void BodyStreamBuffer::Tee(BodyStreamBuffer** branch1,
 
 ScriptPromise BodyStreamBuffer::pull(ScriptState* script_state) {
   DCHECK_EQ(script_state, script_state_.get());
+  if (!consumer_) {
+    // This is a speculative workaround for a crash. See
+    // https://crbug.com/773525.
+    // TODO(yhirano): Remove this branch or have a better comment.
+    return ScriptPromise::CastUndefined(script_state);
+  }
+
   if (stream_needs_more_)
     return ScriptPromise::CastUndefined(script_state);
   stream_needs_more_ = true;
