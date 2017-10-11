@@ -23,6 +23,7 @@
 #include "chromecast/media/cma/pipeline/audio_decoder_software_wrapper.h"
 #include "chromecast/media/cma/pipeline/audio_pipeline_impl.h"
 #include "chromecast/media/cma/pipeline/cma_pipeline_features.h"
+#include "chromecast/media/cma/pipeline/media_pipeline_observer.h"
 #include "chromecast/media/cma/pipeline/video_pipeline_impl.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
 #include "media/base/timestamp_constants.h"
@@ -110,6 +111,9 @@ MediaPipelineImpl::~MediaPipelineImpl() {
   CMALOG(kLogControl) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  // TODO(b/67112414): Do something better than this.
+  MediaPipelineObserver::NotifyPipelineDestroyed(this);
+
   if (backend_state_ != BACKEND_STATE_UNINITIALIZED &&
       backend_state_ != BACKEND_STATE_INITIALIZED)
     metrics::CastMetricsHelper::GetInstance()->RecordApplicationEvent(
@@ -183,7 +187,15 @@ void MediaPipelineImpl::SetCdm(CastCdmContext* cdm_context) {
   audio_pipeline_.reset(new AudioPipelineImpl(audio_decoder_.get(), client));
   if (cdm_context_)
     audio_pipeline_->SetCdm(cdm_context_);
-  return audio_pipeline_->Initialize(config, std::move(frame_provider));
+  ::media::PipelineStatus status =
+      audio_pipeline_->Initialize(config, std::move(frame_provider));
+
+  if (status == ::media::PipelineStatus::PIPELINE_OK) {
+    // TODO(b/67112414): Do something better than this.
+    MediaPipelineObserver::NotifyAudioPipelineInitialized(this, config);
+  }
+
+  return status;
 }
 
 ::media::PipelineStatus MediaPipelineImpl::InitializeVideo(
