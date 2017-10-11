@@ -63,9 +63,6 @@ class ChildCallStackProfileCollector {
   void SetParentProfileCollector(
       metrics::mojom::CallStackProfileCollectorPtr parent_collector);
 
-  // Returns the ChildCallStackProfileCollector for the process.
-  static ChildCallStackProfileCollector* Get();
-
  private:
   friend class ChildCallStackProfileCollectorTest;
 
