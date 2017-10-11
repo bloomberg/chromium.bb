@@ -380,11 +380,6 @@ void HandleResponseHeaders(const net::HttpResponseHeaders* headers,
   if (!headers)
     return;
 
-  // Parse the "Content-Length" header. Adjust to 0 if no valid content_length
-  // presents.
-  int64_t content_length = headers->GetContentLength();
-  create_info->total_bytes = (content_length == -1) ? 0 : content_length;
-
   if (headers->HasStrongValidators()) {
     // If we don't have strong validators as per RFC 7232 section 2, then
     // we neither store nor use them for range requests.

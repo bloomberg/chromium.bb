@@ -116,6 +116,7 @@ DownloadResponseHandler::CreateDownloadCreateInfo(
                 *head.headers, create_info->save_info.get(), fetch_error_body_)
           : DOWNLOAD_INTERRUPT_REASON_NONE;
 
+  create_info->total_bytes = head.content_length > 0 ? head.content_length : 0;
   create_info->result = result;
   if (result == DOWNLOAD_INTERRUPT_REASON_NONE)
     create_info->remote_address = head.socket_address.host();
