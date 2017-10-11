@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import datetime
+import os
 
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
@@ -125,7 +126,7 @@ def ParseCommandLine(argv):
     argv: Command arguments.
 
   Returns:
-    List of parsed args.
+    List of parsed options.
   """
 
   parser = commandline.ArgumentParser(description=__doc__)
@@ -155,27 +156,33 @@ def ParseCommandLine(argv):
                       help='Do not display video output.')
   parser.add_argument('--ssh-port', type=int, default=cros_vm.VM.SSH_PORT,
                       help='ssh port to communicate with VM.')
-  return parser.parse_args(argv)
+
+  opts = parser.parse_args(argv)
+  if opts.build or opts.deploy:
+    if not opts.build_dir:
+      parser.error('Must specifiy --build-dir with --build or --deploy.')
+    if not os.path.isdir(opts.build_dir):
+      parser.error('%s is not a directory.' % opts.build_dir)
+
+  opts.Freeze()
+  return opts
 
 
 def main(argv):
-  args = ParseCommandLine(argv)
-  vm_test = VMTest(image_path=args.image_path,
-                   qemu_path=args.qemu_path, enable_kvm=args.enable_kvm,
-                   display=args.display, catapult_tests=args.catapult_tests,
-                   guest=args.guest,
-                   start_vm=args.start_vm, ssh_port=args.ssh_port)
-
-  if (args.build or args.deploy) and not args.build_dir:
-    args.error('Must specifiy --build-dir with --build or --deploy.')
+  opts = ParseCommandLine(argv)
+  vm_test = VMTest(image_path=opts.image_path,
+                   qemu_path=opts.qemu_path, enable_kvm=opts.enable_kvm,
+                   display=opts.display, catapult_tests=opts.catapult_tests,
+                   guest=opts.guest,
+                   start_vm=opts.start_vm, ssh_port=opts.ssh_port)
 
   vm_test.StartVM()
 
-  if args.build:
-    vm_test.Build(args.build_dir)
+  if opts.build:
+    vm_test.Build(opts.build_dir)
 
-  if args.build or args.deploy:
-    vm_test.Deploy(args.build_dir)
+  if opts.build or opts.deploy:
+    vm_test.Deploy(opts.build_dir)
 
   success = vm_test.RunTests()
   success_str = 'succeeded' if success else 'failed'
