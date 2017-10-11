@@ -1174,6 +1174,11 @@ std::string RenderFrameDevToolsAgentHost::GetParentId() {
   return "";
 }
 
+std::string RenderFrameDevToolsAgentHost::GetOpenerId() {
+  FrameTreeNode* opener = frame_tree_node_->original_opener();
+  return opener ? opener->devtools_frame_token().ToString() : std::string();
+}
+
 std::string RenderFrameDevToolsAgentHost::GetType() {
   if (web_contents() &&
       static_cast<WebContentsImpl*>(web_contents())->GetOuterWebContents()) {

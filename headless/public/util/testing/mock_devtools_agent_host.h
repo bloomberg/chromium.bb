@@ -30,6 +30,7 @@ class MockDevToolsAgentHost : public content::DevToolsAgentHost {
                void(content::DevToolsAgentHostClient* client, int x, int y));
   MOCK_METHOD0(GetId, std::string());
   MOCK_METHOD0(GetParentId, std::string());
+  MOCK_METHOD0(GetOpenerId, std::string());
   MOCK_METHOD0(GetDescription, std::string());
   MOCK_METHOD0(GetFaviconURL, GURL());
   MOCK_METHOD0(GetFrontendURL, std::string());

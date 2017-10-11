@@ -150,6 +150,9 @@ class CONTENT_EXPORT DevToolsAgentHost
   // Returns the id of the parent host, or empty string if no parent.
   virtual std::string GetParentId() = 0;
 
+  // Returns the id of the opener host, or empty string if no opener.
+  virtual std::string GetOpenerId() = 0;
+
   // Returns web contents instance for this host if any.
   virtual WebContents* GetWebContents() = 0;
 
