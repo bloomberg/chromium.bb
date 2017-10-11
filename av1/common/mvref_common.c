@@ -585,8 +585,8 @@ static int add_col_ref_mv(const AV1_COMMON *cm,
                           CANDIDATE_MV *ref_mv_stack, int16_t *mode_context) {
 #if CONFIG_TMV
   const MV_REF *prev_frame_mvs = prev_frame_mvs_base +
-                                 ((blk_row + 1) >> 1) * prev_frame_mvs_stride +
-                                 ((blk_col + 1) >> 1);
+                                 (blk_row >> 1) * prev_frame_mvs_stride +
+                                 (blk_col >> 1);
 #else
   const MV_REF *prev_frame_mvs =
       prev_frame_mvs_base + blk_row * prev_frame_mvs_stride + blk_col;
