@@ -188,6 +188,10 @@ void TaskQueue::InsertFence(InsertFencePosition position) {
   impl_->InsertFence(position);
 }
 
+void TaskQueue::InsertFenceAt(base::TimeTicks time) {
+  impl_->InsertFenceAt(time);
+}
+
 void TaskQueue::RemoveFence() {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
   if (!impl_)

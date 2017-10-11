@@ -220,7 +220,19 @@ class PLATFORM_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
   // removed or a subsequent fence has unblocked some tasks within the queue.
   // Note: delayed tasks get their enqueue order set once their delay has
   // expired, and non-delayed tasks get their enqueue order set when posted.
+  //
+  // Fences come in three flavours:
+  // - Regular (InsertFence(NOW)) - all tasks posted after this moment
+  //   are blocked.
+  // - Fully blocking (InsertFence(BEGINNING_OF_TIME)) - all tasks including
+  //   already posted are blocked.
+  // - Delayed (InsertFenceAt(timestamp)) - blocks all tasks posted after given
+  //   point in time (must be in the future).
+  //
+  // Only one fence can be scheduled at a time. Inserting a new fence
+  // will automatically remove the previous one, regardless of fence type.
   void InsertFence(InsertFencePosition position);
+  void InsertFenceAt(base::TimeTicks time);
 
   // Removes any previously added fence and unblocks execution of any tasks
   // blocked by it.
