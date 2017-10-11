@@ -334,6 +334,22 @@ Node* PositionTemplate<Strategy>::CommonAncestorContainer(
                                   *other.ComputeContainerNode());
 }
 
+static bool IsPositionConnected(const Position& position) {
+  return position.AnchorNode() && position.AnchorNode()->isConnected();
+}
+
+static bool IsPositionConnected(const PositionInFlatTree& position) {
+  if (position.IsNull())
+    return false;
+  return FlatTreeTraversal::Contains(*position.GetDocument(),
+                                     *position.AnchorNode());
+}
+
+template <typename Strategy>
+bool PositionTemplate<Strategy>::IsConnected() const {
+  return IsPositionConnected(*this);
+}
+
 static bool IsPositionValidFor(const Position& position,
                                const Document& document) {
   if (position.IsNull())
@@ -352,6 +368,8 @@ static bool IsPositionValidFor(const PositionInFlatTree& position,
   return FlatTreeTraversal::Contains(document, *position.AnchorNode());
 }
 
+// TODO(xiaochengh): Consolidate the two overloads of |IsPositionValidFor()|
+// with |IsConnected()|.
 template <typename Strategy>
 bool PositionTemplate<Strategy>::IsValidFor(const Document& document) const {
   return IsPositionValidFor(*this, document);

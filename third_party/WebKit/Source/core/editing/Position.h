@@ -153,15 +153,18 @@ class CORE_TEMPLATE_CLASS_EXPORT PositionTemplate {
   Document* GetDocument() const {
     return anchor_node_ ? &anchor_node_->GetDocument() : 0;
   }
-  bool IsConnected() const {
-    return anchor_node_ && anchor_node_->isConnected();
-  }
+
+  // For PositionInFlatTree, it requires an ancestor traversal to compute the
+  // value of IsConnected(), which can be expensive.
+  // TODO(crbug.com/761173): Rename to |ComputeIsConnected()| to indicate the
+  // cost.
+  bool IsConnected() const;
 
   bool IsValidFor(const Document&) const;
 
   bool IsNull() const { return !anchor_node_; }
   bool IsNotNull() const { return anchor_node_; }
-  bool IsOrphan() const { return anchor_node_ && !anchor_node_->isConnected(); }
+  bool IsOrphan() const { return anchor_node_ && !IsConnected(); }
 
   // Note: Comparison of positions require both parameters are non-null. You
   // should check null-position before comparing them.

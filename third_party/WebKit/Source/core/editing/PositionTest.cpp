@@ -228,4 +228,26 @@ TEST_F(PositionTest, ToPositionInFlatTreeWithEmptyShadowRoot) {
             ToPositionInFlatTree(Position(shadow_root, 0)));
 }
 
+TEST_F(PositionTest, NullPositionNotConnected) {
+  EXPECT_FALSE(Position().IsConnected());
+  EXPECT_FALSE(PositionInFlatTree().IsConnected());
+}
+
+TEST_F(PositionTest, IsConnectedBasic) {
+  Position position = SetCaretTextToBody("<div>f|oo</div>");
+  EXPECT_TRUE(position.IsConnected());
+  EXPECT_TRUE(ToPositionInFlatTree(position).IsConnected());
+
+  position.AnchorNode()->remove();
+  EXPECT_FALSE(position.IsConnected());
+  EXPECT_FALSE(ToPositionInFlatTree(position).IsConnected());
+}
+
+TEST_F(PositionTest, IsConnectedInFlatTree) {
+  Position position = SetCaretTextToBody(
+      "<div>f|oo<template data-mode=open>bar</template></div>");
+  EXPECT_TRUE(position.IsConnected());
+  EXPECT_FALSE(ToPositionInFlatTree(position).IsConnected());
+}
+
 }  // namespace blink
