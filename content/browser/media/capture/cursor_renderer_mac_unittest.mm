@@ -16,8 +16,19 @@
 
 namespace content {
 
-const int kTestViewWidth = 800;
-const int kTestViewHeight = 600;
+const int kTestViewWidth = 320;
+const int kTestViewHeight = 240;
+
+CGEventRef myCGEventCallback(CGEventTapProxy proxy,
+                             CGEventType type,
+                             CGEventRef event,
+                             void* refcon) {
+  // Paranoid sanity check.
+  if (type != kCGEventMouseMoved)
+    return event;
+  // Discard mouse-moved event.
+  return NULL;
+}
 
 class CursorRendererMacTest : public ui::CocoaTest {
  public:
@@ -30,11 +41,13 @@ class CursorRendererMacTest : public ui::CocoaTest {
         initWithFrame:NSMakeRect(0, 0, kTestViewWidth, kTestViewHeight)]);
     view_ = view.get();
     [[test_window() contentView] addSubview:view_];
-
     cursor_renderer_.reset(new CursorRendererMac(view_));
+    // Dis-associate mouse and cursor.
+    StartEventTap();
   }
 
   void TearDown() override {
+    StopEventTap();
     cursor_renderer_.reset();
     ui::CocoaTest::TearDown();
   }
@@ -103,9 +116,29 @@ class CursorRendererMacTest : public ui::CocoaTest {
     return (y_found && u_found && v_found);
   }
 
+  // The test cases here need to move the actual cursor. If the mouse moves the
+  // cursor at same time, the cursor position might be unexpected and test cases
+  // will fail. So dis-associate mouse and cursor by enabling event tap for
+  // mouse-moved event during tests runnning.
+  void StartEventTap() {
+    // Create an event tap. We are interested in mouse moved.
+    CGEventMask eventMask = 1 << kCGEventMouseMoved;
+    event_tap_ = CGEventTapCreate(kCGSessionEventTap, kCGHeadInsertEventTap,
+                                  kCGEventTapOptionDefault, eventMask,
+                                  myCGEventCallback, NULL);
+    if (event_tap_) {
+      // Enable the event tap.
+      CGEventTapEnable(event_tap_, true);
+    }
+  }
+
+  void StopEventTap() { CGEventTapEnable(event_tap_, false); }
+
  protected:
   NSView* view_;
   std::unique_ptr<CursorRendererMac> cursor_renderer_;
+
+  CFMachPortRef event_tap_;
 };
 
 TEST_F(CursorRendererMacTest, CursorDuringMouseMovement) {
