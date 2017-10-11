@@ -59,3 +59,7 @@ class PixelExpectations(GpuTestExpectations):
 
     self.Flaky('Pixel_OffscreenCanvasWebGLSoftwareCompositingWorker',
         ['mac', ('nvidia', 0xfe9), 'debug'], bug=751328)
+
+    # Failing on Nexus 5; haven't investigated why yet.
+    self.Skip('Pixel_WebGL2_BlitFramebuffer_Result_Displayed',
+        ['android', ('qualcomm', 'Adreno (TM) 330')], bug=773293)
