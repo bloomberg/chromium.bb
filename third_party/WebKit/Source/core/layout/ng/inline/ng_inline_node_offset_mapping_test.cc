@@ -56,6 +56,16 @@ class NGInlineNodeOffsetMappingTest : public RenderingTest {
     return GetOffsetMapping().GetTextContentOffset(node, offset);
   }
 
+  unsigned StartOfNextNonCollapsedCharacter(const Node& node,
+                                            unsigned offset) const {
+    return GetOffsetMapping().StartOfNextNonCollapsedCharacter(node, offset);
+  }
+
+  unsigned EndOfLastNonCollapsedCharacter(const Node& node,
+                                          unsigned offset) const {
+    return GetOffsetMapping().EndOfLastNonCollapsedCharacter(node, offset);
+  }
+
   RefPtr<const ComputedStyle> style_;
   LayoutNGBlockFlow* layout_block_flow_ = nullptr;
   LayoutObject* layout_object_ = nullptr;
@@ -122,6 +132,16 @@ TEST_F(NGInlineNodeOffsetMappingTest, OneTextNode) {
   EXPECT_EQ(1u, GetTextContentOffset(*foo_node, 1));
   EXPECT_EQ(2u, GetTextContentOffset(*foo_node, 2));
   EXPECT_EQ(3u, GetTextContentOffset(*foo_node, 3));
+
+  EXPECT_EQ(0u, StartOfNextNonCollapsedCharacter(*foo_node, 0));
+  EXPECT_EQ(1u, StartOfNextNonCollapsedCharacter(*foo_node, 1));
+  EXPECT_EQ(2u, StartOfNextNonCollapsedCharacter(*foo_node, 2));
+  EXPECT_EQ(3u, StartOfNextNonCollapsedCharacter(*foo_node, 3));
+
+  EXPECT_EQ(0u, EndOfLastNonCollapsedCharacter(*foo_node, 0));
+  EXPECT_EQ(1u, EndOfLastNonCollapsedCharacter(*foo_node, 1));
+  EXPECT_EQ(2u, EndOfLastNonCollapsedCharacter(*foo_node, 2));
+  EXPECT_EQ(3u, EndOfLastNonCollapsedCharacter(*foo_node, 3));
 }
 
 TEST_F(NGInlineNodeOffsetMappingTest, TwoTextNodes) {
@@ -238,6 +258,14 @@ TEST_F(NGInlineNodeOffsetMappingTest, OneTextNodeWithCollapsedSpace) {
   EXPECT_EQ(5u, GetTextContentOffset(*node, 6));
   EXPECT_EQ(6u, GetTextContentOffset(*node, 7));
   EXPECT_EQ(7u, GetTextContentOffset(*node, 8));
+
+  EXPECT_EQ(3u, StartOfNextNonCollapsedCharacter(*node, 3));
+  EXPECT_EQ(5u, StartOfNextNonCollapsedCharacter(*node, 4));
+  EXPECT_EQ(5u, StartOfNextNonCollapsedCharacter(*node, 5));
+
+  EXPECT_EQ(3u, EndOfLastNonCollapsedCharacter(*node, 3));
+  EXPECT_EQ(4u, EndOfLastNonCollapsedCharacter(*node, 4));
+  EXPECT_EQ(4u, EndOfLastNonCollapsedCharacter(*node, 5));
 }
 
 TEST_F(NGInlineNodeOffsetMappingTest, FullyCollapsedWhiteSpaceNode) {
@@ -291,6 +319,9 @@ TEST_F(NGInlineNodeOffsetMappingTest, FullyCollapsedWhiteSpaceNode) {
   EXPECT_EQ(5u, GetTextContentOffset(*bar_node, 1));
   EXPECT_EQ(6u, GetTextContentOffset(*bar_node, 2));
   EXPECT_EQ(7u, GetTextContentOffset(*bar_node, 3));
+
+  EXPECT_EQ(0u, EndOfLastNonCollapsedCharacter(*space_node, 1u));
+  EXPECT_EQ(1u, StartOfNextNonCollapsedCharacter(*space_node, 0u));
 }
 
 TEST_F(NGInlineNodeOffsetMappingTest, ReplacedElement) {
@@ -470,6 +501,15 @@ TEST_F(NGInlineNodeOffsetMappingTest, FirstLetterInDifferentBlock) {
   EXPECT_EQ(1u, remaining_text_result.GetTextContentOffset(*text_node, 1));
   EXPECT_EQ(2u, remaining_text_result.GetTextContentOffset(*text_node, 2));
   EXPECT_EQ(3u, remaining_text_result.GetTextContentOffset(*text_node, 3));
+}
+
+TEST_F(NGInlineNodeOffsetMappingTest, WhiteSpaceTextNodeWithoutLayoutText) {
+  SetupHtml("t", "<div id=t> <span>foo</span></div>");
+  Element* div = GetDocument().getElementById("t");
+  const Node* text_node = div->firstChild();
+
+  EXPECT_EQ(0u, EndOfLastNonCollapsedCharacter(*text_node, 1u));
+  EXPECT_EQ(1u, StartOfNextNonCollapsedCharacter(*text_node, 0u));
 }
 
 }  // namespace blink
