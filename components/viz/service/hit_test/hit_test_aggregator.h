@@ -30,10 +30,6 @@ class VIZ_SERVICE_EXPORT HitTestAggregator {
                     HitTestAggregatorDelegate* delegate);
   ~HitTestAggregator();
 
-  // Performs the work of Aggregate by creating a PostTask so that
-  // the work is not directly on the call.
-  void PostTaskAggregate(const SurfaceId& display_surface_id);
-
   // Called after surfaces have been aggregated into the DisplayFrame.
   // In this call HitTestRegionList structures received from active surfaces
   // are aggregated into the HitTestRegionList structure in
