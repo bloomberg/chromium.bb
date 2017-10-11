@@ -32,7 +32,7 @@
       },
       "requires": {
         "accessibility_autoclick": [ "ash:autoclick" ],
-        "ash": [ "ash", "display" ],
+        "ash": [ "system_ui", "test", "display" ],
         // Only used in classic ash case.
         "ash_pref_connector": [ "pref_connector" ],
         // Only used in classic ash case.

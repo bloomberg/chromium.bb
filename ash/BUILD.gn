@@ -1621,6 +1621,8 @@ static_library("test_support_common") {
     "metrics/task_switch_time_tracker_test_api.h",
     "metrics/user_metrics_recorder_test_api.cc",
     "metrics/user_metrics_recorder_test_api.h",
+    "mojo_test_interface_factory.cc",
+    "mojo_test_interface_factory.h",
 
     # TODO(jamescook): Consider adding a //ash/public/cpp:test_support target.
     "public/cpp/immersive/immersive_fullscreen_controller_test_api.cc",
@@ -1649,6 +1651,7 @@ static_library("test_support_common") {
     "system/power/power_button_test_base.h",
     "system/status_area_widget_test_helper.cc",
     "system/status_area_widget_test_helper.h",
+    "system/tray/system_tray_test_api.cc",
     "system/tray/system_tray_test_api.h",
     "system/tray/test_system_tray_item.cc",
     "system/tray/test_system_tray_item.h",
@@ -1704,6 +1707,7 @@ static_library("test_support_common") {
     "//ash",
     "//ash/mus:lib",
     "//ash/public/cpp:ash_public_cpp",
+    "//ash/public/interfaces:test_interfaces",
     "//ash/resources",
     "//base",
     "//base:i18n",

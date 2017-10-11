@@ -9,6 +9,8 @@ static_library("test_utils") {
     "lib/test_support.cc",
     "lib/test_utils.cc",
     "test_utils.h",
+    "waiter.cc",
+    "waiter.h",
   ]
 
   deps = [

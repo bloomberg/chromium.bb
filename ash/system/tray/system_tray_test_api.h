@@ -5,16 +5,20 @@
 #ifndef ASH_SYSTEM_TRAY_SYSTEM_TRAY_TEST_API_H_
 #define ASH_SYSTEM_TRAY_SYSTEM_TRAY_TEST_API_H_
 
+#include "ash/public/interfaces/system_tray_test_api.mojom.h"
 #include "ash/system/tray/system_tray.h"
 #include "base/macros.h"
 
 namespace ash {
 
 // Use by tests to access private state of SystemTray.
-class SystemTrayTestApi {
+class SystemTrayTestApi : public mojom::SystemTrayTestApi {
  public:
-  explicit SystemTrayTestApi(SystemTray* tray) : tray_(tray) {}
-  ~SystemTrayTestApi() = default;
+  explicit SystemTrayTestApi(SystemTray* tray);
+  ~SystemTrayTestApi() override;
+
+  // Creates and binds an instance from a remote request (e.g. from chrome).
+  static void BindRequest(mojom::SystemTrayTestApiRequest request);
 
   TrayAccessibility* tray_accessibility() { return tray_->tray_accessibility_; }
   TrayCapsLock* tray_caps_lock() { return tray_->tray_caps_lock_; }
@@ -30,6 +34,15 @@ class SystemTrayTestApi {
   TrayTracing* tray_tracing() { return tray_->tray_tracing_; }
   TraySystemInfo* tray_system_info() { return tray_->tray_system_info_; }
   TrayTiles* tray_tiles() { return tray_->tray_tiles_; }
+
+  // mojom::SystemTrayTestApi:
+  void ShowBubble(ShowBubbleCallback cb) override;
+  void ShowDetailedView(mojom::TrayItem item,
+                        ShowDetailedViewCallback cb) override;
+  void IsBubbleViewVisible(int view_id,
+                           IsBubbleViewVisibleCallback cb) override;
+  void GetBubbleViewTooltip(int view_id,
+                            GetBubbleViewTooltipCallback cb) override;
 
  private:
   SystemTray* const tray_;

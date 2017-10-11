@@ -65,10 +65,7 @@
       "requires": {
         "*": [ "app" ],
         "cdm": [ "media:cdm" ],
-        // In classic ash, the browser supplies ash interfaces to itself.
         "content_browser": [
-          "ash",
-          "display",
           "url_keyed_metrics",
           "geolocation_config"
         ],

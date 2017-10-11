@@ -27,12 +27,16 @@
 #include "ash/wallpaper/wallpaper_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/bind.h"
+#include "base/lazy_instance.h"
 #include "base/single_thread_task_runner.h"
 #include "ui/app_list/presenter/app_list.h"
 
 namespace ash {
-
+namespace mojo_interface_factory {
 namespace {
+
+base::LazyInstance<RegisterInterfacesCallback>::Leaky
+    g_register_interfaces_callback = LAZY_INSTANCE_INITIALIZER;
 
 void BindAcceleratorControllerRequestOnMainThread(
     mojom::AcceleratorControllerRequest request) {
@@ -120,8 +124,6 @@ void BindWallpaperRequestOnMainThread(
 
 }  // namespace
 
-namespace mojo_interface_factory {
-
 void RegisterInterfaces(
     service_manager::BinderRegistry* registry,
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner) {
@@ -168,6 +170,16 @@ void RegisterInterfaces(
                          main_thread_task_runner);
   registry->AddInterface(base::Bind(&BindWallpaperRequestOnMainThread),
                          main_thread_task_runner);
+
+  // Inject additional optional interfaces.
+  if (g_register_interfaces_callback.Get()) {
+    std::move(g_register_interfaces_callback.Get())
+        .Run(registry, main_thread_task_runner);
+  }
+}
+
+void SetRegisterInterfacesCallback(RegisterInterfacesCallback callback) {
+  g_register_interfaces_callback.Get() = std::move(callback);
 }
 
 }  // namespace mojo_interface_factory

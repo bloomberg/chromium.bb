@@ -4,40 +4,24 @@
 
 #include "chrome/browser/ui/ash/networking_config_delegate_chromeos.h"
 
-#include "ash/login_status.h"
-#include "ash/root_window_controller.h"
-#include "ash/shell.h"
+#include "ash/ash_view_ids.h"
+#include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/interfaces/system_tray_test_api.mojom.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "ash/system/network/network_list.h"
-#include "ash/system/network/tray_network.h"
-#include "ash/system/tray/system_tray.h"
-#include "ash/system/tray/system_tray_test_api.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
+#include "content/public/common/service_manager_connection.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/test/extension_test_message_listener.h"
+#include "mojo/public/cpp/test_support/waiter.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/views/view.h"
+
+using base::string16;
 
 namespace {
-
-// Returns true if this view or any child view has the given tooltip.
-bool HasChildWithTooltip(views::View* view,
-                         const base::string16& given_tooltip) {
-  base::string16 tooltip;
-  view->GetTooltipText(gfx::Point(), &tooltip);
-  if (tooltip == given_tooltip)
-    return true;
-
-  for (int i = 0; i < view->child_count(); ++i) {
-    if (HasChildWithTooltip(view->child_at(i), given_tooltip))
-      return true;
-  }
-
-  return false;
-}
 
 using NetworkingConfigDelegateChromeosTest = ExtensionBrowserTest;
 
@@ -51,32 +35,31 @@ IN_PROC_BROWSER_TEST_F(NetworkingConfigDelegateChromeosTest, SystemTrayItem) {
       LoadExtension(test_data_dir_.AppendASCII("networking_config_delegate")));
   ASSERT_TRUE(listener.WaitUntilSatisfied());
 
-  // Open the system tray menu.
-  ash::SystemTray* system_tray =
-      ash::Shell::GetPrimaryRootWindowController()->GetSystemTray();
-  system_tray->ShowDefaultView(ash::BUBBLE_CREATE_NEW,
-                               false /* show_by_click */);
-  content::RunAllPendingInMessageLoop();
-  ASSERT_TRUE(system_tray->HasSystemBubble());
+  // Connect to ash.
+  ash::mojom::SystemTrayTestApiPtr tray_test_api;
+  content::ServiceManagerConnection::GetForProcess()
+      ->GetConnector()
+      ->BindInterface(ash::mojom::kServiceName, &tray_test_api);
 
   // Show the network detail view.
-  ash::TrayNetwork* tray_network =
-      ash::SystemTrayTestApi(system_tray).tray_network();
-  system_tray->ShowDetailedView(tray_network, 0, ash::BUBBLE_CREATE_NEW);
-  content::RunAllPendingInMessageLoop();
-  ASSERT_TRUE(tray_network->detailed());
+  base::RunLoop loop;
+  tray_test_api->ShowDetailedView(ash::mojom::TrayItem::kNetwork,
+                                  loop.QuitClosure());
+  loop.Run();
 
-  // Look for an item with a tooltip saying it is an extension-controlled
-  // network. Searching all children allows this test to avoid knowing about the
-  // specifics of the view hierarchy.
-  base::string16 expected_tooltip = l10n_util::GetStringFUTF16(
+  // Expect that the extension-controlled VPN item appears.
+  string16 expected_tooltip = l10n_util::GetStringFUTF16(
       IDS_ASH_STATUS_TRAY_EXTENSION_CONTROLLED_WIFI,
       base::UTF8ToUTF16("NetworkingConfigDelegate test extension"));
-  EXPECT_TRUE(HasChildWithTooltip(tray_network->detailed(), expected_tooltip));
-
-  // Close the system tray menu.
-  system_tray->CloseBubble();
-  content::RunAllPendingInMessageLoop();
+  using SystemTrayTestApi = ash::mojom::SystemTrayTestApi;
+  mojo::test::Waiter waiter;
+  string16 tooltip;
+  tray_test_api->GetBubbleViewTooltip(
+      ash::VIEW_ID_EXTENSION_CONTROLLED_WIFI,
+      waiter.CaptureNext<SystemTrayTestApi::GetBubbleViewTooltipCallback>(
+          &tooltip));
+  waiter.Wait();
+  EXPECT_EQ(expected_tooltip, tooltip);
 }
 
 }  // namespace
