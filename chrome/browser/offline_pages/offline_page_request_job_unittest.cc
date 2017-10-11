@@ -4,6 +4,12 @@
 
 #include "chrome/browser/offline_pages/offline_page_request_job.h"
 
+#include <map>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
@@ -44,48 +50,58 @@ namespace offline_pages {
 
 namespace {
 
-const GURL kTestUrl("http://test.org/page1");
+const GURL kTestUrl1("http://test.org/page1");
 const GURL kTestUrl2("http://test.org/page2");
 const GURL kTestUrl3("http://test.org/page3");
 const GURL kTestUrl3WithFragment("http://test.org/page3#ref1");
 const GURL kTestUrl4("http://test.org/page4");
 const GURL kTestUrl5("http://test.org/page5");
-const GURL kTestOriginalUrl("http://test.org/first");
-const ClientId kTestClientId = ClientId(kBookmarkNamespace, "1234");
+const GURL kTestUrlRedirectsTo3("http://test.org/first");
+
+const ClientId kTestClientId1 = ClientId(kBookmarkNamespace, "1234");
 const ClientId kTestClientId2 = ClientId(kDownloadNamespace, "1a2b3c4d");
-const ClientId kTestClientId3 = ClientId(kDownloadNamespace, "3456abcd");
-const ClientId kTestClientId4 = ClientId(kDownloadNamespace, "5678");
-const ClientId kTestClientId5 = ClientId(kDownloadNamespace, "9999");
-const int kTestFileSize = 444;
-const int kTestFileSize2 = 450;
-const int kTestFileSize3 = 450;
-const int kTestFileSize4 = 111;
-const int kTestFileSize5 = 450;
+const ClientId kTestClientId3 = ClientId(kAsyncNamespace, "3456abcd");
+const ClientId kTestClientId4 = ClientId(kNTPSuggestionsNamespace, "5678");
+const ClientId kTestClientId5 = ClientId(kBrowserActionsNamespace, "9999");
+
+// Note: as most file size values are below 1 KiB, the file size samples added
+// to page size histograms will mostly fall into the 0-sized bucket. So when
+// checking for correct reporting a 0 will be directly used instead of the
+// specific file size constant divided by 1024.
+const int kTestFileSize1 = 444;  // Real size of offline_pages/test.mhtml.
+const int kTestFileSize2 = 450;  // Real size of offline_pages/hello.mhtml.
+const int kTestFileSize3 = 450;  // Ditto.
+const int kTestFileSize4NonExistent = 9999;
+const int kTestFileSize5 = 450;  // Ditto.
+
 const int kTabId = 1;
 const int kBufSize = 1024;
+
 const char kAggregatedRequestResultHistogram[] =
     "OfflinePages.AggregatedRequestResult2";
 const char kOpenFileErrorCodeHistogram[] =
     "OfflinePages.RequestJob.OpenFileErrorCode";
 const char kAccessEntryPointHistogram[] = "OfflinePages.AccessEntryPoint.";
+const char kPageSizeAccessOfflineHistogramBase[] =
+    "OfflinePages.PageSizeOnAccess.Offline.";
+const char kPageSizeAccessOnlineHistogramBase[] =
+    "OfflinePages.PageSizeOnAccess.Online.";
 
-class OfflinePageRequestJobTestDelegate :
-    public OfflinePageRequestJob::Delegate {
+class OfflinePageRequestJobTestDelegate
+    : public OfflinePageRequestJob::Delegate {
  public:
   OfflinePageRequestJobTestDelegate(content::WebContents* web_content,
                                     int tab_id)
-      : web_content_(web_content),
-        tab_id_(tab_id) {}
+      : web_content_(web_content), tab_id_(tab_id) {}
 
-  content::ResourceRequestInfo::WebContentsGetter
-  GetWebContentsGetter(net::URLRequest* request) const override {
+  content::ResourceRequestInfo::WebContentsGetter GetWebContentsGetter(
+      net::URLRequest* request) const override {
     return base::Bind(&OfflinePageRequestJobTestDelegate::GetWebContents,
                       web_content_);
   }
 
   OfflinePageRequestJob::Delegate::TabIdGetter GetTabIdGetter() const override {
-    return base::Bind(&OfflinePageRequestJobTestDelegate::GetTabId,
-                      tab_id_);
+    return base::Bind(&OfflinePageRequestJobTestDelegate::GetTabId, tab_id_);
   }
 
  private:
@@ -94,8 +110,9 @@ class OfflinePageRequestJobTestDelegate :
     return web_content;
   }
 
-  static bool GetTabId(
-      int tab_id_value, content::WebContents* web_content, int* tab_id) {
+  static bool GetTabId(int tab_id_value,
+                       content::WebContents* web_content,
+                       int* tab_id) {
     *tab_id = tab_id_value;
     return true;
   }
@@ -143,8 +160,8 @@ class TestURLRequestInterceptingJobFactory
       std::unique_ptr<net::URLRequestJobFactory> job_factory,
       std::unique_ptr<net::URLRequestInterceptor> interceptor,
       content::WebContents* web_contents)
-      : net::URLRequestInterceptingJobFactory(
-            std::move(job_factory), std::move(interceptor)),
+      : net::URLRequestInterceptingJobFactory(std::move(job_factory),
+                                              std::move(interceptor)),
         web_contents_(web_contents) {}
   ~TestURLRequestInterceptingJobFactory() override {}
 
@@ -156,8 +173,8 @@ class TestURLRequestInterceptingJobFactory
         MaybeCreateJobWithProtocolHandler(scheme, request, network_delegate);
     if (job) {
       static_cast<OfflinePageRequestJob*>(job)->SetDelegateForTesting(
-          base::MakeUnique<OfflinePageRequestJobTestDelegate>(
-              web_contents_, kTabId));
+          base::MakeUnique<OfflinePageRequestJobTestDelegate>(web_contents_,
+                                                              kTabId));
     }
     return job;
   }
@@ -231,9 +248,8 @@ class TestOfflinePageArchiver : public OfflinePageArchiver {
                      const CreateArchiveCallback& callback) override {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(callback, this, ArchiverResult::SUCCESSFULLY_CREATED,
-                   url_, archive_file_path_, base::string16(),
-                   archive_file_size_));
+        base::Bind(callback, this, ArchiverResult::SUCCESSFULLY_CREATED, url_,
+                   archive_file_path_, base::string16(), archive_file_size_));
   }
 
  private:
@@ -277,11 +293,15 @@ class OfflinePageRequestJobTest : public testing::Test {
   // Expect exactly |count| of |result| UMA reported. No other bucket should
   // have sample.
   void ExpectMultiUniqueSampleForAggregatedRequestResult(
-      OfflinePageRequestJob::AggregatedRequestResult result, int count);
+      OfflinePageRequestJob::AggregatedRequestResult result,
+      int count);
   // Expect one count of |result| UMA reported. Other buckets may have samples
   // as well.
   void ExpectOneNonuniqueSampleForAggregatedRequestResult(
       OfflinePageRequestJob::AggregatedRequestResult result);
+  // Expect no samples to have been reported to the aggregated results
+  // histogram.
+  void ExpectNoSamplesInAggregatedRequestResult();
 
   void ExpectOpenFileErrorCode(int result);
 
@@ -289,6 +309,15 @@ class OfflinePageRequestJobTest : public testing::Test {
       const ClientId& client_id,
       OfflinePageRequestJob::AccessEntryPoint entry_point);
   void ExpectNoAccessEntryPoint();
+
+  void ExpectOfflinePageSizeUniqueSample(ClientId client_id,
+                                         int bucket,
+                                         int count);
+  void ExpectOfflinePageSizeTotalSuffixCount(int count);
+  void ExpectOnlinePageSizeUniqueSample(ClientId client_id,
+                                        int bucket,
+                                        int count);
+  void ExpectOnlinePageSizeTotalSuffixCount(int count);
 
   net::TestURLRequestContext* url_request_context() {
     return test_url_request_context_.get();
@@ -411,36 +440,36 @@ void OfflinePageRequestJobTest::SetUp() {
   // Save an offline page.
   base::FilePath archive_file_path =
       test_data_dir_path.AppendASCII("offline_pages").AppendASCII("test.mhtml");
-  std::unique_ptr<TestOfflinePageArchiver> archiver(
-      new TestOfflinePageArchiver(kTestUrl, archive_file_path, kTestFileSize));
+  std::unique_ptr<TestOfflinePageArchiver> archiver(new TestOfflinePageArchiver(
+      kTestUrl1, archive_file_path, kTestFileSize1));
 
-  SavePage(kTestUrl, kTestClientId, GURL(), std::move(archiver));
+  SavePage(kTestUrl1, kTestClientId1, GURL(), std::move(archiver));
 
   // Save another offline page associated with same online URL as above, but
   // pointing to different archive file.
   base::FilePath archive_file_path2 =
-      test_data_dir_path.AppendASCII("offline_pages").
-          AppendASCII("hello.mhtml");
+      test_data_dir_path.AppendASCII("offline_pages")
+          .AppendASCII("hello.mhtml");
   std::unique_ptr<TestOfflinePageArchiver> archiver2(
-      new TestOfflinePageArchiver(
-          kTestUrl, archive_file_path2, kTestFileSize2));
+      new TestOfflinePageArchiver(kTestUrl1, archive_file_path2,
+                                  kTestFileSize2));
 
   // Make sure that the creation time of 2nd offline file is later.
   clock_.Advance(base::TimeDelta::FromMinutes(10));
 
-  SavePage(kTestUrl, kTestClientId2, GURL(), std::move(archiver2));
+  SavePage(kTestUrl1, kTestClientId2, GURL(), std::move(archiver2));
 
   // Save an offline page associated with online URL that has a fragment
   // identifier.
   base::FilePath archive_file_path3 =
-      test_data_dir_path.AppendASCII("offline_pages").
-          AppendASCII("hello.mhtml");
+      test_data_dir_path.AppendASCII("offline_pages")
+          .AppendASCII("hello.mhtml");
   std::unique_ptr<TestOfflinePageArchiver> archiver3(
-      new TestOfflinePageArchiver(
-          kTestUrl3WithFragment, archive_file_path3, kTestFileSize3));
+      new TestOfflinePageArchiver(kTestUrl3WithFragment, archive_file_path3,
+                                  kTestFileSize3));
 
-  SavePage(kTestUrl3WithFragment, kTestClientId3, kTestOriginalUrl,
-      std::move(archiver3));
+  SavePage(kTestUrl3WithFragment, kTestClientId3, kTestUrlRedirectsTo3,
+           std::move(archiver3));
 
   // Save an offline page pointing to non-existent archive file.
   base::FilePath archive_file_path4 =
@@ -448,7 +477,7 @@ void OfflinePageRequestJobTest::SetUp() {
           .AppendASCII("nonexistent.mhtml");
   std::unique_ptr<TestOfflinePageArchiver> archiver4(
       new TestOfflinePageArchiver(kTestUrl4, archive_file_path4,
-                                  kTestFileSize4));
+                                  kTestFileSize4NonExistent));
 
   SavePage(kTestUrl4, kTestClientId4, GURL(), std::move(archiver4));
 
@@ -498,8 +527,7 @@ void OfflinePageRequestJobTest::SetUpNetworkObjectsOnIO() {
   std::unique_ptr<net::URLRequestJobFactoryImpl> job_factory_impl(
       new net::URLRequestJobFactoryImpl());
   intercepting_job_factory_.reset(new TestURLRequestInterceptingJobFactory(
-      std::move(job_factory_impl),
-      std::move(interceptor),
+      std::move(job_factory_impl), std::move(interceptor),
       web_contents_.get()));
 
   test_url_request_context_->set_job_factory(intercepting_job_factory_.get());
@@ -520,13 +548,12 @@ std::unique_ptr<net::URLRequest> OfflinePageRequestJobTest::CreateRequest(
     const GURL& url,
     const std::string& method,
     content::ResourceType resource_type) {
-  url_request_delegate_ = base::MakeUnique<TestURLRequestDelegate>(
-      base::Bind(&OfflinePageRequestJobTest::ReadCompletedOnIO,
-                 base::Unretained(this)));
+  url_request_delegate_ = base::MakeUnique<TestURLRequestDelegate>(base::Bind(
+      &OfflinePageRequestJobTest::ReadCompletedOnIO, base::Unretained(this)));
 
   std::unique_ptr<net::URLRequest> request =
-      url_request_context()->CreateRequest(
-          url, net::DEFAULT_PRIORITY, url_request_delegate_.get());
+      url_request_context()->CreateRequest(url, net::DEFAULT_PRIORITY,
+                                           url_request_delegate_.get());
   request->set_method(method);
 
   content::ResourceRequestInfo::AllocateForTesting(
@@ -540,25 +567,29 @@ std::unique_ptr<net::URLRequest> OfflinePageRequestJobTest::CreateRequest(
   return request;
 }
 
-void
-OfflinePageRequestJobTest::ExpectOneUniqueSampleForAggregatedRequestResult(
+void OfflinePageRequestJobTest::ExpectOneUniqueSampleForAggregatedRequestResult(
     OfflinePageRequestJob::AggregatedRequestResult result) {
-  histogram_tester_.ExpectUniqueSample(
-      kAggregatedRequestResultHistogram, static_cast<int>(result), 1);
+  histogram_tester_.ExpectUniqueSample(kAggregatedRequestResultHistogram,
+                                       static_cast<int>(result), 1);
 }
 
-void
-OfflinePageRequestJobTest::ExpectMultiUniqueSampleForAggregatedRequestResult(
-    OfflinePageRequestJob::AggregatedRequestResult result, int count) {
-  histogram_tester_.ExpectUniqueSample(
-      kAggregatedRequestResultHistogram, static_cast<int>(result), count);
+void OfflinePageRequestJobTest::
+    ExpectMultiUniqueSampleForAggregatedRequestResult(
+        OfflinePageRequestJob::AggregatedRequestResult result,
+        int count) {
+  histogram_tester_.ExpectUniqueSample(kAggregatedRequestResultHistogram,
+                                       static_cast<int>(result), count);
 }
 
-void
-OfflinePageRequestJobTest::ExpectOneNonuniqueSampleForAggregatedRequestResult(
-    OfflinePageRequestJob::AggregatedRequestResult result) {
-  histogram_tester_.ExpectBucketCount(
-      kAggregatedRequestResultHistogram, static_cast<int>(result), 1);
+void OfflinePageRequestJobTest::
+    ExpectOneNonuniqueSampleForAggregatedRequestResult(
+        OfflinePageRequestJob::AggregatedRequestResult result) {
+  histogram_tester_.ExpectBucketCount(kAggregatedRequestResultHistogram,
+                                      static_cast<int>(result), 1);
+}
+
+void OfflinePageRequestJobTest::ExpectNoSamplesInAggregatedRequestResult() {
+  histogram_tester_.ExpectTotalCount(kAggregatedRequestResultHistogram, 0);
 }
 
 void OfflinePageRequestJobTest::ExpectOpenFileErrorCode(int result) {
@@ -579,6 +610,53 @@ void OfflinePageRequestJobTest::ExpectNoAccessEntryPoint() {
           .empty());
 }
 
+void OfflinePageRequestJobTest::ExpectOfflinePageSizeUniqueSample(
+    ClientId client_id,
+    int bucket,
+    int count) {
+  histogram_tester_.ExpectUniqueSample(
+      kPageSizeAccessOfflineHistogramBase + client_id.name_space, bucket,
+      count);
+}
+
+void OfflinePageRequestJobTest::ExpectOfflinePageSizeTotalSuffixCount(
+    int count) {
+  int total_offline_count = 0;
+  base::HistogramTester::CountsMap all_offline_counts =
+      histogram_tester_.GetTotalCountsForPrefix(
+          kPageSizeAccessOfflineHistogramBase);
+  for (const std::pair<std::string, base::HistogramBase::Count>&
+           namespace_and_count : all_offline_counts) {
+    total_offline_count += namespace_and_count.second;
+  }
+  EXPECT_EQ(count, total_offline_count)
+      << "Wrong histogram samples count under prefix "
+      << kPageSizeAccessOfflineHistogramBase << "*";
+}
+
+void OfflinePageRequestJobTest::ExpectOnlinePageSizeUniqueSample(
+    ClientId client_id,
+    int bucket,
+    int count) {
+  histogram_tester_.ExpectUniqueSample(
+      kPageSizeAccessOnlineHistogramBase + client_id.name_space, bucket, count);
+}
+
+void OfflinePageRequestJobTest::ExpectOnlinePageSizeTotalSuffixCount(
+    int count) {
+  int online_count = 0;
+  base::HistogramTester::CountsMap all_online_counts =
+      histogram_tester_.GetTotalCountsForPrefix(
+          kPageSizeAccessOnlineHistogramBase);
+  for (const std::pair<std::string, base::HistogramBase::Count>&
+           namespace_and_count : all_online_counts) {
+    online_count += namespace_and_count.second;
+  }
+  EXPECT_EQ(count, online_count)
+      << "Wrong histogram samples count under prefix "
+      << kPageSizeAccessOnlineHistogramBase << "*";
+}
+
 void OfflinePageRequestJobTest::SavePage(
     const GURL& url,
     const ClientId& client_id,
@@ -589,8 +667,7 @@ void OfflinePageRequestJobTest::SavePage(
   save_page_params.client_id = client_id;
   save_page_params.original_url = original_url;
   OfflinePageModelFactory::GetForBrowserContext(profile())->SavePage(
-      save_page_params,
-      std::move(archiver),
+      save_page_params, std::move(archiver),
       base::Bind(&OfflinePageRequestJobTest::OnSavePageDone,
                  base::Unretained(this)));
   RunUntilIdle();
@@ -638,8 +715,8 @@ void OfflinePageRequestJobTest::InterceptRequestOnIO(
 
   request_ = CreateRequest(url, method, resource_type);
   if (!extra_header_name.empty()) {
-    request_->SetExtraRequestHeaderByName(
-        extra_header_name, extra_header_value, true);
+    request_->SetExtraRequestHeaderByName(extra_header_name, extra_header_value,
+                                          true);
   }
   request_->Start();
 }
@@ -694,48 +771,50 @@ TEST_F(OfflinePageRequestJobTest, FailedToCreateRequestJob) {
 
   // Must be http/https URL.
   InterceptRequest(GURL("ftp://host/doc"), "GET", "", "",
-      content::RESOURCE_TYPE_MAIN_FRAME);
+                   content::RESOURCE_TYPE_MAIN_FRAME);
   base::RunLoop().Run();
   EXPECT_EQ(0, bytes_read());
   EXPECT_FALSE(offline_page_tab_helper()->GetOfflinePageForTest());
 
   InterceptRequest(GURL("file:///path/doc"), "GET", "", "",
-      content::RESOURCE_TYPE_MAIN_FRAME);
+                   content::RESOURCE_TYPE_MAIN_FRAME);
   base::RunLoop().Run();
   EXPECT_EQ(0, bytes_read());
   EXPECT_FALSE(offline_page_tab_helper()->GetOfflinePageForTest());
 
   // Must be GET method.
-  InterceptRequest(
-      kTestUrl, "POST", "", "", content::RESOURCE_TYPE_MAIN_FRAME);
+  InterceptRequest(kTestUrl1, "POST", "", "",
+                   content::RESOURCE_TYPE_MAIN_FRAME);
   base::RunLoop().Run();
   EXPECT_EQ(0, bytes_read());
   EXPECT_FALSE(offline_page_tab_helper()->GetOfflinePageForTest());
 
-  InterceptRequest(
-      kTestUrl, "HEAD", "", "", content::RESOURCE_TYPE_MAIN_FRAME);
+  InterceptRequest(kTestUrl1, "HEAD", "", "",
+                   content::RESOURCE_TYPE_MAIN_FRAME);
   base::RunLoop().Run();
   EXPECT_EQ(0, bytes_read());
   EXPECT_FALSE(offline_page_tab_helper()->GetOfflinePageForTest());
 
   // Must be main resource.
-  InterceptRequest(
-      kTestUrl, "POST", "", "", content::RESOURCE_TYPE_SUB_FRAME);
+  InterceptRequest(kTestUrl1, "POST", "", "", content::RESOURCE_TYPE_SUB_FRAME);
   base::RunLoop().Run();
   EXPECT_EQ(0, bytes_read());
   EXPECT_FALSE(offline_page_tab_helper()->GetOfflinePageForTest());
 
-  InterceptRequest(
-      kTestUrl, "POST", "", "", content::RESOURCE_TYPE_IMAGE);
+  InterceptRequest(kTestUrl1, "POST", "", "", content::RESOURCE_TYPE_IMAGE);
   base::RunLoop().Run();
   EXPECT_EQ(0, bytes_read());
   EXPECT_FALSE(offline_page_tab_helper()->GetOfflinePageForTest());
+
+  ExpectNoSamplesInAggregatedRequestResult();
+  ExpectOfflinePageSizeTotalSuffixCount(0);
+  ExpectOnlinePageSizeTotalSuffixCount(0);
 }
 
 TEST_F(OfflinePageRequestJobTest, LoadOfflinePageOnDisconnectedNetwork) {
   SimulateHasNetworkConnectivity(false);
 
-  InterceptRequest(kTestUrl, "GET", "", "", content::RESOURCE_TYPE_MAIN_FRAME);
+  InterceptRequest(kTestUrl1, "GET", "", "", content::RESOURCE_TYPE_MAIN_FRAME);
   base::RunLoop().Run();
 
   EXPECT_EQ(kTestFileSize2, bytes_read());
@@ -747,6 +826,8 @@ TEST_F(OfflinePageRequestJobTest, LoadOfflinePageOnDisconnectedNetwork) {
           SHOW_OFFLINE_ON_DISCONNECTED_NETWORK);
   ExpectAccessEntryPoint(kTestClientId2,
                          OfflinePageRequestJob::AccessEntryPoint::LINK);
+  ExpectOfflinePageSizeUniqueSample(kTestClientId2, 0, 1);
+  ExpectOnlinePageSizeTotalSuffixCount(0);
 }
 
 TEST_F(OfflinePageRequestJobTest, PageNotFoundOnDisconnectedNetwork) {
@@ -761,6 +842,8 @@ TEST_F(OfflinePageRequestJobTest, PageNotFoundOnDisconnectedNetwork) {
       OfflinePageRequestJob::AggregatedRequestResult::
           PAGE_NOT_FOUND_ON_DISCONNECTED_NETWORK);
   ExpectNoAccessEntryPoint();
+  ExpectOfflinePageSizeTotalSuffixCount(0);
+  ExpectOnlinePageSizeTotalSuffixCount(0);
 }
 
 TEST_F(OfflinePageRequestJobTest, LoadOfflinePageOnProhibitivelySlowNetwork) {
@@ -768,7 +851,7 @@ TEST_F(OfflinePageRequestJobTest, LoadOfflinePageOnProhibitivelySlowNetwork) {
 
   test_previews_decider()->set_should_allow_preview(true);
 
-  InterceptRequest(kTestUrl, "GET", "", "", content::RESOURCE_TYPE_MAIN_FRAME);
+  InterceptRequest(kTestUrl1, "GET", "", "", content::RESOURCE_TYPE_MAIN_FRAME);
   base::RunLoop().Run();
 
   EXPECT_EQ(kTestFileSize2, bytes_read());
@@ -780,6 +863,8 @@ TEST_F(OfflinePageRequestJobTest, LoadOfflinePageOnProhibitivelySlowNetwork) {
           SHOW_OFFLINE_ON_PROHIBITIVELY_SLOW_NETWORK);
   ExpectAccessEntryPoint(kTestClientId2,
                          OfflinePageRequestJob::AccessEntryPoint::LINK);
+  ExpectOfflinePageSizeUniqueSample(kTestClientId2, 0, 1);
+  ExpectOnlinePageSizeTotalSuffixCount(0);
 }
 
 TEST_F(OfflinePageRequestJobTest, PageNotFoundOnProhibitivelySlowNetwork) {
@@ -796,6 +881,8 @@ TEST_F(OfflinePageRequestJobTest, PageNotFoundOnProhibitivelySlowNetwork) {
       OfflinePageRequestJob::AggregatedRequestResult::
           PAGE_NOT_FOUND_ON_PROHIBITIVELY_SLOW_NETWORK);
   ExpectNoAccessEntryPoint();
+  ExpectOfflinePageSizeTotalSuffixCount(0);
+  ExpectOnlinePageSizeTotalSuffixCount(0);
 }
 
 TEST_F(OfflinePageRequestJobTest, LoadOfflinePageOnFlakyNetwork) {
@@ -803,13 +890,10 @@ TEST_F(OfflinePageRequestJobTest, LoadOfflinePageOnFlakyNetwork) {
 
   // When custom offline header exists and contains "reason=error", it means
   // that net error is hit in last request due to flaky network.
-  InterceptRequest(
-      kTestUrl,
-      "GET",
-      kOfflinePageHeader,
-      std::string(kOfflinePageHeaderReasonKey) + "=" +
-          kOfflinePageHeaderReasonValueDueToNetError,
-      content::RESOURCE_TYPE_MAIN_FRAME);
+  InterceptRequest(kTestUrl1, "GET", kOfflinePageHeader,
+                   std::string(kOfflinePageHeaderReasonKey) + "=" +
+                       kOfflinePageHeaderReasonValueDueToNetError,
+                   content::RESOURCE_TYPE_MAIN_FRAME);
   base::RunLoop().Run();
 
   EXPECT_EQ(kTestFileSize2, bytes_read());
@@ -821,6 +905,8 @@ TEST_F(OfflinePageRequestJobTest, LoadOfflinePageOnFlakyNetwork) {
           SHOW_OFFLINE_ON_FLAKY_NETWORK);
   ExpectAccessEntryPoint(kTestClientId2,
                          OfflinePageRequestJob::AccessEntryPoint::LINK);
+  ExpectOfflinePageSizeUniqueSample(kTestClientId2, 0, 1);
+  ExpectOnlinePageSizeTotalSuffixCount(0);
 }
 
 TEST_F(OfflinePageRequestJobTest, PageNotFoundOnFlakyNetwork) {
@@ -828,13 +914,10 @@ TEST_F(OfflinePageRequestJobTest, PageNotFoundOnFlakyNetwork) {
 
   // When custom offline header exists and contains "reason=error", it means
   // that net error is hit in last request due to flaky network.
-  InterceptRequest(
-      kTestUrl2,
-      "GET",
-      kOfflinePageHeader,
-      std::string(kOfflinePageHeaderReasonKey) + "=" +
-          kOfflinePageHeaderReasonValueDueToNetError,
-      content::RESOURCE_TYPE_MAIN_FRAME);
+  InterceptRequest(kTestUrl2, "GET", kOfflinePageHeader,
+                   std::string(kOfflinePageHeaderReasonKey) + "=" +
+                       kOfflinePageHeaderReasonValueDueToNetError,
+                   content::RESOURCE_TYPE_MAIN_FRAME);
   base::RunLoop().Run();
 
   EXPECT_EQ(0, bytes_read());
@@ -843,6 +926,8 @@ TEST_F(OfflinePageRequestJobTest, PageNotFoundOnFlakyNetwork) {
       OfflinePageRequestJob::AggregatedRequestResult::
           PAGE_NOT_FOUND_ON_FLAKY_NETWORK);
   ExpectNoAccessEntryPoint();
+  ExpectOfflinePageSizeTotalSuffixCount(0);
+  ExpectOnlinePageSizeTotalSuffixCount(0);
 }
 
 TEST_F(OfflinePageRequestJobTest, ForceLoadOfflinePageOnConnectedNetwork) {
@@ -850,12 +935,9 @@ TEST_F(OfflinePageRequestJobTest, ForceLoadOfflinePageOnConnectedNetwork) {
 
   // When custom offline header exists and contains value other than
   // "reason=error", it means that offline page is forced to load.
-  InterceptRequest(
-      kTestUrl,
-      "GET",
-      kOfflinePageHeader,
-      std::string(kOfflinePageHeaderReasonKey) + "=download",
-      content::RESOURCE_TYPE_MAIN_FRAME);
+  InterceptRequest(kTestUrl1, "GET", kOfflinePageHeader,
+                   std::string(kOfflinePageHeaderReasonKey) + "=download",
+                   content::RESOURCE_TYPE_MAIN_FRAME);
   base::RunLoop().Run();
 
   EXPECT_EQ(kTestFileSize2, bytes_read());
@@ -867,6 +949,8 @@ TEST_F(OfflinePageRequestJobTest, ForceLoadOfflinePageOnConnectedNetwork) {
           SHOW_OFFLINE_ON_CONNECTED_NETWORK);
   ExpectAccessEntryPoint(kTestClientId2,
                          OfflinePageRequestJob::AccessEntryPoint::DOWNLOADS);
+  ExpectOfflinePageSizeTotalSuffixCount(0);
+  ExpectOnlinePageSizeUniqueSample(kTestClientId2, 0, 1);
 }
 
 TEST_F(OfflinePageRequestJobTest, PageNotFoundOnConnectedNetwork) {
@@ -874,12 +958,9 @@ TEST_F(OfflinePageRequestJobTest, PageNotFoundOnConnectedNetwork) {
 
   // When custom offline header exists and contains value other than
   // "reason=error", it means that offline page is forced to load.
-  InterceptRequest(
-      kTestUrl2,
-      "GET",
-      kOfflinePageHeader,
-      std::string(kOfflinePageHeaderReasonKey) + "=download",
-      content::RESOURCE_TYPE_MAIN_FRAME);
+  InterceptRequest(kTestUrl2, "GET", kOfflinePageHeader,
+                   std::string(kOfflinePageHeaderReasonKey) + "=download",
+                   content::RESOURCE_TYPE_MAIN_FRAME);
   base::RunLoop().Run();
 
   EXPECT_EQ(0, bytes_read());
@@ -888,40 +969,45 @@ TEST_F(OfflinePageRequestJobTest, PageNotFoundOnConnectedNetwork) {
       OfflinePageRequestJob::AggregatedRequestResult::
           PAGE_NOT_FOUND_ON_CONNECTED_NETWORK);
   ExpectNoAccessEntryPoint();
+  ExpectOfflinePageSizeTotalSuffixCount(0);
+  ExpectOnlinePageSizeTotalSuffixCount(0);
 }
 
 TEST_F(OfflinePageRequestJobTest, DoNotLoadOfflinePageOnConnectedNetwork) {
   SimulateHasNetworkConnectivity(true);
 
-  InterceptRequest(kTestUrl, "GET", "", "", content::RESOURCE_TYPE_MAIN_FRAME);
+  InterceptRequest(kTestUrl1, "GET", "", "", content::RESOURCE_TYPE_MAIN_FRAME);
   base::RunLoop().Run();
 
   EXPECT_EQ(0, bytes_read());
   EXPECT_FALSE(offline_page_tab_helper()->GetOfflinePageForTest());
   ExpectNoAccessEntryPoint();
+  ExpectNoSamplesInAggregatedRequestResult();
+  ExpectOfflinePageSizeTotalSuffixCount(0);
+  ExpectOnlinePageSizeTotalSuffixCount(0);
 }
 
 TEST_F(OfflinePageRequestJobTest, LoadOfflinePageByOfflineID) {
   SimulateHasNetworkConnectivity(true);
 
-  InterceptRequest(
-      kTestUrl,
-      "GET",
-      kOfflinePageHeader,
-      std::string(kOfflinePageHeaderReasonKey) + "=download " +
-          kOfflinePageHeaderIDKey + "=" + base::Int64ToString(offline_id()),
-      content::RESOURCE_TYPE_MAIN_FRAME);
+  InterceptRequest(kTestUrl1, "GET", kOfflinePageHeader,
+                   std::string(kOfflinePageHeaderReasonKey) + "=download " +
+                       kOfflinePageHeaderIDKey + "=" +
+                       base::Int64ToString(offline_id()),
+                   content::RESOURCE_TYPE_MAIN_FRAME);
   base::RunLoop().Run();
 
-  EXPECT_EQ(kTestFileSize, bytes_read());
+  EXPECT_EQ(kTestFileSize1, bytes_read());
   ASSERT_TRUE(offline_page_tab_helper()->GetOfflinePageForTest());
   EXPECT_EQ(offline_id(),
             offline_page_tab_helper()->GetOfflinePageForTest()->offline_id);
   ExpectOneUniqueSampleForAggregatedRequestResult(
       OfflinePageRequestJob::AggregatedRequestResult::
           SHOW_OFFLINE_ON_CONNECTED_NETWORK);
-  ExpectAccessEntryPoint(kTestClientId,
+  ExpectAccessEntryPoint(kTestClientId1,
                          OfflinePageRequestJob::AccessEntryPoint::DOWNLOADS);
+  ExpectOfflinePageSizeTotalSuffixCount(0);
+  ExpectOnlinePageSizeUniqueSample(kTestClientId1, 0, 1);
 }
 
 TEST_F(OfflinePageRequestJobTest,
@@ -931,13 +1017,11 @@ TEST_F(OfflinePageRequestJobTest,
   // The offline page found with specific offline ID does not match the passed
   // online URL. Should fall back to find the offline page based on the online
   // URL.
-  InterceptRequest(
-      kTestUrl2,
-      "GET",
-      kOfflinePageHeader,
-      std::string(kOfflinePageHeaderReasonKey) + "=download " +
-          kOfflinePageHeaderIDKey + "=" + base::Int64ToString(offline_id()),
-      content::RESOURCE_TYPE_MAIN_FRAME);
+  InterceptRequest(kTestUrl2, "GET", kOfflinePageHeader,
+                   std::string(kOfflinePageHeaderReasonKey) + "=download " +
+                       kOfflinePageHeaderIDKey + "=" +
+                       base::Int64ToString(offline_id()),
+                   content::RESOURCE_TYPE_MAIN_FRAME);
   base::RunLoop().Run();
 
   EXPECT_EQ(0, bytes_read());
@@ -946,6 +1030,8 @@ TEST_F(OfflinePageRequestJobTest,
       OfflinePageRequestJob::AggregatedRequestResult::
           PAGE_NOT_FOUND_ON_CONNECTED_NETWORK);
   ExpectNoAccessEntryPoint();
+  ExpectOfflinePageSizeTotalSuffixCount(0);
+  ExpectOnlinePageSizeTotalSuffixCount(0);
 }
 
 TEST_F(OfflinePageRequestJobTest, LoadOfflinePageForUrlWithFragment) {
@@ -953,7 +1039,7 @@ TEST_F(OfflinePageRequestJobTest, LoadOfflinePageForUrlWithFragment) {
 
   // Loads an url with fragment, that will match the offline URL without the
   // fragment.
-  GURL url_with_fragment(kTestUrl.spec() + "#ref");
+  GURL url_with_fragment(kTestUrl1.spec() + "#ref");
   InterceptRequest(
       url_with_fragment, "GET", "", "", content::RESOURCE_TYPE_MAIN_FRAME);
   base::RunLoop().Run();
@@ -965,6 +1051,9 @@ TEST_F(OfflinePageRequestJobTest, LoadOfflinePageForUrlWithFragment) {
   ExpectOneUniqueSampleForAggregatedRequestResult(
       OfflinePageRequestJob::AggregatedRequestResult::
           SHOW_OFFLINE_ON_DISCONNECTED_NETWORK);
+  ExpectOfflinePageSizeUniqueSample(kTestClientId2, 0, 1);
+  ExpectOfflinePageSizeTotalSuffixCount(1);
+  ExpectOnlinePageSizeTotalSuffixCount(0);
 
   // Loads an url without fragment, that will match the offline URL with the
   // fragment.
@@ -978,6 +1067,10 @@ TEST_F(OfflinePageRequestJobTest, LoadOfflinePageForUrlWithFragment) {
   ExpectMultiUniqueSampleForAggregatedRequestResult(
       OfflinePageRequestJob::AggregatedRequestResult::
           SHOW_OFFLINE_ON_DISCONNECTED_NETWORK, 2);
+  ExpectOfflinePageSizeUniqueSample(kTestClientId2, 0, 1);
+  ExpectOfflinePageSizeUniqueSample(kTestClientId3, 0, 1);
+  ExpectOfflinePageSizeTotalSuffixCount(2);
+  ExpectOnlinePageSizeTotalSuffixCount(0);
 
   // Loads an url with fragment, that will match the offline URL with different
   // fragment.
@@ -993,15 +1086,18 @@ TEST_F(OfflinePageRequestJobTest, LoadOfflinePageForUrlWithFragment) {
   ExpectMultiUniqueSampleForAggregatedRequestResult(
       OfflinePageRequestJob::AggregatedRequestResult::
           SHOW_OFFLINE_ON_DISCONNECTED_NETWORK, 3);
-
+  ExpectOfflinePageSizeUniqueSample(kTestClientId2, 0, 1);
+  ExpectOfflinePageSizeUniqueSample(kTestClientId3, 0, 2);
+  ExpectOfflinePageSizeTotalSuffixCount(3);
+  ExpectOnlinePageSizeTotalSuffixCount(0);
 }
 
 TEST_F(OfflinePageRequestJobTest, LoadOfflinePageAfterRedirect) {
   SimulateHasNetworkConnectivity(false);
 
   // This should trigger redirect first.
-  InterceptRequest(
-      kTestOriginalUrl, "GET", "", "", content::RESOURCE_TYPE_MAIN_FRAME);
+  InterceptRequest(kTestUrlRedirectsTo3, "GET", "", "",
+                   content::RESOURCE_TYPE_MAIN_FRAME);
   base::RunLoop().Run();
 
   EXPECT_EQ(kTestFileSize3, bytes_read());
@@ -1016,6 +1112,8 @@ TEST_F(OfflinePageRequestJobTest, LoadOfflinePageAfterRedirect) {
           SHOW_OFFLINE_ON_DISCONNECTED_NETWORK);
   ExpectAccessEntryPoint(kTestClientId3,
                          OfflinePageRequestJob::AccessEntryPoint::LINK);
+  ExpectOfflinePageSizeUniqueSample(kTestClientId3, 0, 1);
+  ExpectOnlinePageSizeTotalSuffixCount(0);
 }
 
 TEST_F(OfflinePageRequestJobTest, NoRedirectForOfflinePageWithSameOriginalURL) {
@@ -1034,6 +1132,8 @@ TEST_F(OfflinePageRequestJobTest, NoRedirectForOfflinePageWithSameOriginalURL) {
           SHOW_OFFLINE_ON_DISCONNECTED_NETWORK);
   ExpectAccessEntryPoint(kTestClientId5,
                          OfflinePageRequestJob::AccessEntryPoint::LINK);
+  ExpectOfflinePageSizeUniqueSample(kTestClientId5, 0, 1);
+  ExpectOnlinePageSizeTotalSuffixCount(0);
 }
 
 TEST_F(OfflinePageRequestJobTest, LoadOfflinePageFromNonExistentFile) {
@@ -1052,6 +1152,9 @@ TEST_F(OfflinePageRequestJobTest, LoadOfflinePageFromNonExistentFile) {
   ExpectOpenFileErrorCode(net::ERR_FILE_NOT_FOUND);
   ExpectAccessEntryPoint(kTestClientId4,
                          OfflinePageRequestJob::AccessEntryPoint::LINK);
+  ExpectOfflinePageSizeUniqueSample(kTestClientId4,
+                                    kTestFileSize4NonExistent / 1024, 1);
+  ExpectOnlinePageSizeTotalSuffixCount(0);
 }
 
 }  // namespace offline_pages

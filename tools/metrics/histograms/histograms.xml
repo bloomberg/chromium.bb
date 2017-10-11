@@ -52007,6 +52007,23 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Size of the saved copy of an offline page.</summary>
 </histogram>
 
+<histogram name="OfflinePages.PageSizeOnAccess.Offline" units="KiB">
+  <owner>carlosk@chromium.org</owner>
+  <summary>
+    Records the archive size of an offline page loaded during a navigation that
+    took place while the device was considered to be offline or with poor
+    connectivity.
+  </summary>
+</histogram>
+
+<histogram name="OfflinePages.PageSizeOnAccess.Online" units="KiB">
+  <owner>carlosk@chromium.org</owner>
+  <summary>
+    Records the archive size of an offline page loaded during a navigation that
+    took place while the device was considered to be online.
+  </summary>
+</histogram>
+
 <histogram name="OfflinePages.Prefetching.ActionAttempts" units="attempts">
   <owner>dewittj@chromium.org</owner>
   <summary>
@@ -101065,6 +101082,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="OfflinePages.OpenSinceLastOpen"/>
   <affected-histogram name="OfflinePages.PageLifetime"/>
   <affected-histogram name="OfflinePages.PageSize"/>
+  <affected-histogram name="OfflinePages.PageSizeOnAccess.Offline"/>
+  <affected-histogram name="OfflinePages.PageSizeOnAccess.Online"/>
   <affected-histogram name="OfflinePages.SavePageResult"/>
   <affected-histogram name="OfflinePages.SavePageTime"/>
 </histogram_suffixes>
