@@ -4,107 +4,92 @@
 
 #include "chromeos/network/firewall_hole.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/mock_permission_broker_client.h"
+#include "chromeos/dbus/fake_permission_broker_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using chromeos::DBusThreadManager;
-using chromeos::FirewallHole;
-using chromeos::MockPermissionBrokerClient;
-using testing::_;
-
+namespace chromeos {
 namespace {
 
-ACTION_TEMPLATE(InvokeCallback,
-                HAS_1_TEMPLATE_PARAMS(int, k),
-                AND_1_VALUE_PARAMS(p1)) {
-  ::std::tr1::get<k>(args).Run(p1);
+void CopyFirewallHole(base::RunLoop* run_loop,
+                      std::unique_ptr<FirewallHole>* out_hole,
+                      std::unique_ptr<FirewallHole> hole) {
+  *out_hole = std::move(hole);
+  run_loop->Quit();
 }
-
-}  // namespace
 
 class FirewallHoleTest : public testing::Test {
  public:
   FirewallHoleTest()
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
-  ~FirewallHoleTest() override {}
+  ~FirewallHoleTest() override = default;
 
-  void SetUp() override {
-    mock_permission_broker_client_ = new MockPermissionBrokerClient();
-    DBusThreadManager::GetSetterForTesting()->SetPermissionBrokerClient(
-        base::WrapUnique(mock_permission_broker_client_));
-  }
+  void SetUp() override { DBusThreadManager::Initialize(); }
 
   void TearDown() override { DBusThreadManager::Shutdown(); }
 
-  void AssertOpenSuccess(std::unique_ptr<FirewallHole> hole) {
-    EXPECT_TRUE(hole.get() != nullptr);
-    run_loop_.Quit();
-  }
-
-  void AssertOpenFailure(std::unique_ptr<FirewallHole> hole) {
-    EXPECT_TRUE(hole.get() == nullptr);
-    run_loop_.Quit();
+  FakePermissionBrokerClient* permission_broker_client() {
+    return static_cast<FakePermissionBrokerClient*>(
+        DBusThreadManager::Get()->GetPermissionBrokerClient());
   }
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-
- protected:
-  base::RunLoop run_loop_;
-  MockPermissionBrokerClient* mock_permission_broker_client_ = nullptr;
 };
 
 TEST_F(FirewallHoleTest, GrantTcpPortAccess) {
-  EXPECT_CALL(*mock_permission_broker_client_,
-              RequestTcpPortAccess(1234, "foo0", _, _))
-      .WillOnce(InvokeCallback<3>(true));
-  EXPECT_CALL(*mock_permission_broker_client_, ReleaseTcpPort(1234, "foo0", _))
-      .WillOnce(InvokeCallback<2>(true));
-
-  FirewallHole::Open(
-      FirewallHole::PortType::TCP, 1234, "foo0",
-      base::Bind(&FirewallHoleTest::AssertOpenSuccess, base::Unretained(this)));
-  run_loop_.Run();
+  base::RunLoop run_loop;
+  std::unique_ptr<FirewallHole> hole;
+  FirewallHole::Open(FirewallHole::PortType::TCP, 1234, "foo0",
+                     base::Bind(&CopyFirewallHole, &run_loop, &hole));
+  run_loop.Run();
+  EXPECT_TRUE(hole.get());
+  EXPECT_TRUE(permission_broker_client()->HasTcpHole(1234, "foo0"));
+  hole.reset();
+  EXPECT_FALSE(permission_broker_client()->HasTcpHole(1234, "foo0"));
 }
 
 TEST_F(FirewallHoleTest, DenyTcpPortAccess) {
-  EXPECT_CALL(*mock_permission_broker_client_,
-              RequestTcpPortAccess(1234, "foo0", _, _))
-      .WillOnce(InvokeCallback<3>(false));
+  permission_broker_client()->AddTcpDenyRule(1234, "foo0");
 
-  FirewallHole::Open(
-      FirewallHole::PortType::TCP, 1234, "foo0",
-      base::Bind(&FirewallHoleTest::AssertOpenFailure, base::Unretained(this)));
-  run_loop_.Run();
+  base::RunLoop run_loop;
+  std::unique_ptr<FirewallHole> hole;
+  FirewallHole::Open(FirewallHole::PortType::TCP, 1234, "foo0",
+                     base::Bind(&CopyFirewallHole, &run_loop, &hole));
+  run_loop.Run();
+  EXPECT_FALSE(hole.get());
 }
 
 TEST_F(FirewallHoleTest, GrantUdpPortAccess) {
-  EXPECT_CALL(*mock_permission_broker_client_,
-              RequestUdpPortAccess(1234, "foo0", _, _))
-      .WillOnce(InvokeCallback<3>(true));
-  EXPECT_CALL(*mock_permission_broker_client_, ReleaseUdpPort(1234, "foo0", _))
-      .WillOnce(InvokeCallback<2>(true));
-
-  FirewallHole::Open(
-      FirewallHole::PortType::UDP, 1234, "foo0",
-      base::Bind(&FirewallHoleTest::AssertOpenSuccess, base::Unretained(this)));
-  run_loop_.Run();
+  base::RunLoop run_loop;
+  std::unique_ptr<FirewallHole> hole;
+  FirewallHole::Open(FirewallHole::PortType::UDP, 1234, "foo0",
+                     base::Bind(&CopyFirewallHole, &run_loop, &hole));
+  run_loop.Run();
+  EXPECT_TRUE(hole.get());
+  EXPECT_TRUE(permission_broker_client()->HasUdpHole(1234, "foo0"));
+  hole.reset();
+  EXPECT_FALSE(permission_broker_client()->HasUdpHole(1234, "foo0"));
 }
 
 TEST_F(FirewallHoleTest, DenyUdpPortAccess) {
-  EXPECT_CALL(*mock_permission_broker_client_,
-              RequestUdpPortAccess(1234, "foo0", _, _))
-      .WillOnce(InvokeCallback<3>(false));
+  permission_broker_client()->AddUdpDenyRule(1234, "foo0");
 
-  FirewallHole::Open(
-      FirewallHole::PortType::UDP, 1234, "foo0",
-      base::Bind(&FirewallHoleTest::AssertOpenFailure, base::Unretained(this)));
-  run_loop_.Run();
+  base::RunLoop run_loop;
+  std::unique_ptr<FirewallHole> hole;
+  FirewallHole::Open(FirewallHole::PortType::UDP, 1234, "foo0",
+                     base::Bind(&CopyFirewallHole, &run_loop, &hole));
+  run_loop.Run();
+  EXPECT_FALSE(hole.get());
 }
+
+}  // namespace
+}  // namespace chromeos
