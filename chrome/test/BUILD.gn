@@ -232,10 +232,16 @@ static_library("test_support") {
       "../browser/chromeos/ownership/fake_owner_settings_service.h",
       "../browser/chromeos/settings/scoped_cros_settings_test_helper.cc",
       "../browser/chromeos/settings/scoped_cros_settings_test_helper.h",
+      "base/default_ash_event_generator_delegate.cc",
+      "base/default_ash_event_generator_delegate.h",
     ]
     public_deps += [
+      "//ash",
+      "//ash:test_support_with_content",
       "//components/ownership",
       "//components/user_manager:test_support",
+      "//ui/aura",
+      "//ui/aura:test_support",
     ]
   }
 
@@ -246,19 +252,6 @@ static_library("test_support") {
     ]
   }
 
-  if (use_ash) {
-    sources += [
-      "base/default_ash_event_generator_delegate.cc",
-      "base/default_ash_event_generator_delegate.h",
-    ]
-
-    public_deps += [
-      "//ash",
-      "//ash:test_support_with_content",
-      "//ui/aura",
-      "//ui/aura:test_support",
-    ]
-  }
   if (toolkit_views) {
     public_deps += [ "//ui/views:test_support" ]
     sources += [
@@ -678,7 +671,6 @@ if (!is_android) {
 
     if (is_chromeos) {
       sources += [
-        "../../ash/accelerators/accelerator_interactive_uitest_chromeos.cc",
         "../browser/chromeos/accessibility/accessibility_highlight_manager_interactive_uitest.cc",
         "../browser/chromeos/accessibility/magnification_controller_browsertest.cc",
         "../browser/chromeos/accessibility/select_to_speak_browsertest.cc",
@@ -720,11 +712,22 @@ if (!is_android) {
         "../browser/chromeos/login/users/wallpaper/wallpaper_manager_test_utils.cc",
         "../browser/chromeos/login/users/wallpaper/wallpaper_manager_test_utils.h",
         "../browser/notifications/login_state_notification_blocker_chromeos_browsertest.cc",
+        "../browser/ui/ash/app_list/app_list_interactive_uitest.cc",
         "../browser/ui/views/apps/chrome_native_app_window_views_aura_ash_interactive_uitest.cc",
+        "../browser/ui/views/ash/tab_scrubber_browsertest.cc",
         "../browser/ui/webui/chromeos/login/oobe_display_chooser_browsertest.cc",
+        "../browser/ui/window_sizer/window_sizer_ash_uitest.cc",
+        "//ash/accelerators/accelerator_interactive_uitest_chromeos.cc",
+        "//ash/drag_drop/drag_drop_interactive_uitest.cc",
+        "//ash/wm/native_cursor_manager_ash_interactive_uitest.cc",
         "data/chromeos/service_login.html",
       ]
+      sources -= [
+        # Use only the _chromeos version on Ash / Chrome OS.
+        "base/view_event_test_platform_part_default.cc",
+      ]
       deps += [
+        "//ash:interactive_ui_test_support",
         "//ash/resources",
         "//chrome/browser/media/router:test_support",
         "//chromeos",
@@ -830,21 +833,6 @@ if (!is_android) {
       deps += [ "//extensions:chrome_extensions_interactive_uitests" ]
     }
 
-    if (use_ash) {
-      sources += [
-        "../browser/ui/ash/app_list/app_list_interactive_uitest.cc",
-        "../browser/ui/views/ash/tab_scrubber_browsertest.cc",
-        "../browser/ui/window_sizer/window_sizer_ash_uitest.cc",
-        "//ash/drag_drop/drag_drop_interactive_uitest.cc",
-        "//ash/wm/native_cursor_manager_ash_interactive_uitest.cc",
-      ]
-      sources -= [
-        # Use only the _chromeos version on Ash / Chrome OS.
-        "base/view_event_test_platform_part_default.cc",
-      ]
-      deps += [ "//ash:interactive_ui_test_support" ]
-    }
-
     if (!enable_native_notifications) {
       sources += [ "../browser/notifications/message_center_notification_manager_interactive_uitest.cc" ]
     }
@@ -861,8 +849,9 @@ if (!is_android) {
     }
   }
 
-  if (enable_app_list && use_ash) {
-    static_library("test_support_applist_ash") {
+  # TODO(jamescook): is_chromeos implies enable_app_list, so collapse them.
+  if (enable_app_list && is_chromeos) {
+    static_library("test_support_applist_chromeos") {
       defines = []
       testonly = true
 
@@ -2032,37 +2021,6 @@ test("browser_tests") {
       data += [ "//extensions/test/data/" ]
     }
 
-    if (use_ash) {
-      sources += [
-        "../browser/chromeos/input_method/textinput_test_helper.cc",
-        "../browser/chromeos/input_method/textinput_test_helper.h",
-        "../browser/ui/ash/accelerator_commands_browsertest.cc",
-        "../browser/ui/ash/app_list/app_list_browsertest.cc",
-        "../browser/ui/ash/chrome_new_window_client_browsertest.cc",
-        "../browser/ui/ash/chrome_screenshot_grabber_browsertest.cc",
-        "../browser/ui/ash/keyboard_controller_browsertest.cc",
-        "../browser/ui/ash/keyboard_end_to_end_browsertest.cc",
-        "../browser/ui/ash/launcher/chrome_launcher_controller_browsertest.cc",
-        "../browser/ui/ash/multi_user/multi_user_window_manager_test.cc",
-        "../browser/ui/ash/multi_user/multi_user_window_manager_test.h",
-        "../browser/ui/ash/networking_config_delegate_chromeos_browsertest.cc",
-        "../browser/ui/ash/shelf_browsertest.cc",
-        "../browser/ui/ash/system_tray_client_browsertest.cc",
-        "../browser/ui/ash/system_tray_tray_cast_browsertest_media_router_chromeos.cc",
-        "../browser/ui/ash/volume_controller_browsertest.cc",
-        "../browser/ui/sort_windows_by_z_index_browsertest.cc",
-        "../browser/ui/views/apps/chrome_native_app_window_views_aura_ash_browsertest.cc",
-        "../browser/ui/views/frame/browser_non_client_frame_view_ash_browsertest.cc",
-      ]
-      deps += [
-        "//ash:test_support_with_content",
-        "//ui/keyboard:test_support",
-      ]
-
-      if (enable_app_list) {
-        deps += [ ":test_support_applist_ash" ]
-      }
-    }
     if (use_aura) {
       sources += [
         "../browser/ui/aura/accessibility/automation_manager_aura_browsertest.cc",
@@ -2234,6 +2192,8 @@ test("browser_tests") {
         "../browser/chromeos/first_run/goodies_displayer_browsertest.cc",
         "../browser/chromeos/input_method/input_method_engine_browsertests.cc",
         "../browser/chromeos/input_method/mode_indicator_browsertest.cc",
+        "../browser/chromeos/input_method/textinput_test_helper.cc",
+        "../browser/chromeos/input_method/textinput_test_helper.h",
         "../browser/chromeos/lock_screen_apps/note_taking_browsertest.cc",
         "../browser/chromeos/login/auto_launched_kiosk_browsertest.cc",
         "../browser/chromeos/login/bluetooth_host_pairing_browsertest.cc",
@@ -2337,9 +2297,26 @@ test("browser_tests") {
         "../browser/extensions/api/certificate_provider/certificate_provider_apitest.cc",
         "../browser/extensions/api/hotword_private/hotword_private_apitest.cc",
         "../browser/extensions/api/vpn_provider/vpn_provider_apitest.cc",
+        "../browser/ui/ash/accelerator_commands_browsertest.cc",
+        "../browser/ui/ash/app_list/app_list_browsertest.cc",
+        "../browser/ui/ash/chrome_new_window_client_browsertest.cc",
+        "../browser/ui/ash/chrome_screenshot_grabber_browsertest.cc",
+        "../browser/ui/ash/keyboard_controller_browsertest.cc",
+        "../browser/ui/ash/keyboard_end_to_end_browsertest.cc",
         "../browser/ui/ash/launcher/arc_app_launcher_browsertest.cc",
+        "../browser/ui/ash/launcher/chrome_launcher_controller_browsertest.cc",
+        "../browser/ui/ash/multi_user/multi_user_window_manager_test.cc",
+        "../browser/ui/ash/multi_user/multi_user_window_manager_test.h",
+        "../browser/ui/ash/networking_config_delegate_chromeos_browsertest.cc",
+        "../browser/ui/ash/shelf_browsertest.cc",
+        "../browser/ui/ash/system_tray_client_browsertest.cc",
+        "../browser/ui/ash/system_tray_tray_cast_browsertest_media_router_chromeos.cc",
+        "../browser/ui/ash/volume_controller_browsertest.cc",
+        "../browser/ui/sort_windows_by_z_index_browsertest.cc",
+        "../browser/ui/views/apps/chrome_native_app_window_views_aura_ash_browsertest.cc",
         "../browser/ui/views/arc_app_dialog_view_browsertest.cc",
         "../browser/ui/views/frame/browser_frame_ash_browsertest.cc",
+        "../browser/ui/views/frame/browser_non_client_frame_view_ash_browsertest.cc",
         "../browser/ui/views/frame/immersive_mode_controller_ash_browsertest.cc",
         "../browser/ui/webui/chromeos/keyboard_overlay_ui_browsertest.cc",
       ]
@@ -2361,6 +2338,7 @@ test("browser_tests") {
         "../browser/ui/webui/signin/user_manager_ui_browsertest.cc",
       ]
       deps += [
+        "//ash:test_support_with_content",
         "//chrome/browser/chromeos:arc_test_support",
         "//components/arc:arc_test_support",
         "//components/prefs",
@@ -2368,10 +2346,13 @@ test("browser_tests") {
         "//services/preferences/public/cpp",
         "//services/preferences/public/interfaces",
         "//services/service_manager/public/cpp",
+        "//ui/keyboard:test_support",
         "//ui/login:resources",
         "//url",
       ]
-
+      if (enable_app_list) {
+        deps += [ ":test_support_applist_chromeos" ]
+      }
       if (use_dbus) {
         deps += [ "//dbus:test_support" ]
       }
@@ -3932,9 +3913,38 @@ test("unit_tests") {
   }
 
   if (is_chromeos) {
-    sources -= [ "../browser/signin/chrome_signin_status_metrics_provider_delegate_unittest.cc" ]
-    sources +=
-        [ "../browser/component_updater/cros_component_installer_unittest.cc" ]
+    sources -= [
+      "../browser/signin/chrome_signin_status_metrics_provider_delegate_unittest.cc",
+
+      # Chrome OS uses window_sizer_ash_unittest.cc
+      "../browser/ui/window_sizer/window_sizer_unittest.cc",
+    ]
+    sources += [
+      "../browser/component_updater/cros_component_installer_unittest.cc",
+      "../browser/media/webrtc/desktop_media_list_ash_unittest.cc",
+      "../browser/renderer_context_menu/mock_render_view_context_menu.cc",
+      "../browser/renderer_context_menu/mock_render_view_context_menu.h",
+      "../browser/signin/signin_error_notifier_ash_unittest.cc",
+      "../browser/sync/sync_error_notifier_ash_unittest.cc",
+      "../browser/ui/ash/accessibility/ax_tree_source_aura_unittest.cc",
+      "../browser/ui/ash/chrome_keyboard_ui_unittest.cc",
+      "../browser/ui/ash/ime_controller_client_unittest.cc",
+      "../browser/ui/ash/launcher/arc_app_shelf_id_unittest.cc",
+      "../browser/ui/ash/launcher/chrome_launcher_controller_unittest.cc",
+      "../browser/ui/ash/launcher/launcher_context_menu_unittest.cc",
+      "../browser/ui/ash/multi_user/multi_user_context_menu_chromeos_unittest.cc",
+      "../browser/ui/ash/multi_user/multi_user_util_chromeos_unittest.cc",
+      "../browser/ui/ash/multi_user/multi_user_window_manager_chromeos_unittest.cc",
+      "../browser/ui/ash/session_controller_client_unittest.cc",
+      "../browser/ui/ash/tablet_mode_client_unittest.cc",
+      "../browser/ui/ash/window_positioner_unittest.cc",
+      "../browser/ui/window_sizer/window_sizer_ash_unittest.cc",
+    ]
+    deps += [
+      "//ash:test_support_with_content",
+      "//ash/resources",
+      "//ash/strings",
+    ]
   }
   if (enable_background) {
     sources += [
@@ -4303,38 +4313,6 @@ test("unit_tests") {
         "../browser/extensions/api/messaging/native_messaging_policy_handler_unittest.cc",
       ]
     }
-  }
-  if (use_ash) {
-    sources += [
-      "../browser/media/webrtc/desktop_media_list_ash_unittest.cc",
-      "../browser/renderer_context_menu/mock_render_view_context_menu.cc",
-      "../browser/renderer_context_menu/mock_render_view_context_menu.h",
-      "../browser/signin/signin_error_notifier_ash_unittest.cc",
-      "../browser/sync/sync_error_notifier_ash_unittest.cc",
-
-      # Ash implies the app list is enabled (only disabled on mobile).
-      "../browser/ui/ash/accessibility/ax_tree_source_aura_unittest.cc",
-      "../browser/ui/ash/chrome_keyboard_ui_unittest.cc",
-      "../browser/ui/ash/ime_controller_client_unittest.cc",
-      "../browser/ui/ash/launcher/arc_app_shelf_id_unittest.cc",
-      "../browser/ui/ash/launcher/chrome_launcher_controller_unittest.cc",
-      "../browser/ui/ash/launcher/launcher_context_menu_unittest.cc",
-      "../browser/ui/ash/multi_user/multi_user_context_menu_chromeos_unittest.cc",
-      "../browser/ui/ash/multi_user/multi_user_util_chromeos_unittest.cc",
-      "../browser/ui/ash/multi_user/multi_user_window_manager_chromeos_unittest.cc",
-      "../browser/ui/ash/session_controller_client_unittest.cc",
-      "../browser/ui/ash/tablet_mode_client_unittest.cc",
-      "../browser/ui/ash/window_positioner_unittest.cc",
-      "../browser/ui/window_sizer/window_sizer_ash_unittest.cc",
-    ]
-    deps += [
-      "//ash:test_support_with_content",
-      "//ash/resources",
-      "//ash/strings",
-    ]
-
-    # Chrome OS uses window_sizer_ash_unittest.cc
-    sources -= [ "../browser/ui/window_sizer/window_sizer_unittest.cc" ]
   }
   if (use_aura) {
     deps += [
