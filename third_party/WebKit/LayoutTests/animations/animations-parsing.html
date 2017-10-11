@@ -1,20 +1,20 @@
 <!DOCTYPE html>
 <html>
 <head>
-<script src="../resources/js-test.js"></script>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
 </head>
 <body>
+<div>
+  <div style="width:500px;height:500px"><div id="test">hello</div></div>
+</div>
 <script>
-description("Test the parsing and the computed style values of the animations properties.")
+'use strict';
+// Test the parsing and the computed style values of the animations properties.
 
-var testContainer = document.createElement("div");
-document.body.appendChild(testContainer);
-
-testContainer.innerHTML = '<div style="width:500px;height:500px"><div id="test">hello</div></div>';
-
-e = document.getElementById('test');
-style = e.style;
-computedStyle = window.getComputedStyle(e, null);
+var e = document.getElementById('test');
+var style = e.style;
+var computedStyle = window.getComputedStyle(e, null);
 
 // This function checks the return value of computedStyle.animation and verifies Blink can parse it.
 function checkAnimationShorthandValue() {
@@ -24,1132 +24,1148 @@ function checkAnimationShorthandValue() {
     return (computedStyle.getPropertyValue('animation') == before);
 }
 
-debug("Valid animation-name values.");
-// Initial test.
-shouldBe("computedStyle.animationName", "'none'");
-shouldBe("computedStyle.webkitAnimationName", "'none'");
-
-style.animationName = "none";
-shouldNotBe("Object.keys(style).indexOf('animationName')", "-1");
-shouldBe("Object.keys(style).indexOf('webkitAnimationName')", "-1");
-shouldBe("style.animationName", "'none'");
-shouldBe("computedStyle.animationName", "'none'");
-shouldBe("style.webkitAnimationName", "'none'");
-shouldBe("computedStyle.webkitAnimationName", "'none'");
-
-style.animationName = "none, none";
-shouldBe("style.animationName", "'none, none'");
-shouldBe("computedStyle.animationName", "'none, none'");
-shouldBe("style.webkitAnimationName", "'none, none'");
-shouldBe("computedStyle.webkitAnimationName", "'none, none'");
-
-style.animationName = "myAnim";
-shouldBe("style.animationName", "'myAnim'");
-shouldBe("computedStyle.animationName", "'myAnim'");
-shouldBe("style.webkitAnimationName", "'myAnim'");
-shouldBe("computedStyle.webkitAnimationName", "'myAnim'");
-
-style.animationName = "background-position, font-size";
-shouldBe("style.animationName", "'background-position, font-size'");
-shouldBe("computedStyle.animationName", "'background-position, font-size'");
-shouldBe("style.webkitAnimationName", "'background-position, font-size'");
-shouldBe("computedStyle.webkitAnimationName", "'background-position, font-size'");
-
-style.animationName = "background-position, font-size, color";
-shouldBe("style.animationName", "'background-position, font-size, color'");
-shouldBe("computedStyle.animationName", "'background-position, font-size, color'");
-shouldBe("style.webkitAnimationName", "'background-position, font-size, color'");
-shouldBe("computedStyle.webkitAnimationName", "'background-position, font-size, color'");
-
-style.animationName = "all, font-size, color";
-shouldBe("style.animationName", "'all, font-size, color'");
-shouldBe("computedStyle.animationName", "'all, font-size, color'");
-shouldBe("style.webkitAnimationName", "'all, font-size, color'");
-shouldBe("computedStyle.webkitAnimationName", "'all, font-size, color'");
-
-style.animationName = "inherit";
-shouldBe("style.animationName", "'inherit'");
-shouldBe("computedStyle.animationName", "'none'");
-shouldBe("style.webkitAnimationName", "'inherit'");
-shouldBe("computedStyle.webkitAnimationName", "'none'");
-
-style.animationName = "initial";
-shouldBe("style.animationName", "'initial'");
-shouldBe("computedStyle.animationName", "'none'");
-shouldBe("style.webkitAnimationName", "'initial'");
-shouldBe("computedStyle.webkitAnimationName", "'none'");
-
-debug("Invalid animation-name values.");
-style.animationName = "";
-
-style.animationName = "0";
-shouldBe("style.animationName", "''");
-shouldBe("computedStyle.animationName", "'none'");
-shouldBe("style.webkitAnimationName", "''");
-shouldBe("computedStyle.webkitAnimationName", "'none'");
-
-style.animationName = "all none";
-shouldBe("style.animationName", "''");
-shouldBe("computedStyle.animationName", "'none'");
-shouldBe("style.webkitAnimationName", "''");
-shouldBe("computedStyle.webkitAnimationName", "'none'");
-
-style.animationName = "opacity width";
-shouldBe("style.animationName", "''");
-shouldBe("computedStyle.animationName", "'none'");
-shouldBe("style.webkitAnimationName", "''");
-shouldBe("computedStyle.webkitAnimationName", "'none'");
-
-style.animationName = "";
-
-debug("Valid animation-duration values.");
-// Initial test.
-shouldBe("computedStyle.animationDuration", "'0s'");
-shouldBe("computedStyle.webkitAnimationDuration", "'0s'");
-
-style.animationDuration = "0s";
-shouldNotBe("Object.keys(style).indexOf('animationDuration')", "-1");
-shouldBe("Object.keys(style).indexOf('webkitAnimationDuration')", "-1");
-shouldBe("style.animationDuration", "'0s'");
-shouldBe("computedStyle.animationDuration", "'0s'");
-shouldBe("style.webkitAnimationDuration", "'0s'");
-shouldBe("computedStyle.webkitAnimationDuration", "'0s'");
-
-style.animationDuration = "5s";
-shouldBe("style.animationDuration", "'5s'");
-shouldBe("computedStyle.animationDuration", "'5s'");
-shouldBe("style.webkitAnimationDuration", "'5s'");
-shouldBe("computedStyle.webkitAnimationDuration", "'5s'");
-
-style.animationDuration = "10ms";
-shouldBe("style.animationDuration", "'10ms'");
-shouldBe("computedStyle.animationDuration", "'0.01s'");
-shouldBe("style.webkitAnimationDuration", "'10ms'");
-shouldBe("computedStyle.webkitAnimationDuration", "'0.01s'");
-
-style.animationDuration = "10ms, 20s";
-shouldBe("style.animationDuration", "'10ms, 20s'");
-shouldBe("computedStyle.animationDuration", "'0.01s, 20s'");
-shouldBe("style.webkitAnimationDuration", "'10ms, 20s'");
-shouldBe("computedStyle.webkitAnimationDuration", "'0.01s, 20s'");
-
-debug("Invalid animation-duration values.");
-style.animationDuration = "";
-
-// Negative values are invalid.
-style.animationDuration = "-10ms";
-shouldBe("style.animationDuration", "''");
-shouldBe("computedStyle.animationDuration", "'0s'");
-shouldBe("style.webkitAnimationDuration", "''");
-shouldBe("computedStyle.webkitAnimationDuration", "'0s'");
-
-style.animationDuration = "'5ms'";
-shouldBe("style.animationDuration", "''");
-shouldBe("computedStyle.animationDuration", "'0s'");
-shouldBe("style.webkitAnimationDuration", "''");
-shouldBe("computedStyle.webkitAnimationDuration", "'0s'");
-
-style.animationDuration = "30px";
-shouldBe("style.animationDuration", "''");
-shouldBe("computedStyle.animationDuration", "'0s'");
-shouldBe("style.webkitAnimationDuration", "''");
-shouldBe("computedStyle.webkitAnimationDuration", "'0s'");
-
-style.animationDuration = "solid";
-shouldBe("style.animationDuration", "''");
-shouldBe("computedStyle.animationDuration", "'0s'");
-shouldBe("style.webkitAnimationDuration", "''");
-shouldBe("computedStyle.webkitAnimationDuration", "'0s'");
-
-style.animationDuration = "20";
-shouldBe("style.animationDuration", "''");
-shouldBe("computedStyle.animationDuration", "'0s'");
-shouldBe("style.webkitAnimationDuration", "''");
-shouldBe("computedStyle.webkitAnimationDuration", "'0s'");
-
-style.animationDuration = "20%";
-shouldBe("style.animationDuration", "''");
-shouldBe("computedStyle.animationDuration", "'0s'");
-shouldBe("style.webkitAnimationDuration", "''");
-shouldBe("computedStyle.webkitAnimationDuration", "'0s'");
-
-style.animationDuration = "0s, 20px";
-shouldBe("style.animationDuration", "''");
-shouldBe("computedStyle.animationDuration", "'0s'");
-shouldBe("style.webkitAnimationDuration", "''");
-shouldBe("computedStyle.webkitAnimationDuration", "'0s'");
-
-debug("Valid animation-timing-function values.");
-// Initial test.
-shouldBe("computedStyle.animationTimingFunction", "'ease'");
-shouldBe("computedStyle.webkitAnimationTimingFunction", "'ease'");
-
-style.animationTimingFunction = "linear";
-shouldNotBe("Object.keys(style).indexOf('animationTimingFunction')", "-1");
-shouldBe("Object.keys(style).indexOf('webkitAnimationTimingFunction')", "-1");
-shouldBe("style.animationTimingFunction", "'linear'");
-shouldBe("computedStyle.animationTimingFunction", "'linear'");
-shouldBe("style.webkitAnimationTimingFunction", "'linear'");
-shouldBe("computedStyle.webkitAnimationTimingFunction", "'linear'");
-
-style.animationTimingFunction = "ease";
-shouldBe("style.animationTimingFunction", "'ease'");
-shouldBe("computedStyle.animationTimingFunction", "'ease'");
-shouldBe("style.webkitAnimationTimingFunction", "'ease'");
-shouldBe("computedStyle.webkitAnimationTimingFunction", "'ease'");
-
-style.animationTimingFunction = "ease-in";
-shouldBe("style.animationTimingFunction", "'ease-in'");
-shouldBe("computedStyle.animationTimingFunction", "'ease-in'");
-shouldBe("style.webkitAnimationTimingFunction", "'ease-in'");
-shouldBe("computedStyle.webkitAnimationTimingFunction", "'ease-in'");
-
-style.animationTimingFunction = "ease-out";
-shouldBe("style.animationTimingFunction", "'ease-out'");
-shouldBe("computedStyle.animationTimingFunction", "'ease-out'");
-shouldBe("style.webkitAnimationTimingFunction", "'ease-out'");
-shouldBe("computedStyle.webkitAnimationTimingFunction", "'ease-out'");
-
-style.animationTimingFunction = "ease-in-out";
-shouldBe("style.animationTimingFunction", "'ease-in-out'");
-shouldBe("computedStyle.animationTimingFunction", "'ease-in-out'");
-shouldBe("style.webkitAnimationTimingFunction", "'ease-in-out'");
-shouldBe("computedStyle.webkitAnimationTimingFunction", "'ease-in-out'");
-
-style.animationTimingFunction = "cubic-bezier(0.25, 0.1, 0.25, 1)";
-shouldBe("style.animationTimingFunction", "'cubic-bezier(0.25, 0.1, 0.25, 1)'");
-shouldBe("computedStyle.animationTimingFunction", "'cubic-bezier(0.25, 0.1, 0.25, 1)'");
-shouldBe("style.webkitAnimationTimingFunction", "'cubic-bezier(0.25, 0.1, 0.25, 1)'");
-shouldBe("computedStyle.webkitAnimationTimingFunction", "'cubic-bezier(0.25, 0.1, 0.25, 1)'");
-
-style.animationTimingFunction = "cubic-bezier(0.1, 0, 0.23, 0.4)";
-shouldBe("style.animationTimingFunction", "'cubic-bezier(0.1, 0, 0.23, 0.4)'");
-shouldBe("computedStyle.animationTimingFunction", "'cubic-bezier(0.1, 0, 0.23, 0.4)'");
-shouldBe("style.webkitAnimationTimingFunction", "'cubic-bezier(0.1, 0, 0.23, 0.4)'");
-shouldBe("computedStyle.webkitAnimationTimingFunction", "'cubic-bezier(0.1, 0, 0.23, 0.4)'");
-
-style.animationTimingFunction = "cubic-bezier(0.1, 0, 0.23, 3)";
-shouldBe("style.animationTimingFunction", "'cubic-bezier(0.1, 0, 0.23, 3)'");
-shouldBe("computedStyle.animationTimingFunction", "'cubic-bezier(0.1, 0, 0.23, 3)'");
-shouldBe("style.webkitAnimationTimingFunction", "'cubic-bezier(0.1, 0, 0.23, 3)'");
-shouldBe("computedStyle.webkitAnimationTimingFunction", "'cubic-bezier(0.1, 0, 0.23, 3)'");
-
-style.animationTimingFunction = "cubic-bezier(0.1, 5, 0.23, 3)";
-shouldBe("style.animationTimingFunction", "'cubic-bezier(0.1, 5, 0.23, 3)'");
-shouldBe("computedStyle.animationTimingFunction", "'cubic-bezier(0.1, 5, 0.23, 3)'");
-shouldBe("style.webkitAnimationTimingFunction", "'cubic-bezier(0.1, 5, 0.23, 3)'");
-shouldBe("computedStyle.webkitAnimationTimingFunction", "'cubic-bezier(0.1, 5, 0.23, 3)'");
-
-style.animationTimingFunction = "cubic-bezier(0.1, 5, 0.23, 0)";
-shouldBe("style.animationTimingFunction", "'cubic-bezier(0.1, 5, 0.23, 0)'");
-shouldBe("computedStyle.animationTimingFunction", "'cubic-bezier(0.1, 5, 0.23, 0)'");
-shouldBe("style.webkitAnimationTimingFunction", "'cubic-bezier(0.1, 5, 0.23, 0)'");
-shouldBe("computedStyle.webkitAnimationTimingFunction", "'cubic-bezier(0.1, 5, 0.23, 0)'");
-
-style.animationTimingFunction = "cubic-bezier(0.2, 2, 0.2, -0.4)";
-shouldBe("style.animationTimingFunction", "'cubic-bezier(0.2, 2, 0.2, -0.4)'");
-shouldBe("computedStyle.animationTimingFunction", "'cubic-bezier(0.2, 2, 0.2, -0.4)'");
-shouldBe("style.webkitAnimationTimingFunction", "'cubic-bezier(0.2, 2, 0.2, -0.4)'");
-shouldBe("computedStyle.webkitAnimationTimingFunction", "'cubic-bezier(0.2, 2, 0.2, -0.4)'");
-
-style.animationTimingFunction = "cubic-bezier(0.2, -2, 0.2, 0.4)";
-shouldBe("style.animationTimingFunction", "'cubic-bezier(0.2, -2, 0.2, 0.4)'");
-shouldBe("computedStyle.animationTimingFunction", "'cubic-bezier(0.2, -2, 0.2, 0.4)'");
-shouldBe("style.webkitAnimationTimingFunction", "'cubic-bezier(0.2, -2, 0.2, 0.4)'");
-shouldBe("computedStyle.webkitAnimationTimingFunction", "'cubic-bezier(0.2, -2, 0.2, 0.4)'");
-
-style.animationTimingFunction = "step-start";
-shouldBe("style.animationTimingFunction", "'step-start'");
-shouldBe("computedStyle.animationTimingFunction", "'step-start'");
-shouldBe("style.webkitAnimationTimingFunction", "'step-start'");
-shouldBe("computedStyle.webkitAnimationTimingFunction", "'step-start'");
-
-style.animationTimingFunction = "step-end";
-shouldBe("style.animationTimingFunction", "'step-end'");
-shouldBe("computedStyle.animationTimingFunction", "'step-end'");
-shouldBe("style.webkitAnimationTimingFunction", "'step-end'");
-shouldBe("computedStyle.webkitAnimationTimingFunction", "'step-end'");
-
-style.animationTimingFunction = "steps(3)";
-shouldBe("style.animationTimingFunction", "'steps(3, end)'");
-shouldBe("computedStyle.animationTimingFunction", "'steps(3, end)'");
-shouldBe("style.webkitAnimationTimingFunction", "'steps(3, end)'");
-shouldBe("computedStyle.webkitAnimationTimingFunction", "'steps(3, end)'");
-
-style.animationTimingFunction = "steps(4, end)";
-shouldBe("style.animationTimingFunction", "'steps(4, end)'");
-shouldBe("computedStyle.animationTimingFunction", "'steps(4, end)'");
-shouldBe("style.webkitAnimationTimingFunction", "'steps(4, end)'");
-shouldBe("computedStyle.webkitAnimationTimingFunction", "'steps(4, end)'");
-
-style.animationTimingFunction = "steps(5, start)";
-shouldBe("style.animationTimingFunction", "'steps(5, start)'");
-shouldBe("computedStyle.animationTimingFunction", "'steps(5, start)'");
-shouldBe("style.webkitAnimationTimingFunction", "'steps(5, start)'");
-shouldBe("computedStyle.webkitAnimationTimingFunction", "'steps(5, start)'");
-
-style.animationTimingFunction = "frames(5)";
-shouldBe("style.animationTimingFunction", "'frames(5)'");
-shouldBe("computedStyle.animationTimingFunction", "'frames(5)'");
-shouldBe("style.webkitAnimationTimingFunction", "'frames(5)'");
-shouldBe("computedStyle.webkitAnimationTimingFunction", "'frames(5)'");
-
-style.animationName = "anim1, anim2";
-
-style.animationTimingFunction = "ease-in-out, ease-in";
-shouldBe("style.animationTimingFunction", "'ease-in-out, ease-in'");
-shouldBe("computedStyle.animationTimingFunction", "'ease-in-out, ease-in'");
-shouldBe("style.webkitAnimationTimingFunction", "'ease-in-out, ease-in'");
-shouldBe("computedStyle.webkitAnimationTimingFunction", "'ease-in-out, ease-in'");
-
-style.animationTimingFunction = "ease-in-out, cubic-bezier(0.1, 0, 0.23, 0.4)";
-shouldBe("style.animationTimingFunction", "'ease-in-out, cubic-bezier(0.1, 0, 0.23, 0.4)'");
-shouldBe("computedStyle.animationTimingFunction", "'ease-in-out, cubic-bezier(0.1, 0, 0.23, 0.4)'");
-shouldBe("style.webkitAnimationTimingFunction", "'ease-in-out, cubic-bezier(0.1, 0, 0.23, 0.4)'");
-shouldBe("computedStyle.webkitAnimationTimingFunction", "'ease-in-out, cubic-bezier(0.1, 0, 0.23, 0.4)'");
-
-style.animationTimingFunction = "steps(3, start), ease-in-out";
-shouldBe("style.animationTimingFunction", "'steps(3, start), ease-in-out'");
-shouldBe("computedStyle.animationTimingFunction", "'steps(3, start), ease-in-out'");
-shouldBe("style.webkitAnimationTimingFunction", "'steps(3, start), ease-in-out'");
-shouldBe("computedStyle.webkitAnimationTimingFunction", "'steps(3, start), ease-in-out'");
-
-debug("Invalid animation-timing-function values.");
-style.animationName = "";
-style.animationTimingFunction = "";
-
-style.animationTimingFunction = "cubic-bezier(3, 0.1, 4, 1)";
-shouldBe("style.animationTimingFunction", "''");
-shouldBe("computedStyle.animationTimingFunction", "'ease'");
-shouldBe("style.webkitAnimationTimingFunction", "''");
-shouldBe("computedStyle.webkitAnimationTimingFunction", "'ease'");
-
-style.animationTimingFunction = "cubic-bezier(1, 0.1, 3, 1)";
-shouldBe("style.animationTimingFunction", "''");
-shouldBe("computedStyle.animationTimingFunction", "'ease'");
-shouldBe("style.webkitAnimationTimingFunction", "''");
-shouldBe("computedStyle.webkitAnimationTimingFunction", "'ease'");
-
-style.animationTimingFunction = "cubic-bezier(0.1, 0, 4, 0.4)";
-shouldBe("style.animationTimingFunction", "''");
-shouldBe("computedStyle.animationTimingFunction", "'ease'");
-shouldBe("style.webkitAnimationTimingFunction", "''");
-shouldBe("computedStyle.webkitAnimationTimingFunction", "'ease'");
-
-style.animationTimingFunction = "cubic-bezier(3, 0, 4, 0.4)";
-shouldBe("style.animationTimingFunction", "''");
-shouldBe("computedStyle.animationTimingFunction", "'ease'");
-shouldBe("style.webkitAnimationTimingFunction", "''");
-shouldBe("computedStyle.webkitAnimationTimingFunction", "'ease'");
-
-style.animationTimingFunction = "cubic-bezier(3, 0, 0.2, 0.4)";
-shouldBe("style.animationTimingFunction", "''");
-shouldBe("computedStyle.animationTimingFunction", "'ease'");
-shouldBe("style.webkitAnimationTimingFunction", "''");
-shouldBe("computedStyle.webkitAnimationTimingFunction", "'ease'");
-
-style.animationTimingFunction = "cubic-bezier(-0.2, 0, 0.2, 0.4)";
-shouldBe("style.animationTimingFunction", "''");
-shouldBe("computedStyle.animationTimingFunction", "'ease'");
-shouldBe("style.webkitAnimationTimingFunction", "''");
-shouldBe("computedStyle.webkitAnimationTimingFunction", "'ease'");
-
-style.animationTimingFunction = "cubic-bezier(0.2, 2, -0.2, 0.4)";
-shouldBe("style.animationTimingFunction", "''");
-shouldBe("computedStyle.animationTimingFunction", "'ease'");
-shouldBe("style.webkitAnimationTimingFunction", "''");
-shouldBe("computedStyle.webkitAnimationTimingFunction", "'ease'");
-
-style.animationTimingFunction = "steps(5, 3)";
-shouldBe("style.animationTimingFunction", "''");
-shouldBe("computedStyle.animationTimingFunction", "'ease'");
-shouldBe("style.webkitAnimationTimingFunction", "''");
-shouldBe("computedStyle.webkitAnimationTimingFunction", "'ease'");
-
-style.animationTimingFunction = "steps(-5, start)";
-shouldBe("style.animationTimingFunction", "''");
-shouldBe("computedStyle.animationTimingFunction", "'ease'");
-shouldBe("style.webkitAnimationTimingFunction", "''");
-shouldBe("computedStyle.webkitAnimationTimingFunction", "'ease'");
-
-style.animationTimingFunction = "steps(5, start, end)";
-shouldBe("style.animationTimingFunction", "''");
-shouldBe("computedStyle.animationTimingFunction", "'ease'");
-shouldBe("style.webkitAnimationTimingFunction", "''");
-shouldBe("computedStyle.webkitAnimationTimingFunction", "'ease'");
-
-style.animationTimingFunction = "step(5)";
-shouldBe("style.animationTimingFunction", "''");
-shouldBe("computedStyle.animationTimingFunction", "'ease'");
-shouldBe("style.webkitAnimationTimingFunction", "''");
-shouldBe("computedStyle.webkitAnimationTimingFunction", "'ease'");
-
-style.animationTimingFunction = "frame(5)";
-shouldBe("style.animationTimingFunction", "''");
-shouldBe("computedStyle.animationTimingFunction", "'ease'");
-shouldBe("style.webkitAnimationTimingFunction", "''");
-shouldBe("computedStyle.webkitAnimationTimingFunction", "'ease'");
-
-style.animationTimingFunction = "frames(1)";
-shouldBe("style.animationTimingFunction", "''");
-shouldBe("computedStyle.animationTimingFunction", "'ease'");
-shouldBe("style.webkitAnimationTimingFunction", "''");
-shouldBe("computedStyle.webkitAnimationTimingFunction", "'ease'");
-
-style.animationTimingFunction = "frames(2, 3)";
-shouldBe("style.animationTimingFunction", "''");
-shouldBe("computedStyle.animationTimingFunction", "'ease'");
-shouldBe("style.webkitAnimationTimingFunction", "''");
-shouldBe("computedStyle.webkitAnimationTimingFunction", "'ease'");
-
-style.animationTimingFunction = "red";
-shouldBe("style.animationTimingFunction", "''");
-shouldBe("computedStyle.animationTimingFunction", "'ease'");
-shouldBe("style.webkitAnimationTimingFunction", "''");
-shouldBe("computedStyle.webkitAnimationTimingFunction", "'ease'");
-
-style.animationTimingFunction = "cubic-bezier(0.25, 0.1, 0.25)";
-shouldBe("style.animationTimingFunction", "''");
-shouldBe("computedStyle.animationTimingFunction", "'ease'");
-shouldBe("style.webkitAnimationTimingFunction", "''");
-shouldBe("computedStyle.webkitAnimationTimingFunction", "'ease'");
-
-style.animationTimingFunction = "cubic-bezier(0.25, 0.1, 0.25, 1, 2)";
-shouldBe("style.animationTimingFunction", "''");
-shouldBe("computedStyle.animationTimingFunction", "'ease'");
-shouldBe("style.webkitAnimationTimingFunction", "''");
-shouldBe("computedStyle.webkitAnimationTimingFunction", "'ease'");
-
-style.animationTimingFunction = "cubic-foo(0.25, 0.1, 0.25, 1)";
-shouldBe("style.animationTimingFunction", "''");
-shouldBe("computedStyle.animationTimingFunction", "'ease'");
-shouldBe("style.webkitAnimationTimingFunction", "''");
-shouldBe("computedStyle.webkitAnimationTimingFunction", "'ease'");
-
-style.animationTimingFunction = "step-middle";
-shouldBe("style.animationTimingFunction", "'step-middle'");
-shouldBe("computedStyle.animationTimingFunction", "'ease'");
-shouldBe("style.webkitAnimationTimingFunction", "'step-middle'");
-shouldBe("computedStyle.webkitAnimationTimingFunction", "'ease'");
-
-style.animationTimingFunction = "steps(5, middle)";
-shouldBe("style.animationTimingFunction", "'steps(5, middle)'");
-shouldBe("computedStyle.animationTimingFunction", "'ease'");
-shouldBe("style.webkitAnimationTimingFunction", "'steps(5, middle)'");
-shouldBe("computedStyle.webkitAnimationTimingFunction", "'ease'");
-
-debug("Valid animation-delay values.");
-// Initial test.
-shouldBe("computedStyle.animationDelay", "'0s'");
-shouldBe("computedStyle.webkitAnimationDelay", "'0s'");
-
-style.animationDelay = "0s";
-shouldNotBe("Object.keys(style).indexOf('animationDelay')", "-1");
-shouldBe("Object.keys(style).indexOf('webkitAnimationDelay')", "-1");
-shouldBe("style.animationDelay", "'0s'");
-shouldBe("computedStyle.animationDelay", "'0s'");
-shouldBe("style.webkitAnimationDelay", "'0s'");
-shouldBe("computedStyle.webkitAnimationDelay", "'0s'");
-
-style.animationDelay = "5s";
-shouldBe("style.animationDelay", "'5s'");
-shouldBe("computedStyle.animationDelay", "'5s'");
-shouldBe("style.webkitAnimationDelay", "'5s'");
-shouldBe("computedStyle.webkitAnimationDelay", "'5s'");
-
-style.animationDelay = "10ms";
-shouldBe("style.animationDelay", "'10ms'");
-shouldBe("computedStyle.animationDelay", "'0.01s'");
-shouldBe("style.webkitAnimationDelay", "'10ms'");
-shouldBe("computedStyle.webkitAnimationDelay", "'0.01s'");
-
-style.animationDelay = "-10ms";
-shouldBe("style.animationDelay", "'-10ms'");
-shouldBe("computedStyle.animationDelay", "'-0.01s'");
-shouldBe("style.webkitAnimationDelay", "'-10ms'");
-shouldBe("computedStyle.webkitAnimationDelay", "'-0.01s'");
-
-style.transitionProperty = "opacity, width";
-
-style.animationDelay = "-10ms, 20s";
-shouldBe("style.animationDelay", "'-10ms, 20s'");
-shouldBe("computedStyle.animationDelay", "'-0.01s, 20s'");
-shouldBe("style.webkitAnimationDelay", "'-10ms, 20s'");
-shouldBe("computedStyle.webkitAnimationDelay", "'-0.01s, 20s'");
-
-debug("Invalid animation-delay values.");
-style.transitionProperty = "opacity";
-style.animationDelay = "";
-
-style.animationDelay = "'5ms'";
-shouldBe("style.animationDelay", "''");
-shouldBe("computedStyle.animationDelay", "'0s'");
-shouldBe("style.webkitAnimationDelay", "''");
-shouldBe("computedStyle.webkitAnimationDelay", "'0s'");
-
-style.animationDelay = "30px";
-shouldBe("style.animationDelay", "''");
-shouldBe("computedStyle.animationDelay", "'0s'");
-shouldBe("style.webkitAnimationDelay", "''");
-shouldBe("computedStyle.webkitAnimationDelay", "'0s'");
-
-style.animationDelay = "solid";
-shouldBe("style.animationDelay", "''");
-shouldBe("computedStyle.animationDelay", "'0s'");
-shouldBe("style.webkitAnimationDelay", "''");
-shouldBe("computedStyle.webkitAnimationDelay", "'0s'");
-
-style.animationDelay = "20";
-shouldBe("style.animationDelay", "''");
-shouldBe("computedStyle.animationDelay", "'0s'");
-shouldBe("style.webkitAnimationDelay", "''");
-shouldBe("computedStyle.webkitAnimationDelay", "'0s'");
-
-style.animationDelay = "20%";
-shouldBe("style.animationDelay", "''");
-shouldBe("computedStyle.animationDelay", "'0s'");
-shouldBe("style.webkitAnimationDelay", "''");
-shouldBe("computedStyle.webkitAnimationDelay", "'0s'");
-
-style.animationDelay = "0s, 20px";
-shouldBe("style.animationDelay", "''");
-shouldBe("computedStyle.animationDelay", "'0s'");
-shouldBe("style.webkitAnimationDelay", "''");
-shouldBe("computedStyle.webkitAnimationDelay", "'0s'");
-
-debug("Valid animation-iteration-count values.");
-// Initial test.
-shouldBe("computedStyle.animationIterationCount", "'1'");
-shouldBe("computedStyle.webkitAnimationIterationCount", "'1'");
-
-style.animationIterationCount = "4";
-shouldNotBe("Object.keys(style).indexOf('animationIterationCount')", "-1");
-shouldBe("Object.keys(style).indexOf('webkitAnimationIterationCount')", "-1");
-shouldBe("style.animationIterationCount", "'4'");
-shouldBe("computedStyle.animationIterationCount", "'4'");
-shouldBe("style.webkitAnimationIterationCount", "'4'");
-shouldBe("computedStyle.webkitAnimationIterationCount", "'4'");
-
-style.animationIterationCount = "2.5";
-shouldBe("style.animationIterationCount", "'2.5'");
-shouldBe("computedStyle.animationIterationCount", "'2.5'");
-shouldBe("style.webkitAnimationIterationCount", "'2.5'");
-shouldBe("computedStyle.webkitAnimationIterationCount", "'2.5'");
-
-style.animationIterationCount = "infinite";
-shouldBe("style.animationIterationCount", "'infinite'");
-shouldBe("computedStyle.animationIterationCount", "'infinite'");
-shouldBe("style.webkitAnimationIterationCount", "'infinite'");
-shouldBe("computedStyle.webkitAnimationIterationCount", "'infinite'");
-
-style.animationIterationCount = "infinite, 3";
-shouldBe("style.animationIterationCount", "'infinite, 3'");
-shouldBe("computedStyle.animationIterationCount", "'infinite, 3'");
-shouldBe("style.webkitAnimationIterationCount", "'infinite, 3'");
-shouldBe("computedStyle.webkitAnimationIterationCount", "'infinite, 3'");
-
-style.animationIterationCount = "0";
-shouldBe("style.animationIterationCount", "'0'");
-shouldBe("computedStyle.animationIterationCount", "'0'");
-shouldBe("style.webkitAnimationIterationCount", "'0'");
-shouldBe("computedStyle.webkitAnimationIterationCount", "'0'");
-
-style.animationIterationCount = "infinite, infinite";
-shouldBe("style.animationIterationCount", "'infinite, infinite'");
-shouldBe("computedStyle.animationIterationCount", "'infinite, infinite'");
-shouldBe("style.webkitAnimationIterationCount", "'infinite, infinite'");
-shouldBe("computedStyle.webkitAnimationIterationCount", "'infinite, infinite'");
-
-debug("Invalid animation-iteration-count values.");
-style.animationIterationCount = "";
-
-style.animationIterationCount = "none";
-shouldBe("style.animationIterationCount", "''");
-shouldBe("computedStyle.animationIterationCount", "'1'");
-shouldBe("style.webkitAnimationIterationCount", "''");
-shouldBe("computedStyle.webkitAnimationIterationCount", "'1'");
-
-style.animationIterationCount = "-3";
-shouldBe("style.animationIterationCount", "''");
-shouldBe("computedStyle.animationIterationCount", "'1'");
-shouldBe("style.webkitAnimationIterationCount", "''");
-shouldBe("computedStyle.webkitAnimationIterationCount", "'1'");
-
-style.animationIterationCount = "infinite, -3";
-shouldBe("style.animationIterationCount", "''");
-shouldBe("computedStyle.animationIterationCount", "'1'");
-shouldBe("style.webkitAnimationIterationCount", "''");
-shouldBe("computedStyle.webkitAnimationIterationCount", "'1'");
-
-style.animationIterationCount = "solid";
-shouldBe("style.animationIterationCount", "''");
-shouldBe("computedStyle.animationIterationCount", "'1'");
-shouldBe("style.webkitAnimationIterationCount", "''");
-shouldBe("computedStyle.webkitAnimationIterationCount", "'1'");
-
-style.animationIterationCount = "-1, infinite";
-shouldBe("style.animationIterationCount", "''");
-shouldBe("computedStyle.animationIterationCount", "'1'");
-shouldBe("style.webkitAnimationIterationCount", "''");
-shouldBe("computedStyle.webkitAnimationIterationCount", "'1'");
-
-style.animationIterationCount = "-1, 3";
-shouldBe("style.animationIterationCount", "''");
-shouldBe("computedStyle.animationIterationCount", "'1'");
-shouldBe("style.webkitAnimationIterationCount", "''");
-shouldBe("computedStyle.webkitAnimationIterationCount", "'1'");
-
-debug("Valid animation-direction values.");
-// Initial test.
-shouldBe("computedStyle.animationDirection", "'normal'");
-shouldBe("computedStyle.webkitAnimationDirection", "'normal'");
-
-style.animationDirection = "reverse";
-shouldNotBe("Object.keys(style).indexOf('animationDirection')", "-1");
-shouldBe("Object.keys(style).indexOf('webkitAnimationDirection')", "-1");
-shouldBe("style.animationDirection", "'reverse'");
-shouldBe("computedStyle.animationDirection", "'reverse'");
-shouldBe("style.webkitAnimationDirection", "'reverse'");
-shouldBe("computedStyle.webkitAnimationDirection", "'reverse'");
-
-style.animationDirection = "normal";
-shouldBe("style.animationDirection", "'normal'");
-shouldBe("computedStyle.animationDirection", "'normal'");
-shouldBe("style.webkitAnimationDirection", "'normal'");
-shouldBe("computedStyle.webkitAnimationDirection", "'normal'");
-
-style.animationDirection = "normal, alternate";
-shouldBe("style.animationDirection", "'normal, alternate'");
-shouldBe("computedStyle.animationDirection", "'normal, alternate'");
-shouldBe("style.webkitAnimationDirection", "'normal, alternate'");
-shouldBe("computedStyle.webkitAnimationDirection", "'normal, alternate'");
-
-style.animationDirection = "alternate";
-shouldBe("style.animationDirection", "'alternate'");
-shouldBe("computedStyle.animationDirection", "'alternate'");
-shouldBe("style.webkitAnimationDirection", "'alternate'");
-shouldBe("computedStyle.webkitAnimationDirection", "'alternate'");
-
-style.animationDirection = "alternate-reverse";
-shouldBe("style.animationDirection", "'alternate-reverse'");
-shouldBe("computedStyle.animationDirection", "'alternate-reverse'");
-shouldBe("style.webkitAnimationDirection", "'alternate-reverse'");
-shouldBe("computedStyle.webkitAnimationDirection", "'alternate-reverse'");
-
-debug("Invalid animation-direction values.");
-style.animationDirection = "";
-
-style.animationDirection = "solid";
-shouldBe("style.animationDirection", "''");
-shouldBe("computedStyle.animationDirection", "'normal'");
-shouldBe("style.webkitAnimationDirection", "''");
-shouldBe("computedStyle.webkitAnimationDirection", "'normal'");
-
-style.animationDirection = "0";
-shouldBe("style.animationDirection", "''");
-shouldBe("computedStyle.animationDirection", "'normal'");
-shouldBe("style.webkitAnimationDirection", "''");
-shouldBe("computedStyle.webkitAnimationDirection", "'normal'");
-
-style.animationDirection = "3px";
-shouldBe("style.animationDirection", "''");
-shouldBe("computedStyle.animationDirection", "'normal'");
-shouldBe("style.webkitAnimationDirection", "''");
-shouldBe("computedStyle.webkitAnimationDirection", "'normal'");
-
-style.animationDirection = "alternate-normal";
-shouldBe("style.animationDirection", "''");
-shouldBe("computedStyle.animationDirection", "'normal'");
-shouldBe("style.webkitAnimationDirection", "''");
-shouldBe("computedStyle.webkitAnimationDirection", "'normal'");
-
-style.animationDirection = "3.5";
-shouldBe("style.animationDirection", "''");
-shouldBe("computedStyle.animationDirection", "'normal'");
-shouldBe("style.webkitAnimationDirection", "''");
-shouldBe("computedStyle.webkitAnimationDirection", "'normal'");
-
-style.animationDirection = "3.5, reverse";
-shouldBe("style.animationDirection", "''");
-shouldBe("computedStyle.animationDirection", "'normal'");
-shouldBe("style.webkitAnimationDirection", "''");
-shouldBe("computedStyle.webkitAnimationDirection", "'normal'");
-
-style.animationDirection = "reverse, solid";
-shouldBe("style.animationDirection", "''");
-shouldBe("computedStyle.animationDirection", "'normal'");
-shouldBe("style.webkitAnimationDirection", "''");
-shouldBe("computedStyle.webkitAnimationDirection", "'normal'");
-
-debug("Valid animation-play-state values.");
-// Initial test.
-shouldBe("computedStyle.animationPlayState", "'running'");
-shouldBe("computedStyle.webkitAnimationPlayState", "'running'");
-
-style.animationPlayState = "paused";
-shouldNotBe("Object.keys(style).indexOf('animationPlayState')", "-1");
-shouldBe("Object.keys(style).indexOf('webkitAnimationPlayState')", "-1");
-shouldBe("style.animationPlayState", "'paused'");
-shouldBe("computedStyle.animationPlayState", "'paused'");
-shouldBe("style.webkitAnimationPlayState", "'paused'");
-shouldBe("computedStyle.webkitAnimationPlayState", "'paused'");
-
-style.animationPlayState = "running";
-shouldBe("style.animationPlayState", "'running'");
-shouldBe("computedStyle.animationPlayState", "'running'");
-shouldBe("style.webkitAnimationPlayState", "'running'");
-shouldBe("computedStyle.webkitAnimationPlayState", "'running'");
-
-style.animationPlayState = "running, running";
-shouldBe("style.animationPlayState", "'running, running'");
-shouldBe("computedStyle.animationPlayState", "'running, running'");
-shouldBe("style.webkitAnimationPlayState", "'running, running'");
-shouldBe("computedStyle.webkitAnimationPlayState", "'running, running'");
-
-style.animationPlayState = "paused, paused";
-shouldBe("style.animationPlayState", "'paused, paused'");
-shouldBe("computedStyle.animationPlayState", "'paused, paused'");
-shouldBe("style.webkitAnimationPlayState", "'paused, paused'");
-shouldBe("computedStyle.webkitAnimationPlayState", "'paused, paused'");
-
-style.animationPlayState = "paused, running";
-shouldBe("style.animationPlayState", "'paused, running'");
-shouldBe("computedStyle.animationPlayState", "'paused, running'");
-shouldBe("style.webkitAnimationPlayState", "'paused, running'");
-shouldBe("computedStyle.webkitAnimationPlayState", "'paused, running'");
-
-debug("Invalid animation-play-state values.");
-style.animationPlayState = "";
-
-style.animationPlayState = "running3";
-shouldBe("style.animationPlayState", "''");
-shouldBe("computedStyle.animationPlayState", "'running'");
-shouldBe("style.webkitAnimationPlayState", "''");
-shouldBe("computedStyle.webkitAnimationPlayState", "'running'");
-
-style.animationPlayState = "0";
-shouldBe("style.animationPlayState", "''");
-shouldBe("computedStyle.animationPlayState", "'running'");
-shouldBe("style.webkitAnimationPlayState", "''");
-shouldBe("computedStyle.webkitAnimationPlayState", "'running'");
-
-style.animationPlayState = "solid";
-shouldBe("style.animationPlayState", "''");
-shouldBe("computedStyle.animationPlayState", "'running'");
-shouldBe("style.webkitAnimationPlayState", "''");
-shouldBe("computedStyle.webkitAnimationPlayState", "'running'");
-
-style.animationPlayState = "20px";
-shouldBe("style.animationPlayState", "''");
-shouldBe("computedStyle.animationPlayState", "'running'");
-shouldBe("style.webkitAnimationPlayState", "''");
-shouldBe("computedStyle.webkitAnimationPlayState", "'running'");
-
-style.animationPlayState = "all";
-shouldBe("style.animationPlayState", "''");
-shouldBe("computedStyle.animationPlayState", "'running'");
-shouldBe("style.webkitAnimationPlayState", "''");
-shouldBe("computedStyle.webkitAnimationPlayState", "'running'");
-
-style.animationPlayState = "running, test";
-shouldBe("style.animationPlayState", "''");
-shouldBe("computedStyle.animationPlayState", "'running'");
-shouldBe("style.webkitAnimationPlayState", "''");
-shouldBe("computedStyle.webkitAnimationPlayState", "'running'");
-
-style.animationPlayState = "all, paused";
-shouldBe("style.animationPlayState", "''");
-shouldBe("computedStyle.animationPlayState", "'running'");
-shouldBe("style.webkitAnimationPlayState", "''");
-shouldBe("computedStyle.webkitAnimationPlayState", "'running'");
-
-debug("Valid animation-fill-mode values.");
-// Initial test.
-shouldBe("computedStyle.animationFillMode", "'none'");
-shouldBe("computedStyle.webkitAnimationFillMode", "'none'");
-
-style.animationFillMode = "forwards";
-shouldNotBe("Object.keys(style).indexOf('animationFillMode')", "-1");
-shouldBe("Object.keys(style).indexOf('webkitAnimationFillMode')", "-1");
-shouldBe("style.animationFillMode", "'forwards'");
-shouldBe("computedStyle.animationFillMode", "'forwards'");
-shouldBe("style.webkitAnimationFillMode", "'forwards'");
-shouldBe("computedStyle.webkitAnimationFillMode", "'forwards'");
-
-style.animationFillMode = "backwards";
-shouldBe("style.animationFillMode", "'backwards'");
-shouldBe("computedStyle.animationFillMode", "'backwards'");
-shouldBe("style.webkitAnimationFillMode", "'backwards'");
-shouldBe("computedStyle.webkitAnimationFillMode", "'backwards'");
-
-style.animationFillMode = "both";
-shouldBe("style.animationFillMode", "'both'");
-shouldBe("computedStyle.animationFillMode", "'both'");
-shouldBe("style.webkitAnimationFillMode", "'both'");
-shouldBe("computedStyle.webkitAnimationFillMode", "'both'");
-
-style.animationFillMode = "none";
-shouldBe("style.animationFillMode", "'none'");
-shouldBe("computedStyle.animationFillMode", "'none'");
-shouldBe("style.webkitAnimationFillMode", "'none'");
-shouldBe("computedStyle.webkitAnimationFillMode", "'none'");
-
-style.animationFillMode = "none, both";
-shouldBe("style.animationFillMode", "'none, both'");
-shouldBe("computedStyle.animationFillMode", "'none, both'");
-shouldBe("style.webkitAnimationFillMode", "'none, both'");
-shouldBe("computedStyle.webkitAnimationFillMode", "'none, both'");
-
-style.animationFillMode = "backwards, forwards";
-shouldBe("style.animationFillMode", "'backwards, forwards'");
-shouldBe("computedStyle.animationFillMode", "'backwards, forwards'");
-shouldBe("style.webkitAnimationFillMode", "'backwards, forwards'");
-shouldBe("computedStyle.webkitAnimationFillMode", "'backwards, forwards'");
-
-debug("Invalid animation-fill-mode values.");
-style.animationFillMode = "";
-
-style.animationFillMode = "foo";
-shouldBe("style.animationFillMode", "''");
-shouldBe("computedStyle.animationFillMode", "'none'");
-shouldBe("style.webkitAnimationFillMode", "''");
-shouldBe("computedStyle.webkitAnimationFillMode", "'none'");
-
-style.animationFillMode = "0";
-shouldBe("style.animationFillMode", "''");
-shouldBe("computedStyle.animationFillMode", "'none'");
-shouldBe("style.webkitAnimationFillMode", "''");
-shouldBe("computedStyle.webkitAnimationFillMode", "'none'");
-
-style.animationFillMode = "-";
-shouldBe("style.animationFillMode", "''");
-shouldBe("computedStyle.animationFillMode", "'none'");
-shouldBe("style.webkitAnimationFillMode", "''");
-shouldBe("computedStyle.webkitAnimationFillMode", "'none'");
-
-style.animationFillMode = "3px";
-shouldBe("style.animationFillMode", "''");
-shouldBe("computedStyle.animationFillMode", "'none'");
-shouldBe("style.webkitAnimationFillMode", "''");
-shouldBe("computedStyle.webkitAnimationFillMode", "'none'");
-
-style.animationFillMode = "backwards, test";
-shouldBe("style.animationFillMode", "''");
-shouldBe("computedStyle.animationFillMode", "'none'");
-shouldBe("style.webkitAnimationFillMode", "''");
-shouldBe("computedStyle.webkitAnimationFillMode", "'none'");
-
-style.animationFillMode = "test, all";
-shouldBe("style.animationFillMode", "''");
-shouldBe("computedStyle.animationFillMode", "'none'");
-shouldBe("style.webkitAnimationFillMode", "''");
-shouldBe("computedStyle.webkitAnimationFillMode", "'none'");
-
-style.animationFillMode = "test, none";
-shouldBe("style.animationFillMode", "''");
-shouldBe("computedStyle.animationFillMode", "'none'");
-shouldBe("style.webkitAnimationFillMode", "''");
-shouldBe("computedStyle.webkitAnimationFillMode", "'none'");
-
-style.animationFillMode = "forwards,";
-shouldBe("style.animationFillMode", "''");
-
-debug("Valid animation shorthand values.");
-style.animation = "";
-// Initial test.
-shouldBe("computedStyle.animation", "'none 0s ease 0s 1 normal none running'");
-shouldBe("computedStyle.webkitAnimation", "'none 0s ease 0s 1 normal none running'");
-
-style.animation = "myShorthandAnim";
-shouldNotBe("Object.keys(style).indexOf('animation')", "-1");
-shouldBe("Object.keys(style).indexOf('webkitAnimation')", "-1");
-shouldBe("style.animation", "'myShorthandAnim'");
-shouldBe("computedStyle.animation", "'myShorthandAnim 0s ease 0s 1 normal none running'");
-shouldBe("style.webkitAnimation", "'myShorthandAnim'");
-shouldBe("computedStyle.webkitAnimation", "'myShorthandAnim 0s ease 0s 1 normal none running'");
-shouldBe("checkAnimationShorthandValue()", "true");
-
-style.animation = "none";
-shouldNotBe("Object.keys(style).indexOf('animation')", "-1");
-shouldBe("Object.keys(style).indexOf('webkitAnimation')", "-1");
-shouldBe("style.animation", "'none'");
-shouldBe("computedStyle.animation", "'none 0s ease 0s 1 normal none running'");
-shouldBe("style.webkitAnimation", "'none'");
-shouldBe("computedStyle.webkitAnimation", "'none 0s ease 0s 1 normal none running'");
-shouldBe("checkAnimationShorthandValue()", "true");
-
-style.animation = "none 20s";
-shouldBe("style.animation", "'20s none'");
-shouldBe("computedStyle.animation", "'none 20s ease 0s 1 normal none running'");
-shouldBe("style.webkitAnimation", "'20s none'");
-shouldBe("computedStyle.webkitAnimation", "'none 20s ease 0s 1 normal none running'");
-shouldBe("checkAnimationShorthandValue()", "true");
-
-style.animation = "myShorthandAnim none 20s";
-shouldBe("style.animation", "'myShorthandAnim 20s none'");
-shouldBe("computedStyle.animation", "'myShorthandAnim 20s ease 0s 1 normal none running'");
-shouldBe("style.webkitAnimation", "'myShorthandAnim 20s none'");
-shouldBe("computedStyle.webkitAnimation", "'myShorthandAnim 20s ease 0s 1 normal none running'");
-shouldBe("checkAnimationShorthandValue()", "true");
-
-style.animation = "myShorthandAnim ease-in none 20s";
-shouldBe("style.animation", "'myShorthandAnim 20s ease-in none'");
-shouldBe("computedStyle.animation", "'myShorthandAnim 20s ease-in 0s 1 normal none running'");
-shouldBe("style.webkitAnimation", "'myShorthandAnim 20s ease-in none'");
-shouldBe("computedStyle.webkitAnimation", "'myShorthandAnim 20s ease-in 0s 1 normal none running'");
-shouldBe("checkAnimationShorthandValue()", "true");
-
-style.animation = "myShorthandAnim ease-in 20s";
-shouldBe("style.animation", "'myShorthandAnim 20s ease-in'");
-shouldBe("computedStyle.animation", "'myShorthandAnim 20s ease-in 0s 1 normal none running'");
-shouldBe("style.webkitAnimation", "'myShorthandAnim 20s ease-in'");
-shouldBe("computedStyle.webkitAnimation", "'myShorthandAnim 20s ease-in 0s 1 normal none running'");
-shouldBe("checkAnimationShorthandValue()", "true");
-
-style.animation = "myShorthandAnim ease-in 20s 10s";
-shouldBe("style.animation", "'myShorthandAnim 20s ease-in 10s'");
-shouldBe("computedStyle.animation", "'myShorthandAnim 20s ease-in 10s 1 normal none running'");
-shouldBe("style.webkitAnimation", "'myShorthandAnim 20s ease-in 10s'");
-shouldBe("computedStyle.webkitAnimation", "'myShorthandAnim 20s ease-in 10s 1 normal none running'");
-// Let's double check here the delay and duration. As stated in the spec the first value parsed
-// is assigned to the duration.
-shouldBe("computedStyle.animationDuration", "'20s'");
-shouldBe("computedStyle.webkitAnimationDuration", "'20s'");
-shouldBe("computedStyle.animationDelay", "'10s'");
-shouldBe("computedStyle.webkitAnimationDelay", "'10s'");
-shouldBe("checkAnimationShorthandValue()", "true");
-
-style.animation = "myShorthandAnim 20s ease-in 10s";
-shouldBe("style.animation", "'myShorthandAnim 20s ease-in 10s'");
-shouldBe("computedStyle.animation", "'myShorthandAnim 20s ease-in 10s 1 normal none running'");
-shouldBe("style.webkitAnimation", "'myShorthandAnim 20s ease-in 10s'");
-shouldBe("computedStyle.webkitAnimation", "'myShorthandAnim 20s ease-in 10s 1 normal none running'");
-shouldBe("computedStyle.animationDuration", "'20s'");
-shouldBe("computedStyle.webkitAnimationDuration", "'20s'");
-shouldBe("computedStyle.animationDelay", "'10s'");
-shouldBe("computedStyle.webkitAnimationDelay", "'10s'");
-shouldBe("checkAnimationShorthandValue()", "true");
-
-style.animation = "myShorthandAnim paused 20s ease-in 10s";
-shouldBe("style.animation", "'myShorthandAnim 20s ease-in 10s paused'");
-shouldBe("computedStyle.animation", "'myShorthandAnim 20s ease-in 10s 1 normal none paused'");
-shouldBe("style.webkitAnimation", "'myShorthandAnim 20s ease-in 10s paused'");
-shouldBe("computedStyle.webkitAnimation", "'myShorthandAnim 20s ease-in 10s 1 normal none paused'");
-shouldBe("computedStyle.animationDuration", "'20s'");
-shouldBe("computedStyle.webkitAnimationDuration", "'20s'");
-shouldBe("computedStyle.animationDelay", "'10s'");
-shouldBe("computedStyle.webkitAnimationDelay", "'10s'");
-shouldBe("checkAnimationShorthandValue()", "true");
-
-style.animation = "myShorthandAnim ease-in both 20s 5";
-shouldBe("style.animation", "'myShorthandAnim 20s ease-in 5 both'");
-shouldBe("computedStyle.animation", "'myShorthandAnim 20s ease-in 0s 5 normal both running'");
-shouldBe("style.webkitAnimation", "'myShorthandAnim 20s ease-in 5 both'");
-shouldBe("computedStyle.webkitAnimation", "'myShorthandAnim 20s ease-in 0s 5 normal both running'");
-shouldBe("checkAnimationShorthandValue()", "true");
-
-style.animation = "myShorthandAnim ease-in 20s 5 backwards";
-shouldBe("style.animation", "'myShorthandAnim 20s ease-in 5 backwards'");
-shouldBe("computedStyle.animation", "'myShorthandAnim 20s ease-in 0s 5 normal backwards running'");
-shouldBe("style.webkitAnimation", "'myShorthandAnim 20s ease-in 5 backwards'");
-shouldBe("computedStyle.webkitAnimation", "'myShorthandAnim 20s ease-in 0s 5 normal backwards running'");
-shouldBe("checkAnimationShorthandValue()", "true");
-
-style.animation = "myShorthandAnim forwards 20s 5";
-shouldBe("style.animation", "'myShorthandAnim 20s 5 forwards'");
-shouldBe("computedStyle.animation", "'myShorthandAnim 20s ease 0s 5 normal forwards running'");
-shouldBe("style.webkitAnimation", "'myShorthandAnim 20s 5 forwards'");
-shouldBe("computedStyle.webkitAnimation", "'myShorthandAnim 20s ease 0s 5 normal forwards running'");
-shouldBe("checkAnimationShorthandValue()", "true");
-
-style.animation = "myShorthandAnim ease-in 20s 5";
-shouldBe("style.animation", "'myShorthandAnim 20s ease-in 5'");
-shouldBe("computedStyle.animation", "'myShorthandAnim 20s ease-in 0s 5 normal none running'");
-shouldBe("style.webkitAnimation", "'myShorthandAnim 20s ease-in 5'");
-shouldBe("computedStyle.webkitAnimation", "'myShorthandAnim 20s ease-in 0s 5 normal none running'");
-shouldBe("checkAnimationShorthandValue()", "true");
-
-style.animation = "myShorthandAnim reverse ease-in 20s 5";
-shouldBe("style.animation", "'myShorthandAnim 20s ease-in 5 reverse'");
-shouldBe("computedStyle.animation", "'myShorthandAnim 20s ease-in 0s 5 reverse none running'");
-shouldBe("style.webkitAnimation", "'myShorthandAnim 20s ease-in 5 reverse'");
-shouldBe("computedStyle.webkitAnimation", "'myShorthandAnim 20s ease-in 0s 5 reverse none running'");
-shouldBe("checkAnimationShorthandValue()", "true");
-
-style.animation = "myShorthandAnim reverse ease-in backwards 20s 5 paused";
-shouldBe("style.animation", "'myShorthandAnim 20s ease-in 5 reverse backwards paused'");
-shouldBe("computedStyle.animation", "'myShorthandAnim 20s ease-in 0s 5 reverse backwards paused'");
-shouldBe("style.webkitAnimation", "'myShorthandAnim 20s ease-in 5 reverse backwards paused'");
-shouldBe("computedStyle.webkitAnimation", "'myShorthandAnim 20s ease-in 0s 5 reverse backwards paused'");
-shouldBe("checkAnimationShorthandValue()", "true");
-
-style.animation = "myShorthandAnim ease-in 20s 10s, width cubic-bezier(0.32, 0, 1, 1) 10s 20s";
-shouldBe("style.animation", "'myShorthandAnim 20s ease-in 10s, width 10s cubic-bezier(0.32, 0, 1, 1) 20s'");
-shouldBe("computedStyle.animation", "'myShorthandAnim 20s ease-in 10s 1 normal none running, width 10s cubic-bezier(0.32, 0, 1, 1) 20s 1 normal none running'");
-shouldBe("style.webkitAnimation", "'myShorthandAnim 20s ease-in 10s, width 10s cubic-bezier(0.32, 0, 1, 1) 20s'");
-shouldBe("computedStyle.webkitAnimation", "'myShorthandAnim 20s ease-in 10s 1 normal none running, width 10s cubic-bezier(0.32, 0, 1, 1) 20s 1 normal none running'");
-// Let's double check here the delay and duration. As stated in the spec the first value parsed
-// is assigned to the duration.
-shouldBe("computedStyle.animationDuration", "'20s, 10s'");
-shouldBe("computedStyle.webkitAnimationDuration", "'20s, 10s'");
-shouldBe("computedStyle.animationDelay", "'10s, 20s'");
-shouldBe("computedStyle.webkitAnimationDelay", "'10s, 20s'");
-shouldBe("checkAnimationShorthandValue()", "true");
-
-style.animation = "myShorthandAnim ease-in 20s 10s paused, width cubic-bezier(0.32, 0, 1, 1) 10s 20s";
-shouldBe("style.animation", "'myShorthandAnim 20s ease-in 10s paused, width 10s cubic-bezier(0.32, 0, 1, 1) 20s'");
-shouldBe("computedStyle.animation", "'myShorthandAnim 20s ease-in 10s 1 normal none paused, width 10s cubic-bezier(0.32, 0, 1, 1) 20s 1 normal none running'");
-shouldBe("style.webkitAnimation", "'myShorthandAnim 20s ease-in 10s paused, width 10s cubic-bezier(0.32, 0, 1, 1) 20s'");
-shouldBe("computedStyle.webkitAnimation", "'myShorthandAnim 20s ease-in 10s 1 normal none paused, width 10s cubic-bezier(0.32, 0, 1, 1) 20s 1 normal none running'");
-// Let's double check here the delay and duration. As stated in the spec the first value parsed
-// is assigned to the duration.
-shouldBe("computedStyle.animationDuration", "'20s, 10s'");
-shouldBe("computedStyle.webkitAnimationDuration", "'20s, 10s'");
-shouldBe("computedStyle.animationDelay", "'10s, 20s'");
-shouldBe("computedStyle.webkitAnimationDelay", "'10s, 20s'");
-shouldBe("checkAnimationShorthandValue()", "true");
-
-style.animation = "myShorthandAnim reverse ease-in 20s 10s paused, test cubic-bezier(0.32, 0, 1, 1) 10s 20s both";
-shouldBe("style.animation", "'myShorthandAnim 20s ease-in 10s reverse paused, test 10s cubic-bezier(0.32, 0, 1, 1) 20s both'");
-shouldBe("computedStyle.animation", "'myShorthandAnim 20s ease-in 10s 1 reverse none paused, test 10s cubic-bezier(0.32, 0, 1, 1) 20s 1 normal both running'");
-shouldBe("style.webkitAnimation", "'myShorthandAnim 20s ease-in 10s reverse paused, test 10s cubic-bezier(0.32, 0, 1, 1) 20s both'");
-shouldBe("computedStyle.webkitAnimation", "'myShorthandAnim 20s ease-in 10s 1 reverse none paused, test 10s cubic-bezier(0.32, 0, 1, 1) 20s 1 normal both running'");
-shouldBe("checkAnimationShorthandValue()", "true");
-
-style.animation = "none, none";
-shouldBe("style.animation", "'none, none'");
-shouldBe("computedStyle.animation", "'none 0s ease 0s 1 normal none running, none 0s ease 0s 1 normal none running'");
-shouldBe("style.webkitAnimation", "'none, none'");
-shouldBe("computedStyle.webkitAnimation", "'none 0s ease 0s 1 normal none running, none 0s ease 0s 1 normal none running'");
-
-style.animation = "ease-in test 20s 10s, none";
-shouldBe("style.animation", "'test 20s ease-in 10s, none'");
-shouldBe("computedStyle.animation", "'test 20s ease-in 10s 1 normal none running, none 0s ease 0s 1 normal none running'");
-shouldBe("style.webkitAnimation", "'test 20s ease-in 10s, none'");
-shouldBe("computedStyle.webkitAnimation", "'test 20s ease-in 10s 1 normal none running, none 0s ease 0s 1 normal none running'");
-shouldBe("computedStyle.animationName", "'test, none'");
-
-style.animation = "none, ease-in test 20s 10s";
-shouldBe("style.animation", "'none, test 20s ease-in 10s'");
-shouldBe("computedStyle.animation", "'none 0s ease 0s 1 normal none running, test 20s ease-in 10s 1 normal none running'");
-shouldBe("style.webkitAnimation", "'none, test 20s ease-in 10s'");
-shouldBe("computedStyle.webkitAnimation", "'none 0s ease 0s 1 normal none running, test 20s ease-in 10s 1 normal none running'");
-shouldBe("computedStyle.animationName", "'none, test'");
-
-style.animation = "myShorthandAnim both 20s 10s ease-in paused, myShorthandAnim ease-out 20s";
-shouldBe("style.animation", "'myShorthandAnim 20s ease-in 10s both paused, myShorthandAnim 20s ease-out'");
-shouldBe("computedStyle.animation", "'myShorthandAnim 20s ease-in 10s 1 normal both paused, myShorthandAnim 20s ease-out 0s 1 normal none running'");
-shouldBe("style.webkitAnimation", "'myShorthandAnim 20s ease-in 10s both paused, myShorthandAnim 20s ease-out'");
-shouldBe("computedStyle.webkitAnimation", "'myShorthandAnim 20s ease-in 10s 1 normal both paused, myShorthandAnim 20s ease-out 0s 1 normal none running'");
-
-style.animation = "myShorthandAnim ease-in 4 20s 10s backwards, myShorthandAnim2 50 ease-out 20s";
-shouldBe("style.animation", "'myShorthandAnim 20s ease-in 10s 4 backwards, myShorthandAnim2 20s ease-out 50'");
-shouldBe("computedStyle.animation", "'myShorthandAnim 20s ease-in 10s 4 normal backwards running, myShorthandAnim2 20s ease-out 0s 50 normal none running'");
-shouldBe("style.webkitAnimation", "'myShorthandAnim 20s ease-in 10s 4 backwards, myShorthandAnim2 20s ease-out 50'");
-shouldBe("computedStyle.webkitAnimation", "'myShorthandAnim 20s ease-in 10s 4 normal backwards running, myShorthandAnim2 20s ease-out 0s 50 normal none running'");
-shouldBe("checkAnimationShorthandValue()", "true");
-
-style.animation = "myShorthandAnim2 reverse ease-out 20s, ease-in myShorthandAnim 20s 10s paused";
-shouldBe("style.animation", "'myShorthandAnim2 20s ease-out reverse, myShorthandAnim 20s ease-in 10s paused'");
-shouldBe("computedStyle.animation", "'myShorthandAnim2 20s ease-out 0s 1 reverse none running, myShorthandAnim 20s ease-in 10s 1 normal none paused'");
-shouldBe("style.webkitAnimation", "'myShorthandAnim2 20s ease-out reverse, myShorthandAnim 20s ease-in 10s paused'");
-shouldBe("computedStyle.webkitAnimation", "'myShorthandAnim2 20s ease-out 0s 1 reverse none running, myShorthandAnim 20s ease-in 10s 1 normal none paused'");
-shouldBe("checkAnimationShorthandValue()", "true");
-
-debug("Invalid animation shorthand values.");
-style.animation = "";
-
-style.animation = "solid red";
-shouldBe("style.animation", "''");
-shouldBe("computedStyle.animation", "'none 0s ease 0s 1 normal none running'");
-shouldBe("style.webkitAnimation", "''");
-shouldBe("computedStyle.webkitAnimation", "'none 0s ease 0s 1 normal none running'");
-
-style.animation = "all 30s width ease-in";
-shouldBe("style.animation", "''");
-shouldBe("computedStyle.animation", "'none 0s ease 0s 1 normal none running'");
-shouldBe("style.webkitAnimation", "''");
-shouldBe("computedStyle.webkitAnimation", "'none 0s ease 0s 1 normal none running'");
-
-style.animation = "animName 30s ease-in 20s, 20px";
-shouldBe("style.animation", "''");
-shouldBe("computedStyle.animation", "'none 0s ease 0s 1 normal none running'");
-shouldBe("style.webkitAnimation", "''");
-shouldBe("computedStyle.webkitAnimation", "'none 0s ease 0s 1 normal none running'");
-
-style.animation = "test 30s ease-in 20s, step-start(2)";
-shouldBe("style.animation", "''");
-shouldBe("computedStyle.animation", "'none 0s ease 0s 1 normal none running'");
-shouldBe("style.webkitAnimation", "''");
-shouldBe("computedStyle.webkitAnimation", "'none 0s ease 0s 1 normal none running'");
-
-style.animation = "ease-in opacity 20s 10s myAnim, none";
-shouldBe("style.animation", "''");
-shouldBe("computedStyle.animation", "'none 0s ease 0s 1 normal none running'");
-shouldBe("style.webkitAnimation", "''");
-shouldBe("computedStyle.webkitAnimation", "'none 0s ease 0s 1 normal none running'");
-
-style.animation = "none, ease-in opacity 20s 10s myAnim";
-shouldBe("style.animation", "''");
-shouldBe("computedStyle.animation", "'none 0s ease 0s 1 normal none running'");
-shouldBe("style.webkitAnimation", "''");
-shouldBe("computedStyle.webkitAnimation", "'none 0s ease 0s 1 normal none running'");
-
-style.animation = ",";
-shouldBe("style.animation", "''");
-shouldBe("computedStyle.animation", "'none 0s ease 0s 1 normal none running'");
-shouldBe("style.webkitAnimation", "''");
-shouldBe("computedStyle.webkitAnimation", "'none 0s ease 0s 1 normal none running'");
-
-style.animation = "running,";
-shouldBe("style.animation", "''");
-shouldBe("computedStyle.animation", "'none 0s ease 0s 1 normal none running'");
-shouldBe("style.webkitAnimation", "''");
-shouldBe("computedStyle.webkitAnimation", "'none 0s ease 0s 1 normal none running'");
-
-style.animation = ", alternate";
-shouldBe("style.animation", "''");
-shouldBe("computedStyle.animation", "'none 0s ease 0s 1 normal none running'");
-shouldBe("style.webkitAnimation", "''");
-shouldBe("computedStyle.webkitAnimation", "'none 0s ease 0s 1 normal none running'");
-
-style.animation = ", commas,";
-shouldBe("style.animation", "''");
-shouldBe("computedStyle.animation", "'none 0s ease 0s 1 normal none running'");
-shouldBe("style.webkitAnimation", "''");
-shouldBe("computedStyle.webkitAnimation", "'none 0s ease 0s 1 normal none running'");
-
-style.animation = "test,, 5s";
-shouldBe("style.animation", "''");
-shouldBe("computedStyle.animation", "'none 0s ease 0s 1 normal none running'");
-shouldBe("style.webkitAnimation", "''");
-shouldBe("computedStyle.webkitAnimation", "'none 0s ease 0s 1 normal none running'");
-
-style.animation = "2 initial";
-shouldBe("style.animation", "''");
-shouldBe("computedStyle.animation", "'none 0s ease 0s 1 normal none running'");
-shouldBe("style.webkitAnimation", "''");
-shouldBe("computedStyle.webkitAnimation", "'none 0s ease 0s 1 normal none running'");
-
-style.animation = "2 inherit";
-shouldBe("style.animation", "''");
-shouldBe("computedStyle.animation", "'none 0s ease 0s 1 normal none running'");
-shouldBe("style.webkitAnimation", "''");
-shouldBe("computedStyle.webkitAnimation", "'none 0s ease 0s 1 normal none running'");
-
-style.animation = "2 unset";
-shouldBe("style.animation", "''");
-shouldBe("computedStyle.animation", "'none 0s ease 0s 1 normal none running'");
-shouldBe("style.webkitAnimation", "''");
-shouldBe("computedStyle.webkitAnimation", "'none 0s ease 0s 1 normal none running'");
-
-style.animation = "2 default";
-shouldBe("style.animation", "'default 2'");
-shouldBe("computedStyle.animation", "'default 0s ease 0s 2 normal none running'");
-shouldBe("style.webkitAnimation", "'default 2'");
-shouldBe("computedStyle.webkitAnimation", "'default 0s ease 0s 2 normal none running'");
-
-document.body.removeChild(testContainer);
+test(() => {
+  // Initial test.
+  assert_equals(computedStyle.animationName, 'none');
+  assert_equals(computedStyle.webkitAnimationName, 'none');
+
+  style.animationName = "none";
+  assert_not_equals(Object.keys(style).indexOf('animationName'), -1);
+  assert_equals(Object.keys(style).indexOf('webkitAnimationName'), -1);
+  assert_equals(style.animationName, 'none');
+  assert_equals(computedStyle.animationName, 'none');
+  assert_equals(style.webkitAnimationName, 'none');
+  assert_equals(computedStyle.webkitAnimationName, 'none');
+
+  style.animationName = "none, none";
+  assert_equals(style.animationName, 'none, none');
+  assert_equals(computedStyle.animationName, 'none, none');
+  assert_equals(style.webkitAnimationName, 'none, none');
+  assert_equals(computedStyle.webkitAnimationName, 'none, none');
+
+  style.animationName = "myAnim";
+  assert_equals(style.animationName, 'myAnim');
+  assert_equals(computedStyle.animationName, 'myAnim');
+  assert_equals(style.webkitAnimationName, 'myAnim');
+  assert_equals(computedStyle.webkitAnimationName, 'myAnim');
+
+  style.animationName = "background-position, font-size";
+  assert_equals(style.animationName, 'background-position, font-size');
+  assert_equals(computedStyle.animationName, 'background-position, font-size');
+  assert_equals(style.webkitAnimationName, 'background-position, font-size');
+  assert_equals(computedStyle.webkitAnimationName, 'background-position, font-size');
+
+  style.animationName = "background-position, font-size, color";
+  assert_equals(style.animationName, 'background-position, font-size, color');
+  assert_equals(computedStyle.animationName, 'background-position, font-size, color');
+  assert_equals(style.webkitAnimationName, 'background-position, font-size, color');
+  assert_equals(computedStyle.webkitAnimationName, 'background-position, font-size, color');
+
+  style.animationName = "all, font-size, color";
+  assert_equals(style.animationName, 'all, font-size, color');
+  assert_equals(computedStyle.animationName, 'all, font-size, color');
+  assert_equals(style.webkitAnimationName, 'all, font-size, color');
+  assert_equals(computedStyle.webkitAnimationName, 'all, font-size, color');
+
+  style.animationName = "inherit";
+  assert_equals(style.animationName, 'inherit');
+  assert_equals(computedStyle.animationName, 'none');
+  assert_equals(style.webkitAnimationName, 'inherit');
+  assert_equals(computedStyle.webkitAnimationName, 'none');
+
+  style.animationName = "initial";
+  assert_equals(style.animationName, 'initial');
+  assert_equals(computedStyle.animationName, 'none');
+  assert_equals(style.webkitAnimationName, 'initial');
+  assert_equals(computedStyle.webkitAnimationName, 'none');
+}, "Valid animation-name values.");
+
+test(() => {
+  style.animationName = "";
+
+  style.animationName = "0";
+  assert_equals(style.animationName, '');
+  assert_equals(computedStyle.animationName, 'none');
+  assert_equals(style.webkitAnimationName, '');
+  assert_equals(computedStyle.webkitAnimationName, 'none');
+
+  style.animationName = "all none";
+  assert_equals(style.animationName, '');
+  assert_equals(computedStyle.animationName, 'none');
+  assert_equals(style.webkitAnimationName, '');
+  assert_equals(computedStyle.webkitAnimationName, 'none');
+
+  style.animationName = "opacity width";
+  assert_equals(style.animationName, '');
+  assert_equals(computedStyle.animationName, 'none');
+  assert_equals(style.webkitAnimationName, '');
+  assert_equals(computedStyle.webkitAnimationName, 'none');
+
+  style.animationName = "";
+}, "Invalid animation-name values.");
+
+test(() => {
+  // Initial test.
+  assert_equals(computedStyle.animationDuration, '0s');
+  assert_equals(computedStyle.webkitAnimationDuration, '0s');
+
+  style.animationDuration = "0s";
+  assert_not_equals(Object.keys(style).indexOf('animationDuration'), -1);
+  assert_equals(Object.keys(style).indexOf('webkitAnimationDuration'), -1);
+  assert_equals(style.animationDuration, '0s');
+  assert_equals(computedStyle.animationDuration, '0s');
+  assert_equals(style.webkitAnimationDuration, '0s');
+  assert_equals(computedStyle.webkitAnimationDuration, '0s');
+
+  style.animationDuration = "5s";
+  assert_equals(style.animationDuration, '5s');
+  assert_equals(computedStyle.animationDuration, '5s');
+  assert_equals(style.webkitAnimationDuration, '5s');
+  assert_equals(computedStyle.webkitAnimationDuration, '5s');
+
+  style.animationDuration = "10ms";
+  assert_equals(style.animationDuration, '10ms');
+  assert_equals(computedStyle.animationDuration, '0.01s');
+  assert_equals(style.webkitAnimationDuration, '10ms');
+  assert_equals(computedStyle.webkitAnimationDuration, '0.01s');
+
+  style.animationDuration = "10ms, 20s";
+  assert_equals(style.animationDuration, '10ms, 20s');
+  assert_equals(computedStyle.animationDuration, '0.01s, 20s');
+  assert_equals(style.webkitAnimationDuration, '10ms, 20s');
+  assert_equals(computedStyle.webkitAnimationDuration, '0.01s, 20s');
+}, "Valid animation-duration values.");
+
+test(() => {
+  style.animationDuration = "";
+
+  // Negative values are invalid.
+  style.animationDuration = "-10ms";
+  assert_equals(style.animationDuration, '');
+  assert_equals(computedStyle.animationDuration, '0s');
+  assert_equals(style.webkitAnimationDuration, '');
+  assert_equals(computedStyle.webkitAnimationDuration, '0s');
+
+  style.animationDuration = "'5ms'";
+  assert_equals(style.animationDuration, '');
+  assert_equals(computedStyle.animationDuration, '0s');
+  assert_equals(style.webkitAnimationDuration, '');
+  assert_equals(computedStyle.webkitAnimationDuration, '0s');
+
+  style.animationDuration = "30px";
+  assert_equals(style.animationDuration, '');
+  assert_equals(computedStyle.animationDuration, '0s');
+  assert_equals(style.webkitAnimationDuration, '');
+  assert_equals(computedStyle.webkitAnimationDuration, '0s');
+
+  style.animationDuration = "solid";
+  assert_equals(style.animationDuration, '');
+  assert_equals(computedStyle.animationDuration, '0s');
+  assert_equals(style.webkitAnimationDuration, '');
+  assert_equals(computedStyle.webkitAnimationDuration, '0s');
+
+  style.animationDuration = "20";
+  assert_equals(style.animationDuration, '');
+  assert_equals(computedStyle.animationDuration, '0s');
+  assert_equals(style.webkitAnimationDuration, '');
+  assert_equals(computedStyle.webkitAnimationDuration, '0s');
+
+  style.animationDuration = "20%";
+  assert_equals(style.animationDuration, '');
+  assert_equals(computedStyle.animationDuration, '0s');
+  assert_equals(style.webkitAnimationDuration, '');
+  assert_equals(computedStyle.webkitAnimationDuration, '0s');
+
+  style.animationDuration = "0s, 20px";
+  assert_equals(style.animationDuration, '');
+  assert_equals(computedStyle.animationDuration, '0s');
+  assert_equals(style.webkitAnimationDuration, '');
+  assert_equals(computedStyle.webkitAnimationDuration, '0s');
+}, "Invalid animation-duration values.");
+
+test(() => {
+  // Initial test.
+  assert_equals(computedStyle.animationTimingFunction, 'ease');
+  assert_equals(computedStyle.webkitAnimationTimingFunction, 'ease');
+
+  style.animationTimingFunction = "linear";
+  assert_not_equals(Object.keys(style).indexOf('animationTimingFunction'), -1);
+  assert_equals(Object.keys(style).indexOf('webkitAnimationTimingFunction'), -1);
+  assert_equals(style.animationTimingFunction, 'linear');
+  assert_equals(computedStyle.animationTimingFunction, 'linear');
+  assert_equals(style.webkitAnimationTimingFunction, 'linear');
+  assert_equals(computedStyle.webkitAnimationTimingFunction, 'linear');
+
+  style.animationTimingFunction = "ease";
+  assert_equals(style.animationTimingFunction, 'ease');
+  assert_equals(computedStyle.animationTimingFunction, 'ease');
+  assert_equals(style.webkitAnimationTimingFunction, 'ease');
+  assert_equals(computedStyle.webkitAnimationTimingFunction, 'ease');
+
+  style.animationTimingFunction = "ease-in";
+  assert_equals(style.animationTimingFunction, 'ease-in');
+  assert_equals(computedStyle.animationTimingFunction, 'ease-in');
+  assert_equals(style.webkitAnimationTimingFunction, 'ease-in');
+  assert_equals(computedStyle.webkitAnimationTimingFunction, 'ease-in');
+
+  style.animationTimingFunction = "ease-out";
+  assert_equals(style.animationTimingFunction, 'ease-out');
+  assert_equals(computedStyle.animationTimingFunction, 'ease-out');
+  assert_equals(style.webkitAnimationTimingFunction, 'ease-out');
+  assert_equals(computedStyle.webkitAnimationTimingFunction, 'ease-out');
+
+  style.animationTimingFunction = "ease-in-out";
+  assert_equals(style.animationTimingFunction, 'ease-in-out');
+  assert_equals(computedStyle.animationTimingFunction, 'ease-in-out');
+  assert_equals(style.webkitAnimationTimingFunction, 'ease-in-out');
+  assert_equals(computedStyle.webkitAnimationTimingFunction, 'ease-in-out');
+
+  style.animationTimingFunction = "cubic-bezier(0.25, 0.1, 0.25, 1)";
+  assert_equals(style.animationTimingFunction, 'cubic-bezier(0.25, 0.1, 0.25, 1)');
+  assert_equals(computedStyle.animationTimingFunction, 'cubic-bezier(0.25, 0.1, 0.25, 1)');
+  assert_equals(style.webkitAnimationTimingFunction, 'cubic-bezier(0.25, 0.1, 0.25, 1)');
+  assert_equals(computedStyle.webkitAnimationTimingFunction, 'cubic-bezier(0.25, 0.1, 0.25, 1)');
+
+  style.animationTimingFunction = "cubic-bezier(0.1, 0, 0.23, 0.4)";
+  assert_equals(style.animationTimingFunction, 'cubic-bezier(0.1, 0, 0.23, 0.4)');
+  assert_equals(computedStyle.animationTimingFunction, 'cubic-bezier(0.1, 0, 0.23, 0.4)');
+  assert_equals(style.webkitAnimationTimingFunction, 'cubic-bezier(0.1, 0, 0.23, 0.4)');
+  assert_equals(computedStyle.webkitAnimationTimingFunction, 'cubic-bezier(0.1, 0, 0.23, 0.4)');
+
+  style.animationTimingFunction = "cubic-bezier(0.1, 0, 0.23, 3)";
+  assert_equals(style.animationTimingFunction, 'cubic-bezier(0.1, 0, 0.23, 3)');
+  assert_equals(computedStyle.animationTimingFunction, 'cubic-bezier(0.1, 0, 0.23, 3)');
+  assert_equals(style.webkitAnimationTimingFunction, 'cubic-bezier(0.1, 0, 0.23, 3)');
+  assert_equals(computedStyle.webkitAnimationTimingFunction, 'cubic-bezier(0.1, 0, 0.23, 3)');
+
+  style.animationTimingFunction = "cubic-bezier(0.1, 5, 0.23, 3)";
+  assert_equals(style.animationTimingFunction, 'cubic-bezier(0.1, 5, 0.23, 3)');
+  assert_equals(computedStyle.animationTimingFunction, 'cubic-bezier(0.1, 5, 0.23, 3)');
+  assert_equals(style.webkitAnimationTimingFunction, 'cubic-bezier(0.1, 5, 0.23, 3)');
+  assert_equals(computedStyle.webkitAnimationTimingFunction, 'cubic-bezier(0.1, 5, 0.23, 3)');
+
+  style.animationTimingFunction = "cubic-bezier(0.1, 5, 0.23, 0)";
+  assert_equals(style.animationTimingFunction, 'cubic-bezier(0.1, 5, 0.23, 0)');
+  assert_equals(computedStyle.animationTimingFunction, 'cubic-bezier(0.1, 5, 0.23, 0)');
+  assert_equals(style.webkitAnimationTimingFunction, 'cubic-bezier(0.1, 5, 0.23, 0)');
+  assert_equals(computedStyle.webkitAnimationTimingFunction, 'cubic-bezier(0.1, 5, 0.23, 0)');
+
+  style.animationTimingFunction = "cubic-bezier(0.2, 2, 0.2, -0.4)";
+  assert_equals(style.animationTimingFunction, 'cubic-bezier(0.2, 2, 0.2, -0.4)');
+  assert_equals(computedStyle.animationTimingFunction, 'cubic-bezier(0.2, 2, 0.2, -0.4)');
+  assert_equals(style.webkitAnimationTimingFunction, 'cubic-bezier(0.2, 2, 0.2, -0.4)');
+  assert_equals(computedStyle.webkitAnimationTimingFunction, 'cubic-bezier(0.2, 2, 0.2, -0.4)');
+
+  style.animationTimingFunction = "cubic-bezier(0.2, -2, 0.2, 0.4)";
+  assert_equals(style.animationTimingFunction, 'cubic-bezier(0.2, -2, 0.2, 0.4)');
+  assert_equals(computedStyle.animationTimingFunction, 'cubic-bezier(0.2, -2, 0.2, 0.4)');
+  assert_equals(style.webkitAnimationTimingFunction, 'cubic-bezier(0.2, -2, 0.2, 0.4)');
+  assert_equals(computedStyle.webkitAnimationTimingFunction, 'cubic-bezier(0.2, -2, 0.2, 0.4)');
+
+  style.animationTimingFunction = "step-start";
+  assert_equals(style.animationTimingFunction, 'step-start');
+  assert_equals(computedStyle.animationTimingFunction, 'step-start');
+  assert_equals(style.webkitAnimationTimingFunction, 'step-start');
+  assert_equals(computedStyle.webkitAnimationTimingFunction, 'step-start');
+
+  style.animationTimingFunction = "step-end";
+  assert_equals(style.animationTimingFunction, 'step-end');
+  assert_equals(computedStyle.animationTimingFunction, 'step-end');
+  assert_equals(style.webkitAnimationTimingFunction, 'step-end');
+  assert_equals(computedStyle.webkitAnimationTimingFunction, 'step-end');
+
+  style.animationTimingFunction = "steps(3)";
+  assert_equals(style.animationTimingFunction, 'steps(3, end)');
+  assert_equals(computedStyle.animationTimingFunction, 'steps(3, end)');
+  assert_equals(style.webkitAnimationTimingFunction, 'steps(3, end)');
+  assert_equals(computedStyle.webkitAnimationTimingFunction, 'steps(3, end)');
+
+  style.animationTimingFunction = "steps(4, end)";
+  assert_equals(style.animationTimingFunction, 'steps(4, end)');
+  assert_equals(computedStyle.animationTimingFunction, 'steps(4, end)');
+  assert_equals(style.webkitAnimationTimingFunction, 'steps(4, end)');
+  assert_equals(computedStyle.webkitAnimationTimingFunction, 'steps(4, end)');
+
+  style.animationTimingFunction = "steps(5, start)";
+  assert_equals(style.animationTimingFunction, 'steps(5, start)');
+  assert_equals(computedStyle.animationTimingFunction, 'steps(5, start)');
+  assert_equals(style.webkitAnimationTimingFunction, 'steps(5, start)');
+  assert_equals(computedStyle.webkitAnimationTimingFunction, 'steps(5, start)');
+
+  style.animationTimingFunction = "frames(5)";
+  assert_equals(style.animationTimingFunction, 'frames(5)');
+  assert_equals(computedStyle.animationTimingFunction, 'frames(5)');
+  assert_equals(style.webkitAnimationTimingFunction, 'frames(5)');
+  assert_equals(computedStyle.webkitAnimationTimingFunction, 'frames(5)');
+
+  style.animationName = "anim1, anim2";
+
+  style.animationTimingFunction = "ease-in-out, ease-in";
+  assert_equals(style.animationTimingFunction, 'ease-in-out, ease-in');
+  assert_equals(computedStyle.animationTimingFunction, 'ease-in-out, ease-in');
+  assert_equals(style.webkitAnimationTimingFunction, 'ease-in-out, ease-in');
+  assert_equals(computedStyle.webkitAnimationTimingFunction, 'ease-in-out, ease-in');
+
+  style.animationTimingFunction = "ease-in-out, cubic-bezier(0.1, 0, 0.23, 0.4)";
+  assert_equals(style.animationTimingFunction, 'ease-in-out, cubic-bezier(0.1, 0, 0.23, 0.4)');
+  assert_equals(computedStyle.animationTimingFunction, 'ease-in-out, cubic-bezier(0.1, 0, 0.23, 0.4)');
+  assert_equals(style.webkitAnimationTimingFunction, 'ease-in-out, cubic-bezier(0.1, 0, 0.23, 0.4)');
+  assert_equals(computedStyle.webkitAnimationTimingFunction, 'ease-in-out, cubic-bezier(0.1, 0, 0.23, 0.4)');
+
+  style.animationTimingFunction = "steps(3, start), ease-in-out";
+  assert_equals(style.animationTimingFunction, 'steps(3, start), ease-in-out');
+  assert_equals(computedStyle.animationTimingFunction, 'steps(3, start), ease-in-out');
+  assert_equals(style.webkitAnimationTimingFunction, 'steps(3, start), ease-in-out');
+  assert_equals(computedStyle.webkitAnimationTimingFunction, 'steps(3, start), ease-in-out');
+}, "Valid animation-timing-function values.");
+
+test(() => {
+  style.animationName = "";
+  style.animationTimingFunction = "";
+
+  style.animationTimingFunction = "cubic-bezier(3, 0.1, 4, 1)";
+  assert_equals(style.animationTimingFunction, '');
+  assert_equals(computedStyle.animationTimingFunction, 'ease');
+  assert_equals(style.webkitAnimationTimingFunction, '');
+  assert_equals(computedStyle.webkitAnimationTimingFunction, 'ease');
+
+  style.animationTimingFunction = "cubic-bezier(1, 0.1, 3, 1)";
+  assert_equals(style.animationTimingFunction, '');
+  assert_equals(computedStyle.animationTimingFunction, 'ease');
+  assert_equals(style.webkitAnimationTimingFunction, '');
+  assert_equals(computedStyle.webkitAnimationTimingFunction, 'ease');
+
+  style.animationTimingFunction = "cubic-bezier(0.1, 0, 4, 0.4)";
+  assert_equals(style.animationTimingFunction, '');
+  assert_equals(computedStyle.animationTimingFunction, 'ease');
+  assert_equals(style.webkitAnimationTimingFunction, '');
+  assert_equals(computedStyle.webkitAnimationTimingFunction, 'ease');
+
+  style.animationTimingFunction = "cubic-bezier(3, 0, 4, 0.4)";
+  assert_equals(style.animationTimingFunction, '');
+  assert_equals(computedStyle.animationTimingFunction, 'ease');
+  assert_equals(style.webkitAnimationTimingFunction, '');
+  assert_equals(computedStyle.webkitAnimationTimingFunction, 'ease');
+
+  style.animationTimingFunction = "cubic-bezier(3, 0, 0.2, 0.4)";
+  assert_equals(style.animationTimingFunction, '');
+  assert_equals(computedStyle.animationTimingFunction, 'ease');
+  assert_equals(style.webkitAnimationTimingFunction, '');
+  assert_equals(computedStyle.webkitAnimationTimingFunction, 'ease');
+
+  style.animationTimingFunction = "cubic-bezier(-0.2, 0, 0.2, 0.4)";
+  assert_equals(style.animationTimingFunction, '');
+  assert_equals(computedStyle.animationTimingFunction, 'ease');
+  assert_equals(style.webkitAnimationTimingFunction, '');
+  assert_equals(computedStyle.webkitAnimationTimingFunction, 'ease');
+
+  style.animationTimingFunction = "cubic-bezier(0.2, 2, -0.2, 0.4)";
+  assert_equals(style.animationTimingFunction, '');
+  assert_equals(computedStyle.animationTimingFunction, 'ease');
+  assert_equals(style.webkitAnimationTimingFunction, '');
+  assert_equals(computedStyle.webkitAnimationTimingFunction, 'ease');
+
+  style.animationTimingFunction = "steps(5, 3)";
+  assert_equals(style.animationTimingFunction, '');
+  assert_equals(computedStyle.animationTimingFunction, 'ease');
+  assert_equals(style.webkitAnimationTimingFunction, '');
+  assert_equals(computedStyle.webkitAnimationTimingFunction, 'ease');
+
+  style.animationTimingFunction = "steps(-5, start)";
+  assert_equals(style.animationTimingFunction, '');
+  assert_equals(computedStyle.animationTimingFunction, 'ease');
+  assert_equals(style.webkitAnimationTimingFunction, '');
+  assert_equals(computedStyle.webkitAnimationTimingFunction, 'ease');
+
+  style.animationTimingFunction = "steps(5, start, end)";
+  assert_equals(style.animationTimingFunction, '');
+  assert_equals(computedStyle.animationTimingFunction, 'ease');
+  assert_equals(style.webkitAnimationTimingFunction, '');
+  assert_equals(computedStyle.webkitAnimationTimingFunction, 'ease');
+
+  style.animationTimingFunction = "step(5)";
+  assert_equals(style.animationTimingFunction, '');
+  assert_equals(computedStyle.animationTimingFunction, 'ease');
+  assert_equals(style.webkitAnimationTimingFunction, '');
+  assert_equals(computedStyle.webkitAnimationTimingFunction, 'ease');
+
+  style.animationTimingFunction = "frame(5)";
+  assert_equals(style.animationTimingFunction, '');
+  assert_equals(computedStyle.animationTimingFunction, 'ease');
+  assert_equals(style.webkitAnimationTimingFunction, '');
+  assert_equals(computedStyle.webkitAnimationTimingFunction, 'ease');
+
+  style.animationTimingFunction = "frames(1)";
+  assert_equals(style.animationTimingFunction, '');
+  assert_equals(computedStyle.animationTimingFunction, 'ease');
+  assert_equals(style.webkitAnimationTimingFunction, '');
+  assert_equals(computedStyle.webkitAnimationTimingFunction, 'ease');
+
+  style.animationTimingFunction = "frames(2, 3)";
+  assert_equals(style.animationTimingFunction, '');
+  assert_equals(computedStyle.animationTimingFunction, 'ease');
+  assert_equals(style.webkitAnimationTimingFunction, '');
+  assert_equals(computedStyle.webkitAnimationTimingFunction, 'ease');
+
+  style.animationTimingFunction = "red";
+  assert_equals(style.animationTimingFunction, '');
+  assert_equals(computedStyle.animationTimingFunction, 'ease');
+  assert_equals(style.webkitAnimationTimingFunction, '');
+  assert_equals(computedStyle.webkitAnimationTimingFunction, 'ease');
+
+  style.animationTimingFunction = "cubic-bezier(0.25, 0.1, 0.25)";
+  assert_equals(style.animationTimingFunction, '');
+  assert_equals(computedStyle.animationTimingFunction, 'ease');
+  assert_equals(style.webkitAnimationTimingFunction, '');
+  assert_equals(computedStyle.webkitAnimationTimingFunction, 'ease');
+
+  style.animationTimingFunction = "cubic-bezier(0.25, 0.1, 0.25, 1, 2)";
+  assert_equals(style.animationTimingFunction, '');
+  assert_equals(computedStyle.animationTimingFunction, 'ease');
+  assert_equals(style.webkitAnimationTimingFunction, '');
+  assert_equals(computedStyle.webkitAnimationTimingFunction, 'ease');
+
+  style.animationTimingFunction = "cubic-foo(0.25, 0.1, 0.25, 1)";
+  assert_equals(style.animationTimingFunction, '');
+  assert_equals(computedStyle.animationTimingFunction, 'ease');
+  assert_equals(style.webkitAnimationTimingFunction, '');
+  assert_equals(computedStyle.webkitAnimationTimingFunction, 'ease');
+
+  style.animationTimingFunction = "step-middle";
+  assert_equals(style.animationTimingFunction, 'step-middle');
+  assert_equals(computedStyle.animationTimingFunction, 'ease');
+  assert_equals(style.webkitAnimationTimingFunction, 'step-middle');
+  assert_equals(computedStyle.webkitAnimationTimingFunction, 'ease');
+
+  style.animationTimingFunction = "steps(5, middle)";
+  assert_equals(style.animationTimingFunction, 'steps(5, middle)');
+  assert_equals(computedStyle.animationTimingFunction, 'ease');
+  assert_equals(style.webkitAnimationTimingFunction, 'steps(5, middle)');
+  assert_equals(computedStyle.webkitAnimationTimingFunction, 'ease');
+}, "Invalid animation-timing-function values.");
+
+test(() => {
+  // Initial test.
+  assert_equals(computedStyle.animationDelay, '0s');
+  assert_equals(computedStyle.webkitAnimationDelay, '0s');
+
+  style.animationDelay = "0s";
+  assert_not_equals(Object.keys(style).indexOf('animationDelay'), -1);
+  assert_equals(Object.keys(style).indexOf('webkitAnimationDelay'), -1);
+  assert_equals(style.animationDelay, '0s');
+  assert_equals(computedStyle.animationDelay, '0s');
+  assert_equals(style.webkitAnimationDelay, '0s');
+  assert_equals(computedStyle.webkitAnimationDelay, '0s');
+
+  style.animationDelay = "5s";
+  assert_equals(style.animationDelay, '5s');
+  assert_equals(computedStyle.animationDelay, '5s');
+  assert_equals(style.webkitAnimationDelay, '5s');
+  assert_equals(computedStyle.webkitAnimationDelay, '5s');
+
+  style.animationDelay = "10ms";
+  assert_equals(style.animationDelay, '10ms');
+  assert_equals(computedStyle.animationDelay, '0.01s');
+  assert_equals(style.webkitAnimationDelay, '10ms');
+  assert_equals(computedStyle.webkitAnimationDelay, '0.01s');
+
+  style.animationDelay = "-10ms";
+  assert_equals(style.animationDelay, '-10ms');
+  assert_equals(computedStyle.animationDelay, '-0.01s');
+  assert_equals(style.webkitAnimationDelay, '-10ms');
+  assert_equals(computedStyle.webkitAnimationDelay, '-0.01s');
+
+  style.transitionProperty = "opacity, width";
+
+  style.animationDelay = "-10ms, 20s";
+  assert_equals(style.animationDelay, '-10ms, 20s');
+  assert_equals(computedStyle.animationDelay, '-0.01s, 20s');
+  assert_equals(style.webkitAnimationDelay, '-10ms, 20s');
+  assert_equals(computedStyle.webkitAnimationDelay, '-0.01s, 20s');
+}, "Valid animation-delay values.");
+
+test(() => {
+  style.transitionProperty = "opacity";
+  style.animationDelay = "";
+
+  style.animationDelay = "'5ms'";
+  assert_equals(style.animationDelay, '');
+  assert_equals(computedStyle.animationDelay, '0s');
+  assert_equals(style.webkitAnimationDelay, '');
+  assert_equals(computedStyle.webkitAnimationDelay, '0s');
+
+  style.animationDelay = "30px";
+  assert_equals(style.animationDelay, '');
+  assert_equals(computedStyle.animationDelay, '0s');
+  assert_equals(style.webkitAnimationDelay, '');
+  assert_equals(computedStyle.webkitAnimationDelay, '0s');
+
+  style.animationDelay = "solid";
+  assert_equals(style.animationDelay, '');
+  assert_equals(computedStyle.animationDelay, '0s');
+  assert_equals(style.webkitAnimationDelay, '');
+  assert_equals(computedStyle.webkitAnimationDelay, '0s');
+
+  style.animationDelay = "20";
+  assert_equals(style.animationDelay, '');
+  assert_equals(computedStyle.animationDelay, '0s');
+  assert_equals(style.webkitAnimationDelay, '');
+  assert_equals(computedStyle.webkitAnimationDelay, '0s');
+
+  style.animationDelay = "20%";
+  assert_equals(style.animationDelay, '');
+  assert_equals(computedStyle.animationDelay, '0s');
+  assert_equals(style.webkitAnimationDelay, '');
+  assert_equals(computedStyle.webkitAnimationDelay, '0s');
+
+  style.animationDelay = "0s, 20px";
+  assert_equals(style.animationDelay, '');
+  assert_equals(computedStyle.animationDelay, '0s');
+  assert_equals(style.webkitAnimationDelay, '');
+  assert_equals(computedStyle.webkitAnimationDelay, '0s');
+}, "Invalid animation-delay values.");
+
+test(() => {
+  // Initial test.
+  assert_equals(computedStyle.animationIterationCount, '1');
+  assert_equals(computedStyle.webkitAnimationIterationCount, '1');
+
+  style.animationIterationCount = "4";
+  assert_not_equals(Object.keys(style).indexOf('animationIterationCount'), -1);
+  assert_equals(Object.keys(style).indexOf('webkitAnimationIterationCount'), -1);
+  assert_equals(style.animationIterationCount, '4');
+  assert_equals(computedStyle.animationIterationCount, '4');
+  assert_equals(style.webkitAnimationIterationCount, '4');
+  assert_equals(computedStyle.webkitAnimationIterationCount, '4');
+
+  style.animationIterationCount = "2.5";
+  assert_equals(style.animationIterationCount, '2.5');
+  assert_equals(computedStyle.animationIterationCount, '2.5');
+  assert_equals(style.webkitAnimationIterationCount, '2.5');
+  assert_equals(computedStyle.webkitAnimationIterationCount, '2.5');
+
+  style.animationIterationCount = "infinite";
+  assert_equals(style.animationIterationCount, 'infinite');
+  assert_equals(computedStyle.animationIterationCount, 'infinite');
+  assert_equals(style.webkitAnimationIterationCount, 'infinite');
+  assert_equals(computedStyle.webkitAnimationIterationCount, 'infinite');
+
+  style.animationIterationCount = "infinite, 3";
+  assert_equals(style.animationIterationCount, 'infinite, 3');
+  assert_equals(computedStyle.animationIterationCount, 'infinite, 3');
+  assert_equals(style.webkitAnimationIterationCount, 'infinite, 3');
+  assert_equals(computedStyle.webkitAnimationIterationCount, 'infinite, 3');
+
+  style.animationIterationCount = "0";
+  assert_equals(style.animationIterationCount, '0');
+  assert_equals(computedStyle.animationIterationCount, '0');
+  assert_equals(style.webkitAnimationIterationCount, '0');
+  assert_equals(computedStyle.webkitAnimationIterationCount, '0');
+
+  style.animationIterationCount = "infinite, infinite";
+  assert_equals(style.animationIterationCount, 'infinite, infinite');
+  assert_equals(computedStyle.animationIterationCount, 'infinite, infinite');
+  assert_equals(style.webkitAnimationIterationCount, 'infinite, infinite');
+  assert_equals(computedStyle.webkitAnimationIterationCount, 'infinite, infinite');
+}, "Valid animation-iteration-count values.");
+
+test(() => {
+  style.animationIterationCount = "";
+
+  style.animationIterationCount = "none";
+  assert_equals(style.animationIterationCount, '');
+  assert_equals(computedStyle.animationIterationCount, '1');
+  assert_equals(style.webkitAnimationIterationCount, '');
+  assert_equals(computedStyle.webkitAnimationIterationCount, '1');
+
+  style.animationIterationCount = "-3";
+  assert_equals(style.animationIterationCount, '');
+  assert_equals(computedStyle.animationIterationCount, '1');
+  assert_equals(style.webkitAnimationIterationCount, '');
+  assert_equals(computedStyle.webkitAnimationIterationCount, '1');
+
+  style.animationIterationCount = "infinite, -3";
+  assert_equals(style.animationIterationCount, '');
+  assert_equals(computedStyle.animationIterationCount, '1');
+  assert_equals(style.webkitAnimationIterationCount, '');
+  assert_equals(computedStyle.webkitAnimationIterationCount, '1');
+
+  style.animationIterationCount = "solid";
+  assert_equals(style.animationIterationCount, '');
+  assert_equals(computedStyle.animationIterationCount, '1');
+  assert_equals(style.webkitAnimationIterationCount, '');
+  assert_equals(computedStyle.webkitAnimationIterationCount, '1');
+
+  style.animationIterationCount = "-1, infinite";
+  assert_equals(style.animationIterationCount, '');
+  assert_equals(computedStyle.animationIterationCount, '1');
+  assert_equals(style.webkitAnimationIterationCount, '');
+  assert_equals(computedStyle.webkitAnimationIterationCount, '1');
+
+  style.animationIterationCount = "-1, 3";
+  assert_equals(style.animationIterationCount, '');
+  assert_equals(computedStyle.animationIterationCount, '1');
+  assert_equals(style.webkitAnimationIterationCount, '');
+  assert_equals(computedStyle.webkitAnimationIterationCount, '1');
+}, "Invalid animation-iteration-count values.");
+
+test(() => {
+  // Initial test.
+  assert_equals(computedStyle.animationDirection, 'normal');
+  assert_equals(computedStyle.webkitAnimationDirection, 'normal');
+
+  style.animationDirection = "reverse";
+  assert_not_equals(Object.keys(style).indexOf('animationDirection'), -1);
+  assert_equals(Object.keys(style).indexOf('webkitAnimationDirection'), -1);
+  assert_equals(style.animationDirection, 'reverse');
+  assert_equals(computedStyle.animationDirection, 'reverse');
+  assert_equals(style.webkitAnimationDirection, 'reverse');
+  assert_equals(computedStyle.webkitAnimationDirection, 'reverse');
+
+  style.animationDirection = "normal";
+  assert_equals(style.animationDirection, 'normal');
+  assert_equals(computedStyle.animationDirection, 'normal');
+  assert_equals(style.webkitAnimationDirection, 'normal');
+  assert_equals(computedStyle.webkitAnimationDirection, 'normal');
+
+  style.animationDirection = "normal, alternate";
+  assert_equals(style.animationDirection, 'normal, alternate');
+  assert_equals(computedStyle.animationDirection, 'normal, alternate');
+  assert_equals(style.webkitAnimationDirection, 'normal, alternate');
+  assert_equals(computedStyle.webkitAnimationDirection, 'normal, alternate');
+
+  style.animationDirection = "alternate";
+  assert_equals(style.animationDirection, 'alternate');
+  assert_equals(computedStyle.animationDirection, 'alternate');
+  assert_equals(style.webkitAnimationDirection, 'alternate');
+  assert_equals(computedStyle.webkitAnimationDirection, 'alternate');
+
+  style.animationDirection = "alternate-reverse";
+  assert_equals(style.animationDirection, 'alternate-reverse');
+  assert_equals(computedStyle.animationDirection, 'alternate-reverse');
+  assert_equals(style.webkitAnimationDirection, 'alternate-reverse');
+  assert_equals(computedStyle.webkitAnimationDirection, 'alternate-reverse');
+}, "Valid animation-direction values.");
+
+test(() => {
+  style.animationDirection = "";
+
+  style.animationDirection = "solid";
+  assert_equals(style.animationDirection, '');
+  assert_equals(computedStyle.animationDirection, 'normal');
+  assert_equals(style.webkitAnimationDirection, '');
+  assert_equals(computedStyle.webkitAnimationDirection, 'normal');
+
+  style.animationDirection = "0";
+  assert_equals(style.animationDirection, '');
+  assert_equals(computedStyle.animationDirection, 'normal');
+  assert_equals(style.webkitAnimationDirection, '');
+  assert_equals(computedStyle.webkitAnimationDirection, 'normal');
+
+  style.animationDirection = "3px";
+  assert_equals(style.animationDirection, '');
+  assert_equals(computedStyle.animationDirection, 'normal');
+  assert_equals(style.webkitAnimationDirection, '');
+  assert_equals(computedStyle.webkitAnimationDirection, 'normal');
+
+  style.animationDirection = "alternate-normal";
+  assert_equals(style.animationDirection, '');
+  assert_equals(computedStyle.animationDirection, 'normal');
+  assert_equals(style.webkitAnimationDirection, '');
+  assert_equals(computedStyle.webkitAnimationDirection, 'normal');
+
+  style.animationDirection = "3.5";
+  assert_equals(style.animationDirection, '');
+  assert_equals(computedStyle.animationDirection, 'normal');
+  assert_equals(style.webkitAnimationDirection, '');
+  assert_equals(computedStyle.webkitAnimationDirection, 'normal');
+
+  style.animationDirection = "3.5, reverse";
+  assert_equals(style.animationDirection, '');
+  assert_equals(computedStyle.animationDirection, 'normal');
+  assert_equals(style.webkitAnimationDirection, '');
+  assert_equals(computedStyle.webkitAnimationDirection, 'normal');
+
+  style.animationDirection = "reverse, solid";
+  assert_equals(style.animationDirection, '');
+  assert_equals(computedStyle.animationDirection, 'normal');
+  assert_equals(style.webkitAnimationDirection, '');
+  assert_equals(computedStyle.webkitAnimationDirection, 'normal');
+}, "Invalid animation-direction values.");
+
+test(() => {
+  // Initial test.
+  assert_equals(computedStyle.animationPlayState, 'running');
+  assert_equals(computedStyle.webkitAnimationPlayState, 'running');
+
+  style.animationPlayState = "paused";
+  assert_not_equals(Object.keys(style).indexOf('animationPlayState'), -1);
+  assert_equals(Object.keys(style).indexOf('webkitAnimationPlayState'), -1);
+  assert_equals(style.animationPlayState, 'paused');
+  assert_equals(computedStyle.animationPlayState, 'paused');
+  assert_equals(style.webkitAnimationPlayState, 'paused');
+  assert_equals(computedStyle.webkitAnimationPlayState, 'paused');
+
+  style.animationPlayState = "running";
+  assert_equals(style.animationPlayState, 'running');
+  assert_equals(computedStyle.animationPlayState, 'running');
+  assert_equals(style.webkitAnimationPlayState, 'running');
+  assert_equals(computedStyle.webkitAnimationPlayState, 'running');
+
+  style.animationPlayState = "running, running";
+  assert_equals(style.animationPlayState, 'running, running');
+  assert_equals(computedStyle.animationPlayState, 'running, running');
+  assert_equals(style.webkitAnimationPlayState, 'running, running');
+  assert_equals(computedStyle.webkitAnimationPlayState, 'running, running');
+
+  style.animationPlayState = "paused, paused";
+  assert_equals(style.animationPlayState, 'paused, paused');
+  assert_equals(computedStyle.animationPlayState, 'paused, paused');
+  assert_equals(style.webkitAnimationPlayState, 'paused, paused');
+  assert_equals(computedStyle.webkitAnimationPlayState, 'paused, paused');
+
+  style.animationPlayState = "paused, running";
+  assert_equals(style.animationPlayState, 'paused, running');
+  assert_equals(computedStyle.animationPlayState, 'paused, running');
+  assert_equals(style.webkitAnimationPlayState, 'paused, running');
+  assert_equals(computedStyle.webkitAnimationPlayState, 'paused, running');
+}, "Valid animation-play-state values.");
+
+test(() => {
+  style.animationPlayState = "";
+
+  style.animationPlayState = "running3";
+  assert_equals(style.animationPlayState, '');
+  assert_equals(computedStyle.animationPlayState, 'running');
+  assert_equals(style.webkitAnimationPlayState, '');
+  assert_equals(computedStyle.webkitAnimationPlayState, 'running');
+
+  style.animationPlayState = "0";
+  assert_equals(style.animationPlayState, '');
+  assert_equals(computedStyle.animationPlayState, 'running');
+  assert_equals(style.webkitAnimationPlayState, '');
+  assert_equals(computedStyle.webkitAnimationPlayState, 'running');
+
+  style.animationPlayState = "solid";
+  assert_equals(style.animationPlayState, '');
+  assert_equals(computedStyle.animationPlayState, 'running');
+  assert_equals(style.webkitAnimationPlayState, '');
+  assert_equals(computedStyle.webkitAnimationPlayState, 'running');
+
+  style.animationPlayState = "20px";
+  assert_equals(style.animationPlayState, '');
+  assert_equals(computedStyle.animationPlayState, 'running');
+  assert_equals(style.webkitAnimationPlayState, '');
+  assert_equals(computedStyle.webkitAnimationPlayState, 'running');
+
+  style.animationPlayState = "all";
+  assert_equals(style.animationPlayState, '');
+  assert_equals(computedStyle.animationPlayState, 'running');
+  assert_equals(style.webkitAnimationPlayState, '');
+  assert_equals(computedStyle.webkitAnimationPlayState, 'running');
+
+  style.animationPlayState = "running, test";
+  assert_equals(style.animationPlayState, '');
+  assert_equals(computedStyle.animationPlayState, 'running');
+  assert_equals(style.webkitAnimationPlayState, '');
+  assert_equals(computedStyle.webkitAnimationPlayState, 'running');
+
+  style.animationPlayState = "all, paused";
+  assert_equals(style.animationPlayState, '');
+  assert_equals(computedStyle.animationPlayState, 'running');
+  assert_equals(style.webkitAnimationPlayState, '');
+  assert_equals(computedStyle.webkitAnimationPlayState, 'running');
+}, "Invalid animation-play-state values.");
+
+test(() => {
+  // Initial test.
+  assert_equals(computedStyle.animationFillMode, 'none');
+  assert_equals(computedStyle.webkitAnimationFillMode, 'none');
+
+  style.animationFillMode = "forwards";
+  assert_not_equals(Object.keys(style).indexOf('animationFillMode'), -1);
+  assert_equals(Object.keys(style).indexOf('webkitAnimationFillMode'), -1);
+  assert_equals(style.animationFillMode, 'forwards');
+  assert_equals(computedStyle.animationFillMode, 'forwards');
+  assert_equals(style.webkitAnimationFillMode, 'forwards');
+  assert_equals(computedStyle.webkitAnimationFillMode, 'forwards');
+
+  style.animationFillMode = "backwards";
+  assert_equals(style.animationFillMode, 'backwards');
+  assert_equals(computedStyle.animationFillMode, 'backwards');
+  assert_equals(style.webkitAnimationFillMode, 'backwards');
+  assert_equals(computedStyle.webkitAnimationFillMode, 'backwards');
+
+  style.animationFillMode = "both";
+  assert_equals(style.animationFillMode, 'both');
+  assert_equals(computedStyle.animationFillMode, 'both');
+  assert_equals(style.webkitAnimationFillMode, 'both');
+  assert_equals(computedStyle.webkitAnimationFillMode, 'both');
+
+  style.animationFillMode = "none";
+  assert_equals(style.animationFillMode, 'none');
+  assert_equals(computedStyle.animationFillMode, 'none');
+  assert_equals(style.webkitAnimationFillMode, 'none');
+  assert_equals(computedStyle.webkitAnimationFillMode, 'none');
+
+  style.animationFillMode = "none, both";
+  assert_equals(style.animationFillMode, 'none, both');
+  assert_equals(computedStyle.animationFillMode, 'none, both');
+  assert_equals(style.webkitAnimationFillMode, 'none, both');
+  assert_equals(computedStyle.webkitAnimationFillMode, 'none, both');
+
+  style.animationFillMode = "backwards, forwards";
+  assert_equals(style.animationFillMode, 'backwards, forwards');
+  assert_equals(computedStyle.animationFillMode, 'backwards, forwards');
+  assert_equals(style.webkitAnimationFillMode, 'backwards, forwards');
+  assert_equals(computedStyle.webkitAnimationFillMode, 'backwards, forwards');
+}, "Valid animation-fill-mode values.");
+
+test(() => {
+  style.animationFillMode = "";
+
+  style.animationFillMode = "foo";
+  assert_equals(style.animationFillMode, '');
+  assert_equals(computedStyle.animationFillMode, 'none');
+  assert_equals(style.webkitAnimationFillMode, '');
+  assert_equals(computedStyle.webkitAnimationFillMode, 'none');
+
+  style.animationFillMode = "0";
+  assert_equals(style.animationFillMode, '');
+  assert_equals(computedStyle.animationFillMode, 'none');
+  assert_equals(style.webkitAnimationFillMode, '');
+  assert_equals(computedStyle.webkitAnimationFillMode, 'none');
+
+  style.animationFillMode = "-";
+  assert_equals(style.animationFillMode, '');
+  assert_equals(computedStyle.animationFillMode, 'none');
+  assert_equals(style.webkitAnimationFillMode, '');
+  assert_equals(computedStyle.webkitAnimationFillMode, 'none');
+
+  style.animationFillMode = "3px";
+  assert_equals(style.animationFillMode, '');
+  assert_equals(computedStyle.animationFillMode, 'none');
+  assert_equals(style.webkitAnimationFillMode, '');
+  assert_equals(computedStyle.webkitAnimationFillMode, 'none');
+
+  style.animationFillMode = "backwards, test";
+  assert_equals(style.animationFillMode, '');
+  assert_equals(computedStyle.animationFillMode, 'none');
+  assert_equals(style.webkitAnimationFillMode, '');
+  assert_equals(computedStyle.webkitAnimationFillMode, 'none');
+
+  style.animationFillMode = "test, all";
+  assert_equals(style.animationFillMode, '');
+  assert_equals(computedStyle.animationFillMode, 'none');
+  assert_equals(style.webkitAnimationFillMode, '');
+  assert_equals(computedStyle.webkitAnimationFillMode, 'none');
+
+  style.animationFillMode = "test, none";
+  assert_equals(style.animationFillMode, '');
+  assert_equals(computedStyle.animationFillMode, 'none');
+  assert_equals(style.webkitAnimationFillMode, '');
+  assert_equals(computedStyle.webkitAnimationFillMode, 'none');
+
+  style.animationFillMode = "forwards,";
+  assert_equals(style.animationFillMode, '');
+}, "Invalid animation-fill-mode values.");
+
+test(() => {
+  style.animation = "";
+  // Initial test.
+  assert_equals(computedStyle.animation, 'none 0s ease 0s 1 normal none running');
+  assert_equals(computedStyle.webkitAnimation, 'none 0s ease 0s 1 normal none running');
+
+  style.animation = "myShorthandAnim";
+  assert_not_equals(Object.keys(style).indexOf('animation'), -1);
+  assert_equals(Object.keys(style).indexOf('webkitAnimation'), -1);
+  assert_equals(style.animation, 'myShorthandAnim');
+  assert_equals(computedStyle.animation, 'myShorthandAnim 0s ease 0s 1 normal none running');
+  assert_equals(style.webkitAnimation, 'myShorthandAnim');
+  assert_equals(computedStyle.webkitAnimation, 'myShorthandAnim 0s ease 0s 1 normal none running');
+  assert_true(checkAnimationShorthandValue());
+
+  style.animation = "none";
+  assert_not_equals(Object.keys(style).indexOf('animation'), -1);
+  assert_equals(Object.keys(style).indexOf('webkitAnimation'), -1);
+  assert_equals(style.animation, 'none');
+  assert_equals(computedStyle.animation, 'none 0s ease 0s 1 normal none running');
+  assert_equals(style.webkitAnimation, 'none');
+  assert_equals(computedStyle.webkitAnimation, 'none 0s ease 0s 1 normal none running');
+  assert_true(checkAnimationShorthandValue());
+
+  style.animation = "none 20s";
+  assert_equals(style.animation, '20s none');
+  assert_equals(computedStyle.animation, 'none 20s ease 0s 1 normal none running');
+  assert_equals(style.webkitAnimation, '20s none');
+  assert_equals(computedStyle.webkitAnimation, 'none 20s ease 0s 1 normal none running');
+  assert_true(checkAnimationShorthandValue());
+
+  style.animation = "myShorthandAnim none 20s";
+  assert_equals(style.animation, 'myShorthandAnim 20s none');
+  assert_equals(computedStyle.animation, 'myShorthandAnim 20s ease 0s 1 normal none running');
+  assert_equals(style.webkitAnimation, 'myShorthandAnim 20s none');
+  assert_equals(computedStyle.webkitAnimation, 'myShorthandAnim 20s ease 0s 1 normal none running');
+  assert_true(checkAnimationShorthandValue());
+
+  style.animation = "myShorthandAnim ease-in none 20s";
+  assert_equals(style.animation, 'myShorthandAnim 20s ease-in none');
+  assert_equals(computedStyle.animation, 'myShorthandAnim 20s ease-in 0s 1 normal none running');
+  assert_equals(style.webkitAnimation, 'myShorthandAnim 20s ease-in none');
+  assert_equals(computedStyle.webkitAnimation, 'myShorthandAnim 20s ease-in 0s 1 normal none running');
+  assert_true(checkAnimationShorthandValue());
+
+  style.animation = "myShorthandAnim ease-in 20s";
+  assert_equals(style.animation, 'myShorthandAnim 20s ease-in');
+  assert_equals(computedStyle.animation, 'myShorthandAnim 20s ease-in 0s 1 normal none running');
+  assert_equals(style.webkitAnimation, 'myShorthandAnim 20s ease-in');
+  assert_equals(computedStyle.webkitAnimation, 'myShorthandAnim 20s ease-in 0s 1 normal none running');
+  assert_true(checkAnimationShorthandValue());
+
+  style.animation = "myShorthandAnim ease-in 20s 10s";
+  assert_equals(style.animation, 'myShorthandAnim 20s ease-in 10s');
+  assert_equals(computedStyle.animation, 'myShorthandAnim 20s ease-in 10s 1 normal none running');
+  assert_equals(style.webkitAnimation, 'myShorthandAnim 20s ease-in 10s');
+  assert_equals(computedStyle.webkitAnimation, 'myShorthandAnim 20s ease-in 10s 1 normal none running');
+  // Let's double check here the delay and duration. As stated in the spec the first value parsed
+  // is assigned to the duration.
+  assert_equals(computedStyle.animationDuration, '20s');
+  assert_equals(computedStyle.webkitAnimationDuration, '20s');
+  assert_equals(computedStyle.animationDelay, '10s');
+  assert_equals(computedStyle.webkitAnimationDelay, '10s');
+  assert_true(checkAnimationShorthandValue());
+
+  style.animation = "myShorthandAnim 20s ease-in 10s";
+  assert_equals(style.animation, 'myShorthandAnim 20s ease-in 10s');
+  assert_equals(computedStyle.animation, 'myShorthandAnim 20s ease-in 10s 1 normal none running');
+  assert_equals(style.webkitAnimation, 'myShorthandAnim 20s ease-in 10s');
+  assert_equals(computedStyle.webkitAnimation, 'myShorthandAnim 20s ease-in 10s 1 normal none running');
+  assert_equals(computedStyle.animationDuration, '20s');
+  assert_equals(computedStyle.webkitAnimationDuration, '20s');
+  assert_equals(computedStyle.animationDelay, '10s');
+  assert_equals(computedStyle.webkitAnimationDelay, '10s');
+  assert_true(checkAnimationShorthandValue());
+
+  style.animation = "myShorthandAnim paused 20s ease-in 10s";
+  assert_equals(style.animation, 'myShorthandAnim 20s ease-in 10s paused');
+  assert_equals(computedStyle.animation, 'myShorthandAnim 20s ease-in 10s 1 normal none paused');
+  assert_equals(style.webkitAnimation, 'myShorthandAnim 20s ease-in 10s paused');
+  assert_equals(computedStyle.webkitAnimation, 'myShorthandAnim 20s ease-in 10s 1 normal none paused');
+  assert_equals(computedStyle.animationDuration, '20s');
+  assert_equals(computedStyle.webkitAnimationDuration, '20s');
+  assert_equals(computedStyle.animationDelay, '10s');
+  assert_equals(computedStyle.webkitAnimationDelay, '10s');
+  assert_true(checkAnimationShorthandValue());
+
+  style.animation = "myShorthandAnim ease-in both 20s 5";
+  assert_equals(style.animation, 'myShorthandAnim 20s ease-in 5 both');
+  assert_equals(computedStyle.animation, 'myShorthandAnim 20s ease-in 0s 5 normal both running');
+  assert_equals(style.webkitAnimation, 'myShorthandAnim 20s ease-in 5 both');
+  assert_equals(computedStyle.webkitAnimation, 'myShorthandAnim 20s ease-in 0s 5 normal both running');
+  assert_true(checkAnimationShorthandValue());
+
+  style.animation = "myShorthandAnim ease-in 20s 5 backwards";
+  assert_equals(style.animation, 'myShorthandAnim 20s ease-in 5 backwards');
+  assert_equals(computedStyle.animation, 'myShorthandAnim 20s ease-in 0s 5 normal backwards running');
+  assert_equals(style.webkitAnimation, 'myShorthandAnim 20s ease-in 5 backwards');
+  assert_equals(computedStyle.webkitAnimation, 'myShorthandAnim 20s ease-in 0s 5 normal backwards running');
+  assert_true(checkAnimationShorthandValue());
+
+  style.animation = "myShorthandAnim forwards 20s 5";
+  assert_equals(style.animation, 'myShorthandAnim 20s 5 forwards');
+  assert_equals(computedStyle.animation, 'myShorthandAnim 20s ease 0s 5 normal forwards running');
+  assert_equals(style.webkitAnimation, 'myShorthandAnim 20s 5 forwards');
+  assert_equals(computedStyle.webkitAnimation, 'myShorthandAnim 20s ease 0s 5 normal forwards running');
+  assert_true(checkAnimationShorthandValue());
+
+  style.animation = "myShorthandAnim ease-in 20s 5";
+  assert_equals(style.animation, 'myShorthandAnim 20s ease-in 5');
+  assert_equals(computedStyle.animation, 'myShorthandAnim 20s ease-in 0s 5 normal none running');
+  assert_equals(style.webkitAnimation, 'myShorthandAnim 20s ease-in 5');
+  assert_equals(computedStyle.webkitAnimation, 'myShorthandAnim 20s ease-in 0s 5 normal none running');
+  assert_true(checkAnimationShorthandValue());
+
+  style.animation = "myShorthandAnim reverse ease-in 20s 5";
+  assert_equals(style.animation, 'myShorthandAnim 20s ease-in 5 reverse');
+  assert_equals(computedStyle.animation, 'myShorthandAnim 20s ease-in 0s 5 reverse none running');
+  assert_equals(style.webkitAnimation, 'myShorthandAnim 20s ease-in 5 reverse');
+  assert_equals(computedStyle.webkitAnimation, 'myShorthandAnim 20s ease-in 0s 5 reverse none running');
+  assert_true(checkAnimationShorthandValue());
+
+  style.animation = "myShorthandAnim reverse ease-in backwards 20s 5 paused";
+  assert_equals(style.animation, 'myShorthandAnim 20s ease-in 5 reverse backwards paused');
+  assert_equals(computedStyle.animation, 'myShorthandAnim 20s ease-in 0s 5 reverse backwards paused');
+  assert_equals(style.webkitAnimation, 'myShorthandAnim 20s ease-in 5 reverse backwards paused');
+  assert_equals(computedStyle.webkitAnimation, 'myShorthandAnim 20s ease-in 0s 5 reverse backwards paused');
+  assert_true(checkAnimationShorthandValue());
+
+  style.animation = "myShorthandAnim ease-in 20s 10s, width cubic-bezier(0.32, 0, 1, 1) 10s 20s";
+  assert_equals(style.animation, 'myShorthandAnim 20s ease-in 10s, width 10s cubic-bezier(0.32, 0, 1, 1) 20s');
+  assert_equals(computedStyle.animation, 'myShorthandAnim 20s ease-in 10s 1 normal none running, width 10s cubic-bezier(0.32, 0, 1, 1) 20s 1 normal none running');
+  assert_equals(style.webkitAnimation, 'myShorthandAnim 20s ease-in 10s, width 10s cubic-bezier(0.32, 0, 1, 1) 20s');
+  assert_equals(computedStyle.webkitAnimation, 'myShorthandAnim 20s ease-in 10s 1 normal none running, width 10s cubic-bezier(0.32, 0, 1, 1) 20s 1 normal none running');
+  // Let's double check here the delay and duration. As stated in the spec the first value parsed
+  // is assigned to the duration.
+  assert_equals(computedStyle.animationDuration, '20s, 10s');
+  assert_equals(computedStyle.webkitAnimationDuration, '20s, 10s');
+  assert_equals(computedStyle.animationDelay, '10s, 20s');
+  assert_equals(computedStyle.webkitAnimationDelay, '10s, 20s');
+  assert_true(checkAnimationShorthandValue());
+
+  style.animation = "myShorthandAnim ease-in 20s 10s paused, width cubic-bezier(0.32, 0, 1, 1) 10s 20s";
+  assert_equals(style.animation, 'myShorthandAnim 20s ease-in 10s paused, width 10s cubic-bezier(0.32, 0, 1, 1) 20s');
+  assert_equals(computedStyle.animation, 'myShorthandAnim 20s ease-in 10s 1 normal none paused, width 10s cubic-bezier(0.32, 0, 1, 1) 20s 1 normal none running');
+  assert_equals(style.webkitAnimation, 'myShorthandAnim 20s ease-in 10s paused, width 10s cubic-bezier(0.32, 0, 1, 1) 20s');
+  assert_equals(computedStyle.webkitAnimation, 'myShorthandAnim 20s ease-in 10s 1 normal none paused, width 10s cubic-bezier(0.32, 0, 1, 1) 20s 1 normal none running');
+  // Let's double check here the delay and duration. As stated in the spec the first value parsed
+  // is assigned to the duration.
+  assert_equals(computedStyle.animationDuration, '20s, 10s');
+  assert_equals(computedStyle.webkitAnimationDuration, '20s, 10s');
+  assert_equals(computedStyle.animationDelay, '10s, 20s');
+  assert_equals(computedStyle.webkitAnimationDelay, '10s, 20s');
+  assert_true(checkAnimationShorthandValue());
+
+  style.animation = "myShorthandAnim reverse ease-in 20s 10s paused, test cubic-bezier(0.32, 0, 1, 1) 10s 20s both";
+  assert_equals(style.animation, 'myShorthandAnim 20s ease-in 10s reverse paused, test 10s cubic-bezier(0.32, 0, 1, 1) 20s both');
+  assert_equals(computedStyle.animation, 'myShorthandAnim 20s ease-in 10s 1 reverse none paused, test 10s cubic-bezier(0.32, 0, 1, 1) 20s 1 normal both running');
+  assert_equals(style.webkitAnimation, 'myShorthandAnim 20s ease-in 10s reverse paused, test 10s cubic-bezier(0.32, 0, 1, 1) 20s both');
+  assert_equals(computedStyle.webkitAnimation, 'myShorthandAnim 20s ease-in 10s 1 reverse none paused, test 10s cubic-bezier(0.32, 0, 1, 1) 20s 1 normal both running');
+  assert_true(checkAnimationShorthandValue());
+
+  style.animation = "none, none";
+  assert_equals(style.animation, 'none, none');
+  assert_equals(computedStyle.animation, 'none 0s ease 0s 1 normal none running, none 0s ease 0s 1 normal none running');
+  assert_equals(style.webkitAnimation, 'none, none');
+  assert_equals(computedStyle.webkitAnimation, 'none 0s ease 0s 1 normal none running, none 0s ease 0s 1 normal none running');
+
+  style.animation = "ease-in test 20s 10s, none";
+  assert_equals(style.animation, 'test 20s ease-in 10s, none');
+  assert_equals(computedStyle.animation, 'test 20s ease-in 10s 1 normal none running, none 0s ease 0s 1 normal none running');
+  assert_equals(style.webkitAnimation, 'test 20s ease-in 10s, none');
+  assert_equals(computedStyle.webkitAnimation, 'test 20s ease-in 10s 1 normal none running, none 0s ease 0s 1 normal none running');
+  assert_equals(computedStyle.animationName, 'test, none');
+
+  style.animation = "none, ease-in test 20s 10s";
+  assert_equals(style.animation, 'none, test 20s ease-in 10s');
+  assert_equals(computedStyle.animation, 'none 0s ease 0s 1 normal none running, test 20s ease-in 10s 1 normal none running');
+  assert_equals(style.webkitAnimation, 'none, test 20s ease-in 10s');
+  assert_equals(computedStyle.webkitAnimation, 'none 0s ease 0s 1 normal none running, test 20s ease-in 10s 1 normal none running');
+  assert_equals(computedStyle.animationName, 'none, test');
+
+  style.animation = "myShorthandAnim both 20s 10s ease-in paused, myShorthandAnim ease-out 20s";
+  assert_equals(style.animation, 'myShorthandAnim 20s ease-in 10s both paused, myShorthandAnim 20s ease-out');
+  assert_equals(computedStyle.animation, 'myShorthandAnim 20s ease-in 10s 1 normal both paused, myShorthandAnim 20s ease-out 0s 1 normal none running');
+  assert_equals(style.webkitAnimation, 'myShorthandAnim 20s ease-in 10s both paused, myShorthandAnim 20s ease-out');
+  assert_equals(computedStyle.webkitAnimation, 'myShorthandAnim 20s ease-in 10s 1 normal both paused, myShorthandAnim 20s ease-out 0s 1 normal none running');
+
+  style.animation = "myShorthandAnim ease-in 4 20s 10s backwards, myShorthandAnim2 50 ease-out 20s";
+  assert_equals(style.animation, 'myShorthandAnim 20s ease-in 10s 4 backwards, myShorthandAnim2 20s ease-out 50');
+  assert_equals(computedStyle.animation, 'myShorthandAnim 20s ease-in 10s 4 normal backwards running, myShorthandAnim2 20s ease-out 0s 50 normal none running');
+  assert_equals(style.webkitAnimation, 'myShorthandAnim 20s ease-in 10s 4 backwards, myShorthandAnim2 20s ease-out 50');
+  assert_equals(computedStyle.webkitAnimation, 'myShorthandAnim 20s ease-in 10s 4 normal backwards running, myShorthandAnim2 20s ease-out 0s 50 normal none running');
+  assert_true(checkAnimationShorthandValue());
+
+  style.animation = "myShorthandAnim2 reverse ease-out 20s, ease-in myShorthandAnim 20s 10s paused";
+  assert_equals(style.animation, 'myShorthandAnim2 20s ease-out reverse, myShorthandAnim 20s ease-in 10s paused');
+  assert_equals(computedStyle.animation, 'myShorthandAnim2 20s ease-out 0s 1 reverse none running, myShorthandAnim 20s ease-in 10s 1 normal none paused');
+  assert_equals(style.webkitAnimation, 'myShorthandAnim2 20s ease-out reverse, myShorthandAnim 20s ease-in 10s paused');
+  assert_equals(computedStyle.webkitAnimation, 'myShorthandAnim2 20s ease-out 0s 1 reverse none running, myShorthandAnim 20s ease-in 10s 1 normal none paused');
+  assert_true(checkAnimationShorthandValue());
+}, "Valid animation shorthand values.");
+
+test(() => {
+  style.animation = "";
+
+  style.animation = "solid red";
+  assert_equals(style.animation, '');
+  assert_equals(computedStyle.animation, 'none 0s ease 0s 1 normal none running');
+  assert_equals(style.webkitAnimation, '');
+  assert_equals(computedStyle.webkitAnimation, 'none 0s ease 0s 1 normal none running');
+
+  style.animation = "all 30s width ease-in";
+  assert_equals(style.animation, '');
+  assert_equals(computedStyle.animation, 'none 0s ease 0s 1 normal none running');
+  assert_equals(style.webkitAnimation, '');
+  assert_equals(computedStyle.webkitAnimation, 'none 0s ease 0s 1 normal none running');
+
+  style.animation = "animName 30s ease-in 20s, 20px";
+  assert_equals(style.animation, '');
+  assert_equals(computedStyle.animation, 'none 0s ease 0s 1 normal none running');
+  assert_equals(style.webkitAnimation, '');
+  assert_equals(computedStyle.webkitAnimation, 'none 0s ease 0s 1 normal none running');
+
+  style.animation = "test 30s ease-in 20s, step-start(2)";
+  assert_equals(style.animation, '');
+  assert_equals(computedStyle.animation, 'none 0s ease 0s 1 normal none running');
+  assert_equals(style.webkitAnimation, '');
+  assert_equals(computedStyle.webkitAnimation, 'none 0s ease 0s 1 normal none running');
+
+  style.animation = "ease-in opacity 20s 10s myAnim, none";
+  assert_equals(style.animation, '');
+  assert_equals(computedStyle.animation, 'none 0s ease 0s 1 normal none running');
+  assert_equals(style.webkitAnimation, '');
+  assert_equals(computedStyle.webkitAnimation, 'none 0s ease 0s 1 normal none running');
+
+  style.animation = "none, ease-in opacity 20s 10s myAnim";
+  assert_equals(style.animation, '');
+  assert_equals(computedStyle.animation, 'none 0s ease 0s 1 normal none running');
+  assert_equals(style.webkitAnimation, '');
+  assert_equals(computedStyle.webkitAnimation, 'none 0s ease 0s 1 normal none running');
+
+  style.animation = ",";
+  assert_equals(style.animation, '');
+  assert_equals(computedStyle.animation, 'none 0s ease 0s 1 normal none running');
+  assert_equals(style.webkitAnimation, '');
+  assert_equals(computedStyle.webkitAnimation, 'none 0s ease 0s 1 normal none running');
+
+  style.animation = "running,";
+  assert_equals(style.animation, '');
+  assert_equals(computedStyle.animation, 'none 0s ease 0s 1 normal none running');
+  assert_equals(style.webkitAnimation, '');
+  assert_equals(computedStyle.webkitAnimation, 'none 0s ease 0s 1 normal none running');
+
+  style.animation = ", alternate";
+  assert_equals(style.animation, '');
+  assert_equals(computedStyle.animation, 'none 0s ease 0s 1 normal none running');
+  assert_equals(style.webkitAnimation, '');
+  assert_equals(computedStyle.webkitAnimation, 'none 0s ease 0s 1 normal none running');
+
+  style.animation = ", commas,";
+  assert_equals(style.animation, '');
+  assert_equals(computedStyle.animation, 'none 0s ease 0s 1 normal none running');
+  assert_equals(style.webkitAnimation, '');
+  assert_equals(computedStyle.webkitAnimation, 'none 0s ease 0s 1 normal none running');
+
+  style.animation = "test,, 5s";
+  assert_equals(style.animation, '');
+  assert_equals(computedStyle.animation, 'none 0s ease 0s 1 normal none running');
+  assert_equals(style.webkitAnimation, '');
+  assert_equals(computedStyle.webkitAnimation, 'none 0s ease 0s 1 normal none running');
+
+  style.animation = "2 initial";
+  assert_equals(style.animation, '');
+  assert_equals(computedStyle.animation, 'none 0s ease 0s 1 normal none running');
+  assert_equals(style.webkitAnimation, '');
+  assert_equals(computedStyle.webkitAnimation, 'none 0s ease 0s 1 normal none running');
+
+  style.animation = "2 inherit";
+  assert_equals(style.animation, '');
+  assert_equals(computedStyle.animation, 'none 0s ease 0s 1 normal none running');
+  assert_equals(style.webkitAnimation, '');
+  assert_equals(computedStyle.webkitAnimation, 'none 0s ease 0s 1 normal none running');
+
+  style.animation = "2 unset";
+  assert_equals(style.animation, '');
+  assert_equals(computedStyle.animation, 'none 0s ease 0s 1 normal none running');
+  assert_equals(style.webkitAnimation, '');
+  assert_equals(computedStyle.webkitAnimation, 'none 0s ease 0s 1 normal none running');
+
+  style.animation = "2 default";
+  assert_equals(style.animation, 'default 2');
+  assert_equals(computedStyle.animation, 'default 0s ease 0s 2 normal none running');
+  assert_equals(style.webkitAnimation, 'default 2');
+  assert_equals(computedStyle.webkitAnimation, 'default 0s ease 0s 2 normal none running');
+}, "Invalid animation shorthand values.");
 </script>
 </body>
 </html>
