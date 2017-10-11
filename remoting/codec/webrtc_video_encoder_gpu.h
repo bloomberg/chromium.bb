@@ -62,6 +62,8 @@ class WebrtcVideoEncoderGpu : public WebrtcVideoEncoder,
 
   void UseOutputBitstreamBufferId(int32_t bitstream_buffer_id);
 
+  void RunAnyPendingEncode();
+
   State state_;
 
   // Only after the first encode request do we know how large the incoming

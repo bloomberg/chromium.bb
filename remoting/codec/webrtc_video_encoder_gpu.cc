@@ -57,6 +57,10 @@ void WebrtcVideoEncoderGpu::Encode(std::unique_ptr<webrtc::DesktopFrame> frame,
   DCHECK_GT(params.duration, base::TimeDelta::FromMilliseconds(0));
 
   if (state_ == INITIALIZATION_ERROR) {
+    // TODO(zijiehe): The screen resolution limitation of H264 encoder is much
+    // smaller (3840x2176) than VP8 (16k x 16k) or VP9 (65k x 65k). It's more
+    // likely the initialization may fail by using H264 encoder. We should
+    // provide a way to tell the WebrtcVideoStream to stop the video stream.
     DLOG(ERROR) << "Encoder failed to initialize; dropping encode request";
     std::move(done).Run(nullptr);
     return;
@@ -136,9 +140,7 @@ void WebrtcVideoEncoderGpu::RequireBitstreamBuffers(
   }
 
   state_ = INITIALIZED;
-
-  if (pending_encode_)
-    std::move(pending_encode_).Run();
+  RunAnyPendingEncode();
 }
 
 void WebrtcVideoEncoderGpu::BitstreamBufferReady(int32_t bitstream_buffer_id,
@@ -192,6 +194,7 @@ void WebrtcVideoEncoderGpu::BeginInitialization() {
   if (!video_encode_accelerator_) {
     LOG(ERROR) << "Could not create VideoEncodeAccelerator";
     state_ = INITIALIZATION_ERROR;
+    RunAnyPendingEncode();
     return;
   }
 
@@ -204,6 +207,11 @@ void WebrtcVideoEncoderGpu::UseOutputBitstreamBufferId(
   video_encode_accelerator_->UseOutputBitstreamBuffer(media::BitstreamBuffer(
       bitstream_buffer_id, output_buffers_[bitstream_buffer_id]->handle(),
       output_buffer_size_));
+}
+
+void WebrtcVideoEncoderGpu::RunAnyPendingEncode() {
+  if (pending_encode_)
+    std::move(pending_encode_).Run();
 }
 
 // static
