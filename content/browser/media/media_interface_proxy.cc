@@ -28,6 +28,7 @@
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #include "base/guid.h"
+#include "content/browser/media/cdm_storage_impl.h"
 #include "content/public/browser/cdm_registry.h"
 #include "content/public/common/cdm_info.h"
 #include "media/base/key_system_names.h"
@@ -98,7 +99,7 @@ void MediaInterfaceProxy::CreateCdm(
 }
 
 service_manager::mojom::InterfaceProviderPtr
-MediaInterfaceProxy::GetFrameServices() {
+MediaInterfaceProxy::GetFrameServices(const std::string& cdm_file_system_id) {
   // Register frame services.
   service_manager::mojom::InterfaceProviderPtr interfaces;
 
@@ -115,6 +116,12 @@ MediaInterfaceProxy::GetFrameServices() {
           ->GetURLRequestContext();
   provider->registry()->AddInterface(base::Bind(
       &ProvisionFetcherImpl::Create, base::RetainedRef(context_getter)));
+
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+  DCHECK(!cdm_file_system_id.empty());
+  provider->registry()->AddInterface(base::Bind(
+      &CdmStorageImpl::Create, render_frame_host_, cdm_file_system_id));
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #endif  // BUILDFLAG(ENABLE_MOJO_CDM)
 
   GetContentClient()->browser()->ExposeInterfacesToMediaService(
@@ -147,7 +154,7 @@ void MediaInterfaceProxy::ConnectToMediaService() {
   connector->BindInterface(media::mojom::kMediaServiceName, &media_service);
 
   media_service->CreateInterfaceFactory(MakeRequest(&interface_factory_ptr_),
-                                        GetFrameServices());
+                                        GetFrameServices(std::string()));
 
   interface_factory_ptr_.set_connection_error_handler(
       base::BindOnce(&MediaInterfaceProxy::OnMediaServiceConnectionError,
@@ -191,6 +198,7 @@ media::mojom::InterfaceFactory* MediaInterfaceProxy::GetCdmInterfaceFactory(
   std::string cdm_guid = service_manager::mojom::kInheritUserID;
 
   base::FilePath cdm_path;
+  std::string cdm_file_system_id;
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   std::unique_ptr<CdmInfo> cdm_info = GetCdmInfoForKeySystem(key_system);
@@ -206,20 +214,26 @@ media::mojom::InterfaceFactory* MediaInterfaceProxy::GetCdmInterfaceFactory(
     NOTREACHED() << "Invalid CDM GUID " << cdm_info->guid;
     return nullptr;
   }
+  if (!CdmStorageImpl::IsValidCdmFileSystemId(cdm_info->file_system_id)) {
+    NOTREACHED() << "Invalid file system ID " << cdm_info->file_system_id;
+    return nullptr;
+  }
   cdm_guid = cdm_info->guid;
   cdm_path = cdm_info->path;
+  cdm_file_system_id = cdm_info->file_system_id;
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
   auto found = cdm_interface_factory_map_.find(cdm_guid);
   if (found != cdm_interface_factory_map_.end())
     return found->second.get();
 
-  return ConnectToCdmService(cdm_guid, cdm_path);
+  return ConnectToCdmService(cdm_guid, cdm_path, cdm_file_system_id);
 }
 
 media::mojom::InterfaceFactory* MediaInterfaceProxy::ConnectToCdmService(
     const std::string& cdm_guid,
-    const base::FilePath& cdm_path) {
+    const base::FilePath& cdm_path,
+    const std::string& cdm_file_system_id) {
   DVLOG(1) << __func__ << ": cdm_guid = " << cdm_guid;
 
   DCHECK(!cdm_interface_factory_map_.count(cdm_guid));
@@ -239,7 +253,7 @@ media::mojom::InterfaceFactory* MediaInterfaceProxy::ConnectToCdmService(
 
   InterfaceFactoryPtr interface_factory_ptr;
   media_service->CreateInterfaceFactory(MakeRequest(&interface_factory_ptr),
-                                        GetFrameServices());
+                                        GetFrameServices(cdm_file_system_id));
   interface_factory_ptr.set_connection_error_handler(
       base::BindOnce(&MediaInterfaceProxy::OnCdmServiceConnectionError,
                      base::Unretained(this), cdm_guid));

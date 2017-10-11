@@ -20,6 +20,7 @@ struct CONTENT_EXPORT CdmInfo {
           const std::string& guid,
           const base::Version& version,
           const base::FilePath& path,
+          const std::string& file_system_id,
           const std::vector<std::string>& supported_codecs,
           const std::string& supported_key_system,
           bool supports_sub_key_systems);
@@ -38,6 +39,11 @@ struct CONTENT_EXPORT CdmInfo {
   // Path to the library implementing the CDM. May be empty if the
   // CDM is not a separate library (e.g. Widevine on Android).
   base::FilePath path;
+
+  // Identifier used by the PluginPrivateFileSystem to identify the files
+  // stored by this CDM. Valid identifiers only contain letters (A-Za-z),
+  // digits(0-9), or "._-".
+  std::string file_system_id;
 
   // List of codecs supported by the CDM (e.g. vp8).
   // TODO(jrummell): use the enums from media::AudioCodec and media::VideoCodec

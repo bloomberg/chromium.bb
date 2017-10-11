@@ -53,8 +53,10 @@ class MediaInterfaceProxy : public media::mojom::InterfaceFactory {
   using InterfaceFactoryPtr = media::mojom::InterfaceFactoryPtr;
 
   // Gets services provided by the browser (at RenderFrameHost level) to the
-  // mojo media (or CDM) service running remotely.
-  service_manager::mojom::InterfaceProviderPtr GetFrameServices();
+  // mojo media (or CDM) service running remotely. |cdm_file_system_id| is
+  // used to register the appropriate CdmStorage interface needed by the CDM.
+  service_manager::mojom::InterfaceProviderPtr GetFrameServices(
+      const std::string& cdm_file_system_id);
 
   // Gets the MediaService |interface_factory_ptr_|. Returns null if unexpected
   // error happened.
@@ -70,12 +72,15 @@ class MediaInterfaceProxy : public media::mojom::InterfaceFactory {
   // unexpected error happened.
   InterfaceFactory* GetCdmInterfaceFactory(const std::string& key_system);
 
-  // Connects to the CDM service associated with |key_system|, adds the new
+  // Connects to the CDM service associated with |cdm_guid|, adds the new
   // InterfaceFactoryPtr to the |cdm_interface_factory_map_|, and returns the
   // newly created InterfaceFactory pointer. Returns nullptr if unexpected error
-  // happened.
+  // happened. |cdm_path| will be used to preload the CDM, if necessary.
+  // |cdm_file_system_id| is used when creating the matching storage
+  // interface.
   InterfaceFactory* ConnectToCdmService(const std::string& cdm_guid,
-                                        const base::FilePath& cdm_path);
+                                        const base::FilePath& cdm_path,
+                                        const std::string& cdm_file_system_id);
 
   // Callback for connection error from the InterfaceFactoryPtr in the
   // |cdm_interface_factory_map_| associated with |cdm_guid|.
