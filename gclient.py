@@ -1357,6 +1357,8 @@ it or fix the checkout.
             options.config_filename, os.getcwd()))
       path = gclient_utils.FindGclientRoot(os.getcwd(), options.config_filename)
       if not path:
+        if options.verbose:
+          print('Couldn\'t find configuration file.')
         return None
       client = GClient(path, options)
       client.SetConfig(gclient_utils.FileRead(
