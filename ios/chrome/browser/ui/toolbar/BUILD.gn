@@ -7,6 +7,7 @@ source_set("toolbar") {
   sources = [
     "new_tab_button.h",
     "new_tab_button.mm",
+    "omnibox_focuser.h",
     "toolbar_button_tints.h",
     "toolbar_button_tints.mm",
     "toolbar_controller+protected.h",
@@ -33,6 +34,7 @@ source_set("toolbar") {
     "web_toolbar_controller.mm",
     "web_toolbar_controller_constants.h",
     "web_toolbar_controller_constants.mm",
+    "web_toolbar_delegate.h",
   ]
   deps = [
     ":resource_macros",

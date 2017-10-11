@@ -12,7 +12,7 @@
 #import "base/ios/block_types.h"
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_controller.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_owner.h"
-#import "ios/chrome/browser/ui/toolbar/web_toolbar_controller.h"
+#import "ios/chrome/browser/ui/toolbar/web_toolbar_delegate.h"
 #import "ios/chrome/browser/ui/url_loader.h"
 #import "ios/public/provider/chrome/browser/voice/voice_search_presenter.h"
 
@@ -21,6 +21,7 @@
 @class BrowserContainerView;
 @class BrowserViewControllerDependencyFactory;
 class GURL;
+@protocol OmniboxFocuser;
 @protocol SnackbarCommands;
 @class Tab;
 @class TabModel;
