@@ -79,6 +79,9 @@ class CSSPropertyAPI {
       WritingMode) const {
     return *this;
   }
+  static void FilterEnabledCSSPropertiesIntoVector(const CSSPropertyID*,
+                                                   size_t length,
+                                                   Vector<CSSPropertyID>&);
 
  protected:
   static const CSSPropertyAPI& ResolveToPhysicalPropertyAPI(
