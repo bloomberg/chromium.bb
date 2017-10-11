@@ -170,8 +170,7 @@ void InsertTextCommand::DoApply(EditingState* editing_state) {
     GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
     bool end_of_selection_was_at_start_of_block =
         IsStartOfBlock(EndingVisibleSelection().VisibleEnd());
-    DeleteSelection(editing_state, false, true, false, false);
-    if (editing_state->IsAborted())
+    if (!DeleteSelection(editing_state, false, true, false, false))
       return;
     // deleteSelection eventually makes a new endingSelection out of a Position.
     // If that Position doesn't have a layoutObject (e.g. it is on a <frameset>

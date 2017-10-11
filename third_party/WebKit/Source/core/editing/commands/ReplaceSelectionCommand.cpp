@@ -1067,8 +1067,8 @@ void ReplaceSelectionCommand::InsertParagraphSeparatorIfNeeds(
                                      IsStartOfBlock(visible_start);
     // FIXME: We should only expand to include fully selected special elements
     // if we are copying a selection and pasting it on top of itself.
-    DeleteSelection(editing_state, false, merge_blocks_after_delete, false);
-    if (editing_state->IsAborted())
+    if (!DeleteSelection(editing_state, false, merge_blocks_after_delete,
+                         false))
       return;
     if (fragment.HasInterchangeNewlineAtStart()) {
       GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();

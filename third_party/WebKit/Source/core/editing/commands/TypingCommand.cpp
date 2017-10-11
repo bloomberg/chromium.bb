@@ -1069,8 +1069,7 @@ void TypingCommand::ForwardDeleteKeyPressedInternal(
 
 void TypingCommand::DeleteSelection(bool smart_delete,
                                     EditingState* editing_state) {
-  CompositeEditCommand::DeleteSelection(editing_state, smart_delete);
-  if (editing_state->IsAborted())
+  if (!CompositeEditCommand::DeleteSelection(editing_state, smart_delete))
     return;
   TypingAddedToOpenCommand(kDeleteSelection);
 }
