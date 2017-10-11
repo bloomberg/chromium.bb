@@ -322,14 +322,22 @@ scoped_refptr<MediaRouteController> MediaRouterMojoImpl::GetRouteController(
   }
   DCHECK(route_controller);
 
-  auto callback = base::BindOnce(&MediaRouterMojoImpl::OnMediaControllerCreated,
-                                 weak_factory_.GetWeakPtr(), route_id);
-  media_route_provider_->CreateMediaRouteController(
-      route_id, route_controller->CreateControllerRequest(),
-      route_controller->BindObserverPtr(), std::move(callback));
-
+  InitMediaRouteController(route_controller.get());
   route_controllers_.emplace(route_id, route_controller.get());
   return route_controller;
+}
+
+void MediaRouterMojoImpl::InitMediaRouteController(
+    MediaRouteController* route_controller) {
+  DCHECK(route_controller);
+  const MediaRoute::Id& route_id = route_controller->route_id();
+  auto callback = base::BindOnce(&MediaRouterMojoImpl::OnMediaControllerCreated,
+                                 weak_factory_.GetWeakPtr(), route_id);
+  MediaRouteController::InitMojoResult result =
+      route_controller->InitMojoInterfaces();
+  media_route_provider_->CreateMediaRouteController(
+      route_id, std::move(result.first), std::move(result.second),
+      std::move(callback));
 }
 
 void MediaRouterMojoImpl::ProvideSinks(const std::string& provider_name,

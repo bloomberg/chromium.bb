@@ -116,8 +116,10 @@ class MediaRouterMojoImpl : public MediaRouterBase,
   // even if the MRP SinkAvailability is marked UNAVAILABLE.
   void UpdateMediaSinks(const MediaSource::Id& source_id);
 
-  // Callback called by MRP's CreateMediaRouteController().
-  void OnMediaControllerCreated(const MediaRoute::Id& route_id, bool success);
+  // Requests the creation of a MediaRouteController implementation by passing
+  // the interface request to |media_route_provider_|. Does not take ownership
+  // of |route_controller|.
+  void InitMediaRouteController(MediaRouteController* route_controller);
 
   // Binds |this| to a Mojo interface request.
   void BindToMojoRequest(mojo::InterfaceRequest<mojom::MediaRouter> request);
@@ -270,6 +272,9 @@ class MediaRouterMojoImpl : public MediaRouterBase,
                              const base::Optional<MediaRoute>& media_route,
                              const base::Optional<std::string>& error_text,
                              RouteRequestResult::ResultCode result_code);
+
+  // Callback called by MRP's CreateMediaRouteController().
+  void OnMediaControllerCreated(const MediaRoute::Id& route_id, bool success);
 
   // Invalidates and removes controllers from |route_controllers_| whose media
   // routes do not appear in |routes|.

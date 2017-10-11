@@ -42,7 +42,24 @@ MediaRouteController::MediaRouteController(const MediaRoute::Id& route_id,
   DCHECK(request_manager_);
 }
 
-void MediaRouteController::InitAdditionalMojoConnnections() {}
+MediaRouteController::InitMojoResult
+MediaRouteController::InitMojoInterfaces() {
+  DCHECK(is_valid_);
+  DCHECK(!mojo_media_controller_);
+  DCHECK(!binding_.is_bound());
+
+  auto request = mojo::MakeRequest(&mojo_media_controller_);
+  mojo_media_controller_.set_connection_error_handler(base::BindOnce(
+      &MediaRouteController::OnMojoConnectionError, base::Unretained(this)));
+
+  mojom::MediaStatusObserverPtr observer;
+  binding_.Bind(mojo::MakeRequest(&observer));
+  binding_.set_connection_error_handler(base::BindOnce(
+      &MediaRouteController::OnMojoConnectionError, base::Unretained(this)));
+
+  InitAdditionalMojoConnections();
+  return std::make_pair(std::move(request), std::move(observer));
+}
 
 RouteControllerType MediaRouteController::GetType() const {
   return RouteControllerType::kGeneric;
@@ -100,7 +117,7 @@ void MediaRouteController::SetVolume(float volume) {
 
 void MediaRouteController::OnMediaStatusUpdated(const MediaStatus& status) {
   DCHECK(is_valid_);
-  current_media_status_ = MediaStatus(status);
+  current_media_status_ = status;
   for (Observer& observer : observers_)
     observer.OnMediaStatusUpdated(status);
 }
@@ -115,25 +132,14 @@ void MediaRouteController::Invalidate() {
   // |this| is deleted here!
 }
 
-mojom::MediaControllerRequest MediaRouteController::CreateControllerRequest() {
-  auto request = mojo::MakeRequest(&mojo_media_controller_);
-  mojo_media_controller_.set_connection_error_handler(base::BindOnce(
-      &MediaRouteController::OnMojoConnectionError, base::Unretained(this)));
-  return request;
-}
-
-mojom::MediaStatusObserverPtr MediaRouteController::BindObserverPtr() {
-  DCHECK(is_valid_);
-  mojom::MediaStatusObserverPtr observer;
-  binding_.Bind(mojo::MakeRequest(&observer));
-  binding_.set_connection_error_handler(base::BindOnce(
-      &MediaRouteController::OnMojoConnectionError, base::Unretained(this)));
-  return observer;
-}
-
 MediaRouteController::~MediaRouteController() {
   if (is_valid_)
     media_router_->DetachRouteController(route_id_, this);
+}
+
+void MediaRouteController::OnMojoConnectionError() {
+  binding_.Close();
+  mojo_media_controller_.reset();
 }
 
 void MediaRouteController::AddObserver(Observer* observer) {
@@ -144,11 +150,6 @@ void MediaRouteController::AddObserver(Observer* observer) {
 void MediaRouteController::RemoveObserver(Observer* observer) {
   DCHECK(is_valid_);
   observers_.RemoveObserver(observer);
-}
-
-void MediaRouteController::OnMojoConnectionError() {
-  binding_.Close();
-  mojo_media_controller_.reset();
 }
 
 // static
@@ -167,22 +168,13 @@ HangoutsMediaRouteController::HangoutsMediaRouteController(
 
 HangoutsMediaRouteController::~HangoutsMediaRouteController() {}
 
-void HangoutsMediaRouteController::InitAdditionalMojoConnnections() {
-  MediaRouteController::InitAdditionalMojoConnnections();
-  auto request = mojo::MakeRequest(&mojo_hangouts_controller_);
-  mojo_hangouts_controller_.set_connection_error_handler(
-      base::BindOnce(&HangoutsMediaRouteController::OnMojoConnectionError,
-                     base::Unretained(this)));
-  mojo_media_controller()->ConnectHangoutsMediaRouteController(
-      std::move(request));
-}
-
 RouteControllerType HangoutsMediaRouteController::GetType() const {
   return RouteControllerType::kHangouts;
 }
 
 void HangoutsMediaRouteController::SetLocalPresent(bool local_present) {
   if (request_manager()->mojo_connections_ready()) {
+    DCHECK(mojo_hangouts_controller_);
     mojo_hangouts_controller_->SetLocalPresent(local_present);
     return;
   }
@@ -190,6 +182,15 @@ void HangoutsMediaRouteController::SetLocalPresent(bool local_present) {
       base::BindOnce(&HangoutsMediaRouteController::SetLocalPresent,
                      base::AsWeakPtr(this), local_present),
       MediaRouteProviderWakeReason::ROUTE_CONTROLLER_COMMAND);
+}
+
+void HangoutsMediaRouteController::InitAdditionalMojoConnections() {
+  auto request = mojo::MakeRequest(&mojo_hangouts_controller_);
+  mojo_hangouts_controller_.set_connection_error_handler(
+      base::BindOnce(&HangoutsMediaRouteController::OnMojoConnectionError,
+                     base::Unretained(this)));
+  mojo_media_controller()->ConnectHangoutsMediaRouteController(
+      std::move(request));
 }
 
 void HangoutsMediaRouteController::OnMojoConnectionError() {
