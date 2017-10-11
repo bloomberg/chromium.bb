@@ -50,13 +50,12 @@ class BASE_EXPORT SchedulerWorkerPool {
   // Resets the worker pool in TLS.
   void UnbindFromCurrentThread();
 
-  // Prevents new tasks from being scheduled and waits for currently scheduled
-  // tasks to complete their execution. It is guaranteed that no thread will
-  // do work on behalf of this SchedulerWorkerPool after this returns.
-  // It is invalid to post a task once this is called. TaskTracker::Flush()
-  // can be called before this to complete existing tasks, which might
-  // otherwise post a task during JoinForTesting(). This can only be called
-  // once.
+  // Prevents new tasks from starting to run and waits for currently running
+  // tasks to complete their execution. It is guaranteed that no thread will do
+  // work on behalf of this SchedulerWorkerPool after this returns. It is
+  // invalid to post a task once this is called. TaskTracker::Flush() can be
+  // called before this to complete existing tasks, which might otherwise post a
+  // task during JoinForTesting(). This can only be called once.
   virtual void JoinForTesting() = 0;
 
  protected:

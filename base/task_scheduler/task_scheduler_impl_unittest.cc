@@ -296,10 +296,10 @@ TEST_P(TaskSchedulerImplTest, PostDelayedTaskWithTraitsNoDelayBeforeStart) {
                Unretained(&task_running)),
       TimeDelta());
 
-  // Wait a little bit to make sure that the task isn't scheduled before
-  // Start(). Note: This test won't catch a case where the task runs just after
-  // the check and before Start(). However, we expect the test to be flaky if
-  // the tested code allows that to happen.
+  // Wait a little bit to make sure that the task doesn't run before Start().
+  // Note: This test won't catch a case where the task runs just after the check
+  // and before Start(). However, we expect the test to be flaky if the tested
+  // code allows that to happen.
   PlatformThread::Sleep(TestTimeouts::tiny_timeout());
   EXPECT_FALSE(task_running.IsSignaled());
 
@@ -319,10 +319,10 @@ TEST_P(TaskSchedulerImplTest, PostDelayedTaskWithTraitsWithDelayBeforeStart) {
                Unretained(&task_running)),
       TestTimeouts::tiny_timeout());
 
-  // Wait a little bit to make sure that the task isn't scheduled before
-  // Start(). Note: This test won't catch a case where the task runs just after
-  // the check and before Start(). However, we expect the test to be flaky if
-  // the tested code allows that to happen.
+  // Wait a little bit to make sure that the task doesn't run before Start().
+  // Note: This test won't catch a case where the task runs just after the check
+  // and before Start(). However, we expect the test to be flaky if the tested
+  // code allows that to happen.
   PlatformThread::Sleep(TestTimeouts::tiny_timeout());
   EXPECT_FALSE(task_running.IsSignaled());
 
@@ -341,16 +341,16 @@ TEST_P(TaskSchedulerImplTest, PostTaskViaTaskRunnerBeforeStart) {
                  BindOnce(&VerifyTaskEnvironmentAndSignalEvent,
                           GetParam().traits, Unretained(&task_running)));
 
-  // Wait a little bit to make sure that the task isn't scheduled before
-  // Start(). Note: This test won't catch a case where the task runs just after
-  // the check and before Start(). However, we expect the test to be flaky if
-  // the tested code allows that to happen.
+  // Wait a little bit to make sure that the task doesn't run before Start().
+  // Note: This test won't catch a case where the task runs just after the check
+  // and before Start(). However, we expect the test to be flaky if the tested
+  // code allows that to happen.
   PlatformThread::Sleep(TestTimeouts::tiny_timeout());
   EXPECT_FALSE(task_running.IsSignaled());
 
   StartTaskScheduler();
 
-  // This should not hang if the task is scheduled after Start().
+  // This should not hang if the task runs after Start().
   task_running.Wait();
 }
 

@@ -282,30 +282,30 @@ TEST_P(TaskSchedulerWorkerPoolTest, SequencedRunsTasksInCurrentSequence) {
 
 // Verify that tasks posted before Start run after Start.
 TEST_P(TaskSchedulerWorkerPoolTest, PostBeforeStart) {
-  WaitableEvent task_1_scheduled(WaitableEvent::ResetPolicy::MANUAL,
-                                 WaitableEvent::InitialState::NOT_SIGNALED);
-  WaitableEvent task_2_scheduled(WaitableEvent::ResetPolicy::MANUAL,
-                                 WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent task_1_running(WaitableEvent::ResetPolicy::MANUAL,
+                               WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent task_2_running(WaitableEvent::ResetPolicy::MANUAL,
+                               WaitableEvent::InitialState::NOT_SIGNALED);
 
   scoped_refptr<TaskRunner> task_runner =
       worker_pool_->CreateTaskRunnerWithTraits({WithBaseSyncPrimitives()});
 
-  task_runner->PostTask(FROM_HERE, BindOnce(&WaitableEvent::Signal,
-                                            Unretained(&task_1_scheduled)));
-  task_runner->PostTask(FROM_HERE, BindOnce(&WaitableEvent::Signal,
-                                            Unretained(&task_2_scheduled)));
+  task_runner->PostTask(
+      FROM_HERE, BindOnce(&WaitableEvent::Signal, Unretained(&task_1_running)));
+  task_runner->PostTask(
+      FROM_HERE, BindOnce(&WaitableEvent::Signal, Unretained(&task_2_running)));
 
   // Workers should not be created and tasks should not run before the pool is
   // started. The sleep is to give time for the tasks to potentially run.
   PlatformThread::Sleep(TestTimeouts::tiny_timeout());
-  EXPECT_FALSE(task_1_scheduled.IsSignaled());
-  EXPECT_FALSE(task_2_scheduled.IsSignaled());
+  EXPECT_FALSE(task_1_running.IsSignaled());
+  EXPECT_FALSE(task_2_running.IsSignaled());
 
   StartWorkerPool();
 
-  // Tasks should be scheduled shortly after the pool is started.
-  task_1_scheduled.Wait();
-  task_2_scheduled.Wait();
+  // Tasks should run shortly after the pool is started.
+  task_1_running.Wait();
+  task_2_running.Wait();
 
   task_tracker_.Flush();
 }

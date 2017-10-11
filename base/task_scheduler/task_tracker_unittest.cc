@@ -293,7 +293,7 @@ TEST_P(TaskSchedulerTaskTrackerTest, WillPostAndRunLongTaskBeforeShutdown) {
   thread_running_task.Start();
   task_running.Wait();
 
-  // Initiate shutdown after the task has been scheduled.
+  // Initiate shutdown after the task has started to run.
   CallShutdownAsync();
 
   if (GetParam() == TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN) {
