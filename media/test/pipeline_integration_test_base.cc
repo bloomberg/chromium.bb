@@ -36,6 +36,7 @@ using ::testing::AtLeast;
 using ::testing::AtMost;
 using ::testing::Invoke;
 using ::testing::InvokeWithoutArgs;
+using ::testing::InSequence;
 using ::testing::Return;
 using ::testing::SaveArg;
 
@@ -322,15 +323,23 @@ void PipelineIntegrationTestBase::Pause() {
 }
 
 bool PipelineIntegrationTestBase::Seek(base::TimeDelta seek_time) {
-  ended_ = false;
+  // Enforce that BUFFERING_HAVE_ENOUGH is the first call below.
+  ::testing::InSequence dummy;
 
+  ended_ = false;
   base::RunLoop run_loop;
+
+  // Should always transition to HAVE_ENOUGH once the seek completes.
   EXPECT_CALL(*this, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH))
       .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
+
+  // After initial HAVE_ENOUGH, any buffering state change is allowed as
+  // playback may cause any number of underflow/preroll events.
+  EXPECT_CALL(*this, OnBufferingStateChange(_)).Times(AnyNumber());
+
   pipeline_->Seek(seek_time, base::Bind(&PipelineIntegrationTestBase::OnSeeked,
                                         base::Unretained(this), seek_time));
   RunUntilIdle(&run_loop);
-  EXPECT_CALL(*this, OnBufferingStateChange(_)).Times(AnyNumber());
   return (pipeline_status_ == PIPELINE_OK);
 }
 
