@@ -90,6 +90,8 @@ SavePageResult ToSavePageResult(ArchiverResult archiver_result) {
   return result;
 }
 
+// TODO(carlosk): Canonicalize this suffix adding logic which is already
+// duplicated in many different places around the codebase.
 std::string AddHistogramSuffix(const ClientId& client_id,
                                const char* histogram_name) {
   if (client_id.name_space.empty()) {
