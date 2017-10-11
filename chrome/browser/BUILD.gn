@@ -1749,9 +1749,6 @@ split_static_library("browser") {
     "//third_party/libyuv",
     "//third_party/re2",
     "//third_party/smhasher:cityhash",
-    "//third_party/webrtc/modules/desktop_capture",
-    "//third_party/webrtc_overrides",
-    "//third_party/webrtc_overrides:init_webrtc",
     "//third_party/widevine/cdm:headers",
     "//third_party/zlib",
     "//third_party/zlib:minizip",
@@ -3953,6 +3950,11 @@ split_static_library("browser") {
       "media/webrtc/webrtc_rtp_dump_writer.h",
       "media/webrtc/webrtc_text_log_handler.cc",
       "media/webrtc/webrtc_text_log_handler.h",
+    ]
+    deps += [
+      "//third_party/webrtc/modules/desktop_capture",
+      "//third_party/webrtc_overrides",
+      "//third_party/webrtc_overrides:init_webrtc",
     ]
   }
 
