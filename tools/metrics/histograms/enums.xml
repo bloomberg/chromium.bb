@@ -41114,6 +41114,32 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="2" label="Signature whitelist"/>
 </enum>
 
+<enum name="WiFiAp80211kSupport">
+  <int value="0" label="Does not support 802.11k"/>
+  <int value="1" label="Supports 802.11k neighbor lists"/>
+</enum>
+
+<enum name="WiFiAp80211rSupport">
+  <int value="0" label="Does not support 802.11r"/>
+  <int value="1" label="Supports Over-the-Air FT Roaming"/>
+  <int value="2" label="Supports Over-the-DS FT Roaming"/>
+</enum>
+
+<enum name="WiFiAp80211vBSSMaxIdlePeriodSupport">
+  <int value="0" label="Does not support 802.11v BSS Max idle period"/>
+  <int value="1" label="Supports BSS Max idle period"/>
+</enum>
+
+<enum name="WiFiAp80211vBSSTransitionSupport">
+  <int value="0" label="Does not support 802.11v BSS transition"/>
+  <int value="1" label="Supports BSS transition"/>
+</enum>
+
+<enum name="WiFiAp80211vDMSSupport">
+  <int value="0" label="Does not support 802.11v DMS"/>
+  <int value="1" label="Supports DMS"/>
+</enum>
+
 <enum name="WiFiApMode">
   <int value="0" label="Unknown"/>
   <int value="1" label="Managed"/>
