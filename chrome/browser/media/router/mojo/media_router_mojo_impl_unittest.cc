@@ -975,6 +975,10 @@ TEST_F(MediaRouterMojoImplTest, GetRouteController) {
   TestCreateMediaRouteController();
 }
 
+TEST_F(MediaRouterMojoImplTest, GetHangoutsRouteController) {
+  TestCreateHangoutsMediaRouteController();
+}
+
 TEST_F(MediaRouterMojoImplTest, GetRouteControllerMultipleTimes) {
   router()->OnRoutesUpdated({CreateMediaRoute(), CreateMediaRoute2()},
                             std::string(), std::vector<std::string>());

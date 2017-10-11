@@ -34,6 +34,14 @@ class MediaRouter;
 // An observer should be instantiated with a scoped_refptr obtained through
 // MediaRouter::GetRouteController().
 //
+// |MediaRouteController::InitMojoInterfaces()| must be invoked before commands
+// can be issued and MediaStatus status updates are received. This method is
+// called in |MediaRouter::GetRouteController()| when the controller is
+// initially created. Note that the Mojo bindings / interface ptrs will be reset
+// when the event page is suspended; when the event page is woken up,
+// |InitMojoInterfaces()| will be invoked again to re-initialize the Mojo
+// interfaces / bindings.
+//
 // A MediaRouteController instance is destroyed when all its observers dispose
 // their references to it. When the associated route is destroyed, Invalidate()
 // is called to make the controller's observers dispose their refptrs.
@@ -76,15 +84,22 @@ class MediaRouteController
     DISALLOW_COPY_AND_ASSIGN(Observer);
   };
 
+  // Value returned by |InitMojoInterfaces()|.
+  // The first item is an unbound MediaControllerRequest.
+  // The second item is a bound MediaStatusObserverPtr whose binding is owned
+  // by |this|.
+  using InitMojoResult =
+      std::pair<mojom::MediaControllerRequest, mojom::MediaStatusObserverPtr>;
+
   // Constructs a MediaRouteController that forwards media commands to
   // |mojo_media_controller_|. |media_router_| will be notified when the
   // MediaRouteController is destroyed via DetachRouteController().
   MediaRouteController(const MediaRoute::Id& route_id,
                        content::BrowserContext* context);
 
-  // Overridable by subclasses to request interfaces for additional comamnds.
-  // Valid to call only once after |mojo_media_controller_| is bound.
-  virtual void InitAdditionalMojoConnnections();
+  // Initializes the Mojo interfaces/bindings in this MediaRouteController.
+  // This should only be called when the Mojo interfaces/bindings are not bound.
+  InitMojoResult InitMojoInterfaces();
 
   virtual RouteControllerType GetType() const;
 
@@ -102,16 +117,11 @@ class MediaRouteController
 
   // Notifies |observers_| to dispose their references to the controller. The
   // controller gets destroyed when all the references are disposed.
+  // This happens when the route associated with the controller no longer
+  // exists.
+  // Further operations should not be performed on the controller once it has
+  // become invalid, as it will be deleted soon.
   void Invalidate();
-
-  // Returns an interface request tied to |mojo_media_controller_|, to be bound
-  // to an implementation. |mojo_media_controller_| gets reset whenever this is
-  // called.
-  mojom::MediaControllerRequest CreateControllerRequest();
-
-  // Returns a mojo pointer bound to |this| by |binding_|. This must only be
-  // called at most once in the lifetime of the controller.
-  mojom::MediaStatusObserverPtr BindObserverPtr();
 
   MediaRoute::Id route_id() const { return route_id_; }
 
@@ -141,6 +151,10 @@ class MediaRouteController
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
+  // Overridable by subclasses to request interfaces for additional commands.
+  // Called in |InitMojoConnections()| after |mojo_media_controller_| is bound.
+  virtual void InitAdditionalMojoConnections() {}
+
   // Overridable by subclasses to perform additional cleanup before the main
   // logic in |Invalidate()| executes.
   virtual void InvalidateInternal() {}
@@ -155,7 +169,8 @@ class MediaRouteController
   // the requests to it.
   EventPageRequestManager* const request_manager_;
 
-  // |media_router_| will be notified when the controller is destroyed.
+  // |media_router_| will be notified when the controller is destroyed and if
+  // |Invalidate()| has not been called.
   MediaRouter* const media_router_;
 
   // The binding to observe the out-of-process provider of status updates.
@@ -165,7 +180,12 @@ class MediaRouteController
   // ownership of the controller through scoped_refptr.
   base::ObserverList<Observer> observers_;
 
-  // This becomes false when the controller is invalidated.
+  // This becomes false when |Invalidate()| is called on the controller.
+  // TODO(imcheng): We need the |is_valid_| bit and make have the dtor depend on
+  // it in order to prevent concurrent modifications to MediaRouterMojoImpl's
+  // internal mapping while |this| is being deleted due to |Invalidate()|. This
+  // behavior coupling is confusing and should be rewritten in a way that does
+  // not depend on such subtle behavior.
   bool is_valid_ = true;
 
   // The latest media status that the controller has been notified with.
@@ -184,7 +204,6 @@ class HangoutsMediaRouteController : public MediaRouteController {
                                content::BrowserContext* context);
 
   // MediaRouteController
-  void InitAdditionalMojoConnnections() override;
   RouteControllerType GetType() const override;
 
   void SetLocalPresent(bool local_present);
@@ -193,6 +212,8 @@ class HangoutsMediaRouteController : public MediaRouteController {
   ~HangoutsMediaRouteController() override;
 
  private:
+  // MediaRouteController
+  void InitAdditionalMojoConnections() override;
   void OnMojoConnectionError() override;
   void InvalidateInternal() override;
 
