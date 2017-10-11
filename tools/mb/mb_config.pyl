@@ -147,6 +147,7 @@
       'ToTWinCFI64': 'clang_tot_cfi_full_cfi_diag_thin_lto_release_static_dcheck_always_on',
       'ToTWinThinLTO64': 'clang_tot_official_full_symbols_thin_lto_static_use_lld',
       'ToTiOS': 'ios',
+      'UBSanVptr Linux': 'ubsan_vptr_release_bot',
     },
 
     'chromium.fyi': {
@@ -234,8 +235,6 @@
       'Site Isolation Android': 'android_release_bot_minimal_symbols_arm64',
       'Site Isolation Linux': 'release_trybot',
       'Site Isolation Win': 'release_trybot_x86',
-      'ThinLTO Linux ToT': 'thin_lto_clang_tot_full_symbols_release_static_use_lld',
-      'UBSanVptr Linux': 'ubsan_vptr_release_bot',
       'WebKit Linux - RandomOrder': 'release_trybot',
       'WebKit Mac - RandomOrder': 'release_trybot',
       'WebKit Win - RandomOrder': 'release_bot_x86_minimal_symbols',
@@ -1584,10 +1583,6 @@
       # official builds with DCHECK on. To counter this, the flag is fixed
       # here. For details see https://crbug.com/596231#c71.
       'disable_dcheck_always_on',
-    ],
-
-    'thin_lto_clang_tot_full_symbols_release_static_use_lld': [
-      'thin_lto', 'clang_tot', 'full_symbols', 'release', 'static', 'use_lld',
     ],
 
     'tsan_disable_nacl_debug_bot': [
