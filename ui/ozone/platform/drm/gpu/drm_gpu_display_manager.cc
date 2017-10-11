@@ -8,6 +8,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "ui/display/types/display_mode.h"
+#include "ui/display/types/display_snapshot.h"
 #include "ui/display/types/gamma_ramp_rgb_entry.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
@@ -71,10 +72,10 @@ DrmGpuDisplayManager::DrmGpuDisplayManager(ScreenManager* screen_manager,
 DrmGpuDisplayManager::~DrmGpuDisplayManager() {
 }
 
-std::vector<DisplaySnapshot_Params> DrmGpuDisplayManager::GetDisplays() {
+MovableDisplaySnapshots DrmGpuDisplayManager::GetDisplays() {
   std::vector<std::unique_ptr<DrmDisplay>> old_displays;
   old_displays.swap(displays_);
-  std::vector<DisplaySnapshot_Params> params_list;
+  MovableDisplaySnapshots params_list;
 
   const DrmDeviceVector& devices = drm_device_manager_->GetDrmDevices();
   size_t device_index = 0;
