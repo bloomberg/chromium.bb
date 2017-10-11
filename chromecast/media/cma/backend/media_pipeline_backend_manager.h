@@ -45,6 +45,12 @@ class MediaPipelineBackendManager {
     // Returns |true| if the delegate is accepting buffers.
     virtual bool IsActive() = 0;
 
+    // Called when calls to |OnPushBuffer| will start.
+    virtual void OnStreamStarted() = 0;
+
+    // Called when calls to |OnPushBuffer| will stop.
+    virtual void OnStreamStopped() = 0;
+
     // If |IsActive| returns true, the media stream's audio buffers will be sent
     // to the delegate and the media stream's volume will be set to 0.
     //
@@ -57,6 +63,9 @@ class MediaPipelineBackendManager {
     // subsequent buffers will have the new config. This method will be called
     // regardless if |IsActive| returs true or false.
     virtual void OnSetConfig(const AudioConfig& config) = 0;
+
+    // Called when volume changes. |volume| is from [0.0, 1.0].
+    virtual void OnSetVolume(float volume) = 0;
 
    protected:
     virtual ~BufferDelegate() = default;

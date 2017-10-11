@@ -30,16 +30,26 @@ AudioDecoderWrapper::AudioDecoderWrapper(
   DCHECK(decoder_);
 
   backend_manager_->AddAudioDecoder(this);
+  if (buffer_delegate_) {
+    buffer_delegate_->OnStreamStarted();
+  }
 }
 
 AudioDecoderWrapper::~AudioDecoderWrapper() {
+  if (buffer_delegate_) {
+    buffer_delegate_->OnStreamStopped();
+  }
   backend_manager_->RemoveAudioDecoder(this);
 }
 
 void AudioDecoderWrapper::SetGlobalVolumeMultiplier(float multiplier) {
   global_volume_multiplier_ = multiplier;
   if (!delegate_active_) {
-    decoder_->SetVolume(stream_volume_multiplier_ * global_volume_multiplier_);
+    float volume = stream_volume_multiplier_ * global_volume_multiplier_;
+    decoder_->SetVolume(volume);
+    if (buffer_delegate_) {
+      buffer_delegate_->OnSetVolume(volume);
+    }
   }
 }
 
@@ -78,11 +88,15 @@ bool AudioDecoderWrapper::SetConfig(const AudioConfig& config) {
 
 bool AudioDecoderWrapper::SetVolume(float multiplier) {
   stream_volume_multiplier_ = std::max(0.0f, std::min(multiplier, 1.0f));
+  float volume = stream_volume_multiplier_ * global_volume_multiplier_;
+  if (buffer_delegate_) {
+    buffer_delegate_->OnSetVolume(volume);
+  }
+
   if (delegate_active_) {
     return true;
   }
-  return decoder_->SetVolume(stream_volume_multiplier_ *
-                             global_volume_multiplier_);
+  return decoder_->SetVolume(volume);
 }
 
 AudioDecoderWrapper::RenderingDelay AudioDecoderWrapper::GetRenderingDelay() {
