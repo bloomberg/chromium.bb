@@ -3487,6 +3487,13 @@ def ApplyCustomOverrides(site_config, ge_build_config):
           'hw_tests': hw_test_list.SharedPoolPFQ(),
       },
 
+      # Currently factory and firmware branches will be created after DVT stage
+      # therefore we need signed factory shim or accessory_rwsig firmware from
+      # ToT temporarily.
+      #
+      # After factory and firmware branches are created, the configuation of
+      # this project should be removed.
+      # --- start from here ---
       'poppy-release': {
           'sign_types': ['recovery', 'accessory_rwsig', 'factory'],
       },
@@ -3494,6 +3501,11 @@ def ApplyCustomOverrides(site_config, ge_build_config):
       'soraka-release': {
           'sign_types': ['recovery', 'accessory_rwsig', 'factory'],
       },
+
+      'coral-release': {
+          'sign_types': ['recovery', 'factory'],
+      },
+      # --- end from here ---
   }
 
   for config_name, overrides  in overwritten_configs.iteritems():

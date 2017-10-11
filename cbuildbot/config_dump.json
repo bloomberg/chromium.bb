@@ -6696,6 +6696,10 @@
             "{\n    \"name\": \"whitetip1\",\n    \"test_suites\": []\n}",
             "{\n    \"name\": \"whitetip2\",\n    \"test_suites\": []\n}"
         ],
+        "sign_types": [
+            "recovery",
+            "factory"
+        ],
         "vm_tests": [],
         "vm_tests_override": null
     },
