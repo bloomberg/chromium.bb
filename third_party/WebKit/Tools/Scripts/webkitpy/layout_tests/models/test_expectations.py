@@ -747,6 +747,8 @@ class TestExpectationsModel(object):
 
         if SKIP in expectation_line.parsed_expectations:
             self._result_type_to_tests[SKIP].add(test)
+        elif TIMEOUT in expectation_line.parsed_expectations:
+            self._result_type_to_tests[TIMEOUT].add(test)
         elif expectation_line.parsed_expectations == set([PASS]):
             self._result_type_to_tests[PASS].add(test)
         elif expectation_line.is_flaky():
@@ -926,6 +928,7 @@ class TestExpectations(object):
         'pass': PASS,
         'fail': FAIL,
         'flaky': FLAKY,
+        'timeout': TIMEOUT,
     }
 
     @classmethod

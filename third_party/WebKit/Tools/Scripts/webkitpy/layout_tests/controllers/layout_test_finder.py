@@ -162,6 +162,9 @@ class LayoutTestFinder(object):
         all_tests = set(all_tests_list)
 
         tests_to_skip = expectations.get_tests_with_result_type(test_expectations.SKIP)
+
+        if self._options.skip_timeouts:
+            tests_to_skip.update(expectations.get_tests_with_result_type(test_expectations.TIMEOUT))
         if self._options.skip_failing_tests:
             tests_to_skip.update(expectations.get_tests_with_result_type(test_expectations.FAIL))
             tests_to_skip.update(expectations.get_tests_with_result_type(test_expectations.FLAKY))
