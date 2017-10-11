@@ -1437,6 +1437,7 @@ test("browser_tests") {
       "../browser/subresource_filter/subresource_filter_browser_test_harness.cc",
       "../browser/subresource_filter/subresource_filter_browser_test_harness.h",
       "../browser/subresource_filter/subresource_filter_browsertest.cc",
+      "../browser/subresource_filter/subresource_filter_devtools_browsertest.cc",
       "../browser/subresource_filter/subresource_filter_popup_browsertest.cc",
       "../browser/subresource_filter/subresource_filter_settings_browsertest.cc",
       "../browser/subresource_filter/subresource_filter_special_subframe_navigations_browsertest.cc",
