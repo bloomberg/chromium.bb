@@ -22,9 +22,9 @@
             gs://chromium-browser-clang/$x/llvm-code-coverage-$rev.tgz ; \
         done
     $ gsutil.py cp -n -a public-read gs://chromium-browser-clang-staging/Mac/lld-$rev.tgz \
-          gs://chromium-browser-clang/Mac/clang-$rev.tgz ; \
+          gs://chromium-browser-clang/Mac/lld-$rev.tgz
     ```
-        
+
 1.  Run the goma package update script to push these packages to goma. If you do
     not have the necessary credentials to do the upload, ask clang@chromium.org
     to find someone who does
