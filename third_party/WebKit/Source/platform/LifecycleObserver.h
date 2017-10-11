@@ -58,6 +58,9 @@ template <typename Context, typename Observer>
 inline void LifecycleObserver<Context, Observer>::SetContext(Context* context) {
   using Notifier = LifecycleNotifier<Context, Observer>;
 
+  if (lifecycle_context_ == context)
+    return;
+
   if (lifecycle_context_) {
     static_cast<Notifier*>(lifecycle_context_)
         ->RemoveObserver(static_cast<Observer*>(this));

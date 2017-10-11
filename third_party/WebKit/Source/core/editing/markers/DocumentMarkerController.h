@@ -132,6 +132,8 @@ class CORE_EXPORT DocumentMarkerController final
 #endif
 
   // SynchronousMutationObserver
+  // For performance, observer is only registered when
+  // |possibly_existing_marker_types_| is non-zero.
   void DidUpdateCharacterData(CharacterData*,
                               unsigned offset,
                               unsigned old_length,
@@ -160,7 +162,7 @@ class CORE_EXPORT DocumentMarkerController final
   // Provide a quick way to determine whether a particular marker type is absent
   // without going through the map.
   DocumentMarker::MarkerTypes possibly_existing_marker_types_;
-  const Member<const Document> document_;
+  const Member<Document> document_;
 };
 
 }  // namespace blink
