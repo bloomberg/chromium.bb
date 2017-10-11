@@ -2249,11 +2249,8 @@ bool RenderViewContextMenu::IsOpenLinkOTREnabled() const {
 }
 
 void RenderViewContextMenu::ExecOpenLinkNewTab() {
-  Browser* browser = chrome::FindBrowserWithWebContents(source_web_contents_);
   OpenURLWithExtraHeaders(params_.link_url, GetDocumentURL(params_),
-                          (!browser || browser->is_app())
-                              ? WindowOpenDisposition::NEW_FOREGROUND_TAB
-                              : WindowOpenDisposition::NEW_BACKGROUND_TAB,
+                          WindowOpenDisposition::NEW_BACKGROUND_TAB,
                           ui::PAGE_TRANSITION_LINK, "", true);
 }
 
