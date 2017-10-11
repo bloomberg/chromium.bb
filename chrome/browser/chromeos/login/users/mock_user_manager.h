@@ -76,6 +76,9 @@ class MockUserManager : public ChromeUserManager {
                void(UserManager::UserSessionStateObserver*));
   MOCK_METHOD0(NotifyLocalStateChanged, void(void));
   MOCK_CONST_METHOD0(AreSupervisedUsersAllowed, bool(void));
+  MOCK_CONST_METHOD0(IsGuestSessionAllowed, bool(void));
+  MOCK_CONST_METHOD1(IsGaiaUserAllowed, bool(const user_manager::User& user));
+  MOCK_CONST_METHOD1(IsUserAllowed, bool(const user_manager::User& user));
   MOCK_CONST_METHOD3(UpdateLoginState,
                      void(const user_manager::User*,
                           const user_manager::User*,

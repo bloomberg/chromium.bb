@@ -106,6 +106,9 @@ class FakeChromeUserManager : public ChromeUserManager {
       const AccountId& account_id) const override;
   void ChangeUserChildStatus(user_manager::User* user, bool is_child) override;
   bool AreSupervisedUsersAllowed() const override;
+  bool IsGuestSessionAllowed() const override;
+  bool IsGaiaUserAllowed(const user_manager::User& user) const override;
+  bool IsUserAllowed(const user_manager::User& user) const override;
   PrefService* GetLocalState() const override;
   bool GetPlatformKnownUserId(const std::string& user_email,
                               const std::string& gaia_id,

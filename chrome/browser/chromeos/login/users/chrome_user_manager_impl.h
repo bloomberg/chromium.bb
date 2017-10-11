@@ -88,6 +88,9 @@ class ChromeUserManagerImpl
   bool IsUserNonCryptohomeDataEphemeral(
       const AccountId& account_id) const override;
   bool AreSupervisedUsersAllowed() const override;
+  bool IsGuestSessionAllowed() const override;
+  bool IsGaiaUserAllowed(const user_manager::User& user) const override;
+  bool IsUserAllowed(const user_manager::User& user) const override;
   void UpdateLoginState(const user_manager::User* active_user,
                         const user_manager::User* primary_user,
                         bool is_current_user_owner) const override;
@@ -257,6 +260,12 @@ class ChromeUserManagerImpl
   // Specific flows by user e-mail. Keys should be canonicalized before
   // access.
   FlowMap specific_flows_;
+
+  // Cros settings change subscriptions.
+  std::unique_ptr<CrosSettings::ObserverSubscription> allow_guest_subscription_;
+  std::unique_ptr<CrosSettings::ObserverSubscription>
+      allow_supervised_user_subscription_;
+  std::unique_ptr<CrosSettings::ObserverSubscription> users_subscription_;
 
   std::unique_ptr<CrosSettings::ObserverSubscription>
       local_accounts_subscription_;

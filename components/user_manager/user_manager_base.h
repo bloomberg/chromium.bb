@@ -110,6 +110,7 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   void NotifyUserProfileImageUpdated(
       const User& user,
       const gfx::ImageSkia& profile_image) override;
+  void NotifyUsersSignInConstraintsChanged() override;
   void ChangeUserChildStatus(User* user, bool is_child) override;
   void ResetProfileEverInitialized(const AccountId& account_id) override;
   void Initialize() override;

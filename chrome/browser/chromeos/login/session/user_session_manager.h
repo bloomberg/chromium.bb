@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_notification_controller.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager.h"
 #include "chrome/browser/chromeos/login/signin/token_handle_util.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/login/auth/authenticator.h"
 #include "chromeos/login/auth/user_context.h"
@@ -86,7 +87,8 @@ class UserSessionManager
       public net::NetworkChangeNotifier::NetworkChangeObserver,
       public base::SupportsWeakPtr<UserSessionManager>,
       public UserSessionManagerDelegate,
-      public user_manager::UserManager::UserSessionStateObserver {
+      public user_manager::UserManager::UserSessionStateObserver,
+      public user_manager::UserManager::Observer {
  public:
   // Context of StartSession calls.
   typedef enum {
@@ -275,6 +277,9 @@ class UserSessionManager
   // UserSessionManagerDelegate overrides:
   // Used when restoring user sessions after crash.
   void OnProfilePrepared(Profile* profile, bool browser_launched) override;
+
+  // user_manager::UserManager::Observer overrides:
+  void OnUsersSignInConstraintsChanged() override;
 
   void ChildAccountStatusReceivedCallback(Profile* profile);
 
