@@ -16,7 +16,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/json/json_reader.h"
 #include "base/macros.h"
-#include "base/memory/manual_constructor.h"
+#include "base/optional.h"
 #include "base/strings/string_piece.h"
 
 namespace base {
@@ -102,7 +102,7 @@ class BASE_EXPORT JSONParser {
 
     ~StringBuilder();
 
-    void operator=(StringBuilder&& other);
+    StringBuilder& operator=(StringBuilder&& other);
 
     // Either increases the |length_| of the string or copies the character if
     // the StringBuilder has been converted. |c| must be in the basic ASCII
@@ -136,10 +136,9 @@ class BASE_EXPORT JSONParser {
     // Number of bytes in |pos_| that make up the string being built.
     size_t length_;
 
-    // The copied string representation. Will be uninitialized until Convert()
-    // is called, which will set has_string_ to true.
-    bool has_string_;
-    base::ManualConstructor<std::string> string_;
+    // The copied string representation. Will be unset until Convert() is
+    // called.
+    base::Optional<std::string> string_;
   };
 
   // Quick check that the stream has capacity to consume |length| more bytes.

@@ -133,58 +133,50 @@ int JSONParser::error_column() const {
 JSONParser::StringBuilder::StringBuilder() : StringBuilder(nullptr) {}
 
 JSONParser::StringBuilder::StringBuilder(const char* pos)
-    : pos_(pos), length_(0), has_string_(false) {}
+    : pos_(pos), length_(0) {}
 
 JSONParser::StringBuilder::~StringBuilder() {
-  if (has_string_)
-    string_.Destroy();
 }
 
-void JSONParser::StringBuilder::operator=(StringBuilder&& other) {
-  pos_ = other.pos_;
-  length_ = other.length_;
-  has_string_ = other.has_string_;
-  if (has_string_)
-    string_.InitFromMove(std::move(other.string_));
-}
+JSONParser::StringBuilder& JSONParser::StringBuilder::operator=(
+    StringBuilder&& other) = default;
 
 void JSONParser::StringBuilder::Append(const char& c) {
   DCHECK_GE(c, 0);
   DCHECK_LT(static_cast<unsigned char>(c), 128);
 
-  if (has_string_)
+  if (string_)
     string_->push_back(c);
   else
     ++length_;
 }
 
 void JSONParser::StringBuilder::AppendString(const char* str, size_t len) {
-  DCHECK(has_string_);
+  DCHECK(string_);
   string_->append(str, len);
 }
 
 void JSONParser::StringBuilder::Convert() {
-  if (has_string_)
+  if (string_)
     return;
 
-  has_string_ = true;
-  string_.Init(pos_, length_);
+  string_.emplace(pos_, length_);
 }
 
 StringPiece JSONParser::StringBuilder::AsStringPiece() {
-  if (has_string_)
-    return StringPiece(*string_);
+  if (string_)
+    return *string_;
   return StringPiece(pos_, length_);
 }
 
 const std::string& JSONParser::StringBuilder::AsString() {
-  if (!has_string_)
+  if (!string_)
     Convert();
   return *string_;
 }
 
 std::string JSONParser::StringBuilder::DestructiveAsString() {
-  if (has_string_)
+  if (string_)
     return std::move(*string_);
   return std::string(pos_, length_);
 }
