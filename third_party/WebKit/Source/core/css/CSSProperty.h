@@ -88,10 +88,6 @@ class CSSProperty {
 
   const CSSValue* Value() const { return value_.Get(); }
 
-  static void FilterEnabledCSSPropertiesIntoVector(const CSSPropertyID*,
-                                                   size_t length,
-                                                   Vector<CSSPropertyID>&);
-
   const StylePropertyMetadata& Metadata() const { return metadata_; }
 
   bool operator==(const CSSProperty& other) const;

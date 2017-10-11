@@ -131,4 +131,15 @@ const StylePropertyShorthand& CSSPropertyAPI::BorderDirections() {
   return border_directions;
 }
 
+void CSSPropertyAPI::FilterEnabledCSSPropertiesIntoVector(
+    const CSSPropertyID* properties,
+    size_t propertyCount,
+    Vector<CSSPropertyID>& outVector) {
+  for (unsigned i = 0; i < propertyCount; i++) {
+    CSSPropertyID property = properties[i];
+    if (Get(property).IsEnabled())
+      outVector.push_back(property);
+  }
+}
+
 }  // namespace blink
