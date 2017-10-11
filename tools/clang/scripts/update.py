@@ -29,7 +29,8 @@ import zipfile
 # Reverting problematic clang rolls is safe, though.
 CLANG_REVISION = '313786'
 
-use_head_revision = bool(int(os.environ.get('LLVM_FORCE_HEAD_REVISION', '0')))
+use_head_revision = bool(os.environ.get('LLVM_FORCE_HEAD_REVISION', '0')
+                         in ('1', 'YES'))
 if use_head_revision:
   CLANG_REVISION = 'HEAD'
 
