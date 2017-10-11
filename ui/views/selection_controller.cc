@@ -51,8 +51,8 @@ bool SelectionController::OnMousePressed(
           delegate_->SetTextBeingDragged(true);
         } else {
           delegate_->OnBeforePointerAction();
-          const bool selection_changed =
-              render_text->MoveCursorTo(event.location(), event.IsShiftDown());
+          const bool selection_changed = render_text->MoveCursorToPoint(
+              event.location(), event.IsShiftDown());
           delegate_->OnAfterPointerAction(false, selection_changed);
         }
         break;
@@ -84,7 +84,7 @@ bool SelectionController::OnMousePressed(
       !delegate_->IsReadOnly()) {
     delegate_->OnBeforePointerAction();
     const bool selection_changed =
-        render_text->MoveCursorTo(event.location(), false);
+        render_text->MoveCursorToPoint(event.location(), false);
     const bool text_changed = delegate_->PasteSelectionClipboard();
     delegate_->OnAfterPointerAction(text_changed,
                                     selection_changed | text_changed);
@@ -133,7 +133,7 @@ void SelectionController::OnMouseReleased(const ui::MouseEvent& event) {
   if (delegate_->HasTextBeingDragged()) {
     delegate_->OnBeforePointerAction();
     const bool selection_changed =
-        render_text->MoveCursorTo(event.location(), false);
+        render_text->MoveCursorToPoint(event.location(), false);
     delegate_->OnAfterPointerAction(false, selection_changed);
   }
 
@@ -176,7 +176,7 @@ void SelectionController::SelectWord(const gfx::Point& point) {
   gfx::RenderText* render_text = GetRenderText();
   DCHECK(render_text);
   delegate_->OnBeforePointerAction();
-  render_text->MoveCursorTo(point, false);
+  render_text->MoveCursorToPoint(point, false);
   render_text->SelectWord();
   delegate_->OnAfterPointerAction(false, true);
 }
@@ -199,7 +199,7 @@ void SelectionController::SelectThroughLastDragLocation() {
 
   delegate_->OnBeforePointerAction();
 
-  render_text->MoveCursorTo(last_drag_location_, true);
+  render_text->MoveCursorToPoint(last_drag_location_, true);
 
   if (aggregated_clicks_ == 1) {
     render_text->SelectWord();

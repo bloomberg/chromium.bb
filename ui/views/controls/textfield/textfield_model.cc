@@ -439,16 +439,16 @@ bool TextfieldModel::MoveCursorTo(const gfx::SelectionModel& cursor) {
     gfx::Range range(render_text_->selection().start(), cursor.caret_pos());
     if (!range.is_empty())
       return render_text_->SelectRange(range);
-    return render_text_->MoveCursorTo(
+    return render_text_->SetSelection(
         gfx::SelectionModel(cursor.caret_pos(), cursor.caret_affinity()));
   }
-  return render_text_->MoveCursorTo(cursor);
+  return render_text_->SetSelection(cursor);
 }
 
 bool TextfieldModel::MoveCursorTo(const gfx::Point& point, bool select) {
   if (HasCompositionText())
     ConfirmCompositionText();
-  return render_text_->MoveCursorTo(point, select);
+  return render_text_->MoveCursorToPoint(point, select);
 }
 
 base::string16 TextfieldModel::GetSelectedText() const {
@@ -464,7 +464,7 @@ void TextfieldModel::SelectRange(const gfx::Range& range) {
 void TextfieldModel::SelectSelectionModel(const gfx::SelectionModel& sel) {
   if (HasCompositionText())
     ConfirmCompositionText();
-  render_text_->MoveCursorTo(sel);
+  render_text_->SetSelection(sel);
 }
 
 void TextfieldModel::SelectAll(bool reversed) {
@@ -754,7 +754,7 @@ void TextfieldModel::ReplaceTextInternal(const base::string16& new_text,
     size_t next =
         render_text_->IndexOfAdjacentGrapheme(cursor, gfx::CURSOR_FORWARD);
     if (next == model.caret_pos())
-      render_text_->MoveCursorTo(model);
+      render_text_->SetSelection(model);
     else
       render_text_->SelectRange(gfx::Range(next, model.caret_pos()));
   }

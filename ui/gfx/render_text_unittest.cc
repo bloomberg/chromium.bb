@@ -2094,22 +2094,22 @@ TEST_P(RenderTextTest, CenteredDisplayOffset) {
 void MoveLeftRightByWordVerifier(RenderText* render_text, const char* str) {
   render_text->SetText(UTF8ToUTF16(str));
 
-  // Test moving by word from left ro right.
+  // Test moving by word from left to right.
   render_text->MoveCursor(LINE_BREAK, CURSOR_LEFT, SELECTION_NONE);
   bool first_word = true;
   while (true) {
     // First, test moving by word from a word break position, such as from
     // "|abc def" to "abc| def".
-    SelectionModel start = render_text->selection_model();
+    const SelectionModel start = render_text->selection_model();
     render_text->MoveCursor(WORD_BREAK, CURSOR_RIGHT, SELECTION_NONE);
-    SelectionModel end = render_text->selection_model();
+    const SelectionModel end = render_text->selection_model();
     if (end == start)  // reach the end.
       break;
 
     // For testing simplicity, each word is a 3-character word.
     int num_of_character_moves = first_word ? 3 : 4;
     first_word = false;
-    render_text->MoveCursorTo(start);
+    render_text->SetSelection(start);
     for (int j = 0; j < num_of_character_moves; ++j)
       render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, SELECTION_NONE);
     EXPECT_EQ(end, render_text->selection_model());
@@ -2117,7 +2117,7 @@ void MoveLeftRightByWordVerifier(RenderText* render_text, const char* str) {
     // Then, test moving by word from positions inside the word, such as from
     // "a|bc def" to "abc| def", and from "ab|c def" to "abc| def".
     for (int j = 1; j < num_of_character_moves; ++j) {
-      render_text->MoveCursorTo(start);
+      render_text->SetSelection(start);
       for (int k = 0; k < j; ++k)
         render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, SELECTION_NONE);
       render_text->MoveCursor(WORD_BREAK, CURSOR_RIGHT, SELECTION_NONE);
@@ -2129,21 +2129,21 @@ void MoveLeftRightByWordVerifier(RenderText* render_text, const char* str) {
   render_text->MoveCursor(LINE_BREAK, CURSOR_RIGHT, SELECTION_NONE);
   first_word = true;
   while (true) {
-    SelectionModel start = render_text->selection_model();
+    const SelectionModel start = render_text->selection_model();
     render_text->MoveCursor(WORD_BREAK, CURSOR_LEFT, SELECTION_NONE);
-    SelectionModel end = render_text->selection_model();
+    const SelectionModel end = render_text->selection_model();
     if (end == start)  // reach the end.
       break;
 
     int num_of_character_moves = first_word ? 3 : 4;
     first_word = false;
-    render_text->MoveCursorTo(start);
+    render_text->SetSelection(start);
     for (int j = 0; j < num_of_character_moves; ++j)
       render_text->MoveCursor(CHARACTER_BREAK, CURSOR_LEFT, SELECTION_NONE);
     EXPECT_EQ(end, render_text->selection_model());
 
     for (int j = 1; j < num_of_character_moves; ++j) {
-      render_text->MoveCursorTo(start);
+      render_text->SetSelection(start);
       for (int k = 0; k < j; ++k)
         render_text->MoveCursor(CHARACTER_BREAK, CURSOR_LEFT, SELECTION_NONE);
       render_text->MoveCursor(WORD_BREAK, CURSOR_LEFT, SELECTION_NONE);
@@ -2232,11 +2232,11 @@ TEST_P(RenderTextHarfBuzzTest, MoveLeftRightByWordInBidiText_TestEndOfText) {
 TEST_P(RenderTextHarfBuzzTest, MoveLeftRightByWordInTextWithMultiSpaces) {
   RenderText* render_text = GetRenderText();
   render_text->SetText(UTF8ToUTF16("abc     def"));
-  render_text->MoveCursorTo(SelectionModel(5, CURSOR_FORWARD));
+  render_text->SetCursorPosition(5);
   render_text->MoveCursor(WORD_BREAK, CURSOR_RIGHT, SELECTION_NONE);
   EXPECT_EQ(11U, render_text->cursor_position());
 
-  render_text->MoveCursorTo(SelectionModel(5, CURSOR_FORWARD));
+  render_text->SetCursorPosition(5);
   render_text->MoveCursor(WORD_BREAK, CURSOR_LEFT, SELECTION_NONE);
   EXPECT_EQ(0U, render_text->cursor_position());
 }
@@ -2818,8 +2818,7 @@ TEST_P(RenderTextHarfBuzzTest, DisplayRectShowsCursorLTR) {
 
   RenderText* render_text = GetRenderText();
   render_text->SetText(UTF8ToUTF16("abcdefghijklmnopqrstuvwxzyabcdefg"));
-  render_text->MoveCursorTo(SelectionModel(render_text->text().length(),
-                                           CURSOR_FORWARD));
+  render_text->SetCursorPosition(render_text->text().length());
   int width = render_text->GetStringSize().width();
   ASSERT_GT(width, 10);
 
@@ -2845,7 +2844,7 @@ TEST_P(RenderTextHarfBuzzTest, DisplayRectShowsCursorLTR) {
   render_text->SetText(
       UTF8ToUTF16("\u05d0\u05d1\u05d2\u05d3\u05d4\u05d5\u05d6\u05d7"
                   "\u05d8\u05d9\u05da\u05db\u05dc\u05dd\u05de\u05df"));
-  render_text->MoveCursorTo(SelectionModel(0, CURSOR_FORWARD));
+  render_text->SetCursorPosition(0);
   width = render_text->GetStringSize().width();
   ASSERT_GT(width, 10);
 
@@ -2877,7 +2876,7 @@ TEST_P(RenderTextTest, DisplayRectShowsCursorRTL) {
   ResetRenderTextInstance();
   RenderText* render_text = GetRenderText();
   render_text->SetText(UTF8ToUTF16("abcdefghijklmnopqrstuvwxzyabcdefg"));
-  render_text->MoveCursorTo(SelectionModel(0, CURSOR_FORWARD));
+  render_text->SetCursorPosition(0);
   int width = render_text->GetStringSize().width();
   ASSERT_GT(width, 10);
 
@@ -2903,8 +2902,7 @@ TEST_P(RenderTextTest, DisplayRectShowsCursorRTL) {
   render_text->SetText(
       UTF8ToUTF16("\u05d0\u05d1\u05d2\u05d3\u05d4\u05d5\u05d6\u05d7"
                   "\u05d8\u05d9\u05da\u05db\u05dc\u05dd\u05de\u05df"));
-  render_text->MoveCursorTo(SelectionModel(render_text->text().length(),
-                                           CURSOR_FORWARD));
+  render_text->SetCursorPosition(render_text->text().length());
   width = render_text->GetStringSize().width();
   ASSERT_GT(width, 10);
 
@@ -2940,11 +2938,11 @@ TEST_P(RenderTextTest, SelectionKeepsLigatures) {
   for (size_t i = 0; i < arraysize(kTestStrings); ++i) {
     render_text->SetText(UTF8ToUTF16(kTestStrings[i]));
     const int expected_width = render_text->GetStringSize().width();
-    render_text->MoveCursorTo(SelectionModel(Range(0, 1), CURSOR_FORWARD));
+    render_text->SelectRange({0, 1});
     EXPECT_EQ(expected_width, render_text->GetStringSize().width());
     // Drawing the text should not DCHECK or crash; see http://crbug.com/262119
     render_text->Draw(canvas());
-    render_text->MoveCursorTo(SelectionModel(0, CURSOR_FORWARD));
+    render_text->SetCursorPosition(0);
   }
 }
 
@@ -4548,7 +4546,7 @@ TEST_P(RenderTextHarfBuzzTest, LineEndSelections) {
     // Position the cursor at the logical beginning of text.
     render_text->SelectRange(Range(0));
 
-    render_text->MoveCursorTo(
+    render_text->MoveCursorToPoint(
         Point(cases[i].x, GetCursorYForTesting(cases[i].line_num)), true);
     EXPECT_EQ(UTF8ToUTF16(cases[i].selected_text),
               GetSelectedText(render_text));
