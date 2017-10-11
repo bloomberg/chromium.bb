@@ -866,6 +866,12 @@ RendererBlinkPlatformImpl::CreateRTCPeerConnectionHandler(
     return nullptr;
 
 #if BUILDFLAG(ENABLE_WEBRTC)
+  std::unique_ptr<WebRTCPeerConnectionHandler> peer_connection_handler =
+      GetContentClient()->renderer()->OverrideCreateWebRTCPeerConnectionHandler(
+          client);
+  if (peer_connection_handler)
+    return peer_connection_handler;
+
   PeerConnectionDependencyFactory* rtc_dependency_factory =
       render_thread->GetPeerConnectionDependencyFactory();
   return rtc_dependency_factory->CreateRTCPeerConnectionHandler(client);

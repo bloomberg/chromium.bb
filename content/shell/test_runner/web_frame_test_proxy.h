@@ -241,6 +241,12 @@ class WebFrameTestProxy : public Base, public WebFrameTestProxyBase {
     return Base::DecidePolicyForNavigation(info);
   }
 
+  void WillStartUsingPeerConnectionHandler(
+      blink::WebRTCPeerConnectionHandler* handler) override {
+    // RenderFrameImpl::willStartUsingPeerConnectionHandler can not be mocked.
+    // See http://crbug/363285.
+  }
+
   blink::WebUserMediaClient* UserMediaClient() override {
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kUseFakeUIForMediaStream)) {

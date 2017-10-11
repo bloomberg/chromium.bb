@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 116 tests; 72 PASS, 44 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 116 tests; 74 PASS, 42 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS EventTarget interface: existence and properties of interface object
 PASS EventTarget interface object length
 PASS EventTarget interface object name
@@ -61,12 +61,12 @@ PASS RTCPeerConnection interface: pc must inherit property "createAnswer(RTCAnsw
 PASS RTCPeerConnection interface: calling createAnswer(RTCAnswerOptions) on pc with too few arguments must throw TypeError
 PASS RTCPeerConnection interface: pc must inherit property "setLocalDescription(RTCSessionDescription)" with the proper type
 PASS RTCPeerConnection interface: calling setLocalDescription(RTCSessionDescription) on pc with too few arguments must throw TypeError
-FAIL RTCPeerConnection interface: pc must inherit property "localDescription" with the proper type Unrecognized type RTCSessionDescription
+PASS RTCPeerConnection interface: pc must inherit property "localDescription" with the proper type
 FAIL RTCPeerConnection interface: pc must inherit property "currentLocalDescription" with the proper type assert_inherits: property "currentLocalDescription" not found in prototype chain
 FAIL RTCPeerConnection interface: pc must inherit property "pendingLocalDescription" with the proper type assert_inherits: property "pendingLocalDescription" not found in prototype chain
 PASS RTCPeerConnection interface: pc must inherit property "setRemoteDescription(RTCSessionDescription)" with the proper type
 PASS RTCPeerConnection interface: calling setRemoteDescription(RTCSessionDescription) on pc with too few arguments must throw TypeError
-FAIL RTCPeerConnection interface: pc must inherit property "remoteDescription" with the proper type Unrecognized type RTCSessionDescription
+PASS RTCPeerConnection interface: pc must inherit property "remoteDescription" with the proper type
 FAIL RTCPeerConnection interface: pc must inherit property "currentRemoteDescription" with the proper type assert_inherits: property "currentRemoteDescription" not found in prototype chain
 FAIL RTCPeerConnection interface: pc must inherit property "pendingRemoteDescription" with the proper type assert_inherits: property "pendingRemoteDescription" not found in prototype chain
 PASS RTCPeerConnection interface: pc must inherit property "addIceCandidate(RTCIceCandidate)" with the proper type

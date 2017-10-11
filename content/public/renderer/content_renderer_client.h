@@ -45,6 +45,8 @@ class WebMediaStreamCenter;
 class WebMediaStreamCenterClient;
 class WebPlugin;
 class WebPrescientNetworking;
+class WebRTCPeerConnectionHandler;
+class WebRTCPeerConnectionHandlerClient;
 class WebSocketHandshakeThrottle;
 class WebSpeechSynthesizer;
 class WebSpeechSynthesizerClient;
@@ -153,6 +155,12 @@ class CONTENT_EXPORT ContentRendererClient {
   // returns NULL the content layer will create the stream center.
   virtual std::unique_ptr<blink::WebMediaStreamCenter>
   OverrideCreateWebMediaStreamCenter(blink::WebMediaStreamCenterClient* client);
+
+  // Allows the embedder to override creating a WebRTCPeerConnectionHandler. If
+  // it returns NULL the content layer will create the connection handler.
+  virtual std::unique_ptr<blink::WebRTCPeerConnectionHandler>
+  OverrideCreateWebRTCPeerConnectionHandler(
+      blink::WebRTCPeerConnectionHandlerClient* client);
 
   // Allows the embedder to override creating a WebMIDIAccessor.  If it
   // returns NULL the content layer will create the MIDI accessor.

@@ -27,8 +27,6 @@ function error() {
 
 function verifyStats(status)
 {
-    // Note that this function verifies "old-style" stats, not the
-    // standardized version.
     // Status must be a global variable to be used in test statements.
     status_g = status;
     result = status.result();
@@ -44,9 +42,8 @@ function verifyStats(status)
     shouldBeNonNull('res.id');
     shouldBeNonNull('res.type');
     shouldBeGreaterThanOrEqual('res.names().length', '1');
-    // TODO(hta): Look up the stat of the right type name to check it.
-    // shouldBeGreaterThanOrEqual('res.names().indexOf("type")', '0');
-    // shouldBe('res.stat("type")', '"audio"');
+    shouldBeGreaterThanOrEqual('res.names().indexOf("type")', '0');
+    shouldBe('res.stat("type")', '"audio"');
     // Named getter: Can access results by their ID values.
     shouldBeNonNull('status_g.namedItem(res.id)');
     shouldBeNonNull('status_g[res.id]');
@@ -57,7 +54,7 @@ function statsHandler1(status)
     testPassed("statsHandler1 was called");
     shouldBeNonNull('status');
     result = status.result();
-    shouldBeGreaterThanOrEqual('result.length', '0');
+    shouldBe('result.length', '0');
     shouldNotThrow('getUserMedia({audio:true, video:true}, gotStream)');
 }
 

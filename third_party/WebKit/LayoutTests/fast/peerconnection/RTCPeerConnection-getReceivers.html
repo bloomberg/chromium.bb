@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>RTCPeerConnection.getReceivers</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+</head>
+<body>
+<script>
+promise_test(function() {
+  let pc = new RTCPeerConnection();
+  return createStreams({audio:true}, 1)
+    .then(function(streams) {
+      return addRemoteStreamsFromLocalStreams(pc, streams);
+    })
+    .then(function() {
+      verifyStreamAndTrackCounts(pc.getRemoteStreams(), 1, true, false);
+      verifyRemoteTracksHaveReceivers(pc);
+      // Make sure object identities are preserved between calls.
+      assert_array_equals(pc.getReceivers(), pc.getReceivers());
+    });
+}, 'getReceivers() for a single audio track.');
+
+promise_test(function() {
+  let pc = new RTCPeerConnection();
+  return createStreams({video:true}, 1)
+    .then(function(streams) {
+      return addRemoteStreamsFromLocalStreams(pc, streams);
+    })
+    .then(function() {
+      verifyStreamAndTrackCounts(pc.getRemoteStreams(), 1, false, true);
+      verifyRemoteTracksHaveReceivers(pc);
+      // Make sure object identities are preserved between calls.
+      assert_array_equals(pc.getReceivers(), pc.getReceivers());
+    });
+}, 'getReceivers() for a single video track.');
+
+promise_test(function() {
+  let pc = new RTCPeerConnection();
+  return createStreams({audio:true, video:true}, 1)
+    .then(function(streams) {
+      return addRemoteStreamsFromLocalStreams(pc, streams);
+    })
+    .then(function() {
+      verifyStreamAndTrackCounts(pc.getRemoteStreams(), 1, true, true);
+      verifyRemoteTracksHaveReceivers(pc);
+      // Make sure object identities are preserved between calls.
+      assert_array_equals(pc.getReceivers(), pc.getReceivers());
+    });
+}, 'getReceivers() for a single stream with an audio and video track.');
+
+promise_test(function() {
+  let pc = new RTCPeerConnection();
+  return createStreams({audio:true, video:true}, 2)
+    .then(function(streams) {
+      return addRemoteStreamsFromLocalStreams(pc, streams);
+    })
+    .then(function() {
+      verifyStreamAndTrackCounts(pc.getRemoteStreams(), 2, true, true);
+      verifyRemoteTracksHaveReceivers(pc);
+      // Make sure object identities are preserved between calls.
+      assert_array_equals(pc.getReceivers(), pc.getReceivers());
+    });
+}, 'getReceivers() for multiple audio-video streams.');
+
+promise_test(function() {
+  let pc = new RTCPeerConnection();
+  let receivers = new Set();
+  return createStreams({audio:true, video:true}, 2)
+    .then(function(streams) {
+      return addRemoteStreamsFromLocalStreams(pc, streams);
+    })
+    .then(function() {
+      verifyStreamAndTrackCounts(pc.getRemoteStreams(), 2, true, true);
+      verifyRemoteTracksHaveReceivers(pc);
+      // Make sure object identities are preserved between calls.
+      assert_array_equals(pc.getReceivers(), pc.getReceivers());
+
+      for (let i = 0; i < pc.getReceivers().length; ++i)
+        receivers.add(pc.getReceivers()[i]);
+      // 2 receivers per stream, one for audio and one for video
+      assert_equals(receivers.size, 4);
+
+      return removeRemoteStreamsFromLocalStreams(
+          pc, [ pc.getLocalStreams()[0] ]);
+    })
+    .then(function() {
+      verifyStreamAndTrackCounts(pc.getRemoteStreams(), 1, true, true);
+      verifyRemoteTracksHaveReceivers(pc);
+      // Make sure object identities are preserved between calls.
+      assert_array_equals(pc.getReceivers(), pc.getReceivers());
+
+      for (let i = 0; i < pc.getReceivers().length; ++i)
+        assert_true(receivers.has(pc.getReceivers()[i]));
+
+      return createStreams({audio:true, video:true}, 1);
+    })
+    .then(function(streams) {
+      return addRemoteStreamsFromLocalStreams(pc, streams);
+    })
+    .then(function() {
+      verifyStreamAndTrackCounts(pc.getRemoteStreams(), 2, true, true);
+      verifyRemoteTracksHaveReceivers(pc);
+      // Make sure object identities are preserved between calls.
+      assert_array_equals(pc.getReceivers(), pc.getReceivers());
+
+      // |receivers| contains all receivers so far (4), including the ones for
+      // the removed streams. The set does not contain duplicates, so adding all
+      // receivers here should only increase the size for the new stream (2 new
+      // receivers).
+      for (let i = 0; i < pc.getReceivers().length; ++i)
+        receivers.add(pc.getReceivers()[i]);
+      assert_equals(receivers.size, 6);
+
+      return removeRemoteStreamsFromLocalStreams(pc, pc.getLocalStreams());
+    })
+    .then(function() {
+      assert_equals(pc.getRemoteStreams().length, 0);
+      assert_equals(pc.getReceivers().length, 0);
+    });
+}, 'getReceivers() for streams being added and removed.');
+
+// |RTCRtpReceiver::getContributingSources| is mocked to update the contributing
+// sources with a predictable pattern, see
+// |MockWebRTCRtpReceiver::getContributingSources|. This test ensures that the
+// sources are correctly cached for subsequent calls in the same event task
+// execution, that they are updated between event task execution calls and that
+// object identities of contributing sources hold.
+promise_test(function() {
+  let pc = new RTCPeerConnection();
+  let receiver = null;
+  let contributingSource0 = null;
+  return createStreams({audio:true}, 1)
+    .then(function(streams) {
+      return addRemoteStreamsFromLocalStreams(pc, streams);
+    })
+    .then(function() {
+      verifyStreamAndTrackCounts(pc.getRemoteStreams(), 1, true, false);
+      verifyRemoteTracksHaveReceivers(pc);
+
+      assert_equals(pc.getReceivers().length, 1);
+      receiver = pc.getReceivers()[0];
+      verifyContributingSourcesAreCached(receiver);
+
+      let contributingSources = receiver.getContributingSources();
+      assert_equals(contributingSources.length, 1);
+      assertContributingSourceEquals(contributingSources[0], 0, 0.0);
+
+      // Remember the first contributing source for later.
+      contributingSource0 = contributingSources[0];
+      // Pass |contributingSource0| to the next "then". By resolving a promise
+      // we get an asynchronous callback, i.e. the "then" happens in the next
+      // iteration of the event loop. This should invalidate the contributing
+      // sources cache.
+      return Promise.resolve(contributingSource0);
+    }).then(function(prevContributingSource) {
+      verifyContributingSourcesAreCached(receiver);
+
+      let contributingSources = receiver.getContributingSources();
+      assert_equals(contributingSources.length, 2);
+      assertContributingSourceEquals(contributingSources[0], 0, 0.0);
+      assertContributingSourceEquals(contributingSources[1], 1, 5000.0);
+
+      // Make sure object identities are preserved between event loop task
+      // executions (between asynchronous calls and contributing sources
+      // updates).
+      assert_equals(contributingSources[0], prevContributingSource);
+
+      return Promise.resolve(contributingSources[1]);
+    }).then(function(prevContributingSource) {
+      verifyContributingSourcesAreCached(receiver);
+
+      let contributingSources = receiver.getContributingSources();
+      assert_equals(contributingSources.length, 2);
+      assert_equals(contributingSources[0], prevContributingSource);
+      assertContributingSourceEquals(contributingSources[0], 1, 5000.0);
+      assertContributingSourceEquals(contributingSources[1], 2, 10000.0);
+
+      // Make sure object identities are preserved between event loop task
+      // executions (between asynchronous calls and contributing sources
+      // updates).
+      assert_equals(contributingSources[0], prevContributingSource);
+
+      return Promise.resolve(contributingSources[1]);
+    }).then(function(prevContributingSource) {
+      verifyContributingSourcesAreCached(receiver);
+
+      // It's source 0's turn to be updated. A contributing source should be
+      // kept up-to-date in a new event loop task execution without having to
+      // explicitly call |getContributingSources|.
+      assertContributingSourceEquals(contributingSource0, 0, 15000.0);
+
+      let contributingSources = receiver.getContributingSources();
+      assert_equals(contributingSources.length, 2);
+      assertContributingSourceEquals(contributingSources[0], 2, 10000.0);
+      assertContributingSourceEquals(contributingSources[1], 0, 15000.0);
+      assert_equals(contributingSources[0], prevContributingSource);
+      assert_equals(contributingSources[1], contributingSource0);
+
+      return Promise.resolve();
+    });
+}, 'receiver.getContributingSources()');
+
+/**
+ * Helper functions to tests.
+ */
+
+function createStreams(constraints, numStreams, streamsSoFar = []) {
+  if (numStreams == 0) {
+    return Promise.resolve(streamsSoFar);;
+  }
+  return navigator.mediaDevices.getUserMedia(constraints)
+    .then(function(stream) {
+      return createStreams(constraints,
+                           numStreams - 1,
+                           streamsSoFar.concat([stream]));
+    });
+}
+
+/**
+ * Adds |localStreams| to the peer connection and
+ * |makeRemoteStreamsMatchLocalStreams|.
+ *
+ * Returns a promise.
+ */
+function addRemoteStreamsFromLocalStreams(pc, localStreams) {
+  for (let i = 0; i < localStreams.length; ++i)
+    pc.addStream(localStreams[i]);
+  return makeRemoteStreamsMatchLocalStreams(pc);
+}
+
+/**
+ * Removes |localStreams| from the peer connection and
+ * |makeRemoteStreamsMatchLocalStreams|.
+ *
+ * Returns a promise.
+ */
+function removeRemoteStreamsFromLocalStreams(pc, localStreams) {
+  for (let i = 0; i < localStreams.length; ++i)
+    pc.removeStream(localStreams[i]);
+  return makeRemoteStreamsMatchLocalStreams(pc);
+}
+
+/**
+ * Makes the peer connection's remote streams match its local streams. New local
+ * streams result in cloning, removed local streams result in removing the
+ * corresponding remote stream.
+ *
+ * Returns a promise.
+ */
+function makeRemoteStreamsMatchLocalStreams(pc) {
+  // In LayoutTests a |MockWebRTCPeerConnectionHandler| is used and as such we
+  // cannot establish a real call. Instead we rely on the mock making remote
+  // streams match the local streams on |setRemoteDescription|.
+  return pc.setRemoteDescription(
+      new RTCSessionDescription({type:'answer', sdp:'remote'}))
+      .then(function() {
+        let localStreams = pc.getLocalStreams();
+        let remoteStreams = pc.getRemoteStreams();
+        assert_equals(localStreams.length, remoteStreams.length);
+        for (let i = 0; i < localStreams.length; i++) {
+          assert_equals(localStreams[i].getAudioTracks().length,
+                        remoteStreams[i].getAudioTracks().length);
+          assert_equals(localStreams[i].getVideoTracks().length,
+                        remoteStreams[i].getVideoTracks().length);
+        }
+        return Promise.resolve();
+      });
+}
+
+function verifyStreamAndTrackCounts(streams, streamCount, audio, video) {
+  assert_equals(streams.length, streamCount);
+  for (let i = 0; i < streams.length; ++i) {
+    assert_equals(streams[i].getAudioTracks().length, audio ? 1 : 0);
+    assert_equals(streams[i].getVideoTracks().length, video ? 1 : 0);
+  }
+}
+
+function verifyRemoteTracksHaveReceivers(pc) {
+  let remoteTracks = new Set();
+  let remoteStreams = pc.getRemoteStreams();
+  for (let i = 0; i < remoteStreams.length; ++i) {
+    let remoteStreamTracks = remoteStreams[i].getTracks();
+    for (let j = 0; j < remoteStreamTracks.length; ++j) {
+      remoteTracks.add(remoteStreamTracks[j]);
+    }
+  }
+
+  let receiverTracks = new Set();
+  let receivers = pc.getReceivers();
+  for (let i = 0; i < receivers.length; ++i) {
+    assert_true(receivers[i] != null);
+    assert_true(receivers[i].track != null);
+    assert_true(remoteTracks.has(receivers[i].track));
+    assert_false(receiverTracks.has(receivers[i].track));
+    receiverTracks.add(receivers[i].track);
+  }
+  assert_equals(receiverTracks.size, remoteTracks.size);
+}
+
+/**
+ * The |MockWebRTCRtpReceiver::getContributingSources| produces a new set of
+ * contributing sources every call. The |RTCRtpReceiver| has a cache to make
+ * sure its |getContributingSources| does not change during the same event loop
+ * task execution.
+ */
+function verifyContributingSourcesAreCached(receiver) {
+  // If caching is working as intended, this is always true. It should only be
+  // able to change between asynchronous calls, e.g. |Promise.resolve().then()|.
+  // Since the mock always produces a new set of sources, this would not be true
+  // if caching was not enabled.
+  assert_array_equals(receiver.getContributingSources(),
+                      receiver.getContributingSources());
+}
+
+function assertContributingSourceEquals(contributingSource, source, timestamp) {
+  assert_equals(contributingSource.source, source);
+  assert_equals(contributingSource.timestamp, timestamp);
+}
+</script>
+</body>
+</html>

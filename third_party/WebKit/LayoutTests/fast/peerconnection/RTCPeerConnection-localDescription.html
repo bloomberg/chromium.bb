@@ -1,0 +1,84 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+<script src="../../resources/js-test.js"></script>
+</head>
+<body>
+<script>
+description("Tests RTCPeerConnection localDescription.");
+
+var pc = null;
+
+function requestFailed2()
+{
+    testPassed('requestFailed was called.');
+
+    shouldBeEqualToString('pc.localDescription.type', "offer");
+    shouldBeEqualToString('pc.localDescription.sdp', "local");
+    pc.close();
+    shouldBeEqualToString('pc.localDescription.type', "offer");
+    shouldBeEqualToString('pc.localDescription.sdp', "local");
+
+    finishJSTest();
+}
+
+function requestSucceeded1()
+{
+    testPassed('requestSucceeded was called.');
+
+    sessionDescription = new RTCSessionDescription({type:"answer", sdp:"remote"});
+    shouldNotThrow('pc.setLocalDescription(sessionDescription, unexpectedCallback, requestFailed2);');
+}
+
+function unexpectedCallback()
+{
+    testFailed('unexpectedCallback was called.');
+    finishJSTest();
+}
+
+function expectedTypeError(error)
+{
+    window.error = error;
+    shouldBe('error.name', '"TypeError"');
+    testPassed('expectedTypeError was called.');
+}
+
+function expectedInvalidSessionDescription(error)
+{
+    window.error = error;
+    shouldBe('error.name', '"OperationError"');
+    testPassed('expectedInvalidSessionDescription was called.');
+}
+
+function testExecutionOrderClosedConnection()
+{
+    var localPeerConnection = new RTCPeerConnection();
+    localPeerConnection.close();
+    var counter = 0;
+    window.events = [];
+    Promise.resolve().then(_ => events[counter++] = 1);
+    var sessionDescription = new RTCSessionDescription({type:"offer", sdp:"local"});
+    localPeerConnection.setLocalDescription(sessionDescription, unexpectedCallback, error => {
+        window.error = error;
+        shouldBe('error.name', '"InvalidStateError"');
+        shouldBe('error.toString()', '"InvalidStateError: The RTCPeerConnection\'s signalingState is \'closed\'."');
+        events[counter++] = 2;
+    });
+    Promise.resolve().then(_ => {
+        events[counter++] = 3;
+        shouldBe('events', '[1,2,3]');
+    });
+}
+
+shouldNotThrow('testExecutionOrderClosedConnection()');
+pc = new RTCPeerConnection();
+shouldNotThrow('pc.setLocalDescription().catch(expectedTypeError)');
+shouldNotThrow('pc.setLocalDescription(null).catch(expectedInvalidSessionDescription)');
+var sessionDescription = new RTCSessionDescription({type:"offer", sdp:"local"});
+shouldNotThrow('pc.setLocalDescription(sessionDescription, requestSucceeded1, unexpectedCallback);');
+
+window.jsTestIsAsync = true;
+window.successfullyParsed = true;
+</script>
+</body>
+</html>

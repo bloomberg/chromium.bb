@@ -177,6 +177,18 @@ LayoutTestContentRendererClient::OverrideCreateWebMediaStreamCenter(
 #endif
 }
 
+std::unique_ptr<WebRTCPeerConnectionHandler>
+LayoutTestContentRendererClient::OverrideCreateWebRTCPeerConnectionHandler(
+    WebRTCPeerConnectionHandlerClient* client) {
+#if BUILDFLAG(ENABLE_WEBRTC)
+  test_runner::WebTestInterfaces* interfaces =
+      LayoutTestRenderThreadObserver::GetInstance()->test_interfaces();
+  return interfaces->CreateWebRTCPeerConnectionHandler(client);
+#else
+  return nullptr;
+#endif
+}
+
 std::unique_ptr<WebMIDIAccessor>
 LayoutTestContentRendererClient::OverrideCreateMIDIAccessor(
     WebMIDIAccessorClient* client) {
