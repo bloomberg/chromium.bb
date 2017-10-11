@@ -54,6 +54,7 @@ DEFINE_CERT_ERROR_ID(kFailedParsingSpki, "Couldn't parse SubjectPublicKeyInfo");
 DEFINE_CERT_ERROR_ID(kUnacceptableSignatureAlgorithm,
                      "Unacceptable signature algorithm");
 DEFINE_CERT_ERROR_ID(kUnacceptablePublicKey, "Unacceptable public key");
+DEFINE_CERT_ERROR_ID(kCertificateRevoked, "Certificate is revoked");
 
 }  // namespace cert_errors
 
