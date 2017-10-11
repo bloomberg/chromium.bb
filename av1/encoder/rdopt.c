@@ -5356,7 +5356,7 @@ static int predict_skip_flag_8bit(const MACROBLOCK *x, BLOCK_SIZE bsize) {
   const struct macroblock_plane *const p = &x->plane[0];
   const int bw = block_size_wide[bsize];
   const int bh = block_size_high[bsize];
-  tran_low_t DCT_coefs[32 * 32];
+  DECLARE_ALIGNED(32, tran_low_t, DCT_coefs[32 * 32]);
   TxfmParam param;
   param.tx_type = DCT_DCT;
 #if CONFIG_RECT_TX && (CONFIG_EXT_TX || CONFIG_VAR_TX)
