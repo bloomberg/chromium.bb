@@ -598,6 +598,7 @@ static_library("sync") {
     "//components/prefs",
     "//components/reading_list/features:reading_list_enable_flags",
     "//components/signin/core/browser",
+    "//components/strings",
     "//components/sync/engine_impl/attachments/proto",
     "//components/version_info",
     "//crypto",
@@ -608,6 +609,7 @@ static_library("sync") {
     "//third_party/leveldatabase",
     "//third_party/zlib",
     "//third_party/zlib/google:compression_utils",
+    "//ui/base",
   ]
 
   if (is_android) {

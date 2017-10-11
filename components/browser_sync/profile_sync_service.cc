@@ -36,7 +36,6 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/common/profile_management_switches.h"
-#include "components/strings/grit/components_strings.h"
 #include "components/sync/base/bind_to_task_runner.h"
 #include "components/sync/base/cryptographer.h"
 #include "components/sync/base/passphrase_type.h"
@@ -80,8 +79,6 @@
 #include "components/version_info/version_info_values.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "ui/base/l10n/time_format.h"
 
 #if defined(OS_ANDROID)
 #include "components/sync/syncable/read_transaction.h"
@@ -1455,20 +1452,8 @@ bool ProfileSyncService::IsPassphraseRequiredForDecryption() const {
   return IsEncryptedDatatypeEnabled() && IsPassphraseRequired();
 }
 
-base::string16 ProfileSyncService::GetLastSyncedTimeString() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  const base::Time last_synced_time = sync_prefs_.GetLastSyncedTime();
-  if (last_synced_time.is_null())
-    return l10n_util::GetStringUTF16(IDS_SYNC_TIME_NEVER);
-
-  base::TimeDelta time_since_last_sync = base::Time::Now() - last_synced_time;
-
-  if (time_since_last_sync < base::TimeDelta::FromMinutes(1))
-    return l10n_util::GetStringUTF16(IDS_SYNC_TIME_JUST_NOW);
-
-  return ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_ELAPSED,
-                                ui::TimeFormat::LENGTH_SHORT,
-                                time_since_last_sync);
+base::Time ProfileSyncService::GetLastSyncedTime() const {
+  return sync_prefs_.GetLastSyncedTime();
 }
 
 void ProfileSyncService::UpdateSelectedTypesHistogram(

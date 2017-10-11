@@ -6,9 +6,11 @@ include_rules = [
   # to test.
   "+base",
   "+build",
+  "+components/strings",
   "+components/version_info",
   "+google_apis",
   "+testing",
+  "+ui/base",
 
   # Force subdirectories to explicitly define DEPS.
   "-components/sync",

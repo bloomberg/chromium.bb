@@ -305,8 +305,8 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   // the struct will be filled with default data.
   virtual bool QueryDetailedSyncStatus(SyncStatus* result) = 0;
 
-  // Returns a user-friendly string form of last synced time (in minutes).
-  virtual base::string16 GetLastSyncedTimeString() const = 0;
+  // Returns the last synced time.
+  virtual base::Time GetLastSyncedTime() const = 0;
 
   // Returns a human readable string describing engine initialization state.
   virtual std::string GetEngineInitializationStateString() const = 0;

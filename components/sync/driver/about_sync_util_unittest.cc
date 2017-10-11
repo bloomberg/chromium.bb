@@ -26,10 +26,6 @@ class SyncServiceMock : public FakeSyncService {
 
   bool QueryDetailedSyncStatus(SyncStatus* result) override { return false; }
 
-  base::string16 GetLastSyncedTimeString() const override {
-    return base::string16(base::ASCIIToUTF16("none"));
-  }
-
   SyncCycleSnapshot GetLastCycleSnapshot() const override {
     return SyncCycleSnapshot();
   }
