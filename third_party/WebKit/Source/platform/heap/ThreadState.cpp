@@ -386,6 +386,13 @@ bool ThreadState::JudgeGCThreshold(size_t allocated_object_size_threshold,
          PartitionAllocGrowingRate() >= heap_growing_rate_threshold;
 }
 
+bool ThreadState::ShouldScheduleIncrementalMarking() const {
+  // TODO(mluppautz): For now immediately schedule incremental marking if
+  // the runtime flag is provided, basically exercising a stress test.
+  return (GcState() == kNoGCScheduled || GcState() == kSweeping) &&
+         RuntimeEnabledFeatures::HeapIncrementalMarkingEnabled();
+}
+
 bool ThreadState::ShouldScheduleIdleGC() {
   if (GcState() != kNoGCScheduled)
     return false;
@@ -551,12 +558,20 @@ void ThreadState::ScheduleGCIfNeeded() {
       return;
     }
   }
+
   if (ShouldScheduleIdleGC()) {
 #if PRINT_HEAP_STATS
     DataLogF("Scheduled IdleGC\n");
 #endif
     ScheduleIdleGC();
     return;
+  }
+
+  if (ShouldScheduleIncrementalMarking()) {
+#if PRINT_HEAP_STATS
+    DataLogF("Scheduled IncrementalMarking\n");
+#endif
+    ScheduleIncrementalMarkingStart();
   }
 }
 
@@ -647,6 +662,26 @@ void ThreadState::PerformIdleLazySweep(double deadline_seconds) {
     PostSweep();
 }
 
+void ThreadState::ScheduleIncrementalMarkingStart() {
+  // TODO(mlippautz): Incorporate incremental sweeping into incremental steps.
+  if (IsSweepingInProgress())
+    CompleteSweep();
+
+  SetGCState(kIncrementalMarkingStartScheduled);
+}
+
+void ThreadState::ScheduleIncrementalMarkingStep() {
+  CHECK(!IsSweepingInProgress());
+
+  SetGCState(kIncrementalMarkingStepScheduled);
+}
+
+void ThreadState::ScheduleIncrementalMarkingFinalize() {
+  CHECK(!IsSweepingInProgress());
+
+  SetGCState(kIncrementalMarkingFinalizeScheduled);
+}
+
 void ThreadState::ScheduleIdleGC() {
   if (IsSweepingInProgress()) {
     SetGCState(kSweepingAndIdleGCScheduled);
@@ -700,9 +735,10 @@ void UnexpectedGCState(ThreadState::GCState gc_state) {
     UNEXPECTED_GCSTATE(kSweeping);
     UNEXPECTED_GCSTATE(kSweepingAndIdleGCScheduled);
     UNEXPECTED_GCSTATE(kSweepingAndPreciseGCScheduled);
-    default:
-      NOTREACHED();
-      return;
+    UNEXPECTED_GCSTATE(kIncrementalMarkingStartScheduled);
+    UNEXPECTED_GCSTATE(kIncrementalMarkingStepScheduled);
+    UNEXPECTED_GCSTATE(kIncrementalMarkingFinalizeScheduled);
+    UNEXPECTED_GCSTATE(kPageNavigationGCScheduled);
   }
 }
 
@@ -718,8 +754,23 @@ void ThreadState::SetGCState(GCState gc_state) {
   switch (gc_state) {
     case kNoGCScheduled:
       DCHECK(CheckThread());
-      VERIFY_STATE_TRANSITION(gc_state_ == kSweeping ||
-                              gc_state_ == kSweepingAndIdleGCScheduled);
+      VERIFY_STATE_TRANSITION(
+          gc_state_ == kSweeping || gc_state_ == kSweepingAndIdleGCScheduled ||
+          gc_state_ == kIncrementalMarkingFinalizeScheduled);
+      break;
+    case kIncrementalMarkingStartScheduled:
+      DCHECK(CheckThread());
+      VERIFY_STATE_TRANSITION((gc_state_ == kSweeping) ||
+                              (gc_state_ == kNoGCScheduled));
+      break;
+    case kIncrementalMarkingStepScheduled:
+      DCHECK(CheckThread());
+      VERIFY_STATE_TRANSITION(gc_state_ == kIncrementalMarkingStartScheduled ||
+                              gc_state_ == kIncrementalMarkingStepScheduled);
+      break;
+    case kIncrementalMarkingFinalizeScheduled:
+      DCHECK(CheckThread());
+      VERIFY_STATE_TRANSITION(gc_state_ == kIncrementalMarkingStepScheduled);
       break;
     case kIdleGCScheduled:
     case kPreciseGCScheduled:
@@ -785,6 +836,15 @@ void ThreadState::RunScheduledGC(BlinkGC::StackState stack_state) {
       break;
     case kIdleGCScheduled:
       // Idle time GC will be scheduled by Blink Scheduler.
+      break;
+    case kIncrementalMarkingStartScheduled:
+      IncrementalMarkingStart();
+      break;
+    case kIncrementalMarkingStepScheduled:
+      IncrementalMarkingStep();
+      break;
+    case kIncrementalMarkingFinalizeScheduled:
+      IncrementalMarkingFinalize();
       break;
     default:
       break;
@@ -1415,6 +1475,21 @@ void ThreadState::TakeSnapshot(SnapshotType type) {
   BlinkGCMemoryDumpProvider::Instance()
       ->CurrentProcessMemoryDump()
       ->AddOwnershipEdge(classes_dump->guid(), heaps_dump->guid());
+}
+
+void ThreadState::IncrementalMarkingStart() {
+  DataLogF("IncrementalMarkingStart\n");
+  ScheduleIncrementalMarkingStep();
+}
+
+void ThreadState::IncrementalMarkingStep() {
+  DataLogF("IncrementalMarkingStep\n");
+  ScheduleIncrementalMarkingFinalize();
+}
+
+void ThreadState::IncrementalMarkingFinalize() {
+  DataLogF("IncrementalMarkingFinalize\n");
+  SetGCState(kNoGCScheduled);
 }
 
 void ThreadState::CollectGarbage(BlinkGC::StackState stack_state,

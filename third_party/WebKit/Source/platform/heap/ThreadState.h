@@ -138,6 +138,9 @@ class PLATFORM_EXPORT ThreadState {
   enum GCState {
     kNoGCScheduled,
     kIdleGCScheduled,
+    kIncrementalMarkingStartScheduled,
+    kIncrementalMarkingStepScheduled,
+    kIncrementalMarkingFinalizeScheduled,
     kPreciseGCScheduled,
     kFullGCScheduled,
     kPageNavigationGCScheduled,
@@ -249,6 +252,22 @@ class PLATFORM_EXPORT ThreadState {
     return GcState() == kSweeping ||
            GcState() == kSweepingAndPreciseGCScheduled ||
            GcState() == kSweepingAndIdleGCScheduled;
+  }
+
+  // Incremental GC.
+
+  void ScheduleIncrementalMarkingStart();
+  void ScheduleIncrementalMarkingStep();
+  void ScheduleIncrementalMarkingFinalize();
+
+  void IncrementalMarkingStart();
+  void IncrementalMarkingStep();
+  void IncrementalMarkingFinalize();
+
+  bool IsIncrementalMarkingInProgress() const {
+    return GcState() == kIncrementalMarkingStartScheduled ||
+           GcState() == kIncrementalMarkingStepScheduled ||
+           GcState() == kIncrementalMarkingFinalizeScheduled;
   }
 
   // A GC runs in the following sequence.
@@ -609,6 +628,7 @@ class PLATFORM_EXPORT ThreadState {
   bool ShouldScheduleIdleGC();
   bool ShouldSchedulePreciseGC();
   bool ShouldForceConservativeGC();
+  bool ShouldScheduleIncrementalMarking() const;
   // V8 minor or major GC is likely to drop a lot of references to objects
   // on Oilpan's heap. We give a chance to schedule a GC.
   bool ShouldScheduleV8FollowupGC();
