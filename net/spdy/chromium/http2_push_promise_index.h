@@ -18,18 +18,24 @@ namespace net {
 
 class SpdySession;
 
+// This class manages cross-origin pushed streams from the receipt of
+// PUSH_PROMISE frame until they are matched to a request.  Each SpdySessionPool
+// owns one instance of this class, which then allows requests to be matched
+// with a pushed stream regardless of which HTTP/2 connection the stream is on
+// on.  Only pushed streams with cryptographic schemes (for example, https) are
+// allowed to be shared across connections.  Non-cryptographic scheme pushes
+// (for example, http) are fully managed within each SpdySession.
 class NET_EXPORT Http2PushPromiseIndex {
  public:
   Http2PushPromiseIndex();
   ~Http2PushPromiseIndex();
 
-  // If there is a session for |key| that has an unclaimed push stream for
-  // |url|, return it.  Otherwise return nullptr.
+  // Returns a session with |key| that has an unclaimed push stream for |url| if
+  // such exists.  Returns nullptr otherwise.
   base::WeakPtr<SpdySession> Find(const SpdySessionKey& key, const GURL& url);
 
-  // (Un)register a SpdySession with an unclaimed pushed stream for |url|, so
-  // that the right SpdySession can be served by FindAvailableSession.
-  void RegisterUnclaimedPushedStream(GURL url,
+  // (Un)registers a SpdySession with an unclaimed pushed stream for |url|.
+  void RegisterUnclaimedPushedStream(const GURL& url,
                                      base::WeakPtr<SpdySession> spdy_session);
   void UnregisterUnclaimedPushedStream(const GURL& url,
                                        SpdySession* spdy_session);
