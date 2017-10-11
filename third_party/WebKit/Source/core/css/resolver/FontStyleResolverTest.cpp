@@ -14,7 +14,7 @@ TEST(FontStyleResolverTest, Simple) {
       MutableStylePropertySet::Create(kHTMLStandardMode);
   CSSParser::ParseValue(style, CSSPropertyFont, "15px Ahem", true);
 
-  FontDescription desc = FontStyleResolver::ComputeFont(*style);
+  FontDescription desc = FontStyleResolver::ComputeFont(*style, nullptr);
 
   EXPECT_EQ(desc.SpecifiedSize(), 15);
   EXPECT_EQ(desc.ComputedSize(), 15);
@@ -26,7 +26,7 @@ TEST(FontStyleResolverTest, InvalidSize) {
       MutableStylePropertySet::Create(kHTMLStandardMode);
   CSSParser::ParseValue(style, CSSPropertyFont, "-1px Ahem", true);
 
-  FontDescription desc = FontStyleResolver::ComputeFont(*style);
+  FontDescription desc = FontStyleResolver::ComputeFont(*style, nullptr);
 
   EXPECT_EQ(desc.Family().Family(), nullptr);
   EXPECT_EQ(desc.SpecifiedSize(), 0);
@@ -38,7 +38,7 @@ TEST(FontStyleResolverTest, InvalidWeight) {
       MutableStylePropertySet::Create(kHTMLStandardMode);
   CSSParser::ParseValue(style, CSSPropertyFont, "wrong 1px Ahem", true);
 
-  FontDescription desc = FontStyleResolver::ComputeFont(*style);
+  FontDescription desc = FontStyleResolver::ComputeFont(*style, nullptr);
 
   EXPECT_EQ(desc.Family().Family(), nullptr);
   EXPECT_EQ(desc.SpecifiedSize(), 0);
@@ -51,11 +51,23 @@ TEST(FontStyleResolverTest, InvalidEverything) {
   CSSParser::ParseValue(style, CSSPropertyFont, "wrong wrong wrong 1px Ahem",
                         true);
 
-  FontDescription desc = FontStyleResolver::ComputeFont(*style);
+  FontDescription desc = FontStyleResolver::ComputeFont(*style, nullptr);
 
   EXPECT_EQ(desc.Family().Family(), nullptr);
   EXPECT_EQ(desc.SpecifiedSize(), 0);
   EXPECT_EQ(desc.ComputedSize(), 0);
+}
+
+TEST(FontStyleResolverTest, RelativeSize) {
+  MutableStylePropertySet* style =
+      MutableStylePropertySet::Create(kHTMLStandardMode);
+  CSSParser::ParseValue(style, CSSPropertyFont, "italic 2ex Ahem", true);
+
+  FontDescription desc = FontStyleResolver::ComputeFont(*style, nullptr);
+
+  EXPECT_EQ(desc.Family().Family(), "Ahem");
+  EXPECT_EQ(desc.SpecifiedSize(), 16);
+  EXPECT_EQ(desc.ComputedSize(), 16);
 }
 
 }  // namespace blink

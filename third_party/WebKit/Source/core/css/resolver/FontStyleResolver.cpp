@@ -13,11 +13,13 @@
 namespace blink {
 
 FontDescription FontStyleResolver::ComputeFont(
-    const StylePropertySet& property_set) {
+    const StylePropertySet& property_set,
+    FontSelector* font_selector) {
   FontBuilder builder(nullptr);
 
   FontDescription fontDescription;
   Font font(fontDescription);
+  font.Update(font_selector);
   CSSToLengthConversionData::FontSizes fontSizes(16, 16, &font);
   CSSToLengthConversionData::ViewportSize viewportSize(0, 0);
   CSSToLengthConversionData conversionData(nullptr, fontSizes, viewportSize, 1);
