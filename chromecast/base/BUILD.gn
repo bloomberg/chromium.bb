@@ -60,8 +60,6 @@ source_set("base") {
     "device_capabilities_impl.h",
     "error_codes.cc",
     "error_codes.h",
-    "file_utils.cc",
-    "file_utils.h",
     "observer.h",
     "path_utils.cc",
     "path_utils.h",
