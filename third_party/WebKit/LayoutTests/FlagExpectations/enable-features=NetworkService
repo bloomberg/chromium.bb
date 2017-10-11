@@ -71,7 +71,6 @@ Bug(none) external/wpt/service-workers/service-worker/fetch-event-redirect.https
 Bug(none) external/wpt/service-workers/service-worker/fetch-event-respond-with-response-body-with-invalid-chunk.https.html [ Failure ]
 Bug(none) external/wpt/service-workers/service-worker/fetch-event-respond-with-stops-propagation.https.html [ Timeout ]
 Bug(none) external/wpt/service-workers/service-worker/fetch-event.https.html [ Timeout ]
-Bug(none) external/wpt/service-workers/service-worker/fetch-request-fallback.https.html [ Failure ]
 Bug(none) external/wpt/service-workers/service-worker/fetch-request-resources.https.html [ Pass Failure Crash ]
 Bug(none) external/wpt/service-workers/service-worker/fetch-request-xhr-sync.https.html [ Timeout ]
 Bug(none) external/wpt/service-workers/service-worker/fetch-request-xhr.https.html [ Crash ]
