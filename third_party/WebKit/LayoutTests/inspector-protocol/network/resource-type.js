@@ -22,6 +22,23 @@
   }
   testRunner.log('Network agent enabled');
 
+  dp.Network.onRequestWillBeSent(event => {
+    var url = event.params.request.url;
+    if (url.startsWith('blob'))
+      return;
+
+    var type = event.params.type;
+    for (var resource of resources) {
+      if (!url.endsWith(resource.url))
+        continue;
+      if (resource.gotRequestType)
+        testRunner.fail('FAIL: Requested resource ' + url + ' twice.');
+      resource.gotRequestType = type;
+      return;
+    }
+    testRunner.fail('FAIL: Requested unexpected resource ' + url);
+  });
+
   dp.Network.onResponseReceived(event => {
     var url = event.params.response.url;
     if (url.indexOf('blob') === 0)
@@ -35,7 +52,6 @@
       if (resource.gotType)
         testRunner.fail('FAIL: Received resource ' + url + ' twice.');
       resource.gotType = type;
-      resource.gotUrl = url;
       resource.requestId = requestId;
       return;
     }
@@ -64,10 +80,16 @@
 
   function receivedAllResources() {
     for (var resource of resources) {
-        var description = 'Resource ' + resource.url + ' got type: ' + resource.gotType +  ', responseAvailable: ' + resource.responseAvailable;
-        if (resource.responseAvailable)
-            description += ', responseEncoded: ' + resource.responseEncoded;
-        testRunner.log(description);
+      var description = [
+        'Resource ' + resource.url + ':',
+        '  - request type: ' + resource.gotRequestType,
+        '  - response type: ' + resource.gotType,
+        '  - responseAvailable: ' + resource.responseAvailable
+      ];
+      if (resource.responseAvailable)
+        description.push('  - responseEncoded: ' + resource.responseEncoded);
+
+      testRunner.log(description.join('\n'));
     }
     testRunner.completeTest();
   }

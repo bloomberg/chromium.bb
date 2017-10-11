@@ -364,7 +364,8 @@ bool ResourceLoader::WillFollowRedirect(
   Context().PrepareRequest(new_request,
                            FetchContext::RedirectType::kForRedirect);
   Context().DispatchWillSendRequest(resource_->Identifier(), new_request,
-                                    redirect_response, options.initiator_info);
+                                    redirect_response, resource_->GetType(),
+                                    options.initiator_info);
 
   // First-party cookie logic moved from DocumentLoader in Blink to
   // net::URLRequest in the browser. Assert that Blink didn't try to change it

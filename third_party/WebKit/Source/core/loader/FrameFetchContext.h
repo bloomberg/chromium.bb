@@ -88,6 +88,7 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
       unsigned long identifier,
       ResourceRequest&,
       const ResourceResponse& redirect_response,
+      Resource::Type,
       const FetchInitiatorInfo& = FetchInitiatorInfo()) override;
   void DispatchDidLoadResourceFromMemoryCache(unsigned long identifier,
                                               const ResourceRequest&,
@@ -187,7 +188,8 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   bool ShouldBlockRequestByInspector(const KURL&) const override;
   void DispatchDidBlockRequest(const ResourceRequest&,
                                const FetchInitiatorInfo&,
-                               ResourceRequestBlockedReason) const override;
+                               ResourceRequestBlockedReason,
+                               Resource::Type) const override;
   bool ShouldBypassMainWorldCSP() const override;
   bool IsSVGImageChromeClient() const override;
   void CountUsage(WebFeature) const override;
