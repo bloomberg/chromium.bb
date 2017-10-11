@@ -651,8 +651,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
     LOG_IF(ERROR, !response)
         << "Failed to call "
         << login_manager::kSessionManagerRestartJob;
-    std::move(callback).Run(response ? DBUS_METHOD_CALL_SUCCESS
-                                     : DBUS_METHOD_CALL_FAILURE);
+    std::move(callback).Run(response != nullptr);
   }
 
   // Called when kSessionManagerRetrieveActiveSessions method is complete.

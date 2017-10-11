@@ -259,7 +259,7 @@ class ChromeRestartRequest
   void RestartJob();
 
   // Called when RestartJob D-Bus method call is complete.
-  void OnRestartJob(base::ScopedFD local_auth_fd, DBusMethodCallStatus status);
+  void OnRestartJob(base::ScopedFD local_auth_fd, bool result);
 
   const std::vector<std::string> argv_;
   base::OneShotTimer timer_;
@@ -316,7 +316,7 @@ void ChromeRestartRequest::RestartJob() {
 }
 
 void ChromeRestartRequest::OnRestartJob(base::ScopedFD local_auth_fd,
-                                        DBusMethodCallStatus status) {
+                                        bool result) {
   // Now that the call is complete, local_auth_fd can be closed and discarded,
   // which will happen automatically when it goes out of scope.
   VLOG(1) << "OnRestartJob";

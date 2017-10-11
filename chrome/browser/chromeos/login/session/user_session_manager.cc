@@ -1201,7 +1201,7 @@ void UserSessionManager::PrepareTpmDeviceAndFinalizeProfile(Profile* profile) {
     return;
   }
 
-  VoidDBusMethodCallback callback =
+  auto callback =
       base::BindOnce(&UserSessionManager::OnCryptohomeOperationCompleted,
                      AsWeakPtr(), profile);
   CryptohomeClient* client = DBusThreadManager::Get()->GetCryptohomeClient();
@@ -1211,10 +1211,9 @@ void UserSessionManager::PrepareTpmDeviceAndFinalizeProfile(Profile* profile) {
     client->TpmCanAttemptOwnership(std::move(callback));
 }
 
-void UserSessionManager::OnCryptohomeOperationCompleted(
-    Profile* profile,
-    DBusMethodCallStatus call_status) {
-  DCHECK_EQ(DBUS_METHOD_CALL_SUCCESS, call_status);
+void UserSessionManager::OnCryptohomeOperationCompleted(Profile* profile,
+                                                        bool result) {
+  DCHECK(result);
   FinalizePrepareProfile(profile);
 }
 

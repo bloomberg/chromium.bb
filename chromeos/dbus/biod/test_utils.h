@@ -30,8 +30,7 @@ void CopyObjectPathArray(std::vector<dbus::ObjectPath>* dest_object_paths,
 void CopyString(std::string* dest_str, const std::string& src_str);
 
 // Copies |src_status| to |dest_status|.
-void CopyDBusMethodCallStatus(DBusMethodCallStatus* dest_status,
-                              DBusMethodCallStatus src_status);
+void CopyDBusMethodCallResult(bool* dest_result, bool src_result);
 
 // Implementation of BiodClient::Observer for testing.
 class TestBiodObserver : public BiodClient::Observer {

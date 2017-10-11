@@ -76,8 +76,8 @@ void ArcOemCryptoBridge::OnInstanceReady() {
 
 void ArcOemCryptoBridge::OnBootstrapMojoConnection(
     mojom::OemCryptoServiceRequest request,
-    chromeos::DBusMethodCallStatus result) {
-  if (result != chromeos::DBUS_METHOD_CALL_SUCCESS) {
+    bool result) {
+  if (!result) {
     // This can currently happen due to limited device support, so do not log
     // it as an error.
     DVLOG(1) << "ArcOemCryptoBridge had a failure in D-Bus with the daemon";

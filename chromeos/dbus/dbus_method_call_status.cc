@@ -7,16 +7,11 @@
 #include "base/bind.h"
 
 namespace chromeos {
-namespace {
-
-void EmptyVoidDBusMethodCallbackBody(DBusMethodCallStatus result) {
-}
-
-}  // namespace
-
 
 VoidDBusMethodCallback EmptyVoidDBusMethodCallback() {
-  return base::BindOnce(&EmptyVoidDBusMethodCallbackBody);
+  return base::BindOnce([](bool result) {
+    // Do nothing.
+  });
 }
 
 }  // namespace chromeos
