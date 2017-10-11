@@ -41,4 +41,12 @@ bool ChromeVirtualFileRequestServiceProviderDelegate::HandleReadRequest(
   return bridge->HandleReadRequest(id, offset, size, std::move(pipe_write_end));
 }
 
+bool ChromeVirtualFileRequestServiceProviderDelegate::HandleIdReleased(
+    const std::string& id) {
+  arc::ArcFileSystemBridge* bridge = GetArcFileSystemBridge();
+  if (!bridge)
+    return false;
+  return bridge->HandleIdReleased(id);
+}
+
 }  // namespace chromeos

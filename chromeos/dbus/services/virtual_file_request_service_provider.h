@@ -39,6 +39,9 @@ class CHROMEOS_EXPORT VirtualFileRequestServiceProvider
                                    int64_t offset,
                                    int64_t size,
                                    base::ScopedFD pipe_write_end) = 0;
+
+    // Releases resources associated with the ID.
+    virtual bool HandleIdReleased(const std::string& id) = 0;
   };
 
   explicit VirtualFileRequestServiceProvider(
@@ -52,6 +55,8 @@ class CHROMEOS_EXPORT VirtualFileRequestServiceProvider
   // Called on UI thread to handle incoming D-Bus method calls.
   void HandleReadRequest(dbus::MethodCall* method_call,
                          dbus::ExportedObject::ResponseSender response_sender);
+  void HandleIdReleased(dbus::MethodCall* method_call,
+                        dbus::ExportedObject::ResponseSender response_sender);
 
   std::unique_ptr<Delegate> delegate_;
 

@@ -67,6 +67,9 @@ class ArcFileSystemBridge
                          int64_t size,
                          base::ScopedFD pipe_write_end);
 
+  // Releases resources associated with the ID.
+  bool HandleIdReleased(const std::string& id);
+
   // Adds an observer.
   void AddObserver(Observer* observer);
 

@@ -31,6 +31,16 @@ void VirtualFileRequestServiceProvider::Start(
         LOG_IF(ERROR, !success)
             << "Failed to export " << interface_name << "." << method_name;
       }));
+  exported_object->ExportMethod(
+      kVirtualFileRequestServiceInterface,
+      kVirtualFileRequestServiceHandleIdReleasedMethod,
+      base::Bind(&VirtualFileRequestServiceProvider::HandleIdReleased,
+                 weak_ptr_factory_.GetWeakPtr()),
+      base::Bind([](const std::string& interface_name,
+                    const std::string& method_name, bool success) {
+        LOG_IF(ERROR, !success)
+            << "Failed to export " << interface_name << "." << method_name;
+      }));
 }
 
 void VirtualFileRequestServiceProvider::HandleReadRequest(
@@ -49,6 +59,24 @@ void VirtualFileRequestServiceProvider::HandleReadRequest(
   }
   if (!delegate_->HandleReadRequest(id, offset, size,
                                     std::move(pipe_write_end))) {
+    response_sender.Run(dbus::ErrorResponse::FromMethodCall(
+        method_call, DBUS_ERROR_FAILED, std::string()));
+    return;
+  }
+  response_sender.Run(dbus::Response::FromMethodCall(method_call));
+}
+
+void VirtualFileRequestServiceProvider::HandleIdReleased(
+    dbus::MethodCall* method_call,
+    dbus::ExportedObject::ResponseSender response_sender) {
+  std::string id;
+  dbus::MessageReader reader(method_call);
+  if (!reader.PopString(&id)) {
+    response_sender.Run(dbus::ErrorResponse::FromMethodCall(
+        method_call, DBUS_ERROR_INVALID_ARGS, std::string()));
+    return;
+  }
+  if (!delegate_->HandleIdReleased(id)) {
     response_sender.Run(dbus::ErrorResponse::FromMethodCall(
         method_call, DBUS_ERROR_FAILED, std::string()));
     return;
