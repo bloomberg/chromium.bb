@@ -57,3 +57,13 @@ mojom("interfaces_internal") {
   export_define = "ASH_PUBLIC_IMPLEMENTATION=1"
   export_header = "ash/public/cpp/ash_public_export.h"
 }
+
+mojom("test_interfaces") {
+  testonly = true
+  sources = [
+    "system_tray_test_api.mojom",
+  ]
+  deps = [
+    "//mojo/common:common_custom_types",
+  ]
+}

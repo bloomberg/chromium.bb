@@ -2346,10 +2346,12 @@ test("browser_tests") {
       ]
       deps += [
         "//ash:test_support_with_content",
+        "//ash/public/interfaces:test_interfaces",
         "//chrome/browser/chromeos:arc_test_support",
         "//components/arc:arc_test_support",
         "//components/prefs",
         "//components/user_manager:test_support",
+        "//mojo/public/cpp/test_support:test_utils",
         "//services/preferences/public/cpp",
         "//services/preferences/public/interfaces",
         "//services/service_manager/public/cpp",

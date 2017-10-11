@@ -7,6 +7,7 @@
 
 namespace ash {
 
+// TODO(jamescook): Move to //ash/public/cpp.
 enum ViewID {
   VIEW_ID_NONE = 0,
 
@@ -15,6 +16,8 @@ enum ViewID {
   VIEW_ID_USER_VIEW_MEDIA_INDICATOR,
   VIEW_ID_BLUETOOTH_DEFAULT_VIEW,
   VIEW_ID_ACCESSIBILITY_TRAY_ITEM,
+  VIEW_ID_TRAY_ENTERPRISE,
+  VIEW_ID_EXTENSION_CONTROLLED_WIFI,
 
   // View ID that is used to mark sticky header rows in a scroll view.
   VIEW_ID_STICKY_HEADER,

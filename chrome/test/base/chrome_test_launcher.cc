@@ -44,6 +44,8 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "ash/mojo_interface_factory.h"
+#include "ash/mojo_test_interface_factory.h"
 #include "ash/test/ui_controls_factory_ash.h"
 #endif
 
@@ -156,6 +158,13 @@ int LaunchChromeTests(size_t parallel_jobs,
         helper->RegisterNetworkBinders(registry);
       },
       &network_service_test_helper));
+
+#if defined(OS_CHROMEOS)
+  // Inject the test interfaces for ash. Use a callback to avoid linking test
+  // interface support into production code.
+  ash::mojo_interface_factory::SetRegisterInterfacesCallback(
+      base::Bind(&ash::mojo_test_interface_factory::RegisterInterfaces));
+#endif
 
   return content::LaunchTests(delegate, parallel_jobs, argc, argv);
 }
