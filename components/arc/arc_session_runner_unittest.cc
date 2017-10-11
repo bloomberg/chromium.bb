@@ -162,7 +162,7 @@ TEST_F(ArcSessionRunnerTest, Basic) {
   ASSERT_TRUE(arc_session());
   EXPECT_TRUE(arc_session()->IsRunning());
 
-  arc_session_runner()->RequestStop(false);
+  arc_session_runner()->RequestStop();
   EXPECT_FALSE(arc_session());
   EXPECT_TRUE(observer.stopped_called());
 }
@@ -178,7 +178,7 @@ TEST_F(ArcSessionRunnerTest, StopMidStartup) {
   ASSERT_TRUE(arc_session());
   EXPECT_FALSE(arc_session()->IsRunning());
 
-  arc_session_runner()->RequestStop(false);
+  arc_session_runner()->RequestStop();
   EXPECT_FALSE(arc_session());
   EXPECT_FALSE(restarting());
 }
@@ -255,7 +255,7 @@ TEST_F(ArcSessionRunnerTest, Restart) {
   ASSERT_TRUE(arc_session());
   EXPECT_TRUE(arc_session()->IsRunning());
 
-  arc_session_runner()->RequestStop(false);
+  arc_session_runner()->RequestStop();
   EXPECT_FALSE(arc_session());
 }
 
@@ -268,7 +268,7 @@ TEST_F(ArcSessionRunnerTest, GracefulStop) {
   EXPECT_TRUE(arc_session()->IsRunning());
 
   // Graceful stop.
-  arc_session_runner()->RequestStop(false);
+  arc_session_runner()->RequestStop();
   EXPECT_EQ(ArcStopReason::SHUTDOWN, stop_reason());
   EXPECT_FALSE(restarting());
   EXPECT_FALSE(restarting_called());

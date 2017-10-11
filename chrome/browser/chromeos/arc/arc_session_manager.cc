@@ -476,13 +476,11 @@ void ArcSessionManager::ShutdownSession() {
       break;
     case State::ACTIVE:
       // Request to stop the ARC. |state_| will be set to STOPPED eventually.
-      // TODO(yusukes): Always call RequestStop() with |true|.
-      // We can actually remove the boolean parameter then.
       // Set state before requesting the runner to stop in order to prevent the
       // case when |OnSessionStopped| can be called inline and as result
       // |state_| might be changed.
       state_ = State::STOPPING;
-      arc_session_runner_->RequestStop(false);
+      arc_session_runner_->RequestStop();
       break;
     case State::STOPPING:
       // Now ARC is stopping. Do nothing here.
@@ -655,7 +653,7 @@ void ArcSessionManager::RequestDisable() {
   if (!enable_requested_) {
     VLOG(1) << "ARC is already disabled. "
             << "Killing an instance for login screen (if any).";
-    arc_session_runner_->RequestStop(true);
+    arc_session_runner_->RequestStop();
     return;
   }
 
