@@ -398,6 +398,9 @@ static_library("host") {
 
   if (is_win) {
     deps += [
+      # On Windows, we use //media/gpu/MediaFoundationVideoEncodeAcceleratorWin
+      # to detect whether HW encoder is supported by the system.
+      "//media",
       "//remoting/host/win",
       "//remoting/host/win:messages",
       "//remoting/host/win:remoting_lib_idl",

@@ -17,6 +17,8 @@
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
+#include "media/base/win/mf_initializer.h"
+#include "media/gpu/media_foundation_video_encode_accelerator_win.h"
 #include "remoting/host/win/evaluate_d3d.h"
 #endif
 
@@ -114,6 +116,14 @@ std::string GetHostAttributes() {
       result.push_back("Win10+");
     }
   }
+
+  if (media::InitializeMediaFoundation() &&
+      media::MediaFoundationVideoEncodeAccelerator
+      ::PreSandboxInitialization()) {
+    result.push_back("HWEncoder");
+  }
+#elif defined(OS_LINUX)
+  result.push_back("HWEncoder");
 #endif
 
   return base::JoinString(result, kSeparator);

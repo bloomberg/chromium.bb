@@ -200,7 +200,18 @@ static_library("protocol") {
     "//third_party/libyuv",
   ]
 
+  defines = []
+
   if (!is_nacl) {
+    # This condition needs to match with //remoting/codec/BUILD.gn
+    if (is_win || is_linux) {
+      defines += [ "USE_H264_ENCODER" ]
+      deps += [
+        "//media",
+        "//skia",
+      ]
+    }
+
     sources += [
       "chromium_port_allocator_factory.cc",
       "chromium_port_allocator_factory.h",
