@@ -87,7 +87,9 @@ class IconLoader {
 
   IconGroup group_;
 
+#if !defined(OS_ANDROID)
   IconSize icon_size_;
+#endif  // !defined(OS_ANDROID)
 
   IconLoadedCallback callback_;
 
