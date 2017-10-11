@@ -308,16 +308,16 @@ TEST_P(ResizeTest, TestExternalResizeWorks) {
 const unsigned int kStepDownFrame = 3;
 const unsigned int kStepUpFrame = 6;
 
-class ResizeInternalTest : public ResizeTest {
+class ResizeInternalTestLarge : public ResizeTest {
  protected:
 #if WRITE_COMPRESSED_STREAM
-  ResizeInternalTest()
+  ResizeInternalTestLarge()
       : ResizeTest(), frame0_psnr_(0.0), outfile_(NULL), out_frames_(0) {}
 #else
-  ResizeInternalTest() : ResizeTest(), frame0_psnr_(0.0) {}
+  ResizeInternalTestLarge() : ResizeTest(), frame0_psnr_(0.0) {}
 #endif
 
-  virtual ~ResizeInternalTest() {}
+  virtual ~ResizeInternalTestLarge() {}
 
   virtual void BeginPassHook(unsigned int /*pass*/) {
 #if WRITE_COMPRESSED_STREAM
@@ -388,7 +388,7 @@ class ResizeInternalTest : public ResizeTest {
 #endif
 };
 
-TEST_P(ResizeInternalTest, TestInternalResizeWorks) {
+TEST_P(ResizeInternalTestLarge, TestInternalResizeWorks) {
   ::libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
                                        30, 1, 0, 10);
   init_flags_ = AOM_CODEC_USE_PSNR;
@@ -420,7 +420,7 @@ TEST_P(ResizeInternalTest, TestInternalResizeWorks) {
   }
 }
 
-TEST_P(ResizeInternalTest, TestInternalResizeChangeConfig) {
+TEST_P(ResizeInternalTestLarge, TestInternalResizeChangeConfig) {
   ::libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
                                        30, 1, 0, 10);
   cfg_.g_w = 352;
@@ -710,7 +710,7 @@ TEST_P(ResizeCspTest, TestResizeCspWorks) {
 
 AV1_INSTANTIATE_TEST_CASE(ResizeTest,
                           ::testing::Values(::libaom_test::kRealTime));
-AV1_INSTANTIATE_TEST_CASE(ResizeInternalTest,
+AV1_INSTANTIATE_TEST_CASE(ResizeInternalTestLarge,
                           ::testing::Values(::libaom_test::kOnePassGood));
 AV1_INSTANTIATE_TEST_CASE(ResizeRealtimeTest,
                           ::testing::Values(::libaom_test::kRealTime),
