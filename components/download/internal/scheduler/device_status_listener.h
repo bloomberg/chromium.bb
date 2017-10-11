@@ -25,7 +25,8 @@ class DeviceStatusListener : public NetworkStatusListener::Observer,
     virtual void OnDeviceStatusChanged(const DeviceStatus& device_status) = 0;
   };
 
-  explicit DeviceStatusListener(const base::TimeDelta& delay);
+  explicit DeviceStatusListener(const base::TimeDelta& startup_delay,
+                                const base::TimeDelta& online_delay);
   ~DeviceStatusListener() override;
 
   // Returns the current device status for download scheduling.
@@ -49,10 +50,13 @@ class DeviceStatusListener : public NetworkStatusListener::Observer,
   // The observer that listens to device status change events.
   Observer* observer_;
 
-  // If we are actively listening to network and battery change events.
+  // If device status listener is started.
   bool listening_;
 
  private:
+  // Start after a delay to wait for potential network stack setup.
+  void StartAfterDelay();
+
   // NetworkStatusListener::Observer implementation.
   void OnNetworkChanged(
       net::NetworkChangeNotifier::ConnectionType type) override;
@@ -64,13 +68,16 @@ class DeviceStatusListener : public NetworkStatusListener::Observer,
   void NotifyStatusChange();
 
   // Called after a delay to notify the observer. See |delay_|.
-  void NotifyNetworkChangeAfterDelay(NetworkStatus network_status);
+  void NotifyNetworkChange(NetworkStatus network_status);
 
-  // Used to notify the observer after a delay when network becomes connected.
+  // Used to start the device listener or notify network change after a delay.
   base::OneShotTimer timer_;
 
-  // The delay used by |timer_|.
-  base::TimeDelta delay_;
+  // The delay used on start up.
+  base::TimeDelta startup_delay_;
+
+  // The delay used when network status becomes online.
+  base::TimeDelta online_delay_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceStatusListener);
 };
