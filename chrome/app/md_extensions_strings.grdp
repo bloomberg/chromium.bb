@@ -22,6 +22,9 @@
   <message name="IDS_MD_EXTENSIONS_ITEM_ERRORS" desc="The label of the button to bring the user to the page showing an extension's errors.">
     Errors
   </message>
+  <message name="IDS_MD_EXTENSIONS_GUEST_MODE" desc="The text displayed when viewing the page under guest-mode to indicate that guests cannot use this feature.">
+    Extension management is not available to Guest users. Please sign in to manage extensions.
+  </message>
   <message name="IDS_MD_EXTENSIONS_ITEM_ID" desc="The text for the label next to the extension id.">
     &lt;span&gt;ID:&lt;/span&gt;<ph name="EXTENSION_ID">$1<ex>cfhdojbkjhnklbpkdaibdccddilifddb</ex></ph>
   </message>
