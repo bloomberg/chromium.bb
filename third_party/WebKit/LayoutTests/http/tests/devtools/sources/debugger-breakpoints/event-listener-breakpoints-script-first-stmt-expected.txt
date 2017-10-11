@@ -1,4 +1,3 @@
-
 Tests event listener breakpoint to break on the first statement of new scripts.
 
 Set timer for test function.

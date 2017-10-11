@@ -1,15 +1,23 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/debugger-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function testFunction()
-{
-    return 0;
-}
+(async function() {
+  TestRunner.addResult(`Tests that breakpoints are not activated on page reload.Bug 41461\n`);
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.showPanel('sources');
+  await TestRunner.loadHTML(`
+      <p>
+      Tests that breakpoints are not activated on page reload.<a href="https://bugs.webkit.org/show_bug.cgi?id=41461">Bug 41461</a>
+      </p>
+    `);
+  await TestRunner.evaluateInPagePromise(`
+      function testFunction()
+      {
+          return 0;
+      }
+  `);
 
-var test = function() {
   var testName = TestRunner.mainTarget.inspectedURL();
   testName = testName.substring(testName.lastIndexOf('/') + 1);
 
@@ -34,14 +42,4 @@ var test = function() {
       TestRunner.addResult('Error: breakpoints are activated.');
     SourcesTestRunner.completeDebuggerTest();
   }
-};
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Tests that breakpoints are not activated on page reload.<a href="https://bugs.webkit.org/show_bug.cgi?id=41461">Bug 41461</a>
-</p>
-</body>
-</html>
+})();

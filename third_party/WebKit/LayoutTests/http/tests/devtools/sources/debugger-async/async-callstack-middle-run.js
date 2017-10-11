@@ -1,32 +1,36 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/debugger-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function testFunction()
-{
-    setTimeout(timeoutOffCapturing, 0);
-}
+(async function() {
+  TestRunner.addResult(
+      `Tests that capturing asynchronous call stacks in debugger works if started after some time since the page loads.\n`);
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.showPanel('sources');
+  await TestRunner.evaluateInPagePromise(`
+      function testFunction()
+      {
+          setTimeout(timeoutOffCapturing, 0);
+      }
 
-function timeoutOffCapturing()
-{
-    setTimeout(timeoutOffCapturing2, 0);
-    debugger;
-    setTimeout(timeoutOnCapturing, 0);
-}
+      function timeoutOffCapturing()
+      {
+          setTimeout(timeoutOffCapturing2, 0);
+          debugger;
+          setTimeout(timeoutOnCapturing, 0);
+      }
 
-function timeoutOffCapturing2()
-{
-    debugger;
-}
+      function timeoutOffCapturing2()
+      {
+          debugger;
+      }
 
-function timeoutOnCapturing()
-{
-    debugger;
-}
+      function timeoutOnCapturing()
+      {
+          debugger;
+      }
+  `);
 
-var test = function() {
   var totalDebuggerStatements = 3;
   var maxAsyncCallStackDepth = 8;
 
@@ -39,7 +43,7 @@ var test = function() {
   }
 
   function resumeExecution() {
-    SourcesTestRunner.resumeExecution(SourcesTestRunner.waitUntilPaused.bind(InspectorTest, didPause));
+    SourcesTestRunner.resumeExecution(SourcesTestRunner.waitUntilPaused.bind(SourcesTestRunner, didPause));
   }
 
   var step = 0;
@@ -61,15 +65,4 @@ var test = function() {
       SourcesTestRunner.completeDebuggerTest();
     }
   }
-};
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Tests that capturing asynchronous call stacks in debugger works if started after some time since the page loads.
-</p>
-
-</body>
-</html>
+})();

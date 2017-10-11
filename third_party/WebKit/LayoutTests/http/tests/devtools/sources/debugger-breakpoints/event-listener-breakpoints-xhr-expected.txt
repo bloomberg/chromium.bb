@@ -3,29 +3,29 @@ Tests event listener breakpoints on XHRs.
 Set timer for test function.
 Captured call stacks in no particular order:
 Call stack:
-    0) downloadEnd (event-listener-breakpoints-xhr.html:19)
+    0) downloadEnd (event-listener-breakpoints-xhr.js:22)
 Event target: XMLHttpRequest
 
 Call stack:
-    0) downloadProgress (event-listener-breakpoints-xhr.html:27)
+    0) downloadProgress (event-listener-breakpoints-xhr.js:30)
 Event target: XMLHttpRequest
 
 Call stack:
-    0) loadCallback (event-listener-breakpoints-xhr.html:35)
+    0) loadCallback (event-listener-breakpoints-xhr.js:38)
 Event target: XMLHttpRequest
 
 Call stack:
-    0) uploadEnd (event-listener-breakpoints-xhr.html:23)
+    0) uploadEnd (event-listener-breakpoints-xhr.js:26)
 Event target: XMLHttpRequestUpload
 
 Call stack:
-    0) uploadProgress (event-listener-breakpoints-xhr.html:31)
+    0) uploadProgress (event-listener-breakpoints-xhr.js:34)
 Event target: XMLHttpRequestUpload
 
 Call stack:
-    0) xhr.onreadystatechange (event-listener-breakpoints-xhr.html:15)
-    1) sendXHR (event-listener-breakpoints-xhr.html:46)
-    2) testFunction (event-listener-breakpoints-xhr.html:9)
+    0) xhr.onreadystatechange (event-listener-breakpoints-xhr.js:18)
+    1) sendXHR (event-listener-breakpoints-xhr.js:49)
+    2) testFunction (event-listener-breakpoints-xhr.js:12)
 Event target: XMLHttpRequest
 
 

@@ -1,11 +1,23 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
-<script src="../../../inspector/debugger-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(
+      `Tests that DOM debugger will not crash when editing DOM nodes from the Web Inspector. Chromium bug 249655\n`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.showPanel('sources');
+  await TestRunner.loadHTML(`
+      <p>
+      Tests that DOM debugger will not crash when editing DOM nodes from the Web Inspector. <a href="https://code.google.com/p/chromium/issues/detail?id=249655">Chromium bug 249655</a>
+      </p>
+
+      <div id="rootElement" style="color: red">
+      <div id="elementToRemove"></div>
+      </div>
+    `);
+
   SourcesTestRunner.runDebuggerTestSuite([
     function testRemoveNode(next) {
       TestRunner.addResult('Testing NodeRemoved DOM breakpoint.');
@@ -29,19 +41,4 @@ function test() {
       }
     }
   ]);
-}
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Tests that DOM debugger will not crash when editing DOM nodes from the Web Inspector. <a href="https://code.google.com/p/chromium/issues/detail?id=249655">Chromium bug 249655</a>
-</p>
-
-<div id="rootElement" style="color: red">
-<div id="elementToRemove"></div>
-</div>
-
-</body>
-</html>
+})();
