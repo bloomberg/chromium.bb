@@ -1235,7 +1235,8 @@ static void write_filter_intra_mode_info(const AV1_COMMON *const cm,
     if (mbmi->filter_intra_mode_info.use_filter_intra_mode[0]) {
       const FILTER_INTRA_MODE mode =
           mbmi->filter_intra_mode_info.filter_intra_mode[0];
-      write_uniform(w, FILTER_INTRA_MODES, mode);
+      aom_write_symbol(w, mode, xd->tile_ctx->filter_intra_mode_cdf[0],
+                       FILTER_INTRA_MODES);
     }
   }
 
@@ -1257,7 +1258,8 @@ static void write_filter_intra_mode_info(const AV1_COMMON *const cm,
     if (mbmi->filter_intra_mode_info.use_filter_intra_mode[1]) {
       const FILTER_INTRA_MODE mode =
           mbmi->filter_intra_mode_info.filter_intra_mode[1];
-      write_uniform(w, FILTER_INTRA_MODES, mode);
+      aom_write_symbol(w, mode, xd->tile_ctx->filter_intra_mode_cdf[1],
+                       FILTER_INTRA_MODES);
     }
   }
 }

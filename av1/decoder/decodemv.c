@@ -890,7 +890,8 @@ static void read_filter_intra_mode_info(AV1_COMMON *const cm,
         aom_read(r, cm->fc->filter_intra_probs[0], ACCT_STR);
     if (filter_intra_mode_info->use_filter_intra_mode[0]) {
       filter_intra_mode_info->filter_intra_mode[0] =
-          av1_read_uniform(r, FILTER_INTRA_MODES);
+          aom_read_symbol(r, xd->tile_ctx->filter_intra_mode_cdf[0],
+                          FILTER_INTRA_MODES, ACCT_STR);
     }
     if (counts) {
       ++counts
@@ -914,7 +915,8 @@ static void read_filter_intra_mode_info(AV1_COMMON *const cm,
         aom_read(r, cm->fc->filter_intra_probs[1], ACCT_STR);
     if (filter_intra_mode_info->use_filter_intra_mode[1]) {
       filter_intra_mode_info->filter_intra_mode[1] =
-          av1_read_uniform(r, FILTER_INTRA_MODES);
+          aom_read_symbol(r, xd->tile_ctx->filter_intra_mode_cdf[1],
+                          FILTER_INTRA_MODES, ACCT_STR);
     }
     if (counts) {
       ++counts

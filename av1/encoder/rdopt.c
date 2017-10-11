@@ -3881,7 +3881,7 @@ static int rd_pick_filter_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
     if (tokenonly_rd_stats.rate == INT_MAX) continue;
     this_rate = tokenonly_rd_stats.rate +
                 av1_cost_bit(cpi->common.fc->filter_intra_probs[0], 1) +
-                write_uniform_cost(FILTER_INTRA_MODES, mode) + mode_cost;
+                x->filter_intra_mode_cost[0][mode] + mode_cost;
     this_rd = RDCOST(x->rdmult, this_rate, tokenonly_rd_stats.dist);
 
     if (this_rd < *best_rd) {
@@ -5965,7 +5965,7 @@ static int rd_pick_filter_intra_sbuv(const AV1_COMP *const cpi, MACROBLOCK *x,
     this_rate = tokenonly_rd_stats.rate +
                 av1_cost_bit(cpi->common.fc->filter_intra_probs[1], 1) +
                 x->intra_uv_mode_cost[mbmi->mode][mbmi->uv_mode] +
-                write_uniform_cost(FILTER_INTRA_MODES, mode);
+                x->filter_intra_mode_cost[1][mode];
     this_rd = RDCOST(x->rdmult, this_rate, tokenonly_rd_stats.dist);
     if (this_rd < *best_rd) {
       *best_rd = this_rd;
@@ -10306,7 +10306,7 @@ static void pick_filter_intra_interframe(
                                 MAX_ANGLE_DELTA + mbmi->angle_delta[1]);
   }
 #endif  // CONFIG_EXT_INTRA
-  if (mbmi->mode == DC_PRED) {
+  if (mbmi->uv_mode == DC_PRED) {
     rate2 +=
         av1_cost_bit(cpi->common.fc->filter_intra_probs[1],
                      mbmi->filter_intra_mode_info.use_filter_intra_mode[1]);

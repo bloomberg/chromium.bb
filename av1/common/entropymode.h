@@ -345,6 +345,7 @@ typedef struct frame_contexts {
 #endif  // CONFIG_EXT_INTRA
 #if CONFIG_FILTER_INTRA
   aom_prob filter_intra_probs[PLANE_TYPES];
+  aom_cdf_prob filter_intra_mode_cdf[PLANE_TYPES][CDF_SIZE(FILTER_INTRA_MODES)];
 #endif  // CONFIG_FILTER_INTRA
 #if CONFIG_LOOP_RESTORATION
   aom_prob switchable_restore_prob[RESTORE_SWITCHABLE_TYPES - 1];
@@ -568,7 +569,7 @@ typedef struct FRAME_COUNTS {
 #endif  // CONFIG_EXT_INTRA
 #if CONFIG_FILTER_INTRA
   unsigned int filter_intra[PLANE_TYPES][2];
-  unsigned int filter_intra_mode[PLANE_TYPES][10];
+  unsigned int filter_intra_mode[PLANE_TYPES][FILTER_INTRA_MODES];
 #endif  // CONFIG_FILTER_INTRA
 #if CONFIG_LPF_SB
   unsigned int lpf_reuse[LPF_REUSE_CONTEXT][2];

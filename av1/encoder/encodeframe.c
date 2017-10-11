@@ -5978,6 +5978,9 @@ static void sum_intra_stats(FRAME_COUNTS *counts, MACROBLOCKD *xd,
       ++counts->filter_intra[0][use_filter_intra_mode];
       ++counts->filter_intra_mode[0][mbmi->filter_intra_mode_info
                                          .filter_intra_mode[0]];
+      update_cdf(fc->filter_intra_mode_cdf[0],
+                 mbmi->filter_intra_mode_info.filter_intra_mode[0],
+                 FILTER_INTRA_MODES);
     }
     if (mbmi->uv_mode == UV_DC_PRED
 #if CONFIG_CB4X4
@@ -5991,6 +5994,9 @@ static void sum_intra_stats(FRAME_COUNTS *counts, MACROBLOCKD *xd,
       ++counts->filter_intra[1][use_filter_intra_mode];
       ++counts->filter_intra_mode[1][mbmi->filter_intra_mode_info
                                          .filter_intra_mode[1]];
+      update_cdf(fc->filter_intra_mode_cdf[1],
+                 mbmi->filter_intra_mode_info.filter_intra_mode[1],
+                 FILTER_INTRA_MODES);
     }
 #endif  // CONFIG_FILTER_INTRA
 #if CONFIG_EXT_INTRA && CONFIG_INTRA_INTERP
