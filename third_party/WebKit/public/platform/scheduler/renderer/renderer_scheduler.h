@@ -126,25 +126,16 @@ class BLINK_PLATFORM_EXPORT RendererScheduler : public ChildScheduler {
   // constructed. Must be called on the main thread.
   virtual void SetRendererBackgrounded(bool backgrounded) = 0;
 
-  // RAII handle for pausing the renderer. Renderer is paused while
-  // at least one pause handle exists.
-  class BLINK_PLATFORM_EXPORT RendererPauseHandle {
-   public:
-    RendererPauseHandle() {}
-    virtual ~RendererPauseHandle() {}
+  // Tells the scheduler that the render process should be suspended. This can
+  // only be done when the renderer is backgrounded. The renderer will be
+  // automatically resumed when foregrounded.
+  virtual void PauseRenderer() = 0;
 
-   private:
-    DISALLOW_COPY_AND_ASSIGN(RendererPauseHandle);
-  };
-
-  // Tells the scheduler that the renderer process should be paused.
-  // Pausing means that all javascript callbacks should not fire.
-  // https://html.spec.whatwg.org/#pause
-  //
-  // Renderer will be resumed when the handle is destroyed.
-  // Handle should be destroyed before the renderer.
-  virtual std::unique_ptr<RendererPauseHandle> PauseRenderer()
-      WARN_UNUSED_RESULT = 0;
+  // Tells the scheduler that the render process should be resumed. This can
+  // only be done when the renderer is suspended. TabManager (in the future,
+  // MemoryCoordinator) will suspend the renderer again if continuously
+  // backgrounded.
+  virtual void ResumeRenderer() = 0;
 
   enum class NavigatingFrameType { kMainFrame, kChildFrame };
 
@@ -163,6 +154,14 @@ class BLINK_PLATFORM_EXPORT RendererScheduler : public ChildScheduler {
   // recently.
   // Must be called from the main thread.
   virtual bool IsHighPriorityWorkAnticipated() = 0;
+
+  // Pauses the timer queues and increments the timer queue suspension count.
+  // May only be called from the main thread.
+  virtual void PauseTimerQueue() = 0;
+
+  // Decrements the timer queue suspension count and re-enables the timer queues
+  // if the suspension count is zero and the current schduler policy allows it.
+  virtual void ResumeTimerQueue() = 0;
 
   // Pauses the timer queues by inserting a fence that blocks any tasks posted
   // after this point from running. Orthogonal to PauseTimerQueue. Care must

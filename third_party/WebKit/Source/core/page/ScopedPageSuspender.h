@@ -21,7 +21,6 @@
 #define ScopedPageSuspender_h
 
 #include "core/CoreExport.h"
-#include "platform/scheduler/child/web_scheduler.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Noncopyable.h"
 
@@ -42,8 +41,6 @@ class CORE_EXPORT ScopedPageSuspender final {
 
   static void SetPaused(bool);
   static bool IsActive();
-
-  std::unique_ptr<WebScheduler::RendererPauseHandle> pause_handle_;
 };
 
 }  // namespace blink
