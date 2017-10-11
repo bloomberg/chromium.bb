@@ -1830,6 +1830,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, TargetDiscovery) {
   GURL third_url = embedded_test_server()->GetURL("/devtools/navigation.html");
   Shell* third = CreateBrowser();
   NavigateToURLBlockUntilNavigationsComplete(third, third_url, 1);
+
   params = WaitForNotification("Target.targetCreated", true);
   EXPECT_TRUE(params->GetString("targetInfo.type", &temp));
   EXPECT_EQ("page", temp);
@@ -1839,6 +1840,14 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, TargetDiscovery) {
   EXPECT_FALSE(is_attached);
   std::string attached_id = temp;
   ids.insert(temp);
+
+  params = WaitForNotification("Target.targetInfoChanged", true);
+  EXPECT_TRUE(params->GetString("targetInfo.url", &temp));
+  EXPECT_EQ("about:blank", temp);
+
+  params = WaitForNotification("Target.targetInfoChanged", true);
+  EXPECT_TRUE(params->GetString("targetInfo.url", &temp));
+  EXPECT_EQ(third_url, temp);
   EXPECT_TRUE(notifications_.empty());
 
   second->Close();

@@ -24,6 +24,9 @@ class CONTENT_EXPORT DevToolsAgentHostObserver {
   // Called when DevToolsAgentHost was created and is ready to be used.
   virtual void DevToolsAgentHostCreated(DevToolsAgentHost* agent_host);
 
+  // Called when DevToolsAgentHost was created and is ready to be used.
+  virtual void DevToolsAgentHostNavigated(DevToolsAgentHost* agent_host);
+
   // Called when client has attached to DevToolsAgentHost.
   virtual void DevToolsAgentHostAttached(DevToolsAgentHost* agent_host);
 

@@ -670,6 +670,7 @@ void RenderFrameDevToolsAgentHost::ReadyToCommitNavigation(
 
 void RenderFrameDevToolsAgentHost::DidFinishNavigation(
     NavigationHandle* navigation_handle) {
+  NotifyNavigated();
   if (!IsBrowserSideNavigationEnabled()) {
     // CommitPending may destruct |this|.
     scoped_refptr<RenderFrameDevToolsAgentHost> protect(this);
