@@ -167,6 +167,10 @@ class ArcSessionManagerTestBase : public testing::Test {
     ArcSessionManager::DisableUIForTesting();
     SetArcBlockedDueToIncompatibleFileSystemForTesting(false);
 
+    arc_service_manager_ = std::make_unique<ArcServiceManager>();
+    arc_session_manager_ = std::make_unique<ArcSessionManager>(
+        std::make_unique<ArcSessionRunner>(base::Bind(FakeArcSession::Create)));
+
     EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
     TestingProfile::Builder profile_builder;
     profile_builder.SetProfileName("user@gmail.com");
@@ -175,16 +179,14 @@ class ArcSessionManagerTestBase : public testing::Test {
     profile_ = profile_builder.Build();
     StartPreferenceSyncing();
 
-    arc_service_manager_ = std::make_unique<ArcServiceManager>();
-    arc_session_manager_ = std::make_unique<ArcSessionManager>(
-        std::make_unique<ArcSessionRunner>(base::Bind(FakeArcSession::Create)));
-
     ASSERT_FALSE(arc_session_manager_->enable_requested());
     chromeos::WallpaperManager::Initialize();
   }
 
   void TearDown() override {
     chromeos::WallpaperManager::Shutdown();
+    arc_session_manager_->Shutdown();
+    profile_.reset();
     arc_session_manager_.reset();
     arc_service_manager_.reset();
     chromeos::DBusThreadManager::Shutdown();
