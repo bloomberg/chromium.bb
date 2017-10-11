@@ -10,7 +10,6 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/system/ime_menu/ime_menu_tray.h"
-#include "ash/system/lock_screen_action/lock_screen_action_tray.h"
 #include "ash/system/overview/overview_button_tray.h"
 #include "ash/system/palette/palette_tray.h"
 #include "ash/system/session/logout_button_tray.h"
@@ -29,7 +28,6 @@ StatusAreaWidget::StatusAreaWidget(aura::Window* status_container, Shelf* shelf)
       overview_button_tray_(nullptr),
       system_tray_(nullptr),
       web_notification_tray_(nullptr),
-      lock_screen_action_tray_(nullptr),
       logout_button_tray_(nullptr),
       palette_tray_(nullptr),
       virtual_keyboard_tray_(nullptr),
@@ -55,7 +53,6 @@ void StatusAreaWidget::CreateTrayViews() {
   AddOverviewButtonTray();
   AddSystemTray();
   AddWebNotificationTray();
-  AddLockScreenActionTray();
   AddPaletteTray();
   AddVirtualKeyboardTray();
   AddImeMenuTray();
@@ -64,7 +61,6 @@ void StatusAreaWidget::CreateTrayViews() {
   // Initialize after all trays have been created.
   system_tray_->InitializeTrayItems(web_notification_tray_);
   web_notification_tray_->Initialize();
-  lock_screen_action_tray_->Initialize();
   if (palette_tray_)
     palette_tray_->Initialize();
   virtual_keyboard_tray_->Initialize();
@@ -86,8 +82,6 @@ void StatusAreaWidget::Shutdown() {
   // tests and switch to std::unique_ptr. http://crbug.com/700255
   delete web_notification_tray_;
   web_notification_tray_ = nullptr;
-  delete lock_screen_action_tray_;
-  lock_screen_action_tray_ = nullptr;
   // Must be destroyed after |web_notification_tray_|.
   delete system_tray_;
   system_tray_ = nullptr;
@@ -110,8 +104,6 @@ void StatusAreaWidget::UpdateAfterShelfAlignmentChange() {
     system_tray_->UpdateAfterShelfAlignmentChange();
   if (web_notification_tray_)
     web_notification_tray_->UpdateAfterShelfAlignmentChange();
-  if (lock_screen_action_tray_)
-    lock_screen_action_tray_->UpdateAfterShelfAlignmentChange();
   if (logout_button_tray_)
     logout_button_tray_->UpdateAfterShelfAlignmentChange();
   if (virtual_keyboard_tray_)
@@ -160,8 +152,6 @@ void StatusAreaWidget::SchedulePaint() {
   web_notification_tray_->SchedulePaint();
   system_tray_->SchedulePaint();
   virtual_keyboard_tray_->SchedulePaint();
-  if (lock_screen_action_tray_)
-    lock_screen_action_tray_->SchedulePaint();
   logout_button_tray_->SchedulePaint();
   ime_menu_tray_->SchedulePaint();
   if (palette_tray_)
@@ -181,8 +171,6 @@ void StatusAreaWidget::OnNativeWidgetActivationChanged(bool active) {
 
 void StatusAreaWidget::UpdateShelfItemBackground(SkColor color) {
   web_notification_tray_->UpdateShelfItemBackground(color);
-  if (lock_screen_action_tray_)
-    lock_screen_action_tray_->UpdateShelfItemBackground(color);
   system_tray_->UpdateShelfItemBackground(color);
   virtual_keyboard_tray_->UpdateShelfItemBackground(color);
   ime_menu_tray_->UpdateShelfItemBackground(color);
@@ -201,12 +189,6 @@ void StatusAreaWidget::AddWebNotificationTray() {
   web_notification_tray_ =
       new WebNotificationTray(shelf_, GetNativeWindow(), system_tray_);
   status_area_widget_delegate_->AddTray(web_notification_tray_);
-}
-
-void StatusAreaWidget::AddLockScreenActionTray() {
-  DCHECK(system_tray_);
-  lock_screen_action_tray_ = new LockScreenActionTray(shelf_);
-  status_area_widget_delegate_->AddTray(lock_screen_action_tray_);
 }
 
 void StatusAreaWidget::AddLogoutButtonTray() {
