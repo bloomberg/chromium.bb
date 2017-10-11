@@ -138,7 +138,7 @@ void LatencyTracker::ComputeEndToEndLatencyHistograms(
     return;
 
   LatencyInfo::LatencyComponent original_component;
-  std::string scroll_name = "ScrollUpdate";
+  std::string scroll_name = "Uninitialized";
 
   const std::string input_modality =
       LatencySourceEventTypeToInputModalityString(latency.source_event_type());
@@ -172,6 +172,7 @@ void LatencyTracker::ComputeEndToEndLatencyHistograms(
   } else if (latency.FindLatency(
                  ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT,
                  &original_component)) {
+    scroll_name = "ScrollUpdate";
     // This UMA metric tracks the time from when the original touch event is
     // created to when the scroll gesture results in final frame swap.
     // First scroll events are excluded from this metric.
@@ -195,11 +196,14 @@ void LatencyTracker::ComputeEndToEndLatencyHistograms(
           "Event.Latency.EndToEnd.KeyPress", original_component,
           gpu_swap_begin_component);
     }
+    return;
   } else {
     // No original component found.
     return;
   }
 
+  // Record scroll latency metrics.
+  DCHECK(scroll_name == "ScrollBegin" || scroll_name == "ScrollUpdate");
   LatencyInfo::LatencyComponent rendering_scheduled_component;
   bool rendering_scheduled_on_main = latency.FindLatency(
       ui::INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_MAIN_COMPONENT, 0,
