@@ -77,6 +77,8 @@ class CORE_EXPORT PerformanceMonitor final
                                      std::unique_ptr<SourceLocation>);
   static double Threshold(ExecutionContext*, Violation);
 
+  void BypassLongCompileThresholdOnceForTesting();
+
   // Instrumenting methods.
   void Will(const probe::RecalculateStyle&);
   void Did(const probe::RecalculateStyle&);
@@ -157,6 +159,7 @@ class CORE_EXPORT PerformanceMonitor final
               typename DefaultHash<size_t>::Hash,
               WTF::UnsignedWithZeroKeyHashTraits<size_t>>
       subscriptions_;
+  bool bypass_long_compile_threshold_ = false;
 };
 
 }  // namespace blink

@@ -589,6 +589,8 @@ class Internals final : public GarbageCollected<Internals>,
 
   void simulateRasterUnderInvalidations(bool enable);
 
+  void BypassLongCompileThresholdOnce(ExceptionState&);
+
  private:
   explicit Internals(ExecutionContext*);
   Document* ContextDocument() const;

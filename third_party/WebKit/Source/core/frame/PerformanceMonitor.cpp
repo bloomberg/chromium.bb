@@ -26,6 +26,10 @@ namespace {
 static const double kLongTaskSubTaskThresholdInSeconds = 0.012;
 }  // namespace
 
+void PerformanceMonitor::BypassLongCompileThresholdOnceForTesting() {
+  bypass_long_compile_threshold_ = true;
+};
+
 // static
 double PerformanceMonitor::Threshold(ExecutionContext* context,
                                      Violation violation) {
@@ -233,8 +237,14 @@ void PerformanceMonitor::Did(const probe::V8Compile& probe) {
     return;
 
   double v8_compile_duration = probe.Duration();
-  if (v8_compile_duration <= kLongTaskSubTaskThresholdInSeconds)
-    return;
+
+  if (bypass_long_compile_threshold_) {
+    bypass_long_compile_threshold_ = false;
+  } else {
+    if (v8_compile_duration <= kLongTaskSubTaskThresholdInSeconds)
+      return;
+  }
+
   std::unique_ptr<SubTaskAttribution> sub_task_attribution =
       SubTaskAttribution::Create(
           String("script-compile"),
