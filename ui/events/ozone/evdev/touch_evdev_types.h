@@ -22,6 +22,12 @@ struct EVENTS_OZONE_EVDEV_EXPORT InProgressTouchEvdev {
   InProgressTouchEvdev(const InProgressTouchEvdev& other);
   ~InProgressTouchEvdev();
 
+  // Current touch major of this slot.
+  int major = 0;
+
+  // Current tool type of this slot.
+  int tool_type = 0;
+
   // Whether there is new information for the touch.
   bool altered = false;
 
