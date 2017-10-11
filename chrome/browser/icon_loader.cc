@@ -32,7 +32,12 @@ void IconLoader::Start() {
 IconLoader::IconLoader(const base::FilePath& file_path,
                        IconSize size,
                        IconLoadedCallback callback)
-    : file_path_(file_path), icon_size_(size), callback_(callback) {}
+    : file_path_(file_path),
+#if !defined(OS_ANDROID)
+      icon_size_(size),
+#endif  // defined(OS_ANDROID)
+      callback_(callback) {
+}
 
 IconLoader::~IconLoader() {}
 
