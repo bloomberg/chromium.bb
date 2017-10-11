@@ -48,8 +48,10 @@ int ifd_inspect(insp_frame_data *fd, void *decoder) {
   fd->show_frame = cm->show_frame;
   fd->frame_type = cm->frame_type;
   fd->base_qindex = cm->base_qindex;
+#if !CONFIG_MAX_TILE
   fd->tile_mi_cols = cm->tile_width;
   fd->tile_mi_rows = cm->tile_height;
+#endif
   fd->delta_q_present_flag = cm->delta_q_present_flag;
   fd->delta_q_res = cm->delta_q_res;
 #if CONFIG_ACCOUNTING
