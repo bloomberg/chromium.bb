@@ -55,6 +55,10 @@ class TabTasks {
                             int64_t global_id);
 
  private:
+  // Removes navigation from nav_to_task_id_map_ that is oldest according to
+  // global_id.
+  void RemoveOldestNavigation();
+
   FRIEND_TEST_ALL_PREFIXES(TaskTrackerTest, LimitMaxNumberOfTasksPerTab);
   FRIEND_TEST_ALL_PREFIXES(TaskTrackerTest,
                            CreateSubTaskFromExcludedAncestorTask);
@@ -79,6 +83,14 @@ class TabTasks {
   // leaf chain for a navigation, start with its navigation id, and reindex into
   // the map using the parent id, until the parent id is kInvalidNavID.
   std::map<int, TaskIdAndParent> nav_to_task_id_map_;
+
+  // Root navigation contains parent link to navigations that were copied from
+  // another TabTasks instance. These navigations are not present in current
+  // tab's navigation stack. Evicting this navigation would loose this link.
+  // When the first naviation in this instance of TabTasks is created its id is
+  // kept in root_nav_id_. This navigation is not considered for removal when
+  // trimming nav_to_task_id_map_.
+  int root_nav_id_ = kInvalidNavID;
 
   // The most recent navigation id seen for this tab.
   int most_recent_nav_id_ = kInvalidNavID;

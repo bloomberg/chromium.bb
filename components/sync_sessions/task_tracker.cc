@@ -42,13 +42,15 @@ std::vector<int64_t> TabTasks::GetTaskIdsForNavigation(int nav_id) const {
   std::vector<int64_t> task_id_chain;
   int next_id = nav_id;
   while (next_id != kInvalidNavID) {
-    if (nav_to_task_id_map_.count(next_id) == 0)
+    auto next_nav_iter = nav_to_task_id_map_.find(next_id);
+    if (next_nav_iter == nav_to_task_id_map_.end())
       break;
-    task_id_chain.push_back(nav_to_task_id_map_.at(next_id).task_id);
-    DCHECK_NE(kInvalidGlobalID, task_id_chain.back());
-    next_id = nav_to_task_id_map_.at(next_id).parent_nav_id;
+    const TaskIdAndParent& next_nav = next_nav_iter->second;
+    DCHECK_NE(kInvalidGlobalID, next_nav.task_id);
+    task_id_chain.push_back(next_nav.task_id);
+    next_id = next_nav.parent_nav_id;
+    DCHECK_LE(task_id_chain.size(), static_cast<size_t>(kMaxNumTasksPerTab));
   }
-  DCHECK_LE(task_id_chain.size(), static_cast<size_t>(kMaxNumTasksPerTab));
 
   // Reverse the order so the root is the first item (oldest -> newest).
   std::reverse(task_id_chain.begin(), task_id_chain.end());
@@ -64,44 +66,47 @@ void TabTasks::UpdateWithNavigation(int nav_id,
   DCHECK_NE(kInvalidNavID, nav_id);
   DCHECK_NE(kInvalidGlobalID, global_id);
 
-  if (nav_to_task_id_map_.count(nav_id) > 0) {
-    most_recent_nav_id_ = nav_id;
-    nav_to_task_id_map_[most_recent_nav_id_].global_id = global_id;
-    return;
+  if (nav_to_task_id_map_.count(nav_id) == 0) {
+    if (root_nav_id_ == kInvalidNavID)
+      root_nav_id_ = nav_id;
+    DVLOG(1) << "Setting current task id to " << global_id;
+    nav_to_task_id_map_[nav_id].task_id = global_id;
+
+    if (DoesTransitionContinueTask(transition))
+      nav_to_task_id_map_[nav_id].parent_nav_id = most_recent_nav_id_;
   }
-
-  nav_to_task_id_map_[nav_id].task_id = global_id;
-  nav_to_task_id_map_[nav_id].global_id = global_id;
-
-  if (DoesTransitionContinueTask(transition) &&
-      most_recent_nav_id_ != kInvalidGlobalID) {
-    nav_to_task_id_map_[nav_id].parent_nav_id = most_recent_nav_id_;
-  }
-
   DVLOG(1) << "Setting most recent nav id to " << nav_id;
-  DVLOG(1) << "Setting current task id to "
-           << nav_to_task_id_map_[nav_id].task_id;
   most_recent_nav_id_ = nav_id;
+  nav_to_task_id_map_[nav_id].global_id = global_id;
 
   // Go through and drop the oldest navigations until kMaxNumTasksPerTab
   // navigations remain.
   // TODO(zea): we go through max of 100 iterations here on each new navigation.
   // May be worth attempting to optimize this further if it becomes an issue.
   if (nav_to_task_id_map_.size() > kMaxNumTasksPerTab) {
-    int64_t oldest_nav_time = kInvalidGlobalID;
-    int oldest_nav_id = kInvalidNavID;
-    for (auto& iter : nav_to_task_id_map_) {
-      if (oldest_nav_id == kInvalidNavID ||
-          oldest_nav_time > iter.second.global_id) {
-        oldest_nav_id = iter.first;
-        oldest_nav_time = iter.second.global_id;
-      }
-    }
-
-    nav_to_task_id_map_.erase(oldest_nav_id);
+    RemoveOldestNavigation();
     DCHECK_EQ(static_cast<uint64_t>(kMaxNumTasksPerTab),
               nav_to_task_id_map_.size());
   }
+}
+
+void TabTasks::RemoveOldestNavigation() {
+  int64_t oldest_nav_time = kInvalidGlobalID;
+  int oldest_nav_id = kInvalidNavID;
+  for (const auto& iter : nav_to_task_id_map_) {
+    int nav_id = iter.first;
+    // Root navigation contains parent link to navigations copied from other
+    // TaskTracker that are not present in navigation stack of current tab.
+    // It should not be considered for removal.
+    if (nav_id == root_nav_id_)
+      continue;
+    if (oldest_nav_id == kInvalidNavID ||
+        oldest_nav_time > iter.second.global_id) {
+      oldest_nav_id = nav_id;
+      oldest_nav_time = iter.second.global_id;
+    }
+  }
+  nav_to_task_id_map_.erase(oldest_nav_id);
 }
 
 TaskTracker::TaskTracker() {}
