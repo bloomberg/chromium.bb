@@ -106,6 +106,16 @@ Press any key to continue exploring.
   <message desc="Message shown when opening an archive takes long time." name="IDS_ZIP_ARCHIVER_MOUNTING_MESSAGE">
     Please wait, the archive is being scanned...
   </message>
+  <message desc="Message shown when packing an archive takes long time." name="IDS_ZIP_ARCHIVER_PACKING_DEFERRED_MESSAGE">
+    Please wait...
+  </message>
+  <message desc="Message shown when packing fails." name="IDS_ZIP_ARCHIVER_PACKING_ERROR_MESSAGE">
+    Packing failed.
+  </message>
+  <message desc="Message shown when packing is in progress." name="IDS_ZIP_ARCHIVER_PACKING_PROGRESS_MESSAGE">
+    Please wait, packing...
+  </message>
+
 
   <!-- File Manager -->
   <message name="IDS_FILE_SYSTEM_PROVIDER_UNRESPONSIVE_WARNING" desc="A warning shown in a notification that an operation is taking longer than expected.">

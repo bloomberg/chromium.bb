@@ -32,11 +32,9 @@ namespace {
 // List of whitelisted component apps and extensions by their ids for
 // chrome.fileSystem.requestFileSystem.
 const char* const kRequestFileSystemComponentWhitelist[] = {
-    file_manager::kFileManagerAppId,
-    file_manager::kVideoPlayerAppId,
-    file_manager::kGalleryAppId,
-    file_manager::kAudioPlayerAppId,
-    file_manager::kImageLoaderExtensionId,
+    file_manager::kFileManagerAppId, file_manager::kVideoPlayerAppId,
+    file_manager::kGalleryAppId, file_manager::kAudioPlayerAppId,
+    file_manager::kImageLoaderExtensionId, file_manager::kZipArchiverId,
     // TODO(mtomasz): Remove this extension id, and add it only for tests.
     "pkplfbidichfdicaijlchgnapepdginl"  // Testing extensions.
 };

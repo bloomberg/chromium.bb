@@ -351,14 +351,27 @@ var CommandHandler = function(fileManager, selectionHandler) {
       'enable-external-drive-rename', function(enabled) {
         CommandHandler.IS_EXTERNAL_DISK_RENAME_ENABLED_ = enabled;
       }.bind(this));
+
+  chrome.commandLinePrivate.hasSwitch(
+      'enable-zip-archiver-on-file-manager', function(enabled) {
+        CommandHandler.IS_ZIP_ARCHIVER_ENABLED_ = enabled;
+      }.bind(this));
 };
 
 /**
- * Supported disk file system types for renaming.
+ * A flag that determines whether external disk rename feature is enabled or
+ * not.
  * @type {boolean}
  * @private
  */
 CommandHandler.IS_EXTERNAL_DISK_RENAME_ENABLED_ = false;
+
+/**
+ * A flag that determines whether zip archiver is enabled or no.
+ * @type {boolean}
+ * @private
+ */
+CommandHandler.IS_ZIP_ARCHIVER_ENABLED_ = false;
 
 /**
  * Supported disk file system types for renaming.
@@ -1295,9 +1308,21 @@ CommandHandler.COMMANDS_['zip-selection'] = /** @type {Command} */ ({
     var dirEntry = fileManager.getCurrentDirectoryEntry();
     if (!dirEntry)
       return;
-    var selectionEntries = fileManager.getSelection().entries;
-    fileManager.fileOperationManager.zipSelection(
-        /** @type {!DirectoryEntry} */ (dirEntry), selectionEntries);
+
+    if (CommandHandler.IS_ZIP_ARCHIVER_ENABLED_) {
+      fileManager.taskController.getFileTasks()
+          .then(function(tasks) {
+            tasks.execute(FileTasks.ZIP_ARCHIVER_ZIP_TASK_ID);
+          })
+          .catch(function(error) {
+            if (error)
+              console.error(error.stack || error);
+          });
+    } else {
+      var selectionEntries = fileManager.getSelection().entries;
+      fileManager.fileOperationManager.zipSelection(
+          /** @type {!DirectoryEntry} */ (dirEntry), selectionEntries);
+    }
   },
   /**
    * @param {!Event} event Command event.
@@ -1306,10 +1331,14 @@ CommandHandler.COMMANDS_['zip-selection'] = /** @type {Command} */ ({
   canExecute: function(event, fileManager) {
     var dirEntry = fileManager.getCurrentDirectoryEntry();
     var selection = fileManager.getSelection();
-    event.canExecute = dirEntry && !fileManager.directoryModel.isReadOnly() &&
+
+    var isOnEligibleLocation = CommandHandler.IS_ZIP_ARCHIVER_ENABLED_ ?
+        true :
         !fileManager.directoryModel.isOnDrive() &&
-        !fileManager.directoryModel.isOnMTP() && selection &&
-        selection.totalCount > 0;
+            !fileManager.directoryModel.isOnMTP();
+
+    event.canExecute = dirEntry && !fileManager.directoryModel.isReadOnly() &&
+        isOnEligibleLocation && selection && selection.totalCount > 0;
   }
 });
 
