@@ -128,7 +128,7 @@ class TestPasswordProtectionService : public PasswordProtectionService {
 
   ~TestPasswordProtectionService() override {}
 
-  size_t GetPendingRequestsCount() { return requests_.size(); }
+  size_t GetPendingRequestsCount() { return pending_requests_.size(); }
 
   const LoginReputationClientRequest* GetLatestRequestProto() {
     return latest_request_ ? latest_request_->request_proto() : nullptr;
@@ -191,7 +191,7 @@ class PasswordProtectionServiceTest
 
   void TearDown() override { content_setting_map_->ShutdownOnUIThread(); }
 
-  // Sets up |database_manager_| and |requests_| as needed.
+  // Sets up |database_manager_| and |pending_requests_| as needed.
   void InitializeAndStartPasswordOnFocusRequest(bool match_whitelist,
                                                 int timeout_in_ms) {
     GURL target_url(kTargetUrl);

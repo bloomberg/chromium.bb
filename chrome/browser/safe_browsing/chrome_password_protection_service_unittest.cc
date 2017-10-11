@@ -25,6 +25,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "components/safe_browsing/features.h"
+#include "components/safe_browsing/password_protection/password_protection_navigation_throttle.h"
 #include "components/safe_browsing/password_protection/password_protection_request.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_account_fetcher_service.h"
@@ -33,8 +34,10 @@
 #include "components/sync/user_events/fake_user_event_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/variations/variations_params_manager.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "net/http/http_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -49,6 +52,8 @@ namespace {
 const char kPhishingURL[] = "http://phishing.com";
 const char kTestAccountID[] = "account_id";
 const char kTestEmail[] = "foo@example.com";
+const char kBasicResponseHeaders[] = "HTTP/1.1 200 OK";
+const char kRedirectURL[] = "http://redirect.com";
 
 std::unique_ptr<KeyedService> BuildFakeUserEventService(
     content::BrowserContext* context) {
@@ -159,10 +164,12 @@ class ChromePasswordProtectionServiceTest
     verdict_->set_verdict_type(type);
   }
 
-  void RequestFinished(
-      PasswordProtectionRequest* request,
-      std::unique_ptr<LoginReputationClientResponse> response) {
-    service_->RequestFinished(request, false, std::move(response));
+  void SimulateRequestFinished(
+      LoginReputationClientResponse::VerdictType verdict_type) {
+    std::unique_ptr<LoginReputationClientResponse> verdict =
+        base::MakeUnique<LoginReputationClientResponse>();
+    verdict->set_verdict_type(verdict_type);
+    service_->RequestFinished(request_.get(), false, std::move(verdict));
   }
 
   void SetUpSyncAccount(const std::string& hosted_domain,
@@ -177,6 +184,25 @@ class ChromePasswordProtectionServiceTest
         account_tracker_service->PickAccountIdForAccount(account_id, email),
         email, account_id, hosted_domain, "full_name", "given_name", "locale",
         "http://picture.example.com/picture.jpg");
+  }
+
+  void PrepareRequest(LoginReputationClientRequest::TriggerType trigger_type,
+                      bool is_warning_showing) {
+    InitializeRequest(trigger_type);
+    request_->set_is_modal_warning_showing(is_warning_showing);
+    service_->pending_requests_.insert(request_);
+  }
+
+  content::NavigationThrottle::ThrottleCheckResult SimulateWillStart(
+      content::NavigationHandle* test_handle) {
+    std::unique_ptr<PasswordProtectionNavigationThrottle> throttle =
+        service_->MaybeCreateNavigationThrottle(test_handle);
+    if (throttle)
+      test_handle->RegisterThrottleForTesting(std::move(throttle));
+
+    return test_handle->CallWillStartRequestForTesting(
+        /*is_post=*/false, content::Referrer(), /*has_user_gesture=*/false,
+        ui::PAGE_TRANSITION_LINK, /*is_external_protocol=*/false);
   }
 
  protected:
@@ -430,6 +456,78 @@ TEST_F(ChromePasswordProtectionServiceTest, VerifyGetChangePasswordURL) {
                  "2Fmyaccount.google.com%2Fsigninoptions%2Fpassword%3Futm_"
                  "source%3DGoogle%26utm_campaign%3DPhishGuard&hl=en"),
             service_->GetChangePasswordURL());
+}
+
+TEST_F(ChromePasswordProtectionServiceTest,
+       VerifyNavigationDuringPasswordOnFocusPingNotBlocked) {
+  GURL trigger_url(kPhishingURL);
+  NavigateAndCommit(trigger_url);
+  PrepareRequest(LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
+                 /*is_warning_showing=*/false);
+  GURL redirect_url(kRedirectURL);
+  std::unique_ptr<content::NavigationHandle> test_handle =
+      content::NavigationHandle::CreateNavigationHandleForTesting(redirect_url,
+                                                                  main_rfh());
+  EXPECT_EQ(content::NavigationThrottle::PROCEED,
+            SimulateWillStart(test_handle.get()));
+}
+
+TEST_F(ChromePasswordProtectionServiceTest,
+       VerifyNavigationDuringPasswordReusePingDeferred) {
+  GURL trigger_url(kPhishingURL);
+  NavigateAndCommit(trigger_url);
+  // Simulate a on-going password reuse request that hasn't received
+  // verdict yet.
+  PrepareRequest(LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
+                 /*is_warning_showing=*/false);
+
+  GURL redirect_url(kRedirectURL);
+  std::unique_ptr<content::NavigationHandle> test_handle =
+      content::NavigationHandle::CreateNavigationHandleForTesting(redirect_url,
+                                                                  main_rfh());
+  // Verify navigation get deferred.
+  EXPECT_EQ(content::NavigationThrottle::DEFER,
+            SimulateWillStart(test_handle.get()));
+  EXPECT_FALSE(test_handle->HasCommitted());
+  base::RunLoop().RunUntilIdle();
+
+  // Simulate receiving a SAFE verdict.
+  SimulateRequestFinished(LoginReputationClientResponse::SAFE);
+  base::RunLoop().RunUntilIdle();
+
+  // Verify that navigation can be resumed.
+  EXPECT_EQ(content::NavigationThrottle::PROCEED,
+            test_handle->CallWillProcessResponseForTesting(
+                main_rfh(),
+                net::HttpUtil::AssembleRawHeaders(
+                    kBasicResponseHeaders, strlen(kBasicResponseHeaders))));
+  test_handle->CallDidCommitNavigationForTesting(redirect_url);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(test_handle->HasCommitted());
+}
+
+TEST_F(ChromePasswordProtectionServiceTest,
+       VerifyNavigationDuringModalWarningCanceled) {
+  GURL trigger_url(kPhishingURL);
+  NavigateAndCommit(trigger_url);
+  // Simulate a password reuse request, whose verdict is triggering a modal
+  // warning.
+  PrepareRequest(LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
+                 /*is_warning_showing=*/true);
+  base::RunLoop().RunUntilIdle();
+
+  // Simulate receiving a phishing verdict.
+  SimulateRequestFinished(LoginReputationClientResponse::PHISHING);
+  base::RunLoop().RunUntilIdle();
+
+  GURL redirect_url(kRedirectURL);
+  std::unique_ptr<content::NavigationHandle> test_handle =
+      content::NavigationHandle::CreateNavigationHandleForTesting(redirect_url,
+                                                                  main_rfh());
+  // Verify that navigation gets canceled.
+  EXPECT_EQ(content::NavigationThrottle::CANCEL,
+            SimulateWillStart(test_handle.get()));
+  EXPECT_FALSE(test_handle->HasCommitted());
 }
 
 }  // namespace safe_browsing

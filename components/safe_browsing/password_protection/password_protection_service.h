@@ -25,6 +25,7 @@
 
 namespace content {
 class WebContents;
+class NavigationHandle;
 }
 
 namespace history {
@@ -36,8 +37,9 @@ class HostContentSettingsMap;
 
 namespace safe_browsing {
 
-class SafeBrowsingDatabaseManager;
+class PasswordProtectionNavigationThrottle;
 class PasswordProtectionRequest;
+class SafeBrowsingDatabaseManager;
 
 // UMA metrics
 extern const char kPasswordOnFocusRequestOutcomeHistogram[];
@@ -220,6 +222,12 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   virtual bool UserClickedThroughSBInterstitial(
       content::WebContents* web_contents) = 0;
 
+  // Called when a new navigation is starting. Create throttle if there is a
+  // pending sync password reuse ping or if there is a modal warning dialog
+  // showing in the corresponding web contents.
+  std::unique_ptr<PasswordProtectionNavigationThrottle>
+  MaybeCreateNavigationThrottle(content::NavigationHandle* navigation_handle);
+
  protected:
   friend class PasswordProtectionRequest;
   FRIEND_TEST_ALL_PREFIXES(PasswordProtectionServiceTest, VerifyCanSendPing);
@@ -291,9 +299,14 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
 
   HostContentSettingsMap* content_settings() const { return content_settings_; }
 
+  void RemoveWarningRequestsByWebContents(content::WebContents* web_contents);
+
+  bool IsModalWarningShowingInWebContents(content::WebContents* web_contents);
+
  private:
   friend class PasswordProtectionServiceTest;
   friend class TestPasswordProtectionService;
+  friend class ChromePasswordProtectionServiceTest;
   FRIEND_TEST_ALL_PREFIXES(PasswordProtectionServiceTest,
                            TestParseInvalidVerdictEntry);
   FRIEND_TEST_ALL_PREFIXES(PasswordProtectionServiceTest,
@@ -366,8 +379,12 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   // cookie store.
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 
-  // Set of pending PasswordProtectionRequests.
-  std::set<scoped_refptr<PasswordProtectionRequest>> requests_;
+  // Set of pending PasswordProtectionRequests that are still waiting for
+  // verdict.
+  std::set<scoped_refptr<PasswordProtectionRequest>> pending_requests_;
+
+  // Set of PasswordProtectionRequests that are triggering modal warnings.
+  std::set<scoped_refptr<PasswordProtectionRequest>> warning_requests_;
 
   ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
       history_service_observer_;

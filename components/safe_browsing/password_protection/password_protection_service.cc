@@ -23,8 +23,10 @@
 #include "components/safe_browsing/db/database_manager.h"
 #include "components/safe_browsing/db/whitelist_checker_client.h"
 #include "components/safe_browsing/features.h"
+#include "components/safe_browsing/password_protection/password_protection_navigation_throttle.h"
 #include "components/safe_browsing/password_protection/password_protection_request.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
@@ -380,7 +382,7 @@ void PasswordProtectionService::StartRequest(
           trigger_type, password_field_exists, this, GetRequestTimeoutInMS()));
 
   request->Start();
-  requests_.insert(std::move(request));
+  pending_requests_.insert(std::move(request));
 }
 
 void PasswordProtectionService::MaybeStartPasswordFieldOnFocusRequest(
@@ -442,13 +444,20 @@ void PasswordProtectionService::RequestFinished(
             request->trigger_type(), request->matches_sync_password(),
             GetSyncAccountType(), response->verdict_type())) {
       ShowModalWarning(request->web_contents(), response->verdict_token());
+      request->set_is_modal_warning_showing(true);
     }
   }
 
-  // Finished processing this request. Remove it from pending list.
-  for (auto it = requests_.begin(); it != requests_.end(); it++) {
+  request->HandleDeferredNavigations();
+
+  // Remove request from |pending_requests_| list. If it triggers warning, add
+  // it into the !warning_reqeusts_| list.
+  for (auto it = pending_requests_.begin(); it != pending_requests_.end();
+       it++) {
     if (it->get() == request) {
-      requests_.erase(it);
+      if (request->is_modal_warning_showing())
+        warning_requests_.insert(std::move(request));
+      pending_requests_.erase(it);
       break;
     }
   }
@@ -456,14 +465,15 @@ void PasswordProtectionService::RequestFinished(
 
 void PasswordProtectionService::CancelPendingRequests() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  for (auto it = requests_.begin(); it != requests_.end();) {
+  for (auto it = pending_requests_.begin(); it != pending_requests_.end();) {
+    PasswordProtectionRequest* request = it->get();
+    // These are the requests for whom we're still waiting for verdicts.
     // We need to advance the iterator before we cancel because canceling
     // the request will invalidate it when RequestFinished is called.
-    PasswordProtectionRequest* request = it->get();
     it++;
     request->Cancel(false);
   }
-  DCHECK(requests_.empty());
+  DCHECK(pending_requests_.empty());
 }
 
 scoped_refptr<SafeBrowsingDatabaseManager>
@@ -790,6 +800,54 @@ void PasswordProtectionService::LogPasswordEntryRequestOutcome(
     UMA_HISTOGRAM_ENUMERATION(kProtectedPasswordEntryRequestOutcomeHistogram,
                               reason, MAX_OUTCOME);
   }
+}
+
+std::unique_ptr<PasswordProtectionNavigationThrottle>
+PasswordProtectionService::MaybeCreateNavigationThrottle(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsRendererInitiated())
+    return nullptr;
+
+  content::WebContents* web_contents = navigation_handle->GetWebContents();
+  for (scoped_refptr<PasswordProtectionRequest> request : pending_requests_) {
+    if (request->web_contents() == web_contents &&
+        request->trigger_type() ==
+            safe_browsing::LoginReputationClientRequest::PASSWORD_REUSE_EVENT &&
+        request->matches_sync_password()) {
+      std::unique_ptr<PasswordProtectionNavigationThrottle> throttle =
+          base::MakeUnique<PasswordProtectionNavigationThrottle>(
+              navigation_handle, /*is_warning_showing=*/false);
+      request->AddThrottle(throttle.get());
+      return throttle;
+    }
+  }
+
+  for (scoped_refptr<PasswordProtectionRequest> request : warning_requests_) {
+    if (request->web_contents() == web_contents) {
+      return base::MakeUnique<PasswordProtectionNavigationThrottle>(
+          navigation_handle, /*is_warning_showing=*/true);
+    }
+  }
+  return nullptr;
+}
+
+void PasswordProtectionService::RemoveWarningRequestsByWebContents(
+    content::WebContents* web_contents) {
+  for (auto it = warning_requests_.begin(); it != warning_requests_.end();) {
+    if (it->get()->web_contents() == web_contents)
+      it = warning_requests_.erase(it);
+    else
+      ++it;
+  }
+}
+
+bool PasswordProtectionService::IsModalWarningShowingInWebContents(
+    content::WebContents* web_contents) {
+  for (const auto& request : warning_requests_) {
+    if (request->web_contents() == web_contents)
+      return true;
+  }
+  return false;
 }
 
 }  // namespace safe_browsing

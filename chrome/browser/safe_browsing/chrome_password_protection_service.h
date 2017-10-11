@@ -42,6 +42,11 @@ void ShowPasswordReuseModalWarningDialog(
     ChromePasswordProtectionService* service,
     OnWarningDone done_callback);
 
+// Called by ChromeContentBrowserClient to create a
+// PasswordProtectionNavigationThrottle if appropriate.
+std::unique_ptr<PasswordProtectionNavigationThrottle>
+MaybeCreateNavigationThrottle(content::NavigationHandle* navigation_handle);
+
 // ChromePasswordProtectionService extends PasswordProtectionService by adding
 // access to SafeBrowsingNaivigationObserverManager and Profile.
 class ChromePasswordProtectionService : public PasswordProtectionService {
@@ -162,6 +167,18 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
 
   // Gets change password URl based on |account_info_|.
   GURL GetChangePasswordURL();
+
+  void HandleUserActionOnModalWarning(
+      content::WebContents* web_contents,
+      PasswordProtectionService::WarningAction action);
+
+  void HandleUserActionOnPageInfo(
+      content::WebContents* web_contents,
+      PasswordProtectionService::WarningAction action);
+
+  void HandleUserActionOnSettings(
+      content::WebContents* web_contents,
+      PasswordProtectionService::WarningAction action);
 
   FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceTest,
                            VerifyUserPopulationForPasswordOnFocusPing);

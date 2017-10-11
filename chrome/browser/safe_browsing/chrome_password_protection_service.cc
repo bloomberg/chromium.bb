@@ -29,6 +29,7 @@
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/db/database_manager.h"
 #include "components/safe_browsing/features.h"
+#include "components/safe_browsing/password_protection/password_protection_navigation_throttle.h"
 #include "components/safe_browsing/password_protection/password_protection_request.h"
 #include "components/safe_browsing/triggers/trigger_throttler.h"
 #include "components/signin/core/browser/account_info.h"
@@ -37,6 +38,7 @@
 #include "components/sync/protocol/user_event_specifics.pb.h"
 #include "components/sync/user_events/user_event_service.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
@@ -194,7 +196,10 @@ void ChromePasswordProtectionService::ShowModalWarning(
     content::WebContents* web_contents,
     const std::string& verdict_token) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // TODO(jialiul): Use verdict_token field in post warning report.
+  // Don't show warning again if there is already a modal warning showing.
+  if (IsModalWarningShowingInWebContents(web_contents))
+    return;
+
   UpdateSecurityState(SB_THREAT_TYPE_PASSWORD_REUSE, web_contents);
   ShowPasswordReuseModalWarningDialog(
       web_contents, this,
@@ -202,10 +207,10 @@ void ChromePasswordProtectionService::ShowModalWarning(
                      base::Unretained(this), web_contents,
                      PasswordProtectionService::MODAL_DIALOG));
   OnWarningShown(web_contents, PasswordProtectionService::MODAL_DIALOG);
-  if (web_contents->GetLastCommittedURL().is_valid()) {
-    unhandled_password_reuses_[Origin(web_contents->GetLastCommittedURL())] =
-        GetLastCommittedNavigationID(web_contents);
-  }
+  GURL trigger_url = web_contents->GetLastCommittedURL();
+  DCHECK(trigger_url.is_valid());
+  unhandled_password_reuses_[Origin(trigger_url)] =
+      GetLastCommittedNavigationID(web_contents);
   // Starts preparing post-warning report.
   MaybeStartThreatDetailsCollection(web_contents, verdict_token);
 }
@@ -218,48 +223,13 @@ void ChromePasswordProtectionService::OnUserAction(
   RecordWarningAction(ui_type, action);
   switch (ui_type) {
     case PasswordProtectionService::PAGE_INFO:
-      switch (action) {
-        case PasswordProtectionService::CHANGE_PASSWORD:
-          // Opens chrome://settings page in a new tab.
-          OpenUrlInNewTab(GURL(chrome::kChromeUISettingsURL), web_contents);
-          break;
-        case PasswordProtectionService::MARK_AS_LEGITIMATE: {
-          UpdateSecurityState(SB_THREAT_TYPE_SAFE, web_contents);
-          GURL url = web_contents->GetLastCommittedURL();
-          // Removes the corresponding entry in |unhandled_password_reuses_|.
-          unhandled_password_reuses_.erase(url::Origin(url));
-          for (auto& observer : observer_list_)
-            observer.OnMarkingSiteAsLegitimate(url);
-          break;
-        }
-        default:
-          NOTREACHED();
-          break;
-      }
+      HandleUserActionOnPageInfo(web_contents, action);
       break;
     case PasswordProtectionService::MODAL_DIALOG:
-      switch (action) {
-        case PasswordProtectionService::CHANGE_PASSWORD:
-          // Opens chrome://settings page in a new tab.
-          OpenUrlInNewTab(GURL(chrome::kChromeUISettingsURL), web_contents);
-          break;
-        case PasswordProtectionService::IGNORE_WARNING:
-        case PasswordProtectionService::CLOSE:
-          // No need to change state.
-          break;
-        default:
-          NOTREACHED();
-          break;
-      }
-      MaybeFinishCollectingThreatDetails(
-          web_contents, action == PasswordProtectionService::CHANGE_PASSWORD);
+      HandleUserActionOnModalWarning(web_contents, action);
       break;
     case PasswordProtectionService::CHROME_SETTINGS:
-      DCHECK_EQ(PasswordProtectionService::CHANGE_PASSWORD, action);
-      // Opens https://account.google.com for user to change password.
-      OpenUrlInNewTab(GetChangePasswordURL(), web_contents);
-      for (auto& observer : observer_list_)
-        observer.OnStartingGaiaPasswordChange();
+      HandleUserActionOnSettings(web_contents, action);
       break;
     default:
       NOTREACHED();
@@ -631,6 +601,54 @@ GURL ChromePasswordProtectionService::GetChangePasswordURL() {
       change_password_url, g_browser_process->GetApplicationLocale());
 }
 
+void ChromePasswordProtectionService::HandleUserActionOnModalWarning(
+    content::WebContents* web_contents,
+    PasswordProtectionService::WarningAction action) {
+  DCHECK(action == PasswordProtectionService::CHANGE_PASSWORD ||
+         action == PasswordProtectionService::IGNORE_WARNING ||
+         action == PasswordProtectionService::CLOSE);
+  if (action == PasswordProtectionService::CHANGE_PASSWORD) {
+    // Opens chrome://settings page in a new tab.
+    OpenUrlInNewTab(GURL(chrome::kChromeUISettingsURL), web_contents);
+  }
+  RemoveWarningRequestsByWebContents(web_contents);
+  MaybeFinishCollectingThreatDetails(
+      web_contents,
+      /*did_proceed=*/action == PasswordProtectionService::CHANGE_PASSWORD);
+}
+
+void ChromePasswordProtectionService::HandleUserActionOnPageInfo(
+    content::WebContents* web_contents,
+    PasswordProtectionService::WarningAction action) {
+  if (action == PasswordProtectionService::CHANGE_PASSWORD) {
+    // Opens chrome://settings page in a new tab.
+    OpenUrlInNewTab(GURL(chrome::kChromeUISettingsURL), web_contents);
+    return;
+  }
+
+  if (action == PasswordProtectionService::MARK_AS_LEGITIMATE) {
+    UpdateSecurityState(SB_THREAT_TYPE_SAFE, web_contents);
+    GURL url = web_contents->GetLastCommittedURL();
+    // Removes the corresponding entry in |unhandled_password_reuses_|.
+    unhandled_password_reuses_.erase(url::Origin(url));
+    for (auto& observer : observer_list_)
+      observer.OnMarkingSiteAsLegitimate(url);
+    return;
+  }
+
+  NOTREACHED();
+}
+
+void ChromePasswordProtectionService::HandleUserActionOnSettings(
+    content::WebContents* web_contents,
+    PasswordProtectionService::WarningAction action) {
+  DCHECK_EQ(PasswordProtectionService::CHANGE_PASSWORD, action);
+  // Opens https://account.google.com for user to change password.
+  OpenUrlInNewTab(GetChangePasswordURL(), web_contents);
+  for (auto& observer : observer_list_)
+    observer.OnStartingGaiaPasswordChange();
+}
+
 ChromePasswordProtectionService::ChromePasswordProtectionService(
     Profile* profile,
     scoped_refptr<HostContentSettingsMap> content_setting_map,
@@ -642,6 +660,19 @@ ChromePasswordProtectionService::ChromePasswordProtectionService(
       ui_manager_(ui_manager),
       trigger_manager_(nullptr),
       profile_(profile) {
+}
+
+std::unique_ptr<PasswordProtectionNavigationThrottle>
+MaybeCreateNavigationThrottle(content::NavigationHandle* navigation_handle) {
+  if (!base::FeatureList::IsEnabled(kGaiaPasswordReuseReporting))
+    return nullptr;
+  Profile* profile = Profile::FromBrowserContext(
+      navigation_handle->GetWebContents()->GetBrowserContext());
+  ChromePasswordProtectionService* service =
+      ChromePasswordProtectionService::GetPasswordProtectionService(profile);
+  // |service| can be null in tests.
+  return service ? service->MaybeCreateNavigationThrottle(navigation_handle)
+                 : nullptr;
 }
 
 }  // namespace safe_browsing

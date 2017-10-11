@@ -5,6 +5,8 @@
 source_set("password_protection") {
   if (!is_android && !is_ios) {
     sources = [
+      "password_protection_navigation_throttle.cc",
+      "password_protection_navigation_throttle.h",
       "password_protection_request.cc",
       "password_protection_request.h",
       "password_protection_service.cc",
