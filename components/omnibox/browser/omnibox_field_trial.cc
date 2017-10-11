@@ -667,16 +667,15 @@ int OmniboxFieldTrial::KeywordScoreForSufficientlyCompleteMatch() {
 OmniboxFieldTrial::EmphasizeTitlesCondition
 OmniboxFieldTrial::GetEmphasizeTitlesConditionForInput(
     const AutocompleteInput& input) {
-  // First, check if we should emphasize titles for zero suggest suggestions.
-  if (input.from_omnibox_focus()) {
-    return base::FeatureList::IsEnabled(omnibox::kZeroSuggestSwapTitleAndUrl)
-               ? EMPHASIZE_WHEN_NONEMPTY
-               : EMPHASIZE_NEVER;
-  }
-
   // Check the feature that always swaps title and URL (assuming the title is
   // non-empty).
   if (base::FeatureList::IsEnabled(omnibox::kUIExperimentSwapTitleAndUrl))
+    return EMPHASIZE_WHEN_NONEMPTY;
+
+  // Check the feature that swaps the title and URL only for zero suggest
+  // suggestions.
+  if (input.from_omnibox_focus() &&
+      base::FeatureList::IsEnabled(omnibox::kZeroSuggestSwapTitleAndUrl))
     return EMPHASIZE_WHEN_NONEMPTY;
 
   // Look up the parameter named kEmphasizeTitlesRule + "_" + input.type(),
