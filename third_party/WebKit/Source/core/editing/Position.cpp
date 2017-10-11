@@ -350,29 +350,13 @@ bool PositionTemplate<Strategy>::IsConnected() const {
   return IsPositionConnected(*this);
 }
 
-static bool IsPositionValidFor(const Position& position,
-                               const Document& document) {
-  if (position.IsNull())
-    return true;
-  if (position.GetDocument() != document)
-    return false;
-  return position.AnchorNode()->isConnected();
-}
-
-static bool IsPositionValidFor(const PositionInFlatTree& position,
-                               const Document& document) {
-  if (position.IsNull())
-    return true;
-  if (position.GetDocument() != document)
-    return false;
-  return FlatTreeTraversal::Contains(document, *position.AnchorNode());
-}
-
-// TODO(xiaochengh): Consolidate the two overloads of |IsPositionValidFor()|
-// with |IsConnected()|.
 template <typename Strategy>
 bool PositionTemplate<Strategy>::IsValidFor(const Document& document) const {
-  return IsPositionValidFor(*this, document);
+  if (IsNull())
+    return true;
+  if (GetDocument() != document)
+    return false;
+  return IsConnected();
 }
 
 int ComparePositions(const PositionInFlatTree& position_a,
