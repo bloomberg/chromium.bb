@@ -421,7 +421,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   const QuicServerId& server_id() const { return server_id_; }
 
   // Attempts to migrate session when a write error is encountered.
-  void MigrateSessionOnWriteError();
+  void MigrateSessionOnWriteError(int error_code);
 
   // Helper method that writes a packet on the new socket after
   // migration completes. If not null, the packet_ member is written,

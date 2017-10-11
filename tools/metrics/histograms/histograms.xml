@@ -42903,6 +42903,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicSession.GapBetweenWriteErrorAndNetworkDisconnection"
+    units="ms">
+  <owner>zhongyi@chromium.org</owner>
+  <summary>
+    This measures the time gap between the most recent write error and the
+    network disconnection.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicSession.GoAwayReceivedForConnectionMigration"
     enum="BooleanReceived">
   <owner>zhongyi@chromium.org</owner>
@@ -43478,6 +43487,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The network error code returned when attempting to write to a QUIC
     connection after the handshake has been confirmed.
+  </summary>
+</histogram>
+
+<histogram name="Net.QuicSession.WriteError.NetworkDisconnected"
+    enum="NetErrorCodes">
+  <owner>zhongyi@chromium.org</owner>
+  <summary>
+    The most recent network error code when attempting to write to a QUIC
+    connection when the network gets disconnected.
   </summary>
 </histogram>
 
