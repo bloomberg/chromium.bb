@@ -373,12 +373,11 @@ void ExtensionServiceTestWithInstall::UninstallExtension(
 
 void ExtensionServiceTestWithInstall::TerminateExtension(
     const std::string& id) {
-  const Extension* extension = service()->GetInstalledExtension(id);
-  if (!extension) {
+  if (!service()->GetInstalledExtension(id)) {
     ADD_FAILURE();
     return;
   }
-  service()->TrackTerminatedExtensionForTest(extension);
+  service()->TerminateExtension(id);
 }
 
 void ExtensionServiceTestWithInstall::OnExtensionLoaded(
