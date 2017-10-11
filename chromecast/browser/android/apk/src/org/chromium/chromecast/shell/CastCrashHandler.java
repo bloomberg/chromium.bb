@@ -17,10 +17,16 @@ public final class CastCrashHandler {
     private static final String TAG = "cr_CastCrashHandler";
 
     @CalledByNative
-    public static void initializeUploader(String crashDumpPath, boolean uploadCrashToStaging) {
-        CastCrashUploader uploader = new CastCrashUploader(crashDumpPath, uploadCrashToStaging);
+    public static void initializeUploader(String crashDumpPath, String uuid,
+            boolean uploadCrashToStaging, boolean periodicUpload) {
+        CastCrashUploader uploader = CastCrashUploaderFactory.createCastCrashUploader(
+                crashDumpPath, uuid, uploadCrashToStaging);
         if (ChromecastConfigAndroid.canSendUsageStats()) {
-            uploader.startPeriodicUpload();
+            if (periodicUpload) {
+                uploader.startPeriodicUpload();
+            } else {
+                uploader.uploadOnce();
+            }
         } else {
             Log.d(TAG, "Removing crash dumps instead of uploading");
             uploader.removeCrashDumps();
