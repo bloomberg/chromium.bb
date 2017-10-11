@@ -40,8 +40,9 @@ class MockScriptedIdleTaskControllerScheduler final : public WebScheduler {
       WebViewScheduler::WebViewSchedulerDelegate*) override {
     return nullptr;
   }
-  void PauseTimerQueue() override {}
-  void ResumeTimerQueue() override {}
+  std::unique_ptr<RendererPauseHandle> PauseScheduler() override {
+    return nullptr;
+  }
   void AddPendingNavigation(
       scheduler::RendererScheduler::NavigatingFrameType) override {}
   void RemovePendingNavigation(

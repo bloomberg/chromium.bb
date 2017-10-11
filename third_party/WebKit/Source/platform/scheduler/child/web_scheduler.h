@@ -31,6 +31,8 @@ class PLATFORM_EXPORT WebScheduler {
     virtual void ReportIntervention(const WebString& message) = 0;
   };
 
+  using RendererPauseHandle = scheduler::RendererScheduler::RendererPauseHandle;
+
   virtual ~WebScheduler() {}
 
   // Called to prevent any more pending tasks from running. Must be called on
@@ -83,13 +85,10 @@ class PLATFORM_EXPORT WebScheduler {
       InterventionReporter*,
       WebViewScheduler::WebViewSchedulerDelegate*) = 0;
 
-  // Suspends the timer queue and increments the timer queue suspension count.
+  // Pauses the scheduler. See RendererScheduler::PauseRenderer for details.
   // May only be called from the main thread.
-  virtual void PauseTimerQueue() = 0;
-
-  // Decrements the timer queue suspension count and re-enables the timer queue
-  // if the suspension count is zero and the current scheduler policy allows it.
-  virtual void ResumeTimerQueue() = 0;
+  virtual std::unique_ptr<RendererPauseHandle> PauseScheduler()
+      WARN_UNUSED_RESULT = 0;
 
   // Tells the scheduler that a navigation task is pending.
   // TODO(alexclarke): Long term should this be a task trait?

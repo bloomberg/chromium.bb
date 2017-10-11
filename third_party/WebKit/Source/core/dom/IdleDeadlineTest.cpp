@@ -32,8 +32,9 @@ class MockIdleDeadlineScheduler final : public WebScheduler {
     return nullptr;
   }
   WebTaskRunner* CompositorTaskRunner() override { return nullptr; }
-  void PauseTimerQueue() override {}
-  void ResumeTimerQueue() override {}
+  std::unique_ptr<RendererPauseHandle> PauseScheduler() override {
+    return nullptr;
+  }
   void AddPendingNavigation(
       scheduler::RendererScheduler::NavigatingFrameType) override {}
   void RemovePendingNavigation(
