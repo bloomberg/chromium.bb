@@ -52,7 +52,7 @@ bool WorkQueue::BlockedByFence() const {
   // If the queue is empty then any future tasks will have a higher enqueue
   // order and will be blocked. The queue is also blocked if the head is past
   // the fence.
-  return work_queue_.empty() || work_queue_.front().enqueue_order() > fence_;
+  return work_queue_.empty() || work_queue_.front().enqueue_order() >= fence_;
 }
 
 bool WorkQueue::GetFrontTaskEnqueueOrder(EnqueueOrder* enqueue_order) const {

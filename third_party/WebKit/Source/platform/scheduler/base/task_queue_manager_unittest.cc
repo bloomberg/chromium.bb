@@ -197,6 +197,8 @@ class TaskQueueManagerTest : public ::testing::Test {
     }
   }
 
+  base::TimeTicks Now() const { return now_src_->NowTicks(); }
+
   std::unique_ptr<base::MessageLoop> message_loop_;
   std::unique_ptr<base::SimpleTestTickClock> now_src_;
   scoped_refptr<TaskQueueManagerDelegateForTest> main_task_runner_;
@@ -811,6 +813,107 @@ TEST_F(TaskQueueManagerTest, BlockedByFence_BothTypesOfFence) {
   EXPECT_TRUE(runners_[0]->BlockedByFence());
 }
 
+namespace {
+
+void RecordTimeTask(std::vector<base::TimeTicks>* run_times,
+                    base::SimpleTestTickClock* clock) {
+  run_times->push_back(clock->NowTicks());
+}
+
+}  // namespace
+
+TEST_F(TaskQueueManagerTest, DelayedFence_DelayedTasks) {
+  Initialize(1u);
+  test_task_runner_->SetAutoAdvanceNowToPendingTasks(true);
+
+  std::vector<base::TimeTicks> run_times;
+  runners_[0]->PostDelayedTask(
+      FROM_HERE, base::Bind(&RecordTimeTask, &run_times, now_src_.get()),
+      base::TimeDelta::FromMilliseconds(100));
+  runners_[0]->PostDelayedTask(
+      FROM_HERE, base::Bind(&RecordTimeTask, &run_times, now_src_.get()),
+      base::TimeDelta::FromMilliseconds(200));
+  runners_[0]->PostDelayedTask(
+      FROM_HERE, base::Bind(&RecordTimeTask, &run_times, now_src_.get()),
+      base::TimeDelta::FromMilliseconds(300));
+
+  runners_[0]->InsertFenceAt(Now() + base::TimeDelta::FromMilliseconds(250));
+  test_task_runner_->RunUntilIdle();
+
+  EXPECT_THAT(
+      run_times,
+      ElementsAre(base::TimeTicks() + base::TimeDelta::FromMilliseconds(101),
+                  base::TimeTicks() + base::TimeDelta::FromMilliseconds(201)));
+  run_times.clear();
+
+  runners_[0]->RemoveFence();
+  test_task_runner_->RunUntilIdle();
+
+  EXPECT_THAT(run_times, ElementsAre(base::TimeTicks() +
+                                     base::TimeDelta::FromMilliseconds(301)));
+}
+
+TEST_F(TaskQueueManagerTest, DelayedFence_ImmediateTasks) {
+  Initialize(1u);
+  test_task_runner_->SetAutoAdvanceNowToPendingTasks(true);
+
+  std::vector<base::TimeTicks> run_times;
+  runners_[0]->InsertFenceAt(Now() + base::TimeDelta::FromMilliseconds(250));
+
+  for (int i = 0; i < 5; ++i) {
+    runners_[0]->PostTask(
+        FROM_HERE, base::Bind(&RecordTimeTask, &run_times, now_src_.get()));
+    test_task_runner_->RunForPeriod(base::TimeDelta::FromMilliseconds(100));
+  }
+
+  EXPECT_THAT(
+      run_times,
+      ElementsAre(base::TimeTicks() + base::TimeDelta::FromMilliseconds(1),
+                  base::TimeTicks() + base::TimeDelta::FromMilliseconds(101),
+                  base::TimeTicks() + base::TimeDelta::FromMilliseconds(201)));
+  run_times.clear();
+
+  runners_[0]->RemoveFence();
+  test_task_runner_->RunUntilIdle();
+
+  EXPECT_THAT(
+      run_times,
+      ElementsAre(base::TimeTicks() + base::TimeDelta::FromMilliseconds(501),
+                  base::TimeTicks() + base::TimeDelta::FromMilliseconds(501)));
+}
+
+TEST_F(TaskQueueManagerTest, DelayedFence_RemovedFenceDoesNotActivate) {
+  Initialize(1u);
+  test_task_runner_->SetAutoAdvanceNowToPendingTasks(true);
+
+  std::vector<base::TimeTicks> run_times;
+  runners_[0]->InsertFenceAt(Now() + base::TimeDelta::FromMilliseconds(250));
+
+  for (int i = 0; i < 3; ++i) {
+    runners_[0]->PostTask(
+        FROM_HERE, base::Bind(&RecordTimeTask, &run_times, now_src_.get()));
+    test_task_runner_->RunForPeriod(base::TimeDelta::FromMilliseconds(100));
+  }
+
+  runners_[0]->RemoveFence();
+
+  for (int i = 0; i < 2; ++i) {
+    runners_[0]->PostTask(
+        FROM_HERE, base::Bind(&RecordTimeTask, &run_times, now_src_.get()));
+    test_task_runner_->RunForPeriod(base::TimeDelta::FromMilliseconds(100));
+  }
+
+  EXPECT_THAT(
+      run_times,
+      ElementsAre(base::TimeTicks() + base::TimeDelta::FromMilliseconds(1),
+                  base::TimeTicks() + base::TimeDelta::FromMilliseconds(101),
+                  base::TimeTicks() + base::TimeDelta::FromMilliseconds(201),
+                  base::TimeTicks() + base::TimeDelta::FromMilliseconds(301),
+                  base::TimeTicks() + base::TimeDelta::FromMilliseconds(401)));
+}
+
+namespace {
+
 void ReentrantTestTask(scoped_refptr<base::SingleThreadTaskRunner> runner,
                        int countdown,
                        std::vector<EnqueueOrder>* out_result) {
@@ -820,6 +923,8 @@ void ReentrantTestTask(scoped_refptr<base::SingleThreadTaskRunner> runner,
                      Bind(&ReentrantTestTask, runner, countdown, out_result));
   }
 }
+
+}  // namespace
 
 TEST_F(TaskQueueManagerTest, ReentrantPosting) {
   Initialize(1u);

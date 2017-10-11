@@ -156,6 +156,7 @@ class PLATFORM_EXPORT TaskQueueImpl {
   TimeDomain* GetTimeDomain() const;
   void SetBlameContext(base::trace_event::BlameContext* blame_context);
   void InsertFence(TaskQueue::InsertFencePosition position);
+  void InsertFenceAt(base::TimeTicks time);
   void RemoveFence();
   bool HasFence() const;
   bool BlockedByFence() const;
@@ -314,6 +315,7 @@ class PLATFORM_EXPORT TaskQueueImpl {
     int voter_refcount;
     base::trace_event::BlameContext* blame_context;  // Not owned.
     EnqueueOrder current_fence;
+    base::Optional<base::TimeTicks> delayed_fence;
     base::Optional<base::TimeTicks> scheduled_time_domain_wake_up;
     OnTaskStartedHandler on_task_started_handler;
     OnTaskCompletedHandler on_task_completed_handler;
@@ -367,6 +369,12 @@ class PLATFORM_EXPORT TaskQueueImpl {
 
   // Schedules delayed work on time domain and calls the observer.
   void ScheduleDelayedWorkInTimeDomain(base::TimeTicks now);
+
+  // Activate a delayed fence if a time has come.
+  void ActivateDelayedFenceIfNeeded(base::TimeTicks now);
+
+  // Returns true if new work has been unblocked.
+  bool InsertFenceImpl(EnqueueOrder enqueue_order);
 
   const char* name_;
 
