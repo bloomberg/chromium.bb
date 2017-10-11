@@ -298,12 +298,18 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
     }
 
     /**
-     * Loads the search provider logo (e.g. Google doodle), if any.
+     * Loads the search provider logo, if any.
      */
     private void loadSearchProviderLogo() {
         if (!mSearchProviderHasLogo) return;
 
-        mLogoView.showSearchProviderInitialView();
+        boolean isShowingLogo = mLogoView.showSearchProviderInitialView();
+
+        // Doodles appear too small in the sheet to be useful, so only fetch a search provider logo
+        // if the default logo isn't shown, which effectively disables non-3p (Google) doodles.
+        // TODO(https://crbug.com/773657): Make doodles work in the smaller view; until that
+        // happens, ensure that any third-party doodles look acceptable.
+        if (isShowingLogo) return;
 
         mLogoDelegate.getSearchProviderLogo(new LogoObserver() {
             @Override
