@@ -159,6 +159,7 @@
 #import "ios/chrome/browser/ui/tabs/requirements/tab_strip_constants.h"
 #import "ios/chrome/browser/ui/tabs/requirements/tab_strip_presentation.h"
 #import "ios/chrome/browser/ui/tabs/tab_strip_legacy_coordinator.h"
+#import "ios/chrome/browser/ui/toolbar/toolbar_controller_base_feature.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_coordinator.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_model_delegate_ios.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_model_ios.h"
@@ -560,6 +561,10 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   // Fake status bar view used to blend the toolbar into the status bar.
   UIView* _fakeStatusBarView;
+
+  // Constraint specifying the height of the toolbar. Used to update the height
+  // of the toolbar if the safe area changes.
+  __weak NSLayoutConstraint* toolbarHeightConstraint_;
 }
 
 // The browser's side swipe controller.  Lazily instantiated on the first call.
@@ -668,6 +673,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // Builds the UI parts of tab strip and the toolbar.  Does not matter whether
 // or not browser state and tab model are valid.
 - (void)buildToolbarAndTabStrip;
+// Sets up the constraints on the toolbar.
+- (void)addConstraintsToToolbar;
 // Updates view-related functionality with the given tab model and browser
 // state. The view must have been loaded.  Uses |_browserState| and |_model|.
 - (void)addUIFunctionalityForModelAndBrowserState;
@@ -1284,6 +1291,9 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [self installFakeStatusBar];
   [self buildToolbarAndTabStrip];
   [self setUpViewLayout];
+  if (base::FeatureList::IsEnabled(kSafeAreaCompatibleToolbar)) {
+    [self addConstraintsToToolbar];
+  }
   // If the tab model and browser state are valid, finish initialization.
   if (_model && _browserState)
     [self addUIFunctionalityForModelAndBrowserState];
@@ -1302,8 +1312,15 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [super viewSafeAreaInsetsDidChange];
   // Gate this behind iPhone X, since it's currently the only device that
   // needs layout updates here after startup.
-  if (IsIPhoneX())
+  if (IsIPhoneX()) {
     [self setUpViewLayout];
+  }
+  if (base::FeatureList::IsEnabled(kSafeAreaCompatibleToolbar)) {
+    [_toolbarCoordinator.webToolbarController safeAreaInsetsDidChange];
+    toolbarHeightConstraint_.constant =
+        [_toolbarCoordinator.webToolbarController
+                preferredToolbarHeightWhenAlignedToTopOfScreen];
+  }
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -1878,6 +1895,25 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   }
 }
 
+- (void)addConstraintsToToolbar {
+  toolbarHeightConstraint_ = [[_toolbarCoordinator view].heightAnchor
+      constraintEqualToConstant:
+          [_toolbarCoordinator.webToolbarController
+
+                  preferredToolbarHeightWhenAlignedToTopOfScreen]];
+
+  [NSLayoutConstraint activateConstraints:@[
+    [[_toolbarCoordinator view].leadingAnchor
+        constraintEqualToAnchor:[self view].leadingAnchor],
+    [[_toolbarCoordinator view].topAnchor
+        constraintEqualToAnchor:[self view].topAnchor],
+    [[_toolbarCoordinator view].trailingAnchor
+        constraintEqualToAnchor:[self view].trailingAnchor],
+    toolbarHeightConstraint_
+  ]];
+  [[self view] layoutIfNeeded];
+}
+
 // Enable functionality that only makes sense if the views are loaded and
 // both browser state and tab model are valid.
 - (void)addUIFunctionalityForModelAndBrowserState {
@@ -1963,7 +1999,9 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   CGRect toolbarFrame = [[_toolbarCoordinator view] frame];
   toolbarFrame.origin = CGPointMake(0, minY);
   toolbarFrame.size.width = widthOfView;
-  [[_toolbarCoordinator view] setFrame:toolbarFrame];
+  if (!base::FeatureList::IsEnabled(kSafeAreaCompatibleToolbar)) {
+    [[_toolbarCoordinator view] setFrame:toolbarFrame];
+  }
 
   // Place the infobar container above the content area.
   InfoBarContainerView* infoBarContainerView = _infoBarContainer->view();
@@ -4655,8 +4693,14 @@ bubblePresenterForFeature:(const base::Feature&)feature
     } else if ([_findBarController isFindInPageShown]) {
       [self.view insertSubview:[_toolbarCoordinator view]
                   belowSubview:[_findBarController view]];
+      if (base::FeatureList::IsEnabled(kSafeAreaCompatibleToolbar)) {
+        [self addConstraintsToToolbar];
+      }
     } else {
       [self.view addSubview:[_toolbarCoordinator view]];
+      if (base::FeatureList::IsEnabled(kSafeAreaCompatibleToolbar)) {
+        [self addConstraintsToToolbar];
+      }
     }
     _isToolbarControllerRelinquished = NO;
   }

@@ -40,6 +40,7 @@
 #include "ios/chrome/browser/ios_chrome_flag_descriptions.h"
 #include "ios/chrome/browser/ssl/captive_portal_features.h"
 #include "ios/chrome/browser/ui/main/main_feature_flags.h"
+#import "ios/chrome/browser/ui/toolbar/toolbar_controller_base_feature.h"
 #include "ios/chrome/browser/web/features.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -188,7 +189,11 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"tab_switcher_presents_bvc",
      flag_descriptions::kTabSwitcherPresentsBVCName,
      flag_descriptions::kTabSwitcherPresentsBVCDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kTabSwitcherPresentsBVC)}};
+     FEATURE_VALUE_TYPE(kTabSwitcherPresentsBVC)},
+    {"safe_area_compatible_toolbar",
+     flag_descriptions::kSafeAreaCompatibleToolbarName,
+     flag_descriptions::kSafeAreaCompatibleToolbarDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kSafeAreaCompatibleToolbar)}};
 
 // Add all switches from experimental flags to |command_line|.
 void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {

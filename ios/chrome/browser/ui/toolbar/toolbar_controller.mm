@@ -23,6 +23,7 @@
 #import "ios/chrome/browser/ui/reversed_animation.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_controller+protected.h"
+#import "ios/chrome/browser/ui/toolbar/toolbar_controller_base_feature.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_resource_macros.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_tools_menu_button.h"
 #import "ios/chrome/browser/ui/toolbar/tools_menu_button_observer_bridge.h"
@@ -113,6 +114,17 @@ using ios::material::TimingFunction;
 @synthesize style = style_;
 @synthesize dispatcher = dispatcher_;
 
+- (CGFloat)preferredToolbarHeightWhenAlignedToTopOfScreen {
+  DCHECK(base::FeatureList::IsEnabled(kSafeAreaCompatibleToolbar));
+  InterfaceIdiom idiom = IsIPadIdiom() ? IPAD_IDIOM : IPHONE_IDIOM;
+  CGRect frame = kToolbarFrame[idiom];
+  if (idiom == IPHONE_IDIOM) {
+    CGFloat statusBarOffset = [self statusBarOffset];
+    frame.size.height += statusBarOffset;
+  }
+  return frame.size.height;
+}
+
 - (instancetype)initWithStyle:(ToolbarControllerStyle)style
                    dispatcher:
                        (id<ApplicationCommands, BrowserCommands>)dispatcher {
@@ -138,6 +150,14 @@ using ios::material::TimingFunction;
     }
 
     view_ = [[ToolbarView alloc] initWithFrame:viewFrame];
+    if (base::FeatureList::IsEnabled(kSafeAreaCompatibleToolbar)) {
+      [view_ setTranslatesAutoresizingMaskIntoConstraints:NO];
+    }
+
+    UIViewAutoresizing autoresizingMask =
+        UIViewAutoresizingFlexibleLeadingMargin() |
+        UIViewAutoresizingFlexibleTopMargin;
+
     backgroundView_ = [[UIImageView alloc] initWithFrame:backgroundFrame];
     toolsMenuButton_ =
         [[ToolbarToolsMenuButton alloc] initWithFrame:toolsMenuButtonFrame
@@ -145,9 +165,7 @@ using ios::material::TimingFunction;
     [toolsMenuButton_ addTarget:self.dispatcher
                          action:@selector(showToolsMenu)
                forControlEvents:UIControlEventTouchUpInside];
-    [toolsMenuButton_
-        setAutoresizingMask:UIViewAutoresizingFlexibleLeadingMargin() |
-                            UIViewAutoresizingFlexibleBottomMargin];
+    [toolsMenuButton_ setAutoresizingMask:autoresizingMask];
 
     [view_ addSubview:backgroundView_];
     [view_ addSubview:toolsMenuButton_];
@@ -158,9 +176,7 @@ using ios::material::TimingFunction;
     if (idiom == IPAD_IDIOM) {
       CGRect shareButtonFrame = LayoutRectGetRect(kShareMenuButtonFrame);
       shareButton_ = [[UIButton alloc] initWithFrame:shareButtonFrame];
-      [shareButton_
-          setAutoresizingMask:UIViewAutoresizingFlexibleLeadingMargin() |
-                              UIViewAutoresizingFlexibleBottomMargin];
+      [shareButton_ setAutoresizingMask:autoresizingMask];
       [self setUpButton:shareButton_
              withImageEnum:ToolbarButtonNameShare
            forInitialState:UIControlStateNormal
@@ -177,7 +193,9 @@ using ios::material::TimingFunction;
     CGRect shadowFrame = kShadowViewFrame[idiom];
     shadowFrame.origin.y = CGRectGetMaxY(backgroundFrame);
     shadowView_ = [[UIImageView alloc] initWithFrame:shadowFrame];
-    [shadowView_ setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
+    [shadowView_ setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
+                                     UIViewAutoresizingFlexibleTopMargin];
+
     [shadowView_ setUserInteractionEnabled:NO];
     [view_ addSubview:shadowView_];
     [shadowView_ setImage:NativeImage(IDR_IOS_TOOLBAR_SHADOW)];
@@ -189,7 +207,9 @@ using ios::material::TimingFunction;
       fullBleedShadowView_ =
           [[UIImageView alloc] initWithFrame:fullBleedShadowFrame];
       [fullBleedShadowView_
-          setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
+          setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
+                              UIViewAutoresizingFlexibleTopMargin];
+
       [fullBleedShadowView_ setUserInteractionEnabled:NO];
       [fullBleedShadowView_ setAlpha:0];
       [view_ addSubview:fullBleedShadowView_];
@@ -222,9 +242,7 @@ using ios::material::TimingFunction;
       [stackButton_ setTitleColor:highlightColor
                          forState:UIControlStateHighlighted];
 
-      [stackButton_
-          setAutoresizingMask:UIViewAutoresizingFlexibleLeadingMargin() |
-                              UIViewAutoresizingFlexibleBottomMargin];
+      [stackButton_ setAutoresizingMask:autoresizingMask];
 
       [self setUpButton:stackButton_
              withImageEnum:ToolbarButtonNameStack
@@ -260,6 +278,9 @@ using ios::material::TimingFunction;
 }
 
 #pragma mark - Public API
+
+- (void)safeAreaInsetsDidChange {
+}
 
 - (void)applicationDidEnterBackground:(NSNotification*)notify {
   if (toolsPopupController_) {

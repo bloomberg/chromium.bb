@@ -62,6 +62,10 @@ extern const char kOmniboxUIHideSuggestionUrlTrivialSubdomainsDescription[];
 extern const char kPhysicalWeb[];
 extern const char kPhysicalWebDescription[];
 
+// Title and description for the flag to have the toolbar respect the safe area.
+extern const char kSafeAreaCompatibleToolbarName[];
+extern const char kSafeAreaCompatibleToolbarDescription[];
+
 // Title and description for the flag to enable the TabSwitcher to present the
 // BVC.
 extern const char kTabSwitcherPresentsBVCName[];
