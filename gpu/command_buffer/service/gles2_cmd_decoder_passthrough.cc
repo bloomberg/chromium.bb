@@ -678,6 +678,9 @@ bool GLES2DecoderPassthroughImpl::Initialize(
       feature_info_->feature_flags().nv_egl_stream_consumer_external) {
     bound_textures_[GL_TEXTURE_EXTERNAL_OES].resize(num_texture_units);
   }
+  if (feature_info_->feature_flags().arb_texture_rectangle) {
+    bound_textures_[GL_TEXTURE_RECTANGLE_ARB].resize(num_texture_units);
+  }
 
   // Initialize the tracked buffer bindings
   bound_buffers_[GL_ARRAY_BUFFER] = 0;
