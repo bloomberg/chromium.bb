@@ -99,10 +99,10 @@ bool AudioOutputStreamFuchsia::UpdatePresentatioDelay() {
     DLOG(ERROR) << "fuchsia_audio_output_stream_get_min_delay() failed: "
                 << result;
     callback_->OnError();
-    return true;
+    return false;
   }
 
-  return false;
+  return true;
 }
 
 void AudioOutputStreamFuchsia::PumpSamples() {
