@@ -433,6 +433,8 @@ blink_core_sources("layout") {
     "ng/ng_out_of_flow_layout_part.cc",
     "ng/ng_out_of_flow_layout_part.h",
     "ng/ng_out_of_flow_positioned_descendant.h",
+    "ng/ng_page_layout_algorithm.cc",
+    "ng/ng_page_layout_algorithm.h",
     "ng/ng_physical_box_fragment.cc",
     "ng/ng_physical_box_fragment.h",
     "ng/ng_physical_container_fragment.cc",
