@@ -44,7 +44,7 @@ upload.verbosity = 0  # Errors only.
 
 CHROMIUM_GIT_URL = 'https://chromium.googlesource.com/chromium/src.git'
 CL_ISSUE_RE = re.compile('^Issue number: ([0-9]+) \((.*)\)$')
-RIETVELD_URL_RE = re.compile('^https?://(.*)/(.*)')
+REVIEW_URL_RE = re.compile('^https?://(.*)/(.*)')
 ROLL_BRANCH_NAME = 'special_webgl_roll_branch'
 TRYJOB_STATUS_SLEEP_SECONDS = 30
 
@@ -56,7 +56,7 @@ WEBGL_REVISION_TEXT_FILE = os.path.join(
 
 CommitInfo = collections.namedtuple('CommitInfo', ['git_commit',
                                                    'git_repo_url'])
-CLInfo = collections.namedtuple('CLInfo', ['issue', 'url', 'rietveld_server'])
+CLInfo = collections.namedtuple('CLInfo', ['issue', 'url', 'review_server'])
 
 
 def _VarLookup(local_scope):
@@ -189,13 +189,13 @@ class AutoRoller(object):
     issue_number = int(m.group(1))
     url = m.group(2)
 
-    # Parse the Rietveld host from the URL.
-    m = RIETVELD_URL_RE.match(url)
+    # Parse the codereview host from the URL.
+    m = REVIEW_URL_RE.match(url)
     if not m:
-      logging.error('Cannot parse Rietveld host from URL: %s', url)
+      logging.error('Cannot parse codereview host from URL: %s', url)
       sys.exit(-1)
-    rietveld_server = m.group(1)
-    return CLInfo(issue_number, url, rietveld_server)
+    review_server = m.group(1)
+    return CLInfo(issue_number, url, review_server)
 
   def _GetCurrentBranchName(self):
     return self._RunCommand(

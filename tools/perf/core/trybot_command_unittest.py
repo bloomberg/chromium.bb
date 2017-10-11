@@ -551,19 +551,21 @@ class TrybotCommandTest(unittest.TestCase):
     self._AssertTryBotExceptions(
         ('PLEASE NOTE: The workflow for Perf Try jobs is changed. '
          'In order to run the perf try job, you must first upload your '
-         'changes to rietveld.'),
+         'changes for review.'),
         command._GetChangeList)
 
   def testGetChangeListWithIssue(self):
     temp_file = self._MockTempFile(
-        12345, 'https://codereview.chromium.org/12345')
+        12345, 'https://chromium-review.googlesource.com/c/12345')
     command, _ = self._SetupTrybotCommand(
         {'linux_perf_bisect': 'stuff'}, 'linux')
     self._ExpectProcesses((
         (['git', 'cl', 'issue', '--json', temp_file],
-         (0, 'stuff https://codereview.chromium.org/12345 stuff', None)),
+         (0,
+          'stuff https://chromium-review.googlesource.com/c/12345 stuff',
+          None)),
     ))
-    self.assertEquals('https://codereview.chromium.org/12345',
+    self.assertEquals('https://chromium-review.googlesource.com/c/12345',
                       command._GetChangeList())
 
   def testRunTryJobFailed(self):
@@ -609,7 +611,7 @@ class TrybotCommandTest(unittest.TestCase):
           '-b',
           'linux_perf_bisect'], (0, '', None)),))
     command._RunTryJob('linux', arguments, None)
-    self.assertEquals('Perf Try job sent to rietveld for linux platform.',
+    self.assertEquals('Perf Try job started for linux platform.',
                       sys.stdout.getvalue().strip())
 
   def testNoUpstream(self):
@@ -694,7 +696,7 @@ class TrybotCommandTest(unittest.TestCase):
     command, options = self._SetupTrybotCommand({'linux_perf_bisect': 'stuff'},
                                                 'linux')
     temp_file = self._MockTempFile(
-        12345, 'https://codereview.chromium.org/12345')
+        12345, 'https://chromium-review.googlesource.com/c/12345')
 
     self._ExpectProcesses((
         (['git', 'rev-parse', '--abbrev-ref', '--show-toplevel', 'HEAD'],
@@ -702,7 +704,9 @@ class TrybotCommandTest(unittest.TestCase):
         (['git', 'update-index', '--refresh', '-q'], (0, '', None,)),
         (['git', 'diff-index', 'HEAD'], (0, '', None)),
         (['git', 'cl', 'issue', '--json', temp_file],
-         (0, 'stuff https://codereview.chromium.org/12345 stuff', None)),
+         (0,
+          'stuff https://chromium-review.googlesource.com/c/12345 stuff',
+          None)),
         (['git', 'cl', 'try', '-m', 'tryserver.chromium.perf',
           '-p', test_args, '-b', 'linux_perf_bisect'], (0, '', None))
     ))
@@ -711,13 +715,14 @@ class TrybotCommandTest(unittest.TestCase):
                     return_value=trybot_command.CHROMIUM_SRC_PATH):
       command._AttemptTryjob(options, [])
 
-    output = ('Running try job....\n'
-              'view progress here https://codereview.chromium.org/12345.\n'
-              '\tRepo Name: src\n'
-              '\tPath: %s\n'
-              '\tBranch: br\n'
-              'Perf Try job sent to rietveld for linux platform.') % (
-                  options.repo_path)
+    output = (
+        'Running try job....\n'
+        'view progress here https://chromium-review.googlesource.com/c/12345.\n'
+        '\tRepo Name: src\n'
+        '\tPath: %s\n'
+        '\tBranch: br\n'
+        'Perf Try job started for linux platform.') % (
+            options.repo_path)
     self.assertEquals(output, sys.stdout.getvalue().strip())
 
   @mock.patch('core.trybot_command.os.chdir', mock.MagicMock())
@@ -736,7 +741,7 @@ class TrybotCommandTest(unittest.TestCase):
          'android_perf_bisect': 'stuff',
          'mac_perf_bisect': 'stuff'}, 'all')
     temp_file = self._MockTempFile(
-        12345, 'https://codereview.chromium.org/12345')
+        12345, 'https://chromium-review.googlesource.com/c/12345')
 
     self._ExpectProcesses((
         (['git', 'rev-parse', '--abbrev-ref', '--show-toplevel', 'HEAD'],
@@ -744,7 +749,9 @@ class TrybotCommandTest(unittest.TestCase):
         (['git', 'update-index', '--refresh', '-q'], (0, '', None,)),
         (['git', 'diff-index', 'HEAD'], (0, '', None)),
         (['git', 'cl', 'issue', '--json', temp_file],
-         (0, 'stuff https://codereview.chromium.org/12345 stuff', None)),
+         (0,
+          'stuff https://chromium-review.googlesource.com/c/12345 stuff',
+          None)),
         (['git', 'cl', 'try', '-m', 'tryserver.chromium.perf',
           '-p', default_config, '-b', 'win_perf_bisect'], (0, '', None)),
         (['git', 'cl', 'try', '-m', 'tryserver.chromium.perf',
@@ -761,17 +768,18 @@ class TrybotCommandTest(unittest.TestCase):
                     return_value=trybot_command.CHROMIUM_SRC_PATH):
       command._AttemptTryjob(options, [])
 
-    output = ('Running try job....\n'
-              'view progress here https://codereview.chromium.org/12345.\n'
-              '\tRepo Name: src\n'
-              '\tPath: %s\n'
-              '\tBranch: br\n'
-              'Perf Try job sent to rietveld for win platform.\n'
-              'Perf Try job sent to rietveld for android platform.\n'
-              'Perf Try job sent to rietveld for win-x64 platform.\n'
-              'Perf Try job sent to rietveld for mac platform.\n'
-              'Perf Try job sent to rietveld for linux platform.') % (
-                  options.repo_path)
+    output = (
+        'Running try job....\n'
+        'view progress here https://chromium-review.googlesource.com/c/12345.\n'
+        '\tRepo Name: src\n'
+        '\tPath: %s\n'
+        '\tBranch: br\n'
+        'Perf Try job started for win platform.\n'
+        'Perf Try job started for android platform.\n'
+        'Perf Try job started for win-x64 platform.\n'
+        'Perf Try job started for mac platform.\n'
+        'Perf Try job started for linux platform.') % (
+            options.repo_path)
     self.assertEquals(output, sys.stdout.getvalue().strip())
 
   @mock.patch('core.trybot_command.os.chdir', mock.MagicMock())
@@ -784,7 +792,7 @@ class TrybotCommandTest(unittest.TestCase):
         {'linux_perf_bisect': 'stuff'}, 'linux',
         repo_path='root/path_to/repo/v8')
     temp_file = self._MockTempFile(
-        12345, 'https://codereview.chromium.org/12345')
+        12345, 'https://chromium-review.googlesource.com/c/12345')
 
     self._ExpectProcesses((
         (['git', 'rev-parse', '--abbrev-ref', '--show-toplevel', 'HEAD'],
@@ -799,7 +807,9 @@ class TrybotCommandTest(unittest.TestCase):
          (0, 'https://chromium.googlesource.com/v8/v8.git', None)),
         (['git', 'rev-parse', 'br1@{upstream}'], (0, 'feedbeed', None)),
         (['git', 'cl', 'issue', '--json', temp_file],
-         (0, 'stuff https://codereview.chromium.org/12345 stuff', None)),
+         (0,
+          'stuff https://chromium-review.googlesource.com/c/12345 stuff',
+          None)),
         (['git', 'cl', 'try', '-m', 'tryserver.chromium.perf',
           '-p', test_args, '-p', deps_override_arg,
           '-b', 'linux_perf_bisect'], (0, '', None))
@@ -809,12 +819,13 @@ class TrybotCommandTest(unittest.TestCase):
                     return_value='root/path_to/repo/v8'):
       command._AttemptTryjob(options, [])
 
-    output = ('Running try job....\n'
-              'view progress here https://codereview.chromium.org/12345.\n'
-              '\tRepo Name: v8\n'
-              '\tPath: root/path_to/repo/v8\n'
-              '\tBranch: br\n'
-              'Perf Try job sent to rietveld for linux platform.')
+    output = (
+        'Running try job....\n'
+        'view progress here https://chromium-review.googlesource.com/c/12345.\n'
+        '\tRepo Name: v8\n'
+        '\tPath: root/path_to/repo/v8\n'
+        '\tBranch: br\n'
+        'Perf Try job started for linux platform.')
     self.assertEquals(output, sys.stdout.getvalue().strip())
 
   @mock.patch('core.trybot_command.os.chdir', mock.MagicMock())
@@ -833,7 +844,7 @@ class TrybotCommandTest(unittest.TestCase):
          'android_perf_bisect': 'stuff'},
         'all', repo_path='root/path_to/repo/v8')
     temp_file = self._MockTempFile(
-        12345, 'https://codereview.chromium.org/12345')
+        12345, 'https://chromium-review.googlesource.com/c/12345')
 
     self._ExpectProcesses((
         (['git', 'rev-parse', '--abbrev-ref', '--show-toplevel', 'HEAD'],
@@ -849,7 +860,9 @@ class TrybotCommandTest(unittest.TestCase):
         (['git', 'rev-parse', 'br1@{upstream}'],
          (0, 'feedbeed', None)),
         (['git', 'cl', 'issue', '--json', temp_file],
-         (0, 'stuff https://codereview.chromium.org/12345 stuff', None)),
+         (0,
+          'stuff https://chromium-review.googlesource.com/c/12345 stuff',
+          None)),
         (['git', 'cl', 'try', '-m', 'tryserver.chromium.perf',
           '-p', android_config, '-p', deps_override_arg,
           '-b', 'android_perf_bisect'], (0, '', None)),
@@ -865,14 +878,15 @@ class TrybotCommandTest(unittest.TestCase):
                     return_value='root/path_to/repo/v8'):
       command._AttemptTryjob(options, [])
 
-    output = ('Running try job....\n'
-              'view progress here https://codereview.chromium.org/12345.\n'
-              '\tRepo Name: v8\n'
-              '\tPath: root/path_to/repo/v8\n'
-              '\tBranch: br\n'
-              'Perf Try job sent to rietveld for android platform.\n'
-              'Perf Try job sent to rietveld for win-x64 platform.\n'
-              'Perf Try job sent to rietveld for linux platform.')
+    output = (
+        'Running try job....\n'
+        'view progress here https://chromium-review.googlesource.com/c/12345.\n'
+        '\tRepo Name: v8\n'
+        '\tPath: root/path_to/repo/v8\n'
+        '\tBranch: br\n'
+        'Perf Try job started for android platform.\n'
+        'Perf Try job started for win-x64 platform.\n'
+        'Perf Try job started for linux platform.')
     self.assertEquals(output, sys.stdout.getvalue().strip())
 
   @mock.patch('core.trybot_command.os.chdir', mock.MagicMock())
@@ -885,7 +899,7 @@ class TrybotCommandTest(unittest.TestCase):
         {'linux_perf_bisect': 'stuff'}, 'linux',
         repo_path='root/path_to/repo/v8', deps_revision='feedbeed')
     temp_file = self._MockTempFile(
-        12345, 'https://codereview.chromium.org/12345')
+        12345, 'https://chromium-review.googlesource.com/c/12345')
 
     self._ExpectProcesses((
         (['git', 'rev-parse', '--abbrev-ref', '--show-toplevel', 'HEAD'],
@@ -893,7 +907,9 @@ class TrybotCommandTest(unittest.TestCase):
         (['git', 'update-index', '--refresh', '-q'], (0, '', None,)),
         (['git', 'diff-index', 'HEAD'], (0, '', None)),
         (['git', 'cl', 'issue', '--json', temp_file],
-         (0, 'stuff https://codereview.chromium.org/12345 stuff', None)),
+         (0,
+          'stuff https://chromium-review.googlesource.com/c/12345 stuff',
+          None)),
         (['git', 'cl', 'try', '-m', 'tryserver.chromium.perf',
           '-p', test_args, '-p', deps_override_arg,
           '-b', 'linux_perf_bisect'], (0, '', None))
@@ -902,12 +918,13 @@ class TrybotCommandTest(unittest.TestCase):
                     return_value='root/path_to/repo/v8'):
       command._AttemptTryjob(options, [])
 
-    output = ('Running try job....\n'
-              'view progress here https://codereview.chromium.org/12345.\n'
-              '\tRepo Name: v8\n'
-              '\tPath: root/path_to/repo/v8\n'
-              '\tBranch: br\n'
-              'Perf Try job sent to rietveld for linux platform.')
+    output = (
+        'Running try job....\n'
+        'view progress here https://chromium-review.googlesource.com/c/12345.\n'
+        '\tRepo Name: v8\n'
+        '\tPath: root/path_to/repo/v8\n'
+        '\tBranch: br\n'
+        'Perf Try job started for linux platform.')
     self.assertEquals(output, sys.stdout.getvalue().strip())
 
 
