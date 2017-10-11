@@ -6,6 +6,7 @@
 #define ng_box_fragment_painter_h
 
 #include "core/layout/BackgroundBleedAvoidance.h"
+#include "core/layout/api/HitTestAction.h"
 #include "core/paint/BoxPainterBase.h"
 #include "platform/geometry/LayoutSize.h"
 #include "platform/wtf/Allocator.h"
@@ -13,10 +14,14 @@
 namespace blink {
 
 class FillLayer;
-class LayoutRect;
-struct PaintInfo;
-class NGPaintFragment;
+class HitTestLocation;
+class HitTestRequest;
+class HitTestResult;
 class Image;
+class LayoutRect;
+class NGPaintFragment;
+class NGPhysicalFragment;
+struct PaintInfo;
 
 // Painter for LayoutNG box fragments, paints borders and background. Delegates
 // to NGTextFragmentPainter to paint line box fragments.
@@ -40,6 +45,12 @@ class NGBoxFragmentPainter : public BoxPainterBase {
 
   LayoutRect BoundsForDrawingRecorder(const PaintInfo&,
                                       const LayoutPoint& adjusted_paint_offset);
+
+  // TODO(eae): Change to take a HitTestResult pointer instead as it mutates.
+  bool NodeAtPoint(HitTestResult&,
+                   const HitTestLocation& location_in_container,
+                   const LayoutPoint& accumulated_offset,
+                   HitTestAction);
 
  protected:
   BoxPainterBase::FillLayerInfo GetFillLayerInfo(
@@ -69,6 +80,17 @@ class NGBoxFragmentPainter : public BoxPainterBase {
                        const LayoutRect&,
                        const Color& background_color,
                        BackgroundBleedAvoidance = kBackgroundBleedNone);
+
+  bool VisibleToHitTestRequest(const HitTestRequest&) const;
+  bool HitTestChildren(HitTestResult&,
+                       const Vector<std::unique_ptr<const NGPaintFragment>>&,
+                       const HitTestLocation& location_in_container,
+                       const LayoutPoint& accumulated_offset,
+                       HitTestAction);
+  bool HitTestTextFragment(HitTestResult&,
+                           const NGPhysicalFragment&,
+                           const HitTestLocation& location_in_container,
+                           const LayoutPoint& accumulated_offset);
 
   const NGPaintFragment& box_fragment_;
 };
