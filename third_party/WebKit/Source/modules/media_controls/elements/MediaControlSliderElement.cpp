@@ -8,6 +8,7 @@
 #include "core/html/HTMLDivElement.h"
 #include "core/input_type_names.h"
 #include "core/layout/LayoutBoxModelObject.h"
+#include "core/layout/LayoutView.h"
 #include "core/resize_observer/ResizeObserver.h"
 #include "core/resize_observer/ResizeObserverEntry.h"
 #include "platform/wtf/text/StringBuilder.h"
@@ -16,9 +17,10 @@ namespace {
 
 void SetSegmentDivPosition(blink::HTMLDivElement* segment,
                            blink::MediaControlSliderElement::Position position,
-                           int width) {
-  int segment_width = int(position.width * width);
-  int segment_left = int(position.left * width);
+                           int width,
+                           float zoom_factor) {
+  int segment_width = int((position.width * width) / zoom_factor);
+  int segment_left = int((position.left * width) / zoom_factor);
 
   StringBuilder builder;
   builder.Append("width: ");
@@ -119,7 +121,7 @@ void MediaControlSliderElement::SetBeforeSegmentPosition(
   DCHECK(segment_highlight_before_);
   before_segment_position_ = position;
   SetSegmentDivPosition(segment_highlight_before_, before_segment_position_,
-                        Width());
+                        Width(), ZoomFactor());
 }
 
 void MediaControlSliderElement::SetAfterSegmentPosition(
@@ -127,7 +129,7 @@ void MediaControlSliderElement::SetAfterSegmentPosition(
   DCHECK(segment_highlight_after_);
   after_segment_position_ = position;
   SetSegmentDivPosition(segment_highlight_after_, after_segment_position_,
-                        Width());
+                        Width(), ZoomFactor());
 }
 
 int MediaControlSliderElement::Width() {
@@ -136,11 +138,17 @@ int MediaControlSliderElement::Width() {
   return 0;
 }
 
+float MediaControlSliderElement::ZoomFactor() const {
+  if (!GetDocument().GetLayoutView())
+    return 1;
+  return GetDocument().GetLayoutView()->ZoomFactor();
+}
+
 void MediaControlSliderElement::NotifyElementSizeChanged() {
   SetSegmentDivPosition(segment_highlight_before_, before_segment_position_,
-                        Width());
+                        Width(), ZoomFactor());
   SetSegmentDivPosition(segment_highlight_after_, after_segment_position_,
-                        Width());
+                        Width(), ZoomFactor());
 }
 
 DEFINE_TRACE(MediaControlSliderElement) {
