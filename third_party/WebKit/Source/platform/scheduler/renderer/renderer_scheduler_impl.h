@@ -569,7 +569,7 @@ class PLATFORM_EXPORT RendererSchedulerImpl
     TaskCostEstimator loading_task_cost_estimator;
     TaskCostEstimator timer_task_cost_estimator;
     IdleTimeEstimator idle_time_estimator;
-    UseCase current_use_case;
+    TraceableState<UseCase, kTracingCategoryNameDefault> current_use_case;
     Policy current_policy;
     base::TimeTicks current_policy_expiration_time;
     base::TimeTicks estimated_next_frame_begin;
@@ -582,13 +582,13 @@ class PLATFORM_EXPORT RendererSchedulerImpl
     int navigation_task_expected_count;
     ExpensiveTaskPolicy expensive_task_policy;
     bool renderer_hidden;
-    bool renderer_backgrounded;
+    TraceableState<bool, kTracingCategoryNameDefault> renderer_backgrounded;
     bool stopping_when_backgrounded_enabled;
     bool stopped_when_backgrounded;
     bool was_shutdown;
-    bool loading_tasks_seem_expensive;
-    bool timer_tasks_seem_expensive;
-    bool touchstart_expected_soon;
+    TraceableState<bool, kTracingCategoryNameInfo> loading_tasks_seem_expensive;
+    TraceableState<bool, kTracingCategoryNameInfo> timer_tasks_seem_expensive;
+    TraceableState<bool, kTracingCategoryNameDefault> touchstart_expected_soon;
     bool have_seen_a_begin_main_frame;
     bool have_reported_blocking_intervention_in_current_policy;
     bool have_reported_blocking_intervention_since_navigation;
@@ -596,7 +596,7 @@ class PLATFORM_EXPORT RendererSchedulerImpl
     bool begin_frame_not_expected_soon;
     bool in_idle_period_for_testing;
     bool use_virtual_time;
-    bool is_audio_playing;
+    TraceableState<bool, kTracingCategoryNameDefault> is_audio_playing;
     bool compositor_will_send_main_frame_not_expected;
     bool virtual_time_stopped;
     bool has_navigated;
@@ -608,12 +608,6 @@ class PLATFORM_EXPORT RendererSchedulerImpl
     WakeUpBudgetPool* wake_up_budget_pool;                // Not owned.
     RendererMetricsHelper metrics_helper;
     RendererProcessType process_type;
-    StateTracer<kTracingCategoryNameDefault> use_case_tracer;
-    StateTracer<kTracingCategoryNameDefault> backgrounding_tracer;
-    StateTracer<kTracingCategoryNameDefault> audio_playing_tracer;
-    StateTracer<kTracingCategoryNameDefault> touchstart_expected_soon_tracer;
-    StateTracer<kTracingCategoryNameInfo> loading_tasks_seem_expensive_tracer;
-    StateTracer<kTracingCategoryNameInfo> timer_tasks_seem_expensive_tracer;
   };
 
   struct AnyThread {

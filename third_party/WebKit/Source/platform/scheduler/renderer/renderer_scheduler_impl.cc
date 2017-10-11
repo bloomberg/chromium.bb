@@ -193,18 +193,38 @@ RendererSchedulerImpl::MainThreadOnly::MainThreadOnly(
                           time_source,
                           kShortIdlePeriodDurationSampleCount,
                           kShortIdlePeriodDurationPercentile),
-      current_use_case(UseCase::NONE),
+      current_use_case(
+          UseCase::NONE,
+          "RendererScheduler.UseCase",
+          renderer_scheduler_impl,
+          UseCaseToString),
       renderer_pause_count(0),
       navigation_task_expected_count(0),
       expensive_task_policy(ExpensiveTaskPolicy::RUN),
       renderer_hidden(false),
-      renderer_backgrounded(false),
+      renderer_backgrounded(
+          false,
+          "RendererScheduler.Backgrounded",
+          renderer_scheduler_impl,
+          BackgroundStateToString),
       stopping_when_backgrounded_enabled(false),
       stopped_when_backgrounded(false),
       was_shutdown(false),
-      loading_tasks_seem_expensive(false),
-      timer_tasks_seem_expensive(false),
-      touchstart_expected_soon(false),
+      loading_tasks_seem_expensive(
+          false,
+          "RendererScheduler.LoadingTasksSeemsExpensive",
+          renderer_scheduler_impl,
+          YesNoStateToString),
+      timer_tasks_seem_expensive(
+          false,
+          "RendererScheduler.TimerTasksSeemsExpensive",
+          renderer_scheduler_impl,
+          YesNoStateToString),
+      touchstart_expected_soon(
+          false,
+          "RendererScheduler.TouchstartExpectedSoon",
+          renderer_scheduler_impl,
+          YesNoStateToString),
       have_seen_a_begin_main_frame(false),
       have_reported_blocking_intervention_in_current_policy(false),
       have_reported_blocking_intervention_since_navigation(false),
@@ -212,7 +232,11 @@ RendererSchedulerImpl::MainThreadOnly::MainThreadOnly(
       begin_frame_not_expected_soon(false),
       in_idle_period_for_testing(false),
       use_virtual_time(false),
-      is_audio_playing(false),
+      is_audio_playing(
+          false,
+          "RendererScheduler.AudioPlaying",
+          renderer_scheduler_impl,
+          AudioPlayingStateToString),
       compositor_will_send_main_frame_not_expected(false),
       virtual_time_stopped(false),
       has_navigated(false),
@@ -220,21 +244,7 @@ RendererSchedulerImpl::MainThreadOnly::MainThreadOnly(
       rail_mode_observer(nullptr),
       wake_up_budget_pool(nullptr),
       metrics_helper(renderer_scheduler_impl, now, renderer_backgrounded),
-      process_type(RendererProcessType::kRenderer),
-      use_case_tracer("RendererScheduler.UseCase", renderer_scheduler_impl),
-      backgrounding_tracer("RendererScheduler.Backgrounded",
-                           renderer_scheduler_impl),
-      audio_playing_tracer("RendererScheduler.AudioPlaying",
-                           renderer_scheduler_impl),
-      touchstart_expected_soon_tracer(
-          "RendererScheduler.TouchstartExpectedSoon",
-          renderer_scheduler_impl),
-      loading_tasks_seem_expensive_tracer(
-          "RendererScheduler.LoadingTasksSeemsExpensive",
-          renderer_scheduler_impl),
-      timer_tasks_seem_expensive_tracer(
-          "RendererScheduler.TimerTasksSeemsExpensive",
-          renderer_scheduler_impl) {}
+      process_type(RendererProcessType::kRenderer) {}
 
 RendererSchedulerImpl::MainThreadOnly::~MainThreadOnly() {}
 
@@ -580,8 +590,6 @@ void RendererSchedulerImpl::SetRendererBackgrounded(bool backgrounded) {
   if (helper_.IsShutdown() ||
       main_thread_only().renderer_backgrounded == backgrounded)
     return;
-  main_thread_only().backgrounding_tracer.SetState(
-      BackgroundStateToString(backgrounded));
 
   main_thread_only().renderer_backgrounded = backgrounded;
 
@@ -614,8 +622,6 @@ void RendererSchedulerImpl::OnAudioStateChanged() {
   main_thread_only().last_audio_state_change =
       helper_.scheduler_tqm_delegate()->NowTicks();
   main_thread_only().is_audio_playing = is_audio_playing;
-  main_thread_only().audio_playing_tracer.SetState(
-      AudioPlayingStateToString(is_audio_playing));
 
   UpdatePolicy();
 }
@@ -972,8 +978,6 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
 
   base::TimeDelta expected_use_case_duration;
   UseCase use_case = ComputeCurrentUseCase(now, &expected_use_case_duration);
-  if (main_thread_only().current_use_case != use_case)
-    main_thread_only().use_case_tracer.SetState(UseCaseToString(use_case));
   main_thread_only().current_use_case = use_case;
 
   base::TimeDelta touchstart_expected_flag_valid_for_duration;
@@ -983,10 +987,6 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
   if (main_thread_only().has_visible_render_widget_with_touch_handler) {
     touchstart_expected_soon = any_thread().user_model.IsGestureExpectedSoon(
         now, &touchstart_expected_flag_valid_for_duration);
-  }
-  if (main_thread_only().touchstart_expected_soon != touchstart_expected_soon) {
-    main_thread_only().touchstart_expected_soon_tracer.SetState(
-        YesNoStateToString(touchstart_expected_soon));
   }
   main_thread_only().touchstart_expected_soon = touchstart_expected_soon;
 
@@ -1004,16 +1004,6 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
       main_thread_only().timer_task_cost_estimator.expected_task_duration() >
       longest_jank_free_task_duration;
 
-  if (main_thread_only().loading_tasks_seem_expensive !=
-      loading_tasks_seem_expensive) {
-    main_thread_only().loading_tasks_seem_expensive_tracer.SetState(
-        YesNoStateToString(loading_tasks_seem_expensive));
-  }
-  if (main_thread_only().timer_tasks_seem_expensive !=
-      timer_tasks_seem_expensive) {
-    main_thread_only().timer_tasks_seem_expensive_tracer.SetState(
-        YesNoStateToString(timer_tasks_seem_expensive));
-  }
   main_thread_only().timer_tasks_seem_expensive = timer_tasks_seem_expensive;
   main_thread_only().loading_tasks_seem_expensive =
       loading_tasks_seem_expensive;
@@ -2104,18 +2094,12 @@ TimeDomain* RendererSchedulerImpl::GetActiveTimeDomain() {
 void RendererSchedulerImpl::OnTraceLogEnabled() {
   CreateTraceEventObjectSnapshot();
 
-  main_thread_only().use_case_tracer.SetState(
-      UseCaseToString(main_thread_only().current_use_case));
-  main_thread_only().backgrounding_tracer.SetState(
-      BackgroundStateToString(main_thread_only().renderer_backgrounded));
-  main_thread_only().audio_playing_tracer.SetState(
-      AudioPlayingStateToString(main_thread_only().is_audio_playing));
-  main_thread_only().touchstart_expected_soon_tracer.SetState(
-      YesNoStateToString(main_thread_only().touchstart_expected_soon));
-  main_thread_only().loading_tasks_seem_expensive_tracer.SetState(
-      YesNoStateToString(main_thread_only().loading_tasks_seem_expensive));
-  main_thread_only().timer_tasks_seem_expensive_tracer.SetState(
-      YesNoStateToString(main_thread_only().timer_tasks_seem_expensive));
+  main_thread_only().current_use_case.OnTraceLogEnabled();
+  main_thread_only().renderer_backgrounded.OnTraceLogEnabled();
+  main_thread_only().loading_tasks_seem_expensive.OnTraceLogEnabled();
+  main_thread_only().timer_tasks_seem_expensive.OnTraceLogEnabled();
+  main_thread_only().touchstart_expected_soon.OnTraceLogEnabled();
+  main_thread_only().is_audio_playing.OnTraceLogEnabled();
 }
 
 void RendererSchedulerImpl::OnTraceLogDisabled() {}

@@ -203,6 +203,7 @@ jumbo_source_set("unit_tests") {
     "renderer/web_frame_scheduler_impl_unittest.cc",
     "renderer/web_view_scheduler_impl_unittest.cc",
     "renderer/webthread_impl_for_renderer_scheduler_unittest.cc",
+    "util/tracing_helper_unittest.cc",
   ]
 
   deps = [
