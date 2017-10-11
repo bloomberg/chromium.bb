@@ -27,12 +27,15 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Defines the properties of all notification channels we post notifications to in Android O+.
- *
- * PLEASE NOTE, notification channels appear in system UI and are persisted forever by Android,
- * so should not be added or removed lightly, and the proper deprecation and versioning steps must
- * be taken when doing so. Please read the comments and speak to one of this file's OWNERs when
- * adding/removing a channel.
+ * Contains the properties of all our pre-definable notification channels on Android O+. In
+ * practice this is all our channels except site channels, which are defined dynamically by the
+ * {@link SiteChannelsManager}.
+ * <br/><br/>
+ * PLEASE NOTE: Notification channels appear in system UI and their properties are persisted forever
+ * by Android, so should not be added or removed lightly, and the proper deprecation and versioning
+ * steps must be taken when doing so.
+ * <br/><br/>
+ * See the README.md in this directory for more information before adding or changing any channels.
  */
 @TargetApi(Build.VERSION_CODES.O)
 public class ChannelDefinitions {
@@ -59,6 +62,7 @@ public class ChannelDefinitions {
      * PredefinedChannels.MAP below with the appropriate channel parameters.
      * To remove an existing channel, remove the ID from this StringDef, remove its entry from
      * Predefined Channels.MAP, and add the ID to the LEGACY_CHANNELS_ID array below.
+     * See the README in this directory for more detailed instructions.
      */
     @StringDef({CHANNEL_ID_BROWSER, CHANNEL_ID_DOWNLOADS, CHANNEL_ID_INCOGNITO, CHANNEL_ID_MEDIA,
             CHANNEL_ID_SCREEN_CAPTURE, CHANNEL_ID_CONTENT_SUGGESTIONS, CHANNEL_ID_SITES})
@@ -114,7 +118,8 @@ public class ChannelDefinitions {
                             NotificationManager.IMPORTANCE_LOW, CHANNEL_GROUP_ID_GENERAL));
             startup.add(CHANNEL_ID_MEDIA);
 
-            // CHANNEL_ID_SCREENCAPTURE will be created on first use, instead of on startup.
+            // CHANNEL_ID_SCREEN_CAPTURE will be created on first use, instead of on startup,
+            // so that it doesn't clutter the list for users who don't use this feature.
             map.put(CHANNEL_ID_SCREEN_CAPTURE,
                     new PredefinedChannel(CHANNEL_ID_SCREEN_CAPTURE,
                             R.string.notification_category_screen_capture,
@@ -129,8 +134,9 @@ public class ChannelDefinitions {
                     new PredefinedChannel(CHANNEL_ID_SITES, R.string.notification_category_sites,
                             NotificationManager.IMPORTANCE_DEFAULT, CHANNEL_GROUP_ID_GENERAL));
 
-            // As of Aug 2017, this channel is experimental and enabled only through the associated
-            // feature (see org.chromium.chrome.browser.ntp.ContentSuggestionsNotificationHelper).
+            // Not adding to startup channels because this channel is experimental and enabled only
+            // through the associated feature (see
+            // org.chromium.chrome.browser.ntp.ContentSuggestionsNotificationHelper).
             map.put(CHANNEL_ID_CONTENT_SUGGESTIONS,
                     new PredefinedChannel(CHANNEL_ID_CONTENT_SUGGESTIONS,
                             R.string.notification_category_content_suggestions,
