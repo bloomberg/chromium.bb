@@ -36,3 +36,4 @@ $ git am --3way --message-id -p4 /tmp/patchdir
 
 Local Modifications:
  - codereview.settings has been excluded.
+ - the definition of CLIENT_ID has been updated to match the 10.0.16299.0 SDK

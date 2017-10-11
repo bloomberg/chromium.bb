@@ -19,7 +19,8 @@
 
 // Declarations that the system headers should provide but don’t.
 
-struct CLIENT_ID;
+struct _CLIENT_ID;
+typedef _CLIENT_ID CLIENT_ID;
 
 NTSTATUS NTAPI NtCreateThreadEx(PHANDLE ThreadHandle,
                                 ACCESS_MASK DesiredAccess,
