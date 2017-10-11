@@ -1525,7 +1525,6 @@ crbug.com/600248 external/wpt/web-animations/interfaces/Animation/finish.html [ 
 crbug.com/600248 external/wpt/web-animations/timing-model/animations/updating-the-finished-state.html [ Timeout ]
 crbug.com/600248 external/wpt/web-animations/animation-model/animation-types/interpolation-per-property.html [ Timeout ]
 crbug.com/600248 external/wpt/web-animations/animation-model/animation-types/addition-per-property.html [ Timeout ]
-crbug.com/600248 external/wpt/web-animations/animation-model/animation-types/discrete-animation.html [ Failure ]
 crbug.com/600248 external/wpt/web-animations/timing-model/animations/current-time.html [ Failure ]
 crbug.com/600248 external/wpt/web-animations/timing-model/animations/set-the-animation-start-time.html [ Failure ]
 
