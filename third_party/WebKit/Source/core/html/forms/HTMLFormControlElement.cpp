@@ -22,7 +22,7 @@
  *
  */
 
-#include "core/html/HTMLFormControlElement.h"
+#include "core/html/forms/HTMLFormControlElement.h"
 
 #include "core/dom/AXObjectCache.h"
 #include "core/dom/ElementTraversal.h"
@@ -491,11 +491,12 @@ void HTMLFormControlElement::UpdateVisibleValidationMessage() {
   TextDirection message_dir = TextDirection::kLtr;
   TextDirection sub_message_dir = TextDirection::kLtr;
   String sub_message = ValidationSubMessage().StripWhiteSpace();
-  if (message.IsEmpty())
+  if (message.IsEmpty()) {
     client->HideValidationMessage(*this);
-  else
+  } else {
     FindCustomValidationMessageTextDirection(message, message_dir, sub_message,
                                              sub_message_dir);
+  }
   client->ShowValidationMessage(*this, message, message_dir, sub_message,
                                 sub_message_dir);
 }

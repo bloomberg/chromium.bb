@@ -55,7 +55,7 @@
 #include "core/fullscreen/Fullscreen.h"
 #include "core/html/HTMLFrameElement.h"
 #include "core/html/HTMLPlugInElement.h"
-#include "core/html/TextControlElement.h"
+#include "core/html/forms/TextControlElement.h"
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/html_names.h"
 #include "core/input/EventHandler.h"

@@ -13,7 +13,7 @@
 #include "core/editing/SelectionTemplate.h"
 #include "core/editing/VisibleSelection.h"
 #include "core/html/HTMLElement.h"
-#include "core/html/TextControlElement.h"
+#include "core/html/forms/TextControlElement.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -35,7 +35,7 @@
 #include "core/editing/TextAffinity.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleUnits.h"
-#include "core/html/TextControlElement.h"
+#include "core/html/forms/TextControlElement.h"
 #include "core/layout/api/LineLayoutAPIShim.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/compositing/CompositedSelectionBound.h"

@@ -51,7 +51,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLBRElement.h"
-#include "core/html/TextControlElement.h"
+#include "core/html/forms/TextControlElement.h"
 #include "core/html_names.h"
 #include "core/layout/HitTestRequest.h"
 #include "core/layout/HitTestResult.h"

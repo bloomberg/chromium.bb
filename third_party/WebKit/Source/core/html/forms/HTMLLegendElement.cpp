@@ -26,8 +26,8 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
-#include "core/html/HTMLFormControlElement.h"
 #include "core/html/forms/HTMLFieldSetElement.h"
+#include "core/html/forms/HTMLFormControlElement.h"
 #include "core/html_names.h"
 
 namespace blink {

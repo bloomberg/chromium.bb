@@ -26,9 +26,9 @@
 #define HTMLFormControlElement_h
 
 #include "core/CoreExport.h"
-#include "core/html/FormAssociated.h"
-#include "core/html/ListedElement.h"
+#include "core/html/forms/FormAssociated.h"
 #include "core/html/forms/LabelableElement.h"
+#include "core/html/forms/ListedElement.h"
 
 namespace blink {
 

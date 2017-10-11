@@ -29,7 +29,7 @@
 #include "base/gtest_prod_util.h"
 #include "core/CoreExport.h"
 #include "core/editing/Forward.h"
-#include "core/html/HTMLFormControlElementWithState.h"
+#include "core/html/forms/HTMLFormControlElementWithState.h"
 #include "public/platform/WebFocusType.h"
 
 namespace blink {

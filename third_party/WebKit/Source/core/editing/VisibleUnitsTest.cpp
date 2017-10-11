@@ -9,7 +9,7 @@
 #include "core/editing/PositionWithAffinity.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/testing/EditingTestBase.h"
-#include "core/html/TextControlElement.h"
+#include "core/html/forms/TextControlElement.h"
 #include "core/layout/LayoutTextFragment.h"
 
 namespace blink {

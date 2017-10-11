@@ -34,7 +34,7 @@
 #include "core/editing/spellcheck/SpellChecker.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
-#include "core/html/TextControlElement.h"
+#include "core/html/forms/TextControlElement.h"
 #include "platform/Histogram.h"
 #include "platform/text/TextCheckerClient.h"
 

@@ -33,7 +33,7 @@
 #include "core/editing/EditingTriState.h"
 #include "core/editing/Editor.h"
 #include "core/frame/UseCounter.h"
-#include "core/html/TextControlElement.h"
+#include "core/html/forms/TextControlElement.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "platform/Histogram.h"
 #include "platform/wtf/AutoReset.h"

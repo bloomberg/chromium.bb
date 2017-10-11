@@ -32,7 +32,7 @@
 #define HTMLOutputElement_h
 
 #include "core/dom/DOMTokenList.h"
-#include "core/html/HTMLFormControlElement.h"
+#include "core/html/forms/HTMLFormControlElement.h"
 
 namespace blink {
 

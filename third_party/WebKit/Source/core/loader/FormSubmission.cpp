@@ -34,7 +34,7 @@
 #include "core/dom/events/Event.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/FormData.h"
-#include "core/html/HTMLFormControlElement.h"
+#include "core/html/forms/HTMLFormControlElement.h"
 #include "core/html/forms/HTMLFormElement.h"
 #include "core/html/forms/HTMLInputElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
