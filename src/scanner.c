@@ -72,7 +72,9 @@ usage(int ret)
 			"                                 the scanner was built against.\n"
 			"    -c,  --include-core-only     include the core version of the headers,\n"
 			"                                 that is e.g. wayland-client-core.h instead\n"
-			"                                 of wayland-client.h.\n");
+			"                                 of wayland-client.h.\n"
+			"    -s,  --strict                exit immediately with an error if DTD\n"
+			"                                 verification fails.\n");
 	exit(ret);
 }
 
@@ -1801,6 +1803,7 @@ int main(int argc, char *argv[])
 	bool help = false;
 	bool core_headers = false;
 	bool version = false;
+	bool strict = false;
 	bool fail = false;
 	int opt;
 	enum {
@@ -1813,11 +1816,12 @@ int main(int argc, char *argv[])
 		{ "help",              no_argument, NULL, 'h' },
 		{ "version",           no_argument, NULL, 'v' },
 		{ "include-core-only", no_argument, NULL, 'c' },
+		{ "strict",            no_argument, NULL, 's' },
 		{ 0,                   0,           NULL, 0 }
 	};
 
 	while (1) {
-		opt = getopt_long(argc, argv, "hvc", options, NULL);
+		opt = getopt_long(argc, argv, "hvcs", options, NULL);
 
 		if (opt == -1)
 			break;
@@ -1831,6 +1835,9 @@ int main(int argc, char *argv[])
 			break;
 		case 'c':
 			core_headers = true;
+			break;
+		case 's':
+			strict = true;
 			break;
 		default:
 			fail = true;
@@ -1894,6 +1901,10 @@ int main(int argc, char *argv[])
 		"* WARNING: XML failed validation against built-in DTD *\n"
 		"*                                                     *\n"
 		"*******************************************************\n");
+		if (strict) {
+			fclose(input);
+			exit(EXIT_FAILURE);
+		}
 	}
 
 	/* create XML parser */
