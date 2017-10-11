@@ -2,37 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-if (is_mac) {
-  action_foreach("package_sb_files") {
-    script = "mac/package_sb_file.py"
-    sources = [
-      "mac/common.sb",
-      "mac/gpu.sb",
-      "mac/nacl_loader.sb",
-      "mac/ppapi.sb",
-      "mac/renderer.sb",
-      "mac/renderer_v2.sb",
-      "mac/utility.sb",
-    ]
-    outputs = [
-      "$target_gen_dir/{{source_name_part}}.sb.h",
-      "$target_gen_dir/{{source_name_part}}.sb.cc",
-    ]
-    args = [
-      "{{source}}",
-      rebase_path(target_gen_dir, root_build_dir),
-    ]
-  }
-
-  source_set("packaged_sb_files") {
-    sources = get_target_outputs(":package_sb_files")
-    defines = [ "SERVICE_MANAGER_SANDBOX_IMPL" ]
-    deps = [
-      ":package_sb_files",
-    ]
-  }
-}
-
 component("sandbox") {
   sources = [
     "export.h",
@@ -52,18 +21,6 @@ component("sandbox") {
     "//base",
   ]
   if (is_mac) {
-    sources += [
-      "mac/sandbox_mac.h",
-      "mac/sandbox_mac.mm",
-    ]
-    deps += [ "//sandbox/mac:seatbelt" ]
-    public_deps += [ ":packaged_sb_files" ]
-    libs = [
-      "AppKit.framework",
-      "CoreFoundation.framework",
-      "CoreGraphics.framework",
-      "Foundation.framework",
-      "IOSurface.framework",
-    ]
+    public_deps += [ "mac:packaged_sb_files" ]
   }
 }

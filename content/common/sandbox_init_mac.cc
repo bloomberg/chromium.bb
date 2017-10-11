@@ -8,11 +8,11 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "content/common/sandbox_mac.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/sandbox_init.h"
 #include "media/gpu/vt_video_decode_accelerator_mac.h"
 #include "sandbox/mac/seatbelt.h"
-#include "services/service_manager/sandbox/mac/sandbox_mac.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 #include "ui/gl/init/gl_factory.h"
 
@@ -26,14 +26,14 @@ bool InitializeSandboxInternal(service_manager::SandboxType sandbox_type,
                                const base::FilePath& allowed_dir,
                                base::OnceClosure hook) {
   // Warm up APIs before turning on the sandbox.
-  service_manager::Sandbox::SandboxWarmup(sandbox_type);
+  Sandbox::SandboxWarmup(sandbox_type);
 
   // Execute the post warmup callback.
   if (!hook.is_null())
     std::move(hook).Run();
 
   // Actually sandbox the process.
-  return service_manager::Sandbox::EnableSandbox(sandbox_type, allowed_dir);
+  return Sandbox::EnableSandbox(sandbox_type, allowed_dir);
 }
 
 // Helper method to make a closure from a closure.
