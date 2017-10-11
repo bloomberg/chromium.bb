@@ -4,8 +4,12 @@
 
 #include "chromecast/crash/linux/synchronized_minidump_manager.h"
 
+#include <errno.h>
+#include <fcntl.h>
 #include <stdint.h>
 #include <string.h>
+#include <sys/file.h>
+#include <unistd.h>
 
 #include <string>
 #include <utility>
@@ -14,10 +18,10 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
-#include "chromecast/base/file_utils.h"
 #include "chromecast/base/path_utils.h"
 #include "chromecast/base/serializers.h"
 #include "chromecast/crash/linux/dump_info.h"
@@ -124,6 +128,36 @@ bool ValidateMetadata(base::Value* metadata) {
          ratelimit_params->size() == kLockfileNumRatelimitParams &&
          !GetRatelimitPeriodStart(metadata).is_null() &&
          GetRatelimitPeriodDumps(metadata) >= 0;
+}
+
+// Calls flock on valid file descriptor |fd| with flag |flag|. Returns true
+// on success, false on failure.
+bool CallFlockOnFileWithFlag(const int fd, int flag) {
+  int ret = -1;
+  if ((ret = HANDLE_EINTR(flock(fd, flag))) < 0)
+    PLOG(ERROR) << "Error locking " << fd;
+
+  return !ret;
+}
+
+int OpenAndLockFile(const base::FilePath& path, bool write) {
+  int fd = -1;
+  const char* file = path.value().c_str();
+
+  if ((fd = open(file, write ? O_RDWR : O_RDONLY)) < 0) {
+    PLOG(ERROR) << "Error opening " << file;
+  } else if (!CallFlockOnFileWithFlag(fd, LOCK_EX)) {
+    close(fd);
+    fd = -1;
+  }
+
+  return fd;
+}
+
+bool UnlockAndCloseFile(const int fd) {
+  if (!CallFlockOnFileWithFlag(fd, LOCK_UN))
+    return false;
+  return !close(fd);
 }
 
 }  // namespace
