@@ -215,12 +215,13 @@ void RenderWidgetHostLatencyTracker::ComputeInputLatencyHistograms(
     }
   }
 
+  bool action_prevented = ack_result == INPUT_EVENT_ACK_STATE_CONSUMED;
   // Touchscreen tap and scroll gestures depend on the disposition of the touch
   // start and the current touch. For touch start,
   // touch_start_default_prevented_ == (ack_result ==
   // INPUT_EVENT_ACK_STATE_CONSUMED).
-  bool action_prevented = touch_start_default_prevented_ ||
-                          ack_result == INPUT_EVENT_ACK_STATE_CONSUMED;
+  if (WebInputEvent::IsTouchEventType(type))
+    action_prevented |= touch_start_default_prevented_;
 
   std::string event_name = WebInputEvent::GetName(type);
 
