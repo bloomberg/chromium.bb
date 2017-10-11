@@ -553,7 +553,7 @@ TEST_P(BasicMSEPlaybackTest, NewByPts_PlayToEnd) {
 
 const PlaybackTestData kADTSTests[] = {
     {"bear-audio-main-aac.aac", 0, 2724},
-    {"bear-audio-lc-aac.aac", 0, 2858},
+    {"bear-audio-lc-aac.aac", 0, 2717},
     {"bear-audio-implicit-he-aac-v1.aac", 0, 2812},
     {"bear-audio-implicit-he-aac-v2.aac", 0, 3047},
 };
