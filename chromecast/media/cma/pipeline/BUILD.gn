@@ -27,6 +27,8 @@ source_set("pipeline") {
     "media_pipeline_client.h",
     "media_pipeline_impl.cc",
     "media_pipeline_impl.h",
+    "media_pipeline_observer.cc",
+    "media_pipeline_observer.h",
     "video_pipeline_client.cc",
     "video_pipeline_client.h",
     "video_pipeline_impl.cc",
