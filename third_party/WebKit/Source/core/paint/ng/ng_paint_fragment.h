@@ -8,6 +8,7 @@
 #include "core/layout/ng/ng_physical_fragment.h"
 #include "core/loader/resource/ImageResourceObserver.h"
 #include "platform/graphics/paint/DisplayItemClient.h"
+#include "platform/scroll/ScrollTypes.h"
 
 namespace blink {
 
@@ -39,9 +40,16 @@ class NGPaintFragment : public DisplayItemClient, public ImageResourceObserver {
   }
 
   // TODO(layout-dev): Implement when we have oveflow support.
+  // TODO(eae): Switch to using NG geometry types.
   bool HasOverflowClip() const { return false; }
+  bool ShouldClipOverflow() const { return false; }
+  bool HasSelfPaintingLayer() const { return false; }
   LayoutRect VisualRect() const { return visual_rect_; }
   LayoutRect VisualOverflowRect() const { return VisualRect(); }
+  LayoutRect OverflowClipRect(const LayoutPoint&,
+                              OverlayScrollbarClipBehavior) const {
+    return VisualRect();
+  }
 
   // DisplayItemClient methods.
   String DebugName() const { return "NGPaintFragment"; }

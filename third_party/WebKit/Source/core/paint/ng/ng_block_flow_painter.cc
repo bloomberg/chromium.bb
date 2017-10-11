@@ -26,4 +26,16 @@ void NGBlockFlowPainter::PaintBoxFragment(const NGPaintFragment& fragment,
   NGBoxFragmentPainter(fragment).Paint(ng_paint_info, paint_offset);
 }
 
+bool NGBlockFlowPainter::NodeAtPoint(
+    HitTestResult& result,
+    const HitTestLocation& location_in_container,
+    const LayoutPoint& accumulated_offset,
+    HitTestAction action) {
+  if (const NGPaintFragment* paint_fragment = block_.PaintFragment()) {
+    return NGBoxFragmentPainter(*paint_fragment)
+        .NodeAtPoint(result, location_in_container, accumulated_offset, action);
+  }
+  return false;
+}
+
 }  // namespace blink
