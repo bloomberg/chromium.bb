@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/threading/thread_restrictions.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 
@@ -155,6 +156,7 @@ void LevelDBMojoProxy::RunInternal(const base::Closure& task) {
                    this,
                    task,
                    base::Unretained(&done_event)));
+    base::ScopedAllowBaseSyncPrimitives allow_base_sync_primitives;
     done_event.Wait();
   }
 }
