@@ -8,13 +8,10 @@
 
 namespace base {
 
-PendingTask::PendingTask(const Location& posted_from, OnceClosure task)
-    : PendingTask(posted_from, std::move(task), TimeTicks(), true) {}
-
 PendingTask::PendingTask(const Location& posted_from,
                          OnceClosure task,
                          TimeTicks delayed_run_time,
-                         bool nestable)
+                         Nestable nestable)
     : task(std::move(task)),
       posted_from(posted_from),
       delayed_run_time(delayed_run_time),

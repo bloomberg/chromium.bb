@@ -413,7 +413,8 @@ void MessageLoop::RunTask(PendingTask* pending_task) {
 }
 
 bool MessageLoop::DeferOrRunPendingTask(PendingTask pending_task) {
-  if (pending_task.nestable || !run_loop_client_->IsNested()) {
+  if (pending_task.nestable == Nestable::kNestable ||
+      !run_loop_client_->IsNested()) {
     RunTask(&pending_task);
     // Show that we ran a task (Note: a new one might arrive as a
     // consequence!).

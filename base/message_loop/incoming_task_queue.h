@@ -39,7 +39,7 @@ class BASE_EXPORT IncomingTaskQueue
   bool AddToIncomingQueue(const Location& from_here,
                           OnceClosure task,
                           TimeDelta delay,
-                          bool nestable);
+                          Nestable nestable);
 
   // Returns true if the message loop is "idle". Provided for testing.
   bool IsIdleForTesting();

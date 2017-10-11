@@ -60,7 +60,7 @@ IncomingTaskQueue::IncomingTaskQueue(MessageLoop* message_loop)
 bool IncomingTaskQueue::AddToIncomingQueue(const Location& from_here,
                                            OnceClosure task,
                                            TimeDelta delay,
-                                           bool nestable) {
+                                           Nestable nestable) {
   // Use CHECK instead of DCHECK to crash earlier. See http://crbug.com/711167
   // for details.
   CHECK(task);

@@ -69,10 +69,7 @@ TaskQueueImpl::~TaskQueueImpl() {
 }
 
 TaskQueueImpl::Task::Task()
-    : TaskQueue::Task(TaskQueue::PostedTask(base::Closure(),
-                                            base::Location(),
-                                            base::TimeDelta(),
-                                            true),
+    : TaskQueue::Task(TaskQueue::PostedTask(base::Closure(), base::Location()),
                       base::TimeTicks()),
 #ifndef NDEBUG
       enqueue_order_set_(false),
@@ -254,7 +251,7 @@ void TaskQueueImpl::PushOntoDelayedIncomingQueueLocked(Task pending_task) {
       Task(TaskQueue::PostedTask(
                base::Bind(&TaskQueueImpl::ScheduleDelayedWorkTask,
                           base::Unretained(this), base::Passed(&pending_task)),
-               FROM_HERE, base::TimeDelta(), false),
+               FROM_HERE, base::TimeDelta(), base::Nestable::kNonNestable),
            base::TimeTicks(), thread_hop_task_sequence_number,
            thread_hop_task_sequence_number));
 }
@@ -697,7 +694,7 @@ void TaskQueueImpl::TaskAsValueInto(const Task& task,
   state->SetInteger("enqueue_order", task.enqueue_order());
 #endif
   state->SetInteger("sequence_num", task.sequence_num);
-  state->SetBoolean("nestable", task.nestable);
+  state->SetBoolean("nestable", task.nestable == base::Nestable::kNestable);
   state->SetBoolean("is_high_res", task.is_high_res);
   state->SetBoolean("is_cancelled", task.task.IsCancelled());
   state->SetDouble(

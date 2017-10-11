@@ -29,7 +29,7 @@ bool MessageLoopTaskRunner::PostDelayedTask(const Location& from_here,
                                             base::TimeDelta delay) {
   DCHECK(!task.is_null()) << from_here.ToString();
   return incoming_queue_->AddToIncomingQueue(from_here, std::move(task), delay,
-                                             true);
+                                             Nestable::kNestable);
 }
 
 bool MessageLoopTaskRunner::PostNonNestableDelayedTask(
@@ -38,7 +38,7 @@ bool MessageLoopTaskRunner::PostNonNestableDelayedTask(
     base::TimeDelta delay) {
   DCHECK(!task.is_null()) << from_here.ToString();
   return incoming_queue_->AddToIncomingQueue(from_here, std::move(task), delay,
-                                             false);
+                                             Nestable::kNonNestable);
 }
 
 bool MessageLoopTaskRunner::RunsTasksInCurrentSequence() const {
