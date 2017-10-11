@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "components/infobars/core/infobar.h"
+#include "components/language/core/browser/language_model.h"
 #include "components/metrics/proto/translate_event.pb.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -36,6 +37,12 @@ using translate::testing::MockTranslateRanker;
 
 namespace translate {
 
+class MockLanguageModel : public language::LanguageModel {
+  std::vector<LanguageDetails> GetLanguages() override {
+    return {LanguageDetails("en", 1.0)};
+  }
+};
+
 class TranslateUIDelegateTest : public ::testing::Test {
  public:
   TranslateUIDelegateTest() : ::testing::Test() {}
@@ -50,7 +57,9 @@ class TranslateUIDelegateTest : public ::testing::Test {
 
     client_.reset(new MockTranslateClient(&driver_, pref_service_.get()));
     ranker_.reset(new MockTranslateRanker());
-    manager_.reset(new TranslateManager(client_.get(), ranker_.get(), "hi"));
+    language_model_.reset(new MockLanguageModel());
+    manager_.reset(new TranslateManager(client_.get(), ranker_.get(),
+                                        language_model_.get()));
     manager_->GetLanguageState().set_translation_declined(false);
 
     delegate_.reset(
@@ -64,6 +73,7 @@ class TranslateUIDelegateTest : public ::testing::Test {
   std::unique_ptr<sync_preferences::TestingPrefServiceSyncable> pref_service_;
   std::unique_ptr<MockTranslateClient> client_;
   std::unique_ptr<MockTranslateRanker> ranker_;
+  std::unique_ptr<MockLanguageModel> language_model_;
   std::unique_ptr<TranslateManager> manager_;
   std::unique_ptr<TranslateUIDelegate> delegate_;
 

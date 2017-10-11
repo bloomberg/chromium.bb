@@ -127,6 +127,10 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   // Gets the extension (if any) associated with the WebContents that we're in.
   const extensions::Extension* GetExtension() const;
 
+  // Queries the translate service to obtain the user's transate target
+  // language.
+  std::string GetTargetLanguage() const;
+
   void AppendDeveloperItems();
   void AppendDevtoolsForUnpackedExtensions();
   void AppendLinkItems();

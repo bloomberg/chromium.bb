@@ -127,15 +127,14 @@ TranslateManager::RegisterTranslateErrorCallback(
   return g_callback_list_->Add(callback);
 }
 
-TranslateManager::TranslateManager(
-    TranslateClient* translate_client,
-    TranslateRanker* translate_ranker,
-    const std::string& accept_languages_pref_name)
+TranslateManager::TranslateManager(TranslateClient* translate_client,
+                                   TranslateRanker* translate_ranker,
+                                   language::LanguageModel* language_model)
     : page_seq_no_(0),
-      accept_languages_pref_name_(accept_languages_pref_name),
       translate_client_(translate_client),
       translate_driver_(translate_client_->GetTranslateDriver()),
       translate_ranker_(translate_ranker),
+      language_model_(language_model),
       language_state_(translate_driver_),
       translate_event_(base::MakeUnique<metrics::TranslateEventProto>()),
       weak_method_factory_(this) {}
@@ -175,7 +174,8 @@ void TranslateManager::InitiateTranslation(const std::string& page_lang) {
   if (!translate_prefs->IsEnabled()) {
     TranslateBrowserMetrics::ReportInitiationStatus(
         TranslateBrowserMetrics::INITIATION_STATUS_DISABLED_BY_PREFS);
-    std::string target_lang = GetTargetLanguage(translate_prefs.get());
+    std::string target_lang =
+        GetTargetLanguage(translate_prefs.get(), language_model_);
     std::string language_code =
         TranslateDownloadManager::GetLanguageCode(page_lang);
     InitTranslateEvent(language_code, target_lang, *translate_prefs);
@@ -203,7 +203,8 @@ void TranslateManager::InitiateTranslation(const std::string& page_lang) {
     return;
   }
 
-  std::string target_lang = GetTargetLanguage(translate_prefs.get());
+  std::string target_lang =
+      GetTargetLanguage(translate_prefs.get(), language_model_);
   std::string language_code =
       TranslateDownloadManager::GetLanguageCode(page_lang);
 
