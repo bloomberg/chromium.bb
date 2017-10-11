@@ -65,6 +65,10 @@ cast_test_group("cast_tests") {
     tests += [ "//chromecast/media/cma/backend/alsa:cast_alsa_cma_backend_unittests" ]
   }
 
+  if (is_fuchsia) {
+    tests += [ "//chromecast/media/cma/backend/fuchsia:cast_fuchsia_cma_backend_unittests" ]
+  }
+
   if (!is_android) {
     tests += [
       ":cast_shell_browsertests",
