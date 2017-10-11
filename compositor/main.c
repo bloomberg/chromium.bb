@@ -656,7 +656,8 @@ on_caught_signal(int s, siginfo_t *siginfo, void *context)
 
 	print_backtrace();
 
-	segv_compositor->backend->restore(segv_compositor);
+	if (segv_compositor && segv_compositor->backend)
+		segv_compositor->backend->restore(segv_compositor);
 
 	raise(SIGTRAP);
 }
@@ -1824,6 +1825,8 @@ int main(int argc, char *argv[])
 	weston_log_set_handler(vlog, vlog_continue);
 	weston_log_file_open(log);
 
+	catch_signals();
+
 	weston_log("%s\n"
 		   STAMP_SPACE "%s\n"
 		   STAMP_SPACE "Bug reports to: %s\n"
@@ -1872,6 +1875,7 @@ int main(int argc, char *argv[])
 		weston_log("fatal: failed to create compositor\n");
 		goto out;
 	}
+	segv_compositor = ec;
 
 	if (weston_compositor_init_config(ec, config) < 0)
 		goto out;
@@ -1886,9 +1890,6 @@ int main(int argc, char *argv[])
 	}
 
 	weston_pending_output_coldplug(ec);
-
-	catch_signals();
-	segv_compositor = ec;
 
 	if (idle_time < 0)
 		weston_config_section_get_int(section, "idle-time", &idle_time, -1);
