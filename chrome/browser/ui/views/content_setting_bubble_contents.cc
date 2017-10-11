@@ -369,8 +369,6 @@ void ContentSettingBubbleContents::Init() {
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_HORIZONTAL);
   const int related_control_vertical_spacing =
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL);
-  const int unrelated_control_vertical_spacing =
-      provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL);
 
   const int kSingleColumnSetId = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(kSingleColumnSetId);
@@ -392,9 +390,6 @@ void ContentSettingBubbleContents::Init() {
     layout->StartRow(0, kSingleColumnSetId);
     layout->AddView(message_label);
     bubble_content_empty = false;
-  } else if (!bubble_content.title.empty() &&
-             provider->UseExtraDialogPadding()) {
-    layout->AddPaddingRow(0, unrelated_control_vertical_spacing);
   }
 
   // Layout for the item list (blocked plugins and popups).
