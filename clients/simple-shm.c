@@ -40,10 +40,6 @@
 #include "xdg-shell-unstable-v6-client-protocol.h"
 #include "fullscreen-shell-unstable-v1-client-protocol.h"
 
-#include <sys/types.h>
-#include "ivi-application-client-protocol.h"
-#define IVI_SURFACE_ID 9000
-
 struct display {
 	struct wl_display *display;
 	struct wl_registry *registry;
@@ -52,7 +48,6 @@ struct display {
 	struct zwp_fullscreen_shell_v1 *fshell;
 	struct wl_shm *shm;
 	bool has_xrgb;
-	struct ivi_application *ivi_application;
 };
 
 struct buffer {
@@ -67,7 +62,6 @@ struct window {
 	struct wl_surface *surface;
 	struct zxdg_surface_v6 *xdg_surface;
 	struct zxdg_toplevel_v6 *xdg_toplevel;
-	struct ivi_surface *ivi_surface;
 	struct buffer buffers[2];
 	struct buffer *prev_buffer;
 	struct wl_callback *callback;
@@ -165,17 +159,6 @@ static const struct zxdg_toplevel_v6_listener xdg_toplevel_listener = {
 	handle_xdg_toplevel_close,
 };
 
-static void
-handle_ivi_surface_configure(void *data, struct ivi_surface *ivi_surface,
-			     int32_t width, int32_t height)
-{
-	/* Simple-shm is resizable */
-}
-
-static const struct ivi_surface_listener ivi_surface_listener = {
-	handle_ivi_surface_configure,
-};
-
 static struct window *
 create_window(struct display *display, int width, int height)
 {
@@ -213,19 +196,6 @@ create_window(struct display *display, int width, int height)
 							window->surface,
 							ZWP_FULLSCREEN_SHELL_V1_PRESENT_METHOD_DEFAULT,
 							NULL);
-	} else if (display->ivi_application ) {
-		uint32_t id_ivisurf = IVI_SURFACE_ID + (uint32_t)getpid();
-		window->ivi_surface =
-			ivi_application_surface_create(display->ivi_application,
-						       id_ivisurf, window->surface);
-		if (window->ivi_surface == NULL) {
-			fprintf(stderr, "Failed to create ivi_client_surface\n");
-			abort();
-		}
-
-		ivi_surface_add_listener(window->ivi_surface,
-					 &ivi_surface_listener, window);
-
 	} else {
 		assert(0);
 	}
@@ -407,11 +377,6 @@ registry_handle_global(void *data, struct wl_registry *registry,
 					  id, &wl_shm_interface, 1);
 		wl_shm_add_listener(d->shm, &shm_listener, d);
 	}
-	else if (strcmp(interface, "ivi_application") == 0) {
-		d->ivi_application =
-			wl_registry_bind(registry, id,
-					 &ivi_application_interface, 1);
-	}
 }
 
 static void
@@ -554,11 +519,6 @@ main(int argc, char **argv)
 		ret = wl_display_dispatch(display->display);
 
 	fprintf(stderr, "simple-shm exiting\n");
-
-	if (window->display->ivi_application) {
-		ivi_surface_destroy(window->ivi_surface);
-		ivi_application_destroy(window->display->ivi_application);
-	}
 
 	destroy_window(window);
 	destroy_display(display);
