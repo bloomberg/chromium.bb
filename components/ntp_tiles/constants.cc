@@ -16,7 +16,7 @@ extern const base::Feature kPopularSitesBakedInContentFeature{
     "NTPPopularSitesBakedInContent", base::FEATURE_ENABLED_BY_DEFAULT};
 
 extern const base::Feature kNtpMostLikelyFaviconsFromServerFeature{
-    "NTPMostLikelyFaviconsFromServer", base::FEATURE_DISABLED_BY_DEFAULT};
+    "NTPMostLikelyFaviconsFromServer", base::FEATURE_ENABLED_BY_DEFAULT};
 
 extern const base::Feature kLowerResolutionFaviconsFeature{
     "NTPTilesLowerResolutionFavicons", base::FEATURE_DISABLED_BY_DEFAULT};
