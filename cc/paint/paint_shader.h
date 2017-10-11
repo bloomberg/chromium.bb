@@ -178,6 +178,9 @@ class CC_PAINT_EXPORT PaintShader : public SkRefCnt {
   std::vector<SkColor> colors_;
   std::vector<SkScalar> positions_;
 
+  // The |cached_shader_| can be derived/creates from other inputs present in
+  // the PaintShader but we always construct it at creation time to ensure that
+  // accesses to it are thread-safe.
   sk_sp<SkShader> cached_shader_;
 
   DISALLOW_COPY_AND_ASSIGN(PaintShader);

@@ -194,6 +194,12 @@ class CC_PAINT_EXPORT PaintImage {
   // recording with a PaintImage storing the updated sequence id.
   AnimationSequenceId reset_animation_sequence_id_ = 0u;
 
+  // The |cached_sk_image_| can be derived/created from other inputs present in
+  // the PaintImage but we always construct it at creation time for 2 reasons:
+  // 1) This ensures that the underlying SkImage is shared across PaintImage
+  //    copies, which is necessary to allow reuse of decodes from this image in
+  //    skia's cache.
+  // 2) Ensures that accesses to it are thread-safe.
   sk_sp<SkImage> cached_sk_image_;
 };
 
