@@ -45,7 +45,7 @@ is cut as the release build. All ReleaseBlock-Stable bugs should be fixed by the
 stable cut, which consequently corresponds to the absolute last date a merge to
 the release branch should be taken for inclusion in the initial stable release.
 The stable cut will, unless there are exceptions, use the final beta as its
-basis.
+basis. For Chrome OS, the stable cut date may be different than the rest of Chrome.
 
 ### Stable Release
 
