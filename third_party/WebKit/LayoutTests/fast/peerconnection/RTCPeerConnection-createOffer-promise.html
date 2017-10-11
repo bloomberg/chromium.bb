@@ -7,61 +7,16 @@
   </head>
   <body>
     <script>
-      // Note: createOffer() calls in the test runner are successful if the
-      // voiceActivityDetection and iceRestart options are passed with a value
-      // of true and offerToReceiveAudio and offerToReceiveVideo are passed with
-      // a positive value. In all other cases, createOffer() fails in the test
-      // runner.
-
-      defaultError = new DOMException('TEST_ERROR', 'OperationError')
       pc = new RTCPeerConnection();
 
-      // Test that creating an offer with voiceActivityDetection, iceRestart,
-      // offerToReceiveAudio and offerToReceiveVideo returns an accepted promise.
+      // Test some combinations of parameters to createOffer.
       promise_test(function() {
         return pc.createOffer({voiceActivityDetection:true, iceRestart:true, offerToReceiveAudio:1, offerToReceiveVideo:1})
       }, 'createOffer({voiceActivityDetection:true, iceRestart:true})');
 
-      // Test that not explicitly setting voiceActivityDetection results in an
-      // accepted promise, since the default  value for voiceActivityDetection
-      // is true.
       promise_test(function() {
         return pc.createOffer({iceRestart:true, offerToReceiveAudio:1, offerToReceiveVideo:1})
       }, 'createOffer({iceRestart:true})');
-
-      // Test that other combinations return a rejected promise.
-      promise_test(function() {
-        return promise_rejects(this, defaultError,
-          pc.createOffer({voiceActivityDetection:true, iceRestart:true}));
-      }, 'createOffer({voiceActivityDetection:false, iceRestart:false})' );
-
-      promise_test(function() {
-        return promise_rejects(this, defaultError,
-          pc.createOffer({voiceActivityDetection:true, iceRestart:true, offerToReceiveAudio:0, offerToReceiveVideo: 0}));
-      }, 'createOffer({voiceActivityDetection:false, iceRestart:false})' );
-
-      promise_test(function() {
-        return promise_rejects(this, defaultError,
-          pc.createOffer({voiceActivityDetection:false, iceRestart:false}));
-      }, 'createOffer({voiceActivityDetection:false, iceRestart:false})' );
-
-      promise_test(function() {
-        return promise_rejects(this, defaultError,
-          pc.createOffer({voiceActivityDetection:false, iceRestart:true}));
-      }, 'createOffer({voiceActivityDetection:false, iceRestart:true})' );
-
-      promise_test(function() {
-        return promise_rejects(this, defaultError,
-          pc.createOffer({voiceActivityDetection:true, iceRestart:false}));
-      }, 'createOffer({voiceActivityDetection:true, iceRestart:false})' );
-
-      promise_test(function() {
-        return promise_rejects(this, defaultError, pc.createOffer({}));
-      }, 'createOffer({})' );
-
-      promise_test(function() {
-        return promise_rejects(this, defaultError, pc.createOffer());
-      }, 'createOffer()' );
 
       // Test type error
       promise_test(function() {

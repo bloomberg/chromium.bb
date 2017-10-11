@@ -23,10 +23,10 @@ FAIL new RTCPeerConnection(config) - with 2 stun servers should succeed pc.getCo
 FAIL setConfiguration(config) - with 2 stun servers should succeed pc.getConfiguration is not a function
 FAIL new RTCPeerConnection(config) - with turn server, username, credential should succeed pc.getConfiguration is not a function
 FAIL setConfiguration(config) - with turn server, username, credential should succeed pc.getConfiguration is not a function
-FAIL new RTCPeerConnection(config) - with turns server and empty string username, credential should succeed pc.getConfiguration is not a function
-FAIL setConfiguration(config) - with turns server and empty string username, credential should succeed pc.getConfiguration is not a function
-FAIL new RTCPeerConnection(config) - with turn server and empty string username, credential should succeed pc.getConfiguration is not a function
-FAIL setConfiguration(config) - with turn server and empty string username, credential should succeed pc.getConfiguration is not a function
+FAIL new RTCPeerConnection(config) - with turns server and empty string username, credential should succeed Failed to construct 'RTCPeerConnection': Failed to initialize native PeerConnection.
+FAIL setConfiguration(config) - with turns server and empty string username, credential should succeed Failed to execute 'setConfiguration' on 'RTCPeerConnection': Could not update the PeerConnection with the given configuration.
+FAIL new RTCPeerConnection(config) - with turn server and empty string username, credential should succeed Failed to construct 'RTCPeerConnection': Failed to initialize native PeerConnection.
+FAIL setConfiguration(config) - with turn server and empty string username, credential should succeed Failed to execute 'setConfiguration' on 'RTCPeerConnection': Could not update the PeerConnection with the given configuration.
 FAIL new RTCPeerConnection(config) - with one turns server, one turn server, username, credential should succeed pc.getConfiguration is not a function
 FAIL setConfiguration(config) - with one turns server, one turn server, username, credential should succeed pc.getConfiguration is not a function
 FAIL new RTCPeerConnection(config) - with stun server and credentialType password should succeed pc.getConfiguration is not a function
@@ -49,8 +49,8 @@ PASS new RTCPeerConnection(config) - with http url should throw SyntaxError
 PASS setConfiguration(config) - with http url should throw SyntaxError
 FAIL new RTCPeerConnection(config) - with invalid turn url should throw SyntaxError assert_throws: function "() =>\n      makePc({ iceServers: [{\n        urls: 'turn://example.org/foo?x=y'\n      }] })" threw object "InvalidAccessError: Failed to construct 'RTCPeerConnection': Both username and credential are required when the URL scheme is "turn" or "turns"." that is not a DOMException SyntaxError: property "code" is equal to 15, expected 12
 FAIL setConfiguration(config) - with invalid turn url should throw SyntaxError assert_throws: function "() =>\n      makePc({ iceServers: [{\n        urls: 'turn://example.org/foo?x=y'\n      }] })" threw object "InvalidAccessError: Failed to execute 'setConfiguration' on 'RTCPeerConnection': Both username and credential are required when the URL scheme is "turn" or "turns"." that is not a DOMException SyntaxError: property "code" is equal to 15, expected 12
-FAIL new RTCPeerConnection(config) - with invalid stun url should throw SyntaxError assert_throws: function "() =>\n      makePc({ iceServers: [{\n        urls: 'stun://example.org/foo?x=y'\n      }] })" did not throw
-FAIL setConfiguration(config) - with invalid stun url should throw SyntaxError assert_throws: function "() =>\n      makePc({ iceServers: [{\n        urls: 'stun://example.org/foo?x=y'\n      }] })" did not throw
+FAIL new RTCPeerConnection(config) - with invalid stun url should throw SyntaxError assert_throws: function "() =>\n      makePc({ iceServers: [{\n        urls: 'stun://example.org/foo?x=y'\n      }] })" threw object "NotSupportedError: Failed to construct 'RTCPeerConnection': Failed to initialize native PeerConnection." that is not a DOMException SyntaxError: property "code" is equal to 9, expected 12
+FAIL setConfiguration(config) - with invalid stun url should throw SyntaxError assert_throws: function "() =>\n      makePc({ iceServers: [{\n        urls: 'stun://example.org/foo?x=y'\n      }] })" threw object "OperationError: Failed to execute 'setConfiguration' on 'RTCPeerConnection': Could not update the PeerConnection with the given configuration." that is not a DOMException SyntaxError: property "code" is equal to 0, expected 12
 FAIL new RTCPeerConnection(config) - with empty urls and credentialType password should succeed pc.getConfiguration is not a function
 FAIL setConfiguration(config) - with empty urls and credentialType password should succeed pc.getConfiguration is not a function
 FAIL new RTCPeerConnection(config) - with empty urls and credentialType oauth should succeed pc.getConfiguration is not a function
