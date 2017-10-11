@@ -4,6 +4,8 @@
 
 #include "ash/wm/splitview/split_view_controller.h"
 
+#include "ash/display/screen_orientation_controller_chromeos.h"
+#include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/system/overview/overview_button_tray.h"
@@ -21,6 +23,7 @@
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_window_delegate.h"
+#include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/widget/widget.h"
 
@@ -482,6 +485,112 @@ TEST_F(SplitViewControllerTest, LongPressWithUnsnappableWindow) {
   LongPressOnOverivewButtonTray();
   EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
   ToggleOverview();
+}
+
+// Test the rotation functionalities in split view mode.
+TEST_F(SplitViewControllerTest, RotationTest) {
+  UpdateDisplay("807x407");
+  int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
+  display::DisplayManager* display_manager = Shell::Get()->display_manager();
+  display::test::ScopedSetInternalDisplayId set_internal(display_manager,
+                                                         display_id);
+  ScreenOrientationControllerTestApi test_api(
+      Shell::Get()->screen_orientation_controller());
+
+  // Set the screen orientation to LANDSCAPE_PRIMARY.
+  test_api.SetDisplayRotation(display::Display::ROTATE_0,
+                              display::Display::ROTATION_SOURCE_ACTIVE);
+  EXPECT_EQ(test_api.GetCurrentOrientation(),
+            blink::kWebScreenOrientationLockLandscapePrimary);
+
+  const gfx::Rect bounds(0, 0, 200, 200);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(window2.get(),
+                                      SplitViewController::RIGHT);
+  gfx::Rect bounds_window1 = window1->GetBoundsInScreen();
+  gfx::Rect bounds_window2 = window2->GetBoundsInScreen();
+  gfx::Rect bounds_divider =
+      split_view_divider()->GetDividerBoundsInScreen(false /* is_dragging */);
+
+  // Test |window1|, divider and |window2| are aligned horizontally.
+  // |window1| is on the left, then the divider, and then |window2|.
+  EXPECT_EQ(bounds_divider.x(), bounds_window1.x() + bounds_window1.width());
+  EXPECT_EQ(bounds_window2.x(), bounds_divider.x() + bounds_divider.width());
+  EXPECT_EQ(bounds_window1.height(), bounds_divider.height());
+  EXPECT_EQ(bounds_window1.height(), bounds_window2.height());
+
+  // Rotate the screen by 90 degree.
+  test_api.SetDisplayRotation(display::Display::ROTATE_90,
+                              display::Display::ROTATION_SOURCE_ACTIVE);
+  EXPECT_EQ(test_api.GetCurrentOrientation(),
+            blink::kWebScreenOrientationLockPortraitPrimary);
+
+  bounds_window1 = window1->GetBoundsInScreen();
+  bounds_window2 = window2->GetBoundsInScreen();
+  bounds_divider =
+      split_view_divider()->GetDividerBoundsInScreen(false /* is_dragging */);
+
+  // Test that |window1|, divider, |window2| are now aligned vertically.
+  // |window2| is on the top, then the divider, and then |window1|.
+  EXPECT_EQ(bounds_divider.y(), bounds_window2.y() + bounds_window2.height());
+  EXPECT_EQ(bounds_window1.y(), bounds_divider.y() + bounds_divider.height());
+  EXPECT_EQ(bounds_window1.width(), bounds_divider.width());
+  EXPECT_EQ(bounds_window1.width(), bounds_window2.width());
+
+  // Rotate the screen by 180 degree.
+  test_api.SetDisplayRotation(display::Display::ROTATE_180,
+                              display::Display::ROTATION_SOURCE_ACTIVE);
+  EXPECT_EQ(test_api.GetCurrentOrientation(),
+            blink::kWebScreenOrientationLockLandscapeSecondary);
+
+  bounds_window1 = window1->GetBoundsInScreen();
+  bounds_window2 = window2->GetBoundsInScreen();
+  bounds_divider =
+      split_view_divider()->GetDividerBoundsInScreen(false /* is_dragging */);
+
+  // Test that |window1|, divider, |window2| are now aligned horizontally.
+  // |window2| is on the left, then the divider, and then |window1|.
+  EXPECT_EQ(bounds_divider.x(), bounds_window2.x() + bounds_window2.width());
+  EXPECT_EQ(bounds_window1.x(), bounds_divider.x() + bounds_divider.width());
+  EXPECT_EQ(bounds_window1.height(), bounds_divider.height());
+  EXPECT_EQ(bounds_window1.height(), bounds_window2.height());
+
+  // Rotate the screen by 270 degree.
+  test_api.SetDisplayRotation(display::Display::ROTATE_270,
+                              display::Display::ROTATION_SOURCE_ACTIVE);
+  EXPECT_EQ(test_api.GetCurrentOrientation(),
+            blink::kWebScreenOrientationLockPortraitSecondary);
+  bounds_window1 = window1->GetBoundsInScreen();
+  bounds_window2 = window2->GetBoundsInScreen();
+  bounds_divider =
+      split_view_divider()->GetDividerBoundsInScreen(false /* is_dragging */);
+
+  // Test that |window1|, divider, |window2| are now aligned vertically.
+  // |window1| is on the top, then the divider, and then |window2|.
+  EXPECT_EQ(bounds_divider.y(), bounds_window1.y() + bounds_window1.height());
+  EXPECT_EQ(bounds_window2.y(), bounds_divider.y() + bounds_divider.height());
+  EXPECT_EQ(bounds_window1.width(), bounds_divider.width());
+  EXPECT_EQ(bounds_window1.width(), bounds_window2.width());
+
+  // Rotate the screen back to 0 degree.
+  test_api.SetDisplayRotation(display::Display::ROTATE_0,
+                              display::Display::ROTATION_SOURCE_ACTIVE);
+  EXPECT_EQ(test_api.GetCurrentOrientation(),
+            blink::kWebScreenOrientationLockLandscapePrimary);
+  bounds_window1 = window1->GetBoundsInScreen();
+  bounds_window2 = window2->GetBoundsInScreen();
+  bounds_divider =
+      split_view_divider()->GetDividerBoundsInScreen(false /* is_dragging */);
+
+  // Test |window1|, divider and |window2| are aligned horizontally.
+  // |window1| is on the left, then the divider, and then |window2|.
+  EXPECT_EQ(bounds_divider.x(), bounds_window1.x() + bounds_window1.width());
+  EXPECT_EQ(bounds_window2.x(), bounds_divider.x() + bounds_divider.width());
+  EXPECT_EQ(bounds_window1.height(), bounds_divider.height());
+  EXPECT_EQ(bounds_window1.height(), bounds_window2.height());
 }
 
 }  // namespace ash

@@ -9,6 +9,8 @@
 #include "ash/accessibility/accessibility_delegate.h"
 #include "ash/accessibility_types.h"
 #include "ash/app_list/test_app_list_presenter_impl.h"
+#include "ash/display/screen_orientation_controller_chromeos.h"
+#include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/drag_drop/drag_drop_controller.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/config.h"
@@ -1959,13 +1961,17 @@ class SplitViewWindowSelectorTest : public WindowSelectorTest {
     return Shell::Get()->split_view_controller();
   }
 
+  void EndSplitView() { split_view_controller()->EndSplitView(); }
+
  protected:
   gfx::Rect GetSplitViewLeftWindowBounds(aura::Window* window) {
-    return split_view_controller()->GetLeftWindowBoundsInScreen(window);
+    return split_view_controller()->GetSnappedWindowBoundsInScreen(
+        window, SplitViewController::LEFT);
   }
 
   gfx::Rect GetSplitViewRightWindowBounds(aura::Window* window) {
-    return split_view_controller()->GetRightWindowBoundsInScreen(window);
+    return split_view_controller()->GetSnappedWindowBoundsInScreen(
+        window, SplitViewController::RIGHT);
   }
 
  private:
@@ -1995,7 +2001,7 @@ TEST_F(SplitViewWindowSelectorTest, DragOverviewWindowToSnap) {
   window_selector()->InitiateDrag(selector_item1, start_location1);
   const gfx::Point end_location1(0, 0);
   window_selector()->Drag(selector_item1, end_location1);
-  window_selector()->CompleteDrag(selector_item1);
+  window_selector()->CompleteDrag(selector_item1, end_location1);
 
   EXPECT_TRUE(split_view_controller()->IsSplitViewModeActive());
   EXPECT_EQ(split_view_controller()->state(),
@@ -2011,7 +2017,7 @@ TEST_F(SplitViewWindowSelectorTest, DragOverviewWindowToSnap) {
   window_selector()->InitiateDrag(selector_item2, start_location2);
   const gfx::Point end_location2(0, 0);
   window_selector()->Drag(selector_item2, end_location2);
-  window_selector()->CompleteDrag(selector_item2);
+  window_selector()->CompleteDrag(selector_item2, end_location2);
 
   EXPECT_EQ(split_view_controller()->state(),
             SplitViewController::LEFT_SNAPPED);
@@ -2028,7 +2034,7 @@ TEST_F(SplitViewWindowSelectorTest, DragOverviewWindowToSnap) {
       split_view_controller()->GetDisplayWorkAreaBoundsInScreen(window2.get());
   const gfx::Point end_location3(work_area_rect.width(), 0);
   window_selector()->Drag(selector_item3, end_location3);
-  window_selector()->CompleteDrag(selector_item3);
+  window_selector()->CompleteDrag(selector_item3, end_location3);
 
   EXPECT_EQ(split_view_controller()->state(),
             SplitViewController::BOTH_SNAPPED);
@@ -2086,7 +2092,7 @@ TEST_F(SplitViewWindowSelectorTest, WindowGridSizeWhileDraggingWithSplitView) {
 
   // Snap window1 to the left and initialize dragging for window2.
   window_selector()->Drag(selector_item, left);
-  window_selector()->CompleteDrag(selector_item);
+  window_selector()->CompleteDrag(selector_item, left);
   ASSERT_EQ(SplitViewController::LEFT_SNAPPED,
             split_view_controller()->state());
   ASSERT_EQ(window1.get(), split_view_controller()->left_window());
@@ -2163,7 +2169,7 @@ TEST_F(SplitViewWindowSelectorTest, EmptyWindowsListExitOverview) {
   window_selector()->InitiateDrag(selector_item1, start_location1);
   const gfx::Point end_location1(0, 0);
   window_selector()->Drag(selector_item1, end_location1);
-  window_selector()->CompleteDrag(selector_item1);
+  window_selector()->CompleteDrag(selector_item1, end_location1);
 
   EXPECT_EQ(split_view_controller()->IsSplitViewModeActive(), true);
   EXPECT_EQ(split_view_controller()->state(),
@@ -2197,7 +2203,7 @@ TEST_F(SplitViewWindowSelectorTest, SplitViewOverviewOverlayVisibility) {
                                      ->current_indicator_type());
 
   // Snap window to the left.
-  window_selector()->CompleteDrag(selector_item);
+  window_selector()->CompleteDrag(selector_item, end_location1);
   ASSERT_TRUE(split_view_controller()->IsSplitViewModeActive());
   ASSERT_EQ(SplitViewController::LEFT_SNAPPED,
             split_view_controller()->state());
@@ -2209,7 +2215,7 @@ TEST_F(SplitViewWindowSelectorTest, SplitViewOverviewOverlayVisibility) {
   EXPECT_EQ(IndicatorType::NONE, window_selector()
                                      ->split_view_overview_overlay()
                                      ->current_indicator_type());
-  window_selector()->CompleteDrag(selector_item);
+  window_selector()->CompleteDrag(selector_item, start_location);
 }
 
 // Verify that the split view overview overlay is shown when expected when
@@ -2240,7 +2246,7 @@ TEST_F(SplitViewWindowSelectorTest,
   EXPECT_EQ(IndicatorType::NONE, window_selector()
                                      ->split_view_overview_overlay()
                                      ->current_indicator_type());
-  window_selector()->CompleteDrag(selector_item);
+  window_selector()->CompleteDrag(selector_item, end_location1);
 }
 
 // Verify that the split view overview overlays widget reparents when starting a
@@ -2277,7 +2283,8 @@ TEST_F(SplitViewWindowSelectorTest, SplitViewOverviewOverlayWidgetReparenting) {
   // Drag the item in a way that neither opens the window nor activates
   // splitview mode.
   window_selector()->Drag(selector_item, primary_screen_bounds.CenterPoint());
-  window_selector()->CompleteDrag(selector_item);
+  window_selector()->CompleteDrag(selector_item,
+                                  primary_screen_bounds.CenterPoint());
   ASSERT_TRUE(window_selector());
   ASSERT_FALSE(split_view_controller()->IsSplitViewModeActive());
 
@@ -2293,7 +2300,158 @@ TEST_F(SplitViewWindowSelectorTest, SplitViewOverviewOverlayWidgetReparenting) {
                                  ->split_view_overview_overlay()
                                  ->widget_->GetNativeView()
                                  ->GetRootWindow());
-  window_selector()->CompleteDrag(selector_item);
+  window_selector()->CompleteDrag(selector_item, start_location);
+}
+
+// Test the overview window drag functionalities when screen rotates.
+TEST_F(SplitViewWindowSelectorTest, SplitViewRotationTest) {
+  UpdateDisplay("807x407");
+  int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
+  display::DisplayManager* display_manager = Shell::Get()->display_manager();
+  display::test::ScopedSetInternalDisplayId set_internal(display_manager,
+                                                         display_id);
+  ScreenOrientationControllerTestApi test_api(
+      Shell::Get()->screen_orientation_controller());
+
+  // Set the screen orientation to LANDSCAPE_PRIMARY.
+  test_api.SetDisplayRotation(display::Display::ROTATE_0,
+                              display::Display::ROTATION_SOURCE_ACTIVE);
+  EXPECT_EQ(test_api.GetCurrentOrientation(),
+            blink::kWebScreenOrientationLockLandscapePrimary);
+
+  const gfx::Rect bounds(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+
+  ToggleOverview();
+  // Test that dragging |window1| to the left of the screen snaps it to left.
+  const int grid_index = 0;
+  WindowSelectorItem* selector_item1 =
+      GetWindowItemForWindow(grid_index, window1.get());
+  gfx::Rect selector_item_bounds1 = selector_item1->target_bounds();
+  gfx::Point start_location1(selector_item_bounds1.CenterPoint());
+  window_selector()->InitiateDrag(selector_item1, start_location1);
+  const gfx::Point end_location1(0, 0);
+  window_selector()->Drag(selector_item1, end_location1);
+  window_selector()->CompleteDrag(selector_item1, end_location1);
+  EXPECT_EQ(split_view_controller()->state(),
+            SplitViewController::LEFT_SNAPPED);
+  EXPECT_EQ(split_view_controller()->left_window(), window1.get());
+
+  // Test that dragging |window2| to the right of the screen snaps it to right.
+  WindowSelectorItem* selector_item2 =
+      GetWindowItemForWindow(grid_index, window2.get());
+  gfx::Rect selector_item_bounds2 = selector_item2->target_bounds();
+  gfx::Point start_location2(selector_item_bounds2.CenterPoint());
+  window_selector()->InitiateDrag(selector_item2, start_location2);
+  gfx::Rect work_area_rect =
+      split_view_controller()->GetDisplayWorkAreaBoundsInScreen(window2.get());
+  gfx::Point end_location2(work_area_rect.width(), work_area_rect.height());
+  window_selector()->Drag(selector_item2, end_location2);
+  window_selector()->CompleteDrag(selector_item2, end_location2);
+  EXPECT_EQ(split_view_controller()->state(),
+            SplitViewController::BOTH_SNAPPED);
+  EXPECT_EQ(split_view_controller()->right_window(), window2.get());
+  EndSplitView();
+
+  // Rotate the screen by 90 degree.
+  test_api.SetDisplayRotation(display::Display::ROTATE_90,
+                              display::Display::ROTATION_SOURCE_ACTIVE);
+  EXPECT_EQ(test_api.GetCurrentOrientation(),
+            blink::kWebScreenOrientationLockPortraitPrimary);
+  ToggleOverview();
+
+  // Test that dragging |window1| to the top of the screen snaps it to right.
+  selector_item1 = GetWindowItemForWindow(grid_index, window1.get());
+  selector_item_bounds1 = selector_item1->target_bounds();
+  start_location1 = selector_item_bounds1.CenterPoint();
+  window_selector()->InitiateDrag(selector_item1, start_location1);
+  window_selector()->Drag(selector_item1, end_location1);
+  window_selector()->CompleteDrag(selector_item1, end_location1);
+  EXPECT_EQ(split_view_controller()->state(),
+            SplitViewController::RIGHT_SNAPPED);
+  EXPECT_EQ(split_view_controller()->right_window(), window1.get());
+
+  // Test that dragging |window2| to the bottom of the screen snaps it to left.
+  selector_item2 = GetWindowItemForWindow(grid_index, window2.get());
+  selector_item_bounds2 = selector_item2->target_bounds();
+  start_location2 = selector_item_bounds2.CenterPoint();
+  window_selector()->InitiateDrag(selector_item2, start_location2);
+  work_area_rect =
+      split_view_controller()->GetDisplayWorkAreaBoundsInScreen(window2.get());
+  end_location2 = gfx::Point(work_area_rect.width(), work_area_rect.height());
+  window_selector()->Drag(selector_item2, end_location2);
+  window_selector()->CompleteDrag(selector_item2, end_location2);
+  EXPECT_EQ(split_view_controller()->state(),
+            SplitViewController::BOTH_SNAPPED);
+  EXPECT_EQ(split_view_controller()->left_window(), window2.get());
+  EndSplitView();
+
+  // Rotate the screen by 180 degree.
+  test_api.SetDisplayRotation(display::Display::ROTATE_180,
+                              display::Display::ROTATION_SOURCE_ACTIVE);
+  EXPECT_EQ(test_api.GetCurrentOrientation(),
+            blink::kWebScreenOrientationLockLandscapeSecondary);
+  ToggleOverview();
+
+  // Test that dragging |window1| to the left of the screen snaps it to right.
+  selector_item1 = GetWindowItemForWindow(grid_index, window1.get());
+  selector_item_bounds1 = selector_item1->target_bounds();
+  start_location1 = selector_item_bounds1.CenterPoint();
+  window_selector()->InitiateDrag(selector_item1, start_location1);
+  window_selector()->Drag(selector_item1, end_location1);
+  window_selector()->CompleteDrag(selector_item1, end_location1);
+  EXPECT_EQ(split_view_controller()->state(),
+            SplitViewController::RIGHT_SNAPPED);
+  EXPECT_EQ(split_view_controller()->right_window(), window1.get());
+
+  // Test that dragging |window2| to the right of the screen snaps it to left.
+  selector_item2 = GetWindowItemForWindow(grid_index, window2.get());
+  selector_item_bounds2 = selector_item2->target_bounds();
+  start_location2 = selector_item_bounds2.CenterPoint();
+  window_selector()->InitiateDrag(selector_item2, start_location2);
+  work_area_rect =
+      split_view_controller()->GetDisplayWorkAreaBoundsInScreen(window2.get());
+  end_location2 = gfx::Point(work_area_rect.width(), work_area_rect.height());
+  window_selector()->Drag(selector_item2, end_location2);
+  window_selector()->CompleteDrag(selector_item2, end_location2);
+  EXPECT_EQ(split_view_controller()->state(),
+            SplitViewController::BOTH_SNAPPED);
+  EXPECT_EQ(split_view_controller()->left_window(), window2.get());
+  EndSplitView();
+
+  // Rotate the screen by 270 degree.
+  test_api.SetDisplayRotation(display::Display::ROTATE_270,
+                              display::Display::ROTATION_SOURCE_ACTIVE);
+  EXPECT_EQ(test_api.GetCurrentOrientation(),
+            blink::kWebScreenOrientationLockPortraitSecondary);
+  ToggleOverview();
+
+  // Test that dragging |window1| to the top of the screen snaps it to left.
+  selector_item1 = GetWindowItemForWindow(grid_index, window1.get());
+  selector_item_bounds1 = selector_item1->target_bounds();
+  start_location1 = selector_item_bounds1.CenterPoint();
+  window_selector()->InitiateDrag(selector_item1, start_location1);
+  window_selector()->Drag(selector_item1, end_location1);
+  window_selector()->CompleteDrag(selector_item1, end_location1);
+  EXPECT_EQ(split_view_controller()->state(),
+            SplitViewController::LEFT_SNAPPED);
+  EXPECT_EQ(split_view_controller()->left_window(), window1.get());
+
+  // Test that dragging |window2| to the bottom of the screen snaps it to right.
+  selector_item2 = GetWindowItemForWindow(grid_index, window2.get());
+  selector_item_bounds2 = selector_item2->target_bounds();
+  start_location2 = selector_item_bounds2.CenterPoint();
+  window_selector()->InitiateDrag(selector_item2, start_location2);
+  work_area_rect =
+      split_view_controller()->GetDisplayWorkAreaBoundsInScreen(window2.get());
+  end_location2 = gfx::Point(work_area_rect.width(), work_area_rect.height());
+  window_selector()->Drag(selector_item2, end_location2);
+  window_selector()->CompleteDrag(selector_item2, end_location2);
+  EXPECT_EQ(split_view_controller()->state(),
+            SplitViewController::BOTH_SNAPPED);
+  EXPECT_EQ(split_view_controller()->right_window(), window2.get());
+  EndSplitView();
 }
 
 }  // namespace ash
