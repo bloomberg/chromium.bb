@@ -4,15 +4,12 @@
 
 #include "ui/views/controls/webview/webview.h"
 
-#include <string>
 #include <utility>
 
 #include "build/build_config.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
@@ -34,7 +31,6 @@ const char WebView::kViewClassName[] = "WebView";
 
 WebView::WebView(content::BrowserContext* browser_context)
     : holder_(new NativeViewHost()),
-      observing_render_process_host_(nullptr),
       embed_fullscreen_widget_mode_enabled_(false),
       is_embedding_fullscreen_widget_(false),
       browser_context_(browser_context),
@@ -60,15 +56,6 @@ void WebView::SetWebContents(content::WebContents* replacement) {
     return;
   DetachWebContents();
   WebContentsObserver::Observe(replacement);
-  if (observing_render_process_host_) {
-    observing_render_process_host_->RemoveObserver(this);
-    observing_render_process_host_ = nullptr;
-  }
-  if (web_contents() && web_contents()->GetMainFrame()->GetProcess()) {
-    observing_render_process_host_ =
-        web_contents()->GetMainFrame()->GetProcess();
-    observing_render_process_host_->AddObserver(this);
-  }
   // web_contents() now returns |replacement| from here onwards.
   SetFocusBehavior(web_contents() ? FocusBehavior::ALWAYS
                                   : FocusBehavior::NEVER);
@@ -227,21 +214,6 @@ gfx::NativeViewAccessible WebView::GetNativeViewAccessible() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// WebView, content::RenderProcessHostObserver implementation:
-
-void WebView::RenderProcessExited(content::RenderProcessHost* host,
-                                  base::TerminationStatus status,
-                                  int exit_code) {
-  NotifyAccessibilityWebContentsChanged();
-}
-
-void WebView::RenderProcessHostDestroyed(content::RenderProcessHost* host) {
-  DCHECK_EQ(host, observing_render_process_host_);
-  observing_render_process_host_->RemoveObserver(this);
-  observing_render_process_host_ = nullptr;
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // WebView, content::WebContentsDelegate implementation:
 
 bool WebView::EmbedsFullscreenWidget() const {
@@ -268,10 +240,6 @@ void WebView::RenderViewHostChanged(content::RenderViewHost* old_host,
 }
 
 void WebView::WebContentsDestroyed() {
-  if (observing_render_process_host_) {
-    observing_render_process_host_->RemoveObserver(this);
-    observing_render_process_host_ = nullptr;
-  }
   NotifyAccessibilityWebContentsChanged();
 }
 
@@ -302,6 +270,10 @@ void WebView::DidDetachInterstitialPage() {
 void WebView::OnWebContentsFocused(
     content::RenderWidgetHost* render_widget_host) {
   RequestFocus();
+}
+
+void WebView::RenderProcessGone(base::TerminationStatus status) {
+  NotifyAccessibilityWebContentsChanged();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
