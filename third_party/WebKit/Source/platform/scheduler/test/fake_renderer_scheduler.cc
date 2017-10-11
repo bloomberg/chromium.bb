@@ -75,9 +75,10 @@ void FakeRendererScheduler::SetRendererHidden(bool hidden) {}
 
 void FakeRendererScheduler::SetRendererBackgrounded(bool backgrounded) {}
 
-void FakeRendererScheduler::PauseRenderer() {}
-
-void FakeRendererScheduler::ResumeRenderer() {}
+std::unique_ptr<FakeRendererScheduler::RendererPauseHandle>
+FakeRendererScheduler::PauseRenderer() {
+  return nullptr;
+}
 
 void FakeRendererScheduler::AddPendingNavigation(NavigatingFrameType type) {}
 
@@ -98,10 +99,6 @@ void FakeRendererScheduler::RemoveTaskObserver(
     base::MessageLoop::TaskObserver* task_observer) {}
 
 void FakeRendererScheduler::Shutdown() {}
-
-void FakeRendererScheduler::PauseTimerQueue() {}
-
-void FakeRendererScheduler::ResumeTimerQueue() {}
 
 void FakeRendererScheduler::VirtualTimePaused() {}
 
