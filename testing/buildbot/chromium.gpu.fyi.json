@@ -2941,7 +2941,8 @@
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 2
         }
       },
       {
@@ -3574,7 +3575,8 @@
               "gpu": "1002:6613",
               "os": "Ubuntu"
             }
-          ]
+          ],
+          "shards": 2
         }
       },
       {
@@ -4022,7 +4024,8 @@
               "gpu": "8086:5912",
               "os": "Ubuntu"
             }
-          ]
+          ],
+          "shards": 2
         }
       },
       {
@@ -4470,7 +4473,8 @@
               "gpu": "10de:1cb3",
               "os": "Ubuntu"
             }
-          ]
+          ],
+          "shards": 2
         }
       },
       {
@@ -4937,7 +4941,7 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "shards": 15
+          "shards": 20
         }
       },
       {
@@ -4990,7 +4994,8 @@
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 2
         }
       },
       {
@@ -10832,7 +10837,8 @@
               "os": "Ubuntu",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 2
         }
       }
     ]
@@ -11536,7 +11542,8 @@
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 2
         }
       },
       {
@@ -11561,7 +11568,8 @@
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 2
         }
       },
       {
@@ -11586,7 +11594,8 @@
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 2
         }
       }
     ]
@@ -12133,7 +12142,8 @@
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 2
         }
       },
       {
@@ -12158,7 +12168,8 @@
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 2
         }
       },
       {
@@ -12183,7 +12194,8 @@
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 2
         }
       },
       {
@@ -12752,7 +12764,8 @@
               "gpu": "8086:5912",
               "os": "Windows-10"
             }
-          ]
+          ],
+          "shards": 2
         }
       },
       {
@@ -12776,7 +12789,8 @@
               "gpu": "8086:5912",
               "os": "Windows-10"
             }
-          ]
+          ],
+          "shards": 2
         }
       },
       {
@@ -12800,7 +12814,8 @@
               "gpu": "8086:5912",
               "os": "Windows-10"
             }
-          ]
+          ],
+          "shards": 2
         }
       },
       {
@@ -13387,7 +13402,8 @@
               "gpu": "10de:1cb3",
               "os": "Windows-10"
             }
-          ]
+          ],
+          "shards": 2
         }
       },
       {
@@ -13411,7 +13427,8 @@
               "gpu": "10de:1cb3",
               "os": "Windows-10"
             }
-          ]
+          ],
+          "shards": 2
         }
       },
       {
@@ -13435,7 +13452,8 @@
               "gpu": "10de:1cb3",
               "os": "Windows-10"
             }
-          ]
+          ],
+          "shards": 2
         }
       },
       {
@@ -14055,7 +14073,8 @@
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 2
         }
       },
       {
@@ -14080,7 +14099,8 @@
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 2
         }
       },
       {
@@ -14105,7 +14125,8 @@
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 2
         }
       },
       {
@@ -14224,7 +14245,8 @@
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 2
         }
       }
     ]
@@ -14771,7 +14793,8 @@
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 2
         }
       },
       {
@@ -14796,7 +14819,8 @@
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 2
         }
       },
       {
@@ -15368,7 +15392,8 @@
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 2
         }
       },
       {
@@ -15393,7 +15418,8 @@
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 2
         }
       },
       {
@@ -15418,7 +15444,8 @@
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 2
         }
       },
       {
@@ -16032,7 +16059,7 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "shards": 15
+          "shards": 20
         }
       },
       {
@@ -16042,7 +16069,9 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=gl"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=gl",
+          "--webgl-conformance-version=2.0.1",
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl2_conformance_gl_tests",
@@ -16057,7 +16086,8 @@
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 20
         }
       },
       {
@@ -16110,7 +16140,8 @@
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 2
         }
       },
       {
@@ -16135,7 +16166,8 @@
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 2
         }
       },
       {
@@ -16160,7 +16192,8 @@
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 2
         }
       },
       {
@@ -16748,7 +16781,8 @@
               "gpu": "1002:6613",
               "os": "Windows-2008ServerR2-SP1"
             }
-          ]
+          ],
+          "shards": 2
         }
       },
       {
@@ -16772,7 +16806,8 @@
               "gpu": "1002:6613",
               "os": "Windows-2008ServerR2-SP1"
             }
-          ]
+          ],
+          "shards": 2
         }
       },
       {
@@ -17392,7 +17427,8 @@
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 2
         }
       },
       {
@@ -17417,7 +17453,8 @@
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 2
         }
       },
       {
@@ -18031,7 +18068,7 @@
               "pool": "Chrome-GPU"
             }
           ],
-          "shards": 15
+          "shards": 20
         }
       },
       {
@@ -18041,7 +18078,9 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=gl"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=gl",
+          "--webgl-conformance-version=2.0.1",
+          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl2_conformance_gl_tests",
@@ -18056,7 +18095,8 @@
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 20
         }
       },
       {
@@ -18109,7 +18149,8 @@
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 2
         }
       },
       {
@@ -18134,7 +18175,8 @@
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 2
         }
       },
       {
@@ -18159,7 +18201,8 @@
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 2
         }
       },
       {
@@ -18879,7 +18922,8 @@
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 2
         }
       },
       {
@@ -18904,7 +18948,8 @@
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 2
         }
       },
       {
@@ -18929,7 +18974,8 @@
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 2
         }
       },
       {
@@ -19550,7 +19596,8 @@
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 2
         }
       },
       {
@@ -19575,7 +19622,8 @@
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 2
         }
       },
       {
@@ -19600,7 +19648,8 @@
               "os": "Windows-2008ServerR2-SP1",
               "pool": "Chrome-GPU"
             }
-          ]
+          ],
+          "shards": 2
         }
       },
       {

@@ -1966,6 +1966,9 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
       '--use-angle=d3d9',
     ],
     'asan_args': ['--is-asan'],
+    'swarming': {
+      'shards': 2,
+    },
   },
   'webgl_conformance_gl_tests': {
     'tester_configs': [
@@ -2014,6 +2017,9 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
       '--use-angle=gl',
     ],
     'asan_args': ['--is-asan'],
+    'swarming': {
+      'shards': 2,
+    },
   },
   'webgl_conformance_d3d11_passthrough': {
     'tester_configs': [
@@ -2038,6 +2044,9 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
       '--use-passthrough-cmd-decoder',
     ],
     'asan_args': ['--is-asan'],
+    'swarming': {
+      'shards': 2,
+    },
   },
   'webgl_conformance_gl_passthrough': {
     'tester_configs': [
@@ -2062,6 +2071,9 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
       '--use-passthrough-cmd-decoder',
     ],
     'asan_args': ['--is-asan'],
+    'swarming': {
+      'shards': 2,
+    },
   },
   'webgl2_conformance_tests': {
     'tester_configs': [
@@ -2155,8 +2167,8 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
     'asan_args': ['--is-asan'],
     'swarming': {
       # These tests currently take about an hour and fifteen minutes
-      # to run. Split them into roughly 5-minute shards.
-      'shards': 15,
+      # to run serially.
+      'shards': 20,
     },
   },
   'webgl2_conformance_gl_tests': {
@@ -2187,6 +2199,20 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
     'extra_browser_args': [
       '--use-angle=gl',
     ],
+    'args': [
+      '--webgl-conformance-version=2.0.1',
+      # The current working directory when run via isolate is
+      # out/Debug or out/Release. Reference this file relatively to
+      # it.
+      '--read-abbreviated-json-results-from=' + \
+      '../../content/test/data/gpu/webgl2_conformance_tests_output.json',
+    ],
+    'asan_args': ['--is-asan'],
+    'swarming': {
+      # These tests currently take about an hour and fifteen minutes
+      # to run serially.
+      'shards': 20,
+    },
   },
   'webgl2_conformance_d3d11_passthrough_tests': {
     'tester_configs': [
@@ -2222,7 +2248,7 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
     'swarming': {
       # These tests currently take about an hour and fifteen minutes
       # to run. Split them into roughly 5-minute shards.
-      'shards': 15,
+      'shards': 20,
     },
   },
 }
