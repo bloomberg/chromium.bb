@@ -643,7 +643,7 @@ void WindowSelectorItem::HandlePressEvent(
 void WindowSelectorItem::HandleReleaseEvent(
     const gfx::Point& location_in_screen) {
   EndDrag();
-  window_selector_->CompleteDrag(this);
+  window_selector_->CompleteDrag(this, location_in_screen);
 }
 
 void WindowSelectorItem::HandleDragEvent(const gfx::Point& location_in_screen) {

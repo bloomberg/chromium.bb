@@ -12,6 +12,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/shell_observer.h"
+#include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/window_state.h"
 #include "base/macros.h"
 #include "ui/aura/window_observer.h"
@@ -35,9 +36,11 @@ class TabletModeEventHandler;
 // behind the window so that no other windows are visible and/or obscured.
 // With the destruction of the manager all windows will be restored to their
 // original state.
-class ASH_EXPORT TabletModeWindowManager : public aura::WindowObserver,
-                                           public display::DisplayObserver,
-                                           public ShellObserver {
+class ASH_EXPORT TabletModeWindowManager
+    : public aura::WindowObserver,
+      public display::DisplayObserver,
+      public ShellObserver,
+      public SplitViewController::Observer {
  public:
   // This should only be deleted by the creator (ash::Shell).
   ~TabletModeWindowManager() override;
@@ -54,12 +57,12 @@ class ASH_EXPORT TabletModeWindowManager : public aura::WindowObserver,
   // Called from a window state object when it gets destroyed.
   void WindowStateDestroyed(aura::Window* window);
 
-  // ShellObserver overrides:
+  // ShellObserver:
   void OnOverviewModeStarting() override;
   void OnOverviewModeEnded() override;
   void OnSplitViewModeEnded() override;
 
-  // Overridden from WindowObserver:
+  // aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;
   void OnWindowHierarchyChanged(const HierarchyChangeParams& params) override;
   void OnWindowPropertyChanged(aura::Window* window,
@@ -70,11 +73,15 @@ class ASH_EXPORT TabletModeWindowManager : public aura::WindowObserver,
                              const gfx::Rect& new_bounds) override;
   void OnWindowVisibilityChanged(aura::Window* window, bool visible) override;
 
-  // display::DisplayObserver overrides:
+  // display::DisplayObserver:
   void OnDisplayAdded(const display::Display& display) override;
   void OnDisplayRemoved(const display::Display& display) override;
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t metrics) override;
+
+  // SplitViewController::Observer:
+  void OnSplitViewStateChanged(SplitViewController::State previous_state,
+                               SplitViewController::State state) override;
 
   // Tell all managing windows not to handle WM events.
   void SetIgnoreWmEventsForExit();
@@ -94,9 +101,9 @@ class ASH_EXPORT TabletModeWindowManager : public aura::WindowObserver,
   // Restore all windows to their previous state.
   void RestoreAllWindows();
 
-  // Set whether to defer bounds updates on all tracked windows. When set to
-  // false bounds will be updated as they may be stale.
-  void SetDeferBoundsUpdates(bool defer_bounds_updates);
+  // Set whether to defer bounds updates for |window|. When set to false bounds
+  // will be updated as they may be stale.
+  void SetDeferBoundsUpdates(aura::Window* window, bool defer_bounds_updates);
 
   // If the given window should be handled by us, this function will maximize it
   // and add it to the list of known windows (remembering the initial show

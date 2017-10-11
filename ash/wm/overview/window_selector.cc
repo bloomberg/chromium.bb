@@ -549,10 +549,11 @@ void WindowSelector::Drag(WindowSelectorItem* item,
   window_drag_controller_->Drag(location_in_screen);
 }
 
-void WindowSelector::CompleteDrag(WindowSelectorItem* item) {
+void WindowSelector::CompleteDrag(WindowSelectorItem* item,
+                                  const gfx::Point& location_in_screen) {
   DCHECK(window_drag_controller_.get());
   DCHECK_EQ(item, window_drag_controller_->item());
-  window_drag_controller_->CompleteDrag();
+  window_drag_controller_->CompleteDrag(location_in_screen);
 }
 
 void WindowSelector::PositionWindows(bool animate) {

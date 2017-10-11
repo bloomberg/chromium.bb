@@ -339,14 +339,6 @@ void TabletModeWindowState::UpdateWindow(wm::WindowState* window_state,
     window_state->window()->Hide();
     if (window_state->IsActive())
       window_state->Deactivate();
-  } else if (target_state == mojom::WindowStateType::LEFT_SNAPPED) {
-    window_state->SetBoundsDirect(
-        Shell::Get()->split_view_controller()->GetSnappedWindowBoundsInParent(
-            window_state->window(), SplitViewController::LEFT));
-  } else if (target_state == mojom::WindowStateType::RIGHT_SNAPPED) {
-    window_state->SetBoundsDirect(
-        Shell::Get()->split_view_controller()->GetSnappedWindowBoundsInParent(
-            window_state->window(), SplitViewController::RIGHT));
   } else {
     UpdateBounds(window_state, animated);
   }

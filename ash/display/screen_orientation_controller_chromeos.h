@@ -102,6 +102,9 @@ class ASH_EXPORT ScreenOrientationController
   // Set locked to the given |rotation| and save it.
   void SetLockToRotation(display::Display::Rotation rotation);
 
+  // Gets current screen orientation type.
+  blink::WebScreenOrientationLockType GetCurrentOrientation() const;
+
   // wm::ActivationChangeObserver:
   void OnWindowActivated(
       ::wm::ActivationChangeObserver::ActivationReason reason,
@@ -199,8 +202,6 @@ class ASH_EXPORT ScreenOrientationController
   // (http://www.w3.org/TR/screen-orientation/). Returns true if |rotation| is
   // supported for the current |rotation_locked_orientation_|.
   bool IsRotationAllowedInLockedState(display::Display::Rotation rotation);
-
-  blink::WebScreenOrientationLockType GetCurrentOrientationForTest() const;
 
   // Certain orientation locks allow for rotation between the two angles of the
   // same screen orientation. Returns true if |rotation_locked_orientation_|

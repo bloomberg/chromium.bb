@@ -257,6 +257,11 @@ void ScreenOrientationController::SetLockToRotation(
   SetLockToOrientation(RotationToOrientation(rotation));
 }
 
+blink::WebScreenOrientationLockType
+ScreenOrientationController::GetCurrentOrientation() const {
+  return RotationToOrientation(current_rotation_);
+}
+
 void ScreenOrientationController::OnWindowActivated(
     ::wm::ActivationChangeObserver::ActivationReason reason,
     aura::Window* gained_active,
@@ -589,11 +594,6 @@ bool ScreenOrientationController::IsRotationAllowedInLockedState(
            rotation == display::Display::ROTATE_270;
   }
   return false;
-}
-
-blink::WebScreenOrientationLockType
-ScreenOrientationController::GetCurrentOrientationForTest() const {
-  return RotationToOrientation(current_rotation_);
 }
 
 bool ScreenOrientationController::CanRotateInLockedState() {

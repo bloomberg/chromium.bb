@@ -1,0 +1,5 @@
+specific_include_rules = {
+  "split_view_(controller|divider)\.h": [
+    "+third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationLockType.h",
+  ],
+}
