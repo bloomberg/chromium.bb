@@ -5,6 +5,10 @@
 #ifndef EXTENSIONS_BROWSER_API_DECLARATIVE_NET_REQUEST_TEST_UTILS_H_
 #define EXTENSIONS_BROWSER_API_DECLARATIVE_NET_REQUEST_TEST_UTILS_H_
 
+namespace content {
+class BrowserContext;
+}  // namespace content
+
 namespace extensions {
 
 class Extension;
@@ -13,7 +17,8 @@ namespace declarative_net_request {
 
 // Returns true if the given extension has a valid indexed ruleset. Should be
 // called on a sequence where file IO is allowed.
-bool HasValidIndexedRuleset(const Extension& extension);
+bool HasValidIndexedRuleset(const Extension& extension,
+                            content::BrowserContext* browser_context);
 
 }  // namespace declarative_net_request
 }  // namespace extensions

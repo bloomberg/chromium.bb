@@ -180,8 +180,7 @@ class ExtensionMetricsProviderInstallsTest
 TEST_F(ExtensionMetricsProviderInstallsTest, TestProtoConstruction) {
   auto add_extension = [this](const Extension* extension) {
     prefs()->OnExtensionInstalled(extension, Extension::ENABLED,
-                                  syncer::StringOrdinal(),
-                                  extensions::kInstallFlagNone, std::string());
+                                  syncer::StringOrdinal(), std::string());
   };
 
   {

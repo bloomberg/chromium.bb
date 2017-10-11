@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "content/public/browser/utility_process_mojo_client.h"
 #include "extensions/browser/crx_file_info.h"
@@ -53,12 +54,17 @@ class SandboxedUnpackerClient
   // for deleting this memory.
   //
   // install_icon - The icon we will display in the installation UI, if any.
+  //
+  // dnr_ruleset_checksum - Checksum for the indexed ruleset corresponding to
+  // the Declarative Net Request API. Optional since it's only valid for
+  // extensions which provide a declarative ruleset.
   virtual void OnUnpackSuccess(
       const base::FilePath& temp_dir,
       const base::FilePath& extension_root,
       std::unique_ptr<base::DictionaryValue> original_manifest,
       const Extension* extension,
-      const SkBitmap& install_icon) = 0;
+      const SkBitmap& install_icon,
+      const base::Optional<int>& dnr_ruleset_checksum) = 0;
   virtual void OnUnpackFailure(const CrxInstallError& error) = 0;
 
  protected:
@@ -232,7 +238,8 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
 
   // Reports unpack success or failure, or unzip failure.
   void ReportSuccess(std::unique_ptr<base::DictionaryValue> original_manifest,
-                     const SkBitmap& install_icon);
+                     const SkBitmap& install_icon,
+                     const base::Optional<int>& dnr_ruleset_checksum);
   void ReportFailure(FailureReason reason, const base::string16& error);
 
   // Overwrites original manifest with safe result from utility process.
@@ -249,10 +256,12 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
   void Cleanup();
 
   // Indexes |json_ruleset| if it is non-null and persists the corresponding
-  // indexed file for the Declarative Net Request API. Returns false and reports
-  // failure in case of an error.
+  // indexed file for the Declarative Net Request API. Also, returns the
+  // checksum of the indexed ruleset file if the ruleset was persisted. Returns
+  // false and reports failure in case of an error.
   bool IndexAndPersistRulesIfNeeded(
-      std::unique_ptr<base::ListValue> json_ruleset);
+      std::unique_ptr<base::ListValue> json_ruleset,
+      base::Optional<int>* dnr_ruleset_checksum);
 
   // If we unpacked a CRX file, we hold on to the path name for use
   // in various histograms.
