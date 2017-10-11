@@ -19,6 +19,7 @@
 typedef struct _drmModeModeInfo drmModeModeInfo;
 
 namespace display {
+class DisplaySnapshot;
 struct GammaRampRGBEntry;
 }
 
@@ -40,8 +41,9 @@ class DrmDisplay {
   uint32_t connector() const { return connector_; }
   const std::vector<drmModeModeInfo>& modes() const { return modes_; }
 
-  DisplaySnapshot_Params Update(HardwareDisplayControllerInfo* info,
-                                size_t device_index);
+  std::unique_ptr<display::DisplaySnapshot> Update(
+      HardwareDisplayControllerInfo* info,
+      size_t device_index);
 
   bool Configure(const drmModeModeInfo* mode, const gfx::Point& origin);
   bool GetHDCPState(display::HDCPState* state);

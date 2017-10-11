@@ -18,19 +18,18 @@ class DisplaySnapshot;
 
 namespace ui {
 
-struct DisplaySnapshot_Params;
 class GpuThreadAdapter;
 
 class DrmDisplayHost : public GpuThreadObserver {
  public:
   DrmDisplayHost(GpuThreadAdapter* sender,
-                 const DisplaySnapshot_Params& params,
+                 std::unique_ptr<display::DisplaySnapshot> params,
                  bool is_dummy);
   ~DrmDisplayHost() override;
 
   display::DisplaySnapshot* snapshot() const { return snapshot_.get(); }
 
-  void UpdateDisplaySnapshot(const DisplaySnapshot_Params& params);
+  void UpdateDisplaySnapshot(std::unique_ptr<display::DisplaySnapshot> params);
   void Configure(const display::DisplayMode* mode,
                  const gfx::Point& origin,
                  const display::ConfigureCallback& callback);

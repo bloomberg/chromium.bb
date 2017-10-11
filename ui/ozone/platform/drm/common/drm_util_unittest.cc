@@ -146,11 +146,12 @@ TEST_F(DrmUtilTest, RoundTripDisplaySnapshot) {
   orig_params.push_back(sp);
   orig_params.push_back(ep);
 
-  auto intermediate_snapshots =
-      CreateMovableDisplaySnapshotsFromParams(orig_params);
+  MovableDisplaySnapshots intermediate_snapshots;
+  for (const auto& snapshot_params : orig_params)
+    intermediate_snapshots.push_back(CreateDisplaySnapshot(snapshot_params));
 
   std::vector<DisplaySnapshot_Params> roundtrip_params =
-      CreateParamsFromSnapshot(intermediate_snapshots);
+      CreateDisplaySnapshotParams(intermediate_snapshots);
 
   DetailedCompare(fp, roundtrip_params[0]);
 

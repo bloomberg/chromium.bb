@@ -16,11 +16,9 @@
 namespace ui {
 
 DrmDisplayHost::DrmDisplayHost(GpuThreadAdapter* sender,
-                               const DisplaySnapshot_Params& params,
+                               std::unique_ptr<display::DisplaySnapshot> params,
                                bool is_dummy)
-    : sender_(sender),
-      snapshot_(CreateDisplaySnapshotFromParams(params)),
-      is_dummy_(is_dummy) {
+    : sender_(sender), snapshot_(std::move(params)), is_dummy_(is_dummy) {
   sender_->AddGpuThreadObserver(this);
 }
 
@@ -30,8 +28,8 @@ DrmDisplayHost::~DrmDisplayHost() {
 }
 
 void DrmDisplayHost::UpdateDisplaySnapshot(
-    const DisplaySnapshot_Params& params) {
-  snapshot_ = CreateDisplaySnapshotFromParams(params);
+    std::unique_ptr<display::DisplaySnapshot> params) {
+  snapshot_ = std::move(params);
 }
 
 void DrmDisplayHost::Configure(const display::DisplayMode* mode,

@@ -313,7 +313,7 @@ void HostDrmDevice::GpuRefreshNativeDisplaysCallback(
     std::vector<std::unique_ptr<display::DisplaySnapshot>> displays) const {
   DCHECK_CALLED_ON_VALID_THREAD(on_window_server_thread_);
   display_manager_->GpuHasUpdatedNativeDisplays(
-      CreateParamsFromSnapshot(displays));
+      CreateDisplaySnapshotParams(displays));
 }
 
 void HostDrmDevice::GpuDisableNativeDisplayCallback(int64_t display_id,

@@ -253,9 +253,7 @@ void DrmThread::CheckOverlayCapabilities(
 
 void DrmThread::RefreshNativeDisplays(
     base::OnceCallback<void(MovableDisplaySnapshots)> callback) {
-  auto snapshots =
-      CreateMovableDisplaySnapshotsFromParams(display_manager_->GetDisplays());
-  std::move(callback).Run(std::move(snapshots));
+  std::move(callback).Run(display_manager_->GetDisplays());
 }
 
 void DrmThread::ConfigureNativeDisplay(
