@@ -462,9 +462,11 @@ static const struct MappingData {
     {0x057e, 0x2006, NintendoSwitchLeft},   // Nintendo switch left.
     {0x057e, 0x2007, NintendoSwitchRight},  // Nintendo switch right.
     // NES style gamepad.
-    {0x0583, 0x2060, IBuffalocClassicMapper},  // iBuffalo Classic.
-    {0x0079, 0x0011, ClassicNESMapper},        // Classic NES controller.
-    {0x12bd, 0xd015, SNesRetroMapper},         // Hitgaming SNES retro.
+    {0x0583, 0x2060, IBuffalocClassicMapper},         // iBuffalo Classic.
+    {0x0079, 0x0011, ClassicNESMapper},               // Classic NES controller.
+    {0x12bd, 0xd015, SNesRetroMapper},                // Hitgaming SNES retro.
+    {0x3810, 0x9, Vendor_046dProduct_b501Mapper},     // FC30 Pro, bluetooth.
+    {0x1002, 0x9000, Vendor_046dProduct_b501Mapper},  // FC30 Pro, wired.
     // Android gamepad.
     {0x0b05, 0x4500, ADT1Mapper},  // Nexus player controller (asus gamepad).
     {0x1532, 0x0900, ADT1Mapper},  // Razer serval.
