@@ -333,23 +333,14 @@ int main(int argc, const char **argv) {
   cts_each_dim[0] = INTRA_MODES;
   cts_each_dim[1] = INTRA_MODES;
   cts_each_dim[2] = INTRA_MODES;
-  optimize_entropy_table(
-      &fc.kf_y_mode[0][0][0], probsfile, 3, cts_each_dim, av1_intra_mode_tree,
-      0,
-      "const aom_prob av1_kf_y_mode_prob[INTRA_MODES][INTRA_MODES]"
-      "[INTRA_MODES - 1]");
   optimize_cdf_table(
       &fc.kf_y_mode[0][0][0], probsfile, 3, cts_each_dim,
       "const aom_cdf_prob\n"
-      "av1_kf_y_mode_cdf[INTRA_MODES][INTRA_MODES][CDF_SIZE(INTRA_MODES)]");
+      "default_kf_y_mode_cdf[INTRA_MODES][INTRA_MODES][CDF_SIZE(INTRA_MODES)]");
 
   /* Intra mode (non-keyframe luma) */
   cts_each_dim[0] = BLOCK_SIZE_GROUPS;
   cts_each_dim[1] = INTRA_MODES;
-  optimize_entropy_table(
-      &fc.y_mode[0][0], probsfile, 2, cts_each_dim, av1_intra_mode_tree, 0,
-      "static const aom_prob default_if_y_probs[BLOCK_SIZE_GROUPS]"
-      "[INTRA_MODES - 1]");
   optimize_cdf_table(
       &fc.y_mode[0][0], probsfile, 2, cts_each_dim,
       "static const aom_cdf_prob\n"
@@ -358,10 +349,6 @@ int main(int argc, const char **argv) {
   /* Intra mode (chroma) */
   cts_each_dim[0] = INTRA_MODES;
   cts_each_dim[1] = UV_INTRA_MODES;
-  optimize_entropy_table(&fc.uv_mode[0][0], probsfile, 2, cts_each_dim,
-                         av1_intra_mode_tree, 0,
-                         "static const aom_prob default_uv_probs[INTRA_MODES]"
-                         "[UV_INTRA_MODES - 1]");
   optimize_cdf_table(
       &fc.uv_mode[0][0], probsfile, 2, cts_each_dim,
       "static const aom_cdf_prob\n"
