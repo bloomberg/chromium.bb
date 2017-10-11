@@ -1,6 +1,7 @@
 <!DOCTYPE html>
-<html class="reftest-wait">
-<link rel="match" href="geometry-border-image-005-ref.html">
+<html>
+<script src="../resources/run-after-layout-and-paint.js"></script>
+<script src="./resources/test-runner-paint-worklet.js"></script>
 <style>
 html, body { margin: 0; padding: 0; }
 .container {
@@ -14,8 +15,6 @@ html, body { margin: 0; padding: 0; }
   border-image-slice: 0 fill;
 }
 </style>
-<script src="../common/reftest-wait.js"></script>
-<script src="../common/css-paint-tests.js"></script>
 <body>
 <div id="canvas-geometry" class="container"></div>
 

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
-<html class="reftest-wait">
-<link rel="match" href="paint2d-zoom-ref.html">
+<html>
+<script src="../resources/run-after-layout-and-paint.js"></script>
+<script src="./resources/test-runner-paint-worklet.js"></script>
 <style>
 html, body { margin: 0; padding: 0; }
 #output {
@@ -9,8 +10,6 @@ html, body { margin: 0; padding: 0; }
     background-image: paint(worklet);
 }
 </style>
-<script src="/common/reftest-wait.js"></script>
-<script src="/common/css-paint-tests.js"></script>
 <body>
 <div id="output"></div>
 
