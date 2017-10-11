@@ -82,6 +82,15 @@ public class ReaderModeInfoBar extends InfoBar {
     }
 
     @Override
+    protected CharSequence getAccessibilityMessage(CharSequence defaultMessage) {
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.ALLOW_READER_FOR_ACCESSIBILITY)) {
+            return getContext().getString(R.string.reader_view_text_alt);
+        } else {
+            return getContext().getString(R.string.reader_view_text);
+        }
+    }
+
+    @Override
     public void onCloseButtonClicked() {
         if (getReaderModeManager() != null) {
             getReaderModeManager().onClosed(StateChangeReason.CLOSE_BUTTON);
