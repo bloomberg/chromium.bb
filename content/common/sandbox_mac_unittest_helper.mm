@@ -14,8 +14,8 @@ extern "C" {
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/process/kill.h"
-#include "content/common/sandbox_mac.h"
 #include "content/test/test_content_client.h"
+#include "services/service_manager/sandbox/mac/sandbox_mac.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 #include "testing/multiprocess_func_list.h"
 
@@ -156,9 +156,10 @@ MULTIPROCESS_TEST_MAIN(mac_sandbox_test_runner) {
     return -1;
   }
 
-  Sandbox::SandboxWarmup(sandbox_type);
+  service_manager::Sandbox::SandboxWarmup(sandbox_type);
 
-  if (!Sandbox::EnableSandbox(sandbox_type, base::FilePath())) {
+  if (!service_manager::Sandbox::EnableSandbox(sandbox_type,
+                                               base::FilePath())) {
     LOG(ERROR) << "Failed to initialize sandbox " << sandbox_type;
     return -1;
   }
