@@ -750,7 +750,7 @@ void AppListView::SetChildViewsForStateTransition(AppListState target_state) {
       app_list_main_view_->contents_view()->apps_container_view();
 
   if (apps_container_view->IsInFolderView())
-    apps_container_view->app_list_folder_view()->CloseFolderPage();
+    apps_container_view->ResetForShowApps();
 
   if (target_state == PEEKING) {
     app_list_main_view_->contents_view()->SetActiveState(
