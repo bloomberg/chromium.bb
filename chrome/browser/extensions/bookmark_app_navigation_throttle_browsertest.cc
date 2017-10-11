@@ -28,7 +28,9 @@
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/notification_types.h"
+#include "net/base/escape.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/url_request/url_fetcher.h"
 
@@ -42,6 +44,18 @@ enum class LinkTarget {
 };
 
 namespace {
+
+std::string CreateServerRedirect(const GURL& target_url) {
+  const char* const kServerRedirectBase = "/server-redirect?";
+  return kServerRedirectBase +
+         net::EscapeQueryParamValue(target_url.spec(), false);
+}
+
+std::string CreateClientRedirect(const GURL& target_url) {
+  const char* const kClientRedirectBase = "/client-redirect?";
+  return kClientRedirectBase +
+         net::EscapeQueryParamValue(target_url.spec(), false);
+}
 
 // Inserts an iframe in the main frame of |web_contents|.
 void InsertIFrame(content::WebContents* web_contents) {
@@ -65,12 +79,13 @@ content::RenderFrameHost* GetIFrame(content::WebContents* web_contents) {
   return *it;
 }
 
-// Creates an <a> element, sets its href and target to |href| and |target|
-// respectively, adds it to the DOM, and clicks on it. Returns once the link
+// Creates an <a> element, sets its href and target to |link_url| and |target|
+// respectively, adds it to the DOM, and clicks on it. Returns once |target_url|
 // has loaded.
-void ClickLinkAndWait(content::WebContents* web_contents,
-                      const GURL& target_url,
-                      LinkTarget target) {
+void ClickLinkAndWaitForURLLoad(content::WebContents* web_contents,
+                                const GURL& link_url,
+                                const GURL& target_url,
+                                LinkTarget target) {
   ui_test_utils::UrlLoadObserver url_observer(
       target_url, content::NotificationService::AllSources());
   std::string script = base::StringPrintf(
@@ -82,10 +97,18 @@ void ClickLinkAndWait(content::WebContents* web_contents,
       "const event = new MouseEvent('click', {'view': window});"
       "link.dispatchEvent(event);"
       "})();",
-      target_url.spec().c_str(),
-      target == LinkTarget::SELF ? "_self" : "_blank");
+      link_url.spec().c_str(), target == LinkTarget::SELF ? "_self" : "_blank");
   ASSERT_TRUE(content::ExecuteScript(web_contents, script));
   url_observer.Wait();
+}
+
+// Creates an <a> element, sets its href and target to |link_url| and |target|
+// respectively, adds it to the DOM, and clicks on it. Returns once the link
+// has loaded.
+void ClickLinkAndWait(content::WebContents* web_contents,
+                      const GURL& link_url,
+                      LinkTarget target) {
+  ClickLinkAndWaitForURLLoad(web_contents, link_url, link_url, target);
 }
 
 // Creates a <form> element with a |target_url| action and |method| method. Adds
@@ -157,6 +180,11 @@ class BookmarkAppNavigationThrottleBrowserTest : public ExtensionBrowserTest {
     // responsible for adding elements and firing events on these empty pages.
     embedded_test_server()->RegisterRequestHandler(
         base::BindRepeating([](const HttpRequest& request) {
+          // Let the default request handlers handle redirections.
+          if (request.GetURL().path() == "/server-redirect" ||
+              request.GetURL().path() == "/client-redirect") {
+            return std::unique_ptr<HttpResponse>();
+          }
           auto response = base::MakeUnique<BasicHttpResponse>();
           response->set_content_type("text/html");
           response->AddCustomHeader("Access-Control-Allow-Origin", "*");
@@ -469,6 +497,53 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest, AppUrlSelf) {
       app_url, base::Bind(&ClickLinkAndWait,
                           browser()->tab_strip_model()->GetActiveWebContents(),
                           app_url, LinkTarget::SELF));
+}
+
+// Tests that clicking a link with target="_self" and for which the server
+// redirects to the app's app_url opens the Bookmark App.
+IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
+                       ServerRedirectToAppUrlSelf) {
+  InstallTestBookmarkApp();
+  NavigateToLaunchingPage();
+
+  const GURL app_url = embedded_test_server()->GetURL(kAppUrlPath);
+  const GURL redirecting_url = embedded_test_server()->GetURL(
+      "localhost", CreateServerRedirect(app_url));
+  TestTabActionOpensAppWindow(
+      app_url, base::Bind(&ClickLinkAndWaitForURLLoad,
+                          browser()->tab_strip_model()->GetActiveWebContents(),
+                          redirecting_url, app_url, LinkTarget::SELF));
+}
+
+// Tests that clicking a link with target="_self" and for which the client
+// redirects to the app's app_url opens the Bookmark App.
+IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
+                       ClientRedirectToAppUrlSelf) {
+  InstallTestBookmarkApp();
+  NavigateToLaunchingPage();
+
+  content::WebContents* initial_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  GURL initial_url = initial_tab->GetLastCommittedURL();
+  int num_tabs = browser()->tab_strip_model()->count();
+  size_t num_browsers = chrome::GetBrowserCount(profile());
+
+  const GURL app_url = embedded_test_server()->GetURL(kAppUrlPath);
+  const GURL redirecting_url = embedded_test_server()->GetURL(
+      "localhost", CreateClientRedirect(app_url));
+  ClickLinkAndWaitForURLLoad(
+      browser()->tab_strip_model()->GetActiveWebContents(), redirecting_url,
+      app_url, LinkTarget::SELF);
+
+  EXPECT_EQ(num_tabs, browser()->tab_strip_model()->count());
+  EXPECT_EQ(++num_browsers, chrome::GetBrowserCount(profile()));
+  EXPECT_NE(browser(), chrome::FindLastActive());
+
+  EXPECT_EQ(redirecting_url, initial_tab->GetLastCommittedURL());
+  EXPECT_EQ(app_url, chrome::FindLastActive()
+                         ->tab_strip_model()
+                         ->GetActiveWebContents()
+                         ->GetLastCommittedURL());
 }
 
 // Tests that clicking a link with target="_self" to a URL in the Web App's
