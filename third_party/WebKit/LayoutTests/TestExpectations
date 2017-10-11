@@ -3761,3 +3761,6 @@ crbug.com/773122 [ Win7 ] virtual/gpu/fast/canvas/canvas-lost-gpu-context.html [
 
 # Sheriff failures 2017-10-10
 crbug.com/773434 [ Win7 ] fast/text/monospace-width-cache.html [ Failure ]
+
+# Sheriff failures 2017-10-11
+crbug.com/772411 [ Mac ] virtual/mojo-loading/http/tests/media/autoplay-crossorigin.html [ Timeout Failure Pass ]
