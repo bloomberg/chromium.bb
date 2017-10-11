@@ -11,7 +11,9 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/lazy_task_runner.h"
 #include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/single_thread_task_runner_thread_mode.h"
 #include "base/task_scheduler/task_traits.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
@@ -45,6 +47,18 @@ namespace shell_integration {
 namespace {
 
 const struct AppModeInfo* gAppModeInfo = nullptr;
+
+// TODO(crbug.com/773563): Remove |g_sequenced_task_runner| and use an instance
+// field / singleton instead.
+#if defined(OS_WIN)
+base::LazyCOMSTATaskRunner g_sequenced_task_runner =
+    LAZY_COM_STA_TASK_RUNNER_INITIALIZER(
+        base::TaskTraits(base::MayBlock()),
+        base::SingleThreadTaskRunnerThreadMode::SHARED);
+#else
+base::LazySequencedTaskRunner g_sequenced_task_runner =
+    LAZY_SEQUENCED_TASK_RUNNER_INITIALIZER(base::TaskTraits(base::MayBlock()));
+#endif
 
 }  // namespace
 
@@ -138,13 +152,13 @@ base::string16 GetAppShortcutsSubdirName() {
 //
 
 void DefaultWebClientWorker::StartCheckIsDefault() {
-  GetTaskRunner()->PostTask(
+  g_sequenced_task_runner.Get()->PostTask(
       FROM_HERE,
       base::Bind(&DefaultWebClientWorker::CheckIsDefault, this, false));
 }
 
 void DefaultWebClientWorker::StartSetAsDefault() {
-  GetTaskRunner()->PostTask(
+  g_sequenced_task_runner.Get()->PostTask(
       FROM_HERE, base::Bind(&DefaultWebClientWorker::SetAsDefault, this));
 }
 
@@ -170,33 +184,6 @@ void DefaultWebClientWorker::OnCheckIsDefaultComplete(
 
 ///////////////////////////////////////////////////////////////////////////////
 // DefaultWebClientWorker, private:
-
-// static
-scoped_refptr<base::SequencedTaskRunner>
-DefaultWebClientWorker::GetTaskRunner() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  // TODO(pmonette): The better way to make sure all instances of
-  // DefaultWebClient share a SequencedTaskRunner is to make the worker a
-  // singleton.
-  static scoped_refptr<base::SequencedTaskRunner>* task_runner = nullptr;
-
-  constexpr base::TaskTraits traits = {base::MayBlock()};
-
-  if (!task_runner) {
-#if defined(OS_WIN)
-    // Shell integration calls like shell_integration::GetDefaultBrowser require
-    // the thread to have COM initialized.
-    task_runner = new scoped_refptr<base::SequencedTaskRunner>(
-        base::CreateCOMSTATaskRunnerWithTraits(traits));
-#else
-    task_runner = new scoped_refptr<base::SequencedTaskRunner>(
-        base::CreateSequencedTaskRunnerWithTraits(traits));
-#endif
-  }
-
-  return *task_runner;
-}
 
 void DefaultWebClientWorker::CheckIsDefault(bool is_following_set_as_default) {
   base::ThreadRestrictions::AssertIOAllowed();

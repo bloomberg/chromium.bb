@@ -191,36 +191,29 @@ TEST_F(ExternalProtocolHandlerTest, TestLaunchSchemeUnBlockedChromeUnknown) {
          shell_integration::UNKNOWN_DEFAULT, Action::LAUNCH);
 }
 
-// TODO(crbug.com/765733): Fix the test.
 TEST_F(ExternalProtocolHandlerTest,
-       DISABLED_TestLaunchSchemeUnBlockedChromeOtherModeDefault) {
+       TestLaunchSchemeUnBlockedChromeOtherModeDefault) {
   DoTest(ExternalProtocolHandler::DONT_BLOCK,
          shell_integration::OTHER_MODE_IS_DEFAULT, Action::LAUNCH);
 }
 
-TEST_F(ExternalProtocolHandlerTest,
-       DISABLED_TestLaunchSchemeUnknownChromeDefault) {
+TEST_F(ExternalProtocolHandlerTest, TestLaunchSchemeUnknownChromeDefault) {
   DoTest(ExternalProtocolHandler::UNKNOWN, shell_integration::IS_DEFAULT,
          Action::BLOCK);
 }
 
-// TODO(crbug.com/765733): Fix the test.
-TEST_F(ExternalProtocolHandlerTest,
-       DISABLED_TestLaunchSchemeUnknownChromeNotDefault) {
+TEST_F(ExternalProtocolHandlerTest, TestLaunchSchemeUnknownChromeNotDefault) {
   DoTest(ExternalProtocolHandler::UNKNOWN, shell_integration::NOT_DEFAULT,
          Action::PROMPT);
 }
 
-// TODO(crbug.com/765733): Fix the test.
-TEST_F(ExternalProtocolHandlerTest,
-       DISABLED_TestLaunchSchemeUnknownChromeUnknown) {
+TEST_F(ExternalProtocolHandlerTest, TestLaunchSchemeUnknownChromeUnknown) {
   DoTest(ExternalProtocolHandler::UNKNOWN, shell_integration::UNKNOWN_DEFAULT,
          Action::PROMPT);
 }
 
-// TODO(crbug.com/765733): Fix the test.
 TEST_F(ExternalProtocolHandlerTest,
-       DISABLED_TestLaunchSchemeUnknownChromeOtherModeDefault) {
+       TestLaunchSchemeUnknownChromeOtherModeDefault) {
   DoTest(ExternalProtocolHandler::UNKNOWN,
          shell_integration::OTHER_MODE_IS_DEFAULT, Action::PROMPT);
 }
