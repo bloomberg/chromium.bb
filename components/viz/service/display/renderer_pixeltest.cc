@@ -285,12 +285,13 @@ void CreateTestYUVVideoDrawQuad_FromVideoFrame(
   resource_ids_to_transfer.push_back(resource_v);
   if (with_alpha)
     resource_ids_to_transfer.push_back(resource_a);
-  std::vector<TransferableResource> list;
+  std::vector<TransferableResource> send_to_parent;
   std::vector<ReturnedResource> returned_to_child;
   int child_id = resource_provider->CreateChild(
       base::Bind(&CollectResources, &returned_to_child));
-  child_resource_provider->PrepareSendToParent(resource_ids_to_transfer, &list);
-  resource_provider->ReceiveFromChild(child_id, list);
+  child_resource_provider->PrepareSendToParent(resource_ids_to_transfer,
+                                               &send_to_parent);
+  resource_provider->ReceiveFromChild(child_id, send_to_parent);
 
   // Before create DrawQuad in DisplayResourceProvider's namespace, get the
   // mapped resource id first.
@@ -375,12 +376,13 @@ void CreateTestY16TextureDrawQuad_FromVideoFrame(
   // Transfer resource to the parent.
   cc::ResourceProvider::ResourceIdArray resource_ids_to_transfer;
   resource_ids_to_transfer.push_back(resource_y);
-  std::vector<TransferableResource> list;
+  std::vector<TransferableResource> send_to_parent;
   std::vector<ReturnedResource> returned_to_child;
   int child_id = resource_provider->CreateChild(
       base::Bind(&CollectResources, &returned_to_child));
-  child_resource_provider->PrepareSendToParent(resource_ids_to_transfer, &list);
-  resource_provider->ReceiveFromChild(child_id, list);
+  child_resource_provider->PrepareSendToParent(resource_ids_to_transfer,
+                                               &send_to_parent);
+  resource_provider->ReceiveFromChild(child_id, send_to_parent);
 
   // Before create DrawQuad in DisplayResourceProvider's namespace, get the
   // mapped resource id first.

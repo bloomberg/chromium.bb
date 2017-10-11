@@ -62,7 +62,7 @@ void AddRenderPassQuad(viz::RenderPass* to_pass,
                        SkBlendMode blend_mode);
 
 void AddOneOfEveryQuadType(viz::RenderPass* to_pass,
-                           ResourceProvider* resource_provider,
+                           LayerTreeResourceProvider* resource_provider,
                            viz::RenderPassId child_pass_id,
                            gpu::SyncToken* sync_token_for_mailbox_texture);
 

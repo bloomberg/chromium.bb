@@ -160,22 +160,6 @@ class CC_EXPORT ResourceProvider
       gfx::BufferUsage usage,
       const gfx::ColorSpace& color_space);
 
-  // Wraps an external texture mailbox into a GL resource.
-  viz::ResourceId CreateResourceFromTextureMailbox(
-      const viz::TextureMailbox& mailbox,
-      std::unique_ptr<viz::SingleReleaseCallback> release_callback);
-
-  viz::ResourceId CreateResourceFromTextureMailbox(
-      const viz::TextureMailbox& mailbox,
-      std::unique_ptr<viz::SingleReleaseCallback> release_callback,
-      bool read_lock_fences_enabled);
-
-  viz::ResourceId CreateResourceFromTextureMailbox(
-      const viz::TextureMailbox& mailbox,
-      std::unique_ptr<viz::SingleReleaseCallback> release_callback,
-      bool read_lock_fences_enabled,
-      gfx::BufferFormat buffer_format);
-
   void DeleteResource(viz::ResourceId id);
   // In the case of GPU resources, we may need to flush the GL context to ensure
   // that texture deletions are seen in a timely fashion. This function should

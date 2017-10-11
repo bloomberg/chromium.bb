@@ -25,6 +25,22 @@ class CC_EXPORT LayerTreeResourceProvider : public ResourceProvider {
       const viz::ResourceSettings& resource_settings);
   ~LayerTreeResourceProvider() override;
 
+  // Wraps an external texture mailbox into a GL resource.
+  viz::ResourceId CreateResourceFromTextureMailbox(
+      const viz::TextureMailbox& mailbox,
+      std::unique_ptr<viz::SingleReleaseCallback> release_callback);
+
+  viz::ResourceId CreateResourceFromTextureMailbox(
+      const viz::TextureMailbox& mailbox,
+      std::unique_ptr<viz::SingleReleaseCallback> release_callback,
+      bool read_lock_fences_enabled);
+
+  viz::ResourceId CreateResourceFromTextureMailbox(
+      const viz::TextureMailbox& mailbox,
+      std::unique_ptr<viz::SingleReleaseCallback> release_callback,
+      bool read_lock_fences_enabled,
+      gfx::BufferFormat buffer_format);
+
   // Gets the most recent sync token from the indicated resources.
   gpu::SyncToken GetSyncTokenForResources(const ResourceIdArray& resource_ids);
 
