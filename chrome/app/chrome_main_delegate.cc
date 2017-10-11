@@ -118,6 +118,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/java_exception_reporter.h"
+#include "chrome/browser/android/crash/pure_java_exception_handler.h"
 #include "chrome/common/descriptors_android.h"
 #else
 // Diagnostics is only available on non-android platforms.
@@ -912,6 +913,7 @@ void ChromeMainDelegate::PreSandboxStartup() {
     if (process_type.empty()) {
       breakpad::InitCrashReporter(process_type);
       base::android::InitJavaExceptionReporter();
+      UninstallPureJavaExceptionHandler();
     } else {
       breakpad::InitNonBrowserCrashReporterForAndroid(process_type);
       base::android::InitJavaExceptionReporterForChildProcess();
