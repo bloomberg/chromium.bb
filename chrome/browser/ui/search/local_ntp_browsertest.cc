@@ -348,12 +348,6 @@ class LocalNTPJavascriptTest : public CustomNTPUrlTest {
 // This runs a bunch of pure JS-side tests, i.e. those that don't require any
 // interaction from the native side.
 IN_PROC_BROWSER_TEST_F(LocalNTPJavascriptTest, SimpleJavascriptTests) {
-  if (content::AreAllSitesIsolatedForTesting()) {
-    LOG(ERROR) << "LocalNTPJavascriptTest.SimpleJavascriptTests doesn't work "
-                  "in --site-per-process mode yet, see crbug.com/695221.";
-    return;
-  }
-
   content::WebContents* active_tab =
       OpenNewTab(browser(), GURL(chrome::kChromeUINewTabURL));
   ASSERT_TRUE(search::IsInstantNTP(active_tab));
@@ -434,12 +428,6 @@ content::RenderFrameHost* GetMostVisitedIframe(content::WebContents* tab) {
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(LocalNTPJavascriptTest, LoadsIframe) {
-  if (content::AreAllSitesIsolatedForTesting()) {
-    LOG(ERROR) << "LocalNTPJavascriptTest.LoadsIframe doesn't work in "
-                  "--site-per-process mode yet, see crbug.com/695221.";
-    return;
-  }
-
   content::WebContents* active_tab =
       OpenNewTab(browser(), GURL(chrome::kChromeUINewTabURL));
   ASSERT_TRUE(search::IsInstantNTP(active_tab));
