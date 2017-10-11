@@ -11,12 +11,62 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "remoting/protocol/video_channel_state_observer.h"
+
+#if defined(USE_H264_ENCODER)
+#include "media/video/h264_parser.h"
+#endif
 
 namespace remoting {
 namespace protocol {
+
+#if defined(USE_H264_ENCODER)
+namespace {
+
+// -- COPIED FROM //content/renderer/media/gpu/rtc_video_encoder.cc --
+// This logic should be shared in //media/video/h264_parser.h.
+// Populates struct webrtc::RTPFragmentationHeader for H264 codec.
+// Each entry specifies the offset and length (excluding start code) of a NALU.
+// Returns true if successful.
+//
+// TODO(zijiehe): Following logic should be placed in
+// //media/video/h264_parser.h. See
+// https://chromium-review.googlesource.com/c/chromium/src/+/703926
+bool GetRTPFragmentationHeaderH264(webrtc::RTPFragmentationHeader* header,
+                                   const uint8_t* data, uint32_t length) {
+  media::H264Parser parser;
+  parser.SetStream(data, length);
+
+  std::vector<media::H264NALU> nalu_vector;
+  while (true) {
+    media::H264NALU nalu;
+    const media::H264Parser::Result result = parser.AdvanceToNextNALU(&nalu);
+    if (result == media::H264Parser::kOk) {
+      nalu_vector.push_back(nalu);
+    } else if (result == media::H264Parser::kEOStream) {
+      break;
+    } else {
+      DLOG(ERROR) << "Unexpected H264 parser result";
+      return false;
+    }
+  }
+
+  header->VerifyAndAllocateFragmentationHeader(nalu_vector.size());
+  for (size_t i = 0; i < nalu_vector.size(); ++i) {
+    header->fragmentationOffset[i] = nalu_vector[i].data - data;
+    header->fragmentationLength[i] = nalu_vector[i].size;
+    header->fragmentationPlType[i] = 0;
+    header->fragmentationTimeDiff[i] = 0;
+  }
+  return true;
+}
+
+}  // namespace
+#endif
 
 WebrtcDummyVideoEncoder::WebrtcDummyVideoEncoder(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
@@ -101,8 +151,8 @@ webrtc::EncodedImageCallback::Result WebrtcDummyVideoEncoder::SendEncodedFrame(
     const WebrtcVideoEncoder::EncodedFrame& frame,
     base::TimeTicks capture_time) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  uint8_t* buffer =
-      reinterpret_cast<uint8_t*>(const_cast<char*>(frame.data.data()));
+  uint8_t* buffer = reinterpret_cast<uint8_t*>(
+      base::string_as_array(const_cast<std::string*>(&frame.data)));
   size_t buffer_size = frame.data.size();
   base::AutoLock lock(lock_);
   if (state_ == kUninitialized) {
@@ -150,18 +200,36 @@ webrtc::EncodedImageCallback::Result WebrtcDummyVideoEncoder::SendEncodedFrame(
     vp9_info->spatial_idx = webrtc::kNoSpatialIdx;
     vp9_info->tl0_pic_idx = webrtc::kNoTl0PicIdx;
     vp9_info->picture_id = webrtc::kNoPictureId;
+  } else if (codec_type_ == webrtc::kVideoCodecH264) {
+#if defined(USE_H264_ENCODER)
+    webrtc::CodecSpecificInfoH264* h264_info =
+        &codec_specific_info.codecSpecific.H264;
+    h264_info->packetization_mode =
+        webrtc::H264PacketizationMode::NonInterleaved;
+#else
+    NOTREACHED();
+#endif
   } else {
     NOTREACHED();
   }
 
   webrtc::RTPFragmentationHeader header;
-  memset(&header, 0, sizeof(header));
-
-  header.VerifyAndAllocateFragmentationHeader(1);
-  header.fragmentationOffset[0] = 0;
-  header.fragmentationLength[0] = buffer_size;
-  header.fragmentationPlType[0] = 0;
-  header.fragmentationTimeDiff[0] = 0;
+  if (codec_type_ == webrtc::kVideoCodecH264) {
+#if defined(USE_H264_ENCODER)
+    if (!GetRTPFragmentationHeaderH264(&header, buffer, buffer_size)) {
+      return webrtc::EncodedImageCallback::Result(
+          webrtc::EncodedImageCallback::Result::ERROR_SEND_FAILED);
+    }
+#else
+    NOTREACHED();
+#endif
+  } else {
+    header.VerifyAndAllocateFragmentationHeader(1);
+    header.fragmentationOffset[0] = 0;
+    header.fragmentationLength[0] = buffer_size;
+    header.fragmentationPlType[0] = 0;
+    header.fragmentationTimeDiff[0] = 0;
+  }
 
   DCHECK(encoded_callback_);
   return encoded_callback_->OnEncodedImage(encoded_image, &codec_specific_info,

@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "build/build_config.h"
 #include "remoting/base/constants.h"
 #include "remoting/codec/webrtc_video_encoder_proxy.h"
 #include "remoting/codec/webrtc_video_encoder_vpx.h"
@@ -20,6 +21,10 @@
 #include "third_party/webrtc/api/peerconnectioninterface.h"
 #include "third_party/webrtc/api/test/fakeconstraints.h"
 #include "third_party/webrtc/media/base/videocapturer.h"
+
+#if defined(USE_H264_ENCODER)
+#include "remoting/codec/webrtc_video_encoder_gpu.h"
+#endif
 
 namespace remoting {
 namespace protocol {
@@ -258,12 +263,13 @@ void WebrtcVideoStream::OnEncoderCreated(webrtc::VideoCodecType codec_type) {
     encoder_ = base::MakeUnique<WebrtcVideoEncoderProxy>(
         WebrtcVideoEncoderVpx::CreateForVP9(), encode_task_runner_);
   } else if (codec_type == webrtc::kVideoCodecH264) {
+#if defined(USE_H264_ENCODER)
     LOG(ERROR) << "Using H264 video codec.";
-    // TODO(gusss): Whenever the H264 encoder is ready, this is how it will be
-    // initialized.
-    // encoder_ = base::MakeUnique<WebrtcVideoEncoderProxy>(
-    //     WebrtcVideoEncoderGpu::CreateForH264(), encode_task_runner_);
+    encoder_ = base::MakeUnique<WebrtcVideoEncoderProxy>(
+        WebrtcVideoEncoderGpu::CreateForH264(), encode_task_runner_);
+#else
     NOTIMPLEMENTED();
+#endif
   } else {
     LOG(FATAL) << "Unknown codec type: " << codec_type;
   }
