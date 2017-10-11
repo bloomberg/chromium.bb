@@ -45,10 +45,10 @@ class PLATFORM_EXPORT UnacceleratedImageBufferSurface
  public:
   UnacceleratedImageBufferSurface(
       const IntSize&,
-      OpacityMode = kNonOpaque,
       ImageInitializationMode = kInitializeImagePixels,
       const CanvasColorParams& = CanvasColorParams(kLegacyCanvasColorSpace,
-                                                   kRGBA8CanvasPixelFormat));
+                                                   kRGBA8CanvasPixelFormat,
+                                                   kNonOpaque));
   ~UnacceleratedImageBufferSurface() override;
 
   PaintCanvas* Canvas() override;

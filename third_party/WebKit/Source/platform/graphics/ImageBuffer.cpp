@@ -78,12 +78,11 @@ std::unique_ptr<ImageBuffer> ImageBuffer::Create(
 
 std::unique_ptr<ImageBuffer> ImageBuffer::Create(
     const IntSize& size,
-    OpacityMode opacity_mode,
     ImageInitializationMode initialization_mode,
     const CanvasColorParams& color_params) {
   std::unique_ptr<ImageBufferSurface> surface(
       WTF::WrapUnique(new UnacceleratedImageBufferSurface(
-          size, opacity_mode, initialization_mode, color_params)));
+          size, initialization_mode, color_params)));
 
   if (!surface->IsValid())
     return nullptr;
@@ -495,7 +494,7 @@ void ImageBuffer::DisableAcceleration() {
   std::unique_ptr<ImageBufferSurface> surface =
       WTF::WrapUnique(new RecordingImageBufferSurface(
           surface_->Size(), RecordingImageBufferSurface::kAllowFallback,
-          surface_->GetOpacityMode(), surface_->ColorParams()));
+          surface_->ColorParams()));
   SetSurface(std::move(surface));
 }
 

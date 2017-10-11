@@ -103,17 +103,17 @@ class PLATFORM_EXPORT ImageBufferSurface {
   virtual RefPtr<StaticBitmapImage> NewImageSnapshot(AccelerationHint,
                                                      SnapshotReason) = 0;
 
-  OpacityMode GetOpacityMode() const { return opacity_mode_; }
+  OpacityMode GetOpacityMode() const { return color_params_.GetOpacityMode(); }
   const IntSize& Size() const { return size_; }
   const CanvasColorParams& ColorParams() const { return color_params_; }
+
   void NotifyIsValidChanged(bool is_valid) const;
 
  protected:
-  ImageBufferSurface(const IntSize&, OpacityMode, const CanvasColorParams&);
+  ImageBufferSurface(const IntSize&, const CanvasColorParams&);
   void Clear();
 
  private:
-  OpacityMode opacity_mode_;
   IntSize size_;
   CanvasColorParams color_params_;
 };

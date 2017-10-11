@@ -28,8 +28,7 @@ class RecordingImageBufferSurfaceTest : public Test {
  protected:
   RecordingImageBufferSurfaceTest() {
     auto test_surface = std::make_unique<RecordingImageBufferSurface>(
-        IntSize(10, 10), RecordingImageBufferSurface::kAllowFallback,
-        kNonOpaque);
+        IntSize(10, 10), RecordingImageBufferSurface::kAllowFallback);
     test_surface_ = test_surface.get();
     // We create an ImageBuffer in order for the |test_surface| to be
     // properly initialized with a GraphicsContext

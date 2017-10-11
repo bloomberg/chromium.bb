@@ -31,7 +31,6 @@ class PLATFORM_EXPORT RecordingImageBufferSurface : public ImageBufferSurface {
   // Only GetRecord() should be used to access the resulting frame.
   RecordingImageBufferSurface(const IntSize&,
                               AllowFallback,
-                              OpacityMode = kNonOpaque,
                               const CanvasColorParams& = CanvasColorParams());
   ~RecordingImageBufferSurface() override;
 

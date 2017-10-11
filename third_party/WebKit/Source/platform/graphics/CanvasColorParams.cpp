@@ -5,6 +5,7 @@
 #include "platform/graphics/CanvasColorParams.h"
 
 #include "platform/runtime_enabled_features.h"
+#include "third_party/skia/include/core/SkSurfaceProps.h"
 #include "ui/gfx/color_space.h"
 
 namespace blink {
@@ -33,8 +34,11 @@ gfx::ColorSpace::PrimaryID GetPrimaryID(CanvasColorSpace color_space) {
 CanvasColorParams::CanvasColorParams() = default;
 
 CanvasColorParams::CanvasColorParams(CanvasColorSpace color_space,
-                                     CanvasPixelFormat pixel_format)
-    : color_space_(color_space), pixel_format_(pixel_format) {}
+                                     CanvasPixelFormat pixel_format,
+                                     OpacityMode opacity_mode)
+    : color_space_(color_space),
+      pixel_format_(pixel_format),
+      opacity_mode_(opacity_mode) {}
 
 CanvasColorParams::CanvasColorParams(const SkImageInfo& info) {
   color_space_ = kLegacyCanvasColorSpace;
@@ -70,6 +74,10 @@ void CanvasColorParams::SetCanvasPixelFormat(CanvasPixelFormat pixel_format) {
   pixel_format_ = pixel_format;
 }
 
+void CanvasColorParams::SetOpacityMode(OpacityMode opacity_mode) {
+  opacity_mode_ = opacity_mode;
+}
+
 bool CanvasColorParams::LinearPixelMath() const {
   return color_space_ != kLegacyCanvasColorSpace;
 }
@@ -99,6 +107,19 @@ SkColorType CanvasColorParams::GetSkColorType() const {
   if (pixel_format_ == kF16CanvasPixelFormat)
     return kRGBA_F16_SkColorType;
   return kN32_SkColorType;
+}
+
+SkAlphaType CanvasColorParams::GetSkAlphaType() const {
+  if (opacity_mode_ == kOpaque)
+    return kOpaque_SkAlphaType;
+  return kPremul_SkAlphaType;
+}
+
+const SkSurfaceProps* CanvasColorParams::GetSkSurfaceProps() const {
+  static const SkSurfaceProps disable_lcd_props(0, kUnknown_SkPixelGeometry);
+  if (opacity_mode_ == kOpaque)
+    return nullptr;
+  return &disable_lcd_props;
 }
 
 uint8_t CanvasColorParams::BytesPerPixel() const {

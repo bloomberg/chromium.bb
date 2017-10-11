@@ -62,7 +62,7 @@ class HTMLCanvasPainterTestForSPv2 : public PaintControllerPaintTest {
   std::unique_ptr<Canvas2DLayerBridge> MakeCanvas2DLayerBridge(
       const IntSize& size) {
     return WTF::WrapUnique(new Canvas2DLayerBridge(
-        size, 0, kNonOpaque, Canvas2DLayerBridge::kForceAccelerationForTesting,
+        size, 0, Canvas2DLayerBridge::kForceAccelerationForTesting,
         CanvasColorParams()));
   }
 

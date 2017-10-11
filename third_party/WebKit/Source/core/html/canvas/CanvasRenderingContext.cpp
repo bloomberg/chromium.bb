@@ -37,7 +37,9 @@ CanvasRenderingContext::CanvasRenderingContext(
     CanvasRenderingContextHost* host,
     const CanvasContextCreationAttributes& attrs)
     : host_(host),
-      color_params_(kLegacyCanvasColorSpace, kRGBA8CanvasPixelFormat),
+      color_params_(kLegacyCanvasColorSpace,
+                    kRGBA8CanvasPixelFormat,
+                    kNonOpaque),
       creation_attributes_(attrs) {
   color_params_.SetCanvasColorSpace(kLegacyCanvasColorSpace);
   if (RuntimeEnabledFeatures::ColorCanvasExtensionsEnabled()) {
@@ -57,6 +59,11 @@ CanvasRenderingContext::CanvasRenderingContext(
 
     // TODO(ccameron): linearPixelMath needs to be propagated here.
   }
+
+  if (!creation_attributes_.alpha()) {
+    color_params_.SetOpacityMode(kOpaque);
+  }
+
   // Make m_creationAttributes reflect the effective colorSpace, pixelFormat and
   // linearPixelMath rather than the requested one.
   creation_attributes_.setColorSpace(ColorSpaceAsString());
