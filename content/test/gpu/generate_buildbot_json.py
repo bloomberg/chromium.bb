@@ -20,6 +20,9 @@ SRC_DIR = os.path.dirname(os.path.dirname(os.path.dirname(THIS_DIR)))
 # Current stable Windows 7 NVIDIA GT 610 device/driver identifier.
 WIN_7_NVIDIA_GEFORCE_610_STABLE_DRIVER = '10de:104a-21.21.13.7254'
 
+# Current experimental Windows NVIDIA GT 610 device/driver identifier.
+WIN_NVIDIA_GEFORCE_610_EXPERIMENTAL_DRIVER = '10de:104a-23.21.13.8792'
+
 # Current stable Windows 10 NVIDIA GT 610 device/driver identifier.
 WIN_10_NVIDIA_GEFORCE_610_STABLE_DRIVER = '10de:104a-21.21.13.7619'
 
@@ -274,8 +277,7 @@ FYI_WATERFALL = {
     'Win7 Experimental Release (NVIDIA)': {
       'swarming_dimensions': [
         {
-          # TODO(jmadill): change this to experimental driver version.
-          'gpu': WIN_7_NVIDIA_GEFORCE_610_STABLE_DRIVER,
+          'gpu': WIN_NVIDIA_GEFORCE_610_EXPERIMENTAL_DRIVER,
           'os': 'Windows-2008ServerR2-SP1',
           'pool': 'Chrome-GPU',
         },
