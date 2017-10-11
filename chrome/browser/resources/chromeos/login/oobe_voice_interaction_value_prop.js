@@ -79,6 +79,13 @@ Polymer({
   initialized_: false,
 
   /**
+   * Whether the response header has been received for the value prop view
+   * @type: {boolean}
+   * @private
+   */
+  headerReceived_: false,
+
+  /**
    * On-tap event handler for skip button.
    *
    * @private
@@ -132,6 +139,7 @@ Polymer({
    */
   reloadValueProp: function() {
     this.valuePropError_ = false;
+    this.headerReceived_ = false;
     this.valueView_.src = 'https://www.gstatic.com/opa-chromeos/oobe/' +
         this.locale + '/value_proposition.html';
 
@@ -154,6 +162,8 @@ Polymer({
    * Handles event when value prop view cannot be loaded.
    */
   onValueViewErrorOccurred: function(details) {
+    // TODO(updowndota): Remove after bug is fixed.
+    console.error('Value prop view error: ' + JSON.stringify(details));
     this.valuePropError_ = true;
     window.clearTimeout(this.animationTimeout_);
     window.clearTimeout(this.loadingTimeout_);
@@ -170,11 +180,17 @@ Polymer({
    * Handles event when value prop view is loaded.
    */
   onValueViewContentLoad: function(details) {
-    if (this.valuePropError_) {
+    // TODO(updowndota): Remove after bug is fixed.
+    console.error('Value prop view loaded: ' + JSON.stringify(details));
+    if (details == null) {
+      return;
+    }
+    if (this.valuePropError_ || !this.headerReceived_) {
       return;
     }
     if (this.reloadWithDefaultUrl_) {
       this.valueView_.src = this.defaultUrl;
+      this.headerReceived_ = false;
       this.reloadWithDefaultUrl_ = false;
       return;
     }
@@ -194,6 +210,13 @@ Polymer({
    * Handles event when webview request headers received.
    */
   onValueViewHeadersReceived: function(details) {
+    // TODO(updowndota): Remove after bug is fixed.
+    console.error(
+        'Value prop view header received: ' + JSON.stringify(details));
+    if (details == null) {
+      return;
+    }
+    this.headerReceived_ = true;
     if (details.statusCode == '404') {
       if (details.url != this.defaultUrl) {
         this.reloadWithDefaultUrl_ = true;
