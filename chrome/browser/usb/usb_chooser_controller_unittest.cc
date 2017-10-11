@@ -155,3 +155,13 @@ TEST_F(UsbChooserControllerTest, AddAndRemoveDeviceWithSameName) {
   EXPECT_EQ(base::ASCIIToUTF16("b"), usb_chooser_controller_->GetOption(0));
   EXPECT_EQ(base::ASCIIToUTF16("a"), usb_chooser_controller_->GetOption(1));
 }
+
+TEST_F(UsbChooserControllerTest, UnknownDeviceName) {
+  uint16_t vendor_id = 123;
+  uint16_t product_id = 456;
+  scoped_refptr<device::MockUsbDevice> device =
+      new device::MockUsbDevice(vendor_id, product_id);
+  device_client_.usb_service()->AddDevice(device);
+  EXPECT_EQ(base::ASCIIToUTF16("Unknown device [007b:01c8]"),
+            usb_chooser_controller_->GetOption(0));
+}
