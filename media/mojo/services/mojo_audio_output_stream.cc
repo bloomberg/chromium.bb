@@ -16,26 +16,31 @@ namespace media {
 
 MojoAudioOutputStream::MojoAudioOutputStream(
     mojom::AudioOutputStreamRequest request,
+    mojom::AudioOutputStreamClientPtr client,
     CreateDelegateCallback create_delegate_callback,
     StreamCreatedCallback stream_created_callback,
     base::OnceClosure deleter_callback)
     : stream_created_callback_(std::move(stream_created_callback)),
       deleter_callback_(std::move(deleter_callback)),
       binding_(this, std::move(request)),
+      client_(std::move(client)),
       weak_factory_(this) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(deleter_callback_);
   // |this| owns |binding_|, so unretained is safe.
   binding_.set_connection_error_handler(
-      base::Bind(&MojoAudioOutputStream::OnError, base::Unretained(this)));
+      base::BindOnce(&MojoAudioOutputStream::OnError, base::Unretained(this)));
+  client_.set_connection_error_handler(
+      base::BindOnce(&MojoAudioOutputStream::OnError, base::Unretained(this)));
   delegate_ = std::move(create_delegate_callback).Run(this);
   if (!delegate_) {
     // Failed to initialize the stream. We cannot call |deleter_callback_| yet,
     // since construction isn't done.
     binding_.Close();
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&MojoAudioOutputStream::OnError,
-                              weak_factory_.GetWeakPtr()));
+        FROM_HERE,
+        base::BindOnce(&MojoAudioOutputStream::OnStreamError,
+                       weak_factory_.GetWeakPtr(), /* not used */ 0));
   }
 }
 
@@ -58,7 +63,7 @@ void MojoAudioOutputStream::SetVolume(double volume) {
   if (volume < 0 || volume > 1) {
     LOG(ERROR) << "MojoAudioOutputStream::SetVolume(" << volume
                << ") out of range.";
-    OnError();
+    OnStreamError(/*not used*/ 0);
     return;
   }
   delegate_->OnSetVolume(volume);
@@ -91,6 +96,7 @@ void MojoAudioOutputStream::OnStreamCreated(
 
 void MojoAudioOutputStream::OnStreamError(int stream_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  client_->OnError();
   OnError();
 }
 

@@ -50,6 +50,44 @@ MojoAudioOutputIPC::FactoryAccessorCB NullAccessor() {
       []() -> mojom::RendererAudioOutputStreamFactory* { return nullptr; });
 }
 
+class TestStreamProvider : public media::mojom::AudioOutputStreamProvider {
+ public:
+  explicit TestStreamProvider(media::mojom::AudioOutputStream* stream)
+      : stream_(stream) {}
+
+  ~TestStreamProvider() override {
+    // If we expected a stream to be acquired, make sure it is so.
+    if (stream_)
+      EXPECT_TRUE(binding_);
+  }
+
+  void Acquire(media::mojom::AudioOutputStreamRequest stream_request,
+               media::mojom::AudioOutputStreamClientPtr client_ptr,
+               const media::AudioParameters& params,
+               AcquireCallback callback) override {
+    EXPECT_EQ(binding_, base::nullopt);
+    EXPECT_NE(stream_, nullptr);
+    std::swap(client_, client_ptr);
+    binding_.emplace(stream_, std::move(stream_request));
+    base::CancelableSyncSocket foreign_socket;
+    EXPECT_TRUE(
+        base::CancelableSyncSocket::CreatePair(&socket_, &foreign_socket));
+    std::move(callback).Run(mojo::SharedBufferHandle::Create(kMemoryLength),
+                            mojo::WrapPlatformFile(foreign_socket.Release()));
+  }
+
+  media::mojom::AudioOutputStreamClient* client() {
+    DCHECK(client_.get());
+    return client_.get();
+  }
+
+ private:
+  media::mojom::AudioOutputStream* stream_;
+  media::mojom::AudioOutputStreamClientPtr client_;
+  base::Optional<mojo::Binding<media::mojom::AudioOutputStream>> binding_;
+  base::CancelableSyncSocket socket_;
+};
+
 class TestRemoteFactory : public mojom::RendererAudioOutputStreamFactory {
  public:
   TestRemoteFactory()
@@ -83,7 +121,7 @@ class TestRemoteFactory : public mojom::RendererAudioOutputStreamFactory {
   void PrepareProviderForAuthorization(
       int64_t session_id,
       const std::string& device_id,
-      std::unique_ptr<media::mojom::AudioOutputStreamProvider> provider) {
+      std::unique_ptr<TestStreamProvider> provider) {
     EXPECT_FALSE(expect_request_);
     expect_request_ = true;
     expected_session_id_ = session_id;
@@ -108,6 +146,10 @@ class TestRemoteFactory : public mojom::RendererAudioOutputStreamFactory {
     expect_request_ = false;
   }
 
+  media::mojom::AudioOutputStreamClient* client() {
+    return provider_->client();
+  }
+
   MojoAudioOutputIPC::FactoryAccessorCB GetAccessor() {
     return base::BindRepeating(&TestRemoteFactory::get, base::Unretained(this));
   }
@@ -121,39 +163,9 @@ class TestRemoteFactory : public mojom::RendererAudioOutputStreamFactory {
 
   mojom::RendererAudioOutputStreamFactoryPtr this_proxy_;
   mojo::Binding<mojom::RendererAudioOutputStreamFactory> binding_;
-  std::unique_ptr<media::mojom::AudioOutputStreamProvider> provider_;
+  std::unique_ptr<TestStreamProvider> provider_;
   base::Optional<mojo::Binding<media::mojom::AudioOutputStreamProvider>>
       provider_binding_;
-};
-
-class TestStreamProvider : public media::mojom::AudioOutputStreamProvider {
- public:
-  explicit TestStreamProvider(media::mojom::AudioOutputStream* stream)
-      : stream_(stream) {}
-
-  ~TestStreamProvider() override {
-    // If we expected a stream to be acquired, make sure it is so.
-    if (stream_)
-      EXPECT_TRUE(binding_);
-  }
-
-  void Acquire(media::mojom::AudioOutputStreamRequest stream_request,
-               const media::AudioParameters& params,
-               AcquireCallback callback) override {
-    EXPECT_EQ(binding_, base::nullopt);
-    EXPECT_NE(stream_, nullptr);
-    binding_.emplace(stream_, std::move(stream_request));
-    base::CancelableSyncSocket foreign_socket;
-    EXPECT_TRUE(
-        base::CancelableSyncSocket::CreatePair(&socket_, &foreign_socket));
-    std::move(callback).Run(mojo::SharedBufferHandle::Create(kMemoryLength),
-                            mojo::WrapPlatformFile(foreign_socket.Release()));
-  }
-
- private:
-  media::mojom::AudioOutputStream* stream_;
-  base::Optional<mojo::Binding<media::mojom::AudioOutputStream>> binding_;
-  base::CancelableSyncSocket socket_;
 };
 
 class MockStream : public media::mojom::AudioOutputStream {
@@ -325,7 +337,6 @@ TEST(MojoAudioOutputIPC, IsReusableAfterError) {
   base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(&delegate);
 
-  EXPECT_CALL(delegate, OnError()).Times(AtLeast(1));
   stream_factory.Disconnect();
   base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(&delegate);
@@ -345,6 +356,11 @@ TEST(MojoAudioOutputIPC, IsReusableAfterError) {
         OnDeviceAuthorized(media::OutputDeviceStatus::OUTPUT_DEVICE_STATUS_OK,
                            _, std::string(kReturnedDeviceId)));
     EXPECT_CALL(delegate, GotOnStreamCreated());
+    base::RunLoop().RunUntilIdle();
+    Mock::VerifyAndClearExpectations(&delegate);
+
+    EXPECT_CALL(delegate, OnError());
+    stream_factory.client()->OnError();
     base::RunLoop().RunUntilIdle();
     Mock::VerifyAndClearExpectations(&delegate);
 
@@ -428,7 +444,6 @@ TEST(MojoAudioOutputIPC,
   base::RunLoop().RunUntilIdle();
 
   stream_factory.Disconnect();
-  EXPECT_CALL(delegate, OnError());
   base::RunLoop().RunUntilIdle();
 
   ipc->CloseStream();

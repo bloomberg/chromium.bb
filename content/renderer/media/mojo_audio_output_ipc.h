@@ -14,13 +14,16 @@
 #include "content/common/content_export.h"
 #include "content/common/media/renderer_audio_output_stream_factory.mojom.h"
 #include "media/audio/audio_output_ipc.h"
+#include "mojo/public/cpp/bindings/binding.h"
 
 namespace content {
 
 // MojoAudioOutputIPC is a renderer-side class for handling creation,
 // initialization and control of an output stream. May only be used on a single
 // thread.
-class CONTENT_EXPORT MojoAudioOutputIPC : public media::AudioOutputIPC {
+class CONTENT_EXPORT MojoAudioOutputIPC
+    : public media::AudioOutputIPC,
+      public media::mojom::AudioOutputStreamClient {
  public:
   using FactoryAccessorCB =
       base::RepeatingCallback<mojom::RendererAudioOutputStreamFactory*()>;
@@ -42,6 +45,9 @@ class CONTENT_EXPORT MojoAudioOutputIPC : public media::AudioOutputIPC {
   void PauseStream() override;
   void CloseStream() override;
   void SetVolume(double volume) override;
+
+  // media::mojom::AudioOutputStreamClient implementation.
+  void OnError() override;
 
  private:
   using AuthorizationCB = mojom::RendererAudioOutputStreamFactory::
@@ -68,6 +74,8 @@ class CONTENT_EXPORT MojoAudioOutputIPC : public media::AudioOutputIPC {
   const FactoryAccessorCB factory_accessor_;
 
   THREAD_CHECKER(thread_checker_);
+
+  mojo::Binding<media::mojom::AudioOutputStreamClient> binding_;
   media::mojom::AudioOutputStreamProviderPtr stream_provider_;
   media::mojom::AudioOutputStreamPtr stream_;
   media::AudioOutputIPCDelegate* delegate_ = nullptr;

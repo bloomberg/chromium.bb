@@ -40,6 +40,7 @@ class MEDIA_MOJO_EXPORT MojoAudioOutputStreamProvider
  private:
   // mojom::AudioOutputStreamProvider implementation.
   void Acquire(mojom::AudioOutputStreamRequest stream_request,
+               mojom::AudioOutputStreamClientPtr client,
                const AudioParameters& params,
                AcquireCallback acquire_callback) override;
 

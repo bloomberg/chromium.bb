@@ -34,6 +34,7 @@ class MEDIA_MOJO_EXPORT MojoAudioOutputStream
   // should be removed (stream ended/error). |deleter_callback| is required to
   // destroy |this| synchronously.
   MojoAudioOutputStream(mojom::AudioOutputStreamRequest request,
+                        mojom::AudioOutputStreamClientPtr client,
                         CreateDelegateCallback create_delegate_callback,
                         StreamCreatedCallback stream_created_callback,
                         base::OnceClosure deleter_callback);
@@ -61,6 +62,7 @@ class MEDIA_MOJO_EXPORT MojoAudioOutputStream
   StreamCreatedCallback stream_created_callback_;
   base::OnceClosure deleter_callback_;
   mojo::Binding<AudioOutputStream> binding_;
+  mojom::AudioOutputStreamClientPtr client_;
   std::unique_ptr<AudioOutputDelegate> delegate_;
   base::WeakPtrFactory<MojoAudioOutputStream> weak_factory_;
 

@@ -91,7 +91,7 @@ class MockDeleter {
   MOCK_METHOD0(Finished, void());
 };
 
-class MockClient {
+class MockClient : public mojom::AudioOutputStreamClient {
  public:
   MockClient() {}
 
@@ -120,6 +120,8 @@ class MockClient {
 
   MOCK_METHOD0(GotNotification, void());
 
+  MOCK_METHOD0(OnError, void());
+
  private:
   std::unique_ptr<base::SharedMemory> buffer_;
   std::unique_ptr<base::CancelableSyncSocket> socket_;
@@ -141,13 +143,14 @@ void NotCalled(mojo::ScopedSharedBufferHandle shared_buffer,
 class MojoAudioOutputStreamTest : public Test {
  public:
   MojoAudioOutputStreamTest()
-      : foreign_socket_(base::MakeUnique<TestCancelableSyncSocket>()) {}
+      : foreign_socket_(base::MakeUnique<TestCancelableSyncSocket>()),
+        client_binding_(&client_, mojo::MakeRequest(&client_ptr_)) {}
 
   AudioOutputStreamPtr CreateAudioOutput() {
     AudioOutputStreamPtr p;
     ExpectDelegateCreation();
     impl_ = base::MakeUnique<MojoAudioOutputStream>(
-        mojo::MakeRequest(&p),
+        mojo::MakeRequest(&p), std::move(client_ptr_),
         base::BindOnce(&MockDelegateFactory::CreateDelegate,
                        base::Unretained(&mock_delegate_factory_)),
         base::Bind(&MockClient::Initialized, base::Unretained(&client_)),
@@ -176,16 +179,19 @@ class MojoAudioOutputStreamTest : public Test {
   AudioOutputDelegate::EventHandler* delegate_event_handler_ = nullptr;
   StrictMock<MockDelegateFactory> mock_delegate_factory_;
   StrictMock<MockDeleter> deleter_;
-  MockClient client_;
+  StrictMock<MockClient> client_;
+  media::mojom::AudioOutputStreamClientPtr client_ptr_;
+  mojo::Binding<media::mojom::AudioOutputStreamClient> client_binding_;
   std::unique_ptr<MojoAudioOutputStream> impl_;
 };
 
 TEST_F(MojoAudioOutputStreamTest, NoDelegate_SignalsError) {
   bool deleter_called = false;
+  EXPECT_CALL(client_, OnError()).Times(1);
   mojom::AudioOutputStreamPtr stream_ptr;
   MojoAudioOutputStream stream(
-      mojo::MakeRequest(&stream_ptr), base::BindOnce(&CreateNoDelegate),
-      base::Bind(&NotCalled),
+      mojo::MakeRequest(&stream_ptr), std::move(client_ptr_),
+      base::BindOnce(&CreateNoDelegate), base::Bind(&NotCalled),
       base::BindOnce([](bool* p) { *p = true; }, &deleter_called));
   EXPECT_FALSE(deleter_called)
       << "Stream shouldn't call the deleter from its constructor.";
@@ -219,6 +225,7 @@ TEST_F(MojoAudioOutputStreamTest, SetVolume_SetsVolume) {
 
 TEST_F(MojoAudioOutputStreamTest, DestructWithCallPending_Safe) {
   AudioOutputStreamPtr audio_output_ptr = CreateAudioOutput();
+  EXPECT_CALL(client_, GotNotification());
   base::RunLoop().RunUntilIdle();
 
   ASSERT_NE(nullptr, delegate_event_handler_);
@@ -247,6 +254,7 @@ TEST_F(MojoAudioOutputStreamTest, Created_NotifiesClient) {
 TEST_F(MojoAudioOutputStreamTest, SetVolumeTooLarge_Error) {
   AudioOutputStreamPtr audio_output_ptr = CreateAudioOutput();
   EXPECT_CALL(deleter_, Finished());
+  EXPECT_CALL(client_, OnError()).Times(1);
 
   audio_output_ptr->SetVolume(15);
   base::RunLoop().RunUntilIdle();
@@ -256,6 +264,7 @@ TEST_F(MojoAudioOutputStreamTest, SetVolumeTooLarge_Error) {
 TEST_F(MojoAudioOutputStreamTest, SetVolumeNegative_Error) {
   AudioOutputStreamPtr audio_output_ptr = CreateAudioOutput();
   EXPECT_CALL(deleter_, Finished());
+  EXPECT_CALL(client_, OnError()).Times(1);
 
   audio_output_ptr->SetVolume(-0.5);
   base::RunLoop().RunUntilIdle();
@@ -265,6 +274,7 @@ TEST_F(MojoAudioOutputStreamTest, SetVolumeNegative_Error) {
 TEST_F(MojoAudioOutputStreamTest, DelegateErrorBeforeCreated_PropagatesError) {
   AudioOutputStreamPtr audio_output_ptr = CreateAudioOutput();
   EXPECT_CALL(deleter_, Finished());
+  EXPECT_CALL(client_, OnError()).Times(1);
 
   ASSERT_NE(nullptr, delegate_event_handler_);
   delegate_event_handler_->OnStreamError(kStreamId);
@@ -275,7 +285,9 @@ TEST_F(MojoAudioOutputStreamTest, DelegateErrorBeforeCreated_PropagatesError) {
 
 TEST_F(MojoAudioOutputStreamTest, DelegateErrorAfterCreated_PropagatesError) {
   AudioOutputStreamPtr audio_output_ptr = CreateAudioOutput();
+  EXPECT_CALL(client_, GotNotification());
   EXPECT_CALL(deleter_, Finished());
+  EXPECT_CALL(client_, OnError()).Times(1);
   base::RunLoop().RunUntilIdle();
 
   ASSERT_NE(nullptr, delegate_event_handler_);

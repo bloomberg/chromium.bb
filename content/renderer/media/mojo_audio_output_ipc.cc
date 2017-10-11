@@ -21,7 +21,9 @@ void TrivialAuthorizedCallback(media::OutputDeviceStatus,
 }  // namespace
 
 MojoAudioOutputIPC::MojoAudioOutputIPC(FactoryAccessorCB factory_accessor)
-    : factory_accessor_(std::move(factory_accessor)), weak_factory_(this) {
+    : factory_accessor_(std::move(factory_accessor)),
+      binding_(this),
+      weak_factory_(this) {
   DETACH_FROM_THREAD(thread_checker_);
 }
 
@@ -79,14 +81,17 @@ void MojoAudioOutputIPC::CreateStream(media::AudioOutputIPCDelegate* delegate,
   DCHECK_EQ(delegate_, delegate);
   // Since the creation callback won't fire if the provider binding is gone
   // and |this| owns |stream_provider_|, unretained is safe.
-  stream_provider_->Acquire(mojo::MakeRequest(&stream_), params,
+  media::mojom::AudioOutputStreamClientPtr client_ptr;
+  binding_.Bind(mojo::MakeRequest(&client_ptr));
+  stream_provider_->Acquire(mojo::MakeRequest(&stream_), std::move(client_ptr),
+                            params,
                             base::BindOnce(&MojoAudioOutputIPC::StreamCreated,
                                            base::Unretained(this)));
 
-  // Unretained is safe because |delegate_| must remain valid until
-  // CloseStream is called, and |stream_| is reset in CloseStream.
-  stream_.set_connection_error_handler(base::BindOnce(
-      &media::AudioOutputIPCDelegate::OnError, base::Unretained(delegate_)));
+  // Don't set a connection error handler. Either an error has already been
+  // signaled through the AudioOutputStreamClient interface, or the connection
+  // is broken because because the frame owning |this| was destroyed, in which
+  // case |this| will soon be cleaned up anyways.
 }
 
 void MojoAudioOutputIPC::PlayStream() {
@@ -105,6 +110,7 @@ void MojoAudioOutputIPC::CloseStream() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   stream_provider_.reset();
   stream_.reset();
+  binding_.Close();
   delegate_ = nullptr;
 
   // Cancel any pending callbacks for this stream.
@@ -115,6 +121,12 @@ void MojoAudioOutputIPC::SetVolume(double volume) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (stream_.is_bound())
     stream_->SetVolume(volume);
+}
+
+void MojoAudioOutputIPC::OnError() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(delegate_);
+  delegate_->OnError();
 }
 
 bool MojoAudioOutputIPC::AuthorizationRequested() {
@@ -132,10 +144,17 @@ MojoAudioOutputIPC::MakeProviderRequest() {
   media::mojom::AudioOutputStreamProviderRequest request =
       mojo::MakeRequest(&stream_provider_);
 
-  // Unretained is safe because |delegate_| must remain valid until
-  // CloseStream is called, and |stream_provider_| is reset in CloseStream.
-  stream_provider_.set_connection_error_handler(base::BindOnce(
-      &media::AudioOutputIPCDelegate::OnError, base::Unretained(delegate_)));
+  // Don't set a connection error handler.
+  // There are three possible reasons for a connection error.
+  // 1. The connection is broken before authorization was completed. In this
+  //    case, the ScopedCallbackRunner wrapping the callback will call the
+  //    callback with failure.
+  // 2. The connection is broken due to authorization being denied. In this
+  //    case, the callback was called with failure first, so the state of the
+  //    stream provider is irrelevant.
+  // 3. The connection was broken after authorization succeeded. This is because
+  //    of the frame owning this stream being destructed, and this object will
+  //    be cleaned up soon.
   return request;
 }
 
