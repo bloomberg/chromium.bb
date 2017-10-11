@@ -342,6 +342,7 @@ test("gpu_unittests") {
   if ((is_win || (is_linux && !use_ozone)) && !is_asan) {
     sources += [
       "command_buffer/service/gles2_cmd_decoder_passthrough_unittest_buffers.cc",
+      "command_buffer/service/gles2_cmd_decoder_passthrough_unittest_drawing.cc",
       "command_buffer/service/gles2_cmd_decoder_passthrough_unittest_framebuffers.cc",
     ]
   }

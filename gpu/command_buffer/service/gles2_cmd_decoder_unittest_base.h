@@ -861,6 +861,8 @@ class GLES2DecoderPassthroughTestBase : public testing::Test,
                                 &entries_processed);
   }
 
+  void SetBucketData(uint32_t bucket_id, const void* data, size_t data_size);
+
   template <typename T>
   T GetSharedMemoryAs() {
     return reinterpret_cast<T>(shared_memory_address_);
@@ -905,6 +907,8 @@ class GLES2DecoderPassthroughTestBase : public testing::Test,
   void InjectGLError(GLenum error);
 
  protected:
+  void DoRequestExtension(const char* extension);
+
   void DoBindBuffer(GLenum target, GLuint client_id);
   void DoDeleteBuffer(GLuint client_id);
   void DoBufferData(GLenum target,

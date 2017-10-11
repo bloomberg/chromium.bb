@@ -2304,6 +2304,25 @@ void GLES2DecoderPassthroughTestBase::TearDown() {
   gl::init::ShutdownGL();
 }
 
+void GLES2DecoderPassthroughTestBase::SetBucketData(uint32_t bucket_id,
+                                                    const void* data,
+                                                    size_t data_size) {
+  DCHECK(data || data_size == 0);
+  {
+    cmd::SetBucketSize cmd;
+    cmd.Init(bucket_id, static_cast<uint32_t>(data_size));
+    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  }
+  if (data) {
+    memcpy(shared_memory_address_, data, data_size);
+    cmd::SetBucketData cmd;
+    cmd.Init(bucket_id, 0, static_cast<uint32_t>(data_size), shared_memory_id_,
+             kSharedMemoryOffset);
+    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+    memset(shared_memory_address_, 0, data_size);
+  }
+}
+
 GLint GLES2DecoderPassthroughTestBase::GetGLError() {
   cmds::GetError cmd;
   cmd.Init(shared_memory_id_, shared_memory_offset_);
@@ -2313,6 +2332,18 @@ GLint GLES2DecoderPassthroughTestBase::GetGLError() {
 
 void GLES2DecoderPassthroughTestBase::InjectGLError(GLenum error) {
   decoder_->InjectDriverError(error);
+}
+
+void GLES2DecoderPassthroughTestBase::DoRequestExtension(
+    const char* extension) {
+  DCHECK(extension != nullptr);
+
+  uint32_t bucket_id = 0;
+  SetBucketData(bucket_id, extension, strlen(extension) + 1);
+
+  cmds::RequestExtensionCHROMIUM cmd;
+  cmd.Init(bucket_id);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 void GLES2DecoderPassthroughTestBase::DoBindBuffer(GLenum target,

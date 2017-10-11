@@ -3834,6 +3834,9 @@ error::Error GLES2DecoderPassthroughImpl::DoDrawArraysInstancedANGLE(
     GLint first,
     GLsizei count,
     GLsizei primcount) {
+  if (!feature_info_->feature_flags().angle_instanced_arrays) {
+    return error::kUnknownCommand;
+  }
   glDrawArraysInstancedANGLE(mode, first, count, primcount);
   return error::kNoError;
 }
@@ -3844,6 +3847,9 @@ error::Error GLES2DecoderPassthroughImpl::DoDrawElementsInstancedANGLE(
     GLenum type,
     const void* indices,
     GLsizei primcount) {
+  if (!feature_info_->feature_flags().angle_instanced_arrays) {
+    return error::kUnknownCommand;
+  }
   glDrawElementsInstancedANGLE(mode, count, type, indices, primcount);
   return error::kNoError;
 }
@@ -3851,6 +3857,9 @@ error::Error GLES2DecoderPassthroughImpl::DoDrawElementsInstancedANGLE(
 error::Error GLES2DecoderPassthroughImpl::DoVertexAttribDivisorANGLE(
     GLuint index,
     GLuint divisor) {
+  if (!feature_info_->feature_flags().angle_instanced_arrays) {
+    return error::kUnknownCommand;
+  }
   glVertexAttribDivisorANGLE(index, divisor);
   return error::kNoError;
 }
