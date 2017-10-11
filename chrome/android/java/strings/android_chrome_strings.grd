@@ -271,6 +271,9 @@ CHAR-LIMIT guidelines:
       <message name="IDS_NOTIFICATION_CATEGORY_CONTENT_SUGGESTIONS" desc="Label for Content Suggestions, within a list of notification categories. [CHAR-LIMIT=32]">
         Content Suggestions
       </message>
+      <message name="IDS_NOTIFICATION_CATEGORY_FULLSCREEN_CONTROLS" desc="Label for notification shown when fullscreen webapp is being shown, within a list of notification categories. [CHAR-LIMIT=32]">
+        Full screen site controls
+      </message>
       <message name="IDS_NOTIFICATION_CATEGORY_SITES" desc="Label for notifications from websites, within a list of notification categories. [CHAR-LIMIT=32]">
         Sites
       </message>

@@ -57,7 +57,8 @@ class WebappActionsNotificationManager {
                 Context.NOTIFICATION_SERVICE);
         nm.notify(NotificationConstants.NOTIFICATION_ID_WEBAPP_ACTIONS, createNotification());
         NotificationUmaTracker.getInstance().onNotificationShown(
-                NotificationUmaTracker.WEBAPP_ACTIONS, ChannelDefinitions.CHANNEL_ID_BROWSER);
+                NotificationUmaTracker.WEBAPP_ACTIONS,
+                ChannelDefinitions.CHANNEL_ID_WEBAPP_ACTIONS);
     }
 
     private Notification createNotification() {
@@ -76,7 +77,7 @@ class WebappActionsNotificationManager {
 
         return NotificationBuilderFactory
                 .createChromeNotificationBuilder(
-                        true /* prefer compat */, ChannelDefinitions.CHANNEL_ID_BROWSER)
+                        true /* prefer compat */, ChannelDefinitions.CHANNEL_ID_WEBAPP_ACTIONS)
                 .setSmallIcon(R.drawable.ic_chrome)
                 .setContentTitle(
                         mWebappActivity.getString(R.string.webapp_runs_in_chrome_disclosure,
