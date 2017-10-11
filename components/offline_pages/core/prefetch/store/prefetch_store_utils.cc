@@ -13,11 +13,6 @@
 namespace offline_pages {
 
 // static
-int64_t PrefetchStoreUtils::GenerateOfflineId() {
-  return base::RandGenerator(std::numeric_limits<int64_t>::max()) + 1;
-}
-
-// static
 bool PrefetchStoreUtils::DeletePrefetchItemByOfflineIdSync(sql::Connection* db,
                                                            int64_t offline_id) {
   DCHECK(db);

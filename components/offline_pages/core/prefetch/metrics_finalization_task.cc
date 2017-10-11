@@ -13,7 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
-#include "components/offline_pages/core/offline_time_utils.h"
+#include "components/offline_pages/core/offline_store_utils.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store.h"
 #include "sql/connection.h"
@@ -65,17 +65,17 @@ std::vector<PrefetchItemStats> FetchUrlsSync(sql::Connection* db) {
 
   std::vector<PrefetchItemStats> urls;
   while (statement.Step()) {
-    urls.emplace_back(
-        statement.ColumnInt64(0),  // offline_id
-        statement.ColumnInt(1),    // generate_bundle_attempts
-        statement.ColumnInt(2),    // get_operation_attempts
-        statement.ColumnInt(3),    // download_initiation_attempts
-        statement.ColumnInt64(4),  // archive_body_length
-        FromDatabaseTime(statement.ColumnInt64(5)),  // creation_time
-        static_cast<PrefetchItemErrorCode>(
-            statement.ColumnInt(6)),  // error_code
-        statement.ColumnInt64(7)      // file_size
-        );
+    urls.emplace_back(statement.ColumnInt64(0),  // offline_id
+                      statement.ColumnInt(1),    // generate_bundle_attempts
+                      statement.ColumnInt(2),    // get_operation_attempts
+                      statement.ColumnInt(3),    // download_initiation_attempts
+                      statement.ColumnInt64(4),  // archive_body_length
+                      store_utils::FromDatabaseTime(
+                          statement.ColumnInt64(5)),  // creation_time
+                      static_cast<PrefetchItemErrorCode>(
+                          statement.ColumnInt(6)),  // error_code
+                      statement.ColumnInt64(7)      // file_size
+                      );
   }
 
   return urls;
@@ -89,7 +89,7 @@ bool MarkUrlAsZombie(sql::Connection* db,
       "offline_id = ?";
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt(0, static_cast<int>(PrefetchItemState::ZOMBIE));
-  statement.BindInt(1, ToDatabaseTime(freshness_time));
+  statement.BindInt(1, store_utils::ToDatabaseTime(freshness_time));
   statement.BindInt64(2, offline_id);
   return statement.Run();
 }

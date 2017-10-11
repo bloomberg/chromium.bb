@@ -15,7 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/offline_pages/core/offline_page_item.h"
-#include "components/offline_pages/core/offline_time_utils.h"
+#include "components/offline_pages/core/offline_store_utils.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
@@ -211,40 +211,24 @@ bool DeleteByOfflineId(sql::Connection* db, int64_t offline_id) {
   return statement.Run();
 }
 
-base::FilePath GetPathFromUTF8String(const std::string& path_string) {
-#if defined(OS_POSIX)
-  return base::FilePath(path_string);
-#elif defined(OS_WIN)
-  return base::FilePath(base::UTF8ToWide(path_string));
-#else
-#error Unknown OS
-#endif
-}
-
-std::string GetUTF8StringFromPath(const base::FilePath& path) {
-#if defined(OS_POSIX)
-  return path.value();
-#elif defined(OS_WIN)
-  return base::WideToUTF8(path.value());
-#else
-#error Unknown OS
-#endif
-}
-
 // Create an offline page item from a SQL result.  Expects complete rows with
 // all columns present.
 OfflinePageItem MakeOfflinePageItem(sql::Statement* statement) {
   int64_t id = statement->ColumnInt64(0);
-  base::Time creation_time = FromDatabaseTime(statement->ColumnInt64(1));
+  base::Time creation_time =
+      store_utils::FromDatabaseTime(statement->ColumnInt64(1));
   int64_t file_size = statement->ColumnInt64(2);
-  base::Time last_access_time = FromDatabaseTime(statement->ColumnInt64(3));
+  base::Time last_access_time =
+      store_utils::FromDatabaseTime(statement->ColumnInt64(3));
   int access_count = statement->ColumnInt(4);
   int64_t system_download_id = statement->ColumnInt64(5);
-  base::Time file_missing_time = FromDatabaseTime(statement->ColumnInt64(6));
+  base::Time file_missing_time =
+      store_utils::FromDatabaseTime(statement->ColumnInt64(6));
   int upgrade_attempt = statement->ColumnInt(7);
   ClientId client_id(statement->ColumnString(8), statement->ColumnString(9));
   GURL url(statement->ColumnString(10));
-  base::FilePath path(GetPathFromUTF8String(statement->ColumnString(11)));
+  base::FilePath path(
+      store_utils::FromDatabaseFilePath(statement->ColumnString(11)));
   base::string16 title = statement->ColumnString16(12);
   GURL original_url(statement->ColumnString(13));
   std::string request_origin = statement->ColumnString(14);
@@ -284,16 +268,16 @@ ItemActionStatus AddOfflinePageSync(const OfflinePageItem& item,
   statement.BindString(1, item.url.spec());
   statement.BindString(2, item.client_id.name_space);
   statement.BindString(3, item.client_id.id);
-  statement.BindString(4, GetUTF8StringFromPath(item.file_path));
+  statement.BindString(4, store_utils::ToDatabaseFilePath(item.file_path));
   statement.BindInt64(5, item.file_size);
-  statement.BindInt64(6, ToDatabaseTime(item.creation_time));
-  statement.BindInt64(7, ToDatabaseTime(item.last_access_time));
+  statement.BindInt64(6, store_utils::ToDatabaseTime(item.creation_time));
+  statement.BindInt64(7, store_utils::ToDatabaseTime(item.last_access_time));
   statement.BindInt(8, item.access_count);
   statement.BindString16(9, item.title);
   statement.BindString(10, item.original_url.spec());
   statement.BindString(11, item.request_origin);
   statement.BindInt64(12, item.system_download_id);
-  statement.BindInt64(13, ToDatabaseTime(item.file_missing_time));
+  statement.BindInt64(13, store_utils::ToDatabaseTime(item.file_missing_time));
   statement.BindInt(14, item.upgrade_attempt);
   statement.BindString(15, item.digest);
 
@@ -318,16 +302,16 @@ bool Update(sql::Connection* db, const OfflinePageItem& item) {
   statement.BindString(0, item.url.spec());
   statement.BindString(1, item.client_id.name_space);
   statement.BindString(2, item.client_id.id);
-  statement.BindString(3, GetUTF8StringFromPath(item.file_path));
+  statement.BindString(3, store_utils::ToDatabaseFilePath(item.file_path));
   statement.BindInt64(4, item.file_size);
-  statement.BindInt64(5, ToDatabaseTime(item.creation_time));
-  statement.BindInt64(6, ToDatabaseTime(item.last_access_time));
+  statement.BindInt64(5, store_utils::ToDatabaseTime(item.creation_time));
+  statement.BindInt64(6, store_utils::ToDatabaseTime(item.last_access_time));
   statement.BindInt(7, item.access_count);
   statement.BindString16(8, item.title);
   statement.BindString(9, item.original_url.spec());
   statement.BindString(10, item.request_origin);
   statement.BindInt64(11, item.system_download_id);
-  statement.BindInt64(12, ToDatabaseTime(item.file_missing_time));
+  statement.BindInt64(12, store_utils::ToDatabaseTime(item.file_missing_time));
   statement.BindInt(13, item.upgrade_attempt);
   statement.BindString(14, item.digest);
   statement.BindInt64(15, item.offline_id);

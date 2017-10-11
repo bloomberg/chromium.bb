@@ -8,8 +8,8 @@
 
 #include "base/bind.h"
 #include "base/time/default_clock.h"
-#include "components/offline_pages/core/model/offline_store_utils.h"
 #include "components/offline_pages/core/offline_page_model.h"
+#include "components/offline_pages/core/offline_store_utils.h"
 
 namespace offline_pages {
 
@@ -51,7 +51,7 @@ void CreateArchiveTask::CreateArchive() {
   // If we already have an offline id, use it. If not, generate one.
   int64_t offline_id = save_page_params_.proposed_offline_id;
   if (offline_id == OfflinePageModel::kInvalidOfflineId)
-    offline_id = OfflineStoreUtils::GenerateOfflineId();
+    offline_id = store_utils::GenerateOfflineId();
 
   // Create a proposed OfflinePageItem to pass in callback, the page will be
   // missing fields, which are going to be filled when the archive creation

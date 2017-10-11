@@ -7,7 +7,7 @@
 #include <array>
 
 #include "base/bind.h"
-#include "components/offline_pages/core/offline_time_utils.h"
+#include "components/offline_pages/core/offline_store_utils.h"
 #include "components/offline_pages/core/prefetch/prefetch_dispatcher.h"
 #include "components/offline_pages/core/prefetch/prefetch_downloader.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
@@ -66,7 +66,7 @@ bool FinalizeStaleItems(PrefetchItemState state,
       "UPDATE prefetch_items SET state = ?, error_code = ?"
       " WHERE state = ? AND freshness_time < ?";
   const int64_t earliest_fresh_db_time =
-      ToDatabaseTime(now - FreshnessPeriodForState(state));
+      store_utils::ToDatabaseTime(now - FreshnessPeriodForState(state));
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt(0, static_cast<int>(PrefetchItemState::FINISHED));
   statement.BindInt(1, static_cast<int>(ErrorCodeForState(state)));
@@ -101,7 +101,7 @@ bool FinalizeFutureItems(PrefetchItemState state,
       "UPDATE prefetch_items SET state = ?, error_code = ?"
       " WHERE state = ? AND freshness_time > ?";
   const int64_t future_fresh_db_time_limit =
-      ToDatabaseTime(now + base::TimeDelta::FromDays(1));
+      store_utils::ToDatabaseTime(now + base::TimeDelta::FromDays(1));
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt(0, static_cast<int>(PrefetchItemState::FINISHED));
   statement.BindInt(

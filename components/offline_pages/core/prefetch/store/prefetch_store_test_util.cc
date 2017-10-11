@@ -10,7 +10,7 @@
 #include "base/test/simple_test_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/clock.h"
-#include "components/offline_pages/core/offline_time_utils.h"
+#include "components/offline_pages/core/offline_store_utils.h"
 #include "components/offline_pages/core/prefetch/prefetch_item.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_downloader_quota.h"
@@ -59,8 +59,8 @@ bool InsertPrefetchItemSync(const PrefetchItem& item, sql::Connection* db) {
   statement.BindInt(3, item.get_operation_attempts);
   statement.BindInt(4, item.download_initiation_attempts);
   statement.BindInt64(5, item.archive_body_length);
-  statement.BindInt64(6, ToDatabaseTime(item.creation_time));
-  statement.BindInt64(7, ToDatabaseTime(item.freshness_time));
+  statement.BindInt64(6, store_utils::ToDatabaseTime(item.creation_time));
+  statement.BindInt64(7, store_utils::ToDatabaseTime(item.freshness_time));
   statement.BindInt(8, static_cast<int>(item.error_code));
   statement.BindString(9, item.guid);
   statement.BindString(10, item.client_id.name_space);
@@ -70,7 +70,7 @@ bool InsertPrefetchItemSync(const PrefetchItem& item, sql::Connection* db) {
   statement.BindString(14, item.operation_name);
   statement.BindString(15, item.archive_body_name);
   statement.BindString16(16, item.title);
-  statement.BindString(17, item.file_path.AsUTF8Unsafe());
+  statement.BindString(17, store_utils::ToDatabaseFilePath(item.file_path));
   statement.BindInt64(18, item.file_size);
 
   return statement.Run();
@@ -100,8 +100,9 @@ void PopulatePrefetchItem(const sql::Statement& statement, PrefetchItem* item) {
   item->get_operation_attempts = statement.ColumnInt(3);
   item->download_initiation_attempts = statement.ColumnInt(4);
   item->archive_body_length = statement.ColumnInt64(5);
-  item->creation_time = FromDatabaseTime(statement.ColumnInt64(6));
-  item->freshness_time = FromDatabaseTime(statement.ColumnInt64(7));
+  item->creation_time = store_utils::FromDatabaseTime(statement.ColumnInt64(6));
+  item->freshness_time =
+      store_utils::FromDatabaseTime(statement.ColumnInt64(7));
   item->error_code = static_cast<PrefetchItemErrorCode>(statement.ColumnInt(8));
   item->guid = statement.ColumnString(9);
   item->client_id.name_space = statement.ColumnString(10);
@@ -111,7 +112,8 @@ void PopulatePrefetchItem(const sql::Statement& statement, PrefetchItem* item) {
   item->operation_name = statement.ColumnString(14);
   item->archive_body_name = statement.ColumnString(15);
   item->title = statement.ColumnString16(16);
-  item->file_path = base::FilePath::FromUTF8Unsafe(statement.ColumnString(17));
+  item->file_path =
+      store_utils::FromDatabaseFilePath(statement.ColumnString(17));
   item->file_size = statement.ColumnInt64(18);
 }
 

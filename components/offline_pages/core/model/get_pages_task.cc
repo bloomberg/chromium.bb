@@ -9,8 +9,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "components/offline_pages/core/client_policy_controller.h"
-#include "components/offline_pages/core/model/offline_store_utils.h"
-#include "components/offline_pages/core/offline_time_utils.h"
+#include "components/offline_pages/core/offline_store_utils.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
@@ -31,17 +30,20 @@ using ReadResult = GetPagesTask::ReadResult;
 // Expects the order of columns as defined by OFFLINE_PAGE_PROJECTION macro.
 OfflinePageItem MakeOfflinePageItem(sql::Statement* statement) {
   int64_t id = statement->ColumnInt64(0);
-  base::Time creation_time = FromDatabaseTime(statement->ColumnInt64(1));
+  base::Time creation_time =
+      store_utils::FromDatabaseTime(statement->ColumnInt64(1));
   int64_t file_size = statement->ColumnInt64(2);
-  base::Time last_access_time = FromDatabaseTime(statement->ColumnInt64(3));
+  base::Time last_access_time =
+      store_utils::FromDatabaseTime(statement->ColumnInt64(3));
   int access_count = statement->ColumnInt(4);
   int64_t system_download_id = statement->ColumnInt64(5);
-  base::Time file_missing_time = FromDatabaseTime(statement->ColumnInt64(6));
+  base::Time file_missing_time =
+      store_utils::FromDatabaseTime(statement->ColumnInt64(6));
   int upgrade_attempt = statement->ColumnInt(7);
   ClientId client_id(statement->ColumnString(8), statement->ColumnString(9));
   GURL url(statement->ColumnString(10));
   base::FilePath path(
-      base::FilePath::FromUTF8Unsafe(statement->ColumnString(11)));
+      store_utils::FromDatabaseFilePath(statement->ColumnString(11)));
   base::string16 title = statement->ColumnString16(12);
   GURL original_url(statement->ColumnString(13));
   std::string request_origin = statement->ColumnString(14);

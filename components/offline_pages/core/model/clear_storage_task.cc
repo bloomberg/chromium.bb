@@ -17,10 +17,9 @@
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "components/offline_pages/core/client_policy_controller.h"
-#include "components/offline_pages/core/model/offline_store_utils.h"
 #include "components/offline_pages/core/offline_page_client_policy.h"
 #include "components/offline_pages/core/offline_page_metadata_store_sql.h"
-#include "components/offline_pages/core/offline_time_utils.h"
+#include "components/offline_pages/core/offline_store_utils.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
@@ -66,9 +65,10 @@ PageInfo MakePageInfo(sql::Statement* statement) {
   page_info.client_id =
       ClientId(statement->ColumnString(1), statement->ColumnString(2));
   page_info.file_size = statement->ColumnInt64(3);
-  page_info.last_access_time = FromDatabaseTime(statement->ColumnInt64(4));
+  page_info.last_access_time =
+      store_utils::FromDatabaseTime(statement->ColumnInt64(4));
   page_info.file_path =
-      base::FilePath::FromUTF8Unsafe(statement->ColumnString(5));
+      store_utils::FromDatabaseFilePath(statement->ColumnString(5));
   return page_info;
 }
 
