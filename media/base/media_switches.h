@@ -7,6 +7,8 @@
 #ifndef MEDIA_BASE_MEDIA_SWITCHES_H_
 #define MEDIA_BASE_MEDIA_SWITCHES_H_
 
+#include <string>
+
 #include "base/feature_list.h"
 #include "build/build_config.h"
 #include "media/base/media_export.h"
@@ -144,6 +146,10 @@ MEDIA_EXPORT extern const base::Feature kD3D11VideoDecoding;
 MEDIA_EXPORT extern const base::Feature kDelayCopyNV12Textures;
 MEDIA_EXPORT extern const base::Feature kMediaFoundationH264Encoding;
 #endif  // defined(OS_WIN)
+
+#if defined(OS_MACOSX)
+MEDIA_EXPORT extern const base::Feature kSerializeCoreAudioPauseResume;
+#endif  // defined(OS_MACOSX)
 
 // Based on a |command_line| and the current platform, returns the effective
 // autoplay policy. In other words, it will take into account the default policy
