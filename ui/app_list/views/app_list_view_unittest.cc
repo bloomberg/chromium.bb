@@ -1231,6 +1231,35 @@ TEST_F(AppListViewFullscreenTest, SetStateFailsWhenClosing) {
   ASSERT_EQ(AppListView::CLOSED, view_->app_list_state());
 }
 
+// Tests that going into a folder view, then setting the AppListState to PEEKING
+// hides the folder view.
+TEST_F(AppListViewFullscreenTest, FolderViewToPeeking) {
+  Initialize(0, false, false);
+  AppListTestModel* model = delegate_->GetTestModel();
+  model->PopulateApps(kInitialItems);
+  const std::string folder_id =
+      model->MergeItems(model->top_level_item_list()->item_at(0)->id(),
+                        model->top_level_item_list()->item_at(1)->id());
+  model->FindFolderItem(folder_id);
+  Show();
+  AppsGridViewTestApi test_api(view_->app_list_main_view()
+                                   ->contents_view()
+                                   ->apps_container_view()
+                                   ->apps_grid_view());
+  test_api.PressItemAt(0);
+  EXPECT_TRUE(view_->app_list_main_view()
+                  ->contents_view()
+                  ->apps_container_view()
+                  ->IsInFolderView());
+
+  view_->SetState(AppListView::PEEKING);
+
+  EXPECT_FALSE(view_->app_list_main_view()
+                   ->contents_view()
+                   ->apps_container_view()
+                   ->IsInFolderView());
+}
+
 // Tests that when a click or tap event propagates to the AppListView, if the
 // event location is within the bounds of AppsGridView, do not close the
 // AppListView.
