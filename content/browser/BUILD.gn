@@ -1914,6 +1914,13 @@ source_set("browser") {
     }
   }
 
+  if (enable_library_cdms) {
+    sources += [
+      "media/cdm_storage_impl.cc",
+      "media/cdm_storage_impl.h",
+    ]
+  }
+
   if (use_atk) {
     sources += [
       "accessibility/accessibility_tree_formatter_auralinux.cc",

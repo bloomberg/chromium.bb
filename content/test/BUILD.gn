@@ -1728,6 +1728,10 @@ test("content_unittests") {
     ]
   }
 
+  if (enable_library_cdms) {
+    sources += [ "../browser/media/cdm_storage_impl_unittest.cc" ]
+  }
+
   if (enable_webrtc) {
     # Put WebRTC-related plugins sources in the "enable_webrtc &&
     # enable_plugins" section below.
