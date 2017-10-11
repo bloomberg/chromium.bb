@@ -14,6 +14,7 @@
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "components/language/core/browser/language_model.h"
 #include "components/prefs/pref_service.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_manager.h"
@@ -116,9 +117,11 @@ bool TranslateService::IsTranslateBubbleEnabled() {
 }
 
 // static
-std::string TranslateService::GetTargetLanguage(PrefService* prefs) {
+std::string TranslateService::GetTargetLanguage(
+    PrefService* prefs,
+    language::LanguageModel* language_model) {
   return translate::TranslateManager::GetTargetLanguage(
-      ChromeTranslateClient::CreateTranslatePrefs(prefs).get());
+      ChromeTranslateClient::CreateTranslatePrefs(prefs).get(), language_model);
 }
 
 // static

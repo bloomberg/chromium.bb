@@ -10,11 +10,15 @@
 class GURL;
 class PrefService;
 
+namespace language {
+class LanguageModel;
+}  // namespace language
+
 // Singleton managing the resources required for Translate.
 class TranslateService
     : public web_resource::ResourceRequestAllowedNotifier::Observer {
  public:
-   // Must be called before the Translate feature can be used.
+  // Must be called before the Translate feature can be used.
   static void Initialize();
 
   // Must be called to shut down the Translate feature.
@@ -32,13 +36,10 @@ class TranslateService
   // Returns true if the new translate bubble is enabled.
   static bool IsTranslateBubbleEnabled();
 
-  // Returns the language to translate to. The language returned is the
-  // first language found in the following list that is supported by the
-  // translation service:
-  //     the UI language
-  //     the accept-language list
-  // If no language is found then an empty string is returned.
-  static std::string GetTargetLanguage(PrefService* prefs);
+  // Returns the language to translate to. For more details, see
+  // TranslateManager::GetTargetLanguage.
+  static std::string GetTargetLanguage(PrefService* prefs,
+                                       language::LanguageModel* language_model);
 
   // Returns true if the URL can be translated.
   static bool IsTranslatableURL(const GURL& url);

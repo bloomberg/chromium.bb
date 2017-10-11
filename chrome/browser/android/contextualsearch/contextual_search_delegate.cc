@@ -17,12 +17,14 @@
 #include "chrome/browser/android/contextualsearch/contextual_search_field_trial.h"
 #include "chrome/browser/android/contextualsearch/resolved_search_term.h"
 #include "chrome/browser/android/proto/client_discourse_context.pb.h"
+#include "chrome/browser/language/language_model_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/translate/translate_service.h"
 #include "chrome/common/pref_names.h"
 #include "components/browser_sync/profile_sync_service.h"
+#include "components/language/core/browser/language_model.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/variations/net/variations_http_headers.h"
@@ -402,7 +404,10 @@ bool ContextualSearchDelegate::CanSendPageURL(
 std::string ContextualSearchDelegate::GetTargetLanguage() {
   Profile* profile = ProfileManager::GetActiveUserProfile();
   PrefService* pref_service = profile->GetPrefs();
-  std::string result = TranslateService::GetTargetLanguage(pref_service);
+  language::LanguageModel* language_model =
+      LanguageModelFactory::GetInstance()->GetForBrowserContext(profile);
+  std::string result =
+      TranslateService::GetTargetLanguage(pref_service, language_model);
   DCHECK(!result.empty());
   return result;
 }

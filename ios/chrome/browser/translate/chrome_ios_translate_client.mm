@@ -29,6 +29,7 @@
 #include "ios/chrome/browser/infobars/infobar.h"
 #include "ios/chrome/browser/infobars/infobar_controller.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
+#include "ios/chrome/browser/language/language_model_factory.h"
 #include "ios/chrome/browser/language/url_language_histogram_factory.h"
 #include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/sync/ios_user_event_service_factory.h"
@@ -59,7 +60,9 @@ ChromeIOSTranslateClient::ChromeIOSTranslateClient(web::WebState* web_state)
           translate::TranslateRankerFactory::GetForBrowserState(
               ios::ChromeBrowserState::FromBrowserState(
                   web_state->GetBrowserState())),
-          prefs::kAcceptLanguages)),
+          LanguageModelFactory::GetInstance()->GetForBrowserState(
+              ios::ChromeBrowserState::FromBrowserState(
+                  web_state->GetBrowserState())))),
       translate_driver_(web_state,
                         web_state->GetNavigationManager(),
                         translate_manager_.get(),
