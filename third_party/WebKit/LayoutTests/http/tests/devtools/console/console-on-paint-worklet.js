@@ -12,7 +12,7 @@
       }
   `);
 
-  ConsoleTestRunner.waitForConsoleMessages(3, finish);
+  ConsoleTestRunner.waitForConsoleMessages(6, finish);
   TestRunner.evaluateInPage('importWorklet();');
 
   function finish() {
