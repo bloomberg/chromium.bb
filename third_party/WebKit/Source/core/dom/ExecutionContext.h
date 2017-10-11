@@ -70,6 +70,7 @@ enum ReasonForCallingCanExecuteScripts {
 class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
                                      public Supplementable<ExecutionContext> {
   WTF_MAKE_NONCOPYABLE(ExecutionContext);
+  MERGE_GARBAGE_COLLECTED_MIXINS();
 
  public:
   DECLARE_VIRTUAL_TRACE();

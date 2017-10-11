@@ -139,10 +139,8 @@ class Supplement : public GarbageCollectedMixin,
   Member<T> supplementable_;
 };
 
-// Supplementable<T> inherits from GarbageCollectedMixin virtually
-// to allow ExecutionContext to derive from two GC mixin classes.
 template <typename T>
-class Supplementable : public virtual GarbageCollectedMixin {
+class Supplementable : public GarbageCollectedMixin {
   WTF_MAKE_NONCOPYABLE(Supplementable);
 
  public:

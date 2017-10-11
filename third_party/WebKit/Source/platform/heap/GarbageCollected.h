@@ -192,6 +192,29 @@ class GarbageCollectedMixinConstructorMarker
   }
 };
 
+// Merge two or more Mixins into one:
+//
+//  class A : public GarbageCollectedMixin {};
+//  class B : public GarbageCollectedMixin {};
+//  class C : public A, public B {
+//    // C::AdjustAndMark is now ambiguous because there are two candidates:
+//    // A::AdjustAndMark and B::AdjustAndMark.  Ditto for other functions.
+//
+//    MERGE_GARBAGE_COLLECTED_MIXINS();
+//    // The macro defines C::AdjustAndMark, etc. so that they are no longer
+//    // ambiguous. USING_GARBAGE_COLLECTED_MIXIN(TYPE) overrides them later
+//    // and provides the implementations.
+//  };
+#define MERGE_GARBAGE_COLLECTED_MIXINS()                          \
+ public:                                                          \
+  void AdjustAndMark(Visitor*) const override = 0;                \
+  HeapObjectHeader* GetHeapObjectHeader() const override = 0;     \
+  void AdjustAndTraceMarkedWrapper(const ScriptWrappableVisitor*) \
+      const override = 0;                                         \
+                                                                  \
+ private:                                                         \
+  using merge_garbage_collected_mixins_requires_semicolon = void
+
 // Base class for objects allocated in the Blink garbage-collected heap.
 //
 // Defines a 'new' operator that allocates the memory in the heap.  'delete'

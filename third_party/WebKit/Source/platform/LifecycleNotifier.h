@@ -34,7 +34,7 @@
 namespace blink {
 
 template <typename T, typename Observer>
-class LifecycleNotifier : public virtual GarbageCollectedMixin {
+class LifecycleNotifier : public GarbageCollectedMixin {
  public:
   virtual ~LifecycleNotifier();
 
