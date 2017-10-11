@@ -624,6 +624,15 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         json_string = host.filesystem.read_text_file('/tmp/layout-test-results/full_results.json')
         self.assertTrue(json_string.find(expected_token) != -1)
 
+    def test_watch(self):
+        host = MockHost()
+        host.user.set_canned_responses(['r', 'r', 'q'])
+        _, output, _ = logging_run(['--watch', 'failures/unexpected/text.html'], tests_included=True, host=host)
+        output_string = output.getvalue()
+        self.assertIn(
+            'Link to pretty diff:\nfile:///tmp/layout-test-results/failures/unexpected/text-pretty-diff.html', output_string)
+        self.assertEqual(output_string.count('[1/1] failures/unexpected/text.html failed unexpectedly (text diff)'), 3)
+
     def test_crash_with_stderr(self):
         host = MockHost()
         logging_run(['failures/unexpected/crash-with-stderr.html'], tests_included=True, host=host)

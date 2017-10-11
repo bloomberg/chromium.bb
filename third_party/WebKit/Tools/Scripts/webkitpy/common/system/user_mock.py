@@ -37,15 +37,18 @@ class MockUser(object):
     DEFAULT_NO = 'n'
 
     @classmethod
-    def prompt(cls, message, repeat=1, raw_input=raw_input):
-        return 'Mock user response'
-
-    @classmethod
     def prompt_with_list(cls, list_title, list_items, can_choose_multiple=False, raw_input=raw_input):
         pass
 
     def __init__(self):
         self.opened_urls = []
+        self._canned_responses = ['Mock user response']
+
+    def prompt(self, message, repeat=1, raw_input=raw_input):
+        return self._canned_responses.pop(0)
+
+    def set_canned_responses(self, responses):
+        self._canned_responses = responses
 
     def confirm(self, message=None, default='y'):
         _log.info(message)
