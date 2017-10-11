@@ -15,24 +15,24 @@
 
 namespace display {
 
-// This class represents the basic information for a native mode. Platforms will
+// This class represents the basic information for a native mode. Platforms may
 // extend this class to add platform specific information about the mode.
 class DISPLAY_TYPES_EXPORT DisplayMode {
  public:
   DisplayMode(const gfx::Size& size, bool interlaced, float refresh_rate);
-  virtual ~DisplayMode();
-  virtual std::unique_ptr<DisplayMode> Clone() const;
+  ~DisplayMode();
+  std::unique_ptr<DisplayMode> Clone() const;
 
   const gfx::Size& size() const { return size_; }
   bool is_interlaced() const { return is_interlaced_; }
   float refresh_rate() const { return refresh_rate_; }
 
-  virtual std::string ToString() const;
+  std::string ToString() const;
 
  private:
-  gfx::Size size_;
-  float refresh_rate_;
-  bool is_interlaced_;
+  const gfx::Size size_;
+  const float refresh_rate_;
+  const bool is_interlaced_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayMode);
 };
