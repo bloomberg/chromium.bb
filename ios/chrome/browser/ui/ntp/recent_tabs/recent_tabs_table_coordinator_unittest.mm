@@ -153,7 +153,7 @@ class RecentTabsTableCoordinatorTest : public BlockCleanupTest {
             chrome_browser_state_.get()));
     EXPECT_CALL(*syncSetupService, IsSyncEnabled())
         .WillRepeatedly(Return(syncEnabled));
-    EXPECT_CALL(*syncSetupService, IsDataTypeEnabled(syncer::PROXY_TABS))
+    EXPECT_CALL(*syncSetupService, IsDataTypePreferred(syncer::PROXY_TABS))
         .WillRepeatedly(Return(true));
     EXPECT_CALL(*syncSetupService, GetSyncServiceState())
         .WillRepeatedly(Return(SyncSetupService::kNoSyncServiceError));

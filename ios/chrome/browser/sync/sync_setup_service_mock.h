@@ -21,7 +21,9 @@ class SyncSetupServiceMock : public SyncSetupService {
 
   MOCK_METHOD0(GetSyncServiceState, SyncServiceState());
 
-  MOCK_CONST_METHOD1(IsDataTypeEnabled, bool(syncer::ModelType));
+  MOCK_CONST_METHOD1(IsDataTypePreferred, bool(syncer::ModelType));
+
+  MOCK_CONST_METHOD1(IsDataTypeActive, bool(syncer::ModelType));
 
   MOCK_METHOD0(HasFinishedInitialSetup, bool());
 

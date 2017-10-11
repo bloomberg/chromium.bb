@@ -126,7 +126,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 // Returns a switch item for sync everything, set to on if |isOn| is YES.
 - (CollectionViewItem*)syncEverythingSwitchItem:(BOOL)isOn;
 // Returns a switch item for the syncable data type |dataType|, set to on if
-// |IsDataTypeEnabled| for that type returns true.
+// |IsDataTypePreferred| for that type returns true.
 - (CollectionViewItem*)switchItemForDataType:
     (SyncSetupService::SyncableDatatype)dataType;
 // Returns an item for Encryption.
@@ -375,7 +375,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (CollectionViewItem*)switchItemForDataType:
     (SyncSetupService::SyncableDatatype)dataType {
   syncer::ModelType modelType = _syncSetupService->GetModelType(dataType);
-  BOOL isOn = _syncSetupService->IsDataTypeEnabled(modelType);
+  BOOL isOn = _syncSetupService->IsDataTypePreferred(modelType);
 
   SyncSwitchItem* syncDataTypeItem =
       [self switchItemWithType:ItemTypeSyncableDataType
@@ -784,7 +784,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     SyncSetupService::SyncableDatatype dataType =
         (SyncSetupService::SyncableDatatype)syncSwitchItem.dataType;
     syncer::ModelType modelType = _syncSetupService->GetModelType(dataType);
-    syncSwitchItem.on = _syncSetupService->IsDataTypeEnabled(modelType);
+    syncSwitchItem.on = _syncSetupService->IsDataTypePreferred(modelType);
     syncSwitchItem.enabled = [self shouldSyncableItemsBeEnabled];
     [switchsToReconfigure addObject:syncSwitchItem];
   }

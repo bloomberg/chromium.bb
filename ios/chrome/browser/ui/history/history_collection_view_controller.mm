@@ -349,7 +349,7 @@ const CGFloat kSeparatorInset = 10;
   SyncSetupService* syncSetupService =
       SyncSetupServiceFactory::GetForBrowserState(_browserState);
   if (syncSetupService->IsSyncEnabled() &&
-      syncSetupService->IsDataTypeEnabled(syncer::HISTORY_DELETE_DIRECTIVES) &&
+      syncSetupService->IsDataTypeActive(syncer::HISTORY_DELETE_DIRECTIVES) &&
       queryResultsInfo.sync_timed_out) {
     [self showHistoryMatchingQuery:_currentQuery];
     return;

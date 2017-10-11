@@ -62,9 +62,13 @@ class SyncSetupService : public KeyedService {
   virtual void SetSyncEnabled(bool sync_enabled);
 
   // Returns all currently enabled datatypes.
-  syncer::ModelTypeSet GetDataTypes() const;
-  // Returns whether the given datatype is enabled.
-  virtual bool IsDataTypeEnabled(syncer::ModelType datatype) const;
+  syncer::ModelTypeSet GetPreferredDataTypes() const;
+  // Returns whether the given datatype has been enabled for sync and its
+  // initialization is complete (SyncEngineHost::OnEngineInitialized has been
+  // called).
+  virtual bool IsDataTypeActive(syncer::ModelType datatype) const;
+  // Returns whether the given datatype is enabled by the user.
+  virtual bool IsDataTypePreferred(syncer::ModelType datatype) const;
   // Enables or disables the given datatype. To be noted: this can be called at
   // any time, but will only be meaningful if |IsSyncEnabled| is true and
   // |IsSyncingAllDataTypes| is false. Changes won't take effect in the sync
