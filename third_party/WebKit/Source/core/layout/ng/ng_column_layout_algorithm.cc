@@ -199,7 +199,14 @@ LayoutUnit NGColumnLayoutAlgorithm::CalculateBalancedColumnBlockSize(
   // fragment tree, not just the root.
   NGFragment fragment(space->WritingMode(), *result->PhysicalFragment().get());
   LayoutUnit single_strip_block_size = fragment.BlockSize();
-  LayoutUnit block_size = single_strip_block_size / column_count;
+
+  // Some extra care is required the division here. We want a the resulting
+  // LayoutUnit value to be large enough to prevent overflowing columns. Use
+  // floating point to get higher precision than LayoutUnit. Then convert it to
+  // a LayoutUnit, but round it up to the nearest value that LayoutUnit is able
+  // to represent.
+  LayoutUnit block_size = LayoutUnit::FromFloatCeil(
+      single_strip_block_size.ToFloat() / static_cast<float>(column_count));
 
   // Finally, honor {,min-,max-}{height,width} properties.
   return ConstrainColumnBlockSize(block_size, Node(), ConstraintSpace(),
