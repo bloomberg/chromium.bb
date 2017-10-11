@@ -123,6 +123,7 @@ struct NavigateParams {
   // [in]:                Condition:                        [out]:
   // NEW_BACKGROUND_TAB   target browser tabstrip is empty  NEW_FOREGROUND_TAB
   // CURRENT_TAB          "     "     "                     NEW_FOREGROUND_TAB
+  // NEW_BACKGROUND_TAB   target browser is an app browser  NEW_FOREGROUND_TAB
   // OFF_THE_RECORD       target browser profile is incog.  NEW_FOREGROUND_TAB
   //
   // If disposition is NEW_BACKGROUND_TAB, TabStripModel::ADD_ACTIVE is

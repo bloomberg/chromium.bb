@@ -6,12 +6,17 @@
 
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/json/json_reader.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/test_extension_dir.h"
+#include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
@@ -19,10 +24,12 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/context_menu_params.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
@@ -105,6 +112,29 @@ class HostedAppTest : public ExtensionBrowserTest {
     host_resolver()->AddRule("*", "127.0.0.1");
   }
 
+  // Tests that performing |action| results in a new foreground tab
+  // that navigated to |target_url| in the main browser window.
+  void TestAppActionOpensForegroundTab(base::OnceClosure action,
+                                       const GURL& target_url) {
+    ASSERT_EQ(app_browser_, chrome::FindLastActive());
+
+    size_t num_browsers = chrome::GetBrowserCount(profile());
+    int num_tabs = browser()->tab_strip_model()->count();
+    content::WebContents* initial_tab =
+        browser()->tab_strip_model()->GetActiveWebContents();
+
+    ASSERT_NO_FATAL_FAILURE(std::move(action).Run());
+
+    EXPECT_EQ(num_browsers, chrome::GetBrowserCount(profile()));
+    EXPECT_EQ(browser(), chrome::FindLastActive());
+    EXPECT_EQ(++num_tabs, browser()->tab_strip_model()->count());
+
+    content::WebContents* new_tab =
+        browser()->tab_strip_model()->GetActiveWebContents();
+    EXPECT_NE(initial_tab, new_tab);
+    EXPECT_EQ(target_url, new_tab->GetLastCommittedURL());
+  }
+
   Browser* app_browser_;
 
  private:
@@ -112,6 +142,86 @@ class HostedAppTest : public ExtensionBrowserTest {
 
   DISALLOW_COPY_AND_ASSIGN(HostedAppTest);
 };
+
+// Tests that "Open link in new tab" opens a link in a foreground tab.
+IN_PROC_BROWSER_TEST_F(HostedAppTest, OpenLinkInNewTab) {
+  SetupApp("app", true);
+
+  const GURL url("http://www.foo.com/");
+  TestAppActionOpensForegroundTab(
+      base::BindOnce(
+          [](content::WebContents* app_contents, const GURL& target_url) {
+            ui_test_utils::UrlLoadObserver url_observer(
+                target_url, content::NotificationService::AllSources());
+            content::ContextMenuParams params;
+            params.page_url = app_contents->GetLastCommittedURL();
+            params.link_url = target_url;
+
+            TestRenderViewContextMenu menu(app_contents->GetMainFrame(),
+                                           params);
+            menu.Init();
+            menu.ExecuteCommand(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB,
+                                0 /* event_flags */);
+            url_observer.Wait();
+          },
+          app_browser_->tab_strip_model()->GetActiveWebContents(), url),
+      url);
+}
+
+// Tests that Ctrl + Clicking a link opens a foreground tab.
+IN_PROC_BROWSER_TEST_F(HostedAppTest, CtrlClickLink) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  ui_test_utils::UrlLoadObserver url_observer(
+      GURL("http://www.example.com/empty.html"),
+      content::NotificationService::AllSources());
+  SetupApp("app", true);
+  // Wait for URL to load so that we can run JS on the page.
+  url_observer.Wait();
+
+  const GURL url("http://www.foo.com/");
+  TestAppActionOpensForegroundTab(
+      base::BindOnce(
+          [](content::WebContents* app_contents, const GURL& target_url) {
+            ui_test_utils::UrlLoadObserver url_observer(
+                target_url, content::NotificationService::AllSources());
+            const std::string script = base::StringPrintf(
+                "(() => {"
+                "const link = document.createElement('a');"
+                "link.href = '%s';"
+                "link.textContent = 'test link';"
+                "document.body.appendChild(link);"
+                // Get the coordinates for the center of the link element to
+                // send back.
+                "const bounds = link.getBoundingClientRect();"
+                "window.domAutomationController.send("
+                "JSON.stringify({"
+                "'x': Math.floor(bounds.left + bounds.width / 2),"
+                "'y': Math.floor(bounds.top + bounds.height / 2)}));"
+                "console.log('sending result');"
+                "})();",
+                target_url.spec().c_str());
+            std::string result;
+            ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+                app_contents, script, &result));
+            std::unique_ptr<base::Value> value = base::JSONReader::Read(result);
+            int x = value->FindKey("x")->GetInt();
+            int y = value->FindKey("y")->GetInt();
+
+            int ctrl_key;
+#if defined(OS_MACOSX)
+            ctrl_key = blink::WebInputEvent::Modifiers::kMetaKey;
+#else
+            ctrl_key = blink::WebInputEvent::Modifiers::kControlKey;
+#endif
+            content::SimulateMouseClickAt(app_contents, ctrl_key,
+                                          blink::WebMouseEvent::Button::kLeft,
+                                          gfx::Point(x, y));
+            url_observer.Wait();
+          },
+          app_browser_->tab_strip_model()->GetActiveWebContents(), url),
+      url);
+}
 
 // Check that the location bar is shown correctly for bookmark apps.
 IN_PROC_BROWSER_TEST_F(HostedAppTest,

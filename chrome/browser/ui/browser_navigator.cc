@@ -430,6 +430,14 @@ void Navigate(NavigateParams* params) {
         source_browser->window()->GetDispositionForPopupBounds(
             params->window_bounds);
   }
+  // Trying to open a background tab when in an app browser results in
+  // focusing a regular browser window an opening a tab in the background
+  // of that window. Change the disposition to NEW_FOREGROUND_TAB so that
+  // the new tab is focused.
+  if (source_browser && source_browser->is_app() &&
+      params->disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB) {
+    params->disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+  }
 
   params->browser = GetBrowserForDisposition(params);
   if (!params->browser)
