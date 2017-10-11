@@ -1300,7 +1300,7 @@ To obtain new licenses, connect to the internet and play your downloaded content
         Contacting Google…this may take a minute
       </message>
       <message name="IDS_SIGN_IN_TIMEOUT_TITLE" desc="Title of sign in timeout alert dialog">
-        Can't sign in
+        Can’t sign in
       </message>
       <message name="IDS_SIGN_IN_TIMEOUT_MESSAGE" desc="Message of sign in timeout alert dialog">
         Google took too long to respond
@@ -2002,7 +2002,7 @@ To obtain new licenses, connect to the internet and play your downloaded content
         Download pending…
       </message>
       <message name="IDS_DOWNLOAD_CANT_OPEN_FILE" desc="Toast that appears when a downloaded file can't be opened.">
-        Can't open file
+        Can’t open file
       </message>
       <message name="IDS_DOWNLOAD_NOTIFICATION_PAUSE_BUTTON" desc="Text on the button that pauses a download.">
         Pause
@@ -2422,7 +2422,7 @@ To obtain new licenses, connect to the internet and play your downloaded content
         Tap More to get articles
       </message>
       <message name="IDS_NTP_SUGGESTIONS_FETCH_FAILED" desc="Snackbar text shown when the user presses the More button to get more suggestions, but this fails (eg, no internet connectivity).">
-        Unable to get suggestions
+        Can’t get suggestions
       </message>
       <message name="IDS_NTP_ALL_DISMISSED_REFRESH" desc="Text label for button to refresh the New Tab Page when all suggested content has been dismissed. [CHAR-LIMIT=20]">
         Refresh
