@@ -167,9 +167,7 @@ static void count_segs_sb(const AV1_COMMON *cm, MACROBLOCKD *xd,
   const int bs = mi_size_wide[bsize], hbs = bs / 2;
 #if CONFIG_EXT_PARTITION_TYPES
   PARTITION_TYPE partition;
-#if CONFIG_EXT_PARTITION_TYPES_AB
   const int qbs = bs / 4;
-#endif  // CONFIG_EXT_PARTITION_TYPES_AB
 #else
   int bw, bh;
 #endif  // CONFIG_EXT_PARTITION_TYPES
@@ -239,6 +237,20 @@ static void count_segs_sb(const AV1_COMMON *cm, MACROBLOCKD *xd,
       CSEGS(hbs, hbs, hbs, hbs);
       break;
 #endif
+    case PARTITION_HORZ_4:
+      CSEGS(bs, qbs, 0, 0);
+      CSEGS(bs, qbs, qbs, 0);
+      CSEGS(bs, qbs, 2 * qbs, 0);
+      if (mi_row + 3 * qbs < cm->mi_rows) CSEGS(bs, qbs, 3 * qbs, 0);
+      break;
+
+    case PARTITION_VERT_4:
+      CSEGS(qbs, bs, 0, 0);
+      CSEGS(qbs, bs, 0, qbs);
+      CSEGS(qbs, bs, 0, 2 * qbs);
+      if (mi_col + 3 * qbs < cm->mi_cols) CSEGS(qbs, bs, 0, 3 * qbs);
+      break;
+
     case PARTITION_SPLIT: {
       const BLOCK_SIZE subsize = subsize_lookup[PARTITION_SPLIT][bsize];
       int n;
