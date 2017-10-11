@@ -5,6 +5,7 @@
 #include "modules/background_fetch/BackgroundFetchRegistration.h"
 
 #include "core/dom/DOMException.h"
+#include "core/dom/events/Event.h"
 #include "modules/background_fetch/BackgroundFetchBridge.h"
 #include "modules/background_fetch/IconDefinition.h"
 #include "modules/event_target_modules_names.h"
@@ -29,14 +30,40 @@ BackgroundFetchRegistration::BackgroundFetchRegistration(
       download_total_(download_total),
       downloaded_(downloaded),
       icons_(icons),
-      title_(title) {}
+      title_(title),
+      observer_binding_(this) {}
 
 BackgroundFetchRegistration::~BackgroundFetchRegistration() = default;
 
-void BackgroundFetchRegistration::SetServiceWorkerRegistration(
+void BackgroundFetchRegistration::Initialize(
     ServiceWorkerRegistration* registration) {
+  DCHECK(!registration_);
   DCHECK(registration);
+
   registration_ = registration;
+
+  mojom::blink::BackgroundFetchRegistrationObserverPtr observer;
+  observer_binding_.Bind(mojo::MakeRequest(&observer));
+
+  BackgroundFetchBridge::From(registration_)
+      ->AddRegistrationObserver(unique_id_, std::move(observer));
+}
+
+void BackgroundFetchRegistration::OnProgress(uint64_t upload_total,
+                                             uint64_t uploaded,
+                                             uint64_t download_total,
+                                             uint64_t downloaded) {
+  upload_total_ = upload_total;
+  uploaded_ = uploaded;
+  download_total_ = download_total;
+  downloaded_ = downloaded;
+
+  ExecutionContext* context = GetExecutionContext();
+  if (!context || context->IsContextDestroyed())
+    return;
+
+  DCHECK(context->IsContextThread());
+  DispatchEvent(Event::Create(EventTypeNames::progress));
 }
 
 String BackgroundFetchRegistration::id() const {
@@ -110,6 +137,10 @@ void BackgroundFetchRegistration::DidAbort(
   }
 
   NOTREACHED();
+}
+
+void BackgroundFetchRegistration::Dispose() {
+  observer_binding_.Close();
 }
 
 DEFINE_TRACE(BackgroundFetchRegistration) {

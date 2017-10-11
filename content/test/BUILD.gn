@@ -1145,6 +1145,7 @@ test("content_unittests") {
     "../browser/background_fetch/background_fetch_delegate_proxy_unittest.cc",
     "../browser/background_fetch/background_fetch_event_dispatcher_unittest.cc",
     "../browser/background_fetch/background_fetch_job_controller_unittest.cc",
+    "../browser/background_fetch/background_fetch_registration_notifier_unittest.cc",
     "../browser/background_fetch/background_fetch_service_unittest.cc",
     "../browser/background_sync/background_sync_manager_unittest.cc",
     "../browser/background_sync/background_sync_network_observer_unittest.cc",

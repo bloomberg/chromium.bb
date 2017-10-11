@@ -91,7 +91,7 @@ void BackgroundFetchBridge::DidGetRegistration(
 
   if (registration) {
     DCHECK_EQ(error, mojom::blink::BackgroundFetchError::NONE);
-    registration->SetServiceWorkerRegistration(GetSupplementable());
+    registration->Initialize(GetSupplementable());
   }
 
   callback(error, registration);
@@ -101,6 +101,12 @@ void BackgroundFetchBridge::GetDeveloperIds(GetDeveloperIdsCallback callback) {
   GetService()->GetDeveloperIds(
       GetSupplementable()->WebRegistration()->RegistrationId(),
       GetSecurityOrigin(), ConvertToBaseCallback(std::move(callback)));
+}
+
+void BackgroundFetchBridge::AddRegistrationObserver(
+    const String& unique_id,
+    mojom::blink::BackgroundFetchRegistrationObserverPtr observer) {
+  GetService()->AddRegistrationObserver(unique_id, std::move(observer));
 }
 
 SecurityOrigin* BackgroundFetchBridge::GetSecurityOrigin() {
