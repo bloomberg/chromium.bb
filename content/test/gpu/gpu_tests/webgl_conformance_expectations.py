@@ -638,6 +638,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('WebglExtension_EXT_sRGB',
         ['android',
          ('qualcomm', 'Adreno (TM) 420'), ('qualcomm', 'Adreno (TM) 430')])
+    self.Fail('conformance/glsl/misc/uninitialized-local-global-variables.html',
+        ['android', ('qualcomm', 'Adreno (TM) 420')], bug=2046) # angle bug ID
 
     # Nexus 9
     self.Fail('deqp/data/gles2/shaders/functions.html',
