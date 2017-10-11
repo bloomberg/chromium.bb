@@ -5366,7 +5366,12 @@ static int predict_skip_flag_8bit(const MACROBLOCK *x, BLOCK_SIZE bsize) {
 #endif
   param.bd = 8;
   param.lossless = 0;
+
+#if CONFIG_TXMG
+  av1_highbd_fwd_txfm(p->src_diff, DCT_coefs, bw, &param);
+#else   // CONFIG_TXMG
   av1_fwd_txfm(p->src_diff, DCT_coefs, bw, &param);
+#endif  // CONFIG_TXMG
 
   uint32_t dc = (uint32_t)av1_dc_quant(x->qindex, 0, AOM_BITS_8);
   uint32_t ac = (uint32_t)av1_ac_quant(x->qindex, 0, AOM_BITS_8);
