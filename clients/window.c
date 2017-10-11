@@ -83,10 +83,6 @@ typedef void *EGLContext;
 
 #include "window.h"
 
-#include <sys/types.h>
-#include "ivi-application-client-protocol.h"
-#define IVI_SURFACE_ID 9000
-
 #define ZWP_RELATIVE_POINTER_MANAGER_V1_VERSION 1
 #define ZWP_POINTER_CONSTRAINTS_V1_VERSION 1
 
@@ -110,7 +106,6 @@ struct display {
 	struct wl_data_device_manager *data_device_manager;
 	struct text_cursor_position *text_cursor_position;
 	struct zxdg_shell_v6 *xdg_shell;
-	struct ivi_application *ivi_application; /* ivi style shell */
 	struct zwp_relative_pointer_manager_v1 *relative_pointer_manager;
 	struct zwp_pointer_constraints_v1 *pointer_constraints;
 	EGLDisplay dpy;
@@ -271,8 +266,6 @@ struct window {
 
 	struct window *parent;
 	struct window *last_parent;
-
-	struct ivi_surface *ivi_surface;
 
 	struct window_frame *frame;
 
@@ -1452,19 +1445,6 @@ window_get_display(struct window *window)
 }
 
 static void
-handle_ivi_surface_configure(void *data, struct ivi_surface *ivi_surface,
-                             int32_t width, int32_t height)
-{
-	struct window *window = data;
-
-	window_schedule_resize(window, width, height);
-}
-
-static const struct ivi_surface_listener ivi_surface_listener = {
-        handle_ivi_surface_configure,
-};
-
-static void
 surface_create_surface(struct surface *surface, uint32_t flags)
 {
 	struct display *display = surface->window->display;
@@ -1617,9 +1597,6 @@ window_destroy(struct window *window)
 		zxdg_popup_v6_destroy(window->xdg_popup);
 	if (window->xdg_surface)
 		zxdg_surface_v6_destroy(window->xdg_surface);
-
-	if (window->ivi_surface)
-		ivi_surface_destroy(window->ivi_surface);
 
 	surface_destroy(window->main_surface);
 
@@ -5181,7 +5158,7 @@ window_create_internal(struct display *display, int custom)
 	surface = surface_create(window);
 	window->main_surface = surface;
 
-	assert(custom || display->xdg_shell || display->ivi_application);
+	assert(custom || display->xdg_shell);
 
 	window->custom = custom;
 	window->preferred_format = WINDOW_PREFERRED_FORMAT_NONE;
@@ -5201,7 +5178,6 @@ struct window *
 window_create(struct display *display)
 {
 	struct window *window;
-	uint32_t id_ivisurf;
 
 	window = window_create_internal(display, 0);
 
@@ -5224,16 +5200,6 @@ window_create(struct display *display)
 		window_inhibit_redraw(window);
 
 		wl_surface_commit(window->main_surface->surface);
-	} else if (display->ivi_application) {
-		/* auto generation of ivi_id based on process id + basement of id */
-		id_ivisurf = IVI_SURFACE_ID + (uint32_t)getpid();
-		window->ivi_surface =
-			ivi_application_surface_create(display->ivi_application,
-						       id_ivisurf, window->main_surface->surface);
-		fail_on_null(window->ivi_surface, 0, __FILE__, __LINE__);
-
-		ivi_surface_add_listener(window->ivi_surface,
-					 &ivi_surface_listener, window);
 	}
 
 	return window;
@@ -5988,11 +5954,6 @@ registry_handle_global(void *data, struct wl_registry *registry, uint32_t id,
 			wl_registry_bind(registry, id,
 					 &wl_subcompositor_interface, 1);
 	}
-	else if (strcmp(interface, "ivi_application") == 0) {
-		d->ivi_application =
-			wl_registry_bind(registry, id,
-					 &ivi_application_interface, 1);
-	}
 
 	if (d->global_handler)
 		d->global_handler(d, id, interface, version, d->user_data);
@@ -6290,9 +6251,6 @@ display_destroy(struct display *display)
 
 	if (display->xdg_shell)
 		zxdg_shell_v6_destroy(display->xdg_shell);
-
-	if (display->ivi_application)
-		ivi_application_destroy(display->ivi_application);
 
 	if (display->shm)
 		wl_shm_destroy(display->shm);

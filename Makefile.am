@@ -715,8 +715,6 @@ nodist_libtoytoolkit_la_SOURCES =			\
 	protocol/viewporter-client-protocol.h		\
 	protocol/xdg-shell-unstable-v6-protocol.c			\
 	protocol/xdg-shell-unstable-v6-client-protocol.h		\
-	protocol/ivi-application-protocol.c		\
-	protocol/ivi-application-client-protocol.h	\
 	protocol/pointer-constraints-unstable-v1-protocol.c		\
 	protocol/pointer-constraints-unstable-v1-client-protocol.h	\
 	protocol/relative-pointer-unstable-v1-protocol.c		\
