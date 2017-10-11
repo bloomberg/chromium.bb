@@ -92,7 +92,6 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
   void ReleaseTouches();
   void ReleaseButtons();
   void CancelAllTouches();
-  bool IsPalm(const InProgressTouchEvdev& touch);
   // Normalize pressure value to [0, 1].
   float ScalePressure(int32_t value);
 

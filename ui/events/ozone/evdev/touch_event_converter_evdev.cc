@@ -227,8 +227,8 @@ void TouchEventConverterEvdev::Initialize(const EventDeviceInfo& info) {
           info.GetAbsMtSlotValueWithDefault(ABS_MT_PRESSURE, i, 0));
       int tool_type = info.GetAbsMtSlotValueWithDefault(ABS_MT_TOOL_TYPE, i,
                                                         MT_TOOL_FINGER);
-      events_[i].tool_type = tool_type;
-      events_[i].major = touch_major;
+      events_[i].cancelled = (tool_type == MT_TOOL_PALM) ||
+                             (major_max_ > 0 && touch_major == major_max_);
       if (events_[i].cancelled)
         cancelled_state = true;
     }
@@ -422,7 +422,12 @@ void TouchEventConverterEvdev::ProcessAbs(const input_event& input) {
       // we can scale the ellipse correctly. However on the Pixel we get
       // neither minor nor orientation, so this is all we can do.
       events_[current_slot_].radius_x = input.value * touch_major_scale_ / 2.0f;
-      events_[current_slot_].major = input.value;
+
+      // The MT protocol communicates that there is palm on the surface
+      // by either sending ABS_MT_TOOL_TYPE/MT_TOOL_PALM, or by setting
+      // touch major to max.
+      if (major_max_ > 0 && input.value == major_max_)
+        events_[current_slot_].cancelled = true;
       break;
     case ABS_MT_TOUCH_MINOR:
       events_[current_slot_].radius_y = input.value * touch_major_scale_ / 2.0f;
@@ -434,7 +439,8 @@ void TouchEventConverterEvdev::ProcessAbs(const input_event& input) {
       events_[current_slot_].y = input.value;
       break;
     case ABS_MT_TOOL_TYPE:
-      events_[current_slot_].tool_type = input.value;
+      if (input.value == MT_TOOL_PALM)
+        events_[current_slot_].cancelled = true;
       break;
     case ABS_MT_TRACKING_ID:
       UpdateTrackingId(current_slot_, input.value);
@@ -539,11 +545,6 @@ void TouchEventConverterEvdev::CancelAllTouches() {
   }
 }
 
-bool TouchEventConverterEvdev::IsPalm(const InProgressTouchEvdev& touch) {
-  return touch.tool_type == MT_TOOL_PALM ||
-         (major_max_ > 0 && touch.major == major_max_);
-}
-
 void TouchEventConverterEvdev::ReportEvents(base::TimeTicks timestamp) {
   if (dropped_events_) {
     Reinitialize();
@@ -555,9 +556,6 @@ void TouchEventConverterEvdev::ReportEvents(base::TimeTicks timestamp) {
 
   for (size_t i = 0; i < events_.size(); i++) {
     InProgressTouchEvdev* event = &events_[i];
-    if (IsPalm(*event)) {
-      event->cancelled = true;
-    }
     if (event->altered && (event->cancelled ||
                            (false_touch_finder_ &&
                             false_touch_finder_->SlotHasNoise(event->slot)))) {
