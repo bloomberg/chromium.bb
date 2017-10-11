@@ -856,7 +856,7 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   // Set product name ("Chrome OS" or "Chromium OS") to be used in context
   // header of new-style notification.
   message_center::MessageCenter::Get()->SetProductOSName(
-      l10n_util::GetStringUTF16(IDS_PRODUCT_OS_NAME));
+      l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_OS_NAME));
 
   // Register all installed components for regular update.
   base::PostTaskWithTraitsAndReplyWithResult(
