@@ -4,22 +4,28 @@
 
 #include "content/browser/tracing/background_memory_tracing_observer.h"
 
+#include "base/trace_event/heap_profiler_event_filter.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/memory_dump_request_args.h"
+#include "base/trace_event/trace_log.h"
 #include "content/browser/tracing/background_tracing_rule.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
 
 using base::trace_event::MemoryDumpManager;
+using base::trace_event::TraceConfig;
+using base::trace_event::TraceLog;
 
 namespace content {
 namespace {
 const char kEnableHeapProfilerModeName[] = "enable_heap_profiler_mode";
 const char kBackgroundModeName[] = "background";
+const char kHeapProfilerCategoryFilter[] = "heap_profiler_category_filter";
 
 void GlobalDumpCallback(bool success, uint64_t guid) {
   // Disable heap profiling after capturing the first memory dump.
   MemoryDumpManager::GetInstance()->EnableHeapProfiling(
       base::trace_event::kHeapProfilingModeDisabled);
+  TraceLog::GetInstance()->SetDisabled(TraceLog::FILTERING_MODE);
 }
 }  // namespace
 
@@ -40,22 +46,49 @@ void BackgroundMemoryTracingObserver::OnScenarioActivated(
     return;
   }
 
+  const BackgroundTracingRule* heap_profiling_rule = nullptr;
   for (const auto& rule : config->rules()) {
-    if (rule->category_preset() != BackgroundTracingConfigImpl::CategoryPreset::
-                                       BENCHMARK_MEMORY_LIGHT ||
-        !rule->args()) {
-      continue;
-    }
-    std::string mode;
-    if (rule->args()->GetString(kEnableHeapProfilerModeName, &mode) &&
-        mode == kBackgroundModeName) {
-      heap_profiling_enabled_ = true;
-      // TODO(ssid): Add ability to enable profiling on all processes,
-      // crbug.com/700245.
-      MemoryDumpManager::GetInstance()->EnableHeapProfiling(
-          base::trace_event::kHeapProfilingModeBackground);
+    if (rule->category_preset() == BackgroundTracingConfigImpl::CategoryPreset::
+                                       BENCHMARK_MEMORY_LIGHT &&
+        rule->args()) {
+      heap_profiling_rule = rule.get();
+      break;
     }
   }
+  if (!heap_profiling_rule)
+    return;
+  std::string mode;
+  if (!heap_profiling_rule->args()->GetString(kEnableHeapProfilerModeName,
+                                              &mode) ||
+      mode != kBackgroundModeName) {
+    return;
+  }
+
+  heap_profiling_enabled_ = true;
+  // TODO(ssid): Add ability to enable profiling on all processes,
+  // crbug.com/700245.
+  MemoryDumpManager::GetInstance()->EnableHeapProfiling(
+      base::trace_event::kHeapProfilingModeBackground);
+
+  std::string filter_string;
+  if (base::trace_event::AllocationContextTracker::capture_mode() ==
+          base::trace_event::AllocationContextTracker::CaptureMode::DISABLED ||
+      (TraceLog::GetInstance()->enabled_modes() & TraceLog::FILTERING_MODE) ||
+      !heap_profiling_rule->args()->GetString(kHeapProfilerCategoryFilter,
+                                              &filter_string)) {
+    return;
+  }
+  base::trace_event::TraceConfigCategoryFilter category_filter;
+  category_filter.InitializeFromString(filter_string);
+  TraceConfig::EventFilterConfig heap_profiler_filter_config(
+      base::trace_event::HeapProfilerEventFilter::kName);
+  heap_profiler_filter_config.SetCategoryFilter(category_filter);
+  TraceConfig::EventFilters filters;
+  filters.push_back(heap_profiler_filter_config);
+  TraceConfig filtering_trace_config;
+  filtering_trace_config.SetEventFilters(filters);
+  TraceLog::GetInstance()->SetEnabled(filtering_trace_config,
+                                      TraceLog::FILTERING_MODE);
 }
 
 void BackgroundMemoryTracingObserver::OnScenarioAborted() {
@@ -64,6 +97,7 @@ void BackgroundMemoryTracingObserver::OnScenarioAborted() {
   heap_profiling_enabled_ = false;
   MemoryDumpManager::GetInstance()->EnableHeapProfiling(
       base::trace_event::kHeapProfilingModeDisabled);
+  TraceLog::GetInstance()->SetDisabled(TraceLog::FILTERING_MODE);
 }
 
 void BackgroundMemoryTracingObserver::OnTracingEnabled(
