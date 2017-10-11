@@ -216,6 +216,42 @@ AudioParameters GetFallbackOutputParams(
 }
 #endif
 
+// This enum must match the numbering for
+// AudioOutputResamplerOpenLowLatencyStreamResult in enums.xml. Do not reorder
+// or remove items, only add new items before OPEN_STREAM_MAX.
+enum OpenStreamResult {
+  OPEN_STREAM_FAIL = 0,
+  OPEN_STREAM_FALLBACK_TO_FAKE = 1,
+  OPEN_STREAM_FALLBACK_TO_LINEAR = 2,
+  OPEN_STREAM_SUCCESS = 3,
+  OPEN_STREAM_SUBSEQUENT_FALLBACK_TO_FAKE_FAIL = 4,
+  OPEN_STREAM_SUBSEQUENT_FALLBACK_TO_FAKE_SUCCESS = 5,
+  OPEN_STREAM_SUBSEQUENT_FALLBACK_TO_LINEAR_FAIL = 6,
+  OPEN_STREAM_SUBSEQUENT_FALLBACK_TO_LINEAR_SUCCESS = 7,
+  OPEN_STREAM_SUBSEQUENT_FAIL = 8,
+  OPEN_STREAM_SUBSEQUENT_SUCCESS = 9,
+  OPEN_STREAM_MAX = 9,
+};
+
+OpenStreamResult GetSubsequentStreamCreationResultBucket(
+    const AudioParameters& current_params,
+    bool success) {
+  switch (current_params.format()) {
+    case AudioParameters::AUDIO_PCM_LOW_LATENCY:
+      return success ? OPEN_STREAM_SUBSEQUENT_SUCCESS
+                     : OPEN_STREAM_SUBSEQUENT_FAIL;
+    case AudioParameters::AUDIO_PCM_LINEAR:
+      return success ? OPEN_STREAM_SUBSEQUENT_FALLBACK_TO_LINEAR_SUCCESS
+                     : OPEN_STREAM_SUBSEQUENT_FALLBACK_TO_LINEAR_FAIL;
+    case AudioParameters::AUDIO_FAKE:
+      return success ? OPEN_STREAM_SUBSEQUENT_FALLBACK_TO_FAKE_SUCCESS
+                     : OPEN_STREAM_SUBSEQUENT_FALLBACK_TO_FAKE_FAIL;
+    default:
+      NOTREACHED();
+      return OPEN_STREAM_FAIL;
+  }
+}
+
 }  // namespace
 
 AudioOutputResampler::AudioOutputResampler(
@@ -306,17 +342,20 @@ bool AudioOutputResampler::OpenStream() {
   if (dispatcher_->OpenStream()) {
     // Only record the UMA statistic if we didn't fallback during construction
     // and only for the first stream we open.
-    if (first_stream && original_output_params_.format() ==
-                            AudioParameters::AUDIO_PCM_LOW_LATENCY) {
-      UMA_HISTOGRAM_BOOLEAN("Media.FallbackToHighLatencyAudioPath", false);
+    if (original_output_params_.format() ==
+        AudioParameters::AUDIO_PCM_LOW_LATENCY) {
+      if (first_stream)
+        UMA_HISTOGRAM_BOOLEAN("Media.FallbackToHighLatencyAudioPath", false);
+
+      UMA_HISTOGRAM_ENUMERATION(
+          "Media.AudioOutputResampler.OpenLowLatencyStream",
+          first_stream
+              ? OPEN_STREAM_SUCCESS
+              : GetSubsequentStreamCreationResultBucket(output_params_, true),
+          OPEN_STREAM_MAX + 1);
     }
     return true;
   }
-
-  // If we have successfully opened a stream previously, there's nothing more to
-  // be done.
-  if (!first_stream)
-    return false;
 
   // Fallback is available for low latency streams only.
   if (original_output_params_.format() !=
@@ -324,6 +363,15 @@ bool AudioOutputResampler::OpenStream() {
     return false;
   }
 
+  // If we have successfully opened a stream previously, there's nothing more to
+  // be done.
+  if (!first_stream) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "Media.AudioOutputResampler.OpenLowLatencyStream",
+        GetSubsequentStreamCreationResultBucket(output_params_, false),
+        OPEN_STREAM_MAX + 1);
+    return false;
+  }
   // Record UMA statistics about the hardware which triggered the failure so
   // we can debug and triage later.
   RecordFallbackStats(original_output_params_);
@@ -337,8 +385,12 @@ bool AudioOutputResampler::OpenStream() {
   output_params_ = GetFallbackOutputParams(original_output_params_);
   const std::string fallback_device_id = "";
   dispatcher_ = MakeDispatcher(fallback_device_id, output_params_);
-  if (dispatcher_->OpenStream())
+  if (dispatcher_->OpenStream()) {
+    UMA_HISTOGRAM_ENUMERATION("Media.AudioOutputResampler.OpenLowLatencyStream",
+                              OPEN_STREAM_FALLBACK_TO_LINEAR,
+                              OPEN_STREAM_MAX + 1);
     return true;
+  }
 #endif
 
   DLOG(ERROR) << "Unable to open audio device in high latency mode.  Falling "
@@ -348,11 +400,17 @@ bool AudioOutputResampler::OpenStream() {
   output_params_ = input_params_;
   output_params_.set_format(AudioParameters::AUDIO_FAKE);
   dispatcher_ = MakeDispatcher(device_id_, output_params_);
-  if (dispatcher_->OpenStream())
+  if (dispatcher_->OpenStream()) {
+    UMA_HISTOGRAM_ENUMERATION("Media.AudioOutputResampler.OpenLowLatencyStream",
+                              OPEN_STREAM_FALLBACK_TO_FAKE,
+                              OPEN_STREAM_MAX + 1);
     return true;
+  }
 
   // Resetting the malfunctioning dispatcher.
   dispatcher_.reset();
+  UMA_HISTOGRAM_ENUMERATION("Media.AudioOutputResampler.OpenLowLatencyStream",
+                            OPEN_STREAM_FAIL, OPEN_STREAM_MAX + 1);
   return false;
 }
 

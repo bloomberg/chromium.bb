@@ -31374,6 +31374,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.AudioOutputResampler.OpenLowLatencyStream"
+    enum="AudioOutputResamplerLowLatencyOpenStreamResult">
+  <owner>olka@chromium.org</owner>
+  <summary>
+    Whether a low latency stream to be rendered through the resampler was opened
+    successfully or which type of fallback stream was used instead. In case a
+    fake fallback stream is used it means audio rendered through the resampler
+    will be muted. In case fallback fails entirely, renderer callback error will
+    be signalled.
+  </summary>
+</histogram>
+
 <histogram name="Media.AudioRendererAudioGlitches" enum="AudioGlitchResult">
   <owner>henrika@chromium.org</owner>
   <summary>
