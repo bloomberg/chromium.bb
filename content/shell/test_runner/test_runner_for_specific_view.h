@@ -167,9 +167,6 @@ class TestRunnerForSpecificView {
   // Changes the direction of the focused element.
   void SetTextDirection(const std::string& direction_name);
 
-  // Dump current PageImportanceSignals for the page.
-  void DumpPageImportanceSignals();
-
   // Permits the adding and removing of only one opaque overlay.
   void AddWebPageOverlay();
   void RemoveWebPageOverlay();

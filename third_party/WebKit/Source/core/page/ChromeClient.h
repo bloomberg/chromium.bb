@@ -339,11 +339,6 @@ class CORE_EXPORT ChromeClient : public PlatformChromeClient {
 
   virtual FloatSize ElasticOverscroll() const { return FloatSize(); }
 
-  // Called when observed XHR, fetch, and other fetch request with non-GET
-  // method is initiated from javascript. At this time, it is not guaranteed
-  // that this is comprehensive.
-  virtual void DidObserveNonGetFetchFromScript() const {}
-
   virtual std::unique_ptr<WebFrameScheduler> CreateFrameScheduler(
       BlameContext*,
       WebFrameScheduler::FrameType) = 0;

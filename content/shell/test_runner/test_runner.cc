@@ -148,7 +148,6 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void DumpFrameLoadCallbacks();
   void DumpIconChanges();
   void DumpNavigationPolicy();
-  void DumpPageImportanceSignals();
   void DumpPermissionClientCallbacks();
   void DumpPingLoaderCallbacks();
   void DumpResourceLoadCallbacks();
@@ -424,8 +423,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("dumpIconChanges", &TestRunnerBindings::DumpIconChanges)
       .SetMethod("dumpNavigationPolicy",
                  &TestRunnerBindings::DumpNavigationPolicy)
-      .SetMethod("dumpPageImportanceSignals",
-                 &TestRunnerBindings::DumpPageImportanceSignals)
       .SetMethod("dumpPermissionClientCallbacks",
                  &TestRunnerBindings::DumpPermissionClientCallbacks)
       .SetMethod("dumpPingLoaderCallbacks",
@@ -1248,11 +1245,6 @@ void TestRunnerBindings::DumpDragImage() {
 void TestRunnerBindings::DumpNavigationPolicy() {
   if (runner_)
     runner_->DumpNavigationPolicy();
-}
-
-void TestRunnerBindings::DumpPageImportanceSignals() {
-  if (view_runner_)
-    view_runner_->DumpPageImportanceSignals();
 }
 
 void TestRunnerBindings::ShowWebInspector(gin::Arguments* args) {
