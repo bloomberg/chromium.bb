@@ -49,9 +49,30 @@ const CGFloat kButtonGap = 6;
         initWithContentRect:ui::kWindowSizeDeterminedLater]);
     NSView* contentView = [window_ contentView];
 
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+
     informativeTextField_.reset([constrained_window::CreateLabel() retain]);
+    [informativeTextField_ setSelectable:YES];
+    [informativeTextField_ setAlignment:NSNaturalTextAlignment];
+    if (@available(macOS 10.10, *)) {
+      [informativeTextField_ setLineBreakMode:NSLineBreakByWordWrapping];
+    } else {
+      [[informativeTextField_ cell] setLineBreakMode:NSLineBreakByWordWrapping];
+    }
+    [informativeTextField_
+        setFont:rb.GetFont(chrome_style::kTextFontStyle).GetNativeFont()];
     [contentView addSubview:informativeTextField_];
+
     messageTextField_.reset([constrained_window::CreateLabel() retain]);
+    [messageTextField_ setSelectable:YES];
+    [messageTextField_ setAlignment:NSNaturalTextAlignment];
+    if (@available(macOS 10.10, *)) {
+      [messageTextField_ setLineBreakMode:NSLineBreakByWordWrapping];
+    } else {
+      [[messageTextField_ cell] setLineBreakMode:NSLineBreakByWordWrapping];
+    }
+    [messageTextField_
+        setFont:rb.GetFont(chrome_style::kTitleFontStyle).GetNativeFont()];
     [contentView addSubview:messageTextField_];
 
     closeButton_.reset(
@@ -66,12 +87,7 @@ const CGFloat kButtonGap = 6;
 }
 
 - (void)setInformativeText:(NSString*)string {
-  [informativeTextField_ setAttributedStringValue:
-      constrained_window::GetAttributedLabelString(
-          string,
-          chrome_style::kTextFontStyle,
-          NSNaturalTextAlignment,
-          NSLineBreakByWordWrapping)];
+  [informativeTextField_ setStringValue:string];
 }
 
 - (NSString*)messageText {
@@ -79,12 +95,7 @@ const CGFloat kButtonGap = 6;
 }
 
 - (void)setMessageText:(NSString*)string {
-  [messageTextField_ setAttributedStringValue:
-      constrained_window::GetAttributedLabelString(
-          string,
-          chrome_style::kTitleFontStyle,
-          NSNaturalTextAlignment,
-          NSLineBreakByWordWrapping)];
+  [messageTextField_ setStringValue:string];
 }
 
 - (void)setLinkText:(NSString*)text target:(id)target action:(SEL)action {
