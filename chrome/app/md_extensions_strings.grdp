@@ -7,6 +7,9 @@
   <message name="IDS_MD_EXTENSIONS_DISABLED_UPDATE_REQUIRED_BY_POLICY" desc="Text shown in the extensions settings for extensions disabled due to minimum version requirement from enterprise policy">
     This extension is outdated and disabled by enterprise policy. It might become enabled automatically when a newer version is available.
   </message>
+  <message name="IDS_MD_EXTENSIONS_MENU_BUTTON_LABEL" desc="Tooltips for the sidebar menu button.">
+    Main menu
+  </message>
   <message name="IDS_MD_EXTENSIONS_ERROR_PAGE_HEADING" desc="The heading of the page displaying an extension's errors.">
     Errors
   </message>
