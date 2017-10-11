@@ -246,6 +246,36 @@ TEST_F(ContextMenuJsTest, UnsupportedReferrerPolicy) {
   EXPECT_NSEQ(@"never", result[kContextMenuElementReferrerPolicy]);
 }
 
+// Tests that getElementFromPoint finds an element at the bottom of a very long
+// page.
+TEST_F(ContextMenuJsTest, LinkOfTextFromTallPage) {
+  const char kHtml[] =
+      "<html><body>"
+      " <div style='height:4000px'></div>"
+      " <div><a href='http://destination'>link</a></div>"
+      "</body></html>";
+  LoadHtml(kHtml);
+
+  // Scroll the webView to the bottom to make the link accessible.
+  CGFloat content_height = GetWebViewContentSize().height;
+  CGFloat scroll_view_height =
+      CGRectGetHeight(web_state()->GetWebViewProxy().scrollViewProxy.frame);
+  CGFloat offset = content_height - scroll_view_height;
+  web_state()->GetWebViewProxy().scrollViewProxy.contentOffset =
+      CGPointMake(0.0, offset);
+
+  ExecuteJavaScript(@"document.getElementsByTagName('a')");  // Force layout.
+
+  // Link is at bottom of the page content.
+  id result = ExecuteGetElementFromPointJavaScript(1, content_height - 5.0);
+  NSDictionary* expected_result = @{
+    kContextMenuElementInnerText : @"link",
+    kContextMenuElementReferrerPolicy : @"default",
+    kContextMenuElementHyperlink : @"http://destination/",
+  };
+  EXPECT_NSEQ(expected_result, result);
+}
+
 // Tests that a callout information about a link is displayed when
 // -webkit-touch-callout property is not specified. Please see:
 // https://developer.mozilla.org/en-US/docs/Web/CSS/-webkit-touch-callout
