@@ -205,8 +205,8 @@ PasswordProtectionService* ServicesDelegateImpl::GetPasswordProtectionService(
     Profile* profile) const {
   DCHECK(profile);
   auto it = password_protection_service_map_.find(profile);
-  DCHECK(it != password_protection_service_map_.end());
-  return it->second.get();
+  return it != password_protection_service_map_.end() ? it->second.get()
+                                                      : nullptr;
 }
 
 }  // namespace safe_browsing

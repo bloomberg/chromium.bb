@@ -10,6 +10,7 @@
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/password_manager/core/browser/password_reuse_detector.h"
 #include "components/safe_browsing/db/whitelist_checker_client.h"
+#include "components/safe_browsing/password_protection/password_protection_navigation_throttle.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
@@ -62,6 +63,7 @@ PasswordProtectionRequest::PasswordProtectionRequest(
       password_protection_service_(pps),
       request_timeout_in_ms_(request_timeout_in_ms),
       request_proto_(base::MakeUnique<LoginReputationClientRequest>()),
+      is_modal_warning_showing_(false),
       weakptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -370,10 +372,24 @@ void PasswordProtectionRequest::Finish(
 void PasswordProtectionRequest::Cancel(bool timed_out) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   fetcher_.reset();
+  // If request is canceled because |password_protection_service_| is shutting
+  // down, ignore all these deferred navigations.
+  if (!timed_out)
+    throttles_.clear();
 
   Finish(timed_out ? PasswordProtectionService::TIMEDOUT
                    : PasswordProtectionService::CANCELED,
          nullptr);
+}
+
+void PasswordProtectionRequest::HandleDeferredNavigations() {
+  for (auto* throttle : throttles_) {
+    if (is_modal_warning_showing_)
+      throttle->CancelNavigation(content::NavigationThrottle::CANCEL);
+    else
+      throttle->ResumeNavigation();
+  }
+  throttles_.clear();
 }
 
 }  // namespace safe_browsing

@@ -81,6 +81,7 @@
 #include "chrome/browser/resource_coordinator/background_tab_navigation_throttle.h"
 #include "chrome/browser/safe_browsing/certificate_reporting_service.h"
 #include "chrome/browser/safe_browsing/certificate_reporting_service_factory.h"
+#include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/browser/safe_browsing/url_checker_delegate_impl.h"
@@ -165,6 +166,7 @@
 #include "components/safe_browsing/browser/url_checker_delegate.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/db/database_manager.h"
+#include "components/safe_browsing/password_protection/password_protection_navigation_throttle.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/spellcheck/spellcheck_build_features.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_throttle_manager.h"
@@ -3344,6 +3346,17 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
           BackgroundTabNavigationThrottle::MaybeCreateThrottleFor(handle);
   if (background_tab_navigation_throttle)
     throttles.push_back(std::move(background_tab_navigation_throttle));
+#endif
+
+// TODO(764520): Remove the OS_CHROMEOS part of the condition once Gaia password
+// reuse feature is enabled on Chrome OS.
+#if defined(SAFE_BROWSING_DB_LOCAL) && !defined(OS_CHROMEOS)
+  std::unique_ptr<content::NavigationThrottle>
+      password_protection_navigation_throttle =
+          safe_browsing::MaybeCreateNavigationThrottle(handle);
+  if (password_protection_navigation_throttle) {
+    throttles.push_back(std::move(password_protection_navigation_throttle));
+  }
 #endif
 
   std::unique_ptr<content::NavigationThrottle> pdf_iframe_throttle =
