@@ -17,6 +17,7 @@ from chromite.cbuildbot import validation_pool_unittest
 from chromite.lib.const import waterfall
 from chromite.lib import buildbucket_lib
 from chromite.lib import builder_status_lib
+from chromite.lib import build_requests
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_test_lib
@@ -24,6 +25,9 @@ from chromite.lib import fake_cidb
 from chromite.lib import metadata_lib
 from chromite.lib import patch_unittest
 from chromite.lib import tree_status
+
+
+site_config = config_lib.GetConfig()
 
 
 # pylint: disable=protected-access
@@ -197,12 +201,8 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
     self.master_test_config = config_lib.BuildConfig(
         name='master-test', master=True,
         active_waterfall=waterfall.WATERFALL_INTERNAL)
-    self.master_cq_config = config_lib.BuildConfig(
-        name='master-paladin', master=True,
-        active_waterfall=waterfall.WATERFALL_INTERNAL)
-    self.master_canary_config = config_lib.BuildConfig(
-        name='master-release', master=True,
-        active_waterfall=waterfall.WATERFALL_INTERNAL)
+    self.master_cq_config = site_config['master-paladin']
+    self.master_canary_config = site_config['master-release']
     self.metadata = metadata_lib.CBuildbotMetadata()
     self.db = fake_cidb.FakeCIDBConnection()
     self.buildbucket_client = mock.Mock()
@@ -1349,6 +1349,12 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
     self.assertEqual(buildbucket_info_dict['failure'].buildbucket_id,
                      'retry_id')
     self.assertEqual(buildbucket_info_dict['failure'].retry, 1)
+    requests = slave_status.db.GetBuildRequestsForBuildConfigs('failure')
+    self.assertEqual(len(requests), 1)
+    self.assertEqual(requests[0].request_build_config, 'failure')
+    self.assertEqual(requests[0].request_buildbucket_id, 'retry_id')
+    self.assertEqual(requests[0].request_reason,
+                     build_requests.REASON_IMPORTANT_CQ_SLAVE)
 
     retried_builds = slave_status._RetryBuilds(builds_to_retry)
     self.assertEqual(retried_builds, builds_to_retry)
@@ -1357,6 +1363,13 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
     self.assertEqual(buildbucket_info_dict['canceled'].buildbucket_id,
                      'retry_id')
     self.assertEqual(buildbucket_info_dict['canceled'].retry, 2)
+    requests = slave_status.db.GetBuildRequestsForBuildConfigs('canceled')
+    self.assertEqual(len(requests), 2)
+    for req in requests:
+      self.assertEqual(req.request_build_config, 'canceled')
+      self.assertEqual(req.request_buildbucket_id, 'retry_id')
+      self.assertEqual(req.request_reason,
+                       build_requests.REASON_IMPORTANT_CQ_SLAVE)
 
   def test_GetNewSlaveBuildbucketInfo(self):
     """Test _GetNewSlaveBuildbucketInfo."""
