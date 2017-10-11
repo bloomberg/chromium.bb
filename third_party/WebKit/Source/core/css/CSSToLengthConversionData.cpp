@@ -30,7 +30,7 @@
 
 #include "core/css/CSSToLengthConversionData.h"
 
-#include "core/css/CSSHelper.h"
+#include "core/css/CSSResolutionUnits.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/style/ComputedStyle.h"
 

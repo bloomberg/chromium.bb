@@ -5,7 +5,7 @@
 #include "core/css/cssom/CSSUnitValue.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/css/CSSHelper.h"
+#include "core/css/CSSResolutionUnits.h"
 #include "platform/wtf/MathExtras.h"
 
 namespace blink {

@@ -23,7 +23,7 @@
 #include "core/svg/SVGSVGElement.h"
 
 #include "bindings/core/v8/ScriptEventListener.h"
-#include "core/css/CSSHelper.h"
+#include "core/css/CSSResolutionUnits.h"
 #include "core/css/StyleChangeReason.h"
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
