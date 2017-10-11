@@ -154,12 +154,40 @@ TEST(TaskTrackerTest, LimitMaxNumberOfTasksPerTab) {
 
   ASSERT_THAT(tab_tasks->nav_to_task_id_map_, SizeIs(kMaxNumTasksPerTab));
   EXPECT_THAT(tab_tasks->GetTaskIdsForNavigation(0), ElementsAre());
-  EXPECT_THAT(tab_tasks->GetTaskIdsForNavigation(1), ElementsAre());
-  EXPECT_THAT(tab_tasks->GetTaskIdsForNavigation(2), ElementsAre(200));
+  // Navigation 1 is the root navigation. It is preserved.
+  EXPECT_THAT(tab_tasks->GetTaskIdsForNavigation(1), ElementsAre(100));
+  // Navigation 2 is oldest non-root naviation. It is evicted.
+  EXPECT_THAT(tab_tasks->GetTaskIdsForNavigation(2), ElementsAre());
   task_ids = tab_tasks->GetTaskIdsForNavigation(kMaxNumTasksPerTab + 1);
-  EXPECT_THAT(task_ids, SizeIs(kMaxNumTasksPerTab));
-  EXPECT_EQ(task_ids[0], 200);
-  EXPECT_EQ(task_ids[kMaxNumTasksPerTab - 1], (kMaxNumTasksPerTab + 1) * 100);
+  // Navigation chain starts at navigation 3 since navigation 2 was evicted.
+  EXPECT_THAT(task_ids, SizeIs(kMaxNumTasksPerTab - 1));
+  EXPECT_EQ(task_ids.front(), 300);
+  EXPECT_EQ(task_ids.back(), (kMaxNumTasksPerTab + 1) * 100);
+}
+
+// Regression test for crbug/766963. Tests that evicting and reinserting root
+// navigation doesn't create loop in navigation chain.
+TEST(TaskTrackerTest, LoopInNavigationChain) {
+  TaskTracker task_tracker;
+  TabTasks* tasks = task_tracker.GetTabTasks(kTab1, kInvalidTabID);
+  // Create a few navigations that would later be evicted.
+  tasks->UpdateWithNavigation(1, ui::PageTransition::PAGE_TRANSITION_LINK, 1);
+  tasks->UpdateWithNavigation(2, ui::PageTransition::PAGE_TRANSITION_LINK, 2);
+  tasks->UpdateWithNavigation(3, ui::PageTransition::PAGE_TRANSITION_LINK, 3);
+  // Continue task from navigation 2.
+  tasks->UpdateWithNavigation(2, ui::PageTransition::PAGE_TRANSITION_LINK, 4);
+  // Create large number of navigations to get navigation 1 evicted.
+  for (int i = 0; i < kMaxNumTasksPerTab - 2; i++) {
+    tasks->UpdateWithNavigation(
+        i + 10, ui::PageTransition::PAGE_TRANSITION_LINK, i + 10);
+  }
+  // Revisit navigation 1 to get it recreated.
+  tasks->UpdateWithNavigation(1, ui::PageTransition::PAGE_TRANSITION_LINK,
+                              1000);
+
+  // If recreation of navigation 1 caused loop then the next call would either
+  // DCHECK or OOM.
+  tasks->GetTaskIdsForNavigation(1);
 }
 
 TEST(TaskTrackerTest, CreateTabTasksFromSourceTab) {
