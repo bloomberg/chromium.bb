@@ -118,6 +118,9 @@ class PageInfoBubbleDecoration : public BubbleDecoration,
   // the divider bar. This is recomputed every time this object is drawn.
   int focus_ring_right_inset_ = 0;
 
+  // Distance in points to inset the left edge of the focus ring by.
+  int focus_ring_left_inset_ = 0;
+
   // Used to disable find bar animations when testing.
   bool disable_animations_during_testing_;
 
