@@ -50,7 +50,6 @@ class ChromeRenderThreadObserver : public content::RenderThreadObserver,
       content::AssociatedInterfaceRegistry* associated_interfaces) override;
   void UnregisterMojoInterfaces(
       content::AssociatedInterfaceRegistry* associated_interfaces) override;
-  void OnRenderProcessShutdown() override;
 
   // chrome::mojom::RendererConfiguration:
   void SetInitialConfiguration(bool is_incognito_process) override;

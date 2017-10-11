@@ -60,11 +60,6 @@ ImageDownloaderBase::~ImageDownloaderBase() {
     thread->RemoveObserver(this);
 }
 
-// Ensure all loaders cleared before calling blink::shutdown.
-void ImageDownloaderBase::OnRenderProcessShutdown() {
-  image_fetchers_.clear();
-}
-
 void ImageDownloaderBase::DownloadImage(const GURL& image_url,
                                         bool is_favicon,
                                         bool bypass_cache,

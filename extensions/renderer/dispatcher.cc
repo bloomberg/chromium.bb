@@ -896,8 +896,7 @@ bool Dispatcher::OnControlMessageReceived(const IPC::Message& message) {
 void Dispatcher::IdleNotification() {
   if (set_idle_notifications_ && forced_idle_timer_) {
     // Dampen the forced delay as well if the extension stays idle for long
-    // periods of time. (forced_idle_timer_ can be NULL after
-    // OnRenderProcessShutdown has been called.)
+    // periods of time.
     int64_t forced_delay_ms =
         std::max(RenderThread::Get()->GetIdleNotificationDelayInMs(),
                  kMaxExtensionIdleHandlerDelayMs);
@@ -908,16 +907,6 @@ void Dispatcher::IdleNotification() {
         RenderThread::Get(),
         &RenderThread::IdleHandler);
   }
-}
-
-void Dispatcher::OnRenderProcessShutdown() {
-  v8_schema_registry_.reset();
-  forced_idle_timer_.reset();
-  content_watcher_.reset();
-  script_context_set_->ForEach(
-      std::string(), nullptr,
-      base::Bind(&ScriptContextSet::Remove,
-                 base::Unretained(script_context_set_.get())));
 }
 
 void Dispatcher::OnActivateExtension(const std::string& extension_id) {

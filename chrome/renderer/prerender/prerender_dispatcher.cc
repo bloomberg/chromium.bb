@@ -127,18 +127,6 @@ bool PrerenderDispatcher::OnControlMessageReceived(
   return handled;
 }
 
-void PrerenderDispatcher::OnRenderProcessShutdown() {
-  // Renderer is shutting down, abandon all in-flight prerenders.
-  for (auto it : prerenders_) {
-    const PrerenderExtraData& extra_data =
-        PrerenderExtraData::FromPrerender(it.second);
-    content::RenderThread::Get()->Send(
-        new PrerenderHostMsg_AbandonLinkRelPrerender(
-            extra_data.prerender_id()));
-  }
-  prerenders_.clear();
-}
-
 void PrerenderDispatcher::Add(const WebPrerender& prerender) {
   const PrerenderExtraData& extra_data =
       PrerenderExtraData::FromPrerender(prerender);

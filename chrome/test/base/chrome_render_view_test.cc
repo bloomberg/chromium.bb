@@ -133,11 +133,6 @@ void ChromeRenderViewTest::SetUp() {
 
 void ChromeRenderViewTest::TearDown() {
   base::RunLoop().RunUntilIdle();
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  ChromeExtensionsRendererClient* ext_client =
-      ChromeExtensionsRendererClient::GetInstance();
-  ext_client->GetExtensionDispatcherForTest()->OnRenderProcessShutdown();
-#endif
 
 #if defined(LEAK_SANITIZER)
   // Do this before shutting down V8 in RenderViewTest::TearDown().
