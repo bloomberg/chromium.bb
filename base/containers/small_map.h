@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include <map>
+#include <new>
 #include <string>
 #include <utility>
 
@@ -89,9 +90,7 @@ namespace internal {
 template <typename NormalMap>
 class small_map_default_init {
  public:
-  void operator()(ManualConstructor<NormalMap>* map) const {
-    map->Init();
-  }
+  void operator()(NormalMap* map) const { new (map) NormalMap(); }
 };
 
 // has_key_equal<M>::value is true iff there exists a type M::key_equal. This is
@@ -243,7 +242,7 @@ class small_map {
     }
     inline value_type* operator->() const {
       if (array_iter_ != NULL) {
-        return array_iter_->get();
+        return array_iter_;
       } else {
         return hash_iter_.operator->();
       }
@@ -251,7 +250,7 @@ class small_map {
 
     inline value_type& operator*() const {
       if (array_iter_ != NULL) {
-        return *array_iter_->get();
+        return *array_iter_;
       } else {
         return *hash_iter_;
       }
@@ -275,12 +274,11 @@ class small_map {
    private:
     friend class small_map;
     friend class const_iterator;
-    inline explicit iterator(ManualConstructor<value_type>* init)
-      : array_iter_(init) {}
+    inline explicit iterator(value_type* init) : array_iter_(init) {}
     inline explicit iterator(const typename NormalMap::iterator& init)
       : array_iter_(NULL), hash_iter_(init) {}
 
-    ManualConstructor<value_type>* array_iter_;
+    value_type* array_iter_;
     typename NormalMap::iterator hash_iter_;
   };
 
@@ -328,7 +326,7 @@ class small_map {
 
     inline const value_type* operator->() const {
       if (array_iter_ != NULL) {
-        return array_iter_->get();
+        return array_iter_;
       } else {
         return hash_iter_.operator->();
       }
@@ -336,7 +334,7 @@ class small_map {
 
     inline const value_type& operator*() const {
       if (array_iter_ != NULL) {
-        return *array_iter_->get();
+        return *array_iter_;
       } else {
         return *hash_iter_;
       }
@@ -356,14 +354,13 @@ class small_map {
 
    private:
     friend class small_map;
-    inline explicit const_iterator(
-        const ManualConstructor<value_type>* init)
-      : array_iter_(init) {}
+    inline explicit const_iterator(const value_type* init)
+        : array_iter_(init) {}
     inline explicit const_iterator(
         const typename NormalMap::const_iterator& init)
       : array_iter_(NULL), hash_iter_(init) {}
 
-    const ManualConstructor<value_type>* array_iter_;
+    const value_type* array_iter_;
     typename NormalMap::const_iterator hash_iter_;
   };
 
@@ -371,7 +368,7 @@ class small_map {
     key_equal compare;
     if (size_ >= 0) {
       for (int i = 0; i < size_; i++) {
-        if (compare(array_[i]->first, key)) {
+        if (compare(array_[i].first, key)) {
           return iterator(array_ + i);
         }
       }
@@ -385,7 +382,7 @@ class small_map {
     key_equal compare;
     if (size_ >= 0) {
       for (int i = 0; i < size_; i++) {
-        if (compare(array_[i]->first, key)) {
+        if (compare(array_[i].first, key)) {
           return const_iterator(array_ + i);
         }
       }
@@ -403,19 +400,19 @@ class small_map {
       // operator[] searches backwards, favoring recently-added
       // elements.
       for (int i = size_-1; i >= 0; --i) {
-        if (compare(array_[i]->first, key)) {
-          return array_[i]->second;
+        if (compare(array_[i].first, key)) {
+          return array_[i].second;
         }
       }
       if (size_ == kArraySize) {
         ConvertToRealMap();
-        return (*map_)[key];
+        return map_[key];
       } else {
-        array_[size_].Init(key, data_type());
-        return array_[size_++]->second;
+        new (&array_[size_]) value_type(key, data_type());
+        return array_[size_++].second;
       }
     } else {
-      return (*map_)[key];
+      return map_[key];
     }
   }
 
@@ -425,20 +422,20 @@ class small_map {
 
     if (size_ >= 0) {
       for (int i = 0; i < size_; i++) {
-        if (compare(array_[i]->first, x.first)) {
+        if (compare(array_[i].first, x.first)) {
           return std::make_pair(iterator(array_ + i), false);
         }
       }
       if (size_ == kArraySize) {
         ConvertToRealMap();  // Invalidates all iterators!
-        std::pair<typename NormalMap::iterator, bool> ret = map_->insert(x);
+        std::pair<typename NormalMap::iterator, bool> ret = map_.insert(x);
         return std::make_pair(iterator(ret.first), ret.second);
       } else {
-        array_[size_].Init(x);
+        new (&array_[size_]) value_type(x);
         return std::make_pair(iterator(array_ + size_++), true);
       }
     } else {
-      std::pair<typename NormalMap::iterator, bool> ret = map_->insert(x);
+      std::pair<typename NormalMap::iterator, bool> ret = map_.insert(x);
       return std::make_pair(iterator(ret.first), ret.second);
     }
   }
@@ -460,22 +457,22 @@ class small_map {
     if (size_ >= 0) {
       value_type x(std::forward<Args>(args)...);
       for (int i = 0; i < size_; i++) {
-        if (compare(array_[i]->first, x.first)) {
+        if (compare(array_[i].first, x.first)) {
           return std::make_pair(iterator(array_ + i), false);
         }
       }
       if (size_ == kArraySize) {
         ConvertToRealMap();  // Invalidates all iterators!
         std::pair<typename NormalMap::iterator, bool> ret =
-            map_->emplace(std::move(x));
+            map_.emplace(std::move(x));
         return std::make_pair(iterator(ret.first), ret.second);
       } else {
-        array_[size_].Init(std::move(x));
+        new (&array_[size_]) value_type(std::move(x));
         return std::make_pair(iterator(array_ + size_++), true);
       }
     } else {
       std::pair<typename NormalMap::iterator, bool> ret =
-          map_->emplace(std::forward<Args>(args)...);
+          map_.emplace(std::forward<Args>(args)...);
       return std::make_pair(iterator(ret.first), ret.second);
     }
   }
@@ -484,14 +481,14 @@ class small_map {
     if (size_ >= 0) {
       return iterator(array_);
     } else {
-      return iterator(map_->begin());
+      return iterator(map_.begin());
     }
   }
   const_iterator begin() const {
     if (size_ >= 0) {
       return const_iterator(array_);
     } else {
-      return const_iterator(map_->begin());
+      return const_iterator(map_.begin());
     }
   }
 
@@ -499,24 +496,24 @@ class small_map {
     if (size_ >= 0) {
       return iterator(array_ + size_);
     } else {
-      return iterator(map_->end());
+      return iterator(map_.end());
     }
   }
   const_iterator end() const {
     if (size_ >= 0) {
       return const_iterator(array_ + size_);
     } else {
-      return const_iterator(map_->end());
+      return const_iterator(map_.end());
     }
   }
 
   void clear() {
     if (size_ >= 0) {
       for (int i = 0; i < size_; i++) {
-        array_[i].Destroy();
+        array_[i].~value_type();
       }
     } else {
-      map_.Destroy();
+      map_.~NormalMap();
     }
     size_ = 0;
   }
@@ -525,16 +522,16 @@ class small_map {
   iterator erase(const iterator& position) {
     if (size_ >= 0) {
       int i = position.array_iter_ - array_;
-      array_[i].Destroy();
+      array_[i].~value_type();
       --size_;
       if (i != size_) {
-        array_[i].InitFromMove(std::move(array_[size_]));
-        array_[size_].Destroy();
+        new (&array_[i]) value_type(std::move(array_[size_]));
+        array_[size_].~value_type();
         return iterator(array_ + i);
       }
       return end();
     }
-    return iterator(map_->erase(position.hash_iter_));
+    return iterator(map_.erase(position.hash_iter_));
   }
 
   size_t erase(const key_type& key) {
@@ -552,7 +549,7 @@ class small_map {
     if (size_ >= 0) {
       return static_cast<size_t>(size_);
     } else {
-      return map_->size();
+      return map_.size();
     }
   }
 
@@ -560,7 +557,7 @@ class small_map {
     if (size_ >= 0) {
       return (size_ == 0);
     } else {
-      return map_->empty();
+      return map_.empty();
     }
   }
 
@@ -572,11 +569,11 @@ class small_map {
 
   inline NormalMap* map() {
     CHECK(UsingFullMap());
-    return map_.get();
+    return &map_;
   }
   inline const NormalMap* map() const {
     CHECK(UsingFullMap());
-    return map_.get();
+    return &map_;
   }
 
  private:
@@ -584,26 +581,28 @@ class small_map {
 
   MapInit functor_;
 
-  // We want to call constructors and destructors manually, but we don't
-  // want to allocate and deallocate the memory used for them separately.
-  // So, we use this crazy ManualConstructor class. Since C++11 it's possible
-  // to use objects in unions like this, but the ManualDestructor syntax is
-  // a bit better and doesn't have limitations on object type.
-  //
-  // Since array_ and map_ are mutually exclusive, we'll put them in a
-  // union.
+  // We want to call constructors and destructors manually, but we don't want to
+  // allocate and deallocate the memory used for them separately. Since array_
+  // and map_ are mutually exclusive, we'll put them in a union.
   union {
-    ManualConstructor<value_type> array_[kArraySize];
-    ManualConstructor<NormalMap> map_;
+    value_type array_[kArraySize];
+    NormalMap map_;
   };
 
   void ConvertToRealMap() {
-    // Move the current elements into a temporary array.
-    ManualConstructor<value_type> temp_array[kArraySize];
+    // Storage for the elements in the temporary array. This is intentionally
+    // declared as a union to avoid having to default-construct |kArraySize|
+    // elements, only to move construct over them in the initial loop.
+    union Storage {
+      Storage() {}
+      ~Storage() {}
+      value_type array[kArraySize];
+    } temp;
 
+    // Move the current elements into a temporary array.
     for (int i = 0; i < kArraySize; i++) {
-      temp_array[i].InitFromMove(std::move(array_[i]));
-      array_[i].Destroy();
+      new (&temp.array[i]) value_type(std::move(array_[i]));
+      array_[i].~value_type();
     }
 
     // Initialize the map.
@@ -612,8 +611,8 @@ class small_map {
 
     // Insert elements into it.
     for (int i = 0; i < kArraySize; i++) {
-      map_->insert(std::move(*temp_array[i]));
-      temp_array[i].Destroy();
+      map_.insert(std::move(temp.array[i]));
+      temp.array[i].~value_type();
     }
   }
 
@@ -623,20 +622,20 @@ class small_map {
     size_ = src.size_;
     if (src.size_ >= 0) {
       for (int i = 0; i < size_; i++) {
-        array_[i].Init(*src.array_[i]);
+        new (&array_[i]) value_type(src.array_[i]);
       }
     } else {
       functor_(&map_);
-      (*map_.get()) = (*src.map_.get());
+      map_ = src.map_;
     }
   }
   void Destroy() {
     if (size_ >= 0) {
       for (int i = 0; i < size_; i++) {
-        array_[i].Destroy();
+        array_[i].~value_type();
       }
     } else {
-      map_.Destroy();
+      map_.~NormalMap();
     }
   }
 };

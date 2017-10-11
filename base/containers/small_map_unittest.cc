@@ -449,8 +449,8 @@ class unordered_map_add_item : public std::unordered_map<int, int> {
   }
 };
 
-void InitMap(ManualConstructor<unordered_map_add_item>* map_ctor) {
-  map_ctor->Init(std::make_pair(0, 0));
+void InitMap(unordered_map_add_item* map_ctor) {
+  new (map_ctor) unordered_map_add_item(std::make_pair(0, 0));
 }
 
 class unordered_map_add_item_initializer {
@@ -458,8 +458,8 @@ class unordered_map_add_item_initializer {
   explicit unordered_map_add_item_initializer(int item_to_add)
       : item_(item_to_add) {}
   unordered_map_add_item_initializer() : item_(0) {}
-  void operator()(ManualConstructor<unordered_map_add_item>* map_ctor) const {
-    map_ctor->Init(std::make_pair(item_, item_));
+  void operator()(unordered_map_add_item* map_ctor) const {
+    new (map_ctor) unordered_map_add_item(std::make_pair(item_, item_));
   }
 
   int item_;
@@ -469,7 +469,7 @@ class unordered_map_add_item_initializer {
 
 TEST(SmallMap, SubclassInitializationWithFunctionPointer) {
   small_map<unordered_map_add_item, 4, std::equal_to<int>,
-            void (&)(ManualConstructor<unordered_map_add_item>*)>
+            void (&)(unordered_map_add_item*)>
       m(InitMap);
 
   EXPECT_TRUE(m.empty());
