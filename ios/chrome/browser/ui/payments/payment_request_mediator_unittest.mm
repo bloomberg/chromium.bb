@@ -216,8 +216,10 @@ TEST_F(PaymentRequestMediatorTest, TestShippingAddressItem) {
   EXPECT_TRUE([add_shipping_address_item.text
       isEqualToString:l10n_util::GetNSString(
                           IDS_PAYMENTS_SHIPPING_ADDRESS_LABEL)]);
-  EXPECT_EQ(nil, add_shipping_address_item.detailText);
-  EXPECT_EQ(MDCCollectionViewCellAccessoryDisclosureIndicator,
+  EXPECT_TRUE([add_shipping_address_item.detailText
+      isEqualToString:[l10n_util::GetNSString(IDS_CHOOSE)
+                          uppercaseStringWithLocale:[NSLocale currentLocale]]]);
+  EXPECT_EQ(MDCCollectionViewCellAccessoryNone,
             add_shipping_address_item.accessoryType);
 
   // Remove the shipping profiles.
@@ -258,8 +260,10 @@ TEST_F(PaymentRequestMediatorTest, TestShippingOptionItem) {
   EXPECT_TRUE([add_shipping_option_item.text
       isEqualToString:l10n_util::GetNSString(
                           IDS_PAYMENTS_SHIPPING_OPTION_LABEL)]);
-  EXPECT_EQ(nil, add_shipping_option_item.detailText);
-  EXPECT_EQ(MDCCollectionViewCellAccessoryDisclosureIndicator,
+  EXPECT_TRUE([add_shipping_option_item.detailText
+      isEqualToString:[l10n_util::GetNSString(IDS_CHOOSE)
+                          uppercaseStringWithLocale:[NSLocale currentLocale]]]);
+  EXPECT_EQ(MDCCollectionViewCellAccessoryNone,
             add_shipping_option_item.accessoryType);
 }
 
@@ -301,8 +305,10 @@ TEST_F(PaymentRequestMediatorTest, TestPaymentMethodItem) {
   EXPECT_TRUE([add_payment_method_item.text
       isEqualToString:l10n_util::GetNSString(
                           IDS_PAYMENT_REQUEST_PAYMENT_METHOD_SECTION_NAME)]);
-  EXPECT_EQ(nil, add_payment_method_item.detailText);
-  EXPECT_EQ(MDCCollectionViewCellAccessoryDisclosureIndicator,
+  EXPECT_TRUE([add_payment_method_item.detailText
+      isEqualToString:[l10n_util::GetNSString(IDS_CHOOSE)
+                          uppercaseStringWithLocale:[NSLocale currentLocale]]]);
+  EXPECT_EQ(MDCCollectionViewCellAccessoryNone,
             add_payment_method_item.accessoryType);
 
   // Remove the payment methods.
@@ -390,8 +396,10 @@ TEST_F(PaymentRequestMediatorTest, TestContactInfoItem) {
   EXPECT_TRUE([add_contact_info_item.text
       isEqualToString:l10n_util::GetNSString(
                           IDS_PAYMENTS_CONTACT_DETAILS_LABEL)]);
-  EXPECT_EQ(nil, add_contact_info_item.detailText);
-  EXPECT_EQ(MDCCollectionViewCellAccessoryDisclosureIndicator,
+  EXPECT_TRUE([add_contact_info_item.detailText
+      isEqualToString:[l10n_util::GetNSString(IDS_CHOOSE)
+                          uppercaseStringWithLocale:[NSLocale currentLocale]]]);
+  EXPECT_EQ(MDCCollectionViewCellAccessoryNone,
             add_contact_info_item.accessoryType);
 
   // Remove the contact profiles.

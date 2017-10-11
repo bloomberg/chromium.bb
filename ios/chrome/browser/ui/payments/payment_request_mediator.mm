@@ -150,6 +150,9 @@ using ::payment_request_util::GetShippingSectionTitle;
   if (self.paymentRequest->shipping_profiles().empty()) {
     item.detailText = [l10n_util::GetNSString(IDS_ADD)
         uppercaseStringWithLocale:[NSLocale currentLocale]];
+  } else if (!profile) {
+    item.detailText = [l10n_util::GetNSString(IDS_CHOOSE)
+        uppercaseStringWithLocale:[NSLocale currentLocale]];
   } else {
     item.accessoryType = MDCCollectionViewCellAccessoryDisclosureIndicator;
   }
@@ -173,7 +176,13 @@ using ::payment_request_util::GetShippingSectionTitle;
   CollectionViewDetailItem* item = [[CollectionViewDetailItem alloc] init];
   item.text = base::SysUTF16ToNSString(
       GetShippingOptionSectionString(self.paymentRequest->shipping_type()));
-  item.accessoryType = MDCCollectionViewCellAccessoryDisclosureIndicator;
+
+  if (!option) {
+    item.detailText = [l10n_util::GetNSString(IDS_CHOOSE)
+        uppercaseStringWithLocale:[NSLocale currentLocale]];
+  } else {
+    item.accessoryType = MDCCollectionViewCellAccessoryDisclosureIndicator;
+  }
   return item;
 }
 
@@ -221,6 +230,9 @@ using ::payment_request_util::GetShippingSectionTitle;
   if (self.paymentRequest->payment_methods().empty()) {
     item.detailText = [l10n_util::GetNSString(IDS_ADD)
         uppercaseStringWithLocale:[NSLocale currentLocale]];
+  } else if (!paymentMethod) {
+    item.detailText = [l10n_util::GetNSString(IDS_CHOOSE)
+        uppercaseStringWithLocale:[NSLocale currentLocale]];
   } else {
     item.accessoryType = MDCCollectionViewCellAccessoryDisclosureIndicator;
   }
@@ -258,6 +270,9 @@ using ::payment_request_util::GetShippingSectionTitle;
   item.text = l10n_util::GetNSString(IDS_PAYMENTS_CONTACT_DETAILS_LABEL);
   if (self.paymentRequest->contact_profiles().empty()) {
     item.detailText = [l10n_util::GetNSString(IDS_ADD)
+        uppercaseStringWithLocale:[NSLocale currentLocale]];
+  } else if (!profile) {
+    item.detailText = [l10n_util::GetNSString(IDS_CHOOSE)
         uppercaseStringWithLocale:[NSLocale currentLocale]];
   } else {
     item.accessoryType = MDCCollectionViewCellAccessoryDisclosureIndicator;
