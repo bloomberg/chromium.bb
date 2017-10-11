@@ -106,11 +106,14 @@ void UpdateLegacyMultiColumnFlowThread(
   // TODO(mstensho): Update all column boxes, not just the first column set
   // (like we do above). This is needed to support column-span:all.
   for (LayoutBox* column_box = flow_thread->FirstMultiColumnBox(); column_box;
-       column_box = column_box->NextSiblingMultiColumnBox())
+       column_box = column_box->NextSiblingMultiColumnBox()) {
     column_box->ClearNeedsLayout();
+    column_box->UpdateAfterLayout();
+  }
 
   flow_thread->ValidateColumnSets();
   flow_thread->SetLogicalHeight(flow_end);
+  flow_thread->UpdateAfterLayout();
   flow_thread->ClearNeedsLayout();
 }
 
