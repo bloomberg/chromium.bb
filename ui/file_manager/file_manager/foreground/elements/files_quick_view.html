@@ -33,6 +33,14 @@
             <template is="dom-if" if="[[browsable]]">
               <webview class="content" src="[[contentUrl]]"></webview>
             </template>
+            <!-- document/HTML -->
+            <template is="dom-if" if="[[isHtml_(type, subtype)]]">
+              <files-safe-media hidden="[[!contentUrl]]" type="html" class="content" src="[[contentUrl]]"></files-safe-media>
+              <template is="dom-if" if="[[!contentUrl]]">
+                <div generic-thumbnail="[[type]]"></div>
+                <div class="no-preview">[[noPreviewText]]</div>
+              </template>
+            </template>
             <!-- Image -->
             <template is="dom-if" if="[[isImage_(type)]]">
               <files-safe-media hidden="[[!contentUrl]]" type="image" class="content no-close-on-click" src="[[contentUrl]]"></files-safe-media>
@@ -67,7 +75,7 @@
                 <div class="no-preview">[[noPlaybackText]]</div>
               </template>
             </template>
-            <div hidden="[[!isUnsupported_(type, browsable)]]">
+            <div hidden="[[!isUnsupported_(type, subtype, browsable)]]">
               <div generic-thumbnail$="[[type]]"></div>
               <div class="no-preview">[[noPreviewText]]</div>
             </div>

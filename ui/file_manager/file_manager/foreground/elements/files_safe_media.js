@@ -39,6 +39,8 @@ var FilesSafeMedia = Polymer({
          return 'foreground/elements/files_safe_audio_webview_content.html';
       case 'video':
          return 'foreground/elements/files_safe_video_webview_content.html';
+      case 'html':
+        return 'foreground/elements/files_safe_html_webview_content.html';
       default:
         console.error('Unsupported type: ' + this.type);
         return '';
@@ -51,7 +53,7 @@ var FilesSafeMedia = Polymer({
       Polymer.dom(this.$.content).removeChild(this.webview_);
       this.webview_ = null;
     } else if (this.src && !this.webview_) {
-      // Create webview node only if src exists to save resouces.
+      // Create webview node only if src exists to save resources.
       var webview =
           /** @type {!HTMLElement} */ (document.createElement('webview'));
       this.webview_ = webview;
@@ -62,7 +64,10 @@ var FilesSafeMedia = Polymer({
           'contentload', this.onSrcChange_.bind(this));
       webview.src = this.sourceFile_();
     } else if (this.src && this.webview_.contentWindow) {
-      this.webview_.contentWindow.postMessage(this.src, FILES_APP_ORIGIN);
+      var data = {};
+      data.type = this.type;
+      data.src = this.src;
+      this.webview_.contentWindow.postMessage(data, FILES_APP_ORIGIN);
     }
   },
 
