@@ -68,6 +68,19 @@ def ExpandWildcards(root, sub_dir):
   return matches[0]
 
 
+def BuildRepackageFileList(src_dir):
+  # Strip off a trailing slash if present
+  if src_dir.endswith('\\'):
+    src_dir = src_dir[:-1]
+  result = []
+  for root, _, files in os.walk(src_dir):
+    for f in files:
+      final_from = os.path.normpath(os.path.join(root, f))
+      dest = final_from[len(src_dir) + 1:]
+      result.append((final_from, dest))
+  return result
+
+
 def BuildFileList(override_dir):
   result = []
 
@@ -400,37 +413,43 @@ def main():
   parser.add_option('--override', action='store', type='string',
                     dest='override_dir', default=None,
                     help='Specify alternate bin/include/lib directory')
+  parser.add_option('--repackage', action='store', type='string',
+                    dest='repackage_dir', default=None,
+                    help='Specify raw directory to be packaged, for hot fixes.')
   (options, args) = parser.parse_args()
 
-  if len(args) != 1 or args[0] not in ('2015', '2017'):
-    print 'Must specify 2015 or 2017'
-    parser.print_help();
-    return 1
-
-  if options.override_dir:
-    if (not os.path.exists(os.path.join(options.override_dir, 'bin')) or
-        not os.path.exists(os.path.join(options.override_dir, 'include')) or
-        not os.path.exists(os.path.join(options.override_dir, 'lib'))):
-      print 'Invalid override directory - must contain bin/include/lib dirs'
+  if options.repackage_dir:
+    files = BuildRepackageFileList(options.repackage_dir)
+  else:
+    if len(args) != 1 or args[0] not in ('2015', '2017'):
+      print 'Must specify 2015 or 2017'
+      parser.print_help();
       return 1
 
-  global VS_VERSION
-  VS_VERSION = args[0]
-  global WIN_VERSION
-  WIN_VERSION = options.winver
-  global VC_TOOLS
-  if VS_VERSION == '2017':
-    vs_path = GetVSPath()
-    temp_tools_path = ExpandWildcards(vs_path, 'VC/Tools/MSVC/14.*.*')
-    # Strip off the leading vs_path characters and switch back to / separators.
-    VC_TOOLS = temp_tools_path[len(vs_path) + 1:].replace('\\', '/')
-  else:
-    VC_TOOLS = 'VC'
+    if options.override_dir:
+      if (not os.path.exists(os.path.join(options.override_dir, 'bin')) or
+          not os.path.exists(os.path.join(options.override_dir, 'include')) or
+          not os.path.exists(os.path.join(options.override_dir, 'lib'))):
+        print 'Invalid override directory - must contain bin/include/lib dirs'
+        return 1
 
-  print 'Building file list for VS %s Windows %s...' % (VS_VERSION, WIN_VERSION)
-  files = BuildFileList(options.override_dir)
+    global VS_VERSION
+    VS_VERSION = args[0]
+    global WIN_VERSION
+    WIN_VERSION = options.winver
+    global VC_TOOLS
+    if VS_VERSION == '2017':
+      vs_path = GetVSPath()
+      temp_tools_path = ExpandWildcards(vs_path, 'VC/Tools/MSVC/14.*.*')
+      # Strip off the leading vs_path characters and switch back to / separators.
+      VC_TOOLS = temp_tools_path[len(vs_path) + 1:].replace('\\', '/')
+    else:
+      VC_TOOLS = 'VC'
 
-  AddEnvSetup(files)
+    print 'Building file list for VS %s Windows %s...' % (VS_VERSION, WIN_VERSION)
+    files = BuildFileList(options.override_dir)
+
+    AddEnvSetup(files)
 
   if False:
     for f in files:
@@ -449,7 +468,7 @@ def main():
       sys.stdout.write('\r%d/%d ...%s' % (count, len(files), disk_name[-40:]))
       sys.stdout.flush()
       count += 1
-      if disk_name.count(WIN_VERSION) > 0:
+      if not options.repackage_dir and disk_name.count(WIN_VERSION) > 0:
         version_match_count += 1
       if os.path.exists(disk_name):
         if options.dryrun:
@@ -466,7 +485,7 @@ def main():
     return 0
   if missing_files:
     raise Exception('One or more files were missing - aborting')
-  if version_match_count == 0:
+  if not options.repackage_dir and version_match_count == 0:
     raise Exception('No files found that match the specified winversion')
   sys.stdout.write('\rWrote to %s.%s\n' % (output, ' '*50))
   sys.stdout.flush()
