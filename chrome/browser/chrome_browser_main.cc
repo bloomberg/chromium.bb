@@ -39,7 +39,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
 #include "base/task_scheduler/post_task.h"
-#include "base/threading/platform_thread.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
@@ -643,17 +642,9 @@ ChromeBrowserMainParts::ChromeBrowserMainParts(
       result_code_(content::RESULT_CODE_NORMAL_EXIT),
       startup_watcher_(new StartupTimeBomb()),
       shutdown_watcher_(new ShutdownWatcherHelper()),
-      sampling_profiler_(base::PlatformThread::CurrentId(),
-                         StackSamplingConfiguration::Get()
-                             ->GetSamplingParamsForCurrentProcess(),
-                         metrics::CallStackProfileMetricsProvider::
-                             GetProfilerCallbackForBrowserProcessStartup()),
       profile_(NULL),
       run_message_loop_(true),
       local_state_(NULL) {
-  if (StackSamplingConfiguration::Get()->IsProfilerEnabledForCurrentProcess())
-    sampling_profiler_.Start();
-
   // If we're running tests (ui_task is non-null).
   if (parameters.ui_task)
     browser_defaults::enable_help_app = false;
