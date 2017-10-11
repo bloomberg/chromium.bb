@@ -14,8 +14,8 @@
     testRunner.log('Received metrics:');
     for (const metric of metrics)
       testRunner.log(`\t${metric.name}`);
-    checkMetric('DocumentCount');
-    checkMetric('NodeCount');
+    checkMetric('Documents');
+    checkMetric('Nodes');
 
     function checkMetric(name) {
       const metric = metrics.find(metric => metric.name === name);
