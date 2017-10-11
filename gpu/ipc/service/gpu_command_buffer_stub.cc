@@ -919,6 +919,10 @@ void GpuCommandBufferStub::OnWaitForTokenInRange(int32_t start,
   CheckContextLost();
   if (wait_for_token_)
     LOG(ERROR) << "Got WaitForToken command while currently waiting for token.";
+  if (channel_->scheduler()) {
+    channel_->scheduler()->RaisePriorityForClientWait(sequence_id_,
+                                                      command_buffer_id_);
+  }
   wait_for_token_ =
       base::MakeUnique<WaitForCommandState>(start, end, reply_message);
   CheckCompleteWaits();
@@ -936,6 +940,10 @@ void GpuCommandBufferStub::OnWaitForGetOffsetInRange(
     LOG(ERROR)
         << "Got WaitForGetOffset command while currently waiting for offset.";
   }
+  if (channel_->scheduler()) {
+    channel_->scheduler()->RaisePriorityForClientWait(sequence_id_,
+                                                      command_buffer_id_);
+  }
   wait_for_get_offset_ =
       base::MakeUnique<WaitForCommandState>(start, end, reply_message);
   wait_set_get_buffer_count_ = set_get_buffer_count;
@@ -943,7 +951,8 @@ void GpuCommandBufferStub::OnWaitForGetOffsetInRange(
 }
 
 void GpuCommandBufferStub::CheckCompleteWaits() {
-  if (wait_for_token_ || wait_for_get_offset_) {
+  bool has_wait = wait_for_token_ || wait_for_get_offset_;
+  if (has_wait) {
     CommandBuffer::State state = command_buffer_->GetState();
     if (wait_for_token_ &&
         (CommandBuffer::InRange(wait_for_token_->start, wait_for_token_->end,
@@ -967,6 +976,11 @@ void GpuCommandBufferStub::CheckCompleteWaits() {
       Send(wait_for_get_offset_->reply.release());
       wait_for_get_offset_.reset();
     }
+  }
+  if (channel_->scheduler() && has_wait &&
+      !(wait_for_token_ || wait_for_get_offset_)) {
+    channel_->scheduler()->ResetPriorityForClientWait(sequence_id_,
+                                                      command_buffer_id_);
   }
 }
 

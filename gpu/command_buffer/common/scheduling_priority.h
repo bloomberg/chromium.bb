@@ -10,19 +10,16 @@
 namespace gpu {
 
 enum class SchedulingPriority {
-  // The Highest and High priorities can be used by priveleged clients only.
-  // This priority should be used for UI contexts.
-  kHighest,
-  // This priority is used by the scheduler for prioritizing contexts which have
-  // outstanding sync token waits.
+  // The High priority can be used by priveleged clients only. This priority is
+  // used for UI contexts and by the scheduler for prioritizing contexts which
+  // have outstanding sync token waits or client side waits.
   kHigh,
   // The following priorities can be used on unprivileged clients.
-  // This priority should be used as the default priority for all contexts.
+  // This priority is used as the default priority for all contexts.
   kNormal,
+  // This priority is used for worker contexts.
   kLow,
-  // This priority should be used for worker contexts.
-  kLowest,
-  kLast = kLowest
+  kLast = kLow
 };
 
 GPU_EXPORT const char* SchedulingPriorityToString(SchedulingPriority priority);

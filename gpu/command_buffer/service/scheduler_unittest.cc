@@ -99,7 +99,7 @@ TEST_F(SchedulerTest, ContinuedTasksRunFirst) {
 
 TEST_F(SchedulerTest, SequencesRunInPriorityOrder) {
   SequenceId sequence_id1 =
-      scheduler()->CreateSequence(SchedulingPriority::kLowest);
+      scheduler()->CreateSequence(SchedulingPriority::kLow);
   bool ran1 = false;
   scheduler()->ScheduleTask(Scheduler::Task(sequence_id1,
                                             GetClosure([&] { ran1 = true; }),
@@ -113,7 +113,7 @@ TEST_F(SchedulerTest, SequencesRunInPriorityOrder) {
                                             std::vector<SyncToken>()));
 
   SequenceId sequence_id3 =
-      scheduler()->CreateSequence(SchedulingPriority::kHighest);
+      scheduler()->CreateSequence(SchedulingPriority::kHigh);
   bool ran3 = false;
   scheduler()->ScheduleTask(Scheduler::Task(sequence_id3,
                                             GetClosure([&] { ran3 = true; }),
@@ -173,7 +173,7 @@ TEST_F(SchedulerTest, SequencesOfSamePriorityRunInOrder) {
 
 TEST_F(SchedulerTest, SequenceWaitsForFence) {
   SequenceId sequence_id1 =
-      scheduler()->CreateSequence(SchedulingPriority::kHighest);
+      scheduler()->CreateSequence(SchedulingPriority::kHigh);
   SequenceId sequence_id2 =
       scheduler()->CreateSequence(SchedulingPriority::kNormal);
 
@@ -261,7 +261,7 @@ TEST_F(SchedulerTest, ReleaseSequenceIsPrioritized) {
                                             std::vector<SyncToken>()));
 
   SequenceId sequence_id2 =
-      scheduler()->CreateSequence(SchedulingPriority::kLowest);
+      scheduler()->CreateSequence(SchedulingPriority::kLow);
   CommandBufferNamespace namespace_id = CommandBufferNamespace::GPU_IO;
   CommandBufferId command_buffer_id = CommandBufferId::FromUnsafeValue(1);
   scoped_refptr<SyncPointClientState> release_state =
@@ -280,7 +280,7 @@ TEST_F(SchedulerTest, ReleaseSequenceIsPrioritized) {
   bool ran3 = false;
   SyncToken sync_token(namespace_id, 0, command_buffer_id, release);
   SequenceId sequence_id3 =
-      scheduler()->CreateSequence(SchedulingPriority::kHighest);
+      scheduler()->CreateSequence(SchedulingPriority::kHigh);
   scheduler()->ScheduleTask(Scheduler::Task(
       sequence_id3, GetClosure([&] { ran3 = true; }), {sync_token}));
 
@@ -302,7 +302,7 @@ TEST_F(SchedulerTest, ReleaseSequenceIsPrioritized) {
 
 TEST_F(SchedulerTest, ReleaseSequenceShouldYield) {
   SequenceId sequence_id1 =
-      scheduler()->CreateSequence(SchedulingPriority::kLowest);
+      scheduler()->CreateSequence(SchedulingPriority::kLow);
   CommandBufferNamespace namespace_id = CommandBufferNamespace::GPU_IO;
   CommandBufferId command_buffer_id = CommandBufferId::FromUnsafeValue(1);
   scoped_refptr<SyncPointClientState> release_state =
@@ -323,7 +323,7 @@ TEST_F(SchedulerTest, ReleaseSequenceShouldYield) {
   bool ran2 = false;
   SyncToken sync_token(namespace_id, 0, command_buffer_id, release);
   SequenceId sequence_id2 =
-      scheduler()->CreateSequence(SchedulingPriority::kHighest);
+      scheduler()->CreateSequence(SchedulingPriority::kHigh);
   scheduler()->ScheduleTask(Scheduler::Task(
       sequence_id2, GetClosure([&] { ran2 = true; }), {sync_token}));
 
@@ -416,6 +416,70 @@ TEST_F(SchedulerTest, WaitOnSelfShouldNotBlockSequence) {
   EXPECT_FALSE(sync_point_manager()->IsSyncTokenReleased(sync_token));
 
   release_state->Destroy();
+}
+
+TEST_F(SchedulerTest, ClientWaitIsPrioritized) {
+  SequenceId sequence_id1 =
+      scheduler()->CreateSequence(SchedulingPriority::kNormal);
+
+  bool ran1 = false;
+  scheduler()->ScheduleTask(Scheduler::Task(sequence_id1,
+                                            GetClosure([&] { ran1 = true; }),
+                                            std::vector<SyncToken>()));
+
+  SequenceId sequence_id2 =
+      scheduler()->CreateSequence(SchedulingPriority::kLow);
+  CommandBufferId command_buffer_id = CommandBufferId::FromUnsafeValue(1);
+  bool ran2 = false;
+  scheduler()->ScheduleTask(Scheduler::Task(sequence_id2,
+                                            GetClosure([&] { ran2 = true; }),
+                                            std::vector<SyncToken>()));
+
+  bool ran3 = false;
+  SequenceId sequence_id3 =
+      scheduler()->CreateSequence(SchedulingPriority::kHigh);
+  scheduler()->ScheduleTask(Scheduler::Task(sequence_id3,
+                                            GetClosure([&] { ran3 = true; }),
+                                            std::vector<SyncToken>()));
+
+  scheduler()->RaisePriorityForClientWait(sequence_id2, command_buffer_id);
+
+  task_runner()->RunPendingTasks();
+  EXPECT_FALSE(ran1);
+  EXPECT_TRUE(ran2);
+  EXPECT_FALSE(ran3);
+
+  task_runner()->RunPendingTasks();
+  EXPECT_FALSE(ran1);
+  EXPECT_TRUE(ran3);
+
+  task_runner()->RunPendingTasks();
+  EXPECT_TRUE(ran1);
+
+  ran1 = ran2 = ran3 = false;
+  scheduler()->ScheduleTask(Scheduler::Task(sequence_id1,
+                                            GetClosure([&] { ran1 = true; }),
+                                            std::vector<SyncToken>()));
+  scheduler()->ScheduleTask(Scheduler::Task(sequence_id2,
+                                            GetClosure([&] { ran2 = true; }),
+                                            std::vector<SyncToken>()));
+  scheduler()->ScheduleTask(Scheduler::Task(sequence_id3,
+                                            GetClosure([&] { ran3 = true; }),
+                                            std::vector<SyncToken>()));
+
+  scheduler()->ResetPriorityForClientWait(sequence_id2, command_buffer_id);
+
+  task_runner()->RunPendingTasks();
+  EXPECT_FALSE(ran1);
+  EXPECT_FALSE(ran2);
+  EXPECT_TRUE(ran3);
+
+  task_runner()->RunPendingTasks();
+  EXPECT_TRUE(ran1);
+  EXPECT_FALSE(ran2);
+
+  task_runner()->RunPendingTasks();
+  EXPECT_TRUE(ran2);
 }
 
 }  // namespace

@@ -154,7 +154,7 @@ TEST_F(GpuChannelTest, HighPriorityStreamsDisallowed) {
   init_params.surface_handle = kNullSurfaceHandle;
   init_params.share_group_id = MSG_ROUTING_NONE;
   init_params.stream_id = kStreamId;
-  init_params.stream_priority = SchedulingPriority::kHighest;
+  init_params.stream_priority = SchedulingPriority::kHigh;
   init_params.attribs = gles2::ContextCreationAttribHelper();
   init_params.active_url = GURL();
   bool result = false;
@@ -186,7 +186,7 @@ TEST_F(GpuChannelTest, HighPriorityStreamsAllowed) {
   init_params.surface_handle = kNullSurfaceHandle;
   init_params.share_group_id = MSG_ROUTING_NONE;
   init_params.stream_id = 1;
-  init_params.stream_priority = SchedulingPriority::kHighest;
+  init_params.stream_priority = SchedulingPriority::kHigh;
   init_params.attribs = gles2::ContextCreationAttribHelper();
   init_params.active_url = GURL();
   bool result = false;

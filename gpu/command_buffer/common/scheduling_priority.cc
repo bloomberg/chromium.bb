@@ -10,16 +10,12 @@ namespace gpu {
 
 const char* SchedulingPriorityToString(SchedulingPriority priority) {
   switch (priority) {
-    case SchedulingPriority::kHighest:
-      return "Highest";
     case SchedulingPriority::kHigh:
       return "High";
     case SchedulingPriority::kNormal:
       return "Normal";
     case SchedulingPriority::kLow:
       return "Low";
-    case SchedulingPriority::kLowest:
-      return "Lowest";
   }
   NOTREACHED();
   return "";

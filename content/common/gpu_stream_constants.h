@@ -17,9 +17,9 @@ enum {
 const gpu::SchedulingPriority kGpuStreamPriorityDefault =
     gpu::SchedulingPriority::kNormal;
 const gpu::SchedulingPriority kGpuStreamPriorityUI =
-    gpu::SchedulingPriority::kHighest;
+    gpu::SchedulingPriority::kHigh;
 const gpu::SchedulingPriority kGpuStreamPriorityWorker =
-    gpu::SchedulingPriority::kLowest;
+    gpu::SchedulingPriority::kLow;
 
 }  // namespace content
 
