@@ -900,6 +900,12 @@ message TPMFirmwareUpdateSettingsProto {
   optional bool allow_user_initiated_powerwash = 1;
 }
 
+// Settings to control the behavior of user avatar functionality.
+message UserAvatarSettingsProto {
+  // Whether the user can record avatar videos.
+  optional bool allow_videos = 1;
+}
+
 message ChromeDeviceSettingsProto {
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
   optional UserWhitelistProto user_whitelist = 2;
@@ -972,4 +978,5 @@ message ChromeDeviceSettingsProto {
   optional DeviceNativePrintersWhitelistProto native_device_printers_whitelist =
       58;
   optional TPMFirmwareUpdateSettingsProto tpm_firmware_update_settings = 59;
+  optional UserAvatarSettingsProto user_avatar_settings = 60;
 }

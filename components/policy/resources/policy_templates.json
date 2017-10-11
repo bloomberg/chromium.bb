@@ -143,7 +143,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 392
+#   For your editing convenience: highest ID currently used: 393
 #   And don't forget to also update the EnterprisePolicies enum of
 #   histograms.xml (run 'python tools/metrics/histograms/update_policies.py').
 #
@@ -9793,7 +9793,37 @@
 
       If the policy is not set, TPM firmware update functionality will not be available.''',
     },
+    {
+      'name': 'DeviceUserAvatarSettings',
+      'supported_on': ['chrome_os:63-'],
+      'device_only': True,
+      'type': 'dict',
+      'schema': {
+        'type': 'object',
+        'properties': {
+          'allow-videos': {
+            'type': 'boolean',
+          },
+        },
+      },
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': {
+        'allow-videos': True
+      },
+      'id': 393,
+      'caption': '''Configure user avatar behavior''',
+      'tags': [],
+      'desc': '''Configures behavior of user avatars that represent the users on the login screen.
 
+      Individual settings can be specified in JSON properties:
+
+      <ph name="USER_AVATAR_SETTINGS_ALLOW_VIDEOS">allow-videos</ph>: If set to <ph name="USER_AVATAR_SETTINGS_ALLOW_VIDEOS_TRUE">true</ph>, users will be allowed to use videos for avatar images.
+
+      If this policy is not set, videos for avatar image is allowed.''',
+    },
     {
       'name': 'QuickUnlock',
       'type': 'group',

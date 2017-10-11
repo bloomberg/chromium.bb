@@ -280,4 +280,7 @@ const char kDevicePrintersWhitelist[] = "cros.device.printers_whitelist";
 // functionality.
 const char kTPMFirmwareUpdateSettings[] = "cros.tpm_firmware_update_settings";
 
+// Boolean pref indicating whether videos for user avatar are allowed.
+const char kAllowUserAvatarVideos[] = "cros.allow_user_avatar_videos";
+
 }  // namespace chromeos

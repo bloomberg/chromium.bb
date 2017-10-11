@@ -36,6 +36,15 @@ Polymer({
       value: false,
     },
 
+    /**
+     * True if video mode is allowed.
+     * @private {boolean}
+     */
+    allowVideoMode: {
+      type: Boolean,
+      value: true,
+    },
+
     /** Specifies the selected image index. */
     selectedImageIndex: Number,
 

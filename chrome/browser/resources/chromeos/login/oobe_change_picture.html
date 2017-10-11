@@ -45,6 +45,7 @@
     <div id="container">
       <cr-picture-pane id="picturePane"
           camera-present="[[cameraPresent]]",
+          allow-video-mode="[[allowVideoMode]]",
           image-src="[[getImageSrc_(selectedItem_)]]"
           image-type="[[getImageType_(selectedItem_)]]"
           discard-image-label="[[i18nDynamic(locale, 'discardPhoto')]]"

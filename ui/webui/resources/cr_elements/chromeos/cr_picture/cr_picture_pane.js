@@ -15,6 +15,9 @@ Polymer({
     /** Whether the camera is present / available */
     cameraPresent: Boolean,
 
+    /** Whether video mode is allowed */
+    allowVideoMode: Boolean,
+
     /** Image source to show when imageType != CAMERA. */
     imageSrc: String,
 
