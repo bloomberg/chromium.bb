@@ -2441,7 +2441,7 @@ void ExtensionService::MaybeSpinUpLazyBackgroundPage(
   extensions::LazyBackgroundTaskQueue* queue =
       extensions::LazyBackgroundTaskQueue::Get(profile_);
   queue->AddPendingTask(profile_, extension->id(),
-                        base::Bind(&DoNothingWithExtensionHost));
+                        base::BindOnce(&DoNothingWithExtensionHost));
 }
 
 void ExtensionService::UninstallMigratedExtensions() {

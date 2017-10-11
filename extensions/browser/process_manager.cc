@@ -424,8 +424,9 @@ bool ProcessManager::WakeEventPage(const std::string& extension_id,
   }
   LazyBackgroundTaskQueue* queue =
       LazyBackgroundTaskQueue::Get(browser_context_);
-  queue->AddPendingTask(browser_context_, extension_id,
-                        base::Bind(&PropagateExtensionWakeResult, callback));
+  queue->AddPendingTask(
+      browser_context_, extension_id,
+      base::BindOnce(&PropagateExtensionWakeResult, callback));
   return true;
 }
 

@@ -35,7 +35,7 @@ class ServiceWorkerTaskQueue : public KeyedService,
                          const Extension* extension) override;
   void AddPendingTaskToDispatchEvent(
       LazyContextId* context_id,
-      const LazyContextTaskQueue::PendingTask& task) override;
+      LazyContextTaskQueue::PendingTask task) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerTaskQueue);

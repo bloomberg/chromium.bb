@@ -131,8 +131,8 @@ void DispatchOnStartupEventImpl(BrowserContext* browser_context,
           ->ShouldEnqueueTask(browser_context, extension)) {
     LazyBackgroundTaskQueue::Get(browser_context)
         ->AddPendingTask(browser_context, extension_id,
-                         base::Bind(&DispatchOnStartupEventImpl,
-                                    browser_context, extension_id, false));
+                         base::BindOnce(&DispatchOnStartupEventImpl,
+                                        browser_context, extension_id, false));
     return;
   }
 
@@ -593,7 +593,8 @@ ExtensionFunction::ResponseAction RuntimeGetBackgroundPageFunction::Run() {
     LazyBackgroundTaskQueue::Get(browser_context())
         ->AddPendingTask(
             browser_context(), extension_id(),
-            base::Bind(&RuntimeGetBackgroundPageFunction::OnPageLoaded, this));
+            base::BindOnce(&RuntimeGetBackgroundPageFunction::OnPageLoaded,
+                           this));
   } else if (host) {
     OnPageLoaded(host);
   } else {
