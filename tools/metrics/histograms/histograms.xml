@@ -7840,6 +7840,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="CaptivePortal.DetectionResultSincePortal"
+    enum="BooleanPresent">
+  <owner>warx@chromium.org</owner>
+  <summary>
+    Within one minute of the default network reporting a portal network, if we
+    see an offline detection result, it is likely the client got blacklisted.
+    Record the boolean rate that Chrome observes offline vs non-offline
+    detection results. See go/bad-portal for client blacklisting problem.
+  </summary>
+</histogram>
+
 <histogram name="CaptivePortal.DetectResult" enum="CaptivePortalDetectResult">
   <owner>meacer@chromium.org</owner>
   <summary>Records the result of a captive portal probe.</summary>
