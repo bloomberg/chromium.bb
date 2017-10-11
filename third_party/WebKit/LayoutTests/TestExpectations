@@ -3678,8 +3678,6 @@ crbug.com/763809 [ Win7 Debug ] fast/multicol/nested-very-tall-inside-short-cras
 crbug.com/763975 [ Linux Mac Debug ] webaudio/internals/cycle-connection-gc.html [ Pass Failure ]
 
 # Sheriff failures 2017-09-12
-# Temporarily disabling this for JPEG change. Restore after fixes for 763605 are rebaselined.
-# crbug.com/764179 [ Mac10.11 ] virtual/gpu-rasterization/images/color-profile-background-image-space.html [ Pass Failure ]
 crbug.com/764180 [ Android ] virtual/display_list_2d_canvas/fast/canvas/script-inside-canvas-fallback.html [ Pass Crash ]
 
 # Sheriff failure 2017-09-15
@@ -3687,11 +3685,6 @@ crbug.com/765685 [ Android ] external/wpt/mediacapture-streams/MediaStream-idl.h
 
 # Sheriff failure 2017-09-18
 crbug.com/766404 [ Mac ] plugins/keyboard-events.html [ Pass Failure ]
-
-# JPEG decoding change in Skia
-crbug.com/763605 virtual/gpu-rasterization/images/color-profile-background-image-space.html [ NeedsManualRebaseline ]
-crbug.com/763605 virtual/gpu-rasterization/images/color-profile-svg-fill-text.html [ NeedsManualRebaseline ]
-crbug.com/763605 virtual/gpu-rasterization/images/color-profile-svg.html [ NeedsManualRebaseline ]
 
 # controls-video-keynav.html issues
 crbug.com/749965 [ Mac ] media/controls/controls-video-keynav.html [ Failure Pass ]
