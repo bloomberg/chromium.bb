@@ -7,8 +7,11 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
+#include "base/threading/platform_thread.h"
 #include "base/time/time.h"
+#include "chrome/common/stack_sampling_configuration.h"
 #include "components/metrics/child_call_stack_profile_collector.h"
 #include "content/public/child/child_thread.h"
 #include "content/public/common/content_switches.h"
@@ -23,7 +26,28 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 #endif
 
-ChromeContentGpuClient::ChromeContentGpuClient() {}
+namespace {
+
+base::LazyInstance<metrics::ChildCallStackProfileCollector>::Leaky
+    g_call_stack_profile_collector = LAZY_INSTANCE_INITIALIZER;
+
+}  // namespace
+
+ChromeContentGpuClient::ChromeContentGpuClient()
+    : stack_sampling_profiler_(
+          base::PlatformThread::CurrentId(),
+          StackSamplingConfiguration::Get()
+              ->GetSamplingParamsForCurrentProcess(),
+          g_call_stack_profile_collector.Get().GetProfilerCallback(
+              metrics::CallStackProfileParams(
+                  metrics::CallStackProfileParams::GPU_PROCESS,
+                  metrics::CallStackProfileParams::GPU_MAIN_THREAD,
+                  metrics::CallStackProfileParams::PROCESS_STARTUP,
+                  metrics::CallStackProfileParams::MAY_SHUFFLE))) {
+  if (StackSamplingConfiguration::Get()->IsProfilerEnabledForCurrentProcess())
+    stack_sampling_profiler_.Start();
+}
+
 ChromeContentGpuClient::~ChromeContentGpuClient() {}
 
 void ChromeContentGpuClient::InitializeRegistry(
@@ -46,11 +70,10 @@ void ChromeContentGpuClient::GpuServiceInitialized(
   gpu_preferences_ = gpu_preferences;
 #endif
 
-  // Note: The call stack profile collection is initiated in ChromeMain.
   metrics::mojom::CallStackProfileCollectorPtr browser_interface;
   content::ChildThread::Get()->GetConnector()->BindInterface(
       content::mojom::kBrowserServiceName, &browser_interface);
-  metrics::ChildCallStackProfileCollector::Get()->SetParentProfileCollector(
+  g_call_stack_profile_collector.Get().SetParentProfileCollector(
       std::move(browser_interface));
 }
 
