@@ -118,6 +118,9 @@ class OfflinePageStorageManager {
                          const ArchiveManager::StorageStats& stats,
                          std::vector<int64_t>* page_ids_to_clear);
 
+  // Reports how much storage each namespace of page is using.
+  void ReportStorageUsageUMA(const MultipleOfflinePageItemResult& pages);
+
   // Determines if manager should clear pages.
   ClearMode ShouldClearPages(const ArchiveManager::StorageStats& storage_stats);
 
@@ -145,6 +148,9 @@ class OfflinePageStorageManager {
 
   // Clock for getting time.
   std::unique_ptr<base::Clock> clock_;
+
+  // We only report usage once per launch, keep track here.
+  bool reported_usage_this_launch_;
 
   base::WeakPtrFactory<OfflinePageStorageManager> weak_ptr_factory_;
 
