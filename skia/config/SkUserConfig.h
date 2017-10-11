@@ -200,8 +200,8 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 
 // Remove this after we fixed all the issues related to the new SDF algorithm
 // (https://codereview.chromium.org/1643143002)
-#ifndef    SK_USE_LEGACY_DISTANCE_FIELDS
-#   define SK_USE_LEGACY_DISTANCE_FIELDS
+#ifndef SK_USE_LEGACY_DISTANCE_FIELDS
+#define SK_USE_LEGACY_DISTANCE_FIELDS
 #endif
 
 #ifndef SK_DISABLE_DEFERRED_PROXIES
@@ -230,10 +230,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 
 #ifndef SK_COLOR_SPACE_XFORM_LEGACY_PIPELINE
 #define SK_COLOR_SPACE_XFORM_LEGACY_PIPELINE
-#endif
-
-#ifndef SK_SUPPORT_LEGACY_COMPUTEBYTESIZE_RET_0
-#define SK_SUPPORT_LEGACY_COMPUTEBYTESIZE_RET_0
 #endif
 
 ///////////////////////// Imported from BUILD.gn and skia_common.gypi
