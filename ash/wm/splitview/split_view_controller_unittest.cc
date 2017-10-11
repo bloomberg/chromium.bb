@@ -593,4 +593,17 @@ TEST_F(SplitViewControllerTest, RotationTest) {
   EXPECT_EQ(bounds_window1.height(), bounds_window2.height());
 }
 
+// Test that if the split view mode is active when exiting tablet mode, we
+// should also end split view mode.
+TEST_F(SplitViewControllerTest, ExitTabletModeEndSplitView) {
+  const gfx::Rect bounds(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
+  EXPECT_TRUE(split_view_controller()->IsSplitViewModeActive());
+
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
+}
+
 }  // namespace ash

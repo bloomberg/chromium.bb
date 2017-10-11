@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/shell_observer.h"
+#include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "ash/wm/window_state_observer.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -34,7 +35,8 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
                                        public ash::wm::WindowStateObserver,
                                        public ::wm::ActivationChangeObserver,
                                        public ShellObserver,
-                                       public display::DisplayObserver {
+                                       public display::DisplayObserver,
+                                       public TabletModeObserver {
  public:
   enum State { NO_SNAP, LEFT_SNAPPED, RIGHT_SNAPPED, BOTH_SNAPPED };
 
@@ -125,6 +127,9 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   // display::DisplayObserver:
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t metrics) override;
+
+  // TabletModeObserver:
+  void OnTabletModeEnding() override;
 
   aura::Window* left_window() { return left_window_; }
   aura::Window* right_window() { return right_window_; }
