@@ -855,7 +855,10 @@ class GitWrapper(SCMWrapper):
       depth = None
     mirror.populate(verbose=options.verbose,
                     bootstrap=not getattr(options, 'no_bootstrap', False),
-                    depth=depth)
+                    depth=depth,
+                    ignore_lock=getattr(options, 'ignore_locks', False),
+                    lock_timeout=getattr(options, 'lock_timeout', 0))
+    mirror.unlock()
 
   def _Clone(self, revision, url, options):
     """Clone a git repository from the given URL.

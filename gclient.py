@@ -1308,6 +1308,10 @@ it or fix the checkout.
     if cache_dir:
       cache_dir = os.path.join(self.root_dir, cache_dir)
       cache_dir = os.path.abspath(cache_dir)
+      # If running on a bot, force break any stale git cache locks.
+      if os.path.exists(cache_dir) and os.environ.get('CHROME_HEADLESS'):
+        subprocess2.check_call(['git', 'cache', 'unlock', '--cache-dir',
+                                cache_dir, '--force', '--all'])
     gclient_scm.GitWrapper.cache_dir = cache_dir
     git_cache.Mirror.SetCachePath(cache_dir)
 
@@ -2350,11 +2354,16 @@ def CMDsync(parser, args):
   parser.add_option('--no_bootstrap', '--no-bootstrap',
                     action='store_true',
                     help='Don\'t bootstrap from Google Storage.')
+  parser.add_option('--ignore_locks', action='store_true',
+                    help='GIT ONLY - Ignore cache locks.')
   parser.add_option('--break_repo_locks', action='store_true',
                     help='GIT ONLY - Forcibly remove repo locks (e.g. '
                       'index.lock). This should only be used if you know for '
                       'certain that this invocation of gclient is the only '
                       'thing operating on the git repos (e.g. on a bot).')
+  parser.add_option('--lock_timeout', type='int', default=5000,
+                    help='GIT ONLY - Deadline (in seconds) to wait for git '
+                         'cache lock to become available. Default is %default.')
   # TODO(agable): Remove these when the oldest CrOS release milestone is M56.
   parser.add_option('-t', '--transitive', action='store_true',
                     help='DEPRECATED: This is a no-op.')

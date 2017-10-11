@@ -331,7 +331,7 @@ def gclient_sync(
   os.close(fd)
 
   args = ['sync', '--verbose', '--reset', '--force',
-         '--output-json', gclient_output_file,
+         '--ignore_locks', '--output-json', gclient_output_file,
          '--nohooks', '--noprehooks', '--delete_unversioned_trees']
   if with_branch_heads:
     args += ['--with_branch_heads']
@@ -470,9 +470,36 @@ def is_broken_repo_dir(repo_dir):
   return not path.exists(os.path.join(repo_dir, '.git', 'config'))
 
 
+def _maybe_break_locks(checkout_path):
+  """This removes all .lock files from this repo's .git directory.
+
+  In particular, this will cleanup index.lock files, as well as ref lock
+  files.
+  """
+  git_dir = os.path.join(checkout_path, '.git')
+  for dirpath, _, filenames in os.walk(git_dir):
+    for filename in filenames:
+      if filename.endswith('.lock'):
+        to_break = os.path.join(dirpath, filename)
+        print 'breaking lock: %s' % to_break
+        try:
+          os.remove(to_break)
+        except OSError as ex:
+          print 'FAILED to break lock: %s: %s' % (to_break, ex)
+          raise
+
+
 def git_checkout(solutions, revisions, shallow, refs, git_cache_dir,
                  cleanup_dir):
   build_dir = os.getcwd()
+  # Before we do anything, break all git_cache locks.
+  if path.isdir(git_cache_dir):
+    git('cache', 'unlock', '-vv', '--force', '--all',
+        '--cache-dir', git_cache_dir)
+    for item in os.listdir(git_cache_dir):
+      filename = os.path.join(git_cache_dir, item)
+      if item.endswith('.lock'):
+        raise Exception('%s exists after cache unlock' % filename)
   first_solution = True
   for sln in solutions:
     # Just in case we're hitting a different git server than the one from
@@ -489,7 +516,7 @@ def git_checkout(solutions, revisions, shallow, refs, git_cache_dir,
         shallow = False
       sln_dir = path.join(build_dir, name)
       s = ['--shallow'] if shallow else []
-      populate_cmd = (['cache', 'populate', '-v',
+      populate_cmd = (['cache', 'populate', '--ignore_locks', '-v',
                        '--cache-dir', git_cache_dir] + s + [url])
       for ref in refs:
         populate_cmd.extend(['--ref', ref])
@@ -516,6 +543,18 @@ def git_checkout(solutions, revisions, shallow, refs, git_cache_dir,
         for ref in refs:
           refspec = '%s:%s' % (ref, ref.lstrip('+'))
           git('fetch', 'origin', refspec, cwd=sln_dir)
+
+        # Windows sometimes has trouble deleting files.
+        # This can make git commands that rely on locks fail.
+        # Try a few times in case Windows has trouble again (and again).
+        if sys.platform.startswith('win'):
+          tries = 3
+          while tries:
+            try:
+              _maybe_break_locks(sln_dir)
+              break
+            except Exception:
+              tries -= 1
 
         revision = get_target_revision(name, url, revisions) or 'HEAD'
         force_revision(sln_dir, revision)

@@ -231,6 +231,20 @@ class BotUpdateUnittests(unittest.TestCase):
         gclient_sync_cmd = args
     self.assertTrue('--break_repo_locks' in gclient_sync_cmd)
 
+  def testGitCheckoutBreaksLocks(self):
+    self.overrideSetupForWindows()
+    path = '/b/build/slave/foo/build/.git'
+    lockfile = 'index.lock'
+    removed = []
+    old_os_walk = os.walk
+    old_os_remove = os.remove
+    setattr(os, 'walk', lambda _: [(path, None, [lockfile])])
+    setattr(os, 'remove', removed.append)
+    bot_update.ensure_checkout(**self.params)
+    setattr(os, 'walk', old_os_walk)
+    setattr(os, 'remove', old_os_remove)
+    self.assertTrue(os.path.join(path, lockfile) in removed)
+
 
 if __name__ == '__main__':
   unittest.main()
