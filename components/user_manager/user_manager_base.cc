@@ -699,6 +699,12 @@ void UserManagerBase::NotifyUserProfileImageUpdated(
     observer.OnUserProfileImageUpdated(user, profile_image);
 }
 
+void UserManagerBase::NotifyUsersSignInConstraintsChanged() {
+  DCHECK(!task_runner_ || task_runner_->RunsTasksInCurrentSequence());
+  for (auto& observer : observer_list_)
+    observer.OnUsersSignInConstraintsChanged();
+}
+
 bool UserManagerBase::CanUserBeRemoved(const User* user) const {
   // Only regular and supervised users are allowed to be manually removed.
   if (!user ||

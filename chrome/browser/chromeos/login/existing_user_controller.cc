@@ -354,6 +354,8 @@ void ExistingUserController::UpdateLoginDisplay(
 
   cros_settings_->GetBoolean(kAccountsPrefShowUserNamesOnSignIn,
                              &show_users_on_signin);
+  user_manager::UserManager* const user_manager =
+      user_manager::UserManager::Get();
   for (auto* user : users) {
     // Skip kiosk apps for login screen user list. Kiosk apps as pods (aka new
     // kiosk UI) is currently disabled and it gets the apps directly from
@@ -362,15 +364,12 @@ void ExistingUserController::UpdateLoginDisplay(
         user->GetType() == user_manager::USER_TYPE_ARC_KIOSK_APP) {
       continue;
     }
-
     // TODO(xiyuan): Clean user profile whose email is not in whitelist.
     const bool meets_supervised_requirements =
         user->GetType() != user_manager::USER_TYPE_SUPERVISED ||
-        user_manager::UserManager::Get()->AreSupervisedUsersAllowed();
+        user_manager->AreSupervisedUsersAllowed();
     const bool meets_whitelist_requirements =
-        CrosSettings::IsWhitelisted(user->GetAccountId().GetUserEmail(),
-                                    nullptr) ||
-        !user->HasGaiaAccount();
+        !user->HasGaiaAccount() || user_manager->IsGaiaUserAllowed(*user);
 
     // Public session accounts are always shown on login screen.
     const bool meets_show_users_requirements =
@@ -384,8 +383,7 @@ void ExistingUserController::UpdateLoginDisplay(
 
   // If no user pods are visible, fallback to single new user pod which will
   // have guest session link.
-  bool show_guest;
-  cros_settings_->GetBoolean(kAccountsPrefAllowGuest, &show_guest);
+  bool show_guest = user_manager->IsGuestSessionAllowed();
   show_users_on_signin |= !filtered_users.empty();
   show_guest &= !filtered_users.empty();
   bool allow_new_user = true;
@@ -1202,8 +1200,7 @@ void ExistingUserController::LoginAsGuest() {
   PerformPreLoginActions(UserContext(user_manager::USER_TYPE_GUEST,
                                      user_manager::GuestAccountId()));
 
-  bool allow_guest;
-  cros_settings_->GetBoolean(kAccountsPrefAllowGuest, &allow_guest);
+  bool allow_guest = user_manager::UserManager::Get()->IsGuestSessionAllowed();
   if (!allow_guest) {
     // Disallowed. The UI should normally not show the guest session button.
     LOG(ERROR) << "Guest login attempt when guest mode is disallowed.";

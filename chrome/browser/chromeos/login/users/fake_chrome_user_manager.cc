@@ -569,6 +569,37 @@ bool FakeChromeUserManager::AreSupervisedUsersAllowed() const {
   return true;
 }
 
+bool FakeChromeUserManager::IsGuestSessionAllowed() const {
+  bool is_guest_allowed = false;
+  CrosSettings::Get()->GetBoolean(kAccountsPrefAllowGuest, &is_guest_allowed);
+  return is_guest_allowed;
+}
+
+bool FakeChromeUserManager::IsGaiaUserAllowed(
+    const user_manager::User& user) const {
+  DCHECK(user.HasGaiaAccount());
+  return CrosSettings::IsWhitelisted(user.GetAccountId().GetUserEmail(),
+                                     nullptr);
+}
+
+bool FakeChromeUserManager::IsUserAllowed(
+    const user_manager::User& user) const {
+  DCHECK(user.GetType() == user_manager::USER_TYPE_REGULAR ||
+         user.GetType() == user_manager::USER_TYPE_GUEST ||
+         user.GetType() == user_manager::USER_TYPE_SUPERVISED ||
+         user.GetType() == user_manager::USER_TYPE_CHILD);
+
+  if (user.GetType() == user_manager::USER_TYPE_GUEST &&
+      !IsGuestSessionAllowed())
+    return false;
+  if (user.GetType() == user_manager::USER_TYPE_SUPERVISED &&
+      !AreSupervisedUsersAllowed())
+    return false;
+  if (user.HasGaiaAccount() && !IsGaiaUserAllowed(user))
+    return false;
+  return true;
+}
+
 void FakeChromeUserManager::CreateLocalState() {
   local_state_ = base::MakeUnique<TestingPrefServiceSimple>();
   user_manager::known_user::RegisterPrefs(local_state_->registry());

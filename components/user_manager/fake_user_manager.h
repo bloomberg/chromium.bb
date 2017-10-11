@@ -98,6 +98,9 @@ class USER_MANAGER_EXPORT FakeUserManager : public UserManagerBase {
   void RemoveSessionStateObserver(UserSessionStateObserver* obs) override {}
   void NotifyLocalStateChanged() override {}
   bool AreSupervisedUsersAllowed() const override;
+  bool IsGuestSessionAllowed() const override;
+  bool IsGaiaUserAllowed(const user_manager::User& user) const override;
+  bool IsUserAllowed(const user_manager::User& user) const override;
   void UpdateLoginState(const user_manager::User* active_user,
                         const user_manager::User* primary_user,
                         bool is_current_user_owner) const override;

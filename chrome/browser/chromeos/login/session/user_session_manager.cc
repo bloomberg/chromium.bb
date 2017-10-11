@@ -405,6 +405,7 @@ UserSessionManager::UserSessionManager()
       weak_factory_(this) {
   net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
   user_manager::UserManager::Get()->AddSessionStateObserver(this);
+  user_manager::UserManager::Get()->AddObserver(this);
 }
 
 UserSessionManager::~UserSessionManager() {
@@ -412,8 +413,10 @@ UserSessionManager::~UserSessionManager() {
   // still exists.
   // TODO(nkostylev): fix order of destruction of UserManager
   // / UserSessionManager objects.
-  if (user_manager::UserManager::IsInitialized())
+  if (user_manager::UserManager::IsInitialized()) {
     user_manager::UserManager::Get()->RemoveSessionStateObserver(this);
+    user_manager::UserManager::Get()->RemoveObserver(this);
+  }
   net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
 }
 
@@ -939,6 +942,25 @@ void UserSessionManager::OnProfilePrepared(Profile* profile,
 
   // Restore other user sessions if any.
   RestorePendingUserSessions();
+}
+
+void UserSessionManager::OnUsersSignInConstraintsChanged() {
+  const user_manager::UserManager* user_manager =
+      user_manager::UserManager::Get();
+  const user_manager::UserList& logged_in_users =
+      user_manager->GetLoggedInUsers();
+  for (auto* user : logged_in_users) {
+    if (user->GetType() != user_manager::USER_TYPE_REGULAR &&
+        user->GetType() != user_manager::USER_TYPE_GUEST &&
+        user->GetType() != user_manager::USER_TYPE_SUPERVISED &&
+        user->GetType() != user_manager::USER_TYPE_CHILD) {
+      continue;
+    }
+    if (!user_manager->IsUserAllowed(*user)) {
+      LOG(ERROR) << "The current user is not allowed, terminating the session.";
+      chrome::AttemptUserExit();
+    }
+  }
 }
 
 void UserSessionManager::ChildAccountStatusReceivedCallback(Profile* profile) {

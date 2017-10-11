@@ -54,6 +54,10 @@ class USER_MANAGER_EXPORT UserManager {
     // Called when the child status of the given user has changed.
     virtual void OnChildStatusChanged(const User& user);
 
+    // Called when any of the device cros settings which are responsible for
+    // user sign in are changed.
+    virtual void OnUsersSignInConstraintsChanged();
+
    protected:
     virtual ~Observer();
   };
@@ -325,6 +329,7 @@ class USER_MANAGER_EXPORT UserManager {
   virtual void NotifyUserProfileImageUpdated(
       const User& user,
       const gfx::ImageSkia& profile_image) = 0;
+  virtual void NotifyUsersSignInConstraintsChanged() = 0;
 
   // Changes the child status and notifies observers.
   virtual void ChangeUserChildStatus(User* user, bool is_child) = 0;
@@ -335,6 +340,19 @@ class USER_MANAGER_EXPORT UserManager {
 
   // Returns true if supervised users allowed.
   virtual bool AreSupervisedUsersAllowed() const = 0;
+
+  // Returns true if guest user is allowed.
+  virtual bool IsGuestSessionAllowed() const = 0;
+
+  // Returns true if the |user|, which has a GAIA account is allowed according
+  // to device settings and policies.
+  // Accept only users who has gaia account.
+  virtual bool IsGaiaUserAllowed(const User& user) const = 0;
+
+  // Returns true if |user| is allowed depending on device policies.
+  // Accepted user types: USER_TYPE_REGULAR, USER_TYPE_GUEST,
+  // USER_TYPE_SUPERVISED, USER_TYPE_CHILD.
+  virtual bool IsUserAllowed(const User& user) const = 0;
 
   // Returns "Local State" PrefService instance.
   virtual PrefService* GetLocalState() const = 0;
