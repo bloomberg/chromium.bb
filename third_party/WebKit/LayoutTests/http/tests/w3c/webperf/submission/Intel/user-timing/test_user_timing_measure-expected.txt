@@ -1,13 +1,13 @@
 This is a testharness.js-based test.
-Harness Error. harness_status.status = 1 , harness_status.message = 9 duplicate test names: "entryType should be "measure".", "startTime should be a number.", "duration should be a number.", "Entries in entrylist should be in order.", "Entry "aaa" should be one that we have set.", "There should be 1 entries.", "Entry "" should be one that we have set.", "Entry "2" should be one that we have set.", "There should be 2 entries."
+Harness Error. harness_status.status = 1 , harness_status.message = 9 duplicate test names: "entryType should be "measure".", "startTime should be a number.", "duration should be a number.", "Entries in entrylist should be in order.", "Entry "" should be one that we have set.", "There should be 1 entries.", "Entry "aaa" should be one that we have set.", "Entry "2" should be one that we have set.", "There should be 2 entries."
 PASS There should be 0 entries returned.
 PASS There should be 3 entries.
 PASS Entries in entrylist should be in order.
-PASS Entry "aaa" should be one that we have set.
+PASS Entry "" should be one that we have set.
 PASS entryType should be "measure".
 PASS startTime should be a number.
 PASS duration should be a number.
-PASS Entry "" should be one that we have set.
+PASS Entry "aaa" should be one that we have set.
 PASS entryType should be "measure".
 PASS startTime should be a number.
 PASS duration should be a number.
@@ -17,13 +17,13 @@ PASS startTime should be a number.
 PASS duration should be a number.
 PASS There should be 1 entries.
 PASS Entries in entrylist should be in order.
-PASS Entry "aaa" should be one that we have set.
+PASS Entry "" should be one that we have set.
 PASS entryType should be "measure".
 PASS startTime should be a number.
 PASS duration should be a number.
 PASS There should be 1 entries.
 PASS Entries in entrylist should be in order.
-PASS Entry "" should be one that we have set.
+PASS Entry "aaa" should be one that we have set.
 PASS entryType should be "measure".
 PASS startTime should be a number.
 PASS duration should be a number.
@@ -35,7 +35,7 @@ PASS startTime should be a number.
 PASS duration should be a number.
 PASS There should be 6 entries.
 PASS Entries in entrylist should be in order.
-PASS Entry "aaa" should be one that we have set.
+PASS Entry "" should be one that we have set.
 PASS entryType should be "measure".
 PASS startTime should be a number.
 PASS duration should be a number.
@@ -47,7 +47,7 @@ PASS Entry "" should be one that we have set.
 PASS entryType should be "measure".
 PASS startTime should be a number.
 PASS duration should be a number.
-PASS Entry "" should be one that we have set.
+PASS Entry "aaa" should be one that we have set.
 PASS entryType should be "measure".
 PASS startTime should be a number.
 PASS duration should be a number.
@@ -61,26 +61,6 @@ PASS startTime should be a number.
 PASS duration should be a number.
 PASS There should be 2 entries.
 PASS Entries in entrylist should be in order.
-PASS Entry "aaa" should be one that we have set.
-PASS entryType should be "measure".
-PASS startTime should be a number.
-PASS duration should be a number.
-PASS Entry "aaa" should be one that we have set.
-PASS entryType should be "measure".
-PASS startTime should be a number.
-PASS duration should be a number.
-PASS There should be 2 entries.
-PASS Entries in entrylist should be in order.
-PASS Entry "aaa" should be one that we have set.
-PASS entryType should be "measure".
-PASS startTime should be a number.
-PASS duration should be a number.
-PASS Entry "aaa" should be one that we have set.
-PASS entryType should be "measure".
-PASS startTime should be a number.
-PASS duration should be a number.
-PASS There should be 2 entries.
-PASS Entries in entrylist should be in order.
 PASS Entry "" should be one that we have set.
 PASS entryType should be "measure".
 PASS startTime should be a number.
@@ -91,11 +71,31 @@ PASS startTime should be a number.
 PASS duration should be a number.
 PASS There should be 2 entries.
 PASS Entries in entrylist should be in order.
+PASS Entry "aaa" should be one that we have set.
+PASS entryType should be "measure".
+PASS startTime should be a number.
+PASS duration should be a number.
+PASS Entry "aaa" should be one that we have set.
+PASS entryType should be "measure".
+PASS startTime should be a number.
+PASS duration should be a number.
+PASS There should be 2 entries.
+PASS Entries in entrylist should be in order.
 PASS Entry "" should be one that we have set.
 PASS entryType should be "measure".
 PASS startTime should be a number.
 PASS duration should be a number.
 PASS Entry "" should be one that we have set.
+PASS entryType should be "measure".
+PASS startTime should be a number.
+PASS duration should be a number.
+PASS There should be 2 entries.
+PASS Entries in entrylist should be in order.
+PASS Entry "aaa" should be one that we have set.
+PASS entryType should be "measure".
+PASS startTime should be a number.
+PASS duration should be a number.
+PASS Entry "aaa" should be one that we have set.
 PASS entryType should be "measure".
 PASS startTime should be a number.
 PASS duration should be a number.

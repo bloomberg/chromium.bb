@@ -89,6 +89,8 @@ class CORE_EXPORT PerformanceEntry
 
   static bool StartTimeCompareLessThan(PerformanceEntry* a,
                                        PerformanceEntry* b) {
+    if (a->startTime() == b->startTime())
+      return a->index_ < b->index_;
     return a->startTime() < b->startTime();
   }
 
@@ -109,6 +111,7 @@ class CORE_EXPORT PerformanceEntry
   const double start_time_;
   const double duration_;
   const PerformanceEntryType entry_type_enum_;
+  size_t index_;
 };
 
 }  // namespace blink
