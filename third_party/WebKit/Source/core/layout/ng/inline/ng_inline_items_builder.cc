@@ -464,28 +464,35 @@ template <typename OffsetMappingBuilder>
 void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::EnterBlock(
     const ComputedStyle* style) {
   // Handle bidi-override on the block itself.
-  switch (style->GetUnicodeBidi()) {
-    case UnicodeBidi::kNormal:
-    case UnicodeBidi::kEmbed:
-    case UnicodeBidi::kIsolate:
-      // Isolate and embed values are enforced by default and redundant on the
-      // block elements.
-      // Direction is handled as the paragraph level by
-      // NGBidiParagraph::SetParagraph().
-      if (style->Direction() == TextDirection::kRtl)
+  if (style->RtlOrdering() == EOrder::kLogical) {
+    switch (style->GetUnicodeBidi()) {
+      case UnicodeBidi::kNormal:
+      case UnicodeBidi::kEmbed:
+      case UnicodeBidi::kIsolate:
+        // Isolate and embed values are enforced by default and redundant on the
+        // block elements.
+        // Direction is handled as the paragraph level by
+        // NGBidiParagraph::SetParagraph().
+        if (style->Direction() == TextDirection::kRtl)
+          has_bidi_controls_ = true;
+        break;
+      case UnicodeBidi::kBidiOverride:
+      case UnicodeBidi::kIsolateOverride:
+        AppendBidiControl(style, kLeftToRightOverrideCharacter,
+                          kRightToLeftOverrideCharacter);
+        Enter(nullptr, kPopDirectionalFormattingCharacter);
+        break;
+      case UnicodeBidi::kPlaintext:
+        // Plaintext is handled as the paragraph level by
+        // NGBidiParagraph::SetParagraph().
         has_bidi_controls_ = true;
-      break;
-    case UnicodeBidi::kBidiOverride:
-    case UnicodeBidi::kIsolateOverride:
-      AppendBidiControl(style, kLeftToRightOverrideCharacter,
-                        kRightToLeftOverrideCharacter);
-      Enter(nullptr, kPopDirectionalFormattingCharacter);
-      break;
-    case UnicodeBidi::kPlaintext:
-      // Plaintext is handled as the paragraph level by
-      // NGBidiParagraph::SetParagraph().
-      has_bidi_controls_ = true;
-      break;
+        break;
+    }
+  } else {
+    DCHECK_EQ(style->RtlOrdering(), EOrder::kVisual);
+    AppendBidiControl(style, kLeftToRightOverrideCharacter,
+                      kRightToLeftOverrideCharacter);
+    Enter(nullptr, kPopDirectionalFormattingCharacter);
   }
 
   if (style->Display() == EDisplay::kListItem &&
@@ -498,35 +505,37 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::EnterInline(
     LayoutObject* node) {
   // https://drafts.csswg.org/css-writing-modes-3/#bidi-control-codes-injection-table
   const ComputedStyle* style = node->Style();
-  switch (style->GetUnicodeBidi()) {
-    case UnicodeBidi::kNormal:
-      break;
-    case UnicodeBidi::kEmbed:
-      AppendBidiControl(style, kLeftToRightEmbedCharacter,
-                        kRightToLeftEmbedCharacter);
-      Enter(node, kPopDirectionalFormattingCharacter);
-      break;
-    case UnicodeBidi::kBidiOverride:
-      AppendBidiControl(style, kLeftToRightOverrideCharacter,
-                        kRightToLeftOverrideCharacter);
-      Enter(node, kPopDirectionalFormattingCharacter);
-      break;
-    case UnicodeBidi::kIsolate:
-      AppendBidiControl(style, kLeftToRightIsolateCharacter,
-                        kRightToLeftIsolateCharacter);
-      Enter(node, kPopDirectionalIsolateCharacter);
-      break;
-    case UnicodeBidi::kPlaintext:
-      AppendOpaque(NGInlineItem::kBidiControl, kFirstStrongIsolateCharacter);
-      Enter(node, kPopDirectionalIsolateCharacter);
-      break;
-    case UnicodeBidi::kIsolateOverride:
-      AppendOpaque(NGInlineItem::kBidiControl, kFirstStrongIsolateCharacter);
-      AppendBidiControl(style, kLeftToRightOverrideCharacter,
-                        kRightToLeftOverrideCharacter);
-      Enter(node, kPopDirectionalIsolateCharacter);
-      Enter(node, kPopDirectionalFormattingCharacter);
-      break;
+  if (style->RtlOrdering() == EOrder::kLogical) {
+    switch (style->GetUnicodeBidi()) {
+      case UnicodeBidi::kNormal:
+        break;
+      case UnicodeBidi::kEmbed:
+        AppendBidiControl(style, kLeftToRightEmbedCharacter,
+                          kRightToLeftEmbedCharacter);
+        Enter(node, kPopDirectionalFormattingCharacter);
+        break;
+      case UnicodeBidi::kBidiOverride:
+        AppendBidiControl(style, kLeftToRightOverrideCharacter,
+                          kRightToLeftOverrideCharacter);
+        Enter(node, kPopDirectionalFormattingCharacter);
+        break;
+      case UnicodeBidi::kIsolate:
+        AppendBidiControl(style, kLeftToRightIsolateCharacter,
+                          kRightToLeftIsolateCharacter);
+        Enter(node, kPopDirectionalIsolateCharacter);
+        break;
+      case UnicodeBidi::kPlaintext:
+        AppendOpaque(NGInlineItem::kBidiControl, kFirstStrongIsolateCharacter);
+        Enter(node, kPopDirectionalIsolateCharacter);
+        break;
+      case UnicodeBidi::kIsolateOverride:
+        AppendOpaque(NGInlineItem::kBidiControl, kFirstStrongIsolateCharacter);
+        AppendBidiControl(style, kLeftToRightOverrideCharacter,
+                          kRightToLeftOverrideCharacter);
+        Enter(node, kPopDirectionalIsolateCharacter);
+        Enter(node, kPopDirectionalFormattingCharacter);
+        break;
+    }
   }
 
   AppendOpaque(NGInlineItem::kOpenTag, style, node);
