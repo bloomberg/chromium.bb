@@ -449,6 +449,10 @@ def parse_args(args):
                 action='store_true',
                 default=False,
                 help='Do everything but actually run the tests or upload results.'),
+            optparse.make_option(
+                '-w', '--watch',
+                action='store_true',
+                help='Re-run tests quickly (e.g. avoid restarting the server)'),
         ]))
 
     # FIXME: Move these into json_results_generator.py.
