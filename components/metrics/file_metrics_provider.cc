@@ -119,7 +119,10 @@ struct FileMetricsProvider::SourceInfo {
       : type(params.type),
         association(params.association),
         prefs_key(params.prefs_key),
-        filter(params.filter) {
+        filter(params.filter),
+        max_age(params.max_age),
+        max_dir_kib(params.max_dir_kib),
+        max_dir_files(params.max_dir_files) {
     switch (type) {
       case SOURCE_HISTOGRAMS_ACTIVE_FILE:
         DCHECK(prefs_key.empty());
@@ -153,6 +156,15 @@ struct FileMetricsProvider::SourceInfo {
 
   // The filter callback for determining what to do with found files.
   FilterCallback filter;
+
+  // The maximum allowed age of a file.
+  base::TimeDelta max_age;
+
+  // The maximum allowed bytes in a directory.
+  size_t max_dir_kib;
+
+  // The maximum allowed files in a directory.
+  size_t max_dir_files;
 
   // The last-seen time of this source to detect change.
   base::Time last_seen;
@@ -242,41 +254,48 @@ bool FileMetricsProvider::LocateNextFileInDirectory(SourceInfo* source) {
 
   // Open the directory and find all the files, remembering the last-modified
   // time of each.
-  base::flat_map<base::Time, base::FilePath> found_files;
+  struct FoundFile {
+    base::FilePath path;
+    base::FileEnumerator::FileInfo info;
+  };
+  base::flat_map<base::Time, FoundFile> found_files;
   base::FilePath file_path;
   base::Time now_time = base::Time::Now();
-  int file_count = 0;
-  int delete_count = 0;
+  size_t total_size_kib = 0;  // Using KiB allows 4TiB even on 32-bit builds.
+  size_t file_count = 0;
+  size_t delete_count = 0;
   base::FileEnumerator file_iter(source->directory, /*recursive=*/false,
                                  base::FileEnumerator::FILES);
-  for (file_path = file_iter.Next(); !file_path.empty();
-       file_path = file_iter.Next()) {
-    base::FileEnumerator::FileInfo file_info = file_iter.GetInfo();
+  FoundFile found_file;
+  for (found_file.path = file_iter.Next(); !found_file.path.empty();
+       found_file.path = file_iter.Next()) {
+    found_file.info = file_iter.GetInfo();
 
     // Ignore directories and zero-sized files.
-    if (file_info.IsDirectory() || file_info.GetSize() == 0)
+    if (found_file.info.IsDirectory() || found_file.info.GetSize() == 0)
       continue;
 
     // Ignore temporary files.
     base::FilePath::CharType first_character =
-        file_path.BaseName().value().front();
+        found_file.path.BaseName().value().front();
     if (first_character == FILE_PATH_LITERAL('.') ||
         first_character == FILE_PATH_LITERAL('_')) {
       continue;
     }
 
     // Ignore non-PMA (Persistent Memory Allocator) files.
-    if (file_path.Extension() !=
+    if (found_file.path.Extension() !=
         base::PersistentMemoryAllocator::kFileExtension) {
       continue;
     }
 
     // Process real files.
-    base::Time modified = file_info.GetLastModifiedTime();
+    total_size_kib += found_file.info.GetSize() >> 10;
+    base::Time modified = found_file.info.GetLastModifiedTime();
     if (modified > source->last_seen) {
       // This file hasn't been read. Remember it (unless it's from the future).
       if (modified <= now_time)
-        found_files.emplace(modified, std::move(file_path));
+        found_files.emplace(modified, std::move(found_file));
       ++file_count;
     } else {
       // This file has been read. Try to delete it. Ignore any errors because
@@ -284,23 +303,42 @@ bool FileMetricsProvider::LocateNextFileInDirectory(SourceInfo* source) {
       // have been created by a privileged process like setup.exe. Even if it
       // is not removed, it will continue to be ignored bacuse of the older
       // modification time.
-      base::DeleteFile(file_path, /*recursive=*/false);
+      base::DeleteFile(found_file.path, /*recursive=*/false);
       ++delete_count;
     }
   }
 
   UMA_HISTOGRAM_COUNTS_100("UMA.FileMetricsProvider.DirectoryFiles",
                            file_count);
-  UMA_HISTOGRAM_COUNTS_100("UMA.FileMetricsProvider.DeletedFiles",
-                           delete_count);
 
   // Filter files from the front until one is found for processing.
+  bool have_file = false;
   while (!found_files.empty()) {
-    base::FilePath& path = found_files.begin()->second;
-    AccessResult result = HandleFilterSource(source, path);
+    const FoundFile& found = found_files.begin()->second;
+    bool too_many =
+        source->max_dir_files > 0 && file_count > source->max_dir_files;
+    bool too_big =
+        source->max_dir_kib > 0 && total_size_kib > source->max_dir_kib;
+    bool too_old =
+        source->max_age != base::TimeDelta() &&
+        now_time - found.info.GetLastModifiedTime() > source->max_age;
+    if (too_many || too_big || too_old) {
+      base::DeleteFile(found.path, /*recursive=*/false);
+      ++delete_count;
+      --file_count;
+      total_size_kib -= found.info.GetSize() >> 10;
+      RecordAccessResult(too_many ? ACCESS_RESULT_TOO_MANY_FILES
+                                  : too_big ? ACCESS_RESULT_TOO_MANY_BYTES
+                                            : ACCESS_RESULT_TOO_OLD);
+      found_files.erase(found_files.begin());
+      continue;
+    }
+
+    AccessResult result = HandleFilterSource(source, found.path);
     if (result == ACCESS_RESULT_SUCCESS) {
-      source->path = std::move(path);
-      return true;
+      source->path = std::move(found.path);
+      have_file = true;
+      break;
     }
 
     // Record the result. Success will be recorded by the caller.
@@ -308,8 +346,10 @@ bool FileMetricsProvider::LocateNextFileInDirectory(SourceInfo* source) {
     found_files.erase(found_files.begin());
   }
 
-  // No files to read.
-  return false;
+  UMA_HISTOGRAM_COUNTS_100("UMA.FileMetricsProvider.DeletedFiles",
+                           delete_count);
+
+  return have_file;
 }
 
 // static
@@ -325,7 +365,8 @@ void FileMetricsProvider::FinishedWithSource(SourceInfo* source,
       // accumulating or also being recorded by different instances of
       // the browser.
       if (result == ACCESS_RESULT_SUCCESS ||
-          result == ACCESS_RESULT_NOT_MODIFIED) {
+          result == ACCESS_RESULT_NOT_MODIFIED ||
+          result == ACCESS_RESULT_TOO_OLD) {
         DeleteFileWhenPossible(source->path);
       }
       break;
@@ -391,6 +432,10 @@ FileMetricsProvider::AccessResult FileMetricsProvider::CheckAndMapMetricSource(
 
   if (source->last_seen >= info.last_modified)
     return ACCESS_RESULT_NOT_MODIFIED;
+  if (source->max_age != base::TimeDelta() &&
+      base::Time::Now() - info.last_modified > source->max_age) {
+    return ACCESS_RESULT_TOO_OLD;
+  }
 
   // Non-directory files still need to be filtered.
   if (source->directory.empty()) {
