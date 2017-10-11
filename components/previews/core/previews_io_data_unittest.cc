@@ -25,7 +25,7 @@
 #include "components/previews/core/previews_black_list.h"
 #include "components/previews/core/previews_black_list_item.h"
 #include "components/previews/core/previews_experiments.h"
-#include "components/previews/core/previews_log.h"
+#include "components/previews/core/previews_logger.h"
 #include "components/previews/core/previews_opt_out_store.h"
 #include "components/previews/core/previews_ui_service.h"
 #include "components/variations/variations_associated_data.h"

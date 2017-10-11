@@ -12,7 +12,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "components/previews/core/previews_io_data.h"
-#include "components/previews/core/previews_log.h"
+#include "components/previews/core/previews_logger.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace previews {

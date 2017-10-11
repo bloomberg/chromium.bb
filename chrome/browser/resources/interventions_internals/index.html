@@ -2,6 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
     <title>Interventions-Internals</title>
     <script src="chrome://resources/js/cr.js"></script>
     <script src="chrome://resources/js/mojo_bindings.js"></script>
@@ -9,10 +10,34 @@
     <script src="chrome/browser/ui/webui/interventions_internals/interventions_internals.mojom.js">
     </script>
     <script src="index.js"></script>
+    <link rel="stylesheet" type="text/css" href="index.css">
   </head>
 
   <body>
-    <div id="previewsStatuses">
+    <nav class="tab-select">
+      <label>
+        <input type="radio" id="statuses" name="tabs"
+               value="previews-statuses" checked="checked">
+        <span>Previews Modes</span>
+      </label>
+      <label>
+        <input type="radio" id="logs" name="tabs" value="message-logs">
+        <span>Logs</span>
+      </label>
+    </nav>
+
+    <div class="tab-content" id="previews-statuses">
+    </div>
+
+    <div class="tab-content" id="message-logs">
+      <table id="message-logs-table">
+        <tr>
+          <th id="time-table-header">Time</th>
+          <th id="type-table-header">Type</th>
+          <th id="description-table-header">Description</th>
+          <th id="url-table-header">URL</th>
+        </tr>
+      </table>
     </div>
   </body>
 </html>

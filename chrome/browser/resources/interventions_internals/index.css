@@ -1,0 +1,49 @@
+/**
+ * Copyright 2017 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+.hidden-tab {
+  display: none;
+  padding: 12px;
+}
+
+.selected-tab {
+  display: block;
+  padding: 12px;
+}
+
+.tab-select input[type=radio] {
+   display: none;
+}
+
+.tab-select label {
+  background: #ddd;
+  border: outset 1px silver;
+  cursor: pointer;
+  margin-right: -5px;
+  padding: 5px 5px;
+}
+
+.tab-select input:checked + span {
+  background: #aaa;
+  border: inset 1px silver;
+}
+
+table {
+  border: 1px solid black;
+  border-collapse: collapse;
+}
+
+th {
+  border: 1px solid black;
+  padding: 15px;
+  text-align: left;
+}
+
+td {
+  border: 1px solid black;
+  padding: 15px;
+  text-align: left;
+}

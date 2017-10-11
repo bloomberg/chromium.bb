@@ -23,10 +23,35 @@ const char kOfflineDesciption[] = "Offline Previews";
 }  // namespace
 
 InterventionsInternalsPageHandler::InterventionsInternalsPageHandler(
-    mojom::InterventionsInternalsPageHandlerRequest request)
-    : binding_(this, std::move(request)) {}
+    mojom::InterventionsInternalsPageHandlerRequest request,
+    previews::PreviewsLogger* logger)
+    : binding_(this, std::move(request)), logger_(logger) {
+  DCHECK(logger_);
+}
 
-InterventionsInternalsPageHandler::~InterventionsInternalsPageHandler() {}
+InterventionsInternalsPageHandler::~InterventionsInternalsPageHandler() {
+  DCHECK(logger_);
+  logger_->RemoveObserver(this);
+}
+
+void InterventionsInternalsPageHandler::SetClientPage(
+    mojom::InterventionsInternalsPagePtr page) {
+  page_ = std::move(page);
+  DCHECK(page_);
+  logger_->AddAndNotifyObserver(this);
+}
+
+void InterventionsInternalsPageHandler::OnNewMessageLogAdded(
+    const previews::PreviewsLogger::MessageLog& message) {
+  mojom::MessageLogPtr mojo_message_ptr(mojom::MessageLog::New());
+
+  mojo_message_ptr->type = message.event_type;
+  mojo_message_ptr->description = message.event_description;
+  mojo_message_ptr->url = message.url;
+  mojo_message_ptr->time = message.time.ToJavaTime();
+
+  page_->LogNewMessage(std::move(mojo_message_ptr));
+}
 
 void InterventionsInternalsPageHandler::GetPreviewsEnabled(
     GetPreviewsEnabledCallback callback) {
