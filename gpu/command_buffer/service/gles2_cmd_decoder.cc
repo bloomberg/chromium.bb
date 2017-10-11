@@ -10430,10 +10430,8 @@ error::Error GLES2DecoderImpl::HandleDrawArraysInstancedANGLE(
   if (!features().angle_instanced_arrays)
     return error::kUnknownCommand;
 
-  return DoDrawArrays("glDrawArraysIntancedANGLE",
-                      true,
-                      static_cast<GLenum>(c.mode),
-                      static_cast<GLint>(c.first),
+  return DoDrawArrays("glDrawArraysInstancedANGLE", true,
+                      static_cast<GLenum>(c.mode), static_cast<GLint>(c.first),
                       static_cast<GLsizei>(c.count),
                       static_cast<GLsizei>(c.primcount));
 }
