@@ -240,7 +240,7 @@ void Vsma(const float* source_p,
   }
 #elif HAVE_MIPS_MSA_INTRINSICS
   if ((source_stride == 1) && (dest_stride == 1)) {
-    float* destPCopy = destP;
+    float* destPCopy = dest_p;
     v4f32 vScale;
     v4f32 vSrc0, vSrc1, vSrc2, vSrc3, vSrc4, vSrc5, vSrc6, vSrc7;
     v4f32 vDst0, vDst1, vDst2, vDst3, vDst4, vDst5, vDst6, vDst7;
