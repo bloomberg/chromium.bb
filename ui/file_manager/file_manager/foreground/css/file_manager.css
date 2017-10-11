@@ -1609,6 +1609,7 @@ li[renaming=''] .badge {
   background-position: center;
   background-repeat: no-repeat;
   height: 28px;
+  isolation: isolate;
   opacity: 0;
   position: absolute;
   transition: opacity 220ms ease;
@@ -1644,6 +1645,7 @@ body.check-select #list-container li[selected] .detail-checkmark {
   background-size: cover;
   border-radius: 14px;
   height: 100%;
+  isolation: isolate;
   opacity: 1;
   width: 100%;
 }
