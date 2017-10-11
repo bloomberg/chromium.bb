@@ -11,6 +11,10 @@
     {
       "name": "testJavascriptInterfaceCustomPropertiesClearedOnReload",
       "_bug_id": "crbug.com/767847"
+    },
+    {
+      "name": "testPauseResumeTimers",
+      "_bug_id": "crbug.com/773848"
     }
   ],
   "android.webkit.cts.WebSettingsTest": [
