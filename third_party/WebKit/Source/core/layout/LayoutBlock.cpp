@@ -193,7 +193,6 @@ void LayoutBlock::StyleWillChange(StyleDifference diff,
   LayoutBox::StyleWillChange(diff, new_style);
 }
 
-enum LogicalExtent { kLogicalWidth, kLogicalHeight };
 static bool BorderOrPaddingLogicalDimensionChanged(
     const ComputedStyle& old_style,
     const ComputedStyle& new_style,
