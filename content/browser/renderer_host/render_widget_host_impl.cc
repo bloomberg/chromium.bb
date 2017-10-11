@@ -749,14 +749,10 @@ bool RenderWidgetHostImpl::GetResizeParams(ResizeParams* resize_params) {
     resize_params->physical_backing_size = view_->GetPhysicalBackingSize();
     resize_params->top_controls_height = view_->GetTopControlsHeight();
     resize_params->bottom_controls_height = view_->GetBottomControlsHeight();
-    if (IsUseZoomForDSFEnabled() && display::Screen::GetScreen()) {
-      const display::Display& display =
-          display::Screen::GetScreen()->GetPrimaryDisplay();
-      if (display.id() != display::kInvalidDisplayId) {
-        float device_scale = display.device_scale_factor();
-        resize_params->top_controls_height *= device_scale;
-        resize_params->bottom_controls_height *= device_scale;
-      }
+    if (IsUseZoomForDSFEnabled()) {
+      float device_scale = resize_params->screen_info.device_scale_factor;
+      resize_params->top_controls_height *= device_scale;
+      resize_params->bottom_controls_height *= device_scale;
     }
     resize_params->browser_controls_shrink_blink_size =
         view_->DoBrowserControlsShrinkBlinkSize();
