@@ -1054,5 +1054,28 @@ TEST_F(NGColumnLayoutAlgorithmTest, ColumnBalancingFixedHeightMinHeight) {
   EXPECT_EQ(expectation, dump);
 }
 
+TEST_F(NGColumnLayoutAlgorithmTest, ColumnBalancing100By3) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #parent { columns: 3; }
+    </style>
+    <div id="container">
+      <div id="parent">
+        <div style="height:100px;"></div>
+      </div>
+    </div>
+  )HTML");
+
+  RefPtr<const NGPhysicalBoxFragment> parent_fragment =
+      RunBlockLayoutAlgorithm(GetElementById("container"));
+
+  FragmentChildIterator iterator(parent_fragment.get());
+  const auto* multicol = iterator.NextChild();
+  ASSERT_TRUE(multicol);
+
+  // Actual column-count should be 3. I.e. no overflow columns.
+  EXPECT_EQ(3U, multicol->Children().size());
+}
+
 }  // anonymous namespace
 }  // namespace blink
