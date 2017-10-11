@@ -47124,6 +47124,51 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Network.Shill.Wifi.Ap80211kSupport" enum="WiFiAp80211kSupport">
+  <owner>matthewmwang@chromium.org</owner>
+  <summary>
+    Chrome OS network metric sampling the number of Wireless Access Points that
+    support the 802.11k standard, sampled on successful connections to an AP.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Wifi.Ap80211rSupport" enum="WiFiAp80211rSupport">
+  <owner>matthewmwang@chromium.org</owner>
+  <summary>
+    Chrome OS network metric sampling the number of Wireless Access Points that
+    support the 802.11r standard, sampled on successful connections to an AP.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Wifi.Ap80211vBSSMaxIdlePeriodSupport"
+    enum="WiFiAp80211vBSSMaxIdlePeriodSupport">
+  <owner>matthewmwang@chromium.org</owner>
+  <summary>
+    Chrome OS network metric sampling the number of Wireless Access Points that
+    support the 802.11v BSS Max Idle Period feature, sampled on successful
+    connections to an AP.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Wifi.Ap80211vBSSTransitionSupport"
+    enum="WiFiAp80211vBSSTransitionSupport">
+  <owner>matthewmwang@chromium.org</owner>
+  <summary>
+    Chrome OS network metric sampling the number of Wireless Access Points that
+    support the 802.11v BSS Transition feature, sampled on successful
+    connections to an AP.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Wifi.Ap80211vDMSSupport"
+    enum="WiFiAp80211vDMSSupport">
+  <owner>matthewmwang@chromium.org</owner>
+  <summary>
+    Chrome OS network metric sampling the number of Wireless Access Points that
+    support the 802.11v DMS feature, sampled on successful connections to an AP.
+  </summary>
+</histogram>
+
 <histogram name="Network.Shill.WiFi.ApDisconnectReason" enum="WiFiReasonCode">
   <owner>kirtika@chromium.org</owner>
   <summary>
