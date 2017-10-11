@@ -1776,31 +1776,22 @@ void ShellSurface::UpdateShadow() {
     shadow_underlay_.reset();
   } else {
     wm::SetShadowElevation(window, wm::ShadowElevation::DEFAULT);
-    gfx::Rect shadow_content_bounds =
-        gfx::ScaleToEnclosedRect(shadow_content_bounds_, 1.f / scale_);
 
-    // Convert from screen to display coordinates.
-    if (!shadow_content_bounds.IsEmpty()) {
-      gfx::Point origin = shadow_content_bounds.origin() - origin_offset_;
-      wm::ConvertPointFromScreen(window->parent(), &origin);
-      shadow_content_bounds.set_origin(origin);
+    gfx::Rect shadow_bounds;
+    if (shadow_content_bounds_.IsEmpty()) {
+      shadow_bounds = gfx::Rect(window->bounds().size());
+    } else {
+      shadow_bounds = shadow_content_bounds_;
+      if (shadow_underlay_in_surface_)
+        shadow_bounds = gfx::ScaleToEnclosedRect(shadow_bounds, 1.f / scale_);
+
+      // Convert from screen to display coordinates.
+      shadow_bounds -= origin_offset_;
+      wm::ConvertRectFromScreen(window->parent(), &shadow_bounds);
+
+      // Convert from display to window coordinates.
+      shadow_bounds -= window->bounds().OffsetFromOrigin();
     }
-
-    if (!shadow_underlay_in_surface_) {
-      shadow_content_bounds = shadow_content_bounds_;
-      if (shadow_content_bounds.IsEmpty()) {
-        shadow_content_bounds = window->bounds();
-      } else {
-        // Convert from screen to display coordinates.
-        gfx::Point origin = shadow_content_bounds.origin() - origin_offset_;
-        wm::ConvertPointFromScreen(window->parent(), &origin);
-        shadow_content_bounds.set_origin(origin);
-      }
-    }
-
-    gfx::Point shadow_origin = shadow_content_bounds.origin();
-    shadow_origin -= window->bounds().OffsetFromOrigin();
-    gfx::Rect shadow_bounds(shadow_origin, shadow_content_bounds.size());
 
     bool needs_shadow_underlay = shadow_background_opacity_ > 0.f;
     if (needs_shadow_underlay) {
