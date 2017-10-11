@@ -222,23 +222,6 @@ class FakeServiceWorkerContainerHost
 
 }  // namespace
 
-// Returns typical response info for a resource load that went through a service
-// worker.
-std::unique_ptr<ResourceResponseHead> CreateResponseInfoFromServiceWorker() {
-  auto head = std::make_unique<ResourceResponseHead>();
-  head->was_fetched_via_service_worker = true;
-  head->was_fallback_required_by_service_worker = false;
-  head->url_list_via_service_worker = std::vector<GURL>();
-  head->response_type_via_service_worker =
-      network::mojom::FetchResponseType::kDefault;
-  // TODO(emim): start and ready time should be set.
-  head->service_worker_start_time = base::TimeTicks();
-  head->service_worker_ready_time = base::TimeTicks();
-  head->is_in_cache_storage = false;
-  head->cache_storage_cache_name = std::string();
-  head->did_service_worker_navigation_preload = false;
-  return head;
-}
 
 class ServiceWorkerSubresourceLoaderTest : public ::testing::Test {
  protected:
@@ -288,27 +271,6 @@ class ServiceWorkerSubresourceLoaderTest : public ::testing::Test {
     request->url = url;
     request->method = "GET";
     return request;
-  }
-
-  void ExpectResponseInfo(const ResourceResponseHead& info,
-                          const ResourceResponseHead& expected_info) {
-    EXPECT_EQ(expected_info.was_fetched_via_service_worker,
-              info.was_fetched_via_service_worker);
-    EXPECT_EQ(expected_info.was_fallback_required_by_service_worker,
-              info.was_fallback_required_by_service_worker);
-    EXPECT_EQ(expected_info.url_list_via_service_worker,
-              info.url_list_via_service_worker);
-    EXPECT_EQ(expected_info.response_type_via_service_worker,
-              info.response_type_via_service_worker);
-    EXPECT_EQ(expected_info.service_worker_start_time,
-              info.service_worker_start_time);
-    EXPECT_EQ(expected_info.service_worker_ready_time,
-              info.service_worker_ready_time);
-    EXPECT_EQ(expected_info.is_in_cache_storage, info.is_in_cache_storage);
-    EXPECT_EQ(expected_info.cache_storage_cache_name,
-              info.cache_storage_cache_name);
-    EXPECT_EQ(expected_info.did_service_worker_navigation_preload,
-              info.did_service_worker_navigation_preload);
   }
 
   TestBrowserThreadBundle thread_bundle_;
@@ -363,7 +325,16 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, StreamResponse) {
 
   const ResourceResponseHead& info = url_loader_client_->response_head();
   EXPECT_EQ(200, info.headers->response_code());
-  ExpectResponseInfo(info, *CreateResponseInfoFromServiceWorker());
+  EXPECT_EQ(true, info.was_fetched_via_service_worker);
+  EXPECT_EQ(false, info.was_fallback_required_by_service_worker);
+  EXPECT_EQ(std::vector<GURL>(), info.url_list_via_service_worker);
+  EXPECT_EQ(network::mojom::FetchResponseType::kDefault,
+            info.response_type_via_service_worker);
+  EXPECT_EQ(false, info.is_in_cache_storage);
+  EXPECT_EQ(std::string(), info.cache_storage_cache_name);
+  EXPECT_EQ(false, info.did_service_worker_navigation_preload);
+  EXPECT_NE(base::TimeTicks(), info.service_worker_start_time);
+  EXPECT_NE(base::TimeTicks(), info.service_worker_ready_time);
 
   // Write the body stream.
   uint32_t written_bytes = sizeof(kResponseBody) - 1;
