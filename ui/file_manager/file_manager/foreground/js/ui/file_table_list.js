@@ -360,9 +360,11 @@ filelist.handlePointerDownUp = function(e, index) {
           // existing selection should be cleared.
           if (!sm.getCheckSelectMode())
             sm.unselectAll();
-          // Always enables check-select mode on clicks on checkmark.
-          sm.setCheckSelectMode(true);
         }
+        // Always enables check-select mode when the selection is updated by
+        // Ctrl+Click or Click on an item's icon.
+        sm.setCheckSelectMode(true);
+
         // Toggle the current one and make it anchor index.
         sm.setIndexSelected(index, !sm.getIndexSelected(index));
         sm.leadIndex = index;
