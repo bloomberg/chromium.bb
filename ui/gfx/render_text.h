@@ -287,10 +287,12 @@ class GFX_EXPORT RenderText {
   }
 
   const SelectionModel& selection_model() const { return selection_model_; }
-
   const Range& selection() const { return selection_model_.selection(); }
-
   size_t cursor_position() const { return selection_model_.caret_pos(); }
+
+  // Set the cursor to |position|, with the caret affinity trailing the previous
+  // grapheme, or if there is no previous grapheme, leading the cursor position.
+  // See SelectionModel::caret_affinity_ for details.
   void SetCursorPosition(size_t position);
 
   // Moves the cursor left or right. Cursor movement is visual, meaning that
@@ -306,13 +308,13 @@ class GFX_EXPORT RenderText {
   // Returns true if the cursor position or selection range changed.
   // If any index in |selection_model| is not a cursorable position (not on a
   // grapheme boundary), it is a no-op and returns false.
-  bool MoveCursorTo(const SelectionModel& selection_model);
+  bool SetSelection(const SelectionModel& selection);
 
   // Moves the cursor to the text index corresponding to |point|. If |select| is
   // true, a selection is made with the current selection start index. If the
   // resultant text indices do not lie on valid grapheme boundaries, it is a no-
   // op and returns false.
-  bool MoveCursorTo(const gfx::Point& point, bool select);
+  bool MoveCursorToPoint(const gfx::Point& point, bool select);
 
   // Set the selection_model_ based on |range|.
   // If the |range| start or end is greater than text length, it is modified
@@ -562,8 +564,8 @@ class GFX_EXPORT RenderText {
   SelectionModel LineSelectionModel(size_t line_index,
                                     gfx::VisualCursorDirection direction);
 
-  // Sets the selection model, the argument is assumed to be valid.
-  virtual void SetSelectionModel(const SelectionModel& model);
+  // Sets the selection model, |model| is assumed to be valid.
+  void SetSelectionModel(const SelectionModel& model);
 
   // Get the visual bounds containing the logical substring within the |range|.
   // If |range| is empty, the result is empty. These bounds could be visually
@@ -653,13 +655,6 @@ class GFX_EXPORT RenderText {
 
  private:
   friend class test::RenderTextTestApi;
-
-  // Set the cursor to |position|, with the caret trailing the previous
-  // grapheme, or if there is no previous grapheme, leading the cursor position.
-  // If |select| is false, the selection start is moved to the same position.
-  // If the |position| is not a cursorable position (not on grapheme boundary),
-  // it is a NO-OP.
-  void MoveCursorTo(size_t position, bool select);
 
   // Updates |layout_text_| and |display_text_| as needed (or marks them dirty).
   void OnTextAttributeChanged();
