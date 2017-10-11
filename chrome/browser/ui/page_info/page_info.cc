@@ -152,6 +152,13 @@ bool ShouldShowPermission(const PageInfoUI::PermissionInfo& info,
                nullptr) != nullptr;
   }
 
+#if defined(OS_ANDROID)
+  // Special geolocation DSE settings apply only on Android, so make sure it
+  // gets checked there regardless of default setting on Desktop.
+  if (info.type == CONTENT_SETTINGS_TYPE_GEOLOCATION)
+    return true;
+#endif
+
   // All other content settings only show when they are non-factory-default.
   if ((base::CommandLine::ForCurrentProcess()->HasSwitch(
            switches::kEnableSiteSettings) ||

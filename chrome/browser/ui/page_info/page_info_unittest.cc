@@ -216,8 +216,13 @@ TEST_F(PageInfoTest, NonFactoryDefaultPermissionsShown) {
   feature_list.InitAndEnableFeature(features::kSiteDetails);
 
   page_info()->PresentSitePermissions();
-  // By default, the number of permissions shown should be 0.
+// By default, the number of permissions shown should be 0, except on Android,
+// where Geolocation needs to be checked for DSE settings.
+#if defined(OS_ANDROID)
+  EXPECT_EQ(1uL, last_permission_info_list().size());
+#else
   EXPECT_EQ(0uL, last_permission_info_list().size());
+#endif
 
   std::vector<ContentSettingsType> non_default_permissions = {
       CONTENT_SETTINGS_TYPE_GEOLOCATION, CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
