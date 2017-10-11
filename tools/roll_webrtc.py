@@ -18,7 +18,6 @@ SRC_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, os.pardir))
 sys.path.insert(0, os.path.join(SRC_DIR, 'build'))
 import find_depot_tools
 find_depot_tools.add_depot_tools_to_path()
-import rietveld
 import roll_dep_svn
 from third_party import upload
 
@@ -28,7 +27,7 @@ upload.verbosity = 0  # Errors only.
 CHROMIUM_GIT_URL = 'https://chromium.googlesource.com/chromium/src.git'
 COMMIT_POSITION_RE = re.compile('^Cr-Commit-Position: .*#([0-9]+).*$')
 CL_ISSUE_RE = re.compile('^Issue number: ([0-9]+) \((.*)\)$')
-RIETVELD_URL_RE = re.compile('^https?://(.*)/(.*)')
+REVIEW_URL_RE = re.compile('^https?://(.*)/(.*)')
 ROLL_BRANCH_NAME = 'special_webrtc_roll_branch'
 TRYJOB_STATUS_SLEEP_SECONDS = 30
 
@@ -58,7 +57,7 @@ FAILURE_STATUS = (2, 4, 5)
 CommitInfo = collections.namedtuple('CommitInfo', ['commit_position',
                                                    'git_commit',
                                                    'git_repo_url'])
-CLInfo = collections.namedtuple('CLInfo', ['issue', 'url', 'rietveld_server'])
+CLInfo = collections.namedtuple('CLInfo', ['issue', 'url', 'review_server'])
 
 
 def _VarLookup(local_scope):
@@ -105,44 +104,6 @@ def _ParseDepsDict(deps_content):
   return local_scope
 
 
-def _WaitForTrybots(issue, rietveld_server):
-  """Wait until all trybots have passed or at least one have failed.
-
-  Returns:
-    An exit code of 0 if all trybots passed or non-zero otherwise.
-  """
-  assert type(issue) is int
-  print 'Trybot status for https://%s/%d:' % (rietveld_server, issue)
-  remote = rietveld.Rietveld('https://' + rietveld_server, None, None)
-
-  attempt = 0
-  max_tries = 60*60/TRYJOB_STATUS_SLEEP_SECONDS # Max one hour
-  while attempt < max_tries:
-    # Get patches for the issue so we can use the latest one.
-    data = remote.get_issue_properties(issue, messages=False)
-    patchsets = data['patchsets']
-
-    # Get trybot status for the latest patch set.
-    data = remote.get_patchset_properties(issue, patchsets[-1])
-
-    tryjob_results = data['try_job_results']
-    if len(tryjob_results) == 0:
-      logging.debug('No trybots have yet been triggered for https://%s/%d' ,
-                    rietveld_server, issue)
-    else:
-      _PrintTrybotsStatus(tryjob_results)
-      if any(r['result'] in FAILURE_STATUS for r in tryjob_results):
-        logging.error('Found failing tryjobs (see above)')
-        return 1
-      if all(r['result'] in SUCCESS_STATUS for r in tryjob_results):
-        return 0
-
-    logging.debug('Waiting for %d seconds before next check...',
-                  TRYJOB_STATUS_SLEEP_SECONDS)
-    time.sleep(TRYJOB_STATUS_SLEEP_SECONDS)
-    attempt += 1
-
-
 def _PrintTrybotsStatus(tryjob_results):
   status_to_name = {}
   for trybot_result in tryjob_results:
@@ -153,6 +114,7 @@ def _PrintTrybotsStatus(tryjob_results):
   print '\n========== TRYJOBS STATUS =========='
   for status,name_list in status_to_name.iteritems():
     print '%s: %s' % (status, ','.join(sorted(name_list)))
+
 
 class AutoRoller(object):
   def __init__(self, chromium_src):
@@ -245,13 +207,13 @@ class AutoRoller(object):
     issue_number = int(m.group(1))
     url = m.group(2)
 
-    # Parse the Rietveld host from the URL.
-    m = RIETVELD_URL_RE.match(url)
+    # Parse the codereview host from the URL.
+    m = REVIEW_URL_RE.match(url)
     if not m:
-      logging.error('Cannot parse Rietveld host from URL: %s', url)
+      logging.error('Cannot parse codereview host from URL: %s', url)
       sys.exit(-1)
-    rietveld_server = m.group(1)
-    return CLInfo(issue_number, url, rietveld_server)
+    review_server = m.group(1)
+    return CLInfo(issue_number, url, review_server)
 
   def _GetCurrentBranchName(self):
     return self._RunCommand(
@@ -386,13 +348,6 @@ class AutoRoller(object):
       self._RunCommand(['git', 'branch', '-D', ROLL_BRANCH_NAME])
     return 0
 
-  def WaitForTrybots(self):
-    active_branch, _ = self._GetBranches()
-    if active_branch != ROLL_BRANCH_NAME:
-      self._RunCommand(['git', 'checkout', ROLL_BRANCH_NAME])
-    cl_info = self._GetCLInfo()
-    return _WaitForTrybots(cl_info.issue, cl_info.rietveld_server)
-
 
 def main():
   parser = argparse.ArgumentParser(
@@ -404,12 +359,6 @@ def main():
   parser.add_argument('--no-commit',
     help=('Don\'t send the CL to the CQ. This is useful if additional changes '
           'are needed to the CL (like for API changes).'),
-    action='store_true')
-  parser.add_argument('--wait-for-trybots',
-    help=('Waits until all trybots from a previously created roll are either '
-          'successful or at least one has failed. This is useful to be able to '
-          'continuously run this script but not initiating new rolls until a '
-          'previous one is known to have passed or failed.'),
     action='store_true')
   parser.add_argument('--close-previous-roll', action='store_true',
                       help='Abort a previous roll if one exists.')
@@ -434,8 +383,6 @@ def main():
   autoroller = AutoRoller(SRC_DIR)
   if args.abort:
     return autoroller.Abort()
-  elif args.wait_for_trybots:
-    return autoroller.WaitForTrybots()
   else:
     return autoroller.PrepareRoll(args.dry_run, args.ignore_checks,
                                   args.no_commit, args.close_previous_roll,

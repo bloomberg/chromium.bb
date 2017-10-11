@@ -4,7 +4,7 @@
 # found in the LICENSE file.
 
 """Generate a CL to roll a DEPS entry to the specified revision number and post
-it to Rietveld so that the CL will land automatically if it passes the
+it for review so that the CL will land automatically if it passes the
 commit-queue's checks.
 """
 
@@ -122,7 +122,6 @@ def main():
 
   if not options.dry_run:
     prnt_subprocess.check_call(['git', 'fetch', 'origin'])
-    prnt_subprocess.call(['git', 'svn', 'fetch'])
     branch_cmd = ['git', 'checkout', '-b', new_branch, options.upstream]
     if options.force:
       branch_cmd.append('-f')
