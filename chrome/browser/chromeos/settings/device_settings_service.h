@@ -140,6 +140,9 @@ class DeviceSettingsService : public SessionManagerClient::Observer {
     return device_off_hours_controller_.get();
   }
 
+  void SetDeviceOffHoursControllerForTesting(
+      std::unique_ptr<policy::DeviceOffHoursController> controller);
+
   // Triggers an attempt to pull the public half of the owner key from disk and
   // load the device settings.
   void Load();
