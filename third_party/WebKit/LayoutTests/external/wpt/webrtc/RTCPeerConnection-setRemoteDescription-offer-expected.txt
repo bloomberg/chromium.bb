@@ -1,9 +1,0 @@
-This is a testharness.js-based test.
-FAIL setRemoteDescription with valid offer should succeed assert_not_equals: Expect session description to be defined got disallowed value undefined
-FAIL Setting remote description multiple times with different offer should succeed assert_not_equals: Expect session description to be defined got disallowed value undefined
-FAIL setRemoteDescription(offer) with invalid SDP should reject with RTCError assert_equals: Expect error detail field to set to sdp-syntax-error expected (string) "sdp-syntax-error" but got (undefined) undefined
-FAIL Calling setRemoteDescription(offer) from have-local-offer state should reject with InvalidStateError assert_throws: function "function () { throw e }" threw object "OperationError: Failed to set remote offer sdp: Called in wrong state: STATE_SENTOFFER" that is not a DOMException InvalidStateError: property "code" is equal to 0, expected 11
-PASS Test onsignalingstatechange event for setRemoteDescription with valid offer should succeed
-PASS Test onsignalingstatechange event for Setting remote description multiple times with different offer should succeed
-Harness: the test ran to completion.
-

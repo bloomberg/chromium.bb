@@ -7,8 +7,8 @@ PASS new RTCPeerConnection(config) - with { rtcpMuxPolicy: null } should throw T
 PASS setConfiguration(config) - with { rtcpMuxPolicy: null } should throw TypeError
 PASS new RTCPeerConnection(config) - with { rtcpMuxPolicy: 'invalid' } should throw TypeError
 PASS setConfiguration(config) - with { rtcpMuxPolicy: 'invalid' } should throw TypeError
-PASS setConfiguration({ rtcpMuxPolicy: 'negotiate' }) with initial rtcpMuxPolicy require should throw InvalidModificationError
-PASS setConfiguration({ rtcpMuxPolicy: 'require' }) with initial rtcpMuxPolicy negotiate should throw InvalidModificationError
-PASS setConfiguration({}) with initial rtcpMuxPolicy negotiate should throw InvalidModificationError
+FAIL setConfiguration({ rtcpMuxPolicy: 'negotiate' }) with initial rtcpMuxPolicy require should throw InvalidModificationError assert_throws: function "() =>\n      pc.setConfiguration({ rtcpMuxPolicy: 'negotiate' })" did not throw
+FAIL setConfiguration({ rtcpMuxPolicy: 'require' }) with initial rtcpMuxPolicy negotiate should throw InvalidModificationError assert_throws: function "() =>\n      pc.setConfiguration({ rtcpMuxPolicy: 'require' })" did not throw
+FAIL setConfiguration({}) with initial rtcpMuxPolicy negotiate should throw InvalidModificationError assert_throws: function "() =>\n      pc.setConfiguration({})" did not throw
 Harness: the test ran to completion.
 

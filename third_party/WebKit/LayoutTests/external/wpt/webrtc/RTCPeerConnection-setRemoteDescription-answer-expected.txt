@@ -1,7 +1,0 @@
-This is a testharness.js-based test.
-FAIL setRemoteDescription() with valid state and answer should succeed assert_not_equals: Expect session description to be defined got disallowed value undefined
-FAIL Calling setRemoteDescription(answer) from stable state should reject with InvalidStateError assert_throws: function "function () { throw e }" threw object "OperationError: Failed to set remote answer sdp: Called in wrong state: STATE_INIT" that is not a DOMException InvalidStateError: property "code" is equal to 0, expected 11
-FAIL Calling setRemoteDescription(answer) from have-remote-offer state should reject with InvalidStateError assert_throws: function "function () { throw e }" threw object "OperationError: Failed to set remote answer sdp: Called in wrong state: STATE_RECEIVEDOFFER" that is not a DOMException InvalidStateError: property "code" is equal to 0, expected 11
-PASS Test onsignalingstatechange event for setRemoteDescription() with valid state and answer should succeed
-Harness: the test ran to completion.
-

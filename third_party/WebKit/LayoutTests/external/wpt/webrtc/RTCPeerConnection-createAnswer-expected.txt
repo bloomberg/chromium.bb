@@ -1,6 +1,6 @@
 This is a testharness.js-based test.
-FAIL createAnswer() with null remoteDescription should reject with InvalidStateError assert_throws: function "function () { throw e }" threw object "OperationError: CreateAnswer can't be called before SetRemoteDescription." that is not a DOMException InvalidStateError: property "code" is equal to 0, expected 11
-FAIL createAnswer() after setting remote description should succeed assert_false: Expect answer to not be instance of RTCSessionDescription expected false got true
-PASS createAnswer() when connection is closed reject with InvalidStateError
+FAIL createAnswer() with null remoteDescription should reject with InvalidStateError assert_unreached: Should have rejected: undefined Reached unreachable code
+FAIL createAnswer() after setting remote description should succeed promise_test: Unhandled rejection with value: object "OperationError: TEST_ERROR"
+FAIL createAnswer() when connection is closed reject with InvalidStateError promise_test: Unhandled rejection with value: object "OperationError: TEST_ERROR"
 Harness: the test ran to completion.
 

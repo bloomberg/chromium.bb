@@ -1,0 +1,15 @@
+This is a testharness.js-based test.
+Harness Error. harness_status.status = 1 , harness_status.message = 1 duplicate test name: "createOffer({voiceActivityDetection:false, iceRestart:false})"
+PASS createOffer({voiceActivityDetection:true, iceRestart:true})
+PASS createOffer({iceRestart:true})
+PASS createOffer({voiceActivityDetection:false, iceRestart:false})
+PASS createOffer({voiceActivityDetection:false, iceRestart:false})
+PASS createOffer({voiceActivityDetection:false, iceRestart:false})
+PASS createOffer({voiceActivityDetection:false, iceRestart:true})
+PASS createOffer({voiceActivityDetection:true, iceRestart:false})
+PASS createOffer({})
+PASS createOffer()
+PASS createOffer(1)
+PASS createOffer() with closed peer connection
+Harness: the test ran to completion.
+
