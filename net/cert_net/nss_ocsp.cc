@@ -50,11 +50,11 @@
 
 namespace net {
 
-// OSCPScopedAllowBaseSyncPrimitives is a friend and derived class of
+// OCSPScopedAllowBaseSyncPrimitives is a friend and derived class of
 // base::ScopedAllowBaseSyncPrimitives which can be instantiated by
 // OCSPRequestSession. OCSPRequestSession can't itself be a friend of
 // base::ScopedAllowBaseSyncPrimitives because it is in the anonymous namespace.
-class OSCPScopedAllowBaseSyncPrimitives
+class OCSPScopedAllowBaseSyncPrimitives
     : public base::ScopedAllowBaseSyncPrimitives {};
 
 namespace {
@@ -249,7 +249,7 @@ class OCSPRequestSession
 
   bool Wait() {
     // This method waits on a ConditionVariable from a base::MayBlock task.
-    OSCPScopedAllowBaseSyncPrimitives scoped_allow_base_sync_primitives;
+    OCSPScopedAllowBaseSyncPrimitives scoped_allow_base_sync_primitives;
 
     base::TimeDelta timeout = timeout_;
     base::AutoLock autolock(lock_);
