@@ -64,11 +64,12 @@
     <cr-toolbar page-name="$i18n{toolbarTitle}"
         search-prompt="$i18n{search}"
         clear-label="$i18n{clearSearch}"
+        menu-label="$i18n{mainMenu}"
         show-menu="[[!isGuest]]" show-search="[[!isGuest]]">
       <div class="more-actions" hidden$="[[isGuest]]">
-        <span>$i18n{toolbarDevMode}</span>
+        <span id="devModeLabel">$i18n{toolbarDevMode}</span>
         <cr-toggle id="dev-mode" on-change="onDevModeChange_"
-            checked="[[inDevMode]]">
+            checked="[[inDevMode]]" aria-labelledby="devModeLabel">
         </cr-toggle>
       </div>
     </cr-toolbar>
