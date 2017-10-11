@@ -138,20 +138,28 @@ static base::File::Error GetDirectoryEntries(const FilePath& dir_param,
   return return_value;
 #else
   const std::string dir_string = dir_param.AsUTF8Unsafe();
-  DIR* dir = opendir(dir_string.c_str());
-  if (!dir)
-    return base::File::OSErrorToFileError(errno);
-  struct dirent* dent;
   errno = 0;
+  DIR* dir = opendir(dir_string.c_str());
+  int saved_errno;
+  if (!dir) {
+    saved_errno = errno;
+    VLOG(1) << "Error " << saved_errno << " opening directory \"" << dir_string
+            << '"';
+    return base::File::OSErrorToFileError(saved_errno);
+  }
+  struct dirent* dent;
   while ((dent = readdir(dir))) {
     if (strcmp(dent->d_name, ".") == 0 || strcmp(dent->d_name, "..") == 0)
       continue;
     result->push_back(FilePath::FromUTF8Unsafe(dent->d_name));
   }
-  int saved_errno = errno;
+  saved_errno = errno;
   closedir(dir);
-  if (saved_errno != 0)
+  if (saved_errno != 0) {
+    VLOG(1) << "Error " << saved_errno << " listing entries in \"" << dir_string
+            << '"';
     return base::File::OSErrorToFileError(saved_errno);
+  }
   return base::File::FILE_OK;
 #endif
 }
