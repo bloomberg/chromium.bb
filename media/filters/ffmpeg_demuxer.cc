@@ -1297,6 +1297,8 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
   int detected_audio_track_count = 0;
   int detected_video_track_count = 0;
   int detected_text_track_count = 0;
+  int supported_audio_track_count = 0;
+  int supported_video_track_count = 0;
   for (size_t i = 0; i < format_context->nb_streams; ++i) {
     AVStream* stream = format_context->streams[i];
     const AVCodecParameters* codec_parameters = stream->codecpar;
@@ -1377,10 +1379,12 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
     }
 
     if (codec_type == AVMEDIA_TYPE_AUDIO) {
-      streams_[i]->SetEnabled(detected_audio_track_count == 1,
+      ++supported_audio_track_count;
+      streams_[i]->SetEnabled(supported_audio_track_count == 1,
                               base::TimeDelta());
     } else if (codec_type == AVMEDIA_TYPE_VIDEO) {
-      streams_[i]->SetEnabled(detected_video_track_count == 1,
+      ++supported_video_track_count;
+      streams_[i]->SetEnabled(supported_video_track_count == 1,
                               base::TimeDelta());
     }
 
