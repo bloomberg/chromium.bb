@@ -42,6 +42,13 @@ cr.define('extensions', function() {
       // passed to different elements as different types.
       delegate: Object,
 
+      isGuest_: {
+        type: Boolean,
+        value: function() {
+          return loadTimeData.getBoolean('isGuest');
+        },
+      },
+
       inDevMode: {
         type: Boolean,
         value: false,

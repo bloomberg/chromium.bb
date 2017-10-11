@@ -39,6 +39,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/ui/webui/extensions/chromeos/kiosk_apps_handler.h"
+#include "components/user_manager/user_manager.h"
 #endif
 
 namespace extensions {
@@ -144,6 +145,7 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
                              IDS_MD_EXTENSIONS_SIDEBAR_GET_MORE_EXTENSIONS);
   source->AddLocalizedString("keyboardShortcuts",
                              IDS_MD_EXTENSIONS_SIDEBAR_KEYBOARD_SHORTCUTS);
+  source->AddLocalizedString("guestModeMessage", IDS_MD_EXTENSIONS_GUEST_MODE);
   source->AddLocalizedString("itemId", IDS_MD_EXTENSIONS_ITEM_ID);
   source->AddLocalizedString("itemInspectViews",
                              IDS_MD_EXTENSIONS_ITEM_INSPECT_VIEWS);
@@ -340,6 +342,16 @@ ExtensionsUI::ExtensionsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 
   if (is_md) {
     source = CreateMdExtensionsSource();
+
+    source->AddBoolean(
+        "isGuest",
+#if defined(OS_CHROMEOS)
+        user_manager::UserManager::Get()->IsLoggedInAsGuest() ||
+            user_manager::UserManager::Get()->IsLoggedInAsPublicAccount());
+#else
+        profile->IsOffTheRecord());
+#endif
+
     auto install_extension_handler =
         base::MakeUnique<InstallExtensionHandler>();
     InstallExtensionHandler* handler = install_extension_handler.get();

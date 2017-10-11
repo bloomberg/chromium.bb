@@ -55,7 +55,7 @@
       }
     </style>
     <extensions-drop-overlay></extensions-drop-overlay>
-    <extensions-toolbar in-dev-mode="[[inDevMode]]"
+    <extensions-toolbar is-guest="[[isGuest_]]" in-dev-mode="[[inDevMode]]"
         on-pack-tap="onPackTap_" delegate="[[delegate]]"
         on-cr-toolbar-menu-tap="onMenuButtonTap_"
         on-search-changed="onFilterChanged_"
@@ -72,10 +72,10 @@
       </div>
     </dialog>
     <extensions-view-manager id="viewManager" role="main">
-      <extensions-item-list id="items-list"
-          items="[[itemsList_]]"
+      <extensions-item-list id="items-list" items="[[itemsList_]]"
           delegate="[[delegate]]" in-dev-mode="[[inDevMode]]"
-          filter="[[filter]]" hidden$="[[!didInitPage_]]" slot="view">
+          filter="[[filter]]" hidden$="[[!didInitPage_]]" slot="view"
+          is-guest="[[isGuest_]]">
       </extensions-item-list>
       <extensions-detail-view id="details-view" delegate="[[delegate]]"
           in-dev-mode="[[inDevMode]]" data="[[detailViewItem_]]"

@@ -46,6 +46,9 @@
       }
     </style>
     <div id="container">
+      <div class="empty-list-message" hidden="[[!isGuest]]">
+        $i18n{guestModeMessage}
+      </div>
       <div id="no-items" class="empty-list-message"
           hidden$="[[!shouldShowEmptyItemsMessage_(items.length)]]">
         <span>$i18nRaw{noExtensionsOrApps}</span>

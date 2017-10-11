@@ -20,6 +20,8 @@ cr.define('extensions', function() {
         value: false,
       },
 
+      isGuest: Boolean,
+
       filter: String,
 
       /** @private {Array<!chrome.developerPrivate.ExtensionInfo>} */
@@ -42,12 +44,14 @@ cr.define('extensions', function() {
           item => item.name.toLowerCase().includes(formattedFilter));
     },
 
+    /** @private */
     shouldShowEmptyItemsMessage_: function() {
-      return this.items.length === 0;
+      return !this.isGuest && this.items.length === 0;
     },
 
+    /** @private */
     shouldShowEmptySearchMessage_: function() {
-      return !this.shouldShowEmptyItemsMessage_() &&
+      return !this.isGuest && !this.shouldShowEmptyItemsMessage_() &&
           this.shownItems_.length === 0;
     },
   });

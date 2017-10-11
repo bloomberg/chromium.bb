@@ -2,12 +2,13 @@
 
 <link rel="import" href="chrome://resources/cr_elements/cr_icons_css.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toolbar/cr_toolbar_search_field.html">
+<link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-media-query/iron-media-query.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 
 <dom-module id="cr-toolbar">
   <template>
-    <style include="cr-icons">
+    <style include="cr-icons cr-hidden-style">
       :host {
         --cr-toolbar-field-width: 580px;
         --cr-toolbar-height: 56px;
@@ -148,7 +149,7 @@
       </div>
     </div>
 
-    <div id="centeredContent">
+    <div id="centeredContent" hidden$="[[!showSearch]]">
       <cr-toolbar-search-field id="search" narrow="[[narrow]]"
           label="[[searchPrompt]]" clear-label="[[clearLabel]]"
           spinner-active="[[spinnerActive]]"

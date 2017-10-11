@@ -34,6 +34,8 @@ cr.define('extensions', function() {
         value: false,
       },
 
+      isGuest: Boolean,
+
       // <if expr="chromeos">
       kioskEnabled: Boolean,
       // </if>
