@@ -398,6 +398,8 @@ source_set("browser") {
     "background_fetch/background_fetch_job_controller.h",
     "background_fetch/background_fetch_registration_id.cc",
     "background_fetch/background_fetch_registration_id.h",
+    "background_fetch/background_fetch_registration_notifier.cc",
+    "background_fetch/background_fetch_registration_notifier.h",
     "background_fetch/background_fetch_request_info.cc",
     "background_fetch/background_fetch_request_info.h",
     "background_fetch/background_fetch_service_impl.cc",

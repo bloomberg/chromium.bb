@@ -56,6 +56,9 @@ class CONTENT_EXPORT BackgroundFetchServiceImpl
   void GetDeveloperIds(int64_t service_worker_registration_id,
                        const url::Origin& origin,
                        GetDeveloperIdsCallback callback) override;
+  void AddRegistrationObserver(
+      const std::string& unique_id,
+      blink::mojom::BackgroundFetchRegistrationObserverPtr observer) override;
 
  private:
   // Validates and returns whether the |developer_id|, |unique_id|, |requests|

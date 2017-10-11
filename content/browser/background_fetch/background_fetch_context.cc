@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "content/browser/background_fetch/background_fetch_job_controller.h"
 #include "content/browser/background_fetch/background_fetch_registration_id.h"
+#include "content/browser/background_fetch/background_fetch_registration_notifier.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/browser/background_fetch_delegate.h"
 #include "content/public/browser/blob_handle.h"
@@ -40,6 +41,8 @@ BackgroundFetchContext::BackgroundFetchContext(
       data_manager_(browser_context, service_worker_context),
       event_dispatcher_(service_worker_context),
       delegate_proxy_(browser_context_->GetBackgroundFetchDelegate()),
+      registration_notifier_(
+          std::make_unique<BackgroundFetchRegistrationNotifier>()),
       weak_factory_(this) {
   // Although this lives only on the IO thread, it is constructed on UI thread.
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -109,6 +112,12 @@ BackgroundFetchJobController* BackgroundFetchContext::GetActiveFetch(
   return controller;
 }
 
+void BackgroundFetchContext::AddRegistrationObserver(
+    const std::string& unique_id,
+    blink::mojom::BackgroundFetchRegistrationObserverPtr observer) {
+  registration_notifier_->AddObserver(unique_id, std::move(observer));
+}
+
 void BackgroundFetchContext::CreateController(
     const BackgroundFetchRegistrationId& registration_id,
     const BackgroundFetchOptions& options) {
@@ -134,6 +143,9 @@ void BackgroundFetchContext::DidCompleteJob(
 
   const BackgroundFetchRegistrationId& registration_id =
       controller->registration_id();
+
+  // Delete observers for the registration, there won't be any future updates.
+  registration_notifier_->RemoveObservers(registration_id.unique_id());
 
   DCHECK_GT(active_fetches_.count(registration_id.unique_id()), 0u);
   switch (controller->state()) {
