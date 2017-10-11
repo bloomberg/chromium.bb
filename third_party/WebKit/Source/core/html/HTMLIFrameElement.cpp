@@ -186,14 +186,15 @@ void HTMLIFrameElement::ParseAttribute(
               kOtherMessageSource, kWarningMessageLevel, message));
         }
       }
-
-      if (old_syntax) {
-        UseCounter::Count(
-            GetDocument(),
-            WebFeature::kFeaturePolicyAllowAttributeDeprecatedSyntax);
-      } else {
-        UseCounter::Count(GetDocument(),
-                          WebFeature::kFeaturePolicyAllowAttribute);
+      if (!value.IsEmpty()) {
+        if (old_syntax) {
+          UseCounter::Count(
+              GetDocument(),
+              WebFeature::kFeaturePolicyAllowAttributeDeprecatedSyntax);
+        } else {
+          UseCounter::Count(GetDocument(),
+                            WebFeature::kFeaturePolicyAllowAttribute);
+        }
       }
     }
   } else {
