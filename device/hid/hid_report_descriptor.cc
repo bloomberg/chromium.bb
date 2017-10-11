@@ -4,6 +4,7 @@
 
 #include "device/hid/hid_report_descriptor.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 
 namespace device {
@@ -16,11 +17,11 @@ const int kBitsPerByte = 8;
 
 HidReportDescriptor::HidReportDescriptor(const std::vector<uint8_t>& bytes) {
   size_t header_index = 0;
-  HidReportDescriptorItem* item = NULL;
+  HidReportDescriptorItem* item = nullptr;
   while (header_index < bytes.size()) {
     item = new HidReportDescriptorItem(&bytes[header_index],
                                        bytes.size() - header_index, item);
-    items_.push_back(linked_ptr<HidReportDescriptorItem>(item));
+    items_.push_back(base::WrapUnique(item));
     header_index += item->GetSize();
   }
 }
@@ -57,12 +58,7 @@ void HidReportDescriptor::GetDetails(
   // Local tags data:
   uint32_t current_usage = 0;
 
-  for (std::vector<linked_ptr<HidReportDescriptorItem> >::const_iterator
-           items_iter = items().begin();
-       items_iter != items().end();
-       ++items_iter) {
-    linked_ptr<HidReportDescriptorItem> current_item = *items_iter;
-
+  for (const auto& current_item : items()) {
     switch (current_item->tag()) {
       // Main tags:
       case HidReportDescriptorItem::kTagCollection:

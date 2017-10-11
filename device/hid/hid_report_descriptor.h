@@ -8,9 +8,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
-#include "base/memory/linked_ptr.h"
 #include "device/hid/hid_collection_info.h"
 #include "device/hid/hid_report_descriptor_item.h"
 
@@ -24,7 +24,7 @@ class HidReportDescriptor {
   HidReportDescriptor(const std::vector<uint8_t>& bytes);
   ~HidReportDescriptor();
 
-  const std::vector<linked_ptr<HidReportDescriptorItem> >& items() const {
+  const std::vector<std::unique_ptr<HidReportDescriptorItem>>& items() const {
     return items_;
   }
 
@@ -37,7 +37,7 @@ class HidReportDescriptor {
                   size_t* max_feature_report_size);
 
  private:
-  std::vector<linked_ptr<HidReportDescriptorItem> > items_;
+  std::vector<std::unique_ptr<HidReportDescriptorItem>> items_;
 };
 
 }  // namespace device
