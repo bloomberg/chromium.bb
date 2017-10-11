@@ -135,10 +135,6 @@ declare_args() {
 # TODO(xhwang): Remove |enable_plugins| once pepper CDM support is removed.
 enable_library_cdms = enable_plugins && (is_linux || is_mac || is_win)
 
-# Enables host verification for CDMs.
-enable_cdm_host_verification = enable_library_cdms && (is_mac || is_win) &&
-                               (is_chrome_branded || enable_widevine)
-
 declare_args() {
   # Experiment to enable mojo media services (e.g. "renderer", "cdm", see
   # |mojo_media_services|). When enabled, selected mojo paths will be enabled in
@@ -157,6 +153,11 @@ declare_args() {
   # will be linked if this feature is enabled, increasing the binary size. This
   # feature does not make sense if the mojo renderer is not enabled.
   enable_runtime_media_renderer_selection = is_cast_desktop_build
+
+  # Enables host verification for CDMs.
+  # Windows and Mac.
+  enable_cdm_host_verification =
+      enable_library_cdms && (is_mac || is_win) && is_chrome_branded
 }
 
 # This feature can only be enabled when using Mojo media. Furthermore, the
@@ -165,6 +166,9 @@ declare_args() {
 assert(
     !enable_runtime_media_renderer_selection || enable_mojo_media,
     "Runtime media renderer selection only applies when mojo media is enabled.")
+
+assert(!enable_cdm_host_verification || is_mac || is_win,
+       "CDM host verification is only supported on Mac and Windows.")
 
 # Use another declare_args() to pick up possible overrides of enable_mojo_media
 # from --args command line flags. See "gn help declare_args".
