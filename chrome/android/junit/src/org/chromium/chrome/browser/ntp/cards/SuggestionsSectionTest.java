@@ -144,7 +144,8 @@ public class SuggestionsSectionTest {
         assertEquals(setOf(1, 2), section.getItemDismissalGroup(2));
 
         // With snippets.
-        section.appendSuggestions(snippets, /*keepSectionSize=*/true);
+        section.appendSuggestions(snippets, /* keepSectionSize = */ true,
+                /* reportPrefetchedSuggestionsCount = */ false);
         assertEquals(ItemViewType.HEADER, section.getItemViewType(0));
         assertEquals(Collections.emptySet(), section.getItemDismissalGroup(0));
         assertEquals(ItemViewType.SNIPPET, section.getItemViewType(1));
@@ -199,7 +200,8 @@ public class SuggestionsSectionTest {
         assertEquals(2, section.getItemCount()); // When empty, we have the header and status card.
         assertEquals(ItemViewType.STATUS, section.getItemViewType(1));
 
-        section.appendSuggestions(snippets, /*keepSectionSize=*/true);
+        section.appendSuggestions(snippets, /* keepSectionSize = */ true,
+                /* reportPrefetchedSuggestionsCount = */ false);
         verify(mParent).onItemRangeInserted(section, 1, suggestionCount);
         verify(mParent).onItemRangeRemoved(section, 1 + suggestionCount, 1);
     }
@@ -215,7 +217,8 @@ public class SuggestionsSectionTest {
         // Simulate initialisation by the adapter. Here we don't care about the notifications, since
         // the RecyclerView will be updated through notifyDataSetChanged.
         section.setStatus(CategoryStatus.AVAILABLE);
-        section.appendSuggestions(snippets, /*keepSectionSize=*/true);
+        section.appendSuggestions(snippets, /* keepSectionSize = */ true,
+                /* reportPrefetchedSuggestionsCount = */ false);
         reset(mParent);
 
         // We don't clear suggestions when the status is AVAILABLE.
@@ -254,7 +257,8 @@ public class SuggestionsSectionTest {
         section.setStatus(CategoryStatus.AVAILABLE);
         reset(mParent);
 
-        section.appendSuggestions(snippets, /*keepSectionSize=*/true);
+        section.appendSuggestions(snippets, /* keepSectionSize = */ true,
+                /* reportPrefetchedSuggestionsCount = */ false);
 
         section.removeSuggestionById(snippets.get(1).mIdWithinCategory);
         verify(mParent).onItemRangeRemoved(section, 2, 1);
@@ -283,7 +287,8 @@ public class SuggestionsSectionTest {
         reset(mParent);
         assertEquals(3, section.getItemCount()); // We have the header and status card and a button.
 
-        section.appendSuggestions(snippets, /*keepSectionSize=*/true);
+        section.appendSuggestions(snippets, /* keepSectionSize = */ true,
+                /* reportPrefetchedSuggestionsCount = */ false);
         assertEquals(4, section.getItemCount());
 
         section.removeSuggestionById(snippets.get(0).mIdWithinCategory);
@@ -330,7 +335,8 @@ public class SuggestionsSectionTest {
 
         SuggestionsSection section = createSectionWithFetchAction(true);
         section.setStatus(CategoryStatus.AVAILABLE);
-        section.appendSuggestions(snippets, /*keepSectionSize=*/true);
+        section.appendSuggestions(snippets, /* keepSectionSize = */ true,
+                /* reportPrefetchedSuggestionsCount = */ false);
 
         // Check that we pick up the correct information.
         assertEquals(Long.valueOf(0L), snippets.get(0).getOfflinePageOfflineId());
@@ -439,7 +445,8 @@ public class SuggestionsSectionTest {
                                 .build());
         SuggestionsSection section = createSection(info);
         section.setStatus(CategoryStatus.AVAILABLE);
-        section.appendSuggestions(createDummySuggestions(suggestionCount, TEST_CATEGORY_ID), true);
+        section.appendSuggestions(createDummySuggestions(suggestionCount, TEST_CATEGORY_ID), true,
+                /* reportPrefetchedSuggestionsCount = */ false);
         assertEquals(ActionItem.State.BUTTON, section.getActionItemForTesting().getState());
 
         // Tap the button
@@ -448,7 +455,8 @@ public class SuggestionsSectionTest {
 
         // Simulate receiving suggestions.
         section.setStatus(CategoryStatus.AVAILABLE);
-        section.appendSuggestions(createDummySuggestions(suggestionCount, TEST_CATEGORY_ID), false);
+        section.appendSuggestions(createDummySuggestions(suggestionCount, TEST_CATEGORY_ID), false,
+                /* reportPrefetchedSuggestionsCount = */ false);
         assertEquals(ActionItem.State.BUTTON, section.getActionItemForTesting().getState());
     }
 
@@ -467,7 +475,7 @@ public class SuggestionsSectionTest {
                 .build());
         section.setStatus(CategoryStatus.AVAILABLE);
         section.appendSuggestions(createDummySuggestions(suggestionCount, REMOTE_TEST_CATEGORY),
-                /*keepSectionSize=*/true);
+                /* keepSectionSize = */ true, /* reportPrefetchedSuggestionsCount = */ false);
         assertEquals(ActionItem.State.BUTTON, section.getActionItemForTesting().getState());
         assertEquals(10, section.getSuggestionsCount());
         assertTrue(section.getCategoryInfo().isRemote());
@@ -510,7 +518,7 @@ public class SuggestionsSectionTest {
                 .build());
         section.setStatus(CategoryStatus.AVAILABLE);
         section.appendSuggestions(createDummySuggestions(10, REMOTE_TEST_CATEGORY),
-                /*keepSectionSize=*/true);
+                /* keepSectionSize = */ true, /* reportPrefetchedSuggestionsCount = */ false);
         assertEquals(ActionItem.State.BUTTON, section.getActionItemForTesting().getState());
         assertTrue(section.getCategoryInfo().isRemote());
 
@@ -792,7 +800,8 @@ public class SuggestionsSectionTest {
         // Append another 3 suggestions.
         List<SnippetArticle> appendedSnippets =
                 createDummySuggestions(3, TEST_CATEGORY_ID, "appended");
-        section.appendSuggestions(appendedSnippets, /*keepSectionSize=*/false);
+        section.appendSuggestions(appendedSnippets, /* keepSectionSize = */ false,
+                /* reportPrefetchedSuggestionsCount = */ false);
 
         // All 7 snippets should be in place.
         snippets.addAll(appendedSnippets);
@@ -814,7 +823,8 @@ public class SuggestionsSectionTest {
     public void testCardIsNotifiedWhenBecomingFirst() {
         List<SnippetArticle> suggestions = createDummySuggestions(5, /* categoryId = */ 42);
         SuggestionsSection section = createSectionWithFetchAction(false);
-        section.appendSuggestions(suggestions, /*keepSectionSize=*/true);
+        section.appendSuggestions(suggestions, /* keepSectionSize = */ true,
+                /* reportPrefetchedSuggestionsCount = */ false);
         reset(mParent);
 
         // Remove the first card. The second one should get the update.
@@ -828,7 +838,8 @@ public class SuggestionsSectionTest {
     public void testCardIsNotifiedWhenBecomingLast() {
         List<SnippetArticle> suggestions = createDummySuggestions(5, /* categoryId = */ 42);
         SuggestionsSection section = createSectionWithFetchAction(false);
-        section.appendSuggestions(suggestions, /*keepSectionSize=*/true);
+        section.appendSuggestions(suggestions, /* keepSectionSize = */ true,
+                /* reportPrefetchedSuggestionsCount = */ false);
         reset(mParent);
 
         // Remove the last card. The penultimate one should get the update.
@@ -842,7 +853,8 @@ public class SuggestionsSectionTest {
     public void testCardIsNotifiedWhenBecomingSoleCard() {
         List<SnippetArticle> suggestions = createDummySuggestions(2, /* categoryId = */ 42);
         SuggestionsSection section = createSectionWithFetchAction(false);
-        section.appendSuggestions(suggestions, /*keepSectionSize=*/true);
+        section.appendSuggestions(suggestions, /* keepSectionSize = */ true,
+                /* reportPrefetchedSuggestionsCount = */ false);
         reset(mParent);
 
         // Remove the last card. The penultimate one should get the update.
@@ -856,7 +868,8 @@ public class SuggestionsSectionTest {
     public void testGetItemDismissalGroupWithSuggestions() {
         List<SnippetArticle> suggestions = createDummySuggestions(5, TEST_CATEGORY_ID);
         SuggestionsSection section = createSectionWithFetchAction(false);
-        section.appendSuggestions(suggestions, /*keepSectionSize=*/true);
+        section.appendSuggestions(suggestions, /* keepSectionSize = */ true,
+                /* reportPrefetchedSuggestionsCount = */ false);
 
         assertThat(section.getItemDismissalGroup(1).size(), is(1));
         assertThat(section.getItemDismissalGroup(1), contains(1));
@@ -884,11 +897,12 @@ public class SuggestionsSectionTest {
         List<SnippetArticle> suggestions = createDummySuggestions(5, /* categoryId = */ 42);
         SuggestionsSection section = createSectionWithFetchAction(false);
 
-        section.appendSuggestions(suggestions, /*keepSectionSize=*/true);
+        section.appendSuggestions(suggestions, /* keepSectionSize = */ true,
+                /* reportPrefetchedSuggestionsCount = */ false);
         reset(mParent);
 
         section.appendSuggestions(createDummySuggestions(2, /* categoryId = */ 42, "new"),
-                /*keepSectionSize=*/false);
+                /* keepSectionSize = */ false, /* reportPrefetchedSuggestionsCount = */ false);
         verify(mParent).onItemRangeChanged(
                 same(section), eq(5), eq(1), any(PartialBindCallback.class));
     }
@@ -896,7 +910,8 @@ public class SuggestionsSectionTest {
     private SuggestionsSection createSectionWithSuggestions(List<SnippetArticle> snippets) {
         SuggestionsSection section = createSectionWithFetchAction(true);
         section.setStatus(CategoryStatus.AVAILABLE);
-        section.appendSuggestions(snippets, /*keepSectionSize=*/true);
+        section.appendSuggestions(snippets, /* keepSectionSize = */ true,
+                /* reportPrefetchedSuggestionsCount = */ false);
 
         // Reset any notification invocations on the parent from setting the initial list
         // of suggestions.

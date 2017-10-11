@@ -19,7 +19,9 @@ namespace metrics {
 
 namespace {
 
+// Keep in sync with MAX_SUGGESTIONS_PER_SECTION in NewTabPageUma.java.
 const int kMaxSuggestionsPerCategory = 20;
+
 const int kMaxSuggestionsTotal = 50;
 const int kMaxCategories = 10;
 
@@ -64,9 +66,6 @@ const char kHistogramTimeSinceSuggestionFetched[] =
     "NewTabPage.ContentSuggestions.TimeSinceSuggestionFetched";
 
 // Histograms related to prefetching.
-const char kHistogramPrefetchedArticlesCountOnNtpOpenedIfVisibleAndOffline[] =
-    "NewTabPage.ContentSuggestions.CountOnNtpOpenedIfVisible.Articles."
-    "Prefetched.Offline";
 const char kHistogramPrefetchedArticleOpenedWhenOffline[] =
     "NewTabPage.ContentSuggestions.Opened.Articles.Prefetched.Offline";
 const char kHistogramPrefetchedArticleShownWhenOffline[] =
@@ -229,29 +228,18 @@ void RecordContentSuggestionsUsage() {
 
 void OnPageShown(const std::vector<Category>& categories,
                  const std::vector<int>& suggestions_per_category,
-                 const std::vector<int>& prefetched_suggestions_per_category,
-                 const std::vector<bool>& is_category_visible,
-                 bool is_offline) {
+                 const std::vector<bool>& is_category_visible) {
   DCHECK_EQ(categories.size(), suggestions_per_category.size());
-  DCHECK_EQ(categories.size(), prefetched_suggestions_per_category.size());
   DCHECK_EQ(categories.size(), is_category_visible.size());
   int suggestions_total = 0;
   int visible_categories_count = 0;
   for (size_t i = 0; i < categories.size(); ++i) {
-    DCHECK_GE(suggestions_per_category[i],
-              prefetched_suggestions_per_category[i]);
     if (is_category_visible[i]) {
       LogCategoryHistogramPosition(kHistogramCountOnNtpOpenedIfVisible,
                                    categories[i], suggestions_per_category[i],
                                    kMaxSuggestionsPerCategory);
       suggestions_total += suggestions_per_category[i];
       ++visible_categories_count;
-      if (categories[i].IsKnownCategory(KnownCategories::ARTICLES) &&
-          is_offline) {
-        UMA_HISTOGRAM_EXACT_LINEAR(
-            kHistogramPrefetchedArticlesCountOnNtpOpenedIfVisibleAndOffline,
-            prefetched_suggestions_per_category[i], kMaxSuggestionsPerCategory);
-      }
     }
   }
   UMA_HISTOGRAM_EXACT_LINEAR(kHistogramCountOnNtpOpenedIfVisible,

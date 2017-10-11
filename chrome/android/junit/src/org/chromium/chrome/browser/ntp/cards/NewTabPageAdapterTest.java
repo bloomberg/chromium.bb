@@ -77,6 +77,7 @@ import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.suggestions.ContentSuggestionsTestUtils.CategoryInfoBuilder;
 import org.chromium.chrome.test.util.browser.suggestions.FakeSuggestionsSource;
+import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.ArrayList;
@@ -277,6 +278,13 @@ public class NewTabPageAdapterTest {
         MockitoAnnotations.initMocks(this);
 
         ContextUtils.initApplicationContextForTests(RuntimeEnvironment.application);
+
+        // Ensure that NetworkChangeNotifier is initialized.
+        if (!NetworkChangeNotifier.isInitialized()) {
+            NetworkChangeNotifier.init();
+        }
+        NetworkChangeNotifier.forceConnectivityState(true);
+
         // Make sure that isChromeHome() is current value set by the test, not the value saved in
         // the shared preference.
         // TODO(changwan): check if we can clear shared preferences for each test case.

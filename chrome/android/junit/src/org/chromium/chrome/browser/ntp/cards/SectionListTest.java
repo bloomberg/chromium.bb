@@ -54,6 +54,7 @@ import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.suggestions.ContentSuggestionsTestUtils.CategoryInfoBuilder;
 import org.chromium.chrome.test.util.browser.suggestions.FakeSuggestionsSource;
+import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.HashMap;
@@ -88,6 +89,12 @@ public class SectionListTest {
     public void setUp() {
         ContextUtils.initApplicationContextForTests(RuntimeEnvironment.application);
         FeatureUtilities.resetChromeHomeEnabledForTests();
+
+        // Ensure that NetworkChangeNotifier is initialized.
+        if (!NetworkChangeNotifier.isInitialized()) {
+            NetworkChangeNotifier.init();
+        }
+        NetworkChangeNotifier.forceConnectivityState(true);
 
         CardsVariationParameters.setTestVariationParams(new HashMap<>());
         MockitoAnnotations.initMocks(this);
@@ -180,10 +187,10 @@ public class SectionListTest {
         List<SnippetArticle> newSuggestions1 = createDummySuggestions(2, CATEGORY1, "new");
         List<SnippetArticle> newSuggestions2 = createDummySuggestions(2, CATEGORY2, "new");
 
-        sectionList.getSection(CATEGORY1).appendSuggestions(
-                newSuggestions1.subList(0, 1), /*keepSectionSize=*/false);
-        sectionList.getSection(CATEGORY2).appendSuggestions(
-                newSuggestions2, /*keepSectionSize=*/false);
+        sectionList.getSection(CATEGORY1).appendSuggestions(newSuggestions1.subList(0, 1),
+                /* keepSectionSize = */ false, /* reportPrefetchedSuggestionsCount = */ false);
+        sectionList.getSection(CATEGORY2).appendSuggestions(newSuggestions2,
+                /* keepSectionSize = */ false, /* reportPrefetchedSuggestionsCount = */ false);
 
         bindViewHolders(sectionList, 3, sectionList.getItemCount());
 
@@ -216,8 +223,8 @@ public class SectionListTest {
         assertThat(newSuggestions2.get(1).getPerSectionRank(), equalTo(5));
 
         // Add one more suggestions1
-        sectionList.getSection(CATEGORY1).appendSuggestions(
-                newSuggestions1.subList(1, 2), /*keepSectionSize=*/false);
+        sectionList.getSection(CATEGORY1).appendSuggestions(newSuggestions1.subList(1, 2),
+                /* keepSectionSize = */ false, /* reportPrefetchedSuggestionsCount = */ false);
         bindViewHolders(sectionList);
 
         // After the changes we should have:
