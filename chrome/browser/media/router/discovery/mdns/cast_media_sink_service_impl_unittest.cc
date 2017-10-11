@@ -481,8 +481,7 @@ TEST_F(CastMediaSinkServiceImplTest, TestOnChannelErrorMayRetryForCastSink) {
   media_sink_service_impl_.SetTaskRunnerForTest(mock_time_task_runner_);
 
   // There is an existing cast sink in |current_sinks_map_|.
-  media_sink_service_impl_.current_sinks_map_[ip_endpoint1.address()] =
-      cast_sink;
+  media_sink_service_impl_.current_sinks_map_[ip_endpoint1] = cast_sink;
   EXPECT_CALL(socket, ready_state())
       .WillRepeatedly(Return(cast_channel::ReadyState::CLOSED));
   media_sink_service_impl_.OnError(
@@ -571,12 +570,9 @@ TEST_F(CastMediaSinkServiceImplTest, TestOnFetchCompleted) {
   net::IPEndPoint ip_endpoint3 = CreateIPEndPoint(3);
 
   // Find Cast sink 1, 2, 3
-  media_sink_service_impl_.current_sinks_map_[ip_endpoint1.address()] =
-      cast_sink1;
-  media_sink_service_impl_.current_sinks_map_[ip_endpoint2.address()] =
-      cast_sink2;
-  media_sink_service_impl_.current_sinks_map_[ip_endpoint3.address()] =
-      cast_sink3;
+  media_sink_service_impl_.current_sinks_map_[ip_endpoint1] = cast_sink1;
+  media_sink_service_impl_.current_sinks_map_[ip_endpoint2] = cast_sink2;
+  media_sink_service_impl_.current_sinks_map_[ip_endpoint3] = cast_sink3;
 
   // Callback returns Cast sink 1, 2, 3
   media_sink_service_impl_.OnFetchCompleted();
@@ -594,8 +590,7 @@ TEST_F(CastMediaSinkServiceImplTest, TestAttemptConnection) {
   net::IPEndPoint ip_endpoint2 = CreateIPEndPoint(2);
 
   // Find Cast sink 1
-  media_sink_service_impl_.current_sinks_map_[ip_endpoint1.address()] =
-      cast_sink1;
+  media_sink_service_impl_.current_sinks_map_[ip_endpoint1] = cast_sink1;
 
   EXPECT_CALL(*mock_cast_socket_service_,
               OpenSocketInternal(ip_endpoint1, _, _))
@@ -1028,9 +1023,9 @@ TEST_F(CastMediaSinkServiceImplTest, DualDiscoveryDoesntDuplicateCacheItems) {
   content::RunAllTasksUntilIdle();
 
   // The same sink will be discovered via dial and mdns.
-  MediaSinkInternal sink1_cast = CreateCastSink(1);
-  MediaSinkInternal sink1_dial = CreateDialSink(1);
-  net::IPEndPoint ip_endpoint1_cast = CreateIPEndPoint(1);
+  MediaSinkInternal sink1_cast = CreateCastSink(0);
+  MediaSinkInternal sink1_dial = CreateDialSink(0);
+  net::IPEndPoint ip_endpoint1_cast = CreateIPEndPoint(0);
   net::IPEndPoint ip_endpoint1_dial(sink1_dial.dial_data().ip_address,
                                     CastMediaSinkServiceImpl::kCastControlPort);
   std::vector<MediaSinkInternal> sink_list1{sink1_cast};
