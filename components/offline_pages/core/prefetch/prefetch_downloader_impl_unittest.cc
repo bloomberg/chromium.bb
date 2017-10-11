@@ -46,7 +46,7 @@ class PrefetchDownloaderImplTest : public PrefetchRequestTestBase {
 
     auto downloader = base::MakeUnique<PrefetchDownloaderImpl>(
         &download_service_, kTestChannel);
-    downloader->SetClockForTest(base::WrapUnique(clock_));
+    downloader->SetClockForTesting(base::WrapUnique(clock_));
     download_service_.SetFailedDownload(kFailedDownloadId, false);
     download_service_.SetIsReady(true);
     download_client_ = base::MakeUnique<TestDownloadClient>(downloader.get());
