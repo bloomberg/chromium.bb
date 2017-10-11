@@ -188,6 +188,10 @@ class V8RuntimeStatsMobileBrowsingBenchmark(
   PLATFORM = 'mobile'
   SUPPORTED_PLATFORMS = [story.expectations.ALL_MOBILE]
 
+  def SetExtraBrowserOptions(self, options):
+    options.AppendExtraBrowserArgs(
+      '--enable-blink-features=BlinkRuntimeCallStats')
+
   def GetExpectations(self):
     class StoryExpectations(story.expectations.StoryExpectations):
       def SetExpectations(self):
