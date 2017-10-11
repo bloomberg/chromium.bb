@@ -20,6 +20,10 @@ namespace net {
 
 namespace {
 
+namespace test_default {
+#include "net/http/transport_security_state_static_unittest_default.h"
+}
+
 HashValue GetTestHashValue(uint8_t label, HashValueTag tag) {
   HashValue hash_value(tag);
   memset(hash_value.data(), label, hash_value.size());
@@ -88,6 +92,10 @@ bool ParseAsHPKPHeader(const std::string& value,
 }
 
 class HttpSecurityHeadersTest : public testing::Test {
+ public:
+  ~HttpSecurityHeadersTest() override {
+    SetTransportSecurityStateSourceForTesting(nullptr);
+  }
 };
 
 
@@ -652,19 +660,14 @@ TEST_F(HttpSecurityHeadersTest, ValidPKPHeadersSHA256) {
   TestValidPKPHeaders(HASH_VALUE_SHA256);
 }
 
-#if !BUILDFLAG(INCLUDE_TRANSPORT_SECURITY_STATE_PRELOAD_LIST)
-#define MAYBE_UpdateDynamicPKPOnly DISABLED_UpdateDynamicPKPOnly
-#else
-#define MAYBE_UpdateDynamicPKPOnly UpdateDynamicPKPOnly
-#endif
+TEST_F(HttpSecurityHeadersTest, UpdateDynamicPKPOnly) {
+  SetTransportSecurityStateSourceForTesting(&test_default::kHSTSSource);
 
-TEST_F(HttpSecurityHeadersTest, MAYBE_UpdateDynamicPKPOnly) {
   TransportSecurityState state;
   TransportSecurityState::STSState static_sts_state;
   TransportSecurityState::PKPState static_pkp_state;
 
-  // docs.google.com has preloaded pins.
-  std::string domain = "docs.google.com";
+  std::string domain = "no-rejected-pins-pkp.preloaded.test";
   state.enable_static_pins_ = true;
   EXPECT_TRUE(
       state.GetStaticDomainState(domain, &static_sts_state, &static_pkp_state));
@@ -676,7 +679,7 @@ TEST_F(HttpSecurityHeadersTest, MAYBE_UpdateDynamicPKPOnly) {
   HashValue backup_hash = GetTestHashValue(2, HASH_VALUE_SHA256);
   std::string good_pin = GetTestPin(1, HASH_VALUE_SHA256);
   std::string backup_pin = GetTestPin(2, HASH_VALUE_SHA256);
-  GURL report_uri("http://google.com");
+  GURL report_uri("http://report-uri.test/pkp");
   std::string header = "max-age = 10000; " + good_pin + "; " + backup_pin +
                        ";report-uri=\"" + report_uri.spec() + "\"";
 
@@ -727,19 +730,14 @@ TEST_F(HttpSecurityHeadersTest, MAYBE_UpdateDynamicPKPOnly) {
       base::ContainsValue(new_dynamic_pkp_state.spki_hashes, backup_hash));
 }
 
-#if !BUILDFLAG(INCLUDE_TRANSPORT_SECURITY_STATE_PRELOAD_LIST)
-#define MAYBE_UpdateDynamicPKPMaxAge0 DISABLED_UpdateDynamicPKPMaxAge0
-#else
-#define MAYBE_UpdateDynamicPKPMaxAge0 UpdateDynamicPKPMaxAge0
-#endif
+TEST_F(HttpSecurityHeadersTest, UpdateDynamicPKPMaxAge0) {
+  SetTransportSecurityStateSourceForTesting(&test_default::kHSTSSource);
 
-TEST_F(HttpSecurityHeadersTest, MAYBE_UpdateDynamicPKPMaxAge0) {
   TransportSecurityState state;
   TransportSecurityState::STSState static_sts_state;
   TransportSecurityState::PKPState static_pkp_state;
 
-  // docs.google.com has preloaded pins.
-  std::string domain = "docs.google.com";
+  std::string domain = "no-rejected-pins-pkp.preloaded.test";
   state.enable_static_pins_ = true;
   ASSERT_TRUE(
       state.GetStaticDomainState(domain, &static_sts_state, &static_pkp_state));
@@ -811,19 +809,14 @@ TEST_F(HttpSecurityHeadersTest, MAYBE_UpdateDynamicPKPMaxAge0) {
 // Tests that when a static HSTS and a static HPKP entry are present, adding a
 // dynamic HSTS header does not clobber the static HPKP entry. Further, adding a
 // dynamic HPKP entry could not affect the HSTS entry for the site.
-#if !BUILDFLAG(INCLUDE_TRANSPORT_SECURITY_STATE_PRELOAD_LIST)
-#define MAYBE_NoClobberPins DISABLED_NoClobberPins
-#else
-#define MAYBE_NoClobberPins NoClobberPins
-#endif
+TEST_F(HttpSecurityHeadersTest, NoClobberPins) {
+  SetTransportSecurityStateSourceForTesting(&test_default::kHSTSSource);
 
-TEST_F(HttpSecurityHeadersTest, MAYBE_NoClobberPins) {
   TransportSecurityState state;
   TransportSecurityState::STSState sts_state;
   TransportSecurityState::PKPState pkp_state;
 
-  // accounts.google.com has preloaded pins.
-  std::string domain = "accounts.google.com";
+  std::string domain = "hsts-hpkp-preloaded.test";
   state.enable_static_pins_ = true;
 
   // Retrieve the static STS and PKP states as it is by default, including its

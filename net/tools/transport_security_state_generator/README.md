@@ -227,6 +227,15 @@ as for the official Chromium list.
 
 All these tests are part of the `net_unittests` target.
 
+#### Writing tests that depend on static transport security state
+
+Tests in `net_unittests` (except for `TransportSecurityStateStaticTest`) should
+not depend on the real preload list. If you are writing tests that require a
+static transport security state use
+`transport_security_state_static_unittest_default.json` instead. Tests can
+override the active preload list by calling
+`SetTransportSecurityStateSourceForTesting`.
+
 ## See also
 
 * <https://hstspreload.org/>
