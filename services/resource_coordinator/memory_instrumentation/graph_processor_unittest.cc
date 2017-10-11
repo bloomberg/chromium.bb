@@ -38,12 +38,15 @@ TEST(GraphProcessorTest, ComputeMemoryGraph) {
   auto id_to_dump_it = global_dump->process_dump_graphs().find(1);
   auto* first_child = id_to_dump_it->second->FindNode("test1");
   ASSERT_NE(first_child, nullptr);
+  ASSERT_EQ(first_child->parent(), id_to_dump_it->second->root());
 
   auto* second_child = first_child->GetChild("test2");
   ASSERT_NE(second_child, nullptr);
+  ASSERT_EQ(second_child->parent(), first_child);
 
   auto* third_child = second_child->GetChild("test3");
   ASSERT_NE(third_child, nullptr);
+  ASSERT_EQ(third_child->parent(), second_child);
 
   auto* direct = id_to_dump_it->second->FindNode("test1/test2/test3");
   ASSERT_EQ(third_child, direct);

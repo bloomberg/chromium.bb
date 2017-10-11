@@ -40,13 +40,14 @@ void GlobalDumpGraph::AddNodeOwnershipEdge(Node* owner,
   owned->AddOwnedByEdge(edge);
 }
 
-Node* GlobalDumpGraph::CreateNode(Process* process_graph) {
-  all_nodes_.emplace_front(process_graph);
+Node* GlobalDumpGraph::CreateNode(Process* process_graph, Node* parent) {
+  all_nodes_.emplace_front(process_graph, parent);
   return &*all_nodes_.begin();
 }
 
 Process::Process(GlobalDumpGraph* global_graph)
-    : global_graph_(global_graph), root_(global_graph->CreateNode(this)) {}
+    : global_graph_(global_graph),
+      root_(global_graph->CreateNode(this, nullptr)) {}
 Process::~Process() {}
 
 Node* Process::CreateNode(MemoryAllocatorDumpGuid guid,
@@ -62,7 +63,7 @@ Node* Process::CreateNode(MemoryAllocatorDumpGuid guid,
     Node* parent = current;
     current = current->GetChild(key);
     if (!current) {
-      current = global_graph_->CreateNode(this);
+      current = global_graph_->CreateNode(this, parent);
       parent->InsertChild(key, current);
     }
   }
@@ -85,8 +86,8 @@ Node* Process::FindNode(base::StringPiece path) {
   return current;
 }
 
-Node::Node(Process* dump_graph)
-    : dump_graph_(dump_graph), owns_edge_(nullptr) {}
+Node::Node(Process* dump_graph, Node* parent)
+    : dump_graph_(dump_graph), parent_(parent), owns_edge_(nullptr) {}
 Node::~Node() {}
 
 Node* Node::GetChild(base::StringPiece name) {

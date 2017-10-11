@@ -24,8 +24,8 @@ TEST(GlobalDumpGraphTest, CreateContainerForProcess) {
 
 TEST(GlobalDumpGraphTest, AddNodeOwnershipEdge) {
   GlobalDumpGraph global_dump_graph;
-  Node owner(global_dump_graph.shared_memory_graph());
-  Node owned(global_dump_graph.shared_memory_graph());
+  Node owner(global_dump_graph.shared_memory_graph(), nullptr);
+  Node owned(global_dump_graph.shared_memory_graph(), nullptr);
 
   global_dump_graph.AddNodeOwnershipEdge(&owner, &owned, 1);
 
@@ -63,31 +63,42 @@ TEST(ProcessTest, CreateAndFindNode) {
   ASSERT_EQ(nodes_by_guid.find(MemoryAllocatorDumpGuid(5))->second, fifth);
 }
 
+TEST(ProcessTest, CreateNodeParent) {
+  GlobalDumpGraph global_dump_graph;
+  Process graph(&global_dump_graph);
+
+  Node* parent = graph.CreateNode(MemoryAllocatorDumpGuid(1), "simple");
+  Node* child = graph.CreateNode(MemoryAllocatorDumpGuid(1), "simple/child");
+
+  ASSERT_EQ(parent->parent(), graph.root());
+  ASSERT_EQ(child->parent(), parent);
+}
+
 TEST(NodeTest, GetChild) {
   GlobalDumpGraph global_dump_graph;
-  Node node(global_dump_graph.shared_memory_graph());
+  Node node(global_dump_graph.shared_memory_graph(), nullptr);
 
   ASSERT_EQ(node.GetChild("test"), nullptr);
 
-  Node child(global_dump_graph.shared_memory_graph());
+  Node child(global_dump_graph.shared_memory_graph(), &node);
   node.InsertChild("child", &child);
   ASSERT_EQ(node.GetChild("child"), &child);
 }
 
 TEST(NodeTest, InsertChild) {
   GlobalDumpGraph global_dump_graph;
-  Node node(global_dump_graph.shared_memory_graph());
+  Node node(global_dump_graph.shared_memory_graph(), nullptr);
 
   ASSERT_EQ(node.GetChild("test"), nullptr);
 
-  Node child(global_dump_graph.shared_memory_graph());
+  Node child(global_dump_graph.shared_memory_graph(), &node);
   node.InsertChild("child", &child);
   ASSERT_EQ(node.GetChild("child"), &child);
 }
 
 TEST(NodeTest, AddEntry) {
   GlobalDumpGraph global_dump_graph;
-  Node node(global_dump_graph.shared_memory_graph());
+  Node node(global_dump_graph.shared_memory_graph(), nullptr);
 
   node.AddEntry("scalar", Node::Entry::ScalarUnits::kBytes, 100ul);
   ASSERT_EQ(node.entries().size(), 1ul);
