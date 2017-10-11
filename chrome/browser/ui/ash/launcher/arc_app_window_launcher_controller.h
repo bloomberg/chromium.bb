@@ -9,13 +9,15 @@
 #include <memory>
 #include <vector>
 
-#include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/macros.h"
+#include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_shelf_id.h"
+#include "chrome/browser/ui/ash/tablet_mode_client.h"
+#include "chrome/browser/ui/ash/tablet_mode_client_observer.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/aura/env_observer.h"
 #include "ui/aura/window_observer.h"
@@ -33,7 +35,7 @@ class Profile;
 class ArcAppWindowLauncherController : public AppWindowLauncherController,
                                        public aura::EnvObserver,
                                        public aura::WindowObserver,
-                                       public ash::TabletModeObserver,
+                                       public TabletModeClientObserver,
                                        public ArcAppListPrefs::Observer,
                                        public arc::ArcSessionManager::Observer {
  public:
@@ -59,9 +61,8 @@ class ArcAppWindowLauncherController : public AppWindowLauncherController,
                          aura::Window* gained_active,
                          aura::Window* lost_active) override;
 
-  // ash::TabletModeObserver:
-  void OnTabletModeStarted() override;
-  void OnTabletModeEnded() override;
+  // TabletModeClient:
+  void OnTabletModeToggled(bool enabled) override;
 
   // ArcAppListPrefs::Observer:
   void OnAppReadyChanged(const std::string& app_id, bool ready) override;
@@ -125,7 +126,7 @@ class ArcAppWindowLauncherController : public AppWindowLauncherController,
   ShelfGroupToAppControllerMap app_shelf_group_to_controller_map_;
   std::vector<aura::Window*> observed_windows_;
   Profile* observed_profile_ = nullptr;
-  bool observing_shell_ = false;
+  ScopedObserver<TabletModeClient, TabletModeClientObserver> tablet_observer_;
 
   // The time when the ARC OptIn management check was started. This happens
   // right after user agrees the ToS or in some cases for managed user when ARC
