@@ -35,7 +35,6 @@ static_library("browser_sync") {
     "//components/prefs",
     "//components/reading_list/features:flags",
     "//components/signin/core/browser",
-    "//components/strings",
     "//components/sync_bookmarks",
     "//components/sync_preferences",
     "//components/sync_sessions",
@@ -44,7 +43,6 @@ static_library("browser_sync") {
     "//components/version_info:generate_version_info",
     "//google_apis",
     "//net",
-    "//ui/base",
   ]
 }
 
@@ -77,7 +75,6 @@ source_set("unit_tests") {
     "//components/signin/core/browser",
     "//components/signin/core/browser:test_support",
     "//components/signin/core/common:common",
-    "//components/strings",
     "//components/sync",
     "//components/sync:test_support_driver",
     "//components/sync:test_support_engine",
@@ -94,7 +91,6 @@ source_set("unit_tests") {
     "//net",
     "//testing/gmock",
     "//testing/gtest",
-    "//ui/base",
   ]
 }
 

@@ -14,12 +14,15 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "components/signin/core/browser/signin_manager_base.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 #include "components/sync/engine/sync_status.h"
 #include "components/sync/engine/sync_string_conversions.h"
 #include "components/sync/model/time.h"
 #include "components/sync/protocol/proto_enum_conversions.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/l10n/time_format.h"
 
 using base::DictionaryValue;
 using base::ListValue;
@@ -250,6 +253,20 @@ std::string GetTimeStr(base::Time time, const std::string& default_msg) {
   return time_str;
 }
 
+base::string16 GetLastSyncedTimeString(base::Time last_synced_time) {
+  if (last_synced_time.is_null())
+    return l10n_util::GetStringUTF16(IDS_SYNC_TIME_NEVER);
+
+  base::TimeDelta time_since_last_sync = base::Time::Now() - last_synced_time;
+
+  if (time_since_last_sync < base::TimeDelta::FromMinutes(1))
+    return l10n_util::GetStringUTF16(IDS_SYNC_TIME_JUST_NOW);
+
+  return ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_ELAPSED,
+                                ui::TimeFormat::LENGTH_SHORT,
+                                time_since_last_sync);
+}
+
 std::string GetConnectionStatus(const SyncService::SyncTokenStatus& status) {
   std::string message;
   switch (status.connection_status) {
@@ -460,7 +477,7 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
   next_token_request.SetValue(
       GetTimeStr(token_status.next_token_request_time, "not scheduled"));
 
-  last_synced.SetValue(service->GetLastSyncedTimeString());
+  last_synced.SetValue(GetLastSyncedTimeString(service->GetLastSyncedTime()));
   is_setup_complete.SetValue(service->IsFirstSetupComplete());
   is_local_sync_enabled.SetValue(service->IsLocalSyncEnabled());
   if (service->IsLocalSyncEnabled() && is_status_valid) {

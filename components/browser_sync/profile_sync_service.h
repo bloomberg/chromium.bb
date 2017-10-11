@@ -294,7 +294,7 @@ class ProfileSyncService : public syncer::SyncServiceBase,
   SyncTokenStatus GetSyncTokenStatus() const override;
   std::string QuerySyncStatusSummaryString() override;
   bool QueryDetailedSyncStatus(syncer::SyncStatus* result) override;
-  base::string16 GetLastSyncedTimeString() const override;
+  base::Time GetLastSyncedTime() const override;
   std::string GetEngineInitializationStateString() const override;
   syncer::SyncCycleSnapshot GetLastCycleSnapshot() const override;
   std::unique_ptr<base::Value> GetTypeStatusMap() override;

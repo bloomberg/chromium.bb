@@ -157,8 +157,8 @@ bool FakeSyncService::QueryDetailedSyncStatus(SyncStatus* result) {
   return false;
 }
 
-base::string16 FakeSyncService::GetLastSyncedTimeString() const {
-  return base::string16();
+base::Time FakeSyncService::GetLastSyncedTime() const {
+  return base::Time();
 }
 
 std::string FakeSyncService::GetEngineInitializationStateString() const {

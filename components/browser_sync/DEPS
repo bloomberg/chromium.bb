@@ -18,12 +18,10 @@ include_rules = [
   "+components/sync_preferences",
   "+components/sync_bookmarks",
   "+components/sync_sessions",
-  "+components/strings",
   "+components/variations",
   "+components/version_info",
   "+components/webdata/common",
   "+components/webdata_services",
   "+google_apis",
   "+net",
-  "+ui/base/l10n",
 ]

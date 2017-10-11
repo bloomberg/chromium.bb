@@ -24,7 +24,6 @@
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_signin_manager.h"
-#include "components/strings/grit/components_strings.h"
 #include "components/sync/base/pref_names.h"
 #include "components/sync/driver/fake_data_type_controller.h"
 #include "components/sync/driver/sync_api_component_factory_mock.h"
@@ -37,7 +36,6 @@
 #include "google_apis/gaia/gaia_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/l10n/l10n_util.h"
 
 using syncer::DataTypeController;
 using syncer::FakeSyncEngine;
@@ -636,16 +634,15 @@ TEST_F(ProfileSyncServiceTest, ClearDataOnSignOut) {
   ExpectSyncEngineCreation(1);
   InitializeForNthSync();
   EXPECT_TRUE(service()->IsSyncActive());
-  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_SYNC_TIME_JUST_NOW),
-            service()->GetLastSyncedTimeString());
+  EXPECT_LT(base::Time::Now() - service()->GetLastSyncedTime(),
+            base::TimeDelta::FromMinutes(1));
   EXPECT_TRUE(service()->GetLocalDeviceInfoProvider()->GetLocalDeviceInfo());
 
   // Sign out.
   service()->RequestStop(ProfileSyncService::CLEAR_DATA);
   PumpLoop();
 
-  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_SYNC_TIME_NEVER),
-            service()->GetLastSyncedTimeString());
+  EXPECT_TRUE(service()->GetLastSyncedTime().is_null());
   EXPECT_FALSE(service()->GetLocalDeviceInfoProvider()->GetLocalDeviceInfo());
 }
 
@@ -924,8 +921,8 @@ TEST_F(ProfileSyncServiceTest, DisableSyncOnClient) {
   InitializeForNthSync();
 
   EXPECT_TRUE(service()->IsSyncActive());
-  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_SYNC_TIME_JUST_NOW),
-            service()->GetLastSyncedTimeString());
+  EXPECT_LT(base::Time::Now() - service()->GetLastSyncedTime(),
+            base::TimeDelta::FromMinutes(1));
   EXPECT_TRUE(service()->GetLocalDeviceInfoProvider()->GetLocalDeviceInfo());
 
   syncer::SyncProtocolError client_cmd;
@@ -940,8 +937,7 @@ TEST_F(ProfileSyncServiceTest, DisableSyncOnClient) {
 #endif
 
   EXPECT_FALSE(service()->IsSyncActive());
-  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_SYNC_TIME_NEVER),
-            service()->GetLastSyncedTimeString());
+  EXPECT_TRUE(service()->GetLastSyncedTime().is_null());
   EXPECT_FALSE(service()->GetLocalDeviceInfoProvider()->GetLocalDeviceInfo());
 }
 
