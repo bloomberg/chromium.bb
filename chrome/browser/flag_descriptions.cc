@@ -2423,6 +2423,10 @@ const char kEnableImeMenuName[] = "Enable opt-in IME menu";
 const char kEnableImeMenuDescription[] =
     "Enable access to the new IME menu in the Language Settings page.";
 
+const char kEnableTabletSplitViewName[] = "Split view in Tablet mode";
+const char kEnableTabletSplitViewDescription[] =
+    "Enable split view for Chrome OS tablet mode.";
+
 const char kEnableZipArchiverOnFileManagerName[] = "ZIP archiver for Drive";
 const char kEnableZipArchiverOnFileManagerDescription[] =
     "Enable the ability to archive and unpack files on Drive in the Files app";
