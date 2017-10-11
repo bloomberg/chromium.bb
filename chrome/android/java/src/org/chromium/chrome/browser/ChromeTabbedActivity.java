@@ -1577,13 +1577,16 @@ public class ChromeTabbedActivity
 
             @Override
             public int getHeaderResourceId() {
-                if (getBottomSheet() != null
-                        && ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_PROMO)) {
+                if (getBottomSheet() == null
+                        || !getAppMenuPropertiesDelegate().shouldShowPageMenu()) {
+                    return 0;
+                }
+
+                if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_PROMO)) {
                     return R.layout.chrome_home_promo_header;
                 }
 
-                if (getBottomSheet() != null && mControlContainer.getVisibility() == View.VISIBLE
-                        && getAppMenuPropertiesDelegate().shouldShowPageMenu()
+                if (mControlContainer.getVisibility() == View.VISIBLE
                         && !getBottomSheet().isSheetOpen()) {
                     Tracker tracker =
                             TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
