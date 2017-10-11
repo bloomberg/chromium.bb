@@ -65,7 +65,6 @@ static void OnPageShown(
     const JavaParamRef<jclass>& caller,
     const JavaParamRef<jintArray>& jcategories,
     const JavaParamRef<jintArray>& jsuggestions_per_category,
-    const JavaParamRef<jintArray>& jprefetched_suggestions_per_category,
     const JavaParamRef<jbooleanArray>& jis_category_visible) {
   std::vector<int> categories_int;
   JavaIntArrayToIntVector(env, jcategories, &categories_int);
@@ -74,11 +73,6 @@ static void OnPageShown(
   JavaIntArrayToIntVector(env, jsuggestions_per_category,
                           &suggestions_per_category);
   DCHECK_EQ(categories_int.size(), suggestions_per_category.size());
-
-  std::vector<int> prefetched_suggestions_per_category;
-  JavaIntArrayToIntVector(env, jprefetched_suggestions_per_category,
-                          &prefetched_suggestions_per_category);
-  DCHECK_EQ(categories_int.size(), prefetched_suggestions_per_category.size());
 
   std::vector<bool> is_category_visible;
   JavaBooleanArrayToBoolVector(env, jis_category_visible, &is_category_visible);
@@ -89,9 +83,8 @@ static void OnPageShown(
     categories.push_back(Category::FromIDValue(categories_int[i]));
   }
 
-  ntp_snippets::metrics::OnPageShown(
-      categories, suggestions_per_category, prefetched_suggestions_per_category,
-      is_category_visible, net::NetworkChangeNotifier::IsOffline());
+  ntp_snippets::metrics::OnPageShown(categories, suggestions_per_category,
+                                     is_category_visible);
   GetUserClassifier()->OnEvent(UserClassifier::Metric::NTP_OPENED);
 }
 

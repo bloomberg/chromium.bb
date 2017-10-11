@@ -374,14 +374,6 @@ public class SuggestionsSection extends InnerNode {
         return mSuggestionsList.getItemCount();
     }
 
-    public int getPrefetchedSuggestionsCount() {
-        int count = 0;
-        for (SnippetArticle suggestion : mSuggestionsList) {
-            if (suggestion.isPrefetched()) ++count;
-        }
-        return count;
-    }
-
     public boolean isDataStale() {
         return mIsDataStale;
     }
@@ -458,7 +450,8 @@ public class SuggestionsSection extends InnerNode {
                     "updateSuggestions: Category %d is stale, will keep already seen suggestions.",
                     getCategory());
         }
-        appendSuggestions(suggestions, /*keepSectionSize=*/true);
+        appendSuggestions(suggestions, /* keepSectionSize = */ true,
+                /* reportPrefetchedSuggestionsCount = */ false);
     }
 
     /**
@@ -466,9 +459,12 @@ public class SuggestionsSection extends InnerNode {
      *
      * @param suggestions The suggestions to be added at the end of the current list.
      * @param keepSectionSize Whether the section size should stay the same -- will be enforced by
-     *                        replacing not-yet-seen suggestions with the new suggestions.
+     *         replacing not-yet-seen suggestions with the new suggestions.
+     * @param reportPrefetchedSuggestionsCount Whether to report the number of prefetched article
+     *         suggestions.
      */
-    public void appendSuggestions(List<SnippetArticle> suggestions, boolean keepSectionSize) {
+    public void appendSuggestions(List<SnippetArticle> suggestions, boolean keepSectionSize,
+            boolean reportPrefetchedSuggestionsCount) {
         if (keepSectionSize) {
             Log.d(TAG, "updateSuggestions: keeping the first %d suggestion",
                     mNumberOfSuggestionsSeen);
@@ -477,11 +473,8 @@ public class SuggestionsSection extends InnerNode {
         }
         mSuggestionsList.addAll(suggestions);
 
-        for (SnippetArticle article : suggestions) {
-            if (!article.requiresExactOfflinePage()) {
-                mOfflineModelObserver.updateOfflinableSuggestionAvailability(article);
-            }
-        }
+        mOfflineModelObserver.updateAllSuggestionsOfflineAvailability(
+                reportPrefetchedSuggestionsCount);
 
         if (!keepSectionSize) {
             NewTabPageUma.recordUIUpdateResult(NewTabPageUma.UI_UPDATE_SUCCESS_APPENDED);
@@ -557,7 +550,8 @@ public class SuggestionsSection extends InnerNode {
                     if (!isAttached()) return; // The section has been dismissed.
 
                     mMoreButton.updateState(ActionItem.State.BUTTON);
-                    appendSuggestions(suggestions, /* keepSectionSize = */ false);
+                    appendSuggestions(suggestions, /* keepSectionSize = */ false,
+                            /* reportPrefetchedSuggestionsCount = */ false);
                 },
                 () -> {  /* failureRunnable */
                     if (!isAttached()) return; // The section has been dismissed.
