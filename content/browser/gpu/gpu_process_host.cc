@@ -519,7 +519,7 @@ GpuProcessHost::~GpuProcessHost() {
 
   std::string message;
   bool block_offscreen_contexts = true;
-  if (!in_process_) {
+  if (!in_process_ && process_launched_) {
     int exit_code;
     base::TerminationStatus status = process_->GetTerminationStatus(
         false /* known_dead */, &exit_code);
