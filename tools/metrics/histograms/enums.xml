@@ -17376,6 +17376,9 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="7" label="File contents internally deleted."/>
   <int value="8" label="File processing was postponed due to filtering."/>
   <int value="9" label="File was skipped/deleted due to filtering."/>
+  <int value="10" label="File was older than maximum allowed age."/>
+  <int value="11" label="File made for too many files in the directory."/>
+  <int value="12" label="File made for too many bytes in the directory."/>
 </enum>
 
 <enum name="FileMetricsProviderEmbeddedProfileResult">

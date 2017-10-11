@@ -144,6 +144,12 @@
 
 namespace {
 
+#if defined(OS_ANDROID) || defined(OS_IOS) || defined(OS_CHROMEOS)
+const int kMaxHistogramStorageKiB = 100 << 10;  // 100 MiB
+#else
+const int kMaxHistogramStorageKiB = 500 << 10;  // 500 MiB
+#endif
+
 // This specifies the amount of time to wait for all renderers to send their
 // data.
 const int kMaxHistogramGatheringWaitDuration = 60000;  // 60 seconds.
@@ -245,12 +251,13 @@ std::unique_ptr<metrics::FileMetricsProvider> CreateFileMetricsProvider(
     base::FilePath browser_metrics_upload_dir = user_data_dir.AppendASCII(
         ChromeMetricsServiceClient::kBrowserMetricsName);
     if (metrics_reporting_enabled) {
-      file_metrics_provider->RegisterSource(
-          metrics::FileMetricsProvider::Params(
-              browser_metrics_upload_dir,
-              metrics::FileMetricsProvider::SOURCE_HISTOGRAMS_ATOMIC_DIR,
-              metrics::FileMetricsProvider::ASSOCIATE_INTERNAL_PROFILE,
-              ChromeMetricsServiceClient::kBrowserMetricsName));
+      metrics::FileMetricsProvider::Params params(
+          browser_metrics_upload_dir,
+          metrics::FileMetricsProvider::SOURCE_HISTOGRAMS_ATOMIC_DIR,
+          metrics::FileMetricsProvider::ASSOCIATE_INTERNAL_PROFILE,
+          ChromeMetricsServiceClient::kBrowserMetricsName);
+      params.max_dir_kib = kMaxHistogramStorageKiB;
+      file_metrics_provider->RegisterSource(params);
 
       base::FilePath active_path;
       base::GlobalHistogramAllocator::ConstructFilePaths(

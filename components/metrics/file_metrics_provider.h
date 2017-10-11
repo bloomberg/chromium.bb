@@ -141,7 +141,10 @@ class FileMetricsProvider : public MetricsProvider,
     const base::StringPiece prefs_key;
 
     // Other parameters that can be set after construction.
-    FilterCallback filter;
+    FilterCallback filter;       // Run-time check for what to do with file.
+    base::TimeDelta max_age;     // Maximum age of a file (0=unlimited).
+    size_t max_dir_kib = 0;      // Maximum bytes in a directory (0=inf).
+    size_t max_dir_files = 100;  // Maximum files in a directory (0=inf).
   };
 
   explicit FileMetricsProvider(PrefService* local_state);
@@ -198,8 +201,17 @@ class FileMetricsProvider : public MetricsProvider,
     // File is scheduled to be tried again later.
     ACCESS_RESULT_FILTER_TRY_LATER,
 
-    // The file was skipped according to filtering rules.
+    // File was skipped according to filtering rules.
     ACCESS_RESULT_FILTER_SKIP_FILE,
+
+    // File was skipped because it exceeds the maximum age.
+    ACCESS_RESULT_TOO_OLD,
+
+    // File was skipped because too many files in directory.
+    ACCESS_RESULT_TOO_MANY_FILES,
+
+    // File was skipped because too many bytes in directory.
+    ACCESS_RESULT_TOO_MANY_BYTES,
 
     ACCESS_RESULT_MAX
   };

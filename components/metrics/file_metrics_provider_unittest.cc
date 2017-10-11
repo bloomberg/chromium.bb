@@ -74,6 +74,8 @@ class FileMetricsProviderTest : public testing::TestWithParam<bool> {
     EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
     FileMetricsProvider::RegisterPrefs(prefs_->registry(), kMetricsName);
     FileMetricsProvider::SetTaskRunnerForTesting(task_runner_);
+    // Get this first so it isn't created inside the persistent allocator.
+    base::GlobalHistogramAllocator::GetCreateHistogramResultHistogram();
   }
 
   ~FileMetricsProviderTest() override {
@@ -178,9 +180,6 @@ class FileMetricsProviderTest : public testing::TestWithParam<bool> {
       int histogram_count,
       const std::function<void(base::PersistentHistogramAllocator*)>&
           callback) {
-    // Get this first so it isn't created inside the persistent allocator.
-    base::GlobalHistogramAllocator::GetCreateHistogramResultHistogram();
-
     base::GlobalHistogramAllocator::CreateWithLocalMemory(
         create_large_files_ ? kLargeFileSize : kSmallFileSize,
         0, kMetricsName);
@@ -294,6 +293,29 @@ TEST_P(FileMetricsProviderTest, AccessMetrics) {
   EXPECT_FALSE(base::PathExists(metrics_file()));
 }
 
+TEST_P(FileMetricsProviderTest, AccessTimeLimitedFile) {
+  ASSERT_FALSE(PathExists(metrics_file()));
+
+  base::Time metrics_time = base::Time::Now() - base::TimeDelta::FromHours(5);
+  std::unique_ptr<base::PersistentHistogramAllocator> histogram_allocator =
+      CreateMetricsFileWithHistograms(2);
+  ASSERT_TRUE(PathExists(metrics_file()));
+  base::TouchFile(metrics_file(), metrics_time, metrics_time);
+
+  // Register the file and allow the "checker" task to run.
+  FileMetricsProvider::Params params(
+      metrics_file(), FileMetricsProvider::SOURCE_HISTOGRAMS_ATOMIC_FILE,
+      FileMetricsProvider::ASSOCIATE_CURRENT_RUN, kMetricsName);
+  params.max_age = base::TimeDelta::FromHours(1);
+  provider()->RegisterSource(params);
+
+  // Attempt to access the file should return nothing.
+  OnDidCreateMetricsLog();
+  RunTasks();
+  EXPECT_EQ(0U, GetSnapshotHistogramCount());
+  EXPECT_FALSE(base::PathExists(metrics_file()));
+}
+
 TEST_P(FileMetricsProviderTest, FilterDelaysFile) {
   ASSERT_FALSE(PathExists(metrics_file()));
 
@@ -365,9 +387,6 @@ TEST_P(FileMetricsProviderTest, FilterSkipsFile) {
 
 TEST_P(FileMetricsProviderTest, AccessDirectory) {
   ASSERT_FALSE(PathExists(metrics_file()));
-
-  // Get this first so it isn't created inside the persistent allocator.
-  base::GlobalHistogramAllocator::GetCreateHistogramResultHistogram();
 
   base::GlobalHistogramAllocator::CreateWithLocalMemory(
       64 << 10, 0, kMetricsName);
@@ -450,11 +469,157 @@ TEST_P(FileMetricsProviderTest, AccessDirectory) {
   EXPECT_TRUE(base::PathExists(metrics_files.GetPath().AppendASCII("baz")));
 }
 
-TEST_P(FileMetricsProviderTest, AccessFilteredDirectory) {
+TEST_P(FileMetricsProviderTest, AccessTimeLimitedDirectory) {
   ASSERT_FALSE(PathExists(metrics_file()));
 
-  // Get this first so it isn't created inside the persistent allocator.
-  base::GlobalHistogramAllocator::GetCreateHistogramResultHistogram();
+  base::GlobalHistogramAllocator::CreateWithLocalMemory(64 << 10, 0,
+                                                        kMetricsName);
+  base::GlobalHistogramAllocator* allocator =
+      base::GlobalHistogramAllocator::Get();
+  base::HistogramBase* histogram;
+
+  // Create one old file and one new file.
+  base::ScopedTempDir metrics_files;
+  EXPECT_TRUE(metrics_files.CreateUniqueTempDir());
+  histogram = base::Histogram::FactoryGet("h1", 1, 100, 10, 0);
+  histogram->Add(1);
+  WriteMetricsFileAtTime(metrics_files.GetPath().AppendASCII("a1.pma"),
+                         allocator,
+                         base::Time::Now() - base::TimeDelta::FromHours(1));
+
+  histogram = base::Histogram::FactoryGet("h2", 1, 100, 10, 0);
+  histogram->Add(2);
+  WriteMetricsFileAtTime(metrics_files.GetPath().AppendASCII("b2.pma"),
+                         allocator, base::Time::Now());
+
+  // The global allocator has to be detached here so that no metrics created
+  // by code called below get stored in it as that would make for potential
+  // use-after-free operations if that code is called again.
+  base::GlobalHistogramAllocator::ReleaseForTesting();
+
+  // Register the file and allow the "checker" task to run.
+  FileMetricsProvider::Params params(
+      metrics_files.GetPath(),
+      FileMetricsProvider::SOURCE_HISTOGRAMS_ATOMIC_DIR,
+      FileMetricsProvider::ASSOCIATE_CURRENT_RUN, kMetricsName);
+  params.max_age = base::TimeDelta::FromMinutes(30);
+  provider()->RegisterSource(params);
+
+  // Only b2, with 2 histograms, should be read.
+  OnDidCreateMetricsLog();
+  RunTasks();
+  EXPECT_EQ(2U, GetSnapshotHistogramCount());
+  OnDidCreateMetricsLog();
+  RunTasks();
+  EXPECT_EQ(0U, GetSnapshotHistogramCount());
+
+  EXPECT_FALSE(base::PathExists(metrics_files.GetPath().AppendASCII("a1.pma")));
+  EXPECT_FALSE(base::PathExists(metrics_files.GetPath().AppendASCII("b2.pma")));
+}
+
+TEST_P(FileMetricsProviderTest, AccessCountLimitedDirectory) {
+  ASSERT_FALSE(PathExists(metrics_file()));
+
+  base::GlobalHistogramAllocator::CreateWithLocalMemory(64 << 10, 0,
+                                                        kMetricsName);
+  base::GlobalHistogramAllocator* allocator =
+      base::GlobalHistogramAllocator::Get();
+  base::HistogramBase* histogram;
+
+  // Create one old file and one new file.
+  base::ScopedTempDir metrics_files;
+  EXPECT_TRUE(metrics_files.CreateUniqueTempDir());
+  histogram = base::Histogram::FactoryGet("h1", 1, 100, 10, 0);
+  histogram->Add(1);
+  WriteMetricsFileAtTime(metrics_files.GetPath().AppendASCII("a1.pma"),
+                         allocator,
+                         base::Time::Now() - base::TimeDelta::FromHours(1));
+
+  histogram = base::Histogram::FactoryGet("h2", 1, 100, 10, 0);
+  histogram->Add(2);
+  WriteMetricsFileAtTime(metrics_files.GetPath().AppendASCII("b2.pma"),
+                         allocator, base::Time::Now());
+
+  // The global allocator has to be detached here so that no metrics created
+  // by code called below get stored in it as that would make for potential
+  // use-after-free operations if that code is called again.
+  base::GlobalHistogramAllocator::ReleaseForTesting();
+
+  // Register the file and allow the "checker" task to run.
+  FileMetricsProvider::Params params(
+      metrics_files.GetPath(),
+      FileMetricsProvider::SOURCE_HISTOGRAMS_ATOMIC_DIR,
+      FileMetricsProvider::ASSOCIATE_CURRENT_RUN, kMetricsName);
+  params.max_dir_files = 1;
+  provider()->RegisterSource(params);
+
+  // Only b2, with 2 histograms, should be read.
+  OnDidCreateMetricsLog();
+  RunTasks();
+  EXPECT_EQ(2U, GetSnapshotHistogramCount());
+  OnDidCreateMetricsLog();
+  RunTasks();
+  EXPECT_EQ(0U, GetSnapshotHistogramCount());
+
+  EXPECT_FALSE(base::PathExists(metrics_files.GetPath().AppendASCII("a1.pma")));
+  EXPECT_FALSE(base::PathExists(metrics_files.GetPath().AppendASCII("b2.pma")));
+}
+
+TEST_P(FileMetricsProviderTest, AccessSizeLimitedDirectory) {
+  // This only works with large files that are big enough to count.
+  if (!create_large_files_)
+    return;
+
+  ASSERT_FALSE(PathExists(metrics_file()));
+
+  size_t file_size_kib = 64;
+  base::GlobalHistogramAllocator::CreateWithLocalMemory(file_size_kib << 10, 0,
+                                                        kMetricsName);
+  base::GlobalHistogramAllocator* allocator =
+      base::GlobalHistogramAllocator::Get();
+  base::HistogramBase* histogram;
+
+  // Create one old file and one new file.
+  base::ScopedTempDir metrics_files;
+  EXPECT_TRUE(metrics_files.CreateUniqueTempDir());
+  histogram = base::Histogram::FactoryGet("h1", 1, 100, 10, 0);
+  histogram->Add(1);
+  WriteMetricsFileAtTime(metrics_files.GetPath().AppendASCII("a1.pma"),
+                         allocator,
+                         base::Time::Now() - base::TimeDelta::FromHours(1));
+
+  histogram = base::Histogram::FactoryGet("h2", 1, 100, 10, 0);
+  histogram->Add(2);
+  WriteMetricsFileAtTime(metrics_files.GetPath().AppendASCII("b2.pma"),
+                         allocator, base::Time::Now());
+
+  // The global allocator has to be detached here so that no metrics created
+  // by code called below get stored in it as that would make for potential
+  // use-after-free operations if that code is called again.
+  base::GlobalHistogramAllocator::ReleaseForTesting();
+
+  // Register the file and allow the "checker" task to run.
+  FileMetricsProvider::Params params(
+      metrics_files.GetPath(),
+      FileMetricsProvider::SOURCE_HISTOGRAMS_ATOMIC_DIR,
+      FileMetricsProvider::ASSOCIATE_CURRENT_RUN, kMetricsName);
+  params.max_dir_kib = file_size_kib + 1;
+  provider()->RegisterSource(params);
+
+  // Only b2, with 2 histograms, should be read.
+  OnDidCreateMetricsLog();
+  RunTasks();
+  EXPECT_EQ(2U, GetSnapshotHistogramCount());
+  OnDidCreateMetricsLog();
+  RunTasks();
+  EXPECT_EQ(0U, GetSnapshotHistogramCount());
+
+  EXPECT_FALSE(base::PathExists(metrics_files.GetPath().AppendASCII("a1.pma")));
+  EXPECT_FALSE(base::PathExists(metrics_files.GetPath().AppendASCII("b2.pma")));
+}
+
+TEST_P(FileMetricsProviderTest, AccessFilteredDirectory) {
+  ASSERT_FALSE(PathExists(metrics_file()));
 
   base::GlobalHistogramAllocator::CreateWithLocalMemory(64 << 10, 0,
                                                         kMetricsName);
@@ -536,7 +701,6 @@ TEST_P(FileMetricsProviderTest, AccessFilteredDirectory) {
 TEST_P(FileMetricsProviderTest, AccessReadWriteMetrics) {
   // Create a global histogram allocator that maps to a file.
   ASSERT_FALSE(PathExists(metrics_file()));
-  base::GlobalHistogramAllocator::GetCreateHistogramResultHistogram();
   base::GlobalHistogramAllocator::CreateWithFile(
       metrics_file(),
       create_large_files_ ? kLargeFileSize : kSmallFileSize,
