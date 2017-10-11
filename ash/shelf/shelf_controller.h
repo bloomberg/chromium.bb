@@ -5,6 +5,7 @@
 #ifndef ASH_SHELF_SHELF_CONTROLLER_H_
 #define ASH_SHELF_SHELF_CONTROLLER_H_
 
+#include "ash/ash_export.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/public/cpp/shelf_model.h"
@@ -23,11 +24,11 @@ namespace ash {
 
 // Ash's ShelfController owns the ShelfModel and implements interface functions
 // that allow Chrome to modify and observe the Shelf and ShelfModel state.
-class ShelfController : public mojom::ShelfController,
-                        public ShelfModelObserver,
-                        public SessionObserver,
-                        public TabletModeObserver,
-                        public WindowTreeHostManager::Observer {
+class ASH_EXPORT ShelfController : public mojom::ShelfController,
+                                   public ShelfModelObserver,
+                                   public SessionObserver,
+                                   public TabletModeObserver,
+                                   public WindowTreeHostManager::Observer {
  public:
   ShelfController();
   ~ShelfController() override;
@@ -60,6 +61,8 @@ class ShelfController : public mojom::ShelfController,
   void ShelfItemDelegateChanged(const ShelfID& id,
                                 ShelfItemDelegate* old_delegate,
                                 ShelfItemDelegate* delegate) override;
+
+  void FlushForTesting();
 
  private:
   // SessionObserver:

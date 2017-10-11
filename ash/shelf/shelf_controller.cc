@@ -299,6 +299,10 @@ void ShelfController::ShelfItemDelegateChanged(const ShelfID& id,
   });
 }
 
+void ShelfController::FlushForTesting() {
+  bindings_.FlushForTesting();
+}
+
 void ShelfController::OnActiveUserPrefServiceChanged(
     PrefService* pref_service) {
   SetShelfBehaviorsFromPrefs();

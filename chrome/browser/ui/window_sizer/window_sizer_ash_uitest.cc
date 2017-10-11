@@ -3,32 +3,81 @@
 // found in the LICENSE file.
 
 #include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_controller.h"
 #include "ash/shelf/shelf_view.h"
+#include "ash/shelf/shelf_view_test_api.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
-#include "base/location.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
-#include "build/build_config.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
-#include "ui/aura/window_event_dispatcher.h"
-#include "ui/base/test/ui_controls.h"
-#include "ui/display/display.h"
-#include "ui/display/screen.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/view.h"
 #include "ui/views/view_model.h"
+#include "ui/wm/core/coordinate_conversion.h"
 
 namespace {
+
+// Get the bounds of the browser shortcut item in the root window space.
+gfx::Rect GetChromeIconBoundsForRootWindow(aura::Window* root) {
+  ash::ShelfView* shelf_view =
+      ash::Shelf::ForWindow(root)->GetShelfViewForTesting();
+  const views::ViewModel* view_model = shelf_view->view_model_for_test();
+  EXPECT_EQ(2, view_model->view_size());
+  gfx::Rect bounds = view_model->view_at(1)->GetBoundsInScreen();
+  wm::ConvertRectFromScreen(root, &bounds);
+  return bounds;
+}
+
+// Ensure animations progress to give the shelf button a non-empty size.
+void EnsureShelfInitialization() {
+  aura::Window* root = ash::Shell::GetPrimaryRootWindow();
+  ash::ShelfView* shelf_view =
+      ash::Shelf::ForWindow(root)->GetShelfViewForTesting();
+  ash::ShelfViewTestAPI(shelf_view).RunMessageLoopUntilAnimationsDone();
+  ASSERT_GT(GetChromeIconBoundsForRootWindow(root).height(), 0);
+}
+
+// Launch a new browser window by left-clicking the browser shortcut item.
+void OpenBrowserUsingShelfOnRootWindow(aura::Window* root) {
+  ui::test::EventGenerator generator(root);
+  gfx::Point center = GetChromeIconBoundsForRootWindow(root).CenterPoint();
+  generator.MoveMouseTo(center);
+  generator.ClickLeftButton();
+  // Ash notifies Chrome that the browser shortcut item was selected.
+  ash::Shell::Get()->shelf_controller()->FlushForTesting();
+  // Chrome replies to Ash that a new window was opened.
+  ChromeLauncherController::instance()->FlushForTesting();
+}
+
+// Launch a new browser window by clicking the "New window" context menu item.
+void OpenBrowserUsingContextMenuOnRootWindow(aura::Window* root) {
+  ui::test::EventGenerator generator(root);
+  gfx::Point chrome_icon = GetChromeIconBoundsForRootWindow(root).CenterPoint();
+  generator.MoveMouseTo(chrome_icon);
+  generator.PressRightButton();
+
+  // Ash notifies Chrome that the browser shortcut item was right-clicked.
+  ash::Shell::Get()->shelf_controller()->FlushForTesting();
+  // Chrome replies to Ash with the context menu items to display.
+  ChromeLauncherController::instance()->FlushForTesting();
+
+  // Move the cursor up to the "New window" menu option - assumes menu content.
+  generator.MoveMouseBy(0, -5 * views::MenuConfig::instance().item_min_height -
+                               views::MenuConfig::instance().separator_height);
+  generator.ReleaseRightButton();
+
+  // Ash notifies Chrome's ShelfItemDelegate that the menu item was selected.
+  ash::Shell::Get()->shelf_controller()->FlushForTesting();
+}
 
 class WindowSizerTest : public InProcessBrowserTest {
  public:
@@ -45,153 +94,71 @@ class WindowSizerTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(WindowSizerTest);
 };
 
-void CloseBrowser(Browser* browser) {
-  browser->window()->Close();
-  base::RunLoop().RunUntilIdle();
-}
-
-gfx::Rect GetChromeIconBoundsForRootWindow(aura::Window* root_window) {
-  const ash::ShelfView* shelf_view =
-      ash::Shelf::ForWindow(root_window)->GetShelfViewForTesting();
-  const views::ViewModel* view_model = shelf_view->view_model_for_test();
-
-  EXPECT_EQ(2, view_model->view_size());
-  return view_model->view_at(1)->GetBoundsInScreen();
-}
-
-void OpenBrowserUsingShelfOnRootWindow(aura::Window* root_window) {
-  ui::test::EventGenerator generator(root_window);
-  gfx::Point center =
-      GetChromeIconBoundsForRootWindow(root_window).CenterPoint();
-  display::Display display =
-      display::Screen::GetScreen()->GetDisplayNearestWindow(root_window);
-  const gfx::Point& origin = display.bounds().origin();
-  center.Offset(- origin.x(), - origin.y());
-  generator.MoveMouseTo(center);
-  generator.ClickLeftButton();
-  // Spin a run loop so Ash can notify Chrome of item selection for handling.
-  base::RunLoop().RunUntilIdle();
-}
-
-}  // namespace
-
-// Disabled due to flaky failures on ChromeOS: https://crbug.com/770138
-IN_PROC_BROWSER_TEST_F(WindowSizerTest,
-                       DISABLED_OpenBrowserUsingShelfOnOtherDisplay) {
+IN_PROC_BROWSER_TEST_F(WindowSizerTest, OpenBrowserUsingShelfItem) {
   // Don't shutdown when closing the last browser window.
   ScopedKeepAlive test_keep_alive(KeepAliveOrigin::BROWSER_PROCESS_CHROMEOS,
                                   KeepAliveRestartOption::DISABLED);
-
   aura::Window::Windows root_windows = ash::Shell::GetAllRootWindows();
-
   BrowserList* browser_list = BrowserList::GetInstance();
+  EnsureShelfInitialization();
 
   EXPECT_EQ(1u, browser_list->size());
-  // Close the browser window so that clicking icon will create a new window.
-  CloseBrowser(browser_list->get(0));
+  // Close the browser window so that clicking the icon creates a new window.
+  CloseBrowserSynchronously(browser_list->get(0));
   EXPECT_EQ(0u, browser_list->size());
   EXPECT_EQ(root_windows[0], ash::Shell::GetRootWindowForNewWindows());
 
   OpenBrowserUsingShelfOnRootWindow(root_windows[1]);
 
-  // A new browser must be created on 2nd display.
+  // A new browser window should be opened on the 2nd display.
   EXPECT_EQ(1u, browser_list->size());
   EXPECT_EQ(root_windows[1],
             browser_list->get(0)->window()->GetNativeWindow()->GetRootWindow());
   EXPECT_EQ(root_windows[1], ash::Shell::GetRootWindowForNewWindows());
 
-  // Close the browser window so that clicking icon will create a new window.
-  CloseBrowser(browser_list->get(0));
+  // Close the browser window so that clicking the icon creates a new window.
+  CloseBrowserSynchronously(browser_list->get(0));
   EXPECT_EQ(0u, browser_list->size());
 
   OpenBrowserUsingShelfOnRootWindow(root_windows[0]);
 
-  // A new browser must be created on 1st display.
+  // A new browser window should be opened on the 1st display.
   EXPECT_EQ(1u, browser_list->size());
   EXPECT_EQ(root_windows[0],
             browser_list->get(0)->window()->GetNativeWindow()->GetRootWindow());
   EXPECT_EQ(root_windows[0], ash::Shell::GetRootWindowForNewWindows());
 }
 
-namespace {
-
-class WindowSizerContextMenuTest : public WindowSizerTest {
- public:
-  WindowSizerContextMenuTest() {}
-  ~WindowSizerContextMenuTest() override {}
-
-  static void Step1(gfx::Point release_point) {
-    ui_controls::SendMouseEventsNotifyWhenDone(
-        ui_controls::RIGHT, ui_controls::DOWN,
-        base::Bind(&WindowSizerContextMenuTest::Step2, release_point));
-  }
-
-  static void Step2(gfx::Point release_point) {
-    ui_controls::SendMouseMoveNotifyWhenDone(
-        release_point.x(), release_point.y(),
-        base::Bind(&WindowSizerContextMenuTest::Step3));
-  }
-
-  static void Step3() {
-    ui_controls::SendMouseEventsNotifyWhenDone(
-        ui_controls::RIGHT, ui_controls::UP,
-        base::Bind(&WindowSizerContextMenuTest::QuitLoop));
-  }
-
-  static void QuitLoop() {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WindowSizerContextMenuTest);
-};
-
-void OpenBrowserUsingContextMenuOnRootWindow(aura::Window* root_window) {
-  gfx::Point chrome_icon =
-      GetChromeIconBoundsForRootWindow(root_window).CenterPoint();
-  gfx::Point release_point = chrome_icon;
-  // -153 moves the cursor up to the "New window" menu option.
-  release_point.Offset(0, -153);
-  ui_controls::SendMouseMoveNotifyWhenDone(
-      chrome_icon.x(), chrome_icon.y(),
-      base::Bind(&WindowSizerContextMenuTest::Step1, release_point));
-  base::RunLoop().Run();
-}
-
-}  // namespace
-
-// Disabled due to flaky failures on ChromeOS: https://crbug.com/770138
-IN_PROC_BROWSER_TEST_F(WindowSizerContextMenuTest,
-                       DISABLED_OpenBrowserUsingContextMenuOnOtherDisplay) {
+IN_PROC_BROWSER_TEST_F(WindowSizerTest, OpenBrowserUsingContextMenu) {
   // Don't shutdown when closing the last browser window.
   ScopedKeepAlive test_keep_alive(KeepAliveOrigin::BROWSER_PROCESS_CHROMEOS,
                                   KeepAliveRestartOption::DISABLED);
+  aura::Window::Windows root_windows = ash::Shell::GetAllRootWindows();
+  BrowserList* browser_list = BrowserList::GetInstance();
+  EnsureShelfInitialization();
 
   views::MenuController::TurnOffMenuSelectionHoldForTest();
 
-  aura::Window::Windows root_windows = ash::Shell::GetAllRootWindows();
-
-  BrowserList* browser_list = BrowserList::GetInstance();
-
   ASSERT_EQ(1u, browser_list->size());
   EXPECT_EQ(root_windows[0], ash::Shell::GetRootWindowForNewWindows());
-  CloseBrowser(browser_list->get(0));
+  CloseBrowserSynchronously(browser_list->get(0));
 
   OpenBrowserUsingContextMenuOnRootWindow(root_windows[1]);
 
-  // A new browser must be created on 2nd display.
+  // A new browser window should be opened on the 2nd display.
   ASSERT_EQ(1u, browser_list->size());
   EXPECT_EQ(root_windows[1],
             browser_list->get(0)->window()->GetNativeWindow()->GetRootWindow());
   EXPECT_EQ(root_windows[1], ash::Shell::GetRootWindowForNewWindows());
 
-  CloseBrowser(browser_list->get(0));
+  CloseBrowserSynchronously(browser_list->get(0));
   OpenBrowserUsingContextMenuOnRootWindow(root_windows[0]);
 
-  // Next new browser must be created on 1st display.
+  // A new browser window should be opened on the 1st display.
   ASSERT_EQ(1u, browser_list->size());
   EXPECT_EQ(root_windows[0],
             browser_list->get(0)->window()->GetNativeWindow()->GetRootWindow());
   EXPECT_EQ(root_windows[0], ash::Shell::GetRootWindowForNewWindows());
 }
+
+}  // namespace
