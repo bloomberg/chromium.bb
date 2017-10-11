@@ -161,8 +161,7 @@ class CC_EXPORT SoftwareImageDecodeCache
    public:
     DecodedImage(const SkImageInfo& info,
                  std::unique_ptr<base::DiscardableMemory> memory,
-                 const SkSize& src_rect_offset,
-                 uint64_t tracing_id);
+                 const SkSize& src_rect_offset);
     ~DecodedImage();
 
     const sk_sp<SkImage>& image() const {
@@ -333,9 +332,6 @@ class CC_EXPORT SoftwareImageDecodeCache
 
   SkColorType color_type_;
   size_t max_items_in_cache_;
-
-  // Used to uniquely identify DecodedImages for memory traces.
-  base::AtomicSequenceNumber next_tracing_id_;
 };
 
 }  // namespace cc
