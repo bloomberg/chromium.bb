@@ -2,29 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/properties/CSSShorthandPropertyAPIWebkitBorderStart.h"
+#include "core/css/properties/CSSPropertyAPIScrollSnapMarginInlineStart.h"
 
 #include "core/StylePropertyShorthand.h"
 #include "core/css/CSSProperty.h"
+#include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 
 namespace blink {
 
-bool CSSShorthandPropertyAPIWebkitBorderStart::ParseShorthand(
-    bool important,
+const CSSValue* CSSPropertyAPIScrollSnapMarginInlineStart::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
-    const CSSParserLocalContext&,
-    HeapVector<CSSProperty, 256>& properties) const {
-  return CSSPropertyParserHelpers::ConsumeShorthandGreedilyViaLonghandAPIs(
-      webkitBorderStartShorthand(), important, context, range, properties);
+    const CSSParserLocalContext&) const {
+  return ConsumeLengthOrPercent(
+      range, context.Mode(), kValueRangeNonNegative,
+      CSSPropertyParserHelpers::UnitlessQuirk::kAllow);
 }
 
 const CSSPropertyAPI&
-CSSShorthandPropertyAPIWebkitBorderStart::ResolveDirectionAwareProperty(
+CSSPropertyAPIScrollSnapMarginInlineStart::ResolveDirectionAwareProperty(
     TextDirection direction,
     WritingMode writing_mode) const {
   return ResolveToPhysicalPropertyAPI(direction, writing_mode, kStartSide,
-                                      CSSPropertyAPI::BorderDirections());
+                                      scrollSnapMarginShorthand());
 }
 }  // namespace blink
