@@ -488,6 +488,7 @@ def main(args):
   else:
     parser.error('gsutil not found in %s, bad depot_tools checkout?' %
                  GSUTIL_DEFAULT_PATH)
+  gsutil.check_call('version')  # Call this once to ensure it exists.
 
   # Passing in -g/--config will run our copy of GSUtil, then quit.
   if options.config:
