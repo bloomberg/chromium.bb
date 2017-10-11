@@ -52,6 +52,9 @@ const size_t kMemoryThresholdToSubrect = 64 * 1024 * 1024;
 const int kMinDimensionToSubrect = 4 * 1024;
 const float kMemoryRatioToSubrect = 0.5f;
 
+// Tracing ID sequence for use in DecodedImage.
+base::AtomicSequenceNumber g_next_tracing_id_;
+
 class AutoRemoveKeyFromTaskMap {
  public:
   AutoRemoveKeyFromTaskMap(
@@ -605,8 +608,7 @@ SoftwareImageDecodeCache::GetExactSizeImageDecode(
   }
 
   return std::make_unique<DecodedImage>(decoded_info, std::move(decoded_pixels),
-                                        SkSize::Make(0, 0),
-                                        next_tracing_id_.GetNext());
+                                        SkSize::Make(0, 0));
 }
 
 std::unique_ptr<SoftwareImageDecodeCache::DecodedImage>
@@ -671,11 +673,10 @@ SoftwareImageDecodeCache::GetSubrectImageDecode(const ImageKey& key,
     DCHECK(result);
   }
 
-  return base::WrapUnique(new DecodedImage(
+  return std::make_unique<DecodedImage>(
       subrect_info.makeColorSpace(decoded_draw_image.image()->refColorSpace()),
       std::move(subrect_pixels),
-      SkSize::Make(-key.src_rect().x(), -key.src_rect().y()),
-      next_tracing_id_.GetNext()));
+      SkSize::Make(-key.src_rect().x(), -key.src_rect().y()));
 }
 
 std::unique_ptr<SoftwareImageDecodeCache::DecodedImage>
@@ -755,8 +756,7 @@ SoftwareImageDecodeCache::GetScaledImageDecode(const ImageKey& key,
   return std::make_unique<DecodedImage>(
       scaled_info.makeColorSpace(decoded_draw_image.image()->refColorSpace()),
       std::move(scaled_pixels),
-      SkSize::Make(-key.src_rect().x(), -key.src_rect().y()),
-      next_tracing_id_.GetNext());
+      SkSize::Make(-key.src_rect().x(), -key.src_rect().y()));
 }
 
 void SoftwareImageDecodeCache::DrawWithImageFinished(
@@ -1097,13 +1097,12 @@ std::string ImageDecodeCacheKey::ToString() const {
 SoftwareImageDecodeCache::DecodedImage::DecodedImage(
     const SkImageInfo& info,
     std::unique_ptr<base::DiscardableMemory> memory,
-    const SkSize& src_rect_offset,
-    uint64_t tracing_id)
+    const SkSize& src_rect_offset)
     : locked_(true),
       image_info_(info),
       memory_(std::move(memory)),
       src_rect_offset_(src_rect_offset),
-      tracing_id_(tracing_id) {
+      tracing_id_(g_next_tracing_id_.GetNext()) {
   SkPixmap pixmap(image_info_, memory_->data(), image_info_.minRowBytes());
   image_ = SkImage::MakeFromRaster(
       pixmap, [](const void* pixels, void* context) {}, nullptr);
