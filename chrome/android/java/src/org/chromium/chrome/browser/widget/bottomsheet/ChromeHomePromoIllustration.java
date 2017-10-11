@@ -518,7 +518,9 @@ public class ChromeHomePromoIllustration extends Drawable implements Drawable.Ca
 
         @Override
         public void setAlpha(int i) {
+            int previousAlpha = mAlpha;
             mAlpha = i;
+            if (previousAlpha != mAlpha) invalidateSelf();
         }
 
         @Override
@@ -609,7 +611,9 @@ public class ChromeHomePromoIllustration extends Drawable implements Drawable.Ca
 
         @Override
         public void setAlpha(int i) {
+            int previousAlpha = mAlpha;
             mAlpha = i;
+            if (previousAlpha != mAlpha) invalidateSelf();
         }
 
         @Override
