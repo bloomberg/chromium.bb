@@ -17,17 +17,19 @@ class VRService;
 
 namespace content {
 
+class RenderFrameHost;
+
 // Provides access to the browser process representation of a WebVR site
 // session. See VrServiceImpl.
 class WebvrServiceProvider {
  public:
   static void BindWebvrService(
-      int render_frame_process_id,
-      int render_frame_routing_id,
+      RenderFrameHost* render_frame_host,
       mojo::InterfaceRequest<device::mojom::VRService> request);
 
-  using BindWebvrServiceCallback = base::Callback<
-      void(int, int, mojo::InterfaceRequest<device::mojom::VRService>)>;
+  using BindWebvrServiceCallback =
+      base::Callback<void(RenderFrameHost*,
+                          mojo::InterfaceRequest<device::mojom::VRService>)>;
 
   CONTENT_EXPORT static void SetWebvrServiceCallback(
       BindWebvrServiceCallback callback);

@@ -25,11 +25,10 @@ namespace device {
 class DEVICE_VR_EXPORT VRDisplayImpl : public mojom::VRMagicWindowProvider {
  public:
   VRDisplayImpl(device::VRDevice* device,
-                int render_frame_process_id,
-                int render_frame_routing_id,
                 mojom::VRServiceClient* service_client,
                 mojom::VRDisplayInfoPtr display_info,
-                mojom::VRDisplayHostPtr display_host);
+                mojom::VRDisplayHostPtr display_host,
+                bool in_frame_focused);
   ~VRDisplayImpl() override;
 
   virtual void OnChanged(mojom::VRDisplayInfoPtr vr_device_info);
@@ -41,9 +40,9 @@ class DEVICE_VR_EXPORT VRDisplayImpl : public mojom::VRMagicWindowProvider {
   virtual void OnDeactivate(mojom::VRDisplayEventReason reason);
 
   void SetListeningForActivate(bool listening);
+  void SetInFocusedFrame(bool in_focused_frame);
   bool ListeningForActivate() { return listening_for_activate_; }
-  int ProcessId() { return render_frame_process_id_; }
-  int RoutingId() { return render_frame_routing_id_; }
+  bool InFocusedFrame() { return in_focused_frame_; }
 
   void RequestPresent(mojom::VRSubmitFrameClientPtr submit_client,
                       mojom::VRPresentationProviderRequest request,
@@ -58,9 +57,8 @@ class DEVICE_VR_EXPORT VRDisplayImpl : public mojom::VRMagicWindowProvider {
   mojo::Binding<mojom::VRMagicWindowProvider> binding_;
   mojom::VRDisplayClientPtr client_;
   device::VRDevice* device_;
-  const int render_frame_process_id_;
-  const int render_frame_routing_id_;
   bool listening_for_activate_ = false;
+  bool in_focused_frame_ = false;
 };
 
 }  // namespace device

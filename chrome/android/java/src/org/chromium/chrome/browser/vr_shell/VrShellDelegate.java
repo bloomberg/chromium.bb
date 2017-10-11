@@ -750,7 +750,18 @@ public class VrShellDelegate
         boolean tentativeWebVrMode =
                 mListeningForWebVrActivateBeforePause && !mRequestedWebVr && !mAutopresentWebVr;
         if (tentativeWebVrMode) {
-            nativeDisplayActivate(mNativeVrShellDelegate);
+            // Before we fire DisplayActivate, we need focus to propagate to the WebContents we're
+            // about to send DisplayActivate to. Focus propagates during onResume, which is when
+            // this function is called, so if we post DisplayActivate to fire after onResume, focus
+            // will have propagated.
+            assert !mPaused;
+            new Handler().post(new Runnable() {
+                @Override
+                public void run() {
+                    if (mNativeVrShellDelegate == 0) return;
+                    nativeDisplayActivate(mNativeVrShellDelegate);
+                }
+            });
         }
 
         enterVr(tentativeWebVrMode);

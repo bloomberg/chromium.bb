@@ -10,19 +10,31 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/vr/service/vr_device_manager.h"
 #include "chrome/browser/vr/service/vr_display_host.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_widget_host.h"
+#include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/web_contents.h"
 #include "device/vr/vr_device.h"
 #include "device/vr/vr_display_impl.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace vr {
 
-VRServiceImpl::VRServiceImpl(int render_frame_process_id,
-                             int render_frame_routing_id)
-    : render_frame_process_id_(render_frame_process_id),
-      render_frame_routing_id_(render_frame_routing_id),
-      weak_ptr_factory_(this) {
+VRServiceImpl::VRServiceImpl(content::RenderFrameHost* render_frame_host)
+    : WebContentsObserver(
+          content::WebContents::FromRenderFrameHost(render_frame_host)),
+      render_frame_host_(render_frame_host) {
+  DCHECK(render_frame_host_);
   // TODO(crbug/701027): make sure that client_ is never null by initializing it
   // in the constructor.
+}
+
+// Constructor for testing.
+VRServiceImpl::VRServiceImpl() : render_frame_host_(nullptr) {
+  CHECK(DCHECK_IS_ON());
+}
+
+void VRServiceImpl::SetBinding(mojo::StrongBindingPtr<VRService> binding) {
+  binding_ = std::move(binding);
 }
 
 VRServiceImpl::~VRServiceImpl() {
@@ -33,12 +45,13 @@ VRServiceImpl::~VRServiceImpl() {
   VRDeviceManager::GetInstance()->RemoveService(this);
 }
 
-void VRServiceImpl::Create(int render_frame_process_id,
-                           int render_frame_routing_id,
+void VRServiceImpl::Create(content::RenderFrameHost* render_frame_host,
                            device::mojom::VRServiceRequest request) {
-  mojo::MakeStrongBinding(std::make_unique<VRServiceImpl>(
-                              render_frame_process_id, render_frame_routing_id),
-                          std::move(request));
+  std::unique_ptr<VRServiceImpl> vr_service_impl =
+      std::make_unique<VRServiceImpl>(render_frame_host);
+  VRServiceImpl* impl = vr_service_impl.get();
+  impl->SetBinding(
+      mojo::MakeStrongBinding(std::move(vr_service_impl), std::move(request)));
 }
 
 void VRServiceImpl::SetClient(device::mojom::VRServiceClientPtr service_client,
@@ -68,14 +81,41 @@ void VRServiceImpl::ConnectDevice(device::VRDevice* device) {
   if (!display_info)
     return;
   displays_[device] = std::make_unique<VRDisplayHost>(
-      device, render_frame_process_id_, render_frame_routing_id_, client_.get(),
-      std::move(display_info));
+      device, render_frame_host_, client_.get(), std::move(display_info));
 }
 
 void VRServiceImpl::SetListeningForActivate(bool listening) {
-  for (const auto& display : displays_) {
+  for (const auto& display : displays_)
     display.second->SetListeningForActivate(listening);
+}
+
+void VRServiceImpl::OnWebContentsFocused(content::RenderWidgetHost* host) {
+  OnWebContentsFocusChanged(host, true);
+}
+
+void VRServiceImpl::OnWebContentsLostFocus(content::RenderWidgetHost* host) {
+  OnWebContentsFocusChanged(host, false);
+}
+
+void VRServiceImpl::RenderFrameDeleted(content::RenderFrameHost* host) {
+  if (host != render_frame_host_)
+    return;
+
+  // Binding should always be live here, as this is a StrongBinding.
+  // Close the binding (and delete this VrServiceImpl) when the RenderFrameHost
+  // is deleted.
+  DCHECK(binding_.get());
+  binding_->Close();
+}
+
+void VRServiceImpl::OnWebContentsFocusChanged(content::RenderWidgetHost* host,
+                                              bool focused) {
+  if (!render_frame_host_->GetView() ||
+      render_frame_host_->GetView()->GetRenderWidgetHost() != host) {
+    return;
   }
+  for (const auto& display : displays_)
+    display.second->SetInFocusedFrame(focused);
 }
 
 }  // namespace vr
