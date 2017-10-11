@@ -8,6 +8,8 @@
 #include <set>
 
 #include "base/macros.h"
+#include "base/time/tick_clock.h"
+#include "base/time/time.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_base.h"
 
 namespace resource_coordinator {
@@ -25,6 +27,15 @@ class PageCoordinationUnitImpl : public CoordinationUnitBase {
   void RecalculateProperty(const mojom::PropertyType property_type) override;
 
   bool IsVisible() const;
+  // Returns 0 if no navigation has happened, otherwise returns the time since
+  // the last navigation commit.
+  base::TimeDelta TimeSinceLastNavigation() const;
+  // Returns the time since the last visibility change, it should always have a
+  // value since we set the visibility property when we create a
+  // PageCoordinationUnit.
+  base::TimeDelta TimeSinceLastVisibilityChange() const;
+
+  void SetClockForTest(std::unique_ptr<base::TickClock> test_clock);
 
  private:
   // CoordinationUnitBase implementation.
@@ -38,6 +49,11 @@ class PageCoordinationUnitImpl : public CoordinationUnitBase {
 
   // Returns the main frame CU or nullptr if this page has no main frame.
   CoordinationUnitBase* GetMainFrameCoordinationUnit();
+
+  std::unique_ptr<base::TickClock> clock_;
+  base::TimeTicks visibility_change_time_;
+  // Main frame navigation committed time.
+  base::TimeTicks navigation_committed_time_;
 
   DISALLOW_COPY_AND_ASSIGN(PageCoordinationUnitImpl);
 };

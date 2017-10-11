@@ -17,6 +17,8 @@
 #include "chrome/test/base/tracing.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/ukm/test_ukm_recorder.h"
+#include "components/ukm/ukm_source.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/test_utils.h"
@@ -222,41 +224,87 @@ class ProcessMemoryMetricsEmitterTest : public ExtensionBrowserTest {
  protected:
   std::unique_ptr<ukm::TestAutoSetUkmRecorder> test_ukm_recorder_;
 
-  void CheckAllUkmSources(size_t metric_count = 1u) {
-    std::set<ukm::SourceId> source_ids = test_ukm_recorder_->GetSourceIds();
-    for (auto source_id : source_ids) {
-      if (ProcessHasTypeForSource(source_id, ProcessType::BROWSER)) {
-        CheckUkmBrowserSource(source_id, 1);
-      } else if (ProcessHasTypeForSource(source_id, ProcessType::RENDERER)) {
-        // Renderer metrics associate with navigation's source, instead of
-        // creating a new one.
-        CheckUkmRendererSource(source_id, metric_count);
-      } else if (ProcessHasTypeForSource(source_id, ProcessType::GPU)) {
-        // Not checked yet.
-      } else {
-        // This must be Total2.
-        CheckMemoryMetricWithName(
-            source_id, UkmEntry::kTotal2_PrivateMemoryFootprintName, false, 1);
-      }
+  void CheckMetricWithName(ukm::SourceId source_id,
+                           const char* name,
+                           std::function<bool(int64_t)> check,
+                           size_t metric_count) {
+    std::vector<int64_t> metrics = test_ukm_recorder_->GetMetricValues(
+        source_id, UkmEntry::kEntryName, name);
+    EXPECT_EQ(metric_count, metrics.size()) << name;
+    if (metrics.size() > 0) {
+      // The check should be performed on the last entry.
+      int64_t metric = metrics.back();
+      EXPECT_TRUE(check(metric)) << name;
     }
+  }
+
+  void CheckExactMetricWithName(ukm::SourceId source_id,
+                                const char* name,
+                                int64_t expected_value,
+                                size_t metric_count) {
+    CheckMetricWithName(source_id, name,
+                        [expected_value](int64_t value) -> bool {
+                          return value == expected_value;
+                        },
+                        metric_count);
   }
 
   void CheckMemoryMetricWithName(ukm::SourceId source_id,
                                  const char* name,
                                  bool can_be_zero,
                                  size_t metric_count = 1u) {
-    std::vector<int64_t> metrics = test_ukm_recorder_->GetMetricValues(
-        source_id, UkmEntry::kEntryName, name);
-    EXPECT_EQ(metric_count, metrics.size()) << name;
-    if (metrics.size() > 0) {
-      int64_t metric = *metrics.begin();
-      EXPECT_GE(metric, can_be_zero ? 0 : 1) << name;
-      EXPECT_LE(metric, 4000) << name;
-    }
+    CheckMetricWithName(source_id, name,
+                        [can_be_zero](int64_t value) -> bool {
+                          return value >= (can_be_zero ? 0 : 1) &&
+                                 value <= 4000;
+                        },
+                        metric_count);
   }
 
-  void CheckUkmRendererSource(ukm::SourceId source_id,
-                              size_t metric_count = 1u) {
+  void CheckTimeMetricWithName(ukm::SourceId source_id,
+                               const char* name,
+                               size_t metric_count = 1u) {
+    CheckMetricWithName(
+        source_id, name,
+        [](int64_t value) -> bool { return value >= 0 && value <= 10; },
+        metric_count);
+  }
+
+  void CheckAllUkmSources(size_t metric_count = 1u) {
+    std::set<ukm::SourceId> source_ids = test_ukm_recorder_->GetSourceIds();
+    bool has_browser_source = false;
+    bool has_renderer_source = false;
+    bool has_total_source = false;
+    for (auto source_id : source_ids) {
+      // Ignore sources with no entries.
+      const ukm::UkmSource* source =
+          test_ukm_recorder_->GetSourceForSourceId(source_id);
+      if (source &&
+          !test_ukm_recorder_->HasEntry(*source, UkmEntry::kEntryName))
+        continue;
+      if (ProcessHasTypeForSource(source_id, ProcessType::BROWSER)) {
+        has_browser_source = true;
+        CheckUkmBrowserSource(source_id, 1);
+      } else if (ProcessHasTypeForSource(source_id, ProcessType::RENDERER)) {
+        // Renderer metrics associate with navigation's source, instead of
+        // creating a new one.
+        has_renderer_source = true;
+        CheckUkmRendererSource(source_id, metric_count);
+      } else if (ProcessHasTypeForSource(source_id, ProcessType::GPU)) {
+        // Not checked yet.
+      } else {
+        // This must be Total2.
+        has_total_source = true;
+        CheckMemoryMetricWithName(
+            source_id, UkmEntry::kTotal2_PrivateMemoryFootprintName, false, 1);
+      }
+    }
+    EXPECT_TRUE(has_browser_source);
+    EXPECT_TRUE(has_renderer_source);
+    EXPECT_TRUE(has_total_source);
+  }
+
+  void CheckUkmRendererSource(ukm::SourceId source_id, size_t metric_count) {
     CheckMemoryMetricWithName(source_id, UkmEntry::kMallocName, false,
                               metric_count);
 #if !defined(OS_MACOSX)
@@ -295,6 +343,23 @@ class ProcessMemoryMetricsEmitterTest : public ExtensionBrowserTest {
 
     return std::find(metrics.begin(), metrics.end(),
                      static_cast<int64_t>(process_type)) != metrics.end();
+  }
+
+  void CheckPageInfoUkmMetrics(GURL url,
+                               bool is_visible,
+                               size_t metric_count = 1u) {
+    const ukm::UkmSource* source = test_ukm_recorder_->GetSourceForUrl(url);
+    EXPECT_TRUE(source) << "Ukm Source for Renderer URL not found";
+    // Only renderer processes has an associated URL.
+    EXPECT_TRUE(ProcessHasTypeForSource(source->id(), ProcessType::RENDERER));
+
+    CheckExactMetricWithName(source->id(), UkmEntry::kIsVisibleName, is_visible,
+                             metric_count);
+    CheckTimeMetricWithName(
+        source->id(), UkmEntry::kTimeSinceLastNavigationName, metric_count);
+    CheckTimeMetricWithName(source->id(),
+                            UkmEntry::kTimeSinceLastVisibilityChangeName,
+                            metric_count);
   }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -351,9 +416,10 @@ class ProcessMemoryMetricsEmitterTest : public ExtensionBrowserTest {
 #endif
 IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
                        MAYBE_FetchAndEmitMetrics) {
-  GURL url1(url::kAboutBlankURL);
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const GURL url = embedded_test_server()->GetURL("foo.com", "/empty.html");
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(), url1, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      browser(), url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
   base::HistogramTester histogram_tester;
@@ -372,6 +438,7 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
 
   CheckAllMemoryMetrics(histogram_tester, 1);
   CheckAllUkmSources();
+  CheckPageInfoUkmMetrics(url, true);
 }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -394,9 +461,10 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
   EXPECT_EQ(1u, pm->GetRenderFrameHostsForExtension(extension1->id()).size());
   EXPECT_EQ(1u, pm->GetRenderFrameHostsForExtension(extension2->id()).size());
 
-  GURL url1(url::kAboutBlankURL);
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const GURL url = embedded_test_server()->GetURL("foo.com", "/empty.html");
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(), url1, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      browser(), url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
   base::HistogramTester histogram_tester;
@@ -414,8 +482,9 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
   run_loop.Run();
 
   CheckAllMemoryMetrics(histogram_tester, 1, 1, 2);
-  // Extensions do not get a UKM record.
+  // Extension processes do not have page_info.
   CheckAllUkmSources();
+  CheckPageInfoUkmMetrics(url, true);
 }
 
 #if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER)
@@ -436,9 +505,9 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
   ProcessManager* pm = ProcessManager::Get(profile());
   EXPECT_EQ(1u, pm->GetRenderFrameHostsForExtension(app->id()).size());
 
-  GURL url1(url::kAboutBlankURL);
+  const GURL url = embedded_test_server()->GetURL("foo.com", "/empty.html");
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(), url1, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      browser(), url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
   base::HistogramTester histogram_tester;
@@ -458,6 +527,7 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
   // No extensions should be observed
   CheckAllMemoryMetrics(histogram_tester, 1, 1, 0);
   CheckAllUkmSources();
+  CheckPageInfoUkmMetrics(url, true);
 }
 
 #if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER)
@@ -485,9 +555,10 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
   EXPECT_EQ(1u, pm->GetRenderFrameHostsForExtension(extension1->id()).size());
   EXPECT_EQ(1u, pm->GetRenderFrameHostsForExtension(extension2->id()).size());
 
-  GURL url1(url::kAboutBlankURL);
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const GURL url = embedded_test_server()->GetURL("foo.com", "/empty.html");
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(), url1, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      browser(), url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
   base::HistogramTester histogram_tester;
@@ -504,8 +575,12 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
 
   run_loop.Run();
 
-  // When hosts share a process, no unique URL is identified, therefore no UKM.
   CheckAllMemoryMetrics(histogram_tester, 1, 1, 1);
+  CheckAllUkmSources();
+  // When hosts share a process, no unique URL is identified, therefore no page
+  // info.
+  EXPECT_FALSE(test_ukm_recorder_->HasEntry(
+      *test_ukm_recorder_->GetSourceForUrl(url), UkmEntry::kEntryName));
 }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
@@ -516,9 +591,10 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
 #endif
 IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
                        MAYBE_FetchDuringTrace) {
-  GURL url1(url::kAboutBlankURL);
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const GURL url = embedded_test_server()->GetURL("foo.com", "/empty.html");
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(), url1, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      browser(), url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
   base::HistogramTester histogram_tester;
@@ -563,6 +639,7 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
 
   CheckAllMemoryMetrics(histogram_tester, 1);
   CheckAllUkmSources();
+  CheckPageInfoUkmMetrics(url, true);
 }
 
 #if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER)
@@ -571,9 +648,10 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
 #define MAYBE_FetchThreeTimes FetchThreeTimes
 #endif
 IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest, MAYBE_FetchThreeTimes) {
-  GURL url1(url::kAboutBlankURL);
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const GURL url = embedded_test_server()->GetURL("foo.com", "/empty.html");
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(), url1, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      browser(), url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
   base::HistogramTester histogram_tester;
@@ -591,4 +669,59 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest, MAYBE_FetchThreeTimes) {
 
   CheckAllMemoryMetrics(histogram_tester, count);
   CheckAllUkmSources(count);
+  CheckPageInfoUkmMetrics(url, true, count);
+}
+
+#if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER)
+#define MAYBE_ForegroundAndBackgroundPages DISABLED_ForegroundAndBackgroundPages
+#else
+#define MAYBE_ForegroundAndBackgroundPages ForegroundAndBackgroundPages
+#endif
+IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
+                       MAYBE_ForegroundAndBackgroundPages) {
+  ui_test_utils::WindowedTabAddedNotificationObserver tab_observer(
+      content::NotificationService::AllSources());
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const GURL url1 = embedded_test_server()->GetURL("a.com", "/empty.html");
+  const GURL url2 = embedded_test_server()->GetURL("b.com", "/empty.html");
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url1, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  tab_observer.Wait();
+  content::WebContents* tab1 = tab_observer.GetTab();
+
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url2, WindowOpenDisposition::NEW_BACKGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  tab_observer.Wait();
+  content::WebContents* tab2 = tab_observer.GetTab();
+
+  base::HistogramTester histogram_tester;
+  {
+    base::RunLoop run_loop;
+    scoped_refptr<ProcessMemoryMetricsEmitterFake> emitter(
+        new ProcessMemoryMetricsEmitterFake(&run_loop,
+                                            test_ukm_recorder_.get()));
+    emitter->FetchAndEmitProcessMemoryMetrics();
+    run_loop.Run();
+  }
+
+  CheckAllMemoryMetrics(histogram_tester, 1, 2);
+  CheckAllUkmSources();
+  CheckPageInfoUkmMetrics(url1, true /* is_visible */);
+  CheckPageInfoUkmMetrics(url2, false /* is_visible */);
+  tab1->WasHidden();
+  tab2->WasShown();
+  {
+    base::RunLoop run_loop;
+    scoped_refptr<ProcessMemoryMetricsEmitterFake> emitter(
+        new ProcessMemoryMetricsEmitterFake(&run_loop,
+                                            test_ukm_recorder_.get()));
+    emitter->FetchAndEmitProcessMemoryMetrics();
+    run_loop.Run();
+  }
+  CheckAllMemoryMetrics(histogram_tester, 2, 2);
+  CheckAllUkmSources(2);
+  CheckPageInfoUkmMetrics(url1, false /* is_visible */, 2);
+  CheckPageInfoUkmMetrics(url2, true /* is_visible */, 2);
 }

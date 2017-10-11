@@ -9,6 +9,7 @@
 #include "base/process/process_handle.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_base.h"
 #include "services/resource_coordinator/coordination_unit/frame_coordination_unit_impl.h"
+#include "services/resource_coordinator/coordination_unit/page_coordination_unit_impl.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 
 namespace resource_coordinator {
@@ -35,12 +36,21 @@ void CoordinationUnitIntrospectorImpl::GetProcessToURLMap(
     std::set<CoordinationUnitBase*> page_cus =
         process_cu->GetAssociatedCoordinationUnitsOfType(
             CoordinationUnitType::kPage);
-    for (CoordinationUnitBase* page_cu : page_cus) {
+    std::vector<resource_coordinator::mojom::PageInfoPtr> page_infos;
+    for (CoordinationUnitBase* cu : page_cus) {
+      auto* page_cu = CoordinationUnitBase::ToPageCoordinationUnit(cu);
       int64_t ukm_source_id;
       if (page_cu->GetProperty(
               resource_coordinator::mojom::PropertyType::kUKMSourceId,
               &ukm_source_id)) {
-        process_info->ukm_source_ids.push_back(ukm_source_id);
+        mojom::PageInfoPtr page_info(mojom::PageInfo::New());
+        page_info->ukm_source_id = ukm_source_id;
+        page_info->is_visible = page_cu->IsVisible();
+        page_info->time_since_last_visibility_change =
+            page_cu->TimeSinceLastVisibilityChange();
+        page_info->time_since_last_navigation =
+            page_cu->TimeSinceLastNavigation();
+        process_info->page_infos.push_back(std::move(page_info));
       }
     }
     process_infos.push_back(std::move(process_info));

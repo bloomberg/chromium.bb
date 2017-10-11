@@ -724,6 +724,12 @@ be describing additional metrics about the same event.
       Measure of memory consumed by GL command buffer.
     </summary>
   </metric>
+  <metric name="IsVisible">
+    <summary>
+      Indicates whether the tab is visible or not at the time of metric
+      collection.
+    </summary>
+  </metric>
   <metric name="Malloc">
     <summary>
       Measure of memory allocated by malloc.
@@ -755,6 +761,18 @@ be describing additional metrics about the same event.
   <metric name="Resident">
     <summary>
       Size of process' working set.
+    </summary>
+  </metric>
+  <metric name="TimeSinceLastNavigation">
+    <summary>
+      The time in seconds since the Tab navigated. Only emitted for tabs that
+      are not sharing a process.
+    </summary>
+  </metric>
+  <metric name="TimeSinceLastVisibilityChange">
+    <summary>
+      The time in seconds since the Tab changed visibility. Only emitted for
+      tabs that are not sharing a process.
     </summary>
   </metric>
   <metric name="Total2.PrivateMemoryFootprint">

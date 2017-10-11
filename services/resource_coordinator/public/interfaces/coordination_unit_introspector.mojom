@@ -6,10 +6,18 @@ module resource_coordinator.mojom;
 
 import "coordination_unit.mojom";
 import "mojo/common/process_id.mojom";
+import "mojo/common/time.mojom";
+
+struct PageInfo {
+  int64 ukm_source_id;
+  bool is_visible;
+  mojo.common.mojom.TimeDelta time_since_last_navigation;
+  mojo.common.mojom.TimeDelta time_since_last_visibility_change;
+};
 
 struct ProcessInfo {
   mojo.common.mojom.ProcessId pid;
-  array<int64> ukm_source_ids;
+  array<PageInfo> page_infos;
 };
 
 interface CoordinationUnitIntrospector {

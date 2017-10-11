@@ -28,6 +28,5 @@ enum PropertyType {
   kNetworkAlmostIdle,
   kPID,
   kVisible,
-  kURL,
   kUKMSourceId,
 };
