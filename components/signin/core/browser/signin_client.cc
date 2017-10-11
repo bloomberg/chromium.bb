@@ -38,6 +38,10 @@ void SigninClient::PreSignOut(
   sign_out.Run();
 }
 
+void SigninClient::PreGaiaLogout(base::OnceClosure callback) {
+  std::move(callback).Run();
+}
+
 void SigninClient::SignOut() {
   GetPrefs()->ClearPref(prefs::kGoogleServicesSigninScopedDeviceId);
   OnSignedOut();
