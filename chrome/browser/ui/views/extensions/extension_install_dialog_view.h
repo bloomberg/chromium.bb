@@ -123,6 +123,16 @@ class ExtensionInstallDialogView : public views::DialogDelegateView,
   DISALLOW_COPY_AND_ASSIGN(ExtensionInstallDialogView);
 };
 
+// A simple view that prepends a view with a bullet with the help of a grid
+// layout.
+class BulletedView : public views::View {
+ public:
+  explicit BulletedView(views::View* view);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BulletedView);
+};
+
 // A view to display text with an expandable details section.
 class ExpandableContainerView : public views::View,
                                 public views::ButtonListener,
