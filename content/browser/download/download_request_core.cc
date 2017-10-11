@@ -258,6 +258,13 @@ bool DownloadRequestCore::OnResponseStarted(
   const net::HttpResponseHeaders* headers = request()->response_headers();
   HandleResponseHeaders(headers, create_info.get());
 
+  // If the content-length header is not present (or contains something other
+  // than numbers), the incoming content_length is -1 (unknown size).
+  // Set the content length to 0 to indicate unknown size to DownloadManager.
+  create_info->total_bytes = request()->GetExpectedContentSize() > 0
+                                 ? request()->GetExpectedContentSize()
+                                 : 0;
+
   // GURL::GetOrigin() doesn't support getting the inner origin of a blob URL.
   // However, requesting a cross origin blob URL would have resulted in a
   // network error, so we'll just ignore them here. Furthermore, we consider
