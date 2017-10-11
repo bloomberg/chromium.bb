@@ -62476,6 +62476,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>The amount of time that elapsed during CreateProfilePrefs.</summary>
 </histogram>
 
+<histogram name="PrefService.NetworkPredictionEnabled" enum="BooleanEnabled">
+  <owner>petewil@chromium.org</owner>
+  <summary>
+    Count events where Network Prediction was enabled or disabled.
+  </summary>
+</histogram>
+
 <histogram name="PrefService.PersistentLogRecallProtobufs"
     enum="PersistedLogsLogReadStatus">
   <owner>holte@chromium.org</owner>
