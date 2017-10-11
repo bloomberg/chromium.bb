@@ -28859,6 +28859,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="InstantTethering.HostScanBatchDuration" units="ms">
+  <owner>hansberry@chromium.org</owner>
+  <summary>
+    The duration of a batch of host scans. A batch is defined as a series of one
+    or host scans separated by no more than one minute.
+
+    For example, if a scan occurs then stops and does not start back up again,
+    the metric logged would be the amount of time taken for that scan. However,
+    if a scan finishes and a new scan starts up again less than a minute after
+    the previous scan finished, the metric logged would be the time difference
+    between the start of the first scan and the finish of the second scan.
+  </summary>
+</histogram>
+
 <histogram name="InstantTethering.HostScanResult"
     enum="InstantTethering_HostScanResult">
   <owner>hansberry@chromium.com</owner>
