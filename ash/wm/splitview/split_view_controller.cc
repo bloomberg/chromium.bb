@@ -36,8 +36,9 @@ float FindClosestFixedPositionRatio(float distance, float length) {
   float closest_ratio = 0.f;
   for (float ratio : kFixedPositionRatios) {
     if (std::abs(current_ratio - ratio) <
-        std::abs(current_ratio - closest_ratio))
+        std::abs(current_ratio - closest_ratio)) {
       closest_ratio = ratio;
+    }
   }
   return closest_ratio;
 }
@@ -116,6 +117,7 @@ void SplitViewController::SnapWindow(aura::Window* window,
     Shell::Get()->AddShellObserver(this);
     Shell::Get()->activation_client()->AddObserver(this);
     display::Screen::GetScreen()->AddObserver(this);
+    Shell::Get()->tablet_mode_controller()->AddObserver(this);
     Shell::Get()->NotifySplitViewModeStarting();
 
     screen_orientation_ =
@@ -141,13 +143,12 @@ void SplitViewController::SnapWindow(aura::Window* window,
     left_window_ = (window == left_window_) ? nullptr : left_window_;
   }
 
-  if (left_window_ && right_window_) {
+  if (left_window_ && right_window_)
     state_ = BOTH_SNAPPED;
-  } else if (left_window_) {
+  else if (left_window_)
     state_ = LEFT_SNAPPED;
-  } else if (right_window_) {
+  else if (right_window_)
     state_ = RIGHT_SNAPPED;
-  }
 
   StartObserving(window);
   const wm::WMEvent event((snap_position == LEFT) ? wm::WM_EVENT_SNAP_LEFT
@@ -309,6 +310,7 @@ void SplitViewController::EndSplitView() {
   Shell::Get()->RemoveShellObserver(this);
   Shell::Get()->activation_client()->RemoveObserver(this);
   display::Screen::GetScreen()->RemoveObserver(this);
+  Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
 
   StopObserving(left_window_);
   StopObserving(right_window_);
@@ -463,6 +465,10 @@ void SplitViewController::OnDisplayMetricsChanged(
 
   NotifyDividerPositionChanged();
   UpdateSnappedWindowsAndDividerBounds();
+}
+
+void SplitViewController::OnTabletModeEnding() {
+  EndSplitView();
 }
 
 void SplitViewController::StartObserving(aura::Window* window) {
