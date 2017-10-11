@@ -51,6 +51,10 @@ const base::TimeDelta kDefaultWindowStartTime = base::TimeDelta::FromMinutes(5);
 // Default value for the end window time for OS to schedule background task.
 const base::TimeDelta kDefaultWindowEndTime = base::TimeDelta::FromHours(8);
 
+// Default value for start up delay to wait for network stack ready.
+const base::TimeDelta kDefaultNetworkStartupDelay =
+    base::TimeDelta::FromSeconds(5);
+
 // The default delay to notify the observer when network changes from
 // disconnected to connected.
 const base::TimeDelta kDefaultNetworkChangeDelay =
@@ -111,6 +115,10 @@ std::unique_ptr<Configuration> Configuration::CreateFromFinch() {
   config->window_end_time =
       base::TimeDelta::FromSeconds(base::saturated_cast<int>(GetFinchConfigUInt(
           kWindowEndTimeSecondsConfig, kDefaultWindowEndTime.InSeconds())));
+  config->network_startup_delay =
+      base::TimeDelta::FromMilliseconds(base::saturated_cast<int>(
+          GetFinchConfigUInt(kNetworkStartupDelayMsConfig,
+                             kDefaultNetworkStartupDelay.InMilliseconds())));
   config->network_change_delay =
       base::TimeDelta::FromMilliseconds(base::saturated_cast<int>(
           GetFinchConfigUInt(kNetworkChangeDelayMsConfig,
@@ -141,6 +149,7 @@ Configuration::Configuration()
       file_cleanup_window(kDefaultFileCleanupWindow),
       window_start_time(kDefaultWindowStartTime),
       window_end_time(kDefaultWindowEndTime),
+      network_startup_delay(kDefaultNetworkStartupDelay),
       network_change_delay(kDefaultNetworkChangeDelay),
       navigation_completion_delay(kDefaultNavigationCompletionDelay),
       navigation_timeout_delay(kDefaultNavigationTimeoutDelay),

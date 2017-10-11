@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_DOWNLOAD_INTERNAL_TEST_TEST_DEVICE_STATUS_LISTENER_H_
 #define COMPONENTS_DOWNLOAD_INTERNAL_TEST_TEST_DEVICE_STATUS_LISTENER_H_
 
+#include "base/memory/weak_ptr.h"
 #include "components/download/internal/scheduler/device_status_listener.h"
 
 namespace download {
@@ -21,6 +22,7 @@ class TestDeviceStatusListener : public DeviceStatusListener {
   void NotifyObserver(const DeviceStatus& device_status);
 
   // Sets the device status without notifying the observer.
+  // If called before Start() is called, may notify the observer.
   void SetDeviceStatus(const DeviceStatus& status);
 
   // DeviceStatusListener implementation.
@@ -28,6 +30,10 @@ class TestDeviceStatusListener : public DeviceStatusListener {
   void Stop() override;
 
  private:
+  void StartAfterDelay();
+
+  base::WeakPtrFactory<TestDeviceStatusListener> weak_ptr_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(TestDeviceStatusListener);
 };
 

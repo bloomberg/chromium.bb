@@ -44,8 +44,8 @@ DownloadService* CreateDownloadService(
   auto store = base::MakeUnique<DownloadStore>(entry_db_storage_dir,
                                                std::move(entry_db));
   auto model = base::MakeUnique<ModelImpl>(std::move(store));
-  auto device_status_listener =
-      base::MakeUnique<DeviceStatusListener>(config->network_change_delay);
+  auto device_status_listener = base::MakeUnique<DeviceStatusListener>(
+      config->network_startup_delay, config->network_change_delay);
   NavigationMonitor* navigation_monitor =
       NavigationMonitorFactory::GetForBrowserContext(
           download_manager->GetBrowserContext());
