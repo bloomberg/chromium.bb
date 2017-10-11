@@ -111,8 +111,8 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   void DidAnimateForInputOnCompositorThread() override;
   void SetRendererHidden(bool hidden) override;
   void SetRendererBackgrounded(bool backgrounded) override;
-  void PauseRenderer() override;
-  void ResumeRenderer() override;
+  std::unique_ptr<RendererPauseHandle> PauseRenderer() override
+      WARN_UNUSED_RESULT;
   void AddPendingNavigation(NavigatingFrameType type) override;
   void RemovePendingNavigation(NavigatingFrameType type) override;
   bool IsHighPriorityWorkAnticipated() override;
@@ -122,8 +122,6 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   void RemoveTaskObserver(
       base::MessageLoop::TaskObserver* task_observer) override;
   void Shutdown() override;
-  void PauseTimerQueue() override;
-  void ResumeTimerQueue() override;
   void VirtualTimePaused() override;
   void VirtualTimeResumed() override;
   void SetStoppingWhenBackgroundedEnabled(bool enabled) override;
@@ -409,6 +407,15 @@ class PLATFORM_EXPORT RendererSchedulerImpl
 
   class TaskDurationMetricTracker;
 
+  class RendererPauseHandleImpl : public RendererPauseHandle {
+   public:
+    explicit RendererPauseHandleImpl(RendererSchedulerImpl* scheduler);
+    ~RendererPauseHandleImpl() override;
+
+   private:
+    RendererSchedulerImpl* scheduler_;  // NOT OWNED
+  };
+
   // IdleHelper::Delegate implementation:
   bool CanEnterLongIdlePeriod(
       base::TimeTicks now,
@@ -488,11 +495,6 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   void UpdateForInputEventOnCompositorThread(WebInputEvent::Type type,
                                              InputEventState input_event_state);
 
-  // Helpers for safely stopping/resuming the timer queue after a
-  // background/foreground signal.
-  void PauseTimerQueueWhenBackgrounded();
-  void ResumeTimerQueueWhenForegroundedOrResumed();
-
   // The task cost estimators and the UserModel need to be reset upon page
   // nagigation. This function does that. Must be called from the main thread.
   void ResetForNavigationLocked();
@@ -516,6 +518,9 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   bool ShouldDisableThrottlingBecauseOfAudio(base::TimeTicks now);
 
   void AddQueueToWakeUpBudgetPool(MainThreadTaskQueue* queue);
+
+  void PauseRendererImpl();
+  void ResumeRendererImpl();
 
   MainThreadSchedulerHelper helper_;
   IdleHelper idle_helper_;
@@ -573,12 +578,10 @@ class PLATFORM_EXPORT RendererSchedulerImpl
     base::TimeDelta compositor_frame_interval;
     base::TimeDelta longest_jank_free_task_duration;
     base::Optional<base::TimeTicks> last_audio_state_change;
-    int timer_queue_pause_count;  // TIMER_TASK_QUEUE stopped if non-zero.
+    int renderer_pause_count;  // Renderer is paused if non-zero.
     int navigation_task_expected_count;
     ExpensiveTaskPolicy expensive_task_policy;
     bool renderer_hidden;
-    bool renderer_backgrounded;
-    bool renderer_paused;
     TraceableState<bool, kTracingCategoryNameDefault> renderer_backgrounded;
     bool stopping_when_backgrounded_enabled;
     bool stopped_when_backgrounded;

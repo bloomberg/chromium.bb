@@ -82,5 +82,10 @@ WebSchedulerImpl::CreateWebViewScheduler(
   return nullptr;
 }
 
+std::unique_ptr<WebSchedulerImpl::RendererPauseHandle>
+WebSchedulerImpl::PauseScheduler() {
+  return nullptr;
+}
+
 }  // namespace scheduler
 }  // namespace blink

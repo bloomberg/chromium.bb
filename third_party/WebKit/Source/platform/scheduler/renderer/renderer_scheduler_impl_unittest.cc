@@ -2377,15 +2377,15 @@ TEST_F(RendererSchedulerImplTest, TimerQueueEnabledByDefault) {
               ::testing::ElementsAre(std::string("T1"), std::string("T2")));
 }
 
-TEST_F(RendererSchedulerImplTest, StopAndResumeTimerQueue) {
+TEST_F(RendererSchedulerImplTest, StopAndResumeRenderer) {
   std::vector<std::string> run_order;
   PostTestTasks(&run_order, "T1 T2");
 
-  scheduler_->PauseTimerQueue();
+  auto pause_handle = scheduler_->PauseRenderer();
   RunUntilIdle();
   EXPECT_THAT(run_order, ::testing::ElementsAre());
 
-  scheduler_->ResumeTimerQueue();
+  pause_handle.reset();
   RunUntilIdle();
   EXPECT_THAT(run_order,
               ::testing::ElementsAre(std::string("T1"), std::string("T2")));
@@ -2395,7 +2395,7 @@ TEST_F(RendererSchedulerImplTest, StopAndThrottleTimerQueue) {
   std::vector<std::string> run_order;
   PostTestTasks(&run_order, "T1 T2");
 
-  scheduler_->PauseTimerQueue();
+  auto pause_handle = scheduler_->PauseRenderer();
   RunUntilIdle();
   scheduler_->task_queue_throttler()->IncreaseThrottleRefCount(
       static_cast<TaskQueue*>(timer_task_runner_.get()));
@@ -2403,14 +2403,14 @@ TEST_F(RendererSchedulerImplTest, StopAndThrottleTimerQueue) {
   EXPECT_THAT(run_order, ::testing::ElementsAre());
 }
 
-TEST_F(RendererSchedulerImplTest, ThrottleAndPauseTimerQueue) {
+TEST_F(RendererSchedulerImplTest, ThrottleAndPauseRenderer) {
   std::vector<std::string> run_order;
   PostTestTasks(&run_order, "T1 T2");
 
   scheduler_->task_queue_throttler()->IncreaseThrottleRefCount(
       static_cast<TaskQueue*>(timer_task_runner_.get()));
   RunUntilIdle();
-  scheduler_->PauseTimerQueue();
+  auto pause_handle = scheduler_->PauseRenderer();
   RunUntilIdle();
   EXPECT_THAT(run_order, ::testing::ElementsAre());
 }
@@ -2419,114 +2419,43 @@ TEST_F(RendererSchedulerImplTest, MultipleStopsNeedMultipleResumes) {
   std::vector<std::string> run_order;
   PostTestTasks(&run_order, "T1 T2");
 
-  scheduler_->PauseTimerQueue();
-  scheduler_->PauseTimerQueue();
-  scheduler_->PauseTimerQueue();
+  auto pause_handle1 = scheduler_->PauseRenderer();
+  auto pause_handle2 = scheduler_->PauseRenderer();
+  auto pause_handle3 = scheduler_->PauseRenderer();
   RunUntilIdle();
   EXPECT_THAT(run_order, ::testing::ElementsAre());
 
-  scheduler_->ResumeTimerQueue();
+  pause_handle1.reset();
   RunUntilIdle();
   EXPECT_THAT(run_order, ::testing::ElementsAre());
 
-  scheduler_->ResumeTimerQueue();
+  pause_handle2.reset();
   RunUntilIdle();
   EXPECT_THAT(run_order, ::testing::ElementsAre());
 
-  scheduler_->ResumeTimerQueue();
+  pause_handle3.reset();
   RunUntilIdle();
   EXPECT_THAT(run_order,
               ::testing::ElementsAre(std::string("T1"), std::string("T2")));
 }
 
 TEST_F(RendererSchedulerImplTest, PauseRenderer) {
-  scheduler_->SetStoppingWhenBackgroundedEnabled(true);
-  // Assume that the renderer is backgrounded.
-  scheduler_->SetRendererBackgrounded(true);
-
   // Tasks in some queues don't fire when the renderer is paused.
   std::vector<std::string> run_order;
   PostTestTasks(&run_order, "D1 C1 L1 I1 T1");
-  scheduler_->PauseRenderer();
+  auto pause_handle = scheduler_->PauseRenderer();
   EnableIdleTasks();
   RunUntilIdle();
   EXPECT_THAT(run_order,
               ::testing::ElementsAre(std::string("D1"), std::string("C1"),
                                      std::string("I1")));
 
-  // The rest queued tasks fire when the tab goes foregrounded.
+  // Tasks are executed when renderer is resumed.
   run_order.clear();
-  scheduler_->SetRendererBackgrounded(false);
+  pause_handle.reset();
   RunUntilIdle();
   EXPECT_THAT(run_order,
               ::testing::ElementsAre(std::string("L1"), std::string("T1")));
-
-  run_order.clear();
-  PostTestTasks(&run_order, "D2 T2");
-  // The renderer is foregrounded. Suspension doesn't take effect.
-  scheduler_->PauseRenderer();
-  RunUntilIdle();
-  EXPECT_THAT(run_order,
-              ::testing::ElementsAre(std::string("D2"), std::string("T2")));
-}
-
-TEST_F(RendererSchedulerImplTest, ResumeRenderer) {
-  ScopedAutoAdvanceNowEnabler enable_auto_advance_now(mock_task_runner_);
-
-  // Assume that the renderer is backgrounded.
-  scheduler_->SetRendererBackgrounded(true);
-
-  // Tasks in some queues don't fire when the renderer is paused.
-  std::vector<std::string> run_order;
-  PostTestTasks(&run_order, "D1 C1 L1 I1 T1");
-  scheduler_->PauseRenderer();
-  EnableIdleTasks();
-  RunUntilIdle();
-  EXPECT_THAT(run_order,
-              ::testing::ElementsAre(std::string("D1"), std::string("C1"),
-                                     std::string("I1")));
-
-  // The rest queued tasks fire when the renderer is resumed.
-  run_order.clear();
-  scheduler_->ResumeRenderer();
-  RunUntilIdle();
-  EXPECT_THAT(run_order,
-              ::testing::ElementsAre(std::string("L1"), std::string("T1")));
-
-  run_order.clear();
-  // No crash occurs when the renderer is paused again, and
-  // tasks in some queues don't fire because of paused.
-  PostTestTasks(&run_order, "D2 C2 L2 I2 T2");
-  scheduler_->PauseRenderer();
-  EnableIdleTasks();
-  RunUntilIdle();
-  EXPECT_THAT(run_order,
-              ::testing::ElementsAre(std::string("D2"), std::string("C2"),
-                                     std::string("I2")));
-
-  // The rest queued tasks fire when the renderer is resumed.
-  run_order.clear();
-  scheduler_->ResumeRenderer();
-  RunUntilIdle();
-  EXPECT_THAT(run_order,
-              ::testing::ElementsAre(std::string("L2"), std::string("T2")));
-
-  run_order.clear();
-  PostTestTasks(&run_order, "D3 T3");
-  // No crash occurs when the resumed renderer goes foregrounded.
-  // Posted tasks while the renderer is resumed fire.
-  scheduler_->SetRendererBackgrounded(false);
-  RunUntilIdle();
-  EXPECT_THAT(run_order,
-              ::testing::ElementsAre(std::string("D3"), std::string("T3")));
-
-  run_order.clear();
-  PostTestTasks(&run_order, "D4 T4");
-  // The renderer is foregrounded. Resuming doesn't take effect.
-  scheduler_->ResumeRenderer();
-  RunUntilIdle();
-  EXPECT_THAT(run_order,
-              ::testing::ElementsAre(std::string("D4"), std::string("T4")));
 }
 
 TEST_F(RendererSchedulerImplTest, UseCaseToString) {
@@ -3241,7 +3170,7 @@ TEST_F(RendererSchedulerImplTest, BlockedTimerNotification_TimersStopped) {
   WebViewSchedulerImplForTest web_view_scheduler(scheduler_.get());
 
   scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
-  scheduler_->PauseTimerQueue();
+  auto pause_handle = scheduler_->PauseRenderer();
   DoMainFrame();
   SimulateExpensiveTasks(timer_task_runner_);
   SimulateCompositorGestureStart(TouchEventPolicy::SEND_TOUCH_START);
@@ -3419,7 +3348,7 @@ TEST_F(RendererSchedulerImplTest,
       FROM_HERE, base::Bind(SlowCountingTask, &count, clock_.get(), 7,
                             scheduler_->TimerTaskQueue()));
 
-  bool paused = false;
+  std::unique_ptr<RendererScheduler::RendererPauseHandle> paused;
   for (int i = 0; i < 1000; i++) {
     viz::BeginFrameArgs begin_frame_args = viz::BeginFrameArgs::Create(
         BEGINFRAME_FROM_HERE, 0, next_begin_frame_number_++, clock_->NowTicks(),
@@ -3458,8 +3387,7 @@ TEST_F(RendererSchedulerImplTest,
     // timers are paused.
     if (count > 0 && !paused) {
       EXPECT_EQ(2u, count);
-      scheduler_->PauseTimerQueue();
-      paused = true;
+      paused = scheduler_->PauseRenderer();
     }
   }
 
@@ -3790,7 +3718,7 @@ TEST_F(RendererSchedulerImplTest, UnthrottledTaskRunner) {
   unthrottled_task_runner->PostTask(
       FROM_HERE, base::Bind(SlowCountingTask, &unthrottled_count, clock_.get(),
                             7, unthrottled_task_runner));
-  scheduler_->PauseTimerQueue();
+  auto handle = scheduler_->PauseRenderer();
 
   for (int i = 0; i < 1000; i++) {
     viz::BeginFrameArgs begin_frame_args = viz::BeginFrameArgs::Create(

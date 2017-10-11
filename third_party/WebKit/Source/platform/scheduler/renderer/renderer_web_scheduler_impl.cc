@@ -31,12 +31,9 @@ WebTaskRunner* RendererWebSchedulerImpl::CompositorTaskRunner() {
   return compositor_task_runner_.get();
 }
 
-void RendererWebSchedulerImpl::PauseTimerQueue() {
-  renderer_scheduler_->PauseTimerQueue();
-}
-
-void RendererWebSchedulerImpl::ResumeTimerQueue() {
-  renderer_scheduler_->ResumeTimerQueue();
+std::unique_ptr<RendererWebSchedulerImpl::RendererPauseHandle>
+RendererWebSchedulerImpl::PauseScheduler() {
+  return renderer_scheduler_->PauseRenderer();
 }
 
 std::unique_ptr<blink::WebViewScheduler>
