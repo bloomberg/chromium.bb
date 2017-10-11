@@ -242,7 +242,7 @@ class CrxInstaller : public SandboxedUnpackerClient {
   void CheckInstall();
 
   // Runs on the UI thread. Callback from PreloadCheckGroup.
-  void OnInstallChecksComplete(PreloadCheck::Errors errors);
+  void OnInstallChecksComplete(const PreloadCheck::Errors& errors);
 
   // Runs on the UI thread. Confirms the installation to the ExtensionService.
   void ConfirmInstall();

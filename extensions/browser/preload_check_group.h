@@ -32,7 +32,7 @@ class PreloadCheckGroup : public PreloadCheck {
 
  private:
   // Saves any errors and may invoke the callback.
-  virtual void OnCheckComplete(Errors errors);
+  virtual void OnCheckComplete(const Errors& errors);
 
   // Invokes the callback if the checks are considered finished.
   void MaybeInvokeCallback();

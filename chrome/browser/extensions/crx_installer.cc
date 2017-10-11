@@ -532,7 +532,7 @@ void CrxInstaller::CheckInstall() {
       base::BindOnce(&CrxInstaller::OnInstallChecksComplete, this));
 }
 
-void CrxInstaller::OnInstallChecksComplete(PreloadCheck::Errors errors) {
+void CrxInstaller::OnInstallChecksComplete(const PreloadCheck::Errors& errors) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!service_weak_)
     return;

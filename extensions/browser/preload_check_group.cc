@@ -36,7 +36,7 @@ void PreloadCheckGroup::Start(ResultCallback callback) {
   }
 }
 
-void PreloadCheckGroup::OnCheckComplete(Errors errors) {
+void PreloadCheckGroup::OnCheckComplete(const Errors& errors) {
   DCHECK(thread_checker_.CalledOnValidThread());
   errors_.insert(errors.begin(), errors.end());
   running_checks_--;
@@ -53,8 +53,8 @@ void PreloadCheckGroup::MaybeInvokeCallback() {
   weak_ptr_factory_.InvalidateWeakPtrs();
   running_checks_ = 0;
 
-  DCHECK(!callback_.is_null());
-  base::ResetAndReturn(&callback_).Run(errors_);
+  DCHECK(callback_);
+  std::move(callback_).Run(errors_);
 }
 
 }  // namespace extensions

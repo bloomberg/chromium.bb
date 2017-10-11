@@ -92,7 +92,7 @@ class UnpackedInstaller
   void StartInstallChecks();
 
   // Callback from PreloadCheckGroup.
-  void OnInstallChecksComplete(PreloadCheck::Errors errors);
+  void OnInstallChecksComplete(const PreloadCheck::Errors& errors);
 
   // Verifies if loading unpacked extensions is allowed.
   bool IsLoadingUnpackedAllowed() const;
