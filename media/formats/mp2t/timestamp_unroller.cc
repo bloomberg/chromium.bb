@@ -21,6 +21,9 @@ int64_t TimestampUnroller::GetUnrolledTimestamp(int64_t timestamp) {
   // Mpeg2 TS timestamps have an accuracy of 33 bits.
   const int nbits = 33;
 
+  // Bitmask for the high 31 bits of the unrolled timestamp.
+  const int64_t unrolled_time_high_mask = 0xFFFFFFFE00000000LL;
+
   // |timestamp| has a precision of |nbits|
   // so make sure the highest bits are set to 0.
   DCHECK_EQ((timestamp >> nbits), 0);
@@ -48,10 +51,10 @@ int64_t TimestampUnroller::GetUnrolledTimestamp(int64_t timestamp) {
   // values during that process.
   // - possible overflows are not considered here since 64 bits on a 90kHz
   // timescale is way enough to represent several years of playback.
-  int64_t previous_unrolled_time_high = (previous_unrolled_timestamp_ >> nbits);
-  int64_t time0 = ((previous_unrolled_time_high - 1) << nbits) | timestamp;
-  int64_t time1 = ((previous_unrolled_time_high + 0) << nbits) | timestamp;
-  int64_t time2 = ((previous_unrolled_time_high + 1) << nbits) | timestamp;
+  int64_t time1 =
+      (previous_unrolled_timestamp_ & unrolled_time_high_mask) | timestamp;
+  int64_t time0 = time1 - (1LL << nbits);
+  int64_t time2 = time1 + (1LL << nbits);
 
   // Select the min absolute difference with the current time
   // so as to ensure time continuity.
