@@ -46519,6 +46519,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Network.Shill.Cellular.ExpiredLeaseLengthSeconds"
     units="seconds">
+  <obsolete>
+    Deprecated since Chrome OS build 10010.0.0 and superceded by
+    Network.Shill.Cellular.ExpiredLeaseLengthSeconds2 due to change in number of
+    buckets (crosreview.com/557297, crosreview.com/703679).
+  </obsolete>
+  <owner>benchan@chromium.org</owner>
+  <summary>
+    Chrome OS network performance metric that tracks the length of a lease for a
+    cellular network at the time it expired without the DHCP client being able
+    to renew it.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Cellular.ExpiredLeaseLengthSeconds2"
+    units="seconds">
   <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network performance metric that tracks the length of a lease for a
@@ -46805,6 +46820,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.Ethernet.ExpiredLeaseLengthSeconds"
+    units="seconds">
+  <obsolete>
+    Deprecated since Chrome OS build 10010.0.0 and superceded by
+    Network.Shill.Ethernet.ExpiredLeaseLengthSeconds2 due to change in number of
+    buckets (crosreview.com/557297, crosreview.com/703679).
+  </obsolete>
+  <owner>benchan@chromium.org</owner>
+  <summary>
+    Chrome OS network performance metric that tracks the length of a lease for
+    an Ethernet network at the time it expired without the DHCP client being
+    able to renew it.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Ethernet.ExpiredLeaseLengthSeconds2"
     units="seconds">
   <owner>benchan@chromium.org</owner>
   <summary>
@@ -47301,6 +47331,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.Wifi.ExpiredLeaseLengthSeconds" units="seconds">
+  <obsolete>
+    Deprecated since Chrome OS build 10010.0.0 and superceded by
+    Network.Shill.Wifi.ExpiredLeaseLengthSeconds2 due to change in number of
+    buckets (crosreview.com/557297, crosreview.com/703679).
+  </obsolete>
+  <owner>kirtika@chromium.org</owner>
+  <summary>
+    Chrome OS network performance metric that tracks the length of a lease for a
+    WiFi network at the time it expired without the DHCP client being able to
+    renew it.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Wifi.ExpiredLeaseLengthSeconds2" units="seconds">
   <owner>kirtika@chromium.org</owner>
   <summary>
     Chrome OS network performance metric that tracks the length of a lease for a
@@ -47782,6 +47826,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Network.Shill.Wimax.ExpiredLeaseLengthSeconds" units="seconds">
+  <obsolete>
+    Deprecated since Chrome OS build 10010.0.0 and superceded by
+    Network.Shill.Wimax.ExpiredLeaseLengthSeconds2 due to change in number of
+    buckets (crosreview.com/557297, crosreview.com/703679).
+  </obsolete>
+  <owner>benchan@chromium.org</owner>
+  <summary>
+    Chrome OS network performance metric that tracks the length of a lease for a
+    WiMax network at the time it expired without the DHCP client being able to
+    renew it.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.Wimax.ExpiredLeaseLengthSeconds2"
+    units="seconds">
   <owner>benchan@chromium.org</owner>
   <summary>
     Chrome OS network performance metric that tracks the length of a lease for a
