@@ -2,19 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PREVIEWS_CORE_PREVIEWS_LOG_H_
-#define COMPONENTS_PREVIEWS_CORE_PREVIEWS_LOG_H_
+#ifndef COMPONENTS_PREVIEWS_CORE_PREVIEWS_LOGGER_H_
+#define COMPONENTS_PREVIEWS_CORE_PREVIEWS_LOGGER_H_
 
 #include <list>
 #include <string>
 
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "components/previews/core/previews_experiments.h"
 #include "url/gurl.h"
 
 namespace previews {
+
+class PreviewsLoggerObserver;
 
 // Records information about previews and interventions events. The class only
 // keeps the recent event logs.
@@ -67,6 +70,14 @@ class PreviewsLogger {
   PreviewsLogger();
   virtual ~PreviewsLogger();
 
+  // Add a observer to the list. This observer will be notified when new a log
+  // message is added to the logger. Observers must remove themselves with
+  // RemoveObserver.
+  void AddAndNotifyObserver(PreviewsLoggerObserver* observer);
+
+  // Removes a observer from the observers list. Virtualized in testing.
+  virtual void RemoveObserver(PreviewsLoggerObserver* observer);
+
   std::vector<MessageLog> log_messages() const;
 
   // Add MessageLog using the given information. Pop out the oldest log if the
@@ -84,6 +95,9 @@ class PreviewsLogger {
   // Collection of recorded log messages.
   std::list<MessageLog> log_messages_;
 
+  // A list of observers listening to the logger.
+  base::ObserverList<PreviewsLoggerObserver> observer_list_;
+
   SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(PreviewsLogger);
@@ -91,4 +105,4 @@ class PreviewsLogger {
 
 }  // namespace previews
 
-#endif  // COMPONENTS_PREVIEWS_CORE_PREVIEWS_LOG_H
+#endif  // COMPONENTS_PREVIEWS_CORE_PREVIEWS_LOGGER_H_

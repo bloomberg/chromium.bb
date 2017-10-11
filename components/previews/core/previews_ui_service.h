@@ -14,7 +14,7 @@
 #include "base/time/time.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_io_data.h"
-#include "components/previews/core/previews_log.h"
+#include "components/previews/core/previews_logger.h"
 #include "components/previews/core/previews_opt_out_store.h"
 
 class GURL;
@@ -53,6 +53,11 @@ class PreviewsUIService {
                                     PreviewsType type,
                                     bool opt_out,
                                     base::Time time);
+
+  // Expose the pointer to PreviewsLogger to extract logging messages. This
+  // pointer's life time is the same as of |this|, and it is guaranteed to not
+  // return null.
+  PreviewsLogger* previews_logger() const;
 
  private:
   // The IO thread portion of the inter-thread communication for previews/.

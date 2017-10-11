@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/webui/interventions_internals/interventions_internals.mojom.h"
 #include "chrome/browser/ui/webui/interventions_internals/interventions_internals_page_handler.h"
 #include "chrome/browser/ui/webui/mojo_web_ui_controller.h"
+#include "components/previews/core/previews_logger.h"
 
 // The WebUI for chrome://interventions-internals.
 class InterventionsInternalsUI
@@ -21,6 +22,9 @@ class InterventionsInternalsUI
   // MojoWebUIController overrides:
   void BindUIHandler(
       mojom::InterventionsInternalsPageHandlerRequest request) override;
+
+  // The PreviewsLogger that this handler is listening to.
+  previews::PreviewsLogger* logger_;
 
   std::unique_ptr<InterventionsInternalsPageHandler> page_handler_;
 

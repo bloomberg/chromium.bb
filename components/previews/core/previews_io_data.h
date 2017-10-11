@@ -17,7 +17,7 @@
 #include "base/time/time.h"
 #include "components/previews/core/previews_decider.h"
 #include "components/previews/core/previews_experiments.h"
-#include "components/previews/core/previews_log.h"
+#include "components/previews/core/previews_logger.h"
 #include "net/nqe/effective_connection_type.h"
 
 class GURL;

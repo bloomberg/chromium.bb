@@ -8,4 +8,8 @@ mojom("mojo_bindings") {
   sources = [
     "interventions_internals.mojom",
   ]
+
+  public_deps = [
+    "//url/mojo:url_mojom_gurl",
+  ]
 }
