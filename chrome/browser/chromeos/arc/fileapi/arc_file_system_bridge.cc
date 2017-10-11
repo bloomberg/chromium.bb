@@ -288,6 +288,10 @@ bool ArcFileSystemBridge::HandleReadRequest(const std::string& id,
   return true;
 }
 
+bool ArcFileSystemBridge::HandleIdReleased(const std::string& id) {
+  return id_to_url_.erase(id) != 0;
+}
+
 void ArcFileSystemBridge::OnReadRequestCompleted(const std::string& id,
                                                  bool result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);

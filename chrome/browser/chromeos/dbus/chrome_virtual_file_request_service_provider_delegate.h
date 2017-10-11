@@ -22,11 +22,12 @@ class ChromeVirtualFileRequestServiceProviderDelegate
   ChromeVirtualFileRequestServiceProviderDelegate();
   ~ChromeVirtualFileRequestServiceProviderDelegate() override;
 
-  // Called on UI thread to handle incoming D-Bus method calls.
+  // VirtualFileRequestServiceProvider::Delegate overrides:
   bool HandleReadRequest(const std::string& id,
                          int64_t offset,
                          int64_t size,
                          base::ScopedFD pipe_write_end) override;
+  bool HandleIdReleased(const std::string& id) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeVirtualFileRequestServiceProviderDelegate);
