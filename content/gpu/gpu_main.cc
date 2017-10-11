@@ -82,7 +82,7 @@
 
 #if defined(OS_MACOSX)
 #include "base/message_loop/message_pump_mac.h"
-#include "services/service_manager/sandbox/mac/sandbox_mac.h"
+#include "content/common/sandbox_mac.h"
 #endif
 
 #if defined(USE_OZONE)
@@ -160,7 +160,7 @@ class ContentSandboxHelper : public gpu::GpuSandboxHelper {
 #elif defined(OS_WIN)
     return StartSandboxWindows(sandbox_info_);
 #elif defined(OS_MACOSX)
-    return service_manager::Sandbox::SandboxIsCurrentlyActive();
+    return Sandbox::SandboxIsCurrentlyActive();
 #else
     return false;
 #endif

@@ -2,29 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICE_MANAGER_SANDBOX_MAC_SANDBOX_MAC_H_
-#define SERVICE_MANAGER_SANDBOX_MAC_SANDBOX_MAC_H_
+#ifndef CONTENT_COMMON_SANDBOX_MAC_H_
+#define CONTENT_COMMON_SANDBOX_MAC_H_
+
+#include <map>
+#include <string>
 
 #include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "services/service_manager/sandbox/export.h"
+#include "content/common/content_export.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 
 namespace base {
 class FilePath;
 }
 
-namespace service_manager {
+namespace content {
 
-class SERVICE_MANAGER_SANDBOX_EXPORT Sandbox {
+class CONTENT_EXPORT Sandbox {
  public:
+
   // Warm up System APIs that empirically need to be accessed before the
   // sandbox is turned on. |sandbox_type| is the type of sandbox to warm up.
   // Valid |sandbox_type| values are defined by the enum SandboxType, or can be
   // defined by the embedder via
   // ContentClient::GetSandboxProfileForProcessType().
-  static void SandboxWarmup(SandboxType sandbox_type);
+  static void SandboxWarmup(service_manager::SandboxType sandbox_type);
 
   // Turns on the OS X sandbox for this process.
   // |sandbox_type| - type of Sandbox to use. See SandboxWarmup() for legal
@@ -33,7 +37,7 @@ class SERVICE_MANAGER_SANDBOX_EXPORT Sandbox {
   // profile that supports this is SANDBOX_TYPE_UTILITY .
   //
   // Returns true on success, false if an error occurred enabling the sandbox.
-  static bool EnableSandbox(SandboxType sandbox_type,
+  static bool EnableSandbox(service_manager::SandboxType sandbox_type,
                             const base::FilePath& allowed_dir);
 
   // Returns true if the sandbox has been enabled for the current process.
@@ -67,6 +71,6 @@ class SERVICE_MANAGER_SANDBOX_EXPORT Sandbox {
   DISALLOW_IMPLICIT_CONSTRUCTORS(Sandbox);
 };
 
-}  // namespace service_manager
+}  // namespace content
 
-#endif  // SERVICE_MANAGER_SANDBOX_MAC_SANDBOX_MAC_H_
+#endif  // CONTENT_COMMON_SANDBOX_MAC_H_
