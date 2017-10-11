@@ -626,7 +626,9 @@ Error:
 
 #if CONFIG_FRAME_SUPERRES
 static void upscale_normative(const uint8_t *const input, int length,
-                              uint8_t *output, int olength) {
+                              uint8_t *output, int olength,
+                              int superres_denom) {
+  (void)superres_denom;
 #if CONFIG_LOOP_RESTORATION
   interpolate_simple(input, length, output, olength);
 #else
@@ -636,22 +638,31 @@ static void upscale_normative(const uint8_t *const input, int length,
 
 static void upscale_normative_plane(const uint8_t *const input, int height,
                                     int width, int in_stride, uint8_t *output,
-                                    int height2, int width2, int out_stride) {
+                                    int height2, int width2, int out_stride,
+                                    int superres_denom) {
   int i;
-  uint8_t *intbuf = (uint8_t *)aom_malloc(sizeof(uint8_t) * width2 * height);
-  uint8_t *arrbuf = (uint8_t *)aom_malloc(sizeof(uint8_t) * height);
-  uint8_t *arrbuf2 = (uint8_t *)aom_malloc(sizeof(uint8_t) * height2);
-  if (intbuf == NULL || arrbuf == NULL || arrbuf2 == NULL) goto Error;
   assert(width > 0);
   assert(height > 0);
   assert(width2 > 0);
   assert(height2 > 0);
+#if CONFIG_HORZONLY_FRAME_SUPERRES
+  (void)height;
+  (void)height2;
+  assert(height2 == height);
   for (i = 0; i < height; ++i)
-    upscale_normative(input + in_stride * i, width, intbuf + width2 * i,
-                      width2);
+    upscale_normative(input + in_stride * i, width, output + out_stride * i,
+                      width2, superres_denom);
+#else
+  uint8_t *intbuf = (uint8_t *)aom_malloc(sizeof(uint8_t) * width2 * height);
+  uint8_t *arrbuf = (uint8_t *)aom_malloc(sizeof(uint8_t) * height);
+  uint8_t *arrbuf2 = (uint8_t *)aom_malloc(sizeof(uint8_t) * height2);
+  if (intbuf == NULL || arrbuf == NULL || arrbuf2 == NULL) goto Error;
+  for (i = 0; i < height; ++i)
+    upscale_normative(input + in_stride * i, width, intbuf + width2 * i, width2,
+                      superres_denom);
   for (i = 0; i < width2; ++i) {
     fill_col_to_arr(intbuf + i, width2, height, arrbuf);
-    upscale_normative(arrbuf, height, arrbuf2, height2);
+    upscale_normative(arrbuf, height, arrbuf2, height2, superres_denom);
     fill_arr_to_col(output + i, out_stride, height2, arrbuf2);
   }
 
@@ -659,6 +670,7 @@ Error:
   aom_free(intbuf);
   aom_free(arrbuf);
   aom_free(arrbuf2);
+#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
 }
 #endif  // CONFIG_FRAME_SUPERRES
 
@@ -960,7 +972,9 @@ Error:
 
 #if CONFIG_FRAME_SUPERRES
 static void highbd_upscale_normative(const uint16_t *const input, int length,
-                                     uint16_t *output, int olength, int bd) {
+                                     uint16_t *output, int olength,
+                                     int superres_denom, int bd) {
+  (void)superres_denom;
 #if CONFIG_LOOP_RESTORATION
   highbd_interpolate_simple(input, length, output, olength, bd);
 #else
@@ -971,19 +985,34 @@ static void highbd_upscale_normative(const uint16_t *const input, int length,
 static void highbd_upscale_normative_plane(const uint8_t *const input,
                                            int height, int width, int in_stride,
                                            uint8_t *output, int height2,
-                                           int width2, int out_stride, int bd) {
+                                           int width2, int out_stride,
+                                           int superres_denom, int bd) {
   int i;
+  assert(width > 0);
+  assert(height > 0);
+  assert(width2 > 0);
+  assert(height2 > 0);
+#if CONFIG_HORZONLY_FRAME_SUPERRES
+  (void)height;
+  (void)height2;
+  assert(height2 == height);
+  for (i = 0; i < height; ++i)
+    highbd_upscale_normative(CONVERT_TO_SHORTPTR(input + in_stride * i), width,
+                             CONVERT_TO_SHORTPTR(output + out_stride * i),
+                             width2, superres_denom, bd);
+#else
   uint16_t *intbuf = (uint16_t *)aom_malloc(sizeof(uint16_t) * width2 * height);
   uint16_t *arrbuf = (uint16_t *)aom_malloc(sizeof(uint16_t) * height);
   uint16_t *arrbuf2 = (uint16_t *)aom_malloc(sizeof(uint16_t) * height2);
   if (intbuf == NULL || arrbuf == NULL || arrbuf2 == NULL) goto Error;
   for (i = 0; i < height; ++i) {
     highbd_upscale_normative(CONVERT_TO_SHORTPTR(input + in_stride * i), width,
-                             intbuf + width2 * i, width2, bd);
+                             intbuf + width2 * i, width2, superres_denom, bd);
   }
   for (i = 0; i < width2; ++i) {
     highbd_fill_col_to_arr(intbuf + i, width2, height, arrbuf);
-    highbd_upscale_normative(arrbuf, height, arrbuf2, height2, bd);
+    highbd_upscale_normative(arrbuf, height, arrbuf2, height2, superres_denom,
+                             bd);
     highbd_fill_arr_to_col(CONVERT_TO_SHORTPTR(output + i), out_stride, height2,
                            arrbuf2);
   }
@@ -992,6 +1021,7 @@ Error:
   aom_free(intbuf);
   aom_free(arrbuf);
   aom_free(arrbuf2);
+#endif  // CONFIG_HORZONLY_FRAME_SUPERRES
 }
 #endif  // CONFIG_FRAME_SUPERRES
 
@@ -1115,12 +1145,13 @@ void av1_resize_and_extend_frame(const YV12_BUFFER_CONFIG *src,
 #if CONFIG_FRAME_SUPERRES
 #if CONFIG_HIGHBITDEPTH
 void av1_upscale_normative_and_extend_frame(const YV12_BUFFER_CONFIG *src,
-                                            YV12_BUFFER_CONFIG *dst, int bd) {
+                                            YV12_BUFFER_CONFIG *dst,
+                                            int superres_denom, int bd) {
 #else
 void av1_upscale_normative_and_extend_frame(const YV12_BUFFER_CONFIG *src,
-                                            YV12_BUFFER_CONFIG *dst) {
+                                            YV12_BUFFER_CONFIG *dst,
+                                            int superres_denom) {
 #endif  // CONFIG_HIGHBITDEPTH
-  // TODO(dkovalev): replace YV12_BUFFER_CONFIG with aom_image_t
   int i;
   const uint8_t *const srcs[3] = { src->y_buffer, src->u_buffer,
                                    src->v_buffer };
@@ -1139,14 +1170,14 @@ void av1_upscale_normative_and_extend_frame(const YV12_BUFFER_CONFIG *src,
   for (i = 0; i < MAX_MB_PLANE; ++i) {
 #if CONFIG_HIGHBITDEPTH
     if (src->flags & YV12_FLAG_HIGHBITDEPTH)
-      highbd_upscale_normative_plane(srcs[i], src_heights[i], src_widths[i],
-                                     src_strides[i], dsts[i], dst_heights[i],
-                                     dst_widths[i], dst_strides[i], bd);
+      highbd_upscale_normative_plane(
+          srcs[i], src_heights[i], src_widths[i], src_strides[i], dsts[i],
+          dst_heights[i], dst_widths[i], dst_strides[i], superres_denom, bd);
     else
 #endif  // CONFIG_HIGHBITDEPTH
       upscale_normative_plane(srcs[i], src_heights[i], src_widths[i],
                               src_strides[i], dsts[i], dst_heights[i],
-                              dst_widths[i], dst_strides[i]);
+                              dst_widths[i], dst_strides[i], superres_denom);
   }
   aom_extend_frame_borders(dst);
 }
@@ -1284,9 +1315,11 @@ void av1_superres_upscale(AV1_COMMON *cm, BufferPool *const pool) {
                  frame_to_show->y_crop_height != cm->height));
 #if CONFIG_HIGHBITDEPTH
   av1_upscale_normative_and_extend_frame(&copy_buffer, frame_to_show,
+                                         cm->superres_scale_denominator,
                                          (int)cm->bit_depth);
 #else
-  av1_upscale_normative_and_extend_frame(&copy_buffer, frame_to_show);
+  av1_upscale_normative_and_extend_frame(&copy_buffer, frame_to_show,
+                                         cm->superres_scale_denominator);
 #endif  // CONFIG_HIGHBITDEPTH
 
   // Free the copy buffer
