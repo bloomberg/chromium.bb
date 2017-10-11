@@ -41,7 +41,8 @@ class LazyContextTaskQueue {
           worker_thread_id(worker_thread_id),
           url(url) {}
   };
-  using PendingTask = base::Callback<void(std::unique_ptr<ContextInfo> params)>;
+  using PendingTask =
+      base::OnceCallback<void(std::unique_ptr<ContextInfo> params)>;
 
   // Returns true if the task should be added to the queue (that is, if the
   // extension has a lazy background page or service worker that isn't ready
@@ -63,7 +64,7 @@ class LazyContextTaskQueue {
   // 2. LazyBackgroundTaskQueue::AddPendingTask is tied to ExtensionHost. This
   //    class should be ExtensionHost agnostic.
   virtual void AddPendingTaskToDispatchEvent(LazyContextId* context_id,
-                                             const PendingTask& task) = 0;
+                                             PendingTask task) = 0;
 };
 
 }  // namespace extensions

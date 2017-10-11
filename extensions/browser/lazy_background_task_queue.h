@@ -42,7 +42,7 @@ class LazyBackgroundTaskQueue : public KeyedService,
                                 public content::NotificationObserver,
                                 public ExtensionRegistryObserver {
  public:
-  typedef base::Callback<void(ExtensionHost*)> PendingTask;
+  using PendingTask = base::OnceCallback<void(ExtensionHost*)>;
 
   explicit LazyBackgroundTaskQueue(content::BrowserContext* browser_context);
   ~LazyBackgroundTaskQueue() override;
@@ -62,17 +62,16 @@ class LazyBackgroundTaskQueue : public KeyedService,
   // ExtensionHost.
   void AddPendingTaskToDispatchEvent(
       LazyContextId* context_id,
-      const LazyContextTaskQueue::PendingTask& task) override;
+      LazyContextTaskQueue::PendingTask task) override;
 
   // Adds a task to the queue for a given extension. If this is the first
   // task added for the extension, its lazy background page will be loaded.
   // The task will be called either when the page is loaded, or when the
   // page fails to load for some reason (e.g. a crash or browser
   // shutdown). In the latter case, the ExtensionHost parameter is NULL.
-  void AddPendingTask(
-      content::BrowserContext* context,
-      const std::string& extension_id,
-      const PendingTask& task);
+  void AddPendingTask(content::BrowserContext* context,
+                      const std::string& extension_id,
+                      PendingTask task);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(LazyBackgroundTaskQueueTest, AddPendingTask);
@@ -80,8 +79,8 @@ class LazyBackgroundTaskQueue : public KeyedService,
 
   // A map between a BrowserContext/extension_id pair and the queue of tasks
   // pending the load of its background page.
-  typedef std::pair<content::BrowserContext*, ExtensionId> PendingTasksKey;
-  typedef std::vector<PendingTask> PendingTasksList;
+  using PendingTasksKey = std::pair<content::BrowserContext*, ExtensionId>;
+  using PendingTasksList = std::vector<PendingTask>;
   using PendingTasksMap =
       std::map<PendingTasksKey, std::unique_ptr<PendingTasksList>>;
 

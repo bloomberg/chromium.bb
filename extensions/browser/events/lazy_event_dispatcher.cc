@@ -120,7 +120,7 @@ bool LazyEventDispatcher::QueueEventDispatch(
   }
 
   queue->AddPendingTaskToDispatchEvent(
-      dispatch_context, base::Bind(dispatch_function_, dispatched_event));
+      dispatch_context, base::BindOnce(dispatch_function_, dispatched_event));
 
   return true;
 }

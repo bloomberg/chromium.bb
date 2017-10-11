@@ -609,9 +609,9 @@ void MessageService::ClosePortImpl(const PortId& port_id,
     if (pending != pending_lazy_background_page_channels_.end()) {
       lazy_background_task_queue_->AddPendingTask(
           pending->second.first, pending->second.second,
-          base::Bind(&MessageService::PendingLazyBackgroundPageClosePort,
-                     weak_factory_.GetWeakPtr(), port_id, process_id,
-                     routing_id, force_close, error_message));
+          base::BindOnce(&MessageService::PendingLazyBackgroundPageClosePort,
+                         weak_factory_.GetWeakPtr(), port_id, process_id,
+                         routing_id, force_close, error_message));
     }
     return;
   }
@@ -711,8 +711,8 @@ void MessageService::EnqueuePendingMessageForLazyBackgroundLoad(
   if (pending != pending_lazy_background_page_channels_.end()) {
     lazy_background_task_queue_->AddPendingTask(
         pending->second.first, pending->second.second,
-        base::Bind(&MessageService::PendingLazyBackgroundPagePostMessage,
-                   weak_factory_.GetWeakPtr(), source_port_id, message));
+        base::BindOnce(&MessageService::PendingLazyBackgroundPagePostMessage,
+                       weak_factory_.GetWeakPtr(), source_port_id, message));
   }
 }
 
@@ -753,8 +753,9 @@ bool MessageService::MaybeAddPendingLazyBackgroundPageOpenChannelTask(
   int source_id = (*params)->source_process_id;
   lazy_background_task_queue_->AddPendingTask(
       context, extension->id(),
-      base::Bind(&MessageService::PendingLazyBackgroundPageOpenChannel,
-                 weak_factory_.GetWeakPtr(), base::Passed(params), source_id));
+      base::BindOnce(&MessageService::PendingLazyBackgroundPageOpenChannel,
+                     weak_factory_.GetWeakPtr(), base::Passed(params),
+                     source_id));
 
   for (const PendingMessage& message : pending_messages) {
     EnqueuePendingMessageForLazyBackgroundLoad(message.first, channel_id,

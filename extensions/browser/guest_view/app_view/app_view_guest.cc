@@ -198,9 +198,10 @@ void AppViewGuest::CreateWebContents(
   if (queue->ShouldEnqueueTask(browser_context(), guest_extension)) {
     queue->AddPendingTask(
         browser_context(), guest_extension->id(),
-        base::Bind(&AppViewGuest::LaunchAppAndFireEvent,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   base::Passed(base::WrapUnique(data->DeepCopy())), callback));
+        base::BindOnce(&AppViewGuest::LaunchAppAndFireEvent,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       base::Passed(base::WrapUnique(data->DeepCopy())),
+                       callback));
     return;
   }
 
