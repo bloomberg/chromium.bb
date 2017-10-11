@@ -37981,7 +37981,12 @@
     { "name": "simpletax.ca", "include_subdomains": true, "mode": "force-https" },
     { "name": "scotthelme.co.uk", "include_subdomains": true, "mode": "force-https", "expect_staple": true, "expect_staple_report_uri": "https://scotthelme.report-uri.io/r/default/staple/reportOnly", "include_subdomains_for_expect_staple": true, "expect_ct": true, "expect_ct_report_uri": "https://scotthelme.report-uri.io/r/default/ct/reportOnly", "include_subdomains_for_expect_ct": true },
     { "name": "hstspreload.appspot.com", "include_subdomains": true, "mode": "force-https" },
-    { "name": "matteomarescotti.it", "include_subdomains": true, "mode": "force-https", "expect_staple": true, "expect_staple_report_uri": "https://matteomarescotti.report-uri.io/r/default/staple/reportOnly", "include_subdomains_for_expect_staple": true },
+    {
+      "name": "matteomarescotti.it",
+      "mode": "force-https", "include_subdomains": true,
+      "expect_staple": true, "include_subdomains_for_expect_staple": true,
+      "expect_staple_report_uri": "https://matteomarescotti.report-uri.io/r/default/staple/reportOnly"
+    },
     { "name": "www.cnet.com", "include_subdomains": true, "mode": "force-https" },
     {
       "name": "alessandroz.pro",
