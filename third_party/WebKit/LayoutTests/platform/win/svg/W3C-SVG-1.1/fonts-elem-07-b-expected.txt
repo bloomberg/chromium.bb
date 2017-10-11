@@ -1,5 +1,5 @@
-layer at (0,0) size 480x360
-  LayoutView at (0,0) size 480x360
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
 layer at (0,0) size 480x360
   LayoutSVGRoot {svg} at (0,0) size 480x360
     LayoutSVGContainer {g} at (30,3) size 364x239.54

@@ -75,9 +75,6 @@ namespace content {
 
 namespace {
 
-const int kTestSVGWindowWidthDip = 480;
-const int kTestSVGWindowHeightDip = 360;
-
 base::FilePath GetBuildDirectory() {
   base::FilePath result;
   base::PathService::Get(base::DIR_EXE, &result);
@@ -383,9 +380,6 @@ bool BlinkTestController::PrepareForLayoutTest(
   is_compositing_test_ =
       test_url_.spec().find("compositing/") != std::string::npos;
   initial_size_ = Shell::GetShellDefaultSize();
-  // The W3C SVG layout tests use a different size than the other layout tests.
-  if (test_url_.spec().find("W3C-SVG-1.1") != std::string::npos)
-    initial_size_ = gfx::Size(kTestSVGWindowWidthDip, kTestSVGWindowHeightDip);
   if (!main_window_) {
     main_window_ = content::Shell::CreateNewWindow(
         browser_context,
@@ -414,6 +408,7 @@ bool BlinkTestController::PrepareForLayoutTest(
         ->GetWidget()
         ->GetView()
         ->SetSize(initial_size_);
+    // Try to reset the window size. This can fail, see crbug.com/772811
     main_window_->web_contents()
         ->GetRenderViewHost()
         ->GetWidget()

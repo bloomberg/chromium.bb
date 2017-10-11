@@ -1,7 +1,7 @@
-layer at (0,0) size 480x360
-  LayoutView at (0,0) size 480x360
-layer at (0,0) size 480x360
-  LayoutSVGRoot {svg} at (0,0) size 480x360
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutSVGRoot {svg} at (0,0) size 800x600
     LayoutSVGContainer {g} at (70,8) size 462.13x267
       LayoutSVGText {text} at (113.50,8) size 254x15 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (113.50,8) size 254x15

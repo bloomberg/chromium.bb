@@ -1,7 +1,7 @@
-layer at (0,0) size 480x360
-  LayoutView at (0,0) size 480x360
-layer at (0,0) size 480x360
-  LayoutSVGRoot {svg} at (0,0) size 480x360
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutSVGRoot {svg} at (0,0) size 800x600
     LayoutSVGContainer {g} at (15.71,5.71) size 448.57x298.57
       LayoutSVGViewportContainer {svg} at (1,1) size 628x418
         LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
@@ -43,25 +43,25 @@ layer at (0,0) size 480x360
           LayoutSVGRect {rect} at (1,1) size 628x418 [stroke={[type=SOLID] [color=#0000FF]}] [x=1.00] [y=1.00] [width=628.00] [height=418.00]
           LayoutSVGRect {rect} at (10,10) size 580x40 [fill={[type=LINEAR-GRADIENT] [id="MyGradient"]}] [x=10.00] [y=10.00] [width=580.00] [height=40.00]
             [filter="Identity"] LayoutSVGResourceFilter {filter} at (10,10) size 580x40
-          LayoutSVGText {text} at (10,50.61) size 198.50x35 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (10,50.61) size 198.50x35
-              chunk 1 text run 1 at (10.00,80.00) startOffset 0 endOffset 14 width 198.51: "type: identity"
+          LayoutSVGText {text} at (10,48.92) size 202.98x36.95 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (10,48.92) size 202.98x36.95
+              chunk 1 text run 1 at (10.00,80.00) startOffset 0 endOffset 14 width 202.99: "type: identity"
           LayoutSVGRect {rect} at (10,110) size 580x40 [fill={[type=LINEAR-GRADIENT] [id="MyGradient"]}] [x=10.00] [y=110.00] [width=580.00] [height=40.00]
             [filter="Table"] LayoutSVGResourceFilter {filter} at (10,110) size 580x40
-          LayoutSVGText {text} at (10,150.61) size 162.25x35 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (10,150.61) size 162.25x35
-              chunk 1 text run 1 at (10.00,180.00) startOffset 0 endOffset 11 width 162.25: "type: table"
+          LayoutSVGText {text} at (10,148.92) size 164.48x36.95 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (10,148.92) size 164.48x36.95
+              chunk 1 text run 1 at (10.00,180.00) startOffset 0 endOffset 11 width 164.49: "type: table"
           LayoutSVGRect {rect} at (10,210) size 580x40 [fill={[type=LINEAR-GRADIENT] [id="MyGradient"]}] [x=10.00] [y=210.00] [width=580.00] [height=40.00]
             [filter="Linear"] LayoutSVGResourceFilter {filter} at (10,210) size 580x40
-          LayoutSVGText {text} at (10,250.61) size 587.84x35 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (10,250.61) size 587.84x35
-              chunk 1 text run 1 at (10.00,280.00) startOffset 0 endOffset 40 width 587.85: "type:linear slope:.5 intercepts:.25/0/.5"
+          LayoutSVGText {text} at (10,248.92) size 597.08x36.95 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (10,248.92) size 597.08x36.95
+              chunk 1 text run 1 at (10.00,280.00) startOffset 0 endOffset 40 width 597.09: "type:linear slope:.5 intercepts:.25/0/.5"
           LayoutSVGRect {rect} at (10,310) size 580x40 [fill={[type=LINEAR-GRADIENT] [id="MyGradient"]}] [x=10.00] [y=310.00] [width=580.00] [height=40.00]
             [filter="Gamma"] LayoutSVGResourceFilter {filter} at (10,310) size 580x40
-          LayoutSVGText {text} at (10,350.61) size 572.45x35 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (10,350.61) size 572.45x35
-              chunk 1 text run 1 at (10.00,380.00) startOffset 0 endOffset 34 width 572.45: "type: gamma ampl:2 exponents:5/3/1"
-    LayoutSVGText {text} at (10,304) size 264x46 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (10,304) size 264x46
-        chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 264.00: "$Revision: 1.6 $"
+          LayoutSVGText {text} at (10,348.92) size 587.84x36.95 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (10,348.92) size 587.84x36.95
+              chunk 1 text run 1 at (10.00,380.00) startOffset 0 endOffset 34 width 587.85: "type: gamma ampl:2 exponents:5/3/1"
+    LayoutSVGText {text} at (10,304) size 268.19x45.59 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (10,304) size 268.19x45.59
+        chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 268.20: "$Revision: 1.6 $"
     LayoutSVGRect {rect} at (1,1) size 478x358 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]

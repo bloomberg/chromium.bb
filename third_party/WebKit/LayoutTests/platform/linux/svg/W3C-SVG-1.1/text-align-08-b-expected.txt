@@ -1,23 +1,23 @@
-layer at (0,0) size 480x360
-  LayoutView at (0,0) size 480x360
-layer at (0,0) size 480x360
-  LayoutSVGRoot {svg} at (0,0) size 480x360
-    LayoutSVGContainer {g} at (50,66) size 434x170
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutSVGRoot {svg} at (0,0) size 800x600
+    LayoutSVGContainer {g} at (50,65.61) size 433.19x168
       LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
-      LayoutSVGText {text} at (50,66) size 434x170 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (50,66) size 258x170
-          chunk 1 text run 1 at (50.00,200.00) startOffset 0 endOffset 3 width 255.00: "a\x{729C}\x{923}"
-        LayoutSVGTSpan {tspan} at (50,66) size 434x170
-          LayoutSVGInlineText {#text} at (305,133) size 129x85
-            chunk 1 text run 1 at (305.00,200.00) startOffset 0 endOffset 3 width 127.00: "a\x{729C}\x{923}"
-        LayoutSVGTSpan {tspan} at (50,66) size 434x170
-          LayoutSVGInlineText {#text} at (432,173) size 52x34
-            chunk 1 text run 1 at (432.00,200.00) startOffset 0 endOffset 3 width 51.00: "a\x{729C}\x{923}"
+      LayoutSVGText {text} at (50,65.61) size 433.19x168 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (50,65.61) size 256.80x168
+          chunk 1 text run 1 at (50.00,200.00) startOffset 0 endOffset 3 width 254.40: "a\x{729C}\x{923}"
+        LayoutSVGTSpan {tspan} at (50,65.61) size 433.19x168
+          LayoutSVGInlineText {#text} at (304.39,132.81) size 128.39x85.19
+            chunk 1 text run 1 at (304.40,200.00) startOffset 0 endOffset 3 width 127.20: "a\x{729C}\x{923}"
+        LayoutSVGTSpan {tspan} at (50,65.61) size 433.19x168
+          LayoutSVGInlineText {#text} at (431.59,173) size 51.59x34.19
+            chunk 1 text run 1 at (431.60,200.00) startOffset 0 endOffset 3 width 51.00: "a\x{729C}\x{923}"
         LayoutSVGInlineText {#text} at (0,0) size 0x0
       LayoutSVGPath {line} at (50,200) size 383x0 [stroke={[type=SOLID] [color=#0000FF]}] [fill={[type=SOLID] [color=#000000]}] [x1=50.00] [y1=200.00] [x2=433.00] [y2=200.00]
       LayoutSVGPath {line} at (50,230) size 383x0 [stroke={[type=SOLID] [color=#FF0000]}] [fill={[type=SOLID] [color=#000000]}] [x1=50.00] [y1=230.00] [x2=433.00] [y2=230.00]
       LayoutSVGPath {line} at (50,95) size 383x0 [stroke={[type=SOLID] [color=#008000]}] [fill={[type=SOLID] [color=#000000]}] [x1=50.00] [y1=95.00] [x2=433.00] [y2=95.00]
-    LayoutSVGText {text} at (10,304) size 264x46 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (10,304) size 264x46
-        chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 264.00: "$Revision: 1.7 $"
+    LayoutSVGText {text} at (10,304) size 268.19x45.59 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (10,304) size 268.19x45.59
+        chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 268.20: "$Revision: 1.7 $"
     LayoutSVGRect {rect} at (1,1) size 478x358 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]

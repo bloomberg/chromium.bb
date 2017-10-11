@@ -1,75 +1,75 @@
-layer at (0,0) size 480x360
-  LayoutView at (0,0) size 480x360
-layer at (0,0) size 480x360
-  LayoutSVGRoot {svg} at (0,0) size 480x360
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutSVGRoot {svg} at (0,0) size 800x600
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
-    LayoutSVGContainer {g} at (10,13) size 430x279
-      LayoutSVGText {text} at (10,13) size 299x21 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (10,13) size 299x21
-          chunk 1 text run 1 at (10.00,30.00) startOffset 0 endOffset 35 width 299.00: "Testing liveness of SVG DOM objects"
-      LayoutSVGContainer {g} at (40,60) size 252x350 [transform={m=((0.00,1.00)(-1.00,0.00)) t=(500.00,0.00)}]
+    LayoutSVGContainer {g} at (10,13.20) size 430x275.19
+      LayoutSVGText {text} at (10,13.20) size 299.80x21 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (10,13.20) size 299.80x21
+          chunk 1 text run 1 at (10.00,30.00) startOffset 0 endOffset 35 width 299.80: "Testing liveness of SVG DOM objects"
+      LayoutSVGContainer {g} at (40,60) size 248.39x350 [transform={m=((0.00,1.00)(-1.00,0.00)) t=(500.00,0.00)}]
         LayoutSVGRect {rect} at (40,60) size 20x20 [fill={[type=SOLID] [color=#008000]}] [x=40.00] [y=60.00] [width=20.00] [height=20.00]
-        LayoutSVGText {text} at (70,62) size 162x16 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (70,62) size 162x16
-            chunk 1 text run 1 at (70.00,75.00) startOffset 0 endOffset 21 width 162.00: "SVGAnimatedNumberList"
+        LayoutSVGText {text} at (70,62.41) size 159x15.59 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (70,62.41) size 159x15.59
+            chunk 1 text run 1 at (70.00,75.00) startOffset 0 endOffset 21 width 158.40: "SVGAnimatedNumberList"
         LayoutSVGRect {rect} at (40,90) size 20x20 [fill={[type=SOLID] [color=#008000]}] [x=40.00] [y=90.00] [width=20.00] [height=20.00]
-        LayoutSVGText {text} at (70,92) size 133x16 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (70,92) size 133x16
-            chunk 1 text run 1 at (70.00,105.00) startOffset 0 endOffset 17 width 133.00: "SVGAnimatedLength"
+        LayoutSVGText {text} at (70,92.41) size 129.59x15.59 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (70,92.41) size 129.59x15.59
+            chunk 1 text run 1 at (70.00,105.00) startOffset 0 endOffset 17 width 129.60: "SVGAnimatedLength"
         LayoutSVGRect {rect} at (40,120) size 20x20 [fill={[type=SOLID] [color=#008000]}] [x=40.00] [y=120.00] [width=20.00] [height=20.00]
-        LayoutSVGText {text} at (70,122) size 155x16 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (70,122) size 155x16
-            chunk 1 text run 1 at (70.00,135.00) startOffset 0 endOffset 21 width 155.00: "SVGAnimatedLengthList"
+        LayoutSVGText {text} at (70,122.41) size 151.80x15.59 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (70,122.41) size 151.80x15.59
+            chunk 1 text run 1 at (70.00,135.00) startOffset 0 endOffset 21 width 151.20: "SVGAnimatedLengthList"
         LayoutSVGRect {rect} at (40,150) size 20x20 [fill={[type=SOLID] [color=#008000]}] [x=40.00] [y=150.00] [width=20.00] [height=20.00]
-        LayoutSVGText {text} at (70,152) size 125x16 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (70,152) size 125x16
-            chunk 1 text run 1 at (70.00,165.00) startOffset 0 endOffset 16 width 125.00: "SVGAnimatedAngle"
+        LayoutSVGText {text} at (70,152.41) size 122.39x15.59 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (70,152.41) size 122.39x15.59
+            chunk 1 text run 1 at (70.00,165.00) startOffset 0 endOffset 16 width 122.40: "SVGAnimatedAngle"
         LayoutSVGRect {rect} at (40,180) size 20x20 [fill={[type=SOLID] [color=#008000]}] [x=40.00] [y=180.00] [width=20.00] [height=20.00]
-        LayoutSVGText {text} at (70,182) size 118x16 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (70,182) size 118x16
-            chunk 1 text run 1 at (70.00,195.00) startOffset 0 endOffset 15 width 118.00: "SVGAnimatedRect"
+        LayoutSVGText {text} at (70,182.41) size 116.39x15.59 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (70,182.41) size 116.39x15.59
+            chunk 1 text run 1 at (70.00,195.00) startOffset 0 endOffset 15 width 115.80: "SVGAnimatedRect"
         LayoutSVGRect {rect} at (40,210) size 20x20 [fill={[type=SOLID] [color=#008000]}] [x=40.00] [y=210.00] [width=20.00] [height=20.00]
-        LayoutSVGText {text} at (70,212) size 176.47x16 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (70,212) size 176.47x16
-            chunk 1 text run 1 at (70.00,225.00) startOffset 0 endOffset 24 width 176.48: "SVGAnimatedTransformList"
+        LayoutSVGText {text} at (70,212.41) size 172.27x15.59 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (70,212.41) size 172.27x15.59
+            chunk 1 text run 1 at (70.00,225.00) startOffset 0 endOffset 24 width 171.68: "SVGAnimatedTransformList"
         LayoutSVGRect {rect} at (40,240) size 20x20 [fill={[type=SOLID] [color=#008000]}] [x=40.00] [y=240.00] [width=20.00] [height=20.00]
-        LayoutSVGText {text} at (70,242) size 222x16 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (70,242) size 222x16
-            chunk 1 text run 1 at (70.00,255.00) startOffset 0 endOffset 30 width 222.00: "SVGAnimatedPreserveAspectRatio"
+        LayoutSVGText {text} at (70,242.41) size 218.39x15.59 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (70,242.41) size 218.39x15.59
+            chunk 1 text run 1 at (70.00,255.00) startOffset 0 endOffset 30 width 218.40: "SVGAnimatedPreserveAspectRatio"
         LayoutSVGRect {rect} at (40,270) size 20x20 [fill={[type=SOLID] [color=#008000]}] [x=40.00] [y=270.00] [width=20.00] [height=20.00]
-        LayoutSVGText {text} at (70,272) size 141x16 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (70,272) size 141x16
-            chunk 1 text run 1 at (70.00,285.00) startOffset 0 endOffset 18 width 141.00: "SVGAnimatedBoolean"
+        LayoutSVGText {text} at (70,272.41) size 138x15.59 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (70,272.41) size 138x15.59
+            chunk 1 text run 1 at (70.00,285.00) startOffset 0 endOffset 18 width 138.00: "SVGAnimatedBoolean"
         LayoutSVGRect {rect} at (40,300) size 20x20 [fill={[type=SOLID] [color=#008000]}] [x=40.00] [y=300.00] [width=20.00] [height=20.00]
-        LayoutSVGText {text} at (70,302) size 126x16 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (70,302) size 126x16
-            chunk 1 text run 1 at (70.00,315.00) startOffset 0 endOffset 17 width 126.00: "SVGAnimatedString"
+        LayoutSVGText {text} at (70,302.41) size 123x15.59 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (70,302.41) size 123x15.59
+            chunk 1 text run 1 at (70.00,315.00) startOffset 0 endOffset 17 width 123.00: "SVGAnimatedString"
         LayoutSVGRect {rect} at (40,330) size 20x20 [fill={[type=SOLID] [color=#008000]}] [x=40.00] [y=330.00] [width=20.00] [height=20.00]
-        LayoutSVGText {text} at (70,332) size 170x16 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (70,332) size 170x16
-            chunk 1 text run 1 at (70.00,345.00) startOffset 0 endOffset 22 width 170.00: "SVGAnimatedEnumeration"
+        LayoutSVGText {text} at (70,332.41) size 165.59x15.59 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (70,332.41) size 165.59x15.59
+            chunk 1 text run 1 at (70.00,345.00) startOffset 0 endOffset 22 width 165.60: "SVGAnimatedEnumeration"
         LayoutSVGRect {rect} at (40,360) size 20x20 [fill={[type=SOLID] [color=#008000]}] [x=40.00] [y=360.00] [width=20.00] [height=20.00]
-        LayoutSVGText {text} at (70,362) size 134x16 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (70,362) size 134x16
-            chunk 1 text run 1 at (70.00,375.00) startOffset 0 endOffset 18 width 134.00: "SVGAnimatedInteger"
+        LayoutSVGText {text} at (70,362.41) size 130.19x15.59 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (70,362.41) size 130.19x15.59
+            chunk 1 text run 1 at (70.00,375.00) startOffset 0 endOffset 18 width 130.20: "SVGAnimatedInteger"
         LayoutSVGRect {rect} at (40,390) size 20x20 [fill={[type=SOLID] [color=#008000]}] [x=40.00] [y=390.00] [width=20.00] [height=20.00]
-        LayoutSVGText {text} at (70,392) size 140x16 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (70,392) size 140x16
-            chunk 1 text run 1 at (70.00,405.00) startOffset 0 endOffset 17 width 140.00: "SVGAnimatedNumber"
+        LayoutSVGText {text} at (70,392.41) size 136.80x15.59 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (70,392.41) size 136.80x15.59
+            chunk 1 text run 1 at (70.00,405.00) startOffset 0 endOffset 17 width 136.80: "SVGAnimatedNumber"
       LayoutSVGHiddenContainer {g} at (-100,-100) size 200x200
-        LayoutSVGText {text} at (10,-17) size 34.25x24.17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (10,-17) size 34.25x24.17
-            chunk 1 text run 1 at (10.00,0.00) startOffset 0 endOffset 1 width 10.00: "a"
-            chunk 1 text run 2 at (20.00,0.00) startOffset 1 endOffset 2 width 10.00: "b"
-            chunk 1 text run 3 at (30.00,0.00) startOffset 2 endOffset 3 width 9.00: "c"
+        LayoutSVGText {text} at (10,-16.80) size 34.58x24.23 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (10,-16.80) size 34.58x24.23
+            chunk 1 text run 1 at (10.00,0.00) startOffset 0 endOffset 1 width 10.20: "a"
+            chunk 1 text run 2 at (20.20,0.00) startOffset 1 endOffset 2 width 10.20: "b"
+            chunk 1 text run 3 at (30.40,0.00) startOffset 2 endOffset 3 width 9.00: "c"
         LayoutSVGEllipse {circle} at (-100,-100) size 200x200 [fill={[type=SOLID] [color=#000000]}] [cx=0.00] [cy=0.00] [r=100.00]
         LayoutSVGResourceMarker {marker} [id="marker"] [markerUnits=strokeWidth] [ref at (0,0)] [angle=60.00]
         LayoutSVGViewportContainer {svg} at (0,0) size 0x0
         LayoutSVGResourceFilter {filter} [id=""] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
           [feConvolveMatrix order="width=3 height=3" kernelMatrix="[1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00]" divisor="9.00" bias="0.00" target="(1,1)" edgeMode="DUPLICATE" preserveAlpha="1"]
             [feTurbulence type="TURBULENCE" baseFrequency="4.00, 5.00" seed="0.00" numOctaves="1" stitchTiles="0"]
-    LayoutSVGContainer {g} at (10,311) size 231x36
-      LayoutSVGText {text} at (10,311) size 231x36 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (10,311) size 231x36
-          chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 231.00: "$Revision: 1.7 $"
+    LayoutSVGContainer {g} at (10,311.20) size 227.39x36
+      LayoutSVGText {text} at (10,311.20) size 227.39x36 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (10,311.20) size 227.39x36
+          chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 227.40: "$Revision: 1.7 $"
     LayoutSVGRect {rect} at (1,1) size 478x358 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]

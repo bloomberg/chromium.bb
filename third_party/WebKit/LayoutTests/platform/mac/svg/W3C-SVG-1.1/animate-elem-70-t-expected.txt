@@ -1,40 +1,40 @@
-layer at (0,0) size 480x360
-  LayoutView at (0,0) size 480x360
-layer at (0,0) size 480x360
-  LayoutSVGRoot {svg} at (0,0) size 480x360
-    LayoutSVGText {text} at (10,304) size 263.33x46 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (10,304) size 263.33x46
-        chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 263.34: "$Revision: 1.7 $"
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutSVGRoot {svg} at (0,0) size 800x600
+    LayoutSVGText {text} at (10,304) size 263.31x46.19 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (10,304) size 263.31x46.19
+        chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 263.31: "$Revision: 1.7 $"
     LayoutSVGRect {rect} at (1,1) size 478x358 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]
-    LayoutSVGText {text} at (228.88,12) size 22.23x23 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (228.88,12) size 22.23x23
-        chunk 1 (middle anchor) text run 1 at (228.88,30.00) startOffset 0 endOffset 4 width 22.24: "fill"
-    LayoutSVGContainer {g} at (-17.63,32) size 297.05x142 [transform={m=((1.00,0.00)(0.00,1.00)) t=(130.00,60.00)}]
-      LayoutSVGContainer {g} at (-137.63,-13) size 137.63x142 [transform={m=((1.00,0.00)(0.00,1.00)) t=(120.00,45.00)}]
-        LayoutSVGText {text} at (-137.63,-13) size 137.63x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-137.63,-13) size 137.63x17
-            chunk 1 (end anchor) text run 1 at (-137.63,0.00) startOffset 0 endOffset 25 width 137.63: "fill unspecified (remove)"
-        LayoutSVGText {text} at (-65.44,12) size 65.44x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-65.44,12) size 65.44x17
-            chunk 1 (end anchor) text run 1 at (-65.44,25.00) startOffset 0 endOffset 11 width 65.44: "fill=remove"
-        LayoutSVGText {text} at (-133.83,87) size 133.83x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-133.83,87) size 133.83x17
-            chunk 1 (end anchor) text run 1 at (-133.83,100.00) startOffset 0 endOffset 26 width 133.83: "fill=freeze (with restart)"
-        LayoutSVGText {text} at (-122.94,112) size 122.94x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-122.94,112) size 122.94x17
-            chunk 1 (end anchor) text run 1 at (-122.94,125.00) startOffset 0 endOffset 24 width 122.94: "fill=freeze (no restart)"
-      LayoutSVGContainer {g} at (-15.53,-28) size 114.95x32 [transform={m=((1.00,0.00)(0.00,1.00)) t=(180.00,125.00)}]
-        LayoutSVGText {text} at (-15.53,-28) size 31.13x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-15.53,-28) size 31.13x17
+    LayoutSVGText {text} at (228.88,12) size 22.22x22.80 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (228.88,12) size 22.22x22.80
+        chunk 1 (middle anchor) text run 1 at (228.88,30.00) startOffset 0 endOffset 4 width 22.23: "fill"
+    LayoutSVGContainer {g} at (-17.61,33) size 297.03x140.59 [transform={m=((1.00,0.00)(0.00,1.00)) t=(130.00,60.00)}]
+      LayoutSVGContainer {g} at (-137.61,-12) size 137.61x140.59 [transform={m=((1.00,0.00)(0.00,1.00)) t=(120.00,45.00)}]
+        LayoutSVGText {text} at (-137.61,-12) size 137.61x15.59 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-137.61,-12) size 137.61x15.59
+            chunk 1 (end anchor) text run 1 at (-137.61,0.00) startOffset 0 endOffset 25 width 137.61: "fill unspecified (remove)"
+        LayoutSVGText {text} at (-65.42,13) size 65.42x15.59 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-65.42,13) size 65.42x15.59
+            chunk 1 (end anchor) text run 1 at (-65.43,25.00) startOffset 0 endOffset 11 width 65.43: "fill=remove"
+        LayoutSVGText {text} at (-133.81,88) size 133.81x15.59 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-133.81,88) size 133.81x15.59
+            chunk 1 (end anchor) text run 1 at (-133.81,100.00) startOffset 0 endOffset 26 width 133.81: "fill=freeze (with restart)"
+        LayoutSVGText {text} at (-122.92,113) size 122.92x15.59 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-122.92,113) size 122.92x15.59
+            chunk 1 (end anchor) text run 1 at (-122.93,125.00) startOffset 0 endOffset 24 width 122.93: "fill=freeze (no restart)"
+      LayoutSVGContainer {g} at (-15.53,-27) size 114.95x30.59 [transform={m=((1.00,0.00)(0.00,1.00)) t=(180.00,125.00)}]
+        LayoutSVGText {text} at (-15.53,-27) size 31.13x15.59 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-15.53,-27) size 31.13x15.59
             chunk 1 (middle anchor) text run 1 at (-15.54,-15.00) startOffset 0 endOffset 5 width 31.09: "never"
-        LayoutSVGText {text} at (-12.03,-13) size 24.08x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-12.03,-13) size 24.08x17
+        LayoutSVGText {text} at (-12.03,-12) size 24.08x15.59 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-12.03,-12) size 24.08x15.59
             chunk 1 (middle anchor) text run 1 at (-12.04,0.00) startOffset 0 endOffset 4 width 24.09: "here"
-        LayoutSVGText {text} at (60.55,-28) size 38.88x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (60.55,-28) size 38.88x17
-            chunk 1 (middle anchor) text run 1 at (60.56,-15.00) startOffset 0 endOffset 6 width 38.88: "always"
-        LayoutSVGText {text} at (67.95,-13) size 24.08x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (67.95,-13) size 24.08x17
+        LayoutSVGText {text} at (60.56,-27) size 38.86x15.59 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (60.56,-27) size 38.86x15.59
+            chunk 1 (middle anchor) text run 1 at (60.56,-15.00) startOffset 0 endOffset 6 width 38.87: "always"
+        LayoutSVGText {text} at (67.95,-12) size 24.08x15.59 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (67.95,-12) size 24.08x15.59
             chunk 1 (middle anchor) text run 1 at (67.96,0.00) startOffset 0 endOffset 4 width 24.09: "here"
       LayoutSVGContainer {g} at (-6,-6) size 92x137 [transform={m=((1.00,0.00)(0.00,1.00)) t=(180.00,40.00)}]
         LayoutSVGHiddenContainer {defs} at (-6,-6) size 12x12

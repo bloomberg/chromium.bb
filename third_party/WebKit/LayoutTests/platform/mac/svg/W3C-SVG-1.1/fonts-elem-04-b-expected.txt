@@ -1,15 +1,15 @@
-layer at (0,0) size 480x360
-  LayoutView at (0,0) size 480x360
-layer at (0,0) size 480x360
-  LayoutSVGRoot {svg} at (0,0) size 480x360
-    LayoutSVGContainer {g} at (26,7) size 391.55x235.54
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutSVGRoot {svg} at (0,0) size 800x600
+    LayoutSVGContainer {g} at (26,7.41) size 391.55x235.13
       LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
-      LayoutSVGText {text} at (26,7) size 391.55x36 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (26,7) size 391.55x36
+      LayoutSVGText {text} at (26,7.41) size 391.55x35.39 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (26,7.41) size 391.55x35.39
           chunk 1 text run 1 at (26.00,35.00) startOffset 0 endOffset 31 width 391.55: "External SVG font element (css)"
       LayoutSVGContainer {g} at (31,81.41) size 344x161.13
-        LayoutSVGText {text} at (31,113) size 104.48x22 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (31,113) size 104.48x22
+        LayoutSVGText {text} at (31,113.20) size 104.48x21.59 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (31,113.20) size 104.48x21.59
             chunk 1 text run 1 at (31.00,130.00) startOffset 0 endOffset 13 width 104.48: "Placed Glyphs"
         LayoutSVGContainer {g} at (0,-102.54) size 210x161.13 [transform={m=((1.00,0.00)(0.00,-1.00)) t=(165.00,140.00)}]
           LayoutSVGPath {line} at (0,0) size 210x0 [stroke={[type=SOLID] [color=#888888]}] [fill={[type=SOLID] [color=#000000]}] [x1=0.00] [y1=0.00] [x2=210.00] [y2=0.00]
@@ -25,15 +25,15 @@ layer at (0,0) size 480x360
             LayoutSVGPath {line} at (6106,-3500) size 0x5500 [stroke={[type=SOLID] [color=#888888] [stroke width=50.00]}] [fill={[type=SOLID] [color=#000000]}] [x1=6106.00] [y1=-3500.00] [x2=6106.00] [y2=2000.00]
             LayoutSVGPath {path} at (105,-445) size 864x1508 [transform={m=((1.00,0.00)(0.00,1.00)) t=(6106.00,0.00)}] [fill={[type=SOLID] [color=#000000]}] [data="M 770 -196 Q 770 -320 710 -382 T 528 -445 Q 443 -445 367 -413 Q 271 -371 271 -298 Q 271 -244 339 -244 Q 375 -244 420 -268 T 517 -293 Q 566 -292 590 -269 T 614 -201 Q 614 -153 577 -115 T 463 -48 Q 304 -12 208 104 Q 105 227 105 404 Q 105 607 240 823 Q 390 1063 578 1063 Q 676 1063 797 1017 Q 950 958 950 873 Q 950 835 925 806 T 863 776 Q 834 776 813 793 T 771 828 Q 712 875 578 875 Q 476 875 376 693 Q 285 526 285 404 Q 285 272 375 196 Q 459 125 591 125 Q 651 125 719 157 L 835 219 Q 865 235 878 235 Q 915 235 942 206 T 969 138 Q 969 35 713 -40 Q 742 -78 756 -117 T 770 -196 Z"]
             LayoutSVGPath {line} at (7158,-3500) size 0x5500 [stroke={[type=SOLID] [color=#888888] [stroke width=50.00]}] [fill={[type=SOLID] [color=#000000]}] [x1=7158.00] [y1=-3500.00] [x2=7158.00] [y2=2000.00]
-      LayoutSVGText {text} at (67,193) size 73.53x22 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (67,193) size 73.53x22
+      LayoutSVGText {text} at (67,193.20) size 73.53x21.59 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (67,193.20) size 73.53x21.59
           chunk 1 text run 1 at (67.00,210.00) startOffset 0 endOffset 8 width 73.52: "SVG Font"
       LayoutSVGContainer {g} at (0,-54) size 210x69 [transform={m=((1.00,0.00)(0.00,1.00)) t=(165.00,220.00)}]
         LayoutSVGPath {line} at (0,0) size 210x0 [stroke={[type=SOLID] [color=#888888]}] [fill={[type=SOLID] [color=#000000]}] [x1=0.00] [y1=0.00] [x2=210.00] [y2=0.00]
         LayoutSVGText {text} at (0,-54) size 193.03x69 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (0,-54) size 193.03x69
             chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 5 width 193.04: "Ay\x{D6}@\x{E7}"
-    LayoutSVGText {text} at (10,304) size 263.33x46 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (10,304) size 263.33x46
-        chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 263.34: "$Revision: 1.1 $"
+    LayoutSVGText {text} at (10,304) size 263.31x46.19 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (10,304) size 263.31x46.19
+        chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 263.31: "$Revision: 1.1 $"
     LayoutSVGRect {rect} at (1,1) size 478x358 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]
