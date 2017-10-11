@@ -39,7 +39,8 @@ class FakeRendererScheduler : public RendererScheduler {
   void DidAnimateForInputOnCompositorThread() override;
   void SetRendererHidden(bool hidden) override;
   void SetRendererBackgrounded(bool backgrounded) override;
-  std::unique_ptr<RendererPauseHandle> PauseRenderer() override;
+  void PauseRenderer() override;
+  void ResumeRenderer() override;
   void AddPendingNavigation(NavigatingFrameType type) override;
   void RemovePendingNavigation(NavigatingFrameType type) override;
   bool IsHighPriorityWorkAnticipated() override;
@@ -49,6 +50,8 @@ class FakeRendererScheduler : public RendererScheduler {
   void RemoveTaskObserver(
       base::MessageLoop::TaskObserver* task_observer) override;
   void Shutdown() override;
+  void PauseTimerQueue() override;
+  void ResumeTimerQueue() override;
   void VirtualTimePaused() override;
   void VirtualTimeResumed() override;
   void SetStoppingWhenBackgroundedEnabled(bool enabled) override;

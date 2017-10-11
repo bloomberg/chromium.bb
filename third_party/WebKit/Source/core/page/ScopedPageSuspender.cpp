@@ -42,8 +42,7 @@ ScopedPageSuspender::ScopedPageSuspender() {
     return;
 
   SetPaused(true);
-  pause_handle_ =
-      Platform::Current()->CurrentThread()->Scheduler()->PauseScheduler();
+  Platform::Current()->CurrentThread()->Scheduler()->PauseTimerQueue();
 }
 
 ScopedPageSuspender::~ScopedPageSuspender() {
@@ -51,6 +50,7 @@ ScopedPageSuspender::~ScopedPageSuspender() {
     return;
 
   SetPaused(false);
+  Platform::Current()->CurrentThread()->Scheduler()->ResumeTimerQueue();
 }
 
 void ScopedPageSuspender::SetPaused(bool paused) {
