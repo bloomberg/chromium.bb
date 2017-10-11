@@ -18,7 +18,6 @@
 
 namespace base {
 class CommandLine;
-class SequencedTaskRunner;
 }
 
 namespace shell_integration {
@@ -183,10 +182,6 @@ class DefaultWebClientWorker
   bool interactive_permitted_ = true;
 
  private:
-  // Returns the global task runner that sequences all the file operations of
-  // each workers.
-  static scoped_refptr<base::SequencedTaskRunner> GetTaskRunner();
-
   // Checks whether Chrome is the default web client. Always called on a
   // blocking sequence. When |is_following_set_as_default| is true, The default
   // state will be reported to UMA as the result of the set-as-default
