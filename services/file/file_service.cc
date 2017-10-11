@@ -81,8 +81,7 @@ FileService::FileService()
     : file_service_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
       leveldb_service_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::WithBaseSyncPrimitives(),
-           base::TaskShutdownBehavior::BLOCK_SHUTDOWN})) {
+          {base::MayBlock(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN})) {
   registry_.AddInterface<leveldb::mojom::LevelDBService>(base::Bind(
       &FileService::BindLevelDBServiceRequest, base::Unretained(this)));
   registry_.AddInterface<mojom::FileSystem>(
