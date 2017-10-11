@@ -25,6 +25,7 @@
 #include "content/public/common/context_menu_params.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_frame_navigation_observer.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/notification_types.h"
@@ -57,6 +58,14 @@ std::string CreateClientRedirect(const GURL& target_url) {
          net::EscapeQueryParamValue(target_url.spec(), false);
 }
 
+std::unique_ptr<content::TestNavigationObserver> GetTestNavigationObserver(
+    const GURL& target_url) {
+  auto observer = std::make_unique<content::TestNavigationObserver>(target_url);
+  observer->WatchExistingWebContents();
+  observer->StartWatchingNewWebContents();
+  return observer;
+}
+
 // Inserts an iframe in the main frame of |web_contents|.
 void InsertIFrame(content::WebContents* web_contents) {
   ASSERT_TRUE(
@@ -82,12 +91,11 @@ content::RenderFrameHost* GetIFrame(content::WebContents* web_contents) {
 // Creates an <a> element, sets its href and target to |link_url| and |target|
 // respectively, adds it to the DOM, and clicks on it. Returns once |target_url|
 // has loaded.
-void ClickLinkAndWaitForURLLoad(content::WebContents* web_contents,
-                                const GURL& link_url,
-                                const GURL& target_url,
-                                LinkTarget target) {
-  ui_test_utils::UrlLoadObserver url_observer(
-      target_url, content::NotificationService::AllSources());
+void ClickLinkAndWaitForURL(content::WebContents* web_contents,
+                            const GURL& link_url,
+                            const GURL& target_url,
+                            LinkTarget target) {
+  auto observer = GetTestNavigationObserver(target_url);
   std::string script = base::StringPrintf(
       "(() => {"
       "const link = document.createElement('a');"
@@ -99,7 +107,7 @@ void ClickLinkAndWaitForURLLoad(content::WebContents* web_contents,
       "})();",
       link_url.spec().c_str(), target == LinkTarget::SELF ? "_self" : "_blank");
   ASSERT_TRUE(content::ExecuteScript(web_contents, script));
-  url_observer.Wait();
+  observer->WaitForNavigationFinished();
 }
 
 // Creates an <a> element, sets its href and target to |link_url| and |target|
@@ -108,7 +116,7 @@ void ClickLinkAndWaitForURLLoad(content::WebContents* web_contents,
 void ClickLinkAndWait(content::WebContents* web_contents,
                       const GURL& link_url,
                       LinkTarget target) {
-  ClickLinkAndWaitForURLLoad(web_contents, link_url, link_url, target);
+  ClickLinkAndWaitForURL(web_contents, link_url, link_url, target);
 }
 
 // Creates a <form> element with a |target_url| action and |method| method. Adds
@@ -126,8 +134,7 @@ void SubmitFormAndWait(content::WebContents* web_contents,
     ASSERT_TRUE(target_url.query().empty());
   }
 
-  ui_test_utils::UrlLoadObserver url_observer(
-      target_url, content::NotificationService::AllSources());
+  auto observer = GetTestNavigationObserver(target_url);
   std::string script = base::StringPrintf(
       "(() => {"
       "const form = document.createElement('form');"
@@ -142,15 +149,14 @@ void SubmitFormAndWait(content::WebContents* web_contents,
       target_url.spec().c_str(),
       method == net::URLFetcher::RequestType::POST ? "post" : "get");
   ASSERT_TRUE(content::ExecuteScript(web_contents, script));
-  url_observer.Wait();
+  observer->WaitForNavigationFinished();
 }
 
 // Uses |params| to navigate to a URL. Blocks until the URL is loaded.
 void NavigateToURLAndWait(chrome::NavigateParams* params) {
-  ui_test_utils::UrlLoadObserver url_observer(
-      params->url, content::NotificationService::AllSources());
+  auto observer = GetTestNavigationObserver(params->url);
   ui_test_utils::NavigateToURL(params);
-  url_observer.Wait();
+  observer->WaitForNavigationFinished();
 }
 
 // Wrapper so that we can use base::Bind with NavigateToURL.
@@ -221,14 +227,13 @@ class BookmarkAppNavigationThrottleBrowserTest : public ExtensionBrowserTest {
 
   Browser* OpenTestBookmarkApp() {
     GURL app_url = embedded_test_server()->GetURL(kAppUrlPath);
-    ui_test_utils::UrlLoadObserver url_observer(
-        app_url, content::NotificationService::AllSources());
+    auto observer = GetTestNavigationObserver(app_url);
 
     OpenApplication(AppLaunchParams(
         profile(), test_bookmark_app_, extensions::LAUNCH_CONTAINER_WINDOW,
         WindowOpenDisposition::CURRENT_TAB, SOURCE_CHROME_INTERNAL));
 
-    url_observer.Wait();
+    observer->WaitForNavigationFinished();
 
     return chrome::FindLastActive();
   }
@@ -510,7 +515,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
   const GURL redirecting_url = embedded_test_server()->GetURL(
       "localhost", CreateServerRedirect(app_url));
   TestTabActionOpensAppWindow(
-      app_url, base::Bind(&ClickLinkAndWaitForURLLoad,
+      app_url, base::Bind(&ClickLinkAndWaitForURL,
                           browser()->tab_strip_model()->GetActiveWebContents(),
                           redirecting_url, app_url, LinkTarget::SELF));
 }
@@ -531,9 +536,8 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
   const GURL app_url = embedded_test_server()->GetURL(kAppUrlPath);
   const GURL redirecting_url = embedded_test_server()->GetURL(
       "localhost", CreateClientRedirect(app_url));
-  ClickLinkAndWaitForURLLoad(
-      browser()->tab_strip_model()->GetActiveWebContents(), redirecting_url,
-      app_url, LinkTarget::SELF);
+  ClickLinkAndWaitForURL(browser()->tab_strip_model()->GetActiveWebContents(),
+                         redirecting_url, app_url, LinkTarget::SELF);
 
   EXPECT_EQ(num_tabs, browser()->tab_strip_model()->count());
   EXPECT_EQ(++num_browsers, chrome::GetBrowserCount(profile()));
@@ -676,8 +680,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
   GURL initial_url = initial_tab->GetLastCommittedURL();
 
   const GURL in_scope_url = embedded_test_server()->GetURL(kInScopeUrlPath);
-  ui_test_utils::UrlLoadObserver url_observer(
-      in_scope_url, content::NotificationService::AllSources());
+  auto observer = GetTestNavigationObserver(in_scope_url);
   content::ContextMenuParams params;
   params.page_url = initial_url;
   params.link_url = in_scope_url;
@@ -685,7 +688,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppNavigationThrottleBrowserTest,
   menu.Init();
   menu.ExecuteCommand(IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD,
                       0 /* event_flags */);
-  url_observer.Wait();
+  observer->WaitForNavigationFinished();
 
   Browser* incognito_browser = chrome::FindLastActive();
   EXPECT_EQ(incognito_browser->profile(), profile()->GetOffTheRecordProfile());
