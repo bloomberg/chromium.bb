@@ -59,6 +59,13 @@ size_t RegisterCastCrashKeys() {
       // gin/:
       {"v8-ignition", ::crash_keys::kSmallSize},
 
+      // Site isolation.  These keys help debug renderer kills such as
+      // https://crbug.com/773140.
+      {"requested_site_url", ::crash_keys::kSmallSize},
+      {"requested_origin", ::crash_keys::kSmallSize},
+      {"killed_process_origin_lock", ::crash_keys::kSmallSize},
+      {"site_isolation_mode", ::crash_keys::kSmallSize},
+
       // Temporary for https://crbug.com/626802.
       {"newframe_routing_id", ::crash_keys::kSmallSize},
       {"newframe_proxy_id", ::crash_keys::kSmallSize},

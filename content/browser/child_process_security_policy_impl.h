@@ -195,6 +195,10 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   // returned values.
   CheckOriginLockResult CheckOriginLock(int child_id, const GURL& site_url);
 
+  // Retrieves the current origin lock of process |child_id|.  Returns an empty
+  // GURL if the process does not exist or if it is not locked to an origin.
+  GURL GetOriginLock(int child_id);
+
   // Register FileSystem type and permission policy which should be used
   // for the type.  The |policy| must be a bitwise-or'd value of
   // storage::FilePermissionPolicy.
