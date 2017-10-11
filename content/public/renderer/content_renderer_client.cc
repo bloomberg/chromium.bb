@@ -60,12 +60,6 @@ ContentRendererClient::OverrideCreateWebMediaStreamCenter(
   return nullptr;
 }
 
-std::unique_ptr<blink::WebRTCPeerConnectionHandler>
-ContentRendererClient::OverrideCreateWebRTCPeerConnectionHandler(
-    blink::WebRTCPeerConnectionHandlerClient* client) {
-  return nullptr;
-}
-
 std::unique_ptr<blink::WebMIDIAccessor>
 ContentRendererClient::OverrideCreateMIDIAccessor(
     blink::WebMIDIAccessorClient* client) {
