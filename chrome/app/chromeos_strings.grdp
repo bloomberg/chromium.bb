@@ -859,8 +859,8 @@ Press any key to continue exploring.
   <message name="IDS_FILE_BROWSER_METADATA_BOX_CREATION_TIME" desc="Label for file creation time.">
     Created Time
   </message>
-  <message name="IDS_FILE_BROWSER_METADATA_BOX_DIMENSION" desc="Label for image dimension.">
-    Dimension
+  <message name="IDS_FILE_BROWSER_METADATA_BOX_DIMENSION" desc="Label for image dimensions.">
+    Dimensions
   </message>
   <message name="IDS_FILE_BROWSER_METADATA_BOX_DURATION" desc="Label for audio/video duration.">
     Duration
