@@ -44,8 +44,8 @@ class PLATFORM_EXPORT WebSchedulerImpl : public WebScheduler {
   std::unique_ptr<WebViewScheduler> CreateWebViewScheduler(
       InterventionReporter*,
       WebViewScheduler::WebViewSchedulerDelegate*) override;
-  void PauseTimerQueue() override {}
-  void ResumeTimerQueue() override {}
+  std::unique_ptr<RendererPauseHandle> PauseScheduler() override
+      WARN_UNUSED_RESULT;
   void AddPendingNavigation(
       scheduler::RendererScheduler::NavigatingFrameType type) override {}
   void RemovePendingNavigation(

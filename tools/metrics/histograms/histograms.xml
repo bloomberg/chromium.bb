@@ -64885,6 +64885,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PurgeAndSuspend.PendingTaskCount">
+  <obsolete>
+    Deprecated Oct 2017.
+  </obsolete>
   <owner>tasak@google.com</owner>
   <summary>
     This records how many tasks are still in task queues when a backgrounded

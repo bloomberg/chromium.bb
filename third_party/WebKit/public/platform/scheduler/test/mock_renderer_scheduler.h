@@ -44,8 +44,7 @@ class MockRendererScheduler : public RendererScheduler {
   MOCK_METHOD0(DidAnimateForInputOnCompositorThread, void());
   MOCK_METHOD1(SetRendererHidden, void(bool));
   MOCK_METHOD1(SetRendererBackgrounded, void(bool));
-  MOCK_METHOD0(PauseRenderer, void());
-  MOCK_METHOD0(ResumeRenderer, void());
+  MOCK_METHOD0(PauseRenderer, std::unique_ptr<RendererPauseHandle>());
   MOCK_METHOD1(AddPendingNavigation, void(NavigatingFrameType));
   MOCK_METHOD1(RemovePendingNavigation, void(NavigatingFrameType));
   MOCK_METHOD0(OnNavigate, void());
@@ -55,8 +54,6 @@ class MockRendererScheduler : public RendererScheduler {
   MOCK_METHOD1(AddTaskObserver, void(base::MessageLoop::TaskObserver*));
   MOCK_METHOD1(RemoveTaskObserver, void(base::MessageLoop::TaskObserver*));
   MOCK_METHOD0(Shutdown, void());
-  MOCK_METHOD0(PauseTimerQueue, void());
-  MOCK_METHOD0(ResumeTimerQueue, void());
   MOCK_METHOD0(VirtualTimePaused, void());
   MOCK_METHOD0(VirtualTimeResumed, void());
   MOCK_METHOD1(SetStoppingWhenBackgroundedEnabled, void(bool));
