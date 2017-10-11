@@ -10,8 +10,6 @@
 #include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
-#include "chrome/browser/engagement/site_engagement_service.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
@@ -79,25 +77,6 @@ void JavaScriptDialogTabHelper::RunJavaScriptDialog(
     const base::string16& default_prompt_text,
     DialogClosedCallback callback,
     bool* did_suppress_message) {
-  SiteEngagementService* site_engagement_service = SiteEngagementService::Get(
-      Profile::FromBrowserContext(alerting_web_contents->GetBrowserContext()));
-  double engagement_score =
-      site_engagement_service->GetScore(alerting_frame_url);
-  int32_t message_length = static_cast<int32_t>(message_text.length());
-  if (engagement_score == 0) {
-    UMA_HISTOGRAM_COUNTS("JSDialogs.CharacterCount.EngagementNone",
-                         message_length);
-  } else if (engagement_score < 1) {
-    UMA_HISTOGRAM_COUNTS("JSDialogs.CharacterCount.EngagementLessThanOne",
-                         message_length);
-  } else if (engagement_score < 5) {
-    UMA_HISTOGRAM_COUNTS("JSDialogs.CharacterCount.EngagementOneToFive",
-                         message_length);
-  } else {
-    UMA_HISTOGRAM_COUNTS("JSDialogs.CharacterCount.EngagementHigher",
-                         message_length);
-  }
-
   content::WebContents* parent_web_contents =
       WebContentsObserver::web_contents();
   bool foremost = IsWebContentsForemost(parent_web_contents);
@@ -174,29 +153,9 @@ void JavaScriptDialogTabHelper::RunJavaScriptDialog(
 
   if (did_suppress_message) {
     UMA_HISTOGRAM_COUNTS("JSDialogs.CharacterCountUserSuppressed",
-                         message_length);
+                         message_text.length());
   }
 }
-
-namespace {
-
-void SaveUnloadUmaStats(
-    double engagement_score,
-    content::JavaScriptDialogManager::DialogClosedCallback callback,
-    bool success,
-    const base::string16& user_input) {
-  if (success) {
-    UMA_HISTOGRAM_PERCENTAGE("JSDialogs.SiteEngagementOfBeforeUnload.Leave",
-                             engagement_score);
-  } else {
-    UMA_HISTOGRAM_PERCENTAGE("JSDialogs.SiteEngagementOfBeforeUnload.Stay",
-                             engagement_score);
-  }
-
-  std::move(callback).Run(success, user_input);
-}
-
-}  // namespace
 
 void JavaScriptDialogTabHelper::RunBeforeUnloadDialog(
     content::WebContents* web_contents,
@@ -208,15 +167,8 @@ void JavaScriptDialogTabHelper::RunBeforeUnloadDialog(
   // - they can be requested for many tabs at the same time
   // and therefore auto-dismissal is inappropriate for them.
 
-  SiteEngagementService* site_engagement_service = SiteEngagementService::Get(
-      Profile::FromBrowserContext(web_contents->GetBrowserContext()));
-  double engagement_score =
-      site_engagement_service->GetScore(web_contents->GetLastCommittedURL());
-
-  return AppModalDialogManager()->RunBeforeUnloadDialog(
-      web_contents, is_reload,
-      base::BindOnce(&SaveUnloadUmaStats, engagement_score,
-                     std::move(callback)));
+  return AppModalDialogManager()->RunBeforeUnloadDialog(web_contents, is_reload,
+                                                        std::move(callback));
 }
 
 bool JavaScriptDialogTabHelper::HandleJavaScriptDialog(

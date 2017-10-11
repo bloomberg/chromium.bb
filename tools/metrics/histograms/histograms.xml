@@ -29438,8 +29438,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="JSDialogs.CharacterCount" units="characters">
   <owner>avi@chromium.org</owner>
   <summary>
-    The count of the number of characters in JavaScript dialog messages grouped
-    by site engagement score.
+    The count of the number of characters in JavaScript dialog messages.
   </summary>
 </histogram>
 
@@ -29541,6 +29540,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="JSDialogs.SiteEngagementOfBeforeUnload" units="%">
+  <obsolete>
+    Deprecated 2017-10.
+  </obsolete>
   <owner>avi@chromium.org</owner>
   <summary>
     The site engagement values of sites showing onbeforeunload dialogs. Logged
@@ -98224,6 +98226,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram_suffixes>
 
 <histogram_suffixes name="JSDialogs.EngagementList" separator=".">
+  <obsolete>
+    Deprecated 2017-10.
+  </obsolete>
   <suffix name="EngagementNone" label="site engagement = 0"/>
   <suffix name="EngagementLessThanOne" label="site engagement &lt; 1"/>
   <suffix name="EngagementOneToFive" label="site engagement &gt;= 1, &lt; 5"/>
@@ -98238,6 +98243,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram_suffixes>
 
 <histogram_suffixes name="JSDialogs.LeaveStay" separator=".">
+  <obsolete>
+    Deprecated 2017-10.
+  </obsolete>
   <suffix name="Leave" label="user opted to leave the page"/>
   <suffix name="Stay" label="user opted to stay on the page"/>
   <affected-histogram name="JSDialogs.SiteEngagementOfBeforeUnload"/>
