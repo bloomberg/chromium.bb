@@ -182,10 +182,12 @@ class TabManager : public TabStripModelObserver,
   // TODO(tasak): rename this to CanPurgeBackgroundedRenderer.
   bool CanSuspendBackgroundedRenderer(int render_process_id) const;
 
-  // Indicates how TabManager should load pending background tabs.
+  // Indicates how TabManager should load pending background tabs. The mode is
+  // recorded in tracing for easier debugging. The existing explicit numbering
+  // should be kept as is when new modes are added.
   enum BackgroundTabLoadingMode {
-    kStaggered,  // Load a background tab after another tab has done loading.
-    kPaused      // Pause loading background tabs unless the user selects it.
+    kStaggered = 0,  // Load a background tab after another tab is done loading.
+    kPaused = 1      // Pause loading background tabs unless a user selects it.
   };
 
   // Maybe throttle a tab's navigation based on current system status.
