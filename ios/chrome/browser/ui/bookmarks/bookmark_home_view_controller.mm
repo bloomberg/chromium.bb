@@ -1058,6 +1058,10 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
       self.appBar.headerViewController.headerView;
 
   [self.appBar addSubviewsToParent];
+  // Prevent the touch events on appBar from being forwarded to the tableView.
+  // See https://crbug.com/773580
+  [self.appBar.headerViewController.headerView
+      stopForwardingTouchEventsForView:self.appBar.navigationBar];
 
   if (self.navigationController.viewControllers.count > 1) {
     // Add custom back button.
