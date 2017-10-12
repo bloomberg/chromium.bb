@@ -83,15 +83,10 @@ void FramePainter::Paint(GraphicsContext& context,
             GetFrameView().X() - GetFrameView().ScrollX(),
             GetFrameView().Y() - GetFrameView().ScrollY()));
 
-    if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-      PaintContents(context, global_paint_flags, document_dirty_rect);
-    } else {
-      ClipRecorder clip_recorder(context, *GetFrameView().GetLayoutView(),
-                                 DisplayItem::kClipFrameToVisibleContentRect,
-                                 GetFrameView().VisibleContentRect());
-
-      PaintContents(context, global_paint_flags, document_dirty_rect);
-    }
+    ClipRecorder clip_recorder(context, *GetFrameView().GetLayoutView(),
+                               DisplayItem::kClipFrameToVisibleContentRect,
+                               GetFrameView().VisibleContentRect());
+    PaintContents(context, global_paint_flags, document_dirty_rect);
   }
 
   if (should_paint_scrollbars) {
