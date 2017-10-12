@@ -18,6 +18,7 @@
 #include "cc/test/test_context_support.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "gpu/command_buffer/client/gles2_interface_stub.h"
+#include "gpu/config/gpu_feature_info.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 namespace skia_bindings {
@@ -48,6 +49,7 @@ class TestContextProvider : public viz::ContextProvider {
   bool BindToCurrentThread() override;
   void DetachFromThread() override;
   const gpu::Capabilities& ContextCapabilities() const override;
+  const gpu::GpuFeatureInfo& GetGpuFeatureInfo() const override;
   gpu::gles2::GLES2Interface* ContextGL() override;
   gpu::ContextSupport* ContextSupport() override;
   class GrContext* GrContext() override;
@@ -82,6 +84,8 @@ class TestContextProvider : public viz::ContextProvider {
   std::unique_ptr<skia_bindings::GrContextForGLES2Interface> gr_context_;
   std::unique_ptr<viz::ContextCacheController> cache_controller_;
   bool bound_ = false;
+
+  gpu::GpuFeatureInfo gpu_feature_info_;
 
   base::ThreadChecker main_thread_checker_;
   base::ThreadChecker context_thread_checker_;

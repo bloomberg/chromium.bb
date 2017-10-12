@@ -20,6 +20,7 @@
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/shader_translator_cache.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
+#include "gpu/config/gpu_feature_info.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "gpu/ipc/gl_in_process_context.h"
 #include "gpu/ipc/gpu_in_process_thread_service.h"
@@ -122,6 +123,10 @@ base::Lock* InProcessContextProvider::GetLock() {
 
 const gpu::Capabilities& InProcessContextProvider::ContextCapabilities() const {
   return context_->GetCapabilities();
+}
+
+const gpu::GpuFeatureInfo& InProcessContextProvider::GetGpuFeatureInfo() const {
+  return context_->GetGpuFeatureInfo();
 }
 
 void InProcessContextProvider::SetLostContextCallback(

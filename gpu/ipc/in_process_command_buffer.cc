@@ -143,8 +143,6 @@ InProcessCommandBuffer::Service::Service(
     const GpuFeatureInfo& gpu_feature_info)
     : gpu_preferences_(gpu_preferences),
       gpu_feature_info_(gpu_feature_info),
-      gpu_driver_bug_workarounds_(
-          gpu_feature_info.enabled_gpu_driver_bug_workarounds),
       mailbox_manager_(mailbox_manager),
       share_group_(share_group),
       shader_translator_cache_(gpu_preferences_) {
@@ -159,11 +157,6 @@ InProcessCommandBuffer::Service::~Service() {}
 
 const GpuPreferences& InProcessCommandBuffer::Service::gpu_preferences() {
   return gpu_preferences_;
-}
-
-const GpuDriverBugWorkarounds&
-InProcessCommandBuffer::Service::gpu_driver_bug_workarounds() {
-  return gpu_driver_bug_workarounds_;
 }
 
 scoped_refptr<gl::GLShareGroup> InProcessCommandBuffer::Service::share_group() {
@@ -183,13 +176,13 @@ gles2::ProgramCache* InProcessCommandBuffer::Service::program_cache() {
       (gl::g_current_gl_driver->ext.b_GL_ARB_get_program_binary ||
        gl::g_current_gl_driver->ext.b_GL_OES_get_program_binary) &&
       !gpu_preferences().disable_gpu_program_cache) {
-    const GpuDriverBugWorkarounds& workarounds = gpu_driver_bug_workarounds_;
     bool disable_disk_cache =
         gpu_preferences_.disable_gpu_shader_disk_cache ||
-        workarounds.disable_program_disk_cache;
+        gpu_feature_info_.IsWorkaroundEnabled(gpu::DISABLE_PROGRAM_DISK_CACHE);
     program_cache_.reset(new gles2::MemoryProgramCache(
         gpu_preferences_.gpu_program_cache_size, disable_disk_cache,
-        workarounds.disable_program_caching_for_transform_feedback,
+        gpu_feature_info_.IsWorkaroundEnabled(
+            gpu::DISABLE_PROGRAM_CACHING_FOR_TRANSFORM_FEEDBACK),
         &activity_flags_));
   }
   return program_cache_.get();
@@ -314,8 +307,10 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
                                          : service_->share_group();
 
   bool bind_generates_resource = false;
+  gpu::GpuDriverBugWorkarounds workarounds(
+      service_->gpu_feature_info().enabled_gpu_driver_bug_workarounds);
   scoped_refptr<gles2::FeatureInfo> feature_info =
-      new gles2::FeatureInfo(service_->gpu_driver_bug_workarounds());
+      new gles2::FeatureInfo(workarounds);
 
   context_group_ =
       params.context_group
@@ -738,6 +733,10 @@ void InProcessCommandBuffer::SetGpuControlClient(GpuControlClient* client) {
 
 const Capabilities& InProcessCommandBuffer::GetCapabilities() const {
   return capabilities_;
+}
+
+const GpuFeatureInfo& InProcessCommandBuffer::GetGpuFeatureInfo() const {
+  return service_->gpu_feature_info();
 }
 
 int32_t InProcessCommandBuffer::CreateImage(ClientBuffer buffer,

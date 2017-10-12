@@ -51,6 +51,7 @@ class VIZ_COMMON_EXPORT InProcessContextProvider : public ContextProvider {
   void InvalidateGrContext(uint32_t state) override;
   base::Lock* GetLock() override;
   const gpu::Capabilities& ContextCapabilities() const override;
+  const gpu::GpuFeatureInfo& GetGpuFeatureInfo() const override;
   void SetLostContextCallback(
       const LostContextCallback& lost_context_callback) override;
 

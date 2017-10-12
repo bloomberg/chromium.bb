@@ -2,6 +2,7 @@ include_rules = [
   "+cc/output",
   "+cc/resources",
   "+gpu/command_buffer",
+  "+gpu/config/gpu_feature_info.h",
   "+gpu/GLES2/gl2extchromium.h",
   "+gpu/ipc",
   "+gpu/skia_bindings",

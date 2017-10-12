@@ -31,7 +31,6 @@
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/service_discardable_manager.h"
-#include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/gpu_export.h"
 #include "gpu/ipc/service/image_transport_surface_delegate.h"
@@ -171,6 +170,9 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   void AddFilter(IPC::MessageFilter* message_filter) override;
   int32_t GetRouteID() const override;
 
+  // Upstream this function to GpuControl if needs arise.
+  const GpuFeatureInfo& GetGpuFeatureInfo() const;
+
   using SwapBuffersCompletionCallback = base::Callback<void(
       const std::vector<ui::LatencyInfo>& latency_info,
       gfx::SwapResult result,
@@ -220,7 +222,6 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
 
     const GpuPreferences& gpu_preferences();
     const GpuFeatureInfo& gpu_feature_info() { return gpu_feature_info_; }
-    const GpuDriverBugWorkarounds& gpu_driver_bug_workarounds();
     scoped_refptr<gl::GLShareGroup> share_group();
     gles2::MailboxManager* mailbox_manager() { return mailbox_manager_; }
     gles2::Outputter* outputter();
@@ -239,7 +240,6 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
    protected:
     const GpuPreferences gpu_preferences_;
     const GpuFeatureInfo gpu_feature_info_;
-    const GpuDriverBugWorkarounds gpu_driver_bug_workarounds_;
     std::unique_ptr<gles2::MailboxManager> owned_mailbox_manager_;
     gles2::MailboxManager* mailbox_manager_ = nullptr;
     std::unique_ptr<gles2::Outputter> outputter_;

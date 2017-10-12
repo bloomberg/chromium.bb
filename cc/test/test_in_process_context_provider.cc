@@ -123,6 +123,11 @@ const gpu::Capabilities& TestInProcessContextProvider::ContextCapabilities()
   return capabilities_;
 }
 
+const gpu::GpuFeatureInfo& TestInProcessContextProvider::GetGpuFeatureInfo()
+    const {
+  return gpu_feature_info_;
+}
+
 void TestInProcessContextProvider::SetLostContextCallback(
     const LostContextCallback& lost_context_callback) {}
 

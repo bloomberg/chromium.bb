@@ -30,6 +30,7 @@
 #include "components/viz/common/resources/platform_color.h"
 #include "components/viz/test/test_gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/common/sync_token.h"
+#include "gpu/config/gpu_feature_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -90,6 +91,9 @@ class PerfContextProvider : public viz::ContextProvider {
   const gpu::Capabilities& ContextCapabilities() const override {
     return capabilities_;
   }
+  const gpu::GpuFeatureInfo& GetGpuFeatureInfo() const override {
+    return gpu_feature_info_;
+  }
   gpu::gles2::GLES2Interface* ContextGL() override { return context_gl_.get(); }
   gpu::ContextSupport* ContextSupport() override { return &support_; }
   class GrContext* GrContext() override {
@@ -122,6 +126,7 @@ class PerfContextProvider : public viz::ContextProvider {
   viz::ContextCacheController cache_controller_;
   base::Lock context_lock_;
   gpu::Capabilities capabilities_;
+  gpu::GpuFeatureInfo gpu_feature_info_;
 };
 
 enum RasterBufferProviderType {

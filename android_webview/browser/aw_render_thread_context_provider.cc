@@ -15,6 +15,7 @@
 #include "gpu/command_buffer/client/gles2_trace_implementation.h"
 #include "gpu/command_buffer/client/gpu_switches.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
+#include "gpu/config/gpu_feature_info.h"
 #include "gpu/ipc/gl_in_process_context.h"
 #include "gpu/skia_bindings/gl_bindings_skia_cmd_buffer.h"
 #include "third_party/skia/include/gpu/GrContext.h"
@@ -105,6 +106,12 @@ const gpu::Capabilities& AwRenderThreadContextProvider::ContextCapabilities()
     const {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   return context_->GetImplementation()->capabilities();
+}
+
+const gpu::GpuFeatureInfo& AwRenderThreadContextProvider::GetGpuFeatureInfo()
+    const {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+  return context_->GetGpuFeatureInfo();
 }
 
 gpu::gles2::GLES2Interface* AwRenderThreadContextProvider::ContextGL() {
