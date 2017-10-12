@@ -7,8 +7,6 @@
 #include <stdint.h>
 
 #include <algorithm>
-#include <ios>
-#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -20,6 +18,7 @@
 #include "chrome/installer/zucchini/address_translator.h"
 #include "chrome/installer/zucchini/algorithm.h"
 #include "chrome/installer/zucchini/image_utils.h"
+#include "chrome/installer/zucchini/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace zucchini {
@@ -39,19 +38,6 @@ std::vector<T> Cat(const std::vector<T>& a, const std::vector<T>& b) {
 template <class T>
 std::vector<T> Sub(const std::vector<T>& a, size_t lo, size_t hi) {
   return std::vector<T>(a.begin() + lo, a.begin() + hi);
-}
-
-// Parses space-separated list of byte hex values into list.
-std::vector<uint8_t> ParseHexString(const std::string& s) {
-  std::vector<uint8_t> ret;
-  std::istringstream iss(s);
-  iss >> std::hex;
-  uint32_t temp = 0;  // Cannot be uint8_t: istringstream treats this as char!
-  while (iss >> temp) {
-    CHECK_LE(temp, 0xFFU);
-    ret.push_back(temp);
-  }
-  return ret;
 }
 
 }  // namespace
