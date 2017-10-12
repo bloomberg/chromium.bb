@@ -14,7 +14,6 @@
 #include "core/style/AppliedTextDecoration.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
-#include "platform/text/Truncation.h"
 
 namespace blink {
 
@@ -86,25 +85,6 @@ void NGTextFragmentPainter::Paint(const Document& document,
   const NGPhysicalTextFragment& text_fragment =
       ToNGPhysicalTextFragment(fragment_.PhysicalFragment());
 
-  // TODO(layout-dev): Truncation and hyphens are computed during layout.
-  // Remove the concept of truncation?
-  unsigned length = text_fragment.Text().length();
-  unsigned truncation = kCNoTruncation;
-
-  bool ltr = true;
-  bool flow_is_ltr = true;
-  if (truncation != kCNoTruncation) {
-    // In a mixed-direction flow the ellipsis is at the start of the text
-    // rather than at the end of it.
-    selection_start = ltr == flow_is_ltr
-                          ? std::min<int>(selection_start, truncation)
-                          : std::max<int>(selection_start, truncation);
-    selection_end = ltr == flow_is_ltr
-                        ? std::min<int>(selection_end, truncation)
-                        : std::max<int>(selection_end, truncation);
-    length = ltr == flow_is_ltr ? truncation : length;
-  }
-
   NGTextPainter text_painter(context, font, text_fragment, text_origin,
                              box_rect, text_fragment.IsHorizontal());
 
@@ -113,15 +93,12 @@ void NGTextFragmentPainter::Paint(const Document& document,
                                  style.GetTextEmphasisPosition());
   }
 
-  if (truncation != kCNoTruncation && ltr != flow_is_ltr)
-    text_painter.SetEllipsisOffset(truncation);
-
+  unsigned length = text_fragment.Text().length();
   if (!paint_selected_text_only) {
     // Paint text decorations except line-through.
     DecorationInfo decoration_info;
     bool has_line_through_decoration = false;
-    if (style.TextDecorationsInEffect() != TextDecoration::kNone &&
-        truncation != kCFullTruncation) {
+    if (style.TextDecorationsInEffect() != TextDecoration::kNone) {
       LayoutPoint local_origin = LayoutPoint(box_origin);
       LayoutUnit width = fragment_.Size().width;
       const NGPhysicalBoxFragment* decorating_box = nullptr;
@@ -145,13 +122,6 @@ void NGTextFragmentPainter::Paint(const Document& document,
 
     int start_offset = 0;
     int end_offset = length;
-    // Where the text and its flow have opposite directions then our offset into
-    // the text given by |truncation| is at the start of the part that will be
-    // visible.
-    if (truncation != kCNoTruncation && ltr != flow_is_ltr) {
-      start_offset = truncation;
-      end_offset = length;
-    }
 
     if (paint_selected_text_separately && selection_start < selection_end) {
       start_offset = selection_end;
