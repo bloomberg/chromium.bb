@@ -317,6 +317,67 @@ TEST_F(NGColumnLayoutAlgorithmTest, TwoBlocksInTwoColumns) {
   EXPECT_EQ(expectation, dump);
 }
 
+TEST_F(NGColumnLayoutAlgorithmTest, ZeroHeight) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        columns: 3;
+        column-fill: auto;
+        column-gap: 10px;
+        height: 0;
+        width: 320px;
+      }
+    </style>
+    <div id="container">
+      <div id="parent"></div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x0
+    offset:0,0 size:320x0
+      offset:0,0 size:100x0
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
+TEST_F(NGColumnLayoutAlgorithmTest, ZeroHeightWithContent) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        columns: 3;
+        column-fill: auto;
+        column-gap: 10px;
+        height: 0;
+        width: 320px;
+      }
+    </style>
+    <div id="container">
+      <div id="parent">
+        <div style="width:20px; height:5px;"></div>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x0
+    offset:0,0 size:320x0
+      offset:0,0 size:100x1
+        offset:0,0 size:20x1
+      offset:110,0 size:100x1
+        offset:0,0 size:20x1
+      offset:220,0 size:100x1
+        offset:0,0 size:20x1
+      offset:330,0 size:100x1
+        offset:0,0 size:20x1
+      offset:440,0 size:100x1
+        offset:0,0 size:20x1
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
 TEST_F(NGColumnLayoutAlgorithmTest, OverflowedBlock) {
   SetBodyInnerHTML(R"HTML(
     <style>
@@ -1075,6 +1136,55 @@ TEST_F(NGColumnLayoutAlgorithmTest, ColumnBalancing100By3) {
 
   // Actual column-count should be 3. I.e. no overflow columns.
   EXPECT_EQ(3U, multicol->Children().size());
+}
+
+TEST_F(NGColumnLayoutAlgorithmTest, ColumnBalancingEmpty) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        columns: 3;
+        column-gap: 10px;
+        width: 320px;
+      }
+    </style>
+    <div id="container">
+      <div id="parent"></div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x0
+    offset:0,0 size:320x0
+      offset:0,0 size:100x0
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
+TEST_F(NGColumnLayoutAlgorithmTest, ColumnBalancingEmptyBlock) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        columns: 3;
+        column-gap: 10px;
+        width: 320px;
+      }
+    </style>
+    <div id="container">
+      <div id="parent">
+        <div style="width:20px;"></div>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x0
+    offset:0,0 size:320x0
+      offset:0,0 size:100x0
+        offset:0,0 size:20x0
+)DUMP";
+  EXPECT_EQ(expectation, dump);
 }
 
 }  // anonymous namespace
