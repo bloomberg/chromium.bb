@@ -12,9 +12,9 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "build/build_config.h"
 #include "media/base/media_log.h"
 #include "media/mojo/interfaces/interface_factory.mojom.h"
-#include "media/mojo/interfaces/media_service.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
@@ -23,6 +23,12 @@
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 #include "url/gurl.h"
+
+#if defined(OS_MACOSX)
+#include "media/mojo/interfaces/media_service_mac.mojom.h"
+#else
+#include "media/mojo/interfaces/media_service.mojom.h"
+#endif  // defined(OS_MACOSX)
 
 namespace media {
 
@@ -45,7 +51,13 @@ class MEDIA_MOJO_EXPORT MediaService : public service_manager::Service,
   void Create(mojom::MediaServiceRequest request);
 
   // mojom::MediaService implementation.
+#if defined(OS_MACOSX)
+  void LoadCdm(const base::FilePath& cdm_path,
+               mojom::SeatbeltExtensionTokenProviderPtr token_provider) final;
+#else
   void LoadCdm(const base::FilePath& cdm_path) final;
+#endif  // defined(OS_MACOSX)
+
   void CreateInterfaceFactory(
       mojom::InterfaceFactoryRequest request,
       service_manager::mojom::InterfaceProviderPtr host_interfaces) final;

@@ -211,7 +211,7 @@
 #include "content/browser/plugin_service_impl.h"
 #endif
 
-#if BUILDFLAG(ENABLE_MOJO_CDM) && BUILDFLAG(ENABLE_LIBRARY_CDMS)
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #include "content/browser/media/cdm_registry_impl.h"
 #endif
 
@@ -831,7 +831,7 @@ int BrowserMainLoop::PreCreateThreads() {
   }
 #endif
 
-#if BUILDFLAG(ENABLE_MOJO_CDM) && BUILDFLAG(ENABLE_LIBRARY_CDMS)
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   // Prior to any processing happening on the IO thread, we create the
   // CDM service as it is predominantly used from the IO thread. This must
   // be called on the main thread since it involves file path checks.

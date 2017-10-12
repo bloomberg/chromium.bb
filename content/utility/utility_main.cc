@@ -26,6 +26,8 @@
 #if defined(OS_WIN)
 #include "base/rand_util.h"
 #include "sandbox/win/src/sandbox.h"
+
+sandbox::TargetServices* g_utility_target_services = nullptr;
 #endif
 
 namespace content {
@@ -49,6 +51,8 @@ int UtilityMain(const MainFunctionParams& parameters) {
   // Seccomp-BPF policy.
   if (parameters.zygote_child)
     LinuxSandbox::InitializeSandbox();
+#elif defined(OS_WIN)
+  g_utility_target_services = parameters.sandbox_info->target_services;
 #endif
 
   ChildProcess utility_process;
@@ -72,18 +76,17 @@ int UtilityMain(const MainFunctionParams& parameters) {
   }
 
 #if defined(OS_WIN)
-  if (!service_manager::IsUnsandboxedSandboxType(
-          service_manager::SandboxTypeFromCommandLine(
-              parameters.command_line))) {
-    sandbox::TargetServices* target_services =
-        parameters.sandbox_info->target_services;
-    if (!target_services)
+  auto sandbox_type =
+      service_manager::SandboxTypeFromCommandLine(parameters.command_line);
+  if (!service_manager::IsUnsandboxedSandboxType(sandbox_type) &&
+      sandbox_type != service_manager::SANDBOX_TYPE_CDM) {
+    if (!g_utility_target_services)
       return false;
     char buffer;
     // Ensure RtlGenRandom is warm before the token is lowered; otherwise,
     // base::RandBytes() will CHECK fail when v8 is initialized.
     base::RandBytes(&buffer, sizeof(buffer));
-    target_services->LowerToken();
+    g_utility_target_services->LowerToken();
   }
 #endif
 

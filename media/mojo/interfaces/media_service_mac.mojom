@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,11 @@ module media.mojom;
 
 import "media/mojo/interfaces/interface_factory.mojom";
 import "mojo/common/file_path.mojom";
+import "sandbox/mac/mojom/seatbelt_extension_token.mojom";
 import "services/service_manager/public/interfaces/interface_provider.mojom";
+
+// TODO(xhwang): Merge this file with media_service.mojom once EnabledIf
+// attribute is supported in mojom files. See https://crbug.com/676224
 
 // A service to provide media InterfaceFactory, typically to the media pipeline
 // running in the renderer process. The service itself runs in the process
@@ -20,7 +24,11 @@ interface MediaService {
   // Since the client will not know whether LoadCdm() has been called by a
   // previous MediaService instance, the client should always call it after
   // interface connection. If the CDM is already loaded, this will be a no-op.
-  LoadCdm(mojo.common.mojom.FilePath cdm_path);
+  // |token_provider| can be used to get a sandbox seatbelt extension token
+  // synchronously so that the MediaService instance can load the CDM and other
+  // needed files within the Mac sandbox.
+  LoadCdm(mojo.common.mojom.FilePath cdm_path,
+          SeatbeltExtensionTokenProvider? token_provider);
 
   // Requests an InterfaceFactory. |host_interfaces| can optionally be used to
   // provide interfaces hosted by the caller to the remote InterfaceFactory
@@ -28,4 +36,10 @@ interface MediaService {
   CreateInterfaceFactory(
       InterfaceFactory& factory,
       service_manager.mojom.InterfaceProvider? host_interfaces);
+};
+
+// An interface to provide a sandbox seatbelt extension token synchronously.
+interface SeatbeltExtensionTokenProvider {
+  [Sync]
+  GetTokens() => (array<sandbox.mac.mojom.SeatbeltExtensionToken> tokens);
 };

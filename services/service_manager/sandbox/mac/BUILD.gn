@@ -5,6 +5,7 @@
 action_foreach("package_sb_files") {
   script = "package_sb_file.py"
   sources = [
+    "cdm.sb",
     "common.sb",
     "gpu.sb",
     "nacl_loader.sb",

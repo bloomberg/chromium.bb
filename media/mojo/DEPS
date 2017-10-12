@@ -5,6 +5,11 @@ include_rules = [
   "+mojo/converters",
   "+mojo/logging",
   "+mojo/public",
+
+  # TODO(xhwang): Ideally media should not worry about sandbox. Find a way to
+  # remove this dependency.
+  "+sandbox/mac",
+
   "+services/metrics",
   "+services/service_manager",
 

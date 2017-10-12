@@ -63,6 +63,10 @@ class MEDIA_MOJO_EXPORT MojoMediaClient {
       service_manager::Connector* connector,
       service_manager::ServiceContextRefFactory* context_ref_factory);
 
+  // Called by the MediaService to ensure the process is sandboxed. It could be
+  // a no-op if the process is already sandboxed.
+  virtual void EnsureSandboxed();
+
   virtual std::unique_ptr<AudioDecoder> CreateAudioDecoder(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 

@@ -15,7 +15,6 @@ mojom("interfaces") {
     "demuxer_stream.mojom",
     "interface_factory.mojom",
     "media_log.mojom",
-    "media_service.mojom",
     "media_types.mojom",
     "output_protection.mojom",
     "platform_verification.mojom",
@@ -44,6 +43,18 @@ mojom("interfaces") {
     "//url/mojo:url_mojom_gurl",
     "//url/mojo:url_mojom_origin",
   ]
+
+  # TODO(xhwang): Remove media_service_mac.mojom when we support EnabledIf
+  # attribute in mojom files. See https://crbug.com/676224
+  if (is_mac) {
+    sources += [ "media_service_mac.mojom" ]
+
+    # TODO(xhwang): Ideally media should not worry about sandbox. Find a way to
+    # remove this dependency.
+    public_deps += [ "//sandbox/mac/mojom" ]
+  } else {
+    sources += [ "media_service.mojom" ]
+  }
 }
 
 mojom("constants") {
