@@ -48,15 +48,15 @@ Platform specific build notes:
     Script can run on a normal Ubuntu box.
 
   linux mipsel:
-    Script must be run inside of ChromeOS SimpleChrome setup:
-        cros chrome-sdk --board=mipsel-o32-generic --use-external-config
+    Script must be run inside of ChromeOS checkout. Follow instructions in this doc:
+        https://docs.google.com/document/d/14bqZ9NISsyEO3948wehhJ7wc9deTIz-yHUhF1MQp7Po/edit?pref=2&pli=1#bookmark=id.9xsx8g59oaay
 
   linux mips64el:
     Script can run on a normal Ubuntu with mips64el cross-toolchain in $PATH.
 
   linux arm/arm-neon:
-    Script must be run inside of ChromeOS SimpleChrome setup:
-        cros chrome-sdk --board=arm-generic
+    Script must be run inside of ChromeOS checkout. Follow instructions in this doc:
+        https://docs.google.com/document/d/14bqZ9NISsyEO3948wehhJ7wc9deTIz-yHUhF1MQp7Po/edit?pref=2&pli=1#bookmark=id.9xsx8g59oaay
 
   linux arm64:
     Script can run on a normal Ubuntu with AArch64 cross-toolchain in $PATH.
