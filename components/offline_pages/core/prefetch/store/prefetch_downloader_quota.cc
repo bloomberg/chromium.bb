@@ -15,12 +15,13 @@
 namespace offline_pages {
 
 // static
-const char PrefetchDownloaderQuota::kMaxDailyQuotaBytesParamName[] =
-    "offline_pages_max_daily_quota_bytes";
 const int64_t PrefetchDownloaderQuota::kDefaultMaxDailyQuotaBytes =
     20LL * 1024 * 1024;  // 20 MB
 
 namespace {
+static const char kMaxDailyQuotaBytesParamName[] =
+    "offline_pages_max_daily_quota_bytes";
+
 constexpr base::TimeDelta kQuotaPeriod = base::TimeDelta::FromDays(1);
 
 // Normalize quota to [0, GetMaxDailyQuotaBytes()].
