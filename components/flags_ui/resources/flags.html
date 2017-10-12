@@ -18,12 +18,12 @@
   <div class="flex-container">
     <div class="flex">
       <div class="search-container">
-        <input type="text" id="search" placeholder="$i18n{flagsSearchPlaceholder}">
-        <button class="clear-search" title="Clear search"></button>
+        <input type="text" id="search" placeholder="$i18n{flagsSearchPlaceholder}"  tabindex="1">
+        <button class="clear-search" title="Clear search" tabindex="2"></button>
       </div>
     </div>
     <div class="flex">
-      <button id="experiment-reset-all" type="button">$i18n{resetAllButton}</button>
+      <button id="experiment-reset-all" type="button" tabindex="3">$i18n{resetAllButton}</button>
     </div>
   </div>
 </div>
@@ -43,7 +43,7 @@
 </if>
     </div>
     <p class="promo">
-      <span id="channel-promo-beta">$i18nRaw{channelPromoBeta}</span>
+      <span id="channel-promo-beta" hidden>$i18nRaw{channelPromoBeta}</span>
       <span id="channel-promo-dev" hidden>$i18nRaw{channelPromoDev}</span>
     </p>
     <ul class="tabs" role="tablist">
@@ -51,7 +51,7 @@
         <a href="#tab-content-available" id="tab-available" class="tab" role="tab"
             aria-selected="true"
             aria-controls="panel1"
-            tabindex="0">Available</a>
+            tabindex="4">Available</a>
         <div id="tab-content-available" class="tab-content"
             role="tabpanel" aria-labelledby="tab-available" aria-hidden="false">
           <div class="experiment"
@@ -68,11 +68,11 @@
                   <span class="platforms" jscontent="supported_platforms.join(', ')"></span>
                 </p>
                 <a class="permalink" jsvalues="href: '#' + internal_name"
-                    jscontent="'#' + internal_name"></a>
+                    jscontent="'#' + internal_name" tabindex="6"></a>
               </div>
               <div class="flex experiment-actions">
                 <div jsdisplay="options && options.length > 0">
-                  <select class="experiment-select"
+                  <select class="experiment-select" tabindex="6"
                       jsvalues=".internal_name:internal_name;.disabled:!enabled">
                     <option jsvalues=".selected:selected"
                         jsselect="options"
@@ -81,12 +81,12 @@
                   </select>
                 </div>
                 <span>
-                  <a class="experiment-disable-link"
+                  <button class="experiment-disable-link"
                       jsvalues=".internal_name:internal_name"
-                      jsdisplay="enabled" href="#">$i18n{disable}</a>
-                  <a class="experiment-enable-link"
+                      jsdisplay="enabled" href="#" tabindex="6">$i18n{disable}</button>
+                  <button class="experiment-enable-link"
                       jsvalues=".internal_name:internal_name"
-                      jsdisplay="!enabled" href="#">$i18n{enable}</a>
+                      jsdisplay="!enabled" href="#" tabindex="6">$i18n{enable}</button>
                 </span>
               </div>
             </div>
@@ -99,7 +99,7 @@
       <li>
         <a href="#tab-content-unavailable" id="tab-unavailable" class="tab" role="tab"
            aria-selected="false" aria-controls="panel2"
-           tabindex="0">Unavailable</a>
+           tabindex="5">Unavailable</a>
         <div id="tab-content-unavailable" class="tab-content"
             role="tabpanel" aria-labelledby="tab-unavailable" aria-hidden="false">
           <div class="experiment"
@@ -117,7 +117,7 @@
                 </p>
                 <a class="permalink"
                     jsvalues="href: '#' + internal_name"
-                    jscontent="'#' + internal_name"></a>
+                    jscontent="'#' + internal_name" tabindex="7"></a>
               </div>
               <div class="flex experiment-actions">$i18n{flagsNotSupported}</div>
             </div>
@@ -131,7 +131,7 @@
       <div class="flex-container">
         <div class="flex restart-notice" jstcache="0">$i18n{flagsRestartNotice}</div>
         <div class="flex">
-          <button class="experiment-restart-button" type="button">
+          <button class="experiment-restart-button" type="button" tabindex="8">
             $i18n{flagsRestartButton}
           </button>
         </div>
