@@ -228,10 +228,6 @@ offset_t AddressTranslator::RvaToOffset(rva_t rva) const {
               : kInvalidOffset;
 }
 
-bool AddressTranslator::IsValidRva(rva_t rva) const {
-  return RvaToUnit(rva) != nullptr;
-}
-
 const AddressTranslator::Unit* AddressTranslator::OffsetToUnit(
     offset_t offset) const {
   // Finds first Unit with |offset_begin| > |offset|, rewind by 1 to find the
