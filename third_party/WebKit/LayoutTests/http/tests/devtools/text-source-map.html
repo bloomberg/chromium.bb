@@ -15,7 +15,7 @@ function test() {
   }
 
   function checkReverseMapping(compiledLineNumber, compiledColumnNumber, sourceURL, sourceLineNumber, mapping) {
-    var entry = mapping.firstSourceLineMapping(sourceURL, sourceLineNumber);
+    var entry = mapping.sourceLineMapping(sourceURL, sourceLineNumber, 0);
     if (!entry) {
       TestRunner.addResult('source line ' + sourceLineNumber + ' has no mappings.');
       return;
