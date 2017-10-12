@@ -62,7 +62,6 @@ class PerfTestInstance(test_instance.TestInstance):
 
     self._collect_chartjson_data = args.collect_chartjson_data
     self._dry_run = args.dry_run
-    self._flaky_steps = args.flaky_steps
     self._output_dir_archive_path = args.output_dir_archive_path
     # TODO(rnephew): Get rid of this when everything uses
     # --output-dir-archive-path
@@ -187,10 +186,6 @@ class PerfTestInstance(test_instance.TestInstance):
   @property
   def dry_run(self):
     return self._dry_run
-
-  @property
-  def flaky_steps(self):
-    return self._flaky_steps
 
   @property
   def known_devices_file(self):
