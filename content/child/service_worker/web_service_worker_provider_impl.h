@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "content/common/service_worker/service_worker_types.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerProvider.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_error_type.mojom.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
@@ -30,7 +31,8 @@ struct ServiceWorkerVersionAttributes;
 
 // This class corresponds to one ServiceWorkerContainer interface in
 // JS context (i.e. navigator.serviceWorker).
-class WebServiceWorkerProviderImpl : public blink::WebServiceWorkerProvider {
+class CONTENT_EXPORT WebServiceWorkerProviderImpl
+    : public blink::WebServiceWorkerProvider {
  public:
   WebServiceWorkerProviderImpl(ThreadSafeSender* thread_safe_sender,
                                ServiceWorkerProviderContext* context);
@@ -54,6 +56,12 @@ class WebServiceWorkerProviderImpl : public blink::WebServiceWorkerProvider {
   bool ValidateScopeAndScriptURL(const blink::WebURL& pattern,
                                  const blink::WebURL& script_url,
                                  blink::WebString* error_message) override;
+
+  // Sets the ServiceWorkerContainer#controller for this provider. It's not
+  // used when this WebServiceWorkerProvider is for a service worker context.
+  void SetController(const ServiceWorkerObjectInfo& info,
+                     const std::set<uint32_t>& features,
+                     bool should_notify_controller_change);
 
   int provider_id() const;
 
