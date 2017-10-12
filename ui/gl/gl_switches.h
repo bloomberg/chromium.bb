@@ -52,8 +52,6 @@ GL_EXPORT extern const char kEnableSwapBuffersWithBounds[];
 GL_EXPORT extern const char kEnableDirectCompositionLayers[];
 GL_EXPORT extern const char kDisableDirectCompositionLayers[];
 
-GL_EXPORT extern const char kUsePassthroughCmdDecoder[];
-
 // These flags are used by the test harness code, not passed in by users.
 GL_EXPORT extern const char kDisableGLDrawingForTests[];
 GL_EXPORT extern const char kOverrideUseSoftwareGLForTests[];

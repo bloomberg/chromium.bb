@@ -11,10 +11,10 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
+#include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/config/gpu_switches.h"
 #include "media/media_features.h"
 #include "ui/gl/gl_switches.h"
-#include "ui/gl/gl_utils.h"
 
 namespace {
 
@@ -125,7 +125,7 @@ const gpu::GpuPreferences GetGpuPreferencesFromCommandLine() {
   gpu_preferences.enable_gpu_service_tracing =
       command_line->HasSwitch(switches::kEnableGPUServiceTracing);
   gpu_preferences.use_passthrough_cmd_decoder =
-      gl::UsePassthroughCommandDecoder(command_line);
+      gpu::gles2::UsePassthroughCommandDecoder(command_line);
   // Some of these preferences are set or adjusted in
   // GpuDataManagerImplPrivate::AppendGpuCommandLine.
   return gpu_preferences;
