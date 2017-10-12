@@ -529,7 +529,7 @@ spring_tool_SOURCES =				\
 
 if BUILD_CLIENTS
 
-bin_PROGRAMS += weston-terminal weston-info
+bin_PROGRAMS += weston-terminal weston-info weston-debug
 
 libexec_PROGRAMS +=				\
 	weston-desktop-shell			\
@@ -860,6 +860,15 @@ nodist_weston_info_SOURCES =					\
 weston_info_LDADD = $(WESTON_INFO_LIBS) libshared.la
 weston_info_CFLAGS = $(AM_CFLAGS) $(CLIENT_CFLAGS)
 
+weston_debug_SOURCES = 					\
+	clients/weston-debug.c				\
+	shared/helpers.h
+nodist_weston_debug_SOURCES =				\
+	protocol/weston-debug-protocol.c		\
+	protocol/weston-debug-client-protocol.h
+weston_debug_LDADD = $(WESTON_INFO_LIBS) libshared.la
+weston_debug_CFLAGS = $(AM_CFLAGS) $(CLIENT_CFLAGS)
+
 weston_desktop_shell_SOURCES = 				\
 	clients/desktop-shell.c				\
 	shared/helpers.h
@@ -896,6 +905,8 @@ BUILT_SOURCES +=					\
 	protocol/weston-screenshooter-client-protocol.h			\
 	protocol/weston-touch-calibration-protocol.c			\
 	protocol/weston-touch-calibration-client-protocol.h		\
+	protocol/weston-debug-protocol.c				\
+	protocol/weston-debug-client-protocol.h				\
 	protocol/text-cursor-position-client-protocol.h	\
 	protocol/text-cursor-position-protocol.c	\
 	protocol/text-input-unstable-v1-protocol.c			\
@@ -1593,7 +1604,7 @@ surface_screenshot_la_SOURCES = tests/surface-screenshot.c
 # Documentation
 #
 
-man_MANS = weston.1 weston.ini.5
+man_MANS = weston.1 weston.ini.5 weston-debug.1
 
 if ENABLE_DRM_COMPOSITOR
 man_MANS += weston-drm.7
@@ -1624,6 +1635,7 @@ EXTRA_DIST +=					\
 	doc/wayland-screenshot.jpg		\
 	doc/calibration-helper.bash		\
 	man/weston.man				\
+	man/weston-debug.man			\
 	man/weston-drm.man			\
 	man/weston-rdp.man			\
 	man/weston.ini.man
