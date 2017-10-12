@@ -28819,6 +28819,9 @@ from previous Chrome versions.
   <int value="1000" label="STALE_AT_DOWNLOADING">
     Entry became stale while at the DOWNLOADING state.
   </int>
+  <int value="1050" label="STALE_AT_IMPORTING">
+    Entry became stale while at the IMPORTING state.
+  </int>
   <int value="1100" label="STALE_AT_UNKNOWN">
     Entry became stale at an unknown state.
   </int>
