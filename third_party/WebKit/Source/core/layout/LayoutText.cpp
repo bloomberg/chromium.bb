@@ -45,8 +45,11 @@
 #include "core/layout/line/EllipsisBox.h"
 #include "core/layout/line/GlyphOverflow.h"
 #include "core/layout/line/InlineTextBox.h"
+#include "core/layout/ng/inline/ng_inline_node.h"
+#include "core/layout/ng/inline/ng_offset_mapping_result.h"
 #include "platform/fonts/CharacterRange.h"
 #include "platform/geometry/FloatQuad.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/scheduler/child/web_scheduler.h"
 #include "platform/text/BidiResolver.h"
 #include "platform/text/Character.h"
@@ -1898,7 +1901,31 @@ LayoutRect LayoutText::LocalSelectionRect() const {
   return rect;
 }
 
+bool LayoutText::ShouldUseNGAlternatives() const {
+  // LayoutNG alternatives rely on |TextLength()| property, which is correct
+  // only when fragment painting is enabled.
+  return RuntimeEnabledFeatures::LayoutNGEnabled() &&
+         RuntimeEnabledFeatures::LayoutNGPaintFragmentsEnabled() &&
+         EnclosingNGBlockFlow();
+}
+
+const NGOffsetMappingResult& LayoutText::GetNGOffsetMapping() const {
+  DCHECK(EnclosingNGBlockFlow());
+  return NGInlineNode(EnclosingNGBlockFlow()).ComputeOffsetMappingIfNeeded();
+}
+
 int LayoutText::CaretMinOffset() const {
+  if (ShouldUseNGAlternatives()) {
+    // TODO(xiaochengh): Support ::first-letter.
+    if (!GetNode())
+      return 0;
+    const unsigned candidate =
+        GetNGOffsetMapping().StartOfNextNonCollapsedCharacter(*GetNode(), 0);
+    // Align with the legacy behavior that 0 is returned if the entire node
+    // contains only collapsed whitespaces.
+    return candidate == TextLength() ? 0 : candidate;
+  }
+
   InlineTextBox* box = FirstTextBox();
   if (!box)
     return 0;
@@ -1909,6 +1936,18 @@ int LayoutText::CaretMinOffset() const {
 }
 
 int LayoutText::CaretMaxOffset() const {
+  if (ShouldUseNGAlternatives()) {
+    // TODO(xiaochengh): Support ::first-letter.
+    if (!GetNode())
+      return TextLength();
+    const unsigned candidate =
+        GetNGOffsetMapping().EndOfLastNonCollapsedCharacter(*GetNode(),
+                                                            TextLength());
+    // Align with the legacy behavior that |TextLength()| is returned if the
+    // entire node contains only collapsed whitespaces.
+    return candidate == 0u ? TextLength() : candidate;
+  }
+
   InlineTextBox* box = LastTextBox();
   if (!LastTextBox())
     return TextLength();
@@ -1920,6 +1959,17 @@ int LayoutText::CaretMaxOffset() const {
 }
 
 unsigned LayoutText::ResolvedTextLength() const {
+  if (ShouldUseNGAlternatives()) {
+    // TODO(xiaochengh): Support ::first-letter.
+    if (!GetNode())
+      return 0;
+    const NGOffsetMappingResult& mapping = GetNGOffsetMapping();
+    const unsigned start = mapping.GetTextContentOffset(*GetNode(), 0);
+    const unsigned end = mapping.GetTextContentOffset(*GetNode(), TextLength());
+    DCHECK_LE(start, end);
+    return end - start;
+  }
+
   int len = 0;
   for (InlineTextBox* box : InlineTextBoxesOf(*this))
     len += box->Len();
