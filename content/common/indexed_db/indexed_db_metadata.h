@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <string>
 
 #include "base/strings/string16.h"
 #include "content/common/indexed_db/indexed_db_key_path.h"
@@ -24,8 +25,10 @@ struct CONTENT_EXPORT IndexedDBIndexMetadata {
                          bool unique,
                          bool multi_entry);
   IndexedDBIndexMetadata(const IndexedDBIndexMetadata& other);
+  IndexedDBIndexMetadata(IndexedDBIndexMetadata&& other);
   ~IndexedDBIndexMetadata();
   IndexedDBIndexMetadata& operator=(const IndexedDBIndexMetadata& other);
+  IndexedDBIndexMetadata& operator=(IndexedDBIndexMetadata&& other);
   bool operator==(const IndexedDBIndexMetadata& other) const;
 
   base::string16 name;
@@ -37,6 +40,7 @@ struct CONTENT_EXPORT IndexedDBIndexMetadata {
 
 struct CONTENT_EXPORT IndexedDBObjectStoreMetadata {
   static const int64_t kInvalidId = -1;
+  static const int64_t kMinimumIndexId = 30;
 
   IndexedDBObjectStoreMetadata();
   IndexedDBObjectStoreMetadata(const base::string16& name,
@@ -45,9 +49,11 @@ struct CONTENT_EXPORT IndexedDBObjectStoreMetadata {
                                bool auto_increment,
                                int64_t max_index_id);
   IndexedDBObjectStoreMetadata(const IndexedDBObjectStoreMetadata& other);
+  IndexedDBObjectStoreMetadata(IndexedDBObjectStoreMetadata&& other);
   ~IndexedDBObjectStoreMetadata();
   IndexedDBObjectStoreMetadata& operator=(
       const IndexedDBObjectStoreMetadata& other);
+  IndexedDBObjectStoreMetadata& operator=(IndexedDBObjectStoreMetadata&& other);
   bool operator==(const IndexedDBObjectStoreMetadata& other) const;
 
   base::string16 name;
@@ -69,8 +75,10 @@ struct CONTENT_EXPORT IndexedDBDatabaseMetadata {
                             int64_t version,
                             int64_t max_object_store_id);
   IndexedDBDatabaseMetadata(const IndexedDBDatabaseMetadata& other);
+  IndexedDBDatabaseMetadata(IndexedDBDatabaseMetadata&& other);
   ~IndexedDBDatabaseMetadata();
   IndexedDBDatabaseMetadata& operator=(const IndexedDBDatabaseMetadata& other);
+  IndexedDBDatabaseMetadata& operator=(IndexedDBDatabaseMetadata&& other);
   bool operator==(const IndexedDBDatabaseMetadata& other) const;
 
   base::string16 name;

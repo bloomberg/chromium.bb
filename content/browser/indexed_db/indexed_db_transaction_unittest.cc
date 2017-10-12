@@ -13,9 +13,11 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/browser/indexed_db/fake_indexed_db_metadata_coding.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_database_error.h"
 #include "content/browser/indexed_db/indexed_db_fake_backing_store.h"
+#include "content/browser/indexed_db/indexed_db_metadata_coding.h"
 #include "content/browser/indexed_db/indexed_db_observer.h"
 #include "content/browser/indexed_db/mock_indexed_db_database_callbacks.h"
 #include "content/browser/indexed_db/mock_indexed_db_factory.h"
@@ -53,6 +55,7 @@ class IndexedDBTransactionTest : public testing::Test {
     leveldb::Status s;
     std::tie(db_, s) = IndexedDBDatabase::Create(
         base::ASCIIToUTF16("db"), backing_store_.get(), factory_.get(),
+        base::MakeUnique<FakeIndexedDBMetadataCoding>(),
         IndexedDBDatabase::Identifier());
     ASSERT_TRUE(s.ok());
   }

@@ -21,11 +21,15 @@ IndexedDBIndexMetadata::IndexedDBIndexMetadata(const base::string16& name,
 
 IndexedDBIndexMetadata::IndexedDBIndexMetadata(
     const IndexedDBIndexMetadata& other) = default;
+IndexedDBIndexMetadata::IndexedDBIndexMetadata(IndexedDBIndexMetadata&& other) =
+    default;
 
 IndexedDBIndexMetadata::~IndexedDBIndexMetadata() = default;
 
 IndexedDBIndexMetadata& IndexedDBIndexMetadata::operator=(
     const IndexedDBIndexMetadata& other) = default;
+IndexedDBIndexMetadata& IndexedDBIndexMetadata::operator=(
+    IndexedDBIndexMetadata&& other) = default;
 
 bool IndexedDBIndexMetadata::operator==(
     const IndexedDBIndexMetadata& other) const {
@@ -49,11 +53,15 @@ IndexedDBObjectStoreMetadata::IndexedDBObjectStoreMetadata() = default;
 
 IndexedDBObjectStoreMetadata::IndexedDBObjectStoreMetadata(
     const IndexedDBObjectStoreMetadata& other) = default;
+IndexedDBObjectStoreMetadata::IndexedDBObjectStoreMetadata(
+    IndexedDBObjectStoreMetadata&& other) = default;
 
 IndexedDBObjectStoreMetadata::~IndexedDBObjectStoreMetadata() = default;
 
 IndexedDBObjectStoreMetadata& IndexedDBObjectStoreMetadata::operator=(
     const IndexedDBObjectStoreMetadata& other) = default;
+IndexedDBObjectStoreMetadata& IndexedDBObjectStoreMetadata::operator=(
+    IndexedDBObjectStoreMetadata&& other) = default;
 
 bool IndexedDBObjectStoreMetadata::operator==(
     const IndexedDBObjectStoreMetadata& other) const {
@@ -76,11 +84,15 @@ IndexedDBDatabaseMetadata::IndexedDBDatabaseMetadata(
 
 IndexedDBDatabaseMetadata::IndexedDBDatabaseMetadata(
     const IndexedDBDatabaseMetadata& other) = default;
+IndexedDBDatabaseMetadata::IndexedDBDatabaseMetadata(
+    IndexedDBDatabaseMetadata&& other) = default;
 
 IndexedDBDatabaseMetadata::~IndexedDBDatabaseMetadata() = default;
 
 IndexedDBDatabaseMetadata& IndexedDBDatabaseMetadata::operator=(
     const IndexedDBDatabaseMetadata& other) = default;
+IndexedDBDatabaseMetadata& IndexedDBDatabaseMetadata::operator=(
+    IndexedDBDatabaseMetadata&& other) = default;
 
 bool IndexedDBDatabaseMetadata::operator==(
     const IndexedDBDatabaseMetadata& other) const {

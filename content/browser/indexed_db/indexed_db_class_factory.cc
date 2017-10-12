@@ -8,6 +8,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "content/browser/indexed_db/indexed_db_factory.h"
+#include "content/browser/indexed_db/indexed_db_metadata_coding.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
 #include "content/browser/indexed_db/leveldb/leveldb_iterator_impl.h"
 #include "content/browser/indexed_db/leveldb/leveldb_transaction.h"
@@ -33,8 +34,10 @@ scoped_refptr<IndexedDBDatabase> IndexedDBClassFactory::CreateIndexedDBDatabase(
     const base::string16& name,
     scoped_refptr<IndexedDBBackingStore> backing_store,
     scoped_refptr<IndexedDBFactory> factory,
+    std::unique_ptr<IndexedDBMetadataCoding> metadata_coding,
     const IndexedDBDatabase::Identifier& unique_identifier) {
-  return new IndexedDBDatabase(name, backing_store, factory, unique_identifier);
+  return new IndexedDBDatabase(name, backing_store, factory,
+                               std::move(metadata_coding), unique_identifier);
 }
 
 std::unique_ptr<IndexedDBTransaction>

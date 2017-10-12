@@ -19,6 +19,7 @@
 namespace content {
 
 class IndexedDBConnection;
+class IndexedDBMetadataCoding;
 class LevelDBTransaction;
 class LevelDBDatabase;
 
@@ -45,6 +46,7 @@ class MockBrowserTestIndexedDBClassFactory : public IndexedDBClassFactory {
       const base::string16& name,
       scoped_refptr<IndexedDBBackingStore> backing_store,
       scoped_refptr<IndexedDBFactory> factory,
+      std::unique_ptr<IndexedDBMetadataCoding> metadata_coding,
       const IndexedDBDatabase::Identifier& unique_identifier) override;
   std::unique_ptr<IndexedDBTransaction> CreateIndexedDBTransaction(
       int64_t id,
