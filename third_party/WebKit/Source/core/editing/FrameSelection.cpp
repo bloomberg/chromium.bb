@@ -1028,10 +1028,7 @@ bool FrameSelection::SelectWordAroundCaret() {
   // http://crbug.com/657237 for more details.
   if (!selection.IsCaret())
     return false;
-  return SelectWordAroundPosition(selection.VisibleStart());
-}
-
-bool FrameSelection::SelectWordAroundPosition(const VisiblePosition& position) {
+  const VisiblePosition& position = selection.VisibleStart();
   static const EWordSide kWordSideList[2] = {kNextWordIfOnBoundary,
                                              kPreviousWordIfOnBoundary};
   for (EWordSide word_side : kWordSideList) {

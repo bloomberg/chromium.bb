@@ -184,11 +184,6 @@ class CORE_EXPORT FrameSelection final
   // Returns true if a word is selected.
   bool SelectWordAroundCaret();
 
-  // TODO(editing-dev): We should replace |SelectWordAroundPosition()|
-  // with |SelectWordAroundCaret()|.
-  // Returns true if a word is selected.
-  bool SelectWordAroundPosition(const VisiblePosition&);
-
 #ifndef NDEBUG
   void ShowTreeForThis() const;
 #endif
