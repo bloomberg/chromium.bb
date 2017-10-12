@@ -73,6 +73,8 @@ split_static_library("ui") {
     "autofill/popup_view_common.h",
     "blocked_content/blocked_window_params.cc",
     "blocked_content/blocked_window_params.h",
+    "blocked_content/console_logger.cc",
+    "blocked_content/console_logger.h",
     "blocked_content/popup_blocker_tab_helper.cc",
     "blocked_content/popup_blocker_tab_helper.h",
     "blocked_content/popup_opener_tab_helper.cc",
