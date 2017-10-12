@@ -65,7 +65,7 @@ struct PreconnectPrediction {
   PreconnectPrediction(const PreconnectPrediction& other);
   ~PreconnectPrediction();
 
-  bool is_redirected;
+  bool is_redirected = false;
   std::string host;
   std::vector<GURL> preconnect_origins;
   std::vector<GURL> preresolve_hosts;
@@ -267,6 +267,7 @@ class ResourcePrefetchPredictor : public history::HistoryServiceObserver {
                      RedirectDataMap* redirect_data);
 
   void LearnOrigins(const std::string& host,
+                    const GURL& main_frame_origin,
                     const std::map<GURL, OriginRequestSummary>& summaries);
 
   // Reports database readiness metric defined as percentage of navigated hosts

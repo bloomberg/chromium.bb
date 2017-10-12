@@ -392,6 +392,7 @@ TEST_F(LoadingDataCollectorTest, SimpleNavigation) {
   URLRequestSummary main_frame =
       CreateURLRequestSummary(1, "http://www.google.com");
   collector_->RecordURLRequest(main_frame);
+  collector_->RecordURLResponse(main_frame);
   EXPECT_EQ(1U, collector_->inflight_navigations_.size());
 
   std::vector<URLRequestSummary> resources;
@@ -465,7 +466,9 @@ TEST_F(LoadingDataCollectorTest, SimpleRedirect) {
   URLRequestSummary fb3 = CreateRedirectRequestSummary(
       1, "http://facebook.com/google", "https://facebook.com/google");
   collector_->RecordURLRedirect(fb3);
-  NavigationID fb_end = CreateNavigationID(1, "https://facebook.com/google");
+  URLRequestSummary fb4 =
+      CreateURLRequestSummary(1, "https://facebook.com/google");
+  collector_->RecordURLResponse(fb4);
 
   EXPECT_CALL(
       *mock_predictor_,
@@ -473,7 +476,7 @@ TEST_F(LoadingDataCollectorTest, SimpleRedirect) {
           "https://facebook.com/google", "http://fb.com/google",
           std::vector<URLRequestSummary>()))));
 
-  collector_->RecordMainFrameLoadComplete(fb_end);
+  collector_->RecordMainFrameLoadComplete(fb4.navigation_id);
 }
 
 TEST_F(LoadingDataCollectorTest, OnMainFrameRequest) {
@@ -648,6 +651,7 @@ TEST_F(LoadingDataCollectorTest, TestRecordFirstContentfulPaint) {
   URLRequestSummary main_frame =
       CreateURLRequestSummary(1, "http://www.google.com");
   collector_->RecordURLRequest(main_frame);
+  collector_->RecordURLResponse(main_frame);
   EXPECT_EQ(1U, collector_->inflight_navigations_.size());
 
   URLRequestSummary resource1 = CreateURLRequestSummary(

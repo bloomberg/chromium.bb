@@ -332,20 +332,19 @@ void LoadingDataCollector::RecordURLResponse(
     const URLRequestSummary& response) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (response.resource_type == content::RESOURCE_TYPE_MAIN_FRAME)
-    return;
-
   NavigationMap::const_iterator nav_it =
       inflight_navigations_.find(response.navigation_id);
   if (nav_it == inflight_navigations_.end())
     return;
   auto& page_request_summary = *nav_it->second;
 
-  if (!response.is_no_store)
-    page_request_summary.subresource_requests.push_back(response);
-
   if (config_.is_origin_learning_enabled)
     page_request_summary.UpdateOrAddToOrigins(response);
+
+  if (!response.is_no_store &&
+      response.resource_type != content::RESOURCE_TYPE_MAIN_FRAME) {
+    page_request_summary.subresource_requests.push_back(response);
+  }
 }
 
 void LoadingDataCollector::RecordURLRedirect(

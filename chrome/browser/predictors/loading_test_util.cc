@@ -129,6 +129,7 @@ PageRequestSummary CreatePageRequestSummary(
   PageRequestSummary summary(main_frame_gurl);
   summary.initial_url = GURL(initial_url);
   summary.subresource_requests = subresource_requests;
+  summary.UpdateOrAddToOrigins(CreateURLRequestSummary(1, main_frame_url));
   for (auto& request_summary : subresource_requests)
     summary.UpdateOrAddToOrigins(request_summary);
   return summary;

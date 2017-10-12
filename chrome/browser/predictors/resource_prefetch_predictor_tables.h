@@ -66,8 +66,10 @@ class ResourcePrefetchPredictorTables : public PredictorTableBase {
   // misses from |data|.
   static void TrimOrigins(OriginData* data, size_t max_consecutive_misses);
 
-  // Sorts the origins by score, decreasing.
-  static void SortOrigins(OriginData* data);
+  // Sorts the origins by score, decreasing. Prioritizes |main_frame_origin|
+  // if found in |data|.
+  static void SortOrigins(OriginData* data,
+                          const std::string& main_frame_origin);
 
   // Computes score of |origin|.
   static float ComputeOriginScore(const OriginStat& origin);

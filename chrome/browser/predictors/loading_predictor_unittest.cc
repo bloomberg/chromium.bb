@@ -21,6 +21,8 @@
 using testing::_;
 using testing::Return;
 using testing::StrictMock;
+using testing::DoAll;
+using testing::SetArgPointee;
 
 namespace predictors {
 
@@ -69,6 +71,7 @@ class LoadingPredictorTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<LoadingPredictor> predictor_;
+  StrictMock<MockResourcePrefetchPredictor>* mock_predictor_;
 };
 
 LoadingPredictorTest::LoadingPredictorTest()
@@ -95,6 +98,7 @@ void LoadingPredictorTest::SetUp() {
   EXPECT_CALL(*mock, PredictPreconnectOrigins(GURL(kUrl3), _))
       .WillRepeatedly(Return(false));
 
+  mock_predictor_ = mock.get();
   predictor_->set_mock_resource_prefetch_predictor(std::move(mock));
 
   predictor_->StartInitialization();
@@ -127,6 +131,9 @@ void LoadingPredictorPreconnectTest::SetUp() {
           predictor_->GetWeakPtr(), profile_->GetRequestContext());
   mock_preconnect_manager_ = mock_preconnect_manager.get();
   predictor_->set_mock_preconnect_manager(std::move(mock_preconnect_manager));
+
+  EXPECT_CALL(*mock_predictor_, GetPrefetchData(_, _))
+      .WillRepeatedly(Return(false));
 }
 
 LoadingPredictorConfig LoadingPredictorPreconnectTest::CreateConfig() {
@@ -141,26 +148,26 @@ TEST_F(LoadingPredictorTest, TestPrefetchingDurationHistogram) {
   const GURL url2 = GURL(kUrl2);
   const GURL url3 = GURL(kUrl3);
 
-  predictor_->PrepareForPageLoad(url, HintOrigin::EXTERNAL);
+  predictor_->PrepareForPageLoad(url, HintOrigin::NAVIGATION);
   predictor_->CancelPageLoadHint(url);
   histogram_tester.ExpectTotalCount(
       internal::kResourcePrefetchPredictorPrefetchingDurationHistogram, 1);
 
   // Mismatched start / end.
-  predictor_->PrepareForPageLoad(url, HintOrigin::EXTERNAL);
+  predictor_->PrepareForPageLoad(url, HintOrigin::NAVIGATION);
   predictor_->CancelPageLoadHint(url2);
   // No increment.
   histogram_tester.ExpectTotalCount(
       internal::kResourcePrefetchPredictorPrefetchingDurationHistogram, 1);
 
   // Can track a navigation (url2) while one is still in progress (url).
-  predictor_->PrepareForPageLoad(url2, HintOrigin::EXTERNAL);
+  predictor_->PrepareForPageLoad(url2, HintOrigin::NAVIGATION);
   predictor_->CancelPageLoadHint(url2);
   histogram_tester.ExpectTotalCount(
       internal::kResourcePrefetchPredictorPrefetchingDurationHistogram, 2);
 
   // Do not track non-prefetchable URLs.
-  predictor_->PrepareForPageLoad(url3, HintOrigin::EXTERNAL);
+  predictor_->PrepareForPageLoad(url3, HintOrigin::NAVIGATION);
   predictor_->CancelPageLoadHint(url3);
   // No increment.
   histogram_tester.ExpectTotalCount(
@@ -261,7 +268,7 @@ TEST_F(LoadingPredictorTest, TestMainFrameRequestDoesntCancelExternalHint) {
 
 TEST_F(LoadingPredictorTest, TestDontTrackNonPrefetchableUrls) {
   const GURL url3 = GURL(kUrl3);
-  predictor_->PrepareForPageLoad(url3, HintOrigin::EXTERNAL);
+  predictor_->PrepareForPageLoad(url3, HintOrigin::NAVIGATION);
   EXPECT_TRUE(predictor_->active_hints_.empty());
 }
 
@@ -293,6 +300,74 @@ TEST_F(LoadingPredictorPreconnectTest, TestHandleOmniboxHint) {
       GURL("http://en.wikipedia.org/wiki/random");
   predictor_->PrepareForPageLoad(preresolve_suggestion2, HintOrigin::OMNIBOX,
                                  false);
+}
+
+// Checks that the predictor preconnects to an initial origin even when it
+// doesn't have any historical data for this host.
+TEST_F(LoadingPredictorPreconnectTest, TestAddInitialUrlToEmptyPrediction) {
+  GURL main_frame_url("http://search.com/kittens");
+  EXPECT_CALL(*mock_predictor_, PredictPreconnectOrigins(main_frame_url, _))
+      .WillOnce(Return(false));
+  EXPECT_CALL(
+      *mock_preconnect_manager_,
+      Start(main_frame_url, std::vector<GURL>({GURL("http://search.com")}),
+            std::vector<GURL>()));
+  predictor_->PrepareForPageLoad(main_frame_url, HintOrigin::EXTERNAL);
+}
+
+// Checks that the predictor doesn't preconnect to an initial origin in the case
+// of NAVIGATION hint.
+TEST_F(LoadingPredictorPreconnectTest, TestAddInitialUrlForNavigationHint) {
+  GURL main_frame_url("http://search.com/kittens");
+  EXPECT_CALL(*mock_predictor_, PredictPreconnectOrigins(main_frame_url, _))
+      .WillOnce(Return(false));
+  predictor_->PrepareForPageLoad(main_frame_url, HintOrigin::NAVIGATION);
+}
+
+// Checks that the predictor doesn't add an initial origin to a preconnect list
+// if the list already containts the origin.
+TEST_F(LoadingPredictorPreconnectTest, TestAddInitialUrlMatchesPrediction) {
+  GURL main_frame_url("http://search.com/kittens");
+  PreconnectPrediction prediction = CreatePreconnectPrediction(
+      "search.com", true,
+      {GURL("http://search.com"), GURL("http://cdn.search.com")},
+      {GURL("http://ads.search.com")});
+  EXPECT_CALL(*mock_predictor_, PredictPreconnectOrigins(main_frame_url, _))
+      .WillOnce(DoAll(SetArgPointee<1>(prediction), Return(true)));
+  EXPECT_CALL(*mock_preconnect_manager_,
+              Start(main_frame_url,
+                    std::vector<GURL>({GURL("http://search.com"),
+                                       GURL("http://cdn.search.com")}),
+                    std::vector<GURL>({GURL("http://ads.search.com")})));
+  predictor_->PrepareForPageLoad(main_frame_url, HintOrigin::EXTERNAL);
+}
+
+// Checks that the predictor adds an initial origin to a preconnect list if the
+// list doesn't contain this origin already. It may be possible if an initial
+// url redirects to another host.
+TEST_F(LoadingPredictorPreconnectTest, TestAddInitialUrlDoesntMatchPrediction) {
+  GURL main_frame_url("http://search.com/kittens");
+  PreconnectPrediction prediction = CreatePreconnectPrediction(
+      "search.com", true,
+      {GURL("http://en.search.com"), GURL("http://cdn.search.com")},
+      {GURL("http://ads.search.com")});
+  EXPECT_CALL(*mock_predictor_, PredictPreconnectOrigins(main_frame_url, _))
+      .WillOnce(DoAll(SetArgPointee<1>(prediction), Return(true)));
+  EXPECT_CALL(*mock_preconnect_manager_,
+              Start(main_frame_url,
+                    std::vector<GURL>({GURL("http://search.com"),
+                                       GURL("http://en.search.com"),
+                                       GURL("http://cdn.search.com")}),
+                    std::vector<GURL>({GURL("http://ads.search.com")})));
+  predictor_->PrepareForPageLoad(main_frame_url, HintOrigin::EXTERNAL);
+}
+
+// Checks that the predictor doesn't preconnect to a bad url.
+TEST_F(LoadingPredictorPreconnectTest, TestAddInvalidInitialUrl) {
+  GURL main_frame_url("file:///tmp/index.html");
+  EXPECT_CALL(*mock_predictor_, PredictPreconnectOrigins(main_frame_url, _))
+      .WillOnce(Return(false));
+  predictor_->PrepareForPageLoad(main_frame_url, HintOrigin::EXTERNAL);
 }
 
 }  // namespace predictors
