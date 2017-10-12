@@ -1070,8 +1070,11 @@ bool SchedulerStateMachine::ShouldBlockDeadlineIndefinitely() const {
   if (!visible_)
     return false;
 
-  // Wait for main frame to be ready for commits.
-  if (defer_commits_)
+  // Wait for main frame to be ready for commits if in full-pipe mode, so that
+  // we ensure we block during renderer initialization. In commit_to_active_tree
+  // mode, we cannot block for defer_commits_, as this may negatively affect
+  // animation smoothness during resize or orientation changes.
+  if (defer_commits_ && settings_.wait_for_all_pipeline_stages_before_draw)
     return true;
 
   // Wait for main frame if one is in progress or about to be started.
