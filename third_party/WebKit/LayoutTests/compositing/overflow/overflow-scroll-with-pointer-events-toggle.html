@@ -32,14 +32,14 @@ if (window.internals)
   internals.settings.setPreferCompositingToLCDTextEnabled(true);
 
 onload = function() {
-  documentLayerTree = JSON.parse(window.internals.layerTreeAsText(document));
-  shouldBe('isUsingCompositedScrolling(documentLayerTree)', 'false');
+  var scroller = document.getElementById('scroller');
+  shouldBe('elementSubtreeHasCompositedScrollLayers(scroller)', 'false');
 
   // removing 'pointer-events: none' should cause composited scrolling
   document.getElementById('scroller').style.pointerEvents = '';
   runAfterLayoutAndPaint(function() {
-    documentLayerTree = JSON.parse(window.internals.layerTreeAsText(document));
-    shouldBe('isUsingCompositedScrolling(documentLayerTree)', 'true');
+    var scroller = document.getElementById('scroller');
+    shouldBe('elementSubtreeHasCompositedScrollLayers(scroller)', 'true');
     finishJSTest();
   });
 };

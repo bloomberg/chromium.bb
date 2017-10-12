@@ -41,7 +41,7 @@ var result = "";
 onload = function() {
     if (window.internals) {
         result += "No border radius (should be using composited scrolling): ";
-        if (isUsingCompositedScrolling(JSON.parse(window.internals.layerTreeAsText(document))))
+        if (elementSubtreeHasCompositedScrollLayers(document.getElementById('scroller')))
             result += "Pass.\n";
         else
             result += "Fail.\n"
@@ -50,7 +50,7 @@ onload = function() {
     requestAnimationFrame(function() {
         if (window.internals) {
             result += "Has border radius (should not be using composited scrolling): ";
-            if (!isUsingCompositedScrolling(JSON.parse(window.internals.layerTreeAsText(document))))
+            if (!elementSubtreeHasCompositedScrollLayers(document.getElementById('scroller')))
                 result += "Pass.\n";
             else
                 result += "Fail.\n"
