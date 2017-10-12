@@ -172,7 +172,7 @@ class SearchProviderTest : public testing::Test,
   std::unique_ptr<base::FieldTrialList> field_trial_list_;
 
   // Default values used for testing.
-  static const std::string kNotApplicable;
+  static const char kNotApplicable[];
   static const ExpectedMatch kEmptyExpectedMatch;
 
   // Adds a search for |term|, using the engine |t_url| to the history, and
@@ -259,7 +259,7 @@ class SearchProviderTest : public testing::Test,
 };
 
 // static
-const std::string SearchProviderTest::kNotApplicable = "Not Applicable";
+const char SearchProviderTest::kNotApplicable[] = "Not Applicable";
 const SearchProviderTest::ExpectedMatch
     SearchProviderTest::kEmptyExpectedMatch = { kNotApplicable, false };
 
