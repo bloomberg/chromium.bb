@@ -44,6 +44,8 @@ public class ActionItem extends OptionalLeaf {
     private final SuggestionsCategoryInfo mCategoryInfo;
     private final SuggestionsSection mParentSection;
     private final SuggestionsRanker mSuggestionsRanker;
+    private final SuggestionsMetrics.DurationTracker mSpinnerDurationTracker =
+            SuggestionsMetrics.getSpinnerVisibilityReporter();
 
     private boolean mImpressionTracked;
     private int mPerSectionRank = -1;
@@ -104,6 +106,12 @@ public class ActionItem extends OptionalLeaf {
 
         if (mState == newState) return;
         mState = newState;
+
+        if (mState == State.LOADING) {
+            mSpinnerDurationTracker.startTracking();
+        } else {
+            mSpinnerDurationTracker.endTracking();
+        }
 
         boolean newVisibility = (newState != State.HIDDEN);
         if (isVisible() != newVisibility) {

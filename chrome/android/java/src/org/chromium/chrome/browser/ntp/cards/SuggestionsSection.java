@@ -21,7 +21,6 @@ import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
-import org.chromium.chrome.browser.suggestions.ContentSuggestionPlaceholder;
 import org.chromium.chrome.browser.suggestions.SuggestionsOfflineModelObserver;
 import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
@@ -49,7 +48,6 @@ public class SuggestionsSection extends InnerNode {
 
     // Children
     private final SectionHeader mHeader;
-    private final @Nullable ContentSuggestionPlaceholder mPlaceholder;
     private final SuggestionsList mSuggestionsList;
     private final @Nullable StatusItem mStatus;
     private final ActionItem mMoreButton;
@@ -105,11 +103,9 @@ public class SuggestionsSection extends InnerNode {
         boolean isChromeHomeEnabled = FeatureUtilities.isChromeHomeEnabled();
         if (isChromeHomeEnabled) {
             mStatus = null;
-            mPlaceholder = new ContentSuggestionPlaceholder();
-            addChildren(mHeader, mPlaceholder, mSuggestionsList, mMoreButton);
+            addChildren(mHeader, mSuggestionsList, mMoreButton);
         } else {
             mStatus = StatusItem.createNoSuggestionsItem(info);
-            mPlaceholder = null;
             addChildren(mHeader, mSuggestionsList, mStatus, mMoreButton);
         }
 
@@ -257,11 +253,6 @@ public class SuggestionsSection extends InnerNode {
             mStatus.setVisible(!hasSuggestions());
         }
 
-        // A manual fetch can complete after the placeholder is shown, thus we can have both a
-        // placeholder and some suggestions present with no status change notification. We need to
-        // update its visibility here to avoid that.
-        updatePlaceholderVisibility();
-
         // When the ActionItem stops being dismissable, it is possible that it was being
         // interacted with. We need to reset the view's related property changes.
         if (mMoreButton.isVisible()) {
@@ -388,8 +379,7 @@ public class SuggestionsSection extends InnerNode {
      * check, as it's standing for content, but the status card is not.
      */
     public boolean hasCards() {
-        return hasSuggestions()
-                || (FeatureUtilities.isChromeHomeEnabled() && mPlaceholder.isVisible());
+        return hasSuggestions();
     }
 
     /**
@@ -408,12 +398,6 @@ public class SuggestionsSection extends InnerNode {
             suggestionIds[i] = mSuggestionsList.getSuggestionAt(i).mIdWithinCategory;
         }
         return suggestionIds;
-    }
-
-    private boolean updatePlaceholderVisibility() {
-        if (!FeatureUtilities.isChromeHomeEnabled()) return false;
-        mPlaceholder.setVisible(isLoading() && !hasSuggestions());
-        return mPlaceholder.isVisible();
     }
 
     /**
@@ -570,9 +554,6 @@ public class SuggestionsSection extends InnerNode {
 
         boolean isLoading = SnippetsBridge.isCategoryLoading(status);
         mMoreButton.updateState(isLoading ? ActionItem.State.LOADING : ActionItem.State.BUTTON);
-        if (updatePlaceholderVisibility()) {
-            mPlaceholder.trackVisibilityDuration();
-        }
     }
 
     /** Clears the suggestions and related data, resetting the state of the section. */

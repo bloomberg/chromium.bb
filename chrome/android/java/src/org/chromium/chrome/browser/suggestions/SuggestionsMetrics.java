@@ -133,13 +133,13 @@ public abstract class SuggestionsMetrics {
     }
 
     /**
-     * @return A {@link DurationTracker} to notify to report how long the placeholder is visible
+     * @return A {@link DurationTracker} to notify to report how long the spinner is visible
      * for.
      */
-    public static DurationTracker getPlaceholderVisibilityReporter() {
+    public static DurationTracker getSpinnerVisibilityReporter() {
         return new DurationTracker((duration) -> {
             RecordHistogram.recordTimesHistogram(
-                    "ContentSuggestions.FetchPendingPlaceholder.VisibleDuration", duration,
+                    "ContentSuggestions.FetchPendingSpinner.VisibleDuration", duration,
                     TimeUnit.MILLISECONDS);
         });
     }
