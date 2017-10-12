@@ -42,10 +42,10 @@ namespace views {
 namespace {
 
 // Background color of the footnote view.
-const SkColor kFootnoteBackgroundColor = SkColorSetRGB(245, 245, 245);
+constexpr SkColor kFootnoteBackgroundColor = SkColorSetRGB(250, 250, 250);
 
 // Color of the top border of the footnote.
-const SkColor kFootnoteBorderColor = SkColorSetRGB(229, 229, 229);
+constexpr SkColor kFootnoteBorderColor = SkColorSetRGB(235, 235, 235);
 
 // Get the |vertical| or horizontal amount that |available_bounds| overflows
 // |window_bounds|.

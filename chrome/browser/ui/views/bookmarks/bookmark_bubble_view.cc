@@ -134,6 +134,10 @@ base::string16 BookmarkBubbleView::GetWindowTitle() const {
                                        : IDS_BOOKMARK_BUBBLE_PAGE_BOOKMARK);
 }
 
+bool BookmarkBubbleView::ShouldShowCloseButton() const {
+  return true;
+}
+
 gfx::ImageSkia BookmarkBubbleView::GetWindowIcon() {
 #if defined(OS_WIN)
   if (is_showing_ios_promotion_) {
