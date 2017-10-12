@@ -387,5 +387,6 @@ TEST_F(NGInlineLayoutAlgorithmTest, VisualRect) {
   EXPECT_EQ(LayoutUnit(20), visual_rect.size.height);
 }
 
+#undef MAYBE_VerticalAlignBottomReplaced
 }  // namespace
 }  // namespace blink

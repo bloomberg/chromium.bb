@@ -246,4 +246,9 @@ TEST_F(VirtualTimeTest, MAYBE_DOMTimersSuspended) {
   EXPECT_EQ("1, 2", ExecuteJavaScript("run_order.join(', ')"));
 }
 
+#undef MAYBE_DOMTimersFireInExpectedOrder
+#undef MAYBE_SetInterval
+#undef MAYBE_AllowVirtualTimeToAdvance
+#undef MAYBE_VirtualTimeNotAllowedToAdvanceWhileResourcesLoading
+#undef MAYBE_DOMTimersSuspended
 }  // namespace blink

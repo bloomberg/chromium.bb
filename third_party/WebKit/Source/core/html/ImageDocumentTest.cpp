@@ -311,4 +311,5 @@ TEST_F(ImageDocumentViewportTest, HidingURLBarDoesntChangeImageLocation) {
   EXPECT_EQ(175, rect->y());
 }
 
+#undef MAYBE
 }  // namespace blink

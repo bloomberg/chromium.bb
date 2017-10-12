@@ -688,4 +688,5 @@ TEST_F(WebAssociatedURLLoaderTest, CrossOriginHeaderAllowResponseHeaders) {
   EXPECT_FALSE(actual_response_.HttpHeaderField(header_name_string).IsEmpty());
 }
 
+#undef MAYBE_UntrustedCheckHeaders
 }  // namespace blink

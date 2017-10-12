@@ -280,5 +280,6 @@ TEST_F(NGLineBreakerTest, BoundaryInFirstWord) {
   EXPECT_EQ("789", ToString(lines[1], node));
 }
 
+#undef MAYBE_OverflowAtomicInline
 }  // namespace
 }  // namespace blink

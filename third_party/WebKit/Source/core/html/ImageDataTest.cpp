@@ -507,5 +507,6 @@ TEST_F(ImageDataTest, ImageDataTooBigToAllocateDoesNotCrash) {
   EXPECT_EQ(image_data, nullptr);
 }
 
+#undef MAYBE_CreateImageDataTooBig
 }  // namspace
 }  // namespace blink
