@@ -70,6 +70,10 @@ struct PaintPropertyTreeBuilderFragmentContext {
     // reference a scroll offset transform, scroll nodes should be updated if
     // the transform tree changes.
     const ScrollPaintPropertyNode* scroll = nullptr;
+
+    // True if any fixed-position children within this context are fixed to the
+    // root of the FrameView (and hence above its scroll).
+    bool fixed_position_children_fixed_to_root = false;
   };
 
   ContainingBlockContext current;

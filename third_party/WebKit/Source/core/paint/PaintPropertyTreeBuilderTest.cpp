@@ -3205,6 +3205,40 @@ static FragmentData& FragmentAt(LayoutObject* obj, unsigned count) {
   return *fragment;
 }
 
+TEST_P(PaintPropertyTreeBuilderTest,
+       PaintOffsetUnderMulticolumnScrollFixedPos) {
+  SetBodyInnerHTML(
+      "<div id=fixed style='position: fixed; columns: 2'>"
+      "  <div style='width: 50px; height: 20px; background: lightblue'></div>"
+      "  <div style='width: 50px; height: 20px; background: lightgray'></div>"
+      "</div>"
+      "<div style='height: 2000px'></div>");
+  LayoutObject* fixed = GetLayoutObjectByElementId("fixed");
+  LayoutObject* multicol_container = fixed->SlowFirstChild();
+
+  ASSERT_TRUE(multicol_container->FirstFragment());
+  ASSERT_TRUE(multicol_container->FirstFragment()->NextFragment());
+  ASSERT_FALSE(
+      multicol_container->FirstFragment()->NextFragment()->NextFragment());
+  EXPECT_EQ(LayoutPoint(8, 8),
+            multicol_container->FirstFragment()->PaintOffset());
+  EXPECT_EQ(LayoutPoint(59, -12),
+            multicol_container->FirstFragment()->NextFragment()->PaintOffset());
+
+  GetDocument().View()->LayoutViewportScrollableArea()->ScrollBy(
+      ScrollOffset(0, 25), kUserScroll);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  ASSERT_TRUE(multicol_container->FirstFragment());
+  ASSERT_TRUE(multicol_container->FirstFragment()->NextFragment());
+  ASSERT_FALSE(
+      multicol_container->FirstFragment()->NextFragment()->NextFragment());
+  EXPECT_EQ(LayoutPoint(8, 8),
+            multicol_container->FirstFragment()->PaintOffset());
+  EXPECT_EQ(LayoutPoint(59, -12),
+            multicol_container->FirstFragment()->NextFragment()->PaintOffset());
+}
+
 TEST_P(PaintPropertyTreeBuilderTest, PaintOffsetsUnderMultiColumn) {
   SetBodyInnerHTML(
       "<style>"

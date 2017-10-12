@@ -160,6 +160,7 @@ void PaintPropertyTreeBuilder::UpdateProperties(
     context.absolute_position = context.current;
     full_context.container_for_absolute_position = nullptr;
     context.fixed_position = context.current;
+    context.fixed_position.fixed_position_children_fixed_to_root = true;
     return;
   } else {
     context.current.paint_offset_root = frame_view.GetLayoutView()->Layer();
@@ -234,6 +235,7 @@ void PaintPropertyTreeBuilder::UpdateProperties(
   context.fixed_position = context.current;
   context.fixed_position.transform = fixed_transform_node;
   context.fixed_position.scroll = fixed_scroll_node;
+  context.fixed_position.fixed_position_children_fixed_to_root = true;
 
   std::unique_ptr<PropertyTreeState> contents_state(new PropertyTreeState(
       context.current.transform, context.current.clip, context.current_effect));
@@ -1190,6 +1192,7 @@ void PaintPropertyTreeBuilder::UpdateOutOfFlowContext(
     }
   } else if (object.CanContainFixedPositionObjects()) {
     context.fixed_position = context.current;
+    context.fixed_position.fixed_position_children_fixed_to_root = false;
   } else if (paint_properties && paint_properties->CssClip()) {
     // CSS clip applies to all descendants, even if this object is not a
     // containing block ancestor of the descendant. It is okay for
@@ -1263,6 +1266,11 @@ void PaintPropertyTreeBuilder::UpdatePaintOffset(
       break;
     case EPosition::kFixed:
       context.current = context.fixed_position;
+      // Fixed-position elements that are fixed to the vieport have a transform
+      // above the scroll of the LayoutView. Child content is relative to that
+      // transform, and hence the fixed-position element.
+      if (context.fixed_position.fixed_position_children_fixed_to_root)
+        context.current.paint_offset_root = object.Layer();
       break;
     default:
       NOTREACHED();
