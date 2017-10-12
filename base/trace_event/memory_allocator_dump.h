@@ -73,16 +73,11 @@ class BASE_EXPORT MemoryAllocatorDump {
   static MemoryAllocatorDumpGuid GetDumpIdFromName(
       const std::string& absolute_name);
 
-  // MemoryAllocatorDump is owned by ProcessMemoryDump.
-  // TODO(primiano): remove this constructor, ProcessMemoryDump* is not used
-  // for anything other than extracting the MemoryDumpLevelOfDetail these days.
-  MemoryAllocatorDump(const std::string& absolute_name,
-                      ProcessMemoryDump*,
-                      const MemoryAllocatorDumpGuid&);
   MemoryAllocatorDump(const std::string& absolute_name,
                       MemoryDumpLevelOfDetail,
                       const MemoryAllocatorDumpGuid&);
-  MemoryAllocatorDump(const std::string& absolute_name, ProcessMemoryDump*);
+  MemoryAllocatorDump(const std::string& absolute_name,
+                      MemoryDumpLevelOfDetail);
   ~MemoryAllocatorDump();
 
   // Standard attribute |name|s for the AddScalar and AddString() methods.

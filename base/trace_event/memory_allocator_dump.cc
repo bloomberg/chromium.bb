@@ -48,25 +48,16 @@ MemoryAllocatorDump::MemoryAllocatorDump(
   DCHECK(absolute_name[0] != '/' && *absolute_name.rbegin() != '/');
 }
 
-MemoryAllocatorDump::MemoryAllocatorDump(const std::string& absolute_name,
-                                         ProcessMemoryDump* process_memory_dump,
-                                         const MemoryAllocatorDumpGuid& guid)
-    : MemoryAllocatorDump(absolute_name,
-                          process_memory_dump
-                              ? process_memory_dump->dump_args().level_of_detail
-                              : MemoryDumpLevelOfDetail::FIRST,
-                          guid) {}
-
 // If the caller didn't provide a guid, make one up by hashing the
 // absolute_name with the current PID.
 // Rationale: |absolute_name| is already supposed to be unique within a
 // process, the pid will make it unique among all processes.
-MemoryAllocatorDump::MemoryAllocatorDump(const std::string& absolute_name,
-                                         ProcessMemoryDump* process_memory_dump)
+MemoryAllocatorDump::MemoryAllocatorDump(
+    const std::string& absolute_name,
+    MemoryDumpLevelOfDetail level_of_detail)
     : MemoryAllocatorDump(absolute_name,
-                          process_memory_dump,
-                          GetDumpIdFromName(absolute_name)) {
-}
+                          level_of_detail,
+                          GetDumpIdFromName(absolute_name)) {}
 
 MemoryAllocatorDump::~MemoryAllocatorDump() {
 }
