@@ -12,10 +12,13 @@ import android.view.View;
 import android.widget.CompoundButton;
 
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.StrictModeContext;
 import org.chromium.base.SysUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
+import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.FeatureUtilities;
@@ -107,8 +110,27 @@ public class ChromeHomePromoDialog extends PromoDialog {
         ChromeActivity activity = (ChromeActivity) getOwnerActivity();
         Tab tab = activity.getActivityTab();
 
+        boolean showOptOutSnackbar = false;
+        if (!mSwitchStateShouldEnable
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_OPT_OUT_SNACKBAR)) {
+            try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+                showOptOutSnackbar =
+                        !ChromePreferenceManager.getInstance().getChromeHomeOptOutSnackbarShown();
+            }
+        }
+
+        Runnable finalizeCallback = null;
+        if (showOptOutSnackbar) {
+            finalizeCallback = new Runnable() {
+                @Override
+                public void run() {
+                    ChromeHomeSnackbarController.initialize(tab);
+                }
+            };
+        }
+
         // Detach the foreground tab and. It will be reattached when the activity is restarted.
-        tab.detachAndStartReparenting(null, null, null);
+        tab.detachAndStartReparenting(null, null, finalizeCallback);
 
         getOwnerActivity().recreate();
     }

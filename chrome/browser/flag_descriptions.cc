@@ -1594,6 +1594,11 @@ const char kChromeHomeDoodleName[] = "Chrome Home Doodle.";
 const char kChromeHomeDoodleDescription[] =
     "Enables showing the Doodle on the NTP for Chrome Home.";
 
+const char kChromeHomeOptOutSnackbarName[] = "Chrome Home Opt-out Snackbar";
+const char kChromeHomeOptOutSnackbarDescription[] =
+    "Show a snackbar prompting users to take a survey the first time they"
+    " opt-out of Chrome Home";
+
 const char kChromeHomePersonalizedOmniboxSuggestionsName[] =
     "Chrome Home Personalized Omnibox Suggestions";
 const char kChromeHomePersonalizedOmniboxSuggestionsDescription[] =
