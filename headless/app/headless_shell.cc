@@ -35,6 +35,7 @@
 #include "headless/public/headless_devtools_target.h"
 #include "headless/public/util/deterministic_http_protocol_handler.h"
 #include "net/base/filename_util.h"
+#include "net/base/host_port_pair.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
@@ -53,8 +54,8 @@ namespace headless {
 
 namespace {
 
-// Address where to listen to incoming DevTools connections.
-const char kDevToolsHttpServerAddress[] = "127.0.0.1";
+// By default listen to incoming DevTools connections on localhost.
+const char kUseLocalHostForDevToolsHttpServer[] = "localhost";
 // Default file name for screenshot. Can be overriden by "--screenshot" switch.
 const char kDefaultScreenshotFileName[] = "screenshot.png";
 // Default file name for pdf. Can be overriden by "--print-to-pdf" switch.
@@ -697,7 +698,7 @@ int HeadlessShellMain(int argc, const char** argv) {
   // Enable devtools if requested, either by specifying a port (and optional
   // address), or by specifying the fd of an already-open socket.
   if (command_line.HasSwitch(::switches::kRemoteDebuggingPort)) {
-    std::string address = kDevToolsHttpServerAddress;
+    std::string address = kUseLocalHostForDevToolsHttpServer;
     if (command_line.HasSwitch(switches::kRemoteDebuggingAddress)) {
       address =
           command_line.GetSwitchValueASCII(switches::kRemoteDebuggingAddress);
@@ -715,11 +716,8 @@ int HeadlessShellMain(int argc, const char** argv) {
       LOG(ERROR) << "Invalid devtools server port";
       return EXIT_FAILURE;
     }
-    net::IPAddress devtools_address;
-    bool result = devtools_address.AssignFromIPLiteral(address);
-    DCHECK(result);
-    const net::IPEndPoint endpoint(devtools_address,
-                                   base::checked_cast<uint16_t>(parsed_port));
+    const net::HostPortPair endpoint(address,
+                                     base::checked_cast<uint16_t>(parsed_port));
     builder.EnableDevToolsServer(endpoint);
   } else if (command_line.HasSwitch(switches::kRemoteDebuggingSocketFd)) {
     int parsed_fd;
