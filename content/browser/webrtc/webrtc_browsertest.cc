@@ -231,4 +231,10 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest, ApplyConstraints) {
   MakeTypicalPeerConnectionCall("testApplyConstraints();");
 }
 
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
+                       GetSettingsWhenRemoteDimensionsUnknown) {
+  MakeTypicalPeerConnectionCall(
+      "testGetSettingsWhenRemoteDimensionsUnknown();");
+}
+
 }  // namespace content

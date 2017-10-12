@@ -329,15 +329,17 @@ void MediaStreamVideoSource::SetMutedState(bool muted_state) {
 void MediaStreamVideoSource::UpdateTrackSettings(
     MediaStreamVideoTrack* track,
     const VideoTrackAdapterSettings& adapter_settings) {
+  // If the source does not provide a format, do not set any target dimensions
+  // or frame rate.
+  if (!GetCurrentFormat())
+    return;
+
   // Calculate resulting frame size if the source delivers frames
   // according to the current format. Note: Format may change later.
   gfx::Size desired_size;
-  VideoTrackAdapter::CalculateTargetSize(
-      false /* is_rotated */,
-      GetCurrentFormat()
-          ? GetCurrentFormat()->frame_size
-          : gfx::Size(adapter_settings.max_width, adapter_settings.max_height),
-      adapter_settings, &desired_size);
+  VideoTrackAdapter::CalculateTargetSize(false /* is_rotated */,
+                                         GetCurrentFormat()->frame_size,
+                                         adapter_settings, &desired_size);
   track->SetTargetSizeAndFrameRate(desired_size.width(), desired_size.height(),
                                    adapter_settings.max_frame_rate);
 }
