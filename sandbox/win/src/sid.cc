@@ -4,10 +4,13 @@
 
 #include "sandbox/win/src/sid.h"
 
+#include <memory>
+
 #include <sddl.h>
 
 #include "base/logging.h"
 #include "base/win/windows_version.h"
+#include "sandbox/win/src/win_utils.h"
 
 namespace sandbox {
 
@@ -115,12 +118,43 @@ Sid Sid::FromSddlString(const wchar_t* sddl_sid) {
   return Sid(converted_sid);
 }
 
+Sid Sid::FromSubAuthorities(PSID_IDENTIFIER_AUTHORITY identifier_authority,
+                            BYTE sub_authority_count,
+                            PDWORD sub_authorities) {
+  Sid sid;
+  if (!::InitializeSid(sid.sid_, identifier_authority, sub_authority_count))
+    return Sid();
+
+  for (DWORD index = 0; index < sub_authority_count; ++index) {
+    PDWORD sub_authority = GetSidSubAuthority(sid.sid_, index);
+    *sub_authority = sub_authorities[index];
+  }
+  return sid;
+}
+
+Sid Sid::AllRestrictedApplicationPackages() {
+  SID_IDENTIFIER_AUTHORITY package_authority = {SECURITY_APP_PACKAGE_AUTHORITY};
+  DWORD sub_authorities[] = {SECURITY_APP_PACKAGE_BASE_RID,
+                             SECURITY_BUILTIN_PACKAGE_ANY_RESTRICTED_PACKAGE};
+  return FromSubAuthorities(&package_authority, 2, sub_authorities);
+}
+
 PSID Sid::GetPSID() const {
   return const_cast<BYTE*>(sid_);
 }
 
 bool Sid::IsValid() const {
   return !!::IsValidSid(GetPSID());
+}
+
+// Converts the SID to an SDDL format string.
+bool Sid::ToSddlString(base::string16* sddl_string) const {
+  LPWSTR sid = nullptr;
+  if (!::ConvertSidToStringSid(GetPSID(), &sid))
+    return false;
+  std::unique_ptr<void, LocalFreeDeleter> sid_ptr(sid);
+  *sddl_string = sid;
+  return true;
 }
 
 }  // namespace sandbox
