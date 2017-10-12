@@ -198,15 +198,15 @@ ProcessMemoryDump& ProcessMemoryDump::operator=(ProcessMemoryDump&& other) =
 
 MemoryAllocatorDump* ProcessMemoryDump::CreateAllocatorDump(
     const std::string& absolute_name) {
-  return AddAllocatorDumpInternal(
-      std::make_unique<MemoryAllocatorDump>(absolute_name, this));
+  return AddAllocatorDumpInternal(std::make_unique<MemoryAllocatorDump>(
+      absolute_name, dump_args_.level_of_detail));
 }
 
 MemoryAllocatorDump* ProcessMemoryDump::CreateAllocatorDump(
     const std::string& absolute_name,
     const MemoryAllocatorDumpGuid& guid) {
-  return AddAllocatorDumpInternal(
-      std::make_unique<MemoryAllocatorDump>(absolute_name, this, guid));
+  return AddAllocatorDumpInternal(std::make_unique<MemoryAllocatorDump>(
+      absolute_name, dump_args_.level_of_detail, guid));
 }
 
 MemoryAllocatorDump* ProcessMemoryDump::AddAllocatorDumpInternal(
@@ -469,7 +469,8 @@ void ProcessMemoryDump::AddSuballocation(const MemoryAllocatorDumpGuid& source,
 MemoryAllocatorDump* ProcessMemoryDump::GetBlackHoleMad() {
   DCHECK(is_black_hole_non_fatal_for_testing_);
   if (!black_hole_mad_)
-    black_hole_mad_.reset(new MemoryAllocatorDump("discarded", this));
+    black_hole_mad_.reset(
+        new MemoryAllocatorDump("discarded", dump_args_.level_of_detail));
   return black_hole_mad_.get();
 }
 
