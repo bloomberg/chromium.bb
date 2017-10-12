@@ -162,23 +162,25 @@ static INLINE void av1_make_inter_predictor(
 
 #if CONFIG_WARPED_MOTION || CONFIG_GLOBAL_MOTION
   WarpedMotionParams final_warp_params;
-  const int do_warp = allow_warp(
-      mi, warp_types,
+  const int do_warp =
+      (w >= 8 && h >= 8 &&
+       allow_warp(mi, warp_types,
 #if CONFIG_GLOBAL_MOTION
 #if CONFIG_COMPOUND_SINGLEREF
-      // TODO(zoeliu): To further check the single
-      // ref comp mode to work together with
-      //               global motion.
-      has_second_ref(&mi->mbmi) ? &xd->global_motion[mi->mbmi.ref_frame[ref]]
-                                : &xd->global_motion[mi->mbmi.ref_frame[0]],
+                  // TODO(zoeliu): To further check the single
+                  // ref comp mode to work together with
+                  //               global motion.
+                  has_second_ref(&mi->mbmi)
+                      ? &xd->global_motion[mi->mbmi.ref_frame[ref]]
+                      : &xd->global_motion[mi->mbmi.ref_frame[0]],
 #else   // !(CONFIG_COMPOUND_SINGLEREF)
-      &xd->global_motion[mi->mbmi.ref_frame[ref]],
+                  &xd->global_motion[mi->mbmi.ref_frame[ref]],
 #endif  // CONFIG_COMPOUND_SINGLEREF
 #endif  // CONFIG_GLOBAL_MOTION
 #if CONFIG_MOTION_VAR
-      build_for_obmc,
+                  build_for_obmc,
 #endif  // CONFIG_MOTION_VAR
-      &final_warp_params);
+                  &final_warp_params));
   if (do_warp
 #if CONFIG_AMVR
       && xd->cur_frame_mv_precision_level == 0
