@@ -4710,30 +4710,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         You have no recently captured WebRTC logs.
       </message>
 
-      <!-- Custom dictionary page -->
-      <message name="IDS_LANGUAGE_DICTIONARY_OVERLAY_TITLE" desc="Title for the chrome://settings/editDictionary page, where a user can add and remove words in the dictionary used for spelling">
-        Custom spelling dictionary
-      </message>
-      <message name="IDS_LANGUAGE_DICTIONARY_OVERLAY_ADD_WORD_LABEL" desc="Label for adding a new word to the dictionary on the chrome://settings/editDictionary page">
-        Add a new word
-      </message>
-      <message name="IDS_LANGUAGE_DICTIONARY_OVERLAY_SEARCH_PLACEHOLDER" desc="Text placeholder for an empty search field on the chrome://settings/editDictionary page">
-        Search dictionary
-      </message>
-      <message name="IDS_LANGUAGE_DICTIONARY_OVERLAY_NO_MATCHES" desc="Text description of a search that has no results on the chrome://settings/editDictionary page">
-        No matches were found.
-      </message>
-
       <!-- Search -->
       <message name="IDS_SEARCH_PREF_EXPLANATION" desc="Description of the search engine preference">
         Set which search engine is used when searching from the
         <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>omnibox<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>.
-      </message>
-      <message name="IDS_HOTWORD_AUDIO_HISTORY_ENABLED" desc="Text to display when the user has audio history enabled.">
-        Voice &amp; Audio Activity is enabled for <ph name="USER_EMAIL">$1<ex>joe@gmail.com</ex></ph>.
-      </message>
-      <message name="IDS_HOTWORD_CONFIRM_BUBBLE_TITLE" desc="The title text for the bubble to enable the hotword voice search trigger.">
-        Ok Google
       </message>
       <message name="IDS_HOTWORD_GENERIC_ERROR_MESSAGE" desc="The default error message text when no additional details are known.">
         This feature is temporarily unavailable. <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>Help<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
@@ -5383,12 +5363,6 @@ the Bookmarks menu.">
       <!-- Android uses custom UI for Bookmark importing -->
       <if expr="not is_android">
         <!-- Import Settings Dialog -->
-        <message name="IDS_IMPORT_SETTINGS_TITLE" desc="Dialog title for import dialog">
-          Import bookmarks and settings
-        </message>
-        <message name="IDS_IMPORT_FROM_LABEL" desc="Label before profile select combo box">
-          From:
-        </message>
         <if expr="is_win">
           <message name="IDS_IMPORT_FROM_IE" desc="browser combo box: Microsoft Internet Explorer">
             Microsoft Internet Explorer
@@ -5411,41 +5385,8 @@ the Bookmarks menu.">
         <message name="IDS_IMPORT_FROM_BOOKMARKS_HTML_FILE" desc="browser combo box: Bookmarks HTML File">
           Bookmarks HTML File
         </message>
-        <message name="IDS_IMPORT_ITEMS_LABEL" desc="Label before item select checkboxes">
-          Select items to import:
-        </message>
-        <message name="IDS_IMPORT_HISTORY_CHKBOX" desc="Checkbox for importing browsing history">
-          Browsing history
-        </message>
-        <message name="IDS_IMPORT_FAVORITES_CHKBOX" desc="Checkbox for importing favorites">
-          Favorites/Bookmarks
-        </message>
-        <message name="IDS_IMPORT_PASSWORDS_CHKBOX" desc="Checkbox for importing saved passwords">
-          Saved passwords
-        </message>
-        <message name="IDS_IMPORT_SEARCH_ENGINES_CHKBOX" desc="Checkbox for importing search engines">
-          Search engines
-        </message>
-        <message name="IDS_IMPORT_AUTOFILL_FORM_DATA_CHKBOX" desc="Checkbox for importing form data for autofill">
-          Autofill form data
-        </message>
-        <message name="IDS_IMPORT_LOADING_PROFILES" desc="Status text to notify the user that profiles are being loaded">
-          Loading...
-        </message>
-        <message name="IDS_IMPORT_SUCCEEDED" desc="Status text to notify the user that the import succeeded">
-          Success!
-        </message>
 
-        <message name="IDS_IMPORT_COMMIT" desc="Text for OK button on dialog">
-          Import
-        </message>
-        <message name="IDS_IMPORT_CHOOSE_FILE" desc="Text for the Choose File on dialog">
-          Choose File
-        </message>
 
-        <message name="IDS_IMPORT_NO_PROFILE_FOUND" desc="Message displayed when we do not find any supported browser to import from.">
-          No supported browser found
-        </message>
 
         <!-- Import progress popup -->
         <if expr="is_macosx">
@@ -5641,9 +5582,6 @@ the Bookmarks menu.">
       <message name="IDS_CLEAR_BROWSING_DATA_TITLE" desc="Dialog title">
         Clear browsing data
       </message>
-      <message name="IDS_FLASH_STORAGE_SETTINGS" desc="Link for opening Adobe Flash Player storage settings">
-        Adobe Flash Player storage settings...
-      </message>
       <message name="IDS_FLASH_PERMISSION_FRAGMENT" desc="Permission asked in the permission bubble when a URL wants to use Flash Plugins on the page. Preceded by the prompt 'This site would like to:'">
         Run Flash
       </message>
@@ -5691,30 +5629,6 @@ I don't think this site should be blocked!
       <message name="IDS_COOKIES_BLOCK_3RDPARTY_CHKBOX" desc="A checkbox in the Content Settings dialog for blocking all 3rd party cookies.">
         Block third-party cookies and site data
       </message>
-      <message name="IDS_MEDIA_STREAM_MIC_TAB_LABEL" desc="Label for the microphone tab on Content Settings dialog">
-        Microphone
-      </message>
-      <message name="IDS_MEDIA_STREAM_CAMERA_TAB_LABEL" desc="Label for the camera tab on Content Settings dialog">
-        Camera
-      </message>
-      <message name="IDS_MEDIA_STREAM_MIC_HEADER" desc="Header for microphone exception management page on Content Settings dialog">
-        Microphone exceptions
-      </message>
-      <message name="IDS_MEDIA_STREAM_CAMERA_HEADER" desc="Header for camera exception management page on Content Settings dialog">
-        Camera exceptions
-      </message>
-      <message name="IDS_MEDIA_STREAM_BLOCK_AUDIO_ONLY_RADIO" desc="A radio button in Content Settings dialog to deny all sites to access audio capture device.">
-        Do not allow sites to access your microphone
-      </message>
-      <message name="IDS_MEDIA_STREAM_ASK_AUDIO_ONLY_RADIO" desc="A radio button in Content Settings dialog to allow site to query the permision to access audio capture devices.">
-        Ask when a site requires access to your microphone (recommended)
-      </message>
-      <message name="IDS_MEDIA_STREAM_BLOCK_VIDEO_ONLY_RADIO" desc="A radio button in Content Settings dialog to deny all sites to access video capture device.">
-        Do not allow sites to access your camera
-      </message>
-      <message name="IDS_MEDIA_STREAM_ASK_VIDEO_ONLY_RADIO" desc="A radio button in Content Settings dialog to allow site to query the permision to access video capture devices.">
-        Ask when a site requires access to your camera (recommended)
-      </message>
       <message name="IDS_MEDIA_SELECTED_MIC_LABEL" desc="The label of the 'microphone device' select menu">
         Microphone:
       </message>
@@ -5723,33 +5637,6 @@ I don't think this site should be blocked!
       </message>
       <message name="IDS_MEDIA_MENU_NO_DEVICE_TITLE" desc="The title of the media select menu if there is no microphone or camera available on the machine">
         None available
-      </message>
-      <message name="IDS_MEDIA_PEPPER_FLASH_MIC_DEFAULT_DIVERGED_LABEL" desc="The label in Content Settings dialog informing that Pepper Flash uses different default permission for microphone than the default media permission.">
-        Adobe Flash Player microphone settings are different.
-      </message>
-      <message name="IDS_MEDIA_PEPPER_FLASH_CAMERA_DEFAULT_DIVERGED_LABEL" desc="The label in Content Settings dialog informing that Pepper Flash uses different default permission for camera than the default media permission.">
-        Adobe Flash Player camera settings are different.
-      </message>
-      <message name="IDS_MEDIA_PEPPER_FLASH_MIC_EXCEPTIONS_DIVERGED_LABEL" desc="The label in the media device exception management page informing that Pepper Flash uses different exceptions for microphone than the ones listed on the page.">
-        Adobe Flash Player microphone exceptions are different.
-      </message>
-      <message name="IDS_MEDIA_PEPPER_FLASH_CAMERA_EXCEPTIONS_DIVERGED_LABEL" desc="The label in the media device exception management page informing that Pepper Flash uses different exceptions for camera than the ones listed on the page.">
-        Adobe Flash Player camera exceptions are different.
-      </message>
-      <message name="IDS_MEDIA_PEPPER_FLASH_CHANGE_LINK" desc="The link to change Pepper Flash camera and microphone settings.">
-        Change
-      </message>
-      <message name="IDS_IMAGES_TAB_LABEL" desc="Label for Images tab on Content Settings dialog">
-        Images
-      </message>
-      <message name="IDS_IMAGES_HEADER" desc="Header for image exception management page on Content Settings dialog">
-        Image exceptions
-      </message>
-      <message name="IDS_IMAGES_LOAD_RADIO" desc="A radio button in the Content Settings dialog for allowing all images to be loaded.">
-        Show all images (recommended)
-      </message>
-      <message name="IDS_IMAGES_NOLOAD_RADIO" desc="A radio button in the Content Settings dialog for preventing loading any image.">
-        Do not show any images
       </message>
       <message name="IDS_POPUP_TAB_LABEL" desc="Label for Pop-up Windows tab on Content Settings dialog">
         Pop-ups
@@ -5771,142 +5658,15 @@ I don't think this site should be blocked!
           {NUM_POPUPS,plural,=1{A pop-up is blocked} other{# pop-ups are blocked}}
         </message>
       </if>
-      <message name="IDS_FLASH_TAB_LABEL" desc="Label for Flash tab on Content Settings dialog">
-        Flash
-      </message>
-      <message name="IDS_FLASH_HEADER" desc="Header for plugin exception management page on Content Settings dialog">
-        Flash exceptions
-      </message>
-      <message name="IDS_FLASH_ALLOW_RADIO" desc="A radio button in the Content Settings dialog for allowing plugins use on any site.">
-        Allow sites to run Flash
-      </message>
-      <message name="IDS_FLASH_DETECT_RECOMMENDED_RADIO" desc="A radio button in the Content Settings dialog for detecting and running important plugin content only. This is the behavior Chrome recommends.">
-        Detect and run important Flash content (recommended)
-      </message>
-      <message name="IDS_FLASH_ASK_RECOMMENDED_RADIO" desc="A radio button in the Content Settings dialog for asking first before running Flash. This is the behavior Chrome recommends.">
-        Ask first before allowing sites to run Flash (recommended)
-      </message>
-      <message name="IDS_FLASH_BLOCK_RADIO" desc="A radio button in the Content Settings dialog for gating plugins on a context menu activation.">
-        Block sites from running Flash
-      </message>
-      <message name="IDS_JAVASCRIPT_TAB_LABEL" desc="Label for JavaScript tab on Content Settings dialog">
-        JavaScript
-      </message>
-      <message name="IDS_JAVASCRIPT_HEADER" desc="Label for JavaScript exception management page on Content Settings dialog">
-        JavaScript exceptions
-      </message>
-      <message name="IDS_JS_ALLOW_RADIO" desc="A radio button in the Content Settings dialog for allowing JavaScript use on any site.">
-        Allow all sites to run JavaScript (recommended)
-      </message>
-      <message name="IDS_JS_DONOTALLOW_RADIO" desc="A radio button in the Content Settings dialog for preventing JavaScript use on any site.">
-        Do not allow any site to run JavaScript
-      </message>
       <message name="IDS_PDF_TAB_LABEL" desc="Label for the pdf plugin tab on Content Settings dialog">
         PDF Documents
       </message>
       <message name="IDS_PDF_ENABLE_CHECKBOX" desc="A checkbox in the Content Settings dialog for forcing an external PDF viewer app in place of the internal PDF plugin.">
         Open PDF files in the default PDF viewer application.
       </message>
-      <message name="IDS_HANDLERS_TAB_LABEL" desc="Label for Handlers tab on Content Settings dialog">
-        Handlers
-      </message>
-      <message name="IDS_HANDLERS_ALLOW_RADIO" desc="A radio button in the Content Settings dialog for allowing sites to register themselves as handlers for protocols.">
-        Allow sites to ask to become default handlers for protocols (recommended)
-      </message>
-      <message name="IDS_HANDLERS_DONOTALLOW_RADIO" desc="A radio button in the Content Settings dialog for preventing sites from registering themselves as handlers for protocols.">
-        Do not allow any site to handle protocols
-      </message>
     <message name="IDS_HANDLERS_BUBBLE_MANAGE_LINK" desc="Link on the register protocol handler bubble that opens up the Content Settings management dialog.">
       Manage handler settings...
     </message>
-    <message name="IDS_HANDLERS_TYPE_COLUMN_HEADER" desc="Header on the settings page for the column showing handler protocols.">
-        Type
-    </message>
-    <message name="IDS_HANDLERS_SITE_COLUMN_HEADER" desc="Header on the settings page for the column showing handler sites.">
-        Site
-    </message>
-    <message name="IDS_HANDLERS_REMOVE_HANDLER_LINK" desc="Text on the link that removes a registered protocol handler from a user's settings.">
-        remove this site
-    </message>
-    <message name="IDS_HANDLERS_NONE_HANDLER" desc="Text in the dropdown for handlers for a given protocol that indicates that the protocol shouldn't be handled.">
-        (none)
-    </message>
-    <message name="IDS_HANDLERS_ACTIVE_HEADING" desc="Header for the section of the handlers settings page that lists handlers that are active, that is, can be used to handle links.">
-        Active protocol handlers
-    </message>
-    <message name="IDS_HANDLERS_IGNORED_HEADING" desc="Header for the section of the handlers settings page that lists handlers that are ignored.">
-        Ignored protocol handlers
-    </message>
-
-    <message name="IDS_HANDLER_OPTIONS_WINDOW_TITLE" desc="The title of the window that lets a user change what handlers they have registered for various protocols / mimetypes.">
-      Protocol handlers
-    </message>
-      <message name="IDS_GEOLOCATION_TAB_LABEL" desc="Label for Geolocation tab on Content Settings dialog" meaning="Geolocation">
-        Location
-      </message>
-      <message name="IDS_GEOLOCATION_HEADER" desc="Label for Geolocation exception management page on Content Settings dialog">
-        Geolocation exceptions
-      </message>
-      <message name="IDS_GEOLOCATION_ALLOW_RADIO" desc="A radio button in the Content Settings dialog for allowing all sites access to geolocation data.">
-        Allow all sites to track your physical location
-      </message>
-      <message name="IDS_GEOLOCATION_ASK_RADIO" desc="A radio button in the Content Settings dialog for asking before allowing sites access to gelocation data.">
-        Ask when a site tries to track your physical location (recommended)
-      </message>
-      <message name="IDS_GEOLOCATION_BLOCK_RADIO" desc="A radio button in the Content Settings dialog for blocking sites from accessing geolocation data.">
-        Do not allow any site to track your physical location
-      </message>
-      <message name="IDS_GEOLOCATION_GOOGLE_ACCESS_ENABLE_CHKBOX" desc="The label of the 'Allow Google services to access your location' checkbox">
-        Allow Google services to access your location
-      </message>
-      <message name="IDS_GEOLOCATION_SET_BY_HOVER" desc="Hover text for URL in a list of exceptions, preceding the name of the granting hosted app.">
-        Set by app:
-      </message>
-      <message name="IDS_NOTIFICATIONS_TAB_LABEL" desc="Label for Notifications tab on Content Settings dialog">
-        Notifications
-      </message>
-      <message name="IDS_NOTIFICATIONS_HEADER" desc="Label for Notifications exception management page on Content Settings dialog">
-        Notifications exceptions
-      </message>
-      <message name="IDS_NOTIFICATIONS_ALLOW_RADIO" desc="A radio button in Content Settings dialog to allow all sites to show notifications.">
-        Allow all sites to show notifications
-      </message>
-      <message name="IDS_NOTIFICATIONS_BLOCK_RADIO" desc="A radio button in Content Settings dialog to deny all sites to show notifications.">
-        Do not allow any site to show notifications
-      </message>
-      <message name="IDS_NOTIFICATIONS_ASK_RADIO" desc="A radio button in Content Settings dialog to configure notifications per-site.">
-        Ask when a site wants to show notifications (recommended)
-      </message>
-      <message name="IDS_EXCEPTIONS_PATTERN_HEADER" desc="A column header for the pattern column of the cookie/image/javascript/plugins exceptions dialog">
-        Hostname pattern
-      </message>
-      <message name="IDS_EXCEPTIONS_USB_DEVICE_HEADER" desc="A column headers for the exceptions dialog indicating the name of a device the page has access to (e.g. 'Nexus 5')">
-        Device
-      </message>
-      <message name="IDS_EXCEPTIONS_ZOOM_HEADER" desc="A column header for the exceptions dialog indicating the zoom level of pages (e.g. 110% magnification)">
-        Zoom
-      </message>
-      <message name="IDS_EXCEPTIONS_ALLOW_BUTTON" desc="A label to display in the exception page's action column when a site's content setting is allowed for a given domain">
-        Allow
-      </message>
-      <message name="IDS_EXCEPTIONS_BLOCK_BUTTON" desc="A label to display in the exception page's action column when a site's content setting is blocked for a given domain.">
-        Block
-      </message>
-      <message name="IDS_EXCEPTIONS_ASK_BUTTON" desc="A label to display in the exception page's action column when a site's content setting is set to prompt for a given domain.">
-        Ask
-      </message>
-      <message name="IDS_EXCEPTIONS_SESSION_ONLY_BUTTON" desc="A label to display in the exception page's action column when a site's content setting is allow but only for the duration of the session for a given domain.">
-        Clear on exit
-      </message>
-      <message name="IDS_EXCEPTIONS_DETECT_IMPORTANT_CONTENT_BUTTON" desc="A label to display in the exception page's action column when only important content is allowed.">
-        Detect content
-      </message>
-      <message name="IDS_EXCEPTIONS_OTR_LABEL" desc="A label informing the user that the table below the label shows incognito-only exceptions">
-        Exceptions below only apply to the current incognito session.
-      </message>
-      <message name="IDS_EXCEPTIONS_GEOLOCATION_EMBEDDED_ON_HOST" desc="Template text for a child row in the Geolocation Exceptions page view. Controls the permission setting for the parent page when embedded on the specified site.">
-        embedded on <ph name="URL">$1<ex>www.google.com</ex></ph>
-      </message>
       <message name="IDS_PROTECTED_CONTENT_TAB_LABEL" desc="Label for the Protected Content tab on the Content Settings dialog.">
         Protected content
       </message>
@@ -5938,13 +5698,6 @@ I don't think this site should be blocked!
       </message>
       <message name="IDS_PPAPI_BROKER_ASK_RADIO" desc="A radio button in Content Settings dialog to allow site to query the permision to access the PPAPI broker.">
         Ask when a site wants to use a plugin to access your computer (recommended)
-      </message>
-
-      <message name="IDS_EXCEPTIONS_MANAGE" desc="The label on the button that launches the exceptions management page for a given content type">
-        Manage exceptions...
-      </message>
-      <message name="IDS_HANDLERS_MANAGE" desc="The label on the button that launches the exceptions management page for a given content type">
-        Manage handlers...
       </message>
 
       <message name="IDS_USB_DEVICES_HEADER_AND_TAB_LABEL" desc="Label for USB devices tab and a header on the Content Settings dialog (a page may be granted permission to connect to individual USB devices).">
@@ -9299,18 +9052,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
       </message>
 
       <!-- Web MIDI messages -->
-      <message name="IDS_MIDI_SYSEX_TAB_LABEL" desc="Label for MIDI system exclusive message on Content Settings dialog">
-        MIDI devices full control
-      </message>
-      <message name="IDS_MIDI_SYSEX_ALLOW_RADIO" desc="A radio button in Content Settings dialog to allow a site to access MIDI devices with system exclusive messages.">
-        Allow all sites to use system exclusive messages to access MIDI devices
-      </message>
-      <message name="IDS_MIDI_SYSEX_BLOCK_RADIO" desc="A radio button in Content Settings dialog to deny a site to access MIDI devices with system exclusive messages.">
-        Do not allow any sites to use system exclusive messages to access MIDI devices
-      </message>
-      <message name="IDS_MIDI_SYSEX_ASK_RADIO" desc="A radio button in Content Settings dialog to allow a site to query the permision to access MIDI devices with system exclusive messages.">
-        Ask me when a site wants to use system exclusive messages to access MIDI devices (recommended)
-      </message>
       <message name="IDS_MIDI_SYSEX_INFOBAR_QUESTION" desc="Question asked on the info bar whenever URL wants to access MIDI devices with system exclusive messages.">
         <ph name="URL">
           $1<ex>www.google.com</ex>
@@ -9427,9 +9168,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
       </message>
       <message name="IDS_MANAGE_PASSWORDS_TITLE" desc="The title text that is used in the manage passwords bubble when a password is autofilled or after a user has stored a password.">
         Saved passwords for this site:
-      </message>
-      <message name="IDS_MANAGE_PASSWORDS_REMOTE_TEXT" desc="The text used to tell inform users of how to manage their passwords from a website.">
-        Access your passwords from any device at <ph name="LINK_TEXT">$1<ex>passwords.google.com</ex></ph>
       </message>
 
       <message name="IDS_MANAGE_PASSWORDS_NO_PASSWORDS" desc="The text that is used in the manage passwords bubble when all passwords have been deleted.">
@@ -9802,17 +9540,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
         <message name="IDS_LEGACY_SUPERVISED_USER_LEARN_MORE_TITLE" desc="Title for the 'Learn more' dialog for the supervised user feature.">
           What is a supervised user?
         </message>
-        <message name="IDS_LEGACY_SUPERVISED_USER_LEARN_MORE_TEXT" desc="Informative text describing the 'supervised user' feature in detail, shown when the 'Learn more' link is clicked in the 'Create User' dialog. The HTML entities at the starts of the lines are a non-breaking space, a bullet, and another non-breaking space.">
-          A supervised user can explore the web with your guidance. As the manager of a supervised user in Chrome, you can
-
-&#160;&#8226;&#160;allow or prohibit certain websites,
-&#160;&#8226;&#160;review websites the supervised user has visited, and
-&#160;&#8226;&#160;manage other settings.
-
-Creating a supervised user does not create a Google Account, and their bookmarks, browsing history, and other preferences will not follow them to other devices with Chrome Sync.
-
-After you create a new supervised user, you can manage their settings at any time, from any device, at <ph name="DISPLAY_LINK">$1</ph>. <ph name="BEGIN_LINK">&lt;a target="_blank" href="https://support.google.com/chrome/?p=ui_supervised_users&amp;hl=[GRITLANGCODE]"&gt;</ph>Learn more about supervised users<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
-        </message>
         <message name="IDS_SUPERVISED_USER_LEARN_MORE_TEXT" desc="Informative text describing the 'supervised user' feature in detail, shown when the 'Learn more' link is clicked in the 'Create User' page of the user manager. The HTML entities at the starts of the lines are a non-breaking space, a bullet, and another non-breaking space.">
           A supervised user can explore the web with your guidance. As the manager of a supervised user in Chrome, you can:
 
@@ -9829,11 +9556,6 @@ For more information, visit our <ph name="BEGIN_LINK">&lt;a target="_blank" href
         </message>
         <message name="IDS_LEGACY_SUPERVISED_USER_CREATED_TITLE" desc="Title for the confirmation dialog that appears after a supervised user has been created.">
           <ph name="NEW_PROFILE_NAME">$1<ex>New User</ex></ph> is now a supervised user
-        </message>
-        <message name="IDS_LEGACY_SUPERVISED_USER_CREATED_TEXT" desc="Informative text for the confirmation dialog that appears after a supervised user has been created.">
-          A supervised user named <ph name="NEW_PROFILE_NAME">$1<ex>New User</ex></ph> has been created. To set which websites this supervised user can view, you can configure restrictions and settings by visiting <ph name="BEGIN_LINK">&lt;a target="_blank" href="$3"&gt;</ph><ph name="DISPLAY_LINK">$4</ph><ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>. If you do not change the default settings, <ph name="NEW_PROFILE_NAME">$1<ex>New User</ex></ph> can browse all sites on the web.
-
-Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex></ph> for these and further instructions.
         </message>
         <message name="IDS_LEGACY_SUPERVISED_USER_CREATED_DONE_BUTTON" desc="Text for the button that closes the dialog without making any additional changes, on the supervised user creation confirmation dialog.">
           OK, got it
@@ -9861,9 +9583,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
         <message name="IDS_LEGACY_SUPERVISED_USER_ALREADY_ON_THIS_DEVICE" desc="Text shown in the list of supervised users beside the name of a supervised user that already exists on the current device.">
           (already on this device)
         </message>
-        <message name="IDS_LEGACY_SUPERVISED_USER_NO_EXISTING_ERROR" desc="Message shown to the custodian when they open the 'supervised user import' overlay but they have no existing supervised users to import.">
-          Oops! Looks like you have no existing supervised users to import. Please create one or more from another device then you can import them here.
-        </message>
         <message name="IDS_LEGACY_SUPERVISED_USER_IMPORT_LOCAL_ERROR" desc="Message shown when a local error (for example, a disk error) occurs during supervised user import.">
           The supervised user couldn't be imported. Please check your hard drive space and permissions and try again.
         </message>
@@ -9872,15 +9591,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
         </message>
         <message name="IDS_LEGACY_SUPERVISED_USER_IMPORT_SIGN_IN_ERROR" desc="Message shown when a sign-in error occurs during supervised user import.">
           Looks like there's a problem with your credentials. Please make sure you're signed in properly and try again.
-        </message>
-        <message name="IDS_LEGACY_SUPERVISED_USER_SELECT_AVATAR_TITLE" desc="Title for the dialog used to select an avatar for a supervised user being imported. The dialog is shown only when the supervised user being imported has no Chrome synced avatar.">
-          Select an avatar for this supervised user
-        </message>
-        <message name="IDS_LEGACY_SUPERVISED_USER_SELECT_AVATAR_TEXT" desc="Text that instructs the user to choose an avatar for the supervised user being imported.">
-          Choose an avatar for this supervised user.
-        </message>
-        <message name="IDS_LEGACY_SUPERVISED_USER_SELECT_AVATAR_OK" desc="Text on the button to confirm the avatar selection for the supervised user being imported.">
-          Ok, import
         </message>
       </if>
 
@@ -10504,9 +10214,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
         <message name="IDS_LOCAL_DISCOVERY_CLOUD_DEVICES_LOGIN" desc="Text on login button for local discovery page">
           sign in
         </message>
-        <message name="IDS_LOCAL_DISCOVERY_DEVICES_PAGE_BUTTON" desc="Text on button to take user to devices page">
-          Manage
-        </message>
         <message name="IDS_LOCAL_DISCOVERY_AVAILABLE_DEVICES" desc="Title for 'available devices' section in devices page">
           New devices
         </message>
@@ -10518,9 +10225,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
         </message>
         <message name="IDS_LOCAL_DISCOVERY_CONNECTOR_SECTION" desc="In local discovery page: Title of cloud print connector section.">
           Classic printers
-        </message>
-        <message name="IDS_LOCAL_DISCOVERY_NOTIFICATIONS_ENABLE_CHECKBOX_LABEL" desc="Label for notificatiosn-enable checkbox">
-          Show notifications when new printers are detected on the network
         </message>
         <message name="IDS_LOCAL_DISCOVERY_NOTIFICATIONS_DISABLE_BUTTON_LABEL" desc="Label for button disabling local device notifications">
           Don't show this again
