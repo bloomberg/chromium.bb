@@ -382,15 +382,17 @@ public class ChromeTabbedActivity
 
     @Override
     protected @LaunchIntentDispatcher.Action int maybeDispatchLaunchIntent(Intent intent) {
-        if (getClass().equals(ChromeTabbedActivity.class)) {
+        if (getClass().equals(ChromeTabbedActivity.class)
+                && Intent.ACTION_MAIN.equals(intent.getAction())) {
             // Since Chrome can be launched by ChromeTabbedActivity in addition to
             // ChromeLauncherActivity, we need to install the handler here too.
             PureJavaExceptionHandler.installHandler();
 
-            // ChromeTabbedActivity can be started via an explicit intent from inside of Chrome,
-            // via an implicit MAIN intent, or via a MAIN/LAUNCHER intent. In either case call
-            // dispatchToTabbedActivity(), which will either do nothing, or will start a different
-            // multiwindow-related TabbedActivity.
+            // Call dispatchToTabbedActivity() for MAIN intents to activate proper multi-window
+            // TabbedActivity (i.e. if CTA2 is currently running and Chrome is started, CTA2
+            // should be brought to front). Don't call dispatchToTabbedActivity() for non-MAIN
+            // intents to avoid breaking cases where CTA is started explicitly (e.g. to handle
+            // 'Move to other window' command from CTA2).
             return LaunchIntentDispatcher.dispatchToTabbedActivity(this, intent);
         }
         return super.maybeDispatchLaunchIntent(intent);
