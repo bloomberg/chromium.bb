@@ -356,7 +356,10 @@ bool PositionTemplate<Strategy>::IsValidFor(const Document& document) const {
     return true;
   if (GetDocument() != document)
     return false;
-  return IsConnected();
+  if (!IsConnected())
+    return false;
+  return !IsOffsetInAnchor() ||
+         OffsetInContainerNode() <= LastOffsetInNode(*AnchorNode());
 }
 
 int ComparePositions(const PositionInFlatTree& position_a,

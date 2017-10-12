@@ -62,6 +62,25 @@ spellcheck_test(
           '<div contenteditable>#zz#. z</div>',
           '2 Canceled spellcheck request should not remove existing marker')
     });
+
+// Must be at least 1024 characters to force spellchecker to compute checking
+// range with TextIterator.
+const longText = 'bla. '.repeat(255) + 'bla.';
+spellcheck_test(
+  `<div contenteditable>${longText}|</div>`,
+  document => {
+    document.execCommand('insertText', false, 'zz..');
+
+    // Invalidate the ending selection of InsertText command in the undo stack.
+    const textNode = document.getSelection().anchorNode;
+    textNode.deleteData(textNode.length - 1, 1);
+
+    // Clear selection, so that if spellchecker can only use the ending
+    // selection of InsertText command to compute checking range.
+    document.getSelection().removeAllRanges();
+  },
+  `<div contenteditable>${longText}zz.</div>`,
+  '3 No spellcheck due to invalid ending selection in the undo stack');
 </script>
 </body>
 </html>
