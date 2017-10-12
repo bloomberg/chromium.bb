@@ -130,6 +130,10 @@ struct rdp_peers_item {
 	struct wl_list link;
 };
 
+struct rdp_head {
+	struct weston_head base;
+};
+
 struct rdp_output {
 	struct weston_output base;
 	struct wl_event_source *finish_frame_timer;
@@ -151,6 +155,12 @@ struct rdp_peer_context {
 	struct rdp_peers_item item;
 };
 typedef struct rdp_peer_context RdpPeerContext;
+
+static inline struct rdp_head *
+to_rdp_head(struct weston_head *base)
+{
+	return container_of(base, struct rdp_head, base);
+}
 
 static inline struct rdp_output *
 to_rdp_output(struct weston_output *base)
@@ -482,12 +492,19 @@ rdp_output_set_size(struct weston_output *base,
 		    int width, int height)
 {
 	struct rdp_output *output = to_rdp_output(base);
-	struct weston_head *head = &output->base.head;
+	struct weston_head *head;
 	struct weston_mode *currentMode;
 	struct weston_mode initMode;
 
 	/* We can only be called once. */
 	assert(!output->base.current_mode);
+
+	wl_list_for_each(head, &output->base.head_list, output_link) {
+		weston_head_set_monitor_strings(head, "weston", "rdp", NULL);
+
+		/* XXX: Calculate proper size. */
+		weston_head_set_physical_size(head, width, height);
+	}
 
 	wl_list_init(&output->peers);
 
@@ -501,11 +518,6 @@ rdp_output_set_size(struct weston_output *base,
 		return -1;
 
 	output->base.current_mode = output->base.native_mode = currentMode;
-
-	weston_head_set_monitor_strings(head, "weston", "rdp", NULL);
-
-	/* XXX: Calculate proper size. */
-	weston_head_set_physical_size(head, width, height);
 
 	output->base.start_repaint_loop = rdp_output_start_repaint_loop;
 	output->base.repaint = rdp_output_repaint;
@@ -576,33 +588,62 @@ rdp_output_destroy(struct weston_output *base)
 	free(output);
 }
 
-static int
-rdp_backend_create_output(struct weston_compositor *compositor)
+static struct weston_output *
+rdp_output_create(struct weston_compositor *compositor, const char *name)
 {
 	struct rdp_output *output;
 
 	output = zalloc(sizeof *output);
 	if (output == NULL)
-		return -1;
+		return NULL;
 
-	weston_output_init(&output->base, compositor, "rdp");
+	weston_output_init(&output->base, compositor, name);
 
 	output->base.destroy = rdp_output_destroy;
 	output->base.disable = rdp_output_disable;
 	output->base.enable = rdp_output_enable;
+	output->base.attach_head = NULL;
 
 	weston_compositor_add_pending_output(&output->base, compositor);
 
+	return &output->base;
+}
+
+static int
+rdp_head_create(struct weston_compositor *compositor, const char *name)
+{
+	struct rdp_head *head;
+
+	head = zalloc(sizeof *head);
+	if (!head)
+		return -1;
+
+	weston_head_init(&head->base, name);
+	weston_head_set_connection_status(&head->base, true);
+	weston_compositor_add_head(compositor, &head->base);
+
 	return 0;
+}
+
+static void
+rdp_head_destroy(struct rdp_head *head)
+{
+	weston_head_release(&head->base);
+	free(head);
 }
 
 static void
 rdp_destroy(struct weston_compositor *ec)
 {
 	struct rdp_backend *b = to_rdp_backend(ec);
+	struct weston_head *base, *next;
 	int i;
 
 	weston_compositor_shutdown(ec);
+
+	wl_list_for_each_safe(base, next, &ec->head_list, compositor_link)
+		rdp_head_destroy(to_rdp_head(base));
+
 	for (i = 0; i < MAX_FREERDP_FDS; i++)
 		if (b->listener_events[i])
 			wl_event_source_remove(b->listener_events[i]);
@@ -1298,6 +1339,7 @@ rdp_backend_create(struct weston_compositor *compositor,
 
 	b->compositor = compositor;
 	b->base.destroy = rdp_destroy;
+	b->base.create_output = rdp_output_create;
 	b->rdp_key = config->rdp_key ? strdup(config->rdp_key) : NULL;
 	b->no_clients_resize = config->no_clients_resize;
 
@@ -1319,7 +1361,7 @@ rdp_backend_create(struct weston_compositor *compositor,
 	if (pixman_renderer_init(compositor) < 0)
 		goto err_compositor;
 
-	if (rdp_backend_create_output(compositor) < 0)
+	if (rdp_head_create(compositor, "rdp") < 0)
 		goto err_compositor;
 
 	compositor->capabilities |= WESTON_CAP_ARBITRARY_MODES;
