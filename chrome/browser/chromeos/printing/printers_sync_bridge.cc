@@ -14,6 +14,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "components/sync/base/report_unrecoverable_error.h"
 #include "components/sync/model/model_type_change_processor.h"
 #include "components/sync/model/model_type_store.h"
@@ -107,6 +108,7 @@ class PrintersSyncBridge::StoreProxy {
         }
       }
     }
+    owner_->NotifyPrintersUpdated();
 
     if (error) {
       owner_->change_processor()->ReportError(
@@ -151,7 +153,8 @@ PrintersSyncBridge::PrintersSyncBridge(
     : ModelTypeSyncBridge(base::BindRepeating(&ModelTypeChangeProcessor::Create,
                                               error_callback),
                           syncer::PRINTERS),
-      store_delegate_(base::MakeUnique<StoreProxy>(this, callback)) {}
+      store_delegate_(base::MakeUnique<StoreProxy>(this, callback)),
+      observers_(new base::ObserverListThreadSafe<Observer>()) {}
 
 PrintersSyncBridge::~PrintersSyncBridge() {}
 
@@ -197,6 +200,7 @@ base::Optional<syncer::ModelError> PrintersSyncBridge::MergeSyncData(
     }
   }
 
+  NotifyPrintersUpdated();
   batch->TransferMetadataChanges(std::move(metadata_change_list));
   store_delegate_->Commit(std::move(batch));
   return {};
@@ -229,6 +233,7 @@ base::Optional<syncer::ModelError> PrintersSyncBridge::ApplySyncChanges(
     }
   }
 
+  NotifyPrintersUpdated();
   // Update the local database with metadata for the incoming changes.
   batch->TransferMetadataChanges(std::move(metadata_change_list));
 
@@ -238,25 +243,27 @@ base::Optional<syncer::ModelError> PrintersSyncBridge::ApplySyncChanges(
 
 void PrintersSyncBridge::GetData(StorageKeyList storage_keys,
                                  DataCallback callback) {
-  base::AutoLock lock(data_lock_);
   auto batch = base::MakeUnique<syncer::MutableDataBatch>();
-  for (const auto& key : storage_keys) {
-    auto found = all_data_.find(key);
-    if (found != all_data_.end()) {
-      batch->Put(key, CopyToEntityData(*found->second));
+  {
+    base::AutoLock lock(data_lock_);
+    for (const auto& key : storage_keys) {
+      auto found = all_data_.find(key);
+      if (found != all_data_.end()) {
+        batch->Put(key, CopyToEntityData(*found->second));
+      }
     }
   }
-
   callback.Run(std::move(batch));
 }
 
 void PrintersSyncBridge::GetAllData(DataCallback callback) {
-  base::AutoLock lock(data_lock_);
   auto batch = base::MakeUnique<syncer::MutableDataBatch>();
-  for (const auto& entry : all_data_) {
-    batch->Put(entry.first, CopyToEntityData(*entry.second));
+  {
+    base::AutoLock lock(data_lock_);
+    for (const auto& entry : all_data_) {
+      batch->Put(entry.first, CopyToEntityData(*entry.second));
+    }
   }
-
   callback.Run(std::move(batch));
 }
 
@@ -291,13 +298,27 @@ ConflictResolution PrintersSyncBridge::ResolveConflict(
 
 void PrintersSyncBridge::AddPrinter(
     std::unique_ptr<sync_pb::PrinterSpecifics> printer) {
-  base::AutoLock lock(data_lock_);
-  AddPrinterLocked(std::move(printer));
+  {
+    base::AutoLock lock(data_lock_);
+    AddPrinterLocked(std::move(printer));
+  }
+  NotifyPrintersUpdated();
 }
 
 bool PrintersSyncBridge::UpdatePrinter(
     std::unique_ptr<sync_pb::PrinterSpecifics> printer) {
-  base::AutoLock lock(data_lock_);
+  bool res;
+  {
+    base::AutoLock lock(data_lock_);
+    res = UpdatePrinterLocked(std::move(printer));
+  }
+  NotifyPrintersUpdated();
+  return res;
+}
+
+bool PrintersSyncBridge::UpdatePrinterLocked(
+    std::unique_ptr<sync_pb::PrinterSpecifics> printer) {
+  data_lock_.AssertAcquired();
   DCHECK(printer->has_id());
   auto iter = all_data_.find(printer->id());
   if (iter == all_data_.end()) {
@@ -402,6 +423,19 @@ bool PrintersSyncBridge::DeleteSpecifics(const std::string& id,
   }
 
   return false;
+}
+
+void PrintersSyncBridge::AddObserver(Observer* obs) {
+  observers_->AddObserver(obs);
+}
+
+void PrintersSyncBridge::RemoveObserver(Observer* obs) {
+  observers_->RemoveObserver(obs);
+}
+
+void PrintersSyncBridge::NotifyPrintersUpdated() {
+  observers_->Notify(FROM_HERE,
+                     &PrintersSyncBridge::Observer::OnPrintersUpdated);
 }
 
 }  // namespace chromeos
