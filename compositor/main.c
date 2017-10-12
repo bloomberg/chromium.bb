@@ -120,6 +120,7 @@ struct wet_compositor {
 
 static FILE *weston_logfile = NULL;
 static struct weston_debug_scope *log_scope;
+static struct weston_debug_scope *protocol_scope;
 
 static int cached_tm_mday = -1;
 
@@ -223,6 +224,116 @@ vlog_continue(const char *fmt, va_list argp)
 	va_end(argp2);
 
 	return vfprintf(weston_logfile, fmt, argp);
+}
+
+static const char *
+get_next_argument(const char *signature, char* type)
+{
+	for(; *signature; ++signature) {
+		switch(*signature) {
+		case 'i':
+		case 'u':
+		case 'f':
+		case 's':
+		case 'o':
+		case 'n':
+		case 'a':
+		case 'h':
+			*type = *signature;
+			return signature + 1;
+		}
+	}
+	*type = '\0';
+	return signature;
+}
+
+static void
+protocol_log_fn(void *user_data,
+		enum wl_protocol_logger_type direction,
+		const struct wl_protocol_logger_message *message)
+{
+	FILE *fp;
+	char *logstr;
+	size_t logsize;
+	char timestr[128];
+	struct wl_resource *res = message->resource;
+	const char *signature = message->message->signature;
+	int i;
+	char type;
+
+	if (!weston_debug_scope_is_enabled(protocol_scope))
+		return;
+
+	fp = open_memstream(&logstr, &logsize);
+	if (!fp)
+		return;
+
+	weston_debug_scope_timestamp(protocol_scope,
+			timestr, sizeof timestr);
+	fprintf(fp, "%s ", timestr);
+	fprintf(fp, "client %p %s ", wl_resource_get_client(res),
+		direction == WL_PROTOCOL_LOGGER_REQUEST ? "rq" : "ev");
+	fprintf(fp, "%s@%u.%s(",
+		wl_resource_get_class(res),
+		wl_resource_get_id(res),
+		message->message->name);
+
+	for (i = 0; i < message->arguments_count; i++) {
+		signature = get_next_argument(signature, &type);
+
+		if (i > 0)
+			fprintf(fp, ", ");
+
+		switch (type) {
+		case 'u':
+			fprintf(fp, "%u", message->arguments[i].u);
+			break;
+		case 'i':
+			fprintf(fp, "%d", message->arguments[i].i);
+			break;
+		case 'f':
+			fprintf(fp, "%f",
+				wl_fixed_to_double(message->arguments[i].f));
+			break;
+		case 's':
+			fprintf(fp, "\"%s\"", message->arguments[i].s);
+			break;
+		case 'o':
+			if (message->arguments[i].o) {
+				struct wl_resource* resource;
+				resource = (struct wl_resource*) message->arguments[i].o;
+				fprintf(fp, "%s@%u",
+					wl_resource_get_class(resource),
+					wl_resource_get_id(resource));
+			}
+			else
+				fprintf(fp, "nil");
+			break;
+		case 'n':
+			fprintf(fp, "new id %s@",
+				(message->message->types[i]) ?
+				message->message->types[i]->name :
+				"[unknown]");
+			if (message->arguments[i].n != 0)
+				fprintf(fp, "%u", message->arguments[i].n);
+			else
+				fprintf(fp, "nil");
+			break;
+		case 'a':
+			fprintf(fp, "array");
+			break;
+		case 'h':
+			fprintf(fp, "fd %d", message->arguments[i].h);
+			break;
+		}
+	}
+
+	fprintf(fp, ")\n");
+
+	if (fclose(fp) == 0)
+		weston_debug_scope_write(protocol_scope, logstr, logsize);
+
+	free(logstr);
 }
 
 static struct wl_list child_process_list;
@@ -2417,6 +2528,7 @@ int main(int argc, char *argv[])
 	struct wet_compositor wet = { 0 };
 	int require_input;
 	int32_t wait_for_debugger = 0;
+	struct wl_protocol_logger *protologger = NULL;
 
 	const struct weston_option core_options[] = {
 		{ WESTON_OPTION_STRING, "backend", 'B', &backend },
@@ -2521,9 +2633,18 @@ int main(int argc, char *argv[])
 
 	log_scope = weston_compositor_add_debug_scope(wet.compositor, "log",
 			"Weston and Wayland log\n", NULL, NULL);
+	protocol_scope =
+		weston_compositor_add_debug_scope(wet.compositor,
+			"proto",
+			"Wayland protocol dump for all clients.\n",
+			NULL, NULL);
 
-	if (debug_protocol)
+	if (debug_protocol) {
+		protologger = wl_display_add_protocol_logger(display,
+							     protocol_log_fn,
+							     NULL);
 		weston_compositor_enable_debug_protocol(wet.compositor);
+	}
 
 	if (weston_compositor_init_config(wet.compositor, config) < 0)
 		goto out;
@@ -2634,6 +2755,11 @@ out:
 	/* free(NULL) is valid, and it won't be NULL if it's used */
 	free(wet.parsed_options);
 
+	if (protologger)
+		wl_protocol_logger_destroy(protologger);
+
+	weston_debug_scope_destroy(protocol_scope);
+	protocol_scope = NULL;
 	weston_debug_scope_destroy(log_scope);
 	log_scope = NULL;
 	weston_compositor_destroy(wet.compositor);
