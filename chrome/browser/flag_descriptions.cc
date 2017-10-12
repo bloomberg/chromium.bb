@@ -299,6 +299,11 @@ const char kEnableClientLoFiName[] = "Client-side Lo-Fi previews";
 const char kEnableClientLoFiDescription[] =
     "Enable showing low fidelity images on some pages on slow networks.";
 
+const char kEnableNoScriptPreviewsName[] = "NoScript previews";
+
+const char kEnableNoScriptPreviewsDescription[] =
+    "Enable disabling JavaScript on some pages on slow networks.";
+
 const char kEnableDataReductionProxyLitePageName[] =
     "Lite pages for Data Saver Lo-Fi mode";
 const char kEnableDataReductionProxyLitePageDescription[] =

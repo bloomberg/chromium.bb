@@ -37,6 +37,7 @@ enum PreviewsTypes {
   PREVIEWS_OFF = 1 << 5,  // Request a normal (non-Preview) version of
                           // the resource. Server transformations may
                           // still happen if the page is heavy.
+  NOSCRIPT_ON = 1 << 6,   // Request that script be disabled for page load.
   PREVIEWS_STATE_LAST = PREVIEWS_OFF
 };
 
@@ -59,6 +60,7 @@ STATIC_ASSERT_PREVIEWS_ENUM(SERVER_LITE_PAGE_ON,
 STATIC_ASSERT_PREVIEWS_ENUM(PREVIEWS_NO_TRANSFORM,
                             blink::WebURLRequest::kPreviewsNoTransform);
 STATIC_ASSERT_PREVIEWS_ENUM(PREVIEWS_OFF, blink::WebURLRequest::kPreviewsOff);
+STATIC_ASSERT_PREVIEWS_ENUM(NOSCRIPT_ON, blink::WebURLRequest::kNoScriptOn);
 STATIC_ASSERT_PREVIEWS_ENUM(PREVIEWS_STATE_LAST,
                             blink::WebURLRequest::kPreviewsStateLast);
 
