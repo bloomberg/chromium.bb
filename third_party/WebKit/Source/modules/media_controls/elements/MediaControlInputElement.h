@@ -31,6 +31,10 @@ class MODULES_EXPORT MediaControlInputElement : public HTMLInputElement,
 
   DECLARE_VIRTUAL_TRACE();
 
+  MediaControlInputElement* OverflowElementForTests() const {
+    return overflow_element_;
+  }
+
  protected:
   MediaControlInputElement(MediaControlsImpl&, MediaControlElementType);
 

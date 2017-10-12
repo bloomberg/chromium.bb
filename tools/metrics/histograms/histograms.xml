@@ -31755,6 +31755,30 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.Controls.Overflow.TimeToAction" units="seconds">
+  <owner>beccahughes@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
+  <summary>
+    Records the amount of time the overflow menu is displayed until the user
+    clicked on a menu item. The overflow menu is shown by clicking the three
+    dots on the media controls and is used to show more controls when there is
+    not enough space. This histogram will record up to 100 seconds with accuracy
+    to the second.
+  </summary>
+</histogram>
+
+<histogram name="Media.Controls.Overflow.TimeToDismiss" units="seconds">
+  <owner>beccahughes@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
+  <summary>
+    Records the amount of time the overflow menu is displayed until the user
+    dismissed the menu without clicking on a menu item. The overflow menu is
+    shown by clicking the three dots on the media controls and is used to show
+    more controls when there is not enough space. This histogram will record up
+    to 100 seconds with accuracy to the second.
+  </summary>
+</histogram>
+
 <histogram name="Media.Controls.Show" enum="MediaControlsShowReason">
   <obsolete>
     Deprecated May 19 2016 in favor of Media.Controls.Show.{Audio,Video}
