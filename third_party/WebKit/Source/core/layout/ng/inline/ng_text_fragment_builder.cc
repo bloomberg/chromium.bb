@@ -85,7 +85,6 @@ RefPtr<NGPhysicalTextFragment> NGTextFragmentBuilder::ToTextFragment(
           end_offset, size_.ConvertToPhysical(WritingMode()), expansion_,
           ToLineOrientation(WritingMode()), end_effect_,
           std::move(shape_result_)));
-  fragment->UpdateVisualRect();
   return fragment;
 }
 

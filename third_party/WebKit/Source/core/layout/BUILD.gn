@@ -330,6 +330,8 @@ blink_core_sources("layout") {
     "ng/geometry/ng_physical_location.h",
     "ng/geometry/ng_physical_offset.cc",
     "ng/geometry/ng_physical_offset.h",
+    "ng/geometry/ng_physical_offset_rect.cc",
+    "ng/geometry/ng_physical_offset_rect.h",
     "ng/geometry/ng_physical_rect.cc",
     "ng/geometry/ng_physical_rect.h",
     "ng/geometry/ng_physical_size.cc",

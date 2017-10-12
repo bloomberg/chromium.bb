@@ -10,6 +10,7 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
     LayoutObject* layout_object,
     const ComputedStyle& style,
     NGPhysicalSize size,
+    const NGPhysicalOffsetRect& contents_visual_rect,
     Vector<RefPtr<NGPhysicalFragment>>& children,
     Vector<NGBaseline>& baselines,
     unsigned border_edges,  // NGBorderEdges::Physical
@@ -20,6 +21,7 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
                                   kFragmentBox,
                                   children,
                                   std::move(break_token)),
+      contents_visual_rect_(contents_visual_rect),
       baselines_(std::move(baselines)) {
   DCHECK(baselines.IsEmpty());  // Ensure move semantics is used.
   border_edge_ = border_edges;
@@ -34,18 +36,18 @@ const NGBaseline* NGPhysicalBoxFragment::Baseline(
   return nullptr;
 }
 
-void NGPhysicalBoxFragment::UpdateVisualRect() const {
-  NGPhysicalContainerFragment::UpdateVisualRect();
-
+const NGPhysicalOffsetRect NGPhysicalBoxFragment::LocalVisualRect() const {
   // TODO(kojii): Add its own visual overflow (e.g., box-shadow)
+  return {{}, Size()};
 }
 
 RefPtr<NGPhysicalFragment> NGPhysicalBoxFragment::CloneWithoutOffset() const {
   Vector<RefPtr<NGPhysicalFragment>> children_copy(children_);
   Vector<NGBaseline> baselines_copy(baselines_);
-  RefPtr<NGPhysicalFragment> physical_fragment = WTF::AdoptRef(
-      new NGPhysicalBoxFragment(layout_object_, Style(), size_, children_copy,
-                                baselines_copy, border_edge_, break_token_));
+  RefPtr<NGPhysicalFragment> physical_fragment =
+      WTF::AdoptRef(new NGPhysicalBoxFragment(
+          layout_object_, Style(), size_, contents_visual_rect_, children_copy,
+          baselines_copy, border_edge_, break_token_));
   return physical_fragment;
 }
 

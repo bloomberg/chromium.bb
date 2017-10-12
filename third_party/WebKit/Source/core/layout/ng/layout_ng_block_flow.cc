@@ -222,9 +222,9 @@ void LayoutNGBlockFlow::WillCollectInlines() {}
 // LayoutResult are required to compute the result.
 // TODO(kojii): Use the cached result for now, we may need to reconsider as the
 // cache evolves.
-const NGPhysicalFragment* LayoutNGBlockFlow::CurrentFragment() const {
+const NGPhysicalBoxFragment* LayoutNGBlockFlow::CurrentFragment() const {
   if (cached_result_)
-    return cached_result_->PhysicalFragment().get();
+    return ToNGPhysicalBoxFragment(cached_result_->PhysicalFragment().get());
   return nullptr;
 }
 
@@ -233,12 +233,12 @@ void LayoutNGBlockFlow::AddOverflowFromChildren() {
   // |CopyFragmentDataToLayoutBox()| and |RecalcOverflowAfterStyleChange()|.
   // Add overflow from the last layout cycle.
   if (ChildrenInline()) {
-    if (const NGPhysicalFragment* physical_fragment = CurrentFragment()) {
+    if (const NGPhysicalBoxFragment* physical_fragment = CurrentFragment()) {
       // TODO(kojii): If |RecalcOverflowAfterStyleChange()|, we need to
       // re-compute glyph bounding box. How to detect it and how to re-compute
       // is TBD.
-      LayoutRect visual_rect = physical_fragment->LocalVisualRect();
-      AddContentsVisualOverflow(visual_rect);
+      AddContentsVisualOverflow(
+          physical_fragment->ContentsVisualRect().ToLayoutRect());
       // TODO(kojii): The above code computes visual overflow only, we fallback
       // to LayoutBlock for AddLayoutOverflow() for now. It doesn't compute
       // correctly without RootInlineBox though.

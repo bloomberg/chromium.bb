@@ -184,6 +184,32 @@ NGPixelSnappedPhysicalBoxStrut NGPhysicalFragment::BorderWidths() const {
   return box_strut.SnapToDevicePixels();
 }
 
+void NGPhysicalFragment::PropagateContentsVisualRect(
+    NGPhysicalOffsetRect* parent_visual_rect) const {
+  NGPhysicalOffsetRect visual_rect;
+  switch (Type()) {
+    case NGPhysicalFragment::kFragmentBox: {
+      const auto& box = ToNGPhysicalBoxFragment(*this);
+      visual_rect = box.LocalVisualRect();
+      visual_rect.Unite(box.ContentsVisualRect());
+      break;
+    }
+    case NGPhysicalFragment::kFragmentText: {
+      const auto& text = ToNGPhysicalTextFragment(*this);
+      visual_rect = text.LocalVisualRect();
+      break;
+    }
+    case NGPhysicalFragment::kFragmentLineBox: {
+      const auto& line_box = ToNGPhysicalLineBoxFragment(*this);
+      for (const auto& child : line_box.Children())
+        child->PropagateContentsVisualRect(&visual_rect);
+      break;
+    }
+  }
+  visual_rect.offset += Offset();
+  parent_visual_rect->Unite(visual_rect);
+}
+
 RefPtr<NGPhysicalFragment> NGPhysicalFragment::CloneWithoutOffset() const {
   switch (Type()) {
     case kFragmentBox:
@@ -203,10 +229,6 @@ RefPtr<NGPhysicalFragment> NGPhysicalFragment::CloneWithoutOffset() const {
       break;
   }
   return nullptr;
-}
-
-void NGPhysicalFragment::UpdateVisualRect() const {
-  SetVisualRect({LayoutPoint(), LayoutSize(Size().width, Size().height)});
 }
 
 String NGPhysicalFragment::ToString() const {

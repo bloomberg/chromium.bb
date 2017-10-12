@@ -16,6 +16,7 @@
 namespace blink {
 
 class ShapeResult;
+struct NGPhysicalOffsetRect;
 
 // In CSS Writing Modes Levle 4, line orientation for layout and line
 // orientation for paint are not always the same.
@@ -86,8 +87,9 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
     return LineOrientation() == NGLineOrientation::kHorizontal;
   }
 
-  // Update visual rect for this fragment.
-  void UpdateVisualRect() const override;
+  // The visual bounding box that includes glpyh bounding box and CSS
+  // properties, in local coordinates.
+  NGPhysicalOffsetRect LocalVisualRect() const;
 
   NGTextEndEffect EndEffect() const {
     return static_cast<NGTextEndEffect>(end_effect_);

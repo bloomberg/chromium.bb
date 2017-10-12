@@ -382,9 +382,9 @@ TEST_F(NGInlineLayoutAlgorithmTest, VisualRect) {
 
   EXPECT_EQ(LayoutUnit(10), box_fragment->Size().height);
 
-  LayoutRect visual_rect = box_fragment->LocalVisualRect();
-  EXPECT_EQ(LayoutUnit(-5), visual_rect.Y());
-  EXPECT_EQ(LayoutUnit(20), visual_rect.Height());
+  NGPhysicalOffsetRect visual_rect = box_fragment->ContentsVisualRect();
+  EXPECT_EQ(LayoutUnit(-5), visual_rect.offset.top);
+  EXPECT_EQ(LayoutUnit(20), visual_rect.size.height);
 }
 
 }  // namespace

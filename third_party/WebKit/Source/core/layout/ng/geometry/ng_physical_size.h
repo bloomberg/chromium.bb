@@ -11,6 +11,7 @@
 
 namespace blink {
 
+class LayoutSize;
 struct NGLogicalSize;
 
 // NGPhysicalSize is the size of a rect (typically a fragment) in the physical
@@ -26,6 +27,14 @@ struct CORE_EXPORT NGPhysicalSize {
   NGLogicalSize ConvertToLogical(NGWritingMode mode) const;
 
   bool operator==(const NGPhysicalSize& other) const;
+
+  bool IsEmpty() const {
+    return width == LayoutUnit() || height == LayoutUnit();
+  }
+
+  // Conversions from/to existing code. New code prefers type safety for
+  // logical/physical distinctions.
+  LayoutSize ToLayoutSize() const;
 
   String ToString() const;
 };

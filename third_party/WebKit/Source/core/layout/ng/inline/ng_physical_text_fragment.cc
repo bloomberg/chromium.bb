@@ -4,16 +4,15 @@
 
 #include "core/layout/ng/inline/ng_physical_text_fragment.h"
 
+#include "core/layout/ng/geometry/ng_physical_offset_rect.h"
 #include "core/layout/ng/inline/ng_line_height_metrics.h"
 #include "core/style/ComputedStyle.h"
 
 namespace blink {
 
-void NGPhysicalTextFragment::UpdateVisualRect() const {
-  if (!shape_result_) {
-    NGPhysicalFragment::UpdateVisualRect();
-    return;
-  }
+NGPhysicalOffsetRect NGPhysicalTextFragment::LocalVisualRect() const {
+  if (!shape_result_)
+    return {};
 
   // TODO(kojii): Copying InlineTextBox logic from
   // InlineFlowBox::ComputeOverflow().
@@ -47,20 +46,16 @@ void NGPhysicalTextFragment::UpdateVisualRect() const {
   LayoutRect visual_rect = EnclosingLayoutRect(visual_float_rect);
   switch (LineOrientation()) {
     case NGLineOrientation::kHorizontal:
-      break;
+      return NGPhysicalOffsetRect(visual_rect);
     case NGLineOrientation::kClockWiseVertical:
-      visual_rect =
-          LayoutRect(size_.width - visual_rect.MaxY(), visual_rect.X(),
-                     visual_rect.Height(), visual_rect.Width());
-      break;
+      return {{size_.width - visual_rect.MaxY(), visual_rect.X()},
+              {visual_rect.Height(), visual_rect.Width()}};
     case NGLineOrientation::kCounterClockWiseVertical:
-      visual_rect =
-          LayoutRect(visual_rect.Y(), size_.height - visual_rect.MaxX(),
-                     visual_rect.Height(), visual_rect.Width());
-      break;
+      return {{visual_rect.Y(), size_.height - visual_rect.MaxX()},
+              {visual_rect.Height(), visual_rect.Width()}};
   }
-
-  SetVisualRect(visual_rect);
+  NOTREACHED();
+  return {};
 }
 
 }  // namespace blink
