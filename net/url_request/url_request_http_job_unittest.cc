@@ -178,6 +178,170 @@ TEST_F(URLRequestHttpJobSetUpSourceTest, UnknownEncoding) {
   EXPECT_EQ("Test Content", delegate_.data_received());
 }
 
+class URLRequestHttpJobWithProxy {
+ public:
+  explicit URLRequestHttpJobWithProxy(
+      std::unique_ptr<ProxyService> proxy_service)
+      : proxy_service_(std::move(proxy_service)),
+        context_(new TestURLRequestContext(true)) {
+    context_->set_client_socket_factory(&socket_factory_);
+    context_->set_network_delegate(&network_delegate_);
+    context_->set_proxy_service(proxy_service_.get());
+    context_->Init();
+  }
+
+  MockClientSocketFactory socket_factory_;
+  TestNetworkDelegate network_delegate_;
+  std::unique_ptr<ProxyService> proxy_service_;
+  std::unique_ptr<TestURLRequestContext> context_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(URLRequestHttpJobWithProxy);
+};
+
+// Tests that when proxy is not used, the proxy server is set correctly on the
+// URLRequest.
+TEST(URLRequestHttpJobWithProxy, TestFailureWithoutProxy) {
+  URLRequestHttpJobWithProxy http_job_with_proxy(nullptr);
+
+  MockWrite writes[] = {MockWrite(kSimpleGetMockWrite)};
+  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_CONNECTION_RESET)};
+
+  StaticSocketDataProvider socket_data(reads, arraysize(reads), writes,
+                                       arraysize(writes));
+  http_job_with_proxy.socket_factory_.AddSocketDataProvider(&socket_data);
+
+  TestDelegate delegate;
+  std::unique_ptr<URLRequest> request =
+      http_job_with_proxy.context_->CreateRequest(
+          GURL("http://www.example.com"), DEFAULT_PRIORITY, &delegate,
+          TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  request->Start();
+  ASSERT_TRUE(request->is_pending());
+  base::RunLoop().Run();
+
+  EXPECT_THAT(delegate.request_status(), IsError(ERR_CONNECTION_RESET));
+  EXPECT_EQ(ProxyServer::Direct(), request->proxy_server());
+  EXPECT_FALSE(request->was_fetched_via_proxy());
+  EXPECT_EQ(0, request->received_response_content_length());
+  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)),
+            request->GetTotalSentBytes());
+  EXPECT_EQ(CountReadBytes(reads, arraysize(reads)),
+            request->GetTotalReceivedBytes());
+  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)),
+            http_job_with_proxy.network_delegate_.total_network_bytes_sent());
+  EXPECT_EQ(
+      CountReadBytes(reads, arraysize(reads)),
+      http_job_with_proxy.network_delegate_.total_network_bytes_received());
+}
+
+// Tests that when one proxy is in use and the connection to the proxy server
+// fails, the proxy server is still set correctly on the URLRequest.
+TEST(URLRequestHttpJobWithProxy, TestSuccessfulWithOneProxy) {
+  const char kSimpleProxyGetMockWrite[] =
+      "GET http://www.example.com/ HTTP/1.1\r\n"
+      "Host: www.example.com\r\n"
+      "Proxy-Connection: keep-alive\r\n"
+      "User-Agent:\r\n"
+      "Accept-Encoding: gzip, deflate\r\n"
+      "Accept-Language: en-us,fr\r\n\r\n";
+
+  const ProxyServer proxy_server =
+      ProxyServer::FromURI("http://origin.net:80", ProxyServer::SCHEME_HTTP);
+
+  std::unique_ptr<ProxyService> proxy_service =
+      ProxyService::CreateFixedFromPacResult(proxy_server.ToPacString());
+
+  MockWrite writes[] = {MockWrite(kSimpleProxyGetMockWrite)};
+  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_CONNECTION_RESET)};
+
+  StaticSocketDataProvider socket_data(reads, arraysize(reads), writes,
+                                       arraysize(writes));
+
+  URLRequestHttpJobWithProxy http_job_with_proxy(std::move(proxy_service));
+  http_job_with_proxy.socket_factory_.AddSocketDataProvider(&socket_data);
+
+  TestDelegate delegate;
+  std::unique_ptr<URLRequest> request =
+      http_job_with_proxy.context_->CreateRequest(
+          GURL("http://www.example.com"), DEFAULT_PRIORITY, &delegate,
+          TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  request->Start();
+  ASSERT_TRUE(request->is_pending());
+  base::RunLoop().Run();
+
+  EXPECT_THAT(delegate.request_status(), IsError(ERR_CONNECTION_RESET));
+  // When request fails due to proxy connection errors, the proxy server should
+  // still be set on the |request|.
+  EXPECT_EQ(proxy_server, request->proxy_server());
+  EXPECT_FALSE(request->was_fetched_via_proxy());
+  EXPECT_EQ(0, request->received_response_content_length());
+  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)),
+            request->GetTotalSentBytes());
+  EXPECT_EQ(0, request->GetTotalReceivedBytes());
+  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)),
+            http_job_with_proxy.network_delegate_.total_network_bytes_sent());
+  EXPECT_EQ(
+      0, http_job_with_proxy.network_delegate_.total_network_bytes_received());
+}
+
+// Tests that when two proxies are in use and the connection to the first proxy
+// server fails, the proxy server is set correctly on the URLRequest.
+TEST(URLRequestHttpJobWithProxy,
+     TestContentLengthSuccessfulRequestWithTwoProxies) {
+  const ProxyServer proxy_server =
+      ProxyServer::FromURI("http://origin.net:80", ProxyServer::SCHEME_HTTP);
+
+  // Connection to |proxy_server| would fail. Request should be fetched over
+  // DIRECT.
+  std::unique_ptr<ProxyService> proxy_service =
+      ProxyService::CreateFixedFromPacResult(
+          proxy_server.ToPacString() + "; " +
+          ProxyServer::Direct().ToPacString());
+
+  MockWrite writes[] = {MockWrite(kSimpleGetMockWrite)};
+  MockRead reads[] = {MockRead("HTTP/1.1 200 OK\r\n"
+                               "Content-Length: 12\r\n\r\n"),
+                      MockRead("Test Content"), MockRead(ASYNC, OK)};
+
+  MockConnect mock_connect_1(SYNCHRONOUS, ERR_CONNECTION_RESET);
+  StaticSocketDataProvider connect_data_1;
+  connect_data_1.set_connect_data(mock_connect_1);
+
+  StaticSocketDataProvider socket_data(reads, arraysize(reads), writes,
+                                       arraysize(writes));
+
+  URLRequestHttpJobWithProxy http_job_with_proxy(std::move(proxy_service));
+  http_job_with_proxy.socket_factory_.AddSocketDataProvider(&connect_data_1);
+  http_job_with_proxy.socket_factory_.AddSocketDataProvider(&socket_data);
+
+  TestDelegate delegate;
+  std::unique_ptr<URLRequest> request =
+      http_job_with_proxy.context_->CreateRequest(
+          GURL("http://www.example.com"), DEFAULT_PRIORITY, &delegate,
+          TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  request->Start();
+  ASSERT_TRUE(request->is_pending());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_THAT(delegate.request_status(), IsOk());
+  EXPECT_EQ(ProxyServer::Direct(), request->proxy_server());
+  EXPECT_FALSE(request->was_fetched_via_proxy());
+  EXPECT_EQ(12, request->received_response_content_length());
+  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)),
+            request->GetTotalSentBytes());
+  EXPECT_EQ(CountReadBytes(reads, arraysize(reads)),
+            request->GetTotalReceivedBytes());
+  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)),
+            http_job_with_proxy.network_delegate_.total_network_bytes_sent());
+  EXPECT_EQ(
+      CountReadBytes(reads, arraysize(reads)),
+      http_job_with_proxy.network_delegate_.total_network_bytes_received());
+}
+
 class URLRequestHttpJobTest : public ::testing::Test {
  protected:
   URLRequestHttpJobTest() : context_(true) {
