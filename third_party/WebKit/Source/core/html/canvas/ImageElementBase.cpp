@@ -14,6 +14,20 @@
 
 namespace blink {
 
+// static
+Image::ImageDecodingMode ImageElementBase::ParseImageDecodingMode(
+    const AtomicString& async_attr_value) {
+  if (async_attr_value.IsNull())
+    return Image::kUnspecifiedDecode;
+
+  const auto& value = async_attr_value.LowerASCII();
+  if (value == "" || value == "on")
+    return Image::kAsyncDecode;
+  if (value == "off")
+    return Image::kSyncDecode;
+  return Image::kUnspecifiedDecode;
+}
+
 ImageResourceContent* ImageElementBase::CachedImage() const {
   return GetImageLoader().GetImage();
 }

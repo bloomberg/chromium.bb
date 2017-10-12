@@ -1100,6 +1100,7 @@ void GraphicsLayer::SetContentsRect(const IntRect& rect) {
 
 void GraphicsLayer::SetContentsToImage(
     Image* image,
+    Image::ImageDecodingMode decode_mode,
     RespectImageOrientationEnum respect_image_orientation) {
   PaintImage paint_image;
   if (image)
@@ -1114,6 +1115,10 @@ void GraphicsLayer::SetContentsToImage(
   }
 
   if (paint_image) {
+    paint_image =
+        PaintImageBuilder::WithCopy(std::move(paint_image))
+            .set_decoding_mode(Image::ToPaintImageDecodingMode(decode_mode))
+            .TakePaintImage();
     if (!image_layer_) {
       image_layer_ =
           Platform::Current()->CompositorSupport()->CreateImageLayer();

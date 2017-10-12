@@ -36,6 +36,7 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/Image.h"
 #include "platform/graphics/paint/CullRect.h"
 #include "platform/graphics/paint/DisplayItem.h"
 #include "platform/transforms/AffineTransform.h"
@@ -145,6 +146,8 @@ struct CORE_EXPORT PaintInfo {
   friend class SVGPaintContext;
   friend class SVGShapePainter;
 };
+
+Image::ImageDecodingMode GetImageDecodingMode(Node*);
 
 }  // namespace blink
 

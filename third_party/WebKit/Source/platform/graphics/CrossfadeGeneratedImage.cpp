@@ -43,7 +43,8 @@ CrossfadeGeneratedImage::CrossfadeGeneratedImage(RefPtr<Image> from_image,
 
 void CrossfadeGeneratedImage::DrawCrossfade(PaintCanvas* canvas,
                                             const PaintFlags& flags,
-                                            ImageClampingMode clamp_mode) {
+                                            ImageClampingMode clamp_mode,
+                                            ImageDecodingMode decode_mode) {
   FloatRect from_image_rect(FloatPoint(), FloatSize(from_image_->Size()));
   FloatRect to_image_rect(FloatPoint(), FloatSize(to_image_->Size()));
   FloatRect dest_rect((FloatPoint()), FloatSize(crossfade_size_));
@@ -67,12 +68,12 @@ void CrossfadeGeneratedImage::DrawCrossfade(PaintCanvas* canvas,
   // written this way during refactoring to avoid modifying existing behavior,
   // but this warrants further investigation. crbug.com/472634
   from_image_->Draw(canvas, image_flags, dest_rect, from_image_rect,
-                    kDoNotRespectImageOrientation, clamp_mode);
+                    kDoNotRespectImageOrientation, clamp_mode, decode_mode);
   image_flags.setBlendMode(SkBlendMode::kPlus);
   image_alpha = ClampedAlphaForBlending(percentage_);
   image_flags.setAlpha(image_alpha > 255 ? 255 : image_alpha);
   to_image_->Draw(canvas, image_flags, dest_rect, to_image_rect,
-                  kDoNotRespectImageOrientation, clamp_mode);
+                  kDoNotRespectImageOrientation, clamp_mode, decode_mode);
 }
 
 void CrossfadeGeneratedImage::Draw(PaintCanvas* canvas,
@@ -80,7 +81,8 @@ void CrossfadeGeneratedImage::Draw(PaintCanvas* canvas,
                                    const FloatRect& dst_rect,
                                    const FloatRect& src_rect,
                                    RespectImageOrientationEnum,
-                                   ImageClampingMode clamp_mode) {
+                                   ImageClampingMode clamp_mode,
+                                   ImageDecodingMode decode_mode) {
   // Draw nothing if either of the images hasn't loaded yet.
   if (from_image_ == Image::NullImage() || to_image_ == Image::NullImage())
     return;
@@ -93,7 +95,7 @@ void CrossfadeGeneratedImage::Draw(PaintCanvas* canvas,
                   dst_rect.Height() / src_rect.Height());
   canvas->translate(-src_rect.X(), -src_rect.Y());
 
-  DrawCrossfade(canvas, flags, clamp_mode);
+  DrawCrossfade(canvas, flags, clamp_mode, decode_mode);
 }
 
 void CrossfadeGeneratedImage::DrawTile(GraphicsContext& context,
@@ -108,7 +110,7 @@ void CrossfadeGeneratedImage::DrawTile(GraphicsContext& context,
   FloatRect dest_rect((FloatPoint()), FloatSize(crossfade_size_));
   flags.setFilterQuality(
       context.ComputeFilterQuality(this, dest_rect, src_rect));
-  DrawCrossfade(context.Canvas(), flags, kClampImageToSourceRect);
+  DrawCrossfade(context.Canvas(), flags, kClampImageToSourceRect, kSyncDecode);
 }
 
 }  // namespace blink

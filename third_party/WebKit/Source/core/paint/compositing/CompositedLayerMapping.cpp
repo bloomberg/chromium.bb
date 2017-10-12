@@ -34,6 +34,7 @@
 #include "core/frame/VisualViewport.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLIFrameElement.h"
+#include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
@@ -797,7 +798,7 @@ bool CompositedLayerMapping::UpdateGraphicsLayerConfiguration() {
     if (IsDirectlyCompositedImage()) {
       UpdateImageContents();
     } else if (graphics_layer_->HasContentsLayer()) {
-      graphics_layer_->SetContentsToImage(nullptr);
+      graphics_layer_->SetContentsToImage(nullptr, Image::kUnspecifiedDecode);
     }
   }
 
@@ -2815,9 +2816,15 @@ void CompositedLayerMapping::UpdateImageContents() {
   if (!image)
     return;
 
+  Node* node = image_layout_object.GetNode();
+  Image::ImageDecodingMode decode_mode =
+      IsHTMLImageElement(node) ? ToHTMLImageElement(node)->GetDecodingMode()
+                               : Image::kUnspecifiedDecode;
+
   // This is a no-op if the layer doesn't have an inner layer for the image.
   graphics_layer_->SetContentsToImage(
-      image, LayoutObject::ShouldRespectImageOrientation(&image_layout_object));
+      image, decode_mode,
+      LayoutObject::ShouldRespectImageOrientation(&image_layout_object));
 
   graphics_layer_->SetFilterQuality(
       GetLayoutObject().Style()->ImageRendering() == EImageRendering::kPixelated

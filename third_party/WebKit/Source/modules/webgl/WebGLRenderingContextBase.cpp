@@ -4550,7 +4550,7 @@ RefPtr<Image> WebGLRenderingContextBase::DrawImageIntoBuffer(
   // https://crbug.com/672299
   image->Draw(buf->Canvas(), flags, dest_rect, src_rect,
               kDoNotRespectImageOrientation,
-              Image::kDoNotClampImageToSourceRect);
+              Image::kDoNotClampImageToSourceRect, Image::kSyncDecode);
   return buf->NewImageSnapshot(kPreferNoAcceleration,
                                kSnapshotReasonWebGLDrawImageIntoBuffer);
 }

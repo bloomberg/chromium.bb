@@ -465,7 +465,10 @@ inline bool PaintFastBottomLayer(const DisplayItemClient& image_client,
                "data",
                InspectorPaintImageEvent::Data(node, *info.image, image->Rect(),
                                               FloatRect(rect)));
-  context.DrawImageRRect(image, border, src_rect, composite_op);
+  // Since there is no way for the developer to specify decode behavior, use
+  // kSync by default.
+  context.DrawImageRRect(image, Image::kSyncDecode, border, src_rect,
+                         composite_op);
 
   return true;
 }

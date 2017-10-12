@@ -73,6 +73,7 @@ class CC_PAINT_EXPORT PaintImage {
 
   enum class AnimationType { ANIMATED, VIDEO, STATIC };
   enum class CompletionState { DONE, PARTIALLY_DONE };
+  enum class DecodingMode { kUnspecified, kSync, kAsync };
 
   static Id GetNextId();
   static ContentId GetNextContentId();
@@ -120,6 +121,11 @@ class CC_PAINT_EXPORT PaintImage {
   bool is_multipart() const { return is_multipart_; }
   int repetition_count() const { return repetition_count_; }
   bool ShouldAnimate() const;
+  size_t frame_index() const { return frame_index_; }
+  AnimationSequenceId reset_animation_sequence_id() const {
+    return reset_animation_sequence_id_;
+  }
+  DecodingMode decoding_mode() const { return decoding_mode_; }
 
   // TODO(vmpstr): Don't get the SkImage here if you don't need to.
   uint32_t unique_id() const { return GetSkImage()->uniqueID(); }
@@ -128,10 +134,6 @@ class CC_PAINT_EXPORT PaintImage {
   int width() const { return GetSkImage()->width(); }
   int height() const { return GetSkImage()->height(); }
   SkColorSpace* color_space() const { return GetSkImage()->colorSpace(); }
-  size_t frame_index() const { return frame_index_; }
-  AnimationSequenceId reset_animation_sequence_id() const {
-    return reset_animation_sequence_id_;
-  }
 
   // Returns a unique id for the pixel data for the frame at |frame_index|. Used
   // only for lazy-generated images.
@@ -193,6 +195,8 @@ class CC_PAINT_EXPORT PaintImage {
   // will reset this animation in the compositor for the first frame which has a
   // recording with a PaintImage storing the updated sequence id.
   AnimationSequenceId reset_animation_sequence_id_ = 0u;
+
+  DecodingMode decoding_mode_ = DecodingMode::kSync;
 
   // The |cached_sk_image_| can be derived/created from other inputs present in
   // the PaintImage but we always construct it at creation time for 2 reasons:

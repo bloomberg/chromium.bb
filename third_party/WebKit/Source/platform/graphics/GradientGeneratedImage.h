@@ -52,7 +52,8 @@ class PLATFORM_EXPORT GradientGeneratedImage final : public GeneratedImage {
             const FloatRect&,
             const FloatRect&,
             RespectImageOrientationEnum,
-            ImageClampingMode) override;
+            ImageClampingMode,
+            ImageDecodingMode) override;
   void DrawTile(GraphicsContext&, const FloatRect&) override;
 
   GradientGeneratedImage(RefPtr<Gradient> generator, const IntSize& size)

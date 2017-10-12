@@ -52,7 +52,8 @@ void UnacceleratedStaticBitmapImage::Draw(PaintCanvas* canvas,
                                           const FloatRect& dst_rect,
                                           const FloatRect& src_rect,
                                           RespectImageOrientationEnum,
-                                          ImageClampingMode clamp_mode) {
+                                          ImageClampingMode clamp_mode,
+                                          ImageDecodingMode) {
   StaticBitmapImage::DrawHelper(canvas, flags, dst_rect, src_rect, clamp_mode,
                                 PaintImageForCurrentFrame());
 }

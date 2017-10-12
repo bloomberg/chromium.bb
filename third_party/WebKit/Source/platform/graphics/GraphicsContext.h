@@ -201,12 +201,14 @@ class PLATFORM_EXPORT GraphicsContext {
                        SkBlendMode);
 
   void DrawImage(Image*,
+                 Image::ImageDecodingMode,
                  const FloatRect& dest_rect,
                  const FloatRect* src_rect = nullptr,
                  SkBlendMode = SkBlendMode::kSrcOver,
                  RespectImageOrientationEnum = kDoNotRespectImageOrientation);
   void DrawImageRRect(
       Image*,
+      Image::ImageDecodingMode,
       const FloatRoundedRect& dest,
       const FloatRect& src_rect,
       SkBlendMode = SkBlendMode::kSrcOver,

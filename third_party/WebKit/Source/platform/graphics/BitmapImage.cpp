@@ -292,12 +292,20 @@ void BitmapImage::Draw(
     const FloatRect& dst_rect,
     const FloatRect& src_rect,
     RespectImageOrientationEnum should_respect_image_orientation,
-    ImageClampingMode clamp_mode) {
+    ImageClampingMode clamp_mode,
+    ImageDecodingMode decode_mode) {
   TRACE_EVENT0("skia", "BitmapImage::draw");
 
   PaintImage image = PaintImageForCurrentFrame();
   if (!image)
     return;  // It's too early and we don't have an image yet.
+
+  auto paint_image_decoding_mode = ToPaintImageDecodingMode(decode_mode);
+  if (image.decoding_mode() != paint_image_decoding_mode) {
+    image = PaintImageBuilder::WithCopy(std::move(image))
+                .set_decoding_mode(paint_image_decoding_mode)
+                .TakePaintImage();
+  }
 
   FloatRect adjusted_src_rect = src_rect;
   adjusted_src_rect.Intersect(SkRect::MakeWH(image.width(), image.height()));

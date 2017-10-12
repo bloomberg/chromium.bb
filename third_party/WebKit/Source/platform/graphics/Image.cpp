@@ -122,7 +122,7 @@ void Image::DrawTiledBackground(GraphicsContext& ctxt,
   if (one_tile_rect.Contains(dest_rect)) {
     const FloatRect visible_src_rect =
         ComputeSubsetForTile(one_tile_rect, dest_rect, intrinsic_tile_size);
-    ctxt.DrawImage(this, dest_rect, &visible_src_rect, op,
+    ctxt.DrawImage(this, kSyncDecode, dest_rect, &visible_src_rect, op,
                    kDoNotRespectImageOrientation);
     return;
   }

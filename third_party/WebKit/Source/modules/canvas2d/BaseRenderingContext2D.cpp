@@ -1084,7 +1084,7 @@ void BaseRenderingContext2D::DrawImageInternal(PaintCanvas* c,
     image_flags.setAntiAlias(ShouldDrawImageAntialiased(dst_rect));
     image->Draw(c, image_flags, dst_rect, src_rect,
                 kDoNotRespectImageOrientation,
-                Image::kDoNotClampImageToSourceRect);
+                Image::kDoNotClampImageToSourceRect, Image::kSyncDecode);
   } else {
     c->save();
     c->clipRect(dst_rect);
