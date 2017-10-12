@@ -144,6 +144,27 @@ class StartupBrowserCreator {
                           Profile* last_used_profile,
                           const Profiles& last_opened_profiles);
 
+  // Launch browser for |last_opened_profiles| if it's not empty. Otherwise,
+  // launch browser for |last_used_profile|. Return false if any browser is
+  // failed to be launched. Otherwise, return true.
+  bool LaunchBrowserForLastProfiles(const base::CommandLine& command_line,
+                                    const base::FilePath& cur_dir,
+                                    bool process_startup,
+                                    Profile* last_used_profile,
+                                    const Profiles& last_opened_profiles);
+
+  // Launch the |last_used_profile| with the full command line, and the other
+  // |last_opened_profiles| without the URLs to launch. Return false if any
+  // browser is failed to be launched. Otherwise, return true.
+
+  bool ProcessLastOpenedProfiles(
+      const base::CommandLine& command_line,
+      const base::FilePath& cur_dir,
+      chrome::startup::IsProcessStartup is_process_startup,
+      chrome::startup::IsFirstRun is_first_run,
+      Profile* last_used_profile,
+      const Profiles& last_opened_profiles);
+
   // Returns the list of URLs to open from the command line.
   static std::vector<GURL> GetURLsFromCommandLine(
       const base::CommandLine& command_line,
