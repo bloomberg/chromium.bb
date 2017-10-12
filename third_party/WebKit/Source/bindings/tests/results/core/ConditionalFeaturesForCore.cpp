@@ -55,6 +55,12 @@ void InstallConditionalFeaturesForCore(
       V8Window::installMojoJS(isolate, world, instance_object, prototype_object,
                               interface_object);
     }
+    if (settings && settings->isMojoJSTestEnabled()) {
+      v8::Local<v8::Object> instance_object =
+          script_state->GetContext()->Global();
+      V8Window::installMojoJSTest(isolate, world, instance_object,
+                                  prototype_object, interface_object);
+    }
   }
   // TODO(iclelland): Extract this common code out of ConditionalFeaturesForCore
   // and ConditionalFeaturesForModules into a block.

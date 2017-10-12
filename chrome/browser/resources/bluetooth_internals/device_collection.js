@@ -50,7 +50,7 @@ cr.define('device_collection', function() {
 
     /**
      * Adds or updates a Device with new DeviceInfo.
-     * @param {!interfaces.BluetoothDevice.DeviceInfo} deviceInfo
+     * @param {!bluetooth.mojom.DeviceInfo} deviceInfo
      */
     addOrUpdate: function(deviceInfo) {
       deviceInfo.removed = false;
@@ -75,7 +75,7 @@ cr.define('device_collection', function() {
 
     /**
      * Marks the Device as removed.
-     * @param {!interfaces.bluetoothDevice.DeviceInfo} deviceInfo
+     * @param {!bluetooth.mojom.DeviceInfo} deviceInfo
      */
     remove: function(deviceInfo) {
       var device = this.getByAddress(deviceInfo.address);

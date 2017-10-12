@@ -9,6 +9,7 @@
     DependentLifetime,
     Exposed=(Window,Worker),
     RaisesException=Constructor,
+    ContextEnabled=MojoJSTest,
     RuntimeEnabled=MojoJSTest
 ] interface MojoInterfaceInterceptor : EventTarget {
     [RaisesException] void start();

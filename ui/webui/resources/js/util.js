@@ -508,20 +508,6 @@ if (!('key' in KeyboardEvent.prototype)) {
 // </if>  /* is_ios */
 
 /**
- * Helper to convert callback-based define() API to a promise-based API.
- * @suppress {undefinedVars}
- * @param {!Array<string>} moduleNames
- * @return {!Promise}
- */
-function importModules(moduleNames) {
-  return new Promise(function(resolve) {
-    define(moduleNames, function() {
-      resolve(Array.from(arguments));
-    });
-  });
-}
-
-/**
  * @param {!Event} e
  * @return {boolean} Whether a modifier key was down when processing |e|.
  */

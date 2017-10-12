@@ -293,9 +293,9 @@ cr.define('value_control', function() {
      */
     redraw: function() {
       this.readBtn_.hidden =
-          (this.properties_ & interfaces.BluetoothDevice.Property.READ) === 0;
+          (this.properties_ & bluetooth.mojom.Property.READ) === 0;
       this.writeBtn_.hidden =
-          (this.properties_ & interfaces.BluetoothDevice.Property.WRITE) === 0;
+          (this.properties_ & bluetooth.mojom.Property.WRITE) === 0;
 
       var isAvailable = !this.readBtn_.hidden || !this.writeBtn_.hidden;
       this.unavailableMessage_.hidden = isAvailable;
@@ -319,13 +319,13 @@ cr.define('value_control', function() {
 
     /**
      * Gets an error string describing the given |result| code.
-     * @param {!interfaces.BluetoothDevice.GattResult} result
+     * @param {!bluetooth.mojom.GattResult} result
      * @private
      */
     getErrorString_: function(result) {
       // TODO(crbug.com/663394): Replace with more descriptive error
       // messages.
-      var GattResult = interfaces.BluetoothDevice.GattResult;
+      var GattResult = bluetooth.mojom.GattResult;
       return Object.keys(GattResult).find(function(key) {
         return GattResult[key] === result;
       });
@@ -354,8 +354,7 @@ cr.define('value_control', function() {
           .then(function(response) {
             this.readBtn_.disabled = false;
 
-            if (response.result ===
-                interfaces.BluetoothDevice.GattResult.SUCCESS) {
+            if (response.result === bluetooth.mojom.GattResult.SUCCESS) {
               this.setValue(response.value);
               Snackbar.show(
                   this.deviceAddress_ + ': Read succeeded',
@@ -395,8 +394,7 @@ cr.define('value_control', function() {
           .then(function(response) {
             this.writeBtn_.disabled = false;
 
-            if (response.result ===
-                interfaces.BluetoothDevice.GattResult.SUCCESS) {
+            if (response.result === bluetooth.mojom.GattResult.SUCCESS) {
               Snackbar.show(
                   this.deviceAddress_ + ': Write succeeded',
                   SnackbarType.SUCCESS);

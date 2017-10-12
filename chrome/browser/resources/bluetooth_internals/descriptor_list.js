@@ -25,7 +25,7 @@ cr.define('descriptor_list', function() {
    * A fieldset is created within the element for the primitive
    * properties, 'id' and 'uuid' within the DescriptorInfo object.
    * @constructor
-   * @param {!interfaces.BluetoothDevice.DescriptorInfo} descriptorInfo
+   * @param {!bluetooth.mojom.DescriptorInfo} descriptorInfo
    * @param {string} deviceAddress
    * @param {string} serviceId
    * @param {string} characteristicId
@@ -35,7 +35,7 @@ cr.define('descriptor_list', function() {
     var listItem = new ExpandableListItem();
     listItem.__proto__ = DescriptorListItem.prototype;
 
-    /** @type {!interfaces.BluetoothDevice.DescriptorInfo} */
+    /** @type {!bluetooth.mojom.DescriptorInfo} */
     listItem.info = descriptorInfo;
     /** @private {string} */
     listItem.deviceAddress_ = deviceAddress;

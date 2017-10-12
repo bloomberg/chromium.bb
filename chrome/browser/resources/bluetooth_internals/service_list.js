@@ -21,7 +21,7 @@ cr.define('service_list', function() {
   var PROPERTY_NAMES = {
     id: 'ID',
     'uuid.uuid': 'UUID',
-    is_primary: 'Type',
+    isPrimary: 'Type',
   };
 
   /**
@@ -30,7 +30,7 @@ cr.define('service_list', function() {
    * contains an ObjectFieldSet that displays all of the properties in the
    * given |serviceInfo|. Data is not loaded until the ServiceListItem is
    * expanded for the first time.
-   * @param {!interfaces.BluetoothDevice.ServiceInfo} serviceInfo
+   * @param {!bluetooth.mojom.ServiceInfo} serviceInfo
    * @param {string} deviceAddress
    * @constructor
    */
@@ -38,7 +38,7 @@ cr.define('service_list', function() {
     var listItem = new ExpandableListItem();
     listItem.__proto__ = ServiceListItem.prototype;
 
-    /** @type {!interfaces.BluetoothDevice.ServiceInfo} */
+    /** @type {!bluetooth.mojom.ServiceInfo} */
     listItem.info = serviceInfo;
     /** @private {string} */
     listItem.deviceAddress_ = deviceAddress;
@@ -64,7 +64,7 @@ cr.define('service_list', function() {
       this.serviceFieldSet_.setObject({
         id: this.info.id,
         'uuid.uuid': this.info.uuid.uuid,
-        is_primary: this.info.is_primary ? 'Primary' : 'Secondary',
+        isPrimary: this.info.isPrimary ? 'Primary' : 'Secondary',
       });
 
       // Create content for display in brief content container.
