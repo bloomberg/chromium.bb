@@ -152,6 +152,7 @@ void PrepareBitmapCopyOutputResult(
     return;
   }
   SkCanvas canvas(grayscale_bitmap);
+  canvas.clear(SK_ColorBLACK);
   SkPaint paint;
   paint.setColorFilter(SkLumaColorFilter::Make());
   canvas.drawBitmap(scaled_bitmap, SkIntToScalar(0), SkIntToScalar(0), &paint);
