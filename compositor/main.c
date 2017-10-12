@@ -119,6 +119,7 @@ struct wet_compositor {
 };
 
 static FILE *weston_logfile = NULL;
+static struct weston_debug_scope *log_scope;
 
 static int cached_tm_mday = -1;
 
@@ -149,9 +150,19 @@ static int weston_log_timestamp(void)
 static void
 custom_handler(const char *fmt, va_list arg)
 {
+	char timestr[128];
+	va_list arg2;
+
+	va_copy(arg2, arg);
 	weston_log_timestamp();
 	fprintf(weston_logfile, "libwayland: ");
-	vfprintf(weston_logfile, fmt, arg);
+	vfprintf(weston_logfile, fmt, arg2);
+	va_end(arg2);
+
+	weston_debug_scope_printf(log_scope, "%s libwayland: ",
+			weston_debug_scope_timestamp(log_scope,
+			timestr, sizeof timestr));
+	weston_debug_scope_vprintf(log_scope, fmt, arg);
 }
 
 static void
@@ -183,9 +194,21 @@ static int
 vlog(const char *fmt, va_list ap)
 {
 	int l;
+	char timestr[128];
+	va_list ap2;
+
+	va_copy(ap2, ap);
+
+	if (weston_debug_scope_is_enabled(log_scope)) {
+		weston_debug_scope_printf(log_scope, "%s ",
+				weston_debug_scope_timestamp(log_scope,
+				timestr, sizeof timestr));
+		weston_debug_scope_vprintf(log_scope, fmt, ap);
+	}
 
 	l = weston_log_timestamp();
-	l += vfprintf(weston_logfile, fmt, ap);
+	l += vfprintf(weston_logfile, fmt, ap2);
+	va_end(ap2);
 
 	return l;
 }
@@ -193,6 +216,12 @@ vlog(const char *fmt, va_list ap)
 static int
 vlog_continue(const char *fmt, va_list argp)
 {
+	va_list argp2;
+
+	va_copy(argp2, argp);
+	weston_debug_scope_vprintf(log_scope, fmt, argp2);
+	va_end(argp2);
+
 	return vfprintf(weston_logfile, fmt, argp);
 }
 
@@ -2490,6 +2519,9 @@ int main(int argc, char *argv[])
 	}
 	segv_compositor = wet.compositor;
 
+	log_scope = weston_compositor_add_debug_scope(wet.compositor, "log",
+			"Weston and Wayland log\n", NULL, NULL);
+
 	if (debug_protocol)
 		weston_compositor_enable_debug_protocol(wet.compositor);
 
@@ -2602,6 +2634,8 @@ out:
 	/* free(NULL) is valid, and it won't be NULL if it's used */
 	free(wet.parsed_options);
 
+	weston_debug_scope_destroy(log_scope);
+	log_scope = NULL;
 	weston_compositor_destroy(wet.compositor);
 
 out_signals:
