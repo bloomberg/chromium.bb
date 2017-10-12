@@ -206,6 +206,9 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   int CaretMaxOffset() const override;
   unsigned ResolvedTextLength() const;
 
+  // True if any character remains after CSS white-space collapsing.
+  bool HasNonCollapsedText() const;
+
   bool ContainsReversedText() const { return contains_reversed_text_; }
 
   bool IsSecure() const {
