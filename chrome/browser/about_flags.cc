@@ -1901,7 +1901,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-chrome-home", flag_descriptions::kChromeHomeName,
      flag_descriptions::kChromeHomeDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kChromeHomeFeature)},
-    {"always-show-chrome-home-promo", flag_descriptions::kChromeHomePromoName,
+    {"enable-chrome-home-promo", flag_descriptions::kChromeHomePromoName,
      flag_descriptions::kChromeHomePromoDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kChromeHomePromo)},
     {"enable-chrome-home-doodle", flag_descriptions::kChromeHomeDoodleName,
