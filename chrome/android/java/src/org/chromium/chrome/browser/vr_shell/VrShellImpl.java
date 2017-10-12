@@ -428,7 +428,7 @@ public class VrShellImpl
     // the security icon in the URL bar.
     @CalledByNative
     public void onUnhandledPageInfo() {
-        mDelegate.requestToExitVr(new OnExitVrRequestListener() {
+        VrShellDelegate.requestToExitVr(new OnExitVrRequestListener() {
             @Override
             public void onSucceeded() {
                 PageInfoPopup.show(
