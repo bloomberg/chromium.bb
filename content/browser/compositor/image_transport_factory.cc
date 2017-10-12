@@ -4,56 +4,26 @@
 
 #include "content/browser/compositor/image_transport_factory.h"
 
-#include "base/command_line.h"
-#include "base/single_thread_task_runner.h"
-#include "content/browser/compositor/gpu_process_transport_factory.h"
-#include "ui/compositor/compositor.h"
-#include "ui/compositor/compositor_switches.h"
-#include "ui/gl/gl_implementation.h"
+#include "base/logging.h"
 
 namespace content {
-
 namespace {
-ImageTransportFactory* g_factory = NULL;
-bool g_initialized_for_unit_tests = false;
-static gl::DisableNullDrawGLBindings* g_disable_null_draw = NULL;
 
-void SetFactory(ImageTransportFactory* factory) {
-  g_factory = factory;
-}
+ImageTransportFactory* g_factory = nullptr;
 
-}
+}  // namespace
 
 // static
-void ImageTransportFactory::Initialize(
-    scoped_refptr<base::SingleThreadTaskRunner> resize_task_runner) {
-  DCHECK(!g_factory || g_initialized_for_unit_tests);
-  if (g_initialized_for_unit_tests)
-    return;
-  SetFactory(new GpuProcessTransportFactory(std::move(resize_task_runner)));
-}
-
-void ImageTransportFactory::InitializeForUnitTests(
+void ImageTransportFactory::SetFactory(
     std::unique_ptr<ImageTransportFactory> factory) {
   DCHECK(!g_factory);
-  DCHECK(!g_initialized_for_unit_tests);
-  g_initialized_for_unit_tests = true;
-
-  const base::CommandLine* command_line =
-      base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnablePixelOutputInTests))
-    g_disable_null_draw = new gl::DisableNullDrawGLBindings;
-
-  SetFactory(factory.release());
+  g_factory = factory.release();
 }
 
 // static
 void ImageTransportFactory::Terminate() {
   delete g_factory;
-  g_factory = NULL;
-  delete g_disable_null_draw;
-  g_disable_null_draw = NULL;
-  g_initialized_for_unit_tests = false;
+  g_factory = nullptr;
 }
 
 // static

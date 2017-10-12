@@ -6,22 +6,9 @@
 #define CONTENT_BROWSER_COMPOSITOR_IMAGE_TRANSPORT_FACTORY_H_
 
 #include <memory>
-#include <string>
 
-#include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
-#include "gpu/ipc/common/surface_handle.h"
-#include "ui/gfx/native_widget_types.h"
-#include "ui/latency/latency_info.h"
-
-namespace base {
-class SingleThreadTaskRunner;
-}
-
-namespace gfx {
-enum class SwapResult;
-}
 
 namespace ui {
 class Compositor;
@@ -47,14 +34,8 @@ class CONTENT_EXPORT ImageTransportFactory {
  public:
   virtual ~ImageTransportFactory() {}
 
-  // Initializes the global transport factory.
-  static void Initialize(
-      scoped_refptr<base::SingleThreadTaskRunner> resize_task_runner);
-
-  // Initializes the global transport factory for unit tests using the provided
-  // context factory.
-  static void InitializeForUnitTests(
-      std::unique_ptr<ImageTransportFactory> factory);
+  // Sets the global transport factory.
+  static void SetFactory(std::unique_ptr<ImageTransportFactory> factory);
 
   // Terminates the global transport factory.
   static void Terminate();

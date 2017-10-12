@@ -58,6 +58,7 @@
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/compositor/gpu_process_transport_factory.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/dom_storage/dom_storage_area.h"
 #include "content/browser/download/download_resource_handler.h"
@@ -1465,7 +1466,8 @@ int BrowserMainLoop::BrowserThreadsStarted() {
 
   DCHECK(factory);
   if (!is_mus) {
-    ImageTransportFactory::Initialize(GetResizeTaskRunner());
+    ImageTransportFactory::SetFactory(
+        std::make_unique<GpuProcessTransportFactory>(GetResizeTaskRunner()));
     ImageTransportFactory::GetInstance()->SetGpuChannelEstablishFactory(
         factory);
   }

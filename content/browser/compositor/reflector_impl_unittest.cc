@@ -137,8 +137,8 @@ class ReflectorImplTest : public testing::Test {
     message_loop_ = base::MakeUnique<base::MessageLoop>();
     ui::InitializeContextFactoryForTests(enable_pixel_output, &context_factory,
                                          &context_factory_private);
-    ImageTransportFactory::InitializeForUnitTests(
-        base::MakeUnique<NoTransportImageTransportFactory>());
+    ImageTransportFactory::SetFactory(
+        std::make_unique<NoTransportImageTransportFactory>());
     task_runner_ = message_loop_->task_runner();
     compositor_task_runner_ = new FakeTaskRunner();
     begin_frame_source_.reset(new viz::DelayBasedBeginFrameSource(

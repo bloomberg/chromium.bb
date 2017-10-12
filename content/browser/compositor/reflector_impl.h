@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "content/common/content_export.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
