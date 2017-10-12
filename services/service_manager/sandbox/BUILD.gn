@@ -21,6 +21,18 @@ component("sandbox") {
     "//base",
   ]
   if (is_mac) {
+    sources += [
+      "mac/sandbox_mac.h",
+      "mac/sandbox_mac.mm",
+    ]
+    deps += [ "//sandbox/mac:seatbelt" ]
     public_deps += [ "mac:packaged_sb_files" ]
+    libs = [
+      "AppKit.framework",
+      "CoreFoundation.framework",
+      "CoreGraphics.framework",
+      "Foundation.framework",
+      "IOSurface.framework",
+    ]
   }
 }

@@ -316,8 +316,6 @@ source_set("common") {
     "sandbox_linux/sandbox_linux.h",
     "sandbox_linux/sandbox_seccomp_bpf_linux.cc",
     "sandbox_linux/sandbox_seccomp_bpf_linux.h",
-    "sandbox_mac.h",
-    "sandbox_mac.mm",
     "sandbox_win.cc",
     "sandbox_win.h",
     "savable_subframe.h",
