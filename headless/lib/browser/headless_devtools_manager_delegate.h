@@ -85,6 +85,11 @@ class HeadlessDevToolsManagerDelegate
       int session_id,
       int command_id,
       const base::DictionaryValue* params);
+  std::unique_ptr<base::DictionaryValue> Close(
+      content::DevToolsAgentHost* agent_host,
+      int session_id,
+      int command_id,
+      const base::DictionaryValue* params);
   std::unique_ptr<base::DictionaryValue> SetWindowBounds(
       content::DevToolsAgentHost* agent_host,
       int session_id,
