@@ -1976,6 +1976,12 @@ unsigned LayoutText::ResolvedTextLength() const {
   return len;
 }
 
+bool LayoutText::HasNonCollapsedText() const {
+  if (ShouldUseNGAlternatives())
+    return ResolvedTextLength();
+  return FirstTextBox();
+}
+
 void LayoutText::MomentarilyRevealLastTypedCharacter(
     unsigned last_typed_character_offset) {
   if (!g_secure_text_timers)
