@@ -269,6 +269,7 @@
     'blink_css_fragmentation_tests': {
       'filepath': 'third_party/WebKit/LayoutTests/fast/multicol/' \
                   '|third_party/WebKit/LayoutTests/fast/pagination/' \
+                  '|third_party/WebKit/LayoutTests/fragmentation/' \
                   '|third_party/WebKit/LayoutTests/printing/'
     },
     'blink_css_grid_layout': {
@@ -1716,7 +1717,7 @@
                   'dglazkov+blink@chromium.org',
                   'rob.buis@samsung.com'],
     'blink_css_flexbox': ['cbiesinger@chromium.org'],
-    'blink_css_fragmentation_tests': ['mstensho@opera.com'],
+    'blink_css_fragmentation_tests': [''],
     'blink_css_grid_layout': ['jfernandez@igalia.com',
                               'rego@igalia.com',
                               'svillar@igalia.com'],
