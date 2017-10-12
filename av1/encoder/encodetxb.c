@@ -1199,7 +1199,7 @@ static INLINE int check_br_neighbor(tran_low_t qc) {
   return abs(qc) > BR_MAG_OFFSET;
 }
 
-#define FAST_OPTIMIZE_TXB 1
+#define FAST_OPTIMIZE_TXB 0
 
 #if FAST_OPTIMIZE_TXB
 #define ALNB_REF_OFFSET_NUM 2
