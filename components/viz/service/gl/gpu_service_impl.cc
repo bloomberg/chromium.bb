@@ -161,7 +161,7 @@ void GpuServiceImpl::InitializeWithHost(
   gpu_host->DidInitialize(gpu_info_, gpu_feature_info_);
   gpu_host_ = ui::mojom::ThreadSafeGpuHostPtr::Create(gpu_host.PassInterface(),
                                                       io_runner_);
-  if (!in_host_process_) {
+  if (!in_host_process()) {
     // The global callback is reset from the dtor. So Unretained() here is safe.
     // Note that the callback can be called from any thread. Consequently, the
     // callback cannot use a WeakPtr.
@@ -304,7 +304,7 @@ void GpuServiceImpl::RequestCompleteGpuInfo(
              RequestCompleteGpuInfoCallback callback) {
             std::move(callback).Run(gpu_service->gpu_info_);
 #if defined(OS_WIN)
-            if (!gpu_service->in_host_process_) {
+            if (!gpu_service->in_host_process()) {
               // The unsandboxed GPU process fulfilled its duty. Rest
               // in peace.
               base::RunLoop::QuitCurrentWhenIdleDeprecated();
@@ -322,7 +322,7 @@ void GpuServiceImpl::UpdateGpuInfoPlatform(
   // initialization (see GpuInit::InitializeAndStartSandbox()) on non-mac
   // platforms, and during in-browser gpu thread initialization on all platforms
   // (See InProcessGpuThread::Init()).
-  if (in_host_process_)
+  if (in_host_process())
     return;
 
   DCHECK_EQ(gpu::kCollectInfoNone, gpu_info_.context_info_state);
@@ -351,7 +351,7 @@ void GpuServiceImpl::UpdateGpuInfoPlatform(
   // GPU full info collection should only happen on un-sandboxed GPU process
   // or single process/in-process gpu mode on Windows.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  DCHECK(command_line->HasSwitch("disable-gpu-sandbox") || in_host_process_);
+  DCHECK(command_line->HasSwitch("disable-gpu-sandbox") || in_host_process());
 
   // We can continue on shutdown here because we're not writing any critical
   // state in this task.
@@ -512,7 +512,7 @@ void GpuServiceImpl::WakeUpGpu() {
 
 void GpuServiceImpl::GpuSwitched() {
   DVLOG(1) << "GPU: GPU has switched";
-  if (!in_host_process_)
+  if (!in_host_process())
     ui::GpuSwitchingManager::GetInstance()->NotifyGpuSwitched();
 }
 

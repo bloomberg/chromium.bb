@@ -10,6 +10,7 @@
 #include "base/power_monitor/power_monitor_device_source.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "build/build_config.h"
 #include "components/viz/service/display_embedder/gpu_display_provider.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/gl/gpu_service_impl.h"
@@ -71,16 +72,44 @@ std::unique_ptr<base::Thread> CreateAndStartCompositorThread() {
   return thread;
 }
 
+std::unique_ptr<base::Thread> CreateAndStartIOThread() {
+  // TODO(sad): We do not need the IO thread once gpu has a separate process.
+  // It should be possible to use |main_task_runner_| for doing IO tasks.
+  base::Thread::Options thread_options(base::MessageLoop::TYPE_IO, 0);
+  thread_options.priority = base::ThreadPriority::NORMAL;
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+  // TODO(reveman): Remove this in favor of setting it explicitly for each
+  // type of process.
+  thread_options.priority = base::ThreadPriority::DISPLAY;
+#endif
+  auto io_thread = std::make_unique<base::Thread>("GpuIOThread");
+  CHECK(io_thread->StartWithOptions(thread_options));
+  return io_thread;
+}
+
 }  // namespace
 
 namespace ui {
 
-GpuMain::GpuMain(mojom::GpuMainRequest request)
-    : io_thread_("GpuIOThread"),
+GpuMain::ExternalDependencies::ExternalDependencies() = default;
+
+GpuMain::ExternalDependencies::~ExternalDependencies() = default;
+
+GpuMain::ExternalDependencies::ExternalDependencies(
+    ExternalDependencies&& other) = default;
+
+GpuMain::ExternalDependencies& GpuMain::ExternalDependencies::operator=(
+    ExternalDependencies&& other) = default;
+
+GpuMain::GpuMain(Delegate* delegate,
+                 ExternalDependencies dependencies,
+                 std::unique_ptr<gpu::GpuInit> gpu_init)
+    : delegate_(delegate),
+      dependencies_(std::move(dependencies)),
+      gpu_init_(std::move(gpu_init)),
       gpu_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      compositor_thread_(CreateAndStartCompositorThread()),
-      compositor_thread_task_runner_(compositor_thread_->task_runner()),
-      binding_(this, std::move(request)) {
+      binding_(this),
+      associated_binding_(this) {
   // TODO(crbug.com/609317): Remove this when Mus Window Server and GPU are
   // split into separate processes. Until then this is necessary to be able to
   // run Mushrome (chrome --mus) with Mus running in the browser process.
@@ -89,30 +118,45 @@ GpuMain::GpuMain(mojom::GpuMainRequest request)
         base::MakeUnique<base::PowerMonitorDeviceSource>());
   }
 
-  // TODO(sad): We do not need the IO thread once gpu has a separate process. It
-  // should be possible to use |main_task_runner_| for doing IO tasks.
-  base::Thread::Options thread_options(base::MessageLoop::TYPE_IO, 0);
-  thread_options.priority = base::ThreadPriority::NORMAL;
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
-  // TODO(reveman): Remove this in favor of setting it explicitly for each type
-  // of process.
-  thread_options.priority = base::ThreadPriority::DISPLAY;
-#endif
-  CHECK(io_thread_.StartWithOptions(thread_options));
+  if (!gpu_init_) {
+    // Initialize GpuInit before starting the IO or compositor threads.
+    gpu_init_ = std::make_unique<gpu::GpuInit>();
+    gpu_init_->set_sandbox_helper(this);
+    // TODO(crbug.com/609317): Use InitializeAndStartSandbox() when gpu-mus is
+    // split into a separate process.
+    gpu_init_->InitializeInProcess(base::CommandLine::ForCurrentProcess());
+  }
 
-  gpu_init_ = std::make_unique<gpu::GpuInit>();
-  gpu_init_->set_sandbox_helper(this);
-  // TODO(crbug.com/609317): Use InitializeAndStartSandbox() when gpu-mus is
-  // split into a separate process.
-  gpu_init_->InitializeInProcess(base::CommandLine::ForCurrentProcess());
+  if (!dependencies_.io_thread_task_runner)
+    io_thread_ = CreateAndStartIOThread();
+  if (dependencies_.create_display_compositor) {
+    compositor_thread_ = CreateAndStartCompositorThread();
+    compositor_thread_task_runner_ = compositor_thread_->task_runner();
+  }
+
   gpu_service_ = base::MakeUnique<viz::GpuServiceImpl>(
       gpu_init_->gpu_info(), gpu_init_->TakeWatchdogThread(),
-      io_thread_.task_runner(), gpu_init_->gpu_feature_info());
+      io_thread_ ? io_thread_->task_runner()
+                 : dependencies_.io_thread_task_runner,
+      gpu_init_->gpu_feature_info());
 }
 
 GpuMain::~GpuMain() {
   DCHECK(gpu_thread_task_runner_->BelongsToCurrentThread());
-  io_thread_.Stop();
+  if (io_thread_)
+    io_thread_->Stop();
+}
+
+void GpuMain::SetLogMessagesForHost(LogMessages log_messages) {
+  log_messages_ = std::move(log_messages);
+}
+
+void GpuMain::Bind(mojom::GpuMainRequest request) {
+  binding_.Bind(std::move(request));
+}
+
+void GpuMain::BindAssociated(mojom::GpuMainAssociatedRequest request) {
+  associated_binding_.Bind(std::move(request));
 }
 
 void GpuMain::TearDown() {
@@ -152,21 +196,37 @@ void GpuMain::CreateGpuService(viz::mojom::GpuServiceRequest request,
                                mojo::ScopedSharedBufferHandle activity_flags) {
   DCHECK(gpu_thread_task_runner_->BelongsToCurrentThread());
   gpu_service_->UpdateGPUInfoFromPreferences(preferences);
+  for (const LogMessage& log : log_messages_)
+    gpu_host->RecordLogMessage(log.severity, log.header, log.message);
+  log_messages_.clear();
+  if (!gpu_init_->init_successful()) {
+    LOG(ERROR) << "Exiting GPU process due to errors during initialization";
+    gpu_service_.reset();
+    gpu_host->DidFailInitialize();
+    if (delegate_)
+      delegate_->OnInitializationFailed();
+    return;
+  }
+
+  gpu_service_->Bind(std::move(request));
   gpu_service_->InitializeWithHost(
       std::move(gpu_host),
-      gpu::GpuProcessActivityFlags(std::move(activity_flags)));
-  gpu_service_->Bind(std::move(request));
+      gpu::GpuProcessActivityFlags(std::move(activity_flags)),
+      dependencies_.sync_point_manager, dependencies_.shutdown_event);
 
   if (pending_frame_sink_manager_request_.is_pending()) {
     CreateFrameSinkManagerInternal(
         std::move(pending_frame_sink_manager_request_),
         std::move(pending_frame_sink_manager_client_info_));
   }
+  if (delegate_)
+    delegate_->OnGpuServiceConnection(gpu_service_.get());
 }
 
 void GpuMain::CreateFrameSinkManager(
     viz::mojom::FrameSinkManagerRequest request,
     viz::mojom::FrameSinkManagerClientPtr client) {
+  DCHECK(compositor_thread_task_runner_);
   DCHECK(gpu_thread_task_runner_->BelongsToCurrentThread());
   if (!gpu_service_ || !gpu_service_->is_initialized()) {
     pending_frame_sink_manager_request_ = std::move(request);
