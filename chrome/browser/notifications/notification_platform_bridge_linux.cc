@@ -563,39 +563,34 @@ class NotificationPlatformBridgeLinuxImpl
             base::ContainsKey(capabilities_, kCapabilityBodyHyperlinks)) {
           body << "<a href=\""
                << net::EscapePath(notification->origin_url().spec()) << "\">"
-               << url_display_text << "</a>";
+               << url_display_text << "</a>\n\n";
         } else {
-          body << url_display_text;
+          body << url_display_text << "\n\n";
         }
       } else if (!notification->context_message().empty()) {
         std::string context =
             base::UTF16ToUTF8(notification->context_message());
         if (body_markup)
           EscapeUnsafeCharacters(&context);
-        body << context;
+        body << context << "\n\n";
       }
 
       std::string message = base::UTF16ToUTF8(notification->message());
       if (body_markup)
         EscapeUnsafeCharacters(&message);
-      if (!message.empty()) {
-        if (body.tellp())
-          body << "\n";
-        body << message;
-      }
+      if (!message.empty())
+        body << message << "\n";
 
       if (notification->type() == message_center::NOTIFICATION_TYPE_MULTIPLE) {
         for (const auto& item : notification->items()) {
-          if (body.tellp())
-            body << "\n";
           const std::string title = base::UTF16ToUTF8(item.title);
           const std::string message = base::UTF16ToUTF8(item.message);
           // TODO(peter): Figure out the right way to internationalize
           // this for RTL languages.
           if (body_markup)
-            body << "<b>" << title << "</b> " << message;
+            body << "<b>" << title << "</b> " << message << "\n";
           else
-            body << title << " - " << message;
+            body << title << " - " << message << "\n";
         }
       } else if (notification->type() ==
                      message_center::NOTIFICATION_TYPE_IMAGE &&
@@ -603,16 +598,16 @@ class NotificationPlatformBridgeLinuxImpl
         std::unique_ptr<ResourceFile> image_file = WriteDataToTmpFile(
             ResizeImageToFdoMaxSize(notification->image()).As1xPNGBytes());
         if (image_file) {
-          if (body.tellp())
-            body << "\n";
           body << "<img src=\""
                << net::EscapePath(image_file->file_path().value())
-               << "\" alt=\"\"/>";
+               << "\" alt=\"\"/>\n";
           data->resource_files.push_back(std::move(image_file));
         }
       }
     }
-    writer.AppendString(body.str());
+    std::string body_str = body.str();
+    base::TrimString(body_str, "\n", &body_str);
+    writer.AppendString(body_str);
 
     // Even-indexed elements in this vector are action IDs passed back to
     // us in OnActionInvoked().  Odd-indexed ones contain the button text.
