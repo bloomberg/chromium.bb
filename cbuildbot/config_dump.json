@@ -10581,6 +10581,78 @@
             "chrome_internal"
         ]
     },
+    "grunt-chromium-pfq": {
+        "_template": "chromium_pfq",
+        "boards": [
+            "grunt"
+        ],
+        "buildslave_type": "baremetal",
+        "important": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "grunt-compile-only-pre-cq": {
+        "_template": "compile_only_pre_cq",
+        "boards": [
+            "grunt"
+        ]
+    },
+    "grunt-full": {
+        "_template": "full",
+        "boards": [
+            "grunt"
+        ],
+        "buildslave_type": "baremetal",
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "grunt-no-vmtest-pre-cq": {
+        "_template": "no_vmtest_pre_cq",
+        "boards": [
+            "grunt"
+        ]
+    },
+    "grunt-paladin": {
+        "_template": "paladin",
+        "boards": [
+            "grunt"
+        ],
+        "important": false,
+        "vm_tests": []
+    },
+    "grunt-pre-cq": {
+        "_template": "pre_cq",
+        "boards": [
+            "grunt"
+        ]
+    },
+    "grunt-release": {
+        "_template": "release",
+        "active_waterfall": "chromeos",
+        "boards": [
+            "grunt"
+        ],
+        "buildslave_type": "baremetal"
+    },
+    "grunt-tot-chromium-pfq-informational": {
+        "_template": "chromium_pfq_informational",
+        "boards": [
+            "grunt"
+        ],
+        "buildslave_type": "baremetal",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "grunt-unittest-stress": {
+        "_template": "unittest_stress",
+        "boards": [
+            "grunt"
+        ]
+    },
     "guado-accelerator-compile-only-pre-cq": {
         "_template": "compile_only_pre_cq",
         "boards": [
@@ -16135,6 +16207,7 @@
             "gnawty-release",
             "gonzo-release",
             "gru-release",
+            "grunt-release",
             "guado-accelerator-release",
             "guado-macrophage-release",
             "guado-release",
