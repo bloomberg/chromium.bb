@@ -6,6 +6,7 @@
 
 #include "core/dom/Node.h"
 #include "core/dom/Text.h"
+#include "core/layout/ng/inline/ng_inline_node.h"
 
 namespace blink {
 
@@ -39,6 +40,14 @@ unsigned NGOffsetMappingUnit::ConvertDOMOffsetToTextContent(
     return text_content_start_;
   // Handle has identity mapping.
   return offset - dom_start_ + text_content_start_;
+}
+
+const NGOffsetMappingResult* GetNGOffsetMappingFor(const Node& node,
+                                                   unsigned offset) {
+  Optional<NGInlineNode> inline_node = GetNGInlineNodeFor(node, offset);
+  if (!inline_node)
+    return nullptr;
+  return &inline_node->ComputeOffsetMappingIfNeeded();
 }
 
 NGOffsetMappingResult::NGOffsetMappingResult(NGOffsetMappingResult&& other)
@@ -152,6 +161,13 @@ unsigned NGOffsetMappingResult::EndOfLastNonCollapsedCharacter(
     --unit;
   }
   return fallback;
+}
+
+bool NGOffsetMappingResult::IsNonCollapsedCharacter(const Node& node,
+                                                    unsigned offset) const {
+  const NGOffsetMappingUnit* unit = GetMappingUnitForDOMOffset(node, offset);
+  return unit && offset < unit->DOMEnd() &&
+         unit->GetType() != NGOffsetMappingUnitType::kCollapsed;
 }
 
 }  // namespace blink

@@ -120,6 +120,10 @@ class CORE_EXPORT NGOffsetMappingResult {
   // character does not exist.
   unsigned EndOfLastNonCollapsedCharacter(const Node&, unsigned offset) const;
 
+  // Returns true if the character at the position is non-collapsed. If the
+  // offset is at the end of the node, returns false.
+  bool IsNonCollapsedCharacter(const Node&, unsigned offset) const;
+
   // TODO(xiaochengh): Add APIs for reverse mapping.
 
  private:
@@ -128,6 +132,8 @@ class CORE_EXPORT NGOffsetMappingResult {
 
   DISALLOW_COPY_AND_ASSIGN(NGOffsetMappingResult);
 };
+
+const NGOffsetMappingResult* GetNGOffsetMappingFor(const Node&, unsigned);
 
 }  // namespace blink
 
