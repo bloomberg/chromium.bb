@@ -862,9 +862,9 @@ void BlinkTestRunner::OnPixelsDumpCompleted(const SkBitmap& snapshot) {
   // The snapshot arrives from the GPU process via shared memory. Because MSan
   // can't track initializedness across processes, we must assure it that the
   // pixels are in fact initialized.
-  MSAN_UNPOISON(snapshot.getPixels(), snapshot.getSize());
+  MSAN_UNPOISON(snapshot.getPixels(), snapshot.computeByteSize());
   base::MD5Digest digest;
-  base::MD5Sum(snapshot.getPixels(), snapshot.getSize(), &digest);
+  base::MD5Sum(snapshot.getPixels(), snapshot.computeByteSize(), &digest);
   std::string actual_pixel_hash = base::MD5DigestToBase16(digest);
 
   if (actual_pixel_hash == test_config_->expected_pixel_hash) {

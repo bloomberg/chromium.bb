@@ -35,7 +35,7 @@ void ResizeImage(SkBitmap* decoded_image,
   //   sizeof(skia::mojom::Bitmap::Data_) + pixel data array header (8 bytes)
   // Use a bigger number in case we need padding at the end.
   int64_t struct_size = sizeof(skia::mojom::Bitmap::Data_) + kPadding;
-  int64_t image_size = decoded_image->computeSize64();
+  int64_t image_size = decoded_image->computeByteSize();
   int halves = 0;
   while (struct_size + (image_size >> 2 * halves) > max_size_in_bytes)
     halves++;

@@ -220,7 +220,7 @@ void CanvasCaptureHandler::CreateNewFrame(const SkImage* image) {
        pixmap.colorType() == kBGRA_8888_SkColorType) &&
       pixmap.alphaType() == kUnpremul_SkAlphaType) {
     source_ptr = static_cast<const uint8*>(pixmap.addr(0, 0));
-    source_length = pixmap.getSafeSize64();
+    source_length = pixmap.computeByteSize();
     source_stride = pixmap.rowBytes();
     image_size.set_width(pixmap.width());
     image_size.set_height(pixmap.height());

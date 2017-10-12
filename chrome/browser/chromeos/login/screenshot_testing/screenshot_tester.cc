@@ -319,7 +319,7 @@ ScreenshotTester::Result ScreenshotTester::CompareScreenshotsRegularly(
   testing_result.similarity = result.result;
 
   scoped_refptr<base::RefCountedBytes> diff_image(new base::RefCountedBytes);
-  diff_image->data().resize(result.rgbDiffBitmap.getSize());
+  diff_image->data().resize(result.rgbDiffBitmap.computeByteSize());
   CHECK(gfx::PNGCodec::EncodeBGRASkBitmap(result.rgbDiffBitmap, false,
                                           &diff_image->data()))
       << "Could not encode difference to PNG";

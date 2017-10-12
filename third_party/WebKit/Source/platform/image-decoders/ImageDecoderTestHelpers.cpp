@@ -31,7 +31,7 @@ RefPtr<SharedBuffer> ReadFile(const char* dir, const char* file_name) {
 }
 
 unsigned HashBitmap(const SkBitmap& bitmap) {
-  return StringHasher::HashMemory(bitmap.getPixels(), bitmap.getSize());
+  return StringHasher::HashMemory(bitmap.getPixels(), bitmap.computeByteSize());
 }
 
 static unsigned CreateDecodingBaseline(DecoderCreator create_decoder,

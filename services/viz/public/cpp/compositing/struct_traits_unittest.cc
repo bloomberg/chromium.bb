@@ -1250,9 +1250,9 @@ TEST_F(StructTraitsTest, CopyOutputResult_Bitmap) {
   SkBitmap expected_bitmap;
   expected_bitmap.allocN32Pixels(7, 8, adobe_rgb);
   expected_bitmap.eraseARGB(123, 213, 77, 33);
-  EXPECT_EQ(expected_bitmap.getSize(), out_bitmap.getSize());
+  EXPECT_EQ(expected_bitmap.computeByteSize(), out_bitmap.computeByteSize());
   EXPECT_EQ(0, std::memcmp(expected_bitmap.getPixels(), out_bitmap.getPixels(),
-                           expected_bitmap.getSize()));
+                           expected_bitmap.computeByteSize()));
   EXPECT_TRUE(SkColorSpace::Equals(expected_bitmap.colorSpace(),
                                    out_bitmap.colorSpace()));
 }

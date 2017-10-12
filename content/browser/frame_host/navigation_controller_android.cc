@@ -48,7 +48,7 @@ static base::android::ScopedJavaLocalRef<jobject> CreateJavaNavigationEntry(
       ConvertUTF16ToJavaString(env, entry->GetTitle()));
   ScopedJavaLocalRef<jobject> j_bitmap;
   const content::FaviconStatus& status = entry->GetFavicon();
-  if (status.valid && status.image.ToSkBitmap()->getSize() > 0)
+  if (status.valid && status.image.ToSkBitmap()->computeByteSize() > 0)
     j_bitmap = gfx::ConvertToJavaBitmap(status.image.ToSkBitmap());
 
   return content::Java_NavigationControllerImpl_createNavigationEntry(

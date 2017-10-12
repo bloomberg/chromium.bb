@@ -41,7 +41,7 @@ struct SkBitmap_Data {
     if (!bitmap->tryAllocPixels(
             SkImageInfo::Make(width, height, color_type, alpha_type)))
       return false;
-    if (pixels_size != bitmap->getSize())
+    if (pixels_size != bitmap->computeByteSize())
       return false;
     memcpy(bitmap->getPixels(), pixels, pixels_size);
     return true;
@@ -58,7 +58,7 @@ void ParamTraits<SkBitmap>::Write(base::Pickle* m, const SkBitmap& p) {
   bmp_data.InitSkBitmapDataForTransfer(p);
   m->WriteData(reinterpret_cast<const char*>(&bmp_data),
                static_cast<int>(fixed_size));
-  size_t pixel_size = p.getSize();
+  size_t pixel_size = p.computeByteSize();
   m->WriteData(reinterpret_cast<const char*>(p.getPixels()),
                static_cast<int>(pixel_size));
 }
