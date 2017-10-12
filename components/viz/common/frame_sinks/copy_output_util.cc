@@ -45,8 +45,14 @@ gfx::Rect ComputeResultRect(const gfx::Rect& area,
 
   const int64_t x = FloorScale(area.x(), scale_to.x(), scale_from.x());
   const int64_t y = FloorScale(area.y(), scale_to.y(), scale_from.y());
-  const int64_t w = CeilScale(area.width(), scale_to.x(), scale_from.x());
-  const int64_t h = CeilScale(area.height(), scale_to.y(), scale_from.y());
+  const int64_t w =
+      area.width() == 0
+          ? 0
+          : (CeilScale(area.right(), scale_to.x(), scale_from.x()) - x);
+  const int64_t h =
+      area.height() == 0
+          ? 0
+          : (CeilScale(area.bottom(), scale_to.y(), scale_from.y()) - y);
 
   // These constants define the "reasonable" range of result Rect coordinates.
   constexpr int kMaxOriginOffset = (1 << 24) - 1;  // Arbitrary, but practical.
