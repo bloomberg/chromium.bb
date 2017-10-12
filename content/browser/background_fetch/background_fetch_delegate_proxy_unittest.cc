@@ -61,9 +61,14 @@ class FakeController : public BackgroundFetchDelegateProxy::Controller {
     request_started_ = true;
   }
 
-  // Called when the given |request| has been completed.
+  void DidUpdateRequest(
+      const scoped_refptr<BackgroundFetchRequestInfo>& request,
+      const std::string& download_guid,
+      uint64_t bytes_downloaded) override {}
+
   void DidCompleteRequest(
-      const scoped_refptr<BackgroundFetchRequestInfo>& request) override {
+      const scoped_refptr<BackgroundFetchRequestInfo>& request,
+      const std::string& download_guid) override {
     request_completed_ = true;
   }
 

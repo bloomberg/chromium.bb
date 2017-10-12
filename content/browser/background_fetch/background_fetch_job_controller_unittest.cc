@@ -32,6 +32,7 @@ namespace content {
 namespace {
 
 const char kExampleDeveloperId[] = "my-example-id";
+const char kExampleResponseData[] = "My response data";
 
 class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
  public:
@@ -81,7 +82,9 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
     for (const auto& pair : request_data) {
       CreateRequestWithProvidedResponse(
           pair.second, pair.first,
-          TestResponseBuilder(200 /* response_code */).Build());
+          TestResponseBuilder(200 /* response_code */)
+              .SetResponseData(kExampleResponseData)
+              .Build());
     }
   }
 
@@ -92,16 +95,29 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
     DCHECK(delegate_);
     delegate_proxy_ = std::make_unique<BackgroundFetchDelegateProxy>(delegate_);
 
+    BackgroundFetchRegistration registration;
+    registration.developer_id = registration_id.developer_id();
+    registration.unique_id = registration_id.unique_id();
+
     return std::make_unique<BackgroundFetchJobController>(
         delegate_proxy_.get(), registration_id, BackgroundFetchOptions(),
-        &data_manager_,
+        registration, &data_manager_,
+        base::BindRepeating(
+            &BackgroundFetchJobControllerTest::DidUpdateProgress,
+            base::Unretained(this)),
         base::BindOnce(&BackgroundFetchJobControllerTest::DidCompleteJob,
                        base::Unretained(this)));
   }
 
  protected:
   BackgroundFetchDataManager data_manager_;
+
+  uint64_t last_downloaded_ = 0;
   bool did_complete_job_ = false;
+
+  // Closure that will be invoked every time the JobController receives a
+  // progress update from a download.
+  base::RepeatingClosure job_progress_closure_;
 
   // Closure that will be invoked when the JobController has completed all
   // available jobs. Enables use of a run loop for deterministic waits.
@@ -111,14 +127,25 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
   BackgroundFetchDelegate* delegate_;
 
  private:
-  void DidCreateRegistration(blink::mojom::BackgroundFetchError* out_error,
-                             const base::Closure& quit_closure,
-                             blink::mojom::BackgroundFetchError error) {
+  void DidCreateRegistration(
+      blink::mojom::BackgroundFetchError* out_error,
+      const base::Closure& quit_closure,
+      blink::mojom::BackgroundFetchError error,
+      const base::Optional<BackgroundFetchRegistration>& registration) {
     DCHECK(out_error);
 
     *out_error = error;
 
     quit_closure.Run();
+  }
+
+  void DidUpdateProgress(const std::string& unique_id,
+                         uint64_t download_total,
+                         uint64_t downloaded) {
+    last_downloaded_ = downloaded;
+
+    if (job_progress_closure_)
+      job_progress_closure_.Run();
   }
 
   void DidCompleteJob(BackgroundFetchJobController* controller) {
@@ -233,6 +260,36 @@ TEST_F(BackgroundFetchJobControllerTest, AbortJob) {
 
   EXPECT_EQ(controller->state(), BackgroundFetchJobController::State::ABORTED);
   EXPECT_TRUE(did_complete_job_);
+}
+
+TEST_F(BackgroundFetchJobControllerTest, Progress) {
+  BackgroundFetchRegistrationId registration_id;
+
+  ASSERT_NO_FATAL_FAILURE(CreateRegistrationForRequests(
+      &registration_id, {{GURL("https://example.com/slow_cat.png"), "GET"}}));
+
+  std::unique_ptr<BackgroundFetchJobController> controller =
+      CreateJobController(registration_id);
+
+  controller->Start();
+
+  {
+    base::RunLoop run_loop;
+    job_progress_closure_ = run_loop.QuitClosure();
+    run_loop.Run();
+  }
+
+  EXPECT_GT(last_downloaded_, 0u);
+  EXPECT_LT(last_downloaded_, strlen(kExampleResponseData));
+
+  {
+    base::RunLoop run_loop;
+    job_completed_closure_ = run_loop.QuitClosure();
+    run_loop.Run();
+  }
+
+  EXPECT_TRUE(did_complete_job_);
+  EXPECT_EQ(last_downloaded_, strlen(kExampleResponseData));
 }
 
 }  // namespace

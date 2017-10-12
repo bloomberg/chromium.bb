@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/modules/background_fetch/background_fetch.mojom.h"
 
@@ -31,8 +32,6 @@ class CONTENT_EXPORT BackgroundFetchRegistrationNotifier {
   // Notifies any registered observers for the registration identified by the
   // |unique_id| of the progress. This will cause JavaScript events to fire.
   void Notify(const std::string& unique_id,
-              uint64_t upload_total,
-              uint64_t uploaded,
               uint64_t download_total,
               uint64_t downloaded);
 
@@ -40,6 +39,10 @@ class CONTENT_EXPORT BackgroundFetchRegistrationNotifier {
   // When the background fetch was successful, the Notify() function should have
   // been called beforehand to inform developers of the final state.
   void RemoveObservers(const std::string& unique_id);
+
+  base::WeakPtr<BackgroundFetchRegistrationNotifier> GetWeakPtr() {
+    return weak_factory_.GetWeakPtr();
+  }
 
  private:
   // Called when the connection with the |observer| for the registration
@@ -52,6 +55,8 @@ class CONTENT_EXPORT BackgroundFetchRegistrationNotifier {
   std::multimap<std::string,
                 blink::mojom::BackgroundFetchRegistrationObserverPtr>
       observers_;
+
+  base::WeakPtrFactory<BackgroundFetchRegistrationNotifier> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundFetchRegistrationNotifier);
 };

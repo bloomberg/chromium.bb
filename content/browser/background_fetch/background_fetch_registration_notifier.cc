@@ -9,11 +9,10 @@
 
 namespace content {
 
-BackgroundFetchRegistrationNotifier::BackgroundFetchRegistrationNotifier() =
-    default;
+BackgroundFetchRegistrationNotifier::BackgroundFetchRegistrationNotifier()
+    : weak_factory_(this) {}
 
-BackgroundFetchRegistrationNotifier::~BackgroundFetchRegistrationNotifier() =
-    default;
+BackgroundFetchRegistrationNotifier::~BackgroundFetchRegistrationNotifier() {}
 
 void BackgroundFetchRegistrationNotifier::AddObserver(
     const std::string& unique_id,
@@ -29,13 +28,14 @@ void BackgroundFetchRegistrationNotifier::AddObserver(
 }
 
 void BackgroundFetchRegistrationNotifier::Notify(const std::string& unique_id,
-                                                 uint64_t upload_total,
-                                                 uint64_t uploaded,
                                                  uint64_t download_total,
                                                  uint64_t downloaded) {
   auto range = observers_.equal_range(unique_id);
-  for (auto it = range.first; it != range.second; ++it)
-    it->second->OnProgress(upload_total, uploaded, download_total, downloaded);
+  for (auto it = range.first; it != range.second; ++it) {
+    // TODO(crbug.com/774054): Uploads are not yet supported.
+    it->second->OnProgress(0 /* upload_total */, 0 /* uploaded */,
+                           download_total, downloaded);
+  }
 }
 
 void BackgroundFetchRegistrationNotifier::RemoveObservers(
