@@ -57864,6 +57864,46 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Permissions.BatteryLevel.Accepted.Geolocation" units="%">
+  <owner>timloh@chromium.org</owner>
+  <summary>
+    Battery percentage when a geolocation permission prompt was accepted on
+    Android.
+  </summary>
+</histogram>
+
+<histogram name="Permissions.BatteryLevel.Accepted.LocationSettingsDialog"
+    units="%">
+  <owner>timloh@chromium.org</owner>
+  <summary>
+    Battery percentage when a location settings dialog was accepted.
+  </summary>
+</histogram>
+
+<histogram name="Permissions.BatteryLevel.Denied.Geolocation" units="%">
+  <owner>timloh@chromium.org</owner>
+  <summary>
+    Battery percentage when a geolocation permission prompt was denied on
+    Android.
+  </summary>
+</histogram>
+
+<histogram name="Permissions.BatteryLevel.Denied.LocationSettingsDialog"
+    units="%">
+  <owner>timloh@chromium.org</owner>
+  <summary>
+    Battery percentage when a location settings dialog was denied.
+  </summary>
+</histogram>
+
+<histogram name="Permissions.BatteryLevel.Dismissed.Geolocation" units="%">
+  <owner>timloh@chromium.org</owner>
+  <summary>
+    Battery percentage when a geolocation permission prompt was dismissed on
+    Android.
+  </summary>
+</histogram>
+
 <histogram name="Permissions.Engagement.Accepted" units="%">
   <owner>dominickn@chromium.org</owner>
   <owner>kcarattini@chromium.org</owner>

@@ -4192,6 +4192,7 @@ if (is_android) {
       "../android/java/src/org/chromium/chrome/browser/payments/SslValidityChecker.java",
       "../android/java/src/org/chromium/chrome/browser/permissions/PermissionDialogController.java",
       "../android/java/src/org/chromium/chrome/browser/permissions/PermissionDialogDelegate.java",
+      "../android/java/src/org/chromium/chrome/browser/permissions/PermissionUmaUtil.java",
       "../android/java/src/org/chromium/chrome/browser/photo_picker/DecoderService.java",
       "../android/java/src/org/chromium/chrome/browser/physicalweb/PhysicalWebBroadcastService.java",
       "../android/java/src/org/chromium/chrome/browser/physicalweb/UrlManager.java",
