@@ -4,11 +4,6 @@
 
 #include "chrome/browser/ui/ash/palette_delegate_chromeos.h"
 
-#include "ash/accelerators/accelerator_controller_delegate_classic.h"
-#include "ash/screenshot_delegate.h"
-#include "ash/shell.h"
-#include "ash/shell_port_classic.h"
-#include "ash/utility/screenshot_controller.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/arc/voice_interaction/arc_voice_interaction_framework_service.h"
@@ -112,12 +107,6 @@ void PaletteDelegateChromeOS::SetProfile(Profile* profile) {
   OnPaletteEnabledPrefChanged();
 }
 
-void PaletteDelegateChromeOS::OnPartialScreenshotDone(
-    const base::Closure& then) {
-  if (then)
-    then.Run();
-}
-
 bool PaletteDelegateChromeOS::ShouldAutoOpenPalette() {
   if (!profile_)
     return false;
@@ -130,30 +119,6 @@ bool PaletteDelegateChromeOS::ShouldShowPalette() {
     return false;
 
   return profile_->GetPrefs()->GetBoolean(prefs::kEnableStylusTools);
-}
-
-void PaletteDelegateChromeOS::TakeScreenshot() {
-  auto* screenshot_delegate = ash::ShellPortClassic::Get()
-                                  ->accelerator_controller_delegate()
-                                  ->screenshot_delegate();
-  screenshot_delegate->HandleTakeScreenshotForAllRootWindows();
-}
-
-void PaletteDelegateChromeOS::TakePartialScreenshot(const base::Closure& done) {
-  auto* screenshot_controller = ash::Shell::Get()->screenshot_controller();
-  auto* screenshot_delegate = ash::ShellPortClassic::Get()
-                                  ->accelerator_controller_delegate()
-                                  ->screenshot_delegate();
-  screenshot_controller->set_pen_events_only(true);
-  screenshot_controller->StartPartialScreenshotSession(
-      screenshot_delegate, false /* draw_overlay_immediately */);
-  screenshot_controller->set_on_screenshot_session_done(
-      base::Bind(&PaletteDelegateChromeOS::OnPartialScreenshotDone,
-                 weak_factory_.GetWeakPtr(), done));
-}
-
-void PaletteDelegateChromeOS::CancelPartialScreenshot() {
-  ash::Shell::Get()->screenshot_controller()->CancelScreenshotSession();
 }
 
 }  // namespace chromeos

@@ -4,22 +4,24 @@
 
 #include <memory>
 
+#include "ash/public/cpp/config.h"
 #include "ash/shell.h"
 #include "ash/shell_test_api.h"
 #include "ash/system/palette/mock_palette_tool_delegate.h"
 #include "ash/system/palette/palette_ids.h"
 #include "ash/system/palette/palette_tool.h"
-#include "ash/system/palette/test_palette_delegate.h"
 #include "ash/system/palette/tools/capture_region_mode.h"
 #include "ash/system/palette/tools/capture_screen_action.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/ash_test_helper.h"
+#include "ash/test_screenshot_delegate.h"
+#include "ash/utility/screenshot_controller.h"
 #include "base/macros.h"
+#include "ui/events/test/event_generator.h"
 
 namespace ash {
 
-namespace {
-
-// Base class for all create note ash tests.
+// Base class for all screenshot pallette tools tests.
 class ScreenshotToolTest : public AshTestBase {
  public:
   ScreenshotToolTest() {}
@@ -28,27 +30,33 @@ class ScreenshotToolTest : public AshTestBase {
   void SetUp() override {
     AshTestBase::SetUp();
 
-    ShellTestApi().SetPaletteDelegate(std::make_unique<TestPaletteDelegate>());
-
     palette_tool_delegate_ = std::make_unique<MockPaletteToolDelegate>();
   }
 
-  TestPaletteDelegate* test_palette_delegate() {
-    return static_cast<TestPaletteDelegate*>(Shell::Get()->palette_delegate());
+  TestScreenshotDelegate* test_screenshot_delegate() {
+    return ash_test_helper()->test_screenshot_delegate();
   }
 
  protected:
   std::unique_ptr<MockPaletteToolDelegate> palette_tool_delegate_;
 
+  bool IsPartialScreenshotActive() {
+    return static_cast<bool>(
+        Shell::Get()->screenshot_controller()->on_screenshot_session_done_);
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ScreenshotToolTest);
 };
 
-}  // namespace
-
 // Verifies that capturing a region triggers the partial screenshot delegate
 // method. Invoking the callback passed to the delegate disables the tool.
 TEST_F(ScreenshotToolTest, EnablingCaptureRegionCallsDelegateAndDisablesTool) {
+  // TODO(kaznacheev): Remove when screenshots work with MASH
+  // http://crbug.com/557397.
+  if (Shell::GetAshConfig() != Config::CLASSIC)
+    return;
+
   std::unique_ptr<PaletteTool> tool =
       std::make_unique<CaptureRegionMode>(palette_tool_delegate_.get());
 
@@ -56,26 +64,54 @@ TEST_F(ScreenshotToolTest, EnablingCaptureRegionCallsDelegateAndDisablesTool) {
   // a screenshot session and hides the palette.
   EXPECT_CALL(*palette_tool_delegate_.get(), HidePalette());
   tool->OnEnable();
-  EXPECT_EQ(1, test_palette_delegate()->take_partial_screenshot_count());
+  EXPECT_TRUE(IsPartialScreenshotActive());
   testing::Mock::VerifyAndClearExpectations(palette_tool_delegate_.get());
 
+  // Simulate region selection.
+  EXPECT_CALL(*palette_tool_delegate_.get(),
+              DisableTool(PaletteToolId::CAPTURE_REGION));
+
+  const gfx::Rect selection(100, 200, 300, 400);
+  GetEventGenerator().EnterPenPointerMode();
+  GetEventGenerator().MoveTouch(selection.origin());
+  GetEventGenerator().PressTouch();
+  GetEventGenerator().MoveTouch(
+      gfx::Point(selection.right(), selection.bottom()));
+  GetEventGenerator().ReleaseTouch();
+
+  EXPECT_FALSE(IsPartialScreenshotActive());
+  EXPECT_EQ(1,
+            test_screenshot_delegate()->handle_take_partial_screenshot_count());
+  EXPECT_EQ(selection.ToString(),
+            test_screenshot_delegate()->last_rect().ToString());
+  testing::Mock::VerifyAndClearExpectations(palette_tool_delegate_.get());
+
+  // Enable the tool again
+  tool->OnEnable();
+  EXPECT_TRUE(IsPartialScreenshotActive());
   // Calling the associated callback (partial screenshot finished) will disable
   // the tool.
   EXPECT_CALL(*palette_tool_delegate_.get(),
               DisableTool(PaletteToolId::CAPTURE_REGION));
-  test_palette_delegate()->partial_screenshot_done().Run();
+  Shell::Get()->screenshot_controller()->CancelScreenshotSession();
+  EXPECT_FALSE(IsPartialScreenshotActive());
 }
 
 // Verifies that capturing the screen triggers the screenshot delegate method,
 // disables the tool, and hides the palette.
 TEST_F(ScreenshotToolTest, EnablingCaptureScreenCallsDelegateAndDisablesTool) {
+  // TODO(kaznacheev): Remove when screenshots work with MASH
+  // http://crbug.com/557397.
+  if (Shell::GetAshConfig() != Config::CLASSIC)
+    return;
+
   std::unique_ptr<PaletteTool> tool =
       std::make_unique<CaptureScreenAction>(palette_tool_delegate_.get());
   EXPECT_CALL(*palette_tool_delegate_.get(),
               DisableTool(PaletteToolId::CAPTURE_SCREEN));
   EXPECT_CALL(*palette_tool_delegate_.get(), HidePaletteImmediately());
   tool->OnEnable();
-  EXPECT_EQ(1, test_palette_delegate()->take_screenshot_count());
+  EXPECT_EQ(1, test_screenshot_delegate()->handle_take_screenshot_count());
 }
 
 }  // namespace ash

@@ -35,15 +35,4 @@ bool TestPaletteDelegate::ShouldShowPalette() {
   return should_show_palette_;
 }
 
-void TestPaletteDelegate::TakeScreenshot() {
-  ++take_screenshot_count_;
-}
-
-void TestPaletteDelegate::TakePartialScreenshot(const base::Closure& done) {
-  ++take_partial_screenshot_count_;
-  partial_screenshot_done_ = done;
-}
-
-void TestPaletteDelegate::CancelPartialScreenshot() {}
-
 }  // namespace ash
