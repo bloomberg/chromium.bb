@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_BACKGROUND_FETCH_BACKGROUND_FETCH_DELEGATE_PROXY_H_
 #define CONTENT_BROWSER_BACKGROUND_FETCH_BACKGROUND_FETCH_DELEGATE_PROXY_H_
 
+#include <stdint.h>
 #include <map>
 #include <memory>
 #include <string>
@@ -35,9 +36,17 @@ class CONTENT_EXPORT BackgroundFetchDelegateProxy {
         const scoped_refptr<BackgroundFetchRequestInfo>& request,
         const std::string& download_guid) = 0;
 
+    // Called when the given |request| has an update, meaning that a total of
+    // |bytes_downloaded| are now available for the response.
+    virtual void DidUpdateRequest(
+        const scoped_refptr<BackgroundFetchRequestInfo>& request,
+        const std::string& download_guid,
+        uint64_t bytes_downloaded) = 0;
+
     // Called when the given |request| has been completed.
     virtual void DidCompleteRequest(
-        const scoped_refptr<BackgroundFetchRequestInfo>& request) = 0;
+        const scoped_refptr<BackgroundFetchRequestInfo>& request,
+        const std::string& download_guid) = 0;
 
     virtual ~Controller() {}
   };
@@ -71,6 +80,10 @@ class CONTENT_EXPORT BackgroundFetchDelegateProxy {
   // Should only be called on the IO thread.
   void OnDownloadComplete(const std::string& guid,
                           std::unique_ptr<BackgroundFetchResult> result);
+
+  // Called when progerss has been made for the download identified by |guid|.
+  // Should only be called on the IO thread.
+  void OnDownloadUpdated(const std::string& guid, uint64_t bytes_downloaded);
 
   // Should only be called from the BackgroundFetchDelegate (on the IO thread).
   void DidStartRequest(const std::string& guid,

@@ -84,6 +84,20 @@ void MockBackgroundFetchDelegate::DownloadUrl(
       base::BindOnce(&BackgroundFetchDelegate::Client::OnDownloadStarted,
                      client(), guid, std::move(response)));
 
+  if (test_response->data.size()) {
+    // Report progress at 50% complete.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&BackgroundFetchDelegate::Client::OnDownloadUpdated,
+                       client(), guid, test_response->data.size() / 2));
+
+    // Report progress at 100% complete.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&BackgroundFetchDelegate::Client::OnDownloadUpdated,
+                       client(), guid, test_response->data.size()));
+  }
+
   if (test_response->succeeded_) {
     base::FilePath response_path;
     if (!temp_directory_.IsValid()) {

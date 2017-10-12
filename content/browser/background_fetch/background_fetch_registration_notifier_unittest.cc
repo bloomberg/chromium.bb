@@ -22,10 +22,8 @@ namespace {
 const char kPrimaryUniqueId[] = "7e57ab1e-c0de-a150-ca75-1e75f005ba11";
 const char kSecondaryUniqueId[] = "bb48a9fb-c21f-4c2d-a9ae-58bd48a9fb53";
 
-constexpr uint64_t kUploadTotal = 1;
-constexpr uint64_t kUploaded = 2;
-constexpr uint64_t kDownloadTotal = 3;
-constexpr uint64_t kDownloaded = 4;
+constexpr uint64_t kDownloadTotal = 1;
+constexpr uint64_t kDownloaded = 2;
 
 class TestRegistrationObserver
     : public blink::mojom::BackgroundFetchRegistrationObserver {
@@ -92,12 +90,9 @@ class BackgroundFetchRegistrationNotifierTest : public ::testing::Test {
   // Notifies all observers for the |unique_id| of the made progress, and waits
   // until the task runner managing the Mojo connection has finished.
   void Notify(const std::string& unique_id,
-              uint64_t upload_total,
-              uint64_t uploaded,
               uint64_t download_total,
               uint64_t downloaded) {
-    notifier_->Notify(unique_id, upload_total, uploaded, download_total,
-                      downloaded);
+    notifier_->Notify(unique_id, download_total, downloaded);
     task_runner_->RunUntilIdle();
   }
 
@@ -117,14 +112,14 @@ TEST_F(BackgroundFetchRegistrationNotifierTest, NotifySingleObserver) {
   notifier_->AddObserver(kPrimaryUniqueId, observer->GetPtr());
   ASSERT_EQ(observer->progress_updates().size(), 0u);
 
-  Notify(kPrimaryUniqueId, kUploadTotal, kUploaded, kDownloadTotal,
-         kDownloaded);
+  Notify(kPrimaryUniqueId, kDownloadTotal, kDownloaded);
 
   ASSERT_EQ(observer->progress_updates().size(), 1u);
 
   auto& update = observer->progress_updates()[0];
-  EXPECT_EQ(update.upload_total, kUploadTotal);
-  EXPECT_EQ(update.uploaded, kUploaded);
+  // TODO(crbug.com/774054): Uploads are not yet supported.
+  EXPECT_EQ(update.upload_total, 0u);
+  EXPECT_EQ(update.uploaded, 0u);
   EXPECT_EQ(update.download_total, kDownloadTotal);
   EXPECT_EQ(update.downloaded, kDownloaded);
 }
@@ -146,15 +141,15 @@ TEST_F(BackgroundFetchRegistrationNotifierTest, NotifyMultipleObservers) {
   ASSERT_EQ(secondary_observer->progress_updates().size(), 0u);
 
   // Notify the |kPrimaryUniqueId|.
-  Notify(kPrimaryUniqueId, kUploadTotal, kUploaded, kDownloadTotal,
-         kDownloaded);
+  Notify(kPrimaryUniqueId, kDownloadTotal, kDownloaded);
 
   for (auto& observer : primary_observers) {
     ASSERT_EQ(observer->progress_updates().size(), 1u);
 
     auto& update = observer->progress_updates()[0];
-    EXPECT_EQ(update.upload_total, kUploadTotal);
-    EXPECT_EQ(update.uploaded, kUploaded);
+    // TODO(crbug.com/774054): Uploads are not yet supported.
+    EXPECT_EQ(update.upload_total, 0u);
+    EXPECT_EQ(update.uploaded, 0u);
     EXPECT_EQ(update.download_total, kDownloadTotal);
     EXPECT_EQ(update.downloaded, kDownloaded);
   }
@@ -170,16 +165,14 @@ TEST_F(BackgroundFetchRegistrationNotifierTest,
   notifier_->AddObserver(kPrimaryUniqueId, observer->GetPtr());
   ASSERT_EQ(observer->progress_updates().size(), 0u);
 
-  Notify(kPrimaryUniqueId, kUploadTotal, kUploaded, kDownloadTotal,
-         kDownloaded);
+  Notify(kPrimaryUniqueId, kDownloadTotal, kDownloaded);
 
   ASSERT_EQ(observer->progress_updates().size(), 1u);
 
   // Remove the observers from |kPrimaryUniqueId| from the notifier.
   notifier_->RemoveObservers(kPrimaryUniqueId);
 
-  Notify(kPrimaryUniqueId, kUploadTotal, kUploaded, kDownloadTotal,
-         kDownloaded);
+  Notify(kPrimaryUniqueId, kDownloadTotal, kDownloaded);
 
   // The observers for |kPrimaryUniqueId| were removed, so no second update
   // should have been received by the |observer|.
@@ -193,16 +186,14 @@ TEST_F(BackgroundFetchRegistrationNotifierTest,
   notifier_->AddObserver(kPrimaryUniqueId, observer->GetPtr());
   ASSERT_EQ(observer->progress_updates().size(), 0u);
 
-  Notify(kPrimaryUniqueId, kUploadTotal, kUploaded, kDownloadTotal,
-         kDownloaded);
+  Notify(kPrimaryUniqueId, kDownloadTotal, kDownloaded);
 
   ASSERT_EQ(observer->progress_updates().size(), 1u);
 
   // Closes the binding as would be done from the renderer process.
   observer->Close();
 
-  Notify(kPrimaryUniqueId, kUploadTotal, kUploaded, kDownloadTotal,
-         kDownloaded);
+  Notify(kPrimaryUniqueId, kDownloadTotal, kDownloaded);
 
   // The observers for |kPrimaryUniqueId| were removed, so no second update
   // should have been received by the |observer|.
@@ -215,8 +206,7 @@ TEST_F(BackgroundFetchRegistrationNotifierTest, NotifyWithoutObservers) {
   notifier_->AddObserver(kPrimaryUniqueId, observer->GetPtr());
   ASSERT_EQ(observer->progress_updates().size(), 0u);
 
-  Notify(kSecondaryUniqueId, kUploadTotal, kUploaded, kDownloadTotal,
-         kDownloaded);
+  Notify(kSecondaryUniqueId, kDownloadTotal, kDownloaded);
 
   // Because the notification was for |kSecondaryUniqueId|, no progress updates
   // should be received by the |observer|.

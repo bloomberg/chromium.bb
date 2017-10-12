@@ -15,21 +15,25 @@ BackgroundFetchJobController::BackgroundFetchJobController(
     BackgroundFetchDelegateProxy* delegate_proxy,
     const BackgroundFetchRegistrationId& registration_id,
     const BackgroundFetchOptions& options,
+    const BackgroundFetchRegistration& registration,
     BackgroundFetchDataManager* data_manager,
+    ProgressCallback progress_callback,
     CompletedCallback completed_callback)
     : registration_id_(registration_id),
       options_(options),
+      complete_requests_downloaded_bytes_cache_(registration.downloaded),
       data_manager_(data_manager),
       delegate_proxy_(delegate_proxy),
+      progress_callback_(std::move(progress_callback)),
       completed_callback_(std::move(completed_callback)),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  data_manager_->SetListener(registration_id, this);
+  data_manager_->SetController(registration_id, this);
 }
 
 BackgroundFetchJobController::~BackgroundFetchJobController() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  data_manager_->SetListener(registration_id_, nullptr);
+  data_manager_->SetController(registration_id_, nullptr);
 }
 
 void BackgroundFetchJobController::Start() {
@@ -72,8 +76,25 @@ void BackgroundFetchJobController::DidStartRequest(
                                       download_guid);
 }
 
+void BackgroundFetchJobController::DidUpdateRequest(
+    const scoped_refptr<BackgroundFetchRequestInfo>& request,
+    const std::string& download_guid,
+    uint64_t bytes_downloaded) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (active_request_download_bytes_[download_guid] == bytes_downloaded)
+    return;
+
+  active_request_download_bytes_[download_guid] = bytes_downloaded;
+
+  progress_callback_.Run(registration_id_.unique_id(), options_.download_total,
+                         complete_requests_downloaded_bytes_cache_ +
+                             GetInProgressDownloadedBytes());
+}
+
 void BackgroundFetchJobController::DidCompleteRequest(
-    const scoped_refptr<BackgroundFetchRequestInfo>& request) {
+    const scoped_refptr<BackgroundFetchRequestInfo>& request,
+    const std::string& download_guid) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(state_ == State::FETCHING || state_ == State::ABORTED);
 
@@ -81,6 +102,11 @@ void BackgroundFetchJobController::DidCompleteRequest(
   // never get here and the DCHECK above should only allow FETCHING.
   if (state_ == State::ABORTED)
     return;
+
+  // This request is no longer in-progress, so the DataManager will take over
+  // responsibility for storing its downloaded bytes, though still need a cache.
+  active_request_download_bytes_.erase(download_guid);
+  complete_requests_downloaded_bytes_cache_ += request->GetFileSize();
 
   // The DataManager must acknowledge that it stored the data and that there are
   // no more pending requests to avoid marking this job as completed too early.
@@ -114,6 +140,13 @@ void BackgroundFetchJobController::UpdateUI(const std::string& title) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   delegate_proxy_->UpdateUI(title);
+}
+
+uint64_t BackgroundFetchJobController::GetInProgressDownloadedBytes() {
+  uint64_t sum = 0;
+  for (const auto& entry : active_request_download_bytes_)
+    sum += entry.second;
+  return sum;
 }
 
 void BackgroundFetchJobController::Abort() {

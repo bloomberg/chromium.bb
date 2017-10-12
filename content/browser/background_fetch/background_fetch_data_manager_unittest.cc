@@ -102,9 +102,11 @@ class BackgroundFetchDataManagerTest : public BackgroundFetchTestBase {
     return data;
   }
 
-  void DidCreateRegistration(base::Closure quit_closure,
-                             blink::mojom::BackgroundFetchError* out_error,
-                             blink::mojom::BackgroundFetchError error) {
+  void DidCreateRegistration(
+      base::Closure quit_closure,
+      blink::mojom::BackgroundFetchError* out_error,
+      blink::mojom::BackgroundFetchError error,
+      const base::Optional<BackgroundFetchRegistration>& registration) {
     *out_error = error;
 
     quit_closure.Run();

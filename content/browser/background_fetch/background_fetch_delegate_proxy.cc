@@ -132,6 +132,10 @@ void BackgroundFetchDelegateProxy::Core::OnDownloadUpdated(
     const std::string& guid,
     uint64_t bytes_downloaded) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&BackgroundFetchDelegateProxy::OnDownloadUpdated,
+                     io_parent_, guid, bytes_downloaded));
 }
 
 void BackgroundFetchDelegateProxy::Core::OnDownloadComplete(
@@ -216,6 +220,7 @@ void BackgroundFetchDelegateProxy::DidStartRequest(
     const std::string& guid,
     std::unique_ptr<BackgroundFetchResponse> response) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_EQ(controller_map_.count(guid), 1u);
 
   const scoped_refptr<BackgroundFetchRequestInfo>& request_info =
       controller_map_[guid].first;
@@ -227,10 +232,26 @@ void BackgroundFetchDelegateProxy::DidStartRequest(
     job_controller->DidStartRequest(request_info, guid);
 }
 
+void BackgroundFetchDelegateProxy::OnDownloadUpdated(
+    const std::string& guid,
+    uint64_t bytes_downloaded) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_EQ(controller_map_.count(guid), 1u);
+
+  const scoped_refptr<BackgroundFetchRequestInfo>& request_info =
+      controller_map_[guid].first;
+  base::WeakPtr<Controller> job_controller = controller_map_[guid].second;
+
+  // TODO(peter): Should we update the |request_info| with the progress?
+  if (job_controller)
+    job_controller->DidUpdateRequest(request_info, guid, bytes_downloaded);
+}
+
 void BackgroundFetchDelegateProxy::OnDownloadComplete(
     const std::string& guid,
     std::unique_ptr<BackgroundFetchResult> result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_EQ(controller_map_.count(guid), 1u);
 
   const scoped_refptr<BackgroundFetchRequestInfo>& request_info =
       controller_map_[guid].first;
@@ -239,7 +260,7 @@ void BackgroundFetchDelegateProxy::OnDownloadComplete(
   request_info->SetResult(std::move(result));
 
   if (job_controller)
-    job_controller->DidCompleteRequest(request_info);
+    job_controller->DidCompleteRequest(request_info, guid);
 }
 
 }  // namespace content
