@@ -50,6 +50,9 @@ class SchedulerWorkerDefaultDelegate : public SchedulerWorker::Delegate {
   SchedulerWorkerDefaultDelegate() = default;
 
   // SchedulerWorker::Delegate:
+  void OnCanScheduleSequence(scoped_refptr<Sequence> sequence) override {
+    ADD_FAILURE() << "Unexpected call to OnCanScheduleSequence().";
+  }
   void OnMainEntry(SchedulerWorker* worker) override {}
   scoped_refptr<Sequence> GetWork(SchedulerWorker* worker) override {
     return nullptr;
@@ -190,6 +193,9 @@ class TaskSchedulerWorkerTest : public testing::TestWithParam<size_t> {
         outer_->created_sequences_.push_back(sequence);
       }
 
+      sequence = outer_->task_tracker_.WillScheduleSequence(std::move(sequence),
+                                                            nullptr);
+      EXPECT_TRUE(sequence);
       return sequence;
     }
 
@@ -453,6 +459,9 @@ class ControllableCleanupDelegate : public SchedulerWorkerDefaultDelegate {
         TimeDelta()));
     EXPECT_TRUE(task_tracker_->WillPostTask(task.get()));
     sequence->PushTask(std::move(task));
+    sequence =
+        task_tracker_->WillScheduleSequence(std::move(sequence), nullptr);
+    EXPECT_TRUE(sequence);
     return sequence;
   }
 
