@@ -41,6 +41,20 @@ class HarfBuzzShaperTest : public ::testing::Test {
   hb_script_t script = HB_SCRIPT_INVALID;
 };
 
+class ShapeParameterTest : public HarfBuzzShaperTest,
+                           public ::testing::WithParamInterface<TextDirection> {
+ protected:
+  RefPtr<ShapeResult> ShapeWithParameter(HarfBuzzShaper* shaper) {
+    TextDirection direction = GetParam();
+    return shaper->Shape(&font, direction);
+  }
+};
+
+INSTANTIATE_TEST_CASE_P(HarfBuzzShaperTest,
+                        ShapeParameterTest,
+                        ::testing::Values(TextDirection::kLtr,
+                                          TextDirection::kRtl));
+
 static inline ShapeResultTestInfo* TestInfo(RefPtr<ShapeResult>& result) {
   return static_cast<ShapeResultTestInfo*>(result.get());
 }
@@ -353,15 +367,31 @@ TEST_F(HarfBuzzShaperTest, ShapeVerticalMixed) {
   EXPECT_EQ(result->Bounds(), composite_result->Bounds());
 }
 
-TEST_F(HarfBuzzShaperTest, MissingGlyph) {
+TEST_P(ShapeParameterTest, MissingGlyph) {
   // U+FFF0 is not assigned as of Unicode 10.0.
   String string(
       u"\uFFF0"
       u"Hello");
   HarfBuzzShaper shaper(string.Characters16(), string.length());
-  RefPtr<ShapeResult> result = shaper.Shape(&font, TextDirection::kLtr);
+  RefPtr<ShapeResult> result = ShapeWithParameter(&shaper);
   EXPECT_EQ(0u, result->StartIndexForResult());
   EXPECT_EQ(string.length(), result->EndIndexForResult());
+}
+
+TEST_P(ShapeParameterTest, ZeroWidthSpace) {
+  UChar string[] = {kZeroWidthSpaceCharacter,
+                    kZeroWidthSpaceCharacter,
+                    0x0627,
+                    0x0631,
+                    0x062F,
+                    0x0648,
+                    kZeroWidthSpaceCharacter,
+                    kZeroWidthSpaceCharacter};
+  const unsigned length = WTF_ARRAY_LENGTH(string);
+  HarfBuzzShaper shaper(string, length);
+  RefPtr<ShapeResult> result = ShapeWithParameter(&shaper);
+  EXPECT_EQ(0u, result->StartIndexForResult());
+  EXPECT_EQ(length, result->EndIndexForResult());
 }
 
 TEST_F(HarfBuzzShaperTest, NegativeLetterSpacing) {
