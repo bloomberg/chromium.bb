@@ -62,6 +62,10 @@ void UiTexture::SetMode(ColorScheme::Mode mode) {
   OnSetMode();
 }
 
+void UiTexture::OnInitialized() {
+  set_dirty();
+}
+
 void UiTexture::OnSetMode() {}
 
 const ColorScheme& UiTexture::color_scheme() const {

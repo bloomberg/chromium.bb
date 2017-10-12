@@ -207,7 +207,11 @@ void VrShellGl::Initialize() {
 }
 
 void VrShellGl::InitializeGl(gfx::AcceleratedWidget window) {
-  CHECK(!ready_to_draw_);
+  bool reinitializing = ready_to_draw_;
+
+  // We should only ever re-initialize when our surface is destroyed, which
+  // should only ever happen when drawing to a surface.
+  CHECK(!reinitializing || !surfaceless_rendering_);
   if (gl::GetGLImplementation() == gl::kGLImplementationNone &&
       !gl::init::InitializeGLOneOff()) {
     LOG(ERROR) << "gl::init::InitializeGLOneOff failed";
@@ -254,22 +258,28 @@ void VrShellGl::InitializeGl(gfx::AcceleratedWidget window) {
   content_surface_texture_->SetDefaultBufferSize(
       content_tex_physical_size_.width(), content_tex_physical_size_.height());
 
-  InitializeRenderer();
+  if (!reinitializing)
+    InitializeRenderer();
 
   ui_->OnGlInitialized(content_texture_id,
                        vr::UiElementRenderer::kTextureLocationExternal);
 
   webvr_vsync_align_ = base::FeatureList::IsEnabled(features::kWebVrVsyncAlign);
 
-  if (daydream_support_) {
+  if (daydream_support_ && !reinitializing) {
     base::PostTaskWithTraits(
         FROM_HERE, {base::TaskPriority::BACKGROUND},
         base::Bind(LoadControllerModelTask, weak_ptr_factory_.GetWeakPtr(),
                    task_runner_));
   }
 
+  if (reinitializing && mailbox_bridge_) {
+    mailbox_bridge_ = nullptr;
+    CreateOrResizeWebVRSurface(webvr_surface_size_);
+  }
+
   ready_to_draw_ = true;
-  if (!paused_)
+  if (!paused_ && !reinitializing)
     OnVSync(base::TimeTicks::Now());
 }
 
@@ -287,7 +297,7 @@ void VrShellGl::CreateOrResizeWebVRSurface(const gfx::Size& size) {
 
   // ContentPhysicalBoundsChanged is getting called twice with
   // identical sizes? Avoid thrashing the existing context.
-  if (size == webvr_surface_size_) {
+  if (mailbox_bridge_ && (size == webvr_surface_size_)) {
     return;
   }
 

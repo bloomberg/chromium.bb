@@ -665,10 +665,7 @@ public class VrShellImpl
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
-        // TODO(mthiesse): For now we don't need to handle this because we exit VR on activity pause
-        // (which destroys the surface). If in the future we don't destroy VR Shell on exiting,
-        // we will need to handle this, or at least properly handle surfaceCreated being called
-        // multiple times.
+        nativeSetSurface(mNativeVrShell, null);
     }
 
     private void createTabModelSelectorTabObserver() {
