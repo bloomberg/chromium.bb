@@ -16,6 +16,7 @@
 #include "chrome/browser/android/search_geolocation/search_geolocation_service.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/permissions/permission_request_id.h"
+#include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/permissions/permission_update_infobar_delegate_android.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -44,6 +45,10 @@ const char kLocationSettingsAcceptMetricBase[] =
     "Geolocation.SettingsDialog.AcceptEvent.";
 const char kLocationSettingsDenyMetricBase[] =
     "Geolocation.SettingsDialog.DenyEvent.";
+const char kLocationSettingsAcceptBatteryMetric[] =
+    "Permissions.BatteryLevel.Accepted.LocationSettingsDialog";
+const char kLocationSettingsDenyBatteryMetric[] =
+    "Permissions.BatteryLevel.Denied.LocationSettingsDialog";
 
 const char kLocationSettingsMetricDSESuffix[] = "DSE";
 const char kLocationSettingsMetricNonDSESuffix[] = "NonDSE";
@@ -469,11 +474,15 @@ void GeolocationPermissionContextAndroid::OnLocationSettingsDialogShown(
     LogLocationSettingsMetric(kLocationSettingsAcceptMetricBase,
                               is_default_search,
                               LocationSettingsBackOffLevel(is_default_search));
+    PermissionUmaUtil::RecordWithBatteryBucket(
+        kLocationSettingsAcceptBatteryMetric);
     ResetLocationSettingsBackOff(is_default_search);
   } else {
     LogLocationSettingsMetric(kLocationSettingsDenyMetricBase,
                               is_default_search,
                               LocationSettingsBackOffLevel(is_default_search));
+    PermissionUmaUtil::RecordWithBatteryBucket(
+        kLocationSettingsDenyBatteryMetric);
     UpdateLocationSettingsBackOff(is_default_search);
     content_setting = CONTENT_SETTING_BLOCK;
     persist = false;
