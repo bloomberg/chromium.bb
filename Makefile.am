@@ -104,6 +104,10 @@ libweston_@LIBWESTON_MAJOR@_la_SOURCES =			\
 	shared/platform.h				\
 	shared/weston-egl-ext.h
 
+libweston_@LIBWESTON_MAJOR@_datadir = $(datadir)/weston/protocols
+dist_libweston_@LIBWESTON_MAJOR@_data_DATA =	\
+	protocol/weston-debug.xml
+
 lib_LTLIBRARIES += libweston-desktop-@LIBWESTON_MAJOR@.la
 libweston_desktop_@LIBWESTON_MAJOR@_la_CPPFLAGS = $(AM_CPPFLAGS) -DIN_WESTON
 libweston_desktop_@LIBWESTON_MAJOR@_la_CFLAGS = $(AM_CFLAGS) $(COMPOSITOR_CFLAGS)
@@ -150,6 +154,8 @@ endif
 nodist_libweston_@LIBWESTON_MAJOR@_la_SOURCES =				\
 	protocol/weston-screenshooter-protocol.c			\
 	protocol/weston-screenshooter-server-protocol.h			\
+	protocol/weston-debug-protocol.c				\
+	protocol/weston-debug-server-protocol.h				\
 	protocol/text-cursor-position-protocol.c	\
 	protocol/text-cursor-position-server-protocol.h	\
 	protocol/text-input-unstable-v1-protocol.c			\
@@ -273,6 +279,10 @@ pkgconfig_DATA = \
 	libweston/libweston-${LIBWESTON_MAJOR}.pc \
 	libweston-desktop/libweston-desktop-${LIBWESTON_MAJOR}.pc \
 	compositor/weston.pc
+
+noarch_pkgconfigdir = $(datadir)/pkgconfig
+noarch_pkgconfig_DATA = \
+	libweston/libweston-${LIBWESTON_MAJOR}-protocols.pc
 
 wayland_sessiondir = $(datadir)/wayland-sessions
 dist_wayland_session_DATA = compositor/weston.desktop

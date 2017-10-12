@@ -695,6 +695,7 @@ AC_CONFIG_FILES([Makefile libweston/version.h compositor/weston.pc])
 # libweston_abi_version here, and outside [] because of m4 quoting rules
 AC_CONFIG_FILES([libweston/libweston-]libweston_major_version[.pc:libweston/libweston.pc.in])
 AC_CONFIG_FILES([libweston/libweston-]libweston_major_version[-uninstalled.pc:libweston/libweston-uninstalled.pc.in])
+AC_CONFIG_FILES([libweston/libweston-]libweston_major_version[-protocols.pc:libweston/libweston-protocols.pc.in])
 AC_CONFIG_FILES([libweston-desktop/libweston-desktop-]libweston_major_version[.pc:libweston-desktop/libweston-desktop.pc.in])
 AC_CONFIG_FILES([libweston-desktop/libweston-desktop-]libweston_major_version[-uninstalled.pc:libweston-desktop/libweston-desktop-uninstalled.pc.in])
 
