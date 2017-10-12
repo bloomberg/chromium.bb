@@ -60,6 +60,7 @@
 #include "compositor-x11.h"
 #include "compositor-wayland.h"
 #include "windowed-output-api.h"
+#include "weston-debug.h"
 
 #define WINDOW_TITLE "Weston Compositor"
 
@@ -508,6 +509,7 @@ usage(int error_code)
 		"  -c, --config=FILE\tConfig file to load, defaults to weston.ini\n"
 		"  --no-config\t\tDo not read weston.ini\n"
 		"  --wait-for-debugger\tRaise SIGSTOP on start-up\n"
+		"  --debug\t\tEnable debug extension\n"
 		"  -h, --help\t\tThis help message\n\n");
 
 #if defined(BUILD_DRM_COMPOSITOR)
@@ -2375,6 +2377,7 @@ int main(int argc, char *argv[])
 	char *socket_name = NULL;
 	int32_t version = 0;
 	int32_t noconfig = 0;
+	int32_t debug_protocol = 0;
 	int32_t numlock_on;
 	char *config_file = NULL;
 	struct weston_config *config = NULL;
@@ -2399,6 +2402,7 @@ int main(int argc, char *argv[])
 		{ WESTON_OPTION_BOOLEAN, "no-config", 0, &noconfig },
 		{ WESTON_OPTION_STRING, "config", 'c', &config_file },
 		{ WESTON_OPTION_BOOLEAN, "wait-for-debugger", 0, &wait_for_debugger },
+		{ WESTON_OPTION_BOOLEAN, "debug", 0, &debug_protocol },
 	};
 
 	wl_list_init(&wet.layoutput_list);
@@ -2485,6 +2489,9 @@ int main(int argc, char *argv[])
 		goto out;
 	}
 	segv_compositor = wet.compositor;
+
+	if (debug_protocol)
+		weston_compositor_enable_debug_protocol(wet.compositor);
 
 	if (weston_compositor_init_config(wet.compositor, config) < 0)
 		goto out;

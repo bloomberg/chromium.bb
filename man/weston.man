@@ -133,6 +133,17 @@ If also
 .B --no-config
 is given, no configuration file will be read.
 .TP
+.BR \-\-debug
+Enable debug protocol extension
+.I weston_debug_v1
+which any client can use to receive debugging messages from the compositor.
+
+.B WARNING:
+This is risky for two reasons. First, a client may cause a denial-of-service
+blocking the compositor by providing an unsuitable file descriptor, and
+second, the debug messages may expose sensitive information. This option
+should not be used in production.
+.TP
 .BR \-\-version
 Print the program version.
 .TP
