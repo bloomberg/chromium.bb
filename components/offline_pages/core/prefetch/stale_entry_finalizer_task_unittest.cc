@@ -127,14 +127,18 @@ TEST_F(StaleEntryFinalizerTaskTest, HandlesFreshnessTimesCorrectly) {
       CreateAndInsertItem(PrefetchItemState::DOWNLOADING, -47);
   PrefetchItem b3_item2_stale =
       CreateAndInsertItem(PrefetchItemState::DOWNLOADING, -49);
+  PrefetchItem b3_item3_fresh =
+      CreateAndInsertItem(PrefetchItemState::IMPORTING, -47);
+  PrefetchItem b3_item4_stale =
+      CreateAndInsertItem(PrefetchItemState::IMPORTING, -49);
 
   // Check inserted initial items.
   std::set<PrefetchItem> initial_items = {
       b1_item1_fresh, b1_item2_stale, b2_item1_fresh, b2_item2_stale,
       b2_item3_fresh, b2_item4_stale, b2_item5_fresh, b2_item6_stale,
-      b3_item1_fresh, b3_item2_stale};
+      b3_item1_fresh, b3_item2_stale, b3_item3_fresh, b3_item4_stale};
   std::set<PrefetchItem> all_inserted_items;
-  EXPECT_EQ(10U, store_util()->GetAllItems(&all_inserted_items));
+  EXPECT_EQ(12U, store_util()->GetAllItems(&all_inserted_items));
   EXPECT_EQ(initial_items, all_inserted_items);
 
   // Execute the expiration task.
@@ -160,15 +164,18 @@ TEST_F(StaleEntryFinalizerTaskTest, HandlesFreshnessTimesCorrectly) {
   PrefetchItem b3_item2_finished(b3_item2_stale);
   b3_item2_finished.state = PrefetchItemState::FINISHED;
   b3_item2_finished.error_code = PrefetchItemErrorCode::STALE_AT_DOWNLOADING;
+  PrefetchItem b3_item4_finished(b3_item4_stale);
+  b3_item4_finished.state = PrefetchItemState::FINISHED;
+  b3_item4_finished.error_code = PrefetchItemErrorCode::STALE_AT_IMPORTING;
 
   // Creates the expected set of final items and compares with what's in store.
   std::set<PrefetchItem> expected_final_items = {
       b1_item1_fresh, b1_item2_finished, b2_item1_fresh, b2_item2_finished,
       b2_item3_fresh, b2_item4_finished, b2_item5_fresh, b2_item6_finished,
-      b3_item1_fresh, b3_item2_finished};
-  EXPECT_EQ(10U, expected_final_items.size());
+      b3_item1_fresh, b3_item2_finished, b3_item3_fresh, b3_item4_finished};
+  EXPECT_EQ(12U, expected_final_items.size());
   std::set<PrefetchItem> all_items_post_expiration;
-  EXPECT_EQ(10U, store_util()->GetAllItems(&all_items_post_expiration));
+  EXPECT_EQ(12U, store_util()->GetAllItems(&all_items_post_expiration));
   EXPECT_EQ(expected_final_items, all_items_post_expiration);
 }
 
@@ -207,8 +214,7 @@ TEST_F(StaleEntryFinalizerTaskTest, HandlesStalesInAllStatesCorrectly) {
   EXPECT_EQ(1U,
             Filter(post_items, PrefetchItemState::SENT_GET_OPERATION).size());
   EXPECT_EQ(1U, Filter(post_items, PrefetchItemState::DOWNLOADED).size());
-  EXPECT_EQ(1U, Filter(post_items, PrefetchItemState::IMPORTING).size());
-  EXPECT_EQ(6U, Filter(post_items, PrefetchItemState::FINISHED).size());
+  EXPECT_EQ(7U, Filter(post_items, PrefetchItemState::FINISHED).size());
   EXPECT_EQ(1U, Filter(post_items, PrefetchItemState::ZOMBIE).size());
 }
 
@@ -280,6 +286,10 @@ TEST_F(StaleEntryFinalizerTaskTest, HandlesClockSetBackwardsCorrectly) {
       CreateAndInsertItem(PrefetchItemState::DOWNLOADING, 23);
   PrefetchItem b3_item2_future =
       CreateAndInsertItem(PrefetchItemState::DOWNLOADING, 25);
+  PrefetchItem b3_item3_recent =
+      CreateAndInsertItem(PrefetchItemState::IMPORTING, 23);
+  PrefetchItem b3_item4_future =
+      CreateAndInsertItem(PrefetchItemState::IMPORTING, 25);
 
   PrefetchItem b4_item1_future =
       CreateAndInsertItem(PrefetchItemState::SENT_GENERATE_PAGE_BUNDLE, 25);
@@ -288,9 +298,10 @@ TEST_F(StaleEntryFinalizerTaskTest, HandlesClockSetBackwardsCorrectly) {
   std::set<PrefetchItem> initial_items = {
       b1_item1_recent, b1_item2_future, b2_item1_recent, b2_item2_future,
       b2_item3_recent, b2_item4_future, b2_item5_recent, b2_item6_future,
-      b3_item1_recent, b3_item2_future, b4_item1_future};
+      b3_item1_recent, b3_item2_future, b3_item3_recent, b3_item4_future,
+      b4_item1_future};
   std::set<PrefetchItem> all_inserted_items;
-  EXPECT_EQ(11U, store_util()->GetAllItems(&all_inserted_items));
+  EXPECT_EQ(13U, store_util()->GetAllItems(&all_inserted_items));
   EXPECT_EQ(initial_items, all_inserted_items);
 
   // Execute the expiration task.
@@ -320,6 +331,10 @@ TEST_F(StaleEntryFinalizerTaskTest, HandlesClockSetBackwardsCorrectly) {
   b3_item2_finished.state = PrefetchItemState::FINISHED;
   b3_item2_finished.error_code =
       PrefetchItemErrorCode::MAXIMUM_CLOCK_BACKWARD_SKEW_EXCEEDED;
+  PrefetchItem b3_item4_finished(b3_item4_future);
+  b3_item4_finished.state = PrefetchItemState::FINISHED;
+  b3_item4_finished.error_code =
+      PrefetchItemErrorCode::MAXIMUM_CLOCK_BACKWARD_SKEW_EXCEEDED;
   PrefetchItem b4_item_finished(b4_item1_future);
   b4_item1_future.state = PrefetchItemState::SENT_GENERATE_PAGE_BUNDLE;
   b4_item1_future.error_code = PrefetchItemErrorCode::SUCCESS;
@@ -329,10 +344,11 @@ TEST_F(StaleEntryFinalizerTaskTest, HandlesClockSetBackwardsCorrectly) {
   std::set<PrefetchItem> expected_final_items = {
       b1_item1_recent, b1_item2_finished, b2_item1_recent, b2_item2_finished,
       b2_item3_recent, b2_item4_finished, b2_item5_recent, b2_item6_finished,
-      b3_item1_recent, b3_item2_finished, b4_item1_future};
-  EXPECT_EQ(11U, expected_final_items.size());
+      b3_item1_recent, b3_item2_finished, b3_item3_recent, b3_item4_finished,
+      b4_item1_future};
+  EXPECT_EQ(13U, expected_final_items.size());
   std::set<PrefetchItem> all_items_post_expiration;
-  EXPECT_EQ(11U, store_util()->GetAllItems(&all_items_post_expiration));
+  EXPECT_EQ(13U, store_util()->GetAllItems(&all_items_post_expiration));
   EXPECT_EQ(expected_final_items, all_items_post_expiration);
 }
 
@@ -370,8 +386,7 @@ TEST_F(StaleEntryFinalizerTaskTest,
   EXPECT_EQ(1U,
             Filter(post_items, PrefetchItemState::SENT_GET_OPERATION).size());
   EXPECT_EQ(1U, Filter(post_items, PrefetchItemState::DOWNLOADED).size());
-  EXPECT_EQ(1U, Filter(post_items, PrefetchItemState::IMPORTING).size());
-  EXPECT_EQ(6U, Filter(post_items, PrefetchItemState::FINISHED).size());
+  EXPECT_EQ(7U, Filter(post_items, PrefetchItemState::FINISHED).size());
   EXPECT_EQ(1U, Filter(post_items, PrefetchItemState::ZOMBIE).size());
 }
 

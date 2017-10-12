@@ -170,6 +170,7 @@ enum class PrefetchItemErrorCode {
   STALE_AT_RECEIVED_GCM = 800,
   STALE_AT_RECEIVED_BUNDLE = 900,
   STALE_AT_DOWNLOADING = 1000,
+  STALE_AT_IMPORTING = 1050,
   STALE_AT_UNKNOWN = 1100,
   // Exceeded maximum retries for get operation request.
   GET_OPERATION_MAX_ATTEMPTS_REACHED = 1200,
