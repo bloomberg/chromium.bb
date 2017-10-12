@@ -127,7 +127,6 @@ void AudioOutputStreamFuchsia::PumpSamples() {
 
   int frames_filled = callback_->OnMoreData(delay, now, 0, audio_bus_.get());
   DCHECK_EQ(frames_filled, audio_bus_->frames());
-  stream_position_samples_ += frames_filled;
 
   audio_bus_->Scale(volume_);
   audio_bus_->ToInterleaved<media::Float32SampleTypeTraits>(
@@ -158,6 +157,8 @@ void AudioOutputStreamFuchsia::PumpSamples() {
       callback_->OnError();
     }
   } while (started_time_.is_null());
+
+  stream_position_samples_ += frames_filled;
 
   timer_.Start(FROM_HERE,
                GetCurrentStreamTime() - base::TimeTicks::Now() -
