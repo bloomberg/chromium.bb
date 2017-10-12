@@ -43,14 +43,6 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutBlockFlow (positioned) DIV id='item1' class='item'",
-      "reason": "selection"
-    },
-    {
-      "object": "LayoutBlockFlow DIV class='inline-block'",
-      "reason": "selection"
-    },
-    {
       "object": "LayoutText #text",
       "reason": "geometry"
     },
@@ -114,14 +106,6 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutBlockFlow (positioned) DIV id='item1' class='item'",
-      "reason": "selection"
-    },
-    {
-      "object": "LayoutBlockFlow DIV class='inline-block'",
-      "reason": "selection"
-    },
-    {
       "object": "LayoutText #text",
       "reason": "geometry"
     },
@@ -132,14 +116,6 @@
     {
       "object": "InlineTextBox 'ipsum'",
       "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='item2' class='item'",
-      "reason": "selection"
-    },
-    {
-      "object": "LayoutBlockFlow DIV class='inline-block'",
-      "reason": "selection"
     },
     {
       "object": "LayoutText #text",

@@ -51,14 +51,6 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutBlockFlow HTML",
-      "reason": "selection"
-    },
-    {
-      "object": "LayoutBlockFlow BODY",
-      "reason": "selection"
-    },
-    {
       "object": "LayoutText #text",
       "reason": "selection"
     },
