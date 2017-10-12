@@ -1562,6 +1562,53 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, FailAlternativeProxy) {
   EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
 }
 
+// Verifies that if the alternative proxy server job fails due to network
+// disconnection, then the proxy delegate is not notified.
+TEST_F(HttpStreamFactoryImplJobControllerTest,
+       InternetDisconnectedAlternativeProxy) {
+  quic_data_ = std::make_unique<MockQuicData>();
+  quic_data_->AddConnect(SYNCHRONOUS, ERR_INTERNET_DISCONNECTED);
+  tcp_data_ = std::make_unique<SequencedSocketData>(nullptr, 0, nullptr, 0);
+  tcp_data_->set_connect_data(MockConnect(SYNCHRONOUS, OK));
+  SSLSocketDataProvider ssl_data(ASYNC, OK);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_data);
+
+  UseAlternativeProxy();
+
+  HttpRequestInfo request_info;
+  request_info.method = "GET";
+  request_info.url = GURL("http://mail.example.org/");
+  Initialize(request_info);
+  EXPECT_TRUE(test_proxy_delegate()->alternative_proxy_server().is_quic());
+
+  // Enable delayed TCP and set time delay for waiting job.
+  QuicStreamFactory* quic_stream_factory = session_->quic_stream_factory();
+  quic_stream_factory->set_require_confirmation(false);
+  ServerNetworkStats stats1;
+  stats1.srtt = base::TimeDelta::FromMicroseconds(300 * 1000);
+  session_->http_server_properties()->SetServerNetworkStats(
+      url::SchemeHostPort(GURL("https://myproxy.org")), stats1);
+
+  request_ =
+      job_controller_->Start(&request_delegate_, nullptr, net_log_.bound(),
+                             HttpStreamRequest::HTTP_STREAM, DEFAULT_PRIORITY);
+  EXPECT_TRUE(job_controller_->main_job());
+  EXPECT_TRUE(job_controller_->alternative_job());
+
+  EXPECT_CALL(request_delegate_, OnStreamReadyImpl(_, _, _));
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(job_controller_->alternative_job());
+  EXPECT_TRUE(job_controller_->main_job());
+
+  // The alternative proxy server should not be marked as bad.
+  EXPECT_TRUE(test_proxy_delegate()->alternative_proxy_server().is_valid());
+  EXPECT_EQ(1, test_proxy_delegate()->get_alternative_proxy_invocations());
+  request_.reset();
+  EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
+}
+
 TEST_F(HttpStreamFactoryImplJobControllerTest,
        AlternativeProxyServerJobFailsAfterMainJobSucceeds) {
   base::HistogramTester histogram_tester;
