@@ -414,6 +414,11 @@ public class ChromeTabbedActivity
                 @Override
                 public void didCloseTab(int tabId, boolean incognito) {
                     closeIfNoTabsAndHomepageEnabled(false);
+                    if (!isFinishing() && FeatureUtilities.isChromeHomeEnabled()
+                            && getTabModelSelector().getTotalTabCount() == 0) {
+                        getBottomSheet().displayNewTabUi(incognito);
+                        getBottomSheet().setSheetState(BottomSheet.SHEET_STATE_HALF, true);
+                    }
                 }
 
                 @Override
