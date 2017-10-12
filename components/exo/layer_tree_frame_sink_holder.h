@@ -7,9 +7,15 @@
 
 #include <memory>
 
+#include "ash/shell_observer.h"
 #include "base/containers/flat_map.h"
 #include "cc/trees/layer_tree_frame_sink_client.h"
+#include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/resources/release_callback.h"
+
+namespace ash {
+class Shell;
+}
 
 namespace cc {
 class LayerTreeFrameSink;
@@ -20,11 +26,22 @@ class SurfaceTreeHost;
 
 // This class talks to CompositorFrameSink and keeps track of references to
 // the contents of Buffers.
-class LayerTreeFrameSinkHolder : public cc::LayerTreeFrameSinkClient {
+class LayerTreeFrameSinkHolder : public cc::LayerTreeFrameSinkClient,
+                                 public ash::ShellObserver {
  public:
   LayerTreeFrameSinkHolder(SurfaceTreeHost* surface_tree_host,
                            std::unique_ptr<cc::LayerTreeFrameSink> frame_sink);
   ~LayerTreeFrameSinkHolder() override;
+
+  // Delete frame sink after having reclaimed and called all resource
+  // release callbacks.
+  // TODO(reveman): Find a better way to handle deletion of in-flight resources.
+  // crbug.com/765763
+  static void DeleteWhenLastResourceHasBeenReclaimed(
+      std::unique_ptr<LayerTreeFrameSinkHolder> holder);
+
+  void SubmitCompositorFrame(viz::CompositorFrame frame);
+  void DidNotProduceFrame(const viz::BeginFrameAck& ack);
 
   bool HasReleaseCallbackForResource(viz::ResourceId id);
   void SetResourceReleaseCallback(viz::ResourceId id,
@@ -32,15 +49,13 @@ class LayerTreeFrameSinkHolder : public cc::LayerTreeFrameSinkClient {
   int AllocateResourceId();
   base::WeakPtr<LayerTreeFrameSinkHolder> GetWeakPtr();
 
-  cc::LayerTreeFrameSink* frame_sink() { return frame_sink_.get(); }
-
   // Overridden from cc::LayerTreeFrameSinkClient:
   void SetBeginFrameSource(viz::BeginFrameSource* source) override;
   void ReclaimResources(
       const std::vector<viz::ReturnedResource>& resources) override;
   void SetTreeActivationCallback(const base::Closure& callback) override {}
   void DidReceiveCompositorFrameAck() override;
-  void DidLoseLayerTreeFrameSink() override {}
+  void DidLoseLayerTreeFrameSink() override;
   void OnDraw(const gfx::Transform& transform,
               const gfx::Rect& viewport,
               bool resourceless_software_draw) override {}
@@ -49,7 +64,12 @@ class LayerTreeFrameSinkHolder : public cc::LayerTreeFrameSinkClient {
       const gfx::Rect& viewport_rect,
       const gfx::Transform& transform) override {}
 
+  // Overridden from ash::ShellObserver:
+  void OnShellDestroyed() override;
+
  private:
+  void DeleteSoon();
+
   // A collection of callbacks used to release resources.
   using ResourceReleaseCallbackMap =
       base::flat_map<viz::ResourceId, viz::ReleaseCallback>;
@@ -57,11 +77,15 @@ class LayerTreeFrameSinkHolder : public cc::LayerTreeFrameSinkClient {
 
   SurfaceTreeHost* surface_tree_host_;
   std::unique_ptr<cc::LayerTreeFrameSink> frame_sink_;
+  ash::Shell* shell_ = nullptr;
 
   // The next resource id the buffer is attached to.
   int next_resource_id_ = 1;
 
-  base::WeakPtrFactory<LayerTreeFrameSinkHolder> weak_factory_;
+  gfx::Size last_frame_size_in_pixels_;
+  float last_frame_device_scale_factor_ = 1.0f;
+
+  base::WeakPtrFactory<LayerTreeFrameSinkHolder> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerTreeFrameSinkHolder);
 };

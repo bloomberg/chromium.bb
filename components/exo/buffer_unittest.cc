@@ -143,5 +143,52 @@ TEST_F(BufferTest, OnLostResources) {
       ->SendOnLostResources();
 }
 
+TEST_F(BufferTest, SurfaceTreeHostDestruction) {
+  gfx::Size buffer_size(256, 256);
+  auto buffer = std::make_unique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  auto surface_tree_host =
+      std::make_unique<SurfaceTreeHost>("BufferTest", nullptr);
+  LayerTreeFrameSinkHolder* frame_sink_holder =
+      surface_tree_host->layer_tree_frame_sink_holder();
+
+  // Set the release callback.
+  int release_call_count = 0;
+  buffer->set_release_callback(
+      base::Bind(&Release, base::Unretained(&release_call_count)));
+
+  buffer->OnAttach();
+  viz::TransferableResource resource;
+  // Produce a transferable resource for the contents of the buffer.
+  bool rv =
+      buffer->ProduceTransferableResource(frame_sink_holder, false, &resource);
+  ASSERT_TRUE(rv);
+
+  buffer->OnDetach();
+  ASSERT_EQ(release_call_count, 0);
+
+  // Get a weak reference to frame sink holder.
+  auto weak_frame_sink_holder = frame_sink_holder->GetWeakPtr();
+
+  // Destroy surface tree host. Weak reference should be valid until all
+  // resources have been reclaimed.
+  surface_tree_host.reset();
+  ASSERT_EQ(release_call_count, 0);
+  ASSERT_TRUE(weak_frame_sink_holder);
+
+  // Release buffer.
+  viz::ReturnedResource returned_resource;
+  returned_resource.id = resource.id;
+  returned_resource.sync_token = resource.mailbox_holder.sync_token;
+  returned_resource.lost = false;
+  std::vector<viz::ReturnedResource> resources = {returned_resource};
+  weak_frame_sink_holder->ReclaimResources(resources);
+
+  RunAllPendingInMessageLoop();
+
+  // Release() should have been called exactly once.
+  ASSERT_EQ(release_call_count, 1);
+}
+
 }  // namespace
 }  // namespace exo

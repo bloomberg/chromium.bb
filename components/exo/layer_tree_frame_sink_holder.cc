@@ -4,6 +4,8 @@
 
 #include "components/exo/layer_tree_frame_sink_holder.h"
 
+#include "ash/shell.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "components/exo/surface_tree_host.h"
 #include "components/viz/common/resources/returned_resource.h"
@@ -18,16 +20,60 @@ LayerTreeFrameSinkHolder::LayerTreeFrameSinkHolder(
     std::unique_ptr<cc::LayerTreeFrameSink> frame_sink)
     : surface_tree_host_(surface_tree_host),
       frame_sink_(std::move(frame_sink)),
-      weak_factory_(this) {
+      weak_ptr_factory_(this) {
   frame_sink_->BindToClient(this);
 }
 
 LayerTreeFrameSinkHolder::~LayerTreeFrameSinkHolder() {
   frame_sink_->DetachFromClient();
 
-  // Release all resources which aren't returned from LayerTreeFrameSink.
   for (auto& callback : release_callbacks_)
-    callback.second.Run(gpu::SyncToken(), false);
+    callback.second.Run(gpu::SyncToken(), true /* lost */);
+}
+
+// static
+void LayerTreeFrameSinkHolder::DeleteWhenLastResourceHasBeenReclaimed(
+    std::unique_ptr<LayerTreeFrameSinkHolder> holder) {
+  // Submit an empty frame to ensure that pending release callbacks will be
+  // processed in a finite amount of time.
+  viz::CompositorFrame frame;
+  frame.metadata.begin_frame_ack.source_id =
+      viz::BeginFrameArgs::kManualSourceId;
+  frame.metadata.begin_frame_ack.sequence_number =
+      viz::BeginFrameArgs::kStartingFrameNumber;
+  frame.metadata.begin_frame_ack.has_damage = true;
+  frame.metadata.device_scale_factor = holder->last_frame_device_scale_factor_;
+  std::unique_ptr<viz::RenderPass> pass = viz::RenderPass::Create();
+  pass->SetNew(1, gfx::Rect(holder->last_frame_size_in_pixels_), gfx::Rect(),
+               gfx::Transform());
+  frame.render_pass_list.push_back(std::move(pass));
+  holder->frame_sink_->SubmitCompositorFrame(std::move(frame));
+
+  // Delete sink holder immediately if not waiting for resources to be
+  // reclaimed.
+  if (holder->release_callbacks_.empty())
+    return;
+
+  ash::Shell* shell = ash::Shell::Get();
+  holder->shell_ = shell;
+  holder->surface_tree_host_ = nullptr;
+
+  // If we have pending release callbacks then extend the lifetime of holder
+  // by adding it as a shell observer. The holder will delete itself when shell
+  // shuts down or when all pending release callbacks have been called.
+  shell->AddShellObserver(holder.release());
+}
+
+void LayerTreeFrameSinkHolder::SubmitCompositorFrame(
+    viz::CompositorFrame frame) {
+  last_frame_size_in_pixels_ = frame.size_in_pixels();
+  last_frame_device_scale_factor_ = frame.metadata.device_scale_factor;
+  frame_sink_->SubmitCompositorFrame(std::move(frame));
+}
+
+void LayerTreeFrameSinkHolder::DidNotProduceFrame(
+    const viz::BeginFrameAck& ack) {
+  frame_sink_->DidNotProduceFrame(ack);
 }
 
 bool LayerTreeFrameSinkHolder::HasReleaseCallbackForResource(
@@ -47,7 +93,7 @@ int LayerTreeFrameSinkHolder::AllocateResourceId() {
 }
 
 base::WeakPtr<LayerTreeFrameSinkHolder> LayerTreeFrameSinkHolder::GetWeakPtr() {
-  return weak_factory_.GetWeakPtr();
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -69,10 +115,42 @@ void LayerTreeFrameSinkHolder::ReclaimResources(
       release_callbacks_.erase(it);
     }
   }
+
+  if (shell_ && release_callbacks_.empty())
+    DeleteSoon();
 }
 
 void LayerTreeFrameSinkHolder::DidReceiveCompositorFrameAck() {
-  surface_tree_host_->DidReceiveCompositorFrameAck();
+  if (surface_tree_host_)
+    surface_tree_host_->DidReceiveCompositorFrameAck();
+}
+
+void LayerTreeFrameSinkHolder::DidLoseLayerTreeFrameSink() {
+  for (auto& callback : release_callbacks_)
+    callback.second.Run(gpu::SyncToken(), true /* lost */);
+  release_callbacks_.clear();
+
+  if (shell_)
+    DeleteSoon();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ash::ShellObserver overrides:
+
+void LayerTreeFrameSinkHolder::OnShellDestroyed() {
+  shell_->RemoveShellObserver(this);
+  delete this;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// LayerTreeFrameSinkHolder, private:
+
+void LayerTreeFrameSinkHolder::DeleteSoon() {
+  // Move strong reference from shell observer list to DeleteSoon.
+  DCHECK(shell_);
+  shell_->RemoveShellObserver(this);
+  shell_ = nullptr;
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }
 
 }  // namespace exo
