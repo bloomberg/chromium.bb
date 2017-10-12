@@ -10769,11 +10769,11 @@
         "boards": [
             "grunt"
         ],
-        "buildslave_type": "baremetal",
         "important": false,
         "useflags": [
             "-chrome_internal"
-        ]
+        ],
+        "vm_tests": []
     },
     "grunt-compile-only-pre-cq": {
         "_template": "compile_only_pre_cq",
@@ -10786,11 +10786,11 @@
         "boards": [
             "grunt"
         ],
-        "buildslave_type": "baremetal",
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
-        ]
+        ],
+        "vm_tests": []
     },
     "grunt-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -10804,13 +10804,15 @@
             "grunt"
         ],
         "important": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "grunt-pre-cq": {
         "_template": "pre_cq",
         "boards": [
             "grunt"
-        ]
+        ],
+        "vm_tests": []
     },
     "grunt-release": {
         "_template": "release",
@@ -10818,17 +10820,18 @@
         "boards": [
             "grunt"
         ],
-        "buildslave_type": "baremetal"
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "grunt-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
             "grunt"
         ],
-        "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
+        ],
+        "vm_tests": []
     },
     "grunt-unittest-stress": {
         "_template": "unittest_stress",
