@@ -29,6 +29,24 @@ option(ENABLE_NASM "Use nasm instead of yasm for x86 assembly." OFF)
 option(ENABLE_TOOLS "Enable applications in tools sub directory." ON)
 option(ENABLE_WERROR "Converts warnings to errors at compile time." OFF)
 
+# ARM assembly/intrinsics flags.
+option(ENABLE_NEON "Enables NEON optimizations on ARM targets." ON)
+option(ENABLE_NEON_ASM "Enables NEON ASM optimizations on ARM targets." ON)
+
+# MIPS assembly/intrinsics flags.
+option(ENABLE_DSPR2 "Enables DSPR2 optimizations on MIPS targets." OFF)
+option(ENABLE_MSA "Enables MSA optimizations on MIPS targets." OFF)
+
+# x86/x86_64 assembly/intrinsics flags.
+option(ENABLE_MMX "Enables MMX optimizations on x86/x86_64 targets." ON)
+option(ENABLE_SSE "Enables SSE optimizations on x86/x86_64 targets." ON)
+option(ENABLE_SSE2 "Enables SSE2 optimizations on x86/x86_64 targets." ON)
+option(ENABLE_SSE3 "Enables SSE3 optimizations on x86/x86_64 targets." ON)
+option(ENABLE_SSSE3 "Enables SSSE3 optimizations on x86/x86_64 targets." ON)
+option(ENABLE_SSE4_1 "Enables SSE4_1 optimizations on x86/x86_64 targets." ON)
+option(ENABLE_AVX "Enables AVX optimizations on x86/x86_64 targets." ON)
+option(ENABLE_AVX2 "Enables AVX2 optimizations on x86/x86_64 targets." ON)
+
 # $BUILD_SHARED_LIBS is a CMake built-in-- it's listed here for visibility.
 option(BUILD_SHARED_LIBS "CMake should generate a shared library build." OFF)
 
