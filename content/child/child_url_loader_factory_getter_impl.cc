@@ -4,6 +4,10 @@
 
 #include "content/child/child_url_loader_factory_getter_impl.h"
 
+#include "base/feature_list.h"
+#include "content/public/common/content_features.h"
+#include "third_party/WebKit/public/platform/WebURLRequest.h"
+
 namespace content {
 
 ChildURLLoaderFactoryGetter::Info::Info(
@@ -55,6 +59,18 @@ ChildURLLoaderFactoryGetterImpl::GetClonedInfo() {
 
   return Info(std::move(network_loader_factory_info),
               std::move(blob_loader_factory_info));
+}
+
+mojom::URLLoaderFactory* ChildURLLoaderFactoryGetterImpl::GetFactoryForURL(
+    const GURL& url,
+    mojom::URLLoaderFactory* default_factory) {
+  if (base::FeatureList::IsEnabled(features::kNetworkService) &&
+      url.SchemeIsBlob()) {
+    return GetBlobLoaderFactory();
+  }
+  if (default_factory)
+    return default_factory;
+  return GetNetworkLoaderFactory();
 }
 
 mojom::URLLoaderFactory*

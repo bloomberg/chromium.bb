@@ -35,14 +35,9 @@ std::unique_ptr<blink::WebURLLoader>
 ServiceWorkerFetchContextImpl::CreateURLLoader(
     const blink::WebURLRequest& request,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  if (request.Url().ProtocolIs(url::kBlobScheme)) {
-    return base::MakeUnique<content::WebURLLoaderImpl>(
-        resource_dispatcher_.get(), std::move(task_runner),
-        url_loader_factory_getter_->GetBlobLoaderFactory());
-  }
   return base::MakeUnique<content::WebURLLoaderImpl>(
       resource_dispatcher_.get(), std::move(task_runner),
-      url_loader_factory_getter_->GetNetworkLoaderFactory());
+      url_loader_factory_getter_->GetFactoryForURL(request.Url()));
 }
 
 void ServiceWorkerFetchContextImpl::WillSendRequest(

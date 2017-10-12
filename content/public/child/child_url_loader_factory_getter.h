@@ -8,6 +8,8 @@
 #include "base/memory/ref_counted.h"
 #include "content/public/common/url_loader_factory.mojom.h"
 
+class GURL;
+
 namespace content {
 
 // ChildProcess version's URLLoaderFactoryGetter, i.e. a getter that holds
@@ -33,6 +35,14 @@ class ChildURLLoaderFactoryGetter
   };
 
   virtual Info GetClonedInfo() = 0;
+
+  // Returns the URLLoaderFactory that can handle the given |request_url| (e.g.
+  // returns BlobURLLoader factory for blob: URL requests). When an appropriate
+  // factory cannot be determined, |default_factory| is returned if non-null
+  // factory is given, or Network URLLoaderFactory is returned otherwise.
+  virtual mojom::URLLoaderFactory* GetFactoryForURL(
+      const GURL& request_url,
+      mojom::URLLoaderFactory* default_factory = nullptr) = 0;
 
   virtual mojom::URLLoaderFactory* GetNetworkLoaderFactory() = 0;
   virtual mojom::URLLoaderFactory* GetBlobLoaderFactory() = 0;

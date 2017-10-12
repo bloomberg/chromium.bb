@@ -6896,26 +6896,16 @@ blink::WebPageVisibilityState RenderFrameImpl::VisibilityState() const {
 std::unique_ptr<blink::WebURLLoader> RenderFrameImpl::CreateURLLoader(
     const blink::WebURLRequest& request,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  // Currently the tests (RenderViewTests) that need URLLoader but do not
+  // have ChildThread use the Platform::Current()->CreateURLLoader().
+  DCHECK(ChildThreadImpl::current());
+
   UpdatePeakMemoryStats();
 
-  ChildThreadImpl* child_thread = ChildThreadImpl::current();
-  if (!child_thread) {
-    return RenderThreadImpl::current()->blink_platform_impl()->CreateURLLoader(
-        request, std::move(task_runner));
-  }
-
-  mojom::URLLoaderFactory* factory = custom_url_loader_factory_.get();
-
-  if (base::FeatureList::IsEnabled(features::kNetworkService) &&
-      request.Url().ProtocolIs(url::kBlobScheme)) {
-    factory = GetDefaultURLLoaderFactoryGetter()->GetBlobLoaderFactory();
-    DCHECK(factory);
-  }
-
-  if (!factory) {
-    factory = GetDefaultURLLoaderFactoryGetter()->GetNetworkLoaderFactory();
-    DCHECK(factory);
-  }
+  mojom::URLLoaderFactory* factory =
+      GetDefaultURLLoaderFactoryGetter()->GetFactoryForURL(
+          request.Url(), custom_url_loader_factory_.get());
+  DCHECK(factory);
 
   mojom::KeepAliveHandlePtr keep_alive_handle;
   if (base::FeatureList::IsEnabled(
@@ -6923,9 +6913,9 @@ std::unique_ptr<blink::WebURLLoader> RenderFrameImpl::CreateURLLoader(
       request.GetKeepalive()) {
     GetFrameHost()->IssueKeepAliveHandle(mojo::MakeRequest(&keep_alive_handle));
   }
-  return base::MakeUnique<WebURLLoaderImpl>(child_thread->resource_dispatcher(),
-                                            std::move(task_runner), factory,
-                                            std::move(keep_alive_handle));
+  return base::MakeUnique<WebURLLoaderImpl>(
+      ChildThreadImpl::current()->resource_dispatcher(), std::move(task_runner),
+      factory, std::move(keep_alive_handle));
 }
 
 void RenderFrameImpl::DraggableRegionsChanged() {

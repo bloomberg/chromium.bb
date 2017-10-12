@@ -33,6 +33,9 @@ class CONTENT_EXPORT ChildURLLoaderFactoryGetterImpl
 
   Info GetClonedInfo() override;
 
+  mojom::URLLoaderFactory* GetFactoryForURL(
+      const GURL& url,
+      mojom::URLLoaderFactory* default_factory) override;
   mojom::URLLoaderFactory* GetNetworkLoaderFactory() override;
   mojom::URLLoaderFactory* GetBlobLoaderFactory() override;
 
