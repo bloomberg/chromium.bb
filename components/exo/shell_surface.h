@@ -288,7 +288,6 @@ class ShellSurface : public SurfaceTreeHost,
   // Overridden from ui::CompositorLockClient:
   void CompositorLockTimedOut() override;
 
-  aura::Window* shadow_overlay() { return shadow_overlay_.get(); }
   aura::Window* shadow_underlay() { return shadow_underlay_.get(); }
 
   Surface* surface_for_testing() { return root_surface(); }
@@ -380,7 +379,6 @@ class ShellSurface : public SurfaceTreeHost,
   gfx::Vector2d pending_origin_offset_accumulator_;
   int resize_component_ = HTCAPTION;  // HT constant (see ui/base/hit_test.h)
   int pending_resize_component_ = HTCAPTION;
-  std::unique_ptr<aura::Window> shadow_overlay_;
   std::unique_ptr<aura::Window> shadow_underlay_;
   base::Optional<gfx::Rect> shadow_bounds_;
   bool shadow_bounds_changed_ = false;

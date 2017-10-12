@@ -810,11 +810,9 @@ TEST_F(ShellSurfaceTest, SurfaceShadow) {
 
   // For surface shadow, the underlay is placed at the bottom of shell surfaces.
   EXPECT_EQ(window, shell_surface->shadow_underlay()->parent());
-  EXPECT_EQ(window, shell_surface->shadow_overlay()->parent());
 
   auto child_it = window->children().begin();
   EXPECT_EQ(*child_it++, shell_surface->shadow_underlay());
-  EXPECT_EQ(*child_it++, shell_surface->shadow_overlay());
   EXPECT_EQ(*child_it++, shell_surface->host_window());
   EXPECT_EQ(child_it, window->children().end());
 
@@ -824,10 +822,8 @@ TEST_F(ShellSurfaceTest, SurfaceShadow) {
   surface->Commit();
 
   EXPECT_FALSE(shell_surface->shadow_underlay());
-  EXPECT_EQ(window, shell_surface->shadow_overlay()->parent());
 
   child_it = window->children().begin();
-  EXPECT_EQ(*child_it++, shell_surface->shadow_overlay());
   EXPECT_EQ(*child_it++, shell_surface->host_window());
   EXPECT_EQ(child_it, window->children().end());
 
@@ -838,11 +834,9 @@ TEST_F(ShellSurfaceTest, SurfaceShadow) {
 
   EXPECT_TRUE(shell_surface->shadow_underlay());
   EXPECT_EQ(window, shell_surface->shadow_underlay()->parent());
-  EXPECT_EQ(window, shell_surface->shadow_overlay()->parent());
 
   child_it = window->children().begin();
   EXPECT_EQ(*child_it++, shell_surface->shadow_underlay());
-  EXPECT_EQ(*child_it++, shell_surface->shadow_overlay());
   EXPECT_EQ(*child_it++, shell_surface->host_window());
   EXPECT_EQ(child_it, window->children().end());
 }
@@ -916,18 +910,8 @@ TEST_F(ShellSurfaceTest, NonSurfaceShadow) {
   EXPECT_EQ(wm::ShadowElevation::DEFAULT, GetShadowElevation(window));
   EXPECT_TRUE(shadow->layer()->visible());
 
-  // For no surface shadow, both of underlay and overlay should be stacked
-  // below the surface window.
+  // For non-surface shadow, the underlay should be below the surface window.
   EXPECT_EQ(window, shell_surface->shadow_underlay()->parent());
-  EXPECT_EQ(window, shell_surface->shadow_overlay()->parent());
-
-  // Shadow overlay should be stacked just above the shadow underlay.
-  auto underlay_it =
-      std::find(window->children().begin(), window->children().end(),
-                shell_surface->shadow_underlay());
-  ASSERT_NE(underlay_it, window->children().end());
-  ASSERT_NE(std::next(underlay_it), window->children().end());
-  EXPECT_EQ(*std::next(underlay_it), shell_surface->shadow_overlay());
 }
 
 TEST_F(ShellSurfaceTest, ShadowWithStateChange) {
@@ -961,11 +945,9 @@ TEST_F(ShellSurfaceTest, ShadowWithStateChange) {
   surface->Commit();
   EXPECT_EQ(wm::ShadowElevation::DEFAULT, GetShadowElevation(window));
 
-  // Shadow overlay bounds.
   EXPECT_TRUE(shadow->layer()->visible());
   // Origin must be in sync.
-  EXPECT_EQ(expected_shadow_origin,
-            shadow->layer()->parent()->bounds().origin());
+  EXPECT_EQ(expected_shadow_origin, shadow->content_bounds().origin());
 
   const gfx::Rect work_area =
       display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
@@ -983,12 +965,12 @@ TEST_F(ShellSurfaceTest, ShadowWithStateChange) {
   widget->Restore();
   EXPECT_TRUE(shadow->layer()->visible());
   const gfx::Rect shadow_in_maximized(expected_shadow_origin, work_area.size());
-  EXPECT_EQ(shadow_in_maximized, shadow->layer()->parent()->bounds());
+  EXPECT_EQ(shadow_in_maximized, shadow->content_bounds());
 
   // The bounds is updated.
   shell_surface->SetShadowBounds(shadow_bounds);
   surface->Commit();
-  EXPECT_EQ(expected_shadow_bounds, shadow->layer()->parent()->bounds());
+  EXPECT_EQ(expected_shadow_bounds, shadow->content_bounds());
 }
 
 TEST_F(ShellSurfaceTest, ShadowWithTransform) {
@@ -1020,7 +1002,7 @@ TEST_F(ShellSurfaceTest, ShadowWithTransform) {
   shell_surface->SetShadowBounds(shadow_bounds);
   surface->Commit();
   EXPECT_TRUE(shadow->layer()->visible());
-  EXPECT_EQ(gfx::Rect(-10, -10, 100, 100), shadow->layer()->parent()->bounds());
+  EXPECT_EQ(gfx::Rect(-10, -10, 100, 100), shadow->content_bounds());
 }
 
 TEST_F(ShellSurfaceTest, ShadowStartMaximized) {
@@ -1062,7 +1044,7 @@ TEST_F(ShellSurfaceTest, ShadowStartMaximized) {
   wm::Shadow* shadow = wm::ShadowController::GetShadowForWindow(window);
   ASSERT_TRUE(shadow);
   EXPECT_TRUE(shadow->layer()->visible());
-  EXPECT_EQ(gfx::Rect(10, 10, 100, 100), shadow->layer()->parent()->bounds());
+  EXPECT_EQ(gfx::Rect(10, 10, 100, 100), shadow->content_bounds());
 }
 
 TEST_P(ShellSurfaceBoundsModeTest, ToggleFullscreen) {
