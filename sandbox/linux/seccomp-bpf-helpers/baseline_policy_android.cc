@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl.h"
 #include "sandbox/linux/seccomp-bpf-helpers/syscall_parameters_restrictions.h"
+#include "sandbox/linux/seccomp-bpf-helpers/syscall_sets.h"
 #include "sandbox/linux/system_headers/linux_syscalls.h"
 
 #if defined(__x86_64__)
@@ -143,6 +144,11 @@ ResultExpr BaselinePolicyAndroid::EvaluateSyscall(int sysno) const {
     case __NR_ptrace:
       override_and_allow = true;
       break;
+  }
+
+  // https://crbug.com/772441 and https://crbug.com/760020.
+  if (SyscallSets::IsEventFd(sysno)) {
+    return Allow();
   }
 
   // https://crbug.com/644759
