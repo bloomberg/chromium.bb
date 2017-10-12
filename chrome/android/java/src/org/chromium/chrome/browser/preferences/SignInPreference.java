@@ -58,6 +58,9 @@ public class SignInPreference
 
         int imageSize = context.getResources().getDimensionPixelSize(R.dimen.user_picture_size);
         mProfileDataCache = new ProfileDataCache(context, Profile.getLastUsedProfile(), imageSize);
+
+        setOnPreferenceClickListener(preference
+                -> AccountSigninActivity.startIfAllowed(getContext(), SigninAccessPoint.SETTINGS));
     }
 
     /**
@@ -106,25 +109,36 @@ public class SignInPreference
      * Updates the title, summary, and image based on the current sign-in state.
      */
     private void update() {
-        String accountName = ChromeSigninController.get().getSignedInAccountName();
         if (SigninManager.get(getContext()).isSigninDisabledByPolicy()) {
             setupSigninDisabled();
-        } else if (accountName == null) {
-            // Don't change the promo type if the promo is already being shown.
-            final boolean forceNew = mSigninPromoController != null;
-            if ((SigninPromoController.hasNotReachedImpressionLimit(SigninAccessPoint.SETTINGS)
-                        && SigninPromoController.arePersonalizedPromosEnabled())
-                    || forceNew) {
-                setupPersonalizedPromo();
-            } else {
-                setupGenericPromo();
-            }
-        } else {
-            setupSignedIn(accountName);
+            return;
         }
 
-        setOnPreferenceClickListener(preference
-                -> AccountSigninActivity.startIfAllowed(getContext(), SigninAccessPoint.SETTINGS));
+        String accountName = ChromeSigninController.get().getSignedInAccountName();
+        if (accountName != null) {
+            setupSignedIn(accountName);
+            return;
+        }
+
+        if (ChromePreferenceManager.getInstance().getSettingsPersonalizedSigninPromoDismissed()) {
+            // Don't show the new promo if it was dismissed by the user.
+            setupGenericPromo();
+            return;
+        }
+
+        if (mSigninPromoController != null) {
+            // Don't change the promo type if the new promo is already being shown.
+            setupPersonalizedPromo();
+            return;
+        }
+
+        if (SigninPromoController.hasNotReachedImpressionLimit(SigninAccessPoint.SETTINGS)
+                && SigninPromoController.arePersonalizedPromosEnabled()) {
+            setupPersonalizedPromo();
+            return;
+        }
+
+        setupGenericPromo();
     }
 
     private void setupSigninDisabled() {
@@ -140,12 +154,12 @@ public class SignInPreference
     }
 
     private void setupPersonalizedPromo() {
-        setLayoutResource(R.layout.custom_preference);
+        setLayoutResource(R.layout.personalized_signin_promo_view_settings);
         setTitle("");
         setSummary("");
         setFragment(null);
         setIcon(null);
-        setWidgetLayoutResource(R.layout.personalized_signin_promo_view_settings);
+        setWidgetLayoutResource(0);
         setViewEnabled(true);
 
         if (mSigninPromoController == null) {
@@ -218,7 +232,10 @@ public class SignInPreference
         }
         PersonalizedSigninPromoView signinPromoView =
                 view.findViewById(R.id.signin_promo_view_container);
-        mSigninPromoController.setupPromoView(getContext(), signinPromoView, profileData, null);
+        mSigninPromoController.setupPromoView(getContext(), signinPromoView, profileData, () -> {
+            ChromePreferenceManager.getInstance().setSettingsPersonalizedSigninPromoDismissed(true);
+            update();
+        });
     }
 
     // ProfileSyncServiceListener implementation.
