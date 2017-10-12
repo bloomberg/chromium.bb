@@ -219,18 +219,14 @@ void PrerenderResourceThrottle::WillStartRequestOnUI(
       cancel = true;
     } else if (!PrerenderManager::DoesSubresourceURLHaveValidScheme(url) &&
                resource_type != content::RESOURCE_TYPE_MAIN_FRAME) {
-      // For ORIGIN_OFFLINE, simply cancel this invalid request and continue.
-      // For other origins, fail the prerender here.
-      if (prerender_contents->origin() != ORIGIN_OFFLINE) {
-        // Destroying the prerender for unsupported scheme only for non-main
-        // resource to allow chrome://crash to actually crash in the
-        // *RendererCrash tests instead of being intercepted here. The
-        // unsupported
-        // scheme for the main resource is checked in WillRedirectRequestOnUI()
-        // and PrerenderContents::CheckURL(). See http://crbug.com/673771.
-        prerender_contents->Destroy(FINAL_STATUS_UNSUPPORTED_SCHEME);
-        ReportUnsupportedPrerenderScheme(url);
-      }
+      // Destroying the prerender for unsupported scheme only for non-main
+      // resource to allow chrome://crash to actually crash in the
+      // *RendererCrash tests instead of being intercepted here. The
+      // unsupported
+      // scheme for the main resource is checked in WillRedirectRequestOnUI()
+      // and PrerenderContents::CheckURL(). See http://crbug.com/673771.
+      prerender_contents->Destroy(FINAL_STATUS_UNSUPPORTED_SCHEME);
+      ReportUnsupportedPrerenderScheme(url);
       cancel = true;
 #if defined(OS_ANDROID)
     } else if (resource_type == content::RESOURCE_TYPE_FAVICON) {

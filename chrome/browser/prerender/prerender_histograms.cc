@@ -63,8 +63,6 @@ std::string GetHistogramName(Origin origin, const std::string& name) {
       return ComposeHistogramName("gws", name);
     case ORIGIN_EXTERNAL_REQUEST_FORCED_PRERENDER:
       return ComposeHistogramName("externalrequestforced", name);
-    case ORIGIN_OFFLINE:
-      return ComposeHistogramName("offline", name);
     default:
       NOTREACHED();
       break;

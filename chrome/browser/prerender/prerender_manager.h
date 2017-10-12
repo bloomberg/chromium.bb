@@ -162,22 +162,6 @@ class PrerenderManager : public content::NotificationObserver,
       content::SessionStorageNamespace* session_storage_namespace,
       const gfx::Size& size);
 
-  // Adds a prerender for the background loader. Returns a PrerenderHandle if
-  // the URL was added, NULL if it was not.
-  //
-  // The caller may set an observer on the handle to receive load events. When
-  // the caller is done using the WebContents, it should call OnCancel() on the
-  // handle to free the resources associated with the prerender.
-  //
-  // The caller must provide two guarantees:
-  // 1. It must never ask for a swap-in;
-  // 2. The SessionStorageNamespace must not be shared with any tab / page load
-  //    to avoid swapping in from there.
-  std::unique_ptr<PrerenderHandle> AddPrerenderForOffline(
-      const GURL& url,
-      content::SessionStorageNamespace* session_storage_namespace,
-      const gfx::Size& size);
-
   // Cancels all active prerenders.
   void CancelAllPrerenders();
 
