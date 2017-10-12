@@ -20,51 +20,12 @@
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "gpu/ipc/service/gpu_watchdog_thread.h"
 
-#if defined(USE_OZONE)
-#include "ui/ozone/public/ozone_platform.h"
-#endif
-
-#if defined(OS_MACOSX)
-#include "base/message_loop/message_pump_mac.h"
-#endif
-
 namespace {
-
-#if defined(USE_X11)
-std::unique_ptr<base::MessagePump> CreateMessagePumpX11() {
-  // TODO(sad): This should create a TYPE_UI message pump, and create a
-  // PlatformEventSource when gpu process split happens.
-  return base::MessageLoop::CreateMessagePumpForType(
-      base::MessageLoop::TYPE_DEFAULT);
-}
-#endif  // defined(USE_X11)
-
-#if defined(OS_MACOSX)
-std::unique_ptr<base::MessagePump> CreateMessagePumpMac() {
-  return base::MakeUnique<base::MessagePumpCFRunLoop>();
-}
-#endif  // defined(OS_MACOSX)
 
 std::unique_ptr<base::Thread> CreateAndStartCompositorThread() {
   auto thread = std::make_unique<base::Thread>("CompositorThread");
   base::Thread::Options thread_options;
-#if defined(OS_WIN)
   thread_options.message_loop_type = base::MessageLoop::TYPE_DEFAULT;
-#elif defined(USE_X11)
-  thread_options.message_pump_factory = base::Bind(&CreateMessagePumpX11);
-#elif defined(USE_OZONE)
-  // The MessageLoop type required depends on the Ozone platform selected at
-  // runtime.
-  thread_options.message_loop_type =
-      ui::OzonePlatform::EnsureInstance()->GetMessageLoopTypeForGpu();
-#elif defined(OS_LINUX)
-  thread_options.message_loop_type = base::MessageLoop::TYPE_DEFAULT;
-#elif defined(OS_MACOSX)
-  thread_options.message_pump_factory = base::Bind(&CreateMessagePumpMac);
-#else
-  thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
-#endif
-
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
   thread_options.priority = base::ThreadPriority::DISPLAY;
 #endif
