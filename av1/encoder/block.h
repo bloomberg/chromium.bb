@@ -304,6 +304,8 @@ struct macroblock {
 #endif  // CONFIG_EXT_INTRA
 #if CONFIG_LOOP_RESTORATION
   int switchable_restore_cost[RESTORE_SWITCHABLE_TYPES];
+  int wiener_restore_cost[2];
+  int sgrproj_restore_cost[2];
 #endif  // CONFIG_LOOP_RESTORATION
 #if CONFIG_INTRABC
   int intrabc_cost[2];

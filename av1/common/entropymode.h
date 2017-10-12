@@ -348,7 +348,11 @@ typedef struct frame_contexts {
   aom_cdf_prob filter_intra_mode_cdf[PLANE_TYPES][CDF_SIZE(FILTER_INTRA_MODES)];
 #endif  // CONFIG_FILTER_INTRA
 #if CONFIG_LOOP_RESTORATION
-  aom_prob switchable_restore_prob[RESTORE_SWITCHABLE_TYPES - 1];
+  aom_cdf_prob switchable_restore_cdf[CDF_SIZE(RESTORE_SWITCHABLE_TYPES)];
+#if CONFIG_NEW_MULTISYMBOL
+  aom_cdf_prob wiener_restore_cdf[CDF_SIZE(2)];
+  aom_cdf_prob sgrproj_restore_cdf[CDF_SIZE(2)];
+#endif  // CONFIG_NEW_MULTISYMBOL
 #endif  // CONFIG_LOOP_RESTORATION
   aom_cdf_prob y_mode_cdf[BLOCK_SIZE_GROUPS][CDF_SIZE(INTRA_MODES)];
   aom_cdf_prob uv_mode_cdf[INTRA_MODES][CDF_SIZE(UV_INTRA_MODES)];
@@ -706,9 +710,7 @@ extern const aom_tree_index av1_ncobmc_tree[TREE_SIZE(OBMC_FAMILY_MODES)];
 #endif  // CONFIG_NCOBMC_ADAPT_WEIGHT
 #if CONFIG_LOOP_RESTORATION
 #define RESTORE_NONE_SGRPROJ_PROB 64
-#define RESTORE_NONE_BILATERAL_PROB 16
 #define RESTORE_NONE_WIENER_PROB 64
-#define RESTORE_NONE_DOMAINTXFMRF_PROB 64
 extern const aom_tree_index
     av1_switchable_restore_tree[TREE_SIZE(RESTORE_SWITCHABLE_TYPES)];
 #endif  // CONFIG_LOOP_RESTORATION

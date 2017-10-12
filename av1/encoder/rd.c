@@ -271,8 +271,19 @@ void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
 #endif  // CONFIG_INTRA_INTERP
 #endif  // CONFIG_EXT_INTRA
 #if CONFIG_LOOP_RESTORATION
-  av1_cost_tokens(x->switchable_restore_cost, fc->switchable_restore_prob,
-                  av1_switchable_restore_tree);
+  av1_cost_tokens_from_cdf(x->switchable_restore_cost,
+                           fc->switchable_restore_cdf, NULL);
+#if CONFIG_NEW_MULTISYMBOL
+  av1_cost_tokens_from_cdf(x->wiener_restore_cost, fc->wiener_restore_cdf,
+                           NULL);
+  av1_cost_tokens_from_cdf(x->sgrproj_restore_cost, fc->sgrproj_restore_cdf,
+                           NULL);
+#else
+  x->wiener_restore_cost[0] = av1_cost_bit(RESTORE_NONE_WIENER_PROB, 0);
+  x->wiener_restore_cost[1] = av1_cost_bit(RESTORE_NONE_WIENER_PROB, 1);
+  x->sgrproj_restore_cost[0] = av1_cost_bit(RESTORE_NONE_SGRPROJ_PROB, 0);
+  x->sgrproj_restore_cost[1] = av1_cost_bit(RESTORE_NONE_SGRPROJ_PROB, 1);
+#endif  // CONFIG_NEW_MULTISYMBOL
 #endif  // CONFIG_LOOP_RESTORATION
 #if CONFIG_INTRABC
   av1_cost_tokens_from_cdf(x->intrabc_cost, fc->intrabc_cdf, NULL);

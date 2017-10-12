@@ -2887,9 +2887,8 @@ static void loop_restoration_read_sb_coeffs(const AV1_COMMON *const cm,
   if (rsi->frame_restoration_type == RESTORE_SWITCHABLE) {
     assert(plane == 0);
     rsi->restoration_type[rtile_idx] =
-        aom_read_tree(r, av1_switchable_restore_tree,
-                      cm->fc->switchable_restore_prob, ACCT_STR);
-
+        aom_read_symbol(r, xd->tile_ctx->switchable_restore_cdf,
+                        RESTORE_SWITCHABLE_TYPES, ACCT_STR);
     if (rsi->restoration_type[rtile_idx] == RESTORE_WIENER) {
       read_wiener_filter(wiener_win, &rsi->wiener_info[rtile_idx], wiener_info,
                          r);
@@ -2897,7 +2896,11 @@ static void loop_restoration_read_sb_coeffs(const AV1_COMMON *const cm,
       read_sgrproj_filter(&rsi->sgrproj_info[rtile_idx], sgrproj_info, r);
     }
   } else if (rsi->frame_restoration_type == RESTORE_WIENER) {
+#if CONFIG_NEW_MULTISYMBOL
+    if (aom_read_symbol(r, xd->tile_ctx->wiener_restore_cdf, 2, ACCT_STR)) {
+#else
     if (aom_read(r, RESTORE_NONE_WIENER_PROB, ACCT_STR)) {
+#endif  // CONFIG_NEW_MULTISYMBOL
       rsi->restoration_type[rtile_idx] = RESTORE_WIENER;
       read_wiener_filter(wiener_win, &rsi->wiener_info[rtile_idx], wiener_info,
                          r);
@@ -2905,7 +2908,11 @@ static void loop_restoration_read_sb_coeffs(const AV1_COMMON *const cm,
       rsi->restoration_type[rtile_idx] = RESTORE_NONE;
     }
   } else if (rsi->frame_restoration_type == RESTORE_SGRPROJ) {
+#if CONFIG_NEW_MULTISYMBOL
+    if (aom_read_symbol(r, xd->tile_ctx->sgrproj_restore_cdf, 2, ACCT_STR)) {
+#else
     if (aom_read(r, RESTORE_NONE_SGRPROJ_PROB, ACCT_STR)) {
+#endif  // CONFIG_NEW_MULTISYMBOL
       rsi->restoration_type[rtile_idx] = RESTORE_SGRPROJ;
       read_sgrproj_filter(&rsi->sgrproj_info[rtile_idx], sgrproj_info, r);
     } else {

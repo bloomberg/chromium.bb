@@ -2492,15 +2492,20 @@ static const aom_cdf_prob default_quarter_tx_size_cdf[CDF_SIZE(2)] = {
 #endif
 
 #if CONFIG_LOOP_RESTORATION
-const aom_tree_index
-    av1_switchable_restore_tree[TREE_SIZE(RESTORE_SWITCHABLE_TYPES)] = {
-      -RESTORE_NONE, 2, -RESTORE_WIENER, -RESTORE_SGRPROJ,
+static const aom_cdf_prob
+    default_switchable_restore_cdf[CDF_SIZE(RESTORE_SWITCHABLE_TYPES)] = {
+      AOM_ICDF(32 * 128), AOM_ICDF(144 * 128), AOM_ICDF(32768), 0,
     };
 
-static const aom_prob
-    default_switchable_restore_prob[RESTORE_SWITCHABLE_TYPES - 1] = {
-      32, 128,
-    };
+#if CONFIG_NEW_MULTISYMBOL
+static const aom_cdf_prob default_wiener_restore_cdf[CDF_SIZE(2)] = {
+  AOM_ICDF(64 * 128), AOM_ICDF(32768), 0,
+};
+
+static const aom_cdf_prob default_sgrproj_restore_cdf[CDF_SIZE(2)] = {
+  AOM_ICDF(64 * 128), AOM_ICDF(32768), 0,
+};
+#endif  // CONFIG_NEW_MULTISYMBOL
 #endif  // CONFIG_LOOP_RESTORATION
 
 #define NUM_PALETTE_NEIGHBORS 3  // left, top-left and top.
@@ -6644,7 +6649,11 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_copy(fc->inter_lgt_prob, default_inter_lgt_prob);
 #endif  // CONFIG_LGT_FROM_PRED
 #if CONFIG_LOOP_RESTORATION
-  av1_copy(fc->switchable_restore_prob, default_switchable_restore_prob);
+  av1_copy(fc->switchable_restore_cdf, default_switchable_restore_cdf);
+#if CONFIG_NEW_MULTISYMBOL
+  av1_copy(fc->wiener_restore_cdf, default_wiener_restore_cdf);
+  av1_copy(fc->sgrproj_restore_cdf, default_sgrproj_restore_cdf);
+#endif  // CONFIG_NEW_MULTISYMBOL
 #endif  // CONFIG_LOOP_RESTORATION
   av1_copy(fc->y_mode_cdf, default_if_y_mode_cdf);
   av1_copy(fc->uv_mode_cdf, default_uv_mode_cdf);
