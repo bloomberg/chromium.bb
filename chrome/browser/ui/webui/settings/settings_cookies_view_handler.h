@@ -7,9 +7,12 @@
 
 #include <memory>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 
@@ -43,11 +46,17 @@ class CookiesViewHandler : public SettingsPageUIHandler,
   void TreeModelEndBatch(CookiesTreeModel* model) override;
 
  private:
-  // Creates the CookiesTreeModel if neccessary.
+  // Creates the CookiesTreeModel if necessary.
   void EnsureCookiesTreeModelCreated();
 
-  // Updates search filter for cookies tree model.
-  void HandleUpdateSearchResults(const base::ListValue* args);
+  // Set |filter_| and get a portion (or all) of the list items.
+  void HandleGetDisplayList(const base::ListValue* args);
+
+  // Remove all items matching the current |filter_|.
+  void HandleRemoveShownItems(const base::ListValue* args);
+
+  // Remove a single item.
+  void HandleRemoveItem(const base::ListValue* args);
 
   // Retrieve cookie details for a specific site.
   void HandleGetCookieDetails(const base::ListValue* args);
@@ -58,13 +67,11 @@ class CookiesViewHandler : public SettingsPageUIHandler,
   // Remove selected sites data.
   void HandleRemove(const base::ListValue* args);
 
-  // Get the tree node using the tree path info in |args| and call
-  // SendChildren to pass back children nodes data to WebUI.
-  void HandleLoadChildren(const base::ListValue* args);
-
   // Get children nodes data and pass it to 'CookiesView.loadChildren' to
   // update the WebUI.
   void SendChildren(const CookieTreeNode* parent);
+
+  void SendLocalDataList(const CookieTreeNode* parent);
 
   // Package and send cookie details for a site.
   void SendCookieDetails(const CookieTreeNode* parent);
@@ -73,16 +80,35 @@ class CookiesViewHandler : public SettingsPageUIHandler,
   // 'CookiesView.loadChildren' to update the WebUI.
   void HandleReloadCookies(const base::ListValue* args);
 
-  // The Cookies Tree model
-  std::unique_ptr<CookiesTreeModel> cookies_tree_model_;
-
   // Flag to indicate whether there is a batch update in progress.
   bool batch_update_;
 
-  std::unique_ptr<CookiesTreeModelUtil> model_util_;
+  // The Cookies Tree model
+  std::unique_ptr<CookiesTreeModel> cookies_tree_model_;
 
-  // The callback ID for the current outstanding request.
-  std::string callback_id_;
+  // Only show items that contain |filter|.
+  base::string16 filter_;
+
+  struct Request {
+    Request();
+    void Clear();
+
+    // The top list item in view.
+    int start_index;
+    // How many list items are in view.
+    int index_count;
+    // The callback ID for the current outstanding request.
+    std::string callback_id_;
+  };
+
+  // The current client request.
+  Request request_;
+
+  // Sorted index list, by site. Indexes refer to |model->GetRoot()| children.
+  typedef std::pair<base::string16, int> LabelAndIndex;
+  std::vector<LabelAndIndex> sorted_sites_;
+
+  std::unique_ptr<CookiesTreeModelUtil> model_util_;
 
   DISALLOW_COPY_AND_ASSIGN(CookiesViewHandler);
 };

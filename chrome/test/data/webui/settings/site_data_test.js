@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-suite('<site-data>', function() {
+suite('SiteDataTest', function() {
   /** @type {SiteDataElement} */
   var siteData;
 
@@ -10,7 +10,8 @@ suite('<site-data>', function() {
   var testBrowserProxy;
 
   setup(function() {
-    testBrowserProxy = new TestLocalDataBrowserProxy;
+    settings.navigateTo(settings.routes.SITE_SETTINGS);
+    testBrowserProxy = new TestLocalDataBrowserProxy();
     settings.LocalDataBrowserProxyImpl.instance_ = testBrowserProxy;
     siteData = document.createElement('site-data');
   });
@@ -19,50 +20,60 @@ suite('<site-data>', function() {
     siteData.remove();
   });
 
-  test('tapping remove button (trash can) calls remove on origin', function() {
-    var GOOGLE_ID = '1';
-    siteData.sites = [{site: 'Google', id: GOOGLE_ID, localData: 'Cookiez!'}];
-    Polymer.dom.flush();
-
-    MockInteractions.tap(siteData.$$('.icon-delete-gray'));
-
-    return testBrowserProxy.whenCalled('removeCookie').then(function(path) {
-      assertEquals(GOOGLE_ID, path);
-    });
+  test('remove button (trash) calls remove on origin', function() {
+    let promise =
+        test_util.eventToPromise('site-data-list-complete', siteData)
+            .then(() => {
+              Polymer.dom.flush();
+              var button =
+                  siteData.$$('.site-item').querySelector('.icon-delete-gray');
+              assertTrue(!!button);
+              assertEquals(button.is, 'paper-icon-button-light');
+              MockInteractions.tap(button);
+              return testBrowserProxy.whenCalled('removeItem');
+            })
+            .then(function(path) {
+              assertEquals('Hello', path);
+            });
+    var sites = [
+      {site: 'Hello', id: '1', localData: 'Cookiez!'},
+    ];
+    testBrowserProxy.setCookieList(sites);
+    document.body.appendChild(siteData);
+    settings.navigateTo(settings.routes.SITE_SETTINGS_SITE_DATA);
+    return promise;
   });
 
   test('remove button hidden when no search results', function() {
-    siteData.sites = [
+    let promise = test_util.eventToPromise('site-data-list-complete', siteData)
+                      .then(() => {
+                        assertEquals(2, siteData.$.list.items.length);
+                        let promise2 = test_util.eventToPromise(
+                            'site-data-list-complete', siteData);
+                        siteData.filter = 'Hello';
+                        return promise2;
+                      })
+                      .then(() => {
+                        assertEquals(1, siteData.$.list.items.length);
+                      });
+    var sites = [
       {site: 'Hello', id: '1', localData: 'Cookiez!'},
       {site: 'World', id: '2', localData: 'Cookiez!'},
     ];
-
-    Polymer.dom.flush();
-    assertEquals(
-        siteData.sites.length,
-        siteData.shadowRoot.querySelectorAll('#siteItem').length);
-
-    // Expecting one result, so the button should be shown.
-    siteData.filter = 'Hello';
-    Polymer.dom.flush();
-    assertEquals(1, siteData.shadowRoot.querySelectorAll('#siteItem').length);
-    assertFalse(siteData.$.removeShowingSites.hidden);
-
-    // Expecting no results, so the button should be hidden.
-    siteData.filter = 'foo';
-    Polymer.dom.flush();
-    assertEquals(0, siteData.shadowRoot.querySelectorAll('#siteItem').length);
-    assertTrue(siteData.$.removeShowingSites.hidden);
+    testBrowserProxy.setCookieList(sites);
+    document.body.appendChild(siteData);
+    settings.navigateTo(settings.routes.SITE_SETTINGS_SITE_DATA);
+    return promise;
   });
 
   test('calls reloadCookies() when created', function() {
     settings.navigateTo(settings.routes.SITE_SETTINGS_SITE_DATA);
     document.body.appendChild(siteData);
+    settings.navigateTo(settings.routes.SITE_SETTINGS_COOKIES);
     return testBrowserProxy.whenCalled('reloadCookies');
   });
 
   test('calls reloadCookies() when visited again', function() {
-    settings.navigateTo(settings.routes.SITE_SETTINGS_SITE_DATA);
     document.body.appendChild(siteData);
     settings.navigateTo(settings.routes.SITE_SETTINGS_COOKIES);
     testBrowserProxy.reset();
