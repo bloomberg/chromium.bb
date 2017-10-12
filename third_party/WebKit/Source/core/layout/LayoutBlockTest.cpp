@@ -7,6 +7,7 @@
 
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutTestHelper.h"
+#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -22,7 +23,7 @@ TEST_F(LayoutBlockTest, LayoutNameCalledWithNullStyle) {
 }
 
 TEST_F(LayoutBlockTest, WidthAvailableToChildrenChanged) {
-  RuntimeEnabledFeatures::SetOverlayScrollbarsEnabled(false);
+  ScopedOverlayScrollbarsForTest overlay_scrollbars(false);
   SetBodyInnerHTML(
       "<!DOCTYPE html>"
       "<div id='list' style='overflow-y:auto; width:150px; height:100px'>"

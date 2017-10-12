@@ -44,10 +44,12 @@ namespace {
 
 class RootScrollerTest : public ::testing::Test,
                          public ::testing::WithParamInterface<bool>,
-                         private ScopedRootLayerScrollingForTest {
+                         private ScopedRootLayerScrollingForTest,
+                         private ScopedRootScrollerForTest {
  public:
   RootScrollerTest()
       : ScopedRootLayerScrollingForTest(GetParam()),
+        ScopedRootScrollerForTest(true),
         base_url_("http://www.test.com/") {
     RegisterMockedHttpURLLoad("overflow-scrolling.html");
     RegisterMockedHttpURLLoad("root-scroller.html");
@@ -165,8 +167,6 @@ class RootScrollerTest : public ::testing::Test,
 
   WebViewImpl* InitializeInternal(const std::string& url,
                                   FrameTestHelpers::TestWebViewClient* client) {
-    RuntimeEnabledFeatures::SetSetRootScrollerEnabled(true);
-
     helper_.InitializeAndLoad(url, nullptr, client, nullptr,
                               &ConfigureSettings);
 

@@ -14,7 +14,7 @@
 #include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/loader/testing/CryptoTestingPlatformSupport.h"
 #include "platform/loader/testing/MockFetchContext.h"
-#include "platform/runtime_enabled_features.h"
+#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/RefPtr.h"
@@ -326,9 +326,11 @@ TEST_F(SubresourceIntegrityTest, ParseAlgorithm) {
   ExpectAlgorithm("sha-384-", IntegrityAlgorithm::kSha384);
   ExpectAlgorithm("sha-512-", IntegrityAlgorithm::kSha512);
 
-  RuntimeEnabledFeatures::SetSignatureBasedIntegrityEnabled(true);
-  ExpectAlgorithm("ed25519-", IntegrityAlgorithm::kEd25519);
-  RuntimeEnabledFeatures::SetSignatureBasedIntegrityEnabled(false);
+  {
+    ScopedSignatureBasedIntegrityForTest signature_based_integrity(true);
+    ExpectAlgorithm("ed25519-", IntegrityAlgorithm::kEd25519);
+  }
+  ScopedSignatureBasedIntegrityForTest signature_based_integrity(false);
   ExpectAlgorithmFailure("ed25519-", SubresourceIntegrity::kAlgorithmUnknown);
 
   ExpectAlgorithmFailure("sha1-", SubresourceIntegrity::kAlgorithmUnknown);
@@ -516,12 +518,14 @@ TEST_F(SubresourceIntegrityTest, Parsing) {
               "BpfBw7ivV8q2jLiT13fxDYAe2tJllusRSZ273h2nFSE=",
               IntegrityAlgorithm::kSha256);
 
-  RuntimeEnabledFeatures::SetSignatureBasedIntegrityEnabled(false);
-  ExpectEmptyParseResult("ed25519-xxxx");
-  ExpectEmptyParseResult(
-      "ed25519-qGFmwTxlocg707D1cX4w60iTwtfwbMLf8ITDyfko7s0=");
+  {
+    ScopedSignatureBasedIntegrityForTest signature_based_integrity(false);
+    ExpectEmptyParseResult("ed25519-xxxx");
+    ExpectEmptyParseResult(
+        "ed25519-qGFmwTxlocg707D1cX4w60iTwtfwbMLf8ITDyfko7s0=");
+  }
 
-  RuntimeEnabledFeatures::SetSignatureBasedIntegrityEnabled(true);
+  ScopedSignatureBasedIntegrityForTest signature_based_integrity(true);
   ExpectParse("ed25519-xxxx", "xxxx", IntegrityAlgorithm::kEd25519);
   ExpectParse("ed25519-qGFmwTxlocg707D1cX4w60iTwtfwbMLf8ITDyfko7s0=",
               "qGFmwTxlocg707D1cX4w60iTwtfwbMLf8ITDyfko7s0=",

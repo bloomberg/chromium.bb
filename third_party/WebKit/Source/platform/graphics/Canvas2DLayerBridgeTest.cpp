@@ -43,8 +43,8 @@
 #include "platform/graphics/paint/PaintFlags.h"
 #include "platform/graphics/test/FakeGLES2Interface.h"
 #include "platform/graphics/test/FakeWebGraphicsContext3DProvider.h"
-#include "platform/runtime_enabled_features.h"
 #include "platform/scheduler/child/web_scheduler.h"
+#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "platform/testing/TestingPlatformSupport.h"
 #include "platform/wtf/RefPtr.h"
 #include "public/platform/Platform.h"
@@ -1069,7 +1069,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_PrepareMailboxWhileBackgroundRendering)
 
 TEST_F(Canvas2DLayerBridgeTest, DeleteGpuMemoryBufferAfterTeardown) {
 #if defined(OS_MACOSX) || defined(OS_CHROMEOS)
-  RuntimeEnabledFeatures::SetCanvas2dImageChromiumEnabled(true);
+  ScopedCanvas2dImageChromiumForTest canvas_2d_image_chromium(true);
 #endif
   ScopedTestingPlatformSupport<FakePlatformSupport> platform;
 

@@ -15,6 +15,7 @@
 #include "modules/presentation/MockWebPresentationClient.h"
 #include "modules/presentation/PresentationController.h"
 #include "modules/remoteplayback/HTMLMediaElementRemotePlayback.h"
+#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/modules/presentation/WebPresentationClient.h"
 #include "public/platform/modules/presentation/WebPresentationConnectionCallbacks.h"
@@ -51,26 +52,12 @@ class MockEventListenerForRemotePlayback : public EventListener {
   MOCK_METHOD2(handleEvent, void(ExecutionContext* executionContext, Event*));
 };
 
-class RemotePlaybackTest : public ::testing::Test {
+class RemotePlaybackTest : public ::testing::Test,
+                           private ScopedRemotePlaybackBackendForTest {
+ public:
+  RemotePlaybackTest() : ScopedRemotePlaybackBackendForTest(true) {}
+
  protected:
-  void SetUp() override {
-    was_new_remote_playback_pipeline_enabled_ =
-        RuntimeEnabledFeatures::NewRemotePlaybackPipelineEnabled();
-
-    was_remote_playback_backend_enabled_ =
-        RuntimeEnabledFeatures::RemotePlaybackBackendEnabled();
-    // Pretend the backend is enabled by default to test the API with backend
-    // implemented.
-    RuntimeEnabledFeatures::SetRemotePlaybackBackendEnabled(true);
-  }
-
-  void TearDown() override {
-    RuntimeEnabledFeatures::SetNewRemotePlaybackPipelineEnabled(
-        was_new_remote_playback_pipeline_enabled_);
-    RuntimeEnabledFeatures::SetRemotePlaybackBackendEnabled(
-        was_remote_playback_backend_enabled_);
-  }
-
   void CancelPrompt(RemotePlayback* remote_playback) {
     remote_playback->PromptCancelled();
   }
@@ -86,10 +73,6 @@ class RemotePlaybackTest : public ::testing::Test {
   // Has to outlive the page so that PresentationController doesn't crash trying
   // to set it to null in ContextDestroyed().
   MockWebPresentationClient presentation_client_;
-
- private:
-  bool was_remote_playback_backend_enabled_;
-  bool was_new_remote_playback_pipeline_enabled_;
 };
 
 TEST_F(RemotePlaybackTest, PromptCancelledRejectsWithNotAllowedError) {
@@ -315,7 +298,7 @@ TEST_F(RemotePlaybackTest, DisableRemotePlaybackCancelsAvailabilityCallbacks) {
 }
 
 TEST_F(RemotePlaybackTest, PromptThrowsWhenBackendDisabled) {
-  RuntimeEnabledFeatures::SetRemotePlaybackBackendEnabled(false);
+  ScopedRemotePlaybackBackendForTest remote_playback_backend(false);
   V8TestingScope scope;
 
   auto page_holder = DummyPageHolder::Create();
@@ -347,7 +330,7 @@ TEST_F(RemotePlaybackTest, PromptThrowsWhenBackendDisabled) {
 }
 
 TEST_F(RemotePlaybackTest, WatchAvailabilityWorksWhenBackendDisabled) {
-  RuntimeEnabledFeatures::SetRemotePlaybackBackendEnabled(false);
+  ScopedRemotePlaybackBackendForTest remote_playback_backend(false);
   V8TestingScope scope;
 
   auto page_holder = DummyPageHolder::Create();
@@ -388,7 +371,7 @@ TEST_F(RemotePlaybackTest, WatchAvailabilityWorksWhenBackendDisabled) {
 }
 
 TEST_F(RemotePlaybackTest, IsListening) {
-  RuntimeEnabledFeatures::SetNewRemotePlaybackPipelineEnabled(true);
+  ScopedNewRemotePlaybackPipelineForTest new_remote_playback_pipeline(true);
   V8TestingScope scope;
 
   auto page_holder = DummyPageHolder::Create();

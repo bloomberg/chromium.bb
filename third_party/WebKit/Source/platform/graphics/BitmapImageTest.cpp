@@ -35,9 +35,9 @@
 #include "platform/graphics/DeferredImageDecoder.h"
 #include "platform/graphics/ImageObserver.h"
 #include "platform/graphics/test/MockImageDecoder.h"
-#include "platform/runtime_enabled_features.h"
 #include "platform/scheduler/test/fake_web_task_runner.h"
 #include "platform/testing/HistogramTester.h"
+#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "platform/testing/TestingPlatformSupport.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/wtf/StdLibExtras.h"
@@ -455,7 +455,7 @@ TEST_F(BitmapImageTestWithMockDecoder, AnimationPolicyOverride) {
 }
 
 TEST_F(BitmapImageTestWithMockDecoder, DontAdvanceToIncompleteFrame) {
-  RuntimeEnabledFeatures::SetCompositorImageAnimationsEnabled(false);
+  ScopedCompositorImageAnimationsForTest compositor_image_animations(false);
 
   repetition_count_ = kAnimationLoopOnce;
   frame_count_ = 3u;

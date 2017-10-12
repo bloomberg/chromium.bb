@@ -41,6 +41,7 @@
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "platform/graphics/gpu/DrawingBufferTestHelpers.h"
+#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "platform/testing/TestingPlatformSupport.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/RefPtr.h"
@@ -390,7 +391,11 @@ TEST_F(DrawingBufferTest, verifyInsertAndWaitSyncTokenCorrectly) {
   EXPECT_EQ(wait_sync_token, gl_->MostRecentlyWaitedSyncToken());
 }
 
-class DrawingBufferImageChromiumTest : public DrawingBufferTest {
+class DrawingBufferImageChromiumTest : public DrawingBufferTest,
+                                       private ScopedWebGLImageChromiumForTest {
+ public:
+  DrawingBufferImageChromiumTest() : ScopedWebGLImageChromiumForTest(true) {}
+
  protected:
   void SetUp() override {
     platform_.reset(new ScopedTestingPlatformSupport<FakePlatformSupport>);
@@ -401,7 +406,6 @@ class DrawingBufferImageChromiumTest : public DrawingBufferTest {
     std::unique_ptr<WebGraphicsContext3DProviderForTests> provider =
         WTF::WrapUnique(
             new WebGraphicsContext3DProviderForTests(std::move(gl)));
-    RuntimeEnabledFeatures::SetWebGLImageChromiumEnabled(true);
     GLES2InterfaceForTests* gl_ =
         static_cast<GLES2InterfaceForTests*>(provider->ContextGL());
     image_id0_ = gl_->NextImageIdToBeCreated();
@@ -415,7 +419,6 @@ class DrawingBufferImageChromiumTest : public DrawingBufferTest {
   }
 
   void TearDown() override {
-    RuntimeEnabledFeatures::SetWebGLImageChromiumEnabled(false);
     platform_.reset();
   }
 
