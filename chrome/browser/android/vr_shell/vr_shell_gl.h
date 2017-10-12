@@ -125,9 +125,9 @@ class VrShellGl : public device::mojom::VRPresentationProvider,
   void InitializeRenderer();
   // Returns true if successfully resized.
   bool ResizeForWebVR(int16_t frame_index);
-  void UpdateSamples();
   void DrawFrame(int16_t frame_index);
   void DrawFrameSubmitWhenReady(int16_t frame_index,
+                                gvr_frame* frame_ptr,
                                 const gfx::Transform& head_pose,
                                 std::unique_ptr<gl::GLFenceEGL> fence);
   bool ShouldDrawWebVr();
@@ -215,7 +215,6 @@ class VrShellGl : public device::mojom::VRPresentationProvider,
   std::unique_ptr<gvr::BufferViewport> webvr_left_viewport_;
   std::unique_ptr<gvr::BufferViewport> webvr_right_viewport_;
   std::unique_ptr<gvr::SwapChain> swap_chain_;
-  gvr::Frame frame_;
   base::queue<std::pair<uint8_t, WebVrBounds>> pending_bounds_;
   int premature_received_frames_ = 0;
   base::queue<uint16_t> pending_frames_;
@@ -240,7 +239,7 @@ class VrShellGl : public device::mojom::VRPresentationProvider,
 
   std::unique_ptr<vr::Ui> ui_;
 
-  bool web_vr_mode_ = false;
+  bool web_vr_mode_;
   bool ready_to_draw_ = false;
   bool paused_ = true;
   bool surfaceless_rendering_;
@@ -284,8 +283,6 @@ class VrShellGl : public device::mojom::VRPresentationProvider,
   AndroidVSyncHelper vsync_helper_;
 
   base::CancelableCallback<void()> webvr_frame_timeout_;
-
-  std::vector<gvr::BufferSpec> specs_;
 
   base::WeakPtrFactory<VrShellGl> weak_ptr_factory_;
 
