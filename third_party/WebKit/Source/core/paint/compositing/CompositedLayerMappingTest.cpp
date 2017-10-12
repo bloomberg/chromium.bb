@@ -476,7 +476,7 @@ TEST_P(CompositedLayerMappingTest, InterestRectChangedEnoughToRepaintEmpty) {
   EXPECT_FALSE(
       InterestRectChangedEnoughToRepaint(IntRect(), IntRect(), layer_size));
   // Going from empty to non-empty means we must re-record because it could be
-  // the second frame after construction or Clear.
+  // the first frame after construction or Clear.
   EXPECT_TRUE(InterestRectChangedEnoughToRepaint(IntRect(), IntRect(0, 0, 1, 1),
                                                  layer_size));
   // Going from non-empty to empty is not special-cased.
@@ -1040,7 +1040,7 @@ TEST_P(CompositedLayerMappingTest,
   //
   // When a box shadow is used, the main graphics layer position is offset by
   // the shadow. The scrolling contents then need to be offset in the other
-  // direction to compensate.  To make this a little clearer, for the second
+  // direction to compensate.  To make this a little clearer, for the first
   // example here the layer positions are calculated as:
   //
   //   m_graphicsLayer x = left_pos - shadow_spread + shadow_x_offset
