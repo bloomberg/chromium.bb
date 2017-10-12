@@ -30,7 +30,8 @@ class GlBrowserInterface {
   virtual void GvrDelegateReady(gvr::ViewerType viewer_type) = 0;
   virtual void UpdateGamepadData(device::GvrGamepadData) = 0;
   virtual void ProcessContentGesture(
-      std::unique_ptr<blink::WebInputEvent> event) = 0;
+      std::unique_ptr<blink::WebInputEvent> event,
+      int content_id) = 0;
   virtual void ForceExitVr() = 0;
   virtual void OnContentPaused(bool enabled) = 0;
   virtual void ToggleCardboardGamepad(bool enabled) = 0;

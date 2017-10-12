@@ -117,6 +117,9 @@ class VrShellGl : public device::mojom::VRPresentationProvider,
 
   void set_is_exiting(bool exiting) { is_exiting_ = exiting; }
 
+  void OnSwapContents(int new_content_id);
+  bool ContentGestureIsLocked(blink::WebInputEvent::Type type);
+
  private:
   void GvrInit(gvr_context* gvr_api);
   void InitializeRenderer();
@@ -245,6 +248,9 @@ class VrShellGl : public device::mojom::VRPresentationProvider,
   bool is_exiting_ = false;
 
   std::unique_ptr<VrController> controller_;
+
+  int content_id_ = 0;
+  int locked_content_id_ = 0;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 

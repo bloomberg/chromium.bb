@@ -44,8 +44,8 @@ class VrGLThread : public base::android::JavaHandlerThread,
   void ContentSurfaceChanged(jobject surface) override;
   void GvrDelegateReady(gvr::ViewerType viewer_type) override;
   void UpdateGamepadData(device::GvrGamepadData) override;
-  void ProcessContentGesture(
-      std::unique_ptr<blink::WebInputEvent> event) override;
+  void ProcessContentGesture(std::unique_ptr<blink::WebInputEvent> event,
+                             int content_id) override;
   void ForceExitVr() override;
   void OnContentPaused(bool enabled) override;
   void ToggleCardboardGamepad(bool enabled) override;

@@ -84,11 +84,12 @@ void VrGLThread::UpdateGamepadData(device::GvrGamepadData pad) {
 }
 
 void VrGLThread::ProcessContentGesture(
-    std::unique_ptr<blink::WebInputEvent> event) {
+    std::unique_ptr<blink::WebInputEvent> event,
+    int content_id) {
   DCHECK(OnGlThread());
   main_thread_task_runner_->PostTask(
       FROM_HERE, base::Bind(&VrShell::ProcessContentGesture, weak_vr_shell_,
-                            base::Passed(std::move(event))));
+                            base::Passed(std::move(event)), content_id));
 }
 
 void VrGLThread::ForceExitVr() {
