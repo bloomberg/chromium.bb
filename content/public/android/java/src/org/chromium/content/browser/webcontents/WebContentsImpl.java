@@ -284,6 +284,11 @@ import java.util.UUID;
     }
 
     @Override
+    public String getEncoding() {
+        return nativeGetEncoding(mNativeWebContentsAndroid);
+    }
+
+    @Override
     public boolean isLoading() {
         return nativeIsLoading(mNativeWebContentsAndroid);
     }
@@ -732,6 +737,7 @@ import java.util.UUID;
     private native RenderFrameHost nativeGetMainFrame(long nativeWebContentsAndroid);
     private native String nativeGetTitle(long nativeWebContentsAndroid);
     private native String nativeGetVisibleURL(long nativeWebContentsAndroid);
+    private native String nativeGetEncoding(long nativeWebContentsAndroid);
     private native boolean nativeIsLoading(long nativeWebContentsAndroid);
     private native boolean nativeIsLoadingToDifferentDocument(long nativeWebContentsAndroid);
     private native void nativeStop(long nativeWebContentsAndroid);
