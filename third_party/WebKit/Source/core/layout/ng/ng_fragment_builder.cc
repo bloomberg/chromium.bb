@@ -235,10 +235,12 @@ RefPtr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment() {
 
   NGPhysicalSize physical_size = size_.ConvertToPhysical(WritingMode());
 
+  NGPhysicalOffsetRect contents_visual_rect({}, physical_size);
   for (size_t i = 0; i < children_.size(); ++i) {
     NGPhysicalFragment* child = children_[i].get();
     child->SetOffset(offsets_[i].ConvertToPhysical(
         WritingMode(), Direction(), physical_size, child->Size()));
+    child->PropagateContentsVisualRect(&contents_visual_rect);
   }
 
   RefPtr<NGBreakToken> break_token;
@@ -257,9 +259,9 @@ RefPtr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment() {
 
   RefPtr<NGPhysicalBoxFragment> fragment =
       WTF::AdoptRef(new NGPhysicalBoxFragment(
-          layout_object_, Style(), physical_size, children_, baselines_,
-          border_edges_.ToPhysical(WritingMode()), std::move(break_token)));
-  fragment->UpdateVisualRect();
+          layout_object_, Style(), physical_size, contents_visual_rect,
+          children_, baselines_, border_edges_.ToPhysical(WritingMode()),
+          std::move(break_token)));
 
   return WTF::AdoptRef(new NGLayoutResult(
       std::move(fragment), oof_positioned_descendants_, unpositioned_floats_,

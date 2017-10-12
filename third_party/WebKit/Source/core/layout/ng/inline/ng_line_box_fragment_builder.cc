@@ -93,7 +93,6 @@ NGLineBoxFragmentBuilder::ToLineBoxFragment() {
           Style(), physical_size, children_, metrics_,
           break_token_ ? std::move(break_token_)
                        : NGInlineBreakToken::Create(node_)));
-  fragment->UpdateVisualRect();
   return fragment;
 }
 

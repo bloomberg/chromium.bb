@@ -29,7 +29,8 @@ void NGPaintFragment::PopulateDescendants() {
   }
   // TODO(kojii): Do some stuff to accumulate visual rects and convert to paint
   // coordinates.
-  SetVisualRect(PhysicalFragment().LocalVisualRect());
+  // TODO(kojii): This is still quite worng, revisit in following patch.
+  SetVisualRect({{}, PhysicalFragment().Size().ToLayoutSize()});
 }
 
 }  // namespace blink

@@ -22,15 +22,4 @@ NGPhysicalContainerFragment::NGPhysicalContainerFragment(
   DCHECK(children.IsEmpty());  // Ensure move semantics is used.
 }
 
-void NGPhysicalContainerFragment::UpdateVisualRect() const {
-  LayoutRect visual_rect(LayoutPoint(),
-                         LayoutSize(Size().width, Size().height));
-  for (const auto& child : children_) {
-    LayoutRect child_visual_rect = child->LocalVisualRect();
-    child_visual_rect.Move(child->Offset().left, child->Offset().top);
-    visual_rect.Unite(child_visual_rect);
-  }
-  SetVisualRect(visual_rect);
-}
-
 }  // namespace blink

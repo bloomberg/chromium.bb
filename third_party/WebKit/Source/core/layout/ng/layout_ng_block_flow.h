@@ -66,7 +66,7 @@ class CORE_EXPORT LayoutNGBlockFlow : public LayoutBlockFlow {
  private:
   void UpdateOutOfFlowBlockLayout();
 
-  const NGPhysicalFragment* CurrentFragment() const;
+  const NGPhysicalBoxFragment* CurrentFragment() const;
 
   const NGBaseline* FragmentBaseline(NGBaselineAlgorithmType) const;
 
