@@ -9,7 +9,7 @@
 #include "ash/palette_delegate.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
-#include "ash/wm/power_button_controller.h"
+#include "ash/system/power/power_button_controller.h"
 #include "components/prefs/testing_pref_service.h"
 
 namespace ash {

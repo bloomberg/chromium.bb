@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/power_button_controller.h"
+#include "ash/system/power/power_button_controller.h"
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/public/cpp/ash_switches.h"

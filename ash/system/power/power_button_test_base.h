@@ -7,9 +7,9 @@
 
 #include <memory>
 
+#include "ash/system/power/power_button_controller.h"
 #include "ash/system/power/tablet_power_button_controller.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/wm/power_button_controller.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"
 
 namespace base {
