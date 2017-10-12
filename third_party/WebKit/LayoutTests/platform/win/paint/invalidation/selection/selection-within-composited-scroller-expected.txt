@@ -71,6 +71,22 @@
   ],
   "objectPaintInvalidations": [
     {
+      "object": "LayoutBlockFlow HTML",
+      "reason": "selection"
+    },
+    {
+      "object": "LayoutBlockFlow BODY",
+      "reason": "selection"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='scroller'",
+      "reason": "selection"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='target'",
+      "reason": "selection"
+    },
+    {
       "object": "LayoutText #text",
       "reason": "selection"
     },
