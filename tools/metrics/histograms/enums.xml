@@ -28602,6 +28602,21 @@ from previous Chrome versions.
   </int>
 </enum>
 
+<enum name="OfflinePagesPrefetchUsage">
+  <int value="0" label="Has prefetched pages">
+    Reported when Offline Model DB is loaded.
+  </int>
+  <int value="1" label="Only fetched new pages">
+    Reported when at least one page was prefetched in a day, but none opened.
+  </int>
+  <int value="2" label="Only opened prefetched page">
+    User opened at least one prefetched page, but no new pages were prefetched.
+  </int>
+  <int value="3" label="Both fetched and opened prefetched pages">
+    The pages were both prefetched and opened during the day.
+  </int>
+</enum>
+
 <enum name="OfflinePagesRedirectResult">
   <obsolete>
     Deprecated 2016-08.

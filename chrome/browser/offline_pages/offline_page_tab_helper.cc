@@ -102,6 +102,13 @@ void OfflinePageTabHelper::DidFinishNavigation(
     offline_info_.offline_header = provisional_offline_info_.offline_header;
     offline_info_.is_showing_offline_preview =
         provisional_offline_info_.is_showing_offline_preview;
+
+    // Report prefetch usage to OfflineMetricsCollector.
+    if (offline_info_.offline_page &&
+        policy_controller_.IsSuggested(
+            offline_info_.offline_page->client_id.name_space)) {
+      prefetch_service_->GetOfflineMetricsCollector()->OnPrefetchedPageOpened();
+    }
   }
   provisional_offline_info_.Clear();
 

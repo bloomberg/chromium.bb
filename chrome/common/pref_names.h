@@ -872,12 +872,21 @@ extern const char kOfflinePrefetchBackoff[];
 extern const char kOfflineUsageStartObserved[];
 extern const char kOfflineUsageOnlineObserved[];
 extern const char kOfflineUsageOfflineObserved[];
+extern const char kPrefetchUsageEnabledObserved[];
+extern const char kPrefetchUsageHasPagesObserved[];
+extern const char kPrefetchUsageFetchObserved[];
+extern const char kPrefetchUsageOpenObserved[];
 extern const char kOfflineUsageTrackingDay[];
 extern const char kOfflineUsageUnusedCount[];
 extern const char kOfflineUsageStartedCount[];
 extern const char kOfflineUsageOfflineCount[];
 extern const char kOfflineUsageOnlineCount[];
 extern const char kOfflineUsageMixedCount[];
+extern const char kPrefetchUsageEnabledCount[];
+extern const char kPrefetchUsageHasPagesCount[];
+extern const char kPrefetchUsageFetchedCount[];
+extern const char kPrefetchUsageOpenedCount[];
+extern const char kPrefetchUsageMixedCount[];
 #endif
 
 extern const char kMediaEngagementSchemaVersion[];

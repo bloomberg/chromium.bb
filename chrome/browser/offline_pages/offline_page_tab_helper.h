@@ -123,6 +123,11 @@ class OfflinePageTabHelper :
   // Service, overlives this object.
   PrefetchService* prefetch_service_ = nullptr;
 
+  // Table of OfflinePages policies.
+  // TODO(dimich): When we only have one shared version of PolicyController,
+  // replace this instance with access to a shared one.
+  ClientPolicyController policy_controller_;
+
   base::WeakPtrFactory<OfflinePageTabHelper> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(OfflinePageTabHelper);

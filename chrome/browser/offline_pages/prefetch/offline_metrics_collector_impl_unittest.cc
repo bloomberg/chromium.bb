@@ -61,11 +61,23 @@ TEST_F(OfflineMetricsCollectorTest, CheckCleanInit) {
   EXPECT_EQ(false, prefs().GetBoolean(prefs::kOfflineUsageStartObserved));
   EXPECT_EQ(false, prefs().GetBoolean(prefs::kOfflineUsageOfflineObserved));
   EXPECT_EQ(false, prefs().GetBoolean(prefs::kOfflineUsageOnlineObserved));
+
+  EXPECT_EQ(false, prefs().GetBoolean(prefs::kPrefetchUsageEnabledObserved));
+  EXPECT_EQ(false, prefs().GetBoolean(prefs::kPrefetchUsageHasPagesObserved));
+  EXPECT_EQ(false, prefs().GetBoolean(prefs::kPrefetchUsageFetchObserved));
+  EXPECT_EQ(false, prefs().GetBoolean(prefs::kPrefetchUsageOpenObserved));
+
   EXPECT_EQ(0, prefs().GetInteger(prefs::kOfflineUsageUnusedCount));
   EXPECT_EQ(0, prefs().GetInteger(prefs::kOfflineUsageStartedCount));
   EXPECT_EQ(0, prefs().GetInteger(prefs::kOfflineUsageOfflineCount));
   EXPECT_EQ(0, prefs().GetInteger(prefs::kOfflineUsageOnlineCount));
   EXPECT_EQ(0, prefs().GetInteger(prefs::kOfflineUsageMixedCount));
+
+  EXPECT_EQ(0, prefs().GetInteger(prefs::kPrefetchUsageEnabledCount));
+  EXPECT_EQ(0, prefs().GetInteger(prefs::kPrefetchUsageHasPagesCount));
+  EXPECT_EQ(0, prefs().GetInteger(prefs::kPrefetchUsageFetchedCount));
+  EXPECT_EQ(0, prefs().GetInteger(prefs::kPrefetchUsageOpenedCount));
+  EXPECT_EQ(0, prefs().GetInteger(prefs::kPrefetchUsageMixedCount));
 }
 
 TEST_F(OfflineMetricsCollectorTest, FirstStart) {
@@ -102,6 +114,29 @@ TEST_F(OfflineMetricsCollectorTest, SetTrackingFlags) {
   EXPECT_EQ(true, prefs().GetBoolean(prefs::kOfflineUsageStartObserved));
   EXPECT_EQ(true, prefs().GetBoolean(prefs::kOfflineUsageOfflineObserved));
   EXPECT_EQ(true, prefs().GetBoolean(prefs::kOfflineUsageOnlineObserved));
+}
+
+TEST_F(OfflineMetricsCollectorTest, SetTrackingFlagsPrefech) {
+  collector()->OnPrefetchEnabled();
+  EXPECT_EQ(true, prefs().GetBoolean(prefs::kPrefetchUsageEnabledObserved));
+  EXPECT_EQ(false, prefs().GetBoolean(prefs::kPrefetchUsageHasPagesObserved));
+  EXPECT_EQ(false, prefs().GetBoolean(prefs::kPrefetchUsageFetchObserved));
+  EXPECT_EQ(false, prefs().GetBoolean(prefs::kPrefetchUsageOpenObserved));
+  collector()->OnHasPrefetchedPagesDetected();
+  EXPECT_EQ(true, prefs().GetBoolean(prefs::kPrefetchUsageEnabledObserved));
+  EXPECT_EQ(true, prefs().GetBoolean(prefs::kPrefetchUsageHasPagesObserved));
+  EXPECT_EQ(false, prefs().GetBoolean(prefs::kPrefetchUsageFetchObserved));
+  EXPECT_EQ(false, prefs().GetBoolean(prefs::kPrefetchUsageOpenObserved));
+  collector()->OnSuccessfulPagePrefetch();
+  EXPECT_EQ(true, prefs().GetBoolean(prefs::kPrefetchUsageEnabledObserved));
+  EXPECT_EQ(true, prefs().GetBoolean(prefs::kPrefetchUsageHasPagesObserved));
+  EXPECT_EQ(true, prefs().GetBoolean(prefs::kPrefetchUsageFetchObserved));
+  EXPECT_EQ(false, prefs().GetBoolean(prefs::kPrefetchUsageOpenObserved));
+  collector()->OnPrefetchedPageOpened();
+  EXPECT_EQ(true, prefs().GetBoolean(prefs::kPrefetchUsageEnabledObserved));
+  EXPECT_EQ(true, prefs().GetBoolean(prefs::kPrefetchUsageHasPagesObserved));
+  EXPECT_EQ(true, prefs().GetBoolean(prefs::kPrefetchUsageFetchObserved));
+  EXPECT_EQ(true, prefs().GetBoolean(prefs::kPrefetchUsageOpenObserved));
 }
 
 TEST_F(OfflineMetricsCollectorTest, TrueIsFinalState) {
@@ -160,6 +195,47 @@ TEST_F(OfflineMetricsCollectorTest, RestoreFromPrefs) {
   EXPECT_EQ(0, prefs().GetInteger(prefs::kOfflineUsageOfflineCount));
   EXPECT_EQ(0, prefs().GetInteger(prefs::kOfflineUsageOnlineCount));
   EXPECT_EQ(0, prefs().GetInteger(prefs::kOfflineUsageMixedCount));
+}
+
+TEST_F(OfflineMetricsCollectorTest, RestoreFromPrefsPrefetch) {
+  collector()->OnPrefetchEnabled();
+  EXPECT_EQ(true, prefs().GetBoolean(prefs::kPrefetchUsageEnabledObserved));
+  EXPECT_EQ(false, prefs().GetBoolean(prefs::kPrefetchUsageHasPagesObserved));
+  EXPECT_EQ(false, prefs().GetBoolean(prefs::kPrefetchUsageFetchObserved));
+  EXPECT_EQ(false, prefs().GetBoolean(prefs::kPrefetchUsageOpenObserved));
+
+  prefs().SetInteger(prefs::kPrefetchUsageEnabledCount, 1);
+  prefs().SetInteger(prefs::kPrefetchUsageHasPagesCount, 2);
+  prefs().SetInteger(prefs::kPrefetchUsageFetchedCount, 3);
+  prefs().SetInteger(prefs::kPrefetchUsageOpenedCount, 4);
+  prefs().SetInteger(prefs::kPrefetchUsageMixedCount, 5);
+
+  Reload();
+  collector()->OnSuccessfulPagePrefetch();
+  EXPECT_EQ(true, prefs().GetBoolean(prefs::kPrefetchUsageEnabledObserved));
+  EXPECT_EQ(false, prefs().GetBoolean(prefs::kPrefetchUsageHasPagesObserved));
+  EXPECT_EQ(true, prefs().GetBoolean(prefs::kPrefetchUsageFetchObserved));
+  EXPECT_EQ(false, prefs().GetBoolean(prefs::kPrefetchUsageOpenObserved));
+
+  collector()->ReportAccumulatedStats();
+  histograms().ExpectBucketCount("OfflinePages.PrefetchEnabled", true, 1);
+  histograms().ExpectBucketCount("OfflinePages.PrefetchUsage",
+                                 0 /* PrefetchUsageType::HAS_PAGES */, 2);
+  histograms().ExpectBucketCount("OfflinePages.PrefetchUsage",
+                                 1 /* PrefetchUsageType::FETCHED_NEW_PAGES */,
+                                 3);
+  histograms().ExpectBucketCount("OfflinePages.PrefetchUsage",
+                                 2 /* PrefetchUsageType::OPENED_PAGES */, 4);
+  histograms().ExpectBucketCount(
+      "OfflinePages.PrefetchUsage",
+      3 /* PrefetchUsageType::FETCHED_AND_OPENED_PAGES */, 5);
+
+  // After reporting, counters should be reset.
+  EXPECT_EQ(0, prefs().GetInteger(prefs::kPrefetchUsageEnabledCount));
+  EXPECT_EQ(0, prefs().GetInteger(prefs::kPrefetchUsageHasPagesCount));
+  EXPECT_EQ(0, prefs().GetInteger(prefs::kPrefetchUsageFetchedCount));
+  EXPECT_EQ(0, prefs().GetInteger(prefs::kPrefetchUsageOpenedCount));
+  EXPECT_EQ(0, prefs().GetInteger(prefs::kPrefetchUsageMixedCount));
 }
 
 TEST_F(OfflineMetricsCollectorTest, ChangesWithinDay) {
@@ -228,6 +304,46 @@ TEST_F(OfflineMetricsCollectorTest, MultipleDays) {
                                  3 /* UsageType::ONLINE */, 0);
   histograms().ExpectBucketCount("OfflinePages.OfflineUsage",
                                  4 /* UsageType::MIXED */, 0);
+}
+
+TEST_F(OfflineMetricsCollectorTest, OverDayBoundaryPrefetch) {
+  base::Time start = test_clock().Now();
+  collector()->OnPrefetchEnabled();
+
+  test_clock().SetNow(start + base::TimeDelta::FromDays(1));
+  collector()->OnPrefetchEnabled();
+
+  test_clock().SetNow(start + base::TimeDelta::FromDays(2));
+  collector()->OnHasPrefetchedPagesDetected();
+
+  test_clock().SetNow(start + base::TimeDelta::FromDays(3));
+  collector()->OnSuccessfulPagePrefetch();
+
+  test_clock().SetNow(start + base::TimeDelta::FromDays(4));
+  collector()->OnPrefetchedPageOpened();
+
+  test_clock().SetNow(start + base::TimeDelta::FromDays(5));
+  collector()->OnPrefetchEnabled();
+  collector()->OnHasPrefetchedPagesDetected();
+  collector()->OnSuccessfulPagePrefetch();
+  collector()->OnPrefetchedPageOpened();
+
+  test_clock().SetNow(start + base::TimeDelta::FromDays(6));
+  collector()->OnPrefetchEnabled();
+
+  // Force collector to report stats and observe them reported correctly.
+  collector()->ReportAccumulatedStats();
+  histograms().ExpectBucketCount("OfflinePages.PrefetchEnabled", true, 3);
+  histograms().ExpectBucketCount("OfflinePages.PrefetchUsage",
+                                 0 /* PrefetchUsageType::HAS_PAGES */, 1);
+  histograms().ExpectBucketCount("OfflinePages.PrefetchUsage",
+                                 1 /* PrefetchUsageType::FETCHED_NEW_PAGES */,
+                                 1);
+  histograms().ExpectBucketCount("OfflinePages.PrefetchUsage",
+                                 2 /* PrefetchUsageType::OPENED_PAGES */, 1);
+  histograms().ExpectBucketCount(
+      "OfflinePages.PrefetchUsage",
+      3 /* PrefetchUsageType::FETCHED_AND_OPENED_PAGES */, 1);
 }
 
 }  // namespace offline_pages
