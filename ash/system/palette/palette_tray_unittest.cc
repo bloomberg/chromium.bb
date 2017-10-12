@@ -183,13 +183,13 @@ TEST_F(PaletteTrayTest, ModeToolDeactivatedAutomatically) {
   ASSERT_TRUE(palette_tray_->is_active());
   ASSERT_TRUE(test_api_->GetTrayBubbleWrapper());
 
-  // Activate and deactivate the capture region tool.
+  // Activate and deactivate the laser pointer tool.
   test_api_->GetPaletteToolManager()->ActivateTool(
-      PaletteToolId::CAPTURE_REGION);
+      PaletteToolId::LASER_POINTER);
   ASSERT_TRUE(test_api_->GetPaletteToolManager()->IsToolActive(
-      PaletteToolId::CAPTURE_REGION));
+      PaletteToolId::LASER_POINTER));
   test_api_->GetPaletteToolManager()->DeactivateTool(
-      PaletteToolId::CAPTURE_REGION);
+      PaletteToolId::LASER_POINTER);
 
   // Verify the bubble is hidden and the button is inactive after deactivating
   // the capture region tool.

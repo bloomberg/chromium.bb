@@ -44,17 +44,6 @@ class PaletteDelegate {
   // equivalent to AddPaletteEnableListener.
   virtual bool ShouldShowPalette() = 0;
 
-  // Take a screenshot of the entire window.
-  virtual void TakeScreenshot() = 0;
-
-  // Take a screenshot of a user-selected region. |done| is called when the
-  // partial screenshot session has finished; a screenshot may or may not have
-  // been taken.
-  virtual void TakePartialScreenshot(const base::Closure& done) = 0;
-
-  // Cancels any active partial screenshot session.
-  virtual void CancelPartialScreenshot() = 0;
-
  private:
   DISALLOW_ASSIGN(PaletteDelegate);
 };

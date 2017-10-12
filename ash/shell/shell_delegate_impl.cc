@@ -43,12 +43,6 @@ class PaletteDelegateImpl : public PaletteDelegate {
   bool HasNoteApp() override { return false; }
   bool ShouldAutoOpenPalette() override { return false; }
   bool ShouldShowPalette() override { return false; }
-  void TakeScreenshot() override {}
-  void TakePartialScreenshot(const base::Closure& done) override {
-    if (done)
-      done.Run();
-  }
-  void CancelPartialScreenshot() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PaletteDelegateImpl);
