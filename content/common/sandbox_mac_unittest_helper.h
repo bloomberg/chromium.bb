@@ -6,7 +6,7 @@
 #define CONTENT_COMMON_SANDBOX_MAC_UNITTEST_HELPER_H_
 
 #include "base/test/multiprocess_test.h"
-#include "content/common/sandbox_mac.h"
+#include "services/service_manager/sandbox/mac/sandbox_mac.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 
 namespace content {
