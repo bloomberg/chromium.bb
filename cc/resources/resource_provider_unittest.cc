@@ -455,8 +455,7 @@ class ResourceProviderTest
     viz::ResourceSettings resource_settings = CreateResourceSettings();
     resource_provider_ = std::make_unique<DisplayResourceProvider>(
         context_provider_.get(), shared_bitmap_manager_.get(),
-        gpu_memory_buffer_manager_.get(), kDelegatedSyncPointsRequired,
-        resource_settings);
+        gpu_memory_buffer_manager_.get(), resource_settings);
     child_resource_provider_ = std::make_unique<LayerTreeResourceProvider>(
         child_context_provider_.get(), shared_bitmap_manager_.get(),
         child_gpu_memory_buffer_manager_.get(), child_needs_sync_token,
@@ -1870,7 +1869,7 @@ class ResourceProviderTestTextureFilters : public ResourceProviderTest {
 
     auto parent_resource_provider(std::make_unique<DisplayResourceProvider>(
         parent_context_provider.get(), shared_bitmap_manager.get(), nullptr,
-        kDelegatedSyncPointsRequired, resource_settings));
+        resource_settings));
 
     gfx::Size size(1, 1);
     viz::ResourceFormat format = viz::RGBA_8888;
@@ -2321,8 +2320,7 @@ TEST_P(ResourceProviderTest, ScopedSampler) {
 
   auto resource_provider(std::make_unique<DisplayResourceProvider>(
       context_provider.get(), shared_bitmap_manager_.get(),
-      gpu_memory_buffer_manager_.get(), kDelegatedSyncPointsRequired,
-      CreateResourceSettings()));
+      gpu_memory_buffer_manager_.get(), CreateResourceSettings()));
 
   gfx::Size size(1, 1);
   viz::ResourceFormat format = viz::RGBA_8888;
@@ -2528,7 +2526,7 @@ TEST_P(ResourceProviderTest, TextureMailbox_SharedMemory) {
 
   auto resource_provider(std::make_unique<DisplayResourceProvider>(
       nullptr, shared_bitmap_manager_.get(), gpu_memory_buffer_manager_.get(),
-      kDelegatedSyncPointsRequired, CreateResourceSettings()));
+      CreateResourceSettings()));
 
   auto child_resource_provider(std::make_unique<LayerTreeResourceProvider>(
       nullptr, shared_bitmap_manager_.get(), gpu_memory_buffer_manager_.get(),
@@ -2601,8 +2599,7 @@ class ResourceProviderTestTextureMailboxGLFilters
 
     auto resource_provider(std::make_unique<DisplayResourceProvider>(
         context_provider.get(), shared_bitmap_manager,
-        gpu_memory_buffer_manager, kDelegatedSyncPointsRequired,
-        CreateResourceSettings()));
+        gpu_memory_buffer_manager, CreateResourceSettings()));
 
     auto child_context_owned(std::make_unique<TextureStateTrackingContext>());
     TextureStateTrackingContext* child_context = child_context_owned.get();
@@ -2778,8 +2775,7 @@ TEST_P(ResourceProviderTest, TextureMailbox_GLTextureExternalOES) {
 
   auto resource_provider(std::make_unique<DisplayResourceProvider>(
       context_provider.get(), shared_bitmap_manager_.get(),
-      gpu_memory_buffer_manager_.get(), kDelegatedSyncPointsRequired,
-      CreateResourceSettings()));
+      gpu_memory_buffer_manager_.get(), CreateResourceSettings()));
 
   auto child_context_owned(std::make_unique<TextureStateTrackingContext>());
   TextureStateTrackingContext* child_context = child_context_owned.get();

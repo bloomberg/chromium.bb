@@ -37,7 +37,7 @@ class SurfaceAggregatorPerfTest : public testing::Test {
     shared_bitmap_manager_ = base::MakeUnique<cc::TestSharedBitmapManager>();
 
     resource_provider_ =
-        cc::FakeResourceProvider::Create<cc::DisplayResourceProvider>(
+        cc::FakeResourceProvider::CreateDisplayResourceProvider(
             context_provider_.get(), shared_bitmap_manager_.get());
   }
 

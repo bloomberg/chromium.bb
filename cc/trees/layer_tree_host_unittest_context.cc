@@ -883,7 +883,7 @@ class LayerTreeHostContextTestDontUseLostResources
     CHECK(child_context_provider_->BindToCurrentThread());
     shared_bitmap_manager_.reset(new TestSharedBitmapManager);
     child_resource_provider_ =
-        FakeResourceProvider::Create<LayerTreeResourceProvider>(
+        FakeResourceProvider::CreateLayerTreeResourceProvider(
             child_context_provider_.get(), shared_bitmap_manager_.get());
   }
 
