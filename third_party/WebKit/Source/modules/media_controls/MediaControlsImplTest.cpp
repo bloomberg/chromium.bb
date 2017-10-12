@@ -31,9 +31,9 @@
 #include "modules/remoteplayback/HTMLMediaElementRemotePlayback.h"
 #include "modules/remoteplayback/RemotePlayback.h"
 #include "platform/heap/Handle.h"
-#include "platform/runtime_enabled_features.h"
 #include "platform/testing/EmptyWebMediaPlayer.h"
 #include "platform/testing/HistogramTester.h"
+#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "platform/testing/TestingPlatformSupport.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/WebMouseEvent.h"
@@ -164,12 +164,13 @@ enum DownloadActionMetrics {
 
 }  // namespace
 
-class MediaControlsImplTest : public ::testing::Test {
+class MediaControlsImplTest : public ::testing::Test,
+                              private ScopedMediaCastOverlayButtonForTest {
+ public:
+  MediaControlsImplTest() : ScopedMediaCastOverlayButtonForTest(true) {}
+
  protected:
   virtual void SetUp() {
-    // Enable the cast overlay button as this is enabled by default.
-    RuntimeEnabledFeatures::SetMediaCastOverlayButtonEnabled(true);
-
     InitializePage();
   }
 
@@ -400,7 +401,7 @@ TEST_F(MediaControlsImplTest, CastOverlayDefault) {
 }
 
 TEST_F(MediaControlsImplTest, CastOverlayDisabled) {
-  RuntimeEnabledFeatures::SetMediaCastOverlayButtonEnabled(false);
+  ScopedMediaCastOverlayButtonForTest media_cast_overlay_button(false);
 
   Element* cast_overlay_button = GetElementByShadowPseudoId(
       MediaControls(), "-internal-media-controls-overlay-cast-button");
@@ -447,7 +448,7 @@ TEST_F(MediaControlsImplTest, CastOverlayMediaControlsDisabled) {
 }
 
 TEST_F(MediaControlsImplTest, CastOverlayDisabledMediaControlsDisabled) {
-  RuntimeEnabledFeatures::SetMediaCastOverlayButtonEnabled(false);
+  ScopedMediaCastOverlayButtonForTest media_cast_overlay_button(false);
 
   Element* cast_overlay_button = GetElementByShadowPseudoId(
       MediaControls(), "-internal-media-controls-overlay-cast-button");

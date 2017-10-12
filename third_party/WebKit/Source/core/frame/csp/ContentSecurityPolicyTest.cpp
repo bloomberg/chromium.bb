@@ -12,7 +12,7 @@
 #include "platform/loader/fetch/IntegrityMetadata.h"
 #include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/network/ContentSecurityPolicyParsers.h"
-#include "platform/runtime_enabled_features.h"
+#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
@@ -98,7 +98,7 @@ TEST_F(ContentSecurityPolicyTest, ParseInsecureRequestPolicy) {
 }
 
 TEST_F(ContentSecurityPolicyTest, ParseEnforceTreatAsPublicAddressDisabled) {
-  RuntimeEnabledFeatures::SetCorsRFC1918Enabled(false);
+  ScopedCorsRFC1918ForTest cors_rfc1918(false);
   execution_context->SetAddressSpace(kWebAddressSpacePrivate);
   EXPECT_EQ(kWebAddressSpacePrivate, execution_context->AddressSpace());
 
@@ -110,7 +110,7 @@ TEST_F(ContentSecurityPolicyTest, ParseEnforceTreatAsPublicAddressDisabled) {
 }
 
 TEST_F(ContentSecurityPolicyTest, ParseEnforceTreatAsPublicAddressEnabled) {
-  RuntimeEnabledFeatures::SetCorsRFC1918Enabled(true);
+  ScopedCorsRFC1918ForTest cors_rfc1918(true);
   execution_context->SetAddressSpace(kWebAddressSpacePrivate);
   EXPECT_EQ(kWebAddressSpacePrivate, execution_context->AddressSpace());
 

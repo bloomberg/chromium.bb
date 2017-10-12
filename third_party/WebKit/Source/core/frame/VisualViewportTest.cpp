@@ -181,7 +181,7 @@ TEST_P(VisualViewportTest, TestResize) {
 // Make sure that the visibleContentRect method acurately reflects the scale and
 // scroll location of the viewport with and without scrollbars.
 TEST_P(VisualViewportTest, TestVisibleContentRect) {
-  RuntimeEnabledFeatures::SetOverlayScrollbarsEnabled(false);
+  ScopedOverlayScrollbarsForTest overlay_scrollbars(false);
   InitializeWithDesktopSettings();
 
   RegisterMockedHttpURLLoad("200-by-300.html");
@@ -479,10 +479,7 @@ TEST_P(VisualViewportTest, TestVisibleRectInDocument) {
 }
 
 TEST_P(VisualViewportTest, TestFractionalScrollOffsetIsNotOverwritten) {
-  bool orig_fractional_offsets_enabled =
-      RuntimeEnabledFeatures::FractionalScrollOffsetsEnabled();
-  RuntimeEnabledFeatures::SetFractionalScrollOffsetsEnabled(true);
-
+  ScopedFractionalScrollOffsetsForTest fractional_scroll_offsets(true);
   InitializeWithAndroidSettings();
   WebView()->Resize(IntSize(200, 250));
 
@@ -498,9 +495,6 @@ TEST_P(VisualViewportTest, TestFractionalScrollOffsetIsNotOverwritten) {
   EXPECT_EQ(
       30.5,
       frame_view.LayoutViewportScrollableArea()->GetScrollOffset().Height());
-
-  RuntimeEnabledFeatures::SetFractionalScrollOffsetsEnabled(
-      orig_fractional_offsets_enabled);
 }
 
 // Test that the viewport's scroll offset is always appropriately bounded such
@@ -1968,10 +1962,7 @@ TEST_P(VisualViewportTest, PinchZoomGestureScrollsVisualViewportOnly) {
 }
 
 TEST_P(VisualViewportTest, ResizeWithScrollAnchoring) {
-  bool wasScrollAnchoringEnabled =
-      RuntimeEnabledFeatures::ScrollAnchoringEnabled();
-  RuntimeEnabledFeatures::SetScrollAnchoringEnabled(true);
-
+  ScopedScrollAnchoringForTest scroll_anchoring(true);
   InitializeWithDesktopSettings();
   WebView()->Resize(IntSize(800, 600));
 
@@ -1986,16 +1977,12 @@ TEST_P(VisualViewportTest, ResizeWithScrollAnchoring) {
   WebView()->Resize(IntSize(800, 300));
   EXPECT_EQ(ScrollOffset(700, 200),
             frame_view.LayoutViewportScrollableArea()->GetScrollOffset());
-
-  RuntimeEnabledFeatures::SetScrollAnchoringEnabled(wasScrollAnchoringEnabled);
 }
 
 // Ensure that resize anchoring as happens when browser controls hide/show
 // affects the scrollable area that's currently set as the root scroller.
 TEST_P(VisualViewportTest, ResizeAnchoringWithRootScroller) {
-  bool wasRootScrollerEnabled =
-      RuntimeEnabledFeatures::SetRootScrollerEnabled();
-  RuntimeEnabledFeatures::SetSetRootScrollerEnabled(true);
+  ScopedRootScrollerForTest root_scroller(true);
 
   InitializeWithAndroidSettings();
   WebView()->Resize(IntSize(800, 600));
@@ -2020,16 +2007,12 @@ TEST_P(VisualViewportTest, ResizeAnchoringWithRootScroller) {
 
   EXPECT_EQ(ScrollOffset(),
             frame_view.LayoutViewportScrollableArea()->GetScrollOffset());
-
-  RuntimeEnabledFeatures::SetSetRootScrollerEnabled(wasRootScrollerEnabled);
 }
 
 // Ensure that resize anchoring as happens when the device is rotated affects
 // the scrollable area that's currently set as the root scroller.
 TEST_P(VisualViewportTest, RotationAnchoringWithRootScroller) {
-  bool wasRootScrollerEnabled =
-      RuntimeEnabledFeatures::SetRootScrollerEnabled();
-  RuntimeEnabledFeatures::SetSetRootScrollerEnabled(true);
+  ScopedRootScrollerForTest root_scroller(true);
 
   InitializeWithAndroidSettings();
   WebView()->Resize(IntSize(800, 600));
@@ -2051,8 +2034,6 @@ TEST_P(VisualViewportTest, RotationAnchoringWithRootScroller) {
   EXPECT_EQ(ScrollOffset(),
             frame_view.LayoutViewportScrollableArea()->GetScrollOffset());
   EXPECT_EQ(600, scroller->scrollTop());
-
-  RuntimeEnabledFeatures::SetSetRootScrollerEnabled(wasRootScrollerEnabled);
 }
 
 // Make sure a composited background-attachment:fixed background gets resized

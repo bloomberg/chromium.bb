@@ -11,8 +11,8 @@
 #include "core/html/media/MediaCustomControlsFullscreenDetector.h"
 #include "core/loader/EmptyClients.h"
 #include "core/testing/DummyPageHolder.h"
-#include "platform/runtime_enabled_features.h"
 #include "platform/testing/EmptyWebMediaPlayer.h"
+#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -140,10 +140,7 @@ TEST_F(HTMLMediaElementEventListenersTest,
 
 TEST_F(HTMLMediaElementEventListenersTest,
        FullscreenDetectorTimerCancelledOnContextDestroy) {
-  bool original_video_fullscreen_detection_enabled =
-      RuntimeEnabledFeatures::VideoFullscreenDetectionEnabled();
-
-  RuntimeEnabledFeatures::SetVideoFullscreenDetectionEnabled(true);
+  ScopedVideoFullscreenDetectionForTest video_fullscreen_detection(true);
 
   EXPECT_EQ(Video(), nullptr);
   GetDocument().body()->SetInnerHTMLFromString("<body><video></video</body>");
@@ -185,9 +182,6 @@ TEST_F(HTMLMediaElementEventListenersTest,
   // Should only notify the false value when ExecutionContext is destroyed.
   EXPECT_EQ(1u, observed_results.size());
   EXPECT_FALSE(observed_results[0]);
-
-  RuntimeEnabledFeatures::SetVideoFullscreenDetectionEnabled(
-      original_video_fullscreen_detection_enabled);
 }
 
 }  // namespace blink

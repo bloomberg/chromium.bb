@@ -43,7 +43,7 @@
 #include "core/html/ImageData.h"
 #include "core/offscreencanvas/OffscreenCanvas.h"
 #include "platform/graphics/StaticBitmapImage.h"
-#include "platform/runtime_enabled_features.h"
+#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "platform/wtf/CurrentTime.h"
 #include "platform/wtf/DateMath.h"
 #include "public/platform/WebBlobInfo.h"
@@ -767,31 +767,11 @@ TEST(V8ScriptValueSerializerTest, RoundTripImageData) {
   EXPECT_EQ(200, new_image_data->data()->Data()[0]);
 }
 
-class ScopedEnableColorCanvasExtensions {
- public:
-  ScopedEnableColorCanvasExtensions()
-      : experimental_canvas_features_(
-            RuntimeEnabledFeatures::ExperimentalCanvasFeaturesEnabled()),
-        color_canvas_extensions_(
-            RuntimeEnabledFeatures::ColorCanvasExtensionsEnabled()) {
-    RuntimeEnabledFeatures::SetExperimentalCanvasFeaturesEnabled(true);
-    RuntimeEnabledFeatures::SetColorCanvasExtensionsEnabled(true);
-  }
-  ~ScopedEnableColorCanvasExtensions() {
-    RuntimeEnabledFeatures::SetExperimentalCanvasFeaturesEnabled(
-        experimental_canvas_features_);
-    RuntimeEnabledFeatures::SetColorCanvasExtensionsEnabled(
-        color_canvas_extensions_);
-  }
-
- private:
-  bool experimental_canvas_features_;
-  bool color_canvas_extensions_;
-};
-
 TEST(V8ScriptValueSerializerTest, RoundTripImageDataWithColorSpaceInfo) {
-  // enable color canvas extensions for this test
-  ScopedEnableColorCanvasExtensions color_canvas_extensions_enabler;
+  // enable experimental canvas features and color canvas extensions for this
+  // test
+  ScopedExperimentalCanvasFeaturesForTest experimental_canvas_features(true);
+  ScopedColorCanvasExtensionsForTest color_canvas_extensions(true);
   // ImageData objects with color space information should serialize and
   // deserialize correctly.
   V8TestingScope scope;
@@ -1007,8 +987,10 @@ TEST(V8ScriptValueSerializerTest, RoundTripImageBitmap) {
 }
 
 TEST(V8ScriptValueSerializerTest, RoundTripImageBitmapWithColorSpaceInfo) {
-  // enable color canvas extensions for this test
-  ScopedEnableColorCanvasExtensions color_canvas_extensions_enabler;
+  // enable experimental canvas features and color canvas extensions for this
+  // test
+  ScopedExperimentalCanvasFeaturesForTest experimental_canvas_features(true);
+  ScopedColorCanvasExtensionsForTest color_canvas_extensions(true);
   V8TestingScope scope;
   // Make a 10x7 red ImageBitmap in P3 color space.
   SkImageInfo info = SkImageInfo::Make(

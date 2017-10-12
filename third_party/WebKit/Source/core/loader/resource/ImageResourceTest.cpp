@@ -45,7 +45,6 @@
 #include "platform/loader/fetch/UniqueIdentifier.h"
 #include "platform/loader/testing/MockFetchContext.h"
 #include "platform/loader/testing/MockResourceClient.h"
-#include "platform/runtime_enabled_features.h"
 #include "platform/scheduler/test/fake_web_task_runner.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "platform/testing/ScopedMockedURL.h"
@@ -346,11 +345,6 @@ ResourceFetcher* CreateFetcher() {
       MockFetchContext::Create(MockFetchContext::kShouldLoadNewResource));
 }
 
-using ScopedClientPlaceholderForServerLoFiForTest =
-    ScopedRuntimeEnabledFeatureForTest<
-        RuntimeEnabledFeatures::ClientPlaceholdersForServerLoFiEnabled,
-        RuntimeEnabledFeatures::SetClientPlaceholdersForServerLoFiEnabled>;
-
 TEST(ImageResourceTest, MultipartImage) {
   ResourceFetcher* fetcher = CreateFetcher();
   KURL test_url(kParsedURLString, kTestURL);
@@ -631,20 +625,18 @@ TEST(ImageResourceTest, UpdateBitmapImages) {
   EXPECT_TRUE(image_resource->GetContent()->GetImage()->IsBitmapImage());
 }
 
-class ImageResourceReloadTest : public ::testing::TestWithParam<bool> {
+class ImageResourceReloadTest
+    : public ::testing::TestWithParam<bool>,
+      private ScopedClientPlaceholdersForServerLoFiForTest {
  public:
+  ImageResourceReloadTest()
+      : ScopedClientPlaceholdersForServerLoFiForTest(GetParam()) {}
   ~ImageResourceReloadTest() override {}
 
   bool IsClientPlaceholderForServerLoFiEnabled() const { return GetParam(); }
 
   void SetUp() override {
-    scoped_show_placeholder_.reset(
-        new ScopedClientPlaceholderForServerLoFiForTest(GetParam()));
   }
-
- private:
-  std::unique_ptr<ScopedClientPlaceholderForServerLoFiForTest>
-      scoped_show_placeholder_;
 };
 
 TEST_P(ImageResourceReloadTest, ReloadIfLoFiOrPlaceholderAfterFinished) {

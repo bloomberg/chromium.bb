@@ -6,7 +6,7 @@
 
 #include "core/css/CSSValueList.h"
 #include "core/css/parser/CSSParser.h"
-#include "platform/runtime_enabled_features.h"
+#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -59,7 +59,7 @@ TEST(CSSPropertyParserTest, CSSPaint_TrailingComma) {
 }
 
 TEST(CSSPropertyParserTest, CSSPaint_PaintArgumentsDiabled) {
-  RuntimeEnabledFeatures::SetCSSPaintAPIArgumentsEnabled(false);
+  ScopedCSSPaintAPIArgumentsForTest css_paint_api_arguments(false);
   const CSSValue* value = CSSParser::ParseSingleValue(
       CSSPropertyBackgroundImage, "paint(bar, 10px, red)");
   ASSERT_FALSE(value);

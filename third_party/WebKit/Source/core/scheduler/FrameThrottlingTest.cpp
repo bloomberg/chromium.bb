@@ -563,7 +563,7 @@ TEST_P(FrameThrottlingTest, ChangeOriginInThrottledFrame) {
 TEST_P(FrameThrottlingTest, ThrottledFrameWithFocus) {
   WebView().GetSettings()->SetJavaScriptEnabled(true);
   WebView().GetSettings()->SetAcceleratedCompositingEnabled(true);
-  RuntimeEnabledFeatures::SetCompositedSelectionUpdateEnabled(true);
+  ScopedCompositedSelectionUpdateForTest composited_selection_update(true);
 
   // Create a hidden frame which is throttled and has a text selection.
   SimRequest main_resource("https://example.com/", "text/html");

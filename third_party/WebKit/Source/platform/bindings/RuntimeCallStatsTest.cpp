@@ -4,7 +4,7 @@
 
 #include "platform/bindings/RuntimeCallStats.h"
 
-#include "platform/runtime_enabled_features.h"
+#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "platform/wtf/CurrentTime.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -238,7 +238,7 @@ TEST_F(RuntimeCallStatsTest, ResetCallStats) {
 }
 
 TEST_F(RuntimeCallStatsTest, TestEnterAndLeaveMacrosWithCallStatsDisabled) {
-  RuntimeEnabledFeatures::SetBlinkRuntimeCallStatsEnabled(false);
+  ScopedBlinkRuntimeCallStatsForTest blink_runtime_call_stats(false);
   RuntimeCallStats stats;
   RuntimeCallCounter* counter = stats.GetCounter(test_counter_1_id);
   RuntimeCallTimer timer;
@@ -252,7 +252,7 @@ TEST_F(RuntimeCallStatsTest, TestEnterAndLeaveMacrosWithCallStatsDisabled) {
 }
 
 TEST_F(RuntimeCallStatsTest, TestEnterAndLeaveMacrosWithCallStatsEnabled) {
-  RuntimeEnabledFeatures::SetBlinkRuntimeCallStatsEnabled(true);
+  ScopedBlinkRuntimeCallStatsForTest blink_runtime_call_stats(true);
   RuntimeCallStats stats;
   RuntimeCallCounter* counter = stats.GetCounter(test_counter_1_id);
   RuntimeCallTimer timer;
@@ -266,7 +266,7 @@ TEST_F(RuntimeCallStatsTest, TestEnterAndLeaveMacrosWithCallStatsEnabled) {
 }
 
 TEST_F(RuntimeCallStatsTest, TestScopeMacroWithCallStatsDisabled) {
-  RuntimeEnabledFeatures::SetBlinkRuntimeCallStatsEnabled(false);
+  ScopedBlinkRuntimeCallStatsForTest blink_runtime_call_stats(false);
   RuntimeCallStats stats;
   RuntimeCallCounter* counter = stats.GetCounter(test_counter_1_id);
 
@@ -280,7 +280,7 @@ TEST_F(RuntimeCallStatsTest, TestScopeMacroWithCallStatsDisabled) {
 }
 
 TEST_F(RuntimeCallStatsTest, TestScopeMacroWithCallStatsEnabled) {
-  RuntimeEnabledFeatures::SetBlinkRuntimeCallStatsEnabled(true);
+  ScopedBlinkRuntimeCallStatsForTest blink_runtime_call_stats(true);
   RuntimeCallStats stats;
   RuntimeCallCounter* counter = stats.GetCounter(test_counter_1_id);
 
@@ -294,7 +294,7 @@ TEST_F(RuntimeCallStatsTest, TestScopeMacroWithCallStatsEnabled) {
 }
 
 TEST_F(RuntimeCallStatsTest, TestScopeWithOptionalMacroWithCallStatsDisabled) {
-  RuntimeEnabledFeatures::SetBlinkRuntimeCallStatsEnabled(false);
+  ScopedBlinkRuntimeCallStatsForTest blink_runtime_call_stats(false);
   RuntimeCallStats stats;
   RuntimeCallCounter* counter = stats.GetCounter(test_counter_1_id);
 
@@ -310,7 +310,7 @@ TEST_F(RuntimeCallStatsTest, TestScopeWithOptionalMacroWithCallStatsDisabled) {
 }
 
 TEST_F(RuntimeCallStatsTest, TestScopeWithOptionalMacroWithCallStatsEnabled) {
-  RuntimeEnabledFeatures::SetBlinkRuntimeCallStatsEnabled(true);
+  ScopedBlinkRuntimeCallStatsForTest blink_runtime_call_stats(true);
   RuntimeCallStats stats;
   RuntimeCallCounter* counter = stats.GetCounter(test_counter_1_id);
 

@@ -31,7 +31,7 @@
 #include "platform/weborigin/SecurityOrigin.h"
 
 #include "platform/blob/BlobURL.h"
-#include "platform/runtime_enabled_features.h"
+#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "platform/weborigin/Suborigin.h"
@@ -223,7 +223,7 @@ TEST_F(SecurityOriginTest, IsSecureViaTrustworthy) {
 }
 
 TEST_F(SecurityOriginTest, Suborigins) {
-  RuntimeEnabledFeatures::SetSuboriginsEnabled(true);
+  ScopedSuboriginsForTest suborigins(true);
 
   RefPtr<SecurityOrigin> origin =
       SecurityOrigin::CreateFromString("https://test.com");
@@ -268,7 +268,7 @@ TEST_F(SecurityOriginTest, Suborigins) {
 }
 
 TEST_F(SecurityOriginTest, SuboriginsParsing) {
-  RuntimeEnabledFeatures::SetSuboriginsEnabled(true);
+  ScopedSuboriginsForTest suborigins(true);
   String protocol, real_protocol, host, real_host, suborigin;
   protocol = "https";
   host = "test.com";
@@ -310,7 +310,7 @@ TEST_F(SecurityOriginTest, SuboriginsParsing) {
 }
 
 TEST_F(SecurityOriginTest, SuboriginsIsSameSchemeHostPortAndSuborigin) {
-  blink::RuntimeEnabledFeatures::SetSuboriginsEnabled(true);
+  ScopedSuboriginsForTest suborigins(true);
   RefPtr<SecurityOrigin> origin =
       SecurityOrigin::CreateFromString("https-so://foobar.test.com");
   RefPtr<SecurityOrigin> other1 =
@@ -330,7 +330,7 @@ TEST_F(SecurityOriginTest, SuboriginsIsSameSchemeHostPortAndSuborigin) {
 }
 
 TEST_F(SecurityOriginTest, CanAccess) {
-  RuntimeEnabledFeatures::SetSuboriginsEnabled(true);
+  ScopedSuboriginsForTest suborigins(true);
 
   struct TestCase {
     bool can_access;
@@ -356,7 +356,7 @@ TEST_F(SecurityOriginTest, CanAccess) {
 }
 
 TEST_F(SecurityOriginTest, CanRequest) {
-  RuntimeEnabledFeatures::SetSuboriginsEnabled(true);
+  ScopedSuboriginsForTest suborigins(true);
 
   struct TestCase {
     bool can_request;
