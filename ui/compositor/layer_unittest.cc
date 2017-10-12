@@ -759,6 +759,7 @@ TEST_F(LayerWithDelegateTest, Cloning) {
   const float temperature = 0.8f;
   layer->SetLayerTemperature(temperature);
   layer->AddCacheRenderSurfaceRequest();
+  layer->AddTrilinearFilteringRequest();
 
   auto clone = layer->Clone();
 
@@ -771,6 +772,9 @@ TEST_F(LayerWithDelegateTest, Cloning) {
   // Cloning should not preserve cache_render_surface flag.
   EXPECT_NE(layer->cc_layer_for_testing()->cache_render_surface(),
             clone->cc_layer_for_testing()->cache_render_surface());
+  // Cloning should not preserve trilinear_filtering flag.
+  EXPECT_NE(layer->cc_layer_for_testing()->trilinear_filtering(),
+            clone->cc_layer_for_testing()->trilinear_filtering());
 
   layer->SetTransform(gfx::Transform());
   layer->SetColor(SK_ColorGREEN);
@@ -2091,6 +2095,23 @@ TEST_F(LayerWithRealCompositorTest, SwitchCCLayerCacheRenderSurface) {
 
   // Ensure that the cache_render_surface flag is maintained.
   EXPECT_TRUE(l1->cc_layer_for_testing()->cache_render_surface());
+}
+
+// Tests that when a layer with trilinear_filtering flag has its CC layer
+// switched, that the trilinear_filtering flag is maintained.
+TEST_F(LayerWithRealCompositorTest, SwitchCCLayerTrilinearFiltering) {
+  std::unique_ptr<Layer> root(CreateLayer(LAYER_TEXTURED));
+  std::unique_ptr<Layer> l1(CreateLayer(LAYER_TEXTURED));
+  GetCompositor()->SetRootLayer(root.get());
+  root->Add(l1.get());
+
+  l1->AddTrilinearFilteringRequest();
+
+  // Change l1's cc::Layer.
+  l1->SwitchCCLayerForTest();
+
+  // Ensure that the trilinear_filtering flag is maintained.
+  EXPECT_TRUE(l1->cc_layer_for_testing()->trilinear_filtering());
 }
 
 // Tests that the animators in the layer tree is added to the

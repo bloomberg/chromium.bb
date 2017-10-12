@@ -115,7 +115,8 @@ Layer::Layer()
       cc_layer_(nullptr),
       device_scale_factor_(1.0f),
       cache_render_surface_requests_(0),
-      deferred_paint_requests_(0) {
+      deferred_paint_requests_(0),
+      trilinear_filtering_request_(0) {
   CreateCcLayer();
 }
 
@@ -144,7 +145,8 @@ Layer::Layer(LayerType type)
       cc_layer_(nullptr),
       device_scale_factor_(1.0f),
       cache_render_surface_requests_(0),
-      deferred_paint_requests_(0) {
+      deferred_paint_requests_(0),
+      trilinear_filtering_request_(0) {
   CreateCcLayer();
 }
 
@@ -636,6 +638,7 @@ void Layer::SwitchToLayer(scoped_refptr<cc::Layer> new_layer) {
   new_layer->SetPosition(cc_layer_->position());
   new_layer->SetBackgroundColor(cc_layer_->background_color());
   new_layer->SetCacheRenderSurface(cc_layer_->cache_render_surface());
+  new_layer->SetTrilinearFiltering(cc_layer_->trilinear_filtering());
 
   cc_layer_ = new_layer.get();
   content_layer_ = nullptr;
@@ -703,8 +706,27 @@ void Layer::RemoveDeferredPaintRequest() {
     ScheduleDraw();
 }
 
-void Layer::SetTrilinearFiltering(bool trilinear_filtering) {
-  cc_layer_->SetTrilinearFiltering(trilinear_filtering);
+// Note: The code that sets this flag would be responsible to unset it on that
+// ui::Layer. We do not want to clone this flag to a cloned layer by accident,
+// which could be a supprise. But we want to preserve it after switching to a
+// new cc::Layer. There could be a whole subtree and the root changed, but does
+// not mean we want to treat the trilinear filtering all different.
+void Layer::AddTrilinearFilteringRequest() {
+  ++trilinear_filtering_request_;
+  TRACE_COUNTER_ID1("ui", "TrilinearFilteringRequests", this,
+                    trilinear_filtering_request_);
+  if (trilinear_filtering_request_ == 1)
+    cc_layer_->SetTrilinearFiltering(true);
+}
+
+void Layer::RemoveTrilinearFilteringRequest() {
+  DCHECK_GT(trilinear_filtering_request_, 0u);
+
+  --trilinear_filtering_request_;
+  TRACE_COUNTER_ID1("ui", "TrilinearFilteringRequests", this,
+                    trilinear_filtering_request_);
+  if (trilinear_filtering_request_ == 0)
+    cc_layer_->SetTrilinearFiltering(false);
 }
 
 void Layer::SetTextureMailbox(

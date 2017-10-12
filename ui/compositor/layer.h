@@ -438,7 +438,8 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   bool IsPaintDeferredForTesting() const { return deferred_paint_requests_; }
 
   // Request trilinear filtering for layer.
-  void SetTrilinearFiltering(bool trilinear_filtering);
+  void AddTrilinearFilteringRequest();
+  void RemoveTrilinearFilteringRequest();
 
   // The back link from the mask layer to it's associated masked layer.
   // We keep this reference for the case that if the mask layer gets deleted
@@ -620,6 +621,12 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   // value > 0, means we need to defer painting the layer. If the value == 0,
   // means we should paint the layer.
   unsigned deferred_paint_requests_;
+
+  // The counter to maintain how many trilinear filtering requests we have. If
+  // the value > 0, means we need to perform trilinear filtering on the layer.
+  // If the value == 0, means we should not perform trilinear filtering on the
+  // layer.
+  unsigned trilinear_filtering_request_;
 
   DISALLOW_COPY_AND_ASSIGN(Layer);
 };
