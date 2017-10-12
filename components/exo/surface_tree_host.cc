@@ -11,7 +11,9 @@
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "components/exo/layer_tree_frame_sink_holder.h"
 #include "components/exo/surface.h"
+#include "components/exo/wm_helper.h"
 #include "components/viz/common/quads/compositor_frame.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
 #include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -318,6 +320,18 @@ void SurfaceTreeHost::SubmitCompositorFrame() {
   root_surface_->AppendSurfaceHierarchyContentsToFrame(
       gfx::Point(), device_scale_factor, layer_tree_frame_sink_holder_.get(),
       &frame);
+
+  if (WMHelper::GetInstance()->AreVerifiedSyncTokensNeeded()) {
+    std::vector<GLbyte*> sync_tokens;
+    for (auto& resource : frame.resource_list)
+      sync_tokens.push_back(resource.mailbox_holder.sync_token.GetData());
+    ui::ContextFactory* context_factory =
+        aura::Env::GetInstance()->context_factory();
+    gpu::gles2::GLES2Interface* gles2 =
+        context_factory->SharedMainThreadContextProvider()->ContextGL();
+    gles2->VerifySyncTokensCHROMIUM(sync_tokens.data(), sync_tokens.size());
+  }
+
   layer_tree_frame_sink_holder_->SubmitCompositorFrame(std::move(frame));
 
   if (current_begin_frame_ack_.sequence_number !=

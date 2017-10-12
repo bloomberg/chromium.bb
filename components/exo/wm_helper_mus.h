@@ -42,6 +42,7 @@ class WMHelperMus : public WMHelper,
   void RemovePostTargetHandler(ui::EventHandler* handler) override;
   bool IsTabletModeWindowManagerEnabled() const override;
   double GetDefaultDeviceScaleFactor() const override;
+  bool AreVerifiedSyncTokensNeeded() const override;
 
   // Overridden from aura::FocusSynchronizerObserver:
   void OnActiveFocusClientChanged(aura::client::FocusClient* focus_client,
