@@ -335,8 +335,8 @@ class MODULES_EXPORT BaseAudioContext
   void MaybeRecordStartAttempt();
 
   void SetWorkletMessagingProxy(AudioWorkletMessagingProxy*);
-
   AudioWorkletMessagingProxy* WorkletMessagingProxy();
+  bool HasWorkletMessagingProxy() const;
 
  protected:
   enum ContextType { kRealtimeContext, kOfflineContext };
@@ -514,6 +514,7 @@ class MODULES_EXPORT BaseAudioContext
   Optional<AutoplayStatus> autoplay_status_;
   AudioIOPosition output_position_;
 
+  bool has_worklet_messaging_proxy_ = false;
   Member<AudioWorkletMessagingProxy> worklet_messaging_proxy_;
 };
 

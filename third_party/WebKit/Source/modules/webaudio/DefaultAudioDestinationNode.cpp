@@ -88,7 +88,7 @@ void DefaultAudioDestinationHandler::StartDestination() {
   // Use Experimental AudioWorkletThread only when AudioWorklet is enabled and
   // there is an active AudioWorkletGlobalScope.
   if (RuntimeEnabledFeatures::AudioWorkletEnabled() &&
-      Context()->WorkletMessagingProxy()) {
+      Context()->HasWorkletMessagingProxy()) {
     DCHECK(Context()->WorkletMessagingProxy()->GetWorkletBackingThread());
     destination_->StartWithWorkletThread(
         Context()->WorkletMessagingProxy()->GetWorkletBackingThread());

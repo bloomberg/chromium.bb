@@ -402,6 +402,9 @@ interface AudioTrackList : EventTarget
     setter onaddtrack
     setter onchange
     setter onremovetrack
+interface AudioWorkletNode : AudioNode
+    attribute @@toStringTag
+    method constructor
 interface AuthenticatorAssertionResponse : AuthenticatorResponse
     attribute @@toStringTag
     getter authenticatorData

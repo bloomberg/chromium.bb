@@ -1,0 +1,20 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// https://webaudio.github.io/web-audio-api/#AudioWorkletNode
+
+[
+    ActiveScriptWrappable,
+    Constructor(BaseAudioContext context, DOMString name, optional AudioWorkletNodeOptions options),
+    DependentLifetime,
+    Global=(Worklet,AudioWorklet),
+    RaisesException=Constructor,
+    RuntimeEnabled=AudioWorklet
+] interface AudioWorkletNode : AudioNode {
+    readonly attribute AudioParamMap parameters;
+    // TODO(hongchan): Implement the following.
+    // readonly attribute MessagePort port;
+    // readonly attribute AudioWorkletProcessorState processorState;
+    // attribute EventHandler onprocessorstatechange;
+};
