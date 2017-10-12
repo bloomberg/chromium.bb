@@ -35,7 +35,6 @@
 #include "core/dom/SyncReattachContext.h"
 #include "core/frame/Deprecation.h"
 #include "core/frame/LocalDOMWindow.h"
-#include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLImageFallbackHelper.h"
 #include "core/html/HTMLPictureElement.h"
