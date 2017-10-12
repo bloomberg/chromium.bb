@@ -38,6 +38,8 @@ class TeeHelper final : public GarbageCollectedFinalized<TeeHelper>,
       : src_(consumer),
         destination1_(new Destination(execution_context, this)),
         destination2_(new Destination(execution_context, this)) {
+    // TODO(yhirano): Remove this check once the crash is gone.
+    CHECK(!ThreadState::Current()->IsObjectResurrectionForbidden());
     consumer->SetClient(this);
     // As no client is set to either destinations, Destination::notify() is
     // no-op in this function.
@@ -45,6 +47,8 @@ class TeeHelper final : public GarbageCollectedFinalized<TeeHelper>,
   }
 
   void OnStateChange() override {
+    // TODO(yhirano): Remove this check once the crash is gone.
+    CHECK(!ThreadState::Current()->IsObjectResurrectionForbidden());
     bool destination1_was_empty = destination1_->IsEmpty();
     bool destination2_was_empty = destination2_->IsEmpty();
     bool has_enqueued = false;
@@ -141,6 +145,8 @@ class TeeHelper final : public GarbageCollectedFinalized<TeeHelper>,
         : execution_context_(execution_context), tee_(tee) {}
 
     Result BeginRead(const char** buffer, size_t* available) override {
+      // TODO(yhirano): Remove this check once the crash is gone.
+      CHECK(!ThreadState::Current()->IsObjectResurrectionForbidden());
       DCHECK(!chunk_in_use_);
       *buffer = nullptr;
       *available = 0;
@@ -172,6 +178,8 @@ class TeeHelper final : public GarbageCollectedFinalized<TeeHelper>,
     Result EndRead(size_t read) override {
       DCHECK(chunk_in_use_);
       DCHECK(chunks_.IsEmpty() || chunk_in_use_ == chunks_[0]);
+      // TODO(yhirano): Remove this check once the crash is gone.
+      CHECK(!ThreadState::Current()->IsObjectResurrectionForbidden());
       chunk_in_use_ = nullptr;
       if (chunks_.IsEmpty()) {
         // This object becomes errored during the two-phase read.
@@ -197,6 +205,8 @@ class TeeHelper final : public GarbageCollectedFinalized<TeeHelper>,
     void SetClient(BytesConsumer::Client* client) override {
       DCHECK(!client_);
       DCHECK(client);
+      // TODO(yhirano): Remove this check once the crash is gone.
+      CHECK(!ThreadState::Current()->IsObjectResurrectionForbidden());
       auto state = GetPublicState();
       if (state == PublicState::kClosed || state == PublicState::kErrored)
         return;
