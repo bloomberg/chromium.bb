@@ -811,7 +811,7 @@ void ClipboardWin::WriteBitmap(const SkBitmap& bitmap) {
 
   if (bits && source_hbitmap) {
     // Copy the bitmap out of shared memory and into GDI
-    memcpy(bits, bitmap.getPixels(), bitmap.getSize());
+    memcpy(bits, bitmap.getPixels(), bitmap.computeByteSize());
 
     // Now we have an HBITMAP, we can write it to the clipboard
     WriteBitmapFromHandle(source_hbitmap,

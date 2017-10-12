@@ -452,9 +452,10 @@ SkBitmap ClipboardAndroid::ReadImage(ClipboardType type) const {
 
     bmp.allocN32Pixels(size->width(), size->height());
 
-    DCHECK_EQ(sizeof(gfx::Size) + bmp.getSize(), input.size());
+    DCHECK_EQ(sizeof(gfx::Size) + bmp.computeByteSize(), input.size());
 
-    memcpy(bmp.getPixels(), input.data() + sizeof(gfx::Size), bmp.getSize());
+    memcpy(bmp.getPixels(), input.data() + sizeof(gfx::Size),
+           bmp.computeByteSize());
   }
   return bmp;
 }
@@ -540,7 +541,7 @@ void ClipboardAndroid::WriteBitmap(const SkBitmap& bitmap) {
 
   std::string packed(reinterpret_cast<const char*>(&size), sizeof(size));
   packed += std::string(static_cast<const char*>(bitmap.getPixels()),
-                        bitmap.getSize());
+                        bitmap.computeByteSize());
   g_map.Get().Set(kBitmapFormat, packed);
 }
 

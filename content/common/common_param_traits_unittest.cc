@@ -50,7 +50,7 @@ TEST(IPCMessageTest, Bitmap) {
   SkBitmap bitmap;
 
   bitmap.allocN32Pixels(10, 5);
-  memset(bitmap.getPixels(), 'A', bitmap.getSize());
+  memset(bitmap.getPixels(), 'A', bitmap.computeByteSize());
 
   IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
   IPC::ParamTraits<SkBitmap>::Write(&msg, bitmap);
@@ -63,9 +63,10 @@ TEST(IPCMessageTest, Bitmap) {
   EXPECT_EQ(bitmap.width(), output.width());
   EXPECT_EQ(bitmap.height(), output.height());
   EXPECT_EQ(bitmap.rowBytes(), output.rowBytes());
-  EXPECT_EQ(bitmap.getSize(), output.getSize());
-  EXPECT_EQ(memcmp(bitmap.getPixels(), output.getPixels(), bitmap.getSize()),
-            0);
+  EXPECT_EQ(bitmap.computeByteSize(), output.computeByteSize());
+  EXPECT_EQ(
+      memcmp(bitmap.getPixels(), output.getPixels(), bitmap.computeByteSize()),
+      0);
 
   // Also test the corrupt case.
   IPC::Message bad_msg(1, 2, IPC::Message::PRIORITY_NORMAL);
@@ -76,7 +77,7 @@ TEST(IPCMessageTest, Bitmap) {
   EXPECT_TRUE(iter.ReadData(&fixed_data, &fixed_data_size));
   bad_msg.WriteData(fixed_data, fixed_data_size);
   // Add some bogus pixel data.
-  const size_t bogus_pixels_size = bitmap.getSize() * 2;
+  const size_t bogus_pixels_size = bitmap.computeByteSize() * 2;
   std::unique_ptr<char[]> bogus_pixels(new char[bogus_pixels_size]);
   memset(bogus_pixels.get(), 'B', bogus_pixels_size);
   bad_msg.WriteData(bogus_pixels.get(), bogus_pixels_size);

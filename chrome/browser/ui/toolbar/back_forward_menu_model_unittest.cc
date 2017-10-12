@@ -552,13 +552,13 @@ TEST_F(BackFwdMenuModelTest, FaviconLoadTest) {
   SkBitmap valid_icon_bitmap = *valid_icon.ToSkBitmap();
 
   // Verify we did not get the default favicon.
-  EXPECT_NE(0, memcmp(default_icon_bitmap.getPixels(),
-                      valid_icon_bitmap.getPixels(),
-                      default_icon_bitmap.getSize()));
+  EXPECT_NE(
+      0, memcmp(default_icon_bitmap.getPixels(), valid_icon_bitmap.getPixels(),
+                default_icon_bitmap.computeByteSize()));
   // Verify we did get the expected favicon.
-  EXPECT_EQ(0, memcmp(new_icon_bitmap.getPixels(),
-                      valid_icon_bitmap.getPixels(),
-                      new_icon_bitmap.getSize()));
+  EXPECT_EQ(0,
+            memcmp(new_icon_bitmap.getPixels(), valid_icon_bitmap.getPixels(),
+                   new_icon_bitmap.computeByteSize()));
 
   // Make sure the browser deconstructor doesn't have problems.
   browser->tab_strip_model()->CloseAllTabs();
