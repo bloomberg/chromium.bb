@@ -597,25 +597,7 @@ TEST_F(PrerenderTest, PrerenderRespectsThirdPartyCookiesPref) {
       "Prerender.FinalStatus", FINAL_STATUS_BLOCK_THIRD_PARTY_COOKIES, 1);
 }
 
-TEST_F(PrerenderTest, OfflinePrerenderIgnoresThirdPartyCookiesPref) {
-  GURL url("http://www.google.com/");
-  ASSERT_TRUE(PrerenderManager::IsAnyPrerenderingPossible());
-
-  profile()->GetPrefs()->SetBoolean(prefs::kBlockThirdPartyCookies, true);
-  DummyPrerenderContents* prerender_contents =
-      prerender_manager()->CreateNextPrerenderContents(
-          url, ORIGIN_OFFLINE, FINAL_STATUS_MANAGER_SHUTDOWN);
-  std::unique_ptr<PrerenderHandle> prerender_handle(
-      prerender_manager()->AddPrerenderForOffline(url, nullptr, kSize));
-  EXPECT_TRUE(prerender_handle);
-  EXPECT_TRUE(prerender_handle->IsPrerendering());
-  EXPECT_TRUE(prerender_contents->prerendering_has_started());
-  EXPECT_EQ(prerender_contents, prerender_handle->contents());
-  EXPECT_EQ(ORIGIN_OFFLINE, prerender_handle->contents()->origin());
-}
-
-// Checks that the prerender mode affects "normal" origins such as omnibox, but
-// not offline origin.
+// Checks how prerender mode affects various origins.
 TEST_F(PrerenderTest, PrerenderModePerOrigin) {
   test_utils::RestorePrerenderMode restore_prerender_mode;
 
@@ -624,17 +606,13 @@ TEST_F(PrerenderTest, PrerenderModePerOrigin) {
   prerender_manager()->SetOmniboxMode(
       PrerenderManager::PRERENDER_MODE_NOSTATE_PREFETCH);
   EXPECT_TRUE(PrerenderManager::IsAnyPrerenderingPossible());
-  EXPECT_FALSE(PrerenderManager::IsNoStatePrefetch(ORIGIN_OFFLINE));
   EXPECT_TRUE(PrerenderManager::IsNoStatePrefetch(ORIGIN_OMNIBOX));
   EXPECT_FALSE(PrerenderManager::IsNoStatePrefetch(ORIGIN_INSTANT));
-  EXPECT_FALSE(PrerenderManager::IsSimpleLoadExperiment(ORIGIN_OFFLINE));
   EXPECT_FALSE(PrerenderManager::IsSimpleLoadExperiment(ORIGIN_OMNIBOX));
 
   prerender_manager()->SetMode(PrerenderManager::PRERENDER_MODE_ENABLED);
   EXPECT_TRUE(PrerenderManager::IsAnyPrerenderingPossible());
-  EXPECT_FALSE(PrerenderManager::IsNoStatePrefetch(ORIGIN_OFFLINE));
   EXPECT_TRUE(PrerenderManager::IsNoStatePrefetch(ORIGIN_OMNIBOX));
-  EXPECT_FALSE(PrerenderManager::IsSimpleLoadExperiment(ORIGIN_OFFLINE));
   EXPECT_FALSE(PrerenderManager::IsSimpleLoadExperiment(ORIGIN_OMNIBOX));
 
   prerender_manager()->SetMode(PrerenderManager::PRERENDER_MODE_DISABLED);
@@ -649,9 +627,7 @@ TEST_F(PrerenderTest, PrerenderModePerOrigin) {
   prerender_manager()->SetInstantMode(
       PrerenderManager::PRERENDER_MODE_SIMPLE_LOAD_EXPERIMENT);
   EXPECT_TRUE(PrerenderManager::IsAnyPrerenderingPossible());
-  EXPECT_FALSE(PrerenderManager::IsNoStatePrefetch(ORIGIN_OFFLINE));
   EXPECT_FALSE(PrerenderManager::IsNoStatePrefetch(ORIGIN_OMNIBOX));
-  EXPECT_FALSE(PrerenderManager::IsSimpleLoadExperiment(ORIGIN_OFFLINE));
   EXPECT_FALSE(PrerenderManager::IsSimpleLoadExperiment(ORIGIN_OMNIBOX));
   EXPECT_TRUE(PrerenderManager::IsSimpleLoadExperiment(ORIGIN_INSTANT));
 }
@@ -679,25 +655,6 @@ TEST_F(PrerenderTest, PrerenderRespectsPrerenderModeSimpleLoad) {
   EXPECT_FALSE(AddSimplePrerender(url));
 }
 
-// Checks that a full prerender happens in offline mode, even if no-state
-// prefetch is enabled.
-TEST_F(PrerenderTest, OfflinePrerenderIgnoresPrerenderMode) {
-  GURL url("http://www.google.com/");
-  test_utils::RestorePrerenderMode restore_prerender_mode;
-
-  prerender_manager()->SetMode(
-      PrerenderManager::PRERENDER_MODE_NOSTATE_PREFETCH);
-
-  ASSERT_TRUE(PrerenderManager::IsAnyPrerenderingPossible());
-
-  DummyPrerenderContents* prerender_contents =
-      prerender_manager()->CreateNextPrerenderContents(
-          url, ORIGIN_OFFLINE, FINAL_STATUS_MANAGER_SHUTDOWN);
-  std::unique_ptr<PrerenderHandle> prerender_handle(
-      prerender_manager()->AddPrerenderForOffline(url, nullptr, kSize));
-  EXPECT_EQ(FULL_PRERENDER, prerender_contents->prerender_mode());
-}
-
 TEST_F(PrerenderTest, PrerenderDisabledOnLowEndDevice) {
   GURL url("http://www.google.com/");
   ASSERT_TRUE(PrerenderManager::IsAnyPrerenderingPossible());
@@ -705,22 +662,6 @@ TEST_F(PrerenderTest, PrerenderDisabledOnLowEndDevice) {
   EXPECT_FALSE(AddSimplePrerender(url));
   histogram_tester().ExpectUniqueSample("Prerender.FinalStatus",
                                         FINAL_STATUS_LOW_END_DEVICE, 1);
-}
-
-TEST_F(PrerenderTest, OfflinePrerenderPossibleOnLowEndDevice) {
-  GURL url("http://www.google.com/");
-  ASSERT_TRUE(PrerenderManager::IsAnyPrerenderingPossible());
-
-  prerender_manager()->SetIsLowEndDevice(true);
-
-  DummyPrerenderContents* prerender_contents =
-      prerender_manager()->CreateNextPrerenderContents(
-          url, ORIGIN_OFFLINE, FINAL_STATUS_MANAGER_SHUTDOWN);
-  std::unique_ptr<PrerenderHandle> prerender_handle(
-      prerender_manager()->AddPrerenderForOffline(url, nullptr, kSize));
-  EXPECT_TRUE(prerender_handle);
-  EXPECT_TRUE(prerender_handle->IsPrerendering());
-  EXPECT_TRUE(prerender_contents->prerendering_has_started());
 }
 
 TEST_F(PrerenderTest, FoundTest) {
@@ -734,19 +675,6 @@ TEST_F(PrerenderTest, FoundTest) {
   std::unique_ptr<PrerenderContents> entry =
       prerender_manager()->FindAndUseEntry(url);
   ASSERT_EQ(prerender_contents, entry.get());
-}
-
-TEST_F(PrerenderTest, UnfindableOfflinePrerenderTest) {
-  GURL url("http://www.google.com/");
-  DummyPrerenderContents* prerender_contents =
-      prerender_manager()->CreateNextPrerenderContents(
-          url, ORIGIN_OFFLINE, FINAL_STATUS_MANAGER_SHUTDOWN);
-  std::unique_ptr<PrerenderHandle> prerender_handle(
-      prerender_manager()->AddPrerenderForOffline(url, nullptr, kSize));
-  EXPECT_TRUE(prerender_handle);
-  EXPECT_TRUE(prerender_handle->IsPrerendering());
-  EXPECT_TRUE(prerender_contents->prerendering_has_started());
-  ASSERT_FALSE(prerender_manager()->FindAndUseEntry(url));
 }
 
 // Make sure that if queue a request, and a second prerender request for the
@@ -1272,22 +1200,6 @@ TEST_F(PrerenderTest, NotSoRecentlyVisited) {
   ASSERT_EQ(prerender_contents, entry.get());
 }
 
-// Tests that the offline origin is not restricted by recently visited check.
-TEST_F(PrerenderTest, OfflinePrerenderStartsWhenRecentlyVisited) {
-  GURL url("http://www.google.com/");
-
-  prerender_manager()->RecordNavigation(url);
-
-  DummyPrerenderContents* prerender_contents =
-      prerender_manager()->CreateNextPrerenderContents(
-          url, ORIGIN_OFFLINE, FINAL_STATUS_MANAGER_SHUTDOWN);
-  std::unique_ptr<PrerenderHandle> prerender_handle =
-      prerender_manager()->AddPrerenderForOffline(url, nullptr, kSize);
-  EXPECT_TRUE(prerender_handle);
-  EXPECT_TRUE(prerender_handle->IsPrerendering());
-  EXPECT_TRUE(prerender_contents->prerendering_has_started());
-}
-
 // Tests that the prerender manager matches include the fragment.
 TEST_F(PrerenderTest, FragmentMatchesTest) {
   GURL fragment_url("http://www.google.com/#test");
@@ -1405,43 +1317,28 @@ TEST_F(PrerenderTest, PrerenderNotAllowedOnCellularWithExternalOrigin) {
                                         FINAL_STATUS_CELLULAR_NETWORK, 1);
 }
 
-TEST_F(PrerenderTest, PrerenderAllowedForOfflineAndForcedCellular) {
-  const Origin origins[] = {
-      ORIGIN_EXTERNAL_REQUEST_FORCED_PRERENDER, ORIGIN_OFFLINE,
-  };
-
+TEST_F(PrerenderTest, PrerenderAllowedForForcedCellular) {
   EnablePrerender();
   std::unique_ptr<net::NetworkChangeNotifier> mock(
       new MockNetworkChangeNotifier4G);
   EXPECT_TRUE(net::NetworkChangeNotifier::IsConnectionCellular(
       net::NetworkChangeNotifier::GetConnectionType()));
   GURL url("http://www.google.com/");
-  for (const Origin& origin : origins) {
-    DummyPrerenderContents* prerender_contents = nullptr;
-    std::unique_ptr<PrerenderHandle> prerender_handle;
-    if (origin == ORIGIN_OFFLINE) {
-      prerender_contents = prerender_manager()->CreateNextPrerenderContents(
-          url, origin, FINAL_STATUS_MANAGER_SHUTDOWN);
-      prerender_handle =
-          prerender_manager()->AddPrerenderForOffline(url, nullptr, kSize);
-    } else {
-      prerender_contents = prerender_manager()->CreateNextPrerenderContents(
-          url, origin, FINAL_STATUS_USED);
-      prerender_handle =
-          prerender_manager()->AddForcedPrerenderFromExternalRequest(
-              url, content::Referrer(), nullptr, gfx::Rect(kSize));
-    }
-    EXPECT_TRUE(prerender_handle);
-    EXPECT_TRUE(prerender_handle->IsPrerendering());
-    EXPECT_TRUE(prerender_contents->prerendering_has_started());
-    EXPECT_EQ(prerender_contents, prerender_handle->contents());
-    EXPECT_EQ(origin, prerender_handle->contents()->origin());
-    if (origin != ORIGIN_OFFLINE) {
-      std::unique_ptr<PrerenderContents> entry =
-          prerender_manager()->FindAndUseEntry(url);
-      ASSERT_EQ(prerender_contents, entry.get());
-    }
-  }
+  DummyPrerenderContents* prerender_contents = nullptr;
+  std::unique_ptr<PrerenderHandle> prerender_handle;
+  prerender_contents = prerender_manager()->CreateNextPrerenderContents(
+      url, ORIGIN_EXTERNAL_REQUEST_FORCED_PRERENDER, FINAL_STATUS_USED);
+  prerender_handle = prerender_manager()->AddForcedPrerenderFromExternalRequest(
+      url, content::Referrer(), nullptr, gfx::Rect(kSize));
+  EXPECT_TRUE(prerender_handle);
+  EXPECT_TRUE(prerender_handle->IsPrerendering());
+  EXPECT_TRUE(prerender_contents->prerendering_has_started());
+  EXPECT_EQ(prerender_contents, prerender_handle->contents());
+  EXPECT_EQ(ORIGIN_EXTERNAL_REQUEST_FORCED_PRERENDER,
+            prerender_handle->contents()->origin());
+  std::unique_ptr<PrerenderContents> entry =
+      prerender_manager()->FindAndUseEntry(url);
+  ASSERT_EQ(prerender_contents, entry.get());
 }
 
 TEST_F(PrerenderTest, LinkManagerCancel) {
@@ -1972,11 +1869,13 @@ TEST_F(PrerenderTest, PrerenderContentsIsValidHttpMethod) {
 
 TEST_F(PrerenderTest, PrerenderContentsIncrementsByteCount) {
   GURL url("http://www.google.com/");
-  DummyPrerenderContents* prerender_contents = nullptr;
-  prerender_contents = prerender_manager()->CreateNextPrerenderContents(
-      url, ORIGIN_OFFLINE, FINAL_STATUS_MANAGER_SHUTDOWN);
+  DummyPrerenderContents* prerender_contents =
+      prerender_manager()->CreateNextPrerenderContents(
+          url, ORIGIN_EXTERNAL_REQUEST_FORCED_PRERENDER,
+          FINAL_STATUS_MANAGER_SHUTDOWN);
   std::unique_ptr<PrerenderHandle> prerender_handle =
-      prerender_manager()->AddPrerenderForOffline(url, nullptr, kSize);
+      prerender_manager()->AddForcedPrerenderFromExternalRequest(
+          url, content::Referrer(), nullptr, gfx::Rect(kSize));
 
   TestNetworkBytesChangedObserver observer;
   prerender_handle->SetObserver(&observer);

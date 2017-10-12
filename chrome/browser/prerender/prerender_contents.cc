@@ -485,8 +485,7 @@ bool PrerenderContents::CheckURL(const GURL& url) {
     Destroy(FINAL_STATUS_UNSUPPORTED_SCHEME);
     return false;
   }
-  if (origin() != ORIGIN_OFFLINE &&
-      prerender_manager_->HasRecentlyBeenNavigatedTo(origin(), url)) {
+  if (prerender_manager_->HasRecentlyBeenNavigatedTo(origin(), url)) {
     Destroy(FINAL_STATUS_RECENTLY_VISITED);
     return false;
   }
@@ -607,13 +606,6 @@ void PrerenderContents::DidFinishNavigation(
     Destroy(FINAL_STATUS_UNSUPPORTED_SCHEME);
     return;
   }
-
-  // Prevent ORIGIN_OFFLINE prerenders from being destroyed on location.href
-  // change, since the history is never merged for offline prerenders. Also
-  // avoid adding aliases as they may potentially mark other valid requests to
-  // offline as duplicate.
-  if (origin() == ORIGIN_OFFLINE)
-    return;
 
   // If the prerender made a second navigation entry, abort the prerender. This
   // avoids having to correctly implement a complex history merging case (this

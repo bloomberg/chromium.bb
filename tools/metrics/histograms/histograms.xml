@@ -96917,7 +96917,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       label="Link triggered prerender, rel=prerender, same domain."/>
   <suffix name="webnext" label="Link triggered prerender, rel=next."/>
   <suffix name="offline"
-      label="Prerender triggered for saving a page for offline use."/>
+      label="Prerender triggered for saving a page for offline use.">
+    <obsolete>
+      Deprecated October 2017
+    </obsolete>
+  </suffix>
   <affected-histogram name="Prerender.FinalStatus_Prerender5minTTL"/>
   <affected-histogram name="Prerender.FinalStatus_PrerenderControl"/>
   <affected-histogram name="Prerender.FinalStatus_PrerenderEnabled"/>
@@ -102853,7 +102857,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       label="No origin; in the case of prefetch TTFCP this is when no
              prefetch was involved."/>
   <suffix name="omnibox" label="Triggered from the omnibox."/>
-  <suffix name="wash" label="Multiple sources could have triggered."/>
+  <suffix name="wash" label="Multiple sources could have triggered.">
+    <obsolete>
+      Deprecated April 2017
+    </obsolete>
+  </suffix>
   <suffix name="web" label="Link triggered prerender."/>
   <suffix name="webcross"
       label="Link triggered prerender, rel=prerender, cross domain."/>
@@ -102861,7 +102869,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       label="Link triggered prerender, rel=prerender, same domain."/>
   <suffix name="webnext" label="Link triggered prerender, rel=next."/>
   <suffix name="offline"
-      label="Prerender triggered for saving a page for offline use."/>
+      label="Prerender triggered for saving a page for offline use.">
+    <obsolete>
+      Deprecated October 2017
+    </obsolete>
+  </suffix>
   <affected-histogram name="Prerender.AbandonTimeUntilUsed"/>
   <affected-histogram name="Prerender.CookieSendType"/>
   <affected-histogram name="Prerender.CookieStatus"/>

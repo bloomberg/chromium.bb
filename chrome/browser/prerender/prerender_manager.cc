@@ -102,8 +102,7 @@ bool AreExtraHeadersCompatibleWithPrerenderContents(
 // Returns true if prerendering is forced, because it is needed as a feature, as
 // opposed to a performance optimization.
 bool IsPrerenderingForced(Origin origin) {
-  return origin == ORIGIN_OFFLINE ||
-         origin == ORIGIN_EXTERNAL_REQUEST_FORCED_PRERENDER;
+  return origin == ORIGIN_EXTERNAL_REQUEST_FORCED_PRERENDER;
 }
 
 }  // namespace
@@ -290,14 +289,6 @@ std::unique_ptr<PrerenderHandle> PrerenderManager::AddPrerenderForInstant(
     content::SessionStorageNamespace* session_storage_namespace,
     const gfx::Size& size) {
   return AddPrerender(ORIGIN_INSTANT, url, content::Referrer(), gfx::Rect(size),
-                      session_storage_namespace);
-}
-
-std::unique_ptr<PrerenderHandle> PrerenderManager::AddPrerenderForOffline(
-    const GURL& url,
-    content::SessionStorageNamespace* session_storage_namespace,
-    const gfx::Size& size) {
-  return AddPrerender(ORIGIN_OFFLINE, url, content::Referrer(), gfx::Rect(size),
                       session_storage_namespace);
 }
 
@@ -871,9 +862,8 @@ std::unique_ptr<PrerenderHandle> PrerenderManager::AddPrerender(
     SessionStorageNamespace* session_storage_namespace) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  // Allow only Requests for offlining on low end devices, the lifetime of
-  // those prerenders is managed by the offliner.
-  if (IsLowEndDevice() && origin != ORIGIN_OFFLINE) {
+  // Disallow prerendering on low end devices.
+  if (IsLowEndDevice()) {
     RecordFinalStatusWithoutCreatingPrerenderContents(
         url_arg, origin, FINAL_STATUS_LOW_END_DEVICE);
     return nullptr;
@@ -888,8 +878,7 @@ std::unique_ptr<PrerenderHandle> PrerenderManager::AddPrerender(
   GURL url = url_arg;
   GURL alias_url;
 
-  if (profile_->GetPrefs()->GetBoolean(prefs::kBlockThirdPartyCookies) &&
-      origin != ORIGIN_OFFLINE) {
+  if (profile_->GetPrefs()->GetBoolean(prefs::kBlockThirdPartyCookies)) {
     RecordFinalStatusWithoutCreatingPrerenderContents(
         url, origin, FINAL_STATUS_BLOCK_THIRD_PARTY_COOKIES);
     return nullptr;
@@ -1119,9 +1108,8 @@ PrerenderManager::PrerenderData* PrerenderManager::FindPrerenderData(
     const SessionStorageNamespace* session_storage_namespace) {
   for (const auto& prerender : active_prerenders_) {
     PrerenderContents* contents = prerender->contents();
-    if (contents->Matches(url, session_storage_namespace)) {
-      return contents->origin() != ORIGIN_OFFLINE ? prerender.get() : nullptr;
-    }
+    if (contents->Matches(url, session_storage_namespace))
+      return prerender.get();
   }
   return nullptr;
 }
@@ -1141,8 +1129,6 @@ bool PrerenderManager::DoesRateLimitAllowPrerender(Origin origin) const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::TimeDelta elapsed_time =
       GetCurrentTimeTicks() - last_prerender_start_time_;
-  if (origin == ORIGIN_OFFLINE)
-    return true;
   if (!config_.rate_limit_enabled)
     return true;
   return elapsed_time >=
@@ -1305,13 +1291,8 @@ NetworkPredictionStatus PrerenderManager::GetPredictionStatusForOrigin(
   // settings and with all possible network types. This would avoid web devs
   // coming up with creative ways to prefetch in cases they are not allowed to
   // do so.
-  //
-  // Offline originated prerenders also ignore the network state and privacy
-  // settings because they are controlled by the offliner logic via
-  // PrerenderHandle.
   if (origin == ORIGIN_LINK_REL_PRERENDER_SAMEDOMAIN ||
-      origin == ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN ||
-      origin == ORIGIN_OFFLINE) {
+      origin == ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN) {
     return NetworkPredictionStatus::ENABLED;
   }
 

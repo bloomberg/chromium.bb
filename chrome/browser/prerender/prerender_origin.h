@@ -24,8 +24,8 @@ enum Origin {
   ORIGIN_INSTANT = 11,
   ORIGIN_LINK_REL_NEXT = 12,
   ORIGIN_EXTERNAL_REQUEST_FORCED_PRERENDER = 13,
-  ORIGIN_OFFLINE = 14,
-  ORIGIN_MAX,
+  // Obsolete: ORIGIN_OFFLINE = 14,
+  ORIGIN_MAX = 15,
 };
 
 // Return a human-readable name for |origin|.
