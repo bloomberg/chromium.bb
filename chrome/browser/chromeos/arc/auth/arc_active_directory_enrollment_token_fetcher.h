@@ -61,7 +61,7 @@ class ArcActiveDirectoryEnrollmentTokenFetcher
   void OnDMTokenAvailable(const std::string& dm_token);
 
   // ArcSupportHost::AuthDelegate:
-  void OnAuthSucceeded(const std::string& unused_auth_code) override;
+  void OnAuthSucceeded() override;
   void OnAuthFailed(const std::string& error_msg) override;
   void OnAuthRetryClicked() override;
 

@@ -58,19 +58,16 @@ void FakeArcSupport::Close() {
   UnsetMessageHost();
 }
 
-void FakeArcSupport::EmulateAuthSuccess(const std::string& auth_code) {
-  DCHECK(ui_page_ == ArcSupportHost::UIPage::LSO ||
-         ui_page_ == ArcSupportHost::UIPage::ACTIVE_DIRECTORY_AUTH);
+void FakeArcSupport::EmulateAuthSuccess() {
+  DCHECK_EQ(ArcSupportHost::UIPage::ACTIVE_DIRECTORY_AUTH, ui_page_);
   base::DictionaryValue message;
   message.SetString("event", "onAuthSucceeded");
-  message.SetString("code", auth_code);
   SerializeAndSend(native_message_host_.get(), message);
 }
 
 void FakeArcSupport::EmulateAuthFailure(const std::string& error_msg) {
   DCHECK(native_message_host_);
-  DCHECK(ui_page_ == ArcSupportHost::UIPage::LSO ||
-         ui_page_ == ArcSupportHost::UIPage::ACTIVE_DIRECTORY_AUTH);
+  DCHECK_EQ(ArcSupportHost::UIPage::ACTIVE_DIRECTORY_AUTH, ui_page_);
   base::DictionaryValue message;
   message.SetString("event", "onAuthFailed");
   message.SetString("errorMessage", error_msg);
@@ -146,8 +143,6 @@ void FakeArcSupport::PostMessageFromNativeHost(
     }
     if (page == "terms") {
       ui_page_ = ArcSupportHost::UIPage::TERMS;
-    } else if (page == "lso-loading") {
-      ui_page_ = ArcSupportHost::UIPage::LSO;
     } else if (page == "arc-loading") {
       ui_page_ = ArcSupportHost::UIPage::ARC_LOADING;
     } else if (page == "active-directory-auth") {

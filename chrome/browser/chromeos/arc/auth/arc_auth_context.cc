@@ -15,8 +15,6 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager_base.h"
-#include "content/public/browser/browser_context.h"
-#include "content/public/browser/storage_partition.h"
 #include "content/public/common/url_constants.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -59,15 +57,7 @@ constexpr net::BackoffEntry::Policy kRetryBackoffPolicy = {
 }  // namespace
 
 ArcAuthContext::ArcAuthContext(Profile* profile)
-    : retry_backoff_(&kRetryBackoffPolicy) {
-  // Reuse storage used in ARC OptIn platform app.
-  const std::string site_url =
-      base::StringPrintf("%s://%s/persist?%s", content::kGuestScheme,
-                         kPlayStoreAppId, ArcSupportHost::kStorageId);
-  storage_partition_ = content::BrowserContext::GetStoragePartitionForSite(
-      profile, GURL(site_url));
-  CHECK(storage_partition_);
-
+    : profile_(profile), retry_backoff_(&kRetryBackoffPolicy) {
   // Get token service and account ID to fetch auth tokens.
   token_service_ = ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
   const SigninManagerBase* const signin_manager =
@@ -85,7 +75,7 @@ ArcAuthContext::~ArcAuthContext() {
 
 void ArcAuthContext::Prepare(const PrepareCallback& callback) {
   if (context_prepared_) {
-    callback.Run(storage_partition_->GetURLRequestContext());
+    callback.Run(profile_->GetRequestContext());
     return;
   }
 
@@ -132,9 +122,9 @@ void ArcAuthContext::StartFetchers() {
     return;
   }
 
-  ubertoken_fetcher_.reset(
-      new UbertokenFetcher(token_service_, this, GaiaConstants::kChromeOSSource,
-                           storage_partition_->GetURLRequestContext()));
+  ubertoken_fetcher_.reset(new UbertokenFetcher(token_service_, this,
+                                                GaiaConstants::kChromeOSSource,
+                                                profile_->GetRequestContext()));
   ubertoken_fetcher_->StartFetchingToken(account_id_);
 }
 
@@ -164,9 +154,8 @@ void ArcAuthContext::OnFetcherError(const GoogleServiceAuthError& error) {
 
 void ArcAuthContext::OnUbertokenSuccess(const std::string& token) {
   ResetFetchers();
-  merger_fetcher_.reset(
-      new GaiaAuthFetcher(this, GaiaConstants::kChromeOSSource,
-                          storage_partition_->GetURLRequestContext()));
+  merger_fetcher_.reset(new GaiaAuthFetcher(
+      this, GaiaConstants::kChromeOSSource, profile_->GetRequestContext()));
   merger_fetcher_->StartMergeSession(token, std::string());
 }
 
@@ -180,8 +169,7 @@ void ArcAuthContext::OnMergeSessionSuccess(const std::string& data) {
       << "Auth context was successfully prepared after retry.";
   context_prepared_ = true;
   ResetFetchers();
-  base::ResetAndReturn(&callback_)
-      .Run(storage_partition_->GetURLRequestContext());
+  base::ResetAndReturn(&callback_).Run(profile_->GetRequestContext());
 }
 
 void ArcAuthContext::OnMergeSessionFailure(

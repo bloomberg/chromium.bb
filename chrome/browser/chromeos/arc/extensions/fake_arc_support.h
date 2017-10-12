@@ -40,8 +40,8 @@ class FakeArcSupport : public extensions::NativeMessageHost::Client {
   // Emulates clicking Close button.
   void Close();
 
-  // Authentication page emulation (either LSO or Active Directory).
-  void EmulateAuthSuccess(const std::string& auth_code);
+  // Authentication page emulation for Active Directory.
+  void EmulateAuthSuccess();
   void EmulateAuthFailure(const std::string& error_msg);
 
   // Emulates clicking Agree button on the fake terms of service page.

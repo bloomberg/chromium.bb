@@ -8,12 +8,6 @@
  */
 var appWindow = null;
 
-/**
- * Contains web content provided by Google authorization server.
- * @type {WebView}
- */
-var lsoView = null;
-
 /** @type {TermsOfServicePage} */
 var termsPage = null;
 
@@ -476,7 +470,7 @@ class ActiveDirectoryAuthPage {
       // Did it actually work?
       if (details.statusCode == 200) {
         // 'code' is unused, but it needs to be there.
-        sendNativeMessage('onAuthSucceeded', {code: ''});
+        sendNativeMessage('onAuthSucceeded');
       } else {
         sendNativeMessage('onAuthFailed', {
           errorMessage:
@@ -629,25 +623,12 @@ function showPage(pageDivId, options) {
   hideOverlay();
   appWindow.contentWindow.stopProgressAnimation();
   var doc = appWindow.contentWindow.document;
-  // If the request is lso-loading and arc-loading page is currently shown,
-  // then we do not switch the view. This is because both pages are saying
-  // "operation in progress", and switching the page looks unwanted message
-  // change from users' point of view.
-  if (pageDivId != 'lso-loading' || doc.getElementById('arc-loading').hidden) {
-    var pages = doc.getElementsByClassName('section');
-    for (var i = 0; i < pages.length; i++) {
-      pages[i].hidden = pages[i].id != pageDivId;
-    }
+
+  var pages = doc.getElementsByClassName('section');
+  for (var i = 0; i < pages.length; i++) {
+    pages[i].hidden = pages[i].id != pageDivId;
   }
 
-  if (pageDivId == 'lso-loading') {
-    lsoView.src = 'https://accounts.google.com/o/oauth2/v2/auth?client_id=' +
-        '1070009224336-sdh77n7uot3oc99ais00jmuft6sk2fg9.apps.' +
-        'googleusercontent.com&response_type=code&redirect_uri=oob&' +
-        'scope=https://www.google.com/accounts/OAuthLogin&' +
-        'device_type=arc_plus_plus&device_id=' + currentDeviceId +
-        '&hl=' + navigator.language;
-  }
   if (pageDivId == 'active-directory-auth') {
     activeDirectoryAuthPage.enableEventProcessing(true);
     activeDirectoryAuthPage.setUrls(
@@ -663,8 +644,7 @@ function showPage(pageDivId, options) {
 
   // Start progress bar animation for the page that has the dynamic progress
   // bar. 'error' page has the static progress bar that no need to be animated.
-  if (pageDivId == 'terms' || pageDivId == 'arc-loading' ||
-      pageDivId == 'lso-loading') {
+  if (pageDivId == 'terms' || pageDivId == 'arc-loading') {
     appWindow.contentWindow.startProgressAnimation(pageDivId);
   }
 }
@@ -794,71 +774,6 @@ function closeWindow() {
 
 chrome.app.runtime.onLaunched.addListener(function() {
   var onAppContentLoad = function() {
-    var doc = appWindow.contentWindow.document;
-    lsoView = doc.getElementById('arc-support');
-    lsoView.addContentScripts([{
-      name: 'postProcess',
-      matches: ['https://accounts.google.com/*'],
-      css: {files: ['lso.css']},
-      run_at: 'document_end'
-    }]);
-
-    var isLsoApprovalResponse = function(url) {
-      var resultUrlPrefix = 'https://accounts.google.com/o/oauth2/approval?';
-      return url.substring(0, resultUrlPrefix.length) == resultUrlPrefix;
-    };
-
-    var lsoError = false;
-    var onLsoViewRequestResponseStarted = function(details) {
-      if (isLsoApprovalResponse(details.url)) {
-        showPage('arc-loading');
-      }
-      lsoError = false;
-    };
-
-    var onLsoViewErrorOccurred = function(details) {
-      showErrorPage(
-          appWindow.contentWindow.loadTimeData.getString('serverError'));
-      lsoError = true;
-    };
-
-    var onLsoViewContentLoad = function() {
-      if (lsoError) {
-        return;
-      }
-
-      if (!isLsoApprovalResponse(lsoView.src)) {
-        // Show LSO page when its content is ready.
-        showPage('lso');
-        // We have fixed width for LSO page in css file in order to prevent
-        // unwanted webview resize animation when it is shown first time. Now
-        // it safe to make it up to window width.
-        lsoView.style.width = '100%';
-        return;
-      }
-
-      lsoView.executeScript({code: 'document.title;'}, function(results) {
-        var authCodePrefix = 'Success code=';
-        if (results && results.length == 1 && typeof results[0] == 'string' &&
-            results[0].substring(0, authCodePrefix.length) == authCodePrefix) {
-          var authCode = results[0].substring(authCodePrefix.length);
-          sendNativeMessage('onAuthSucceeded', {code: authCode});
-        } else {
-          sendNativeMessage('onAuthFailed', {errorMessage: 'Bad results.'});
-          showErrorPage(appWindow.contentWindow.loadTimeData.getString(
-              'authorizationFailed'));
-        }
-      });
-    };
-
-    var requestFilter = {urls: ['<all_urls>'], types: ['main_frame']};
-
-    lsoView.request.onResponseStarted.addListener(
-        onLsoViewRequestResponseStarted, requestFilter);
-    lsoView.request.onErrorOccurred.addListener(
-        onLsoViewErrorOccurred, requestFilter);
-    lsoView.addEventListener('contentload', onLsoViewContentLoad);
-
     var onRetry = function() {
       sendNativeMessage('onRetryClicked');
     };
@@ -867,6 +782,7 @@ chrome.app.runtime.onLaunched.addListener(function() {
       sendNativeMessage('onSendFeedbackClicked');
     };
 
+    var doc = appWindow.contentWindow.document;
     doc.getElementById('button-retry').addEventListener('click', onRetry);
     doc.getElementById('button-send-feedback')
         .addEventListener('click', onSendFeedback);

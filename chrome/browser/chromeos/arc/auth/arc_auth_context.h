@@ -17,10 +17,6 @@
 class Profile;
 class ProfileOAuth2TokenService;
 
-namespace content {
-class StoragePartition;
-}
-
 namespace net {
 class URLRequestContextGetter;
 }
@@ -73,16 +69,14 @@ class ArcAuthContext : public UbertokenConsumer,
   void OnFetcherError(const GoogleServiceAuthError& error);
 
   // Unowned pointer.
+  Profile* const profile_;
   ProfileOAuth2TokenService* token_service_;
+
   std::string account_id_;
   std::string full_account_id_;
 
   // Whether the merge session should be skipped. Set to true only in testing.
   bool skip_merge_session_for_testing_ = false;
-
-  // Owned by content::BrowserContent. Used to isolate cookies for auth server
-  // communication and shared with ARC OptIn UI platform app.
-  content::StoragePartition* storage_partition_ = nullptr;
 
   PrepareCallback callback_;
   bool context_prepared_ = false;

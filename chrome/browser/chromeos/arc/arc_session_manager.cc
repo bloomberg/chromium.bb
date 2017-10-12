@@ -534,14 +534,13 @@ void ArcSessionManager::CancelAuthCode() {
   }
 
   // If ARC failed to boot normally, stop ARC. Similarly, if the current page is
-  // LSO or ACTIVE_DIRECTORY_AUTH, closing the window should stop ARC since the
-  // user chooses to not sign in. In any other case, ARC is booting normally and
+  // ACTIVE_DIRECTORY_AUTH, closing the window should stop ARC since the user
+  // chooses to not sign in. In any other case, ARC is booting normally and
   // the instance should not be stopped.
   if ((state_ != State::NEGOTIATING_TERMS_OF_SERVICE &&
        state_ != State::CHECKING_ANDROID_MANAGEMENT) &&
       (!support_host_ ||
        (support_host_->ui_page() != ArcSupportHost::UIPage::ERROR &&
-        support_host_->ui_page() != ArcSupportHost::UIPage::LSO &&
         support_host_->ui_page() !=
             ArcSupportHost::UIPage::ACTIVE_DIRECTORY_AUTH))) {
     return;

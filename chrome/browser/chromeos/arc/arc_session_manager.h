@@ -30,8 +30,7 @@ class ArcPaiStarter;
 class ArcTermsOfServiceNegotiator;
 enum class ProvisioningResult : int;
 
-// This class proxies the request from the client to fetch an auth code from
-// LSO. It lives on the UI thread.
+// This class is responsible for handing stages of ARC life-cycle.
 class ArcSessionManager : public ArcSessionRunner::Observer,
                           public ArcSupportHost::ErrorDelegate {
  public:
@@ -356,6 +355,7 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
 
   // Internal state machine. See also State enum class.
   State state_ = State::NOT_INITIALIZED;
+
   base::ObserverList<Observer> observer_list_;
   std::unique_ptr<ArcAppLauncher> playstore_launcher_;
   bool reenable_arc_ = false;

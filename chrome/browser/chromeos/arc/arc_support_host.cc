@@ -70,13 +70,10 @@ constexpr char kEvent[] = "event";
 // No data will be provided.
 constexpr char kEventOnWindowClosed[] = "onWindowClosed";
 
-// "onAuthSucceeded" is fired when LSO or Active Directory authentication
-// succeeds. For LSO, the auth token is passed via "code" field. For Active
-// Directory, "code" is empty.
+// "onAuthSucceeded" is fired when Active Directory authentication succeeds.
 constexpr char kEventOnAuthSucceeded[] = "onAuthSucceeded";
-constexpr char kCode[] = "code";
 
-// "onAuthFailed" is fired when LSO or Active Directory authentication failed.
+// "onAuthFailed" is fired when Active Directory authentication failed.
 constexpr char kEventOnAuthFailed[] = "onAuthFailed";
 constexpr char kAuthErrorMessage[] = "errorMessage";
 
@@ -117,8 +114,6 @@ std::ostream& operator<<(std::ostream& os, ArcSupportHost::UIPage ui_page) {
       return os << "NO_PAGE";
     case ArcSupportHost::UIPage::TERMS:
       return os << "TERMS";
-    case ArcSupportHost::UIPage::LSO:
-      return os << "LSO";
     case ArcSupportHost::UIPage::ARC_LOADING:
       return os << "ARC_LOADING";
     case ArcSupportHost::UIPage::ACTIVE_DIRECTORY_AUTH:
@@ -162,9 +157,6 @@ std::ostream& operator<<(std::ostream& os, ArcSupportHost::Error error) {
 }
 
 }  // namespace
-
-// static
-const char ArcSupportHost::kStorageId[] = "arc_support";
 
 ArcSupportHost::ArcSupportHost(Profile* profile)
     : profile_(profile),
@@ -227,10 +219,6 @@ void ArcSupportHost::ShowTermsOfService() {
   ShowPage(UIPage::TERMS);
 }
 
-void ArcSupportHost::ShowLso() {
-  ShowPage(UIPage::LSO);
-}
-
 void ArcSupportHost::ShowArcLoading() {
   ShowPage(UIPage::ARC_LOADING);
 }
@@ -262,10 +250,6 @@ void ArcSupportHost::ShowPage(UIPage ui_page) {
   switch (ui_page) {
     case UIPage::TERMS:
       message.SetString(kPage, "terms");
-      break;
-    case UIPage::LSO:
-      // TODO(hidehiko): Merge LSO and LSO_LOADING.
-      message.SetString(kPage, "lso-loading");
       break;
     case UIPage::ARC_LOADING:
       message.SetString(kPage, "arc-loading");
@@ -451,9 +435,6 @@ bool ArcSupportHost::Initialize() {
   loadtime_data->SetString(
       "greetingHeader", l10n_util::GetStringUTF16(IDS_ARC_OOBE_TERMS_HEADING));
   loadtime_data->SetString(
-      "loadingDescription",
-      l10n_util::GetStringUTF16(IDS_ARC_OPT_IN_DIALOG_PROGRESS_LSO));
-  loadtime_data->SetString(
       "greetingDescription",
       l10n_util::GetStringUTF16(IDS_ARC_OOBE_TERMS_DESCRIPTION));
   loadtime_data->SetString(
@@ -472,8 +453,8 @@ bool ArcSupportHost::Initialize() {
       "buttonRetry",
       l10n_util::GetStringUTF16(IDS_ARC_OPT_IN_DIALOG_BUTTON_RETRY));
   loadtime_data->SetString(
-      "progressLsoLoading",
-      l10n_util::GetStringUTF16(IDS_ARC_OPT_IN_DIALOG_PROGRESS_LSO));
+      "progressTermsLoading",
+      l10n_util::GetStringUTF16(IDS_ARC_OPT_IN_DIALOG_PROGRESS_TERMS));
   loadtime_data->SetString(
       "progressAndroidLoading",
       l10n_util::GetStringUTF16(IDS_ARC_OPT_IN_DIALOG_PROGRESS_ANDROID));
@@ -582,12 +563,7 @@ void ArcSupportHost::OnMessage(const base::DictionaryValue& message) {
     }
   } else if (event == kEventOnAuthSucceeded) {
     DCHECK(auth_delegate_);
-    std::string code;
-    if (!message.GetString(kCode, &code)) {
-      NOTREACHED();
-      return;
-    }
-    auth_delegate_->OnAuthSucceeded(code);
+    auth_delegate_->OnAuthSucceeded();
   } else if (event == kEventOnAuthFailed) {
     DCHECK(auth_delegate_);
     std::string error_message;

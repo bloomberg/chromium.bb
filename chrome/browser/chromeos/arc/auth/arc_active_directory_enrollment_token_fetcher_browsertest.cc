@@ -87,9 +87,7 @@ class SimulateAuthSucceedsObserver : public FakeArcSupportObserverBase {
   explicit SimulateAuthSucceedsObserver(FakeArcSupport* fake_arc_support)
       : FakeArcSupportObserverBase(fake_arc_support) {}
 
-  void OnAuthPageShown() override {
-    fake_arc_support_->EmulateAuthSuccess("" /* auth_code unused */);
-  }
+  void OnAuthPageShown() override { fake_arc_support_->EmulateAuthSuccess(); }
 };
 
 // Simulates pressing the Cancel button or closing the window.
@@ -147,7 +145,7 @@ class SimulateAuthRetryObserver : public FakeArcSupportObserverBase {
       fake_arc_support_->ClickRetryButton();
     } else if (saml_auth_count_ == 2) {
       // Second saml auth attempt, trigger success.
-      fake_arc_support_->EmulateAuthSuccess("" /* auth_code unused */);
+      fake_arc_support_->EmulateAuthSuccess();
     } else {
       ADD_FAILURE() << "Auth page should only be shown twice";
       run_loop_->Quit();
