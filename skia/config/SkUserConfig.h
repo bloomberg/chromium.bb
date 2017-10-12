@@ -239,10 +239,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
  */
 #define SK_ALLOW_STATIC_GLOBAL_INITIALIZERS 0
 
-/* This flag forces Skia not to use typographic metrics with GDI.
- */
-#define SK_GDI_ALWAYS_USE_TEXTMETRICS_FOR_FONT_METRICS
-
 /* Restrict formats for Skia font matching to SFNT type fonts. */
 #define SK_FONT_CONFIG_INTERFACE_ONLY_ALLOW_SFNT_FONTS
 
