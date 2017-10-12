@@ -971,6 +971,7 @@ static INLINE void partition_gather_horz_alike(aom_cdf_prob *out,
   out[0] -= cdf_element_prob(in, PARTITION_HORZ_A);
   out[0] -= cdf_element_prob(in, PARTITION_HORZ_B);
   out[0] -= cdf_element_prob(in, PARTITION_VERT_A);
+  out[0] -= cdf_element_prob(in, PARTITION_HORZ_4);
 #endif
   out[0] = AOM_ICDF(out[0]);
   out[1] = AOM_ICDF(CDF_PROB_TOP);
@@ -985,6 +986,7 @@ static INLINE void partition_gather_vert_alike(aom_cdf_prob *out,
   out[0] -= cdf_element_prob(in, PARTITION_HORZ_A);
   out[0] -= cdf_element_prob(in, PARTITION_VERT_A);
   out[0] -= cdf_element_prob(in, PARTITION_VERT_B);
+  out[0] -= cdf_element_prob(in, PARTITION_VERT_4);
 #endif
   out[0] = AOM_ICDF(out[0]);
   out[1] = AOM_ICDF(CDF_PROB_TOP);
