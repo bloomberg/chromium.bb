@@ -772,6 +772,101 @@ TEST_F(ChromeVariationsConfigurationTest,
   EXPECT_FALSE(foo.valid);
 }
 
+TEST_F(ChromeVariationsConfigurationTest,
+       InvalidTrackingOnlyCausesInvalidConfig) {
+  std::map<std::string, std::string> foo_params;
+  foo_params["event_used"] = "name:eu;comparator:any;window:0;storage:360";
+  foo_params["event_trigger"] = "name:et;comparator:any;window:0;storage:360";
+  foo_params["tracking_only"] = "bogus value";
+  SetFeatureParams(kTestFeatureFoo, foo_params);
+
+  base::HistogramTester histogram_tester;
+  std::vector<const base::Feature*> features = {&kTestFeatureFoo};
+  configuration_.ParseFeatureConfigs(features);
+
+  FeatureConfig foo = configuration_.GetFeatureConfig(kTestFeatureFoo);
+  EXPECT_FALSE(foo.valid);
+  EXPECT_FALSE(foo.tracking_only);
+  histogram_tester.ExpectBucketCount(
+      kConfigParseEventName,
+      static_cast<int>(stats::ConfigParsingEvent::FAILURE_TRACKING_ONLY_PARSE),
+      1);
+  histogram_tester.ExpectBucketCount(
+      kConfigParseEventName,
+      static_cast<int>(stats::ConfigParsingEvent::FAILURE), 1);
+  histogram_tester.ExpectTotalCount(kConfigParseEventName, 2);
+}
+
+void RunTrackingOnlyTest(ChromeVariationsConfigurationTest* test,
+                         ChromeVariationsConfiguration* configuration,
+                         std::vector<const base::Feature*> features,
+                         std::string tracking_only_definition,
+                         bool expected_value,
+                         bool is_valid) {
+  std::map<std::string, std::string> foo_params;
+  foo_params["event_used"] = "name:eu;comparator:any;window:0;storage:360";
+  foo_params["event_trigger"] = "name:et;comparator:any;window:0;storage:360";
+  foo_params["tracking_only"] = tracking_only_definition;
+  test->SetFeatureParams(kTestFeatureFoo, foo_params);
+
+  configuration->ParseFeatureConfigs(features);
+  FeatureConfig foo = configuration->GetFeatureConfig(kTestFeatureFoo);
+  EXPECT_EQ(is_valid, foo.valid);
+
+  FeatureConfig expected_foo;
+  expected_foo.valid = is_valid;
+  expected_foo.used = EventConfig("eu", Comparator(ANY, 0), 0, 360);
+  expected_foo.trigger = EventConfig("et", Comparator(ANY, 0), 0, 360);
+  expected_foo.tracking_only = expected_value;
+  EXPECT_EQ(expected_foo, foo);
+}
+
+TEST_F(ChromeVariationsConfigurationTest, TrackingOnlyReturnsTrue) {
+  base::HistogramTester histogram_tester;
+  RunTrackingOnlyTest(this, &configuration_, {&kTestFeatureFoo}, "true",
+                      true /* expected_value */, true /* is_valid */);
+
+  histogram_tester.ExpectBucketCount(
+      kConfigParseEventName,
+      static_cast<int>(stats::ConfigParsingEvent::SUCCESS), 1);
+  histogram_tester.ExpectTotalCount(kConfigParseEventName, 1);
+}
+
+TEST_F(ChromeVariationsConfigurationTest,
+       TrackingOnlyReturnsTrueCaseInsensitive) {
+  base::HistogramTester histogram_tester;
+  RunTrackingOnlyTest(this, &configuration_, {&kTestFeatureFoo}, "tRUe",
+                      true /* expected_value */, true /* is_valid */);
+
+  histogram_tester.ExpectBucketCount(
+      kConfigParseEventName,
+      static_cast<int>(stats::ConfigParsingEvent::SUCCESS), 1);
+  histogram_tester.ExpectTotalCount(kConfigParseEventName, 1);
+}
+
+TEST_F(ChromeVariationsConfigurationTest, TrackingOnlyReturnsFalse) {
+  base::HistogramTester histogram_tester;
+  RunTrackingOnlyTest(this, &configuration_, {&kTestFeatureFoo}, "false",
+                      false /* expected_value */, true /* is_valid */);
+
+  histogram_tester.ExpectBucketCount(
+      kConfigParseEventName,
+      static_cast<int>(stats::ConfigParsingEvent::SUCCESS), 1);
+  histogram_tester.ExpectTotalCount(kConfigParseEventName, 1);
+}
+
+TEST_F(ChromeVariationsConfigurationTest,
+       TrackingOnlyReturnsFalseCaseInsensitive) {
+  base::HistogramTester histogram_tester;
+  RunTrackingOnlyTest(this, &configuration_, {&kTestFeatureFoo}, "fALSe",
+                      false /* expected_value */, true /* is_valid */);
+
+  histogram_tester.ExpectBucketCount(
+      kConfigParseEventName,
+      static_cast<int>(stats::ConfigParsingEvent::SUCCESS), 1);
+  histogram_tester.ExpectTotalCount(kConfigParseEventName, 1);
+}
+
 TEST_F(ChromeVariationsConfigurationTest, AllComparatorTypesWork) {
   std::map<std::string, std::string> foo_params;
   foo_params["event_used"] = "name:e0;comparator:any;window:20;storage:30";

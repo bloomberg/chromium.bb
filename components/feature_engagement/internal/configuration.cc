@@ -127,7 +127,7 @@ bool operator==(const SessionRateImpact& lhs, const SessionRateImpact& rhs) {
          std::tie(rhs.type, rhs.affected_features);
 }
 
-FeatureConfig::FeatureConfig() : valid(false) {}
+FeatureConfig::FeatureConfig() : valid(false), tracking_only(false) {}
 
 FeatureConfig::FeatureConfig(const FeatureConfig& other) = default;
 

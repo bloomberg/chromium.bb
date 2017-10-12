@@ -237,6 +237,7 @@ configuration:
         *   `<action name="InProductHelp.ShouldTriggerHelpUI.IPH_MyFunFeature">`
         *   `<action name="InProductHelp.ShouldTriggerHelpUIResult.NotTriggered.IPH_MyFunFeature">`
         *   `<action name="InProductHelp.ShouldTriggerHelpUIResult.Triggered.IPH_MyFunFeature">`
+        *   `<action name="InProductHelp.ShouldTriggerHelpUIResult.WouldHaveTriggered.IPH_MyFunFeature">`
 
 ### Adding a local field trial testing configuration
 
@@ -330,6 +331,7 @@ Format:
   "event_used": "{EventConfig}",
   "event_trigger": "{EventConfig}",
   "event_???": "{EventConfig}",
+  "tracking_only": "{Boolean}"
   "x_???": "..."
  }
 ```
@@ -338,33 +340,52 @@ The `FeatureConfig` fields `availability`, `session_rate`, `event_used` and
 `event_trigger` are required, and there can be an arbitrary amount of other
 `event_???` entries.
 
-*   `availability`
+*   `availability` __REQUIRED__
     *   For how long must an in-product help experiment have been available to
         the end user.
     *   The value of the `Comparator` is in a number of days.
-*   `session_rate`
+    *   See [Comparator](#Comparator) below for details.
+*   `session_rate` __REQUIRED__
     *   How many other in-product help have been displayed within the current
         end user session.
     *   The value of the `Comparator` is a count of total In-Product Help
         displayed in the current end user session.
+    *   See [Comparator](#Comparator) below for details.
 *   `session_rate_impact`
     *   Which other in-product help features showing the current IPH impacts.
     *   By default, a feature impacts every other feature.
-    *   See `SessionRateImpact` below for details.
-*   `event_used`
+    *   Defaults to `all`.
+    *   See [SessionRateImpact](#SessionRateImpact) below for details.
+*   `event_used` __REQUIRED__
     *   Relates to what the in-product help wants to highlight, i.e. teach the
         user about and increase usage of.
     *   This is typically the action that the In-Product Help should stimulate
         usage of.
     *   Special UMA is tracked for this.
-*   `event_trigger`
+    *   See [EventConfig](#EventConfig) below for details.
+*   `event_trigger` __REQUIRED__
     *   Relates to the times in-product help is triggered.
     *   Special UMA is tracked for this.
+    *   See [EventConfig](#EventConfig) below for details.
 *   `event_???`
     *   Similar to the other `event_` items, but for all other preconditions
         that must have been met.
     *   Name must match `/^event_[a-zA-Z0-9-_]+$/` and not be `event_used` or
         `event_trigger`.
+    *   See [EventConfig](#EventConfig) below for details.
+*   `tracking_only`
+    *   Set to true if in-product help should never trigger.
+    *   Tracker::ShouldTriggerHelpUI(...) will always return false, but if all
+        other conditions are met, it will still be recorded as having been
+        shown in the internal database and through UMA.
+    *   This is meant to be used by either local tests or for comparisons
+        between different experiment groups.
+    *   If you want to later transition users with this flag set to `true` to
+        in fact display in-product help, you might want to use a different
+        `EventConfig::name` for the `event_trigger` configuration than the
+        non-tracking configuration.
+    *   Defaults to `false`.
+    *   See [Boolean](#Boolean) below for details.
 *   `x_???`
     *   Any parameter starting with `x_` is ignored by the feature engagement
         tracker.
@@ -451,6 +472,28 @@ Other than `any`, all comparators require a value.
 ==0
 any
 <15
+```
+
+### Boolean
+
+Format: ```[true|false]```
+
+The following values are allowed:
+
+*   `true`
+*   `false`
+
+The value must be quoted (like all the other values).
+
+**Examples**
+
+```
+true
+false
+TRUE
+FALSE
+True
+False
 ```
 
 ### SessionRateImpact
