@@ -11,11 +11,11 @@ namespace blink {
 
 namespace {
 
-struct UniteTestData {
+struct PhysicalOffsetRectUniteTestData {
   NGPhysicalOffsetRect a;
   NGPhysicalOffsetRect b;
   NGPhysicalOffsetRect expected;
-} unite_test_data[] = {
+} physical_offset_rect_unite_test_data[] = {
     {{}, {}, {}},
     {{},
      {{LayoutUnit(1), LayoutUnit(2)}, {LayoutUnit(3), LayoutUnit(4)}},
@@ -31,18 +31,20 @@ struct UniteTestData {
      {{LayoutUnit(100), LayoutUnit(50)}, {LayoutUnit(300), LayoutUnit(200)}}},
 };
 
-std::ostream& operator<<(std::ostream& os, const UniteTestData& data) {
+std::ostream& operator<<(std::ostream& os,
+                         const PhysicalOffsetRectUniteTestData& data) {
   WTF::Partitions::Initialize(nullptr);
   return os << "Unite " << data.a << " and " << data.b;
 }
 
 class NGPhysicalOffsetRectUniteTest
     : public ::testing::Test,
-      public ::testing::WithParamInterface<UniteTestData> {};
+      public ::testing::WithParamInterface<PhysicalOffsetRectUniteTestData> {};
 
-INSTANTIATE_TEST_CASE_P(NGGeometryUnitsTest,
-                        NGPhysicalOffsetRectUniteTest,
-                        ::testing::ValuesIn(unite_test_data));
+INSTANTIATE_TEST_CASE_P(
+    NGGeometryUnitsTest,
+    NGPhysicalOffsetRectUniteTest,
+    ::testing::ValuesIn(physical_offset_rect_unite_test_data));
 
 TEST_P(NGPhysicalOffsetRectUniteTest, Data) {
   const auto& data = GetParam();
