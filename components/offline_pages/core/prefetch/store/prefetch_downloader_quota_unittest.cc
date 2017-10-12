@@ -18,6 +18,7 @@ const char kTestConfig[] = "12345";
 const char kTestZero[] = "0";
 const char kInvalidNegative[] = "-12345";
 const char kInvalidEmpty[] = "";
+const char kInvalidText[] = "tacos";
 }  // namespace
 
 class PrefetchDownloaderQuotaTest : public testing::Test {
@@ -58,7 +59,7 @@ void PrefetchDownloaderQuotaTest::SetTestingMaxDailyQuotaBytes(
 
 TEST_F(PrefetchDownloaderQuotaTest, GetMaxDailyQuotaBytes) {
   EXPECT_EQ(PrefetchDownloaderQuota::kDefaultMaxDailyQuotaBytes,
-            PrefetchDownloaderQuota::kDefaultMaxDailyQuotaBytes);
+            PrefetchDownloaderQuota::GetMaxDailyQuotaBytes());
 
   SetTestingMaxDailyQuotaBytes(kTestConfig);
   EXPECT_EQ(12345LL, PrefetchDownloaderQuota::GetMaxDailyQuotaBytes());
@@ -71,6 +72,10 @@ TEST_F(PrefetchDownloaderQuotaTest, GetMaxDailyQuotaBytes) {
             PrefetchDownloaderQuota::GetMaxDailyQuotaBytes());
 
   SetTestingMaxDailyQuotaBytes(kInvalidEmpty);
+  EXPECT_EQ(PrefetchDownloaderQuota::kDefaultMaxDailyQuotaBytes,
+            PrefetchDownloaderQuota::GetMaxDailyQuotaBytes());
+
+  SetTestingMaxDailyQuotaBytes(kInvalidText);
   EXPECT_EQ(PrefetchDownloaderQuota::kDefaultMaxDailyQuotaBytes,
             PrefetchDownloaderQuota::GetMaxDailyQuotaBytes());
 }
