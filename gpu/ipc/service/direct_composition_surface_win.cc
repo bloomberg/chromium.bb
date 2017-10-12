@@ -6,6 +6,7 @@
 
 #include <d3d11_1.h>
 #include <dcomptypes.h>
+#include <dxgi1_6.h>
 
 #include "base/containers/circular_deque.h"
 #include "base/feature_list.h"
@@ -33,11 +34,6 @@
 #include "ui/gl/gl_image_memory.h"
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/gl/scoped_make_current.h"
-
-#if defined(NTDDI_WIN10_RS2)
-#define ENABLE_HDR_DETECTION
-#include <dxgi1_6.h>
-#endif
 
 #ifndef EGL_ANGLE_flexible_surface_compatibility
 #define EGL_ANGLE_flexible_surface_compatibility 1
@@ -1086,20 +1082,32 @@ bool DirectCompositionSurfaceWin::AreOverlaysSupported() {
 
 // static
 bool DirectCompositionSurfaceWin::IsHDRSupported() {
-  bool hdr_monitor_found = false;
-#if defined(ENABLE_HDR_DETECTION)
-  base::win::ScopedComPtr<ID3D11Device> d3d11_device =
-      gl::QueryD3D11DeviceObjectFromANGLE();
-  if (!d3d11_device) {
-    DLOG(ERROR) << "Failing to detect HDR, couldn't retrieve D3D11 "
-                << "device from ANGLE.";
-    return false;
+  // When a D3D device is created, it creates a snapshot of the output adapters'
+  // properties. In order to get an up-to-date result, it is necessary to create
+  // a new D3D11Device for every query.
+  base::win::ScopedComPtr<ID3D11Device> d3d11_device;
+  base::win::ScopedComPtr<ID3D11DeviceContext> d3d11_device_context;
+  {
+    D3D_FEATURE_LEVEL feature_levels[] = {D3D_FEATURE_LEVEL_11_1,
+                                          D3D_FEATURE_LEVEL_11_0};
+    UINT flags = 0;
+    D3D_FEATURE_LEVEL feature_level_out = D3D_FEATURE_LEVEL_11_0;
+    HRESULT hr = D3D11CreateDevice(
+        nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, flags, feature_levels,
+        arraysize(feature_levels), D3D11_SDK_VERSION,
+        d3d11_device.GetAddressOf(), &feature_level_out,
+        d3d11_device_context.GetAddressOf());
+    if (FAILED(hr)) {
+      DLOG(ERROR) << "Failing to detect HDR, couldn't create D3D11 device.";
+    }
   }
+
   base::win::ScopedComPtr<IDXGIDevice> dxgi_device;
   d3d11_device.CopyTo(dxgi_device.GetAddressOf());
   base::win::ScopedComPtr<IDXGIAdapter> dxgi_adapter;
   dxgi_device->GetAdapter(dxgi_adapter.GetAddressOf());
 
+  bool hdr_monitor_found = false;
   unsigned int i = 0;
   while (true) {
     base::win::ScopedComPtr<IDXGIOutput> output;
@@ -1121,7 +1129,6 @@ bool DirectCompositionSurfaceWin::IsHDRSupported() {
     }
   }
   UMA_HISTOGRAM_BOOLEAN("GPU.Output.HDR", hdr_monitor_found);
-#endif
   return hdr_monitor_found;
 }
 
