@@ -125,7 +125,6 @@ jumbo_source_set("scheduler") {
     "//base",
     "//cc",
     "//device/base/synchronization",
-    "//skia",
     "//third_party/WebKit/Source/platform:make_platform_generated",
     "//third_party/WebKit/Source/platform/instrumentation",
     "//third_party/WebKit/Source/platform/wtf",
@@ -162,7 +161,6 @@ jumbo_source_set("test_support") {
   deps = [
     "//base",
     "//base/test:test_support",
-    "//skia",
   ]
 
   configs += [ "//third_party/WebKit/Source/platform:blink_platform_config" ]
@@ -211,7 +209,6 @@ jumbo_source_set("unit_tests") {
     "//base/test:test_support",
     "//components/viz/common",
     "//components/viz/test:test_support",
-    "//skia",
     "//testing/gmock",
     "//testing/gtest",
   ]
@@ -229,7 +226,6 @@ source_set("perf_tests") {
   deps = [
     "//base",
     "//base/test:test_support",
-    "//skia",
     "//testing/gmock",
     "//testing/gtest",
     "//testing/perf",
