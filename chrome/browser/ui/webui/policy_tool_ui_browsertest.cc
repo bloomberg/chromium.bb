@@ -20,10 +20,8 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
-#include "ui/base/l10n/l10n_util.h"
 
 class PolicyToolUITest : public InProcessBrowserTest {
  public:
@@ -58,8 +56,6 @@ class PolicyToolUITest : public InProcessBrowserTest {
   // element are shown).
   int GetElementDisabledState(const std::string& element_id,
                               const std::string& error_message_id);
-  void SetPolicyValue(const std::string& policy_name,
-                      const std::string& policy_value);
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -151,34 +147,6 @@ std::unique_ptr<base::ListValue> PolicyToolUITest::ExtractSessionsList() {
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
       browser()->tab_strip_model()->GetActiveWebContents(), javascript, &json));
   return base::ListValue::From(base::JSONReader::Read(json));
-}
-
-void PolicyToolUITest::SetPolicyValue(const std::string& policy_name,
-                                      const std::string& policy_value) {
-  std::string javascript =
-      "document.getElementById('show-unset').click();"
-      "var policies = document.querySelectorAll("
-      "    'section.policy-table-section > * > tbody');"
-      "var policyEntry;"
-      "for (var i = 0; i < policies.length; ++i) {"
-      "  if (policies[i].getElementsByClassName('name')[0].textContent == '" +
-      policy_name +
-      "') {"
-      "    policyEntry = policies[i];"
-      "    break;"
-      "  }"
-      "}"
-      "policyEntry.getElementsByClassName('edit-button')[0].click();"
-      "policyEntry.getElementsByClassName('value-edit-field')[0].value = '" +
-      policy_value +
-      "';"
-      "policyEntry.getElementsByClassName('save-button')[0].click();"
-      "document.getElementById('show-unset').click();"
-      "var name = policyEntry.getElementsByClassName('name-column')[0]"
-      "                      .getElementsByTagName('div')[0].textContent;";
-  EXPECT_TRUE(content::ExecuteScript(
-      browser()->tab_strip_model()->GetActiveWebContents(), javascript));
-  content::RunAllTasksUntilIdle();
 }
 
 void PolicyToolUITest::LoadSessionAndWaitForAlert(
@@ -293,14 +261,29 @@ IN_PROC_BROWSER_TEST_F(PolicyToolUITest, ImportingSession) {
 IN_PROC_BROWSER_TEST_F(PolicyToolUITest, Editing) {
   ui_test_utils::NavigateToURL(browser(), GURL("chrome://policy-tool"));
 
-  // Change one policy values.
-  SetPolicyValue("AllowDinosaurEasterEgg", "true");
+  // Change one policy value and get its name.
+  std::string javascript =
+      "document.getElementById('show-unset').click();"
+      "var policyEntry = document.querySelectorAll("
+      "    'section.policy-table-section > * > tbody')[0];"
+      "policyEntry.getElementsByClassName('edit-button')[0].click();"
+      "policyEntry.getElementsByClassName('value-edit-field')[0].value ="
+      "                                                           'test';"
+      "policyEntry.getElementsByClassName('save-button')[0].click();"
+      "document.getElementById('show-unset').click();"
+      "var name = policyEntry.getElementsByClassName('name-column')[0]"
+      "                      .getElementsByTagName('div')[0].textContent;"
+      "domAutomationController.send(name);";
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  std::string name = "";
+  EXPECT_TRUE(
+      content::ExecuteScriptAndExtractString(contents, javascript, &name));
+
   std::unique_ptr<base::Value> values = ExtractPolicyValues(true);
   base::DictionaryValue expected;
-  expected.SetPath({"chromePolicies", "AllowDinosaurEasterEgg", "value"},
-                   base::Value("true"));
-  expected.SetPath({"chromePolicies", "AllowDinosaurEasterEgg", "status"},
-                   base::Value(l10n_util::GetStringUTF8(IDS_POLICY_OK)));
+  expected.SetString("chromePolicies." + name + ".value", "test");
+  expected.SetString("chromePolicies." + name + ".status", "OK");
   EXPECT_EQ(expected, *values);
 
   // Check if the session file is correct.
@@ -311,15 +294,20 @@ IN_PROC_BROWSER_TEST_F(PolicyToolUITest, Editing) {
   values = base::JSONReader::Read(file_contents);
   expected.SetDictionary("extensionPolicies",
                          base::MakeUnique<base::DictionaryValue>());
-  expected.RemovePath({"chromePolicies", "AllowDinosaurEasterEgg", "status"});
+  expected.Remove("chromePolicies." + name + ".status", nullptr);
   EXPECT_EQ(expected, *values);
 
   // Set value of this variable to "", so that it becomes unset.
-  SetPolicyValue("AllowDinosaurEasterEgg", "");
+  javascript =
+      "var policyEntry = document.querySelectorAll("
+      "    'section.policy-table-section > * > tbody')[0];"
+      "policyEntry.getElementsByClassName('edit-button')[0].click();"
+      "policyEntry.getElementsByClassName('value-edit-field')[0].value = '';"
+      "policyEntry.getElementsByClassName('save-button')[0].click();";
+  EXPECT_TRUE(ExecuteScript(contents, javascript));
   values = ExtractPolicyValues(false);
-  expected.RemovePath({"chromePolicies", "AllowDinosaurEasterEgg"});
-  expected.SetKey("chromePolicies", base::DictionaryValue());
-  expected.RemoveKey("extensionPolicies");
+  expected.Remove("chromePolicies." + name, nullptr);
+  expected.Remove("extensionPolicies", nullptr);
   EXPECT_EQ(expected, *values);
 }
 
@@ -411,65 +399,4 @@ IN_PROC_BROWSER_TEST_F(PolicyToolUITest, SessionsList) {
     expected.GetList().push_back(base::Value(base::IntToString(i)));
   }
   EXPECT_EQ(expected, *sessions);
-}
-
-IN_PROC_BROWSER_TEST_F(PolicyToolUITest, SessionTypeValidation) {
-  // Load the page and check that the status is displayed correctly.
-  ui_test_utils::NavigateToURL(browser(), GURL("chrome://policy-tool"));
-
-  // Check that correct stringified boolean value is displayed correctly.
-  SetPolicyValue("AllowDinosaurEasterEgg", "true");
-  std::unique_ptr<base::DictionaryValue> page = ExtractPolicyValues(true);
-  EXPECT_EQ(
-      base::Value(l10n_util::GetStringUTF8(IDS_POLICY_OK)),
-      *page->FindPath({"chromePolicies", "AllowDinosaurEasterEgg", "status"}));
-
-  // Check that a non-boolean value is shown as invalid.
-  SetPolicyValue("AllowDinosaurEasterEgg", "string");
-  page = ExtractPolicyValues(true);
-  EXPECT_EQ(
-      base::Value(l10n_util::GetStringUTF8(IDS_POLICY_TOOL_INVALID_TYPE)),
-      *page->FindPath({"chromePolicies", "AllowDinosaurEasterEgg", "status"}));
-
-  // Check that a list value is parsed correctly.
-  SetPolicyValue("ImagesAllowedForUrls", "[\"a\", \"b\"]");
-  page = ExtractPolicyValues(true);
-  EXPECT_EQ(
-      base::Value(l10n_util::GetStringUTF8(IDS_POLICY_OK)),
-      *page->FindPath({"chromePolicies", "ImagesAllowedForUrls", "status"}));
-
-  // Check that a non-list value is considered invalid for list policy.
-  SetPolicyValue("ImagesAllowedForUrls", "true");
-  page = ExtractPolicyValues(true);
-  EXPECT_EQ(
-      base::Value(l10n_util::GetStringUTF8(IDS_POLICY_TOOL_INVALID_TYPE)),
-      *page->FindPath({"chromePolicies", "ImagesAllowedForUrls", "status"}));
-
-  // Check that a list of elements of wrong types is considered invalid.
-  SetPolicyValue("ImagesAllowedForUrls", "[1, 2]");
-  page = ExtractPolicyValues(true);
-  EXPECT_EQ(
-      base::Value(l10n_util::GetStringUTF8(IDS_POLICY_TOOL_INVALID_TYPE)),
-      *page->FindPath({"chromePolicies", "ImagesAllowedForUrls", "status"}));
-
-  // Check that a malformed list is considered invalid.
-  SetPolicyValue("ImagesAllowedForUrls", "[\"a\"");
-  page = ExtractPolicyValues(true);
-  EXPECT_EQ(
-      base::Value(l10n_util::GetStringUTF8(IDS_POLICY_TOOL_INVALID_TYPE)),
-      *page->FindPath({"chromePolicies", "ImagesAllowedForUrls", "status"}));
-
-  // Check that a dictionary is parsed correctly.
-  SetPolicyValue("ManagedBookmarks",
-                 "[{\"toplevel_name\": \"My managed bookmarks folder\"}, "
-                 "{\"url\": \"google.com\", \"name\": \"Google\"}]");
-  page = ExtractPolicyValues(true);
-  EXPECT_EQ(base::Value(l10n_util::GetStringUTF8(IDS_POLICY_OK)),
-            *page->FindPath({"chromePolicies", "ManagedBookmarks", "status"}));
-
-  // Check that a dictionary with wrong attributes is considered invalid.
-  SetPolicyValue("ManagedBookmarks", "[{\"attribute\": \"value\"}]");
-  page = ExtractPolicyValues(true);
-  EXPECT_EQ(base::Value(l10n_util::GetStringUTF8(IDS_POLICY_TOOL_INVALID_TYPE)),
-            *page->FindPath({"chromePolicies", "ManagedBookmarks", "status"}));
 }
