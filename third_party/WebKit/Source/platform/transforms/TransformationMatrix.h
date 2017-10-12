@@ -150,6 +150,7 @@ class PLATFORM_EXPORT TransformationMatrix {
               m42, m43, m44);
   }
   TransformationMatrix(const SkMatrix44& matrix) {
+    CheckAlignment();
     SetMatrix(
         matrix.get(0, 0), matrix.get(1, 0), matrix.get(2, 0), matrix.get(3, 0),
         matrix.get(0, 1), matrix.get(1, 1), matrix.get(2, 1), matrix.get(3, 1),
