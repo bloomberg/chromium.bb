@@ -22,7 +22,6 @@
 #include "net/base/trace_constants.h"
 
 #if defined(OS_FUCHSIA)
-#include <fcntl.h>
 #include <poll.h>
 #include <sys/ioctl.h>
 #endif  // OS_FUCHSIA
@@ -61,19 +60,6 @@ int MapConnectError(int os_error) {
     }
   }
 }
-
-#if defined(OS_FUCHSIA)
-bool SetBlocking(int fd) {
-  const int flags = fcntl(fd, F_GETFL);
-  if (flags == -1)
-    return false;
-  if ((flags & O_NONBLOCK) == 0)
-    return true;
-  if (fcntl(fd, F_SETFL, flags & ~O_NONBLOCK) == -1)
-    return false;
-  return true;
-}
-#endif  // OS_FUCHSIA
 
 }  // namespace
 
@@ -504,26 +490,9 @@ void SocketPosix::AcceptCompleted() {
 }
 
 int SocketPosix::DoConnect() {
-#if defined(OS_FUCHSIA)
-  // Non-blocking connect() is not fully implemented on Fuchsia, use synchronous
-  // connect to unblock tests.
-  // TODO(https://crbug.com/765720): use non-blocking connect() when it works.
-  if (!SetBlocking(socket_fd_)) {
-    LOG(FATAL) << "Failed to unset O_NONBLOCK";
-  }
-#endif  // OS_FUCHSIA
-
   int rv = HANDLE_EINTR(connect(socket_fd_,
                                 peer_address_->addr,
                                 peer_address_->addr_len));
-
-#if defined(OS_FUCHSIA)
-  // TODO(https://crbug.com/765720): Remove when SetBlocking() is removed.
-  if (!base::SetNonBlocking(socket_fd_)) {
-    LOG(FATAL) << "Failed to set O_NONBLOCK";
-  }
-#endif  // OS_FUCHSIA
-
   DCHECK_GE(0, rv);
   return rv == 0 ? OK : MapConnectError(errno);
 }
