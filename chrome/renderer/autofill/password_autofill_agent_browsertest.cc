@@ -1286,18 +1286,24 @@ TEST_F(PasswordAutofillAgentTest,
   SimulateOnFillPasswordForm(fill_data_);
   // Neither field should have been autocompleted.
   CheckTextFieldsDOMState("user1", false, std::string(), false);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0, fake_driver_.called_show_manual_fallback_for_saving_count());
 
   // Only password field should be autocompleted.
   EXPECT_TRUE(password_autofill_agent_->FillSuggestion(
       password_element_, ASCIIToUTF16(kAliceUsername),
       ASCIIToUTF16(kAlicePassword)));
   CheckTextFieldsDOMState("user1", false, kAlicePassword, true);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, fake_driver_.called_show_manual_fallback_for_saving_count());
 
   // Try Filling with a different password. Only password should be changed.
   EXPECT_TRUE(password_autofill_agent_->FillSuggestion(
       password_element_, ASCIIToUTF16(kBobUsername),
       ASCIIToUTF16(kCarolPassword)));
   CheckTextFieldsDOMState("user1", false, kCarolPassword, true);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(2, fake_driver_.called_show_manual_fallback_for_saving_count());
 }
 
 // Tests that |FillSuggestion| properly fills the password if the username field
