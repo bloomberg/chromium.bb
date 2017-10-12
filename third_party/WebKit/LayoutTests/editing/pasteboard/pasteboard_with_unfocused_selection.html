@@ -44,7 +44,7 @@ test(() => {
 
     const link = selection.document.querySelector('a');
     link.focus();
-    testRunner.execCommand('copy'); // Shouldn't copy 'text'
+    testRunner.execCommand('copy'); // Shouldn still copy 'text'
     const target = selection.document.getElementById('target');
     target.focus();
     testRunner.execCommand('paste');
@@ -53,7 +53,7 @@ test(() => {
   [
     '<div contenteditable>text</div>',
     '<a href="http://www.example.com/">link</a>',
-    '<div contenteditable id="target">foo|</div>'
+    '<div contenteditable id="target">text|</div>'
   ].join(''));
 }, 'Copying with unfocused selection in contenteditable div');
 

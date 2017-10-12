@@ -1161,7 +1161,7 @@ void Editor::Cut(EditorCommandSource source) {
   }
 }
 
-void Editor::Copy(EditorCommandSource source) {
+void Editor::Copy(EditorCommandSource) {
   if (TryDHTMLCopy())
     return;  // DHTML did the whole operation
   if (!CanCopy())
@@ -1172,10 +1172,6 @@ void Editor::Copy(EditorCommandSource source) {
   // |tryDHTMLCopy| dispatches copy event, which may make layout dirty, but
   // we need clean layout to obtain the selected content.
   GetFrame().GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
-
-  if (source == kCommandFromMenuOrKeyBinding &&
-      !GetFrameSelection().SelectionHasFocus())
-    return;
 
   if (EnclosingTextControl(
           GetFrameSelection().ComputeVisibleSelectionInDOMTree().Start())) {
