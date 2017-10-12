@@ -31,7 +31,6 @@
 #include "core/CoreInitializer.h"
 
 #include "bindings/core/v8/ScriptStreamerThread.h"
-#include "core/HTMLTokenizerNames.h"
 #include "core/css/MediaQueryEvaluator.h"
 #include "core/css/StyleChangeReason.h"
 #include "core/css/media_feature_names.h"
@@ -43,6 +42,7 @@
 #include "core/events/EventFactory.h"
 #include "core/html/canvas/CanvasRenderingContextFactory.h"
 #include "core/html_names.h"
+#include "core/html_tokenizer_names.h"
 #include "core/input_mode_names.h"
 #include "core/input_type_names.h"
 #include "core/mathml_names.h"

@@ -970,7 +970,7 @@ make_names("make_core_generated_event_type_names") {
 }
 
 make_names("make_core_generated_html_tokenizer_names") {
-  in_files = [ "html/parser/HTMLTokenizerNames.json5" ]
+  in_files = [ "html/parser/html_tokenizer_names.json5" ]
   output_dir = blink_core_output_dir
 }
 

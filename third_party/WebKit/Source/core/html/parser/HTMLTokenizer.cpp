@@ -27,12 +27,12 @@
 
 #include "core/html/parser/HTMLTokenizer.h"
 
-#include "core/HTMLTokenizerNames.h"
 #include "core/html/parser/HTMLEntityParser.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/parser/HTMLTreeBuilder.h"
 #include "core/html/parser/MarkupTokenizerInlines.h"
 #include "core/html_names.h"
+#include "core/html_tokenizer_names.h"
 #include "platform/wtf/ASCIICType.h"
 #include "platform/wtf/text/Unicode.h"
 
