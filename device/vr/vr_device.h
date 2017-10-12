@@ -67,6 +67,19 @@ class DEVICE_VR_EXPORT VRDevice {
   VRDisplayImpl* presenting_display_ = nullptr;
   VRDisplayImpl* listening_for_activate_diplay_ = nullptr;
 
+  // On Android display activate is triggered after the Device ON flow that
+  // pauses Chrome, which unfocuses the webvr page, which lets us know that that
+  // page is no longer listening to displayActivate. We then have a race between
+  // blink-side getting focus back and letting us know the page is listening for
+  // displayactivate, and the browser sending displayactivate.
+  // We resolve this by remembering which display was last listening for
+  // displayactivate most recently, and sending the activation there so long as
+  // the WebContents it belongs to is focused and nothing has more recently
+  // started listening for displayactivate.
+  // This is safe because if the page is /actually/ not listening for activate
+  // anymore, the displayactivate signal will just be ignored.
+  VRDisplayImpl* last_listening_for_activate_diplay_ = nullptr;
+
   unsigned int id_;
 
   static unsigned int next_id_;
