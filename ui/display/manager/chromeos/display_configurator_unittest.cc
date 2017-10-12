@@ -101,7 +101,7 @@ class TestObserver : public DisplayConfigurator::Observer {
 
 class TestStateController : public DisplayConfigurator::StateController {
  public:
-  TestStateController() : state_(MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED) {}
+  TestStateController() : state_(MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED) {}
   ~TestStateController() override {}
 
   void set_state(MultipleDisplayState state) { state_ = state; }
@@ -416,7 +416,7 @@ TEST_F(DisplayConfiguratorTest, ConnectSecondOutput) {
   // Connect a second output and check that the configurator enters
   // extended mode.
   observer_.Reset();
-  state_controller_.set_state(MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED);
+  state_controller_.set_state(MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED);
   UpdateOutputs(2, true);
 
   EXPECT_EQ(
@@ -462,7 +462,7 @@ TEST_F(DisplayConfiguratorTest, ConnectSecondOutput) {
                     .SetIsAspectPerservingScaling(true)
                     .Build();
 
-  state_controller_.set_state(MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED);
+  state_controller_.set_state(MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED);
   UpdateOutputs(2, true);
   EXPECT_EQ(
       JoinActions(
@@ -478,7 +478,7 @@ TEST_F(DisplayConfiguratorTest, ConnectSecondOutput) {
   observer_.Reset();
   configurator_.SetDisplayMode(MULTIPLE_DISPLAY_STATE_DUAL_MIRROR);
   EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
-  EXPECT_EQ(MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED,
+  EXPECT_EQ(MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED,
             configurator_.display_state());
   EXPECT_TRUE(mirroring_controller_.SoftwareMirroringEnabled());
 
@@ -486,7 +486,7 @@ TEST_F(DisplayConfiguratorTest, ConnectSecondOutput) {
 
   // Setting MULTIPLE_DISPLAY_STATE_DUAL_MIRROR should try to reconfigure.
   observer_.Reset();
-  configurator_.SetDisplayMode(MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED);
+  configurator_.SetDisplayMode(MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED);
   EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
   EXPECT_FALSE(mirroring_controller_.SoftwareMirroringEnabled());
   EXPECT_EQ(1, observer_.num_changes());
@@ -495,7 +495,7 @@ TEST_F(DisplayConfiguratorTest, ConnectSecondOutput) {
   observer_.Reset();
   configurator_.SetDisplayMode(MULTIPLE_DISPLAY_STATE_DUAL_MIRROR);
   EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
-  EXPECT_EQ(MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED,
+  EXPECT_EQ(MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED,
             configurator_.display_state());
   EXPECT_TRUE(mirroring_controller_.SoftwareMirroringEnabled());
   EXPECT_EQ(1, observer_.num_changes());
@@ -604,7 +604,7 @@ TEST_F(DisplayConfiguratorTest, SetDisplayPower) {
               .c_str(),
           nullptr),
       log_->GetActionsAndClear());
-  EXPECT_EQ(MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED,
+  EXPECT_EQ(MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED,
             configurator_.display_state());
   EXPECT_TRUE(mirroring_controller_.SoftwareMirroringEnabled());
   EXPECT_EQ(1, observer_.num_changes());
@@ -647,7 +647,7 @@ TEST_F(DisplayConfiguratorTest, SetDisplayPower) {
               .c_str(),
           nullptr),
       log_->GetActionsAndClear());
-  EXPECT_EQ(MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED,
+  EXPECT_EQ(MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED,
             configurator_.display_state());
   EXPECT_TRUE(mirroring_controller_.SoftwareMirroringEnabled());
   EXPECT_EQ(1, observer_.num_changes());
@@ -669,7 +669,7 @@ TEST_F(DisplayConfiguratorTest, SetDisplayPower) {
               .c_str(),
           nullptr),
       log_->GetActionsAndClear());
-  EXPECT_EQ(MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED,
+  EXPECT_EQ(MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED,
             configurator_.display_state());
   EXPECT_TRUE(mirroring_controller_.SoftwareMirroringEnabled());
   EXPECT_EQ(1, observer_.num_changes());
@@ -870,7 +870,7 @@ TEST_F(DisplayConfiguratorTest, InvalidMultipleDisplayStates) {
   EXPECT_EQ(0, observer_.num_failures());
   configurator_.SetDisplayMode(MULTIPLE_DISPLAY_STATE_SINGLE);
   configurator_.SetDisplayMode(MULTIPLE_DISPLAY_STATE_DUAL_MIRROR);
-  configurator_.SetDisplayMode(MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED);
+  configurator_.SetDisplayMode(MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED);
   EXPECT_EQ(1, observer_.num_changes());
   EXPECT_EQ(3, observer_.num_failures());
 
@@ -883,11 +883,11 @@ TEST_F(DisplayConfiguratorTest, InvalidMultipleDisplayStates) {
   EXPECT_EQ(1, observer_.num_changes());
   EXPECT_EQ(1, observer_.num_failures());
   configurator_.SetDisplayMode(MULTIPLE_DISPLAY_STATE_DUAL_MIRROR);
-  configurator_.SetDisplayMode(MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED);
+  configurator_.SetDisplayMode(MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED);
   EXPECT_EQ(1, observer_.num_changes());
   EXPECT_EQ(3, observer_.num_failures());
 
-  state_controller_.set_state(MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED);
+  state_controller_.set_state(MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED);
   UpdateOutputs(2, true);
   observer_.Reset();
   configurator_.SetDisplayMode(MULTIPLE_DISPLAY_STATE_HEADLESS);
@@ -895,7 +895,7 @@ TEST_F(DisplayConfiguratorTest, InvalidMultipleDisplayStates) {
   EXPECT_EQ(0, observer_.num_changes());
   EXPECT_EQ(2, observer_.num_failures());
   configurator_.SetDisplayMode(MULTIPLE_DISPLAY_STATE_DUAL_MIRROR);
-  configurator_.SetDisplayMode(MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED);
+  configurator_.SetDisplayMode(MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED);
   EXPECT_EQ(2, observer_.num_changes());
   EXPECT_EQ(2, observer_.num_failures());
 }
@@ -1323,7 +1323,7 @@ TEST_F(DisplayConfiguratorTest, HandleConfigureCrtcFailure) {
 // so they can be reused later: http://crosbug.com/p/31571
 TEST_F(DisplayConfiguratorTest, SaveDisplayPowerStateOnConfigFailure) {
   // Start out with two displays in extended mode.
-  state_controller_.set_state(MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED);
+  state_controller_.set_state(MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED);
   Init(false);
   configurator_.ForceInitialConfigure();
   log_->GetActionsAndClear();
@@ -1469,7 +1469,7 @@ TEST_F(DisplayConfiguratorTest, ExternalControl) {
 TEST_F(DisplayConfiguratorTest,
        SetDisplayPowerWhilePendingConfigurationTaskRunning) {
   // Start out with two displays in extended mode.
-  state_controller_.set_state(MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED);
+  state_controller_.set_state(MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED);
   Init(false);
   configurator_.ForceInitialConfigure();
   log_->GetActionsAndClear();
@@ -1527,7 +1527,7 @@ TEST_F(DisplayConfiguratorTest,
 TEST_F(DisplayConfiguratorTest,
        SetDisplayPowerAfterFailedDisplayConfiguration) {
   // Start out with two displays in extended mode.
-  state_controller_.set_state(MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED);
+  state_controller_.set_state(MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED);
   Init(false);
   configurator_.ForceInitialConfigure();
   log_->GetActionsAndClear();
@@ -1603,7 +1603,7 @@ TEST_F(DisplayConfiguratorTest,
 
 TEST_F(DisplayConfiguratorTest, TestWithThreeDisplays) {
   // Start out with two displays in extended mode.
-  state_controller_.set_state(MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED);
+  state_controller_.set_state(MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED);
   Init(false);
   configurator_.ForceInitialConfigure();
   log_->GetActionsAndClear();
@@ -1675,7 +1675,7 @@ TEST_F(DisplayConfiguratorTest, TestWithThreeDisplays) {
 
   // Disconnect the third output.
   observer_.Reset();
-  state_controller_.set_state(MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED);
+  state_controller_.set_state(MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED);
   UpdateOutputs(2, true);
   EXPECT_EQ(
       JoinActions(
@@ -1691,10 +1691,10 @@ TEST_F(DisplayConfiguratorTest, TestWithThreeDisplays) {
 // Tests the suspend and resume behavior when in dual or multi display modes.
 TEST_F(DisplayConfiguratorTest, SuspendResumeWithMultipleDisplays) {
   InitWithSingleOutput();
-  state_controller_.set_state(MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED);
+  state_controller_.set_state(MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED);
   observer_.Reset();
   UpdateOutputs(2, true);
-  EXPECT_EQ(MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED,
+  EXPECT_EQ(MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED,
             configurator_.display_state());
   EXPECT_FALSE(mirroring_controller_.SoftwareMirroringEnabled());
   EXPECT_EQ(1, observer_.num_changes());
@@ -1719,7 +1719,7 @@ TEST_F(DisplayConfiguratorTest, SuspendResumeWithMultipleDisplays) {
   EXPECT_EQ(CALLBACK_SUCCESS, config_waiter_.callback_result());
   EXPECT_EQ(chromeos::DISPLAY_POWER_ALL_OFF,
             configurator_.current_power_state());
-  EXPECT_EQ(MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED,
+  EXPECT_EQ(MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED,
             configurator_.display_state());
   EXPECT_EQ(
       JoinActions(
@@ -1739,7 +1739,7 @@ TEST_F(DisplayConfiguratorTest, SuspendResumeWithMultipleDisplays) {
   EXPECT_EQ(kLongDelay, config_waiter_.Wait());
   EXPECT_EQ(chromeos::DISPLAY_POWER_ALL_ON,
             configurator_.current_power_state());
-  EXPECT_EQ(MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED,
+  EXPECT_EQ(MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED,
             configurator_.display_state());
   EXPECT_EQ(
       JoinActions(
@@ -1756,7 +1756,7 @@ TEST_F(DisplayConfiguratorTest, SuspendResumeWithMultipleDisplays) {
   configurator_.SuspendDisplays(config_waiter_.on_configuration_callback());
   EXPECT_EQ(kNoDelay, config_waiter_.Wait());
   EXPECT_EQ(CALLBACK_SUCCESS, config_waiter_.callback_result());
-  EXPECT_EQ(MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED,
+  EXPECT_EQ(MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED,
             configurator_.display_state());
   EXPECT_EQ(chromeos::DISPLAY_POWER_ALL_OFF,
             configurator_.current_power_state());

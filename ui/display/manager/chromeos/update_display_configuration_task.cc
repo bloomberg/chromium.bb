@@ -117,10 +117,10 @@ void UpdateDisplayConfigurationTask::OnStateEntered(
     bool enable_software_mirroring = false;
     if (!success && new_display_state_ == MULTIPLE_DISPLAY_STATE_DUAL_MIRROR) {
       if (layout_manager_->GetDisplayState() !=
-              MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED ||
+              MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED ||
           layout_manager_->GetPowerState() != new_power_state_ ||
           force_configure_) {
-        new_display_state_ = MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED;
+        new_display_state_ = MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED;
         EnterState(base::Bind(
             &UpdateDisplayConfigurationTask::OnEnableSoftwareMirroring,
             weak_ptr_factory_.GetWeakPtr()));
@@ -128,10 +128,10 @@ void UpdateDisplayConfigurationTask::OnStateEntered(
       }
 
       success = layout_manager_->GetDisplayState() ==
-                MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED;
+                MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED;
       enable_software_mirroring = success;
       if (success)
-        new_display_state_ = MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED;
+        new_display_state_ = MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED;
     }
 
     layout_manager_->GetSoftwareMirroringController()->SetSoftwareMirroring(
@@ -199,7 +199,7 @@ MultipleDisplayState UpdateDisplayConfigurationTask::ChooseDisplayState()
         layout_manager_->GetStateController();
 
     if (!state_controller)
-      return MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED;
+      return MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED;
     return state_controller->GetStateForDisplayIds(cached_displays_);
   }
 

@@ -289,13 +289,8 @@ bool DisplayConfigurator::DisplayLayoutManagerImpl::GetDisplayLayout(
       }
       break;
     }
-    case MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED:
     case MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED: {
-      // In docked mode (with internal display + 2 external displays) the state
-      // will be DUAL_EXTENDED with internal display turned off and the 2
-      // external displays turned on.
-      if (new_display_state == MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED &&
-          states.size() != 2 && num_on_displays != 2) {
+      if (states.size() < 2) {
         LOG(WARNING) << "Ignoring request to enter extended mode with "
                      << states.size() << " connected display(s) and "
                      << num_on_displays << " turned on";
@@ -883,10 +878,10 @@ void DisplayConfigurator::SetDisplayMode(MultipleDisplayState new_state) {
           << MultipleDisplayStateToString(new_state);
   if (current_display_state_ == new_state) {
     // Cancel software mirroring if the state is moving from
-    // MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED to
-    // MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED.
+    // MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED to
+    // MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED.
     if (mirroring_controller_ &&
-        new_state == MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED)
+        new_state == MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED)
       mirroring_controller_->SetSoftwareMirroring(false);
     NotifyDisplayStateObservers(true, new_state);
     return;
@@ -954,7 +949,6 @@ void DisplayConfigurator::ResumeDisplays() {
   displays_suspended_ = false;
 
   if (current_display_state_ == MULTIPLE_DISPLAY_STATE_DUAL_MIRROR ||
-      current_display_state_ == MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED ||
       current_display_state_ == MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED) {
     // When waking up from suspend while being in a multi display mode, we
     // schedule a delayed forced configuration, which will make

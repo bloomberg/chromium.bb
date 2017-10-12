@@ -981,9 +981,9 @@ void DisplayManager::SetMirrorMode(bool mirror) {
 
 #if defined(OS_CHROMEOS)
   if (configure_displays_) {
-    MultipleDisplayState new_state = mirror
-                                         ? MULTIPLE_DISPLAY_STATE_DUAL_MIRROR
-                                         : MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED;
+    MultipleDisplayState new_state =
+        mirror ? MULTIPLE_DISPLAY_STATE_DUAL_MIRROR
+               : MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED;
     delegate_->display_configurator()->SetDisplayMode(new_state);
     return;
   }
