@@ -170,23 +170,25 @@ void TrackerImpl::NotifyEvent(const std::string& event) {
 }
 
 bool TrackerImpl::ShouldTriggerHelpUI(const base::Feature& feature) {
+  FeatureConfig feature_config = configuration_->GetFeatureConfig(feature);
   ConditionValidator::Result result = condition_validator_->MeetsConditions(
-      feature, configuration_->GetFeatureConfig(feature), *event_model_,
-      *availability_model_, time_provider_->GetCurrentDay());
+      feature, feature_config, *event_model_, *availability_model_,
+      time_provider_->GetCurrentDay());
   if (result.NoErrors()) {
     condition_validator_->NotifyIsShowing(
-        feature, configuration_->GetFeatureConfig(feature),
-        configuration_->GetRegisteredFeatures());
-    FeatureConfig feature_config = configuration_->GetFeatureConfig(feature);
+        feature, feature_config, configuration_->GetRegisteredFeatures());
+
     DCHECK_NE("", feature_config.trigger.name);
     event_model_->IncrementEvent(feature_config.trigger.name,
                                  time_provider_->GetCurrentDay());
   }
 
-  stats::RecordShouldTriggerHelpUI(feature, result);
+  stats::RecordShouldTriggerHelpUI(feature, feature_config, result);
   DVLOG(2) << "Trigger result for " << feature.name
-           << ": trigger=" << result.NoErrors() << " " << result;
-  return result.NoErrors();
+           << ": trigger=" << result.NoErrors()
+           << " tracking_only=" << feature_config.tracking_only << " "
+           << result;
+  return result.NoErrors() && !feature_config.tracking_only;
 }
 
 Tracker::TriggerState TrackerImpl::GetTriggerState(

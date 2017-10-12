@@ -140,6 +140,13 @@ struct FeatureConfig {
   // Number of days the in-product help has been available must fit this
   // comparison.
   Comparator availability;
+
+  // Whether this configuration will only be used for tracking and comparisons
+  // between experiment groups. Setting this to true will ensure that
+  // Tracker::ShouldTriggerHelpUI(...) always returns false, but if all
+  // other conditions are met, it will still be recorded as having been
+  // shown in the internal database and through UMA.
+  bool tracking_only;
 };
 
 bool operator==(const FeatureConfig& lhs, const FeatureConfig& rhs);
