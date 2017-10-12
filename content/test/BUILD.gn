@@ -48,6 +48,8 @@ static_library("test_support") {
     "../browser/download/mock_download_item_impl.h",
     "../browser/download/mock_download_job.cc",
     "../browser/download/mock_download_job.h",
+    "../browser/download/slow_download_http_response.cc",
+    "../browser/download/slow_download_http_response.h",
     "../browser/media/session/mock_media_session_observer.cc",
     "../browser/media/session/mock_media_session_observer.h",
     "../browser/service_worker/embedded_worker_test_helper.cc",
