@@ -22,7 +22,7 @@ class MediaControlCastButtonElement final : public MediaControlInputElement {
 
   // TODO(avayvod): replace with the button listening to the state change
   // events.
-  void UpdateDisplayType();
+  void UpdateDisplayType() override;
 
   // MediaControlInputElement overrides.
   bool WillRespondToMouseClickEvents() final;

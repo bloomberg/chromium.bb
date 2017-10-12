@@ -32,6 +32,8 @@ void MediaControlToggleClosedCaptionsButtonElement::UpdateDisplayType() {
   SetDisplayType(captions_visible ? kMediaHideClosedCaptionsButton
                                   : kMediaShowClosedCaptionsButton);
   SetClass("visible", captions_visible);
+
+  MediaControlInputElement::UpdateDisplayType();
 }
 
 WebLocalizedString::Name
