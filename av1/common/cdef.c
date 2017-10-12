@@ -158,7 +158,7 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
                     MACROBLOCKD *xd) {
   int fbr, fbc;
   int nhfb, nvfb;
-  uint16_t src[CDEF_INBUF_SIZE];
+  DECLARE_ALIGNED(16, uint16_t, src[CDEF_INBUF_SIZE]);
   uint16_t *linebuf[3];
   uint16_t *colbuf[3];
   cdef_list dlist[MI_SIZE_64X64 * MI_SIZE_64X64];
@@ -274,7 +274,7 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
       curr_row_cdef[fbc] = 1;
       for (pli = 0; pli < nplanes; pli++) {
 #if !CONFIG_CDEF_SINGLEPASS
-        uint16_t dst[CDEF_BLOCKSIZE * CDEF_BLOCKSIZE];
+        DECLARE_ALIGNED(16, uint16_t, dst[CDEF_BLOCKSIZE * CDEF_BLOCKSIZE]);
 #endif
         int coffset;
         int rend, cend;

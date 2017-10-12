@@ -22,7 +22,7 @@
 
 /* Generated from gen_filter_tables.c. */
 #if !CONFIG_CDEF_SINGLEPASS || CDEF_FULL
-const int cdef_directions[8][3] = {
+DECLARE_ALIGNED(16, const int, cdef_directions[8][3]) = {
   { -1 * CDEF_BSTRIDE + 1, -2 * CDEF_BSTRIDE + 2, -3 * CDEF_BSTRIDE + 3 },
   { 0 * CDEF_BSTRIDE + 1, -1 * CDEF_BSTRIDE + 2, -1 * CDEF_BSTRIDE + 3 },
   { 0 * CDEF_BSTRIDE + 1, 0 * CDEF_BSTRIDE + 2, 0 * CDEF_BSTRIDE + 3 },
@@ -33,7 +33,7 @@ const int cdef_directions[8][3] = {
   { 1 * CDEF_BSTRIDE + 0, 2 * CDEF_BSTRIDE - 1, 3 * CDEF_BSTRIDE - 1 }
 };
 #else
-const int cdef_directions[8][2] = {
+DECLARE_ALIGNED(16, const int, cdef_directions[8][2]) = {
   { -1 * CDEF_BSTRIDE + 1, -2 * CDEF_BSTRIDE + 2 },
   { 0 * CDEF_BSTRIDE + 1, -1 * CDEF_BSTRIDE + 2 },
   { 0 * CDEF_BSTRIDE + 1, 0 * CDEF_BSTRIDE + 2 },
