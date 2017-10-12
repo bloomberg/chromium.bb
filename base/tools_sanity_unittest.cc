@@ -343,7 +343,15 @@ TEST(ToolsSanityTest, AtomicsAreIgnored) {
 }
 
 #if defined(CFI_ENFORCEMENT_TRAP)
+#if defined(OS_WIN)
+#define CFI_ERROR_MSG "EXCEPTION_ILLEGAL_INSTRUCTION"
+#elif defined(OS_ANDROID)
+// TODO(pcc): Produce proper stack dumps on Android and test for the correct
+// si_code here.
+#define CFI_ERROR_MSG "^$"
+#else
 #define CFI_ERROR_MSG "ILL_ILLOPN"
+#endif
 #elif defined(CFI_ENFORCEMENT_DIAGNOSTIC)
 #define CFI_ERROR_MSG "runtime error: control flow integrity check"
 #endif // CFI_ENFORCEMENT_TRAP || CFI_ENFORCEMENT_DIAGNOSTIC
