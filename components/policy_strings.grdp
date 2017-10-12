@@ -252,6 +252,9 @@
   <message name="IDS_POLICY_TOOL_CORRUPTED_FILE" desc="A message that is shown to the user when the session file is corrupted.">
     The file seems to be corrupted. Click the 'Reset' button to reset the session.
   </message>
+  <message name="IDS_POLICY_TOOL_INVALID_TYPE" desc="The text displayed in the status column when the value type doesn't match the actual policy type.">
+    The policy type is invalid.
+  </message>
   <!-- chrome://policy -->
   <message name="IDS_POLICY_TITLE" desc="Page title and the title of the section that lists policies.">
     Policies
