@@ -31,7 +31,7 @@
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/signin/oauth2_token_service_factory.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
-#import "ios/chrome/browser/ui/autofill/autofill_client_ios.h"
+#import "ios/chrome/browser/ui/autofill/chrome_autofill_client_ios.h"
 #import "ios/web/public/web_state/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -75,7 +75,7 @@ using autofill::AutofillPopupDelegate;
             ios::SigninManagerFactory::GetForBrowserState(originalBrowserState),
             OAuth2TokenServiceFactory::GetForBrowserState(originalBrowserState),
             base::Closure()));
-    _autofillClient.reset(new autofill::AutofillClientIOS(
+    _autofillClient.reset(new autofill::ChromeAutofillClientIOS(
         browserState, webState, infobarManager, self, passwordGenerationManager,
         std::move(identityProvider)));
     autofill::AutofillDriverIOS::CreateForWebStateAndDelegate(
