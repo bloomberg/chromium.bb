@@ -219,26 +219,26 @@ def build_internal_scripts_slave(c):
 @config_ctx()
 def master_deps(c):
   s = c.solutions.add()
-  s.name = 'build_internal/master.DEPS'
+  s.name = 'master.DEPS'
   s.url = ('https://chrome-internal.googlesource.com/'
            'chrome/tools/build/master.DEPS.git')
-  c.got_revision_mapping['build_internal/master.DEPS'] = 'got_revision'
+  c.got_revision_mapping['master.DEPS'] = 'got_revision'
 
 @config_ctx()
 def slave_deps(c):
   s = c.solutions.add()
-  s.name = 'build_internal/slave.DEPS'
+  s.name = 'slave.DEPS'
   s.url = ('https://chrome-internal.googlesource.com/'
            'chrome/tools/build/slave.DEPS.git')
-  c.got_revision_mapping['build_internal/slave.DEPS'] = 'got_revision'
+  c.got_revision_mapping['slave.DEPS'] = 'got_revision'
 
 @config_ctx()
 def internal_deps(c):
   s = c.solutions.add()
-  s.name = 'build_internal/internal.DEPS'
+  s.name = 'internal.DEPS'
   s.url = ('https://chrome-internal.googlesource.com/'
            'chrome/tools/build/internal.DEPS.git')
-  c.got_revision_mapping['build_internal/internal.DEPS'] = 'got_revision'
+  c.got_revision_mapping['internal.DEPS'] = 'got_revision'
 
 @config_ctx()
 def pdfium(c):
