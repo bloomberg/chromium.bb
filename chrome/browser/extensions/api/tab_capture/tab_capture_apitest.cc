@@ -145,14 +145,8 @@ TEST(TabCaptureCaptureOffscreenTabTest, DetermineInitialSize) {
                 options));
 }
 
-// Flaky on Mac. See https://crbug.com/764464.
-#if defined(OS_MACOSX)
-#define MAYBE_ApiTests DISABLED_ApiTests
-#else
-#define MAYBE_ApiTests ApiTests
-#endif
 // Tests API behaviors, including info queries, and constraints violations.
-IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_ApiTests) {
+IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, ApiTests) {
   AddExtensionToCommandLineWhitelist();
   ASSERT_TRUE(RunExtensionSubtest("tab_capture", "api_tests.html")) << message_;
 }
