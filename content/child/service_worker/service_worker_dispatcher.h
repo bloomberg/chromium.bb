@@ -112,6 +112,8 @@ class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
                          blink::WebServiceWorkerProviderClient* client);
   void RemoveProviderClient(int provider_id);
 
+  blink::WebServiceWorkerProviderClient* GetProviderClient(int provider_id);
+
   // Returns the existing service worker or a newly created one with the given
   // handle reference. Returns nullptr if the given reference is invalid.
   scoped_refptr<WebServiceWorkerImpl> GetOrCreateServiceWorker(
@@ -138,6 +140,11 @@ class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
   // Unlike GetOrCreateThreadSpecificInstance() this doesn't create a new
   // instance if thread-local instance doesn't exist.
   static ServiceWorkerDispatcher* GetThreadSpecificInstance();
+
+  // Assumes that the given object information retains an interprocess handle
+  // reference passed from the browser process, and adopts it.
+  std::unique_ptr<ServiceWorkerHandleReference> Adopt(
+      const ServiceWorkerObjectInfo& info);
 
   base::SingleThreadTaskRunner* main_thread_task_runner() {
     return main_thread_task_runner_.get();
@@ -226,11 +233,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
       WebServiceWorkerRegistrationImpl* registration);
   void RemoveServiceWorkerRegistration(
       int registration_handle_id);
-
-  // Assumes that the given object information retains an interprocess handle
-  // reference passed from the browser process, and adopts it.
-  std::unique_ptr<ServiceWorkerHandleReference> Adopt(
-      const ServiceWorkerObjectInfo& info);
 
   UpdateCallbackMap pending_update_callbacks_;
   UnregistrationCallbackMap pending_unregistration_callbacks_;

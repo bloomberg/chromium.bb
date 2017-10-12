@@ -559,6 +559,13 @@ ServiceWorkerProviderHost::PrepareForCrossSiteTransfer() {
   DCHECK_EQ(kDocumentMainThreadId, render_thread_id_);
   DCHECK_NE(SERVICE_WORKER_PROVIDER_UNKNOWN, info_.type);
 
+  // Clear the controller from the renderer-side provider, since no one knows
+  // what's going to happen until after cross-site transfer finishes.
+  if (controller_) {
+    SendSetControllerServiceWorker(nullptr,
+                                   false /* notify_controllerchange */);
+  }
+
   std::unique_ptr<ServiceWorkerProviderHost> provisional_host =
       base::WrapUnique(new ServiceWorkerProviderHost(
           process_id(),
@@ -570,13 +577,6 @@ ServiceWorkerProviderHost::PrepareForCrossSiteTransfer() {
     DecreaseProcessReference(pattern);
 
   RemoveAllMatchingRegistrations();
-
-  // Clear the controller from the renderer-side provider, since no one knows
-  // what's going to happen until after cross-site transfer finishes.
-  if (controller_) {
-    SendSetControllerServiceWorker(nullptr,
-                                   false /* notify_controllerchange */);
-  }
 
   render_process_id_ = ChildProcessHost::kInvalidUniqueID;
   render_thread_id_ = kInvalidEmbeddedWorkerThreadId;
@@ -881,14 +881,20 @@ void ServiceWorkerProviderHost::SendSetControllerServiceWorker(
     DCHECK_EQ(controller_.get(), version);
   }
 
-  ServiceWorkerMsg_SetControllerServiceWorker_Params params;
-  params.thread_id = render_thread_id_;
-  params.provider_id = provider_id();
-  params.object_info = GetOrCreateServiceWorkerHandle(version);
-  params.should_notify_controllerchange = notify_controllerchange;
-  if (version)
-    params.used_features = version->used_features();
-  Send(new ServiceWorkerMsg_SetControllerServiceWorker(params));
+  std::vector<blink::mojom::WebFeature> used_features;
+  if (version) {
+    for (const auto& feature : version->used_features()) {
+      // TODO: version->used_features() should never have a feature outside the
+      // known feature range. But there is special case, see the details in
+      // crbug.com/758419.
+      if (feature >= 0 &&
+          feature < static_cast<uint32_t>(
+                        blink::mojom::WebFeature::kNumberOfFeatures))
+        used_features.push_back(static_cast<blink::mojom::WebFeature>(feature));
+    }
+  }
+  container_->SetController(GetOrCreateServiceWorkerHandle(version),
+                            used_features, notify_controllerchange);
 }
 
 void ServiceWorkerProviderHost::Register(

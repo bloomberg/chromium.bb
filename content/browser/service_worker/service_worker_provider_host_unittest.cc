@@ -35,17 +35,6 @@ namespace content {
 
 namespace {
 
-// Sets the document URL for |host| and associates it with |registration|.
-// A dumb version of
-// ServiceWorkerControlleeRequestHandler::PrepareForMainResource().
-void SimulateServiceWorkerControlleeRequestHandler(
-    ServiceWorkerProviderHost* host,
-    ServiceWorkerRegistration* registration) {
-  host->SetDocumentUrl(GURL("https://www.example.com/page"));
-  host->AssociateRegistration(registration,
-                              false /* notify_controllerchange */);
-}
-
 const char kServiceWorkerScheme[] = "i-can-use-service-worker";
 
 class ServiceWorkerTestContentClient : public TestContentClient {
@@ -372,6 +361,27 @@ TEST_F(ServiceWorkerProviderHostTest, RemoveProvider) {
   EXPECT_FALSE(context_->GetProviderHost(process_id, provider_id));
 }
 
+class MockServiceWorkerContainer : public mojom::ServiceWorkerContainer {
+ public:
+  explicit MockServiceWorkerContainer(
+      mojom::ServiceWorkerContainerAssociatedRequest request)
+      : binding_(this, std::move(request)) {}
+
+  ~MockServiceWorkerContainer() override = default;
+
+  void SetController(const ServiceWorkerObjectInfo& controller,
+                     const std::vector<blink::mojom::WebFeature>& used_features,
+                     bool should_notify_controllerchange) override {
+    was_set_controller_called_ = true;
+  }
+
+  bool was_set_controller_called() const { return was_set_controller_called_; }
+
+ private:
+  bool was_set_controller_called_ = false;
+  mojo::AssociatedBinding<mojom::ServiceWorkerContainer> binding_;
+};
+
 TEST_F(ServiceWorkerProviderHostTest, Controller) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableBrowserSideNavigation);
@@ -385,27 +395,31 @@ TEST_F(ServiceWorkerProviderHostTest, Controller) {
                                      true /* is_parent_frame_secure */);
   remote_endpoints_.emplace_back();
   remote_endpoints_.back().BindWithProviderHostInfo(&info);
+  auto container = base::MakeUnique<MockServiceWorkerContainer>(
+      std::move(*remote_endpoints_.back().client_request()));
 
   // Create an active version and then start the navigation.
   scoped_refptr<ServiceWorkerVersion> version = new ServiceWorkerVersion(
       registration1_.get(), GURL("https://www.example.com/sw.js"),
       1 /* version_id */, helper_->context()->AsWeakPtr());
   registration1_->SetActiveVersion(version);
-  SimulateServiceWorkerControlleeRequestHandler(host.get(),
-                                                registration1_.get());
 
   // Finish the navigation.
+  host->SetDocumentUrl(GURL("https://www.example.com/page"));
   host->CompleteNavigationInitialized(
       helper_->mock_render_process_id(), std::move(info),
       helper_->GetDispatcherHostForProcess(helper_->mock_render_process_id())
           ->AsWeakPtr());
 
+  host->AssociateRegistration(registration1_.get(),
+                              false /* notify_controllerchange */);
+  base::RunLoop().RunUntilIdle();
+
   // The page should be controlled since there was an active version at the
   // time navigation started. The SetController IPC should have been sent.
   EXPECT_TRUE(host->active_version());
   EXPECT_EQ(host->active_version(), host->controller());
-  EXPECT_TRUE(helper_->ipc_sink()->GetUniqueMessageMatching(
-      ServiceWorkerMsg_SetControllerServiceWorker::ID));
+  EXPECT_TRUE(container->was_set_controller_called());
 }
 
 TEST_F(ServiceWorkerProviderHostTest, ActiveIsNotController) {
@@ -421,31 +435,34 @@ TEST_F(ServiceWorkerProviderHostTest, ActiveIsNotController) {
                                      true /* is_parent_frame_secure */);
   remote_endpoints_.emplace_back();
   remote_endpoints_.back().BindWithProviderHostInfo(&info);
+  auto container = base::MakeUnique<MockServiceWorkerContainer>(
+      std::move(*remote_endpoints_.back().client_request()));
 
-  // Associate it with an installing registration then start the navigation.
+  // Create an installing version and then start the navigation.
   scoped_refptr<ServiceWorkerVersion> version = new ServiceWorkerVersion(
       registration1_.get(), GURL("https://www.example.com/sw.js"),
       1 /* version_id */, helper_->context()->AsWeakPtr());
   registration1_->SetInstallingVersion(version);
-  SimulateServiceWorkerControlleeRequestHandler(host.get(),
-                                                registration1_.get());
-
-  // Promote the worker to active while navigation is still happening.
-  registration1_->SetActiveVersion(version);
 
   // Finish the navigation.
+  host->SetDocumentUrl(GURL("https://www.example.com/page"));
   host->CompleteNavigationInitialized(
       helper_->mock_render_process_id(), std::move(info),
       helper_->GetDispatcherHostForProcess(helper_->mock_render_process_id())
           ->AsWeakPtr());
+
+  host->AssociateRegistration(registration1_.get(),
+                              false /* notify_controllerchange */);
+  // Promote the worker to active while navigation is still happening.
+  registration1_->SetActiveVersion(version);
+  base::RunLoop().RunUntilIdle();
 
   // The page should not be controlled since there was no active version at the
   // time navigation started. Furthermore, no SetController IPC should have been
   // sent.
   EXPECT_TRUE(host->active_version());
   EXPECT_FALSE(host->controller());
-  EXPECT_EQ(nullptr, helper_->ipc_sink()->GetFirstMessageMatching(
-                         ServiceWorkerMsg_SetControllerServiceWorker::ID));
+  EXPECT_FALSE(container->was_set_controller_called());
 }
 
 }  // namespace content
