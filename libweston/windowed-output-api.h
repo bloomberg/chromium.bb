@@ -56,23 +56,26 @@ struct weston_windowed_output_api {
 	int (*output_set_size)(struct weston_output *output,
 			       int width, int height);
 
-	/** Create a new windowed output.
+	/** Create a new windowed head.
 	 *
 	 * \param compositor The compositor instance.
-	 * \param name       Desired name for a new output.
+	 * \param name       Desired name for a new head, not NULL.
 	 *
 	 * Returns 0 on success, -1 on failure.
 	 *
-	 * This creates a new output in the backend using this API.
-	 * After this function is ran, the created output should be
-	 * ready for configuration using the output_configure() and
-	 * weston_output_set_{scale,transform}().
+	 * This creates a new head in the backend. The new head will
+	 * be advertised in the compositor's head list and triggers a
+	 * head_changed callback.
 	 *
-	 * An optional name can be assigned to it, so it can be used
-	 * by compositor to configure it. It can't be NULL.
+	 * A new output can be created for the head. The output must be
+	 * configured with output_set_size() and
+	 * weston_output_set_{scale,transform}() before enabling it.
+	 *
+	 * \sa weston_compositor_set_heads_changed_cb(),
+	 * weston_compositor_create_output_with_head()
 	 */
-	int (*output_create)(struct weston_compositor *compositor,
-			     const char *name);
+	int (*create_head)(struct weston_compositor *compositor,
+			   const char *name);
 };
 
 static inline const struct weston_windowed_output_api *
