@@ -26,6 +26,8 @@ void cfl_init(CFL_CTX *cfl, AV1_COMMON *cm) {
   cfl->store_y = 0;
 #if CONFIG_DEBUG
   cfl_clear_sub8x8_val(cfl);
+  cfl->store_counter = 0;
+  cfl->last_compute_counter = 0;
 #endif  // CONFIG_DEBUG
 }
 
@@ -463,16 +465,59 @@ static INLINE void sub8x8_adjust_offset(const CFL_CTX *cfl, int *row_out,
   }
 }
 #if CONFIG_DEBUG
-static INLINE void sub8x8_set_val(CFL_CTX *cfl, int row, int col, int val_high,
-                                  int val_wide) {
-  for (int val_r = 0; val_r < val_high; val_r++) {
-    assert(row + val_r < CFL_SUB8X8_VAL_MI_SIZE);
-    int row_off = (row + val_r) * CFL_SUB8X8_VAL_MI_SIZE;
-    for (int val_c = 0; val_c < val_wide; val_c++) {
-      assert(col + val_c < CFL_SUB8X8_VAL_MI_SIZE);
-      assert(cfl->sub8x8_val[row_off + col + val_c] == 0);
-      cfl->sub8x8_val[row_off + col + val_c]++;
+// Since the chroma surface of sub8x8 block span across multiple luma blocks,
+// this function validates that the reconstructed luma area required to predict
+// the chroma block using CfL has been stored during the previous luma encode.
+//
+//   Issue 1: Chroma intra prediction is not always performed after luma. One
+//   such example is when luma RD cost is really high and the mode decision
+//   algorithm decides to terminate instead of evaluating chroma.
+//
+//   Issue 2: When multiple CfL predictions are computed for a given sub8x8
+//   block. The reconstructed luma that belongs to the non-reference sub8x8
+//   blocks must remain in the buffer (we cannot clear the buffer when we
+//   compute the CfL prediction
+//
+// To resolve these issues, we increment the store_counter on each store. if
+// other sub8x8 blocks have already been coded and the counter corresponds to
+// the previous value they are also set to the current value. If a sub8x8 block
+// is not stored the store_counter won't match which will be detected when the
+// CfL parements are computed.
+static void sub8x8_set_val(CFL_CTX *cfl, int row, int col, TX_SIZE y_tx_size) {
+  const int y_tx_wide_unit = tx_size_wide_unit[y_tx_size];
+  const int y_tx_high_unit = tx_size_high_unit[y_tx_size];
+
+  // How many 4x4 are in tx_size
+  const int y_tx_unit_len = y_tx_wide_unit * y_tx_high_unit;
+  assert(y_tx_unit_len == 1 || y_tx_unit_len == 2 || y_tx_unit_len == 4);
+
+  // Invalidate other counters if (0,0)
+  const int is_first = row + col == 0;
+  cfl->store_counter += is_first ? 2 : 1;
+
+  const int inc =
+      (y_tx_wide_unit >= y_tx_high_unit) ? 1 : CFL_SUB8X8_VAL_MI_SIZE;
+  uint16_t *sub8x8_val = cfl->sub8x8_val + (row * CFL_SUB8X8_VAL_MI_SIZE + col);
+  for (int i = 0; i < y_tx_unit_len; i++) {
+    *sub8x8_val = cfl->store_counter;
+    sub8x8_val += inc;
+  }
+
+  if (!is_first) {
+    const uint16_t prev_store_counter = cfl->store_counter - 1;
+    int found = 0;
+    sub8x8_val = cfl->sub8x8_val;
+    for (int y = 0; y < CFL_SUB8X8_VAL_MI_SIZE; y++) {
+      for (int x = 0; x < CFL_SUB8X8_VAL_MI_SIZE; x++) {
+        if (sub8x8_val[x] == prev_store_counter) {
+          sub8x8_val[x] = cfl->store_counter;
+          found = 1;
+        }
+      }
+      sub8x8_val += CFL_SUB8X8_VAL_MI_SIZE;
     }
+    // Something is wrong if (0,0) is missing
+    assert(found);
   }
 }
 #endif  // CONFIG_DEBUG
@@ -483,15 +528,13 @@ void cfl_store_tx(MACROBLOCKD *const xd, int row, int col, TX_SIZE tx_size,
   struct macroblockd_plane *const pd = &xd->plane[AOM_PLANE_Y];
   uint8_t *dst =
       &pd->dst.buf[(row * pd->dst.stride + col) << tx_size_wide_log2[0]];
-  (void)bsize;
   if (block_size_high[bsize] == 4 || block_size_wide[bsize] == 4) {
     // Only dimensions of size 4 can have an odd offset.
     assert(!((col & 1) && tx_size_wide[tx_size] != 4));
     assert(!((row & 1) && tx_size_high[tx_size] != 4));
     sub8x8_adjust_offset(cfl, &row, &col);
 #if CONFIG_DEBUG
-    sub8x8_set_val(cfl, row, col, tx_size_high_unit[tx_size],
-                   tx_size_wide_unit[tx_size]);
+    sub8x8_set_val(cfl, row, col, tx_size);
 #endif  // CONFIG_DEBUG
   }
   cfl_store(cfl, dst, pd->dst.stride, row, col, tx_size_wide[tx_size],
@@ -507,7 +550,12 @@ void cfl_store_block(MACROBLOCKD *const xd, BLOCK_SIZE bsize, TX_SIZE tx_size) {
   if (block_size_high[bsize] == 4 || block_size_wide[bsize] == 4) {
     sub8x8_adjust_offset(cfl, &row, &col);
 #if CONFIG_DEBUG
-    sub8x8_set_val(cfl, row, col, mi_size_high[bsize], mi_size_wide[bsize]);
+    // Point to the last transform block inside the partition.
+    const int off_row =
+        row + (mi_size_high[bsize] - tx_size_high_unit[tx_size]);
+    const int off_col =
+        col + (mi_size_wide[bsize] - tx_size_wide_unit[tx_size]);
+    sub8x8_set_val(cfl, off_row, off_col, tx_size);
 #endif  // CONFIG_DEBUG
   }
   const int width = max_intra_block_width(xd, bsize, AOM_PLANE_Y, tx_size);
@@ -526,13 +574,24 @@ void cfl_compute_parameters(MACROBLOCKD *const xd, TX_SIZE tx_size) {
   const BLOCK_SIZE plane_bsize = AOMMAX(
       BLOCK_4X4, get_plane_block_size(mbmi->sb_type, &xd->plane[AOM_PLANE_U]));
 #if CONFIG_DEBUG
-  if (mbmi->sb_type < BLOCK_8X8) {
-    for (int val_r = 0; val_r < mi_size_high[mbmi->sb_type]; val_r++) {
-      for (int val_c = 0; val_c < mi_size_wide[mbmi->sb_type]; val_c++) {
-        assert(cfl->sub8x8_val[val_r * CFL_SUB8X8_VAL_MI_SIZE + val_c] == 1);
+  BLOCK_SIZE bsize = mbmi->sb_type;
+  if (block_size_high[bsize] == 4 || block_size_wide[bsize] == 4) {
+    const uint16_t compute_counter = cfl->sub8x8_val[0];
+    assert(compute_counter != cfl->last_compute_counter);
+    bsize = scale_chroma_bsize(bsize, cfl->subsampling_x, cfl->subsampling_y);
+    const int val_wide = mi_size_wide[bsize];
+    const int val_high = mi_size_high[bsize];
+    assert(val_wide <= CFL_SUB8X8_VAL_MI_SIZE);
+    assert(val_high <= CFL_SUB8X8_VAL_MI_SIZE);
+    for (int val_r = 0; val_r < val_high; val_r++) {
+      for (int val_c = 0; val_c < val_wide; val_c++) {
+        // If all counters in the validation buffer are equal then they are all
+        // related to the same chroma reference block.
+        assert(cfl->sub8x8_val[val_r * CFL_SUB8X8_VAL_MI_SIZE + val_c] ==
+               compute_counter);
       }
     }
-    cfl_clear_sub8x8_val(cfl);
+    cfl->last_compute_counter = compute_counter;
   }
 #endif  // CONFIG_DEBUG
   // AOM_PLANE_U is used, but both planes will have the same sizes.
