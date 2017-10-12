@@ -485,12 +485,18 @@ void PasswordManager::ShowManualFallbackForSaving(
   }
   ProvisionallySaveManager(password_form, matched_manager, nullptr);
 
-  DCHECK(provisional_save_manager_);
-  bool is_update = IsPasswordUpdate(*provisional_save_manager_);
+  // Show the fallback if a prompt or a confirmation bubble should be available.
   bool has_generated_password =
       provisional_save_manager_->has_generated_password();
-  client_->ShowManualFallbackForSaving(std::move(provisional_save_manager_),
-                                       has_generated_password, is_update);
+  if (ShouldPromptUserToSavePassword() || has_generated_password) {
+    DCHECK(provisional_save_manager_);
+    bool is_update = IsPasswordUpdate(*provisional_save_manager_);
+    client_->ShowManualFallbackForSaving(std::move(provisional_save_manager_),
+                                         has_generated_password, is_update);
+  } else {
+    provisional_save_manager_.reset();
+    HideManualFallbackForSaving();
+  }
 }
 
 void PasswordManager::HideManualFallbackForSaving() {
