@@ -500,10 +500,10 @@ void CastMediaSinkServiceImpl::OnChannelOpenSucceeded(
   auto& ip_endpoint = cast_sink.cast_data().ip_endpoint;
   auto sink_it = current_sinks_map_.find(ip_endpoint);
   if (sink_it == current_sinks_map_.end()) {
-    metrics_.RecordResolvedFromSource(sink_source);
+    metrics_.RecordCastSinkDiscoverySource(sink_source);
   } else if (sink_it->second.cast_data().discovered_by_dial &&
              !cast_sink.cast_data().discovered_by_dial) {
-    metrics_.RecordResolvedFromSource(SinkSource::kDialMdns);
+    metrics_.RecordCastSinkDiscoverySource(SinkSource::kDialMdns);
   }
   current_sinks_map_[ip_endpoint] = cast_sink;
 
@@ -527,7 +527,7 @@ void CastMediaSinkServiceImpl::OnDialSinkAdded(const MediaSinkInternal& sink) {
   if (base::ContainsKey(current_sinks_map_, ip_endpoint)) {
     DVLOG(2) << "Sink discovered by mDNS, skip adding [name]: "
              << sink.sink().name();
-    metrics_.RecordResolvedFromSource(SinkSource::kMdnsDial);
+    metrics_.RecordCastSinkDiscoverySource(SinkSource::kMdnsDial);
     return;
   }
 

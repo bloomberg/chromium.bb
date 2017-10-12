@@ -80,12 +80,12 @@ class CastDeviceCountMetrics : public DeviceCountMetrics {
   static const char kHistogramCastKnownDeviceCount[];
   static const char kHistogramCastConnectedDeviceCount[];
   static const char kHistogramCastCachedSinksAvailableCount[];
-  static const char kHistogramCastCachedSinkResolved[];
+  static const char kHistogramCastDiscoverySinkSource[];
 
   void RecordDeviceCounts(size_t available_device_count,
                           size_t known_device_count) override;
   void RecordCachedSinksAvailableCount(size_t cached_sink_count);
-  void RecordResolvedFromSource(SinkSource sink_source);
+  void RecordCastSinkDiscoverySource(SinkSource sink_source);
 };
 
 class CastAnalytics {

@@ -199,7 +199,7 @@ TEST_F(CastMediaSinkServiceImplTest, TestMultipleOnChannelOpenSucceeded) {
       cast_sink2, &socket2, CastMediaSinkServiceImpl::SinkSource::kMdns);
   EXPECT_THAT(
       tester.GetAllSamples(
-          CastDeviceCountMetrics::kHistogramCastCachedSinkResolved),
+          CastDeviceCountMetrics::kHistogramCastDiscoverySinkSource),
       ElementsAre(Bucket(
           static_cast<int>(CastMediaSinkServiceImpl::SinkSource::kMdns), 1)));
 
@@ -207,7 +207,7 @@ TEST_F(CastMediaSinkServiceImplTest, TestMultipleOnChannelOpenSucceeded) {
       cast_sink3, &socket3, CastMediaSinkServiceImpl::SinkSource::kDial);
   EXPECT_THAT(
       tester.GetAllSamples(
-          CastDeviceCountMetrics::kHistogramCastCachedSinkResolved),
+          CastDeviceCountMetrics::kHistogramCastDiscoverySinkSource),
       ElementsAre(
           Bucket(static_cast<int>(CastMediaSinkServiceImpl::SinkSource::kMdns),
                  1),
@@ -220,7 +220,7 @@ TEST_F(CastMediaSinkServiceImplTest, TestMultipleOnChannelOpenSucceeded) {
       cast_sink3, &socket3, CastMediaSinkServiceImpl::SinkSource::kMdns);
   EXPECT_THAT(
       tester.GetAllSamples(
-          CastDeviceCountMetrics::kHistogramCastCachedSinkResolved),
+          CastDeviceCountMetrics::kHistogramCastDiscoverySinkSource),
       ElementsAre(
           Bucket(static_cast<int>(CastMediaSinkServiceImpl::SinkSource::kMdns),
                  1),
