@@ -155,6 +155,17 @@ void CastMediaSinkService::Stop() {
   cast_media_sink_service_impl_.reset();
 }
 
+void CastMediaSinkService::ForceSinkDiscoveryCallback() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (!cast_media_sink_service_impl_)
+    return;
+
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&CastMediaSinkServiceImpl::ForceSinkDiscoveryCallback,
+                     cast_media_sink_service_impl_->AsWeakPtr()));
+}
+
 void CastMediaSinkService::SetDnsSdRegistryForTest(DnsSdRegistry* registry) {
   DCHECK(!dns_sd_registry_);
   dns_sd_registry_ = registry;

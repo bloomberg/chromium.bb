@@ -53,6 +53,7 @@ class CastMediaSinkService
   // MediaSinkService implementation
   void Start() override;
   void Stop() override;
+  void ForceSinkDiscoveryCallback() override;
 
   void SetDnsSdRegistryForTest(DnsSdRegistry* registry);
 

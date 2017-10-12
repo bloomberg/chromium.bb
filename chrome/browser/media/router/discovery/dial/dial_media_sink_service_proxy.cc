@@ -39,6 +39,17 @@ void DialMediaSinkServiceProxy::Stop() {
       base::BindOnce(&DialMediaSinkServiceProxy::StopOnIOThread, this));
 }
 
+void DialMediaSinkServiceProxy::ForceSinkDiscoveryCallback() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!dial_media_sink_service_)
+    return;
+
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&DialMediaSinkServiceImpl::ForceSinkDiscoveryCallback,
+                     dial_media_sink_service_->AsWeakPtr()));
+}
+
 void DialMediaSinkServiceProxy::SetObserver(
     DialMediaSinkServiceObserver* observer) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

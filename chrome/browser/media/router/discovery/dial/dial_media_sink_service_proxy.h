@@ -51,6 +51,8 @@ class DialMediaSinkServiceProxy
   // Start() is cleared.
   void Stop() override;
 
+  void ForceSinkDiscoveryCallback() override;
+
   // Does not take ownership of |observer|. Caller should make sure |observer|
   // object outlives |this|.
   void SetObserver(DialMediaSinkServiceObserver* observer);

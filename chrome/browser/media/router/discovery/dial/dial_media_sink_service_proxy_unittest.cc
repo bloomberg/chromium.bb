@@ -91,4 +91,11 @@ TEST_F(DialMediaSinkServiceProxyTest, TestOnSinksDiscovered) {
   mock_service_->OnSinksDiscovered();
 }
 
+TEST_F(DialMediaSinkServiceProxyTest, TestForceSinkDiscoveryCallback) {
+  EXPECT_CALL(mock_sink_discovered_cb_, Run(_));
+
+  proxy_->ForceSinkDiscoveryCallback();
+  base::RunLoop().RunUntilIdle();
+}
+
 }  // namespace media_router

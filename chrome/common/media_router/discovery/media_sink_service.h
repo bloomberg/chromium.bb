@@ -39,6 +39,9 @@ class MediaSinkService {
   // Stops sink discovery. No-ops if already stopped.
   virtual void Stop() = 0;
 
+  // Forces invoking |sink_discovery_callback_| with |sinks|.
+  virtual void ForceSinkDiscoveryCallback() = 0;
+
  protected:
   OnSinksDiscoveredCallback sink_discovery_callback_;
 

@@ -8,6 +8,7 @@
 #include <memory>
 #include <set>
 
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/media/router/discovery/dial/device_description_service.h"
 #include "chrome/browser/media/router/discovery/dial/dial_registry.h"
 #include "chrome/browser/media/router/discovery/media_sink_discovery_metrics.h"
@@ -32,8 +33,10 @@ class DialMediaSinkServiceObserver {
 // A service which can be used to start background discovery and resolution of
 // DIAL devices (Smart TVs, Game Consoles, etc.).
 // This class is not thread safe. All methods must be called from the IO thread.
-class DialMediaSinkServiceImpl : public MediaSinkServiceBase,
-                                 public DialRegistry::Observer {
+class DialMediaSinkServiceImpl
+    : public MediaSinkServiceBase,
+      public DialRegistry::Observer,
+      public base::SupportsWeakPtr<DialMediaSinkServiceImpl> {
  public:
   DialMediaSinkServiceImpl(const OnSinksDiscoveredCallback& callback,
                            net::URLRequestContextGetter* request_context);
