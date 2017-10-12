@@ -131,7 +131,7 @@ class ReportingService {
   // upload has been done yet.
   base::TimeTicks last_upload_finish_time_;
 
-  base::ThreadChecker thread_checker_;
+  SEQUENCE_CHECKER(sequence_checker_);
 
   // Weak pointers factory used to post task on different threads. All weak
   // pointers managed by this factory have the same lifetime as

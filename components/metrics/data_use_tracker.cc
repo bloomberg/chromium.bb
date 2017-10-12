@@ -48,7 +48,7 @@ void DataUseTracker::RegisterPrefs(PrefRegistrySimple* registry) {
 void DataUseTracker::UpdateMetricsUsagePrefs(const std::string& service_name,
                                              int message_size,
                                              bool is_cellular) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!is_cellular)
     return;
@@ -60,7 +60,7 @@ void DataUseTracker::UpdateMetricsUsagePrefs(const std::string& service_name,
 }
 
 bool DataUseTracker::ShouldUploadLogOnCellular(int log_bytes) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   RemoveExpiredEntries();
 
@@ -89,7 +89,7 @@ bool DataUseTracker::ShouldUploadLogOnCellular(int log_bytes) {
 
 void DataUseTracker::UpdateUsagePref(const std::string& pref_name,
                                      int message_size) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   DictionaryPrefUpdate pref_updater(local_state_, pref_name);
   int todays_traffic = 0;
@@ -102,13 +102,13 @@ void DataUseTracker::UpdateUsagePref(const std::string& pref_name,
 }
 
 void DataUseTracker::RemoveExpiredEntries() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   RemoveExpiredEntriesForPref(prefs::kUmaCellDataUse);
   RemoveExpiredEntriesForPref(prefs::kUserCellDataUse);
 }
 
 void DataUseTracker::RemoveExpiredEntriesForPref(const std::string& pref_name) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   const base::DictionaryValue* user_pref_dict =
       local_state_->GetDictionary(pref_name);
@@ -131,7 +131,7 @@ void DataUseTracker::RemoveExpiredEntriesForPref(const std::string& pref_name) {
 // than latest registered date in perf, we still count that in total use as user
 // actually used that data.
 int DataUseTracker::ComputeTotalDataUse(const std::string& pref_name) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   int total_data_use = 0;
   const base::DictionaryValue* pref_dict =
@@ -146,7 +146,7 @@ int DataUseTracker::ComputeTotalDataUse(const std::string& pref_name) {
 }
 
 bool DataUseTracker::GetUmaWeeklyQuota(int* uma_weekly_quota_bytes) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   std::string param_value_str = variations::GetVariationParamValue(
       "UMA_EnableCellularLogUpload", "Uma_Quota");
@@ -158,7 +158,7 @@ bool DataUseTracker::GetUmaWeeklyQuota(int* uma_weekly_quota_bytes) const {
 }
 
 bool DataUseTracker::GetUmaRatio(double* ratio) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   std::string param_value_str = variations::GetVariationParamValue(
       "UMA_EnableCellularLogUpload", "Uma_Ratio");
@@ -174,7 +174,7 @@ base::Time DataUseTracker::GetCurrentMeasurementDate() const {
 }
 
 std::string DataUseTracker::GetCurrentMeasurementDateAsString() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   base::Time::Exploded today_exploded;
   GetCurrentMeasurementDate().LocalExplode(&today_exploded);
