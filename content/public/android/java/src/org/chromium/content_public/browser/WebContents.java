@@ -108,6 +108,11 @@ public interface WebContents extends Parcelable {
     String getVisibleUrl();
 
     /**
+     * @return The character encoding for the current visible page.
+     */
+    String getEncoding();
+
+    /**
      * @return Whether this WebContents is loading a resource.
      */
     boolean isLoading();
