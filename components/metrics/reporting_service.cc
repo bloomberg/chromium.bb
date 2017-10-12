@@ -32,7 +32,7 @@ ReportingService::ReportingService(MetricsServiceClient* client,
       log_upload_in_progress_(false),
       data_use_tracker_(DataUseTracker::Create(local_state)),
       self_ptr_factory_(this) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(client_);
   DCHECK(local_state);
 }
@@ -42,7 +42,7 @@ ReportingService::~ReportingService() {
 }
 
 void ReportingService::Initialize() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!upload_scheduler_);
   log_store()->LoadPersistedUnsentLogs();
   base::Closure send_next_log_callback = base::Bind(
@@ -51,19 +51,19 @@ void ReportingService::Initialize() {
 }
 
 void ReportingService::Start() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (reporting_active_)
     upload_scheduler_->Start();
 }
 
 void ReportingService::Stop() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (upload_scheduler_)
     upload_scheduler_->Stop();
 }
 
 void ReportingService::EnableReporting() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (reporting_active_)
     return;
   reporting_active_ = true;
@@ -71,20 +71,20 @@ void ReportingService::EnableReporting() {
 }
 
 void ReportingService::DisableReporting() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   reporting_active_ = false;
   Stop();
 }
 
 bool ReportingService::reporting_active() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return reporting_active_;
 }
 
 void ReportingService::UpdateMetricsUsagePrefs(const std::string& service_name,
                                                int message_size,
                                                bool is_cellular) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (data_use_tracker_) {
     data_use_tracker_->UpdateMetricsUsagePrefs(service_name, message_size,
                                                is_cellular);
@@ -97,7 +97,7 @@ void ReportingService::UpdateMetricsUsagePrefs(const std::string& service_name,
 
 void ReportingService::SendNextLog() {
   DVLOG(1) << "SendNextLog";
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!last_upload_finish_time_.is_null()) {
     LogActualUploadInterval(base::TimeTicks::Now() - last_upload_finish_time_);
     last_upload_finish_time_ = base::TimeTicks();
@@ -134,7 +134,7 @@ void ReportingService::SendNextLog() {
 }
 
 void ReportingService::SendStagedLog() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(log_store()->has_staged_log());
   if (!log_store()->has_staged_log())
     return;
@@ -157,7 +157,7 @@ void ReportingService::SendStagedLog() {
 
 void ReportingService::OnLogUploadComplete(int response_code, int error_code) {
   DVLOG(1) << "OnLogUploadComplete:" << response_code;
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(log_upload_in_progress_);
   log_upload_in_progress_ = false;
 
