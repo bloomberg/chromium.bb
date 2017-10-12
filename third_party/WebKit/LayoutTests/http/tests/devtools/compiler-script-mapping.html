@@ -59,11 +59,11 @@ function test() {
         SourcesTestRunner.checkUILocation(originalUISourceCode, 1, 200, uiLocation(script, 1, 200));
 
         SourcesTestRunner.checkRawLocation(
-            script, 0, 42, Bindings.debuggerWorkspaceBinding.uiLocationToRawLocation(uiSourceCode1, 3, 10));
+            script, 0, 48, Bindings.debuggerWorkspaceBinding.uiLocationToRawLocation(uiSourceCode1, 3, 10));
         SourcesTestRunner.checkRawLocation(
             script, 1, 85, Bindings.debuggerWorkspaceBinding.uiLocationToRawLocation(uiSourceCode2, 1, 0));
         SourcesTestRunner.checkRawLocation(
-            script, 1, 110, Bindings.debuggerWorkspaceBinding.uiLocationToRawLocation(uiSourceCode2, 5, 2));
+            script, 1, 140, Bindings.debuggerWorkspaceBinding.uiLocationToRawLocation(uiSourceCode2, 5, 2));
 
         TestRunner.addResult('Location checks passed. Requesting content');
         uiSourceCode1.requestContent().then(didRequestContent1);
