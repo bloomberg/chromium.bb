@@ -49,15 +49,6 @@ Polymer({
      */
     type: String,
 
-    /**
-     * The name of the network being configured.
-     * @private
-     */
-    name: {
-      type: String,
-      notify: true,
-    },
-
     /** @private */
     enableConnect: {
       type: String,
@@ -307,10 +298,10 @@ Polymer({
 
   /**
    * Listener function for chrome.networkingPrivate.onCertificateListsChanged.
-   * @type {function()}
+   * @type {?function()}
    * @private
    */
-  certificateListsChangedListener_: function() {},
+  certificateListsChangedListener_: null,
 
   /** @override */
   attached: function() {
@@ -322,12 +313,16 @@ Polymer({
 
   /** @override */
   detached: function() {
-    this.networkingPrivate.onNetworksChanged.removeListener(
+    assert(this.certificateListsChangedListener_);
+    this.networkingPrivate.onCertificateListsChanged.removeListener(
         this.certificateListsChangedListener_);
+    this.certificateListsChangedListener_ = null;
   },
 
   init: function() {
     this.propertiesSent_ = false;
+    this.guid = this.networkProperties.GUID;
+    this.type = this.networkProperties.Type;
     if (this.guid) {
       this.networkingPrivate.getProperties(
           this.guid, this.getPropertiesCallback_.bind(this));
@@ -414,7 +409,6 @@ Polymer({
     }
     this.propertiesReceived_ = true;
     this.networkProperties = properties;
-    this.name = properties.Name || '';
 
     // Set the current shareNetwork_ value when porperties are received.
     var source = properties.Source;

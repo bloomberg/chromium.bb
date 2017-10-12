@@ -4,8 +4,10 @@
 
 /**
  * @fileoverview Fake implementation of chrome.networkingPrivate for testing.
+ *    NOTE: Include "ROOT_PATH + 'ui/webui/resources/js/promise_resolver.js'"
+ *    in any test that uses this.
  */
-cr.define('settings', function() {
+cr.define('chrome', function() {
   /**
    * @constructor
    * @implements {NetworkingPrivate}
@@ -17,9 +19,14 @@ cr.define('settings', function() {
     /** @type {!Array<!CrOnc.NetworkStateProperties>} */
     this.networkStates_ = [];
 
-    /** @type {!{chrome.networkingPrivate.GlobalPolicy}} */
-    this.globalPolicy_ = {};
+    /** @type {!{chrome.networkingPrivate.GlobalPolicy}|undefined} */
+    this.globalPolicy_ = undefined;
 
+    /** @type {!{chrome.networkingPrivate.CertificateLists}|undefined} */
+    this.certificateLists_ = undefined;
+
+    /** @private {!Map<string, !PromiseResolver>} */
+    this.resolverMap_ = new Map();
     this.resetForTest();
   }
 
@@ -38,6 +45,20 @@ cr.define('settings', function() {
       ];
 
       this.globalPolicy_ = {};
+      this.certificateLists_ = {
+        serverCaCertificates: [],
+        userCertificates: [],
+      };
+
+      var methodNames = [
+        'getProperties', 'getProperties', 'getManagedProperties', 'getNetworks',
+        'getDeviceStates', 'enableNetworkType', 'disableNetworkType',
+        'disableNetworkType', 'requestNetworkScan', 'getGlobalPolicy',
+        'getCertificateLists'
+      ];
+      methodNames.forEach((methodName) => {
+        this.resolverMap_.set(methodName, new PromiseResolver());
+      });
     },
 
     /** @param {!Array<!CrOnc.NetworkStateProperties>} network */
@@ -53,16 +74,51 @@ cr.define('settings', function() {
       return this.deviceStates_[type] || null;
     },
 
-    /** @override */
-    getProperties: assertNotReached,
+    /**
+     * @param {string} methodName
+     * @protected
+     */
+    methodCalled(methodName) {
+      this.getResolver_(methodName).resolve();
+    },
+
+    /**
+     * @param {string} methodName
+     * @return {!Promise}
+     */
+    whenCalled(methodName) {
+      return this.getResolver_(methodName).promise;
+    },
+
+    /**
+     * @param {string} methodName
+     * @private
+     */
+    getResolver_(methodName) {
+      let method = this.resolverMap_.get(methodName);
+      assert(!!method, `Method '${methodName}' not found.`);
+      return method;
+    },
+
+    /** NetworkingPrivate implementation */
 
     /** @override */
-    getManagedProperties: function(guid) {
+    getProperties: function(guid, callback) {
+      var result = this.networkStates_.find(function(state) {
+        return state.GUID == guid;
+      });
+      callback(result);
+      this.methodCalled('getProperties');
+    },
+
+    /** @override */
+    getManagedProperties: function(guid, callback) {
       var result = this.networkStates_.find(function(state) {
         return state.GUID == guid;
       });
       // TODO(stevenjb): Convert state to ManagedProperties.
-      return result;
+      callback(result);
+      this.methodCalled('getManagedProperties');
     },
 
     /** @override */
@@ -87,6 +143,7 @@ cr.define('settings', function() {
           return state.Type == type;
         }));
       }
+      this.methodCalled('getNetworks');
     },
 
     /** @override */
@@ -98,22 +155,27 @@ cr.define('settings', function() {
           devices.push(state);
       }.bind(this));
       callback(devices);
+      this.methodCalled('getDeviceStates');
     },
 
     /** @override */
     enableNetworkType: function(type) {
       this.deviceStates_[type].State = 'Enabled';
       this.onDeviceStateListChanged.callListeners();
+      this.methodCalled('enableNetworkType');
     },
 
     /** @override */
     disableNetworkType: function(type) {
       this.deviceStates_[type].State = 'Disabled';
       this.onDeviceStateListChanged.callListeners();
+      this.methodCalled('disableNetworkType');
     },
 
     /** @override */
-    requestNetworkScan: function() {},
+    requestNetworkScan: function() {
+      this.methodCalled('requestNetworkScan');
+    },
 
     /** @override */
     startConnect: assertNotReached,
@@ -154,6 +216,13 @@ cr.define('settings', function() {
     /** @override */
     getGlobalPolicy: function(callback) {
       callback(this.globalPolicy_);
+      this.methodCalled('getGlobalPolicy');
+    },
+
+    /** @override */
+    getCertificateLists: function(callback) {
+      callback(this.certificateLists_);
+      this.methodCalled('getCertificateLists');
     },
 
     /** @type {!FakeChromeEvent} */
@@ -167,6 +236,9 @@ cr.define('settings', function() {
 
     /** @type {!FakeChromeEvent} */
     onPortalDetectionCompleted: new FakeChromeEvent(),
+
+    /** @type {!FakeChromeEvent} */
+    onCertificateListsChanged: new FakeChromeEvent(),
   };
 
   return {FakeNetworkingPrivate: FakeNetworkingPrivate};

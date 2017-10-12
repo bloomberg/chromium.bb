@@ -23,7 +23,7 @@
       <div id="label" class="start">[[label]]</div>
       <paper-input-container no-label-float>
         <input is="iron-input" value="{{value::change}}"
-            disabled="[[disabled]]" aria-labelledby="label"
+            disabled="[[disabled]]" aria-label$="[[label]]"
             type="[[getInputType_(password, showPassword)]]">
       </paper-input-container>
       <template is="dom-if" if="[[password]]">

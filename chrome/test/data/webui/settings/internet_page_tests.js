@@ -40,11 +40,23 @@ suite('Internet', function() {
       vpnNameTemplate: 'vpnNameTemplate',
     };
 
-    api_ = new settings.FakeNetworkingPrivate();
+    api_ = new chrome.FakeNetworkingPrivate();
 
     // Disable animations so sub-pages open within one event loop.
     testing.Test.disableAnimationsAndTransitions();
   });
+
+  function flushAsync() {
+    Polymer.dom.flush();
+    return new Promise(resolve => {
+      internetPage.async(resolve);
+    });
+  };
+
+  function setNetworksForTest(networks) {
+    api_.resetForTest();
+    api_.addNetworksForTest(networks);
+  };
 
   setup(function() {
     PolymerTest.clearBody();
@@ -55,11 +67,19 @@ suite('Internet', function() {
     document.body.appendChild(internetPage);
     networkSummary_ = internetPage.$$('network-summary');
     assertTrue(!!networkSummary_);
-    Polymer.dom.flush();
+    return flushAsync().then(() => {
+      return Promise.all([
+        api_.whenCalled('getNetworks'),
+        api_.whenCalled('getDeviceStates'),
+      ]);
+    });
   });
 
   teardown(function() {
     internetPage.remove();
+    delete internetPage;
+    // Navigating to the details page changes the Route state.
+    settings.resetRouteForTesting();
   });
 
   suite('MainPage', function() {
@@ -75,7 +95,7 @@ suite('Internet', function() {
     });
 
     test('WiFi', function() {
-      api_.addNetworksForTest([
+      setNetworksForTest([
         {GUID: 'wifi1_guid', Name: 'wifi1', Type: 'WiFi'},
         {GUID: 'wifi12_guid', Name: 'wifi2', Type: 'WiFi'},
       ]);
@@ -109,13 +129,9 @@ suite('Internet', function() {
     });
   });
 
-  function callAsync(resolve) {
-    Polymer.Base.async(resolve);
-  };
-
   suite('SubPage', function() {
     test('WiFi', function() {
-      api_.addNetworksForTest([
+      setNetworksForTest([
         {GUID: 'wifi1_guid', Name: 'wifi1', Type: 'WiFi'},
         {GUID: 'wifi12_guid', Name: 'wifi2', Type: 'WiFi'},
       ]);
@@ -124,9 +140,7 @@ suite('Internet', function() {
       var wifi = networkSummary_.$$('#WiFi');
       assertTrue(!!wifi);
       MockInteractions.tap(wifi.$$('button.subpage-arrow'));
-      Polymer.dom.flush();
-      // Allow dom-if templates to resolve.
-      return new Promise(callAsync).then(function() {
+      return flushAsync().then(() => {
         var subpage = internetPage.$$('settings-internet-subpage');
         assertTrue(!!subpage);
         assertEquals(2, subpage.networkStateList_.length);
@@ -140,33 +154,35 @@ suite('Internet', function() {
     });
 
     test('Cellular', function() {
-      api_.addNetworksForTest([
+      setNetworksForTest([
         {GUID: 'cellular1_guid', Name: 'cellular1', Type: 'Cellular'},
       ]);
       api_.enableNetworkType('Cellular');
-      Polymer.dom.flush();
-      // Allow dom-if templates to resolve.
-      return new Promise(callAsync).then(function() {
+      return flushAsync().then(() => {
+        return Promise.all([
+          api_.whenCalled('getNetworks'),
+          api_.whenCalled('getDeviceStates'),
+        ]);
+      }).then(() => {
         var mobile = networkSummary_.$$('#Cellular');
         assertTrue(!!mobile);
         MockInteractions.tap(mobile.$$('button.subpage-arrow'));
-        Polymer.dom.flush();
-        return new Promise(callAsync);
-      }).then(function() {
+        return Promise.all([
+          api_.whenCalled('getManagedProperties'),
+        ]);
+      }).then(() => {
         var detailPage = internetPage.$$('settings-internet-detail-page');
         assertTrue(!!detailPage);
       });
     });
 
     test('Tether', function() {
-      api_.addNetworksForTest([
+      setNetworksForTest([
         {GUID: 'tether1_guid', Name: 'tether1', Type: 'Tether'},
         {GUID: 'tether2_guid', Name: 'tether2', Type: 'Tether'},
       ]);
       api_.enableNetworkType('Tether');
-      Polymer.dom.flush();
-      // Allow dom-if templates to resolve.
-      return new Promise(callAsync).then(function() {
+      return flushAsync().then(() => {
         var mobile = networkSummary_.$$('#Tether');
         assertTrue(!!mobile);
         MockInteractions.tap(mobile.$$('button.subpage-arrow'));
@@ -188,16 +204,14 @@ suite('Internet', function() {
     });
 
     test('Tether plus Cellular', function() {
-      api_.addNetworksForTest([
+      setNetworksForTest([
         {GUID: 'cellular1_guid', Name: 'cellular1', Type: 'Cellular'},
         {GUID: 'tether1_guid', Name: 'tether1', Type: 'Tether'},
         {GUID: 'tether2_guid', Name: 'tether2', Type: 'Tether'},
       ]);
       api_.enableNetworkType('Cellular');
       api_.enableNetworkType('Tether');
-      Polymer.dom.flush();
-      // Allow dom-if templates to resolve.
-      return new Promise(callAsync).then(function() {
+      return flushAsync().then(() => {
         var mobile = networkSummary_.$$('#Cellular');
         assertTrue(!!mobile);
         MockInteractions.tap(mobile.$$('button.subpage-arrow'));
@@ -218,7 +232,7 @@ suite('Internet', function() {
     });
 
     test('VPN', function() {
-      api_.addNetworksForTest([
+      setNetworksForTest([
         {GUID: 'vpn1_guid', Name: 'vpn1', Type: 'VPN'},
         {GUID: 'vpn2_guid', Name: 'vpn1', Type: 'VPN'},
         {
@@ -250,9 +264,7 @@ suite('Internet', function() {
         },
       ]);
       api_.onNetworkListChanged.callListeners();
-      Polymer.dom.flush();
-      // Allow dom-if templates to resolve.
-      Polymer.Base.async(function() {
+      return flushAsync().then(() => {
         var vpn = networkSummary_.$$('#VPN');
         assertTrue(!!vpn);
         MockInteractions.tap(vpn.$$('button.subpage-arrow'));

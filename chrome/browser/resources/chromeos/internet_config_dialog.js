@@ -29,21 +29,6 @@ Polymer({
      */
     guid_: String,
 
-    /**
-     * The type of network being configured.
-     * @private {!chrome.networkingPrivate.NetworkType}
-     */
-    type_: String,
-
-    /**
-     * The name of the network being configured (set by network-config).
-     * @private
-     */
-    name_: {
-      type: String,
-      value: '',
-    },
-
     /** @private */
     enableConnect_: String,
 
@@ -51,9 +36,10 @@ Polymer({
     enableSave_: String,
 
     /**
-     * The current properties for an existing network, or a minimal subset when
-     * a new network is being configured.
-     * @type {!chrome.networkingPrivate.NetworkProperties|undefined}
+     * The current properties if an existing network is being configured, or
+     * a minimal subset for a new network. Note: network-config may modify
+     * this (specifically .name).
+     * @type {!chrome.networkingPrivate.NetworkProperties}
      */
     networkProperties_: Object,
   },
@@ -63,15 +49,14 @@ Polymer({
     var dialogArgs = chrome.getVariableValue('dialogArguments');
     assert(dialogArgs);
     var args = JSON.parse(dialogArgs);
-    this.type_ =
-        /** @type {chrome.networkingPrivate.NetworkType} */ (args.type);
-    assert(this.type_);
+    var type = /** @type {chrome.networkingPrivate.NetworkType} */ (args.type);
+    assert(type);
     this.guid_ = args.guid || '';
 
     this.networkProperties_ = {
       GUID: this.guid_,
-      Name: this.name_,
-      Type: this.type_,
+      Name: '',
+      Type: type,
     };
 
     this.$.networkConfig.init();
@@ -87,7 +72,8 @@ Polymer({
    * @private
    */
   getTitle_: function() {
-    return this.name_ || this.i18n('OncType' + this.type_);
+    return this.networkProperties_.Name ||
+        this.i18n('OncType' + this.networkProperties_.Type);
   },
 
   /** @private */

@@ -74,7 +74,7 @@ Polymer({
     var oncKey = 'Onc' + prefix.replace(/\./g, '-') + '_' + key;
     if (this.i18nExists(oncKey))
       return this.i18n(oncKey);
-    assertNotReached();
+    assertNotReached('ONC Key not found: ' + oncKey);
     return key;
   },
 
