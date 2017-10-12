@@ -378,6 +378,8 @@ int ProofVerifierChromium::Job::DoVerifyCert(int result) {
 }
 
 int ProofVerifierChromium::Job::DoVerifyCertComplete(int result) {
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicSession.CertVerificationResult",
+                              -result);
   cert_verifier_request_.reset();
 
   const CertVerifyResult& cert_verify_result =

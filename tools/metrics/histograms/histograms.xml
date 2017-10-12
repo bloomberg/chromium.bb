@@ -42763,6 +42763,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicSession.CertVerificationResult" enum="NetErrorCodes">
+  <owner>rch@chromium.org</owner>
+  <summary>
+    The network error code returned to a QUIC session from the CertVerifier when
+    a certification verification is attempted.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicSession.CertVerifierJob.CompleteTime"
     units="Milliseconds">
   <owner>rch@chromium.org</owner>
