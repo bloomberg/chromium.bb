@@ -6,6 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_macros.h"
 #include "components/safe_browsing/db/util.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "content/public/browser/navigation_handle.h"
@@ -26,6 +27,12 @@ constexpr char kWarnNewWindowMessage[] =
     "Chrome might start preventing this site from opening new tabs or windows "
     "in the future. Learn more at "
     "https://www.chromestatus.com/feature/5243055179300864";
+
+void LogAction(SafeBrowsingTriggeredPopupBlocker::Action action) {
+  UMA_HISTOGRAM_ENUMERATION("ContentSettings.Popups.StrongBlockerActions",
+                            action,
+                            SafeBrowsingTriggeredPopupBlocker::Action::kCount);
+}
 
 }  // namespace
 
@@ -54,6 +61,7 @@ SafeBrowsingTriggeredPopupBlocker::SafeBrowsingTriggeredPopupBlocker(
 
 bool SafeBrowsingTriggeredPopupBlocker::ShouldApplyStrongPopupBlocker(
     const content::OpenURLParams* open_url_params) {
+  LogAction(Action::kConsidered);
   if (!is_triggered_for_current_committed_load_)
     return false;
 
@@ -71,6 +79,7 @@ bool SafeBrowsingTriggeredPopupBlocker::ShouldApplyStrongPopupBlocker(
 
   // TODO(csharrison): Migrate SubresourceFilter* popup metrics.
   if (should_block) {
+    LogAction(Action::kBlocked);
     web_contents()->GetMainFrame()->AddMessageToConsole(
         content::CONSOLE_MESSAGE_LEVEL_ERROR, kDisallowNewWindowMessage);
   }
@@ -91,19 +100,20 @@ void SafeBrowsingTriggeredPopupBlocker::DidFinishNavigation(
     return;
   }
 
-  if (navigation_handle->IsErrorPage()) {
-    is_triggered_for_current_committed_load_ = false;
+  is_triggered_for_current_committed_load_ = false;
+  if (navigation_handle->IsErrorPage())
     return;
-  }
 
   // Log a warning only if we've matched a warn-only safe browsing list.
-  if (level == SubresourceFilterLevel::WARN) {
+  if (level == SubresourceFilterLevel::ENFORCE) {
+    is_triggered_for_current_committed_load_ = true;
+    LogAction(Action::kEnforcedSite);
+  } else if (level == SubresourceFilterLevel::WARN) {
     web_contents()->GetMainFrame()->AddMessageToConsole(
         content::CONSOLE_MESSAGE_LEVEL_WARNING, kWarnNewWindowMessage);
+    LogAction(Action::kWarningSite);
   }
-
-  is_triggered_for_current_committed_load_ =
-      level == SubresourceFilterLevel::ENFORCE;
+  LogAction(Action::kNavigation);
 }
 
 // This method will always be called before the DidFinishNavigation associated

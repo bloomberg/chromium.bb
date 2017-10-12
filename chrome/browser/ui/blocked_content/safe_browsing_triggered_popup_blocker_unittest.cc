@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
 #include "chrome/browser/subresource_filter/chrome_subresource_filter_client.h"
@@ -236,4 +237,62 @@ TEST_F(SafeBrowsingTriggeredPopupBlockerTest,
   content::NavigationSimulator::NavigateAndFailFromDocument(
       fail_url, net::ERR_CONNECTION_RESET, main_rfh());
   EXPECT_FALSE(popup_blocker()->ShouldApplyStrongPopupBlocker(nullptr));
+}
+
+TEST_F(SafeBrowsingTriggeredPopupBlockerTest, LogActions) {
+  base::HistogramTester histogram_tester;
+  const char kActionHistogram[] = "ContentSettings.Popups.StrongBlockerActions";
+  int total_count = 0;
+  // Call this when a new histogram entry is logged. Call it multiple times if
+  // multiple entries are logged.
+  auto check_histogram = [&](SafeBrowsingTriggeredPopupBlocker::Action action,
+                             int expected_count) {
+    histogram_tester.ExpectBucketCount(
+        kActionHistogram, static_cast<int>(action), expected_count);
+    total_count++;
+  };
+
+  const GURL url_enforce("https://example.enforce/");
+  const GURL url_warn("https://example.warn/");
+  const GURL url_nothing("https://example.nothing/");
+  MarkUrlAsAbusiveEnforce(url_enforce);
+  MarkUrlAsAbusiveWarning(url_warn);
+
+  // Navigate to an enforce site.
+  NavigateAndCommit(url_enforce);
+  check_histogram(SafeBrowsingTriggeredPopupBlocker::Action::kNavigation, 1);
+  check_histogram(SafeBrowsingTriggeredPopupBlocker::Action::kEnforcedSite, 1);
+  histogram_tester.ExpectTotalCount(kActionHistogram, total_count);
+
+  // Block two popups.
+  EXPECT_TRUE(popup_blocker()->ShouldApplyStrongPopupBlocker(nullptr));
+  check_histogram(SafeBrowsingTriggeredPopupBlocker::Action::kConsidered, 1);
+  check_histogram(SafeBrowsingTriggeredPopupBlocker::Action::kBlocked, 1);
+  histogram_tester.ExpectTotalCount(kActionHistogram, total_count);
+
+  EXPECT_TRUE(popup_blocker()->ShouldApplyStrongPopupBlocker(nullptr));
+  check_histogram(SafeBrowsingTriggeredPopupBlocker::Action::kConsidered, 2);
+  check_histogram(SafeBrowsingTriggeredPopupBlocker::Action::kBlocked, 2);
+  histogram_tester.ExpectTotalCount(kActionHistogram, total_count);
+
+  // Navigate to a warn site.
+  NavigateAndCommit(url_warn);
+  check_histogram(SafeBrowsingTriggeredPopupBlocker::Action::kNavigation, 2);
+  check_histogram(SafeBrowsingTriggeredPopupBlocker::Action::kWarningSite, 1);
+  histogram_tester.ExpectTotalCount(kActionHistogram, total_count);
+
+  // Let one popup through.
+  EXPECT_FALSE(popup_blocker()->ShouldApplyStrongPopupBlocker(nullptr));
+  check_histogram(SafeBrowsingTriggeredPopupBlocker::Action::kConsidered, 3);
+  histogram_tester.ExpectTotalCount(kActionHistogram, total_count);
+
+  // Navigate to a site not matched in Safe Browsing.
+  NavigateAndCommit(url_nothing);
+  check_histogram(SafeBrowsingTriggeredPopupBlocker::Action::kNavigation, 3);
+  histogram_tester.ExpectTotalCount(kActionHistogram, total_count);
+
+  // Let one popup through.
+  EXPECT_FALSE(popup_blocker()->ShouldApplyStrongPopupBlocker(nullptr));
+  check_histogram(SafeBrowsingTriggeredPopupBlocker::Action::kConsidered, 4);
+  histogram_tester.ExpectTotalCount(kActionHistogram, total_count);
 }
