@@ -49,8 +49,8 @@ constexpr int kInkDropLargeSize = 60;
 constexpr int kIconPaddingHorizontal = 7;
 constexpr int kIconPaddingVertical = 8;
 
-// The time threshold before an item can be dragged by touch events.
-constexpr int kTouchDragTimeThresholdMs = 300;
+// The time threshold before an item can be dragged.
+constexpr int kDragTimeThresholdMs = 300;
 
 // The drag and drop app icon should get scaled by this factor.
 constexpr float kAppIconScale = 1.2f;
@@ -297,7 +297,7 @@ void ShelfButton::AddState(State state) {
     if (state & STATE_ATTENTION)
       indicator_->ShowAttention(true);
 
-    if (state & STATE_TOUCH_DRAGGING)
+    if (state & STATE_DRAGGING)
       ScaleAppIcon(true);
   }
 }
@@ -309,7 +309,7 @@ void ShelfButton::ClearState(State state) {
     if (state & STATE_ATTENTION)
       indicator_->ShowAttention(false);
 
-    if (state & STATE_TOUCH_DRAGGING)
+    if (state & STATE_DRAGGING)
       ScaleAppIcon(false);
   }
 }
@@ -352,12 +352,17 @@ const char* ShelfButton::GetClassName() const {
 bool ShelfButton::OnMousePressed(const ui::MouseEvent& event) {
   Button::OnMousePressed(event);
   shelf_view_->PointerPressedOnButton(this, ShelfView::MOUSE, event);
+  drag_timer_.Start(
+      FROM_HERE, base::TimeDelta::FromMilliseconds(kDragTimeThresholdMs),
+      base::Bind(&ShelfButton::OnTouchDragTimer, base::Unretained(this)));
   return true;
 }
 
 void ShelfButton::OnMouseReleased(const ui::MouseEvent& event) {
   Button::OnMouseReleased(event);
   shelf_view_->PointerReleasedOnButton(this, ShelfView::MOUSE, false);
+  drag_timer_.Stop();
+  ClearState(STATE_DRAGGING);
 }
 
 void ShelfButton::OnMouseCaptureLost() {
@@ -461,35 +466,34 @@ void ShelfButton::OnGestureEvent(ui::GestureEvent* event) {
   switch (event->type()) {
     case ui::ET_GESTURE_TAP_DOWN:
       AddState(STATE_HOVERED);
-      touch_drag_timer_.Start(
-          FROM_HERE,
-          base::TimeDelta::FromMilliseconds(kTouchDragTimeThresholdMs),
+      drag_timer_.Start(
+          FROM_HERE, base::TimeDelta::FromMilliseconds(kDragTimeThresholdMs),
           base::Bind(&ShelfButton::OnTouchDragTimer, base::Unretained(this)));
       event->SetHandled();
       break;
     case ui::ET_GESTURE_END:
-      touch_drag_timer_.Stop();
+      drag_timer_.Stop();
       ClearState(STATE_HOVERED);
-      ClearState(STATE_TOUCH_DRAGGING);
+      ClearState(STATE_DRAGGING);
       break;
     case ui::ET_GESTURE_SCROLL_BEGIN:
-      if (state_ & STATE_TOUCH_DRAGGING) {
+      if (state_ & STATE_DRAGGING) {
         shelf_view_->PointerPressedOnButton(this, ShelfView::TOUCH, *event);
         event->SetHandled();
       } else {
-        touch_drag_timer_.Stop();
+        drag_timer_.Stop();
       }
       break;
     case ui::ET_GESTURE_SCROLL_UPDATE:
-      if ((state_ & STATE_TOUCH_DRAGGING) && shelf_view_->IsDraggedView(this)) {
+      if ((state_ & STATE_DRAGGING) && shelf_view_->IsDraggedView(this)) {
         shelf_view_->PointerDraggedOnButton(this, ShelfView::TOUCH, *event);
         event->SetHandled();
       }
       break;
     case ui::ET_GESTURE_SCROLL_END:
     case ui::ET_SCROLL_FLING_START:
-      if (state_ & STATE_TOUCH_DRAGGING) {
-        ClearState(STATE_TOUCH_DRAGGING);
+      if (state_ & STATE_DRAGGING) {
+        ClearState(STATE_DRAGGING);
         shelf_view_->PointerReleasedOnButton(this, ShelfView::TOUCH, false);
         event->SetHandled();
       }
@@ -552,7 +556,7 @@ void ShelfButton::UpdateState() {
 }
 
 void ShelfButton::OnTouchDragTimer() {
-  AddState(STATE_TOUCH_DRAGGING);
+  AddState(STATE_DRAGGING);
 }
 
 void ShelfButton::ScaleAppIcon(bool scale_up) {

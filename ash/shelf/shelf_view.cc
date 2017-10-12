@@ -1821,12 +1821,10 @@ void ShelfView::ShowMenu(std::unique_ptr<ui::MenuModel> menu_model,
     run_types |=
         views::MenuRunner::CONTEXT_MENU | views::MenuRunner::FIXED_ANCHOR;
 
-  // Selected shelf items with context menu opened can only be dragged if the
-  // shelf is not in auto-hide.
+  // Only selected shelf items with context menu opened can be dragged.
   const ShelfItem* item = ShelfItemForView(source);
   if (context_menu && item && item->type != TYPE_APP_LIST &&
-      source_type == ui::MenuSourceType::MENU_SOURCE_TOUCH &&
-      shelf()->auto_hide_behavior() == SHELF_AUTO_HIDE_BEHAVIOR_NEVER) {
+      source_type == ui::MenuSourceType::MENU_SOURCE_TOUCH) {
     run_types |= views::MenuRunner::SEND_GESTURE_EVENTS_TO_OWNER;
   }
 
