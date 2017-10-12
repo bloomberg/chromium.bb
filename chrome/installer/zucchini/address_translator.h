@@ -50,7 +50,12 @@ namespace zucchini {
 // ranges and create "fake" units to accommodate dangling RVAs. Then
 // AddressTranslator can be simplified.
 
-// Virtual Address relative to some base address (RVA).
+// Virtual Address relative to some base address (RVA). There's distinction
+// between "valid RVA" and "existent RVA":
+// - Valid RVA: An RVA that's reasonably small, i.e., below |kRvaBound|.
+// - Existent RVA: An RVA that has semantic meaning in an image, and may
+//   translate to an offset in an image or (if a dangling RVA) a fake offset.
+//   All existent RVAs are valid RVAs.
 using rva_t = uint32_t;
 // Divide by 2 to match |kOffsetBound|.
 constexpr rva_t kRvaBound = static_cast<rva_t>(-1) / 2;
@@ -157,14 +162,8 @@ class AddressTranslator {
   rva_t OffsetToRva(offset_t offset) const;
 
   // Returns the (possibly fake) offset corresponding to |rva|, or
-  // kInvalidOffset if not found.
+  // kInvalidOffset if not found (i.e., |rva| is non-existent).
   offset_t RvaToOffset(rva_t rva) const;
-
-  // Returns whether a given |rva| is represented.
-  bool IsValidRva(rva_t rva) const;
-
-  // There is no IsValidOffset(): Check for regular offsets is merely comparing
-  // against image size; and fake offset check is not needed outside this class.
 
   // For testing.
   offset_t fake_offset_begin() const { return fake_offset_begin_; }

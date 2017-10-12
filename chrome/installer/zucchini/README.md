@@ -30,7 +30,7 @@ a fallback method of directly downloading "new" in case of patching failure.
 
 **Element**: A region in a file with associated executable type, represented by
 the tuple (exe_type, offset, length). Every Element in new file is associated
-with an Element in old file and patched independantly.
+with an Element in old file and patched independently.
 
 **Reference**: A directed connection between two offsets in a binary. For
 example, consider jump instructions in x86:
@@ -39,21 +39,31 @@ example, consider jump instructions in x86:
 
 Here, the 4 bytes `[3D 00 00 00]` starting at address `00401001` point to
 address `00401042` in memory. This forms a reference from `offset(00401001)`
-(length `4`) to `offset(00401042)`, where `offset(addr)` indicates the disk
-offset corresponding to `addr`.
+(length 4) to `offset(00401042)`, where `offset(addr)` indicates the disk
+offset corresponding to `addr`. A reference has a location, length (implicitly
+determined by reference type), body, and target.
 
 **Location**: The starting offset of bytes that store a reference. In the
-preceding example, `offset(00401001)` is a location. Each location is associated
-with a span of bytes that encodes reference data.
+preceding example, `offset(00401001)` is a location. Each location is the
+beginning of a reference body.
+
+**Body**: The span of bytes that encodes reference data, i.e.,
+[location, location + length) =
+[location, location + 1, ..., location + length - 1].
+In the preceding example, `length = 4`, so the reference body is
+`[00401001, 00401001 + 4) = [00401001, 00401002, 00401003, 00401004]`.
+All reference bodies in an image must not overlap, and often regions boundaries
+are required to not straddle a reference body.
 
 **Target**: The offset that's the destination of a reference. In the preceding
-example, `offset(00401042)` is a target. Different references can share common
+example, `offset(00401042)` is the target. Different references can share common
 targets. For example, in
 
     00401000: E9 3D 00 00 00     jmp         00401042
     00401005: EB 3B              jmp         00401042
 
-we have two references with different locations, but same target.
+we have two references with different locations and bodies, but same target
+of `00401042`.
 
 Because the bytes that encode a reference depend on its target, and potentially
 on its location, they are more likely to get modified from an old version of a
@@ -76,7 +86,7 @@ relationship. Each reference type belong to exactly one reference pool. Targets
 for references in the same pool are shared.
 
 For example, the following describes two pools defined for Dalvik Executable
-format (DEX). Both pools spawn mutiple types of references.
+format (DEX). Both pools spawn multiple types of references.
 
 1. Index in string table.
   - From bytecode to string index using 16 bits.
@@ -88,7 +98,7 @@ format (DEX). Both pools spawn mutiple types of references.
 
 Boundaries between different pools can be ambiguous. Having all targets belong
 to the same pool can reduce redundancy, but will use more memory and might
-cause larger corrections to happen, so this is a tradeoff that can be resolved
+cause larger corrections to happen, so this is a trade-off that can be resolved
 with benchmarks.
 
 **Abs32 references**: References whose targets are adjusted by the OS during
