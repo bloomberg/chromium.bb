@@ -3247,8 +3247,8 @@ void PaintLayer::RemoveAncestorOverflowLayer(const PaintLayer* removed_layer) {
     // constrained by the root.
     if (AncestorOverflowLayer()->IsRootLayer() &&
         GetLayoutObject().Style()->HasStickyConstrainedPosition()) {
-      GetLayoutObject().View()->GetFrameView()->RemoveViewportConstrainedObject(
-          GetLayoutObject());
+      if (LocalFrameView* frame_view = GetLayoutObject().GetFrameView())
+        frame_view->RemoveViewportConstrainedObject(GetLayoutObject());
     }
 
     if (PaintLayerScrollableArea* ancestor_scrollable_area =
