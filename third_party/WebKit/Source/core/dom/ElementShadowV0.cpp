@@ -64,10 +64,10 @@ inline void DistributionPool::Clear() {
 inline void DistributionPool::PopulateChildren(const ContainerNode& parent) {
   Clear();
   for (Node* child = parent.firstChild(); child; child = child->nextSibling()) {
-    if (IsHTMLSlotElement(child)) {
-      // TODO(hayato): Support re-distribution across v0 and v1 shadow trees
+    // Re-distribution across v0 and v1 shadow trees is not supported
+    if (IsHTMLSlotElement(child))
       continue;
-    }
+
     if (IsActiveV0InsertionPoint(*child)) {
       V0InsertionPoint* insertion_point = ToV0InsertionPoint(child);
       for (size_t i = 0; i < insertion_point->DistributedNodesSize(); ++i)
