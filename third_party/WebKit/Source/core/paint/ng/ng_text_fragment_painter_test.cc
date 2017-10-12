@@ -20,7 +20,10 @@
 
 namespace blink {
 
-using NGTextFragmentPainterTest = PaintControllerPaintTestBase;
+using NGTextFragmentPainterTest = PaintControllerPaintTest;
+INSTANTIATE_TEST_CASE_P(All,
+                        NGTextFragmentPainterTest,
+                        ::testing::Values(0, kRootLayerScrolling));
 
 class EnableLayoutNGForScope {
  public:
@@ -40,7 +43,7 @@ class EnableLayoutNGForScope {
   bool paint_fragments_;
 };
 
-TEST_F(NGTextFragmentPainterTest, TestTextStyle) {
+TEST_P(NGTextFragmentPainterTest, TestTextStyle) {
   EnableLayoutNGForScope enable_layout_ng;
 
   SetBodyInnerHTML(R"HTML(
@@ -50,7 +53,6 @@ TEST_F(NGTextFragmentPainterTest, TestTextStyle) {
     </body>
   )HTML");
 
-  LayoutView& layout_view = *GetDocument().GetLayoutView();
   LayoutObject& container = *GetLayoutObjectByElementId("container");
 
   const LayoutNGBlockFlow& block_flow = ToLayoutNGBlockFlow(container);
@@ -59,6 +61,16 @@ TEST_F(NGTextFragmentPainterTest, TestTextStyle) {
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
   IntRect interest_rect(0, 0, 640, 480);
   Paint(&interest_rect);
+
+  DisplayItemClient* background_client = nullptr;
+  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
+      RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
+    // With SPv1 and RLS, the document background uses the scrolling contents
+    // layer as its DisplayItemClient.
+    background_client = GetLayoutView().Layer()->GraphicsLayerBacking();
+  } else {
+    background_client = &GetLayoutView();
+  }
 
   const NGPaintFragment& root_fragment = *block_flow.PaintFragment();
   EXPECT_EQ(1u, root_fragment.Children().size());
@@ -70,7 +82,7 @@ TEST_F(NGTextFragmentPainterTest, TestTextStyle) {
 
   EXPECT_DISPLAY_LIST(
       RootPaintController().GetDisplayItemList(), 4,
-      TestDisplayItem(layout_view, DisplayItem::kDocumentBackground),
+      TestDisplayItem(*background_client, DisplayItem::kDocumentBackground),
       TestDisplayItem(root_fragment, DisplayItem::kBoxDecorationBackground),
       TestDisplayItem(box_fragment, DisplayItem::kBoxDecorationBackground),
       TestDisplayItem(text_fragment, kForegroundType));
