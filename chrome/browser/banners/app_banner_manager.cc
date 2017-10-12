@@ -170,7 +170,7 @@ bool AppBannerManager::IsWebAppInstalled(
 void AppBannerManager::OnDidGetManifest(const InstallableData& data) {
   UpdateState(State::ACTIVE);
   if (data.error_code != NO_ERROR_DETECTED) {
-    StopWithCode(data.error_code);
+    Stop(data.error_code);
     return;
   }
 
@@ -215,7 +215,7 @@ void AppBannerManager::OnDidPerformInstallableCheck(
     if (data.error_code == NO_MATCHING_SERVICE_WORKER)
       TrackDisplayEvent(DISPLAY_EVENT_LACKS_SERVICE_WORKER);
 
-    StopWithCode(data.error_code);
+    Stop(data.error_code);
     return;
   }
 
@@ -279,7 +279,7 @@ void AppBannerManager::Terminate() {
   if (state_ == State::PENDING_ENGAGEMENT && !has_sufficient_engagement_)
     TrackDisplayEvent(DISPLAY_EVENT_NOT_VISITED_ENOUGH);
 
-  StopWithCode(TerminationCode());
+  Stop(TerminationCode());
 }
 
 InstallableStatusCode AppBannerManager::TerminationCode() const {
@@ -305,7 +305,7 @@ InstallableStatusCode AppBannerManager::TerminationCode() const {
   return NO_ERROR_DETECTED;
 }
 
-void AppBannerManager::StopWithCode(InstallableStatusCode code) {
+void AppBannerManager::Stop(InstallableStatusCode code) {
   if (code != NO_ERROR_DETECTED)
     ReportStatus(web_contents(), code);
 
@@ -519,7 +519,7 @@ bool AppBannerManager::CheckIfShouldShowBanner() {
       default:
         NOTREACHED();
     }
-    StopWithCode(code);
+    Stop(code);
     return false;
   }
   return true;
@@ -587,7 +587,7 @@ void AppBannerManager::ShowBanner() {
 
 void AppBannerManager::DisplayAppBanner(bool user_gesture) {
   if (IsExperimentalAppBannersEnabled() && !user_gesture) {
-    StopWithCode(NO_GESTURE);
+    Stop(NO_GESTURE);
     return;
   }
 
