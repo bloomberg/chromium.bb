@@ -97,6 +97,21 @@ void NGOffsetMappingBuilder::Annotate(const LayoutText* layout_object) {
   std::fill(annotation_.begin(), annotation_.end(), layout_object);
 }
 
+void NGOffsetMappingBuilder::AnnotateRange(unsigned start,
+                                           unsigned end,
+                                           const LayoutText* layout_object) {
+  DCHECK_LE(start, end);
+  DCHECK_LE(end, annotation_.size());
+  std::fill(annotation_.begin() + start, annotation_.begin() + end,
+            layout_object);
+}
+
+void NGOffsetMappingBuilder::AnnotateSuffix(unsigned length,
+                                            const LayoutText* layout_object) {
+  DCHECK_LE(length, annotation_.size());
+  AnnotateRange(annotation_.size() - length, annotation_.size(), layout_object);
+}
+
 void NGOffsetMappingBuilder::Concatenate(const NGOffsetMappingBuilder& other) {
   DCHECK(!mapping_.IsEmpty());
   DCHECK(!other.mapping_.IsEmpty());
