@@ -202,24 +202,17 @@ std::string AudioManagerCras::GetAssociatedOutputDeviceID(
   chromeos::AudioDeviceList devices;
   GetAudioDevices(&devices);
 
-  uint64_t device_id = 0;
   if (input_device_id == AudioDeviceDescription::kDefaultDeviceId) {
-    return AudioDeviceDescription::kDefaultDeviceId;
-  } else {
-    // At this point, we know we have an ordinary input device id, so we parse
-    // the string for its device_id.
-    if (!base::StringToUint64(input_device_id, &device_id))
-      return "";
+    // Note: the default input should not be associated to any output, as this
+    // may lead to accidental uses of a pinned stream.
+    return "";
   }
 
-  // Find the device in the device list to get the device name (identifying the
-  // hardware device).
-  const chromeos::AudioDevice* input_device =
-      GetDeviceFromId(devices, device_id);
-  if (!input_device)
-    return "";
+  const std::string device_name =
+      GetHardwareDeviceFromDeviceId(devices, true, input_device_id);
 
-  const base::StringPiece device_name = input_device->device_name;
+  if (device_name.empty())
+    return "";
 
   // Now search for an output device with the same device name.
   auto output_device_it = std::find_if(
@@ -234,22 +227,23 @@ std::string AudioManagerCras::GetAssociatedOutputDeviceID(
 
 std::string AudioManagerCras::GetDefaultOutputDeviceID() {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
-  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
-                            base::WaitableEvent::InitialState::NOT_SIGNALED);
-  uint64_t active_output_node_id = 0;
-  if (main_task_runner_->BelongsToCurrentThread()) {
-    // Unittest may use the same thread for audio thread.
-    GetPrimaryActiveOutputNodeOnMainThread(&active_output_node_id, &event);
-  } else {
-    main_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(
-            &AudioManagerCras::GetPrimaryActiveOutputNodeOnMainThread,
-            weak_this_, base::Unretained(&active_output_node_id),
-            base::Unretained(&event)));
-  }
-  WaitEventOrShutdown(&event);
-  return base::Uint64ToString(active_output_node_id);
+  return base::Uint64ToString(GetPrimaryActiveOutputNode());
+}
+
+std::string AudioManagerCras::GetGroupIDOutput(
+    const std::string& output_device_id) {
+  chromeos::AudioDeviceList devices;
+  GetAudioDevices(&devices);
+
+  return GetHardwareDeviceFromDeviceId(devices, false, output_device_id);
+}
+
+std::string AudioManagerCras::GetGroupIDInput(
+    const std::string& input_device_id) {
+  chromeos::AudioDeviceList devices;
+  GetAudioDevices(&devices);
+
+  return GetHardwareDeviceFromDeviceId(devices, true, input_device_id);
 }
 
 const char* AudioManagerCras::GetName() {
@@ -375,6 +369,24 @@ bool AudioManagerCras::IsDefault(const std::string& device_id, bool is_input) {
   return device_name.unique_id == device_id;
 }
 
+std::string AudioManagerCras::GetHardwareDeviceFromDeviceId(
+    const chromeos::AudioDeviceList& devices,
+    bool is_input,
+    const std::string& device_id) {
+  uint64_t u64_device_id = 0;
+  if (AudioDeviceDescription::IsDefaultDevice(device_id)) {
+    u64_device_id =
+        is_input ? GetPrimaryActiveInputNode() : GetPrimaryActiveOutputNode();
+  } else {
+    if (!base::StringToUint64(device_id, &u64_device_id))
+      return "";
+  }
+
+  const chromeos::AudioDevice* device = GetDeviceFromId(devices, u64_device_id);
+
+  return device ? device->device_name : "";
+}
+
 void AudioManagerCras::GetAudioDevices(chromeos::AudioDeviceList* devices) {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
@@ -414,6 +426,26 @@ uint64_t AudioManagerCras::GetPrimaryActiveInputNode() {
         FROM_HERE,
         base::BindOnce(&AudioManagerCras::GetPrimaryActiveInputNodeOnMainThread,
                        weak_this_, &device_id, &event));
+  }
+  WaitEventOrShutdown(&event);
+  return device_id;
+}
+
+uint64_t AudioManagerCras::GetPrimaryActiveOutputNode() {
+  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
+  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
+                            base::WaitableEvent::InitialState::NOT_SIGNALED);
+  uint64_t device_id = 0;
+  if (main_task_runner_->BelongsToCurrentThread()) {
+    // Unittest may use the same thread for audio thread.
+    GetPrimaryActiveOutputNodeOnMainThread(&device_id, &event);
+  } else {
+    main_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &AudioManagerCras::GetPrimaryActiveOutputNodeOnMainThread,
+            weak_this_, base::Unretained(&device_id),
+            base::Unretained(&event)));
   }
   WaitEventOrShutdown(&event);
   return device_id;

@@ -35,6 +35,8 @@ class MEDIA_EXPORT AudioManagerCras : public AudioManagerBase {
   std::string GetAssociatedOutputDeviceID(
       const std::string& input_device_id) override;
   std::string GetDefaultOutputDeviceID() override;
+  std::string GetGroupIDOutput(const std::string& output_device_id) override;
+  std::string GetGroupIDInput(const std::string& input_device_id) override;
   const char* GetName() override;
   bool Shutdown() override;
 
@@ -80,10 +82,16 @@ class MEDIA_EXPORT AudioManagerCras : public AudioManagerBase {
 
   void GetAudioDeviceNamesImpl(bool is_input, AudioDeviceNames* device_names);
 
+  std::string GetHardwareDeviceFromDeviceId(
+      const chromeos::AudioDeviceList& devices,
+      bool is_input,
+      const std::string& device_id);
+
   void GetAudioDevices(chromeos::AudioDeviceList* devices);
   void GetAudioDevicesOnMainThread(chromeos::AudioDeviceList* devices,
                                    base::WaitableEvent* event);
   uint64_t GetPrimaryActiveInputNode();
+  uint64_t GetPrimaryActiveOutputNode();
   void GetPrimaryActiveInputNodeOnMainThread(uint64_t* active_input_node_id,
                                              base::WaitableEvent* event);
   void GetPrimaryActiveOutputNodeOnMainThread(uint64_t* active_output_node_id,
