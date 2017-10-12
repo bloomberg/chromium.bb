@@ -3367,8 +3367,16 @@ void RenderFrameHostImpl::CommitNavigation(
     last_navigation_previews_state_ = common_params.previews_state;
   }
 
-  // Released in OnStreamHandleConsumed().
-  stream_handle_ = std::move(body);
+  // If this navigation is same-document, then |body| is nullptr. So without
+  // this condition, the following line would reset |stream_handle_| to nullptr.
+  // Doing this would stop any pending document load in the renderer and this
+  // same-document navigation would not load any new ones for replacement.
+  // The user would finish with a half loaded document.
+  // See https://crbug.com/769645.
+  if (!FrameMsg_Navigate_Type::IsSameDocument(common_params.navigation_type)) {
+    // Released in OnStreamHandleConsumed().
+    stream_handle_ = std::move(body);
+  }
 
   // When navigating to a debug url, no commit is expected from the
   // RenderFrameHost, nor should the throbber start. The NavigationRequest is
