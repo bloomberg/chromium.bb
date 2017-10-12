@@ -139,7 +139,21 @@ std::string RangesToString(
 }
 
 template <typename RangeClass>
-std::string BufferQueueToLogString(
+std::string BufferQueueBuffersToLogString(
+    const typename SourceBufferStream<RangeClass>::BufferQueue& buffers) {
+  std::stringstream result;
+
+  result << "Buffers:\n";
+  for (const auto& buf : buffers) {
+    result << "\tdts=" << buf->GetDecodeTimestamp().InMicroseconds() << " "
+           << buf->AsHumanReadableString() << "\n";
+  }
+
+  return result.str();
+}
+
+template <typename RangeClass>
+std::string BufferQueueMetadataToLogString(
     const typename SourceBufferStream<RangeClass>::BufferQueue& buffers) {
   std::stringstream result;
   DecodeTimestamp pts_interval_start;
@@ -283,7 +297,8 @@ bool SourceBufferStream<RangeClass>::Append(const BufferQueue& buffers) {
   DCHECK(!end_of_stream_);
 
   DVLOG(1) << __func__ << " " << GetStreamTypeName() << ": buffers "
-           << BufferQueueToLogString<RangeClass>(buffers);
+           << BufferQueueMetadataToLogString<RangeClass>(buffers);
+  DVLOG(4) << BufferQueueBuffersToLogString<RangeClass>(buffers);
 
   // TODO(wolenetz): Make this DCHECK also applicable to ByPts once SAP-Type-2
   // is more fully supported such that the NewByPts versions of
