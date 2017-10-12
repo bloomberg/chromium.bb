@@ -1182,6 +1182,12 @@ TEST(SchedulerStateMachineTest, TestFullCycleWithCommitToActive) {
   state.OnBeginImplFrameDeadline();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+
+  // When commits are deferred, we don't block the deadline.
+  state.SetDeferCommits(true);
+  state.OnBeginImplFrame(0, 13);
+  EXPECT_NE(SchedulerStateMachine::BEGIN_IMPL_FRAME_DEADLINE_MODE_BLOCKED,
+            state.CurrentBeginImplFrameDeadlineMode());
 }
 
 TEST(SchedulerStateMachineTest, TestFullCycleWithCommitRequestInbetween) {
