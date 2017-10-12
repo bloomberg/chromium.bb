@@ -42,6 +42,11 @@ namespace {{variant}} {
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/optional.h"
+
+#include "mojo/public/cpp/bindings/mojo_features.h"
+#if BUILDFLAG(MOJO_TRACE_ENABLED)
+#include "base/trace_event/trace_event.h"
+#endif
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/associated_interface_request.h"
