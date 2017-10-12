@@ -265,7 +265,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
         login_manager::kSessionManagerHandleSupervisedUserCreationFinished);
   }
 
-  void RetrieveActiveSessions(const ActiveSessionsCallback& callback) override {
+  void RetrieveActiveSessions(ActiveSessionsCallback callback) override {
     dbus::MethodCall method_call(
         login_manager::kSessionManagerInterface,
         login_manager::kSessionManagerRetrieveActiveSessions);
@@ -275,7 +275,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
         base::BindOnce(&SessionManagerClientImpl::OnRetrieveActiveSessions,
                        weak_ptr_factory_.GetWeakPtr(),
                        login_manager::kSessionManagerRetrieveActiveSessions,
-                       callback));
+                       std::move(callback)));
   }
 
   void RetrieveDevicePolicy(const RetrievePolicyCallback& callback) override {
@@ -656,38 +656,37 @@ class SessionManagerClientImpl : public SessionManagerClient {
 
   // Called when kSessionManagerRetrieveActiveSessions method is complete.
   void OnRetrieveActiveSessions(const std::string& method_name,
-                                const ActiveSessionsCallback& callback,
+                                ActiveSessionsCallback callback,
                                 dbus::Response* response) {
-    ActiveSessionsMap sessions;
-    bool success = false;
     if (!response) {
-      callback.Run(sessions, success);
+      std::move(callback).Run(base::nullopt);
       return;
     }
 
     dbus::MessageReader reader(response);
     dbus::MessageReader array_reader(nullptr);
-
     if (!reader.PopArray(&array_reader)) {
       LOG(ERROR) << method_name << " response is incorrect: "
                  << response->ToString();
-    } else {
-      while (array_reader.HasMoreData()) {
-        dbus::MessageReader dict_entry_reader(nullptr);
-        std::string key;
-        std::string value;
-        if (!array_reader.PopDictEntry(&dict_entry_reader) ||
-            !dict_entry_reader.PopString(&key) ||
-            !dict_entry_reader.PopString(&value)) {
-          LOG(ERROR) << method_name << " response is incorrect: "
-                     << response->ToString();
-        } else {
-          sessions[cryptohome::Identification::FromString(key)] = value;
-        }
-      }
-      success = true;
+      std::move(callback).Run(base::nullopt);
+      return;
     }
-    callback.Run(sessions, success);
+
+    ActiveSessionsMap sessions;
+    while (array_reader.HasMoreData()) {
+      dbus::MessageReader dict_entry_reader(nullptr);
+      std::string key;
+      std::string value;
+      if (!array_reader.PopDictEntry(&dict_entry_reader) ||
+          !dict_entry_reader.PopString(&key) ||
+          !dict_entry_reader.PopString(&value)) {
+        LOG(ERROR) << method_name
+                   << " response is incorrect: " << response->ToString();
+      } else {
+        sessions[cryptohome::Identification::FromString(key)] = value;
+      }
+    }
+    std::move(callback).Run(std::move(sessions));
   }
 
   void ExtractString(const std::string& method_name,
@@ -933,8 +932,7 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
     for (auto& observer : observers_)
       observer.ScreenIsUnlocked();
   }
-  void RetrieveActiveSessions(const ActiveSessionsCallback& callback) override {
-  }
+  void RetrieveActiveSessions(ActiveSessionsCallback callback) override {}
   void RetrieveDevicePolicy(const RetrievePolicyCallback& callback) override {
     base::FilePath owner_key_path;
     if (!PathService::Get(chromeos::FILE_OWNER_KEY, &owner_key_path)) {

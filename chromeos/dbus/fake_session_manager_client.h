@@ -44,7 +44,7 @@ class FakeSessionManagerClient : public SessionManagerClient {
   void RequestLockScreen() override;
   void NotifyLockScreenShown() override;
   void NotifyLockScreenDismissed() override;
-  void RetrieveActiveSessions(const ActiveSessionsCallback& callback) override;
+  void RetrieveActiveSessions(ActiveSessionsCallback callback) override;
   void RetrieveDevicePolicy(const RetrievePolicyCallback& callback) override;
   RetrievePolicyResponseType BlockingRetrieveDevicePolicy(
       std::string* policy_out) override;
