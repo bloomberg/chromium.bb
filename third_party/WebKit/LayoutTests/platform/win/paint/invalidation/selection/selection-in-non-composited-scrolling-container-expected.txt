@@ -26,6 +26,14 @@
   ],
   "objectPaintInvalidations": [
     {
+      "object": "LayoutBlockFlow HTML",
+      "reason": "selection"
+    },
+    {
+      "object": "LayoutBlockFlow BODY",
+      "reason": "selection"
+    },
+    {
       "object": "LayoutTextControl INPUT id='target'",
       "reason": "subtree"
     },
