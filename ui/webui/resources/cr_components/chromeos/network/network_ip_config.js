@@ -111,15 +111,18 @@ Polymer({
   /** @private */
   automaticChanged_: function() {
     if (!this.automatic_) {
-      // Ensure that there is a valid IPConfig object.
-      this.ipConfig_ = this.ipConfig_ || {
-        ipv4: {
-          Gateway: '192.168.1.1',
-          IPAddress: '192.168.1.1',
-          RoutingPrefix: '255.255.255.0',
-          Type: CrOnc.IPType.IPV4,
-        },
+      var defaultIpv4 = {
+        Gateway: '192.168.1.1',
+        IPAddress: '192.168.1.1',
+        RoutingPrefix: '255.255.255.0',
+        Type: CrOnc.IPType.IPV4,
       };
+      // Ensure that there is a valid IPConfig object. Copy any set properties
+      // over the default properties to ensure all properties are set.
+      if (this.ipConfig_)
+        this.ipConfig_.ipv4 = Object.assign(defaultIpv4, this.ipConfig_.ipv4);
+      else
+        this.ipConfig_ = {ipv4: defaultIpv4};
       this.sendStaticIpConfig_();
       return;
     }
