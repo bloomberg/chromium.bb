@@ -23,27 +23,23 @@ TEST(ContentSuggestionsMetricsTest, ShouldLogOnSuggestionsShown) {
                     Category::FromKnownCategory(KnownCategories::ARTICLES),
                     /*position_in_category=*/3, base::Time::Now(),
                     /*score=*/0.01f,
-                    base::Time::Now() - base::TimeDelta::FromHours(2),
-                    /*is_prefetched=*/false, /*is_offline=*/false);
+                    base::Time::Now() - base::TimeDelta::FromHours(2));
   // Test corner cases for score.
   OnSuggestionShown(/*global_position=*/1,
                     Category::FromKnownCategory(KnownCategories::ARTICLES),
                     /*position_in_category=*/3, base::Time::Now(),
                     /*score=*/0.0f,
-                    base::Time::Now() - base::TimeDelta::FromHours(2),
-                    /*is_prefetched=*/false, /*is_offline=*/false);
+                    base::Time::Now() - base::TimeDelta::FromHours(2));
   OnSuggestionShown(/*global_position=*/1,
                     Category::FromKnownCategory(KnownCategories::ARTICLES),
                     /*position_in_category=*/3, base::Time::Now(),
                     /*score=*/1.0f,
-                    base::Time::Now() - base::TimeDelta::FromHours(2),
-                    /*is_prefetched=*/false, /*is_offline=*/false);
+                    base::Time::Now() - base::TimeDelta::FromHours(2));
   OnSuggestionShown(/*global_position=*/1,
                     Category::FromKnownCategory(KnownCategories::ARTICLES),
                     /*position_in_category=*/3, base::Time::Now(),
                     /*score=*/8.0f,
-                    base::Time::Now() - base::TimeDelta::FromHours(2),
-                    /*is_prefetched=*/false, /*is_offline=*/false);
+                    base::Time::Now() - base::TimeDelta::FromHours(2));
 
   EXPECT_THAT(
       histogram_tester.GetAllSamples(
@@ -133,41 +129,6 @@ TEST(ContentSuggestionsMetricsTest,
   EXPECT_THAT(histogram_tester.GetAllSamples(
                   "NewTabPage.ContentSuggestions.SectionCountOnNtpOpened"),
               ElementsAre(base::Bucket(/*min=*/2, /*count=*/1)));
-}
-
-TEST(ContentSuggestionsMetricsTest, ShouldLogPrefetchedSuggestionsWhenShown) {
-  base::HistogramTester histogram_tester;
-  OnSuggestionShown(/*global_position=*/11,
-                    Category::FromKnownCategory(KnownCategories::ARTICLES),
-                    /*position_in_category=*/1, base::Time::Now(),
-                    /*score=*/1.0f,
-                    base::Time::Now() - base::TimeDelta::FromHours(2),
-                    /*is_prefetched=*/false, /*is_offline=*/false);
-  OnSuggestionShown(/*global_position=*/13,
-                    Category::FromKnownCategory(KnownCategories::ARTICLES),
-                    /*position_in_category=*/3, base::Time::Now(),
-                    /*score=*/1.0f,
-                    base::Time::Now() - base::TimeDelta::FromHours(2),
-                    /*is_prefetched=*/true, /*is_offline=*/false);
-  OnSuggestionShown(/*global_position=*/15,
-                    Category::FromKnownCategory(KnownCategories::ARTICLES),
-                    /*position_in_category=*/5, base::Time::Now(),
-                    /*score=*/1.0f,
-                    base::Time::Now() - base::TimeDelta::FromHours(2),
-                    /*is_prefetched=*/false, /*is_offline=*/true);
-  OnSuggestionShown(/*global_position=*/23,
-                    Category::FromKnownCategory(KnownCategories::ARTICLES),
-                    /*position_in_category=*/13, base::Time::Now(),
-                    /*score=*/1.0f,
-                    base::Time::Now() - base::TimeDelta::FromHours(2),
-                    /*is_prefetched=*/true, /*is_offline=*/true);
-
-  // Only the last call should be reported, because only there the user is
-  // offline and the suggestion was prefetched at the same time.
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples(
-          "NewTabPage.ContentSuggestions.Shown.Articles.Prefetched.Offline"),
-      ElementsAre(base::Bucket(/*min=*/13, /*count=*/1)));
 }
 
 TEST(ContentSuggestionsMetricsTest, ShouldLogPrefetchedSuggestionsWhenOpened) {

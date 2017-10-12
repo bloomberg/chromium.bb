@@ -76,6 +76,7 @@ import org.chromium.chrome.test.util.browser.compositor.layouts.DisableChromeAni
 import org.chromium.chrome.test.util.browser.suggestions.DummySuggestionsEventReporter;
 import org.chromium.chrome.test.util.browser.suggestions.FakeSuggestionsSource;
 import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependenciesRule;
+import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.base.DeviceFormFactor;
 
 import java.io.IOException;
@@ -159,6 +160,13 @@ public class ArticleSnippetsTest {
         mTimestamp = System.currentTimeMillis() - 5 * DateUtils.MINUTE_IN_MILLIS;
 
         ThreadUtils.runOnUiThreadBlocking(() -> {
+            if (!NetworkChangeNotifier.isInitialized()) {
+                NetworkChangeNotifier.init();
+            }
+            NetworkChangeNotifier.forceConnectivityState(true);
+        });
+
+        ThreadUtils.runOnUiThreadBlocking(() -> {
             FeatureUtilities.resetChromeHomeEnabledForTests();
             FeatureUtilities.cacheChromeHomeEnabled();
         });
@@ -178,8 +186,8 @@ public class ArticleSnippetsTest {
                     mUiDelegate.getNavigationDelegate(), touchEnabledDelegate);
             mRecyclerView.init(mUiConfig, mContextMenuManager);
 
-            mSuggestion = new SnippetArticleViewHolder(
-                    mRecyclerView, mContextMenuManager, mUiDelegate, mUiConfig);
+            mSuggestion = new SnippetArticleViewHolder(mRecyclerView, mContextMenuManager,
+                    mUiDelegate, mUiConfig, /* offlinePageBridge = */ null);
             mSigninPromo = new SignInPromo.GenericPromoViewHolder(
                     mRecyclerView, mContextMenuManager, mUiConfig);
         });

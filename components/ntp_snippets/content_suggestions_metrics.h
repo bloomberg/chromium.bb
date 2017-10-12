@@ -28,9 +28,7 @@ void OnSuggestionShown(int global_position,
                        int position_in_category,
                        base::Time publish_date,
                        float score,
-                       base::Time fetch_date,
-                       bool is_prefetched,
-                       bool is_offline);
+                       base::Time fetch_date);
 
 // TODO(crbug.com/682160): Take struct, so that one could not mix up the
 // order of arguments.

@@ -68,8 +68,10 @@ const char kHistogramTimeSinceSuggestionFetched[] =
 // Histograms related to prefetching.
 const char kHistogramPrefetchedArticleOpenedWhenOffline[] =
     "NewTabPage.ContentSuggestions.Opened.Articles.Prefetched.Offline";
-const char kHistogramPrefetchedArticleShownWhenOffline[] =
-    "NewTabPage.ContentSuggestions.Shown.Articles.Prefetched.Offline";
+// NewTabPage.ContentSuggestions.CountOnNtpOpenedIfVisible.Articles.\
+// Prefetched.Offline2 and
+// NewTabPage.ContentSuggestions.Shown.Articles.Prefetched.Offline2 are recorded
+// in Java to avoid race condition.
 
 const char kPerCategoryHistogramFormat[] = "%s.%s";
 
@@ -253,9 +255,7 @@ void OnSuggestionShown(int global_position,
                        int position_in_category,
                        base::Time publish_date,
                        float score,
-                       base::Time fetch_date,
-                       bool is_prefetched,
-                       bool is_offline) {
+                       base::Time fetch_date) {
   UMA_HISTOGRAM_EXACT_LINEAR(kHistogramShown, global_position,
                              kMaxSuggestionsTotal);
   LogCategoryHistogramPosition(kHistogramShown, category, position_in_category,
@@ -272,11 +272,6 @@ void OnSuggestionShown(int global_position,
         kHistogramTimeSinceSuggestionFetched, base::Time::Now() - fetch_date,
         base::TimeDelta::FromSeconds(1), base::TimeDelta::FromDays(7),
         /*bucket_count=*/100);
-    if (is_offline && is_prefetched) {
-      UMA_HISTOGRAM_EXACT_LINEAR(kHistogramPrefetchedArticleShownWhenOffline,
-                                 position_in_category,
-                                 kMaxSuggestionsPerCategory);
-    }
   }
 
   // TODO(markusheintz): Discuss whether the code below should be moved into a
