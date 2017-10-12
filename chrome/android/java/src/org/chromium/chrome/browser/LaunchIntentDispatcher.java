@@ -14,7 +14,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
-import android.provider.Browser;
 import android.support.annotation.IntDef;
 import android.support.customtabs.CustomTabsIntent;
 import android.text.TextUtils;
@@ -23,6 +22,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.IntentHandler.ExternalAppId;
 import org.chromium.chrome.browser.browserservices.BrowserSessionContentUtils;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
@@ -257,9 +257,9 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
 
         // Don't reroute Chrome Intents.
         Context context = ContextUtils.getApplicationContext();
-        if (TextUtils.equals(context.getPackageName(),
-                    IntentUtils.safeGetStringExtra(intent, Browser.EXTRA_APPLICATION_ID))
-                || IntentHandler.wasIntentSenderChrome(intent)) {
+        ExternalAppId externalAppId =
+                IntentHandler.determineExternalIntentSource(context.getPackageName(), intent);
+        if (ExternalAppId.CHROME == externalAppId || IntentHandler.wasIntentSenderChrome(intent)) {
             return false;
         }
 
@@ -278,6 +278,12 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
 
         // Don't reroute intents created by Reader Mode.
         if (ReaderModeManager.isReaderModeCreatedIntent(intent)) {
+            return false;
+        }
+
+        // Blacklist apps whose in app browsing experiences provides a conflict and poor interaction
+        // with the CustomTab based UI.
+        if (ExternalAppId.FACEBOOK == externalAppId) {
             return false;
         }
 
