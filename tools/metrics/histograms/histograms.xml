@@ -90918,9 +90918,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="WebCore.IndexedDB.Context.ForcedCloseReason"
+<histogram name="WebCore.IndexedDB.Context.ForceCloseReason"
     enum="IDBContextForcedCloseReason">
-  <owner>dgrogan@chromium.org</owner>
+  <owner>cmumford@chromium.org</owner>
   <summary>The reason that a forced-close of a backing store occurred.</summary>
 </histogram>
 
