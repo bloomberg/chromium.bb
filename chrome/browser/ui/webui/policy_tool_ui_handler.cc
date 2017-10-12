@@ -11,8 +11,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
 #include "build/build_config.h"
-#include "chrome/browser/policy/schema_registry_service.h"
-#include "chrome/browser/policy/schema_registry_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 
 // static
@@ -145,8 +143,7 @@ std::string PolicyToolUIHandler::ReadOrCreateFileCallback() {
   return contents;
 }
 
-void PolicyToolUIHandler::OnSessionContentsReceived(
-    const std::string& contents) {
+void PolicyToolUIHandler::OnFileRead(const std::string& contents) {
   // If the saving is disabled, send a message about that to the UI.
   if (!is_saving_enabled_) {
     CallJavascriptFunction("policy.Page.disableSaving");
@@ -162,7 +159,8 @@ void PolicyToolUIHandler::OnSessionContentsReceived(
                            base::DictionaryValue());
     CallJavascriptFunction("policy.Page.disableEditing");
   } else {
-    ParseAndCheckPolicyTypes(value.get());
+    // TODO(urusant): convert the policy values so that the types are
+    // consistent with actual policy types.
     CallJavascriptFunction("policy.Page.setPolicyValues", *value);
     base::PostTaskWithTraitsAndReplyWithResult(
         FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
@@ -182,7 +180,7 @@ void PolicyToolUIHandler::ImportFile() {
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&PolicyToolUIHandler::ReadOrCreateFileCallback,
                      base::Unretained(this)),
-      base::BindOnce(&PolicyToolUIHandler::OnSessionContentsReceived,
+      base::BindOnce(&PolicyToolUIHandler::OnFileRead,
                      callback_weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -246,86 +244,6 @@ void PolicyToolUIHandler::HandleUpdateSession(const base::ListValue* args) {
                      base::Unretained(this), converted_values),
       base::BindOnce(&PolicyToolUIHandler::OnSessionUpdated,
                      callback_weak_ptr_factory_.GetWeakPtr()));
-
-  // Send the dictionary back to UI in order to update the errors about policy
-  // types.
-  OnSessionContentsReceived(converted_values);
-}
-
-std::unique_ptr<base::Value> PolicyToolUIHandler::ParseSinglePolicyType(
-    const policy::Schema& policy_schema,
-    const std::string& policy_name,
-    base::Value* policy_value) {
-  if (!policy_schema.valid())
-    return nullptr;
-  if (policy_value->type() == base::Value::Type::STRING &&
-      policy_schema.type() != base::Value::Type::STRING) {
-    return base::JSONReader::Read(policy_value->GetString());
-  }
-  return base::MakeUnique<base::Value>(policy_value->Clone());
-}
-
-bool PolicyToolUIHandler::CheckSinglePolicyType(
-    const policy::Schema& policy_schema,
-    const std::string& policy_name,
-    base::Value* policy_value) {
-  // If the schema is invalid, this means that the policy is unknown, and so
-  // considered valid.
-  if (!policy_schema.valid())
-    return true;
-  std::string error_path, error;
-  return policy_schema.Validate(*policy_value, policy::SCHEMA_STRICT,
-                                &error_path, &error);
-}
-
-void PolicyToolUIHandler::ParseAndCheckSingleSourcePolicyTypes(
-    const policy::Schema* source_schema,
-    base::Value* policies) {
-  for (const auto& policy : policies->DictItems()) {
-    const std::string policy_name = policy.first;
-    policy::Schema policy_schema = source_schema->GetKnownProperty(policy_name);
-    // CheckSinglePolicyType(policy_schema, policy_name, &policy.second);
-    std::unique_ptr<base::Value> parsed_value = ParseSinglePolicyType(
-        policy_schema, policy_name, policy.second.FindKey("value"));
-    if (parsed_value &&
-        CheckSinglePolicyType(policy_schema, policy_name, parsed_value.get())) {
-      policy.second.SetKey("value", std::move(*parsed_value));
-      policy.second.SetKey("valid", base::Value(true));
-    } else {
-      policy.second.SetKey("valid", base::Value(false));
-    }
-  }
-}
-
-void PolicyToolUIHandler::ParseAndCheckPolicyTypes(
-    base::DictionaryValue* values) {
-  Profile* profile = Profile::FromWebUI(web_ui());
-  policy::SchemaRegistry* registry =
-      policy::SchemaRegistryServiceFactory::GetForContext(
-          profile->GetOriginalProfile())
-          ->registry();
-  scoped_refptr<policy::SchemaMap> schema_map = registry->schema_map();
-
-  // Check chrome policies.
-  base::Value* chrome_policies = values->FindKey("chromePolicies");
-  if (chrome_policies) {
-    policy::PolicyNamespace chrome_ns(policy::POLICY_DOMAIN_CHROME, "");
-    const policy::Schema* chrome_schema = schema_map->GetSchema(chrome_ns);
-    ParseAndCheckSingleSourcePolicyTypes(chrome_schema, chrome_policies);
-  }
-
-  // Check extension policies.
-  base::Value* extension_policies = values->FindKey("extensionPolicies");
-  if (extension_policies) {
-    for (const auto& extension : extension_policies->DictItems()) {
-      const std::string extension_name = extension.first;
-      policy::PolicyNamespace extension_ns(policy::POLICY_DOMAIN_EXTENSIONS,
-                                           extension_name);
-      const policy::Schema* extension_schema =
-          schema_map->GetSchema(extension_ns);
-      ParseAndCheckSingleSourcePolicyTypes(extension_schema, &extension.second);
-    }
-  }
 }
 
 void PolicyToolUIHandler::HandleResetSession(const base::ListValue* args) {

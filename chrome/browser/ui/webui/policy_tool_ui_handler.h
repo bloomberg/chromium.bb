@@ -33,7 +33,7 @@ class PolicyToolUIHandler : public PolicyUIHandler {
   void HandleResetSession(const base::ListValue* args);
 
   std::string ReadOrCreateFileCallback();
-  void OnSessionContentsReceived(const std::string& contents);
+  void OnFileRead(const std::string& contents);
 
   bool DoUpdateSession(const std::string& contents);
   void OnSessionUpdated(bool is_successful);
@@ -51,26 +51,6 @@ class PolicyToolUIHandler : public PolicyUIHandler {
   void OnSessionsListReceived(base::ListValue list);
 
   void SetDefaultSessionName();
-
-  // Tries to parse the value if it is necessary. If parsing was necessary, but
-  // not successful, returns nullptr.
-  std::unique_ptr<base::Value> ParseSinglePolicyType(
-      const policy::Schema& policy_schema,
-      const std::string& policy_name,
-      base::Value* policy_value);
-  // Checks if the value matches the actual policy type.
-  bool CheckSinglePolicyType(const policy::Schema& policy_schema,
-                             const std::string& policy_name,
-                             base::Value* policy_value);
-  // Parses and checks policy types for a single source (e.g. chrome policies
-  // or policies for one extension). For each policy, if parsing was successful
-  // and the parsed value matches its expected schema, replaces the policy value
-  // with the parsed value. Also, sets the 'valid' field to indicate whether the
-  // value is valid for its policy.
-  void ParseAndCheckSingleSourcePolicyTypes(const policy::Schema* source_schema,
-                                            base::Value* policies);
-  // Parses and checks policy types for all sources.
-  void ParseAndCheckPolicyTypes(base::DictionaryValue* values);
 
   bool is_saving_enabled_ = true;
 
