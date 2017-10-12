@@ -52,6 +52,7 @@ extern "C" {
 #define DRM_AMDGPU_GEM_USERPTR		0x11
 #define DRM_AMDGPU_WAIT_FENCES		0x12
 #define DRM_AMDGPU_VM			0x13
+#define DRM_AMDGPU_FENCE_TO_HANDLE	0x14
 
 #define DRM_IOCTL_AMDGPU_GEM_CREATE	DRM_IOWR(DRM_COMMAND_BASE + DRM_AMDGPU_GEM_CREATE, union drm_amdgpu_gem_create)
 #define DRM_IOCTL_AMDGPU_GEM_MMAP	DRM_IOWR(DRM_COMMAND_BASE + DRM_AMDGPU_GEM_MMAP, union drm_amdgpu_gem_mmap)
@@ -67,6 +68,7 @@ extern "C" {
 #define DRM_IOCTL_AMDGPU_GEM_USERPTR	DRM_IOWR(DRM_COMMAND_BASE + DRM_AMDGPU_GEM_USERPTR, struct drm_amdgpu_gem_userptr)
 #define DRM_IOCTL_AMDGPU_WAIT_FENCES	DRM_IOWR(DRM_COMMAND_BASE + DRM_AMDGPU_WAIT_FENCES, union drm_amdgpu_wait_fences)
 #define DRM_IOCTL_AMDGPU_VM		DRM_IOWR(DRM_COMMAND_BASE + DRM_AMDGPU_VM, union drm_amdgpu_vm)
+#define DRM_IOCTL_AMDGPU_FENCE_TO_HANDLE DRM_IOWR(DRM_COMMAND_BASE + DRM_AMDGPU_FENCE_TO_HANDLE, union drm_amdgpu_fence_to_handle)
 
 #define AMDGPU_GEM_DOMAIN_CPU		0x1
 #define AMDGPU_GEM_DOMAIN_GTT		0x2
@@ -87,6 +89,8 @@ extern "C" {
 #define AMDGPU_GEM_CREATE_SHADOW		(1 << 4)
 /* Flag that allocating the BO should use linear VRAM */
 #define AMDGPU_GEM_CREATE_VRAM_CONTIGUOUS	(1 << 5)
+/* Flag that BO is always valid in this VM */
+#define AMDGPU_GEM_CREATE_VM_ALWAYS_VALID	(1 << 6)
 
 struct drm_amdgpu_gem_create_in  {
 	/** the requested memory size */
@@ -513,6 +517,20 @@ struct drm_amdgpu_cs_chunk_sem {
 	__u32 handle;
 };
 
+#define AMDGPU_FENCE_TO_HANDLE_GET_SYNCOBJ	0
+#define AMDGPU_FENCE_TO_HANDLE_GET_SYNCOBJ_FD	1
+#define AMDGPU_FENCE_TO_HANDLE_GET_SYNC_FILE_FD	2
+
+union drm_amdgpu_fence_to_handle {
+	struct {
+		struct drm_amdgpu_fence fence;
+		__u32 what;
+	} in;
+	struct {
+		__u32 handle;
+	} out;
+};
+
 struct drm_amdgpu_cs_chunk_data {
 	union {
 		struct drm_amdgpu_cs_chunk_ib		ib_data;
@@ -764,6 +782,7 @@ struct drm_amdgpu_info_device {
 	__u64 max_memory_clock;
 	/* cu information */
 	__u32 cu_active_number;
+	/* NOTE: cu_ao_mask is INVALID, DON'T use it */
 	__u32 cu_ao_mask;
 	__u32 cu_bitmap[4][4];
 	/** Render backend pipe mask. One render backend is CB+DB. */
@@ -818,6 +837,8 @@ struct drm_amdgpu_info_device {
 	/* max gs wavefront per vgt*/
 	__u32 max_gs_waves_per_vgt;
 	__u32 _pad1;
+	/* always on cu bitmap */
+	__u32 cu_ao_bitmap[4][4];
 };
 
 struct drm_amdgpu_info_hw_ip {
