@@ -127,6 +127,12 @@ component("services") {
       "mojo_cdm_helper.h",
     ]
     deps += [ "//media/cdm:cdm_api" ]
+
+    # TODO(xhwang): Ideally media should not worry about sandbox. Find a way to
+    # remove this dependency.
+    if (is_mac) {
+      deps += [ "//sandbox" ]
+    }
   }
 }
 

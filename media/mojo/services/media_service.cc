@@ -16,7 +16,10 @@
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #include "media/cdm/cdm_module.h"
-#endif
+#if defined(OS_MACOSX)
+#include "sandbox/mac/seatbelt_extension.h"
+#endif  // defined(OS_MACOSX)
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 namespace media {
 
@@ -57,7 +60,13 @@ void MediaService::Create(mojom::MediaServiceRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
+#if defined(OS_MACOSX)
+void MediaService::LoadCdm(
+    const base::FilePath& cdm_path,
+    mojom::SeatbeltExtensionTokenProviderPtr token_provider) {
+#else
 void MediaService::LoadCdm(const base::FilePath& cdm_path) {
+#endif  // defined(OS_MACOSX)
   DVLOG(1) << __func__ << ": cdm_path = " << cdm_path.value();
 
   // Ignore request if service has already stopped.
@@ -71,6 +80,23 @@ void MediaService::LoadCdm(const base::FilePath& cdm_path) {
     return;
   }
 
+#if defined(OS_MACOSX)
+  std::vector<sandbox::SeatbeltExtensionToken> tokens;
+  CHECK(token_provider->GetTokens(&tokens));
+
+  std::vector<std::unique_ptr<sandbox::SeatbeltExtension>> extensions;
+
+  for (auto&& token : tokens) {
+    DVLOG(3) << "token: " << token.token();
+    auto extension = sandbox::SeatbeltExtension::FromToken(std::move(token));
+    if (!extension->Consume()) {
+      DVLOG(1) << "Failed to comsume sandbox seatbelt extension. This could "
+                  "happen if --no-sandbox is specified.";
+    }
+    extensions.push_back(std::move(extension));
+  }
+#endif  // defined(OS_MACOSX)
+
 #if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
   std::vector<CdmHostFilePath> cdm_host_file_paths;
   mojo_media_client_->AddCdmHostFilePaths(&cdm_host_file_paths);
@@ -81,9 +107,17 @@ void MediaService::LoadCdm(const base::FilePath& cdm_path) {
     return;
 #endif  // BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
 
-  // TODO(crbug.com/510604): If the process is not sandboxed, sandbox it now!
+  // This may trigger the sandbox to be sealed.
+  mojo_media_client_->EnsureSandboxed();
+
+#if defined(OS_MACOSX)
+  for (auto&& extension : extensions)
+    extension->Revoke();
+#endif  // defined(OS_MACOSX)
+
+  // Always called within the sandbox.
   instance->InitializeCdmModule();
-#endif  //  BUILDFLAG(ENABLE_LIBRARY_CDMS)
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 }
 
 void MediaService::CreateInterfaceFactory(

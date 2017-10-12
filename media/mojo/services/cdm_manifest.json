@@ -1,10 +1,7 @@
 {
   "name": "cdm",
   "display_name": "Content Decryption Module Service",
-  // TODO(xhwang): This is only used for test/experiment for now so it's okay
-  // to run it in an unsandboxed utility process. Fix CDM loading so that we can
-  // run it in the sandboxed utility process. See http://crbug.com/510604
-  "sandbox_type": "none",
+  "sandbox_type": "cdm",
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {

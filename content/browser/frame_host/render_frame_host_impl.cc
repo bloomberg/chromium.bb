@@ -119,7 +119,6 @@
 #include "device/vr/vr_service.mojom.h"
 #include "media/base/media_switches.h"
 #include "media/media_features.h"
-#include "media/mojo/interfaces/media_service.mojom.h"
 #include "media/mojo/interfaces/remoting.mojom.h"
 #include "media/mojo/services/media_interface_provider.h"
 #include "media/mojo/services/video_decode_stats_recorder.h"

@@ -8,13 +8,14 @@
 #include <string>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/service_manager_connection.h"
 #include "media/mojo/interfaces/constants.mojom.h"
-#include "media/mojo/interfaces/media_service.mojom.h"
 #include "media/mojo/services/media_interface_provider.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -32,9 +33,82 @@
 #include "content/public/browser/cdm_registry.h"
 #include "content/public/common/cdm_info.h"
 #include "media/base/key_system_names.h"
-#endif
+#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
+#if defined(OS_MACOSX)
+#include "sandbox/mac/seatbelt_extension.h"
+#endif  // defined(OS_MACOSX)
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
+
+#if defined(OS_MACOSX)
+#include "media/mojo/interfaces/media_service_mac.mojom.h"
+#else
+#include "media/mojo/interfaces/media_service.mojom.h"
+#endif  // defined(OS_MACOSX)
 
 namespace content {
+
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS) && defined(OS_MACOSX)
+
+namespace {
+
+#if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
+// TODO(xhwang): Move this to a common place.
+const base::FilePath::CharType kSignatureFileExtension[] =
+    FILE_PATH_LITERAL(".sig");
+
+// Returns the signature file path given the |file_path|. This function should
+// only be used when the signature file and the file are located in the same
+// directory, which is the case for the CDM and CDM adapter.
+base::FilePath GetSigFilePath(const base::FilePath& file_path) {
+  return file_path.AddExtension(kSignatureFileExtension);
+}
+#endif  // BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
+
+class SeatbeltExtensionTokenProviderImpl
+    : public media::mojom::SeatbeltExtensionTokenProvider {
+ public:
+  explicit SeatbeltExtensionTokenProviderImpl(const base::FilePath& cdm_path)
+      : cdm_path_(cdm_path) {}
+  void GetTokens(GetTokensCallback callback) final {
+    std::vector<sandbox::SeatbeltExtensionToken> tokens;
+
+    // Allow the CDM to be loaded in the CDM service process.
+    auto cdm_token = sandbox::SeatbeltExtension::Issue(
+        sandbox::SeatbeltExtension::FILE_READ, cdm_path_.value());
+    if (cdm_token) {
+      tokens.push_back(std::move(*cdm_token));
+    } else {
+      std::move(callback).Run({});
+      return;
+    }
+
+#if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
+    // If CDM host verification is enabled, also allow to open the CDM signature
+    // file.
+    auto cdm_sig_token =
+        sandbox::SeatbeltExtension::Issue(sandbox::SeatbeltExtension::FILE_READ,
+                                          GetSigFilePath(cdm_path_).value());
+    if (cdm_sig_token) {
+      tokens.push_back(std::move(*cdm_sig_token));
+    } else {
+      std::move(callback).Run({});
+      return;
+    }
+#endif  // BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
+
+    std::move(callback).Run(std::move(tokens));
+  }
+
+ private:
+  base::FilePath cdm_path_;
+
+  DISALLOW_COPY_AND_ASSIGN(SeatbeltExtensionTokenProviderImpl);
+};
+
+}  // namespace
+
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS) && defined(OS_MACOSX)
 
 MediaInterfaceProxy::MediaInterfaceProxy(
     RenderFrameHost* render_frame_host,
@@ -247,8 +321,17 @@ media::mojom::InterfaceFactory* MediaInterfaceProxy::ConnectToCdmService(
   connector->BindInterface(identity, &media_service);
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+#if defined(OS_MACOSX)
   // LoadCdm() should always be called before CreateInterfaceFactory().
+  media::mojom::SeatbeltExtensionTokenProviderPtr token_provider_ptr;
+  mojo::MakeStrongBinding(
+      std::make_unique<SeatbeltExtensionTokenProviderImpl>(cdm_path),
+      mojo::MakeRequest(&token_provider_ptr));
+
+  media_service->LoadCdm(cdm_path, std::move(token_provider_ptr));
+#else
   media_service->LoadCdm(cdm_path);
+#endif  // defined(OS_MACOSX)
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
   InterfaceFactoryPtr interface_factory_ptr;

@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "build/build_config.h"
 #include "content/child/child_process.h"
 #include "content/network/network_service_impl.h"
 #include "content/public/common/content_client.h"
@@ -32,11 +33,16 @@
 #include "media/mojo/services/media_service.h"       // nogncheck
 #include "media/mojo/services/mojo_cdm_helper.h"     // nogncheck
 #include "media/mojo/services/mojo_media_client.h"   // nogncheck
-#endif
-
 #if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
 #include "media/cdm/cdm_host_file.h"
 #endif  // BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
+#endif
+
+#if defined(OS_WIN)
+#include "sandbox/win/src/sandbox.h"
+
+extern sandbox::TargetServices* g_utility_target_services;
+#endif
 
 namespace {
 
@@ -64,6 +70,14 @@ class CdmMojoMediaClient final : public media::MojoMediaClient {
  public:
   CdmMojoMediaClient() {}
   ~CdmMojoMediaClient() override {}
+
+  void EnsureSandboxed() override {
+#if defined(OS_WIN)
+    // |g_utility_target_services| can be null if --no-sandbox is specified.
+    if (g_utility_target_services)
+      g_utility_target_services->LowerToken();
+#endif
+  }
 
   std::unique_ptr<media::CdmFactory> CreateCdmFactory(
       service_manager::mojom::InterfaceProvider* host_interfaces) override {

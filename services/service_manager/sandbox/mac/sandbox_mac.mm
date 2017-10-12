@@ -38,6 +38,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
 #include "sandbox/mac/sandbox_compiler.h"
+#include "services/service_manager/sandbox/mac/cdm.sb.h"
 #include "services/service_manager/sandbox/mac/common.sb.h"
 #include "services/service_manager/sandbox/mac/gpu.sb.h"
 #include "services/service_manager/sandbox/mac/nacl_loader.sb.h"
@@ -68,7 +69,7 @@ SandboxTypeToResourceIDMapping kDefaultSandboxTypeToResourceIDMapping[] = {
     {SANDBOX_TYPE_GPU, kSeatbeltPolicyString_gpu},
     {SANDBOX_TYPE_PPAPI, kSeatbeltPolicyString_ppapi},
     {SANDBOX_TYPE_NETWORK, nullptr},
-    {SANDBOX_TYPE_CDM, kSeatbeltPolicyString_ppapi},
+    {SANDBOX_TYPE_CDM, kSeatbeltPolicyString_cdm},
     {SANDBOX_TYPE_NACL_LOADER, kSeatbeltPolicyString_nacl_loader},
     {SANDBOX_TYPE_PDF_COMPOSITOR, kSeatbeltPolicyString_ppapi},
     {SANDBOX_TYPE_PROFILING, kSeatbeltPolicyString_utility},
@@ -94,6 +95,7 @@ const char* Sandbox::kSandboxOSVersion = "OS_VERSION";
 const char* Sandbox::kSandboxPermittedDir = "PERMITTED_DIR";
 const char* Sandbox::kSandboxElCapOrLater = "ELCAP_OR_LATER";
 const char* Sandbox::kSandboxMacOS1013 = "MACOS_1013";
+const char* Sandbox::kSandboxBundleVersionPath = "BUNDLE_VERSION_PATH";
 
 // Warm up System APIs that empirically need to be accessed before the Sandbox
 // is turned on.
@@ -252,6 +254,14 @@ bool Sandbox::EnableSandbox(SandboxType sandbox_type,
   bool macos_1013 = base::mac::IsOS10_13();
   if (!compiler.InsertBooleanParam(kSandboxMacOS1013, macos_1013))
     return false;
+
+  if (sandbox_type == service_manager::SANDBOX_TYPE_CDM) {
+    base::FilePath bundle_path = Sandbox::GetCanonicalSandboxPath(
+        base::mac::FrameworkBundlePath().DirName());
+    if (!compiler.InsertStringParam(kSandboxBundleVersionPath,
+                                    bundle_path.value()))
+      return false;
+  }
 
   // Initialize sandbox.
   std::string error_str;
