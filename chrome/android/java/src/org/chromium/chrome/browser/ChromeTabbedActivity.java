@@ -499,7 +499,8 @@ public class ChromeTabbedActivity
             //                promos.
             if (!mLocaleManager.hasShownSearchEnginePromoThisSession() && !mIntentWithEffect
                     && FirstRunStatus.getFirstRunFlowComplete()
-                    && preferenceManager.getPromosSkippedOnFirstStart()) {
+                    && preferenceManager.getPromosSkippedOnFirstStart()
+                    && !VrShellDelegate.isInVr()) {
                 // Data reduction promo should be temporarily suppressed if the sign in promo is
                 // shown to avoid nagging users too much.
                 TabModel currentModel = mTabModelSelectorImpl.getCurrentModel();
