@@ -212,15 +212,18 @@
   <message name="IDS_BOOKMARK_AX_BUBBLE_FOLDER_LABEL" desc="Text preceding the folder selector">
     Bookmark folder
   </message>
-  <message name="IDS_BOOKMARK_BUBBLE_OPTIONS" desc="Title of the button the user can click to edit details of the bookmark">
-    Edit...
-  </message>
   <if expr="not use_titlecase">
+    <message name="IDS_BOOKMARK_BUBBLE_OPTIONS" desc="Title of the button the user can click to edit details of the bookmark">
+      Edit...
+    </message>
     <message name="IDS_BOOKMARK_BUBBLE_CHOOSER_ANOTHER_FOLDER" desc="Text in the combobox allowing the user to choose another folder (by bringing up th editor).">
       Choose another folder...
     </message>
   </if>
   <if expr="use_titlecase">
+    <message name="IDS_BOOKMARK_BUBBLE_OPTIONS" desc="In Title Case: Title of the button the user can click to edit details of the bookmark">
+      Edit...
+    </message>
     <message name="IDS_BOOKMARK_BUBBLE_CHOOSER_ANOTHER_FOLDER" desc="In Title Case: Text in the combobox allowing the user to choose another folder (by bringing up th editor).">
       Choose Another Folder...
     </message>
@@ -252,7 +255,7 @@
 
   <!-- Begin of Bookmark Editor strings. -->
   <message name="IDS_BOOKMARK_EDITOR_NAME_LABEL" desc="Label shown before the title/name of the URL.">
-    Name:
+    Name
   </message>
   <message name="IDS_BOOKMARK_AX_EDITOR_NAME_LABEL" desc="Spoken text for bookmark name text field in edit folder dialog">
     Bookmark name
@@ -266,31 +269,43 @@
     Bookmark URL
   </message>
   <message name="IDS_BOOKMARK_EDITOR_URL_LABEL" desc="Label shown before the URL.">
-    URL:
-  </message>
-  <message name="IDS_BOOKMARK_EDITOR_NEW_FOLDER_BUTTON" desc="Text on the new folder button.">
-    New folder
-  </message>
-  <message name="IDS_BOOKMARK_EDITOR_NEW_FOLDER_MENU_ITEM" desc="Text on the new folder context menu item.">
-    &amp;New folder
+    URL
   </message>
   <message name="IDS_BOOKMARK_EDITOR_CONFIRM_DELETE" desc="The message shown in the dialog asking the user to confirm deleting a folder. [ICU Syntax]">
     {NUM_BOOKMARKS, plural,
      =1 {This folder contains a bookmark. Are you sure you want to delete it?}
      other {This folder contains # bookmarks. Are you sure you want to delete it?}}
   </message>
-  <message name="IDS_BOOKMARK_FOLDER_EDITOR_WINDOW_TITLE" desc="Window title of editor for bookmark folders">
-    Edit folder name
-  </message>
-  <message name="IDS_BOOKMARK_FOLDER_EDITOR_WINDOW_TITLE_NEW" desc="Window title of editor for new bookmark folders">
-    New folder
-  </message>
   <if expr="not use_titlecase">
+    <message name="IDS_BOOKMARK_EDITOR_NEW_FOLDER_BUTTON" desc="Text on the new folder button.">
+      New folder
+    </message>
+    <message name="IDS_BOOKMARK_EDITOR_NEW_FOLDER_MENU_ITEM" desc="Text on the new folder context menu item.">
+      &amp;New folder
+    </message>
+    <message name="IDS_BOOKMARK_FOLDER_EDITOR_WINDOW_TITLE" desc="Window title of editor for bookmark folders">
+      Edit folder name
+    </message>
+    <message name="IDS_BOOKMARK_FOLDER_EDITOR_WINDOW_TITLE_NEW" desc="Window title of editor for new bookmark folders">
+      New folder
+    </message>
     <message name="IDS_BOOKMARK_ALL_TABS_DIALOG_TITLE" desc="The title of the Bookmark All Tabs dialog.">
       Bookmark all tabs
     </message>
   </if>
   <if expr="use_titlecase">
+    <message name="IDS_BOOKMARK_EDITOR_NEW_FOLDER_BUTTON" desc="In Title Case: Text on the new folder button.">
+      New Folder
+    </message>
+    <message name="IDS_BOOKMARK_EDITOR_NEW_FOLDER_MENU_ITEM" desc="In Title Case: Text on the new folder context menu item.">
+      &amp;New Folder
+    </message>
+    <message name="IDS_BOOKMARK_FOLDER_EDITOR_WINDOW_TITLE" desc="In Title Case: Window title of editor for bookmark folders">
+      Edit Folder Name
+    </message>
+    <message name="IDS_BOOKMARK_FOLDER_EDITOR_WINDOW_TITLE_NEW" desc="In Title Case: Window title of editor for new bookmark folders">
+      New Folder
+    </message>
     <message name="IDS_BOOKMARK_ALL_TABS_DIALOG_TITLE" desc="In Title Case: The title of the Bookmark All Tabs dialog.">
       Bookmark All Tabs
     </message>
