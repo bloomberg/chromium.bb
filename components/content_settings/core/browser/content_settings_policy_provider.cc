@@ -200,7 +200,7 @@ void PolicyProvider::GetContentSettingsFromPreferences(
 
     const PrefService::Preference* pref = prefs_->FindPreference(pref_name);
     DCHECK(pref);
-    DCHECK(pref->IsManaged());
+    DCHECK(!pref->HasUserSetting() && !pref->HasExtensionSetting());
 
     const base::ListValue* pattern_str_list = nullptr;
     if (!pref->GetValue()->GetAsList(&pattern_str_list)) {
@@ -257,7 +257,7 @@ void PolicyProvider::GetAutoSelectCertificateSettingsFromPreferences(
 
   const PrefService::Preference* pref = prefs_->FindPreference(pref_name);
   DCHECK(pref);
-  DCHECK(pref->IsManaged());
+  DCHECK(!pref->HasUserSetting() && !pref->HasExtensionSetting());
 
   const base::ListValue* pattern_filter_str_list = nullptr;
   if (!pref->GetValue()->GetAsList(&pattern_filter_str_list)) {
