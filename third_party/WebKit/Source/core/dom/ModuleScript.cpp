@@ -11,19 +11,6 @@
 
 namespace blink {
 
-const char* ModuleInstantiationStateToString(ModuleInstantiationState state) {
-  switch (state) {
-    case ModuleInstantiationState::kUninstantiated:
-      return "uninstantiated";
-    case ModuleInstantiationState::kInstantiated:
-      return "instantiated";
-    case ModuleInstantiationState::kErrored:
-      return "errored";
-  }
-  NOTREACHED();
-  return "";
-}
-
 ModuleScript* ModuleScript::Create(
     const String& source_text,
     Modulator* modulator,

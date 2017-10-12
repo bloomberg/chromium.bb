@@ -20,15 +20,6 @@
 
 namespace blink {
 
-// https://html.spec.whatwg.org/multipage/webappapis.html#concept-module-script-state
-enum class ModuleInstantiationState {
-  kUninstantiated,
-  kErrored,
-  kInstantiated,
-};
-
-const char* ModuleInstantiationStateToString(ModuleInstantiationState);
-
 // ModuleScript is a model object for the "module script" spec concept.
 // https://html.spec.whatwg.org/multipage/webappapis.html#module-script
 class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
@@ -58,8 +49,6 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
   ScriptModule Record() const;
   bool HasEmptyRecord() const;
   const KURL& BaseURL() const { return base_url_; }
-
-  ModuleInstantiationState State() const { return state_; }
 
   // Corresponds to spec concept: module script's record's [[Status]]
   ScriptModuleState RecordStatus() const;
@@ -131,9 +120,6 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
 
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-module-script-base-url
   const KURL base_url_;
-
-  // https://html.spec.whatwg.org/multipage/webappapis.html#concept-module-script-instantiation-state
-  ModuleInstantiationState state_ = ModuleInstantiationState::kUninstantiated;
 
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-module-script-pre-instantiation-error
   //
