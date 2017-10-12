@@ -741,7 +741,7 @@ void BrowserPluginGuest::RenderProcessGone(base::TerminationStatus status) {
 bool BrowserPluginGuest::ShouldForwardToBrowserPluginGuest(
     const IPC::Message& message) {
   return (message.type() != BrowserPluginHostMsg_Attach::ID) &&
-      (IPC_MESSAGE_CLASS(message) == BrowserPluginMsgStart);
+         (IPC_MESSAGE_CLASS(message) == BrowserPluginMsgStart);
 }
 
 bool BrowserPluginGuest::OnMessageReceived(const IPC::Message& message) {
@@ -788,12 +788,10 @@ bool BrowserPluginGuest::OnMessageReceived(const IPC::Message& message,
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(BrowserPluginGuest, message,
                                    render_frame_host)
-#if defined(OS_MACOSX)
     // MacOS X creates and populates platform-specific select drop-down menus
     // whereas other platforms merely create a popup window that the guest
     // renderer process paints inside.
     IPC_MESSAGE_HANDLER(FrameHostMsg_ShowPopup, OnShowPopup)
-#endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -1093,7 +1091,14 @@ void BrowserPluginGuest::OnShowPopup(
     RenderFrameHost* render_frame_host,
     const FrameHostMsg_ShowPopup_Params& params) {
   gfx::Rect translated_bounds(params.bounds);
-  translated_bounds.Offset(guest_window_rect_.OffsetFromOrigin());
+  WebContents* guest = web_contents();
+  if (GuestMode::IsCrossProcessFrameGuest(guest)) {
+    translated_bounds.set_origin(
+        guest->GetRenderWidgetHostView()->TransformPointToRootCoordSpace(
+            translated_bounds.origin()));
+  } else {
+    translated_bounds.Offset(guest_window_rect_.OffsetFromOrigin());
+  }
   BrowserPluginPopupMenuHelper popup_menu_helper(
       owner_web_contents_->GetMainFrame(), render_frame_host);
   popup_menu_helper.ShowPopupMenu(translated_bounds,
