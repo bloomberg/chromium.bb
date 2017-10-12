@@ -96,6 +96,8 @@ class FetchDataLoaderAsBlobHandle final : public FetchDataLoader,
     }
   }
 
+  String DebugName() const override { return "FetchDataLoaderAsBlobHandle"; }
+
   DEFINE_INLINE_TRACE() {
     visitor->Trace(consumer_);
     visitor->Trace(client_);
@@ -167,6 +169,8 @@ class FetchDataLoaderAsArrayBuffer final : public FetchDataLoader,
     }
   }
 
+  String DebugName() const override { return "FetchDataLoaderAsArrayBuffer"; }
+
   DEFINE_INLINE_TRACE() {
     visitor->Trace(consumer_);
     visitor->Trace(client_);
@@ -218,6 +222,8 @@ class FetchDataLoaderAsFailure final : public FetchDataLoader,
       }
     }
   }
+
+  String DebugName() const override { return "FetchDataLoaderAsFailure"; }
 
   void Cancel() override { consumer_->Cancel(); }
 
@@ -298,6 +304,8 @@ class FetchDataLoaderAsFormData final : public FetchDataLoader,
       }
     }
   }
+
+  String DebugName() const override { return "FetchDataLoaderAsFormData"; }
 
   void Cancel() override {
     consumer_->Cancel();
@@ -453,6 +461,8 @@ class FetchDataLoaderAsString final : public FetchDataLoader,
     }
   }
 
+  String DebugName() const override { return "FetchDataLoaderAsString"; }
+
   void Cancel() override { consumer_->Cancel(); }
 
   DEFINE_INLINE_TRACE() {
@@ -542,6 +552,8 @@ class FetchDataLoaderAsDataPipe final : public FetchDataLoader,
       }
     }
   }
+
+  String DebugName() const override { return "FetchDataLoaderAsDataPipe"; }
 
   void Cancel() override { StopInternal(); }
 

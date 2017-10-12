@@ -50,6 +50,7 @@ class MODULES_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase,
 
   // BytesConsumer::Client
   void OnStateChange() override;
+  String DebugName() const override { return "BodyStreamBuffer"; }
 
   bool IsStreamReadable();
   bool IsStreamClosed();

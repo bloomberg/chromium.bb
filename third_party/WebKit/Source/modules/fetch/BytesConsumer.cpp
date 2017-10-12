@@ -25,6 +25,7 @@ class NoopClient final : public GarbageCollectedFinalized<NoopClient>,
 
  public:
   void OnStateChange() override {}
+  String DebugName() const override { return "NoopClient"; }
 };
 
 class TeeHelper final : public GarbageCollectedFinalized<TeeHelper>,
@@ -85,6 +86,7 @@ class TeeHelper final : public GarbageCollectedFinalized<TeeHelper>,
       }
     }
   }
+  String DebugName() const override { return "TeeHelper"; }
 
   BytesConsumer::PublicState GetPublicState() const {
     return src_->GetPublicState();

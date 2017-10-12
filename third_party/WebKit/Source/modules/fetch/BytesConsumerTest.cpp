@@ -26,6 +26,7 @@ class BytesConsumerTestClient final
 
  public:
   void OnStateChange() override { ++num_on_state_change_called_; }
+  String DebugName() const override { return "BytesConsumerTestClient"; }
   int NumOnStateChangeCalled() const { return num_on_state_change_called_; }
 
  private:
