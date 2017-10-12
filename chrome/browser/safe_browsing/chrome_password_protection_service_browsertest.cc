@@ -260,7 +260,7 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
-                       VeriryUnhandledPasswordReuse) {
+                       VerifyUnhandledPasswordReuse) {
   histograms_.ExpectTotalCount(kGaiaPasswordChangeHistogramName, 0);
   ChromePasswordProtectionService* service = GetService(/*is_incognito=*/false);
   ASSERT_TRUE(service);
@@ -298,7 +298,7 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
   // Simulates a Gaia password change.
   SimulateGaiaPasswordChange(/*is_incognito=*/false);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(0u, service->unhandled_password_reuses().size());
+  EXPECT_TRUE(service->unhandled_password_reuses().empty());
   EXPECT_FALSE(
       ChromePasswordProtectionService::ShouldShowChangePasswordSettingUI(
           profile));

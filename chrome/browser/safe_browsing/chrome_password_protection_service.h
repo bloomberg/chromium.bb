@@ -188,6 +188,9 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
                            VerifyPasswordReuseUserEventNotRecorded);
   FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceTest,
                            VerifyPasswordReuseDetectedUserEventRecorded);
+  FRIEND_TEST_ALL_PREFIXES(
+      ChromePasswordProtectionServiceTest,
+      VerifyPasswordReuseLookupEventNotRecordedFeatureNotEnabled);
   FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceTest,
                            VerifyPasswordReuseLookupUserEventRecorded);
   FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceTest,
@@ -207,6 +210,9 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   // Returns whether the profile is valid and has safe browsing service enabled.
   bool IsSafeBrowsingEnabled();
 
+  std::unique_ptr<sync_pb::UserEventSpecifics>
+  GetUserEventSpecificsWithNavigationId(int64_t navigation_id);
+
   std::unique_ptr<sync_pb::UserEventSpecifics> GetUserEventSpecifics(
       content::WebContents* web_contents);
 
@@ -222,6 +228,11 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
       sync_pb::UserEventSpecifics::GaiaPasswordReuse::PasswordReuseLookup::
           ReputationVerdict verdict,
       const std::string& verdict_token);
+
+  void LogPasswordReuseDialogInteraction(
+      int64_t navigation_id,
+      sync_pb::UserEventSpecifics::GaiaPasswordReuse::
+          PasswordReuseDialogInteraction::InteractionResult interaction_result);
 
   // Constructor used for tests only.
   ChromePasswordProtectionService(
