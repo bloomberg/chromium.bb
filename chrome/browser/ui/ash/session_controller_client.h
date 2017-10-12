@@ -12,7 +12,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/policy/device_off_hours_controller.h"
+#include "chrome/browser/chromeos/policy/off_hours/device_off_hours_controller.h"
 #include "chrome/browser/supervised_user/supervised_user_service_observer.h"
 #include "components/session_manager/core/session_manager_observer.h"
 #include "components/user_manager/user_manager.h"
@@ -41,7 +41,7 @@ class SessionControllerClient
       public session_manager::SessionManagerObserver,
       public SupervisedUserServiceObserver,
       public content::NotificationObserver,
-      public policy::DeviceOffHoursController::Observer {
+      public policy::off_hours::DeviceOffHoursController::Observer {
  public:
   SessionControllerClient();
   ~SessionControllerClient() override;

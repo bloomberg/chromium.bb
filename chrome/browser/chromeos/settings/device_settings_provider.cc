@@ -21,7 +21,7 @@
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
-#include "chrome/browser/chromeos/policy/device_off_hours_controller.h"
+#include "chrome/browser/chromeos/policy/off_hours/off_hours_proto_parser.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_cache.h"
 #include "chrome/browser/chromeos/tpm_firmware_update.h"
@@ -576,8 +576,8 @@ void DecodeGenericPolicies(
   }
 
   if (policy.has_device_off_hours()) {
-    auto off_hours_policy =
-        policy::ConvertOffHoursProtoToValue(policy.device_off_hours());
+    auto off_hours_policy = policy::off_hours::ConvertOffHoursProtoToValue(
+        policy.device_off_hours());
     if (off_hours_policy)
       new_values_cache->SetValue(kDeviceOffHours, std::move(off_hours_policy));
   }
