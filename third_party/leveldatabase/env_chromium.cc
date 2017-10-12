@@ -19,6 +19,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -1204,12 +1205,29 @@ LevelDBStatusValue GetLevelDBStatusUMAValue(const leveldb::Status& s) {
 class DBTracker::TrackedDBImpl : public base::LinkNode<TrackedDBImpl>,
                                  public TrackedDB {
  public:
-  TrackedDBImpl(DBTracker* tracker, const std::string name, leveldb::DB* db)
+  TrackedDBImpl(DBTracker* tracker,
+                const std::string name,
+                leveldb::DB* db,
+                const leveldb::Cache* block_cache)
       : tracker_(tracker), name_(name), db_(db) {
-    tracker_->DatabaseOpened(this);
+    if (leveldb_chrome::GetSharedWebBlockCache() ==
+        leveldb_chrome::GetSharedBrowserBlockCache()) {
+      shared_read_cache_use_ = SharedReadCacheUse_Unified;
+    } else if (block_cache == leveldb_chrome::GetSharedBrowserBlockCache()) {
+      shared_read_cache_use_ = SharedReadCacheUse_Browser;
+    } else if (block_cache == leveldb_chrome::GetSharedWebBlockCache()) {
+      shared_read_cache_use_ = SharedReadCacheUse_Web;
+    } else if (block_cache == leveldb_chrome::GetSharedInMemoryBlockCache()) {
+      shared_read_cache_use_ = SharedReadCacheUse_InMemory;
+    } else {
+      NOTREACHED();
+    }
+    tracker_->DatabaseOpened(this, shared_read_cache_use_);
   }
 
-  ~TrackedDBImpl() override { tracker_->DatabaseDestroyed(this); }
+  ~TrackedDBImpl() override {
+    tracker_->DatabaseDestroyed(this, shared_read_cache_use_);
+  }
 
   const std::string& name() const override { return name_; }
 
@@ -1265,6 +1283,9 @@ class DBTracker::TrackedDBImpl : public base::LinkNode<TrackedDBImpl>,
   DBTracker* tracker_;
   std::string name_;
   std::unique_ptr<leveldb::DB> db_;
+  SharedReadCacheUse shared_read_cache_use_;
+
+  DISALLOW_COPY_AND_ASSIGN(TrackedDBImpl);
 };
 
 // Reports live databases to memory-infra. For each live database the following
@@ -1359,6 +1380,22 @@ base::trace_event::MemoryAllocatorDump* DBTracker::GetOrCreateAllocatorDump(
   return dump;
 }
 
+void DBTracker::UpdateHistograms() {
+  base::AutoLock lock(databases_lock_);
+  if (leveldb_chrome::GetSharedWebBlockCache() ==
+      leveldb_chrome::GetSharedBrowserBlockCache()) {
+    UMA_HISTOGRAM_COUNTS_100("LevelDB.SharedCache.DBCount.Unified",
+                             database_use_count_[SharedReadCacheUse_Unified]);
+  } else {
+    UMA_HISTOGRAM_COUNTS_100("LevelDB.SharedCache.DBCount.Web",
+                             database_use_count_[SharedReadCacheUse_Web]);
+    UMA_HISTOGRAM_COUNTS_100("LevelDB.SharedCache.DBCount.Browser",
+                             database_use_count_[SharedReadCacheUse_Browser]);
+  }
+  UMA_HISTOGRAM_COUNTS_100("LevelDB.SharedCache.DBCount.InMemory",
+                           database_use_count_[SharedReadCacheUse_InMemory]);
+}
+
 bool DBTracker::IsTrackedDB(const leveldb::DB* db) const {
   base::AutoLock lock(databases_lock_);
   for (auto* i = databases_.head(); i != databases_.end(); i = i->next()) {
@@ -1378,7 +1415,7 @@ leveldb::Status DBTracker::OpenDatabase(const leveldb::Options& options,
   CHECK((status.ok() && db) || (!status.ok() && !db));
   if (status.ok()) {
     // TrackedDBImpl ctor adds the instance to the tracker.
-    *dbptr = new TrackedDBImpl(GetInstance(), name, db);
+    *dbptr = new TrackedDBImpl(GetInstance(), name, db, options.block_cache);
   }
   return status;
 }
@@ -1390,26 +1427,32 @@ void DBTracker::VisitDatabases(const DatabaseVisitor& visitor) {
   }
 }
 
-void DBTracker::DatabaseOpened(TrackedDBImpl* database) {
+void DBTracker::DatabaseOpened(TrackedDBImpl* database,
+                               SharedReadCacheUse cache_use) {
   base::AutoLock lock(databases_lock_);
   databases_.Append(database);
+  database_use_count_[cache_use]++;
 }
 
-void DBTracker::DatabaseDestroyed(TrackedDBImpl* database) {
+void DBTracker::DatabaseDestroyed(TrackedDBImpl* database,
+                                  SharedReadCacheUse cache_use) {
   base::AutoLock lock(databases_lock_);
   database->RemoveFromList();
+  DCHECK_LT(0, database_use_count_[cache_use]);
+  database_use_count_[cache_use]--;
 }
 
 leveldb::Status OpenDB(const leveldb_env::Options& options,
                        const std::string& name,
                        std::unique_ptr<leveldb::DB>* dbptr) {
+  // For UMA logging purposes we need the block cache to be created outside of
+  // leveldb so that the size can be logged and it can be pruned.
+  DCHECK(options.block_cache != nullptr);
   DBTracker::TrackedDB* tracked_db = nullptr;
   leveldb::Status s;
   if (options.env && leveldb_chrome::IsMemEnv(options.env)) {
-    // Zero size cache to prevent cache hits.
-    static leveldb::Cache* s_empty_cache = leveldb::NewLRUCache(0);
     Options mem_options = options;
-    mem_options.block_cache = s_empty_cache;
+    mem_options.block_cache = leveldb_chrome::GetSharedInMemoryBlockCache();
     mem_options.write_buffer_size = 0;  // minimum size.
     s = DBTracker::GetInstance()->OpenDatabase(mem_options, name, &tracked_db);
   } else {

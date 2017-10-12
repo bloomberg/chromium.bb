@@ -19,6 +19,7 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/process_type.h"
 #include "ppapi/features/features.h"
+#include "third_party/leveldatabase/leveldb_chrome.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
@@ -294,6 +295,7 @@ void MetricsMemoryDetails::UpdateHistograms() {
 #if defined(OS_CHROMEOS)
   UpdateSwapHistograms();
 #endif
+  leveldb_chrome::UpdateHistograms();
 }
 
 #if defined(OS_CHROMEOS)

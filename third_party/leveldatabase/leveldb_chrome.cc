@@ -9,7 +9,9 @@
 #include "base/bind.h"
 #include "base/containers/flat_set.h"
 #include "base/memory/memory_pressure_listener.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/sys_info.h"
+#include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
 #include "util/mutexlock.h"
 
@@ -80,6 +82,24 @@ class Globals {
     return in_memory_envs_.find(env) != in_memory_envs_.end();
   }
 
+  void UpdateHistograms() {
+    leveldb_env::DBTracker::GetInstance()->UpdateHistograms();
+
+    // leveldb limits the read cache size to 1GB, but its default value is 8MB,
+    // and Chrome uses either 1MB or 8MB.
+    if (GetSharedWebBlockCache() == GetSharedBrowserBlockCache()) {
+      UMA_HISTOGRAM_COUNTS_10M("LevelDB.SharedCache.BytesUsed.Unified",
+                               browser_block_cache_->TotalCharge());
+      return;
+    }
+    UMA_HISTOGRAM_COUNTS_10M("LevelDB.SharedCache.BytesUsed.Web",
+                             web_block_cache_->TotalCharge());
+    UMA_HISTOGRAM_COUNTS_10M("LevelDB.SharedCache.BytesUsed.Browser",
+                             browser_block_cache_->TotalCharge());
+    UMA_HISTOGRAM_COUNTS_10M("LevelDB.SharedCache.BytesUsed.InMemory",
+                             GetSharedInMemoryBlockCache()->TotalCharge());
+  }
+
  private:
   ~Globals() {}
 
@@ -124,6 +144,12 @@ Cache* GetSharedBrowserBlockCache() {
   return Globals::GetInstance()->browser_block_cache();
 }
 
+Cache* GetSharedInMemoryBlockCache() {
+  // Zero size cache to prevent cache hits.
+  static leveldb::Cache* s_empty_cache = leveldb::NewLRUCache(0);
+  return s_empty_cache;
+}
+
 bool IsMemEnv(const leveldb::Env* env) {
   DCHECK(env);
   return Globals::GetInstance()->IsInMemoryEnv(env);
@@ -131,6 +157,10 @@ bool IsMemEnv(const leveldb::Env* env) {
 
 leveldb::Env* NewMemEnv(leveldb::Env* base_env) {
   return new ChromeMemEnv(base_env);
+}
+
+void UpdateHistograms() {
+  return Globals::GetInstance()->UpdateHistograms();
 }
 
 }  // namespace leveldb_chrome
