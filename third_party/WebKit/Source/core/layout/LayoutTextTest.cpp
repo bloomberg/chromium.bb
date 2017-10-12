@@ -6,6 +6,7 @@
 
 #include "core/layout/LayoutTestHelper.h"
 #include "core/layout/line/InlineTextBox.h"
+#include "platform/runtime_enabled_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -92,6 +93,44 @@ TEST_F(LayoutTextTest, WidthLengthBeyondLength) {
       GetBasicText()->Width(0u, 2u, LayoutUnit(), TextDirection::kLtr, false);
   ASSERT_GE(width, 4.f);
   ASSERT_LE(width, 20.f);
+}
+
+TEST_F(LayoutTextTest, CaretMinMaxOffsetNG) {
+  RuntimeEnabledFeatures::SetLayoutNGEnabled(true);
+  RuntimeEnabledFeatures::SetLayoutNGPaintFragmentsEnabled(true);
+
+  SetBasicBody("foo");
+  EXPECT_EQ(0, GetBasicText()->CaretMinOffset());
+  EXPECT_EQ(3, GetBasicText()->CaretMaxOffset());
+
+  SetBasicBody("  foo");
+  EXPECT_EQ(2, GetBasicText()->CaretMinOffset());
+  EXPECT_EQ(5, GetBasicText()->CaretMaxOffset());
+
+  SetBasicBody("foo  ");
+  EXPECT_EQ(0, GetBasicText()->CaretMinOffset());
+  EXPECT_EQ(3, GetBasicText()->CaretMaxOffset());
+
+  SetBasicBody(" foo  ");
+  EXPECT_EQ(1, GetBasicText()->CaretMinOffset());
+  EXPECT_EQ(4, GetBasicText()->CaretMaxOffset());
+}
+
+TEST_F(LayoutTextTest, ResolvedTextLengthNG) {
+  RuntimeEnabledFeatures::SetLayoutNGEnabled(true);
+  RuntimeEnabledFeatures::SetLayoutNGPaintFragmentsEnabled(true);
+
+  SetBasicBody("foo");
+  EXPECT_EQ(3u, GetBasicText()->ResolvedTextLength());
+
+  SetBasicBody("  foo");
+  EXPECT_EQ(3u, GetBasicText()->ResolvedTextLength());
+
+  SetBasicBody("foo  ");
+  EXPECT_EQ(3u, GetBasicText()->ResolvedTextLength());
+
+  SetBasicBody(" foo  ");
+  EXPECT_EQ(3u, GetBasicText()->ResolvedTextLength());
 }
 
 }  // namespace blink
