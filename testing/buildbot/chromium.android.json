@@ -2194,7 +2194,8 @@
           "dimension_sets": [
             {
               "device_os": "MMB29Q",
-              "device_type": "bullhead"
+              "device_type": "bullhead",
+              "temp_band": "<30"
             }
           ],
           "hard_timeout": 1500,
