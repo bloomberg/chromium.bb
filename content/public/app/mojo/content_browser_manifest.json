@@ -154,6 +154,7 @@
           "media::mojom::VideoDecodeStatsRecorder",
           "media::mojom::WatchTimeRecorderProvider",
           "mojom::MediaDevicesDispatcherHost",
+          "network::mojom::RestrictedCookieManager",
           "payments::mojom::PaymentManager",
           "payments::mojom::PaymentRequest",
           "resource_coordinator::mojom::CoordinationUnit",

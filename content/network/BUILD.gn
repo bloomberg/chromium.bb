@@ -49,6 +49,8 @@ source_set("network_sources") {
     "proxy_resolver_factory_mojo.h",
     "proxy_service_mojo.cc",
     "proxy_service_mojo.h",
+    "restricted_cookie_manager_impl.cc",
+    "restricted_cookie_manager_impl.h",
     "url_loader_impl.cc",
     "url_loader_impl.h",
   ]

@@ -102,6 +102,7 @@ target("jumbo_" + modules_target_type, "modules") {
     "//third_party/WebKit/Source/modules/canvas",
     "//third_party/WebKit/Source/modules/canvas2d",
     "//third_party/WebKit/Source/modules/compositorworker",
+    "//third_party/WebKit/Source/modules/cookie_store",
     "//third_party/WebKit/Source/modules/credentialmanager",
     "//third_party/WebKit/Source/modules/crypto",
     "//third_party/WebKit/Source/modules/csspaint",

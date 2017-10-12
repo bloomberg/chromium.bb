@@ -235,10 +235,14 @@ class CookieManagerImplTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(CookieManagerImplTest);
 };
 
+namespace {
+
 bool CompareCanonicalCookies(const net::CanonicalCookie& c1,
                              const net::CanonicalCookie& c2) {
   return c1.FullCompare(c2);
 }
+
+}  // anonymous namespace
 
 // Test the GetAllCookies accessor.  Also tests that canonical
 // cookies come out of the store unchanged.
