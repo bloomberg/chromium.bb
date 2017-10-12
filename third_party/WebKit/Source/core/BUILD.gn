@@ -363,7 +363,7 @@ generate_event_interfaces("core_event_interfaces") {
     "html/track/TrackEvent.idl",
     "mojo/test/MojoInterfaceRequestEvent.idl",
   ]
-  output_file = "core/EventNames.json5"
+  output_file = "core/event_names.json5"
 }
 
 # generated_testing_idls -------------------------------------------------------
@@ -925,7 +925,7 @@ process_json5_files("make_core_generated_svg_element_type_helpers") {
 
 make_event_factory("make_core_generated_event_factory") {
   in_files = [
-    "$blink_core_output_dir/EventNames.json5",
+    "$blink_core_output_dir/event_names.json5",
     "events/EventAliases.json5",
   ]
   outputs = [
@@ -955,17 +955,17 @@ make_names("make_core_generated_media_type_names") {
 }
 
 make_names("make_core_generated_event_names") {
-  in_files = [ "$blink_core_output_dir/EventNames.json5" ]
+  in_files = [ "$blink_core_output_dir/event_names.json5" ]
   output_dir = blink_core_output_dir
 }
 
 make_names("make_core_generated_event_target_names") {
-  in_files = [ "events/EventTargetNames.json5" ]
+  in_files = [ "events/event_target_names.json5" ]
   output_dir = blink_core_output_dir
 }
 
 make_names("make_core_generated_event_type_names") {
-  in_files = [ "events/EventTypeNames.json5" ]
+  in_files = [ "events/event_type_names.json5" ]
   output_dir = blink_core_output_dir
 }
 

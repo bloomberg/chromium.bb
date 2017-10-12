@@ -27,7 +27,7 @@
 
 #include "core/xmlhttprequest/XMLHttpRequestProgressEventThrottle.h"
 
-#include "core/EventTypeNames.h"
+#include "core/event_type_names.h"
 #include "core/events/ProgressEvent.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/probe/CoreProbes.h"

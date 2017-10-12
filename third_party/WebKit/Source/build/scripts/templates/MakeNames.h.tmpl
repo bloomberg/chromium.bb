@@ -7,11 +7,7 @@
 #define {{namespace}}{{suffix}}Names_h
 
 {% set symbol_export = '%s ' % export if export else '' %}
-{% if suffix %}
-#include "core/{{namespace}}Names.h"
-{% else %}
 #include "platform/wtf/text/AtomicString.h"
-{% endif %}
 {% if export == 'CORE_EXPORT' %}
 #include "core/CoreExport.h"
 {% elif export == 'MODULES_EXPORT' %}

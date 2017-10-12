@@ -25,7 +25,7 @@
 
 #include "core/xmlhttprequest/XMLHttpRequestUpload.h"
 
-#include "core/EventTypeNames.h"
+#include "core/event_type_names.h"
 #include "core/events/ProgressEvent.h"
 #include "core/probe/CoreProbes.h"
 #include "platform/wtf/Assertions.h"

@@ -4,7 +4,7 @@
 
 #include "modules/eventsource/EventSourceParser.h"
 
-#include "core/EventTypeNames.h"
+#include "core/event_type_names.h"
 #include "modules/eventsource/EventSource.h"
 #include "platform/wtf/ASCIICType.h"
 #include "platform/wtf/Assertions.h"

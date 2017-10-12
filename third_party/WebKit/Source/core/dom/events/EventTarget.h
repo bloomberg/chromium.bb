@@ -34,12 +34,12 @@
 
 #include <memory>
 #include "core/CoreExport.h"
-#include "core/EventNames.h"
-#include "core/EventTargetNames.h"
-#include "core/EventTypeNames.h"
 #include "core/dom/events/AddEventListenerOptionsResolved.h"
 #include "core/dom/events/EventDispatchResult.h"
 #include "core/dom/events/EventListenerMap.h"
+#include "core/event_names.h"
+#include "core/event_target_names.h"
+#include "core/event_type_names.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Allocator.h"
