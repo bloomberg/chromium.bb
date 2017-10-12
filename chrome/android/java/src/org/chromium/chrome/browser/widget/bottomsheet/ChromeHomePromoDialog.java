@@ -109,10 +109,10 @@ public class ChromeHomePromoDialog extends PromoDialog {
         }
 
         ChromeActivity activity = (ChromeActivity) getOwnerActivity();
-        Tab tab = activity.getActivityTab();
+        final Tab tab = activity.getActivityTab();
 
         boolean showOptOutSnackbar = false;
-        if (!mSwitchStateShouldEnable
+        if (tab != null && !mSwitchStateShouldEnable
                 && ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_OPT_OUT_SNACKBAR)) {
             try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
                 showOptOutSnackbar =
@@ -131,7 +131,7 @@ public class ChromeHomePromoDialog extends PromoDialog {
         }
 
         // Detach the foreground tab and. It will be reattached when the activity is restarted.
-        tab.detachAndStartReparenting(null, null, finalizeCallback);
+        if (tab != null) tab.detachAndStartReparenting(null, null, finalizeCallback);
 
         getOwnerActivity().recreate();
     }
