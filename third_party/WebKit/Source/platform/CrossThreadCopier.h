@@ -43,9 +43,10 @@
 #include "platform/wtf/TypeTraits.h"
 #include "platform/wtf/WeakPtr.h"
 #include "third_party/WebKit/common/message_port/message_port_channel.h"
-#include "third_party/skia/include/core/SkRefCnt.h"
 
 class SkRefCnt;
+template <typename T>
+class sk_sp;
 
 namespace WTF {
 

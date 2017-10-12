@@ -29,6 +29,7 @@
 #include "platform/instrumentation/tracing/web_process_memory_dump.h"
 #include "platform/wtf/text/UTF8.h"
 #include "platform/wtf/text/Unicode.h"
+#include "third_party/skia/include/core/SkData.h"
 
 namespace blink {
 

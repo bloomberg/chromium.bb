@@ -106,7 +106,6 @@ jumbo_source_set("loader") {
   public_deps = [
     "//base",
     "//net",
-    "//skia",
     "//third_party/icu",
     "//v8",
   ]

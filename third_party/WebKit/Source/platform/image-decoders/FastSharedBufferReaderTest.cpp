@@ -30,6 +30,7 @@
 
 #include "platform/image-decoders/FastSharedBufferReader.h"
 #include "platform/image-decoders/SegmentReader.h"
+#include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkRWBuffer.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
