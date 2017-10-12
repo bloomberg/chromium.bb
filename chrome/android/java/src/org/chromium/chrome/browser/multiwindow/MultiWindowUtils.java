@@ -233,6 +233,11 @@ public class MultiWindowUtils implements ActivityStateListener {
         for (AppTask task : appTasks) {
             if (task.getTaskInfo() == null || task.getTaskInfo().baseActivity == null) continue;
             String baseActivity = task.getTaskInfo().baseActivity.getClassName();
+
+            if (TextUtils.equals(baseActivity, ChromeTabbedActivity.MAIN_LAUNCHER_ACTIVITY_NAME)) {
+                baseActivity = ChromeTabbedActivity.class.getName();
+            }
+
             if (TextUtils.equals(baseActivity, className)) return true;
         }
         return false;
