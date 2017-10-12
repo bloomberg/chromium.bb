@@ -63,7 +63,7 @@ namespace content {
 
 namespace {
 
-TracingControllerImpl* g_controller = nullptr;
+TracingControllerImpl* g_tracing_controller = nullptr;
 
 std::string GetNetworkTypeString() {
   switch (net::NetworkChangeNotifier::GetConnectionType()) {
@@ -199,12 +199,12 @@ TracingController* TracingController::GetInstance() {
 
 TracingControllerImpl::TracingControllerImpl()
     : delegate_(GetContentClient()->browser()->GetTracingDelegate()) {
-  DCHECK(!g_controller);
+  DCHECK(!g_tracing_controller);
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Deliberately leaked, like this class.
   base::FileTracing::SetProvider(new FileTracingProviderImpl);
   AddAgents();
-  g_controller = this;
+  g_tracing_controller = this;
 }
 
 TracingControllerImpl::~TracingControllerImpl() = default;
@@ -252,8 +252,8 @@ TracingControllerImpl::GenerateMetadataDict() const {
 }
 
 TracingControllerImpl* TracingControllerImpl::GetInstance() {
-  DCHECK(g_controller);
-  return g_controller;
+  DCHECK(g_tracing_controller);
+  return g_tracing_controller;
 }
 
 bool TracingControllerImpl::GetCategories(

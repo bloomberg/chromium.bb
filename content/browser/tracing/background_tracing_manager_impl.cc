@@ -31,8 +31,8 @@ namespace content {
 
 namespace {
 
-base::LazyInstance<BackgroundTracingManagerImpl>::Leaky g_controller =
-    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<BackgroundTracingManagerImpl>::Leaky
+    g_background_tracing_manager = LAZY_INSTANCE_INITIALIZER;
 
 // These values are used for a histogram. Do not reorder.
 enum BackgroundTracingMetrics {
@@ -87,7 +87,7 @@ BackgroundTracingManager* BackgroundTracingManager::GetInstance() {
 }
 
 BackgroundTracingManagerImpl* BackgroundTracingManagerImpl::GetInstance() {
-  return g_controller.Pointer();
+  return g_background_tracing_manager.Pointer();
 }
 
 BackgroundTracingManagerImpl::BackgroundTracingManagerImpl()
