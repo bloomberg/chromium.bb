@@ -403,6 +403,10 @@ int HeadlessWebContentsImpl::GetMainFrameTreeNodeId() const {
   return web_contents()->GetMainFrame()->GetFrameTreeNodeId();
 }
 
+std::string HeadlessWebContentsImpl::GetMainFrameDevToolsId() const {
+  return web_contents()->GetMainFrame()->GetDevToolsFrameToken().ToString();
+}
+
 bool HeadlessWebContentsImpl::OpenURL(const GURL& url) {
   if (!url.is_valid())
     return false;

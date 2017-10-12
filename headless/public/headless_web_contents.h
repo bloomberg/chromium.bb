@@ -88,6 +88,8 @@ class HEADLESS_EXPORT HeadlessWebContents {
 
   virtual int GetMainFrameTreeNodeId() const = 0;
 
+  virtual std::string GetMainFrameDevToolsId() const = 0;
+
  protected:
   HeadlessWebContents() {}
 
