@@ -18,6 +18,8 @@ enum class SourceIdType : int64_t {
   NAVIGATION_ID = 1,
 };
 
+const SourceId kInvalidSourceId = 0;
+
 // Get a new source ID, which is unique for the duration of a browser session.
 METRICS_EXPORT SourceId AssignNewSourceId();
 

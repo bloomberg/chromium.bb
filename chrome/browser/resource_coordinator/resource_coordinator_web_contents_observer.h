@@ -59,7 +59,7 @@ class ResourceCoordinatorWebContentsObserver
 
   std::unique_ptr<resource_coordinator::ResourceCoordinatorInterface>
       page_resource_coordinator_;
-  ukm::SourceId ukm_source_id_;
+  ukm::SourceId ukm_source_id_ = ukm::kInvalidSourceId;
 
   // Favicon and title are set when a page is loaded, we only want to send
   // signals to GRC about title and favicon update from the previous title and
