@@ -29,6 +29,7 @@ enum SquashingDisallowedReason {
   kSquashingDisallowedReasonSquashingLayerIsAnimating = 1 << 13,
   kSquashingDisallowedReasonRenderingContextMismatch = 1 << 14,
   kSquashingDisallowedReasonFragmentedContent = 1 << 15,
+  kSquashingDisallowedReasonBorderRadiusClipsDescendants = 1 << 16,
 };
 
 typedef unsigned SquashingDisallowedReasons;

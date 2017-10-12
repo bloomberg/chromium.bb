@@ -65,6 +65,10 @@ const SquashingDisallowedReasonStringMap kSquashingDisallowedReasonStringMap[] =
         {kSquashingDisallowedReasonFragmentedContent,
          "SquashingDisallowedReasonFragmentedContent",
          "Cannot squash layers that are inside fragmentation contexts."},
+        {kSquashingDisallowedReasonBorderRadiusClipsDescendants,
+         "SquashingDisallowedReasonBorderRadiusClipsDecendants",
+         "Cannot squash layers that must apply a border radius clip to their "
+         "decendants"},
 };
 
 const size_t kNumberOfSquashingDisallowedReasons =

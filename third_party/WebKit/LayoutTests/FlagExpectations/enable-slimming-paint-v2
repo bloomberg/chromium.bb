@@ -1101,6 +1101,7 @@ crbug.com/707444 svg/custom/clip-mask-negative-scale.svg [ Failure ]
 crbug.com/707444 svg/custom/mask-inside-defs.svg [ Failure ]
 
 # Subpixel differences
+Bug(none) compositing/overflow/border-radius-prevents-squashing-with-inline-transform.html [ Failure ]
 Bug(none) compositing/composited-scaled-child-with-border-radius-parent-clip.html [ Failure ]
 Bug(none) compositing/composited-translated-child-with-border-radius-parent-clip.html [ Failure ]
 Bug(none) compositing/overflow/border-radius-on-grandparent-composited-grandchild.html [ Failure ]
