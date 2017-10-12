@@ -40,6 +40,8 @@
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
+#include "gpu/config/gpu_driver_bug_workaround_type.h"
+#include "gpu/config/gpu_feature_info.h"
 #include "platform/graphics/AcceleratedStaticBitmapImage.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/ImageBuffer.h"
@@ -239,7 +241,8 @@ bool DrawingBuffer::DefaultBufferRequiresAlphaChannelToBePreserved() {
   }
 
   bool rgb_emulation =
-      ContextProvider()->GetCapabilities().emulate_rgb_buffer_with_rgba ||
+      ContextProvider()->GetGpuFeatureInfo().IsWorkaroundEnabled(
+          gpu::DISABLE_GL_RGB_FORMAT) ||
       (ShouldUseChromiumImage() &&
        ContextProvider()->GetCapabilities().chromium_image_rgb_emulation);
   return !want_alpha_channel_ && rgb_emulation;
@@ -573,9 +576,8 @@ DrawingBuffer::TextureColorBufferParameters() {
   parameters.target = GL_TEXTURE_2D;
   if (want_alpha_channel_) {
     parameters.allocate_alpha_channel = true;
-  } else if (ContextProvider()
-                 ->GetCapabilities()
-                 .emulate_rgb_buffer_with_rgba) {
+  } else if (ContextProvider()->GetGpuFeatureInfo().IsWorkaroundEnabled(
+                 gpu::DISABLE_GL_RGB_FORMAT)) {
     parameters.allocate_alpha_channel = true;
   } else {
     parameters.allocate_alpha_channel =
@@ -1035,9 +1037,8 @@ void DrawingBuffer::ResolveMultisampleFramebufferInternal() {
     // multisampled renderbuffers and the alpha channel can be overwritten.
     // Clear the alpha channel of |m_fbo|.
     if (DefaultBufferRequiresAlphaChannelToBePreserved() &&
-        ContextProvider()
-            ->GetCapabilities()
-            .disable_multisampling_color_mask_usage) {
+        ContextProvider()->GetGpuFeatureInfo().IsWorkaroundEnabled(
+            gpu::DISABLE_MULTISAMPLING_COLOR_MASK_USAGE)) {
       gl_->ClearColor(0, 0, 0, 1);
       gl_->ColorMask(false, false, false, true);
       gl_->Clear(GL_COLOR_BUFFER_BIT);
@@ -1310,10 +1311,10 @@ GLenum DrawingBuffer::GetMultisampledRenderbufferFormat() {
   if (ShouldUseChromiumImage() &&
       ContextProvider()->GetCapabilities().chromium_image_rgb_emulation)
     return GL_RGBA8_OES;
-  if (ContextProvider()
-          ->GetCapabilities()
-          .disable_webgl_rgb_multisampling_usage)
+  if (ContextProvider()->GetGpuFeatureInfo().IsWorkaroundEnabled(
+          gpu::DISABLE_WEBGL_RGB_MULTISAMPLING_USAGE)) {
     return GL_RGBA8_OES;
+  }
   return GL_RGB8_OES;
 }
 

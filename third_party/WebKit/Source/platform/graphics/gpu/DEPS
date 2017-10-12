@@ -1,7 +1,7 @@
 include_rules = [
-    # For tests only!
     "+gpu/command_buffer/client/gles2_interface_stub.h",
     "+gpu/command_buffer/common/capabilities.h",
     "+gpu/command_buffer/common/gpu_memory_buffer_support.h",
+    "+gpu/config/gpu_driver_bug_workaround_type.h",
     "+gpu/config/gpu_feature_info.h"
 ]
