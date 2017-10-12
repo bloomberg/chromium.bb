@@ -210,23 +210,6 @@ wm_log(const char *fmt, ...)
 #endif
 }
 
-static int __attribute__ ((format (printf, 1, 2)))
-wm_log_continue(const char *fmt, ...)
-{
-#ifdef WM_DEBUG
-	int l;
-	va_list argp;
-
-	va_start(argp, fmt);
-	l = weston_vlog_continue(fmt, argp);
-	va_end(argp);
-
-	return l;
-#else
-	return 0;
-#endif
-}
-
 static void
 weston_output_weak_ref_init(struct weston_output_weak_ref *ref)
 {
@@ -430,7 +413,7 @@ dump_cardinal_array(FILE *fp, xcb_get_property_reply_t *reply)
 }
 
 void
-dump_property(struct weston_wm *wm,
+dump_property(FILE *fp, struct weston_wm *wm,
 	      xcb_atom_t property, xcb_get_property_reply_t *reply)
 {
 	int32_t *incr_value;
@@ -439,18 +422,11 @@ dump_property(struct weston_wm *wm,
 	xcb_window_t *window_value;
 	int width, len;
 	uint32_t i;
-	FILE *fp;
-	char *logstr;
-	size_t logsize;
-
-	fp = open_memstream(&logstr, &logsize);
-	if (!fp)
-		return;
 
 	width = fprintf(fp, "%s: ", get_atom_name(wm->conn, property));
 	if (reply == NULL) {
 		fprintf(fp, "(no reply)\n");
-		goto out;
+		return;
 	}
 
 	width += fprintf(fp, "%s/%d, length %d (value_len %d): ",
@@ -492,15 +468,10 @@ dump_property(struct weston_wm *wm,
 	} else {
 		fprintf(fp, "huh?\n");
 	}
-
-out:
-	if (fclose(fp) == 0)
-		wm_log_continue("%s", logstr);
-	free(logstr);
 }
 
 static void
-read_and_dump_property(struct weston_wm *wm,
+read_and_dump_property(FILE *fp, struct weston_wm *wm,
 		       xcb_window_t window, xcb_atom_t property)
 {
 	xcb_get_property_reply_t *reply;
@@ -510,7 +481,7 @@ read_and_dump_property(struct weston_wm *wm,
 				  property, XCB_ATOM_ANY, 0, 2048);
 	reply = xcb_get_property_reply(wm->conn, cookie, NULL);
 
-	dump_property(wm, property, reply);
+	dump_property(fp, wm, property, reply);
 
 	free(reply);
 }
@@ -1389,19 +1360,35 @@ weston_wm_handle_property_notify(struct weston_wm *wm, xcb_generic_event_t *even
 	xcb_property_notify_event_t *property_notify =
 		(xcb_property_notify_event_t *) event;
 	struct weston_wm_window *window;
+	FILE *fp;
+	char *logstr;
+	size_t logsize;
 
 	if (!wm_lookup_window(wm, property_notify->window, &window))
 		return;
 
 	window->properties_dirty = 1;
 
-	wm_log("XCB_PROPERTY_NOTIFY: window %d, ", property_notify->window);
-	if (property_notify->state == XCB_PROPERTY_DELETE)
-		wm_log_continue("deleted %s\n",
-				get_atom_name(wm->conn, property_notify->atom));
-	else
-		read_and_dump_property(wm, property_notify->window,
-				       property_notify->atom);
+	fp = open_memstream(&logstr, &logsize);
+	if (fp) {
+		fprintf(fp, "XCB_PROPERTY_NOTIFY: window %d, ", property_notify->window);
+		if (property_notify->state == XCB_PROPERTY_DELETE)
+			fprintf(fp, "deleted %s\n",
+					get_atom_name(wm->conn, property_notify->atom));
+		else
+			read_and_dump_property(fp, wm, property_notify->window,
+					       property_notify->atom);
+
+		if (fclose(fp) == 0)
+			wm_log("%s", logstr);
+		free(logstr);
+	} else {
+		/* read_and_dump_property() is a X11 roundtrip.
+		 * Mimic it to maintain ordering semantics between debug
+		 * and non-debug paths.
+		 */
+		get_atom_name(wm->conn, property_notify->atom);
+	}
 
 	if (property_notify->atom == wm->atom.net_wm_name ||
 	    property_notify->atom == XCB_ATOM_WM_NAME)

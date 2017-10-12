@@ -34,6 +34,12 @@
 #include "xwayland.h"
 #include "shared/helpers.h"
 
+#ifdef WM_DEBUG
+#define wm_log(...) weston_log(__VA_ARGS__)
+#else
+#define wm_log(...) do {} while (0)
+#endif
+
 static int
 writable_callback(int fd, uint32_t mask, void *data)
 {
@@ -102,6 +108,9 @@ weston_wm_get_incr_chunk(struct weston_wm *wm)
 {
 	xcb_get_property_cookie_t cookie;
 	xcb_get_property_reply_t *reply;
+	FILE *fp;
+	char *logstr;
+	size_t logsize;
 
 	cookie = xcb_get_property(wm->conn,
 				  0, /* delete */
@@ -115,7 +124,13 @@ weston_wm_get_incr_chunk(struct weston_wm *wm)
 	if (reply == NULL)
 		return;
 
-	dump_property(wm, wm->atom.wl_selection, reply);
+	fp = open_memstream(&logstr, &logsize);
+	if (fp) {
+		dump_property(fp, wm, wm->atom.wl_selection, reply);
+		if (fclose(fp) == 0)
+			wm_log("%s", logstr);
+		free(logstr);
+	}
 
 	if (xcb_get_property_value_length(reply) > 0) {
 		/* reply's ownership is transferred to wm, which is responsible
@@ -178,6 +193,9 @@ weston_wm_get_selection_targets(struct weston_wm *wm)
 	xcb_atom_t *value;
 	char **p;
 	uint32_t i;
+	FILE *fp;
+	char *logstr;
+	size_t logsize;
 
 	cookie = xcb_get_property(wm->conn,
 				  1, /* delete */
@@ -191,7 +209,13 @@ weston_wm_get_selection_targets(struct weston_wm *wm)
 	if (reply == NULL)
 		return;
 
-	dump_property(wm, wm->atom.wl_selection, reply);
+	fp = open_memstream(&logstr, &logsize);
+	if (fp) {
+		dump_property(fp, wm, wm->atom.wl_selection, reply);
+		if (fclose(fp) == 0)
+			wm_log("%s", logstr);
+		free(logstr);
+	}
 
 	if (reply->type != XCB_ATOM_ATOM) {
 		free(reply);
@@ -232,6 +256,9 @@ weston_wm_get_selection_data(struct weston_wm *wm)
 {
 	xcb_get_property_cookie_t cookie;
 	xcb_get_property_reply_t *reply;
+	FILE *fp;
+	char *logstr;
+	size_t logsize;
 
 	cookie = xcb_get_property(wm->conn,
 				  1, /* delete */
@@ -243,7 +270,13 @@ weston_wm_get_selection_data(struct weston_wm *wm)
 
 	reply = xcb_get_property_reply(wm->conn, cookie, NULL);
 
-	dump_property(wm, wm->atom.wl_selection, reply);
+	fp = open_memstream(&logstr, &logsize);
+	if (fp) {
+		dump_property(fp, wm, wm->atom.wl_selection, reply);
+		if (fclose(fp) == 0)
+			wm_log("%s", logstr);
+		free(logstr);
+	}
 
 	if (reply == NULL) {
 		return;

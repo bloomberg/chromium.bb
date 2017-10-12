@@ -23,6 +23,7 @@
  * SOFTWARE.
  */
 
+#include <stdio.h>
 #include <wayland-server.h>
 #include <xcb/xcb.h>
 #include <xcb/xfixes.h>
@@ -159,7 +160,7 @@ struct weston_wm {
 };
 
 void
-dump_property(struct weston_wm *wm, xcb_atom_t property,
+dump_property(FILE *fp, struct weston_wm *wm, xcb_atom_t property,
 	      xcb_get_property_reply_t *reply);
 
 const char *
