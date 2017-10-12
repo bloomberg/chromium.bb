@@ -49,7 +49,7 @@
         android:layout_marginEnd="@dimen/tile_view_offline_badge_margin_end_modern"
         android:visibility="gone"
         android:contentDescription="@string/accessibility_ntp_offline_badge"
-        chrome:chrometint="@color/tile_view_offline_badge_tint"
+        chrome:chrometint="@color/suggestions_offline_badge_tint"
         android:src="@drawable/offline_pin_round" />
 
     <!-- The title. -->
