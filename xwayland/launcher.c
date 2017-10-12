@@ -229,6 +229,8 @@ weston_xserver_destroy(struct wl_listener *l, void *data)
 	if (wxs->loop)
 		weston_xserver_shutdown(wxs);
 
+	weston_debug_scope_destroy(wxs->wm_debug);
+
 	free(wxs);
 }
 
@@ -390,6 +392,11 @@ weston_module_init(struct weston_compositor *compositor)
 
 	wxs->destroy_listener.notify = weston_xserver_destroy;
 	wl_signal_add(&compositor->destroy_signal, &wxs->destroy_listener);
+
+	wxs->wm_debug = weston_compositor_add_debug_scope(wxs->compositor,
+			"xwm-wm-x11",
+			"XWM's window management X11 events\n",
+			NULL, NULL);
 
 	return 0;
 }

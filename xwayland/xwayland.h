@@ -33,6 +33,7 @@
 #include "compositor.h"
 #include "compositor/weston.h"
 #include "xwayland-api.h"
+#include "weston-debug.h"
 
 #define SEND_EVENT_MASK (0x80)
 #define EVENT_TYPE(event) ((event)->response_type & ~SEND_EVENT_MASK)
@@ -52,6 +53,8 @@ struct weston_xserver {
 	struct wl_listener destroy_listener;
 	weston_xwayland_spawn_xserver_func_t spawn_func;
 	void *user_data;
+
+	struct weston_debug_scope *wm_debug;
 };
 
 struct weston_wm {
