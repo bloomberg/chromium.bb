@@ -176,8 +176,12 @@ class GFX_EXPORT RenderText {
   // On Mac, while selecting text if the cursor is outside the vertical text
   // bounds, drag to the end of the text.
   static constexpr bool kDragToEndIfOutsideVerticalBounds = true;
+  // Mac supports a selection that is "undirected". When undirected, the cursor
+  // doesn't know which end of the selection it's at until it first moves.
+  static constexpr bool kSelectionIsAlwaysDirected = false;
 #else
   static constexpr bool kDragToEndIfOutsideVerticalBounds = false;
+  static constexpr bool kSelectionIsAlwaysDirected = true;
 #endif
 
   // The character used for displaying obscured text. Use a bullet character.
@@ -717,6 +721,12 @@ class GFX_EXPORT RenderText {
   // Specifies whether the cursor is enabled. If disabled, no space is reserved
   // for the cursor when positioning text.
   bool cursor_enabled_;
+
+  // Whether the current selection has a known direction. That is, whether a
+  // directional input (e.g. arrow key) has been received for the current
+  // selection to indicate which end of the selection has the caret. When true,
+  // directed inputs preserve (rather than replace) the selection affinity.
+  bool has_directed_selection_;
 
   // The color used for drawing selected text.
   SkColor selection_color_;

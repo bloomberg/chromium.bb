@@ -3325,8 +3325,13 @@ TEST_F(TextfieldTest, FocusChangesScrollToStart) {
   if (!PlatformStyle::kTextfieldScrollsToStartOnFocusChange)
     return;
 
+  // The cursor is at the start (so that it scrolls in to view), but the
+  // "Select All" is currently undirected. Shift+right will give it a direction
+  // and scroll to the end.
   SendKeyEvent(ui::VKEY_RIGHT, true, false);
-  EXPECT_EQ(1U, textfield_->GetCursorPosition());
+  EXPECT_EQ(kText.size(), textfield_->GetCursorPosition());
+
+  // And a focus loss should scroll back to the start.
   textfield_->OnBlur();
   EXPECT_EQ(0U, textfield_->GetCursorPosition());
 }

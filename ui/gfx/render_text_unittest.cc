@@ -2260,6 +2260,120 @@ TEST_P(RenderTextHarfBuzzTest, MoveLeftRightByWordInChineseText) {
   EXPECT_EQ(6U, render_text->cursor_position());
 }
 
+// Test the correct behavior of undirected selections: selections where the
+// "end" of the selection that holds the cursor is only determined after the
+// first cursor movement.
+TEST_P(RenderTextHarfBuzzTest, DirectedSelections) {
+  RenderText* render_text = GetRenderText();
+
+  auto ResultAfter = [&](VisualCursorDirection direction) -> base::string16 {
+    render_text->MoveCursor(CHARACTER_BREAK, direction, SELECTION_RETAIN);
+    return GetSelectedText(render_text);
+  };
+
+  render_text->SetText(UTF8ToUTF16("01234"));
+
+  // Test Right, then Left. LTR.
+  // Undirected, or forward when kSelectionIsAlwaysDirected.
+  render_text->SelectRange({2, 4});
+  EXPECT_EQ(UTF8ToUTF16("23"), GetSelectedText(render_text));
+  EXPECT_EQ(UTF8ToUTF16("234"), ResultAfter(CURSOR_RIGHT));
+  EXPECT_EQ(UTF8ToUTF16("23"), ResultAfter(CURSOR_LEFT));
+
+  // Test collapsing the selection. This always ignores any existing direction.
+  render_text->MoveCursor(CHARACTER_BREAK, CURSOR_LEFT, SELECTION_NONE);
+  EXPECT_EQ(Range(2, 2), render_text->selection());  // Collapse left.
+
+  // Undirected, or backward when kSelectionIsAlwaysDirected.
+  render_text->SelectRange({4, 2});
+  EXPECT_EQ(UTF8ToUTF16("23"), GetSelectedText(render_text));
+  if (RenderText::kSelectionIsAlwaysDirected)
+    EXPECT_EQ(UTF8ToUTF16("3"), ResultAfter(CURSOR_RIGHT));  // Keep left.
+  else
+    EXPECT_EQ(UTF8ToUTF16("234"), ResultAfter(CURSOR_RIGHT));  // Pick right.
+  EXPECT_EQ(UTF8ToUTF16("23"), ResultAfter(CURSOR_LEFT));
+
+  render_text->MoveCursor(CHARACTER_BREAK, CURSOR_LEFT, SELECTION_NONE);
+  EXPECT_EQ(Range(2, 2), render_text->selection());  // Collapse left.
+
+  // Test Left, then Right. LTR.
+  // Undirected, or forward when kSelectionIsAlwaysDirected.
+  render_text->SelectRange({2, 4});
+  EXPECT_EQ(UTF8ToUTF16("23"), GetSelectedText(render_text));  // Sanity check,
+
+  if (RenderText::kSelectionIsAlwaysDirected)
+    EXPECT_EQ(UTF8ToUTF16("2"), ResultAfter(CURSOR_LEFT));  // Keep right.
+  else
+    EXPECT_EQ(UTF8ToUTF16("123"), ResultAfter(CURSOR_LEFT));  // Pick left.
+  EXPECT_EQ(UTF8ToUTF16("23"), ResultAfter(CURSOR_RIGHT));
+
+  render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, SELECTION_NONE);
+  EXPECT_EQ(Range(4, 4), render_text->selection());  // Collapse right.
+
+  // Undirected, or backward when kSelectionIsAlwaysDirected.
+  render_text->SelectRange({4, 2});
+  EXPECT_EQ(UTF8ToUTF16("23"), GetSelectedText(render_text));
+  EXPECT_EQ(UTF8ToUTF16("123"), ResultAfter(CURSOR_LEFT));
+  EXPECT_EQ(UTF8ToUTF16("23"), ResultAfter(CURSOR_RIGHT));
+
+  render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, SELECTION_NONE);
+  EXPECT_EQ(Range(4, 4), render_text->selection());  // Collapse right.
+
+  auto ToHebrew = [](const char* digits) -> base::string16 {
+    const base::string16 hebrew = UTF8ToUTF16("אבגדח");  // Roughly "abcde".
+    DCHECK_EQ(5u, hebrew.size());
+    base::string16 result;
+    for (const char* d = digits; *d; d++)
+      result += hebrew[*d - '0'];
+    return result;
+  };
+  render_text->SetText(ToHebrew("01234"));
+
+  // Test Left, then Right. RTL.
+  // Undirected, or forward (to the left) when kSelectionIsAlwaysDirected.
+  render_text->SelectRange({2, 4});
+  EXPECT_EQ(ToHebrew("23"), GetSelectedText(render_text));
+  EXPECT_EQ(ToHebrew("234"), ResultAfter(CURSOR_LEFT));
+  EXPECT_EQ(ToHebrew("23"), ResultAfter(CURSOR_RIGHT));
+
+  render_text->MoveCursor(CHARACTER_BREAK, CURSOR_LEFT, SELECTION_NONE);
+  EXPECT_EQ(Range(4, 4), render_text->selection());  // Collapse left.
+
+  // Undirected, or backward (to the right) when kSelectionIsAlwaysDirected.
+  render_text->SelectRange({4, 2});
+  EXPECT_EQ(ToHebrew("23"), GetSelectedText(render_text));
+  if (RenderText::kSelectionIsAlwaysDirected)
+    EXPECT_EQ(ToHebrew("3"), ResultAfter(CURSOR_LEFT));  // Keep right.
+  else
+    EXPECT_EQ(ToHebrew("234"), ResultAfter(CURSOR_LEFT));  // Pick left.
+  EXPECT_EQ(ToHebrew("23"), ResultAfter(CURSOR_RIGHT));
+
+  render_text->MoveCursor(CHARACTER_BREAK, CURSOR_LEFT, SELECTION_NONE);
+  EXPECT_EQ(Range(4, 4), render_text->selection());  // Collapse left.
+
+  // Test Right, then Left. RTL.
+  // Undirected, or forward (to the left) when kSelectionIsAlwaysDirected.
+  render_text->SelectRange({2, 4});
+  EXPECT_EQ(ToHebrew("23"), GetSelectedText(render_text));
+  if (RenderText::kSelectionIsAlwaysDirected)
+    EXPECT_EQ(ToHebrew("2"), ResultAfter(CURSOR_RIGHT));  // Keep left.
+  else
+    EXPECT_EQ(ToHebrew("123"), ResultAfter(CURSOR_RIGHT));  // Pick right.
+  EXPECT_EQ(ToHebrew("23"), ResultAfter(CURSOR_LEFT));
+
+  render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, SELECTION_NONE);
+  EXPECT_EQ(Range(2, 2), render_text->selection());  // Collapse right.
+
+  // Undirected, or backward (to the right) when kSelectionIsAlwaysDirected.
+  render_text->SelectRange({4, 2});
+  EXPECT_EQ(ToHebrew("23"), GetSelectedText(render_text));
+  EXPECT_EQ(ToHebrew("123"), ResultAfter(CURSOR_RIGHT));
+  EXPECT_EQ(ToHebrew("23"), ResultAfter(CURSOR_LEFT));
+
+  render_text->MoveCursor(CHARACTER_BREAK, CURSOR_RIGHT, SELECTION_NONE);
+  EXPECT_EQ(Range(2, 2), render_text->selection());  // Collapse right.
+}
+
 TEST_P(RenderTextTest, StringSizeSanity) {
   RenderText* render_text = GetRenderText();
   render_text->SetText(UTF8ToUTF16("Hello World"));
