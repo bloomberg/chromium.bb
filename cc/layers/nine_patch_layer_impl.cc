@@ -85,8 +85,8 @@ const char* NinePatchLayerImpl::LayerTypeAsString() const {
   return "cc::NinePatchLayerImpl";
 }
 
-std::unique_ptr<base::DictionaryValue> NinePatchLayerImpl::LayerTreeAsJson() {
-  std::unique_ptr<base::DictionaryValue> result = LayerImpl::LayerTreeAsJson();
+std::unique_ptr<base::DictionaryValue> NinePatchLayerImpl::LayerAsJson() {
+  std::unique_ptr<base::DictionaryValue> result = LayerImpl::LayerAsJson();
   quad_generator_.AsJson(result.get());
   return result;
 }

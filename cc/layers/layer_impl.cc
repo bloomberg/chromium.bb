@@ -379,7 +379,7 @@ void LayerImpl::SetIsResizedByBrowserControls(bool resized) {
   is_resized_by_browser_controls_ = resized;
 }
 
-std::unique_ptr<base::DictionaryValue> LayerImpl::LayerTreeAsJson() {
+std::unique_ptr<base::DictionaryValue> LayerImpl::LayerAsJson() {
   std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue);
   result->SetInteger("LayerId", id());
   result->SetString("LayerType", LayerTypeAsString());
@@ -416,7 +416,13 @@ std::unique_ptr<base::DictionaryValue> LayerImpl::LayerTreeAsJson() {
     result->Set("TouchRegion", std::move(region));
   }
 
-  list = std::make_unique<base::ListValue>();
+  return result;
+}
+
+std::unique_ptr<base::DictionaryValue> LayerImpl::LayerTreeAsJson() {
+  std::unique_ptr<base::DictionaryValue> result = LayerAsJson();
+
+  auto list = std::make_unique<base::ListValue>();
   for (size_t i = 0; i < test_properties()->children.size(); ++i)
     list->Append(test_properties()->children[i]->LayerTreeAsJson());
   result->Set("Children", std::move(list));
