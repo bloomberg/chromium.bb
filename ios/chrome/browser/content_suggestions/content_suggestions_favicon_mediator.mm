@@ -183,7 +183,8 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
     if (ntpTile.url == item.URL) {
       ntp_tiles::metrics::RecordTileImpression(
           ntp_tiles::NTPTileImpression(i, ntpTile.source, ntpTile.title_source,
-                                       [item tileType], item.URL),
+                                       [item tileType],
+                                       ntpTile.data_generation_time, item.URL),
           GetApplicationContext()->GetRapporServiceImpl());
       // Reset the URL to be sure to log the impression only once.
       ntpTile.url = GURL();

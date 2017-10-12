@@ -16,6 +16,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "chrome/common/search/instant_types.h"
 #include "chrome/common/search/ntp_logging_events.h"
 #include "chrome/common/url_constants.h"
@@ -180,6 +181,11 @@ v8::Local<v8::Object> GenerateMostVisitedItem(
            v8::String::NewFromUtf8(isolate, direction));
   obj->Set(v8::String::NewFromUtf8(isolate, "url"),
            UTF8ToV8String(isolate, mv_item.url.spec()));
+  obj->Set(
+      v8::String::NewFromUtf8(isolate, "dataGenerationTime"),
+      mv_item.data_generation_time.is_null()
+          ? v8::Local<v8::Value>(v8::Null(isolate))
+          : v8::Date::New(isolate, mv_item.data_generation_time.ToJsTime()));
   return obj;
 }
 
@@ -201,6 +207,15 @@ content::RenderFrame* GetRenderFrameWithCheckedOrigin(const GURL& origin) {
     return NULL;
 
   return main_frame;
+}
+
+base::Time ConvertDateValueToTime(v8::Value* value) {
+  DCHECK(value);
+  if (value->IsNull())
+    return base::Time();
+
+  DCHECK(value->IsDate());
+  return base::Time::FromJsTime(v8::Date::Cast(value)->ValueOf());
 }
 
 }  // namespace
@@ -866,8 +881,9 @@ void SearchBoxExtensionWrapper::LogMostVisitedImpression(
   if (!render_frame)
     return;
 
-  if (args.Length() < 4 || !args[0]->IsNumber() || !args[1]->IsNumber() ||
-      !args[2]->IsNumber() || !args[3]->IsNumber()) {
+  if (args.Length() < 5 || !args[0]->IsNumber() || !args[1]->IsNumber() ||
+      !args[2]->IsNumber() || !args[3]->IsNumber() ||
+      (!args[4]->IsDate() && !args[4]->IsNull())) {
     ThrowInvalidParameters(args);
     return;
   }
@@ -885,6 +901,7 @@ void SearchBoxExtensionWrapper::LogMostVisitedImpression(
         static_cast<ntp_tiles::TileTitleSource>(args[1]->Uint32Value()),
         /*visual_type=*/
         static_cast<ntp_tiles::TileVisualType>(args[3]->Uint32Value()),
+        /*data_generation_time=*/ConvertDateValueToTime(*args[4]),
         /*url_for_rappor=*/GURL());
     SearchBox::Get(render_frame)->LogMostVisitedImpression(impression);
   }
@@ -898,8 +915,9 @@ void SearchBoxExtensionWrapper::LogMostVisitedNavigation(
   if (!render_frame)
     return;
 
-  if (args.Length() < 4 || !args[0]->IsNumber() || !args[1]->IsNumber() ||
-      !args[2]->IsNumber() || !args[3]->IsNumber()) {
+  if (args.Length() < 5 || !args[0]->IsNumber() || !args[1]->IsNumber() ||
+      !args[2]->IsNumber() || !args[3]->IsNumber() ||
+      (!args[4]->IsDate() && !args[4]->IsNull())) {
     ThrowInvalidParameters(args);
     return;
   }
@@ -917,6 +935,7 @@ void SearchBoxExtensionWrapper::LogMostVisitedNavigation(
         static_cast<ntp_tiles::TileTitleSource>(args[1]->Uint32Value()),
         /*visual_type=*/
         static_cast<ntp_tiles::TileVisualType>(args[3]->Uint32Value()),
+        /*data_generation_time=*/ConvertDateValueToTime(*args[4]),
         /*url_for_rappor=*/GURL());
     SearchBox::Get(render_frame)->LogMostVisitedNavigation(impression);
   }

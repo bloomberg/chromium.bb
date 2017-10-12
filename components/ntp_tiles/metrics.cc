@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/strings/stringprintf.h"
@@ -37,17 +37,10 @@ const char kTileTypeSuffixIconReal[] = "IconsReal";
 const char kTileTypeSuffixThumbnail[] = "Thumbnail";
 const char kTileTypeSuffixThumbnailFailed[] = "ThumbnailFailed";
 
-// Log an event for a given |histogram| at a given element |position|. This
-// routine exists because regular histogram macros are cached thus can't be used
-// if the name of the histogram will change at a given call site.
-void LogHistogramEvent(const std::string& histogram,
-                       int position,
-                       int num_sites) {
-  base::HistogramBase* counter = base::LinearHistogram::FactoryGet(
-      histogram, 1, num_sites, num_sites + 1,
-      base::Histogram::kUmaTargetedHistogramFlag);
-  if (counter)
-    counter->Add(position);
+void LogUmaHistogramAge(const std::string& name, const base::TimeDelta& value) {
+  // Log the value in number of seconds.
+  base::UmaHistogramCustomCounts(name, value.InSeconds(), 5,
+                                 base::TimeDelta::FromDays(14).InSeconds(), 20);
 }
 
 std::string GetSourceHistogramName(TileSource source) {
@@ -100,19 +93,28 @@ void RecordTileImpression(const NTPTileImpression& impression,
                             impression.index, kMaxNumTiles);
 
   std::string source_name = GetSourceHistogramName(impression.source);
-  std::string impression_histogram = base::StringPrintf(
-      "NewTabPage.SuggestionsImpression.%s", source_name.c_str());
-  LogHistogramEvent(impression_histogram, impression.index, kMaxNumTiles);
+  base::UmaHistogramExactLinear(
+      base::StringPrintf("NewTabPage.SuggestionsImpression.%s",
+                         source_name.c_str()),
+      impression.index, kMaxNumTiles);
+
+  if (!impression.data_generation_time.is_null()) {
+    const base::TimeDelta age =
+        base::Time::Now() - impression.data_generation_time;
+    LogUmaHistogramAge("NewTabPage.SuggestionsImpressionAge", age);
+    LogUmaHistogramAge(
+        base::StringPrintf("NewTabPage.SuggestionsImpressionAge.%s",
+                           source_name.c_str()),
+        age);
+  }
 
   UMA_HISTOGRAM_ENUMERATION("NewTabPage.TileTitle",
                             static_cast<int>(impression.title_source),
                             kLastTitleSource + 1);
-  std::string title_source_histogram =
+  base::UmaHistogramExactLinear(
       base::StringPrintf("NewTabPage.TileTitle.%s",
-                         GetSourceHistogramName(impression.source).c_str());
-  LogHistogramEvent(title_source_histogram,
-                    static_cast<int>(impression.title_source),
-                    kLastTitleSource + 1);
+                         GetSourceHistogramName(impression.source).c_str()),
+      static_cast<int>(impression.title_source), kLastTitleSource + 1);
 
   if (impression.visual_type > LAST_RECORDED_TILE_TYPE) {
     return;
@@ -121,10 +123,9 @@ void RecordTileImpression(const NTPTileImpression& impression,
   UMA_HISTOGRAM_ENUMERATION("NewTabPage.TileType", impression.visual_type,
                             LAST_RECORDED_TILE_TYPE + 1);
 
-  std::string tile_type_histogram =
-      base::StringPrintf("NewTabPage.TileType.%s", source_name.c_str());
-  LogHistogramEvent(tile_type_histogram, impression.visual_type,
-                    LAST_RECORDED_TILE_TYPE + 1);
+  base::UmaHistogramExactLinear(
+      base::StringPrintf("NewTabPage.TileType.%s", source_name.c_str()),
+      impression.visual_type, LAST_RECORDED_TILE_TYPE + 1);
 
   const char* tile_type_suffix = GetTileTypeSuffix(impression.visual_type);
   if (tile_type_suffix) {
@@ -136,10 +137,10 @@ void RecordTileImpression(const NTPTileImpression& impression,
           impression.url_for_rappor);
     }
 
-    std::string icon_impression_histogram = base::StringPrintf(
-        "NewTabPage.SuggestionsImpression.%s", tile_type_suffix);
-    LogHistogramEvent(icon_impression_histogram, impression.index,
-                      kMaxNumTiles);
+    base::UmaHistogramExactLinear(
+        base::StringPrintf("NewTabPage.SuggestionsImpression.%s",
+                           tile_type_suffix),
+        impression.index, kMaxNumTiles);
   }
 }
 
@@ -147,37 +148,44 @@ void RecordTileClick(const NTPTileImpression& impression) {
   UMA_HISTOGRAM_ENUMERATION("NewTabPage.MostVisited", impression.index,
                             kMaxNumTiles);
 
-  std::string histogram =
-      base::StringPrintf("NewTabPage.MostVisited.%s",
-                         GetSourceHistogramName(impression.source).c_str());
-  LogHistogramEvent(histogram, impression.index, kMaxNumTiles);
+  std::string source_name = GetSourceHistogramName(impression.source);
+  base::UmaHistogramExactLinear(
+      base::StringPrintf("NewTabPage.MostVisited.%s", source_name.c_str()),
+      impression.index, kMaxNumTiles);
+
+  if (!impression.data_generation_time.is_null()) {
+    const base::TimeDelta age =
+        base::Time::Now() - impression.data_generation_time;
+    LogUmaHistogramAge("NewTabPage.MostVisitedAge", age);
+    LogUmaHistogramAge(
+        base::StringPrintf("NewTabPage.MostVisitedAge.%s", source_name.c_str()),
+        age);
+  }
 
   const char* tile_type_suffix = GetTileTypeSuffix(impression.visual_type);
   if (tile_type_suffix) {
-    std::string tile_type_histogram =
-        base::StringPrintf("NewTabPage.MostVisited.%s", tile_type_suffix);
-    LogHistogramEvent(tile_type_histogram, impression.index, kMaxNumTiles);
+    base::UmaHistogramExactLinear(
+        base::StringPrintf("NewTabPage.MostVisited.%s", tile_type_suffix),
+        impression.index, kMaxNumTiles);
   }
 
   UMA_HISTOGRAM_ENUMERATION("NewTabPage.TileTitleClicked",
                             static_cast<int>(impression.title_source),
                             kLastTitleSource + 1);
-  std::string name_histogram =
+  base::UmaHistogramExactLinear(
       base::StringPrintf("NewTabPage.TileTitleClicked.%s",
-                         GetSourceHistogramName(impression.source).c_str());
-  LogHistogramEvent(name_histogram, static_cast<int>(impression.title_source),
-                    kLastTitleSource + 1);
+                         GetSourceHistogramName(impression.source).c_str()),
+      static_cast<int>(impression.title_source), kLastTitleSource + 1);
 
   if (impression.visual_type <= LAST_RECORDED_TILE_TYPE) {
     UMA_HISTOGRAM_ENUMERATION("NewTabPage.TileTypeClicked",
                               impression.visual_type,
                               LAST_RECORDED_TILE_TYPE + 1);
 
-    std::string type_histogram =
+    base::UmaHistogramExactLinear(
         base::StringPrintf("NewTabPage.TileTypeClicked.%s",
-                           GetSourceHistogramName(impression.source).c_str());
-    LogHistogramEvent(type_histogram, impression.visual_type,
-                      LAST_RECORDED_TILE_TYPE + 1);
+                           GetSourceHistogramName(impression.source).c_str()),
+        impression.visual_type, LAST_RECORDED_TILE_TYPE + 1);
   }
 }
 

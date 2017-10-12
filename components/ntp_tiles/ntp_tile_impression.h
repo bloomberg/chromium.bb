@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_NTP_TILES_NTP_TILE_IMPRESSION_H_
 #define COMPONENTS_NTP_TILES_NTP_TILE_IMPRESSION_H_
 
+#include "base/time/time.h"
 #include "components/ntp_tiles/tile_source.h"
 #include "components/ntp_tiles/tile_title_source.h"
 #include "components/ntp_tiles/tile_visual_type.h"
@@ -19,6 +20,7 @@ struct NTPTileImpression {
                     TileSource source,
                     TileTitleSource title_source,
                     TileVisualType visual_type,
+                    base::Time data_generation_time,
                     const GURL& url_for_rappor);
   ~NTPTileImpression();
 
@@ -27,6 +29,10 @@ struct NTPTileImpression {
   TileSource source;
   TileTitleSource title_source;
   TileVisualType visual_type;
+  // The timestamp representing when the tile data (e.g. URL) was generated
+  // originally, regardless of the impression timestamp or the time when it
+  // was fetched (for server-side suggestions).
+  base::Time data_generation_time;
   // URL the tile points to, used to report Rappor metrics only (might be empty
   // and is hence ignored, e.g. on desktop).
   GURL url_for_rappor;

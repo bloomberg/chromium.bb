@@ -131,11 +131,13 @@ var logEvent = function(eventType) {
  * @param {number} tileTitleSource The title's source from TileTitleSource.
  * @param {number} tileSource The source from TileSource.
  * @param {number} tileType The type from TileVisualType.
+ * @param {Date} dataGenerationTime Timestamp representing when the tile was
+ *               produced by a ranking algorithm.
  */
 function logMostVisitedImpression(
-    tileIndex, tileTitleSource, tileSource, tileType) {
+    tileIndex, tileTitleSource, tileSource, tileType, dataGenerationTime) {
   chrome.embeddedSearch.newTabPage.logMostVisitedImpression(
-      tileIndex, tileTitleSource, tileSource, tileType);
+      tileIndex, tileTitleSource, tileSource, tileType, dataGenerationTime);
 }
 
 /**
@@ -144,11 +146,13 @@ function logMostVisitedImpression(
  * @param {number} tileTitleSource The title's source from TileTitleSource.
  * @param {number} tileSource The source from TileSource.
  * @param {number} tileType The type from TileVisualType.
+ * @param {Date} dataGenerationTime Timestamp representing when the tile was
+ *               produced by a ranking algorithm.
  */
 function logMostVisitedNavigation(
-    tileIndex, tileTitleSource, tileSource, tileType) {
+    tileIndex, tileTitleSource, tileSource, tileType, dataGenerationTime) {
   chrome.embeddedSearch.newTabPage.logMostVisitedNavigation(
-      tileIndex, tileTitleSource, tileSource, tileType);
+      tileIndex, tileTitleSource, tileSource, tileType, dataGenerationTime);
 }
 
 /**
@@ -407,7 +411,8 @@ var renderTile = function(data) {
 
   tile.addEventListener('click', function(ev) {
     logMostVisitedNavigation(
-        position, data.tileTitleSource, data.tileSource, tileType);
+        position, data.tileTitleSource, data.tileSource, tileType,
+        data.dataGenerationTime);
   });
 
   tile.addEventListener('keydown', function(event) {
@@ -468,7 +473,8 @@ var renderTile = function(data) {
     // Store the type for a potential later navigation.
     tileType = TileVisualType.THUMBNAIL;
     logMostVisitedImpression(
-        position, data.tileTitleSource, data.tileSource, tileType);
+        position, data.tileTitleSource, data.tileSource, tileType,
+        data.dataGenerationTime);
     // Note: It's important to call countLoad last, because that might emit the
     // NTP_ALL_TILES_LOADED event, which must happen after the impression log.
     countLoad();
@@ -479,7 +485,8 @@ var renderTile = function(data) {
     // Store the type for a potential later navigation.
     tileType = TileVisualType.THUMBNAIL_FAILED;
     logMostVisitedImpression(
-        position, data.tileTitleSource, data.tileSource, tileType);
+        position, data.tileTitleSource, data.tileSource, tileType,
+        data.dataGenerationTime);
     // Note: It's important to call countLoad last, because that might emit the
     // NTP_ALL_TILES_LOADED event, which must happen after the impression log.
     countLoad();

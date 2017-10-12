@@ -118,17 +118,19 @@ if (!chrome.embeddedSearch) {
       // This method is restricted to chrome-search://most-visited pages by
       // checking the invoking context's origin in searchbox_extension.cc.
       this.logMostVisitedImpression = function(position, tileTitleSource,
-                                               tileSource, tileType) {
+                                               tileSource, tileType,
+                                               dataGenerationTime) {
         LogMostVisitedImpression(position, tileTitleSource, tileSource,
-                                 tileType);
+                                 tileType, dataGenerationTime);
       };
 
       // This method is restricted to chrome-search://most-visited pages by
       // checking the invoking context's origin in searchbox_extension.cc.
       this.logMostVisitedNavigation = function(position, tileTitleSource,
-                                               tileSource, tileType) {
+                                               tileSource, tileType,
+                                               dataGenerationTime) {
         LogMostVisitedNavigation(position, tileTitleSource, tileSource,
-                                 tileType);
+                                 tileType, dataGenerationTime);
       };
 
       this.undoAllMostVisitedDeletions = function() {

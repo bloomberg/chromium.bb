@@ -31,15 +31,14 @@ constexpr int kInferredTitleSource =
 using testing::ElementsAre;
 using testing::IsEmpty;
 
+MATCHER_P3(IsBucketBetween, lower_bound, upper_bound, count, "") {
+  return arg.min >= lower_bound && arg.min <= upper_bound && arg.count == count;
+}
+
 // Builder for instances of NTPTileImpression that uses sensible defaults.
 class Builder {
  public:
-  Builder()
-      : impression_(/*index=*/0,
-                    TileSource::TOP_SITES,
-                    TileTitleSource::UNKNOWN,
-                    TileVisualType::UNKNOWN_TILE_TYPE,
-                    GURL()) {}
+  Builder() {}
 
   Builder& WithIndex(int index) {
     impression_.index = index;
@@ -55,6 +54,10 @@ class Builder {
   }
   Builder& WithVisualType(TileVisualType visual_type) {
     impression_.visual_type = visual_type;
+    return *this;
+  }
+  Builder& WithDataGenerationTime(base::Time data_generation_time) {
+    impression_.data_generation_time = data_generation_time;
     return *this;
   }
   Builder& WithUrl(const GURL& url) {
@@ -291,6 +294,31 @@ TEST(RecordTileImpressionTest, ShouldRecordImpressionsForTileTitleSource) {
                           base::Bucket(kInferredTitleSource, /*count=*/1)));
 }
 
+TEST(RecordTileImpressionTest, ShouldRecordAge) {
+  const base::TimeDelta kSuggestionAge = base::TimeDelta::FromMinutes(1);
+  const base::TimeDelta kBucketTolerance = base::TimeDelta::FromSeconds(20);
+  base::HistogramTester histogram_tester;
+  RecordTileImpression(
+      Builder()
+          .WithSource(TileSource::SUGGESTIONS_SERVICE)
+          .WithDataGenerationTime(base::Time::Now() - kSuggestionAge)
+          .Build(),
+      /*rappor_service=*/nullptr);
+
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("NewTabPage.SuggestionsImpressionAge"),
+      ElementsAre(
+          IsBucketBetween((kSuggestionAge - kBucketTolerance).InSeconds(),
+                          (kSuggestionAge + kBucketTolerance).InSeconds(),
+                          /*count=*/1)));
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "NewTabPage.SuggestionsImpressionAge.server"),
+              ElementsAre(IsBucketBetween(
+                  (kSuggestionAge - kBucketTolerance).InSeconds(),
+                  (kSuggestionAge + kBucketTolerance).InSeconds(),
+                  /*count=*/1)));
+}
+
 TEST(RecordTileClickTest, ShouldRecordUmaForIcon) {
   base::HistogramTester histogram_tester;
   RecordTileClick(Builder()
@@ -503,6 +531,29 @@ TEST(RecordTileClickTest, ShouldRecordClicksForTileTitleSource) {
                           base::Bucket(kManifestTitleSource, /*count=*/1),
                           base::Bucket(kMetaTagTitleSource, /*count=*/1),
                           base::Bucket(kTitleTagTitleSource, /*count=*/2)));
+}
+
+TEST(RecordTileClickTest, ShouldRecordClickAge) {
+  const base::TimeDelta kSuggestionAge = base::TimeDelta::FromMinutes(1);
+  const base::TimeDelta kBucketTolerance = base::TimeDelta::FromSeconds(20);
+  base::HistogramTester histogram_tester;
+  RecordTileClick(
+      Builder()
+          .WithSource(TileSource::SUGGESTIONS_SERVICE)
+          .WithDataGenerationTime(base::Time::Now() - kSuggestionAge)
+          .Build());
+
+  EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.MostVisitedAge"),
+              ElementsAre(IsBucketBetween(
+                  (kSuggestionAge - kBucketTolerance).InSeconds(),
+                  (kSuggestionAge + kBucketTolerance).InSeconds(),
+                  /*count=*/1)));
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("NewTabPage.MostVisitedAge.server"),
+      ElementsAre(
+          IsBucketBetween((kSuggestionAge - kBucketTolerance).InSeconds(),
+                          (kSuggestionAge + kBucketTolerance).InSeconds(),
+                          /*count=*/1)));
 }
 
 }  // namespace

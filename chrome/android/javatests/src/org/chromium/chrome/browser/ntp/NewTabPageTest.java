@@ -62,6 +62,7 @@ import org.chromium.ui.base.PageTransition;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Semaphore;
@@ -106,10 +107,11 @@ public class NewTabPageTest {
 
         mSiteSuggestions = new ArrayList<>();
         mSiteSuggestions.add(new SiteSuggestion("TOP_SITES", mTestServer.getURL(TEST_PAGE) + "#1",
-                "", TileTitleSource.TITLE_TAG, TileSource.TOP_SITES, TileSectionType.PERSONALIZED));
+                "", TileTitleSource.TITLE_TAG, TileSource.TOP_SITES, TileSectionType.PERSONALIZED,
+                new Date()));
         mSiteSuggestions.add(new SiteSuggestion("WHITELIST", mTestServer.getURL(TEST_PAGE) + "#2",
                 "/test.png", TileTitleSource.UNKNOWN, TileSource.WHITELIST,
-                TileSectionType.PERSONALIZED));
+                TileSectionType.PERSONALIZED, new Date()));
 
         mMostVisitedSites = new FakeMostVisitedSites();
         mMostVisitedSites.setTileSuggestions(mSiteSuggestions.get(0), mSiteSuggestions.get(1));

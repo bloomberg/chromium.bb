@@ -13,6 +13,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -97,17 +98,17 @@ public class MostVisitedSitesBridge
     }
 
     @Override
-    public void recordTileImpression(int index, @TileVisualType int type,
-            @TileTitleSource int titleSource, @TileSource int source, String url) {
-        nativeRecordTileImpression(
-                mNativeMostVisitedSitesBridge, index, type, titleSource, source, url);
+    public void recordTileImpression(Tile tile) {
+        nativeRecordTileImpression(mNativeMostVisitedSitesBridge, tile.getIndex(), tile.getType(),
+                tile.getTitleSource(), tile.getSource(),
+                tile.getData().dataGenerationTime.getTime(), tile.getUrl());
     }
 
     @Override
-    public void recordOpenedMostVisitedItem(int index, @TileVisualType int type,
-            @TileTitleSource int titleSource, @TileSource int source) {
-        nativeRecordOpenedMostVisitedItem(
-                mNativeMostVisitedSitesBridge, index, type, titleSource, source);
+    public void recordOpenedMostVisitedItem(Tile tile) {
+        nativeRecordOpenedMostVisitedItem(mNativeMostVisitedSitesBridge, tile.getIndex(),
+                tile.getType(), tile.getTitleSource(), tile.getSource(),
+                tile.getData().dataGenerationTime.getTime());
     }
 
     @Override
@@ -126,11 +127,12 @@ public class MostVisitedSitesBridge
      * {@link SiteSuggestion}s.
      */
     public static List<SiteSuggestion> buildSiteSuggestions(String[] titles, String[] urls,
-            int[] sections, String[] whitelistIconPaths, int[] titleSources, int[] sources) {
+            int[] sections, String[] whitelistIconPaths, int[] titleSources, int[] sources,
+            long[] dataGenerationTimesMs) {
         List<SiteSuggestion> siteSuggestions = new ArrayList<>(titles.length);
         for (int i = 0; i < titles.length; ++i) {
             siteSuggestions.add(new SiteSuggestion(titles[i], urls[i], whitelistIconPaths[i],
-                    titleSources[i], sources[i], sections[i]));
+                    titleSources[i], sources[i], sections[i], new Date(dataGenerationTimesMs[i])));
         }
         return siteSuggestions;
     }
@@ -149,14 +151,15 @@ public class MostVisitedSitesBridge
      */
     @CalledByNative
     private void onURLsAvailable(String[] titles, String[] urls, int[] sections,
-            String[] whitelistIconPaths, int[] titleSources, int[] sources) {
+            String[] whitelistIconPaths, int[] titleSources, int[] sources,
+            long[] dataGenerationTimesMs) {
         // Don't notify observer if we've already been destroyed.
         if (mNativeMostVisitedSitesBridge == 0) return;
 
         List<SiteSuggestion> suggestions = new ArrayList<>();
 
-        suggestions.addAll(buildSiteSuggestions(
-                titles, urls, sections, whitelistIconPaths, titleSources, sources));
+        suggestions.addAll(buildSiteSuggestions(titles, urls, sections, whitelistIconPaths,
+                titleSources, sources, dataGenerationTimesMs));
 
         mWrappedObserver.onSiteSuggestionsAvailable(suggestions);
     }
@@ -194,7 +197,7 @@ public class MostVisitedSitesBridge
     private native void nativeRecordPageImpression(
             long nativeMostVisitedSitesBridge, int tilesCount);
     private native void nativeRecordTileImpression(long nativeMostVisitedSitesBridge, int index,
-            int type, int titleSource, int source, String url);
+            int type, int titleSource, int source, long dataGenerationTimeMs, String url);
     private native void nativeRecordOpenedMostVisitedItem(long nativeMostVisitedSitesBridge,
-            int index, int tileType, int titleSource, int source);
+            int index, int tileType, int titleSource, int source, long dataGenerationTimeMs);
 }

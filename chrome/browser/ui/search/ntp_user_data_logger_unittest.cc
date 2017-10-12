@@ -11,6 +11,7 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/test/histogram_tester.h"
+#include "base/time/time.h"
 #include "chrome/common/search/ntp_logging_events.h"
 #include "chrome/common/url_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -52,6 +53,10 @@ class TestNTPUserDataLogger : public NTPUserDataLogger {
   bool is_google_ = true;
 };
 
+MATCHER_P3(IsBucketBetween, lower_bound, upper_bound, count, "") {
+  return arg.min >= lower_bound && arg.min <= upper_bound && arg.count == count;
+}
+
 }  // namespace
 
 TEST(NTPUserDataLoggerTest, TestNumberOfTiles) {
@@ -67,7 +72,7 @@ TEST(NTPUserDataLoggerTest, TestNumberOfTiles) {
   for (int i = 0; i < 8; ++i) {
     logger.LogMostVisitedImpression(ntp_tiles::NTPTileImpression(
         i, TileSource::SUGGESTIONS_SERVICE, TileTitleSource::UNKNOWN,
-        TileVisualType::THUMBNAIL, GURL()));
+        TileVisualType::THUMBNAIL, base::Time(), GURL()));
   }
   logger.LogEvent(NTP_ALL_TILES_LOADED, delta);
   EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.NumberOfTiles"),
@@ -101,50 +106,50 @@ TEST(NTPUserDataLoggerTest, TestLogMostVisitedImpression) {
   // Impressions increment the associated bins.
   logger.LogMostVisitedImpression(ntp_tiles::NTPTileImpression(
       0, TileSource::SUGGESTIONS_SERVICE, TileTitleSource::INFERRED,
-      TileVisualType::THUMBNAIL, GURL()));
+      TileVisualType::THUMBNAIL, base::Time(), GURL()));
   logger.LogMostVisitedImpression(ntp_tiles::NTPTileImpression(
       1, TileSource::SUGGESTIONS_SERVICE, TileTitleSource::INFERRED,
-      TileVisualType::THUMBNAIL_FAILED, GURL()));
+      TileVisualType::THUMBNAIL_FAILED, base::Time(), GURL()));
   logger.LogMostVisitedImpression(ntp_tiles::NTPTileImpression(
       2, TileSource::SUGGESTIONS_SERVICE, TileTitleSource::INFERRED,
-      TileVisualType::THUMBNAIL, GURL()));
+      TileVisualType::THUMBNAIL, base::Time(), GURL()));
   logger.LogMostVisitedImpression(ntp_tiles::NTPTileImpression(
       3, TileSource::SUGGESTIONS_SERVICE, TileTitleSource::INFERRED,
-      TileVisualType::THUMBNAIL, GURL()));
+      TileVisualType::THUMBNAIL, base::Time(), GURL()));
   logger.LogMostVisitedImpression(ntp_tiles::NTPTileImpression(
       4, TileSource::TOP_SITES, TileTitleSource::TITLE_TAG,
-      TileVisualType::THUMBNAIL, GURL()));
+      TileVisualType::THUMBNAIL, base::Time(), GURL()));
   logger.LogMostVisitedImpression(ntp_tiles::NTPTileImpression(
       5, TileSource::TOP_SITES, TileTitleSource::MANIFEST,
-      TileVisualType::THUMBNAIL, GURL()));
+      TileVisualType::THUMBNAIL, base::Time(), GURL()));
   logger.LogMostVisitedImpression(ntp_tiles::NTPTileImpression(
       6, TileSource::POPULAR, TileTitleSource::TITLE_TAG,
-      TileVisualType::THUMBNAIL, GURL()));
+      TileVisualType::THUMBNAIL, base::Time(), GURL()));
   logger.LogMostVisitedImpression(ntp_tiles::NTPTileImpression(
       7, TileSource::POPULAR_BAKED_IN, TileTitleSource::META_TAG,
-      TileVisualType::THUMBNAIL, GURL()));
+      TileVisualType::THUMBNAIL, base::Time(), GURL()));
 
   // Repeated impressions for the same bins are ignored.
   logger.LogMostVisitedImpression(ntp_tiles::NTPTileImpression(
       0, TileSource::SUGGESTIONS_SERVICE, TileTitleSource::UNKNOWN,
-      TileVisualType::THUMBNAIL_FAILED, GURL()));
+      TileVisualType::THUMBNAIL_FAILED, base::Time(), GURL()));
   logger.LogMostVisitedImpression(ntp_tiles::NTPTileImpression(
       1, TileSource::TOP_SITES, TileTitleSource::UNKNOWN,
-      TileVisualType::THUMBNAIL_FAILED, GURL()));
+      TileVisualType::THUMBNAIL_FAILED, base::Time(), GURL()));
   logger.LogMostVisitedImpression(ntp_tiles::NTPTileImpression(
       2, TileSource::SUGGESTIONS_SERVICE, TileTitleSource::UNKNOWN,
-      TileVisualType::THUMBNAIL, GURL()));
+      TileVisualType::THUMBNAIL, base::Time(), GURL()));
   logger.LogMostVisitedImpression(ntp_tiles::NTPTileImpression(
       3, TileSource::TOP_SITES, TileTitleSource::UNKNOWN,
-      TileVisualType::THUMBNAIL, GURL()));
+      TileVisualType::THUMBNAIL, base::Time(), GURL()));
 
   // Impressions are silently ignored for tiles >= 8.
   logger.LogMostVisitedImpression(ntp_tiles::NTPTileImpression(
       8, TileSource::SUGGESTIONS_SERVICE, TileTitleSource::UNKNOWN,
-      TileVisualType::THUMBNAIL, GURL()));
+      TileVisualType::THUMBNAIL, base::Time(), GURL()));
   logger.LogMostVisitedImpression(ntp_tiles::NTPTileImpression(
       9, TileSource::TOP_SITES, TileTitleSource::UNKNOWN,
-      TileVisualType::THUMBNAIL, GURL()));
+      TileVisualType::THUMBNAIL, base::Time(), GURL()));
 
   // The actual histograms are emitted only after the ALL_TILES_LOADED event, so
   // at this point everything should still be empty.
@@ -229,19 +234,19 @@ TEST(NTPUserDataLoggerTest, TestLogMostVisitedImpression) {
   logger.LogMostVisitedImpression(ntp_tiles::NTPTileImpression(
       0, TileSource::SUGGESTIONS_SERVICE, TileTitleSource::INFERRED,
 
-      TileVisualType::THUMBNAIL, GURL()));
+      TileVisualType::THUMBNAIL, base::Time(), GURL()));
   logger.LogMostVisitedImpression(ntp_tiles::NTPTileImpression(
       1, TileSource::POPULAR, TileTitleSource::MANIFEST,
 
-      TileVisualType::THUMBNAIL, GURL()));
+      TileVisualType::THUMBNAIL, base::Time(), GURL()));
   logger.LogMostVisitedImpression(ntp_tiles::NTPTileImpression(
       2, TileSource::SUGGESTIONS_SERVICE, TileTitleSource::INFERRED,
 
-      TileVisualType::THUMBNAIL, GURL()));
+      TileVisualType::THUMBNAIL, base::Time(), GURL()));
   logger.LogMostVisitedImpression(ntp_tiles::NTPTileImpression(
       3, TileSource::TOP_SITES, TileTitleSource::MANIFEST,
 
-      TileVisualType::THUMBNAIL_FAILED, GURL()));
+      TileVisualType::THUMBNAIL_FAILED, base::Time(), GURL()));
   logger.LogEvent(NTP_ALL_TILES_LOADED, delta);
 
   EXPECT_THAT(
@@ -307,7 +312,7 @@ TEST(NTPUserDataLoggerTest, TestLogMostVisitedNavigation) {
 
   logger.LogMostVisitedNavigation(ntp_tiles::NTPTileImpression(
       0, TileSource::SUGGESTIONS_SERVICE, TileTitleSource::UNKNOWN,
-      TileVisualType::THUMBNAIL, GURL()));
+      TileVisualType::THUMBNAIL, base::Time(), GURL()));
   EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.MostVisited"),
               ElementsAre(Bucket(0, 1)));
   EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.MostVisited.server"),
@@ -325,7 +330,7 @@ TEST(NTPUserDataLoggerTest, TestLogMostVisitedNavigation) {
 
   logger.LogMostVisitedNavigation(ntp_tiles::NTPTileImpression(
       1, TileSource::SUGGESTIONS_SERVICE, TileTitleSource::UNKNOWN,
-      TileVisualType::THUMBNAIL_FAILED, GURL()));
+      TileVisualType::THUMBNAIL_FAILED, base::Time(), GURL()));
   EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.MostVisited"),
               ElementsAre(Bucket(0, 1), Bucket(1, 1)));
   EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.MostVisited.server"),
@@ -346,7 +351,7 @@ TEST(NTPUserDataLoggerTest, TestLogMostVisitedNavigation) {
 
   logger.LogMostVisitedNavigation(ntp_tiles::NTPTileImpression(
       2, TileSource::TOP_SITES, TileTitleSource::MANIFEST,
-      TileVisualType::THUMBNAIL_FAILED, GURL()));
+      TileVisualType::THUMBNAIL_FAILED, base::Time(), GURL()));
   EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.MostVisited"),
               ElementsAre(Bucket(0, 1), Bucket(1, 1), Bucket(2, 1)));
   EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.MostVisited.server"),
@@ -367,7 +372,7 @@ TEST(NTPUserDataLoggerTest, TestLogMostVisitedNavigation) {
 
   logger.LogMostVisitedNavigation(ntp_tiles::NTPTileImpression(
       3, TileSource::POPULAR, TileTitleSource::META_TAG,
-      TileVisualType::THUMBNAIL, GURL()));
+      TileVisualType::THUMBNAIL, base::Time(), GURL()));
   EXPECT_THAT(
       histogram_tester.GetAllSamples("NewTabPage.MostVisited"),
       ElementsAre(Bucket(0, 1), Bucket(1, 1), Bucket(2, 1), Bucket(3, 1)));
@@ -409,16 +414,16 @@ TEST(NTPUserDataLoggerTest, TestLogMostVisitedNavigation) {
   // Navigations always increase.
   logger.LogMostVisitedNavigation(ntp_tiles::NTPTileImpression(
       0, TileSource::SUGGESTIONS_SERVICE, TileTitleSource::UNKNOWN,
-      TileVisualType::THUMBNAIL, GURL()));
+      TileVisualType::THUMBNAIL, base::Time(), GURL()));
   logger.LogMostVisitedNavigation(ntp_tiles::NTPTileImpression(
       1, TileSource::TOP_SITES, TileTitleSource::TITLE_TAG,
-      TileVisualType::THUMBNAIL, GURL()));
+      TileVisualType::THUMBNAIL, base::Time(), GURL()));
   logger.LogMostVisitedNavigation(ntp_tiles::NTPTileImpression(
       2, TileSource::SUGGESTIONS_SERVICE, TileTitleSource::UNKNOWN,
-      TileVisualType::THUMBNAIL, GURL()));
+      TileVisualType::THUMBNAIL, base::Time(), GURL()));
   logger.LogMostVisitedNavigation(ntp_tiles::NTPTileImpression(
       3, TileSource::POPULAR, TileTitleSource::MANIFEST,
-      TileVisualType::THUMBNAIL, GURL()));
+      TileVisualType::THUMBNAIL, base::Time(), GURL()));
   EXPECT_THAT(
       histogram_tester.GetAllSamples("NewTabPage.MostVisited"),
       ElementsAre(Bucket(0, 2), Bucket(1, 2), Bucket(2, 2), Bucket(3, 2)));
@@ -479,7 +484,7 @@ TEST(NTPUserDataLoggerTest, TestLoadTime) {
   // the time histograms).
   logger.LogMostVisitedImpression(ntp_tiles::NTPTileImpression(
       0, TileSource::TOP_SITES, TileTitleSource::UNKNOWN,
-      TileVisualType::THUMBNAIL, GURL()));
+      TileVisualType::THUMBNAIL, base::Time(), GURL()));
 
   // Send the ALL_TILES_LOADED event, this should trigger emitting histograms.
   logger.LogEvent(NTP_ALL_TILES_LOADED, delta_tiles_loaded);
@@ -525,7 +530,7 @@ TEST(NTPUserDataLoggerTest, TestLoadTime) {
   // in .MostLikely.
   logger.LogMostVisitedImpression(ntp_tiles::NTPTileImpression(
       0, TileSource::SUGGESTIONS_SERVICE, TileTitleSource::UNKNOWN,
-      TileVisualType::THUMBNAIL, GURL()));
+      TileVisualType::THUMBNAIL, base::Time(), GURL()));
 
   base::TimeDelta delta_tiles_received2 = base::TimeDelta::FromMilliseconds(50);
   base::TimeDelta delta_tiles_loaded2 = base::TimeDelta::FromMilliseconds(500);
@@ -698,4 +703,30 @@ TEST(NTPUserDataLoggerTest, TestLoadTimeRemoteNTPOther) {
                                          delta_tiles_loaded, 1);
   histogram_tester.ExpectTimeBucketCount("NewTabPage.LoadTime.Web.Other",
                                          delta_tiles_loaded, 1);
+}
+
+TEST(NTPUserDataLoggerTest, TestImpressionsAge) {
+  base::StatisticsRecorder::Initialize();
+
+  base::HistogramTester histogram_tester;
+
+  // Ensure non-zero statistics.
+  TestNTPUserDataLogger logger(GURL("chrome://newtab/"));
+
+  constexpr base::TimeDelta delta = base::TimeDelta::FromMilliseconds(0);
+  constexpr base::TimeDelta kSuggestionAge = base::TimeDelta::FromMinutes(1);
+  constexpr base::TimeDelta kBucketTolerance = base::TimeDelta::FromSeconds(20);
+
+  logger.LogMostVisitedImpression(ntp_tiles::NTPTileImpression(
+      0, TileSource::SUGGESTIONS_SERVICE, TileTitleSource::UNKNOWN,
+      TileVisualType::THUMBNAIL, base::Time::Now() - kSuggestionAge, GURL()));
+
+  logger.LogEvent(NTP_ALL_TILES_LOADED, delta);
+
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "NewTabPage.SuggestionsImpressionAge.server"),
+              ElementsAre(IsBucketBetween(
+                  (kSuggestionAge - kBucketTolerance).InSeconds(),
+                  (kSuggestionAge + kBucketTolerance).InSeconds(),
+                  /*count=*/1)));
 }

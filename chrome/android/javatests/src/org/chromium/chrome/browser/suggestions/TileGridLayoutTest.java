@@ -64,6 +64,7 @@ import org.chromium.ui.test.util.UiRestriction;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -243,7 +244,7 @@ public class TileGridLayoutTest {
         List<SiteSuggestion> siteSuggestions = makeSuggestions(FAKE_MOST_VISITED_URLS.length);
         siteSuggestions.add(homePagePosition,
                 new SiteSuggestion("HOMEPAGE", HOME_PAGE_URL, "", TileTitleSource.TITLE_TAG,
-                        TileSource.HOMEPAGE, TileSectionType.PERSONALIZED));
+                        TileSource.HOMEPAGE, TileSectionType.PERSONALIZED, new Date()));
 
         FakeMostVisitedSites mMostVisitedSites = new FakeMostVisitedSites();
         mMostVisitedSites.setTileSuggestions(siteSuggestions);

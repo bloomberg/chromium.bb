@@ -86,14 +86,9 @@ public interface MostVisitedSites {
     /**
      * Records metrics about an impression of a tile including its source (local, server, ...) and
      * its visual type.
-     * @param index The index of the tile that was impressed (0-based).
-     * @param type The visual type of the item as defined in {@link TileVisualType}.
-     * @param titleSource The {@link TileTitleSource} where the item's title originated from.
-     * @param source The {@link TileSource} that generated this item.
-     * @param url The URL of the tile.
+     * @param tile Object holding the details of a tile.
      */
-    void recordTileImpression(int index, @TileVisualType int type, @TileTitleSource int titleSource,
-            @TileSource int source, String url);
+    void recordTileImpression(Tile tile);
 
     /**
      * Records the opening of a Most Visited Item.
@@ -102,6 +97,5 @@ public interface MostVisitedSites {
      * @param titleSource The {@link TileTitleSource} where the item's title originated from.
      * @param source The {@link TileSource} that generated this item.
      */
-    void recordOpenedMostVisitedItem(int index, @TileVisualType int type,
-            @TileTitleSource int titleSource, @TileSource int source);
+    void recordOpenedMostVisitedItem(Tile tile);
 }
