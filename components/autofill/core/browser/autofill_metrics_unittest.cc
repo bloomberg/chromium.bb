@@ -1426,8 +1426,7 @@ TEST_F(AutofillMetricsTest, UpiVirtualPaymentAddress) {
                                      1);
   histogram_tester.ExpectTotalCount("Autofill.UserHappiness.CreditCard", 0);
   histogram_tester.ExpectTotalCount("Autofill.UserHappiness.Password", 0);
-  histogram_tester.ExpectTotalCount("Autofill.UserHappiness.UnknownFormType",
-                                    0);
+  histogram_tester.ExpectTotalCount("Autofill.UserHappiness.Unknown", 0);
 }
 
 // Verify that when a field is annotated with the autocomplete attribute, its
@@ -5000,8 +4999,7 @@ TEST_F(AutofillMetricsTest, LogUserHappinessMetric_PasswordForm) {
                                        AutofillMetrics::USER_DID_AUTOFILL, 1);
     histogram_tester.ExpectTotalCount("Autofill.UserHappiness.CreditCard", 0);
     histogram_tester.ExpectTotalCount("Autofill.UserHappiness.Address", 0);
-    histogram_tester.ExpectTotalCount("Autofill.UserHappiness.UnknownFormType",
-                                      0);
+    histogram_tester.ExpectTotalCount("Autofill.UserHappiness.Unknown", 0);
   }
 
   {
@@ -5014,8 +5012,7 @@ TEST_F(AutofillMetricsTest, LogUserHappinessMetric_PasswordForm) {
                                        AutofillMetrics::USER_DID_AUTOFILL, 1);
     histogram_tester.ExpectTotalCount("Autofill.UserHappiness.CreditCard", 0);
     histogram_tester.ExpectTotalCount("Autofill.UserHappiness.Address", 0);
-    histogram_tester.ExpectTotalCount("Autofill.UserHappiness.UnknownFormType",
-                                      0);
+    histogram_tester.ExpectTotalCount("Autofill.UserHappiness.Unknown", 0);
   }
 }
 
@@ -5026,7 +5023,7 @@ TEST_F(AutofillMetricsTest, LogUserHappinessMetric_UnknownForm) {
                                             NO_GROUP);
     histogram_tester.ExpectBucketCount("Autofill.UserHappiness",
                                        AutofillMetrics::USER_DID_AUTOFILL, 1);
-    histogram_tester.ExpectBucketCount("Autofill.UserHappiness.UnknownFormType",
+    histogram_tester.ExpectBucketCount("Autofill.UserHappiness.Unknown",
                                        AutofillMetrics::USER_DID_AUTOFILL, 1);
     histogram_tester.ExpectTotalCount("Autofill.UserHappiness.CreditCard", 0);
     histogram_tester.ExpectTotalCount("Autofill.UserHappiness.Address", 0);
@@ -5039,7 +5036,7 @@ TEST_F(AutofillMetricsTest, LogUserHappinessMetric_UnknownForm) {
                                             TRANSACTION);
     histogram_tester.ExpectBucketCount("Autofill.UserHappiness",
                                        AutofillMetrics::USER_DID_AUTOFILL, 1);
-    histogram_tester.ExpectBucketCount("Autofill.UserHappiness.UnknownFormType",
+    histogram_tester.ExpectBucketCount("Autofill.UserHappiness.Unknown",
                                        AutofillMetrics::USER_DID_AUTOFILL, 1);
     histogram_tester.ExpectTotalCount("Autofill.UserHappiness.CreditCard", 0);
     histogram_tester.ExpectTotalCount("Autofill.UserHappiness.Address", 0);
@@ -5474,7 +5471,6 @@ TEST_F(AutofillMetricsTest, FormFillDuration) {
   second_form.fields[1].value = ASCIIToUTF16("theking@gmail.com");
   second_form.fields[2].value = ASCIIToUTF16("12345678901");
   second_form.fields[3].value = ASCIIToUTF16("51512345678");
-
   // Expect only form load metrics to be logged if the form is submitted without
   // user interaction.
   {
@@ -5620,6 +5616,212 @@ TEST_F(AutofillMetricsTest, FormFillDuration) {
         "Autofill.FillDuration.FromInteraction.WithoutAutofill", 0);
 
     autofill_manager_->Reset();
+  }
+}
+
+TEST_F(AutofillMetricsTest, FormFillDurationFromInteraction_CreditCardForm) {
+  // Should log time duration with autofill for credit card form.
+  {
+    base::HistogramTester histogram_tester;
+    AutofillMetrics::LogFormFillDurationFromInteraction(
+        {CREDIT_CARD_FORM}, true /* used_autofill */,
+        base::TimeDelta::FromMilliseconds(2000));
+    histogram_tester.ExpectTimeBucketCount(
+        "Autofill.FillDuration.FromInteraction.WithAutofill.CreditCard",
+        base::TimeDelta::FromMilliseconds(2000), 1);
+    histogram_tester.ExpectTotalCount(
+        "Autofill.FillDuration.FromInteraction.WithoutAutofill.CreditCard", 0);
+  }
+
+  // Should log time duration without autofill for credit card form.
+  {
+    base::HistogramTester histogram_tester;
+    AutofillMetrics::LogFormFillDurationFromInteraction(
+        {CREDIT_CARD_FORM}, false /* used_autofill */,
+        base::TimeDelta::FromMilliseconds(2000));
+    histogram_tester.ExpectTimeBucketCount(
+        "Autofill.FillDuration.FromInteraction.WithoutAutofill.CreditCard",
+        base::TimeDelta::FromMilliseconds(2000), 1);
+    histogram_tester.ExpectTotalCount(
+        "Autofill.FillDuration.FromInteraction.WithAutofill.CreditCard", 0);
+  }
+
+  // Should not log time duration for credit card form if credit card form is
+  // not detected.
+  {
+    base::HistogramTester histogram_tester;
+    AutofillMetrics::LogFormFillDurationFromInteraction(
+        {UNKNOWN_FORM_TYPE}, false /* used_autofill */,
+        base::TimeDelta::FromMilliseconds(2000));
+    histogram_tester.ExpectTotalCount(
+        "Autofill.FillDuration.FromInteraction.WithAutofill.CreditCard", 0);
+    histogram_tester.ExpectTotalCount(
+        "Autofill.FillDuration.FromInteraction.WithoutAutofill.CreditCard", 0);
+  }
+}
+
+TEST_F(AutofillMetricsTest, FormFillDurationFromInteraction_AddressForm) {
+  // Should log time duration with autofill for address form.
+  {
+    base::HistogramTester histogram_tester;
+    AutofillMetrics::LogFormFillDurationFromInteraction(
+        {ADDRESS_FORM}, true /* used_autofill */,
+        base::TimeDelta::FromMilliseconds(2000));
+    histogram_tester.ExpectTimeBucketCount(
+        "Autofill.FillDuration.FromInteraction.WithAutofill.Address",
+        base::TimeDelta::FromMilliseconds(2000), 1);
+    histogram_tester.ExpectTotalCount(
+        "Autofill.FillDuration.FromInteraction.WithoutAutofill.Address", 0);
+  }
+
+  // Should log time duration without autofill for address form.
+  {
+    base::HistogramTester histogram_tester;
+    AutofillMetrics::LogFormFillDurationFromInteraction(
+        {ADDRESS_FORM}, false /* used_autofill */,
+        base::TimeDelta::FromMilliseconds(2000));
+    histogram_tester.ExpectTimeBucketCount(
+        "Autofill.FillDuration.FromInteraction.WithoutAutofill.Address",
+        base::TimeDelta::FromMilliseconds(2000), 1);
+    histogram_tester.ExpectTotalCount(
+        "Autofill.FillDuration.FromInteraction.WithAutofill.Address", 0);
+  }
+
+  // Should not log time duration for address form if address form is not
+  // detected.
+  {
+    base::HistogramTester histogram_tester;
+    AutofillMetrics::LogFormFillDurationFromInteraction(
+        {UNKNOWN_FORM_TYPE}, false /* used_autofill */,
+        base::TimeDelta::FromMilliseconds(2000));
+    histogram_tester.ExpectTotalCount(
+        "Autofill.FillDuration.FromInteraction.WithAutofill.Address", 0);
+    histogram_tester.ExpectTotalCount(
+        "Autofill.FillDuration.FromInteraction.WithoutAutofill.Address", 0);
+  }
+}
+
+TEST_F(AutofillMetricsTest, FormFillDurationFromInteraction_PasswordForm) {
+  // Should log time duration with autofill for password form.
+  {
+    base::HistogramTester histogram_tester;
+    AutofillMetrics::LogFormFillDurationFromInteraction(
+        {PASSWORD_FORM}, true /* used_autofill */,
+        base::TimeDelta::FromMilliseconds(2000));
+    histogram_tester.ExpectTimeBucketCount(
+        "Autofill.FillDuration.FromInteraction.WithAutofill.Password",
+        base::TimeDelta::FromMilliseconds(2000), 1);
+    histogram_tester.ExpectTotalCount(
+        "Autofill.FillDuration.FromInteraction.WithoutAutofill.Password", 0);
+  }
+
+  // Should log time duration without autofill for password form.
+  {
+    base::HistogramTester histogram_tester;
+    AutofillMetrics::LogFormFillDurationFromInteraction(
+        {PASSWORD_FORM}, false /* used_autofill */,
+        base::TimeDelta::FromMilliseconds(2000));
+    histogram_tester.ExpectTimeBucketCount(
+        "Autofill.FillDuration.FromInteraction.WithoutAutofill.Password",
+        base::TimeDelta::FromMilliseconds(2000), 1);
+    histogram_tester.ExpectTotalCount(
+        "Autofill.FillDuration.FromInteraction.WithAutofill.Password", 0);
+  }
+
+  // Should not log time duration for password form if password form is not
+  // detected.
+  {
+    base::HistogramTester histogram_tester;
+    AutofillMetrics::LogFormFillDurationFromInteraction(
+        {UNKNOWN_FORM_TYPE}, false /* used_autofill */,
+        base::TimeDelta::FromMilliseconds(2000));
+    histogram_tester.ExpectTotalCount(
+        "Autofill.FillDuration.FromInteraction.WithAutofill.Password", 0);
+    histogram_tester.ExpectTotalCount(
+        "Autofill.FillDuration.FromInteraction.WithoutAutofill.Password", 0);
+  }
+}
+
+TEST_F(AutofillMetricsTest, FormFillDurationFromInteraction_UnknownForm) {
+  // Should log time duration with autofill for unknown form.
+  {
+    base::HistogramTester histogram_tester;
+    AutofillMetrics::LogFormFillDurationFromInteraction(
+        {UNKNOWN_FORM_TYPE}, true /* used_autofill */,
+        base::TimeDelta::FromMilliseconds(2000));
+    histogram_tester.ExpectTimeBucketCount(
+        "Autofill.FillDuration.FromInteraction.WithAutofill.Unknown",
+        base::TimeDelta::FromMilliseconds(2000), 1);
+    histogram_tester.ExpectTotalCount(
+        "Autofill.FillDuration.FromInteraction.WithoutAutofill.Unknown", 0);
+  }
+
+  // Should log time duration without autofill for unknown form.
+  {
+    base::HistogramTester histogram_tester;
+    AutofillMetrics::LogFormFillDurationFromInteraction(
+        {UNKNOWN_FORM_TYPE}, false /* used_autofill */,
+        base::TimeDelta::FromMilliseconds(2000));
+    histogram_tester.ExpectTimeBucketCount(
+        "Autofill.FillDuration.FromInteraction.WithoutAutofill.Unknown",
+        base::TimeDelta::FromMilliseconds(2000), 1);
+    histogram_tester.ExpectTotalCount(
+        "Autofill.FillDuration.FromInteraction.WithAutofill.Unknown", 0);
+  }
+
+  // Should not log time duration for unknown form if unknown form is not
+  // detected.
+  {
+    base::HistogramTester histogram_tester;
+    AutofillMetrics::LogFormFillDurationFromInteraction(
+        {ADDRESS_FORM}, false /* used_autofill */,
+        base::TimeDelta::FromMilliseconds(2000));
+    histogram_tester.ExpectTotalCount(
+        "Autofill.FillDuration.FromInteraction.WithAutofill.Unknown", 0);
+    histogram_tester.ExpectTotalCount(
+        "Autofill.FillDuration.FromInteraction.WithoutAutofill.Unknown", 0);
+  }
+}
+
+TEST_F(AutofillMetricsTest, FormFillDurationFromInteraction_MultipleForms) {
+  // Should log time duration with autofill for all forms.
+  {
+    base::HistogramTester histogram_tester;
+    AutofillMetrics::LogFormFillDurationFromInteraction(
+        {CREDIT_CARD_FORM, ADDRESS_FORM, PASSWORD_FORM, UNKNOWN_FORM_TYPE},
+        true /* used_autofill */, base::TimeDelta::FromMilliseconds(2000));
+    histogram_tester.ExpectTimeBucketCount(
+        "Autofill.FillDuration.FromInteraction.WithAutofill.CreditCard",
+        base::TimeDelta::FromMilliseconds(2000), 1);
+    histogram_tester.ExpectTimeBucketCount(
+        "Autofill.FillDuration.FromInteraction.WithAutofill.Address",
+        base::TimeDelta::FromMilliseconds(2000), 1);
+    histogram_tester.ExpectTimeBucketCount(
+        "Autofill.FillDuration.FromInteraction.WithAutofill.Password",
+        base::TimeDelta::FromMilliseconds(2000), 1);
+    histogram_tester.ExpectTimeBucketCount(
+        "Autofill.FillDuration.FromInteraction.WithAutofill.Unknown",
+        base::TimeDelta::FromMilliseconds(2000), 1);
+  }
+
+  // Should log time duration without autofill for all forms.
+  {
+    base::HistogramTester histogram_tester;
+    AutofillMetrics::LogFormFillDurationFromInteraction(
+        {CREDIT_CARD_FORM, ADDRESS_FORM, PASSWORD_FORM, UNKNOWN_FORM_TYPE},
+        false /* used_autofill */, base::TimeDelta::FromMilliseconds(2000));
+    histogram_tester.ExpectTimeBucketCount(
+        "Autofill.FillDuration.FromInteraction.WithoutAutofill.CreditCard",
+        base::TimeDelta::FromMilliseconds(2000), 1);
+    histogram_tester.ExpectTimeBucketCount(
+        "Autofill.FillDuration.FromInteraction.WithoutAutofill.Address",
+        base::TimeDelta::FromMilliseconds(2000), 1);
+    histogram_tester.ExpectTimeBucketCount(
+        "Autofill.FillDuration.FromInteraction.WithoutAutofill.Password",
+        base::TimeDelta::FromMilliseconds(2000), 1);
+    histogram_tester.ExpectTimeBucketCount(
+        "Autofill.FillDuration.FromInteraction.WithoutAutofill.Unknown",
+        base::TimeDelta::FromMilliseconds(2000), 1);
   }
 }
 
