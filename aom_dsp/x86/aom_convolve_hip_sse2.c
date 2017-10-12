@@ -28,7 +28,8 @@ void aom_convolve8_add_src_hip_sse2(const uint8_t *src, ptrdiff_t src_stride,
   (void)x_step_q4;
   (void)y_step_q4;
 
-  uint16_t temp[(MAX_SB_SIZE + SUBPEL_TAPS - 1) * MAX_SB_SIZE];
+  DECLARE_ALIGNED(16, uint16_t,
+                  temp[(MAX_SB_SIZE + SUBPEL_TAPS - 1) * MAX_SB_SIZE]);
   int intermediate_height = h + SUBPEL_TAPS - 1;
   int i, j;
   const int center_tap = ((SUBPEL_TAPS - 1) / 2);
