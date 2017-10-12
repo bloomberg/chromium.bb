@@ -132,9 +132,9 @@ void FakeSessionManagerClient::NotifyLockScreenDismissed() {
 }
 
 void FakeSessionManagerClient::RetrieveActiveSessions(
-      const ActiveSessionsCallback& callback) {
+    ActiveSessionsCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, user_sessions_, true));
+      FROM_HERE, base::BindOnce(std::move(callback), user_sessions_));
 }
 
 void FakeSessionManagerClient::RetrieveDevicePolicy(

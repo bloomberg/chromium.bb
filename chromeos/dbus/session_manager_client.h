@@ -153,18 +153,16 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
 
   // The ActiveSessionsCallback is used for the RetrieveActiveSessions()
   // method. It receives |sessions| argument where the keys are cryptohome_ids
-  // for all users that are currently active and |success| argument which
-  // indicates whether or not the request succeded.
+  // for all users that are currently active.
   using ActiveSessionsCallback =
-      base::Callback<void(const ActiveSessionsMap& sessions, bool success)>;
+      DBusMethodCallback<ActiveSessionsMap /* sessions */>;
 
   // Enumerates active user sessions. Usually Chrome naturally keeps track of
   // active users when they are added into current session. When Chrome is
   // restarted after crash by session_manager it only receives cryptohome id and
   // user_id_hash for one user. This method is used to retrieve list of all
   // active users.
-  virtual void RetrieveActiveSessions(
-      const ActiveSessionsCallback& callback) = 0;
+  virtual void RetrieveActiveSessions(ActiveSessionsCallback callback) = 0;
 
   // Used for RetrieveDevicePolicy, RetrievePolicyForUser and
   // RetrieveDeviceLocalAccountPolicy. Takes a serialized protocol buffer as

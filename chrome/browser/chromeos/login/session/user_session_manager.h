@@ -13,6 +13,7 @@
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/base/locale_util.h"
 #include "chrome/browser/chromeos/eol_notification.h"
@@ -362,8 +363,7 @@ class UserSessionManager
 
   // Callback to process RetrieveActiveSessions() request results.
   void OnRestoreActiveSessions(
-      const SessionManagerClient::ActiveSessionsMap& sessions,
-      bool success);
+      base::Optional<SessionManagerClient::ActiveSessionsMap> sessions);
 
   // Called by OnRestoreActiveSessions() when there're user sessions in
   // |pending_user_sessions_| that has to be restored one by one.
