@@ -148,10 +148,7 @@ void EntryView::Layout() {
 }
 
 gfx::Size EntryView::CalculatePreferredSize() const {
-  DCHECK_EQ(1, child_count());
-  gfx::Size size = child_at(0)->GetPreferredSize();
-  size.SetToMax(gfx::Size(kWidth, kEntryHeight));
-  return size;
+  return gfx::Size(kWidth, kEntryHeight);
 }
 
 void EntryView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
