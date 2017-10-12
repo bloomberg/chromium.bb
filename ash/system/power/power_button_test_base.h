@@ -101,6 +101,10 @@ class PowerButtonTestBase : public AshTestBase {
   // Enables or disables tablet mode based on |enable|.
   void EnableTabletMode(bool enable);
 
+  void set_has_tablet_mode_switch(bool has_tablet_mode_switch) {
+    has_tablet_mode_switch_ = has_tablet_mode_switch;
+  }
+
   // Ownership is passed on to chromeos::DBusThreadManager.
   chromeos::FakePowerManagerClient* power_manager_client_ = nullptr;
   chromeos::FakeSessionManagerClient* session_manager_client_ = nullptr;
@@ -112,7 +116,21 @@ class PowerButtonTestBase : public AshTestBase {
   std::unique_ptr<LockStateControllerTestApi> lock_state_test_api_;
   base::SimpleTestTickClock* tick_clock_ = nullptr;  // Not owned.
 
+  // Indicates whether switches::kAshEnableTabletMode is appended.
+  bool has_tablet_mode_switch_ = true;
+
   DISALLOW_COPY_AND_ASSIGN(PowerButtonTestBase);
+};
+
+// Base test fixture same as PowerButtonTestBase excepts that tablet mode swtich
+// is not set.
+class NoTabletModePowerButtonTestBase : public PowerButtonTestBase {
+ public:
+  NoTabletModePowerButtonTestBase() { set_has_tablet_mode_switch(false); }
+  ~NoTabletModePowerButtonTestBase() override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(NoTabletModePowerButtonTestBase);
 };
 
 }  // namespace ash

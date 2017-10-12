@@ -70,7 +70,8 @@ void PowerButtonController::OnPowerButtonEvent(
                                     ->IsTabletModeWindowManagerEnabled();
 
   if (button_type_ == ButtonType::NORMAL && !should_take_screenshot &&
-      tablet_controller_) {
+      tablet_controller_ &&
+      tablet_controller_->ShouldHandlePowerButtonEvents()) {
     tablet_controller_->OnPowerButtonEvent(down, timestamp);
     return;
   }
