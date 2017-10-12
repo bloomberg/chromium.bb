@@ -37,12 +37,28 @@ cr.define('extensions', function() {
   'use strict';
 
   /**
+   * Regular expression that captures the leading slash, the content and the
+   * trailing slash in three different groups.
+   * @const {!RegExp}
+   */
+  const CANONICAL_PATH_REGEX = /(^\/)([\/-\w]+)(\/$)/;
+
+  /**
    * A helper object to manage in-page navigations. Since the extensions page
    * needs to support different urls for different subpages (like the details
    * page), we use this object to manage the history and url conversions.
    */
   class NavigationHelper {
     constructor() {
+      // Redirect if route not supported.
+      let validPathnames = ['/'];
+      if (!loadTimeData.getBoolean('isGuest')) {
+        validPathnames.push('/shortcuts', '/apps');
+      }
+      if (!validPathnames.includes(this.currentPath_)) {
+        window.history.replaceState(undefined, '', '/');
+      }
+
       /** @private {number} */
       this.nextListenerId_ = 1;
 
@@ -52,6 +68,11 @@ cr.define('extensions', function() {
       window.addEventListener('popstate', () => {
         this.notifyRouteChanged_(this.getCurrentPage());
       });
+    }
+
+    /** @private */
+    get currentPath_() {
+      return location.pathname.replace(CANONICAL_PATH_REGEX, '$1$2');
     }
 
     /**
@@ -70,10 +91,10 @@ cr.define('extensions', function() {
       if (id)
         return {page: Page.ERRORS, extensionId: id};
 
-      if (location.pathname == '/shortcuts')
+      if (this.currentPath_ == '/shortcuts')
         return {page: Page.SHORTCUTS};
 
-      if (location.pathname == '/apps')
+      if (this.currentPath_ == '/apps')
         return {page: Page.LIST, type: extensions.ShowingType.APPS};
 
       return {page: Page.LIST, type: extensions.ShowingType.EXTENSIONS};

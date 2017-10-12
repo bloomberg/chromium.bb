@@ -29,6 +29,14 @@ cr.define('extensions', function() {
       this.manager_ = manager;
       this.manager_.set('delegate', this);
 
+      // Skip any setup or backend requests if we're in guest-mode.
+      // TODO(scottchen): there might be a better place to do this once manager
+      //     and service become less coupled.
+      if (loadTimeData.getBoolean('isGuest')) {
+        this.manager_.initPage();
+        return;
+      }
+
       const keyboardShortcuts = this.manager_.keyboardShortcuts;
       keyboardShortcuts.addEventListener(
           'shortcut-updated', this.onExtensionCommandUpdated_.bind(this));
