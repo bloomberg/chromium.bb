@@ -25,10 +25,14 @@ LayerTreeFrameSinkHolder::LayerTreeFrameSinkHolder(
 }
 
 LayerTreeFrameSinkHolder::~LayerTreeFrameSinkHolder() {
-  frame_sink_->DetachFromClient();
+  if (frame_sink_)
+    frame_sink_->DetachFromClient();
 
   for (auto& callback : release_callbacks_)
     callback.second.Run(gpu::SyncToken(), true /* lost */);
+
+  if (shell_)
+    shell_->RemoveShellObserver(this);
 }
 
 // static
@@ -117,7 +121,7 @@ void LayerTreeFrameSinkHolder::ReclaimResources(
   }
 
   if (shell_ && release_callbacks_.empty())
-    DeleteSoon();
+    ScheduleDelete();
 }
 
 void LayerTreeFrameSinkHolder::DidReceiveCompositorFrameAck() {
@@ -131,7 +135,7 @@ void LayerTreeFrameSinkHolder::DidLoseLayerTreeFrameSink() {
   release_callbacks_.clear();
 
   if (shell_)
-    DeleteSoon();
+    ScheduleDelete();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -139,17 +143,20 @@ void LayerTreeFrameSinkHolder::DidLoseLayerTreeFrameSink() {
 
 void LayerTreeFrameSinkHolder::OnShellDestroyed() {
   shell_->RemoveShellObserver(this);
-  delete this;
+  shell_ = nullptr;
+  // Make sure frame sink never outlives the shell.
+  frame_sink_->DetachFromClient();
+  frame_sink_.reset();
+  ScheduleDelete();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // LayerTreeFrameSinkHolder, private:
 
-void LayerTreeFrameSinkHolder::DeleteSoon() {
-  // Move strong reference from shell observer list to DeleteSoon.
-  DCHECK(shell_);
-  shell_->RemoveShellObserver(this);
-  shell_ = nullptr;
+void LayerTreeFrameSinkHolder::ScheduleDelete() {
+  if (delete_pending_)
+    return;
+  delete_pending_ = true;
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }
 

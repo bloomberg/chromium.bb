@@ -66,7 +66,12 @@ class FastInkView::LayerTreeFrameSinkHolder
       : view_(view), frame_sink_(std::move(frame_sink)) {
     frame_sink_->BindToClient(this);
   }
-  ~LayerTreeFrameSinkHolder() override { frame_sink_->DetachFromClient(); }
+  ~LayerTreeFrameSinkHolder() override {
+    if (frame_sink_)
+      frame_sink_->DetachFromClient();
+    if (shell_)
+      shell_->RemoveShellObserver(this);
+  }
 
   // Delete frame sink after having reclaimed all exported resources.
   // TODO(reveman): Find a better way to handle deletion of in-flight resources.
@@ -128,7 +133,7 @@ class FastInkView::LayerTreeFrameSinkHolder
     }
 
     if (shell_ && exported_resources_.empty())
-      DeleteSoon();
+      ScheduleDelete();
   }
   void SetTreeActivationCallback(const base::Closure& callback) override {}
   void DidReceiveCompositorFrameAck() override {
@@ -138,7 +143,7 @@ class FastInkView::LayerTreeFrameSinkHolder
   void DidLoseLayerTreeFrameSink() override {
     exported_resources_.clear();
     if (shell_)
-      DeleteSoon();
+      ScheduleDelete();
   }
   void OnDraw(const gfx::Transform& transform,
               const gfx::Rect& viewport,
@@ -151,15 +156,18 @@ class FastInkView::LayerTreeFrameSinkHolder
   // Overridden from ash::ShellObserver:
   void OnShellDestroyed() override {
     shell_->RemoveShellObserver(this);
-    delete this;
+    shell_ = nullptr;
+    // Make sure frame sink never outlives the shell.
+    frame_sink_->DetachFromClient();
+    frame_sink_.reset();
+    ScheduleDelete();
   }
 
  private:
-  void DeleteSoon() {
-    // Move strong reference from shell observer list to DeleteSoon.
-    DCHECK(shell_);
-    shell_->RemoveShellObserver(this);
-    shell_ = nullptr;
+  void ScheduleDelete() {
+    if (delete_pending_)
+      return;
+    delete_pending_ = true;
     base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
   }
 
@@ -170,6 +178,7 @@ class FastInkView::LayerTreeFrameSinkHolder
   gfx::Size last_frame_size_in_pixels_;
   float last_frame_device_scale_factor_ = 1.0f;
   ash::Shell* shell_ = nullptr;
+  bool delete_pending_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(LayerTreeFrameSinkHolder);
 };
