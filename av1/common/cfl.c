@@ -336,6 +336,19 @@ static void cfl_luma_subsampling_420_lbd(const uint8_t *input, int input_stride,
   }
 }
 
+static void cfl_luma_subsampling_422_lbd(const uint8_t *input, int input_stride,
+                                         int16_t *output_q3, int width,
+                                         int height) {
+  for (int j = 0; j < height; j++) {
+    for (int i = 0; i < width; i++) {
+      int left = i << 1;
+      output_q3[i] = (input[left] + input[left + 1]) << 2;
+    }
+    input += input_stride;
+    output_q3 += MAX_SB_SIZE;
+  }
+}
+
 static void cfl_luma_subsampling_444_lbd(const uint8_t *input, int input_stride,
                                          int16_t *output_q3, int width,
                                          int height) {
@@ -360,6 +373,19 @@ static void cfl_luma_subsampling_420_hbd(const uint16_t *input,
                      << 1;
     }
     input += input_stride << 1;
+    output_q3 += MAX_SB_SIZE;
+  }
+}
+
+static void cfl_luma_subsampling_422_hbd(const uint16_t *input,
+                                         int input_stride, int16_t *output_q3,
+                                         int width, int height) {
+  for (int j = 0; j < height; j++) {
+    for (int i = 0; i < width; i++) {
+      int left = i << 1;
+      output_q3[i] = (input[left] + input[left + 1]) << 2;
+    }
+    input += input_stride;
     output_q3 += MAX_SB_SIZE;
   }
 }
@@ -393,17 +419,20 @@ static void cfl_luma_subsampling_420(const uint8_t *input, int input_stride,
 }
 
 static void cfl_luma_subsampling_422(const uint8_t *input, int input_stride,
-                                     int16_t *output_q3, int width,
-                                     int height) {
-  for (int j = 0; j < height; j++) {
-    for (int i = 0; i < width; i++) {
-      int left = i << 1;
-      output_q3[i] = (input[left] + input[left + 1]) << 2;
-    }
-    input += input_stride;
-    output_q3 += MAX_SB_SIZE;
+                                     int16_t *output_q3, int width, int height,
+                                     int use_hbd) {
+#if CONFIG_HIGHBITDEPTH
+  if (use_hbd) {
+    const uint16_t *input_16 = CONVERT_TO_SHORTPTR(input);
+    cfl_luma_subsampling_422_hbd(input_16, input_stride, output_q3, width,
+                                 height);
+    return;
   }
+#endif  // CONFIG_HIGHBITDEPTH
+  (void)use_hbd;
+  cfl_luma_subsampling_422_lbd(input, input_stride, output_q3, width, height);
 }
+
 static void cfl_luma_subsampling_444(const uint8_t *input, int input_stride,
                                      int16_t *output_q3, int width, int height,
                                      int use_hbd) {
@@ -460,7 +489,7 @@ static INLINE void cfl_store(CFL_CTX *cfl, const uint8_t *input,
                              store_height, use_hbd);
   } else if (sub_y == 0 && sub_x == 1) {
     cfl_luma_subsampling_422(input, input_stride, pred_buf_q3, store_width,
-                             store_height);
+                             store_height, use_hbd);
   } else {
     fprintf(stderr,
             "Only 4:4:4, 4:2:2 and 4:2:0 are currently supported by CfL, %d %d "
