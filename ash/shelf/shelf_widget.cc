@@ -6,6 +6,7 @@
 
 #include "ash/animation/animation_change_type.h"
 #include "ash/focus_cycler.h"
+#include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
@@ -20,7 +21,6 @@
 #include "ash/system/status_area_layout_manager.h"
 #include "ash/system/status_area_widget.h"
 #include "base/command_line.h"
-#include "chromeos/chromeos_switches.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/skbitmap_operations.h"
@@ -114,8 +114,7 @@ ShelfWidget::DelegateView::~DelegateView() {}
 
 // static
 bool ShelfWidget::IsUsingMdLoginShelf() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-             chromeos::switches::kShowMdLogin) &&
+  return switches::IsUsingMdLogin() &&
          (Shell::Get()->session_controller()->GetSessionState() ==
               session_manager::SessionState::LOCKED ||
           Shell::Get()->session_controller()->GetSessionState() ==

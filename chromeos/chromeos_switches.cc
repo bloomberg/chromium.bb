@@ -473,9 +473,6 @@ const char kShillStub[] = "shill-stub";
 // This makes it easier to test layout logic.
 const char kShowLoginDevOverlay[] = "show-login-dev-overlay";
 
-// If true, the views-based md login and lock screens will be shown.
-const char kShowMdLogin[] = "show-md-login";
-
 // If true, the non-md login and lock screens will be shown.
 const char kShowNonMdLogin[] = "show-non-md-login";
 

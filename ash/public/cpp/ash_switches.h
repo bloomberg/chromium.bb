@@ -52,6 +52,7 @@ ASH_PUBLIC_EXPORT extern const char kAshTouchHud[];
 ASH_PUBLIC_EXPORT extern const char kAuraLegacyPowerButton[];
 ASH_PUBLIC_EXPORT extern const char kForceClamshellPowerButton[];
 ASH_PUBLIC_EXPORT extern const char kHasInternalStylus[];
+ASH_PUBLIC_EXPORT extern const char kShowMdLogin[];
 ASH_PUBLIC_EXPORT extern const char kSpuriousPowerButtonWindow[];
 ASH_PUBLIC_EXPORT extern const char kSpuriousPowerButtonAccelCount[];
 ASH_PUBLIC_EXPORT extern const char kSpuriousPowerButtonScreenAccel[];
@@ -60,6 +61,9 @@ ASH_PUBLIC_EXPORT extern const char kSpuriousPowerButtonLidAngleChange[];
 ASH_PUBLIC_EXPORT extern const char kUseIMEService[];
 
 ASH_PUBLIC_EXPORT bool IsNightLightEnabled();
+
+// Returns true if the md based login/lock UI is enabled.
+ASH_PUBLIC_EXPORT bool IsUsingMdLogin();
 
 }  // namespace switches
 }  // namespace ash

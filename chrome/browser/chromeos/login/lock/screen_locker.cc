@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "ash/login/ui/lock_screen.h"
+#include "ash/public/cpp/ash_switches.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/session_controller.mojom.h"
 #include "base/bind.h"
@@ -46,7 +47,6 @@
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/audio/chromeos_sounds.h"
-#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/biod/constants.pb.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
@@ -84,12 +84,6 @@ namespace {
 // on successful authentication before unlocking, but we want to be sure that
 // unlock happens even if animations are broken.
 const int kUnlockGuardTimeoutMs = 400;
-
-// Returns true if we are using md-based login/lock.
-bool IsUsingMdLogin() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kShowMdLogin);
-}
 
 // Returns true if fingerprint authentication is available for one of the
 // |users|.
@@ -207,7 +201,7 @@ void ScreenLocker::Init() {
 
   authenticator_ = UserSessionManager::GetInstance()->CreateAuthenticator(this);
   extended_authenticator_ = ExtendedAuthenticator::Create(this);
-  if (IsUsingMdLogin()) {
+  if (ash::switches::IsUsingMdLogin()) {
     // Create delegate that calls into the views-based lock screen via mojo.
     views_screen_locker_ = base::MakeUnique<ViewsScreenLocker>(this);
     delegate_ = views_screen_locker_.get();
