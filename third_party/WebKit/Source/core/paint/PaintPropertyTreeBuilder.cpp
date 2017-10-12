@@ -323,7 +323,6 @@ Optional<IntPoint> PaintPropertyTreeBuilder::UpdateForPaintOffsetTranslation(
        context.current.paint_offset != LayoutPoint())) {
     paint_offset_translation =
         ApplyPaintOffsetTranslation(object, context.current.paint_offset);
-    context.current.paint_offset_root = ToLayoutBoxModelObject(object).Layer();
 
     if (RuntimeEnabledFeatures::RootLayerScrollingEnabled() &&
         object.IsLayoutView()) {
@@ -1363,6 +1362,9 @@ void PaintPropertyTreeBuilder::UpdateForObjectLocationAndSize(
     context.fragment_clip_context->paint_offset = paint_offset;
     fragment_data->SetPaintOffset(paint_offset);
   }
+
+  if (paint_offset_translation)
+    context.current.paint_offset_root = ToLayoutBoxModelObject(object).Layer();
 
   if (!object.IsBox())
     return;
