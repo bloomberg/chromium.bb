@@ -346,8 +346,7 @@ public class BookmarkFolderSelectActivity extends SynchronousInitializationActiv
 
             Drawable iconDrawable;
             if (entry.mType == FolderListEntry.TYPE_NORMAL) {
-                iconDrawable = TintedDrawable.constructTintedDrawable(
-                        view.getResources(), R.drawable.bookmark_folder);
+                iconDrawable = BookmarkUtils.getFolderIcon(view.getResources());
             } else {
                 // For new folder, start_icon is different.
                 VectorDrawableCompat vectorDrawable = VectorDrawableCompat.create(

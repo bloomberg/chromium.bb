@@ -9,7 +9,6 @@ import android.util.AttributeSet;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
-import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.components.bookmarks.BookmarkId;
 
 /**
@@ -27,8 +26,7 @@ public class BookmarkFolderRow extends BookmarkRow {
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
-        setIconDrawable(
-                TintedDrawable.constructTintedDrawable(getResources(), R.drawable.bookmark_folder));
+        setIconDrawable(BookmarkUtils.getFolderIcon(getResources()));
     }
 
     // BookmarkRow implementation.
