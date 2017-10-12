@@ -16,6 +16,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/features.h"
 #include "components/security_state/core/security_state.h"
@@ -267,7 +268,10 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
   Profile* profile = browser()->profile();
   ui_test_utils::NavigateToURL(browser(),
                                embedded_test_server()->GetURL(kLoginPageUrl));
-  ASSERT_TRUE(service->unhandled_password_reuses().empty());
+  ASSERT_TRUE(
+      profile->GetPrefs()
+          ->GetDictionary(prefs::kSafeBrowsingUnhandledSyncPasswordReuses)
+          ->empty());
   ASSERT_FALSE(
       ChromePasswordProtectionService::ShouldShowChangePasswordSettingUI(
           profile));
@@ -277,7 +281,10 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
       browser()->tab_strip_model()->GetActiveWebContents();
   service->ShowModalWarning(web_contents, "unused_token");
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1u, service->unhandled_password_reuses().size());
+  EXPECT_EQ(1u,
+            profile->GetPrefs()
+                ->GetDictionary(prefs::kSafeBrowsingUnhandledSyncPasswordReuses)
+                ->size());
   EXPECT_TRUE(
       ChromePasswordProtectionService::ShouldShowChangePasswordSettingUI(
           profile));
@@ -290,7 +297,10 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
   ui_test_utils::NavigateToURL(browser2, GURL("data:text/html,<html></html>"));
   service->ShowModalWarning(new_web_contents, "unused_token");
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(2u, service->unhandled_password_reuses().size());
+  EXPECT_EQ(2u,
+            profile->GetPrefs()
+                ->GetDictionary(prefs::kSafeBrowsingUnhandledSyncPasswordReuses)
+                ->size());
   EXPECT_TRUE(
       ChromePasswordProtectionService::ShouldShowChangePasswordSettingUI(
           profile));
@@ -298,7 +308,10 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
   // Simulates a Gaia password change.
   SimulateGaiaPasswordChange(/*is_incognito=*/false);
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(service->unhandled_password_reuses().empty());
+  EXPECT_EQ(0u,
+            profile->GetPrefs()
+                ->GetDictionary(prefs::kSafeBrowsingUnhandledSyncPasswordReuses)
+                ->size());
   EXPECT_FALSE(
       ChromePasswordProtectionService::ShouldShowChangePasswordSettingUI(
           profile));
@@ -313,8 +326,10 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
       ChromePasswordProtectionService::ShouldShowChangePasswordSettingUI(
           profile));
   // Simulates previous session has unhandled password reuses.
-  profile->GetPrefs()->SetBoolean(
-      prefs::kSafeBrowsingChangePasswordInSettingsEnabled, true);
+  DictionaryPrefUpdate update(profile->GetPrefs(),
+                              prefs::kSafeBrowsingUnhandledSyncPasswordReuses);
+  update->SetKey("https://oldreuse.com",
+                 /*navigation_id=*/base::Value("12345"));
 
   EXPECT_TRUE(
       ChromePasswordProtectionService::ShouldShowChangePasswordSettingUI(
@@ -325,8 +340,10 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
   EXPECT_FALSE(
       ChromePasswordProtectionService::ShouldShowChangePasswordSettingUI(
           profile));
-  EXPECT_FALSE(profile->GetPrefs()->GetBoolean(
-      prefs::kSafeBrowsingChangePasswordInSettingsEnabled));
+  EXPECT_TRUE(
+      profile->GetPrefs()
+          ->GetDictionary(prefs::kSafeBrowsingUnhandledSyncPasswordReuses)
+          ->empty());
 }
 
 // TODO(jialiul): Add more tests where multiple browser windows are involved.

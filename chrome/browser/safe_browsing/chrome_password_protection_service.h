@@ -112,10 +112,6 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   void MaybeFinishCollectingThreatDetails(content::WebContents* web_contents,
                                           bool did_proceed);
 
-  const std::map<Origin, int64_t>& unhandled_password_reuses() const {
-    return unhandled_password_reuses_;
-  }
-
   // Called when sync user's Gaia password changed.
   void OnGaiaPasswordChanged();
 
@@ -248,10 +244,6 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
       navigation_observer_manager_;
   base::ObserverList<Observer> observer_list_;
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
-  // The map of password reuse origin of top-level frame to navigation ID. These
-  // are password reuses that user hasn't chosen to change password, or
-  // mark site as legitimate yet.
-  std::map<Origin, int64_t> unhandled_password_reuses_;
   DISALLOW_COPY_AND_ASSIGN(ChromePasswordProtectionService);
 };
 
