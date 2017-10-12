@@ -123,6 +123,8 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   void DidDismissDownloadInProductHelp();
   MediaDownloadInProductHelpManager* DownloadInProductHelp();
 
+  void MaybeRecordOverflowTimeToAction();
+
   DECLARE_VIRTUAL_TRACE();
 
  private:

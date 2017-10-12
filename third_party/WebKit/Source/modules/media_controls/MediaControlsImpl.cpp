@@ -1381,6 +1381,11 @@ void MediaControlsImpl::OnWaiting() {
   UpdateCSSClassFromState();
 }
 
+void MediaControlsImpl::MaybeRecordOverflowTimeToAction() {
+  overflow_list_->MaybeRecordTimeTaken(
+      MediaControlOverflowMenuListElement::kTimeToAction);
+}
+
 DEFINE_TRACE(MediaControlsImpl) {
   visitor->Trace(element_mutation_callback_);
   visitor->Trace(resize_observer_);
