@@ -44,8 +44,12 @@ LoadPolicy DocumentSubresourceFilter::GetLoadPolicy(
   if (subresource_url.SchemeIs(url::kDataScheme))
     return LoadPolicy::ALLOW;
 
+  // If ThreadTicks is not supported, then no CPU time measurements have been
+  // collected. Don't report both CPU and wall duration to be consistent.
   auto wall_duration_timer = ScopedTimers::StartIf(
-      activation_state_.measure_performance, [this](base::TimeDelta delta) {
+      activation_state_.measure_performance &&
+          ScopedThreadTimers::IsSupported(),
+      [this](base::TimeDelta delta) {
         statistics_.evaluation_total_wall_duration += delta;
         UMA_HISTOGRAM_MICRO_TIMES(
             "SubresourceFilter.SubresourceLoad.Evaluation.WallDuration", delta);
