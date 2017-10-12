@@ -251,28 +251,6 @@ String GetTextForInlineCollection<NGOffsetMappingBuilder>(
   return ToText(node)->data();
 }
 
-// Templated helper function for CollectInlinesInternal().
-template <typename OffsetMappingBuilder>
-void AppendTextTransformedOffsetMapping(OffsetMappingBuilder*,
-                                        const LayoutText*,
-                                        const String&) {}
-
-template <>
-void AppendTextTransformedOffsetMapping<NGOffsetMappingBuilder>(
-    NGOffsetMappingBuilder* concatenated_mapping_builder,
-    const LayoutText* node,
-    const String& text_transformed_string) {
-  // TODO(xiaochengh): We are assuming that DOM data string and text-transformed
-  // strings have the same length, which is incorrect.
-  if (text_transformed_string.IsEmpty())
-    return;
-  NGOffsetMappingBuilder text_transformed_mapping_builder;
-  text_transformed_mapping_builder.AppendIdentityMapping(
-      text_transformed_string.length());
-  text_transformed_mapping_builder.Annotate(node);
-  concatenated_mapping_builder->Concatenate(text_transformed_mapping_builder);
-}
-
 // The function is templated to indicate the purpose of collected inlines:
 // - With EmptyOffsetMappingBuilder: updating layout;
 // - With NGOffsetMappingBuilder: building offset mapping on clean layout.
@@ -300,8 +278,6 @@ LayoutBox* CollectInlinesInternal(
         const String& text =
             GetTextForInlineCollection<OffsetMappingBuilder>(*layout_text);
         builder->Append(text, node->Style(), layout_text);
-        AppendTextTransformedOffsetMapping(
-            &builder->GetConcatenatedOffsetMappingBuilder(), layout_text, text);
       }
       ClearNeedsLayoutIfUpdatingLayout<OffsetMappingBuilder>(layout_text);
 
@@ -418,10 +394,9 @@ const NGOffsetMappingResult& NGInlineNode::ComputeOffsetMappingIfNeeded() {
     CollectInlinesInternal(GetLayoutBlockFlow(), &builder);
     builder.ToString();
 
-    NGOffsetMappingBuilder& mapping_builder =
-        builder.GetConcatenatedOffsetMappingBuilder();
-    mapping_builder.Composite(builder.GetOffsetMappingBuilder());
-
+    // TODO(xiaochengh): This doesn't compute offset mapping correctly when
+    // text-transform CSS property changes text length.
+    NGOffsetMappingBuilder& mapping_builder = builder.GetOffsetMappingBuilder();
     MutableData()->offset_mapping_ =
         WTF::MakeUnique<NGOffsetMappingResult>(mapping_builder.Build());
   }
