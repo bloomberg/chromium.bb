@@ -6086,6 +6086,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Time spent on 2D canvas toDataURL API call.</summary>
 </histogram>
 
+<histogram name="Blink.CheckerableImageCount" enum="CheckerableImageType">
+  <owner>khushalsagar@chromium.org</owner>
+  <summary>
+    The number of images which could have been checkered (async decoded) for a
+    performance gain, split by the DOM element type on which they were used.
+    This is recorded each time an image for an element created by the page is
+    loaded, either from the network or the local cache. The browser heuristics
+    define an image to be checkerable if it is expected to have a long decode
+    duration. Since these images may be on the rendering critical path, decoding
+    them asychronously from painting other content can provide better
+    performance be reducing overall content checkerboarding.
+  </summary>
+</histogram>
+
 <histogram name="Blink.ColorGamut.Destination" enum="Gamut">
   <owner>hubbe@chromium.org</owner>
   <summary>Gamut properties of destination color space.</summary>
