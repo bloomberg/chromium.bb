@@ -196,6 +196,7 @@ bool IsSupportedInFeaturePolicy(WebFeaturePolicyFeature feature) {
     case WebFeaturePolicyFeature::kUsb:
     case WebFeaturePolicyFeature::kWebVr:
       return true;
+    case WebFeaturePolicyFeature::kSyncXHR:
     case WebFeaturePolicyFeature::kVibrate:
       return RuntimeEnabledFeatures::FeaturePolicyExperimentalFeaturesEnabled();
     default:
