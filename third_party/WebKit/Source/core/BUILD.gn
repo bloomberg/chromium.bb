@@ -1771,6 +1771,19 @@ fuzzer_test("stylesheet_contents_fuzzer") {
   libfuzzer_options = [ "max_len=1024" ]
 }
 
+# Fuzzer for blink::CSSParserFastPaths
+fuzzer_test("css_parser_fast_paths_fuzzer") {
+  sources = [
+    "css/parser/CSSParserFastPathsFuzzer.cpp",
+  ]
+  deps = [
+    ":core",
+    "../platform:blink_fuzzer_test_support",
+  ]
+  dict = "//third_party/WebKit/Source/core/css/css.dict"
+  libfuzzer_options = [ "max_len=128" ]
+}
+
 # Fuzzer for blink::HTMLPreloadScanner.
 fuzzer_test("html_preload_scanner_fuzzer") {
   sources = [
