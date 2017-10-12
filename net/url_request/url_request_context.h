@@ -49,7 +49,6 @@ class NetworkQualityEstimator;
 class ReportingService;
 class ProxyService;
 class URLRequest;
-class URLRequestBackoffManager;
 class URLRequestJobFactory;
 class URLRequestThrottlerManager;
 
@@ -210,12 +209,6 @@ class NET_EXPORT URLRequestContext
     throttler_manager_ = throttler_manager;
   }
 
-  // May return nullptr.
-  URLRequestBackoffManager* backoff_manager() const { return backoff_manager_; }
-  void set_backoff_manager(URLRequestBackoffManager* backoff_manager) {
-    backoff_manager_ = backoff_manager;
-  }
-
   // Gets the URLRequest objects that hold a reference to this
   // URLRequestContext.
   const std::set<const URLRequest*>& url_requests() const {
@@ -322,7 +315,6 @@ class NET_EXPORT URLRequestContext
   HttpTransactionFactory* http_transaction_factory_;
   const URLRequestJobFactory* job_factory_;
   URLRequestThrottlerManager* throttler_manager_;
-  URLRequestBackoffManager* backoff_manager_;
   NetworkQualityEstimator* network_quality_estimator_;
   ReportingService* reporting_service_;
   NetworkErrorLoggingDelegate* network_error_logging_delegate_;
