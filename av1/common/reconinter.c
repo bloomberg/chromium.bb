@@ -2067,10 +2067,9 @@ void av1_count_overlappable_neighbors(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                &mbmi->overlappable_neighbors[1]);
 }
 
-// HW does not support < 4x4 prediction. To limit the bandwidth requirement, for
-// small blocks, only blend with neighbors from one side. If block-size of
-// current plane is 4x4 or 8x4, the above neighbor (dir = 0) will be skipped. If
-// it is 4x8, the left neighbor (dir = 1) will be skipped.
+// HW does not support < 4x4 prediction. To limit the bandwidth requirement, if
+// block-size of current plane is smaller than 8x8, always only blend with the
+// left neighbor(s) (skip blending with the above side).
 #define DISABLE_CHROMA_U8X8_OBMC 0  // 0: one-sided obmc; 1: disable
 
 int skip_u4x4_pred_in_obmc(BLOCK_SIZE bsize, const struct macroblockd_plane *pd,
