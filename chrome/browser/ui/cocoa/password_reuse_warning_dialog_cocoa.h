@@ -7,15 +7,15 @@
 
 #import <Cocoa/Cocoa.h>
 
+#import "base/mac/scoped_nsobject.h"
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
-#include "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac.h"
 
+@class ConstrainedWindowCustomWindow;
 @class PasswordReuseWarningViewController;
 
-// A constrained dialog that warns users about a password reuse.
+// A modal dialog that warns users about a password reuse.
 class PasswordReuseWarningDialogCocoa
-    : public ConstrainedWindowMacDelegate,
-      public safe_browsing::ChromePasswordProtectionService::Observer {
+    : public safe_browsing::ChromePasswordProtectionService::Observer {
  public:
   PasswordReuseWarningDialogCocoa(
       content::WebContents* web_contents,
@@ -38,13 +38,13 @@ class PasswordReuseWarningDialogCocoa
   void OnChangePassword();
   void OnIgnore();
 
- private:
-  // ConstrainedWindowMacDelegate:
-  void OnConstrainedWindowClosed(ConstrainedWindowMac* window) override;
+  // Closes the dialog.
+  void Close();
 
+ private:
   // This class observes the |service_| to check if the password reuse
-  // status has changed.
-  safe_browsing::ChromePasswordProtectionService* service_;  // weak.
+  // status has changed. Weak.
+  safe_browsing::ChromePasswordProtectionService* service_;
 
   // The url of the site that triggered this dialog.
   const GURL url_;
@@ -52,11 +52,14 @@ class PasswordReuseWarningDialogCocoa
   // Dialog button callback.
   safe_browsing::OnWarningDone callback_;
 
+  // The sheet that contains the dialog view.
+  base::scoped_nsobject<ConstrainedWindowCustomWindow> sheet_;
+
+  // The window that runs the modal dialog. Weak.
+  NSWindow* parent_window_;
+
   // Controller for the dialog view.
   base::scoped_nsobject<PasswordReuseWarningViewController> controller_;
-
-  // The constrained window that contains the dialog view.
-  std::unique_ptr<ConstrainedWindowMac> window_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordReuseWarningDialogCocoa);
 };
