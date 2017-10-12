@@ -91,10 +91,7 @@ ExclusiveAccessBubbleViews::ExclusiveAccessBubbleViews(
 }
 
 ExclusiveAccessBubbleViews::~ExclusiveAccessBubbleViews() {
-  if (bubble_first_hide_callback_) {
-    std::move(bubble_first_hide_callback_)
-        .Run(ExclusiveAccessBubbleHideReason::kInterrupted);
-  }
+  RunHideCallbackIfNeeded(ExclusiveAccessBubbleHideReason::kInterrupted);
 
   popup_->RemoveObserver(this);
 
@@ -120,10 +117,7 @@ void ExclusiveAccessBubbleViews::UpdateContent(
     return;
 
   // Bubble maybe be re-used after timeout.
-  if (bubble_first_hide_callback_) {
-    std::move(bubble_first_hide_callback_)
-        .Run(ExclusiveAccessBubbleHideReason::kInterrupted);
-  }
+  RunHideCallbackIfNeeded(ExclusiveAccessBubbleHideReason::kInterrupted);
 
   bubble_first_hide_callback_ = std::move(bubble_first_hide_callback);
 
@@ -147,6 +141,16 @@ void ExclusiveAccessBubbleViews::UpdateContent(
 void ExclusiveAccessBubbleViews::RepositionIfVisible() {
   if (popup_->IsVisible())
     UpdateBounds();
+}
+
+void ExclusiveAccessBubbleViews::HideImmediately() {
+  if (!popup_->IsVisible())
+    return;
+
+  RunHideCallbackIfNeeded(ExclusiveAccessBubbleHideReason::kInterrupted);
+
+  animation_->SetSlideDuration(kQuickSlideOutDurationMs);
+  animation_->Hide();
 }
 
 views::View* ExclusiveAccessBubbleViews::GetView() {
@@ -277,10 +281,7 @@ void ExclusiveAccessBubbleViews::Hide() {
   // timer, so the bubble has been displayed for at least
   // |ExclusiveAccessBubble::kInitialDelayMs|.
   DCHECK(!IsHideTimeoutRunning());
-  if (bubble_first_hide_callback_) {
-    std::move(bubble_first_hide_callback_)
-        .Run(ExclusiveAccessBubbleHideReason::kTimeout);
-  }
+  RunHideCallbackIfNeeded(ExclusiveAccessBubbleHideReason::kTimeout);
 
   animation_->SetSlideDuration(kSlideOutDurationMs);
   animation_->Hide();
@@ -333,4 +334,10 @@ void ExclusiveAccessBubbleViews::OnWidgetVisibilityChanged(
 void ExclusiveAccessBubbleViews::LinkClicked(views::Link* link,
                                              int event_flags) {
   ExitExclusiveAccess();
+}
+
+void ExclusiveAccessBubbleViews::RunHideCallbackIfNeeded(
+    ExclusiveAccessBubbleHideReason reason) {
+  if (bubble_first_hide_callback_)
+    std::move(bubble_first_hide_callback_).Run(reason);
 }

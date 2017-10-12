@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/fullscreen_control/fullscreen_control_host.h"
 
 #include "base/bind.h"
+#include "chrome/browser/ui/views/exclusive_access_bubble_views.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/fullscreen_control/fullscreen_control_view.h"
 #include "ui/events/event.h"
@@ -100,5 +101,8 @@ void FullscreenControlHost::HandleFullScreenControlVisibility(
 void FullscreenControlHost::ShowForInputEntryMethod(
     InputEntryMethod input_entry_method) {
   input_entry_method_ = input_entry_method;
+  auto* bubble = browser_view_->exclusive_access_bubble();
+  if (bubble)
+    bubble->HideImmediately();
   fullscreen_control_popup_.Show(browser_view_->GetClientAreaBoundsInScreen());
 }
