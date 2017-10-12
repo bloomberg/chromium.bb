@@ -210,6 +210,9 @@ extern const char kEnableClearBrowsingDataCountersDescription[];
 extern const char kEnableClientLoFiName[];
 extern const char kEnableClientLoFiDescription[];
 
+extern const char kEnableNoScriptPreviewsName[];
+extern const char kEnableNoScriptPreviewsDescription[];
+
 extern const char kEnableDataReductionProxyLitePageName[];
 extern const char kEnableDataReductionProxyLitePageDescription[];
 

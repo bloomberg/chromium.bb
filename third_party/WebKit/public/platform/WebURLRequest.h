@@ -178,6 +178,7 @@ class WebURLRequest {
     kPreviewsOff = 1 << 5,  // Request a normal (non-Preview) version of
                             // the resource. Server transformations may
                             // still happen if the page is heavy.
+    kNoScriptOn = 1 << 6,   // Request that script be disabled for page load.
     kPreviewsStateLast = kPreviewsOff
   };
 
