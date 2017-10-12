@@ -49,7 +49,6 @@ class ScopedIPCSupport;
 }  // namespace mojo
 
 namespace content {
-class ChildHistogramMessageFilter;
 class ChildResourceMessageFilter;
 class FileSystemDispatcher;
 class InProcessChildThreadParams;
@@ -146,10 +145,6 @@ class CONTENT_EXPORT ChildThreadImpl
   // the main thread.
   ThreadSafeSender* thread_safe_sender() const {
     return thread_safe_sender_.get();
-  }
-
-  ChildHistogramMessageFilter* child_histogram_message_filter() const {
-    return histogram_message_filter_.get();
   }
 
   ServiceWorkerMessageFilter* service_worker_message_filter() const {
@@ -271,8 +266,6 @@ class CONTENT_EXPORT ChildThreadImpl
   std::unique_ptr<FileSystemDispatcher> file_system_dispatcher_;
 
   std::unique_ptr<QuotaDispatcher> quota_dispatcher_;
-
-  scoped_refptr<ChildHistogramMessageFilter> histogram_message_filter_;
 
   scoped_refptr<ChildResourceMessageFilter> resource_message_filter_;
 

@@ -7,6 +7,8 @@
         "browser": [
           "content::mojom::Child",
           "printing::mojom::PDFToPWGRasterConverter",
+          "content::mojom::ChildHistogramFetcher",
+          "content::mojom::ChildHistogramFetcherFactory",
           "IPC::mojom::ChannelBootstrap",
           "service_manager::mojom::ServiceFactory"
         ],

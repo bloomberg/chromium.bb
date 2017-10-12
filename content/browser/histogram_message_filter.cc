@@ -19,8 +19,6 @@ HistogramMessageFilter::HistogramMessageFilter()
 bool HistogramMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(HistogramMessageFilter, message)
-    IPC_MESSAGE_HANDLER(ChildProcessHostMsg_ChildHistogramData,
-                        OnChildHistogramData)
     IPC_MESSAGE_HANDLER(ChildProcessHostMsg_GetBrowserHistogram,
                         OnGetBrowserHistogram)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -29,13 +27,6 @@ bool HistogramMessageFilter::OnMessageReceived(const IPC::Message& message) {
 }
 
 HistogramMessageFilter::~HistogramMessageFilter() {}
-
-void HistogramMessageFilter::OnChildHistogramData(
-    int sequence_number,
-    const std::vector<std::string>& pickled_histograms) {
-  HistogramController::GetInstance()->OnHistogramDataCollected(
-      sequence_number, pickled_histograms);
-}
 
 void HistogramMessageFilter::OnGetBrowserHistogram(
     const std::string& name,

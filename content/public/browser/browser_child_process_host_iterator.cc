@@ -67,4 +67,9 @@ BrowserChildProcessHostDelegate*
   return (*iterator_)->delegate();
 }
 
+ChildProcessHost* BrowserChildProcessHostIterator::GetHost() {
+  CHECK(!Done());
+  return (*iterator_)->GetHost();
+}
+
 }  // namespace content
