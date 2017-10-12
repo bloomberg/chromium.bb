@@ -60,8 +60,11 @@ class TextCodecUTF8 : public TextCodec {
                              bool flush,
                              bool stop_on_error,
                              bool& saw_error);
-  void HandleError(UChar*& destination, bool stop_on_error, bool& saw_error);
-  void ConsumePartialSequenceByte();
+  void HandleError(int character,
+                   UChar*& destination,
+                   bool stop_on_error,
+                   bool& saw_error);
+  void ConsumePartialSequenceBytes(int num_bytes);
 
   int partial_sequence_size_;
   uint8_t partial_sequence_[U8_MAX_LENGTH];
