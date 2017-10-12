@@ -20,6 +20,7 @@ class BrowserHandler : public protocol::Browser::Backend {
   protocol::Response GetWindowBounds(
       int window_id,
       std::unique_ptr<protocol::Browser::Bounds>* out_bounds) override;
+  protocol::Response Close() override;
   protocol::Response SetWindowBounds(
       int window_id,
       std::unique_ptr<protocol::Browser::Bounds> out_bounds) override;
