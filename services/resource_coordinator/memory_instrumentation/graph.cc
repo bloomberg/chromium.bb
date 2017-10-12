@@ -51,7 +51,10 @@ Process::Process(GlobalDumpGraph* global_graph)
 Process::~Process() {}
 
 Node* Process::CreateNode(MemoryAllocatorDumpGuid guid,
-                          base::StringPiece path) {
+                          base::StringPiece path,
+                          bool weak) {
+  DCHECK(!path.empty());
+
   std::string path_string = path.as_string();
   base::StringTokenizer tokenizer(path_string, "/");
 
@@ -68,12 +71,19 @@ Node* Process::CreateNode(MemoryAllocatorDumpGuid guid,
     }
   }
 
+  // The final node should have the weakness specified by the
+  // argument and also be considered explicit.
+  current->set_weak(weak);
+  current->set_explicit(true);
+
   // Add to the global guid map as well.
   global_graph_->nodes_by_guid_.emplace(guid, current);
   return current;
 }
 
 Node* Process::FindNode(base::StringPiece path) {
+  DCHECK(!path.empty());
+
   std::string path_string = path.as_string();
   base::StringTokenizer tokenizer(path_string, "/");
   Node* current = root_;

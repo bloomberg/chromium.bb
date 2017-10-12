@@ -11,6 +11,7 @@ namespace memory_instrumentation {
 using base::ProcessId;
 using base::trace_event::HeapProfilerSerializationState;
 using base::trace_event::MemoryAllocatorDump;
+using base::trace_event::MemoryAllocatorDumpGuid;
 using base::trace_event::MemoryDumpArgs;
 using base::trace_event::MemoryDumpLevelOfDetail;
 using base::trace_event::ProcessMemoryDump;
@@ -27,6 +28,9 @@ TEST(GraphProcessorTest, ComputeMemoryGraph) {
 
   auto* target = pmd.CreateAllocatorDump("target");
   pmd.AddOwnershipEdge(source->guid(), target->guid(), 10);
+
+  auto* weak =
+      pmd.CreateWeakSharedGlobalAllocatorDump(MemoryAllocatorDumpGuid(1));
 
   process_dumps.emplace(1, std::move(pmd));
 
@@ -55,6 +59,8 @@ TEST(GraphProcessorTest, ComputeMemoryGraph) {
 
   auto size = third_child->entries().find(MemoryAllocatorDump::kNameSize);
   ASSERT_EQ(10ul, size->second.value_uint64);
+
+  ASSERT_TRUE(weak->flags() & MemoryAllocatorDump::Flags::WEAK);
 
   auto& edges = global_dump->edges();
   auto edge_it = edges.begin();

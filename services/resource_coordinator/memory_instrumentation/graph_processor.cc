@@ -67,22 +67,29 @@ void GraphProcessor::CollectAllocatorDumps(
     const base::trace_event::ProcessMemoryDump& source,
     GlobalDumpGraph* global_graph,
     Process* process_graph) {
+  // Turn each dump into a node in the graph of dumps in the appropriate
+  // process dump or global dump.
   for (const auto& path_to_dump : source.allocator_dumps()) {
     const std::string& path = path_to_dump.first;
     const MemoryAllocatorDump& dump = *path_to_dump.second;
 
+    // All global dumps (i.e. those starting with global/) should be redirected
+    // to the shared graph.
     bool is_global = base::StartsWith(path, "global/", CompareCase::SENSITIVE);
-    Process* graph =
+    Process* process =
         is_global ? global_graph->shared_memory_graph() : process_graph;
 
     Node* node;
     auto node_iterator = global_graph->nodes_by_guid().find(dump.guid());
     if (node_iterator == global_graph->nodes_by_guid().end()) {
-      node = graph->CreateNode(dump.guid(), path);
+      // Storing whether the process is weak here will allow for later
+      // computations on whether or not the node should be removed.
+      bool is_weak = dump.flags() & MemoryAllocatorDump::Flags::WEAK;
+      node = process->CreateNode(dump.guid(), path, is_weak);
     } else {
       node = node_iterator->second;
 
-      DCHECK_EQ(node, graph->FindNode(path))
+      DCHECK_EQ(node, process->FindNode(path))
           << "Nodes have different paths but same GUIDs";
       DCHECK(is_global) << "Multiple nodes have same GUID without being global";
     }

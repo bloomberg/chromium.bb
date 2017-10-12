@@ -30,10 +30,11 @@ class GlobalDumpGraph {
     ~Process();
 
     // Creates a node in the dump graph which is associated with the
-    // given |guid| and |path| and returns it.
+    // given |guid|, |path| and |weak|ness and returns it.
     GlobalDumpGraph::Node* CreateNode(
         base::trace_event::MemoryAllocatorDumpGuid guid,
-        base::StringPiece path);
+        base::StringPiece path,
+        bool weak);
 
     // Returns the node in the graph at the given |path| or nullptr
     // if no such node exists in the provided |graph|.
@@ -103,6 +104,10 @@ class GlobalDumpGraph {
     // Sets the edge indicates that this node owns another node.
     void SetOwnsEdge(Edge* edge);
 
+    bool is_weak() const { return weak_; }
+    void set_weak(bool weak) { weak_ = weak; }
+    bool is_explicit() const { return explicit_; }
+    void set_explicit(bool explicit_node) { explicit_ = explicit_node; }
     GlobalDumpGraph::Edge* owns_edge() const { return owns_edge_; }
     const std::vector<GlobalDumpGraph::Edge*>& owned_by_edges() const {
       return owned_by_edges_;
@@ -116,6 +121,8 @@ class GlobalDumpGraph {
     Node* const parent_;
     std::map<std::string, Entry> entries_;
     std::map<std::string, Node*> children_;
+    bool explicit_ = false;
+    bool weak_ = false;
 
     GlobalDumpGraph::Edge* owns_edge_;
     std::vector<GlobalDumpGraph::Edge*> owned_by_edges_;
