@@ -18,7 +18,7 @@
       <div class="start layout horizontal center">
         <cr-network-icon network-state="[[networkProperties_]]" is-list-item>
         </cr-network-icon>
-        <div class="title">[[getTitle_(type_, name_)]]</div>
+        <div class="title">[[getTitle_(networkProperties_.*)]]</div>
       </div>
       <div id="buttonDiv">
         <paper-button class="secondary-button" on-tap="onCancelTap_">
@@ -42,8 +42,7 @@
     <div class="settings-box">
       <network-config id="networkConfig" class="flex"
           networking-private="[[networkingPrivate]]"
-          guid="[[guid_]]" type="[[type_]]" name="{{name_}}"
-          network-properties="[[networkProperties_]]"
+          network-properties="{{networkProperties_}}"
           enable-connect="{{enableConnect_}}" enable-save="{{enableSave_}}"
           on-close="close_">
       </network-config>

@@ -18,13 +18,17 @@ function FakeChromeEvent() {
 FakeChromeEvent.prototype = {
   /** @param {Function} listener */
   addListener: function(listener) {
-    assertFalse(this.listeners_.has(listener));
+    assertFalse(
+        this.listeners_.has(listener),
+        'FakeChromeEvent.addListened: Listener already added');
     this.listeners_.add(listener);
   },
 
   /** @param {Function} listener */
   removeListener: function(listener) {
-    assertTrue(this.listeners_.has(listener));
+    assertTrue(
+        this.listeners_.has(listener),
+        'FakeChromeEvent.removeListener: Listener does not exist');
     this.listeners_.delete(listener);
   },
 

@@ -25,19 +25,6 @@ Polymer({
      */
     guid_: String,
 
-    /**
-     * The type of network is being configured.
-     * @private {!chrome.networkingPrivate.NetworkType}
-     */
-    type_: String,
-
-    /**
-     * The network of the network being configured. This is 2-way data bound to
-     * |name| in the network-config element which will set the property.
-     * @private
-     */
-    name_: String,
-
     /** @private */
     enableConnect_: String,
 
@@ -45,9 +32,10 @@ Polymer({
     enableSave_: String,
 
     /**
-     * The current properties if an existing network being configured, or
-     * a minimal subset for a new network.
-     * @private {!chrome.networkingPrivate.NetworkProperties|undefined}
+     * The current properties if an existing network is being configured, or
+     * a minimal subset for a new network. Note: network-config may modify
+     * this (specifically .name).
+     * @private {!chrome.networkingPrivate.NetworkProperties}
      */
     networkProperties_: Object,
   },
@@ -66,15 +54,14 @@ Polymer({
 
     // Set networkProperties for new configurations and for existing
     // configurations until the current properties are loaded.
-    this.name_ = queryParams.get('name') || '';
+    var name = queryParams.get('name') || '';
     var typeParam = queryParams.get('type');
-    this.type_ =
-        (typeParam && CrOnc.getValidType(typeParam)) || CrOnc.Type.WI_FI;
-    assert(this.type_ && this.type_ != CrOnc.Type.ALL);
+    var type = (typeParam && CrOnc.getValidType(typeParam)) || CrOnc.Type.WI_FI;
+    assert(type && type != CrOnc.Type.ALL);
     this.networkProperties_ = {
       GUID: this.guid_,
-      Name: this.name_,
-      Type: this.type_,
+      Name: name,
+      Type: type,
     };
 
     // First focus this page (which will focus a button), then init the config
@@ -100,7 +87,8 @@ Polymer({
    * @private
    */
   getTitle_: function() {
-    return this.name_ || this.i18n('OncType' + this.type_);
+    return this.networkProperties_.Name ||
+        this.i18n('OncType' + this.networkProperties_.Type);
   },
 
   /** @private */

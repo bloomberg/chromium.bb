@@ -167,6 +167,8 @@ Polymer({
    * @private
    */
   getStateText_: function(networkProperties) {
+    if (!networkProperties.ConnectionState)
+      return '';
     return this.i18n('Onc' + networkProperties.ConnectionState);
   },
 

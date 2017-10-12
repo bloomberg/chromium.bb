@@ -53,6 +53,7 @@ js2gtest("browser_tests_js_webui") {
     "bluetooth_internals_browsertest.js",
     "certificate_viewer_dialog_test.js",
     "chrome_send_browsertest.js",
+    "cr_components/cr_components_browsertest.js",
     "cr_elements/cr_elements_browsertest.js",
     "engagement/site_engagement_browsertest.js",
     "extensions/cr_extensions_browsertest.js",

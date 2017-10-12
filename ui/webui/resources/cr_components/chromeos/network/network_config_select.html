@@ -14,7 +14,7 @@
     <div class="property-box hr">
       <div id="label" class="start">[[label]]</div>
       <select class="md-select" disabled="[[disabled]]"
-          value="{{value::change}}" aria-labelledby="label">
+          value="{{value::change}}" aria-label$="[[label]]">
         <template is="dom-repeat" items="[[items]]">
           <option value="[[getItemValue_(item)]]"
               disabled="[[!getItemEnabled_(item)]]">
