@@ -333,7 +333,10 @@ class CC_EXPORT LayerImpl {
   void AddDamageRect(const gfx::Rect& damage_rect);
   const gfx::Rect& damage_rect() const { return damage_rect_; }
 
-  virtual std::unique_ptr<base::DictionaryValue> LayerTreeAsJson();
+  virtual std::unique_ptr<base::DictionaryValue> LayerAsJson();
+  // TODO(pdr): This should be removed because there is no longer a tree
+  // of layers, only a list.
+  std::unique_ptr<base::DictionaryValue> LayerTreeAsJson();
 
   // This includes |layer_property_changed_not_from_property_trees_| and
   // property_trees changes.

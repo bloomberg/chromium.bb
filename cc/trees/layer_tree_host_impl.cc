@@ -3986,6 +3986,17 @@ void LayerTreeHostImpl::ActivateAnimations() {
   }
 }
 
+std::string LayerTreeHostImpl::LayerListAsJson() const {
+  auto list = std::make_unique<base::ListValue>();
+  for (auto* layer : *active_tree_) {
+    list->Append(layer->LayerAsJson());
+  }
+  std::string str;
+  base::JSONWriter::WriteWithOptions(
+      *list, base::JSONWriter::OPTIONS_PRETTY_PRINT, &str);
+  return str;
+}
+
 std::string LayerTreeHostImpl::LayerTreeAsJson() const {
   std::string str;
   if (active_tree_->root_layer_for_testing()) {

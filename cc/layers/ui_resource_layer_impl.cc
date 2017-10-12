@@ -138,8 +138,8 @@ const char* UIResourceLayerImpl::LayerTypeAsString() const {
   return "cc::UIResourceLayerImpl";
 }
 
-std::unique_ptr<base::DictionaryValue> UIResourceLayerImpl::LayerTreeAsJson() {
-  std::unique_ptr<base::DictionaryValue> result = LayerImpl::LayerTreeAsJson();
+std::unique_ptr<base::DictionaryValue> UIResourceLayerImpl::LayerAsJson() {
+  std::unique_ptr<base::DictionaryValue> result = LayerImpl::LayerAsJson();
 
   result->Set("ImageBounds", MathUtil::AsValue(image_bounds_));
 
