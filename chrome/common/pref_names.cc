@@ -2453,6 +2453,15 @@ const char kOfflinePrefetchBackoff[] = "offline_prefetch.backoff";
 const char kOfflineUsageStartObserved[] = "offline_pages.start_observed";
 const char kOfflineUsageOnlineObserved[] = "offline_pages.online_observed";
 const char kOfflineUsageOfflineObserved[] = "offline_pages.offline_observed";
+// Boolean flags indicating state of a prefetch subsystem during a day.
+const char kPrefetchUsageEnabledObserved[] =
+    "offline_pages.prefetch_enabled_observed";
+const char kPrefetchUsageHasPagesObserved[] =
+    "offline_pages.prefetch_has_pages_observed";
+const char kPrefetchUsageFetchObserved[] =
+    "offline_pages.prefetch_fetch_observed";
+const char kPrefetchUsageOpenObserved[] =
+    "offline_pages.prefetch_open_observed";
 // A time corresponding to a midnight that starts the day for which
 // OfflineMetricsCollector tracks the Chrome usage. Once current time passes
 // 24hrs from this point, the further tracking is attributed to the next day.
@@ -2464,6 +2473,17 @@ const char kOfflineUsageStartedCount[] = "offline_pages.started_count";
 const char kOfflineUsageOfflineCount[] = "offline_pages.offline_count";
 const char kOfflineUsageOnlineCount[] = "offline_pages.online_count";
 const char kOfflineUsageMixedCount[] = "offline_pages.mixed_count";
+// Accumulated counters of days with specified Prefetch usage. When there is
+// likely a network connection, these counters are reported via UMA and reset.
+const char kPrefetchUsageEnabledCount[] =
+    "offline_pages.prefetch_enabled_count";
+const char kPrefetchUsageHasPagesCount[] =
+    "offline_pages.prefetch_has_pages_count";
+const char kPrefetchUsageFetchedCount[] =
+    "offline_pages.prefetch_fetched_count";
+const char kPrefetchUsageOpenedCount[] = "offline_pages.prefetch_opened_count";
+const char kPrefetchUsageMixedCount[] = "offline_pages.prefetch_mixed_count";
+
 #endif
 
 // Stores the Media Engagement Index schema version. If the stored value

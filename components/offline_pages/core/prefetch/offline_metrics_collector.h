@@ -15,6 +15,8 @@ class OfflineMetricsCollector {
  public:
   virtual ~OfflineMetricsCollector() = default;
 
+  // OfflineUsage histogram support.
+
   // Chrome started up or was (as on Android) brought from background to
   // foreground. A day when this happened is a day the browser was used.
   virtual void OnAppStartupOrResume() = 0;
@@ -26,6 +28,24 @@ class OfflineMetricsCollector {
   // Successful navigation to an offline page happened. A day when it happens is
   // at least a 'offline_content' day
   virtual void OnSuccessfulNavigationOffline() = 0;
+
+  // PrefetchUsage histogram support.
+
+  // Reports that combination of flags resulting in Prefetch activation is set.
+  // A day when it happens is reported as 'prefetch enabled' day.
+  virtual void OnPrefetchEnabled() = 0;
+
+  // A new suggestion URL is received. A day when it happened is reported as
+  // 'attempted prefetch' day.
+  virtual void OnHasPrefetchedPagesDetected() = 0;
+
+  // A page was successfully prefetched. A day when it happens is reported as
+  // 'successful prefetch' day.
+  virtual void OnSuccessfulPagePrefetch() = 0;
+
+  // A prefetched page was opened. A day when it happened is reported as
+  // 'prefetch page opened' day.
+  virtual void OnPrefetchedPageOpened() = 0;
 
   // Uses UMA to report the accumulated classification for the days past.
   virtual void ReportAccumulatedStats() = 0;

@@ -46,9 +46,13 @@ class OfflineMetricsCollectorImpl : public OfflineMetricsCollector {
  public:
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
-  // The kind of Chrome usage during a day.
-  // This class is used in UMA reporting. Keep it in sync with
-  // OfflinePagesOfflineUsage enum in histograms. Public for testing.
+  // This enum is used for UMA reporting. It is used to report the kind of
+  // Prefetch usage per day and corresponds to OfflinePagesOfflineUsage in
+  // enums.xml.
+  // NOTE: because this is used for UMA reporting, these values should not be
+  // changed or reused; new values should be appended immediately before the
+  // MAX_USAGE value. Make sure to update the histogram enum mentioned above
+  // accordingly.
   enum class DailyUsageType {
     UNUSED = 0,   // Chrome was not used the whole day.
     STARTED = 1,  // Started, but no successful navigations happened during the
@@ -61,6 +65,25 @@ class OfflineMetricsCollectorImpl : public OfflineMetricsCollector {
     MAX_USAGE = 5,
   };
 
+  // This enum is used for UMA reporting. It is used to report the kind of
+  // Prefetch usage per day and corresponds to OfflinePagesPrefetchUsage in
+  // enums.xml.
+  // NOTE: because this is used for UMA reporting, these values should not be
+  // changed or reused; new values should be appended immediately before the
+  // MAX_USAGE value. Make sure to update the histogram enum mentioned above
+  // accordingly.
+  enum class PrefetchUsageType {
+    // Prefetch subsystem has unexpired prefetched pages.
+    HAS_PAGES = 0,
+    // New pages has been fetched during the day.
+    FETCHED_NEW_PAGES = 1,
+    // The prefetched offline pages were opened during the day.
+    OPENED_PAGES = 2,
+    // The pages were both fetched and opened during the day.
+    FETCHED_AND_OPENED_PAGES = 3,
+    MAX_USAGE = 4,
+  };
+
   explicit OfflineMetricsCollectorImpl(PrefService* prefs);
   ~OfflineMetricsCollectorImpl() override;
 
@@ -68,6 +91,10 @@ class OfflineMetricsCollectorImpl : public OfflineMetricsCollector {
   void OnAppStartupOrResume() override;
   void OnSuccessfulNavigationOnline() override;
   void OnSuccessfulNavigationOffline() override;
+  void OnPrefetchEnabled() override;
+  void OnHasPrefetchedPagesDetected() override;
+  void OnSuccessfulPagePrefetch() override;
+  void OnPrefetchedPageOpened() override;
   void ReportAccumulatedStats() override;
 
   void SetClockForTesting(base::Clock* clock);
@@ -86,7 +113,8 @@ class OfflineMetricsCollectorImpl : public OfflineMetricsCollector {
   bool UpdatePastDaysIfNeeded();
 
   // Reports to UMA 1 day of specified usage.
-  void ReportUsageForOneDayToUma(DailyUsageType usage_type);
+  void ReportOfflineUsageForOneDayToUma(DailyUsageType usage_type);
+  void ReportPrefetchUsageForOneDayToUma(PrefetchUsageType usage_type);
 
   // Used to retrieve current time, overrideable in tests.
   base::Time Now() const;
@@ -97,6 +125,14 @@ class OfflineMetricsCollectorImpl : public OfflineMetricsCollector {
   bool chrome_start_observed_ = false;
   bool offline_navigation_observed_ = false;
   bool online_navigation_observed_ = false;
+
+  // Prefetch tracking, boolean bits indicating which prefetch events were
+  // observed during the day. At the end of the day, they are used to increment
+  // corresponding prefetch counters.
+  bool prefetch_is_enabled_observed_ = false;
+  bool prefetch_has_pages_observed_ = false;
+  bool prefetch_fetch_observed_ = false;
+  bool prefetch_open_observed_ = false;
 
   // The midnight that starts the day for which current tracking is happening.
   // It is used to determine if the time of the observable usage is still during
@@ -112,6 +148,12 @@ class OfflineMetricsCollectorImpl : public OfflineMetricsCollector {
   int offline_days_count_ = 0;
   int online_days_count_ = 0;
   int mixed_days_count_ = 0;
+
+  int prefetch_enable_count_ = 0;
+  int prefetch_has_pages_count_ = 0;
+  int prefetch_fetched_count_ = 0;
+  int prefetch_opened_count_ = 0;
+  int prefetch_mixed_count_ = 0;
 
   // Has the same lifetime as profile, so should outlive this subcomponent
   // of profile's PrefetchService.

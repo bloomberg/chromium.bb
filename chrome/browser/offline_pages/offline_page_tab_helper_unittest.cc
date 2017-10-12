@@ -39,6 +39,10 @@ class TestMetricsCollector : public OfflineMetricsCollector {
   void OnSuccessfulNavigationOffline() override {
     successful_offline_navigations_count_++;
   }
+  void OnPrefetchEnabled() override {}
+  void OnHasPrefetchedPagesDetected() override {}
+  void OnSuccessfulPagePrefetch() override {}
+  void OnPrefetchedPageOpened() override {}
   void ReportAccumulatedStats() override { report_stats_count_++; }
 
   int app_startup_count_ = 0;
