@@ -665,27 +665,14 @@ void ShellSurface::SetOrientation(Orientation orientation) {
   pending_orientation_ = orientation;
 }
 
-void ShellSurface::SetRectangularShadow_DEPRECATED(
-    const gfx::Rect& content_bounds) {
-  TRACE_EVENT1("exo", "ShellSurface::SetRectangularShadow_DEPRECATED",
-               "content_bounds", content_bounds.ToString());
-  pending_shadow_underlay_in_surface_ = false;
-  if (content_bounds != shadow_content_bounds_) {
-    shadow_content_bounds_ = content_bounds;
-    shadow_content_bounds_changed_ = true;
-    shadow_enabled_ = !content_bounds.IsEmpty();
-  }
-}
-
-void ShellSurface::SetRectangularSurfaceShadow(
-    const gfx::Rect& content_bounds) {
-  TRACE_EVENT1("exo", "ShellSurface::SetRectangularSurfaceShadow",
-               "content_bounds", content_bounds.ToString());
-  pending_shadow_underlay_in_surface_ = true;
-  if (content_bounds != shadow_content_bounds_) {
-    shadow_content_bounds_ = content_bounds;
-    shadow_content_bounds_changed_ = true;
-    shadow_enabled_ = !content_bounds.IsEmpty();
+void ShellSurface::SetShadowBounds(const gfx::Rect& bounds) {
+  TRACE_EVENT1("exo", "ShellSurface::SetShadowBounds", "bounds",
+               bounds.ToString());
+  auto shadow_bounds =
+      bounds.IsEmpty() ? base::nullopt : base::make_optional(bounds);
+  if (shadow_bounds_ != shadow_bounds) {
+    shadow_bounds_ = shadow_bounds;
+    shadow_bounds_changed_ = true;
   }
 }
 
@@ -764,7 +751,7 @@ void ShellSurface::OnSurfaceCommit() {
   // bounds have changed, shadow API requires that we synchronize the shadow
   // bounds change with the next frame, so we have to submit the next frame to a
   // new surface, and let the host_window() use the new surface.
-  if (pending_shadow_underlay_in_surface_ && shadow_content_bounds_changed_)
+  if (shadow_bounds_changed_)
     host_window()->AllocateLocalSurfaceId();
 
   SurfaceTreeHost::OnSurfaceCommit();
@@ -861,17 +848,16 @@ void ShellSurface::OnSetFrame(SurfaceFrameType type) {
   // TODO(reveman): Allow frame to change after surface has been enabled.
   switch (type) {
     case SurfaceFrameType::NONE:
-      frame_enabled_ = shadow_enabled_ = false;
+      frame_enabled_ = false;
+      shadow_bounds_.reset();
       break;
     case SurfaceFrameType::NORMAL:
       frame_enabled_ = true;
-      pending_shadow_underlay_in_surface_ = false;
-      shadow_enabled_ = true;
+      shadow_bounds_ = gfx::Rect();
       break;
     case SurfaceFrameType::SHADOW:
       frame_enabled_ = false;
-      pending_shadow_underlay_in_surface_ = false;
-      shadow_enabled_ = true;
+      shadow_bounds_ = gfx::Rect();
       break;
   }
 }
@@ -1759,31 +1745,23 @@ void ShellSurface::UpdateShadow() {
   if (!widget_ || !root_surface())
     return;
 
-  if (shadow_underlay_in_surface_ != pending_shadow_underlay_in_surface_) {
-    shadow_underlay_in_surface_ = pending_shadow_underlay_in_surface_;
-    shadow_overlay_.reset();
-    shadow_underlay_.reset();
-  }
-
-  shadow_content_bounds_changed_ = false;
+  shadow_bounds_changed_ = false;
 
   UpdateBackdrop();
 
   aura::Window* window = widget_->GetNativeWindow();
 
-  if (!shadow_enabled_) {
+  if (!shadow_bounds_) {
     wm::SetShadowElevation(window, wm::ShadowElevation::NONE);
     shadow_underlay_.reset();
   } else {
     wm::SetShadowElevation(window, wm::ShadowElevation::DEFAULT);
 
     gfx::Rect shadow_bounds;
-    if (shadow_content_bounds_.IsEmpty()) {
+    if (shadow_bounds_->IsEmpty()) {
       shadow_bounds = gfx::Rect(window->bounds().size());
     } else {
-      shadow_bounds = shadow_content_bounds_;
-      if (shadow_underlay_in_surface_)
-        shadow_bounds = gfx::ScaleToEnclosedRect(shadow_bounds, 1.f / scale_);
+      shadow_bounds = gfx::ScaleToEnclosedRect(*shadow_bounds_, 1.f / scale_);
 
       // Convert from screen to display coordinates.
       shadow_bounds -= origin_offset_;

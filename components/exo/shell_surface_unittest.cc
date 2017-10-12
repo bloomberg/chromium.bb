@@ -774,7 +774,7 @@ TEST_F(ShellSurfaceTest, SurfaceShadow) {
   EXPECT_FALSE(shadow->layer()->visible());
 
   // 3) Create a shadow.
-  shell_surface->SetRectangularSurfaceShadow(gfx::Rect(10, 10, 100, 100));
+  shell_surface->SetShadowBounds(gfx::Rect(10, 10, 100, 100));
   surface->Commit();
   EXPECT_TRUE(shadow->layer()->visible());
 
@@ -795,14 +795,14 @@ TEST_F(ShellSurfaceTest, SurfaceShadow) {
   EXPECT_EQ(before, shadow->layer()->bounds());
 
   // 5) This should disable shadow.
-  shell_surface->SetRectangularSurfaceShadow(gfx::Rect());
+  shell_surface->SetShadowBounds(gfx::Rect());
   surface->Commit();
 
   EXPECT_EQ(wm::ShadowElevation::NONE, GetShadowElevation(window));
   EXPECT_FALSE(shadow->layer()->visible());
 
   // 6) This should enable non surface shadow again.
-  shell_surface->SetRectangularSurfaceShadow(gfx::Rect(10, 10, 100, 100));
+  shell_surface->SetShadowBounds(gfx::Rect(10, 10, 100, 100));
   surface->Commit();
 
   EXPECT_EQ(wm::ShadowElevation::DEFAULT, GetShadowElevation(window));
@@ -957,7 +957,7 @@ TEST_F(ShellSurfaceTest, ShadowWithStateChange) {
   aura::Window* window = widget->GetNativeWindow();
   wm::Shadow* shadow = wm::ShadowController::GetShadowForWindow(window);
 
-  shell_surface->SetRectangularSurfaceShadow(shadow_bounds);
+  shell_surface->SetShadowBounds(shadow_bounds);
   surface->Commit();
   EXPECT_EQ(wm::ShadowElevation::DEFAULT, GetShadowElevation(window));
 
@@ -974,7 +974,7 @@ TEST_F(ShellSurfaceTest, ShadowWithStateChange) {
   ASSERT_TRUE(widget->IsMaximized());
   EXPECT_FALSE(shadow->layer()->visible());
 
-  shell_surface->SetRectangularSurfaceShadow(work_area);
+  shell_surface->SetShadowBounds(work_area);
   surface->Commit();
   EXPECT_FALSE(shadow->layer()->visible());
 
@@ -986,7 +986,7 @@ TEST_F(ShellSurfaceTest, ShadowWithStateChange) {
   EXPECT_EQ(shadow_in_maximized, shadow->layer()->parent()->bounds());
 
   // The bounds is updated.
-  shell_surface->SetRectangularSurfaceShadow(shadow_bounds);
+  shell_surface->SetShadowBounds(shadow_bounds);
   surface->Commit();
   EXPECT_EQ(expected_shadow_bounds, shadow->layer()->parent()->bounds());
 }
@@ -1017,7 +1017,7 @@ TEST_F(ShellSurfaceTest, ShadowWithTransform) {
   gfx::Transform transform;
   transform.Translate(50, 50);
   window->SetTransform(transform);
-  shell_surface->SetRectangularSurfaceShadow(shadow_bounds);
+  shell_surface->SetShadowBounds(shadow_bounds);
   surface->Commit();
   EXPECT_TRUE(shadow->layer()->visible());
   EXPECT_EQ(gfx::Rect(-10, -10, 100, 100), shadow->layer()->parent()->bounds());
@@ -1036,14 +1036,14 @@ TEST_F(ShellSurfaceTest, ShadowStartMaximized) {
   EXPECT_FALSE(wm::ShadowController::GetShadowForWindow(window));
 
   // Sending a shadow bounds in maximized state won't create a shaodw.
-  shell_surface->SetRectangularSurfaceShadow(gfx::Rect(10, 10, 100, 100));
+  shell_surface->SetShadowBounds(gfx::Rect(10, 10, 100, 100));
   surface->Commit();
 
   EXPECT_FALSE(wm::ShadowController::GetShadowForWindow(window));
   // Underlay should be created even without shadow.
   ASSERT_TRUE(shell_surface->shadow_underlay());
   EXPECT_TRUE(shell_surface->shadow_underlay()->IsVisible());
-  shell_surface->SetRectangularSurfaceShadow(gfx::Rect(0, 0, 0, 0));
+  shell_surface->SetShadowBounds(gfx::Rect());
   // Underlay should be created even without shadow.
   ASSERT_TRUE(shell_surface->shadow_underlay());
   EXPECT_TRUE(shell_surface->shadow_underlay()->IsVisible());
@@ -1053,7 +1053,7 @@ TEST_F(ShellSurfaceTest, ShadowStartMaximized) {
   EXPECT_FALSE(shell_surface->shadow_underlay());
 
   surface->SetFrame(SurfaceFrameType::SHADOW);
-  shell_surface->SetRectangularSurfaceShadow(gfx::Rect(10, 10, 100, 100));
+  shell_surface->SetShadowBounds(gfx::Rect(10, 10, 100, 100));
   surface->Commit();
 
   // Restore the window and make sure the shadow is created, visible and
@@ -1110,42 +1110,6 @@ TEST_P(ShellSurfaceBoundsModeTest, ToggleFullscreen) {
     EXPECT_EQ(CurrentContext()->bounds().width(),
               shell_surface->GetWidget()->GetWindowBoundsInScreen().width());
   }
-}
-
-// Make sure that a surface shell started in maximize creates deprecated
-// shadow correctly.
-TEST_F(ShellSurfaceTest,
-       StartMaximizedThenMinimizeWithSetRectangularShadow_DEPRECATED) {
-  const gfx::Size display_size =
-      display::Screen::GetScreen()->GetPrimaryDisplay().size();
-  const gfx::Size buffer_size(display_size);
-  std::unique_ptr<Buffer> buffer(
-      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
-  std::unique_ptr<Surface> surface(new Surface);
-  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(
-      surface.get(), nullptr, ShellSurface::BoundsMode::CLIENT, gfx::Point(),
-      true, false, ash::kShellWindowId_DefaultContainer));
-
-  // Start in maximized.
-  shell_surface->Maximize();
-  surface->Attach(buffer.get());
-  surface->Commit();
-
-  gfx::Rect shadow_bounds =
-      display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
-  shell_surface->SetGeometry(shadow_bounds);
-  shell_surface->SetRectangularShadow_DEPRECATED(shadow_bounds);
-  surface->Commit();
-  EXPECT_EQ(shadow_bounds,
-            shell_surface->GetWidget()->GetWindowBoundsInScreen());
-  ASSERT_EQ(shadow_bounds,
-            shell_surface->shadow_underlay()->GetBoundsInScreen());
-  EXPECT_EQ(display::Screen::GetScreen()->GetPrimaryDisplay().size(),
-            shell_surface->surface_for_testing()->window()->bounds().size());
-
-  ash::wm::WMEvent minimize_event(ash::wm::WM_EVENT_MINIMIZE);
-  aura::Window* window = shell_surface->GetWidget()->GetNativeWindow();
-  ash::wm::GetWindowState(window)->OnWMEvent(&minimize_event);
 }
 
 TEST_F(ShellSurfaceTest, CompositorLockInRotation) {

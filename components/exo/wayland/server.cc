@@ -1997,9 +1997,7 @@ void remote_surface_set_rectangular_shadow_DEPRECATED(wl_client* client,
                                                       int32_t y,
                                                       int32_t width,
                                                       int32_t height) {
-  ShellSurface* shell_surface = GetUserDataAs<ShellSurface>(resource);
-  gfx::Rect content_bounds(x, y, width, height);
-  shell_surface->SetRectangularShadow_DEPRECATED(content_bounds);
+  NOTIMPLEMENTED();
 }
 
 void remote_surface_set_rectangular_shadow_background_opacity(
@@ -2079,8 +2077,7 @@ void remote_surface_set_rectangular_surface_shadow(wl_client* client,
                                                    int32_t width,
                                                    int32_t height) {
   ShellSurface* shell_surface = GetUserDataAs<ShellSurface>(resource);
-  gfx::Rect content_bounds(x, y, width, height);
-  shell_surface->SetRectangularSurfaceShadow(content_bounds);
+  shell_surface->SetShadowBounds(gfx::Rect(x, y, width, height));
 }
 
 void remote_surface_set_systemui_visibility(wl_client* client,
