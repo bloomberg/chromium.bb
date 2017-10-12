@@ -1,14 +1,6 @@
 # TODO: Investigate failure, http://crbug.com/754864.
 -CastStreamingApiTestWithPixelOutput.EndToEnd
 
-# TODO: Fails because RenderWidget::DidReceiveCompositorFrameAck() is
-# not called as often as it was before. http://crbug.com/754846.
--ConstrainedWebDialogBrowserTest.ContentResizeInAutoResizingDialog
-
-# TODO: reenable, fails because of http://crbug.com/753593.
--ForceMaximizeOnFirstRunTest.PRE_TwoRuns
--ForceMaximizeOnFirstRunTest.TwoRuns
-
 # TODO: fails because of screen capture. http://crbug.com/754899.
 -ChromeScreenshotGrabberBrowserTest.TakeScreenshot
 -LoginFeedbackTest.Basic
@@ -19,9 +11,6 @@
 
 # TODO: fix, see http://crbug.com/755272.
 -PDFExtensionTest.RedirectsFailInPlugin
-
-# TODO: fix, http://crbug.com/759156.
--PolicyDisplayRotationDefault/DisplayRotationDefaultTest.RefreshSecondDisplay/2
 
 # TODO: fix, see http://crbug.com/755303.
 -StartupMetricsTest.ReportsValues
