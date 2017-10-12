@@ -30,6 +30,8 @@
 #ifndef AXObject_h
 #define AXObject_h
 
+#include <ostream>
+
 #include "core/dom/Element.h"
 #include "core/editing/Forward.h"
 #include "core/editing/TextAffinity.h"
@@ -925,6 +927,8 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
 
   static unsigned number_of_live_ax_objects_;
 };
+
+MODULES_EXPORT std::ostream& operator<<(std::ostream&, const AXObject&);
 
 #define DEFINE_AX_OBJECT_TYPE_CASTS(thisType, predicate)           \
   DEFINE_TYPE_CASTS(thisType, AXObject, object, object->predicate, \

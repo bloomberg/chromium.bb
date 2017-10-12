@@ -2,32 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/accessibility/AXObject.h"
+#include <gtest/gtest.h>
 
-#include <memory>
 #include "core/dom/AXObjectCache.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
-#include "core/testing/DummyPageHolder.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#include "modules/accessibility/testing/AccessibilityTest.h"
 
 namespace blink {
 
-class AXObjectTest : public ::testing::Test {
- protected:
-  Document& GetDocument() { return page_holder_->GetDocument(); }
-
- private:
-  void SetUp() override;
-
-  std::unique_ptr<DummyPageHolder> page_holder_;
-};
-
-void AXObjectTest::SetUp() {
-  page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
-}
-
-TEST_F(AXObjectTest, IsARIAWidget) {
+// TODO(nektar): Break test up into multiple tests.
+TEST_F(AccessibilityTest, IsARIAWidget) {
   String test_content =
       "<body>"
       "<span id=\"plain\">plain</span><br>"
@@ -46,8 +31,7 @@ TEST_F(AXObjectTest, IsARIAWidget) {
       "id=\"focusable-parent\">focusable-parent</div></div><br>"
       "</body>";
 
-  GetDocument().documentElement()->SetInnerHTMLFromString(test_content);
-  GetDocument().UpdateStyleAndLayout();
+  SetBodyInnerHTML(test_content);
   Element* root(GetDocument().documentElement());
   EXPECT_FALSE(AXObjectCache::IsInsideFocusableElementOrARIAWidget(
       *root->getElementById("plain")));

@@ -243,8 +243,10 @@ jumbo_source_set("unit_tests") {
   testonly = true
 
   sources = [
-    "accessibility/AXObjectTest.cpp",
+    "accessibility/AXObjectCacheTest.cpp",
     "accessibility/AccessibilityObjectModelTest.cpp",
+    "accessibility/testing/AccessibilityTest.cpp",
+    "accessibility/testing/AccessibilityTest.h",
     "background_fetch/BackgroundFetchManagerTest.cpp",
     "cachestorage/CacheTest.cpp",
     "canvas/HTMLCanvasElementModuleTest.cpp",
