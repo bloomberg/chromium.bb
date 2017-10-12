@@ -878,6 +878,8 @@ source_set("browser") {
     "indexed_db/indexed_db_leveldb_coding.h",
     "indexed_db/indexed_db_leveldb_operations.cc",
     "indexed_db/indexed_db_leveldb_operations.h",
+    "indexed_db/indexed_db_metadata_coding.cc",
+    "indexed_db/indexed_db_metadata_coding.h",
     "indexed_db/indexed_db_observer.cc",
     "indexed_db/indexed_db_observer.h",
     "indexed_db/indexed_db_pending_connection.cc",

@@ -29,54 +29,8 @@ IndexedDBFakeBackingStore::IndexedDBFakeBackingStore(
                             task_runner) {}
 IndexedDBFakeBackingStore::~IndexedDBFakeBackingStore() {}
 
-std::vector<base::string16> IndexedDBFakeBackingStore::GetDatabaseNames(
-    leveldb::Status* s) {
-  *s = leveldb::Status::OK();
-  return std::vector<base::string16>();
-}
-leveldb::Status IndexedDBFakeBackingStore::GetIDBDatabaseMetaData(
-    const base::string16& name,
-    IndexedDBDatabaseMetadata*,
-    bool* found) {
-  return leveldb::Status::OK();
-}
-
-leveldb::Status IndexedDBFakeBackingStore::CreateIDBDatabaseMetaData(
-    const base::string16& name,
-    int64_t version,
-    int64_t* row_id) {
-  return leveldb::Status::OK();
-}
-void IndexedDBFakeBackingStore::UpdateIDBDatabaseIntVersion(Transaction*,
-                                                            int64_t row_id,
-                                                            int64_t version) {}
 leveldb::Status IndexedDBFakeBackingStore::DeleteDatabase(
     const base::string16& name) {
-  return leveldb::Status::OK();
-}
-
-leveldb::Status IndexedDBFakeBackingStore::CreateObjectStore(
-    Transaction*,
-    int64_t database_id,
-    int64_t object_store_id,
-    const base::string16& name,
-    const IndexedDBKeyPath&,
-    bool auto_increment) {
-  return leveldb::Status::OK();
-}
-
-leveldb::Status IndexedDBFakeBackingStore::DeleteObjectStore(
-    Transaction* transaction,
-    int64_t database_id,
-    int64_t object_store_id) {
-  return leveldb::Status::OK();
-}
-
-leveldb::Status IndexedDBFakeBackingStore::RenameObjectStore(
-    Transaction* transaction,
-    int64_t database_id,
-    int64_t object_store_id,
-    const base::string16& new_name) {
   return leveldb::Status::OK();
 }
 
@@ -129,32 +83,13 @@ leveldb::Status IndexedDBFakeBackingStore::KeyExistsInObjectStore(
   return leveldb::Status::OK();
 }
 
-leveldb::Status IndexedDBFakeBackingStore::CreateIndex(
-    Transaction*,
-    int64_t database_id,
-    int64_t object_store_id,
-    int64_t index_id,
-    const base::string16& name,
-    const IndexedDBKeyPath&,
-    bool is_unique,
-    bool is_multi_entry) {
+leveldb::Status IndexedDBFakeBackingStore::ClearIndex(Transaction*,
+                                                      int64_t database_id,
+                                                      int64_t object_store_id,
+                                                      int64_t index_id) {
   return leveldb::Status::OK();
 }
 
-leveldb::Status IndexedDBFakeBackingStore::DeleteIndex(Transaction*,
-                                                       int64_t database_id,
-                                                       int64_t object_store_id,
-                                                       int64_t index_id) {
-  return leveldb::Status::OK();
-}
-leveldb::Status IndexedDBFakeBackingStore::RenameIndex(
-    Transaction*,
-    int64_t database_id,
-    int64_t object_store_id,
-    int64_t index_id,
-    const base::string16& new_name) {
-  return leveldb::Status::OK();
-}
 leveldb::Status IndexedDBFakeBackingStore::PutIndexDataForRecord(
     Transaction*,
     int64_t database_id,

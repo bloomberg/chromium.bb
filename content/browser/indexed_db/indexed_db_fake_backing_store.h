@@ -26,32 +26,7 @@ class IndexedDBFakeBackingStore : public IndexedDBBackingStore {
   IndexedDBFakeBackingStore();
   IndexedDBFakeBackingStore(IndexedDBFactory* factory,
                             base::SequencedTaskRunner* task_runner);
-  std::vector<base::string16> GetDatabaseNames(leveldb::Status* s) override;
-  leveldb::Status GetIDBDatabaseMetaData(const base::string16& name,
-                                         IndexedDBDatabaseMetadata*,
-                                         bool* found) override;
-  leveldb::Status CreateIDBDatabaseMetaData(const base::string16& name,
-                                            int64_t version,
-                                            int64_t* row_id) override;
-  void UpdateIDBDatabaseIntVersion(Transaction*,
-                                   int64_t row_id,
-                                   int64_t version) override;
   leveldb::Status DeleteDatabase(const base::string16& name) override;
-
-  leveldb::Status CreateObjectStore(Transaction*,
-                                    int64_t database_id,
-                                    int64_t object_store_id,
-                                    const base::string16& name,
-                                    const IndexedDBKeyPath&,
-                                    bool auto_increment) override;
-
-  leveldb::Status DeleteObjectStore(Transaction* transaction,
-                                    int64_t database_id,
-                                    int64_t object_store_id) override;
-  leveldb::Status RenameObjectStore(Transaction* transaction,
-                                    int64_t database_id,
-                                    int64_t object_store_id,
-                                    const base::string16& name) override;
 
   leveldb::Status PutRecord(
       IndexedDBBackingStore::Transaction* transaction,
@@ -88,23 +63,10 @@ class IndexedDBFakeBackingStore : public IndexedDBBackingStore {
       RecordIdentifier* found_record_identifier,
       bool* found) override;
 
-  leveldb::Status CreateIndex(Transaction*,
-                              int64_t database_id,
-                              int64_t object_store_id,
-                              int64_t index_id,
-                              const base::string16& name,
-                              const IndexedDBKeyPath&,
-                              bool is_unique,
-                              bool is_multi_entry) override;
-  leveldb::Status DeleteIndex(Transaction*,
-                              int64_t database_id,
-                              int64_t object_store_id,
-                              int64_t index_id) override;
-  leveldb::Status RenameIndex(Transaction*,
-                              int64_t database_id,
-                              int64_t object_store_id,
-                              int64_t index_id,
-                              const base::string16& new_name) override;
+  leveldb::Status ClearIndex(Transaction*,
+                             int64_t database_id,
+                             int64_t object_store_id,
+                             int64_t index_id) override;
   leveldb::Status PutIndexDataForRecord(Transaction*,
                                         int64_t database_id,
                                         int64_t object_store_id,

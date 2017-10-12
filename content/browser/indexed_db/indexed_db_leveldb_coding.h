@@ -273,6 +273,9 @@ class ObjectStoreMetaDataKey {
     KEY_GENERATOR_CURRENT_NUMBER = 7
   };
 
+  // From the IndexedDB specification.
+  static const int64_t kKeyGeneratorInitialNumber;
+
   ObjectStoreMetaDataKey();
   static bool Decode(base::StringPiece* slice, ObjectStoreMetaDataKey* result);
   CONTENT_EXPORT static std::string Encode(int64_t database_id,

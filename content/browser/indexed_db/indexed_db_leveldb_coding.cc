@@ -1317,6 +1317,8 @@ std::string DatabaseMetaDataKey::Encode(int64_t database_id,
   return ret;
 }
 
+const int64_t ObjectStoreMetaDataKey::kKeyGeneratorInitialNumber = 1;
+
 ObjectStoreMetaDataKey::ObjectStoreMetaDataKey()
     : object_store_id_(-1), meta_data_type_(0xFF) {}
 

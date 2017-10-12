@@ -430,18 +430,6 @@ class CONTENT_EXPORT IndexedDBBackingStore
 
   // Compact is public for testing.
   virtual void Compact();
-  virtual std::vector<base::string16> GetDatabaseNames(leveldb::Status*);
-  virtual leveldb::Status GetIDBDatabaseMetaData(
-      const base::string16& name,
-      IndexedDBDatabaseMetadata* metadata,
-      bool* success) WARN_UNUSED_RESULT;
-  virtual leveldb::Status CreateIDBDatabaseMetaData(const base::string16& name,
-                                                    int64_t version,
-                                                    int64_t* row_id);
-  virtual void UpdateIDBDatabaseIntVersion(
-      IndexedDBBackingStore::Transaction* transaction,
-      int64_t row_id,
-      int64_t version);
   virtual leveldb::Status DeleteDatabase(const base::string16& name);
 
   // Assumes caller has already closed the backing store.
@@ -450,25 +438,6 @@ class CONTENT_EXPORT IndexedDBBackingStore
   static bool RecordCorruptionInfo(const base::FilePath& path_base,
                                    const url::Origin& origin,
                                    const std::string& message);
-  leveldb::Status GetObjectStores(
-      int64_t database_id,
-      std::map<int64_t, IndexedDBObjectStoreMetadata>* map) WARN_UNUSED_RESULT;
-  virtual leveldb::Status CreateObjectStore(
-      IndexedDBBackingStore::Transaction* transaction,
-      int64_t database_id,
-      int64_t object_store_id,
-      const base::string16& name,
-      const IndexedDBKeyPath& key_path,
-      bool auto_increment) WARN_UNUSED_RESULT;
-  virtual leveldb::Status DeleteObjectStore(
-      IndexedDBBackingStore::Transaction* transaction,
-      int64_t database_id,
-      int64_t object_store_id) WARN_UNUSED_RESULT;
-  virtual leveldb::Status RenameObjectStore(
-      IndexedDBBackingStore::Transaction* transaction,
-      int64_t database_id,
-      int64_t object_store_id,
-      const base::string16& name) WARN_UNUSED_RESULT;
 
   virtual leveldb::Status GetRecord(
       IndexedDBBackingStore::Transaction* transaction,
@@ -517,26 +486,11 @@ class CONTENT_EXPORT IndexedDBBackingStore
       RecordIdentifier* found_record_identifier,
       bool* found) WARN_UNUSED_RESULT;
 
-  virtual leveldb::Status CreateIndex(
-      IndexedDBBackingStore::Transaction* transaction,
-      int64_t database_id,
-      int64_t object_store_id,
-      int64_t index_id,
-      const base::string16& name,
-      const IndexedDBKeyPath& key_path,
-      bool is_unique,
-      bool is_multi_entry) WARN_UNUSED_RESULT;
-  virtual leveldb::Status DeleteIndex(
+  virtual leveldb::Status ClearIndex(
       IndexedDBBackingStore::Transaction* transaction,
       int64_t database_id,
       int64_t object_store_id,
       int64_t index_id) WARN_UNUSED_RESULT;
-  virtual leveldb::Status RenameIndex(
-      IndexedDBBackingStore::Transaction* transaction,
-      int64_t database_id,
-      int64_t object_store_id,
-      int64_t index_id,
-      const base::string16& new_name) WARN_UNUSED_RESULT;
   virtual leveldb::Status PutIndexDataForRecord(
       IndexedDBBackingStore::Transaction* transaction,
       int64_t database_id,
@@ -609,6 +563,8 @@ class CONTENT_EXPORT IndexedDBBackingStore
 
   LevelDBDatabase* db() { return db_.get(); }
 
+  const std::string& origin_identifier() { return origin_identifier_; }
+
   // Returns true if a blob cleanup job is pending on journal_cleaning_timer_.
   bool IsBlobCleanupPending();
 
@@ -639,6 +595,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
 
   leveldb::Status SetUpMetadata();
 
+  // TODO(dmurph): Move this completely to IndexedDBMetadataFactory.
   leveldb::Status GetCompleteMetadata(
       std::vector<IndexedDBDatabaseMetadata>* output);
 
@@ -686,10 +643,6 @@ class CONTENT_EXPORT IndexedDBBackingStore
       const IndexedDBKey& key,
       std::string* found_encoded_primary_key,
       bool* found);
-  leveldb::Status GetIndexes(int64_t database_id,
-                             int64_t object_store_id,
-                             std::map<int64_t, IndexedDBIndexMetadata>* map)
-      WARN_UNUSED_RESULT;
 
   // Remove the blob directory for the specified database and all contained
   // blob files.

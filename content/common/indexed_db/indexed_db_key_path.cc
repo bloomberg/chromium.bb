@@ -21,8 +21,11 @@ IndexedDBKeyPath::IndexedDBKeyPath(const std::vector<base::string16>& array)
     : type_(kWebIDBKeyPathTypeArray), array_(array) {}
 
 IndexedDBKeyPath::IndexedDBKeyPath(const IndexedDBKeyPath& other) = default;
+IndexedDBKeyPath::IndexedDBKeyPath(IndexedDBKeyPath&& other) = default;
 IndexedDBKeyPath::~IndexedDBKeyPath() = default;
 IndexedDBKeyPath& IndexedDBKeyPath::operator=(const IndexedDBKeyPath& other) =
+    default;
+IndexedDBKeyPath& IndexedDBKeyPath::operator=(IndexedDBKeyPath&& other) =
     default;
 
 const std::vector<base::string16>& IndexedDBKeyPath::array() const {

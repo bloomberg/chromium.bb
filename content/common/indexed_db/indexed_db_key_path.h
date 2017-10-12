@@ -21,8 +21,10 @@ class CONTENT_EXPORT IndexedDBKeyPath {
   explicit IndexedDBKeyPath(const base::string16&);
   explicit IndexedDBKeyPath(const std::vector<base::string16>&);
   IndexedDBKeyPath(const IndexedDBKeyPath& other);
+  IndexedDBKeyPath(IndexedDBKeyPath&& other);
   ~IndexedDBKeyPath();
   IndexedDBKeyPath& operator=(const IndexedDBKeyPath& other);
+  IndexedDBKeyPath& operator=(IndexedDBKeyPath&& other);
 
   bool IsNull() const { return type_ == blink::kWebIDBKeyPathTypeNull; }
   bool operator==(const IndexedDBKeyPath& other) const;
