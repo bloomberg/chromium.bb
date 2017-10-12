@@ -104,16 +104,6 @@ static INLINE void round_shift_array(int32_t *arr, int size, int bit) {
 static INLINE int32_t half_btf(int32_t w0, int32_t in0, int32_t w1, int32_t in1,
                                int bit) {
   int32_t result_32 = w0 * in0 + w1 * in1;
-#if CONFIG_COEFFICIENT_RANGE_CHECKING
-  int64_t result_64 = (int64_t)w0 * (int64_t)in0 + (int64_t)w1 * (int64_t)in1;
-  if (result_64 < INT32_MIN || result_64 > INT32_MAX) {
-    printf("%s %d overflow result_32: %d result_64: %" PRId64
-           " w0: %d in0: %d w1: %d in1: "
-           "%d\n",
-           __FILE__, __LINE__, result_32, result_64, w0, in0, w1, in1);
-    assert(0 && "half_btf overflow");
-  }
-#endif
   return round_shift(result_32, bit);
 }
 
