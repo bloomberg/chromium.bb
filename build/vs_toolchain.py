@@ -41,7 +41,9 @@ def SetEnvironmentAndGetRuntimeDllDirs():
   if ((sys.platform in ('win32', 'cygwin') or os.path.exists(json_data_file))
       and depot_tools_win_toolchain):
     if ShouldUpdateToolchain():
-      Update()
+      update_result = Update()
+      if update_result != 0:
+        raise Exception('Failed to update, error code %d.' % update_result)
     with open(json_data_file, 'r') as tempf:
       toolchain_data = json.load(tempf)
 
