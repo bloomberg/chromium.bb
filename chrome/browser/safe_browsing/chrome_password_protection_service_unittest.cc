@@ -43,6 +43,8 @@
 
 using sync_pb::UserEventSpecifics;
 using GaiaPasswordReuse = UserEventSpecifics::GaiaPasswordReuse;
+using PasswordReuseDialogInteraction =
+    GaiaPasswordReuse::PasswordReuseDialogInteraction;
 using PasswordReuseLookup = GaiaPasswordReuse::PasswordReuseLookup;
 
 namespace safe_browsing {
@@ -59,6 +61,35 @@ std::unique_ptr<KeyedService> BuildFakeUserEventService(
     content::BrowserContext* context) {
   return base::MakeUnique<syncer::FakeUserEventService>();
 }
+
+constexpr struct {
+  // The response from the password protection service.
+  PasswordProtectionService::RequestOutcome request_outcome;
+  // The enum to log in the user event for that response.
+  PasswordReuseLookup::LookupResult lookup_result;
+} kTestCasesWithoutVerdict[]{
+    {PasswordProtectionService::MATCHED_WHITELIST,
+     PasswordReuseLookup::WHITELIST_HIT},
+    {PasswordProtectionService::URL_NOT_VALID_FOR_REPUTATION_COMPUTING,
+     PasswordReuseLookup::URL_UNSUPPORTED},
+    {PasswordProtectionService::CANCELED, PasswordReuseLookup::REQUEST_FAILURE},
+    {PasswordProtectionService::TIMEDOUT, PasswordReuseLookup::REQUEST_FAILURE},
+    {PasswordProtectionService::DISABLED_DUE_TO_INCOGNITO,
+     PasswordReuseLookup::REQUEST_FAILURE},
+    {PasswordProtectionService::REQUEST_MALFORMED,
+     PasswordReuseLookup::REQUEST_FAILURE},
+    {PasswordProtectionService::FETCH_FAILED,
+     PasswordReuseLookup::REQUEST_FAILURE},
+    {PasswordProtectionService::RESPONSE_MALFORMED,
+     PasswordReuseLookup::REQUEST_FAILURE},
+    {PasswordProtectionService::SERVICE_DESTROYED,
+     PasswordReuseLookup::REQUEST_FAILURE},
+    {PasswordProtectionService::DISABLED_DUE_TO_FEATURE_DISABLED,
+     PasswordReuseLookup::REQUEST_FAILURE},
+    {PasswordProtectionService::DISABLED_DUE_TO_USER_POPULATION,
+     PasswordReuseLookup::REQUEST_FAILURE},
+    {PasswordProtectionService::MAX_OUTCOME,
+     PasswordReuseLookup::REQUEST_FAILURE}};
 
 }  // namespace
 
@@ -316,20 +347,30 @@ TEST_F(ChromePasswordProtectionServiceTest, VerifyUpdateSecurityState) {
 
 TEST_F(ChromePasswordProtectionServiceTest,
        VerifyPasswordReuseUserEventNotRecorded) {
-  // Feature not enabled.
+  // Feature not enabled so nothing should be logged.
+  NavigateAndCommit(GURL("https:www.example.com/"));
+
+  // PasswordReuseDetected
   service_->MaybeLogPasswordReuseDetectedEvent(web_contents());
   EXPECT_TRUE(GetUserEventService()->GetRecordedUserEvents().empty());
   service_->MaybeLogPasswordReuseLookupEvent(
       web_contents(), PasswordProtectionService::MATCHED_WHITELIST, nullptr);
   EXPECT_TRUE(GetUserEventService()->GetRecordedUserEvents().empty());
 
-  EnableGaiaPasswordReuseReporting();
-  // Feature enabled but no committed navigation entry.
-  service_->MaybeLogPasswordReuseDetectedEvent(web_contents());
-  EXPECT_TRUE(GetUserEventService()->GetRecordedUserEvents().empty());
-  service_->MaybeLogPasswordReuseLookupEvent(
-      web_contents(), PasswordProtectionService::MATCHED_WHITELIST, nullptr);
-  EXPECT_TRUE(GetUserEventService()->GetRecordedUserEvents().empty());
+  // PasswordReuseLookup
+  unsigned long t = 0;
+  for (const auto& it : kTestCasesWithoutVerdict) {
+    service_->MaybeLogPasswordReuseLookupEvent(web_contents(),
+                                               it.request_outcome, nullptr);
+    ASSERT_TRUE(GetUserEventService()->GetRecordedUserEvents().empty()) << t;
+    t++;
+  }
+
+  // PasswordReuseDialogInteraction
+  service_->LogPasswordReuseDialogInteraction(
+      1000 /* navigation_id */,
+      PasswordReuseDialogInteraction::WARNING_ACTION_TAKEN);
+  ASSERT_TRUE(GetUserEventService()->GetRecordedUserEvents().empty());
 }
 
 TEST_F(ChromePasswordProtectionServiceTest,
@@ -364,83 +405,57 @@ TEST_F(ChromePasswordProtectionServiceTest,
   EnableGaiaPasswordReuseReporting();
   NavigateAndCommit(GURL("https://www.example.com/"));
 
-  std::vector<std::pair<PasswordProtectionService::RequestOutcome,
-                        PasswordReuseLookup::LookupResult>>
-      test_cases_result_only = {
-          {PasswordProtectionService::MATCHED_WHITELIST,
-           PasswordReuseLookup::WHITELIST_HIT},
-          {PasswordProtectionService::URL_NOT_VALID_FOR_REPUTATION_COMPUTING,
-           PasswordReuseLookup::URL_UNSUPPORTED},
-          {PasswordProtectionService::CANCELED,
-           PasswordReuseLookup::REQUEST_FAILURE},
-          {PasswordProtectionService::TIMEDOUT,
-           PasswordReuseLookup::REQUEST_FAILURE},
-          {PasswordProtectionService::DISABLED_DUE_TO_INCOGNITO,
-           PasswordReuseLookup::REQUEST_FAILURE},
-          {PasswordProtectionService::REQUEST_MALFORMED,
-           PasswordReuseLookup::REQUEST_FAILURE},
-          {PasswordProtectionService::FETCH_FAILED,
-           PasswordReuseLookup::REQUEST_FAILURE},
-          {PasswordProtectionService::RESPONSE_MALFORMED,
-           PasswordReuseLookup::REQUEST_FAILURE},
-          {PasswordProtectionService::SERVICE_DESTROYED,
-           PasswordReuseLookup::REQUEST_FAILURE},
-          {PasswordProtectionService::DISABLED_DUE_TO_FEATURE_DISABLED,
-           PasswordReuseLookup::REQUEST_FAILURE},
-          {PasswordProtectionService::DISABLED_DUE_TO_USER_POPULATION,
-           PasswordReuseLookup::REQUEST_FAILURE},
-          {PasswordProtectionService::MAX_OUTCOME,
-           PasswordReuseLookup::REQUEST_FAILURE}};
-
   unsigned long t = 0;
-  for (const auto& it : test_cases_result_only) {
-    VLOG(1) << __FUNCTION__ << ": case: " << t;
-    service_->MaybeLogPasswordReuseLookupEvent(web_contents(), it.first,
-                                               nullptr);
-    ASSERT_EQ(t + 1, GetUserEventService()->GetRecordedUserEvents().size());
+  for (const auto& it : kTestCasesWithoutVerdict) {
+    service_->MaybeLogPasswordReuseLookupEvent(web_contents(),
+                                               it.request_outcome, nullptr);
+    ASSERT_EQ(t + 1, GetUserEventService()->GetRecordedUserEvents().size())
+        << t;
     PasswordReuseLookup reuse_lookup = GetUserEventService()
                                            ->GetRecordedUserEvents()[t]
                                            .gaia_password_reuse_event()
                                            .reuse_lookup();
-    EXPECT_EQ(it.second, reuse_lookup.lookup_result());
+    EXPECT_EQ(it.lookup_result, reuse_lookup.lookup_result()) << t;
     t++;
   }
 
   {
-    VLOG(1) << __FUNCTION__ << ": case: " << t;
     auto response = base::MakeUnique<LoginReputationClientResponse>();
     response->set_verdict_token("token1");
     response->set_verdict_type(LoginReputationClientResponse::LOW_REPUTATION);
     service_->MaybeLogPasswordReuseLookupEvent(
         web_contents(), PasswordProtectionService::RESPONSE_ALREADY_CACHED,
         response.get());
-    ASSERT_EQ(t + 1, GetUserEventService()->GetRecordedUserEvents().size());
+    ASSERT_EQ(t + 1, GetUserEventService()->GetRecordedUserEvents().size())
+        << t;
     PasswordReuseLookup reuse_lookup = GetUserEventService()
                                            ->GetRecordedUserEvents()[t]
                                            .gaia_password_reuse_event()
                                            .reuse_lookup();
-    EXPECT_EQ(PasswordReuseLookup::CACHE_HIT, reuse_lookup.lookup_result());
-    EXPECT_EQ(PasswordReuseLookup::LOW_REPUTATION, reuse_lookup.verdict());
-    EXPECT_EQ("token1", reuse_lookup.verdict_token());
+    EXPECT_EQ(PasswordReuseLookup::CACHE_HIT, reuse_lookup.lookup_result())
+        << t;
+    EXPECT_EQ(PasswordReuseLookup::LOW_REPUTATION, reuse_lookup.verdict()) << t;
+    EXPECT_EQ("token1", reuse_lookup.verdict_token()) << t;
     t++;
   }
 
   {
-    VLOG(1) << __FUNCTION__ << ": case: " << t;
     auto response = base::MakeUnique<LoginReputationClientResponse>();
     response->set_verdict_token("token2");
     response->set_verdict_type(LoginReputationClientResponse::SAFE);
     service_->MaybeLogPasswordReuseLookupEvent(
         web_contents(), PasswordProtectionService::SUCCEEDED, response.get());
-    ASSERT_EQ(t + 1, GetUserEventService()->GetRecordedUserEvents().size());
+    ASSERT_EQ(t + 1, GetUserEventService()->GetRecordedUserEvents().size())
+        << t;
     PasswordReuseLookup reuse_lookup = GetUserEventService()
                                            ->GetRecordedUserEvents()[t]
                                            .gaia_password_reuse_event()
                                            .reuse_lookup();
     EXPECT_EQ(PasswordReuseLookup::REQUEST_SUCCESS,
-              reuse_lookup.lookup_result());
-    EXPECT_EQ(PasswordReuseLookup::SAFE, reuse_lookup.verdict());
-    EXPECT_EQ("token2", reuse_lookup.verdict_token());
+              reuse_lookup.lookup_result())
+        << t;
+    EXPECT_EQ(PasswordReuseLookup::SAFE, reuse_lookup.verdict()) << t;
+    EXPECT_EQ("token2", reuse_lookup.verdict_token()) << t;
     t++;
   }
 }
