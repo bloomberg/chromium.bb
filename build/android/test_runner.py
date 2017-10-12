@@ -618,11 +618,6 @@ def AddPerfTestOptions(parser):
       '--dry-run',
       action='store_true',
       help='Just print the steps without executing.')
-  parser.add_argument(
-      '--flaky-steps',
-      type=os.path.realpath,
-      help='A JSON file containing steps that are flaky '
-           'and will have its exit code ignored.')
   # TODO(rnephew): Remove this when everything moves to new option in platform
   # mode.
   parser.add_argument(
