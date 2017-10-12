@@ -73,7 +73,7 @@ enum ManagePasswordItemState {
 }
 @property(readonly, nonatomic) NSTextField* usernameField;
 
-- (id)initWithForm:(const autofill::PasswordForm&)form editMode:(BOOL)editMode;
+- (id)initWithForm:(const autofill::PasswordForm&)form;
 @end
 
 @interface PendingPasswordItemView (Testing)

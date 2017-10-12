@@ -67,7 +67,6 @@ void InitLabel(NSTextField* textField, const base::string16& text) {
   [textField setBezeled:NO];
   [textField setFont:LabelFont()];
   [[textField cell] setLineBreakMode:NSLineBreakByTruncatingTail];
-  [textField sizeToFit];
 }
 
 std::pair<CGFloat, CGFloat> GetResizedColumns(
@@ -95,6 +94,7 @@ NSSecureTextField* PasswordLabel(const base::string16& text) {
   base::scoped_nsobject<NSSecureTextField> textField(
       [[NSSecureTextField alloc] initWithFrame:NSZeroRect]);
   InitLabel(textField, text);
+  [textField sizeToFit];
   return textField.autorelease();
 }
 
@@ -102,6 +102,7 @@ NSTextField* Label(const base::string16& text) {
   base::scoped_nsobject<NSTextField> textField(
       [[NSTextField alloc] initWithFrame:NSZeroRect]);
   InitLabel(textField, text);
+  [textField sizeToFit];
   return textField.autorelease();
 }
 

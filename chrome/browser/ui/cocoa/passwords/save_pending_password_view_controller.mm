@@ -26,9 +26,7 @@ NSString* const kEditTouchBarId = @"EDIT";
 NSString* const kNeverTouchBarId = @"NEVER";
 NSString* const kSaveTouchBarId = @"SAVE";
 
-NSTextField* EditableUsernameField(const base::string16& text) {
-  base::scoped_nsobject<NSTextField> textField(
-      [[NSTextField alloc] initWithFrame:NSZeroRect]);
+void InitEditableLabel(NSTextField* textField, const base::string16& text) {
   [textField setStringValue:base::SysUTF16ToNSString(text)];
   [textField setEditable:YES];
   [textField setSelectable:YES];
@@ -36,14 +34,13 @@ NSTextField* EditableUsernameField(const base::string16& text) {
   [textField setBordered:YES];
   [textField setBezeled:YES];
   [[textField cell] setUsesSingleLineMode:YES];
-  [textField sizeToFit];
-  return textField.autorelease();
 }
 
-NSTextField* UsernameLabel(const base::string16& text) {
+NSTextField* EditableField(const base::string16& text) {
   base::scoped_nsobject<NSTextField> textField(
       [[NSTextField alloc] initWithFrame:NSZeroRect]);
-  InitLabel(textField, text);
+  InitEditableLabel(textField.get(), text);
+  [textField sizeToFit];
   return textField.autorelease();
 }
 
@@ -73,10 +70,10 @@ void FillPasswordCombobox(const autofill::PasswordForm& form,
     [combobox selectItemAtIndex:index];
 }
 
-NSComboBox* PasswordCombobox(const autofill::PasswordForm& form, bool visible) {
+NSComboBox* PasswordCombobox(const autofill::PasswordForm& form) {
   base::scoped_nsobject<NSComboBox> textField(
       [[NSComboBox alloc] initWithFrame:NSZeroRect]);
-  FillPasswordCombobox(form, visible, textField);
+  FillPasswordCombobox(form, false, textField);
   [textField sizeToFit];
   return textField.autorelease();
 }
@@ -128,15 +125,24 @@ NSButton* EyeIcon(id target, SEL action) {
   if (!self.model)
     return;  // The view will be destroyed soon.
   bool visible = [passwordViewButton_ state] == NSOnState;
+  const autofill::PasswordForm& form = self.model->pending_password();
   if (!visible) {
     // The previous state was editable. Save the current result.
     self.model->OnCredentialEdited(
-        self.model->pending_password().username_value,
+        form.username_value,
         base::SysNSStringToUTF16([passwordField_ stringValue]));
   }
-  FillPasswordCombobox(
-      self.model->pending_password(), visible,
-      base::mac::ObjCCastStrict<NSComboBox>(passwordField_.get()));
+  NSComboBox* combobox = base::mac::ObjCCast<NSComboBox>(passwordField_.get());
+  if (combobox) {
+    FillPasswordCombobox(self.model->pending_password(), visible, combobox);
+  } else {
+    if (visible) {
+      InitEditableLabel(passwordField_.get(), form.password_value);
+    } else {
+      InitLabel(passwordField_.get(),
+                base::string16(form.password_value.length(), '*'));
+    }
+  }
   [[self.view window]
       makeFirstResponder:(visible ? passwordField_.get() : saveButton_.get())];
 }
@@ -191,17 +197,30 @@ NSButton* EyeIcon(id target, SEL action) {
       password_manager::features::kEnableUsernameCorrection);
   const autofill::PasswordForm& form = self.model->pending_password();
   if (enableUsernameEditing)
-    usernameField_.reset([EditableUsernameField(form.username_value) retain]);
+    usernameField_.reset([EditableField(form.username_value) retain]);
   else
-    usernameField_.reset([UsernameLabel(GetDisplayUsername(form)) retain]);
+    usernameField_.reset([Label(GetDisplayUsername(form)) retain]);
   [container addSubview:usernameField_];
 
   bool enablePasswordEditing = base::FeatureList::IsEnabled(
       password_manager::features::kEnablePasswordSelection);
   if (form.federation_origin.unique()) {
     if (enablePasswordEditing) {
-      passwordField_.reset([PasswordCombobox(form, false) retain]);
-      [passwordField_ setDelegate:self];
+      if (form.all_possible_passwords.size() > 1) {
+        passwordField_.reset([PasswordCombobox(form) retain]);
+        [passwordField_ setDelegate:self];
+      } else {
+        passwordField_.reset(
+            [Label(base::string16(form.password_value.length(), '*')) retain]);
+        // Overwrite the height of the password field because it's higher in the
+        // editable mode.
+        [passwordField_
+            setFrameSize:NSMakeSize(
+                             NSWidth([passwordField_ frame]),
+                             std::max(NSHeight([passwordField_ frame]),
+                                      NSHeight([EditableField(
+                                          form.username_value) frame])))];
+      }
       if (!self.model->hide_eye_icon()) {
         passwordViewButton_.reset(
             [EyeIcon(self, @selector(onEyeClicked:)) retain]);
