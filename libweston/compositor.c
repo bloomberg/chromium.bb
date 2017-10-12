@@ -6361,6 +6361,9 @@ weston_compositor_create(struct wl_display *display, void *user_data)
 			      ec, bind_presentation))
 		goto fail;
 
+	if (weston_debug_compositor_create(ec) < 0)
+		goto fail;
+
 	if (weston_input_init(ec) != 0)
 		goto fail;
 
@@ -6701,6 +6704,8 @@ weston_compositor_destroy(struct weston_compositor *compositor)
 
 	if (compositor->heads_changed_source)
 		wl_event_source_remove(compositor->heads_changed_source);
+
+	weston_debug_compositor_destroy(compositor);
 
 	free(compositor);
 }

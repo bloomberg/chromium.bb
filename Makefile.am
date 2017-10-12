@@ -96,6 +96,8 @@ libweston_@LIBWESTON_MAJOR@_la_SOURCES =			\
 	libweston/linux-dmabuf.h			\
 	libweston/pixel-formats.c			\
 	libweston/pixel-formats.h			\
+	libweston/weston-debug.c			\
+	libweston/weston-debug.h			\
 	shared/helpers.h				\
 	shared/matrix.c					\
 	shared/matrix.h					\
