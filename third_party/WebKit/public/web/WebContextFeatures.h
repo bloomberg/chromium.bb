@@ -22,6 +22,7 @@ namespace blink {
 class WebContextFeatures {
  public:
   BLINK_EXPORT static void EnableMojoJS(v8::Local<v8::Context>, bool);
+  BLINK_EXPORT static void EnableMojoJSTest(v8::Local<v8::Context>, bool);
 
  private:
   WebContextFeatures();

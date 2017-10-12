@@ -103,6 +103,10 @@
       var receiverResult = this.incomingReceiver_ &&
           this.incomingReceiver_.accept(message);
 
+      // Dispatching the message may have closed the connector.
+      if (this.handle_ == null)
+        return;
+
       // Handle invalid incoming message.
       if (!internal.isTestingMode() && !receiverResult) {
         // TODO(yzshen): Consider notifying the embedder.

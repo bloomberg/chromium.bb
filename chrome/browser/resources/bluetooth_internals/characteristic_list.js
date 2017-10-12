@@ -44,7 +44,7 @@ cr.define('characteristic_list', function() {
    * properties, 'id' and 'uuid', and one for the 'properties' bitfield in the
    * CharacteristicInfo object.
    * @constructor
-   * @param {!interfaces.BluetoothDevice.CharacteristicInfo} characteristicInfo
+   * @param {!bluetooth.mojom.CharacteristicInfo} characteristicInfo
    * @param {string} deviceAddress
    * @param {string} serviceId
    */
@@ -53,7 +53,7 @@ cr.define('characteristic_list', function() {
     var listItem = new ExpandableListItem();
     listItem.__proto__ = CharacteristicListItem.prototype;
 
-    /** @type {!interfaces.BluetoothDevice.CharacteristicInfo} */
+    /** @type {!bluetooth.mojom.CharacteristicInfo} */
     listItem.info = characteristicInfo;
     /** @private {string} */
     listItem.deviceAddress_ = deviceAddress;
@@ -87,7 +87,7 @@ cr.define('characteristic_list', function() {
       this.propertiesFieldSet_ = new object_fieldset.ObjectFieldSet();
       this.propertiesFieldSet_.setPropertyDisplayNames(
           PROPERTIES_PROPERTY_NAMES);
-      var Property = interfaces.BluetoothDevice.Property;
+      var Property = bluetooth.mojom.Property;
       this.propertiesFieldSet_.setObject({
         broadcast: (this.info.properties & Property.BROADCAST) > 0,
         read: (this.info.properties & Property.READ) > 0,
@@ -120,7 +120,7 @@ cr.define('characteristic_list', function() {
         characteristicId: this.info.id,
         properties: this.info.properties,
       });
-      this.valueControl_.setValue(this.info.last_known_value);
+      this.valueControl_.setValue(this.info.lastKnownValue);
 
       /** @private {!descriptor_list.DescriptorList} */
       this.descriptorList_ = new descriptor_list.DescriptorList();

@@ -24,8 +24,11 @@
   <link rel="import" href="chrome://resources/html/cr/ui/page_manager/page.html">
   <link rel="import" href="chrome://resources/html/util.html">
 
+  <script src="chrome://resources/js/mojo_bindings.js"></script>
+  <script src="uuid.mojom.js"></script>
+  <script src="device.mojom.js"></script>
+  <script src="adapter.mojom.js"></script>
   <script src="snackbar.js"></script>
-  <script src="interfaces.js"></script>
   <script src="adapter_broker.js"></script>
   <script src="device_broker.js"></script>
   <script src="object_fieldset.js"></script>
@@ -85,11 +88,11 @@
   <table>
     <thead>
       <tr>
-        <th data-field="name_for_display">Name</th>
+        <th data-field="nameForDisplay">Name</th>
         <th data-field="address">Address</th>
         <th data-field="rssi.value">Latest RSSI</th>
         <th data-field="services.length">Services</th>
-        <th data-field="is_gatt_connected">GATT Connection State</th>
+        <th data-field="isGattConnected">GATT Connection State</th>
         <th></th>
       </tr>
     </thead>

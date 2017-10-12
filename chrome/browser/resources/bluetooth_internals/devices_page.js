@@ -51,7 +51,7 @@ cr.define('devices_page', function() {
 
     /**
      * Updates the inspect status of the given |deviceInfo| in the device table.
-     * @param {!interfaces.BluetoothDevice.DeviceInfo} deviceInfo
+     * @param {!bluetooth.mojom.DeviceInfo} deviceInfo
      * @param {boolean} isInspecting
      */
     setInspecting: function(deviceInfo, isInspecting) {

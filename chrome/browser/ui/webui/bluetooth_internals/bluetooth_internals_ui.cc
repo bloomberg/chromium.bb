@@ -16,6 +16,8 @@ BluetoothInternalsUI::BluetoothInternalsUI(content::WebUI* web_ui)
       content::WebUIDataSource::Create(chrome::kChromeUIBluetoothInternalsHost);
 
   // Add required resources.
+  html_source->AddResourcePath("adapter.mojom.js",
+                               IDR_BLUETOOTH_ADAPTER_MOJO_JS);
   html_source->AddResourcePath("adapter_broker.js",
                                IDR_BLUETOOTH_INTERNALS_ADAPTER_BROKER_JS);
   html_source->AddResourcePath("adapter_page.js",
@@ -28,6 +30,7 @@ BluetoothInternalsUI::BluetoothInternalsUI(content::WebUI* web_ui)
                                IDR_BLUETOOTH_INTERNALS_CHARACTERISTIC_LIST_JS);
   html_source->AddResourcePath("descriptor_list.js",
                                IDR_BLUETOOTH_INTERNALS_DESCRIPTOR_LIST_JS);
+  html_source->AddResourcePath("device.mojom.js", IDR_BLUETOOTH_DEVICE_MOJO_JS);
   html_source->AddResourcePath("device_broker.js",
                                IDR_BLUETOOTH_INTERNALS_DEVICE_BROKER_JS);
   html_source->AddResourcePath("device_collection.js",
@@ -40,8 +43,6 @@ BluetoothInternalsUI::BluetoothInternalsUI(content::WebUI* web_ui)
                                IDR_BLUETOOTH_INTERNALS_DEVICES_PAGE_JS);
   html_source->AddResourcePath("expandable_list.js",
                                IDR_BLUETOOTH_INTERNALS_EXPANDABLE_LIST_JS);
-  html_source->AddResourcePath("interfaces.js",
-                               IDR_BLUETOOTH_INTERNALS_INTERFACES_JS);
   html_source->AddResourcePath("object_fieldset.js",
                                IDR_BLUETOOTH_INTERNALS_OBJECT_FIELDSET_JS);
   html_source->AddResourcePath("service_list.js",
@@ -50,17 +51,10 @@ BluetoothInternalsUI::BluetoothInternalsUI(content::WebUI* web_ui)
                                IDR_BLUETOOTH_INTERNALS_SIDEBAR_JS);
   html_source->AddResourcePath("snackbar.js",
                                IDR_BLUETOOTH_INTERNALS_SNACKBAR_JS);
+  html_source->AddResourcePath("uuid.mojom.js", IDR_BLUETOOTH_UUID_MOJO_JS);
   html_source->AddResourcePath("value_control.js",
                                IDR_BLUETOOTH_INTERNALS_VALUE_CONTROL_JS);
 
-  html_source->AddResourcePath(
-      "device/bluetooth/public/interfaces/adapter.mojom",
-      IDR_BLUETOOTH_ADAPTER_MOJO_JS);
-  html_source->AddResourcePath(
-      "device/bluetooth/public/interfaces/device.mojom",
-      IDR_BLUETOOTH_DEVICE_MOJO_JS);
-  html_source->AddResourcePath("device/bluetooth/public/interfaces/uuid.mojom",
-                               IDR_BLUETOOTH_UUID_MOJO_JS);
   html_source->SetDefaultResource(IDR_BLUETOOTH_INTERNALS_HTML);
   html_source->UseGzip();
 

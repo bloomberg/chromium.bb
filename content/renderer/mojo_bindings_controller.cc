@@ -79,8 +79,14 @@ void MojoBindingsController::DidCreateScriptContext(
   //
   // We also only allow these bindings to be installed when creating the main
   // world context.
-  if (bindings_type_ != MojoBindingsType::FOR_LAYOUT_TESTS && world_id == 0)
+  if (bindings_type_ != MojoBindingsType::FOR_LAYOUT_TESTS && world_id == 0) {
     blink::WebContextFeatures::EnableMojoJS(context, true);
+    // These bindings are only needed by WebUI tests however the browsertest
+    // framework does not currently inform the renderer if it is being started
+    // by a test. The gin bindings also expose the test interface to WebUI
+    // contexts.
+    blink::WebContextFeatures::EnableMojoJSTest(context, true);
+  }
 }
 
 void MojoBindingsController::WillReleaseScriptContext(
