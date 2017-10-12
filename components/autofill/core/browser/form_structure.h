@@ -245,7 +245,7 @@ class FormStructure {
   FormData ToFormData() const;
 
   // Returns the possible form types.
-  std::set<FormType> GetFormTypes();
+  std::set<FormType> GetFormTypes() const;
 
   bool operator==(const FormData& form) const;
   bool operator!=(const FormData& form) const;

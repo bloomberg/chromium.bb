@@ -787,8 +787,7 @@ void FormStructure::LogQualityMetrics(
       DCHECK(!submission_time.is_null());
 
       // The |load_time| might be unset, in the case that the form was
-      // dynamically
-      // added to the DOM.
+      // dynamically added to the DOM.
       if (!load_time.is_null()) {
         // Submission should always chronologically follow form load.
         DCHECK(submission_time > load_time);
@@ -805,13 +804,8 @@ void FormStructure::LogQualityMetrics(
         // Submission should always chronologically follow interaction.
         DCHECK(submission_time > interaction_time);
         base::TimeDelta elapsed = submission_time - interaction_time;
-        if (did_autofill_some_possible_fields) {
-          AutofillMetrics::LogFormFillDurationFromInteractionWithAutofill(
-              elapsed);
-        } else {
-          AutofillMetrics::LogFormFillDurationFromInteractionWithoutAutofill(
-              elapsed);
-        }
+        AutofillMetrics::LogFormFillDurationFromInteraction(
+            GetFormTypes(), did_autofill_some_possible_fields, elapsed);
       }
     }
     if (form_interactions_ukm_logger->url() != source_url())
@@ -1434,7 +1428,7 @@ base::string16 FormStructure::FindLongestCommonPrefix(
   return filtered_strings[0];
 }
 
-std::set<FormType> FormStructure::GetFormTypes() {
+std::set<FormType> FormStructure::GetFormTypes() const {
   std::set<FormType> form_types;
   for (const auto& field : fields_) {
     form_types.insert(
