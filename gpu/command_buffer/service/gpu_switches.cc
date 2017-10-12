@@ -62,4 +62,8 @@ const char kGLShaderIntermOutput[] = "gl-shader-interm-output";
 // round intermediate values in ANGLE.
 const char kEmulateShaderPrecision[] = "emulate-shader-precision";
 
+// Use the Pass-through command decoder, skipping all validation and state
+// tracking.
+const char kUsePassthroughCmdDecoder[] = "use-passthrough-cmd-decoder";
+
 }  // namespace switches

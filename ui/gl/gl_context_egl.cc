@@ -177,8 +177,8 @@ bool GLContextEGL::Initialize(GLSurface* compatible_surface,
     context_attributes.push_back(EGL_ROBUST_RESOURCE_INITIALIZATION_ANGLE);
     context_attributes.push_back(
         attribs.robust_resource_initialization ? EGL_TRUE : EGL_FALSE);
-  } else if (attribs.robust_resource_initialization) {
-    DCHECK(GLSurfaceEGL::IsDisplayRobustResourceInitSupported());
+  } else {
+    DCHECK(!attribs.robust_resource_initialization);
   }
 
   // Append final EGL_NONE to signal the context attributes are finished

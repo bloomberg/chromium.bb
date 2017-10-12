@@ -8,13 +8,8 @@
 
 #include "ui/gfx/color_space.h"
 #include "ui/gl/gl_bindings.h"
-#include "ui/gl/gl_switches.h"
 
 namespace gl {
-
-bool UsePassthroughCommandDecoder(const base::CommandLine* command_line) {
-  return command_line->HasSwitch(switches::kUsePassthroughCmdDecoder);
-}
 
 int GetGLColorSpace(const gfx::ColorSpace& color_space) {
   if (color_space == gfx::ColorSpace::CreateSCRGBLinear())

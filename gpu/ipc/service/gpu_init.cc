@@ -253,7 +253,7 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line) {
                         gpu_info_.sandboxed);
 
   gpu_info_.passthrough_cmd_decoder =
-      gl::UsePassthroughCommandDecoder(command_line) &&
+      gles2::UsePassthroughCommandDecoder(command_line) &&
       gles2::PassthroughCommandDecoderSupported();
 
   init_successful_ = true;
