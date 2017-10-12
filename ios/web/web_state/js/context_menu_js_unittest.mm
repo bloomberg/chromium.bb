@@ -248,7 +248,7 @@ TEST_F(ContextMenuJsTest, UnsupportedReferrerPolicy) {
 
 // Tests that getElementFromPoint finds an element at the bottom of a very long
 // page.
-TEST_F(ContextMenuJsTest, LinkOfTextFromTallPage) {
+TEST_F(ContextMenuJsTest, FLAKY_LinkOfTextFromTallPage) {
   const char kHtml[] =
       "<html><body>"
       " <div style='height:4000px'></div>"
