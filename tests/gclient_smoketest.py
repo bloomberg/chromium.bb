@@ -343,7 +343,7 @@ class GClientSmokeGIT(GClientSmokeBase):
                                 ('repo_3@1', 'src/repo2/repo3'),
                                 ('repo_4@2', 'src/repo4'))
     tree['src/git_hooked2'] = 'git_hooked2'
-    tree['src/gclient.args'] = '\n'.join([
+    tree['src/repo2/gclient.args'] = '\n'.join([
         '# Generated from \'DEPS\'',
         'false_var = false',
         'false_str_var = false',
@@ -364,7 +364,7 @@ class GClientSmokeGIT(GClientSmokeBase):
                                 ('repo_4@2', 'src/repo4'))
     tree['src/git_hooked1'] = 'git_hooked1'
     tree['src/git_hooked2'] = 'git_hooked2'
-    tree['src/gclient.args'] = '\n'.join([
+    tree['src/repo2/gclient.args'] = '\n'.join([
         '# Generated from \'DEPS\'',
         'false_var = false',
         'false_str_var = false',
@@ -406,7 +406,7 @@ class GClientSmokeGIT(GClientSmokeBase):
                                 ('repo_2@2', 'src/repo2'),
                                 ('repo_3@1', 'src/repo2/repo3'),
                                 ('repo_4@2', 'src/repo4'))
-    tree['src/gclient.args'] = '\n'.join([
+    tree['src/repo2/gclient.args'] = '\n'.join([
         '# Generated from \'DEPS\'',
         'false_var = false',
         'false_str_var = false',
@@ -451,7 +451,7 @@ class GClientSmokeGIT(GClientSmokeBase):
                                 ('repo_3@1', 'src/repo2/repo3'),
                                 ('repo_4@2', 'src/repo4'))
     tree['src/git_hooked2'] = 'git_hooked2'
-    tree['src/gclient.args'] = '\n'.join([
+    tree['src/repo2/gclient.args'] = '\n'.join([
         '# Generated from \'DEPS\'',
         'false_var = false',
         'false_str_var = false',
@@ -473,7 +473,7 @@ class GClientSmokeGIT(GClientSmokeBase):
                                 ('repo_4@2', 'src/repo4'))
     tree['src/git_hooked1'] = 'git_hooked1'
     tree['src/git_hooked2'] = 'git_hooked2'
-    tree['src/gclient.args'] = '\n'.join([
+    tree['src/repo2/gclient.args'] = '\n'.join([
         '# Generated from \'DEPS\'',
         'false_var = false',
         'false_str_var = false',
@@ -659,7 +659,7 @@ class GClientSmokeGIT(GClientSmokeBase):
 
     self.maxDiff = None
     self.assertEqual([
-        'gclient_gn_args_file = "src/gclient.args"',
+        'gclient_gn_args_file = "src/repo2/gclient.args"',
         'gclient_gn_args = [\'false_var\', \'false_str_var\', \'true_var\', '
             '\'true_str_var\', \'str_var\', \'cond_var\']',
         'allowed_hosts = [',
@@ -833,7 +833,7 @@ class GClientSmokeGIT(GClientSmokeBase):
       deps_contents = f.read()
 
     self.assertEqual([
-        'gclient_gn_args_file = "src/gclient.args"',
+        'gclient_gn_args_file = "src/repo2/gclient.args"',
         'gclient_gn_args = [\'false_var\', \'false_str_var\', \'true_var\', '
             '\'true_str_var\', \'str_var\', \'cond_var\']',
         'allowed_hosts = [',

@@ -893,8 +893,6 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
 
     # Always parse the DEPS file.
     self.ParseDepsFile()
-    if self._gn_args_file and command == 'update':
-      self.WriteGNArgsFile()
     self._run_is_done(file_list or [], parsed_url)
     if command in ('update', 'revert') and not options.noprehooks:
       self.RunPreDepsHooks()
@@ -961,6 +959,9 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
         else:
           print('Skipped missing %s' % cwd, file=sys.stderr)
 
+  def HasGNArgsFile(self):
+    return self._gn_args_file is not None
+
   def WriteGNArgsFile(self):
     lines = ['# Generated from %r' % self.deps_file]
     variables = self.get_vars()
@@ -1005,6 +1006,12 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     for s in self.dependencies:
       result.extend(s.GetHooks(options))
     return result
+
+  def WriteGNArgsFilesRecursively(self, dependencies):
+    for dep in dependencies:
+      if dep.HasGNArgsFile():
+        dep.WriteGNArgsFile()
+      self.WriteGNArgsFilesRecursively(dep.dependencies)
 
   def RunHooksRecursively(self, options):
     assert self.hooks_ran == False
@@ -1478,8 +1485,11 @@ it or fix the checkout.
       print('Please fix your script, having invalid --revision flags will soon '
             'considered an error.', file=sys.stderr)
 
-    # Once all the dependencies have been processed, it's now safe to run the
-    # hooks.
+    # Once all the dependencies have been processed, it's now safe to write
+    # out any gn_args_files and run the hooks.
+    if command == 'update':
+      self.WriteGNArgsFilesRecursively(self.dependencies)
+
     if not self._options.nohooks:
       self.RunHooksRecursively(self._options)
 

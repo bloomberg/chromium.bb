@@ -336,7 +336,9 @@ vars = {
   'str_var': 'abc',
   'cond_var': 'false_str_var and true_var',
 }
-gclient_gn_args_file = 'src/gclient.args'
+# Nest the args file in a sub-repo, to make sure we don't try to
+# write it before we've cloned everything.
+gclient_gn_args_file = 'src/repo2/gclient.args'
 gclient_gn_args = [
   'false_var',
   'false_str_var',
@@ -489,7 +491,7 @@ vars = {
   'cond_var': 'false_str_var and true_var',
 }
 
-gclient_gn_args_file = 'src/gclient.args'
+gclient_gn_args_file = 'src/repo2/gclient.args'
 gclient_gn_args = [
   'false_var',
   'false_str_var',
