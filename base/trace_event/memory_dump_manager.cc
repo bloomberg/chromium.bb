@@ -763,7 +763,7 @@ void MemoryDumpManager::FinishAsyncProcessDump(
   // and is temporary given the upcoming work on the out-of-process heap
   // profiler.
   const auto& args = pmd_async_state->req_args;
-  if (args.level_of_detail == MemoryDumpLevelOfDetail::DETAILED) {
+  if (!pmd_async_state->process_memory_dump->heap_dumps().empty()) {
     std::unique_ptr<TracedValue> traced_value = base::MakeUnique<TracedValue>();
     pmd_async_state->process_memory_dump->SerializeHeapProfilerDumpsInto(
         traced_value.get());
