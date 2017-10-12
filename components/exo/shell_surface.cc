@@ -1812,20 +1812,7 @@ void ShellSurface::UpdateShadow() {
     if (!shadow)
       return;
 
-    if (!shadow_overlay_) {
-      shadow_overlay_ = std::make_unique<aura::Window>(nullptr);
-      shadow_overlay_->set_owned_by_parent(false);
-      DCHECK(!shadow_overlay_->owned_by_parent());
-      shadow_overlay_->SetEventTargetingPolicy(
-          ui::mojom::EventTargetingPolicy::NONE);
-      shadow_overlay_->Init(ui::LAYER_NOT_DRAWN);
-      shadow_overlay_->layer()->Add(shadow->layer());
-      window->AddChild(shadow_overlay());
-      window->StackChildBelow(shadow_overlay(), host_window());
-      shadow_overlay_->Show();
-    }
-    shadow_overlay_->SetBounds(shadow_bounds);
-    shadow->SetContentBounds(gfx::Rect(shadow_bounds.size()));
+    shadow->SetContentBounds(shadow_bounds);
     // Surfaces that can't be activated are usually menus and tooltips. Use a
     // small style shadow for them.
     if (!activatable_)
