@@ -111,6 +111,42 @@ class LocalNTPTest : public InProcessBrowserTest {
  public:
   LocalNTPTest() {}
 
+  // Navigates the active tab to chrome://newtab and waits until the NTP is
+  // fully loaded. Note that simply waiting for a navigation is not enough,
+  // since the MV iframe receives the tiles asynchronously.
+  void NavigateToNTPAndWaitUntilLoaded() {
+    content::WebContents* active_tab =
+        browser()->tab_strip_model()->GetActiveWebContents();
+
+    // Attach a message queue *before* navigating to the NTP, to make sure we
+    // don't miss the 'loaded' message.
+    content::DOMMessageQueue msg_queue(active_tab);
+
+    // Navigate to the NTP.
+    ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+    ASSERT_TRUE(search::IsInstantNTP(active_tab));
+    ASSERT_EQ(GURL(chrome::kChromeSearchLocalNtpUrl),
+              active_tab->GetController().GetVisibleEntry()->GetURL());
+
+    // When the iframe has loaded all the tiles, it sends a 'loaded' postMessage
+    // to the page. Wait for that message to arrive.
+    ASSERT_TRUE(content::ExecuteScript(active_tab, R"js(
+      window.addEventListener('message', function(event) {
+        if (event.data.cmd == 'loaded') {
+          domAutomationController.send('NavigateToNTPAndWaitUntilLoaded');
+        }
+      });
+    )js"));
+    std::string message;
+    // First get rid of a message produced by the ExecuteScript call above.
+    ASSERT_TRUE(msg_queue.PopMessage(&message));
+    // Now wait for the "NavigateToNTPAndWaitUntilLoaded" message.
+    ASSERT_TRUE(msg_queue.WaitForMessage(&message));
+    ASSERT_EQ("\"NavigateToNTPAndWaitUntilLoaded\"", message);
+    // There shouldn't be any other messages.
+    ASSERT_FALSE(msg_queue.PopMessage(&message));
+  }
+
   void SetUserSelectedDefaultSearchProvider(const std::string& base_url,
                                             const std::string& ntp_url) {
     base::ThreadRestrictions::ScopedAllowIO allow_io;
@@ -223,11 +259,10 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, GoogleNTPLoadsWithoutError) {
   content::ConsoleObserverDelegate console_observer(active_tab, "*");
   active_tab->SetDelegate(&console_observer);
 
+  base::HistogramTester histograms;
+
   // Navigate to the NTP.
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
-  ASSERT_TRUE(search::IsInstantNTP(active_tab));
-  ASSERT_EQ(GURL(chrome::kChromeSearchLocalNtpUrl),
-            active_tab->GetController().GetVisibleEntry()->GetURL());
+  NavigateToNTPAndWaitUntilLoaded();
 
   bool is_google = false;
   ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
@@ -237,6 +272,29 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, GoogleNTPLoadsWithoutError) {
 
   // We shouldn't have gotten any console error messages.
   EXPECT_TRUE(console_observer.message().empty()) << console_observer.message();
+
+  // Make sure load time metrics were recorded.
+  histograms.ExpectTotalCount("NewTabPage.LoadTime", 1);
+  histograms.ExpectTotalCount("NewTabPage.LoadTime.LocalNTP", 1);
+  histograms.ExpectTotalCount("NewTabPage.LoadTime.LocalNTP.Google", 1);
+  histograms.ExpectTotalCount("NewTabPage.LoadTime.MostVisited", 1);
+  histograms.ExpectTotalCount("NewTabPage.TilesReceivedTime", 1);
+  histograms.ExpectTotalCount("NewTabPage.TilesReceivedTime.LocalNTP", 1);
+  histograms.ExpectTotalCount("NewTabPage.TilesReceivedTime.MostVisited", 1);
+
+  // Make sure impression metrics were recorded. There should be 2 tiles, the
+  // default prepopulated TopSites (see history::PrepopulatedPage).
+  histograms.ExpectTotalCount("NewTabPage.NumberOfTiles", 1);
+  histograms.ExpectBucketCount("NewTabPage.NumberOfTiles", 2, 1);
+  histograms.ExpectTotalCount("NewTabPage.SuggestionsImpression", 2);
+  histograms.ExpectBucketCount("NewTabPage.SuggestionsImpression", 0, 1);
+  histograms.ExpectBucketCount("NewTabPage.SuggestionsImpression", 1, 1);
+  histograms.ExpectTotalCount("NewTabPage.SuggestionsImpression.client", 2);
+  histograms.ExpectTotalCount("NewTabPage.SuggestionsImpression.Thumbnail", 2);
+  histograms.ExpectTotalCount("NewTabPage.TileTitle", 2);
+  histograms.ExpectTotalCount("NewTabPage.TileTitle.client", 2);
+  histograms.ExpectTotalCount("NewTabPage.TileType", 2);
+  histograms.ExpectTotalCount("NewTabPage.TileType.client", 2);
 }
 
 IN_PROC_BROWSER_TEST_F(LocalNTPTest, NonGoogleNTPLoadsWithoutError) {
@@ -251,11 +309,10 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, NonGoogleNTPLoadsWithoutError) {
   content::ConsoleObserverDelegate console_observer(active_tab, "*");
   active_tab->SetDelegate(&console_observer);
 
+  base::HistogramTester histograms;
+
   // Navigate to the NTP.
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
-  ASSERT_TRUE(search::IsInstantNTP(active_tab));
-  ASSERT_EQ(GURL(chrome::kChromeSearchLocalNtpUrl),
-            active_tab->GetController().GetVisibleEntry()->GetURL());
+  NavigateToNTPAndWaitUntilLoaded();
 
   bool is_google = false;
   ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
@@ -265,6 +322,29 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, NonGoogleNTPLoadsWithoutError) {
 
   // We shouldn't have gotten any console error messages.
   EXPECT_TRUE(console_observer.message().empty()) << console_observer.message();
+
+  // Make sure load time metrics were recorded.
+  histograms.ExpectTotalCount("NewTabPage.LoadTime", 1);
+  histograms.ExpectTotalCount("NewTabPage.LoadTime.LocalNTP", 1);
+  histograms.ExpectTotalCount("NewTabPage.LoadTime.LocalNTP.Other", 1);
+  histograms.ExpectTotalCount("NewTabPage.LoadTime.MostVisited", 1);
+  histograms.ExpectTotalCount("NewTabPage.TilesReceivedTime", 1);
+  histograms.ExpectTotalCount("NewTabPage.TilesReceivedTime.LocalNTP", 1);
+  histograms.ExpectTotalCount("NewTabPage.TilesReceivedTime.MostVisited", 1);
+
+  // Make sure impression metrics were recorded. There should be 2 tiles, the
+  // default prepopulated TopSites (see history::PrepopulatedPage).
+  histograms.ExpectTotalCount("NewTabPage.NumberOfTiles", 1);
+  histograms.ExpectBucketCount("NewTabPage.NumberOfTiles", 2, 1);
+  histograms.ExpectTotalCount("NewTabPage.SuggestionsImpression", 2);
+  histograms.ExpectBucketCount("NewTabPage.SuggestionsImpression", 0, 1);
+  histograms.ExpectBucketCount("NewTabPage.SuggestionsImpression", 1, 1);
+  histograms.ExpectTotalCount("NewTabPage.SuggestionsImpression.client", 2);
+  histograms.ExpectTotalCount("NewTabPage.SuggestionsImpression.Thumbnail", 2);
+  histograms.ExpectTotalCount("NewTabPage.TileTitle", 2);
+  histograms.ExpectTotalCount("NewTabPage.TileTitle.client", 2);
+  histograms.ExpectTotalCount("NewTabPage.TileType", 2);
+  histograms.ExpectTotalCount("NewTabPage.TileType.client", 2);
 }
 
 IN_PROC_BROWSER_TEST_F(LocalNTPTest, FrenchGoogleNTPLoadsWithoutError) {
