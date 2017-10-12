@@ -328,7 +328,10 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
 
   std::unique_ptr<BlinkInterfaceProviderImpl> blink_interface_provider_;
 
-  PossiblyAssociatedInterfacePtr<mojom::URLLoaderFactory> url_loader_factory_;
+  // Platform's default factory getter. TODO(kinuko): Migrate all
+  // URLLoader{Factory} callsites to per-frame / per-context ones and
+  // deprecate this.
+  scoped_refptr<ChildURLLoaderFactoryGetter> url_loader_factory_getter_;
 
   mojom::WebDatabaseHostPtrInfo web_database_host_info_;
   scoped_refptr<mojom::ThreadSafeWebDatabaseHostPtr> web_database_host_;
