@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.webapps;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 
@@ -18,7 +20,9 @@ import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.url_formatter.UrlFormatter;
+import org.chromium.ui.widget.Toast;
 
 /**
  * Manages the notification shown by Chrome when running standalone Web Apps. It accomplishes
@@ -115,7 +119,13 @@ class WebappActionsNotificationManager {
             mWebappActivity.onMenuOrKeyboardAction(R.id.open_in_browser_id, false /* fromMenu */);
             return true;
         } else if (ACTION_FOCUS.equals(intent.getAction())) {
-            // Do nothing, just close notification drawer and focus the Web App.
+            Tab tab = mWebappActivity.getActivityTab();
+            if (tab != null) {
+                ClipboardManager clipboard = (ClipboardManager) mWebappActivity.getSystemService(
+                        Context.CLIPBOARD_SERVICE);
+                clipboard.setPrimaryClip(ClipData.newPlainText("url", tab.getOriginalUrl()));
+                Toast.makeText(mWebappActivity, R.string.url_copied, Toast.LENGTH_SHORT).show();
+            }
             RecordUserAction.record("Webapp.NotificationFocused");
             return true;
         }
