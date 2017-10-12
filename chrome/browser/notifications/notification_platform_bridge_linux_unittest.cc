@@ -453,7 +453,7 @@ TEST_F(NotificationPlatformBridgeLinuxTest, NotificationAttribution) {
           [](const NotificationRequest& request) {
             EXPECT_EQ(
                 "<a href=\"https%3A//google.com/"
-                "search%3Fq=test&ie=UTF8\">google.com</a>\nBody text",
+                "search%3Fq=test&ie=UTF8\">google.com</a>\n\nBody text",
                 request.body);
           },
           1));
