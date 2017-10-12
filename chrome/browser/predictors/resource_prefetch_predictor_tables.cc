@@ -103,8 +103,20 @@ void ResourcePrefetchPredictorTables::TrimOrigins(
 }
 
 // static
-void ResourcePrefetchPredictorTables::SortOrigins(OriginData* data) {
-  std::sort(data->mutable_origins()->begin(), data->mutable_origins()->end(),
+void ResourcePrefetchPredictorTables::SortOrigins(
+    OriginData* data,
+    const std::string& main_frame_origin) {
+  auto* origins = data->mutable_origins();
+  auto it = std::find_if(origins->begin(), origins->end(),
+                         [&main_frame_origin](const OriginStat& x) {
+                           return x.origin() == main_frame_origin;
+                         });
+  int iterator_offset = 0;
+  if (it != origins->end()) {
+    origins->SwapElements(0, it - origins->begin());
+    iterator_offset = 1;
+  }
+  std::sort(origins->begin() + iterator_offset, origins->end(),
             [](const OriginStat& x, const OriginStat& y) {
               // Decreasing score ordering.
               return ComputeOriginScore(x) > ComputeOriginScore(y);

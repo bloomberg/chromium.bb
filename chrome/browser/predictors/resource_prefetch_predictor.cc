@@ -511,7 +511,7 @@ void ResourcePrefetchPredictor::OnVisitCountLookup(
   }
 
   if (config_.is_origin_learning_enabled)
-    LearnOrigins(host, summary.origins);
+    LearnOrigins(host, summary.main_frame_url.GetOrigin(), summary.origins);
 
   if (observer_)
     observer_->OnNavigationLearned(url_visit_count, summary);
@@ -706,6 +706,7 @@ void ResourcePrefetchPredictor::LearnRedirect(const std::string& key,
 
 void ResourcePrefetchPredictor::LearnOrigins(
     const std::string& host,
+    const GURL& main_frame_origin,
     const std::map<GURL, OriginRequestSummary>& summaries) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (host.size() > ResourcePrefetchPredictorTables::kMaxStringLength)
@@ -780,8 +781,8 @@ void ResourcePrefetchPredictor::LearnOrigins(
   // Trim and Sort.
   ResourcePrefetchPredictorTables::TrimOrigins(&data,
                                                config_.max_consecutive_misses);
-  ResourcePrefetchPredictorTables::SortOrigins(&data);
-  if (data.origins_size() > static_cast<int>(config_.max_resources_per_entry)) {
+  ResourcePrefetchPredictorTables::SortOrigins(&data, main_frame_origin.spec());
+  if (data.origins_size() > static_cast<int>(config_.max_origins_per_entry)) {
     data.mutable_origins()->DeleteSubrange(
         config_.max_origins_per_entry,
         data.origins_size() - config_.max_origins_per_entry);

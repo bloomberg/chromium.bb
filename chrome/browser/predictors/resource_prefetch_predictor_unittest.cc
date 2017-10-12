@@ -443,8 +443,10 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationLowHistoryCount) {
             PrefetchDataMap({{host_data.primary_key(), host_data}}));
 
   OriginData origin_data = CreateOriginData("www.google.com");
+  InitializeOriginStat(origin_data.add_origins(), "https://www.google.com/", 1,
+                       0, 0, 1., false, true);
   InitializeOriginStat(origin_data.add_origins(), "https://google.com/", 1, 0,
-                       0, 1., false, true);
+                       0, 2., false, true);
   EXPECT_EQ(mock_tables_->origin_table_.data_,
             OriginDataMap({{origin_data.host(), origin_data}}));
 
@@ -540,14 +542,16 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationUrlNotInDB) {
             PrefetchDataMap({{host_data.primary_key(), host_data}}));
 
   OriginData origin_data = CreateOriginData("www.google.com");
+  InitializeOriginStat(origin_data.add_origins(), "http://www.google.com/", 1,
+                       0, 0, 1., false, true);
   InitializeOriginStat(origin_data.add_origins(), "http://static.google.com/",
-                       1, 0, 0, 2., true, true);
+                       1, 0, 0, 3., true, true);
   InitializeOriginStat(origin_data.add_origins(), "http://dev.null.google.com/",
-                       1, 0, 0, 4., true, true);
+                       1, 0, 0, 5., true, true);
   InitializeOriginStat(origin_data.add_origins(), "http://google.com/", 1, 0, 0,
-                       1., false, true);
+                       2., false, true);
   InitializeOriginStat(origin_data.add_origins(), "http://reader.google.com/",
-                       1, 0, 0, 3., false, true);
+                       1, 0, 0, 4., false, true);
   EXPECT_EQ(mock_tables_->origin_table_.data_,
             OriginDataMap({{origin_data.host(), origin_data}}));
 
@@ -678,10 +682,12 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationUrlInDB) {
                 {{host_redirect_data.primary_key(), host_redirect_data}}));
 
   OriginData origin_data = CreateOriginData("www.google.com");
+  InitializeOriginStat(origin_data.add_origins(), "http://www.google.com/", 1.,
+                       0, 0, 1., false, true);
   InitializeOriginStat(origin_data.add_origins(), "http://static.google.com/",
-                       1, 0, 0, 2., true, true);
+                       1, 0, 0, 3., true, true);
   InitializeOriginStat(origin_data.add_origins(), "http://google.com/", 1, 0, 0,
-                       1., false, true);
+                       2., false, true);
   EXPECT_EQ(mock_tables_->origin_table_.data_,
             OriginDataMap({{origin_data.host(), origin_data}}));
 }
@@ -755,8 +761,10 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationUrlNotInDBAndDBFull) {
                 {{host_redirect_data.primary_key(), host_redirect_data}}));
 
   OriginData origin_data = CreateOriginData("www.nike.com");
+  InitializeOriginStat(origin_data.add_origins(), "http://www.nike.com/", 1, 0,
+                       0, 1., false, true);
   InitializeOriginStat(origin_data.add_origins(), "http://nike.com/", 1, 0, 0,
-                       1., false, true);
+                       2., false, true);
   OriginDataMap expected_origin_data = test_origin_data_;
   expected_origin_data.erase("google.com");
   expected_origin_data["www.nike.com"] = origin_data;

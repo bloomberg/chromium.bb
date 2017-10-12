@@ -22,6 +22,22 @@ const base::TimeDelta kMinDelayBetweenPreresolveRequests =
 const base::TimeDelta kMinDelayBetweenPreconnectRequests =
     base::TimeDelta::FromSeconds(10);
 
+// Returns true iff |prediction| is not empty.
+bool AddInitialUrlToPreconnectPrediction(const GURL& initial_url,
+                                         PreconnectPrediction* prediction) {
+  GURL initial_origin = initial_url.GetOrigin();
+
+  if ((prediction->preconnect_origins.empty() ||
+       prediction->preconnect_origins.front() != initial_origin) &&
+      initial_origin.is_valid() && initial_origin.SchemeIsHTTPOrHTTPS()) {
+    prediction->preconnect_origins.emplace(
+        prediction->preconnect_origins.begin(), initial_origin);
+  }
+
+  return !prediction->preconnect_origins.empty() ||
+         !prediction->preresolve_hosts.empty();
+}
+
 }  // namespace
 
 LoadingPredictor::LoadingPredictor(const LoadingPredictorConfig& config,
@@ -79,6 +95,14 @@ void LoadingPredictor::PrepareForPageLoad(const GURL& url,
     has_preconnect_prediction =
         resource_prefetch_predictor_->PredictPreconnectOrigins(url,
                                                                &prediction);
+    // For all but NAVIGATION hint origins it makes sense to preconnect to the
+    // |url| even if the predictor has no prediction. In the NAVIGATION case
+    // it makes less sense because the connection will follow shortly after
+    // the hint with a higher priority.
+    if (origin != HintOrigin::NAVIGATION) {
+      has_preconnect_prediction =
+          AddInitialUrlToPreconnectPrediction(url, &prediction);
+    }
     if (has_preconnect_prediction &&
         config_.IsPreconnectEnabledForOrigin(profile_, origin)) {
       MaybeAddPreconnect(url, prediction.preconnect_origins,
