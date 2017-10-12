@@ -85,6 +85,7 @@ class CONTENT_EXPORT LocalStorageCachedArea
                   const std::vector<uint8_t>& old_value,
                   const std::string& source) override;
   void AllDeleted(const std::string& source) override;
+  void ShouldSendOldValueOnMutations(bool value) override;
 
   // Common helper for KeyAdded() and KeyChanged()
   void KeyAddedOrChanged(const std::vector<uint8_t>& key,
@@ -108,6 +109,8 @@ class CONTENT_EXPORT LocalStorageCachedArea
   scoped_refptr<DOMStorageMap> map_;
   std::map<base::string16, int> ignore_key_mutations_;
   bool ignore_all_mutations_ = false;
+  // See ShouldSendOldValueOnMutations().
+  bool should_send_old_value_on_mutations_ = true;
   mojom::LevelDBWrapperPtr leveldb_;
   mojo::AssociatedBinding<mojom::LevelDBObserver> binding_;
   LocalStorageCachedAreas* cached_areas_;

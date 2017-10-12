@@ -101,9 +101,11 @@ class CONTENT_EXPORT LevelDBWrapperImpl : public mojom::LevelDBWrapper {
   void AddObserver(mojom::LevelDBObserverAssociatedPtrInfo observer) override;
   void Put(const std::vector<uint8_t>& key,
            const std::vector<uint8_t>& value,
+           const base::Optional<std::vector<uint8_t>>& client_old_value,
            const std::string& source,
            PutCallback callback) override;
   void Delete(const std::vector<uint8_t>& key,
+              const base::Optional<std::vector<uint8_t>>& client_old_value,
               const std::string& source,
               DeleteCallback callback) override;
   void DeleteAll(const std::string& source,
