@@ -63,7 +63,7 @@ bool MediaEngagementTimeFilterAdapter(
 
 // The current schema version of the MEI data. If this value is higher
 // than the stored value, all MEI data will be wiped.
-static const int kSchemaVersion = 2;
+static const int kSchemaVersion = 3;
 
 }  // namespace
 
