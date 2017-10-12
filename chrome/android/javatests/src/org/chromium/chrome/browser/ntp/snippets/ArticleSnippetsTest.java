@@ -53,7 +53,6 @@ import org.chromium.chrome.browser.signin.DisplayableProfileData;
 import org.chromium.chrome.browser.signin.SigninAccessPoint;
 import org.chromium.chrome.browser.signin.SigninPromoController;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
-import org.chromium.chrome.browser.suggestions.ContentSuggestionPlaceholder;
 import org.chromium.chrome.browser.suggestions.ContentSuggestionsAdditionalAction;
 import org.chromium.chrome.browser.suggestions.DestructionObserver;
 import org.chromium.chrome.browser.suggestions.ImageFetcher;
@@ -402,23 +401,6 @@ public class ArticleSnippetsTest {
             mContentView.addView(mSigninPromo.itemView);
         });
         mRenderTestRule.render(mSigninPromo.itemView, "hot_state_personalized_signin_promo");
-    }
-
-    @Test
-    @MediumTest
-    @Feature({"ArticleSnippets", "RenderTest"})
-    public void testContentSuggestionPlaceholder() throws IOException {
-        // TODO(dgn): Try to use assume or notify the test runner in some way that we skipped it
-        // instead of making it always PASS here.
-        if (!mChromeHomeEnabled) return; // Placeholder is only valid on modern.
-
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            ContentSuggestionPlaceholder.ViewHolder viewHolder =
-                    new ContentSuggestionPlaceholder.ViewHolder(mRecyclerView, mUiConfig, null);
-            viewHolder.onBindViewHolder();
-            mContentView.addView(viewHolder.itemView);
-        });
-        mRenderTestRule.render(mContentView.getChildAt(0), "content_suggestion_placeholder");
     }
 
     private void createPersonalizedSigninPromo(@Nullable DisplayableProfileData profileData) {

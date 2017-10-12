@@ -10525,12 +10525,28 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="ContentSuggestions.FetchPendingPlaceholder.VisibleDuration"
     units="ms">
+  <obsolete>
+    Deprecated in favor of
+    ContentSuggestions.FetchPendingSpinner.VisibleDuration.
+  </obsolete>
   <owner>dgn@chromium.org</owner>
   <owner>ntp-dev+metrics@chromium.org</owner>
   <summary>
     Android: How long the content suggestion placeholder is shown. This is
     tracked based on when the placeholder is enabled in the UI, not how long it
     is actually visible on screen. Depending on the screen size, the used value
+    could be bigger.
+  </summary>
+</histogram>
+
+<histogram name="ContentSuggestions.FetchPendingSpinner.VisibleDuration"
+    units="ms">
+  <owner>dgn@chromium.org</owner>
+  <owner>ntp-dev+metrics@chromium.org</owner>
+  <summary>
+    Android: How long the content suggestion loading spinner is shown. This is
+    tracked based on when the spinner is enabled in the UI, not how long it is
+    actually visible on screen. Depending on the screen size, the used value
     could be bigger.
   </summary>
 </histogram>
