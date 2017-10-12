@@ -34,12 +34,16 @@ public class ChromeHomePromoDialog extends PromoDialog {
     /** Whether or not the switch in the promo is enabled or disabled. */
     private boolean mSwitchStateShouldEnable;
 
+    /** Whether or not the user made a selection by tapping the 'ok' button. */
+    private boolean mUserMadeSelection;
+
     /**
      * Default constructor.
      * @param activity The {@link Activity} showing the promo.
      */
     public ChromeHomePromoDialog(Activity activity) {
         super(activity);
+        setOnDismissListener(this);
     }
 
     @Override
@@ -61,10 +65,7 @@ public class ChromeHomePromoDialog extends PromoDialog {
 
     @Override
     public void onClick(View view) {
-        if (mSwitchStateShouldEnable != FeatureUtilities.isChromeHomeEnabled()) {
-            FeatureUtilities.switchChromeHomeUserSetting(mSwitchStateShouldEnable);
-            restartChromeInstances();
-        }
+        mUserMadeSelection = true;
 
         // There is only one button for this dialog, so dismiss on any click.
         dismiss();
@@ -136,5 +137,14 @@ public class ChromeHomePromoDialog extends PromoDialog {
     }
 
     @Override
-    public void onDismiss(DialogInterface dialogInterface) {}
+    public void onDismiss(DialogInterface dialogInterface) {
+        // If the user did not hit 'ok', do not use the switch value to store the user setting.
+        boolean userSetting = mUserMadeSelection ? mSwitchStateShouldEnable
+                                                 : FeatureUtilities.isChromeHomeEnabled();
+
+        boolean restartRequired = userSetting != FeatureUtilities.isChromeHomeEnabled();
+        FeatureUtilities.switchChromeHomeUserSetting(userSetting);
+
+        if (restartRequired) restartChromeInstances();
+    }
 }

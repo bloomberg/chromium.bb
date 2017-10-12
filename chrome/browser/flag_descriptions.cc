@@ -1584,7 +1584,7 @@ const char kChromeHomePersonalizedOmniboxSuggestionsDescription[] =
 
 const char kChromeHomePromoName[] = "Chrome Home Promo";
 const char kChromeHomePromoDescription[] =
-    "Force the Chrome Home promotion to show each time the browser restarts.";
+    "Enable showing the opt-in/out Chrome Home promo.";
 
 const char kChromeHomeSwipeLogicName[] = "Chrome Home Swipe Logic";
 const char kChromeHomeSwipeLogicDescription[] =
