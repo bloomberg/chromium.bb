@@ -4817,6 +4817,49 @@ TEST_P(RenderTextHarfBuzzTest, BaselineWithLineHeight) {
   EXPECT_EQ(gfx::Vector2d(), current_selection_bounds.OffsetFromOrigin());
 }
 
+TEST_P(RenderTextHarfBuzzTest, TeluguGraphemeBoundaries) {
+  RenderText* render_text = GetRenderText();
+  render_text->SetDisplayRect(Rect(50, 1000));
+  // This is first syllable of the Telugu word for "New" in Chrome. It's a
+  // string of 4 UTF-8 characters: [క,్,ర,ొ]. When typeset with a supporting
+  // font, the second and fourth characters become diacritical marks for the
+  // first and third characters to form two graphemes. Then, these graphemes
+  // combine into a ligature "cluster". But, unlike ligatures in English (e.g.
+  // the "ffl" in "waffle"), this Telugu ligature is laid out vertically, with
+  // both graphemes occupying the same horizontal space.
+  render_text->SetText(UTF8ToUTF16("క్రొ"));
+
+  const int whole_width = render_text->GetStringSize().width();
+  const int half_width = whole_width / 2;
+  // Sanity check. A typical width is 8 pixels. Anything less than 6 could screw
+  // up the checks below with rounding.
+  EXPECT_LE(6, whole_width);
+
+  // Go to the end and perform Shift+Left. The selection should jump to a
+  // grapheme boundary and enclose the second grapheme in the ligature.
+  render_text->SetCursorPosition(4);
+  render_text->MoveCursor(CHARACTER_BREAK, CURSOR_LEFT, SELECTION_RETAIN);
+  EXPECT_EQ(Range(4, 2), render_text->selection());
+  test_api()->EnsureLayout();
+
+  // The selection should start before the string end, and cover about half the
+  // width. Note this requires the RenderText implementation to return a
+  // sensible selection bounds for the diacritical at the end of the ligature.
+  Rect selection_bounds = GetSelectionBoundsUnion();
+  // The selection width rounds up, and half_width may already be rounded down.
+  EXPECT_GE(1, selection_bounds.width() - half_width);
+  EXPECT_GE(1, selection_bounds.x() - half_width);
+
+  render_text->MoveCursor(CHARACTER_BREAK, CURSOR_LEFT, SELECTION_RETAIN);
+  EXPECT_EQ(Range(4, 0), render_text->selection());
+  test_api()->EnsureLayout();
+
+  // The selection should cover the entire width.
+  selection_bounds = GetSelectionBoundsUnion();
+  EXPECT_EQ(0, selection_bounds.x());
+  EXPECT_EQ(whole_width, selection_bounds.width());
+}
+
 // Prefix for test instantiations intentionally left blank since each test
 // fixture class has a single parameterization.
 #if defined(OS_MACOSX)
