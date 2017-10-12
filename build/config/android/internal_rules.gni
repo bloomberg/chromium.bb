@@ -2367,7 +2367,7 @@ if (enable_java_templates) {
         args += [ "--chromium-code=1" ]
       }
       if (_enable_errorprone) {
-        deps += [ "//third_party/errorprone:chromium_errorprone" ]
+        deps += [ "//third_party/errorprone:chromium_errorprone($default_toolchain)" ]
         args += [
           "--use-errorprone-path",
           "bin/chromium_errorprone",
