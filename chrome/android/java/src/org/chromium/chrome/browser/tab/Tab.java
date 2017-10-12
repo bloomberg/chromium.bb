@@ -948,7 +948,9 @@ public class Tab
 
         // Start by assuming the current theme color is that one that should be used. This will
         // either be transparent, the last theme color, or the color restored from TabState.
-        int themeColor = mThemeColor;
+        int themeColor = ColorUtils.isValidThemeColor(mThemeColor) || mThemeColor == 0
+                ? mThemeColor
+                : getDefaultThemeColor();
 
         // Only use the web contents for the theme color if it is known to have changed, This
         // corresponds to the didChangeThemeColor in WebContentsObserver.
