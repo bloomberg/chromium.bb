@@ -145,7 +145,7 @@ class OzonePlatformGbm : public OzonePlatform {
       PlatformWindowDelegate* delegate,
       const gfx::Rect& bounds) override {
     GpuThreadAdapter* adapter = gpu_platform_support_host_.get();
-    if (using_mojo_ || single_process_) {
+    if (using_mojo_) {
       adapter = host_drm_device_.get();
     }
 
