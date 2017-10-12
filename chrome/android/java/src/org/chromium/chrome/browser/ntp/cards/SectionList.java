@@ -50,7 +50,11 @@ public class SectionList
         mUiDelegate.addDestructionObserver(this::removeAllSections);
     }
 
-    static private boolean shouldReportPrefetchedSuggestionsCount(@CategoryInt int category) {
+    /**
+     * Returns whether prefetched suggestions metrics should be reported for a given category.
+     * @param category given category to check.
+     */
+    static public boolean shouldReportPrefetchedSuggestionsMetrics(@CategoryInt int category) {
         return category == KnownCategories.ARTICLES && !NetworkChangeNotifier.isOnline();
     }
 
@@ -68,7 +72,7 @@ public class SectionList
             int categoryStatus = suggestionsSource.getCategoryStatus(category);
             if (SnippetsBridge.isCategoryEnabled(categoryStatus)) {
                 resetSection(category, categoryStatus, alwaysAllowEmptySections,
-                        shouldReportPrefetchedSuggestionsCount(category));
+                        shouldReportPrefetchedSuggestionsMetrics(category));
             }
         }
 
@@ -295,7 +299,7 @@ public class SectionList
             Log.d(TAG, "The section for category %d is stale - Resetting.", category);
             resetSection(category, mUiDelegate.getSuggestionsSource().getCategoryStatus(category),
                     /* alwaysAllowEmptySections = */ false,
-                    shouldReportPrefetchedSuggestionsCount(category));
+                    shouldReportPrefetchedSuggestionsMetrics(category));
         }
 
         // We may have updated (or not) the visible suggestions, so we still record the new state,

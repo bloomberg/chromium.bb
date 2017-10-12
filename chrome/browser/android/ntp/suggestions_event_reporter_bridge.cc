@@ -95,13 +95,11 @@ static void OnSuggestionShown(JNIEnv* env,
                               jint position_in_category,
                               jlong publish_timestamp_ms,
                               jfloat score,
-                              jlong fetch_timestamp_ms,
-                              jboolean is_prefetched) {
+                              jlong fetch_timestamp_ms) {
   ntp_snippets::metrics::OnSuggestionShown(
       global_position, Category::FromIDValue(j_category_id),
       position_in_category, base::Time::FromJavaTime(publish_timestamp_ms),
-      score, base::Time::FromJavaTime(fetch_timestamp_ms), is_prefetched,
-      net::NetworkChangeNotifier::IsOffline());
+      score, base::Time::FromJavaTime(fetch_timestamp_ms));
   if (global_position == 0) {
     GetUserClassifier()->OnEvent(UserClassifier::Metric::SUGGESTIONS_SHOWN);
   }

@@ -46,6 +46,7 @@ import java.util.Set;
 public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements NodeParent {
     private final SuggestionsUiDelegate mUiDelegate;
     private final ContextMenuManager mContextMenuManager;
+    private final OfflinePageBridge mOfflinePageBridge;
 
     @Nullable
     private final View mAboveTheFoldView;
@@ -130,6 +131,8 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
             mRoot.addChild(mBottomSpacer);
         }
 
+        mOfflinePageBridge = offlinePageBridge;
+
         RemoteSuggestionsStatusObserver suggestionsObserver = new RemoteSuggestionsStatusObserver();
         mUiDelegate.addDestructionObserver(suggestionsObserver);
 
@@ -159,8 +162,8 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
                 return new SectionHeaderViewHolder(mRecyclerView, mUiConfig);
 
             case ItemViewType.SNIPPET:
-                return new SnippetArticleViewHolder(
-                        mRecyclerView, mContextMenuManager, mUiDelegate, mUiConfig);
+                return new SnippetArticleViewHolder(mRecyclerView, mContextMenuManager, mUiDelegate,
+                        mUiConfig, mOfflinePageBridge);
 
             case ItemViewType.SPACING:
                 return new NewTabPageViewHolder(SpacingItem.createView(parent));

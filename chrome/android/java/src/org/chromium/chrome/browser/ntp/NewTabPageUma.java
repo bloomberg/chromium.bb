@@ -321,6 +321,16 @@ public final class NewTabPageUma {
     }
 
     /**
+     * Records position of a prefetched article suggestion, which was seen by the user on the
+     * suggestions surface when there was no network connection.
+     */
+    public static void recordPrefetchedArticleSuggestionImpressionPosition(int positionInSection) {
+        RecordHistogram.recordEnumeratedHistogram("NewTabPage.ContentSuggestions.Shown.Articles."
+                        + "Prefetched.Offline2",
+                positionInSection, MAX_SUGGESTIONS_PER_SECTION);
+    }
+
+    /**
      * Records the number of new NTPs opened in a new tab. Use through
      * {@link NewTabPageUma#monitorNTPCreation(TabModelSelector)}.
      */

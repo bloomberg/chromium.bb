@@ -11,11 +11,15 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.metrics.ImpressionTracker;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.ContextMenuManager.ContextMenuItemId;
+import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.ntp.cards.CardViewHolder;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
+import org.chromium.chrome.browser.ntp.cards.SectionList;
 import org.chromium.chrome.browser.ntp.cards.SuggestionsCategoryInfo;
+import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.suggestions.SuggestionsBinder;
 import org.chromium.chrome.browser.suggestions.SuggestionsMetrics;
+import org.chromium.chrome.browser.suggestions.SuggestionsOfflineModelObserver;
 import org.chromium.chrome.browser.suggestions.SuggestionsRecyclerView;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 import org.chromium.chrome.browser.util.FeatureUtilities;
@@ -29,6 +33,7 @@ import org.chromium.ui.mojom.WindowOpenDisposition;
 public class SnippetArticleViewHolder extends CardViewHolder implements ImpressionTracker.Listener {
     private final SuggestionsUiDelegate mUiDelegate;
     private final SuggestionsBinder mSuggestionsBinder;
+    private final OfflinePageBridge mOfflinePageBridge;
 
     private SuggestionsCategoryInfo mCategoryInfo;
     private SnippetArticle mArticle;
@@ -41,10 +46,11 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
      * @param contextMenuManager The manager responsible for the context menu.
      * @param uiDelegate The delegate object used to open an article, fetch thumbnails, etc.
      * @param uiConfig The NTP UI configuration object used to adjust the article UI.
+     * @param offlinePageBridge used to determine if article is prefetched.
      */
     public SnippetArticleViewHolder(SuggestionsRecyclerView parent,
             ContextMenuManager contextMenuManager, SuggestionsUiDelegate uiDelegate,
-            UiConfig uiConfig) {
+            UiConfig uiConfig, OfflinePageBridge offlinePageBridge) {
         super(getLayout(), parent, uiConfig, contextMenuManager);
 
         mUiDelegate = uiDelegate;
@@ -52,12 +58,32 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
         mDisplayStyleObserver = new DisplayStyleObserverAdapter(
                 itemView, uiConfig, newDisplayStyle -> updateLayout());
 
+        mOfflinePageBridge = offlinePageBridge;
+
         new ImpressionTracker(itemView, this);
     }
 
     @Override
     public void onImpression() {
         if (mArticle != null && mArticle.trackImpression()) {
+            if (SectionList.shouldReportPrefetchedSuggestionsMetrics(mArticle.mCategory)
+                    && mOfflinePageBridge.isOfflinePageModelLoaded()) {
+                // Before reporting prefetched suggestion impression, we ask Offline Page model
+                // whether the page is actually prefetched to avoid race condition when suggestion
+                // surface is opened.
+
+                // TabId is relevant only for recent tab offline pages, which we do not handle here,
+                // so we do not care about tab id.
+                mOfflinePageBridge.selectPageForOnlineUrl(
+                        mArticle.getUrl(), /* tabId = */ 0, item -> {
+                            if (!SuggestionsOfflineModelObserver.isPrefetchedOfflinePage(item)) {
+                                return;
+                            }
+                            NewTabPageUma.recordPrefetchedArticleSuggestionImpressionPosition(
+                                    mArticle.getPerSectionRank());
+                        });
+            }
+
             mUiDelegate.getEventReporter().onSuggestionShown(mArticle);
             mRecyclerView.onSnippetImpression();
         }

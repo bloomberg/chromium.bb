@@ -112,13 +112,21 @@ public abstract class SuggestionsOfflineModelObserver<T extends OfflinableSugges
                     @Override
                     public void onResult(OfflinePageItem item) {
                         if (prefetchedReporter != null) {
-                            prefetchedReporter.requestCompleted(/* prefetched = */ item != null
-                                    && TextUtils.equals(item.getClientId().getNamespace(),
-                                               OfflinePageBridge.SUGGESTED_ARTICLES_NAMESPACE));
+                            prefetchedReporter.requestCompleted(isPrefetchedOfflinePage(item));
                         }
                         onSuggestionOfflineIdChanged(suggestion, item);
                     }
                 });
+    }
+
+    /**
+     * Returns whether OfflinePageItem corresponds to a prefetched page.
+     * @param item OfflinePageItem to check.
+     */
+    public static boolean isPrefetchedOfflinePage(@Nullable OfflinePageItem item) {
+        return item != null
+                && TextUtils.equals(item.getClientId().getNamespace(),
+                           OfflinePageBridge.SUGGESTED_ARTICLES_NAMESPACE);
     }
 
     /**

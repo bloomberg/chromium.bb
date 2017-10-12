@@ -48783,6 +48783,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram
     name="NewTabPage.ContentSuggestions.Shown.Articles.Prefetched.Offline"
     units="index">
+  <obsolete>
+    Deprecated in October 2017 (M63) and replaced by
+    Shown.Articles.Prefetched.Offline2, because underreported. UI checked
+    whether a URL is prefetched asynchronously. As a result, there was a race
+    condition and for suggestions immediately visible on the suggestions surface
+    this metric could be reported before their URLs are actually checked.
+  </obsolete>
   <owner>vitaliii@chromium.org</owner>
   <summary>
     Android: The position of a prefetched suggestion card that was shown on the
@@ -48793,6 +48800,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     user. This tracked position can be different from the position observed by
     the user, e.g. when the user dismissed some suggestions from the list or
     requested more that got inserted in the middle of the feed.
+  </summary>
+</histogram>
+
+<histogram
+    name="NewTabPage.ContentSuggestions.Shown.Articles.Prefetched.Offline2"
+    units="index">
+  <owner>vitaliii@chromium.org</owner>
+  <summary>
+    Android: The position of a prefetched suggestion card that was shown on the
+    NTP when offline. Analogous to NewTabPage.ContentSuggestions.Shown. That is
+    a card is considered shown when at least 1/3 of its height is visible on the
+    screen. For each card, at most one impression is recorded per NTP instance.
+    We track the position the card had in the list when it was first seen by the
+    user. This tracked position can be different from the position observed by
+    the user, e.g. when the user dismissed some suggestions from the list or
+    requested more that got inserted in the middle of the feed. This metric is
+    reported not immediately after the impression, but once the request to
+    Offline Page model to check the URL finishes.
   </summary>
 </histogram>
 
