@@ -7663,6 +7663,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="HTTP"/>
   <int value="2" label="HTTPS"/>
   <int value="3" label="QUIC"/>
+  <int value="4" label="Direct"/>
 </enum>
 
 <enum name="DataReductionProxyQuicDefaultAlternativeProxy">

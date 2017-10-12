@@ -12654,6 +12654,41 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Whether the warm up URL was fetched succesfully.</summary>
 </histogram>
 
+<histogram name="DataReductionProxy.WarmupURL.HasViaHeader" enum="Boolean">
+  <owner>tbansal@chromium.org</owner>
+  <summary>
+    Whether the response headers of the warm up URL had Chrome Proxy via header.
+    Recorded only when non-null response headers were available when the fetch
+    of warm  up URL concludes.
+  </summary>
+</histogram>
+
+<histogram name="DataReductionProxy.WarmupURL.HttpResponseCode"
+    enum="HttpResponseCode">
+  <owner>tbansal@chromium.org</owner>
+  <summary>
+    HTTP response code of the warm up URL. Set to 1 when HTTP response headers
+    were unavailable.
+  </summary>
+</histogram>
+
+<histogram name="DataReductionProxy.WarmupURL.NetError" enum="NetErrorCodes">
+  <owner>tbansal@chromium.org</owner>
+  <summary>
+    Net error codes observed when the fetch of the warm up URL concludes.
+  </summary>
+</histogram>
+
+<histogram name="DataReductionProxy.WarmupURL.ProxySchemeUsed"
+    enum="DataReductionProxyProxySchemeUsed">
+  <owner>tbansal@chromium.org</owner>
+  <summary>
+    Proxy scheme of the proxy server via which the warm up URL was fetched.
+    Recorded only when non-null response headers were available when the fetch
+    of warm  up URL concludes.
+  </summary>
+</histogram>
+
 <histogram name="DataUsage.MatchingRulesCount.Invalid" units="count">
   <owner>bengr@chromium.org</owner>
   <owner>rajendrant@chromium.org</owner>
