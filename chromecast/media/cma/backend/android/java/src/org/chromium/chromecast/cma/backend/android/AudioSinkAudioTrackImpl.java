@@ -19,6 +19,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.chromecast.media.AudioContentType;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;

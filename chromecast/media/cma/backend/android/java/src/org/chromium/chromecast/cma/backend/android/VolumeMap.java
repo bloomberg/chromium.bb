@@ -17,6 +17,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.chromecast.media.AudioContentType;
 
 /**
  * Implements the java-side of the volume control API that maps between volume levels ([0..100])
