@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "content/public/browser/navigation_throttle.h"
 
 namespace content {
@@ -38,6 +39,9 @@ class BookmarkAppNavigationThrottle : public content::NavigationThrottle {
  private:
   content::NavigationThrottle::ThrottleCheckResult CheckNavigation();
   void OpenBookmarkApp(scoped_refptr<const Extension> bookmark_app);
+  void CloseWebContents();
+
+  base::WeakPtrFactory<BookmarkAppNavigationThrottle> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkAppNavigationThrottle);
 };

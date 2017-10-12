@@ -6,13 +6,16 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/logging.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/extensions/api/url_handlers/url_handlers_parser.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -23,12 +26,16 @@
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
 
+using content::BrowserThread;
+
 namespace extensions {
 
 // static
 std::unique_ptr<content::NavigationThrottle>
 BookmarkAppNavigationThrottle::MaybeCreateThrottleFor(
     content::NavigationHandle* navigation_handle) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   DVLOG(1) << "Considering URL for interception: "
            << navigation_handle->GetURL().spec();
   if (!navigation_handle->IsInMainFrame()) {
@@ -56,7 +63,7 @@ BookmarkAppNavigationThrottle::MaybeCreateThrottleFor(
 
 BookmarkAppNavigationThrottle::BookmarkAppNavigationThrottle(
     content::NavigationHandle* navigation_handle)
-    : content::NavigationThrottle(navigation_handle) {}
+    : content::NavigationThrottle(navigation_handle), weak_ptr_factory_(this) {}
 
 BookmarkAppNavigationThrottle::~BookmarkAppNavigationThrottle() {}
 
@@ -76,6 +83,8 @@ BookmarkAppNavigationThrottle::WillRedirectRequest() {
 
 content::NavigationThrottle::ThrottleCheckResult
 BookmarkAppNavigationThrottle::CheckNavigation() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   content::WebContents* source = navigation_handle()->GetWebContents();
   ui::PageTransition transition_type = navigation_handle()->GetPageTransition();
   if (!(PageTransitionCoreTypeIs(transition_type, ui::PAGE_TRANSITION_LINK))) {
@@ -131,12 +140,36 @@ BookmarkAppNavigationThrottle::CheckNavigation() {
     return content::NavigationThrottle::CANCEL_AND_IGNORE;
   }
 
+  if (source->GetController().IsInitialNavigation()) {
+    // When a new WebContents has no opener, the first navigation will happen
+    // synchronously. This could result in us opening the app and then focusing
+    // the original WebContents. To avoid this we open the app asynchronously.
+    if (!source->HasOpener()) {
+      DVLOG(1) << "Deferring opening app.";
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::Bind(&BookmarkAppNavigationThrottle::OpenBookmarkApp,
+                                weak_ptr_factory_.GetWeakPtr(), matching_app));
+    } else {
+      OpenBookmarkApp(matching_app);
+    }
+
+    // According to NavigationThrottle::WillStartRequest's documentation closing
+    // a WebContents should be done asynchronously to avoid UAFs. Closing the
+    // WebContents will cancel the navigation.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&BookmarkAppNavigationThrottle::CloseWebContents,
+                              weak_ptr_factory_.GetWeakPtr()));
+    return content::NavigationThrottle::DEFER;
+  }
+
   OpenBookmarkApp(matching_app);
   return content::NavigationThrottle::CANCEL_AND_IGNORE;
 }
 
 void BookmarkAppNavigationThrottle::OpenBookmarkApp(
     scoped_refptr<const Extension> bookmark_app) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   content::WebContents* source = navigation_handle()->GetWebContents();
   content::BrowserContext* browser_context = source->GetBrowserContext();
   Profile* profile = Profile::FromBrowserContext(browser_context);
@@ -144,7 +177,14 @@ void BookmarkAppNavigationThrottle::OpenBookmarkApp(
       profile, bookmark_app.get(), extensions::LAUNCH_CONTAINER_WINDOW,
       WindowOpenDisposition::CURRENT_TAB, extensions::SOURCE_URL_HANDLER);
   launch_params.override_url = navigation_handle()->GetURL();
+
+  DVLOG(1) << "Opening app.";
   OpenApplication(launch_params);
+}
+
+void BookmarkAppNavigationThrottle::CloseWebContents() {
+  DVLOG(1) << "Closing empty tab.";
+  navigation_handle()->GetWebContents()->Close();
 }
 
 }  // namespace extensions
