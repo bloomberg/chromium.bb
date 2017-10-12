@@ -134,4 +134,27 @@ TEST(SidTest, AppContainer) {
   }
 }
 
+TEST(SidTest, Sddl) {
+  Sid sid_sddl = Sid::FromSddlString(L"S-1-1-0");
+  ASSERT_TRUE(sid_sddl.IsValid());
+  base::string16 sddl_str;
+  ASSERT_TRUE(sid_sddl.ToSddlString(&sddl_str));
+  ASSERT_EQ(L"S-1-1-0", sddl_str);
+}
+
+TEST(SidTest, SubAuthorities) {
+  DWORD world_subauthorities[] = {0};
+  SID_IDENTIFIER_AUTHORITY world_authority = {SECURITY_WORLD_SID_AUTHORITY};
+  Sid sid_world =
+      Sid::FromSubAuthorities(&world_authority, 1, world_subauthorities);
+  ASSERT_TRUE(EqualSid(sid_world, ATL::Sids::World()));
+  ASSERT_TRUE(Sid::FromSubAuthorities(&world_authority, 0, nullptr).IsValid());
+
+  DWORD admin_subauthorities[] = {32, 544};
+  SID_IDENTIFIER_AUTHORITY nt_authority = {SECURITY_NT_AUTHORITY};
+  Sid sid_admin =
+      Sid::FromSubAuthorities(&nt_authority, 2, admin_subauthorities);
+  ASSERT_TRUE(EqualSid(sid_admin, ATL::Sids::Admins()));
+}
+
 }  // namespace sandbox

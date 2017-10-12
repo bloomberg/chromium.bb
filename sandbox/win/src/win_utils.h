@@ -5,9 +5,8 @@
 #ifndef SANDBOX_SRC_WIN_UTILS_H_
 #define SANDBOX_SRC_WIN_UTILS_H_
 
-#include <windows.h>
-
 #include <stddef.h>
+#include <windows.h>
 #include <string>
 
 #include "base/macros.h"
@@ -63,6 +62,15 @@ class SingletonBase {
     delete GetInstance();
     return 0;
   }
+};
+
+// Function object which invokes LocalFree on its parameter, which must be
+// a pointer. Can be used to store LocalAlloc pointers in std::unique_ptr:
+//
+// std::unique_ptr<int, sandbox::LocalFreeDeleter> foo_ptr(
+//     static_cast<int*>(LocalAlloc(LMEM_FIXED, sizeof(int))));
+struct LocalFreeDeleter {
+  inline void operator()(void* ptr) const { ::LocalFree(ptr); }
 };
 
 // Convert a short path (C:\path~1 or \\??\\c:\path~1) to the long version of

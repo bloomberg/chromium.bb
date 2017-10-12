@@ -133,7 +133,7 @@ bool AddKnownSidToObject(HANDLE object,
                         nullptr, &old_dacl, nullptr, &descriptor))
     return false;
 
-  if (!AddSidToDacl(sid.GetPSID(), old_dacl, access_mode, access, &new_dacl)) {
+  if (!AddSidToDacl(sid, old_dacl, access_mode, access, &new_dacl)) {
     ::LocalFree(descriptor);
     return false;
   }
