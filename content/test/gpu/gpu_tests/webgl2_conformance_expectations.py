@@ -299,6 +299,12 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     # Passthrough command decoder / Linux / OpenGL / NVIDIA
     self.Fail('conformance/textures/image_bitmap_from_video/' +
+        'tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html',
+        ['linux', 'passthrough', 'opengl', 'nvidia'], bug=773861)
+    self.Fail('conformance/textures/image_bitmap_from_video/' +
+        'tex-2d-luminance-luminance-unsigned_byte.html',
+        ['linux', 'passthrough', 'opengl', 'nvidia'], bug=773861)
+    self.Fail('conformance/textures/image_bitmap_from_video/' +
         'tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html',
         ['linux', 'passthrough', 'opengl', 'nvidia'], bug=766918)
 
