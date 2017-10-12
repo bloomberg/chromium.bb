@@ -11,9 +11,9 @@ crbug.com/714962 editing/pasteboard/19644-1.html [ Failure ]
 crbug.com/714962 editing/pasteboard/19644-2.html [ Failure ]
 crbug.com/714962 editing/text-iterator/findString-restarts-at-last-position.html [ Failure ]
 
-# TODO(editing-dev): Investigate why a BR is left in the editable container when
-# LayoutNG is enabled, but not when disabled.
+# Editing does not completely work with LayoutNG yet.
 crbug.com/707656 editing/deleting/in-visibly-empty-root.html [ Failure Pass ]
+crbug.com/707656 editing/inserting/insert_br.html [ Failure ]
 
 # TextIterator differ in trailing spaces.
 crbug.com/591099 fast/text/bidi-isolate-nextlinebreak-failure.html [ Failure Pass ]
