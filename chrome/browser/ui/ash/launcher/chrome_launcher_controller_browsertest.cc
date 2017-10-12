@@ -2301,37 +2301,6 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, MatchingShelfIDandActiveTab) {
   EXPECT_EQ(browser_id, id);
 }
 
-IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, OverflowBubble) {
-  // Make sure to have a browser window
-  chrome::NewTab(browser());
-
-  // No overflow yet.
-  EXPECT_FALSE(shelf_->shelf_widget()->IsShowingOverflowBubble());
-
-  ash::ShelfViewTestAPI test(shelf_->GetShelfViewForTesting());
-
-  int items_added = 0;
-  while (!test.IsOverflowButtonVisible()) {
-    std::string fake_app_id = base::StringPrintf("fake_app_%d", items_added);
-    PinFakeApp(fake_app_id);
-
-    ++items_added;
-    ASSERT_LT(items_added, 10000);
-    // Spin a run loop so Ash can synchronize ShelfModels and update ShelfView.
-    base::RunLoop().RunUntilIdle();
-  }
-
-  // Now show overflow bubble.
-  test.ShowOverflowBubble();
-  EXPECT_TRUE(shelf_->shelf_widget()->IsShowingOverflowBubble());
-
-  // Unpin first pinned app and there should be no crash.
-  controller_->UnpinAppWithID("fake_app_0");
-
-  test.RunMessageLoopUntilAnimationsDone();
-  EXPECT_FALSE(shelf_->shelf_widget()->IsShowingOverflowBubble());
-}
-
 // Check that a windowed V1 application can navigate away from its domain, but
 // still gets detected properly.
 IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, V1AppNavigation) {

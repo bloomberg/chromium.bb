@@ -1927,6 +1927,21 @@ TEST_F(ShelfViewTest, TestHideOverflow) {
   EXPECT_TRUE(test_api_->IsShowingOverflowBubble());
 }
 
+TEST_F(ShelfViewTest, UnpinningCancelsOverflow) {
+  // Add just enough items for overflow; one fewer would not require overflow.
+  const ShelfID first_shelf_id = AddAppShortcut();
+  AddButtonsUntilOverflow();
+  test_api_->ShowOverflowBubble();
+  EXPECT_TRUE(test_api_->IsOverflowButtonVisible());
+  EXPECT_TRUE(test_api_->IsShowingOverflowBubble());
+
+  // Unpinning an item should hide the overflow button and close the bubble.
+  model_->UnpinAppWithID(first_shelf_id.app_id);
+  test_api_->RunMessageLoopUntilAnimationsDone();
+  EXPECT_FALSE(test_api_->IsOverflowButtonVisible());
+  EXPECT_FALSE(test_api_->IsShowingOverflowBubble());
+}
+
 // Verify the animations of the shelf items are as long as expected.
 TEST_F(ShelfViewTest, TestShelfItemsAnimations) {
   TestShelfObserver observer(shelf_view_->shelf());
