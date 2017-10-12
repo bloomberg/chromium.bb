@@ -3205,6 +3205,29 @@ static FragmentData& FragmentAt(LayoutObject* obj, unsigned count) {
   return *fragment;
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, PaintOffsetsUnderMultiColumnScrolled) {
+  SetBodyInnerHTML(
+      "<!doctype HTML>"
+      "<div style='columns: 1;'>"
+      "   <div id=scroller style='height: 400px; width: 400px; overflow: "
+      "auto;'>"
+      "     <div style='width: 50px; height: 1000px; background: lightgray'>"
+      "   </div>"
+      " </div>"
+      "</div>");
+
+  LayoutObject* scroller = GetLayoutObjectByElementId("scroller");
+  ToLayoutBoxModelObject(scroller)->Layer()->GetScrollableArea()->ScrollBy(
+      ScrollOffset(0, 300), kUserScroll);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  EXPECT_EQ(FloatSize(8, 8), scroller->FirstFragment()
+                                 ->PaintProperties()
+                                 ->PaintOffsetTranslation()
+                                 ->Matrix()
+                                 .To2DTranslation());
+}
+
 TEST_P(PaintPropertyTreeBuilderTest,
        PaintOffsetUnderMulticolumnScrollFixedPos) {
   SetBodyInnerHTML(
