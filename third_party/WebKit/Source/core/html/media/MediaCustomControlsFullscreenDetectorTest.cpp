@@ -4,7 +4,7 @@
 
 #include "core/html/media/MediaCustomControlsFullscreenDetector.h"
 
-#include "core/EventTypeNames.h"
+#include "core/event_type_names.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/geometry/IntRect.h"

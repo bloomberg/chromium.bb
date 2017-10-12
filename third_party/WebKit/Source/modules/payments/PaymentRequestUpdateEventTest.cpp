@@ -8,7 +8,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
-#include "core/EventTypeNames.h"
+#include "core/event_type_names.h"
 #include "modules/payments/PaymentRequest.h"
 #include "modules/payments/PaymentTestHelper.h"
 #include "modules/payments/PaymentUpdater.h"

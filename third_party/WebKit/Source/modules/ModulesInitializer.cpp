@@ -5,11 +5,11 @@
 #include "modules/ModulesInitializer.h"
 
 #include "bindings/modules/v8/ModuleBindingsInitializer.h"
-#include "core/EventTypeNames.h"
 #include "core/css/CSSPaintImageGenerator.h"
 #include "core/dom/ContextFeaturesClientImpl.h"
 #include "core/dom/Document.h"
 #include "core/editing/suggestion/TextSuggestionBackendImpl.h"
+#include "core/event_type_names.h"
 #include "core/exported/WebSharedWorkerImpl.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"

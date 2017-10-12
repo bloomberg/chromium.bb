@@ -5,8 +5,8 @@
 #ifndef DOMWindowInstallation_h
 #define DOMWindowInstallation_h
 
-#include "core/EventTypeNames.h"
 #include "core/dom/events/EventTarget.h"
+#include "core/event_type_names.h"
 
 namespace blink {
 
