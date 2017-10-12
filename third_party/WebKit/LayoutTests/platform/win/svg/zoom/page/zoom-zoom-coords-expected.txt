@@ -82,7 +82,7 @@ PASS text2.top is 132.66
 FAIL text2.width should be 47.98. Was 47.421878814697266.
 FAIL text2.height should be 6.02. Was 5.921872138977051.
 FAIL text2.right should be 222.98. Was 222.42187881469727.
-FAIL text2.bottom should be 138.7. Was 138.59374713897705.
+FAIL text2.bottom should be 138.7. Was 138.58593463897705.
 
 PASS svg3.left is 900.00
 PASS svg3.top is 500.00

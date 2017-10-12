@@ -9,7 +9,7 @@ layer at (0,0) size 800x600
       LayoutSVGContainer {g} at (72.91,60) size 311.67x307.78
         LayoutSVGContainer {g} at (-17.09,0) size 311.67x307.78 [transform={m=((1.00,0.00)(0.00,1.00)) t=(90.00,60.00)}]
           LayoutSVGText {text} at (-17.09,0) size 41.19x170.98 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (-17.09,0) size 34.19x68.38
+            LayoutSVGInlineText {#text} at (-17.09,0) size 34.19x68.39
               chunk 1 (vertical) text run 1 at (-10.50,0.00) startOffset 0 endOffset 1 height 34.20: "t"
               chunk 1 (vertical) text run 2 at (-10.50,34.20) startOffset 1 endOffset 2 height 34.20: "e"
             LayoutSVGTSpan {tspan} at (-17.09,0) size 41.19x170.98
@@ -19,7 +19,7 @@ layer at (0,0) size 800x600
               chunk 1 (vertical) text run 1 at (-10.50,102.60) startOffset 0 endOffset 1 height 34.20: "x"
               chunk 1 (vertical) text run 2 at (-10.50,136.80) startOffset 1 endOffset 2 height 34.20: "t"
           LayoutSVGText {text} at (41.89,0) size 55.19x273.58 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (62.89,0) size 34.19x68.38
+            LayoutSVGInlineText {#text} at (62.89,0) size 34.19x68.39
               chunk 1 (vertical) text run 1 at (69.50,0.00) startOffset 0 endOffset 1 height 34.20: "t"
               chunk 1 (vertical) text run 2 at (69.50,34.20) startOffset 1 endOffset 2 height 34.20: "e"
             LayoutSVGTSpan {tspan} at (41.89,0) size 55.19x273.58
@@ -32,7 +32,7 @@ layer at (0,0) size 800x600
               chunk 1 (vertical) text run 1 at (69.50,205.20) startOffset 0 endOffset 1 height 34.20: "x"
               chunk 1 (vertical) text run 2 at (69.50,239.40) startOffset 1 endOffset 2 height 34.20: "t"
           LayoutSVGText {text} at (145.39,0) size 51.69x239.38 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (162.89,0) size 34.19x68.38
+            LayoutSVGInlineText {#text} at (162.89,0) size 34.19x68.39
               chunk 1 (vertical) text run 1 at (169.50,0.00) startOffset 0 endOffset 1 height 34.20: "t"
               chunk 1 (vertical) text run 2 at (169.50,34.20) startOffset 1 endOffset 2 height 34.20: "e"
             LayoutSVGTSpan {tspan} at (145.39,0) size 51.69x239.38
@@ -46,11 +46,11 @@ layer at (0,0) size 800x600
             LayoutSVGInlineText {#text} at (162.89,205.19) size 34.19x34.19
               chunk 1 (vertical) text run 1 at (169.50,205.20) startOffset 0 endOffset 1 height 34.20: "t"
           LayoutSVGText {text} at (242.89,0) size 51.69x307.78 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (242.89,0) size 34.19x68.38
+            LayoutSVGInlineText {#text} at (242.89,0) size 34.19x68.39
               chunk 1 (vertical) text run 1 at (249.50,0.00) startOffset 0 endOffset 1 height 34.20: "t"
               chunk 1 (vertical) text run 2 at (249.50,34.20) startOffset 1 endOffset 2 height 34.20: "e"
             LayoutSVGTSpan {tspan} at (242.89,0) size 51.69x307.78
-              LayoutSVGInlineText {#text} at (260.39,68.39) size 34.19x170.98
+              LayoutSVGInlineText {#text} at (260.39,68.39) size 34.19x171
                 chunk 1 (vertical) text run 1 at (267.00,68.40) startOffset 0 endOffset 1 height 34.20: "s"
                 chunk 1 (vertical) text run 2 at (267.00,102.60) startOffset 1 endOffset 2 height 34.20: "u"
                 chunk 1 (vertical) text run 3 at (267.00,136.80) startOffset 2 endOffset 3 height 34.20: "p"

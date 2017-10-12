@@ -22,17 +22,17 @@ layer at (0,0) size 800x600
       LayoutSVGContainer {g} at (0,0) size 0x0
       LayoutSVGContainer {g} at (210,80) size 40x40
         LayoutSVGEllipse {circle} at (210,80) size 40x40 [stroke={[type=SOLID] [color=#000000] [stroke width=5.00]}] [fill={[type=SOLID] [color=#00FFFF]}] [cx=230.00] [cy=100.00] [r=20.00]
-    LayoutSVGText {text} at (385,25.61) size 46.80x18.59 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (385,25.61) size 46.80x18.59
+    LayoutSVGText {text} at (385,25.59) size 46.80x18.59 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (385,25.59) size 46.80x18.59
         chunk 1 text run 1 at (385.00,40.00) startOffset 0 endOffset 7 width 46.80: "display"
-    LayoutSVGText {text} at (384.39,133.81) size 58.80x20.39 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (384.39,133.81) size 58.80x20.39
+    LayoutSVGText {text} at (384.39,133.80) size 58.80x20.39 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (384.39,133.80) size 58.80x20.39
         chunk 1 text run 1 at (385.00,150.00) startOffset 0 endOffset 10 width 58.20: "visibility"
-    LayoutSVGText {text} at (5,209.81) size 391.03x31.80 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (5,209.81) size 391.03x31.80
+    LayoutSVGText {text} at (5,209.80) size 391.03x31.80 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (5,209.80) size 391.03x31.80
         chunk 1 text run 1 at (5.00,235.00) startOffset 0 endOffset 36 width 391.05: "Test of display attribute animation."
-    LayoutSVGText {text} at (5,248.81) size 386.39x20.39 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (5,248.81) size 386.39x20.39
+    LayoutSVGText {text} at (5,248.80) size 386.39x20.39 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (5,248.80) size 386.39x20.39
         chunk 1 text run 1 at (5.00,265.00) startOffset 0 endOffset 55 width 386.40: "Circles with same color should be visible at same time."
     LayoutSVGText {text} at (10,304) size 265.80x45.59 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (10,304) size 265.80x45.59

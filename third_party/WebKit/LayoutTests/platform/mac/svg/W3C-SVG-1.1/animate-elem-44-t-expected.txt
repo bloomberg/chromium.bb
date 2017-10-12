@@ -13,15 +13,15 @@ layer at (0,0) size 800x600
       LayoutSVGEllipse {circle} at (390,170) size 60x60 [fill={[type=SOLID] [color=#CCCCCC]}] [cx=420.00] [cy=200.00] [r=30.00]
       LayoutSVGPath {path} at (22.50,16.50) size 68x136 [stroke={[type=SOLID] [color=#000000] [stroke width=4.00]}] [fill={[type=SOLID] [color=#CC0066]}] [data="M 26.5 32.5 L 33.5 32.5 L 40.5 29.5 L 47.5 23.5 L 61.5 17.5 L 73.5 16.5 L 74.5 33.5 L 73.5 50.5 L 73.5 64.5 L 72.5 77.5 L 72.5 90.5 L 72.5 105.5 L 71.5 126.5 L 89.5 128.5 L 90.5 138.5 L 89.5 151.5 L 72.5 151.5 L 54.5 152.5 L 38.5 152.5 L 27.5 152.5 L 28.5 139.5 L 30.5 127.5 L 44.5 125.5 L 46.5 112.5 L 47.5 99.5 L 46.5 87.5 L 48.5 73.5 L 48.5 53.5 L 34.5 52.5 L 22.5 52.5 L 22.5 51.5 L 22.5 41.5 L 22.5 33.5 Z"]
       LayoutSVGEllipse {circle} at (20,170) size 60x60 [fill={[type=SOLID] [color=#CC0066]}] [cx=50.00] [cy=200.00] [r=30.00]
-    LayoutSVGText {text} at (5,199.81) size 419.81x32.39 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (5,199.81) size 419.81x32.39
+    LayoutSVGText {text} at (5,199.80) size 419.81x32.39 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (5,199.80) size 419.81x32.39
         chunk 1 text run 1 at (5.00,225.00) startOffset 0 endOffset 21 width 234.03: "Animation on the 'd' "
         chunk 1 text run 1 at (239.03,225.00) startOffset 0 endOffset 18 width 185.80: "attribute of path."
-    LayoutSVGText {text} at (5,238.20) size 321.42x21.59 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (5,238.20) size 321.42x21.59
+    LayoutSVGText {text} at (5,238.19) size 321.42x21.59 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (5,238.19) size 321.42x21.59
         chunk 1 text run 1 at (5.00,255.00) startOffset 0 endOffset 45 width 321.43: "Digit should match outline at indicated time."
-    LayoutSVGText {text} at (5,258.20) size 380.27x21.59 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (5,258.20) size 380.27x21.59
+    LayoutSVGText {text} at (5,258.19) size 380.27x21.59 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (5,258.19) size 380.27x21.59
         chunk 1 text run 1 at (5.00,275.00) startOffset 0 endOffset 54 width 380.27: "Filled circle should follow morphing digit discretely."
     LayoutSVGText {text} at (10,304) size 263.31x46.19 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (10,304) size 263.31x46.19

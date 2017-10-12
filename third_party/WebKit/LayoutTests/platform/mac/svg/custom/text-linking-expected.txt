@@ -14,10 +14,10 @@ layer at (0,0) size 800x600
             chunk 1 text run 1 at (100.00,50.00) startOffset 0 endOffset 13 width 79.11: "tspan in link"
     LayoutSVGText {text} at (0,0) size 0x0
       LayoutSVGInline {a} at (0,0) size 0x0
-    LayoutSVGText {text} at (97.25,125.98) size 101.34x27.92 contains 1 chunk(s)
-      LayoutSVGInline {a} at (97.25,125.98) size 101.34x27.92
-        LayoutSVGTextPath {textPath} at (97.25,125.98) size 101.34x27.92
-          LayoutSVGInlineText {#text} at (97.25,125.98) size 101.34x27.92
+    LayoutSVGText {text} at (97.25,125.98) size 101.36x27.92 contains 1 chunk(s)
+      LayoutSVGInline {a} at (97.25,125.98) size 101.36x27.92
+        LayoutSVGTextPath {textPath} at (97.25,125.98) size 101.36x27.92
+          LayoutSVGInlineText {#text} at (97.25,125.98) size 101.36x27.92
             chunk 1 text run 1 at (102.18,149.56) startOffset 0 endOffset 1 width 4.45: "t"
             chunk 1 text run 2 at (107.84,148.43) startOffset 1 endOffset 2 width 7.10: "e"
             chunk 1 text run 3 at (115.24,146.95) startOffset 2 endOffset 3 width 8.00: "x"

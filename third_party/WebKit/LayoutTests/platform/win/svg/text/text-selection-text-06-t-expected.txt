@@ -9,15 +9,15 @@ layer at (0,0) size 800x600
           LayoutSVGPath {line} at (0,-15) size 0x15 [stroke={[type=SOLID] [color=#FF0000]}] [fill={[type=SOLID] [color=#000000]}] [x1=0.00] [y1=0.00] [x2=0.00] [y2=-15.00]
           LayoutSVGRect {rect} at (-4,-4) size 8x8 [fill={[type=SOLID] [color=#000000]}] [x=-4.00] [y=-4.00] [width=8.00] [height=8.00]
       LayoutSVGContainer {g} at (9.41,25) size 274.59x209 [transform={m=((1.00,0.00)(0.00,1.00)) t=(20.00,30.00)}]
-        LayoutSVGContainer {g} at (-0.59,-10.19) size 70.78x153.19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,40.00)}]
+        LayoutSVGContainer {g} at (-0.59,-10.19) size 70.78x153.17 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,40.00)}]
           LayoutSVGText {text} at (0,-10.19) size 61.19x13.19 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,-10.19) size 61.19x13.19
               chunk 1 text run 1 at (0.00,0.00) startOffset 0 endOffset 13 width 61.20: "x positioning"
-          LayoutSVGText {text} at (-0.59,29.81) size 61.80x13.19 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (-0.59,29.81) size 61.80x13.19
+          LayoutSVGText {text} at (-0.59,29.80) size 61.80x13.19 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (-0.59,29.80) size 61.80x13.19
               chunk 1 text run 1 at (0.00,40.00) startOffset 0 endOffset 13 width 61.20: "y positioning"
-          LayoutSVGText {text} at (0,129.81) size 70.19x13.19 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,129.81) size 70.19x13.19
+          LayoutSVGText {text} at (0,129.80) size 70.19x13.19 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (0,129.80) size 70.19x13.19
               chunk 1 text run 1 at (0.00,140.00) startOffset 0 endOffset 15 width 70.20: "x/y positioning"
         LayoutSVGContainer {g} at (6,-15) size 178x19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(100.00,40.00)}]
           LayoutSVGContainer {use} at (-4,-15) size 8x19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,0.00)}]

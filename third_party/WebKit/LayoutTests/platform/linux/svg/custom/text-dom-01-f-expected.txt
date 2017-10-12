@@ -10,11 +10,11 @@ layer at (0,0) size 480x360
         LayoutSVGPath {line} at (133.33,15) size 0x15 [stroke={[type=SOLID] [color=#FF0000]}] [fill={[type=SOLID] [color=#000000]}] [x1=133.33] [y1=30.00] [x2=133.33] [y2=15.00]
         LayoutSVGPath {line} at (125.33,15) size 0x15 [stroke={[type=SOLID] [color=#FF0000]}] [fill={[type=SOLID] [color=#000000]}] [x1=125.33] [y1=30.00] [x2=125.33] [y2=15.00]
         LayoutSVGPath {line} at (189.33,30) size 56x0 [stroke={[type=SOLID] [color=#00FF00]}] [fill={[type=SOLID] [color=#000000]}] [x1=189.33] [y1=30.00] [x2=245.33] [y2=30.00]
-        LayoutSVGText {text} at (62.33,16) size 355.33x22 contains 1 chunk(s)
+        LayoutSVGText {text} at (62.33,16) size 355.33x21.98 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (62.33,16) size 32x17
             chunk 1 (middle anchor) text run 1 at (62.33,30.00) startOffset 0 endOffset 5 width 32.00: "This "
-          LayoutSVGTSpan {tspan} at (62.33,16) size 355.33x22
-            LayoutSVGInlineText {#text} at (92.20,20.09) size 19.13x17.91
+          LayoutSVGTSpan {tspan} at (62.33,16) size 355.33x21.98
+            LayoutSVGInlineText {#text} at (92.20,20.09) size 19.11x17.89
               chunk 1 (middle anchor) text run 1 at (94.33,30.00) startOffset 0 endOffset 1 width 3.00: "i"
               chunk 1 (middle anchor) text run 2 at (97.33,30.00) startOffset 1 endOffset 2 width 8.00: "s"
           LayoutSVGInlineText {#text} at (105.33,16) size 312.33x17

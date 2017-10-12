@@ -2,20 +2,20 @@ layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
-    LayoutSVGContainer {g} at (15,42.41) size 375x247.59
-      LayoutSVGContainer {g} at (15,42.41) size 66x227.59
-        LayoutSVGText {text} at (15,42.41) size 66x15 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (15,42.41) size 66x15
+    LayoutSVGContainer {g} at (15,42.39) size 375x247.61
+      LayoutSVGContainer {g} at (15,42.39) size 66x227.61
+        LayoutSVGText {text} at (15,42.39) size 66x15 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (15,42.39) size 66x15
             chunk 1 text run 1 at (15.00,55.00) startOffset 0 endOffset 11 width 66.00: "Color at 3s"
         LayoutSVGRect {rect} at (15,60) size 30x30 [fill={[type=SOLID] [color=#000000]}] [x=15.00] [y=60.00] [width=30.00] [height=30.00]
         LayoutSVGEllipse {circle} at (20,65) size 20x20 [fill={[type=SOLID] [color=#0000FF]}] [cx=30.00] [cy=75.00] [r=10.00]
-        LayoutSVGText {text} at (15,132.41) size 66x15 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (15,132.41) size 66x15
+        LayoutSVGText {text} at (15,132.39) size 66x15 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (15,132.39) size 66x15
             chunk 1 text run 1 at (15.00,145.00) startOffset 0 endOffset 11 width 66.00: "Color at 6s"
         LayoutSVGRect {rect} at (15,150) size 30x30 [fill={[type=SOLID] [color=#000000]}] [x=15.00] [y=150.00] [width=30.00] [height=30.00]
         LayoutSVGEllipse {circle} at (20,155) size 20x20 [fill={[type=SOLID] [color=#40007F]}] [cx=30.00] [cy=165.00] [r=10.00]
-        LayoutSVGText {text} at (15,222.41) size 66x15 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (15,222.41) size 66x15
+        LayoutSVGText {text} at (15,222.39) size 66x15 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (15,222.39) size 66x15
             chunk 1 text run 1 at (15.00,235.00) startOffset 0 endOffset 11 width 66.00: "Color at 9s"
         LayoutSVGRect {rect} at (15,240) size 30x30 [fill={[type=SOLID] [color=#000000]}] [x=15.00] [y=240.00] [width=30.00] [height=30.00]
         LayoutSVGEllipse {circle} at (20,245) size 20x20 [fill={[type=SOLID] [color=#800000]}] [cx=30.00] [cy=255.00] [r=10.00]

@@ -2,9 +2,9 @@ layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 480x360
   LayoutSVGRoot {svg} at (0,0) size 480x360
-    LayoutSVGContainer {g} at (64,9.20) size 326x325.59
-      LayoutSVGText {text} at (100,9.20) size 187.31x13.80 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (100,9.20) size 187.31x13.80
+    LayoutSVGContainer {g} at (64,9.19) size 326x325.61
+      LayoutSVGText {text} at (100,9.19) size 187.31x13.80 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (100,9.19) size 187.31x13.80
           chunk 1 text run 1 at (100.00,20.00) startOffset 0 endOffset 41 width 187.31: "Some circles with ids, for linking tests."
       LayoutSVGEllipse {circle} at (185,105) size 70x70 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#FF0000]}] [cx=220.00] [cy=140.00] [r=35.00]
       LayoutSVGText {text} at (203,88) size 38.67x13.80 contains 1 chunk(s)

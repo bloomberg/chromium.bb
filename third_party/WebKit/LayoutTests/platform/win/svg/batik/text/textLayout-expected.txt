@@ -204,9 +204,9 @@ layer at (0,0) size 450x500
         LayoutSVGText {text} at (40,402) size 124x10 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (40,402) size 124x10
             chunk 1 text run 1 at (40.00,410.00) startOffset 0 endOffset 34 width 123.00: "textLength=\"350\" word-spacing=\"-5\""
-      LayoutSVGContainer {g} at (40,427) size 349.98x30
-        LayoutSVGText {text} at (40,427) size 349.98x17 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (40,427) size 349.98x17
+      LayoutSVGContainer {g} at (40,427) size 350x30
+        LayoutSVGText {text} at (40,427) size 350x17 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (40,427) size 350x17
             chunk 1 text run 1 at (40.00,440.00) startOffset 0 endOffset 7 width 50.00: "Narrow "
             chunk 1 text run 2 at (85.00,440.00) startOffset 7 endOffset 18 width 64.00: "separation "
             chunk 1 text run 3 at (144.00,440.00) startOffset 18 endOffset 26 width 54.00: "between "

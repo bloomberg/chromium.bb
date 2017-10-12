@@ -2,15 +2,15 @@ layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
-    LayoutSVGContainer {g} at (0,0.80) size 56.20x17.70
+    LayoutSVGContainer {g} at (0,0.80) size 56.20x17.69
       LayoutSVGPath {svg:line} at (24.77,0.80) size 0x11.60 [stroke={[type=SOLID] [color=#008000]}] [fill={[type=SOLID] [color=#000000]}] [x1=24.77] [y1=0.80] [x2=24.77] [y2=12.40]
       LayoutSVGPath {svg:line} at (30.59,0.80) size 0x11.60 [stroke={[type=SOLID] [color=#008000]}] [fill={[type=SOLID] [color=#000000]}] [x1=30.59] [y1=0.80] [x2=30.59] [y2=12.40]
       LayoutSVGRect {svg:rect} at (24.77,0.80) size 5.83x11.40 [fill={[type=SOLID] [color=#FF0000] [opacity=0.40]}] [x=24.77] [y=0.80] [width=5.83] [height=11.40]
-      LayoutSVGText {svg:text} at (0,28.20) size 112.39x8.80 [transform={m=((0.50,0.00)(0.00,0.50)) t=(0.00,0.00)}] contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,28.20) size 112.39x8.80
+      LayoutSVGText {svg:text} at (0,28.19) size 112.39x8.80 [transform={m=((0.50,0.00)(0.00,0.50)) t=(0.00,0.00)}] contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,28.19) size 112.39x8.80
           chunk 1 text run 1 at (0.00,35.00) startOffset 0 endOffset 38 width 112.40: "Expected 'to' to be selected, got: 't'"
-    LayoutSVGText {text} at (10,0.81) size 50x11.39 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (10,0.81) size 50x11.39
+    LayoutSVGText {text} at (10,0.80) size 50x11.39 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (10,0.80) size 50x11.39
         chunk 1 text run 1 at (10.00,10.00) startOffset 0 endOffset 15 width 72.09: "Text to Squeeze"
 selection start: position 3 of child 0 {#text} of child 5 {text} of child 0 {svg} of document
 selection end:   position 4 of child 0 {#text} of child 5 {text} of child 0 {svg} of document

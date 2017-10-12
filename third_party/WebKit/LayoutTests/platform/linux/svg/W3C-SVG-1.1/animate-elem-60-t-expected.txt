@@ -6,8 +6,8 @@ layer at (0,0) size 800x600
       LayoutSVGInlineText {#text} at (10,304) size 268.19x45.59
         chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 268.20: "$Revision: 1.6 $"
     LayoutSVGRect {rect} at (1,1) size 478x358 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]
-    LayoutSVGText {text} at (216.89,12.61) size 45.59x22.19 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (216.89,12.61) size 45.59x22.19
+    LayoutSVGText {text} at (216.89,12.59) size 45.59x22.19 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (216.89,12.59) size 45.59x22.19
         chunk 1 (middle anchor) text run 1 at (217.50,30.00) startOffset 0 endOffset 5 width 45.00: "begin"
     LayoutSVGContainer {g} at (12.20,-22.19) size 237.80x212.19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(100.00,80.00)}]
       LayoutSVGContainer {g} at (-67.80,-12) size 68.39x190.59 [transform={m=((1.00,0.00)(0.00,1.00)) t=(80.00,5.00)}]

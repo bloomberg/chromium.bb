@@ -131,9 +131,9 @@ layer at (0,0) size 800x600
         LayoutSVGText {text} at (10,-1.39) size 83.86x10.19 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (10,-1.39) size 83.86x10.19
             chunk 1 text run 1 at (10.00,7.00) startOffset 0 endOffset 19 width 83.87: "Test status: PASSED"
-    LayoutSVGContainer {g} at (10,310.61) size 229.45x36.59
-      LayoutSVGText {text} at (10,310.61) size 229.45x36.59 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (10,310.61) size 229.45x36.59
+    LayoutSVGContainer {g} at (10,310.59) size 229.45x36.59
+      LayoutSVGText {text} at (10,310.59) size 229.45x36.59 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (10,310.59) size 229.45x36.59
           chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 229.45: "$Revision: 1.9 $"
     LayoutSVGRect {rect} at (1,1) size 478x358 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]
     LayoutSVGContainer {g} at (1,-0.59) size 478x23.39

@@ -2,18 +2,18 @@ layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
-    LayoutSVGContainer {g} at (19,-4.19) size 464.75x257.39
+    LayoutSVGContainer {g} at (19,-4.19) size 464.75x257.38
       LayoutSVGText {text} at (19,-4.19) size 395.41x77.39 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (19,-4.19) size 395.41x77.39
           chunk 1 text run 1 at (19.00,60.00) startOffset 0 endOffset 11 width 395.41: "Normal Text"
-      LayoutSVGText {text} at (19,55.81) size 343.09x77.39 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (19,55.81) size 343.09x77.39
+      LayoutSVGText {text} at (19,55.80) size 343.09x77.39 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (19,55.80) size 343.09x77.39
           chunk 1 text run 1 at (19.00,120.00) startOffset 0 endOffset 12 width 343.10: "Fill opacity"
-      LayoutSVGText {text} at (19,115.81) size 464.75x77.39 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (19,115.81) size 464.75x77.39
+      LayoutSVGText {text} at (19,115.80) size 464.75x77.39 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (19,115.80) size 464.75x77.39
           chunk 1 text run 1 at (19.00,180.00) startOffset 0 endOffset 14 width 464.75: "Stroke opacity"
-      LayoutSVGText {text} at (19,175.81) size 242.67x77.39 [opacity=0.50] contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (19,175.81) size 242.67x77.39 [opacity=0.50]
+      LayoutSVGText {text} at (19,175.80) size 242.67x77.39 [opacity=0.50] contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (19,175.80) size 242.67x77.39 [opacity=0.50]
           chunk 1 text run 1 at (19.00,240.00) startOffset 0 endOffset 7 width 242.67: "Opacity"
     LayoutSVGText {text} at (10,304) size 263.31x46.19 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (10,304) size 263.31x46.19

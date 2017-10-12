@@ -2,12 +2,12 @@ layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
-    LayoutSVGContainer {g} at (0,1) size 74.52x17.50
+    LayoutSVGContainer {g} at (0,1) size 74.52x17.49
       LayoutSVGPath {svg:line} at (56.26,1) size 0x11.20 [stroke={[type=SOLID] [color=#008000]}] [fill={[type=SOLID] [color=#000000]}] [x1=56.26] [y1=1.00] [x2=56.26] [y2=12.20]
       LayoutSVGPath {svg:line} at (74.52,1) size 0x11.20 [stroke={[type=SOLID] [color=#008000]}] [fill={[type=SOLID] [color=#000000]}] [x1=74.52] [y1=1.00] [x2=74.52] [y2=12.20]
       LayoutSVGRect {svg:rect} at (56.26,1) size 18.27x11.20 [fill={[type=SOLID] [color=#FF0000] [opacity=0.40]}] [x=56.26] [y=1.00] [width=18.27] [height=11.20]
-      LayoutSVGText {svg:text} at (0,27.81) size 117.05x9.19 [transform={m=((0.50,0.00)(0.00,0.50)) t=(0.00,0.00)}] contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,27.81) size 117.05x9.19
+      LayoutSVGText {svg:text} at (0,27.80) size 117.05x9.19 [transform={m=((0.50,0.00)(0.00,0.50)) t=(0.00,0.00)}] contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,27.80) size 117.05x9.19
           chunk 1 text run 1 at (0.00,35.00) startOffset 0 endOffset 40 width 117.05: "Expected 'to' to be selected, got: 'etc'"
     LayoutSVGText {text} at (10,1) size 140x11.19 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (10,1) size 140x11.19

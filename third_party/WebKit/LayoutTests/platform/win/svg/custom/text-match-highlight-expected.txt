@@ -46,10 +46,10 @@ layer at (0,0) size 800x401
         LayoutSVGText {text} at (10,91) size 138x12 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (10,91) size 138x12
             chunk 1 text run 1 at (10.00,100.00) startOffset 0 endOffset 23 width 138.00: "Findme in a typewriter!"
-        LayoutSVGContainer {g} at (69.42,14.69) size 668x237.47 [transform={m=((0.30,0.00)(0.00,0.30)) t=(0.00,120.00)}]
-          LayoutSVGText {text} at (69.42,14.69) size 668x237.47 contains 1 chunk(s)
-            LayoutSVGTextPath {textPath} at (69.42,14.69) size 668x237.47
-              LayoutSVGInlineText {#text} at (69.42,14.69) size 668x237.47
+        LayoutSVGContainer {g} at (69.42,14.67) size 668x237.47 [transform={m=((0.30,0.00)(0.00,0.30)) t=(0.00,120.00)}]
+          LayoutSVGText {text} at (69.42,14.67) size 668x237.47 contains 1 chunk(s)
+            LayoutSVGTextPath {textPath} at (69.42,14.67) size 668x237.47
+              LayoutSVGInlineText {#text} at (69.42,14.67) size 668x237.47
                 chunk 1 text run 1 at (109.48,190.53) startOffset 0 endOffset 1 width 26.67: "F"
                 chunk 1 text run 2 at (122.51,177.58) startOffset 1 endOffset 2 width 10.00: "i"
                 chunk 1 text run 3 at (135.54,164.79) startOffset 2 endOffset 3 width 26.67: "n"

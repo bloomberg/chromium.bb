@@ -20,8 +20,8 @@ layer at (0,0) size 800x600
       LayoutSVGContainer {use} at (0,0) size 0x0
       LayoutSVGContainer {use} at (0,0) size 0x0
       LayoutSVGContainer {use} at (0,0) size 0x0
-    LayoutSVGText {text} at (46.19,13.41) size 387.59x27.59 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (46.19,13.41) size 387.59x27.59
+    LayoutSVGText {text} at (46.19,13.39) size 387.59x27.59 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (46.19,13.39) size 387.59x27.59
         chunk 1 (middle anchor) text run 1 at (46.20,35.00) startOffset 0 endOffset 39 width 387.60: "External references and computed values"
     LayoutSVGText {text} at (10,304) size 265.80x45.59 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (10,304) size 265.80x45.59

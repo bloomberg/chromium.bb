@@ -15,9 +15,9 @@ layer at (0,0) size 450x500
           chunk 1 text run 1 at (-10.00,-120.00) startOffset 0 endOffset 39 width 225.20: "Text with one textPath child and x=\"10\""
       LayoutSVGContainer {use} at (100,-93.75) size 140x93.75
         LayoutSVGPath {path} at (100,-93.75) size 140x93.75 [stroke={[type=SOLID] [color=#0000FF]}] [data="M 100 0 c 0 -125 140 -125 140 0"]
-      LayoutSVGText {text} at (95.70,-107.81) size 155.20x79.97 contains 1 chunk(s)
-        LayoutSVGTextPath {textPath} at (95.70,-107.81) size 155.20x79.97
-          LayoutSVGInlineText {#text} at (95.70,-107.81) size 155.20x79.97
+      LayoutSVGText {text} at (95.70,-107.81) size 155.20x79.95 contains 1 chunk(s)
+        LayoutSVGTextPath {textPath} at (95.70,-107.81) size 155.20x79.95
+          LayoutSVGInlineText {#text} at (95.70,-107.81) size 155.20x79.95
             chunk 1 (middle anchor) text run 1 at (110.23,-51.78) startOffset 0 endOffset 1 width 9.77: "T"
             chunk 1 (middle anchor) text run 2 at (113.78,-58.67) startOffset 1 endOffset 2 width 7.10: "e"
             chunk 1 (middle anchor) text run 3 at (117.89,-65.13) startOffset 2 endOffset 3 width 8.00: "x"
@@ -57,9 +57,9 @@ layer at (0,0) size 450x500
           chunk 1 text run 1 at (-10.00,-120.00) startOffset 0 endOffset 40 width 232.20: "Text with one textPath child and x=\"100\""
       LayoutSVGContainer {use} at (100,-93.75) size 140x93.75
         LayoutSVGPath {path} at (100,-93.75) size 140x93.75 [stroke={[type=SOLID] [color=#0000FF]}] [data="M 100 0 c 0 -125 140 -125 140 0"]
-      LayoutSVGText {text} at (177.53,-106.97) size 76.47x107.05 contains 1 chunk(s)
-        LayoutSVGTextPath {textPath} at (177.53,-106.97) size 76.47x107.05
-          LayoutSVGInlineText {#text} at (177.53,-106.97) size 76.47x107.05
+      LayoutSVGText {text} at (177.53,-106.97) size 76.47x107.06 contains 1 chunk(s)
+        LayoutSVGTextPath {textPath} at (177.53,-106.97) size 76.47x107.06
+          LayoutSVGInlineText {#text} at (177.53,-106.97) size 76.47x107.06
             chunk 1 (middle anchor) text run 1 at (182.62,-92.38) startOffset 0 endOffset 1 width 9.77: "T"
             chunk 1 (middle anchor) text run 2 at (190.16,-90.21) startOffset 1 endOffset 2 width 7.10: "e"
             chunk 1 (middle anchor) text run 3 at (197.11,-87.20) startOffset 2 endOffset 3 width 8.00: "x"

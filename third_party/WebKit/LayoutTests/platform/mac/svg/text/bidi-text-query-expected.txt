@@ -2,21 +2,21 @@ layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
-    LayoutSVGText {text} at (10,33.81) size 126.53x19.80 contains 1 chunk(s)
-      LayoutSVGTSpan {tspan} at (10,33.81) size 126.53x19.80
-        LayoutSVGInlineText {#text} at (10,33.81) size 126.53x19.80
+    LayoutSVGText {text} at (10,33.80) size 126.53x19.80 contains 1 chunk(s)
+      LayoutSVGTSpan {tspan} at (10,33.80) size 126.53x19.80
+        LayoutSVGInlineText {#text} at (10,33.80) size 126.53x19.80
           chunk 1 text run 1 at (10.00,50.00) startOffset 0 endOffset 17 width 126.54 LTR override: "\x{646}\x{634}\x{627}\x{637} \x{627}\x{644}\x{62A}\x{62F}\x{648}\x{64A}\x{644}\x{60C} W3C"
-    LayoutSVGText {text} at (9.38,63.81) size 124.11x19.80 contains 1 chunk(s)
-      LayoutSVGTSpan {tspan} at (9.38,63.81) size 124.11x19.80
-        LayoutSVGInlineText {#text} at (9.38,63.81) size 124.11x19.80
+    LayoutSVGText {text} at (9.38,63.80) size 124.11x19.80 contains 1 chunk(s)
+      LayoutSVGTSpan {tspan} at (9.38,63.80) size 124.11x19.80
+        LayoutSVGInlineText {#text} at (9.38,63.80) size 124.11x19.80
           chunk 1 text run 1 at (10.00,80.00) startOffset 0 endOffset 12 width 72.76 RTL: "\x{646}\x{634}\x{627}\x{637} \x{627}\x{644}\x{62A}\x{62F}\x{648}\x{64A}\x{644}"
           chunk 1 text run 1 at (82.76,80.00) startOffset 0 endOffset 5 width 50.74: "\x{60C} W3C"
-    LayoutSVGText {text} at (9.38,93.81) size 124.09x19.80 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (88.48,93.81) size 44.98x19.80
+    LayoutSVGText {text} at (9.38,93.80) size 124.09x19.80 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (88.48,93.80) size 44.98x19.80
         chunk 1 (end anchor) text run 1 at (88.50,110.00) startOffset 0 endOffset 1 width 5.00 RTL: " "
         chunk 1 (end anchor) text run 1 at (93.50,110.00) startOffset 0 endOffset 3 width 40.00: "W3C"
-      LayoutSVGTSpan {tspan} at (9.38,93.81) size 124.09x19.80
-        LayoutSVGInlineText {#text} at (9.38,93.81) size 79.11x19.80
+      LayoutSVGTSpan {tspan} at (9.38,93.80) size 124.09x19.80
+        LayoutSVGInlineText {#text} at (9.38,93.80) size 79.11x19.80
           chunk 1 (end anchor) text run 1 at (10.00,110.00) startOffset 0 endOffset 13 width 78.50 RTL: "\x{646}\x{634}\x{627}\x{637} \x{627}\x{644}\x{62A}\x{62F}\x{648}\x{64A}\x{644}\x{60C}"
     LayoutSVGContainer {g} at (10,33.80) size 126.54x85.39
       LayoutSVGRect {rect} at (10,33.80) size 9.47x19.80 [fill={[type=SOLID] [color=#FF0000] [opacity=0.40]}] [x=10.00] [y=33.80] [width=9.47] [height=19.80]

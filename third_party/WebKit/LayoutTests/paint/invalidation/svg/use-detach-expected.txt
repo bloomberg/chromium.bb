@@ -8,62 +8,62 @@
       "paintInvalidations": [
         {
           "object": "LayoutSVGContainer g id='use'",
-          "rect": [210, 58, 44, 64],
+          "rect": [210, 57, 44, 65],
           "reason": "appeared"
         },
         {
           "object": "LayoutSVGContainer g id='use'",
-          "rect": [210, 58, 44, 64],
+          "rect": [210, 57, 44, 65],
           "reason": "appeared"
         },
         {
           "object": "LayoutSVGContainer g id='use'",
-          "rect": [210, 58, 44, 64],
+          "rect": [210, 57, 44, 65],
           "reason": "disappeared"
         },
         {
           "object": "LayoutSVGContainer use",
-          "rect": [210, 58, 44, 38],
+          "rect": [210, 57, 44, 39],
           "reason": "appeared"
         },
         {
           "object": "LayoutSVGContainer use",
-          "rect": [210, 58, 44, 38],
+          "rect": [210, 57, 44, 39],
           "reason": "appeared"
         },
         {
           "object": "LayoutSVGContainer use",
-          "rect": [210, 58, 44, 38],
+          "rect": [210, 57, 44, 39],
           "reason": "disappeared"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [210, 58, 44, 38],
+          "rect": [210, 57, 44, 39],
           "reason": "appeared"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [210, 58, 44, 38],
+          "rect": [210, 57, 44, 39],
           "reason": "appeared"
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [210, 58, 44, 38],
+          "rect": [210, 57, 44, 39],
           "reason": "disappeared"
         },
         {
           "object": "LayoutSVGText text id='use_text'",
-          "rect": [210, 58, 44, 38],
+          "rect": [210, 57, 44, 39],
           "reason": "appeared"
         },
         {
           "object": "LayoutSVGText text id='use_text'",
-          "rect": [210, 58, 44, 38],
+          "rect": [210, 57, 44, 39],
           "reason": "appeared"
         },
         {
           "object": "LayoutSVGText text id='use_text'",
-          "rect": [210, 58, 44, 38],
+          "rect": [210, 57, 44, 39],
           "reason": "disappeared"
         },
         {

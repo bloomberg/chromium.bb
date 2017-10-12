@@ -87,7 +87,7 @@ void SVGRootInlineBox::ComputePerCharacterLayoutInformation() {
 LayoutRect SVGRootInlineBox::LayoutInlineBoxes(InlineBox& box) {
   LayoutRect rect;
   if (box.IsSVGInlineTextBox()) {
-    rect = ToSVGInlineTextBox(box).CalculateBoundaries();
+    rect = LayoutRect(ToSVGInlineTextBox(box).CalculateBoundaries());
   } else {
     for (InlineBox* child = ToInlineFlowBox(box).FirstChild(); child;
          child = child->NextOnLine())

@@ -2,13 +2,13 @@ layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
-    LayoutSVGContainer {g} at (5,1.61) size 65x40.39
-      LayoutSVGContainer {g} at (5,1.61) size 65x40.39
-        LayoutSVGText {text} at (5,1.61) size 53.56x6.69 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (5,1.61) size 53.56x6.69
+    LayoutSVGContainer {g} at (5,1.59) size 65x40.41
+      LayoutSVGContainer {g} at (5,1.59) size 65x40.41
+        LayoutSVGText {text} at (5,1.59) size 53.56x6.69 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (5,1.59) size 53.56x6.69
             chunk 1 text run 1 at (5.00,7.00) startOffset 0 endOffset 21 width 53.37: "Test default value of"
-        LayoutSVGText {text} at (5,8.61) size 61.03x6.69 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (5,8.61) size 61.03x6.69
+        LayoutSVGText {text} at (5,8.59) size 61.03x6.69 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (5,8.59) size 61.03x6.69
             chunk 1 text run 1 at (5.00,14.00) startOffset 0 endOffset 21 width 61.04: "zoomAndPan attribute."
         LayoutSVGContainer {g} at (10,22) size 60x20
           LayoutSVGEllipse {circle} at (10,22) size 20x20 [stroke={[type=SOLID] [color=#0000FF]}] [fill={[type=SOLID] [color=#000000]}] [cx=20.00] [cy=32.00] [r=10.00]
