@@ -98650,7 +98650,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="LevelDBEnv.TimeUntilSuccessFor"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="LevelDBOpenResults" separator="_">
+<histogram_suffixes name="LevelDBOpenResults" separator=".">
   <suffix name="DomDistillerStore" label="Databases for DomDistillerStore"/>
   <suffix name="GCMKeyStore" label="Databases for GCMKeyStore"/>
   <suffix name="ImageManager" label="Databases for ImageManager"/>
