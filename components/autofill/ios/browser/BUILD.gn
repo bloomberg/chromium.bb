@@ -9,6 +9,8 @@ source_set("browser") {
   sources = [
     "autofill_agent.h",
     "autofill_agent.mm",
+    "autofill_client_ios.h",
+    "autofill_client_ios.mm",
     "autofill_client_ios_bridge.h",
     "autofill_driver_ios.h",
     "autofill_driver_ios.mm",
@@ -32,6 +34,7 @@ source_set("browser") {
     "//components/autofill/core/browser",
     "//components/autofill/core/common",
     "//components/prefs:prefs",
+    "//google_apis",
     "//ios/web",
     "//ui/gfx/geometry",
   ]

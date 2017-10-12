@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_CLIENT_IOS_H_
-#define IOS_CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_CLIENT_IOS_H_
+#ifndef COMPONENTS_AUTOFILL_IOS_BROWSER_AUTOFILL_CLIENT_IOS_H_
+#define COMPONENTS_AUTOFILL_IOS_BROWSER_AUTOFILL_CLIENT_IOS_H_
 
 #include <memory>
 #include <string>
@@ -13,21 +13,9 @@
 #include "base/macros.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/ui/card_unmask_prompt_controller_impl.h"
-#include "components/autofill/ios/browser/autofill_client_ios_bridge.h"
+#import "components/autofill/ios/browser/autofill_client_ios_bridge.h"
 
 class IdentityProvider;
-
-namespace infobars {
-class InfoBarManager;
-}
-
-namespace ios {
-class ChromeBrowserState;
-}
-
-namespace password_manager {
-class PasswordGenerationManager;
-}
 
 namespace syncer {
 class SyncService;
@@ -37,6 +25,8 @@ namespace web {
 class WebState;
 }
 
+class PrefService;
+
 namespace autofill {
 
 class PersonalDataManager;
@@ -45,12 +35,12 @@ class PersonalDataManager;
 class AutofillClientIOS : public AutofillClient {
  public:
   AutofillClientIOS(
-      ios::ChromeBrowserState* browser_state,
+      PrefService* pref_service,
+      PersonalDataManager* personal_data_manager,
       web::WebState* web_state,
-      infobars::InfoBarManager* infobar_manager,
       id<AutofillClientIOSBridge> bridge,
-      password_manager::PasswordGenerationManager* password_generation_manager,
-      std::unique_ptr<IdentityProvider> identity_provider);
+      std::unique_ptr<IdentityProvider> identity_provider,
+      scoped_refptr<AutofillWebDataService> autofill_web_data_service);
   ~AutofillClientIOS() override;
 
   // AutofillClient implementation.
@@ -100,17 +90,16 @@ class AutofillClientIOS : public AutofillClient {
   void ExecuteCommand(int id) override;
 
  private:
-  ios::ChromeBrowserState* browser_state_;
+  PrefService* pref_service_;
+  PersonalDataManager* personal_data_manager_;
   web::WebState* web_state_;
-  infobars::InfoBarManager* infobar_manager_;
   __weak id<AutofillClientIOSBridge> bridge_;
-  password_manager::PasswordGenerationManager* password_generation_manager_;
   std::unique_ptr<IdentityProvider> identity_provider_;
-  CardUnmaskPromptControllerImpl unmask_controller_;
+  scoped_refptr<AutofillWebDataService> autofill_web_data_service_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillClientIOS);
 };
 
 }  // namespace autofill
 
-#endif  // IOS_CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_CLIENT_IOS_H_
+#endif  // COMPONENTS_AUTOFILL_IOS_BROWSER_AUTOFILL_CLIENT_IOS_H_

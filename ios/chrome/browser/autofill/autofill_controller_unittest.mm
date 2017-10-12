@@ -27,7 +27,7 @@
 #import "ios/chrome/browser/autofill/form_suggestion_controller.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
-#import "ios/chrome/browser/ui/autofill/autofill_client_ios.h"
+#import "ios/chrome/browser/ui/autofill/chrome_autofill_client_ios.h"
 #include "ios/chrome/browser/ui/settings/personal_data_manager_data_changed_observer.h"
 #import "ios/chrome/browser/web/chrome_web_test.h"
 #include "ios/chrome/browser/web_data_service_factory.h"
