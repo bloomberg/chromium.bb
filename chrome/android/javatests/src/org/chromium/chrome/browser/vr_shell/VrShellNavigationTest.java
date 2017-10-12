@@ -94,7 +94,7 @@ public class VrShellNavigationTest {
                 mVrTestRule.getActivity().getActivityTab(), new Runnable() {
                     @Override
                     public void run() {
-                        mVrTestFramework.runJavaScriptOrFail(
+                        VrTestFramework.runJavaScriptOrFail(
                                 "window.location.href = '" + getUrl(to) + "';",
                                 POLL_TIMEOUT_SHORT_MS, mVrTestFramework.getFirstTabWebContents());
                     }
@@ -104,7 +104,7 @@ public class VrShellNavigationTest {
     private void enterFullscreenOrFail(ContentViewCore cvc)
             throws InterruptedException, TimeoutException {
         DOMUtils.clickNode(cvc, "fullscreen");
-        mVrTestFramework.waitOnJavaScriptStep(cvc.getWebContents());
+        VrTestFramework.waitOnJavaScriptStep(cvc.getWebContents());
         Assert.assertTrue(DOMUtils.isFullscreen(cvc.getWebContents()));
     }
 

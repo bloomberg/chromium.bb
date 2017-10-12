@@ -124,7 +124,7 @@ public class VrShellControllerInputTest {
         VrTransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
         // Enter fullscreen
         DOMUtils.clickNode(mVrTestFramework.getFirstTabCvc(), "fullscreen");
-        mVrTestFramework.waitOnJavaScriptStep(mVrTestFramework.getFirstTabWebContents());
+        VrTestFramework.waitOnJavaScriptStep(mVrTestFramework.getFirstTabWebContents());
         Assert.assertTrue(DOMUtils.isFullscreen(mVrTestFramework.getFirstTabWebContents()));
 
         EmulatedVrController controller = new EmulatedVrController(mVrTestRule.getActivity());

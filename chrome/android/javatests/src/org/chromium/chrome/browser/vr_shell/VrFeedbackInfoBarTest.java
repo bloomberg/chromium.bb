@@ -131,7 +131,7 @@ public class VrFeedbackInfoBarTest {
         // Enter VR presentation mode.
         mVrTestFramework.loadUrlAndAwaitInitialization(TEST_PAGE_WEBVR_URL, PAGE_LOAD_TIMEOUT_S);
         Assert.assertTrue("VRDisplay found",
-                mVrTestFramework.vrDisplayFound(mVrTestFramework.getFirstTabWebContents()));
+                VrTestFramework.vrDisplayFound(mVrTestFramework.getFirstTabWebContents()));
         VrTransitionUtils.enterPresentationAndWait(
                 mVrTestFramework.getFirstTabCvc(), mVrTestFramework.getFirstTabWebContents());
         assertState(true /* isInVr */, false /* isInfobarVisible  */);
@@ -152,7 +152,7 @@ public class VrFeedbackInfoBarTest {
         // Enter VR presentation mode.
         mVrTestFramework.loadUrlAndAwaitInitialization(TEST_PAGE_WEBVR_URL, PAGE_LOAD_TIMEOUT_S);
         Assert.assertTrue("VRDisplay found",
-                mVrTestFramework.vrDisplayFound(mVrTestFramework.getFirstTabWebContents()));
+                VrTestFramework.vrDisplayFound(mVrTestFramework.getFirstTabWebContents()));
         VrTransitionUtils.enterPresentationAndWait(
                 mVrTestFramework.getFirstTabCvc(), mVrTestFramework.getFirstTabWebContents());
         assertState(true /* isInVr */, false /* isInfobarVisible  */);
@@ -163,7 +163,7 @@ public class VrFeedbackInfoBarTest {
                 mVrTestRule.getActivity().getActivityTab(), new Runnable() {
                     @Override
                     public void run() {
-                        mVrTestFramework.runJavaScriptOrFail(
+                        VrTestFramework.runJavaScriptOrFail(
                                 "window.location.href = '" + TEST_PAGE_2D_URL + "';",
                                 POLL_TIMEOUT_SHORT_MS, mVrTestFramework.getFirstTabWebContents());
                     }

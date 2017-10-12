@@ -89,7 +89,7 @@ public class WebVrInputTest {
         mVrTestFramework.loadUrlAndAwaitInitialization(
                 VrTestFramework.getHtmlTestFile("test_screen_taps_not_registered"),
                 PAGE_LOAD_TIMEOUT_S);
-        mVrTestFramework.executeStepAndWait(
+        VrTestFramework.executeStepAndWait(
                 "stepVerifyNoInitialTaps()", mVrTestFramework.getFirstTabWebContents());
         VrTransitionUtils.enterPresentationAndWait(
                 mVrTestFramework.getFirstTabCvc(), mVrTestFramework.getFirstTabWebContents());
@@ -108,9 +108,9 @@ public class WebVrInputTest {
                 mVrTestRule.getActivity().getWindow().getDecorView().getRootView());
         Assert.assertTrue("VrShellImpl dispatched touches",
                 touchRegisteredLatch.await(POLL_TIMEOUT_SHORT_MS, TimeUnit.MILLISECONDS));
-        mVrTestFramework.executeStepAndWait(
+        VrTestFramework.executeStepAndWait(
                 "stepVerifyNoAdditionalTaps()", mVrTestFramework.getFirstTabWebContents());
-        mVrTestFramework.endTest(mVrTestFramework.getFirstTabWebContents());
+        VrTestFramework.endTest(mVrTestFramework.getFirstTabWebContents());
     }
 
     /**
@@ -128,10 +128,10 @@ public class WebVrInputTest {
                 mVrTestFramework.getFirstTabCvc(), mVrTestFramework.getFirstTabWebContents());
         // Send a controller click and wait for JavaScript to receive it.
         controller.sendClickButtonToggleEvent();
-        mVrTestFramework.waitOnJavaScriptStep(mVrTestFramework.getFirstTabWebContents());
+        VrTestFramework.waitOnJavaScriptStep(mVrTestFramework.getFirstTabWebContents());
         controller.sendClickButtonToggleEvent();
-        mVrTestFramework.waitOnJavaScriptStep(mVrTestFramework.getFirstTabWebContents());
-        mVrTestFramework.endTest(mVrTestFramework.getFirstTabWebContents());
+        VrTestFramework.waitOnJavaScriptStep(mVrTestFramework.getFirstTabWebContents());
+        VrTestFramework.endTest(mVrTestFramework.getFirstTabWebContents());
     }
 
     /**
@@ -165,7 +165,7 @@ public class WebVrInputTest {
                         MotionEvent.obtain(downTime, downTime, MotionEvent.ACTION_DOWN, x, y, 0));
             }
         });
-        mVrTestFramework.waitOnJavaScriptStep(mVrTestFramework.getFirstTabWebContents());
+        VrTestFramework.waitOnJavaScriptStep(mVrTestFramework.getFirstTabWebContents());
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
@@ -174,8 +174,8 @@ public class WebVrInputTest {
                         MotionEvent.obtain(downTime, now, MotionEvent.ACTION_UP, x, y, 0));
             }
         });
-        mVrTestFramework.waitOnJavaScriptStep(mVrTestFramework.getFirstTabWebContents());
-        mVrTestFramework.endTest(mVrTestFramework.getFirstTabWebContents());
+        VrTestFramework.waitOnJavaScriptStep(mVrTestFramework.getFirstTabWebContents());
+        VrTestFramework.endTest(mVrTestFramework.getFirstTabWebContents());
     }
 
     /**
@@ -189,7 +189,7 @@ public class WebVrInputTest {
                 PAGE_LOAD_TIMEOUT_S);
         VrTransitionUtils.enterPresentationAndWait(
                 mVrTestFramework.getFirstTabCvc(), mVrTestFramework.getFirstTabWebContents());
-        mVrTestFramework.endTest(mVrTestFramework.getFirstTabWebContents());
+        VrTestFramework.endTest(mVrTestFramework.getFirstTabWebContents());
     }
 
     /**
@@ -207,7 +207,7 @@ public class WebVrInputTest {
         EmulatedVrController controller = new EmulatedVrController(mVrTestRule.getActivity());
         controller.pressReleaseAppButton();
         Assert.assertTrue("App button exited WebVR presentation",
-                mVrTestFramework.pollJavaScriptBoolean("!vrDisplay.isPresenting",
+                VrTestFramework.pollJavaScriptBoolean("!vrDisplay.isPresenting",
                         POLL_TIMEOUT_SHORT_MS, mVrTestFramework.getFirstTabWebContents()));
     }
 
@@ -250,11 +250,11 @@ public class WebVrInputTest {
                 VrTestFramework.getHtmlTestFile("webvr_page_submits_once"), PAGE_LOAD_TIMEOUT_S);
         VrTransitionUtils.enterPresentationOrFail(mVrTestFramework.getFirstTabCvc());
         // Wait for page to stop submitting frames.
-        mVrTestFramework.waitOnJavaScriptStep(mVrTestFramework.getFirstTabWebContents());
+        VrTestFramework.waitOnJavaScriptStep(mVrTestFramework.getFirstTabWebContents());
         EmulatedVrController controller = new EmulatedVrController(mVrTestRule.getActivity());
         controller.pressReleaseAppButton();
         Assert.assertTrue("App button exited WebVR presentation",
-                mVrTestFramework.pollJavaScriptBoolean("!vrDisplay.isPresenting",
+                VrTestFramework.pollJavaScriptBoolean("!vrDisplay.isPresenting",
                         POLL_TIMEOUT_SHORT_MS, mVrTestFramework.getFirstTabWebContents()));
     }
 }

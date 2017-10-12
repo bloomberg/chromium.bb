@@ -66,13 +66,13 @@ public class WebVrTabTest {
         mVrTestFramework.loadUrlAndAwaitInitialization(
                 VrTestFramework.getHtmlTestFile("test_pose_data_unfocused_tab"),
                 PAGE_LOAD_TIMEOUT_S);
-        mVrTestFramework.executeStepAndWait(
+        VrTestFramework.executeStepAndWait(
                 "stepCheckFrameDataWhileFocusedTab()", mVrTestFramework.getFirstTabWebContents());
 
         mVrTestRule.loadUrlInNewTab("about:blank");
 
-        mVrTestFramework.executeStepAndWait("stepCheckFrameDataWhileNonFocusedTab()",
+        VrTestFramework.executeStepAndWait("stepCheckFrameDataWhileNonFocusedTab()",
                 mVrTestFramework.getFirstTabWebContents());
-        mVrTestFramework.endTest(mVrTestFramework.getFirstTabWebContents());
+        VrTestFramework.endTest(mVrTestFramework.getFirstTabWebContents());
     }
 }
