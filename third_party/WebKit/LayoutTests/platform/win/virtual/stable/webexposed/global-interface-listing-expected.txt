@@ -3717,6 +3717,7 @@ interface Navigator
     getter connection
     getter cookieEnabled
     getter credentials
+    getter deviceMemory
     getter doNotTrack
     getter geolocation
     getter hardwareConcurrency
