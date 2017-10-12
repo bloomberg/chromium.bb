@@ -35,8 +35,6 @@ jumbo_source_set("scheduler") {
     "base/time_converter.h",
     "base/time_domain.cc",
     "base/time_domain.h",
-    "base/trace_helper.cc",
-    "base/trace_helper.h",
     "base/virtual_time_domain.cc",
     "base/virtual_time_domain.h",
     "base/work_queue.cc",
