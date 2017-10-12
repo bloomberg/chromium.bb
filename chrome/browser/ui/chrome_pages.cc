@@ -28,6 +28,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/md_bookmarks/md_bookmarks_ui.h"
 #include "chrome/browser/ui/webui/site_settings_helper.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
@@ -90,6 +91,11 @@ void ShowHelpImpl(Browser* browser, Profile* profile, HelpSource source) {
       extensions::ExtensionRegistry::Get(profile)->GetExtensionById(
           genius_app::kGeniusAppId,
           extensions::ExtensionRegistry::EVERYTHING);
+  if (!extension) {
+    DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kDisableDefaultApps));
+    return;
+  }
   extensions::AppLaunchSource app_launch_source(extensions::SOURCE_UNTRACKED);
   switch (source) {
     case HELP_SOURCE_KEYBOARD:
