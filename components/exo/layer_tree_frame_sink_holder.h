@@ -68,7 +68,7 @@ class LayerTreeFrameSinkHolder : public cc::LayerTreeFrameSinkClient,
   void OnShellDestroyed() override;
 
  private:
-  void DeleteSoon();
+  void ScheduleDelete();
 
   // A collection of callbacks used to release resources.
   using ResourceReleaseCallbackMap =
@@ -84,6 +84,8 @@ class LayerTreeFrameSinkHolder : public cc::LayerTreeFrameSinkClient,
 
   gfx::Size last_frame_size_in_pixels_;
   float last_frame_device_scale_factor_ = 1.0f;
+
+  bool delete_pending_ = false;
 
   base::WeakPtrFactory<LayerTreeFrameSinkHolder> weak_ptr_factory_;
 
