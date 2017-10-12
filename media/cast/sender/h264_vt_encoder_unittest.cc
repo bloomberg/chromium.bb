@@ -305,10 +305,10 @@ TEST_F(H264VideoToolboxEncoderTest, DISABLED_CheckFrameMetadataSequence) {
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
 // Failed on mac_chromium_rel_ng trybot. http://crbug.com/627260
 TEST_F(H264VideoToolboxEncoderTest, DISABLED_CheckFramesAreDecodable) {
-  VideoDecoderConfig config(kCodecH264, H264PROFILE_MAIN, frame_->format(),
-                            COLOR_SPACE_UNSPECIFIED, frame_->coded_size(),
-                            frame_->visible_rect(), frame_->natural_size(),
-                            EmptyExtraData(), Unencrypted());
+  VideoDecoderConfig config(
+      kCodecH264, H264PROFILE_MAIN, frame_->format(), COLOR_SPACE_UNSPECIFIED,
+      VIDEO_ROTATION_0, frame_->coded_size(), frame_->visible_rect(),
+      frame_->natural_size(), EmptyExtraData(), Unencrypted());
   scoped_refptr<EndToEndFrameChecker> checker(new EndToEndFrameChecker(config));
 
   VideoEncoder::FrameEncodedCallback cb =

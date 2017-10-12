@@ -258,6 +258,7 @@ source_set("base") {
     "video_frame_pool.h",
     "video_renderer.cc",
     "video_renderer.h",
+    "video_rotation.cc",
     "video_rotation.h",
     "video_types.cc",
     "video_types.h",

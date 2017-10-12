@@ -230,9 +230,9 @@ TEST_F(FFmpegVideoDecoderTest, Initialize_Normal) {
 TEST_F(FFmpegVideoDecoderTest, Initialize_OpenDecoderFails) {
   // Specify Theora w/o extra data so that avcodec_open2() fails.
   VideoDecoderConfig config(kCodecTheora, VIDEO_CODEC_PROFILE_UNKNOWN,
-                            kVideoFormat, COLOR_SPACE_UNSPECIFIED, kCodedSize,
-                            kVisibleRect, kNaturalSize, EmptyExtraData(),
-                            Unencrypted());
+                            kVideoFormat, COLOR_SPACE_UNSPECIFIED,
+                            VIDEO_ROTATION_0, kCodedSize, kVisibleRect,
+                            kNaturalSize, EmptyExtraData(), Unencrypted());
   InitializeWithConfigWithResult(config, false);
 }
 

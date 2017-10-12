@@ -169,8 +169,6 @@ class MockDemuxerStream : public DemuxerStream {
   void set_video_decoder_config(const VideoDecoderConfig& config);
   void set_liveness(Liveness liveness);
 
-  VideoRotation video_rotation() override;
-
  private:
   Type type_;
   Liveness liveness_;

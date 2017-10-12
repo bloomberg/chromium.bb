@@ -147,10 +147,6 @@ bool DecryptingDemuxerStream::SupportsConfigChanges() {
   return demuxer_stream_->SupportsConfigChanges();
 }
 
-VideoRotation DecryptingDemuxerStream::video_rotation() {
-  return demuxer_stream_->video_rotation();
-}
-
 DecryptingDemuxerStream::~DecryptingDemuxerStream() {
   DVLOG(2) << __func__ << " : state_ = " << state_;
   DCHECK(task_runner_->BelongsToCurrentThread());

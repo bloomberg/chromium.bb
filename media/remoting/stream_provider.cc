@@ -40,7 +40,6 @@ class MediaStream final : public DemuxerStream {
   DemuxerStream::Type type() const override;
   Liveness liveness() const override;
   bool SupportsConfigChanges() override;
-  VideoRotation video_rotation() override;
 
   void Initialize(const base::Closure& init_done_cb);
   void FlushUntil(int count);
@@ -371,10 +370,6 @@ DemuxerStream::Liveness MediaStream::liveness() const {
 
 bool MediaStream::SupportsConfigChanges() {
   return true;
-}
-
-VideoRotation MediaStream::video_rotation() {
-  return VideoRotation::VIDEO_ROTATION_0;
 }
 
 void MediaStream::AppendBuffer(scoped_refptr<DecoderBuffer> buffer) {

@@ -99,10 +99,6 @@ bool FakeDemuxerStream::SupportsConfigChanges() {
   return config_changes_;
 }
 
-VideoRotation FakeDemuxerStream::video_rotation() {
-  return VIDEO_ROTATION_0;
-}
-
 void FakeDemuxerStream::HoldNextRead() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   read_to_hold_ = next_read_num_;
@@ -161,8 +157,8 @@ void FakeDemuxerStream::UpdateVideoDecoderConfig() {
   const gfx::Rect kVisibleRect(kStartWidth, kStartHeight);
   video_decoder_config_.Initialize(
       kCodecVP8, VIDEO_CODEC_PROFILE_UNKNOWN, PIXEL_FORMAT_YV12,
-      COLOR_SPACE_UNSPECIFIED, next_coded_size_, kVisibleRect, next_coded_size_,
-      EmptyExtraData(),
+      COLOR_SPACE_UNSPECIFIED, VIDEO_ROTATION_0, next_coded_size_, kVisibleRect,
+      next_coded_size_, EmptyExtraData(),
       is_encrypted_ ? AesCtrEncryptionScheme() : Unencrypted());
   next_coded_size_.Enlarge(kWidthDelta, kHeightDelta);
 }

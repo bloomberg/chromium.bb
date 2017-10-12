@@ -1049,9 +1049,9 @@ void WebMediaPlayerImpl::Paint(blink::WebCanvas* canvas,
       return;
     }
   }
-  skcanvas_video_renderer_.Paint(video_frame, canvas, gfx::RectF(gfx_rect),
-                                 flags, pipeline_metadata_.video_rotation,
-                                 context_3d);
+  skcanvas_video_renderer_.Paint(
+      video_frame, canvas, gfx::RectF(gfx_rect), flags,
+      pipeline_metadata_.video_decoder_config.video_rotation(), context_3d);
 }
 
 bool WebMediaPlayerImpl::HasSingleSecurityOrigin() const {
@@ -1476,7 +1476,8 @@ void WebMediaPlayerImpl::OnMetadata(PipelineMetadata metadata) {
   pipeline_metadata_ = metadata;
 
   SetReadyState(WebMediaPlayer::kReadyStateHaveMetadata);
-  UMA_HISTOGRAM_ENUMERATION("Media.VideoRotation", metadata.video_rotation,
+  UMA_HISTOGRAM_ENUMERATION("Media.VideoRotation",
+                            metadata.video_decoder_config.video_rotation(),
                             VIDEO_ROTATION_MAX + 1);
 
   if (HasVideo()) {
@@ -1495,7 +1496,8 @@ void WebMediaPlayerImpl::OnMetadata(PipelineMetadata metadata) {
     if (!surface_layer_for_video_enabled_) {
       DCHECK(!video_weblayer_);
       video_weblayer_.reset(new cc_blink::WebLayerImpl(cc::VideoLayer::Create(
-          compositor_.get(), pipeline_metadata_.video_rotation)));
+          compositor_.get(),
+          pipeline_metadata_.video_decoder_config.video_rotation())));
       video_weblayer_->layer()->SetContentsOpaque(opaque_);
       video_weblayer_->SetContentsOpaqueIsFixed(true);
       client_->SetWebLayer(video_weblayer_.get());
@@ -1687,8 +1689,8 @@ void WebMediaPlayerImpl::OnVideoNaturalSizeChange(const gfx::Size& size) {
 
   // The input |size| is from the decoded video frame, which is the original
   // natural size and need to be rotated accordingly.
-  gfx::Size rotated_size =
-      GetRotatedVideoSize(pipeline_metadata_.video_rotation, size);
+  gfx::Size rotated_size = GetRotatedVideoSize(
+      pipeline_metadata_.video_decoder_config.video_rotation(), size);
 
   RecordVideoNaturalSize(rotated_size);
 
@@ -2634,7 +2636,8 @@ bool WebMediaPlayerImpl::IsStreaming() const {
 }
 
 bool WebMediaPlayerImpl::DoesOverlaySupportMetadata() const {
-  return pipeline_metadata_.video_rotation == VIDEO_ROTATION_0;
+  return pipeline_metadata_.video_decoder_config.video_rotation() ==
+         VIDEO_ROTATION_0;
 }
 
 void WebMediaPlayerImpl::ActivateViewportIntersectionMonitoring(bool activate) {

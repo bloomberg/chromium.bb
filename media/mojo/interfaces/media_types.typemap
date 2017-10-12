@@ -17,6 +17,7 @@ public_headers = [
   "//media/base/sample_format.h",
   "//media/base/subsample_entry.h",
   "//media/base/video_codecs.h",
+  "//media/base/video_rotation.h",
   "//media/base/video_types.h",
   "//media/base/watch_time_keys.h",
 ]
@@ -46,5 +47,6 @@ type_mappings = [
   "media.mojom.VideoCodec=media::VideoCodec",
   "media.mojom.VideoCodecProfile=media::VideoCodecProfile",
   "media.mojom.VideoPixelFormat=media::VideoPixelFormat",
+  "media.mojom.VideoRotation=media::VideoRotation",
   "media.mojom.WatchTimeKey=media::WatchTimeKey",
 ]

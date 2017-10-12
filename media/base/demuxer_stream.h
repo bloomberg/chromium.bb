@@ -94,8 +94,6 @@ class MEDIA_EXPORT DemuxerStream {
   // on this.
   virtual bool SupportsConfigChanges() = 0;
 
-  virtual VideoRotation video_rotation() = 0;
-
  protected:
   // Only allow concrete implementations to get deleted.
   virtual ~DemuxerStream();

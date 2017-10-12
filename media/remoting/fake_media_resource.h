@@ -29,7 +29,6 @@ class FakeDemuxerStream : public DemuxerStream {
   Liveness liveness() const override;
   void EnableBitstreamConverter() override {}
   bool SupportsConfigChanges() override;
-  VideoRotation video_rotation() override;
 
   void CreateFakeFrame(size_t size, bool key_frame, int pts_ms);
 

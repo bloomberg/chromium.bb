@@ -30,8 +30,8 @@ struct MEDIA_EXPORT PipelineMetadata {
   bool has_video;
   AudioDecoderConfig audio_decoder_config;
   VideoDecoderConfig video_decoder_config;
-  gfx::Size natural_size;  // Rotated according to |video_rotation|.
-  VideoRotation video_rotation;
+  gfx::Size natural_size;  // Rotated according to
+                           // |video_decoder_config|.video_rotation().
   base::Time timeline_offset;
 };
 
