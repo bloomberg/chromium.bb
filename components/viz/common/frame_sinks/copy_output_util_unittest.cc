@@ -47,6 +47,24 @@ constexpr gfx::Vector2d kDoublingYVectors[4][2] = {
      gfx::Vector2d(kMaxInt, kMaxEvenInt)},
 };
 
+// These are all equivalent to a scale ratio of 2:1 in the X direction.
+constexpr gfx::Vector2d kHalvingXVectors[4][2] = {
+    {gfx::Vector2d(2, 1), gfx::Vector2d(1, 1)},
+    {gfx::Vector2d(42, 1), gfx::Vector2d(21, 1)},
+    {gfx::Vector2d(kMaxEvenInt, 1), gfx::Vector2d(kMaxEvenInt / 2, 1)},
+    {gfx::Vector2d(kMaxEvenInt, kMaxInt),
+     gfx::Vector2d(kMaxEvenInt / 2, kMaxInt)},
+};
+
+// These are all equivalent to a scale ratio of 2:1 in the Y direction.
+constexpr gfx::Vector2d kHalvingYVectors[4][2] = {
+    {gfx::Vector2d(1, 2), gfx::Vector2d(1, 1)},
+    {gfx::Vector2d(1, 110), gfx::Vector2d(1, 55)},
+    {gfx::Vector2d(1, kMaxEvenInt), gfx::Vector2d(1, kMaxEvenInt / 2)},
+    {gfx::Vector2d(kMaxInt, kMaxEvenInt),
+     gfx::Vector2d(kMaxInt, kMaxEvenInt / 2)},
+};
+
 TEST(CopyOutputUtil, ComputesValidResultRects) {
   for (const gfx::Vector2d* v : kNonScalingVectors) {
     SCOPED_TRACE(::testing::Message()
@@ -78,14 +96,42 @@ TEST(CopyOutputUtil, ComputesValidResultRects) {
     EXPECT_EQ(gfx::Rect(1, -4, 3, 8),
               ComputeResultRect(gfx::Rect(1, -2, 3, 4), v[0], v[1]));
   }
+  for (const gfx::Vector2d* v : kHalvingXVectors) {
+    SCOPED_TRACE(::testing::Message()
+                 << "v[0]=" << v[0].ToString() << ", v[1]=" << v[1].ToString());
+    EXPECT_EQ(gfx::Rect(1, 2, 3, 4),
+              ComputeResultRect(gfx::Rect(2, 2, 6, 4), v[0], v[1]));
+    EXPECT_EQ(gfx::Rect(1, 2, 4, 4),
+              ComputeResultRect(gfx::Rect(3, 2, 6, 4), v[0], v[1]));
+    EXPECT_EQ(gfx::Rect(0, 2, 4, 4),
+              ComputeResultRect(gfx::Rect(1, 2, 6, 4), v[0], v[1]));
+    EXPECT_EQ(gfx::Rect(1, 2, 4, 4),
+              ComputeResultRect(gfx::Rect(2, 2, 7, 4), v[0], v[1]));
+    EXPECT_EQ(gfx::Rect(1, 2, 3, 4),
+              ComputeResultRect(gfx::Rect(2, 2, 5, 4), v[0], v[1]));
+  }
+  for (const gfx::Vector2d* v : kHalvingYVectors) {
+    SCOPED_TRACE(::testing::Message()
+                 << "v[0]=" << v[0].ToString() << ", v[1]=" << v[1].ToString());
+    EXPECT_EQ(gfx::Rect(2, 1, 4, 3),
+              ComputeResultRect(gfx::Rect(2, 2, 4, 6), v[0], v[1]));
+    EXPECT_EQ(gfx::Rect(2, 1, 4, 4),
+              ComputeResultRect(gfx::Rect(2, 3, 4, 6), v[0], v[1]));
+    EXPECT_EQ(gfx::Rect(2, 0, 4, 4),
+              ComputeResultRect(gfx::Rect(2, 1, 4, 6), v[0], v[1]));
+    EXPECT_EQ(gfx::Rect(2, 1, 4, 4),
+              ComputeResultRect(gfx::Rect(2, 2, 4, 7), v[0], v[1]));
+    EXPECT_EQ(gfx::Rect(2, 1, 4, 3),
+              ComputeResultRect(gfx::Rect(2, 2, 4, 5), v[0], v[1]));
+  }
 
   // Scale 3:2 in the X direction and 7:3 in the Y direction.
   constexpr gfx::Vector2d kWeirdScaleFrom = gfx::Vector2d(3, 7);
   constexpr gfx::Vector2d kWeirdScaleTo = gfx::Vector2d(2, 3);
   EXPECT_EQ(
-      gfx::Rect(0, 0, 1, 1),
+      gfx::Rect(0, 0, 2, 2),
       ComputeResultRect(gfx::Rect(1, 1, 1, 2), kWeirdScaleFrom, kWeirdScaleTo));
-  EXPECT_EQ(gfx::Rect(-1, -1, 1, 1),
+  EXPECT_EQ(gfx::Rect(-1, -1, 1, 2),
             ComputeResultRect(gfx::Rect(-1, -1, 1, 2), kWeirdScaleFrom,
                               kWeirdScaleTo));
   EXPECT_EQ(
@@ -94,15 +140,28 @@ TEST(CopyOutputUtil, ComputesValidResultRects) {
   EXPECT_EQ(gfx::Rect(-2, -3, 4, 6),
             ComputeResultRect(gfx::Rect(-3, -7, 6, 14), kWeirdScaleFrom,
                               kWeirdScaleTo));
-  EXPECT_EQ(gfx::Rect((1 << 24) * 2 / 3, (1 << 25) * 3 / 7,
-                      (1 << 15) * 2 / 3 + 1, (1 << 16) * 3 / 7 + 1),
-            ComputeResultRect(gfx::Rect(1 << 24, 1 << 25, 1 << 15, 1 << 16),
-                              kWeirdScaleFrom, kWeirdScaleTo));
+  int x = 1 << 24;
+  int y = 1 << 25;
+  int w = 1 << 15;
+  int h = 1 << 16;
   EXPECT_EQ(
-      gfx::Rect(-(1 << 24) * 2 / 3 - 1, -(1 << 25) * 3 / 7 - 1,
-                (1 << 15) * 2 / 3 + 1, (1 << 16) * 3 / 7 + 1),
-      ComputeResultRect(gfx::Rect(-(1 << 24), -(1 << 25), 1 << 15, 1 << 16),
-                        kWeirdScaleFrom, kWeirdScaleTo));
+      gfx::Rect(x * kWeirdScaleTo.x() / kWeirdScaleFrom.x(),
+                y * kWeirdScaleTo.y() / kWeirdScaleFrom.y(),
+                (x + w) * kWeirdScaleTo.x() / kWeirdScaleFrom.x() -
+                    x * kWeirdScaleTo.x() / kWeirdScaleFrom.x(),
+                (y + h) * kWeirdScaleTo.y() / kWeirdScaleFrom.y() -
+                    y * kWeirdScaleTo.y() / kWeirdScaleFrom.y() + 1),
+      ComputeResultRect(gfx::Rect(x, y, w, h), kWeirdScaleFrom, kWeirdScaleTo));
+  x = -(1 << 24);
+  y = -(1 << 25);
+  EXPECT_EQ(
+      gfx::Rect(x * kWeirdScaleTo.x() / kWeirdScaleFrom.x() - 1,
+                y * kWeirdScaleTo.y() / kWeirdScaleFrom.y() - 1,
+                (x + w) * kWeirdScaleTo.x() / kWeirdScaleFrom.x() -
+                    x * kWeirdScaleTo.x() / kWeirdScaleFrom.x() + 1,
+                (y + h) * kWeirdScaleTo.y() / kWeirdScaleFrom.y() -
+                    y * kWeirdScaleTo.y() / kWeirdScaleFrom.y() + 1),
+      ComputeResultRect(gfx::Rect(x, y, w, h), kWeirdScaleFrom, kWeirdScaleTo));
 }
 
 TEST(CopyOutputUtil, IdentifiesUnreasonableResultRects) {
