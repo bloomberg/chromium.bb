@@ -36,6 +36,11 @@ constexpr double kMaxMediaBitrateCapacityFraction = 0.9;
 constexpr int kPixelPerSec4K = 3840 * 2160 * 30;  // 4k 30fps.
 constexpr int kPixelPerSec2K = 1920 * 1080 * 30;  // 1080p 30fps.
 
+// The minimum media element duration that is allowed for media remoting.
+// Frequent switching into and out of media remoting for short-duration media
+// can feel "janky" to the user.
+constexpr double kMinRemotingMediaDurationInSec = 60;
+
 }  // namespace
 
 RendererController::RendererController(scoped_refptr<SharedSession> session)
@@ -340,6 +345,9 @@ bool RendererController::CanBeRemoting() const {
   if (is_remote_playback_disabled_)
     return false;
 
+  if (client_->Duration() <= kMinRemotingMediaDurationInSec)
+    return false;
+
   return true;
 }
 
@@ -460,7 +468,7 @@ void RendererController::OnDelayedStartTimerFired(
          !session_->HasVideoCapability(
              mojom::RemotingSinkVideoCapability::SUPPORT_4K))) {
       VLOG(1) << "Media remoting is not supported: frame_rate = " << frame_rate
-              << " resouliton = " << pipeline_metadata_.natural_size.ToString();
+              << " resolution = " << pipeline_metadata_.natural_size.ToString();
       encountered_renderer_fatal_error_ = true;
       return;
     }
