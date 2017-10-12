@@ -159,6 +159,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'nvidia', 'opengl'], bug=773823)
     self.Fail('deqp/functional/gles3/lifetime.html',
         ['win', 'nvidia', 'opengl'], bug=773823)
+    self.Fail('deqp/functional/gles3/negativeshaderapi.html',
+        ['win', 'nvidia', 'opengl'], bug=773823)
     self.Fail('deqp/functional/gles3/negativevertexarrayapi.html',
         ['win', 'nvidia', 'opengl'], bug=773823)
     self.Fail('deqp/functional/gles3/shaderbuiltinvar.html',
