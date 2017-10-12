@@ -2068,8 +2068,6 @@ class TestGitCl(TestCase):
 
     if new_branch:
       self.calls = [((['git', 'new-branch', 'master'],), ''),]
-    else:
-      self.calls = [((['git', 'symbolic-ref', 'HEAD'],), 'master')]
 
     if default_codereview:
       if not force_codereview:
@@ -2267,7 +2265,6 @@ class TestGitCl(TestCase):
     self.mock(git_cl.gerrit_util, 'GetChangeDetail', notExists)
 
     self.calls = [
-      ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
       ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
       ((['git', 'config', 'branch.master.rietveldissue'],), CERR1),
       ((['git', 'config', 'branch.master.gerritissue'],), CERR1),

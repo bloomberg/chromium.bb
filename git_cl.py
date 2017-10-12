@@ -2828,11 +2828,19 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
             'uploading changes based on top of this branch difficult.\n'
             'If you want to do that, use "git cl patch --force" instead.')
 
-    self.SetIssue(parsed_issue_arg.issue)
-    self.SetPatchset(patchset)
-    fetched_hash = RunGit(['rev-parse', 'FETCH_HEAD']).strip()
-    self._GitSetBranchConfigValue('last-upload-hash', fetched_hash)
-    self._GitSetBranchConfigValue('gerritsquashhash', fetched_hash)
+    if self.GetBranch():
+      self.SetIssue(parsed_issue_arg.issue)
+      self.SetPatchset(patchset)
+      fetched_hash = RunGit(['rev-parse', 'FETCH_HEAD']).strip()
+      self._GitSetBranchConfigValue('last-upload-hash', fetched_hash)
+      self._GitSetBranchConfigValue('gerritsquashhash', fetched_hash)
+    else:
+      print('WARNING: You are in detached HEAD state.\n'
+            'The patch has been applied to your checkout, but you will not be '
+            'able to upload a new patch set to the gerrit issue.\n'
+            'Try using the \'-b\' option if you would like to work on a '
+            'branch and/or upload a new patch set.')
+
     return 0
 
   @staticmethod
@@ -5402,8 +5410,6 @@ def CMDpatch(parser, args):
       RunGit(['branch', '-D', options.newbranch],
              stderr=subprocess2.PIPE, error_ok=True)
     RunGit(['new-branch', options.newbranch])
-  elif not GetCurrentBranch():
-    DieWithError('A branch is required to apply patch. Hint: use -b option.')
 
   cl = Changelist(**cl_kwargs)
 
