@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>
+      Test the construction of AudioWorkletNode
+    </title>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script>
+    <script src="../../../webaudio-resources/audit.js"></script>
+    <script src="audio-worklet-common.js"></script>
+  </head>
+  <body>
+    <script id="layout-test-code">
+      // TODO(hongchan): remove this assertion when AudioWorklet shipped.
+      assertAudioWorklet();
+
+      let audit = Audit.createTaskRunner();
+      let context = new AudioContext();
+
+      // Test if an exception is thrown correctly when AWN constructor is
+      // invoked before resolving |.addModule()| promise.
+      audit.define(
+          {label: 'construction-before-module-loading'},
+          (task, should) => {
+            should(() => new AudioWorkletNode(context, 'dummy'),
+                   'Creating a node before loading a module should throw.')
+                .throw('InvalidStateError');
+
+            task.done();
+          });
+
+      // Test the construction of AudioWorkletNode after the resolution of
+      // |.addModule()|. Also the constructor must throw an exception when
+      // a unregistered node name was given.
+      audit.define(
+          {label: 'construction-after-module-loading'},
+          (task, should) => {
+            audioWorklet.addModule('dummy-processor.js').then(() => {
+              let dummyWorkletNode = new AudioWorkletNode(context, 'dummy');
+              should(dummyWorkletNode instanceof AudioWorkletNode,
+                     '"dummyWorkletNode" is an instance of AudioWorkletNode')
+                  .beTrue();
+              should(() => new AudioWorkletNode(context, 'foobar'),
+                     'Unregistered name "foobar" must throw an exception.')
+                  .throw();
+              task.done();
+            });
+          });
+
+      audit.run();
+    </script>
+  </body>
+</html>

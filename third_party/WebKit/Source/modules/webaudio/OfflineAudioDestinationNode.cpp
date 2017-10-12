@@ -145,7 +145,7 @@ void OfflineAudioDestinationHandler::InitializeOfflineRenderThread(
   // Use Experimental AudioWorkletThread only when AudioWorklet is enabled and
   // there is an active AudioWorkletGlobalScope.
   if (RuntimeEnabledFeatures::AudioWorkletEnabled() &&
-      Context()->WorkletMessagingProxy()) {
+      Context()->HasWorkletMessagingProxy()) {
     DCHECK(Context()->WorkletMessagingProxy()->GetWorkletBackingThread());
     worklet_backing_thread_ =
         Context()->WorkletMessagingProxy()->GetWorkletBackingThread();
@@ -372,7 +372,7 @@ WebThread* OfflineAudioDestinationHandler::GetRenderingThread() {
   // Use Experimental AudioWorkletThread only when AudioWorklet is enabled and
   // there is an active AudioWorkletGlobalScope.
   if (RuntimeEnabledFeatures::AudioWorkletEnabled() &&
-      Context()->WorkletMessagingProxy()) {
+      Context()->HasWorkletMessagingProxy()) {
     DCHECK(!render_thread_ && worklet_backing_thread_);
     return worklet_backing_thread_;
   }

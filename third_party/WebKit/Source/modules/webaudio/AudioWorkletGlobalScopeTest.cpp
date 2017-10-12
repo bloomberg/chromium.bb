@@ -21,6 +21,7 @@
 #include "modules/webaudio/AudioWorkletProcessor.h"
 #include "modules/webaudio/AudioWorkletProcessorDefinition.h"
 #include "modules/webaudio/AudioWorkletThread.h"
+#include "platform/audio/AudioBus.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/bindings/V8BindingMacros.h"
 #include "platform/bindings/V8ObjectConstructor.h"
@@ -148,9 +149,9 @@ class AudioWorkletGlobalScopeTest : public ::testing::Test {
     EXPECT_TRUE(definition->ProcessLocal(isolate)->IsFunction());
 
     AudioWorkletProcessor* processor =
-        global_scope->CreateInstance("testProcessor");
+        global_scope->CreateInstance("testProcessor", kTestingSampleRate);
     EXPECT_TRUE(processor);
-    EXPECT_EQ(processor->GetName(), "testProcessor");
+    EXPECT_EQ(processor->Name(), "testProcessor");
     EXPECT_TRUE(processor->InstanceLocal(isolate)->IsObject());
 
     wait_event->Signal();
@@ -213,13 +214,13 @@ class AudioWorkletGlobalScopeTest : public ::testing::Test {
         R"JS(
           registerProcessor('testProcessor', class {
               constructor () {
-                this.constant = 1;
+                this.constant_ = 1;
               }
-              process (input, output) {
-                let inputChannelData = input.getChannelData(0);
-                let outputChannelData = output.getChannelData(0);
-                for (let i = 0; i < input.length; ++i) {
-                  outputChannelData[i] = inputChannelData[i] + this.constant;
+              process (inputs, outputs) {
+                let inputChannel = inputs[0][0];
+                let outputChannel = outputs[0][0];
+                for (let i = 0; i < outputChannel.length; ++i) {
+                  outputChannel[i] = inputChannel[i] + this.constant_;
                 }
               }
             }
@@ -227,31 +228,30 @@ class AudioWorkletGlobalScopeTest : public ::testing::Test {
         )JS"));
 
     AudioWorkletProcessor* processor =
-        global_scope->CreateInstance("testProcessor");
+        global_scope->CreateInstance("testProcessor", kTestingSampleRate);
     EXPECT_TRUE(processor);
 
-    AudioBuffer* input_buffer =
-        AudioBuffer::Create(1, kRenderQuantumFrames, kTestingSampleRate);
-    AudioBuffer* output_buffer =
-        AudioBuffer::Create(1, kRenderQuantumFrames, kTestingSampleRate);
-    DOMFloat32Array* input_channel_data =
-        input_buffer->getChannelData(0).View();
-    float* input_array_data = input_channel_data->Data();
-    EXPECT_TRUE(input_array_data);
-    DOMFloat32Array* output_channel_data =
-        output_buffer->getChannelData(0).View();
-    float* output_array_data = output_channel_data->Data();
-    EXPECT_TRUE(output_array_data);
+    Vector<AudioBus*> input_buses;
+    Vector<AudioBus*> output_buses;
+    HashMap<String, std::unique_ptr<AudioFloatArray>> param_data_map;
+    RefPtr<AudioBus> input_bus = AudioBus::Create(1, kRenderQuantumFrames);
+    RefPtr<AudioBus> output_bus = AudioBus::Create(1, kRenderQuantumFrames);
+    AudioChannel* input_channel = input_bus->Channel(0);
+    AudioChannel* output_channel = output_bus->Channel(0);
 
-    // Fill |inputBuffer| with 1 and zero out |outputBuffer|.
-    std::fill(input_array_data, input_array_data + input_buffer->length(), 1);
-    output_buffer->Zero();
+    input_buses.push_back(input_bus.get());
+    output_buses.push_back(output_bus.get());
+
+    // Fill |input_channel| with 1 and zero out |output_bus|.
+    std::fill(input_channel->MutableData(),
+              input_channel->MutableData() + input_channel->length(), 1);
+    output_bus->Zero();
 
     // Then invoke the process() method to perform JS buffer manipulation. The
     // output buffer should contain a constant value of 2.
-    processor->Process(input_buffer, output_buffer);
-    for (unsigned i = 0; i < output_buffer->length(); ++i) {
-      EXPECT_EQ(output_array_data[i], 2);
+    processor->Process(&input_buses, &output_buses, &param_data_map, 0.0);
+    for (unsigned i = 0; i < output_channel->length(); ++i) {
+      EXPECT_EQ(output_channel->Data()[i], 2);
     }
 
     wait_event->Signal();

@@ -1,0 +1,14 @@
+This is a testharness.js-based test.
+PASS AudioParamMap interface: existence and properties of interface object
+PASS AudioParamMap interface object length
+PASS AudioParamMap interface object name
+PASS AudioParamMap interface: existence and properties of interface prototype object
+PASS AudioParamMap interface: existence and properties of interface prototype object's "constructor" property
+FAIL AudioWorkletNode interface: existence and properties of interface object Cannot read property 'has_extended_attribute' of undefined
+PASS AudioWorkletNode interface object length
+PASS AudioWorkletNode interface object name
+FAIL AudioWorkletNode interface: existence and properties of interface prototype object Cannot read property 'has_extended_attribute' of undefined
+PASS AudioWorkletNode interface: existence and properties of interface prototype object's "constructor" property
+FAIL AudioWorkletNode interface: attribute parameters assert_true: The prototype object must have a property "parameters" expected true got false
+Harness: the test ran to completion.
+

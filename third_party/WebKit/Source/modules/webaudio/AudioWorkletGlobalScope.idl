@@ -10,4 +10,6 @@
     RuntimeEnabled=AudioWorklet
 ] interface AudioWorkletGlobalScope : WorkletGlobalScope {
     [RaisesException] void registerProcessor(DOMString name, Function processorConstructor);
+    readonly attribute double currentTime;
+    readonly attribute float sampleRate;
 };

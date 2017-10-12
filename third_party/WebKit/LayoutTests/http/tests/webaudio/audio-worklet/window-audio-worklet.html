@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>
+      Checking window.audioWorklet
+    </title>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script>
+    <script src="../../../webaudio-resources/audit.js"></script>
+    <script src="audio-worklet-common.js"></script>
+  </head>
+  <body>
+    <script id="layout-test-code">
+      // TODO(hongchan): remove this assertion when AudioWorklet shipped.
+      assertAudioWorklet();
+
+      let audit = Audit.createTaskRunner();
+
+      // Test if AudioWorklet exists.
+      audit.define('Test if AudioWorklet exists', (task, should) => {
+        should(window.audioWorklet instanceof Worklet,
+               'window.audioWorklet is an instance of Worklet')
+            .beTrue();
+        task.done();
+      });
+
+      // Test the construction of BaseAudioContext before |worklet.addModule()|.
+      audit.define(
+          'Test invocation of addModule() after BaseAudioContext construction',
+          (task, should) => {
+            should(
+              () => {
+                let context = new AudioContext();
+                audioWorklet.addModule('bypass-processor.js');
+              },
+              'Calling audioWorklet.addModule() before construction of ' +
+                  'BaseAudioContext')
+              .notThrow();
+
+            task.done();
+          });
+
+      audit.run();
+    </script>
+  </body>
+</html>
