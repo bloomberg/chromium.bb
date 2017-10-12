@@ -69,14 +69,14 @@ class MakeSettingsWriter(json5_generator.Writer):
         self.json5_file.name_dictionaries.sort(key=lambda entry: entry['name'])
 
         self._outputs = {
-            ('SettingsMacros.h'): self.generate_macros,
+            ('settings_macros.h'): self.generate_macros,
         }
         self._template_context = {
             'input_files': self._input_files,
             'settings': self.json5_file.name_dictionaries,
         }
 
-    @template_expander.use_jinja('templates/SettingsMacros.h.tmpl', filters=filters)
+    @template_expander.use_jinja('templates/settings_macros.h.tmpl', filters=filters)
     def generate_macros(self):
         return self._template_context
 

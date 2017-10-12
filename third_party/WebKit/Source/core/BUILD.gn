@@ -381,11 +381,11 @@ action("generated_settings_macros") {
 
   inputs = scripts_for_json5_files + [
              "../build/scripts/make_settings.py",
-             "../build/scripts/templates/SettingsMacros.h.tmpl",
+             "../build/scripts/templates/settings_macros.h.tmpl",
              "frame/Settings.json5",
            ]
   outputs = [
-    "$blink_core_output_dir/SettingsMacros.h",
+    "$blink_core_output_dir/settings_macros.h",
   ]
 
   args = [
