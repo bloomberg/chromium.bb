@@ -66,7 +66,9 @@ TEST(RenderSurfaceLayerImplTest, Occlusion) {
 }
 
 static std::unique_ptr<viz::RenderPass> DoAppendQuadsWithScaledMask(
-    DrawMode draw_mode) {
+    DrawMode draw_mode,
+    float device_scale_factor,
+    Layer::LayerMaskType mask_type) {
   gfx::Size layer_size(1000, 1000);
   gfx::Size viewport_size(1000, 1000);
   float scale_factor = 2;
@@ -88,8 +90,7 @@ static std::unique_ptr<viz::RenderPass> DoAppendQuadsWithScaledMask(
   surface->test_properties()->transform = scale;
 
   std::unique_ptr<FakeMaskLayerImpl> mask_layer = FakeMaskLayerImpl::Create(
-      impl.host_impl()->active_tree(), 4, raster_source,
-      Layer::LayerMaskType::SINGLE_TEXTURE_MASK);
+      impl.host_impl()->active_tree(), 4, raster_source, mask_type);
   mask_layer->set_resource_size(
       gfx::ScaleToCeiledSize(layer_size, scale_factor));
   mask_layer->SetDrawsContent(true);
@@ -105,6 +106,7 @@ static std::unique_ptr<viz::RenderPass> DoAppendQuadsWithScaledMask(
   root->test_properties()->AddChild(std::move(surface));
   impl.host_impl()->active_tree()->SetRootLayerForTesting(std::move(root));
 
+  impl.host_impl()->active_tree()->SetDeviceScaleFactor(device_scale_factor);
   impl.host_impl()->SetViewportSize(viewport_size);
   impl.host_impl()->active_tree()->BuildLayerListAndPropertyTreesForTesting();
   impl.host_impl()->active_tree()->UpdateDrawProperties();
@@ -123,8 +125,8 @@ static std::unique_ptr<viz::RenderPass> DoAppendQuadsWithScaledMask(
 }
 
 TEST(RenderSurfaceLayerImplTest, AppendQuadsWithScaledMask) {
-  std::unique_ptr<viz::RenderPass> render_pass =
-      DoAppendQuadsWithScaledMask(DRAW_MODE_HARDWARE);
+  std::unique_ptr<viz::RenderPass> render_pass = DoAppendQuadsWithScaledMask(
+      DRAW_MODE_HARDWARE, 1.f, Layer::LayerMaskType::SINGLE_TEXTURE_MASK);
   DCHECK(render_pass->quad_list.front());
   const viz::RenderPassDrawQuad* quad =
       viz::RenderPassDrawQuad::MaterialCast(render_pass->quad_list.front());
@@ -134,11 +136,25 @@ TEST(RenderSurfaceLayerImplTest, AppendQuadsWithScaledMask) {
 
 TEST(RenderSurfaceLayerImplTest, ResourcelessAppendQuadsSkipMask) {
   std::unique_ptr<viz::RenderPass> render_pass =
-      DoAppendQuadsWithScaledMask(DRAW_MODE_RESOURCELESS_SOFTWARE);
+      DoAppendQuadsWithScaledMask(DRAW_MODE_RESOURCELESS_SOFTWARE, 1.f,
+                                  Layer::LayerMaskType::SINGLE_TEXTURE_MASK);
   DCHECK(render_pass->quad_list.front());
   const viz::RenderPassDrawQuad* quad =
       viz::RenderPassDrawQuad::MaterialCast(render_pass->quad_list.front());
   EXPECT_EQ(0u, quad->mask_resource_id());
+}
+
+TEST(RenderSurfaceLayerImplTest,
+     AppendQuadsWithSolidColorMaskAndDeviceScaleFactor) {
+  std::unique_ptr<viz::RenderPass> render_pass = DoAppendQuadsWithScaledMask(
+      DRAW_MODE_HARDWARE, 2.f, Layer::LayerMaskType::MULTI_TEXTURE_MASK);
+  DCHECK(render_pass->quad_list.front());
+  const viz::RenderPassDrawQuad* quad =
+      viz::RenderPassDrawQuad::MaterialCast(render_pass->quad_list.front());
+  EXPECT_EQ(gfx::Transform(),
+            quad->shared_quad_state->quad_to_target_transform);
+  LayerTestCommon::VerifyQuadsExactlyCoverRect(
+      render_pass->quad_list, quad->shared_quad_state->quad_layer_rect);
 }
 
 }  // namespace
