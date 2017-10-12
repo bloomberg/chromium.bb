@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.suggestions;
 
+import java.util.Date;
+
 /**
  * Data class that holds the site suggestion data provided by the tiles component.
  */
@@ -29,14 +31,19 @@ public class SiteSuggestion {
     @TileSectionType
     public final int sectionType;
 
+    /** The instant in time representing when the tile was originally generated
+        (produced by a ranking algorithm). */
+    public final Date dataGenerationTime;
+
     public SiteSuggestion(String title, String url, String whitelistIconPath, int titleSource,
-            int source, int sectionType) {
+            int source, int sectionType, Date dataGenerationTime) {
         this.title = title;
         this.url = url;
         this.whitelistIconPath = whitelistIconPath;
         this.source = source;
         this.titleSource = titleSource;
         this.sectionType = sectionType;
+        this.dataGenerationTime = (Date) dataGenerationTime.clone();
     }
 
     @Override

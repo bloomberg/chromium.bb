@@ -76,6 +76,7 @@ void SuggestionsStore::FilterExpiredSuggestions(
   SuggestionsProfile filtered_suggestions;
   int64_t now_usec =
       (this->clock_->Now() - base::Time::UnixEpoch()).ToInternalValue();
+  filtered_suggestions.set_timestamp(suggestions->timestamp());
 
   for (int i = 0; i < suggestions->suggestions_size(); ++i) {
     ChromeSuggestion* suggestion = suggestions->mutable_suggestions(i);

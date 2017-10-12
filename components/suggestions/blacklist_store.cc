@@ -197,6 +197,7 @@ void BlacklistStore::FilterSuggestions(SuggestionsProfile* profile) {
 
   // Populate the filtered suggestions.
   SuggestionsProfile filtered_profile;
+  filtered_profile.set_timestamp(profile->timestamp());
   for (int i = 0; i < profile->suggestions_size(); ++i) {
     if (blacklist_set.find(profile->suggestions(i).url()) ==
         blacklist_set.end()) {

@@ -294,7 +294,8 @@ void MostVisitedSites::OnMostVisitedURLsAvailable(
     // MostVisitedURL.title is either the title or the URL which is treated
     // exactly as the title. Differentiating here is not worth the overhead.
     tile.title_source = TileTitleSource::TITLE_TAG;
-
+    // TODO(crbug.com/773278): Populate |data_generation_time| here in order to
+    // log UMA metrics of age.
     tiles.push_back(std::move(tile));
   }
 
@@ -331,6 +332,10 @@ void MostVisitedSites::BuildCurrentTilesGivenSuggestionsProfile(
   if (num_sites_ < num_tiles)
     num_tiles = num_sites_;
 
+  const base::Time profile_timestamp =
+      base::Time::UnixEpoch() +
+      base::TimeDelta::FromMicroseconds(suggestions_profile.timestamp());
+
   NTPTilesVector tiles;
   for (size_t i = 0; i < num_tiles; ++i) {
     const ChromeSuggestion& suggestion_pb = suggestions_profile.suggestions(i);
@@ -347,6 +352,8 @@ void MostVisitedSites::BuildCurrentTilesGivenSuggestionsProfile(
     tile.whitelist_icon_path = GetWhitelistLargeIconPath(url);
     tile.thumbnail_url = GURL(suggestion_pb.thumbnail());
     tile.favicon_url = GURL(suggestion_pb.favicon_url());
+    tile.data_generation_time = profile_timestamp;
+
     if (AreNtpMostLikelyFaviconsFromServerEnabled()) {
       icon_cacher_->StartFetchMostLikely(
           url, base::Bind(&MostVisitedSites::OnIconMadeAvailable,

@@ -349,9 +349,10 @@ const char kRateThisAppCommand[] = "ratethisapp";
       recordAction:new_tab_page_uma::ACTION_OPENED_MOST_VISITED_ENTRY];
   base::RecordAction(base::UserMetricsAction("MobileNTPMostVisited"));
 
-  ntp_tiles::metrics::RecordTileClick(
-      ntp_tiles::NTPTileImpression(mostVisitedIndex, item.source,
-                                   item.titleSource, [item tileType], GURL()));
+  ntp_tiles::metrics::RecordTileClick(ntp_tiles::NTPTileImpression(
+      mostVisitedIndex, item.source, item.titleSource, [item tileType],
+      // TODO(crbug.com/763946): Plumb generation time.
+      base::Time(), GURL()));
 }
 
 // Shows a snackbar with an action to undo the removal of the most visited item
