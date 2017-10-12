@@ -20,6 +20,8 @@ class MediaSinkServiceBase : public MediaSinkService {
   explicit MediaSinkServiceBase(const OnSinksDiscoveredCallback& callback);
   ~MediaSinkServiceBase() override;
 
+  void ForceSinkDiscoveryCallback() override;
+
  protected:
   void SetTimerForTest(std::unique_ptr<base::Timer> timer);
 
@@ -46,13 +48,13 @@ class MediaSinkServiceBase : public MediaSinkService {
   // Sorted sinks from current round of discovery.
   std::set<MediaSinkInternal> current_sinks_;
 
-  // Sorted sinks sent to Media Router Provider in last FetchCompleted().
-  std::set<MediaSinkInternal> mrp_sinks_;
-
  private:
   friend class MediaSinkServiceBaseTest;
   FRIEND_TEST_ALL_PREFIXES(MediaSinkServiceBaseTest,
                            TestFetchCompleted_SameSink);
+
+  // Sorted sinks sent to Media Router Provider in last FetchCompleted().
+  std::set<MediaSinkInternal> mrp_sinks_;
 
   // Timer for finishing fetching.
   std::unique_ptr<base::Timer> finish_timer_;
