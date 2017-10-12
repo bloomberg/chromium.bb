@@ -651,6 +651,7 @@ void LayoutMultiColumnSet::UpdateFromNG() {
   DCHECK_EQ(fragmentainer_groups_.size(), 1U);
   auto& group = fragmentainer_groups_[0];
   group.UpdateFromNG(LogicalHeight());
+  ComputeOverflow(LogicalHeight());
   ClearNeedsLayout();
 }
 

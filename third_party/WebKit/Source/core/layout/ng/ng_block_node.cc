@@ -298,7 +298,8 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
     box_->SetMargin(ComputePhysicalMargins(constraint_space, Style()));
   }
 
-  if (GetFlowThread(*box_)) {
+  LayoutMultiColumnFlowThread* flow_thread = GetFlowThread(*box_);
+  if (flow_thread) {
     PlaceChildrenInFlowThread(constraint_space, physical_fragment);
   } else {
     NGPhysicalOffset offset_from_start;
@@ -327,6 +328,12 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
           PreviouslyUsedBlockSpace(constraint_space, physical_fragment);
     }
     block->LayoutPositionedObjects(true);
+
+    if (flow_thread) {
+      UpdateLegacyMultiColumnFlowThread(*this, flow_thread, constraint_space,
+                                        physical_fragment);
+    }
+
     // |ComputeOverflow()| below calls |AddOverflowFromChildren()|, which
     // computes visual overflow from |RootInlineBox| if |ChildrenInline()|.
     block->ComputeOverflow(intrinsic_block_size -
@@ -342,11 +349,6 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
 
     if (block_flow->CreatesNewFormattingContext())
       block_flow->AddOverflowFromFloats();
-
-    if (auto* flow_thread = block_flow->MultiColumnFlowThread()) {
-      UpdateLegacyMultiColumnFlowThread(*this, flow_thread, constraint_space,
-                                        physical_fragment);
-    }
   }
 }
 
