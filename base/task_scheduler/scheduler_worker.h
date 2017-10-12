@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/atomic_flag.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task_scheduler/can_schedule_sequence_observer.h"
 #include "base/task_scheduler/scheduler_lock.h"
 #include "base/task_scheduler/scheduler_worker_params.h"
 #include "base/task_scheduler/sequence.h"
@@ -41,11 +42,12 @@ class TaskTracker;
 class BASE_EXPORT SchedulerWorker
     : public RefCountedThreadSafe<SchedulerWorker> {
  public:
-  // Delegate interface for SchedulerWorker. The methods are always called from
-  // the thread managed by the SchedulerWorker instance.
-  class BASE_EXPORT Delegate {
+  // Delegate interface for SchedulerWorker. All methods except
+  // OnCanScheduleSequence() (inherited from CanScheduleSequenceObserver) are
+  // called from the thread managed by the SchedulerWorker instance.
+  class BASE_EXPORT Delegate : public CanScheduleSequenceObserver {
    public:
-    virtual ~Delegate() = default;
+    ~Delegate() override = default;
 
     // Called by |worker|'s thread when it enters its main function.
     virtual void OnMainEntry(SchedulerWorker* worker) = 0;
@@ -58,6 +60,9 @@ class BASE_EXPORT SchedulerWorker
 
     // Called when |sequence| isn't empty after the SchedulerWorker pops a Task
     // from it. |sequence| is the last Sequence returned by GetWork().
+    //
+    // TODO(fdoray): Rename to RescheduleSequence() to match TaskTracker
+    // terminology.
     virtual void ReEnqueueSequence(scoped_refptr<Sequence> sequence) = 0;
 
     // Called to determine how long to sleep before the next call to GetWork().

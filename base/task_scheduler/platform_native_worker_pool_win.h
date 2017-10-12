@@ -51,7 +51,7 @@ class BASE_EXPORT PlatformNativeWorkerPoolWin : public SchedulerWorkerPool {
                                        PTP_WORK);
 
   // SchedulerWorkerPool:
-  void ScheduleSequence(scoped_refptr<Sequence> sequence) override;
+  void OnCanScheduleSequence(scoped_refptr<Sequence> sequence) override;
 
   // Returns the top Sequence off the |priority_queue_|. Returns nullptr
   // if the |priority_queue_| is empty.

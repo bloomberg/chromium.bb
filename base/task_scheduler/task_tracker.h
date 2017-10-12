@@ -5,7 +5,9 @@
 #ifndef BASE_TASK_SCHEDULER_TASK_TRACKER_H_
 #define BASE_TASK_SCHEDULER_TASK_TRACKER_H_
 
+#include <functional>
 #include <memory>
+#include <queue>
 
 #include "base/atomicops.h"
 #include "base/base_export.h"
@@ -14,6 +16,7 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_base.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task_scheduler/can_schedule_sequence_observer.h"
 #include "base/task_scheduler/scheduler_lock.h"
 #include "base/task_scheduler/sequence.h"
 #include "base/task_scheduler/task.h"
@@ -26,13 +29,65 @@ class HistogramBase;
 
 namespace internal {
 
-// All tasks go through the scheduler's TaskTracker when they are posted and
-// when they are executed. The TaskTracker sets up the environment to run tasks,
-// enforces shutdown semantics, records metrics, and takes care of tracing and
-// profiling. This class is thread-safe.
+// TaskTracker enforces policies that determines whether:
+// - A task can be added to a sequence (WillPostTask).
+// - A sequence can be scheduled (WillScheduleSequence).
+// - The next task in a scheduled sequence can run (RunNextTask).
+// TaskTracker also sets up the environment to run a task (RunNextTask) and
+// records metrics and trace events. This class is thread-safe.
+//
+// Life of a sequence:
+// (possible states: IDLE, PREEMPTED, SCHEDULED, RUNNING)
+//
+//                            Create a sequence
+//                                   |
+//  ------------------------> Sequence is IDLE
+//  |                                |
+//  |                     Add a task to the sequence
+//  |            (allowed by TaskTracker::WillPostTask)
+//  |                                |
+//  |               TaskTracker:WillScheduleSequence
+//  |           _____________________|_____________________
+//  |           |                                          |
+//  |    Returns true                                Returns false
+//  |           |                                          |
+//  |           |                                Sequence is PREEMPTED <----
+//  |           |                                          |               |
+//  |           |                            Eventually,                   |
+//  |           |                            CanScheduleSequenceObserver   |
+//  |           |                            is notified that the          |
+//  |           |                            sequence can be scheduled.    |
+//  |           |__________________________________________|               |
+//  |                               |                                      |
+//  |                   (*) Sequence is SCHEDULED                          |
+//  |                               |                                      |
+//  |                A thread is ready to run the next                     |
+//  |                      task in the sequence                            |
+//  |                               |                                      |
+//  |                   TaskTracker::RunNextTask                           |
+//  |                A task from the sequence is run                       |
+//  |                      Sequence is RUNNING                             |
+//  |                               |                                      |
+//  |         ______________________|____                                  |
+//  |         |                          |                                 |
+//  |   Sequence is empty      Sequence has more tasks                     |
+//  |_________|             _____________|_______________                  |
+//                          |                            |                 |
+//                   Sequence can be            Sequence cannot be         |
+//                   scheduled                  scheduled at this          |
+//                          |                   moment                     |
+//                   Go back to (*)                      |_________________|
+//
+//
+// Note: A background task is a task posted with TaskPriority::BACKGROUND. A
+// foreground task is a task posted with TaskPriority::USER_VISIBLE or
+// TaskPriority::USER_BLOCKING.
 class BASE_EXPORT TaskTracker {
  public:
-  TaskTracker();
+  // |max_num_scheduled_background_sequences| is the maximum number of
+  // background sequences that be scheduled concurrently.
+  TaskTracker(int max_num_scheduled_background_sequences =
+                  std::numeric_limits<int>::max());
   virtual ~TaskTracker();
 
   // Synchronously shuts down the scheduler. Once this is called, only tasks
@@ -55,11 +110,30 @@ class BASE_EXPORT TaskTracker {
   // this operation is allowed (|task| should be posted if-and-only-if it is).
   bool WillPostTask(const Task* task);
 
-  // Runs the next task in |sequence| unless the current shutdown state
-  // prevents that. Then, pops the task from |sequence| (even if it didn't run).
-  // Returns true if the sequence was made empty after popping the task.
-  // WillPostTask() must have allowed |task| to be posted before this is called.
-  bool RunNextTask(Sequence* sequence);
+  // Informs this TaskTracker that |sequence| is about to be scheduled. If this
+  // returns |sequence|, it is expected that RunNextTask() will soon be called
+  // with |sequence| as argument. Otherwise, RunNextTask() must not be called
+  // with |sequence| as argument until |observer| is notified that |sequence|
+  // can be scheduled (the caller doesn't need to keep a pointer to |sequence|;
+  // it will be included in the notification to |observer|). WillPostTask() must
+  // have allowed the task in front of |sequence| to be posted before this is
+  // called. |observer| is only required if the priority of |sequence| is
+  // TaskPriority::BACKGROUND
+  scoped_refptr<Sequence> WillScheduleSequence(
+      scoped_refptr<Sequence> sequence,
+      CanScheduleSequenceObserver* observer);
+
+  // Runs the next task in |sequence| unless the current shutdown state prevents
+  // that. Then, pops the task from |sequence| (even if it didn't run). Returns
+  // |sequence| if it can be rescheduled immediately. If |sequence| is non-empty
+  // after popping a task from it but it can't be rescheduled immediately, it
+  // will be handed back to |observer| when it can be rescheduled.
+  // WillPostTask() must have allowed the task in front of |sequence| to be
+  // posted before this is called. Also, WillScheduleSequence(), RunNextTask()
+  // or CanScheduleSequenceObserver::OnCanScheduleSequence() must have allowed
+  // |sequence| to be (re)scheduled.
+  scoped_refptr<Sequence> RunNextTask(scoped_refptr<Sequence> sequence,
+                                      CanScheduleSequenceObserver* observer);
 
   // Returns true once shutdown has started (Shutdown() has been called but
   // might not have returned). Note: sequential consistency with the thread
@@ -102,6 +176,7 @@ class BASE_EXPORT TaskTracker {
 
  private:
   class State;
+  struct PreemptedBackgroundSequence;
 
   void PerformShutdown();
 
@@ -127,6 +202,24 @@ class BASE_EXPORT TaskTracker {
   // Decrements the number of pending undelayed tasks and signals |flush_cv_| if
   // it reaches zero.
   void DecrementNumPendingUndelayedTasks();
+
+  // To be called after running a background task from |just_ran_sequence|.
+  // Performs the following actions:
+  //  - If |just_ran_sequence| is non-null:
+  //    - returns it if it should be rescheduled by the caller of RunNextTask(),
+  //      i.e. its next task is set to run earlier than the earliest currently
+  //      preempted sequence.
+  //    - Otherwise |just_ran_sequence| is preempted and the next preempted
+  //      sequence is scheduled (|observer| will be notified when
+  //      |just_ran_sequence| should be scheduled again).
+  //  - If |just_ran_sequence| is null (RunNextTask() just popped the last task
+  //    from it):
+  //    - the next preempeted sequence (if any) is scheduled.
+  //  - In all cases: adjusts the number of scheduled background sequences
+  //    accordingly.
+  scoped_refptr<Sequence> ManageBackgroundSequencesAfterRunningTask(
+      scoped_refptr<Sequence> just_ran_sequence,
+      CanScheduleSequenceObserver* observer);
 
   // Records the TaskScheduler.TaskLatency.[task priority].[may block] histogram
   // for |task|.
@@ -158,6 +251,25 @@ class BASE_EXPORT TaskTracker {
   // Event instantiated when shutdown starts and signaled when shutdown
   // completes.
   std::unique_ptr<WaitableEvent> shutdown_event_;
+
+  // Maximum number of background sequences that can that be scheduled
+  // concurrently.
+  const int max_num_scheduled_background_sequences_;
+
+  // Synchronizes accesses to |preempted_background_sequences_| and
+  // |num_scheduled_background_sequences_|.
+  SchedulerLock background_lock_;
+
+  // A priority queue of sequences that are waiting to be scheduled. Use
+  // std::greater so that the sequence which contains the task that has been
+  // posted the earliest is on top of the priority queue.
+  std::priority_queue<PreemptedBackgroundSequence,
+                      std::vector<PreemptedBackgroundSequence>,
+                      std::greater<PreemptedBackgroundSequence>>
+      preempted_background_sequences_;
+
+  // Number of currently scheduled background sequences.
+  int num_scheduled_background_sequences_ = 0;
 
   // TaskScheduler.TaskLatency.[task priority].[may block] histograms. The first
   // index is a TaskPriority. The second index is 0 for non-blocking tasks, 1

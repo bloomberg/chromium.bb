@@ -61,6 +61,7 @@ class SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl
   ~SchedulerWorkerDelegateImpl() override;
 
   // SchedulerWorker::Delegate:
+  void OnCanScheduleSequence(scoped_refptr<Sequence> sequence) override;
   void OnMainEntry(SchedulerWorker* worker) override;
   scoped_refptr<Sequence> GetWork(SchedulerWorker* worker) override;
   void DidRunTask() override;
@@ -230,7 +231,7 @@ SchedulerWorkerPoolImpl::~SchedulerWorkerPoolImpl() {
 #endif
 }
 
-void SchedulerWorkerPoolImpl::ScheduleSequence(
+void SchedulerWorkerPoolImpl::OnCanScheduleSequence(
     scoped_refptr<Sequence> sequence) {
   const auto sequence_sort_key = sequence->GetSortKey();
   shared_priority_queue_.BeginTransaction()->Push(std::move(sequence),
@@ -238,6 +239,7 @@ void SchedulerWorkerPoolImpl::ScheduleSequence(
 
   WakeUpOneWorker();
 }
+
 void SchedulerWorkerPoolImpl::GetHistograms(
     std::vector<const HistogramBase*>* histograms) const {
   histograms->push_back(detach_duration_histogram_);
@@ -321,6 +323,11 @@ SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::
 
 SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::
     ~SchedulerWorkerDelegateImpl() = default;
+
+void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::
+    OnCanScheduleSequence(scoped_refptr<Sequence> sequence) {
+  outer_->OnCanScheduleSequence(std::move(sequence));
+}
 
 void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::OnMainEntry(
     SchedulerWorker* worker) {
