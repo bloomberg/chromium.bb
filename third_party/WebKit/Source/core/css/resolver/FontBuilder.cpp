@@ -101,7 +101,6 @@ AtomicString FontBuilder::GenericFontFamilyName(
 
 float FontBuilder::FontSizeForKeyword(unsigned keyword,
                                       bool is_monospace) const {
-  DCHECK(document_);
   return FontSize::FontSizeForKeyword(document_, keyword, is_monospace);
 }
 
