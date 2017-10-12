@@ -20,7 +20,7 @@
 
 void av1_copy_frame_mvs(const AV1_COMMON *const cm, MODE_INFO *mi, int mi_row,
                         int mi_col, int x_mis, int y_mis) {
-#if CONFIG_TMV
+#if CONFIG_TMV || CONFIG_MFMV
   const int frame_mvs_stride = ROUND_POWER_OF_TWO(cm->mi_cols, 1);
   MV_REF *frame_mvs =
       cm->cur_frame->mvs + (mi_row >> 1) * frame_mvs_stride + (mi_col >> 1);
@@ -543,9 +543,10 @@ static int add_tpl_ref_mv(const AV1_COMMON *cm,
   if (!is_inside(&xd->tile, mi_col, mi_row, cm->mi_rows, cm, &mi_pos))
     return coll_blk_count;
 
-  const TPL_MV_REF *prev_frame_mvs = cm->cur_frame->tpl_mvs +
-                                     (mi_row + mi_pos.row) * cm->mi_stride +
-                                     (mi_col + mi_pos.col);
+  const TPL_MV_REF *prev_frame_mvs =
+      cm->cur_frame->tpl_mvs +
+      ((mi_row + mi_pos.row) >> 1) * (cm->mi_stride >> 1) +
+      ((mi_col + mi_pos.col) >> 1);
 
   MV_REFERENCE_FRAME rf[2];
   av1_set_ref_frame(rf, ref_frame);
@@ -1617,12 +1618,14 @@ static int get_block_position(AV1_COMMON *cm, int *mi_r, int *mi_c, int blk_row,
       (abs(mv.col) >> 3) > MAX_OFFSET_WIDTH)
     return 0;
 
-  int row = (sign_bias == 1) ? blk_row - (mv.row >> (3 + MI_SIZE_LOG2))
-                             : blk_row + (mv.row >> (3 + MI_SIZE_LOG2));
-  int col = (sign_bias == 1) ? blk_col - (mv.col >> (3 + MI_SIZE_LOG2))
-                             : blk_col + (mv.col >> (3 + MI_SIZE_LOG2));
+  int row = (sign_bias == 1) ? blk_row - (mv.row >> (4 + MI_SIZE_LOG2))
+                             : blk_row + (mv.row >> (4 + MI_SIZE_LOG2));
+  int col = (sign_bias == 1) ? blk_col - (mv.col >> (4 + MI_SIZE_LOG2))
+                             : blk_col + (mv.col >> (4 + MI_SIZE_LOG2));
 
-  if (row < 0 || row >= cm->mi_rows || col < 0 || col >= cm->mi_cols) return 0;
+  if (row < 0 || row >= (cm->mi_rows >> 1) || col < 0 ||
+      col >= (cm->mi_cols >> 1))
+    return 0;
 
   *mi_r = row;
   *mi_c = col;
@@ -1648,7 +1651,7 @@ void av1_setup_motion_field(AV1_COMMON *cm) {
   TPL_MV_REF *tpl_mvs_base = cm->cur_frame->tpl_mvs;
 
   for (int ref_frame = 0; ref_frame < INTER_REFS_PER_FRAME; ++ref_frame) {
-    int size = (cm->mi_rows + 16) * cm->mi_stride;
+    int size = ((cm->mi_rows + MAX_MIB_SIZE) >> 1) * (cm->mi_stride >> 1);
     for (int idx = 0; idx < size; ++idx) {
       for (int i = 0; i < MFMV_STACK_SIZE; ++i)
         tpl_mvs_base[idx].mfmv[ref_frame][i].as_int = INVALID_MV;
@@ -1745,9 +1748,12 @@ void av1_setup_motion_field(AV1_COMMON *cm) {
     };
     // clang-format on
 
-    for (int blk_row = 0; blk_row < cm->mi_rows && !is_lst_overlay; ++blk_row) {
-      for (int blk_col = 0; blk_col < cm->mi_cols; ++blk_col) {
-        MV_REF *mv_ref = &mv_ref_base[blk_row * cm->mi_cols + blk_col];
+    const int mvs_rows = (cm->mi_rows + 1) >> 1;
+    const int mvs_cols = (cm->mi_cols + 1) >> 1;
+
+    for (int blk_row = 0; blk_row < mvs_rows && !is_lst_overlay; ++blk_row) {
+      for (int blk_col = 0; blk_col < mvs_cols; ++blk_col) {
+        MV_REF *mv_ref = &mv_ref_base[blk_row * mvs_cols + blk_col];
         MV fwd_mv = mv_ref->mv[0].as_mv;
         MV_REFERENCE_FRAME ref_frame[2] = { mv_ref->ref_frame[0],
                                             mv_ref->ref_frame[1] };
@@ -1765,7 +1771,7 @@ void av1_setup_motion_field(AV1_COMMON *cm) {
                                              this_mv.as_mv, 1);
 
           if (pos_valid) {
-            int mi_offset = mi_r * cm->mi_stride + mi_c;
+            int mi_offset = mi_r * (cm->mi_stride >> 1) + mi_c;
             tpl_mvs_base[mi_offset].mfmv[FWD_RF_OFFSET(LAST_FRAME)][0].as_int =
                 this_mv.as_int;
 
@@ -1802,7 +1808,7 @@ void av1_setup_motion_field(AV1_COMMON *cm) {
                                              this_mv.as_mv, 0);
 
           if (pos_valid) {
-            int mi_offset = mi_r * cm->mi_stride + mi_c;
+            int mi_offset = mi_r * (cm->mi_stride >> 1) + mi_c;
             get_mv_projection(&this_mv.as_mv, fwd_mv, cur_to_alt,
                               ref_frame_offset);
             tpl_mvs_base[mi_offset].mfmv[FWD_RF_OFFSET(ALTREF_FRAME)]
@@ -1870,10 +1876,12 @@ void av1_setup_motion_field(AV1_COMMON *cm) {
 #endif
     };
     // clang-format on
+    const int mvs_rows = (cm->mi_rows + 1) >> 1;
+    const int mvs_cols = (cm->mi_cols + 1) >> 1;
 
-    for (int blk_row = 0; blk_row < cm->mi_rows; ++blk_row) {
-      for (int blk_col = 0; blk_col < cm->mi_cols; ++blk_col) {
-        MV_REF *mv_ref = &mv_ref_base[blk_row * cm->mi_cols + blk_col];
+    for (int blk_row = 0; blk_row < mvs_rows; ++blk_row) {
+      for (int blk_col = 0; blk_col < mvs_cols; ++blk_col) {
+        MV_REF *mv_ref = &mv_ref_base[blk_row * mvs_cols + blk_col];
         MV fwd_mv = mv_ref->mv[0].as_mv;
         MV_REFERENCE_FRAME ref_frame[2] = { mv_ref->ref_frame[0],
                                             mv_ref->ref_frame[1] };
@@ -1890,7 +1898,7 @@ void av1_setup_motion_field(AV1_COMMON *cm) {
                                              this_mv.as_mv, 0);
 
           if (pos_valid) {
-            int mi_offset = mi_r * cm->mi_stride + mi_c;
+            int mi_offset = mi_r * (cm->mi_stride >> 1) + mi_c;
             tpl_mvs_base[mi_offset]
                 .mfmv[FWD_RF_OFFSET(ALTREF_FRAME)][ref_stamp]
                 .as_int = mv_sign_reverse(this_mv);
@@ -1984,9 +1992,12 @@ void av1_setup_motion_field(AV1_COMMON *cm) {
       gld_offset, bwd_offset, alt2_offset, alt_offset,
     };
 
-    for (int blk_row = 0; blk_row < cm->mi_rows; ++blk_row) {
-      for (int blk_col = 0; blk_col < cm->mi_cols; ++blk_col) {
-        MV_REF *mv_ref = &mv_ref_base[blk_row * cm->mi_cols + blk_col];
+    const int mvs_rows = (cm->mi_rows + 1) >> 1;
+    const int mvs_cols = (cm->mi_cols + 1) >> 1;
+
+    for (int blk_row = 0; blk_row < mvs_rows; ++blk_row) {
+      for (int blk_col = 0; blk_col < mvs_cols; ++blk_col) {
+        MV_REF *mv_ref = &mv_ref_base[blk_row * mvs_cols + blk_col];
         MV fwd_mv = mv_ref->mv[0].as_mv;
         MV_REFERENCE_FRAME ref_frame[2] = { mv_ref->ref_frame[0],
                                             mv_ref->ref_frame[1] };
@@ -2002,7 +2013,7 @@ void av1_setup_motion_field(AV1_COMMON *cm) {
                                              this_mv.as_mv, 0);
 
           if (pos_valid) {
-            int mi_offset = mi_r * cm->mi_stride + mi_c;
+            int mi_offset = mi_r * (cm->mi_stride >> 1) + mi_c;
 
             tpl_mvs_base[mi_offset]
                 .mfmv[FWD_RF_OFFSET(BWDREF_FRAME)][ref_stamp]

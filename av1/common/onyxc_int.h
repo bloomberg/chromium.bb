@@ -645,10 +645,10 @@ static INLINE void ensure_mv_buffer(RefCntBuffer *buf, AV1_COMMON *cm) {
 
 #if CONFIG_MFMV
     aom_free(buf->tpl_mvs);
-    CHECK_MEM_ERROR(
-        cm, buf->tpl_mvs,
-        (TPL_MV_REF *)aom_calloc((cm->mi_rows + MAX_MIB_SIZE) * cm->mi_stride,
-                                 sizeof(*buf->tpl_mvs)));
+    CHECK_MEM_ERROR(cm, buf->tpl_mvs, (TPL_MV_REF *)aom_calloc(
+                                          ((cm->mi_rows + MAX_MIB_SIZE) >> 1) *
+                                              (cm->mi_stride >> 1),
+                                          sizeof(*buf->tpl_mvs)));
 #endif
   }
 }
