@@ -298,16 +298,14 @@ class RasterBufferProviderTest
     worker_context_provider_ = TestContextProvider::CreateWorker();
     TestWebGraphicsContext3D* context3d = context_provider_->TestContext3d();
     context3d->set_support_sync_query(true);
-    resource_provider_ =
-        FakeResourceProvider::Create<LayerTreeResourceProvider>(
-            context_provider_.get(), &shared_bitmap_manager_,
-            &gpu_memory_buffer_manager_);
+    resource_provider_ = FakeResourceProvider::CreateLayerTreeResourceProvider(
+        context_provider_.get(), &shared_bitmap_manager_,
+        &gpu_memory_buffer_manager_);
   }
 
   void CreateSoftwareResourceProvider() {
-    resource_provider_ =
-        FakeResourceProvider::Create<LayerTreeResourceProvider>(
-            nullptr, &shared_bitmap_manager_, &gpu_memory_buffer_manager_);
+    resource_provider_ = FakeResourceProvider::CreateLayerTreeResourceProvider(
+        nullptr, &shared_bitmap_manager_, &gpu_memory_buffer_manager_);
   }
 
   void OnTimeout() {

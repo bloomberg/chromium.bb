@@ -489,13 +489,13 @@ class OverlayTest : public testing::Test {
 
     shared_bitmap_manager_ = std::make_unique<cc::TestSharedBitmapManager>();
     resource_provider_ =
-        cc::FakeResourceProvider::Create<cc::DisplayResourceProvider>(
+        cc::FakeResourceProvider::CreateDisplayResourceProvider(
             provider_.get(), shared_bitmap_manager_.get());
 
     child_provider_ = cc::TestContextProvider::Create();
     child_provider_->BindToCurrentThread();
     child_resource_provider_ =
-        cc::FakeResourceProvider::Create<cc::LayerTreeResourceProvider>(
+        cc::FakeResourceProvider::CreateLayerTreeResourceProvider(
             child_provider_.get(), shared_bitmap_manager_.get());
 
     overlay_processor_ =
@@ -542,7 +542,7 @@ TEST(OverlayTest, OverlaysProcessorHasStrategy) {
 
   auto shared_bitmap_manager = std::make_unique<cc::TestSharedBitmapManager>();
   std::unique_ptr<cc::DisplayResourceProvider> resource_provider =
-      cc::FakeResourceProvider::Create<cc::DisplayResourceProvider>(
+      cc::FakeResourceProvider::CreateDisplayResourceProvider(
           provider.get(), shared_bitmap_manager.get());
 
   auto overlay_processor =
@@ -2358,8 +2358,8 @@ class GLRendererWithOverlaysTest : public testing::Test {
     output_surface_ = std::make_unique<OutputSurfaceType>(provider_);
     output_surface_->BindToClient(&output_surface_client_);
     resource_provider_ =
-        cc::FakeResourceProvider::Create<cc::DisplayResourceProvider>(
-            provider_.get(), nullptr);
+        cc::FakeResourceProvider::CreateDisplayResourceProvider(provider_.get(),
+                                                                nullptr);
 
     provider_->support()->SetScheduleOverlayPlaneCallback(base::Bind(
         &MockOverlayScheduler::Schedule, base::Unretained(&scheduler_)));
@@ -2367,7 +2367,7 @@ class GLRendererWithOverlaysTest : public testing::Test {
     child_provider_ = cc::TestContextProvider::Create();
     child_provider_->BindToCurrentThread();
     child_resource_provider_ =
-        cc::FakeResourceProvider::Create<cc::LayerTreeResourceProvider>(
+        cc::FakeResourceProvider::CreateLayerTreeResourceProvider(
             child_provider_.get(), nullptr);
   }
 

@@ -2246,7 +2246,7 @@ class SurfaceAggregatorWithResourcesTest : public testing::Test {
   void SetUp() override {
     shared_bitmap_manager_ = base::MakeUnique<cc::TestSharedBitmapManager>();
     resource_provider_ =
-        cc::FakeResourceProvider::Create<cc::DisplayResourceProvider>(
+        cc::FakeResourceProvider::CreateDisplayResourceProvider(
             nullptr, shared_bitmap_manager_.get());
 
     aggregator_ = base::MakeUnique<SurfaceAggregator>(

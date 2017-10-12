@@ -168,12 +168,9 @@ void PixelTest::SetUpGLRenderer(bool flipped_output_surface) {
   shared_bitmap_manager_.reset(new TestSharedBitmapManager);
   gpu_memory_buffer_manager_ =
       std::make_unique<viz::TestGpuMemoryBufferManager>();
-  // Not relevant for display compositor since it's not delegated.
-  constexpr bool delegated_sync_points_required = false;
   resource_provider_ = std::make_unique<DisplayResourceProvider>(
       output_surface_->context_provider(), shared_bitmap_manager_.get(),
-      gpu_memory_buffer_manager_.get(), delegated_sync_points_required,
-      settings_.resource_settings);
+      gpu_memory_buffer_manager_.get(), settings_.resource_settings);
 
   child_context_provider_ = new TestInProcessContextProvider(nullptr);
   child_context_provider_->BindToCurrentThread();
@@ -202,11 +199,8 @@ void PixelTest::SetUpSoftwareRenderer() {
       std::make_unique<viz::SoftwareOutputDevice>()));
   output_surface_->BindToClient(output_surface_client_.get());
   shared_bitmap_manager_.reset(new TestSharedBitmapManager());
-  constexpr bool delegated_sync_points_required =
-      false;  // Meaningless for software.
   resource_provider_ = std::make_unique<DisplayResourceProvider>(
       nullptr, shared_bitmap_manager_.get(), gpu_memory_buffer_manager_.get(),
-      delegated_sync_points_required,
       settings_.resource_settings);
   auto renderer = std::make_unique<viz::SoftwareRenderer>(
       &renderer_settings_, output_surface_.get(), resource_provider_.get());
