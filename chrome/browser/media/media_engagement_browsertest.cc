@@ -262,19 +262,19 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
-                       DoNotRecordEngagement_NotVisible) {
+                       RecordEngagement_NotVisible) {
   LoadTestPageAndWaitForPlayAndAudible("engagement_test.html");
   OpenTab();
   AdvanceMeaningfulPlaybackTime();
-  ExpectScores(1, 0);
+  ExpectScores(1, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,
-                       DoNotRecordEngagement_NotVisible_AudioOnly) {
+                       RecordEngagement_NotVisible_AudioOnly) {
   LoadTestPageAndWaitForPlayAndAudible("engagement_test_audio.html");
   OpenTab();
   AdvanceMeaningfulPlaybackTime();
-  ExpectScores(1, 0);
+  ExpectScores(1, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest,

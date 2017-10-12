@@ -24,8 +24,6 @@ class MediaEngagementContentsObserver : public content::WebContentsObserver {
       content::NavigationHandle* navigation_handle) override;
   void ReadyToCommitNavigation(
       content::NavigationHandle* navigation_handle) override;
-  void WasShown() override;
-  void WasHidden() override;
   void MediaStartedPlaying(const MediaPlayerInfo& media_player_info,
                            const MediaPlayerId& media_player_id) override;
   void MediaStoppedPlaying(const MediaPlayerInfo& media_player_info,
@@ -160,7 +158,6 @@ class MediaEngagementContentsObserver : public content::WebContentsObserver {
   // Record the score and change in score to UKM.
   void RecordUkmMetrics();
 
-  bool is_visible_ = false;
   bool significant_playback_recorded_ = false;
 
   // Records the engagement score for the current origin to a histogram so we
