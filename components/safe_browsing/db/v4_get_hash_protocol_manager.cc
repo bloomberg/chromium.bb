@@ -268,6 +268,7 @@ void V4GetHashProtocolManager::ClearCache() {
 void V4GetHashProtocolManager::GetFullHashes(
     const FullHashToStoreAndHashPrefixesMap&
         full_hash_to_store_and_hash_prefixes,
+    const std::vector<std::string>& list_client_states,
     FullHashCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -300,7 +301,8 @@ void V4GetHashProtocolManager::GetFullHashes(
     return;
   }
 
-  std::string req_base64 = GetHashRequest(prefixes_to_request);
+  std::string req_base64 =
+      GetHashRequest(prefixes_to_request, list_client_states);
   GURL gethash_url;
   net::HttpRequestHeaders headers;
   GetHashUrlAndHeaders(req_base64, &gethash_url, &headers);
@@ -372,7 +374,11 @@ void V4GetHashProtocolManager::GetFullHashesWithApis(
         GetChromeUrlApiId(), prefix);
   }
 
+  // This is a special method that is called from SafeBrowsingDatabaseManager
+  // that may not be PVer4 so it does not have any notion of lists being synced,
+  // therefore |list_client_states| is empty.
   GetFullHashes(full_hash_to_store_and_hash_prefixes,
+                {} /* list_client_states */,
                 base::Bind(&V4GetHashProtocolManager::OnFullHashForApi,
                            base::Unretained(this), api_callback, full_hashes));
 }
@@ -473,10 +479,18 @@ void V4GetHashProtocolManager::GetFullHashCachedResults(
 }
 
 std::string V4GetHashProtocolManager::GetHashRequest(
-    const std::vector<HashPrefix>& prefixes_to_request) {
+    const std::vector<HashPrefix>& prefixes_to_request,
+    const std::vector<std::string>& list_client_states) {
   DCHECK(!prefixes_to_request.empty());
 
   FindFullHashesRequest req;
+
+  V4ProtocolManagerUtil::SetClientInfoFromConfig(req.mutable_client(), config_);
+
+  for (const auto& client_state : list_client_states) {
+    req.add_client_states(client_state);
+  }
+
   ThreatInfo* info = req.mutable_threat_info();
   for (const PlatformType p : platform_types_) {
     info->add_platform_types(p);
@@ -490,8 +504,6 @@ std::string V4GetHashProtocolManager::GetHashRequest(
   for (const HashPrefix& prefix : prefixes_to_request) {
     info->add_threat_entries()->set_hash(prefix);
   }
-
-  V4ProtocolManagerUtil::SetClientInfoFromConfig(req.mutable_client(), config_);
 
   // Serialize and Base64 encode.
   std::string req_data, req_base64;

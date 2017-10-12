@@ -167,7 +167,7 @@ TEST_F(V4GetHashProtocolManagerTest, TestGetHashErrorHandlingNetwork) {
                                                       HashPrefix("AHash"));
   std::vector<FullHashInfo> expected_results;
   pm->GetFullHashes(
-      matched_locally,
+      matched_locally, {},
       base::Bind(&V4GetHashProtocolManagerTest::ValidateGetV4HashResults,
                  base::Unretained(this), expected_results));
 
@@ -195,7 +195,7 @@ TEST_F(V4GetHashProtocolManagerTest, TestGetHashErrorHandlingResponseCode) {
                                                       HashPrefix("AHash"));
   std::vector<FullHashInfo> expected_results;
   pm->GetFullHashes(
-      matched_locally,
+      matched_locally, {},
       base::Bind(&V4GetHashProtocolManagerTest::ValidateGetV4HashResults,
                  base::Unretained(this), expected_results));
 
@@ -232,7 +232,7 @@ TEST_F(V4GetHashProtocolManagerTest, TestGetHashErrorHandlingOK) {
   expected_results.push_back(fhi);
 
   pm->GetFullHashes(
-      matched_locally,
+      matched_locally, {},
       base::Bind(&V4GetHashProtocolManagerTest::ValidateGetV4HashResults,
                  base::Unretained(this), expected_results));
 
@@ -301,13 +301,18 @@ TEST_F(V4GetHashProtocolManagerTest, TestGetHashRequest) {
   req.mutable_client()->set_client_id(pm->config_.client_name);
   req.mutable_client()->set_client_version(pm->config_.version);
 
+  std::vector<std::string> client_states = {"client_state_1", "client_state_2"};
+  for (const auto& client_state : client_states) {
+    req.add_client_states(client_state);
+  }
+
   // Serialize and Base64 encode.
   std::string req_data, req_base64;
   req.SerializeToString(&req_data);
   base::Base64Encode(req_data, &req_base64);
 
   std::vector<HashPrefix> prefixes_to_request = {one, two};
-  EXPECT_EQ(req_base64, pm->GetHashRequest(prefixes_to_request));
+  EXPECT_EQ(req_base64, pm->GetHashRequest(prefixes_to_request, client_states));
 }
 
 TEST_F(V4GetHashProtocolManagerTest, TestParseHashResponse) {
@@ -767,7 +772,7 @@ TEST_F(V4GetHashProtocolManagerTest, TestUpdatesAreMerged) {
   expected_results[1].metadata.api_permissions.insert("NOTIFICATIONS");
 
   pm->GetFullHashes(
-      matched_locally,
+      matched_locally, {},
       base::Bind(&V4GetHashProtocolManagerTest::ValidateGetV4HashResults,
                  base::Unretained(this), expected_results));
 

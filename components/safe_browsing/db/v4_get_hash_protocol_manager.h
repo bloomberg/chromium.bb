@@ -166,9 +166,12 @@ class V4GetHashProtocolManager : public net::URLFetcherDelegate {
 
   // Retrieve the full hash for a set of prefixes, and invoke the callback
   // argument when the results are retrieved. The callback may be invoked
-  // synchronously.
+  // synchronously. |list_client_states| is needed for reporting the current
+  // state of the lists on the client; it does not affect the response from the
+  // server.
   virtual void GetFullHashes(const FullHashToStoreAndHashPrefixesMap&
                                  full_hash_to_matching_hash_prefixes,
+                             const std::vector<std::string>& list_client_states,
                              FullHashCallback callback);
 
   // Retrieve the full hash and API metadata for the origin of |url|, and invoke
@@ -241,8 +244,11 @@ class V4GetHashProtocolManager : public net::URLFetcherDelegate {
 
   // Fills a FindFullHashesRequest protocol buffer for a request.
   // Returns the serialized and base 64 encoded request as a string.
+  // |prefixes_to_request| is the list of hash prefixes to get full hashes for.
+  // |list_client_states| is the client_state of each of the lists being synced.
   std::string GetHashRequest(
-      const std::vector<HashPrefix>& prefixes_to_request);
+      const std::vector<HashPrefix>& prefixes_to_request,
+      const std::vector<std::string>& list_client_states);
 
   void GetHashUrlAndHeaders(const std::string& request_base64,
                             GURL* gurl,

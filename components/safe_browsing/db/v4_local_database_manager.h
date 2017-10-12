@@ -304,6 +304,11 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
       net::URLRequestContextGetter* request_context_getter,
       const V4ProtocolConfig& config);
 
+  // Updates the |list_client_states_| with the state information in
+  // |store_state_map|.
+  void UpdateListClientStates(
+      const std::unique_ptr<StoreStateMap>& store_state_map);
+
   // The callback called each time the protocol manager downloads updates
   // successfully.
   void UpdateRequestCompleted(
@@ -330,6 +335,11 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
   // Callback to get the current extended reporting level. Needed by the update
   // manager.
   ExtendedReportingLevelCallback extended_reporting_level_callback_;
+
+  // The client_state of each list currently being synced. This is updated each
+  // time a database update completes, and used to send list client_state
+  // information in the full hash request.
+  std::vector<std::string> list_client_states_;
 
   // The list of stores to manage (for hash prefixes and full hashes). Each
   // element contains the identifier for the store, the corresponding
