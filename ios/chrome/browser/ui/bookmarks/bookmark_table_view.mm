@@ -245,8 +245,7 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
 }
 
 - (void)addNewFolder {
-  // TODO(crbug.com/695749): Check if we need to disable the 'New Folder' button
-  // when _currentRootNode is NULL.
+  [self.editingFolderCell stopEdit];
   if (!_currentRootNode) {
     return;
   }
@@ -264,6 +263,7 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
   if (!_editing && self.tableView.editing) {
     self.tableView.editing = NO;
   }
+  [self.editingFolderCell stopEdit];
   _editing = editing;
   [self resetEditNodes];
   [self.tableView setEditing:editing animated:YES];
@@ -308,6 +308,10 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
 - (void)setContentPosition:(CGFloat)position {
   // The scroll position was divided by the cell height when stored.
   [self.tableView setContentOffset:CGPointMake(0, position * kCellHeightPt)];
+}
+
+- (void)navigateAway {
+  [self.editingFolderCell stopEdit];
 }
 
 #pragma mark - UIView
@@ -465,14 +469,8 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
       [self.delegate bookmarkTableView:self selectedEditNodes:_editNodes];
       return;
     }
+    [self.editingFolderCell stopEdit];
     if (node->is_folder()) {
-      // if editing folder name, cancel it.
-      if (_editingFolderNode) {
-        _editingFolderNode = NULL;
-        self.editingFolderCell = nil;
-        self.addingNewFolder = NO;
-        [self refreshContents];
-      }
       [self.delegate bookmarkTableView:self selectedFolderForNavigation:node];
     } else {
       // Open URL. Pass this to the delegate.
@@ -700,6 +698,7 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
   [self showEmptyOrLoadingSpinnerBackgroundIfNeeded];
   [self cancelAllFaviconLoads];
   [self.delegate bookmarkTableViewRefreshContextBar:self];
+  [self.editingFolderCell stopEdit];
   [self.tableView reloadData];
   if (self.editing && !_editNodes.empty()) {
     [self restoreRowSelection];

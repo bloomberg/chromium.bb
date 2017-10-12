@@ -120,6 +120,9 @@ class PrefRegistrySyncable;
 // Scrolls the table view to the desired row position.
 - (void)setContentPosition:(CGFloat)position;
 
+// Called when back or done button of navigation bar is tapped.
+- (void)navigateAway;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_TABLE_VIEW_H_

@@ -1838,38 +1838,94 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   [BookmarksNewGenTestCase openBookmarks];
   [BookmarksNewGenTestCase openMobileBookmarks];
 
-  // Click on "New Folder".
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          @"context_bar_leading_button")]
-      performAction:grey_tap()];
-
-  // TODO(crbug.com/695749): Verify the context bar is in default state here.
-  // The keyboard is blocking the visibility to the context bar here.  So we
-  // will need to dismiss the keyboard when verifying.
-
-  // Rename the new folder as "New Folder 1".
+  // Create a new folder and name it "New Folder 1".
   NSString* newFolderTitle = @"New Folder 1";
-  [BookmarksNewGenTestCase
-      renameNewBookmarkFolderWithFolderTitle:newFolderTitle];
+  [BookmarksNewGenTestCase createNewBookmarkFolderWithFolderTitle:newFolderTitle
+                                                      pressReturn:YES];
 
   // Verify "New Folder 1" is created.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(newFolderTitle)]
-      assertWithMatcher:grey_notNil()];
+  [BookmarksNewGenTestCase verifyFolderCreatedWithTitle:newFolderTitle];
 
-  // Click on "New Folder" and create "New Folder 2".
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          @"context_bar_leading_button")]
-      performAction:grey_tap()];
+  // Create a new folder and name it "New Folder 2".
   newFolderTitle = @"New Folder 2";
-  [BookmarksNewGenTestCase
-      renameNewBookmarkFolderWithFolderTitle:newFolderTitle];
+  [BookmarksNewGenTestCase createNewBookmarkFolderWithFolderTitle:newFolderTitle
+                                                      pressReturn:YES];
 
   // Verify "New Folder 2" is created.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(newFolderTitle)]
-      assertWithMatcher:grey_notNil()];
+  [BookmarksNewGenTestCase verifyFolderCreatedWithTitle:newFolderTitle];
 
   // Verify context bar does not change after editing folder name.
   [self verifyContextBarInDefaultStateWithSelectEnabled:YES];
+}
+
+// Tests the new folder name is committed when name editing is interrupted by
+// navigating away.
+- (void)testNewFolderNameCommittedOnNavigatingAway {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kBookmarkNewGeneration);
+
+  [BookmarksNewGenTestCase setupStandardBookmarks];
+  [BookmarksNewGenTestCase openBookmarks];
+  [BookmarksNewGenTestCase openMobileBookmarks];
+
+  // Create a new folder and type "New Folder 1" without pressing return.
+  NSString* newFolderTitle = @"New Folder 1";
+  [BookmarksNewGenTestCase createNewBookmarkFolderWithFolderTitle:newFolderTitle
+                                                      pressReturn:NO];
+
+  // Interrupt the folder name editing by tapping on back.
+  [[EarlGrey selectElementWithMatcher:BookmarksBackButton()]
+      performAction:grey_tap()];
+  // Come back to Mobile Bookmarks.
+  [BookmarksNewGenTestCase openMobileBookmarks];
+
+  // Verify folder name "New Folder 1" was committed.
+  [BookmarksNewGenTestCase verifyFolderCreatedWithTitle:newFolderTitle];
+
+  // Create a new folder and type "New Folder 2" without pressing return.
+  newFolderTitle = @"New Folder 2";
+  [BookmarksNewGenTestCase createNewBookmarkFolderWithFolderTitle:newFolderTitle
+                                                      pressReturn:NO];
+
+  // Interrupt the folder name editing by tapping on done.
+  [[EarlGrey selectElementWithMatcher:BookmarksDoneButton()]
+      performAction:grey_tap()];
+  // Reopen bookmarks.
+  [BookmarksNewGenTestCase openBookmarks];
+
+  // Verify folder name "New Folder 2" was committed.
+  [BookmarksNewGenTestCase verifyFolderCreatedWithTitle:newFolderTitle];
+
+  // Create a new folder and type "New Folder 3" without pressing return.
+  newFolderTitle = @"New Folder 3";
+  [BookmarksNewGenTestCase createNewBookmarkFolderWithFolderTitle:newFolderTitle
+                                                      pressReturn:NO];
+
+  // Interrupt the folder name editing by entering Folder 1
+  [BookmarksNewGenTestCase scrollToTop];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
+      performAction:grey_tap()];
+  // Come back to Mobile Bookmarks.
+  [[EarlGrey selectElementWithMatcher:BookmarksBackButton()]
+      performAction:grey_tap()];
+
+  // Verify folder name "New Folder 3" was committed.
+  [BookmarksNewGenTestCase verifyFolderCreatedWithTitle:newFolderTitle];
+
+  // Create a new folder and type "New Folder 4" without pressing return.
+  newFolderTitle = @"New Folder 4";
+  [BookmarksNewGenTestCase createNewBookmarkFolderWithFolderTitle:newFolderTitle
+                                                      pressReturn:NO];
+
+  // Interrupt the folder name editing by tapping on First URL.
+  [BookmarksNewGenTestCase scrollToTop];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"First URL")]
+      performAction:grey_tap()];
+  // Reopen bookmarks.
+  [BookmarksNewGenTestCase openBookmarks];
+
+  // Verify folder name "New Folder 4" was committed.
+  [BookmarksNewGenTestCase verifyFolderCreatedWithTitle:newFolderTitle];
 }
 
 - (void)testEmptyBackgroundAndSelectButton {
@@ -2563,6 +2619,33 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
+// Scroll the bookmarks to top.
++ (void)scrollToTop {
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(@"bookmarksTableView")]
+      performAction:grey_scrollToContentEdge(kGREYContentEdgeTop)];
+}
+
+// Scroll the bookmarks to bottom.
++ (void)scrollToBottom {
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(@"bookmarksTableView")]
+      performAction:grey_scrollToContentEdge(kGREYContentEdgeBottom)];
+}
+
+// Verify a folder with given name is created and it is not being edited.
++ (void)verifyFolderCreatedWithTitle:(NSString*)folderTitle {
+  // scroll to bottom to make sure new folder appears.
+  [BookmarksNewGenTestCase scrollToBottom];
+  // verify the folder is created.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(folderTitle)]
+      assertWithMatcher:grey_notNil()];
+  // verify the editable textfield is gone.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(@"bookmark_editing_text")]
+      assertWithMatcher:grey_nil()];
+}
+
 // Context bar strings.
 + (NSString*)contextBarNewFolderString {
   return l10n_util::GetNSString(IDS_IOS_BOOKMARK_CONTEXT_BAR_NEW_FOLDER);
@@ -2584,8 +2667,14 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   return l10n_util::GetNSString(IDS_IOS_BOOKMARK_CONTEXT_BAR_MORE);
 }
 
-// Rename title of the newly created folder.
-+ (void)renameNewBookmarkFolderWithFolderTitle:(NSString*)folderTitle {
+// Create a new folder with given title.
++ (void)createNewBookmarkFolderWithFolderTitle:(NSString*)folderTitle
+                                   pressReturn:(BOOL)pressReturn {
+  // Click on "New Folder".
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          @"context_bar_leading_button")]
+      performAction:grey_tap()];
+
   NSString* titleIdentifier = @"bookmark_editing_text";
 
   // Type the folder title.
@@ -2595,13 +2684,17 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
       performAction:grey_replaceText(folderTitle)];
 
   // Press the keyboard return key.
-  [[EarlGrey
-      selectElementWithMatcher:grey_allOf(grey_accessibilityID(titleIdentifier),
-                                          grey_sufficientlyVisible(), nil)]
-      performAction:grey_typeText(@"\n")];
+  if (pressReturn) {
+    [[EarlGrey
+        selectElementWithMatcher:grey_allOf(
+                                     grey_accessibilityID(titleIdentifier),
+                                     grey_sufficientlyVisible(), nil)]
+        performAction:grey_typeText(@"\n")];
 
-  // Wait until the editing textfield is gone.
-  [BookmarksNewGenTestCase waitForDeletionOfBookmarkWithTitle:titleIdentifier];
+    // Wait until the editing textfield is gone.
+    [BookmarksNewGenTestCase
+        waitForDeletionOfBookmarkWithTitle:titleIdentifier];
+  }
 }
 
 // TODO(crbug.com/695749): Add egtests for:
@@ -2614,5 +2707,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
 // 4. Restoring y position when opening from cache.
 // 5. Adding new folder when when existing bookmarks list covers full screen
 //    height,to ensure we scroll to the newly added folder.
+// 6. Test new folder name is committed when name editing is interrupted by
+// tapping context bar buttons.
 
 @end
