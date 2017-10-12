@@ -815,6 +815,7 @@ extern const char kTcpFastOpenDescription[];
 extern const char kTopChromeMd[];
 extern const char kTopChromeMdDescription[];
 extern const char kTopChromeMdMaterial[];
+extern const char kTopChromeMdMaterialAuto[];
 extern const char kTopChromeMdMaterialHybrid[];
 
 extern const char kThreadedScrollingName[];

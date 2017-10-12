@@ -77,6 +77,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/base/win/hidden_window.h"
 #include "ui/base/win/message_box_win.h"
 #include "ui/gfx/platform_font_win.h"
 #include "ui/gfx/switches.h"
@@ -504,7 +505,8 @@ void ChromeBrowserMainPartsWin::PostProfileInit() {
 void ChromeBrowserMainPartsWin::PostBrowserStart() {
   ChromeBrowserMainParts::PostBrowserStart();
 
-  UMA_HISTOGRAM_BOOLEAN("Windows.Tablet", base::win::IsTabletDevice(nullptr));
+  UMA_HISTOGRAM_BOOLEAN("Windows.Tablet",
+      base::win::IsTabletDevice(nullptr, ui::GetHiddenWindow()));
 
   // Set up a task to verify installed modules in the current process.
   // TODO(gab): Use base::PostTaskWithTraits() directly when we're convinced

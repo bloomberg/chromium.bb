@@ -139,9 +139,6 @@ bool IsWindows10TabletMode(HWND hwnd) {
     return false;
 
   ScopedComPtr<ABI::Windows::UI::ViewManagement::IUIViewSettings> view_settings;
-  // TODO(ananta)
-  // Avoid using GetForegroundWindow here and pass in the HWND of the window
-  // intiating the request to display the keyboard.
   hr = view_settings_interop->GetForWindow(hwnd, IID_PPV_ARGS(&view_settings));
   if (FAILED(hr))
     return false;
@@ -157,7 +154,7 @@ bool IsWindows10TabletMode(HWND hwnd) {
 // if the keyboard count is 1 or more.. While this will work in most cases
 // it won't work if there are devices which expose keyboard interfaces which
 // are attached to the machine.
-bool IsKeyboardPresentOnSlate(std::string* reason) {
+bool IsKeyboardPresentOnSlate(std::string* reason, HWND hwnd) {
   bool result = false;
 
   if (GetVersion() < VERSION_WIN8) {
@@ -185,7 +182,7 @@ bool IsKeyboardPresentOnSlate(std::string* reason) {
   }
 
   // If it is a tablet device we assume that there is no keyboard attached.
-  if (IsTabletDevice(reason)) {
+  if (IsTabletDevice(reason, hwnd)) {
     if (reason)
       *reason += "Tablet device.\n";
     return false;
@@ -428,14 +425,14 @@ void SetAbortBehaviorForCrashReporting() {
   signal(SIGABRT, ForceCrashOnSigAbort);
 }
 
-bool IsTabletDevice(std::string* reason) {
+bool IsTabletDevice(std::string* reason, HWND hwnd) {
   if (GetVersion() < VERSION_WIN8) {
     if (reason)
       *reason = "Tablet device detection not supported below Windows 8\n";
     return false;
   }
 
-  if (IsWindows10TabletMode(::GetForegroundWindow()))
+  if (IsWindows10TabletMode(hwnd))
     return true;
 
   if (GetSystemMetrics(SM_MAXIMUMTOUCHES) == 0) {

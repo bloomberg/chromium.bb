@@ -612,8 +612,8 @@ ScreenWinDisplay ScreenWin::GetScreenWinDisplay(
   }
   // There is 1:1 correspondence between MONITORINFOEX and ScreenWinDisplay.
   // If we make it here, it means we have no displays and we should hand out the
-  // default display.
-  DCHECK_EQ(screen_win_displays_.size(), 0u);
+  // default display. [Sometimes we get here anyway: crbug.com/768845]
+  // DCHECK_EQ(screen_win_displays_.size(), 0u);
   return ScreenWinDisplay();
 }
 
