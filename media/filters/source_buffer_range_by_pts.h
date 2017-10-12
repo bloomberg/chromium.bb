@@ -209,6 +209,9 @@ class MEDIA_EXPORT SourceBufferRangeByPts : public SourceBufferRange {
   // presentation end time of this range. Hence this helper method.
   void UpdateEndTimeUsingLastGOP();
 
+  // Helper for debugging state.
+  std::string ToStringForDebugging() const;
+
   // If the first buffer in this range is the beginning of a coded frame group,
   // |range_start_pts_| is the presentation time when the coded frame group
   // begins. This is especially important in muxed media where the first coded
