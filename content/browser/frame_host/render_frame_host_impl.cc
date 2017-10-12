@@ -14,6 +14,7 @@
 #include "base/feature_list.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/process/kill.h"
@@ -91,6 +92,7 @@
 #include "content/common/site_isolation_policy.h"
 #include "content/common/swapped_out_messages.h"
 #include "content/common/widget.mojom.h"
+#include "content/network/restricted_cookie_manager_impl.h"
 #include "content/public/browser/ax_event_notification_details.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_context.h"
@@ -112,6 +114,7 @@
 #include "content/public/common/file_chooser_file_info.h"
 #include "content/public/common/file_chooser_params.h"
 #include "content/public/common/isolated_world_ids.h"
+#include "content/public/common/network_service.mojom.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
@@ -2871,6 +2874,30 @@ void RenderFrameHostImpl::IssueKeepAliveHandle(
   keep_alive_handle_factory_->Create(std::move(request));
 }
 
+namespace {
+
+void GetRestrictedCookieManager(
+    RenderFrameHostImpl* render_frame_host_impl,
+    network::mojom::RestrictedCookieManagerRequest request) {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableExperimentalWebPlatformFeatures)) {
+    return;
+  }
+
+  BrowserContext* browser_context =
+      render_frame_host_impl->GetProcess()->GetBrowserContext();
+  StoragePartition* storage_partition =
+      BrowserContext::GetDefaultStoragePartition(browser_context);
+  mojom::NetworkContext* network_context =
+      storage_partition->GetNetworkContext();
+  uint32_t render_process_id = render_frame_host_impl->GetProcess()->GetID();
+  uint32_t render_frame_id = render_frame_host_impl->GetRoutingID();
+  network_context->GetRestrictedCookieManager(
+      std::move(request), render_process_id, render_frame_id);
+}
+
+}  // anonymous namespace
+
 void RenderFrameHostImpl::RunCreateWindowCompleteCallback(
     CreateNewWindowCallback callback,
     mojom::CreateNewWindowReplyPtr reply,
@@ -3042,6 +3069,9 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   }
 
   registry_->AddInterface(base::Bind(&media::VideoDecodeStatsRecorder::Create));
+
+  registry_->AddInterface(
+      base::BindRepeating(GetRestrictedCookieManager, base::Unretained(this)));
 }
 
 void RenderFrameHostImpl::ResetWaitingState() {

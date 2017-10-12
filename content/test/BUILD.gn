@@ -1508,6 +1508,7 @@ test("content_unittests") {
     "../network/network_context_unittest.cc",
     "../network/network_service_unittest.cc",
     "../network/proxy_resolver_factory_mojo_unittest.cc",
+    "../network/restricted_cookie_manager_impl_unittest.cc",
     "../network/url_loader_unittest.cc",
     "../public/common/simple_url_loader_unittest.cc",
     "../public/common/url_utils_unittest.cc",

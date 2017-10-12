@@ -10,6 +10,7 @@ import "url_loader.mojom";
 import "url_loader_factory.mojom";
 import "url/mojo/url.mojom";
 import "services/network/public/interfaces/cookie_manager.mojom";
+import "services/network/public/interfaces/restricted_cookie_manager.mojom";
 
 // Parameters for constructing a network context.
 struct NetworkContextParams {
@@ -72,6 +73,12 @@ interface NetworkContext {
 
   // Get the CookieManager associated with this network context.
   GetCookieManager(network.mojom.CookieManager& cookie_manager);
+
+  // TODO(crbug.com/729800): Switch from {process,frame}_id to the network
+  //                         service's representation of security principals.
+  GetRestrictedCookieManager(
+      network.mojom.RestrictedCookieManager& restricted_cookie_manager,
+      int32 render_process_id, int32 render_frame_id);
 
   // Clears network objects with implicit URL history information. Data related
   // to events that happened prior to |start_time| may be retained. Only applies

@@ -91,6 +91,10 @@
       status: "experimental",
     },
     {
+      name: "AsyncCookies",
+      status: "experimental",
+    },
+    {
       name: "AudioOutputDevices",
       status: "stable",
     },
