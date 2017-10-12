@@ -243,6 +243,17 @@ class ChromiumEnv : public leveldb::Env,
 // memory-infra. The class is thread safe.
 class DBTracker {
  public:
+  enum SharedReadCacheUse : int {
+    // Use for databases whose access pattern is dictated by browser code.
+    SharedReadCacheUse_Browser = 0,
+    // Use for databases whose access pattern is directly influenced by Web
+    // APIs, like Indexed DB, etc.
+    SharedReadCacheUse_Web,
+    SharedReadCacheUse_Unified,   // When Web == Browser.
+    SharedReadCacheUse_InMemory,  // Shared by all in-memory databases.
+    SharedReadCacheUse_NumCacheUses
+  };
+
   // DBTracker singleton instance.
   static DBTracker* GetInstance();
 
@@ -254,6 +265,9 @@ class DBTracker {
   static base::trace_event::MemoryAllocatorDump* GetOrCreateAllocatorDump(
       base::trace_event::ProcessMemoryDump* pmd,
       leveldb::DB* tracked_db);
+
+  // Report counts to UMA.
+  void UpdateHistograms();
 
   // Provides extra information about a tracked database.
   class TrackedDB : public leveldb::DB {
@@ -299,13 +313,15 @@ class DBTracker {
   // Checks if |db| is tracked.
   bool IsTrackedDB(const leveldb::DB* db) const;
 
-  void DatabaseOpened(TrackedDBImpl* database);
-  void DatabaseDestroyed(TrackedDBImpl* database);
+  void DatabaseOpened(TrackedDBImpl* database, SharedReadCacheUse cache_use);
+  void DatabaseDestroyed(TrackedDBImpl* database, SharedReadCacheUse cache_use);
 
   std::unique_ptr<MemoryDumpProvider> mdp_;
 
+  // Protect databases_ and database_use_count_.
   mutable base::Lock databases_lock_;
   base::LinkedList<TrackedDBImpl> databases_;
+  int database_use_count_[SharedReadCacheUse_NumCacheUses] = {};
 
   DISALLOW_COPY_AND_ASSIGN(DBTracker);
 };
