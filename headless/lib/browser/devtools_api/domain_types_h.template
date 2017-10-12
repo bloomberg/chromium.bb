@@ -52,12 +52,8 @@ class HEADLESS_EXPORT {{type.id}} {
   public:
     enum {
       kNoFieldsSet = 0,
-  {% set count = 0 %}
-  {% for property in type.properties %}
-    {% if not(property.optional) %}
-      {% set count = count + 1 %}
-      k{{property.name | to_title_case}}Set = 1 << {{count}},
-    {% endif %}
+  {% for property in type.properties|rejectattr("optional") %}
+    k{{property.name | to_title_case}}Set = 1 << {{loop.index}},
   {% endfor %}
       kAllRequiredFieldsSet = (
   {%- for property in type.properties %}
