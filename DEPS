@@ -1387,6 +1387,24 @@ hooks = [
       'bb7a8c4be8001868468ba0a76389ce4ee111620c',
     ],
   },
+
+  # Download and initialize "vpython" VirtualEnv environment packages.
+  {
+    'name': 'vpython_common',
+    'pattern': '.',
+    'action': [ 'vpython',
+                '-vpython-spec', 'src/.vpython',
+                '-vpython-tool', 'install',
+    ],
+  },
+  {
+    'name': 'vpython_webkitpy',
+    'pattern': '.',
+    'action': [ 'vpython',
+                '-vpython-spec', 'src/third_party/WebKit/Tools/Scripts/common.vpython',
+                '-vpython-tool', 'install',
+    ],
+  },
 ]
 
 recursedeps = [
