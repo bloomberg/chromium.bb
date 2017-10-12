@@ -130,6 +130,7 @@ class RendererController final : public SharedSession::Client,
   // began. |delayed_start_time| is the time that the delayed start began.
   void OnDelayedStartTimerFired(StartTrigger start_trigger,
                                 size_t decoded_bytes_before_delay,
+                                unsigned decoded_frame_count_before_delay,
                                 base::TimeTicks delayed_start_time);
 
   // Helper to request the media pipeline switch to the remoting renderer.
