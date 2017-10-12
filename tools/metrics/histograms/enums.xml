@@ -38880,20 +38880,216 @@ would be helpful to identify which type is being sent.
 </enum>
 
 <enum name="TPMVersionFingerprint">
-  <int value="305524852" label="IFX 4.32 build 0x36f variant 1"/>
-  <int value="368058567" label="STM 0xd08"/>
-  <int value="517482723" label="IFX 4.32 build 0x36f variant 2"/>
-  <int value="639195905" label="IFX 4.32 build 0x36f variant 3"/>
+<!--
+Full version information for the fingerprint enum values:
+
+  TPM family: 312e3200
+  spec level: 0000000200000003
+  manufacturer: 49465800
+  tpm_model: ffffffff
+  firmware version: 0000000000000422
+  vendor specific: 042203F20274706D3431FFFFFF
+  version fingerprint: 157181839 095e678f
+
+  TPM family: 312e3200
+  spec level: 0000000200000003
+  manufacturer: 49465800
+  tpm_model: ffffffff
+  firmware version: 0000000000000420
+  vendor specific: 0420036F0074706D3431FFFFFF
+  version fingerprint: 305524852 1235f074
+
+  TPM family: 312e3200
+  spec level: 0000000200000003
+  manufacturer: 53544d20
+  tpm_model: ffffffff
+  firmware version: 0000000000000d08
+  vendor specific: 48
+  version fingerprint: 368058567 15f020c7
+
+  TPM family: 312e3200
+  spec level: 0000000200000003
+  manufacturer: 49465800
+  tpm_model: ffffffff
+  firmware version: 0000000000000422
+  vendor specific: 042203F20274706D3338FFFFFF
+  version fingerprint: 487001745 1d070e91
+
+  TPM family: 312e3200
+  spec level: 0000000200000003
+  manufacturer: 49465800
+  tpm_model: ffffffff
+  firmware version: 0000000000000420
+  vendor specific: 0420036F0074706D3338FFFFFF
+  version fingerprint: 517482723 1ed828e3
+
+  TPM family: 312e3200
+  spec level: 0000000200000003
+  manufacturer: 49465800
+  tpm_model: ffffffff
+  firmware version: 000000000000062b
+  vendor specific: 062B00F30074706D733135FFFF
+  version fingerprint: 545386023 2081ee27
+
+  TPM family: 312e3200
+  spec level: 0000000200000003
+  manufacturer: 49465800
+  tpm_model: ffffffff
+  firmware version: 0000000000000420
+  vendor specific: 0420036F0074706D3335FFFFFF
+  version fingerprint: 639195905 26195b01
+
+  TPM family: 312e3200
+  spec level: 0000000200000003
+  manufacturer: 49465800
+  tpm_model: ffffffff
+  firmware version: 0000000000008521
+  vendor specific: 852100E30274706D3738FFFFFF
+  version fingerprint: 847042924 327cd96c
+
+  TPM family: 322e3000
+  spec level: 0000000000000074
+  manufacturer: 43524f53
+  tpm_model: 00000001
+  firmware version: 0dc5c85b01a68fe6
+  vendor specific: 784347206654504D
+  version fingerprint: 987235505 3ad804b1
+
+  TPM family: 312e3200
+  spec level: 0000000200000003
+  manufacturer: 49465800
+  tpm_model: ffffffff
+  firmware version: 0000000000000628
+  vendor specific: 062800BE0074706D733135FFFF
+  version fingerprint: 987973414 3ae34726
+
+  TPM family: 312e3200
+  spec level: 0000000200000003
+  manufacturer: 57454300
+  tpm_model: ffffffff
+  firmware version: 0000000000000345
+  vendor specific:
+  version fingerprint: 1311411160 4e2a8bd8
+
+  TPM family: 312e3200
+  spec level: 0000000200000002
+  manufacturer: 49465800
+  tpm_model: ffffffff
+  firmware version: 0000000000000312
+  vendor specific: 0312000900
+  version fingerprint: 1353576267 50adef4b
+
+  TPM family: 312e3200
+  spec level: 0000000200000003
+  manufacturer: 49465800
+  tpm_model: ffffffff
+  firmware version: 0000000000008520
+  vendor specific: 852000500074706D3738FFFFFF
+  version fingerprint: 1437720528 55b1dfd0
+
+  TPM family: 312e3200
+  spec level: 0000000200000002
+  manufacturer: 49465800
+  tpm_model: ffffffff
+  firmware version: 0000000000009312
+  vendor specific: 9312000F00
+  version fingerprint: 1451134301 567e8d5d
+
+  TPM family: 312e3200
+  spec level: 0000000200000003
+  manufacturer: 49465800
+  tpm_model: ffffffff
+  firmware version: 0000000000008520
+  vendor specific: 852000500074706D3439FFFFFF
+  version fingerprint: 1490841853 58dc70fd
+
+  TPM family: 312e3200
+  spec level: 0000000200000003
+  manufacturer: 49465800
+  tpm_model: ffffffff
+  firmware version: 0000000000008520
+  vendor specific: 852000500074706D3435FFFFFF
+  version fingerprint: 1716634300 6651c2bc
+
+  TPM family: 312e3200
+  spec level: 0000000200000003
+  manufacturer: 49465800
+  tpm_model: ffffffff
+  firmware version: 0000000000008521
+  vendor specific: 852100E30274706D3439FFFFFF
+  version fingerprint: 1733077393 674ca991
+
+  TPM family: 312e3200
+  spec level: 0000000200000003
+  manufacturer: 49465800
+  tpm_model: ffffffff
+  firmware version: 000000000000041f
+  vendor specific: 041F02C20074706D3332FFFFFF
+  version fingerprint: 1828625721 6cfe9d39
+
+  TPM family: 322e3000
+  spec level: 0000000000000074
+  manufacturer: 43524f53
+  tpm_model: 00000001
+  firmware version: 0fd788bd01a68fe6
+  vendor specific: 784347206654504D
+  version fingerprint: 1887455524 70804924
+
+  TPM family: 312e3200
+  spec level: 0000000200000003
+  manufacturer: 49465800
+  tpm_model: ffffffff
+  firmware version: 0000000000000422
+  vendor specific: 042203F20274706D3335FFFFFF
+  version fingerprint: 1941011596 73b17c8c
+
+  TPM family: 312e3200
+  spec level: 0000000200000003
+  manufacturer: 49465800
+  tpm_model: ffffffff
+  firmware version: 0000000000008521
+  vendor specific: 852100E30274706D3435FFFFFF
+  version fingerprint: 1953654937 74726899
+
+  TPM family: 312e3200
+  spec level: 0000000200000003
+  manufacturer: 49465800
+  tpm_model: ffffffff
+  firmware version: 0000000000008521
+  vendor specific: 852100E30074706D3738FFFFFF
+  version fingerprint: 1973986381 75a8a44d
+
+  TPM family: 312e3200
+  spec level: 0000000200000003
+  manufacturer: 49465800
+  tpm_model: ffffffff
+  firmware version: 0000000000000422
+  vendor specific: 042203F20274706D3332FFFFFF
+  version fingerprint: 2024714959 78aeb2cf
+-->
+
+  <int value="157181839" label="IFX 9655 rev 41 fw 4.34 build 03f2"/>
+  <int value="305524852" label="IFX 9655 rev 41 fw 4.32 build 036f"/>
+  <int value="368058567" label="STM d08"/>
+  <int value="487001745" label="IFX 9655 rev 38 fw 4.34 build 03f2"/>
+  <int value="517482723" label="IFX 9655 rev 38 fw 4.32 build 036f"/>
+  <int value="545386023" label="IFX 9670 rev 15 fw 6.43 build 00f3"/>
+  <int value="639195905" label="IFX 9655 rev 35 fw 4.32 build 036f"/>
+  <int value="847042924" label="IFX 9645 rev 78 fw 133.33 build 00e3"/>
   <int value="987235505" label="CROS 0dc5c85b01a68fe6"/>
-  <int value="987973414" label="IFX 6.40 build 0xbe"/>
-  <int value="1311411160" label="WEC 0x345"/>
-  <int value="1353576267" label="IFX 3.18 build 0x9"/>
-  <int value="1437720528" label="IFX 133.32 build 0x5 variant 1"/>
-  <int value="1451134301" label="IFX 147.18 build 0xf"/>
-  <int value="1490841853" label="IFX 133.32 build 0x5 variant 2"/>
-  <int value="1716634300" label="IFX 133.32 build 0x5 variant 3"/>
-  <int value="1828625721" label="IFX 4.31 build 0x2c2"/>
+  <int value="987973414" label="IFX 9670 rev 15 fw 6.40 build 00be"/>
+  <int value="1311411160" label="WEC 345"/>
+  <int value="1353576267" label="IFX 9635 fw 3.18 build 0009"/>
+  <int value="1437720528" label="IFX 9645 rev 78 fw 133.32 build 0050"/>
+  <int value="1451134301" label="IFX 9635 147.18 build 000f"/>
+  <int value="1490841853" label="IFX 9645 rev 49 fw 133.32 build 0050"/>
+  <int value="1716634300" label="IFX 9645 rev 45 fw 133.32 build 0050"/>
+  <int value="1733077393" label="IFX 9645 rev 49 fw 133.33 build 00e3"/>
+  <int value="1828625721" label="IFX 9655 rev 32 fw 4.31 build 02c2"/>
   <int value="1887455524" label="CROS 0fd788bd01a68fe6"/>
+  <int value="1941011596" label="IFX 9655 rev 35 fw 4.34 build 03f2"/>
+  <int value="1953654937" label="IFX 9645 rev 45 fw 133.33 build 00e3"/>
+  <int value="2024714959" label="IFX 9655 rev 32 fw 4.34 build 03f2"/>
 </enum>
 
 <enum name="TrackedPreference">
