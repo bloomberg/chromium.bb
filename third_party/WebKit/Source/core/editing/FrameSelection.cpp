@@ -1032,8 +1032,8 @@ bool FrameSelection::SelectWordAroundCaret() {
 }
 
 bool FrameSelection::SelectWordAroundPosition(const VisiblePosition& position) {
-  static const EWordSide kWordSideList[2] = {kRightWordIfOnBoundary,
-                                             kLeftWordIfOnBoundary};
+  static const EWordSide kWordSideList[2] = {kNextWordIfOnBoundary,
+                                             kPreviousWordIfOnBoundary};
   for (EWordSide word_side : kWordSideList) {
     // TODO(yoichio): We should have Position version of |start/endOfWord|
     // for avoiding unnecessary canonicalization.

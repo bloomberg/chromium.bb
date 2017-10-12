@@ -297,20 +297,19 @@ static PositionTemplate<Strategy> ComputeStartRespectingGranularityAlgorithm(
       // |wordSide|.
       // Edge case: If the caret is after the last word in a soft-wrapped line
       // or the last word in the document, select that last word
-      // (LeftWordIfOnBoundary).
+      // (kPreviousWordIfOnBoundary).
       // Edge case: If the caret is after the last word in a paragraph, select
       // from the the end of the last word to the line break (also
-      // RightWordIfOnBoundary);
+      // kNextWordIfOnBoundary);
       const VisiblePositionTemplate<Strategy> visible_start =
           CreateVisiblePosition(passed_start);
       if (IsEndOfEditableOrNonEditableContent(visible_start) ||
           (IsEndOfLine(visible_start) && !IsStartOfLine(visible_start) &&
            !IsEndOfParagraph(visible_start))) {
-        return StartOfWord(visible_start, kLeftWordIfOnBoundary)
+        return StartOfWord(visible_start, kPreviousWordIfOnBoundary)
             .DeepEquivalent();
       }
-      return StartOfWord(visible_start, kRightWordIfOnBoundary)
-          .DeepEquivalent();
+      return StartOfWord(visible_start, kNextWordIfOnBoundary).DeepEquivalent();
     }
     case TextGranularity::kSentence:
       return StartOfSentence(CreateVisiblePosition(passed_start))
@@ -370,17 +369,17 @@ static PositionTemplate<Strategy> ComputeEndRespectingGranularityAlgorithm(
       // |wordSide|.
       // Edge case: If the caret is after the last word in a soft-wrapped line
       // or the last word in the document, select that last word
-      // (|LeftWordIfOnBoundary|).
+      // (|kPreviousWordIfOnBoundary|).
       // Edge case: If the caret is after the last word in a paragraph, select
       // from the the end of the last word to the line break (also
-      // |RightWordIfOnBoundary|);
+      // |kNextWordIfOnBoundary|);
       const VisiblePositionTemplate<Strategy> original_end =
           CreateVisiblePosition(passed_end);
-      EWordSide side = kRightWordIfOnBoundary;
+      EWordSide side = kNextWordIfOnBoundary;
       if (IsEndOfEditableOrNonEditableContent(original_end) ||
           (IsEndOfLine(original_end) && !IsStartOfLine(original_end) &&
            !IsEndOfParagraph(original_end)))
-        side = kLeftWordIfOnBoundary;
+        side = kPreviousWordIfOnBoundary;
 
       const VisiblePositionTemplate<Strategy> word_end =
           EndOfWord(original_end, side);

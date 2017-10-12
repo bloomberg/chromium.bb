@@ -62,7 +62,7 @@ PositionTemplate<Strategy> EndOfWordAlgorithm(
     EWordSide side) {
   DCHECK(c.IsValid()) << c;
   VisiblePositionTemplate<Strategy> p = c;
-  if (side == kLeftWordIfOnBoundary) {
+  if (side == kPreviousWordIfOnBoundary) {
     if (IsStartOfParagraph(c))
       return c.DeepEquivalent();
 
@@ -133,9 +133,9 @@ PositionTemplate<Strategy> StartOfWordAlgorithm(
     EWordSide side) {
   DCHECK(c.IsValid()) << c;
   // TODO(yosin) This returns a null VP for c at the start of the document
-  // and |side| == |LeftWordIfOnBoundary|
+  // and |side| == |kPreviousWordIfOnBoundary|
   VisiblePositionTemplate<Strategy> p = c;
-  if (side == kRightWordIfOnBoundary) {
+  if (side == kNextWordIfOnBoundary) {
     // at paragraph end, the startofWord is the current position
     if (IsEndOfParagraph(c))
       return c.DeepEquivalent();
