@@ -42,7 +42,13 @@ class IntPoint;
 class IntRect;
 class LocalFrame;
 
-enum EWordSide { kRightWordIfOnBoundary = false, kLeftWordIfOnBoundary = true };
+// |EWordSiste| is used as a parameter of |StartOfWord()| and |EndOfWord()|
+// to control a returning position when they are called for a position before
+// word boundary.
+enum EWordSide {
+  kNextWordIfOnBoundary = false,
+  kPreviousWordIfOnBoundary = true
+};
 
 // This struct represents local caret rectangle in |layout_object|.
 struct LocalCaretRect {
@@ -132,26 +138,26 @@ PreviousPositionOf(const VisiblePositionInFlatTree&,
 // returned Position should be canonicalized with |previousBoundary()| by
 // TextItetator.
 CORE_EXPORT Position StartOfWordPosition(const VisiblePosition&,
-                                         EWordSide = kRightWordIfOnBoundary);
+                                         EWordSide = kNextWordIfOnBoundary);
 CORE_EXPORT VisiblePosition StartOfWord(const VisiblePosition&,
-                                        EWordSide = kRightWordIfOnBoundary);
+                                        EWordSide = kNextWordIfOnBoundary);
 CORE_EXPORT PositionInFlatTree
 StartOfWordPosition(const VisiblePositionInFlatTree&,
-                    EWordSide = kRightWordIfOnBoundary);
+                    EWordSide = kNextWordIfOnBoundary);
 CORE_EXPORT VisiblePositionInFlatTree
 StartOfWord(const VisiblePositionInFlatTree&,
-            EWordSide = kRightWordIfOnBoundary);
+            EWordSide = kNextWordIfOnBoundary);
 // TODO(yoichio): Replace |endOfWord| to |endOfWordPosition| because returned
 // Position should be canonicalized with |nextBoundary()| by TextItetator.
 CORE_EXPORT Position EndOfWordPosition(const VisiblePosition&,
-                                       EWordSide = kRightWordIfOnBoundary);
+                                       EWordSide = kNextWordIfOnBoundary);
 CORE_EXPORT VisiblePosition EndOfWord(const VisiblePosition&,
-                                      EWordSide = kRightWordIfOnBoundary);
+                                      EWordSide = kNextWordIfOnBoundary);
 CORE_EXPORT PositionInFlatTree
 EndOfWordPosition(const VisiblePositionInFlatTree&,
-                  EWordSide = kRightWordIfOnBoundary);
+                  EWordSide = kNextWordIfOnBoundary);
 CORE_EXPORT VisiblePositionInFlatTree
-EndOfWord(const VisiblePositionInFlatTree&, EWordSide = kRightWordIfOnBoundary);
+EndOfWord(const VisiblePositionInFlatTree&, EWordSide = kNextWordIfOnBoundary);
 VisiblePosition PreviousWordPosition(const VisiblePosition&);
 VisiblePosition NextWordPosition(const VisiblePosition&);
 
