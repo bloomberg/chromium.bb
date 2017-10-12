@@ -191,6 +191,8 @@ Still reading?
     <ignore path="AndroidManifest.xml"/>
   </issue>
   <issue id="NewApi">
+    <!-- This is rewritten by desugar after lint runs. -->
+    <ignore regexp="Call requires API level 19.*`java.util.Objects#requireNonNull`"/>
     <!-- AutoCloseable has been available since API 15, just hidden. -->
     <ignore regexp="Class requires API level 19.*java.lang.AutoCloseable"/>
     <!-- We support try-with-resources via desugar. -->
@@ -198,6 +200,7 @@ Still reading?
     <ignore regexp="Call requires API level 19.*`java.lang.Throwable#addSuppressed`"/>
     <!-- We support default methods via desugar. -->
     <ignore regexp="Default method requires API level 24"/>
+    <!-- Suppressions below this line need rationale :( -->
     <ignore regexp="Attribute `paddingStart` referenced here can result in a crash on some specific devices older than API 17"/>
     <ignore regexp="chrome/android/java/res/values-v17/styles.xml"/>
     <ignore regexp="chromecast/internal"/>
