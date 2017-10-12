@@ -1275,7 +1275,7 @@ TEST_F(TranslateManagerRenderViewHostTest, NeverTranslateLanguagePref) {
   EXPECT_TRUE(translate_prefs->CanTranslateLanguage(accept_languages, "fr"));
   SetPrefObserverExpectation(
       translate::TranslatePrefs::kPrefTranslateBlockedLanguages);
-  translate_prefs->BlockLanguage("fr");
+  translate_prefs->AddToLanguageList("fr", /*force_blocked=*/true);
   EXPECT_TRUE(translate_prefs->IsBlockedLanguage("fr"));
   EXPECT_FALSE(translate_prefs->IsSiteBlacklisted(url.host()));
   EXPECT_FALSE(translate_prefs->CanTranslateLanguage(accept_languages, "fr"));
@@ -1435,7 +1435,7 @@ TEST_F(TranslateManagerRenderViewHostTest, ContextMenu) {
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   std::unique_ptr<translate::TranslatePrefs> translate_prefs(
       ChromeTranslateClient::CreateTranslatePrefs(profile->GetPrefs()));
-  translate_prefs->BlockLanguage("fr");
+  translate_prefs->AddToLanguageList("fr", /*force_blocked=*/true);
   translate_prefs->BlacklistSite(url.host());
   EXPECT_TRUE(translate_prefs->IsBlockedLanguage("fr"));
   EXPECT_TRUE(translate_prefs->IsSiteBlacklisted(url.host()));

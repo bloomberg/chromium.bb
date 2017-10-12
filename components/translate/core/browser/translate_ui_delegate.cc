@@ -269,7 +269,8 @@ bool TranslateUIDelegate::IsLanguageBlocked() {
 
 void TranslateUIDelegate::SetLanguageBlocked(bool value) {
   if (value) {
-    prefs_->BlockLanguage(GetOriginalLanguageCode());
+    prefs_->AddToLanguageList(GetOriginalLanguageCode(),
+                              /*force_blocked=*/true);
     if (translate_manager_) {
       translate_manager_->GetLanguageState().SetTranslateEnabled(false);
       // Translation has been blocked for this language. Capture that in the

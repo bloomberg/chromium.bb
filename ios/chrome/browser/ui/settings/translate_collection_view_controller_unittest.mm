@@ -100,7 +100,7 @@ TEST_F(TranslateCollectionViewControllerTest, TestClearPreferences) {
       ChromeIOSTranslateClient::CreateTranslatePrefs(pref_service_.get()));
   translate_prefs->BlacklistSite(kBlacklistedSite);
   ASSERT_TRUE(translate_prefs->IsSiteBlacklisted(kBlacklistedSite));
-  translate_prefs->BlockLanguage(kLanguage1);
+  translate_prefs->AddToLanguageList(kLanguage1, /*force_blocked=*/true);
   ASSERT_TRUE(translate_prefs->IsBlockedLanguage(kLanguage1));
   translate_prefs->WhitelistLanguagePair(kLanguage1, kLanguage2);
   ASSERT_TRUE(

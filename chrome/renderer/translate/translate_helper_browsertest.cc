@@ -492,11 +492,11 @@ TEST_F(TranslateHelperBrowserTest, LanguageCommonMistakesAreCorrected) {
 
 // Tests that a back navigation gets a translate language message.
 TEST_F(TranslateHelperBrowserTest, BackToTranslatablePage) {
-  LoadHTML("<html><head><meta http-equiv=\"content-language\" content=\"zh\">"
-           "</head><body>This page is in Chinese.</body></html>");
+  LoadHTML("<html><head><meta http-equiv=\"content-language\" content=\"es\">"
+           "</head><body>This page is in Spanish.</body></html>");
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(fake_translate_driver_.called_new_page_);
-  EXPECT_EQ("zh", fake_translate_driver_.details_->adopted_language);
+  EXPECT_EQ("es", fake_translate_driver_.details_->adopted_language);
   fake_translate_driver_.ResetNewPageValues();
 
   content::PageState back_state = GetCurrentPageState();
@@ -509,11 +509,11 @@ TEST_F(TranslateHelperBrowserTest, BackToTranslatablePage) {
   fake_translate_driver_.ResetNewPageValues();
 
   GoBack(GURL("data:text/html;charset=utf-8,<html><head>"
-              "<meta http-equiv=\"content-language\" content=\"zh\">"
-              "</head><body>This page is in Chinese.</body></html>"),
+              "<meta http-equiv=\"content-language\" content=\"es\">"
+              "</head><body>This page is in Spanish.</body></html>"),
          back_state);
 
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(fake_translate_driver_.called_new_page_);
-  EXPECT_EQ("zh", fake_translate_driver_.details_->adopted_language);
+  EXPECT_EQ("es", fake_translate_driver_.details_->adopted_language);
 }
