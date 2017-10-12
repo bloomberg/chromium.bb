@@ -47,6 +47,9 @@
 
 namespace blink {
 
+// The maximum number of MessageEvents to dispatch from one task.
+static const int kMaximumMessagesPerTask = 200;
+
 MessagePort* MessagePort::Create(ExecutionContext& execution_context) {
   return new MessagePort(execution_context);
 }
@@ -109,7 +112,7 @@ void MessagePort::MessageAvailable() {
 
   task_runner_->PostTask(BLINK_FROM_HERE,
                          CrossThreadBind(&MessagePort::DispatchMessages,
-                                         WrapCrossThreadWeakPersistent(this)));
+                                         WrapCrossThreadPersistent(this)));
 }
 
 void MessagePort::start() {
@@ -183,7 +186,9 @@ void MessagePort::DispatchMessages() {
   if (!Started())
     return;
 
-  while (true) {
+  // There's an upper bound on the loop iterations in one DispatchMessages call,
+  // otherwise page JS could make it loop forever or starve other work.
+  for (int i = 0; i < kMaximumMessagesPerTask; ++i) {
     // Because close() doesn't cancel any in flight calls to dispatchMessages(),
     // and can be triggered by the onmessage event handler, we need to check if
     // the port is still open before each dispatch.
