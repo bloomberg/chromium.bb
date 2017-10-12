@@ -310,10 +310,6 @@ void EnterTabSwitcherWithCommand() {
   // The TabSwitcherController is only used on iPhones.
   if (!IsIPadIdiom())
     EARL_GREY_TEST_SKIPPED(@"TabSwitcherController is only used on iPads.");
-  // TODO(crbug.com/769708): reenable on iOS11.
-  if (@available(iOS 11, *)) {
-    EARL_GREY_TEST_SKIPPED(@"Test failing on iOS11.");
-  }
 
   // Load the blank test page so that JavaScript can be executed.
   const GURL kBlankPageURL = HttpServer::MakeUrl("http://blank-page");
@@ -328,11 +324,8 @@ void EnterTabSwitcherWithCommand() {
   chrome_test_util::ExecuteJavaScript(
       [NSString stringWithFormat:kAlertFormat, kCancelledMessageText], nil);
 
-  // Close the Tab that is attempting to display a dialog.
-  id<GREYMatcher> closeButton = grey_allOf(
-      grey_accessibilityID(kTabSwicherPanelCellCloseButtonAccessibilityID),
-      grey_sufficientlyVisible(), nil);
-  [[EarlGrey selectElementWithMatcher:closeButton] performAction:grey_tap()];
+  // Close the tab so that the queued dialog is cancelled.
+  [[self class] closeAllTabs];
 
   // Open a new tab.  This will exit the stack view and will make the non-
   // incognito BrowserState active.  Attempt to present an alert with
