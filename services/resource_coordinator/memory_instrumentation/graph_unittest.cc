@@ -42,12 +42,16 @@ TEST(ProcessTest, CreateAndFindNode) {
   GlobalDumpGraph global_dump_graph;
   Process graph(&global_dump_graph);
 
-  Node* first = graph.CreateNode(MemoryAllocatorDumpGuid(1), "simple/test/1");
-  Node* second = graph.CreateNode(MemoryAllocatorDumpGuid(2), "simple/test/2");
-  Node* third = graph.CreateNode(MemoryAllocatorDumpGuid(3), "simple/other/1");
-  Node* fourth = graph.CreateNode(MemoryAllocatorDumpGuid(4), "complex/path");
-  Node* fifth =
-      graph.CreateNode(MemoryAllocatorDumpGuid(5), "complex/path/child/1");
+  Node* first =
+      graph.CreateNode(MemoryAllocatorDumpGuid(1), "simple/test/1", false);
+  Node* second =
+      graph.CreateNode(MemoryAllocatorDumpGuid(2), "simple/test/2", false);
+  Node* third =
+      graph.CreateNode(MemoryAllocatorDumpGuid(3), "simple/other/1", false);
+  Node* fourth =
+      graph.CreateNode(MemoryAllocatorDumpGuid(4), "complex/path", false);
+  Node* fifth = graph.CreateNode(MemoryAllocatorDumpGuid(5),
+                                 "complex/path/child/1", false);
 
   ASSERT_EQ(graph.FindNode("simple/test/1"), first);
   ASSERT_EQ(graph.FindNode("simple/test/2"), second);
@@ -67,11 +71,38 @@ TEST(ProcessTest, CreateNodeParent) {
   GlobalDumpGraph global_dump_graph;
   Process graph(&global_dump_graph);
 
-  Node* parent = graph.CreateNode(MemoryAllocatorDumpGuid(1), "simple");
-  Node* child = graph.CreateNode(MemoryAllocatorDumpGuid(1), "simple/child");
+  Node* parent = graph.CreateNode(MemoryAllocatorDumpGuid(1), "simple", false);
+  Node* child =
+      graph.CreateNode(MemoryAllocatorDumpGuid(1), "simple/child", false);
 
   ASSERT_EQ(parent->parent(), graph.root());
   ASSERT_EQ(child->parent(), parent);
+}
+
+TEST(ProcessTest, WeakAndExplicit) {
+  GlobalDumpGraph global_dump_graph;
+  Process graph(&global_dump_graph);
+
+  Node* first =
+      graph.CreateNode(MemoryAllocatorDumpGuid(1), "simple/test/1", true);
+  Node* second =
+      graph.CreateNode(MemoryAllocatorDumpGuid(2), "simple/test/2", false);
+
+  ASSERT_TRUE(first->is_weak());
+  ASSERT_FALSE(second->is_weak());
+
+  ASSERT_TRUE(first->is_explicit());
+  ASSERT_TRUE(second->is_explicit());
+
+  Node* parent = graph.FindNode("simple/test");
+  ASSERT_NE(parent, nullptr);
+  ASSERT_FALSE(parent->is_weak());
+  ASSERT_FALSE(parent->is_explicit());
+
+  Node* grandparent = graph.FindNode("simple");
+  ASSERT_NE(grandparent, nullptr);
+  ASSERT_FALSE(grandparent->is_weak());
+  ASSERT_FALSE(grandparent->is_explicit());
 }
 
 TEST(NodeTest, GetChild) {
