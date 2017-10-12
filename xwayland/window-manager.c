@@ -410,19 +410,13 @@ dump_cardinal_array_elem(FILE *fp, unsigned format,
 }
 
 static void
-dump_cardinal_array(xcb_get_property_reply_t *reply)
+dump_cardinal_array(FILE *fp, xcb_get_property_reply_t *reply)
 {
 	unsigned i = 0;
-	FILE *fp;
 	void *arr;
 	char *str = NULL;
-	size_t size = 0;
 
 	assert(reply->type == XCB_ATOM_CARDINAL);
-
-	fp = open_memstream(&str, &size);
-	if (!fp)
-		return;
 
 	arr = xcb_get_property_value(reply);
 
@@ -432,10 +426,6 @@ dump_cardinal_array(xcb_get_property_reply_t *reply)
 					     arr, reply->value_len, i);
 	fprintf(fp, "]");
 
-	if (fclose(fp) != 0)
-		return;
-
-	wm_log_continue("%s\n", str);
 	free(str);
 }
 
@@ -449,22 +439,29 @@ dump_property(struct weston_wm *wm,
 	xcb_window_t *window_value;
 	int width, len;
 	uint32_t i;
+	FILE *fp;
+	char *logstr;
+	size_t logsize;
 
-	width = wm_log_continue("%s: ", get_atom_name(wm->conn, property));
-	if (reply == NULL) {
-		wm_log_continue("(no reply)\n");
+	fp = open_memstream(&logstr, &logsize);
+	if (!fp)
 		return;
+
+	width = fprintf(fp, "%s: ", get_atom_name(wm->conn, property));
+	if (reply == NULL) {
+		fprintf(fp, "(no reply)\n");
+		goto out;
 	}
 
-	width += wm_log_continue("%s/%d, length %d (value_len %d): ",
-				 get_atom_name(wm->conn, reply->type),
-				 reply->format,
-				 xcb_get_property_value_length(reply),
-				 reply->value_len);
+	width += fprintf(fp, "%s/%d, length %d (value_len %d): ",
+			 get_atom_name(wm->conn, reply->type),
+			 reply->format,
+			 xcb_get_property_value_length(reply),
+			 reply->value_len);
 
 	if (reply->type == wm->atom.incr) {
 		incr_value = xcb_get_property_value(reply);
-		wm_log_continue("%d\n", *incr_value);
+		fprintf(fp, "%d\n", *incr_value);
 	} else if (reply->type == wm->atom.utf8_string ||
 	           reply->type == wm->atom.string) {
 		text_value = xcb_get_property_value(reply);
@@ -472,29 +469,34 @@ dump_property(struct weston_wm *wm,
 			len = 40;
 		else
 			len = reply->value_len;
-		wm_log_continue("\"%.*s\"\n", len, text_value);
+		fprintf(fp, "\"%.*s\"\n", len, text_value);
 	} else if (reply->type == XCB_ATOM_ATOM) {
 		atom_value = xcb_get_property_value(reply);
 		for (i = 0; i < reply->value_len; i++) {
 			name = get_atom_name(wm->conn, atom_value[i]);
 			if (width + strlen(name) + 2 > 78) {
-				wm_log_continue("\n    ");
+				fprintf(fp, "\n    ");
 				width = 4;
 			} else if (i > 0) {
-				width +=  wm_log_continue(", ");
+				width +=  fprintf(fp, ", ");
 			}
 
-			width +=  wm_log_continue("%s", name);
+			width +=  fprintf(fp, "%s", name);
 		}
-		wm_log_continue("\n");
+		fprintf(fp, "\n");
 	} else if (reply->type == XCB_ATOM_CARDINAL) {
-		dump_cardinal_array(reply);
+		dump_cardinal_array(fp, reply);
 	} else if (reply->type == XCB_ATOM_WINDOW && reply->format == 32) {
 		window_value = xcb_get_property_value(reply);
-		wm_log_continue("win %u\n", *window_value);
+		fprintf(fp, "win %u\n", *window_value);
 	} else {
-		wm_log_continue("huh?\n");
+		fprintf(fp, "huh?\n");
 	}
+
+out:
+	if (fclose(fp) == 0)
+		wm_log_continue("%s", logstr);
+	free(logstr);
 }
 
 static void
