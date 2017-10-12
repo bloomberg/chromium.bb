@@ -476,7 +476,7 @@ TEST_P(CompositedLayerMappingTest, InterestRectChangedEnoughToRepaintEmpty) {
   EXPECT_FALSE(
       InterestRectChangedEnoughToRepaint(IntRect(), IntRect(), layer_size));
   // Going from empty to non-empty means we must re-record because it could be
-  // the first frame after construction or Clear.
+  // the second frame after construction or Clear.
   EXPECT_TRUE(InterestRectChangedEnoughToRepaint(IntRect(), IntRect(0, 0, 1, 1),
                                                  layer_size));
   // Going from non-empty to empty is not special-cased.
@@ -1040,7 +1040,7 @@ TEST_P(CompositedLayerMappingTest,
   //
   // When a box shadow is used, the main graphics layer position is offset by
   // the shadow. The scrolling contents then need to be offset in the other
-  // direction to compensate.  To make this a little clearer, for the first
+  // direction to compensate.  To make this a little clearer, for the second
   // example here the layer positions are calculated as:
   //
   //   m_graphicsLayer x = left_pos - shadow_spread + shadow_x_offset
@@ -2014,6 +2014,70 @@ TEST_P(CompositedLayerMappingTest,
   ASSERT_TRUE(child_mapping->AncestorClippingLayer());
   EXPECT_TRUE(child_mapping->AncestorClippingLayer()->MaskLayer());
   ASSERT_TRUE(child_mapping->AncestorClippingMaskLayer());
+}
+
+TEST_P(CompositedLayerMappingTest,
+       BorderRadiusPreventsSquashingWithInlineTransform) {
+  // When a node with inline transform has siblings with border radius and
+  // composited children, those siblings must not be squashed because it
+  // prevents application of a border radius clip mask.
+  SetBodyInnerHTML(
+      "<style>"
+      "  .precursor {"
+      "    width: 100px;"
+      "    height: 40px;"
+      "  }"
+      "  .container {"
+      "    position: relative;"
+      "    top: 20px;"
+      "    width: 100px;"
+      "    height: 40px;"
+      "    border: 1px solid black;"
+      "    border-radius: 10px;"
+      "    overflow: hidden;"
+      "  }"
+      "  .contents {"
+      "    height: 200px;"
+      "    width: 200px;"
+      "    position: relative;"
+      "    top: -10px;"
+      "    left: -10px;"
+      "  }"
+      "</style>"
+      "<div id='precursor' class='precursor'"
+      " style='transform: translateZ(0);'>"
+      "</div>"
+      "<div id='container1' class='container'>"
+      "  <div id='contents1' class='contents'></div>"
+      "</div>"
+      "<div id='container2' class='container'>"
+      "  <div id='contents2' class='contents'></div>"
+      "</div>");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  Element* first_child = GetDocument().getElementById("contents1");
+  ASSERT_TRUE(first_child);
+  PaintLayer* first_child_paint_layer =
+      ToLayoutBoxModelObject(first_child->GetLayoutObject())->Layer();
+  ASSERT_TRUE(first_child_paint_layer);
+  CompositedLayerMapping* first_child_mapping =
+      first_child_paint_layer->GetCompositedLayerMapping();
+  ASSERT_TRUE(first_child_mapping);
+  ASSERT_TRUE(first_child_mapping->AncestorClippingLayer());
+  EXPECT_TRUE(first_child_mapping->AncestorClippingLayer()->MaskLayer());
+  ASSERT_TRUE(first_child_mapping->AncestorClippingMaskLayer());
+
+  Element* second_child = GetDocument().getElementById("contents2");
+  ASSERT_TRUE(second_child);
+  PaintLayer* second_child_paint_layer =
+      ToLayoutBoxModelObject(second_child->GetLayoutObject())->Layer();
+  ASSERT_TRUE(second_child_paint_layer);
+  CompositedLayerMapping* second_child_mapping =
+      second_child_paint_layer->GetCompositedLayerMapping();
+  ASSERT_TRUE(second_child_mapping);
+  ASSERT_TRUE(second_child_mapping->AncestorClippingLayer());
+  EXPECT_TRUE(second_child_mapping->AncestorClippingLayer()->MaskLayer());
+  ASSERT_TRUE(second_child_mapping->AncestorClippingMaskLayer());
 }
 
 TEST_P(CompositedLayerMappingTest, StickyPositionMainThreadOffset) {

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<style>
+.precursor {
+  width: 100px;
+  height: 40px;
+  background-color: blue;
+}
+.container {
+  position: relative;
+  top: 20px;
+  width: 100px;
+  height: 40px;
+  background-color: red;
+  border: 1px solid black;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.contents {
+  background-color: green;
+  height: 200px;
+  width: 200px;
+  position: relative;
+  top: -10px;
+  left: -10px;
+}
+</style>
+<div id="precursor" class="precursor" style="transform: translateZ(0);"></div>
+<div id="container1" class="container">
+  <div id="contents1" class="contents"></div>
+</div>
+<div id="container2" class="container">
+  <div id="contents2" class="contents"></div>
+</div>
+
