@@ -387,4 +387,14 @@ TEST_F(PrefetchDispatcherTest, SuspendRemovedAfterNewBackgroundTask) {
   EXPECT_TRUE(dispatcher_task_queue()->HasPendingTasks());
 }
 
+TEST_F(PrefetchDispatcherTest, NoNetworkRequestsAfterNewURLs) {
+  PrefetchURL prefetch_url(kTestID, kTestURL, base::string16());
+  prefetch_dispatcher()->AddCandidatePrefetchURLs(
+      kTestNamespace, std::vector<PrefetchURL>(1, prefetch_url));
+  RunUntilIdle();
+
+  // We should not have started GPB
+  EXPECT_EQ(nullptr, GetRunningFetcher());
+}
+
 }  // namespace offline_pages

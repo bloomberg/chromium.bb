@@ -158,15 +158,24 @@ void PrefetchDispatcherImpl::QueueReconcileTasks() {
 }
 
 void PrefetchDispatcherImpl::QueueActionTasks() {
-  if (suspended_)
-    return;
-
   service_->GetLogger()->RecordActivity("Dispatcher: Adding action tasks.");
+
+  // Import should be run first to minimize time to import after download
+  // finishes, during the download background task.
+  std::unique_ptr<Task> import_archives_task =
+      base::MakeUnique<ImportArchivesTask>(service_->GetPrefetchStore(),
+                                           service_->GetPrefetchImporter());
+  task_queue_.AddTask(std::move(import_archives_task));
 
   std::unique_ptr<Task> download_archives_task =
       base::MakeUnique<DownloadArchivesTask>(service_->GetPrefetchStore(),
                                              service_->GetPrefetchDownloader());
   task_queue_.AddTask(std::move(download_archives_task));
+
+  // The following tasks should not be run unless we are in the background task,
+  // as we need to ensure WiFi access at that time.
+  if (!background_task_)
+    return;
 
   std::unique_ptr<Task> get_operation_task = base::MakeUnique<GetOperationTask>(
       service_->GetPrefetchStore(),
@@ -185,10 +194,6 @@ void PrefetchDispatcherImpl::QueueActionTasks() {
               weak_factory_.GetWeakPtr(), "GeneratePageBundleRequest"));
   task_queue_.AddTask(std::move(generate_page_bundle_task));
 
-  std::unique_ptr<Task> import_archives_task =
-      base::MakeUnique<ImportArchivesTask>(service_->GetPrefetchStore(),
-                                           service_->GetPrefetchImporter());
-  task_queue_.AddTask(std::move(import_archives_task));
 }
 
 void PrefetchDispatcherImpl::StopBackgroundTask() {
@@ -281,8 +286,8 @@ void PrefetchDispatcherImpl::CleanupDownloads(
     const std::map<std::string, std::pair<base::FilePath, int64_t>>&
         success_downloads) {
   task_queue_.AddTask(base::MakeUnique<DownloadCleanupTask>(
-      service_->GetPrefetchDispatcher(), service_->GetPrefetchStore(),
-      outstanding_download_ids, success_downloads));
+      this, service_->GetPrefetchStore(), outstanding_download_ids,
+      success_downloads));
 }
 
 void PrefetchDispatcherImpl::DownloadCompleted(
@@ -299,8 +304,9 @@ void PrefetchDispatcherImpl::DownloadCompleted(
   }
 
   task_queue_.AddTask(base::MakeUnique<DownloadCompletedTask>(
-      service_->GetPrefetchDispatcher(), service_->GetPrefetchStore(),
-      download_result));
+      this, service_->GetPrefetchStore(), download_result));
+  task_queue_.AddTask(base::MakeUnique<ImportArchivesTask>(
+      service_->GetPrefetchStore(), service_->GetPrefetchImporter()));
 }
 
 void PrefetchDispatcherImpl::ImportCompleted(int64_t offline_id, bool success) {
@@ -312,8 +318,7 @@ void PrefetchDispatcherImpl::ImportCompleted(int64_t offline_id, bool success) {
                                         (success ? "succeeded" : "failed"));
 
   task_queue_.AddTask(base::MakeUnique<ImportCompletedTask>(
-      service_->GetPrefetchDispatcher(), service_->GetPrefetchStore(),
-      offline_id, success));
+      this, service_->GetPrefetchStore(), offline_id, success));
 }
 
 void PrefetchDispatcherImpl::LogRequestResult(

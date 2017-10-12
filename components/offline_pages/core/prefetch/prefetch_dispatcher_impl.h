@@ -77,7 +77,7 @@ class PrefetchDispatcherImpl : public PrefetchDispatcher,
   // Adds the Action tasks to the queue. See PrefetchDispatcher interface
   // declaration for Action tasks definition.
   // Action tasks can be added to the queue either in response to periodic
-  // wakeup (when BeginBackgroundTask() is called) or any time TaskQueue is
+  // wakeup (when BeginBackgroundTask() is called) or any time TaskQueue
   // becomes idle and any task called SchedulePipelineProcessing() before.
   void QueueActionTasks();
 
