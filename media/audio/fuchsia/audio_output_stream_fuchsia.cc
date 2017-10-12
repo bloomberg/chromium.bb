@@ -92,7 +92,7 @@ base::TimeTicks AudioOutputStreamFuchsia::GetCurrentStreamTime() {
                                             parameters_.sample_rate());
 }
 
-bool AudioOutputStreamFuchsia::UpdatePresentatioDelay() {
+bool AudioOutputStreamFuchsia::UpdatePresentationDelay() {
   int result = fuchsia_audio_output_stream_get_min_delay(
       stream_, &presentation_delay_ns_);
   if (result != ZX_OK) {
@@ -114,7 +114,7 @@ void AudioOutputStreamFuchsia::PumpSamples() {
   //  1. The stream wasn't previously running.
   //  2. We missed timer deadline, e.g. after the system was suspended.
   if (started_time_.is_null() || now > GetCurrentStreamTime()) {
-    if (!UpdatePresentatioDelay())
+    if (!UpdatePresentationDelay())
       return;
 
     started_time_ = base::TimeTicks();
@@ -150,7 +150,7 @@ void AudioOutputStreamFuchsia::PumpSamples() {
     if (result == ZX_ERR_IO_MISSED_DEADLINE) {
       DLOG(ERROR) << "AudioOutputStreamFuchsia::PumpSamples() missed deadline, "
                      "resetting PTS.";
-      if (!UpdatePresentatioDelay())
+      if (!UpdatePresentationDelay())
         return;
       started_time_ = base::TimeTicks();
     } else if (result != ZX_OK) {
