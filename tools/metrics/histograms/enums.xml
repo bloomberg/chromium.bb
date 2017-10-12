@@ -1677,6 +1677,14 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="3" label="Audio and silence"/>
 </enum>
 
+<enum name="AudioOutputProxyStreamFormat">
+  <int value="0" label="Bitstream"/>
+  <int value="1" label="Linear PCM"/>
+  <int value="2" label="Low latency PCM"/>
+  <int value="3" label="Low latency PCM fall back to Fake"/>
+  <int value="4" label="Fake"/>
+</enum>
+
 <enum name="AudioOutputResamplerLowLatencyOpenStreamResult">
   <int value="0" label="Creation of low latency stream failed"/>
   <int value="1" label="Fallback to fake stream succeeded"/>

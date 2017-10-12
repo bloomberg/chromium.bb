@@ -9,6 +9,8 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -43,6 +45,18 @@ std::unique_ptr<AudioDebugRecorder> GetNullptrAudioDebugRecorder(
     const AudioParameters& params) {
   return nullptr;
 }
+
+// This enum must match the numbering for AudioOutputProxyStreamFormat in
+// enums.xml. Do not reorder or remove items, only add new items before
+// STREAM_FORMAT_MAX.
+enum StreamFormat {
+  STREAM_FORMAT_BITSTREAM = 0,
+  STREAM_FORMAT_PCM_LINEAR = 1,
+  STREAM_FORMAT_PCM_LOW_LATENCY = 2,
+  STREAM_FORMAT_PCM_LOW_LATENCY_FALLBACK_TO_FAKE = 3,
+  STREAM_FORMAT_FAKE = 4,
+  STREAM_FORMAT_MAX = 4,
+};
 
 }  // namespace
 
@@ -235,6 +249,8 @@ AudioOutputStream* AudioManagerBase::MakeAudioOutputStreamProxy(
     const AudioParameters& params,
     const std::string& device_id) {
   CHECK(GetTaskRunner()->BelongsToCurrentThread());
+  DCHECK(params.IsValid());
+  base::Optional<StreamFormat> uma_stream_format;
 
   // If the caller supplied an empty device id to select the default device,
   // we fetch the actual device id of the default device so that the lookup
@@ -264,7 +280,14 @@ AudioOutputStream* AudioManagerBase::MakeAudioOutputStreamProxy(
         GetPreferredOutputStreamParameters(output_device_id, params);
 
     // Ensure we only pass on valid output parameters.
-    if (!output_params.IsValid()) {
+    if (output_params.IsValid()) {
+      if (params.effects() != output_params.effects()) {
+        // Turn off effects that weren't requested.
+        output_params.set_effects(params.effects() & output_params.effects());
+      }
+
+      uma_stream_format = STREAM_FORMAT_PCM_LOW_LATENCY;
+    } else {
       // We've received invalid audio output parameters, so switch to a mock
       // output device based on the input parameters.  This may happen if the OS
       // provided us junk values for the hardware configuration.
@@ -278,11 +301,32 @@ AudioOutputStream* AudioManagerBase::MakeAudioOutputStreamProxy(
       // Tell the AudioManager to create a fake output device.
       output_params = params;
       output_params.set_format(AudioParameters::AUDIO_FAKE);
-    } else if (params.effects() != output_params.effects()) {
-      // Turn off effects that weren't requested.
-      output_params.set_effects(params.effects() & output_params.effects());
+      uma_stream_format = STREAM_FORMAT_PCM_LOW_LATENCY_FALLBACK_TO_FAKE;
     }
+
     output_params.set_latency_tag(params.latency_tag());
+
+  } else {
+    switch (output_params.format()) {
+      case AudioParameters::AUDIO_PCM_LINEAR:
+        uma_stream_format = STREAM_FORMAT_PCM_LINEAR;
+        break;
+      case AudioParameters::AUDIO_FAKE:
+        uma_stream_format = STREAM_FORMAT_FAKE;
+        break;
+      default:
+        if (output_params.IsBitstreamFormat())
+          uma_stream_format = STREAM_FORMAT_BITSTREAM;
+        else
+          NOTREACHED();
+    }
+  }
+
+  if (uma_stream_format) {
+    UMA_HISTOGRAM_ENUMERATION("Media.AudioOutputStreamProxy.StreamFormat",
+                              *uma_stream_format, STREAM_FORMAT_MAX + 1);
+  } else {
+    NOTREACHED();
   }
 
   std::unique_ptr<DispatcherParams> dispatcher_params =

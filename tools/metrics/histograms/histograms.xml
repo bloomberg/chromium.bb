@@ -31416,6 +31416,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.AudioOutputStreamProxy.StreamFormat"
+    enum="AudioOutputProxyStreamFormat">
+  <owner>olka@chromium.org</owner>
+  <summary>
+    Records format used by AudioManager to create audio output stream proxy. If
+    a fake stream is created it results in muted audio playback.
+  </summary>
+</histogram>
+
 <histogram name="Media.AudioRendererAudioGlitches" enum="AudioGlitchResult">
   <owner>henrika@chromium.org</owner>
   <summary>
