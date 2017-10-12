@@ -4,8 +4,10 @@
 
 #include "ash/lock_screen_action/lock_screen_action_background_controller.h"
 
+#include "ash/lock_screen_action/lock_screen_action_background_controller_impl.h"
 #include "ash/lock_screen_action/lock_screen_action_background_controller_stub.h"
 #include "ash/lock_screen_action/lock_screen_action_background_observer.h"
+#include "ash/public/cpp/ash_switches.h"
 #include "base/callback.h"
 
 namespace ash {
@@ -22,10 +24,12 @@ std::unique_ptr<LockScreenActionBackgroundController>
 LockScreenActionBackgroundController::Create() {
   if (g_testing_factory_callback)
     return g_testing_factory_callback->Run();
-  // TODO(tbarzic): Add a proper LockScreenActionBackgroundController
-  // implementation to be used with views lock screen implementation.
-  // http://crbug.com/746596
-  return std::make_unique<LockScreenActionBackgroundControllerStub>();
+  // Web UI based lock screen implements its own background - use the stub
+  // lock action background controller implementation unless md-based lock UI
+  // is used.
+  if (!switches::IsUsingMdLogin())
+    return std::make_unique<LockScreenActionBackgroundControllerStub>();
+  return std::make_unique<LockScreenActionBackgroundControllerImpl>();
 }
 
 // static

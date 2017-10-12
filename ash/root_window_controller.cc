@@ -88,12 +88,6 @@
 namespace ash {
 namespace {
 
-// Returns true if the md-based login/lock UI is enabled.
-bool IsUsingMdLogin() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kShowMdLogin);
-}
-
 bool IsWindowAboveContainer(aura::Window* window,
                             aura::Window* blocking_container) {
   std::vector<aura::Window*> target_path;
@@ -876,7 +870,7 @@ void RootWindowController::CreateContainers() {
 
   // The shelf should be displayed on lock screen if md-based login/lock UI is
   // enabled.
-  aura::Window* shelf_container_parent = IsUsingMdLogin()
+  aura::Window* shelf_container_parent = switches::IsUsingMdLogin()
                                              ? lock_screen_related_containers
                                              : non_lock_screen_containers;
   aura::Window* shelf_container = CreateContainer(
