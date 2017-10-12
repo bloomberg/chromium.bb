@@ -150,8 +150,11 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     return inputs_.is_root_for_isolated_group;
   }
 
-  void SetShouldHitTest(bool should_hit_test);
-  bool should_hit_test() const { return inputs_.should_hit_test; }
+  // Make the layer hit testable even if |draws_content_| is false.
+  void SetHitTestableWithoutDrawsContent(bool should_hit_test);
+  bool hit_testable_without_draws_content() const {
+    return inputs_.hit_testable_without_draws_content;
+  }
 
   void SetFilters(const FilterOperations& filters);
   const FilterOperations& filters() const { return inputs_.filters; }
@@ -550,7 +553,10 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
     bool is_root_for_isolated_group : 1;
 
-    bool should_hit_test : 1;
+    // Hit testing depends on draws_content (see: |LayerImpl::should_hit_test|)
+    // and this bit can be set to cause the LayerImpl to be hit testable without
+    // draws_content.
+    bool hit_testable_without_draws_content : 1;
 
     bool contents_opaque : 1;
 
