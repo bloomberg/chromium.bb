@@ -61,7 +61,7 @@ class PackageInfraGoBinariesStage(generic_stages.BuilderStage,
   def _PreparePackagesDir(self):
     self._PrepareArchiveDir()
     packages_dir = _GetPackageDir(self.archive_path)
-    osutils.SafeMakeDirs(packages_dir, 0o775)
+    osutils.SafeMakedirs(packages_dir, 0o775)
 
   def _PrepareArchiveDir(self):
     # Make sure local archive directory is prepared, if it was not already.
@@ -121,7 +121,7 @@ def _StageChrootFilesIntoDir(target_path, paths):
     chroot_path = path_util.FromChrootPath(os.path.join(_GO_BINDIR, path))
     install_path = os.path.join(target_path, os.path.relpath(path, '/'))
     install_parent = os.path.dirname(install_path)
-    osutils.SafeMakeDirs(install_parent, 0o775)
+    osutils.SafeMakedirs(install_parent, 0o775)
     shutil.copyfile(chroot_path, install_path)
 
 
