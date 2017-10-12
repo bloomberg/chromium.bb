@@ -70,9 +70,10 @@ const LanguageCodePair kLanguageCodeSynonyms[] = {
 // If this table is updated, please sync this with the synonym table in
 // chrome/browser/resources/settings/languages_page/languages.js.
 const LanguageCodePair kLanguageCodeChineseCompatiblePairs[] = {
-  {"zh-TW", "zh-HK"},
-  {"zh-TW", "zh-MO"},
-  {"zh-CN", "zh-SG"},
+    {"zh-TW", "zh-HK"},
+    {"zh-TW", "zh-MO"},
+    {"zh-CN", "zh-SG"},
+    {"zh-CN", "zh"},
 };
 
 const char kSecurityOrigin[] = "https://translate.googleapis.com/";
@@ -97,17 +98,21 @@ void ToTranslateLanguageSynonym(std::string* language) {
   if (main_part.empty())
     return;
 
+  // Chinese is a special case.
+  // There is not a single base language, but two: traditional and simplified.
+  // The kLanguageCodeChineseCompatiblePairs list contains the relation between
+  // various Chinese locales.
+  if (main_part == "zh") {
+    *language = main_part + tail_part;
+    return;
+  }
+
   // Apply linear search here because number of items in the list is just four.
   for (size_t i = 0; i < arraysize(kLanguageCodeSynonyms); ++i) {
     if (main_part == kLanguageCodeSynonyms[i].chrome_language) {
       main_part = std::string(kLanguageCodeSynonyms[i].translate_language);
       break;
     }
-  }
-
-  if (main_part == "zh") {
-    *language = main_part + tail_part;
-    return;
   }
 
   *language = main_part;
@@ -145,6 +150,21 @@ GURL GetTranslateSecurityOrigin() {
         command_line->GetSwitchValueASCII(switches::kTranslateSecurityOrigin);
   }
   return GURL(security_origin);
+}
+
+bool ContainsSameBaseLanguage(const std::vector<std::string>& list,
+                              const std::string& language_code) {
+  std::string base_language;
+  std::string unused_str;
+  SplitIntoMainAndTail(language_code, &base_language, &unused_str);
+  for (const auto& item : list) {
+    std::string compare_base;
+    SplitIntoMainAndTail(item, &compare_base, &unused_str);
+    if (compare_base == base_language)
+      return true;
+  }
+
+  return false;
 }
 
 }  // namespace translate

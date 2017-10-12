@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -84,6 +84,15 @@ chrome.languageSettingsPrivate.enableLanguage = function(languageCode) {};
  * @see https://developer.chrome.com/extensions/languageSettingsPrivate#method-disableLanguage
  */
 chrome.languageSettingsPrivate.disableLanguage = function(languageCode) {};
+
+/**
+ * Enables or disables translation for a given language.
+ * @param {string} languageCode
+ * @param {boolean} enable
+ * @see https://developer.chrome.com/extensions/languageSettingsPrivate#method-setEnableTranslationForLanguage
+ */
+chrome.languageSettingsPrivate.setEnableTranslationForLanguage = function(
+    languageCode, enable) {};
 
 /**
  * Gets the current status of the chosen spell check dictionaries.

@@ -31,13 +31,15 @@ const char* kPreferredLanguagesPref = nullptr;
 #endif
 const char kAcceptLanguagesPref[] = "intl.accept_languages";
 
+const char kTranslateBlockedLanguagesPref[] = "translate_blocked_languages";
+
 }  // namespace
 
 namespace translate {
 
-class TranslatePrefTest : public testing::Test {
+class TranslatePrefsTest : public testing::Test {
  protected:
-  TranslatePrefTest()
+  TranslatePrefsTest()
       : prefs_(new sync_preferences::TestingPrefServiceSyncable()) {
     translate_prefs_.reset(new translate::TranslatePrefs(
         prefs_.get(), kAcceptLanguagesPref, kPreferredLanguagesPref));
@@ -64,17 +66,39 @@ class TranslatePrefTest : public testing::Test {
     return update.GetOldestDenialTime();
   }
 
-  void ExpectLanguagePrefs(const std::string& expected_str) {
-    if (expected_str.empty()) {
+  // Checks that the provided strings are equivalent to the language prefs.
+  // Chrome OS uses a different pref, so we need to handle it separately.
+  void ExpectLanguagePrefs(const std::string& expected,
+                           const std::string& expected_chromeos) {
+    if (expected.empty()) {
       EXPECT_TRUE(prefs_->GetString(kAcceptLanguagesPref).empty());
-#if defined(OS_CHROMEOS)
-      EXPECT_TRUE(prefs_->GetString(kPreferredLanguagesPref).empty());
-#endif
     } else {
-      EXPECT_EQ(expected_str, prefs_->GetString(kAcceptLanguagesPref));
+      EXPECT_EQ(expected, prefs_->GetString(kAcceptLanguagesPref));
+    }
 #if defined(OS_CHROMEOS)
-      EXPECT_EQ(expected_str, prefs_->GetString(kPreferredLanguagesPref));
+    if (expected_chromeos.empty()) {
+      EXPECT_TRUE(prefs_->GetString(kPreferredLanguagesPref).empty());
+    } else {
+      EXPECT_EQ(expected_chromeos, prefs_->GetString(kPreferredLanguagesPref));
+    }
 #endif
+  }
+
+  // Similar to function above: this one expects both ChromeOS and other
+  // platforms to have the same value of language prefs.
+  void ExpectLanguagePrefs(const std::string& expected) {
+    ExpectLanguagePrefs(expected, expected);
+  }
+
+  void ExpectBlockedLanguageListContent(const std::vector<std::string>& list) {
+    const base::ListValue* const blacklist =
+        prefs_->GetList(kTranslateBlockedLanguagesPref);
+    const int input_size = list.size();
+    ASSERT_EQ(input_size, static_cast<int>(blacklist->GetSize()));
+    for (int i = 0; i < input_size; ++i) {
+      std::string value;
+      blacklist->GetString(i, &value);
+      EXPECT_EQ(list[i], value);
     }
   }
 
@@ -86,7 +110,7 @@ class TranslatePrefTest : public testing::Test {
   base::Time two_days_ago_;
 };
 
-TEST_F(TranslatePrefTest, IsTooOftenDeniedIn2016Q2UI) {
+TEST_F(TranslatePrefsTest, IsTooOftenDeniedIn2016Q2UI) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(translate::kTranslateUI2016Q2);
 
@@ -102,7 +126,7 @@ TEST_F(TranslatePrefTest, IsTooOftenDeniedIn2016Q2UI) {
   EXPECT_TRUE(translate_prefs_->IsTooOftenDenied(kTestLanguage));
 }
 
-TEST_F(TranslatePrefTest, IsTooOftenIgnoredIn2016Q2UI) {
+TEST_F(TranslatePrefsTest, IsTooOftenIgnoredIn2016Q2UI) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(translate::kTranslateUI2016Q2);
 
@@ -118,7 +142,7 @@ TEST_F(TranslatePrefTest, IsTooOftenIgnoredIn2016Q2UI) {
   EXPECT_TRUE(translate_prefs_->IsTooOftenDenied(kTestLanguage));
 }
 
-TEST_F(TranslatePrefTest, UpdateLastDeniedTime) {
+TEST_F(TranslatePrefsTest, UpdateLastDeniedTime) {
   // Test that denials with more than 24 hours difference between them do not
   // block the language.
   translate_prefs_->ResetDenialState();
@@ -159,13 +183,13 @@ TEST_F(TranslatePrefTest, UpdateLastDeniedTime) {
 }
 
 // Test that the default value for non-existing entries is base::Time::Null().
-TEST_F(TranslatePrefTest, DenialTimeUpdate_DefaultTimeIsNull) {
+TEST_F(TranslatePrefsTest, DenialTimeUpdate_DefaultTimeIsNull) {
   DenialTimeUpdate update(prefs_.get(), kTestLanguage, 2);
   EXPECT_TRUE(update.GetOldestDenialTime().is_null());
 }
 
 // Test that non-existing entries automatically create a ListValue.
-TEST_F(TranslatePrefTest, DenialTimeUpdate_ForceListExistence) {
+TEST_F(TranslatePrefsTest, DenialTimeUpdate_ForceListExistence) {
   DictionaryPrefUpdate dict_update(
       prefs_.get(), TranslatePrefs::kPrefTranslateLastDeniedTimeForLanguage);
   base::DictionaryValue* denial_dict = dict_update.Get();
@@ -184,7 +208,7 @@ TEST_F(TranslatePrefTest, DenialTimeUpdate_ForceListExistence) {
 
 // Test that an existing update time record (which is a double in a dict)
 // is automatically migrated to a list of update times instead.
-TEST_F(TranslatePrefTest, DenialTimeUpdate_Migrate) {
+TEST_F(TranslatePrefsTest, DenialTimeUpdate_Migrate) {
   translate_prefs_->ResetDenialState();
   DictionaryPrefUpdate dict_update(
       prefs_.get(), TranslatePrefs::kPrefTranslateLastDeniedTimeForLanguage);
@@ -208,7 +232,7 @@ TEST_F(TranslatePrefTest, DenialTimeUpdate_Migrate) {
   EXPECT_EQ(two_days_ago_, update.GetOldestDenialTime());
 }
 
-TEST_F(TranslatePrefTest, DenialTimeUpdate_SlidingWindow) {
+TEST_F(TranslatePrefsTest, DenialTimeUpdate_SlidingWindow) {
   DenialTimeUpdate update(prefs_.get(), kTestLanguage, 4);
 
   update.AddDenialTime(now_ - base::TimeDelta::FromMinutes(5));
@@ -239,7 +263,7 @@ TEST_F(TranslatePrefTest, DenialTimeUpdate_SlidingWindow) {
 // The logic of UpdateLanguageList() changes based on the value of feature
 // kImprovedLanguageSettings, which is a boolean.
 // We write two separate test cases for true and false.
-TEST_F(TranslatePrefTest, UpdateLanguageList) {
+TEST_F(TranslatePrefsTest, UpdateLanguageList) {
   ScopedFeatureList disable_feature;
   disable_feature.InitAndDisableFeature(translate::kImprovedLanguageSettings);
 
@@ -262,11 +286,7 @@ TEST_F(TranslatePrefTest, UpdateLanguageList) {
   // The list is exanded by adding the base languagese.
   languages = {"en-US", "ja", "en-CA", "fr-CA"};
   translate_prefs_->UpdateLanguageList(languages);
-  EXPECT_EQ("en-US,en,ja,en-CA,fr-CA,fr",
-            prefs_->GetString(kAcceptLanguagesPref));
-#if defined(OS_CHROMEOS)
-  EXPECT_EQ("en-US,ja,en-CA,fr-CA", prefs_->GetString(kPreferredLanguagesPref));
-#endif
+  ExpectLanguagePrefs("en-US,en,ja,en-CA,fr-CA,fr", "en-US,ja,en-CA,fr-CA");
 
   // List already expanded.
   languages = {"en-US", "en", "fr", "fr-CA"};
@@ -274,7 +294,7 @@ TEST_F(TranslatePrefTest, UpdateLanguageList) {
   ExpectLanguagePrefs("en-US,en,fr,fr-CA");
 }
 
-TEST_F(TranslatePrefTest, UpdateLanguageListFeatureEnabled) {
+TEST_F(TranslatePrefsTest, UpdateLanguageListFeatureEnabled) {
   ScopedFeatureList enable_feature;
   enable_feature.InitAndEnableFeature(translate::kImprovedLanguageSettings);
 
@@ -305,7 +325,7 @@ TEST_F(TranslatePrefTest, UpdateLanguageListFeatureEnabled) {
   ExpectLanguagePrefs("en-US,en,fr,fr-CA");
 }
 
-TEST_F(TranslatePrefTest, ULPPrefs) {
+TEST_F(TranslatePrefsTest, ULPPrefs) {
   // Mock the pref.
   // Case 1: well formed ULP.
   const char json1[] =
@@ -428,6 +448,263 @@ TEST_F(TranslatePrefTest, ULPPrefs) {
             list[0].second);  // and their probability will add to gether be 0.6
   EXPECT_EQ("fr", list[1].first);  // fr will move down to the 2nd one
   EXPECT_EQ(0.4, list[1].second);
+}
+
+TEST_F(TranslatePrefsTest, BlockLanguage) {
+  // One language.
+  translate_prefs_->BlockLanguage("en-UK");
+  ExpectBlockedLanguageListContent({"en"});
+
+  // Add a few more.
+  translate_prefs_->BlockLanguage("es-AR");
+  translate_prefs_->BlockLanguage("fr-CA");
+  ExpectBlockedLanguageListContent({"en", "es", "fr"});
+
+  // Add a duplicate.
+  translate_prefs_->ClearBlockedLanguages();
+  translate_prefs_->BlockLanguage("es-AR");
+  translate_prefs_->BlockLanguage("es-AR");
+  ExpectBlockedLanguageListContent({"es"});
+
+  // Two languages with the same base.
+  translate_prefs_->ClearBlockedLanguages();
+  translate_prefs_->BlockLanguage("fr-CA");
+  translate_prefs_->BlockLanguage("fr-FR");
+  ExpectBlockedLanguageListContent({"fr"});
+
+  // Chinese is a special case.
+  translate_prefs_->ClearBlockedLanguages();
+  translate_prefs_->BlockLanguage("zh-MO");
+  translate_prefs_->BlockLanguage("zh-CN");
+  ExpectBlockedLanguageListContent({"zh-TW", "zh-CN"});
+
+  translate_prefs_->ClearBlockedLanguages();
+  translate_prefs_->BlockLanguage("zh-TW");
+  translate_prefs_->BlockLanguage("zh-HK");
+  ExpectBlockedLanguageListContent({"zh-TW"});
+}
+
+TEST_F(TranslatePrefsTest, UnblockLanguage) {
+  // Language in the list.
+  translate_prefs_->UnblockLanguage("en-UK");
+  ExpectBlockedLanguageListContent({});
+
+  // Language not in the list.
+  translate_prefs_->BlockLanguage("en-UK");
+  translate_prefs_->UnblockLanguage("es-AR");
+  ExpectBlockedLanguageListContent({"en"});
+
+  // Language in the list but with different region.
+  translate_prefs_->UnblockLanguage("en-AU");
+  ExpectBlockedLanguageListContent({});
+
+  // Multiple languages.
+  translate_prefs_->ClearBlockedLanguages();
+  translate_prefs_->BlockLanguage("fr-CA");
+  translate_prefs_->BlockLanguage("fr-FR");
+  translate_prefs_->BlockLanguage("es-AR");
+  translate_prefs_->UnblockLanguage("fr-FR");
+  ExpectBlockedLanguageListContent({"es"});
+
+  // Chinese is a special case.
+  translate_prefs_->ClearBlockedLanguages();
+  translate_prefs_->BlockLanguage("zh-MO");
+  translate_prefs_->BlockLanguage("zh-CN");
+  translate_prefs_->UnblockLanguage("zh-TW");
+  ExpectBlockedLanguageListContent({"zh-CN"});
+
+  translate_prefs_->ClearBlockedLanguages();
+  translate_prefs_->BlockLanguage("zh-MO");
+  translate_prefs_->BlockLanguage("zh-CN");
+  translate_prefs_->UnblockLanguage("zh-CN");
+  ExpectBlockedLanguageListContent({"zh-TW"});
+}
+
+TEST_F(TranslatePrefsTest, AddToLanguageList) {
+  ScopedFeatureList disable_feature;
+  disable_feature.InitAndDisableFeature(translate::kImprovedLanguageSettings);
+  std::vector<std::string> languages;
+
+  // One language.
+  translate_prefs_->UpdateLanguageList(languages);
+  translate_prefs_->ClearBlockedLanguages();
+  translate_prefs_->AddToLanguageList("it-IT", /*force_blocked=*/true);
+  ExpectLanguagePrefs("it-IT,it", "it-IT");
+  ExpectBlockedLanguageListContent({"it"});
+
+  // Multiple languages.
+  translate_prefs_->UpdateLanguageList(languages);
+  translate_prefs_->ClearBlockedLanguages();
+  translate_prefs_->AddToLanguageList("it-IT", /*force_blocked=*/true);
+  translate_prefs_->AddToLanguageList("fr-FR", /*force_blocked=*/true);
+  translate_prefs_->AddToLanguageList("fr-CA", /*force_blocked=*/true);
+  ExpectLanguagePrefs("it-IT,it,fr-FR,fr,fr-CA", "it-IT,fr-FR,fr-CA");
+  ExpectBlockedLanguageListContent({"it", "fr"});
+
+  // Language already in list.
+  languages = {"en-US", "es-AR"};
+  translate_prefs_->UpdateLanguageList(languages);
+  translate_prefs_->ClearBlockedLanguages();
+  translate_prefs_->AddToLanguageList("es-AR", /*force_blocked=*/true);
+  ExpectLanguagePrefs("en-US,en,es-AR,es", "en-US,es-AR");
+  ExpectBlockedLanguageListContent({"es"});
+
+  // Language from same family already in list.
+  languages = {"en-US", "es-AR"};
+  translate_prefs_->UpdateLanguageList(languages);
+  translate_prefs_->ClearBlockedLanguages();
+  translate_prefs_->AddToLanguageList("es-ES", /*force_blocked=*/true);
+  ExpectLanguagePrefs("en-US,en,es-AR,es,es-ES", "en-US,es-AR,es-ES");
+  ExpectBlockedLanguageListContent({"es"});
+
+  // Force blocked false, language not already in list.
+  languages = {"en-US"};
+  translate_prefs_->UpdateLanguageList(languages);
+  translate_prefs_->ClearBlockedLanguages();
+  translate_prefs_->AddToLanguageList("it-IT", /*force_blocked=*/false);
+  ExpectLanguagePrefs("en-US,en,it-IT,it", "en-US,it-IT");
+  ExpectBlockedLanguageListContent({"it"});
+
+  // Force blocked false, language from same family already in list.
+  languages = {"en-US", "es-AR"};
+  translate_prefs_->UpdateLanguageList(languages);
+  translate_prefs_->ClearBlockedLanguages();
+  translate_prefs_->AddToLanguageList("es-ES", /*force_blocked=*/false);
+  ExpectLanguagePrefs("en-US,en,es-AR,es,es-ES", "en-US,es-AR,es-ES");
+  ExpectBlockedLanguageListContent({"es"});
+}
+
+TEST_F(TranslatePrefsTest, AddToLanguageListFeatureEnabled) {
+  ScopedFeatureList enable_feature;
+  enable_feature.InitAndEnableFeature(translate::kImprovedLanguageSettings);
+  std::vector<std::string> languages;
+
+  // Force blocked false, language not already in list.
+  languages = {"en-US"};
+  translate_prefs_->UpdateLanguageList(languages);
+  translate_prefs_->ClearBlockedLanguages();
+  translate_prefs_->AddToLanguageList("it-IT", /*force_blocked=*/false);
+  ExpectLanguagePrefs("en-US,it-IT");
+  ExpectBlockedLanguageListContent({"it"});
+
+  // Force blocked false, language from same family already in list.
+  languages = {"en-US", "es-AR"};
+  translate_prefs_->UpdateLanguageList(languages);
+  translate_prefs_->ClearBlockedLanguages();
+  translate_prefs_->AddToLanguageList("es-ES", /*force_blocked=*/false);
+  ExpectLanguagePrefs("en-US,es-AR,es-ES");
+  ExpectBlockedLanguageListContent({});
+}
+
+TEST_F(TranslatePrefsTest, RemoveFromLanguageList) {
+  ScopedFeatureList disable_feature;
+  disable_feature.InitAndDisableFeature(translate::kImprovedLanguageSettings);
+  std::vector<std::string> languages;
+
+  // Remove from empty list.
+  translate_prefs_->UpdateLanguageList(languages);
+  translate_prefs_->ClearBlockedLanguages();
+  translate_prefs_->RemoveFromLanguageList("it-IT");
+  ExpectLanguagePrefs("");
+  ExpectBlockedLanguageListContent({});
+
+  // Languages are never unblocked.
+  languages = {"en-US", "es-AR", "es-ES"};
+  translate_prefs_->UpdateLanguageList(languages);
+  translate_prefs_->ClearBlockedLanguages();
+  translate_prefs_->BlockLanguage("en-US");
+  translate_prefs_->BlockLanguage("es-AR");
+  translate_prefs_->RemoveFromLanguageList("es-ES");
+  ExpectLanguagePrefs("en-US,en,es-AR,es", "en-US,es-AR");
+  ExpectBlockedLanguageListContent({"en", "es"});
+
+// With the feature disabled, some behaviors for ChromeOS are different from
+// other platforms and should be tested separately.
+#if defined(OS_CHROMEOS)
+
+  // One language.
+  languages = {"it-IT"};
+  translate_prefs_->UpdateLanguageList(languages);
+  translate_prefs_->ClearBlockedLanguages();
+  translate_prefs_->RemoveFromLanguageList("it-IT");
+  ExpectLanguagePrefs("");
+  ExpectBlockedLanguageListContent({});
+
+  // Multiple languages.
+  languages = {"en-US", "es-AR", "fr-CA"};
+  translate_prefs_->UpdateLanguageList(languages);
+  translate_prefs_->ClearBlockedLanguages();
+  translate_prefs_->RemoveFromLanguageList("es-AR");
+  translate_prefs_->RemoveFromLanguageList("fr-CA");
+  ExpectLanguagePrefs("en-US,en", "en-US");
+  ExpectBlockedLanguageListContent({});
+
+  // Languages are never unblocked, even if it's the last of a family.
+  languages = {"en-US", "es-AR"};
+  translate_prefs_->UpdateLanguageList(languages);
+  translate_prefs_->ClearBlockedLanguages();
+  translate_prefs_->BlockLanguage("en-US");
+  translate_prefs_->BlockLanguage("es-AR");
+  translate_prefs_->RemoveFromLanguageList("es-AR");
+  ExpectLanguagePrefs("en-US,en", "en-US");
+  ExpectBlockedLanguageListContent({"en", "es"});
+
+#else
+
+  // One language.
+  languages = {"it-IT"};
+  translate_prefs_->UpdateLanguageList(languages);
+  translate_prefs_->ClearBlockedLanguages();
+  translate_prefs_->RemoveFromLanguageList("it-IT");
+  ExpectLanguagePrefs("it");
+  ExpectBlockedLanguageListContent({});
+
+  // Multiple languages.
+  languages = {"en-US", "es-AR", "fr-CA"};
+  translate_prefs_->UpdateLanguageList(languages);
+  translate_prefs_->ClearBlockedLanguages();
+  translate_prefs_->RemoveFromLanguageList("es-AR");
+  translate_prefs_->RemoveFromLanguageList("fr-CA");
+  ExpectLanguagePrefs("en-US,en,es,fr");
+  ExpectBlockedLanguageListContent({});
+
+  // Languages are never unblocked, even if it's the last of a family.
+  languages = {"en-US", "es-AR"};
+  translate_prefs_->UpdateLanguageList(languages);
+  translate_prefs_->ClearBlockedLanguages();
+  translate_prefs_->BlockLanguage("en-US");
+  translate_prefs_->BlockLanguage("es-AR");
+  translate_prefs_->RemoveFromLanguageList("es-AR");
+  ExpectLanguagePrefs("en-US,en,es");
+  ExpectBlockedLanguageListContent({"en", "es"});
+
+#endif
+}
+
+TEST_F(TranslatePrefsTest, RemoveFromLanguageListFeatureEnabled) {
+  ScopedFeatureList enable_feature;
+  enable_feature.InitAndEnableFeature(translate::kImprovedLanguageSettings);
+  std::vector<std::string> languages;
+
+  // Unblock last language of a family.
+  languages = {"en-US", "es-AR"};
+  translate_prefs_->UpdateLanguageList(languages);
+  translate_prefs_->ClearBlockedLanguages();
+  translate_prefs_->BlockLanguage("en-US");
+  translate_prefs_->BlockLanguage("es-AR");
+  translate_prefs_->RemoveFromLanguageList("es-AR");
+  ExpectLanguagePrefs("en-US");
+  ExpectBlockedLanguageListContent({"en"});
+
+  // Do not unblock if not the last language of a family.
+  languages = {"en-US", "es-AR", "es-ES"};
+  translate_prefs_->UpdateLanguageList(languages);
+  translate_prefs_->ClearBlockedLanguages();
+  translate_prefs_->BlockLanguage("en-US");
+  translate_prefs_->BlockLanguage("es-AR");
+  translate_prefs_->RemoveFromLanguageList("es-AR");
+  ExpectLanguagePrefs("en-US,es-ES");
+  ExpectBlockedLanguageListContent({"en", "es"});
 }
 
 }  // namespace translate
