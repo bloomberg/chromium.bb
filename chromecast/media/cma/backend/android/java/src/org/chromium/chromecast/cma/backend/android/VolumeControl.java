@@ -18,6 +18,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.chromecast.media.AudioContentType;
 
 /**
  * Implements the java-side of the volume control logic running on Android when using CMA backend by
