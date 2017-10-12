@@ -6,8 +6,8 @@
 
 #include <cstdint>
 
-#include "platform/scheduler/base/trace_helper.h"
 #include "platform/scheduler/renderer/task_queue_throttler.h"
+#include "platform/scheduler/util/tracing_helper.h"
 
 namespace blink {
 namespace scheduler {
@@ -104,7 +104,7 @@ void WakeUpBudgetPool::AsValueInto(base::trace_event::TracedValue* state,
 
   state->BeginArray("task_queues");
   for (TaskQueue* queue : associated_task_queues_) {
-    state->AppendString(trace_helper::PointerToString(queue));
+    state->AppendString(PointerToString(queue));
   }
   state->EndArray();
 

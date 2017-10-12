@@ -21,7 +21,6 @@
 #include "platform/scheduler/base/task_queue_impl.h"
 #include "platform/scheduler/base/task_queue_selector.h"
 #include "platform/scheduler/base/time_converter.h"
-#include "platform/scheduler/base/trace_helper.h"
 #include "platform/scheduler/base/virtual_time_domain.h"
 #include "platform/scheduler/child/scheduler_tqm_delegate.h"
 #include "platform/scheduler/renderer/auto_advancing_virtual_time_domain.h"
@@ -1566,8 +1565,7 @@ RendererSchedulerImpl::AsValueLocked(base::TimeTicks optional_now) const {
   state->BeginDictionary("web_view_schedulers");
   for (WebViewSchedulerImpl* web_view_scheduler :
        main_thread_only().web_view_schedulers) {
-    state->BeginDictionaryWithCopiedName(
-        trace_helper::PointerToString(web_view_scheduler));
+    state->BeginDictionaryWithCopiedName(PointerToString(web_view_scheduler));
     web_view_scheduler->AsValueInto(state.get());
     state->EndDictionary();
   }

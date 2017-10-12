@@ -11,12 +11,12 @@
 #include "base/optional.h"
 #include "platform/WebFrameScheduler.h"
 #include "platform/scheduler/base/real_time_domain.h"
-#include "platform/scheduler/base/trace_helper.h"
 #include "platform/scheduler/child/scheduler_tqm_delegate.h"
 #include "platform/scheduler/renderer/budget_pool.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
 #include "platform/scheduler/renderer/throttled_time_domain.h"
 #include "platform/scheduler/renderer/web_frame_scheduler_impl.h"
+#include "platform/scheduler/util/tracing_helper.h"
 
 namespace blink {
 namespace scheduler {
@@ -438,12 +438,9 @@ void TaskQueueThrottler::AsValueInto(base::trace_event::TracedValue* state,
 
   state->BeginDictionary("queue_details");
   for (const auto& map_entry : queue_details_) {
-    state->BeginDictionaryWithCopiedName(
-        trace_helper::PointerToString(map_entry.first));
-
+    state->BeginDictionaryWithCopiedName(PointerToString(map_entry.first));
     state->SetInteger("throttling_ref_count",
                       map_entry.second.throttling_ref_count);
-
     state->EndDictionary();
   }
   state->EndDictionary();

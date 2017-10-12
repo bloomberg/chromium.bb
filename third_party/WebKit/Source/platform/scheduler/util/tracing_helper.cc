@@ -4,6 +4,9 @@
 
 #include "platform/scheduler/util/tracing_helper.h"
 
+#include "base/format_macros.h"
+#include "base/strings/stringprintf.h"
+
 namespace blink {
 namespace scheduler {
 
@@ -33,6 +36,12 @@ void WarmupTracingCategories() {
   TRACE_EVENT_WARMUP_CATEGORY(kTracingCategoryNameInfo);
   TRACE_EVENT_WARMUP_CATEGORY(kTracingCategoryNameDebug);
   TRACE_EVENT_WARMUP_CATEGORY(kTracingCategoryNameVerboseSnapshots);
+}
+
+std::string PointerToString(const void* pointer) {
+  return base::StringPrintf(
+      "0x%" PRIx64,
+      static_cast<uint64_t>(reinterpret_cast<uintptr_t>(pointer)));
 }
 
 }  // namespace scheduler

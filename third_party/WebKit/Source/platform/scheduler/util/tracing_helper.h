@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_UTIL_TRACING_HELPER_H_
 #define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_UTIL_TRACING_HELPER_H_
 
+#include <string>
 #include "base/macros.h"
 #include "base/trace_event/trace_event.h"
 #include "platform/PlatformExport.h"
@@ -22,7 +23,10 @@ PLATFORM_EXPORT extern const char kTracingCategoryNameInfo[];
 PLATFORM_EXPORT extern const char kTracingCategoryNameDebug[];
 
 void WarmupTracingCategories();
+
 bool AreVerboseSnapshotsEnabled();
+
+std::string PointerToString(const void* pointer);
 
 // TRACE_EVENT macros define static variable to cache a pointer to the state
 // of category. Hence, we need distinct version for each category in order to

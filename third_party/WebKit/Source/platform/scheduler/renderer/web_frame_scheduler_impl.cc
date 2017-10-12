@@ -8,13 +8,13 @@
 #include "base/trace_event/blame_context.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/scheduler/base/real_time_domain.h"
-#include "platform/scheduler/base/trace_helper.h"
 #include "platform/scheduler/base/virtual_time_domain.h"
 #include "platform/scheduler/child/web_task_runner_impl.h"
 #include "platform/scheduler/renderer/auto_advancing_virtual_time_domain.h"
 #include "platform/scheduler/renderer/budget_pool.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
 #include "platform/scheduler/renderer/web_view_scheduler_impl.h"
+#include "platform/scheduler/util/tracing_helper.h"
 #include "public/platform/BlameContext.h"
 #include "public/platform/WebString.h"
 
@@ -341,36 +341,32 @@ void WebFrameSchedulerImpl::AsValueInto(
                        : "Subframe");
   if (loading_task_queue_) {
     state->SetString("loading_task_queue",
-                     trace_helper::PointerToString(loading_task_queue_.get()));
+                     PointerToString(loading_task_queue_.get()));
   }
   if (loading_control_task_queue_) {
-    state->SetString(
-        "loading_control_task_queue",
-        trace_helper::PointerToString(loading_control_task_queue_.get()));
+    state->SetString("loading_control_task_queue",
+                     PointerToString(loading_control_task_queue_.get()));
   }
   if (throttleable_task_queue_)
-    state->SetString(
-        "throttleable_task_queue",
-        trace_helper::PointerToString(throttleable_task_queue_.get()));
+    state->SetString("throttleable_task_queue",
+                     PointerToString(throttleable_task_queue_.get()));
   if (deferrable_task_queue_) {
-    state->SetString(
-        "deferrable_task_queue",
-        trace_helper::PointerToString(deferrable_task_queue_.get()));
+    state->SetString("deferrable_task_queue",
+                     PointerToString(deferrable_task_queue_.get()));
   }
   if (pausable_task_queue_) {
     state->SetString("pausable_task_queue",
-                     trace_helper::PointerToString(pausable_task_queue_.get()));
+                     PointerToString(pausable_task_queue_.get()));
   }
   if (unpausable_task_queue_) {
-    state->SetString(
-        "unpausable_task_queue",
-        trace_helper::PointerToString(unpausable_task_queue_.get()));
+    state->SetString("unpausable_task_queue",
+                     PointerToString(unpausable_task_queue_.get()));
   }
   if (blame_context_) {
     state->BeginDictionary("blame_context");
-    state->SetString("id_ref",
-                     trace_helper::PointerToString(
-                         reinterpret_cast<void*>(blame_context_->id())));
+    state->SetString(
+        "id_ref",
+        PointerToString(reinterpret_cast<void*>(blame_context_->id())));
     state->SetString("scope", blame_context_->scope());
     state->EndDictionary();
   }
