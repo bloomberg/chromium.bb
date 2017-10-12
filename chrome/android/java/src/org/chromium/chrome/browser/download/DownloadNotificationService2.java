@@ -228,7 +228,7 @@ public class DownloadNotificationService2 {
         updateNotification(notificationId, notification, id,
                 new DownloadSharedPreferenceEntry(id, notificationId, isOffTheRecord,
                         canDownloadWhileMetered, fileName, true, isTransient));
-        // TODO(jming): do we want to handle the pending option in a different manner?
+
         mDownloadForegroundServiceManager.updateDownloadStatus(context,
                 DownloadForegroundServiceManager.DownloadStatus.IN_PROGRESS, notificationId,
                 notification);

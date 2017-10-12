@@ -137,6 +137,16 @@ public class DownloadBroadcastManager extends Service {
                 break;
 
             case ACTION_DOWNLOAD_RESUME:
+                // If user manually resumes a download, update the network type if it
+                // is not metered previously.
+                boolean canDownloadWhileMetered = entry.canDownloadWhileMetered
+                        || DownloadManagerService.isActiveNetworkMetered(mApplicationContext);
+                // Update the SharedPreference entry.
+                mDownloadSharedPreferenceHelper.addOrReplaceSharedPreferenceEntry(
+                        new DownloadSharedPreferenceEntry(entry.id, entry.notificationId,
+                                entry.isOffTheRecord, canDownloadWhileMetered, entry.fileName, true,
+                                entry.isTransient));
+
                 mDownloadNotificationService.notifyDownloadPending(entry.id, entry.fileName,
                         entry.isOffTheRecord, entry.canDownloadWhileMetered, entry.isTransient,
                         null, true);
@@ -207,6 +217,7 @@ public class DownloadBroadcastManager extends Service {
 
         Preconditions.checkNotNull(downloadServiceDelegate);
         Preconditions.checkNotNull(id);
+        Preconditions.checkNotNull(entry);
 
         // Handle all remaining actions.
         switch (action) {
@@ -219,13 +230,8 @@ public class DownloadBroadcastManager extends Service {
                 break;
 
             case ACTION_DOWNLOAD_RESUME:
-                DownloadInfo info = new DownloadInfo.Builder()
-                                            .setDownloadGuid(id.id)
-                                            .setIsOffTheRecord(isOffTheRecord)
-                                            .build();
-
                 downloadServiceDelegate.resumeDownload(
-                        id, new DownloadItem(false, info), true /* hasUserGesture */);
+                        id, entry.buildDownloadItem(), true /* hasUserGesture */);
                 break;
 
             default:
