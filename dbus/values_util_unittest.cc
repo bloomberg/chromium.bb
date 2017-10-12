@@ -14,7 +14,6 @@
 
 #include "base/json/json_writer.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "dbus/message.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -517,11 +516,11 @@ TEST(ValuesUtilTest, AppendDictionary) {
   const double kDoubleValue = 4.9;
   const std::string kStringValue = "fifty";
 
-  auto list_value = base::MakeUnique<base::ListValue>();
+  auto list_value = std::make_unique<base::ListValue>();
   list_value->AppendBoolean(kBoolValue);
   list_value->AppendInteger(kInt32Value);
 
-  auto dictionary_value = base::MakeUnique<base::DictionaryValue>();
+  auto dictionary_value = std::make_unique<base::DictionaryValue>();
   dictionary_value->SetBoolean(kKey1, kBoolValue);
   dictionary_value->SetInteger(kKey2, kDoubleValue);
 
@@ -564,11 +563,11 @@ TEST(ValuesUtilTest, AppendDictionaryAsVariant) {
   const double kDoubleValue = 4.9;
   const std::string kStringValue = "fifty";
 
-  auto list_value = base::MakeUnique<base::ListValue>();
+  auto list_value = std::make_unique<base::ListValue>();
   list_value->AppendBoolean(kBoolValue);
   list_value->AppendInteger(kInt32Value);
 
-  auto dictionary_value = base::MakeUnique<base::DictionaryValue>();
+  auto dictionary_value = std::make_unique<base::DictionaryValue>();
   dictionary_value->SetBoolean(kKey1, kBoolValue);
   dictionary_value->SetInteger(kKey2, kDoubleValue);
 
