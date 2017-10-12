@@ -16,11 +16,15 @@ body {
   --color-light-gray: rgba(0, 0, 0, 0.54);
   --color-shadow: rgba(0, 0, 0, 0.1);
   --ease-in-out: cubic-bezier(0.4, 0.0, 0.2, 1);
+  --google-blue-500: rgb(66, 133, 244);
   --google-blue-700: rgb(51, 103, 214);
-  --google-grey-100: rgb(245, 245, 245);
+  --google-gray-100: rgb(245, 245, 245);
+  --google-gray-300: rgb(224, 224, 224);
   color: var(--color-dark-gray);
   font-family: Roboto;
-  font-size: 13px;
+  font-size: 0.8125em;
+  /* Force the vertical scrollbar to always be displayed, to avoid UI jumps. */
+  height: 100vh;
   margin: 0;
 }
 
@@ -82,11 +86,13 @@ h2 {
   max-width: 700px;
 }
 
-#header .flex-container .flex:first-child {
+#header .flex-container .flex:first-child,
+[dir='rtl'] #header .flex-container .flex:last-child {
   text-align: left;
 }
 
-#header .flex-container .flex:last-child {
+#header .flex-container .flex:last-child,
+[dir='rtl'] #header .flex-container .flex:first-child {
   text-align: right;
 }
 
@@ -100,7 +106,7 @@ h2 {
 }
 
 #search {
-  background: var(--google-grey-100) url(../../../ui/webui/resources/images/icon_search.svg) no-repeat 8px 50%;
+  background: var(--google-gray-100) url(../../../ui/webui/resources/images/icon_search.svg) no-repeat 8px 50%;
   border: 1px solid transparent;
   border-radius: 3px;
   box-sizing: border-box;
@@ -109,9 +115,14 @@ h2 {
   width: 100%;
 }
 
+[dir='rtl'] #search {
+  background-position: right 50%;
+  padding: 12px 36px 12px 12px;
+}
+
 #search:focus {
   border-color: var(--google-blue-700);
-  outline: none;
+  outline: 0;
 }
 
 .clear-search {
@@ -125,6 +136,16 @@ h2 {
   right: 8px;
   top: calc(50% - 10px);
   width: 20px;
+}
+
+.clear-search:focus {
+  opacity: 1;
+  outline: 0;
+}
+
+[dir='rtl'] .clear-search {
+  left: 8px;
+  right: initial;
 }
 
 .searching .blurb-container,
@@ -157,12 +178,15 @@ h2 {
   padding: 8px 12px;
 }
 
+#experiment-reset-all:hover {
+  background: var(--google-gray-300);
+}
+
 .experiment {
   color: var(--color-light-gray);
   line-height: 1.45;
   /* Adjustment for fixed header */
   margin: .3em 0 -70px;
-  overflow: hidden;
   padding-top: 70px;
   width: 100%;
 }
@@ -172,22 +196,17 @@ h2 {
 }
 
 .experiment .flex-container .flex:first-child {
+  -webkit-padding-end: 8px;
   box-sizing: border-box;
-  overflow: hidden;
-  padding-right: 8px;
+  max-width: 540px;
+}
+
+[dir='rtl'] .experiment .flex-container .flex:first-child  {
+  text-align: right;
 }
 
 .experiment p {
   margin: .2em 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  width: 100%;
-}
-
-.experiment .expand p {
-  overflow: visible;
-  white-space: normal;
 }
 
 .experiment-name {
@@ -196,6 +215,7 @@ h2 {
   display: inline-block;
   font-size: 13px;
   font-weight: 500;
+  line-height: 1.5;
   margin: 0;
   padding: 0;
 }
@@ -230,6 +250,7 @@ h2 {
 
 .experiment-disable-link,
 .experiment-enable-link {
+  background: white;
   border: 1px solid var(--google-blue-700);
   border-radius: 3px;
   box-sizing: border-box;
@@ -243,6 +264,11 @@ h2 {
   text-decoration: none;
   vertical-align: middle;
   width: 100%;
+}
+
+.experiment-disable-link:hover,
+.experiment-enable-link:hover {
+  background: var(--google-gray-100);
 }
 
 .experiment-disable-link:active,
@@ -322,7 +348,9 @@ h2 {
   top: 0;
 }
 
-.tab:active {
+.tab:active,
+.tab:focus {
+  background: #eee;
   outline: 0;
 }
 
@@ -364,6 +392,10 @@ h2 {
   text-align: right;
 }
 
+[dir='rtl'] #needs-restart .flex:last-child {
+  text-align: left;
+}
+
 #needs-restart.show {
   opacity: 1;
   transform: translate(0);
@@ -385,11 +417,26 @@ h2 {
   color: white;
   font-size: 14px;
   padding: 14px 38px;
+  text-transform: uppercase;
+}
+
+.experiment-restart-button:active,
+.experiment-restart-button:focus {
+  background: var(--google-blue-500);
+  outline: 0;
+}
+
+.experiment-restart-button:hover {
+  background: var(--google-blue-500);
 }
 
 #version {
   color: var(--color-light-gray);
   text-align: right;
+}
+
+[dir='rtl'] #version {
+  text-align: left;
 }
 
 @media (max-width: 360px) {
@@ -443,6 +490,10 @@ h2 {
     text-align: left;
   }
 
+  [dir='rtl'] #flagsTemplate > .flex-container:first-child {
+    text-align: right;
+  }
+
   #flagsTemplate > .flex-container:first-child .flex {
     width: 100%;
   }
@@ -450,6 +501,10 @@ h2 {
   #flagsTemplate > .flex-container #version {
     padding-bottom: 16px;
     text-align: left;
+  }
+
+  [dir='rtl'] #flagsTemplate > .flex-container #version {
+    text-align: right;
   }
 
   #needs-restart {

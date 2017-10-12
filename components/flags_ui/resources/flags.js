@@ -48,14 +48,6 @@ function renderTemplate(experimentalFeaturesData) {
     elements[i].onclick = restartBrowser;
   }
 
-  // Toggling of experiment description overflow content.
-  elements = document.querySelectorAll('.experiment .flex:first-child');
-  for (var i = 0; i < elements.length; ++i) {
-    elements[i].addEventListener('click', function(e) {
-      this.classList.toggle('expand');
-    });
-  }
-
   // Tab panel selection.
   var tabEls = document.getElementsByClassName('tab');
   for (var i = 0; i < tabEls.length; ++i) {
@@ -70,7 +62,7 @@ function renderTemplate(experimentalFeaturesData) {
   $('experiment-reset-all').onclick = resetAllFlags;
 
   highlightReferencedFlag();
-  var search = new FlagSearch();
+  var search = FlagSearch.getInstance();
   search.init();
 }
 
@@ -208,6 +200,8 @@ function handleSelectExperimentalFeatureChoice(node, index) {
  * Handles in page searching. Matches against the experiment flag name.
  */
 var FlagSearch = function() {
+  FlagSearch.instance_ = this;
+
   this.experiments_ = [];
   this.unavailableExperiments_ = [];
 
@@ -215,14 +209,27 @@ var FlagSearch = function() {
   this.noMatchMsg_ = document.querySelectorAll('.no-match');
 
   this.searchIntervalId_ = null;
+  this.initialized = false;
 };
 
 // Delay in ms following a keypress, before a search is made.
 FlagSearch.SEARCH_DEBOUNCE_TIME_MS = 150;
 
+/**
+ * Get the singleton instance of FlagSearch.
+ * @return {Object} Instance of FlagSearch.
+ */
+FlagSearch.getInstance = function() {
+  if (FlagSearch.instance_) {
+    return FlagSearch.instance_;
+  } else {
+    return new FlagSearch();
+  }
+};
+
 FlagSearch.prototype = {
   /**
-   * Initialises the in page search. Addings searchbox listeners and
+   * Initialises the in page search. Adding searchbox listeners and
    * collates the permalinks used for string matching.
    */
   init: function() {
@@ -231,10 +238,19 @@ FlagSearch.prototype = {
     this.unavailableExperiments_ =
         document.querySelectorAll('#tab-content-unavailable .permalink');
 
-    this.searchBox_.addEventListener('keyup', this.debounceSearch.bind(this));
-    document.querySelector('.clear-search').addEventListener('click',
-        this.clearSearch.bind(this));
-    this.searchBox_.focus();
+    if (!this.initialized) {
+      this.searchBox_.addEventListener('keyup', this.debounceSearch.bind(this));
+      document.querySelector('.clear-search').addEventListener('click',
+          this.clearSearch.bind(this));
+
+      window.addEventListener('keyup', function(e) {
+          if (e.key == '/') {
+            this.searchBox_.focus();
+          }
+      }.bind(this));
+      this.searchBox_.focus();
+      this.initialized = true;
+    }
   },
 
   /**
@@ -312,7 +328,9 @@ FlagSearch.prototype = {
     var unavailableMatches = 0;
 
     if (searchTerm || searchTerm == '') {
-      document.body.classList.add('searching');
+      if (searchTerm) {
+        document.body.classList.add('searching');
+      }
       // Available experiments
       for (var i = 0, j = this.experiments_.length; i < j; i++) {
         if (this.highlightMatches(searchTerm, this.experiments_[i])) {
