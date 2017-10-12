@@ -6,6 +6,8 @@
       "provides": {
         "browser": [
           "content::mojom::Child",
+          "content::mojom::ChildHistogramFetcher",
+          "content::mojom::ChildHistogramFetcherFactory",
           "content::mojom::EmbeddedWorkerInstanceClient",
           "content::mojom::EmbeddedWorkerSetup",
           "content::mojom::FrameFactory",

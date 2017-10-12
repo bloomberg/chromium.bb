@@ -36,7 +36,7 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "build/build_config.h"
 #include "components/tracing/child/child_trace_message_filter.h"
-#include "content/child/child_histogram_message_filter.h"
+#include "content/child/child_histogram_fetcher_impl.h"
 #include "content/child/child_process.h"
 #include "content/child/child_resource_message_filter.h"
 #include "content/child/fileapi/file_system_dispatcher.h"
@@ -56,6 +56,7 @@
 #include "content/public/common/mojo_channel_switches.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
+#include "content/public/common/simple_connection_filter.h"
 #include "ipc/ipc_channel_mojo.h"
 #include "ipc/ipc_logging.h"
 #include "ipc/ipc_platform_file.h"
@@ -480,9 +481,14 @@ void ChildThreadImpl::Init(const Options& options) {
       this, message_loop()->task_runner()));
   file_system_dispatcher_.reset(new FileSystemDispatcher());
 
-  histogram_message_filter_ = new ChildHistogramMessageFilter();
   resource_message_filter_ =
       new ChildResourceMessageFilter(resource_dispatcher());
+
+  auto registry = base::MakeUnique<service_manager::BinderRegistry>();
+  registry->AddInterface(base::Bind(&ChildHistogramFetcherFactoryImpl::Create),
+                         GetIOTaskRunner());
+  GetServiceManagerConnection()->AddConnectionFilter(
+      base::MakeUnique<SimpleConnectionFilter>(std::move(registry)));
 
   service_worker_message_filter_ =
       new ServiceWorkerMessageFilter(thread_safe_sender_.get());
@@ -494,7 +500,6 @@ void ChildThreadImpl::Init(const Options& options) {
   notification_dispatcher_ =
       new NotificationDispatcher(thread_safe_sender_.get());
 
-  channel_->AddFilter(histogram_message_filter_.get());
   channel_->AddFilter(resource_message_filter_.get());
   channel_->AddFilter(quota_message_filter_->GetFilter());
   channel_->AddFilter(notification_dispatcher_->GetFilter());
@@ -609,7 +614,6 @@ ChildThreadImpl::~ChildThreadImpl() {
   IPC::Logging::GetInstance()->SetIPCSender(NULL);
 #endif
 
-  channel_->RemoveFilter(histogram_message_filter_.get());
   channel_->RemoveFilter(sync_message_filter_.get());
 
   // The ChannelProxy object caches a pointer to the IPC thread, so need to

@@ -86,6 +86,7 @@
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/gpu/shader_cache_factory.h"
+#include "content/browser/histogram_controller.h"
 #include "content/browser/histogram_message_filter.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_dispatcher_host.h"
@@ -155,6 +156,7 @@
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/worker_service.h"
+#include "content/public/common/bind_interface_helpers.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/connection_filter.h"
 #include "content/public/common/content_constants.h"
@@ -184,6 +186,7 @@
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ppapi/features/features.h"
 #include "services/device/public/interfaces/battery_monitor.mojom.h"
@@ -3591,8 +3594,13 @@ RenderProcessHost* RenderProcessHostImpl::GetProcessHostForSiteInstance(
 void RenderProcessHostImpl::CreateSharedRendererHistogramAllocator() {
   // Create a persistent memory segment for renderer histograms only if
   // they're active in the browser.
-  if (!base::GlobalHistogramAllocator::Get())
+  if (!base::GlobalHistogramAllocator::Get()) {
+    if (is_initialized_) {
+      HistogramController::GetInstance()->SetHistogramMemory<RenderProcessHost>(
+          this, mojo::ScopedSharedBufferHandle());
+    }
     return;
+  }
 
   // Get handle to the renderer process. Stop if there is none.
   base::ProcessHandle destination = GetHandle();
@@ -3614,10 +3622,10 @@ void RenderProcessHostImpl::CreateSharedRendererHistogramAllocator() {
         std::move(shm), GetID(), "RendererMetrics", /*readonly=*/false));
   }
 
-  base::SharedMemoryHandle shm_handle =
-      metrics_allocator_->shared_memory()->handle().Duplicate();
-  Send(new ChildProcessMsg_SetHistogramMemory(
-      shm_handle, metrics_allocator_->shared_memory()->mapped_size()));
+  HistogramController::GetInstance()->SetHistogramMemory<RenderProcessHost>(
+      this, mojo::WrapSharedMemoryHandle(
+                metrics_allocator_->shared_memory()->handle().Duplicate(),
+                metrics_allocator_->shared_memory()->mapped_size(), false));
 }
 
 void RenderProcessHostImpl::ProcessDied(bool already_dead,
@@ -3706,6 +3714,7 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead,
 
   shared_bitmap_allocation_notifier_impl_.ChildDied();
 
+  HistogramController::GetInstance()->NotifyChildDied<RenderProcessHost>(this);
   // This object is not deleted at this point and might be reused later.
   // TODO(darin): clean this up
 }

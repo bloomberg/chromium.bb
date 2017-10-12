@@ -26,6 +26,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/tracing/common/tracing_switches.h"
+#include "content/browser/histogram_controller.h"
 #include "content/browser/histogram_message_filter.h"
 #include "content/browser/loader/resource_message_filter.h"
 #include "content/browser/service_manager/service_manager_context.h"
@@ -47,6 +48,7 @@
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "content/public/common/service_manager_connection.h"
 #include "mojo/edk/embedder/embedder.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 #include "services/service_manager/embedder/switches.h"
 
 #if defined(OS_MACOSX)
@@ -522,10 +524,14 @@ void BrowserChildProcessHostImpl::CreateMetricsAllocator() {
 
 void BrowserChildProcessHostImpl::ShareMetricsAllocatorToProcess() {
   if (metrics_allocator_) {
-    base::SharedMemoryHandle shm_handle =
-        metrics_allocator_->shared_memory()->handle().Duplicate();
-    Send(new ChildProcessMsg_SetHistogramMemory(
-        shm_handle, metrics_allocator_->shared_memory()->mapped_size()));
+    HistogramController::GetInstance()->SetHistogramMemory<ChildProcessHost>(
+        GetHost(),
+        mojo::WrapSharedMemoryHandle(
+            metrics_allocator_->shared_memory()->handle().Duplicate(),
+            metrics_allocator_->shared_memory()->mapped_size(), false));
+  } else {
+    HistogramController::GetInstance()->SetHistogramMemory<ChildProcessHost>(
+        GetHost(), mojo::ScopedSharedBufferHandle());
   }
 }
 

@@ -612,6 +612,7 @@ mojom("mojo_bindings") {
     "file_utilities.mojom",
     "frame.mojom",
     "frame_sink_provider.mojom",
+    "histogram_fetcher.mojom",
     "host_zoom.mojom",
     "image_downloader/image_downloader.mojom",
     "indexed_db/indexed_db.mojom",

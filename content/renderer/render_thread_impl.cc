@@ -63,7 +63,6 @@
 #include "content/child/appcache/appcache_dispatcher.h"
 #include "content/child/appcache/appcache_frontend_impl.h"
 #include "content/child/blob_storage/blob_message_filter.h"
-#include "content/child/child_histogram_message_filter.h"
 #include "content/child/child_resource_message_filter.h"
 #include "content/child/indexed_db/indexed_db_dispatcher.h"
 #include "content/child/memory/child_memory_coordinator_impl.h"
