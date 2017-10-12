@@ -97,6 +97,8 @@ class RendererControllerTest : public ::testing::Test,
     activate_viewport_intersection_monitoring_ = activate;
   }
 
+  double Duration() const override { return duration_in_sec_; }
+
   size_t VideoDecodedByteCount() const override { return decoded_bytes_; }
 
   size_t AudioDecodedByteCount() const override { return 0; }
@@ -199,6 +201,7 @@ class RendererControllerTest : public ::testing::Test,
   base::SimpleTestTickClock* clock_;  // Own by |controller_|;
   std::string sink_name_;
   std::unique_ptr<RendererController> controller_;
+  double duration_in_sec_ = 120;  // 2m duration.
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RendererControllerTest);
@@ -277,6 +280,16 @@ TEST_F(RendererControllerTest, ToggleRendererOnDisableChange) {
   // disableRemotePlayback attribute), this should shut down remoting.
   controller_->OnRemotePlaybackDisabled(true);
   RunUntilIdle();
+  ExpectInLocalRendering();
+}
+
+TEST_F(RendererControllerTest, NotStartForShortContent) {
+  const scoped_refptr<SharedSession> shared_session =
+      FakeRemoterFactory::CreateSharedSession(false);
+  duration_in_sec_ = 30;
+  InitializeControllerAndBecomeDominant(shared_session,
+                                        DefaultMetadata(VideoCodec::kCodecVP8),
+                                        GetDefaultSinkMetadata(true));
   ExpectInLocalRendering();
 }
 

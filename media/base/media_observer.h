@@ -36,6 +36,11 @@ class MEDIA_EXPORT MediaObserverClient {
   virtual size_t AudioDecodedByteCount() const = 0;
   virtual size_t VideoDecodedByteCount() const = 0;
   virtual unsigned DecodedFrameCount() const = 0;
+
+  // Gets the media duration in seconds. Returns
+  // |std::numeric_limits<double>::infinity()| for an infinite stream duration.
+  // TODO(xjz): Use base::TimeDelta for media duration (crbug.com/773911).
+  virtual double Duration() const = 0;
 };
 
 // This class is an observer of media player events.
