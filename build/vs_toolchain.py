@@ -390,6 +390,30 @@ def Update(force=False):
         depot_tools_win_toolchain):
     import find_depot_tools
     depot_tools_path = find_depot_tools.add_depot_tools_to_path()
+
+    # On Linux, the file system is usually case-sensitive while the Windows
+    # SDK only works on case-insensitive file systems.  If it doesn't already
+    # exist, set up a ciopfs fuse mount to put the SDK in a case-insensitive
+    # part of the file system.
+    toolchain_dir = os.path.join(depot_tools_path, 'win_toolchain', 'vs_files')
+    if sys.platform.startswith('linux') and not os.path.ismount(toolchain_dir):
+      import distutils.spawn
+      ciopfs = distutils.spawn.find_executable('ciopfs')
+      if not ciopfs:
+        # TODO(thakis): Offer to auto-install this?  Or have a
+        # build/install-build-deps-win.sh script and point to that? (Or run
+        # that?)
+        print >>sys.stderr, \
+            "\n\tCouldn't set up case-insensitive mount for Windows SDK."
+        print >>sys.stderr, \
+            "\tPlease run `sudo apt-get install ciopfs` and try again.\n"
+        return 1
+      if not os.path.isdir(toolchain_dir):
+        os.mkdir(toolchain_dir)
+      if not os.path.isdir(toolchain_dir + '.ciopfs'):
+        os.mkdir(toolchain_dir + '.ciopfs')
+      subprocess.check_call([ciopfs, toolchain_dir + '.ciopfs', toolchain_dir])
+
     # Necessary so that get_toolchain_if_necessary.py will put the VS toolkit
     # in the correct directory.
     os.environ['GYP_MSVS_VERSION'] = GetVisualStudioVersion()

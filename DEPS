@@ -721,9 +721,8 @@ hooks = [
     # Update the Windows toolchain if necessary.  Must run before 'clang' below.
     'name': 'win_toolchain',
     'pattern': '.',
-    # TODO(thakis): Put some condition here. Not just host_os == 'win', because
-    # we also need this for (mac|linux) -> win cross builds.
-    'action': ['python', 'src/build/vs_toolchain.py', 'update'],
+    'condition': 'checkout_win',
+    'action': ['python', 'src/build/vs_toolchain.py', 'update', '--force'],
   },
   {
     # Update the Mac toolchain if necessary.
