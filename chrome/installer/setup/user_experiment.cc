@@ -396,7 +396,9 @@ void RunUserExperiment(const base::CommandLine& command_line,
     return;
   }
 
-  if (base::win::IsTabletDevice(nullptr)) {
+  // Note that the following call will not detect Win10 Tablet mode when
+  // run under a debugger - GetForegroundWindow gets confused.
+  if (base::win::IsTabletDevice(nullptr, ::GetForegroundWindow())) {
     VLOG(1) << "Aborting experiment due to tablet device.";
     experiment.SetState(ExperimentMetrics::kIsTabletDevice);
     storage_lock->StoreExperiment(experiment);
