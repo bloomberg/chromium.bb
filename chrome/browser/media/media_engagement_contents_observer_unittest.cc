@@ -203,14 +203,12 @@ class MediaEngagementContentsObserverTest
 
   void SimulateSignificantAudioPlayer(int id) {
     SimulatePlaybackStarted(id, true, false);
-    SimulateIsVisible();
     SimulateAudible();
     web_contents()->SetAudioMuted(false);
   }
 
   void SimulateSignificantVideoPlayer(int id) {
     SimulateAudioVideoPlaybackStarted(id);
-    SimulateIsVisible();
     SimulateAudible();
     web_contents()->SetAudioMuted(false);
     SimulateResizeEventSignificantSize(id);
@@ -315,10 +313,6 @@ TEST_F(MediaEngagementContentsObserverTest, AreConditionsMet) {
   EXPECT_FALSE(AreConditionsMet());
   web_contents()->SetAudioMuted(false);
 
-  SimulateIsHidden();
-  EXPECT_FALSE(AreConditionsMet());
-
-  SimulateIsVisible();
   SimulatePlaybackStopped(0);
   EXPECT_FALSE(AreConditionsMet());
 
@@ -486,10 +480,8 @@ TEST_F(MediaEngagementContentsObserverTest, TimerRunsDependingOnConditions) {
   EXPECT_FALSE(IsTimerRunning());
 
   web_contents()->SetAudioMuted(false);
-  SimulateIsHidden();
-  EXPECT_FALSE(IsTimerRunning());
+  EXPECT_TRUE(IsTimerRunning());
 
-  SimulateIsVisible();
   SimulatePlaybackStopped(0);
   EXPECT_FALSE(IsTimerRunning());
 
@@ -542,7 +534,6 @@ TEST_F(MediaEngagementContentsObserverTest, InteractionsRecorded) {
 TEST_F(MediaEngagementContentsObserverTest,
        SignificantPlaybackNotRecordedIfAudioSilent) {
   SimulateAudioVideoPlaybackStarted(0);
-  SimulateIsVisible();
   SimulateInaudible();
   web_contents()->SetAudioMuted(false);
   EXPECT_FALSE(IsTimerRunning());
@@ -649,6 +640,19 @@ TEST_F(MediaEngagementContentsObserverTest,
   SimulateAudioVideoPlaybackStarted(0);
   tester.ExpectTotalCount(
       MediaEngagementContentsObserver::kHistogramScoreAtPlaybackName, 0);
+}
+
+TEST_F(MediaEngagementContentsObserverTest, VisibilityNotRequired) {
+  EXPECT_FALSE(IsTimerRunning());
+
+  SimulateSignificantVideoPlayer(0);
+  EXPECT_TRUE(IsTimerRunning());
+
+  SimulateIsVisible();
+  EXPECT_TRUE(IsTimerRunning());
+
+  SimulateIsHidden();
+  EXPECT_TRUE(IsTimerRunning());
 }
 
 TEST_F(MediaEngagementContentsObserverTest, RecordUkmMetricsOnDestroy) {

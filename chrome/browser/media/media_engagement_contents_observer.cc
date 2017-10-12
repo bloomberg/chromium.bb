@@ -127,16 +127,6 @@ void MediaEngagementContentsObserver::DidFinishNavigation(
   service_->RecordVisit(committed_origin_.GetURL());
 }
 
-void MediaEngagementContentsObserver::WasShown() {
-  is_visible_ = true;
-  UpdateTimer();
-}
-
-void MediaEngagementContentsObserver::WasHidden() {
-  is_visible_ = false;
-  UpdateTimer();
-}
-
 MediaEngagementContentsObserver::PlayerState::PlayerState() = default;
 
 MediaEngagementContentsObserver::PlayerState&
@@ -354,7 +344,7 @@ void MediaEngagementContentsObserver::MaybeInsertRemoveSignificantPlayer(
 }
 
 bool MediaEngagementContentsObserver::AreConditionsMet() const {
-  if (significant_players_.empty() || !is_visible_)
+  if (significant_players_.empty())
     return false;
 
   return !web_contents()->IsAudioMuted();
