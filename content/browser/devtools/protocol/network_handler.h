@@ -44,7 +44,8 @@ class NetworkHandler : public DevToolsDomainHandler,
   static std::vector<NetworkHandler*> ForAgentHost(DevToolsAgentHostImpl* host);
 
   void Wire(UberDispatcher* dispatcher) override;
-  void SetRenderFrameHost(RenderFrameHostImpl* host) override;
+  void SetRenderer(RenderProcessHost* process_host,
+                   RenderFrameHostImpl* frame_host) override;
 
   Response Enable(Maybe<int> max_total_size,
                   Maybe<int> max_resource_size) override;
@@ -131,6 +132,7 @@ class NetworkHandler : public DevToolsDomainHandler,
 
  private:
   std::unique_ptr<Network::Frontend> frontend_;
+  RenderProcessHost* process_;
   RenderFrameHostImpl* host_;
   bool enabled_;
   bool interception_enabled_;

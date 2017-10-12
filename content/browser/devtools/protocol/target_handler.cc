@@ -118,8 +118,9 @@ void TargetHandler::Wire(UberDispatcher* dispatcher) {
   Target::Dispatcher::wire(dispatcher, this);
 }
 
-void TargetHandler::SetRenderFrameHost(RenderFrameHostImpl* render_frame_host) {
-  auto_attacher_.SetRenderFrameHost(render_frame_host);
+void TargetHandler::SetRenderer(RenderProcessHost* process_host,
+                                RenderFrameHostImpl* frame_host) {
+  auto_attacher_.SetRenderFrameHost(frame_host);
 }
 
 Response TargetHandler::Disable() {

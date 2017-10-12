@@ -24,7 +24,9 @@ class EmulationHandler : public DevToolsDomainHandler,
   ~EmulationHandler() override;
 
   void Wire(UberDispatcher* dispatcher) override;
-  void SetRenderFrameHost(RenderFrameHostImpl* host) override;
+  void SetRenderer(RenderProcessHost* process_host,
+                   RenderFrameHostImpl* frame_host) override;
+
   Response Disable() override;
 
   Response SetGeolocationOverride(Maybe<double> latitude,

@@ -22,7 +22,8 @@ class IOHandler : public DevToolsDomainHandler,
   ~IOHandler() override;
 
   void Wire(UberDispatcher* dispatcher) override;
-  void SetRenderFrameHost(RenderFrameHostImpl* host) override;
+  void SetRenderer(RenderProcessHost* process_host,
+                   RenderFrameHostImpl* frame_host) override;
 
   // Protocol methods.
   void Read(
@@ -40,7 +41,7 @@ class IOHandler : public DevToolsDomainHandler,
 
   std::unique_ptr<IO::Frontend> frontend_;
   DevToolsIOContext* io_context_;
-  RenderFrameHostImpl* host_;
+  RenderProcessHost* process_host_;
   base::WeakPtrFactory<IOHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(IOHandler);

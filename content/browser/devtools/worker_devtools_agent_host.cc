@@ -27,6 +27,7 @@ void WorkerDevToolsAgentHost::AttachSession(DevToolsSession* session) {
     AttachToWorker();
   }
   if (RenderProcessHost* host = RenderProcessHost::FromID(worker_id_.first)) {
+    session->SetRenderer(host, nullptr);
     host->Send(new DevToolsAgentMsg_Attach(
         worker_id_.second, GetId(), session->session_id()));
   }
@@ -104,6 +105,7 @@ void WorkerDevToolsAgentHost::WorkerReadyForInspection() {
     AttachToWorker();
     if (RenderProcessHost* host = RenderProcessHost::FromID(worker_id_.first)) {
       for (DevToolsSession* session : sessions()) {
+        session->SetRenderer(host, nullptr);
         host->Send(new DevToolsAgentMsg_Reattach(worker_id_.second, GetId(),
                                                  session->session_id(),
                                                  session->state_cookie()));
@@ -126,6 +128,9 @@ void WorkerDevToolsAgentHost::WorkerRestarted(WorkerId worker_id) {
   DCHECK_EQ(WORKER_TERMINATED, state_);
   state_ = IsAttached() ? WORKER_PAUSED_FOR_REATTACH : WORKER_UNINSPECTED;
   worker_id_ = worker_id;
+  RenderProcessHost* host = RenderProcessHost::FromID(worker_id_.first);
+  for (DevToolsSession* session : sessions())
+    session->SetRenderer(host, nullptr);
   WorkerCreated();
 }
 
@@ -136,6 +141,8 @@ void WorkerDevToolsAgentHost::WorkerDestroyed() {
     for (auto* inspector : protocol::InspectorHandler::ForAgentHost(this))
       inspector->TargetCrashed();
     DetachFromWorker();
+    for (DevToolsSession* session : sessions())
+      session->SetRenderer(nullptr, nullptr);
   }
   state_ = WORKER_TERMINATED;
   Release();  // Balanced in WorkerCreated().

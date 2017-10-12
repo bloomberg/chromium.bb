@@ -17,9 +17,6 @@
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 
 namespace content {
-
-class RenderFrameHostImpl;
-
 namespace protocol {
 
 class StorageHandler : public DevToolsDomainHandler,
@@ -30,7 +27,8 @@ class StorageHandler : public DevToolsDomainHandler,
 
   // content::protocol::DevToolsDomainHandler
   void Wire(UberDispatcher* dispatcher) override;
-  void SetRenderFrameHost(RenderFrameHostImpl* host) override;
+  void SetRenderer(RenderProcessHost* process_host,
+                   RenderFrameHostImpl* frame_host) override;
   Response Disable() override;
 
   // content::protocol::storage::Backend
@@ -65,7 +63,7 @@ class StorageHandler : public DevToolsDomainHandler,
                                      const base::string16& object_store_name);
 
   std::unique_ptr<Storage::Frontend> frontend_;
-  RenderFrameHostImpl* host_;
+  RenderProcessHost* process_;
   std::unique_ptr<CacheStorageObserver> cache_storage_observer_;
   std::unique_ptr<IndexedDBObserver> indexed_db_observer_;
 

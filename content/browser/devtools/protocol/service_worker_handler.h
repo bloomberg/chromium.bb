@@ -33,7 +33,8 @@ class ServiceWorkerHandler : public DevToolsDomainHandler,
   ~ServiceWorkerHandler() override;
 
   void Wire(UberDispatcher* dispatcher) override;
-  void SetRenderFrameHost(RenderFrameHostImpl* host) override;
+  void SetRenderer(RenderProcessHost* process_host,
+                   RenderFrameHostImpl* frame_host) override;
 
   Response Enable() override;
   Response Disable() override;
@@ -70,7 +71,7 @@ class ServiceWorkerHandler : public DevToolsDomainHandler,
   std::unique_ptr<ServiceWorker::Frontend> frontend_;
   bool enabled_;
   scoped_refptr<ServiceWorkerContextWatcher> context_watcher_;
-  RenderFrameHostImpl* render_frame_host_;
+  RenderProcessHost* process_;
 
   base::WeakPtrFactory<ServiceWorkerHandler> weak_factory_;
 
