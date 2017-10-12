@@ -37,7 +37,9 @@ class InputHandler : public DevToolsDomainHandler,
   static std::vector<InputHandler*> ForAgentHost(DevToolsAgentHostImpl* host);
 
   void Wire(UberDispatcher* dispatcher) override;
-  void SetRenderFrameHost(RenderFrameHostImpl* host) override;
+  void SetRenderer(RenderProcessHost* process_host,
+                   RenderFrameHostImpl* frame_host) override;
+
   void OnSwapCompositorFrame(
       const viz::CompositorFrameMetadata& frame_metadata);
   Response Disable() override;

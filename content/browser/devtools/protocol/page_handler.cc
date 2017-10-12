@@ -141,8 +141,9 @@ std::vector<PageHandler*> PageHandler::ForAgentHost(
       host, Page::Metainfo::domainName);
 }
 
-void PageHandler::SetRenderFrameHost(RenderFrameHostImpl* host) {
-  if (host_ == host)
+void PageHandler::SetRenderer(RenderProcessHost* process_host,
+                              RenderFrameHostImpl* frame_host) {
+  if (host_ == frame_host)
     return;
 
   RenderWidgetHostImpl* widget_host =
@@ -154,7 +155,7 @@ void PageHandler::SetRenderFrameHost(RenderFrameHostImpl* host) {
         content::Source<RenderWidgetHost>(widget_host));
   }
 
-  host_ = host;
+  host_ = frame_host;
   widget_host = host_ ? host_->GetRenderWidgetHost() : nullptr;
 
   if (widget_host) {

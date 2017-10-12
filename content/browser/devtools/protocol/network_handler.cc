@@ -646,6 +646,7 @@ void ConfigureServiceWorkerContextOnIO() {
 
 NetworkHandler::NetworkHandler(const std::string& host_id)
     : DevToolsDomainHandler(Network::Metainfo::domainName),
+      process_(nullptr),
       host_(nullptr),
       enabled_(false),
       interception_enabled_(false),
@@ -674,8 +675,10 @@ void NetworkHandler::Wire(UberDispatcher* dispatcher) {
   Network::Dispatcher::wire(dispatcher, this);
 }
 
-void NetworkHandler::SetRenderFrameHost(RenderFrameHostImpl* host) {
-  host_ = host;
+void NetworkHandler::SetRenderer(RenderProcessHost* process_host,
+                                 RenderFrameHostImpl* frame_host) {
+  process_ = process_host;
+  host_ = frame_host;
 }
 
 Response NetworkHandler::Enable(Maybe<int> max_total_size,
@@ -697,32 +700,31 @@ Response NetworkHandler::Disable() {
 }
 
 Response NetworkHandler::ClearBrowserCache() {
-  if (host_) {
-    content::BrowsingDataRemover* remover =
-        content::BrowserContext::GetBrowsingDataRemover(
-            host_->GetSiteInstance()->GetProcess()->GetBrowserContext());
-    remover->Remove(base::Time(), base::Time::Max(),
-                    content::BrowsingDataRemover::DATA_TYPE_CACHE,
-                    content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB);
-  }
-
+  if (!process_)
+    return Response::InternalError();
+  content::BrowsingDataRemover* remover =
+      content::BrowserContext::GetBrowsingDataRemover(
+          process_->GetBrowserContext());
+  remover->Remove(base::Time(), base::Time::Max(),
+                  content::BrowsingDataRemover::DATA_TYPE_CACHE,
+                  content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB);
   return Response::OK();
 }
 
 void NetworkHandler::ClearBrowserCookies(
     std::unique_ptr<ClearBrowserCookiesCallback> callback) {
-  if (!host_) {
+  if (!process_) {
     callback->sendFailure(Response::InternalError());
     return;
   }
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&ClearCookiesOnIO,
-                     base::Unretained(host_->GetProcess()
-                                          ->GetStoragePartition()
-                                          ->GetURLRequestContext()),
-                     std::move(callback)));
+      base::BindOnce(
+          &ClearCookiesOnIO,
+          base::Unretained(
+              process_->GetStoragePartition()->GetURLRequestContext()),
+          std::move(callback)));
 }
 
 void NetworkHandler::GetCookies(Maybe<Array<String>> protocol_urls,
@@ -738,16 +740,16 @@ void NetworkHandler::GetCookies(Maybe<Array<String>> protocol_urls,
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&CookieRetriever::RetrieveCookiesOnIO, retriever,
-                     base::Unretained(host_->GetProcess()
-                                          ->GetStoragePartition()
-                                          ->GetURLRequestContext()),
-                     urls));
+      base::BindOnce(
+          &CookieRetriever::RetrieveCookiesOnIO, retriever,
+          base::Unretained(
+              process_->GetStoragePartition()->GetURLRequestContext()),
+          urls));
 }
 
 void NetworkHandler::GetAllCookies(
     std::unique_ptr<GetAllCookiesCallback> callback) {
-  if (!host_) {
+  if (!process_) {
     callback->sendFailure(Response::InternalError());
     return;
   }
@@ -757,10 +759,10 @@ void NetworkHandler::GetAllCookies(
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&CookieRetriever::RetrieveAllCookiesOnIO, retriever,
-                     base::Unretained(host_->GetProcess()
-                                          ->GetStoragePartition()
-                                          ->GetURLRequestContext())));
+      base::BindOnce(
+          &CookieRetriever::RetrieveAllCookiesOnIO, retriever,
+          base::Unretained(
+              process_->GetStoragePartition()->GetURLRequestContext())));
 }
 
 void NetworkHandler::SetCookie(const std::string& name,
@@ -773,7 +775,7 @@ void NetworkHandler::SetCookie(const std::string& name,
                                Maybe<std::string> same_site,
                                Maybe<double> expires,
                                std::unique_ptr<SetCookieCallback> callback) {
-  if (!host_) {
+  if (!process_) {
     callback->sendFailure(Response::InternalError());
     return;
   }
@@ -785,33 +787,33 @@ void NetworkHandler::SetCookie(const std::string& name,
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&SetCookieOnIO,
-                     base::Unretained(host_->GetProcess()
-                                          ->GetStoragePartition()
-                                          ->GetURLRequestContext()),
-                     name, value, url.fromMaybe(""), domain.fromMaybe(""),
-                     path.fromMaybe(""), secure.fromMaybe(false),
-                     http_only.fromMaybe(false), same_site.fromMaybe(""),
-                     expires.fromMaybe(-1),
-                     base::BindOnce(&CookieSetOnIO, std::move(callback))));
+      base::BindOnce(
+          &SetCookieOnIO,
+          base::Unretained(
+              process_->GetStoragePartition()->GetURLRequestContext()),
+          name, value, url.fromMaybe(""), domain.fromMaybe(""),
+          path.fromMaybe(""), secure.fromMaybe(false),
+          http_only.fromMaybe(false), same_site.fromMaybe(""),
+          expires.fromMaybe(-1),
+          base::BindOnce(&CookieSetOnIO, std::move(callback))));
 }
 
 void NetworkHandler::SetCookies(
     std::unique_ptr<protocol::Array<Network::CookieParam>> cookies,
     std::unique_ptr<SetCookiesCallback> callback) {
-  if (!host_) {
+  if (!process_) {
     callback->sendFailure(Response::InternalError());
     return;
   }
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&SetCookiesOnIO,
-                     base::Unretained(host_->GetProcess()
-                                          ->GetStoragePartition()
-                                          ->GetURLRequestContext()),
-                     std::move(cookies),
-                     base::BindOnce(&CookiesSetOnIO, std::move(callback))));
+      base::BindOnce(
+          &SetCookiesOnIO,
+          base::Unretained(
+              process_->GetStoragePartition()->GetURLRequestContext()),
+          std::move(cookies),
+          base::BindOnce(&CookiesSetOnIO, std::move(callback))));
 }
 
 void NetworkHandler::DeleteCookies(
@@ -820,7 +822,7 @@ void NetworkHandler::DeleteCookies(
     Maybe<std::string> domain,
     Maybe<std::string> path,
     std::unique_ptr<DeleteCookiesCallback> callback) {
-  if (!host_) {
+  if (!process_) {
     callback->sendFailure(Response::InternalError());
     return;
   }
@@ -831,14 +833,13 @@ void NetworkHandler::DeleteCookies(
   }
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&DeleteCookiesOnIO,
-                     base::Unretained(host_->GetProcess()
-                                          ->GetStoragePartition()
-                                          ->GetURLRequestContext()),
-                     name, url.fromMaybe(""), domain.fromMaybe(""),
-                     path.fromMaybe(""),
-                     base::BindOnce(&DeleteCookiesCallback::sendSuccess,
-                                    std::move(callback))));
+      base::BindOnce(
+          &DeleteCookiesOnIO,
+          base::Unretained(
+              process_->GetStoragePartition()->GetURLRequestContext()),
+          name, url.fromMaybe(""), domain.fromMaybe(""), path.fromMaybe(""),
+          base::BindOnce(&DeleteCookiesCallback::sendSuccess,
+                         std::move(callback))));
 }
 
 Response NetworkHandler::SetUserAgentOverride(const std::string& user_agent) {
@@ -1118,7 +1119,7 @@ void NetworkHandler::ContinueInterceptedRequest(
     std::unique_ptr<ContinueInterceptedRequestCallback> callback) {
   DevToolsURLRequestInterceptor* devtools_url_request_interceptor =
       DevToolsURLRequestInterceptor::FromBrowserContext(
-          WebContents::FromRenderFrameHost(host_)->GetBrowserContext());
+          process_->GetBrowserContext());
   if (!devtools_url_request_interceptor) {
     callback->sendFailure(Response::InternalError());
     return;

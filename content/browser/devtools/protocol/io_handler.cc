@@ -25,7 +25,7 @@ namespace protocol {
 IOHandler::IOHandler(DevToolsIOContext* io_context)
     : DevToolsDomainHandler(IO::Metainfo::domainName),
       io_context_(io_context),
-      host_(nullptr),
+      process_host_(nullptr),
       weak_factory_(this) {}
 
 IOHandler::~IOHandler() {}
@@ -35,8 +35,9 @@ void IOHandler::Wire(UberDispatcher* dispatcher) {
   IO::Dispatcher::wire(dispatcher, this);
 }
 
-void IOHandler::SetRenderFrameHost(RenderFrameHostImpl* host) {
-  host_ = host;
+void IOHandler::SetRenderer(RenderProcessHost* process_host,
+                            RenderFrameHostImpl* frame_host) {
+  process_host_ = process_host;
 }
 
 void IOHandler::Read(
@@ -49,21 +50,15 @@ void IOHandler::Read(
 
   scoped_refptr<DevToolsIOContext::ROStream> stream =
       io_context_->GetByHandle(handle);
-  if (!stream &&
+  if (!stream && process_host_ &&
       StartsWith(handle, kBlobPrefix, base::CompareCase::SENSITIVE)) {
+    BrowserContext* browser_context = process_host_->GetBrowserContext();
+    ChromeBlobStorageContext* blob_context =
+        ChromeBlobStorageContext::GetFor(browser_context);
+    StoragePartition* storage_partition = process_host_->GetStoragePartition();
     std::string uuid = handle.substr(strlen(kBlobPrefix));
-    BrowserContext* browser_context =
-        host_ ? host_->GetSiteInstance()->GetBrowserContext() : nullptr;
-    if (browser_context) {
-      ChromeBlobStorageContext* blob_context =
-          ChromeBlobStorageContext::GetFor(browser_context);
-      StoragePartition* storage_partition = BrowserContext::GetStoragePartition(
-          browser_context, host_->GetSiteInstance());
-      if (storage_partition) {
-        stream = io_context_->OpenBlob(blob_context, storage_partition, handle,
-                                       uuid);
-      }
-    }
+    stream =
+        io_context_->OpenBlob(blob_context, storage_partition, handle, uuid);
   }
 
   if (!stream) {

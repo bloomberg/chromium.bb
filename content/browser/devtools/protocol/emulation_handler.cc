@@ -66,11 +66,12 @@ EmulationHandler::EmulationHandler()
 EmulationHandler::~EmulationHandler() {
 }
 
-void EmulationHandler::SetRenderFrameHost(RenderFrameHostImpl* host) {
-  if (host_ == host)
+void EmulationHandler::SetRenderer(RenderProcessHost* process_host,
+                                   RenderFrameHostImpl* frame_host) {
+  if (host_ == frame_host)
     return;
 
-  host_ = host;
+  host_ = frame_host;
   if (touch_emulation_enabled_)
     UpdateTouchEventEmulationState();
   UpdateDeviceEmulationState();

@@ -8,6 +8,7 @@
 #include "base/json/json_writer.h"
 #include "content/browser/devtools/devtools_manager.h"
 #include "content/browser/devtools/protocol/protocol.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/public/browser/devtools_manager_delegate.h"
 
 namespace content {
@@ -18,6 +19,7 @@ DevToolsSession::DevToolsSession(DevToolsAgentHostImpl* agent_host,
     : agent_host_(agent_host),
       client_(client),
       session_id_(session_id),
+      process_(nullptr),
       host_(nullptr),
       dispatcher_(new protocol::UberDispatcher(this)),
       chunk_processor_(base::Bind(&DevToolsSession::SendMessageFromProcessor,
@@ -34,14 +36,20 @@ DevToolsSession::~DevToolsSession() {
 void DevToolsSession::AddHandler(
     std::unique_ptr<protocol::DevToolsDomainHandler> handler) {
   handler->Wire(dispatcher_.get());
-  handler->SetRenderFrameHost(host_);
+  handler->SetRenderer(process_, host_);
   handlers_[handler->name()] = std::move(handler);
 }
 
-void DevToolsSession::SetRenderFrameHost(RenderFrameHostImpl* host) {
-  host_ = host;
+void DevToolsSession::SetRenderFrameHost(RenderFrameHostImpl* frame_host) {
+  SetRenderer(frame_host ? frame_host->GetProcess() : nullptr, frame_host);
+}
+
+void DevToolsSession::SetRenderer(RenderProcessHost* process_host,
+                                  RenderFrameHostImpl* frame_host) {
+  process_ = process_host;
+  host_ = frame_host;
   for (auto& pair : handlers_)
-    pair.second->SetRenderFrameHost(host_);
+    pair.second->SetRenderer(process_, host_);
 }
 
 void DevToolsSession::SetFallThroughForNotFound(bool value) {

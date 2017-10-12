@@ -14,7 +14,6 @@
 #include "content/browser/devtools/service_worker_devtools_manager.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
-#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_context_watcher.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
@@ -24,7 +23,6 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
-#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
@@ -157,9 +155,8 @@ void DispatchSyncEventOnIO(scoped_refptr<ServiceWorkerContextWrapper> context,
 ServiceWorkerHandler::ServiceWorkerHandler()
     : DevToolsDomainHandler(ServiceWorker::Metainfo::domainName),
       enabled_(false),
-      render_frame_host_(nullptr),
-      weak_factory_(this) {
-}
+      process_(nullptr),
+      weak_factory_(this) {}
 
 ServiceWorkerHandler::~ServiceWorkerHandler() {
 }
@@ -169,18 +166,16 @@ void ServiceWorkerHandler::Wire(UberDispatcher* dispatcher) {
   ServiceWorker::Dispatcher::wire(dispatcher, this);
 }
 
-void ServiceWorkerHandler::SetRenderFrameHost(
-    RenderFrameHostImpl* render_frame_host) {
-  render_frame_host_ = render_frame_host;
+void ServiceWorkerHandler::SetRenderer(RenderProcessHost* process_host,
+                                       RenderFrameHostImpl* frame_host) {
+  process_ = process_host;
   // Do not call UpdateHosts yet, wait for load to commit.
-  if (!render_frame_host) {
+  if (!process_host) {
     ClearForceUpdate();
     context_ = nullptr;
     return;
   }
-  StoragePartition* partition = BrowserContext::GetStoragePartition(
-      render_frame_host->GetProcess()->GetBrowserContext(),
-      render_frame_host->GetSiteInstance());
+  StoragePartition* partition = process_host->GetStoragePartition();
   DCHECK(partition);
   context_ = static_cast<ServiceWorkerContextWrapper*>(
       partition->GetServiceWorkerContext());
@@ -312,7 +307,7 @@ Response ServiceWorkerHandler::DeliverPushMessage(
     const std::string& data) {
   if (!enabled_)
     return CreateDomainNotEnabledErrorResponse();
-  if (!render_frame_host_)
+  if (!process_)
     return CreateContextErrorResponse();
   int64_t id = 0;
   if (!base::StringToInt64(registration_id, &id))
@@ -320,9 +315,9 @@ Response ServiceWorkerHandler::DeliverPushMessage(
   PushEventPayload payload;
   if (data.size() > 0)
     payload.setData(data);
-  BrowserContext::DeliverPushMessage(
-      render_frame_host_->GetProcess()->GetBrowserContext(), GURL(origin), id,
-      payload, base::Bind(&PushDeliveryNoOp));
+  BrowserContext::DeliverPushMessage(process_->GetBrowserContext(),
+                                     GURL(origin), id, payload,
+                                     base::Bind(&PushDeliveryNoOp));
   return Response::OK();
 }
 
@@ -333,16 +328,14 @@ Response ServiceWorkerHandler::DispatchSyncEvent(
     bool last_chance) {
   if (!enabled_)
     return CreateDomainNotEnabledErrorResponse();
-  if (!render_frame_host_)
+  if (!process_)
     return CreateContextErrorResponse();
   int64_t id = 0;
   if (!base::StringToInt64(registration_id, &id))
     return CreateInvalidVersionIdErrorResponse();
 
   StoragePartitionImpl* partition =
-      static_cast<StoragePartitionImpl*>(BrowserContext::GetStoragePartition(
-          render_frame_host_->GetProcess()->GetBrowserContext(),
-          render_frame_host_->GetSiteInstance()));
+      static_cast<StoragePartitionImpl*>(process_->GetStoragePartition());
   BackgroundSyncContext* sync_context = partition->GetBackgroundSyncContext();
 
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,

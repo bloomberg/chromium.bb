@@ -260,8 +260,9 @@ std::vector<InputHandler*> InputHandler::ForAgentHost(
       host, Input::Metainfo::domainName);
 }
 
-void InputHandler::SetRenderFrameHost(RenderFrameHostImpl* host) {
-  if (host == host_)
+void InputHandler::SetRenderer(RenderProcessHost* process_host,
+                               RenderFrameHostImpl* frame_host) {
+  if (frame_host == host_)
     return;
   ClearInputState();
   if (host_) {
@@ -269,9 +270,9 @@ void InputHandler::SetRenderFrameHost(RenderFrameHostImpl* host) {
     if (ignore_input_events_)
       host_->GetRenderWidgetHost()->SetIgnoreInputEvents(false);
   }
-  host_ = host;
-  if (host) {
-    host->GetRenderWidgetHost()->AddInputEventObserver(this);
+  host_ = frame_host;
+  if (host_) {
+    host_->GetRenderWidgetHost()->AddInputEventObserver(this);
     if (ignore_input_events_)
       host_->GetRenderWidgetHost()->SetIgnoreInputEvents(true);
   }
