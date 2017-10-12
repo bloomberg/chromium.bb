@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/offline_pages/core/prefetch/mock_prefetch_item_generator.h"
@@ -72,6 +73,7 @@ PrefetchItem StaleEntryFinalizerTaskTest::CreateAndInsertItem(
   PrefetchItem item(item_generator()->CreateItem(state));
   item.freshness_time =
       fake_now_ + base::TimeDelta::FromHours(time_delta_in_hours);
+  item.creation_time = item.freshness_time;
   EXPECT_TRUE(store_util()->InsertPrefetchItem(item))
       << "Failed inserting item with state " << static_cast<int>(state);
   return item;
@@ -174,7 +176,9 @@ TEST_F(StaleEntryFinalizerTaskTest, HandlesFreshnessTimesCorrectly) {
 // their freshness dates are really old.
 TEST_F(StaleEntryFinalizerTaskTest, HandlesStalesInAllStatesCorrectly) {
   // Insert "stale" items for every state.
-  const int many_hours = -7 * 24;
+  // We want a longer time than the pipeline normally takes, but shorter
+  // than the point at which we report items as too old.
+  const int many_hours = -6 * 24;
   CreateAndInsertItem(PrefetchItemState::NEW_REQUEST, many_hours);
   CreateAndInsertItem(PrefetchItemState::SENT_GENERATE_PAGE_BUNDLE, many_hours);
   CreateAndInsertItem(PrefetchItemState::AWAITING_GCM, many_hours);
@@ -369,6 +373,35 @@ TEST_F(StaleEntryFinalizerTaskTest,
   EXPECT_EQ(1U, Filter(post_items, PrefetchItemState::IMPORTING).size());
   EXPECT_EQ(6U, Filter(post_items, PrefetchItemState::FINISHED).size());
   EXPECT_EQ(1U, Filter(post_items, PrefetchItemState::ZOMBIE).size());
+}
+
+// Verifies that expired and non-expired items from all expirable states are
+// properly handled.
+TEST_F(StaleEntryFinalizerTaskTest, HandlesStuckItemsCorrectly) {
+  base::HistogramTester histogram_tester;
+  // Insert fresh and stale items for all expirable states from all buckets.
+  PrefetchItem item1_recent =
+      CreateAndInsertItem(PrefetchItemState::SENT_GENERATE_PAGE_BUNDLE, 1);
+  PrefetchItem item2_stuck =
+      CreateAndInsertItem(PrefetchItemState::SENT_GENERATE_PAGE_BUNDLE, -170);
+
+  // Check inserted initial items.
+  std::set<PrefetchItem> initial_items = {item1_recent, item2_stuck};
+  std::set<PrefetchItem> all_inserted_items;
+  EXPECT_EQ(2U, store_util()->GetAllItems(&all_inserted_items));
+  EXPECT_EQ(initial_items, all_inserted_items);
+
+  // Execute the expiration task.
+  ExpectTaskCompletes(stale_finalizer_task_.get());
+  stale_finalizer_task_->Run();
+  RunUntilIdle();
+  EXPECT_EQ(Result::MORE_WORK_NEEDED, stale_finalizer_task_->final_status());
+
+  // Check that the proper UMA was reported for the stale item, but not the
+  // fresh item, so there should be exactly one sample.
+  histogram_tester.ExpectUniqueSample(
+      "OfflinePages.Prefetching.StuckItemState",
+      static_cast<int>(PrefetchItemState::SENT_GENERATE_PAGE_BUNDLE), 1);
 }
 
 }  // namespace offline_pages
