@@ -3244,6 +3244,12 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
       <message name="IDS_CHROME_HOME_OPT_OUT_MENU_ITEM" desc="Item that appears at the top Chrome options menu on mobile. Describes a new feature called “Chrome Home” (which is a placeholder name; official naming is underway; for now, do not translate the feature name). Gerund is used to indicate the current state, e.g. you are now using Chrome Home. Tapping this item opens a dialog that allows the user to turn off the Chrome Home feature.">
         You're using Chrome Home
       </message>
+       <message name="IDS_CHROME_HOME_OPT_OUT_SNACKBAR_TEXT" desc="Message that appears on a snackbar after the user has turned off the new feature called “Chrome Home” (which is a placeholder name; official naming is underway; for now, do not translate the feature name).">
+        Tell us why you turned off Chrome Home
+      </message>
+      <message name="IDS_CHROME_HOME_OPT_OUT_SNACKBAR_ACTION" desc="Action button that appears on a snackbar after the user has turned off the new feature called “Chrome Home”.">
+        Take survey
+      </message>
 
       <!-- Photo picker -->
       <message name="IDS_PHOTO_PICKER_SELECT_IMAGES" desc="The label in the title bar of the Photo Picker dialog, suggesting which action the user should take.">

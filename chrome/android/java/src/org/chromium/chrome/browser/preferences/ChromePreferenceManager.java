@@ -46,6 +46,8 @@ public class ChromePreferenceManager {
     private static final String HERB_FLAVOR_KEY = "herb_flavor";
     private static final String CHROME_HOME_ENABLED_KEY = "chrome_home_enabled";
     private static final String CHROME_HOME_USER_ENABLED_KEY = "chrome_home_user_enabled";
+    private static final String CHROME_HOME_OPT_OUT_SNACKBAR_SHOWN =
+            "chrome_home_opt_out_snackbar_shown";
 
     private static final String CHROME_DEFAULT_BROWSER = "applink.chrome_default_browser";
 
@@ -443,6 +445,20 @@ public class ChromePreferenceManager {
      */
     public void clearChromeHomeUserPreference() {
         mSharedPreferences.edit().remove(CHROME_HOME_USER_ENABLED_KEY).apply();
+    }
+
+    /**
+     * Mark that the Chrome Home opt-out snackbar has been shown.
+     */
+    public void setChromeHomeOptOutSnackbarShown() {
+        writeBoolean(CHROME_HOME_OPT_OUT_SNACKBAR_SHOWN, true);
+    }
+
+    /**
+     * @return Whether the Chrome Home opt-out snackbar has been shown.
+     */
+    public boolean getChromeHomeOptOutSnackbarShown() {
+        return mSharedPreferences.getBoolean(CHROME_HOME_OPT_OUT_SNACKBAR_SHOWN, false);
     }
 
     /** Marks that the content suggestions surface has been shown. */

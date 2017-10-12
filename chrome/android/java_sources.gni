@@ -1327,6 +1327,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/widget/bottomsheet/BottomSheetPaddingUtils.java",
   "java/src/org/chromium/chrome/browser/widget/bottomsheet/ChromeHomePromoDialog.java",
   "java/src/org/chromium/chrome/browser/widget/bottomsheet/ChromeHomePromoIllustration.java",
+  "java/src/org/chromium/chrome/browser/widget/bottomsheet/ChromeHomeSnackbarController.java",
   "java/src/org/chromium/chrome/browser/widget/bottomsheet/EmptyBottomSheetObserver.java",
   "java/src/org/chromium/chrome/browser/widget/bottomsheet/PlaceholderSheetContent.java",
   "java/src/org/chromium/chrome/browser/widget/displaystyle/MarginResizer.java",

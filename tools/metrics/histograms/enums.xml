@@ -24361,6 +24361,7 @@ from previous Chrome versions.
   <int value="943319566" label="enable-intent-picker"/>
   <int value="946688335" label="OmniboxSpareRenderer:disabled"/>
   <int value="952558794" label="enable-remote-assistance"/>
+  <int value="955340765" label="ChromeHomeOptOutSnackbar:enabled"/>
   <int value="963457392" label="ChromeHomeModernLayout:disabled"/>
   <int value="979445973" label="OmniboxSpareRenderer:enabled"/>
   <int value="980396200" label="enable-new-korean-ime"/>
@@ -24472,6 +24473,7 @@ from previous Chrome versions.
   <int value="1253698118" label="ash-disable-stable-overview-order"/>
   <int value="1257980502" label="disable-accelerated-video-decode"/>
   <int value="1260186484" label="spurious-power-button-screen-accel"/>
+  <int value="1261713150" label="ChromeHomeOptOutSnackbar:disabled"/>
   <int value="1266886673" label="delay-reload-stop-button-change"/>
   <int value="1268470658" label="disable-android-password-link"/>
   <int value="1269940659" label="EnumerateAudioDevices:enabled"/>
@@ -36164,6 +36166,7 @@ from previous Chrome versions.
   <int value="19" label="TRANSLATE_NEVER"/>
   <int value="20" label="TRANSLATE_NEVER_SITE"/>
   <int value="21" label="SNIPPET_FETCH_FAILED"/>
+  <int value="22" label="CHROME_HOME_OPT_OUT_SURVEY"/>
 </enum>
 
 <enum name="SnippetOpenMethod">

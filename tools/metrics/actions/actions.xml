@@ -1276,6 +1276,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Android.ChromeHome.OptOutSnackbarClicked">
+  <owner>mdjones@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <description>
+    User clicked the 'Take Survey' button on the snackbar shown after they opted
+    out of Chrome Home.
+  </description>
+</action>
+
 <action name="Android.ChromeHome.ShowBookmarks">
   <owner>mdjones@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
