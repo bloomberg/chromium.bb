@@ -1552,6 +1552,7 @@
 -StreamsPrivateApiTest.FileURL
 -StreamsPrivateApiTest.Headers
 -StreamsPrivateApiTest.Navigate
+-SymantecMessageSSLUITest.ManySubresources
 -SymantecMessageSSLUITest.PostJune2016
 -SymantecMessageSSLUITest.PreJune2016
 -SymantecMessageSSLUITest.Subresource
