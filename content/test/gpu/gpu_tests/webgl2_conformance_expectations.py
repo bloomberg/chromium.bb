@@ -146,6 +146,39 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/glsl3/' +
         'vector-dynamic-indexing-swizzled-lvalue.html',
         ['win', 'nvidia', 'opengl'], bug=709874)
+    self.Fail('conformance2/state/gl-object-get-calls.html',
+        ['win', 'nvidia', 'opengl'], bug=773823)
+    self.Fail('conformance2/transform_feedback/transform_feedback.html',
+        ['win', 'nvidia', 'opengl'], bug=773823)
+    self.Fail('conformance2/transform_feedback/two-unreferenced-varyings.html',
+        ['win', 'nvidia', 'opengl'], bug=773823)
+    self.Fail('conformance2/transform_feedback/' +
+        'unwritten-output-defaults-to-zero.html',
+        ['win', 'nvidia', 'opengl'], bug=773823)
+    self.Fail('deqp/functional/gles3/booleanstatequery.html',
+        ['win', 'nvidia', 'opengl'], bug=773823)
+    self.Fail('deqp/functional/gles3/lifetime.html',
+        ['win', 'nvidia', 'opengl'], bug=773823)
+    self.Fail('deqp/functional/gles3/negativevertexarrayapi.html',
+        ['win', 'nvidia', 'opengl'], bug=773823)
+    self.Fail('deqp/functional/gles3/shaderbuiltinvar.html',
+        ['win', 'nvidia', 'opengl'], bug=773823)
+    self.Fail('deqp/functional/gles3/shadercommonfunction.html',
+        ['win', 'nvidia', 'opengl'], bug=773823)
+    self.Fail('deqp/functional/gles3/shaderpackingfunction.html',
+        ['win', 'nvidia', 'opengl'], bug=773823)
+    self.Fail('deqp/functional/gles3/shaderstatequery.html',
+        ['win', 'nvidia', 'opengl'], bug=773823)
+    self.Fail('deqp/functional/gles3/transformfeedback/basic_types_*.html',
+        ['win', 'nvidia', 'opengl'], bug=773823)
+    self.Fail('deqp/functional/gles3/transformfeedback/interpolation_*.html',
+        ['win', 'nvidia', 'opengl'], bug=773823)
+    self.Fail('deqp/functional/gles3/transformfeedback/point_size.html',
+        ['win', 'nvidia', 'opengl'], bug=773823)
+    self.Fail('deqp/functional/gles3/transformfeedback/position.html',
+        ['win', 'nvidia', 'opengl'], bug=773823)
+    self.Fail('deqp/functional/gles3/transformfeedback/random_*.html',
+        ['win', 'nvidia', 'opengl'], bug=773823)
 
     # Win / AMD
     self.Fail('conformance2/rendering/blitframebuffer-stencil-only.html',
