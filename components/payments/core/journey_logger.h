@@ -222,9 +222,6 @@ class JourneyLogger {
   // Payment Request.
   void RecordEventsMetric(CompletionStatus completion_status);
 
-  // Records the Payment Request Url Keyed Metrics.
-  void RecordUrlKeyedMetrics(CompletionStatus completion_status);
-
   // Returns whether this Payment Request was triggered (shown or skipped show).
   bool WasPaymentRequestTriggered();
 
