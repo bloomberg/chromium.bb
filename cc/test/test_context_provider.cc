@@ -197,6 +197,12 @@ const gpu::Capabilities& TestContextProvider::ContextCapabilities() const {
   return context3d_->test_capabilities();
 }
 
+const gpu::GpuFeatureInfo& TestContextProvider::GetGpuFeatureInfo() const {
+  DCHECK(bound_);
+  DCHECK(context_thread_checker_.CalledOnValidThread());
+  return gpu_feature_info_;
+}
+
 gpu::gles2::GLES2Interface* TestContextProvider::ContextGL() {
   DCHECK(context3d_);
   DCHECK(bound_);

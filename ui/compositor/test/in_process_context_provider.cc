@@ -116,6 +116,11 @@ const gpu::Capabilities& InProcessContextProvider::ContextCapabilities() const {
   return context_->GetImplementation()->capabilities();
 }
 
+const gpu::GpuFeatureInfo& InProcessContextProvider::GetGpuFeatureInfo() const {
+  DCHECK(context_thread_checker_.CalledOnValidThread());
+  return context_->GetGpuFeatureInfo();
+}
+
 gpu::gles2::GLES2Interface* InProcessContextProvider::ContextGL() {
   DCHECK(context_thread_checker_.CalledOnValidThread());
 
