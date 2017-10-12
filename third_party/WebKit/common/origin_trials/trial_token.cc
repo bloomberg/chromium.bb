@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/origin_trials/trial_token.h"
+#include "third_party/WebKit/common/origin_trials/trial_token.h"
 
 #include <vector>
 
@@ -14,12 +14,11 @@
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "third_party/WebKit/public/platform/WebOriginTrialTokenStatus.h"
 #include "third_party/boringssl/src/include/openssl/curve25519.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
-namespace content {
+namespace blink {
 
 namespace {
 
@@ -47,68 +46,66 @@ TrialToken::~TrialToken() {}
 std::unique_ptr<TrialToken> TrialToken::From(
     const std::string& token_text,
     base::StringPiece public_key,
-    blink::WebOriginTrialTokenStatus* out_status) {
+    OriginTrialTokenStatus* out_status) {
   DCHECK(out_status);
   std::string token_payload;
   std::string token_signature;
   *out_status =
       Extract(token_text, public_key, &token_payload, &token_signature);
-  if (*out_status != blink::WebOriginTrialTokenStatus::kSuccess) {
+  if (*out_status != OriginTrialTokenStatus::kSuccess) {
     return nullptr;
   }
   std::unique_ptr<TrialToken> token = Parse(token_payload);
   if (token) {
     token->signature_ = token_signature;
-    *out_status = blink::WebOriginTrialTokenStatus::kSuccess;
+    *out_status = OriginTrialTokenStatus::kSuccess;
   } else {
-    *out_status = blink::WebOriginTrialTokenStatus::kMalformed;
+    *out_status = OriginTrialTokenStatus::kMalformed;
   }
   return token;
 }
 
-blink::WebOriginTrialTokenStatus TrialToken::IsValid(
-    const url::Origin& origin,
-    const base::Time& now) const {
+OriginTrialTokenStatus TrialToken::IsValid(const url::Origin& origin,
+                                           const base::Time& now) const {
   // The order of these checks is intentional. For example, will only report a
   // token as expired if it is valid for the origin.
   if (!ValidateOrigin(origin)) {
-    return blink::WebOriginTrialTokenStatus::kWrongOrigin;
+    return OriginTrialTokenStatus::kWrongOrigin;
   }
   if (!ValidateDate(now)) {
-    return blink::WebOriginTrialTokenStatus::kExpired;
+    return OriginTrialTokenStatus::kExpired;
   }
-  return blink::WebOriginTrialTokenStatus::kSuccess;
+  return OriginTrialTokenStatus::kSuccess;
 }
 
 // static
-blink::WebOriginTrialTokenStatus TrialToken::Extract(
-    const std::string& token_text,
-    base::StringPiece public_key,
-    std::string* out_token_payload,
-    std::string* out_token_signature) {
+OriginTrialTokenStatus TrialToken::Extract(const std::string& token_text,
+                                           base::StringPiece public_key,
+                                           std::string* out_token_payload,
+                                           std::string* out_token_signature) {
   if (token_text.empty()) {
-    return blink::WebOriginTrialTokenStatus::kMalformed;
+    return OriginTrialTokenStatus::kMalformed;
   }
 
   // Token is base64-encoded; decode first.
   std::string token_contents;
   if (!base::Base64Decode(token_text, &token_contents)) {
-    return blink::WebOriginTrialTokenStatus::kMalformed;
+    return OriginTrialTokenStatus::kMalformed;
   }
 
   // Only version 2 currently supported.
   if (token_contents.length() < (kVersionOffset + kVersionSize)) {
-    return blink::WebOriginTrialTokenStatus::kMalformed;
+    return OriginTrialTokenStatus::kMalformed;
   }
   uint8_t version = token_contents[kVersionOffset];
   if (version != kVersion2) {
-    return blink::WebOriginTrialTokenStatus::kWrongVersion;
+    return OriginTrialTokenStatus::kWrongVersion;
   }
 
   // Token must be large enough to contain a version, signature, and payload
   // length.
   if (token_contents.length() < (kPayloadLengthOffset + kPayloadLengthSize)) {
-    return blink::WebOriginTrialTokenStatus::kMalformed;
+    return OriginTrialTokenStatus::kMalformed;
   }
 
   // Extract the length of the signed data (Big-endian).
@@ -117,7 +114,7 @@ blink::WebOriginTrialTokenStatus TrialToken::Extract(
 
   // Validate that the stated length matches the actual payload length.
   if (payload_length != token_contents.length() - kPayloadOffset) {
-    return blink::WebOriginTrialTokenStatus::kMalformed;
+    return OriginTrialTokenStatus::kMalformed;
   }
 
   // Extract the version-specific contents of the token.
@@ -133,13 +130,13 @@ blink::WebOriginTrialTokenStatus TrialToken::Extract(
 
   // Validate the signature on the data before proceeding.
   if (!TrialToken::ValidateSignature(signature, signed_data, public_key)) {
-    return blink::WebOriginTrialTokenStatus::kInvalidSignature;
+    return OriginTrialTokenStatus::kInvalidSignature;
   }
 
   // Return the payload and signature, as new strings.
   *out_token_payload = token_contents.substr(kPayloadOffset, payload_length);
   *out_token_signature = signature.as_string();
-  return blink::WebOriginTrialTokenStatus::kSuccess;
+  return OriginTrialTokenStatus::kSuccess;
 }
 
 // static
@@ -189,8 +186,7 @@ std::unique_ptr<TrialToken> TrialToken::Parse(
 bool TrialToken::ValidateOrigin(const url::Origin& origin) const {
   if (match_subdomains_) {
     return origin.scheme() == origin_.scheme() &&
-           origin.DomainIs(origin_.host()) &&
-           origin.port() == origin_.port();
+           origin.DomainIs(origin_.host()) && origin.port() == origin_.port();
   }
   return origin == origin_;
 }
@@ -231,4 +227,4 @@ TrialToken::TrialToken(const url::Origin& origin,
       feature_name_(feature_name),
       expiry_time_(base::Time::FromDoubleT(expiry_timestamp)) {}
 
-}  // namespace content
+}  // namespace blink

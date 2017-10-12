@@ -1433,7 +1433,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ParseRegistrationData(
   }
   if (data.has_origin_trial_tokens()) {
     const ServiceWorkerOriginTrialInfo& info = data.origin_trial_tokens();
-    TrialTokenValidator::FeatureToTokensMap origin_trial_tokens;
+    blink::TrialTokenValidator::FeatureToTokensMap origin_trial_tokens;
     for (int i = 0; i < info.features_size(); ++i) {
       const auto& feature = info.features(i);
       for (int j = 0; j < feature.tokens_size(); ++j)

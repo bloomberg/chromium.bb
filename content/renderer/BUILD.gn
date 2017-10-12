@@ -493,6 +493,7 @@ target(link_target_type, "renderer") {
     "//services/ui/public/cpp/gpu",
     "//skia",
     "//storage/common",
+    "//third_party/WebKit/common:blink_common",
     "//third_party/WebKit/public:blink",
     "//third_party/WebKit/public:features",
     "//third_party/WebKit/public:mojo_bindings",

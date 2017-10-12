@@ -34,6 +34,10 @@ component("blink_common") {
     "message_port/message_port_message_struct_traits.h",
     "mime_util/mime_util.cc",
     "mime_util/mime_util.h",
+    "origin_trials/trial_token.cc",
+    "origin_trials/trial_token.h",
+    "origin_trials/trial_token_validator.cc",
+    "origin_trials/trial_token_validator.h",
   ]
 
   public_deps = [
@@ -59,6 +63,8 @@ test("blink_common_unittests") {
   sources = [
     "device_memory/approximated_device_memory_unittest.cc",
     "mime_util/mime_util_unittest.cc",
+    "origin_trials/trial_token_unittest.cc",
+    "origin_trials/trial_token_validator_unittest.cc",
     "test/run_all_unittests.cc",
   ]
 
@@ -68,6 +74,7 @@ test("blink_common_unittests") {
     "//base/test:test_support",
     "//net",
     "//testing/gtest",
+    "//third_party/boringssl",
   ]
 }
 

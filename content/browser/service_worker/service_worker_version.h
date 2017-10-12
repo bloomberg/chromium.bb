@@ -35,13 +35,13 @@
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/browser/service_worker/service_worker_script_cache_map.h"
 #include "content/common/content_export.h"
-#include "content/common/origin_trials/trial_token_validator.h"
 #include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/WebKit/common/origin_trials/trial_token_validator.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_event_status.mojom.h"
 #include "ui/base/mojo/window_open_disposition.mojom.h"
 #include "url/gurl.h"
@@ -367,12 +367,13 @@ class CONTENT_EXPORT ServiceWorkerVersion
   //  2) The worker is an existing one but the entry in ServiceWorkerDatabase
   //     was written by old version of Chrome (< M56), so |origin_trial_tokens|
   //     wasn't set in the entry.
-  const TrialTokenValidator::FeatureToTokensMap* origin_trial_tokens() const {
+  const blink::TrialTokenValidator::FeatureToTokensMap* origin_trial_tokens()
+      const {
     return origin_trial_tokens_.get();
   }
   // Set valid tokens in |tokens|. Invalid tokens in |tokens| are ignored.
   void SetValidOriginTrialTokens(
-      const TrialTokenValidator::FeatureToTokensMap& tokens);
+      const blink::TrialTokenValidator::FeatureToTokensMap& tokens);
 
   void SetDevToolsAttached(bool attached);
 
@@ -776,7 +777,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   std::unique_ptr<net::HttpResponseInfo> main_script_http_info_;
 
-  std::unique_ptr<TrialTokenValidator::FeatureToTokensMap> origin_trial_tokens_;
+  std::unique_ptr<blink::TrialTokenValidator::FeatureToTokensMap>
+      origin_trial_tokens_;
 
   // If not OK, the reason that StartWorker failed. Used for
   // running |start_callbacks_|.
@@ -805,6 +807,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // version completed, or used during the lifetime of |this|. The values must
   // be from blink::UseCounter::Feature enum.
   std::set<uint32_t> used_features_;
+
+  std::unique_ptr<blink::TrialTokenValidator> validator_;
 
   base::WeakPtrFactory<ServiceWorkerVersion> weak_factory_;
 

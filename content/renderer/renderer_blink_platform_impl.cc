@@ -88,6 +88,7 @@
 #include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
 #include "storage/common/database/database_identifier.h"
 #include "storage/common/quota/quota_types.h"
+#include "third_party/WebKit/common/origin_trials/trial_token_validator.h"
 #include "third_party/WebKit/public/platform/BlameContext.h"
 #include "third_party/WebKit/public/platform/FilePathConversion.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
@@ -1319,9 +1320,15 @@ void RendererBlinkPlatformImpl::QueryStorageUsageAndQuota(
 
 //------------------------------------------------------------------------------
 
-blink::WebTrialTokenValidator*
+std::unique_ptr<blink::WebTrialTokenValidator>
 RendererBlinkPlatformImpl::TrialTokenValidator() {
-  return &trial_token_validator_;
+  return std::make_unique<WebTrialTokenValidatorImpl>(
+      std::make_unique<blink::TrialTokenValidator>(OriginTrialPolicy()));
+}
+
+std::unique_ptr<blink::TrialPolicy>
+RendererBlinkPlatformImpl::OriginTrialPolicy() {
+  return std::make_unique<TrialPolicyImpl>();
 }
 
 void RendererBlinkPlatformImpl::WorkerContextCreated(
