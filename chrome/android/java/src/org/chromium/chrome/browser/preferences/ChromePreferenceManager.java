@@ -53,6 +53,9 @@ public class ChromePreferenceManager {
 
     private static final String CONTENT_SUGGESTIONS_SHOWN_KEY = "content_suggestions_shown";
 
+    private static final String SETTINGS_PERSONALIZED_SIGNIN_PROMO_DISMISSED =
+            "settings_personalized_signin_promo_dismissed";
+
     // TODO(crbug.com/757892): Remove this preference key once the personalized signin promos
     // launch completely.
     private static final String NTP_GENERIC_SIGNIN_PROMO_DISMISSED = "ntp.signin_promo_dismissed";
@@ -359,6 +362,16 @@ public class ChromePreferenceManager {
 
     public void setCachedChromeDefaultBrowser(boolean isDefault) {
         writeBoolean(CHROME_DEFAULT_BROWSER, isDefault);
+    }
+
+    /** Set whether the user dismissed the personalized sign in promo from the Settings. */
+    public void setSettingsPersonalizedSigninPromoDismissed(boolean isPromoDismissed) {
+        writeBoolean(SETTINGS_PERSONALIZED_SIGNIN_PROMO_DISMISSED, isPromoDismissed);
+    }
+
+    /** Checks if the user dismissed the personalized sign in promo from the Settings. */
+    public boolean getSettingsPersonalizedSigninPromoDismissed() {
+        return mSharedPreferences.getBoolean(SETTINGS_PERSONALIZED_SIGNIN_PROMO_DISMISSED, false);
     }
 
     /** Checks if the user dismissed the generic sign in promo from the new tab page. */

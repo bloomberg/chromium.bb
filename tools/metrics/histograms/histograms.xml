@@ -36196,6 +36196,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="MobileSignInPromo.SettingsManager.ImpressionsTilXButton"
+    units="impressions">
+  <owner>jlebel@chromium.org</owner>
+  <summary>
+    Counts how many times the explicit &quot;X&quot;-to-close button is clicked
+    per impression.
+  </summary>
+</histogram>
+
 <histogram name="MobileStartup.IntentToCreationTime" units="ms">
   <owner>twellington@chromium.org</owner>
   <summary>

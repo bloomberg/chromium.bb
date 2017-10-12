@@ -46,7 +46,7 @@ public class SigninPromoController implements ImpressionTracker.Listener {
             "signin_promo_impressions_count_settings";
 
     private static final int MAX_IMPRESSIONS_BOOKMARKS = 20;
-    private static final int MAX_IMPRESSIONS_SETTINGS = 5;
+    private static final int MAX_IMPRESSIONS_SETTINGS = 20;
 
     private final ImpressionTracker mImpressionTracker = new ImpressionTracker(this);
     private @Nullable DisplayableProfileData mProfileData;
@@ -57,6 +57,7 @@ public class SigninPromoController implements ImpressionTracker.Listener {
     private final String mImpressionWithNoAccountUserActionName;
     private final @Nullable String mImpressionsTilDismissHistogramName;
     private final @Nullable String mImpressionsTilSigninButtonsHistogramName;
+    private final @Nullable String mImpressionsTilXButtonHistogramName;
     private final @StringRes int mDescriptionStringId;
     private boolean mWasDisplayed;
     private boolean mWasUsed;
@@ -112,6 +113,8 @@ public class SigninPromoController implements ImpressionTracker.Listener {
                         "MobileSignInPromo.BookmarkManager.ImpressionsTilDismiss";
                 mImpressionsTilSigninButtonsHistogramName =
                         "MobileSignInPromo.BookmarkManager.ImpressionsTilSigninButtons";
+                mImpressionsTilXButtonHistogramName =
+                        "MobileSignInPromo.BookmarkManager.ImpressionsTilXButton";
                 mDescriptionStringId = R.string.signin_promo_description_bookmarks;
                 break;
             case SigninAccessPoint.NTP_CONTENT_SUGGESTIONS:
@@ -124,6 +127,7 @@ public class SigninPromoController implements ImpressionTracker.Listener {
                         "Signin_ImpressionWithNoAccount_FromNTPContentSuggestions";
                 mImpressionsTilDismissHistogramName = null;
                 mImpressionsTilSigninButtonsHistogramName = null;
+                mImpressionsTilXButtonHistogramName = null;
                 mDescriptionStringId = R.string.signin_promo_description_ntp_content_suggestions;
                 break;
             case SigninAccessPoint.RECENT_TABS:
@@ -136,6 +140,7 @@ public class SigninPromoController implements ImpressionTracker.Listener {
                         "Signin_ImpressionWithNoAccount_FromRecentTabs";
                 mImpressionsTilDismissHistogramName = null;
                 mImpressionsTilSigninButtonsHistogramName = null;
+                mImpressionsTilXButtonHistogramName = null;
                 mDescriptionStringId = R.string.signin_promo_description_recent_tabs;
                 break;
             case SigninAccessPoint.SETTINGS:
@@ -148,6 +153,8 @@ public class SigninPromoController implements ImpressionTracker.Listener {
                         "MobileSignInPromo.SettingsManager.ImpressionsTilDismiss";
                 mImpressionsTilSigninButtonsHistogramName =
                         "MobileSignInPromo.SettingsManager.ImpressionsTilSigninButtons";
+                mImpressionsTilXButtonHistogramName =
+                        "MobileSignInPromo.SettingsManager.ImpressionsTilXButton";
                 mDescriptionStringId = R.string.signin_promo_description_settings;
                 break;
             default:
@@ -195,11 +202,10 @@ public class SigninPromoController implements ImpressionTracker.Listener {
         if (onDismissListener != null) {
             view.getDismissButton().setVisibility(View.VISIBLE);
             view.getDismissButton().setOnClickListener(promoView -> {
-                assert mAccessPoint == SigninAccessPoint.BOOKMARK_MANAGER;
+                assert mImpressionsTilXButtonHistogramName != null;
                 mWasUsed = true;
                 RecordHistogram.recordCount100Histogram(
-                        "MobileSignInPromo.BookmarkManager.ImpressionsTilXButton",
-                        getNumImpressions());
+                        mImpressionsTilXButtonHistogramName, getNumImpressions());
                 onDismissListener.onDismiss();
             });
         } else {
