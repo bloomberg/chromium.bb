@@ -3,16 +3,16 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
-    LayoutSVGContainer {g} at (60,12.41) size 416.59x332.39
+    LayoutSVGContainer {g} at (60,12.39) size 416.59x332.39
       LayoutSVGText {text} at (180,13) size 91.50x34.19 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (180,13) size 91.50x34.19
           chunk 1 text run 1 at (180.00,40.00) startOffset 0 endOffset 9 width 91.51: "Text fill"
-      LayoutSVGContainer {g} at (60,12.41) size 416.59x332.39
-        LayoutSVGText {text} at (60,12.41) size 216.59x332.39 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (60,12.41) size 216.59x332.39
+      LayoutSVGContainer {g} at (60,12.39) size 416.59x332.39
+        LayoutSVGText {text} at (60,12.39) size 216.59x332.39 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (60,12.39) size 216.59x332.39
             chunk 1 text run 1 at (60.00,280.00) startOffset 0 endOffset 1 width 216.60: "A"
-        LayoutSVGText {text} at (260,12.41) size 216.59x332.39 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (260,12.41) size 216.59x332.39
+        LayoutSVGText {text} at (260,12.39) size 216.59x332.39 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (260,12.39) size 216.59x332.39
             chunk 1 text run 1 at (260.00,280.00) startOffset 0 endOffset 1 width 216.60: "A"
     LayoutSVGText {text} at (10,304) size 265.80x45.59 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (10,304) size 265.80x45.59

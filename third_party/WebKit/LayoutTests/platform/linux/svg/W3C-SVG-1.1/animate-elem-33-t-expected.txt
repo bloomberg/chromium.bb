@@ -95,11 +95,11 @@ layer at (0,0) size 800x600
         LayoutSVGEllipse {circle} at (55,-20) size 40x40 [stroke={[type=SOLID] [color=#555555]}] [fill={[type=SOLID] [color=#CCCCCC]}] [cx=75.00] [cy=0.00] [r=20.00]
         LayoutSVGEllipse {circle} at (105,-20) size 40x40 [stroke={[type=SOLID] [color=#555555]}] [fill={[type=SOLID] [color=#CCCCCC]}] [cx=125.00] [cy=0.00] [r=20.00]
       LayoutSVGEllipse {circle} at (-20,-20) size 40x40 [transform={m=((1.00,0.00)(0.00,1.00)) t=(75.00,0.00)}] [stroke={[type=SOLID] [color=#000000] [stroke width=3.00]}] [fill={[type=SOLID] [color=#CC0066]}] [cx=0.00] [cy=0.00] [r=20.00]
-    LayoutSVGText {text} at (5,209.81) size 371.45x31.80 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (5,209.81) size 371.45x31.80
+    LayoutSVGText {text} at (5,209.80) size 371.45x31.80 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (5,209.80) size 371.45x31.80
         chunk 1 text run 1 at (5.00,235.00) startOffset 0 endOffset 31 width 371.46: "Test of keyPoints and keyTimes."
-    LayoutSVGText {text} at (4.39,248.81) size 387.59x20.39 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (4.39,248.81) size 387.59x20.39
+    LayoutSVGText {text} at (4.39,248.80) size 387.59x20.39 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (4.39,248.80) size 387.59x20.39
         chunk 1 text run 1 at (5.00,265.00) startOffset 0 endOffset 54 width 387.00: "Number indicates the circle's passing time in seconds."
     LayoutSVGText {text} at (10,304) size 268.19x45.59 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (10,304) size 268.19x45.59

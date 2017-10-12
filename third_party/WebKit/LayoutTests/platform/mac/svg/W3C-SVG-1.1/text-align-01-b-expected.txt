@@ -2,9 +2,9 @@ layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
-    LayoutSVGContainer {g} at (5,9.41) size 450.14x277.19
-      LayoutSVGText {text} at (5,9.41) size 434.33x37.80 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (5,9.41) size 434.33x37.80
+    LayoutSVGContainer {g} at (5,9.39) size 450.14x277.20
+      LayoutSVGText {text} at (5,9.39) size 434.33x37.80 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (5,9.39) size 434.33x37.80
           chunk 1 text run 1 at (5.00,40.00) startOffset 0 endOffset 31 width 434.33: "Test 'text-anchor' (horizontal)"
       LayoutSVGContainer {g} at (21.55,103) size 433.59x183.59
         LayoutSVGContainer {g} at (-3,-27) size 228.14x33.59 [transform={m=((1.00,0.00)(0.00,1.00)) t=(230.00,130.00)}]

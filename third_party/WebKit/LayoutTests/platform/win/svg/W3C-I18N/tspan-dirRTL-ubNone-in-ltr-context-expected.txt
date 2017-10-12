@@ -2,15 +2,15 @@ layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
-    LayoutSVGContainer {g} at (20,133.20) size 390x85.80
-      LayoutSVGText {text} at (95.16,133.20) size 269.67x21 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (95.16,133.20) size 134.06x21
+    LayoutSVGContainer {g} at (20,133.19) size 390x85.81
+      LayoutSVGText {text} at (95.16,133.19) size 269.67x21 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (95.16,133.19) size 134.06x21
           chunk 1 (middle anchor) text run 1 at (95.16,150.00) startOffset 0 endOffset 15 width 134.07: "dirRTL ubNone \""
-        LayoutSVGTSpan {tspan} at (95.16,133.20) size 269.67x21
-          LayoutSVGInlineText {#text} at (228.63,133.20) size 124.19x21
+        LayoutSVGTSpan {tspan} at (95.16,133.19) size 269.67x21
+          LayoutSVGInlineText {#text} at (228.63,133.19) size 124.19x21
             chunk 1 (middle anchor) text run 1 at (229.24,150.00) startOffset 0 endOffset 12 width 71.40 RTL: "\x{646}\x{634}\x{627}\x{637} \x{627}\x{644}\x{62A}\x{62F}\x{648}\x{64A}\x{644}"
             chunk 1 (middle anchor) text run 1 at (300.64,150.00) startOffset 0 endOffset 5 width 52.20: "\x{60C} W3C"
-        LayoutSVGInlineText {#text} at (352.83,133.20) size 12x21
+        LayoutSVGInlineText {#text} at (352.83,133.19) size 12x21
           chunk 1 (middle anchor) text run 1 at (352.84,150.00) startOffset 0 endOffset 2 width 12.00: "\"!"
       LayoutSVGText {text} at (20,171) size 84.59x11.39 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (20,171) size 84.59x11.39

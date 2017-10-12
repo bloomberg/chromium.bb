@@ -2,38 +2,38 @@ layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
-    LayoutSVGContainer {g} at (10,10) size 458.39x277.41
+    LayoutSVGContainer {g} at (10,10) size 458.39x277.39
       LayoutSVGResourceRadialGradient {radialGradient} [id="Grad1"] [gradientUnits=userSpaceOnUse] [center=(75,100)] [focal=(75,100)] [radius=130.00] [focalRadius=0.00]
         LayoutSVGGradientStop {stop} [offset=0.00] [color=#000000]
         LayoutSVGGradientStop {stop} [offset=1.00] [color=#FF0000]
       LayoutSVGRect {rect} at (10,10) size 210x140 [fill={[type=RADIAL-GRADIENT] [id="Grad1"]}] [x=10.00] [y=10.00] [width=210.00] [height=140.00]
-      LayoutSVGText {text} at (10,153.61) size 177.59x13.80 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (10,153.61) size 177.59x13.80
+      LayoutSVGText {text} at (10,153.59) size 177.59x13.80 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (10,153.59) size 177.59x13.80
           chunk 1 text run 1 at (10.00,165.00) startOffset 0 endOffset 36 width 177.60: "Radial gradient on fill of rectangle"
       LayoutSVGResourceRadialGradient {radialGradient} [id="Grad2"] [gradientUnits=userSpaceOnUse] [center=(295,100)] [focal=(295,100)] [radius=150.00] [focalRadius=0.00]
         LayoutSVGGradientStop {stop} [offset=0.00] [color=#FF0000]
         LayoutSVGGradientStop {stop} [offset=1.00] [color=#FFFF00]
       LayoutSVGRect {rect} at (250,30) size 170x100 [stroke={[type=RADIAL-GRADIENT] [id="Grad2"] [stroke width=40.00]}] [x=250.00] [y=30.00] [width=170.00] [height=100.00]
-      LayoutSVGText {text} at (230,153.61) size 199.80x13.80 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (230,153.61) size 199.80x13.80
+      LayoutSVGText {text} at (230,153.59) size 199.80x13.80 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (230,153.59) size 199.80x13.80
           chunk 1 text run 1 at (230.00,165.00) startOffset 0 endOffset 38 width 199.80: "Radial gradient on stroke of rectangle"
       LayoutSVGResourceRadialGradient {radialGradient} [id="Grad3"] [gradientUnits=userSpaceOnUse] [center=(225,180)] [focal=(225,180)] [radius=90.00] [focalRadius=0.00]
         LayoutSVGGradientStop {stop} [offset=0.00] [color=#000000]
         LayoutSVGGradientStop {stop} [offset=1.00] [color=#FFFF00]
-      LayoutSVGText {text} at (10,165.61) size 414x55.19 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (10,165.61) size 414x55.19
+      LayoutSVGText {text} at (10,165.59) size 414x55.19 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (10,165.59) size 414x55.19
           chunk 1 text run 1 at (10.00,210.00) startOffset 0 endOffset 21 width 414.00: "Gradient on text fill"
-      LayoutSVGText {text} at (10,213.61) size 205.19x13.80 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (10,213.61) size 205.19x13.80
+      LayoutSVGText {text} at (10,213.59) size 205.19x13.80 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (10,213.59) size 205.19x13.80
           chunk 1 text run 1 at (10.00,225.00) startOffset 0 endOffset 40 width 204.60: "Radial gradient on text, black to yellow"
       LayoutSVGResourceRadialGradient {radialGradient} [id="Grad4"] [gradientUnits=userSpaceOnUse] [center=(225,245)] [focal=(225,245)] [radius=90.00] [focalRadius=0.00]
         LayoutSVGGradientStop {stop} [offset=0.00] [color=#000000]
         LayoutSVGGradientStop {stop} [offset=1.00] [color=#FF0000]
-      LayoutSVGText {text} at (10,229.81) size 458.39x49.80 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (10,229.81) size 458.39x49.80
+      LayoutSVGText {text} at (10,229.80) size 458.39x49.80 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (10,229.80) size 458.39x49.80
           chunk 1 text run 1 at (10.00,270.00) startOffset 0 endOffset 23 width 458.40: "Gradient on text stroke"
-      LayoutSVGText {text} at (10,273.61) size 240x13.80 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (10,273.61) size 240x13.80
+      LayoutSVGText {text} at (10,273.59) size 240x13.80 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (10,273.59) size 240x13.80
           chunk 1 text run 1 at (10.00,285.00) startOffset 0 endOffset 47 width 240.00: "Radial gradient on stroke of text, black to red"
     LayoutSVGText {text} at (10,304) size 268.19x45.59 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (10,304) size 268.19x45.59

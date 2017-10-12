@@ -258,7 +258,7 @@ layer at (0,0) size 800x600
           LayoutSVGRect {rect} at (75,0) size 10x60 [stroke={[type=SOLID] [color=#000000] [stroke width=0.50]}] [fill={[type=SOLID] [color=#FFA500]}] [x=75.00] [y=0.00] [width=10.00] [height=60.00]
           LayoutSVGRect {rect} at (90,0) size 10x60 [stroke={[type=SOLID] [color=#000000] [stroke width=0.50]}] [fill={[type=SOLID] [color=#FFD700]}] [x=90.00] [y=0.00] [width=10.00] [height=60.00]
           LayoutSVGRect {rect} at (0,0) size 100x60 [stroke={[type=SOLID] [color=#000000] [stroke width=0.50]}] [fill={[type=RADIAL-GRADIENT] [id="grad6d"]}] [x=0.00] [y=0.00] [width=100.00] [height=60.00]
-    LayoutSVGText {text} at (10,312.41) size 197.50x35.39 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (10,312.41) size 197.50x35.39
+    LayoutSVGText {text} at (10,312.39) size 197.50x35.39 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (10,312.39) size 197.50x35.39
         chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 197.50: "$Revision: 1.7 $"
     LayoutSVGRect {rect} at (1,1) size 478x358 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]

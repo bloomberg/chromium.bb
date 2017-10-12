@@ -2,17 +2,17 @@ layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
-    LayoutSVGContainer {g} at (20,25.41) size 430x234.19
-      LayoutSVGContainer {g} at (20,25.41) size 430x234.19
-        LayoutSVGContainer {g} at (0,-24.59) size 200x234.19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(20.00,50.00)}]
-          LayoutSVGText {text} at (0,175.41) size 107.39x34.19 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,175.41) size 107.39x34.19
+    LayoutSVGContainer {g} at (20,25.41) size 430x234.17
+      LayoutSVGContainer {g} at (20,25.41) size 430x234.17
+        LayoutSVGContainer {g} at (0,-24.59) size 200x234.17 [transform={m=((1.00,0.00)(0.00,1.00)) t=(20.00,50.00)}]
+          LayoutSVGText {text} at (0,175.39) size 107.39x34.19 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (0,175.39) size 107.39x34.19
               chunk 1 text run 1 at (0.00,203.00) startOffset 0 endOffset 8 width 107.40: "0-2 sec."
-          LayoutSVGText {text} at (0,142.41) size 107.39x34.19 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,142.41) size 107.39x34.19
+          LayoutSVGText {text} at (0,142.39) size 107.39x34.19 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (0,142.39) size 107.39x34.19
               chunk 1 text run 1 at (0.00,170.00) startOffset 0 endOffset 8 width 107.40: "2-4 sec."
-          LayoutSVGText {text} at (0,86.41) size 107.39x34.19 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,86.41) size 107.39x34.19
+          LayoutSVGText {text} at (0,86.39) size 107.39x34.19 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (0,86.39) size 107.39x34.19
               chunk 1 text run 1 at (0.00,114.00) startOffset 0 endOffset 8 width 107.40: "4-6 sec."
           LayoutSVGText {text} at (3,-24.59) size 97.80x34.19 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (3,-24.59) size 97.80x34.19
@@ -23,15 +23,15 @@ layer at (0,0) size 800x600
             LayoutSVGPath {line} at (120,111) size 50x0 [stroke={[type=SOLID] [color=#880000] [stroke width=4.00]}] [fill={[type=SOLID] [color=#000000]}] [x1=120.00] [y1=111.00] [x2=170.00] [y2=111.00]
             LayoutSVGPath {line} at (120,0) size 50x0 [stroke={[type=SOLID] [color=#880000] [stroke width=4.00]}] [fill={[type=SOLID] [color=#000000]}] [x1=120.00] [y1=0.00] [x2=170.00] [y2=0.00]
           LayoutSVGRect {rect} at (140,-10) size 60x210 [stroke={[type=SOLID] [color=#FF00FF] [stroke width=4.00]}] [fill={[type=SOLID] [color=#FFAA44]}] [x=140.00] [y=-10.00] [width=60.00] [height=210.00]
-        LayoutSVGContainer {g} at (0,-24.59) size 200x234.19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(250.00,50.00)}]
-          LayoutSVGText {text} at (0,175.41) size 107.39x34.19 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,175.41) size 107.39x34.19
+        LayoutSVGContainer {g} at (0,-24.59) size 200x234.17 [transform={m=((1.00,0.00)(0.00,1.00)) t=(250.00,50.00)}]
+          LayoutSVGText {text} at (0,175.39) size 107.39x34.19 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (0,175.39) size 107.39x34.19
               chunk 1 text run 1 at (0.00,203.00) startOffset 0 endOffset 8 width 107.40: "0-2 sec."
-          LayoutSVGText {text} at (0,142.41) size 107.39x34.19 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,142.41) size 107.39x34.19
+          LayoutSVGText {text} at (0,142.39) size 107.39x34.19 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (0,142.39) size 107.39x34.19
               chunk 1 text run 1 at (0.00,170.00) startOffset 0 endOffset 8 width 107.40: "2-4 sec."
-          LayoutSVGText {text} at (0,86.41) size 107.39x34.19 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,86.41) size 107.39x34.19
+          LayoutSVGText {text} at (0,86.39) size 107.39x34.19 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (0,86.39) size 107.39x34.19
               chunk 1 text run 1 at (0.00,114.00) startOffset 0 endOffset 8 width 107.40: "4-6 sec."
           LayoutSVGText {text} at (3,-24.59) size 97.80x34.19 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (3,-24.59) size 97.80x34.19

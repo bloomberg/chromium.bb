@@ -68,9 +68,9 @@ layer at (0,0) size 800x541
               chunk 1 text run 23 at (85.00,150.00) startOffset 22 endOffset 23 width 14.00: "f"
               chunk 1 text run 24 at (71.00,150.00) startOffset 23 endOffset 24 width 14.00: "f"
           LayoutSVGInlineText {#text} at (0,0) size 0x0
-        LayoutSVGText {text} at (38.05,204.25) size 356.98x152.33 contains 1 chunk(s)
-          LayoutSVGTextPath {textPath} at (38.05,204.25) size 356.98x152.33
-            LayoutSVGInlineText {#text} at (38.05,204.25) size 356.98x152.33
+        LayoutSVGText {text} at (38.05,204.25) size 357x152.33 contains 1 chunk(s)
+          LayoutSVGTextPath {textPath} at (38.05,204.25) size 357x152.33
+            LayoutSVGInlineText {#text} at (38.05,204.25) size 357x152.33
               chunk 1 text run 1 at (56.73,251.92) startOffset 0 endOffset 1 width 14.00: "f"
               chunk 1 text run 2 at (70.19,255.77) startOffset 1 endOffset 2 width 14.00: "f"
               chunk 1 text run 3 at (83.65,259.62) startOffset 2 endOffset 3 width 14.00: "f"
@@ -107,6 +107,6 @@ layer at (0,0) size 800x541
           LayoutSVGInlineText {#text} at (0,0) size 0x0
         LayoutSVGRect {rect} at (41,55) size 355x57 [stroke={[type=SOLID] [color=#008000]}] [fill={[type=SOLID] [color=#00000000]}] [x=41.00] [y=55.00] [width=355.00] [height=57.00]
         LayoutSVGRect {rect} at (54,138) size 355x57 [stroke={[type=SOLID] [color=#008000]}] [fill={[type=SOLID] [color=#00000000]}] [x=54.00] [y=138.00] [width=355.00] [height=57.00]
-        LayoutSVGRect {rect} at (38.05,204.25) size 356.98x152.33 [stroke={[type=SOLID] [color=#008000]}] [fill={[type=SOLID] [color=#00000000]}] [x=38.05] [y=204.25] [width=356.98] [height=152.33]
+        LayoutSVGRect {rect} at (38.05,204.25) size 357x152.33 [stroke={[type=SOLID] [color=#008000]}] [fill={[type=SOLID] [color=#00000000]}] [x=38.05] [y=204.25] [width=357.00] [height=152.33]
         LayoutSVGRect {rect} at (50,394) size 136x71 [stroke={[type=SOLID] [color=#008000]}] [fill={[type=SOLID] [color=#00000000]}] [x=50.00] [y=394.00] [width=136.00] [height=71.00]
       LayoutText {#text} at (0,0) size 0x0

@@ -2,12 +2,12 @@ layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
-    LayoutSVGContainer {g} at (0,1) size 94.63x17.50
+    LayoutSVGContainer {g} at (0,1) size 94.63x17.49
       LayoutSVGPath {svg:line} at (10,1) size 0x11.20 [stroke={[type=SOLID] [color=#008000]}] [fill={[type=SOLID] [color=#000000]}] [x1=10.00] [y1=1.00] [x2=10.00] [y2=12.20]
       LayoutSVGPath {svg:line} at (60,1) size 0x11.20 [stroke={[type=SOLID] [color=#008000]}] [fill={[type=SOLID] [color=#000000]}] [x1=60.00] [y1=1.00] [x2=60.00] [y2=12.20]
       LayoutSVGRect {svg:rect} at (10,1) size 50x11.20 [fill={[type=SOLID] [color=#FF0000] [opacity=0.40]}] [x=10.00] [y=1.00] [width=50.00] [height=11.20]
-      LayoutSVGText {svg:text} at (0,27.81) size 189.25x9.19 [transform={m=((0.50,0.00)(0.00,0.50)) t=(0.00,0.00)}] contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (0,27.81) size 189.25x9.19
+      LayoutSVGText {svg:text} at (0,27.80) size 189.25x9.19 [transform={m=((0.50,0.00)(0.00,0.50)) t=(0.00,0.00)}] contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,27.80) size 189.25x9.19
           chunk 1 text run 1 at (0.00,35.00) startOffset 0 endOffset 61 width 189.26: "Expected 'Text to Squeeze' to be selected, got: 'Text to Squ'"
     LayoutSVGText {text} at (10,1) size 50x11.19 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (10,1) size 50x11.19

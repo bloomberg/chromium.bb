@@ -17,9 +17,9 @@ layer at (0,0) size 800x600
           LayoutSVGContainer {g} at (12.50,30) size 175x60
             LayoutSVGPath {path} at (12.50,30) size 175x60 [stroke={[type=SOLID] [color=#D90000] [stroke width=10.00]}] [data="M 50 90 C 0 90 0 30 50 30 L 150 30 C 200 30 200 90 150 90 Z"]
             LayoutSVGPath {path} at (37.50,40) size 125x40 [fill={[type=SOLID] [color=#D90000]}] [data="M 60 80 C 30 80 30 40 60 40 L 140 40 C 170 40 170 80 140 80 Z"]
-            LayoutSVGContainer {g} at (52,30.41) size 96.80x55.19
-              LayoutSVGText {text} at (52,30.41) size 96.80x55.19 contains 1 chunk(s)
-                LayoutSVGInlineText {#text} at (52,30.41) size 96.80x55.19
+            LayoutSVGContainer {g} at (52,30.39) size 96.80x55.19
+              LayoutSVGText {text} at (52,30.39) size 96.80x55.19 contains 1 chunk(s)
+                LayoutSVGInlineText {#text} at (52,30.39) size 96.80x55.19
                   chunk 1 text run 1 at (52.00,76.00) startOffset 0 endOffset 3 width 96.80: "SVG"
     LayoutSVGText {text} at (10,304) size 268.19x45.59 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (10,304) size 268.19x45.59

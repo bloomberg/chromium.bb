@@ -2,14 +2,14 @@ layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
-    LayoutSVGContainer {g} at (30,17.41) size 418x254.98
+    LayoutSVGContainer {g} at (30,17.39) size 418x255
       LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
         LayoutSVGResourceClipper {clipPath} [id="overflowHiddenClip1"] [clipPathUnits=userSpaceOnUse]
           LayoutSVGRect {rect} at (0,0) size 2x2 [fill={[type=SOLID] [color=#008000]}] [x=0.00] [y=0.00] [width=2.00] [height=2.00]
         LayoutSVGResourceClipper {clipPath} [id="overflowHiddenClip"] [clipPathUnits=userSpaceOnUse]
           LayoutSVGRect {rect} at (0,0) size 4x4 [fill={[type=SOLID] [color=#008000]}] [x=0.00] [y=0.00] [width=4.00] [height=4.00]
-      LayoutSVGText {text} at (125,17.41) size 175.80x15.59 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (125,17.41) size 175.80x15.59
+      LayoutSVGText {text} at (125,17.39) size 175.80x15.59 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (125,17.39) size 175.80x15.59
           chunk 1 text run 1 at (125.00,30.00) startOffset 0 endOffset 27 width 175.80: "Marker Rendering Properties"
       LayoutSVGContainer {g} at (30,52) size 178x90.39
         LayoutSVGResourceMarker {marker} [id="marker1"] [markerUnits=strokeWidth] [ref at (5,5)] [angle=0.00]

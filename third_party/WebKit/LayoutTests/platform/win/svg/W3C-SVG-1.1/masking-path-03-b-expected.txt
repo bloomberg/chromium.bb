@@ -3,29 +3,29 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
     LayoutSVGContainer {g} at (-175,-20) size 830x410
-      LayoutSVGText {text} at (10,53.20) size 454.59x21 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (10,53.20) size 454.59x21
+      LayoutSVGText {text} at (10,53.19) size 454.59x21 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (10,53.19) size 454.59x21
           chunk 1 text run 1 at (10.00,70.00) startOffset 0 endOffset 60 width 454.60: "Test 'overflow'/'clip' on outermost and inner 'svg' elements"
       LayoutSVGContainer {g} at (-175,-20) size 830x410
         LayoutSVGContainer {g} at (0,0) size 250x60 [transform={m=((1.00,0.00)(0.00,1.00)) t=(115.00,-20.00)}]
           LayoutSVGRect {rect} at (0,0) size 250x60 [stroke={[type=SOLID] [color=#FF8888] [stroke width=2.00]}] [fill={[type=SOLID] [color=#CCCCFF]}] [x=0.00] [y=0.00] [width=250.00] [height=60.00]
-          LayoutSVGText {text} at (15,1.81) size 215.39x53.39 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (15,1.81) size 215.39x53.39
+          LayoutSVGText {text} at (15,1.80) size 215.39x53.39 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (15,1.80) size 215.39x53.39
               chunk 1 text run 1 at (15.00,45.00) startOffset 0 endOffset 10 width 215.40: "Outer Clip"
         LayoutSVGContainer {g} at (0,0) size 250x60 [transform={m=((1.00,0.00)(0.00,1.00)) t=(-175.00,150.00)}]
           LayoutSVGRect {rect} at (0,0) size 250x60 [stroke={[type=SOLID] [color=#FF8888] [stroke width=2.00]}] [fill={[type=SOLID] [color=#CCCCFF]}] [x=0.00] [y=0.00] [width=250.00] [height=60.00]
-          LayoutSVGText {text} at (15,1.81) size 215.39x53.39 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (15,1.81) size 215.39x53.39
+          LayoutSVGText {text} at (15,1.80) size 215.39x53.39 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (15,1.80) size 215.39x53.39
               chunk 1 text run 1 at (15.00,45.00) startOffset 0 endOffset 10 width 215.40: "Outer Clip"
         LayoutSVGContainer {g} at (0,0) size 250x60 [transform={m=((1.00,0.00)(0.00,1.00)) t=(405.00,150.00)}]
           LayoutSVGRect {rect} at (0,0) size 250x60 [stroke={[type=SOLID] [color=#FF8888] [stroke width=2.00]}] [fill={[type=SOLID] [color=#CCCCFF]}] [x=0.00] [y=0.00] [width=250.00] [height=60.00]
-          LayoutSVGText {text} at (15,1.81) size 215.39x53.39 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (15,1.81) size 215.39x53.39
+          LayoutSVGText {text} at (15,1.80) size 215.39x53.39 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (15,1.80) size 215.39x53.39
               chunk 1 text run 1 at (15.00,45.00) startOffset 0 endOffset 10 width 215.40: "Outer Clip"
         LayoutSVGContainer {g} at (0,0) size 250x60 [transform={m=((1.00,0.00)(0.00,1.00)) t=(115.00,330.00)}]
           LayoutSVGRect {rect} at (0,0) size 250x60 [stroke={[type=SOLID] [color=#FF8888] [stroke width=2.00]}] [fill={[type=SOLID] [color=#CCCCFF]}] [x=0.00] [y=0.00] [width=250.00] [height=60.00]
-          LayoutSVGText {text} at (15,1.81) size 215.39x53.39 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (15,1.81) size 215.39x53.39
+          LayoutSVGText {text} at (15,1.80) size 215.39x53.39 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (15,1.80) size 215.39x53.39
               chunk 1 text run 1 at (15.00,45.00) startOffset 0 endOffset 10 width 215.40: "Outer Clip"
       LayoutSVGRect {rect} at (115,100) size 250x160 [stroke={[type=SOLID] [color=#006600] [stroke width=5.00]}] [x=115.00] [y=100.00] [width=250.00] [height=160.00]
       LayoutSVGViewportContainer {svg} at (-50,-17.80) size 350x192.80

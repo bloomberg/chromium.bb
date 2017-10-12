@@ -2,25 +2,25 @@ layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
-    LayoutSVGContainer {g} at (5,4) size 467.77x316.98
+    LayoutSVGContainer {g} at (5,4) size 467.77x317
       LayoutSVGText {text} at (5,4) size 467.77x45 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (5,4) size 467.77x45
           chunk 1 text run 1 at (5.00,40.00) startOffset 0 endOffset 29 width 467.77: "Test 'text-anchor' (vertical)"
-      LayoutSVGContainer {g} at (142.91,47.41) size 134.19x273.58
-        LayoutSVGContainer {g} at (-17.09,-102.59) size 134.19x273.58 [transform={m=((1.00,0.00)(0.00,1.00)) t=(160.00,150.00)}]
-          LayoutSVGContainer {g} at (-17.09,-3) size 34.19x173.98
+      LayoutSVGContainer {g} at (142.91,47.41) size 134.19x273.59
+        LayoutSVGContainer {g} at (-17.09,-102.59) size 134.19x273.59 [transform={m=((1.00,0.00)(0.00,1.00)) t=(160.00,150.00)}]
+          LayoutSVGContainer {g} at (-17.09,-3) size 34.19x174
             LayoutSVGEllipse {circle} at (-3,-3) size 6x6 [fill={[type=SOLID] [color=#000000]}] [cx=0.00] [cy=0.00] [r=3.00]
-            LayoutSVGText {text} at (-17.09,0) size 34.19x170.98 contains 1 chunk(s)
-              LayoutSVGInlineText {#text} at (-17.09,0) size 34.19x170.98
+            LayoutSVGText {text} at (-17.09,0) size 34.19x171 contains 1 chunk(s)
+              LayoutSVGInlineText {#text} at (-17.09,0) size 34.19x171
                 chunk 1 (vertical) text run 1 at (-10.50,0.00) startOffset 0 endOffset 1 height 34.20: "s"
                 chunk 1 (vertical) text run 2 at (-10.50,34.20) startOffset 1 endOffset 2 height 34.20: "t"
                 chunk 1 (vertical) text run 3 at (-10.50,68.40) startOffset 2 endOffset 3 height 34.20: "a"
                 chunk 1 (vertical) text run 4 at (-10.50,102.60) startOffset 3 endOffset 4 height 34.20: "r"
                 chunk 1 (vertical) text run 5 at (-10.50,136.80) startOffset 4 endOffset 5 height 34.20: "t"
-          LayoutSVGContainer {g} at (-17.09,-102.59) size 34.19x205.17 [transform={m=((1.00,0.00)(0.00,1.00)) t=(50.00,0.00)}]
+          LayoutSVGContainer {g} at (-17.09,-102.59) size 34.19x205.19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(50.00,0.00)}]
             LayoutSVGEllipse {circle} at (-3,-3) size 6x6 [fill={[type=SOLID] [color=#000000]}] [cx=0.00] [cy=0.00] [r=3.00]
-            LayoutSVGText {text} at (-17.09,-102.59) size 34.19x205.17 contains 1 chunk(s)
-              LayoutSVGInlineText {#text} at (-17.09,-102.59) size 34.19x205.17
+            LayoutSVGText {text} at (-17.09,-102.59) size 34.19x205.19 contains 1 chunk(s)
+              LayoutSVGInlineText {#text} at (-17.09,-102.59) size 34.19x205.19
                 chunk 1 (middle anchor, vertical) text run 1 at (-10.50,-102.60) startOffset 0 endOffset 1 height 34.20: "m"
                 chunk 1 (middle anchor, vertical) text run 2 at (-10.50,-68.40) startOffset 1 endOffset 2 height 34.20: "i"
                 chunk 1 (middle anchor, vertical) text run 3 at (-10.50,-34.20) startOffset 2 endOffset 3 height 34.20: "d"

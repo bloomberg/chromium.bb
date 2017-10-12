@@ -16,14 +16,14 @@ layer at (0,0) size 800x600
         LayoutSVGPath {path} at (500,100) size 200x200 [fill={[type=SOLID] [color=#CCCCCC] [fill rule=EVEN-ODD]}] [data="M 500 100 L 500 300 L 700 300 L 700 100 L 550 100 L 550 250 L 650 250 L 650 100 L 500 100 Z"]
       LayoutSVGContainer {g} at (500,100) size 200x200 [transform={m=((0.30,0.00)(0.00,0.30)) t=(243.00,150.00)}]
         LayoutSVGPath {path} at (500,100) size 200x200 [fill={[type=SOLID] [color=#CCCCCC] [fill rule=EVEN-ODD]}] [data="M 500 100 L 500 300 L 700 300 L 700 100 L 550 100 L 550 250 L 650 250 L 650 100 L 500 100 Z"]
-    LayoutSVGText {text} at (5,199.81) size 411.59x31.80 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (5,199.81) size 411.59x31.80
+    LayoutSVGText {text} at (5,199.80) size 411.59x31.80 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (5,199.80) size 411.59x31.80
         chunk 1 text run 1 at (5.00,225.00) startOffset 0 endOffset 39 width 411.60: "Animation on: 'points' and 'fill-rule'."
-    LayoutSVGText {text} at (5,238.81) size 319.19x20.39 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (5,238.81) size 319.19x20.39
+    LayoutSVGText {text} at (5,238.80) size 319.19x20.39 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (5,238.80) size 319.19x20.39
         chunk 1 text run 1 at (5.00,255.00) startOffset 0 endOffset 45 width 319.20: "Digit should match outline at indicated time."
-    LayoutSVGText {text} at (5,258.81) size 386.42x20.39 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (5,258.81) size 386.42x20.39
+    LayoutSVGText {text} at (5,258.80) size 386.42x20.39 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (5,258.80) size 386.42x20.39
         chunk 1 text run 1 at (5.00,275.00) startOffset 0 endOffset 54 width 386.43: "Filled square should follow morphing digit discretely."
     LayoutSVGText {text} at (10,304) size 268.19x45.59 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (10,304) size 268.19x45.59

@@ -2,43 +2,43 @@ layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
-    LayoutSVGText {text} at (207.30,7.61) size 65.39x22.19 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (207.30,7.61) size 65.39x22.19
+    LayoutSVGText {text} at (207.30,7.59) size 65.39x22.19 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (207.30,7.59) size 65.39x22.19
         chunk 1 (middle anchor) text run 1 at (207.30,25.00) startOffset 0 endOffset 8 width 65.40: "graphics"
-    LayoutSVGContainer {g} at (-50.78,-29) size 410.78x242 [transform={m=((1.00,0.00)(0.00,1.00)) t=(80.00,75.00)}]
-      LayoutSVGContainer {g} at (-80.78,-10.19) size 80.78x213.19 [transform={m=((1.00,0.00)(0.00,1.00)) t=(30.00,10.00)}]
+    LayoutSVGContainer {g} at (-50.78,-29) size 410.78x241.98 [transform={m=((1.00,0.00)(0.00,1.00)) t=(80.00,75.00)}]
+      LayoutSVGContainer {g} at (-80.78,-10.19) size 80.78x213.17 [transform={m=((1.00,0.00)(0.00,1.00)) t=(30.00,10.00)}]
         LayoutSVGText {text} at (-14.39,-10.19) size 14.39x13.19 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (-14.39,-10.19) size 14.39x13.19
             chunk 1 (end anchor) text run 1 at (-14.40,0.00) startOffset 0 endOffset 4 width 14.40: "fill"
-        LayoutSVGText {text} at (-37.19,9.81) size 37.19x13.19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-37.19,9.81) size 37.19x13.19
+        LayoutSVGText {text} at (-37.19,9.80) size 37.19x13.19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-37.19,9.80) size 37.19x13.19
             chunk 1 (end anchor) text run 1 at (-37.20,20.00) startOffset 0 endOffset 9 width 37.20: "fill-rule"
-        LayoutSVGText {text} at (-28.80,29.81) size 28.80x13.19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-28.80,29.81) size 28.80x13.19
+        LayoutSVGText {text} at (-28.80,29.80) size 28.80x13.19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-28.80,29.80) size 28.80x13.19
             chunk 1 (end anchor) text run 1 at (-28.80,40.00) startOffset 0 endOffset 6 width 28.80: "stroke"
-        LayoutSVGText {text} at (-60,49.81) size 60x13.19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-60,49.81) size 60x13.19
+        LayoutSVGText {text} at (-60,49.80) size 60x13.19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-60,49.80) size 60x13.19
             chunk 1 (end anchor) text run 1 at (-60.00,60.00) startOffset 0 endOffset 12 width 60.00: "stroke-width"
-        LayoutSVGText {text} at (-67.80,69.81) size 67.80x13.19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-67.80,69.81) size 67.80x13.19
+        LayoutSVGText {text} at (-67.80,69.80) size 67.80x13.19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-67.80,69.80) size 67.80x13.19
             chunk 1 (end anchor) text run 1 at (-67.80,80.00) startOffset 0 endOffset 14 width 67.80: "stroke-linecap"
-        LayoutSVGText {text} at (-69.59,89.81) size 69.59x13.19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-69.59,89.81) size 69.59x13.19
+        LayoutSVGText {text} at (-69.59,89.80) size 69.59x13.19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-69.59,89.80) size 69.59x13.19
             chunk 1 (end anchor) text run 1 at (-69.60,100.00) startOffset 0 endOffset 15 width 69.60: "stroke-linejoin"
-        LayoutSVGText {text} at (-79.80,109.81) size 79.80x13.19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-79.80,109.81) size 79.80x13.19
+        LayoutSVGText {text} at (-79.80,109.80) size 79.80x13.19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-79.80,109.80) size 79.80x13.19
             chunk 1 (end anchor) text run 1 at (-79.80,120.00) startOffset 0 endOffset 17 width 79.80: "stroke-miterlimit"
-        LayoutSVGText {text} at (-80.78,129.81) size 80.78x13.19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-80.78,129.81) size 80.78x13.19
+        LayoutSVGText {text} at (-80.78,129.80) size 80.78x13.19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-80.78,129.80) size 80.78x13.19
             chunk 1 (end anchor) text run 1 at (-80.78,140.00) startOffset 0 endOffset 17 width 80.78: "stroke-dashoffset"
-        LayoutSVGText {text} at (-34.80,149.81) size 34.80x13.19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-34.80,149.81) size 34.80x13.19
+        LayoutSVGText {text} at (-34.80,149.80) size 34.80x13.19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-34.80,149.80) size 34.80x13.19
             chunk 1 (end anchor) text run 1 at (-34.80,160.00) startOffset 0 endOffset 7 width 34.80: "display"
-        LayoutSVGText {text} at (-43.19,169.81) size 43.19x13.19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-43.19,169.81) size 43.19x13.19
+        LayoutSVGText {text} at (-43.19,169.80) size 43.19x13.19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-43.19,169.80) size 43.19x13.19
             chunk 1 (end anchor) text run 1 at (-43.20,180.00) startOffset 0 endOffset 10 width 43.20: "visibility"
-        LayoutSVGText {text} at (-25.19,189.81) size 25.19x13.19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (-25.19,189.81) size 25.19x13.19
+        LayoutSVGText {text} at (-25.19,189.80) size 25.19x13.19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (-25.19,189.80) size 25.19x13.19
             chunk 1 (end anchor) text run 1 at (-25.20,200.00) startOffset 0 endOffset 5 width 25.20: "color"
       LayoutSVGContainer {g} at (-1.59,-9) size 247.38x15.59 [transform={m=((1.00,0.00)(0.00,1.00)) t=(90.00,-20.00)}]
         LayoutSVGText {text} at (-1.59,-9) size 43.19x15.59 contains 1 chunk(s)

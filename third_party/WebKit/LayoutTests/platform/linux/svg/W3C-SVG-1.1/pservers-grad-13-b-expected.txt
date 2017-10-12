@@ -2,8 +2,8 @@ layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
-    LayoutSVGText {text} at (132.89,12.61) size 214.80x22.19 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (132.89,12.61) size 214.80x22.19
+    LayoutSVGText {text} at (132.89,12.59) size 214.80x22.19 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (132.89,12.59) size 214.80x22.19
         chunk 1 (middle anchor) text run 1 at (132.90,30.00) startOffset 0 endOffset 27 width 214.20: "Radial gradient focal point"
     LayoutSVGHiddenContainer {defs} at (0,0) size 100x60
       LayoutSVGContainer {g} at (0,0) size 100x60

@@ -23,12 +23,12 @@
         },
         {
           "object": "LayoutSVGInlineText #text",
-          "rect": [0, 129, 596, 135],
+          "rect": [0, 129, 596, 134],
           "reason": "appeared"
         },
         {
           "object": "LayoutSVGText text",
-          "rect": [0, 129, 596, 135],
+          "rect": [0, 129, 596, 134],
           "reason": "appeared"
         },
         {

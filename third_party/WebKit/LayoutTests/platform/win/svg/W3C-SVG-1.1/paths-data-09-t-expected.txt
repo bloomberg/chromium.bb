@@ -2,12 +2,12 @@ layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
-    LayoutSVGContainer {g} at (14.47,12.41) size 401.26x225.19
-      LayoutSVGText {text} at (75,12.41) size 303.59x27 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (75,12.41) size 303.59x27
+    LayoutSVGContainer {g} at (14.47,12.39) size 401.26x225.21
+      LayoutSVGText {text} at (75,12.39) size 303.59x27 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (75,12.39) size 303.59x27
           chunk 1 text run 1 at (75.00,34.00) startOffset 0 endOffset 26 width 303.60: "Lines drawn with commands:"
-      LayoutSVGText {text} at (180,42.41) size 84.59x27 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (180,42.41) size 84.59x27
+      LayoutSVGText {text} at (180,42.39) size 84.59x27 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (180,42.39) size 84.59x27
           chunk 1 text run 1 at (180.00,64.00) startOffset 0 endOffset 7 width 84.60: "m and z"
       LayoutSVGContainer {g} at (8.04,188) size 222.92x94 [transform={m=((1.80,0.00)(0.00,1.80)) t=(0.00,-270.00)}]
         LayoutSVGPath {path} at (10.04,190) size 103.92x90 [stroke={[type=SOLID] [color=#000000]}] [data="m 62 190 l 51.9615 90 l -103.923 0 l 51.9615 -90 Z m 0 15 l 38.9711 67.5 l -77.9123 0 l 38.9711 -67.5 Z"]

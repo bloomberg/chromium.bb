@@ -63,40 +63,40 @@ layer at (0,0) size 800x600
           LayoutSVGPath {polygon} at (592,206) size 8x8 [fill={[type=SOLID] [color=#5A59CE]}] [points="600 210 592 214 592 206"]
           LayoutSVGPath {polygon} at (503,260) size 8x8 [fill={[type=SOLID] [color=#5A59CE]}] [points="511 264 503 268 503 260"]
           LayoutSVGPath {polygon} at (588,321) size 9x8 [fill={[type=SOLID] [color=#5A59CE]}] [points="597 324 590 329 588 321"]
-        LayoutSVGContainer {g} at (177,95.02) size 700.98x235.98
-          LayoutSVGText {text} at (458,95.02) size 419.98x19.98 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (458,95.02) size 419.98x19.98
+        LayoutSVGContainer {g} at (177,95) size 700.98x235.98
+          LayoutSVGText {text} at (458,95) size 419.98x19.98 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (458,95) size 419.98x19.98
               chunk 1 text run 1 at (458.00,105.00) startOffset 0 endOffset 67 width 420.00: "http://prismstandard.org/vocabularies/1.0/resourcetype.xml#birdsEye"
-          LayoutSVGText {text} at (453,149.02) size 409.98x19.98 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (453,149.02) size 409.98x19.98
+          LayoutSVGText {text} at (453,149) size 409.98x19.98 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (453,149) size 409.98x19.98
               chunk 1 text run 1 at (453.00,159.00) startOffset 0 endOffset 71 width 410.00: "http://prismstandard.org/vocabularies/1.0/resourcetype.xml#illustration"
-          LayoutSVGText {text} at (604,203.02) size 109.98x19.98 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (604,203.02) size 109.98x19.98
+          LayoutSVGText {text} at (604,203) size 109.98x19.98 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (604,203) size 109.98x19.98
               chunk 1 text run 1 at (604.00,213.00) startOffset 0 endOffset 13 width 100.00: "image/svg+xml"
-          LayoutSVGText {text} at (530,257.02) size 229.98x19.98 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (530,257.02) size 229.98x19.98
+          LayoutSVGText {text} at (530,257) size 229.98x19.98 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (530,257) size 229.98x19.98
               chunk 1 text run 1 at (530.00,267.00) startOffset 0 endOffset 44 width 220.00: "Line drawing of woman in antique attire, ..."
-          LayoutSVGText {text} at (177,203.02) size 49.98x19.98 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (177,203.02) size 49.98x19.98
+          LayoutSVGText {text} at (177,203) size 49.98x19.98 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (177,203) size 49.98x19.98
               chunk 1 text run 1 at (177.00,213.00) startOffset 0 endOffset 7 width 40.00: "online:"
-          LayoutSVGText {text} at (601,311.02) size 99.63x19.98 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (601,311.02) size 99.63x19.98
+          LayoutSVGText {text} at (601,311) size 99.63x19.98 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (601,311) size 99.63x19.98
               chunk 1 text run 1 at (601.00,321.00) startOffset 0 endOffset 16 width 99.63: "Sibyll Trelawney"
-        LayoutSVGContainer {g} at (240,95.02) size 229.98x190.98
-          LayoutSVGText {text} at (256,148.02) size 189.98x19.98 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (256,148.02) size 189.98x19.98
+        LayoutSVGContainer {g} at (240,95) size 229.98x190.98
+          LayoutSVGText {text} at (256,148) size 189.98x19.98 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (256,148) size 189.98x19.98
               chunk 1 text run 1 at (256.00,158.00) startOffset 0 endOffset 36 width 190.00: "http://purl.org/dc/elements/1.1/type"
-          LayoutSVGText {text} at (250,196.02) size 199.98x19.98 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (250,196.02) size 199.98x19.98
+          LayoutSVGText {text} at (250,196) size 199.98x19.98 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (250,196) size 199.98x19.98
               chunk 1 text run 1 at (250.00,206.00) startOffset 0 endOffset 38 width 190.00: "http://purl.org/dc/elements/1.1/format"
-          LayoutSVGText {text} at (250,266.02) size 219.98x19.98 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (250,266.02) size 219.98x19.98
+          LayoutSVGText {text} at (250,266) size 219.98x19.98 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (250,266) size 219.98x19.98
               chunk 1 text run 1 at (250.00,276.00) startOffset 0 endOffset 39 width 210.00: "http://purl.org/dc/elements/1.1/subject"
-          LayoutSVGText {text} at (256,95.02) size 189.98x19.98 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (256,95.02) size 189.98x19.98
+          LayoutSVGText {text} at (256,95) size 189.98x19.98 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (256,95) size 189.98x19.98
               chunk 1 text run 1 at (256.00,105.00) startOffset 0 endOffset 36 width 190.00: "http://purl.org/dc/elements/1.1/type"
-          LayoutSVGText {text} at (240,215.02) size 229.98x19.98 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (240,215.02) size 229.98x19.98
+          LayoutSVGText {text} at (240,215) size 229.98x19.98 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (240,215) size 229.98x19.98
               chunk 1 text run 1 at (240.00,225.00) startOffset 0 endOffset 43 width 230.00: "http://purl.org/dc/elements/1.1/description"
     LayoutSVGText {text} at (10,304) size 268.19x45.59 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (10,304) size 268.19x45.59

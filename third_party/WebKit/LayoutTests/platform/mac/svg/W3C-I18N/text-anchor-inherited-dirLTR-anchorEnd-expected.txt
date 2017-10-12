@@ -14,9 +14,9 @@ layer at (0,0) size 800x600
           LayoutSVGInlineText {#text} at (115.81,223.97) size 114.17x13.42
             chunk 1 (end anchor) text run 1 at (115.82,235.00) startOffset 0 endOffset 38 width 114.18 RTL: "\x{62C}\x{639}\x{644} \x{634}\x{628}\x{643}\x{629} \x{627}\x{644}\x{648}\x{64A}\x{628} \x{627}\x{644}\x{639}\x{627}\x{644}\x{645}\x{64A}\x{651}\x{629} \x{639}\x{627}\x{644}\x{645}\x{64A}\x{651}\x{629} \x{62D}\x{642}\x{64B}\x{651}\x{627}"
       LayoutSVGImage {image} at (168,110) size 128x26
-    LayoutSVGContainer {g} at (10,334.61) size 43.02x6.59
-      LayoutSVGText {text} at (10,334.61) size 43.02x6.59 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (10,334.61) size 43.02x6.59
+    LayoutSVGContainer {g} at (10,334.59) size 43.02x6.59
+      LayoutSVGText {text} at (10,334.59) size 43.02x6.59 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (10,334.59) size 43.02x6.59
           chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 43.03: "$Revision: 1.4 $"
     LayoutSVGRect {rect} at (1,1) size 478x358 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]
     LayoutSVGContainer {g} at (1,0) size 478x22.19

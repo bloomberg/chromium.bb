@@ -2,7 +2,7 @@ layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 450x500
   LayoutSVGRoot {svg} at (0,0) size 450x500
-    LayoutSVGContainer {g} at (20,26) size 409.84x449
+    LayoutSVGContainer {g} at (20,26) size 409.83x449
       LayoutSVGText {text} at (96.02,26) size 257.94x17.36 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (96.02,26) size 257.94x17.36
           chunk 1 (middle anchor) text run 1 at (96.03,40.00) startOffset 0 endOffset 38 width 257.95: "Long text on a path test for selection"
@@ -11,9 +11,9 @@ layer at (0,0) size 450x500
       LayoutSVGContainer {use} at (25,150) size 400x300
         LayoutSVGPath {path} at (25,150) size 400x300 [stroke={[type=SOLID] [color=#0000FF]}] [data="M 25 150 h 400 m -400 20 h 400 m -400 20 h 400 m -400 20 h 400 m -400 20 h 400 m -400 20 h 400 m -400 20 h 400 m -400 20 h 400 m -400 20 h 400 m -400 20 h 400 m -400 20 h 400 m -400 20 h 400 m -400 20 h 400 m -400 20 h 400 m -400 20 h 400 m -400 20"]
       LayoutSVGRect {rect} at (20,100) size 205x375 [fill={[type=SOLID] [color=#C8C8FF]}] [x=20.00] [y=100.00] [width=205.00] [height=375.00]
-      LayoutSVGText {text} at (21.22,132) size 408.63x263 contains 1 chunk(s)
-        LayoutSVGTextPath {textPath} at (21.22,132) size 408.63x263
-          LayoutSVGInlineText {#text} at (21.22,132) size 408.63x263
+      LayoutSVGText {text} at (21.22,132) size 408.61x263 contains 1 chunk(s)
+        LayoutSVGTextPath {textPath} at (21.22,132) size 408.61x263
+          LayoutSVGInlineText {#text} at (21.22,132) size 408.61x263
             chunk 1 text run 1 at (31.11,150.00) startOffset 0 endOffset 1 width 12.22: "T"
             chunk 1 text run 2 at (42.22,150.00) startOffset 1 endOffset 2 width 10.00: "h"
             chunk 1 text run 3 at (50.00,150.00) startOffset 2 endOffset 3 width 5.56: "i"

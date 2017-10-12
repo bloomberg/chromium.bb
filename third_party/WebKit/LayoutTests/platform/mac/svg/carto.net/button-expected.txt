@@ -90,12 +90,12 @@ layer at (0,0) size 800x600
             LayoutSVGContainer {g} at (-3,-7) size 7.25x14 [transform={m=((1.25,0.00)(0.00,1.25)) t=(0.00,0.00)}]
               LayoutSVGPath {line} at (0,0) size 3x7 [stroke={[type=SOLID] [color=#000000] [stroke width=1.75]}] [fill={[type=SOLID] [color=#000000]}] [x1=0.00] [y1=0.00] [x2=3.00] [y2=7.00]
               LayoutSVGPath {path} at (-3,-7) size 7.25x10 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#FFFFFF] [fill rule=EVEN-ODD]}] [data="M -3 -7 L -3 3 L 0 0 L 4.25 -0.5 Z"]
-    LayoutSVGText {text} at (100,195.92) size 67.33x17.91 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (100,195.92) size 67.33x17.91
+    LayoutSVGText {text} at (100,195.91) size 67.33x17.91 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (100,195.91) size 67.33x17.91
         chunk 1 text run 1 at (100.00,210.00) startOffset 0 endOffset 10 width 67.32: "StatusText"
-    LayoutSVGText {text} at (430,305.92) size 454.58x17.91 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (430,305.92) size 454.58x17.91
+    LayoutSVGText {text} at (430,305.91) size 454.58x17.91 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (430,305.91) size 454.58x17.91
         chunk 1 text run 1 at (430.00,320.00) startOffset 0 endOffset 73 width 454.59: "Click this text to randomly resize the multiline textbutton (textbutton7)"
-    LayoutSVGText {text} at (430,325.92) size 481.27x17.91 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (430,325.92) size 481.27x17.91
+    LayoutSVGText {text} at (430,325.91) size 481.27x17.91 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (430,325.91) size 481.27x17.91
         chunk 1 text run 1 at (430.00,340.00) startOffset 0 endOffset 77 width 481.27: "Click this text to randomly reposition the multiline textbutton (textbutton7)"

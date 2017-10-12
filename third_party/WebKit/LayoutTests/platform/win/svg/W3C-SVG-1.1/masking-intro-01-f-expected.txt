@@ -2,8 +2,8 @@ layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
-    LayoutSVGText {text} at (68.72,18.81) size 342.53x20.39 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (68.72,18.81) size 342.53x20.39
+    LayoutSVGText {text} at (68.72,18.80) size 342.53x20.39 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (68.72,18.80) size 342.53x20.39
         chunk 1 (middle anchor) text run 1 at (68.73,35.00) startOffset 0 endOffset 51 width 342.54: "Testing stroke inclusion for 'clip-path' and 'mask'"
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
       LayoutSVGResourceClipper {clipPath} [id="one"] [clipPathUnits=objectBoundingBox]
@@ -11,8 +11,8 @@ layer at (0,0) size 800x600
         LayoutSVGEllipse {circle} at (0.50,0.30) size 0.40x0.40 [cx=0.70] [cy=0.50] [r=0.20]
     LayoutSVGRect {rect} at (150,0) size 200x200 [fill={[type=SOLID] [color=#00008B]}] [x=150.00] [y=0.00] [width=200.00] [height=200.00]
       [clipPath="one"] LayoutSVGResourceClipper {clipPath} at (155,45) size 175x110
-    LayoutSVGText {text} at (50,95.61) size 114.55x18.59 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (50,95.61) size 114.55x18.59
+    LayoutSVGText {text} at (50,95.59) size 114.55x18.59 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (50,95.59) size 114.55x18.59
         chunk 1 text run 1 at (50.00,110.00) startOffset 0 endOffset 19 width 114.56: "With a 'clip-path':"
     LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
       LayoutSVGResourceMasker {mask} [id="two"] [maskUnits=objectBoundingBox] [maskContentUnits=objectBoundingBox]
@@ -20,8 +20,8 @@ layer at (0,0) size 800x600
         LayoutSVGEllipse {circle} at (0.50,0.30) size 0.40x0.40 [fill={[type=SOLID] [color=#0000FF]}] [cx=0.70] [cy=0.50] [r=0.20]
     LayoutSVGRect {rect} at (150,150) size 200x200 [fill={[type=SOLID] [color=#00008B]}] [x=150.00] [y=150.00] [width=200.00] [height=200.00]
       [masker="two"] LayoutSVGResourceMasker {mask} at (155,195) size 175x110
-    LayoutSVGText {text} at (50,245.61) size 88.75x18.59 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (50,245.61) size 88.75x18.59
+    LayoutSVGText {text} at (50,245.59) size 88.75x18.59 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (50,245.59) size 88.75x18.59
         chunk 1 text run 1 at (50.00,260.00) startOffset 0 endOffset 14 width 88.76: "With a 'mask':"
     LayoutSVGText {text} at (10,304) size 265.80x45.59 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (10,304) size 265.80x45.59

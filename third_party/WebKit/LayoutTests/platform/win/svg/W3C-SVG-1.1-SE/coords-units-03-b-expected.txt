@@ -7,8 +7,8 @@ layer at (0,0) size 800x600
       LayoutSVGContainer {g} at (0,0) size 2000x2000
         LayoutSVGRect {rect} at (0,0) size 2000x2000 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=2000.00] [height=2000.00]
         LayoutSVGRect {rect} at (0,0) size 480x360 [fill={[type=SOLID] [color=#FFFFFF]}] [x=0.00] [y=0.00] [width=480.00] [height=360.00]
-      LayoutSVGText {text} at (125,8.61) size 176.39x13.80 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (125,8.61) size 176.39x13.80
+      LayoutSVGText {text} at (125,8.59) size 176.39x13.80 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (125,8.59) size 176.39x13.80
           chunk 1 text run 1 at (125.00,20.00) startOffset 0 endOffset 35 width 176.40: "Initial viewport and CSS units test"
       LayoutSVGContainer {g} at (20,6) size 385.19x197 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,60.00)}]
         LayoutSVGText {text} at (20,6) size 21.59x15 contains 1 chunk(s)
@@ -83,8 +83,8 @@ layer at (0,0) size 800x600
           LayoutSVGInlineText {#text} at (230,188) size 58.19x15
             chunk 1 text run 1 at (230.00,200.00) startOffset 0 endOffset 10 width 58.20: "Picas (pc)"
         LayoutSVGRect {rect} at (20,200) size 96x1 [fill={[type=SOLID] [color=#000000]}] [x=20.00] [y=200.00] [width=96.00] [height=1.00]
-    LayoutSVGContainer {g} at (10,311.20) size 225.59x36
-      LayoutSVGText {text} at (10,311.20) size 225.59x36 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (10,311.20) size 225.59x36
+    LayoutSVGContainer {g} at (10,311.19) size 225.59x36
+      LayoutSVGText {text} at (10,311.19) size 225.59x36 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (10,311.19) size 225.59x36
           chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 225.60: "$Revision: 1.7 $"
     LayoutSVGRect {rect} at (1,1) size 478x358 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]

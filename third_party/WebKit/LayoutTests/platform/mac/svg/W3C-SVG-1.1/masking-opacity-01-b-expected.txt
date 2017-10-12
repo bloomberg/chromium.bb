@@ -2,9 +2,9 @@ layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
-    LayoutSVGContainer {g} at (10,5.41) size 441.23x284.59
-      LayoutSVGText {text} at (50,5.41) size 384.20x26.64 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (50,5.41) size 384.20x26.64
+    LayoutSVGContainer {g} at (10,5.39) size 441.23x284.61
+      LayoutSVGText {text} at (50,5.39) size 384.20x26.64 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (50,5.39) size 384.20x26.64
           chunk 1 text run 1 at (50.00,27.00) startOffset 0 endOffset 37 width 384.21: "Test for opacity property on a group."
       LayoutSVGRect {rect} at (10,30) size 100x260 [fill={[type=SOLID] [color=#FF0000]}] [x=10.00] [y=30.00] [width=100.00] [height=260.00]
       LayoutSVGContainer {g} at (60,50) size 90x50

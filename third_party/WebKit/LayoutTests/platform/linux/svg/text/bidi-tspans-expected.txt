@@ -2,18 +2,18 @@ layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
-    LayoutSVGContainer {g} at (92.16,133.20) size 275.67x51
-      LayoutSVGText {text} at (92.16,133.20) size 275.67x21 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (92.16,133.20) size 275.67x21
+    LayoutSVGContainer {g} at (92.16,133.19) size 275.67x51
+      LayoutSVGText {text} at (92.16,133.19) size 275.67x21 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (92.16,133.19) size 275.67x21
           chunk 1 (middle anchor) text run 1 at (92.16,150.00) startOffset 0 endOffset 10 width 55.80 RTL: ", \x{627}\x{62E}\x{62A}\x{628}\x{627}\x{631}\"!"
           chunk 1 (middle anchor) text run 1 at (147.96,150.00) startOffset 0 endOffset 14 width 137.07: "dirRTL ubEmbed"
           chunk 1 (middle anchor) text run 1 at (285.04,150.00) startOffset 0 endOffset 14 width 82.80 RTL: "\x{646}\x{634}\x{627}\x{637} \x{627}\x{644}\x{62A}\x{62F}\x{648}\x{64A}\x{644} \""
-      LayoutSVGText {text} at (92.16,163.20) size 275.67x21 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (285.03,163.20) size 82.80x21
+      LayoutSVGText {text} at (92.16,163.19) size 275.67x21 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (285.03,163.19) size 82.80x21
           chunk 1 (middle anchor) text run 1 at (285.04,180.00) startOffset 0 endOffset 14 width 82.80 RTL: "\x{646}\x{634}\x{627}\x{637} \x{627}\x{644}\x{62A}\x{62F}\x{648}\x{64A}\x{644} \""
-        LayoutSVGTSpan {tspan} at (92.16,163.20) size 275.67x21
-          LayoutSVGInlineText {#text} at (103.56,163.20) size 181.45x21
+        LayoutSVGTSpan {tspan} at (92.16,163.19) size 275.67x21
+          LayoutSVGInlineText {#text} at (103.56,163.19) size 181.45x21
             chunk 1 (middle anchor) text run 1 at (103.56,180.00) startOffset 0 endOffset 8 width 44.40 RTL: ", \x{627}\x{62E}\x{62A}\x{628}\x{627}\x{631}"
             chunk 1 (middle anchor) text run 1 at (147.96,180.00) startOffset 0 endOffset 14 width 137.07: "dirRTL ubEmbed"
-        LayoutSVGInlineText {#text} at (92.16,163.20) size 11.39x21
+        LayoutSVGInlineText {#text} at (92.16,163.19) size 11.39x21
           chunk 1 (middle anchor) text run 1 at (92.16,180.00) startOffset 0 endOffset 2 width 11.40 RTL: "\"!"

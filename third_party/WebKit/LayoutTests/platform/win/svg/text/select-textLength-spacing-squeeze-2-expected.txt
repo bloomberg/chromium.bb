@@ -6,8 +6,8 @@ layer at (0,0) size 800x600
       LayoutSVGPath {svg:line} at (29.78,0.80) size 0x11.60 [stroke={[type=SOLID] [color=#008000]}] [fill={[type=SOLID] [color=#000000]}] [x1=29.78] [y1=0.80] [x2=29.78] [y2=12.40]
       LayoutSVGPath {svg:line} at (40.42,0.80) size 0x11.60 [stroke={[type=SOLID] [color=#008000]}] [fill={[type=SOLID] [color=#000000]}] [x1=40.42] [y1=0.80] [x2=40.42] [y2=12.40]
       LayoutSVGRect {svg:rect} at (29.78,0.80) size 10.64x11.40 [fill={[type=SOLID] [color=#FF0000] [opacity=0.40]}] [x=29.78] [y=0.80] [width=10.64] [height=11.40]
-    LayoutSVGText {text} at (10,0.81) size 49.98x11.39 contains 1 chunk(s)
-      LayoutSVGInlineText {#text} at (10,0.81) size 49.98x11.39
+    LayoutSVGText {text} at (10,0.80) size 49.98x11.39 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (10,0.80) size 49.98x11.39
         chunk 1 text run 1 at (10.00,10.00) startOffset 0 endOffset 1 width 6.20: "T"
         chunk 1 text run 2 at (13.53,10.00) startOffset 1 endOffset 2 width 5.60: "e"
         chunk 1 text run 3 at (17.56,10.00) startOffset 2 endOffset 3 width 4.80: "x"

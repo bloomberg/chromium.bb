@@ -108,8 +108,8 @@ layer at (0,0) size 800x600
         LayoutSVGText {text} at (416,481.86) size 62.64x12.80 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (416,481.86) size 62.64x12.80
             chunk 1 text run 1 at (416.00,492.10) startOffset 0 endOffset 11 width 62.64: "Opacity (%)"
-        LayoutSVGText {text} at (212,503.77) size 239.14x12.80 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (212,503.77) size 239.14x12.80
+        LayoutSVGText {text} at (212,503.75) size 239.14x12.80 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (212,503.75) size 239.14x12.80
             chunk 1 text run 1 at (212.00,514.00) startOffset 0 endOffset 40 width 239.15: "RGBA: 0,255,0,100; HSVA: 120,100,100,100"
       LayoutSVGContainer {g} at (500,200) size 300x100
         LayoutSVGRect {rect} at (500,200) size 300x100 [fill={[type=SOLID] [color=#DCDCDC]}] [x=500.00] [y=200.00] [width=300.00] [height=100.00]
@@ -119,8 +119,8 @@ layer at (0,0) size 800x600
         LayoutSVGContainer {use} at (0,-10) size 0x20 [transform={m=((1.00,0.00)(0.00,1.00)) t=(512.00,213.00)}]
           LayoutSVGViewportContainer {svg} at (0,-10) size 0x20
             LayoutSVGPath {line} at (0,-10) size 0x20 [stroke={[type=SOLID] [color=#696969] [stroke width=5.00]}] [fill={[type=SOLID] [color=#000000]}] [x1=0.00] [y1=-10.00] [x2=0.00] [y2=10.00]
-        LayoutSVGText {text} at (716,207.27) size 73.58x12.80 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (716,207.27) size 73.58x12.80
+        LayoutSVGText {text} at (716,207.25) size 73.58x12.80 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (716,207.25) size 73.58x12.80
             chunk 1 text run 1 at (716.00,217.50) startOffset 0 endOffset 13 width 73.59: "Hue (0\x{B0}-180\x{B0})"
         LayoutSVGRect {rect} at (542,245) size 45x30 [stroke={[type=SOLID] [color=#787878] [stroke width=7.50]}] [x=542.00] [y=245.00] [width=45.00] [height=30.00]
         LayoutSVGRect {rect} at (512,230) size 45x30 [fill={[type=SOLID] [color=#FF0000]}] [x=512.00] [y=230.00] [width=45.00] [height=30.00]
@@ -139,11 +139,11 @@ layer at (0,0) size 800x600
         LayoutSVGContainer {use} at (0,-10) size 0x20 [transform={m=((1.00,0.00)(0.00,1.00)) t=(710.00,266.33)}]
           LayoutSVGViewportContainer {svg} at (0,-10) size 0x20
             LayoutSVGPath {line} at (0,-10) size 0x20 [stroke={[type=SOLID] [color=#696969] [stroke width=5.00]}] [fill={[type=SOLID] [color=#000000]}] [x1=0.00] [y1=-10.00] [x2=0.00] [y2=10.00]
-        LayoutSVGText {text} at (716,260.59) size 51.77x12.80 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (716,260.59) size 51.77x12.80
+        LayoutSVGText {text} at (716,260.58) size 51.77x12.80 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (716,260.58) size 51.77x12.80
             chunk 1 text run 1 at (716.00,270.83) startOffset 0 endOffset 9 width 51.77: "Value (%)"
-        LayoutSVGText {text} at (512,284.77) size 225.80x12.80 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (512,284.77) size 225.80x12.80
+        LayoutSVGText {text} at (512,284.75) size 225.80x12.80 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (512,284.75) size 225.80x12.80
             chunk 1 text run 1 at (512.00,295.00) startOffset 0 endOffset 38 width 225.81: "RGBA: 255,0,0,100; HSVA: 0,100,100,100"
       LayoutSVGContainer {g} at (700,500) size 300x120
         LayoutSVGRect {rect} at (700,500) size 300x120 [fill={[type=SOLID] [color=#DCDCDC]}] [x=700.00] [y=500.00] [width=300.00] [height=120.00]
@@ -184,15 +184,15 @@ layer at (0,0) size 800x600
         LayoutSVGText {text} at (916,581.86) size 62.64x12.80 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (916,581.86) size 62.64x12.80
             chunk 1 text run 1 at (916.00,592.10) startOffset 0 endOffset 11 width 62.64: "Opacity (%)"
-        LayoutSVGText {text} at (712,603.77) size 232.47x12.80 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (712,603.77) size 232.47x12.80
+        LayoutSVGText {text} at (712,603.75) size 232.47x12.80 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (712,603.75) size 232.47x12.80
             chunk 1 text run 1 at (712.00,614.00) startOffset 0 endOffset 39 width 232.48: "RGBA: 120,120,120,100; HSVA: 0,0,47,100"
     LayoutSVGContainer {g} at (490,190) size 321.55x153.02 [transform={m=((0.71,0.71)(-0.71,0.71)) t=(0.00,-400.00)}]
       LayoutSVGRect {rect} at (490,190) size 320x110 [fill={[type=SOLID] [color=#00FFFF] [opacity=0.50]}] [x=490.00] [y=190.00] [width=320.00] [height=110.00]
-      LayoutSVGText {text} at (500,305.92) size 311.55x37.09 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (500,305.92) size 290.80x17.91
+      LayoutSVGText {text} at (500,305.91) size 311.55x37.11 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (500,305.91) size 290.80x17.91
           chunk 1 text run 1 at (500.00,320.00) startOffset 0 endOffset 41 width 290.80: "This colourPicker has a callBack function"
-        LayoutSVGTSpan {tspan} at (500,305.92) size 311.55x37.09
+        LayoutSVGTSpan {tspan} at (500,305.91) size 311.55x37.11
           LayoutSVGInlineText {#text} at (500,325.11) size 311.55x17.91
             chunk 1 text run 1 at (500.00,339.20) startOffset 0 endOffset 42 width 311.33: "attached that changes the background color"
       LayoutSVGContainer {g} at (500,200) size 300x90
@@ -225,8 +225,8 @@ layer at (0,0) size 800x600
         LayoutSVGText {text} at (716,253.95) size 62.64x12.80 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (716,253.95) size 62.64x12.80
             chunk 1 text run 1 at (716.00,264.20) startOffset 0 endOffset 11 width 62.64: "Opacity (%)"
-        LayoutSVGText {text} at (512,275.27) size 239.14x12.80 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (512,275.27) size 239.14x12.80
+        LayoutSVGText {text} at (512,275.25) size 239.14x12.80 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (512,275.25) size 239.14x12.80
             chunk 1 text run 1 at (512.00,285.50) startOffset 0 endOffset 40 width 239.15: "RGBA: 0,255,255,50; HSVA: 180,100,100,50"
     LayoutSVGContainer {g} at (499,169) size 367x350
       LayoutSVGContainer {g} at (509,441) size 112x22

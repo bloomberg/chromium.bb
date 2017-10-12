@@ -3,7 +3,7 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
     LayoutSVGContainer {g} at (8.58,5.58) size 462.84x291.31
-      LayoutSVGViewportContainer {svg} at (1,1) size 798x502.27
+      LayoutSVGViewportContainer {svg} at (1,1) size 798x502.25
         LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
           LayoutSVGResourceLinearGradient {linearGradient} [id="MyGradient"] [gradientUnits=userSpaceOnUse] [start=(20,0)] [end=(760,0)]
             LayoutSVGGradientStop {stop} [offset=0.00] [color=#DD00DD]
@@ -24,31 +24,31 @@ layer at (0,0) size 800x600
               [SourceGraphic]
               [feColorMatrix type="LUMINANCETOALPHA"]
                 [SourceGraphic]
-        LayoutSVGContainer {g} at (1,1) size 798x502.27
+        LayoutSVGContainer {g} at (1,1) size 798x502.25
           LayoutSVGRect {rect} at (1,1) size 798x498 [stroke={[type=SOLID] [color=#0000FF]}] [x=1.00] [y=1.00] [width=798.00] [height=498.00]
           LayoutSVGRect {rect} at (20,20) size 760x40 [fill={[type=LINEAR-GRADIENT] [id="MyGradient"]}] [x=20.00] [y=20.00] [width=760.00] [height=40.00]
-          LayoutSVGText {text} at (20,54.66) size 200.69x48.61 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (20,54.66) size 200.69x48.61
+          LayoutSVGText {text} at (20,54.64) size 200.69x48.61 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (20,54.64) size 200.69x48.61
               chunk 1 text run 1 at (20.00,95.00) startOffset 0 endOffset 10 width 200.69: "Unfiltered"
           LayoutSVGRect {rect} at (20,120) size 760x40 [fill={[type=LINEAR-GRADIENT] [id="MyGradient"]}] [x=20.00] [y=120.00] [width=760.00] [height=40.00]
             [filter="Matrix"] LayoutSVGResourceFilter {filter} at (20,120) size 760x40
-          LayoutSVGText {text} at (20,154.66) size 679.47x48.61 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (20,154.66) size 679.47x48.61
+          LayoutSVGText {text} at (20,154.64) size 679.47x48.61 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (20,154.64) size 679.47x48.61
               chunk 1 text run 1 at (20.00,195.00) startOffset 0 endOffset 32 width 679.48: "type=\"matrix\" (grayscale matrix)"
           LayoutSVGRect {rect} at (20,220) size 760x40 [fill={[type=LINEAR-GRADIENT] [id="MyGradient"]}] [x=20.00] [y=220.00] [width=760.00] [height=40.00]
             [filter="Saturate40"] LayoutSVGResourceFilter {filter} at (-18,218) size 836x44
-          LayoutSVGText {text} at (20,254.66) size 578.66x48.61 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (20,254.66) size 578.66x48.61
+          LayoutSVGText {text} at (20,254.64) size 578.66x48.61 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (20,254.64) size 578.66x48.61
               chunk 1 text run 1 at (20.00,295.00) startOffset 0 endOffset 27 width 578.67: "type=\"saturate\" values=\".4\""
           LayoutSVGRect {rect} at (20,320) size 760x40 [fill={[type=LINEAR-GRADIENT] [id="MyGradient"]}] [x=20.00] [y=320.00] [width=760.00] [height=40.00]
             [filter="HueRotate90"] LayoutSVGResourceFilter {filter} at (-18,318) size 836x44
-          LayoutSVGText {text} at (20,354.66) size 630.11x48.61 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (20,354.66) size 630.11x48.61
+          LayoutSVGText {text} at (20,354.64) size 630.11x48.61 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (20,354.64) size 630.11x48.61
               chunk 1 text run 1 at (20.00,395.00) startOffset 0 endOffset 28 width 630.12: "type=\"hueRotate\" values=\"90\""
           LayoutSVGRect {rect} at (20,420) size 760x40 [fill={[type=LINEAR-GRADIENT] [id="MyGradient"]}] [x=20.00] [y=420.00] [width=760.00] [height=40.00]
             [filter="LuminanceToAlpha"] LayoutSVGResourceFilter {filter} at (-18,418) size 836x44
-          LayoutSVGText {text} at (20,454.66) size 525.53x48.61 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (20,454.66) size 525.53x48.61
+          LayoutSVGText {text} at (20,454.64) size 525.53x48.61 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (20,454.64) size 525.53x48.61
               chunk 1 text run 1 at (20.00,495.00) startOffset 0 endOffset 23 width 525.53: "type=\"luminanceToAlpha\""
     LayoutSVGText {text} at (10,304) size 265.80x45.59 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (10,304) size 265.80x45.59

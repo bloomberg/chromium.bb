@@ -2,9 +2,9 @@ layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
-    LayoutSVGContainer {g} at (20,133.20) size 390x85.80
-      LayoutSVGText {text} at (91.16,133.20) size 277.66x21 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (91.16,133.20) size 277.66x21
+    LayoutSVGContainer {g} at (20,133.19) size 390x85.81
+      LayoutSVGText {text} at (91.16,133.19) size 277.66x21 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (91.16,133.19) size 277.66x21
           chunk 1 (middle anchor) text run 1 at (91.17,150.00) startOffset 0 endOffset 35 width 277.66 LTR override: "W3C \x{646}\x{634}\x{627}\x{637} \x{627}\x{644}\x{62A}\x{62F}\x{648}\x{64A}\x{644} dirLTR ubOverride!"
       LayoutSVGText {text} at (20,171) size 85.19x11.39 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (20,171) size 85.19x11.39
