@@ -157,8 +157,8 @@ TEST_F(QueryContentProtectionTaskTest, QueryWith2HDCPDisplays) {
   std::vector<std::unique_ptr<DisplaySnapshot>> displays;
   displays.push_back(CreateDisplaySnapshot(1, DISPLAY_CONNECTION_TYPE_HDMI));
   displays.push_back(CreateDisplaySnapshot(2, DISPLAY_CONNECTION_TYPE_DVI));
-  TestDisplayLayoutManager layout_manager(std::move(displays),
-                                          MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED);
+  TestDisplayLayoutManager layout_manager(
+      std::move(displays), MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED);
 
   QueryContentProtectionTask task(
       &layout_manager, &display_delegate_, 1,

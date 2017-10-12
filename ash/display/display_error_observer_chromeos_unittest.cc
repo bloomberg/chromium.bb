@@ -76,7 +76,7 @@ TEST_F(DisplayErrorObserverTest, CallWithDifferentState) {
 
   observer()->OnDisplayModeChangeFailed(
       display::DisplayConfigurator::DisplayStateList(),
-      display::MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED);
+      display::MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED);
   EXPECT_EQ(ui::SubstituteChromeOSDeviceType(
                 IDS_ASH_DISPLAY_FAILURE_ON_NON_MIRRORING),
             GetMessageContents());

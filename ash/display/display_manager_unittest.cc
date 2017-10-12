@@ -3052,7 +3052,7 @@ TEST_F(DisplayManagerTest, ForcedMirrorMode) {
   outputs.push_back(snapshot1.get());
   outputs.push_back(snapshot2.get());
 
-  EXPECT_EQ(display::MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED,
+  EXPECT_EQ(display::MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED,
             observer.GetStateForDisplayIds(outputs));
 
   display_manager()->layout_store()->set_forced_mirror_mode(true);
@@ -3062,7 +3062,7 @@ TEST_F(DisplayManagerTest, ForcedMirrorMode) {
 
   display_manager()->layout_store()->set_forced_mirror_mode(false);
 
-  EXPECT_EQ(display::MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED,
+  EXPECT_EQ(display::MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED,
             observer.GetStateForDisplayIds(outputs));
 }
 
