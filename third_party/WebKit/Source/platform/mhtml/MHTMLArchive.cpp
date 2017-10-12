@@ -52,15 +52,27 @@ const char* const kQuotedPrintable = "quoted-printable";
 const char* const kBase64 = "base64";
 const char* const kBinary = "binary";
 
-static String ReplaceNonPrintableCharacters(const String& text) {
-  StringBuilder string_builder;
+static String ConvertToPrintableCharacters(const String& text) {
+  // If the text contains all printable ASCII characters, no need for encoding.
+  bool found_non_printable_char = false;
   for (size_t i = 0; i < text.length(); ++i) {
-    if (IsASCIIPrintable(text[i]))
-      string_builder.Append(text[i]);
-    else
-      string_builder.Append('?');
+    if (!IsASCIIPrintable(text[i])) {
+      found_non_printable_char = true;
+      break;
+    }
   }
-  return string_builder.ToString();
+  if (!found_non_printable_char)
+    return text;
+
+  // Encode the text as sequences of printable ASCII characters per RFC 2047
+  // (https://tools.ietf.org/html/rfc2047). Specially, the encoded text will be
+  // as:   =?utf-8?Q?encoded_text?=
+  // where, "utf-8" is the chosen charset to represent the text and "Q" is the
+  // Quoted-Printable format to convert to 7-bit printable ASCII characters.
+  CString utf8_text = text.Utf8();
+  Vector<char> encoded_text;
+  QuotedPrintableEncode(utf8_text.data(), utf8_text.length(), encoded_text);
+  return "=?utf-8?Q?" + String(encoded_text.data(), encoded_text.size()) + "?=";
 }
 
 MHTMLArchive::MHTMLArchive() {}
@@ -144,28 +156,13 @@ void MHTMLArchive::GenerateMHTMLHeader(const String& boundary,
   StringBuilder string_builder;
   string_builder.Append("From: <Saved by Blink>\r\n");
 
-  // Add the versioning information. This can be used to maintain these headers
-  // for backward compatibility.
-  string_builder.Append("X-Snapshot-Version: 1.0\r\n");
-  // Encode the title as sequences of printable ASCII characters per RFC 1342
-  // (https://tools.ietf.org/html/rfc1342). Specially, the encoded title will be
-  // as:   =?utf-8?Q?encoded_text?=
-  // where, "utf-8" is the chosen charset to represent the title and "Q" is the
-  // Quoted-Printable format to convert to 7-bit printable ASCII characters.
-  CString utf8_title = title.Utf8();
-  Vector<char> encoded_title;
-  QuotedPrintableEncode(utf8_title.data(), utf8_title.length(), encoded_title);
-  string_builder.Append("X-Snapshot-Title: =?utf-8?Q?");
-  string_builder.Append(encoded_title.data(), encoded_title.size());
-  string_builder.Append("?=\r\n");
   // Add the document URL in the MHTML headers in order to avoid complicated
   // parsing to locate it in the multipart body headers.
-  string_builder.Append("X-Snapshot-Content-Location: ");
+  string_builder.Append("Snapshot-Content-Location: ");
   string_builder.Append(url.GetString());
 
   string_builder.Append("\r\nSubject: ");
-  // We replace non ASCII characters with '?' characters to match IE's behavior.
-  string_builder.Append(ReplaceNonPrintableCharacters(title));
+  string_builder.Append(ConvertToPrintableCharacters(title));
   string_builder.Append("\r\nDate: ");
   string_builder.Append(date_string);
   string_builder.Append("\r\nMIME-Version: 1.0\r\n");
