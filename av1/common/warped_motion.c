@@ -1655,9 +1655,9 @@ static int32_t get_mult_shift_diag(int64_t Px, int16_t iDet, int shift) {
 }
 #endif  // USE_LIMITED_PREC_MULT
 
-static int find_affine_int(int np, int *pts1, int *pts2, BLOCK_SIZE bsize,
-                           int mvy, int mvx, WarpedMotionParams *wm, int mi_row,
-                           int mi_col) {
+static int find_affine_int(int np, const int *pts1, const int *pts2,
+                           BLOCK_SIZE bsize, int mvy, int mvx,
+                           WarpedMotionParams *wm, int mi_row, int mi_col) {
   int32_t A[2][2] = { { 0, 0 }, { 0, 0 } };
   int32_t Bx[2] = { 0, 0 };
   int32_t By[2] = { 0, 0 };
@@ -1783,13 +1783,14 @@ int find_projection(int np, int *pts1, int *pts2, BLOCK_SIZE bsize, int mvy,
                     int mvx, WarpedMotionParams *wm_params, int mi_row,
                     int mi_col) {
   assert(wm_params->wmtype == AFFINE);
-  const int result = find_affine_int(np, pts1, pts2, bsize, mvy, mvx, wm_params,
-                                     mi_row, mi_col);
-  if (result == 0) {
-    // check compatibility with the fast warp filter
-    if (!get_shear_params(wm_params)) return 1;
-  }
 
-  return result;
+  if (find_affine_int(np, pts1, pts2, bsize, mvy, mvx, wm_params, mi_row,
+                      mi_col))
+    return 1;
+
+  // check compatibility with the fast warp filter
+  if (!get_shear_params(wm_params)) return 1;
+
+  return 0;
 }
 #endif  // CONFIG_WARPED_MOTION
