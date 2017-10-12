@@ -6,7 +6,9 @@
 
 #include "base/guid.h"
 #include "base/metrics/histogram_macros.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_util.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "net/base/load_flags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -92,6 +94,24 @@ void WarmupURLFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
   UMA_HISTOGRAM_BOOLEAN(
       "DataReductionProxy.WarmupURL.FetchSuccessful",
       source->GetStatus().status() == net::URLRequestStatus::SUCCESS);
+
+  UMA_HISTOGRAM_SPARSE_SLOWLY("DataReductionProxy.WarmupURL.NetError",
+                              std::abs(source->GetStatus().error()));
+
+  UMA_HISTOGRAM_SPARSE_SLOWLY("DataReductionProxy.WarmupURL.HttpResponseCode",
+                              std::abs(source->GetResponseCode()));
+
+  if (source->GetResponseHeaders()) {
+    UMA_HISTOGRAM_BOOLEAN(
+        "DataReductionProxy.WarmupURL.HasViaHeader",
+        HasDataReductionProxyViaHeader(*source->GetResponseHeaders(),
+                                       nullptr /* has_intermediary */));
+
+    UMA_HISTOGRAM_ENUMERATION("DataReductionProxy.WarmupURL.ProxySchemeUsed",
+                              util::ConvertNetProxySchemeToProxyScheme(
+                                  source->ProxyServerUsed().scheme()),
+                              PROXY_SCHEME_MAX);
+  }
 }
 
 }  // namespace data_reduction_proxy
