@@ -2406,7 +2406,7 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_ACCESSIBILITY_SUGGESTION_WITH_VIDEO_BADGE" desc="Content description for the badge that indicates a content suggestion on the new tab page has a video.">
         With video
       </message>
-      <message name="IDS_NTP_CHROME_HOME_PROMO" desc="Tappable line of text that appears when a user opens a new tab in Chrome. This text is promotional and is intended to suggest that users try a new feature called “Chrome Home” (which is a placeholder name, official naming is underway; for now, do not translate the feature name). When tapped, a dialog explaining the feature opens. “Try” is imperative. “To browse” (infinitive) means to browse the web.">
+      <message name="IDS_NTP_CHROME_HOME_PROMO" desc="Tappable line of text that appears when a user opens a new tab in Chrome. This text is promotional and is intended to suggest that users try the new Chrome, which has new features. When tapped, a dialog explaining the feature opens. “Try” is imperative. “To browse” (infinitive) means to browse the web.">
         Try an <ph name="BEGIN_LINK">&lt;link&gt;</ph>easier way to browse<ph name="END_LINK">&lt;/link&gt;</ph>
       </message>
       <message name="IDS_NTP_LEARN_MORE_ABOUT_SUGGESTED_CONTENT" desc="Text in the footer of the New Tab Page. Part of the text is a link to a help center page where the user can learn more about suggested content.">
@@ -2721,7 +2721,7 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_ACCESSIBILITY_TOOLBAR_BTN_HOME" desc="Content description for the home button.">
         Home
       </message>
-      <message name="IDS_ACCESSIBILITY_TOOLBAR_BTN_EXPAND" desc="Content description for the Chrome Home sheet expand button. Tapping the button expands a panel that displays content suggestions, bookmarks, downloads, and history.">
+      <message name="IDS_ACCESSIBILITY_TOOLBAR_BTN_EXPAND" desc="Content description for the Chrome Home sheet expand button. Tapping the button expands a panel that displays content suggestions, downloads, bookmarks, and history.">
         Expand navigation panel
       </message>
       <message name="IDS_ACCESSIBILITY_BTN_REFRESH" desc="Content description for the refresh page button.">
@@ -3197,10 +3197,10 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
         Tap to see bookmarks and more
       </message>
       <message name="IDS_BOTTOM_SHEET_ACCESSIBILITY_EXPAND_BUTTON_HELP_BUBBLE_MESSAGE" desc="Text displayed in a help bubble above the toolbar expand button prompting users to tap the button to see their bookmarks and other content when accessibility is enabled.">
-        Tap to see bookmarks, downloads, and history
+        Tap to see downloads, bookmarks, and history
       </message>
-      <message name="IDS_BOTTOM_SHEET_EXPAND_BUTTON_ACCESSIBILITY" desc="Part of the accessibility string read when the expand button is tapped informing users that tapping button will show bookmarks, downloads, and history. 'access' is a noun. 'Bookmarks', 'Downloads', and 'History' should use the same translations as in Chrome settings and menu items. TalkBack will read 'Expand navigation panel button. Double tap to access bookmarks, downloads, and history'.">
-        access bookmarks, downloads, and history.
+      <message name="IDS_BOTTOM_SHEET_EXPAND_BUTTON_ACCESSIBILITY" desc="Part of the accessibility string read when the expand button is tapped informing users that tapping button will show downloads, bookmarks, and history. 'access' is a noun. 'Downloads', 'Bookmarks', and 'History' should use the same translations as in Chrome settings and menu items. TalkBack will read 'Expand navigation panel button. Double tap to access downloads, bookmarks, and history'.">
+        access downloads, bookmarks, and history.
       </message>
      <message name="IDS_BOTTOM_SHEET_ACCESSIBILITY_DESCRIPTION" desc="Accessibility string read when the navigation panel is focused informing the user that the panel can be closed by swiping down.">
         Navigation panel. Swipe down to close.
@@ -3226,28 +3226,28 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
       <message name="IDS_BOTTOM_SHEET_HOME_TAB" desc="Accessibility string read when the home tab is selected.">
         Home tab selected
       </message>
-      <message name="IDS_BOTTOM_SHEET_APP_MENU_IPH" desc="Label for in-product help that appears in the Chrome three-dot menu (navigation menu). In previous versions of Chrome, the menu contained Bookmarks, Downloads, and History. In this version of Chrome, these three items have been moved out of the menu. Tapping this help text will show the user where they can find these three items. 'Bookmarks', 'Downloads', and 'History' should use the same translations as in Chrome settings and menu items. The tone of this string is that of the user asking Chrome, 'where are these 3 things?'">
-        Where are bookmarks, downloads, and history?
+      <message name="IDS_BOTTOM_SHEET_APP_MENU_IPH" desc="Label for in-product help that appears in the Chrome three-dot menu (navigation menu). In previous versions of Chrome, the menu contained Downloads, Bookmarks, and History. In this version of Chrome, these three items have been moved out of the menu. Tapping this help text will show the user where they can find these three items. 'Downloads', 'Bookmarks', and 'History' should use the same translations as in Chrome settings and menu items. The tone of this string is that of the user asking Chrome, 'where are these 3 things?'">
+        Where are downloads, bookmarks, and history?
       </message>
-      <message name="IDS_CHROME_HOME_PROMO_DIALOG_TITLE" desc="Dialog title text. Dialog describes a new feature called “Chrome Home” (which is a placeholder name, official naming is underway; for now, do not translate the feature name). Object is omitted; intended meaning is that we wish to introduce you, the user, to Chrome Home. Infinitive or other verb form may be used if the gerund is not appropriate in your language. ">
-        Introducing Chrome Home
+      <message name="IDS_CHROME_HOME_PROMO_DIALOG_TITLE" desc="Dialog title text. Dialog describes the new Chrome. Object is omitted; intended meaning is that we wish to introduce you, the user, to a new version of Chrome. Infinitive or other verb form may be used if the gerund is not appropriate in your language.">
+        Introducing the new Chrome
       </message>
-      <message name="IDS_CHROME_HOME_PROMO_DIALOG_MESSAGE" desc="Dialog body text. Dialog describes a new feature called “Chrome Home” (which is a placeholder name, official naming is underway; for now, do not translate the feature name). “Swipe up” (imperative) refers to the gesture on a mobile phone. “access” is a noun. “Popular” modifies both “sites and articles.” “Downloads” refers to items the user has downloaded in Chrome.">
+      <message name="IDS_CHROME_HOME_PROMO_DIALOG_MESSAGE" desc="Dialog body text. Describes the new features available in the new Chrome. “Swipe up” (imperative) refers to the gesture on a mobile phone. “access” is a noun. “Popular” modifies both “sites and articles.” “Downloads” refers to items the user has downloaded in Chrome.">
         Swipe up for easy access to popular sites and articles, downloads, and more
       </message>
       <message name="IDS_CHROME_HOME_PROMO_DIALOG_MESSAGE_ACCESSIBILITY" desc="Dialog body text when accessibility is enabled. Dialog describes a new feature called “Chrome Home” (which is a placeholder name, official naming is underway; for now, do not translate the feature name). “Swipe up” (imperative) refers to the gesture on a mobile phone. “access” is a noun. “Popular” modifies both “sites and articles.” “Downloads” refers to items the user has downloaded in Chrome.">
         Swipe up from the bottom of the screen or tap the expand button for easy access to popular sites and articles, downloads, and more
       </message>
-      <message name="IDS_CHROME_HOME_PROMO_DIALOG_CHANGE_LATER" desc="Dialog toggle/switch label. Dialog describes a new feature called “Chrome Home” ( which is a placeholder name; official naming is underway; for now, do not translate the feature name). Toggle is ON by default.">
-        Use Chrome Home
+      <message name="IDS_CHROME_HOME_PROMO_DIALOG_CHANGE_LATER" desc="Dialog toggle/switch label. Dialog describes the features available in the new Chrome. Toggle is ON by default.">
+        Use the new Chrome
       </message>
-      <message name="IDS_CHROME_HOME_OPT_OUT_MENU_ITEM" desc="Item that appears at the top Chrome options menu on mobile. Describes a new feature called “Chrome Home” (which is a placeholder name; official naming is underway; for now, do not translate the feature name). Gerund is used to indicate the current state, e.g. you are now using Chrome Home. Tapping this item opens a dialog that allows the user to turn off the Chrome Home feature.">
-        You're using Chrome Home
+      <message name="IDS_CHROME_HOME_OPT_OUT_MENU_ITEM" desc="Item that appears at the top of the Chrome options menu on mobile. Gerund is used to indicate the current state, e.g. you are now using the new Chrome. Tapping this item opens a dialog that allows the user to turn off the new Chrome and revert to an older version.">
+        You’re using the new Chrome
       </message>
-       <message name="IDS_CHROME_HOME_OPT_OUT_SNACKBAR_TEXT" desc="Message that appears on a snackbar after the user has turned off the new feature called “Chrome Home” (which is a placeholder name; official naming is underway; for now, do not translate the feature name).">
-        Tell us why you turned off Chrome Home
+       <message name="IDS_CHROME_HOME_OPT_OUT_SNACKBAR_TEXT" desc="Message in that appears after the user has turned off the new Chrome and reverted to using an older version. Message requests that the user provide feedback via a survey. “Us” refers to the Chrome team.">
+        Tell us why you turned off the new Chrome
       </message>
-      <message name="IDS_CHROME_HOME_OPT_OUT_SNACKBAR_ACTION" desc="Action button that appears on a snackbar after the user has turned off the new feature called “Chrome Home”.">
+      <message name="IDS_CHROME_HOME_OPT_OUT_SNACKBAR_ACTION" desc="Action button that appears on a snackbar after the user has turned off the new Chrome.">
         Take survey
       </message>
 
