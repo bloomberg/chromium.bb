@@ -33,6 +33,75 @@ DWORD g_init_error = ERROR_SUCCESS;
 // Prints the exception call stack.
 // This is the unit tests exception filter.
 long WINAPI StackDumpExceptionFilter(EXCEPTION_POINTERS* info) {
+  DWORD exc_code = info->ExceptionRecord->ExceptionCode;
+  std::cerr << "Received fatal exception ";
+  switch (exc_code) {
+    case EXCEPTION_ACCESS_VIOLATION:
+      std::cerr << "EXCEPTION_ACCESS_VIOLATION";
+      break;
+    case EXCEPTION_ARRAY_BOUNDS_EXCEEDED:
+      std::cerr << "EXCEPTION_ARRAY_BOUNDS_EXCEEDED";
+      break;
+    case EXCEPTION_BREAKPOINT:
+      std::cerr << "EXCEPTION_BREAKPOINT";
+      break;
+    case EXCEPTION_DATATYPE_MISALIGNMENT:
+      std::cerr << "EXCEPTION_DATATYPE_MISALIGNMENT";
+      break;
+    case EXCEPTION_FLT_DENORMAL_OPERAND:
+      std::cerr << "EXCEPTION_FLT_DENORMAL_OPERAND";
+      break;
+    case EXCEPTION_FLT_DIVIDE_BY_ZERO:
+      std::cerr << "EXCEPTION_FLT_DIVIDE_BY_ZERO";
+      break;
+    case EXCEPTION_FLT_INEXACT_RESULT:
+      std::cerr << "EXCEPTION_FLT_INEXACT_RESULT";
+      break;
+    case EXCEPTION_FLT_INVALID_OPERATION:
+      std::cerr << "EXCEPTION_FLT_INVALID_OPERATION";
+      break;
+    case EXCEPTION_FLT_OVERFLOW:
+      std::cerr << "EXCEPTION_FLT_OVERFLOW";
+      break;
+    case EXCEPTION_FLT_STACK_CHECK:
+      std::cerr << "EXCEPTION_FLT_STACK_CHECK";
+      break;
+    case EXCEPTION_FLT_UNDERFLOW:
+      std::cerr << "EXCEPTION_FLT_UNDERFLOW";
+      break;
+    case EXCEPTION_ILLEGAL_INSTRUCTION:
+      std::cerr << "EXCEPTION_ILLEGAL_INSTRUCTION";
+      break;
+    case EXCEPTION_IN_PAGE_ERROR:
+      std::cerr << "EXCEPTION_IN_PAGE_ERROR";
+      break;
+    case EXCEPTION_INT_DIVIDE_BY_ZERO:
+      std::cerr << "EXCEPTION_INT_DIVIDE_BY_ZERO";
+      break;
+    case EXCEPTION_INT_OVERFLOW:
+      std::cerr << "EXCEPTION_INT_OVERFLOW";
+      break;
+    case EXCEPTION_INVALID_DISPOSITION:
+      std::cerr << "EXCEPTION_INVALID_DISPOSITION";
+      break;
+    case EXCEPTION_NONCONTINUABLE_EXCEPTION:
+      std::cerr << "EXCEPTION_NONCONTINUABLE_EXCEPTION";
+      break;
+    case EXCEPTION_PRIV_INSTRUCTION:
+      std::cerr << "EXCEPTION_PRIV_INSTRUCTION";
+      break;
+    case EXCEPTION_SINGLE_STEP:
+      std::cerr << "EXCEPTION_SINGLE_STEP";
+      break;
+    case EXCEPTION_STACK_OVERFLOW:
+      std::cerr << "EXCEPTION_STACK_OVERFLOW";
+      break;
+    default:
+      std::cerr << "0x" << std::hex << exc_code;
+      break;
+  }
+  std::cerr << "\n";
+
   debug::StackTrace(info).Print();
   if (g_previous_filter)
     return g_previous_filter(info);
