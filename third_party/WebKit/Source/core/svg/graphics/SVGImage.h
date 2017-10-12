@@ -112,6 +112,10 @@ class CORE_EXPORT SVGImage final : public Image {
 
   PaintImage PaintImageForCurrentFrame() override;
 
+ protected:
+  // Whether or not size is available yet.
+  bool IsSizeAvailable() override { return !!page_; }
+
  private:
   // Accesses m_page.
   friend class SVGImageChromeClient;

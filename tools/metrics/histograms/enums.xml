@@ -4355,6 +4355,13 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="3" label="Stream was never read at all"/>
 </enum>
 
+<enum name="CheckerableImageType">
+  <int value="0" label="Checkerable image was used with an img tag"/>
+  <int value="1" label="Checkerable image was used with an svg tag"/>
+  <int value="2" label="Checkerable image was used with a css style property"/>
+  <int value="3" label="Not checkerable image"/>
+</enum>
+
 <enum name="CheckerImagingDecision">
   <int value="0" label="Can decode asynchronously."/>
   <int value="1" label="Image is animated."/>

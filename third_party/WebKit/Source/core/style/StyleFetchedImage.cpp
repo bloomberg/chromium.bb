@@ -113,6 +113,12 @@ void StyleFetchedImage::ImageNotifyFinished(ImageResourceContent*) {
   if (document_ && image_ && image_->GetImage() &&
       image_->GetImage()->IsSVGImage())
     ToSVGImage(image_->GetImage())->UpdateUseCounters(*document_);
+
+  if (image_ && image_->GetImage()) {
+    Image::RecordCheckerableImageUMA(*image_->GetImage(),
+                                     Image::ImageType::kCss);
+  }
+
   // Oilpan: do not prolong the Document's lifetime.
   document_.Clear();
 }

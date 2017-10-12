@@ -26,6 +26,8 @@
 
 #include "platform/graphics/Image.h"
 
+#include "build/build_config.h"
+#include "platform/Histogram.h"
 #include "platform/Length.h"
 #include "platform/SharedBuffer.h"
 #include "platform/geometry/FloatPoint.h"
@@ -40,6 +42,7 @@
 #include "platform/instrumentation/PlatformInstrumentation.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/network/mime/MIMETypeRegistry.h"
+#include "platform/wtf/CheckedNumeric.h"
 #include "platform/wtf/StdLibExtras.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/Platform.h"
@@ -50,6 +53,26 @@
 #include <tuple>
 
 namespace blink {
+namespace {
+
+bool HasCheckerableDimensions(const IntSize& size) {
+  CheckedNumeric<size_t> checked_size = 4u;
+  checked_size *= size.Width();
+  checked_size *= size.Height();
+
+// The constants used here should remain consistent with the values used for
+// LayerTreeSettings in render_widget_compositor.cc.
+#if defined(OS_ANDROID)
+  static const size_t kMinImageSizeCheckered = 512 * 1024;
+#else
+  static const size_t kMinImageSizeCheckered = 1 * 1024 * 1024;
+#endif
+
+  return checked_size.ValueOrDefault(std::numeric_limits<size_t>::max()) >=
+         kMinImageSizeCheckered;
+}
+
+}  // namespace
 
 Image::Image(ImageObserver* observer, bool is_multipart)
     : image_observer_disabled_(false),
@@ -408,6 +431,38 @@ FloatRect Image::ComputeSubsetForTile(const FloatRect& tile,
   subset.SetHeight(dest.Height() / scale.Height());
 
   return subset;
+}
+
+// static
+void Image::RecordCheckerableImageUMA(Image& image, ImageType type) {
+  // This enum is used in UMA counting so should be treated as append only.
+  // Please keep it in sync with CheckerableImageType in enums.xml.
+  enum class CheckerableImageType {
+    kCheckerableImg = 0,
+    kCheckerableSvg = 1,
+    kCheckerableCss = 2,
+    kNotCheckerable = 3,
+    kCount = 4
+  };
+
+  CheckerableImageType checkerable_type = CheckerableImageType::kNotCheckerable;
+  if (image.IsSizeAvailable() && !image.MaybeAnimated() &&
+      HasCheckerableDimensions(image.Size())) {
+    switch (type) {
+      case ImageType::kImg:
+        checkerable_type = CheckerableImageType::kCheckerableImg;
+        break;
+      case ImageType::kSvg:
+        checkerable_type = CheckerableImageType::kCheckerableSvg;
+        break;
+      case ImageType::kCss:
+        checkerable_type = CheckerableImageType::kCheckerableCss;
+        break;
+    }
+  }
+
+  UMA_HISTOGRAM_ENUMERATION("Blink.CheckerableImageCount", checkerable_type,
+                            CheckerableImageType::kCount);
 }
 
 }  // namespace blink
