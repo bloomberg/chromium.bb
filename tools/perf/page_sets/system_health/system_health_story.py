@@ -86,6 +86,15 @@ class SystemHealthStory(page.Page):
     """
     return None
 
+  @classmethod
+  def ShouldDisable(cls, possible_browser):
+    """Override this method to disable a story under specific conditions.
+
+    This method is modelled after telemetry.benchmark.Benchmark.ShouldDisable().
+    """
+    del possible_browser
+    return False
+
   def _Measure(self, action_runner):
     if self._take_memory_measurement:
       action_runner.MeasureMemory(deterministic_mode=True)
