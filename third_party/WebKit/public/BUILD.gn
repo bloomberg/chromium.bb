@@ -274,7 +274,6 @@ source_set("blink_headers") {
     "platform/WebNativeScrollBehavior.h",
     "platform/WebNetworkStateNotifier.h",
     "platform/WebNonCopyable.h",
-    "platform/WebOriginTrialTokenStatus.h",
     "platform/WebPageVisibilityState.h",
     "platform/WebPasswordCredential.h",
     "platform/WebPlatformEventListener.h",

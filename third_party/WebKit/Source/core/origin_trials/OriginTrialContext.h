@@ -12,6 +12,8 @@
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/StringHash.h"
 #include "platform/wtf/text/WTFString.h"
+#include "public/platform/WebTrialTokenValidator.h"
+#include "third_party/WebKit/common/origin_trials/trial_token_validator.h"
 
 namespace blink {
 
@@ -40,7 +42,8 @@ class CORE_EXPORT OriginTrialContext final
  public:
   enum CreateMode { kCreateIfNotExists, kDontCreateIfNotExists };
 
-  OriginTrialContext(ExecutionContext&, WebTrialTokenValidator*);
+  OriginTrialContext(ExecutionContext&,
+                     std::unique_ptr<WebTrialTokenValidator>);
 
   static const char* SupplementName();
 
@@ -98,7 +101,7 @@ class CORE_EXPORT OriginTrialContext final
   Vector<String> tokens_;
   HashSet<String> enabled_trials_;
   HashSet<String> installed_trials_;
-  WebTrialTokenValidator* trial_token_validator_;
+  std::unique_ptr<WebTrialTokenValidator> trial_token_validator_;
 };
 
 }  // namespace blink

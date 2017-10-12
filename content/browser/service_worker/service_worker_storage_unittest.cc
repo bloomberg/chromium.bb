@@ -1861,7 +1861,7 @@ TEST_F(ServiceWorkerStorageTest, OriginTrialsAbsentEntryAndEmptyEntry) {
   data2.is_active = true;
   data2.resources_total_size_bytes = 200;
   // Set empty origin_trial_tokens.
-  data2.origin_trial_tokens = TrialTokenValidator::FeatureToTokensMap();
+  data2.origin_trial_tokens = blink::TrialTokenValidator::FeatureToTokensMap();
   std::vector<ResourceRecord> resources2;
   resources2.push_back(ResourceRecord(2, data2.script, 200));
   WriteRegistration(data2, resources2);
@@ -1975,7 +1975,7 @@ TEST_F(ServiceWorkerStorageOriginTrialsDiskTest, FromMainScript) {
   http_info.headers->AddHeader(kOriginTrial + kFeature3ExpiredToken);
   version->SetMainScriptHttpResponseInfo(http_info);
   ASSERT_TRUE(version->origin_trial_tokens());
-  const TrialTokenValidator::FeatureToTokensMap& tokens =
+  const blink::TrialTokenValidator::FeatureToTokensMap& tokens =
       *version->origin_trial_tokens();
   ASSERT_EQ(2UL, tokens.size());
   ASSERT_EQ(1UL, tokens.at("Feature1").size());
@@ -2004,7 +2004,7 @@ TEST_F(ServiceWorkerStorageOriginTrialsDiskTest, FromMainScript) {
   EXPECT_EQ(SERVICE_WORKER_OK,
             FindRegistrationForDocument(kScope, &found_registration));
   ASSERT_TRUE(found_registration->active_version());
-  const TrialTokenValidator::FeatureToTokensMap& found_tokens =
+  const blink::TrialTokenValidator::FeatureToTokensMap& found_tokens =
       *found_registration->active_version()->origin_trial_tokens();
   ASSERT_EQ(2UL, found_tokens.size());
   ASSERT_EQ(1UL, found_tokens.at("Feature1").size());

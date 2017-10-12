@@ -2,24 +2,36 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_ORIGIN_TRIALS_TRIAL_TOKEN_H_
-#define CONTENT_COMMON_ORIGIN_TRIALS_TRIAL_TOKEN_H_
+#ifndef THIRD_PARTY_WEBKIT_COMMON_ORIGIN_TRIALS_TRIAL_TOKEN_H_
+#define THIRD_PARTY_WEBKIT_COMMON_ORIGIN_TRIALS_TRIAL_TOKEN_H_
 
 #include <memory>
 #include <string>
 
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
-#include "content/common/content_export.h"
+#include "third_party/WebKit/common/common_export.h"
 #include "url/origin.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size);
 
 namespace blink {
-enum class WebOriginTrialTokenStatus;
-}
-
-namespace content {
+// The enum entries below are written to histograms and thus cannot be deleted
+// or reordered.
+// New entries must be added immediately before the end.
+enum class BLINK_COMMON_EXPORT OriginTrialTokenStatus {
+  kSuccess = 0,
+  kNotSupported = 1,
+  kInsecure = 2,
+  kExpired = 3,
+  kWrongOrigin = 4,
+  kInvalidSignature = 5,
+  kMalformed = 6,
+  kWrongVersion = 7,
+  kFeatureDisabled = 8,
+  kTokenDisabled = 9,
+  kLast = kTokenDisabled
+};
 
 // The Origin Trials Framework (OT) provides limited access to experimental
 // features, on a per-origin basis. This class defines the trial token data
@@ -33,7 +45,7 @@ namespace content {
 // More documentation on the token format can be found at
 // https://docs.google.com/document/d/1v5fi0EUV_QHckVHVF2K4P72iNywnrJtNhNZ6i2NPt0M
 
-class CONTENT_EXPORT TrialToken {
+class BLINK_COMMON_EXPORT TrialToken {
  public:
   ~TrialToken();
 
@@ -45,16 +57,15 @@ class CONTENT_EXPORT TrialToken {
   // appropriate for a given origin / feature. It only means that it is
   // correctly formatted and signed by the supplied public key, and can be
   // parsed.
-  static std::unique_ptr<TrialToken> From(
-      const std::string& token_text,
-      base::StringPiece public_key,
-      blink::WebOriginTrialTokenStatus* out_status);
+  static std::unique_ptr<TrialToken> From(const std::string& token_text,
+                                          base::StringPiece public_key,
+                                          OriginTrialTokenStatus* out_status);
 
   // Returns success if this token is appropriate for use by the given origin
   // and has not yet expired. Otherwise, the return value indicates why the
   // token is not valid.
-  blink::WebOriginTrialTokenStatus IsValid(const url::Origin& origin,
-                                           const base::Time& now) const;
+  OriginTrialTokenStatus IsValid(const url::Origin& origin,
+                                 const base::Time& now) const;
 
   url::Origin origin() { return origin_; }
   bool match_subdomains() const { return match_subdomains_; }
@@ -75,11 +86,10 @@ class CONTENT_EXPORT TrialToken {
   // |out_token_payload| and |out_token_signature| parameters, respectively.
   // Otherwise,the return code indicates what was wrong with the string, and
   // |out_token_payload| and |out_token_signature| are unchanged.
-  static blink::WebOriginTrialTokenStatus Extract(
-      const std::string& token_text,
-      base::StringPiece public_key,
-      std::string* out_token_payload,
-      std::string* out_token_signature);
+  static OriginTrialTokenStatus Extract(const std::string& token_text,
+                                        base::StringPiece public_key,
+                                        std::string* out_token_payload,
+                                        std::string* out_token_signature);
 
   // Returns a token object if the string represents a well-formed JSON token
   // payload, or nullptr otherwise.
@@ -115,6 +125,6 @@ class CONTENT_EXPORT TrialToken {
   std::string signature_;
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_COMMON_ORIGIN_TRIALS_TRIAL_TOKEN_H_
+#endif  // THIRD_PARTY_WEBKIT_COMMON_ORIGIN_TRIALS_TRIAL_TOKEN_H_

@@ -13,7 +13,7 @@
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_request_handler.h"
-#include "content/common/origin_trials/trial_token_validator.h"
+#include "content/common/origin_trials/trial_policy_impl.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -23,6 +23,7 @@
 #include "content/public/common/origin_util.h"
 #include "net/http/http_util.h"
 #include "net/url_request/url_request.h"
+#include "third_party/WebKit/common/origin_trials/trial_token_validator.h"
 
 namespace content {
 
@@ -38,13 +39,14 @@ void HandleServiceWorkerLink(
     net::URLRequest* request,
     const std::string& url,
     const std::unordered_map<std::string, base::Optional<std::string>>& params,
+    const blink::TrialTokenValidator& validator,
     ServiceWorkerContextWrapper* service_worker_context_for_testing) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableExperimentalWebPlatformFeatures) &&
-      !TrialTokenValidator::RequestEnablesFeature(request, "ForeignFetch",
-                                                  base::Time::Now())) {
+      !validator.RequestEnablesFeature(request, "ForeignFetch",
+                                       base::Time::Now())) {
     // TODO(mek): Log attempt to use without having correct token?
     return;
   }
@@ -140,11 +142,14 @@ void ProcessLinkHeaderValueForRequest(
   auto rel_param = params.find("rel");
   if (rel_param == params.end() || !rel_param->second)
     return;
+
+  const auto validator = base::MakeUnique<blink::TrialTokenValidator>(
+      base::MakeUnique<TrialPolicyImpl>());
   for (const auto& rel : base::SplitStringPiece(rel_param->second.value(),
                                                 HTTP_LWS, base::TRIM_WHITESPACE,
                                                 base::SPLIT_WANT_NONEMPTY)) {
     if (base::EqualsCaseInsensitiveASCII(rel, "serviceworker"))
-      HandleServiceWorkerLink(request, url, params,
+      HandleServiceWorkerLink(request, url, params, *validator,
                               service_worker_context_for_testing);
   }
 }

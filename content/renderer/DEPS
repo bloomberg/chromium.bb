@@ -26,6 +26,7 @@ include_rules = [
   "+storage/public/interfaces",
   "+third_party/hyphen/hyphen.h",
   "+third_party/webrtc_overrides",
+  "+third_party/WebKit/common/origin_trials",
   "+v8/include",
   "+v8/src/third_party/vtune",
 ]

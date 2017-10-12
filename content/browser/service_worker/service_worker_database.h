@@ -20,9 +20,9 @@
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
-#include "content/common/origin_trials/trial_token_validator.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "third_party/WebKit/common/origin_trials/trial_token_validator.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -77,7 +77,8 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
     base::Time last_update_check;
     std::vector<GURL> foreign_fetch_scopes;
     std::vector<url::Origin> foreign_fetch_origins;
-    base::Optional<TrialTokenValidator::FeatureToTokensMap> origin_trial_tokens;
+    base::Optional<blink::TrialTokenValidator::FeatureToTokensMap>
+        origin_trial_tokens;
     NavigationPreloadState navigation_preload_state;
     std::set<uint32_t> used_features;
 

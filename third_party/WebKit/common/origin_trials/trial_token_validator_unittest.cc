@@ -2,24 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/origin_trials/trial_token_validator.h"
+#include "third_party/WebKit/common/origin_trials/trial_token_validator.h"
 
 #include <memory>
 #include <set>
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
-#include "content/public/common/content_client.h"
-#include "content/public/common/origin_trial_policy.h"
 #include "net/http/http_response_headers.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/WebOriginTrialTokenStatus.h"
+#include "third_party/WebKit/common/origin_trials/trial_policy.h"
+#include "third_party/WebKit/common/origin_trials/trial_token.h"
 #include "url/gurl.h"
 
-namespace content {
+namespace blink {
 
 namespace {
 
@@ -116,8 +116,13 @@ const char kInsecureOriginToken[] =
 // but before the expiry timestamp of kValidToken.
 double kNowTimestamp = 1500000000;
 
-class TestOriginTrialPolicy : public OriginTrialPolicy {
+class TestOriginTrialPolicy : public TrialPolicy {
  public:
+  bool IsOriginTrialsSupported() const override { return true; }
+  bool IsOriginSecure(const GURL& url) const override {
+    return url.SchemeIs("https");
+  }
+
   base::StringPiece GetPublicKey() const override {
     return base::StringPiece(reinterpret_cast<const char*>(key_),
                              arraysize(kTestPublicKey));
@@ -146,27 +151,6 @@ class TestOriginTrialPolicy : public OriginTrialPolicy {
   std::set<std::string> disabled_tokens_;
 };
 
-class TestContentClient : public ContentClient {
- public:
-  // ContentRendererClient methods
-  OriginTrialPolicy* GetOriginTrialPolicy() override {
-    return &origin_trial_policy_;
-  }
-  // Test setup methods
-  void SetOriginTrialPublicKey(const uint8_t* key) {
-    origin_trial_policy_.SetPublicKey(key);
-  }
-  void DisableFeature(const std::string& feature) {
-    origin_trial_policy_.DisableFeature(feature);
-  }
-  void DisableToken(const std::string& token_signature) {
-    origin_trial_policy_.DisableToken(token_signature);
-  }
-
- private:
-  TestOriginTrialPolicy origin_trial_policy_;
-};
-
 }  // namespace
 
 class TrialTokenValidatorTest : public testing::Test {
@@ -181,23 +165,22 @@ class TrialTokenValidatorTest : public testing::Test {
         expired_token_signature_(
             std::string(reinterpret_cast<const char*>(kExpiredTokenSignature),
                         arraysize(kExpiredTokenSignature))),
-        response_headers_(new net::HttpResponseHeaders("")) {
+        response_headers_(new net::HttpResponseHeaders("")),
+        policy_(new TestOriginTrialPolicy),
+        validator_(base::WrapUnique(policy_)) {
     SetPublicKey(kTestPublicKey);
-    SetContentClient(&test_content_client_);
   }
 
-  ~TrialTokenValidatorTest() override { SetContentClient(nullptr); }
+  ~TrialTokenValidatorTest() override {}
 
-  void SetPublicKey(const uint8_t* key) {
-    test_content_client_.SetOriginTrialPublicKey(key);
-  }
+  void SetPublicKey(const uint8_t* key) { policy_->SetPublicKey(key); }
 
   void DisableFeature(const std::string& feature) {
-    test_content_client_.DisableFeature(feature);
+    policy_->DisableFeature(feature);
   }
 
   void DisableToken(const std::string& token_signature) {
-    test_content_client_.DisableToken(token_signature);
+    policy_->DisableToken(token_signature);
   }
 
   base::Time Now() { return base::Time::FromDoubleT(kNowTimestamp); }
@@ -211,104 +194,104 @@ class TrialTokenValidatorTest : public testing::Test {
 
   scoped_refptr<net::HttpResponseHeaders> response_headers_;
 
- private:
-  TestContentClient test_content_client_;
+  TestOriginTrialPolicy* policy_;
+  const TrialTokenValidator validator_;
 };
 
 TEST_F(TrialTokenValidatorTest, ValidateValidToken) {
   std::string feature;
-  EXPECT_EQ(blink::WebOriginTrialTokenStatus::kSuccess,
-            TrialTokenValidator::ValidateToken(
-                kSampleToken, appropriate_origin_, &feature, Now()));
+  EXPECT_EQ(blink::OriginTrialTokenStatus::kSuccess,
+            validator_.ValidateToken(kSampleToken, appropriate_origin_,
+                                     &feature, Now()));
   EXPECT_EQ(kAppropriateFeatureName, feature);
 }
 
 TEST_F(TrialTokenValidatorTest, ValidateInappropriateOrigin) {
   std::string feature;
-  EXPECT_EQ(blink::WebOriginTrialTokenStatus::kWrongOrigin,
-            TrialTokenValidator::ValidateToken(
-                kSampleToken, inappropriate_origin_, &feature, Now()));
-  EXPECT_EQ(blink::WebOriginTrialTokenStatus::kWrongOrigin,
-            TrialTokenValidator::ValidateToken(kSampleToken, insecure_origin_,
-                                               &feature, Now()));
+  EXPECT_EQ(blink::OriginTrialTokenStatus::kWrongOrigin,
+            validator_.ValidateToken(kSampleToken, inappropriate_origin_,
+                                     &feature, Now()));
+  EXPECT_EQ(blink::OriginTrialTokenStatus::kWrongOrigin,
+            validator_.ValidateToken(kSampleToken, insecure_origin_, &feature,
+                                     Now()));
 }
 
 TEST_F(TrialTokenValidatorTest, ValidateInvalidSignature) {
   std::string feature;
-  EXPECT_EQ(blink::WebOriginTrialTokenStatus::kInvalidSignature,
-            TrialTokenValidator::ValidateToken(
-                kInvalidSignatureToken, appropriate_origin_, &feature, Now()));
+  EXPECT_EQ(blink::OriginTrialTokenStatus::kInvalidSignature,
+            validator_.ValidateToken(kInvalidSignatureToken,
+                                     appropriate_origin_, &feature, Now()));
 }
 
 TEST_F(TrialTokenValidatorTest, ValidateUnparsableToken) {
   std::string feature;
-  EXPECT_EQ(blink::WebOriginTrialTokenStatus::kMalformed,
-            TrialTokenValidator::ValidateToken(
-                kUnparsableToken, appropriate_origin_, &feature, Now()));
+  EXPECT_EQ(blink::OriginTrialTokenStatus::kMalformed,
+            validator_.ValidateToken(kUnparsableToken, appropriate_origin_,
+                                     &feature, Now()));
 }
 
 TEST_F(TrialTokenValidatorTest, ValidateExpiredToken) {
   std::string feature;
-  EXPECT_EQ(blink::WebOriginTrialTokenStatus::kExpired,
-            TrialTokenValidator::ValidateToken(
-                kExpiredToken, appropriate_origin_, &feature, Now()));
+  EXPECT_EQ(blink::OriginTrialTokenStatus::kExpired,
+            validator_.ValidateToken(kExpiredToken, appropriate_origin_,
+                                     &feature, Now()));
 }
 
 TEST_F(TrialTokenValidatorTest, ValidateValidTokenWithIncorrectKey) {
   std::string feature;
   SetPublicKey(kTestPublicKey2);
-  EXPECT_EQ(blink::WebOriginTrialTokenStatus::kInvalidSignature,
-            TrialTokenValidator::ValidateToken(
-                kSampleToken, appropriate_origin_, &feature, Now()));
+  EXPECT_EQ(blink::OriginTrialTokenStatus::kInvalidSignature,
+            validator_.ValidateToken(kSampleToken, appropriate_origin_,
+                                     &feature, Now()));
 }
 
 TEST_F(TrialTokenValidatorTest, ValidatorRespectsDisabledFeatures) {
   std::string feature;
   // Disable an irrelevant feature; token should still validate
   DisableFeature(kInappropriateFeatureName);
-  EXPECT_EQ(blink::WebOriginTrialTokenStatus::kSuccess,
-            TrialTokenValidator::ValidateToken(
-                kSampleToken, appropriate_origin_, &feature, Now()));
+  EXPECT_EQ(blink::OriginTrialTokenStatus::kSuccess,
+            validator_.ValidateToken(kSampleToken, appropriate_origin_,
+                                     &feature, Now()));
   EXPECT_EQ(kAppropriateFeatureName, feature);
   // Disable the token's feature; it should no longer be valid
   DisableFeature(kAppropriateFeatureName);
-  EXPECT_EQ(blink::WebOriginTrialTokenStatus::kFeatureDisabled,
-            TrialTokenValidator::ValidateToken(
-                kSampleToken, appropriate_origin_, &feature, Now()));
+  EXPECT_EQ(blink::OriginTrialTokenStatus::kFeatureDisabled,
+            validator_.ValidateToken(kSampleToken, appropriate_origin_,
+                                     &feature, Now()));
 }
 
 TEST_F(TrialTokenValidatorTest, ValidatorRespectsDisabledTokens) {
   std::string feature;
   // Disable an irrelevant token; token should still validate
   DisableToken(expired_token_signature_);
-  EXPECT_EQ(blink::WebOriginTrialTokenStatus::kSuccess,
-            TrialTokenValidator::ValidateToken(
-                kSampleToken, appropriate_origin_, &feature, Now()));
+  EXPECT_EQ(blink::OriginTrialTokenStatus::kSuccess,
+            validator_.ValidateToken(kSampleToken, appropriate_origin_,
+                                     &feature, Now()));
   EXPECT_EQ(kAppropriateFeatureName, feature);
   // Disable the token; it should no longer be valid
   DisableToken(valid_token_signature_);
-  EXPECT_EQ(blink::WebOriginTrialTokenStatus::kTokenDisabled,
-            TrialTokenValidator::ValidateToken(
-                kSampleToken, appropriate_origin_, &feature, Now()));
+  EXPECT_EQ(blink::OriginTrialTokenStatus::kTokenDisabled,
+            validator_.ValidateToken(kSampleToken, appropriate_origin_,
+                                     &feature, Now()));
 }
 
 TEST_F(TrialTokenValidatorTest, ValidateRequestInsecure) {
   response_headers_->AddHeader(std::string("Origin-Trial: ") +
                                kInsecureOriginToken);
-  EXPECT_FALSE(TrialTokenValidator::RequestEnablesFeature(
+  EXPECT_FALSE(validator_.RequestEnablesFeature(
       GURL(kInsecureOrigin), response_headers_.get(), kAppropriateFeatureName,
       Now()));
 }
 
 TEST_F(TrialTokenValidatorTest, ValidateRequestValidToken) {
   response_headers_->AddHeader(std::string("Origin-Trial: ") + kSampleToken);
-  EXPECT_TRUE(TrialTokenValidator::RequestEnablesFeature(
-      GURL(kAppropriateOrigin), response_headers_.get(),
-      kAppropriateFeatureName, Now()));
+  EXPECT_TRUE(validator_.RequestEnablesFeature(GURL(kAppropriateOrigin),
+                                               response_headers_.get(),
+                                               kAppropriateFeatureName, Now()));
 }
 
 TEST_F(TrialTokenValidatorTest, ValidateRequestNoTokens) {
-  EXPECT_FALSE(TrialTokenValidator::RequestEnablesFeature(
+  EXPECT_FALSE(validator_.RequestEnablesFeature(
       GURL(kAppropriateOrigin), response_headers_.get(),
       kAppropriateFeatureName, Now()));
 }
@@ -316,13 +299,13 @@ TEST_F(TrialTokenValidatorTest, ValidateRequestNoTokens) {
 TEST_F(TrialTokenValidatorTest, ValidateRequestMultipleHeaders) {
   response_headers_->AddHeader(std::string("Origin-Trial: ") + kSampleToken);
   response_headers_->AddHeader(std::string("Origin-Trial: ") + kExpiredToken);
-  EXPECT_TRUE(TrialTokenValidator::RequestEnablesFeature(
-      GURL(kAppropriateOrigin), response_headers_.get(),
-      kAppropriateFeatureName, Now()));
-  EXPECT_FALSE(TrialTokenValidator::RequestEnablesFeature(
+  EXPECT_TRUE(validator_.RequestEnablesFeature(GURL(kAppropriateOrigin),
+                                               response_headers_.get(),
+                                               kAppropriateFeatureName, Now()));
+  EXPECT_FALSE(validator_.RequestEnablesFeature(
       GURL(kAppropriateOrigin), response_headers_.get(),
       kInappropriateFeatureName, Now()));
-  EXPECT_FALSE(TrialTokenValidator::RequestEnablesFeature(
+  EXPECT_FALSE(validator_.RequestEnablesFeature(
       GURL(kInappropriateOrigin), response_headers_.get(),
       kAppropriateFeatureName, Now()));
 }
@@ -330,15 +313,15 @@ TEST_F(TrialTokenValidatorTest, ValidateRequestMultipleHeaders) {
 TEST_F(TrialTokenValidatorTest, ValidateRequestMultipleHeaderValues) {
   response_headers_->AddHeader(std::string("Origin-Trial: ") + kExpiredToken +
                                ", " + kSampleToken);
-  EXPECT_TRUE(TrialTokenValidator::RequestEnablesFeature(
-      GURL(kAppropriateOrigin), response_headers_.get(),
-      kAppropriateFeatureName, Now()));
-  EXPECT_FALSE(TrialTokenValidator::RequestEnablesFeature(
+  EXPECT_TRUE(validator_.RequestEnablesFeature(GURL(kAppropriateOrigin),
+                                               response_headers_.get(),
+                                               kAppropriateFeatureName, Now()));
+  EXPECT_FALSE(validator_.RequestEnablesFeature(
       GURL(kAppropriateOrigin), response_headers_.get(),
       kInappropriateFeatureName, Now()));
-  EXPECT_FALSE(TrialTokenValidator::RequestEnablesFeature(
+  EXPECT_FALSE(validator_.RequestEnablesFeature(
       GURL(kInappropriateOrigin), response_headers_.get(),
       kAppropriateFeatureName, Now()));
 }
 
-}  // namespace content
+}  // namespace blink
