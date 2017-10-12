@@ -71,6 +71,10 @@ class MODULES_EXPORT BytesConsumer
     // data by |read| and the state changes from waiting to readable, this
     // function will not be called.
     virtual void OnStateChange() = 0;
+
+    // Each implementation should return a string that represents the
+    // implementation for debug purpose.
+    virtual String DebugName() const = 0;
   };
 
   virtual ~BytesConsumer() {}

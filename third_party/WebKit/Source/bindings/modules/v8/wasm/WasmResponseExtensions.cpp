@@ -76,6 +76,8 @@ class FetchDataLoaderAsWasmModule final : public FetchDataLoader,
     }
   }
 
+  String DebugName() const override { return "FetchDataLoaderAsWasmModule"; }
+
   void Cancel() override {
     consumer_->Cancel();
     return AbortCompilation();

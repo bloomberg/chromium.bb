@@ -151,6 +151,7 @@ class BytesConsumerTestUtil {
     explicit TwoPhaseReader(BytesConsumer* /* consumer */);
 
     void OnStateChange() override;
+    String DebugName() const override { return "TwoPhaseReader"; }
     std::pair<BytesConsumer::Result, Vector<char>> Run();
 
     DEFINE_INLINE_TRACE() {

@@ -45,6 +45,7 @@ class MockBytesConsumerClient
     return new ::testing::StrictMock<MockBytesConsumerClient>();
   }
   MOCK_METHOD0(OnStateChange, void());
+  String DebugName() const override { return "MockBytesConsumerClient"; }
 
  protected:
   MockBytesConsumerClient() {}
