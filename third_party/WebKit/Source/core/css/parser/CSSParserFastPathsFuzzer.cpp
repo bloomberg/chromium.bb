@@ -18,8 +18,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   const std::string data_string(reinterpret_cast<const char*>(data), size);
   const std::size_t data_hash = std::hash<std::string>()(data_string);
 
-  const auto property_id =
-      static_cast<blink::CSSPropertyID>(data_hash % blink::numCSSPropertyIDs);
+  const auto property_id = blink::convertToCSSPropertyID(
+      (data_hash % blink::numCSSProperties) + blink::firstCSSProperty);
 
   for (unsigned parser_mode = 0;
        parser_mode < blink::CSSParserMode::kNumCSSParserModes; parser_mode++) {
