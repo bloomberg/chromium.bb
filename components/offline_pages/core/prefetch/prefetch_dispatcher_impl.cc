@@ -84,6 +84,19 @@ void PrefetchDispatcherImpl::AddCandidatePrefetchURLs(
                                         " suggested URLs.");
 
   PrefetchStore* prefetch_store = service_->GetPrefetchStore();
+
+  // Run 2 pipeline expiration tasks first to ensure there is no buildup of URLs
+  // in the pipeline if the new ones are coming but NOW can't be entered (for
+  // example, if the user is never on WiFi with enough battery charge).
+  // First, detect stale entries and move them to FINISHED.
+  task_queue_.AddTask(
+      base::MakeUnique<StaleEntryFinalizerTask>(this, prefetch_store));
+
+  // Second, move FINISHED to ZOMBIE.
+  task_queue_.AddTask(
+      base::MakeUnique<MetricsFinalizationTask>(prefetch_store));
+
+  // Third, add new unique URLs and remove unneeded ZOMBIEs.
   std::unique_ptr<Task> add_task = base::MakeUnique<AddUniqueUrlsTask>(
       this, prefetch_store, name_space, prefetch_urls);
   task_queue_.AddTask(std::move(add_task));

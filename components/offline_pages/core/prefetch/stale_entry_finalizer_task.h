@@ -21,6 +21,9 @@ class PrefetchStore;
 // considered stale are moved to the "finished" state and have their error code
 // column set to the PrefetchItemErrorCode value that identifies the bucket they
 // were at.
+// NOTE: This task is run periodically as reconciliation task and from some
+// event handlers. As such, it must not cause network operations nor cause
+// 'progress' in the pipeline that would trigger other tasks.
 class StaleEntryFinalizerTask : public Task {
  public:
   enum class Result { NO_MORE_WORK, MORE_WORK_NEEDED };

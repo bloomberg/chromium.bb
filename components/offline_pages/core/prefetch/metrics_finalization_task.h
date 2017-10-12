@@ -16,6 +16,9 @@ class PrefetchStore;
 // metrics about the final status, and marks them as zombies.  Zombies are
 // cleaned up when suggestions are updated and there are no more
 // suggestions at the |requested_url|.
+// NOTE: this task is run periodically as reconciliation task or from some
+// event handlers. It should not cause 'progress' in pipeline on which other
+// tasks would depend. It should only move entries to ZOMBIE state.
 class MetricsFinalizationTask : public Task {
  public:
   explicit MetricsFinalizationTask(PrefetchStore* prefetch_store);
