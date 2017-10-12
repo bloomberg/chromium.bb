@@ -288,37 +288,40 @@ def should_skip_commit(commit):
   assert False
 
 
-def generate_line_subsequences(lines):
-  """Generates line subsequences from a line sequence, where
-  subsequences are separated by '\n'.
+def generate_substrings(file):
+  """Generates substrings from a file stream, where substrings are
+  separated by '\0'.
 
-  For exapmle, the input:
-    ['a\n', '\n', 'b\n', 'c\n', '\n', '\n', 'd\n']
+  For example, the input:
+    'a\0bc\0\0\0d\0'
   would produce the output:
-    [['a'], ['b', 'c'], ['d']].
+    ['a', 'bc', 'd']
 
   Args:
-    lines: An iterable of strings.
+    file: A readable file.
   """
-  data = []
-  for line in lines:
-    if line == '\n':
-      if data != []:
+  data = ''
+  while True:
+    ch = file.read(1)
+    if ch == '':
+      break
+    if ch == '\0':
+      if data != '':
         yield data
-        data = []
+        data = ''
     else:
-      data.append(line.rstrip('\n'))
-  if data != []:
+      data += ch
+  if data != '':
     yield data
 
 
 def generate_commits(git_log_stdout):
   """Parses git log output into a stream of Commit objects.
   """
-  line_subsequence_generator = generate_line_subsequences(git_log_stdout)
+  substring_generator = generate_substrings(git_log_stdout)
   while True:
-    hash = line_subsequence_generator.next()[0]
-    diff = line_subsequence_generator.next()
+    hash = substring_generator.next().strip('\n')
+    diff = substring_generator.next().strip('\n').split('\n')
     yield Commit(hash, diff)
 
 
@@ -393,7 +396,7 @@ def uberblame(file_name, revision):
       blame: A list of TokenContexts.
   """
   cmd_git_log = ['git', 'log', '--minimal', '--no-prefix', '--follow', '-m',
-                 '--first-parent', '-p', '-U0', '--format=%n%h',
+                 '--first-parent', '-p', '-U0', '-z', '--format=%x00%h',
                  revision, '--', file_name]
   git_log = subprocess.Popen(cmd_git_log,
                              stdout=subprocess.PIPE,
