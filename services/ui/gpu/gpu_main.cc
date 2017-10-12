@@ -152,7 +152,7 @@ void GpuMain::TearDown() {
 }
 
 void GpuMain::CreateGpuService(viz::mojom::GpuServiceRequest request,
-                               mojom::GpuHostPtr gpu_host,
+                               viz::mojom::GpuHostPtr gpu_host,
                                const gpu::GpuPreferences& preferences,
                                mojo::ScopedSharedBufferHandle activity_flags) {
   DCHECK(gpu_thread_task_runner_->BelongsToCurrentThread());

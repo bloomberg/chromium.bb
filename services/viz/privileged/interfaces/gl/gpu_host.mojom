@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module ui.mojom;
+module viz.mojom;
 
 import "gpu/ipc/common/gpu_feature_info.mojom";
 import "gpu/ipc/common/gpu_info.mojom";
 import "gpu/ipc/common/surface_handle.mojom";
-import "services/ui/gpu/interfaces/context_lost_reason.mojom";
+import "services/viz/privileged/interfaces/gl/context_lost_reason.mojom";
 import "url/mojo/url.mojom";
 
 // Communication channel from the gpu process to the gpu host. This interface

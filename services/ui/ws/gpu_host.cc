@@ -52,7 +52,7 @@ DefaultGpuHost::DefaultGpuHost(GpuHostDelegate* delegate)
   // TODO(sad): Correctly initialize gpu::GpuPreferences (like it is initialized
   // in GpuProcessHost::Init()).
   gpu::GpuPreferences preferences;
-  mojom::GpuHostPtr gpu_host_proxy;
+  viz::mojom::GpuHostPtr gpu_host_proxy;
   gpu_host_binding_.Bind(mojo::MakeRequest(&gpu_host_proxy));
   gpu_main_->CreateGpuService(MakeRequest(&gpu_service_),
                               std::move(gpu_host_proxy), preferences,
