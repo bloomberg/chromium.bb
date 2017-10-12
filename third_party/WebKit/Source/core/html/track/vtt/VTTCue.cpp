@@ -830,13 +830,14 @@ VTTCueBox* VTTCue::GetDisplayTree() {
 }
 
 void VTTCue::RemoveDisplayTree(RemovalNotification removal_notification) {
-  if (region() && removal_notification == kNotifyRegion) {
+  if (!display_tree_)
+    return;
+  if (removal_notification == kNotifyRegion) {
     // The region needs to be informed about the cue removal.
-    region()->WillRemoveVTTCueBox(display_tree_);
+    if (region())
+      region()->WillRemoveVTTCueBox(display_tree_);
   }
-
-  if (display_tree_)
-    display_tree_->remove(ASSERT_NO_EXCEPTION);
+  display_tree_->remove(ASSERT_NO_EXCEPTION);
 }
 
 void VTTCue::UpdateDisplay(HTMLDivElement& container) {
