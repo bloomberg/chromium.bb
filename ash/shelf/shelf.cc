@@ -34,7 +34,7 @@ void NoopCallback(ShelfAction,
 
 // Shelf::AutoHideEventHandler -----------------------------------------------
 
-// Forwards mouse and gesture events to ShelfLayoutManager.
+// Forwards mouse and gesture events to ShelfLayoutManager for auto-hide.
 // TODO(mash): Add similar event handling support for mash.
 class Shelf::AutoHideEventHandler : public ui::EventHandler {
  public:
