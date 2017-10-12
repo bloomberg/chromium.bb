@@ -20,6 +20,7 @@
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/command_line.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/timer/timer.h"
@@ -495,6 +496,9 @@ void AppListButton::OnVoiceInteractionStatusChanged(
 
   switch (state) {
     case ash::VoiceInteractionState::STOPPED:
+      UMA_HISTOGRAM_TIMES(
+          "VoiceInteraction.OpenDuration",
+          base::TimeTicks::Now() - voice_interaction_start_timestamp_);
       break;
     case ash::VoiceInteractionState::NOT_READY:
       // If we are showing the bursting or waiting animation, no need to do
@@ -515,6 +519,8 @@ void AppListButton::OnVoiceInteractionStatusChanged(
             base::Bind(&VoiceInteractionOverlay::HideAnimation,
                        base::Unretained(voice_interaction_overlay_)));
       }
+
+      voice_interaction_start_timestamp_ = base::TimeTicks::Now();
       break;
   }
 }
