@@ -14,7 +14,7 @@ onload = function() {
 
     if (window.internals) {
         result += "Should not be using composited scrolling: ";
-        if (!isUsingCompositedScrolling(JSON.parse(window.internals.layerTreeAsText(document))))
+        if (!elementSubtreeHasCompositedScrollLayers(document.getElementById('scroller')))
             result += "Pass.\n";
         else
             result += "Fail.\n"
@@ -24,7 +24,7 @@ onload = function() {
     requestAnimationFrame(function() {
         if (window.internals) {
             result += "Should be using composited scrolling (since we're compositing anyhow): ";
-            if (isUsingCompositedScrolling(JSON.parse(window.internals.layerTreeAsText(document))))
+            if (elementSubtreeHasCompositedScrollLayers(document.getElementById('scroller')))
                 result += "Pass.\n";
             else
                 result += "Fail.\n"
@@ -34,7 +34,7 @@ onload = function() {
         requestAnimationFrame(function() {
             if (window.internals) {
                 result += "Should not be using composited scrolling (since we've lost our direct reason): ";
-                if (!isUsingCompositedScrolling(JSON.parse(window.internals.layerTreeAsText(document))))
+                if (!elementSubtreeHasCompositedScrollLayers(document.getElementById('scroller')))
                     result += "Pass.\n";
                 else
                     result += "Fail.\n"
