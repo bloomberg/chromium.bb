@@ -52142,6 +52142,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="OfflinePages.Prefetching.StuckItemState"
+    enum="OfflinePrefetchItemState">
+  <owner>petewil@chromium.org</owner>
+  <summary>
+    A prefetch item was found in this state after more than 7 days since its
+    creation, time enough for it to have been finalized by the pipeline.
+  </summary>
+</histogram>
+
 <histogram name="OfflinePages.Prefetching.UniqueUrlsAddedCount" units="urls">
   <owner>dewittj@chromium.org</owner>
   <summary>
