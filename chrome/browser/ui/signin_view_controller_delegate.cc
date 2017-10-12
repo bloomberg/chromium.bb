@@ -38,12 +38,7 @@ SigninViewControllerDelegate::SigninViewControllerDelegate(
   web_contents_->SetDelegate(this);
 }
 
-SigninViewControllerDelegate::~SigninViewControllerDelegate() {
-  web_modal::WebContentsModalDialogManager* manager =
-      web_modal::WebContentsModalDialogManager::FromWebContents(web_contents_);
-  if (manager)
-    manager->SetDelegate(nullptr);
-}
+SigninViewControllerDelegate::~SigninViewControllerDelegate() {}
 
 void SigninViewControllerDelegate::AttachDialogManager() {
   web_modal::WebContentsModalDialogManager::CreateForWebContents(web_contents_);
