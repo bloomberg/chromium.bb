@@ -94,7 +94,7 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
       draws_content_(false),
       contents_visible_(true),
       is_root_for_isolated_group_(false),
-      should_hit_test_(false),
+      hit_testable_without_draws_content_(false),
       has_scroll_parent_(false),
       has_clip_parent_(false),
       painted_(false),
@@ -1041,11 +1041,11 @@ void GraphicsLayer::SetIsRootForIsolatedGroup(bool isolated) {
   PlatformLayer()->SetIsRootForIsolatedGroup(isolated);
 }
 
-void GraphicsLayer::SetShouldHitTest(bool hit_test) {
-  if (should_hit_test_ == hit_test)
+void GraphicsLayer::SetHitTestableWithoutDrawsContent(bool should_hit_test) {
+  if (hit_testable_without_draws_content_ == should_hit_test)
     return;
-  should_hit_test_ = hit_test;
-  PlatformLayer()->SetShouldHitTest(hit_test);
+  hit_testable_without_draws_content_ = should_hit_test;
+  PlatformLayer()->SetHitTestableWithoutDrawsContent(should_hit_test);
 }
 
 void GraphicsLayer::SetContentsNeedsDisplay() {

@@ -45,7 +45,7 @@ Layer::Inputs::Inputs(int layer_id)
       opacity(1.f),
       blend_mode(SkBlendMode::kSrcOver),
       is_root_for_isolated_group(false),
-      should_hit_test(false),
+      hit_testable_without_draws_content(false),
       contents_opaque(false),
       is_drawable(false),
       double_sided(true),
@@ -603,11 +603,11 @@ void Layer::SetIsRootForIsolatedGroup(bool root) {
   SetNeedsCommit();
 }
 
-void Layer::SetShouldHitTest(bool should_hit_test) {
+void Layer::SetHitTestableWithoutDrawsContent(bool should_hit_test) {
   DCHECK(IsPropertyChangeAllowed());
-  if (inputs_.should_hit_test == should_hit_test)
+  if (inputs_.hit_testable_without_draws_content == should_hit_test)
     return;
-  inputs_.should_hit_test = should_hit_test;
+  inputs_.hit_testable_without_draws_content = should_hit_test;
   SetPropertyTreesNeedRebuild();
   SetNeedsCommit();
 }
@@ -1180,7 +1180,8 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetScrollTreeIndex(scroll_tree_index());
   layer->set_offset_to_transform_parent(offset_to_transform_parent_);
   layer->SetDrawsContent(DrawsContent());
-  layer->SetShouldHitTest(should_hit_test());
+  layer->SetHitTestableWithoutDrawsContent(
+      hit_testable_without_draws_content());
   // subtree_property_changed_ is propagated to all descendants while building
   // property trees. So, it is enough to check it only for the current layer.
   if (subtree_property_changed_)

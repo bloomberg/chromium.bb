@@ -255,7 +255,7 @@ void CompositedLayerMapping::CreatePrimaryGraphicsLayer() {
       CreateGraphicsLayer(owning_layer_.GetCompositingReasons(),
                           owning_layer_.GetSquashingDisallowedReasons());
 
-  UpdateShouldHitTest(true);
+  UpdateHitTestableWithoutDrawsContent(true);
   UpdateOpacity(GetLayoutObject().StyleRef());
   UpdateTransform(GetLayoutObject().StyleRef());
   UpdateFilters(GetLayoutObject().StyleRef());
@@ -282,8 +282,9 @@ void CompositedLayerMapping::DestroyGraphicsLayers() {
   scrolling_contents_layer_ = nullptr;
 }
 
-void CompositedLayerMapping::UpdateShouldHitTest(const bool& should_hit_test) {
-  graphics_layer_->SetShouldHitTest(should_hit_test);
+void CompositedLayerMapping::UpdateHitTestableWithoutDrawsContent(
+    const bool& should_hit_test) {
+  graphics_layer_->SetHitTestableWithoutDrawsContent(should_hit_test);
 }
 
 void CompositedLayerMapping::UpdateOpacity(const ComputedStyle& style) {
@@ -1667,7 +1668,7 @@ void CompositedLayerMapping::UpdateForegroundLayerGeometry(
     foreground_layer_->SetNeedsDisplay();
   }
   foreground_layer_->SetOffsetFromLayoutObject(foreground_offset);
-  foreground_layer_->SetShouldHitTest(true);
+  foreground_layer_->SetHitTestableWithoutDrawsContent(true);
 
   // NOTE: there is some more configuring going on in
   // updateScrollingLayerGeometry().
@@ -2436,7 +2437,7 @@ bool CompositedLayerMapping::UpdateScrollingLayers(
       // Inner layer which renders the content that scrolls.
       scrolling_contents_layer_ =
           CreateGraphicsLayer(kCompositingReasonLayerForScrollingContents);
-      scrolling_contents_layer_->SetShouldHitTest(true);
+      scrolling_contents_layer_->SetHitTestableWithoutDrawsContent(true);
 
       auto element_id = scrollable_area->GetCompositorElementId();
       scrolling_contents_layer_->SetElementId(element_id);

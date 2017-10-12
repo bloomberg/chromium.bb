@@ -134,12 +134,8 @@ bool WebLayerImpl::IsRootForIsolatedGroup() {
   return layer_->is_root_for_isolated_group();
 }
 
-void WebLayerImpl::SetShouldHitTest(bool should_hit_test) {
-  layer_->SetShouldHitTest(should_hit_test);
-}
-
-bool WebLayerImpl::ShouldHitTest() {
-  return layer_->should_hit_test();
+void WebLayerImpl::SetHitTestableWithoutDrawsContent(bool should_hit_test) {
+  layer_->SetHitTestableWithoutDrawsContent(should_hit_test);
 }
 
 void WebLayerImpl::SetOpaque(bool opaque) {

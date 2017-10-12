@@ -437,10 +437,10 @@ class LayerTreeHostImplTest : public testing::Test,
     squash1->SetBounds(gfx::Size(140, 300));
     squash1->SetPosition(gfx::PointF(220, 0));
     if (transparent_layer) {
-      // In the it is a transparent layer but should still participate
-      // in hit testing.
       squash1->test_properties()->opacity = 0.0f;
-      squash1->SetShouldHitTest(true);
+      // The transparent layer should still participate in hit testing even
+      // through it does not draw content.
+      squash1->SetHitTestableWithoutDrawsContent(true);
     } else {
       squash1->SetDrawsContent(true);
     }

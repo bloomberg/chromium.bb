@@ -1306,6 +1306,38 @@ TEST_F(LayerTest, DrawsContentChangedInSetLayerTreeHost) {
   EXPECT_EQ(1, root_layer->NumDescendantsThatDrawContent());
 }
 
+TEST_F(LayerTest, PushUpdatesShouldHitTest) {
+  scoped_refptr<Layer> root_layer = Layer::Create();
+  std::unique_ptr<LayerImpl> impl_layer =
+      LayerImpl::Create(host_impl_.active_tree(), 1);
+  EXPECT_SET_NEEDS_FULL_TREE_SYNC(1,
+                                  layer_tree_host_->SetRootLayer(root_layer));
+  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(3);
+
+  // A layer that draws content should be hit testable.
+  root_layer->SetIsDrawable(true);
+  root_layer->PushPropertiesTo(impl_layer.get());
+  EXPECT_TRUE(impl_layer->DrawsContent());
+  EXPECT_FALSE(impl_layer->hit_testable_without_draws_content());
+  EXPECT_TRUE(impl_layer->should_hit_test());
+
+  // A layer that does not draw content and does not hit test without drawing
+  // content should not be hit testable.
+  root_layer->SetIsDrawable(false);
+  root_layer->PushPropertiesTo(impl_layer.get());
+  EXPECT_FALSE(impl_layer->DrawsContent());
+  EXPECT_FALSE(impl_layer->hit_testable_without_draws_content());
+  EXPECT_FALSE(impl_layer->should_hit_test());
+
+  // |SetHitTestableWithoutDrawsContent| should cause a layer to become hit
+  // testable even though it does not draw content.
+  root_layer->SetHitTestableWithoutDrawsContent(true);
+  root_layer->PushPropertiesTo(impl_layer.get());
+  EXPECT_FALSE(impl_layer->DrawsContent());
+  EXPECT_TRUE(impl_layer->hit_testable_without_draws_content());
+  EXPECT_TRUE(impl_layer->should_hit_test());
+}
+
 void ReceiveCopyOutputResult(int* result_count,
                              std::unique_ptr<viz::CopyOutputResult> result) {
   ++(*result_count);

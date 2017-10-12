@@ -164,8 +164,17 @@ class CC_EXPORT LayerImpl {
   void SetDrawsContent(bool draws_content);
   bool DrawsContent() const { return draws_content_; }
 
-  void SetShouldHitTest(bool should_hit_test);
-  bool should_hit_test() const { return should_hit_test_; }
+  // Make the layer hit test (see: |should_hit_test|) even if !draws_content_.
+  void SetHitTestableWithoutDrawsContent(bool should_hit_test);
+  bool hit_testable_without_draws_content() const {
+    return hit_testable_without_draws_content_;
+  }
+
+  // True if either the layer draws content or has been marked as hit testable
+  // without draws_content.
+  bool should_hit_test() const {
+    return draws_content_ || hit_testable_without_draws_content_;
+  }
 
   LayerImplTestProperties* test_properties() {
     if (!test_properties_)
@@ -506,7 +515,11 @@ class CC_EXPORT LayerImpl {
   bool should_check_backface_visibility_ : 1;
   bool draws_content_ : 1;
   bool contributes_to_drawn_render_surface_ : 1;
-  bool should_hit_test_ : 1;
+
+  // Hit testing depends on draws_content (see: |LayerImpl::should_hit_test|)
+  // and this bit can be set to cause the layer to be hit testable without
+  // draws_content.
+  bool hit_testable_without_draws_content_ : 1;
   bool is_resized_by_browser_controls_ : 1;
 
   static_assert(LAST_VIEWPORT_LAYER_TYPE < (1u << 3),
