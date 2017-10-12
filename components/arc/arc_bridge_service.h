@@ -40,6 +40,7 @@ class PolicyInstance;
 class PowerInstance;
 class PrintInstance;
 class ProcessInstance;
+class RotationLockInstance;
 class StorageManagerInstance;
 class TracingInstance;
 class TtsInstance;
@@ -106,6 +107,9 @@ class ArcBridgeService {
   InstanceHolder<mojom::PowerInstance>* power() { return &power_; }
   InstanceHolder<mojom::PrintInstance>* print() { return &print_; }
   InstanceHolder<mojom::ProcessInstance>* process() { return &process_; }
+  InstanceHolder<mojom::RotationLockInstance>* rotation_lock() {
+    return &rotation_lock_;
+  }
   InstanceHolder<mojom::StorageManagerInstance>* storage_manager() {
     return &storage_manager_;
   }
@@ -152,6 +156,7 @@ class ArcBridgeService {
   InstanceHolder<mojom::PowerInstance> power_;
   InstanceHolder<mojom::PrintInstance> print_;
   InstanceHolder<mojom::ProcessInstance> process_;
+  InstanceHolder<mojom::RotationLockInstance> rotation_lock_;
   InstanceHolder<mojom::StorageManagerInstance> storage_manager_;
   InstanceHolder<mojom::TracingInstance> tracing_;
   InstanceHolder<mojom::TtsInstance> tts_;
