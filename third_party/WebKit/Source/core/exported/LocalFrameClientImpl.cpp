@@ -101,6 +101,10 @@ namespace blink {
 
 namespace {
 
+// Print up to |kMaxCertificateWarningMessages| console messages per frame
+// about certificates that will be distrusted in future.
+const uint32_t kMaxCertificateWarningMessages = 10;
+
 // Convenience helper for frame tree helpers in FrameClient to reduce the amount
 // of null-checking boilerplate code. Since the frame tree is maintained in the
 // web/ layer, the frame tree helpers often have to deal with null WebFrames:
@@ -139,7 +143,7 @@ bool IsBackForwardNavigationInProgress(LocalFrame* local_frame) {
 }  // namespace
 
 LocalFrameClientImpl::LocalFrameClientImpl(WebLocalFrameImpl* frame)
-    : web_frame_(frame) {}
+    : web_frame_(frame), num_certificate_warning_messages_(0) {}
 
 LocalFrameClientImpl* LocalFrameClientImpl::Create(WebLocalFrameImpl* frame) {
   return new LocalFrameClientImpl(frame);
@@ -446,6 +450,10 @@ void LocalFrameClientImpl::DispatchDidCommitLoad(
   }
   if (WebDevToolsAgentImpl* dev_tools = DevToolsAgent())
     dev_tools->DidCommitLoadForLocalFrame(web_frame_->GetFrame());
+
+  // Reset certificate warning state that prevents log spam.
+  num_certificate_warning_messages_ = 0;
+  certificate_warning_hosts_.clear();
 }
 
 void LocalFrameClientImpl::DispatchDidFailProvisionalLoad(
@@ -701,21 +709,54 @@ void LocalFrameClientImpl::DidRunContentWithCertificateErrors(const KURL& url) {
 
 void LocalFrameClientImpl::ReportLegacySymantecCert(const KURL& url,
                                                     Time cert_validity_start) {
+  // To prevent log spam, only log the message once per hostname.
+  if (certificate_warning_hosts_.Contains(url.Host()))
+    return;
+
+  // After |kMaxCertificateWarningMessages| warnings, stop printing messages to
+  // the console. At exactly |kMaxCertificateWarningMessages| warnings, print a
+  // message that additional resources on the page use legacy certificates
+  // without specifying which exact resources. Before
+  // |kMaxCertificateWarningMessages| messages, print the exact resource URL in
+  // the message to help the developer pinpoint the problematic resources.
+
+  if (num_certificate_warning_messages_ > kMaxCertificateWarningMessages)
+    return;
+
   WebString console_message;
-  if (!web_frame_->Client()->OverrideLegacySymantecCertConsoleMessage(
-          url, cert_validity_start, &console_message)) {
+
+  if (num_certificate_warning_messages_ == kMaxCertificateWarningMessages) {
     console_message =
-        WebString(String("The SSL certificate used to load " + url.GetString() +
-                         " will be "
+        WebString(String("Additional resources on this page were loaded with "
+                         "SSL certificates that will be "
                          "distrusted in the future. "
                          "Once distrusted, users will be prevented from "
-                         "loading this resource. See "
+                         "loading these resources. See"
                          "https://g.co/chrome/symantecpkicerts for "
                          "more information."));
+  } else if (!web_frame_->Client()->OverrideLegacySymantecCertConsoleMessage(
+                 url, cert_validity_start, &console_message)) {
+    String port = url.Port() == 443 ? "" : String::Format(":%d", url.Port());
+    console_message = WebString(String::Format(
+        "The SSL certificate used to load resources from %s://%s%s"
+        " will be "
+        "distrusted in the future. "
+        "Once distrusted, users will be prevented from "
+        "loading these resources. See "
+        "https://g.co/chrome/symantecpkicerts for "
+        "more information.",
+        url.Protocol().Utf8().data(), url.Host().Utf8().data(),
+        port.Utf8().data()));
   }
+  num_certificate_warning_messages_++;
+  certificate_warning_hosts_.insert(url.Host());
+  // To avoid spamming the console, use Verbose message level for subframe
+  // resources and only use the warning level for main-frame resources.
   web_frame_->GetFrame()->GetDocument()->AddConsoleMessage(
-      ConsoleMessage::Create(kSecurityMessageSource, kWarningMessageLevel,
-                             console_message));
+      ConsoleMessage::Create(
+          kSecurityMessageSource,
+          web_frame_->Parent() ? kVerboseMessageLevel : kWarningMessageLevel,
+          console_message));
 }
 
 void LocalFrameClientImpl::DidChangePerformanceTiming() {

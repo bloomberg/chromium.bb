@@ -256,6 +256,12 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   Member<WebLocalFrameImpl> web_frame_;
 
   String user_agent_;
+
+  // Used to cap the number of console messages that are printed to warn about
+  // legacy certificates that will be distrusted in future.
+  uint32_t num_certificate_warning_messages_;
+  // The hosts for which a legacy certificate warning has been printed.
+  HashSet<String> certificate_warning_hosts_;
 };
 
 DEFINE_TYPE_CASTS(LocalFrameClientImpl,
