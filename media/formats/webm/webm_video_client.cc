@@ -94,8 +94,8 @@ bool WebMVideoClient::InitializeConfig(
   gfx::Size natural_size = gfx::Size(display_width_, display_height_);
 
   config->Initialize(video_codec, profile, format, COLOR_SPACE_HD_REC709,
-                     coded_size, visible_rect, natural_size, codec_private,
-                     encryption_scheme);
+                     VIDEO_ROTATION_0, coded_size, visible_rect, natural_size,
+                     codec_private, encryption_scheme);
   if (colour_parsed_) {
     WebMColorMetadata color_metadata = colour_parser_.GetWebMColorMetadata();
     config->set_color_space_info(color_metadata.color_space);

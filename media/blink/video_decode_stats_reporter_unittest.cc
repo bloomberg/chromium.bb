@@ -37,8 +37,8 @@ VideoDecoderConfig MakeVideoConfig(VideoCodec codec,
   gfx::Size coded_size = natural_size;
   gfx::Rect visible_rect(coded_size.width(), coded_size.height());
   return VideoDecoderConfig(codec, profile, PIXEL_FORMAT_YV12, COLOR_SPACE_JPEG,
-                            coded_size, visible_rect, natural_size,
-                            EmptyExtraData(), Unencrypted());
+                            VIDEO_ROTATION_0, coded_size, visible_rect,
+                            natural_size, EmptyExtraData(), Unencrypted());
 }
 
 VideoDecoderConfig MakeDefaultVideoConfig() {

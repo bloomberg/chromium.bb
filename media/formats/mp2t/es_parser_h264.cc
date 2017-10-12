@@ -508,8 +508,8 @@ bool EsParserH264::UpdateVideoDecoderConfig(const H264SPS* sps,
 
   VideoDecoderConfig video_decoder_config(
       kCodecH264, profile, PIXEL_FORMAT_YV12, COLOR_SPACE_HD_REC709,
-      coded_size.value(), visible_rect.value(), natural_size, EmptyExtraData(),
-      scheme);
+      VIDEO_ROTATION_0, coded_size.value(), visible_rect.value(), natural_size,
+      EmptyExtraData(), scheme);
 
   if (!video_decoder_config.IsValidConfig()) {
     DVLOG(1) << "Invalid video config: "

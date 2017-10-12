@@ -5,6 +5,8 @@
 #ifndef MEDIA_BASE_VIDEO_ROTATION_H_
 #define MEDIA_BASE_VIDEO_ROTATION_H_
 
+#include <string>
+
 namespace media {
 
 // Enumeration to represent 90 degree video rotation for MP4 videos
@@ -16,6 +18,8 @@ enum VideoRotation {
   VIDEO_ROTATION_270,
   VIDEO_ROTATION_MAX = VIDEO_ROTATION_270
 };
+
+std::string VideoRotationToString(VideoRotation rotation);
 
 }  // namespace media
 

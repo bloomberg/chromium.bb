@@ -17,6 +17,7 @@
 #include "media/base/media_export.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_color_space.h"
+#include "media/base/video_rotation.h"
 #include "media/base/video_types.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -38,6 +39,7 @@ class MEDIA_EXPORT VideoDecoderConfig {
                      VideoCodecProfile profile,
                      VideoPixelFormat format,
                      ColorSpace color_space,
+                     VideoRotation rotation,
                      const gfx::Size& coded_size,
                      const gfx::Rect& visible_rect,
                      const gfx::Size& natural_size,
@@ -53,6 +55,7 @@ class MEDIA_EXPORT VideoDecoderConfig {
                   VideoCodecProfile profile,
                   VideoPixelFormat format,
                   ColorSpace color_space,
+                  VideoRotation rotation,
                   const gfx::Size& coded_size,
                   const gfx::Rect& visible_rect,
                   const gfx::Size& natural_size,
@@ -85,6 +88,9 @@ class MEDIA_EXPORT VideoDecoderConfig {
   // frames tagged with this color space unless they find a different value in
   // the bitstream.
   ColorSpace color_space() const { return color_space_; }
+
+  // Default is VIDEO_ROTATION_0.
+  VideoRotation video_rotation() const { return rotation_; }
 
   // Deprecated. TODO(wolenetz): Remove. See https://crbug.com/665539.
   // Width and height of video frame immediately post-decode. Not all pixels
@@ -131,6 +137,8 @@ class MEDIA_EXPORT VideoDecoderConfig {
 
   // TODO(servolk): Deprecated, use color_space_info_ instead.
   ColorSpace color_space_;
+
+  VideoRotation rotation_;
 
   // Deprecated. TODO(wolenetz): Remove. See https://crbug.com/665539.
   gfx::Size coded_size_;

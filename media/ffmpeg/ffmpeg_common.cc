@@ -518,6 +518,30 @@ bool AVStreamToVideoDecoderConfig(const AVStream* stream,
     format = PIXEL_FORMAT_YV12A;
   }
 
+  VideoRotation video_rotation = VIDEO_ROTATION_0;
+  int rotation = 0;
+  AVDictionaryEntry* rotation_entry = NULL;
+  rotation_entry = av_dict_get(stream->metadata, "rotate", nullptr, 0);
+  if (rotation_entry && rotation_entry->value && rotation_entry->value[0])
+    base::StringToInt(rotation_entry->value, &rotation);
+
+  switch (rotation) {
+    case 0:
+      break;
+    case 90:
+      video_rotation = VIDEO_ROTATION_90;
+      break;
+    case 180:
+      video_rotation = VIDEO_ROTATION_180;
+      break;
+    case 270:
+      video_rotation = VIDEO_ROTATION_270;
+      break;
+    default:
+      LOG(ERROR) << "Unsupported video rotation metadata: " << rotation;
+      break;
+  }
+
   // Prefer the color space found by libavcodec if available.
   ColorSpace color_space = AVColorSpaceToColorSpace(codec_context->colorspace,
                                                     codec_context->color_range);
@@ -543,8 +567,8 @@ bool AVStreamToVideoDecoderConfig(const AVStream* stream,
     extra_data.assign(codec_context->extradata,
                       codec_context->extradata + codec_context->extradata_size);
   }
-  config->Initialize(codec, profile, format, color_space, coded_size,
-                     visible_rect, natural_size, extra_data,
+  config->Initialize(codec, profile, format, color_space, video_rotation,
+                     coded_size, visible_rect, natural_size, extra_data,
                      GetEncryptionScheme(stream));
 
   const AVCodecParameters* codec_parameters = stream->codecpar;

@@ -57,6 +57,10 @@ enum VideoCodecProfile;
 [Native]
 enum VideoPixelFormat;
 
+// See media/base/video_rotation.h for descriptions.
+[Native]
+enum VideoRotation;
+
 // See media/base/watch_time_keys.h for descriptions.
 [Native]
 enum WatchTimeKey;
@@ -136,6 +140,7 @@ struct VideoDecoderConfig {
   VideoCodecProfile profile;
   VideoPixelFormat format;
   ColorSpace color_space;
+  VideoRotation video_rotation;
   gfx.mojom.Size coded_size;
   gfx.mojom.Rect visible_rect;
   gfx.mojom.Size natural_size;

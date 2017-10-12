@@ -43,7 +43,6 @@ class MojoDemuxerStreamAdapter : public DemuxerStream {
   Type type() const override;
   void EnableBitstreamConverter() override;
   bool SupportsConfigChanges() override;
-  VideoRotation video_rotation() override;
 
  private:
   void OnStreamReady(Type type,

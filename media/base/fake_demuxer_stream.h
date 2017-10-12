@@ -34,7 +34,6 @@ class FakeDemuxerStream : public DemuxerStream {
   VideoDecoderConfig video_decoder_config() override;
   Type type() const override;
   bool SupportsConfigChanges() override;
-  VideoRotation video_rotation() override;
 
   void Initialize();
 

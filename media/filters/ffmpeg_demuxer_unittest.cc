@@ -1368,7 +1368,9 @@ TEST_F(FFmpegDemuxerTest, Rotate_Metadata_0) {
 
   DemuxerStream* stream = GetStream(DemuxerStream::VIDEO);
   ASSERT_TRUE(stream);
-  ASSERT_EQ(VIDEO_ROTATION_0, stream->video_rotation());
+
+  const VideoDecoderConfig& video_config = stream->video_decoder_config();
+  ASSERT_EQ(VIDEO_ROTATION_0, video_config.video_rotation());
 }
 
 TEST_F(FFmpegDemuxerTest, Rotate_Metadata_90) {
@@ -1377,7 +1379,9 @@ TEST_F(FFmpegDemuxerTest, Rotate_Metadata_90) {
 
   DemuxerStream* stream = GetStream(DemuxerStream::VIDEO);
   ASSERT_TRUE(stream);
-  ASSERT_EQ(VIDEO_ROTATION_90, stream->video_rotation());
+
+  const VideoDecoderConfig& video_config = stream->video_decoder_config();
+  ASSERT_EQ(VIDEO_ROTATION_90, video_config.video_rotation());
 }
 
 TEST_F(FFmpegDemuxerTest, Rotate_Metadata_180) {
@@ -1386,7 +1390,9 @@ TEST_F(FFmpegDemuxerTest, Rotate_Metadata_180) {
 
   DemuxerStream* stream = GetStream(DemuxerStream::VIDEO);
   ASSERT_TRUE(stream);
-  ASSERT_EQ(VIDEO_ROTATION_180, stream->video_rotation());
+
+  const VideoDecoderConfig& video_config = stream->video_decoder_config();
+  ASSERT_EQ(VIDEO_ROTATION_180, video_config.video_rotation());
 }
 
 TEST_F(FFmpegDemuxerTest, Rotate_Metadata_270) {
@@ -1395,7 +1401,9 @@ TEST_F(FFmpegDemuxerTest, Rotate_Metadata_270) {
 
   DemuxerStream* stream = GetStream(DemuxerStream::VIDEO);
   ASSERT_TRUE(stream);
-  ASSERT_EQ(VIDEO_ROTATION_270, stream->video_rotation());
+
+  const VideoDecoderConfig& video_config = stream->video_decoder_config();
+  ASSERT_EQ(VIDEO_ROTATION_270, video_config.video_rotation());
 }
 
 TEST_F(FFmpegDemuxerTest, NaturalSizeWithoutPASP) {

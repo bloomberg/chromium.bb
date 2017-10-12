@@ -42,10 +42,6 @@ DemuxerStream::Type FakeTextTrackStream::type() const {
 
 bool FakeTextTrackStream::SupportsConfigChanges() { return false; }
 
-VideoRotation FakeTextTrackStream::video_rotation() {
-  return VIDEO_ROTATION_0;
-}
-
 void FakeTextTrackStream::SatisfyPendingRead(
     const base::TimeDelta& start,
     const base::TimeDelta& duration,

@@ -61,7 +61,6 @@ class MEDIA_EXPORT DecryptingDemuxerStream : public DemuxerStream {
   Liveness liveness() const override;
   void EnableBitstreamConverter() override;
   bool SupportsConfigChanges() override;
-  VideoRotation video_rotation() override;
 
  private:
   // For a detailed state diagram please see this link: http://goo.gl/8jAok

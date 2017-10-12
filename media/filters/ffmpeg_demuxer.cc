@@ -302,7 +302,6 @@ FFmpegDemuxerStream::FFmpegDemuxerStream(
       end_of_stream_(false),
       last_packet_timestamp_(kNoTimestamp),
       last_packet_duration_(kNoTimestamp),
-      video_rotation_(VIDEO_ROTATION_0),
       is_enabled_(true),
       waiting_for_keyframe_(false),
       aborted_(false),
@@ -310,8 +309,6 @@ FFmpegDemuxerStream::FFmpegDemuxerStream(
   DCHECK(demuxer_);
 
   bool is_encrypted = false;
-  int rotation = 0;
-  AVDictionaryEntry* rotation_entry = NULL;
 
   // Determine our media format.
   switch (stream->codecpar->codec_type) {
@@ -324,28 +321,6 @@ FFmpegDemuxerStream::FFmpegDemuxerStream(
       DCHECK(video_config_.get() && !audio_config_.get());
       type_ = VIDEO;
       is_encrypted = video_config_->is_encrypted();
-
-      rotation_entry = av_dict_get(stream->metadata, "rotate", NULL, 0);
-      if (rotation_entry && rotation_entry->value && rotation_entry->value[0])
-        base::StringToInt(rotation_entry->value, &rotation);
-
-      switch (rotation) {
-        case 0:
-          break;
-        case 90:
-          video_rotation_ = VIDEO_ROTATION_90;
-          break;
-        case 180:
-          video_rotation_ = VIDEO_ROTATION_180;
-          break;
-        case 270:
-          video_rotation_ = VIDEO_ROTATION_270;
-          break;
-        default:
-          LOG(ERROR) << "Unsupported video rotation metadata: " << rotation;
-          break;
-      }
-
       break;
     case AVMEDIA_TYPE_SUBTITLE:
       DCHECK(!video_config_.get() && !audio_config_.get());
@@ -747,10 +722,6 @@ VideoDecoderConfig FFmpegDemuxerStream::video_decoder_config() {
   DCHECK_EQ(type_, VIDEO);
   DCHECK(video_config_.get());
   return *video_config_;
-}
-
-VideoRotation FFmpegDemuxerStream::video_rotation() {
-  return video_rotation_;
 }
 
 bool FFmpegDemuxerStream::IsEnabled() const {

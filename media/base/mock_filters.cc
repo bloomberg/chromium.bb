@@ -84,10 +84,6 @@ void MockDemuxerStream::set_liveness(DemuxerStream::Liveness liveness) {
   liveness_ = liveness;
 }
 
-VideoRotation MockDemuxerStream::video_rotation() {
-  return VIDEO_ROTATION_0;
-}
-
 MockVideoDecoder::MockVideoDecoder(const std::string& decoder_name)
     : decoder_name_(decoder_name) {
   ON_CALL(*this, CanReadWithoutStalling()).WillByDefault(Return(true));

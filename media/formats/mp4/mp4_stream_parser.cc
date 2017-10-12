@@ -453,7 +453,8 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
       }
       video_config.Initialize(entry.video_codec, entry.video_codec_profile,
                               PIXEL_FORMAT_YV12, COLOR_SPACE_HD_REC709,
-                              coded_size, visible_rect, natural_size,
+                              VIDEO_ROTATION_0, coded_size, visible_rect,
+                              natural_size,
                               // No decoder-specific buffer needed for AVC;
                               // SPS/PPS are embedded in the video stream
                               EmptyExtraData(), scheme);

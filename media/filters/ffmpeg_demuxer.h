@@ -114,7 +114,6 @@ class MEDIA_EXPORT FFmpegDemuxerStream : public DemuxerStream {
   bool SupportsConfigChanges() override;
   AudioDecoderConfig audio_decoder_config() override;
   VideoDecoderConfig video_decoder_config() override;
-  VideoRotation video_rotation() override;
 
   bool IsEnabled() const;
   void SetEnabled(bool enabled, base::TimeDelta timestamp);
@@ -184,7 +183,6 @@ class MEDIA_EXPORT FFmpegDemuxerStream : public DemuxerStream {
   base::TimeDelta last_packet_timestamp_;
   base::TimeDelta last_packet_duration_;
   Ranges<base::TimeDelta> buffered_ranges_;
-  VideoRotation video_rotation_;
   bool is_enabled_;
   bool waiting_for_keyframe_;
   bool aborted_;

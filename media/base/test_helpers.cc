@@ -126,6 +126,7 @@ void WaitableMessageLoopEvent::OnTimeout() {
 }
 
 static VideoDecoderConfig GetTestConfig(VideoCodec codec,
+                                        VideoRotation rotation,
                                         gfx::Size coded_size,
                                         bool is_encrypted) {
   gfx::Rect visible_rect(coded_size.width(), coded_size.height());
@@ -133,7 +134,7 @@ static VideoDecoderConfig GetTestConfig(VideoCodec codec,
 
   return VideoDecoderConfig(
       codec, VIDEO_CODEC_PROFILE_UNKNOWN, PIXEL_FORMAT_YV12, COLOR_SPACE_JPEG,
-      coded_size, visible_rect, natural_size, EmptyExtraData(),
+      rotation, coded_size, visible_rect, natural_size, EmptyExtraData(),
       is_encrypted ? AesCtrEncryptionScheme() : Unencrypted());
 }
 
@@ -142,32 +143,38 @@ static const gfx::Size kLargeSize(640, 480);
 
 // static
 VideoDecoderConfig TestVideoConfig::Invalid() {
-  return GetTestConfig(kUnknownVideoCodec, kNormalSize, false);
+  return GetTestConfig(kUnknownVideoCodec, VIDEO_ROTATION_0, kNormalSize,
+                       false);
 }
 
 // static
 VideoDecoderConfig TestVideoConfig::Normal(VideoCodec codec) {
-  return GetTestConfig(codec, kNormalSize, false);
+  return GetTestConfig(codec, VIDEO_ROTATION_0, kNormalSize, false);
 }
 
 // static
 VideoDecoderConfig TestVideoConfig::NormalH264() {
-  return GetTestConfig(kCodecH264, kNormalSize, false);
+  return GetTestConfig(kCodecH264, VIDEO_ROTATION_0, kNormalSize, false);
 }
 
 // static
 VideoDecoderConfig TestVideoConfig::NormalEncrypted() {
-  return GetTestConfig(kCodecVP8, kNormalSize, true);
+  return GetTestConfig(kCodecVP8, VIDEO_ROTATION_0, kNormalSize, true);
+}
+
+// static
+VideoDecoderConfig TestVideoConfig::NormalRotated(VideoRotation rotation) {
+  return GetTestConfig(kCodecVP8, rotation, kNormalSize, false);
 }
 
 // static
 VideoDecoderConfig TestVideoConfig::Large(VideoCodec codec) {
-  return GetTestConfig(codec, kLargeSize, false);
+  return GetTestConfig(codec, VIDEO_ROTATION_0, kLargeSize, false);
 }
 
 // static
 VideoDecoderConfig TestVideoConfig::LargeEncrypted() {
-  return GetTestConfig(kCodecVP8, kLargeSize, true);
+  return GetTestConfig(kCodecVP8, VIDEO_ROTATION_0, kLargeSize, true);
 }
 
 // static

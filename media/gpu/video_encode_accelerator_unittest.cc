@@ -736,12 +736,14 @@ void VideoFrameQualityValidator::Initialize(const gfx::Size& coded_size,
   VideoDecoderConfig config;
   if (IsVP8(profile_))
     config.Initialize(kCodecVP8, VP8PROFILE_ANY, kInputFormat,
-                      COLOR_SPACE_UNSPECIFIED, coded_size, visible_size,
-                      natural_size, EmptyExtraData(), Unencrypted());
+                      COLOR_SPACE_UNSPECIFIED, VIDEO_ROTATION_0, coded_size,
+                      visible_size, natural_size, EmptyExtraData(),
+                      Unencrypted());
   else if (IsH264(profile_))
     config.Initialize(kCodecH264, H264PROFILE_MAIN, kInputFormat,
-                      COLOR_SPACE_UNSPECIFIED, coded_size, visible_size,
-                      natural_size, EmptyExtraData(), Unencrypted());
+                      COLOR_SPACE_UNSPECIFIED, VIDEO_ROTATION_0, coded_size,
+                      visible_size, natural_size, EmptyExtraData(),
+                      Unencrypted());
   else
     LOG_ASSERT(0) << "Invalid profile " << GetProfileName(profile_);
 

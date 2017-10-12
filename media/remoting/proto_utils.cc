@@ -320,7 +320,7 @@ bool ConvertProtoToVideoDecoderConfig(
       ToMediaVideoCodec(video_message.codec()).value(),
       ToMediaVideoCodecProfile(video_message.profile()).value(),
       ToMediaVideoPixelFormat(video_message.format()).value(),
-      ToMediaColorSpace(video_message.color_space()).value(),
+      ToMediaColorSpace(video_message.color_space()).value(), VIDEO_ROTATION_0,
       gfx::Size(video_message.coded_size().width(),
                 video_message.coded_size().height()),
       gfx::Rect(video_message.visible_rect().x(),
