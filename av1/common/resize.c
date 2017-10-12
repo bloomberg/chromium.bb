@@ -219,7 +219,7 @@ static const interp_kernel filteredinterp_filters1000[(1 << SUBPEL_BITS_RS)] = {
 };
 
 #if CONFIG_FRAME_SUPERRES && CONFIG_LOOP_RESTORATION
-#define INTERP_SIMPLE_TAPS 4
+#define INTERP_SIMPLE_TAPS 6
 static const int16_t filter_simple[(1
                                     << SUBPEL_BITS_RS)][INTERP_SIMPLE_TAPS] = {
 #if INTERP_SIMPLE_TAPS == 2
