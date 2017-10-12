@@ -232,6 +232,15 @@
         "COMODOECCCertificationAuthority"
       ],
       "report_uri": "https://log.ncsccs.com/report/hpkp"
+    },
+    {
+      "name": "tumblr",
+      "static_spki_hashes": [
+        "DigiCertEVRoot",
+        "DigiCertSHA2HighAssuranceServerCA",
+        "TumblrBackup"
+      ],
+      "report_uri": "https://cspreports.srvcs.tumblr.com/hpkp"
     }
   ],
 
@@ -38111,6 +38120,11 @@
     { "name": "mitm-software.badssl.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "hyatt.com", "mode": "force-https" },
     { "name": "www.hyatt.com", "include_subdomains": true, "mode": "force-https" },
+    {
+      "name": "www.tumblr.com",
+      "mode": "force-https", "include_subdomains": false,
+      "include_subdomains_for_pinning": true, "pins": "tumblr"
+    },
     // END OF MANUAL ENTRIES
 
     // TODO(lgarron): hstspreload.org can't scan IPv6-only sites due to Google
