@@ -3677,7 +3677,6 @@ crbug.com/763208 virtual/mojo-loading/http/tests/devtools/sources/debugger-ui/so
 crbug.com/763667 external/wpt/upgrade-insecure-requests/iframe-redirect-upgrade.https.html [ Timeout ]
 
 # Sheriff failures 2017-09-11
-crbug.com/763809 [ Win7 Debug ] fast/multicol/nested-very-tall-inside-short-crash.html [ Pass Failure Timeout ]
 crbug.com/763975 [ Linux Mac Debug ] webaudio/internals/cycle-connection-gc.html [ Pass Failure ]
 
 # Sheriff failures 2017-09-12

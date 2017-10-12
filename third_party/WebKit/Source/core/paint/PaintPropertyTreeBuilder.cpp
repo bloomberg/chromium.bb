@@ -1439,7 +1439,7 @@ void PaintPropertyTreeBuilder::InitSingleFragmentFromParent(
 }
 
 // Limit the maximum number of fragments, to avoid pathological situations.
-static const int kMaxNumFragments = 10000;
+static const int kMaxNumFragments = 2000;
 
 void PaintPropertyTreeBuilder::UpdateFragments(
     const LayoutObject& object,
