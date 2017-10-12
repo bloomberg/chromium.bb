@@ -144,7 +144,8 @@ class CORE_EXPORT SVGImage final : public Image {
             const FloatRect& from_rect,
             const FloatRect& to_rect,
             RespectImageOrientationEnum,
-            ImageClampingMode) override;
+            ImageClampingMode,
+            ImageDecodingMode) override;
   void DrawForContainer(PaintCanvas*,
                         const PaintFlags&,
                         const FloatSize&,

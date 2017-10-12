@@ -211,6 +211,7 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   // Layer contents
   void SetContentsToImage(
       Image*,
+      Image::ImageDecodingMode decode_mode,
       RespectImageOrientationEnum = kDoNotRespectImageOrientation);
   void SetContentsToPlatformLayer(WebLayer* layer) { SetContentsTo(layer); }
   bool HasContentsLayer() const { return contents_layer_; }

@@ -8,6 +8,7 @@
 #include "core/CoreExport.h"
 #include "core/html/canvas/CanvasImageSource.h"
 #include "core/imagebitmap/ImageBitmapSource.h"
+#include "platform/graphics/Image.h"
 
 namespace blink {
 
@@ -20,6 +21,11 @@ class CORE_EXPORT ImageElementBase : public CanvasImageSource,
  public:
   virtual ImageLoader& GetImageLoader() const = 0;
   virtual FloatSize SourceDefaultObjectSize() = 0;
+
+  // Parses the given async parameter value into an ImageDecodingMode. This is
+  // used by SVGImageElement and HTMLImageElement since this class is a common
+  // base for both elements.
+  static Image::ImageDecodingMode ParseImageDecodingMode(const AtomicString&);
 
   IntSize BitmapSourceSize() const override;
   ScriptPromise CreateImageBitmap(ScriptState*,

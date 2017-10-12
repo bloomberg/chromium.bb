@@ -784,6 +784,7 @@ void GraphicsContext::DrawHighlightForText(const Font& font,
 
 void GraphicsContext::DrawImage(
     Image* image,
+    Image::ImageDecodingMode decode_mode,
     const FloatRect& dest,
     const FloatRect* src_ptr,
     SkBlendMode op,
@@ -801,12 +802,13 @@ void GraphicsContext::DrawImage(
   if (ShouldApplyHighContrastFilterToImage(*image))
     image_flags.setColorFilter(high_contrast_filter_);
   image->Draw(canvas_, image_flags, dest, src, should_respect_image_orientation,
-              Image::kClampImageToSourceRect);
+              Image::kClampImageToSourceRect, decode_mode);
   paint_controller_.SetImagePainted();
 }
 
 void GraphicsContext::DrawImageRRect(
     Image* image,
+    Image::ImageDecodingMode decode_mode,
     const FloatRoundedRect& dest,
     const FloatRect& src_rect,
     SkBlendMode op,
@@ -815,7 +817,8 @@ void GraphicsContext::DrawImageRRect(
     return;
 
   if (!dest.IsRounded()) {
-    DrawImage(image, dest.Rect(), &src_rect, op, respect_orientation);
+    DrawImage(image, decode_mode, dest.Rect(), &src_rect, op,
+              respect_orientation);
     return;
   }
 
@@ -848,7 +851,8 @@ void GraphicsContext::DrawImageRRect(
     PaintCanvasAutoRestore auto_restore(canvas_, true);
     canvas_->clipRRect(dest, image_flags.isAntiAlias());
     image->Draw(canvas_, image_flags, dest.Rect(), src_rect,
-                respect_orientation, Image::kClampImageToSourceRect);
+                respect_orientation, Image::kClampImageToSourceRect,
+                decode_mode);
   }
 
   paint_controller_.SetImagePainted();
@@ -905,7 +909,9 @@ void GraphicsContext::DrawTiledImage(Image* image,
 
   if (h_rule == Image::kStretchTile && v_rule == Image::kStretchTile) {
     // Just do a scale.
-    DrawImage(image, dest, &src_rect, op);
+    // Since there is no way for the developer to specify decode behavior, use
+    // kSync by default.
+    DrawImage(image, Image::kSyncDecode, dest, &src_rect, op);
     return;
   }
 

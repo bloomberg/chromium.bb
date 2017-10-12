@@ -38,7 +38,8 @@ void SVGImageForContainer::Draw(PaintCanvas* canvas,
                                 const FloatRect& dst_rect,
                                 const FloatRect& src_rect,
                                 RespectImageOrientationEnum,
-                                ImageClampingMode) {
+                                ImageClampingMode,
+                                ImageDecodingMode) {
   image_->DrawForContainer(canvas, flags, container_size_, zoom_, dst_rect,
                            src_rect, url_);
 }

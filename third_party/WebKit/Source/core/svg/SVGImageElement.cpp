@@ -52,7 +52,8 @@ inline SVGImageElement::SVGImageElement(Document& document)
       preserve_aspect_ratio_(SVGAnimatedPreserveAspectRatio::Create(
           this,
           SVGNames::preserveAspectRatioAttr)),
-      image_loader_(SVGImageLoader::Create(this)) {
+      image_loader_(SVGImageLoader::Create(this)),
+      decoding_mode_(Image::kUnspecifiedDecode) {
   AddToPropertyMap(x_);
   AddToPropertyMap(y_);
   AddToPropertyMap(width_);
@@ -148,6 +149,16 @@ void SVGImageElement::SvgAttributeChanged(const QualifiedName& attr_name) {
   }
 
   SVGGraphicsElement::SvgAttributeChanged(attr_name);
+}
+
+void SVGImageElement::ParseAttribute(
+    const AttributeModificationParams& params) {
+  if (params.name == SVGNames::asyncAttr &&
+      RuntimeEnabledFeatures::ImageAsyncAttributeEnabled()) {
+    decoding_mode_ = ParseImageDecodingMode(params.new_value);
+  } else {
+    SVGElement::ParseAttribute(params);
+  }
 }
 
 bool SVGImageElement::SelfHasRelativeLengths() const {

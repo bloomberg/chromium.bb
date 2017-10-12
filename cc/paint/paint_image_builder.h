@@ -92,6 +92,11 @@ class CC_PAINT_EXPORT PaintImageBuilder {
     paint_image_ = paint_image_.MakeSubset(subset);
     return std::move(*this);
   }
+  PaintImageBuilder&& set_decoding_mode(
+      PaintImage::DecodingMode decoding_mode) {
+    paint_image_.decoding_mode_ = decoding_mode;
+    return std::move(*this);
+  }
 
   PaintImage TakePaintImage();
 

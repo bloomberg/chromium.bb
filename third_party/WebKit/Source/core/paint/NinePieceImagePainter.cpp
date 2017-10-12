@@ -38,7 +38,10 @@ void PaintPieces(GraphicsContext& context,
 
     if (draw_info.is_drawable) {
       if (draw_info.is_corner_piece) {
-        context.DrawImage(image, draw_info.destination, &draw_info.source, op);
+        // Since there is no way for the developer to specify decode behavior,
+        // use kSync by default.
+        context.DrawImage(image, Image::kSyncDecode, draw_info.destination,
+                          &draw_info.source, op);
       } else {
         context.DrawTiledImage(image, draw_info.destination, draw_info.source,
                                draw_info.tile_scale,

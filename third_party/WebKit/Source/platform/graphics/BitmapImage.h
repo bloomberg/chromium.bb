@@ -125,7 +125,8 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
             const FloatRect& dst_rect,
             const FloatRect& src_rect,
             RespectImageOrientationEnum,
-            ImageClampingMode) override;
+            ImageClampingMode,
+            ImageDecodingMode) override;
 
   PaintImage FrameAtIndex(size_t);
 

@@ -33,6 +33,7 @@
     [MeasureAs=SVG1DOMImageElement] readonly attribute SVGAnimatedLength width;
     [MeasureAs=SVG1DOMImageElement] readonly attribute SVGAnimatedLength height;
     [MeasureAs=SVG1DOMImageElement] readonly attribute SVGAnimatedPreserveAspectRatio preserveAspectRatio;
+    [RuntimeEnabled=ImageAsyncAttribute, CEReactions, Reflect] attribute DOMString async;
 
     [RuntimeEnabled=JSImageDecode, CallWith=ScriptState, RaisesException] Promise decode();
 };

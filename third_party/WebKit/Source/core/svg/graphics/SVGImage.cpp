@@ -466,7 +466,8 @@ void SVGImage::Draw(
     const FloatRect& dst_rect,
     const FloatRect& src_rect,
     RespectImageOrientationEnum should_respect_image_orientation,
-    ImageClampingMode clamp_mode) {
+    ImageClampingMode clamp_mode,
+    ImageDecodingMode) {
   if (!page_)
     return;
 

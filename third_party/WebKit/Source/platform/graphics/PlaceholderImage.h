@@ -38,7 +38,8 @@ class PLATFORM_EXPORT PlaceholderImage final : public Image {
             const FloatRect& dest_rect,
             const FloatRect& src_rect,
             RespectImageOrientationEnum,
-            ImageClampingMode) override;
+            ImageClampingMode,
+            ImageDecodingMode) override;
 
   void DestroyDecodedData() override;
 

@@ -39,6 +39,7 @@
     readonly attribute boolean complete;
     readonly attribute DOMString currentSrc;
     [CEReactions, Reflect, ReflectOnly=("","no-referrer","origin","no-referrer-when-downgrade","origin-when-cross-origin","unsafe-url"), ReflectMissing="", ReflectInvalid=""] attribute DOMString referrerPolicy;
+    [RuntimeEnabled=ImageAsyncAttribute, CEReactions, Reflect] attribute DOMString async;
 
     // obsolete members
     // https://html.spec.whatwg.org/#HTMLImageElement-partial

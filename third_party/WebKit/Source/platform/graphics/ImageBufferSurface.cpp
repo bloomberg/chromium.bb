@@ -78,7 +78,8 @@ void ImageBufferSurface::Draw(GraphicsContext& context,
   snapshot = snapshot->MakeUnaccelerated();
 
   DCHECK(!snapshot->IsTextureBacked());
-  context.DrawImage(snapshot.get(), dest_rect, &src_rect, op);
+  context.DrawImage(snapshot.get(), Image::kSyncDecode, dest_rect, &src_rect,
+                    op);
 }
 
 void ImageBufferSurface::Flush(FlushReason) {

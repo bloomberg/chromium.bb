@@ -172,8 +172,14 @@ void ImagePainter::PaintIntoRect(GraphicsContext& context,
   InterpolationQuality previous_interpolation_quality =
       context.ImageInterpolationQuality();
   context.SetImageInterpolationQuality(interpolation_quality);
+
+  Node* node = layout_image_.GetNode();
+  Image::ImageDecodingMode decode_mode =
+      IsHTMLImageElement(node) ? ToHTMLImageElement(node)->GetDecodingMode()
+                               : Image::kUnspecifiedDecode;
   context.DrawImage(
-      image.get(), pixel_snapped_dest_rect, &src_rect, SkBlendMode::kSrcOver,
+      image.get(), decode_mode, pixel_snapped_dest_rect, &src_rect,
+      SkBlendMode::kSrcOver,
       LayoutObject::ShouldRespectImageOrientation(&layout_image_));
   context.SetImageInterpolationQuality(previous_interpolation_quality);
 }

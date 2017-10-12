@@ -32,21 +32,23 @@ PaintImage PlaceholderImage::PaintImageForCurrentFrame() {
 
   const IntRect dest_rect(0, 0, size_.Width(), size_.Height());
   if (paint_record_for_current_frame_) {
-    builder.set_paint_record(paint_record_for_current_frame_, dest_rect,
-                             paint_record_content_id_);
-    return builder.TakePaintImage();
+    return builder
+        .set_paint_record(paint_record_for_current_frame_, dest_rect,
+                          paint_record_content_id_)
+        .TakePaintImage();
   }
 
   PaintRecorder paint_recorder;
   Draw(paint_recorder.beginRecording(FloatRect(dest_rect)), PaintFlags(),
        FloatRect(dest_rect), FloatRect(dest_rect),
-       kDoNotRespectImageOrientation, kClampImageToSourceRect);
+       kDoNotRespectImageOrientation, kClampImageToSourceRect, kSyncDecode);
 
   paint_record_for_current_frame_ = paint_recorder.finishRecordingAsPicture();
   paint_record_content_id_ = PaintImage::GetNextContentId();
-  builder.set_paint_record(paint_record_for_current_frame_, dest_rect,
-                           paint_record_content_id_);
-  return builder.TakePaintImage();
+  return builder
+      .set_paint_record(paint_record_for_current_frame_, dest_rect,
+                        paint_record_content_id_)
+      .TakePaintImage();
 }
 
 void PlaceholderImage::Draw(PaintCanvas* canvas,
@@ -54,7 +56,8 @@ void PlaceholderImage::Draw(PaintCanvas* canvas,
                             const FloatRect& dest_rect,
                             const FloatRect& src_rect,
                             RespectImageOrientationEnum respect_orientation,
-                            ImageClampingMode image_clamping_mode) {
+                            ImageClampingMode image_clamping_mode,
+                            ImageDecodingMode decode_mode) {
   if (!src_rect.Intersects(FloatRect(0.0f, 0.0f,
                                      static_cast<float>(size_.Width()),
                                      static_cast<float>(size_.Height())))) {
@@ -114,7 +117,8 @@ void PlaceholderImage::DrawPattern(GraphicsContext& context,
   // over the whole |dest_rect|. This is done in order to prevent repeated icons
   // from cluttering tiled background images.
   Draw(context.Canvas(), flags, dest_rect, src_rect,
-       kDoNotRespectImageOrientation, kClampImageToSourceRect);
+       kDoNotRespectImageOrientation, kClampImageToSourceRect,
+       kUnspecifiedDecode);
 }
 
 void PlaceholderImage::DestroyDecodedData() {
