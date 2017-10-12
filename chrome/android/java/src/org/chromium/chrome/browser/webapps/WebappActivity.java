@@ -46,8 +46,10 @@ import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.chrome.browser.toolbar.ToolbarControlContainer;
 import org.chromium.chrome.browser.util.ColorUtils;
+import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.content.browser.ScreenOrientationProvider;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.NavigationController;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.base.PageTransition;
 
@@ -222,7 +224,7 @@ public class WebappActivity extends SingleTabActivity {
                 (ToolbarControlContainer) findViewById(R.id.control_container));
         getToolbarManager().initializeWithNative(getTabModelSelector(),
                 getFullscreenManager().getBrowserVisibilityDelegate(), getFindToolbarManager(),
-                null, layoutDriver, null, null, null, null);
+                null, layoutDriver, null, null, null, view -> onToolbarCloseButtonClicked());
         getToolbarManager().setShowTitle(true);
         getToolbarManager().setCloseButtonDrawable(null); // Hides close button.
 
@@ -511,6 +513,15 @@ public class WebappActivity extends SingleTabActivity {
 
                     RecordHistogram.recordBooleanHistogram(
                             HISTOGRAM_NAVIGATION_STATUS, !isErrorPage);
+
+                    updateToolbarCloseButtonVisibility();
+
+                    if (!scopePolicy().isUrlInScope(mWebappInfo, url)) {
+                        // Briefly show the toolbar for off-scope navigations.
+                        getFullscreenManager()
+                                .getBrowserVisibilityDelegate()
+                                .showControlsTransient();
+                    }
                 }
             }
 
@@ -575,6 +586,40 @@ public class WebappActivity extends SingleTabActivity {
                 }, MS_BEFORE_NAVIGATING_BACK_FROM_INTERSTITIAL);
             }
         };
+    }
+
+    protected WebappScopePolicy scopePolicy() {
+        return WebappScopePolicy.WEBAPP;
+    }
+
+    private void updateToolbarCloseButtonVisibility() {
+        if (WebappBrowserControlsDelegate.shouldShowToolbarCloseButton(this)) {
+            getToolbarManager().setCloseButtonDrawable(
+                    TintedDrawable.constructTintedDrawable(getResources(), R.drawable.btn_close));
+            // Applies light or dark tint to icons depending on the theme color.
+            getToolbarManager().getToolbarLayout().getLocationBar().updateVisualsForState();
+        } else {
+            getToolbarManager().setCloseButtonDrawable(null);
+        }
+    }
+
+    /**
+     * Moves the user back in history to most recent on-origin location.
+     */
+    private void onToolbarCloseButtonClicked() {
+        NavigationController nc = getActivityTab().getWebContents().getNavigationController();
+
+        final int lastIndex = nc.getLastCommittedEntryIndex();
+        int index = lastIndex;
+        while (index > 0
+                && !scopePolicy().isUrlInScope(
+                           getWebappInfo(), nc.getEntryAtIndex(index).getUrl())) {
+            index--;
+        }
+
+        if (index != lastIndex) {
+            nc.goToNavigationIndex(index);
+        }
     }
 
     private void updateTaskDescription() {
