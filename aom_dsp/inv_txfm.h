@@ -27,26 +27,16 @@ static INLINE tran_high_t dct_const_round_shift(tran_high_t input) {
 }
 
 static INLINE tran_high_t check_range(tran_high_t input, int bd) {
+  const int32_t int_max = (1 << (7 + bd)) - 1;
+  const int32_t int_min = -int_max - 1;
 #if CONFIG_COEFFICIENT_RANGE_CHECKING
-  // For valid AV1 input streams, intermediate stage coefficients should always
-  // stay within the range of a signed 16 bit integer. Coefficients can go out
-  // of this range for invalid/corrupt AV1 streams. However, strictly checking
-  // this range for every intermediate coefficient can burdensome for a decoder,
-  // therefore the following assertion is only enabled when configured with
-  // --enable-coefficient-range-checking.
-  // For valid highbitdepth AV1 streams, intermediate stage coefficients will
-  // stay within the ranges:
   // - 8 bit: signed 16 bit integer
   // - 10 bit: signed 18 bit integer
   // - 12 bit: signed 20 bit integer
-  const int32_t int_max = (1 << (7 + bd)) - 1;
-  const int32_t int_min = -int_max - 1;
   assert(int_min <= input);
   assert(input <= int_max);
-  (void)int_min;
 #endif  // CONFIG_COEFFICIENT_RANGE_CHECKING
-  (void)bd;
-  return input;
+  return clamp64(input, int_min, int_max);
 }
 
 #define WRAPLOW(x) ((int32_t)check_range(x, 8))
