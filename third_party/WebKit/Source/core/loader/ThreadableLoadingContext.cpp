@@ -49,7 +49,7 @@ class WorkerThreadableLoadingContext : public ThreadableLoadingContext {
 
   ResourceFetcher* GetResourceFetcher() override {
     DCHECK(IsContextThread());
-    return worker_global_scope_->GetResourceFetcher();
+    return worker_global_scope_->EnsureFetcher();
   }
 
   ExecutionContext* GetExecutionContext() override {

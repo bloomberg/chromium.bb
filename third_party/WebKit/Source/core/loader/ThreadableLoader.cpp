@@ -49,7 +49,7 @@ ThreadableLoader* ThreadableLoader::Create(
 
   if (context.IsWorkerGlobalScope()) {
     if (RuntimeEnabledFeatures::OffMainThreadFetchEnabled()) {
-      DCHECK(ToWorkerGlobalScope(&context)->GetResourceFetcher());
+      ToWorkerGlobalScope(&context)->EnsureFetcher();
       // TODO(horo): Rename DocumentThreadableLoader. We will use it on the
       // worker thread when off-main-thread-fetch is enabled.
       return DocumentThreadableLoader::Create(

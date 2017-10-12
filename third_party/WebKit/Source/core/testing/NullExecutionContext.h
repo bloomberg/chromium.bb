@@ -48,6 +48,8 @@ class NullExecutionContext
 
   void SetUpSecurityContext();
 
+  ResourceFetcher* Fetcher() const override { return nullptr; }
+
   using SecurityContext::GetSecurityOrigin;
   using SecurityContext::GetContentSecurityPolicy;
 

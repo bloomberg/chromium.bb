@@ -555,7 +555,7 @@ class CORE_EXPORT Document : public ContainerNode,
                                   int& margin_bottom,
                                   int& margin_left);
 
-  ResourceFetcher* Fetcher() const { return fetcher_.Get(); }
+  ResourceFetcher* Fetcher() const override { return fetcher_.Get(); }
 
   void Initialize();
   virtual void Shutdown();
