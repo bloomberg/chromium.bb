@@ -36,6 +36,7 @@
 #include "platform/PlatformExport.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/text/TextDirection.h"
+#include "platform/wtf/Forward.h"
 #include "platform/wtf/HashSet.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/RefCounted.h"
@@ -118,6 +119,9 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
                                          const TextRun&) const;
 
   void CopyRange(unsigned start, unsigned end, ShapeResult*) const;
+
+  String ToString() const;
+  void ToString(StringBuilder*) const;
 
  protected:
   struct RunInfo;
