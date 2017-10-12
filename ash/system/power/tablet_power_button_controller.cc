@@ -45,6 +45,13 @@ constexpr base::TimeDelta kShutdownWhenScreenOffTimeout =
 constexpr base::TimeDelta kIgnorePowerButtonAfterResumeDelay =
     base::TimeDelta::FromSeconds(2);
 
+// Returns true if device is a convertible/tablet device, otherwise false.
+bool IsTabletModeSupported() {
+  TabletModeController* tablet_mode_controller =
+      Shell::Get()->tablet_mode_controller();
+  return tablet_mode_controller && tablet_mode_controller->CanEnterTabletMode();
+}
+
 // Returns the value for the command-line switch identified by |name|. Returns 0
 // if the switch was unset or contained a non-float value.
 double GetNumSwitch(const base::CommandLine& command_line,
@@ -136,6 +143,10 @@ TabletPowerButtonController::~TabletPowerButtonController() {
     Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
       this);
+}
+
+bool TabletPowerButtonController::ShouldHandlePowerButtonEvents() const {
+  return IsTabletModeSupported();
 }
 
 void TabletPowerButtonController::OnPowerButtonEvent(
