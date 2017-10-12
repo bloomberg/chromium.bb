@@ -151,6 +151,10 @@ CGFloat kShadowOpacity = 0.2f;
   [_appBar headerViewController].headerView.trackingScrollView =
       [_historyCollectionController collectionView];
   [_appBar addSubviewsToParent];
+  // Prevent the touch events on appBar from being forwarded to the
+  // collectionView.  See https://crbug.com/773580
+  [_appBar.headerViewController.headerView
+      stopForwardingTouchEventsForView:_appBar.navigationBar];
 
   // Add navigation bar buttons.
   _leftBarButtonItem =
