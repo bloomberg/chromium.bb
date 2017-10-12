@@ -2050,6 +2050,7 @@ int sortSamples(int *pts_mv, MV *mv, int *pts, int *pts_inref, int len) {
   int pts_mvd[SAMPLES_ARRAY_SIZE] = { 0 };
   int i, j, k;
   int ret = len;
+  assert(len <= SAMPLES_MAX);
 
   for (i = 0; i < len; ++i)
     pts_mvd[i] =
@@ -2084,13 +2085,12 @@ int sortSamples(int *pts_mv, MV *mv, int *pts, int *pts_inref, int len) {
     }
   }
 
-  for (i = len - 1; i >= 1; i--) {
-    int low = (i == 1) ? 1 : AOMMAX((pts_mvd[i - 1] - pts_mvd[0]) / (i - 1), 1);
+  len = AOMMIN(len, LEAST_SQUARES_SAMPLES_MAX);
 
-    if ((pts_mvd[i] - pts_mvd[i - 1]) >= TRIM_THR * low) ret = i;
+  for (i = len - 1; i >= 1; i--) {
+    if ((pts_mvd[i] - pts_mvd[i - 1]) >= TRIM_THR) ret = i;
   }
 
-  if (ret > LEAST_SQUARES_SAMPLES_MAX) ret = LEAST_SQUARES_SAMPLES_MAX;
   return ret;
 }
 
@@ -2130,6 +2130,7 @@ int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
         pts_inref += 2;
         pts_mv += 2;
         np++;
+        if (np >= SAMPLES_MAX) return SAMPLES_MAX;
       }
     } else {
       // Handle "current block width > above block width" case.
@@ -2148,11 +2149,12 @@ int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
           pts_inref += 2;
           pts_mv += 2;
           np++;
+          if (np >= SAMPLES_MAX) return SAMPLES_MAX;
         }
       }
     }
   }
-  assert(2 * np <= SAMPLES_ARRAY_SIZE);
+  assert(np <= SAMPLES_MAX);
 
   // scan the nearest left columns
   if (left_available) {
@@ -2175,6 +2177,7 @@ int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
         pts_inref += 2;
         pts_mv += 2;
         np++;
+        if (np >= SAMPLES_MAX) return SAMPLES_MAX;
       }
     } else {
       // Handle "current block height > above block height" case.
@@ -2193,11 +2196,12 @@ int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
           pts_inref += 2;
           pts_mv += 2;
           np++;
+          if (np >= SAMPLES_MAX) return SAMPLES_MAX;
         }
       }
     }
   }
-  assert(2 * np <= SAMPLES_ARRAY_SIZE);
+  assert(np <= SAMPLES_MAX);
 
   // Top-left block
   if (do_tl && left_available && up_available) {
@@ -2214,9 +2218,10 @@ int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
       pts_inref += 2;
       pts_mv += 2;
       np++;
+      if (np >= SAMPLES_MAX) return SAMPLES_MAX;
     }
   }
-  assert(2 * np <= SAMPLES_ARRAY_SIZE);
+  assert(np <= SAMPLES_MAX);
 
   // Top-right block
   if (do_tr &&
@@ -2234,10 +2239,11 @@ int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
         record_samples(mbmi, pts, pts_inref, pts_mv, global_offset_r,
                        global_offset_c, 0, -1, xd->n8_w, 1);
         np++;
+        if (np >= SAMPLES_MAX) return SAMPLES_MAX;
       }
     }
   }
-  assert(2 * np <= SAMPLES_ARRAY_SIZE);
+  assert(np <= SAMPLES_MAX);
 
   return np;
 }
