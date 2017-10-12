@@ -49,6 +49,7 @@ void CrOSTracingAgent::StartTracing(
   base::trace_event::TraceConfig trace_config(config);
   debug_daemon_ = chromeos::DBusThreadManager::Get()->GetDebugDaemonClient();
   if (!trace_config.IsSystraceEnabled() || !debug_daemon_) {
+    debug_daemon_ = nullptr;
     callback.Run(false /* success */);
     return;
   }
