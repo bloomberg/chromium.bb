@@ -19,7 +19,7 @@ namespace blink {
 // The enum entries below are written to histograms and thus cannot be deleted
 // or reordered.
 // New entries must be added immediately before the end.
-enum class BLINK_COMMON_EXPORT OriginTrialTokenStatus {
+enum class OriginTrialTokenStatus {
   kSuccess = 0,
   kNotSupported = 1,
   kInsecure = 2,
