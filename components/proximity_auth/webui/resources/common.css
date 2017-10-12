@@ -92,7 +92,7 @@ header {
   flex-direction: row-reverse;
 }
 
-#copy-logs-button,
+#save-logs-button,
 #clear-logs-button {
   background-color: rgba(0,0,0,0);
   border: none;
@@ -103,13 +103,13 @@ header {
   padding: 0 25px;
 }
 
-#copy-logs-button:hover,
+#save-logs-button:hover,
 #clear-logs-button:hover {
   cursor: pointer;
   color: #535553;
 }
 
-#copy-logs-button:focus,
+#save-logs-button:focus,
 #clear-logs-button:focus {
   outline: 0;
 }
