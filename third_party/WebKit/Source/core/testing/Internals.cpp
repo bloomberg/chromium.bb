@@ -77,6 +77,7 @@
 #include "core/frame/FrameConsole.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameClient.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/PerformanceMonitor.h"
 #include "core/frame/Settings.h"
@@ -3246,6 +3247,9 @@ void Internals::setNetworkQualityInfoOverride(const String& effective_type,
 
   GetNetworkStateNotifier().SetNetworkQualityInfoOverride(
       web_effective_type, transport_rtt_msec, downlink_throughput_mbps);
+
+  GetFrame()->Client()->SetEffectiveConnectionTypeForTesting(
+      web_effective_type);
 }
 
 void Internals::clearNetworkConnectionInfoOverride() {

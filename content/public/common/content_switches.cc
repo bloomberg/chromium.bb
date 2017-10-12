@@ -385,16 +385,6 @@ const char kDisableOriginTrialControlledBlinkFeatures[] =
 // Comma-separated list of feature names to enable. See also kDisableFeatures.
 const char kEnableFeatures[] = "enable-features";
 
-// WebFonts intervention v2 flag and values.
-const char kEnableWebFontsInterventionV2[] = "enable-webfonts-intervention-v2";
-const char kEnableWebFontsInterventionV2SwitchValueEnabledWith2G[] =
-    "enabled-2g";
-const char kEnableWebFontsInterventionV2SwitchValueEnabledWith3G[] =
-    "enabled-3g";
-const char kEnableWebFontsInterventionV2SwitchValueEnabledWithSlow2G[] =
-    "enabled-slow2g";
-const char kEnableWebFontsInterventionV2SwitchValueDisabled[] = "disabled";
-
 // Makes the GL worker context run asynchronously by using a separate stream.
 const char kEnableGpuAsyncWorkerContext[] = "enable-gpu-async-worker-context";
 
@@ -508,10 +498,6 @@ const char kEnableVtune[]                   = "enable-vtune-support";
 
 // Enable Vulkan support, must also have ENABLE_VULKAN defined.
 const char kEnableVulkan[] = "enable-vulkan";
-
-// Enable WebFonts intervention and trigger the signal always.
-const char kEnableWebFontsInterventionTrigger[] =
-    "enable-webfonts-intervention-trigger";
 
 // Enables WebGL extensions not yet approved by the community.
 const char kEnableWebGLDraftExtensions[] = "enable-webgl-draft-extensions";

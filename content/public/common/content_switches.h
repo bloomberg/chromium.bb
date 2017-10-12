@@ -121,15 +121,6 @@ CONTENT_EXPORT extern const char kEnableDistanceFieldText[];
 CONTENT_EXPORT extern const char kEnableExperimentalCanvasFeatures[];
 CONTENT_EXPORT extern const char kEnableExperimentalWebPlatformFeatures[];
 CONTENT_EXPORT extern const char kEnableFeatures[];
-CONTENT_EXPORT extern const char kEnableWebFontsInterventionV2[];
-CONTENT_EXPORT extern const char
-    kEnableWebFontsInterventionV2SwitchValueEnabledWith2G[];
-CONTENT_EXPORT extern const char
-    kEnableWebFontsInterventionV2SwitchValueEnabledWith3G[];
-CONTENT_EXPORT extern const char
-    kEnableWebFontsInterventionV2SwitchValueEnabledWithSlow2G[];
-CONTENT_EXPORT extern const char
-    kEnableWebFontsInterventionV2SwitchValueDisabled[];
 CONTENT_EXPORT extern const char kEnableGpuAsyncWorkerContext[];
 CONTENT_EXPORT extern const char kEnableGpuMemoryBufferCompositorResources[];
 CONTENT_EXPORT extern const char kEnableGpuMemoryBufferVideoFrames[];
@@ -161,7 +152,6 @@ CONTENT_EXPORT extern const char kEnableUseZoomForDSF[];
 CONTENT_EXPORT extern const char kEnableViewport[];
 CONTENT_EXPORT extern const char kEnableVtune[];
 CONTENT_EXPORT extern const char kEnableVulkan[];
-CONTENT_EXPORT extern const char kEnableWebFontsInterventionTrigger[];
 CONTENT_EXPORT extern const char kEnableWebGLDraftExtensions[];
 CONTENT_EXPORT extern const char kEnableWebGLImageChromium[];
 CONTENT_EXPORT extern const char kEnableWebVR[];

@@ -321,17 +321,6 @@ extern const char kEnableZeroSuggestRedirectToChromeDescription[];
 extern const char kEnableWasmStreamingName[];
 extern const char kEnableWasmStreamingDescription[];
 
-extern const char kEnableWebfontsInterventionName[];
-extern const char kEnableWebfontsInterventionDescription[];
-extern const char kEnableWebfontsInterventionV2ChoiceDefault[];
-extern const char kEnableWebfontsInterventionV2ChoiceEnabledWith2g[];
-extern const char kEnableWebfontsInterventionV2ChoiceEnabledWith3g[];
-extern const char kEnableWebfontsInterventionV2ChoiceEnabledWithSlow2g[];
-extern const char kEnableWebfontsInterventionV2ChoiceDisabled[];
-
-extern const char kEnableWebfontsInterventionTriggerName[];
-extern const char kEnableWebfontsInterventionTriggerDescription[];
-
 extern const char kEnableWebNotificationCustomLayoutsName[];
 extern const char kEnableWebNotificationCustomLayoutsDescription[];
 

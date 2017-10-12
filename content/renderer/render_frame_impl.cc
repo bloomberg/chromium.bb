@@ -4146,6 +4146,11 @@ RenderFrameImpl::GetEffectiveConnectionType() {
   return effective_connection_type_;
 }
 
+void RenderFrameImpl::SetEffectiveConnectionTypeForTesting(
+    blink::WebEffectiveConnectionType type) {
+  effective_connection_type_ = type;
+}
+
 bool RenderFrameImpl::ShouldUseClientLoFiForRequest(
     const WebURLRequest& request) {
   if (request.GetPreviewsState() != WebURLRequest::kPreviewsUnspecified)

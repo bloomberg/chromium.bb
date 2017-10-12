@@ -366,22 +366,6 @@ void WebRuntimeFeatures::EnablePresentationAPI(bool enable) {
   RuntimeEnabledFeatures::SetPresentationEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableWebFontsInterventionV2With2G(bool enable) {
-  RuntimeEnabledFeatures::SetWebFontsInterventionV2With2GEnabled(enable);
-}
-
-void WebRuntimeFeatures::EnableWebFontsInterventionV2With3G(bool enable) {
-  RuntimeEnabledFeatures::SetWebFontsInterventionV2With3GEnabled(enable);
-}
-
-void WebRuntimeFeatures::EnableWebFontsInterventionV2WithSlow2G(bool enable) {
-  RuntimeEnabledFeatures::SetWebFontsInterventionV2WithSlow2GEnabled(enable);
-}
-
-void WebRuntimeFeatures::EnableWebFontsInterventionTrigger(bool enable) {
-  RuntimeEnabledFeatures::SetWebFontsInterventionTriggerEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableRenderingPipelineThrottling(bool enable) {
   RuntimeEnabledFeatures::SetRenderingPipelineThrottlingEnabled(enable);
 }

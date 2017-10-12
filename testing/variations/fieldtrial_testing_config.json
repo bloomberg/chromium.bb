@@ -3798,22 +3798,6 @@
             ]
         }
     ],
-    "WebFontsInterventionV2": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled-3g"
-                }
-            ]
-        }
-    ],
     "WebManifestIcons": [
         {
             "platforms": [

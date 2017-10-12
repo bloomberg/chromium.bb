@@ -145,11 +145,6 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableWebAssemblyStreaming(bool);
   BLINK_PLATFORM_EXPORT static void EnableWebAuth(bool);
   BLINK_PLATFORM_EXPORT static void EnableWebBluetooth(bool);
-  BLINK_PLATFORM_EXPORT static void EnableWebFontsInterventionV2With2G(bool);
-  BLINK_PLATFORM_EXPORT static void EnableWebFontsInterventionV2With3G(bool);
-  BLINK_PLATFORM_EXPORT static void EnableWebFontsInterventionV2WithSlow2G(
-      bool);
-  BLINK_PLATFORM_EXPORT static void EnableWebFontsInterventionTrigger(bool);
   BLINK_PLATFORM_EXPORT static void EnableWebGLDraftExtensions(bool);
   BLINK_PLATFORM_EXPORT static void EnableWebGLImageChromium(bool);
   BLINK_PLATFORM_EXPORT static void EnableWebNfc(bool);

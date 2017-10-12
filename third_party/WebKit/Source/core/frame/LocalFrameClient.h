@@ -322,6 +322,9 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   virtual WebEffectiveConnectionType GetEffectiveConnectionType() {
     return WebEffectiveConnectionType::kTypeUnknown;
   }
+  // Overrides the effective connection type for testing.
+  virtual void SetEffectiveConnectionTypeForTesting(
+      WebEffectiveConnectionType) {}
 
   // Returns whether or not Client Lo-Fi is enabled for the frame
   // (and so image requests may be replaced with a placeholder).
