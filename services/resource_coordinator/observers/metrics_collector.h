@@ -10,6 +10,7 @@
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/resource_coordinator/observers/background_metrics_reporter.h"
 #include "services/resource_coordinator/observers/coordination_unit_graph_observer.h"
 
@@ -95,9 +96,7 @@ class MetricsCollector : public CoordinationUnitGraphObserver {
 
   struct UkmCPUUsageCollectionState {
     size_t num_cpu_usage_measurements = 0u;
-    // |ukm::UkmRecorder::GetNewSourceID| monotonically increases starting at 0,
-    // so -1 implies that the current |ukm_source_id| is invalid.
-    ukm::SourceId ukm_source_id = -1;
+    ukm::SourceId ukm_source_id = ukm::kInvalidSourceId;
   };
 
   bool ShouldReportMetrics(const PageCoordinationUnitImpl* page_cu);

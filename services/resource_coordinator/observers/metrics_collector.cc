@@ -203,7 +203,7 @@ bool MetricsCollector::IsCollectingCPUUsageForUkm(
   UkmCPUUsageCollectionState& state =
       ukm_cpu_usage_collection_state_map_[page_cu_id];
 
-  return state.ukm_source_id > -1 &&
+  return state.ukm_source_id > ukm::kInvalidSourceId &&
          state.num_cpu_usage_measurements < max_ukm_cpu_usage_measurements_;
 }
 
