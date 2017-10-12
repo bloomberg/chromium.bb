@@ -359,7 +359,7 @@ public class TextBubble implements OnTouchListener {
 
         mDrawable.setPositionProperties(arrowXOffset, positionBelow);
 
-        if (positionBelow != currentPositionBelow) {
+        if (mPopupWindow.isShowing() && positionBelow != currentPositionBelow) {
             // This is a hack to deal with the case where the arrow flips between top and bottom.
             // In this case the padding of the background drawable in the PopupWindow changes.
             try {
