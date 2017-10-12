@@ -264,9 +264,8 @@
     /**
      * Returns a compact output for reflection test results.
      *
-     * The reflection tests contain huge number of tests, and Rietveld
-     * code review tool had a 1MB diff size limit. We merge PASS lines.
-     * TODO(qyearsley): Remove this now that we don't use Rietveld.
+     * The reflection tests contain a large number of tests.
+     * This test output merges PASS lines to make baselines smaller.
      */
     function compactTestOutput(tests) {
         let testResults = [];
