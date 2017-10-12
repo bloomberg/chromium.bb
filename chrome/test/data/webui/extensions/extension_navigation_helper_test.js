@@ -8,6 +8,7 @@ cr.define('extension_navigation_helper_tests', function() {
     Basic: 'basic',
     Conversions: 'conversions',
     PushAndReplaceState: 'push and replace state',
+    SupportedRoutes: 'supported routes'
   };
 
   /**
@@ -42,7 +43,6 @@ cr.define('extension_navigation_helper_tests', function() {
 
       navigationHelper.addListener(changePage);
 
-      expectEquals('chrome://extensions/navigation_helper.html', location.href);
       expectDeepEquals(
           {page: Page.LIST, type: extensions.ShowingType.EXTENSIONS},
           navigationHelper.getCurrentPage());
@@ -164,6 +164,28 @@ cr.define('extension_navigation_helper_tests', function() {
       navigationHelper.updateHistory(
           {page: Page.DETAILS, extensionId: id2});
       expectEquals(++expectedLength, history.length);
+    });
+
+    test(assert(TestNames.SupportedRoutes), function() {
+      function testRedirect(url, redirected) {
+        history.pushState({}, '', url);
+        const testNavigationHelper = new extensions.NavigationHelper();
+        expectEquals(redirected, window.location.href !== url);
+      }
+
+      loadTimeData.overrideValues({isGuest: false});
+      testRedirect('chrome://extensions/', false);
+      testRedirect('chrome://extensions/shortcuts', false);
+      testRedirect('chrome://extensions/apps', false);
+      testRedirect('chrome://extensions/fake-route', true);
+      // Test trailing slash works.
+      testRedirect('chrome://extensions/shortcuts/', false);
+
+      loadTimeData.overrideValues({isGuest: true});
+      testRedirect('chrome://extensions/', false);
+      testRedirect('chrome://extensions/shortcuts', true);
+      testRedirect('chrome://extensions/apps', true);
+      testRedirect('chrome://extensions/fake-route', true);
     });
   });
 

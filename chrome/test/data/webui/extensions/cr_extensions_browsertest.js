@@ -528,6 +528,12 @@ TEST_F('CrExtensionsNavigationHelperTest', 'PushAndReplaceState', function() {
       .run();
 });
 
+TEST_F('CrExtensionsNavigationHelperTest', 'SupportedRoutes', function() {
+  mocha
+      .grep(assert(extension_navigation_helper_tests.TestNames.SupportedRoutes))
+      .run();
+});
+
 ////////////////////////////////////////////////////////////////////////////////
 // Extension View Manager Tests
 
