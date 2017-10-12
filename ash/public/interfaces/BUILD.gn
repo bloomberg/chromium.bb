@@ -17,6 +17,7 @@ mojom("interfaces_internal") {
     "cast_config.mojom",
     "constants.mojom",
     "event_properties.mojom",
+    "highlighter_controller.mojom",
     "ime_controller.mojom",
     "ime_info.mojom",
     "locale.mojom",
