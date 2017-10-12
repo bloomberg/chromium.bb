@@ -38039,7 +38039,9 @@
       "name": "matteomarescotti.it",
       "mode": "force-https", "include_subdomains": true,
       "expect_staple": true, "include_subdomains_for_expect_staple": true,
-      "expect_staple_report_uri": "https://matteomarescotti.report-uri.io/r/default/staple/reportOnly"
+      "expect_staple_report_uri": "https://matteomarescotti.report-uri.io/r/default/staple/reportOnly",
+      "expect_ct": true,
+      "expect_ct_report_uri": "https://matteomarescotti.report-uri.io/r/default/ct/reportOnly"
     },
     { "name": "www.cnet.com", "include_subdomains": true, "mode": "force-https" },
     {
