@@ -23,8 +23,13 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
     help_text = 'Fetches new baselines for a CL from test runs on try bots.'
     long_help = ('This command downloads new baselines for failing layout '
                  'tests from archived try job test results. Cross-platform '
-                 'baselines are deduplicated after downloading.')
+                 'baselines are deduplicated after downloading.  Without '
+                 'positional parameters or --test-name-file, all failing tests '
+                 'are rebaselined. If positional parameters are provided, '
+                 'they are interpreted as test names to rebaseline.')
+
     show_in_main_help = True
+    argument_names = '[testname,...]'
 
     def __init__(self):
         super(RebaselineCL, self).__init__(options=[
@@ -47,6 +52,10 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
                      'from try job results of other platforms.'),
             optparse.make_option(
                 '--no-fill-missing', dest='fill_missing', action='store_false'),
+            optparse.make_option(
+                '--test-name-file', dest='test_name_file', default=None,
+                help='Read names of tests to rebaseline from this file, one '
+                     'test per line.'),
             self.no_optimize_option,
             self.results_directory_option,
         ])
@@ -55,6 +64,11 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
     def execute(self, options, args, tool):
         self._tool = tool
         self.git_cl = self.git_cl or GitCL(tool)
+
+        if args and options.test_name_file:
+            _log.error('Aborted: Cannot combine --test-name-file and '
+                       'positional parameters.')
+            return 1
 
         # The WPT manifest is required when iterating through tests
         # TestBaselineSet if there are any tests in web-platform-tests.
@@ -99,7 +113,10 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
                 'as long as the results are not platform-specific.',
                 default=self._tool.user.DEFAULT_NO)
 
-        if args:
+        if options.test_name_file:
+            test_baseline_set = self._make_test_baseline_set_from_file(
+                options.test_name_file, jobs_to_results)
+        elif args:
             test_baseline_set = self._make_test_baseline_set_for_tests(
                 args, jobs_to_results)
         else:
@@ -211,6 +228,22 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
                 continue
             results[build] = layout_test_results
         return results
+
+    def _make_test_baseline_set_from_file(self, filename, builds_to_results):
+        test_baseline_set = TestBaselineSet(self._tool)
+        try:
+            with self._tool.filesystem.open_text_file_for_reading(filename) as fh:
+                _log.info('Reading list of tests to rebaseline '
+                          'from %s', filename)
+                for test in fh.readlines():
+                    test = test.strip()
+                    if not test or test.startswith('#'):
+                        continue
+                    for build in builds_to_results:
+                        test_baseline_set.add(test, build)
+        except IOError:
+            _log.info('Could not read test names from %s', filename)
+        return test_baseline_set
 
     def _make_test_baseline_set_for_tests(self, tests, builds_to_results):
         test_baseline_set = TestBaselineSet(self._tool)

@@ -242,7 +242,7 @@ class MockFileSystem(object):
             return 0
         self._raise_not_found(path)
 
-    def _mktemp(self, suffix='', prefix='tmp', dir=None, **_):  # pylint: disable=redefined-builtin
+    def mktemp(self, suffix='', prefix='tmp', dir=None, **_):  # pylint: disable=redefined-builtin
         if dir is None:
             dir = self.sep + '__im_tmp'
         curno = self.current_tmpno
@@ -256,7 +256,7 @@ class MockFileSystem(object):
             def __init__(self, fs, **kwargs):
                 self._kwargs = kwargs
                 self._filesystem = fs
-                self._directory_path = fs._mktemp(**kwargs)  # pylint: disable=protected-access
+                self._directory_path = fs.mktemp(**kwargs)  # pylint: disable=protected-access
                 fs.maybe_make_directory(self._directory_path)
 
             def __str__(self):
@@ -314,7 +314,7 @@ class MockFileSystem(object):
         return path
 
     def open_binary_tempfile(self, suffix=''):
-        path = self._mktemp(suffix)
+        path = self.mktemp(suffix)
         return (WritableBinaryFileObject(self, path), path)
 
     def open_binary_file_for_reading(self, path):
