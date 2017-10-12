@@ -40,6 +40,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "components/arc/arc_data_remover.h"
+#include "components/arc/arc_instance_mode.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_session_runner.h"
 #include "components/arc/arc_util.h"
@@ -910,7 +911,7 @@ void ArcSessionManager::StartArc() {
 
   arc_start_time_ = base::Time::Now();
   provisioning_reported_ = false;
-  arc_session_runner_->RequestStart();
+  arc_session_runner_->RequestStart(ArcInstanceMode::FULL_INSTANCE);
 }
 
 void ArcSessionManager::StopArc() {

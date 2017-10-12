@@ -27,10 +27,10 @@ chromeos::SessionManagerClient* GetSessionManagerClient() {
 }
 
 // Returns true if restart is needed for given conditions.
-bool IsRestartNeeded(bool run_requested,
+bool IsRestartNeeded(base::Optional<ArcInstanceMode> target_mode,
                      ArcStopReason stop_reason,
                      bool was_running) {
-  if (!run_requested) {
+  if (!target_mode.has_value()) {
     // The request to run ARC is canceled by the caller. No need to restart.
     return false;
   }
@@ -41,8 +41,8 @@ bool IsRestartNeeded(bool run_requested,
       // If ARC is re-requested to start, restart is necessary.
       // This case happens, e.g., RequestStart() -> RequestStop() ->
       // RequestStart(), case. If the second RequestStart() is called before
-      // the instance previously running is stopped, then just |run_requested|
-      // flag is set. On completion, restart is needed.
+      // the instance previously running is stopped, then just |target_mode_|
+      // is set. On completion, restart is needed.
       return true;
     case ArcStopReason::GENERIC_BOOT_FAILURE:
     case ArcStopReason::LOW_DISK_SPACE:
@@ -57,6 +57,33 @@ bool IsRestartNeeded(bool run_requested,
   }
 
   NOTREACHED();
+  return false;
+}
+
+std::ostream& operator<<(std::ostream& os,
+                         base::Optional<ArcInstanceMode> mode) {
+  return mode.has_value() ? (os << mode.value()) : (os << "(nullopt)");
+}
+
+// Returns true if the request to start/upgrade ARC instance is allowed
+// operation.
+bool IsRequestAllowed(const base::Optional<ArcInstanceMode>& current_mode,
+                      ArcInstanceMode request_mode) {
+  if (!current_mode.has_value()) {
+    // This is a request to start a new ARC instance (either mini instance
+    // or full instance).
+    return true;
+  }
+
+  if (current_mode == ArcInstanceMode::MINI_INSTANCE &&
+      request_mode == ArcInstanceMode::FULL_INSTANCE) {
+    // This is a request to upgrade the running mini instance to full instance.
+    return true;
+  }
+
+  // Otherwise, not allowed.
+  LOG(ERROR) << "Unexpected ARC instance mode transition request: "
+             << current_mode << " -> " << request_mode;
   return false;
 }
 
@@ -90,20 +117,19 @@ void ArcSessionRunner::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-void ArcSessionRunner::RequestStart() {
+void ArcSessionRunner::RequestStart(ArcInstanceMode request_mode) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  // Consecutive RequestStart() call. Do nothing.
-  if (run_requested_)
+  if (target_mode_ == request_mode) {
+    // Consecutive RequestStart() call for the same mode. Do nothing.
+    return;
+  }
+
+  if (!IsRequestAllowed(target_mode_, request_mode))
     return;
 
-  VLOG(1) << "Session start requested";
-  run_requested_ = true;
-  // Here |run_requested_| transitions from false to true. So, |restart_timer_|
-  // must be stopped (either not even started, or has been cancelled in
-  // previous RequestStop() call).
-  DCHECK(!restart_timer_.IsRunning());
-
+  VLOG(1) << "Session start requested: " << request_mode;
+  target_mode_ = request_mode;
   if (arc_session_ && arc_session_->IsStopRequested()) {
     // This is the case where RequestStop() was called, but before
     // |arc_session_| had finshed stopping, RequestStart() is called.
@@ -113,17 +139,27 @@ void ArcSessionRunner::RequestStart() {
     return;
   }
 
+  if (restart_timer_.IsRunning()) {
+    // |restart_timer_| may be running if this is upgrade request in a
+    // following scenario.
+    // - RequestStart(MINI_INSTANCE)
+    // - RequestStop()
+    // - RequestStart(MINI_INSTANCE)
+    // - OnSessionStopped()
+    // - RequestStart(FULL_INSTANCE) before RestartArcSession() is called.
+    // In such a case, defer the operation to RestartArcSession() called later.
+    return;
+  }
+
+  // No asynchronous event is expected later. Trigger the ArcSession now.
   StartArcSession();
 }
 
 void ArcSessionRunner::RequestStop() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  // Unlike RequestStart(), this does not check |run_requested_| here.
-  // Even if |run_requested_| is false, an instance for login screen may be
-  // running, which should stop here.
   VLOG(1) << "Session stop requested";
-  run_requested_ = false;
+  target_mode_ = base::nullopt;
 
   if (arc_session_) {
     // If |arc_session_| is running, stop it.
@@ -144,7 +180,7 @@ void ArcSessionRunner::OnShutdown() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   VLOG(1) << "OnShutdown";
-  run_requested_ = false;
+  target_mode_ = base::nullopt;
   restart_timer_.Stop();
   if (arc_session_)
     arc_session_->OnShutdown();
@@ -163,6 +199,7 @@ void ArcSessionRunner::SetRestartDelayForTesting(
 void ArcSessionRunner::StartArcSession() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!restart_timer_.IsRunning());
+  DCHECK(target_mode_.has_value());
 
   VLOG(1) << "Starting ARC instance";
   if (!arc_session_) {
@@ -171,7 +208,15 @@ void ArcSessionRunner::StartArcSession() {
   } else {
     DCHECK(arc_session_->IsForLoginScreen());
   }
-  arc_session_->Start();
+
+  switch (target_mode_.value()) {
+    case ArcInstanceMode::MINI_INSTANCE:
+      arc_session_->StartForLoginScreen();
+      break;
+    case ArcInstanceMode::FULL_INSTANCE:
+      arc_session_->Start();
+      break;
+  }
 }
 
 void ArcSessionRunner::RestartArcSession() {
@@ -198,7 +243,7 @@ void ArcSessionRunner::OnSessionStopped(ArcStopReason stop_reason,
   arc_session_.reset();
 
   const bool restarting =
-      IsRestartNeeded(run_requested_, stop_reason, was_running);
+      IsRestartNeeded(target_mode_, stop_reason, was_running);
   if (restarting) {
     // There was a previous invocation and it crashed for some reason. Try
     // starting ARC instance later again.
@@ -222,13 +267,12 @@ void ArcSessionRunner::EmitLoginPromptVisibleCalled() {
     // instance after the user logs in.
     return;
   }
+
   // Since 'login-prompt-visible' Upstart signal starts all Upstart jobs the
   // container may depend on such as cras, EmitLoginPromptVisibleCalled() is the
   // safe place to start the container for login screen.
   DCHECK(!arc_session_);
-  arc_session_ = factory_.Run();
-  arc_session_->AddObserver(this);
-  arc_session_->StartForLoginScreen();
+  RequestStart(ArcInstanceMode::MINI_INSTANCE);
 }
 
 }  // namespace arc
