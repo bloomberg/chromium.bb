@@ -79,6 +79,10 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
     hide_horizontal_scrollbar_ = visible;
   }
 
+  void set_draw_overflow_indicator(bool draw_overflow_indicator) {
+    draw_overflow_indicator_ = draw_overflow_indicator;
+  }
+
   // Turns this scroll view into a bounded scroll view, with a fixed height.
   // By default, a ScrollView will stretch to fill its outer container.
   void ClipHeightTo(int min_height, int max_height);
@@ -237,6 +241,10 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
 
   // Only needed for pre-Harmony. Remove when Harmony is default.
   bool draw_border_ = false;
+
+  // Whether to draw a white separator on the four sides of the scroll view when
+  // it overflows.
+  bool draw_overflow_indicator_ = true;
 
   // Focus ring, if one is installed.
   View* focus_ring_ = nullptr;

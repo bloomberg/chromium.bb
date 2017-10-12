@@ -893,18 +893,20 @@ void ScrollView::UpdateOverflowIndicatorVisibility(
     const gfx::ScrollOffset& offset) {
   SetControlVisibility(more_content_top_.get(),
                        !draw_border_ && !header_ && vert_sb_->visible() &&
-                           offset.y() > vert_sb_->GetMinPosition());
-  SetControlVisibility(more_content_bottom_.get(),
-                       !draw_border_ && vert_sb_->visible() &&
-                           !horiz_sb_->visible() &&
-                           offset.y() < vert_sb_->GetMaxPosition());
+                           offset.y() > vert_sb_->GetMinPosition() &&
+                           draw_overflow_indicator_);
+  SetControlVisibility(
+      more_content_bottom_.get(),
+      !draw_border_ && vert_sb_->visible() && !horiz_sb_->visible() &&
+          offset.y() < vert_sb_->GetMaxPosition() && draw_overflow_indicator_);
   SetControlVisibility(more_content_left_.get(),
                        !draw_border_ && horiz_sb_->visible() &&
-                           offset.x() > horiz_sb_->GetMinPosition());
-  SetControlVisibility(more_content_right_.get(),
-                       !draw_border_ && horiz_sb_->visible() &&
-                           !vert_sb_->visible() &&
-                           offset.x() < horiz_sb_->GetMaxPosition());
+                           offset.x() > horiz_sb_->GetMinPosition() &&
+                           draw_overflow_indicator_);
+  SetControlVisibility(
+      more_content_right_.get(),
+      !draw_border_ && horiz_sb_->visible() && !vert_sb_->visible() &&
+          offset.x() < horiz_sb_->GetMaxPosition() && draw_overflow_indicator_);
 }
 
 // VariableRowHeightScrollHelper ----------------------------------------------
