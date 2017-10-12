@@ -3663,6 +3663,9 @@ crbug.com/762008 [ Android ] http/tests/appcache/abort-cache-onchecking-resource
 crbug.com/764489 editing/execCommand/format-block-multiple-paragraphs.html [ Failure ]
 crbug.com/764489 editing/execCommand/format-block-multiple-paragraphs-in-pre.html [ Failure ]
 
+# Incorrect pixel alignment due to float number scale factor.
+crbug.com/773810 external/wpt/css/css-transforms-2/transform3d-perspective-008.html [ Failure ]
+
 # Sheriff failure 2017-09-06
 crbug.com/762390 [ Android ] http/tests/devtools/console/only-one-deprecation-warning.js [ Pass Crash ]
 crbug.com/762423 [ Android ] http/tests/dom/create-contextual-fragment-from-svg-document-range.html [ Pass Crash ]
