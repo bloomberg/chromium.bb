@@ -182,12 +182,12 @@ void AppBannerManagerAndroid::PerformInstallableCheck() {
     }
 
     // We must have some error in |code| if we reached this point, so report it.
-    StopWithCode(code);
+    Stop(code);
     return;
   }
 
   if (can_install_webapk_ && !AreWebManifestUrlsWebApkCompatible(manifest_)) {
-    StopWithCode(URL_NOT_SUPPORTED_FOR_WEBAPK);
+    Stop(URL_NOT_SUPPORTED_FOR_WEBAPK);
     return;
   }
 
@@ -209,7 +209,7 @@ void AppBannerManagerAndroid::OnDidPerformInstallableCheck(
 
 void AppBannerManagerAndroid::OnAppIconFetched(const SkBitmap& bitmap) {
   if (bitmap.drawsNothing()) {
-    StopWithCode(NO_ICON_AVAILABLE);
+    Stop(NO_ICON_AVAILABLE);
     return;
   }
 

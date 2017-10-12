@@ -82,12 +82,12 @@ class AppBannerManagerTest : public AppBannerManager {
   }
 
  protected:
-  // All calls to RequestAppBanner should terminate in one of StopWithCode()
-  // (not showing banner), UpdateState(State::PENDING_ENGAGEMENT) (waiting for
+  // All calls to RequestAppBanner should terminate in one of Stop() (not
+  // showing banner), UpdateState(State::PENDING_ENGAGEMENT) (waiting for
   // sufficient engagement), or ShowBannerUi(). Override these methods to
   // capture test status.
-  void StopWithCode(InstallableStatusCode code) override {
-    AppBannerManager::StopWithCode(code);
+  void Stop(InstallableStatusCode code) override {
+    AppBannerManager::Stop(code);
     ASSERT_FALSE(will_show_.get());
     will_show_.reset(new bool(false));
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, quit_closure_);
