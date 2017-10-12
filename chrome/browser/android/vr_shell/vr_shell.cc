@@ -168,6 +168,10 @@ void VrShell::SwapContents(
     const JavaParamRef<jobject>& tab,
     const JavaParamRef<jobject>& android_ui_gesture_target) {
   DCHECK(tab.obj());
+  content_id_++;
+  PostToGlThread(FROM_HERE,
+                 base::Bind(&VrShellGl::OnSwapContents,
+                            gl_thread_->GetVrShellGl(), content_id_));
   TabAndroid* active_tab =
       TabAndroid::GetNativeTab(env, JavaParamRef<jobject>(env, tab));
   DCHECK(active_tab);
@@ -789,8 +793,12 @@ void VrShell::SetContentCssSize(float width, float height, float dpr) {
   Java_VrShellImpl_setContentCssSize(env, j_vr_shell_, width, height, dpr);
 }
 
-void VrShell::ProcessContentGesture(
-    std::unique_ptr<blink::WebInputEvent> event) {
+void VrShell::ProcessContentGesture(std::unique_ptr<blink::WebInputEvent> event,
+                                    int content_id) {
+  // Block the events if they don't belong to the current content
+  if (content_id_ != content_id)
+    return;
+
   if (web_contents_event_forwarder_) {
     web_contents_event_forwarder_->ForwardEvent(std::move(event));
   } else if (android_ui_gesture_target_) {
