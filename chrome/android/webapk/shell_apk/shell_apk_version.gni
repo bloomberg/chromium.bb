@@ -12,4 +12,4 @@ template_shell_apk_version = 28
 # if the WebAPK's ShellAPK version is less than |expected_shell_apk_version|.
 # The version should be incremented after a new ShellAPK has been uploaded to
 # the WebAPK Minting Server.
-expected_shell_apk_version = 26
+expected_shell_apk_version = 28
