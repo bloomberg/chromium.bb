@@ -63,11 +63,6 @@ using base::SysUTF16ToNSString;
 
 namespace {
 
-enum class TestCase {
-  ALL,       // Test all strings.
-  LTR_ONLY,  // Only test Left To Right strings.
-};
-
 // Implemented NSResponder action messages for use in tests.
 NSArray* const kMoveActions = @[
   @"moveForward:",
@@ -177,6 +172,29 @@ gfx::Rect GetExpectedBoundsForRange(ui::TextInputClient* client,
   // positions.
   return gfx::Rect(left_caret.x(), left_caret.y(),
                    right_caret.x() - left_caret.x(), left_caret.height());
+}
+
+// Uses the NSTextInputClient protocol to extract a substring from |view|.
+NSString* GetViewStringForRange(NSView<NSTextInputClient>* view,
+                                NSRange range) {
+  return [[view attributedSubstringForProposedRange:range actualRange:nullptr]
+      string];
+}
+
+// The behavior of NSTextView for RTL strings is buggy for some move and select
+// commands, but only when the command is received when there is a selection
+// active. E.g. moveRight: moves a cursor right in an RTL string, but it moves
+// to the left-end of a selection. See TestEditingCommands() for specifics.
+// This is filed as rdar://27863290.
+bool IsRTLMoveBuggy(SEL sel) {
+  return sel == @selector(moveWordRight:) || sel == @selector(moveWordLeft:) ||
+         sel == @selector(moveRight:) || sel == @selector(moveLeft:);
+}
+bool IsRTLSelectBuggy(SEL sel) {
+  return sel == @selector(moveWordRightAndModifySelection:) ||
+         sel == @selector(moveWordLeftAndModifySelection:) ||
+         sel == @selector(moveRightAndModifySelection:) ||
+         sel == @selector(moveLeftAndModifySelection:);
 }
 
 }  // namespace
@@ -313,11 +331,14 @@ class BridgedNativeWidgetTest : public BridgedNativeWidgetTestBase {
 
   void InstallTextField(const std::string& text);
 
-  // Returns the actual current text for |ns_view_|.
+  // Returns the actual current text for |ns_view_|, or the selected substring.
   NSString* GetActualText();
+  NSString* GetActualSelectedText();
 
-  // Returns the expected current text from |dummy_text_view_|.
+  // Returns the expected current text from |dummy_text_view_|, or the selected
+  // substring.
   NSString* GetExpectedText();
+  NSString* GetExpectedSelectedText();
 
   // Returns the actual selection range for |ns_view_|.
   NSRange GetActualSelectionRange();
@@ -359,7 +380,7 @@ class BridgedNativeWidgetTest : public BridgedNativeWidgetTestBase {
   // focused views::TextField to ensure the resulting text and selection ranges
   // match. |selectors| is an NSArray of NSStrings. |cases| determines whether
   // RTL strings are to be tested.
-  void TestEditingCommands(NSArray* selectors, TestCase cases = TestCase::ALL);
+  void TestEditingCommands(NSArray* selectors);
 
   std::unique_ptr<views::View> view_;
 
@@ -415,16 +436,20 @@ void BridgedNativeWidgetTest::InstallTextField(const std::string& text) {
 }
 
 NSString* BridgedNativeWidgetTest::GetActualText() {
-  NSRange range = NSMakeRange(0, NSUIntegerMax);
-  return [[ns_view_ attributedSubstringForProposedRange:range
-                                            actualRange:nullptr] string];
+  return GetViewStringForRange(ns_view_, NSMakeRange(0, NSUIntegerMax));
+}
+
+NSString* BridgedNativeWidgetTest::GetActualSelectedText() {
+  return GetViewStringForRange(ns_view_, [ns_view_ selectedRange]);
 }
 
 NSString* BridgedNativeWidgetTest::GetExpectedText() {
-  NSRange range = NSMakeRange(0, NSUIntegerMax);
-  return
-      [[dummy_text_view_ attributedSubstringForProposedRange:range
-                                                 actualRange:nullptr] string];
+  return GetViewStringForRange(dummy_text_view_, NSMakeRange(0, NSUIntegerMax));
+}
+
+NSString* BridgedNativeWidgetTest::GetExpectedSelectedText() {
+  return GetViewStringForRange(dummy_text_view_,
+                               [dummy_text_view_ selectedRange]);
 }
 
 NSRange BridgedNativeWidgetTest::GetActualSelectionRange() {
@@ -449,18 +474,16 @@ void BridgedNativeWidgetTest::PerformCommand(SEL sel) {
 
 void BridgedNativeWidgetTest::MakeSelection(int start, int end) {
   ui::TextInputClient* client = [ns_view_ textInputClient];
-  client->SetSelectionRange(gfx::Range(start, end));
+  const gfx::Range range(start, end);
 
-  // Though NSTextView has a selectionAffinity property, it does not seem to
-  // correspond to the selection direction. Hence we extend the selection from
-  //|start| to |end|.
-  [dummy_text_view_ setSelectedRange:NSMakeRange(start, 0)];
-  SEL sel = start > end ? @selector(moveBackwardAndModifySelection:)
-                        : @selector(moveForwardAndModifySelection:);
-  size_t delta = std::abs(end - start);
+  // Although a gfx::Range is directed, the underlying model will not choose an
+  // affinity until the cursor is moved.
+  client->SetSelectionRange(range);
 
-  for (size_t i = 0; i < delta; i++)
-    [dummy_text_view_ doCommandBySelector:sel];
+  // Set the range without an affinity. The first @selector sent to the text
+  // field determines the affinity. Note that Range::ToNSRange() may discard
+  // the direction since NSRange has no direction.
+  [dummy_text_view_ setSelectedRange:range.ToNSRange()];
 }
 
 void BridgedNativeWidgetTest::SetKeyDownEvent(NSEvent* event) {
@@ -569,34 +592,63 @@ void BridgedNativeWidgetTest::TestDeleteEnd(SEL sel) {
                     GetActualSelectionRange());
 }
 
-void BridgedNativeWidgetTest::TestEditingCommands(NSArray* selectors,
-                                                  TestCase cases) {
-  std::vector<base::string16> test_strings;
-  test_strings.push_back(base::WideToUTF16(L"ab c"));
-  if (cases == TestCase::ALL) {
-    test_strings.push_back(
-        base::WideToUTF16(L"\x0634\x0632 \x064A"));  // RTL string.
-  }
+void BridgedNativeWidgetTest::TestEditingCommands(NSArray* selectors) {
+  struct {
+    base::string16 test_string;
+    bool is_rtl;
+  } test_cases[] = {
+      {base::WideToUTF16(L"ab c"), false},
+      {base::WideToUTF16(L"\x0634\x0632 \x064A"), true},
+  };
 
-  for (const base::string16& test_string : test_strings) {
+  for (const auto& test_case : test_cases) {
     for (NSString* selector_string in selectors) {
       SEL sel = NSSelectorFromString(selector_string);
-      const int len = test_string.length();
+      const int len = test_case.test_string.length();
       for (int i = 0; i <= len; i++) {
         for (int j = 0; j <= len; j++) {
           SCOPED_TRACE(base::StringPrintf(
               "Testing range [%d-%d] for case %s and selector %s\n", i, j,
-              base::UTF16ToUTF8(test_string).c_str(),
+              base::UTF16ToUTF8(test_case.test_string).c_str(),
               base::SysNSStringToUTF8(selector_string).c_str()));
 
-          InstallTextField(test_string);
+          InstallTextField(test_case.test_string);
           MakeSelection(i, j);
+
+          // Sanity checks for MakeSelection().
+          EXPECT_NSEQ(GetExpectedSelectedText(), GetActualSelectedText());
           EXPECT_EQ_RANGE_3(NSMakeRange(std::min(i, j), std::abs(i - j)),
                             GetExpectedSelectionRange(),
                             GetActualSelectionRange());
 
+          // Bail out early for selection-modifying commands that are buggy in
+          // Cocoa, since the selected text will not match.
+          if (test_case.is_rtl && i != j && IsRTLSelectBuggy(sel))
+            continue;
+
           PerformCommand(sel);
+          EXPECT_NSEQ(GetExpectedSelectedText(), GetActualSelectedText());
           EXPECT_NSEQ(GetExpectedText(), GetActualText());
+
+          // Spot-check some Cocoa RTL bugs. These only manifest when there is a
+          // selection (i != j), not for regular cursor moves.
+          if (test_case.is_rtl && i != j && IsRTLMoveBuggy(sel)) {
+            if (sel == @selector(moveRight:)) {
+              // Surely moving right with an rtl string moves to the start of a
+              // range (i.e. min). But Cocoa moves to the end.
+              EXPECT_EQ_RANGE(NSMakeRange(std::max(i, j), 0),
+                              GetExpectedSelectionRange());
+              EXPECT_EQ_RANGE(NSMakeRange(std::min(i, j), 0),
+                              GetActualSelectionRange());
+            } else if (sel == @selector(moveLeft:)) {
+              EXPECT_EQ_RANGE(NSMakeRange(std::min(i, j), 0),
+                              GetExpectedSelectionRange());
+              EXPECT_EQ_RANGE(NSMakeRange(std::max(i, j), 0),
+                              GetActualSelectionRange());
+            }
+            continue;
+          }
+
           EXPECT_EQ_RANGE(GetExpectedSelectionRange(),
                           GetActualSelectionRange());
         }
@@ -1144,10 +1196,7 @@ TEST_F(BridgedNativeWidgetTest, TextInput_MoveEditingCommands) {
 
 // Test move and select commands against expectations set by |dummy_text_view_|.
 TEST_F(BridgedNativeWidgetTest, TextInput_MoveAndSelectEditingCommands) {
-  // The behavior of NSTextView for RTL strings is buggy for some move and
-  // select commands. Hence don't test against an RTL string. See
-  // rdar://27863290.
-  TestEditingCommands(kSelectActions, TestCase::LTR_ONLY);
+  TestEditingCommands(kSelectActions);
 }
 
 // Test delete commands against expectations set by |dummy_text_view_|.

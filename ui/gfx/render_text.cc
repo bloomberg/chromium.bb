@@ -520,16 +520,35 @@ void RenderText::MoveCursor(BreakType break_type,
                             VisualCursorDirection direction,
                             SelectionBehavior selection_behavior) {
   SelectionModel cursor(cursor_position(), selection_model_.caret_affinity());
+
+  // Ensure |cursor| is at the "end" of the current selection, since this
+  // determines which side should grow or shrink. If the prior change to the
+  // selection wasn't from cursor movement, the selection may be undirected. Or,
+  // the selection may be collapsing. In these cases, pick the "end" using
+  // |direction| (e.g. the arrow key) rather than the current selection range.
+  if ((!has_directed_selection_ || selection_behavior == SELECTION_NONE) &&
+      !selection().is_empty()) {
+    SelectionModel start = GetSelectionModelForSelectionStart();
+    int start_x = GetCursorBounds(start, true).x();
+    int end_x = GetCursorBounds(cursor, true).x();
+
+    // Use the selection start if it is left (when |direction| is CURSOR_LEFT)
+    // or right (when |direction| is CURSOR_RIGHT) of the selection end.
+    if (direction == CURSOR_RIGHT ? start_x > end_x : start_x < end_x) {
+      // In this case, a direction has been chosen that doesn't match
+      // |selection_model|, so the range must be reversed to place the cursor at
+      // the other end. Note the affinity won't matter: only the affinity of
+      // |start| (which points "in" to the selection) determines the movement.
+      Range range = selection_model_.selection();
+      selection_model_ = SelectionModel(Range(range.end(), range.start()),
+                                        selection_model_.caret_affinity());
+      cursor = start;
+    }
+  }
+
   // Cancelling a selection moves to the edge of the selection.
   if (break_type != LINE_BREAK && !selection().is_empty() &&
       selection_behavior == SELECTION_NONE) {
-    SelectionModel selection_start = GetSelectionModelForSelectionStart();
-    int start_x = GetCursorBounds(selection_start, true).x();
-    int cursor_x = GetCursorBounds(cursor, true).x();
-    // Use the selection start if it is left (when |direction| is CURSOR_LEFT)
-    // or right (when |direction| is CURSOR_RIGHT) of the selection end.
-    if (direction == CURSOR_RIGHT ? start_x > cursor_x : start_x < cursor_x)
-      cursor = selection_start;
     // Use the nearest word boundary in the proper |direction| for word breaks.
     if (break_type == WORD_BREAK)
       cursor = GetAdjacentSelectionModel(cursor, break_type, direction);
@@ -575,6 +594,7 @@ void RenderText::MoveCursor(BreakType break_type,
   }
 
   SetSelection(cursor);
+  has_directed_selection_ = true;
 }
 
 bool RenderText::SetSelection(const SelectionModel& model) {
@@ -621,8 +641,8 @@ bool RenderText::IsPointInSelection(const Point& point) {
 }
 
 void RenderText::ClearSelection() {
-  SetSelectionModel(SelectionModel(cursor_position(),
-                                   selection_model_.caret_affinity()));
+  SetSelectionModel(
+      SelectionModel(cursor_position(), selection_model_.caret_affinity()));
 }
 
 void RenderText::SelectAll(bool reversed) {
@@ -973,6 +993,7 @@ RenderText::RenderText()
       directionality_mode_(DIRECTIONALITY_FROM_TEXT),
       text_direction_(base::i18n::UNKNOWN_DIRECTION),
       cursor_enabled_(true),
+      has_directed_selection_(kSelectionIsAlwaysDirected),
       selection_color_(kDefaultColor),
       selection_background_focused_color_(kDefaultSelectionBackgroundColor),
       focused_(false),
@@ -1046,6 +1067,7 @@ void RenderText::SetSelectionModel(const SelectionModel& model) {
   DCHECK_LE(model.selection().GetMax(), text().length());
   selection_model_ = model;
   cached_bounds_and_offset_valid_ = false;
+  has_directed_selection_ = kSelectionIsAlwaysDirected;
 }
 
 void RenderText::OnTextColorChanged() {
