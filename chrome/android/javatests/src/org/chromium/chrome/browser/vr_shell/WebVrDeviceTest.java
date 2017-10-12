@@ -70,8 +70,8 @@ public class WebVrDeviceTest {
         mVrTestFramework.loadUrlAndAwaitInitialization(
                 VrTestFramework.getHtmlTestFile("test_device_capabilities_match_expectations"),
                 PAGE_LOAD_TIMEOUT_S);
-        mVrTestFramework.executeStepAndWait("stepCheckDeviceCapabilities('" + Build.DEVICE + "')",
+        VrTestFramework.executeStepAndWait("stepCheckDeviceCapabilities('" + Build.DEVICE + "')",
                 mVrTestFramework.getFirstTabWebContents());
-        mVrTestFramework.endTest(mVrTestFramework.getFirstTabWebContents());
+        VrTestFramework.endTest(mVrTestFramework.getFirstTabWebContents());
     }
 }

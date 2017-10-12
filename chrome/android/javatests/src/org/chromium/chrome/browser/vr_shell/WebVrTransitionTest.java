@@ -91,7 +91,7 @@ public class WebVrTransitionTest {
         VrTransitionUtils.enterPresentationAndWait(
                 mVrTestFramework.getFirstTabCvc(), mVrTestFramework.getFirstTabWebContents());
         Assert.assertTrue("VrShellDelegate is in VR", VrShellDelegate.isInVr());
-        mVrTestFramework.endTest(mVrTestFramework.getFirstTabWebContents());
+        VrTestFramework.endTest(mVrTestFramework.getFirstTabWebContents());
     }
 
     /**
@@ -107,8 +107,8 @@ public class WebVrTransitionTest {
         mVrTestFramework.loadUrlAndAwaitInitialization(
                 VrTestFramework.getHtmlTestFile("test_webvr_disabled_without_flag_set"),
                 PAGE_LOAD_TIMEOUT_S);
-        mVrTestFramework.waitOnJavaScriptStep(mVrTestFramework.getFirstTabWebContents());
-        mVrTestFramework.endTest(mVrTestFramework.getFirstTabWebContents());
+        VrTestFramework.waitOnJavaScriptStep(mVrTestFramework.getFirstTabWebContents());
+        VrTestFramework.endTest(mVrTestFramework.getFirstTabWebContents());
     }
 
     /**
@@ -122,11 +122,11 @@ public class WebVrTransitionTest {
         mVrTestFramework.loadUrlAndAwaitInitialization(
                 VrTestFramework.getHtmlTestFile("test_nfc_fires_vrdisplayactivate"),
                 PAGE_LOAD_TIMEOUT_S);
-        mVrTestFramework.runJavaScriptOrFail(
+        VrTestFramework.runJavaScriptOrFail(
                 "addListener()", POLL_TIMEOUT_LONG_MS, mVrTestFramework.getFirstTabWebContents());
         NfcSimUtils.simNfcScan(mVrTestRule.getActivity());
-        mVrTestFramework.waitOnJavaScriptStep(mVrTestFramework.getFirstTabWebContents());
-        mVrTestFramework.endTest(mVrTestFramework.getFirstTabWebContents());
+        VrTestFramework.waitOnJavaScriptStep(mVrTestFramework.getFirstTabWebContents());
+        VrTestFramework.endTest(mVrTestFramework.getFirstTabWebContents());
     }
 
     /**
@@ -142,7 +142,7 @@ public class WebVrTransitionTest {
                 PAGE_LOAD_TIMEOUT_S);
         VrTransitionUtils.enterPresentationAndWait(
                 mVrTestFramework.getFirstTabCvc(), mVrTestFramework.getFirstTabWebContents());
-        mVrTestFramework.endTest(mVrTestFramework.getFirstTabWebContents());
+        VrTestFramework.endTest(mVrTestFramework.getFirstTabWebContents());
     }
 
     /**
@@ -190,8 +190,8 @@ public class WebVrTransitionTest {
         }, POLL_TIMEOUT_LONG_MS, POLL_CHECK_INTERVAL_SHORT_MS);
 
         WebContents wc = cct.get().getActivityTab().getWebContents();
-        mVrTestFramework.waitOnJavaScriptStep(wc);
-        mVrTestFramework.endTest(wc);
+        VrTestFramework.waitOnJavaScriptStep(wc);
+        VrTestFramework.endTest(wc);
     }
 
     /**
