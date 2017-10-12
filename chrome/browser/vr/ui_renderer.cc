@@ -147,6 +147,8 @@ void UiRenderer::DrawElements(const gfx::Transform& view_proj_matrix,
   if (elements.empty()) {
     return;
   }
+  vr_shell_renderer_->set_surface_texture_size(
+      render_info.surface_texture_size);
   bool drawn_reticle = false;
   for (const auto* element : elements) {
     // If we have no element to draw the reticle on, draw it after the
