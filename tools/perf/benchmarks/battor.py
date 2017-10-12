@@ -28,6 +28,10 @@ class _BattOrBenchmark(perf_benchmark.PerfBenchmark):
         ['powerMetric', 'clockSyncLatencyMetric', 'cpuTimeMetric'])
     return options
 
+  @classmethod
+  def ShouldDisable(cls, possible_browser):
+    return not possible_browser.platform.HasBattOrConnected()
+
 
 @benchmark.Owner(emails=['charliea@chromium.org'])
 class BattOrTrivialPages(_BattOrBenchmark):

@@ -65,6 +65,11 @@ class _LongRunningGmailBase(_LongRunningStory):
 class _LongRunningGmailMobileBase(_LongRunningGmailBase):
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
 
+  @classmethod
+  def ShouldDisable(cls, possible_browser):
+    # crbug.com/651198
+    return possible_browser.platform.IsSvelte()
+
   def _DidLoadDocument(self, action_runner):
     # Close the "Get Inbox by Gmail" interstitial.
     action_runner.WaitForJavaScriptCondition(

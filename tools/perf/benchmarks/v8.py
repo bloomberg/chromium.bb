@@ -74,6 +74,12 @@ class _Top25RuntimeStats(perf_benchmark.PerfBenchmark):
     tbm_options.SetTimelineBasedMetrics(['runtimeStatsMetric'])
     return tbm_options
 
+  @classmethod
+  def ShouldDisable(cls, possible_browser):
+    if possible_browser.browser_type == 'reference':
+      return True
+    return False
+
 
 @benchmark.Owner(emails=['cbruni@chromium.org'])
 class V8Top25RuntimeStats(_Top25RuntimeStats):
