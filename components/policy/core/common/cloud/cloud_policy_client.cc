@@ -424,8 +424,6 @@ void CloudPolicyClient::FetchRemoteCommands(
 void CloudPolicyClient::GetDeviceAttributeUpdatePermission(
     const std::string &auth_token,
     const CloudPolicyClient::StatusCallback& callback) {
-  // TODO(pbond): remove this LOG once http://crbug.com/586961 is fixed.
-  LOG(WARNING) << "Send DeviceAttributeUpdatePermissionRequest";
   CHECK(is_registered());
   DCHECK(!auth_token.empty());
 
@@ -714,9 +712,6 @@ void CloudPolicyClient::OnDeviceAttributeUpdatePermissionCompleted(
     DeviceManagementStatus status,
     int net_error,
     const em::DeviceManagementResponse& response) {
-  // TODO(pbond): remove this LOG once http://crbug.com/586961 is fixed.
-  LOG(WARNING) << "Receive DeviceAttributeUpdatePermissionResponse status="
-               << status << " net_error=" << net_error;
   bool success = false;
 
   if (status == DM_STATUS_SUCCESS &&
@@ -730,8 +725,6 @@ void CloudPolicyClient::OnDeviceAttributeUpdatePermissionCompleted(
       response.device_attribute_update_permission_response().has_result() &&
       response.device_attribute_update_permission_response().result() ==
       em::DeviceAttributeUpdatePermissionResponse::ATTRIBUTE_UPDATE_ALLOWED) {
-    // TODO(pbond): remove this LOG once http://crbug.com/586961 is fixed.
-    LOG(WARNING) << "The device attribute update is permitted.";
     success = true;
   }
 
