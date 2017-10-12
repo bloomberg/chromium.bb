@@ -516,10 +516,6 @@ void FrameFetchContext::DispatchDidReceiveResponse(
   }
 
   if (response.IsLegacySymantecCert()) {
-    // TODO(estark): Consider capping this after the message has been printed
-    // some number of times, since this could get spammy for sites that have
-    // lots of subresources with Symantec certs.
-    // https://bugs.chromium.org/p/chromium/issues/detail?id=770406#c1
     GetLocalFrameClient()->ReportLegacySymantecCert(
         response.Url(), response.CertValidityStart());
   }

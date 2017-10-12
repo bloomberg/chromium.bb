@@ -1698,11 +1698,14 @@ bool ChromeContentRendererClient::OverrideLegacySymantecCertConsoleMessage(
   base::Time chrome_66_not_before = base::Time::FromDoubleT(1464739200);
   const char* in_future_string =
       cert_validity_start < chrome_66_not_before ? "in M66" : "in M70";
+  std::string port;
+  if (url.port() != "443")
+    port = base::StringPrintf(":%s", url.port().c_str());
   *console_message = base::StringPrintf(
-      "The SSL certificate used to load %s"
+      "The SSL certificate used to load resources from %s://%s%s"
       " will be distrusted %s. Once distrusted, users will be prevented from "
-      "loading this resource. See https://g.co/chrome/symantecpkicerts for "
+      "loading these resources. See https://g.co/chrome/symantecpkicerts for "
       "more information.",
-      url.spec().c_str(), in_future_string);
+      url.scheme().c_str(), url.host().c_str(), port.c_str(), in_future_string);
   return true;
 }
