@@ -12,6 +12,10 @@
 class TestLocalDataBrowserProxy extends TestBrowserProxy {
   constructor() {
     super([
+      'getDisplayList',
+      'removeAll',
+      'removeShownItems',
+      'removeItem',
       'getCookieDetails',
       'reloadCookies',
       'removeCookie',
@@ -19,19 +23,64 @@ class TestLocalDataBrowserProxy extends TestBrowserProxy {
 
     /** @private {?CookieList} */
     this.cookieDetails_ = null;
+
+    /** @private {Array<!CookieList>} */
+    this.cookieList_ = [];
+  }
+
+  /**
+   * Test-only helper.
+   * @param {!CookieList} cookieList
+   */
+  setCookieDetails(cookieList) {
+    this.cookieDetails_ = cookieList;
+  }
+
+  /**
+   * Test-only helper.
+   * @param {!CookieList} cookieList
+   */
+  setCookieList(cookieList) {
+    this.cookieList_ = cookieList;
+    this.filteredCookieList_ = cookieList;
+  }
+
+  /** @override */
+  getDisplayList(filter, begin, count) {
+    if (filter === undefined)
+      filter = '';
+    if (count == -1)
+      count = this.cookieList_.length;
+    let output = [];
+    let end = Math.min(begin + count, this.cookieList_.length);
+    for (let i = begin; i < end; ++i) {
+      if (this.cookieList_[i].site.indexOf(filter) >= 0) {
+        output.push(this.filteredCookieList_[i]);
+      }
+    }
+    return Promise.resolve({items: output});
+  }
+
+  /** @override */
+  removeAll() {
+    this.methodCalled('removeAll');
+    return Promise.resolve({id: null, children: []});
+  }
+
+  /** @override */
+  removeShownItems() {
+    this.methodCalled('removeShownItems');
+  }
+
+  /** @override */
+  removeItem(id) {
+    this.methodCalled('removeItem', id);
   }
 
   /** @override */
   getCookieDetails(site) {
     this.methodCalled('getCookieDetails', site);
     return Promise.resolve(this.cookieDetails_ || {id: '', children: []});
-  }
-
-  /**
-   * @param {!CookieList} cookieList
-   */
-  setCookieDetails(cookieList) {
-    this.cookieDetails_ = cookieList;
   }
 
   /** @override */

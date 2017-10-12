@@ -1034,6 +1034,7 @@ CrSettingsSiteDataTest.prototype = {
   browsePreload: 'chrome://settings/site_settings/site_data.html',
 
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    'test_util.js',
     '../test_browser_proxy.js',
     'test_local_data_browser_proxy.js',
     'site_data_test.js',

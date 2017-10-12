@@ -5,6 +5,19 @@
 (function() {
 'use strict';
 
+var categoryLabels = {
+  app_cache: loadTimeData.getString('cookieAppCache'),
+  cache_storage: loadTimeData.getString('cookieCacheStorage'),
+  channel_id: loadTimeData.getString('cookieChannelId'),
+  database: loadTimeData.getString('cookieDatabaseStorage'),
+  file_system: loadTimeData.getString('cookieFileSystem'),
+  flash_lso: loadTimeData.getString('cookieFlashLso'),
+  indexed_db: loadTimeData.getString('cookieDatabaseStorage'),
+  local_storage: loadTimeData.getString('cookieLocalStorage'),
+  service_worker: loadTimeData.getString('cookieServiceWorker'),
+  media_license: loadTimeData.getString('cookieMediaLicense'),
+};
+
 /**
  * 'site-data-details-subpage' Display cookie contents.
  */
@@ -45,7 +58,7 @@ Polymer({
     this.browserProxy_ = settings.LocalDataBrowserProxyImpl.getInstance();
 
     this.addWebUIListener(
-        'onTreeItemRemoved', this.getCookieDetails_.bind(this));
+        'on-tree-item-removed', this.getCookieDetails_.bind(this));
   },
 
   /**
@@ -118,7 +131,9 @@ Polymer({
     // cookie to differentiate them.
     if (item.type == 'cookie')
       return item.title;
-    return getCookieDataCategoryText(item.type, item.totalUsage);
+    if (item.type == 'quota')
+      return item.totalUsage;
+    return categoryLabels[item.type];
   },
 
   /**

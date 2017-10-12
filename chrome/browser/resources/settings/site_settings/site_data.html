@@ -3,13 +3,15 @@
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="../settings_page/settings_subpage_search.html">
 <link rel="import" href="../settings_shared_css.html">
-<link rel="import" href="cookie_tree_behavior.html">
+<link rel="import" href="local_data_browser_proxy.html">
 <link rel="import" href="site_settings_behavior.html">
 
 <dom-module id="site-data">
@@ -23,39 +25,37 @@
         -webkit-margin-start: auto;
       }
 
-      #removeSecondary {
+      .separator {
         -webkit-padding-start: 0;
       }
     </style>
     <div class="settings-box continuation">
       <paper-button class="secondary-button" id="removeShowingSites"
-          on-tap="onRemoveShowingSitesTap_"
-          hidden$="[[!isRemoveButtonVisible_(sites, renderedItemCount)]]">
+          on-tap="onRemoveShowingSitesTap_" hidden$="[[!sites.length]]">
         [[computeRemoveLabel_(filter)]]
       </paper-button>
     </div>
-    <template is="dom-repeat" id="list" items="[[sites]]" filter="showItem_"
-        rendered-item-count="{{renderedItemCount::dom-change}}"
-        notify-dom-change>
-      <div class="settings-box two-line" first$="[[!index]]" id="siteItem"
-          on-tap="onSiteTap_" actionable>
-        <div class="favicon-image"
-            style$="background-image: [[favicon_(item.site)]]">
+    <iron-list id="list" items="[[sites]]">
+      <template>
+        <div class="settings-box two-line site-item" first$="[[!index]]"
+            on-tap="onSiteTap_" actionable>
+          <div class="favicon-image"
+              style$="background-image: [[favicon_(item.site)]]">
+          </div>
+          <div class="middle">
+            [[item.site]]
+            <div class="secondary">[[item.localData]]</div>
+          </div>
+          <button class="subpage-arrow" is="paper-icon-button-light"
+              aria-label$="[[item.site]]"></button>
+          <div class="separator"></div>
+          <button is="paper-icon-button-light" class="icon-delete-gray"
+              title$="[[i18n('siteSettingsCookieRemoveSite', item.site)]]"
+              on-tap="onRemoveSiteTap_">
+          </button>
         </div>
-        <div class="middle">
-          [[item.site]]
-          <div class="secondary" id="siteSecondary">[[item.localData]]</div>
-        </div>
-        <button class="subpage-arrow" is="paper-icon-button-light"
-            aria-label$="[[item.site]]"
-            aria-describedby="siteSecondary"></button>
-        <div class="separator" id="removeSecondary"></div>
-        <button is="paper-icon-button-light" class="icon-delete-gray"
-            title$="[[i18n('siteSettingsCookieRemoveSite', item.site)]]"
-            on-tap="onRemoveSiteTap_">
-        </button>
-      </div>
-    </template>
+      </template>
+    </iron-list>
 
     <!-- Confirm Delete dialog -->
     <dialog is="cr-dialog" id="confirmDeleteDialog" close-text="$i18n{close}"
@@ -75,6 +75,5 @@
     </dialog>
   </template>
   <script src="cookie_info.js"></script>
-  <script src="cookie_tree_node.js"></script>
   <script src="site_data.js"></script>
 </dom-module>

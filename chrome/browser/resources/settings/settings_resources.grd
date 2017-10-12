@@ -418,9 +418,6 @@
       <structure name="IDR_SETTINGS_COOKIE_INFO_JS"
                  file="site_settings/cookie_info.js"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_COOKIE_TREE_NODE_JS"
-                 file="site_settings/cookie_tree_node.js"
-                 type="chrome_html" />
       <if expr="not chromeos">
         <structure name="IDR_SETTINGS_DEFAULT_BROWSER_BROWSER_PROXY_HTML"
                    file="default_browser_page/default_browser_browser_proxy.html"
@@ -870,12 +867,6 @@
                  file="route.js"
                  type="chrome_html"
                  preprocess="true" />
-      <structure name="IDR_SETTINGS_COOKIE_TREE_BEHAVIOR_HTML"
-                 file="site_settings/cookie_tree_behavior.html"
-                 type="chrome_html" />
-      <structure name="IDR_SETTINGS_COOKIE_TREE_BEHAVIOR_JS"
-                 file="site_settings/cookie_tree_behavior.js"
-                 type="chrome_html" />
       <structure name="IDR_SETTINGS_SITE_DATA_HTML"
                  file="site_settings/site_data.html"
                  type="chrome_html" />
