@@ -600,7 +600,7 @@ void SessionControllerClient::SendSessionLengthLimit() {
         local_state->GetInt64(prefs::kSessionStartTime));
   }
 
-  policy::DeviceOffHoursController* off_hours_controller =
+  policy::off_hours::DeviceOffHoursController* off_hours_controller =
       chromeos::DeviceSettingsService::Get()->device_off_hours_controller();
   base::TimeTicks policy_off_hours_end_time =
       off_hours_controller->GetOffHoursEndTime();

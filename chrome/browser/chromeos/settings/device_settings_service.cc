@@ -15,7 +15,8 @@
 #include "base/time/time.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
-#include "chrome/browser/chromeos/policy/device_off_hours_controller.h"
+#include "chrome/browser/chromeos/policy/off_hours/device_off_hours_controller.h"
+#include "chrome/browser/chromeos/policy/off_hours/off_hours_policy_applier.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/chromeos/settings/session_manager_operation.h"
 #include "components/ownership/owner_key_util.h"
@@ -69,7 +70,7 @@ DeviceSettingsService* DeviceSettingsService::Get() {
 
 DeviceSettingsService::DeviceSettingsService() {
   device_off_hours_controller_ =
-      base::MakeUnique<policy::DeviceOffHoursController>();
+      base::MakeUnique<policy::off_hours::DeviceOffHoursController>();
 }
 
 DeviceSettingsService::~DeviceSettingsService() {
@@ -117,7 +118,7 @@ scoped_refptr<PublicKey> DeviceSettingsService::GetPublicKey() {
 }
 
 void DeviceSettingsService::SetDeviceOffHoursControllerForTesting(
-    std::unique_ptr<policy::DeviceOffHoursController> controller) {
+    std::unique_ptr<policy::off_hours::DeviceOffHoursController> controller) {
   device_off_hours_controller_ = std::move(controller);
 }
 
@@ -307,7 +308,7 @@ void DeviceSettingsService::HandleCompletedOperation(
     device_off_hours_controller_->UpdateOffHoursPolicy(*device_settings_);
     if (device_off_hours_controller_->is_off_hours_mode()) {
       std::unique_ptr<em::ChromeDeviceSettingsProto> off_device_settings =
-          policy::ApplyOffHoursPolicyToProto(*device_settings_);
+          policy::off_hours::ApplyOffHoursPolicyToProto(*device_settings_);
       if (off_device_settings)
         device_settings_.swap(off_device_settings);
     }

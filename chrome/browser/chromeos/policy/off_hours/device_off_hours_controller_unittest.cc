@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/policy/device_off_hours_controller.h"
+#include "chrome/browser/chromeos/policy/off_hours/device_off_hours_controller.h"
 
 #include <utility>
 
@@ -42,7 +42,7 @@ class DeviceOffHoursControllerTest : public DeviceSettingsTestBase {
     system_clock_client_ = new chromeos::FakeSystemClockClient();
     dbus_setter_->SetSystemClockClient(base::WrapUnique(system_clock_client_));
     device_settings_service_.SetDeviceOffHoursControllerForTesting(
-        base::MakeUnique<policy::DeviceOffHoursController>());
+        base::MakeUnique<policy::off_hours::DeviceOffHoursController>());
   }
 
   void SetDeviceSettings() {
@@ -122,7 +122,7 @@ class DeviceOffHoursControllerTest : public DeviceSettingsTestBase {
   }
 
  private:
-  std::unique_ptr<policy::DeviceOffHoursController>
+  std::unique_ptr<policy::off_hours::DeviceOffHoursController>
       device_off_hours_controller_;
 
   // The object is owned by DeviceSettingsTestBase class.

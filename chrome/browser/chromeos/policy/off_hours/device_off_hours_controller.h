@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_POLICY_DEVICE_OFF_HOURS_CONTROLLER_H_
-#define CHROME_BROWSER_CHROMEOS_POLICY_DEVICE_OFF_HOURS_CONTROLLER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_POLICY_OFF_HOURS_DEVICE_OFF_HOURS_CONTROLLER_H_
+#define CHROME_BROWSER_CHROMEOS_POLICY_OFF_HOURS_DEVICE_OFF_HOURS_CONTROLLER_H_
 
 #include <memory>
 #include <vector>
@@ -13,36 +13,13 @@
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "base/values.h"
 #include "chrome/browser/chromeos/policy/off_hours/off_hours_interval.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/dbus/system_clock_client.h"
 
 namespace policy {
-
-// Return DictionaryValue in format:
-// { "timezone" : string,
-//   "intervals" : list of "OffHours" Intervals,
-//   "ignored_policy_proto_tags" : integer list }
-// "OffHours" Interval dictionary format:
-// { "start" : WeeklyTime,
-//   "end" : WeeklyTime }
-// WeeklyTime dictionary format:
-// { "day_of_week" : int # value is from 1 to 7 (1 = Monday, 2 = Tuesday, etc.)
-//   "time" : int # in milliseconds from the beginning of the day.
-// }
-// This function is used by device_policy_decoder_chromeos to save "OffHours"
-// policy in PolicyMap.
-std::unique_ptr<base::DictionaryValue> ConvertOffHoursProtoToValue(
-    const enterprise_management::DeviceOffHoursProto& container);
-
-// Apply "OffHours" policy for proto which contains device policies. Return
-// ChromeDeviceSettingsProto without policies from |ignored_policy_proto_tags|.
-// The system will revert to the default behavior for the removed policies.
-std::unique_ptr<enterprise_management::ChromeDeviceSettingsProto>
-ApplyOffHoursPolicyToProto(
-    const enterprise_management::ChromeDeviceSettingsProto& input_policies);
+namespace off_hours {
 
 // The main class for handling "OffHours" policy turns "OffHours" mode on and
 // off, handles server and client time, timezone.
@@ -148,12 +125,14 @@ class DeviceOffHoursController : public chromeos::SystemClockClient::Observer,
   bool network_synchronized_ = false;
 
   // Current "OffHours" time intervals.
-  std::vector<off_hours::OffHoursInterval> off_hours_intervals_;
+  std::vector<OffHoursInterval> off_hours_intervals_;
 
-  base::WeakPtrFactory<DeviceOffHoursController> weak_ptr_factory_;
+  base::WeakPtrFactory<DeviceOffHoursController> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DeviceOffHoursController);
 };
+
+}  // namespace off_hours
 }  // namespace policy
 
-#endif  // CHROME_BROWSER_CHROMEOS_POLICY_DEVICE_OFF_HOURS_CONTROLLER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_POLICY_OFF_HOURS_DEVICE_OFF_HOURS_CONTROLLER_H_
