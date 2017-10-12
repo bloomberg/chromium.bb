@@ -32,6 +32,8 @@ void MediaControlMuteButtonElement::UpdateDisplayType() {
   SetDisplayType(muted ? kMediaUnMuteButton : kMediaMuteButton);
   SetClass("muted", muted);
   UpdateOverflowString();
+
+  MediaControlInputElement::UpdateDisplayType();
 }
 
 WebLocalizedString::Name MediaControlMuteButtonElement::GetOverflowStringName()

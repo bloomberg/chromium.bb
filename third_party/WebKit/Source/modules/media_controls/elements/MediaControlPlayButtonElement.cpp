@@ -30,6 +30,8 @@ void MediaControlPlayButtonElement::UpdateDisplayType() {
                                          : kMediaPauseButton);
   SetClass("pause", MediaElement().paused());
   UpdateOverflowString();
+
+  MediaControlInputElement::UpdateDisplayType();
 }
 
 WebLocalizedString::Name MediaControlPlayButtonElement::GetOverflowStringName()

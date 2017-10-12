@@ -62,10 +62,10 @@ class MODULES_EXPORT MediaControlInputElement : public HTMLInputElement,
   // Sets/removes a CSS class from this element based on |should_have_class|.
   void SetClass(const AtomicString& class_name, bool should_have_class);
 
+  virtual void UpdateDisplayType();
+
  private:
   friend class MediaControlInputElementTest;
-
-  virtual void UpdateDisplayType();
 
   bool IsMouseFocusable() const override;
   bool IsMediaControlElement() const final;

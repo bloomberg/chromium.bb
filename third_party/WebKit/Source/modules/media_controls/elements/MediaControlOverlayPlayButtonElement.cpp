@@ -23,6 +23,7 @@ MediaControlOverlayPlayButtonElement::MediaControlOverlayPlayButtonElement(
 
 void MediaControlOverlayPlayButtonElement::UpdateDisplayType() {
   SetIsWanted(MediaElement().ShouldShowControls() && MediaElement().paused());
+  MediaControlInputElement::UpdateDisplayType();
 }
 
 const char* MediaControlOverlayPlayButtonElement::GetNameForHistograms() const {
