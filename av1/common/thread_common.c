@@ -286,10 +286,9 @@ static int loop_filter_row_worker(AV1LfSync *const lf_sync,
 #endif  //  CONFIG_PARALLEL_DEBLOCKING
 
 static void loop_filter_rows_mt(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
-                                struct macroblockd_plane planes[MAX_MB_PLANE],
-                                int start, int stop, int y_only,
-                                AVxWorker *workers, int nworkers,
-                                AV1LfSync *lf_sync) {
+                                struct macroblockd_plane *planes, int start,
+                                int stop, int y_only, AVxWorker *workers,
+                                int nworkers, AV1LfSync *lf_sync) {
 #if CONFIG_EXT_PARTITION
   printf(
       "STOPPING: This code has not been modified to work with the "
@@ -415,7 +414,7 @@ static void loop_filter_rows_mt(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
 }
 
 void av1_loop_filter_frame_mt(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
-                              struct macroblockd_plane planes[MAX_MB_PLANE],
+                              struct macroblockd_plane *planes,
                               int frame_filter_level,
 #if CONFIG_LOOPFILTER_LEVEL
                               int frame_filter_level_r,
