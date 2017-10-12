@@ -1,38 +1,38 @@
 <!DOCTYPE html>
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
-<p>
-This tests double clicking after the last character in the last cell of a
-block table.  The paragraph break (the space between the last character and the
-first character in the next paragraph) should be selected.  Selection painting
-problems might prevent the paragraph break from appearing as selected even
-though it is.  To test manually, double click inside the table cell, after the
-last character, and hit delete.  Afterward, the table should contain 'foobar'.
-</p>
-<div contenteditable="true">
-<table border="1"><tr><td width="100px"><span id="span">foo</span></td></tr></table>
-<div id="end">bar</div>
-</div>
+<script src="../../assert_selection.js"></script>
 <script>
-test(() => {
+selection_test(
+  [
+    '<div contenteditable>',
+      '<table border="1"><tr>',
+        '<td width="100px"><span id="span">foo</span></td>',
+      '</tr></table>',
+      '<div>bar</div>',
+    '</div>',
+  ],
+  selection => {
     assert_not_equals(window.eventSender, undefined,
         'this test requires eventSender');
 
-    const span = document.getElementById('span');
-    const x = span.offsetParent.offsetLeft + span.offsetLeft + span.offsetWidth + 10;
-    y = span.offsetParent.offsetParent.offsetTop + span.offsetParent.offsetTop + span.offsetTop + span.offsetHeight / 2;
+    const span = selection.document.getElementById('span');
+    const x = selection.computeLeft(span) + span.offsetWidth + 10;
+    const y = selection.computeTop(span) + span.offsetHeight / 2;
 
     eventSender.mouseMoveTo(x, y);
     eventSender.mouseDown();
     eventSender.mouseUp();
     eventSender.mouseDown();
     eventSender.mouseUp();
-
-    const selection = window.getSelection();
-    assert_false(selection.isCollapsed, 'isCollapsed');
-    assert_equals(selection.anchorNode, span.firstChild, 'anchorNode');
-    assert_equals(selection.anchorOffset, 3, 'anchorOffset');
-    assert_equals(selection.focusNode, document.getElementById('end'), 'focusNode');
-    assert_equals(selection.focusOffset, 0, 'focusOffset');
-});
+  },
+  [
+    '<div contenteditable>',
+      '<table border="1"><tbody><tr>',
+        '<td width="100px"><span id="span">foo^</span></td>',
+      '</tr></tbody></table>',
+      '<div>|bar</div>',
+    '</div>',
+  ],
+  'Double-click after the last character of table cell');
 </script>
