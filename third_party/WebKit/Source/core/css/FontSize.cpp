@@ -90,6 +90,7 @@ float FontSize::GetComputedSizeFromSpecifiedSize(
 }
 
 const int kFontSizeTableMax = 16;
+const int kDefaultMediumFontSize = 12;
 const int kFontSizeTableMin = 9;
 const int kTotalKeywords = 8;
 
@@ -131,8 +132,9 @@ static int inline RowFromMediumFontSizeInRange(const Settings* settings,
                                                bool quirks_mode,
                                                bool is_monospace,
                                                int& medium_size) {
-  medium_size = is_monospace ? settings->GetDefaultFixedFontSize()
-                             : settings->GetDefaultFontSize();
+  medium_size = settings ? (is_monospace ? settings->GetDefaultFixedFontSize()
+                                         : settings->GetDefaultFontSize())
+                         : kDefaultMediumFontSize;
   if (medium_size >= kFontSizeTableMin && medium_size <= kFontSizeTableMax)
     return medium_size - kFontSizeTableMin;
   return -1;
@@ -143,11 +145,9 @@ float FontSize::FontSizeForKeyword(const Document* document,
                                    bool is_monospace) {
   DCHECK_GE(keyword, 1u);
   DCHECK_LE(keyword, 8u);
-  const Settings* settings = document->GetSettings();
-  if (!settings)
-    return 1.0f;
+  const Settings* settings = document ? document->GetSettings() : nullptr;
+  bool quirks_mode = document ? document->InQuirksMode() : false;
 
-  bool quirks_mode = document->InQuirksMode();
   int medium_size = 0;
   int row = RowFromMediumFontSizeInRange(settings, quirks_mode, is_monospace,
                                          medium_size);
@@ -158,7 +158,8 @@ float FontSize::FontSizeForKeyword(const Document* document,
   }
 
   // Value is outside the range of the table. Apply the scale factor instead.
-  float min_logical_size = std::max(settings->GetMinimumLogicalFontSize(), 1);
+  float min_logical_size =
+      settings ? std::max(settings->GetMinimumLogicalFontSize(), 1) : 1;
   return std::max(kFontSizeFactors[keyword - 1] * medium_size,
                   min_logical_size);
 }
