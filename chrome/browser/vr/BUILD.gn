@@ -23,6 +23,8 @@ static_library("vr_common") {
     "databinding/binding.h",
     "databinding/binding_base.cc",
     "databinding/binding_base.h",
+    "databinding/vector_binding.h",
+    "databinding/vector_element_binding.h",
     "elements/button.cc",
     "elements/button.h",
     "elements/button_texture.cc",
@@ -160,6 +162,7 @@ test("vr_common_unittests") {
   sources = [
     "animation_player_unittest.cc",
     "databinding/binding_unittest.cc",
+    "databinding/vector_binding_unittest.cc",
     "elements/close_button_texture_unittest.cc",
     "elements/exit_prompt_unittest.cc",
     "elements/linear_layout_unittest.cc",
