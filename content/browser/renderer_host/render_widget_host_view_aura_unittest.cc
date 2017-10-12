@@ -648,9 +648,8 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
   }
 
   void SetUpEnvironment(bool enable_surface_synchronization) {
-    ImageTransportFactory::InitializeForUnitTests(
-        std::unique_ptr<ImageTransportFactory>(
-            new NoTransportImageTransportFactory));
+    ImageTransportFactory::SetFactory(
+        std::make_unique<NoTransportImageTransportFactory>());
     aura_test_helper_.reset(new aura::test::AuraTestHelper());
     aura_test_helper_->SetUp(
         ImageTransportFactory::GetInstance()->GetContextFactory(),

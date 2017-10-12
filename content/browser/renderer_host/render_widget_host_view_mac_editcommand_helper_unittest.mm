@@ -98,8 +98,8 @@ class RenderWidgetHostDelegateEditCommandCounter
 class RenderWidgetHostViewMacEditCommandHelperTest : public PlatformTest {
  protected:
   void SetUp() override {
-    ImageTransportFactory::InitializeForUnitTests(
-        base::MakeUnique<NoTransportImageTransportFactory>());
+    ImageTransportFactory::SetFactory(
+        std::make_unique<NoTransportImageTransportFactory>());
   }
   void TearDown() override { ImageTransportFactory::Terminate(); }
 
@@ -111,8 +111,8 @@ class RenderWidgetHostViewMacEditCommandHelperWithTaskEnvTest
     : public PlatformTest {
  protected:
   void SetUp() override {
-    ImageTransportFactory::InitializeForUnitTests(
-        base::MakeUnique<NoTransportImageTransportFactory>());
+    ImageTransportFactory::SetFactory(
+        std::make_unique<NoTransportImageTransportFactory>());
   }
   void TearDown() override { ImageTransportFactory::Terminate(); }
 

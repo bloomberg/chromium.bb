@@ -142,8 +142,8 @@ RenderViewHostTestEnabler::RenderViewHostTestEnabler()
   if (!base::MessageLoop::current())
     message_loop_ = base::MakeUnique<base::MessageLoop>();
 #if !defined(OS_ANDROID)
-  ImageTransportFactory::InitializeForUnitTests(
-      base::MakeUnique<NoTransportImageTransportFactory>());
+  ImageTransportFactory::SetFactory(
+      std::make_unique<NoTransportImageTransportFactory>());
 #else
   if (!screen_)
     screen_.reset(ui::CreateDummyScreenAndroid());
