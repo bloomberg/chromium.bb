@@ -5,10 +5,9 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ARC_VOICE_INTERACTION_HIGHLIGHTER_CONTROLLER_CLIENT_H_
 #define CHROME_BROWSER_CHROMEOS_ARC_VOICE_INTERACTION_HIGHLIGHTER_CONTROLLER_CLIENT_H_
 
-#include <memory>
-
-#include "ash/highlighter/highlighter_selection_observer.h"
+#include "ash/public/interfaces/highlighter_controller.mojom.h"
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/binding.h"
 
 namespace gfx {
 class Rect;
@@ -22,22 +21,41 @@ namespace arc {
 
 class ArcVoiceInteractionFrameworkService;
 
-// TODO(kaznacheev) Convert observer to a mojo connection (crbug/769996)
-class HighlighterControllerClient : public ash::HighlighterSelectionObserver {
+class HighlighterControllerClient
+    : public ash::mojom::HighlighterControllerClient {
  public:
   explicit HighlighterControllerClient(
       ArcVoiceInteractionFrameworkService* service);
   ~HighlighterControllerClient() override;
 
+  // Attaches the client to the controller.
+  void Attach();
+
+  // Detaches the client from the controller.
+  void Detach();
+
+  void SetControllerForTesting(ash::mojom::HighlighterControllerPtr controller);
+
+  void SimulateSelectionTimeoutForTesting();
+
+  void FlushMojoForTesting();
+
  private:
-  // ash::HighlighterSelectionObserver:
+  void ConnectToHighlighterController();
+
+  // ash::mojom::HighlighterControllerClient:
   void HandleSelection(const gfx::Rect& rect) override;
-  void HandleFailedSelection() override;
   void HandleEnabledStateChange(bool enabled) override;
 
   void ReportSelection(const gfx::Rect& rect);
 
   bool start_session_pending() const { return delay_timer_.get(); }
+
+  // Binds to the client interface.
+  mojo::Binding<ash::mojom::HighlighterControllerClient> binding_;
+
+  // HighlighterController interface in ash.
+  ash::mojom::HighlighterControllerPtr highlighter_controller_;
 
   ArcVoiceInteractionFrameworkService* service_;
 

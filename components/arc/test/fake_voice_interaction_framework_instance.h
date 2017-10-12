@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include "components/arc/common/voice_interaction_framework.mojom.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace arc {
 
@@ -36,12 +37,33 @@ class FakeVoiceInteractionFrameworkInstance
   size_t toggle_session_count() const { return toggle_session_count_; }
   size_t setup_wizard_count() const { return setup_wizard_count_; }
   size_t show_settings_count() const { return show_settings_count_; }
+  size_t set_metalayer_visibility_count() const {
+    return set_metalayer_visibility_count_;
+  }
+  bool metalayer_visible() const { return metalayer_visible_; }
+  size_t start_session_for_region_count() const {
+    return start_session_for_region_count_;
+  }
+  const gfx::Rect& selected_region() const { return selected_region_; }
+
+  void ResetCounters() {
+    start_session_count_ = 0u;
+    toggle_session_count_ = 0u;
+    setup_wizard_count_ = 0u;
+    show_settings_count_ = 0u;
+    set_metalayer_visibility_count_ = 0u;
+    start_session_for_region_count_ = 0u;
+  }
 
  private:
   size_t start_session_count_ = 0u;
   size_t toggle_session_count_ = 0u;
   size_t setup_wizard_count_ = 0u;
   size_t show_settings_count_ = 0u;
+  size_t set_metalayer_visibility_count_ = 0u;
+  bool metalayer_visible_ = true;
+  size_t start_session_for_region_count_ = 0u;
+  gfx::Rect selected_region_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeVoiceInteractionFrameworkInstance);
 };

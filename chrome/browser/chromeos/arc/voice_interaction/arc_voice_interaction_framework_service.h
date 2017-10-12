@@ -123,6 +123,10 @@ class ArcVoiceInteractionFrameworkService
   // Starts voice interaction OOBE flow.
   void StartVoiceInteractionOobe();
 
+  HighlighterControllerClient* GetHighlighterClientForTesting() const {
+    return highlighter_client_.get();
+  }
+
   // For supporting ArcServiceManager::GetService<T>().
   static const char kArcServiceName[];
 

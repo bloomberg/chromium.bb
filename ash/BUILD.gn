@@ -189,7 +189,6 @@ component("ash") {
     "highlighter/highlighter_gesture_util.h",
     "highlighter/highlighter_result_view.cc",
     "highlighter/highlighter_result_view.h",
-    "highlighter/highlighter_selection_observer.h",
     "highlighter/highlighter_view.cc",
     "highlighter/highlighter_view.h",
     "host/ash_window_tree_host.cc",

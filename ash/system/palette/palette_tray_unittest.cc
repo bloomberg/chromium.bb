@@ -336,11 +336,7 @@ TEST_F(PaletteTrayTestWithVoiceInteraction, MetalayerToolActivatesHighlighter) {
                          true /* highlighter shown on press */);
   // When metalayer is entered normally (not via stylus button), a failed
   // selection should not exit the mode.
-  // NOTE that this is not testing the real logic in PaletteDelegateChromeOS,
-  // but the logic in HighlighterControllerTestApi (which is mimicking
-  // PaletteDelegateChromeOS). Once PaletteDelegateChromeOS is refactored
-  // (crbug/761120) the assertions below become more useful.
-  EXPECT_TRUE(highlighter_test_api_->handle_failed_selection_called());
+  EXPECT_FALSE(highlighter_test_api_->HandleSelectionCalled());
   EXPECT_TRUE(metalayer_enabled());
 
   // A successfull selection should exit the metalayer mode.
@@ -351,7 +347,7 @@ TEST_F(PaletteTrayTestWithVoiceInteraction, MetalayerToolActivatesHighlighter) {
   EXPECT_TRUE(metalayer_enabled());
   generator.MoveTouch(gfx::Point(300, 100));
   generator.ReleaseTouch();
-  EXPECT_TRUE(highlighter_test_api_->handle_selection_called());
+  EXPECT_TRUE(highlighter_test_api_->HandleSelectionCalled());
   EXPECT_FALSE(metalayer_enabled());
 
   SCOPED_TRACE("drag over palette");

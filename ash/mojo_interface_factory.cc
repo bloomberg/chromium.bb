@@ -9,6 +9,7 @@
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/cast_config_controller.h"
 #include "ash/display/ash_display_controller.h"
+#include "ash/highlighter/highlighter_controller.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/login/lock_screen_controller.h"
 #include "ash/media_controller.h"
@@ -55,6 +56,11 @@ void BindAshDisplayControllerRequestOnMainThread(
 
 void BindCastConfigOnMainThread(mojom::CastConfigRequest request) {
   Shell::Get()->cast_config()->BindRequest(std::move(request));
+}
+
+void BindHighlighterControllerRequestOnMainThread(
+    mojom::HighlighterControllerRequest request) {
+  Shell::Get()->highlighter_controller()->BindRequest(std::move(request));
 }
 
 void BindImeControllerRequestOnMainThread(mojom::ImeControllerRequest request) {
@@ -132,12 +138,15 @@ void RegisterInterfaces(
       main_thread_task_runner);
   registry->AddInterface(base::Bind(&BindAppListRequestOnMainThread),
                          main_thread_task_runner);
-  registry->AddInterface(base::Bind(&BindImeControllerRequestOnMainThread),
-                         main_thread_task_runner);
   registry->AddInterface(
       base::Bind(&BindAshDisplayControllerRequestOnMainThread),
       main_thread_task_runner);
   registry->AddInterface(base::Bind(&BindCastConfigOnMainThread),
+                         main_thread_task_runner);
+  registry->AddInterface(
+      base::Bind(&BindHighlighterControllerRequestOnMainThread),
+      main_thread_task_runner);
+  registry->AddInterface(base::Bind(&BindImeControllerRequestOnMainThread),
                          main_thread_task_runner);
   registry->AddInterface(
       base::Bind(&BindLocaleNotificationControllerOnMainThread),

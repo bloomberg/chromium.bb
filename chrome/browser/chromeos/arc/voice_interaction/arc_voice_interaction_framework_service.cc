@@ -195,6 +195,7 @@ ArcVoiceInteractionFrameworkService::ArcVoiceInteractionFrameworkService(
     : context_(context),
       arc_bridge_service_(bridge_service),
       binding_(this),
+      highlighter_client_(std::make_unique<HighlighterControllerClient>(this)),
       weak_ptr_factory_(this) {
   arc_bridge_service_->voice_interaction_framework()->AddObserver(this);
   ArcSessionManager::Get()->AddObserver(this);
@@ -228,12 +229,13 @@ void ArcVoiceInteractionFrameworkService::OnInstanceReady() {
     }
   }
 
-  highlighter_client_ = std::make_unique<HighlighterControllerClient>(this);
+  highlighter_client_->Attach();
 }
 
 void ArcVoiceInteractionFrameworkService::OnInstanceClosed() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  highlighter_client_.reset();
+  binding_.Close();
+  highlighter_client_->Detach();
 }
 
 void ArcVoiceInteractionFrameworkService::CaptureFullscreen(
