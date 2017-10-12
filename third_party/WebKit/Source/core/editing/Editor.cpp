@@ -1055,14 +1055,18 @@ bool Editor::InsertTextWithoutSendingTextEvent(
   if (!selection.IsContentEditable())
     return false;
 
+  EditingState editing_state;
   // Insert the text
   TypingCommand::InsertText(
       *selection.Start().GetDocument(), text, selection.AsSelection(),
       select_inserted_text ? TypingCommand::kSelectInsertedText : 0,
+      &editing_state,
       triggering_event && triggering_event->IsComposition()
           ? TypingCommand::kTextCompositionConfirm
           : TypingCommand::kTextCompositionNone,
       false, input_type);
+  if (editing_state.IsAborted())
+    return false;
 
   // Reveal the current selection
   if (LocalFrame* edited_frame = selection.Start().GetDocument()->GetFrame()) {

@@ -78,6 +78,7 @@ class CORE_EXPORT TypingCommand final : public CompositeEditCommand {
       const String&,
       const SelectionInDOMTree&,
       Options,
+      EditingState*,
       TextCompositionType = kTextCompositionNone,
       const bool is_incremental_insertion = false,
       InputEvent::InputType = InputEvent::InputType::kInsertText);
