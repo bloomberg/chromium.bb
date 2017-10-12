@@ -150,7 +150,7 @@ TEST_F(PasswordGenerationManagerTest, IsGenerationEnabled) {
 
   EXPECT_CALL(*client_, GetPasswordSyncState())
       .WillRepeatedly(testing::Return(SYNCING_WITH_CUSTOM_PASSPHRASE));
-  EXPECT_FALSE(IsGenerationEnabled());
+  EXPECT_TRUE(IsGenerationEnabled());
 
   // Disabling password syncing should cause generation to be disabled.
   EXPECT_CALL(*client_, GetPasswordSyncState())

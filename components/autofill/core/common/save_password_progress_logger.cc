@@ -394,9 +394,6 @@ std::string SavePasswordProgressLogger::GetStringFromID(
       return "Generation disabled: saving disabled";
     case SavePasswordProgressLogger::STRING_GENERATION_DISABLED_NO_SYNC:
       return "Generation disabled: no sync";
-    case SavePasswordProgressLogger::
-        STRING_GENERATION_DISABLED_CUSTOM_PASSPHRASE:
-      return "Generation disabled: custom passphrase";
     case STRING_GENERATION_RENDERER_ENABLED:
       return "Generation renderer enabled";
     case STRING_GENERATION_RENDERER_INVALID_PASSWORD_FORM:
