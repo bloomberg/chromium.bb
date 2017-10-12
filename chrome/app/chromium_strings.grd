@@ -241,9 +241,6 @@ If you update this file, be sure also to update google_chrome_strings.grd. -->
           Chromium is unresponsive. Relaunch now?
         </message>
       </if>
-      <message name="IDS_IMPORT_FIND_YOUR_BOOKMARKS" desc="Helpful reminder for where to find imported bookmarks">
-        Find your bookmarks in the Chromium menu or on the bookmarks bar.
-      </message>
       <message name="IDS_IMPORTER_LOCK_TEXT" desc="The message to be displayed on dialog">
         Sadly, your Mozilla Firefox settings are not available while that browser is running. To import those settings to Chromium, save your work and close all Firefox windows. Then click Continue.
       </message>
