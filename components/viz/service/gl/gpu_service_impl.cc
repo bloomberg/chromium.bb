@@ -153,14 +153,14 @@ void GpuServiceImpl::UpdateGPUInfoFromPreferences(
 }
 
 void GpuServiceImpl::InitializeWithHost(
-    ui::mojom::GpuHostPtr gpu_host,
+    mojom::GpuHostPtr gpu_host,
     gpu::GpuProcessActivityFlags activity_flags,
     gpu::SyncPointManager* sync_point_manager,
     base::WaitableEvent* shutdown_event) {
   DCHECK(main_runner_->BelongsToCurrentThread());
   gpu_host->DidInitialize(gpu_info_, gpu_feature_info_);
-  gpu_host_ = ui::mojom::ThreadSafeGpuHostPtr::Create(gpu_host.PassInterface(),
-                                                      io_runner_);
+  gpu_host_ =
+      mojom::ThreadSafeGpuHostPtr::Create(gpu_host.PassInterface(), io_runner_);
   if (!in_host_process()) {
     // The global callback is reset from the dtor. So Unretained() here is safe.
     // Note that the callback can be called from any thread. Consequently, the

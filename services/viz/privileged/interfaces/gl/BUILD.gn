@@ -6,6 +6,8 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("gl") {
   sources = [
+    "context_lost_reason.mojom",
+    "gpu_host.mojom",
     "gpu_service.mojom",
   ]
 
@@ -15,5 +17,6 @@ mojom("gl") {
     "//media/mojo/interfaces",
     "//ui/gfx/geometry/mojo",
     "//ui/gfx/mojo",
+    "//url/mojo:url_mojom_gurl",
   ]
 }
