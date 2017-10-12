@@ -330,9 +330,6 @@ const char kEnableExtensionActivityLogTesting[] =
 // crbug.com/142458 .
 const char kEnableFastUnload[] = "enable-fast-unload";
 
-// Enables the Material Design feedback form.
-const char kEnableMaterialDesignFeedback[] = "enable-md-feedback";
-
 // Runs the Native Client inside the renderer process and enables GPU plugin
 // (internally adds lEnableGpuPlugin to the command line).
 const char kEnableNaCl[]                    = "enable-nacl";
@@ -1024,11 +1021,6 @@ bool ExtensionsDisabled(const base::CommandLine& command_line) {
 
 bool ExtensionsDisabled() {
   return ExtensionsDisabled(*base::CommandLine::ForCurrentProcess());
-}
-
-bool MdFeedbackEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      ::switches::kEnableMaterialDesignFeedback);
 }
 
 #if defined(OS_CHROMEOS)

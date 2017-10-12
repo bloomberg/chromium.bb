@@ -386,11 +386,6 @@ const char kEnableMaterialDesignExtensionsDescription[] =
     "If enabled, the chrome://extensions/ URL loads the Material Design "
     "extensions page.";
 
-const char kEnableMaterialDesignFeedbackName[] =
-    "Enable Material Design feedback";
-const char kEnableMaterialDesignFeedbackDescription[] =
-    "If enabled, reporting an issue will load the Material Design feedback UI.";
-
 const char kEnablePolicyToolName[] = "Enable policy management page";
 const char kEnablePolicyToolDescription[] =
     "If enabled, the chrome://policy-tool URL loads a page for managing "
