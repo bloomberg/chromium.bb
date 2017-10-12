@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/observer_list_threadsafe.h"
 #include "base/optional.h"
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/lock.h"
@@ -61,6 +62,14 @@ class PrintersSyncBridge : public syncer::ModelTypeSyncBridge {
   base::Optional<sync_pb::PrinterSpecifics> GetPrinter(
       const std::string& id) const;
 
+  class Observer {
+   public:
+    virtual void OnPrintersUpdated() = 0;
+  };
+
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
  private:
   class StoreProxy;
 
@@ -76,8 +85,15 @@ class PrintersSyncBridge : public syncer::ModelTypeSyncBridge {
   // change. |data_lock_| must be acquired before calling this function.
   bool DeleteSpecifics(const std::string& id,
                        syncer::ModelTypeStore::WriteBatch* batch);
+  // Merges the |printer| with an existing |printer| if their ids match.
+  // Otherwise, adds the printer.  Returns true if the printer is new.
+  // |data_lock_| must be acquired before calling this funciton.
+  bool UpdatePrinterLocked(std::unique_ptr<sync_pb::PrinterSpecifics> printer);
+  // Call OnPrintersUpdated asynchronously on all registered observers.
+  void NotifyPrintersUpdated();
 
   std::unique_ptr<StoreProxy> store_delegate_;
+  scoped_refptr<base::ObserverListThreadSafe<Observer>> observers_;
 
   // Lock over |all_data_|.
   mutable base::Lock data_lock_;
