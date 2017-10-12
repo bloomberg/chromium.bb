@@ -89810,6 +89810,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="VoiceInteraction.OpenDuration" units="ms">
+  <owner>xiaohuic@chromium.org</owner>
+  <summary>
+    Records the time between a voice interaction session start and end.
+  </summary>
+</histogram>
+
 <histogram name="VoiceInteraction.UserInteractionToRequestArrival" units="ms">
   <owner>muyuanli@chromium.org</owner>
   <summary>

@@ -121,6 +121,7 @@ class ASH_EXPORT AppListButton : public views::ImageButton,
   std::unique_ptr<base::OneShotTimer> voice_interaction_animation_delay_timer_;
   std::unique_ptr<base::OneShotTimer>
       voice_interaction_animation_hide_delay_timer_;
+  base::TimeTicks voice_interaction_start_timestamp_;
 
   // Flag that gets set each time we receive a mouse or gesture event. It is
   // then used to render the ink drop in the right location.
