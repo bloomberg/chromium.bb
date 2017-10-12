@@ -50,9 +50,6 @@ PrefetchServiceImpl::PrefetchServiceImpl(
   prefetch_downloader_->SetPrefetchService(this);
   prefetch_gcm_handler_->SetService(this);
   suggested_articles_observer_->SetPrefetchService(this);
-  // TODO(dimich): OK for experiments, only takes a little memory if experiment
-  // is enabled. Remove before stable launch.
-  logger_.SetIsLogging(true);
 }
 
 PrefetchServiceImpl::~PrefetchServiceImpl() {
