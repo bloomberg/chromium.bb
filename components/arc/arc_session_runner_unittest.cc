@@ -158,7 +158,7 @@ TEST_F(ArcSessionRunnerTest, Basic) {
 
   EXPECT_FALSE(arc_session());
 
-  arc_session_runner()->RequestStart();
+  arc_session_runner()->RequestStart(ArcInstanceMode::FULL_INSTANCE);
   ASSERT_TRUE(arc_session());
   EXPECT_TRUE(arc_session()->IsRunning());
 
@@ -174,13 +174,27 @@ TEST_F(ArcSessionRunnerTest, StopMidStartup) {
       base::Bind(&ArcSessionRunnerTest::CreateSuspendedArcSession));
   EXPECT_FALSE(arc_session());
 
-  arc_session_runner()->RequestStart();
+  arc_session_runner()->RequestStart(ArcInstanceMode::FULL_INSTANCE);
   ASSERT_TRUE(arc_session());
   EXPECT_FALSE(arc_session()->IsRunning());
 
   arc_session_runner()->RequestStop();
   EXPECT_FALSE(arc_session());
   EXPECT_FALSE(restarting());
+}
+
+// Does the same for mini instance.
+TEST_F(ArcSessionRunnerTest, StopMidStartup_MiniInstance) {
+  ResetArcSessionFactory(
+      base::Bind(&ArcSessionRunnerTest::CreateSuspendedArcSession));
+  EXPECT_FALSE(arc_session());
+
+  arc_session_runner()->RequestStart(ArcInstanceMode::MINI_INSTANCE);
+  ASSERT_TRUE(arc_session());
+  EXPECT_FALSE(arc_session()->IsRunning());
+
+  arc_session_runner()->RequestStop();
+  EXPECT_FALSE(arc_session());
 }
 
 // If the boot procedure is failed, then restarting mechanism should not
@@ -191,38 +205,65 @@ TEST_F(ArcSessionRunnerTest, BootFailure) {
                  ArcStopReason::GENERIC_BOOT_FAILURE));
   EXPECT_FALSE(arc_session());
 
-  arc_session_runner()->RequestStart();
+  arc_session_runner()->RequestStart(ArcInstanceMode::FULL_INSTANCE);
   EXPECT_EQ(ArcStopReason::GENERIC_BOOT_FAILURE, stop_reason());
   EXPECT_FALSE(arc_session());
   EXPECT_FALSE(restarting());
 }
 
-// Does the same with the mini instance for login screen.
-TEST_F(ArcSessionRunnerTest, BootFailureForLoginScreen) {
+// Does the same with the mini instance.
+TEST_F(ArcSessionRunnerTest, BootFailure_MiniInstance) {
   ResetArcSessionFactory(
       base::Bind(&ArcSessionRunnerTest::CreateBootFailureArcSession,
-                 ArcStopReason::CRASH));
+                 ArcStopReason::GENERIC_BOOT_FAILURE));
   EXPECT_FALSE(arc_session());
 
-  chromeos::DBusThreadManager::Get()
-      ->GetSessionManagerClient()
-      ->EmitLoginPromptVisible();
   // If starting the mini instance fails, arc_session_runner()'s state goes back
   // to STOPPED, but its observers won't be notified.
+  arc_session_runner()->RequestStart(ArcInstanceMode::MINI_INSTANCE);
   EXPECT_FALSE(arc_session());
   EXPECT_FALSE(stopped_called());
 
   // Also make sure that RequestStart() works just fine after the boot
   // failure.
   ResetArcSessionFactory(base::Bind(FakeArcSession::Create));
-  arc_session_runner()->RequestStart();
+  arc_session_runner()->RequestStart(ArcInstanceMode::FULL_INSTANCE);
   ASSERT_TRUE(arc_session());
   EXPECT_TRUE(arc_session()->IsRunning());
 }
 
+// Similary, CRASH should do same for GENERIC_BOOT_FAILURE case, because
+// in mini instance, Mojo connection should not be established.
+TEST_F(ArcSessionRunnerTest, Crash_MiniInstance) {
+  ResetArcSessionFactory(
+      base::Bind(&ArcSessionRunnerTest::CreateBootFailureArcSession,
+                 ArcStopReason::CRASH));
+  EXPECT_FALSE(arc_session());
+
+  // If starting the mini instance fails, arc_session_runner()'s state goes back
+  // to STOPPED, but its observers won't be notified.
+  arc_session_runner()->RequestStart(ArcInstanceMode::MINI_INSTANCE);
+  EXPECT_FALSE(arc_session());
+  EXPECT_FALSE(stopped_called());
+}
+
 // Tests that RequestStart() works even after EmitLoginPromptVisibleCalled()
 // is called.
-TEST_F(ArcSessionRunnerTest, StartWithLoginScreenInstance) {
+TEST_F(ArcSessionRunnerTest, Upgrade) {
+  EXPECT_FALSE(arc_session());
+
+  arc_session_runner()->RequestStart(ArcInstanceMode::MINI_INSTANCE);
+  ASSERT_TRUE(arc_session());
+  EXPECT_FALSE(arc_session()->IsRunning());
+
+  arc_session_runner()->RequestStart(ArcInstanceMode::FULL_INSTANCE);
+  ASSERT_TRUE(arc_session());
+  EXPECT_TRUE(arc_session()->IsRunning());
+}
+
+// We expect mini instance starts to run if EmitLoginPromptVisible signal is
+// emitted.
+TEST_F(ArcSessionRunnerTest, EmitLoginPromptVisible) {
   EXPECT_FALSE(arc_session());
 
   chromeos::DBusThreadManager::Get()
@@ -230,10 +271,6 @@ TEST_F(ArcSessionRunnerTest, StartWithLoginScreenInstance) {
       ->EmitLoginPromptVisible();
   ASSERT_TRUE(arc_session());
   EXPECT_FALSE(arc_session()->IsRunning());
-
-  arc_session_runner()->RequestStart();
-  ASSERT_TRUE(arc_session());
-  EXPECT_TRUE(arc_session()->IsRunning());
 }
 
 // If the instance is stopped, it should be re-started.
@@ -241,7 +278,7 @@ TEST_F(ArcSessionRunnerTest, Restart) {
   arc_session_runner()->SetRestartDelayForTesting(base::TimeDelta());
   EXPECT_FALSE(arc_session());
 
-  arc_session_runner()->RequestStart();
+  arc_session_runner()->RequestStart(ArcInstanceMode::FULL_INSTANCE);
   ASSERT_TRUE(arc_session());
   EXPECT_TRUE(arc_session()->IsRunning());
 
@@ -263,7 +300,7 @@ TEST_F(ArcSessionRunnerTest, GracefulStop) {
   arc_session_runner()->SetRestartDelayForTesting(base::TimeDelta());
   EXPECT_FALSE(arc_session());
 
-  arc_session_runner()->RequestStart();
+  arc_session_runner()->RequestStart(ArcInstanceMode::FULL_INSTANCE);
   ASSERT_TRUE(arc_session());
   EXPECT_TRUE(arc_session()->IsRunning());
 
@@ -279,7 +316,7 @@ TEST_F(ArcSessionRunnerTest, Shutdown) {
   arc_session_runner()->SetRestartDelayForTesting(base::TimeDelta());
   EXPECT_FALSE(arc_session());
 
-  arc_session_runner()->RequestStart();
+  arc_session_runner()->RequestStart(ArcInstanceMode::FULL_INSTANCE);
   ASSERT_TRUE(arc_session());
   EXPECT_TRUE(arc_session()->IsRunning());
 

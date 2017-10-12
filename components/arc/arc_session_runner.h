@@ -10,10 +10,12 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chromeos/dbus/session_manager_client.h"
+#include "components/arc/arc_instance_mode.h"
 #include "components/arc/arc_session.h"
 #include "components/arc/arc_stop_reason.h"
 
@@ -56,7 +58,7 @@ class ArcSessionRunner : public ArcSession::Observer,
 
   // Starts the ARC service, then it will connect the Mojo channel. When the
   // bridge becomes ready, registered Observer's OnSessionReady() is called.
-  void RequestStart();
+  void RequestStart(ArcInstanceMode request_mode);
 
   // Stops the ARC service.
   void RequestStop();
@@ -92,8 +94,9 @@ class ArcSessionRunner : public ArcSession::Observer,
   // Observers for the ARC instance state change events.
   base::ObserverList<Observer> observer_list_;
 
-  // Whether a client requests to run session or not.
-  bool run_requested_ = false;
+  // Target ARC instance running mode. If nullopt, it means the ARC instance
+  // should stop eventually.
+  base::Optional<ArcInstanceMode> target_mode_;
 
   // Instead of immediately trying to restart the container, give it some time
   // to finish tearing down in case it is still in the process of stopping.
