@@ -202,9 +202,11 @@ NSButton* EyeIcon(id target, SEL action) {
     if (enablePasswordEditing) {
       passwordField_.reset([PasswordCombobox(form, false) retain]);
       [passwordField_ setDelegate:self];
-      passwordViewButton_.reset(
-          [EyeIcon(self, @selector(onEyeClicked:)) retain]);
-      [container addSubview:passwordViewButton_];
+      if (!self.model->hide_eye_icon()) {
+        passwordViewButton_.reset(
+            [EyeIcon(self, @selector(onEyeClicked:)) retain]);
+        [container addSubview:passwordViewButton_];
+      }
     } else {
       passwordField_.reset([PasswordLabel(form.password_value) retain]);
     }
