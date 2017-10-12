@@ -1156,6 +1156,54 @@ static INLINE int assign_dv(AV1_COMMON *cm, MACROBLOCKD *xd, int_mv *mv,
 }
 #endif  // CONFIG_INTRABC
 
+#if CONFIG_INTRABC
+static void read_intrabc_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
+                              int mi_row, int mi_col, aom_reader *r) {
+  MODE_INFO *const mi = xd->mi[0];
+  MB_MODE_INFO *const mbmi = &mi->mbmi;
+  FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
+  mbmi->use_intrabc = aom_read_symbol(r, ec_ctx->intrabc_cdf, 2, ACCT_STR);
+  if (mbmi->use_intrabc) {
+    mbmi->tx_size = read_tx_size(cm, xd, 1, !mbmi->skip, r);
+    mbmi->mode = mbmi->uv_mode = UV_DC_PRED;
+    mbmi->interp_filters = av1_broadcast_interp_filter(BILINEAR);
+
+    int16_t inter_mode_ctx[MODE_CTX_REF_FRAMES];
+    int_mv ref_mvs[MAX_MV_REF_CANDIDATES];
+
+    av1_find_mv_refs(cm, xd, mi, INTRA_FRAME, &xd->ref_mv_count[INTRA_FRAME],
+                     xd->ref_mv_stack[INTRA_FRAME], NULL, ref_mvs, mi_row,
+                     mi_col, NULL, NULL, inter_mode_ctx);
+
+    int_mv nearestmv, nearmv;
+    av1_find_best_ref_mvs(0, ref_mvs, &nearestmv, &nearmv);
+
+    int_mv dv_ref = nearestmv.as_int == 0 ? nearmv : nearestmv;
+    if (dv_ref.as_int == 0) av1_find_ref_dv(&dv_ref, mi_row, mi_col);
+    const BLOCK_SIZE bsize = mbmi->sb_type;
+    xd->corrupted |=
+        !assign_dv(cm, xd, &mbmi->mv[0], &dv_ref, mi_row, mi_col, bsize, r);
+#if CONFIG_VAR_TX
+    // TODO(aconverse@google.com): Evaluate allowing VAR TX on intrabc blocks
+    const int width = block_size_wide[bsize] >> tx_size_wide_log2[0];
+    const int height = block_size_high[bsize] >> tx_size_high_log2[0];
+    int idx, idy;
+    for (idy = 0; idy < height; ++idy)
+      for (idx = 0; idx < width; ++idx)
+        mbmi->inter_tx_size[idy >> 1][idx >> 1] = mbmi->tx_size;
+    mbmi->min_tx_size = get_min_tx_size(mbmi->tx_size);
+#endif  // CONFIG_VAR_TX
+#if CONFIG_EXT_TX && !CONFIG_TXK_SEL
+    av1_read_tx_type(cm, xd,
+#if CONFIG_SUPERTX
+                     0,
+#endif
+                     r);
+#endif  // CONFIG_EXT_TX && !CONFIG_TXK_SEL
+  }
+}
+#endif  // CONFIG_INTRABC
+
 static void read_intra_frame_mode_info(AV1_COMMON *const cm,
                                        MACROBLOCKD *const xd, int mi_row,
                                        int mi_col, aom_reader *r) {
@@ -1220,46 +1268,8 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
 
 #if CONFIG_INTRABC
   if (av1_allow_intrabc(bsize, cm)) {
-    mbmi->use_intrabc = aom_read_symbol(r, ec_ctx->intrabc_cdf, 2, ACCT_STR);
-    if (mbmi->use_intrabc) {
-      mbmi->tx_size = read_tx_size(cm, xd, 1, !mbmi->skip, r);
-      mbmi->mode = mbmi->uv_mode = UV_DC_PRED;
-      mbmi->interp_filters = av1_broadcast_interp_filter(BILINEAR);
-
-      int16_t inter_mode_ctx[MODE_CTX_REF_FRAMES];
-      int_mv ref_mvs[MAX_MV_REF_CANDIDATES];
-
-      av1_find_mv_refs(cm, xd, mi, INTRA_FRAME, &xd->ref_mv_count[INTRA_FRAME],
-                       xd->ref_mv_stack[INTRA_FRAME], NULL, ref_mvs, mi_row,
-                       mi_col, NULL, NULL, inter_mode_ctx);
-
-      int_mv nearestmv, nearmv;
-      av1_find_best_ref_mvs(0, ref_mvs, &nearestmv, &nearmv);
-
-      int_mv dv_ref = nearestmv.as_int == 0 ? nearmv : nearestmv;
-      if (dv_ref.as_int == 0) av1_find_ref_dv(&dv_ref, mi_row, mi_col);
-
-      xd->corrupted |=
-          !assign_dv(cm, xd, &mbmi->mv[0], &dv_ref, mi_row, mi_col, bsize, r);
-#if CONFIG_VAR_TX
-      // TODO(aconverse@google.com): Evaluate allowing VAR TX on intrabc blocks
-      const int width = block_size_wide[bsize] >> tx_size_wide_log2[0];
-      const int height = block_size_high[bsize] >> tx_size_high_log2[0];
-      int idx, idy;
-      for (idy = 0; idy < height; ++idy)
-        for (idx = 0; idx < width; ++idx)
-          mbmi->inter_tx_size[idy >> 1][idx >> 1] = mbmi->tx_size;
-      mbmi->min_tx_size = get_min_tx_size(mbmi->tx_size);
-#endif  // CONFIG_VAR_TX
-#if CONFIG_EXT_TX && !CONFIG_TXK_SEL
-      av1_read_tx_type(cm, xd,
-#if CONFIG_SUPERTX
-                       0,
-#endif
-                       r);
-#endif  // CONFIG_EXT_TX && !CONFIG_TXK_SEL
-      return;
-    }
+    read_intrabc_info(cm, xd, mi_row, mi_col, r);
+    if (is_intrabc_block(mbmi)) return;
   }
 #endif  // CONFIG_INTRABC
 

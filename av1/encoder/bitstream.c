@@ -2124,6 +2124,31 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
 #endif  // !CONFIG_TXK_SEL
 }
 
+#if CONFIG_INTRABC
+static void write_intrabc_info(AV1_COMMON *cm, MACROBLOCKD *xd,
+                               const MB_MODE_INFO_EXT *mbmi_ext,
+                               int enable_tx_size, aom_writer *w) {
+  const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
+  int use_intrabc = is_intrabc_block(mbmi);
+  FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
+  aom_write_symbol(w, use_intrabc, ec_ctx->intrabc_cdf, 2);
+  if (use_intrabc) {
+    assert(mbmi->mode == DC_PRED);
+    assert(mbmi->uv_mode == UV_DC_PRED);
+    if (enable_tx_size && !mbmi->skip) write_selected_tx_size(cm, xd, w);
+    int_mv dv_ref = mbmi_ext->ref_mvs[INTRA_FRAME][0];
+    av1_encode_dv(w, &mbmi->mv[0].as_mv, &dv_ref.as_mv, &ec_ctx->ndvc);
+#if CONFIG_EXT_TX && !CONFIG_TXK_SEL
+    av1_write_tx_type(cm, xd,
+#if CONFIG_SUPERTX
+                      0,
+#endif
+                      w);
+#endif  // CONFIG_EXT_TX && !CONFIG_TXK_SEL
+  }
+}
+#endif  // CONFIG_INTRABC
+
 static void write_mb_modes_kf(AV1_COMMON *cm, MACROBLOCKD *xd,
 #if CONFIG_INTRABC
                               const MB_MODE_INFO_EXT *mbmi_ext,
@@ -2196,25 +2221,11 @@ static void write_mb_modes_kf(AV1_COMMON *cm, MACROBLOCKD *xd,
 
 #if CONFIG_INTRABC
   if (av1_allow_intrabc(bsize, cm)) {
-    int use_intrabc = is_intrabc_block(mbmi);
-    aom_write_symbol(w, use_intrabc, ec_ctx->intrabc_cdf, 2);
-    if (use_intrabc) {
-      assert(mbmi->mode == DC_PRED);
-      assert(mbmi->uv_mode == UV_DC_PRED);
-      if (enable_tx_size && !mbmi->skip) write_selected_tx_size(cm, xd, w);
-      int_mv dv_ref = mbmi_ext->ref_mvs[INTRA_FRAME][0];
-      av1_encode_dv(w, &mbmi->mv[0].as_mv, &dv_ref.as_mv, &ec_ctx->ndvc);
-#if CONFIG_EXT_TX && !CONFIG_TXK_SEL
-      av1_write_tx_type(cm, xd,
-#if CONFIG_SUPERTX
-                        0,
-#endif
-                        w);
-#endif  // CONFIG_EXT_TX && !CONFIG_TXK_SEL
-      return;
-    }
+    write_intrabc_info(cm, xd, mbmi_ext, enable_tx_size, w);
+    if (is_intrabc_block(mbmi)) return;
   }
 #endif  // CONFIG_INTRABC
+
   if (enable_tx_size) write_selected_tx_size(cm, xd, w);
 
   if (bsize >= BLOCK_8X8 || unify_bsize) {
