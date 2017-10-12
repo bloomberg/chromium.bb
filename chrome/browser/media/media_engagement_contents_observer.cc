@@ -71,6 +71,9 @@ MediaEngagementContentsObserver::MediaEngagementContentsObserver(
 MediaEngagementContentsObserver::~MediaEngagementContentsObserver() = default;
 
 void MediaEngagementContentsObserver::WebContentsDestroyed() {
+  // Commit a visit if we have not had a playback.
+  MaybeCommitPendingData();
+
   playback_timer_->Stop();
   RecordUkmMetrics();
   ClearPlayerStates();
@@ -105,6 +108,27 @@ void MediaEngagementContentsObserver::RecordUkmMetrics() {
       .Record(ukm_recorder);
 }
 
+void MediaEngagementContentsObserver::MaybeCommitPendingData() {
+  if (!pending_data_to_commit_.has_value())
+    return;
+
+  // If the current origin is not a valid URL then we should just silently reset
+  // any pending data.
+  if (!committed_origin_.GetURL().is_valid()) {
+    pending_data_to_commit_.reset();
+    return;
+  }
+
+  MediaEngagementScore score =
+      service_->CreateEngagementScore(committed_origin_.GetURL());
+  score.IncrementVisits();
+  if (pending_data_to_commit_.value_or(false))
+    score.IncrementMediaPlaybacks();
+  score.Commit();
+
+  pending_data_to_commit_.reset();
+}
+
 void MediaEngagementContentsObserver::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   if (!navigation_handle->IsInMainFrame() ||
@@ -120,11 +144,21 @@ void MediaEngagementContentsObserver::DidFinishNavigation(
   if (committed_origin_.IsSameOriginWith(new_origin))
     return;
 
+  // Commit a visit if we have not had a playback before the new origin is
+  // updated.
+  MaybeCommitPendingData();
+
   RecordUkmMetrics();
 
   committed_origin_ = new_origin;
   significant_playback_recorded_ = false;
-  service_->RecordVisit(committed_origin_.GetURL());
+
+  // As any pending data would have been committed above, we should have no
+  // pending data and we should create a PendingData object. A visit will be
+  // automatically recorded if the PendingData object is present when
+  // MaybeCommitPendingData is called.
+  DCHECK(!pending_data_to_commit_.has_value());
+  pending_data_to_commit_ = false;
 }
 
 MediaEngagementContentsObserver::PlayerState::PlayerState() = default;
@@ -256,7 +290,12 @@ void MediaEngagementContentsObserver::OnSignificantMediaPlaybackTime() {
 #endif
 
   significant_playback_recorded_ = true;
-  service_->RecordPlayback(committed_origin_.GetURL());
+
+  // A playback always comes after a visit so the visit should always be pending
+  // to commit.
+  DCHECK(pending_data_to_commit_.has_value());
+  pending_data_to_commit_ = true;
+  MaybeCommitPendingData();
 }
 
 void MediaEngagementContentsObserver::RecordInsignificantReasons(
