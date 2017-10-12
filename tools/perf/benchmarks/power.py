@@ -80,5 +80,9 @@ class IdlePlatformBenchmark(perf_benchmark.PerfBenchmark):
   def GetExpectations(self):
     class StoryExpectations(story.expectations.StoryExpectations):
       def SetExpectations(self):
-        pass # Nothing disabled.
+        self.DisableBenchmark(
+            [story.expectations.ANDROID_NEXUS5,
+             story.expectations.ANDROID_NEXUS6,
+             story.expectations.ANDROID_NEXUS7,
+             story.expectations.ANDROID_ONE], 'crbug.com/773949')
     return StoryExpectations()
