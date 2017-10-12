@@ -22,7 +22,7 @@ enum AuthenticatorStatus {
   NOT_IMPLEMENTED,
 };
 
-// The public key and attestation that is returned by an authenticator's 
+// The public key and attestation that is returned by an authenticator's
 // call to makeCredential.
 struct PublicKeyCredentialInfo {
   // The base64url encoding of |raw_id|.
@@ -52,7 +52,7 @@ struct AuthenticatorResponse {
   array<uint8> signature;
 };
 
-// Information about the relying party and the account held by the user at 
+// Information about the relying party and the account held by the user at
 // that relying party. This information is used by the authenticator to create
 // or retrieve an appropriate public key credential for this account.
 // These fields take arbitrary input.
@@ -60,7 +60,7 @@ struct PublicKeyCredentialEntity {
   // A unique identifier for the entity. An ASCII serialization of an origin
   // for a relying party, and an arbitrary string specified by the relying party
   // for user accounts.
-  string id;
+  string? id;
 
   // Friendly name associated with the entity intended for display.
   // e.g. "Acme Corporation" for a relying party and "john.p.smith@example.com"
@@ -129,7 +129,7 @@ enum AuthenticatorTransport {
 interface Authenticator {
   // Gets the credential info for a new public key credential created by an
   // authenticator for the given |MakeCredentialOptions|
-  // [PublicKeyCredentialInfo] will only be set if status == SUCCESS.   
+  // [PublicKeyCredentialInfo] will only be set if status == SUCCESS.
   MakeCredential(MakeCredentialOptions options)
       => (AuthenticatorStatus status, PublicKeyCredentialInfo? credential);
 };
