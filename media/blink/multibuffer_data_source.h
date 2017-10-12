@@ -123,6 +123,13 @@ class MEDIA_BLINK_EXPORT MultibufferDataSource : public DataSource {
   void CreateResourceLoader(int64_t first_byte_position,
                             int64_t last_byte_position);
 
+  // Same as above, but called with |lock_| held.
+  void CreateResourceLoader_Locked(int64_t first_byte_position,
+                                   int64_t last_byte_position);
+
+  // Set reader_ while asserting proper locking.
+  void SetReader(MultiBufferReader* reader);
+
   friend class MultibufferDataSourceTest;
 
   // Task posted to perform actual reading on the render thread.
@@ -210,7 +217,7 @@ class MEDIA_BLINK_EXPORT MultibufferDataSource : public DataSource {
   class ReadOperation;
   std::unique_ptr<ReadOperation> read_op_;
 
-  // Protects |stop_signal_received_|, |read_op_| and |total_bytes_|.
+  // Protects |stop_signal_received_|, |read_op_|, |reader_| and |total_bytes_|.
   base::Lock lock_;
 
   // Whether we've been told to stop via Abort() or Stop().
