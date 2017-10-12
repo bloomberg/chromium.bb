@@ -491,12 +491,6 @@ class TranslateManagerRenderViewHostTest
     TranslateService::ShutdownForTesting();
   }
 
-  void SetApplicationLocale(const std::string& locale) {
-    g_browser_process->SetApplicationLocale(locale);
-    translate::TranslateDownloadManager::GetInstance()->set_application_locale(
-        g_browser_process->GetApplicationLocale());
-  }
-
   void SimulateTranslateScriptURLFetch(bool success) {
     net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(
         translate::TranslateScript::kFetcherId);
@@ -557,20 +551,49 @@ class TranslateManagerRenderViewHostTest
   DISALLOW_COPY_AND_ASSIGN(TranslateManagerRenderViewHostTest);
 };
 
+// A variant of the above test class that sets the UI language to an invalid
+// code (and restores it afterwards). This is required because a significant
+// amount of logic using the UI language has already occured by the time we
+// enter an individual test body.
+
+static const char* kInvalidLocale = "qbz";
+class TranslateManagerRenderViewHostInvalidLocaleTest
+    : public TranslateManagerRenderViewHostTest {
+ public:
+  TranslateManagerRenderViewHostInvalidLocaleTest()
+      : original_locale_(g_browser_process->GetApplicationLocale()) {
+    SetApplicationLocale(kInvalidLocale);
+  }
+
+  ~TranslateManagerRenderViewHostInvalidLocaleTest() override {
+    SetApplicationLocale(original_locale_);
+  }
+
+ private:
+  const std::string original_locale_;
+
+  void SetApplicationLocale(const std::string& locale) {
+    g_browser_process->SetApplicationLocale(locale);
+    translate::TranslateDownloadManager::GetInstance()->set_application_locale(
+        g_browser_process->GetApplicationLocale());
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(TranslateManagerRenderViewHostInvalidLocaleTest);
+};
 
 // A list of languages to fake being returned by the translate server.
 // Use only langauges for which Chrome's copy of ICU has
 // display names in English locale. To save space, Chrome's copy of ICU
 // does not have the display name for a language unless it's in the
 // Accept-Language list.
-static const char* server_language_list[] =
-    {"ach", "ak", "af", "en-CA", "zh", "yi", "fr-FR", "tl", "iw", "in", "xx"};
+static const char* kServerLanguageList[] = {
+    "ach", "ak", "af", "en-CA", "zh", "yi", "fr-FR", "tl", "iw", "in", "xx"};
 
 // Test the fetching of languages from the translate server
 TEST_F(TranslateManagerRenderViewHostTest, FetchLanguagesFromTranslateServer) {
   std::vector<std::string> server_languages;
-  for (size_t i = 0; i < arraysize(server_language_list); ++i)
-    server_languages.push_back(server_language_list[i]);
+  for (size_t i = 0; i < arraysize(kServerLanguageList); ++i)
+    server_languages.push_back(kServerLanguageList[i]);
 
   // First, get the default languages list. Note that calling
   // GetSupportedLanguages() invokes RequestLanguageList() internally.
@@ -1089,7 +1112,7 @@ TEST_F(TranslateManagerRenderViewHostTest, CLDReportsUnsupportedPageLanguage) {
   EnableBubbleTest();
 
   // Simulate navigating to a page and getting an unsupported language.
-  SimulateNavigation(GURL("http://www.google.com"), "qbz", true);
+  SimulateNavigation(GURL("http://www.google.com"), kInvalidLocale, true);
 
   // No info-bar should be shown.
   EXPECT_FALSE(TranslateUiVisible());
@@ -1106,7 +1129,7 @@ TEST_F(TranslateManagerRenderViewHostTest, ServerReportsUnsupportedLanguage) {
   SimulateTranslateScriptURLFetch(true);
   // Simulate the render notifying the translation has been done, but it
   // reports a language we don't support.
-  SimulateOnPageTranslated("qbz", "en");
+  SimulateOnPageTranslated(kInvalidLocale, "en");
 
   // An error infobar should be showing to report that we don't support this
   // language.
@@ -1131,19 +1154,16 @@ TEST_F(TranslateManagerRenderViewHostTest, ServerReportsUnsupportedLanguage) {
 
 // Tests that no translate infobar is shown and context menu is disabled, when
 // Chrome is in a language that the translate server does not support.
-TEST_F(TranslateManagerRenderViewHostTest, UnsupportedUILanguage) {
+TEST_F(TranslateManagerRenderViewHostInvalidLocaleTest, UnsupportedUILanguage) {
   // TODO(port): Test corresponding bubble translate UX: http://crbug.com/383235
   if (TranslateService::IsTranslateBubbleEnabled())
     return;
-
-  std::string original_lang = g_browser_process->GetApplicationLocale();
-  SetApplicationLocale("qbz");
 
   // Make sure that the accept language list only contains unsupported languages
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   PrefService* prefs = profile->GetPrefs();
-  prefs->SetString(prefs::kAcceptLanguages, "qbz");
+  prefs->SetString(prefs::kAcceptLanguages, kInvalidLocale);
 
   // Simulate navigating to a page in a language supported by the translate
   // server.
@@ -1157,25 +1177,21 @@ TEST_F(TranslateManagerRenderViewHostTest, UnsupportedUILanguage) {
   menu->Init();
   EXPECT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_TRANSLATE));
   EXPECT_FALSE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_TRANSLATE));
-
-  SetApplicationLocale(original_lang);
 }
 
 // Tests that the first supported accept language is selected
-TEST_F(TranslateManagerRenderViewHostTest, TranslateAcceptLanguage) {
+TEST_F(TranslateManagerRenderViewHostInvalidLocaleTest,
+       TranslateAcceptLanguage) {
   // TODO(port): Test corresponding bubble translate UX: http://crbug.com/383235
   if (TranslateService::IsTranslateBubbleEnabled())
     return;
 
-  // Set locate to non-existant language
-  std::string original_lang = g_browser_process->GetApplicationLocale();
-  SetApplicationLocale("qbz");
-
-  // Set Qbz and French as the only accepted languages
+  // Set an invalid language and French as the only accepted languages
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   PrefService* prefs = profile->GetPrefs();
-  prefs->SetString(prefs::kAcceptLanguages, "qbz,fr");
+  prefs->SetString(prefs::kAcceptLanguages,
+                   std::string(kInvalidLocale) + ",fr");
 
   // Go to a German page
   SimulateNavigation(GURL("http://google.de"), "de", true);
@@ -1183,10 +1199,12 @@ TEST_F(TranslateManagerRenderViewHostTest, TranslateAcceptLanguage) {
   // Expect the infobar to pop up
   EXPECT_TRUE(GetTranslateInfoBar() != NULL);
 
-  // Set Qbz and English-US as the only accepted languages to test the country
-  // code removal code which was causing a crash as filed in Issue 90106,
-  // a crash caused by a language with a country code that wasn't recognized.
-  prefs->SetString(prefs::kAcceptLanguages, "qbz,en-us");
+  // Set an invalid language and English-US as the only accepted languages to
+  // test the country code removal code which was causing a crash as filed in
+  // Issue 90106, a crash caused by a language with a country code that wasn't
+  // recognized.
+  prefs->SetString(prefs::kAcceptLanguages,
+                   std::string(kInvalidLocale) + ",en-us");
 
   // Go to a German page
   SimulateNavigation(GURL("http://google.de"), "de", true);
@@ -1504,7 +1522,7 @@ TEST_F(TranslateManagerRenderViewHostTest, ContextMenu) {
 
   // Test that the translate context menu is enabled even if the page is in an
   // unsupported language.
-  SimulateNavigation(url, "qbz", true);
+  SimulateNavigation(url, kInvalidLocale, true);
   menu.reset(CreateContextMenu());
   menu->Init();
   EXPECT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_TRANSLATE));

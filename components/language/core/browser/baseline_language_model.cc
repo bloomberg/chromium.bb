@@ -14,8 +14,8 @@ namespace {
 constexpr float kUrlLanguageFreqCutoff = 0.3f;
 }  // namespace
 
-const base::Feature kUseBaselineLanguageModel{
-    "UseBaselineLanguageModel", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kUseBaselineLanguageModel{"UseBaselineLanguageModel",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 BaselineLanguageModel::BaselineLanguageModel(
     PrefService* const pref_service,
