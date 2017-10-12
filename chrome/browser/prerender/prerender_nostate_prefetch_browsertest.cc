@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/statistics_recorder.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
@@ -557,19 +558,19 @@ IN_PROC_BROWSER_TEST_P(NoStatePrefetchBrowserTest,
   GetFakeSafeBrowsingDatabaseManager()->SetThreatTypeForUrl(
       url, safe_browsing::SB_THREAT_TYPE_URL_MALWARE);
 
-  RequestCounter main_counter;
-  CountRequestFor(kPrefetchPage, &main_counter);
   RequestCounter script_counter;
   CountRequestFor(kPrefetchScript, &script_counter);
 
   std::unique_ptr<TestPrerender> prerender =
       PrefetchFromFile(kPrefetchPage, FINAL_STATUS_SAFE_BROWSING);
 
-  main_counter.WaitForCount(0);
-  script_counter.WaitForCount(0);
-
-  // Verify that the page load did not happen.
+  // The frame request may have been started, but SafeBrowsing must have already
+  // blocked it. Verify that the page load did not happen.
   prerender->WaitForLoads(0);
+
+  // The frame resource has been blocked by SafeBrowsing, the subresource on
+  // the page shouldn't be requested at all.
+  script_counter.WaitForCount(0);
 }
 
 // If a subresource is unsafe, the corresponding request is cancelled.
@@ -581,14 +582,34 @@ IN_PROC_BROWSER_TEST_P(NoStatePrefetchBrowserTest,
 
   RequestCounter main_counter;
   CountRequestFor(kPrefetchPage, &main_counter);
-  RequestCounter script_counter;
-  CountRequestFor(kPrefetchScript, &script_counter);
+
+  constexpr char kPrefetchCanceledHistogram[] =
+      "SB2.ResourceTypes2.UnsafePrefetchCanceled";
+
+  base::RunLoop run_loop;
+  bool prefetch_canceled_histogram_added = false;
+  EXPECT_TRUE(base::StatisticsRecorder::SetCallback(
+      kPrefetchCanceledHistogram,
+      base::Bind(
+          [](const base::Closure& quit_closure, bool* called,
+             base::HistogramBase::Sample sample) {
+            *called = true;
+            quit_closure.Run();
+          },
+          run_loop.QuitClosure(), &prefetch_canceled_histogram_added)));
 
   std::unique_ptr<TestPrerender> prerender =
       PrefetchFromFile(kPrefetchPage, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
 
+  // The frame resource was loaded.
   main_counter.WaitForCount(1);
-  script_counter.WaitForCount(0);
+
+  // There should be a histogram sample recorded for SafeBrowsing canceling an
+  // unsafe prefetch, which corresponded to the subresource.
+  run_loop.Run();
+  EXPECT_TRUE(prefetch_canceled_histogram_added);
+
+  base::StatisticsRecorder::ClearCallback(kPrefetchCanceledHistogram);
 }
 
 // Checks that prefetching a page does not add it to browsing history.
