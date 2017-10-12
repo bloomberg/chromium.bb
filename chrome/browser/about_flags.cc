@@ -751,22 +751,6 @@ const FeatureEntry::Choice kEnableUseZoomForDSFChoices[] = {
      switches::kEnableUseZoomForDSF, "false"},
 };
 
-const FeatureEntry::Choice kEnableWebFontsInterventionV2Choices[] = {
-    {flag_descriptions::kEnableWebfontsInterventionV2ChoiceDefault, "", ""},
-    {flag_descriptions::kEnableWebfontsInterventionV2ChoiceEnabledWith2g,
-     switches::kEnableWebFontsInterventionV2,
-     switches::kEnableWebFontsInterventionV2SwitchValueEnabledWith2G},
-    {flag_descriptions::kEnableWebfontsInterventionV2ChoiceEnabledWith3g,
-     switches::kEnableWebFontsInterventionV2,
-     switches::kEnableWebFontsInterventionV2SwitchValueEnabledWith3G},
-    {flag_descriptions::kEnableWebfontsInterventionV2ChoiceEnabledWithSlow2g,
-     switches::kEnableWebFontsInterventionV2,
-     switches::kEnableWebFontsInterventionV2SwitchValueEnabledWithSlow2G},
-    {flag_descriptions::kEnableWebfontsInterventionV2ChoiceDisabled,
-     switches::kEnableWebFontsInterventionV2,
-     switches::kEnableWebFontsInterventionV2SwitchValueDisabled},
-};
-
 const FeatureEntry::Choice kTLS13VariantChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
     {flag_descriptions::kTLS13VariantDisabled, switches::kTLS13Variant,
@@ -2461,14 +2445,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutomaticTabDiscardingDescription, kOsWin | kOsMac,
      FEATURE_VALUE_TYPE(features::kAutomaticTabDiscarding)},
 #endif  // OS_WIN || OS_MACOSX
-    {"enable-webfonts-intervention-v2",
-     flag_descriptions::kEnableWebfontsInterventionName,
-     flag_descriptions::kEnableWebfontsInterventionDescription, kOsAll,
-     MULTI_VALUE_TYPE(kEnableWebFontsInterventionV2Choices)},
-    {"enable-webfonts-intervention-trigger",
-     flag_descriptions::kEnableWebfontsInterventionTriggerName,
-     flag_descriptions::kEnableWebfontsInterventionTriggerDescription, kOsAll,
-     SINGLE_VALUE_TYPE(switches::kEnableWebFontsInterventionTrigger)},
     {"tls13-variant", flag_descriptions::kTLS13VariantName,
      flag_descriptions::kTLS13VariantDescription, kOsAll,
      MULTI_VALUE_TYPE(kTLS13VariantChoices)},

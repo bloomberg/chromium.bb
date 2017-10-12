@@ -1098,18 +1098,6 @@
       status: "experimental",
     },
     {
-      name: "WebFontsInterventionTrigger",
-    },
-    {
-      name: "WebFontsInterventionV2With2G",
-    },
-    {
-      name: "WebFontsInterventionV2With3G",
-    },
-    {
-      name: "WebFontsInterventionV2WithSlow2G",
-    },
-    {
       name: "WebGLDraftExtensions",
       status: "experimental",
     },

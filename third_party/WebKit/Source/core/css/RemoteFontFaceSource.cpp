@@ -18,46 +18,10 @@
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/loader/fetch/ResourceLoadPriority.h"
 #include "platform/network/NetworkStateNotifier.h"
-#include "platform/runtime_enabled_features.h"
 #include "platform/wtf/CurrentTime.h"
 #include "public/platform/WebEffectiveConnectionType.h"
 
 namespace blink {
-
-namespace {
-
-bool IsEffectiveConnectionTypeSlowFor(Document* document) {
-  WebEffectiveConnectionType type =
-      document->GetFrame()->Client()->GetEffectiveConnectionType();
-
-  WebEffectiveConnectionType threshold_type =
-      WebEffectiveConnectionType::kTypeUnknown;
-  if (RuntimeEnabledFeatures::WebFontsInterventionV2With2GEnabled()) {
-    threshold_type = WebEffectiveConnectionType::kType2G;
-  } else if (RuntimeEnabledFeatures::WebFontsInterventionV2With3GEnabled()) {
-    threshold_type = WebEffectiveConnectionType::kType3G;
-  } else if (RuntimeEnabledFeatures::
-                 WebFontsInterventionV2WithSlow2GEnabled()) {
-    threshold_type = WebEffectiveConnectionType::kTypeSlow2G;
-  }
-  DCHECK_NE(WebEffectiveConnectionType::kTypeUnknown, threshold_type);
-
-  return WebEffectiveConnectionType::kTypeOffline <= type &&
-         type <= threshold_type;
-}
-
-bool IsConnectionTypeSlow() {
-  return GetNetworkStateNotifier().ConnectionType() ==
-         kWebConnectionTypeCellular2G;
-}
-
-bool IsInterventionV2Enabled() {
-  return RuntimeEnabledFeatures::WebFontsInterventionV2With2GEnabled() ||
-         RuntimeEnabledFeatures::WebFontsInterventionV2With3GEnabled() ||
-         RuntimeEnabledFeatures::WebFontsInterventionV2WithSlow2GEnabled();
-}
-
-}  // namespace
 
 RemoteFontFaceSource::RemoteFontFaceSource(FontResource* font,
                                            CSSFontSelector* font_selector,
@@ -198,22 +162,25 @@ void RemoteFontFaceSource::SwitchToFailurePeriod() {
 }
 
 bool RemoteFontFaceSource::ShouldTriggerWebFontsIntervention() {
-  if (RuntimeEnabledFeatures::WebFontsInterventionTriggerEnabled())
-    return true;
   if (histograms_.GetDataSource() == FontLoadHistograms::kFromMemoryCache ||
       histograms_.GetDataSource() == FontLoadHistograms::kFromDataURL)
     return false;
 
+  WebEffectiveConnectionType connection_type =
+      font_selector_->GetDocument()
+          ->GetFrame()
+          ->Client()
+          ->GetEffectiveConnectionType();
+
   bool network_is_slow =
-      IsInterventionV2Enabled()
-          ? IsEffectiveConnectionTypeSlowFor(font_selector_->GetDocument())
-          : IsConnectionTypeSlow();
+      WebEffectiveConnectionType::kTypeOffline <= connection_type &&
+      connection_type <= WebEffectiveConnectionType::kType3G;
 
   return network_is_slow && display_ == kFontDisplayAuto;
 }
 
 bool RemoteFontFaceSource::IsLowPriorityLoadingAllowedForRemoteFont() const {
-  return is_intervention_triggered_ && IsInterventionV2Enabled();
+  return is_intervention_triggered_;
 }
 
 RefPtr<SimpleFontData> RemoteFontFaceSource::CreateFontData(

@@ -226,41 +226,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(switches::kDisableRemotePlaybackAPI))
     WebRuntimeFeatures::EnableRemotePlaybackAPI(false);
 
-  const std::string webfonts_intervention_v2_group_name =
-      base::FieldTrialList::FindFullName("WebFontsInterventionV2");
-  const std::string webfonts_intervention_v2_about_flag =
-      command_line.GetSwitchValueASCII(switches::kEnableWebFontsInterventionV2);
-  if (!webfonts_intervention_v2_about_flag.empty()) {
-    WebRuntimeFeatures::EnableWebFontsInterventionV2With2G(
-        webfonts_intervention_v2_about_flag.compare(
-            switches::kEnableWebFontsInterventionV2SwitchValueEnabledWith2G) ==
-        0);
-    WebRuntimeFeatures::EnableWebFontsInterventionV2With3G(
-        webfonts_intervention_v2_about_flag.compare(
-            switches::kEnableWebFontsInterventionV2SwitchValueEnabledWith3G) ==
-        0);
-    WebRuntimeFeatures::EnableWebFontsInterventionV2WithSlow2G(
-        webfonts_intervention_v2_about_flag.compare(
-            switches::
-                kEnableWebFontsInterventionV2SwitchValueEnabledWithSlow2G) ==
-        0);
-  } else {
-    WebRuntimeFeatures::EnableWebFontsInterventionV2With2G(base::StartsWith(
-        webfonts_intervention_v2_group_name,
-        switches::kEnableWebFontsInterventionV2SwitchValueEnabledWith2G,
-        base::CompareCase::INSENSITIVE_ASCII));
-    WebRuntimeFeatures::EnableWebFontsInterventionV2With3G(base::StartsWith(
-        webfonts_intervention_v2_group_name,
-        switches::kEnableWebFontsInterventionV2SwitchValueEnabledWith3G,
-        base::CompareCase::INSENSITIVE_ASCII));
-    WebRuntimeFeatures::EnableWebFontsInterventionV2WithSlow2G(base::StartsWith(
-        webfonts_intervention_v2_group_name,
-        switches::kEnableWebFontsInterventionV2SwitchValueEnabledWithSlow2G,
-        base::CompareCase::INSENSITIVE_ASCII));
-  }
-  if (command_line.HasSwitch(switches::kEnableWebFontsInterventionTrigger))
-    WebRuntimeFeatures::EnableWebFontsInterventionTrigger(true);
-
   WebRuntimeFeatures::EnableScrollAnchoring(
       base::FeatureList::IsEnabled(features::kScrollAnchoring) ||
       enableExperimentalWebPlatformFeatures);

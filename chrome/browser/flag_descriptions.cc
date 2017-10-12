@@ -491,23 +491,6 @@ const char kEnableWasmStreamingName[] =
 const char kEnableWasmStreamingDescription[] =
     "WebAssembly.{compile|instantiate} taking a Response as parameter.";
 
-const char kEnableWebfontsInterventionName[] =
-    "New version of User Agent Intervention for WebFonts loading.";
-const char kEnableWebfontsInterventionDescription[] =
-    "Enable New version of User Agent Intervention for WebFonts loading.";
-const char kEnableWebfontsInterventionV2ChoiceDefault[] = "Default";
-const char kEnableWebfontsInterventionV2ChoiceEnabledWith2g[] = "Enabled: 2G";
-const char kEnableWebfontsInterventionV2ChoiceEnabledWith3g[] = "Enabled: 3G";
-const char kEnableWebfontsInterventionV2ChoiceEnabledWithSlow2g[] =
-    "Enabled: Slow 2G";
-const char kEnableWebfontsInterventionV2ChoiceDisabled[] = "Disabled";
-
-const char kEnableWebfontsInterventionTriggerName[] =
-    "Trigger User Agent Intervention for WebFonts loading always.";
-const char kEnableWebfontsInterventionTriggerDescription[] =
-    "Enable to trigger User Agent Intervention for WebFonts loading always. "
-    "This flag affects only when the intervention is enabled.";
-
 const char kEnableWebNotificationCustomLayoutsName[] =
     "Enable custom layouts for Web Notifications.";
 const char kEnableWebNotificationCustomLayoutsDescription[] =
