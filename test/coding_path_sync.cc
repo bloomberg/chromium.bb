@@ -157,18 +157,41 @@ class Decoder {
 
 // Try to reveal a mismatch between LBD and HBD coding paths.
 TEST(CodingPathSync, SearchForHbdLbdMismatch) {
-  const int count_tests = 100;
+  const int count_tests = 10;
   for (int i = 0; i < count_tests; ++i) {
     Decoder dec_hbd(0);
     Decoder dec_lbd(1);
 
     CompressedSource enc(i);
-    const aom_codec_cx_pkt_t *frame = enc.ReadFrame();
 
-    std::vector<int16_t> lbd_yuv = dec_lbd.decode(frame);
-    std::vector<int16_t> hbd_yuv = dec_hbd.decode(frame);
+    for (int k = 0; k < 3; ++k) {
+      const aom_codec_cx_pkt_t *frame = enc.ReadFrame();
 
-    ASSERT_EQ(lbd_yuv, hbd_yuv);
+      std::vector<int16_t> lbd_yuv = dec_lbd.decode(frame);
+      std::vector<int16_t> hbd_yuv = dec_hbd.decode(frame);
+
+      ASSERT_EQ(lbd_yuv, hbd_yuv);
+    }
+  }
+}
+
+TEST(CodingPathSyncLarge, SearchForHbdLbdMismatchLarge) {
+  const int count_tests = 100;
+  const int seed = 1234;
+  for (int i = 0; i < count_tests; ++i) {
+    Decoder dec_hbd(0);
+    Decoder dec_lbd(1);
+
+    CompressedSource enc(seed + i);
+
+    for (int k = 0; k < 5; ++k) {
+      const aom_codec_cx_pkt_t *frame = enc.ReadFrame();
+
+      std::vector<int16_t> lbd_yuv = dec_lbd.decode(frame);
+      std::vector<int16_t> hbd_yuv = dec_hbd.decode(frame);
+
+      ASSERT_EQ(lbd_yuv, hbd_yuv);
+    }
   }
 }
 
