@@ -35,6 +35,7 @@ class MockLevelDBWrapper : public mojom::StoragePartitionService,
 
   void Put(const std::vector<uint8_t>& key,
            const std::vector<uint8_t>& value,
+           const base::Optional<std::vector<uint8_t>>& client_old_value,
            const std::string& source,
            PutCallback callback) override {
     observed_put_ = true;
@@ -45,6 +46,7 @@ class MockLevelDBWrapper : public mojom::StoragePartitionService,
   }
 
   void Delete(const std::vector<uint8_t>& key,
+              const base::Optional<std::vector<uint8_t>>& client_old_value,
               const std::string& source,
               DeleteCallback callback) override {
     observed_delete_ = true;

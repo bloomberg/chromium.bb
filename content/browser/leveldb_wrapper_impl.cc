@@ -146,13 +146,16 @@ void LevelDBWrapperImpl::AddObserver(
   observers_.AddPtr(std::move(observer_ptr));
 }
 
-void LevelDBWrapperImpl::Put(const std::vector<uint8_t>& key,
-                             const std::vector<uint8_t>& value,
-                             const std::string& source,
-                             PutCallback callback) {
+void LevelDBWrapperImpl::Put(
+    const std::vector<uint8_t>& key,
+    const std::vector<uint8_t>& value,
+    const base::Optional<std::vector<uint8_t>>& client_old_value,
+    const std::string& source,
+    PutCallback callback) {
   if (!map_) {
     LoadMap(base::Bind(&LevelDBWrapperImpl::Put, base::Unretained(this), key,
-                       value, source, base::Passed(&callback)));
+                       value, client_old_value, source,
+                       base::Passed(&callback)));
     return;
   }
 
@@ -183,9 +186,8 @@ void LevelDBWrapperImpl::Put(const std::vector<uint8_t>& key,
   }
 
   std::vector<uint8_t> old_value;
-  if (has_old_item) {
+  if (has_old_item)
     old_value.swap((*map_)[key]);
-  }
   (*map_)[key] = value;
   bytes_used_ = new_bytes_used;
   if (!has_old_item) {
@@ -204,12 +206,14 @@ void LevelDBWrapperImpl::Put(const std::vector<uint8_t>& key,
   std::move(callback).Run(true);
 }
 
-void LevelDBWrapperImpl::Delete(const std::vector<uint8_t>& key,
-                                const std::string& source,
-                                DeleteCallback callback) {
+void LevelDBWrapperImpl::Delete(
+    const std::vector<uint8_t>& key,
+    const base::Optional<std::vector<uint8_t>>& client_old_value,
+    const std::string& source,
+    DeleteCallback callback) {
   if (!map_) {
     LoadMap(base::Bind(&LevelDBWrapperImpl::Delete, base::Unretained(this), key,
-                       source, base::Passed(&callback)));
+                       client_old_value, source, base::Passed(&callback)));
     return;
   }
 
@@ -476,7 +480,7 @@ void LevelDBWrapperImpl::CommitChanges() {
     operations.push_back(std::move(item));
   }
   size_t data_size = 0;
-  for (const auto& key: commit_batch_->changed_keys) {
+  for (const auto& key : commit_batch_->changed_keys) {
     data_size += key.size();
     leveldb::mojom::BatchedOperationPtr item =
         leveldb::mojom::BatchedOperation::New();
