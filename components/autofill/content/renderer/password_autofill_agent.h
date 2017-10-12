@@ -261,16 +261,46 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   void ClearPreview(blink::WebInputElement* username,
                     blink::WebInputElement* password);
 
-  // Saves |password_form|, |form| and |input| in |provisionally_saved_form_|,
-  // as long as it satisfies |restriction|. |form| and |input| are the elements
-  // user has just been interacting with before the form save. |form| or |input|
-  // can be null but not both at the same time. For example: if the form is
-  // unowned, |form| will be null; if the user has submitted the form, |input|
-  // will be null.
-  void ProvisionallySavePassword(std::unique_ptr<PasswordForm> password_form,
-                                 const blink::WebFormElement& form,
+  // Saves |form| and |input| in |provisionally_saved_form_|, as long as it
+  // satisfies |restriction|. |form| and |input| are the elements user has just
+  // been interacting with before the form save. |form| or |input| can be null
+  // but not both at the same time. For example: if the form is unowned, |form|
+  // will be null; if the user has submitted the form, |input| will be null.
+  void ProvisionallySavePassword(const blink::WebFormElement& form,
                                  const blink::WebInputElement& input,
                                  ProvisionallySaveRestriction restriction);
+
+  // This function attempts to fill |username_element| and |password_element|
+  // with values from |fill_data|. The |password_element| will only have the
+  // suggestedValue set, and will be registered for copying that to the real
+  // value through |registration_callback|. If a match is found, return true and
+  // |field_value_and_properties_map| will be modified with the autofilled
+  // credentials and |FieldPropertiesFlags::AUTOFILLED| flag.
+  bool FillUserNameAndPassword(
+      blink::WebInputElement* username_element,
+      blink::WebInputElement* password_element,
+      const PasswordFormFillData& fill_data,
+      bool exact_username_match,
+      bool set_selection,
+      FieldValueAndPropertiesMaskMap* field_value_and_properties_map,
+      base::Callback<void(blink::WebInputElement*)> registration_callback,
+      RendererSavePasswordProgressLogger* logger);
+
+  // Attempts to fill |username_element| and |password_element| with the
+  // |fill_data|. Will use the data corresponding to the preferred username,
+  // unless the |username_element| already has a value set. In that case,
+  // attempts to fill the password matching the already filled username, if
+  // such a password exists. The |password_element| will have the
+  // |suggestedValue| set, and |suggestedValue| will be registered for copying
+  // to the real value through |registration_callback|. Returns true if the
+  // password is filled.
+  bool FillFormOnPasswordReceived(
+      const PasswordFormFillData& fill_data,
+      blink::WebInputElement username_element,
+      blink::WebInputElement password_element,
+      FieldValueAndPropertiesMaskMap* field_value_and_properties_map,
+      base::Callback<void(blink::WebInputElement*)> registration_callback,
+      RendererSavePasswordProgressLogger* logger);
 
   // Helper function called when same-document navigation completed
   void OnSameDocumentNavigationCompleted(
