@@ -27,6 +27,7 @@ void TexturedElement::Initialize() {
   glGenTextures(1, &texture_handle_);
   DCHECK(GetTexture() != nullptr);
   texture_size_ = GetTexture()->GetPreferredTextureSize(maximum_width_);
+  GetTexture()->OnInitialized();
   initialized_ = true;
   UpdateTexture();
 }

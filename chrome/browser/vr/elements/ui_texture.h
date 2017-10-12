@@ -41,6 +41,7 @@ class UiTexture {
   bool dirty() const { return dirty_; }
 
   void SetMode(ColorScheme::Mode mode);
+  void OnInitialized();
 
   // This function sets |font_list| to a list of available fonts for |text|. If
   // no font supports |text|, it returns false and leave |font_list| untouched.
