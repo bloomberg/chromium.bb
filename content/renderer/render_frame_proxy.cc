@@ -396,12 +396,10 @@ void RenderFrameProxy::OnDidStartLoading() {
 }
 
 void RenderFrameProxy::OnViewChanged(const viz::FrameSinkId& frame_sink_id) {
-  if (IsRunningInMash()) {
-    // In mash the FrameSinkId comes from RendererWindowTreeClient.
-    return;
-  }
+  // In mash the FrameSinkId comes from RendererWindowTreeClient.
+  if (!IsRunningInMash())
+    frame_sink_id_ = frame_sink_id;
 
-  frame_sink_id_ = frame_sink_id;
   // Resend the FrameRects and allocate a new viz::LocalSurfaceId when the view
   // changes.
   ResendFrameRects();
