@@ -256,7 +256,8 @@ class TeeHelper final : public GarbageCollectedFinalized<TeeHelper>,
       }
       if (client_) {
         char client_name[32];
-        strncpy(client_name, client_name_.data(), sizeof(client_name) - 1);
+        const char* src = client_name_.IsNull() ? "" : client_name_.data();
+        strncpy(client_name, src, sizeof(client_name) - 1);
         client_name[sizeof(client_name) - 1] = '\0';
         WTF::debug::Alias(client_name);
 
@@ -270,7 +271,8 @@ class TeeHelper final : public GarbageCollectedFinalized<TeeHelper>,
 
     DEFINE_INLINE_TRACE() {
       char client_name[32];
-      strncpy(client_name, client_name_.data(), sizeof(client_name) - 1);
+      const char* src = client_name_.IsNull() ? "" : client_name_.data();
+      strncpy(client_name, src, sizeof(client_name) - 1);
       client_name[sizeof(client_name) - 1] = '\0';
       WTF::debug::Alias(client_name);
 
