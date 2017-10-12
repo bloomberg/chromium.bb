@@ -1191,4 +1191,5 @@ TEST_F(BrowserControlsTest, MAYBE(GrowingHeightKeepsTopControlsHidden)) {
   EXPECT_EQ(0.f, web_view->GetBrowserControls().ContentOffset());
 }
 
+#undef MAYBE
 }  // namespace blink

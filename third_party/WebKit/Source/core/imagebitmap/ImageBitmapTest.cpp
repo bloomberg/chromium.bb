@@ -700,4 +700,5 @@ TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionImageData) {
   }
 }
 
+#undef MAYBE_ImageBitmapColorSpaceConversionHTMLImageElement
 }  // namespace blink
