@@ -100,6 +100,8 @@ SurfaceTreeHost::~SurfaceTreeHost() {
     host_window_->layer()->GetCompositor()->vsync_manager()->RemoveObserver(
         this);
   }
+  LayerTreeFrameSinkHolder::DeleteWhenLastResourceHasBeenReclaimed(
+      std::move(layer_tree_frame_sink_holder_));
 }
 
 void SurfaceTreeHost::SetRootSurface(Surface* root_surface) {
@@ -247,8 +249,7 @@ bool SurfaceTreeHost::OnBeginFrameDerivedImpl(const viz::BeginFrameArgs& args) {
     // |DidReceivedCompositorFrameAck()|, we need more begin frames to run
     // |frame_callbacks_| which will be moved to |active_frame_callbacks_| by
     // |DidReceivedCompositorFrameAck()| shortly.
-    layer_tree_frame_sink_holder_->frame_sink()->DidNotProduceFrame(
-        current_begin_frame_ack_);
+    layer_tree_frame_sink_holder_->DidNotProduceFrame(current_begin_frame_ack_);
     current_begin_frame_ack_.sequence_number =
         viz::BeginFrameArgs::kInvalidFrameNumber;
     begin_frame_source_->DidFinishFrame(this);
@@ -317,13 +318,12 @@ void SurfaceTreeHost::SubmitCompositorFrame() {
   root_surface_->AppendSurfaceHierarchyContentsToFrame(
       gfx::Point(), device_scale_factor, layer_tree_frame_sink_holder_.get(),
       &frame);
-  layer_tree_frame_sink_holder_->frame_sink()->SubmitCompositorFrame(
-      std::move(frame));
+  layer_tree_frame_sink_holder_->SubmitCompositorFrame(std::move(frame));
 
   if (current_begin_frame_ack_.sequence_number !=
       viz::BeginFrameArgs::kInvalidFrameNumber) {
     if (!current_begin_frame_ack_.has_damage) {
-      layer_tree_frame_sink_holder_->frame_sink()->DidNotProduceFrame(
+      layer_tree_frame_sink_holder_->DidNotProduceFrame(
           current_begin_frame_ack_);
     }
     current_begin_frame_ack_.sequence_number =
