@@ -51,6 +51,8 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/common/mailbox.h"
+#include "gpu/config/gpu_driver_bug_workaround_type.h"
+#include "gpu/config/gpu_feature_info.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "gpu/ipc/host/gpu_memory_buffer_support.h"
 #include "gpu/vulkan/features.h"
@@ -540,11 +542,14 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
                 std::unique_ptr<viz::CompositorOverlayCandidateValidator>());
       } else if (capabilities.surfaceless) {
 #if defined(OS_MACOSX)
+        const auto& gpu_feature_info = context_provider->GetGpuFeatureInfo();
+        bool disable_overlay_ca_layers = gpu_feature_info.IsWorkaroundEnabled(
+            gpu::DISABLE_OVERLAY_CA_LAYERS);
         display_output_surface = base::MakeUnique<GpuOutputSurfaceMac>(
             compositor->widget(), context_provider, data->surface_handle,
             vsync_callback,
-            CreateOverlayCandidateValidator(
-                compositor->widget(), capabilities.disable_overlay_ca_layers),
+            CreateOverlayCandidateValidator(compositor->widget(),
+                                            disable_overlay_ca_layers),
             GetGpuMemoryBufferManager());
 #else
         auto gpu_output_surface =
