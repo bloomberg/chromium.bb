@@ -340,6 +340,11 @@ void URLRequestHttpJob::NotifyBeforeSendHeadersCallback(
     HttpRequestHeaders* request_headers) {
   DCHECK(request_headers);
   DCHECK_NE(URLRequestStatus::CANCELED, GetStatus().status());
+  if (proxy_info.is_empty()) {
+    SetProxyServer(ProxyServer::Direct());
+  } else {
+    SetProxyServer(proxy_info.proxy_server());
+  }
   if (network_delegate()) {
     network_delegate()->NotifyBeforeSendHeaders(
         request_, proxy_info,

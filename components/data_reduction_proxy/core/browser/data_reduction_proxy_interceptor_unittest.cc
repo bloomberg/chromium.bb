@@ -458,7 +458,7 @@ TEST_F(DataReductionProxyInterceptorEndToEndTest, URLRedirectCycle) {
   EXPECT_EQ(net::OK, delegate().request_status());
   EXPECT_EQ(200, request->GetResponseCode());
   EXPECT_EQ(kBody, delegate().data_received());
-  EXPECT_FALSE(request->was_fetched_via_proxy());
+  EXPECT_TRUE(request->proxy_server().is_direct());
   histogram_tester.ExpectTotalCount(
       "DataReductionProxy.BypassedBytes.URLRedirectCycle", 1);
 }
@@ -492,7 +492,7 @@ TEST_F(DataReductionProxyInterceptorEndToEndTest, ResponseWithBypassAndRetry) {
   EXPECT_EQ(net::OK, delegate().request_status());
   EXPECT_EQ(200, request->GetResponseCode());
   EXPECT_EQ(kBody, delegate().data_received());
-  EXPECT_FALSE(request->was_fetched_via_proxy());
+  EXPECT_TRUE(request->proxy_server().is_direct());
   // The bypassed response should have been intercepted before the response was
   // processed, so only the final response after the retry should have been
   // processed.
@@ -539,7 +539,7 @@ TEST_F(DataReductionProxyInterceptorEndToEndTest, RedirectWithBypassAndRetry) {
   EXPECT_EQ(net::OK, delegate().request_status());
   EXPECT_EQ(200, request->GetResponseCode());
   EXPECT_EQ(kBody, delegate().data_received());
-  EXPECT_FALSE(request->was_fetched_via_proxy());
+  EXPECT_TRUE(request->proxy_server().is_direct());
 
   // Each of the redirects should have been intercepted before being followed.
   EXPECT_EQ(0, delegate().received_redirect_count());

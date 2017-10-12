@@ -646,8 +646,8 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
     return received_response_content_length_;
   }
 
-  // Available at NetworkDelegate::NotifyHeadersReceived() time, which is before
-  // the more general response_info() is available, even though it is a subset.
+  // Available when the request headers are sent, which is before the more
+  // general response_info() is available.
   const ProxyServer& proxy_server() const { return proxy_server_; }
 
   // Gets the connection attempts made in the process of servicing this
