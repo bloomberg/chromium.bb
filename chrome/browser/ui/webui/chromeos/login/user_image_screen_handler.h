@@ -11,7 +11,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/login/screens/user_image_view.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/native_widget_types.h"
@@ -64,9 +63,6 @@ class UserImageScreenHandler : public UserImageView, public BaseScreenHandler {
   // Called when the user image screen has been loaded and shown.
   void HandleScreenShown();
 
-  // Called when video mode allowance changed.
-  void UpdateAllowVideoMode();
-
   UserImageScreen* screen_ = nullptr;
 
   // Keeps whether screen should be shown right after initialization.
@@ -76,8 +72,6 @@ class UserImageScreenHandler : public UserImageView, public BaseScreenHandler {
   bool is_ready_ = false;
 
   base::Time screen_show_time_;
-
-  std::unique_ptr<CrosSettings::ObserverSubscription> device_settings_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(UserImageScreenHandler);
 };
