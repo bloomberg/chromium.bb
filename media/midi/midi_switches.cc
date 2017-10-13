@@ -19,7 +19,7 @@ const base::Feature kMidiManagerWinrt{"MidiManagerWinrt",
 #endif
 
 const base::Feature kMidiManagerDynamicInstantiation{
-    "MidiManagerDynamicInstantiation", base::FEATURE_DISABLED_BY_DEFAULT};
+    "MidiManagerDynamicInstantiation", base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace midi
