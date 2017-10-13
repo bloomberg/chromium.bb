@@ -29039,6 +29039,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="InstantTethering.UserPreference.OnStartup"
+    enum="BooleanEnabled">
+  <owner>hansberry@chromium.com</owner>
+  <summary>
+    Provides the count of the number of users who have the Instant Tethering
+    toggle enabled vs. disabled on startup. This metric is logged each time a
+    user logs into a Chromebook.
+  </summary>
+</histogram>
+
+<histogram name="InstantTethering.UserPreference.OnToggle"
+    enum="BooleanEnabled">
+  <owner>hansberry@chromium.com</owner>
+  <summary>
+    Provides the count of the number of times users have enabled or disabled the
+    user preference for Mobile data. This metric is logged each time the value
+    is toggled.
+  </summary>
+</histogram>
+
 <histogram name="interstitial.authority_invalid_time" units="ms">
   <obsolete>
     Removed on 8/1/13.

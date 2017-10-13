@@ -818,6 +818,9 @@ TEST_F(TetherServiceTest, TestEnabled) {
   EXPECT_FALSE(
       profile_->GetPrefs()->GetBoolean(prefs::kInstantTetheringEnabled));
   VerifyTetherActiveStatus(false /* expected_active */);
+  histogram_tester_.ExpectBucketCount(
+      "InstantTethering.UserPreference.OnToggle", false,
+      1u /* expected_count */);
 
   SetTetherTechnologyStateEnabled(true);
   EXPECT_EQ(chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_ENABLED,
@@ -826,6 +829,9 @@ TEST_F(TetherServiceTest, TestEnabled) {
   EXPECT_TRUE(
       profile_->GetPrefs()->GetBoolean(prefs::kInstantTetheringEnabled));
   VerifyTetherActiveStatus(true /* expected_active */);
+  histogram_tester_.ExpectBucketCount(
+      "InstantTethering.UserPreference.OnToggle", true,
+      1u /* expected_count */);
 
   VerifyTetherFeatureStateRecorded(TetherService::TetherFeatureState::ENABLED,
                                    2 /* expected_count */);
