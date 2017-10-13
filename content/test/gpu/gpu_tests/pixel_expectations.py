@@ -63,3 +63,10 @@ class PixelExpectations(GpuTestExpectations):
     # Failing on Nexus 5; haven't investigated why yet.
     self.Skip('Pixel_WebGL2_BlitFramebuffer_Result_Displayed',
         ['android', ('qualcomm', 'Adreno (TM) 330')], bug=773293)
+
+    # Failing on Nexus 5 and 5X
+    self.Fail('Pixel_CSS3DBlueBox',
+        ['android', ('qualcomm', 'Adreno (TM) 330')], bug=774354)
+    self.Fail('Pixel_CSS3DBlueBox',
+        ['android', ('qualcomm', 'Adreno (TM) 418')], bug=774354)
+
