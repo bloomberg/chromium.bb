@@ -128,6 +128,12 @@ bool CdmModule::Initialize(const base::FilePath& cdm_path) {
     return false;
   }
 
+#if defined(OS_WIN)
+  // Load DXVA before sandbox lockdown to give CDM access to Output Protection
+  // Manager (OPM).
+  LoadLibraryA("dxva2.dll");
+#endif  // defined(OS_WIN)
+
 #if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
   InitCdmHostVerification(library_.get(), cdm_path_, cdm_host_file_paths);
 #endif  // BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
