@@ -17,3 +17,6 @@ declare_args() {
     goma_dir = getenv("HOME") + "/goma"
   }
 }
+
+assert(!(is_win && host_os != "win") || !use_goma,
+       "goma does not yet work in win cross builds, b/64390790")
