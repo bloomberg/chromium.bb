@@ -6,6 +6,7 @@
 #import "base/strings/sys_string_conversions.h"
 #import "base/strings/utf_string_conversions.h"
 #import "components/ntp_tiles/ntp_tile.h"
+#import "ios/chrome/browser/ui/favicon/favicon_attributes.h"
 #import "ios/chrome/browser/ui/ntp/google_landing_data_source.h"
 #import "ios/chrome/browser/ui/ntp/ntp_tile.h"
 #import "ios/chrome/test/block_cleanup_test.h"
@@ -49,25 +50,29 @@ class NTPTileSaverControllerTest : public BlockCleanupTest {
   void setupMockCallback(id mock,
                          std::set<GURL> imageURLs,
                          std::set<GURL> fallbackURLs) {
-    OCMStub([[mock ignoringNonObjectArgs] getFaviconForURL:GURL()
-                                                      size:0
-                                                  useCache:NO
-                                             imageCallback:[OCMArg isNotNil]
-                                          fallbackCallback:[OCMArg any]])
+    OCMStub([[mock ignoringNonObjectArgs]
+                getFaviconForPageURL:GURL()
+                                size:0
+                            useCache:NO
+                            callback:[OCMArg isNotNil]])
         .andDo(^(NSInvocation* invocation) {
           GURL* urltest;
           [invocation getArgument:&urltest atIndex:2];
           if (imageURLs.find(GURL(*urltest)) != imageURLs.end()) {
-            __unsafe_unretained void (^imageCallback)(id);
-            [invocation getArgument:&imageCallback atIndex:5];
+            __unsafe_unretained void (^callback)(id);
+            [invocation getArgument:&callback atIndex:5];
             UIGraphicsBeginImageContext(CGSizeMake(10, 10));
             UIImage* image = UIGraphicsGetImageFromCurrentImageContext();
             UIGraphicsEndImageContext();
-            imageCallback(image);
+            callback([FaviconAttributes attributesWithImage:image]);
           } else if (fallbackURLs.find(GURL(*urltest)) != fallbackURLs.end()) {
-            __unsafe_unretained void (^fallbackCallback)(id, id, BOOL);
-            [invocation getArgument:&fallbackCallback atIndex:6];
-            fallbackCallback(UIColor.whiteColor, UIColor.blueColor, NO);
+            __unsafe_unretained void (^callback)(id);
+            [invocation getArgument:&callback atIndex:5];
+            callback([FaviconAttributes
+                attributesWithMonogram:@"C"
+                             textColor:UIColor.whiteColor
+                       backgroundColor:UIColor.blueColor
+                defaultBackgroundColor:NO]);
           }
         });
   }
