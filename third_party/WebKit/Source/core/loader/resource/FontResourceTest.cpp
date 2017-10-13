@@ -118,7 +118,7 @@ TEST_F(FontResourceTest, CacheAwareFontLoading) {
   resource->load_limit_state_ = FontResource::kUnderLimit;
 
   // FontResource callbacks should be blocked during cache-aware loading.
-  resource->FontLoadShortLimitCallback(nullptr);
+  resource->FontLoadShortLimitCallback();
   EXPECT_FALSE(client->FontLoadShortLimitExceededCalled());
 
   // Fail first request as disk cache miss.
@@ -137,7 +137,7 @@ TEST_F(FontResourceTest, CacheAwareFontLoading) {
   EXPECT_FALSE(client2->FontLoadLongLimitExceededCalled());
 
   // FontResource callbacks are not blocked now.
-  resource->FontLoadLongLimitCallback(nullptr);
+  resource->FontLoadLongLimitCallback();
   EXPECT_TRUE(client->FontLoadLongLimitExceededCalled());
 
   // Add client now, both callbacks should be called.

@@ -28,7 +28,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "core/CoreExport.h"
-#include "platform/Timer.h"
+#include "platform/WebTaskRunner.h"
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/Resource.h"
 #include "platform/loader/fetch/ResourceClient.h"
@@ -53,7 +53,7 @@ class CORE_EXPORT FontResource final : public Resource {
   void SetRevalidatingRequest(const ResourceRequest&) override;
 
   void AllClientsAndObserversRemoved() override;
-  void StartLoadLimitTimers();
+  void StartLoadLimitTimers(WebTaskRunner*);
 
   String OtsParsingMessage() const { return ots_parsing_message_; }
 
@@ -82,8 +82,8 @@ class CORE_EXPORT FontResource final : public Resource {
   FontResource(const ResourceRequest&, const ResourceLoaderOptions&);
 
   void NotifyFinished() override;
-  void FontLoadShortLimitCallback(TimerBase*);
-  void FontLoadLongLimitCallback(TimerBase*);
+  void FontLoadShortLimitCallback();
+  void FontLoadLongLimitCallback();
   void NotifyClientsShortLimitExceeded();
   void NotifyClientsLongLimitExceeded();
 
@@ -100,8 +100,8 @@ class CORE_EXPORT FontResource final : public Resource {
   String ots_parsing_message_;
   LoadLimitState load_limit_state_;
   bool cors_failed_;
-  Timer<FontResource> font_load_short_limit_timer_;
-  Timer<FontResource> font_load_long_limit_timer_;
+  TaskHandle font_load_short_limit_;
+  TaskHandle font_load_long_limit_;
 
   friend class MemoryCache;
   FRIEND_TEST_ALL_PREFIXES(FontResourceTest, CacheAwareFontLoading);
