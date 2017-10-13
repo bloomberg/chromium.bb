@@ -3397,7 +3397,6 @@ test("unit_tests") {
     "../browser/ui/autofill/autofill_popup_layout_model_unittest.cc",
     "../browser/ui/autofill/popup_view_common_unittest.cc",
     "../browser/ui/blocked_content/popup_opener_tab_helper_unittest.cc",
-    "../browser/ui/blocked_content/safe_browsing_triggered_popup_blocker_unittest.cc",
     "../browser/ui/blocked_content/scoped_visibility_tracker_unittest.cc",
     "../browser/ui/bookmarks/bookmark_editor_unittest.cc",
     "../browser/ui/bookmarks/bookmark_ui_utils_desktop_unittest.cc",
