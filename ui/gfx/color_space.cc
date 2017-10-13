@@ -4,6 +4,7 @@
 
 #include "ui/gfx/color_space.h"
 
+#include <iomanip>
 #include <map>
 #include <sstream>
 
@@ -287,36 +288,103 @@ size_t ColorSpace::GetHash() const {
   return result;
 }
 
+#define PRINT_ENUM_CASE(TYPE, NAME) \
+  case TYPE::NAME:                  \
+    ss << #NAME;                    \
+    break;
+
 std::string ColorSpace::ToString() const {
   std::stringstream ss;
+  ss << std::fixed << std::setprecision(4);
   ss << "{primaries:";
-  if (primaries_ == PrimaryID::CUSTOM) {
-    ss << "[";
-    for (size_t i = 0; i < 3; ++i) {
+  switch (primaries_) {
+    PRINT_ENUM_CASE(PrimaryID, INVALID)
+    PRINT_ENUM_CASE(PrimaryID, BT709)
+    PRINT_ENUM_CASE(PrimaryID, BT470M)
+    PRINT_ENUM_CASE(PrimaryID, BT470BG)
+    PRINT_ENUM_CASE(PrimaryID, SMPTE170M)
+    PRINT_ENUM_CASE(PrimaryID, SMPTE240M)
+    PRINT_ENUM_CASE(PrimaryID, FILM)
+    PRINT_ENUM_CASE(PrimaryID, BT2020)
+    PRINT_ENUM_CASE(PrimaryID, SMPTEST428_1)
+    PRINT_ENUM_CASE(PrimaryID, SMPTEST431_2)
+    PRINT_ENUM_CASE(PrimaryID, SMPTEST432_1)
+    PRINT_ENUM_CASE(PrimaryID, XYZ_D50)
+    PRINT_ENUM_CASE(PrimaryID, ADOBE_RGB)
+    PRINT_ENUM_CASE(PrimaryID, APPLE_GENERIC_RGB)
+    PRINT_ENUM_CASE(PrimaryID, WIDE_GAMUT_COLOR_SPIN)
+    PRINT_ENUM_CASE(PrimaryID, ICC_BASED)
+    case PrimaryID::CUSTOM:
       ss << "[";
-      for (size_t j = 0; j < 3; ++j)
-        ss << custom_primary_matrix_[3 * i + j] << ",";
-      ss << "],";
-    }
-    ss << "]";
-  } else {
-    ss << static_cast<int>(primaries_);
+      for (size_t i = 0; i < 3; ++i) {
+        ss << "[";
+        for (size_t j = 0; j < 3; ++j)
+          ss << custom_primary_matrix_[3 * i + j] << ",";
+        ss << "],";
+      }
+      ss << "]";
+      break;
   }
   ss << ", transfer:";
-  if (transfer_ == TransferID::CUSTOM) {
-    ss << "[";
-    for (size_t i = 0; i < 7; ++i)
-      ss << custom_transfer_params_[i] << ",";
-    ss << "]";
-  } else {
-    ss << static_cast<int>(transfer_);
+  switch (transfer_) {
+    PRINT_ENUM_CASE(TransferID, INVALID)
+    PRINT_ENUM_CASE(TransferID, BT709)
+    PRINT_ENUM_CASE(TransferID, GAMMA18)
+    PRINT_ENUM_CASE(TransferID, GAMMA22)
+    PRINT_ENUM_CASE(TransferID, GAMMA24)
+    PRINT_ENUM_CASE(TransferID, GAMMA28)
+    PRINT_ENUM_CASE(TransferID, SMPTE170M)
+    PRINT_ENUM_CASE(TransferID, SMPTE240M)
+    PRINT_ENUM_CASE(TransferID, LINEAR)
+    PRINT_ENUM_CASE(TransferID, LOG)
+    PRINT_ENUM_CASE(TransferID, LOG_SQRT)
+    PRINT_ENUM_CASE(TransferID, IEC61966_2_4)
+    PRINT_ENUM_CASE(TransferID, BT1361_ECG)
+    PRINT_ENUM_CASE(TransferID, IEC61966_2_1)
+    PRINT_ENUM_CASE(TransferID, BT2020_10)
+    PRINT_ENUM_CASE(TransferID, BT2020_12)
+    PRINT_ENUM_CASE(TransferID, SMPTEST2084)
+    PRINT_ENUM_CASE(TransferID, SMPTEST428_1)
+    PRINT_ENUM_CASE(TransferID, ARIB_STD_B67)
+    PRINT_ENUM_CASE(TransferID, SMPTEST2084_NON_HDR)
+    PRINT_ENUM_CASE(TransferID, IEC61966_2_1_HDR)
+    PRINT_ENUM_CASE(TransferID, LINEAR_HDR)
+    PRINT_ENUM_CASE(TransferID, ICC_BASED)
+    case TransferID::CUSTOM: {
+      SkColorSpaceTransferFn fn;
+      GetTransferFunction(&fn);
+      ss << fn.fC << "*x + " << fn.fF << " if x < " << fn.fD << " else (";
+      ss << fn.fA << "*x + " << fn.fB << ")**" << fn.fG << " + " << fn.fE;
+      break;
+    }
   }
-  ss << ", matrix:" << static_cast<int>(matrix_);
-  ss << ", range:" << static_cast<int>(range_);
+  ss << ", matrix:";
+  switch (matrix_) {
+    PRINT_ENUM_CASE(MatrixID, INVALID)
+    PRINT_ENUM_CASE(MatrixID, RGB)
+    PRINT_ENUM_CASE(MatrixID, BT709)
+    PRINT_ENUM_CASE(MatrixID, FCC)
+    PRINT_ENUM_CASE(MatrixID, BT470BG)
+    PRINT_ENUM_CASE(MatrixID, SMPTE170M)
+    PRINT_ENUM_CASE(MatrixID, SMPTE240M)
+    PRINT_ENUM_CASE(MatrixID, YCOCG)
+    PRINT_ENUM_CASE(MatrixID, BT2020_NCL)
+    PRINT_ENUM_CASE(MatrixID, BT2020_CL)
+    PRINT_ENUM_CASE(MatrixID, YDZDX)
+  }
+  ss << ", range:";
+  switch (range_) {
+    PRINT_ENUM_CASE(RangeID, INVALID)
+    PRINT_ENUM_CASE(RangeID, LIMITED)
+    PRINT_ENUM_CASE(RangeID, FULL)
+    PRINT_ENUM_CASE(RangeID, DERIVED)
+  }
   ss << ", icc_profile_id:" << icc_profile_id_;
   ss << "}";
   return ss.str();
 }
+
+#undef PRINT_ENUM_CASE
 
 ColorSpace ColorSpace::GetAsFullRangeRGB() const {
   ColorSpace result(*this);
