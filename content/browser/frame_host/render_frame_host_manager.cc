@@ -555,8 +555,7 @@ void RenderFrameHostManager::CommitPendingFramePolicy() {
     if (pair.second->GetSiteInstance() != parent_site_instance) {
       pair.second->Send(new FrameMsg_DidUpdateFramePolicy(
           pair.second->GetRoutingID(),
-          {frame_tree_node_->current_replication_state().sandbox_flags,
-           frame_tree_node_->current_replication_state().container_policy}));
+          frame_tree_node_->current_replication_state().frame_policy));
     }
   }
 }

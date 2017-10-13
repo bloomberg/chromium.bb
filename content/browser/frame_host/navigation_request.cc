@@ -187,7 +187,7 @@ void AddAdditionalRequestHeaders(net::HttpRequestHeaders* headers,
   if (frame_tree_node->IsMainFrame()) {
     // For main frame, the origin is the url currently loading.
     origin = url::Origin(url);
-  } else if ((frame_tree_node->effective_sandbox_flags() &
+  } else if ((frame_tree_node->effective_frame_policy().sandbox_flags &
               blink::WebSandboxFlags::kOrigin) ==
              blink::WebSandboxFlags::kNone) {
     // The origin should be the origin of the root, except for sandboxed
@@ -974,7 +974,7 @@ void NavigationRequest::OnStartChecksComplete(
   // Only initialize the ServiceWorkerNavigationHandle if it can be created for
   // this frame.
   bool can_create_service_worker =
-      (frame_tree_node_->pending_sandbox_flags() &
+      (frame_tree_node_->pending_frame_policy().sandbox_flags &
        blink::WebSandboxFlags::kOrigin) != blink::WebSandboxFlags::kOrigin;
   request_params_.should_create_service_worker = can_create_service_worker;
   if (can_create_service_worker) {

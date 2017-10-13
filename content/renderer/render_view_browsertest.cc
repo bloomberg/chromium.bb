@@ -194,7 +194,7 @@ FrameReplicationState ReconstructReplicationStateForTesting(
   // blink API...
   result.name = frame->AssignedName().Utf8();
   result.unique_name = test_render_frame->unique_name();
-  result.sandbox_flags = frame->EffectiveSandboxFlags();
+  result.frame_policy.sandbox_flags = frame->EffectiveSandboxFlags();
   // result.should_enforce_strict_mixed_content_checking is calculated in the
   // browser...
   result.origin = frame->GetSecurityOrigin();
