@@ -17,10 +17,8 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/input_method/input_method_engine_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/aura/mus/input_method_mus.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/mock_component_extension_ime_manager_delegate.h"
-#include "ui/base/ime/chromeos/mock_ime_candidate_window_handler.h"
 #include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ime/ime_engine_handler_interface.h"
 #include "ui/base/ime/mock_ime_input_context_handler.h"
@@ -150,16 +148,9 @@ class InputMethodEngineTest : public testing::Test {
     mock_ime_input_context_handler_.reset(new ui::MockIMEInputContextHandler());
     ui::IMEBridge::Get()->SetInputContextHandler(
         mock_ime_input_context_handler_.get());
-
-    mock_ime_candidate_window_handler_.reset(
-        new chromeos::MockIMECandidateWindowHandler());
-    ui::IMEBridge::Get()->SetCandidateWindowHandler(
-        mock_ime_candidate_window_handler_.get());
   }
-
   ~InputMethodEngineTest() override {
     ui::IMEBridge::Get()->SetInputContextHandler(NULL);
-    ui::IMEBridge::Get()->SetCandidateWindowHandler(NULL);
     engine_.reset();
     Shutdown();
   }
@@ -191,8 +182,6 @@ class InputMethodEngineTest : public testing::Test {
 
   std::unique_ptr<ui::MockIMEInputContextHandler>
       mock_ime_input_context_handler_;
-  std::unique_ptr<chromeos::MockIMECandidateWindowHandler>
-      mock_ime_candidate_window_handler_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InputMethodEngineTest);
@@ -328,17 +317,6 @@ TEST_F(InputMethodEngineTest, TestCompositionBoundsChanged) {
   rects.push_back(gfx::Rect());
   engine_->SetCompositionBounds(rects);
   EXPECT_EQ(ONCOMPOSITIONBOUNDSCHANGED, observer_->GetCallsBitmapAndReset());
-}
-
-TEST_F(InputMethodEngineTest, ChangeCandidateWindowVisiblility) {
-  CreateEngine(true);
-  FocusIn(ui::TEXT_INPUT_TYPE_TEXT);
-  engine_->Enable(kTestImeComponentId);
-  std::string error;
-  bool is_candidate_window_visible = true;
-  engine_->SetCandidateWindowVisible(is_candidate_window_visible, &error);
-  EXPECT_EQ(is_candidate_window_visible,
-            mock_ime_candidate_window_handler_->is_candidate_window_visible());
 }
 
 }  // namespace input_method

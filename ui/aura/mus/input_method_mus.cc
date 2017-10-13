@@ -115,7 +115,9 @@ void InputMethodMus::OnInputLocaleChanged() {
 }
 
 bool InputMethodMus::IsCandidatePopupOpen() const {
-  return text_input_client_->is_candidate_window_visible();
+  // TODO(moshayedi): crbug.com/637416. Implement this properly when we have a
+  // mean for displaying candidate list popup.
+  return false;
 }
 
 ui::EventDispatchDetails InputMethodMus::SendKeyEventToInputMethod(
