@@ -47,7 +47,7 @@ const SkColor kDefaultTabTextColor = SkColorSetARGB(0xA0, 0x00, 0x00, 0x00);
 // on the tab strip. Relies on an associated TabController to provide a
 // target/action for selecting the tab.
 
-@interface TabView : NSView<ThemedWindowDrawing> {
+@interface TabView : NSControl<ThemedWindowDrawing> {
  @private
   TabController* controller_;
   base::scoped_nsobject<NSTextField> titleView_;
