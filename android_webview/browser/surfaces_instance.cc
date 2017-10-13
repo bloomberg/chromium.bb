@@ -143,8 +143,7 @@ void SurfacesInstance::DrawAndSwap(const gfx::Size& viewport,
       render_pass->CreateAndAppendDrawQuad<viz::SurfaceDrawQuad>();
   surface_quad->SetNew(quad_state, gfx::Rect(quad_state->quad_layer_rect),
                        gfx::Rect(quad_state->quad_layer_rect), child_id,
-                       viz::SurfaceDrawQuadType::PRIMARY, SK_ColorWHITE,
-                       nullptr);
+                       base::nullopt, SK_ColorWHITE);
 
   viz::CompositorFrame frame;
   // We draw synchronously, so acknowledge a manual BeginFrame.

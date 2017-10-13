@@ -314,13 +314,13 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
 
   // In the event that the primary surface is not yet available in the
   // display compositor, the fallback surface will be used.
-  void SetFallbackSurface(const viz::SurfaceInfo& surface_info);
+  void SetFallbackSurfaceId(const viz::SurfaceId& surface_id);
 
   // Returns the primary SurfaceInfo set by SetShowPrimarySurface.
   const viz::SurfaceInfo* GetPrimarySurfaceInfo() const;
 
-  // Returns the fallback SurfaceInfo set by SetFallbackSurface.
-  const viz::SurfaceInfo* GetFallbackSurfaceInfo() const;
+  // Returns the fallback SurfaceId set by SetFallbackSurfaceId.
+  const viz::SurfaceId* GetFallbackSurfaceId() const;
 
   bool has_external_content() {
     return texture_layer_.get() || surface_layer_.get();

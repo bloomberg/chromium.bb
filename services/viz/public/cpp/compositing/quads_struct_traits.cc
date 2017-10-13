@@ -106,42 +106,13 @@ bool StructTraits<viz::mojom::StreamVideoQuadStateDataView, viz::DrawQuad>::
 }
 
 // static
-viz::mojom::SurfaceDrawQuadType
-EnumTraits<viz::mojom::SurfaceDrawQuadType, viz::SurfaceDrawQuadType>::ToMojom(
-    viz::SurfaceDrawQuadType surface_draw_quad_type) {
-  switch (surface_draw_quad_type) {
-    case viz::SurfaceDrawQuadType::PRIMARY:
-      return viz::mojom::SurfaceDrawQuadType::PRIMARY;
-    case viz::SurfaceDrawQuadType::FALLBACK:
-      return viz::mojom::SurfaceDrawQuadType::FALLBACK;
-  }
-  NOTREACHED();
-  return viz::mojom::SurfaceDrawQuadType::PRIMARY;
-}
-
-// static
-bool EnumTraits<viz::mojom::SurfaceDrawQuadType, viz::SurfaceDrawQuadType>::
-    FromMojom(viz::mojom::SurfaceDrawQuadType input,
-              viz::SurfaceDrawQuadType* out) {
-  switch (input) {
-    case viz::mojom::SurfaceDrawQuadType::PRIMARY:
-      *out = viz::SurfaceDrawQuadType::PRIMARY;
-      return true;
-    case viz::mojom::SurfaceDrawQuadType::FALLBACK:
-      *out = viz::SurfaceDrawQuadType::FALLBACK;
-      return true;
-  }
-  return false;
-}
-
-// static
 bool StructTraits<viz::mojom::SurfaceQuadStateDataView, viz::DrawQuad>::Read(
     viz::mojom::SurfaceQuadStateDataView data,
     viz::DrawQuad* out) {
   viz::SurfaceDrawQuad* quad = static_cast<viz::SurfaceDrawQuad*>(out);
   quad->default_background_color = data.default_background_color();
-  return data.ReadSurfaceDrawQuadType(&quad->surface_draw_quad_type) &&
-         data.ReadSurface(&quad->surface_id);
+  return data.ReadPrimarySurfaceId(&quad->primary_surface_id) &&
+         data.ReadFallbackSurfaceId(&quad->fallback_surface_id);
 }
 
 // static

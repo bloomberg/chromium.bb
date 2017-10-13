@@ -197,8 +197,8 @@ std::unique_ptr<Layer> Layer::Clone() const {
       clone->SetShowPrimarySurface(surface_layer_->primary_surface_info(),
                                    surface_layer_->surface_reference_factory());
     }
-    if (surface_layer_->fallback_surface_info().is_valid())
-      clone->SetFallbackSurface(surface_layer_->fallback_surface_info());
+    if (surface_layer_->fallback_surface_id().is_valid())
+      clone->SetFallbackSurfaceId(surface_layer_->fallback_surface_id());
   } else if (type_ == LAYER_SOLID_COLOR) {
     clone->SetColor(GetTargetColor());
   }
@@ -794,15 +794,14 @@ void Layer::SetShowPrimarySurface(
     mirror->dest()->SetShowPrimarySurface(surface_info, ref_factory);
 }
 
-void Layer::SetFallbackSurface(const viz::SurfaceInfo& surface_info) {
+void Layer::SetFallbackSurfaceId(const viz::SurfaceId& surface_id) {
   DCHECK(type_ == LAYER_TEXTURED || type_ == LAYER_SOLID_COLOR);
   DCHECK(surface_layer_);
 
-  // TODO(fsamuel): We should compute the gutter in the display compositor.
-  surface_layer_->SetFallbackSurfaceInfo(surface_info);
+  surface_layer_->SetFallbackSurfaceId(surface_id);
 
   for (const auto& mirror : mirrors_)
-    mirror->dest()->SetFallbackSurface(surface_info);
+    mirror->dest()->SetFallbackSurfaceId(surface_id);
 }
 
 const viz::SurfaceInfo* Layer::GetPrimarySurfaceInfo() const {
@@ -811,9 +810,9 @@ const viz::SurfaceInfo* Layer::GetPrimarySurfaceInfo() const {
   return nullptr;
 }
 
-const viz::SurfaceInfo* Layer::GetFallbackSurfaceInfo() const {
+const viz::SurfaceId* Layer::GetFallbackSurfaceId() const {
   if (surface_layer_)
-    return &surface_layer_->fallback_surface_info();
+    return &surface_layer_->fallback_surface_id();
   return nullptr;
 }
 

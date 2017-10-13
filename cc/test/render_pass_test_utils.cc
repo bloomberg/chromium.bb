@@ -35,6 +35,20 @@ viz::RenderPass* AddRenderPass(viz::RenderPassList* pass_list,
   return saved;
 }
 
+viz::RenderPass* AddRenderPassWithDamage(viz::RenderPassList* pass_list,
+                                         int render_pass_id,
+                                         const gfx::Rect& output_rect,
+                                         const gfx::Rect& damage_rect,
+                                         const gfx::Transform& root_transform,
+                                         const FilterOperations& filters) {
+  std::unique_ptr<viz::RenderPass> pass(viz::RenderPass::Create());
+  pass->SetNew(render_pass_id, output_rect, damage_rect, root_transform);
+  pass->filters = filters;
+  viz::RenderPass* saved = pass.get();
+  pass_list->push_back(std::move(pass));
+  return saved;
+}
+
 viz::SolidColorDrawQuad* AddQuad(viz::RenderPass* pass,
                                  const gfx::Rect& rect,
                                  SkColor color) {

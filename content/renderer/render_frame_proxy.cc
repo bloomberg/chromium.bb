@@ -383,7 +383,7 @@ void RenderFrameProxy::OnSetChildFrameSurface(
 
   if (!enable_surface_synchronization_)
     compositing_helper_->SetPrimarySurfaceInfo(surface_info);
-  compositing_helper_->SetFallbackSurfaceInfo(surface_info, sequence);
+  compositing_helper_->SetFallbackSurfaceId(surface_info.id(), sequence);
 }
 
 void RenderFrameProxy::OnUpdateOpener(int opener_routing_id) {

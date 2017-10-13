@@ -180,7 +180,7 @@ void WindowPortLocal::OnSurfaceChanged(const viz::SurfaceInfo& surface_info) {
           ->surface_manager()
           ->reference_factory();
   window_->layer()->SetShowPrimarySurface(surface_info, reference_factory);
-  window_->layer()->SetFallbackSurface(surface_info);
+  window_->layer()->SetFallbackSurfaceId(surface_info.id());
 }
 
 bool WindowPortLocal::ShouldRestackTransientChildren() {

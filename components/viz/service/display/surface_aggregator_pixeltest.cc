@@ -124,8 +124,7 @@ TEST_F(SurfaceAggregatorPixelTest, DrawSimpleAggregatedFrame) {
     auto* surface_quad = pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
     surface_quad->SetNew(pass->shared_quad_state_list.back(),
                          gfx::Rect(child_size), gfx::Rect(child_size),
-                         child_surface_id, SurfaceDrawQuadType::PRIMARY,
-                         SK_ColorWHITE, nullptr);
+                         child_surface_id, base::nullopt, SK_ColorWHITE);
 
     auto* color_quad = pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
     bool force_anti_aliasing_off = false;
@@ -214,8 +213,7 @@ TEST_F(SurfaceAggregatorPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
     auto* left_surface_quad = pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
     left_surface_quad->SetNew(pass->shared_quad_state_list.back(),
                               gfx::Rect(child_size), gfx::Rect(child_size),
-                              left_child_id, SurfaceDrawQuadType::PRIMARY,
-                              SK_ColorWHITE, nullptr);
+                              left_child_id, base::nullopt, SK_ColorWHITE);
 
     surface_transform.Translate(100, 0);
     CreateAndAppendTestSharedQuadState(pass.get(), surface_transform,
@@ -224,8 +222,7 @@ TEST_F(SurfaceAggregatorPixelTest, DrawAggregatedFrameWithSurfaceTransforms) {
     auto* right_surface_quad = pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
     right_surface_quad->SetNew(pass->shared_quad_state_list.back(),
                                gfx::Rect(child_size), gfx::Rect(child_size),
-                               right_child_id, SurfaceDrawQuadType::PRIMARY,
-                               SK_ColorWHITE, nullptr);
+                               right_child_id, base::nullopt, SK_ColorWHITE);
 
     auto root_frame = test::MakeCompositorFrame();
     root_frame.render_pass_list.push_back(std::move(pass));

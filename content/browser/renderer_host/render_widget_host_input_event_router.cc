@@ -132,7 +132,7 @@ RenderWidgetHostInputEventRouter::HittestDelegate::HittestDelegate(
 bool RenderWidgetHostInputEventRouter::HittestDelegate::RejectHitTarget(
     const viz::SurfaceDrawQuad* surface_quad,
     const gfx::Point& point_in_quad_space) {
-  auto it = hittest_data_.find(surface_quad->surface_id);
+  auto it = hittest_data_.find(surface_quad->primary_surface_id);
   if (it != hittest_data_.end() && it->second.ignored_for_hittest)
     return true;
   return false;
@@ -141,7 +141,7 @@ bool RenderWidgetHostInputEventRouter::HittestDelegate::RejectHitTarget(
 bool RenderWidgetHostInputEventRouter::HittestDelegate::AcceptHitTarget(
     const viz::SurfaceDrawQuad* surface_quad,
     const gfx::Point& point_in_quad_space) {
-  auto it = hittest_data_.find(surface_quad->surface_id);
+  auto it = hittest_data_.find(surface_quad->primary_surface_id);
   if (it != hittest_data_.end() && !it->second.ignored_for_hittest)
     return true;
   return false;

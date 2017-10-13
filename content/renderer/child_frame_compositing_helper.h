@@ -56,8 +56,8 @@ class CONTENT_EXPORT ChildFrameCompositingHelper {
 
   void OnContainerDestroy();
   void SetPrimarySurfaceInfo(const viz::SurfaceInfo& surface_info);
-  void SetFallbackSurfaceInfo(const viz::SurfaceInfo& surface_info,
-                              const viz::SurfaceSequence& sequence);
+  void SetFallbackSurfaceId(const viz::SurfaceId& surface_id,
+                            const viz::SurfaceSequence& sequence);
   void UpdateVisibility(bool);
   void ChildFrameGone();
 
@@ -85,7 +85,7 @@ class CONTENT_EXPORT ChildFrameCompositingHelper {
   viz::SurfaceId last_primary_surface_id_;
   gfx::Size last_surface_size_in_pixels_;
 
-  viz::SurfaceInfo fallback_surface_info_;
+  viz::SurfaceId fallback_surface_id_;
 
   // The lifetime of this weak pointer should be greater than the lifetime of
   // other member objects, as they may access this pointer during their

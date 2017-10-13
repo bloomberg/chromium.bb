@@ -456,7 +456,6 @@ bool ParamTraits<viz::RenderPass>::Read(const base::Pickle* m,
             cache_render_pass, has_damage_from_contributing_content,
             generate_mipmap);
 
-  viz::DrawQuad* last_draw_quad = nullptr;
   for (uint32_t i = 0; i < quad_list_size; ++i) {
     viz::DrawQuad::Material material;
     base::PickleIterator temp_iter = *iter;
@@ -516,30 +515,6 @@ bool ParamTraits<viz::RenderPass>::Read(const base::Pickle* m,
     }
 
     draw_quad->shared_quad_state = p->shared_quad_state_list.back();
-    // If this quad is a fallback viz::SurfaceDrawQuad then update the previous
-    // primary viz::SurfaceDrawQuad to point to this quad.
-    if (draw_quad->material == viz::DrawQuad::SURFACE_CONTENT) {
-      const viz::SurfaceDrawQuad* surface_draw_quad =
-          viz::SurfaceDrawQuad::MaterialCast(draw_quad);
-      if (surface_draw_quad->surface_draw_quad_type ==
-          viz::SurfaceDrawQuadType::FALLBACK) {
-        // A fallback quad must immediately follow a primary
-        // viz::SurfaceDrawQuad.
-        if (!last_draw_quad ||
-            last_draw_quad->material != viz::DrawQuad::SURFACE_CONTENT) {
-          return false;
-        }
-        viz::SurfaceDrawQuad* last_surface_draw_quad =
-            static_cast<viz::SurfaceDrawQuad*>(last_draw_quad);
-        // Only one fallback quad is currently supported.
-        if (last_surface_draw_quad->surface_draw_quad_type !=
-            viz::SurfaceDrawQuadType::PRIMARY) {
-          return false;
-        }
-        last_surface_draw_quad->fallback_quad = surface_draw_quad;
-      }
-    }
-    last_draw_quad = draw_quad;
   }
 
   return true;

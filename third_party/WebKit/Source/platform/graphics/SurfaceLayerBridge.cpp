@@ -116,7 +116,7 @@ void SurfaceLayerBridge::OnFirstSurfaceActivation(
     scoped_refptr<cc::SurfaceLayer> surface_layer =
         cc::SurfaceLayer::Create(ref_factory_);
     surface_layer->SetPrimarySurfaceInfo(surface_info);
-    surface_layer->SetFallbackSurfaceInfo(surface_info);
+    surface_layer->SetFallbackSurfaceId(surface_info.id());
     surface_layer->SetStretchContentToFillBounds(true);
     surface_layer->SetIsDrawable(true);
     cc_layer_ = surface_layer;
@@ -131,7 +131,7 @@ void SurfaceLayerBridge::OnFirstSurfaceActivation(
     cc::SurfaceLayer* surface_layer =
         static_cast<cc::SurfaceLayer*>(cc_layer_.get());
     surface_layer->SetPrimarySurfaceInfo(surface_info);
-    surface_layer->SetFallbackSurfaceInfo(surface_info);
+    surface_layer->SetFallbackSurfaceId(surface_info.id());
   }
 
   if (observer_)

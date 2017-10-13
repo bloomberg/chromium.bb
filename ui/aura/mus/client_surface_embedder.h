@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/common/surfaces/surface_reference_factory.h"
 #include "ui/gfx/geometry/insets.h"
 
@@ -18,10 +19,6 @@ class Insets;
 
 namespace ui {
 class Layer;
-}
-
-namespace viz {
-class SurfaceInfo;
 }
 
 namespace aura {
@@ -62,6 +59,9 @@ class ClientSurfaceEmbedder {
 
   // Contains the client's content.
   std::unique_ptr<ui::Layer> surface_layer_;
+
+  // Information describing the currently set fallback surface.
+  viz::SurfaceInfo fallback_surface_info_;
 
   // Used for showing a gutter when the content is not available.
   std::unique_ptr<ui::Layer> right_gutter_;

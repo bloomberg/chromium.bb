@@ -549,7 +549,8 @@ void DelegatedFrameHost::OnFirstSurfaceActivation(
   if (!has_primary_surface_)
     return;
 
-  client_->DelegatedFrameHostGetLayer()->SetFallbackSurface(surface_info);
+  client_->DelegatedFrameHostGetLayer()->SetFallbackSurfaceId(
+      surface_info.id());
   local_surface_id_ = surface_info.id().local_surface_id();
 
   released_front_lock_ = NULL;
