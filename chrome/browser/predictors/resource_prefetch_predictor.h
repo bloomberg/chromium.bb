@@ -188,6 +188,8 @@ class ResourcePrefetchPredictor : public history::HistoryServiceObserver {
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest, NavigationUrlNotInDB);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest,
                            NavigationUrlNotInDBAndDBFull);
+  FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest,
+                           NavigationManyResourcesWithDifferentOrigins);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest, RedirectUrlNotInDB);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest, RedirectUrlInDB);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest, OnMainFrameRequest);

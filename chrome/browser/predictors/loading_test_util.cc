@@ -204,6 +204,7 @@ void PopulateTestConfig(LoadingPredictorConfig* config, bool small_db) {
     config->max_hosts_to_track = 2;
     config->min_url_visit_count = 2;
     config->max_resources_per_entry = 4;
+    config->max_origins_per_entry = 5;
     config->max_consecutive_misses = 2;
     config->max_redirect_consecutive_misses = 2;
     config->min_resource_confidence_to_trigger_prefetch = 0.5;
