@@ -85664,6 +85664,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ThirdPartyModules.InputMethodEditorsCount" units="counts">
+  <owner>pmonette@chromium.org</owner>
+  <summary>
+    The number of registered input method editors found on the user's machine.
+    This is emitted shortly after startup when the IME enumeration takes place.
+  </summary>
+</histogram>
+
 <histogram name="ThirdPartyModules.InstalledPrograms.DataSize" units="KB">
   <owner>pmonette@chromium.org</owner>
   <summary>
@@ -85735,7 +85743,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="ThirdPartyModules.ShellExtensionsCount" units="counts">
   <owner>pmonette@chromium.org</owner>
   <summary>
-    The number of registered shell extensions found on the user's machine.
+    The number of registered shell extensions found on the user's machine. This
+    is emitted shortly after startup when the shell extensions enumeration takes
+    place.
   </summary>
 </histogram>
 
