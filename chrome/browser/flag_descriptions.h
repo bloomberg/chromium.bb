@@ -201,6 +201,9 @@ extern const char kEnableAutofillCreditCardUploadGoogleLogoDescription[];
 extern const char kEnableAutofillCreditCardUploadNewUiName[];
 extern const char kEnableAutofillCreditCardUploadNewUiDescription[];
 
+extern const char kEnableAutofillSendBillingCustomerNumberName[];
+extern const char kEnableAutofillSendBillingCustomerNumberDescription[];
+
 extern const char kEnableBreakingNewsPushName[];
 extern const char kEnableBreakingNewsPushDescription[];
 

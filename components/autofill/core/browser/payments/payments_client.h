@@ -12,6 +12,7 @@
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/card_unmask_delegate.h"
 #include "components/autofill/core/browser/credit_card.h"
+#include "components/prefs/pref_service.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
@@ -71,8 +72,10 @@ class PaymentsClient : public net::URLFetcherDelegate,
   // request.
   struct UnmaskRequestDetails {
     UnmaskRequestDetails();
+    UnmaskRequestDetails(const UnmaskRequestDetails& other);
     ~UnmaskRequestDetails();
 
+    int64_t billing_customer_number = 0;
     CreditCard card;
     std::string risk_data;
     CardUnmaskDelegate::UnmaskResponse user_response;
@@ -85,6 +88,7 @@ class PaymentsClient : public net::URLFetcherDelegate,
     UploadRequestDetails(const UploadRequestDetails& other);
     ~UploadRequestDetails();
 
+    int64_t billing_customer_number = 0;
     CreditCard card;
     base::string16 cvc;
     std::vector<AutofillProfile> profiles;
@@ -95,9 +99,10 @@ class PaymentsClient : public net::URLFetcherDelegate,
   };
 
   // |context_getter| is reference counted so it has no lifetime or ownership
-  // requirements. |delegate| must outlive |this|. |source_url| is the url
-  // of the merchant page.
+  // requirements. |pref_service| is used to get the registered preference
+  // value, |delegate| must outlive |this|.
   PaymentsClient(net::URLRequestContextGetter* context_getter,
+                 PrefService* pref_service,
                  PaymentsClientDelegate* delegate);
 
   ~PaymentsClient() override;
@@ -108,6 +113,8 @@ class PaymentsClient : public net::URLFetcherDelegate,
   // identifying information should not be sent until the user has explicitly
   // accepted an upload prompt.
   void Prepare();
+
+  PrefService* GetPrefService() const;
 
   // The user has attempted to unmask a card with the given cvc.
   void UnmaskCard(const UnmaskRequestDetails& request_details);
@@ -159,6 +166,9 @@ class PaymentsClient : public net::URLFetcherDelegate,
 
   // The context for the request.
   scoped_refptr<net::URLRequestContextGetter> context_getter_;
+
+  // The pref service for this client.
+  PrefService* const pref_service_;
 
   // Observer class that has its various On* methods called based on the results
   // of a Payments request.

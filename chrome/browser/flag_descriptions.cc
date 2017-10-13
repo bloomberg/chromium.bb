@@ -285,6 +285,13 @@ const char kEnableAutofillCreditCardUploadNewUiDescription[] =
     "If enabled, displays a new save card bubble/infobar design when offering "
     "to upload credit cards to Google Payments.";
 
+const char kEnableAutofillSendBillingCustomerNumberName[] =
+    "Enable autofill sending billing customer number when calling Google "
+    "Payments";
+const char kEnableAutofillSendBillingCustomerNumberDescription[] =
+    "If enabled, autofill sends billing customer number when calling Google "
+    "Payments.";
+
 const char kEnableBreakingNewsPushName[] = "Breaking News Push";
 const char kEnableBreakingNewsPushDescription[] =
     "Listen for breaking news content suggestions (e.g. for New Tab Page) "

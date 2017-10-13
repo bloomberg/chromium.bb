@@ -61,6 +61,8 @@ CvcUnmaskViewController::CvcUnmaskViewController(
       payments_client_(
           Profile::FromBrowserContext(web_contents_->GetBrowserContext())
               ->GetRequestContext(),
+          Profile::FromBrowserContext(web_contents_->GetBrowserContext())
+              ->GetPrefs(),
           this),
       full_card_request_(this,
                          &payments_client_,
