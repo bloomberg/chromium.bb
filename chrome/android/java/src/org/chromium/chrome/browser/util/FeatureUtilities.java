@@ -25,6 +25,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.firstrun.FirstRunUtils;
@@ -299,6 +300,8 @@ public class FeatureUtilities {
                 if (ChromePreferenceManager.getInstance().isChromeHomeUserPreferenceSet()) {
                     isUserPreferenceSet = true;
                     sChromeHomeEnabled = prefManager.isChromeHomeUserEnabled();
+                    RecordHistogram.recordBooleanHistogram(
+                            "Android.ChromeHome.UserPreference.Enabled", sChromeHomeEnabled);
                 } else {
                     sChromeHomeEnabled = prefManager.isChromeHomeEnabled();
                 }

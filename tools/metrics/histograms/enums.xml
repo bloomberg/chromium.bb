@@ -4410,6 +4410,20 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="4" label="Browser Startup"/>
 </enum>
 
+<enum name="ChromeHomePromoResult">
+  <int value="0" label="Enabled Chome Home"/>
+  <int value="1" label="Disabled Chome Home"/>
+  <int value="2" label="Chrome Home remained enabled"/>
+  <int value="3" label="Chrome Home remained disabled"/>
+  <int value="4" label="No action"/>
+</enum>
+
+<enum name="ChromeHomePromoShowReason">
+  <int value="0" label="NTP"/>
+  <int value="1" label="Menu"/>
+  <int value="2" label="Startup"/>
+</enum>
+
 <enum name="ChromeNotifierServiceActionType">
   <int value="0" label="Unknown"/>
   <int value="1" label="First service enabled"/>
