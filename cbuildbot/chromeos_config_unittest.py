@@ -541,6 +541,19 @@ class CBuildBotTest(ChromeosConfigTestBase):
               'Config %s: has %s VM test, not in override (%s, %s).' % \
               (build_name, test, config.vm_tests, config.vm_tests_override))
 
+  def testVmTestsOnlyOnVmTestBoards(self):
+    """Verify that only VM capable boards run VM tests."""
+    for build_name, config in self.site_config.iteritems():
+      if config['vm_tests'] or config['vm_tests_override']:
+        for board in config['boards']:
+          self.assertIn(board, chromeos_config._vmtest_boards,
+                        'Board %s not able to run VM tests.' % board)
+      for child_config in config.child_configs:
+        if child_config['vm_tests'] or child_config['vm_tests_override']:
+          for board in config['boards']:
+            self.assertIn(board, chromeos_config._vmtest_boards,
+                          'Board %s not able to run VM tests.' % board)
+
   def testHWTestsArchivingHWTestArtifacts(self):
     """Make sure all configs upload artifacts that need them for hw testing."""
     for build_name, config in self.site_config.iteritems():

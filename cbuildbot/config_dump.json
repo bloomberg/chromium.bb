@@ -3317,12 +3317,12 @@
         "boards": [
             "beaglebone"
         ],
-        "buildslave_type": "baremetal",
         "description": "Incremental Beaglebone Builder",
         "images": [],
         "rootfs_verification": false,
         "sync_chrome": false,
-        "trybot_list": true
+        "trybot_list": true,
+        "vm_tests": []
     },
     "beaglebone-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -4138,9 +4138,7 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-        ]
+        "vm_tests": []
     },
     "bob-chrome-pfq": {
         "_template": "chrome_pfq",
@@ -5987,11 +5985,11 @@
         "boards": [
             "chell"
         ],
-        "buildslave_type": "baremetal",
         "description": "Incremental Builds (internal)",
         "internal": true,
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both"
+        "overlays": "both",
+        "vm_tests": []
     },
     "chell-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -6022,7 +6020,8 @@
             "-cros-debug",
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "chell-paladin": {
         "_template": "paladin",
@@ -6183,7 +6182,6 @@
         "build_timeout": 64800,
         "build_type": "chroot",
         "builder_class_name": "sdk_builders.ChrootSdkBuilder",
-        "buildslave_type": "baremetal",
         "chrome_sdk": true,
         "description": "Build the SDK and all the cross-compilers",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Continuous",
@@ -6199,7 +6197,8 @@
         "prebuilts": "public",
         "trybot_list": true,
         "use_sdk": false,
-        "usepkg_build_packages": false
+        "usepkg_build_packages": false,
+        "vm_tests": []
     },
     "clapper-chrome-pfq": {
         "_template": "chrome_pfq",
@@ -16100,7 +16099,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "lumpy-llvm-next-toolchain": {
         "_template": "llvm_next_toolchain",
@@ -21770,7 +21770,8 @@
         "boards": [
             "reef"
         ],
-        "sync_chrome": true
+        "sync_chrome": true,
+        "vm_tests_override": null
     },
     "reef-chrome-pfq": {
         "_template": "chrome_pfq",
@@ -23164,7 +23165,8 @@
             "-debug_fission",
             "-transparent_hugepage",
             "chrome_internal"
-        ]
+        ],
+        "vm_tests_override": null
     },
     "samus-chromium-pfq": {
         "_template": "chromium_pfq",
@@ -29256,7 +29258,8 @@
         "boards": [
             "veyron_tiger"
         ],
-        "sync_chrome": true
+        "sync_chrome": true,
+        "vm_tests_override": null
     },
     "veyron_tiger-chrome-pfq": {
         "_template": "chrome_pfq",
@@ -30237,7 +30240,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "wolf-unittest-stress": {
         "_template": "unittest_stress",
@@ -30872,7 +30876,6 @@
         "boards": [
             "x86-generic"
         ],
-        "buildslave_type": "baremetal",
         "description": "Paladin build with Address Sanitizer (Clang)",
         "disk_layout": "2gb-rootfs",
         "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-ASAN",
@@ -30885,6 +30888,7 @@
         ],
         "important": false,
         "profile": "asan",
+        "vm_tests": [],
         "vm_tests_override": null
     },
     "x86-generic-chromium-pfq": {
@@ -30969,7 +30973,7 @@
         "boards": [
             "x86-generic"
         ],
-        "buildslave_type": "baremetal"
+        "vm_tests": []
     },
     "x86-generic-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",

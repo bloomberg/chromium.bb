@@ -1698,8 +1698,6 @@ def CreateBoardConfigs(site_config, boards_dict, ge_build_config):
       board_config.apply(disk_layout='base')
     if board in _no_unittest_boards:
       board_config.apply(site_config.templates.no_unittest_builder)
-    if board in boards_dict['no_vmtest_boards']:
-      board_config.apply(site_config.templates.no_vmtest_builder)
     if board in _beaglebone_boards:
       board_config.apply(site_config.templates.beaglebone)
 
@@ -3707,6 +3705,23 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
   )
 
 
+def EnsureVmTestsOnVmTestBoards(site_config, boards_dict, _gs_build_config):
+  """Make sure VMTests are only enabled on boards that support them.
+
+  Args:
+    site_config: config_lib.SiteConfig containing builds to have their
+                 waterfall values updated.
+    boards_dict: A dict mapping board types to board name collections.
+    ge_build_config: Dictionary containing the decoded GE configuration file.
+  """
+  for c in site_config.itervalues():
+    if set(c['boards']).intersection(set(boards_dict['no_vmtest_boards'])):
+      c.apply(site_config.templates.no_vmtest_builder)
+      if c.child_configs:
+        for cc in c.child_configs:
+          cc.apply(site_config.templates.no_vmtest_builder)
+
+
 def EnsureVmTestsOnBaremetal(site_config, _gs_build_config):
   """Make sure VMTests have a builder than can run them.
 
@@ -3776,6 +3791,8 @@ def GetConfig():
   InsertWaterfallDefaults(site_config, ge_build_config)
 
   ApplyCustomOverrides(site_config, ge_build_config)
+
+  EnsureVmTestsOnVmTestBoards(site_config, boards_dict, ge_build_config)
 
   EnsureVmTestsOnBaremetal(site_config, ge_build_config)
 
