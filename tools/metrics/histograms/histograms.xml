@@ -10586,6 +10586,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ContentSettings.Popups.StrongBlockerActions"
+    enum="StrongPopupBlockerAction">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    Counts of various events related to the strong popup blocker (aka abusive
+    experience enforcement), that is triggered via safe browsing.
+  </summary>
+</histogram>
+
 <histogram name="ContentSuggestions.FetchPendingPlaceholder.VisibleDuration"
     units="ms">
   <obsolete>

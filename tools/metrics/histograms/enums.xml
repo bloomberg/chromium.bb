@@ -37477,6 +37477,14 @@ from previous Chrome versions.
   <int value="1" label="Leave the current page"/>
 </enum>
 
+<enum name="StrongPopupBlockerAction">
+  <int value="0" label="Navigation commit"/>
+  <int value="1" label="Commit warn site"/>
+  <int value="2" label="Commit enforced site"/>
+  <int value="3" label="Popup considered"/>
+  <int value="4" label="Popup blocked"/>
+</enum>
+
 <enum name="StyleSheetCacheStatus">
   <int value="0" label="No usable cache found"/>
   <int value="1" label="DiskCache served the CSS source"/>
