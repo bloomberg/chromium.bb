@@ -1387,14 +1387,13 @@ be describing additional metrics about the same event.
   <owner>zhenw@chromium.org</owner>
   <summary>
     Collects the expected queueing duration of tasks and metadata for the
-    foreground tab in background tab opening session, which is the duration from
-    the time when the browser starts to open background tabs until the time when
-    browser has finished loading those tabs or paused loading due to memory
-    pressure. A new session starts when the browser resumes loading background
-    tabs when memory pressure returns to normal. The event is not recorded when
-    the session overlaps with session restore. This event is sampled when there
-    are 2 or more backgrounded loading or pending tabs. Therefore, aggregated
-    tab counts over multiple events are invalid.
+    foreground tab during a background tab opening session (the duration of time
+    from when the browser starts to open background tabs until the time the
+    browser has finished loading those tabs or otherwise decided to stop loading
+    them). The event is not recorded when the session overlaps with session
+    restore. This event is sampled when there are 2 or more backgrounded loading
+    or pending tabs. Therefore, aggregated tab counts over multiple events are
+    invalid.
   </summary>
   <metric name="BackgroundTabLoadingCount">
     <summary>
@@ -1437,15 +1436,14 @@ be describing additional metrics about the same event.
   <owner>zhenw@chromium.org</owner>
   <summary>
     Collects data when a tab is switched to from another tab and then finishes
-    loading in the foreground in background tab opening session, which is the
-    duration from the time when the browser starts to open background tabs until
-    the time when browser has finished loading those tabs or paused loading due
-    to memory pressure. A new session starts when the browser resumes loading
-    background tabs when memory pressure returns to normal. The event is only
-    recorded when a tab is switched to from another tab within the same
-    tabstrip. As a result, the initial foreground tab is not included in this
-    event since it was not switched to from another tab. The event is not
-    recorded when the session overlaps with session restore.
+    loading in the foreground during a background tab opening session (the
+    duration of time from when the browser starts to open background tabs until
+    the time the browser has finished loading those tabs or otherwise decided to
+    stop loading them). The event is only recorded when a tab is switched to
+    from another tab within the same tabstrip. As a result, the initial
+    foreground tab is not included in this event since it was not switched to
+    from another tab. The event is not recorded when the session overlaps with
+    session restore.
   </summary>
   <metric name="BackgroundTabLoadingCount">
     <summary>
