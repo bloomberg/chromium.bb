@@ -1812,6 +1812,15 @@
       ]
     }
   },
+  "One Buildbot Step Test Builder": {
+    "swarm823-c4": {
+      "benchmarks": [
+        "blink_perf.css",
+        "smoothness.maps",
+        "media.mse_cases"
+      ]
+    }
+  },
   "Linux Perf": {
     "build27-a9": {
       "benchmarks": [
