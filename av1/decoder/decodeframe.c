@@ -3367,8 +3367,8 @@ void read_sequence_header(SequenceHeader *seq_params,
   /* Placeholder for actually reading from the bitstream */
   seq_params->frame_id_numbers_present_flag = aom_rb_read_bit(rb);
   if (seq_params->frame_id_numbers_present_flag) {
-    seq_params->frame_id_length_minus7 = aom_rb_read_literal(rb, 4);
-    seq_params->delta_frame_id_length_minus2 = aom_rb_read_literal(rb, 4);
+    seq_params->frame_id_length = aom_rb_read_literal(rb, 4) + 7;
+    seq_params->delta_frame_id_length = aom_rb_read_literal(rb, 4) + 2;
   }
 }
 #endif  // CONFIG_REFERENCE_BUFFER
@@ -3610,7 +3610,7 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
     const int frame_to_show = cm->ref_frame_map[existing_frame_idx];
 #if CONFIG_REFERENCE_BUFFER
     if (cm->seq_params.frame_id_numbers_present_flag) {
-      int frame_id_length = cm->seq_params.frame_id_length_minus7 + 7;
+      int frame_id_length = cm->seq_params.frame_id_length;
       int display_frame_id = aom_rb_read_literal(rb, frame_id_length);
       /* Compare display_frame_id with ref_frame_id and check valid for
        * referencing */
@@ -3663,8 +3663,8 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
   if (frame_is_intra_only(cm)) read_sequence_header(&cm->seq_params, rb);
 #endif  // !CONFIG_OBU
   if (cm->seq_params.frame_id_numbers_present_flag) {
-    int frame_id_length = cm->seq_params.frame_id_length_minus7 + 7;
-    int diff_len = cm->seq_params.delta_frame_id_length_minus2 + 2;
+    int frame_id_length = cm->seq_params.frame_id_length;
+    int diff_len = cm->seq_params.delta_frame_id_length;
     int prev_frame_id = 0;
     if (cm->frame_type != KEY_FRAME) {
       prev_frame_id = cm->current_frame_id;
@@ -3833,8 +3833,8 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
 #endif  // CONFIG_FRAME_SIGN_BIAS
 #if CONFIG_REFERENCE_BUFFER
         if (cm->seq_params.frame_id_numbers_present_flag) {
-          int frame_id_length = cm->seq_params.frame_id_length_minus7 + 7;
-          int diff_len = cm->seq_params.delta_frame_id_length_minus2 + 2;
+          int frame_id_length = cm->seq_params.frame_id_length;
+          int diff_len = cm->seq_params.delta_frame_id_length;
           int delta_frame_id_minus1 = aom_rb_read_literal(rb, diff_len);
           int ref_frame_id =
               ((cm->current_frame_id - (delta_frame_id_minus1 + 1) +
@@ -4753,8 +4753,8 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
 
   seq_params->frame_id_numbers_present_flag = aom_rb_read_bit(rb);
   if (seq_params->frame_id_numbers_present_flag) {
-    seq_params->frame_id_length_minus7 = aom_rb_read_literal(rb, 4);
-    seq_params->delta_frame_id_length_minus2 = aom_rb_read_literal(rb, 4);
+    seq_params->frame_id_length = aom_rb_read_literal(rb, 4) + 7;
+    seq_params->delta_frame_id_length = aom_rb_read_literal(rb, 4) + 2;
   }
 
   read_bitdepth_colorspace_sampling(cm, rb, pbi->allow_lowbitdepth);

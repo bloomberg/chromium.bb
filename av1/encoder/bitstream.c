@@ -4149,13 +4149,13 @@ void write_sequence_header(AV1_COMMON *const cm,
       cm->large_scale_tile ? 0 :
 #endif  // CONFIG_EXT_TILE
                            FRAME_ID_NUMBERS_PRESENT_FLAG;
-  seq_params->frame_id_length_minus7 = FRAME_ID_LENGTH_MINUS7;
-  seq_params->delta_frame_id_length_minus2 = DELTA_FRAME_ID_LENGTH_MINUS2;
+  seq_params->frame_id_length = FRAME_ID_LENGTH_MINUS7 + 7;
+  seq_params->delta_frame_id_length = DELTA_FRAME_ID_LENGTH_MINUS2 + 2;
 
   aom_wb_write_bit(wb, seq_params->frame_id_numbers_present_flag);
   if (seq_params->frame_id_numbers_present_flag) {
-    aom_wb_write_literal(wb, seq_params->frame_id_length_minus7, 4);
-    aom_wb_write_literal(wb, seq_params->delta_frame_id_length_minus2, 4);
+    aom_wb_write_literal(wb, seq_params->frame_id_length - 7, 4);
+    aom_wb_write_literal(wb, seq_params->delta_frame_id_length - 2, 4);
   }
 }
 #endif  // CONFIG_REFERENCE_BUFFER
@@ -4347,7 +4347,7 @@ static void write_uncompressed_header_frame(AV1_COMP *cpi,
 
 #if CONFIG_REFERENCE_BUFFER
     if (cm->seq_params.frame_id_numbers_present_flag) {
-      int frame_id_len = cm->seq_params.frame_id_length_minus7 + 7;
+      int frame_id_len = cm->seq_params.frame_id_length;
       int display_frame_id = cm->ref_frame_id[cpi->existing_fb_idx_to_show];
       aom_wb_write_literal(wb, display_frame_id, frame_id_len);
       /* Add a zero byte to prevent emulation of superframe marker */
@@ -4376,7 +4376,7 @@ static void write_uncompressed_header_frame(AV1_COMP *cpi,
 #if CONFIG_REFERENCE_BUFFER
   cm->invalid_delta_frame_id_minus1 = 0;
   if (cm->seq_params.frame_id_numbers_present_flag) {
-    int frame_id_len = cm->seq_params.frame_id_length_minus7 + 7;
+    int frame_id_len = cm->seq_params.frame_id_length;
     aom_wb_write_literal(wb, cm->current_frame_id, frame_id_len);
   }
 #endif  // CONFIG_REFERENCE_BUFFER
@@ -4451,8 +4451,8 @@ static void write_uncompressed_header_frame(AV1_COMP *cpi,
 #if CONFIG_REFERENCE_BUFFER
         if (cm->seq_params.frame_id_numbers_present_flag) {
           int i = get_ref_frame_map_idx(cpi, ref_frame);
-          int frame_id_len = cm->seq_params.frame_id_length_minus7 + 7;
-          int diff_len = cm->seq_params.delta_frame_id_length_minus2 + 2;
+          int frame_id_len = cm->seq_params.frame_id_length;
+          int diff_len = cm->seq_params.delta_frame_id_length;
           int delta_frame_id_minus1 =
               ((cm->current_frame_id - cm->ref_frame_id[i] +
                 (1 << frame_id_len)) %
@@ -4628,7 +4628,7 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
 
 #if CONFIG_REFERENCE_BUFFER
     if (cm->seq_params.frame_id_numbers_present_flag) {
-      int frame_id_len = cm->seq_params.frame_id_length_minus7 + 7;
+      int frame_id_len = cm->seq_params.frame_id_length;
       int display_frame_id = cm->ref_frame_id[cpi->existing_fb_idx_to_show];
       aom_wb_write_literal(wb, display_frame_id, frame_id_len);
       /* Add a zero byte to prevent emulation of superframe marker */
@@ -4654,7 +4654,7 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
 #if CONFIG_REFERENCE_BUFFER
   cm->invalid_delta_frame_id_minus1 = 0;
   if (cm->seq_params.frame_id_numbers_present_flag) {
-    int frame_id_len = cm->seq_params.frame_id_length_minus7 + 7;
+    int frame_id_len = cm->seq_params.frame_id_length;
     aom_wb_write_literal(wb, cm->current_frame_id, frame_id_len);
   }
 #endif  // CONFIG_REFERENCE_BUFFER
@@ -4730,8 +4730,8 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
 #if CONFIG_REFERENCE_BUFFER
       if (cm->seq_params.frame_id_numbers_present_flag) {
         int i = get_ref_frame_map_idx(cpi, ref_frame);
-        int frame_id_len = cm->seq_params.frame_id_length_minus7 + 7;
-        int diff_len = cm->seq_params.delta_frame_id_length_minus2 + 2;
+        int frame_id_len = cm->seq_params.frame_id_length;
+        int diff_len = cm->seq_params.delta_frame_id_length;
         int delta_frame_id_minus1 =
             ((cm->current_frame_id - cm->ref_frame_id[i] +
               (1 << frame_id_len)) %
@@ -4795,8 +4795,8 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
 #if CONFIG_REFERENCE_BUFFER
       if (cm->seq_params.frame_id_numbers_present_flag) {
         int i = get_ref_frame_map_idx(cpi, ref_frame);
-        int frame_id_len = cm->seq_params.frame_id_length_minus7 + 7;
-        int diff_len = cm->seq_params.delta_frame_id_length_minus2 + 2;
+        int frame_id_len = cm->seq_params.frame_id_length;
+        int diff_len = cm->seq_params.delta_frame_id_length;
         int delta_frame_id_minus1 =
             ((cm->current_frame_id - cm->ref_frame_id[i] +
               (1 << frame_id_len)) %
@@ -5237,10 +5237,10 @@ static uint32_t write_sequence_header_obu(AV1_COMP *cpi, uint8_t *const dst) {
   seq_params->frame_id_numbers_present_flag = FRAME_ID_NUMBERS_PRESENT_FLAG;
   aom_wb_write_literal(&wb, seq_params->frame_id_numbers_present_flag, 1);
   if (seq_params->frame_id_numbers_present_flag) {
-    seq_params->frame_id_length_minus7 = FRAME_ID_LENGTH_MINUS7;
-    seq_params->delta_frame_id_length_minus2 = DELTA_FRAME_ID_LENGTH_MINUS2;
-    aom_wb_write_literal(&wb, seq_params->frame_id_length_minus7, 4);
-    aom_wb_write_literal(&wb, seq_params->delta_frame_id_length_minus2, 4);
+    seq_params->frame_id_length = FRAME_ID_LENGTH_MINUS7 + 7;
+    seq_params->delta_frame_id_length = DELTA_FRAME_ID_LENGTH_MINUS2 + 2;
+    aom_wb_write_literal(&wb, seq_params->frame_id_length - 7, 4);
+    aom_wb_write_literal(&wb, seq_params->delta_frame_id_length - 2, 4);
   }
 
   // color_config

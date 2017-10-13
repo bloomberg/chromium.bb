@@ -199,8 +199,8 @@ typedef int BASE_CTX_TABLE[2 /*col*/][2 /*sig_map*/]
 /* Initial version of sequence header structure */
 typedef struct SequenceHeader {
   int frame_id_numbers_present_flag;
-  int frame_id_length_minus7;
-  int delta_frame_id_length_minus2;
+  int frame_id_length;
+  int delta_frame_id_length;
 } SequenceHeader;
 #endif  // CONFIG_REFERENCE_BUFFER
 

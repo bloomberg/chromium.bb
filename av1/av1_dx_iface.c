@@ -292,9 +292,7 @@ static aom_codec_err_t decoder_peek_si_internal(
 #endif  // CONFIG_REFERENCE_BUFFER
 #if CONFIG_REFERENCE_BUFFER
     if (seq_params.frame_id_numbers_present_flag) {
-      int frame_id_len;
-      frame_id_len = seq_params.frame_id_length_minus7 + 7;
-      aom_rb_read_literal(&rb, frame_id_len);
+      aom_rb_read_literal(&rb, seq_params.frame_id_length);
     }
 #endif  // CONFIG_REFERENCE_BUFFER
     if (si->is_kf) {
