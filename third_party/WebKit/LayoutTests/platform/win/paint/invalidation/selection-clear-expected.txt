@@ -45,20 +45,8 @@
       "reason": "disappeared"
     },
     {
-      "object": "LayoutBlockFlow HTML",
-      "reason": "selection"
-    },
-    {
-      "object": "LayoutBlockFlow BODY",
-      "reason": "selection"
-    },
-    {
       "object": "LayoutBlockFlow DIV id='root'",
       "reason": "incremental"
-    },
-    {
-      "object": "LayoutBlockFlow DIV id='root'",
-      "reason": "selection"
     },
     {
       "object": "LayoutBlockFlow DIV id='firstLine'",

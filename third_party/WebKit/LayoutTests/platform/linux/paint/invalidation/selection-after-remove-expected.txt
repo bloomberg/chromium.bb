@@ -346,14 +346,6 @@
       "reason": "disappeared"
     },
     {
-      "object": "LayoutBlockFlow HTML",
-      "reason": "selection"
-    },
-    {
-      "object": "LayoutBlockFlow BODY",
-      "reason": "selection"
-    },
-    {
       "object": "LayoutBlockFlow DIV id='test'",
       "reason": "geometry"
     },

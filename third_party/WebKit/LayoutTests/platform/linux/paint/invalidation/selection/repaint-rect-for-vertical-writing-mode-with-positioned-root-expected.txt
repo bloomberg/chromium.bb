@@ -16,14 +16,6 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutBlockFlow (positioned) DIV id='test'",
-      "reason": "selection"
-    },
-    {
-      "object": "LayoutBlockFlow DIV",
-      "reason": "selection"
-    },
-    {
       "object": "LayoutText #text",
       "reason": "selection"
     },
