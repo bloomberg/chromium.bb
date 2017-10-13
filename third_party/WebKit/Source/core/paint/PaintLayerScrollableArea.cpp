@@ -815,6 +815,13 @@ void PaintLayerScrollableArea::UpdateScrollbarEnabledState() {
     VerticalScrollbar()->SetEnabled(HasVerticalOverflow() && !force_disable);
 }
 
+void PaintLayerScrollableArea::UpdateScrollbarProportions() {
+  if (Scrollbar* horizontal_scrollbar = HorizontalScrollbar())
+    horizontal_scrollbar->SetProportion(VisibleWidth(), ContentsSize().Width());
+  if (Scrollbar* vertical_scrollbar = VerticalScrollbar())
+    vertical_scrollbar->SetProportion(VisibleHeight(), ContentsSize().Height());
+}
+
 void PaintLayerScrollableArea::SetScrollOffsetUnconditionally(
     const ScrollOffset& offset,
     ScrollType scroll_type) {
@@ -910,15 +917,7 @@ void PaintLayerScrollableArea::UpdateAfterLayout() {
 
     UpdateScrollbarEnabledState();
 
-    // Set up the range (and page step/line step).
-    if (Scrollbar* horizontal_scrollbar = this->HorizontalScrollbar()) {
-      horizontal_scrollbar->SetProportion(VisibleWidth(),
-                                          OverflowRect().Width().ToInt());
-    }
-    if (Scrollbar* vertical_scrollbar = this->VerticalScrollbar()) {
-      vertical_scrollbar->SetProportion(VisibleHeight(),
-                                        OverflowRect().Height().ToInt());
-    }
+    UpdateScrollbarProportions();
   }
 
   if (!scrollbars_are_frozen && HasOverlayScrollbars()) {
@@ -1134,16 +1133,7 @@ bool PaintLayerScrollableArea::UpdateAfterCompositingChange() {
 
 void PaintLayerScrollableArea::UpdateAfterOverflowRecalc() {
   UpdateScrollDimensions();
-  if (Scrollbar* horizontal_scrollbar = this->HorizontalScrollbar()) {
-    int client_width = VisibleWidth();
-    horizontal_scrollbar->SetProportion(client_width,
-                                        OverflowRect().Width().ToInt());
-  }
-  if (Scrollbar* vertical_scrollbar = this->VerticalScrollbar()) {
-    int client_height = VisibleHeight();
-    vertical_scrollbar->SetProportion(client_height,
-                                      OverflowRect().Height().ToInt());
-  }
+  UpdateScrollbarProportions();
 
   bool needs_horizontal_scrollbar;
   bool needs_vertical_scrollbar;
