@@ -14,6 +14,7 @@
 #include "ash/focus_cycler.h"
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/host/ash_window_tree_host.h"
+#include "ash/lock_screen_action/lock_screen_action_background_controller.h"
 #include "ash/login_status.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/config.h"
@@ -496,6 +497,7 @@ void RootWindowController::Shutdown() {
     ash_host_->PrepareForShutdown();
 
   system_wallpaper_.reset();
+  lock_screen_action_background_controller_.reset();
   aura::client::SetScreenPositionClient(root_window, nullptr);
 }
 
@@ -664,7 +666,9 @@ RootWindowController::RootWindowController(
       mus_window_tree_host_(window_tree_host),
       window_tree_host_(ash_host ? ash_host->AsWindowTreeHost()
                                  : window_tree_host),
-      shelf_(std::make_unique<Shelf>()) {
+      shelf_(std::make_unique<Shelf>()),
+      lock_screen_action_background_controller_(
+          LockScreenActionBackgroundController::Create()) {
   DCHECK((ash_host && !window_tree_host) || (!ash_host && window_tree_host));
 
   if (!root_window_controllers_)
@@ -753,9 +757,12 @@ void RootWindowController::InitLayoutManagers() {
   aura::Window* lock_action_handler_container =
       GetContainer(kShellWindowId_LockActionHandlerContainer);
   DCHECK(lock_action_handler_container);
+  lock_screen_action_background_controller_->SetParentWindow(
+      lock_action_handler_container);
   lock_action_handler_container->SetLayoutManager(
-      new LockActionHandlerLayoutManager(lock_action_handler_container,
-                                         shelf_.get()));
+      new LockActionHandlerLayoutManager(
+          lock_action_handler_container, shelf_.get(),
+          lock_screen_action_background_controller_.get()));
 
   aura::Window* lock_container =
       GetContainer(kShellWindowId_LockScreenContainer);

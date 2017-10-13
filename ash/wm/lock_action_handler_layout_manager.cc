@@ -37,17 +37,15 @@ bool ShowChildWindows(mojom::TrayActionState action_state,
 
 LockActionHandlerLayoutManager::LockActionHandlerLayoutManager(
     aura::Window* window,
-    Shelf* shelf)
+    Shelf* shelf,
+    LockScreenActionBackgroundController* action_background_controller)
     : LockLayoutManager(window, shelf),
-      action_background_controller_(
-          LockScreenActionBackgroundController::Create()),
+      action_background_controller_(action_background_controller),
       tray_action_observer_(this),
       action_background_observer_(this) {
-  action_background_controller_->SetParentWindow(window);
-
   TrayAction* tray_action = Shell::Get()->tray_action();
   tray_action_observer_.Add(tray_action);
-  action_background_observer_.Add(action_background_controller_.get());
+  action_background_observer_.Add(action_background_controller_);
 }
 
 LockActionHandlerLayoutManager::~LockActionHandlerLayoutManager() = default;
