@@ -148,9 +148,6 @@ class PlatformInfo(object):
         if minor_release == 9:
             # 10.9 is only partially supported; we pretend we're 10.10.
             return 'mac10.10'
-        if minor_release == 13:
-            # 10.13 is only partially supported, we pretend we're 10.12
-            return 'mac10.12'
         return 'mac10.%d' % minor_release
 
     def _determine_linux_version(self, _):

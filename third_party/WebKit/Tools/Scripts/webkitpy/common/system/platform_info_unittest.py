@@ -139,7 +139,7 @@ class TestPlatformInfo(unittest.TestCase):
         self.assertEqual(self.make_info(fake_sys('darwin'), fake_platform('10.10.0')).os_version, 'mac10.10')
         self.assertEqual(self.make_info(fake_sys('darwin'), fake_platform('10.11.0')).os_version, 'mac10.11')
         self.assertEqual(self.make_info(fake_sys('darwin'), fake_platform('10.12.0')).os_version, 'mac10.12')
-        self.assertEqual(self.make_info(fake_sys('darwin'), fake_platform('10.13.0')).os_version, 'mac10.12')
+        self.assertEqual(self.make_info(fake_sys('darwin'), fake_platform('10.13.0')).os_version, 'mac10.13')
         with self.assertRaises(AssertionError):
             self.make_info(fake_sys('darwin'), fake_platform('10.20.0'))
 
