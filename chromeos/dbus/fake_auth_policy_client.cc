@@ -4,6 +4,7 @@
 
 #include "chromeos/dbus/fake_auth_policy_client.h"
 
+#include <memory>
 #include <vector>
 
 #include "base/bind.h"
@@ -75,7 +76,7 @@ void RunSignalCallback(const std::string& interface_name,
                        const std::string& method_name,
                        dbus::ObjectProxy::SignalCallback signal_callback) {
   signal_callback.Run(
-      base::MakeUnique<dbus::Signal>(interface_name, method_name).get());
+      std::make_unique<dbus::Signal>(interface_name, method_name).get());
 }
 
 }  // namespace

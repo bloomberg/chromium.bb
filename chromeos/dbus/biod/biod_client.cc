@@ -12,7 +12,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "chromeos/dbus/biod/fake_biod_client.h"
 #include "chromeos/dbus/biod/messages.pb.h"
@@ -257,7 +256,7 @@ class BiodClientImpl : public BiodClient {
     }
 
     if (result.IsValid())
-      current_enroll_session_path_ = base::MakeUnique<dbus::ObjectPath>(result);
+      current_enroll_session_path_ = std::make_unique<dbus::ObjectPath>(result);
     callback.Run(result);
   }
 
@@ -287,7 +286,7 @@ class BiodClientImpl : public BiodClient {
     }
 
     if (result.IsValid())
-      current_auth_session_path_ = base::MakeUnique<dbus::ObjectPath>(result);
+      current_auth_session_path_ = std::make_unique<dbus::ObjectPath>(result);
     callback.Run(result);
   }
 

@@ -3,12 +3,12 @@
 // found in the LICENSE file.
 #include "chromeos/dbus/arc_midis_client.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
-#include "base/memory/ptr_util.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_proxy.h"
@@ -69,7 +69,7 @@ class ArcMidisClientImpl : public ArcMidisClient {
 
 // static
 std::unique_ptr<ArcMidisClient> ArcMidisClient::Create() {
-  return base::MakeUnique<ArcMidisClientImpl>();
+  return std::make_unique<ArcMidisClientImpl>();
 }
 
 }  // namespace chromeos

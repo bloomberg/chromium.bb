@@ -4,12 +4,12 @@
 
 #include "chromeos/dbus/services/proxy_resolution_service_provider.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -117,7 +117,7 @@ void ProxyResolutionServiceProvider::ResolveProxy(
   scoped_refptr<net::URLRequestContextGetter> context_getter =
       delegate_->GetRequestContext();
 
-  std::unique_ptr<Request> request = base::MakeUnique<Request>(
+  std::unique_ptr<Request> request = std::make_unique<Request>(
       source_url, std::move(response), response_sender, context_getter);
   NotifyCallback notify_callback =
       base::Bind(&ProxyResolutionServiceProvider::NotifyProxyResolved,

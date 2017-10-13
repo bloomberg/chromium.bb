@@ -4,12 +4,12 @@
 
 #include "chromeos/dbus/fake_shill_profile_client.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -64,7 +64,7 @@ void FakeShillProfileClient::GetProperties(
   if (!profile)
     return;
 
-  auto entry_paths = base::MakeUnique<base::ListValue>();
+  auto entry_paths = std::make_unique<base::ListValue>();
   for (base::DictionaryValue::Iterator it(profile->entries); !it.IsAtEnd();
        it.Advance()) {
     entry_paths->AppendString(it.key());
@@ -137,7 +137,7 @@ void FakeShillProfileClient::AddProfile(const std::string& profile_path,
   CHECK(profile_path != GetSharedProfilePath() || profiles_.empty())
       << "Shared profile must be added before any user profile.";
 
-  auto profile = base::MakeUnique<ProfileProperties>();
+  auto profile = std::make_unique<ProfileProperties>();
   profile->properties.SetKey(shill::kUserHashProperty, base::Value(userhash));
   profile->path = profile_path;
   profiles_.emplace_back(std::move(profile));

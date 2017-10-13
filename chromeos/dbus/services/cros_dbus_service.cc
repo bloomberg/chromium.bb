@@ -5,10 +5,11 @@
 #include "chromeos/dbus/services/cros_dbus_service.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/sys_info.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -106,7 +107,7 @@ std::unique_ptr<CrosDBusService> CrosDBusService::Create(
     const dbus::ObjectPath& object_path,
     ServiceProviderList service_providers) {
   if (DBusThreadManager::Get()->IsUsingFakes())
-    return base::MakeUnique<CrosDBusServiceStubImpl>();
+    return std::make_unique<CrosDBusServiceStubImpl>();
 
   return CreateRealImpl(DBusThreadManager::Get()->GetSystemBus(), service_name,
                         object_path, std::move(service_providers));
@@ -126,7 +127,7 @@ std::unique_ptr<CrosDBusService> CrosDBusService::CreateRealImpl(
     const std::string& service_name,
     const dbus::ObjectPath& object_path,
     ServiceProviderList service_providers) {
-  auto service = base::MakeUnique<CrosDBusServiceImpl>(
+  auto service = std::make_unique<CrosDBusServiceImpl>(
       bus, service_name, object_path, std::move(service_providers));
   service->Start();
   return std::move(service);

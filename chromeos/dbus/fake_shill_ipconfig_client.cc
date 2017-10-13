@@ -4,11 +4,11 @@
 
 #include "chromeos/dbus/fake_shill_ipconfig_client.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -65,7 +65,7 @@ void FakeShillIPConfigClient::SetProperty(const dbus::ObjectPath& ipconfig_path,
   if (!ipconfigs_.GetDictionaryWithoutPathExpansion(ipconfig_path.value(),
                                                     &dict)) {
     dict = ipconfigs_.SetDictionaryWithoutPathExpansion(
-        ipconfig_path.value(), base::MakeUnique<base::DictionaryValue>());
+        ipconfig_path.value(), std::make_unique<base::DictionaryValue>());
   }
   // Update existing ip config stub object's properties.
   dict->SetKey(name, value.Clone());

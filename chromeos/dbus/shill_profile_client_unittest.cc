@@ -6,7 +6,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
 #include "base/values.h"
@@ -111,7 +110,7 @@ TEST_F(ShillProfileClientTest, GetProperties) {
   writer.CloseContainer(&array_writer);
 
   // Create the expected value.
-  auto entries = base::MakeUnique<base::ListValue>();
+  auto entries = std::make_unique<base::ListValue>();
   entries->AppendString(kExampleEntryPath);
   base::DictionaryValue value;
   value.SetWithoutPathExpansion(shill::kEntriesProperty, std::move(entries));
