@@ -59,7 +59,7 @@ const int kUnknownProductId = -1;
 // user preference target key, and replaces the flag accordingly.
 const struct ModifierRemapping {
   int flag;
-  int remap_to;
+  ui::chromeos::ModifierKey remap_to;
   const char* pref_name;
   EventRewriterChromeOS::MutableKeyState result;
 } kModifierRemappings[] = {
@@ -124,7 +124,7 @@ const ModifierRemapping* GetRemappedKey(
     return nullptr;
 
   for (size_t i = 0; i < arraysize(kModifierRemappings); ++i) {
-    if (value == kModifierRemappings[i].remap_to)
+    if (value == static_cast<int>(kModifierRemappings[i].remap_to))
       return &kModifierRemappings[i];
   }
   return nullptr;
