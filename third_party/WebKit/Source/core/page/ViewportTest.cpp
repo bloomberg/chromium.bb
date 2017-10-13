@@ -1091,10 +1091,10 @@ TEST_F(ViewportTest, viewport52) {
   Page* page = web_view_helper.WebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(64, constraints.layout_size.Width());
-  EXPECT_NEAR(70.4, constraints.layout_size.Height(), 0.01f);
-  EXPECT_NEAR(5.0f, constraints.initial_scale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_EQ(980, constraints.layout_size.Width());
+  EXPECT_NEAR(1078, constraints.layout_size.Height(), 0.01f);
+  EXPECT_NEAR(0.33f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.33f, constraints.minimum_scale, 0.01f);
   EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
   EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
@@ -1111,7 +1111,7 @@ TEST_F(ViewportTest, viewport53) {
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
   EXPECT_EQ(980, constraints.layout_size.Width());
-  EXPECT_NEAR(70.4, constraints.layout_size.Height(), 0.01f);
+  EXPECT_NEAR(1078, constraints.layout_size.Height(), 0.01f);
   EXPECT_NEAR(0.33f, constraints.initial_scale, 0.01f);
   EXPECT_NEAR(0.33f, constraints.minimum_scale, 0.01f);
   EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
@@ -1129,10 +1129,10 @@ TEST_F(ViewportTest, viewport54) {
   Page* page = web_view_helper.WebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(64, constraints.layout_size.Width());
-  EXPECT_NEAR(70.4, constraints.layout_size.Height(), 0.01f);
-  EXPECT_NEAR(5.0f, constraints.initial_scale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_EQ(980, constraints.layout_size.Width());
+  EXPECT_NEAR(1078, constraints.layout_size.Height(), 0.01f);
+  EXPECT_NEAR(0.33f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.33f, constraints.minimum_scale, 0.01f);
   EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
   EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
@@ -1148,10 +1148,10 @@ TEST_F(ViewportTest, viewport55) {
   Page* page = web_view_helper.WebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(64, constraints.layout_size.Width());
-  EXPECT_NEAR(70.4, constraints.layout_size.Height(), 0.01f);
-  EXPECT_NEAR(5.0f, constraints.initial_scale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_EQ(980, constraints.layout_size.Width());
+  EXPECT_NEAR(1078, constraints.layout_size.Height(), 0.01f);
+  EXPECT_NEAR(0.33f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.33f, constraints.minimum_scale, 0.01f);
   EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
   EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
@@ -1680,10 +1680,10 @@ TEST_F(ViewportTest, viewport83) {
   Page* page = web_view_helper.WebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(64, constraints.layout_size.Width());
-  EXPECT_NEAR(70.4, constraints.layout_size.Height(), 0.01f);
-  EXPECT_NEAR(5.0f, constraints.initial_scale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_EQ(980, constraints.layout_size.Width());
+  EXPECT_NEAR(1078, constraints.layout_size.Height(), 0.01f);
+  EXPECT_NEAR(0.33f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.33f, constraints.minimum_scale, 0.01f);
   EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
   EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
@@ -1699,10 +1699,10 @@ TEST_F(ViewportTest, viewport84) {
   Page* page = web_view_helper.WebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(64, constraints.layout_size.Width());
+  EXPECT_EQ(980, constraints.layout_size.Width());
   EXPECT_EQ(480, constraints.layout_size.Height());
-  EXPECT_NEAR(5.0f, constraints.initial_scale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(0.33f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.33f, constraints.minimum_scale, 0.01f);
   EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
   EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
@@ -1756,10 +1756,10 @@ TEST_F(ViewportTest, viewport87) {
   Page* page = web_view_helper.WebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(64, constraints.layout_size.Width());
-  EXPECT_NEAR(70.4, constraints.layout_size.Height(), 0.01f);
-  EXPECT_NEAR(5.0f, constraints.initial_scale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_EQ(980, constraints.layout_size.Width());
+  EXPECT_NEAR(1078, constraints.layout_size.Height(), 0.01f);
+  EXPECT_NEAR(0.33f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.33f, constraints.minimum_scale, 0.01f);
   EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
   EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
@@ -2212,10 +2212,10 @@ TEST_F(ViewportTest, viewport121) {
   Page* page = web_view_helper.WebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(64, constraints.layout_size.Width());
-  EXPECT_NEAR(70.4, constraints.layout_size.Height(), 0.01f);
-  EXPECT_NEAR(5.0f, constraints.initial_scale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_EQ(980, constraints.layout_size.Width());
+  EXPECT_NEAR(1078, constraints.layout_size.Height(), 0.01f);
+  EXPECT_NEAR(0.33f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.33f, constraints.minimum_scale, 0.01f);
   EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
   EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
@@ -2231,10 +2231,10 @@ TEST_F(ViewportTest, viewport122) {
   Page* page = web_view_helper.WebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(64, constraints.layout_size.Width());
-  EXPECT_NEAR(70.4, constraints.layout_size.Height(), 0.01f);
-  EXPECT_NEAR(5.0f, constraints.initial_scale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_EQ(980, constraints.layout_size.Width());
+  EXPECT_NEAR(1078, constraints.layout_size.Height(), 0.01f);
+  EXPECT_NEAR(0.33f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.33f, constraints.minimum_scale, 0.01f);
   EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
   EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
@@ -2288,10 +2288,10 @@ TEST_F(ViewportTest, viewport125) {
   Page* page = web_view_helper.WebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(64, constraints.layout_size.Width());
-  EXPECT_NEAR(70.4, constraints.layout_size.Height(), 0.01f);
-  EXPECT_NEAR(5.0f, constraints.initial_scale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_EQ(980, constraints.layout_size.Width());
+  EXPECT_NEAR(1078, constraints.layout_size.Height(), 0.01f);
+  EXPECT_NEAR(0.33f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.33f, constraints.minimum_scale, 0.01f);
   EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
   EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
@@ -2307,10 +2307,10 @@ TEST_F(ViewportTest, viewport126) {
   Page* page = web_view_helper.WebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(64, constraints.layout_size.Width());
-  EXPECT_NEAR(70.4, constraints.layout_size.Height(), 0.01f);
-  EXPECT_NEAR(5.0f, constraints.initial_scale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_EQ(980, constraints.layout_size.Width());
+  EXPECT_NEAR(1078, constraints.layout_size.Height(), 0.01f);
+  EXPECT_NEAR(0.33f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.33f, constraints.minimum_scale, 0.01f);
   EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
   EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
@@ -2326,10 +2326,10 @@ TEST_F(ViewportTest, viewport127) {
   Page* page = web_view_helper.WebView()->GetPage();
   PageScaleConstraints constraints = RunViewportTest(page, 320, 352);
 
-  EXPECT_EQ(64, constraints.layout_size.Width());
-  EXPECT_NEAR(70.4, constraints.layout_size.Height(), 0.01f);
-  EXPECT_NEAR(5.0f, constraints.initial_scale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_EQ(980, constraints.layout_size.Width());
+  EXPECT_NEAR(1078, constraints.layout_size.Height(), 0.01f);
+  EXPECT_NEAR(0.33f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.33f, constraints.minimum_scale, 0.01f);
   EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
   EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
@@ -3108,10 +3108,10 @@ TEST_F(ViewportTest, viewportWarnings3) {
       "been ignored.",
       web_frame_client.messages[0].text.Utf8().c_str());
 
-  EXPECT_NEAR(64.0f, constraints.layout_size.Width(), 0.01);
-  EXPECT_NEAR(70.4f, constraints.layout_size.Height(), 0.01);
-  EXPECT_NEAR(5.0f, constraints.initial_scale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(980, constraints.layout_size.Width(), 0.01);
+  EXPECT_NEAR(1078, constraints.layout_size.Height(), 0.01);
+  EXPECT_NEAR(0.33f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.33f, constraints.minimum_scale, 0.01f);
   EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
   EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
@@ -3195,10 +3195,10 @@ TEST_F(ViewportTest, viewportWarnings6) {
       "The value \"\" for key \"width\" is invalid, and has been ignored.",
       web_frame_client.messages[0].text.Utf8().c_str());
 
-  EXPECT_NEAR(64.0f, constraints.layout_size.Width(), 0.01);
-  EXPECT_NEAR(70.4f, constraints.layout_size.Height(), 0.01);
-  EXPECT_NEAR(5.0f, constraints.initial_scale, 0.01f);
-  EXPECT_NEAR(5.0f, constraints.minimum_scale, 0.01f);
+  EXPECT_NEAR(980, constraints.layout_size.Width(), 0.01);
+  EXPECT_NEAR(1078, constraints.layout_size.Height(), 0.01);
+  EXPECT_NEAR(0.33f, constraints.initial_scale, 0.01f);
+  EXPECT_NEAR(0.33f, constraints.minimum_scale, 0.01f);
   EXPECT_NEAR(5.0f, constraints.maximum_scale, 0.01f);
   EXPECT_TRUE(page->GetViewportDescription().user_zoom);
 }
