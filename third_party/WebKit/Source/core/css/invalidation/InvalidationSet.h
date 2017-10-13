@@ -164,6 +164,14 @@ class CORE_EXPORT InvalidationSet
 
   void Combine(const InvalidationSet& other);
 
+  // Returns a singleton DescendantInvalidationSet which only has
+  // InvalidatesSelf() set and is otherwise empty. As this is a common
+  // invalidation set for features only found in rightmost compounds,
+  // sharing this singleton between such features saves a lot of memory on
+  // sites with a big number of style rules.
+  static InvalidationSet* SelfInvalidationSet();
+  bool IsSelfInvalidationSet() const { return this == SelfInvalidationSet(); }
+
  protected:
   explicit InvalidationSet(InvalidationType);
 

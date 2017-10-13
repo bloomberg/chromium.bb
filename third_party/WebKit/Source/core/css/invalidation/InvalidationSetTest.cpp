@@ -64,6 +64,19 @@ TEST(InvalidationSetTest, SubtreeInvalid_AddCustomPseudoBefore) {
   ASSERT_TRUE(set->IsEmpty());
 }
 
+TEST(InvalidationSetTest, SelfInvalidationSet_Combine) {
+  InvalidationSet* self_set = InvalidationSet::SelfInvalidationSet();
+
+  EXPECT_TRUE(self_set->IsSelfInvalidationSet());
+  self_set->Combine(*self_set);
+  EXPECT_TRUE(self_set->IsSelfInvalidationSet());
+
+  RefPtr<InvalidationSet> set = DescendantInvalidationSet::Create();
+  EXPECT_FALSE(set->InvalidatesSelf());
+  set->Combine(*self_set);
+  EXPECT_TRUE(set->InvalidatesSelf());
+}
+
 #ifndef NDEBUG
 TEST(InvalidationSetTest, ShowDebug) {
   RefPtr<InvalidationSet> set = DescendantInvalidationSet::Create();
