@@ -504,11 +504,39 @@ void CompositedLayerMapping::UpdateCompositedBounds() {
   content_offset_in_compositing_layer_dirty_ = true;
 }
 
+GraphicsLayer* CompositedLayerMapping::FrameContentsGraphicsLayer() const {
+  Node* node = GetLayoutObject().GetNode();
+  if (!node->IsFrameOwnerElement())
+    return nullptr;
+
+  Document* document = ToHTMLFrameOwnerElement(node)->contentDocument();
+  if (!document)
+    return nullptr;
+
+  LayoutView* layoutView = document->GetLayoutView();
+  if (!layoutView)
+    return nullptr;
+
+  DCHECK(layoutView->HasLayer());
+  PaintLayer* layer = layoutView->Layer();
+  if (!layer->IsAllowedToQueryCompositingState() ||
+      !layer->HasCompositedLayerMapping()) {
+    // If the child frame's compositing update is still pending, it will compute
+    // its own GraphicsLayer location with FrameOwnerContentsLocation().
+    return nullptr;
+  }
+
+  return layer->GetCompositedLayerMapping()->MainGraphicsLayer();
+}
+
 void CompositedLayerMapping::UpdateAfterPartResize() {
   if (GetLayoutObject().IsLayoutEmbeddedContent()) {
-    if (PaintLayerCompositor* inner_compositor =
-            PaintLayerCompositor::FrameContentsCompositor(
-                ToLayoutEmbeddedContent(GetLayoutObject()))) {
+    if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
+      if (GraphicsLayer* document_layer = FrameContentsGraphicsLayer())
+        document_layer->SetPosition(FlooredIntPoint(ContentsBox().Location()));
+    } else if (PaintLayerCompositor* inner_compositor =
+                   PaintLayerCompositor::FrameContentsCompositor(
+                       ToLayoutEmbeddedContent(GetLayoutObject()))) {
       inner_compositor->FrameViewDidChangeSize();
       // We can floor this point because our frameviews are always aligned to
       // pixel boundaries.
@@ -1240,6 +1268,26 @@ void CompositedLayerMapping::UpdateMainGraphicsLayerGeometry(
       EBackfaceVisibility::kVisible);
 }
 
+LayoutPoint CompositedLayerMapping::FrameOwnerContentsLocation() const {
+  LocalFrame* frame = GetLayoutObject().GetFrame();
+  DCHECK(frame && !frame->IsLocalRoot());
+
+  HTMLFrameOwnerElement* owner = ToHTMLFrameOwnerElement(frame->Owner());
+  LayoutObject* ownerLayoutObject = owner->GetLayoutObject();
+  if (!ownerLayoutObject->HasLayer())
+    return LayoutPoint();
+
+  PaintLayer* ownerLayer = ToLayoutBoxModelObject(ownerLayoutObject)->Layer();
+  if (!ownerLayer->IsAllowedToQueryCompositingState() ||
+      !ownerLayer->HasCompositedLayerMapping()) {
+    // If the parent frame's compositing update is still pending, it will adjust
+    // our position in UpdateAfterPartResize.
+    return LayoutPoint();
+  }
+
+  return ownerLayer->GetCompositedLayerMapping()->ContentsBox().Location();
+}
+
 void CompositedLayerMapping::ComputeGraphicsLayerParentLocation(
     const PaintLayer* compositing_container,
     const IntRect& ancestor_compositing_bounds,
@@ -1267,6 +1315,11 @@ void CompositedLayerMapping::ComputeGraphicsLayerParentLocation(
   } else if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
     graphics_layer_parent_location =
         GetLayoutObject().View()->DocumentRect().Location();
+  } else if (!GetLayoutObject().GetFrame()->IsLocalRoot()) {  // TODO(oopif)
+    DCHECK(RuntimeEnabledFeatures::RootLayerScrollingEnabled() &&
+           !compositing_container);
+    graphics_layer_parent_location =
+        -FlooredIntPoint(FrameOwnerContentsLocation());
   }
 
   if (compositing_container &&
