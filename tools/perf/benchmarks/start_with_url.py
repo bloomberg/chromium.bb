@@ -51,8 +51,6 @@ class StartWithUrlColdTBM(_StartupPerfBenchmark):
   def GetExpectations(self):
     class StoryExpectations(story.expectations.StoryExpectations):
       def SetExpectations(self):
-        self.DisableBenchmark(
-            [story.expectations.ANDROID_NEXUS7], 'crbug.com/667470')
         self.DisableStory(
             'http://kapook.com', [story.expectations.ALL], 'crbug.com/667470')
     return StoryExpectations()
@@ -84,4 +82,3 @@ class StartWithUrlWarmTBM(_StartupPerfBenchmark):
         self.DisableStory(
             'http://kapook.com', [story.expectations.ALL], 'crbug.com/667470')
     return StoryExpectations()
-
