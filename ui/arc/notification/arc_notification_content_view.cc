@@ -119,6 +119,22 @@ class ArcNotificationContentView::EventForwarder : public ui::EventHandler {
         widget->OnGestureEvent(located_event->AsGestureEvent());
       }
     }
+
+    // If AXTree is attached to notification content view, notification surface
+    // always gets focus. Tab key events are consumed by the surface, and tab
+    // focus traversal gets stuck at Android notification. To prevent it, always
+    // pass tab key event to focus manager of content view.
+    // TODO(yawano): include elements inside Android notification in tab focus
+    // traversal rather than skipping them.
+    if (owner_->surface_ && owner_->surface_->GetAXTreeId() != -1 &&
+        event->IsKeyEvent()) {
+      ui::KeyEvent* key_event = event->AsKeyEvent();
+      if (key_event->key_code() == ui::VKEY_TAB &&
+          (key_event->flags() == ui::EF_NONE ||
+           key_event->flags() == ui::EF_SHIFT_DOWN)) {
+        widget->GetFocusManager()->OnKeyEvent(*key_event);
+      }
+    }
   }
 
   ArcNotificationContentView* const owner_;
