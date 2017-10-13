@@ -11,124 +11,12 @@
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/common/leveldb_wrapper.mojom.h"
-#include "content/common/storage_partition_service.mojom.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/renderer/dom_storage/local_storage_cached_areas.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "content/renderer/dom_storage/mock_leveldb_wrapper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
-
-namespace {
-
-class MockLevelDBWrapper : public mojom::StoragePartitionService,
-                           public mojom::LevelDBWrapper {
- public:
-  // StoragePartitionService implementation:
-  void OpenLocalStorage(const url::Origin& origin,
-                        mojom::LevelDBWrapperRequest database) override {
-    bindings_.AddBinding(this, std::move(database));
-  }
-
-  // LevelDBWrapper implementation:
-  void AddObserver(mojom::LevelDBObserverAssociatedPtrInfo observer) override {}
-
-  void Put(const std::vector<uint8_t>& key,
-           const std::vector<uint8_t>& value,
-           const base::Optional<std::vector<uint8_t>>& client_old_value,
-           const std::string& source,
-           PutCallback callback) override {
-    observed_put_ = true;
-    observed_key_ = key;
-    observed_value_ = value;
-    observed_source_ = source;
-    pending_callbacks_.push_back(std::move(callback));
-  }
-
-  void Delete(const std::vector<uint8_t>& key,
-              const base::Optional<std::vector<uint8_t>>& client_old_value,
-              const std::string& source,
-              DeleteCallback callback) override {
-    observed_delete_ = true;
-    observed_key_ = key;
-    observed_source_ = source;
-    pending_callbacks_.push_back(std::move(callback));
-  }
-
-  void DeleteAll(const std::string& source,
-                 DeleteAllCallback callback) override {
-    observed_delete_all_ = true;
-    observed_source_ = source;
-    pending_callbacks_.push_back(std::move(callback));
-  }
-
-  void Get(const std::vector<uint8_t>& key, GetCallback callback) override {}
-
-  void GetAll(
-      mojom::LevelDBWrapperGetAllCallbackAssociatedPtrInfo complete_callback,
-      GetAllCallback callback) override {
-    mojom::LevelDBWrapperGetAllCallbackAssociatedPtr complete_ptr;
-    complete_ptr.Bind(std::move(complete_callback));
-    pending_callbacks_.push_back(
-        base::BindOnce(&mojom::LevelDBWrapperGetAllCallback::Complete,
-                       std::move(complete_ptr)));
-
-    observed_get_all_ = true;
-    std::vector<mojom::KeyValuePtr> all;
-    for (const auto& it : get_all_return_values_) {
-      mojom::KeyValuePtr kv = mojom::KeyValue::New();
-      kv->key = it.first;
-      kv->value = it.second;
-      all.push_back(std::move(kv));
-    }
-    std::move(callback).Run(leveldb::mojom::DatabaseError::OK, std::move(all));
-  }
-
-  // Methods and members for use by test fixtures.
-  bool HasBindings() { return !bindings_.empty(); }
-
-  void ResetObservations() {
-    observed_get_all_ = false;
-    observed_put_ = false;
-    observed_delete_ = false;
-    observed_delete_all_ = false;
-    observed_key_.clear();
-    observed_value_.clear();
-    observed_source_.clear();
-  }
-
-  void CompleteAllPendingCallbacks() {
-    while (!pending_callbacks_.empty())
-      CompleteOnePendingCallback(true);
-  }
-
-  void CompleteOnePendingCallback(bool success) {
-    ASSERT_TRUE(!pending_callbacks_.empty());
-    std::move(pending_callbacks_.front()).Run(success);
-    pending_callbacks_.pop_front();
-  }
-
-  void Flush() { bindings_.FlushForTesting(); }
-
-  void CloseAllBindings() { bindings_.CloseAllBindings(); }
-
-  using ResultCallback = base::OnceCallback<void(bool)>;
-  std::list<ResultCallback> pending_callbacks_;
-  bool observed_get_all_ = false;
-  bool observed_put_ = false;
-  bool observed_delete_ = false;
-  bool observed_delete_all_ = false;
-  std::vector<uint8_t> observed_key_;
-  std::vector<uint8_t> observed_value_;
-  std::string observed_source_;
-
-  std::map<std::vector<uint8_t>, std::vector<uint8_t>> get_all_return_values_;
-
- private:
-  mojo::BindingSet<mojom::LevelDBWrapper> bindings_;
-};
-
-}  // namespace
 
 class LocalStorageCachedAreaTest : public testing::Test {
  public:
@@ -215,8 +103,8 @@ TEST_F(LocalStorageCachedAreaTest, Getters) {
   EXPECT_FALSE(IsCacheLoaded(cached_area.get()));
   EXPECT_EQ(0u, cached_area->GetLength());
   EXPECT_TRUE(IsCacheLoaded(cached_area.get()));
-  EXPECT_TRUE(mock_leveldb_wrapper_.observed_get_all_);
-  EXPECT_EQ(1u, mock_leveldb_wrapper_.pending_callbacks_.size());
+  EXPECT_TRUE(mock_leveldb_wrapper_.observed_get_all());
+  EXPECT_EQ(1u, mock_leveldb_wrapper_.pending_callbacks().size());
   EXPECT_TRUE(IsIgnoringAllMutations(cached_area.get()));
   mock_leveldb_wrapper_.CompleteAllPendingCallbacks();
   mock_leveldb_wrapper_.Flush();
@@ -227,16 +115,16 @@ TEST_F(LocalStorageCachedAreaTest, Getters) {
   EXPECT_FALSE(IsCacheLoaded(cached_area.get()));
   EXPECT_TRUE(cached_area->GetKey(2).is_null());
   EXPECT_TRUE(IsCacheLoaded(cached_area.get()));
-  EXPECT_TRUE(mock_leveldb_wrapper_.observed_get_all_);
-  EXPECT_EQ(1u, mock_leveldb_wrapper_.pending_callbacks_.size());
+  EXPECT_TRUE(mock_leveldb_wrapper_.observed_get_all());
+  EXPECT_EQ(1u, mock_leveldb_wrapper_.pending_callbacks().size());
 
   // GetItem, ditto.
   ResetAll(cached_area.get());
   EXPECT_FALSE(IsCacheLoaded(cached_area.get()));
   EXPECT_TRUE(cached_area->GetItem(kKey).is_null());
   EXPECT_TRUE(IsCacheLoaded(cached_area.get()));
-  EXPECT_TRUE(mock_leveldb_wrapper_.observed_get_all_);
-  EXPECT_EQ(1u, mock_leveldb_wrapper_.pending_callbacks_.size());
+  EXPECT_TRUE(mock_leveldb_wrapper_.observed_get_all());
+  EXPECT_EQ(1u, mock_leveldb_wrapper_.pending_callbacks().size());
 }
 
 TEST_F(LocalStorageCachedAreaTest, Setters) {
@@ -248,13 +136,13 @@ TEST_F(LocalStorageCachedAreaTest, Setters) {
   EXPECT_TRUE(cached_area->SetItem(kKey, kValue, kPageUrl, kStorageAreaId));
   mock_leveldb_wrapper_.Flush();
   EXPECT_TRUE(IsCacheLoaded(cached_area.get()));
-  EXPECT_TRUE(mock_leveldb_wrapper_.observed_get_all_);
-  EXPECT_TRUE(mock_leveldb_wrapper_.observed_put_);
-  EXPECT_EQ(kSource, mock_leveldb_wrapper_.observed_source_);
-  EXPECT_EQ(String16ToUint8Vector(kKey), mock_leveldb_wrapper_.observed_key_);
+  EXPECT_TRUE(mock_leveldb_wrapper_.observed_get_all());
+  EXPECT_TRUE(mock_leveldb_wrapper_.observed_put());
+  EXPECT_EQ(kSource, mock_leveldb_wrapper_.observed_source());
+  EXPECT_EQ(String16ToUint8Vector(kKey), mock_leveldb_wrapper_.observed_key());
   EXPECT_EQ(String16ToUint8Vector(kValue),
-            mock_leveldb_wrapper_.observed_value_);
-  EXPECT_EQ(2u, mock_leveldb_wrapper_.pending_callbacks_.size());
+            mock_leveldb_wrapper_.observed_value());
+  EXPECT_EQ(2u, mock_leveldb_wrapper_.pending_callbacks().size());
 
   // Clear, we expect a just the one call to clear in the db since
   // there's no need to load the data prior to deleting it.
@@ -263,9 +151,9 @@ TEST_F(LocalStorageCachedAreaTest, Setters) {
   cached_area->Clear(kPageUrl, kStorageAreaId);
   mock_leveldb_wrapper_.Flush();
   EXPECT_TRUE(IsCacheLoaded(cached_area.get()));
-  EXPECT_TRUE(mock_leveldb_wrapper_.observed_delete_all_);
-  EXPECT_EQ(kSource, mock_leveldb_wrapper_.observed_source_);
-  EXPECT_EQ(1u, mock_leveldb_wrapper_.pending_callbacks_.size());
+  EXPECT_TRUE(mock_leveldb_wrapper_.observed_delete_all());
+  EXPECT_EQ(kSource, mock_leveldb_wrapper_.observed_source());
+  EXPECT_EQ(1u, mock_leveldb_wrapper_.pending_callbacks().size());
 
   // RemoveItem with nothing to remove, expect just one call to load.
   ResetAll(cached_area.get());
@@ -273,24 +161,25 @@ TEST_F(LocalStorageCachedAreaTest, Setters) {
   cached_area->RemoveItem(kKey, kPageUrl, kStorageAreaId);
   mock_leveldb_wrapper_.Flush();
   EXPECT_TRUE(IsCacheLoaded(cached_area.get()));
-  EXPECT_TRUE(mock_leveldb_wrapper_.observed_get_all_);
-  EXPECT_FALSE(mock_leveldb_wrapper_.observed_delete_);
-  EXPECT_EQ(1u, mock_leveldb_wrapper_.pending_callbacks_.size());
+  EXPECT_TRUE(mock_leveldb_wrapper_.observed_get_all());
+  EXPECT_FALSE(mock_leveldb_wrapper_.observed_delete());
+  EXPECT_EQ(1u, mock_leveldb_wrapper_.pending_callbacks().size());
 
   // RemoveItem with something to remove, expect a call to load followed
   // by a call to remove.
   ResetAll(cached_area.get());
-  mock_leveldb_wrapper_.get_all_return_values_[String16ToUint8Vector(kKey)] =
+  mock_leveldb_wrapper_
+      .mutable_get_all_return_values()[String16ToUint8Vector(kKey)] =
       String16ToUint8Vector(kValue);
   EXPECT_FALSE(IsCacheLoaded(cached_area.get()));
   cached_area->RemoveItem(kKey, kPageUrl, kStorageAreaId);
   mock_leveldb_wrapper_.Flush();
   EXPECT_TRUE(IsCacheLoaded(cached_area.get()));
-  EXPECT_TRUE(mock_leveldb_wrapper_.observed_get_all_);
-  EXPECT_TRUE(mock_leveldb_wrapper_.observed_delete_);
-  EXPECT_EQ(kSource, mock_leveldb_wrapper_.observed_source_);
-  EXPECT_EQ(String16ToUint8Vector(kKey), mock_leveldb_wrapper_.observed_key_);
-  EXPECT_EQ(2u, mock_leveldb_wrapper_.pending_callbacks_.size());
+  EXPECT_TRUE(mock_leveldb_wrapper_.observed_get_all());
+  EXPECT_TRUE(mock_leveldb_wrapper_.observed_delete());
+  EXPECT_EQ(kSource, mock_leveldb_wrapper_.observed_source());
+  EXPECT_EQ(String16ToUint8Vector(kKey), mock_leveldb_wrapper_.observed_key());
+  EXPECT_EQ(2u, mock_leveldb_wrapper_.pending_callbacks().size());
 }
 
 TEST_F(LocalStorageCachedAreaTest, MutationsAreIgnoredUntilLoadCompletion) {
@@ -411,7 +300,8 @@ TEST_F(LocalStorageCachedAreaTest, BrowserDisconnect) {
       cached_areas_.GetCachedArea(kOrigin);
 
   // GetLength to prime the cache.
-  mock_leveldb_wrapper_.get_all_return_values_[String16ToUint8Vector(kKey)] =
+  mock_leveldb_wrapper_
+      .mutable_get_all_return_values()[String16ToUint8Vector(kKey)] =
       String16ToUint8Vector(kValue);
   EXPECT_EQ(1u, cached_area->GetLength());
   EXPECT_TRUE(IsCacheLoaded(cached_area.get()));

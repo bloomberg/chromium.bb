@@ -30294,6 +30294,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="LocalStorage.RendererAreaCacheHit"
+    enum="LocalStorageRendererAreaCacheHitEnum">
+  <owner>ssid@chromium.org</owner>
+  <summary>
+    The renderer side cache hit rate metrics for new HTML5 LocalStorage DB
+    opened.
+  </summary>
+</histogram>
+
 <histogram name="LocalStorage.RendererLocalStorageSizeInKB" units="KB">
   <owner>michaeln@chromium.org</owner>
   <summary>
