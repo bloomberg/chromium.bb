@@ -500,14 +500,12 @@ base::string16 FormatOriginForSecurityDisplay(
 }
 
 base::string16 ElideUrlSimple(const GURL& url,
+                              const base::string16& unelided_url_string,
                               const gfx::FontList& font_list,
                               float available_pixel_width,
                               url::Parsed* parsed) {
   DCHECK_NE(parsed, nullptr);
-
-  base::string16 url_string = url_formatter::FormatUrl(
-      url, url_formatter::kFormatUrlOmitDefaults, net::UnescapeRule::SPACES,
-      parsed, nullptr, nullptr);
+  base::string16 url_string = unelided_url_string;
 
   if (available_pixel_width <= 0 ||
       available_pixel_width >= gfx::GetStringWidthF(url_string, font_list)) {
