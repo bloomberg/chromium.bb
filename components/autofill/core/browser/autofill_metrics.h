@@ -922,7 +922,7 @@ class AutofillMetrics {
 
     void OnWillSubmitForm();
 
-    void OnFormSubmitted(bool force_logging);
+    void OnFormSubmitted();
 
     void SetBankNameAvailable();
 

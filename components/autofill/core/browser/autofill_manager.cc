@@ -248,7 +248,6 @@ AutofillManager::AutofillManager(
       found_cvc_field_(false),
       found_value_in_cvc_field_(false),
       found_cvc_value_in_non_cvc_field_(false),
-      enable_ablation_logging_(false),
       external_delegate_(NULL),
       test_delegate_(NULL),
 #if defined(OS_ANDROID) || defined(OS_IOS)
@@ -447,9 +446,9 @@ bool AutofillManager::OnFormSubmitted(const FormData& form) {
     }
   }
 
-  address_form_event_logger_->OnFormSubmitted(/*force_logging=*/false);
+  address_form_event_logger_->OnFormSubmitted();
   if (IsCreditCardAutofillEnabled())
-    credit_card_form_event_logger_->OnFormSubmitted(enable_ablation_logging_);
+    credit_card_form_event_logger_->OnFormSubmitted();
 
   // Update Personal Data with the form's submitted data.
   if (submitted_form->IsAutofillable())
@@ -632,16 +631,6 @@ void AutofillManager::OnQueryFormFieldAutofillImpl(
     } else {
       suggestions =
           GetProfileSuggestions(*form_structure, field, *autofill_field);
-    }
-
-    // Logic for disabling/ablating credit card autofill.
-    if (base::FeatureList::IsEnabled(kAutofillCreditCardAblationExperiment) &&
-        is_filling_credit_card && !suggestions.empty()) {
-      suggestions.clear();
-      autocomplete_history_manager_->CancelPendingQuery();
-      external_delegate_->OnSuggestionsReturned(query_id, suggestions);
-      enable_ablation_logging_ = true;
-      return;
     }
 
     if (!suggestions.empty()) {
@@ -1634,7 +1623,6 @@ void AutofillManager::Reset() {
   user_did_type_ = false;
   user_did_autofill_ = false;
   user_did_edit_autofilled_field_ = false;
-  enable_ablation_logging_ = false;
   masked_card_ = CreditCard();
   unmasking_query_id_ = -1;
   unmasking_form_ = FormData();
