@@ -13,6 +13,8 @@
 
 namespace metrics {
 
+class ReportingInfo;
+
 // MetricsLogUploader is an abstract base class for uploading UMA logs on behalf
 // of MetricsService.
 class MetricsLogUploader {
@@ -34,7 +36,8 @@ class MetricsLogUploader {
   // |log_hash| is expected to be the hex-encoded SHA1 hash of the log data
   // before compression.
   virtual void UploadLog(const std::string& compressed_log_data,
-                         const std::string& log_hash) = 0;
+                         const std::string& log_hash,
+                         const ReportingInfo& reporting_info) = 0;
 };
 
 }  // namespace metrics

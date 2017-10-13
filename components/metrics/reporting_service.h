@@ -16,6 +16,7 @@
 #include "build/build_config.h"
 #include "components/metrics/data_use_tracker.h"
 #include "components/metrics/metrics_log_uploader.h"
+#include "components/metrics/proto/reporting_info.pb.h"
 
 class PrefService;
 class PrefRegistrySimple;
@@ -130,6 +131,9 @@ class ReportingService {
   // The tick count of the last time log upload has been finished and null if no
   // upload has been done yet.
   base::TimeTicks last_upload_finish_time_;
+
+  // Info on current reporting state to send along with reports.
+  ReportingInfo reporting_info_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

@@ -42,11 +42,14 @@ class NetMetricsLogUploader : public MetricsLogUploader,
   // MetricsLogUploader:
   // Uploads a log to the server_url specified in the constructor.
   void UploadLog(const std::string& compressed_log_data,
-                 const std::string& log_hash) override;
+                 const std::string& log_hash,
+                 const ReportingInfo& reporting_info) override;
+
  private:
   // Uploads a log to a URL passed as a parameter.
   void UploadLogToURL(const std::string& compressed_log_data,
                       const std::string& log_hash,
+                      const ReportingInfo& reporting_info,
                       const GURL& url);
 
   // net::URLFetcherDelegate:
