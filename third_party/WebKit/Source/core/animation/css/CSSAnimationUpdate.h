@@ -110,11 +110,6 @@ class CSSAnimationUpdate final {
     new_animations_.push_back(NewCSSAnimation(animation_name, name_index,
                                               effect, timing, style_rule));
   }
-  // Returns whether animation has been suppressed and should be filtered during
-  // style application.
-  bool IsSuppressedAnimation(const Animation* animation) const {
-    return suppressed_animations_.Contains(animation);
-  }
   void CancelAnimation(size_t index, const Animation& animation) {
     cancelled_animation_indices_.push_back(index);
     suppressed_animations_.insert(&animation);
@@ -143,9 +138,6 @@ class CSSAnimationUpdate final {
       double reversing_shortening_factor,
       const InertEffect&);
   void UnstartTransition(const PropertyHandle&);
-  bool IsCancelledTransition(const PropertyHandle& property) const {
-    return cancelled_transitions_.Contains(property);
-  }
   void CancelTransition(const PropertyHandle& property) {
     cancelled_transitions_.insert(property);
   }
