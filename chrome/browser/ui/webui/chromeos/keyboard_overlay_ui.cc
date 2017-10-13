@@ -50,16 +50,16 @@ const char kLearnMoreURL[] =
 #endif
 
 struct ModifierToLabel {
-  const ModifierKey::ModifierKeyValue modifier;
+  const ModifierKey modifier;
   const char* label;
 } kModifierToLabels[] = {
-    {ui::chromeos::ModifierKey::kSearchKey, "search"},
-    {ui::chromeos::ModifierKey::kControlKey, "ctrl"},
-    {ui::chromeos::ModifierKey::kAltKey, "alt"},
-    {ui::chromeos::ModifierKey::kVoidKey, "disabled"},
-    {ui::chromeos::ModifierKey::kCapsLockKey, "caps lock"},
-    {ui::chromeos::ModifierKey::kEscapeKey, "esc"},
-    {ui::chromeos::ModifierKey::kBackspaceKey, "backspace"},
+    {ModifierKey::kSearchKey, "search"},
+    {ModifierKey::kControlKey, "ctrl"},
+    {ModifierKey::kAltKey, "alt"},
+    {ModifierKey::kVoidKey, "disabled"},
+    {ModifierKey::kCapsLockKey, "caps lock"},
+    {ModifierKey::kEscapeKey, "esc"},
+    {ModifierKey::kBackspaceKey, "backspace"},
 };
 
 struct I18nContentToMessage {
@@ -294,7 +294,7 @@ bool TopRowKeysAreFunctionKeys(Profile* profile) {
   return prefs ? prefs->GetBoolean(prefs::kLanguageSendFunctionKeys) : false;
 }
 
-std::string ModifierKeyToLabel(ModifierKey::ModifierKeyValue modifier) {
+std::string ModifierKeyToLabel(ModifierKey modifier) {
   for (size_t i = 0; i < arraysize(kModifierToLabels); ++i) {
     if (modifier == kModifierToLabels[i].modifier) {
       return kModifierToLabels[i].label;
@@ -407,18 +407,14 @@ void KeyboardOverlayHandler::GetInputMethodId(const base::ListValue* args) {
 void KeyboardOverlayHandler::GetLabelMap(const base::ListValue* args) {
   DCHECK(profile_);
   PrefService* pref_service = profile_->GetPrefs();
-  typedef std::map<ModifierKey::ModifierKeyValue, ModifierKey::ModifierKeyValue>
-      ModifierMap;
+  using ModifierMap = std::map<ModifierKey, ModifierKey>;
   ModifierMap modifier_map;
-  modifier_map[ModifierKey::kSearchKey] =
-      static_cast<ModifierKey::ModifierKeyValue>(
-          pref_service->GetInteger(prefs::kLanguageRemapSearchKeyTo));
-  modifier_map[ModifierKey::kControlKey] =
-      static_cast<ModifierKey::ModifierKeyValue>(
-          pref_service->GetInteger(prefs::kLanguageRemapControlKeyTo));
-  modifier_map[ModifierKey::kAltKey] =
-      static_cast<ModifierKey::ModifierKeyValue>(
-          pref_service->GetInteger(prefs::kLanguageRemapAltKeyTo));
+  modifier_map[ModifierKey::kSearchKey] = static_cast<ModifierKey>(
+      pref_service->GetInteger(prefs::kLanguageRemapSearchKeyTo));
+  modifier_map[ModifierKey::kControlKey] = static_cast<ModifierKey>(
+      pref_service->GetInteger(prefs::kLanguageRemapControlKeyTo));
+  modifier_map[ModifierKey::kAltKey] = static_cast<ModifierKey>(
+      pref_service->GetInteger(prefs::kLanguageRemapAltKeyTo));
   // TODO(mazda): Support prefs::kLanguageRemapCapsLockKeyTo once Caps Lock is
   // added to the overlay UI.
 

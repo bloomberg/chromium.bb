@@ -67,7 +67,7 @@ bool IsSearchKeyMappedToCapsLock() {
   // to worry about sync changing the pref while the menu or notification is
   // visible.
   return prefs->GetInteger(prefs::kLanguageRemapSearchKeyTo) ==
-         ui::chromeos::ModifierKey::kCapsLockKey;
+         static_cast<int>(ui::chromeos::ModifierKey::kCapsLockKey);
 }
 
 std::unique_ptr<Notification> CreateNotification() {
@@ -209,8 +209,9 @@ void TrayCapsLock::RegisterProfilePrefs(PrefRegistrySimple* registry,
                                         bool for_test) {
   if (for_test) {
     // There is no remote pref service, so pretend that ash owns the pref.
-    registry->RegisterIntegerPref(prefs::kLanguageRemapSearchKeyTo,
-                                  ui::chromeos::ModifierKey::kSearchKey);
+    registry->RegisterIntegerPref(
+        prefs::kLanguageRemapSearchKeyTo,
+        static_cast<int>(ui::chromeos::ModifierKey::kSearchKey));
     return;
   }
   // Pref is owned by chrome and flagged as PUBLIC.
