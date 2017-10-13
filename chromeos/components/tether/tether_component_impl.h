@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_COMPONENTS_TETHER_INITIALIZER_IMPL_H_
-#define CHROMEOS_COMPONENTS_TETHER_INITIALIZER_IMPL_H_
+#ifndef CHROMEOS_COMPONENTS_TETHER_TETHER_COMPONENT_IMPL_H_
+#define CHROMEOS_COMPONENTS_TETHER_TETHER_COMPONENT_IMPL_H_
 
 #include <memory>
 
@@ -15,7 +15,7 @@
 #include "chromeos/components/tether/ble_advertiser.h"
 #include "chromeos/components/tether/ble_scanner.h"
 #include "chromeos/components/tether/disconnect_tethering_request_sender.h"
-#include "chromeos/components/tether/initializer.h"
+#include "chromeos/components/tether/tether_component.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_advertisement.h"
@@ -66,16 +66,16 @@ class WifiHotspotConnector;
 class WifiHotspotDisconnector;
 
 // Initializes the Tether Chrome OS component.
-class InitializerImpl : public Initializer,
-                        public BleAdvertiser::Observer,
-                        public BleScanner::Observer,
-                        public DisconnectTetheringRequestSender::Observer {
+class TetherComponentImpl : public TetherComponent,
+                            public BleAdvertiser::Observer,
+                            public BleScanner::Observer,
+                            public DisconnectTetheringRequestSender::Observer {
  public:
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   class Factory {
    public:
-    static std::unique_ptr<Initializer> NewInstance(
+    static std::unique_ptr<TetherComponent> NewInstance(
         cryptauth::CryptAuthService* cryptauth_service,
         NotificationPresenter* notification_presenter,
         PrefService* pref_service,
@@ -89,7 +89,7 @@ class InitializerImpl : public Initializer,
     static void SetInstanceForTesting(Factory* factory);
 
    protected:
-    virtual std::unique_ptr<Initializer> BuildInstance(
+    virtual std::unique_ptr<TetherComponent> BuildInstance(
         cryptauth::CryptAuthService* cryptauth_service,
         NotificationPresenter* notification_presenter,
         PrefService* pref_service,
@@ -104,7 +104,7 @@ class InitializerImpl : public Initializer,
     static Factory* factory_instance_;
   };
 
-  InitializerImpl(
+  TetherComponentImpl(
       cryptauth::CryptAuthService* cryptauth_service,
       NotificationPresenter* notification_presenter,
       PrefService* pref_service,
@@ -113,10 +113,10 @@ class InitializerImpl : public Initializer,
       NetworkConnect* network_connect,
       NetworkConnectionHandler* network_connection_handler,
       scoped_refptr<device::BluetoothAdapter> adapter);
-  ~InitializerImpl() override;
+  ~TetherComponentImpl() override;
 
  protected:
-  // Initializer:
+  // TetherComponent:
   void RequestShutdown() override;
 
   // BleAdvertiser::Observer:
@@ -129,7 +129,7 @@ class InitializerImpl : public Initializer,
   void OnPendingDisconnectRequestsComplete() override;
 
  private:
-  friend class InitializerImplTest;
+  friend class TetherComponentImplTest;
 
   void CreateComponent();
   bool IsAsyncShutdownRequired();
@@ -148,7 +148,7 @@ class InitializerImpl : public Initializer,
 
   // Declare new objects in the order that they will be created during
   // initialization to ensure that they are destroyed in the correct order. This
-  // order will be enforced by InitializerTest.TestCreateAndDestroy.
+  // order will be enforced by TetherComponentImplTest.TestCreateAndDestroy.
   std::unique_ptr<NetworkListSorter> network_list_sorter_;
   std::unique_ptr<TetherHostFetcher> tether_host_fetcher_;
   std::unique_ptr<cryptauth::LocalDeviceDataProvider>
@@ -189,13 +189,13 @@ class InitializerImpl : public Initializer,
       network_connection_handler_tether_delegate_;
   std::unique_ptr<CrashRecoveryManager> crash_recovery_manager_;
 
-  base::WeakPtrFactory<InitializerImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<TetherComponentImpl> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(InitializerImpl);
+  DISALLOW_COPY_AND_ASSIGN(TetherComponentImpl);
 };
 
 }  // namespace tether
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_COMPONENTS_TETHER_INITIALIZER_IMPL_H_
+#endif  // CHROMEOS_COMPONENTS_TETHER_TETHER_COMPONENT_IMPL_H_
