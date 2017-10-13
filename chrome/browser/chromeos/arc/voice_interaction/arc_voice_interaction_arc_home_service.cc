@@ -150,6 +150,7 @@ ArcVoiceInteractionArcHomeService::ArcVoiceInteractionArcHomeService(
       wizard_completed_timeout_(kWizardCompletedTimeout),
       binding_(this) {
   arc_bridge_service_->voice_interaction_arc_home()->AddObserver(this);
+  ArcSessionManager::Get()->AddObserver(this);
 }
 
 ArcVoiceInteractionArcHomeService::~ArcVoiceInteractionArcHomeService() =
@@ -158,6 +159,16 @@ ArcVoiceInteractionArcHomeService::~ArcVoiceInteractionArcHomeService() =
 void ArcVoiceInteractionArcHomeService::Shutdown() {
   ResetTimeouts();
   arc_bridge_service_->voice_interaction_arc_home()->RemoveObserver(this);
+  ArcSessionManager::Get()->RemoveObserver(this);
+}
+
+void ArcVoiceInteractionArcHomeService::OnArcPlayStoreEnabledChanged(
+    bool enabled) {
+  if (!pending_pai_lock_)
+    return;
+
+  pending_pai_lock_ = false;
+  LockPai();
 }
 
 void ArcVoiceInteractionArcHomeService::LockPai() {
@@ -166,6 +177,10 @@ void ArcVoiceInteractionArcHomeService::LockPai() {
       arc::ArcSessionManager::Get()->pai_starter();
   if (!pai_starter) {
     DLOG(ERROR) << "There is no PAI starter.";
+    // We could be starting before ARC session is started when user initiated
+    // voice interaction first before ARC is enabled. We will remember this
+    // and wait for ARC session started to try locking again.
+    pending_pai_lock_ = true;
     return;
   }
   pai_starter->AcquireLock();
