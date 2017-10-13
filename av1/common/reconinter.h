@@ -448,10 +448,10 @@ static INLINE void set_default_interp_filters(
 static INLINE int av1_is_interp_needed(const MACROBLOCKD *const xd) {
   (void)xd;
   const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
-  if (mbmi->motion_mode == WARPED_CAUSAL) return 0;
 #if CONFIG_EXT_SKIP
   if (mbmi->skip_mode) return 0;
 #endif  // CONFIG_EXT_SKIP
+  if (mbmi->motion_mode == WARPED_CAUSAL) return 0;
   if (is_nontrans_global_motion(xd)) return 0;
   return 1;
 }

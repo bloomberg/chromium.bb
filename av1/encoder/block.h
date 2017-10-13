@@ -207,6 +207,20 @@ struct macroblock {
   int skip_chroma_rd;
   int skip_cost[SKIP_CONTEXTS][2];
 
+#if CONFIG_EXT_SKIP
+  int skip_mode;  // 0: off; 1: on
+  int skip_mode_cost[SKIP_CONTEXTS][2];
+
+  int64_t skip_mode_rdcost;  // -1: Not set
+  int skip_mode_rate;
+  int64_t skip_mode_sse;
+  int64_t skip_mode_dist;
+  MV_REFERENCE_FRAME skip_mode_ref_frame[2];
+  int_mv skip_mode_mv[2];
+  int skip_mode_index_candidate;
+  int skip_mode_index;
+#endif  // CONFIG_EXT_SKIP
+
 #if CONFIG_LV_MAP
   LV_MAP_COEFF_COST coeff_costs[TX_SIZES][PLANE_TYPES];
   uint16_t cb_offset;

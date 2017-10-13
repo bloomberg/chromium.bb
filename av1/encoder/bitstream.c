@@ -282,6 +282,24 @@ static int write_skip(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   }
 }
 
+#if CONFIG_EXT_SKIP
+static int write_skip_mode(const AV1_COMMON *cm, const MACROBLOCKD *xd,
+                           int segment_id, const MODE_INFO *mi, aom_writer *w) {
+  if (!cm->skip_mode_flag) return 0;
+  if (segfeature_active(&cm->seg, segment_id, SEG_LVL_SKIP)) {
+    return 0;
+  }
+  const int skip_mode = mi->mbmi.skip_mode;
+  if (!is_comp_ref_allowed(mi->mbmi.sb_type)) {
+    assert(!skip_mode);
+    return 0;
+  }
+  const int ctx = av1_get_skip_mode_context(xd);
+  aom_write_symbol(w, skip_mode, xd->tile_ctx->skip_mode_cdfs[ctx], 2);
+  return skip_mode;
+}
+#endif  // CONFIG_EXT_SKIP
+
 static void write_is_inter(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                            int segment_id, aom_writer *w, const int is_inter) {
   if (!segfeature_active(&cm->seg, segment_id, SEG_LVL_REF_FRAME)) {
@@ -1207,10 +1225,23 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
     }
   }
 
-  skip = write_skip(cm, xd, segment_id, mi, w);
+#if CONFIG_EXT_SKIP
+  write_skip_mode(cm, xd, segment_id, mi, w);
+
+  if (mbmi->skip_mode) {
+    skip = mbmi->skip;
+    assert(skip);
+  } else {
+#endif  // CONFIG_EXT_SKIP
+    skip = write_skip(cm, xd, segment_id, mi, w);
+#if CONFIG_EXT_SKIP
+  }
+#endif  // CONFIG_EXT_SKIP
+
 #if CONFIG_Q_SEGMENTATION
   write_q_segment_id(cm, skip, mbmi, w, seg, segp, bsize, mi_row, mi_col);
-#endif
+#endif  // CONFIG_Q_SEGMENTATION
+
   if (cm->delta_q_present_flag) {
     int super_block_upper_left = ((mi_row & (cm->mib_size - 1)) == 0) &&
                                  ((mi_col & (cm->mib_size - 1)) == 0);
@@ -1252,7 +1283,10 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
     }
   }
 
-  write_is_inter(cm, xd, mbmi->segment_id, w, is_inter);
+#if CONFIG_EXT_SKIP
+  if (!mbmi->skip_mode)
+#endif  // CONFIG_EXT_SKIP
+    write_is_inter(cm, xd, mbmi->segment_id, w, is_inter);
 
   if (cm->tx_mode == TX_MODE_SELECT && block_signals_txsize(bsize) &&
       !(is_inter && skip) && !xd->lossless[segment_id]) {
@@ -1273,6 +1307,10 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
   } else {
     set_txfm_ctxs(mbmi->tx_size, xd->n8_w, xd->n8_h, skip, xd);
   }
+
+#if CONFIG_EXT_SKIP
+  if (mbmi->skip_mode) return;
+#endif  // CONFIG_EXT_SKIP
 
   if (!is_inter) {
     write_intra_mode(ec_ctx, bsize, mode, w);
@@ -1310,7 +1348,6 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
     if (is_compound)
       mode_ctx = mbmi_ext->compound_mode_context[mbmi->ref_frame[0]];
     else
-
       mode_ctx = av1_mode_context_analyzer(mbmi_ext->mode_context,
                                            mbmi->ref_frame, bsize, -1);
 
@@ -1607,7 +1644,7 @@ static void enc_dump_logs(AV1_COMP *cpi, int mi_row, int mi_col) {
   xd->mi = cm->mi_grid_visible + (mi_row * cm->mi_stride + mi_col);
   m = xd->mi[0];
   if (is_inter_block(&m->mbmi)) {
-#define FRAME_TO_CHECK 1
+#define FRAME_TO_CHECK 11
     if (cm->current_video_frame == FRAME_TO_CHECK && cm->show_frame == 1) {
       const MB_MODE_INFO *const mbmi = &m->mbmi;
       const BLOCK_SIZE bsize = mbmi->sb_type;
@@ -1625,11 +1662,15 @@ static void enc_dump_logs(AV1_COMP *cpi, int mi_row, int mi_col) {
 
       MACROBLOCK *const x = &cpi->td.mb;
       const MB_MODE_INFO_EXT *const mbmi_ext = x->mbmi_ext;
-      const int16_t mode_ctx = av1_mode_context_analyzer(
-          mbmi_ext->mode_context, mbmi->ref_frame, bsize, -1);
+      const int16_t mode_ctx =
+          is_comp_ref ? mbmi_ext->compound_mode_context[mbmi->ref_frame[0]]
+                      : av1_mode_context_analyzer(mbmi_ext->mode_context,
+                                                  mbmi->ref_frame, bsize, -1);
+
       const int16_t newmv_ctx = mode_ctx & NEWMV_CTX_MASK;
       int16_t zeromv_ctx = -1;
       int16_t refmv_ctx = -1;
+
       if (mbmi->mode != NEWMV) {
         zeromv_ctx = (mode_ctx >> GLOBALMV_OFFSET) & GLOBALMV_CTX_MASK;
         if (mode_ctx & (1 << ALL_ZERO_FLAG_OFFSET)) {
@@ -1643,18 +1684,31 @@ static void enc_dump_logs(AV1_COMP *cpi, int mi_row, int mi_col) {
         }
       }
 
-      int8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
+#if CONFIG_EXT_SKIP
+      printf(
+          "=== ENCODER ===: "
+          "Frame=%d, (mi_row,mi_col)=(%d,%d), skip_mode=%d, mode=%d, bsize=%d, "
+          "show_frame=%d, mv[0]=(%d,%d), mv[1]=(%d,%d), ref[0]=%d, "
+          "ref[1]=%d, motion_mode=%d, mode_ctx=%d, "
+          "newmv_ctx=%d, zeromv_ctx=%d, refmv_ctx=%d, tx_size=%d\n",
+          cm->current_video_frame, mi_row, mi_col, mbmi->skip_mode, mbmi->mode,
+          bsize, cm->show_frame, mv[0].as_mv.row, mv[0].as_mv.col,
+          mv[1].as_mv.row, mv[1].as_mv.col, mbmi->ref_frame[0],
+          mbmi->ref_frame[1], mbmi->motion_mode, mode_ctx, newmv_ctx,
+          zeromv_ctx, refmv_ctx, mbmi->tx_size);
+#else
       printf(
           "=== ENCODER ===: "
           "Frame=%d, (mi_row,mi_col)=(%d,%d), mode=%d, bsize=%d, "
           "show_frame=%d, mv[0]=(%d,%d), mv[1]=(%d,%d), ref[0]=%d, "
-          "ref[1]=%d, motion_mode=%d, inter_mode_ctx=%d, mode_ctx=%d, "
-          "newmv_ctx=%d, zeromv_ctx=%d, refmv_ctx=%d\n",
+          "ref[1]=%d, motion_mode=%d, mode_ctx=%d, "
+          "newmv_ctx=%d, zeromv_ctx=%d, refmv_ctx=%d, tx_size=%d\n",
           cm->current_video_frame, mi_row, mi_col, mbmi->mode, bsize,
           cm->show_frame, mv[0].as_mv.row, mv[0].as_mv.col, mv[1].as_mv.row,
           mv[1].as_mv.col, mbmi->ref_frame[0], mbmi->ref_frame[1],
-          mbmi->motion_mode, mbmi_ext->mode_context[ref_frame_type], mode_ctx,
-          newmv_ctx, zeromv_ctx, refmv_ctx);
+          mbmi->motion_mode, mode_ctx, newmv_ctx, zeromv_ctx, refmv_ctx,
+          mbmi->tx_size);
+#endif  // CONFIG_EXT_SKIP
     }
   }
 }
@@ -1750,6 +1804,9 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
   for (plane = 0; plane < AOMMIN(2, num_planes); ++plane) {
     const uint8_t palette_size_plane =
         mbmi->palette_mode_info.palette_size[plane];
+#if CONFIG_EXT_SKIP
+    assert(!mbmi->skip_mode || !palette_size_plane);
+#endif  // CONFIG_EXT_SKIP
     if (palette_size_plane > 0) {
 #if CONFIG_INTRABC
       assert(mbmi->use_intrabc == 0);
@@ -3669,8 +3726,6 @@ static void write_uncompressed_header_frame(AV1_COMP *cpi,
       aom_wb_write_literal(wb, cpi->common.ans_window_size_log2 - 8, 4);
 #endif  // CONFIG_ANS && ANS_MAX_SYMBOLS
     } else {
-      MV_REFERENCE_FRAME ref_frame;
-
       aom_wb_write_literal(wb, cpi->refresh_frame_mask, REF_FRAMES);
 
       if (!cpi->refresh_frame_mask) {
@@ -3679,7 +3734,8 @@ static void write_uncompressed_header_frame(AV1_COMP *cpi,
         cm->is_reference_frame = 0;
       }
 
-      for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
+      for (MV_REFERENCE_FRAME ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME;
+           ++ref_frame) {
         assert(get_ref_frame_map_idx(cpi, ref_frame) != INVALID_IDX);
         aom_wb_write_literal(wb, get_ref_frame_map_idx(cpi, ref_frame),
                              REF_FRAMES_LOG2);
@@ -3750,7 +3806,11 @@ static void write_uncompressed_header_frame(AV1_COMP *cpi,
     arf_offset = AOMMIN((MAX_GF_INTERVAL - 1), arf_offset + brf_offset);
     aom_wb_write_literal(wb, arf_offset, 4);
   }
-#endif
+
+#if CONFIG_EXT_SKIP
+  if (cm->is_skip_mode_allowed) aom_wb_write_bit(wb, cm->skip_mode_flag);
+#endif  // CONFIG_EXT_SKIP
+#endif  // CONFIG_FRAME_MARKER
 
 #if CONFIG_REFERENCE_BUFFER
   if (cm->seq_params.frame_id_numbers_present_flag) {

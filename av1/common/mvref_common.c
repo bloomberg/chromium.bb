@@ -1415,62 +1415,9 @@ void av1_setup_frame_sign_bias(AV1_COMMON *cm) {
   }
 }
 #endif  // CONFIG_FRAME_SIGN_BIAS
-
-#if CONFIG_EXT_SKIP
-void av1_setup_skip_mode_allowed(AV1_COMMON *const cm) {
-  cm->is_skip_mode_allowed = 0;
-  cm->ref_frame_idx_0 = cm->ref_frame_idx_1 = INVALID_IDX;
-
-  if (cm->frame_type == KEY_FRAME || cm->intra_only) return;
-
-  BufferPool *const pool = cm->buffer_pool;
-  RefCntBuffer *const frame_bufs = pool->frame_bufs;
-
-  int ref_frame_offset_0 = -1;
-  int ref_frame_offset_1 = INT_MAX;
-  int ref_idx_0 = INVALID_IDX;
-  int ref_idx_1 = INVALID_IDX;
-
-  // Identify the nearest forward and backward references
-  for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) {
-    RefBuffer *const ref_frame = &cm->frame_refs[i];
-    const int buf_idx = ref_frame->idx;
-
-    // Invalid reference frame buffer
-    if (buf_idx == INVALID_IDX) continue;
-
-    const int ref_offset = frame_bufs[buf_idx].cur_frame_offset;
-    if (ref_offset < (int)cm->frame_offset) {
-      // Forward reference
-      if (ref_offset > ref_frame_offset_0) {
-        ref_frame_offset_0 = ref_offset;
-        ref_idx_0 = i;
-      }
-    } else if (ref_offset > (int)cm->frame_offset) {
-      // Backward reference
-      if (ref_offset < ref_frame_offset_1) {
-        ref_frame_offset_1 = ref_offset;
-        ref_idx_1 = i;
-      }
-    }
-  }
-
-  // Flag is set when and only when both forward and backward references
-  // are available and their distance is no greater than 3, i.e. as
-  // opposed to the current frame position, the reference distance pair are
-  // either: (1, 1), (1, 2), or (2, 1).
-  if (ref_idx_0 != INVALID_IDX && ref_idx_1 != INVALID_IDX) {
-    if ((ref_frame_offset_1 - ref_frame_offset_0) <= 3) {
-      cm->is_skip_mode_allowed = 1;
-      cm->ref_frame_idx_0 = ref_idx_0;
-      cm->ref_frame_idx_1 = ref_idx_1;
-    }
-  }
-}
-#endif  // CONFIG_EXT_SKIP
 #endif  // CONFIG_FRAME_MARKER
 
-#if CONFIG_MFMV
+#if CONFIG_MFMV || CONFIG_EXT_SKIP
 // Although we assign 32 bit integers, all the values are strictly under 14
 // bits.
 static int div_mult[32] = {
@@ -1487,7 +1434,9 @@ static void get_mv_projection(MV *output, MV ref, int num, int den) {
   output->col =
       (int16_t)(ROUND_POWER_OF_TWO_SIGNED(ref.col * num * div_mult[den], 14));
 }
+#endif  // CONFIG_MFMV || CONFIG_EXT_SKIP
 
+#if CONFIG_MFMV
 #define MAX_OFFSET_WIDTH 64
 #define MAX_OFFSET_HEIGHT 0
 
@@ -2240,3 +2189,271 @@ int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
   return np;
 }
 #endif  // CONFIG_EXT_WARPED_MOTION
+
+#if CONFIG_EXT_SKIP
+void av1_setup_skip_mode_allowed(AV1_COMMON *const cm) {
+  cm->is_skip_mode_allowed = 0;
+  cm->ref_frame_idx_0 = cm->ref_frame_idx_1 = INVALID_IDX;
+
+  if (cm->frame_type == KEY_FRAME || cm->intra_only) return;
+
+  RefCntBuffer *const frame_bufs = cm->buffer_pool->frame_bufs;
+  const int cur_frame_offset = cm->frame_offset;
+  int ref_frame_offset[2] = { -1, INT_MAX };
+  int ref_idx[2] = { INVALID_IDX, INVALID_IDX };
+  int ref_buf_idx[2] = { INVALID_IDX, INVALID_IDX };
+
+  // Identify the nearest forward and backward references
+  for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) {
+    const int buf_idx = cm->frame_refs[i].idx;
+    if (buf_idx == INVALID_IDX) continue;
+
+    const int ref_offset = frame_bufs[buf_idx].cur_frame_offset;
+    if (ref_offset < cur_frame_offset) {
+      // Forward reference
+      if (ref_offset > ref_frame_offset[0]) {
+        ref_frame_offset[0] = ref_offset;
+        ref_idx[0] = i;
+        ref_buf_idx[0] = buf_idx;
+      }
+    } else if (ref_offset > cur_frame_offset) {
+      // Backward reference
+      if (ref_offset < ref_frame_offset[1]) {
+        ref_frame_offset[1] = ref_offset;
+        ref_idx[1] = i;
+        ref_buf_idx[1] = buf_idx;
+      }
+    }
+  }
+
+  // Flag is set when and only when both forward and backward references
+  // are available and their distance is no greater than 3, i.e. as
+  // opposed to the current frame position, the reference distance pair are
+  // either: (1, 1), (1, 2), or (2, 1).
+  if (ref_idx[0] != INVALID_IDX && ref_idx[1] != INVALID_IDX) {
+    const int cur_to_fwd = cm->frame_offset - ref_frame_offset[0];
+    const int cur_to_bwd = ref_frame_offset[1] - cm->frame_offset;
+#if 0
+    if ((ref_frame_offset[1] - ref_frame_offset[0]) <= 3)
+#endif  // 0
+    if (abs(cur_to_fwd - cur_to_bwd) <= 1) {
+      cm->is_skip_mode_allowed = 1;
+      cm->ref_frame_idx_0 = ref_idx[0];
+      cm->ref_frame_idx_1 = ref_idx[1];
+    }
+  }
+
+  // Set up the temporal mv candidates for skip mode.
+  cm->tpl_frame_ref0_idx = INVALID_IDX;
+  if (cm->is_skip_mode_allowed && cm->use_ref_frame_mvs) {
+    const int tpl_ref1_buf_idx = ref_buf_idx[1];
+    const int tpl_ref1_ref_offsets[INTER_REFS_PER_FRAME] = {
+      frame_bufs[tpl_ref1_buf_idx].lst_frame_offset,
+      frame_bufs[tpl_ref1_buf_idx].lst2_frame_offset,
+      frame_bufs[tpl_ref1_buf_idx].lst3_frame_offset,
+      frame_bufs[tpl_ref1_buf_idx].gld_frame_offset,
+      frame_bufs[tpl_ref1_buf_idx].bwd_frame_offset,
+      frame_bufs[tpl_ref1_buf_idx].alt2_frame_offset,
+      frame_bufs[tpl_ref1_buf_idx].alt_frame_offset
+    };
+
+    for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) {
+      if (tpl_ref1_ref_offsets[i] == ref_frame_offset[0]) {
+        cm->tpl_frame_ref0_idx = i;
+        break;
+      }
+    }
+  }
+}
+
+// Identify mvs for skip mode in the following order:
+// (1) Search the spatial two neighboring blocks (left/top);
+// (2) Search the temporal neighboring blocks;
+// (3) Consider NEAREST_NEARESTMV.
+
+#define SKIP_MODE_MV_LISTS 3
+#define SPATIAL_CANDIDATES 2
+#define TEMPORAL_CANDIDATES 2
+#define TOTAL_CANDIDATES (SPATIAL_CANDIDATES + TEMPORAL_CANDIDATES)
+
+void av1_setup_skip_mode_mvs(const AV1_COMMON *cm, const MACROBLOCKD *xd,
+                             MB_MODE_INFO *mbmi, int mi_row, int mi_col,
+                             const int_mv nearest_mv[2], find_mv_refs_sync sync,
+                             void *const data) {
+#if 0
+  const int sb_mi_size = mi_size_wide[cm->sb_size];
+#endif  // 0
+  const TileInfo *const tile = &xd->tile;
+  int i;
+
+  const MV_REFERENCE_FRAME skip_mode_refs[2] = {
+    LAST_FRAME + cm->ref_frame_idx_0, LAST_FRAME + cm->ref_frame_idx_1
+  };
+  const int8_t ref_frame_types[SKIP_MODE_MV_LISTS] = {
+    skip_mode_refs[0], skip_mode_refs[1], av1_ref_frame_type(skip_mode_refs)
+  };
+  int_mv mv_list[SKIP_MODE_MV_LISTS][TOTAL_CANDIDATES][2];
+  int mv_list_count[SKIP_MODE_MV_LISTS] = { 0 };
+
+  const BLOCK_SIZE bsize = mbmi->sb_type;
+  const int bw = block_size_wide[AOMMAX(bsize, BLOCK_8X8)];
+  const int bh = block_size_high[AOMMAX(bsize, BLOCK_8X8)];
+  const int num_8x8_blocks_wide = num_8x8_blocks_wide_lookup[bsize];
+  const int num_8x8_blocks_high = num_8x8_blocks_high_lookup[bsize];
+
+  // === Search mv candidate(s) over spatial neighboring blocks.
+  POSITION mv_search_pos_cur[SPATIAL_CANDIDATES];
+  mv_search_pos_cur[0].row = num_8x8_blocks_high - 1;  // LEFT
+  mv_search_pos_cur[0].col = -1;
+  mv_search_pos_cur[1].row = -1;  // TOP
+  mv_search_pos_cur[1].col = num_8x8_blocks_wide - 1;
+
+  MB_MODE_INFO *candidate_mbmi[SPATIAL_CANDIDATES] = { NULL };
+  for (i = 0; i < SPATIAL_CANDIDATES; ++i) {
+    const POSITION *const mv_pos = &mv_search_pos_cur[i];
+    if (is_inside(tile, mi_col, mi_row, cm->mi_rows, cm, mv_pos)) {
+      candidate_mbmi[i] =
+          !xd->mi[mv_pos->col + mv_pos->row * xd->mi_stride]
+              ? NULL
+              : &(xd->mi[mv_pos->col + mv_pos->row * xd->mi_stride]->mbmi);
+#if 0
+      if (candidate_mbmi[i] == NULL) continue;
+      // TODO(zoeliu): To investigate whether following sanity check is needed.
+      if ((mi_row & (sb_mi_size - 1)) + mv_pos->row >= sb_mi_size ||
+          (mi_col & (sb_mi_size - 1)) + mv_pos->col >= sb_mi_size)
+        continue;
+#endif  // 0
+    }
+  }
+
+  // First scan on the spatial neighbors, considering both reference frames
+  // matched for compound mode.
+  for (i = 0; i < SPATIAL_CANDIDATES; ++i) {
+    if (candidate_mbmi[i]) {
+      if (has_second_ref(candidate_mbmi[i])) {  // comp
+        if (av1_ref_frame_type(candidate_mbmi[i]->ref_frame) ==
+            ref_frame_types[2])
+          SKIP_MODE_MV_LIST_ADD(candidate_mbmi[i]->mv, mv_list, mv_list_count,
+                                2, bw, bh, xd);
+      } else {  // single
+        if (candidate_mbmi[i]->ref_frame[0] == ref_frame_types[0])
+          SKIP_MODE_MV_LIST_ADD(candidate_mbmi[i]->mv, mv_list, mv_list_count,
+                                0, bw, bh, xd);
+        else if (candidate_mbmi[i]->ref_frame[0] == ref_frame_types[1])
+          SKIP_MODE_MV_LIST_ADD(candidate_mbmi[i]->mv, mv_list, mv_list_count,
+                                1, bw, bh, xd);
+      }
+    }
+  }
+
+  // Re-scan mv candidate(s) over spatial neighboring blocks of compound mode,
+  // with only one reference frame matching the skip mode.
+  for (i = 0; i < SPATIAL_CANDIDATES; ++i) {
+    if (candidate_mbmi[i] && has_second_ref(candidate_mbmi[i])) {  // comp
+      if (candidate_mbmi[i]->ref_frame[0] == ref_frame_types[0] ||
+          candidate_mbmi[i]->ref_frame[1] == ref_frame_types[1]) {
+        const int rf_idx =
+            (candidate_mbmi[i]->ref_frame[1] == ref_frame_types[1]);
+        const int_mv rf_mv[2] = { candidate_mbmi[i]->mv[rf_idx],
+                                  candidate_mbmi[i]->mv[1 - rf_idx] };
+
+        SKIP_MODE_MV_LIST_ADD(rf_mv, mv_list, mv_list_count, rf_idx, bw, bh,
+                              xd);
+      }
+    }
+  }
+
+// TODO(hkuang): Remove this sync after fixing pthread_cond_broadcast
+// on windows platform. The sync here is unncessary if use_perv_frame_mvs
+// is 0. But after removing it, there will be hang in the unit test on windows
+// due to several threads waiting for a thread's signal.
+#if defined(_WIN32) && !HAVE_PTHREAD_H
+  if (cm->frame_parallel_decode && sync != NULL) sync(data, mi_row);
+#endif
+
+  // === Search mv candidate(s) over temporal neighboring blocks.
+  if (cm->tpl_frame_ref0_idx != INVALID_IDX) {
+    // Synchronize here for frame parallel decode if sync function is provided.
+    if (cm->frame_parallel_decode && sync != NULL) {
+      sync(data, mi_row);
+    }
+
+    POSITION mv_search_pos_tpl[TEMPORAL_CANDIDATES];
+    mv_search_pos_tpl[0].row = num_8x8_blocks_high - 1;  // current
+    mv_search_pos_tpl[0].col = num_8x8_blocks_wide - 1;
+    mv_search_pos_tpl[1].row = num_8x8_blocks_high;  // bottom-right
+    mv_search_pos_tpl[1].col = num_8x8_blocks_wide;
+
+    const int mvs_rows = (cm->mi_rows + 1) >> 1;
+    const int mvs_cols = (cm->mi_cols + 1) >> 1;
+
+    RefCntBuffer *const frame_bufs = cm->buffer_pool->frame_bufs;
+
+    const int tpl_ref0_buf_idx = cm->frame_refs[cm->ref_frame_idx_0].idx;
+    const int tpl_ref0_offset = frame_bufs[tpl_ref0_buf_idx].cur_frame_offset;
+    const int tpl_ref1_buf_idx = cm->frame_refs[cm->ref_frame_idx_1].idx;
+    const int tpl_ref1_offset = frame_bufs[tpl_ref1_buf_idx].cur_frame_offset;
+
+    MV_REF *const tpl_mvs_base = frame_bufs[tpl_ref1_buf_idx].mvs;
+
+    for (i = 0; i < TEMPORAL_CANDIDATES; ++i) {
+      const POSITION *const mv_pos = &mv_search_pos_tpl[i];
+      const int tpl_mvs_row = (mi_row + mv_pos->row + 1) >> 1;
+      const int tpl_mvs_col = (mi_col + mv_pos->col + 1) >> 1;
+
+      if (tpl_mvs_row >= 0 && tpl_mvs_row < mvs_rows && tpl_mvs_col >= 0 &&
+          tpl_mvs_col < mvs_cols) {
+        MV_REF *mv_ref = &tpl_mvs_base[tpl_mvs_row * mvs_cols + tpl_mvs_col];
+        MV_REFERENCE_FRAME tpl_frame_rf[2] = { mv_ref->ref_frame[0],
+                                               mv_ref->ref_frame[1] };
+
+        // Check whether the temporal candidate block has its reference frame 0
+        // point to the same forward reference most recent to the current frame.
+        if (tpl_frame_rf[0] <= INTRA_FRAME ||
+            FWD_RF_OFFSET(tpl_frame_rf[0]) != cm->tpl_frame_ref0_idx)
+          continue;
+
+        // Scale the temporal candiate mv of the same forward reference frame
+        // for the current frame.
+        const int cur_to_ref0 = AOMMAX(1, cm->frame_offset - tpl_ref0_offset);
+        const int ref1_to_ref0 = AOMMAX(1, tpl_ref1_offset - tpl_ref0_offset);
+
+        MV tpl_frame_mv[2] = { mv_ref->mv[0].as_mv, mv_ref->mv[1].as_mv };
+        int_mv candidate_mv;
+        get_mv_projection(&candidate_mv.as_mv, tpl_frame_mv[0], cur_to_ref0,
+                          ref1_to_ref0);
+
+        const int_mv tpl_mv[2] = { candidate_mv, mv_ref->mv[1] };
+        SKIP_MODE_MV_LIST_ADD(tpl_mv, mv_list, mv_list_count, 0, bw, bh, xd);
+      }
+    }
+  }
+
+  // === Finalize the mv/ref selection for the current block of skip mode.
+  // TODO(zoeliu): Several items to consider for possibly improving the coding
+  // performance further:
+  // (1) Consider more spatial / temporal neighboring blocks;
+  // (2) Signal the selection to differentiate between single or compoud mode;
+  // (3) May allow the use of the most recent forward reference of the temporal
+  //     neighboring block.
+  if (mv_list_count[2] > 0) {  // comp
+    mbmi->ref_frame[0] = cm->ref_frame_idx_0 + LAST_FRAME;
+    mbmi->ref_frame[1] = cm->ref_frame_idx_1 + LAST_FRAME;
+    mbmi->mv[0].as_int = mv_list[2][0][0].as_int;
+    mbmi->mv[1].as_int = mv_list[2][0][1].as_int;
+  } else if (mv_list_count[0] > 0) {  // single - forward
+    mbmi->ref_frame[0] = cm->ref_frame_idx_0 + LAST_FRAME;
+    mbmi->ref_frame[1] = -1;
+    mbmi->mv[0].as_int = mv_list[0][0][0].as_int;
+  } else if (mv_list_count[1] > 0) {  // single - backward
+    mbmi->ref_frame[0] = cm->ref_frame_idx_1 + LAST_FRAME;
+    mbmi->ref_frame[1] = -1;
+    mbmi->mv[0].as_int = mv_list[1][0][0].as_int;
+  } else {
+    mbmi->ref_frame[0] = cm->ref_frame_idx_0 + LAST_FRAME;
+    mbmi->ref_frame[1] = cm->ref_frame_idx_1 + LAST_FRAME;
+    mbmi->mv[0].as_int = nearest_mv[0].as_int;
+    mbmi->mv[1].as_int = nearest_mv[1].as_int;
+  }
+}
+#endif  // CONFIG_EXT_SKIP
