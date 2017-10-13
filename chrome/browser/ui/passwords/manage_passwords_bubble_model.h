@@ -112,6 +112,10 @@ class ManagePasswordsBubbleModel {
     return title_brand_link_range_;
   }
 
+#if defined(UNIT_TEST)
+  void set_hide_eye_icon(bool hide) { hide_eye_icon_ = hide; }
+#endif
+
   bool hide_eye_icon() const { return hide_eye_icon_; }
 
   Profile* GetProfile() const;
