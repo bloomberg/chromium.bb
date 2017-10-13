@@ -124,21 +124,9 @@ int CommandForKeyEvent(NSEvent* event) {
   if ([event type] != NSKeyDown)
     return -1;
 
-  // Look in menu.
-  NSMenuItem* item = FindMenuItem(event, [NSApp mainMenu]);
-  if (item && [item action] == @selector(commandDispatch:) && [item tag] > 0)
-    return [item tag];
-
-  // "Close window" doesn't use the |commandDispatch:| mechanism. Menu items
-  // that do not correspond to IDC_ constants need no special treatment however,
-  // as they can't be blacklisted in
-  // |BrowserCommandController::IsReservedCommandOrKey()| anyhow.
-  if (item && [item action] == @selector(performClose:))
-    return IDC_CLOSE_WINDOW;
-
-  // "Exit" doesn't use the |commandDispatch:| mechanism either.
-  if (item && [item action] == @selector(terminate:))
-    return IDC_EXIT;
+  int cmdNum = MenuCommandForKeyEvent(event);
+  if (cmdNum != -1)
+    return cmdNum;
 
   // Look in secondary keyboard shortcuts.
   NSUInteger modifiers = [event modifierFlags];
@@ -149,8 +137,8 @@ int CommandForKeyEvent(NSEvent* event) {
   const int keyCode = [event keyCode];
   const unichar keyChar = KeyCharacterForEvent(event);
 
-  int cmdNum = CommandForWindowKeyboardShortcut(
-      cmdKey, shiftKey, cntrlKey, optKey, keyCode, keyChar);
+  cmdNum = CommandForWindowKeyboardShortcut(cmdKey, shiftKey, cntrlKey, optKey,
+                                            keyCode, keyChar);
   if (cmdNum != -1)
     return cmdNum;
 
@@ -158,6 +146,33 @@ int CommandForKeyEvent(NSEvent* event) {
       cmdKey, shiftKey, cntrlKey, optKey, keyCode, keyChar);
   if (cmdNum != -1)
     return cmdNum;
+
+  return -1;
+}
+
+int MenuCommandForKeyEvent(NSEvent* event) {
+  if ([event type] != NSKeyDown)
+    return -1;
+
+  // Look in menu.
+  NSMenuItem* item = FindMenuItem(event, [NSApp mainMenu]);
+
+  if (!item)
+    return -1;
+
+  if ([item action] == @selector(commandDispatch:) && [item tag] > 0)
+    return [item tag];
+
+  // "Close window" doesn't use the |commandDispatch:| mechanism. Menu items
+  // that do not correspond to IDC_ constants need no special treatment however,
+  // as they can't be blacklisted in
+  // |BrowserCommandController::IsReservedCommandOrKey()| anyhow.
+  if (item && [item action] == @selector(performClose:))
+    return IDC_CLOSE_WINDOW;
+
+  // "Exit" doesn't use the |commandDispatch:| mechanism either.
+  if ([item action] == @selector(terminate:))
+    return IDC_EXIT;
 
   return -1;
 }
