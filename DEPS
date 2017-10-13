@@ -524,7 +524,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/google/pywebsocket.git' + '@' + '2d7b73c3acbd0f41dcab487ae5c97c6feae06ce2',
 
   'src/third_party/re2/src':
-    Var('chromium_git') + '/external/github.com/google/re2.git' + '@' + 'ae9cb49a2e2ba95de4f0c6ec5a8afd039996d2c7',
+    Var('chromium_git') + '/external/github.com/google/re2.git' + '@' + '4be7a14432ff0a2ed88fd884fd76a63f0a3a6127',
 
   'src/third_party/requests/src': {
       'url': Var('chromium_git') + '/external/github.com/kennethreitz/requests.git' + '@' + 'f172b30356d821d180fa4ecfa3e71c7274a32de4',
