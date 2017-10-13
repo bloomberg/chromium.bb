@@ -284,7 +284,8 @@ int main(int argc, char* argv[]) {
 #endif
   // Parse switches.
   base::CommandLine command_line = base::CommandLine(argc, argv);
-  if (command_line.HasSwitch("help") || command_line.HasSwitch("h")) {
+  if (command_line.HasSwitch("help") || command_line.HasSwitch("h") ||
+      argc == 1) {
     printf("%s", HELP_TEXT);
     return 1;
   }

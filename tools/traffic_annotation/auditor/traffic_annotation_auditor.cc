@@ -115,7 +115,7 @@ bool TrafficAnnotationAuditor::RunClangTool(
   }
   FILE* options_file = base::OpenFile(options_filepath, "wt");
   if (!options_file) {
-    LOG(ERROR) << "Could not create temporary options file.";
+    LOG(ERROR) << "Could not open temporary options file.";
     return false;
   }
 
@@ -157,6 +157,7 @@ bool TrafficAnnotationAuditor::RunClangTool(
     if (!file_paths.size()) {
       base::CloseFile(options_file);
       base::DeleteFile(options_filepath, false);
+      LOG(ERROR) << "No file is specified for annotation tests.";
       return false;
     }
     for (const auto& file_path : file_paths)
@@ -176,6 +177,25 @@ bool TrafficAnnotationAuditor::RunClangTool(
 
   // Run, and clean after.
   bool result = base::GetAppOutput(cmdline, &clang_tool_raw_output_);
+
+  if (!result) {
+    std::string tool_errors;
+    std::string options_file_text;
+
+    base::GetAppOutputAndError(cmdline, &tool_errors);
+    if (!base::ReadFileToString(options_filepath, &options_file_text))
+      options_file_text = "Could not read options file.";
+
+    LOG(ERROR) << base::StringPrintf(
+        "Calling clang tool returned false.\nCommand line: %s\n\n"
+        "Returned error text: %s\n\nPartial options file: %s\n",
+#if defined(OS_WIN)
+        base::UTF16ToASCII(cmdline.GetCommandLineString()).c_str(),
+#else
+        cmdline.GetCommandLineString().c_str(),
+#endif
+        tool_errors.c_str(), options_file_text.substr(0, 1024).c_str());
+  }
 
   base::DeleteFile(options_filepath, false);
 
