@@ -1734,6 +1734,18 @@ crbug.com/751952 virtual/origin-trials-runtimeflags-disabled/http/tests/origin_t
 crbug.com/771729 [ Win Debug ] external/wpt/html/semantics/scripting-1/the-script-element/execution-timing/039.html [ Pass Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/html/editing/dnd/events/drag-event-div-manual.html [ Skip ]
+crbug.com/626703 external/wpt/html/editing/dnd/events/drag-event-manual.html [ Skip ]
+crbug.com/626703 external/wpt/html/editing/dnd/events/dragend-event-manual.html [ Skip ]
+crbug.com/626703 external/wpt/html/editing/dnd/events/dragenter-event-manual.html [ Skip ]
+crbug.com/626703 external/wpt/html/editing/dnd/events/dragleave-event-manual.html [ Skip ]
+crbug.com/626703 external/wpt/html/editing/dnd/events/dragover-event-manual.html [ Skip ]
+crbug.com/626703 external/wpt/html/editing/dnd/events/dragstart-event-manual.html [ Skip ]
+crbug.com/626703 external/wpt/html/editing/dnd/events/drop-event-manual.html [ Skip ]
+crbug.com/626703 external/wpt/html/editing/dnd/the-datatransfer-interface/effectAllowed-manual.html [ Skip ]
+crbug.com/626703 external/wpt/html/editing/dnd/the-datatransfer-interface/files-manual.html [ Skip ]
+crbug.com/626703 external/wpt/html/editing/dnd/the-datatransfer-interface/setData-manual.html [ Skip ]
+crbug.com/626703 external/wpt/html/editing/dnd/the-datatransfer-interface/types-manual.html [ Skip ]
 crbug.com/626703 external/wpt/html/browsers/browsing-the-web/navigating-across-documents/javascript-url-global-scope.html [ Timeout ]
 crbug.com/626703 external/wpt/entries-api/filesystemdirectoryentry-attributes-manual.html [ Skip ]
 crbug.com/626703 external/wpt/entries-api/filesystemdirectoryentry-createReader-manual.html [ Skip ]
