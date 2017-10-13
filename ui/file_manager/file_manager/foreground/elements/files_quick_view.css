@@ -93,9 +93,10 @@ paper-button:focus:not(:active) {
   color: white;
   display: flex;
   flex-direction: column;
+  height: calc(100% - 64px);
   justify-content: center;
   outline: none;
-  padding: 24px 15%;
+  padding: 32px;
   position: relative;
   text-align: center;
   width: 100%;
@@ -105,9 +106,6 @@ paper-button:focus:not(:active) {
 #innerContentPanel[type="image"],
 #innerContentPanel[type="video"] {
   align-self: center;
-  height: 70%;
-  padding-bottom: initial;
-  padding-top: initial;
 }
 
 .content {
