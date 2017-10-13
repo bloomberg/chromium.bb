@@ -85,6 +85,8 @@ class ChromeAutofillClient
       const std::vector<autofill::FormStructure*>& forms) override;
   void DidFillOrPreviewField(const base::string16& autofilled_value,
                              const base::string16& profile_full_name) override;
+  void DidInteractWithNonsecureCreditCardInput(
+      content::RenderFrameHost* rfh) override;
   bool IsContextSecure() override;
   bool ShouldShowSigninPromo() override;
   bool IsAutofillSupported() override;

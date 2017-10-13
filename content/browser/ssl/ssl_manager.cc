@@ -242,18 +242,6 @@ void SSLManager::DidDisplayContentWithCertErrors() {
   }
 }
 
-void SSLManager::DidShowPasswordInputOnHttp() {
-  UpdateLastCommittedEntry(SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP, 0);
-}
-
-void SSLManager::DidHideAllPasswordInputsOnHttp() {
-  UpdateLastCommittedEntry(0, SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP);
-}
-
-void SSLManager::DidShowCreditCardInputOnHttp() {
-  UpdateLastCommittedEntry(SSLStatus::DISPLAYED_CREDIT_CARD_FIELD_ON_HTTP, 0);
-}
-
 void SSLManager::DidRunMixedContent(const GURL& security_origin) {
   NavigationEntryImpl* entry = controller_->GetLastCommittedEntry();
   if (!entry)

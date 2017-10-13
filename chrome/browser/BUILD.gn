@@ -1373,8 +1373,6 @@ split_static_library("browser") {
     "ssl/ssl_client_certificate_selector.h",
     "ssl/ssl_error_handler.cc",
     "ssl/ssl_error_handler.h",
-    "ssl/visible_password_observer.cc",
-    "ssl/visible_password_observer.h",
     "status_icons/status_icon.cc",
     "status_icons/status_icon.h",
     "status_icons/status_icon_menu_model.cc",

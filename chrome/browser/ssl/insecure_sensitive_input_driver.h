@@ -12,8 +12,9 @@ namespace content {
 class RenderFrameHost;
 }
 
-// The InsecureSensitiveInputDriver watches for InsecureInputService calls from
-// renderers, and surfaces notifications through VisiblePasswordObservers.
+// The InsecureSensitiveInputDriver watches for calls from renderers and
+// instructs the parent |InsecureSensitiveInputDriverFactory| monitoring the
+// WebContents to update the SSLStatusInputEventData.
 //
 // There is one InsecureSensitiveInputDriver per RenderFrameHost.
 // The lifetime is managed by the InsecureSensitiveInputDriverFactory.

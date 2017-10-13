@@ -244,6 +244,8 @@ class MockAutofillManager : public AutofillManager {
 class MockAutofillClient : public TestAutofillClient {
  public:
   MOCK_METHOD0(OnFirstUserGestureObserved, void());
+  MOCK_METHOD1(DidInteractWithNonsecureCreditCardInput,
+               void(content::RenderFrameHost*));
 };
 
 class TestContentAutofillDriver : public ContentAutofillDriver {
@@ -464,34 +466,37 @@ TEST_F(ContentAutofillDriverTest, PreviewFieldWithValue) {
   EXPECT_EQ(input_value, output_value);
 }
 
-// Tests that credit card form interactions are recorded on the current
-// NavigationEntry's SSLStatus if the page is HTTP.
+// Tests that credit card form interactions trigger a call to the client's
+// |DidInteractWithNonsecureCreditCardInput| function if the page is HTTP.
 TEST_F(ContentAutofillDriverTest, CreditCardFormInteraction) {
   GURL url("http://example.test");
   NavigateAndCommit(url);
-  driver_->DidInteractWithCreditCardForm();
-
   content::NavigationEntry* entry =
       web_contents()->GetController().GetVisibleEntry();
   ASSERT_TRUE(entry);
   EXPECT_EQ(url, entry->GetURL());
-  EXPECT_TRUE(!!(entry->GetSSL().content_status &
-                 content::SSLStatus::DISPLAYED_CREDIT_CARD_FIELD_ON_HTTP));
+
+  EXPECT_CALL(*test_autofill_client_,
+              DidInteractWithNonsecureCreditCardInput(main_rfh()));
+  driver_->DidInteractWithCreditCardForm();
 }
 
-// Tests that credit card form interactions are *not* recorded on the current
-// NavigationEntry's SSLStatus if the page is *not* HTTP.
+// Tests that credit card form interactions do NOT trigger a call to the
+// client's |DidInteractWithNonsecureCreditCardInput| function if the page
+// is HTTPS.
 TEST_F(ContentAutofillDriverTest, CreditCardFormInteractionOnHTTPS) {
+  EXPECT_CALL(*test_autofill_client_,
+              DidInteractWithNonsecureCreditCardInput(testing::_))
+      .Times(0);
+
   GURL url("https://example.test");
   NavigateAndCommit(url);
-  driver_->DidInteractWithCreditCardForm();
-
   content::NavigationEntry* entry =
       web_contents()->GetController().GetVisibleEntry();
   ASSERT_TRUE(entry);
   EXPECT_EQ(url, entry->GetURL());
-  EXPECT_FALSE(!!(entry->GetSSL().content_status &
-                  content::SSLStatus::DISPLAYED_CREDIT_CARD_FIELD_ON_HTTP));
+
+  driver_->DidInteractWithCreditCardForm();
 }
 
 }  // namespace autofill

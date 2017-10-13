@@ -58,35 +58,40 @@ IN_PROC_BROWSER_TEST_F(SecurityStateContentUtilsBrowserTest,
   content::WebContents* contents = shell()->web_contents();
   ASSERT_TRUE(contents);
 
-  // First, test that if the flags aren't set on the NavigationEntry,
-  // then they also aren't set on the VisibleSecurityState.
+  // First, ensure the flag is not set prematurely.
   content::SSLStatus& ssl_status =
       contents->GetController().GetVisibleEntry()->GetSSL();
-  ASSERT_FALSE(ssl_status.content_status &
-               content::SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP);
-  ASSERT_FALSE(ssl_status.content_status &
-               content::SSLStatus::DISPLAYED_CREDIT_CARD_FIELD_ON_HTTP);
+  SSLStatusInputEventData* ssl_status_input_events =
+      static_cast<SSLStatusInputEventData*>(ssl_status.user_data.get());
+  InsecureInputEventData events;
+  if (ssl_status_input_events)
+    events = *ssl_status_input_events->input_events();
+  ASSERT_FALSE(events.password_field_shown);
+  ASSERT_FALSE(events.credit_card_field_edited);
+
+  // Next, ensure they aren't set on the VisibleSecurityState.
   std::unique_ptr<security_state::VisibleSecurityState>
       visible_security_state_no_sensitive_inputs =
           GetVisibleSecurityState(contents);
-  EXPECT_FALSE(visible_security_state_no_sensitive_inputs
-                   ->displayed_password_field_on_http);
-  EXPECT_FALSE(visible_security_state_no_sensitive_inputs
-                   ->displayed_credit_card_field_on_http);
+  EXPECT_FALSE(visible_security_state_no_sensitive_inputs->insecure_input_events
+                   .password_field_shown);
+  EXPECT_FALSE(visible_security_state_no_sensitive_inputs->insecure_input_events
+                   .credit_card_field_edited);
 
   // Now, set the flags on the NavigationEntry and test that they are
   // reflected in the VisibleSecurityState.
-  ssl_status.content_status |=
-      content::SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP;
-  ssl_status.content_status |=
-      content::SSLStatus::DISPLAYED_CREDIT_CARD_FIELD_ON_HTTP;
+  events.password_field_shown = true;
+  events.credit_card_field_edited = true;
+  ssl_status.user_data =
+      base::MakeUnique<security_state::SSLStatusInputEventData>(events);
+
   std::unique_ptr<security_state::VisibleSecurityState>
       visible_security_state_sensitive_inputs =
           GetVisibleSecurityState(contents);
-  EXPECT_TRUE(visible_security_state_sensitive_inputs
-                  ->displayed_password_field_on_http);
-  EXPECT_TRUE(visible_security_state_sensitive_inputs
-                  ->displayed_credit_card_field_on_http);
+  EXPECT_TRUE(visible_security_state_sensitive_inputs->insecure_input_events
+                  .password_field_shown);
+  EXPECT_TRUE(visible_security_state_sensitive_inputs->insecure_input_events
+                  .credit_card_field_edited);
 }
 
 // Tests that the flags for nonsecure editing are set correctly.

@@ -502,7 +502,7 @@ TEST(SecurityStateContentUtilsTest, HTTPWarning) {
   EXPECT_EQ(0u, explanations.neutral_explanations.size());
 
   explanations.neutral_explanations.clear();
-  security_info.displayed_credit_card_field_on_http = true;
+  security_info.insecure_input_events.credit_card_field_edited = true;
   security_style = GetSecurityStyle(security_info, &explanations);
   EXPECT_EQ(blink::kWebSecurityStyleNeutral, security_style);
   // Verify one explanation was shown, because Form Not Secure was triggered.
@@ -511,8 +511,8 @@ TEST(SecurityStateContentUtilsTest, HTTPWarning) {
   // Check that when both password and credit card fields get displayed, only
   // one explanation is added.
   explanations.neutral_explanations.clear();
-  security_info.displayed_credit_card_field_on_http = true;
-  security_info.displayed_password_field_on_http = true;
+  security_info.insecure_input_events.credit_card_field_edited = true;
+  security_info.insecure_input_events.password_field_shown = true;
   security_style = GetSecurityStyle(security_info, &explanations);
   EXPECT_EQ(blink::kWebSecurityStyleNeutral, security_style);
   // Verify only one explanation was shown when Form Not Secure is triggered.
@@ -521,8 +521,8 @@ TEST(SecurityStateContentUtilsTest, HTTPWarning) {
   // Verify that two explanations are shown when the Incognito and
   // FormNotSecure flags are both set.
   explanations.neutral_explanations.clear();
-  security_info.displayed_credit_card_field_on_http = true;
-  security_info.displayed_password_field_on_http = false;
+  security_info.insecure_input_events.credit_card_field_edited = true;
+  security_info.insecure_input_events.password_field_shown = false;
   security_info.incognito_downgraded_security_level = true;
   security_style = GetSecurityStyle(security_info, &explanations);
   EXPECT_EQ(blink::kWebSecurityStyleNeutral, security_style);
@@ -531,8 +531,8 @@ TEST(SecurityStateContentUtilsTest, HTTPWarning) {
   // Verify that three explanations are shown when the Incognito, FormNotSecure,
   // and Insecure Field Edit flags are all set.
   explanations.neutral_explanations.clear();
-  security_info.displayed_credit_card_field_on_http = true;
-  security_info.displayed_password_field_on_http = false;
+  security_info.insecure_input_events.credit_card_field_edited = true;
+  security_info.insecure_input_events.password_field_shown = false;
   security_info.incognito_downgraded_security_level = true;
   security_info.field_edit_downgraded_security_level = true;
   security_style = GetSecurityStyle(security_info, &explanations);
@@ -542,8 +542,8 @@ TEST(SecurityStateContentUtilsTest, HTTPWarning) {
   // Verify that one explanation is shown when the Insecure Field Edit flags
   // alone is set.
   explanations.neutral_explanations.clear();
-  security_info.displayed_credit_card_field_on_http = false;
-  security_info.displayed_password_field_on_http = false;
+  security_info.insecure_input_events.credit_card_field_edited = false;
+  security_info.insecure_input_events.password_field_shown = false;
   security_info.incognito_downgraded_security_level = false;
   security_info.field_edit_downgraded_security_level = true;
   security_style = GetSecurityStyle(security_info, &explanations);

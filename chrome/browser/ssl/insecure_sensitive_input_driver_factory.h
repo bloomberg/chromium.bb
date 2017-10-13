@@ -7,6 +7,7 @@
 
 #include <map>
 #include <memory>
+#include <set>
 
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -18,27 +19,51 @@ class WebContents;
 
 class InsecureSensitiveInputDriver;
 
-// Creates and owns InsecureSensitiveInputDrivers. There is one
-// factory per WebContents, and one driver per render frame.
+// This object updates the NavigationEntry's SSLStatus UserData object when
+// sensitive input events occur that may impact Chrome's determination of the
+// page's security level.
+//
+// This class holds a map of InsecureSensitiveInputDrivers, which accept
+// mojom::InsecureInputService notifications from renderers. There is at most
+// one factory per WebContents, and one driver per render frame.
 class InsecureSensitiveInputDriverFactory
     : public content::WebContentsObserver,
       public content::WebContentsUserData<InsecureSensitiveInputDriverFactory> {
  public:
   ~InsecureSensitiveInputDriverFactory() override;
 
-  // Creates a factory for the |web_contents|, enumerates its current frames
-  // and creates an |InsecureSensitiveInputDriver| for each.
+  static InsecureSensitiveInputDriverFactory* GetOrCreateForWebContents(
+      content::WebContents* web_contents);
+
+  // Finds or creates a factory for the |web_contents| and creates an
+  // |InsecureSensitiveInputDriver| for the target |render_frame_host|.
   static void BindDriver(blink::mojom::InsecureInputServiceRequest request,
                          content::RenderFrameHost* render_frame_host);
 
-  // Returns the |InsecureSensitiveInputDriver| previously created for the
-  // specified |render_frame_host| by |BindDriver| or |RenderFrameCreated|.
-  // Returns nullptr if the driver is missing.
-  InsecureSensitiveInputDriver* GetDriverForFrame(
+  // Creates a |InsecureSensitiveInputDriver| for the specified
+  // |render_frame_host| and adds it to the |frame_driver_map_|.
+  InsecureSensitiveInputDriver* GetOrCreateDriverForFrame(
       content::RenderFrameHost* render_frame_host);
 
+  // This method is called when the autofill component detects a credit
+  // card field was interacted with in a non-secure context.
+  void DidInteractWithNonsecureCreditCardInput();
+
+  // This method is called when there is a message notifying
+  // the browser process that the renderer has a visible password field.
+  void RenderFrameHasVisiblePasswordField(
+      content::RenderFrameHost* render_frame_host);
+
+  // This method is called when there is a message notifying the browser
+  // process that the renderer has no visible password fields anymore.
+  void RenderFrameHasNoVisiblePasswordFields(
+      content::RenderFrameHost* render_frame_host);
+
+  // This method is called when there is a message notifying the browser
+  // process that the user edited a field in a non-secure context.
+  void DidEditFieldInInsecureContext();
+
   // content::WebContentsObserver:
-  void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
   void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
 
  private:
@@ -50,6 +75,8 @@ class InsecureSensitiveInputDriverFactory
   std::map<content::RenderFrameHost*,
            std::unique_ptr<InsecureSensitiveInputDriver>>
       frame_driver_map_;
+
+  std::set<content::RenderFrameHost*> frames_with_visible_password_fields_;
 
   DISALLOW_COPY_AND_ASSIGN(InsecureSensitiveInputDriverFactory);
 };
