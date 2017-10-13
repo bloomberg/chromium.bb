@@ -50379,6 +50379,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Notifications.Android.JobStartDelay" units="ms">
+  <owner>awdf@chromium.org</owner>
+  <summary>
+    Records the delay between scheduling a job with the JobScheduler (with a
+    desired latency of 0ms, in response to a notification click) and receiving
+    the onStartJob callback. Only measured on Android N and above.
+  </summary>
+</histogram>
+
 <histogram name="Notifications.AppNotificationStatus"
     enum="NotificationAppStatus">
   <owner>peter@chromium.org</owner>

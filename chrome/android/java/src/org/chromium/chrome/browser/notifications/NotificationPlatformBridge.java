@@ -49,6 +49,7 @@ import org.chromium.webapk.lib.client.WebApkValidator;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nullable;
 
@@ -165,6 +166,7 @@ public class NotificationPlatformBridge {
                 return false;
             }
         }
+        recordJobStartDelayUMA(intent);
 
         String notificationId = intent.getStringExtra(NotificationConstants.EXTRA_NOTIFICATION_ID);
 
@@ -202,6 +204,17 @@ public class NotificationPlatformBridge {
 
         Log.e(TAG, "Unrecognized Notification action: " + intent.getAction());
         return false;
+    }
+
+    private static void recordJobStartDelayUMA(Intent intent) {
+        if (intent.hasExtra(NotificationConstants.EXTRA_JOB_SCHEDULED_TIME_MS)
+                && intent.hasExtra(NotificationConstants.EXTRA_JOB_STARTED_TIME_MS)) {
+            long duration = intent.getLongExtra(NotificationConstants.EXTRA_JOB_STARTED_TIME_MS, -1)
+                    - intent.getLongExtra(NotificationConstants.EXTRA_JOB_SCHEDULED_TIME_MS, -1);
+            if (duration < 0) return; // Possible if device rebooted before job started.
+            RecordHistogram.recordMediumTimesHistogram(
+                    "Notifications.Android.JobStartDelay", duration, TimeUnit.MILLISECONDS);
+        }
     }
 
     @Nullable
