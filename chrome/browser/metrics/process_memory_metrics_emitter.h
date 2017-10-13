@@ -9,7 +9,9 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/process/process_handle.h"
+#include "base/time/time.h"
 #include "services/resource_coordinator/public/interfaces/coordination_unit_introspector.mojom.h"
 #include "services/resource_coordinator/public/interfaces/memory_instrumentation/memory_instrumentation.mojom.h"
 
@@ -59,6 +61,12 @@ class ProcessMemoryMetricsEmitter
   // Virtual for testing. Returns the number of extensions in the given process.
   // It excludes hosted apps extensions.
   virtual int GetNumberOfExtensions(base::ProcessId pid);
+
+  // Virtual for testing. Returns the process uptime of the given process. Does
+  // not return a value when the process startup time is not set.
+  virtual base::Optional<base::TimeDelta> GetProcessUptime(
+      const base::Time& now,
+      base::ProcessId pid);
 
  private:
   friend class base::RefCountedThreadSafe<ProcessMemoryMetricsEmitter>;
