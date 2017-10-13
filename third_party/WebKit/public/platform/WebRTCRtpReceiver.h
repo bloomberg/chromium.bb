@@ -11,6 +11,7 @@
 
 namespace blink {
 
+class WebMediaStream;
 class WebMediaStreamTrack;
 class WebRTCRtpContributingSource;
 
@@ -26,6 +27,7 @@ class BLINK_PLATFORM_EXPORT WebRTCRtpReceiver {
   // the same |id|.
   virtual uintptr_t Id() const = 0;
   virtual const WebMediaStreamTrack& Track() const = 0;
+  virtual WebVector<WebMediaStream> Streams() const = 0;
   virtual WebVector<std::unique_ptr<WebRTCRtpContributingSource>>
   GetSources() = 0;
 };

@@ -29,6 +29,7 @@ class RTCRtpReceiver final : public GarbageCollectedFinalized<RTCRtpReceiver>,
   MediaStreamTrack* track() const;
   const HeapVector<Member<RTCRtpContributingSource>>& getContributingSources();
 
+  const WebRTCRtpReceiver& web_receiver() const;
   void UpdateSourcesIfNeeded();
 
   DECLARE_VIRTUAL_TRACE();

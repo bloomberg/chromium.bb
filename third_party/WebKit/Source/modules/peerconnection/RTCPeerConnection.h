@@ -139,6 +139,11 @@ class MODULES_EXPORT RTCPeerConnection final
   MediaStreamVector getLocalStreams() const;
 
   MediaStreamVector getRemoteStreams() const;
+  // Returns the remote stream for the descriptor, if one exists.
+  MediaStream* getRemoteStream(MediaStreamDescriptor*) const;
+  // Counts the number of receivers that have a remote stream for the descriptor
+  // in its set of associated remote streams.
+  size_t getRemoteStreamUsageCount(MediaStreamDescriptor*) const;
 
   void addStream(ScriptState*,
                  MediaStream*,
@@ -190,10 +195,8 @@ class MODULES_EXPORT RTCPeerConnection final
   void DidChangeSignalingState(SignalingState) override;
   void DidChangeICEGatheringState(ICEGatheringState) override;
   void DidChangeICEConnectionState(ICEConnectionState) override;
-  void DidAddRemoteStream(
-      const WebMediaStream&,
-      WebVector<std::unique_ptr<WebRTCRtpReceiver>>*) override;
-  void DidRemoveRemoteStream(const WebMediaStream&) override;
+  void DidAddRemoteTrack(std::unique_ptr<WebRTCRtpReceiver>) override;
+  void DidRemoveRemoteTrack(std::unique_ptr<WebRTCRtpReceiver>) override;
   void DidAddRemoteDataChannel(WebRTCDataChannelHandler*) override;
   void ReleasePeerConnectionHandler() override;
   void ClosePeerConnection() override;

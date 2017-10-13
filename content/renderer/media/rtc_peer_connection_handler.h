@@ -21,6 +21,7 @@
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
 #include "content/renderer/media/webrtc/media_stream_track_metrics.h"
+#include "content/renderer/media/webrtc/rtc_rtp_receiver.h"
 #include "content/renderer/media/webrtc/rtc_rtp_sender.h"
 #include "content/renderer/media/webrtc/webrtc_media_stream_adapter_map.h"
 #include "content/renderer/media/webrtc/webrtc_media_stream_track_adapter_map.h"
@@ -198,12 +199,16 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   void OnIceGatheringChange(
       webrtc::PeerConnectionInterface::IceGatheringState new_state);
   void OnRenegotiationNeeded();
-  void OnAddStream(
-      std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>
-          remote_stream_adapter_ref,
-      std::vector<std::unique_ptr<blink::WebRTCRtpReceiver>> web_receivers);
-  void OnRemoveStream(
-      const scoped_refptr<webrtc::MediaStreamInterface>& remote_webrtc_stream);
+  void OnAddRemoteTrack(
+      scoped_refptr<webrtc::RtpReceiverInterface> webrtc_receiver,
+      std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef>
+          remote_track_adapter_ref,
+      std::vector<std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>>
+          remote_stream_adapter_refs);
+  void OnRemoveRemoteTrack(
+      scoped_refptr<webrtc::RtpReceiverInterface> webrtc_receiver,
+      std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef>
+          remote_track_adapter_ref);
   void OnDataChannel(std::unique_ptr<RtcDataChannelHandler> handler);
   void OnIceCandidate(const std::string& sdp, const std::string& sdp_mid,
       int sdp_mline_index, int component, int address_family);
@@ -309,12 +314,10 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   // corresponding content layer sender. This is needed to retain the senders'
   // associated set of streams for senders created by |AddTrack|.
   std::map<uintptr_t, std::unique_ptr<RTCRtpSender>> rtp_senders_;
-  // We don't need an "rtp_receivers_" map as long as the blink layer receivers
-  // are not GC'd (protecting the relevant adapters from destruction). These can
-  // be constructed anew on every |GetReceivers| call.
-  // TODO(hbos): When receivers can be created separately from remote streams we
-  // should add an "rtp_receivers_" map too to get rid of the requirement for
-  // the blink layer to keep a receiver reference. https://crbug.com/741619
+  // Maps |RTCRtpReceiver::getId|s of |webrtc::RtpReceiverInterface|s to the
+  // corresponding content layer receivers. The set of receivers is needed in
+  // order to keep its associated track's and streams' adapters alive.
+  std::map<uintptr_t, std::unique_ptr<RTCRtpReceiver>> rtp_receivers_;
 
   base::WeakPtr<PeerConnectionTracker> peer_connection_tracker_;
 
