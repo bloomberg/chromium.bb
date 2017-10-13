@@ -93,10 +93,11 @@ views::View* CreateAddUserView(AddUserSessionPolicy policy) {
   view->SetBackground(views::CreateThemedSolidBackground(
       view, ui::NativeTheme::kColorId_BubbleBackground));
 
-  int message_id = 0;
+  base::string16 message;
   switch (policy) {
     case AddUserSessionPolicy::ALLOWED: {
-      message_id = IDS_ASH_STATUS_TRAY_SIGN_IN_ANOTHER_ACCOUNT;
+      message = l10n_util::GetStringUTF16(
+          IDS_ASH_STATUS_TRAY_SIGN_IN_ANOTHER_ACCOUNT);
 
       auto* icon = new views::ImageView();
       icon->SetImage(
@@ -105,17 +106,21 @@ views::View* CreateAddUserView(AddUserSessionPolicy policy) {
       break;
     }
     case AddUserSessionPolicy::ERROR_NOT_ALLOWED_PRIMARY_USER:
-      message_id = IDS_ASH_STATUS_TRAY_MESSAGE_NOT_ALLOWED_PRIMARY_USER;
+      message = l10n_util::GetStringUTF16(
+          IDS_ASH_STATUS_TRAY_MESSAGE_NOT_ALLOWED_PRIMARY_USER);
       break;
     case AddUserSessionPolicy::ERROR_MAXIMUM_USERS_REACHED:
-      message_id = IDS_ASH_STATUS_TRAY_MESSAGE_CANNOT_ADD_USER;
+      message = l10n_util::GetStringFUTF16Int(
+          IDS_ASH_STATUS_TRAY_MESSAGE_CANNOT_ADD_USER,
+          session_manager::kMaximumNumberOfUserSessions);
       break;
     case AddUserSessionPolicy::ERROR_NO_ELIGIBLE_USERS:
-      message_id = IDS_ASH_STATUS_TRAY_MESSAGE_OUT_OF_USERS;
+      message =
+          l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_MESSAGE_OUT_OF_USERS);
       break;
   }
 
-  auto* command_label = new views::Label(l10n_util::GetStringUTF16(message_id));
+  auto* command_label = new views::Label(message);
   command_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   command_label->SetMultiLine(true);
 
