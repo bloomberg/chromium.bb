@@ -1,4 +1,6 @@
 <!DOCTYPE html>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
+<script src="resources/text-based-repaint.js"></script>
 <style>
 [id^="target"] {
   width: 60px;
@@ -16,8 +18,6 @@
   <div style="width: 4000px; height: 20000px"></div>
   <div id="target4" style="position: relative; top: -10000px; left: 30px"></div>
 </div>
-<script src="../../resources/run-after-layout-and-paint.js"></script>
-<script src="resources/text-based-repaint.js"></script>
 <script>
 window.testIsAsync = true;
 
