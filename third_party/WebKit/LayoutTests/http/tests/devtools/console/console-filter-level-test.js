@@ -79,14 +79,14 @@
     function abcMessagePlain(next) {
       Console.ConsoleViewFilter.levelFilterSetting().set({ verbose: true });
       Console.ConsoleView.instance()._filter._textFilterUI.setValue('abc');
-      Console.ConsoleView.instance()._filter._textFilterChanged();
+      Console.ConsoleView.instance()._filter._onFilterChanged();
       dumpVisibleMessages();
       next();
     },
 
     function abcMessageRegex(next) {
       Console.ConsoleView.instance()._filter._textFilterUI.setValue('/ab[a-z]/');
-      Console.ConsoleView.instance()._filter._textFilterChanged();
+      Console.ConsoleView.instance()._filter._onFilterChanged();
       dumpVisibleMessages();
       next();
     },
