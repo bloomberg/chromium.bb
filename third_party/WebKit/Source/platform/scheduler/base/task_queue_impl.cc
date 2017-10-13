@@ -7,8 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/format_macros.h"
-#include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "base/trace_event/blame_context.h"
 #include "platform/scheduler/base/task_queue_manager.h"
@@ -471,10 +469,16 @@ void TaskQueueImpl::AsValueInto(base::TimeTicks now,
   base::AutoLock immediate_incoming_queue_lock(immediate_incoming_queue_lock_);
   state->BeginDictionary();
   state->SetString("name", GetName());
-  state->SetString(
-      "task_queue_id",
-      base::StringPrintf("%" PRIx64, static_cast<uint64_t>(
-                                         reinterpret_cast<uintptr_t>(this))));
+  if (!main_thread_only().task_queue_manager) {
+    state->SetBoolean("unregistered", true);
+    state->EndDictionary();
+    return;
+  }
+  DCHECK(main_thread_only().time_domain);
+  DCHECK(main_thread_only().delayed_work_queue);
+  DCHECK(main_thread_only().immediate_work_queue);
+
+  state->SetString("task_queue_id", PointerToString(this));
   state->SetBoolean("enabled", IsQueueEnabled());
   state->SetString("time_domain_name",
                    main_thread_only().time_domain->GetName());
