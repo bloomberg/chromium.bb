@@ -244,6 +244,13 @@ class SnackbarView {
                                                            : R.color.snackbar_background_color);
         }
 
+        int textAppearanceResId = snackbar.getTextAppearance();
+        if (textAppearanceResId == 0) {
+            textAppearanceResId = FeatureUtilities.isChromeHomeEnabled() ? R.style.BlackBodyDefault
+                                                                         : R.style.WhiteBody;
+        }
+        ApiCompatibilityUtils.setTextAppearance(mMessageView, textAppearanceResId);
+
         if (mIsTablet) {
             // On tablet, snackbars have rounded corners.
             mSnackbarView.setBackgroundResource(R.drawable.snackbar_background_tablet);
@@ -269,7 +276,6 @@ class SnackbarView {
         }
 
         if (FeatureUtilities.isChromeHomeEnabled()) {
-            ApiCompatibilityUtils.setTextAppearance(mMessageView, R.style.BlackBodyDefault);
             mActionButtonView.setTextColor(ApiCompatibilityUtils.getColor(
                     mContainerView.getResources(), R.color.blue_when_enabled));
             mShadowView.setVisibility(View.VISIBLE);
