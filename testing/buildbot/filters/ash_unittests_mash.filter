@@ -342,6 +342,9 @@
 -WorkspaceLayoutManagerKeyboardTest.IgnoreWorkAreaChangeinNonStickyMode
 # TODO: fix these. They fail because DeviceDataManager isn't created.
 # http://crbug.com/734812.
+-PaletteTrayTestWithInternalStylus.WelcomeBubbleShownOnEject
+-PaletteTrayTestWithInternalStylus.WelcomeBubbleNotShownIfShownBefore
+-PaletteTrayTestWithInternalStylus.WelcomeBubbleNotShownIfAutoOpenPaletteTrue
 -TrayIMETest.HidesOnA11yEnabled
 -TrayIMETest.PerformActionOnDetailedView
 -VirtualKeyboardAlwaysOnTopControllerTest.NotifyKeyboardBoundsChanged

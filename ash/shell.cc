@@ -81,6 +81,7 @@
 #include "ash/system/network/vpn_list.h"
 #include "ash/system/night_light/night_light_controller.h"
 #include "ash/system/palette/palette_tray.h"
+#include "ash/system/palette/palette_welcome_bubble.h"
 #include "ash/system/power/peripheral_battery_notifier.h"
 #include "ash/system/power/power_button_controller.h"
 #include "ash/system/power/power_event_observer.h"
@@ -344,13 +345,14 @@ void Shell::RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
 // static
 void Shell::RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
   AccessibilityController::RegisterProfilePrefs(registry, for_test);
-  LogoutButtonTray::RegisterProfilePrefs(registry);
-  NightLightController::RegisterProfilePrefs(registry);
-  ShelfController::RegisterProfilePrefs(registry);
-  TrayCapsLock::RegisterProfilePrefs(registry, for_test);
   BluetoothPowerController::RegisterProfilePrefs(registry);
   LockScreenController::RegisterProfilePrefs(registry, for_test);
+  LogoutButtonTray::RegisterProfilePrefs(registry);
+  NightLightController::RegisterProfilePrefs(registry);
+  PaletteWelcomeBubble::RegisterProfilePrefs(registry);
+  ShelfController::RegisterProfilePrefs(registry);
   TouchDevicesController::RegisterProfilePrefs(registry);
+  TrayCapsLock::RegisterProfilePrefs(registry, for_test);
 }
 
 views::NonClientFrameView* Shell::CreateDefaultNonClientFrameView(

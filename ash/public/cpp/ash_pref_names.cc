@@ -69,6 +69,9 @@ const char kShouldAlwaysShowAccessibilityMenu[] = "settings.a11y.enable_menu";
 
 // A boolean pref which stores whether a stylus has been seen before.
 const char kHasSeenStylus[] = "ash.has_seen_stylus";
+// A boolean pref which stores whether a the palette warm welcome bubble
+// (displayed when a user first uses a stylus) has been shown before.
+const char kShownPaletteWelcomeBubble[] = "ash.shown_palette_welcome_bubble";
 
 // A boolean pref storing the enabled status of the NightLight feature.
 const char kNightLightEnabled[] = "ash.night_light.enabled";

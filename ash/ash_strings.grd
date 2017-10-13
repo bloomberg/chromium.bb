@@ -463,6 +463,12 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STYLUS_TOOLS_TITLE" desc="The title of the stylus tools dialog in the ash shelf.">
         Stylus tools
       </message>
+      <message name="IDS_ASH_STYLUS_WARM_WELCOME_BUBBLE_TITLE" desc="The title of the bubble that pops up the first time a user uses a stylus.">
+        These are your stylus tools
+      </message>
+      <message name="IDS_ASH_STYLUS_WARM_WELCOME_BUBBLE_DESCRIPTION" desc="The description of the bubble that pops up the first time a user uses a stylus. Describes what tools exist in the palette tray.">
+        Tap the stylus button on the shelf to take a note, screenshot, use the assistant, laser pointer, or magnifying glass.
+      </message>
       <message name="IDS_ASH_PALETTE_SETTINGS" desc="The label on the setting button used to open palette setting page.">
         Stylus settings
       </message>
