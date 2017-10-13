@@ -7,15 +7,19 @@
 #include <aclapi.h>
 #include <sddl.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/logging.h"
+#include "base/strings/stringprintf.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
 #include "sandbox/win/src/job.h"
 #include "sandbox/win/src/restricted_token.h"
+#include "sandbox/win/src/sandbox_utils.h"
 #include "sandbox/win/src/security_level.h"
 #include "sandbox/win/src/sid.h"
+#include "sandbox/win/src/win_utils.h"
 
 namespace sandbox {
 
@@ -292,6 +296,105 @@ DWORD HardenProcessIntegrityLevelPolicy() {
   base::win::ScopedHandle token(token_handle);
 
   return HardenTokenIntegrityLevelPolicy(token.Get());
+}
+
+DWORD CreateLowBoxToken(HANDLE base_token,
+                        TokenType token_type,
+                        PSECURITY_CAPABILITIES security_capabilities,
+                        PHANDLE saved_handles,
+                        DWORD saved_handles_count,
+                        base::win::ScopedHandle* token) {
+  NtCreateLowBoxToken CreateLowBoxToken = nullptr;
+  ResolveNTFunctionPtr("NtCreateLowBoxToken", &CreateLowBoxToken);
+
+  if (base::win::GetVersion() < base::win::VERSION_WIN8)
+    return ERROR_CALL_NOT_IMPLEMENTED;
+
+  if (token_type != PRIMARY && token_type != IMPERSONATION)
+    return ERROR_INVALID_PARAMETER;
+
+  if (!token)
+    return ERROR_INVALID_PARAMETER;
+
+  base::win::ScopedHandle base_token_handle;
+  if (!base_token) {
+    HANDLE process_token = nullptr;
+    if (!::OpenProcessToken(::GetCurrentProcess(), TOKEN_ALL_ACCESS,
+                            &process_token)) {
+      return ::GetLastError();
+    }
+    base_token_handle.Set(process_token);
+    base_token = process_token;
+  }
+  OBJECT_ATTRIBUTES obj_attr;
+  InitializeObjectAttributes(&obj_attr, nullptr, 0, nullptr, nullptr);
+  HANDLE token_lowbox = nullptr;
+
+  NTSTATUS status = CreateLowBoxToken(
+      &token_lowbox, base_token, TOKEN_ALL_ACCESS, &obj_attr,
+      security_capabilities->AppContainerSid,
+      security_capabilities->CapabilityCount,
+      security_capabilities->Capabilities, saved_handles_count, saved_handles);
+  if (!NT_SUCCESS(status))
+    return GetLastErrorFromNtStatus(status);
+
+  base::win::ScopedHandle token_lowbox_handle(token_lowbox);
+  DCHECK(token_lowbox_handle.IsValid());
+
+  // Default from NtCreateLowBoxToken is a Primary token.
+  if (token_type == PRIMARY) {
+    token->Set(token_lowbox_handle.Take());
+    return ERROR_SUCCESS;
+  }
+
+  HANDLE dup_handle = nullptr;
+  if (!::DuplicateTokenEx(token_lowbox_handle.Get(), TOKEN_ALL_ACCESS, nullptr,
+                          ::SecurityImpersonation, ::TokenImpersonation,
+                          &dup_handle)) {
+    return ::GetLastError();
+  }
+
+  token->Set(dup_handle);
+
+  return ERROR_SUCCESS;
+}
+
+DWORD CreateLowBoxObjectDirectory(PSID lowbox_sid,
+                                  bool open_directory,
+                                  base::win::ScopedHandle* directory) {
+  DWORD session_id = 0;
+  if (!::ProcessIdToSessionId(::GetCurrentProcessId(), &session_id))
+    return ::GetLastError();
+
+  LPWSTR sid_string = nullptr;
+  if (!::ConvertSidToStringSid(lowbox_sid, &sid_string))
+    return ::GetLastError();
+
+  std::unique_ptr<wchar_t, LocalFreeDeleter> sid_string_ptr(sid_string);
+  base::string16 directory_path = base::StringPrintf(
+      L"\\Sessions\\%d\\AppContainerNamedObjects\\%ls", session_id, sid_string);
+
+  NtCreateDirectoryObjectFunction CreateObjectDirectory = nullptr;
+  ResolveNTFunctionPtr("NtCreateDirectoryObject", &CreateObjectDirectory);
+
+  OBJECT_ATTRIBUTES obj_attr;
+  UNICODE_STRING obj_name;
+  DWORD attributes = OBJ_CASE_INSENSITIVE;
+  if (open_directory)
+    attributes |= OBJ_OPENIF;
+
+  sandbox::InitObjectAttribs(directory_path, attributes, nullptr, &obj_attr,
+                             &obj_name, nullptr);
+
+  HANDLE handle = nullptr;
+  NTSTATUS status =
+      CreateObjectDirectory(&handle, DIRECTORY_ALL_ACCESS, &obj_attr);
+
+  if (!NT_SUCCESS(status))
+    return GetLastErrorFromNtStatus(status);
+  directory->Set(handle);
+
+  return ERROR_SUCCESS;
 }
 
 }  // namespace sandbox

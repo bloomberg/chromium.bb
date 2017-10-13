@@ -13,6 +13,8 @@
 #include <vector>
 
 #include "base/win/scoped_handle.h"
+#include "base/win/windows_version.h"
+#include "sandbox/win/src/security_capabilities.h"
 #include "sandbox/win/src/sid.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -60,6 +62,106 @@ void TestDefaultDalc(bool restricted_required) {
   ASSERT_EQ(restricted_required, restricted_found);
   if (!restricted_required)
     ASSERT_FALSE(logon_sid_found);
+}
+
+bool GetVariableTokenInformation(HANDLE token,
+                                 TOKEN_INFORMATION_CLASS information_class,
+                                 std::vector<char>* information) {
+  DWORD return_length;
+  if (!::GetTokenInformation(token, information_class, nullptr, 0,
+                             &return_length)) {
+    if (::GetLastError() != ERROR_INSUFFICIENT_BUFFER) {
+      return false;
+    }
+  }
+
+  information->resize(return_length);
+  return !!::GetTokenInformation(token, information_class, information->data(),
+                                 return_length, &return_length);
+}
+
+bool GetVariableTokenInformation(const base::win::ScopedHandle& token,
+                                 TOKEN_INFORMATION_CLASS information_class,
+                                 std::vector<char>* information) {
+  return GetVariableTokenInformation(token.Get(), information_class,
+                                     information);
+}
+
+void CheckLowBoxToken(const base::win::ScopedHandle& token,
+                      TOKEN_TYPE token_type,
+                      PSECURITY_CAPABILITIES security_capabilities) {
+  DWORD appcontainer;
+  DWORD return_length;
+  ASSERT_TRUE(::GetTokenInformation(token.Get(), ::TokenIsAppContainer,
+                                    &appcontainer, sizeof(appcontainer),
+                                    &return_length));
+  ASSERT_TRUE(appcontainer);
+  TOKEN_TYPE token_type_real;
+  ASSERT_TRUE(::GetTokenInformation(token.Get(), ::TokenType, &token_type_real,
+                                    sizeof(token_type_real), &return_length));
+  ASSERT_EQ(token_type_real, token_type);
+  if (token_type == ::TokenImpersonation) {
+    SECURITY_IMPERSONATION_LEVEL imp_level;
+    ASSERT_TRUE(::GetTokenInformation(token.Get(), ::TokenImpersonationLevel,
+                                      &imp_level, sizeof(imp_level),
+                                      &return_length));
+    ASSERT_EQ(imp_level, ::SecurityImpersonation);
+  }
+
+  std::vector<char> package_sid_buf;
+  ASSERT_TRUE(GetVariableTokenInformation(token, ::TokenAppContainerSid,
+                                          &package_sid_buf));
+  PTOKEN_APPCONTAINER_INFORMATION package_sid =
+      reinterpret_cast<PTOKEN_APPCONTAINER_INFORMATION>(package_sid_buf.data());
+  EXPECT_TRUE(::EqualSid(security_capabilities->AppContainerSid,
+                         package_sid->TokenAppContainer));
+
+  std::vector<char> capabilities_buf;
+  ASSERT_TRUE(GetVariableTokenInformation(token, ::TokenCapabilities,
+                                          &capabilities_buf));
+  PTOKEN_GROUPS capabilities =
+      reinterpret_cast<PTOKEN_GROUPS>(capabilities_buf.data());
+  ASSERT_EQ(capabilities->GroupCount, security_capabilities->CapabilityCount);
+  for (DWORD index = 0; index < capabilities->GroupCount; ++index) {
+    EXPECT_EQ(capabilities->Groups[index].Attributes,
+              security_capabilities->Capabilities[index].Attributes);
+    EXPECT_TRUE(::EqualSid(capabilities->Groups[index].Sid,
+                           security_capabilities->Capabilities[index].Sid));
+  }
+}
+
+// Checks if a sid is in the restricting list of the restricted token.
+// Asserts if it's not the case. If count is a positive number, the number of
+// elements in the restricting sids list has to be equal.
+void CheckRestrictingSid(HANDLE restricted_token, ATL::CSid sid, int count) {
+  std::vector<char> memory;
+  ASSERT_TRUE(GetVariableTokenInformation(restricted_token,
+                                          ::TokenRestrictedSids, &memory));
+  PTOKEN_GROUPS groups = reinterpret_cast<PTOKEN_GROUPS>(memory.data());
+  ATL::CTokenGroups atl_groups(*groups);
+
+  if (count >= 0)
+    ASSERT_EQ(static_cast<unsigned>(count), atl_groups.GetCount());
+
+  ATL::CSid::CSidArray sids;
+  ATL::CAtlArray<DWORD> attributes;
+  atl_groups.GetSidsAndAttributes(&sids, &attributes);
+
+  bool present = false;
+  for (unsigned int i = 0; i < sids.GetCount(); ++i) {
+    if (sids[i] == sid) {
+      present = true;
+      break;
+    }
+  }
+
+  ASSERT_TRUE(present);
+}
+
+void CheckRestrictingSid(const ATL::CAccessToken& restricted_token,
+                         ATL::CSid sid,
+                         int count) {
+  CheckRestrictingSid(restricted_token.GetHandle(), sid, count);
 }
 
 }  // namespace
@@ -441,40 +543,6 @@ TEST(RestrictedTokenTest, DeletePrivilege) {
   }
 }
 
-// Checks if a sid is in the restricting list of the restricted token.
-// Asserts if it's not the case. If count is a positive number, the number of
-// elements in the restricting sids list has to be equal.
-void CheckRestrictingSid(const ATL::CAccessToken& restricted_token,
-                         ATL::CSid sid,
-                         int count) {
-  DWORD length = 8192;
-  BYTE* memory = new BYTE[length];
-  TOKEN_GROUPS* groups = reinterpret_cast<TOKEN_GROUPS*>(memory);
-  ASSERT_TRUE(::GetTokenInformation(restricted_token.GetHandle(),
-                                    TokenRestrictedSids, groups, length,
-                                    &length));
-
-  ATL::CTokenGroups atl_groups(*groups);
-  delete[] memory;
-
-  if (count >= 0)
-    ASSERT_EQ(static_cast<unsigned>(count), atl_groups.GetCount());
-
-  ATL::CSid::CSidArray sids;
-  ATL::CAtlArray<DWORD> attributes;
-  atl_groups.GetSidsAndAttributes(&sids, &attributes);
-
-  bool present = false;
-  for (unsigned int i = 0; i < sids.GetCount(); ++i) {
-    if (sids[i] == sid) {
-      present = true;
-      break;
-    }
-  }
-
-  ASSERT_TRUE(present);
-}
-
 // Tests the method AddRestrictingSid.
 TEST(RestrictedTokenTest, AddRestrictingSid) {
   RestrictedToken token;
@@ -579,16 +647,11 @@ TEST(RestrictedTokenTest, AddMultipleRestrictingSids) {
   ATL::CSid session;
   restricted_token.GetLogonSid(&session);
 
-  DWORD length = 8192;
-  BYTE* memory = new BYTE[length];
-  TOKEN_GROUPS* groups = reinterpret_cast<TOKEN_GROUPS*>(memory);
-  ASSERT_TRUE(::GetTokenInformation(restricted_token.GetHandle(),
-                                    TokenRestrictedSids, groups, length,
-                                    &length));
-
+  std::vector<char> memory;
+  ASSERT_TRUE(GetVariableTokenInformation(restricted_token.GetHandle(),
+                                          ::TokenRestrictedSids, &memory));
+  PTOKEN_GROUPS groups = reinterpret_cast<PTOKEN_GROUPS>(memory.data());
   ATL::CTokenGroups atl_groups(*groups);
-  delete[] memory;
-
   ASSERT_EQ(3u, atl_groups.GetCount());
 }
 
@@ -649,6 +712,73 @@ TEST(RestrictedTokenTest, LockdownDefaultDaclNoLogonSid) {
 
   base::win::ScopedHandle handle;
   ASSERT_EQ(DWORD{ERROR_SUCCESS}, token.GetRestrictedToken(&handle));
+}
+
+TEST(RestrictedTokenTest, LowBoxToken) {
+  if (base::win::GetVersion() < base::win::VERSION_WIN8)
+    return;
+  base::win::ScopedHandle token;
+
+  Sid package_sid = Sid::FromSddlString(L"S-1-15-2-1-2-3-4-5-6-7");
+  SecurityCapabilities caps_no_capabilities(package_sid);
+
+  ASSERT_EQ(DWORD{ERROR_INVALID_PARAMETER},
+            CreateLowBoxToken(nullptr, PRIMARY, &caps_no_capabilities, nullptr,
+                              0, nullptr));
+  ASSERT_EQ(DWORD{ERROR_SUCCESS},
+            CreateLowBoxToken(nullptr, PRIMARY, &caps_no_capabilities, nullptr,
+                              0, &token));
+  ASSERT_TRUE(token.IsValid());
+  CheckLowBoxToken(token, ::TokenPrimary, &caps_no_capabilities);
+
+  ASSERT_EQ(DWORD{ERROR_SUCCESS},
+            CreateLowBoxToken(nullptr, IMPERSONATION, &caps_no_capabilities,
+                              nullptr, 0, &token));
+  ASSERT_TRUE(token.IsValid());
+  CheckLowBoxToken(token, ::TokenImpersonation, &caps_no_capabilities);
+
+  std::vector<Sid> capabilities;
+  capabilities.push_back(Sid::FromKnownCapability(kInternetClient));
+  capabilities.push_back(Sid::FromKnownCapability(kPrivateNetworkClientServer));
+  SecurityCapabilities caps_with_capabilities(package_sid, capabilities);
+  ASSERT_EQ(DWORD{ERROR_SUCCESS},
+            CreateLowBoxToken(nullptr, PRIMARY, &caps_with_capabilities,
+                              nullptr, 0, &token));
+  ASSERT_TRUE(token.IsValid());
+  CheckLowBoxToken(token, ::TokenPrimary, &caps_with_capabilities);
+
+  RestrictedToken restricted_token;
+  base::win::ScopedHandle token_handle;
+  ASSERT_EQ(DWORD{ERROR_SUCCESS}, restricted_token.Init(nullptr));
+  ASSERT_EQ(DWORD{ERROR_SUCCESS},
+            restricted_token.AddRestrictingSid(ATL::Sids::World().GetPSID()));
+  ASSERT_EQ(DWORD{ERROR_SUCCESS},
+            restricted_token.GetRestrictedToken(&token_handle));
+
+  ASSERT_EQ(DWORD{ERROR_SUCCESS},
+            CreateLowBoxToken(token_handle.Get(), PRIMARY,
+                              &caps_with_capabilities, nullptr, 0, &token));
+  ASSERT_TRUE(token.IsValid());
+  CheckLowBoxToken(token, ::TokenPrimary, &caps_with_capabilities);
+  CheckRestrictingSid(token.Get(), ATL::Sids::World(), 1);
+
+  SecurityCapabilities caps_for_handles(
+      Sid::FromSddlString(L"S-1-15-2-1-2-3-4-5-6-8"));
+  base::win::ScopedHandle object_handle;
+  ASSERT_EQ(DWORD{ERROR_SUCCESS},
+            CreateLowBoxObjectDirectory(caps_for_handles.AppContainerSid, true,
+                                        &object_handle));
+  HANDLE saved_handles[] = {object_handle.Get()};
+
+  ASSERT_EQ(DWORD{ERROR_SUCCESS},
+            CreateLowBoxToken(token_handle.Get(), PRIMARY, &caps_for_handles,
+                              saved_handles, 1, &token));
+  ASSERT_TRUE(token.IsValid());
+  object_handle.Close();
+  ASSERT_FALSE(object_handle.IsValid());
+  ASSERT_EQ(DWORD{ERROR_ALREADY_EXISTS},
+            CreateLowBoxObjectDirectory(caps_for_handles.AppContainerSid, false,
+                                        &object_handle));
 }
 
 }  // namespace sandbox
