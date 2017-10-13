@@ -15,8 +15,7 @@ body {
   height: 200.3px;
 }
 </style>
-Tests scroll behavior when an unscrollable scrollbar thumb is dragged by mouse.
-Passes if neither the thumb or the content changes.
+Tests scroll behavior when a subpixel scrollbar thumb is dragged by mouse.
 <div id="container">
   <div id="content"></div>
 </div>
@@ -29,7 +28,8 @@ if (window.eventSender) {
     eventSender.mouseDown();
     eventSender.mouseMoveTo(340, 250);
     eventSender.mouseUp();
-    shouldBe("container.scrollTop", "0");
+
+    shouldBeCloseTo("container.scrollTop", "0.57", 0.02);
   };
 }
 </script>

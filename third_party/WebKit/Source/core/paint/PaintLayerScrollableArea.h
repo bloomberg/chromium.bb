@@ -503,6 +503,9 @@ class CORE_EXPORT PaintLayerScrollableArea final
   void UpdateScrollDimensions();
   void UpdateScrollbarEnabledState();
 
+  // Update the proportions used for thumb rect dimensions.
+  void UpdateScrollbarProportions();
+
   void UpdateScrollOffset(const ScrollOffset&, ScrollType) override;
   void InvalidatePaintForScrollOffsetChange(bool offset_was_zero);
 
