@@ -50,22 +50,32 @@ class JsTranslateManagerTest : public PlatformTest {
   JsTranslateManager* manager_;
 };
 
-// TODO(crbug.com/658619#c47): Test reported as flaky.
-TEST_F(JsTranslateManagerTest, DISABLED_PerformancePlaceholder) {
+// Checks that performance.now() returns "correct" time by comparing time delta
+// to time measured using NSDate. As javascript is executed asynchronously and
+// -sleepForTimeInterval: guarantee to sleep for at least as long as timeout,
+// the time delta measured by using performance.now() should be greater than
+// the timeout and smaller than the time measured in process with NSDate.
+TEST_F(JsTranslateManagerTest, PerformancePlaceholder) {
   [manager_ inject];
   EXPECT_TRUE(IsDefined(@"performance"));
   EXPECT_TRUE(IsDefined(@"performance.now"));
 
-  // Check that performance.now returns correct values.
+  NSDate* startDate = [NSDate date];
   NSTimeInterval intervalInSeconds = 0.3;
-  double startTime = [manager_ performanceNow];
+  const double startTimeInMilliSeconds = [manager_ performanceNow];
   [NSThread sleepForTimeInterval:intervalInSeconds];
-  double endTime = [manager_ performanceNow];
-  double timeElapsed = endTime - startTime;
-  // The tolerance is high to avoid flake.
-  EXPECT_NEAR(timeElapsed, intervalInSeconds * 1000, 100);
+  const double timeElapsedInSecondsMeasuredByPerformanceNow =
+      ([manager_ performanceNow] - startTimeInMilliSeconds) / 1000;
+  const double timeElapsedInSecondsMeasuredByNSDate =
+      [[NSDate date] timeIntervalSinceDate:startDate];
+
+  EXPECT_GE(timeElapsedInSecondsMeasuredByPerformanceNow, intervalInSeconds);
+  EXPECT_LE(timeElapsedInSecondsMeasuredByPerformanceNow,
+            timeElapsedInSecondsMeasuredByNSDate);
 }
 
+// Checks that cr.googleTranslate.libReady is available after the code has
+// been injected in the page.
 TEST_F(JsTranslateManagerTest, Inject) {
   [manager_ inject];
   EXPECT_TRUE([manager_ hasBeenInjected]);
