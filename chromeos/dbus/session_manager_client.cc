@@ -200,7 +200,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
     writer.AppendArrayOfStrings(argv);
     session_manager_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&SessionManagerClientImpl::OnRestartJob,
+        base::BindOnce(&SessionManagerClientImpl::OnVoidMethod,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
@@ -460,18 +460,18 @@ class SessionManagerClientImpl : public SessionManagerClient {
                        weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
-  void StopArcInstance(const ArcCallback& callback) override {
+  void StopArcInstance(VoidDBusMethodCallback callback) override {
     dbus::MethodCall method_call(login_manager::kSessionManagerInterface,
                                  login_manager::kSessionManagerStopArcInstance);
     session_manager_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&SessionManagerClientImpl::OnNoOutputParamResponse,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+        base::BindOnce(&SessionManagerClientImpl::OnVoidMethod,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   void SetArcCpuRestriction(
       login_manager::ContainerCpuRestrictionState restriction_state,
-      const ArcCallback& callback) override {
+      VoidDBusMethodCallback callback) override {
     dbus::MethodCall method_call(
         login_manager::kSessionManagerInterface,
         login_manager::kSessionManagerSetArcCpuRestriction);
@@ -479,20 +479,20 @@ class SessionManagerClientImpl : public SessionManagerClient {
     writer.AppendUint32(restriction_state);
     session_manager_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&SessionManagerClientImpl::OnNoOutputParamResponse,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+        base::BindOnce(&SessionManagerClientImpl::OnVoidMethod,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   void EmitArcBooted(const cryptohome::Identification& cryptohome_id,
-                     const ArcCallback& callback) override {
+                     VoidDBusMethodCallback callback) override {
     dbus::MethodCall method_call(login_manager::kSessionManagerInterface,
                                  login_manager::kSessionManagerEmitArcBooted);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(cryptohome_id.id());
     session_manager_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&SessionManagerClientImpl::OnNoOutputParamResponse,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+        base::BindOnce(&SessionManagerClientImpl::OnVoidMethod,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   void GetArcStartTime(DBusMethodCallback<base::TimeTicks> callback) override {
@@ -507,15 +507,15 @@ class SessionManagerClientImpl : public SessionManagerClient {
   }
 
   void RemoveArcData(const cryptohome::Identification& cryptohome_id,
-                     const ArcCallback& callback) override {
+                     VoidDBusMethodCallback callback) override {
     dbus::MethodCall method_call(login_manager::kSessionManagerInterface,
                                  login_manager::kSessionManagerRemoveArcData);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(cryptohome_id.id());
     session_manager_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&SessionManagerClientImpl::OnNoOutputParamResponse,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+        base::BindOnce(&SessionManagerClientImpl::OnVoidMethod,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
  protected:
@@ -574,6 +574,11 @@ class SessionManagerClientImpl : public SessionManagerClient {
         &method_call,
         dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         dbus::ObjectProxy::EmptyResponseCallback());
+  }
+
+  // Called when the method call without result is completed.
+  void OnVoidMethod(VoidDBusMethodCallback callback, dbus::Response* response) {
+    std::move(callback).Run(response);
   }
 
   // Calls given callback (if non-null), with the |success| boolean
@@ -644,14 +649,6 @@ class SessionManagerClientImpl : public SessionManagerClient {
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&SessionManagerClientImpl::OnNoOutputParamResponse,
                        weak_ptr_factory_.GetWeakPtr(), callback));
-  }
-
-  // Called when kSessionManagerRestartJob method is complete.
-  void OnRestartJob(VoidDBusMethodCallback callback, dbus::Response* response) {
-    LOG_IF(ERROR, !response)
-        << "Failed to call "
-        << login_manager::kSessionManagerRestartJob;
-    std::move(callback).Run(response != nullptr);
   }
 
   // Called when kSessionManagerRetrieveActiveSessions method is complete.
@@ -1089,17 +1086,17 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
 
   void SetArcCpuRestriction(
       login_manager::ContainerCpuRestrictionState restriction_state,
-      const ArcCallback& callback) override {
-    callback.Run(false);
+      VoidDBusMethodCallback callback) override {
+    std::move(callback).Run(false);
   }
 
   void EmitArcBooted(const cryptohome::Identification& cryptohome_id,
-                     const ArcCallback& callback) override {
-    callback.Run(false);
+                     VoidDBusMethodCallback callback) override {
+    std::move(callback).Run(false);
   }
 
-  void StopArcInstance(const ArcCallback& callback) override {
-    callback.Run(false);
+  void StopArcInstance(VoidDBusMethodCallback callback) override {
+    std::move(callback).Run(false);
   }
 
   void GetArcStartTime(DBusMethodCallback<base::TimeTicks> callback) override {
@@ -1107,11 +1104,9 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
   }
 
   void RemoveArcData(const cryptohome::Identification& cryptohome_id,
-                     const ArcCallback& callback) override {
-    if (callback.is_null())
-      return;
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  base::Bind(callback, false));
+                     VoidDBusMethodCallback callback) override {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), false));
   }
 
  private:
