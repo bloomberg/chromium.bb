@@ -319,6 +319,7 @@
       'Linux Builder': 'release_bot',
       'Deterministic Linux': 'release_bot',
       'Fuchsia Compile': 'release_bot_fuchsia',
+      'Fuchsia ARM64': 'release_bot_fuchsia_arm64',
     },
 
     'chromium.lkgr': {
@@ -567,6 +568,7 @@
       'chromium_presubmit': 'presubmit',
       'closure_compilation': 'closure_compilation',
       'fuchsia': 'release_trybot_fuchsia',
+      'fuchsia_arm64': 'release_trybot_fuchsia_arm64',
       'fuchsia_compile': 'release_trybot_fuchsia',
       # TODO(kjellander): Remove linux_arm after tryserver restart.
       'linux_arm': 'release_trybot_arm',
@@ -1500,6 +1502,10 @@
       'release_bot', 'fuchsia',
     ],
 
+    'release_bot_fuchsia_arm64': [
+      'release_bot', 'fuchsia', 'arm64',
+    ],
+
     'release_bot_mac_new_sdk': [
       'release_bot', 'mac_new_sdk',
     ],
@@ -1556,6 +1562,10 @@
 
     'release_trybot_fuchsia': [
       'release_trybot', 'fuchsia',
+    ],
+
+    'release_trybot_fuchsia_arm64': [
+      'release_trybot', 'fuchsia', 'arm64',
     ],
 
     'release_trybot_x86': [
