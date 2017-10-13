@@ -22,7 +22,8 @@ class AwMetricsLogUploader : public ::metrics::MetricsLogUploader {
 
   // ::metrics::MetricsLogUploader:
   void UploadLog(const std::string& compressed_log_data,
-                 const std::string& log_hash) override;
+                 const std::string& log_hash,
+                 const metrics::ReportingInfo& reporting_info) override;
 
  private:
   const metrics::MetricsLogUploader::UploadCallback on_upload_complete_;

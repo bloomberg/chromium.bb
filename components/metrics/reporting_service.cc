@@ -113,8 +113,10 @@ void ReportingService::SendNextLog() {
     upload_scheduler_->UploadFinished(true);
     return;
   }
-  if (!log_store()->has_staged_log())
+  if (!log_store()->has_staged_log()) {
+    reporting_info_.set_attempt_count(0);
     log_store()->StageNextLog();
+  }
 
   // Proceed to stage the log for upload if log size satisfies cellular log
   // upload constrains.
@@ -149,10 +151,12 @@ void ReportingService::SendStagedLog() {
                    self_ptr_factory_.GetWeakPtr()));
   }
 
+  reporting_info_.set_attempt_count(reporting_info_.attempt_count() + 1);
+
   const std::string hash =
       base::HexEncode(log_store()->staged_log_hash().data(),
                       log_store()->staged_log_hash().size());
-  log_uploader_->UploadLog(log_store()->staged_log(), hash);
+  log_uploader_->UploadLog(log_store()->staged_log(), hash, reporting_info_);
 }
 
 void ReportingService::OnLogUploadComplete(int response_code, int error_code) {
@@ -160,6 +164,8 @@ void ReportingService::OnLogUploadComplete(int response_code, int error_code) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(log_upload_in_progress_);
   log_upload_in_progress_ = false;
+
+  reporting_info_.set_last_response_code(response_code);
 
   // Log a histogram to track response success vs. failure rates.
   LogResponseOrErrorCode(response_code, error_code);
