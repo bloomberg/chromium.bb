@@ -61,8 +61,8 @@
     "isolated_scripts": [
       {
         "args": [
-          "--bot", "build13-b1--device2",
-          "--builder", "Android Nexus5 Perf",
+          "--bot", "swarm823-c4",
+          "--builder", "One Buildbot Step Test Builder",
           "-v",
           "--output-format=histograms",
           "--output-format=json-test-results",

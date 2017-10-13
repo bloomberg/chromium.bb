@@ -60,9 +60,9 @@
       {
         "args": [
           "--bot",
-          "build13-b1--device2",
+          "swarm823-c4",
           "--builder",
-          "Android Nexus5 Perf",
+          "One Buildbot Step Test Builder",
           "-v",
           "--output-format=histograms",
           "--output-format=json-test-results",
