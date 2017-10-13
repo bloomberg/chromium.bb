@@ -22,6 +22,8 @@ class GraphProcessor {
           process_dumps);
 
  private:
+  friend class GraphProcessorTest;
+
   static void CollectAllocatorDumps(
       const base::trace_event::ProcessMemoryDump& source,
       GlobalDumpGraph* global_graph,
@@ -29,6 +31,8 @@ class GraphProcessor {
 
   static void AddEdges(const base::trace_event::ProcessMemoryDump& source,
                        GlobalDumpGraph* global_graph);
+
+  static void MarkImplicitWeakParentsRecursively(GlobalDumpGraph::Node* node);
 };
 
 }  // namespace memory_instrumentation

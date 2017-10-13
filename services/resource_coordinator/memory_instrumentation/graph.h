@@ -109,8 +109,9 @@ class GlobalDumpGraph {
     bool is_explicit() const { return explicit_; }
     void set_explicit(bool explicit_node) { explicit_ = explicit_node; }
     GlobalDumpGraph::Edge* owns_edge() const { return owns_edge_; }
-    const std::vector<GlobalDumpGraph::Edge*>& owned_by_edges() const {
-      return owned_by_edges_;
+    std::map<std::string, Node*>* children() { return &children_; }
+    std::vector<GlobalDumpGraph::Edge*>* owned_by_edges() {
+      return &owned_by_edges_;
     }
     const Node* parent() const { return parent_; }
     const GlobalDumpGraph::Process* dump_graph() const { return dump_graph_; }

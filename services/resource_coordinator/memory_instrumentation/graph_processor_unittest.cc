@@ -15,8 +15,18 @@ using base::trace_event::MemoryAllocatorDumpGuid;
 using base::trace_event::MemoryDumpArgs;
 using base::trace_event::MemoryDumpLevelOfDetail;
 using base::trace_event::ProcessMemoryDump;
+using Node = GlobalDumpGraph::Node;
 
-TEST(GraphProcessorTest, ComputeMemoryGraph) {
+class GraphProcessorTest : public testing::Test {
+ public:
+  GraphProcessorTest() {}
+
+  void MarkImplicitWeakParentsRecursively(Node* node) {
+    GraphProcessor::MarkImplicitWeakParentsRecursively(node);
+  }
+};
+
+TEST_F(GraphProcessorTest, ComputeMemoryGraph) {
   std::map<ProcessId, ProcessMemoryDump> process_dumps;
 
   MemoryDumpArgs dump_args = {MemoryDumpLevelOfDetail::DETAILED};
@@ -68,6 +78,79 @@ TEST(GraphProcessorTest, ComputeMemoryGraph) {
   ASSERT_EQ(edge_it->source(), direct);
   ASSERT_EQ(edge_it->target(), id_to_dump_it->second->FindNode("target"));
   ASSERT_EQ(edge_it->priority(), 10);
+}
+
+TEST_F(GraphProcessorTest, MarkWeakParentsSimple) {
+  GlobalDumpGraph graph;
+  Node parent(graph.shared_memory_graph(), nullptr);
+  Node first(graph.shared_memory_graph(), &parent);
+  Node second(graph.shared_memory_graph(), &parent);
+
+  parent.InsertChild("first", &first);
+  parent.InsertChild("second", &second);
+
+  // Case where one child is not weak.
+  parent.set_explicit(false);
+  parent.set_weak(false);
+  first.set_explicit(true);
+  first.set_weak(true);
+  second.set_explicit(true);
+  second.set_weak(false);
+
+  // The function should be a no-op.
+  MarkImplicitWeakParentsRecursively(&parent);
+  ASSERT_FALSE(parent.is_weak());
+  ASSERT_TRUE(first.is_weak());
+  ASSERT_FALSE(second.is_weak());
+
+  // Case where all children is weak.
+  second.set_weak(true);
+
+  // The function should mark parent as weak.
+  MarkImplicitWeakParentsRecursively(&parent);
+  ASSERT_TRUE(parent.is_weak());
+  ASSERT_TRUE(first.is_weak());
+  ASSERT_TRUE(second.is_weak());
+}
+
+TEST_F(GraphProcessorTest, MarkWeakParentsComplex) {
+  GlobalDumpGraph graph;
+  Node parent(graph.shared_memory_graph(), nullptr);
+  Node first(graph.shared_memory_graph(), &parent);
+  Node first_child(graph.shared_memory_graph(), &first);
+  Node first_grandchild(graph.shared_memory_graph(), &first_child);
+
+  parent.InsertChild("first", &first);
+  first.InsertChild("child", &first_child);
+  first_child.InsertChild("child", &first_grandchild);
+
+  // |first| is explicitly storng but |first_child| is implicitly so.
+  parent.set_explicit(false);
+  parent.set_weak(false);
+  first.set_explicit(true);
+  first.set_weak(false);
+  first_child.set_explicit(false);
+  first_child.set_weak(false);
+  first_grandchild.set_weak(true);
+  first_grandchild.set_explicit(true);
+
+  // That should lead to |first_child| marked implicitly weak.
+  MarkImplicitWeakParentsRecursively(&parent);
+  ASSERT_FALSE(parent.is_weak());
+  ASSERT_FALSE(first.is_weak());
+  ASSERT_TRUE(first_child.is_weak());
+  ASSERT_TRUE(first_grandchild.is_weak());
+
+  // Reset and change so that first is now only implicitly strong.
+  first.set_explicit(false);
+  first_child.set_weak(false);
+
+  // The whole chain should now be weak.
+  MarkImplicitWeakParentsRecursively(&parent);
+  ASSERT_TRUE(parent.is_weak());
+  ASSERT_TRUE(first.is_weak());
+  ASSERT_TRUE(first_child.is_weak());
+  ASSERT_TRUE(first_grandchild.is_weak());
 }
 
 }  // namespace memory_instrumentation
