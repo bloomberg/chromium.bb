@@ -338,7 +338,6 @@ CGFloat LineWidthFromContext(CGContextRef context) {
 
   NSImage* newTabButtonImage =
       [[[NSImage alloc] initWithSize:newTabButtonImageSize] autorelease];
-  [newTabButtonImage setCacheMode:NSImageCacheAlways];
   [newTabButtonImage addRepresentation:imageRep];
 
   return newTabButtonImage;
