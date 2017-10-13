@@ -204,5 +204,6 @@
     <color name="media_viewer_bg">#000000</color>
     <color name="image_viewer_bg">#0e0e0e</color>
     <color name="modern_toolbar_bg">#E6FFFFFF</color>
+    <color name="google_blue_500_alpha_38_opaque">#B7D1FB</color>
 
 </resources>
