@@ -12,6 +12,8 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/strings/stringprintf.h"
+#include "ui/aura/window_tree_host.h"
+#include "ui/compositor/test/draw_waiter_for_test.h"
 #include "ui/events/test/event_generator.h"
 
 namespace ash {
@@ -35,6 +37,13 @@ class HighlighterControllerTest : public AshTestBase {
     AshTestBase::TearDown();
   }
 
+  void UpdateDisplayAndWaitForCompositingEnded(
+      const std::string& display_specs) {
+    UpdateDisplay(display_specs);
+    ui::DrawWaiterForTest::WaitForCompositingEnded(
+        Shell::GetPrimaryRootWindow()->GetHost()->compositor());
+  }
+
  protected:
   void TraceRect(const gfx::Rect& rect) {
     GetEventGenerator().MoveTouch(gfx::Point(rect.x(), rect.y()));
@@ -44,6 +53,11 @@ class HighlighterControllerTest : public AshTestBase {
     GetEventGenerator().MoveTouch(gfx::Point(rect.x(), rect.bottom()));
     GetEventGenerator().MoveTouch(gfx::Point(rect.x(), rect.y()));
     GetEventGenerator().ReleaseTouch();
+
+    // The the events above will trigger a frame, so wait until a new
+    // CompositorFrame is generated before terminating.
+    ui::DrawWaiterForTest::WaitForCompositingEnded(
+        Shell::GetPrimaryRootWindow()->GetHost()->compositor());
   }
 
   std::unique_ptr<HighlighterControllerTestApi> controller_test_api_;
@@ -240,7 +254,7 @@ TEST_F(HighlighterControllerTest, HighlighterGesturesScaled) {
       std::string display_spec =
           base::StringPrintf("1500x1000*%.2f@%.2f", display_scale, ui_scale);
       SCOPED_TRACE(display_spec);
-      UpdateDisplay(display_spec);
+      UpdateDisplayAndWaitForCompositingEnded(display_spec);
 
       controller_test_api_->ResetSelection();
       TraceRect(original_rect);
@@ -261,28 +275,28 @@ TEST_F(HighlighterControllerTest, HighlighterGesturesRotated) {
   const gfx::Rect trace(200, 100, 400, 300);
 
   // No rotation
-  UpdateDisplay("1500x1000");
+  UpdateDisplayAndWaitForCompositingEnded("1500x1000");
   controller_test_api_->ResetSelection();
   TraceRect(trace);
   EXPECT_TRUE(controller_test_api_->HandleSelectionCalled());
   EXPECT_EQ("200,100 400x300", controller_test_api_->selection().ToString());
 
   // Rotate to 90 degrees
-  UpdateDisplay("1500x1000/r");
+  UpdateDisplayAndWaitForCompositingEnded("1500x1000/r");
   controller_test_api_->ResetSelection();
   TraceRect(trace);
   EXPECT_TRUE(controller_test_api_->HandleSelectionCalled());
   EXPECT_EQ("100,900 300x400", controller_test_api_->selection().ToString());
 
   // Rotate to 180 degrees
-  UpdateDisplay("1500x1000/u");
+  UpdateDisplayAndWaitForCompositingEnded("1500x1000/u");
   controller_test_api_->ResetSelection();
   TraceRect(trace);
   EXPECT_TRUE(controller_test_api_->HandleSelectionCalled());
   EXPECT_EQ("900,600 400x300", controller_test_api_->selection().ToString());
 
   // Rotate to 270 degrees
-  UpdateDisplay("1500x1000/l");
+  UpdateDisplayAndWaitForCompositingEnded("1500x1000/l");
   controller_test_api_->ResetSelection();
   TraceRect(trace);
   EXPECT_TRUE(controller_test_api_->HandleSelectionCalled());
@@ -295,7 +309,7 @@ TEST_F(HighlighterControllerTest, InterruptedStroke) {
   controller_test_api_->SetEnabled(true);
   GetEventGenerator().EnterPenPointerMode();
 
-  UpdateDisplay("1500x1000");
+  UpdateDisplayAndWaitForCompositingEnded("1500x1000");
 
   // An interrupted stroke close to the screen edge should be recognized as a
   // contiguous stroke.
@@ -344,7 +358,7 @@ TEST_F(HighlighterControllerTest, SelectionInsideScreen) {
     std::string display_spec =
         base::StringPrintf("1000x1000*%.2f", display_scales[i]);
     SCOPED_TRACE(display_spec);
-    UpdateDisplay(display_spec);
+    UpdateDisplayAndWaitForCompositingEnded(display_spec);
 
     const gfx::Rect screen(0, 0, 1000, 1000);
 
@@ -418,7 +432,7 @@ TEST_F(HighlighterControllerTest, DetachedClient) {
   controller_test_api_->SetEnabled(true);
   GetEventGenerator().EnterPenPointerMode();
 
-  UpdateDisplay("1500x1000");
+  UpdateDisplayAndWaitForCompositingEnded("1500x1000");
   const gfx::Rect trace(200, 100, 400, 300);
 
   // Detach the client, no notifications should reach it.

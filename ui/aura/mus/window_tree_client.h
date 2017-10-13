@@ -33,7 +33,6 @@
 #include "ui/aura/mus/window_manager_delegate.h"
 #include "ui/aura/mus/window_tree_host_mus_delegate.h"
 #include "ui/base/ui_base_types.h"
-#include "ui/compositor/compositor_observer.h"
 
 namespace base {
 class Thread;
@@ -97,8 +96,7 @@ class AURA_EXPORT WindowTreeClient
       public DragDropControllerHost,
       public WindowManagerClient,
       public WindowTreeHostMusDelegate,
-      public client::TransientWindowClientObserver,
-      public ui::CompositorObserver {
+      public client::TransientWindowClientObserver {
  public:
   // |create_discardable_memory| If it is true, WindowTreeClient will setup the
   // dicardable shared memory manager for this process. In some test, more than
@@ -581,14 +579,6 @@ class AURA_EXPORT WindowTreeClient
   // Overrided from FocusSynchronizerDelegate:
   uint32_t CreateChangeIdForFocus(WindowMus* window) override;
 
-  // Overrided from CompositorObserver:
-  void OnCompositingDidCommit(ui::Compositor* compositor) override;
-  void OnCompositingStarted(ui::Compositor* compositor,
-                            base::TimeTicks start_time) override;
-  void OnCompositingEnded(ui::Compositor* compositor) override;
-  void OnCompositingLockStateChanged(ui::Compositor* compositor) override;
-  void OnCompositingShuttingDown(ui::Compositor* compositor) override;
-
   // The one int in |cursor_location_mapping_|. When we read from this
   // location, we must always read from it atomically.
   base::subtle::Atomic32* cursor_location_memory() {
@@ -679,12 +669,6 @@ class AURA_EXPORT WindowTreeClient
 
   // Set to true once OnWmDisplayAdded() is called.
   bool got_initial_displays_ = false;
-
-  // Set to true if the next CompositorFrame will block on a new child surface.
-  bool synchronizing_with_child_on_next_frame_ = false;
-
-  // Set to true if this WindowTreeClient is currently holding pointer moves.
-  bool holding_pointer_moves_ = false;
 
   gfx::Insets normal_client_area_insets_;
 
