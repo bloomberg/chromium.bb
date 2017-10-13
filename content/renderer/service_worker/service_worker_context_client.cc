@@ -324,8 +324,8 @@ struct ServiceWorkerContextClient::WorkerContextData {
       base::IDMap<std::unique_ptr<DispatchPushEventCallback>>;
   using ExtendableMessageEventCallbacksMap =
       base::IDMap<std::unique_ptr<DispatchExtendableMessageEventCallback>>;
-  using NavigationPreloadRequestsMap = base::IDMap<
-      std::unique_ptr<ServiceWorkerContextClient::NavigationPreloadRequest>>;
+  using NavigationPreloadRequestsMap =
+      base::IDMap<std::unique_ptr<NavigationPreloadRequest>>;
   using InstallEventMethodsMap =
       std::map<int, mojom::ServiceWorkerInstallEventMethodsAssociatedPtr>;
 
@@ -412,7 +412,10 @@ struct ServiceWorkerContextClient::WorkerContextData {
   PushEventCallbacksMap push_event_callbacks;
 
   // Pending callbacks for Fetch Events.
-  std::map<int /* fetch_event_id */, DispatchFetchEventCallback>
+  // We use IDMap for minting an id for the event, which is used in
+  // other places too like |fetch_response_callbacks| and
+  // |NavigationPreloadRequest|.
+  base::IDMap<std::unique_ptr<DispatchFetchEventCallback>>
       fetch_event_callbacks;
 
   // Pending callbacks for respondWith on each fetch event.
@@ -740,9 +743,9 @@ void ServiceWorkerContextClient::WorkerContextStarted(
   DCHECK(!worker_task_runner_.get());
   DCHECK_NE(0, WorkerThread::GetCurrentId());
   worker_task_runner_ = base::ThreadTaskRunnerHandle::Get();
-  // g_worker_client_tls.Pointer()->Get() could return NULL if this context
+  // g_worker_client_tls.Pointer()->Get() could return nullptr if this context
   // gets deleted before workerContextStarted() is called.
-  DCHECK(g_worker_client_tls.Pointer()->Get() == NULL);
+  DCHECK(g_worker_client_tls.Pointer()->Get() == nullptr);
   DCHECK(!proxy_);
   g_worker_client_tls.Pointer()->Set(this);
   proxy_ = proxy;
@@ -803,7 +806,7 @@ void ServiceWorkerContextClient::WillDestroyWorkerContext(
   // At this point WillStopCurrentWorkerThread is already called, so
   // worker_task_runner_->RunsTasksInCurrentSequence() returns false
   // (while we're still on the worker thread).
-  proxy_ = NULL;
+  proxy_ = nullptr;
 
   blob_registry_.reset();
 
@@ -818,14 +821,7 @@ void ServiceWorkerContextClient::WillDestroyWorkerContext(
   AbortPendingEventCallbacks(context_->notification_click_event_callbacks);
   AbortPendingEventCallbacks(context_->notification_close_event_callbacks);
   AbortPendingEventCallbacks(context_->push_event_callbacks);
-  // For some reason |fetch_event_callbacks| uses std::map while others use
-  // base::IDMap.
-  // TODO(falken): Make this consistent.
-  for (auto& item : context_->fetch_event_callbacks) {
-    std::move(item.second)
-        .Run(blink::mojom::ServiceWorkerEventStatus::ABORTED,
-             base::Time::Now());
-  }
+  AbortPendingEventCallbacks(context_->fetch_event_callbacks);
   AbortPendingEventCallbacks(context_->message_event_callbacks);
 
   // We have to clear callbacks now, as they need to be freed on the
@@ -834,14 +830,14 @@ void ServiceWorkerContextClient::WillDestroyWorkerContext(
 
   // This also lets the message filter stop dispatching messages to
   // this client.
-  g_worker_client_tls.Pointer()->Set(NULL);
+  g_worker_client_tls.Pointer()->Set(nullptr);
 
   GetContentClient()->renderer()->WillDestroyServiceWorkerContextOnWorkerThread(
       context, service_worker_version_id_, service_worker_scope_, script_url_);
 }
 
 void ServiceWorkerContextClient::WorkerContextDestroyed() {
-  DCHECK(g_worker_client_tls.Pointer()->Get() == NULL);
+  DCHECK(g_worker_client_tls.Pointer()->Get() == nullptr);
 
   // TODO(shimazu): The signals to the browser should be in the order:
   // (1) WorkerStopped (via mojo call EmbeddedWorkerInstanceHost.OnStopped())
@@ -1082,11 +1078,14 @@ void ServiceWorkerContextClient::DidHandleFetchEvent(
   TRACE_EVENT1("ServiceWorker",
                "ServiceWorkerContextClient::DidHandleFetchEvent", "event_id",
                fetch_event_id);
-  DispatchFetchEventCallback callback =
-      std::move(context_->fetch_event_callbacks[fetch_event_id]);
+  DispatchFetchEventCallback* callback =
+      context_->fetch_event_callbacks.Lookup(fetch_event_id);
   DCHECK(callback);
-  std::move(callback).Run(status, base::Time::FromDoubleT(event_dispatch_time));
-  context_->fetch_event_callbacks.erase(fetch_event_id);
+  DCHECK(*callback);
+  std::move(*callback).Run(status,
+                           base::Time::FromDoubleT(event_dispatch_time));
+
+  context_->fetch_event_callbacks.Remove(fetch_event_id);
 }
 
 void ServiceWorkerContextClient::DidHandleNotificationClickEvent(
@@ -1533,34 +1532,37 @@ void ServiceWorkerContextClient::DispatchExtendableMessageEvent(
 }
 
 void ServiceWorkerContextClient::DispatchFetchEvent(
-    int fetch_event_id,
     const ServiceWorkerFetchRequest& request,
     mojom::FetchEventPreloadHandlePtr preload_handle,
     mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
     DispatchFetchEventCallback callback) {
+  // Register callbacks for notifying about event completion and the response.
+  int fetch_event_id = context_->fetch_event_callbacks.Add(
+      base::MakeUnique<DispatchFetchEventCallback>(std::move(callback)));
+  context_->fetch_response_callbacks.insert(
+      std::make_pair(fetch_event_id, std::move(response_callback)));
+
   // This TRACE_EVENT is used for perf benchmark to confirm if all of fetch
   // events have completed. (crbug.com/736697)
   TRACE_EVENT1("ServiceWorker",
                "ServiceWorkerContextClient::DispatchFetchEvent", "event_id",
                fetch_event_id);
+
+  // Set up for navigation preload (FetchEvent#preloadResponse) if needed.
   std::unique_ptr<NavigationPreloadRequest> preload_request =
       preload_handle
           ? base::MakeUnique<NavigationPreloadRequest>(
                 fetch_event_id, request.url, std::move(preload_handle))
           : nullptr;
   const bool navigation_preload_sent = !!preload_request;
-  context_->fetch_response_callbacks.insert(
-      std::make_pair(fetch_event_id, std::move(response_callback)));
-  context_->fetch_event_callbacks.insert(
-      std::make_pair(fetch_event_id, std::move(callback)));
   if (preload_request) {
     context_->preload_requests.AddWithID(std::move(preload_request),
                                          fetch_event_id);
   }
 
+  // Dispatch the event to the service worker execution context.
   blink::WebServiceWorkerRequest web_request;
   ToWebServiceWorkerRequest(request, &web_request);
-
   if (request.fetch_type == ServiceWorkerFetchType::FOREIGN_FETCH) {
     proxy_->DispatchForeignFetchEvent(fetch_event_id, web_request);
   } else {

@@ -184,7 +184,7 @@ void BrowserSideControllerServiceWorker::DispatchFetchEventInternal(
   response_callback_rawptr->set_fetch_event_id(fetch_event_id);
 
   receiver_version_->event_dispatcher()->DispatchFetchEvent(
-      fetch_event_id, request, nullptr /* preload_handle */,
+      request, nullptr /* preload_handle */,
       std::move(mojo_response_callback_ptr),
       base::BindOnce(&BrowserSideControllerServiceWorker::DidDispatchFetchEvent,
                      weak_factory_.GetWeakPtr(), internal_fetch_event_id,

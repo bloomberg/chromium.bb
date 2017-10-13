@@ -283,7 +283,6 @@ class Helper : public EmbeddedWorkerTestHelper {
  protected:
   void OnFetchEvent(
       int embedded_worker_id,
-      int fetch_event_id,
       const ServiceWorkerFetchRequest& request,
       mojom::FetchEventPreloadHandlePtr preload_handle,
       mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
@@ -293,9 +292,8 @@ class Helper : public EmbeddedWorkerTestHelper {
     switch (response_mode_) {
       case ResponseMode::kDefault:
         EmbeddedWorkerTestHelper::OnFetchEvent(
-            embedded_worker_id, fetch_event_id, request,
-            std::move(preload_handle), std::move(response_callback),
-            std::move(finish_callback));
+            embedded_worker_id, request, std::move(preload_handle),
+            std::move(response_callback), std::move(finish_callback));
         return;
       case ResponseMode::kBlob:
         response_callback->OnResponse(
