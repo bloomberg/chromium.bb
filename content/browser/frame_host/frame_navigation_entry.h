@@ -38,6 +38,8 @@ class CONTENT_EXPORT FrameNavigationEntry
                        scoped_refptr<SiteInstanceImpl> source_site_instance,
                        const GURL& url,
                        const Referrer& referrer,
+                       const std::vector<GURL>& redirect_chain,
+                       const PageState& page_state,
                        const std::string& method,
                        int64_t post_id);
 

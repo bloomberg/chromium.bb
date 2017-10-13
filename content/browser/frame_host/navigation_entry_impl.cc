@@ -43,14 +43,6 @@ void RecursivelyGenerateFrameEntries(
     const ExplodedFrameState& state,
     const std::vector<base::Optional<base::string16>>& referenced_files,
     NavigationEntryImpl::TreeNode* node) {
-  node->frame_entry = new FrameNavigationEntry(
-      UTF16ToUTF8(state.target.value_or(base::string16())),
-      state.item_sequence_number, state.document_sequence_number, nullptr,
-      nullptr, GURL(state.url_string.value_or(base::string16())),
-      Referrer(GURL(state.referrer.value_or(base::string16())),
-               state.referrer_policy),
-      "GET", -1);
-
   // Set a single-frame PageState on the entry.
   ExplodedPageState page_state;
 
@@ -66,7 +58,14 @@ void RecursivelyGenerateFrameEntries(
   std::string data;
   EncodePageState(page_state, &data);
   DCHECK(!data.empty()) << "Shouldn't generate an empty PageState.";
-  node->frame_entry->SetPageState(PageState::CreateFromEncodedData(data));
+
+  node->frame_entry = new FrameNavigationEntry(
+      UTF16ToUTF8(state.target.value_or(base::string16())),
+      state.item_sequence_number, state.document_sequence_number, nullptr,
+      nullptr, GURL(state.url_string.value_or(base::string16())),
+      Referrer(GURL(state.referrer.value_or(base::string16())),
+               state.referrer_policy),
+      std::vector<GURL>(), PageState::CreateFromEncodedData(data), "GET", -1);
 
   // Don't pass the file list to subframes, since that would result in multiple
   // copies of it ending up in the combined list in GetPageState (via
@@ -252,6 +251,8 @@ NavigationEntryImpl::NavigationEntryImpl(
                                                         nullptr,
                                                         url,
                                                         referrer,
+                                                        std::vector<GURL>(),
+                                                        PageState(),
                                                         "GET",
                                                         -1))),
       unique_id_(GetUniqueIDInConstructor()),
@@ -859,10 +860,8 @@ void NavigationEntryImpl::AddOrUpdateFrameEntry(
   // or unique name.
   FrameNavigationEntry* frame_entry = new FrameNavigationEntry(
       unique_name, item_sequence_number, document_sequence_number,
-      site_instance, std::move(source_site_instance), url, referrer, method,
-      post_id);
-  frame_entry->SetPageState(page_state);
-  frame_entry->set_redirect_chain(redirect_chain);
+      site_instance, std::move(source_site_instance), url, referrer,
+      redirect_chain, page_state, method, post_id);
   parent_node->children.push_back(
       base::MakeUnique<NavigationEntryImpl::TreeNode>(parent_node,
                                                       frame_entry));
