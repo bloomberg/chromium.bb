@@ -152,6 +152,11 @@ def GenerateAlertStage(build, stage, exceptions, aborted,
                                        constants.BUILDER_STATUS_WAITING])
   NO_LOG_RETRY_STATUSES = frozenset([constants.BUILDER_STATUS_INFLIGHT,
                                      constants.BUILDER_STATUS_ABORTED])
+  # IGNORE_EXCEPTIONS should be ignored if they're the only exception.
+  IGNORE_EXCEPTIONS = frozenset(['ImportantBuilderFailedException'])
+  # ABORTED_DISREGARD_EXCEPTIONS should cause any failures of aborted stages
+  # to be entirely disregarded.
+  ABORTED_DISREGARD_EXCEPTIONS = frozenset(['_ShutDownException'])
   if (stage['build_id'] != build['id'] or
       stage['status'] in STAGE_IGNORE_STATUSES):
     return None
@@ -225,13 +230,25 @@ def GenerateAlertStage(build, stage, exceptions, aborted,
     del stage_links[MAX_STAGE_LINKS:]
 
   # Add all exceptions recording in CIDB as notes.
+  has_other_exceptions = False
+  has_ignore_exception = False
   for e in exceptions:
     if e.build_stage_id == stage['id']:
       notes.append('%s: %s' % (e.exception_type, e.exception_message))
-      # If the build was aborted and a stage failed because of a shutdown
-      # exception, don't generate an alert.
-      if aborted and e.exception_type == '_ShutDownException':
+      if aborted and e.exception_type in ABORTED_DISREGARD_EXCEPTIONS:
+        # Don't generate alert if the exception indicates it should be
+        # entirely disregarded.
         return None
+      elif e.exception_type in IGNORE_EXCEPTIONS:
+        # Ignore this exception (and stage if there aren't other exceptions).
+        has_ignore_exception = True
+        continue
+      has_other_exceptions = True
+
+  # If there is an ignored exception and no other exceptions, treat this
+  # stage as non-failed.
+  if has_ignore_exception and not has_other_exceptions:
+    return None
 
   # Add the stage to the alert.
   return som.CrosStageFailure(stage['name'],
@@ -351,14 +368,14 @@ def SummarizeStatuses(statuses):
                    for h in frequencies), frequencies
 
 
-def GenerateBuildAlert(build, slave_stages, exceptions, messages, annotations,
+def GenerateBuildAlert(build, stages, exceptions, messages, annotations,
                        siblings, severity, now, db,
                        logdog_client, milo_client, allow_experimental=False):
   """Generate an alert for a single build.
 
   Args:
     build: Dictionary of build details from CIDB.
-    slave_stages: A list of dictionaries of stage details from CIDB.
+    stages: A list of dictionaries of stage details from CIDB.
     exceptions: A list of instances of failure_message_lib.StageFailure.
     messages: A list of build message dictionaries from CIDB.
     annotations: A list of dictionaries of build annotations from CIDB.
@@ -378,6 +395,9 @@ def GenerateBuildAlert(build, slave_stages, exceptions, messages, annotations,
                                            constants.BUILDER_STATUS_ABORTED])
   if ((not allow_experimental and not build['important']) or
       build['status'] in BUILD_IGNORE_STATUSES):
+    logging.debug('  %s:%d (id %d) skipped important %s status %s',
+                  build['builder_name'], build['build_number'], build['id'],
+                  build['important'], build['status'])
     return None
 
   # Record any relevant build messages, keeping track if it was aborted.
@@ -449,14 +469,16 @@ def GenerateBuildAlert(build, slave_stages, exceptions, messages, annotations,
     buildinfo = None
 
   # Highlight the problematic stages.
-  stages = []
-  for stage in slave_stages:
+  alert_stages = []
+  for stage in stages:
     alert_stage = GenerateAlertStage(build, stage, exceptions, aborted,
                                      buildinfo, logdog_client)
     if alert_stage:
-      stages.append(alert_stage)
+      alert_stages.append(alert_stage)
 
-  if aborted and len(stages) == 0:
+  if (aborted or build['master_build_id'] is None) and len(alert_stages) == 0:
+    logging.debug('  %s:%d (id %d) skipped aborted and no stages',
+                  build['builder_name'], build['build_number'], build['id'])
     return None
 
   # Add the alert to the summary.
@@ -468,7 +490,7 @@ def GenerateBuildAlert(build, slave_stages, exceptions, messages, annotations,
   return som.Alert(key, alert_name, alert_name, int(severity),
                    ToEpoch(now), ToEpoch(build['finish_time'] or now),
                    links, [], 'cros-failure',
-                   som.CrosBuildFailure(notes, stages, builders))
+                   som.CrosBuildFailure(notes, alert_stages, builders))
 
 
 def GenerateAlertsSummary(db, builds=None,
@@ -516,28 +538,26 @@ def GenerateAlertsSummary(db, builds=None,
       logging.error('Invalid build tuple: %s' % str(build_tuple))
       continue
 
-    # Find any slave builds, and the individual slave stages.
-    statuses = db.GetSlaveStatuses(master['id'])
+    statuses = [master]
+    stages = db.GetBuildStages(master['id'])
+    exceptions = db.GetBuildsFailures([master['id']])
     messages = db.GetBuildMessages(master['id'])
-    if len(statuses):
-      stages = db.GetSlaveStages(master['id'])
-      exceptions = db.GetSlaveFailures(master['id'])
-      annotations = db.GetAnnotationsForBuilds(
-          [master['id']]).get(master['id'], [])
-      logging.info(('%s %s (id %d): %d slaves, %d slave stages, '
-                    '%d messages, %d annotations'),
-                   wfall, build_config, master['id'],
-                   len(statuses), len(stages), len(messages),
-                   len(annotations))
-    else:
-      # Didn't find any slaves, so treat as a singular build.
-      statuses = [master]
-      stages = db.GetBuildStages(master['id'])
-      exceptions = db.GetBuildsFailures([master['id']])
-      annotations = []
-      logging.info('%s %s (id %d): single build, %d stages, %d messages',
-                   wfall, build_config, master['id'],
-                   len(stages), len(messages))
+    annotations = []
+    logging.info('%s %s (id %d): single/master build, %d stages, %d messages',
+                 wfall, build_config, master['id'],
+                 len(stages), len(messages))
+
+    # Find any slave builds, and the individual slave stages.
+    slave_statuses = db.GetSlaveStatuses(master['id'])
+    if len(slave_statuses):
+      statuses.extend(slave_statuses)
+      slave_stages = db.GetSlaveStages(master['id'])
+      stages.extend(slave_stages)
+      exceptions.extend(db.GetSlaveFailures(master['id']))
+      annotations.extend(db.GetAnnotationsForBuilds(
+          [master['id']]).get(master['id'], []))
+      logging.info('- %d slaves, %d slave stages, %d annotations',
+                   len(slave_statuses), len(slave_stages), len(annotations))
 
     # Look for failing and inflight (signifying timeouts) slave builds.
     for build in sorted(statuses, key=lambda s: s['builder_name']):
