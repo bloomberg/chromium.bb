@@ -124,38 +124,41 @@ class TabUsageRecorder : public WebStateListObserver {
   ~TabUsageRecorder() override;
 
   // Called during startup when the tab model is created, or shortly after a
-  // post-crash launch if the tabs are restored.  |tabs| is an array containing
-  // the tabs being restored in the current tab model. |active_tab| is the tab
-  // currently in the foreground.
-  void InitialRestoredTabs(web::WebState* active_tab,
-                           const std::vector<web::WebState*>& tabs);
+  // post-crash launch if the tabs are restored.  |web_states| is an array
+  // containing/ the tabs being restored in the current tab model.
+  // |active_web_state| is the tab currently in the foreground.
+  void InitialRestoredTabs(web::WebState* active_web_state,
+                           const std::vector<web::WebState*>& web_states);
 
   // Called when a tab switch is made.  Determines what value to record, and
   // when to reset the page load counter.
-  void RecordTabSwitched(web::WebState* old_tab, web::WebState* new_tab);
+  void RecordTabSwitched(web::WebState* old_web_state,
+                         web::WebState* new_web_state);
 
   // Called when the tab model which the user is primarily interacting with has
-  // changed. The |active_tab| is the current tab of the tab model. If the user
-  // began interacting with |active_tab|, |primary| should be true. If the user
-  // stopped interacting with |active_tab|, |primary| should be false.
-  void RecordPrimaryTabModelChange(bool primary, web::WebState* active_tab);
+  // changed. The |active_web_state| is the current tab of the tab model. If the
+  // user began interacting with |active_web_state|, |primary_tab_model| should
+  // be true. If the user stopped interacting with |active_web_state|,
+  // |primary_tab_model| should be false.
+  void RecordPrimaryTabModelChange(bool primary_tab_model,
+                                   web::WebState* active_web_state);
 
   // Called when a page load begins, to keep track of how many page loads
   // happen before an evicted tab is seen.
-  void RecordPageLoadStart(web::WebState* tab);
+  void RecordPageLoadStart(web::WebState* web_state);
 
   // Called when a page load finishes, to track the load time for evicted tabs.
-  void RecordPageLoadDone(web::WebState* tab, bool success);
+  void RecordPageLoadDone(web::WebState* web_state, bool success);
 
   // Called when there is a user-initiated reload.
-  void RecordReload(web::WebState* tab);
+  void RecordReload(web::WebState* web_state);
 
   // Called when WKWebView's renderer is terminated. |tab| contains the tab
   // whose renderer was terminated, |tab_visible| indicates whether or not
   // the tab was visible when the renderer terminated and |application_active|
   // indicates whether the application was in the foreground or background.
-  void RendererTerminated(web::WebState* tab,
-                          bool tab_visible,
+  void RendererTerminated(web::WebState* web_state,
+                          bool web_state_visible,
                           bool application_active);
 
   // Called when the app has been backgrounded.
@@ -167,7 +170,7 @@ class TabUsageRecorder : public WebStateListObserver {
   // Resets the page load count.
   void ResetPageLoads();
 
-  // Size of |evicted_tabs_|.  Used for testing.
+  // Size of |evicted_web_states_|.  Used for testing.
   int EvictedTabsMapSize();
 
   // Resets all tracked data.  Used for testing.
@@ -187,20 +190,20 @@ class TabUsageRecorder : public WebStateListObserver {
   void ResetEvictedTab();
 
   // Whether or not a tab can be disregarded by the metrics.
-  bool ShouldIgnoreTab(web::WebState* tab);
+  bool ShouldIgnoreWebState(web::WebState* web_state);
 
   // Whether or not the tab has already been evicted.
-  bool TabAlreadyEvicted(web::WebState* tab);
+  bool WebStateAlreadyEvicted(web::WebState* web_state);
 
   // Returns the state of the given tab.  Call only once per tab, as it removes
-  // the tab from |evicted_tabs_|.
-  TabStateWhenSelected ExtractTabState(web::WebState* tab);
+  // the tab from |evicted_web_states_|.
+  TabStateWhenSelected ExtractWebStateState(web::WebState* web_state);
 
   // Records various time metrics when a restore of an evicted tab begins.
   void RecordRestoreStartTime();
 
   // Returns the number of WebState that are still alive (in-memory).
-  int GetLiveTabsCount() const;
+  int GetLiveWebStatesCount() const;
 
   // Called after a WebState is added to the WebStateList; will create the
   // observer used to track the WebState's events.
@@ -242,26 +245,26 @@ class TabUsageRecorder : public WebStateListObserver {
 
   // Keep track of the current tab, but only if it has been evicted.
   // This is kept as a pointer value only - it should never be dereferenced.
-  web::WebState* evicted_tab_ = nullptr;
+  web::WebState* evicted_web_state_ = nullptr;
 
-  // State of |evicted_tab_| at the time it became the current tab.
-  TabStateWhenSelected evicted_tab_state_ = IN_MEMORY;
+  // State of |evicted_web_state_| at the time it became the current tab.
+  TabStateWhenSelected evicted_web_state_state_ = IN_MEMORY;
 
   // Keep track of the tab last selected when this tab model was switched
   // away from to another mode (e.g. to incognito).
   // Kept as a pointer value only - it should never be dereferenced.
-  web::WebState* mode_switch_tab_ = nullptr;
+  web::WebState* mode_switch_web_state_ = nullptr;
 
   // Keep track of a tab that was created to be immediately selected.  It should
   // not contribute to the "StatusWhenSwitchedBackToForeground" metric.
-  web::WebState* tab_created_selected_ = nullptr;
+  web::WebState* web_state_created_selected_ = nullptr;
 
   // Keep track of when the evicted tab starts to reload, so that the total
   // time it takes to reload can be recorded.
-  base::TimeTicks evicted_tab_reload_start_time_;
+  base::TimeTicks evicted_web_state_reload_start_time_;
 
   // Keep track of the tabs that have a known eviction cause.
-  std::map<web::WebState*, TabStateWhenSelected> evicted_tabs_;
+  std::map<web::WebState*, TabStateWhenSelected> evicted_web_states_;
 
   // Maps WebStates to the WebStateObserver used to track its events.
   std::map<web::WebState*, std::unique_ptr<WebStateObserver>>
