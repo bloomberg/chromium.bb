@@ -50,6 +50,7 @@ class AlwaysOnTopController;
 class AnimatingWallpaperWidgetController;
 class AshTouchExplorationManager;
 class AshWindowTreeHost;
+class LockScreenActionBackgroundController;
 enum class LoginStatus;
 class PanelLayoutManager;
 class Shelf;
@@ -201,6 +202,11 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   void SetAnimatingWallpaperWidgetController(
       AnimatingWallpaperWidgetController* controller);
 
+  LockScreenActionBackgroundController*
+  lock_screen_action_background_controller() {
+    return lock_screen_action_background_controller_.get();
+  }
+
   // Called when the wallpaper animation is finished. Updates
   // |system_wallpaper_| to be black and drops |boot_splash_screen_| and moves
   // the wallpaper controller into the root window controller. |widget| holds
@@ -338,6 +344,9 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   std::unique_ptr<ui::EventHandler> panel_container_handler_;
 
   std::unique_ptr<::wm::ScopedCaptureClient> capture_client_;
+
+  std::unique_ptr<LockScreenActionBackgroundController>
+      lock_screen_action_background_controller_;
 
   static std::vector<RootWindowController*>* root_window_controllers_;
 

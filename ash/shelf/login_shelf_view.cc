@@ -5,9 +5,12 @@
 #include "ash/shelf/login_shelf_view.h"
 
 #include <memory>
+#include <utility>
 
 #include "ash/ash_constants.h"
 #include "ash/focus_cycler.h"
+#include "ash/lock_screen_action/lock_screen_action_background_controller.h"
+#include "ash/lock_screen_action/lock_screen_action_background_state.h"
 #include "ash/login/lock_screen_controller.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
@@ -91,8 +94,12 @@ class LoginShelfButton : public views::LabelButton {
 
 }  // namespace
 
-LoginShelfView::LoginShelfView()
-    : tray_action_observer_(this), shutdown_controller_observer_(this) {
+LoginShelfView::LoginShelfView(
+    LockScreenActionBackgroundController* lock_screen_action_background)
+    : lock_screen_action_background_(lock_screen_action_background),
+      tray_action_observer_(this),
+      lock_screen_action_background_observer_(this),
+      shutdown_controller_observer_(this) {
   // We reuse the focusable state on this view as a signal that focus should
   // switch to the lock screen or status area. This view should otherwise not
   // be focusable.
@@ -117,7 +124,7 @@ LoginShelfView::LoginShelfView()
   // Adds observers for states that affect the visiblity of different buttons.
   tray_action_observer_.Add(Shell::Get()->tray_action());
   shutdown_controller_observer_.Add(Shell::Get()->shutdown_controller());
-
+  lock_screen_action_background_observer_.Add(lock_screen_action_background);
   UpdateUi();
 }
 
@@ -179,8 +186,20 @@ void LoginShelfView::OnLockScreenNoteStateChanged(
   UpdateUi();
 }
 
+void LoginShelfView::OnLockScreenActionBackgroundStateChanged(
+    LockScreenActionBackgroundState state) {
+  UpdateUi();
+}
+
 void LoginShelfView::OnShutdownPolicyChanged(bool reboot_on_shutdown) {
   UpdateUi();
+}
+
+bool LoginShelfView::LockScreenActionBackgroundAnimating() const {
+  return lock_screen_action_background_->state() ==
+             LockScreenActionBackgroundState::kShowing ||
+         lock_screen_action_background_->state() ==
+             LockScreenActionBackgroundState::kHiding;
 }
 
 void LoginShelfView::UpdateUi() {
@@ -197,8 +216,10 @@ void LoginShelfView::UpdateUi() {
   mojom::TrayActionState tray_action_state =
       Shell::Get()->tray_action()->GetLockScreenNoteState();
   bool is_lock_screen_note_in_foreground =
-      tray_action_state == mojom::TrayActionState::kActive ||
-      tray_action_state == mojom::TrayActionState::kLaunching;
+      (tray_action_state == mojom::TrayActionState::kActive ||
+       tray_action_state == mojom::TrayActionState::kLaunching) &&
+      !LockScreenActionBackgroundAnimating();
+
   // The following should be kept in sync with |updateUI_| in md_header_bar.js.
   GetViewByID(kShutdown)->SetVisible(!show_reboot &&
                                      !is_lock_screen_note_in_foreground);
