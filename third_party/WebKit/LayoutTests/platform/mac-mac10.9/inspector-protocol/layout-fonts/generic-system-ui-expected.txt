@@ -1,9 +1,0 @@
-This text should use the system font.
-#system-ui:
-"Lucida Grande" : 37
-
-This text should use the system font.
-#system-ui-20pt:
-"Lucida Grande" : 37
-
-
