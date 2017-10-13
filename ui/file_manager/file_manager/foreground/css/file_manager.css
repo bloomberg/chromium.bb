@@ -203,10 +203,7 @@ div.splitter {
 }
 
 #directory-tree .tree-item.accepts > .tree-row,
-#directory-tree .tree-row[lead][selected],
-#directory-tree .tree-row[lead],
-#directory-tree .tree-row[selected],
-#directory-tree .tree-row[anchor] {
+#directory-tree .tree-row[selected] {
   color: rgb(51, 103, 214);
 }
 
