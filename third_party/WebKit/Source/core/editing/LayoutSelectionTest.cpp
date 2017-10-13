@@ -63,10 +63,11 @@ static bool TestLayoutObjectState(LayoutObject* object,
 }
 
 using IsTypeOf = Function<bool(const LayoutObject& layout_object)>;
-#define USING_LAYOUTOBJECT_FUNC(member_func)                               \
-  IsTypeOf member_func = WTF::Bind([](const LayoutObject& layout_object) { \
-    return layout_object.member_func();                                    \
-  })
+using IsTypeOfSimple = bool(const LayoutObject& layout_object);
+#define USING_LAYOUTOBJECT_FUNC(member_func)            \
+  bool member_func(const LayoutObject& layout_object) { \
+    return layout_object.member_func();                 \
+  }
 
 USING_LAYOUTOBJECT_FUNC(IsLayoutBlock);
 USING_LAYOUTOBJECT_FUNC(IsLayoutBlockFlow);
@@ -91,6 +92,17 @@ static IsTypeOf IsLayoutTextFragmentOf(const String& text) {
       text);
 }
 
+static bool TestLayoutObject(LayoutObject* object,
+                             IsTypeOfSimple& predicate,
+                             SelectionState state,
+                             InvalidateOption invalidate) {
+  if (!TestLayoutObjectState(object, state, invalidate))
+    return false;
+
+  if (!predicate(*object))
+    return false;
+  return true;
+}
 static bool TestLayoutObject(LayoutObject* object,
                              const IsTypeOf& predicate,
                              SelectionState state,

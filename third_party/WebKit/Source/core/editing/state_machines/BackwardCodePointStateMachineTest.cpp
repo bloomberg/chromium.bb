@@ -8,6 +8,8 @@
 
 namespace blink {
 
+namespace backward_code_point_state_machine_test {
+
 TEST(BackwardCodePointStateMachineTest, DoNothingCase) {
   BackwardCodePointStateMachine machine;
   EXPECT_EQ(0, machine.GetBoundaryOffset());
@@ -71,5 +73,7 @@ TEST(BackwardCodePointStateMachineTest, SurrogatePair) {
             machine.FeedPrecedingCodeUnit(kLeadSurrogate));
   EXPECT_EQ(0, machine.GetBoundaryOffset());
 }
+
+}  // namespace backward_code_point_state_machine_test
 
 }  // namespace blink

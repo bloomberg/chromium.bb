@@ -316,7 +316,7 @@ blink_core_sources("editing") {
   ]
 }
 
-source_set("unit_tests") {
+jumbo_source_set("unit_tests") {
   testonly = true
   sources = [
     "EditingCommandTest.cpp",
