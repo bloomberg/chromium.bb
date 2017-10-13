@@ -56,23 +56,27 @@ suite('cr-toggle', function() {
    * Simulates dragging the toggle button left/right.
    * @param {number} moveDirection -1 for left, 1 for right, 0 when no
    *     pointermove event should be simulated.
+   * @param {number=} diff The move amount in pixels. Only relevant if
+   *     moveDirection is non-zero.
    */
-  function triggerPointerDownMoveUpTapSequence(moveDirection) {
+  function triggerPointerDownMoveUpTapSequence(moveDirection, diff) {
     if (window.getComputedStyle(toggle)['pointer-events'] === 'none')
       return;
 
     // Simulate events in the same order they are fired by the browser.
     // Need to provide a valid |pointerId| for setPointerCapture() to not throw
     // an error.
+    var xStart = 100;
     toggle.dispatchEvent(new PointerEvent(
-        'pointerdown', {pointerId: 1, clientX: 100}));
+        'pointerdown', {pointerId: 1, clientX: xStart}));
+    var xEnd = xStart;
     if (moveDirection) {
-      var clientX = moveDirection > 0 ? 150: 50;
+      xEnd = moveDirection > 0 ? xStart + diff : xStart - diff;
       toggle.dispatchEvent(new PointerEvent(
-          'pointermove', {pointerId: 1, clientX: clientX}));
+          'pointermove', {pointerId: 1, clientX: xEnd}));
     }
     toggle.dispatchEvent(new PointerEvent(
-        'pointerup', {pointerId: 1, clientX: clientX}));
+        'pointerup', {pointerId: 1, clientX: xEnd}));
     MockInteractions.tap(toggle);
   }
 
@@ -92,7 +96,8 @@ suite('cr-toggle', function() {
     assertNotChecked();
   });
 
-  // Test that the control is toggled when the user taps on it.
+  // Test that the control is toggled when the user taps on it (no movement
+  // between pointerdown and pointerup).
   test('ToggleByPointerTap', function() {
     var whenChanged = test_util.eventToPromise('change', toggle);
     triggerPointerDownMoveUpTapSequence(0 /* no pointermove */);
@@ -106,15 +111,34 @@ suite('cr-toggle', function() {
     });
   });
 
+  // Test that the control is toggled if the user moves the pointer by a
+  // MOVE_THRESHOLD_PX pixels accidentally (shaky hands) in any direction.
+  test('ToggleByShakyPointerTap', function() {
+    var whenChanged = test_util.eventToPromise('change', toggle);
+    triggerPointerDownMoveUpTapSequence(
+        1 /* right */, toggle.MOVE_THRESHOLD_PX - 1);
+    return whenChanged.then(function() {
+      assertChecked();
+      whenChanged = test_util.eventToPromise('change', toggle);
+      triggerPointerDownMoveUpTapSequence(
+          1 /* right */, toggle.MOVE_THRESHOLD_PX - 1);
+      return whenChanged;
+    }).then(function() {
+      assertNotChecked();
+    });
+  });
+
   // Test that the control is toggled when the user moves the pointer while
   // holding down.
   test('ToggleByPointerMove', function() {
     var whenChanged = test_util.eventToPromise('change', toggle);
-    triggerPointerDownMoveUpTapSequence(1 /* right */);
+    triggerPointerDownMoveUpTapSequence(
+        1 /* right */, toggle.MOVE_THRESHOLD_PX);
     return whenChanged.then(function() {
       assertChecked();
       whenChanged = test_util.eventToPromise('change', toggle);
-      triggerPointerDownMoveUpTapSequence(-1 /* left */);
+      triggerPointerDownMoveUpTapSequence(
+          -1 /* left */, toggle.MOVE_THRESHOLD_PX);
       return whenChanged;
     }).then(function() {
       assertNotChecked();

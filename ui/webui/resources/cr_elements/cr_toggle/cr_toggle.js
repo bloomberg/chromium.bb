@@ -52,25 +52,37 @@ Polymer({
   /** @private {?Function} */
   boundPointerMove_: null,
 
-  /** @private {boolean} */
-  pointerMoveFired_: false,
+  /**
+   * Number of pixels required to move to consider the pointermove event as
+   * intentional.
+   * @type {number}
+   */
+  MOVE_THRESHOLD_PX: 5,
+
+  /**
+   * Whether the state of the toggle has already taken into account by
+   * |pointeremove| handlers. Used in the 'tap' handler.
+   * @private {boolean}
+   */
+  handledInPointerMove_: false,
 
   /** @override */
   attached: function() {
-    // Note: Doing the same in ready instead of attached produces incorrect
-    // transient values for RTL.
-    var direction = getComputedStyle(this).direction == 'rtl' ? -1 : 1;
+    let direction = getComputedStyle(this).direction == 'rtl' ? -1 : 1;
 
     this.boundPointerMove_ = (e) => {
       // Prevent unwanted text selection to occur while moving the pointer, this
       // is important.
       e.preventDefault();
-      this.pointerMoveFired_ = true;
 
-      var diff = e.clientX - this.pointerDownX_;
-      var shouldToggle = Math.abs(diff) > 4 &&
-          ((diff * direction < 0 && this.checked) ||
-           (diff * direction > 0 && !this.checked));
+      let diff = e.clientX - this.pointerDownX_;
+      if (Math.abs(diff) < this.MOVE_THRESHOLD_PX)
+        return;
+
+      this.handledInPointerMove_ = true;
+
+      let shouldToggle = (diff * direction < 0 && this.checked) ||
+          (diff * direction > 0 && !this.checked);
       if (shouldToggle)
         this.toggleState_(false);
     };
@@ -118,16 +130,15 @@ Polymer({
     // if they occur outside of its bounds.
     this.setPointerCapture(e.pointerId);
     this.pointerDownX_ = e.clientX;
-    this.pointerMoveFired_ = false;
+    this.handledInPointerMove_ = false;
     this.addEventListener('pointermove', this.boundPointerMove_);
   },
 
   /** @private */
-  onTap_: function() {
-    // If pointermove fired it means that user tried to drag the toggle button,
-    // and therefore its state has already been handled within the pointermove
-    // handler. Do nothing here.
-    if (this.pointerMoveFired_)
+  onTap_: function(e) {
+    // User gesture has already been taken care of inside |pointermove|
+    // handlers, Do nothing here.
+    if (this.handledInPointerMove_)
       return;
 
     // If no pointermove event fired, then user just tapped on the
@@ -162,7 +173,7 @@ Polymer({
   // customize the element's ripple
   _createRipple: function() {
     this._rippleContainer = this.$.button;
-    var ripple = Polymer.PaperRippleBehavior._createRipple();
+    let ripple = Polymer.PaperRippleBehavior._createRipple();
     ripple.id = 'ink';
     ripple.setAttribute('recenters', '');
     ripple.classList.add('circle', 'toggle-ink');
