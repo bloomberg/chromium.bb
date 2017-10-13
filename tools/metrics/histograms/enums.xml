@@ -19792,6 +19792,8 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="-2055973512" label="Login.ConsumerNewUsersAllowed"/>
   <int value="-2021219906"
       label="DataUse.MessageSize.AllServices.Downstream.Foreground.NotCellular"/>
+  <int value="-1724216561"
+      label="Extensions.Functions.SucceededTime.LessThan1ms"/>
   <int value="-1620411628"
       label="DataUse.MessageSize.AllServices.Downstream.Unknown.NotCellular"/>
   <int value="-1607339868"
@@ -19818,6 +19820,7 @@ uploading your change for review.  These are checked by presubmit scripts.
       label="DataUse.MessageSize.AllServices.Downstream.Unknown.Cellular"/>
   <int value="424952287"
       label="Network.Shill.Wifi.LinkMonitorResponseTimeSample"/>
+  <int value="433324211" label="Extensions.FunctionCalls"/>
   <int value="628921860"
       label="Network.Shill.Ethernet.LinkMonitorResponseTimeSample"/>
   <int value="662206917"
@@ -19826,6 +19829,7 @@ uploading your change for review.  These are checked by presubmit scripts.
       label="DataUse.MessageSize.AllServices.Upstream.Foreground.Cellular"/>
   <int value="1370064090"
       label="DataUse.MessageSize.AllServices.Upstream.Background.Cellular"/>
+  <int value="1514844119" label="DataUse.Sync.Upload.Bytes"/>
   <int value="1753226325"
       label="DataUse.MessageSize.AllServices.Downstream.Foreground.Cellular"/>
   <int value="1977321258"
@@ -27152,8 +27156,11 @@ from previous Chrome versions.
       label="Persistent sparse histogram accumulated a negative count that
              caused a negative value."/>
   <int value="7"
-      label="Persistent sparse histogram active sample overflowed during
-             accumulation and became negative."/>
+      label="Persistent sparse histogram active sample was negative after
+             accumulation (deprecated)."/>
+  <int value="8"
+      label="Persistent sparse histogram active sample wrapped 2^31 during
+             accumulation."/>
 </enum>
 
 <enum name="NetCacheState">
