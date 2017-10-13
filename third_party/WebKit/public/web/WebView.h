@@ -298,6 +298,8 @@ class WebView : protected WebWidget {
   // level.
   virtual void SetZoomFactorForDeviceScaleFactor(float) = 0;
 
+  virtual float ZoomFactorForDeviceScaleFactor() = 0;
+
   // Resize the view at the same time as changing the state of the top
   // controls. If |browserControlsShrinkLayout| is true, the embedder shrunk the
   // WebView size by the browser controls height.

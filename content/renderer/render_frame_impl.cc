@@ -5189,6 +5189,7 @@ bool RenderFrameImpl::SwapIn() {
     render_view_->main_render_frame_ = this;
     if (render_view_->is_swapped_out())
       render_view_->SetSwappedOut(false);
+    render_view_->UpdateWebViewWithDeviceScaleFactor();
   }
 
   return true;

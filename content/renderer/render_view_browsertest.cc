@@ -851,6 +851,55 @@ TEST_F(RenderViewImplTest, OriginReplicationForSwapOut) {
       web_frame->FirstChild()->NextSibling()->GetSecurityOrigin().IsUnique());
 }
 
+// When we enable --use-zoom-for-dsf, visiting the first web page after opening
+// a new tab looks fine, but visiting the second web page renders smaller DOM
+// elements. We can solve this by updating DSF after swapping in the main frame.
+// See crbug.com/737777#c37.
+TEST_F(RenderViewImplTest, UpdateDSFAfterSwapIn) {
+  // The bug reproduces if zoom is used for devices scale factor.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableUseZoomForDSF);
+  const float device_scale = 3.0f;
+  view()->OnSetDeviceScaleFactor(device_scale);
+  EXPECT_EQ(device_scale, view()->GetDeviceScaleFactor());
+
+  LoadHTML("Hello world!");
+
+  // Swap the main frame out after which it should become a WebRemoteFrame.
+  content::FrameReplicationState replication_state =
+      ReconstructReplicationStateForTesting(frame());
+  // replication_state.origin = url::Origin(GURL("http://foo.com"));
+  frame()->SwapOut(kProxyRoutingId, true, replication_state);
+  EXPECT_TRUE(view()->webview()->MainFrame()->IsWebRemoteFrame());
+
+  // Do the remote-to-local transition for the proxy, which is to create a
+  // provisional local frame.
+  int routing_id = kProxyRoutingId + 1;
+  mojom::CreateFrameWidgetParams widget_params;
+  widget_params.routing_id = view()->GetRoutingID();
+  widget_params.hidden = false;
+  RenderFrameImpl::CreateFrame(
+      routing_id, kProxyRoutingId, MSG_ROUTING_NONE, MSG_ROUTING_NONE,
+      MSG_ROUTING_NONE, base::UnguessableToken::Create(), replication_state,
+      nullptr, widget_params, FrameOwnerProperties());
+  TestRenderFrame* provisional_frame =
+      static_cast<TestRenderFrame*>(RenderFrameImpl::FromRoutingID(routing_id));
+  EXPECT_TRUE(provisional_frame);
+
+  // Navigate to other page, which triggers the swap in.
+  CommonNavigationParams common_params;
+  StartNavigationParams start_params;
+  RequestNavigationParams request_params;
+  common_params.url = GURL("data:text/html,<div>Page</div>");
+  common_params.navigation_type = FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT;
+  common_params.transition = ui::PAGE_TRANSITION_TYPED;
+
+  provisional_frame->Navigate(common_params, start_params, request_params);
+
+  EXPECT_EQ(device_scale, view()->GetDeviceScaleFactor());
+  EXPECT_EQ(device_scale, view()->webview()->ZoomFactorForDeviceScaleFactor());
+}
+
 // Test that when a parent detaches a remote child after the provisional
 // RenderFrame is created but before it is navigated, the RenderFrame is
 // destroyed along with the proxy.  This protects against races in
