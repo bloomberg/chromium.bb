@@ -16577,6 +16577,8 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2185" label="CrossOriginWorkerTextPlain"/>
   <int value="2186" label="CrossOriginWorkerTextXml"/>
   <int value="2187" label="ImageCaptureSetOptions"/>
+  <int value="2188" label="PerformanceObserverForWindow"/>
+  <int value="2189" label="PerformanceObserverForWorker"/>
 </enum>
 
 <enum name="FeedbackSource">

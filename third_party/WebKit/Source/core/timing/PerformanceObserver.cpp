@@ -11,6 +11,7 @@
 #include "bindings/core/v8/v8_performance_observer_callback.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/frame/LocalDOMWindow.h"
+#include "core/frame/UseCounter.h"
 #include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/Performance.h"
 #include "core/timing/PerformanceEntry.h"
@@ -28,10 +29,12 @@ PerformanceObserver* PerformanceObserver::Create(
   LocalDOMWindow* window = ToLocalDOMWindow(script_state->GetContext());
   ExecutionContext* context = ExecutionContext::From(script_state);
   if (window) {
+    UseCounter::Count(context, WebFeature::kPerformanceObserverForWindow);
     return new PerformanceObserver(
         context, DOMWindowPerformance::performance(*window), callback);
   }
   if (context->IsWorkerGlobalScope()) {
+    UseCounter::Count(context, WebFeature::kPerformanceObserverForWorker);
     return new PerformanceObserver(context,
                                    WorkerGlobalScopePerformance::performance(
                                        *ToWorkerGlobalScope(context)),
