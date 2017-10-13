@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/HTMLVideoElement.h"
+#include "core/html/media/HTMLVideoElement.h"
 
 #include <memory>
 #include "core/CSSPropertyNames.h"
@@ -66,8 +66,7 @@ enum VideoPersistenceControlsType {
 }  // anonymous namespace
 
 inline HTMLVideoElement::HTMLVideoElement(Document& document)
-    : HTMLMediaElement(videoTag, document),
-      remoting_interstitial_(nullptr) {
+    : HTMLMediaElement(videoTag, document), remoting_interstitial_(nullptr) {
   if (document.GetSettings()) {
     default_poster_url_ =
         AtomicString(document.GetSettings()->GetDefaultVideoPosterURL());
@@ -138,10 +137,11 @@ void HTMLVideoElement::AttachLayoutTree(AttachContext& context) {
     if (!image_loader_)
       image_loader_ = HTMLImageLoader::Create(this);
     image_loader_->UpdateFromElement();
-    if (GetLayoutObject())
+    if (GetLayoutObject()) {
       ToLayoutImage(GetLayoutObject())
           ->ImageResource()
           ->SetImageResource(image_loader_->GetImage());
+    }
   }
 }
 

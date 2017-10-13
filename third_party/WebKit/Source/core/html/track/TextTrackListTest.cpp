@@ -4,7 +4,7 @@
 
 #include "core/html/track/TextTrackList.h"
 
-#include "core/html/HTMLVideoElement.h"
+#include "core/html/media/HTMLVideoElement.h"
 #include "core/html/track/TextTrack.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"

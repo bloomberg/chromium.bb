@@ -15,7 +15,7 @@
 #include "core/frame/Settings.h"
 #include "core/frame/WebLocalFrameImpl.h"
 #include "core/html/HTMLCanvasElement.h"
-#include "core/html/HTMLMediaElement.h"
+#include "core/html/media/HTMLMediaElement.h"
 #include "core/inspector/InspectorSession.h"
 #include "core/leak_detector/BlinkLeakDetector.h"
 #include "core/offscreencanvas/OffscreenCanvas.h"

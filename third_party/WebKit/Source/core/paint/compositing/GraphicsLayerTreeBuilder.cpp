@@ -26,8 +26,8 @@
 
 #include "core/paint/compositing/GraphicsLayerTreeBuilder.h"
 
-#include "core/html/HTMLMediaElement.h"
-#include "core/html/HTMLVideoElement.h"
+#include "core/html/media/HTMLMediaElement.h"
+#include "core/html/media/HTMLVideoElement.h"
 #include "core/layout/LayoutEmbeddedContent.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/compositing/CompositedLayerMapping.h"

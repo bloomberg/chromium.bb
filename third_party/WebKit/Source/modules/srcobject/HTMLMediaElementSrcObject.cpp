@@ -4,7 +4,7 @@
 
 #include "modules/srcobject/HTMLMediaElementSrcObject.h"
 
-#include "core/html/HTMLMediaElement.h"
+#include "core/html/media/HTMLMediaElement.h"
 #include "modules/mediastream/MediaStream.h"
 #include "platform/mediastream/MediaStreamDescriptor.h"
 

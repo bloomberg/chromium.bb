@@ -11,7 +11,7 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/TaskRunnerHelper.h"
-#include "core/html/HTMLMediaElement.h"
+#include "core/html/media/HTMLMediaElement.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/typed_arrays/DOMTypedArray.h"
 #include "modules/encryptedmedia/ContentDecryptionModuleResultPromise.h"

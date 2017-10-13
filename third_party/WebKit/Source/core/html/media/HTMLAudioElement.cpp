@@ -1,6 +1,5 @@
 /*
- * Copyright (C) 2007, 2010 Apple Inc. All rights reserved.
- * Copyright (C) 2010 Google Inc. All rights reserved.
+ * Copyright (C) 2007, 2010, 2011, 2012, 2013 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -24,36 +23,35 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HTMLAudioElement_h
-#define HTMLAudioElement_h
+#include "core/html/media/HTMLAudioElement.h"
 
-#include "core/CoreExport.h"
-#include "core/html/HTMLMediaElement.h"
+#include "core/dom/ShadowRoot.h"
+#include "core/html_names.h"
 
 namespace blink {
 
-class Document;
+using namespace HTMLNames;
 
-class CORE_EXPORT HTMLAudioElement final : public HTMLMediaElement {
-  DEFINE_WRAPPERTYPEINFO();
+HTMLAudioElement::HTMLAudioElement(Document& document)
+    : HTMLMediaElement(audioTag, document) {}
 
- public:
-  static HTMLAudioElement* Create(Document&);
-  static HTMLAudioElement* CreateForJSConstructor(
-      Document&,
-      const AtomicString& src = g_null_atom);
+HTMLAudioElement* HTMLAudioElement::Create(Document& document) {
+  HTMLAudioElement* audio = new HTMLAudioElement(document);
+  audio->EnsureUserAgentShadowRoot();
+  audio->SuspendIfNeeded();
+  return audio;
+}
 
-  bool IsHTMLAudioElement() const override { return true; }
-
-  // WebMediaPlayerClient implementation.
-  void MediaRemotingStarted(
-      const WebString& remote_device_friendly_name) override {}
-  void MediaRemotingStopped() override {}
-
- private:
-  HTMLAudioElement(Document&);
-};
+HTMLAudioElement* HTMLAudioElement::CreateForJSConstructor(
+    Document& document,
+    const AtomicString& src) {
+  HTMLAudioElement* audio = new HTMLAudioElement(document);
+  audio->EnsureUserAgentShadowRoot();
+  audio->setPreload(AtomicString("auto"));
+  if (!src.IsNull())
+    audio->SetSrc(src);
+  audio->SuspendIfNeeded();
+  return audio;
+}
 
 }  // namespace blink
-
-#endif  // HTMLAudioElement_h

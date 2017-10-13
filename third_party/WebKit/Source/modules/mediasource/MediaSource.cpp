@@ -38,7 +38,7 @@
 #include "core/dom/events/MediaElementEventQueue.h"
 #include "core/frame/Deprecation.h"
 #include "core/frame/UseCounter.h"
-#include "core/html/HTMLMediaElement.h"
+#include "core/html/media/HTMLMediaElement.h"
 #include "core/html/track/AudioTrackList.h"
 #include "core/html/track/VideoTrackList.h"
 #include "modules/mediasource/MediaSourceRegistry.h"

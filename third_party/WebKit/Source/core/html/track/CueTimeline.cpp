@@ -5,8 +5,8 @@
 #include "core/html/track/CueTimeline.h"
 
 #include "core/dom/events/Event.h"
-#include "core/html/HTMLMediaElement.h"
 #include "core/html/HTMLTrackElement.h"
+#include "core/html/media/HTMLMediaElement.h"
 #include "core/html/track/LoadableTextTrack.h"
 #include "core/html/track/TextTrack.h"
 #include "core/html/track/TextTrackCue.h"

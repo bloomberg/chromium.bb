@@ -7,7 +7,7 @@
 
 #include "core/dom/events/EventTarget.h"
 #include "core/event_type_names.h"
-#include "core/html/HTMLMediaElement.h"
+#include "core/html/media/HTMLMediaElement.h"
 #include "core/typed_arrays/DOMTypedArray.h"
 #include "modules/ModulesExport.h"
 #include "platform/Supplementable.h"

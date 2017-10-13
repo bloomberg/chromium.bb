@@ -10,7 +10,7 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/Screen.h"
 #include "core/frame/ScreenOrientationController.h"
-#include "core/html/HTMLVideoElement.h"
+#include "core/html/media/HTMLVideoElement.h"
 #include "core/page/ChromeClient.h"
 #include "modules/device_orientation/DeviceOrientationData.h"
 #include "modules/device_orientation/DeviceOrientationEvent.h"

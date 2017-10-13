@@ -27,7 +27,7 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/TaskRunnerHelper.h"
-#include "core/html/HTMLMediaElement.h"
+#include "core/html/media/HTMLMediaElement.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "modules/webaudio/BaseAudioContext.h"

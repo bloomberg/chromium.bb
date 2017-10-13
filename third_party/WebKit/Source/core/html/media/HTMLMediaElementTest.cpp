@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/HTMLMediaElement.h"
+#include "core/html/media/HTMLMediaElement.h"
 
 #include "core/frame/Settings.h"
-#include "core/html/HTMLAudioElement.h"
-#include "core/html/HTMLVideoElement.h"
+#include "core/html/media/HTMLAudioElement.h"
+#include "core/html/media/HTMLVideoElement.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/network/NetworkStateNotifier.h"
 #include "testing/gtest/include/gtest/gtest.h"

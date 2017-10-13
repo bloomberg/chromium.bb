@@ -30,7 +30,7 @@
 
 #include "modules/mediasource/HTMLVideoElementMediaSource.h"
 
-#include "core/html/HTMLVideoElement.h"
+#include "core/html/media/HTMLVideoElement.h"
 #include "modules/mediasource/VideoPlaybackQuality.h"
 
 namespace blink {

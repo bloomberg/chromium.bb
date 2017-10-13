@@ -6,7 +6,7 @@
 
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrameView.h"
-#include "core/html/HTMLVideoElement.h"
+#include "core/html/media/HTMLVideoElement.h"
 #include "core/layout/LayoutVideo.h"
 #include "core/paint/ImagePainter.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"

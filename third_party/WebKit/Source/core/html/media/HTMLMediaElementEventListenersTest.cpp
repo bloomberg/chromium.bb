@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/HTMLMediaElement.h"
+#include "core/html/media/HTMLMediaElement.h"
 
 #include "core/dom/UserGestureIndicator.h"
 #include "core/fullscreen/Fullscreen.h"
-#include "core/html/HTMLVideoElement.h"
+#include "core/html/media/HTMLVideoElement.h"
 #include "core/html/media/MediaControls.h"
 #include "core/html/media/MediaCustomControlsFullscreenDetector.h"
 #include "core/loader/EmptyClients.h"

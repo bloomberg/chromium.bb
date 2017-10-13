@@ -27,7 +27,7 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/events/MediaElementEventQueue.h"
-#include "core/html/HTMLMediaElement.h"
+#include "core/html/media/HTMLMediaElement.h"
 #include "core/html/track/InbandTextTrack.h"
 #include "core/html/track/LoadableTextTrack.h"
 #include "core/html/track/TextTrack.h"

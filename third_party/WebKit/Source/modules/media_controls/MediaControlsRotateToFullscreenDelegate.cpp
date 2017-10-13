@@ -9,7 +9,7 @@
 #include "core/dom/events/Event.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/fullscreen/Fullscreen.h"
-#include "core/html/HTMLVideoElement.h"
+#include "core/html/media/HTMLVideoElement.h"
 #include "core/page/ChromeClient.h"
 #include "modules/device_orientation/DeviceOrientationData.h"
 #include "modules/device_orientation/DeviceOrientationEvent.h"

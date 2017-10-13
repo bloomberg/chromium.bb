@@ -4,8 +4,8 @@
 
 #include "modules/media_controls/elements/MediaControlInputElement.h"
 
-#include "core/html/HTMLMediaElement.h"
-#include "core/html/HTMLVideoElement.h"
+#include "core/html/media/HTMLMediaElement.h"
+#include "core/html/media/HTMLVideoElement.h"
 #include "core/html_names.h"
 #include "core/input_type_names.h"
 #include "core/testing/DummyPageHolder.h"

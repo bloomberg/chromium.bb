@@ -28,8 +28,8 @@
 
 #include "core/CoreExport.h"
 #include "core/html/HTMLImageLoader.h"
-#include "core/html/HTMLMediaElement.h"
 #include "core/html/canvas/CanvasImageSource.h"
+#include "core/html/media/HTMLMediaElement.h"
 #include "core/imagebitmap/ImageBitmapSource.h"
 #include "third_party/khronos/GLES2/gl2.h"
 
@@ -37,7 +37,7 @@ namespace gpu {
 namespace gles2 {
 class GLES2Interface;
 }
-}
+}  // namespace gpu
 
 namespace blink {
 class ImageBitmapOptions;

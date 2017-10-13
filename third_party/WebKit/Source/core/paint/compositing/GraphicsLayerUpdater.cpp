@@ -26,7 +26,7 @@
 
 #include "core/paint/compositing/GraphicsLayerUpdater.h"
 
-#include "core/html/HTMLMediaElement.h"
+#include "core/html/media/HTMLMediaElement.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/layout/LayoutBlock.h"
 #include "core/paint/PaintLayer.h"

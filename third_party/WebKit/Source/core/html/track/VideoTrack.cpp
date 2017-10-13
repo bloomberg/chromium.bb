@@ -4,7 +4,7 @@
 
 #include "core/html/track/VideoTrack.h"
 
-#include "core/html/HTMLMediaElement.h"
+#include "core/html/media/HTMLMediaElement.h"
 
 namespace blink {
 
