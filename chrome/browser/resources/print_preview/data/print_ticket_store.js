@@ -10,309 +10,289 @@ cr.define('print_preview', function() {
   // destination changes, the new destination might not support duplex anymore,
   // so we should clear the ticket's isDuplexEnabled state.
 
-  /**
-   * Storage of the print ticket and document statistics. Dispatches events when
-   * the contents of the print ticket or document statistics change. Also
-   * handles validation of the print ticket against destination capabilities and
-   * against the document.
-   * @param {!print_preview.DestinationStore} destinationStore Used to
-   *     understand which printer is selected.
-   * @param {!print_preview.AppState} appState Print preview application state.
-   * @param {!print_preview.DocumentInfo} documentInfo Document data model.
-   * @constructor
-   * @extends {cr.EventTarget}
-   */
-  function PrintTicketStore(destinationStore, appState, documentInfo) {
-    cr.EventTarget.call(this);
-
+  class PrintTicketStore extends cr.EventTarget {
     /**
-     * Destination store used to understand which printer is selected.
-     * @type {!print_preview.DestinationStore}
-     * @private
+     * Storage of the print ticket and document statistics. Dispatches events
+     * when the contents of the print ticket or document statistics change. Also
+     * handles validation of the print ticket against destination capabilities
+     * and against the document.
+     * @param {!print_preview.DestinationStore} destinationStore Used to
+     *     understand which printer is selected.
+     * @param {!print_preview.AppState} appState Print preview application
+     * state.
+     * @param {!print_preview.DocumentInfo} documentInfo Document data model.
      */
-    this.destinationStore_ = destinationStore;
+    constructor(destinationStore, appState, documentInfo) {
+      super();
 
-    /**
-     * App state used to persist and load ticket values.
-     * @type {!print_preview.AppState}
-     * @private
-     */
-    this.appState_ = appState;
+      /**
+       * Destination store used to understand which printer is selected.
+       * @type {!print_preview.DestinationStore}
+       * @private
+       */
+      this.destinationStore_ = destinationStore;
 
-    /**
-     * Information about the document to print.
-     * @type {!print_preview.DocumentInfo}
-     * @private
-     */
-    this.documentInfo_ = documentInfo;
+      /**
+       * App state used to persist and load ticket values.
+       * @type {!print_preview.AppState}
+       * @private
+       */
+      this.appState_ = appState;
 
-    /**
-     * Printing capabilities of Chromium and the currently selected destination.
-     * @type {!print_preview.CapabilitiesHolder}
-     * @private
-     */
-    this.capabilitiesHolder_ = new print_preview.CapabilitiesHolder();
+      /**
+       * Information about the document to print.
+       * @type {!print_preview.DocumentInfo}
+       * @private
+       */
+      this.documentInfo_ = documentInfo;
 
-    /**
-     * Current measurement system. Used to work with margin measurements.
-     * @type {!print_preview.MeasurementSystem}
-     * @private
-     */
-    this.measurementSystem_ = new print_preview.MeasurementSystem(
-        ',', '.', print_preview.MeasurementSystemUnitType.IMPERIAL);
+      /**
+       * Printing capabilities of Chromium and the currently selected
+       * destination.
+       * @type {!print_preview.CapabilitiesHolder}
+       * @private
+       */
+      this.capabilitiesHolder_ = new print_preview.CapabilitiesHolder();
 
-    /**
-     * Collate ticket item.
-     * @type {!print_preview.ticket_items.Collate}
-     * @private
-     */
-    this.collate_ = new print_preview.ticket_items.Collate(
-        this.appState_, this.destinationStore_);
+      /**
+       * Current measurement system. Used to work with margin measurements.
+       * @type {!print_preview.MeasurementSystem}
+       * @private
+       */
+      this.measurementSystem_ = new print_preview.MeasurementSystem(
+          ',', '.', print_preview.MeasurementSystemUnitType.IMPERIAL);
 
-    /**
-     * Color ticket item.
-     * @type {!print_preview.ticket_items.Color}
-     * @private
-     */
-    this.color_ = new print_preview.ticket_items.Color(
-        this.appState_, this.destinationStore_);
+      /**
+       * Collate ticket item.
+       * @type {!print_preview.ticket_items.Collate}
+       * @private
+       */
+      this.collate_ = new print_preview.ticket_items.Collate(
+          this.appState_, this.destinationStore_);
 
-    /**
-     * Copies ticket item.
-     * @type {!print_preview.ticket_items.Copies}
-     * @private
-     */
-    this.copies_ =
-        new print_preview.ticket_items.Copies(this.destinationStore_);
+      /**
+       * Color ticket item.
+       * @type {!print_preview.ticket_items.Color}
+       * @private
+       */
+      this.color_ = new print_preview.ticket_items.Color(
+          this.appState_, this.destinationStore_);
 
-    /**
-     * DPI ticket item.
-     * @type {!print_preview.ticket_items.Dpi}
-     * @private
-     */
-    this.dpi_ = new print_preview.ticket_items.Dpi(
-        this.appState_, this.destinationStore_);
+      /**
+       * Copies ticket item.
+       * @type {!print_preview.ticket_items.Copies}
+       * @private
+       */
+      this.copies_ =
+          new print_preview.ticket_items.Copies(this.destinationStore_);
 
-    /**
-     * Duplex ticket item.
-     * @type {!print_preview.ticket_items.Duplex}
-     * @private
-     */
-    this.duplex_ = new print_preview.ticket_items.Duplex(
-        this.appState_, this.destinationStore_);
+      /**
+       * DPI ticket item.
+       * @type {!print_preview.ticket_items.Dpi}
+       * @private
+       */
+      this.dpi_ = new print_preview.ticket_items.Dpi(
+          this.appState_, this.destinationStore_);
 
-    /**
-     * Page range ticket item.
-     * @type {!print_preview.ticket_items.PageRange}
-     * @private
-     */
-    this.pageRange_ =
-        new print_preview.ticket_items.PageRange(this.documentInfo_);
+      /**
+       * Duplex ticket item.
+       * @type {!print_preview.ticket_items.Duplex}
+       * @private
+       */
+      this.duplex_ = new print_preview.ticket_items.Duplex(
+          this.appState_, this.destinationStore_);
 
-    /**
-     * Rasterize PDF ticket item.
-     * @type {!print_preview.ticket_items.Rasterize}
-     * @private
-     */
-    this.rasterize_ = new print_preview.ticket_items.Rasterize(
-        this.destinationStore_, this.documentInfo_);
+      /**
+       * Page range ticket item.
+       * @type {!print_preview.ticket_items.PageRange}
+       * @private
+       */
+      this.pageRange_ =
+          new print_preview.ticket_items.PageRange(this.documentInfo_);
 
-    /**
-     * Scaling ticket item.
-     * @type {!print_preview.ticket_items.Scaling}
-     * @private
-     */
-    this.scaling_ = new print_preview.ticket_items.Scaling(
-        this.appState_, this.destinationStore_, this.documentInfo_);
+      /**
+       * Rasterize PDF ticket item.
+       * @type {!print_preview.ticket_items.Rasterize}
+       * @private
+       */
+      this.rasterize_ = new print_preview.ticket_items.Rasterize(
+          this.destinationStore_, this.documentInfo_);
 
-    /**
-     * Custom margins ticket item.
-     * @type {!print_preview.ticket_items.CustomMargins}
-     * @private
-     */
-    this.customMargins_ = new print_preview.ticket_items.CustomMargins(
-        this.appState_, this.documentInfo_);
+      /**
+       * Scaling ticket item.
+       * @type {!print_preview.ticket_items.Scaling}
+       * @private
+       */
+      this.scaling_ = new print_preview.ticket_items.Scaling(
+          this.appState_, this.destinationStore_, this.documentInfo_);
 
-    /**
-     * Margins type ticket item.
-     * @type {!print_preview.ticket_items.MarginsType}
-     * @private
-     */
-    this.marginsType_ = new print_preview.ticket_items.MarginsType(
-        this.appState_, this.documentInfo_, this.customMargins_);
+      /**
+       * Custom margins ticket item.
+       * @type {!print_preview.ticket_items.CustomMargins}
+       * @private
+       */
+      this.customMargins_ = new print_preview.ticket_items.CustomMargins(
+          this.appState_, this.documentInfo_);
 
-    /**
-     * Media size ticket item.
-     * @type {!print_preview.ticket_items.MediaSize}
-     * @private
-     */
-    this.mediaSize_ = new print_preview.ticket_items.MediaSize(
-        this.appState_, this.destinationStore_, this.documentInfo_,
-        this.marginsType_, this.customMargins_);
+      /**
+       * Margins type ticket item.
+       * @type {!print_preview.ticket_items.MarginsType}
+       * @private
+       */
+      this.marginsType_ = new print_preview.ticket_items.MarginsType(
+          this.appState_, this.documentInfo_, this.customMargins_);
 
-    /**
-     * Landscape ticket item.
-     * @type {!print_preview.ticket_items.Landscape}
-     * @private
-     */
-    this.landscape_ = new print_preview.ticket_items.Landscape(
-        this.appState_, this.destinationStore_, this.documentInfo_,
-        this.marginsType_, this.customMargins_);
+      /**
+       * Media size ticket item.
+       * @type {!print_preview.ticket_items.MediaSize}
+       * @private
+       */
+      this.mediaSize_ = new print_preview.ticket_items.MediaSize(
+          this.appState_, this.destinationStore_, this.documentInfo_,
+          this.marginsType_, this.customMargins_);
 
-    /**
-     * Header-footer ticket item.
-     * @type {!print_preview.ticket_items.HeaderFooter}
-     * @private
-     */
-    this.headerFooter_ = new print_preview.ticket_items.HeaderFooter(
-        this.appState_, this.documentInfo_, this.marginsType_,
-        this.customMargins_, this.mediaSize_, this.landscape_);
+      /**
+       * Landscape ticket item.
+       * @type {!print_preview.ticket_items.Landscape}
+       * @private
+       */
+      this.landscape_ = new print_preview.ticket_items.Landscape(
+          this.appState_, this.destinationStore_, this.documentInfo_,
+          this.marginsType_, this.customMargins_);
 
-    /**
-     * Fit-to-page ticket item.
-     * @type {!print_preview.ticket_items.FitToPage}
-     * @private
-     */
-    this.fitToPage_ = new print_preview.ticket_items.FitToPage(
-        this.appState_, this.documentInfo_, this.destinationStore_);
+      /**
+       * Header-footer ticket item.
+       * @type {!print_preview.ticket_items.HeaderFooter}
+       * @private
+       */
+      this.headerFooter_ = new print_preview.ticket_items.HeaderFooter(
+          this.appState_, this.documentInfo_, this.marginsType_,
+          this.customMargins_, this.mediaSize_, this.landscape_);
 
-    /**
-     * Print CSS backgrounds ticket item.
-     * @type {!print_preview.ticket_items.CssBackground}
-     * @private
-     */
-    this.cssBackground_ = new print_preview.ticket_items.CssBackground(
-        this.appState_, this.documentInfo_);
+      /**
+       * Fit-to-page ticket item.
+       * @type {!print_preview.ticket_items.FitToPage}
+       * @private
+       */
+      this.fitToPage_ = new print_preview.ticket_items.FitToPage(
+          this.appState_, this.documentInfo_, this.destinationStore_);
 
-    /**
-     * Print selection only ticket item.
-     * @type {!print_preview.ticket_items.SelectionOnly}
-     * @private
-     */
-    this.selectionOnly_ =
-        new print_preview.ticket_items.SelectionOnly(this.documentInfo_);
+      /**
+       * Print CSS backgrounds ticket item.
+       * @type {!print_preview.ticket_items.CssBackground}
+       * @private
+       */
+      this.cssBackground_ = new print_preview.ticket_items.CssBackground(
+          this.appState_, this.documentInfo_);
 
-    /**
-     * Vendor ticket items.
-     * @type {!print_preview.ticket_items.VendorItems}
-     * @private
-     */
-    this.vendorItems_ = new print_preview.ticket_items.VendorItems(
-        this.appState_, this.destinationStore_);
+      /**
+       * Print selection only ticket item.
+       * @type {!print_preview.ticket_items.SelectionOnly}
+       * @private
+       */
+      this.selectionOnly_ =
+          new print_preview.ticket_items.SelectionOnly(this.documentInfo_);
 
-    /**
-     * Keeps track of event listeners for the print ticket store.
-     * @type {!EventTracker}
-     * @private
-     */
-    this.tracker_ = new EventTracker();
+      /**
+       * Vendor ticket items.
+       * @type {!print_preview.ticket_items.VendorItems}
+       * @private
+       */
+      this.vendorItems_ = new print_preview.ticket_items.VendorItems(
+          this.appState_, this.destinationStore_);
 
-    /**
-     * Whether the print preview has been initialized.
-     * @type {boolean}
-     * @private
-     */
-    this.isInitialized_ = false;
+      /**
+       * Keeps track of event listeners for the print ticket store.
+       * @type {!EventTracker}
+       * @private
+       */
+      this.tracker_ = new EventTracker();
 
-    this.addEventListeners_();
-  }
+      /**
+       * Whether the print preview has been initialized.
+       * @type {boolean}
+       * @private
+       */
+      this.isInitialized_ = false;
 
-  /**
-   * Event types dispatched by the print ticket store.
-   * @enum {string}
-   */
-  PrintTicketStore.EventType = {
-    CAPABILITIES_CHANGE: 'print_preview.PrintTicketStore.CAPABILITIES_CHANGE',
-    DOCUMENT_CHANGE: 'print_preview.PrintTicketStore.DOCUMENT_CHANGE',
-    INITIALIZE: 'print_preview.PrintTicketStore.INITIALIZE',
-  };
+      this.addEventListeners_();
+    }
 
-  PrintTicketStore.prototype = {
-    __proto__: cr.EventTarget.prototype,
-
-    /**
-     * Whether the print preview has been initialized.
-     * @type {boolean}
-     */
     get isInitialized() {
       return this.isInitialized_;
-    },
+    }
 
     get collate() {
       return this.collate_;
-    },
+    }
 
     get color() {
       return this.color_;
-    },
+    }
 
     get copies() {
       return this.copies_;
-    },
+    }
 
     get cssBackground() {
       return this.cssBackground_;
-    },
+    }
 
     get customMargins() {
       return this.customMargins_;
-    },
+    }
 
     get dpi() {
       return this.dpi_;
-    },
+    }
 
     get duplex() {
       return this.duplex_;
-    },
+    }
 
     get fitToPage() {
       return this.fitToPage_;
-    },
+    }
 
     get headerFooter() {
       return this.headerFooter_;
-    },
+    }
 
     get mediaSize() {
       return this.mediaSize_;
-    },
+    }
 
     get landscape() {
       return this.landscape_;
-    },
+    }
 
     get marginsType() {
       return this.marginsType_;
-    },
+    }
 
     get pageRange() {
       return this.pageRange_;
-    },
+    }
 
     get rasterize() {
       return this.rasterize_;
-    },
+    }
 
     get scaling() {
       return this.scaling_;
-    },
+    }
 
     get selectionOnly() {
       return this.selectionOnly_;
-    },
+    }
 
     get vendorItems() {
       return this.vendorItems_;
-    },
+    }
 
-    /**
-     * @return {!print_preview.MeasurementSystem} Measurement system of the
-     *     local system.
-     */
     get measurementSystem() {
       return this.measurementSystem_;
-    },
+    }
 
     /**
      * Initializes the print ticket store. Dispatches an INITIALIZE event.
@@ -323,8 +303,7 @@ cr.define('print_preview', function() {
      * @param {boolean} selectionOnly Whether only selected content should be
      *     printed.
      */
-    init: function(
-        thousandsDelimeter, decimalDelimeter, unitType, selectionOnly) {
+    init(thousandsDelimeter, decimalDelimeter, unitType, selectionOnly) {
       this.measurementSystem_.setSystem(
           thousandsDelimeter, decimalDelimeter, unitType);
       this.selectionOnly_.updateValue(selectionOnly);
@@ -403,35 +382,35 @@ cr.define('print_preview', function() {
             /** @type {!Object<string>} */ (this.appState_.getField(
                 print_preview.AppStateField.VENDOR_OPTIONS)));
       }
-    },
+    }
 
     /**
      * @return {boolean} {@code true} if the stored print ticket is valid,
      *     {@code false} otherwise.
      */
-    isTicketValid: function() {
+    isTicketValid() {
       return this.isTicketValidForPreview() &&
           (!this.copies_.isCapabilityAvailable() || this.copies_.isValid()) &&
           (!this.pageRange_.isCapabilityAvailable() ||
            this.pageRange_.isValid());
-    },
+    }
 
     /** @return {boolean} Whether the ticket is valid for preview generation. */
-    isTicketValidForPreview: function() {
+    isTicketValidForPreview() {
       return (
           (!this.marginsType_.isCapabilityAvailable() ||
            !this.marginsType_.isValueEqual(
                print_preview.ticket_items.MarginsTypeValue.CUSTOM) ||
            this.customMargins_.isValid()) &&
           (!this.scaling_.isCapabilityAvailable() || this.scaling_.isValid()));
-    },
+    }
 
     /**
      * Creates an object that represents a Google Cloud Print print ticket.
      * @param {!print_preview.Destination} destination Destination to print to.
      * @return {string} Google Cloud Print print ticket.
      */
-    createPrintTicket: function(destination) {
+    createPrintTicket(destination) {
       assert(
           !destination.isLocal || destination.isPrivet ||
               destination.isExtension,
@@ -505,13 +484,13 @@ cr.define('print_preview', function() {
         }
       }
       return JSON.stringify(cjt);
-    },
+    }
 
     /**
      * Adds event listeners for the print ticket store.
      * @private
      */
-    addEventListeners_: function() {
+    addEventListeners_() {
       this.tracker_.add(
           this.destinationStore_,
           print_preview.DestinationStore.EventType
@@ -531,13 +510,13 @@ cr.define('print_preview', function() {
       this.tracker_.add(
           this.documentInfo_, print_preview.DocumentInfo.EventType.CHANGE,
           this.onDocumentInfoChange_.bind(this));
-    },
+    }
 
     /**
      * Called when the capabilities of the selected destination are ready.
      * @private
      */
-    onSelectedDestinationCapabilitiesReady_: function() {
+    onSelectedDestinationCapabilitiesReady_() {
       if (this.capabilitiesHolder_.get() != null) {
         this.customMargins_.updateValue(null);
         if (this.marginsType_.getValue() ==
@@ -558,16 +537,26 @@ cr.define('print_preview', function() {
         cr.dispatchSimpleEvent(
             this, PrintTicketStore.EventType.CAPABILITIES_CHANGE);
       }
-    },
+    }
 
     /**
      * Called when document data model has changed. Dispatches a print ticket
      * store event.
      * @private
      */
-    onDocumentInfoChange_: function() {
+    onDocumentInfoChange_() {
       cr.dispatchSimpleEvent(this, PrintTicketStore.EventType.DOCUMENT_CHANGE);
-    },
+    }
+  }
+
+  /**
+   * Event types dispatched by the print ticket store.
+   * @enum {string}
+   */
+  PrintTicketStore.EventType = {
+    CAPABILITIES_CHANGE: 'print_preview.PrintTicketStore.CAPABILITIES_CHANGE',
+    DOCUMENT_CHANGE: 'print_preview.PrintTicketStore.DOCUMENT_CHANGE',
+    INITIALIZE: 'print_preview.PrintTicketStore.INITIALIZE',
   };
 
   // Export
