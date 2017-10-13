@@ -915,7 +915,7 @@ void NavigatorImpl::RequestTransferURL(
     frame_entry = new FrameNavigationEntry(
         node->unique_name(), -1, -1, nullptr,
         static_cast<SiteInstanceImpl*>(source_site_instance), dest_url,
-        referrer_to_use, method, -1);
+        referrer_to_use, redirect_chain, PageState(), method, -1);
   }
   NavigateToEntry(node, *frame_entry, *entry.get(), ReloadType::NONE, false,
                   false, false, post_body);
