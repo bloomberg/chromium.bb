@@ -643,13 +643,22 @@ config("compiler_cpu_abi") {
         ldflags += [ "--target=aarch64-linux-gnu" ]
       }
     } else if (current_cpu == "mipsel" && !is_nacl) {
+      if (is_clang) {
+        if (is_android) {
+          cflags += [ "--target=mipsel-linux-android" ]
+          ldflags += [ "--target=mipsel-linux-android" ]
+        } else {
+          cflags += [ "--target=mipsel-linux-gnu" ]
+          ldflags += [ "--target=mipsel-linux-gnu" ]
+        }
+      } else {
+        cflags += [ "-EL" ]
+        ldflags += [ "-EL" ]
+      }
+
       if (mips_arch_variant == "r6") {
         if (is_clang) {
-          cflags += [
-            "--target=mipsel-linux-gnu",
-            "-march=mips32r6",
-          ]
-          ldflags += [ "--target=mipsel-linux-gnu" ]
+          cflags += [ "-march=mips32r6" ]
         } else {
           cflags += [
             "-mips32r6",
@@ -672,18 +681,14 @@ config("compiler_cpu_abi") {
         if (is_clang) {
           if (is_android) {
             cflags += [
-              "--target=mipsel-linux-android",
               "-march=mipsel",
               "-mcpu=mips32r2",
             ]
-            ldflags += [ "--target=mipsel-linux-android" ]
           } else {
             cflags += [
-              "--target=mipsel-linux-gnu",
               "-march=mipsel",
               "-mcpu=mips32r2",
             ]
-            ldflags += [ "--target=mipsel-linux-gnu" ]
           }
         } else {
           cflags += [
@@ -698,18 +703,14 @@ config("compiler_cpu_abi") {
         if (is_clang) {
           if (is_android) {
             cflags += [
-              "--target=mipsel-linux-android",
               "-march=mipsel",
               "-mcpu=mips32",
             ]
-            ldflags += [ "--target=mipsel-linux-android" ]
           } else {
             cflags += [
-              "--target=mipsel-linux-gnu",
               "-march=mipsel",
               "-mcpu=mips32",
             ]
-            ldflags += [ "--target=mipsel-linux-gnu" ]
           }
         } else {
           cflags += [
