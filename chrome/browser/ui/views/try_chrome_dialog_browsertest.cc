@@ -298,12 +298,11 @@ IN_PROC_BROWSER_TEST_P(TryChromeDialogTest, InvokeDialog_default) {
   RunDialog();
 }
 
-// TODO(skare): Remove " - 1" hack when
-// https://chromium-review.googlesource.com/c/chromium/src/+/645840 lands.
 INSTANTIATE_TEST_CASE_P(
     Variations,
     TryChromeDialogTest,
-    Range(0,
-          static_cast<int>(installer::ExperimentMetrics::kHoldbackGroup) - 1));
+    ::testing::Range(
+        0,
+        static_cast<int>(installer::ExperimentMetrics::kHoldbackGroup)));
 
 #endif  // defined(OS_WIN)
