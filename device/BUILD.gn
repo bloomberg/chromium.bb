@@ -73,7 +73,11 @@ test("device_unittests") {
     "test/run_all_unittests.cc",
     "u2f/u2f_apdu_unittest.cc",
     "u2f/u2f_ble_frames_unittest.cc",
+    "u2f/u2f_discovery_unittest.cc",
     "u2f/u2f_message_unittest.cc",
+    "u2f/u2f_register_unittest.cc",
+    "u2f/u2f_request_unittest.cc",
+    "u2f/u2f_sign_unittest.cc",
   ]
 
   deps = [
@@ -122,9 +126,7 @@ test("device_unittests") {
       "u2f/fake_hid_impl_for_testing.cc",
       "u2f/fake_hid_impl_for_testing.h",
       "u2f/u2f_hid_device_unittest.cc",
-      "u2f/u2f_register_unittest.cc",
-      "u2f/u2f_request_unittest.cc",
-      "u2f/u2f_sign_unittest.cc",
+      "u2f/u2f_hid_discovery_unittest.cc",
     ]
     deps += [
       "//device/hid",
