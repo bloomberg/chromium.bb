@@ -420,7 +420,7 @@ public class NewTabPageView extends FrameLayout implements TileGroup.Observer {
         NoUnderlineClickableSpan link = new NoUnderlineClickableSpan() {
             @Override
             public void onClick(View view) {
-                new ChromeHomePromoDialog(mActivity).show();
+                new ChromeHomePromoDialog(mActivity, ChromeHomePromoDialog.ShowReason.NTP).show();
             }
         };
 
