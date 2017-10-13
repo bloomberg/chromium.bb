@@ -14,7 +14,7 @@ login.createScreen('UserImageScreen', 'user-image', function() {
   var CONTEXT_KEY_IS_PROFILE_PICTURE_AVAILABLE = 'isProfilePictureAvailable';
 
   return {
-    EXTERNAL_API: ['setDefaultImages', 'hideCurtain', 'setAllowVideoMode'],
+    EXTERNAL_API: ['setDefaultImages', 'hideCurtain'],
 
     /** @override */
     decorate: function(element) {
@@ -161,13 +161,6 @@ login.createScreen('UserImageScreen', 'user-image', function() {
      */
     updateLocalizedContent: function() {
       $('changePicture').i18nUpdateLocale();
-    },
-
-    /**
-     * Set video mode allowance.
-     */
-    setAllowVideoMode: function(allowVideoMode) {
-      $('changePicture').allowVideoMode = allowVideoMode;
     },
   };
 });

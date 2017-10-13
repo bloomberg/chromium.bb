@@ -38,15 +38,6 @@ Polymer({
     switchModeLabel: String,
 
     /**
-     * True when video mode is allowed.
-     * @private {boolean}
-     */
-    allowVideoMode: {
-      type: Boolean,
-      observer: 'allowVideoModeChanged_',
-    },
-
-    /**
      * True if currently in video mode.
      * @private {boolean}
      */
@@ -170,20 +161,7 @@ Polymer({
    * @private
    */
   onTapSwitchMode_: function() {
-    if (!this.allowVideoMode)
-      return;
     this.videomode = !this.videomode;
-    this.fire('switch-mode', this.videomode);
-  },
-
-  /**
-   * Switch out of video mode if not allowed.
-   * @private
-   */
-  allowVideoModeChanged_: function() {
-    if (this.allowVideoMode || !this.videomode)
-      return;
-    this.videomode = false;
     this.fire('switch-mode', this.videomode);
   },
 

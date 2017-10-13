@@ -27,15 +27,6 @@ Polymer({
     },
 
     /**
-     * True if video mode is allowed.
-     * @private {boolean}
-     */
-    allowVideoMode_: {
-      type: Boolean,
-      value: true,
-    },
-
-    /**
      * The currently selected item. This property is bound to the iron-selector
      * and never directly assigned. This may be undefined momentarily as
      * the selection changes due to iron-selector implementation details.
@@ -96,8 +87,6 @@ Polymer({
         'profile-image-changed', this.receiveProfileImage_.bind(this));
     this.addWebUIListener(
         'camera-presence-changed', this.receiveCameraPresence_.bind(this));
-    this.addWebUIListener(
-        'allow-video-mode-changed', this.receiveAllowVideoMode_.bind(this));
   },
 
 
@@ -162,15 +151,6 @@ Polymer({
    */
   receiveCameraPresence_: function(cameraPresent) {
     this.cameraPresent_ = cameraPresent;
-  },
-
-  /**
-   * Handler for the 'allow-video-mode-changed' event.
-   * @param {boolean} allowVideoMode
-   * @private
-   */
-  receiveAllowVideoMode_: function(allowVideoMode) {
-    this.allowVideoMode_ = allowVideoMode;
   },
 
   /**
