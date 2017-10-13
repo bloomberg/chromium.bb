@@ -24284,6 +24284,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="FileBrowser.OpenFiles.RootType" enum="FileManagerRootType">
+  <owner>fukino@chromium.com</owner>
+  <summary>
+    Chrome OS File Browser: The locations (root types) of files which are opened
+    by the file picker.
+  </summary>
+</histogram>
+
 <histogram name="FileBrowser.OpeningFileType" enum="FileType">
   <obsolete>
     Deprecated 4/2013, and replaced by FileBrowser.ViewingFileType.
