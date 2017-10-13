@@ -82,9 +82,6 @@ class X509Certificate;
   // Container for permission info in the site settings section.
   NSView* permissionsView_;
 
-  // Whether the permissionView_ shows anything.
-  BOOL permissionsPresent_;
-
   // The link button for showing site settings.
   NSButton* siteSettingsButton_;
 

@@ -28,19 +28,7 @@
     [self setMenu:[menuController_ menu]];
     [self selectItemWithTag:permissionInfo.setting];
 
-    // Set the button title.
-    base::scoped_nsobject<NSMenuItem> titleItem([[NSMenuItem alloc] init]);
-    base::string16 buttonTitle = PageInfoUI::PermissionActionToUIString(
-        profile, permissionInfo.type, permissionInfo.setting,
-        permissionInfo.default_setting, permissionInfo.source);
-    [titleItem setTitle:base::SysUTF16ToNSString(buttonTitle)];
-    [[self cell] setUsesItemFromMenu:NO];
-    [[self cell] setMenuItem:titleItem.get()];
-    // Although the frame is reset, below, this sizes the cell properly.
-    [self sizeToFit];
-
-    // Size the button to just fit the visible title - not all of its items.
-    [self setFrameSize:SizeForPageInfoButtonTitle(self, [self title])];
+    [self setButtonTitle:permissionInfo profile:profile];
   }
   return self;
 }
@@ -64,6 +52,23 @@
 // Accessor function for testing only.
 - (NSMenu*)permissionMenu {
   return [menuController_ menu];
+}
+
+- (void)setButtonTitle:(const PageInfoUI::PermissionInfo&)permissionInfo
+               profile:(Profile*)profile {
+  // Set the button title.
+  base::scoped_nsobject<NSMenuItem> titleItem([[NSMenuItem alloc] init]);
+  base::string16 buttonTitle = PageInfoUI::PermissionActionToUIString(
+      profile, permissionInfo.type, permissionInfo.setting,
+      permissionInfo.default_setting, permissionInfo.source);
+  [titleItem setTitle:base::SysUTF16ToNSString(buttonTitle)];
+  [[self cell] setUsesItemFromMenu:NO];
+  [[self cell] setMenuItem:titleItem];
+  // Although the frame is reset, below, this sizes the cell properly.
+  [self sizeToFit];
+
+  // Size the button to just fit the visible title - not all of its items.
+  [self setFrameSize:SizeForPageInfoButtonTitle(self, [self title])];
 }
 
 @end
