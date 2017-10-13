@@ -32,7 +32,6 @@ import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.UrlConstants;
@@ -53,6 +52,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.chrome.browser.util.ConversionUtils;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.Tracker;
@@ -69,6 +69,7 @@ import org.chromium.ui.widget.Toast;
 import java.io.File;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.ref.WeakReference;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -126,17 +127,16 @@ public class DownloadUtils {
     public static boolean showDownloadManager(@Nullable Activity activity, @Nullable Tab tab) {
         // Figure out what tab was last being viewed by the user.
         if (activity == null) activity = ApplicationStatus.getLastTrackedFocusedActivity();
+
+        if (openDownloadsManagerInBottomSheet(activity)) return true;
+
         if (tab == null && activity instanceof ChromeTabbedActivity) {
             tab = ((ChromeTabbedActivity) activity).getActivityTab();
         }
 
         Context appContext = ContextUtils.getApplicationContext();
-        if (activity instanceof ChromeActivity
-                && ((ChromeActivity) activity).getBottomSheet() != null) {
-            ((ChromeActivity) activity)
-                    .getBottomSheetContentController()
-                    .showContentAndOpenSheet(R.id.action_downloads);
-        } else if (DeviceFormFactor.isTablet()) {
+
+        if (DeviceFormFactor.isTablet()) {
             // Download Home shows up as a tab on tablets.
             LoadUrlParams params = new LoadUrlParams(UrlConstants.DOWNLOADS_URL);
             if (tab == null || !tab.isInitialized()) {
@@ -180,6 +180,42 @@ public class DownloadUtils {
             tracker.notifyEvent(EventConstants.DOWNLOAD_HOME_OPENED);
         }
 
+        return true;
+    }
+
+    /**
+     * @param activity The activity the download manager should be displayed in if applicable or
+     *                 the last tracked focused activity.
+     * @return Whether the downloads manager was opened in the Chrome Home bottom sheet.
+     */
+    private static boolean openDownloadsManagerInBottomSheet(Activity activity) {
+        if (!FeatureUtilities.isChromeHomeEnabled()) return false;
+
+        Context appContext = ContextUtils.getApplicationContext();
+
+        ChromeTabbedActivity tabbedActivity = null;
+        if (activity instanceof ChromeTabbedActivity) {
+            tabbedActivity = (ChromeTabbedActivity) activity;
+        } else {
+            // Iterate through all activities looking for an instance of ChromeTabbedActivity.
+            List<WeakReference<Activity>> list = ApplicationStatus.getRunningActivities();
+            for (WeakReference<Activity> ref : list) {
+                Activity currentActivity = ref.get();
+                if (currentActivity instanceof ChromeTabbedActivity) {
+                    tabbedActivity = (ChromeTabbedActivity) currentActivity;
+                }
+            }
+        }
+
+        if (tabbedActivity == null) return false;
+
+        tabbedActivity.getBottomSheetContentController().showContentAndOpenSheet(
+                R.id.action_downloads);
+
+        // Bring the ChromeTabbedActivity to the front.
+        Intent intent = new Intent(appContext, tabbedActivity.getClass());
+        intent.addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
+        activity.startActivity(intent);
         return true;
     }
 
