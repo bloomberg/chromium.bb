@@ -12,3 +12,9 @@ interface PingService {
 interface EchoService {
   Echo(string test_data) => (string echo_data);
 };
+
+interface HandleTrampoline {
+  BounceOne(handle<message_pipe> one) => (handle<message_pipe> one);
+  BounceTwo(handle<message_pipe> one, handle<message_pipe> two)
+      => (handle<message_pipe> one, handle<message_pipe> two);
+};

@@ -144,7 +144,7 @@ bool {{proxy_name}}::{{method.name}}(
       new {{class_name}}_{{method.name}}_HandleSyncResponse(
           &result
 {%-     for param in method.response_parameters -%}
-          , param_{{param.name}}
+          , out_param_{{param.name}}
 {%-     endfor %}));
   ignore_result(receiver_->AcceptWithResponder(&message, std::move(responder)));
   return result;
@@ -579,3 +579,38 @@ void {{interface.name}}InterceptorForTesting::{{method.name}}({{interface_macros
   );
 }
 {%- endfor %}
+
+{#--- Async wait helper for testing #}
+{{interface.name}}AsyncWaiter::{{interface.name}}AsyncWaiter(
+    {{interface.name}}* proxy) : proxy_(proxy) {}
+
+{{interface.name}}AsyncWaiter::~{{interface.name}}AsyncWaiter() = default;
+
+{%  for method in interface.methods if method.response_parameters != None -%}
+void {{interface.name}}AsyncWaiter::{{method.name}}(
+    {{interface_macros.declare_sync_method_params("", method)}}) {
+  base::RunLoop loop;
+  proxy_->{{method.name}}(
+{%-   for param in method.parameters -%}
+      std::move({{param.name}}),
+{%-   endfor %}
+      base::Bind(
+          [](base::RunLoop* loop
+{%-   for param in method.response_parameters -%},
+             {{param.kind|cpp_wrapper_type}}* out_{{param.name}}
+{%    endfor -%}
+{%-   for param in method.response_parameters -%},
+             {{param.kind|cpp_wrapper_param_type}} {{param.name}}
+{%-   endfor %}) {
+{%-   for param in method.response_parameters -%}
+            *out_{{param.name}} = std::move({{param.name}});
+{%-   endfor %}
+            loop->Quit();
+          },
+          &loop
+{%-   for param in method.response_parameters -%},
+          out_{{param.name}}
+{%-   endfor %}));
+  loop.Run();
+}
+{% endfor %}
