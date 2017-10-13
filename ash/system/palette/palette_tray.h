@@ -31,6 +31,7 @@ class ImageView;
 
 namespace ash {
 
+class PaletteTrayTestApi;
 class PaletteToolManager;
 class PaletteWelcomeBubble;
 class TrayBubbleWrapper;
@@ -45,33 +46,6 @@ class ASH_EXPORT PaletteTray : public TrayBackgroundView,
                                public PaletteToolManager::Delegate,
                                public ui::InputDeviceEventObserver {
  public:
-  // For testing.
-  // TODO(crbug.com/774166): Move this to class to its own file.
-  class TestApi {
-   public:
-    explicit TestApi(PaletteTray* palette_tray);
-    ~TestApi();
-
-    PaletteToolManager* GetPaletteToolManager() {
-      return palette_tray_->palette_tool_manager_.get();
-    }
-
-    PaletteWelcomeBubble* GetWelcomeBubble() {
-      return palette_tray_->welcome_bubble_.get();
-    }
-
-    TrayBubbleWrapper* GetTrayBubbleWrapper() {
-      return palette_tray_->bubble_.get();
-    }
-
-    bool IsStylusWatcherActive() { return !!palette_tray_->watcher_; }
-
-   private:
-    PaletteTray* palette_tray_ = nullptr;  // not owned
-
-    DISALLOW_COPY_AND_ASSIGN(TestApi);
-  };
-
   explicit PaletteTray(Shelf* shelf);
   ~PaletteTray() override;
 
@@ -108,6 +82,7 @@ class ASH_EXPORT PaletteTray : public TrayBackgroundView,
 
  private:
   class StylusWatcher;
+  friend class PaletteTrayTestApi;
 
   // ui::InputDeviceObserver:
   void OnTouchscreenDeviceConfigurationChanged() override;

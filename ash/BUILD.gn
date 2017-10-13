@@ -1653,6 +1653,8 @@ static_library("test_support_common") {
     "shell_test_api.h",
     "system/cast/tray_cast_test_api.cc",
     "system/cast/tray_cast_test_api.h",
+    "system/palette/palette_tray_test_api.cc",
+    "system/palette/palette_tray_test_api.h",
     "system/palette/test_palette_delegate.cc",
     "system/palette/test_palette_delegate.h",
     "system/power/power_button_test_base.cc",

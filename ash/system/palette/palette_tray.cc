@@ -553,12 +553,4 @@ void PaletteTray::UpdateIconVisibility() {
              palette_utils::IsInUserSession());
 }
 
-// TestApi. For testing purposes.
-PaletteTray::TestApi::TestApi(PaletteTray* palette_tray)
-    : palette_tray_(palette_tray) {
-  DCHECK(palette_tray_);
-}
-
-PaletteTray::TestApi::~TestApi() {}
-
 }  // namespace ash

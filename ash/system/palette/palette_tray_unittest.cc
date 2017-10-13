@@ -17,6 +17,7 @@
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
 #include "ash/shell_test_api.h"
+#include "ash/system/palette/palette_tray_test_api.h"
 #include "ash/system/palette/palette_utils.h"
 #include "ash/system/palette/palette_welcome_bubble.h"
 #include "ash/system/palette/test_palette_delegate.h"
@@ -69,7 +70,7 @@ class PaletteTrayTest : public AshTestBase {
 
     palette_tray_ =
         StatusAreaWidgetTestHelper::GetStatusAreaWidget()->palette_tray();
-    test_api_ = std::make_unique<PaletteTray::TestApi>(palette_tray_);
+    test_api_ = std::make_unique<PaletteTrayTestApi>(palette_tray_);
 
     // Set the test palette delegate here, since this requires an instance of
     // shell to be available.
@@ -95,7 +96,7 @@ class PaletteTrayTest : public AshTestBase {
 
   PaletteTray* palette_tray_ = nullptr;  // not owned
 
-  std::unique_ptr<PaletteTray::TestApi> test_api_;
+  std::unique_ptr<PaletteTrayTestApi> test_api_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PaletteTrayTest);
@@ -149,41 +150,40 @@ TEST_F(PaletteTrayTest, PaletteTrayWorkflow) {
   // Verify the palette tray button is not active, and the palette tray bubble
   // is not shown initially.
   EXPECT_FALSE(palette_tray_->is_active());
-  EXPECT_FALSE(test_api_->GetTrayBubbleWrapper());
+  EXPECT_FALSE(test_api_->tray_bubble_wrapper());
 
   // Verify that by tapping the palette tray button, the button will become
   // active and the palette tray bubble will be open.
   PerformTap();
   EXPECT_TRUE(palette_tray_->is_active());
-  EXPECT_TRUE(test_api_->GetTrayBubbleWrapper());
+  EXPECT_TRUE(test_api_->tray_bubble_wrapper());
 
   // Verify that activating a mode tool will close the palette tray bubble, but
   // leave the palette tray button active.
-  test_api_->GetPaletteToolManager()->ActivateTool(
-      PaletteToolId::LASER_POINTER);
-  EXPECT_TRUE(test_api_->GetPaletteToolManager()->IsToolActive(
+  test_api_->palette_tool_manager()->ActivateTool(PaletteToolId::LASER_POINTER);
+  EXPECT_TRUE(test_api_->palette_tool_manager()->IsToolActive(
       PaletteToolId::LASER_POINTER));
   EXPECT_TRUE(palette_tray_->is_active());
-  EXPECT_FALSE(test_api_->GetTrayBubbleWrapper());
+  EXPECT_FALSE(test_api_->tray_bubble_wrapper());
 
   // Verify that tapping the palette tray while a tool is active will deactivate
   // the tool, and the palette tray button will not be active.
   PerformTap();
   EXPECT_FALSE(palette_tray_->is_active());
-  EXPECT_FALSE(test_api_->GetPaletteToolManager()->IsToolActive(
+  EXPECT_FALSE(test_api_->palette_tool_manager()->IsToolActive(
       PaletteToolId::LASER_POINTER));
 
   // Verify that activating a action tool will close the palette tray bubble and
   // the palette tray button is will not be active.
   PerformTap();
-  ASSERT_TRUE(test_api_->GetTrayBubbleWrapper());
-  test_api_->GetPaletteToolManager()->ActivateTool(
+  ASSERT_TRUE(test_api_->tray_bubble_wrapper());
+  test_api_->palette_tool_manager()->ActivateTool(
       PaletteToolId::CAPTURE_SCREEN);
-  EXPECT_FALSE(test_api_->GetPaletteToolManager()->IsToolActive(
+  EXPECT_FALSE(test_api_->palette_tool_manager()->IsToolActive(
       PaletteToolId::CAPTURE_SCREEN));
   // Wait for the tray bubble widget to close.
   RunAllPendingInMessageLoop();
-  EXPECT_FALSE(test_api_->GetTrayBubbleWrapper());
+  EXPECT_FALSE(test_api_->tray_bubble_wrapper());
   EXPECT_FALSE(palette_tray_->is_active());
 }
 
@@ -194,25 +194,24 @@ TEST_F(PaletteTrayTest, ModeToolDeactivatedAutomatically) {
   // Open the palette tray with a tap.
   PerformTap();
   ASSERT_TRUE(palette_tray_->is_active());
-  ASSERT_TRUE(test_api_->GetTrayBubbleWrapper());
+  ASSERT_TRUE(test_api_->tray_bubble_wrapper());
 
   // Activate and deactivate the laser pointer tool.
-  test_api_->GetPaletteToolManager()->ActivateTool(
-      PaletteToolId::LASER_POINTER);
-  ASSERT_TRUE(test_api_->GetPaletteToolManager()->IsToolActive(
+  test_api_->palette_tool_manager()->ActivateTool(PaletteToolId::LASER_POINTER);
+  ASSERT_TRUE(test_api_->palette_tool_manager()->IsToolActive(
       PaletteToolId::LASER_POINTER));
-  test_api_->GetPaletteToolManager()->DeactivateTool(
+  test_api_->palette_tool_manager()->DeactivateTool(
       PaletteToolId::LASER_POINTER);
 
   // Verify the bubble is hidden and the button is inactive after deactivating
   // the capture region tool.
-  EXPECT_FALSE(test_api_->GetTrayBubbleWrapper());
+  EXPECT_FALSE(test_api_->tray_bubble_wrapper());
   EXPECT_FALSE(palette_tray_->is_active());
 }
 
 TEST_F(PaletteTrayTest, NoMetalayerToolViewCreated) {
   EXPECT_FALSE(
-      test_api_->GetPaletteToolManager()->HasTool(PaletteToolId::METALAYER));
+      test_api_->palette_tool_manager()->HasTool(PaletteToolId::METALAYER));
 }
 
 // Base class for tests that rely on voice interaction enabled.
@@ -251,7 +250,7 @@ class PaletteTrayTestWithVoiceInteraction : public PaletteTrayTest {
 
  protected:
   bool metalayer_enabled() const {
-    return test_api_->GetPaletteToolManager()->IsToolActive(
+    return test_api_->palette_tool_manager()->IsToolActive(
         PaletteToolId::METALAYER);
   }
 
@@ -313,7 +312,7 @@ class PaletteTrayTestWithVoiceInteraction : public PaletteTrayTest {
 
 TEST_F(PaletteTrayTestWithVoiceInteraction, MetalayerToolViewCreated) {
   EXPECT_TRUE(
-      test_api_->GetPaletteToolManager()->HasTool(PaletteToolId::METALAYER));
+      test_api_->palette_tool_manager()->HasTool(PaletteToolId::METALAYER));
 }
 
 TEST_F(PaletteTrayTestWithVoiceInteraction, MetalayerToolActivatesHighlighter) {
@@ -338,7 +337,7 @@ TEST_F(PaletteTrayTestWithVoiceInteraction, MetalayerToolActivatesHighlighter) {
                          false /* no highlighter on press */);
 
   // Activate the palette tool, still no highlighter.
-  test_api_->GetPaletteToolManager()->ActivateTool(PaletteToolId::METALAYER);
+  test_api_->palette_tool_manager()->ActivateTool(PaletteToolId::METALAYER);
   EXPECT_FALSE(highlighter_showing());
 
   // Press/drag over a regular (non-palette) location. This should activate the
@@ -381,7 +380,7 @@ TEST_F(PaletteTrayTestWithVoiceInteraction, MetalayerToolActivatesHighlighter) {
 
   // Disabling metalayer support in the delegate should disable the palette
   // tool.
-  test_api_->GetPaletteToolManager()->ActivateTool(PaletteToolId::METALAYER);
+  test_api_->palette_tool_manager()->ActivateTool(PaletteToolId::METALAYER);
   Shell::Get()->NotifyVoiceInteractionContextEnabled(false);
   EXPECT_FALSE(metalayer_enabled());
 
@@ -480,7 +479,7 @@ TEST_F(PaletteTrayTestWithVoiceInteraction,
   // The barrel button should not work on the lock screen.
   highlighter_test_api_->DestroyPointerView();
   GetSessionControllerClient()->RequestLockScreen();
-  EXPECT_FALSE(test_api_->GetPaletteToolManager()->IsToolActive(
+  EXPECT_FALSE(test_api_->palette_tool_manager()->IsToolActive(
       PaletteToolId::METALAYER));
   WaitDragAndAssertMetalayer("screen locked", origin, ui::EF_LEFT_MOUSE_BUTTON,
                              false /* no metalayer */,
@@ -495,7 +494,7 @@ TEST_F(PaletteTrayTestWithVoiceInteraction,
   // Disable the metalayer support.
   // This should deactivate both the palette tool and the highlighter.
   Shell::Get()->NotifyVoiceInteractionContextEnabled(false);
-  EXPECT_FALSE(test_api_->GetPaletteToolManager()->IsToolActive(
+  EXPECT_FALSE(test_api_->palette_tool_manager()->IsToolActive(
       PaletteToolId::METALAYER));
 
   highlighter_test_api_->DestroyPointerView();
@@ -530,7 +529,7 @@ TEST_F(PaletteTrayTestWithInternalStylus, Visible) {
 TEST_F(PaletteTrayTestWithInternalStylus, PaletteTrayOnLockScreenBehavior) {
   ASSERT_TRUE(palette_tray_->visible());
 
-  PaletteToolManager* manager = test_api_->GetPaletteToolManager();
+  PaletteToolManager* manager = test_api_->palette_tool_manager();
   manager->ActivateTool(PaletteToolId::LASER_POINTER);
   EXPECT_TRUE(manager->IsToolActive(PaletteToolId::LASER_POINTER));
 
@@ -553,14 +552,14 @@ TEST_F(PaletteTrayTestWithInternalStylus, ToolDeactivatesWhenOpeningBubble) {
   ASSERT_TRUE(palette_tray_->visible());
 
   palette_tray_->ShowBubble(false /* show_by_click */);
-  EXPECT_TRUE(test_api_->GetTrayBubbleWrapper());
-  PaletteToolManager* manager = test_api_->GetPaletteToolManager();
+  EXPECT_TRUE(test_api_->tray_bubble_wrapper());
+  PaletteToolManager* manager = test_api_->palette_tool_manager();
   manager->ActivateTool(PaletteToolId::LASER_POINTER);
   EXPECT_TRUE(manager->IsToolActive(PaletteToolId::LASER_POINTER));
-  EXPECT_FALSE(test_api_->GetTrayBubbleWrapper());
+  EXPECT_FALSE(test_api_->tray_bubble_wrapper());
 
   palette_tray_->ShowBubble(false /* show_by_click */);
-  EXPECT_TRUE(test_api_->GetTrayBubbleWrapper());
+  EXPECT_TRUE(test_api_->tray_bubble_wrapper());
   EXPECT_FALSE(manager->IsToolActive(PaletteToolId::LASER_POINTER));
 }
 
@@ -570,10 +569,10 @@ TEST_F(PaletteTrayTestWithInternalStylus, WelcomeBubbleShownOnEject) {
   test_palette_delegate()->set_should_show_palette(true);
   ASSERT_FALSE(active_user_pref_service()->GetBoolean(
       prefs::kShownPaletteWelcomeBubble));
-  EXPECT_FALSE(test_api_->GetWelcomeBubble()->BubbleShown());
+  EXPECT_FALSE(test_api_->welcome_bubble()->BubbleShown());
 
   EjectStylus();
-  EXPECT_TRUE(test_api_->GetWelcomeBubble()->BubbleShown());
+  EXPECT_TRUE(test_api_->welcome_bubble()->BubbleShown());
 }
 
 // Verify if the pref which tracks if the welcome bubble has been shown before
@@ -582,10 +581,10 @@ TEST_F(PaletteTrayTestWithInternalStylus, WelcomeBubbleNotShownIfShownBefore) {
   test_palette_delegate()->set_should_show_palette(true);
   active_user_pref_service()->SetBoolean(prefs::kShownPaletteWelcomeBubble,
                                          true);
-  EXPECT_FALSE(test_api_->GetWelcomeBubble()->BubbleShown());
+  EXPECT_FALSE(test_api_->welcome_bubble()->BubbleShown());
 
   EjectStylus();
-  EXPECT_FALSE(test_api_->GetWelcomeBubble()->BubbleShown());
+  EXPECT_FALSE(test_api_->welcome_bubble()->BubbleShown());
 }
 
 // Verify that the bubble does not get shown if the auto open palette setting is
@@ -596,10 +595,10 @@ TEST_F(PaletteTrayTestWithInternalStylus,
   test_palette_delegate()->set_should_auto_open_palette(true);
   active_user_pref_service()->SetBoolean(prefs::kShownPaletteWelcomeBubble,
                                          false);
-  EXPECT_FALSE(test_api_->GetWelcomeBubble()->BubbleShown());
+  EXPECT_FALSE(test_api_->welcome_bubble()->BubbleShown());
 
   EjectStylus();
-  EXPECT_FALSE(test_api_->GetWelcomeBubble()->BubbleShown());
+  EXPECT_FALSE(test_api_->welcome_bubble()->BubbleShown());
 }
 
 }  // namespace ash
