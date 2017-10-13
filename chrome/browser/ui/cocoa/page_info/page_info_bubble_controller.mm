@@ -684,36 +684,52 @@ bool IsInternalURL(const GURL& url) {
   if (changePasswordButton_) {
     NSPoint changePasswordButtonOrigin;
     NSPoint whitelistReuseButtonOrigin;
-    bool canFitInOneLine = NSWidth([changePasswordButton_ frame]) +
-                               NSWidth([whitelistPasswordReuseButton_ frame]) +
-                               kNSButtonBuiltinMargin <=
-                           NSWidth([contentView_ frame]);
-    bool isRTL = base::i18n::IsRTL();
+    CGFloat viewWidth = NSWidth([contentView_ frame]);
+    CGFloat changePasswordButtonWidth = NSWidth([changePasswordButton_ frame]);
+    CGFloat whitelistReuseButtonWidth =
+        NSWidth([whitelistPasswordReuseButton_ frame]);
     CGFloat horizontalPadding =
         kSectionHorizontalPadding - kNSButtonBuiltinMargin;
-    changePasswordButtonOrigin.x =
-        isRTL ? NSWidth([contentView_ frame]) -
-                    NSWidth([changePasswordButton_ frame]) - horizontalPadding
-              : horizontalPadding;
-    changePasswordButtonOrigin.y = yPos + kSecurityParagraphSpacing;
-    whitelistReuseButtonOrigin.x =
-        isRTL ? (canFitInOneLine
-                     ? changePasswordButtonOrigin.x - kNSButtonBuiltinMargin -
-                           NSWidth([whitelistPasswordReuseButton_ frame])
-                     : NSWidth([contentView_ frame]) -
-                           NSWidth([whitelistPasswordReuseButton_ frame]) -
-                           horizontalPadding)
-              : (canFitInOneLine ? changePasswordButtonOrigin.x +
-                                       NSWidth([changePasswordButton_ frame]) +
-                                       kNSButtonBuiltinMargin
-                                 : changePasswordButtonOrigin.x);
-    whitelistReuseButtonOrigin.y =
-        canFitInOneLine ? changePasswordButtonOrigin.y
-                        : yPos + NSHeight([changePasswordButton_ frame]);
+    bool canFitInOneLine = changePasswordButtonWidth +
+                               whitelistReuseButtonWidth +
+                               2 * horizontalPadding <=
+                           viewWidth;
+    bool isRTL = base::i18n::IsRTL();
+    // Buttons are left-aligned for LTR languages, and are right aligned for
+    // RTL languages. Button order follows OSX convention.
+    if (canFitInOneLine) {
+      whitelistReuseButtonOrigin.y = changePasswordButtonOrigin.y =
+          yPos + kSecurityParagraphSpacing;
+      if (isRTL) {
+        whitelistReuseButtonOrigin.x =
+            viewWidth - whitelistReuseButtonWidth - horizontalPadding;
+        changePasswordButtonOrigin.x =
+            whitelistReuseButtonOrigin.x - changePasswordButtonWidth;
+      } else {
+        whitelistReuseButtonOrigin.x = horizontalPadding;
+        changePasswordButtonOrigin.x =
+            whitelistReuseButtonOrigin.x + whitelistReuseButtonWidth;
+      }
+    } else {
+      // If these buttons cannot fit in one line, stack them vertically.
+      CGFloat buttonWidth = viewWidth - 2 * horizontalPadding;
+      whitelistReuseButtonOrigin.x = horizontalPadding;
+      whitelistReuseButtonOrigin.y = yPos + kSecurityParagraphSpacing;
+      [whitelistPasswordReuseButton_
+          setFrameSize:NSMakeSize(
+                           buttonWidth,
+                           NSHeight([whitelistPasswordReuseButton_ frame]))];
+      changePasswordButtonOrigin.x = horizontalPadding;
+      changePasswordButtonOrigin.y =
+          yPos + kSecurityParagraphSpacing +
+          NSHeight([whitelistPasswordReuseButton_ frame]);
+      [changePasswordButton_
+          setFrameSize:NSMakeSize(buttonWidth,
+                                  NSHeight([changePasswordButton_ frame]))];
+    }
     [changePasswordButton_ setFrameOrigin:changePasswordButtonOrigin];
     [whitelistPasswordReuseButton_ setFrameOrigin:whitelistReuseButtonOrigin];
-    yPos =
-        NSMaxY([whitelistPasswordReuseButton_ frame]) - kNSButtonBuiltinMargin;
+    yPos = NSMaxY([changePasswordButton_ frame]) - kNSButtonBuiltinMargin;
   }
 
   // Resize the height based on contents.
@@ -952,14 +968,6 @@ bool IsInternalURL(const GURL& url) {
                          withAction:@selector(showCertificateInfo:)];
   }
   if (identityInfo.show_change_password_buttons) {
-    changePasswordButton_ =
-        [ButtonUtils buttonWithTitle:l10n_util::GetNSString(
-                                         IDS_PAGE_INFO_CHANGE_PASSWORD_BUTTON)
-                              action:@selector(changePasswordDecisions:)
-                              target:self];
-    [changePasswordButton_ sizeToFit];
-    [changePasswordButton_ setKeyEquivalent:kKeyEquivalentReturn];
-    [securitySectionView_ addSubview:changePasswordButton_];
     whitelistPasswordReuseButton_ = [ButtonUtils
         buttonWithTitle:l10n_util::GetNSString(
                             IDS_PAGE_INFO_WHITELIST_PASSWORD_REUSE_BUTTON)
@@ -968,6 +976,14 @@ bool IsInternalURL(const GURL& url) {
     [whitelistPasswordReuseButton_ sizeToFit];
     [whitelistPasswordReuseButton_ setKeyEquivalent:kKeyEquivalentEscape];
     [securitySectionView_ addSubview:whitelistPasswordReuseButton_];
+    changePasswordButton_ =
+        [ButtonUtils buttonWithTitle:l10n_util::GetNSString(
+                                         IDS_PAGE_INFO_CHANGE_PASSWORD_BUTTON)
+                              action:@selector(changePasswordDecisions:)
+                              target:self];
+    [changePasswordButton_ sizeToFit];
+    [changePasswordButton_ setKeyEquivalent:kKeyEquivalentReturn];
+    [securitySectionView_ addSubview:changePasswordButton_];
   }
 
   [self performLayout];
