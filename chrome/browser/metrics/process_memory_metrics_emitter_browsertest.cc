@@ -291,7 +291,7 @@ class ProcessMemoryMetricsEmitterTest : public ExtensionBrowserTest {
         has_renderer_source = true;
         CheckUkmRendererSource(source_id, metric_count);
       } else if (ProcessHasTypeForSource(source_id, ProcessType::GPU)) {
-        // Not checked yet.
+        CheckUkmGPUSource(source_id, 1);
       } else {
         // This must be Total2.
         has_total_source = true;
@@ -318,10 +318,9 @@ class ProcessMemoryMetricsEmitterTest : public ExtensionBrowserTest {
     CheckMemoryMetricWithName(source_id, UkmEntry::kPartitionAllocName, true,
                               metric_count);
     CheckMemoryMetricWithName(source_id, UkmEntry::kV8Name, true, metric_count);
-    CheckMemoryMetricWithName(source_id, UkmEntry::kUptimeName, true,
-                              metric_count);
     CheckMemoryMetricWithName(source_id, UkmEntry::kNumberOfExtensionsName,
                               true, metric_count);
+    CheckTimeMetricWithName(source_id, UkmEntry::kUptimeName, metric_count);
   }
 
   void CheckUkmBrowserSource(ukm::SourceId source_id,
@@ -334,6 +333,12 @@ class ProcessMemoryMetricsEmitterTest : public ExtensionBrowserTest {
 #endif
     CheckMemoryMetricWithName(source_id, UkmEntry::kPrivateMemoryFootprintName,
                               false, metric_count);
+
+    CheckTimeMetricWithName(source_id, UkmEntry::kUptimeName, metric_count);
+  }
+
+  void CheckUkmGPUSource(ukm::SourceId source_id, size_t metric_count = 1u) {
+    CheckTimeMetricWithName(source_id, UkmEntry::kUptimeName, metric_count);
   }
 
   bool ProcessHasTypeForSource(ukm::SourceId source_id,

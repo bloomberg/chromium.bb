@@ -18,6 +18,7 @@ struct PageInfo {
 struct ProcessInfo {
   mojo.common.mojom.ProcessId pid;
   array<PageInfo> page_infos;
+  mojo.common.mojom.Time? launch_time;
 };
 
 interface CoordinationUnitIntrospector {

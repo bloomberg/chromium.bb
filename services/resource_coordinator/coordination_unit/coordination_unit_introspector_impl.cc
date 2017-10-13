@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/process/process_handle.h"
+#include "base/time/time.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_base.h"
 #include "services/resource_coordinator/coordination_unit/frame_coordination_unit_impl.h"
 #include "services/resource_coordinator/coordination_unit/page_coordination_unit_impl.h"
@@ -32,6 +33,12 @@ void CoordinationUnitIntrospectorImpl::GetProcessToURLMap(
     mojom::ProcessInfoPtr process_info(mojom::ProcessInfo::New());
     process_info->pid = pid;
     DCHECK_NE(base::kNullProcessId, process_info->pid);
+
+    int64_t launch_time;
+    if (process_cu->GetProperty(mojom::PropertyType::kLaunchTime,
+                                &launch_time)) {
+      process_info->launch_time = base::Time::FromTimeT(launch_time);
+    }
 
     std::set<CoordinationUnitBase*> page_cus =
         process_cu->GetAssociatedCoordinationUnitsOfType(

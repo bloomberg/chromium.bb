@@ -23,6 +23,7 @@ enum PropertyType {
   kAudible,
   kCPUUsage,
   kExpectedTaskQueueingDuration,
+  kLaunchTime,
   // Network is considered almost idle when there's no more than 2 network
   // connections.
   kNetworkAlmostIdle,

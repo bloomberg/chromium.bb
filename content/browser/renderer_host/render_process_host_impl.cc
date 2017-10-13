@@ -49,6 +49,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
@@ -3908,6 +3909,10 @@ void RenderProcessHostImpl::OnProcessLaunched() {
   GetProcessResourceCoordinator()->SetProperty(
       resource_coordinator::mojom::PropertyType::kPID,
       base::GetProcId(GetHandle()));
+
+  GetProcessResourceCoordinator()->SetProperty(
+      resource_coordinator::mojom::PropertyType::kLaunchTime,
+      base::Time::Now().ToTimeT());
 
 #if BUILDFLAG(ENABLE_WEBRTC)
   if (WebRTCInternals::GetInstance()->IsAudioDebugRecordingsEnabled()) {
