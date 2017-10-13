@@ -136,7 +136,6 @@ class CONTENT_EXPORT LevelDBDatabase
   };
 
   // Despite the type name, this object uses LRU eviction.
-  size_t lru_max_size_ = 0;
   base::HashingMRUCache<LevelDBIterator*, DetachIteratorOnDestruct>
       iterator_lru_;
 
