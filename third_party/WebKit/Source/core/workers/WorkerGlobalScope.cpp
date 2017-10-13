@@ -87,7 +87,7 @@ KURL WorkerGlobalScope::CompleteURL(const String& url) const {
   if (url.IsNull())
     return KURL();
   // Always use UTF-8 in Workers.
-  return KURL(url_, url);
+  return KURL(BaseURL(), url);
 }
 
 void WorkerGlobalScope::EvaluateClassicScript(

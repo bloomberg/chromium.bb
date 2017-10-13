@@ -102,13 +102,14 @@ Request* Request::CreateRequestWithRequestOrString(
   // We don't use fallback values. We set these flags directly in below.
   // - "Let |fallbackMode| be null."
   // - "Let |fallbackCredentials| be null."
-  // - "Let |baseURL| be entry settings object's API base URL."
+
+  // "Let |baseURL| be entry settings object's API base URL."
+  const KURL base_url = ExecutionContext::From(script_state)->BaseURL();
 
   // "If |input| is a string, run these substeps:"
   if (!input_request) {
     // "Let |parsedURL| be the result of parsing |input| with |baseURL|."
-    KURL parsed_url =
-        ExecutionContext::From(script_state)->CompleteURL(input_string);
+    KURL parsed_url = KURL(base_url, input_string);
     // "If |parsedURL| is failure, throw a TypeError."
     if (!parsed_url.IsValid()) {
       exception_state.ThrowTypeError("Failed to parse URL from " +
@@ -177,8 +178,7 @@ Request* Request::CreateRequestWithRequestOrString(
     } else {
       // "Let |parsedReferrer| be the result of parsing |referrer| with
       // |baseURL|."
-      KURL parsed_referrer = ExecutionContext::From(script_state)
-                                 ->CompleteURL(init.referrer.referrer);
+      KURL parsed_referrer(base_url, init.referrer.referrer);
       if (!parsed_referrer.IsValid()) {
         // "If |parsedReferrer| is failure, throw a TypeError."
         exception_state.ThrowTypeError("Referrer '" + init.referrer.referrer +

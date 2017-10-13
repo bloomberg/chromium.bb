@@ -646,7 +646,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   // Document base URL.
   // https://html.spec.whatwg.org/multipage/urls-and-fetching.html#document-base-url
-  const KURL& BaseURL() const;
+  const KURL& BaseURL() const final;
   void SetBaseURLOverride(const KURL&);
   const KURL& BaseURLOverride() const { return base_url_override_; }
   KURL ValidBaseElementURL() const;

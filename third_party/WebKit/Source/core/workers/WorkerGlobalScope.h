@@ -132,6 +132,7 @@ class CORE_EXPORT WorkerGlobalScope
   // ExecutionContext
   bool IsWorkerGlobalScope() const final { return true; }
   bool IsContextThread() const final;
+  const KURL& BaseURL() const final { return url_; }
   String UserAgent() const final { return user_agent_; }
 
   DOMTimerCoordinator* Timers() final { return &timers_; }
