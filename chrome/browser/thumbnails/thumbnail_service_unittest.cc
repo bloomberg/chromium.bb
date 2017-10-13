@@ -9,10 +9,8 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/history/history_utils.h"
 #include "chrome/browser/history/top_sites_factory.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/history/core/browser/top_sites_impl.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -161,10 +159,6 @@ TEST_F(ThumbnailServiceTest, ShouldUpdateThumbnail) {
 
 TEST_F(ThumbnailServiceTest,
        ShouldAcquireTempThumbnailDependingOnTransitionType) {
-  base::test::ScopedFeatureList features;
-  features.InitAndEnableFeature(
-      features::kCaptureThumbnailDependingOnTransitionType);
-
   const GURL kUnknownURL("http://www.google.com/");
   const ui::PageTransition interesting_transition = ui::PAGE_TRANSITION_TYPED;
   const ui::PageTransition uninteresting_transition = ui::PAGE_TRANSITION_LINK;
