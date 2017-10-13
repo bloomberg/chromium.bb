@@ -1103,7 +1103,10 @@ def CheckPatchFormatted(input_api, output_api, check_js=False):
     cmd.append(input_api.PresubmitLocalPath())
   code, _ = git_cl.RunGitWithCode(cmd, suppress_stderr=True)
   if code == 2:
-    short_path = input_api.basename(input_api.PresubmitLocalPath())
+    if presubmit_subdir:
+      short_path = presubmit_subdir
+    else:
+      short_path = input_api.basename(input_api.change.RepositoryRoot())
     return [output_api.PresubmitPromptWarning(
       'The %s directory requires source formatting. '
       'Please run: git cl format %s%s' %
