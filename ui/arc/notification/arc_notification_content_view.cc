@@ -666,6 +666,14 @@ void ArcNotificationContentView::GetAccessibleNodeData(
     node_data->role = ui::AX_ROLE_CLIENT;
     node_data->AddIntAttribute(ui::AX_ATTR_CHILD_TREE_ID,
                                surface_->GetAXTreeId());
+
+    views::Widget* widget = GetWidget();
+    if (widget) {
+      const gfx::Rect& bounds = widget->GetWindowBoundsInScreen();
+      node_data->transform.reset(new gfx::Transform());
+      node_data->transform->Translate(gfx::Vector2dF(
+          static_cast<float>(bounds.x()), static_cast<float>(bounds.y())));
+    }
   } else {
     node_data->role = ui::AX_ROLE_BUTTON;
     node_data->AddStringAttribute(
