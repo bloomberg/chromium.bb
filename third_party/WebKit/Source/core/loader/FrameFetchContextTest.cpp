@@ -527,9 +527,9 @@ TEST_F(FrameFetchContextHintsTest, MonitorDeviceMemoryHints) {
   ApproximatedDeviceMemory::SetPhysicalMemoryMBForTesting(2048);
   ExpectHeader("http://www.example.com/1.gif", "Device-Memory", true, "2");
   ApproximatedDeviceMemory::SetPhysicalMemoryMBForTesting(64385);
-  ExpectHeader("http://www.example.com/1.gif", "Device-Memory", true, "64");
+  ExpectHeader("http://www.example.com/1.gif", "Device-Memory", true, "8");
   ApproximatedDeviceMemory::SetPhysicalMemoryMBForTesting(768);
-  ExpectHeader("http://www.example.com/1.gif", "Device-Memory", true, "0.75");
+  ExpectHeader("http://www.example.com/1.gif", "Device-Memory", true, "0.5");
   ExpectHeader("http://www.example.com/1.gif", "DPR", false, "");
   ExpectHeader("http://www.example.com/1.gif", "Width", false, "");
   ExpectHeader("http://www.example.com/1.gif", "Viewport-Width", false, "");
