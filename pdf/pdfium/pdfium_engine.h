@@ -569,7 +569,6 @@ class PDFiumEngine : public PDFEngine,
                               int length,
                               FPDF_WIDESTRING url);
   static void Form_GotoPage(IPDF_JSPLATFORM* param, int page_number);
-  static int Form_Browse(IPDF_JSPLATFORM* param, void* file_path, int length);
 
 #if defined(PDF_ENABLE_XFA)
   static void Form_EmailTo(FPDF_FORMFILLINFO* param,
