@@ -33,6 +33,17 @@ void RunFailHslTest(const std::string& hsl_string) {
   EXPECT_FALSE(image_util::ParseHslColorString(hsl_string, &color));
 }
 
+void RunPassRgbTest(const std::string& rgb_string, SkColor expected) {
+  SkColor color = 0;
+  EXPECT_TRUE(image_util::ParseRgbColorString(rgb_string, &color));
+  EXPECT_EQ(color, expected);
+}
+
+void RunFailRgbTest(const std::string& rgb_string) {
+  SkColor color = 0;
+  EXPECT_FALSE(image_util::ParseRgbColorString(rgb_string, &color));
+}
+
 TEST(ImageUtilTest, ChangeBadgeBackgroundNormalCSS) {
   RunPassHexTest("#34006A", SkColorSetARGB(0xFF, 0x34, 0, 0x6A));
 }
@@ -106,6 +117,44 @@ TEST(ImageUtilTest, AcceptHsla) {
 
   // We should able to parse integer alpha value.
   RunPassHslTest("hsla(0, 100%, 50%, 1)", SK_ColorRED);
+}
+
+TEST(ImageUtilTest, AcceptRgb) {
+  // Run basic color tests.
+  RunPassRgbTest("rgb(255,0,0)", SK_ColorRED);
+  RunPassRgbTest("rgb(0,    255, 0)", SK_ColorGREEN);
+  RunPassRgbTest("rgb(0, 0, 255)", SK_ColorBLUE);
+}
+
+TEST(ImageUtilTest, InvalidRgb) {
+  RunFailRgbTest("(0,100,50)");
+  RunFailRgbTest("[0, 100, 50]");
+  RunFailRgbTest("rg b(0,100,50)");
+  RunFailRgbTest("rgb(0,-100, 10)");
+  RunFailRgbTest("rgb(100,50)");
+  RunFailRgbTest("rgb(120.0, 100.6, 50.3)");
+  RunFailRgbTest("rgb[120, 100, 50]");
+  RunFailRgbTest("rgb(120, 100, 50, 1.0)");
+  RunFailRgbTest("rgba(120, 100, 50)");
+  RunFailRgbTest("rgb(0, 300, 0)");
+  // This is valid RGB but we don't support percentages yet.
+  RunFailRgbTest("rgb(100%, 0%, 100%)");
+}
+
+TEST(ImageUtilTest, AcceptRgba) {
+  // Run basic color tests.
+  RunPassRgbTest("rgba(255, 0, 0, 1.0)", SK_ColorRED);
+  RunPassRgbTest("rgba(255, 0, 0, 0.0)",
+                 SkColorSetARGB(0x00, 0xFF, 0x00, 0x00));
+  RunPassRgbTest("rgba(255, 0, 0, 0.5)",
+                 SkColorSetARGB(0x7F, 0xFF, 0x00, 0x00));
+  RunPassRgbTest("rgba(255, 0, 0, 0.25)",
+                 SkColorSetARGB(0x3F, 0xFF, 0x00, 0x00));
+  RunPassRgbTest("rgba(255, 0, 0, 0.75)",
+                 SkColorSetARGB(0xBF, 0xFF, 0x00, 0x00));
+
+  // We should able to parse an integer alpha value.
+  RunPassRgbTest("rgba(255, 0, 0, 1)", SK_ColorRED);
 }
 
 TEST(ImageUtilTest, BasicColorKeyword) {

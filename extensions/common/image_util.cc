@@ -27,8 +27,7 @@ bool ParseCssColorString(const std::string& color_string, SkColor* result) {
   if (base::StartsWith(color_string, "hsl", base::CompareCase::SENSITIVE))
     return ParseHslColorString(color_string, result);
   if (base::StartsWith(color_string, "rgb", base::CompareCase::SENSITIVE)) {
-    NOTIMPLEMENTED();
-    return false;
+    return ParseRgbColorString(color_string, result);
   }
   if (SkParse::FindNamedColor(color_string.c_str(), color_string.size(),
                               result) != nullptr) {
@@ -69,6 +68,49 @@ bool ParseHexColorString(const std::string& color_string, SkColor* result) {
 std::string GenerateHexColorString(SkColor color) {
   return base::StringPrintf("#%02X%02X%02X", SkColorGetR(color),
                             SkColorGetG(color), SkColorGetB(color));
+}
+
+bool ParseRgbColorString(const std::string& color_string, SkColor* result) {
+  // https://www.w3.org/wiki/CSS/Properties/color/RGB#The_format_of_the_RGB_Value
+  // The CSS3 specification defines the format of a RGB color as
+  // rgb(<number>, <number>, <number>) or
+  // rgb(<percent>, <percent>, <percent>) or
+  // and with alpha, the format is
+  // rgb(<number>, <number>, <number>, <alphavalue>) or
+  // rgba(<percent>, <percent>, <percent>, <alphavalue>)
+  // Whitespace is arbitrary.
+  // e.g.: rgb(120, 100, 50), rgba(120, 100, 50, 0.5);
+  int r = 0;
+  int g = 0;
+  int b = 0;
+  // 'rgb()' has '1' alpha value implicitly.
+  double alpha = 1.0;
+
+  // Percentage rgb values are not supported.
+  if (color_string.find('%') != std::string::npos) {
+    NOTIMPLEMENTED();
+    return false;
+  }
+
+  if (!re2::RE2::FullMatch(color_string,
+                           "rgb\\(([\\d]+),\\s*([\\d]+),\\s*([\\d]+)\\)", &r,
+                           &g, &b) &&
+      !re2::RE2::FullMatch(
+          color_string,
+          "rgba\\(([\\d]+),\\s*([\\d]+),\\s*([\\d]+),\\s*([\\d.]+)\\)", &r, &g,
+          &b, &alpha)) {
+    return false;
+  }
+
+  if (alpha < 0 || alpha > 1.0 || r < 0 || r > 255 || g < 0 || g > 255 ||
+      b < 0 || b > 255) {
+    return false;
+  }
+
+  SkAlpha sk_alpha = alpha * 255;
+  *result = SkColorSetARGB(sk_alpha, r, g, b);
+
+  return true;
 }
 
 bool ParseHslColorString(const std::string& color_string, SkColor* result) {
