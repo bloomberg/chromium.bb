@@ -30,7 +30,7 @@ from benchmarks import speedometer
 from benchmarks import v8_browsing
 
 
-MAX_NUM_VALUES = 20e3
+MAX_NUM_VALUES = 50000
 
 
 def SmokeTestGenerator(benchmark, num_pages=1):

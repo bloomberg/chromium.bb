@@ -72,7 +72,7 @@ _DISABLED_TESTS = frozenset({
 })
 
 
-MAX_NUM_VALUES = 20e3
+MAX_NUM_VALUES = 50000
 
 
 def _GenerateSmokeTestCase(benchmark_class, story_to_smoke_test):
