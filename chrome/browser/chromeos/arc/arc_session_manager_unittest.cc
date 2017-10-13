@@ -134,10 +134,14 @@ class FakeLoginDisplayHost : public chromeos::LoginDisplayHost {
                       bool is_auto_launch) override {}
   void StartDemoAppLaunch() override {}
   void StartArcKiosk(const AccountId& account_id) override {}
-  void StartVoiceInteractionOobe() override {}
-  bool IsVoiceInteractionOobe() override { return false; }
+  void StartVoiceInteractionOobe() override {
+    is_voice_interaction_oobe_ = true;
+  }
+  bool IsVoiceInteractionOobe() override { return is_voice_interaction_oobe_; }
 
  private:
+  bool is_voice_interaction_oobe_ = false;
+
   // SessionManager is required by the constructor of WizardController.
   std::unique_ptr<session_manager::SessionManager> session_manager_ =
       std::make_unique<session_manager::SessionManager>();
@@ -846,6 +850,12 @@ TEST_F(ArcSessionOobeOptInTest, OobeOptInActive) {
   EXPECT_FALSE(ArcSessionManager::IsOobeOptInActive());
   CreateLoginDisplayHost();
   EXPECT_FALSE(ArcSessionManager::IsOobeOptInActive());
+  GetFakeUserManager()->set_current_user_new(true);
+  EXPECT_FALSE(ArcSessionManager::IsOobeOptInActive());
+  AppendEnableArcOOBEOptInSwitch();
+  EXPECT_TRUE(ArcSessionManager::IsOobeOptInActive());
+  login_display_host()->StartVoiceInteractionOobe();
+  EXPECT_FALSE(ArcSessionManager::IsOobeOptInActive());
   login_display_host()->StartWizard(
       chromeos::OobeScreen::SCREEN_VOICE_INTERACTION_VALUE_PROP);
   EXPECT_FALSE(ArcSessionManager::IsOobeOptInActive());
@@ -885,9 +895,6 @@ class ArcSessionOobeOptInNegotiatorTest
 
     arc_session_manager()->SetProfile(profile());
     arc_session_manager()->Initialize();
-
-    login_display_host()->StartWizard(
-        chromeos::OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE);
 
     if (IsArcPlayStoreEnabledForProfile(profile()))
       arc_session_manager()->RequestEnable();
