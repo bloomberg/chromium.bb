@@ -19,7 +19,10 @@ chrome.automation.getDesktop = function() {};
  */
 chrome.automation.RoleType = {
   WINDOW: 'window',
-  ROOT_WEB_AREA: 'rootWebArea'
+  ROOT_WEB_AREA: 'rootWebArea',
+  STATIC_TEXT: 'staticText',
+  INLINE_TEXT_BOX: 'inlineTextBox',
+  PARAGRAPH: 'paragraph'
 };
 chrome.automation.StateType = {
   INVISIBLE: 'invisible'
