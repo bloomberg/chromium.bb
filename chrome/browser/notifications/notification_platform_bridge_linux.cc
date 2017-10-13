@@ -562,7 +562,7 @@ class NotificationPlatformBridgeLinuxImpl
         if (body_markup &&
             base::ContainsKey(capabilities_, kCapabilityBodyHyperlinks)) {
           body << "<a href=\""
-               << net::EscapePath(notification->origin_url().spec()) << "\">"
+               << net::EscapeForHTML(notification->origin_url().spec()) << "\">"
                << url_display_text << "</a>\n\n";
         } else {
           body << url_display_text << "\n\n";
