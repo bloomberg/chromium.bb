@@ -96,10 +96,10 @@ crbug.com/549742 [ Mac ] virtual/gpu/fast/canvas/canvas-drawImage-video-imageSmo
 
 # SwiftShader Failures
 crbug.com/726075 [ Win Linux ] compositing/3d-cube.html [ Failure ]
-crbug.com/726075 [ Win ] virtual/gpu/fast/canvas/2d.fillText.gradient.html [ Failure ]
-crbug.com/726075 [ Win Linux ] external/wpt/webvtt/rendering/cues-with-video/processing-model/dom_override_remove_cue_while_paused.html [ Failure ]
-crbug.com/726075 [ Win Linux ] virtual/exotic-color-space/images/color-profile-border-fade.html [ Failure ]
 crbug.com/726075 [ Linux ] shapedetection/detection-HTMLVideoElement.html [ Timeout ]
+
+# Fails because of an 8bit precision error in the YUV -> RGB conversion matrix
+crbug.com/774567 [ Win Linux ] external/wpt/webvtt/rendering/cues-with-video/processing-model/dom_override_remove_cue_while_paused.html [ Failure ]
 
 # Fails because the manual test hasn't been automated yet
 crbug.com/762054 external/wpt/cssom-view/scrollBoundaryBehavior-manual.html [ Skip ]
