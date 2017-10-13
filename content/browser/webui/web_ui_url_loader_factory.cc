@@ -39,7 +39,7 @@ namespace {
 
 class WebUIURLLoaderFactory;
 base::LazyInstance<std::map<int, std::unique_ptr<WebUIURLLoaderFactory>>>::Leaky
-    g_factories = LAZY_INSTANCE_INITIALIZER;
+    g_web_ui_url_loader_factories = LAZY_INSTANCE_INITIALIZER;
 
 void CallOnError(mojom::URLLoaderClientPtrInfo client_info, int error_code) {
   mojom::URLLoaderClientPtr client;
@@ -273,7 +273,7 @@ class WebUIURLLoaderFactory : public mojom::URLLoaderFactory,
 
   // FrameTreeNode::Observer implementation:
   void OnFrameTreeNodeDestroyed(FrameTreeNode* node) override {
-    g_factories.Get().erase(frame_tree_node_id_);
+    g_web_ui_url_loader_factories.Get().erase(frame_tree_node_id_);
   }
 
  private:
@@ -288,9 +288,10 @@ class WebUIURLLoaderFactory : public mojom::URLLoaderFactory,
 
 mojom::URLLoaderFactoryPtr CreateWebUIURLLoader(FrameTreeNode* node) {
   int ftn_id = node->frame_tree_node_id();
-  if (g_factories.Get()[ftn_id].get() == nullptr)
-    g_factories.Get()[ftn_id] = base::MakeUnique<WebUIURLLoaderFactory>(node);
-  return g_factories.Get()[ftn_id]->CreateBinding();
+  if (g_web_ui_url_loader_factories.Get()[ftn_id].get() == nullptr)
+    g_web_ui_url_loader_factories.Get()[ftn_id] =
+        base::MakeUnique<WebUIURLLoaderFactory>(node);
+  return g_web_ui_url_loader_factories.Get()[ftn_id]->CreateBinding();
 }
 
 }  // namespace content
