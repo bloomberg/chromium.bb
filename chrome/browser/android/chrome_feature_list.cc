@@ -111,7 +111,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kWebPaymentsSingleAppUiSkip,
     &kWebVrAutopresent,
     &kWebVRCardboardSupport,
-    &kXGEOVisibleNetworks,
     &ntp_snippets::kIncreasedVisibility,
     &ntp_snippets::kForeignSessionsSuggestionsFeature,
     &ntp_snippets::kNotificationsFeature,
@@ -318,9 +317,6 @@ const base::Feature kWebVrAutopresent{"WebVrAutopresent",
 
 const base::Feature kWebVRCardboardSupport{"WebVRCardboardSupport",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kXGEOVisibleNetworks{"XGEOVisibleNetworks",
-                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 static jboolean IsInitialized(JNIEnv* env, const JavaParamRef<jclass>& clazz) {
   return !!base::FeatureList::GetInstance();
