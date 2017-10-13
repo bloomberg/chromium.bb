@@ -1703,6 +1703,8 @@ jumbo_source_set("unit_tests") {
     "svg/SVGTextContentElementTest.cpp",
     "svg/UnsafeSVGAttributeSanitizationTest.cpp",
     "svg/graphics/SVGImageTest.cpp",
+    "testing/PageTestBase.cpp",
+    "testing/PageTestBase.h",
     "testing/sim/SimCanvas.cpp",
     "testing/sim/SimCanvas.h",
     "testing/sim/SimCompositor.cpp",
