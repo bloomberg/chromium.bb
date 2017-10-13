@@ -195,6 +195,53 @@ def DefaultPages(base_name):
           'tolerance': 3
         },
       ]),
+
+    PixelTestPage(
+      'pixel_webgl2_clearbufferfv_result_displayed.html',
+      base_name + '_WebGL2_ClearBufferfv_Result_Displayed',
+      test_rect=[0, 0, 200, 200],
+      revision=0, # This is not used.
+      expected_colors=[
+        # TODO(kbr): if this works, then factor it out so it applies
+        # to all pixel tests that use programmatic expectations.
+        {
+          "comment": "scale factor overrides",
+          "scale_factor_overrides": [
+            {
+              "device_type": "Nexus 5",
+              "scale_factor": 1.105
+            },
+            {
+              "device_type": "Nexus 5X",
+              "scale_factor": 1.105
+            },
+            {
+              "device_type": "Nexus 6",
+              "scale_factor": 1.47436
+            },
+            {
+              "device_type": "Nexus 6P",
+              "scale_factor": 1.472
+            },
+            {
+              "device_type": "Nexus 9",
+              "scale_factor": 1.566
+            },
+            {
+              "comment": "NVIDIA Shield",
+              "device_type": "sb_na_wf",
+              "scale_factor": 1.226
+            }
+          ]
+        },
+        {
+          'comment': 'green',
+          'location': [1, 1],
+          'size': [180, 180],
+          'color': [0, 255, 0],
+          'tolerance': 3
+        },
+      ]),
   ]
 
 
