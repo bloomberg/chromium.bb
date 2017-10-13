@@ -27,6 +27,7 @@ namespace {
 const size_t kMaximumNumberOfEntries = 100U;
 const char* const kDefaultApplications = "default_applications";
 const char* const kSupportedOrigins = "supported_origins";
+const char* const kHttpsPrefix = "https://";
 
 // Parses the "default_applications": ["https://some/url"] from |dict| into
 // |web_app_manifest_urls|. Returns 'false' for invalid data.
@@ -50,9 +51,12 @@ bool ParseDefaultApplications(base::DictionaryValue* dict,
 
   for (size_t i = 0; i < apps_number; ++i) {
     std::string item;
-    if (!list->GetString(i, &item) || item.empty()) {
+    if (!list->GetString(i, &item) || item.empty() ||
+        !base::IsStringUTF8(item) ||
+        !base::StartsWith(item, kHttpsPrefix, base::CompareCase::SENSITIVE)) {
       LOG(ERROR) << "Each entry in \"" << kDefaultApplications
-                 << "\" must be a string.";
+                 << "\" must be UTF8 string that starts with \"" << kHttpsPrefix
+                 << "\".";
       web_app_manifest_urls->clear();
       return false;
     }
@@ -89,7 +93,7 @@ bool ParseSupportedOrigins(base::DictionaryValue* dict,
       if (item != "*") {
         LOG(ERROR) << "\"" << item << "\" is not a valid value for \""
                    << kSupportedOrigins
-                   << "\". Must be either \"*\" or a list of origins.";
+                   << "\". Must be either \"*\" or a list of RFC6454 origins.";
         return false;
       }
 
@@ -115,9 +119,12 @@ bool ParseSupportedOrigins(base::DictionaryValue* dict,
 
   for (size_t i = 0; i < supported_origins_number; ++i) {
     std::string item;
-    if (!list->GetString(i, &item) || item.empty()) {
+    if (!list->GetString(i, &item) || item.empty() ||
+        !base::IsStringUTF8(item) ||
+        !base::StartsWith(item, kHttpsPrefix, base::CompareCase::SENSITIVE)) {
       LOG(ERROR) << "Each entry in \"" << kSupportedOrigins
-                 << "\" must be a string.";
+                 << "\" must be UTF8 string that starts with \"" << kHttpsPrefix
+                 << "\".";
       supported_origins->clear();
       return false;
     }
