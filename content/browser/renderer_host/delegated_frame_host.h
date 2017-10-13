@@ -98,6 +98,7 @@ class CONTENT_EXPORT DelegatedFrameHost
                             base::TimeTicks start_time) override;
   void OnCompositingEnded(ui::Compositor* compositor) override;
   void OnCompositingLockStateChanged(ui::Compositor* compositor) override;
+  void OnCompositingChildResizing(ui::Compositor* compositor) override;
   void OnCompositingShuttingDown(ui::Compositor* compositor) override;
 
   // ui::CompositorVSyncManager::Observer implementation.

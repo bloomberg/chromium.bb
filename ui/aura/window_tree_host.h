@@ -15,6 +15,7 @@
 #include "ui/aura/aura_export.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/ime/input_method_delegate.h"
+#include "ui/compositor/compositor_observer.h"
 #include "ui/display/display_observer.h"
 #include "ui/events/event_source.h"
 #include "ui/gfx/geometry/insets.h"
@@ -49,7 +50,8 @@ class WindowTreeHostObserver;
 // aura.
 class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
                                    public ui::EventSource,
-                                   public display::DisplayObserver {
+                                   public display::DisplayObserver,
+                                   public ui::CompositorObserver {
  public:
   ~WindowTreeHost() override;
 
@@ -253,6 +255,15 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   void MoveCursorToInternal(const gfx::Point& root_location,
                             const gfx::Point& host_location);
 
+  // Overrided from CompositorObserver:
+  void OnCompositingDidCommit(ui::Compositor* compositor) override;
+  void OnCompositingStarted(ui::Compositor* compositor,
+                            base::TimeTicks start_time) override;
+  void OnCompositingEnded(ui::Compositor* compositor) override;
+  void OnCompositingLockStateChanged(ui::Compositor* compositor) override;
+  void OnCompositingChildResizing(ui::Compositor* compositor) override;
+  void OnCompositingShuttingDown(ui::Compositor* compositor) override;
+
   // We don't use a std::unique_ptr for |window_| since we need this ptr to be
   // valid during its deletion. (Window's dtor notifies observers that may
   // attempt to reach back up to access this object which will be valid until
@@ -280,6 +291,12 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   bool owned_input_method_;
 
   gfx::Insets output_surface_padding_in_pixels_;
+
+  // Set to true if the next CompositorFrame will block on a new child surface.
+  bool synchronizing_with_child_on_next_frame_ = false;
+
+  // Set to true if this WindowTreeHost is currently holding pointer moves.
+  bool holding_pointer_moves_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeHost);
 };

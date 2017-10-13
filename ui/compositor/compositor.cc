@@ -254,6 +254,7 @@ void Compositor::AddFrameSink(const viz::FrameSinkId& frame_sink_id) {
     return;
   context_factory_private_->GetHostFrameSinkManager()
       ->RegisterFrameSinkHierarchy(frame_sink_id_, frame_sink_id);
+
   child_frame_sinks_.insert(frame_sink_id);
 }
 
@@ -284,6 +285,11 @@ void Compositor::SetLayerTreeFrameSink(
     context_factory_private_->SetDisplayColorSpace(this, blending_color_space_,
                                                    output_color_space_);
   }
+}
+
+void Compositor::OnChildResizing() {
+  for (auto& observer : observer_list_)
+    observer.OnCompositingChildResizing(this);
 }
 
 void Compositor::ScheduleDraw() {

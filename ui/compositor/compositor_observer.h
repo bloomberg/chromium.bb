@@ -37,6 +37,9 @@ class COMPOSITOR_EXPORT CompositorObserver {
   // Called when the compositor lock state changes.
   virtual void OnCompositingLockStateChanged(Compositor* compositor) = 0;
 
+  // Called when a child of the compositor is resizing.
+  virtual void OnCompositingChildResizing(Compositor* compositor) = 0;
+
   // Called at the top of the compositor's destructor, to give observers a
   // chance to remove themselves.
   virtual void OnCompositingShuttingDown(Compositor* compositor) = 0;

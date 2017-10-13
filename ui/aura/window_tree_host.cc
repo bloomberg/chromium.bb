@@ -252,7 +252,10 @@ WindowTreeHost::WindowTreeHost(std::unique_ptr<WindowPort> window_port)
 }
 
 void WindowTreeHost::DestroyCompositor() {
-  compositor_.reset();
+  if (compositor_) {
+    compositor_->RemoveObserver(this);
+    compositor_.reset();
+  }
 }
 
 void WindowTreeHost::DestroyDispatcher() {
@@ -290,6 +293,7 @@ void WindowTreeHost::CreateCompositor(const viz::FrameSinkId& frame_sink_id,
       base::ThreadTaskRunnerHandle::Get(), enable_surface_synchronization,
       ui::IsPixelCanvasRecordingEnabled(), external_begin_frames_enabled,
       force_software_compositor));
+  compositor_->AddObserver(this);
   if (!dispatcher()) {
     window()->Init(ui::LAYER_NOT_DRAWN);
     window()->set_host(this);
@@ -410,6 +414,35 @@ void WindowTreeHost::MoveCursorToInternal(const gfx::Point& root_location,
     cursor_client->SetDisplay(display);
   }
   dispatcher()->OnCursorMovedToRootLocation(root_location);
+}
+
+void WindowTreeHost::OnCompositingDidCommit(ui::Compositor* compositor) {}
+
+void WindowTreeHost::OnCompositingStarted(ui::Compositor* compositor,
+                                          base::TimeTicks start_time) {
+  if (!synchronizing_with_child_on_next_frame_)
+    return;
+  synchronizing_with_child_on_next_frame_ = false;
+  dispatcher_->HoldPointerMoves();
+  holding_pointer_moves_ = true;
+}
+
+void WindowTreeHost::OnCompositingEnded(ui::Compositor* compositor) {
+  if (!holding_pointer_moves_)
+    return;
+  dispatcher_->ReleasePointerMoves();
+  holding_pointer_moves_ = false;
+}
+
+void WindowTreeHost::OnCompositingLockStateChanged(ui::Compositor* compositor) {
+}
+
+void WindowTreeHost::OnCompositingChildResizing(ui::Compositor* compositor) {
+  synchronizing_with_child_on_next_frame_ = true;
+}
+
+void WindowTreeHost::OnCompositingShuttingDown(ui::Compositor* compositor) {
+  compositor->RemoveObserver(this);
 }
 
 }  // namespace aura
