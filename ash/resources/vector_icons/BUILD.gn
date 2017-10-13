@@ -26,6 +26,8 @@ aggregate_vector_icons("ash_vector_icons") {
     "lock_screen_arrow.icon",
     "lock_screen_backspace.1x.icon",
     "lock_screen_backspace.icon",
+    "lock_screen_caps_lock.1x.icon",
+    "lock_screen_caps_lock.icon",
     "lock_screen_dropdown.1x.icon",
     "lock_screen_dropdown.icon",
     "network_badge_add_other.1x.icon",
