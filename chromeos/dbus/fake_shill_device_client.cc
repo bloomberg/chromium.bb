@@ -5,6 +5,7 @@
 #include "chromeos/dbus/fake_shill_device_client.h"
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -532,7 +533,7 @@ void FakeShillDeviceClient::SetSimLockStatus(const std::string& device_path,
           shill::kSIMLockStatusProperty, &simlock_dict)) {
     simlock_dict = device_properties->SetDictionaryWithoutPathExpansion(
         shill::kSIMLockStatusProperty,
-        base::MakeUnique<base::DictionaryValue>());
+        std::make_unique<base::DictionaryValue>());
   }
   simlock_dict->Clear();
   simlock_dict->SetKey(shill::kSIMLockTypeProperty, base::Value(status.type));
@@ -647,7 +648,7 @@ base::DictionaryValue* FakeShillDeviceClient::GetDeviceProperties(
   if (!stub_devices_.GetDictionaryWithoutPathExpansion(
       device_path, &properties)) {
     properties = stub_devices_.SetDictionaryWithoutPathExpansion(
-        device_path, base::MakeUnique<base::DictionaryValue>());
+        device_path, std::make_unique<base::DictionaryValue>());
   }
   return properties;
 }

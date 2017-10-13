@@ -4,11 +4,12 @@
 
 #include "chromeos/dbus/services/proxy_resolution_service_provider.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/thread_test_helper.h"
@@ -104,7 +105,7 @@ class TestProxyResolverFactory : public net::ProxyResolverFactory {
       std::unique_ptr<net::ProxyResolver>* resolver,
       const net::CompletionCallback& callback,
       std::unique_ptr<Request>* request) override {
-    *resolver = base::MakeUnique<net::ForwardingProxyResolver>(resolver_);
+    *resolver = std::make_unique<net::ForwardingProxyResolver>(resolver_);
     return net::OK;
   }
 
@@ -153,9 +154,9 @@ class TestDelegate : public ProxyResolutionServiceProvider::Delegate {
     net::ProxyConfig config;
     config.set_pac_url(GURL("http://www.example.com"));
     config.set_pac_mandatory(true);
-    proxy_service_ = base::MakeUnique<net::ProxyService>(
-        base::MakeUnique<net::ProxyConfigServiceFixed>(config),
-        base::MakeUnique<TestProxyResolverFactory>(proxy_resolver_),
+    proxy_service_ = std::make_unique<net::ProxyService>(
+        std::make_unique<net::ProxyConfigServiceFixed>(config),
+        std::make_unique<TestProxyResolverFactory>(proxy_resolver_),
         nullptr /* net_log */);
     context_getter_->GetURLRequestContext()->set_proxy_service(
         proxy_service_.get());
@@ -186,9 +187,9 @@ class ProxyResolutionServiceProviderTest : public testing::Test {
     CHECK(network_thread_.Start());
 
     proxy_resolver_ =
-        base::MakeUnique<TestProxyResolver>(network_thread_.task_runner());
-    service_provider_ = base::MakeUnique<ProxyResolutionServiceProvider>(
-        base::MakeUnique<TestDelegate>(network_thread_.task_runner(),
+        std::make_unique<TestProxyResolver>(network_thread_.task_runner());
+    service_provider_ = std::make_unique<ProxyResolutionServiceProvider>(
+        std::make_unique<TestDelegate>(network_thread_.task_runner(),
                                        proxy_resolver_.get()));
     test_helper_.SetUp(
         kNetworkProxyServiceName, dbus::ObjectPath(kNetworkProxyServicePath),

@@ -4,11 +4,11 @@
 
 #include "chromeos/dbus/biod/fake_biod_client.h"
 
+#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "dbus/object_path.h"
@@ -132,7 +132,7 @@ void FakeBiodClient::StartEnrollSession(const std::string& user_id,
   // Create the enrollment with |user_id|, |label| and a empty fake fingerprint.
   current_record_path_ = dbus::ObjectPath(
       kRecordObjectPathPrefix + std::to_string(next_record_unique_id_++));
-  current_record_ = base::MakeUnique<FakeRecord>();
+  current_record_ = std::make_unique<FakeRecord>();
   current_record_->user_id = user_id;
   current_record_->label = label;
   current_session_ = FingerprintSession::ENROLL;

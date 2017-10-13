@@ -4,6 +4,7 @@
 
 #include "chromeos/dbus/fake_shill_service_client.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -411,7 +412,7 @@ bool FakeShillServiceClient::SetServiceProperty(const std::string& service_path,
     base::DictionaryValue* provider =
         new_properties.SetDictionaryWithoutPathExpansion(
             shill::kProviderProperty,
-            base::MakeUnique<base::DictionaryValue>());
+            std::make_unique<base::DictionaryValue>());
     provider->SetKey(key, value.Clone());
     changed_property = shill::kProviderProperty;
   } else if (value.GetType() == base::Value::Type::DICTIONARY) {
@@ -526,7 +527,7 @@ base::DictionaryValue* FakeShillServiceClient::GetModifiableServiceProperties(
                                                         &properties) &&
       create_if_missing) {
     properties = stub_services_.SetDictionary(
-        service_path, base::MakeUnique<base::DictionaryValue>());
+        service_path, std::make_unique<base::DictionaryValue>());
   }
   return properties;
 }

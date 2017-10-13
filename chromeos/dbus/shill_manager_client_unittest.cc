@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
 #include "base/values.h"
@@ -180,10 +179,10 @@ TEST_F(ShillManagerClientTest, GetNetworksForGeolocation) {
 
 
   // Create the expected value.
-  auto property_dict_value = base::MakeUnique<base::DictionaryValue>();
+  auto property_dict_value = std::make_unique<base::DictionaryValue>();
   property_dict_value->SetKey(shill::kGeoMacAddressProperty,
                               base::Value("01:23:45:67:89:AB"));
-  auto type_entry_value = base::MakeUnique<base::ListValue>();
+  auto type_entry_value = std::make_unique<base::ListValue>();
   type_entry_value->Append(std::move(property_dict_value));
   base::DictionaryValue type_dict_value;
   type_dict_value.SetWithoutPathExpansion("wifi", std::move(type_entry_value));

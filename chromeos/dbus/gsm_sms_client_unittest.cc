@@ -11,7 +11,6 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -293,7 +292,7 @@ TEST_F(GsmSMSClientTest, List) {
   response_ = response.get();
   // Create expected result.
   base::ListValue expected_result;
-  auto sms = base::MakeUnique<base::DictionaryValue>();
+  auto sms = std::make_unique<base::DictionaryValue>();
   sms->SetKey(kNumberKey, base::Value(kExampleNumber));
   sms->SetKey(kTextKey, base::Value(kExampleText));
   expected_result.Append(std::move(sms));

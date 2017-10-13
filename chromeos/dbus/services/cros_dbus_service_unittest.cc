@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "dbus/message.h"
 #include "dbus/mock_bus.h"
@@ -68,7 +67,7 @@ class CrosDBusServiceTest : public testing::Test {
 
     // Create a mock proxy resolution service.
     auto mock_proxy_resolution_service_provider =
-        base::MakeUnique<MockProxyResolutionService>();
+        std::make_unique<MockProxyResolutionService>();
 
     // Start() will be called with |mock_exported_object_|.
     EXPECT_CALL(*mock_proxy_resolution_service_provider,

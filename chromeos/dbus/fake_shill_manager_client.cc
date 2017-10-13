@@ -6,12 +6,12 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -386,7 +386,7 @@ ShillManagerClient::TestInterface* FakeShillManagerClient::GetTestInterface() {
 
 void FakeShillManagerClient::AddDevice(const std::string& device_path) {
   if (GetListProperty(shill::kDevicesProperty)
-          ->AppendIfNotPresent(base::MakeUnique<base::Value>(device_path))) {
+          ->AppendIfNotPresent(std::make_unique<base::Value>(device_path))) {
     CallNotifyObserversPropertyChanged(shill::kDevicesProperty);
   }
 }
@@ -407,13 +407,13 @@ void FakeShillManagerClient::ClearDevices() {
 void FakeShillManagerClient::AddTechnology(const std::string& type,
                                            bool enabled) {
   if (GetListProperty(shill::kAvailableTechnologiesProperty)
-          ->AppendIfNotPresent(base::MakeUnique<base::Value>(type))) {
+          ->AppendIfNotPresent(std::make_unique<base::Value>(type))) {
     CallNotifyObserversPropertyChanged(
         shill::kAvailableTechnologiesProperty);
   }
   if (enabled &&
       GetListProperty(shill::kEnabledTechnologiesProperty)
-          ->AppendIfNotPresent(base::MakeUnique<base::Value>(type))) {
+          ->AppendIfNotPresent(std::make_unique<base::Value>(type))) {
     CallNotifyObserversPropertyChanged(
         shill::kEnabledTechnologiesProperty);
   }
@@ -437,7 +437,7 @@ void FakeShillManagerClient::SetTechnologyInitializing(const std::string& type,
                                                        bool initializing) {
   if (initializing) {
     if (GetListProperty(shill::kUninitializedTechnologiesProperty)
-            ->AppendIfNotPresent(base::MakeUnique<base::Value>(type))) {
+            ->AppendIfNotPresent(std::make_unique<base::Value>(type))) {
       CallNotifyObserversPropertyChanged(
           shill::kUninitializedTechnologiesProperty);
     }
@@ -457,7 +457,7 @@ void FakeShillManagerClient::AddGeoNetwork(
   if (!stub_geo_networks_.GetListWithoutPathExpansion(technology,
                                                       &list_value)) {
     list_value = stub_geo_networks_.SetListWithoutPathExpansion(
-        technology, base::MakeUnique<base::ListValue>());
+        technology, std::make_unique<base::ListValue>());
   }
   list_value->GetList().push_back(network.Clone());
 }
@@ -465,7 +465,7 @@ void FakeShillManagerClient::AddGeoNetwork(
 void FakeShillManagerClient::AddProfile(const std::string& profile_path) {
   const char* key = shill::kProfilesProperty;
   if (GetListProperty(key)->AppendIfNotPresent(
-          base::MakeUnique<base::Value>(profile_path))) {
+          std::make_unique<base::Value>(profile_path))) {
     CallNotifyObserversPropertyChanged(key);
   }
 }
@@ -485,7 +485,7 @@ void FakeShillManagerClient::AddManagerService(
     bool notify_observers) {
   VLOG(2) << "AddManagerService: " << service_path;
   GetListProperty(shill::kServiceCompleteListProperty)
-      ->AppendIfNotPresent(base::MakeUnique<base::Value>(service_path));
+      ->AppendIfNotPresent(std::make_unique<base::Value>(service_path));
   SortManagerServices(false);
   if (notify_observers)
     CallNotifyObserversPropertyChanged(shill::kServiceCompleteListProperty);
@@ -981,7 +981,7 @@ base::ListValue* FakeShillManagerClient::GetListProperty(
   if (!stub_properties_.GetListWithoutPathExpansion(
       property, &list_property)) {
     list_property = stub_properties_.SetListWithoutPathExpansion(
-        property, base::MakeUnique<base::ListValue>());
+        property, std::make_unique<base::ListValue>());
   }
   return list_property;
 }
@@ -1009,7 +1009,7 @@ void FakeShillManagerClient::SetTechnologyEnabled(
   base::ListValue* enabled_list =
       GetListProperty(shill::kEnabledTechnologiesProperty);
   if (enabled)
-    enabled_list->AppendIfNotPresent(base::MakeUnique<base::Value>(type));
+    enabled_list->AppendIfNotPresent(std::make_unique<base::Value>(type));
   else
     enabled_list->Remove(base::Value(type), NULL);
   CallNotifyObserversPropertyChanged(
@@ -1021,7 +1021,7 @@ void FakeShillManagerClient::SetTechnologyEnabled(
 
 std::unique_ptr<base::ListValue> FakeShillManagerClient::GetEnabledServiceList(
     const std::string& property) const {
-  auto new_service_list = base::MakeUnique<base::ListValue>();
+  auto new_service_list = std::make_unique<base::ListValue>();
   const base::ListValue* service_list;
   if (stub_properties_.GetListWithoutPathExpansion(property, &service_list)) {
     ShillServiceClient::TestInterface* service_client =
