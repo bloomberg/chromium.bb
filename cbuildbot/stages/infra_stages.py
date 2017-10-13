@@ -109,6 +109,9 @@ class RegisterInfraGoPackagesStage(generic_stages.BuilderStage,
         cred_path=_CRED_FILE,
     )
 
+  def _VersionString(self):
+    return self._run.attrs.version_info.VersionString()
+
 
 def _StageChrootFilesIntoDir(target_path, paths):
   """Install chroot files into a staging directory.
