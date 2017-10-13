@@ -471,6 +471,18 @@ bool SiteInstanceImpl::ShouldLockToOrigin(BrowserContext* browser_context,
   return true;
 }
 
+// static
+bool SiteInstanceImpl::ShouldAssignSiteForURL(const GURL& url) {
+  // about:blank should not "use up" a new SiteInstance.  The SiteInstance can
+  // still be used for a normal web site.
+  if (url == url::kAboutBlankURL)
+    return false;
+
+  // The embedder will then have the opportunity to determine if the URL
+  // should "use up" the SiteInstance.
+  return GetContentClient()->browser()->ShouldAssignSiteForURL(url);
+}
+
 void SiteInstanceImpl::RenderProcessHostDestroyed(RenderProcessHost* host) {
   DCHECK_EQ(process_, host);
   process_->RemoveObserver(this);
@@ -504,7 +516,6 @@ void SiteInstanceImpl::LockToOriginIfNeeded() {
   // We can get here either when we commit a URL into a SiteInstance that does
   // not yet have a site, or when we create a process for a SiteInstance with a
   // preassigned site.
-  bool was_unused = process_->IsUnused();
   process_->SetIsUsed();
 
   ChildProcessSecurityPolicyImpl* policy =
@@ -517,10 +528,6 @@ void SiteInstanceImpl::LockToOriginIfNeeded() {
 
     switch (lock_state) {
       case ChildProcessSecurityPolicyImpl::CheckOriginLockResult::NO_LOCK: {
-        // TODO(alexmos): Turn this into a CHECK once https://crbug.com/738634
-        // is fixed.
-        DCHECK(was_unused);
-
         // TODO(nick): When all sites are isolated, this operation provides
         // strong protection. If only some sites are isolated, we need
         // additional logic to prevent the non-isolated sites from requesting
@@ -532,7 +539,9 @@ void SiteInstanceImpl::LockToOriginIfNeeded() {
           HAS_WRONG_LOCK:
         // We should never attempt to reassign a different origin lock to a
         // process.
-        CHECK(false);
+        CHECK(false) << "Trying to lock a process to " << site_
+                     << " but the process is already locked to "
+                     << policy->GetOriginLock(process_->GetID());
         break;
       case ChildProcessSecurityPolicyImpl::CheckOriginLockResult::
           HAS_EQUAL_LOCK:
@@ -547,7 +556,9 @@ void SiteInstanceImpl::LockToOriginIfNeeded() {
     // process, make sure we aren't putting it in a process for a site that
     // does.
     CHECK_EQ(lock_state,
-             ChildProcessSecurityPolicyImpl::CheckOriginLockResult::NO_LOCK);
+             ChildProcessSecurityPolicyImpl::CheckOriginLockResult::NO_LOCK)
+        << "Trying to commit non-isolated site " << site_
+        << " in process locked to " << policy->GetOriginLock(process_->GetID());
   }
 }
 
