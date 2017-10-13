@@ -21,6 +21,7 @@
 #include "content/common/content_constants_internal.h"
 #include "content/common/frame_messages.h"
 #include "content/common/frame_owner_properties.h"
+#include "content/common/frame_policy.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -66,8 +67,7 @@ void CreateChildFrameOnUI(int process_id,
                           const std::string& frame_name,
                           const std::string& frame_unique_name,
                           const base::UnguessableToken& devtools_frame_token,
-                          blink::WebSandboxFlags sandbox_flags,
-                          const ParsedFeaturePolicyHeader& container_policy,
+                          const FramePolicy& frame_policy,
                           const FrameOwnerProperties& frame_owner_properties,
                           int new_routing_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -78,8 +78,7 @@ void CreateChildFrameOnUI(int process_id,
   if (render_frame_host) {
     render_frame_host->OnCreateChildFrame(
         new_routing_id, scope, frame_name, frame_unique_name,
-        devtools_frame_token, sandbox_flags, container_policy,
-        frame_owner_properties);
+        devtools_frame_token, frame_policy, frame_owner_properties);
   }
 }
 
@@ -350,8 +349,8 @@ void RenderFrameMessageFilter::OnCreateChildFrame(
       base::BindOnce(&CreateChildFrameOnUI, render_process_id_,
                      params.parent_routing_id, params.scope, params.frame_name,
                      params.frame_unique_name, *devtools_frame_token,
-                     params.sandbox_flags, params.container_policy,
-                     params.frame_owner_properties, *new_routing_id));
+                     params.frame_policy, params.frame_owner_properties,
+                     *new_routing_id));
 }
 
 void RenderFrameMessageFilter::OnCookiesEnabled(int render_frame_id,

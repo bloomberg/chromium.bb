@@ -62,6 +62,7 @@
 #include "content/common/edit_command.h"
 #include "content/common/frame_messages.h"
 #include "content/common/frame_owner_properties.h"
+#include "content/common/frame_policy.h"
 #include "content/common/frame_replication_state.h"
 #include "content/common/input_messages.h"
 #include "content/common/navigation_params.h"
@@ -2310,11 +2311,10 @@ void RenderFrameImpl::OnUpdateOpener(int opener_routing_id) {
   frame_->SetOpener(opener);
 }
 
-void RenderFrameImpl::OnDidUpdateFramePolicy(
-    blink::WebSandboxFlags flags,
-    const ParsedFeaturePolicyHeader& container_policy) {
-  frame_->SetFrameOwnerPolicy(flags,
-                              FeaturePolicyHeaderToWeb(container_policy));
+void RenderFrameImpl::OnDidUpdateFramePolicy(const FramePolicy& frame_policy) {
+  frame_->SetFrameOwnerPolicy(
+      frame_policy.sandbox_flags,
+      FeaturePolicyHeaderToWeb(frame_policy.container_policy));
 }
 
 void RenderFrameImpl::OnSetFrameOwnerProperties(
@@ -3179,8 +3179,8 @@ blink::WebLocalFrame* RenderFrameImpl::CreateChildFrame(
   // browsing context name, only unique name generation.
   params.frame_unique_name = unique_name_helper_.GenerateNameForNewChildFrame(
       params.frame_name.empty() ? fallback_name.Utf8() : params.frame_name);
-  params.sandbox_flags = sandbox_flags;
-  params.container_policy = FeaturePolicyHeaderFromWeb(container_policy);
+  params.frame_policy = {sandbox_flags,
+                         FeaturePolicyHeaderFromWeb(container_policy)};
   params.frame_owner_properties =
       ConvertWebFrameOwnerPropertiesToFrameOwnerProperties(
           frame_owner_properties);
@@ -3319,8 +3319,8 @@ void RenderFrameImpl::DidChangeFramePolicy(
     blink::WebSandboxFlags flags,
     const blink::WebParsedFeaturePolicy& container_policy) {
   Send(new FrameHostMsg_DidChangeFramePolicy(
-      routing_id_, RenderFrame::GetRoutingIdForWebFrame(child_frame), flags,
-      FeaturePolicyHeaderFromWeb(container_policy)));
+      routing_id_, RenderFrame::GetRoutingIdForWebFrame(child_frame),
+      {flags, FeaturePolicyHeaderFromWeb(container_policy)}));
 }
 
 void RenderFrameImpl::DidSetFeaturePolicyHeader(

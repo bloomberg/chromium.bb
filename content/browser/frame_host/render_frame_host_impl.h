@@ -118,6 +118,7 @@ class WebBluetoothServiceImpl;
 struct ContextMenuParams;
 struct FileChooserParams;
 struct FrameOwnerProperties;
+struct FramePolicy;
 struct FileChooserParams;
 struct ResourceResponse;
 
@@ -276,8 +277,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
                           const std::string& frame_name,
                           const std::string& frame_unique_name,
                           const base::UnguessableToken& devtools_frame_token,
-                          blink::WebSandboxFlags sandbox_flags,
-                          const ParsedFeaturePolicyHeader& container_policy,
+                          const FramePolicy& frame_policy,
                           const FrameOwnerProperties& frame_owner_properties);
 
   // Update this frame's last committed origin.
@@ -768,10 +768,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   void OnEnforceInsecureRequestPolicy(blink::WebInsecureRequestPolicy policy);
   void OnUpdateToUniqueOrigin(bool is_potentially_trustworthy_unique_origin);
-  void OnDidChangeFramePolicy(
-      int32_t frame_routing_id,
-      blink::WebSandboxFlags flags,
-      const ParsedFeaturePolicyHeader& container_policy);
+  void OnDidChangeFramePolicy(int32_t frame_routing_id,
+                              const FramePolicy& frame_policy);
   void OnDidChangeFrameOwnerProperties(int32_t frame_routing_id,
                                        const FrameOwnerProperties& properties);
   void OnUpdateTitle(const base::string16& title,

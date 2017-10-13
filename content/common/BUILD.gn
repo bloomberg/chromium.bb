@@ -157,6 +157,8 @@ source_set("common") {
     "frame_messages_forward.h",
     "frame_owner_properties.cc",
     "frame_owner_properties.h",
+    "frame_policy.cc",
+    "frame_policy.h",
     "frame_replication_state.cc",
     "frame_replication_state.h",
     "gin_java_bridge_messages.h",

@@ -27,6 +27,7 @@
 #include "content/common/features.h"
 #include "content/common/frame_message_enums.h"
 #include "content/common/frame_owner_properties.h"
+#include "content/common/frame_policy.h"
 #include "content/common/frame_replication_state.h"
 #include "content/common/navigation_gesture.h"
 #include "content/common/navigation_params.h"
@@ -195,6 +196,11 @@ IPC_STRUCT_TRAITS_BEGIN(content::FrameOwnerProperties)
   IPC_STRUCT_TRAITS_MEMBER(allow_payment_request)
   IPC_STRUCT_TRAITS_MEMBER(is_display_none)
   IPC_STRUCT_TRAITS_MEMBER(required_csp)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(content::FramePolicy)
+  IPC_STRUCT_TRAITS_MEMBER(sandbox_flags)
+  IPC_STRUCT_TRAITS_MEMBER(container_policy)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::PageImportanceSignals)
@@ -560,8 +566,7 @@ IPC_STRUCT_BEGIN(FrameHostMsg_CreateChildFrame_Params)
   IPC_STRUCT_MEMBER(blink::WebTreeScopeType, scope)
   IPC_STRUCT_MEMBER(std::string, frame_name)
   IPC_STRUCT_MEMBER(std::string, frame_unique_name)
-  IPC_STRUCT_MEMBER(blink::WebSandboxFlags, sandbox_flags)
-  IPC_STRUCT_MEMBER(content::ParsedFeaturePolicyHeader, container_policy)
+  IPC_STRUCT_MEMBER(content::FramePolicy, frame_policy)
   IPC_STRUCT_MEMBER(content::FrameOwnerProperties, frame_owner_properties)
 IPC_STRUCT_END()
 
@@ -848,9 +853,7 @@ IPC_MESSAGE_ROUTED1(FrameMsg_Collapse, bool /* collapsed */)
 
 // Notifies the frame that its parent has changed the frame's sandbox flags or
 // container policy.
-IPC_MESSAGE_ROUTED2(FrameMsg_DidUpdateFramePolicy,
-                    blink::WebSandboxFlags,
-                    content::ParsedFeaturePolicyHeader)
+IPC_MESSAGE_ROUTED1(FrameMsg_DidUpdateFramePolicy, content::FramePolicy)
 
 // Update a proxy's window.name property.  Used when the frame's name is
 // changed in another process.
@@ -1224,11 +1227,10 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_DidChangeOpener, int /* opener_routing_id */)
 
 // Notifies the browser that sandbox flags or container policy have changed for
 // a subframe of this frame.
-IPC_MESSAGE_ROUTED3(
+IPC_MESSAGE_ROUTED2(
     FrameHostMsg_DidChangeFramePolicy,
     int32_t /* subframe_routing_id */,
-    blink::WebSandboxFlags /* updated_flags */,
-    content::ParsedFeaturePolicyHeader /* updated container policy */)
+    content::FramePolicy /* updated sandbox flags and container policy */)
 
 // Notifies the browser that frame owner properties have changed for a subframe
 // of this frame.
