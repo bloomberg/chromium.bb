@@ -38,6 +38,7 @@
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
+#include "chrome/browser/picture_in_picture/picture_in_picture_window_controller.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
@@ -324,10 +325,11 @@ const struct UmaEnumCommandIdPair {
     {88, -1, IDC_CONTENT_CONTEXT_EXIT_FULLSCREEN},
     {89, -1, IDC_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP},
     {90, -1, IDC_CONTENT_CONTEXT_SHOWALLSAVEDPASSWORDS},
+    {91, -1, IDC_CONTENT_CONTENT_PICTUREINPICTURE},
     // Add new items here and use |enum_id| from the next line.
     // Also, add new items to RenderViewContextMenuItem enum in
     // tools/metrics/histograms/enums.xml.
-    {91, -1, 0},  // Must be the last. Increment |enum_id| when new IDC
+    {92, -1, 0},  // Must be the last. Increment |enum_id| when new IDC
                   // was added.
 };
 
@@ -1259,6 +1261,7 @@ void RenderViewContextMenu::AppendVideoItems() {
                                   IDS_CONTENT_CONTEXT_SAVEVIDEOAS);
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_COPYAVLOCATION,
                                   IDS_CONTENT_CONTEXT_COPYVIDEOLOCATION);
+  AppendPictureInPictureItem();
   AppendMediaRouterItem();
 }
 
@@ -1544,6 +1547,13 @@ void RenderViewContextMenu::AppendPasswordItems() {
     menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
 }
 
+void RenderViewContextMenu::AppendPictureInPictureItem() {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnablePictureInPicture))
+    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTENT_PICTUREINPICTURE,
+                                    IDS_CONTENT_CONTENT_PICTUREINPICTURE);
+}
+
 // Menu delegate functions -----------------------------------------------------
 
 bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
@@ -1736,6 +1746,8 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       return IsRouteMediaEnabled();
 
     case IDC_CONTENT_CONTEXT_EXIT_FULLSCREEN:
+    // TODO(apacible): Update PIP conditions when finalized.
+    case IDC_CONTENT_CONTENT_PICTUREINPICTURE:
       return true;
 
     default:
@@ -2015,6 +2027,10 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
     case IDC_CONTENT_CONTEXT_SHOWALLSAVEDPASSWORDS:
       autofill::ChromeAutofillClient::FromWebContents(source_web_contents_)
           ->ExecuteCommand(autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY);
+      break;
+
+    case IDC_CONTENT_CONTENT_PICTUREINPICTURE:
+      ExecPictureInPicture();
       break;
 
     default:
@@ -2592,6 +2608,17 @@ void RenderViewContextMenu::ExecProtocolHandlerSettings(int event_flags) {
       ForceNewTabDispositionFromEventFlags(event_flags);
   GURL url = chrome::GetSettingsUrl(chrome::kHandlerSettingsSubPage);
   OpenURL(url, GURL(), disposition, ui::PAGE_TRANSITION_LINK);
+}
+
+void RenderViewContextMenu::ExecPictureInPicture() {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnablePictureInPicture))
+    return;
+
+  PictureInPictureWindowController* window_controller =
+      PictureInPictureWindowController::GetOrCreateForWebContents(
+          embedder_web_contents_);
+  window_controller->Show();
 }
 
 void RenderViewContextMenu::WriteURLToClipboard(const GURL& url) {
