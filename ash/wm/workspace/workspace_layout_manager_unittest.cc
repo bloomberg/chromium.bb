@@ -121,7 +121,7 @@ display::Display GetDisplayNearestWindow(aura::Window* window) {
 
 void EnableStickyKeyboard() {
   keyboard::KeyboardController::ResetInstance(new keyboard::KeyboardController(
-      std::make_unique<keyboard::TestKeyboardUI>(), nullptr));
+      std::make_unique<keyboard::FakeKeyboardUI>(), nullptr));
   keyboard::KeyboardController::GetInstance()->set_keyboard_locked(true);
 }
 
