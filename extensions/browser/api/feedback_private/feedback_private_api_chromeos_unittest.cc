@@ -203,11 +203,12 @@ TEST_F(FeedbackPrivateApiUnittest, ReadLogSourceMultipleSources) {
   // Store the reader ID back into the params to set up for the next call.
   params_1st_read.reader_id = std::make_unique<int>(result_reader_id);
 
-  // Cannot create a second reader from the same log source.
+  // Create a second reader from the same log source.
   ReadLogSourceParams params_1st_read_repeated;
   params_1st_read_repeated.source = api::feedback_private::LOG_SOURCE_MESSAGES;
   params_1st_read_repeated.incremental = true;
-  EXPECT_NE("", RunReadLogSourceFunctionWithError(params_1st_read_repeated));
+  EXPECT_TRUE(RunReadLogSourceFunction(params_1st_read_repeated,
+                                       &result_reader_id, &result_string));
 
   // Attempt to open LOG_SOURCE_UI_LATEST twice.
   ReadLogSourceParams params_2nd_read;
@@ -221,11 +222,12 @@ TEST_F(FeedbackPrivateApiUnittest, ReadLogSourceMultipleSources) {
   // Store the reader ID back into the params to set up for the next call.
   params_2nd_read.reader_id = std::make_unique<int>(result_reader_id);
 
-  // Cannot create a second reader from the same log source.
+  // Create a second reader from the same log source.
   ReadLogSourceParams params_2nd_read_repeated;
   params_2nd_read_repeated.source = api::feedback_private::LOG_SOURCE_UILATEST;
   params_2nd_read_repeated.incremental = true;
-  EXPECT_NE("", RunReadLogSourceFunctionWithError(params_2nd_read_repeated));
+  EXPECT_TRUE(RunReadLogSourceFunction(params_2nd_read_repeated,
+                                       &result_reader_id, &result_string));
 
   // Close the two open log source readers, and make sure new ones can be
   // opened.

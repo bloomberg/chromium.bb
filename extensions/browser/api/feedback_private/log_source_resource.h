@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "base/callback_helpers.h"
+#include "base/callback.h"
 #include "base/macros.h"
 #include "components/feedback/system_logs/system_logs_fetcher.h"
 #include "extensions/browser/api/api_resource.h"
@@ -24,12 +24,15 @@ class LogSourceResource : public ApiResource {
       content::BrowserThread::UI;
 
   LogSourceResource(const std::string& extension_id,
-                    std::unique_ptr<system_logs::SystemLogsSource> source,
-                    base::Closure unregister_callback_);
+                    std::unique_ptr<system_logs::SystemLogsSource> source);
 
   ~LogSourceResource() override;
 
   system_logs::SystemLogsSource* GetLogSource() const { return source_.get(); }
+
+  void set_unregister_callback(const base::Closure& unregister_callback) {
+    unregister_callback_ = unregister_callback;
+  }
 
  private:
   friend class ApiResourceManager<LogSourceResource>;
@@ -38,9 +41,8 @@ class LogSourceResource : public ApiResource {
   std::unique_ptr<system_logs::SystemLogsSource> source_;
 
   // This unregisters the LogSourceResource from a LogSourceAccessManager when
-  // this resource is cleaned up. Just pass in a base::Closure to the
-  // constructor.
-  base::ScopedClosureRunner unregister_runner_;
+  // this resource is cleaned up.
+  base::Closure unregister_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(LogSourceResource);
 };
