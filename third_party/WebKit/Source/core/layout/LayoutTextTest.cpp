@@ -7,6 +7,7 @@
 #include "core/layout/LayoutTestHelper.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "platform/runtime_enabled_features.h"
+#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -96,8 +97,8 @@ TEST_F(LayoutTextTest, WidthLengthBeyondLength) {
 }
 
 TEST_F(LayoutTextTest, CaretMinMaxOffsetNG) {
-  RuntimeEnabledFeatures::SetLayoutNGEnabled(true);
-  RuntimeEnabledFeatures::SetLayoutNGPaintFragmentsEnabled(true);
+  ScopedLayoutNGForTest layout_ng(true);
+  ScopedLayoutNGPaintFragmentsForTest layout_ng_paint_fragments(true);
 
   SetBasicBody("foo");
   EXPECT_EQ(0, GetBasicText()->CaretMinOffset());
@@ -117,8 +118,8 @@ TEST_F(LayoutTextTest, CaretMinMaxOffsetNG) {
 }
 
 TEST_F(LayoutTextTest, ResolvedTextLengthNG) {
-  RuntimeEnabledFeatures::SetLayoutNGEnabled(true);
-  RuntimeEnabledFeatures::SetLayoutNGPaintFragmentsEnabled(true);
+  ScopedLayoutNGForTest layout_ng(true);
+  ScopedLayoutNGPaintFragmentsForTest layout_ng_paint_fragments(true);
 
   SetBasicBody("foo");
   EXPECT_EQ(3u, GetBasicText()->ResolvedTextLength());
