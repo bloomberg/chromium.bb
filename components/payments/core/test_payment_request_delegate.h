@@ -81,7 +81,7 @@ class TestPaymentRequestDelegate : public PaymentRequestDelegate {
 
  private:
   base::MessageLoop loop_;
-  TestPaymentsClientDelegate payments_cleint_delegate_;
+  TestPaymentsClientDelegate payments_client_delegate_;
   autofill::PersonalDataManager* personal_data_manager_;
   std::string locale_;
   const GURL last_committed_url_;

@@ -7,6 +7,10 @@
 namespace autofill {
 namespace prefs {
 
+// Integer that is set to the billing customer number fetched from priority
+// preference.
+const char kAutofillBillingCustomerNumber[] = "billing_customer_number";
+
 // Number of times the credit card signin promo has been shown.
 const char kAutofillCreditCardSigninPromoImpressionCount[] =
     "autofill.credit_card_signin_promo_impression_count";

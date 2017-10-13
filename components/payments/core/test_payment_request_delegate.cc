@@ -14,7 +14,9 @@ TestPaymentRequestDelegate::TestPaymentRequestDelegate(
       locale_("en-US"),
       last_committed_url_("https://shop.com"),
       request_context_(new TestURLRequestContextGetter(loop_.task_runner())),
-      payments_client_(request_context_.get(), &payments_cleint_delegate_),
+      payments_client_(request_context_.get(),
+                       nullptr,
+                       &payments_client_delegate_),
       full_card_request_(&autofill_client_,
                          &payments_client_,
                          personal_data_manager) {}

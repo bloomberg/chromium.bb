@@ -2931,6 +2931,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableAutofillCreditCardBankNameDisplayName,
      flag_descriptions::kEnableAutofillCreditCardBankNameDisplayDescription,
      kOsAll, FEATURE_VALUE_TYPE(autofill::kAutofillCreditCardBankNameDisplay)},
+    {"enable-autofill-send-billing-customer-number",
+     flag_descriptions::kEnableAutofillSendBillingCustomerNumberName,
+     flag_descriptions::kEnableAutofillSendBillingCustomerNumberDescription,
+     kOsAll, FEATURE_VALUE_TYPE(autofill::kAutofillSendBillingCustomerNumber)},
 
 #if defined(OS_WIN)
     {"windows10-custom-titlebar",

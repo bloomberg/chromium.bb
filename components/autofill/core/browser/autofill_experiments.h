@@ -37,6 +37,7 @@ extern const base::Feature kAutofillDeleteDisusedAddresses;
 extern const base::Feature kAutofillDeleteDisusedCreditCards;
 extern const base::Feature kAutofillOfferLocalSaveIfServerCardManuallyEntered;
 extern const base::Feature kAutofillRationalizeFieldTypePredictions;
+extern const base::Feature kAutofillSendBillingCustomerNumber;
 extern const base::Feature kAutofillSuppressDisusedAddresses;
 extern const base::Feature kAutofillSuppressDisusedCreditCards;
 extern const base::Feature kAutofillUpstreamAllowAllEmailDomains;
@@ -128,6 +129,11 @@ unsigned int GetPopupMargin();
 // number into a checkout form anyway, the option to locally save the card is
 // offered.
 bool IsAutofillOfferLocalSaveIfServerCardManuallyEnteredExperimentEnabled();
+
+// Returns whether the experiment is enabled where Chrome reads billing customer
+// number from priority preference and sends it along with UploadCardRequest and
+// FullCardRequest.
+bool IsAutofillSendBillingCustomerNumberExperimentEnabled();
 
 // Returns whether the experiment is enabled where Chrome Upstream requests CVC
 // in the offer to save bubble if it was not detected during the checkout flow.
