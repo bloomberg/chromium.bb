@@ -18,8 +18,10 @@ namespace ash {
 namespace {
 
 void OnSetTouchpadEnabledDone(bool succeeded) {
-  if (!succeeded)
-    LOG(ERROR) << "Failed to set touchpad enabled state.";
+  // Don't log here, |succeeded| is only true if there is a touchpad *and* the
+  // value changed. In other words |succeeded| is false when not on device or
+  // the value was already at the value specified. Neither of these are
+  // interesting failures.
 }
 
 ui::InputDeviceControllerClient* GetInputDeviceControllerClient() {
