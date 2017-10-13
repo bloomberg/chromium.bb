@@ -611,11 +611,25 @@ bool TabManager::IsTabRestoredInForeground(WebContents* web_contents) const {
   return GetWebContentsData(web_contents)->is_restored_in_foreground();
 }
 
-bool TabManager::IsInBackgroundTabOpeningSession() const {
-  if (background_tab_loading_mode_ != BackgroundTabLoadingMode::kStaggered)
-    return false;
+size_t TabManager::GetBackgroundTabLoadingCount() const {
+  if (!IsInBackgroundTabOpeningSession())
+    return 0;
 
-  return !(pending_navigations_.empty() && loading_contents_.empty());
+  return loading_contents_.size();
+}
+
+size_t TabManager::GetBackgroundTabPendingCount() const {
+  if (!IsInBackgroundTabOpeningSession())
+    return 0;
+
+  return pending_navigations_.size();
+}
+
+int TabManager::GetTabCount() const {
+  int tab_count = 0;
+  for (auto* browser : *BrowserList::GetInstance())
+    tab_count += browser->tab_strip_model()->count();
+  return tab_count;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -727,13 +741,6 @@ void TabManager::PurgeBrowserMemory() {
     // touch back/forward.
     web_contents->GetController().ClearAllScreenshots();
   }
-}
-
-int TabManager::GetTabCount() const {
-  int tab_count = 0;
-  for (auto* browser : *BrowserList::GetInstance())
-    tab_count += browser->tab_strip_model()->count();
-  return tab_count;
 }
 
 void TabManager::AddTabStats(const BrowserInfo& browser_info,
@@ -1188,6 +1195,13 @@ TabManager::MaybeThrottleNavigation(BackgroundTabNavigationThrottle* throttle) {
 
   StartForceLoadTimer();
   return content::NavigationThrottle::DEFER;
+}
+
+bool TabManager::IsInBackgroundTabOpeningSession() const {
+  if (background_tab_loading_mode_ != BackgroundTabLoadingMode::kStaggered)
+    return false;
+
+  return !(pending_navigations_.empty() && loading_contents_.empty());
 }
 
 bool TabManager::CanLoadNextTab() const {
