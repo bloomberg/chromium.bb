@@ -238,9 +238,7 @@ VisiblePosition NextParagraphPosition(const VisiblePosition&, LayoutUnit x);
 CORE_EXPORT bool IsStartOfParagraph(
     const VisiblePosition&,
     EditingBoundaryCrossingRule = kCannotCrossEditingBoundary);
-CORE_EXPORT bool IsStartOfParagraph(
-    const VisiblePositionInFlatTree&,
-    EditingBoundaryCrossingRule = kCannotCrossEditingBoundary);
+CORE_EXPORT bool IsStartOfParagraph(const VisiblePositionInFlatTree&);
 CORE_EXPORT bool IsEndOfParagraph(
     const VisiblePosition&,
     EditingBoundaryCrossingRule = kCannotCrossEditingBoundary);

@@ -333,10 +333,9 @@ bool IsStartOfParagraph(const VisiblePosition& pos,
                                                       boundary_crossing_rule);
 }
 
-bool IsStartOfParagraph(const VisiblePositionInFlatTree& pos,
-                        EditingBoundaryCrossingRule boundary_crossing_rule) {
+bool IsStartOfParagraph(const VisiblePositionInFlatTree& pos) {
   return IsStartOfParagraphAlgorithm<EditingInFlatTreeStrategy>(
-      pos, boundary_crossing_rule);
+      pos, kCannotCrossEditingBoundary);
 }
 
 bool IsEndOfParagraph(const VisiblePosition& pos,
