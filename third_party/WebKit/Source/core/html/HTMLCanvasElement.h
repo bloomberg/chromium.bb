@@ -198,8 +198,6 @@ class CORE_EXPORT HTMLCanvasElement final
   bool IsCanvasElement() const override { return true; }
   bool IsOpaque() const override;
   bool IsAccelerated() const override;
-  int SourceWidth() override { return size_.Width(); }
-  int SourceHeight() override { return size_.Height(); }
 
   // SurfaceLayerBridgeObserver implementation
   void OnWebLayerReplaced() override;

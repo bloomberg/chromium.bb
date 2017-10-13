@@ -142,8 +142,6 @@ class CORE_EXPORT OffscreenCanvas final
   }
   bool IsOpaque() const final;
   bool IsAccelerated() const final;
-  int SourceWidth() final { return width(); }
-  int SourceHeight() final { return height(); }
 
   DispatchEventResult HostDispatchEvent(Event* event) {
     return DispatchEvent(event);

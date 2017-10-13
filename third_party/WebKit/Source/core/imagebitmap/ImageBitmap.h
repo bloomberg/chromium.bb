@@ -125,8 +125,6 @@ class CORE_EXPORT ImageBitmap final
   void AdjustDrawRects(FloatRect* src_rect, FloatRect* dst_rect) const override;
   FloatSize ElementSize(const FloatSize&) const override;
   bool IsImageBitmap() const override { return true; }
-  int SourceWidth() override { return image_ ? image_->width() : 0; }
-  int SourceHeight() override { return image_ ? image_->height() : 0; }
   bool IsAccelerated() const override;
 
   // ImageBitmapSource implementation

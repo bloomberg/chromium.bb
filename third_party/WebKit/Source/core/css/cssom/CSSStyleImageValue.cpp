@@ -39,16 +39,6 @@ bool CSSStyleImageValue::IsAccelerated() const {
   return GetImage() && GetImage()->IsTextureBacked();
 }
 
-int CSSStyleImageValue::SourceHeight() {
-  bool not_used;
-  return intrinsicHeight(not_used);
-}
-
-int CSSStyleImageValue::SourceWidth() {
-  bool not_used;
-  return intrinsicWidth(not_used);
-}
-
 RefPtr<Image> CSSStyleImageValue::GetImage() const {
   if (IsCachePending())
     return nullptr;
