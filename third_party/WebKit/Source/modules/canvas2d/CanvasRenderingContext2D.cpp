@@ -771,9 +771,9 @@ TextMetrics* CanvasRenderingContext2D::measureText(const String& text) {
 
   // y direction
   const FontMetrics& font_metrics = font_data->GetFontMetrics();
-  const float ascent = font_metrics.FloatAscent();
-  const float descent = font_metrics.FloatDescent();
-  const float baseline_y = GetFontBaseline(font_metrics);
+  const double ascent = font_metrics.FloatAscent();
+  const double descent = font_metrics.FloatDescent();
+  const double baseline_y = GetFontBaseline(font_metrics);
 
   metrics->SetFontBoundingBoxAscent(ascent - baseline_y);
   metrics->SetFontBoundingBoxDescent(descent + baseline_y);
