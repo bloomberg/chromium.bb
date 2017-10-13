@@ -57,50 +57,70 @@ const SkColor kButtonNoThanksColor = SkColorSetARGB(0x33, 0xFF, 0xFF, 0xFF);
 enum class ButtonTag { CLOSE_BUTTON, OK_BUTTON, NO_THANKS_BUTTON };
 
 // Experiment specification information needed for layout.
-// TODO(skare): Suppress x-to-close in relevant variations.
 struct ExperimentVariations {
+  enum class CloseStyle {
+    kNoThanksButton,
+    kCloseX,
+    kNoThanksButtonAndCloseX,
+  };
+
   // Resource ID for header message string.
   int heading_id;
   // Resource ID for body message string, or 0 for no body text.
   int body_id;
-  // Whether the dialog has a 'no thanks' button. Dialog will always have a
-  // close 'x'.
-  bool has_no_thanks_button;
+  // Set of dismissal controls.
+  CloseStyle close_style;
   // Which action to take on acceptance of the dialog.
   TryChromeDialog::Result result;
 };
 
 constexpr ExperimentVariations kExperiments[] = {
-    {IDS_WIN10_TOAST_RECOMMENDATION, 0, false,
+    {IDS_WIN10_TOAST_RECOMMENDATION, 0,
+     ExperimentVariations::CloseStyle::kCloseX,
      TryChromeDialog::OPEN_CHROME_DEFAULT},
-    {IDS_WIN10_TOAST_RECOMMENDATION, 0, true,
+    {IDS_WIN10_TOAST_RECOMMENDATION, 0,
+     ExperimentVariations::CloseStyle::kNoThanksButtonAndCloseX,
      TryChromeDialog::OPEN_CHROME_DEFAULT},
-    {IDS_WIN10_TOAST_RECOMMENDATION, 0, false,
+    {IDS_WIN10_TOAST_RECOMMENDATION, 0,
+     ExperimentVariations::CloseStyle::kNoThanksButton,
+     TryChromeDialog::OPEN_CHROME_DEFAULT},
+    {IDS_WIN10_TOAST_RECOMMENDATION, 0,
+     ExperimentVariations::CloseStyle::kCloseX,
      TryChromeDialog::OPEN_CHROME_WELCOME_WIN10},
-    {IDS_WIN10_TOAST_RECOMMENDATION, 0, false,
+    {IDS_WIN10_TOAST_RECOMMENDATION, 0,
+     ExperimentVariations::CloseStyle::kCloseX,
      TryChromeDialog::OPEN_CHROME_WELCOME},
-    {IDS_WIN10_TOAST_RECOMMENDATION, IDS_WIN10_TOAST_SWITCH_FAST, false,
+    {IDS_WIN10_TOAST_RECOMMENDATION, IDS_WIN10_TOAST_SWITCH_FAST,
+     ExperimentVariations::CloseStyle::kCloseX,
      TryChromeDialog::OPEN_CHROME_DEFAULT},
-    {IDS_WIN10_TOAST_RECOMMENDATION, IDS_WIN10_TOAST_SWITCH_SECURE, false,
+    {IDS_WIN10_TOAST_RECOMMENDATION, IDS_WIN10_TOAST_SWITCH_SECURE,
+     ExperimentVariations::CloseStyle::kCloseX,
      TryChromeDialog::OPEN_CHROME_DEFAULT},
-    {IDS_WIN10_TOAST_RECOMMENDATION, IDS_WIN10_TOAST_SWITCH_SMART, false,
+    {IDS_WIN10_TOAST_RECOMMENDATION, IDS_WIN10_TOAST_SWITCH_SMART,
+     ExperimentVariations::CloseStyle::kCloseX,
      TryChromeDialog::OPEN_CHROME_DEFAULT},
-    {IDS_WIN10_TOAST_SWITCH_FAST, IDS_WIN10_TOAST_RECOMMENDATION, false,
+    {IDS_WIN10_TOAST_SWITCH_FAST, IDS_WIN10_TOAST_RECOMMENDATION,
+     ExperimentVariations::CloseStyle::kCloseX,
      TryChromeDialog::OPEN_CHROME_DEFAULT},
-    {IDS_WIN10_TOAST_SWITCH_SECURE, IDS_WIN10_TOAST_RECOMMENDATION, false,
+    {IDS_WIN10_TOAST_SWITCH_SECURE, IDS_WIN10_TOAST_RECOMMENDATION,
+     ExperimentVariations::CloseStyle::kCloseX,
      TryChromeDialog::OPEN_CHROME_DEFAULT},
-    {IDS_WIN10_TOAST_SWITCH_SMART, IDS_WIN10_TOAST_RECOMMENDATION, false,
+    {IDS_WIN10_TOAST_SWITCH_SMART, IDS_WIN10_TOAST_RECOMMENDATION,
+     ExperimentVariations::CloseStyle::kCloseX,
      TryChromeDialog::OPEN_CHROME_DEFAULT},
-    {IDS_WIN10_TOAST_BROWSE_FAST, 0, false,
+    {IDS_WIN10_TOAST_BROWSE_FAST, 0, ExperimentVariations::CloseStyle::kCloseX,
      TryChromeDialog::OPEN_CHROME_DEFAULT},
-    {IDS_WIN10_TOAST_BROWSE_SAFELY, 0, false,
+    {IDS_WIN10_TOAST_BROWSE_SAFELY, 0,
+     ExperimentVariations::CloseStyle::kCloseX,
      TryChromeDialog::OPEN_CHROME_DEFAULT},
-    {IDS_WIN10_TOAST_BROWSE_SMART, 0, false,
+    {IDS_WIN10_TOAST_BROWSE_SMART, 0, ExperimentVariations::CloseStyle::kCloseX,
      TryChromeDialog::OPEN_CHROME_DEFAULT},
     {IDS_WIN10_TOAST_SWITCH_SMART_AND_SECURE, IDS_WIN10_TOAST_RECOMMENDATION,
-     true, TryChromeDialog::OPEN_CHROME_DEFAULT},
+     ExperimentVariations::CloseStyle::kNoThanksButtonAndCloseX,
+     TryChromeDialog::OPEN_CHROME_DEFAULT},
     {IDS_WIN10_TOAST_SWITCH_SMART_AND_SECURE, IDS_WIN10_TOAST_RECOMMENDATION,
-     true, TryChromeDialog::OPEN_CHROME_DEFAULT}};
+     ExperimentVariations::CloseStyle::kNoThanksButton,
+     TryChromeDialog::OPEN_CHROME_DEFAULT}};
 
 // Whether a button is an accept or cancel-style button.
 enum class TryChromeButtonType { OPEN_CHROME, NO_THANKS };
@@ -294,17 +314,18 @@ void TryChromeDialog::OnTaskbarIconRect(const gfx::Rect& icon_rect) {
 
   // Note the right padding is smaller than other dimensions,
   // to acommodate the close 'x' button.
-  static constexpr gfx::Insets kInsets(10, 10, 12, 3);
+  static constexpr gfx::Insets kInsets(10, 0, 12, 3);
   contents_view->SetBorder(views::CreatePaddedBorder(
       views::CreateSolidBorder(1, kBorderColor), kInsets));
 
   static constexpr int kLabelSpacing = 10;
   static constexpr int kSpaceBetweenButtons = 4;
   static constexpr int kSpacingAfterHeadingHorizontal = 9;
+  static constexpr int kCloseButtonRightPadding = 2;
 
-  // First row: [icon][pad][text][pad][close button].
-  // Left padding is accomplished via border.
+  // First row: [pad][icon][pad][text][pad][close button].
   columns = layout->AddColumnSet(0);
+  columns->AddPaddingColumn(0, 10 - kInsets.left());
   columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING, 0,
                      views::GridLayout::FIXED, icon_size.width(),
                      icon_size.height());
@@ -312,23 +333,24 @@ void TryChromeDialog::OnTaskbarIconRect(const gfx::Rect& icon_rect) {
   columns->AddColumn(views::GridLayout::FILL, views::GridLayout::LEADING, 1,
                      views::GridLayout::USE_PREF, 0, 0);
   columns->AddPaddingColumn(0, kSpacingAfterHeadingHorizontal);
-  columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::TRAILING,
-                     0, views::GridLayout::USE_PREF, 0, 0);
+  columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::FILL, 0,
+                     views::GridLayout::USE_PREF, 0, 0);
+  columns->AddPaddingColumn(0, kCloseButtonRightPadding);
   int icon_padding = icon_size.width() + kLabelSpacing;
 
   // Optional second row: [pad][text].
   columns = layout->AddColumnSet(1);
-  columns->AddPaddingColumn(0, icon_padding);
+  columns->AddPaddingColumn(0, icon_padding + 10 - kInsets.left());
   columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL, 1,
                      views::GridLayout::USE_PREF, 0, 0);
 
   // Third row: [pad][optional button][pad][button].
   columns = layout->AddColumnSet(2);
   columns->AddPaddingColumn(0, 12 - kInsets.left());
-  columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::FILL, 1,
+  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
                      views::GridLayout::USE_PREF, 0, 0);
   columns->AddPaddingColumn(0, kSpaceBetweenButtons);
-  columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::FILL, 0,
+  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 0,
                      views::GridLayout::USE_PREF, 0, 0);
   columns->AddPaddingColumn(0, 12 - kInsets.right());
 
@@ -346,15 +368,22 @@ void TryChromeDialog::OnTaskbarIconRect(const gfx::Rect& icon_rect) {
   header->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   layout->AddView(header.release());
 
-  // The close button is custom.
-  auto close_button = base::MakeUnique<views::ImageButton>(this);
-  close_button->SetImage(
-      views::Button::STATE_NORMAL,
-      gfx::CreateVectorIcon(kInactiveToastCloseIcon, kBodyColor));
-  close_button->set_tag(static_cast<int>(ButtonTag::CLOSE_BUTTON));
-  close_button_ = close_button.get();
-  layout->AddView(close_button.release());
-  close_button_->SetVisible(false);
+  // Close button if included in the variant.
+  if (kExperiments[group_].close_style ==
+          ExperimentVariations::CloseStyle::kCloseX ||
+      kExperiments[group_].close_style ==
+          ExperimentVariations::CloseStyle::kNoThanksButtonAndCloseX) {
+    auto close_button = base::MakeUnique<views::ImageButton>(this);
+    close_button->SetImage(
+        views::Button::STATE_NORMAL,
+        gfx::CreateVectorIcon(kInactiveToastCloseIcon, kBodyColor));
+    close_button->set_tag(static_cast<int>(ButtonTag::CLOSE_BUTTON));
+    close_button_ = close_button.get();
+    layout->AddView(close_button.release());
+    close_button_->SetVisible(false);
+  } else {
+    layout->SkipColumns(1);
+  }
 
   // Second row: May have text or may be blank.
   layout->StartRow(0, 1);
@@ -369,7 +398,12 @@ void TryChromeDialog::OnTaskbarIconRect(const gfx::Rect& icon_rect) {
 
   // Third row: one or two buttons depending on group.
   layout->StartRowWithPadding(0, 2, 0, 12);
-  if (!kExperiments[group_].has_no_thanks_button)
+  bool has_no_thanks_button =
+      kExperiments[group_].close_style ==
+          ExperimentVariations::CloseStyle::kNoThanksButton ||
+      kExperiments[group_].close_style ==
+          ExperimentVariations::CloseStyle::kNoThanksButtonAndCloseX;
+  if (!has_no_thanks_button)
     layout->SkipColumns(1);
   auto accept_button = CreateWin10StyleButton(
       this, l10n_util::GetStringUTF16(IDS_WIN10_TOAST_OPEN_CHROME),
@@ -377,7 +411,7 @@ void TryChromeDialog::OnTaskbarIconRect(const gfx::Rect& icon_rect) {
   accept_button->set_tag(static_cast<int>(ButtonTag::OK_BUTTON));
   layout->AddView(accept_button.release());
 
-  if (kExperiments[group_].has_no_thanks_button) {
+  if (has_no_thanks_button) {
     auto no_thanks_button = CreateWin10StyleButton(
         this, l10n_util::GetStringUTF16(IDS_WIN10_TOAST_NO_THANKS),
         TryChromeButtonType::NO_THANKS);
@@ -521,14 +555,14 @@ void TryChromeDialog::OnWindowMessage(HWND window,
 
 void TryChromeDialog::GainedMouseHover() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
-  DCHECK(close_button_);
-  close_button_->SetVisible(true);
+  if (close_button_)
+    close_button_->SetVisible(true);
 }
 
 void TryChromeDialog::LostMouseHover() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
-  DCHECK(close_button_);
-  close_button_->SetVisible(false);
+  if (close_button_)
+    close_button_->SetVisible(false);
 }
 
 void TryChromeDialog::ButtonPressed(views::Button* sender,
