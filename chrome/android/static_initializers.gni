@@ -15,6 +15,6 @@ if (current_toolchain == default_toolchain &&
   if (target_cpu == "arm") {
     expected_static_initializer_count = 12
   } else if (target_cpu == "arm64") {
-    expected_static_initializer_count = 6
+    expected_static_initializer_count = 4
   }
 }
