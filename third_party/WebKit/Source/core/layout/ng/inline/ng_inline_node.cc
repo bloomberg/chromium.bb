@@ -5,6 +5,7 @@
 #include "core/layout/ng/inline/ng_inline_node.h"
 
 #include "core/layout/BidiRun.h"
+#include "core/layout/LayoutMultiColumnFlowThread.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutText.h"
 #include "core/layout/LayoutTextFragment.h"
@@ -628,7 +629,12 @@ NGLayoutInputNode NGInlineNode::NextSibling() {
 void NGInlineNode::CopyFragmentDataToLayoutBox(
     const NGConstraintSpace& constraint_space,
     NGLayoutResult* layout_result) {
-  LayoutNGBlockFlow* block_flow = GetLayoutBlockFlow();
+  LayoutBlockFlow* block_flow = GetLayoutBlockFlow();
+
+  // If we have a flow thread, that's where to put the line boxes.
+  if (auto* flow_thread = block_flow->MultiColumnFlowThread())
+    block_flow = flow_thread;
+
   block_flow->DeleteLineBoxTree();
 
   const Vector<NGInlineItem>& items = Data().items_;
