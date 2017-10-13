@@ -45,7 +45,6 @@ class CORE_EXPORT InterpolableValue {
   // Keep interpolate private, but allow calls within the hierarchy without
   // knowledge of type.
   friend class InterpolableNumber;
-  friend class InterpolableBool;
   friend class InterpolableList;
 
   friend class AnimationInterpolableValueTest;
