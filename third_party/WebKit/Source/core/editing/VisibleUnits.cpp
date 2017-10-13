@@ -980,7 +980,8 @@ static PositionTemplate<Strategy> MostBackwardCaretPosition(
 
     // skip position in non-laid out or invisible node
     const LayoutObject* const layout_object =
-        AssociatedLayoutObjectOf(*current_node, current_pos.OffsetInLeafNode());
+        AssociatedLayoutObjectOf(*current_node, current_pos.OffsetInLeafNode(),
+                                 LayoutObjectSide::kFirstLetterIfOnBoundary);
     if (!layout_object ||
         layout_object->Style()->Visibility() != EVisibility::kVisible)
       continue;
@@ -1070,26 +1071,9 @@ static bool DoesContinueOnNextLine(const LayoutText& text_layout_object,
   return true;
 }
 
-// Returns true if |text_layout_object| has visible first-letter.
-bool HasVisibleFirstLetter(const LayoutText& text_layout_object) {
-  if (!text_layout_object.IsTextFragment())
-    return false;
-  const LayoutTextFragment& layout_text_fragment =
-      ToLayoutTextFragment(text_layout_object);
-  if (!layout_text_fragment.IsRemainingTextLayoutObject())
-    return false;
-  const LayoutObject* first_letter_layout_object =
-      layout_text_fragment.GetFirstLetterPseudoElement()->GetLayoutObject();
-  if (!first_letter_layout_object)
-    return false;
-  return first_letter_layout_object->Style()->Visibility() ==
-         EVisibility::kVisible;
-}
-
 // Returns true when both of the following hold:
 // (i)  |offset_in_node| is not the first offset in |text_layout_object|
 // (ii) |offset_in_node| and |offset_in_node - 1| are different caret positions
-// TODO(editing-dev): Document the behavior when there is ::first-letter.
 static bool CanBeBackwardCaretPosition(const LayoutText* text_layout_object,
                                        int offset_in_node) {
   const unsigned text_start_offset = text_layout_object->TextStartOffset();
@@ -1097,15 +1081,8 @@ static bool CanBeBackwardCaretPosition(const LayoutText* text_layout_object,
   const unsigned text_offset = offset_in_node - text_start_offset;
   InlineTextBox* const last_text_box = text_layout_object->LastTextBox();
   for (InlineTextBox* box : InlineTextBoxesOf(*text_layout_object)) {
-    if (text_offset == box->Start()) {
-      if (HasVisibleFirstLetter(*text_layout_object)) {
-        // |offset_in_node| is at start of remaining text of
-        // |Text| node with :first-letter.
-        DCHECK_GE(offset_in_node, 1);
-        return true;
-      }
+    if (text_offset == box->Start())
       continue;
-    }
     if (text_offset <= box->Start() + box->Len()) {
       if (text_offset > box->Start())
         return true;

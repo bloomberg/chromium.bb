@@ -3559,7 +3559,8 @@ void LayoutObject::InvalidateIfControlStateChanged(ControlState control_state) {
 //  Punctuation characters are considered as first-letter. For "(1)ab",
 //  "(1)" are first-letter part and "ab" are remaining part.
 const LayoutObject* AssociatedLayoutObjectOf(const Node& node,
-                                             int offset_in_node) {
+                                             int offset_in_node,
+                                             LayoutObjectSide object_side) {
   DCHECK_GE(offset_in_node, 0);
   LayoutObject* layout_object = node.GetLayoutObject();
   if (!node.IsTextNode() || !layout_object ||
@@ -3573,9 +3574,14 @@ const LayoutObject* AssociatedLayoutObjectOf(const Node& node,
         layout_text_fragment->Start() + layout_text_fragment->FragmentLength());
     return layout_text_fragment;
   }
-  if (layout_text_fragment->FragmentLength() &&
-      static_cast<unsigned>(offset_in_node) >= layout_text_fragment->Start())
-    return layout_object;
+  if (layout_text_fragment->FragmentLength()) {
+    const unsigned threshold =
+        object_side == LayoutObjectSide::kRemainingTextIfOnBoundary
+            ? layout_text_fragment->Start()
+            : layout_text_fragment->Start() + 1;
+    if (static_cast<unsigned>(offset_in_node) >= threshold)
+      return layout_object;
+  }
   LayoutObject* first_letter_layout_object =
       layout_text_fragment->GetFirstLetterPseudoElement()->GetLayoutObject();
   // TODO(yosin): We're not sure when |firstLetterLayoutObject| has
