@@ -244,8 +244,7 @@ bool ImageResourceContent::ImageHasRelativeSize() const {
 
 LayoutSize ImageResourceContent::ImageSize(
     RespectImageOrientationEnum should_respect_image_orientation,
-    float multiplier,
-    SizeType size_type) {
+    float multiplier) {
   if (!image_)
     return LayoutSize();
 
@@ -257,10 +256,6 @@ LayoutSize ImageResourceContent::ImageSize(
   } else {
     size = LayoutSize(image_->Size());
   }
-
-  if (size_type == kIntrinsicCorrectedToDPR &&
-      HasDevicePixelRatioHeaderValue() && DevicePixelRatioHeaderValue() > 0)
-    multiplier = 1 / DevicePixelRatioHeaderValue();
 
   if (multiplier == 1 || image_->HasRelativeSize())
     return size;

@@ -61,10 +61,9 @@ class CORE_EXPORT CSSStyleImageValue : public CSSResourceValue,
     DCHECK(!IsCachePending());
     ImageResourceContent* resource_content =
         image_value_->CachedImage()->CachedImage();
-    return resource_content ? resource_content->ImageSize(
-                                  kDoNotRespectImageOrientation, 1,
-                                  ImageResourceContent::kIntrinsicSize)
-                            : LayoutSize(0, 0);
+    return resource_content
+               ? resource_content->ImageSize(kDoNotRespectImageOrientation, 1)
+               : LayoutSize(0, 0);
   }
 
   virtual bool IsCachePending() const { return image_value_->IsCachePending(); }

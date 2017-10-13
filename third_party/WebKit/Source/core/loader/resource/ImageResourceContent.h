@@ -72,20 +72,11 @@ class CORE_EXPORT ImageResourceContent final
   float DevicePixelRatioHeaderValue() const;
   bool HasDevicePixelRatioHeaderValue() const;
 
-  enum SizeType {
-    // Report the intrinsic size.
-    kIntrinsicSize,
-
-    // Report the intrinsic size corrected to account for image density.
-    kIntrinsicCorrectedToDPR,
-  };
-
   // This method takes a zoom multiplier that can be used to increase the
   // natural size of the image by the zoom.
   LayoutSize ImageSize(
       RespectImageOrientationEnum should_respect_image_orientation,
-      float multiplier,
-      SizeType = kIntrinsicSize);
+      float multiplier);
 
   void UpdateImageAnimationPolicy();
 
