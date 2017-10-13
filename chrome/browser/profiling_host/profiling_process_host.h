@@ -88,6 +88,11 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
   // memory data to the crash server (slow-report).
   void RequestProcessReport(base::ProcessId pid, std::string trigger_name);
 
+  // For testing. Only one can be set at a time. Will be called after the
+  // profiling proecss dumps heaps into the trace log. No guarantees are made
+  // about the task queue on which the callback will be Run.
+  void SetDumpProcessForTracingCallback(base::OnceClosure callback);
+
  protected:
   friend struct base::DefaultSingletonTraits<ProfilingProcessHost>;
   // Exposed for unittests.
@@ -167,6 +172,9 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
 
   // Whether or not the profiling host is started.
   static bool has_started_;
+
+  // For tests.
+  base::OnceClosure dump_process_for_tracing_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfilingProcessHost);
 };

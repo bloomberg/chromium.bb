@@ -5,8 +5,13 @@
 #include "base/allocator/features.h"
 #include "base/allocator/partition_allocator/partition_alloc.h"
 #include "base/json/json_reader.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/run_loop.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/trace_event/trace_buffer.h"
+#include "base/trace_event/trace_config_memory_test_util.h"
+#include "base/trace_event/trace_log.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiling_host/profiling_process_host.h"
 #include "chrome/browser/ui/browser.h"
@@ -16,6 +21,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/tracing_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -28,40 +34,49 @@
 
 namespace {
 
-class MemlogBrowserTest : public InProcessBrowserTest,
-                          public testing::WithParamInterface<const char*> {
- protected:
-  void SetUpDefaultCommandLine(base::CommandLine* command_line) override {
-    InProcessBrowserTest::SetUpDefaultCommandLine(command_line);
-    if (GetParam())
-      command_line->AppendSwitchASCII(switches::kMemlog, GetParam());
-  }
-};
+// Make some specific allocations in Browser to do a deeper test of the
+// allocation tracking. On the renderer side, this is harder so all that's
+// tested there is the existence of information.
+constexpr int kBrowserAllocSize = 103 * 1024;
+constexpr int kBrowserAllocCount = 2048;
 
-void ValidateDump(base::Value* dump_json,
-                  int expected_alloc_size,
-                  int expected_alloc_count,
-                  const char* allocator_name,
-                  const char* type_name) {
-  // Verify allocation is found.
-  // See chrome/profiling/json_exporter.cc for file format info.
+// Test fixed-size partition alloc. The size must be aligned to system pointer
+// size.
+constexpr int kPartitionAllocSize = 8 * 23;
+constexpr int kPartitionAllocCount = 107;
+static const char* kPartitionAllocTypeName = "kPartitionAllocTypeName";
+
+base::Value* FindHeapsV2(base::ProcessId pid, base::Value* dump_json) {
   base::Value* events = dump_json->FindKey("traceEvents");
   base::Value* dumps = nullptr;
+  base::Value* heaps_v2 = nullptr;
   for (base::Value& event : events->GetList()) {
     const base::Value* found_name =
         event.FindKeyOfType("name", base::Value::Type::STRING);
     if (!found_name)
       continue;
-    if (found_name->GetString() == "periodic_interval") {
-      dumps = &event;
-      break;
-    }
+    if (found_name->GetString() != "periodic_interval")
+      continue;
+    const base::Value* found_pid =
+        event.FindKeyOfType("pid", base::Value::Type::INTEGER);
+    if (!found_pid)
+      continue;
+    if (static_cast<base::ProcessId>(found_pid->GetInt()) != pid)
+      continue;
+    dumps = &event;
+    heaps_v2 = dumps->FindPath({"args", "dumps", "heaps_v2"});
+    if (heaps_v2)
+      return heaps_v2;
   }
-  ASSERT_TRUE(dumps);
+  return nullptr;
+}
 
-  base::Value* heaps_v2 = dumps->FindPath({"args", "dumps", "heaps_v2"});
-  ASSERT_TRUE(heaps_v2);
-
+// Verify expectations are present in heap dump.
+void ValidateDump(base::Value* heaps_v2,
+                  int expected_alloc_size,
+                  int expected_alloc_count,
+                  const char* allocator_name,
+                  const char* type_name) {
   base::Value* sizes =
       heaps_v2->FindPath({"allocators", allocator_name, "sizes"});
   ASSERT_TRUE(sizes);
@@ -121,6 +136,97 @@ void ValidateDump(base::Value* dump_json,
     EXPECT_TRUE(found) << "Failed to find type name string.";
   }
 }
+
+class MemlogBrowserTest : public InProcessBrowserTest,
+                          public testing::WithParamInterface<const char*> {
+ protected:
+  void SetUpDefaultCommandLine(base::CommandLine* command_line) override {
+    InProcessBrowserTest::SetUpDefaultCommandLine(command_line);
+    if (GetParam())
+      command_line->AppendSwitchASCII(switches::kMemlog, GetParam());
+  }
+
+  void SetUp() override {
+    partition_allocator_.init();
+    InProcessBrowserTest::SetUp();
+  }
+
+  void TearDown() override {
+    // Intentionally avoid deallocations, since that will trigger a large number
+    // of messages to be sent to the profiling process.
+    leaks_.clear();
+    InProcessBrowserTest::TearDown();
+  }
+
+  void MakeTestAllocations() {
+    leaks_.reserve(2 * kBrowserAllocCount + kPartitionAllocSize);
+    for (int i = 0; i < kBrowserAllocCount; ++i) {
+      leaks_.push_back(new char[kBrowserAllocSize]);
+    }
+
+    for (int i = 0; i < kPartitionAllocCount; ++i) {
+      leaks_.push_back(static_cast<char*>(
+          PartitionAllocGeneric(partition_allocator_.root(),
+                                kPartitionAllocSize, kPartitionAllocTypeName)));
+    }
+
+    for (int i = 0; i < kBrowserAllocCount; ++i) {
+      leaks_.push_back(new char[i + 1]);  // Variadic allocation.
+      total_variadic_allocations_ += i + 1;
+    }
+
+    // Navigate around to force allocations in the renderer.
+    ASSERT_TRUE(embedded_test_server()->Start());
+    ui_test_utils::NavigateToURL(
+        browser(), embedded_test_server()->GetURL("/english_page.html"));
+    // Vive la France!
+    ui_test_utils::NavigateToURL(
+        browser(), embedded_test_server()->GetURL("/french_page.html"));
+  }
+
+  void ValidateBrowserAllocations(base::Value* dump_json) {
+    SCOPED_TRACE("Validating Browser Allocations");
+    base::Value* heaps_v2 =
+        FindHeapsV2(base::Process::Current().Pid(), dump_json);
+    ASSERT_NO_FATAL_FAILURE(
+        ValidateDump(heaps_v2, kBrowserAllocSize * kBrowserAllocCount,
+                     kBrowserAllocCount, "malloc", nullptr));
+    ASSERT_NO_FATAL_FAILURE(ValidateDump(heaps_v2, total_variadic_allocations_,
+                                         kBrowserAllocCount, "malloc",
+                                         nullptr));
+    ASSERT_NO_FATAL_FAILURE(ValidateDump(
+        heaps_v2, kPartitionAllocSize * kPartitionAllocCount,
+        kPartitionAllocCount, "partition_alloc", kPartitionAllocTypeName));
+  }
+
+  void ValidateRendererAllocations(base::Value* dump_json) {
+    SCOPED_TRACE("Validating Renderer Allocation");
+    base::ProcessId renderer_pid = base::GetProcId(browser()
+                                                       ->tab_strip_model()
+                                                       ->GetActiveWebContents()
+                                                       ->GetMainFrame()
+                                                       ->GetProcess()
+                                                       ->GetHandle());
+    base::Value* heaps_v2 = FindHeapsV2(renderer_pid, dump_json);
+    if (GetParam() == switches::kMemlogModeAll) {
+      ASSERT_TRUE(heaps_v2);
+
+      // ValidateDump doesn't always succeed for the renderer, since we don't do
+      // anything to flush allocations, there are very few allocations recorded
+      // by the heap profiler. When we do a heap dump, we prune small
+      // allocations...and this can cause all allocations to be pruned.
+      // ASSERT_NO_FATAL_FAILURE(ValidateDump(dump_json.get(), 0, 0));
+    } else {
+      ASSERT_FALSE(heaps_v2)
+          << "There should be no heap dump for the renderer.";
+    }
+  }
+
+ private:
+  std::vector<char*> leaks_;
+  size_t total_variadic_allocations_ = 0;
+  base::PartitionAllocatorGeneric partition_allocator_;
+};
 
 std::unique_ptr<base::Value> ReadDumpFile(const base::FilePath& path) {
   using base::File;
@@ -195,50 +301,9 @@ IN_PROC_BROWSER_TEST_P(MemlogBrowserTest, EndToEnd) {
       base::Process::Current().Pid(),
       temp_dir.GetPath().Append(FILE_PATH_LITERAL("throwaway.json.gz")));
 
-  // Make some specific allocations in Browser to do a deeper test of the
-  // allocation tracking. On the renderer side, this is harder so all that's
-  // tested there is the existence of information.
-  constexpr int kBrowserAllocSize = 103 * 1024;
-  constexpr int kBrowserAllocCount = 2048;
-
-  // Test fixed-size partition alloc. The size must be aligned to system pointer
-  // size.
-  constexpr int kPartitionAllocSize = 8 * 23;
-  constexpr int kPartitionAllocCount = 107;
-  static const char* kPartitionAllocTypeName = "kPartitionAllocTypeName";
-  base::PartitionAllocatorGeneric partition_allocator;
-  partition_allocator.init();
-
-  std::vector<char*> leaks;
-  leaks.reserve(2 * kBrowserAllocCount + kPartitionAllocSize);
-  for (int i = 0; i < kBrowserAllocCount; ++i) {
-    leaks.push_back(new char[kBrowserAllocSize]);
-  }
-
-  for (int i = 0; i < kPartitionAllocCount; ++i) {
-    leaks.push_back(static_cast<char*>(
-        PartitionAllocGeneric(partition_allocator.root(), kPartitionAllocSize,
-                              kPartitionAllocTypeName)));
-  }
-
-  size_t total_variadic_allocations = 0;
-  for (int i = 0; i < kBrowserAllocCount; ++i) {
-    leaks.push_back(new char[i + 1]);  // Variadic allocation.
-    total_variadic_allocations += i + 1;
-  }
-
-  // Navigate around to force allocations in the renderer.
-  // Also serves to give a lot of time for the browser allocations to propagate
-  // through to the profiling process.
-  ASSERT_TRUE(embedded_test_server()->Start());
-  ui_test_utils::NavigateToURL(
-      browser(), embedded_test_server()->GetURL("/english_page.html"));
-  // Vive la France!
-  ui_test_utils::NavigateToURL(
-      browser(), embedded_test_server()->GetURL("/french_page.html"));
+  MakeTestAllocations();
 
   {
-    SCOPED_TRACE("Validating Browser Allocation");
     base::FilePath browser_dumpfile_path =
         temp_dir.GetPath().Append(FILE_PATH_LITERAL("browserdump.json.gz"));
     DumpProcess(base::Process::Current().Pid(), browser_dumpfile_path);
@@ -246,38 +311,24 @@ IN_PROC_BROWSER_TEST_P(MemlogBrowserTest, EndToEnd) {
     std::unique_ptr<base::Value> dump_json =
         ReadDumpFile(browser_dumpfile_path);
     ASSERT_TRUE(dump_json);
-    ASSERT_NO_FATAL_FAILURE(
-        ValidateDump(dump_json.get(), kBrowserAllocSize * kBrowserAllocCount,
-                     kBrowserAllocCount, "malloc", nullptr));
-    ASSERT_NO_FATAL_FAILURE(
-        ValidateDump(dump_json.get(), total_variadic_allocations,
-                     kBrowserAllocCount, "malloc", nullptr));
-    ASSERT_NO_FATAL_FAILURE(ValidateDump(
-        dump_json.get(), kPartitionAllocSize * kPartitionAllocCount,
-        kPartitionAllocCount, "partition_alloc", kPartitionAllocTypeName));
+    ValidateBrowserAllocations(dump_json.get());
   }
 
   {
-    SCOPED_TRACE("Validating Renderer Allocation");
+    base::ProcessId renderer_pid = base::GetProcId(browser()
+                                                       ->tab_strip_model()
+                                                       ->GetActiveWebContents()
+                                                       ->GetMainFrame()
+                                                       ->GetProcess()
+                                                       ->GetHandle());
     base::FilePath renderer_dumpfile_path =
         temp_dir.GetPath().Append(FILE_PATH_LITERAL("rendererdump.json.gz"));
-    DumpProcess(base::GetProcId(browser()
-                                    ->tab_strip_model()
-                                    ->GetActiveWebContents()
-                                    ->GetMainFrame()
-                                    ->GetProcess()
-                                    ->GetHandle()),
-                renderer_dumpfile_path);
+    DumpProcess(renderer_pid, renderer_dumpfile_path);
     std::unique_ptr<base::Value> dump_json =
         ReadDumpFile(renderer_dumpfile_path);
     if (GetParam() == switches::kMemlogModeAll) {
       ASSERT_TRUE(dump_json);
-
-      // ValidateDump doesn't always succeed for the renderer, since we don't do
-      // anything to flush allocations, there are very few allocations recorded
-      // by the heap profiler. When we do a heap dump, we prune small
-      // allocations...and this can cause all allocations to be pruned.
-      // ASSERT_NO_FATAL_FAILURE(ValidateDump(dump_json.get(), 0, 0));
+      ValidateRendererAllocations(dump_json.get());
     } else {
       ASSERT_FALSE(dump_json)
           << "Renderer should not be dumpable unless kMemlogModeAll!";
@@ -285,8 +336,63 @@ IN_PROC_BROWSER_TEST_P(MemlogBrowserTest, EndToEnd) {
   }
 }
 
+IN_PROC_BROWSER_TEST_P(MemlogBrowserTest, EndToEndTracing) {
+  if (!GetParam()) {
+    // Test that nothing has been started if the flag is not passed. Then early
+    // exit.
+    ASSERT_FALSE(profiling::ProfilingProcessHost::has_started());
+    return;
+  } else {
+    ASSERT_TRUE(profiling::ProfilingProcessHost::has_started());
+  }
+
+  MakeTestAllocations();
+
+  base::RunLoop run_loop;
+  scoped_refptr<base::RefCountedString> result;
+
+  // Once the ProfilingProcessHost has dumped to the trace, stop the trace and
+  // collate the results into |result|, then quit the nested run loop.
+  auto finish_sink_callback = base::Bind(
+      [](scoped_refptr<base::RefCountedString>* result, base::Closure finished,
+         std::unique_ptr<const base::DictionaryValue> metadata,
+         base::RefCountedString* in) {
+        *result = in;
+        std::move(finished).Run();
+      },
+      &result, run_loop.QuitClosure());
+  scoped_refptr<content::TracingController::TraceDataEndpoint> sink =
+      content::TracingController::CreateStringEndpoint(
+          std::move(finish_sink_callback));
+  base::OnceClosure stop_tracing_closure = base::BindOnce(
+      base::IgnoreResult<bool (content::TracingController::*)(
+          const scoped_refptr<content::TracingController::TraceDataEndpoint>&)>(
+          &content::TracingController::StopTracing),
+      base::Unretained(content::TracingController::GetInstance()), sink);
+  base::OnceClosure stop_tracing_ui_thread_closure =
+      base::BindOnce(base::IgnoreResult(&base::TaskRunner::PostTask),
+                     base::ThreadTaskRunnerHandle::Get(), FROM_HERE,
+                     std::move(stop_tracing_closure));
+  profiling::ProfilingProcessHost::GetInstance()
+      ->SetDumpProcessForTracingCallback(
+          std::move(stop_tracing_ui_thread_closure));
+
+  // Spin a nested RunLoop until the heap dump has been added to the trace.
+  content::TracingController::GetInstance()->StartTracing(
+      base::trace_event::TraceConfig(
+          base::trace_event::TraceConfigMemoryTestUtil::
+              GetTraceConfig_PeriodicTriggers(100000, 100000)),
+      base::Closure());
+  run_loop.Run();
+
+  std::unique_ptr<base::Value> dump_json =
+      base::JSONReader::Read(result->data());
+  ASSERT_TRUE(dump_json);
+  ValidateBrowserAllocations(dump_json.get());
+  ValidateRendererAllocations(dump_json.get());
+}
+
 // TODO(ajwong): Test what happens if profiling process crashes.
-// TODO(ajwong): Test the pure json output path used by tracing.
 
 INSTANTIATE_TEST_CASE_P(NoMemlog,
                         MemlogBrowserTest,

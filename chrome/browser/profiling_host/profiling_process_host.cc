@@ -275,6 +275,10 @@ void ProfilingProcessHost::OnDumpProcessesForTracingCallback(
         kTraceEventArgTypes, nullptr /* arg_values */, &wrapper,
         TRACE_EVENT_FLAG_HAS_ID);
   }
+  if (dump_process_for_tracing_callback_) {
+    std::move(dump_process_for_tracing_callback_).Run();
+    dump_process_for_tracing_callback_.Reset();
+  }
 }
 
 void ProfilingProcessHost::AddClientToProfilingService(
@@ -391,6 +395,12 @@ void ProfilingProcessHost::RequestProcessReport(base::ProcessId pid,
       base::BindOnce(&ProfilingProcessHost::GetOutputFileOnBlockingThread,
                      base::Unretained(this), pid, base::FilePath(),
                      std::move(trigger_name), kUpload, base::OnceClosure()));
+}
+
+void ProfilingProcessHost::SetDumpProcessForTracingCallback(
+    base::OnceClosure callback) {
+  DCHECK(!dump_process_for_tracing_callback_);
+  dump_process_for_tracing_callback_ = std::move(callback);
 }
 
 void ProfilingProcessHost::MakeConnector(
