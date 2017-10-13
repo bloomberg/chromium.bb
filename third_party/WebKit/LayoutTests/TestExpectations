@@ -3757,3 +3757,4 @@ crbug.com/772411 [ Mac ] virtual/mojo-loading/http/tests/media/autoplay-crossori
 
 # Sheriff failures 2017-10-13
 crbug.com/774437 [ Win10 ] paint/invalidation/selection-partial-invalidation-between-blocks.html [ Pass Failure ]
+crbug.com/773957 paint/invalidation/raster-under-invalidation-checking.html [ Failure Pass ]
