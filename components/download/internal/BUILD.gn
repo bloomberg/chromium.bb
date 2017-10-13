@@ -23,6 +23,8 @@ static_library("internal") {
     "controller.h",
     "controller_impl.cc",
     "controller_impl.h",
+    "debugging_client.cc",
+    "debugging_client.h",
     "download_driver.h",
     "download_service_impl.cc",
     "download_service_impl.h",

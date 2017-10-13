@@ -97433,6 +97433,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram_suffixes name="Download.Service.Client" separator=".">
   <suffix name="OfflinePage" label="Offline page prefetch."/>
+  <suffix name="BackgroundFetch" label="Background fetch."/>
+  <suffix name="Debugging" label="Debugging client."/>
   <affected-histogram name="Download.Service.Request.ClientAction"/>
   <affected-histogram name="Download.Service.Request.StartResponse"/>
   <affected-histogram name="Download.Service.Request.StartResult"/>

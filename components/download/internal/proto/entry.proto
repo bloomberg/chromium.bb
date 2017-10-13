@@ -20,7 +20,8 @@ enum DownloadClient {
   TEST_3 = 3;
   OFFLINE_PAGE_PREFETCH = 4;
   BACKGROUND_FETCH = 5;
-  BOUNDARY = 6;
+  DEBUGGING = 6;
+  BOUNDARY = 7;
 }
 
 // Stores the request params, internal state, metrics and metadata associated

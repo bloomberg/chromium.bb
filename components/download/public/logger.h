@@ -24,9 +24,36 @@ class Logger {
    public:
     virtual ~Observer() = default;
 
-    // Called whenever the status of the DownloadService changes.  This will
+    // Called whenever the status of the Download Service changes.  This will
     // have the same data as |GetServiceStatus()|.
     virtual void OnServiceStatusChanged(const base::Value& service_status) = 0;
+
+    // Called when the Download Service is able to notify observers of the list
+    // of currently tracked downloads.  This will have the same data as
+    // |GetServiceDownloads()|.
+    virtual void OnServiceDownloadsAvailable(
+        const base::Value& service_downloads) = 0;
+
+    // Called when the state of a download has changed.  Format of
+    // |service_download| is the same as |GetServiceDownloads()|, except not a
+    // list.
+    virtual void OnServiceDownloadChanged(
+        const base::Value& service_download) = 0;
+
+    // Called when a download has failed.  Format of |service_download| is the
+    // same as |GetServiceDownloads()|, except not a list.
+    virtual void OnServiceDownloadFailed(
+        const base::Value& service_download) = 0;
+
+    // Called when a request is made of the download service.  Format of
+    // |service_request| is:
+    // {
+    //   client: string,
+    //   guid: string,
+    //   result: [ACCEPTED,BACKOFF,UNEXPECTED_CLIENT,UNEXPECTED_GUID,
+    //            CLIENT_CANCELLED,INTERNAL_ERROR]
+    // }
+    virtual void OnServiceRequestMade(const base::Value& service_request) = 0;
   };
 
   virtual ~Logger() = default;
@@ -43,6 +70,25 @@ class Logger {
   //   fileMonitorStatus: string [OK,BAD,UNKNOWN]
   // }
   virtual base::Value GetServiceStatus() = 0;
+
+  // Returns the current list of downloads the Download Service is aware of.
+  // The serialized format will be a list of:
+  // {
+  //   client: string,
+  //   guid: string,
+  //   state: string [NEW,AVAILABLE,ACTIVE,PAUSED,COMPLETE],
+  //   url: string,
+  //   file_path: optional string,
+  //   bytes_downloaded: number,
+  //   result: optional [SUCCEED,FAIL,ABORT,TIMEOUT,UNKNOWNL,CANCEL,
+  //                     OUT_OF_RETRIES,OUT_OF_RESUMPTIONS],
+  //   driver: {
+  //     state: string [IN_PROGRESS,COMPLETE,CANCELLED,INTERRUPTED],
+  //     paused: boolean,
+  //     done: boolean,
+  //   }
+  // }
+  virtual base::Value GetServiceDownloads() = 0;
 
  protected:
   Logger() = default;

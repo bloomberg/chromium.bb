@@ -15,6 +15,13 @@ class BlackHoleLogSink : public LogSink {
 
   // LogSink implementation.
   void OnServiceStatusChanged() override;
+  void OnServiceDownloadsAvailable() override;
+  void OnServiceDownloadChanged(const std::string& guid) override;
+  void OnServiceDownloadFailed(CompletionType completion_type,
+                               const Entry& entry) override;
+  void OnServiceRequestMade(DownloadClient client,
+                            const std::string& guid,
+                            DownloadParams::StartResult start_result) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BlackHoleLogSink);

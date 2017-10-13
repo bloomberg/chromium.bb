@@ -9,5 +9,17 @@ namespace test {
 
 void BlackHoleLogSink::OnServiceStatusChanged() {}
 
+void BlackHoleLogSink::OnServiceDownloadsAvailable() {}
+
+void BlackHoleLogSink::OnServiceDownloadChanged(const std::string& guid) {}
+
+void BlackHoleLogSink::OnServiceDownloadFailed(CompletionType completion_type,
+                                               const Entry& entry) {}
+
+void BlackHoleLogSink::OnServiceRequestMade(
+    DownloadClient client,
+    const std::string& guid,
+    DownloadParams::StartResult start_result) {}
+
 }  // namespace test
 }  // namespace download

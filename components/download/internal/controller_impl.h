@@ -105,6 +105,9 @@ class ControllerImpl : public Controller,
   // LogSource implementation.
   Controller::State GetControllerState() override;
   const StartupStatus& GetStartupStatus() override;
+  LogSource::EntryDetailsList GetServiceDownloads() override;
+  base::Optional<EntryDetails> GetServiceDownload(
+      const std::string& guid) override;
 
   // Called when the file monitor and download file directory are initialized.
   void OnFileMonitorReady(bool success);
