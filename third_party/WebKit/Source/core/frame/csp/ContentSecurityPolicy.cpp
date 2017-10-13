@@ -1045,11 +1045,11 @@ bool ContentSecurityPolicy::IsActive() const {
 }
 
 const KURL ContentSecurityPolicy::Url() const {
-  return execution_context_->ContextURL();
+  return execution_context_->Url();
 }
 
 KURL ContentSecurityPolicy::CompleteURL(const String& url) const {
-  return execution_context_->ContextCompleteURL(url);
+  return execution_context_->CompleteURL(url);
 }
 
 void ContentSecurityPolicy::EnforceSandboxFlags(SandboxFlags mask) {

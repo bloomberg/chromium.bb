@@ -118,10 +118,6 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   virtual ResourceFetcher* Fetcher() const = 0;
 
   virtual SecurityContext& GetSecurityContext() = 0;
-  KURL ContextURL() const { return VirtualURL(); }
-  KURL ContextCompleteURL(const String& url) const {
-    return VirtualCompleteURL(url);
-  }
 
   virtual bool CanExecuteScripts(ReasonForCallingCanExecuteScripts) {
     return false;
