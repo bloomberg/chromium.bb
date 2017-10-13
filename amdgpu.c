@@ -44,8 +44,8 @@ enum {
 const static uint32_t render_target_formats[] = { DRM_FORMAT_ARGB8888, DRM_FORMAT_XBGR8888,
 						  DRM_FORMAT_XRGB8888 };
 
-const static uint32_t texture_source_formats[] = { DRM_FORMAT_GR88, DRM_FORMAT_R8,
-						   DRM_FORMAT_NV21, DRM_FORMAT_NV12 };
+const static uint32_t texture_source_formats[] = { DRM_FORMAT_GR88, DRM_FORMAT_R8, DRM_FORMAT_NV21,
+						   DRM_FORMAT_NV12 };
 
 static int amdgpu_set_metadata(int fd, uint32_t handle, struct amdgpu_bo_metadata *info)
 {
@@ -372,7 +372,7 @@ static int amdgpu_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint
 		bo->strides[0] = addr_out.pixelPitch * DIV_ROUND_UP(addr_out.pixelBits, 8);
 	}
 
-	if (use_flags & (BO_USE_CURSOR | BO_USE_LINEAR | BO_USE_SW_READ_OFTEN |
+	if (use_flags & (BO_USE_SCANOUT | BO_USE_CURSOR | BO_USE_LINEAR | BO_USE_SW_READ_OFTEN |
 			 BO_USE_SW_WRITE_OFTEN | BO_USE_SW_WRITE_RARELY | BO_USE_SW_READ_RARELY))
 		gem_create_flags |= AMDGPU_GEM_CREATE_CPU_ACCESS_REQUIRED;
 	else
