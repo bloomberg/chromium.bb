@@ -263,13 +263,13 @@ TEST_F(UpdateServiceTest, BasicUpdateOperations) {
   // Test the install callback.
   base::ScopedTempDir new_version_dir;
   ASSERT_TRUE(new_version_dir.CreateUniqueTempDir());
-  std::unique_ptr<base::DictionaryValue> new_manifest(
-      extension1->manifest()->value()->DeepCopy());
-  new_manifest->SetString("version", "2.0");
 
   installer->Install(
-      std::move(new_manifest), new_version_dir.GetPath(),
-      base::Bind([](const update_client::CrxInstaller::Result& result) {}));
+      new_version_dir.GetPath(),
+      base::Bind([](const update_client::CrxInstaller::Result& result) {
+        EXPECT_EQ(0, result.error);
+        EXPECT_EQ(0, result.extended_error);
+      }));
 
   scoped_refptr<content::MessageLoopRunner> loop_runner =
       new content::MessageLoopRunner();

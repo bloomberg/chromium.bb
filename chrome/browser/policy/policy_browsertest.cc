@@ -3887,18 +3887,9 @@ update_client::CrxComponent ComponentUpdaterPolicyTest::MakeCrxComponent(
    public:
     MockInstaller() {}
 
-    // gMock does not support mocking functions with parameters which have
-    // move semantics. This function is a shim to work around it.
-    void Install(std::unique_ptr<base::DictionaryValue> manifest,
-                 const base::FilePath& unpack_path,
-                 const Callback& callback) {
-      return Install_(manifest, unpack_path, callback);
-    }
-
     MOCK_METHOD1(OnUpdateError, void(int error));
-    MOCK_METHOD3(Install_,
-                 void(const std::unique_ptr<base::DictionaryValue>& manifest,
-                      const base::FilePath& unpack_pat,
+    MOCK_METHOD2(Install,
+                 void(const base::FilePath& unpack_path,
                       const Callback& callback));
     MOCK_METHOD2(GetInstalledFile,
                  bool(const std::string& file, base::FilePath* installed_file));

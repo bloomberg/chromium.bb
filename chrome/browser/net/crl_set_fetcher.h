@@ -17,7 +17,6 @@
 #include "components/update_client/update_client.h"
 
 namespace base {
-class DictionaryValue;
 class FilePath;
 }
 
@@ -41,8 +40,7 @@ class CRLSetFetcher : public update_client::CrxInstaller {
 
   // ComponentInstaller interface
   void OnUpdateError(int error) override;
-  void Install(std::unique_ptr<base::DictionaryValue> manifest,
-               const base::FilePath& unpack_path,
+  void Install(const base::FilePath& unpack_path,
                const Callback& callback) override;
   bool GetInstalledFile(const std::string& file,
                         base::FilePath* installed_file) override;
@@ -81,8 +79,7 @@ class CRLSetFetcher : public update_client::CrxInstaller {
   // the disk.
   void DoDeleteFromDisk();
 
-  bool DoInstall(const base::DictionaryValue& manifest,
-                 const base::FilePath& unpack_path);
+  bool DoInstall(const base::FilePath& unpack_path);
 
   component_updater::ComponentUpdateService* cus_;
 

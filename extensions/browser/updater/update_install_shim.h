@@ -13,10 +13,6 @@
 #include "base/macros.h"
 #include "components/update_client/update_client.h"
 
-namespace base {
-class DictionaryValue;
-}
-
 namespace extensions {
 
 // A callback to implement the install of a new version of the extension.
@@ -45,8 +41,7 @@ class UpdateInstallShim : public update_client::CrxInstaller {
 
   // This is called when a new version of an extension is unpacked at
   // |unpack_path| and is ready for install.
-  void Install(std::unique_ptr<base::DictionaryValue> manifest,
-               const base::FilePath& unpack_path,
+  void Install(const base::FilePath& unpack_path,
                const Callback& callback) override;
 
   // This is called by the generic differential update code in the

@@ -11,10 +11,6 @@
 #include "base/files/file_path.h"
 #include "components/update_client/update_client.h"
 
-namespace base {
-class DictionaryValue;
-}
-
 namespace update_client {
 
 // TODO(sorin): consider reducing the number of the installer mocks.
@@ -26,8 +22,7 @@ class TestInstaller : public CrxInstaller {
 
   void OnUpdateError(int error) override;
 
-  void Install(std::unique_ptr<base::DictionaryValue> manifest,
-               const base::FilePath& unpack_path,
+  void Install(const base::FilePath& unpack_path,
                const Callback& callback) override;
 
   bool GetInstalledFile(const std::string& file,
@@ -73,8 +68,7 @@ class VersionedTestInstaller : public TestInstaller {
  public:
   VersionedTestInstaller();
 
-  void Install(std::unique_ptr<base::DictionaryValue> manifest,
-               const base::FilePath& unpack_path,
+  void Install(const base::FilePath& unpack_path,
                const Callback& callback) override;
 
   bool GetInstalledFile(const std::string& file,

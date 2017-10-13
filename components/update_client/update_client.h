@@ -133,7 +133,6 @@
 class PrefRegistrySimple;
 
 namespace base {
-class DictionaryValue;
 class FilePath;
 }
 
@@ -181,13 +180,11 @@ class CrxInstaller : public base::RefCountedThreadSafe<CrxInstaller> {
   virtual void OnUpdateError(int error) = 0;
 
   // Called by the update service when a CRX has been unpacked
-  // and it is ready to be installed. |manifest| contains the CRX manifest
-  // as a json dictionary.|unpack_path| contains the temporary directory
-  // with all the unpacked CRX files. The caller must invoke the |callback|
-  // when the install flow has completed.
+  // and it is ready to be installed. |unpack_path| contains the
+  // temporary directory with all the unpacked CRX files. The caller must
+  // invoke the |callback| when the install flow has completed.
   // This method may be called from a thread other than the main thread.
-  virtual void Install(std::unique_ptr<base::DictionaryValue> manifest,
-                       const base::FilePath& unpack_path,
+  virtual void Install(const base::FilePath& unpack_path,
                        const Callback& callback) = 0;
 
   // Sets |installed_file| to the full path to the installed |file|. |file| is

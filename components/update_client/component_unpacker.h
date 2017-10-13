@@ -13,7 +13,6 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
-#include "base/json/json_file_value_serializer.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/update_client/out_of_process_patcher.h"
@@ -23,10 +22,6 @@ namespace update_client {
 
 class CrxInstaller;
 class ComponentPatcher;
-
-// Deserializes the CRX manifest. The top level must be a dictionary.
-std::unique_ptr<base::DictionaryValue> ReadManifest(
-    const base::FilePath& unpack_path);
 
 // In charge of unpacking the component CRX package and verifying that it is
 // well formed and the cryptographic signature is correct.

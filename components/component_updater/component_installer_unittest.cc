@@ -286,15 +286,13 @@ TEST_F(ComponentInstallerTest, UnpackPathInstallSuccess) {
   const auto unpack_path = result().unpack_path;
   EXPECT_TRUE(base::DirectoryExists(unpack_path));
 
-  auto manifest = update_client::ReadManifest(unpack_path);
-
   base::ScopedPathOverride scoped_path_override(DIR_COMPONENT_USER);
   base::FilePath base_dir;
   EXPECT_TRUE(PathService::Get(DIR_COMPONENT_USER, &base_dir));
   base_dir = base_dir.Append(relative_install_dir);
   EXPECT_TRUE(base::CreateDirectory(base_dir));
   installer->Install(
-      std::move(manifest), unpack_path,
+      unpack_path,
       base::Bind([](const update_client::CrxInstaller::Result& result) {
         EXPECT_EQ(0, result.error);
       }));
@@ -315,8 +313,6 @@ TEST_F(ComponentInstallerTest, UnpackPathInstallError) {
   const auto unpack_path = result().unpack_path;
   EXPECT_TRUE(base::DirectoryExists(unpack_path));
 
-  auto manifest = update_client::ReadManifest(unpack_path);
-
   // Test the precondition that DIR_COMPONENT_USER is not registered with
   // the path service.
   base::FilePath base_dir;
@@ -324,7 +320,7 @@ TEST_F(ComponentInstallerTest, UnpackPathInstallError) {
 
   // Calling |Install| fails since DIR_COMPONENT_USER does not exist.
   installer->Install(
-      std::move(manifest), unpack_path,
+      unpack_path,
       base::Bind([](const update_client::CrxInstaller::Result& result) {
         EXPECT_EQ(static_cast<int>(
                       update_client::InstallError::NO_DIR_COMPONENT_USER),
