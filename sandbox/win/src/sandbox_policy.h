@@ -172,9 +172,6 @@ class TargetPolicy {
   // than the current level, the sandbox will fail to start.
   virtual ResultCode SetDelayedIntegrityLevel(IntegrityLevel level) = 0;
 
-  // Sets a capability to be enabled for the sandboxed process' AppContainer.
-  virtual ResultCode SetCapability(const wchar_t* sid) = 0;
-
   // Sets the LowBox token for sandboxed process. This is mutually exclusive
   // with SetAppContainer method.
   virtual ResultCode SetLowBox(const wchar_t* sid) = 0;

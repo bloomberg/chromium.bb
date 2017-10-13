@@ -104,6 +104,8 @@ static_library("sandbox") {
     "src/sandbox_types.h",
     "src/sandbox_utils.cc",
     "src/sandbox_utils.h",
+    "src/security_capabilities.cc",
+    "src/security_capabilities.h",
     "src/security_level.h",
     "src/service_resolver.cc",
     "src/service_resolver.h",

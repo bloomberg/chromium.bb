@@ -53,7 +53,6 @@ class PolicyBase final : public TargetPolicy {
   ResultCode SetIntegrityLevel(IntegrityLevel integrity_level) override;
   IntegrityLevel GetIntegrityLevel() const override;
   ResultCode SetDelayedIntegrityLevel(IntegrityLevel integrity_level) override;
-  ResultCode SetCapability(const wchar_t* sid) override;
   ResultCode SetLowBox(const wchar_t* sid) override;
   ResultCode SetProcessMitigations(MitigationFlags flags) override;
   MitigationFlags GetProcessMitigations() override;
@@ -153,7 +152,6 @@ class PolicyBase final : public TargetPolicy {
   // target process. A null set means we need to close all handles of the
   // given type.
   HandleCloser handle_closer_;
-  std::vector<base::string16> capabilities_;
   PSID lowbox_sid_;
   base::win::ScopedHandle lowbox_directory_;
   std::unique_ptr<Dispatcher> dispatcher_;

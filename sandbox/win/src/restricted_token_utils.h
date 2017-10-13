@@ -72,6 +72,31 @@ DWORD HardenTokenIntegrityLevelPolicy(HANDLE token);
 // holes.
 DWORD HardenProcessIntegrityLevelPolicy();
 
+// Create a lowbox token. This is not valid prior to Windows 8.
+// |base_token| a base token to derive the lowbox token from. Can be nullptr.
+// |security_capabilities| list of LowBox capabilities to use when creating the
+// token.
+// |token| is the output value containing the handle of the newly created
+// restricted token.
+// |lockdown_default_dacl| indicates the token's default DACL should be locked
+// down to restrict what other process can open kernel resources created while
+// running under the token.
+DWORD CreateLowBoxToken(HANDLE base_token,
+                        TokenType token_type,
+                        PSECURITY_CAPABILITIES security_capabilities,
+                        PHANDLE saved_handles,
+                        DWORD saved_handles_count,
+                        base::win::ScopedHandle* token);
+
+// Create a lowbox object directory token. This is not valid prior to Windows 8.
+// This returns the Win32 error code from the operation.
+// |lowbox_sid| the SID for the LowBox.
+// |open_directory| open the directory if it already exists.
+// |directory| is the output value for the directory object.
+DWORD CreateLowBoxObjectDirectory(PSID lowbox_sid,
+                                  bool open_directory,
+                                  base::win::ScopedHandle* directory);
+
 }  // namespace sandbox
 
 #endif  // SANDBOX_SRC_RESTRICTED_TOKEN_UTILS_H__
