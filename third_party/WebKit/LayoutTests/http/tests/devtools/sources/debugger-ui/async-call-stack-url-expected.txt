@@ -8,7 +8,7 @@ f2unformatted-asy…js:formatted:8
 setTimeout (async)
 testFunctionasync-call-stack-url.html:10
 setTimeout (async)
-scheduleTestFunctiondebugger-test.js:3
+scheduleTestFunctionVM:3
 (anonymous)VM:1
 Script execution resumed.
 

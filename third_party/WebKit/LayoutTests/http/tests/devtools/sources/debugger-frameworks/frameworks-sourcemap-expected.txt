@@ -4,7 +4,7 @@ Set timer for test function.
 Call stack:
     0) testFunction (frameworks-sourcemap.html:10)
     [setTimeout]
-    0) scheduleTestFunction (debugger-test.js:3)
+    0) scheduleTestFunction <omitted>
     <... skipped remaining frames ...>
 
 Executing StepInto...
@@ -14,14 +14,14 @@ Call stack:
   * 1) foo (framework.js:4)
     2) testFunction (frameworks-sourcemap.html:11)
     [setTimeout]
-    0) scheduleTestFunction (debugger-test.js:3)
+    0) scheduleTestFunction <omitted>
     <... skipped remaining frames ...>
 
 Executing StepOut...
 Call stack:
     0) testFunction (frameworks-sourcemap.html:11)
     [setTimeout]
-    0) scheduleTestFunction (debugger-test.js:3)
+    0) scheduleTestFunction <omitted>
     <... skipped remaining frames ...>
 
 

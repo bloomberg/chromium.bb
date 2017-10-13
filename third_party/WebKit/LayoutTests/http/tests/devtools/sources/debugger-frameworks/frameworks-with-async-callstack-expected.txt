@@ -23,7 +23,7 @@ Call stack:
     [setTimeout]
     0) testFunction (frameworks-with-async-callstack.html:15)
     [setTimeout]
-    0) scheduleTestFunction (debugger-test.js:3)
+    0) scheduleTestFunction <omitted>
     <... skipped remaining frames ...>
 
 Printing visible call stack:
@@ -37,6 +37,6 @@ Call stack:
     [setTimeout]
     0) testFunction (frameworks-with-async-callstack.html:15)
     [setTimeout]
-    0) scheduleTestFunction (debugger-test.js:3)
+    0) scheduleTestFunction <omitted>
     <... skipped remaining frames ...>
 

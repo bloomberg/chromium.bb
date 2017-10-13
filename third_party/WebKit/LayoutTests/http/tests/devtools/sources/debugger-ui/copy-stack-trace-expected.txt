@@ -6,7 +6,7 @@ functionBaz (copy-stack-trace.html:19)
 functionBar (copy-stack-trace.html:14)
 testFunction (copy-stack-trace.html:9)
 setTimeout (async)
-scheduleTestFunction (debugger-test.js:3)
+scheduleTestFunction (VM:3)
 (anonymous) (VM:1)
 Script execution resumed.
 

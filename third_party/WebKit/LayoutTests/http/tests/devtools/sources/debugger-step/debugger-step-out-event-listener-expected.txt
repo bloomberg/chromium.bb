@@ -6,7 +6,7 @@ Call stack:
     0) inner (debugger-step-out-event-listener.html:26)
     1) testFunction (debugger-step-out-event-listener.html:32)
     [setTimeout]
-    0) scheduleTestFunction (debugger-test.js:3)
+    0) scheduleTestFunction <omitted>
     <... skipped remaining frames ...>
 
 Executing StepInto...
@@ -17,7 +17,7 @@ Call stack:
     1) inner (debugger-step-out-event-listener.html:27)
     2) testFunction (debugger-step-out-event-listener.html:32)
     [setTimeout]
-    0) scheduleTestFunction (debugger-test.js:3)
+    0) scheduleTestFunction <omitted>
     <... skipped remaining frames ...>
 
 Executing StepOut...
@@ -26,7 +26,7 @@ Call stack:
     1) inner (debugger-step-out-event-listener.html:27)
     2) testFunction (debugger-step-out-event-listener.html:32)
     [setTimeout]
-    0) scheduleTestFunction (debugger-test.js:3)
+    0) scheduleTestFunction <omitted>
     <... skipped remaining frames ...>
 
 Executing StepOut...
@@ -34,7 +34,7 @@ Call stack:
     0) inner (debugger-step-out-event-listener.html:29)
     1) testFunction (debugger-step-out-event-listener.html:32)
     [setTimeout]
-    0) scheduleTestFunction (debugger-test.js:3)
+    0) scheduleTestFunction <omitted>
     <... skipped remaining frames ...>
 
 Set timer for test function.
@@ -42,14 +42,14 @@ Call stack:
     0) inner (debugger-step-out-event-listener.html:26)
     1) testFunction (debugger-step-out-event-listener.html:32)
     [setTimeout]
-    0) scheduleTestFunction (debugger-test.js:3)
+    0) scheduleTestFunction <omitted>
     <... skipped remaining frames ...>
 
 Executing StepOut...
 Call stack:
     0) testFunction (debugger-step-out-event-listener.html:33)
     [setTimeout]
-    0) scheduleTestFunction (debugger-test.js:3)
+    0) scheduleTestFunction <omitted>
     <... skipped remaining frames ...>
 
 
