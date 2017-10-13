@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/time/time.h"
 #include "build/build_config.h"
 
 #if defined(OS_WIN)
@@ -59,13 +60,10 @@ zipFile OpenForZipping(const std::string& file_name_utf8, int append_flag);
 zipFile OpenFdForZipping(int zip_fd, int append_flag);
 #endif
 
-// Returns a zip_fileinfo with the last modification date of |path| set.
-zip_fileinfo GetFileInfoForZipping(const base::FilePath& path);
-
 // Wrapper around zipOpenNewFileInZip4 which passes most common options.
 bool ZipOpenNewFileInZip(zipFile zip_file,
                          const std::string& str_path,
-                         const zip_fileinfo* file_info);
+                         base::Time last_modified_time);
 
 const int kZipMaxPath = 256;
 const int kZipBufSize = 8192;
