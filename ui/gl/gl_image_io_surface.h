@@ -27,7 +27,8 @@ namespace gl {
 
 class GL_EXPORT GLImageIOSurface : public GLImage {
  public:
-  GLImageIOSurface(const gfx::Size& size, unsigned internalformat);
+  static GLImageIOSurface* Create(const gfx::Size& size,
+                                  unsigned internalformat);
 
   bool Initialize(IOSurfaceRef io_surface,
                   gfx::GenericSharedMemoryId io_surface_id,
@@ -85,6 +86,8 @@ class GL_EXPORT GLImageIOSurface : public GLImage {
   ~GLImageIOSurface() override;
 
  private:
+  GLImageIOSurface(const gfx::Size& size, unsigned internalformat);
+
   Type GetType() const override;
   class RGBConverter;
 

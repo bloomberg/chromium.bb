@@ -1247,7 +1247,7 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
   }
 
   scoped_refptr<gl::GLImageIOSurface> gl_image(
-      new gl::GLImageIOSurface(frame.image_size, GL_BGRA_EXT));
+      gl::GLImageIOSurface::Create(frame.image_size, GL_BGRA_EXT));
   if (!gl_image->InitializeWithCVPixelBuffer(
           frame.image.get(),
           gfx::GenericSharedMemoryId(g_cv_pixel_buffer_ids.GetNext()),

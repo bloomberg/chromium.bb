@@ -46,7 +46,7 @@ scoped_refptr<gl::GLImageIOSurface> CreateGLImage(const gfx::Size& size,
                                                   gfx::BufferFormat format,
                                                   bool video) {
   scoped_refptr<gl::GLImageIOSurface> gl_image(
-      new gl::GLImageIOSurface(size, GL_RGBA));
+      gl::GLImageIOSurface::Create(size, GL_RGBA));
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface(
       gfx::CreateIOSurface(size, format));
   if (video) {

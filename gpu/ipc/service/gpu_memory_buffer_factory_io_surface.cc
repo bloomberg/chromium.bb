@@ -82,7 +82,7 @@ GpuMemoryBufferFactoryIOSurface::CreateImageForGpuMemoryBuffer(
     return scoped_refptr<gl::GLImage>();
 
   scoped_refptr<gl::GLImageIOSurface> image(
-      new gl::GLImageIOSurface(size, internalformat));
+      gl::GLImageIOSurface::Create(size, internalformat));
   if (!image->Initialize(it->second.get(), handle.id, format))
     return scoped_refptr<gl::GLImage>();
 
@@ -105,7 +105,7 @@ GpuMemoryBufferFactoryIOSurface::CreateAnonymousImage(const gfx::Size& size,
   io_surface.reset(IOSurfaceLookupFromMachPort(handle.mach_port.get()));
   DCHECK_NE(nullptr, io_surface.get());
   scoped_refptr<gl::GLImageIOSurface> image(
-      new gl::GLImageIOSurface(size, internalformat));
+      gl::GLImageIOSurface::Create(size, internalformat));
   if (!image->Initialize(io_surface.get(), handle.id, format))
     return scoped_refptr<gl::GLImage>();
   return image;
