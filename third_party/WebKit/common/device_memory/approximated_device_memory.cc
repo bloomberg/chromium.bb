@@ -34,13 +34,13 @@ void ApproximatedDeviceMemory::CalculateAndSetApproximatedDeviceMemory() {
   int lower_bound = physical_memory_mb_;
   int power = 0;
 
-  // Extract the most significant 2-bits and their location.
-  while (lower_bound >= 4) {
+  // Extract the most-significant-bit and its location.
+  while (lower_bound > 1) {
     lower_bound >>= 1;
     power++;
   }
-  // The lower_bound value is either 0b10 or 0b11.
-  DCHECK(lower_bound & 2);
+  // The remaining should always be equal to exactly 1.
+  DCHECK_EQ(lower_bound, 1);
 
   int64_t upper_bound = lower_bound + 1;
   lower_bound = lower_bound << power;
@@ -51,6 +51,11 @@ void ApproximatedDeviceMemory::CalculateAndSetApproximatedDeviceMemory() {
     approximated_device_memory_gb_ = static_cast<float>(lower_bound) / 1024.0;
   else
     approximated_device_memory_gb_ = static_cast<float>(upper_bound) / 1024.0;
+
+  // The exact value beyond 8GB is irrelvant, hence we max-limit the reported
+  // value to 8GB.
+  if (approximated_device_memory_gb_ > 8)
+    approximated_device_memory_gb_ = 8.0;
 }
 
 // static
