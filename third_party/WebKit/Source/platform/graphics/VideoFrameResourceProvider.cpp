@@ -4,8 +4,8 @@
 
 #include "platform/graphics/VideoFrameResourceProvider.h"
 
+#include <memory>
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "components/viz/common/quads/render_pass.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "platform/wtf/WeakPtr.h"
@@ -26,7 +26,7 @@ void VideoFrameResourceProvider::Initialize(
   // https://crbug/768565
   CHECK(media_context_provider);
 
-  resource_updater_ = base::MakeUnique<cc::VideoResourceUpdater>(
+  resource_updater_ = std::make_unique<cc::VideoResourceUpdater>(
       media_context_provider, nullptr, false);
 }
 
