@@ -10,7 +10,6 @@
 #include "ash/public/cpp/app_types.h"
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/fake_user_manager.h"
