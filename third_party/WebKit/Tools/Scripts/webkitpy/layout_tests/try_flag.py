@@ -91,7 +91,7 @@ class TryFlag(object):
             self._host.print_('-- %s: %s/results.html' % (
                 BUILDERS[build.builder_name].version,
                 buildbot.results_url(build.builder_name, build.build_number)))
-            results = buildbot.fetch_results(build, full=True)
+            results = buildbot.fetch_results(build, True)
             results.for_each_test(
                 lambda result, b=build: self._process_result(b, result))
 
