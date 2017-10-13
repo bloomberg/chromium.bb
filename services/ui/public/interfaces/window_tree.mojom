@@ -282,12 +282,12 @@ interface WindowTree {
   // TODO(erg): Additional cursor methods. Visibility, and cursor locking.
 
   // Set text input state for the given window.
-  SetWindowTextInputState(uint32 window_id, mojo.TextInputState state);
+  SetWindowTextInputState(uint32 window_id, TextInputState state);
 
   // Set the input method editor UI (software keyboard, etc) visibility.
   // If state is non-null, the specified window's text input state is updated.
   // Otherwise the existing state is used.
-  SetImeVisibility(uint32 window_id, bool visible, mojo.TextInputState? state);
+  SetImeVisibility(uint32 window_id, bool visible, TextInputState? state);
 
   // Sets the EventTargetingPolicy. See EventTargetingPolicy for details.
   SetEventTargetingPolicy(uint32 window_id, EventTargetingPolicy policy);

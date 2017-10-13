@@ -8,6 +8,7 @@ import "mojo/common/text_direction.mojom";
 import "ui/events/mojo/event.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/gfx/range/mojo/range.mojom";
+import "ui/platform_window/mojo/text_input_state.mojom";
 
 // Specifies where to display the candidate window.
 enum CandidateWindowPosition {
@@ -82,27 +83,6 @@ struct CompositionText {
   string text;
   array<ImeTextSpan> ime_text_spans;
   gfx.mojom.Range selection;
-};
-
-// See comments for ui::TextInputType for more details.
-enum TextInputType {
-  kNone,
-  kText,
-  kPassword,
-  kSearch,
-  kEmail,
-  kNumber,
-  kTelephone,
-  kUrl,
-  kDate,
-  kTime,
-  kDateTime,
-  kDateTimeLocal,
-  kMonth,
-  kWeek,
-  kTextArea,
-  kContentEditable,
-  kDateTimeField
 };
 
 // See comments for ui::TextInputMode for more details.

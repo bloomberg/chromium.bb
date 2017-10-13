@@ -66,8 +66,8 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
     return primary_surface_info_;
   }
 
-  void SetTextInputState(mojo::TextInputStatePtr state);
-  void SetImeVisibility(bool visible, mojo::TextInputStatePtr state);
+  void SetTextInputState(ui::mojom::TextInputStatePtr state);
+  void SetImeVisibility(bool visible, ui::mojom::TextInputStatePtr state);
 
   const ui::CursorData& cursor() const { return cursor_; }
   void SetCursor(const ui::CursorData& cursor);
