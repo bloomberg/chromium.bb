@@ -9,13 +9,13 @@
 #include "android_webview/browser/aw_safe_browsing_config_helper.h"
 #include "android_webview/browser/aw_safe_browsing_whitelist_manager.h"
 #include "android_webview/browser/net/aw_url_request_context_getter.h"
-#include "android_webview/common/aw_version_info_values.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/security_interstitials/core/urls.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/url_constants.h"
@@ -88,7 +88,8 @@ ScopedJavaLocalRef<jstring> GetUnreachableWebDataUrl(
 // static
 ScopedJavaLocalRef<jstring> GetProductVersion(JNIEnv* env,
                                               const JavaParamRef<jclass>&) {
-  return base::android::ConvertUTF8ToJavaString(env, PRODUCT_VERSION);
+  return base::android::ConvertUTF8ToJavaString(
+      env, version_info::GetVersionNumber());
 }
 
 // static

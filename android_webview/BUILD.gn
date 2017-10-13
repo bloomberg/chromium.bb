@@ -675,7 +675,6 @@ source_set("common") {
     ":generate_components_strings",
     ":native_jni",
     "//android_webview:generate_components_strings",
-    "//android_webview/common:version",
     "//base",
     "//base/third_party/dynamic_annotations:dynamic_annotations",
     "//components/autofill/android:provider",

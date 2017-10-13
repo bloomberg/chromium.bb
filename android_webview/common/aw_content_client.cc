@@ -6,11 +6,11 @@
 
 #include "android_webview/common/aw_media_drm_bridge_client.h"
 #include "android_webview/common/aw_resource.h"
-#include "android_webview/common/aw_version_info_values.h"
 #include "android_webview/common/crash_reporter/crash_keys.h"
 #include "android_webview/common/url_constants.h"
 #include "base/command_line.h"
 #include "base/debug/crash_logging.h"
+#include "components/version_info/version_info.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/user_agent.h"
 #include "gpu/config/gpu_info.h"
@@ -22,7 +22,7 @@
 namespace android_webview {
 
 std::string GetProduct() {
-  return "Chrome/" PRODUCT_VERSION;
+  return version_info::GetProductNameAndVersionForUserAgent();
 }
 
 std::string GetUserAgent() {
