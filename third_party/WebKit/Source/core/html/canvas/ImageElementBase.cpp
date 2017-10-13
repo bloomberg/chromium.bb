@@ -120,22 +120,6 @@ const KURL& ImageElementBase::SourceURL() const {
   return CachedImage()->GetResponse().Url();
 }
 
-int ImageElementBase::SourceWidth() {
-  SourceImageStatus status;
-  RefPtr<Image> image = GetSourceImageForCanvas(&status, kPreferNoAcceleration,
-                                                kSnapshotReasonUnknown,
-                                                SourceDefaultObjectSize());
-  return image->width();
-}
-
-int ImageElementBase::SourceHeight() {
-  SourceImageStatus status;
-  RefPtr<Image> image = GetSourceImageForCanvas(&status, kPreferNoAcceleration,
-                                                kSnapshotReasonUnknown,
-                                                SourceDefaultObjectSize());
-  return image->height();
-}
-
 bool ImageElementBase::IsOpaque() const {
   Image* image = const_cast<Element&>(GetElement()).ImageContents();
   return image && image->CurrentFrameKnownToBeOpaque();

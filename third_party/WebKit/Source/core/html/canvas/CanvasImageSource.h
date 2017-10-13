@@ -84,9 +84,6 @@ class CORE_EXPORT CanvasImageSource {
   virtual bool IsOpaque() const { return false; }
   virtual bool IsAccelerated() const = 0;
 
-  virtual int SourceWidth() = 0;
-  virtual int SourceHeight() = 0;
-
  protected:
   virtual ~CanvasImageSource() {}
 };

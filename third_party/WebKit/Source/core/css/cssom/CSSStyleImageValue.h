@@ -33,8 +33,6 @@ class CORE_EXPORT CSSStyleImageValue : public CSSResourceValue,
 
   // CanvasImageSource
   bool IsCSSImageValue() const final { return true; }
-  int SourceWidth() final;
-  int SourceHeight() final;
   bool WouldTaintOrigin(
       SecurityOrigin* destination_security_origin) const final {
     return true;
