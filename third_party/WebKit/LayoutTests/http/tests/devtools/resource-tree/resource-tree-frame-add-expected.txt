@@ -7,6 +7,7 @@ Before addition
 Resources:
 document http://127.0.0.1:8000/devtools/resource-tree/resource-tree-frame-add.html
 stylesheet http://127.0.0.1:8000/devtools/resource-tree/resources/styles-initial.css
+script http://127.0.0.1:8000/inspector/debugger-test.js
 script http://127.0.0.1:8000/inspector/inspector-test.js
 script http://127.0.0.1:8000/inspector/resource-tree/resource-tree-test.js
 script http://127.0.0.1:8000/inspector/resources-test.js
@@ -14,6 +15,7 @@ script http://127.0.0.1:8000/inspector/resources-test.js
 Resources URL Map:
 http://127.0.0.1:8000/devtools/resource-tree/resource-tree-frame-add.html == http://127.0.0.1:8000/devtools/resource-tree/resource-tree-frame-add.html
 http://127.0.0.1:8000/devtools/resource-tree/resources/styles-initial.css == http://127.0.0.1:8000/devtools/resource-tree/resources/styles-initial.css
+http://127.0.0.1:8000/inspector/debugger-test.js == http://127.0.0.1:8000/inspector/debugger-test.js
 http://127.0.0.1:8000/inspector/inspector-test.js == http://127.0.0.1:8000/inspector/inspector-test.js
 http://127.0.0.1:8000/inspector/resource-tree/resource-tree-test.js == http://127.0.0.1:8000/inspector/resource-tree/resource-tree-test.js
 http://127.0.0.1:8000/inspector/resources-test.js == http://127.0.0.1:8000/inspector/resources-test.js
@@ -22,6 +24,7 @@ Resources Tree:
 Frames
     top
         Scripts
+            debugger-test.js
             inspector-test.js
             resource-tree-test.js
             resources-test.js
@@ -32,6 +35,7 @@ Sources:
 -------- Setting mode: [frame]
 top
   resource-tree-frame-add.html
+  debugger-test.js
   inspector-test.js
   resource-tree-test.js
   resources-test.js
@@ -41,6 +45,7 @@ Sources:
 top
   127.0.0.1:8000
     resource-tree-frame-add.html
+    debugger-test.js
     inspector-test.js
     resource-tree-test.js
     resources-test.js
@@ -56,12 +61,14 @@ top
     inspector
       resource-tree
         resource-tree-test.js
+      debugger-test.js
       inspector-test.js
       resources-test.js
 Sources:
 -------- Setting mode: [domain]
 127.0.0.1:8000
   resource-tree-frame-add.html
+  debugger-test.js
   inspector-test.js
   resource-tree-test.js
   resources-test.js
@@ -76,6 +83,7 @@ Sources:
   inspector
     resource-tree
       resource-tree-test.js
+    debugger-test.js
     inspector-test.js
     resources-test.js
 
@@ -87,6 +95,7 @@ document http://127.0.0.1:8000/devtools/resource-tree/resources/resource-tree-fr
 script http://127.0.0.1:8000/devtools/resource-tree/resources/script-navigated.js
 stylesheet http://127.0.0.1:8000/devtools/resource-tree/resources/styles-initial.css
 stylesheet http://127.0.0.1:8000/devtools/resource-tree/resources/styles-navigated.css
+script http://127.0.0.1:8000/inspector/debugger-test.js
 script http://127.0.0.1:8000/inspector/inspector-test.js
 script http://127.0.0.1:8000/inspector/resource-tree/resource-tree-test.js
 script http://127.0.0.1:8000/inspector/resources-test.js
@@ -97,6 +106,7 @@ http://127.0.0.1:8000/devtools/resource-tree/resources/resource-tree-frame-add-i
 http://127.0.0.1:8000/devtools/resource-tree/resources/script-navigated.js == http://127.0.0.1:8000/devtools/resource-tree/resources/script-navigated.js
 http://127.0.0.1:8000/devtools/resource-tree/resources/styles-initial.css == http://127.0.0.1:8000/devtools/resource-tree/resources/styles-initial.css
 http://127.0.0.1:8000/devtools/resource-tree/resources/styles-navigated.css == http://127.0.0.1:8000/devtools/resource-tree/resources/styles-navigated.css
+http://127.0.0.1:8000/inspector/debugger-test.js == http://127.0.0.1:8000/inspector/debugger-test.js
 http://127.0.0.1:8000/inspector/inspector-test.js == http://127.0.0.1:8000/inspector/inspector-test.js
 http://127.0.0.1:8000/inspector/resource-tree/resource-tree-test.js == http://127.0.0.1:8000/inspector/resource-tree/resource-tree-test.js
 http://127.0.0.1:8000/inspector/resources-test.js == http://127.0.0.1:8000/inspector/resources-test.js
@@ -111,6 +121,7 @@ Frames
                 styles-navigated.css
             resource-tree-frame-add-iframe.html
         Scripts
+            debugger-test.js
             inspector-test.js
             resource-tree-test.js
             resources-test.js
@@ -121,6 +132,7 @@ Sources:
 -------- Setting mode: [frame]
 top
   resource-tree-frame-add.html
+  debugger-test.js
   inspector-test.js
   resource-tree-test.js
   resources-test.js
@@ -134,6 +146,7 @@ Sources:
 top
   127.0.0.1:8000
     resource-tree-frame-add.html
+    debugger-test.js
     inspector-test.js
     resource-tree-test.js
     resources-test.js
@@ -154,6 +167,7 @@ top
     inspector
       resource-tree
         resource-tree-test.js
+      debugger-test.js
       inspector-test.js
       resources-test.js
   resource-tree-frame-add-iframe.html
@@ -167,6 +181,7 @@ Sources:
 127.0.0.1:8000
   resource-tree-frame-add-iframe.html
   resource-tree-frame-add.html
+  debugger-test.js
   inspector-test.js
   resource-tree-test.js
   resources-test.js
@@ -186,6 +201,7 @@ Sources:
   inspector
     resource-tree
       resource-tree-test.js
+    debugger-test.js
     inspector-test.js
     resources-test.js
 

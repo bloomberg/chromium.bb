@@ -9,6 +9,7 @@ top
     inspector
       bindings
         bindings-test.js
+      debugger-test.js
       inspector-test.js
 
 Running: attachFrame
@@ -19,6 +20,7 @@ top
     inspector
       bindings
         bindings-test.js
+      debugger-test.js
       inspector-test.js
   frame (magic-frame.html)
     127.0.0.1:8000
@@ -35,5 +37,6 @@ top
     inspector
       bindings
         bindings-test.js
+      debugger-test.js
       inspector-test.js
 

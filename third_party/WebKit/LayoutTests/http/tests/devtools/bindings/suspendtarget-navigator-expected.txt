@@ -10,6 +10,7 @@ top
     inspector
       bindings
         bindings-test.js
+      debugger-test.js
       inspector-test.js
 
 Running: attachFramesAndWaitForSourceMaps
@@ -20,6 +21,7 @@ top
     inspector
       bindings
         bindings-test.js
+      debugger-test.js
       inspector-test.js
   (no domain)
     _test_create-iframe1.js
@@ -73,6 +75,7 @@ top
     inspector
       bindings
         bindings-test.js
+      debugger-test.js
       inspector-test.js
   frame2 (sourcemap-frame.html)
     127.0.0.1:8000

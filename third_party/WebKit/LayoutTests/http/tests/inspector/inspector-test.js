@@ -40,6 +40,9 @@ InspectorTest.flushResults = function()
     results = [];
 }
 
+/**
+ * TestRunner.evaluateInPage inserts sourceURL by inspecting the call stack.
+ */
 InspectorTest.evaluateInPage = async function(code, callback)
 {
     var response = await InspectorTest.RuntimeAgent.invoke_evaluate({
@@ -48,19 +51,6 @@ InspectorTest.evaluateInPage = async function(code, callback)
     });
     if (!response[Protocol.Error])
         InspectorTest.safeWrap(callback)(InspectorTest.runtimeModel.createRemoteObject(response.result), response.exceptionDetails);
-}
-
-InspectorTest.addScriptUISourceCode = function(url, content, isContentScript, worldId) {
-    content += '\n//# sourceURL=' + url;
-    if (isContentScript)
-        content = `testRunner.evaluateScriptInIsolatedWorld(${worldId}, \`${content}\`)`;
-    InspectorTest.evaluateInPagePromise(content);
-    return InspectorTest.waitForUISourceCode(url);
-};
-
-InspectorTest.evaluateInPagePromise = function(code)
-{
-    return new Promise(succ => InspectorTest.evaluateInPage(code, succ));
 }
 
 InspectorTest.addResult = function(text)
@@ -82,95 +72,6 @@ TestRunner.formatters.formatAsURL = function(value)
     if (lastIndex < 0)
         return value;
     return ".../" + value.substr(lastIndex);
-}
-
-InspectorTest.expandAndDumpEventListeners = function(eventListenersView, callback, force)
-{
-    function listenersArrived()
-    {
-        var listenerTypes = eventListenersView._treeOutline.rootElement().children();
-        for (var i = 0; i < listenerTypes.length; ++i) {
-            listenerTypes[i].expand();
-            var listenerItems = listenerTypes[i].children();
-            for (var j = 0; j < listenerItems.length; ++j)
-                listenerItems[j].expand();
-        }
-        InspectorTest.deprecatedRunAfterPendingDispatches(objectsExpanded);
-    }
-
-    function objectsExpanded()
-    {
-        var listenerTypes = eventListenersView._treeOutline.rootElement().children();
-        for (var i = 0; i < listenerTypes.length; ++i) {
-            if (!listenerTypes[i].children().length)
-                continue;
-            var eventType = listenerTypes[i]._title;
-            InspectorTest.addResult("");
-            InspectorTest.addResult("======== " + eventType + " ========");
-            var listenerItems = listenerTypes[i].children();
-            for (var j = 0; j < listenerItems.length; ++j) {
-                InspectorTest.addResult("== " + listenerItems[j].eventListener().origin());
-                InspectorTest.dumpObjectPropertyTreeElement(listenerItems[j]);
-            }
-        }
-        callback();
-    }
-
-    if (force)
-        listenersArrived();
-    else
-        InspectorTest.addSniffer(EventListeners.EventListenersView.prototype, "_eventListenersArrivedForTest", listenersArrived);
-};
-
-InspectorTest.dumpNavigatorView = function(navigatorView, dumpIcons)
-{
-    dumpNavigatorTreeOutline(navigatorView._scriptsTree);
-
-    function dumpNavigatorTreeElement(prefix, treeElement)
-    {
-        var titleText = '';
-        if (treeElement._leadingIconsElement && dumpIcons) {
-            var icons = treeElement._leadingIconsElement.querySelectorAll('[is=ui-icon]');
-            icons = Array.prototype.slice.call(icons);
-            var iconTypes = icons.map(icon => icon._iconType);
-            if (iconTypes.length)
-                titleText = titleText + "[" + iconTypes.join(", ") + "] ";
-        }
-        titleText += treeElement.title;
-        if (treeElement._nodeType === Sources.NavigatorView.Types.FileSystem || treeElement._nodeType === Sources.NavigatorView.Types.FileSystemFolder) {
-            var hasMappedFiles = treeElement.listItemElement.classList.contains("has-mapped-files");
-            if (!hasMappedFiles)
-                titleText += " [dimmed]";
-        }
-        InspectorTest.addResult(prefix + titleText);
-        treeElement.expand();
-        var children = treeElement.children();
-        for (var i = 0; i < children.length; ++i)
-            dumpNavigatorTreeElement(prefix + "  ", children[i]);
-    }
-
-    function dumpNavigatorTreeOutline(treeOutline)
-    {
-        var children = treeOutline.rootElement().children();
-        for (var i = 0; i < children.length; ++i)
-            dumpNavigatorTreeElement("", children[i]);
-    }
-}
-
-InspectorTest.dumpNavigatorViewInAllModes = function(view)
-{
-    ["frame", "frame/domain", "frame/domain/folder", "domain", "domain/folder"].forEach(InspectorTest.dumpNavigatorViewInMode.bind(InspectorTest, view));
-}
-
-InspectorTest.dumpNavigatorViewInMode = function(view, mode)
-{
-    InspectorTest.addResult(view instanceof Sources.SourcesNavigatorView ? "Sources:" : "Content Scripts:");
-    view._groupByFrame = mode.includes("frame");
-    view._groupByDomain = mode.includes("domain");
-    view._groupByFolder = mode.includes("folder");
-    view._resetForTest();
-    InspectorTest.addResult("-------- Setting mode: [" + mode + "]");
-    InspectorTest.dumpNavigatorView(view);
 }
 
 InspectorTest.navigate = function(url, callback)
@@ -252,23 +153,6 @@ InspectorTest.runTestSuite = function(testSuite)
         InspectorTest.safeWrap(nextTest)(runner);
     }
     runner();
-}
-
-InspectorTest.wrapListener = function(func)
-{
-    function wrapper()
-    {
-        var wrapArgs = arguments;
-        var wrapThis = this;
-        // Give a chance to other listeners.
-        setTimeout(apply, 0);
-
-        function apply()
-        {
-            func.apply(wrapThis, wrapArgs);
-        }
-    }
-    return wrapper;
 }
 
 InspectorTest.addConsoleSniffer = function(override, opt_sticky)

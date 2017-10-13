@@ -5,6 +5,7 @@ top
     devtools/elements/styles
       styles-do-not-add-inline-stylesheets-in-navigator.html
     inspector
+      debugger-test.js
       elements-test.js
       inspector-test.js
 

@@ -9,6 +9,7 @@ top
     inspector
       bindings
         bindings-test.js
+      debugger-test.js
       inspector-test.js
 
 Running: attachShadow1
@@ -22,6 +23,7 @@ top
     inspector
       bindings
         bindings-test.js
+      debugger-test.js
       inspector-test.js
   (no domain)
     sourcemap-script.js
@@ -38,6 +40,7 @@ top
     inspector
       bindings
         bindings-test.js
+      debugger-test.js
       inspector-test.js
   (no domain)
     sourcemap-script.js
@@ -54,6 +57,7 @@ top
     inspector
       bindings
         bindings-test.js
+      debugger-test.js
       inspector-test.js
   (no domain)
     sourcemap-script.js
@@ -69,6 +73,7 @@ top
     inspector
       bindings
         bindings-test.js
+      debugger-test.js
       inspector-test.js
   (no domain)
     sourcemap-script.js
