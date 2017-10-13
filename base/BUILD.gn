@@ -492,6 +492,7 @@ component("base") {
     "memory/ref_counted_memory.cc",
     "memory/ref_counted_memory.h",
     "memory/scoped_policy.h",
+    "memory/scoped_refptr.h",
     "memory/shared_memory.h",
     "memory/shared_memory_android.cc",
     "memory/shared_memory_handle.cc",
