@@ -23,11 +23,11 @@
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/extension_registry.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -70,49 +70,62 @@ class InstantExtendedTest : public InProcessBrowserTest,
   bool is_focused_;
 };
 
-class InstantThemeTest : public ExtensionBrowserTest, public InstantUITestBase {
+// TODO(treib): There's no reason for this to be in interactive_ui_tests. Move
+// it to regular browser_tests instead.
+class InstantThemeTest : public ExtensionBrowserTest, public InstantTestBase {
  public:
   InstantThemeTest() {}
 
  protected:
   void SetUpInProcessBrowserTestFixture() override {
     ASSERT_TRUE(https_test_server().Start());
-    GURL base_url = https_test_server().GetURL("/instant_extended.html?");
-    GURL ntp_url = https_test_server().GetURL("/instant_extended_ntp.html?");
+    GURL base_url = https_test_server().GetURL("/instant_extended.html");
+    GURL ntp_url = https_test_server().GetURL("/instant_extended_ntp.html");
     InstantTestBase::Init(base_url, ntp_url, false);
   }
 
-  void InstallThemeSource() {
-    ThemeSource* theme = new ThemeSource(profile());
-    content::URLDataSource::Add(profile(), theme);
+  void SetUpOnMainThread() override {
+    ExtensionBrowserTest::SetUpOnMainThread();
+
+    content::URLDataSource::Add(profile(), new ThemeSource(profile()));
   }
 
   void InstallThemeAndVerify(const std::string& theme_dir,
                              const std::string& theme_name) {
-    const extensions::Extension* theme =
-        ThemeServiceFactory::GetThemeForProfile(profile());
-    // If there is already a theme installed, the current theme should be
-    // disabled and the new one installed + enabled.
-    int expected_change = theme ? 0 : 1;
+    bool had_previous_theme =
+        !!ThemeServiceFactory::GetThemeForProfile(profile());
 
     const base::FilePath theme_path = test_data_dir_.AppendASCII(theme_dir);
-    ASSERT_TRUE(InstallExtensionWithUIAutoConfirm(
-        theme_path, expected_change, ExtensionBrowserTest::browser()));
+    // Themes install asynchronously so we must check the number of enabled
+    // extensions after theme install completes.
+    size_t num_before = extensions::ExtensionRegistry::Get(profile())
+                            ->enabled_extensions()
+                            .size();
     content::WindowedNotificationObserver theme_change_observer(
         chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
         content::Source<ThemeService>(
             ThemeServiceFactory::GetForProfile(profile())));
+    ASSERT_TRUE(InstallExtensionWithUIAutoConfirm(
+        theme_path, 1, ExtensionBrowserTest::browser()));
     theme_change_observer.Wait();
+    size_t num_after = extensions::ExtensionRegistry::Get(profile())
+                           ->enabled_extensions()
+                           .size();
+    // If a theme was already installed, we're just swapping one for another, so
+    // no change in extension count.
+    int expected_change = had_previous_theme ? 0 : 1;
+    EXPECT_EQ(num_before + expected_change, num_after);
+
     const extensions::Extension* new_theme =
         ThemeServiceFactory::GetThemeForProfile(profile());
     ASSERT_NE(nullptr, new_theme);
     ASSERT_EQ(new_theme->name(), theme_name);
   }
 
-  // Loads a named image from |image_url| from the given |rvh| host. |loaded|
+  // Loads a named image from |image_url| in the given |tab|. |loaded|
   // returns whether the image was able to load without error.
   // The method returns true if the JavaScript executed cleanly.
-  bool LoadImage(content::RenderViewHost* rvh,
+  bool LoadImage(content::WebContents* tab,
                  const GURL& image_url,
                  bool* loaded) {
     std::string js_chrome =
@@ -121,7 +134,7 @@ class InstantThemeTest : public ExtensionBrowserTest, public InstantUITestBase {
         "img.onload  = function() { domAutomationController.send(true); };"
         "img.src = '" +
         image_url.spec() + "';";
-    return content::ExecuteScriptAndExtractBool(rvh, js_chrome, loaded);
+    return content::ExecuteScriptAndExtractBool(tab, js_chrome, loaded);
   }
 
  private:
@@ -161,7 +174,6 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedTest, NoMostVisitedChangedOnTabSwitch) {
 }
 
 IN_PROC_BROWSER_TEST_F(InstantThemeTest, ThemeBackgroundAccess) {
-  InstallThemeSource();
   ASSERT_NO_FATAL_FAILURE(InstallThemeAndVerify("theme", "camo theme"));
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
 
@@ -175,24 +187,23 @@ IN_PROC_BROWSER_TEST_F(InstantThemeTest, ThemeBackgroundAccess) {
   // chrome: scheme.
   const GURL chrome_url("chrome://theme/IDR_THEME_NTP_BACKGROUND");
   const GURL search_url("chrome-search://theme/IDR_THEME_NTP_BACKGROUND");
-  content::RenderViewHost* rvh =
-      browser()->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost();
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
   bool loaded = false;
-  ASSERT_TRUE(LoadImage(rvh, chrome_url, &loaded));
+  ASSERT_TRUE(LoadImage(tab, chrome_url, &loaded));
   EXPECT_FALSE(loaded) << chrome_url;
-  ASSERT_TRUE(LoadImage(rvh, search_url, &loaded));
+  ASSERT_TRUE(LoadImage(tab, search_url, &loaded));
   EXPECT_TRUE(loaded) << search_url;
 }
 
 // Flaky on all bots. http://crbug.com/335297.
 IN_PROC_BROWSER_TEST_F(InstantThemeTest,
                        DISABLED_NoThemeBackgroundChangeEventOnTabSwitch) {
-  InstallThemeSource();
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
 
   // Install a theme.
   ASSERT_NO_FATAL_FAILURE(InstallThemeAndVerify("theme", "camo theme"));
-  EXPECT_EQ(1, browser()->tab_strip_model()->count());
+  ASSERT_EQ(1, browser()->tab_strip_model()->count());
 
   // Open new tab.
   ui_test_utils::NavigateToURLWithDisposition(
@@ -200,15 +211,18 @@ IN_PROC_BROWSER_TEST_F(InstantThemeTest,
       WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB |
           ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  EXPECT_EQ(2, browser()->tab_strip_model()->count());
+  ASSERT_EQ(2, browser()->tab_strip_model()->count());
 
+  // Make sure the tab did not receive an onthemechange event for the
+  // already-installed theme. (An event *is* sent, but that happens before the
+  // page can register its handler.)
   content::WebContents* active_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_EQ(1, browser()->tab_strip_model()->active_index());
   int on_theme_changed_calls = 0;
-  EXPECT_TRUE(instant_test_utils::GetIntFromJS(
+  ASSERT_TRUE(instant_test_utils::GetIntFromJS(
       active_tab, "onThemeChangedCalls", &on_theme_changed_calls));
-  EXPECT_EQ(1, on_theme_changed_calls);
+  EXPECT_EQ(0, on_theme_changed_calls);
 
   // Activate the previous tab.
   browser()->tab_strip_model()->ActivateTabAt(0, false);
@@ -218,22 +232,22 @@ IN_PROC_BROWSER_TEST_F(InstantThemeTest,
   browser()->tab_strip_model()->ActivateTabAt(1, false);
   ASSERT_EQ(1, browser()->tab_strip_model()->active_index());
 
-  // Confirm that new tab got no onthemechanged event while switching tabs.
+  // Confirm that new tab got no onthemechange event while switching tabs.
   active_tab = browser()->tab_strip_model()->GetActiveWebContents();
   on_theme_changed_calls = 0;
-  EXPECT_TRUE(instant_test_utils::GetIntFromJS(
+  ASSERT_TRUE(instant_test_utils::GetIntFromJS(
       active_tab, "onThemeChangedCalls", &on_theme_changed_calls));
-  EXPECT_EQ(1, on_theme_changed_calls);
+  EXPECT_EQ(0, on_theme_changed_calls);
 }
 
 // Flaky on all bots. http://crbug.com/335297, http://crbug.com/265971.
 IN_PROC_BROWSER_TEST_F(InstantThemeTest,
                        DISABLED_SendThemeBackgroundChangedEvent) {
-  InstallThemeSource();
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
 
   // Install a theme.
   ASSERT_NO_FATAL_FAILURE(InstallThemeAndVerify("theme", "camo theme"));
+  ASSERT_EQ(1, browser()->tab_strip_model()->count());
 
   // Open new tab.
   ui_test_utils::NavigateToURLWithDisposition(
@@ -241,25 +255,27 @@ IN_PROC_BROWSER_TEST_F(InstantThemeTest,
       WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB |
           ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  EXPECT_EQ(2, browser()->tab_strip_model()->count());
+  ASSERT_EQ(2, browser()->tab_strip_model()->count());
 
-  // Make sure new tab received an onthemechanged event.
+  // Make sure the tab did not receive an onthemechange event for the
+  // already-installed theme. (An event *is* sent, but that happens before the
+  // page can register its handler.)
   content::WebContents* active_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_EQ(1, browser()->tab_strip_model()->active_index());
   int on_theme_changed_calls = 0;
-  EXPECT_TRUE(instant_test_utils::GetIntFromJS(
+  ASSERT_TRUE(instant_test_utils::GetIntFromJS(
       active_tab, "onThemeChangedCalls", &on_theme_changed_calls));
-  EXPECT_EQ(1, on_theme_changed_calls);
+  EXPECT_EQ(0, on_theme_changed_calls);
 
-  // Install a new theme.
+  // Install a different theme.
   ASSERT_NO_FATAL_FAILURE(InstallThemeAndVerify("theme2", "snowflake theme"));
 
-  // Confirm that new tab is notified about the theme changed event.
+  // Confirm that the new tab got notified about the theme changed event.
   on_theme_changed_calls = 0;
-  EXPECT_TRUE(instant_test_utils::GetIntFromJS(
+  ASSERT_TRUE(instant_test_utils::GetIntFromJS(
       active_tab, "onThemeChangedCalls", &on_theme_changed_calls));
-  EXPECT_EQ(2, on_theme_changed_calls);
+  EXPECT_EQ(1, on_theme_changed_calls);
 }
 
 // Flaky on all bots since re-enabled in r208032, crbug.com/253092
