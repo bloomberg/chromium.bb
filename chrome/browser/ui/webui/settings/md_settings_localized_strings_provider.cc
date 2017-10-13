@@ -2118,6 +2118,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
   chromeos::network_element::AddOncLocalizedStrings(html_source);
   chromeos::network_element::AddDetailsLocalizedStrings(html_source);
   chromeos::network_element::AddConfigLocalizedStrings(html_source);
+  chromeos::network_element::AddErrorLocalizedStrings(html_source);
 #endif
   policy_indicator::AddLocalizedStrings(html_source);
 

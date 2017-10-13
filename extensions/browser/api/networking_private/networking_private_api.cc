@@ -136,6 +136,7 @@ const char kErrorNotReady[] = "Error.NotReady";
 const char kErrorNotSupported[] = "Error.NotSupported";
 const char kErrorPolicyControlled[] = "Error.PolicyControlled";
 const char kErrorSimLocked[] = "Error.SimLocked";
+const char kErrorUnconfiguredNetwork[] = "Error.UnconfiguredNetwork";
 
 }  // namespace networking_private
 

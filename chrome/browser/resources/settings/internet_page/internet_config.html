@@ -24,18 +24,11 @@
         <paper-button class="secondary-button" on-tap="onCancelTap_">
           $i18n{cancel}
         </paper-button>
-        <template is="dom-if" if="[[guid_]]">
-          <paper-button class="primary-button" on-tap="onSaveTap_"
-              disabled="[[!enableSave_]]">
-            $i18n{save}
-          </paper-button>
-        </template>
-        <template is="dom-if" if="[[!guid_]]">
-          <paper-button class="primary-button" on-tap="onConnectTap_"
-              disabled="[[!enableConnect_]]">
-            $i18n{networkButtonConnect}
-          </paper-button>
-        </template>
+        <paper-button class="primary-button" on-tap="onSaveOrConnectTap_"
+            disabled="[[!getSaveOrConnectEnabled_(
+                guid_, networkProperties_, enableSave_, enableConnect_)]]">
+          [[getSaveOrConnectLabel_(guid_, networkProperties_)]]
+        </paper-button>
       </div>
     </div>
 

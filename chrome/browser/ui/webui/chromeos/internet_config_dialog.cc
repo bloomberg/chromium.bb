@@ -34,6 +34,7 @@ void AddInternetStrings(content::WebUIDataSource* html_source) {
   chromeos::network_element::AddLocalizedStrings(html_source);
   chromeos::network_element::AddOncLocalizedStrings(html_source);
   chromeos::network_element::AddConfigLocalizedStrings(html_source);
+  chromeos::network_element::AddErrorLocalizedStrings(html_source);
   // Add additional strings and overrides needed by the dialog.
   struct {
     const char* name;

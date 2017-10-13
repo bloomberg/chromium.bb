@@ -1613,6 +1613,20 @@
       WiMAX enable
     </message>
 
+     <!-- Network error strings. -->
+    <message name="IDS_NETWORK_ERROR_CANNOT_CHANGE_SHARED_CONFIG" desc="Network error message shown when attempting to change a shared network configuration if the operation is not allowed">
+      Changing shared network configurations is not allowed
+    </message>
+    <message name="IDS_NETWORK_ERROR_NO_USER_CERT" desc="In the network connect dialog, when creating a VPN or enterprise Wi-Fi connection, error message to display when no user certificates are installed.">
+      Please install a user certificate.
+    </message>
+    <message name="IDS_NETWORK_ERROR_POLICY_CONTROLLED" desc="Network error message shown when attempting to remove or illegally modify a policy controlled network">
+      Network is policy controlled
+    </message>
+    <message name="IDS_NETWORK_ERROR_UNKNOWN" desc="Network error message shown for an unknown or unexpected network configuration error">
+      Error configuring network
+    </message>
+
      <!-- Strings translating ONC (Open Network Configuration) properties -->
      <!-- and translatable values. See onc_spec.html for more information. -->
     <message name="IDS_ONC_IPV4_ADDRESS" desc="ONC Property label for ipv4-IPAddress">

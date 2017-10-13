@@ -15,6 +15,11 @@
         -webkit-margin-end: calc(
           var(--network-control-margin) - var(--cr-icon-ripple-padding));
       }
+
+      #error {
+        color: red;
+        font-weight: 500;
+      }
     </style>
 
     <!-- Share (WiFi and WiMAX) -->
@@ -158,7 +163,13 @@
       </div>
     </template>
 
-    <!-- TODO(stevenjb): Error message for config or cert failure -->
+    <template is="dom-if" if="[[error_]]">
+      <div class="property-box">
+        <div id="error" class="start">
+          [[getError_(error_)]]
+        </div>
+      </div>
+    </template>
 
   </template>
   <script src="network_config.js"></script>

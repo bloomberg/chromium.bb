@@ -33,6 +33,9 @@ void AddDetailsLocalizedStrings(content::WebUIDataSource* html_source);
 // WebUI.
 void AddConfigLocalizedStrings(content::WebUIDataSource* html_source);
 
+// Adds error strings for networking UI.
+void AddErrorLocalizedStrings(content::WebUIDataSource* html_source);
+
 }  // namespace network_element
 }  // namespace chromeos
 

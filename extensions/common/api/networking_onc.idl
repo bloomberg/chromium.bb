@@ -26,6 +26,10 @@ namespace networking.onc {
     Unknown, Offline, Online, Portal, ProxyAuthRequired
   };
 
+  enum ClientCertificateType {
+    Ref, Pattern
+  };
+
   enum ConnectionStateType {
     Connected, Connecting, NotConnected
   };
@@ -53,10 +57,6 @@ namespace networking.onc {
 
   enum ProxySettingsType {
     Direct, Manual, PAC, WPAD
-  };
-
-  enum ClientCertificateType {
-    Ref, Pattern
   };
 
   dictionary ManagedBoolean {
@@ -733,7 +733,16 @@ namespace networking.onc {
     // IP configuration that was received from the DHCP server before applying
     // static IP configuration.
     IPConfigProperties? SavedIPConfig;
-    // Indicates whether and how the network is configured.
+    // Indicates whether and how the network is configured. Possible values are:
+    // <ul>
+    //    <li><code>Device</code></li>
+    //    <li><code>DevicePolicy</code></li>
+    //    <li><code>User</code></li>
+    //    <li><code>UserPolicy</code></li>
+    //    <li><code>None</code></li>
+    // </ul>
+    // 'None' conflicts with extension code generation so we must use a string
+    // for 'Source' instead of a SourceType enum.
     DOMString? Source;
     // The network type.
     NetworkType Type;
@@ -904,7 +913,9 @@ namespace networking.onc {
     static void getState(DOMString networkGuid,
                          GetStatePropertiesCallback callback);
 
-    // Sets the properties of the network with id networkGuid.
+    // Sets the properties of the network with id |networkGuid|. This is only
+    // valid for configured networks (Source != None). Unconfigured visible
+    // networks should use $(ref:createNetwork) instead.
     // <b>
     //   In kiosk sessions, calling this method on a shared network will fail.
     // </b>
