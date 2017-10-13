@@ -56,7 +56,8 @@ class LockDebugView : public views::View, public views::ButtonListener {
   // Debug row which contains buttons that affect the entire UI.
   views::View* debug_row_ = nullptr;
   views::MdTextButton* toggle_blur_ = nullptr;
-  views::MdTextButton* toggle_note_action_;
+  views::MdTextButton* toggle_note_action_ = nullptr;
+  views::MdTextButton* toggle_caps_lock_ = nullptr;
   views::MdTextButton* add_user_ = nullptr;
   views::MdTextButton* remove_user_ = nullptr;
   views::MdTextButton* toggle_auth_ = nullptr;
