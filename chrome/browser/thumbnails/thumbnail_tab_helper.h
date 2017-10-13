@@ -71,8 +71,6 @@ class ThumbnailTabHelper
   // Indicates that the given widget has changed is visibility.
   void WidgetHidden(content::RenderWidgetHost* widget);
 
-  const bool capture_on_navigating_away_;
-
   content::NotificationRegistrar registrar_;
 
   ui::PageTransition page_transition_;

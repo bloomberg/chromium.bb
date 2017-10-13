@@ -4,7 +4,6 @@
 
 #include "chrome/browser/thumbnails/thumbnail_tab_helper.h"
 
-#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/task_scheduler/task_traits.h"
@@ -12,7 +11,6 @@
 #include "chrome/browser/thumbnails/thumbnail_service.h"
 #include "chrome/browser/thumbnails/thumbnail_service_factory.h"
 #include "chrome/browser/thumbnails/thumbnail_utils.h"
-#include "chrome/common/chrome_features.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/notification_details.h"
@@ -59,16 +57,13 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(ThumbnailTabHelper);
 // UpdateThumbnailIfNecessary(), which updates the thumbnail for the current
 // tab if needed. The heuristics to judge whether to update the thumbnail are
 // implemented in ThumbnailService::ShouldAcquirePageThumbnail().
-// There are several triggers that can start the process:
+// There are two triggers that can start the process:
 // - When a renderer is about to be hidden (this usually occurs when the current
 //   tab is closed or another tab is clicked).
-// - If features::kCaptureThumbnailOnNavigatingAway is enabled: Just before
-//   navigating away from the current page.
+// - Just before navigating away from the current page.
 
 ThumbnailTabHelper::ThumbnailTabHelper(content::WebContents* contents)
     : content::WebContentsObserver(contents),
-      capture_on_navigating_away_(base::FeatureList::IsEnabled(
-          features::kCaptureThumbnailOnNavigatingAway)),
       page_transition_(ui::PAGE_TRANSITION_LINK),
       load_interrupted_(false),
       weak_factory_(this) {
@@ -122,12 +117,12 @@ void ThumbnailTabHelper::DidStartNavigation(
       navigation_handle->IsSameDocument()) {
     return;
   }
-  if (capture_on_navigating_away_) {
-    // At this point, the new navigation has just been started, but the
-    // WebContents still shows the previous page. Grab a thumbnail before it
-    // goes away.
-    UpdateThumbnailIfNecessary();
-  }
+
+  // At this point, the new navigation has just been started, but the
+  // WebContents still shows the previous page. Grab a thumbnail before it
+  // goes away.
+  UpdateThumbnailIfNecessary();
+
   // Reset the page transition to some uninteresting type, since the actual
   // type isn't available at this point. We'll get it in DidFinishNavigation
   // (if that happens, which isn't guaranteed).
