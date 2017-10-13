@@ -73,8 +73,12 @@ using bookmarks::BookmarkNode;
 // Builds a controller and brings it on screen.
 - (void)presentBookmarkForBookmarkedTab:(Tab*)tab;
 
-// Dismisses the bookmark browser.
-- (void)dismissBookmarkBrowserAnimated:(BOOL)animated;
+// Dismisses the bookmark browser.  If |urlsToOpen| is not empty, then the user
+// has selected to navigate to those URLs with specified tab mode.
+- (void)dismissBookmarkBrowserAnimated:(BOOL)animated
+                            urlsToOpen:(const std::vector<GURL>&)urlsToOpen
+                           inIncognito:(BOOL)inIncognito
+                                newTab:(BOOL)newTab;
 
 // Dismisses the bookmark editor.
 - (void)dismissBookmarkEditorAnimated:(BOOL)animated;
@@ -194,17 +198,45 @@ using bookmarks::BookmarkNode;
   }
 }
 
-- (void)dismissBookmarkBrowserAnimated:(BOOL)animated {
+- (void)dismissBookmarkBrowserAnimated:(BOOL)animated
+                            urlsToOpen:(const std::vector<GURL>&)urlsToOpen
+                           inIncognito:(BOOL)inIncognito
+                                newTab:(BOOL)newTab {
   if (!self.bookmarkBrowser)
     return;
 
+  // If trying to open urls with tab mode changed, we need to postpone openUrls
+  // until the dismissal of Bookmarks is done.  This is to prevent the race
+  // condition between the dismissal of bookmarks and switch of BVC.
+  const BOOL openUrlsAfterDismissal =
+      !urlsToOpen.empty() &&
+      ((!!inIncognito) != _currentBrowserState->IsOffTheRecord());
+
+  // A copy of the urls vector for the completion block.
+  std::vector<GURL> urlsToOpenAfterDismissal;
+  if (openUrlsAfterDismissal) {
+    // open urls in the completion block after dismissal.
+    urlsToOpenAfterDismissal = urlsToOpen;
+  } else if (!urlsToOpen.empty()) {
+    // open urls now.
+    [self openUrls:urlsToOpen inIncognito:inIncognito newTab:newTab];
+  }
+
   [self.bookmarkBrowser dismissModals];
-  [_parentController dismissViewControllerAnimated:animated
-                                        completion:^{
-                                          self.bookmarkBrowser.homeDelegate =
-                                              nil;
-                                          self.bookmarkBrowser = nil;
-                                        }];
+
+  [_parentController
+      dismissViewControllerAnimated:animated
+                         completion:^{
+                           self.bookmarkBrowser.homeDelegate = nil;
+                           self.bookmarkBrowser = nil;
+
+                           if (!openUrlsAfterDismissal) {
+                             return;
+                           }
+                           [self openUrls:urlsToOpenAfterDismissal
+                               inIncognito:inIncognito
+                                    newTab:newTab];
+                         }];
 }
 
 - (void)dismissBookmarkEditorAnimated:(BOOL)animated {
@@ -219,7 +251,11 @@ using bookmarks::BookmarkNode;
 }
 
 - (void)dismissBookmarkModalControllerAnimated:(BOOL)animated {
-  [self dismissBookmarkBrowserAnimated:animated];
+  // No urls to open.  So it does not care about inIncognito and newTab.
+  [self dismissBookmarkBrowserAnimated:animated
+                            urlsToOpen:std::vector<GURL>()
+                           inIncognito:NO
+                                newTab:NO];
   [self dismissBookmarkEditorAnimated:animated];
 }
 
@@ -257,11 +293,15 @@ bookmarkHomeViewControllerWantsDismissal:(BookmarkHomeViewController*)controller
                                 navigationToUrls:(const std::vector<GURL>&)urls
                                      inIncognito:(BOOL)inIncognito
                                           newTab:(BOOL)newTab {
-  [self dismissBookmarkBrowserAnimated:YES];
+  [self dismissBookmarkBrowserAnimated:YES
+                            urlsToOpen:urls
+                           inIncognito:inIncognito
+                                newTab:newTab];
+}
 
-  if (urls.empty())
-    return;
-
+- (void)openUrls:(const std::vector<GURL>&)urls
+     inIncognito:(BOOL)inIncognito
+          newTab:(BOOL)newTab {
   BOOL openInForegroundTab = YES;
   for (const GURL& url : urls) {
     DCHECK(url.is_valid());
