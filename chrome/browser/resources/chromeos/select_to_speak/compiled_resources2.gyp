@@ -7,6 +7,7 @@
       'target_name': 'select_to_speak',
       'dependencies': [
 	'externs',
+	'paragraph_utils',
 	'<(EXTERNS_GYP):accessibility_private',
 	'<(EXTERNS_GYP):automation',
 	'<(EXTERNS_GYP):chrome_extensions',
@@ -26,6 +27,16 @@
     {
       'target_name': 'externs',
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'paragraph_utils',
+      'dependencies': [
+	'externs',
+	'<(EXTERNS_GYP):accessibility_private',
+	'<(EXTERNS_GYP):automation',
+	'<(EXTERNS_GYP):chrome_extensions',
+       ],
+       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
   ],
 }

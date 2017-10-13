@@ -1,0 +1,99 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+/**
+ * Test fixture for paragraph_utils.js.
+ * @constructor
+ * @extends {testing.Test}
+ */
+function SelectToSpeakParagraphUnitTest () {
+  testing.Test.call(this);
+}
+
+SelectToSpeakParagraphUnitTest.prototype = {
+  __proto__: testing.Test.prototype,
+
+  /** @override */
+  extraLibraries: [
+    'test_support.js',
+    'paragraph_utils.js'
+  ]
+};
+
+TEST_F('SelectToSpeakParagraphUnitTest', 'IsInParagraph', function() {
+  let root = {role: 'rootWebArea'};
+  let paragraph = {role: 'paragraph', parent: 'rootWebArea'};
+  let text1 = {role: 'staticText', parent: paragraph};
+  let text2 = {role: 'staticText', parent: 'rootWebArea'};
+  assertTrue(isInParagraph(text1));
+  assertFalse(isInParagraph(text2));
+});
+
+TEST_F('SelectToSpeakParagraphUnitTest', 'GetParagraphParent', function() {
+  let root = {role: 'rootWebArea'};
+  let paragraph = {role: 'paragraph', parent: 'rootWebArea'};
+  let text1 = {role: 'staticText', parent: paragraph};
+  let text2 = {role: 'staticText', parent: 'rootWebArea'};
+  assertEquals(paragraph, getParagraphParent(text1));
+  assertEquals(null, getParagraphParent(text2));
+});
+
+TEST_F('SelectToSpeakParagraphUnitTest', 'InSameParagraph', function() {
+  let root = {role: 'rootWebArea'};
+  let paragraph1 = {role: 'paragraph', parent: 'rootWebArea'};
+  let text1 = {role: 'staticText', parent: paragraph1};
+  let text2 = {role: 'staticText', parent: paragraph1};
+  let paragraph2 = {role: 'paragraph', parent: 'rootWebArea'};
+  let text3 = {role: 'staticText', parent: paragraph2};
+  assertTrue(inSameParagraph(text1, text2));
+  assertFalse(inSameParagraph(text1, text3));
+});
+
+TEST_F('SelectToSpeakParagraphUnitTest', 'BlockDivBreaksSameParagraph',
+    function() {
+  let root = {role: 'rootWebArea'};
+  let paragraph1 = {role: 'paragraph', parent: 'rootWebArea'};
+  let text1 = {role: 'staticText', parent: paragraph1};
+  let text2 = {role: 'image', parent: paragraph1, display: 'block'};
+  let text3 = {role: 'image', parent: paragraph1, display: 'inline'};
+  let text4 = {role: 'staticText', parent: paragraph1};
+  assertFalse(inSameParagraph(text1, text2));
+  assertFalse(inSameParagraph(text2, text3));
+  assertTrue(inSameParagraph(text3, text4));
+});
+
+TEST_F('SelectToSpeakParagraphUnitTest', 'BuildNodeGroupStopsAtNewParagraph',
+    function() {
+  let root = {role: 'rootWebArea'};
+  let paragraph1 = {role: 'paragraph', parent: 'rootWebArea'};
+  let text1 = {role: 'staticText', parent: paragraph1, name: 'text1'};
+  let text2 = {role: 'staticText', parent: paragraph1, name: 'text2'};
+  let paragraph2 = {role: 'paragraph', parent: 'rootWebArea'};
+  let text3 = {role: 'staticText', parent: paragraph2, name: 'text3'};
+  let result = buildNodeGroup([text1, text2, text3], 0);
+  assertEquals('text1 text2', result.text);
+  assertEquals(1, result.endIndex);
+  assertEquals(2, result.nodes.length);
+  assertEquals(0, result.nodes[0].startChar);
+  assertEquals(text1, result.nodes[0].node);
+  assertEquals(6, result.nodes[1].startChar);
+  assertEquals(text2, result.nodes[1].node);
+});
+
+TEST_F('SelectToSpeakParagraphUnitTest', 'BuildNodeGroupIncludesLinks',
+    function() {
+  let root = {role: 'rootWebArea'};
+  let paragraph1 = {role: 'paragraph', parent: 'rootWebArea'};
+  let text1 = {role: 'staticText', parent: paragraph1, name: 'text1'};
+  let link = {role: 'link', parent: paragraph1};
+  let linkText = {role: 'staticText', parent: link, name: 'linkText'};
+  let result = buildNodeGroup([text1, linkText], 0);
+  assertEquals('text1 linkText', result.text);
+  assertEquals(1, result.endIndex);
+  assertEquals(2, result.nodes.length);
+  assertEquals(0, result.nodes[0].startChar);
+  assertEquals(text1, result.nodes[0].node);
+  assertEquals(6, result.nodes[1].startChar);
+  assertEquals(linkText, result.nodes[1].node);
+});
