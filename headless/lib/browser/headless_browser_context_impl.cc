@@ -84,6 +84,7 @@ HeadlessBrowserContextImpl::HeadlessBrowserContextImpl(
     : browser_(browser),
       context_options_(std::move(context_options)),
       resource_context_(new HeadlessResourceContext),
+      should_remove_headers_(true),
       permission_manager_(new HeadlessPermissionManager()),
       id_(base::GenerateGUID()) {
   InitWhileIOAllowed();
@@ -355,6 +356,14 @@ HeadlessBrowserImpl* HeadlessBrowserContextImpl::browser() const {
 const HeadlessBrowserContextOptions* HeadlessBrowserContextImpl::options()
     const {
   return context_options_.get();
+}
+
+void HeadlessBrowserContextImpl::SetRemoveHeaders(bool should_remove_headers) {
+  should_remove_headers_ = should_remove_headers;
+}
+
+bool HeadlessBrowserContextImpl::ShouldRemoveHeaders() const {
+  return should_remove_headers_;
 }
 
 const std::string& HeadlessBrowserContextImpl::Id() const {

@@ -108,6 +108,9 @@ class HeadlessBrowserContextImpl : public HeadlessBrowserContext,
   const base::UnguessableToken* GetDevToolsFrameTokenForFrameTreeNodeId(
       int frame_tree_node_id) const;
 
+  void SetRemoveHeaders(bool should_remove_headers);
+  bool ShouldRemoveHeaders() const;
+
   void NotifyChildContentsCreated(HeadlessWebContentsImpl* parent,
                                   HeadlessWebContentsImpl* child);
 
@@ -134,6 +137,7 @@ class HeadlessBrowserContextImpl : public HeadlessBrowserContext,
   base::FilePath path_;
   base::Lock observers_lock_;
   base::ObserverList<Observer> observers_;
+  bool should_remove_headers_;
 
   std::unordered_map<std::string, std::unique_ptr<HeadlessWebContents>>
       web_contents_map_;

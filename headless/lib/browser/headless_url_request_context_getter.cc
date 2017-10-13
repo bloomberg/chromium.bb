@@ -11,10 +11,12 @@
 #include "base/memory/ptr_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/devtools_network_transaction_factory.h"
 #include "headless/lib/browser/headless_browser_context_impl.h"
 #include "headless/lib/browser/headless_browser_context_options.h"
 #include "headless/lib/browser/headless_network_delegate.h"
 #include "net/dns/mapped_host_resolver.h"
+#include "net/http/http_transaction_factory.h"
 #include "net/http/http_util.h"
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request_context.h"
@@ -99,12 +101,26 @@ HeadlessURLRequestContextGetter::GetURLRequestContext() {
       builder.set_host_resolver(std::move(mapped_host_resolver));
     }
 
+    // Extra headers are required for network emulation and are removed in
+    // DevToolsNetworkTransaction. If a protocol handler is set for http or
+    // https, then it is likely that the HttpTransactionFactoryCallback will
+    // not be called and DevToolsNetworkTransaction would not remove the header.
+    // In that case, the headers should be removed in HeadlessNetworkDelegate.
+    bool has_http_handler = false;
     for (auto& pair : protocol_handlers_) {
       builder.SetProtocolHandler(pair.first,
                                  base::WrapUnique(pair.second.release()));
+      if (pair.first == url::kHttpScheme || pair.first == url::kHttpsScheme)
+        has_http_handler = true;
     }
     protocol_handlers_.clear();
     builder.SetInterceptors(std::move(request_interceptors_));
+
+    if (!has_http_handler && headless_browser_context_) {
+      headless_browser_context_->SetRemoveHeaders(false);
+      builder.SetCreateHttpTransactionFactoryCallback(
+          base::BindOnce(&content::CreateDevToolsNetworkTransactionFactory));
+    }
 
     url_request_context_ = builder.Build();
     url_request_context_->set_net_log(net_log_);
