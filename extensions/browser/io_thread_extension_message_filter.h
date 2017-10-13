@@ -41,7 +41,6 @@ class IOThreadExtensionMessageFilter : public content::BrowserMessageFilter {
   bool OnMessageReceived(const IPC::Message& message) override;
 
   // Message handlers on the IO thread.
-  void OnAppWindowReady(int route_id);
   void OnExtensionGenerateUniqueID(int* unique_id);
   void OnExtensionRequestForIOThread(
       int routing_id,
