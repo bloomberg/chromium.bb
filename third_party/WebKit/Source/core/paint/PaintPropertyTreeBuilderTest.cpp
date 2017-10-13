@@ -1130,6 +1130,62 @@ TEST_P(PaintPropertyTreeBuilderTest, TransformNodesAcrossSVGHTMLBoundary) {
             div_with_transform_properties->Transform()->Parent());
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, PaintOffsetTranslationSVGHTMLBoundary) {
+  SetBodyInnerHTML(
+      "<svg id='svg'"
+      "  <foreignObject>"
+      "    <body>"
+      "      <div id='divWithTransform'"
+      "          style='transform: translate3d(3px, 4px, 5px);'></div>"
+      "    </body>"
+      "  </foreignObject>"
+      "</svg>");
+
+  LayoutObject& svg = *GetLayoutObjectByElementId("svg");
+  const ObjectPaintProperties* svg_properties =
+      svg.FirstFragment()->PaintProperties();
+  EXPECT_EQ(
+      FloatSize(8, 8),
+      svg_properties->PaintOffsetTranslation()->Matrix().To2DTranslation());
+
+  LayoutObject& div_with_transform =
+      *GetLayoutObjectByElementId("divWithTransform");
+  const ObjectPaintProperties* div_with_transform_properties =
+      div_with_transform.FirstFragment()->PaintProperties();
+  EXPECT_EQ(TransformationMatrix().Translate3d(3, 4, 5),
+            div_with_transform_properties->Transform()->Matrix());
+  EXPECT_EQ(FloatSize(8, 158),
+            div_with_transform_properties->PaintOffsetTranslation()
+                ->Matrix()
+                .To2DTranslation());
+  EXPECT_EQ(div_with_transform_properties->PaintOffsetTranslation(),
+            div_with_transform_properties->Transform()->Parent());
+}
+
+TEST_P(PaintPropertyTreeBuilderTest,
+       PaintOffsetTranslationSVGHTMLBoundaryMulticol) {
+  SetBodyInnerHTML(
+      "<svg id='svg'>"
+      "  <foreignObject>"
+      "    <body>"
+      "      <div id='divWithColumns' style='columns: 2'>"
+      "        <div style='width: 5px; height: 5px; background: blue'>"
+      "      </div>"
+      "    </body>"
+      "  </foreignObject>"
+      "</svg>");
+
+  LayoutObject& svg = *GetLayoutObjectByElementId("svg");
+  const ObjectPaintProperties* svg_properties =
+      svg.FirstFragment()->PaintProperties();
+  EXPECT_EQ(
+      FloatSize(8, 8),
+      svg_properties->PaintOffsetTranslation()->Matrix().To2DTranslation());
+  LayoutObject& div_with_columns =
+      *GetLayoutObjectByElementId("divWithColumns")->SlowFirstChild();
+  EXPECT_EQ(LayoutPoint(0, 0), div_with_columns.FirstFragment()->PaintOffset());
+}
+
 TEST_P(PaintPropertyTreeBuilderTest,
        FixedTransformAncestorAcrossSVGHTMLBoundary) {
   SetBodyInnerHTML(
