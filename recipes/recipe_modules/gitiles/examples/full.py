@@ -4,6 +4,7 @@
 
 DEPS = [
     'gitiles',
+    'recipe_engine/json',
     'recipe_engine/properties',
 ]
 
@@ -62,6 +63,6 @@ def GenTests(api):
       )
       + api.step_data(
           'fetch master:NONEXISTENT',
-          api.gitiles.make_encoded_file('')
+          api.json.output({'value': None})
       )
   )
