@@ -46,7 +46,8 @@ namespace content {
 const int kMediaPlayerThreshold = 1;
 const int kInvalidMediaPlayerId = -1;
 
-static BrowserMediaPlayerManager::Factory g_factory = NULL;
+static BrowserMediaPlayerManager::Factory
+    g_browser_media_player_manager_factory = NULL;
 static media::MediaUrlInterceptor* media_url_interceptor_ = NULL;
 
 // static
@@ -55,8 +56,8 @@ void BrowserMediaPlayerManager::RegisterFactory(Factory factory) {
   // Until Cast is fully upstreamed we want the downstream factory to take
   // priority over the upstream factory. The downstream call happens first,
   // so this will ensure that it does.
-  if (g_factory == nullptr)
-    g_factory = factory;
+  if (g_browser_media_player_manager_factory == nullptr)
+    g_browser_media_player_manager_factory = factory;
 }
 
 // static
@@ -68,13 +69,16 @@ void BrowserMediaPlayerManager::RegisterMediaUrlInterceptor(
 // static
 BrowserMediaPlayerManager* BrowserMediaPlayerManager::Create(
     RenderFrameHost* rfh) {
-  // In chrome, |g_factory| should be set to create a RemoteMediaPlayerManager,
-  // since RegisterFactory() should be called from
+  // In chrome, |g_browser_media_player_manager_factory| should be set
+  // to create a RemoteMediaPlayerManager, since RegisterFactory()
+  // should be called from
   // ChromeMainDelegateAndroid::BasicStartupComplete.
   //
   // In webview, no factory should be set, and returning a nullptr should be
   // handled by the caller.
-  return g_factory != nullptr ? g_factory(rfh) : nullptr;
+  return g_browser_media_player_manager_factory != nullptr
+             ? g_browser_media_player_manager_factory(rfh)
+             : nullptr;
 }
 
 #if !defined(USE_AURA)

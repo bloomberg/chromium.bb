@@ -9,26 +9,26 @@
 namespace content {
 namespace {
 
-ImageTransportFactory* g_factory = nullptr;
+ImageTransportFactory* g_image_transport_factory = nullptr;
 
 }  // namespace
 
 // static
 void ImageTransportFactory::SetFactory(
     std::unique_ptr<ImageTransportFactory> factory) {
-  DCHECK(!g_factory);
-  g_factory = factory.release();
+  DCHECK(!g_image_transport_factory);
+  g_image_transport_factory = factory.release();
 }
 
 // static
 void ImageTransportFactory::Terminate() {
-  delete g_factory;
-  g_factory = nullptr;
+  delete g_image_transport_factory;
+  g_image_transport_factory = nullptr;
 }
 
 // static
 ImageTransportFactory* ImageTransportFactory::GetInstance() {
-  return g_factory;
+  return g_image_transport_factory;
 }
 
 }  // namespace content
