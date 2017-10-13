@@ -233,9 +233,6 @@ class DeviceLocalAccountPolicyService {
   // Deletes brokers in |map| and clears it.
   void DeleteBrokers(PolicyBrokerMap* map);
 
-  // Find the broker for a given |store|. Returns NULL if |store| is unknown.
-  DeviceLocalAccountPolicyBroker* GetBrokerForStore(CloudPolicyStore* store);
-
   // Notifies the |observers_| that the policy for |user_id| has changed.
   void NotifyPolicyUpdated(const std::string& user_id);
 

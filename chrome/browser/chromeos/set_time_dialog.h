@@ -32,8 +32,6 @@ class SetTimeDialog : public ui::WebDialogDelegate {
   SetTimeDialog();
   ~SetTimeDialog() override;
 
-  static void ShowDialogImpl(gfx::NativeWindow parent, int container_id);
-
   // ui::WebDialogDelegate:
   ui::ModalType GetDialogModalType() const override;
   base::string16 GetDialogTitle() const override;

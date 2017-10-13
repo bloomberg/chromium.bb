@@ -565,17 +565,6 @@ void DeviceLocalAccountPolicyService::DeleteBrokers(PolicyBrokerMap* map) {
   map->clear();
 }
 
-DeviceLocalAccountPolicyBroker*
-    DeviceLocalAccountPolicyService::GetBrokerForStore(
-        CloudPolicyStore* store) {
-  for (PolicyBrokerMap::iterator it(policy_brokers_.begin());
-       it != policy_brokers_.end(); ++it) {
-    if (it->second->core()->store() == store)
-      return it->second;
-  }
-  return nullptr;
-}
-
 void DeviceLocalAccountPolicyService::NotifyPolicyUpdated(
     const std::string& user_id) {
   for (auto& observer : observers_)

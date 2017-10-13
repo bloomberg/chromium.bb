@@ -233,9 +233,6 @@ class DeviceSettingsService : public SessionManagerClient::Observer {
                                      SessionManagerOperation* operation,
                                      Status status);
 
-  // Updates status and invokes the callback immediately.
-  void HandleError(Status status, const base::Closure& callback);
-
   // Run OwnershipStatusChanged() for observers and push
   // NOTIFICATION_OWNERSHIP_STATUS_CHANGED to NotificationService.
   void NotifyOwnershipStatusChanged() const;

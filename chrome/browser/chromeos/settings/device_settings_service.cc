@@ -330,18 +330,6 @@ void DeviceSettingsService::HandleCompletedOperation(
     callback.Run();
 }
 
-void DeviceSettingsService::HandleError(Status status,
-                                        const base::Closure& callback) {
-  store_status_ = status;
-  LOG(ERROR) << "Session manager operation failed: " << status;
-  NotifyDeviceSettingsUpdated();
-
-  // The completion callback happens after the notification so clients can
-  // filter self-triggered updates.
-  if (!callback.is_null())
-    callback.Run();
-}
-
 void DeviceSettingsService::NotifyOwnershipStatusChanged() const {
   for (auto& observer : observers_) {
     observer.OwnershipStatusChanged();
