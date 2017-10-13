@@ -26,6 +26,7 @@ enum NegativeSampleReason {
   PERSISTENT_SPARSE_ADD_OVERFLOW,
   PERSISTENT_SPARSE_ACCUMULATE_NEGATIVE_COUNT,
   PERSISTENT_SPARSE_ACCUMULATE_WENT_NEGATIVE,
+  DEPRECATED_PERSISTENT_SPARSE_ACCUMULATE_OVERFLOW,
   PERSISTENT_SPARSE_ACCUMULATE_OVERFLOW,
   MAX_NEGATIVE_SAMPLE_REASONS
 };
@@ -132,8 +133,10 @@ void PersistentSampleMap::Accumulate(Sample value, Count count) {
       reason = PERSISTENT_SPARSE_ACCUMULATE_WENT_NEGATIVE;
     *local_count_ptr += count;
   } else {
-    *local_count_ptr += count;
-    if (*local_count_ptr < 0)
+    Sample old_value = *local_count_ptr;
+    Sample new_value = old_value + count;
+    *local_count_ptr = new_value;
+    if ((new_value >= 0) != (old_value >= 0))
       reason = PERSISTENT_SPARSE_ACCUMULATE_OVERFLOW;
   }
   if (reason != MAX_NEGATIVE_SAMPLE_REASONS) {
