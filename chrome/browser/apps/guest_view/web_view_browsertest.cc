@@ -63,6 +63,7 @@
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/result_codes.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
@@ -3525,6 +3526,38 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, LoadWebviewInsideIframe) {
 
   // Wait for guest to be destroyed.
   watcher.Wait();
+}
+
+// Makes sure that a webview will display correctly after reloading it after a
+// crash.
+IN_PROC_BROWSER_TEST_P(WebViewTest, ReloadAfterCrash) {
+  if (!base::FeatureList::IsEnabled(::features::kGuestViewCrossProcessFrames))
+    return;
+
+  // Load guest and wait for it to appear.
+  LoadAppWithGuest("web_view/simple");
+  EXPECT_TRUE(GetGuestWebContents()->GetMainFrame()->GetView());
+  WaitForChildFrameSurfaceReady(GetGuestWebContents()->GetMainFrame());
+
+  // Kill guest.
+  auto* rph = GetGuestWebContents()->GetMainFrame()->GetProcess();
+  content::RenderProcessHostWatcher crash_observer(
+      rph, content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  EXPECT_TRUE(rph->Shutdown(content::RESULT_CODE_KILLED, false));
+  crash_observer.Wait();
+  EXPECT_FALSE(GetGuestWebContents()->GetMainFrame()->GetView());
+
+  // Reload guest and make sure it appears.
+  content::TestNavigationObserver load_observer(GetGuestWebContents());
+  EXPECT_TRUE(ExecuteScript(GetEmbedderWebContents(),
+                            "document.querySelector('webview').reload()"));
+  load_observer.Wait();
+  EXPECT_TRUE(GetGuestWebContents()->GetMainFrame()->GetView());
+
+  // When the frame passed has a RenderWidgetHostViewChildFrame,
+  // WaitForChildFrameSurfaceReady will only return when the guest is embedded
+  // within the root surface.
+  WaitForChildFrameSurfaceReady(GetGuestWebContents()->GetMainFrame());
 }
 
 IN_PROC_BROWSER_TEST_P(WebViewAccessibilityTest, LoadWebViewAccessibility) {

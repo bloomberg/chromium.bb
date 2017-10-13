@@ -1318,6 +1318,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // is that of the main frame.
   void SetVisibilityForChildViews(bool visible);
 
+  // Reattaches this inner WebContents to its outer WebContents.
+  void ReattachToOuterWebContentsFrame();
+
   // Data for core operation ---------------------------------------------------
 
   // Delegate for notifying our owner about stuff. Not owned by us.
