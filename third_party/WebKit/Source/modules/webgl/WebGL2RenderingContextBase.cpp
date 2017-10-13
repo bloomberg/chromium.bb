@@ -393,14 +393,12 @@ void WebGL2RenderingContextBase::blitFramebuffer(GLint src_x0,
   if (isContextLost())
     return;
 
-  bool default_framebuffer_bound = !GetFramebufferBinding(GL_DRAW_FRAMEBUFFER);
+  bool user_framebuffer_bound = GetFramebufferBinding(GL_DRAW_FRAMEBUFFER);
   DrawingBuffer::ScopedRGBEmulationForBlitFramebuffer emulation(
-      GetDrawingBuffer(), !default_framebuffer_bound);
+      GetDrawingBuffer(), user_framebuffer_bound);
   ContextGL()->BlitFramebufferCHROMIUM(src_x0, src_y0, src_x1, src_y1, dst_x0,
                                        dst_y0, dst_x1, dst_y1, mask, filter);
-  if (default_framebuffer_bound) {
-    MarkContextChanged(kCanvasChanged);
-  }
+  MarkContextChanged(kCanvasChanged);
 }
 
 bool WebGL2RenderingContextBase::ValidateTexFuncLayer(const char* function_name,
@@ -3614,6 +3612,11 @@ void WebGL2RenderingContextBase::clearBufferfv(
 
   ContextGL()->ClearBufferfv(buffer, drawbuffer,
                              value.View()->DataMaybeShared() + src_offset);
+  // The other clearBuffer entry points will currently generate an
+  // error if they're called against the default back buffer. If
+  // support for extended canvas color spaces is added, this call
+  // might need to be added to the other versions.
+  MarkContextChanged(kCanvasChanged);
 }
 
 void WebGL2RenderingContextBase::clearBufferfv(GLenum buffer,
@@ -3634,6 +3637,11 @@ void WebGL2RenderingContextBase::clearBufferfv(GLenum buffer,
                                                    drawing_buffer_.get());
 
   ContextGL()->ClearBufferfv(buffer, drawbuffer, value.data() + src_offset);
+  // The other clearBuffer entry points will currently generate an
+  // error if they're called against the default back buffer. If
+  // support for extended canvas color spaces is added, this call
+  // might need to be added to the other versions.
+  MarkContextChanged(kCanvasChanged);
 }
 
 void WebGL2RenderingContextBase::clearBufferfi(GLenum buffer,
