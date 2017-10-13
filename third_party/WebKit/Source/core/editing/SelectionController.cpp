@@ -438,7 +438,6 @@ static bool ShouldRespectSVGTextBoundaries(
 
 void SelectionController::UpdateSelectionForMouseDrag(
     const HitTestResult& hit_test_result,
-    Node* mouse_press_node,
     const LayoutPoint& drag_start_pos,
     const IntPoint& last_known_mouse_position) {
   if (!mouse_down_may_start_select_)
@@ -477,7 +476,7 @@ void SelectionController::UpdateSelectionForMouseDrag(
       DispatchSelectStart(target) != DispatchEventResult::kNotCanceled)
     return;
 
-  // TODO(yosin) We should check |mousePressNode|, |targetPosition|, and
+  // TODO(yosin) We should check |targetPosition|, and
   // |newSelection| are valid for |m_frame->document()|.
   // |dispatchSelectStart()| can change them by "selectstart" event handler.
 
@@ -1009,7 +1008,6 @@ void SelectionController::HandleMouseDraggedEvent(
     const MouseEventWithHitTestResults& event,
     const IntPoint& mouse_down_pos,
     const LayoutPoint& drag_start_pos,
-    Node* mouse_press_node,
     const IntPoint& last_known_mouse_position) {
   TRACE_EVENT0("blink", "SelectionController::handleMouseDraggedEvent");
 
@@ -1020,15 +1018,14 @@ void SelectionController::HandleMouseDraggedEvent(
     HitTestResult result(request, mouse_down_pos);
     frame_->GetDocument()->GetLayoutViewItem().HitTest(result);
 
-    UpdateSelectionForMouseDrag(result, mouse_press_node, drag_start_pos,
+    UpdateSelectionForMouseDrag(result, drag_start_pos,
                                 last_known_mouse_position);
   }
-  UpdateSelectionForMouseDrag(event.GetHitTestResult(), mouse_press_node,
-                              drag_start_pos, last_known_mouse_position);
+  UpdateSelectionForMouseDrag(event.GetHitTestResult(), drag_start_pos,
+                              last_known_mouse_position);
 }
 
 void SelectionController::UpdateSelectionForMouseDrag(
-    Node* mouse_press_node,
     const LayoutPoint& drag_start_pos,
     const IntPoint& last_known_mouse_position) {
   LocalFrameView* view = frame_->View();
@@ -1043,7 +1040,7 @@ void SelectionController::UpdateSelectionForMouseDrag(
   HitTestResult result(request,
                        view->RootFrameToContents(last_known_mouse_position));
   layout_item.HitTest(result);
-  UpdateSelectionForMouseDrag(result, mouse_press_node, drag_start_pos,
+  UpdateSelectionForMouseDrag(result, drag_start_pos,
                               last_known_mouse_position);
 }
 
