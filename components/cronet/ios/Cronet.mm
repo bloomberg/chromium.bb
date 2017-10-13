@@ -23,6 +23,10 @@
 #include "net/cert/cert_verifier.h"
 #include "net/url_request/url_request_context_getter.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 // Cronet NSError constants.
 NSString* const CRNCronetErrorDomain = @"CRNCronetErrorDomain";
 NSString* const CRNInvalidArgumentKey = @"CRNInvalidArgumentKey";
@@ -82,11 +86,11 @@ class CronetHttpProtocolHandlerDelegate
  public:
   CronetHttpProtocolHandlerDelegate(net::URLRequestContextGetter* getter,
                                     RequestFilterBlock filter)
-      : getter_(getter), filter_(filter, base::scoped_policy::RETAIN) {}
+      : getter_(getter), filter_(filter) {}
 
   void SetRequestFilterBlock(RequestFilterBlock filter) {
     base::AutoLock auto_lock(lock_);
-    filter_.reset(filter, base::scoped_policy::RETAIN);
+    filter_.reset(filter);
   }
 
  private:
