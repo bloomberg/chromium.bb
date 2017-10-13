@@ -210,10 +210,6 @@ var FilesTooltip = Polymer({
    * @private
    */
   onFocus_: function(target, event) {
-    if (!event.sourceCapabilities)
-      // Do not show tooltip because the focus is not moved by user operation.
-      // This happens when moving focus by an invocation of target.focus().
-      return;
     this.initShowingTooltip_(target);
   },
 
