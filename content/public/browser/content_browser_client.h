@@ -59,10 +59,6 @@ namespace gfx {
 class ImageSkia;
 }
 
-namespace gpu {
-class GpuChannelEstablishFactory;
-}
-
 namespace media {
 class AudioLogFactory;
 class AudioManager;
@@ -611,9 +607,6 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Gets the host for an external out-of-process plugin.
   virtual BrowserPpapiHost* GetExternalBrowserPpapiHost(
       int plugin_child_id);
-
-  // Gets the factory to use to establish a connection to the GPU process.
-  virtual gpu::GpuChannelEstablishFactory* GetGpuChannelEstablishFactory();
 
   // Returns true if the socket operation specified by |params| is allowed from
   // the given |browser_context| and |url|. If |params| is nullptr, this method

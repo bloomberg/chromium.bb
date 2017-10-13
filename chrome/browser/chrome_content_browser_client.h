@@ -244,7 +244,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   void DidCreatePpapiPlugin(content::BrowserPpapiHost* browser_host) override;
   content::BrowserPpapiHost* GetExternalBrowserPpapiHost(
       int plugin_process_id) override;
-  gpu::GpuChannelEstablishFactory* GetGpuChannelEstablishFactory() override;
   bool AllowPepperSocketAPI(
       content::BrowserContext* browser_context,
       const GURL& url,

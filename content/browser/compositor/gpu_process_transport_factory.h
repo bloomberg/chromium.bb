@@ -33,6 +33,10 @@ class SingleThreadTaskGraphRunner;
 class SurfaceManager;
 }
 
+namespace gpu {
+class GpuChannelEstablishFactory;
+}
+
 namespace ui {
 class ContextProviderCommandBuffer;
 }
@@ -49,7 +53,8 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
                                    public ui::ContextFactoryPrivate,
                                    public ImageTransportFactory {
  public:
-  explicit GpuProcessTransportFactory(
+  GpuProcessTransportFactory(
+      gpu::GpuChannelEstablishFactory* gpu_channel_factory,
       scoped_refptr<base::SingleThreadTaskRunner> resize_task_runner);
 
   ~GpuProcessTransportFactory() override;
@@ -93,8 +98,6 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
   ui::ContextFactoryPrivate* GetContextFactoryPrivate() override;
   viz::FrameSinkManagerImpl* GetFrameSinkManager() override;
   viz::GLHelper* GetGLHelper() override;
-  void SetGpuChannelEstablishFactory(
-      gpu::GpuChannelEstablishFactory* factory) override;
 #if defined(OS_MACOSX)
   void SetCompositorSuspendedForRecycle(ui::Compositor* compositor,
                                         bool suspended) override;
@@ -145,7 +148,7 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
   scoped_refptr<viz::VulkanInProcessContextProvider>
       shared_vulkan_context_provider_;
 
-  gpu::GpuChannelEstablishFactory* gpu_channel_factory_ = nullptr;
+  gpu::GpuChannelEstablishFactory* const gpu_channel_factory_;
 
   base::WeakPtrFactory<GpuProcessTransportFactory> callback_factory_;
 
