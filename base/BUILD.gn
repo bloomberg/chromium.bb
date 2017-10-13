@@ -1120,6 +1120,7 @@ component("base") {
   public_deps = [
     ":base_static",
     ":build_date",
+    ":cfi_flags",
     ":debugging_flags",
     "//base/numerics:base_numerics",
   ]
@@ -1669,6 +1670,18 @@ component("base") {
     configs -= [ "//build/config/compiler:default_optimization" ]
     configs += [ "//build/config/compiler:optimize_max" ]
   }
+}
+
+# Build flags for Control Flow Integrity
+# https://www.chromium.org/developers/testing/control-flow-integrity
+buildflag_header("cfi_flags") {
+  header = "cfi_flags.h"
+  flags = [
+    # TODO(pcc): remove CFI_CAST_CHECK, see https://crbug.com/626794.
+    "CFI_CAST_CHECK=$is_cfi && $use_cfi_cast",
+    "CFI_ENFORCEMENT_TRAP=$is_cfi && !$use_cfi_diag",
+    "CFI_ENFORCEMENT_DIAGNOSTIC=$is_cfi && $use_cfi_diag && !$use_cfi_recover",
+  ]
 }
 
 buildflag_header("debugging_flags") {
@@ -2415,15 +2428,6 @@ test("base_unittests") {
       # TODO(crbug.com/330301): make this conditional on mac_strip_release.
       # data += [ "$root_out_dir/base_unittests.dSYM/" ]
     }
-  }
-
-  if (use_cfi_cast) {
-    # TODO(krasin): remove CFI_CAST_CHECK, see https://crbug.com/626794.
-    defines += [ "CFI_CAST_CHECK" ]
-  }
-
-  if (use_cfi_diag && !use_cfi_recover) {
-    defines += [ "CFI_ENFORCEMENT_DIAGNOSTIC" ]
   }
 }
 
