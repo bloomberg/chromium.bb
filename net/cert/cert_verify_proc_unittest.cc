@@ -328,7 +328,20 @@ TEST_P(CertVerifyProcInternalTest, EVVerificationMultipleOID) {
       X509Certificate::FORMAT_PEM_CERT_SEQUENCE);
   ASSERT_TRUE(chain);
 
-  scoped_refptr<CRLSet> crl_set(CRLSet::ForTesting(false, NULL, ""));
+  // Build a CRLSet that covers the target certificate.
+  //
+  // This way CRLSet coverage will be sufficient for EV revocation checking,
+  // so this test does not depend on online revocation checking.
+  ASSERT_EQ(1u, chain->GetIntermediateCertificates().size());
+  std::string der_bytes;
+  ASSERT_TRUE(X509Certificate::GetDEREncoded(
+      chain->GetIntermediateCertificates()[0], &der_bytes));
+  base::StringPiece spki;
+  ASSERT_TRUE(asn1::ExtractSPKIFromDERCert(der_bytes, &spki));
+  SHA256HashValue spki_sha256;
+  crypto::SHA256HashString(spki, spki_sha256.data, sizeof(spki_sha256.data));
+  scoped_refptr<CRLSet> crl_set(CRLSet::ForTesting(false, &spki_sha256, ""));
+
   CertVerifyResult verify_result;
   int flags = CertVerifier::VERIFY_EV_CERT;
   int error = Verify(chain.get(), "trustcenter.websecurity.symantec.com", flags,
@@ -773,7 +786,7 @@ TEST(CertVerifyProcTest, DigiNotarCerts) {
     base::StringPiece spki;
     ASSERT_TRUE(asn1::ExtractSPKIFromDERCert(der_bytes, &spki));
 
-    std::string spki_sha256 = crypto::SHA256HashString(spki.as_string());
+    std::string spki_sha256 = crypto::SHA256HashString(spki);
 
     HashValueVector public_keys;
     HashValue hash(HASH_VALUE_SHA256);
