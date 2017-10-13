@@ -41,6 +41,8 @@ class AshTestEnvironmentWayland : public ash::AshTestEnvironment {
   DISALLOW_COPY_AND_ASSIGN(AshTestEnvironmentWayland);
 };
 
+// The ui message loop for running the wayland server. If it is not provided, we
+// will use external wayland server.
 base::MessageLoop* ui_message_loop_ = nullptr;
 
 class WaylandClientTest::WaylandWatcher
@@ -79,7 +81,9 @@ void WaylandClientTest::SetUIMessageLoop(base::MessageLoop* message_loop) {
 }
 
 void WaylandClientTest::SetUp() {
-  DCHECK(ui_message_loop_);
+  if (!ui_message_loop_)
+    return;
+
   DCHECK_NE(base::MessageLoop::current(), ui_message_loop_);
 
   base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
@@ -91,6 +95,9 @@ void WaylandClientTest::SetUp() {
 }
 
 void WaylandClientTest::TearDown() {
+  if (!ui_message_loop_)
+    return;
+
   DCHECK(ui_message_loop_);
   DCHECK_NE(base::MessageLoop::current(), ui_message_loop_);
 
