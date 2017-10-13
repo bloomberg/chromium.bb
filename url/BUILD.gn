@@ -25,6 +25,7 @@ component("url") {
     "scheme_host_port.h",
     "third_party/mozilla/url_parse.cc",
     "third_party/mozilla/url_parse.h",
+    "url_canon.cc",
     "url_canon.h",
     "url_canon_etc.cc",
     "url_canon_filesystemurl.cc",

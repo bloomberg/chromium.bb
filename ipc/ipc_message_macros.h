@@ -201,7 +201,7 @@
 
 #include <tuple>
 
-#include "ipc/export_template.h"
+#include "base/export_template.h"
 #include "ipc/ipc_message_templates.h"
 #include "ipc/ipc_message_utils.h"
 #include "ipc/param_traits_macros.h"
