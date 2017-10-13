@@ -59,6 +59,7 @@ service_test("services_unittests") {
 
   if (is_android) {
     deps += [
+      "//services/data_decoder/public/cpp/android:safe_json_java",
       "//services/device:java",
 
       # Some tests need to initialize V8.

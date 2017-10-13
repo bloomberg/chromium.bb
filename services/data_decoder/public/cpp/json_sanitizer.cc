@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/safe_json/json_sanitizer.h"
+#include "services/data_decoder/public/cpp/json_sanitizer.h"
 
 #if defined(OS_ANDROID)
 #error Build json_sanitizer_android.cc instead of this file on Android.
@@ -18,15 +18,16 @@
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "components/safe_json/safe_json_parser.h"
+#include "services/data_decoder/public/cpp/safe_json_parser.h"
 
-namespace safe_json {
+namespace data_decoder {
 
 namespace {
 
 class OopJsonSanitizer : public JsonSanitizer {
  public:
-  OopJsonSanitizer(const std::string& unsafe_json,
+  OopJsonSanitizer(service_manager::Connector* connector,
+                   const std::string& unsafe_json,
                    const StringCallback& success_callback,
                    const StringCallback& error_callback);
 
@@ -43,15 +44,15 @@ class OopJsonSanitizer : public JsonSanitizer {
   DISALLOW_COPY_AND_ASSIGN(OopJsonSanitizer);
 };
 
-OopJsonSanitizer::OopJsonSanitizer(const std::string& unsafe_json,
+OopJsonSanitizer::OopJsonSanitizer(service_manager::Connector* connector,
+                                   const std::string& unsafe_json,
                                    const StringCallback& success_callback,
                                    const StringCallback& error_callback)
     : success_callback_(success_callback), error_callback_(error_callback) {
-  SafeJsonParser::Parse(unsafe_json,
-                        base::Bind(&OopJsonSanitizer::OnParseSuccess,
-                                   base::Unretained(this)),
-                        base::Bind(&OopJsonSanitizer::OnParseError,
-                                   base::Unretained(this)));
+  SafeJsonParser::Parse(
+      connector, unsafe_json,
+      base::Bind(&OopJsonSanitizer::OnParseSuccess, base::Unretained(this)),
+      base::Bind(&OopJsonSanitizer::OnParseError, base::Unretained(this)));
 }
 
 void OopJsonSanitizer::OnParseSuccess(std::unique_ptr<base::Value> value) {
@@ -84,11 +85,13 @@ void OopJsonSanitizer::OnParseError(const std::string& error) {
 }  // namespace
 
 // static
-void JsonSanitizer::Sanitize(const std::string& unsafe_json,
+void JsonSanitizer::Sanitize(service_manager::Connector* connector,
+                             const std::string& unsafe_json,
                              const StringCallback& success_callback,
                              const StringCallback& error_callback) {
   // OopJsonSanitizer destroys itself when it is finished.
-  new OopJsonSanitizer(unsafe_json, success_callback, error_callback);
+  new OopJsonSanitizer(connector, unsafe_json, success_callback,
+                       error_callback);
 }
 
-}  // namespace safe_json
+}  // namespace data_decoder

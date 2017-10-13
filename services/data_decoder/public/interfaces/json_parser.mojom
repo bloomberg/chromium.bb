@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module safe_json.mojom;
+module data_decoder.mojom;
 
 import "mojo/common/values.mojom";
 
-interface SafeJsonParser {
+interface JsonParser {
   Parse(string json) => (mojo.common.mojom.Value? result, string? error);
 };

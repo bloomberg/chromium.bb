@@ -16,14 +16,15 @@
 #include "chrome/common/chrome_content_client.h"
 #include "components/google/core/browser/google_url_tracker.h"
 #include "components/google/core/browser/google_util.h"
-#include "components/safe_json/safe_json_parser.h"
 #include "components/variations/net/variations_http_headers.h"
+#include "content/public/common/service_manager_connection.h"
 #include "net/base/load_flags.h"
 #include "net/base/url_util.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
+#include "services/data_decoder/public/cpp/safe_json_parser.h"
 
 namespace {
 
@@ -294,7 +295,8 @@ void OneGoogleBarFetcherImpl::FetchDone(const net::URLFetcher* source) {
     response = response.substr(strlen(kResponsePreamble));
   }
 
-  safe_json::SafeJsonParser::Parse(
+  data_decoder::SafeJsonParser::Parse(
+      content::ServiceManagerConnection::GetForProcess()->GetConnector(),
       response,
       base::Bind(&OneGoogleBarFetcherImpl::JsonParsed,
                  weak_ptr_factory_.GetWeakPtr()),

@@ -21,7 +21,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_path_override.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/component_updater/supervised_user_whitelist_installer.h"
@@ -34,11 +33,13 @@
 #include "components/component_updater/component_updater_service.h"
 #include "components/crx_file/id_util.h"
 #include "components/prefs/testing_pref_service.h"
-#include "components/safe_json/testing_json_parser.h"
 #include "components/update_client/crx_update_item.h"
 #include "components/update_client/update_client.h"
 #include "components/update_client/utils.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_service_manager_context.h"
+#include "content/public/test/test_utils.h"
+#include "services/data_decoder/public/cpp/testing_json_parser.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -281,7 +282,7 @@ class SupervisedUserWhitelistInstallerTest : public testing::Test {
   void RegisterExistingComponents() {
     local_state_.Set(prefs::kRegisteredSupervisedUserWhitelists, pref_);
     installer_->RegisterComponents();
-    scoped_task_environment_.RunUntilIdle();
+    content::RunAllTasksUntilIdle();
     base::RunLoop().RunUntilIdle();
   }
 
@@ -294,11 +295,12 @@ class SupervisedUserWhitelistInstallerTest : public testing::Test {
     EXPECT_EQ(version, component->version.GetString());
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  content::TestBrowserThreadBundle thread_bundle_;
   TestingProfileManager testing_profile_manager_;
   base::ScopedPathOverride user_data_dir_override_;
-  safe_json::TestingJsonParser::ScopedFactoryOverride json_parser_override_;
+  data_decoder::TestingJsonParser::ScopedFactoryOverride json_parser_override_;
   TestingPrefServiceSimple local_state_;
+  content::TestServiceManagerContext service_manager_context_;
   std::unique_ptr<SupervisedUserWhitelistInstaller> installer_;
   base::FilePath whitelist_base_directory_;
   base::FilePath whitelist_directory_;
@@ -370,7 +372,7 @@ TEST_F(SupervisedUserWhitelistInstallerTest, InstallNewWhitelist) {
           },
           &observer));
 
-  scoped_task_environment_.RunUntilIdle();
+  content::RunAllTasksUntilIdle();
 
   observer.Wait();
   EXPECT_EQ(whitelist_path_.value(), observer.whitelist_path().value());
@@ -428,7 +430,7 @@ TEST_F(SupervisedUserWhitelistInstallerTest,
   {
     base::RunLoop run_loop;
     installer_->UnregisterWhitelist(kClientId, kCrxId);
-    scoped_task_environment_.RunUntilIdle();
+    content::RunAllTasksUntilIdle();
     run_loop.RunUntilIdle();
   }
   EXPECT_TRUE(component_update_service_.registered_component());
@@ -442,7 +444,7 @@ TEST_F(SupervisedUserWhitelistInstallerTest,
     // This does the same thing in our case as calling UnregisterWhitelist(),
     // but it exercises a different code path.
     profile_attributes_storage()->RemoveProfile(GetProfilePath(kOtherClientId));
-    scoped_task_environment_.RunUntilIdle();
+    content::RunAllTasksUntilIdle();
     run_loop.RunUntilIdle();
   }
   EXPECT_FALSE(component_update_service_.registered_component());

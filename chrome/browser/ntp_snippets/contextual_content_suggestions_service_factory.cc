@@ -20,10 +20,11 @@
 #include "components/ntp_snippets/remote/cached_image_fetcher.h"
 #include "components/ntp_snippets/remote/remote_suggestions_database.h"
 #include "components/prefs/pref_service.h"
-#include "components/safe_json/safe_json_parser.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/common/service_manager_connection.h"
+#include "services/data_decoder/public/cpp/safe_json_parser.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/chrome_feature_list.h"
@@ -98,7 +99,9 @@ ContextualContentSuggestionsServiceFactory::BuildServiceInstanceFor(
   auto contextual_suggestions_fetcher =
       base::MakeUnique<ContextualSuggestionsFetcherImpl>(
           signin_manager, token_service, request_context, pref_service,
-          base::Bind(&safe_json::SafeJsonParser::Parse));
+          base::Bind(&data_decoder::SafeJsonParser::Parse,
+                     content::ServiceManagerConnection::GetForProcess()
+                         ->GetConnector()));
   const base::FilePath::CharType kDatabaseFolder[] =
       FILE_PATH_LITERAL("contextualSuggestionsDatabase");
   base::FilePath database_dir(profile->GetPath().Append(kDatabaseFolder));

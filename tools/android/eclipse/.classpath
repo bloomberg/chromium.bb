@@ -70,7 +70,6 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="components/policy/android/junit/src"/>
     <classpathentry kind="src" path="components/precache/android/java/src"/>
     <classpathentry kind="src" path="components/precache/android/javatests/src"/>
-    <classpathentry kind="src" path="components/safe_json/android/java/src"/>
     <classpathentry kind="src" path="components/signin/core/browser/android/java/src"/>
     <classpathentry kind="src" path="components/signin/core/browser/android/javatests/src"/>
     <classpathentry kind="src" path="components/sync/android/java/src"/>
@@ -113,6 +112,7 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="remoting/android/java/src"/>
     <classpathentry kind="src" path="remoting/android/javatests/src"/>
     <classpathentry kind="src" path="services/service_manager/public/java/src"/>
+    <classpathentry kind="src" path="services/data_decoder/public/cpp/android/src"/>
     <classpathentry kind="src" path="testing/android/appurify_support/java/src"/>
     <classpathentry kind="src" path="testing/android/broker/java/src"/>
     <classpathentry kind="src" path="testing/android/driver/java/src"/>
@@ -273,7 +273,6 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="lib" path="out/Debug/lib.java/components/policy/android/policy_java.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/components/payments/content/payment_request_java.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/components/precache/android/precache_java.jar"/>
-    <classpathentry kind="lib" path="out/Debug/lib.java/components/safe_json/android/safe_json_java.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/components/service_tab_launcher/service_tab_launcher_java.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/components/signin/core/browser/android/java.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/components/variations/android/variations_java.jar"/>
@@ -292,6 +291,7 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="lib" path="out/Debug/lib.java/mojo/public/java/system.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/net/android/net_java.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/printing/printing_java.jar"/>
+    <classpathentry kind="lib" path="out/Debug/lib.java/services/data_decoder/public/android/safe_json_java.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/services/service_manager/public/interfaces/interfaces_java.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/sync/android/sync_java.jar"/>
     <classpathentry kind="lib" path="out/Debug/lib.java/sync/test_support_proto_java.jar"/>

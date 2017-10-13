@@ -58,15 +58,16 @@
 #include "components/ntp_snippets/user_classifier.h"
 #include "components/offline_pages/features/features.h"
 #include "components/prefs/pref_service.h"
-#include "components/safe_json/safe_json_parser.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/common/service_manager_connection.h"
 #include "google_apis/google_api_keys.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/data_decoder/public/cpp/safe_json_parser.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/chrome_feature_list.h"
@@ -307,7 +308,9 @@ MakeBreakingNewsGCMAppHandlerIfEnabled(
   return base::MakeUnique<BreakingNewsGCMAppHandler>(
       gcm_driver, instance_id_profile_service->driver(), pref_service,
       std::move(subscription_manager),
-      base::Bind(&safe_json::SafeJsonParser::Parse),
+      base::Bind(
+          &data_decoder::SafeJsonParser::Parse,
+          content::ServiceManagerConnection::GetForProcess()->GetConnector()),
       base::MakeUnique<base::DefaultClock>(),
       /*token_validation_timer=*/base::MakeUnique<base::OneShotTimer>(),
       /*forced_subscription_timer=*/base::MakeUnique<base::OneShotTimer>());
@@ -373,7 +376,10 @@ void RegisterArticleProviderIfEnabled(ContentSuggestionsService* service,
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
   auto suggestions_fetcher = base::MakeUnique<RemoteSuggestionsFetcherImpl>(
       signin_manager, token_service, request_context, pref_service,
-      language_histogram, base::Bind(&safe_json::SafeJsonParser::Parse),
+      language_histogram,
+      base::Bind(
+          &data_decoder::SafeJsonParser::Parse,
+          content::ServiceManagerConnection::GetForProcess()->GetConnector()),
       GetFetchEndpoint(chrome::GetChannel()), api_key, user_classifier);
 
   std::unique_ptr<BreakingNewsListener> breaking_news_raw_data_provider;

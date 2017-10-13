@@ -32,8 +32,9 @@
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
-#include "components/safe_json/safe_json_parser.h"
+#include "content/public/common/service_manager_connection.h"
 #include "crypto/sha2.h"
+#include "services/data_decoder/public/cpp/safe_json_parser.h"
 
 namespace arc {
 
@@ -378,7 +379,8 @@ void ArcPolicyBridge::ReportCompliance(const std::string& request,
   // the callee interface.
   auto repeating_callback =
       base::AdaptCallbackForRepeating(std::move(callback));
-  safe_json::SafeJsonParser::Parse(
+  data_decoder::SafeJsonParser::Parse(
+      content::ServiceManagerConnection::GetForProcess()->GetConnector(),
       request,
       base::Bind(&ArcPolicyBridge::OnReportComplianceParseSuccess,
                  weak_ptr_factory_.GetWeakPtr(), repeating_callback),

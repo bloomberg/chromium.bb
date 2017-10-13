@@ -11,6 +11,8 @@ source_set("lib") {
     "data_decoder_service.h",
     "image_decoder_impl.cc",
     "image_decoder_impl.h",
+    "json_parser_impl.cc",
+    "json_parser_impl.h",
   ]
 
   deps = [
@@ -33,6 +35,8 @@ source_set("tests") {
 
   sources = [
     "image_decoder_impl_unittest.cc",
+    "public/cpp/json_sanitizer_unittest.cc",
+    "public/cpp/testing_json_parser_unittest.cc",
   ]
 
   deps = [
@@ -40,6 +44,8 @@ source_set("tests") {
     "//base",
     "//gin",
     "//gin:gin_test",
+    "//services/data_decoder/public/cpp",
+    "//services/data_decoder/public/cpp:test_support",
     "//skia",
     "//testing/gtest",
     "//third_party/WebKit/public:blink",

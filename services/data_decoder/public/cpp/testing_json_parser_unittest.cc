@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/safe_json/testing_json_parser.h"
+#include "services/data_decoder/public/cpp/testing_json_parser.h"
 
 #include <memory>
 
@@ -13,7 +13,7 @@
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace safe_json {
+namespace data_decoder {
 namespace {
 
 const char kTestJson[] = "{\"key\":2}";
@@ -22,7 +22,7 @@ class TestingJsonParserTest : public testing::Test {
  public:
   void Parse(const std::string& input) {
     base::RunLoop run_loop;
-    SafeJsonParser::Parse(input,
+    SafeJsonParser::Parse(/* connector=*/nullptr, input,
                           base::Bind(&SuccessCallback, base::Unretained(this),
                                      run_loop.QuitClosure()),
                           base::Bind(&ErrorCallback, base::Unretained(this),
@@ -30,8 +30,8 @@ class TestingJsonParserTest : public testing::Test {
     run_loop.Run();
   }
 
-  bool did_success() { return did_success_; }
-  bool did_error() { return did_error_; }
+  bool did_success() const { return did_success_; }
+  bool did_error() const { return did_error_; }
 
  private:
   static void SuccessCallback(TestingJsonParserTest* test,
@@ -76,4 +76,4 @@ TEST_F(TestingJsonParserTest, QuitLoopInErrorCallback) {
 }
 
 }  // namespace
-}  // namespace safe_json
+}  // namespace data_decoder

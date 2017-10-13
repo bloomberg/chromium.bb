@@ -73,7 +73,7 @@
         "content_plugin": [ "browser" ],
         "content_renderer": [ "browser" ],
         "content_utility": [ "browser" ],
-        "data_decoder": [ "image_decoder" ],
+        "data_decoder": [ "image_decoder", "json_parser" ],
         "device": [
           "device:battery_monitor",
           "device:generic_sensor",

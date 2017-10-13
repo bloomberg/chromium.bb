@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SAFE_JSON_SAFE_JSON_PARSER_H_
-#define COMPONENTS_SAFE_JSON_SAFE_JSON_PARSER_H_
+#ifndef SERVICES_DATA_DECODER_PUBLIC_CPP_SAFE_JSON_PARSER_H_
+#define SERVICES_DATA_DECODER_PUBLIC_CPP_SAFE_JSON_PARSER_H_
 
 #include <memory>
 #include <string>
@@ -14,7 +14,11 @@ namespace base {
 class Value;
 }
 
-namespace safe_json {
+namespace service_manager {
+class Connector;
+}
+
+namespace data_decoder {
 
 // SafeJsonParser parses a given JSON safely via a platform-dependent mechanism
 // (like parsing it in a utility process or in a memory-safe environment).
@@ -32,7 +36,11 @@ class SafeJsonParser {
 
   // Starts parsing the passed in |unsafe_json| and calls either
   // |success_callback| or |error_callback| when finished.
-  static void Parse(const std::string& unsafe_json,
+  // |connector| is the connector provided by the service manager and is used
+  // to retrieve the JSON decoder service. It's commonly retrieved from a
+  // service manager connection context object that the embedder provides.
+  static void Parse(service_manager::Connector* connector,
+                    const std::string& unsafe_json,
                     const SuccessCallback& success_callback,
                     const ErrorCallback& error_callback);
 
@@ -45,6 +53,6 @@ class SafeJsonParser {
   virtual void Start() = 0;
 };
 
-}  // namespace safe_json
+}  // namespace data_decoder
 
-#endif  // COMPONENTS_SAFE_JSON_SAFE_JSON_PARSER_H_
+#endif  // SERVICES_DATA_DECODER_PUBLIC_CPP_SAFE_JSON_PARSER_H_

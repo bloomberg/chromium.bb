@@ -7,11 +7,12 @@
 #include "base/bind.h"
 #include "base/values.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
-#include "components/safe_json/safe_json_parser.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/service_manager_connection.h"
 #include "net/base/load_flags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request.h"
+#include "services/data_decoder/public/cpp/safe_json_parser.h"
 
 using content::BrowserThread;
 
@@ -44,7 +45,8 @@ WebstoreInstallHelper::~WebstoreInstallHelper() {}
 void WebstoreInstallHelper::Start() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  safe_json::SafeJsonParser::Parse(
+  data_decoder::SafeJsonParser::Parse(
+      content::ServiceManagerConnection::GetForProcess()->GetConnector(),
       manifest_, base::Bind(&WebstoreInstallHelper::OnJSONParseSucceeded, this),
       base::Bind(&WebstoreInstallHelper::OnJSONParseFailed, this));
 

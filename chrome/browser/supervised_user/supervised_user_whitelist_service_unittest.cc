@@ -31,7 +31,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if !defined(OS_ANDROID)
-#include "components/safe_json/testing_json_parser.h"
+#include "services/data_decoder/public/cpp/testing_json_parser.h"
 #endif
 
 namespace {
@@ -162,7 +162,7 @@ class SupervisedUserWhitelistServiceTest : public testing::Test {
   TestingProfile profile_;
 
 #if !defined(OS_ANDROID)
-  safe_json::TestingJsonParser::ScopedFactoryOverride factory_override_;
+  data_decoder::TestingJsonParser::ScopedFactoryOverride factory_override_;
 #endif
 
   std::unique_ptr<MockSupervisedUserWhitelistInstaller> installer_;

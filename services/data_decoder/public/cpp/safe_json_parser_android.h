@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SAFE_JSON_SAFE_JSON_PARSER_ANDROID_H_
-#define COMPONENTS_SAFE_JSON_SAFE_JSON_PARSER_ANDROID_H_
+#ifndef SERVICES_DATA_DECODER_PUBLIC_CPP_SAFE_JSON_PARSER_ANDROID_H_
+#define SERVICES_DATA_DECODER_PUBLIC_CPP_SAFE_JSON_PARSER_ANDROID_H_
 
 #include <memory>
 
 #include "base/macros.h"
-#include "components/safe_json/safe_json_parser.h"
+#include "services/data_decoder/public/cpp/safe_json_parser.h"
 
-namespace safe_json {
+namespace data_decoder {
 
 class SafeJsonParserAndroid : public SafeJsonParser {
  public:
@@ -36,6 +36,6 @@ class SafeJsonParserAndroid : public SafeJsonParser {
   DISALLOW_COPY_AND_ASSIGN(SafeJsonParserAndroid);
 };
 
-}  // namespace safe_json
+}  // namespace data_decoder
 
-#endif   // COMPONENTS_SAFE_JSON_SAFE_JSON_PARSER_ANDROID_H_
+#endif  // SERVICES_DATA_DECODER_PUBLIC_CPP_SAFE_JSON_PARSER_ANDROID_H_

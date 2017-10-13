@@ -9,12 +9,13 @@
 #include "base/bind.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/webstore_data_fetcher_delegate.h"
-#include "components/safe_json/safe_json_parser.h"
+#include "content/public/common/service_manager_connection.h"
 #include "extensions/common/extension_urls.h"
 #include "net/base/load_flags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
+#include "services/data_decoder/public/cpp/safe_json_parser.h"
 
 namespace {
 
@@ -129,7 +130,8 @@ void WebstoreDataFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
   fetcher->GetResponseAsString(&webstore_json_data);
 
   // The parser will call us back via one of the callbacks.
-  safe_json::SafeJsonParser::Parse(
+  data_decoder::SafeJsonParser::Parse(
+      content::ServiceManagerConnection::GetForProcess()->GetConnector(),
       webstore_json_data,
       base::Bind(&WebstoreDataFetcher::OnJsonParseSuccess, AsWeakPtr()),
       base::Bind(&WebstoreDataFetcher::OnJsonParseFailure, AsWeakPtr()));

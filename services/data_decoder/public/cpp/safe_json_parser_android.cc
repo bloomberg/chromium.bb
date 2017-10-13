@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/safe_json/safe_json_parser_android.h"
+#include "services/data_decoder/public/cpp/safe_json_parser_android.h"
 
 #include <utility>
 
 #include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/values.h"
-#include "components/safe_json/json_sanitizer.h"
+#include "services/data_decoder/public/cpp/json_sanitizer.h"
 
-namespace safe_json {
+namespace data_decoder {
 
 SafeJsonParserAndroid::SafeJsonParserAndroid(
     const std::string& unsafe_json,
@@ -25,6 +25,7 @@ SafeJsonParserAndroid::~SafeJsonParserAndroid() {}
 
 void SafeJsonParserAndroid::Start() {
   JsonSanitizer::Sanitize(
+      /*connector=*/nullptr,  // connector is unused on Android.
       unsafe_json_,
       base::Bind(&SafeJsonParserAndroid::OnSanitizationSuccess,
                  base::Unretained(this)),
@@ -55,4 +56,4 @@ void SafeJsonParserAndroid::OnSanitizationError(const std::string& error) {
   delete this;
 }
 
-}  // namespace safe_json
+}  // namespace data_decoder

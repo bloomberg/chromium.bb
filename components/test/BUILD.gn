@@ -29,7 +29,6 @@ source_set("test_support") {
     deps += [
       "//components/invalidation/impl",
       "//components/policy/core/browser",
-      "//components/safe_json",
       "//ui/gl:test_support",
     ]
 

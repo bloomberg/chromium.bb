@@ -6,7 +6,6 @@ include_rules = [
   "+components/payments/content/utility",
   "+components/printing/service/public/cpp",
   "+components/printing/service/public/interfaces",
-  "+components/safe_json",
   "+components/wifi",
   "+content/public/child",
   "+content/public/network",
