@@ -221,6 +221,10 @@ static jboolean GetAutoplayEnabled(JNIEnv* env,
   return GetBooleanForContentSetting(CONTENT_SETTINGS_TYPE_AUTOPLAY);
 }
 
+static jboolean GetSoundEnabled(JNIEnv* env, const JavaParamRef<jobject>& obj) {
+  return GetBooleanForContentSetting(CONTENT_SETTINGS_TYPE_SOUND);
+}
+
 static jboolean GetBackgroundSyncEnabled(JNIEnv* env,
                                          const JavaParamRef<jobject>& obj) {
   return GetBooleanForContentSetting(CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC);
@@ -594,6 +598,16 @@ static void SetAutoplayEnabled(JNIEnv* env,
       HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
   host_content_settings_map->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_AUTOPLAY,
+      allow ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
+}
+
+static void SetSoundEnabled(JNIEnv* env,
+                            const JavaParamRef<jobject>& obj,
+                            jboolean allow) {
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
+  host_content_settings_map->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_SOUND,
       allow ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
 }
 

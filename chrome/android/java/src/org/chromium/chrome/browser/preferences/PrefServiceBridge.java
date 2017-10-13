@@ -338,6 +338,13 @@ public final class PrefServiceBridge {
     }
 
     /**
+     * @return true if websites are allowed to play sound.
+     */
+    public boolean isSoundEnabled() {
+        return nativeGetSoundEnabled();
+    }
+
+    /**
      * Sets the preference that controls protected media identifier.
      */
     public void setProtectedMediaIdentifierEnabled(boolean enabled) {
@@ -709,6 +716,10 @@ public final class PrefServiceBridge {
         nativeSetPasswordEchoEnabled(enabled);
     }
 
+    public void setSoundEnabled(boolean allow) {
+        nativeSetSoundEnabled(allow);
+    }
+
     /**
      * @return The setting if popups are enabled
      */
@@ -991,6 +1002,7 @@ public final class PrefServiceBridge {
     private native boolean nativeGetIncognitoModeManaged();
     private native boolean nativeGetPrintingEnabled();
     private native boolean nativeGetPrintingManaged();
+    private native boolean nativeGetSoundEnabled();
     private native boolean nativeGetSupervisedUserSafeSitesEnabled();
     private native void nativeSetTranslateEnabled(boolean enabled);
     private native void nativeResetTranslateDefaults();
@@ -1021,6 +1033,7 @@ public final class PrefServiceBridge {
     private native void nativeSetNotificationsEnabled(boolean allow);
     private native void nativeSetNotificationsVibrateEnabled(boolean enabled);
     private native void nativeSetPasswordEchoEnabled(boolean enabled);
+    private native void nativeSetSoundEnabled(boolean allow);
     private native boolean nativeCanPrefetchAndPrerender();
     private native AboutVersionStrings nativeGetAboutVersionStrings();
     private native void nativeSetContextualSearchPreference(String preference);

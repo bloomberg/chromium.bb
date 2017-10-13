@@ -158,7 +158,9 @@ public class ContentSettingsResources {
             localMap.put(ContentSettingsType.CONTENT_SETTINGS_TYPE_SOUND,
                     new ResourceItem(R.drawable.ic_volume_up_grey600_24dp,
                             R.string.sound_permission_title, R.string.sound_permission_title,
-                            ContentSetting.ALLOW, ContentSetting.BLOCK, 0, 0));
+                            ContentSetting.ALLOW, ContentSetting.BLOCK,
+                            R.string.website_settings_category_sound_allowed,
+                            R.string.website_settings_category_sound_blocked));
             sResourceInfo = localMap;
         }
         return sResourceInfo;
@@ -319,5 +321,13 @@ public class ContentSettingsResources {
      */
     public static int getAdsBlockedListSummary() {
         return R.string.website_settings_category_ads_blocked_list;
+    }
+
+    /**
+     * Returns the blocked summary for the sound permission which should be used for display in the
+     * site settings list only.
+     */
+    public static int getSoundBlockedListSummary() {
+        return R.string.website_settings_category_sound_blocked_list;
     }
 }
