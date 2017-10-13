@@ -178,6 +178,12 @@ config("runtime_library") {
     "_SCL_SECURE_NO_DEPRECATE",
   ]
 
+  if (is_clang) {
+    # Work around Fall Creators Update SDK bug - crbug.com/773476 has details.
+    # https://developercommunity.visualstudio.com/content/problem/131391/154-fails-to-define-deprecatedenumerator-2.html
+    defines += [ "DEPRECATEDENUMERATOR(x)=[[deprecated(x)]]" ]
+  }
+
   # Defines that set up the Windows SDK.
   defines += [
     "_ATL_NO_OPENGL",
