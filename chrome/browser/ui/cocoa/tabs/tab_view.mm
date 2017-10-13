@@ -36,7 +36,8 @@ namespace {
 const SkColor kDarkModeIconColor = SkColorSetARGB(0xFF, 0xC4, 0xC4, 0xC4);
 
 bool IsTabStripKeyboardFocusEnabled() {
-  return base::FeatureList::IsEnabled(features::kTabStripKeyboardFocus);
+  return base::FeatureList::IsEnabled(features::kTabStripKeyboardFocus) &&
+         [NSApp isFullKeyboardAccessEnabled];
 }
 
 }  // namespace
