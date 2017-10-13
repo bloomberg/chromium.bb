@@ -87,11 +87,14 @@ public class WebappActionsNotificationTest {
     }
 
     @Test
-    @SmallTest
-    @Feature({"Webapps"})
-    @RetryOnFailure
-    @MinAndroidSdkLevel(Build.VERSION_CODES.M) // NotificationManager.getActiveNotifications
-    @CommandLineFlags.Add({"enable-features=" + ChromeFeatureList.PWA_PERSISTENT_NOTIFICATION})
+    /*
+      @SmallTest
+      @Feature({"Webapps"})
+      @RetryOnFailure
+      @MinAndroidSdkLevel(Build.VERSION_CODES.M) // NotificationManager.getActiveNotifications
+      @CommandLineFlags.Add({"enable-features=" + ChromeFeatureList.PWA_PERSISTENT_NOTIFICATION})
+    */
+    @DisabledTest(message = "crbug.com/774491")
     public void testNotification_copyUrl() throws Exception {
         Notification notification = getWebappNotification();
         Assert.assertNotNull(notification);
