@@ -203,14 +203,6 @@ class PlatformKeysService : public KeyedService {
                     const std::string& public_key_spki_der,
                     const std::string& error_message);
 
-  // Callback used by |GeneratedKey|.
-  // |public_key_spki_der| will contain the X.509 Subject Public Key Info  of
-  // the generated key in DER encoding. |task| points to the finished |Task|
-  // object.
-  void RegisteredGeneratedKey(const GenerateKeyCallback& callback,
-                              const std::string& public_key_spki_der,
-                              Task* task);
-
   content::BrowserContext* browser_context_;
   KeyPermissions key_permissions_;
   std::unique_ptr<SelectDelegate> select_delegate_;

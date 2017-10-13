@@ -77,11 +77,6 @@ class DeviceSettingsProvider
       const enterprise_management::ChromeDeviceSettingsProto& settings,
       TrustedStatus trusted_status);
 
-  // Applies the data roaming policy.
-  void ApplyRoamingSetting(bool new_value);
-  void ApplyRoamingSettingFromProto(
-      const enterprise_management::ChromeDeviceSettingsProto& settings);
-
   // In case of missing policy blob we should verify if this is upgrade of
   // machine owned from pre version 12 OS and the user never touched the device
   // settings. In this case revert to defaults and let people in until the owner
