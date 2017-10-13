@@ -16,6 +16,13 @@ function sendAsyncScriptRequest()
     iframe.contentDocument.write('<html><body><script src="http://localhost:8000/inspector/network/resources/empty-script.js?async" async></s' + 'cript>;</body></html>');
 }
 
+function sendModuleScriptRequest()
+{
+    var iframe = document.createElement("iframe");
+    document.body.appendChild(iframe);
+    iframe.contentDocument.write('<html><body><script type="module" src="resources/module1.js"></s' + 'cript>;</body></html>');
+}
+
 function sendXHRSync()
 {
     var xhr = new XMLHttpRequest();
@@ -83,6 +90,7 @@ function test() {
   var actions = [
     {'fn': 'sendSyncScriptRequest', 'requests': 1},
     {'fn': 'sendAsyncScriptRequest', 'requests': 1},
+    {'fn': 'sendModuleScriptRequest', 'requests': 2},
     {'fn': 'sendScriptRequestPrecededByImage', 'requests': 2},
     {'fn': 'sendScriptRequestPrecededByPreloadedImage', 'requests': 2},
     {'fn': 'sendXHRSync', 'requests': 1},
