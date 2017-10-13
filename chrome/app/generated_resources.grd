@@ -10945,17 +10945,6 @@ read aloud to screenreader users to announce that a completion is available.">
         Completion available: <ph name="COMPLETION_TEXT">$1</ph>
       </message>
     </if>
-    <if expr="enable_vr">
-      <message name="IDS_VR_SHELL_EXIT_PROMPT_DESCRIPTION" desc="Text on the exit prompt that shows up when the user tries to use a feature that is not supported in VR">
-        This feature is not supported in VR
-      </message>
-      <message name="IDS_VR_SHELL_EXIT_PROMPT_DESCRIPTION_SITE_INFO" desc="Text on the exit prompt that shows up when the user clicks on URL bar security icon in VR">
-        Site information is not available in VR
-      </message>
-      <message name="IDS_VR_SHELL_EXIT_PROMPT_EXIT_VR_BUTTON" desc="Text on the exit button of the exit prompt that shows up when the user clicks on URL bar security icon in VR">
-        EXIT VR
-      </message>
-    </if>
 
     <!-- Ad Blocking UI strings. -->
     <message name="IDS_ALWAYS_ALLOW_ADS" desc="Explanation associated with a toggle to allow ads after ads have been blocked on the page. To be used on pages where the ad blocking UI is governed by a persistent permissions-based whitelist.">
@@ -11099,18 +11088,36 @@ read aloud to screenreader users to announce that a completion is available.">
       <message name="IDS_SCREEN_CAPTURE_NOTIFICATION_TEXT_2" desc="Text to be shown as a notification when screen capture is in progress.">
         Sharing screen
       </message>
-      <message name="IDS_VR_UNDER_DEVELOPMENT_NOTICE" desc="Text to be shown below the URL bar to announce that this is under development.">
-        This is an early release. Some features, like search and text entry, are not yet available.
-      </message>
-      <message name="IDS_VR_POWERED_BY_CHROME_MESSAGE" desc="A message indicating that the current page is running in Chrome.">
-        Powered by Chrome
-      </message>
     </if>
 
-    <!-- VR specific strings -->
+    <!-- Strings that are only used when VR devices are supported -->
+      <!-- TODO(ddorwin): Use consistent naming schemes for VR strings. -->
     <if expr="enable_vr">
       <message name="IDS_PRESS_APP_TO_EXIT" desc="Text displayed in a transient bubble to tell users how to return from cinema mode (where the page displayed in a cinema like environment) or presentation mode (where the WebVR page occupies the entire screen) to normal mode.">
         Press App button to exit
+      </message>
+
+      <!-- VR browser -->
+      <!-- TODO(https://crbug.com/731802): Only build these when the VR browser is supported. -->
+      <message name="IDS_VR_SHELL_EXIT_PROMPT_DESCRIPTION" desc="Text on the exit prompt that shows up when the user tries to use a feature that is not supported in VR">
+        This feature is not supported in VR
+      </message>
+      <message name="IDS_VR_SHELL_EXIT_PROMPT_DESCRIPTION_SITE_INFO" desc="Text on the exit prompt that shows up when the user clicks on URL bar security icon in VR">
+        Site information is not available in VR
+      </message>
+      <message name="IDS_VR_SHELL_EXIT_PROMPT_EXIT_VR_BUTTON" desc="Text on the exit button of the exit prompt that shows up when the user clicks on URL bar security icon in VR">
+        EXIT VR
+      </message>
+      <message name="IDS_PAGE_INFO_VR_BROWSER_UNSUPPORTED_MODE" desc="This text is displayed as a large toast to inform the user that they cannot currently browse in VR and they will soon exit VR mode.">
+        This page contains features not yet supported in VR. Exiting...
+      </message>
+      <message name="IDS_VR_UNDER_DEVELOPMENT_NOTICE" desc="Text to be shown below the URL bar to announce that this is under development.">
+        This is an early release. Some features, like search and text entry, are not yet available.
+      </message>
+
+      <!-- TODO(https://crbug.com/774199): Make this <if expr="is_android"> -->
+      <message name="IDS_VR_POWERED_BY_CHROME_MESSAGE" desc="A message indicating that the current page is running in Chrome.">
+        Powered by Chrome
       </message>
     </if>
   </messages>
