@@ -13,3 +13,5 @@ Technical Documentation:
 * [Features System](/chrome/common/extensions/api/_features.md)
 
 * [Bindings System](/extensions/renderer/bindings.md)
+
+* [Extension events](/extensions/common/events.md)
