@@ -25,22 +25,21 @@
 
 // https://html.spec.whatwg.org/#textmetrics
 
-// TODO(foolip): All float types in this interface should be double.
 // TODO(foolip): Exposed=(Window,Worker)
 interface TextMetrics {
     // x-direction
     readonly attribute float width; // advance width
-    [RuntimeEnabled=ExperimentalCanvasFeatures] readonly attribute float actualBoundingBoxLeft;
-    [RuntimeEnabled=ExperimentalCanvasFeatures] readonly attribute float actualBoundingBoxRight;
+    [RuntimeEnabled=ExperimentalCanvasFeatures] readonly attribute double actualBoundingBoxLeft;
+    [RuntimeEnabled=ExperimentalCanvasFeatures] readonly attribute double actualBoundingBoxRight;
 
     // y-direction
-    [RuntimeEnabled=ExperimentalCanvasFeatures] readonly attribute float fontBoundingBoxAscent;
-    [RuntimeEnabled=ExperimentalCanvasFeatures] readonly attribute float fontBoundingBoxDescent;
-    [RuntimeEnabled=ExperimentalCanvasFeatures] readonly attribute float actualBoundingBoxAscent;
-    [RuntimeEnabled=ExperimentalCanvasFeatures] readonly attribute float actualBoundingBoxDescent;
-    [RuntimeEnabled=ExperimentalCanvasFeatures] readonly attribute float emHeightAscent;
-    [RuntimeEnabled=ExperimentalCanvasFeatures] readonly attribute float emHeightDescent;
-    [RuntimeEnabled=ExperimentalCanvasFeatures] readonly attribute float hangingBaseline;
-    [RuntimeEnabled=ExperimentalCanvasFeatures] readonly attribute float alphabeticBaseline;
-    [RuntimeEnabled=ExperimentalCanvasFeatures] readonly attribute float ideographicBaseline;
+    [RuntimeEnabled=ExperimentalCanvasFeatures] readonly attribute double fontBoundingBoxAscent;
+    [RuntimeEnabled=ExperimentalCanvasFeatures] readonly attribute double fontBoundingBoxDescent;
+    [RuntimeEnabled=ExperimentalCanvasFeatures] readonly attribute double actualBoundingBoxAscent;
+    [RuntimeEnabled=ExperimentalCanvasFeatures] readonly attribute double actualBoundingBoxDescent;
+    [RuntimeEnabled=ExperimentalCanvasFeatures] readonly attribute double emHeightAscent;
+    [RuntimeEnabled=ExperimentalCanvasFeatures] readonly attribute double emHeightDescent;
+    [RuntimeEnabled=ExperimentalCanvasFeatures] readonly attribute double hangingBaseline;
+    [RuntimeEnabled=ExperimentalCanvasFeatures] readonly attribute double alphabeticBaseline;
+    [RuntimeEnabled=ExperimentalCanvasFeatures] readonly attribute double ideographicBaseline;
 };
