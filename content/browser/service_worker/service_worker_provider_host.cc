@@ -883,14 +883,14 @@ void ServiceWorkerProviderHost::SendSetControllerServiceWorker(
 
   std::vector<blink::mojom::WebFeature> used_features;
   if (version) {
-    for (const auto& feature : version->used_features()) {
+    for (const uint32_t feature : version->used_features()) {
       // TODO: version->used_features() should never have a feature outside the
       // known feature range. But there is special case, see the details in
       // crbug.com/758419.
-      if (feature >= 0 &&
-          feature < static_cast<uint32_t>(
-                        blink::mojom::WebFeature::kNumberOfFeatures))
+      if (feature <
+          static_cast<uint32_t>(blink::mojom::WebFeature::kNumberOfFeatures)) {
         used_features.push_back(static_cast<blink::mojom::WebFeature>(feature));
+      }
     }
   }
   container_->SetController(GetOrCreateServiceWorkerHandle(version),
