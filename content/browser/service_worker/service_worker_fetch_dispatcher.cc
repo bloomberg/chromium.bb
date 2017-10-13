@@ -597,7 +597,7 @@ void ServiceWorkerFetchDispatcher::DispatchFetchEvent() {
   // Pass |url_loader_assets_| to the callback to keep the URL loader related
   // assets alive while the FetchEvent is ongoing in the service worker.
   version_->event_dispatcher()->DispatchFetchEvent(
-      fetch_event_id, *request_, std::move(preload_handle_),
+      *request_, std::move(preload_handle_),
       std::move(mojo_response_callback_ptr),
       base::BindOnce(&ServiceWorkerFetchDispatcher::OnFetchEventFinished,
                      base::Unretained(version_.get()), event_finish_id,

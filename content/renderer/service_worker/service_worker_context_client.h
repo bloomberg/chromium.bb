@@ -289,7 +289,6 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
       mojom::ExtendableMessageEventPtr event,
       DispatchExtendableMessageEventCallback callback) override;
   void DispatchFetchEvent(
-      int fetch_event_id,
       const ServiceWorkerFetchRequest& request,
       mojom::FetchEventPreloadHandlePtr preload_handle,
       mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,

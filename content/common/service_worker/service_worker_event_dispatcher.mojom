@@ -96,10 +96,7 @@ interface ServiceWorkerEventDispatcher {
   // handler ran and all outstanding respondWith() and waitUntil() promises have
   // settled. |response_callback| is called once the promise to respondWith()
   // settles, or when the event handler ran without calling respondWith().
-  // |fetch_event_id| is used internally when sending the response with a blob
-  // body back to the browser process. In that case, |response_callback| won't
-  // be called.
-  DispatchFetchEvent(int32 fetch_event_id, blink.mojom.FetchAPIRequest request,
+  DispatchFetchEvent(blink.mojom.FetchAPIRequest request,
                      FetchEventPreloadHandle? preload_handle,
                      ServiceWorkerFetchResponseCallback response_callback)
       => (blink.mojom.ServiceWorkerEventStatus status,
