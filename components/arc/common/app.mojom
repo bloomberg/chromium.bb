@@ -6,8 +6,8 @@
 
 module arc.mojom;
 
+import "gfx.mojom";
 import "scale_factor.mojom";
-import "screen_rect.mojom";
 
 // Describes OrientationLock request.
 // Note: ChromeOS currently assumes the internal panel is always landscape.
@@ -191,7 +191,7 @@ interface AppInstance {
   Init@0(AppHost host_ptr);
 
   [MinVersion=1] CanHandleResolutionDeprecated@4(
-      string package_name, string activity, ScreenRect dimension) =>
+      string package_name, string activity, Rect dimension) =>
           (bool can_handle);
 
   // Closes the the given task.
@@ -205,7 +205,7 @@ interface AppInstance {
   [MinVersion=8] InstallPackage@11(ArcPackageInfo arcPackageInfo);
 
   LaunchAppDeprecated@1(string package_name, string activity,
-                        [MinVersion=1] ScreenRect? dimension_on_screen);
+                        [MinVersion=1] Rect? dimension_on_screen);
 
   // Sends a request to ARC to launch an ARC app defined by |package_name| and
   // |activity|, which cannot be empty.
@@ -213,7 +213,7 @@ interface AppInstance {
                                int64 display_id);
 
   [MinVersion=9] LaunchIntentDeprecated@12(string intent_uri,
-                                           ScreenRect? dimension_on_screen);
+                                           Rect? dimension_on_screen);
 
   // Sends a request to ARC to launch an intent. The intent is encoded as a URI
   // string. See Intent.toUri().
@@ -244,11 +244,11 @@ interface AppInstance {
   [MinVersion=4] SetTaskActive@7(int32 task_id);
 
   [MinVersion=5] ShowPackageInfoDeprecated@9(string package_name,
-                                             ScreenRect dimension_on_screen);
+                                             Rect dimension_on_screen);
 
   [MinVersion=10] ShowPackageInfoOnPageDeprecated@15(string package_name,
                                                      ShowPackageInfoPage page,
-                                                     ScreenRect dimension_on_screen);
+                                                     Rect dimension_on_screen);
 
   // Sends a request to ARC to show package info for given package on the
   // specified page.

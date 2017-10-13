@@ -6,7 +6,7 @@
 
 module arc.mojom;
 
-import "screen_rect.mojom";
+import "gfx.mojom";
 
 // Represents the type of text input field currently focused.
 [Extensible]
@@ -22,25 +22,6 @@ enum TextInputType {
   DATE,
   TIME,
   DATETIME,
-};
-
-// TODO(yhanada): Switch to use gfx.mojom.Rect. See crbug.com/723224.
-// Represents the text insertion points in the container screen coordinates.
-struct CursorRect {
-  int32 left;
-  int32 top;
-  int32 right;
-  int32 bottom;
-};
-
-// TODO(yhanada): Switch to use gfx.mojom.Range. See crbug.com/723224.
-// Represents the range in the text. It is an open interval [start, end).
-[MinVersion=5]
-struct TextRange {
-  // Start offset in UTF-16 index.
-  uint32 start;
-  // End offset in UTF-16 index.
-  uint32 end;
 };
 
 // Represents a single segment of text currently composed by IME.
@@ -59,7 +40,7 @@ interface ImeHost {
   OnTextInputTypeChanged@0(TextInputType type);
 
   // Notifies Chrome that the cursor poisition has changed.
-  OnCursorRectChanged@1(CursorRect rect);
+  OnCursorRectChanged@1(Rect rect);
 
   // Notifies Chrome that the current composition is canceled.
   [MinVersion=1] OnCancelComposition@2();
@@ -74,11 +55,11 @@ interface ImeHost {
   // into this method because Chrome OS IME tries to retrieve these information
   // synchronously, so we need to update them all at once to keep consistency.
   [MinVersion=5] OnCursorRectChangedWithSurroundingText@4(
-      CursorRect rect,           // The cursor position.
-      TextRange text_range,      // The range of |text_in_range| in the current
+      Rect rect,             // The cursor position.
+      Range text_range,      // The range of |text_in_range| in the current
                                  // text in the editor.
       string text_in_range,      // The text around the cursor.
-      TextRange selection_range  // The range of the selected text
+      Range selection_range  // The range of the selected text
                                  // in the current text in the editor.
       );
 };
@@ -100,7 +81,7 @@ interface ImeInstance {
   // |new_bounds| Represents a ChromeOS virtual keyboard bounds in ChromeOS
   // screen coordinate, physical pixel as a unit.
   // When all members are zero value, virtual keyboard is being hidden.
-  [MinVersion=3] OnKeyboardBoundsChanging@4(ScreenRect new_bounds);
+  [MinVersion=3] OnKeyboardBoundsChanging@4(Rect new_bounds);
 
   // Deletes current selection plus the specified number of char16 values
   // before and after selection or caret.

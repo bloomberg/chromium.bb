@@ -2,19 +2,24 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mojom = "//components/arc/common/ime.mojom"
+mojom = "//components/arc/common/gfx.mojom"
+
 public_headers = [
   "//ui/gfx/geometry/rect.h",
   "//ui/gfx/range/range.h",
 ]
+
 deps = [
   "//ui/gfx",
 ]
-traits_headers = [ "//components/arc/ime/arc_ime_struct_traits.h" ]
+
+traits_headers = [ "//components/arc/common/arc_gfx_struct_traits.h" ]
+
 sources = [
-  "//components/arc/ime/arc_ime_struct_traits.cc",
+  "//components/arc/common/arc_gfx_struct_traits.cc",
 ]
+
 type_mappings = [
-  "arc.mojom.CursorRect=::gfx::Rect[move_only]",
-  "arc.mojom.TextRange=::gfx::Range[move_only]",
+  "arc.mojom.Rect=::gfx::Rect",
+  "arc.mojom.Range=::gfx::Range",
 ]

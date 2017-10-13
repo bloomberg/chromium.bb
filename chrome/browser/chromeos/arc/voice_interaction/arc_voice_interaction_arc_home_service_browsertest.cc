@@ -105,9 +105,7 @@ IN_PROC_BROWSER_TEST_F(ArcVoiceInteractionArcHomeServiceTest,
   auto& child = content_root->children[0];
   ASSERT_FALSE(child.is_null());
   ASSERT_EQ(base::UTF16ToUTF8(child->text), "Hello, world");
-  ASSERT_FALSE(child->selection.is_null());
-  ASSERT_EQ(0, child->selection->start_selection);
-  ASSERT_EQ(5, child->selection->end_selection);
+  EXPECT_EQ(gfx::Range(0, 5), child->selection);
 }
 
 IN_PROC_BROWSER_TEST_F(ArcVoiceInteractionArcHomeServiceTest,
@@ -164,19 +162,13 @@ IN_PROC_BROWSER_TEST_F(ArcVoiceInteractionArcHomeServiceTest,
   ASSERT_EQ(content_root->children.size(), 3ul);
 
   auto& grand_child1 = content_root->children[0];
-  ASSERT_FALSE(grand_child1->selection.is_null());
-  ASSERT_EQ(grand_child1->selection->start_selection, 1);
-  ASSERT_EQ(grand_child1->selection->end_selection, 3);
+  EXPECT_EQ(gfx::Range(1, 3), grand_child1->selection);
 
   auto& grand_child2 = content_root->children[1];
-  ASSERT_FALSE(grand_child2->selection.is_null());
-  ASSERT_EQ(grand_child2->selection->start_selection, 0);
-  ASSERT_EQ(grand_child2->selection->end_selection, 6);
+  EXPECT_EQ(gfx::Range(0, 6), grand_child2->selection);
 
   auto& grand_child3 = content_root->children[2];
-  ASSERT_FALSE(grand_child3->selection.is_null());
-  ASSERT_EQ(grand_child3->selection->start_selection, 0);
-  ASSERT_EQ(grand_child3->selection->end_selection, 1);
+  EXPECT_EQ(gfx::Range(0, 1), grand_child3->selection);
 }
 
 }  // namespace arc

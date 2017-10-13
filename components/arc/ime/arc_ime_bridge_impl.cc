@@ -145,7 +145,7 @@ void ArcImeBridgeImpl::OnTextInputTypeChanged(mojom::TextInputType type) {
   delegate_->OnTextInputTypeChanged(ConvertTextInputType(type));
 }
 
-void ArcImeBridgeImpl::OnCursorRectChanged(gfx::Rect rect) {
+void ArcImeBridgeImpl::OnCursorRectChanged(const gfx::Rect& rect) {
   delegate_->OnCursorRectChanged(rect);
 }
 
@@ -158,10 +158,10 @@ void ArcImeBridgeImpl::ShowImeIfNeeded() {
 }
 
 void ArcImeBridgeImpl::OnCursorRectChangedWithSurroundingText(
-    gfx::Rect rect,
-    gfx::Range text_range,
+    const gfx::Rect& rect,
+    const gfx::Range& text_range,
     const std::string& text_in_range,
-    gfx::Range selection_range) {
+    const gfx::Range& selection_range) {
   delegate_->OnCursorRectChangedWithSurroundingText(
       rect, text_range, base::UTF8ToUTF16(text_in_range), selection_range);
 }
