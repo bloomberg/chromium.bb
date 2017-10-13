@@ -138,6 +138,7 @@ declare_args() {
   is_clang =
       current_os == "mac" || current_os == "ios" || current_os == "chromeos" ||
       current_os == "fuchsia" || current_os == "android" ||
+      (current_os == "win" && host_os != "win") ||
       (current_os == "linux" && current_cpu != "s390x" &&
        current_cpu != "s390" && current_cpu != "ppc64" &&
        current_cpu != "ppc" && current_cpu != "mips" && current_cpu != "mips64")
@@ -245,7 +246,9 @@ if (target_os == "android") {
   _default_toolchain = host_toolchain
 } else if (target_os == "win") {
   # On Windows we use the same toolchain for host and target by default.
-  assert(target_os == host_os, "Win cross-compiles only work on win hosts.")
+  # Beware, win cross builds mostly don't work yet, see docs/win_cross.md
+  # TODO(thakis): Allow on Mac as well soon.
+  assert(host_os != "mac", "https://crbug.com/774209")
   if (is_clang) {
     _default_toolchain = "//build/toolchain/win:win_clang_$target_cpu"
   } else {
