@@ -141,9 +141,6 @@ typedef struct {
 #endif
 #endif  // CONFIG_FRAME_MARKER
 
-#if CONFIG_MFMV
-  TPL_MV_REF *tpl_mvs;
-#endif
   MV_REF *mvs;
   int mi_rows;
   int mi_cols;
@@ -547,6 +544,9 @@ typedef struct AV1Common {
 #if CONFIG_ADAPT_SCAN
   int use_adapt_scan;
 #endif
+#if CONFIG_MFMV
+  TPL_MV_REF *tpl_mvs;
+#endif
 } AV1_COMMON;
 
 // TODO(hkuang): Don't need to lock the whole pool after implementing atomic
@@ -642,15 +642,18 @@ static INLINE void ensure_mv_buffer(RefCntBuffer *buf, AV1_COMMON *cm) {
         cm, buf->mvs,
         (MV_REF *)aom_calloc(cm->mi_rows * cm->mi_cols, sizeof(*buf->mvs)));
 #endif  // CONFIG_TMV
+  }
 
 #if CONFIG_MFMV
-    aom_free(buf->tpl_mvs);
-    CHECK_MEM_ERROR(cm, buf->tpl_mvs, (TPL_MV_REF *)aom_calloc(
-                                          ((cm->mi_rows + MAX_MIB_SIZE) >> 1) *
-                                              (cm->mi_stride >> 1),
-                                          sizeof(*buf->tpl_mvs)));
-#endif
+  if (cm->tpl_mvs == NULL || buf->mi_rows < cm->mi_rows ||
+      buf->mi_cols < cm->mi_cols) {
+    aom_free(cm->tpl_mvs);
+    CHECK_MEM_ERROR(cm, cm->tpl_mvs, (TPL_MV_REF *)aom_calloc(
+                                         ((cm->mi_rows + MAX_MIB_SIZE) >> 1) *
+                                             (cm->mi_stride >> 1),
+                                         sizeof(*cm->tpl_mvs)));
   }
+#endif
 }
 
 #if CONFIG_VAR_REFS

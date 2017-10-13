@@ -544,8 +544,7 @@ static int add_tpl_ref_mv(const AV1_COMMON *cm,
     return coll_blk_count;
 
   const TPL_MV_REF *prev_frame_mvs =
-      cm->cur_frame->tpl_mvs +
-      ((mi_row + mi_pos.row) >> 1) * (cm->mi_stride >> 1) +
+      cm->tpl_mvs + ((mi_row + mi_pos.row) >> 1) * (cm->mi_stride >> 1) +
       ((mi_col + mi_pos.col) >> 1);
 
   MV_REFERENCE_FRAME rf[2];
@@ -1648,7 +1647,7 @@ void av1_setup_motion_field(AV1_COMMON *cm) {
   int lst2_frame_index = 0, lst3_frame_index = 0;
   int bwd_frame_index = 0, alt2_frame_index = 0;
 #endif
-  TPL_MV_REF *tpl_mvs_base = cm->cur_frame->tpl_mvs;
+  TPL_MV_REF *tpl_mvs_base = cm->tpl_mvs;
 
   for (int ref_frame = 0; ref_frame < INTER_REFS_PER_FRAME; ++ref_frame) {
     int size = ((cm->mi_rows + MAX_MIB_SIZE) >> 1) * (cm->mi_stride >> 1);

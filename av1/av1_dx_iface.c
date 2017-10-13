@@ -135,6 +135,10 @@ static aom_codec_err_t decoder_destroy(aom_codec_alg_priv_t *ctx) {
       pthread_mutex_destroy(&frame_worker_data->stats_mutex);
       pthread_cond_destroy(&frame_worker_data->stats_cond);
 #endif
+#if CONFIG_MFMV
+      aom_free(frame_worker_data->pbi->common.tpl_mvs);
+      frame_worker_data->pbi->common.tpl_mvs = NULL;
+#endif
       aom_free(frame_worker_data);
     }
 #if CONFIG_MULTITHREAD

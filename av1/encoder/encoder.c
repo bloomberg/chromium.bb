@@ -552,6 +552,11 @@ static void dealloc_compressor_data(AV1_COMP *cpi) {
   cpi->td.mb.mask_buf = NULL;
 #endif
 
+#if CONFIG_MFMV
+  aom_free(cm->tpl_mvs);
+  cm->tpl_mvs = NULL;
+#endif
+
   av1_free_ref_frame_buffers(cm->buffer_pool);
 #if CONFIG_LV_MAP
   av1_free_txb_buf(cpi);
