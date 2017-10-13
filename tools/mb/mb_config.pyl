@@ -605,13 +605,7 @@
       'linux_chromium_rel_ng': 'gpu_tests_release_trybot',
       'linux_chromium_tsan_rel_ng': 'tsan_disable_nacl_release_trybot',
       'linux_chromium_ubsan_rel_ng': 'ubsan_vptr_release_trybot',
-
-      # These are 'release_bot' rather than 'release_trybot' because
-      # 'release_trybot' includes 'dcheck_always_on', which might cause
-      # some layout test results to be different than for normal release
-      # builds (and we only store baselines for release builds).
-      'linux_layout_tests_layout_ng': 'release_bot',
-
+      'linux_layout_tests_layout_ng': 'release_trybot',
       'linux_mojo': 'release_trybot',
       'linux_mojo_chromeos': 'chromeos_with_codecs_release_trybot',
       'linux_nacl_sdk_build': 'release_bot',
