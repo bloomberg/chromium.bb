@@ -66,6 +66,8 @@ class BluetoothLowEnergyCharacteristicsFinder
   void GattDiscoveryCompleteForService(
       device::BluetoothAdapter* adapter,
       device::BluetoothRemoteGattService* service) override;
+  void GattServicesDiscovered(device::BluetoothAdapter* adapter,
+                              device::BluetoothDevice* device) override;
   void GattCharacteristicAdded(
       device::BluetoothAdapter* adapter,
       device::BluetoothRemoteGattCharacteristic* characteristic) override;
@@ -78,6 +80,9 @@ class BluetoothLowEnergyCharacteristicsFinder
   // characteristics were found.
   bool HandleCharacteristicUpdate(
       device::BluetoothRemoteGattCharacteristic* characteristic);
+
+  // Ends the characteristic discovery and calls error callback if necessary.
+  void OnCharacteristicDiscoveryEnded(device::BluetoothDevice* device);
 
   // Scans the remote chracteristics of the service with |uuid| in |device|
   // calling HandleCharacteristicUpdate() for each of them.
@@ -107,6 +112,9 @@ class BluetoothLowEnergyCharacteristicsFinder
 
   // Called when all characteristics were found.
   SuccessCallback success_callback_;
+
+  // Keeps track whether we have ever call the error callback.
+  bool has_error_callback_been_invoked_ = false;
 
   // Called when there is an error.
   ErrorCallback error_callback_;

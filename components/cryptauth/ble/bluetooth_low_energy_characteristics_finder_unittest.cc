@@ -228,6 +228,28 @@ TEST_F(CryptAuthBluetoothLowEnergyCharacteristicFinderTest,
 }
 
 TEST_F(CryptAuthBluetoothLowEnergyCharacteristicFinderTest,
+       DidntFindRightCharacteristicsNorService) {
+  BluetoothLowEnergyCharacteristicsFinder characteristic_finder(
+      adapter_, device_.get(), remote_service_, to_peripheral_char_,
+      from_peripheral_char_, success_callback_, error_callback_);
+  device::BluetoothAdapter::Observer* observer =
+      static_cast<device::BluetoothAdapter::Observer*>(&characteristic_finder);
+
+  EXPECT_CALL(*this, OnCharacteristicsFound(_, _, _)).Times(0);
+  EXPECT_CALL(*this, OnCharacteristicsFinderError(_, _));
+
+  std::unique_ptr<device::MockBluetoothGattCharacteristic> other_char =
+      ExpectToFindCharacteristic(device::BluetoothUUID(kOtherCharUUID),
+                                 kOtherCharID, false);
+  observer->GattCharacteristicAdded(adapter_.get(), other_char.get());
+
+  // GattServicesDiscovered event is fired but the service that contains the
+  // characteristics has not been found. OnCharacteristicsFinderError is
+  // expected to be called.
+  observer->GattServicesDiscovered(adapter_.get(), device_.get());
+}
+
+TEST_F(CryptAuthBluetoothLowEnergyCharacteristicFinderTest,
        FindOnlyOneRightCharacteristic) {
   BluetoothLowEnergyCharacteristicsFinder characteristic_finder(
       adapter_, device_.get(), remote_service_, to_peripheral_char_,
