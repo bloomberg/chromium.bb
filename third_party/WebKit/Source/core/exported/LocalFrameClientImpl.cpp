@@ -736,17 +736,15 @@ void LocalFrameClientImpl::ReportLegacySymantecCert(const KURL& url,
                          "more information."));
   } else if (!web_frame_->Client()->OverrideLegacySymantecCertConsoleMessage(
                  url, cert_validity_start, &console_message)) {
-    String port = url.Port() == 443 ? "" : String::Format(":%d", url.Port());
-    console_message = WebString(String::Format(
-        "The SSL certificate used to load resources from %s://%s%s"
-        " will be "
-        "distrusted in the future. "
-        "Once distrusted, users will be prevented from "
-        "loading these resources. See "
-        "https://g.co/chrome/symantecpkicerts for "
-        "more information.",
-        url.Protocol().Utf8().data(), url.Host().Utf8().data(),
-        port.Utf8().data()));
+    console_message = WebString(
+        String::Format("The SSL certificate used to load resources from %s"
+                       " will be "
+                       "distrusted in the future. "
+                       "Once distrusted, users will be prevented from "
+                       "loading these resources. See "
+                       "https://g.co/chrome/symantecpkicerts for "
+                       "more information.",
+                       SecurityOrigin::Create(url)->ToString().Utf8().data()));
   }
   num_certificate_warning_messages_++;
   certificate_warning_hosts_.insert(url.Host());
