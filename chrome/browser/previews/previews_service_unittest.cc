@@ -18,6 +18,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
+#include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_io_data.h"
 #include "components/previews/core/previews_ui_service.h"
 #include "components/variations/variations_associated_data.h"
@@ -147,4 +148,12 @@ TEST_F(PreviewsServiceTest, TestLitePageProxyDecidesTransform) {
   scoped_feature_list.InitAndEnableFeature(
       data_reduction_proxy::features::kDataReductionProxyDecidesTransform);
   EXPECT_TRUE(io_data()->IsPreviewEnabled(previews::PreviewsType::LITE_PAGE));
+}
+
+TEST_F(PreviewsServiceTest, TestNoScriptPreviewsEnabledByFeature) {
+  EXPECT_FALSE(io_data()->IsPreviewEnabled(previews::PreviewsType::NOSCRIPT));
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      previews::features::kNoScriptPreviews);
+  EXPECT_TRUE(io_data()->IsPreviewEnabled(previews::PreviewsType::NOSCRIPT));
 }

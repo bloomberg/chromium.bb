@@ -46,6 +46,7 @@ bool AllowedOnReload(PreviewsType type) {
     case PreviewsType::LITE_PAGE:
     case PreviewsType::LOFI:
     case PreviewsType::AMP_REDIRECTION:
+    case PreviewsType::NOSCRIPT:
       return true;
     // Loading these types will always be stale when refreshed.
     case PreviewsType::OFFLINE:

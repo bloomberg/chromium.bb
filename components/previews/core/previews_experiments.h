@@ -29,9 +29,12 @@ enum class PreviewsType {
   // AMP version of the page is shown as a preview.
   AMP_REDIRECTION = 4,
 
+  // Preview that disables JavaScript for the navigation.
+  NOSCRIPT = 5,
+
   // Insert new enum values here. Keep values sequential to allow looping from
   // NONE+1 to LAST-1. Also add the enum to Previews.Types histogram suffix.
-  LAST = 5,
+  LAST = 6,
 };
 
 typedef std::vector<std::pair<PreviewsType, int>> PreviewsTypeList;
@@ -78,17 +81,17 @@ base::TimeDelta OfflinePreviewFreshnessDuration();
 net::EffectiveConnectionType GetECTThresholdForPreview(
     previews::PreviewsType type);
 
-// Whether offline previews are enabled.
+// Whether the preview type is enabled.
 bool IsOfflinePreviewsEnabled();
-
-// The blacklist version for offline previews.
-int OfflinePreviewsVersion();
-
-// Whether Client Lo-Fi previews are enabled.
 bool IsClientLoFiEnabled();
+bool IsAMPRedirectionPreviewEnabled();
+bool IsNoScriptPreviewsEnabled();
 
-// The blacklist version for Client Lo-Fi previews.
+// The blacklist version for each preview type.
+int OfflinePreviewsVersion();
 int ClientLoFiVersion();
+int AMPRedirectionPreviewsVersion();
+int NoScriptPreviewsVersion();
 
 // The threshold of EffectiveConnectionType above which Client Lo-Fi previews
 // should not be served.
@@ -96,10 +99,6 @@ net::EffectiveConnectionType EffectiveConnectionTypeThresholdForClientLoFi();
 
 // Returns the hosts that are blacklisted by the Client Lo-Fi field trial.
 std::vector<std::string> GetBlackListedHostsForClientLoFiFieldTrial();
-
-bool IsAMPRedirectionPreviewEnabled();
-
-int AMPRedirectionPreviewsVersion();
 
 }  // namespace params
 

@@ -124,6 +124,7 @@ net::EffectiveConnectionType GetECTThresholdForPreview(
     previews::PreviewsType type) {
   switch (type) {
     case PreviewsType::OFFLINE:
+    case PreviewsType::NOSCRIPT:
       return GetParamValueAsECT(kClientSidePreviewsFieldTrial,
                                 kEffectiveConnectionTypeThreshold,
                                 net::EFFECTIVE_CONNECTION_TYPE_2G);
@@ -149,10 +150,6 @@ bool IsOfflinePreviewsEnabled() {
   return base::FeatureList::IsEnabled(features::kOfflinePreviews);
 }
 
-int OfflinePreviewsVersion() {
-  return GetParamValueAsInt(kClientSidePreviewsFieldTrial, kVersion, 0);
-}
-
 bool IsClientLoFiEnabled() {
   return base::FeatureList::IsEnabled(features::kClientLoFi) ||
          base::StartsWith(
@@ -160,8 +157,30 @@ bool IsClientLoFiEnabled() {
              kEnabled, base::CompareCase::SENSITIVE);
 }
 
+bool IsAMPRedirectionPreviewEnabled() {
+  return base::FeatureList::IsEnabled(features::kAMPRedirection);
+}
+
+bool IsNoScriptPreviewsEnabled() {
+  return base::FeatureList::IsEnabled(features::kNoScriptPreviews);
+}
+
+int OfflinePreviewsVersion() {
+  return GetParamValueAsInt(kClientSidePreviewsFieldTrial, kVersion, 0);
+}
+
 int ClientLoFiVersion() {
   return GetParamValueAsInt(kClientLoFiExperimentName, kVersion, 0);
+}
+
+int AMPRedirectionPreviewsVersion() {
+  return GetFieldTrialParamByFeatureAsInt(features::kAMPRedirection, kVersion,
+                                          0);
+}
+
+int NoScriptPreviewsVersion() {
+  return GetFieldTrialParamByFeatureAsInt(features::kNoScriptPreviews, kVersion,
+                                          0);
 }
 
 net::EffectiveConnectionType EffectiveConnectionTypeThresholdForClientLoFi() {
@@ -175,15 +194,6 @@ std::vector<std::string> GetBlackListedHostsForClientLoFiFieldTrial() {
       base::GetFieldTrialParamValue(kClientLoFiExperimentName,
                                     "short_host_blacklist"),
       ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-}
-
-bool IsAMPRedirectionPreviewEnabled() {
-  return base::FeatureList::IsEnabled(features::kAMPRedirection);
-}
-
-int AMPRedirectionPreviewsVersion() {
-  return GetFieldTrialParamByFeatureAsInt(features::kAMPRedirection, kVersion,
-                                          0);
 }
 
 }  // namespace params
@@ -200,6 +210,8 @@ std::string GetStringNameForType(PreviewsType type) {
       return "LitePage";
     case PreviewsType::AMP_REDIRECTION:
       return "AMPRedirection";
+    case PreviewsType::NOSCRIPT:
+      return "NoScript";
     case PreviewsType::NONE:
     case PreviewsType::LAST:
       break;
