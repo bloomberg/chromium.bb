@@ -21,17 +21,7 @@ struct OpenURLParams;
 class WebContents;
 }  // namespace content
 
-class ConsoleLogger;
-
 extern const base::Feature kAbusiveExperienceEnforce;
-
-constexpr char kAbusiveEnforceMessage[] =
-    "Chrome prevented this site from opening a new tab or window. Learn more "
-    "at https://www.chromestatus.com/feature/5243055179300864";
-constexpr char kAbusiveWarnMessage[] =
-    "Chrome might start preventing this site from opening new tabs or "
-    "windows in the future. Learn more at "
-    "https://www.chromestatus.com/feature/5243055179300864";
 
 // This class observes main frame navigation checks incoming from safe browsing
 // (currently implemented by the subresource_filter component). For navigations
@@ -67,8 +57,7 @@ class SafeBrowsingTriggeredPopupBlocker
     kCount
   };
   explicit SafeBrowsingTriggeredPopupBlocker(
-      content::WebContents* web_contents,
-      std::unique_ptr<ConsoleLogger> logger);
+      content::WebContents* web_contents);
   ~SafeBrowsingTriggeredPopupBlocker() override;
 
   bool ShouldApplyStrongPopupBlocker(
@@ -94,8 +83,6 @@ class SafeBrowsingTriggeredPopupBlocker
   // stronger popup blocker in enforce or warn mode.
   base::Optional<safe_browsing::SubresourceFilterLevel>
       level_for_next_committed_navigation_;
-
-  std::unique_ptr<ConsoleLogger> logger_;
 
   // Whether to ignore the threat pattern type. Useful for flexibility because
   // we have to wait until metadata patterns reach Stable before using them
