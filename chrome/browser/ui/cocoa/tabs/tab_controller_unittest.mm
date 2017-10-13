@@ -587,7 +587,7 @@ TEST_F(TabControllerTest, LayoutAndVisibilityOfSubviewsRTL) {
   CheckLayoutAndVisibilityOfSubviewsForAllStates(true);
 }
 
-TEST_F(TabControllerTest, DeadKeyPressed) {
+TEST_F(TabControllerTest, TabSelection) {
   NSWindow* window = test_window();
   base::scoped_nsobject<TabController> controller([[TabController alloc] init]);
   [[window contentView] addSubview:[controller view]];
@@ -598,30 +598,7 @@ TEST_F(TabControllerTest, DeadKeyPressed) {
   [controller setAction:@selector(selectTab:)];
 
   EXPECT_FALSE([target selected]);
-  NSEvent* deadKeyEvent = [NSEvent keyEventWithType:NSKeyUp
-                                           location:NSZeroPoint
-                                      modifierFlags:0
-                                          timestamp:0
-                                       windowNumber:[window windowNumber]
-                                            context:nil
-                                         characters:@""
-                        charactersIgnoringModifiers:@""
-                                          isARepeat:NO
-                                            keyCode:30];
-  [controller keyUp:deadKeyEvent];
-  EXPECT_FALSE([target selected]);
-
-  NSEvent* enterEvent = [NSEvent keyEventWithType:NSKeyUp
-                                         location:NSZeroPoint
-                                    modifierFlags:0
-                                        timestamp:0
-                                     windowNumber:[window windowNumber]
-                                          context:nil
-                                       characters:@"\n"
-                      charactersIgnoringModifiers:@"\n"
-                                        isARepeat:NO
-                                          keyCode:30];
-  [controller keyUp:enterEvent];
+  [controller performClick:controller];
   EXPECT_TRUE([target selected]);
 }
 

@@ -129,6 +129,9 @@ class MenuDelegate;
 
 // Returns the accessibility title that should be used for this tab.
 - (NSString*)accessibilityTitle;
+
+// Called by AppKit when this tab is "clicked" using the keyboard.
+- (void)performClick:(id)sender;
 @end
 
 @interface TabController(TestingAPI)
