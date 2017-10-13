@@ -231,13 +231,16 @@ struct GpuProcessTransportFactory::PerCompositorData {
 };
 
 GpuProcessTransportFactory::GpuProcessTransportFactory(
+    gpu::GpuChannelEstablishFactory* gpu_channel_factory,
     scoped_refptr<base::SingleThreadTaskRunner> resize_task_runner)
     : frame_sink_id_allocator_(kDefaultClientId),
       renderer_settings_(
           viz::CreateRendererSettings(CreateBufferToTextureTargetMap())),
       resize_task_runner_(std::move(resize_task_runner)),
       task_graph_runner_(new cc::SingleThreadTaskGraphRunner),
+      gpu_channel_factory_(gpu_channel_factory),
       callback_factory_(this) {
+  DCHECK(gpu_channel_factory_);
   cc::SetClientNameForMetrics("Browser");
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -380,7 +383,6 @@ void GpuProcessTransportFactory::CreateLayerTreeFrameSink(
         base::Bind(&GpuProcessTransportFactory::EstablishedGpuChannel,
                    callback_factory_.GetWeakPtr(), compositor,
                    create_gpu_output_surface, 0));
-    DCHECK(gpu_channel_factory_);
     gpu_channel_factory_->EstablishGpuChannel(callback);
   } else {
     EstablishedGpuChannel(compositor, create_gpu_output_surface, 0, nullptr);
@@ -501,7 +503,6 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
           base::Bind(&GpuProcessTransportFactory::EstablishedGpuChannel,
                      callback_factory_.GetWeakPtr(), compositor,
                      create_gpu_output_surface, num_attempts + 1));
-      DCHECK(gpu_channel_factory_);
       gpu_channel_factory_->EstablishGpuChannel(callback);
       return;
     }
@@ -905,12 +906,6 @@ viz::GLHelper* GpuProcessTransportFactory::GetGLHelper() {
   return gl_helper_.get();
 }
 
-void GpuProcessTransportFactory::SetGpuChannelEstablishFactory(
-    gpu::GpuChannelEstablishFactory* factory) {
-  DCHECK(!gpu_channel_factory_ || !factory);
-  gpu_channel_factory_ = factory;
-}
-
 #if defined(OS_MACOSX)
 void GpuProcessTransportFactory::SetCompositorSuspendedForRecycle(
     ui::Compositor* compositor,
@@ -933,7 +928,6 @@ GpuProcessTransportFactory::SharedMainThreadContextProvider() {
   if (!GpuDataManagerImpl::GetInstance()->CanUseGpuBrowserCompositor())
     return nullptr;
 
-  DCHECK(gpu_channel_factory_);
   scoped_refptr<gpu::GpuChannelHost> gpu_channel_host =
       gpu_channel_factory_->EstablishGpuChannelSync();
   if (!gpu_channel_host)

@@ -373,11 +373,6 @@ BrowserPpapiHost*
   return nullptr;
 }
 
-gpu::GpuChannelEstablishFactory*
-ContentBrowserClient::GetGpuChannelEstablishFactory() {
-  return nullptr;
-}
-
 bool ContentBrowserClient::AllowPepperSocketAPI(
     BrowserContext* browser_context,
     const GURL& url,

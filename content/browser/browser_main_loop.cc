@@ -1437,40 +1437,29 @@ int BrowserMainLoop::BrowserThreadsStarted() {
       is_mus) {
     established_gpu_channel = always_uses_gpu = false;
   }
-  gpu::GpuChannelEstablishFactory* factory =
-      GetContentClient()->browser()->GetGpuChannelEstablishFactory();
-  if (!factory) {
-    BrowserGpuChannelHostFactory::Initialize(established_gpu_channel);
-    factory = BrowserGpuChannelHostFactory::instance();
-  }
-#if !defined(OS_ANDROID)
   if (!is_mus) {
-    // TODO(kylechar): Remove flag along with surface sequences.
-    // See https://crbug.com/676384.
+    host_frame_sink_manager_ = base::MakeUnique<viz::HostFrameSinkManager>();
+
+    // TODO(crbug.com/676384): Remove flag along with surface sequences.
     auto surface_lifetime_type =
-        base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kDisableSurfaceReferences)
+        parsed_command_line_.HasSwitch(switches::kDisableSurfaceReferences)
             ? viz::SurfaceManager::LifetimeType::SEQUENCES
             : viz::SurfaceManager::LifetimeType::REFERENCES;
     frame_sink_manager_impl_ =
         std::make_unique<viz::FrameSinkManagerImpl>(surface_lifetime_type);
 
-    host_frame_sink_manager_ = base::MakeUnique<viz::HostFrameSinkManager>();
-
     // TODO(danakj): Don't make a FrameSinkManagerImpl when display is in the
     // Gpu process, instead get the mojo pointer from the Gpu process.
     surface_utils::ConnectWithLocalFrameSinkManager(
         host_frame_sink_manager_.get(), frame_sink_manager_impl_.get());
-  }
-#endif
 
-  DCHECK(factory);
-  if (!is_mus) {
+    // Initialize GpuChannelHostFactory and ImageTransportFactory.
+    BrowserGpuChannelHostFactory::Initialize(established_gpu_channel);
     ImageTransportFactory::SetFactory(
-        std::make_unique<GpuProcessTransportFactory>(GetResizeTaskRunner()));
-    ImageTransportFactory::GetInstance()->SetGpuChannelEstablishFactory(
-        factory);
+        std::make_unique<GpuProcessTransportFactory>(
+            BrowserGpuChannelHostFactory::instance(), GetResizeTaskRunner()));
   }
+
 #if defined(USE_AURA)
   if (env_->mode() == aura::Env::Mode::LOCAL) {
     env_->set_context_factory(GetContextFactory());

@@ -121,7 +121,6 @@ class AURA_EXPORT WindowTreeClient
   void DisableDragDropClient() { install_drag_drop_client_ = false; }
 
   service_manager::Connector* connector() { return connector_; }
-  ui::Gpu* gpu() { return gpu_.get(); }
   CaptureSynchronizer* capture_synchronizer() {
     return capture_synchronizer_.get();
   }
