@@ -35,26 +35,20 @@ static NSString* const kFeedbackContext = @"InSessionFeedbackContext";
 @synthesize inputMode = _inputMode;
 @synthesize shouldResizeHostToFit = _shouldResizeHostToFit;
 
-- (id)init {
-  self = [super init];
-  if (self) {
-    _appBar = [[MDCAppBar alloc] init];
-    [self addChildViewController:_appBar.headerViewController];
-
-    self.view.backgroundColor = RemotingTheme.menuBlueColor;
-    _appBar.headerViewController.headerView.backgroundColor =
-        RemotingTheme.menuBlueColor;
-    MDCNavigationBarTextColorAccessibilityMutator* mutator =
-        [[MDCNavigationBarTextColorAccessibilityMutator alloc] init];
-    [mutator mutate:_appBar.navigationBar];
-  }
-  return self;
-}
-
 #pragma mark - UIViewController
 
 - (void)viewDidLoad {
   [super viewDidLoad];
+
+  _appBar = [[MDCAppBar alloc] init];
+  [self addChildViewController:_appBar.headerViewController];
+
+  self.view.backgroundColor = RemotingTheme.menuBlueColor;
+  _appBar.headerViewController.headerView.backgroundColor =
+      RemotingTheme.menuBlueColor;
+  MDCNavigationBarTextColorAccessibilityMutator* mutator =
+      [[MDCNavigationBarTextColorAccessibilityMutator alloc] init];
+  [mutator mutate:_appBar.navigationBar];
 
   _appBar.headerViewController.headerView.trackingScrollView =
       self.collectionView;
