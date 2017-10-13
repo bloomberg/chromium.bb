@@ -16,49 +16,36 @@ namespace sandbox {
 
 namespace {
 
-typedef decltype(
-    ::DeriveCapabilitySidsFromName) DeriveCapabilitySidsFromNameFunc;
-
-class SidArray {
- public:
-  SidArray() : count_(0), sids_(nullptr) {}
-
-  ~SidArray() {
-    if (sids_) {
-      for (size_t index = 0; index < count_; ++index) {
-        ::LocalFree(sids_[index]);
-      }
-      ::LocalFree(sids_);
-    }
-  }
-
-  DWORD count() { return count_; }
-  PSID* sids() { return sids_; }
-  PDWORD count_ptr() { return &count_; }
-  PSID** sids_ptr() { return &sids_; }
-
- private:
-  DWORD count_;
-  PSID* sids_;
-};
-
-const wchar_t* WellKnownCapabilityToName(WellKnownCapabilities capability) {
+DWORD WellKnownCapabilityToRid(WellKnownCapabilities capability) {
   switch (capability) {
     case kInternetClient:
-      return L"internetClient";
+      return SECURITY_CAPABILITY_INTERNET_CLIENT;
     case kInternetClientServer:
-      return L"internetClientServer";
-    case kRegistryRead:
-      return L"registryRead";
-    case kLpacCryptoServices:
-      return L"lpacCryptoServices";
-    case kEnterpriseAuthentication:
-      return L"enterpriseAuthentication";
+      return SECURITY_CAPABILITY_INTERNET_CLIENT_SERVER;
     case kPrivateNetworkClientServer:
-      return L"privateNetworkClientServer";
+      return SECURITY_CAPABILITY_PRIVATE_NETWORK_CLIENT_SERVER;
+    case kPicturesLibrary:
+      return SECURITY_CAPABILITY_PICTURES_LIBRARY;
+    case kVideosLibrary:
+      return SECURITY_CAPABILITY_VIDEOS_LIBRARY;
+    case kMusicLibrary:
+      return SECURITY_CAPABILITY_MUSIC_LIBRARY;
+    case kDocumentsLibrary:
+      return SECURITY_CAPABILITY_DOCUMENTS_LIBRARY;
+    case kEnterpriseAuthentication:
+      return SECURITY_CAPABILITY_ENTERPRISE_AUTHENTICATION;
+    case kSharedUserCertificates:
+      return SECURITY_CAPABILITY_SHARED_USER_CERTIFICATES;
+    case kRemovableStorage:
+      return SECURITY_CAPABILITY_REMOVABLE_STORAGE;
+    case kAppointments:
+      return SECURITY_CAPABILITY_APPOINTMENTS;
+    case kContacts:
+      return SECURITY_CAPABILITY_CONTACTS;
     default:
-      return nullptr;
+      break;
   }
+  return 0;
 }
 
 }  // namespace
@@ -81,33 +68,39 @@ Sid::Sid(WELL_KNOWN_SID_TYPE type) {
 }
 
 Sid Sid::FromKnownCapability(WellKnownCapabilities capability) {
-  return Sid::FromNamedCapability(WellKnownCapabilityToName(capability));
+  DWORD capability_rid = WellKnownCapabilityToRid(capability);
+  if (!capability_rid)
+    return Sid();
+  SID_IDENTIFIER_AUTHORITY capability_authority = {
+      SECURITY_APP_PACKAGE_AUTHORITY};
+  DWORD sub_authorities[] = {SECURITY_CAPABILITY_BASE_RID, capability_rid};
+  return FromSubAuthorities(&capability_authority, 2, sub_authorities);
 }
 
 Sid Sid::FromNamedCapability(const wchar_t* capability_name) {
-  DeriveCapabilitySidsFromNameFunc* derive_capablity_sids =
-      (DeriveCapabilitySidsFromNameFunc*)GetProcAddress(
-          GetModuleHandle(L"kernelbase"), "DeriveCapabilitySidsFromName");
-  if (!derive_capablity_sids)
+  RtlDeriveCapabilitySidsFromNameFunction derive_capability_sids = nullptr;
+  ResolveNTFunctionPtr("RtlDeriveCapabilitySidsFromName",
+                       &derive_capability_sids);
+  RtlInitUnicodeStringFunction init_unicode_string = nullptr;
+  ResolveNTFunctionPtr("RtlInitUnicodeString", &init_unicode_string);
+
+  if (!derive_capability_sids || !init_unicode_string)
     return Sid();
 
   if (!capability_name || ::wcslen(capability_name) == 0)
     return Sid();
 
-  SidArray capability_group_sids;
-  SidArray capability_sids;
+  UNICODE_STRING name = {};
+  init_unicode_string(&name, capability_name);
+  Sid capability_sid;
+  Sid group_sid;
 
-  if (!derive_capablity_sids(capability_name, capability_group_sids.sids_ptr(),
-                             capability_group_sids.count_ptr(),
-                             capability_sids.sids_ptr(),
-                             capability_sids.count_ptr())) {
-    return Sid();
-  }
-
-  if (capability_sids.count() < 1)
+  NTSTATUS status =
+      derive_capability_sids(&name, group_sid.sid_, capability_sid.sid_);
+  if (!NT_SUCCESS(status))
     return Sid();
 
-  return Sid(capability_sids.sids()[0]);
+  return capability_sid;
 }
 
 Sid Sid::FromSddlString(const wchar_t* sddl_sid) {
