@@ -153,6 +153,10 @@ typedef ScopedRuntimeEnabledFeatureForTest<
     RuntimeEnabledFeatures::SetLayoutNGEnabled>
     ScopedLayoutNGForTest;
 typedef ScopedRuntimeEnabledFeatureForTest<
+    RuntimeEnabledFeatures::LayoutNGPaintFragmentsEnabled,
+    RuntimeEnabledFeatures::SetLayoutNGPaintFragmentsEnabled>
+    ScopedLayoutNGPaintFragmentsForTest;
+typedef ScopedRuntimeEnabledFeatureForTest<
     RuntimeEnabledFeatures::ClientPlaceholdersForServerLoFiEnabled,
     RuntimeEnabledFeatures::SetClientPlaceholdersForServerLoFiEnabled>
     ScopedClientPlaceholdersForServerLoFiForTest;
