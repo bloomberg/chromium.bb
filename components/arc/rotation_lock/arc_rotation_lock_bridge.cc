@@ -48,13 +48,17 @@ ArcRotationLockBridge::ArcRotationLockBridge(content::BrowserContext* context,
                                              ArcBridgeService* bridge_service)
     : arc_bridge_service_(bridge_service) {
   arc_bridge_service_->rotation_lock()->AddObserver(this);
-  ash::Shell::Get()->screen_orientation_controller()->AddObserver(this);
-  ash::Shell::Get()->tablet_mode_controller()->AddObserver(this);
+  // TODO(mash): Support this functionality without ash::Shell access in Chrome.
+  if (ash::Shell::HasInstance()) {
+    ash::Shell::Get()->screen_orientation_controller()->AddObserver(this);
+    ash::Shell::Get()->tablet_mode_controller()->AddObserver(this);
+  }
 }
 
 ArcRotationLockBridge::~ArcRotationLockBridge() {
   arc_bridge_service_->rotation_lock()->RemoveObserver(this);
-  // TODO(mash): mash needs proper shutdown process.
+  // TODO(mus): mus needs proper shutdown process.
+  // TODO(mash): Support this functionality without ash::Shell access in Chrome.
   if (ash::Shell::HasInstance()) {
     ash::Shell::Get()->screen_orientation_controller()->RemoveObserver(this);
     ash::Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
@@ -78,6 +82,10 @@ void ArcRotationLockBridge::OnTabletModeEnded() {
 }
 
 void ArcRotationLockBridge::SendRotationLockState() {
+  // TODO(mash): Support this functionality without ash::Shell access in Chrome.
+  if (!ash::Shell::HasInstance())
+    return;
+
   mojom::RotationLockInstance* rotation_lock_instance =
       ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->rotation_lock(),
                                   OnRotationLockStateChanged);
