@@ -841,8 +841,7 @@ FFmpegDemuxer::FFmpegDemuxer(
       // the BlockingUrlProtocol to handle hops to the render thread for network
       // reads and seeks.
       blocking_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::WithBaseSyncPrimitives(),
-           base::TaskPriority::USER_BLOCKING})),
+          {base::MayBlock(), base::TaskPriority::USER_BLOCKING})),
       stopped_(false),
       pending_read_(false),
       data_source_(data_source),

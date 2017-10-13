@@ -62,6 +62,9 @@ class GpuChannelHost;
 namespace leveldb {
 class LevelDBMojoProxy;
 }
+namespace media {
+class BlockingUrlProtocol;
+}
 namespace mojo {
 class SyncCallRestrictions;
 namespace edk {
@@ -213,6 +216,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
   FRIEND_TEST_ALL_PREFIXES(ThreadRestrictionsTest,
                            ScopedAllowBaseSyncPrimitivesWithBlockingDisallowed);
   friend class leveldb::LevelDBMojoProxy;
+  friend class media::BlockingUrlProtocol;
   friend class net::OCSPScopedAllowBaseSyncPrimitives;
 
   ScopedAllowBaseSyncPrimitives() EMPTY_BODY_IF_DCHECK_IS_OFF;
