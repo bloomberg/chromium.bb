@@ -14,15 +14,16 @@
 namespace content {
 
 base::LazyInstance<std::vector<WebUIControllerFactory*>>::DestructorAtExit
-    g_factories = LAZY_INSTANCE_INITIALIZER;
+    g_web_ui_controller_factories = LAZY_INSTANCE_INITIALIZER;
 
 void WebUIControllerFactory::RegisterFactory(WebUIControllerFactory* factory) {
-  g_factories.Pointer()->push_back(factory);
+  g_web_ui_controller_factories.Pointer()->push_back(factory);
 }
 
 void WebUIControllerFactory::UnregisterFactoryForTesting(
     WebUIControllerFactory* factory) {
-  std::vector<WebUIControllerFactory*>* factories = g_factories.Pointer();
+  std::vector<WebUIControllerFactory*>* factories =
+      g_web_ui_controller_factories.Pointer();
   for (size_t i = 0; i < factories->size(); ++i) {
     if ((*factories)[i] == factory) {
       factories->erase(factories->begin() + i);
@@ -38,7 +39,8 @@ WebUIControllerFactoryRegistry* WebUIControllerFactoryRegistry::GetInstance() {
 
 WebUIController* WebUIControllerFactoryRegistry::CreateWebUIControllerForURL(
     WebUI* web_ui, const GURL& url) const {
-  std::vector<WebUIControllerFactory*>* factories = g_factories.Pointer();
+  std::vector<WebUIControllerFactory*>* factories =
+      g_web_ui_controller_factories.Pointer();
   for (size_t i = 0; i < factories->size(); ++i) {
     WebUIController* controller = (*factories)[i]->CreateWebUIControllerForURL(
         web_ui, url);
@@ -50,7 +52,8 @@ WebUIController* WebUIControllerFactoryRegistry::CreateWebUIControllerForURL(
 
 WebUI::TypeID WebUIControllerFactoryRegistry::GetWebUIType(
     BrowserContext* browser_context, const GURL& url) const {
-  std::vector<WebUIControllerFactory*>* factories = g_factories.Pointer();
+  std::vector<WebUIControllerFactory*>* factories =
+      g_web_ui_controller_factories.Pointer();
   for (size_t i = 0; i < factories->size(); ++i) {
     WebUI::TypeID type = (*factories)[i]->GetWebUIType(browser_context, url);
     if (type != WebUI::kNoWebUI)
@@ -61,7 +64,8 @@ WebUI::TypeID WebUIControllerFactoryRegistry::GetWebUIType(
 
 bool WebUIControllerFactoryRegistry::UseWebUIForURL(
     BrowserContext* browser_context, const GURL& url) const {
-  std::vector<WebUIControllerFactory*>* factories = g_factories.Pointer();
+  std::vector<WebUIControllerFactory*>* factories =
+      g_web_ui_controller_factories.Pointer();
   for (size_t i = 0; i < factories->size(); ++i) {
     if ((*factories)[i]->UseWebUIForURL(browser_context, url))
       return true;
@@ -71,7 +75,8 @@ bool WebUIControllerFactoryRegistry::UseWebUIForURL(
 
 bool WebUIControllerFactoryRegistry::UseWebUIBindingsForURL(
     BrowserContext* browser_context, const GURL& url) const {
-  std::vector<WebUIControllerFactory*>* factories = g_factories.Pointer();
+  std::vector<WebUIControllerFactory*>* factories =
+      g_web_ui_controller_factories.Pointer();
   for (size_t i = 0; i < factories->size(); ++i) {
     if ((*factories)[i]->UseWebUIBindingsForURL(browser_context, url))
       return true;
