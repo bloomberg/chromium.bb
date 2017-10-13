@@ -96,7 +96,8 @@ bool DoesManifestContainRequiredIcon(const content::Manifest& manifest) {
 
 // Returns true if |params| specifies a full PWA check.
 bool IsParamsForPwaCheck(const InstallableParams& params) {
-  return params.check_installable && params.fetch_valid_primary_icon;
+  return params.valid_manifest && params.has_worker &&
+         params.valid_primary_icon;
 }
 
 // Used for a no-op call to GetData.
@@ -205,8 +206,10 @@ void InstallableManager::RecordAddToHomescreenManifestAndIconTimeout() {
   // not a site is a PWA, assuming that the check finishes prior to resetting.
   if (!has_pwa_check_) {
     InstallableParams params;
-    params.check_installable = true;
-    params.fetch_valid_primary_icon = true;
+    params.valid_manifest = true;
+    params.has_worker = true;
+    params.valid_primary_icon = true;
+    params.wait_for_worker = true;
     GetData(params, base::Bind(&DoNothingCallback));
   }
 }
@@ -232,20 +235,19 @@ InstallableStatusCode InstallableManager::GetErrorCode(
   if (manifest_->error != NO_ERROR_DETECTED)
     return manifest_->error;
 
-  if (params.check_installable) {
-    if (valid_manifest_->error != NO_ERROR_DETECTED)
-      return valid_manifest_->error;
-    if (worker_->error != NO_ERROR_DETECTED)
-      return worker_->error;
-  }
+  if (params.valid_manifest && valid_manifest_->error != NO_ERROR_DETECTED)
+    return valid_manifest_->error;
 
-  if (params.fetch_valid_primary_icon) {
+  if (params.has_worker && worker_->error != NO_ERROR_DETECTED)
+    return worker_->error;
+
+  if (params.valid_primary_icon) {
     IconProperty& icon = icons_[IconPurpose::ANY];
     if (icon.error != NO_ERROR_DETECTED)
       return icon.error;
   }
 
-  if (params.fetch_valid_badge_icon) {
+  if (params.valid_badge_icon) {
     IconProperty& icon = icons_[IconPurpose::BADGE];
 
     // If the error is NO_ACCEPTABLE_ICON, there is no icon suitable as a badge
@@ -305,11 +307,10 @@ bool InstallableManager::IsComplete(const InstallableParams& params) const {
   //  b. the resource has been fetched/checked.
   return (!params.check_eligibility || eligibility_->fetched) &&
          manifest_->fetched &&
-         (!params.check_installable ||
-          (valid_manifest_->fetched && worker_->fetched)) &&
-         (!params.fetch_valid_primary_icon ||
-          IsIconFetched(IconPurpose::ANY)) &&
-         (!params.fetch_valid_badge_icon || IsIconFetched(IconPurpose::BADGE));
+         (!params.valid_manifest || valid_manifest_->fetched) &&
+         (!params.has_worker || worker_->fetched) &&
+         (!params.valid_primary_icon || IsIconFetched(IconPurpose::ANY)) &&
+         (!params.valid_badge_icon || IsIconFetched(IconPurpose::BADGE));
 }
 
 void InstallableManager::ResolveMetrics(const InstallableParams& params,
@@ -349,16 +350,14 @@ void InstallableManager::SetManifestDependentTasksComplete() {
 
 void InstallableManager::RunCallback(const InstallableTask& task,
                                      InstallableStatusCode code) {
-  const InstallableParams& params = task.first;
+  const InstallableParams& params = task.params;
   IconProperty null_icon;
   IconProperty* primary_icon = &null_icon;
   IconProperty* badge_icon = &null_icon;
 
-  if (params.fetch_valid_primary_icon &&
-      base::ContainsKey(icons_, IconPurpose::ANY))
+  if (params.valid_primary_icon && base::ContainsKey(icons_, IconPurpose::ANY))
     primary_icon = &icons_[IconPurpose::ANY];
-  if (params.fetch_valid_badge_icon &&
-      base::ContainsKey(icons_, IconPurpose::BADGE))
+  if (params.valid_badge_icon && base::ContainsKey(icons_, IconPurpose::BADGE))
     badge_icon = &icons_[IconPurpose::BADGE];
 
   InstallableData data = {
@@ -369,14 +368,16 @@ void InstallableManager::RunCallback(const InstallableTask& task,
       primary_icon->icon.get(),
       badge_icon->url,
       badge_icon->icon.get(),
-      params.check_installable ? is_installable() : false};
+      valid_manifest_->is_valid,
+      worker_->has_worker,
+  };
 
-  task.second.Run(data);
+  task.callback.Run(data);
 }
 
 void InstallableManager::WorkOnTask() {
   const InstallableTask& task = task_queue_.Current();
-  const InstallableParams& params = task.first;
+  const InstallableParams& params = task.params;
 
   InstallableStatusCode code = GetErrorCode(params);
   bool check_passed = (code == NO_ERROR_DETECTED);
@@ -402,16 +403,14 @@ void InstallableManager::WorkOnTask() {
     CheckEligiblity();
   } else if (!manifest_->fetched) {
     FetchManifest();
-  } else if (params.fetch_valid_primary_icon &&
-             !IsIconFetched(IconPurpose::ANY)) {
+  } else if (params.valid_primary_icon && !IsIconFetched(IconPurpose::ANY)) {
     CheckAndFetchBestIcon(GetIdealPrimaryIconSizeInPx(),
                           GetMinimumPrimaryIconSizeInPx(), IconPurpose::ANY);
-  } else if (params.check_installable && !valid_manifest_->fetched) {
-    CheckInstallable();
-  } else if (params.check_installable && !worker_->fetched) {
+  } else if (params.valid_manifest && !valid_manifest_->fetched) {
+    CheckManifestValid();
+  } else if (params.has_worker && !worker_->fetched) {
     CheckServiceWorker();
-  } else if (params.fetch_valid_badge_icon &&
-             !IsIconFetched(IconPurpose::BADGE)) {
+  } else if (params.valid_badge_icon && !IsIconFetched(IconPurpose::BADGE)) {
     CheckAndFetchBestIcon(GetIdealBadgeIconSizeInPx(),
                           GetIdealBadgeIconSizeInPx(), IconPurpose::BADGE);
   } else {
@@ -464,7 +463,7 @@ void InstallableManager::OnDidGetManifest(const GURL& manifest_url,
   WorkOnTask();
 }
 
-void InstallableManager::CheckInstallable() {
+void InstallableManager::CheckManifestValid() {
   DCHECK(!valid_manifest_->fetched);
   DCHECK(!manifest().IsEmpty());
 
@@ -535,11 +534,10 @@ void InstallableManager::OnDidCheckHasServiceWorker(
       break;
     case content::ServiceWorkerCapability::NO_SERVICE_WORKER:
       InstallableTask& task = task_queue_.Current();
-      InstallableParams& params = task.first;
-      if (params.wait_for_worker) {
+      if (task.params.wait_for_worker) {
         // Wait for ServiceWorkerContextObserver::OnRegistrationStored. Set the
         // param |wait_for_worker| to false so we only wait once per task.
-        params.wait_for_worker = false;
+        task.params.wait_for_worker = false;
         OnWaitingForServiceWorker();
         task_queue_.PauseCurrent();
         if (task_queue_.HasCurrent())
@@ -647,6 +645,10 @@ const content::Manifest& InstallableManager::manifest() const {
   return manifest_->manifest;
 }
 
-bool InstallableManager::is_installable() const {
-  return valid_manifest_->is_valid && worker_->has_worker;
+bool InstallableManager::valid_manifest() {
+  return valid_manifest_->is_valid;
+}
+
+bool InstallableManager::has_worker() {
+  return worker_->has_worker;
 }

@@ -10,28 +10,29 @@ using IconPurpose = content::Manifest::Icon::IconPurpose;
 class InstallableTaskQueueUnitTest : public testing::Test {};
 
 // Constructs an InstallableTask, with the supplied bools stored in it.
-InstallableTask CreateTask(bool check_installable,
-                           bool fetch_valid_primary_icon,
-                           bool fetch_valid_badge_icon) {
+InstallableTask CreateTask(bool valid_manifest,
+                           bool has_worker,
+                           bool valid_primary_icon,
+                           bool valid_badge_icon) {
   InstallableTask task;
-  task.first.check_installable = check_installable;
-  task.first.fetch_valid_primary_icon = fetch_valid_primary_icon;
-  task.first.fetch_valid_badge_icon = fetch_valid_badge_icon;
+  task.params.valid_manifest = valid_manifest;
+  task.params.has_worker = has_worker;
+  task.params.valid_primary_icon = valid_primary_icon;
+  task.params.valid_badge_icon = valid_badge_icon;
   return task;
 }
 
 bool IsEqual(const InstallableTask& task1, const InstallableTask& task2) {
-  return task1.first.check_installable == task2.first.check_installable &&
-         task1.first.fetch_valid_primary_icon ==
-             task2.first.fetch_valid_primary_icon &&
-         task1.first.fetch_valid_badge_icon ==
-             task2.first.fetch_valid_badge_icon;
+  return task1.params.valid_manifest == task2.params.valid_manifest &&
+         task1.params.has_worker == task2.params.has_worker &&
+         task1.params.valid_primary_icon == task2.params.valid_primary_icon &&
+         task1.params.valid_badge_icon == task2.params.valid_badge_icon;
 }
 
 TEST_F(InstallableTaskQueueUnitTest, PausingMakesNextTaskAvailable) {
   InstallableTaskQueue task_queue;
-  InstallableTask task1 = CreateTask(false, false, false);
-  InstallableTask task2 = CreateTask(true, true, true);
+  InstallableTask task1 = CreateTask(false, false, false, false);
+  InstallableTask task2 = CreateTask(true, true, true, true);
 
   task_queue.Add(task1);
   task_queue.Add(task2);
@@ -44,8 +45,8 @@ TEST_F(InstallableTaskQueueUnitTest, PausingMakesNextTaskAvailable) {
 
 TEST_F(InstallableTaskQueueUnitTest, PausedTaskCanBeRetrieved) {
   InstallableTaskQueue task_queue;
-  InstallableTask task1 = CreateTask(false, false, false);
-  InstallableTask task2 = CreateTask(true, true, true);
+  InstallableTask task1 = CreateTask(false, false, false, false);
+  InstallableTask task2 = CreateTask(true, true, true, true);
 
   task_queue.Add(task1);
   task_queue.Add(task2);
@@ -62,8 +63,8 @@ TEST_F(InstallableTaskQueueUnitTest, PausedTaskCanBeRetrieved) {
 
 TEST_F(InstallableTaskQueueUnitTest, NextDiscardsTask) {
   InstallableTaskQueue task_queue;
-  InstallableTask task1 = CreateTask(false, false, false);
-  InstallableTask task2 = CreateTask(true, true, true);
+  InstallableTask task1 = CreateTask(false, false, false, false);
+  InstallableTask task2 = CreateTask(true, true, true, true);
 
   task_queue.Add(task1);
   task_queue.Add(task2);
