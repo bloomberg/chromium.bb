@@ -123,15 +123,18 @@ TetherService::TetherService(
       weak_ptr_factory_(this) {
   power_manager_client_->AddObserver(this);
   session_manager_client_->AddObserver(this);
-
   cryptauth_service_->GetCryptAuthDeviceManager()->AddObserver(this);
-
   network_state_handler_->AddObserver(this, FROM_HERE);
 
   registrar_.Init(profile_->GetPrefs());
   registrar_.Add(prefs::kInstantTetheringAllowed,
                  base::Bind(&TetherService::OnPrefsChanged,
                             weak_ptr_factory_.GetWeakPtr()));
+
+  UMA_HISTOGRAM_BOOLEAN("InstantTethering.UserPreference.OnStartup",
+                        IsEnabledbyPreference());
+  PA_LOG(INFO) << "TetherService has started. Initial user preference value: "
+               << IsEnabledbyPreference();
 
   // GetAdapter may call OnBluetoothAdapterFetched immediately which can cause
   // problems with the Fake implementation since the class is not fully
@@ -287,6 +290,9 @@ void TetherService::DeviceListChanged() {
   if (is_enabled != was_pref_enabled) {
     profile_->GetPrefs()->SetBoolean(prefs::kInstantTetheringEnabled,
                                      is_enabled);
+    UMA_HISTOGRAM_BOOLEAN("InstantTethering.UserPreference.OnToggle",
+                          is_enabled);
+    PA_LOG(INFO) << "Tether user preference changed. New value: " << is_enabled;
   }
   UpdateTetherTechnologyState();
 }
