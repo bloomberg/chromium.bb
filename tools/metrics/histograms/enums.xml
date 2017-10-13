@@ -23580,6 +23580,7 @@ from previous Chrome versions.
   <int value="-1510839574" label="disable-sync-synced-notifications"/>
   <int value="-1508852757" label="CreditCardAutofillTouchBar:disabled"/>
   <int value="-1504305449" label="NTPPhysicalWebPageSuggestions:enabled"/>
+  <int value="-1498334893" label="ExperimentalVRFeatures:enabled"/>
   <int value="-1497338981" label="disable-accelerated-overflow-scroll"/>
   <int value="-1492589689" label="ContentSuggestionsCategories:enabled"/>
   <int value="-1491417046" label="enable-fullscreen-toolbar-reveal"/>
@@ -23863,6 +23864,7 @@ from previous Chrome versions.
   <int value="-697751423" label="disable-quickoffice-component-app"/>
   <int value="-684900739" label="disable-merge-key-char-events"/>
   <int value="-684223908" label="enable-android-wallpapers-app"/>
+  <int value="-680787130" label="ExperimentalVRFeatures:disabled"/>
   <int value="-680589442" label="MacRTL:disabled"/>
   <int value="-671992446" label="TranslateRankerEnforcement:disabled"/>
   <int value="-667517406" label="overscroll-history-navigation"/>

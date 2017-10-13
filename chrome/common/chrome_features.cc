@@ -196,6 +196,12 @@ const base::Feature kExperimentalAppBanners{"ExperimentalAppBanners",
 const base::Feature kExperimentalKeyboardLockUI{
     "ExperimentalKeyboardLockUI", base::FEATURE_DISABLED_BY_DEFAULT};
 
+#if BUILDFLAG(ENABLE_VR)
+// Enables features related to VR browsing that are under development.
+const base::Feature kExperimentalVRFeatures{"ExperimentalVRFeatures",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 #if defined(OS_WIN)
 // Enables using GDI to print text as simply text.
 const base::Feature kGdiTextPrinting {"GdiTextPrinting",
