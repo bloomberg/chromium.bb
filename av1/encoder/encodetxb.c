@@ -1769,6 +1769,10 @@ void try_level_down_facade(LevelDownStats *stats, int scan_idx,
   const int dqv = txb_info->dequant[coeff_idx != 0];
 
   const tran_low_t dqc = qcoeff_to_dqcoeff(qc, dqv, txb_info->shift);
+
+  if (scan_idx != txb_info->eob - 1)
+    if (abs(dqc) < abs(tqc)) return;
+
   const int64_t dqc_dist = get_coeff_dist(tqc, dqc, txb_info->shift);
 
   stats->low_qc = get_lower_coeff(qc);
