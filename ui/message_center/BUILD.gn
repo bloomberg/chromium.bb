@@ -57,6 +57,8 @@ component("message_center") {
       "//build/config/compiler:no_size_t_to_int_warning",
     ]
     sources = [
+      "change_queue.cc",
+      "change_queue.h",
       "cocoa/notification_controller.h",
       "cocoa/notification_controller.mm",
       "cocoa/opaque_views.h",
@@ -205,6 +207,7 @@ if (enable_message_center) {
 
   test("message_center_unittests") {
     sources = [
+      "change_queue_unittest.cc",
       "cocoa/notification_controller_unittest.mm",
       "cocoa/popup_collection_unittest.mm",
       "cocoa/popup_controller_unittest.mm",

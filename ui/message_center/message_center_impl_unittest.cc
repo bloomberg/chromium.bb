@@ -31,6 +31,48 @@ using base::UTF8ToUTF16;
 
 namespace message_center {
 
+namespace {
+
+class CheckObserver : public MessageCenterObserver {
+ public:
+  CheckObserver(MessageCenter* message_center, const std::string& target_id)
+      : message_center_(message_center), target_id_(target_id) {
+    DCHECK(message_center);
+    DCHECK(!target_id.empty());
+  }
+
+  void OnNotificationUpdated(const std::string& notification_id) override {
+    EXPECT_TRUE(message_center_->FindVisibleNotificationById(target_id_));
+  }
+
+ private:
+  MessageCenter* message_center_;
+  std::string target_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(CheckObserver);
+};
+
+class RemoveObserver : public MessageCenterObserver {
+ public:
+  RemoveObserver(MessageCenter* message_center, const std::string& target_id)
+      : message_center_(message_center), target_id_(target_id) {
+    DCHECK(message_center);
+    DCHECK(!target_id.empty());
+  }
+
+  void OnNotificationUpdated(const std::string& notification_id) override {
+    message_center_->RemoveNotification(target_id_, false);
+  }
+
+ private:
+  MessageCenter* message_center_;
+  std::string target_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(RemoveObserver);
+};
+
+}  // anonymous namespace
+
 class MessageCenterImplTest : public testing::Test,
                               public MessageCenterObserver {
  public:
@@ -766,6 +808,37 @@ TEST_F(MessageCenterImplTest, RemoveWhileMessageCenterVisible) {
   // Then update a notification; the update should have propagated.
   message_center()->RemoveNotification(id, false);
   EXPECT_FALSE(message_center()->FindVisibleNotificationById(id));
+}
+
+TEST_F(MessageCenterImplTest, RemoveWhileIteratingObserver) {
+  std::string id("id1");
+  CheckObserver check1(message_center(), id);
+  CheckObserver check2(message_center(), id);
+  RemoveObserver remove(message_center(), id);
+
+  // Prepare a notification
+  std::unique_ptr<Notification> notification(CreateSimpleNotification(id));
+  message_center()->AddNotification(std::move(notification));
+  EXPECT_TRUE(message_center()->FindVisibleNotificationById(id));
+
+  // Install the test handlers
+  message_center()->AddObserver(&check1);
+  message_center()->AddObserver(&remove);
+  message_center()->AddObserver(&check2);
+
+  // Update the notification. The notification will be removed in the observer,
+  // but the actual removal will be done at the end of the iteration.
+  // Notification keeps alive during iteration. This is checked by
+  // CheckObserver.
+  notification.reset(CreateSimpleNotification(id));
+  message_center()->UpdateNotification(id, std::move(notification));
+
+  // Notification is removed correctly.
+  EXPECT_FALSE(message_center()->FindVisibleNotificationById(id));
+
+  message_center()->RemoveObserver(&check1);
+  message_center()->RemoveObserver(&remove);
+  message_center()->RemoveObserver(&check2);
 }
 
 }  // namespace internal
