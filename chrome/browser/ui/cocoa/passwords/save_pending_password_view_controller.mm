@@ -106,6 +106,7 @@ NSButton* EyeIcon(id target, SEL action) {
   base::scoped_nsobject<NSTextField> usernameField_;
   // The field contains the password or IDP origin for federated credentials.
   base::scoped_nsobject<NSTextField> passwordField_;
+  base::scoped_nsobject<NSTextField> passwordText_;
   base::scoped_nsobject<NSButton> passwordViewButton_;
   base::scoped_nsobject<NSButton> saveButton_;
   base::scoped_nsobject<NSButton> neverButton_;
@@ -141,12 +142,17 @@ NSButton* EyeIcon(id target, SEL action) {
   if (combobox) {
     FillPasswordCombobox(self.model->pending_password(), visible, combobox);
   } else {
+    NSRect oldFrame = [passwordField_ frame];
+    CGFloat offsetY = 0;
     if (visible) {
       InitEditableLabel(passwordField_.get(), form.password_value);
+      offsetY = NSMidY([passwordText_ frame]) - NSMidY(oldFrame);
     } else {
       InitLabel(passwordField_.get(),
                 base::string16(form.password_value.length(), '*'));
+      offsetY = NSMaxY([passwordText_ frame]) - NSMaxY(oldFrame);
     }
+    [passwordField_ setFrame:NSOffsetRect(oldFrame, 0, offsetY)];
   }
   [[self.view window]
       makeFirstResponder:(visible ? passwordField_.get() : saveButton_.get())];
@@ -242,25 +248,26 @@ NSButton* EyeIcon(id target, SEL action) {
   }
   [container addSubview:passwordField_];
 
-  NSTextField* usernameLabel =
+  NSTextField* usernameText =
       Label(l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_USERNAME_LABEL));
-  [container addSubview:usernameLabel];
-  NSTextField* passwordLabel =
-      Label(l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_PASSWORD_LABEL));
-  [container addSubview:passwordLabel];
+  [container addSubview:usernameText];
+  passwordText_.reset([Label(
+      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_PASSWORD_LABEL)) retain]);
+  [container addSubview:passwordText_];
 
   // Layout the elements.
   CGFloat firstColumnSize =
-      std::max(NSWidth([usernameLabel frame]), NSWidth([passwordLabel frame]));
+      std::max(NSWidth([usernameText frame]), NSWidth([passwordText_ frame]));
   // Bottow row.
   CGFloat rowHeight = std::max(NSHeight([passwordField_ frame]),
-                               NSHeight([passwordLabel frame]));
-  CGFloat curY = (rowHeight - NSHeight([passwordLabel frame])) / 2;
-  [passwordLabel setFrameOrigin:NSMakePoint(firstColumnSize -
-                                                NSWidth([passwordLabel frame]),
+                               NSHeight([passwordText_ frame]));
+  CGFloat curY = (rowHeight - NSHeight([passwordText_ frame])) / 2;
+  [passwordText_ setFrameOrigin:NSMakePoint(firstColumnSize -
+                                                NSWidth([passwordText_ frame]),
                                             curY)];
-  CGFloat curX = NSMaxX([passwordLabel frame]) + kItemLabelSpacing;
-  curY = (rowHeight - NSHeight([passwordField_ frame])) / 2;
+  CGFloat curX = NSMaxX([passwordText_ frame]) + kItemLabelSpacing;
+  // Password field is top-aligned with the label because it's not editable.
+  curY = NSMaxY([passwordText_ frame]) - NSHeight([passwordField_ frame]);
   [passwordField_ setFrameOrigin:NSMakePoint(curX, curY)];
   CGFloat remainingWidth = kDesiredRowWidth - NSMinX([passwordField_ frame]);
   if (passwordViewButton_) {
@@ -276,11 +283,11 @@ NSButton* EyeIcon(id target, SEL action) {
   // Next row.
   CGFloat rowY = rowHeight + kRelatedControlVerticalSpacing;
   rowHeight = std::max(NSHeight([usernameField_ frame]),
-                       NSHeight([usernameLabel frame]));
-  curX = firstColumnSize - NSWidth([usernameLabel frame]);
-  curY = (rowHeight - NSHeight([usernameLabel frame])) / 2 + rowY;
-  [usernameLabel setFrameOrigin:NSMakePoint(curX, curY)];
-  curX = NSMaxX([usernameLabel frame]) + kItemLabelSpacing;
+                       NSHeight([usernameText frame]));
+  curX = firstColumnSize - NSWidth([usernameText frame]);
+  curY = (rowHeight - NSHeight([usernameText frame])) / 2 + rowY;
+  [usernameText setFrameOrigin:NSMakePoint(curX, curY)];
+  curX = NSMaxX([usernameText frame]) + kItemLabelSpacing;
   curY = (rowHeight - NSHeight([usernameField_ frame])) / 2 + rowY;
   [usernameField_ setFrameOrigin:NSMakePoint(curX, curY)];
   remainingWidth = kDesiredRowWidth - NSMinX([usernameField_ frame]);
