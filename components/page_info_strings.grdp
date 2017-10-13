@@ -322,11 +322,6 @@
       </message>
     </if>
 
-    <!-- VR browser -->
-    <message name="IDS_PAGE_INFO_VR_BROWSER_UNSUPPORTED_MODE" desc="This text is displayed as a large toast to inform the user that they cannot currently browse in VR and they will soon exit VR mode.">
-      This page contains features not yet supported in VR. Exiting...
-    </message>
-
     <!-- Password Protection -->
     <if expr="not is_android">
       <message name="IDS_PAGE_INFO_CHANGE_PASSWORD_SUMMARY" desc="A one-line summary at the top of the Page Info bubble (which shows when you click the security indicator) if user has reuse their google password on current website.">
