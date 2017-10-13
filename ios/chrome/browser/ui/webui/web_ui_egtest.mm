@@ -108,9 +108,9 @@ id<GREYMatcher> WaitForOmniboxText(std::string text) {
   [ChromeEarlGrey waitForWebViewContainingText:pageTitle];
 }
 
-// Tests that clicking on a link for a native page from chrome://chrome-urls
-// navigates to that page.
-- (void)testChromeURLNavigateToNativePage {
+// Tests that clicking on a chrome://terms link from chrome://chrome-urls
+// navigates to terms page.
+- (void)testChromeURLNavigateToTerms {
   LoadWebUIUrl(kChromeUIChromeURLsHost);
 
   // Tap on chrome://terms link on the page.
