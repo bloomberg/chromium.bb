@@ -1471,8 +1471,8 @@ bool AXObject::AriaCheckedIsPresent() const {
 }
 
 bool AXObject::SupportsActiveDescendant() const {
-  // According to the ARIA Spec, all ARIA composite widgets, ARIA text boxes
-  // and ARIA groups should be able to expose an active descendant.
+  // According to the ARIA Spec, all ARIA composite widgets, ARIA text boxes,
+  // ARIA groups and ARIA application should be able to expose an active descendant.
   // Implicitly, <input> and <textarea> elements should also have this ability.
   switch (AriaRoleAttribute()) {
     case kComboBoxRole:
@@ -1489,6 +1489,7 @@ bool AXObject::SupportsActiveDescendant() const {
     case kToolbarRole:
     case kTreeRole:
     case kTreeGridRole:
+    case kApplicationRole:
       return true;
     default:
       return false;
