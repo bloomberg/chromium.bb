@@ -3767,3 +3767,4 @@ crbug.com/772411 [ Mac ] virtual/mojo-loading/http/tests/media/autoplay-crossori
 # Sheriff failures 2017-10-13
 crbug.com/774437 paint/invalidation/selection-partial-invalidation-between-blocks.html [ Pass Failure ]
 crbug.com/774463 [ Win7 Debug ] fast/events/autoscroll-should-not-stop-on-keypress.html [ Failure Pass ]
+crbug.com/774688 [ Mac ] fast/spatial-navigation/snav-container-white-space.html [ Pass Failure ]
