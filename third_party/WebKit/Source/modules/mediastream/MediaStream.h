@@ -62,7 +62,22 @@ class MODULES_EXPORT MediaStream final : public EventTargetWithInlineData,
   static MediaStream* Create(ExecutionContext*);
   static MediaStream* Create(ExecutionContext*, MediaStream*);
   static MediaStream* Create(ExecutionContext*, const MediaStreamTrackVector&);
+  // Creates a MediaStream matching the MediaStreamDescriptor. MediaStreamTracks
+  // are created for any MediaStreamComponents attached to the descriptor.
   static MediaStream* Create(ExecutionContext*, MediaStreamDescriptor*);
+  // Creates a MediaStream with the specified MediaStreamDescriptor and
+  // MediaStreamTracks. The tracks must match the MediaStreamComponents attached
+  // to the descriptor (or else a DCHECK fails). This allows you to create
+  // multiple streams from descriptors containing the same components without
+  // creating duplicate MediaStreamTracks for those components, provided the
+  // caller knows about existing tracks.
+  // This is motivated by WebRTC, where remote streams can be created for tracks
+  // that already exist in Blink (e.g. multiple remote streams containing the
+  // same track).
+  static MediaStream* Create(ExecutionContext*,
+                             MediaStreamDescriptor*,
+                             const MediaStreamTrackVector& audio_tracks,
+                             const MediaStreamTrackVector& video_tracks);
   ~MediaStream() override;
 
   String id() const { return descriptor_->Id(); }
@@ -115,10 +130,15 @@ class MODULES_EXPORT MediaStream final : public EventTargetWithInlineData,
  private:
   MediaStream(ExecutionContext*, MediaStreamDescriptor*);
   MediaStream(ExecutionContext*,
+              MediaStreamDescriptor*,
+              const MediaStreamTrackVector& audio_tracks,
+              const MediaStreamTrackVector& video_tracks);
+  MediaStream(ExecutionContext*,
               const MediaStreamTrackVector& audio_tracks,
               const MediaStreamTrackVector& video_tracks);
 
   bool EmptyOrOnlyEndedTracks();
+  bool TracksMatchDescriptor();
 
   void ScheduleDispatchEvent(Event*);
   void ScheduledEventTimerFired(TimerBase*);

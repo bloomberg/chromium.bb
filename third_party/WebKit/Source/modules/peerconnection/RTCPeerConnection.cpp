@@ -1457,8 +1457,30 @@ void RTCPeerConnection::DidAddRemoteStream(
   if (signaling_state_ == kSignalingStateClosed)
     return;
 
-  MediaStream* stream =
-      MediaStream::Create(GetExecutionContext(), remote_stream);
+  // TODO(hbos): If any of the tracks of this stream already exist on some other
+  // stream/receiver use those track objects instead of unconditionally creating
+  // new tracks. https://crbug.com/769743
+  WebVector<WebMediaStreamTrack> audio_web_tracks;
+  remote_stream.AudioTracks(audio_web_tracks);
+  MediaStreamTrackVector audio_tracks;
+  audio_tracks.ReserveCapacity(audio_web_tracks.size());
+  for (WebMediaStreamTrack& audio_web_track : audio_web_tracks) {
+    audio_tracks.push_back(
+        MediaStreamTrack::Create(GetExecutionContext(), audio_web_track));
+  }
+
+  WebVector<WebMediaStreamTrack> video_web_tracks;
+  remote_stream.VideoTracks(video_web_tracks);
+  MediaStreamTrackVector video_tracks;
+  video_tracks.ReserveCapacity(video_web_tracks.size());
+  for (WebMediaStreamTrack& video_web_track : video_web_tracks) {
+    video_tracks.push_back(
+        MediaStreamTrack::Create(GetExecutionContext(), video_web_track));
+  }
+
+  MediaStream* stream = MediaStream::Create(
+      GetExecutionContext(), remote_stream, audio_tracks, video_tracks);
+
   remote_streams_.push_back(stream);
   stream->RegisterObserver(this);
   for (auto& track : stream->getTracks()) {
