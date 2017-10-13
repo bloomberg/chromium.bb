@@ -31,6 +31,8 @@ public class AwSafeBrowsingConfigHelper {
     public static void maybeInitSafeBrowsingFromSettings(final Context appContext) {
         AwContentsStatics.setSafeBrowsingEnabledByManifest(
                 CommandLine.getInstance().hasSwitch(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
+                || CommandLine.getInstance().hasSwitch(
+                           AwSwitches.WEBVIEW_SAFEBROWSING_BLOCK_ALL_RESOURCES)
                 || appHasOptedIn(appContext));
         // If GMS is available, we will figure out if the user has opted-in to Safe Browsing and set
         // the correct value for sSafeBrowsingUserOptIn.
