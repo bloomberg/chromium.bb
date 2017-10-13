@@ -2196,7 +2196,7 @@
             ],
             "experiments": [
                 {
-                    "name": "PrewarmingWithServiceWorker",
+                    "name": "PrewarmingWithServiceWorker2",
                     "enable_features": [
                         "OmniboxSpeculativeServiceWorkerStartOnQueryInput"
                     ],
