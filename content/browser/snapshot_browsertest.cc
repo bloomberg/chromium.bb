@@ -249,13 +249,7 @@ IN_PROC_BROWSER_TEST_F(SnapshotBrowserTest, SingleWindowTest) {
   }
 }
 
-// Seen to time out / fail on debug Mac; crbug.com/771119, crbug.com/774050.
-#if defined(NDEBUG) && !defined(OS_MACOSX)
-#define MAYBE_SyncMultiWindowTest SyncMultiWindowTest
-#else
-#define MAYBE_SyncMultiWindowTest DISABLED_SyncMultiWindowTest
-#endif
-IN_PROC_BROWSER_TEST_F(SnapshotBrowserTest, MAYBE_SyncMultiWindowTest) {
+IN_PROC_BROWSER_TEST_F(SnapshotBrowserTest, SyncMultiWindowTest) {
   SetupTestServer();
 
   for (int i = 0; i < 3; ++i) {
