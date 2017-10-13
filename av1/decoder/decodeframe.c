@@ -4014,6 +4014,8 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
   setup_segmentation(cm, rb);
 
   {
+    int delta_q_allowed = 1;
+#if !CONFIG_EXT_DELTA_Q
     struct segmentation *const seg = &cm->seg;
     int segment_quantizer_active = 0;
     for (i = 0; i < MAX_SEGMENTS; i++) {
@@ -4021,6 +4023,8 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
         segment_quantizer_active = 1;
       }
     }
+    delta_q_allowed = !segment_quantizer_active;
+#endif
 
     cm->delta_q_res = 1;
 #if CONFIG_EXT_DELTA_Q
@@ -4030,7 +4034,7 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
     cm->delta_lf_multi = 0;
 #endif  // CONFIG_LOOPFILTER_LEVEL
 #endif
-    if (segment_quantizer_active == 0 && cm->base_qindex > 0) {
+    if (delta_q_allowed == 1 && cm->base_qindex > 0) {
       cm->delta_q_present_flag = aom_rb_read_bit(rb);
     } else {
       cm->delta_q_present_flag = 0;
@@ -4039,7 +4043,6 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
       xd->prev_qindex = cm->base_qindex;
       cm->delta_q_res = 1 << aom_rb_read_literal(rb, 2);
 #if CONFIG_EXT_DELTA_Q
-      assert(!segment_quantizer_active);
       cm->delta_lf_present_flag = aom_rb_read_bit(rb);
       if (cm->delta_lf_present_flag) {
         xd->prev_delta_lf_from_base = 0;

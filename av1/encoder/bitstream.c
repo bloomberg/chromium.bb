@@ -4488,6 +4488,8 @@ static void write_uncompressed_header_frame(AV1_COMP *cpi,
   encode_quantization(cm, wb);
   encode_segmentation(cm, xd, wb);
   {
+    int delta_q_allowed = 1;
+#if !CONFIG_EXT_DELTA_Q
     int i;
     struct segmentation *const seg = &cm->seg;
     int segment_quantizer_active = 0;
@@ -4496,15 +4498,18 @@ static void write_uncompressed_header_frame(AV1_COMP *cpi,
         segment_quantizer_active = 1;
       }
     }
+    delta_q_allowed = !segment_quantizer_active;
+#endif
 
     if (cm->delta_q_present_flag) assert(cm->base_qindex > 0);
-    if (segment_quantizer_active == 0 && cm->base_qindex > 0) {
+    // Segment quantizer and delta_q both allowed if CONFIG_EXT_DELTA_Q
+    if (delta_q_allowed == 1 && cm->base_qindex > 0) {
       aom_wb_write_bit(wb, cm->delta_q_present_flag);
       if (cm->delta_q_present_flag) {
         aom_wb_write_literal(wb, OD_ILOG_NZ(cm->delta_q_res) - 1, 2);
         xd->prev_qindex = cm->base_qindex;
 #if CONFIG_EXT_DELTA_Q
-        assert(seg->abs_delta == SEGMENT_DELTADATA);
+        assert(cm->seg.abs_delta == SEGMENT_DELTADATA);
         aom_wb_write_bit(wb, cm->delta_lf_present_flag);
         if (cm->delta_lf_present_flag) {
           aom_wb_write_literal(wb, OD_ILOG_NZ(cm->delta_lf_res) - 1, 2);
@@ -4821,6 +4826,8 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
   encode_quantization(cm, wb);
   encode_segmentation(cm, xd, wb);
   {
+    int delta_q_allowed = 1;
+#if !CONFIG_EXT_DELTA_Q
     int i;
     struct segmentation *const seg = &cm->seg;
     int segment_quantizer_active = 0;
@@ -4829,10 +4836,12 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
         segment_quantizer_active = 1;
       }
     }
+    delta_q_allowed = !segment_quantizer_active;
+#endif
 
     if (cm->delta_q_present_flag)
-      assert(segment_quantizer_active == 0 && cm->base_qindex > 0);
-    if (segment_quantizer_active == 0 && cm->base_qindex > 0) {
+      assert(delta_q_allowed == 1 && cm->base_qindex > 0);
+    if (delta_q_allowed == 1 && cm->base_qindex > 0) {
       aom_wb_write_bit(wb, cm->delta_q_present_flag);
       if (cm->delta_q_present_flag) {
         aom_wb_write_literal(wb, OD_ILOG_NZ(cm->delta_q_res) - 1, 2);
