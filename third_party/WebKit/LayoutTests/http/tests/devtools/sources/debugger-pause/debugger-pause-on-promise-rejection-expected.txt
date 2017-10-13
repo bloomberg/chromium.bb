@@ -7,7 +7,7 @@ Set timer for test function.
 Call stack:
     0) testFunction (debugger-pause-on-promise-rejection.html:35)
     [setTimeout]
-    0) scheduleTestFunction (debugger-test.js:3)
+    0) scheduleTestFunction <omitted>
     <... skipped remaining frames ...>
 Paused on promise rejectionError: uncaught
 
@@ -16,13 +16,13 @@ Set timer for test function.
 Call stack:
     0) testFunction (debugger-pause-on-promise-rejection.html:34)
     [setTimeout]
-    0) scheduleTestFunction (debugger-test.js:3)
+    0) scheduleTestFunction <omitted>
     <... skipped remaining frames ...>
 Paused on promise rejectionError: caught
 Call stack:
     0) testFunction (debugger-pause-on-promise-rejection.html:35)
     [setTimeout]
-    0) scheduleTestFunction (debugger-test.js:3)
+    0) scheduleTestFunction <omitted>
     <... skipped remaining frames ...>
 Paused on promise rejectionError: uncaught
 

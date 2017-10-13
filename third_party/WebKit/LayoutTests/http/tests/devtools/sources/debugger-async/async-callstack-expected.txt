@@ -10,7 +10,7 @@ Call stack:
     [setTimeout]
     0) testFunction (async-callstack.html:13)
     [setTimeout]
-    0) scheduleTestFunction (debugger-test.js:3)
+    0) scheduleTestFunction <omitted>
     <... skipped remaining frames ...>
 
 Call stack:
@@ -23,7 +23,7 @@ Call stack:
     [setTimeout]
     0) testFunction (async-callstack.html:13)
     [setTimeout]
-    0) scheduleTestFunction (debugger-test.js:3)
+    0) scheduleTestFunction <omitted>
     <... skipped remaining frames ...>
 
 Call stack:
@@ -35,7 +35,7 @@ Call stack:
     [setTimeout]
     0) testFunction (async-callstack.html:13)
     [setTimeout]
-    0) scheduleTestFunction (debugger-test.js:3)
+    0) scheduleTestFunction <omitted>
     <... skipped remaining frames ...>
 
 Call stack:
@@ -44,7 +44,7 @@ Call stack:
     [setTimeout]
     0) testFunction (async-callstack.html:13)
     [setTimeout]
-    0) scheduleTestFunction (debugger-test.js:3)
+    0) scheduleTestFunction <omitted>
     <... skipped remaining frames ...>
 
 Call stack:
@@ -57,7 +57,7 @@ Call stack:
     [setTimeout]
     0) testFunction (async-callstack.html:13)
     [setTimeout]
-    0) scheduleTestFunction (debugger-test.js:3)
+    0) scheduleTestFunction <omitted>
     <... skipped remaining frames ...>
 
 Call stack:
@@ -114,7 +114,7 @@ Call stack:
     [setTimeout]
     0) testFunction (async-callstack.html:13)
     [setTimeout]
-    0) scheduleTestFunction (debugger-test.js:3)
+    0) scheduleTestFunction <omitted>
     <... skipped remaining frames ...>
 
 

@@ -7,7 +7,7 @@ Call stack:
     [Promise.resolve]
     0) testFunction (debugger-step-through-promises.html:9)
     [setTimeout]
-    0) scheduleTestFunction (debugger-test.js:3)
+    0) scheduleTestFunction <omitted>
     <... skipped remaining frames ...>
 
 Executing StepInto...
@@ -16,7 +16,7 @@ Call stack:
     [Promise.resolve]
     0) testFunction (debugger-step-through-promises.html:9)
     [setTimeout]
-    0) scheduleTestFunction (debugger-test.js:3)
+    0) scheduleTestFunction <omitted>
     <... skipped remaining frames ...>
 
 Executing StepInto...
@@ -25,7 +25,7 @@ Call stack:
     [Promise.resolve]
     0) testFunction (debugger-step-through-promises.html:14)
     [setTimeout]
-    0) scheduleTestFunction (debugger-test.js:3)
+    0) scheduleTestFunction <omitted>
     <... skipped remaining frames ...>
 
 Executing StepOver...
@@ -34,7 +34,7 @@ Call stack:
     [Promise.resolve]
     0) testFunction (debugger-step-through-promises.html:14)
     [setTimeout]
-    0) scheduleTestFunction (debugger-test.js:3)
+    0) scheduleTestFunction <omitted>
     <... skipped remaining frames ...>
 
 Executing StepOver...
@@ -43,7 +43,7 @@ Call stack:
     [Promise.resolve]
     0) testFunction (debugger-step-through-promises.html:19)
     [setTimeout]
-    0) scheduleTestFunction (debugger-test.js:3)
+    0) scheduleTestFunction <omitted>
     <... skipped remaining frames ...>
 
 Executing StepOver...
@@ -52,7 +52,7 @@ Call stack:
     [Promise.resolve]
     0) testFunction (debugger-step-through-promises.html:19)
     [setTimeout]
-    0) scheduleTestFunction (debugger-test.js:3)
+    0) scheduleTestFunction <omitted>
     <... skipped remaining frames ...>
 
 

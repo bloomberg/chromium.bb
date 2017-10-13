@@ -7,6 +7,6 @@ bootest.js:12
 await in boo (async)
 testFunctiontest.js:18
 setTimeout (async)
-scheduleTestFunctiondebugger-test.js:3
+scheduleTestFunctionVM:3
 (anonymous)VM:1
 

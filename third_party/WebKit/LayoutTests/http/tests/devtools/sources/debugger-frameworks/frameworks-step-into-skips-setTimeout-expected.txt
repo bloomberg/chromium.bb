@@ -11,7 +11,7 @@ Call stack:
   * 1) Framework.scheduleUntilDone (framework.js:138)
     2) testFunction (frameworks-step-into-skips-setTimeout.html:12)
     [setTimeout]
-    0) scheduleTestFunction (debugger-test.js:3)
+    0) scheduleTestFunction <omitted>
     <... skipped remaining frames ...>
 
 Executing StepOut...
@@ -23,7 +23,7 @@ Call stack:
   * 1) Framework.scheduleUntilDone (framework.js:138)
     2) testFunction (frameworks-step-into-skips-setTimeout.html:12)
     [setTimeout]
-    0) scheduleTestFunction (debugger-test.js:3)
+    0) scheduleTestFunction <omitted>
     <... skipped remaining frames ...>
 
 Executing StepInto...
@@ -35,7 +35,7 @@ Call stack:
   * 1) Framework.scheduleUntilDone (framework.js:138)
     2) testFunction (frameworks-step-into-skips-setTimeout.html:12)
     [setTimeout]
-    0) scheduleTestFunction (debugger-test.js:3)
+    0) scheduleTestFunction <omitted>
     <... skipped remaining frames ...>
 
 Executing StepInto...
@@ -50,7 +50,7 @@ Call stack:
   * 1) Framework.scheduleUntilDone (framework.js:138)
     2) testFunction (frameworks-step-into-skips-setTimeout.html:12)
     [setTimeout]
-    0) scheduleTestFunction (debugger-test.js:3)
+    0) scheduleTestFunction <omitted>
     <... skipped remaining frames ...>
 
 

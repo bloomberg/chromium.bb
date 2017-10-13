@@ -4,7 +4,7 @@ Set timer for test function.
 Call stack:
     0) testFunction (frameworks-blackbox-by-source-code.html:8)
     [setTimeout]
-    0) scheduleTestFunction (debugger-test.js:3)
+    0) scheduleTestFunction <omitted>
     <... skipped remaining frames ...>
 
 Executing StepInto...
@@ -12,7 +12,7 @@ Executing StepInto...
 Call stack:
     0) testFunction (frameworks-blackbox-by-source-code.html:10)
     [setTimeout]
-    0) scheduleTestFunction (debugger-test.js:3)
+    0) scheduleTestFunction <omitted>
     <... skipped remaining frames ...>
 
 

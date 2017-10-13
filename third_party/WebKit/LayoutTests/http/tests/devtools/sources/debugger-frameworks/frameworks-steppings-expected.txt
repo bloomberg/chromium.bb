@@ -5,7 +5,7 @@ Set timer for test function.
 Call stack:
     0) testFunction (frameworks-steppings.html:10)
     [setTimeout]
-    0) scheduleTestFunction (debugger-test.js:3)
+    0) scheduleTestFunction <omitted>
     <... skipped remaining frames ...>
 
 Executing StepInto...
@@ -15,7 +15,7 @@ Call stack:
   * 1) Framework.safeRun (framework.js:8)
     2) testFunction (frameworks-steppings.html:11)
     [setTimeout]
-    0) scheduleTestFunction (debugger-test.js:3)
+    0) scheduleTestFunction <omitted>
     <... skipped remaining frames ...>
 
 Executing StepInto...
@@ -27,7 +27,7 @@ Call stack:
   * 4) Framework.safeRun (framework.js:8)
     5) testFunction (frameworks-steppings.html:11)
     [setTimeout]
-    0) scheduleTestFunction (debugger-test.js:3)
+    0) scheduleTestFunction <omitted>
     <... skipped remaining frames ...>
 
 Executing StepInto...
@@ -39,7 +39,7 @@ Call stack:
   * 4) Framework.safeRun (framework.js:8)
     5) testFunction (frameworks-steppings.html:11)
     [setTimeout]
-    0) scheduleTestFunction (debugger-test.js:3)
+    0) scheduleTestFunction <omitted>
     <... skipped remaining frames ...>
 
 Executing StepInto...
@@ -55,7 +55,7 @@ Call stack:
   * 8) Framework.safeRun (framework.js:8)
     9) testFunction (frameworks-steppings.html:11)
     [setTimeout]
-    0) scheduleTestFunction (debugger-test.js:3)
+    0) scheduleTestFunction <omitted>
     <... skipped remaining frames ...>
 
 Executing StepInto...
@@ -79,7 +79,7 @@ Call stack:
   * 13) Framework.safeRun (framework.js:8)
     14) testFunction (frameworks-steppings.html:11)
     [setTimeout]
-    0) scheduleTestFunction (debugger-test.js:3)
+    0) scheduleTestFunction <omitted>
     <... skipped remaining frames ...>
 
 Executing StepInto...
@@ -103,7 +103,7 @@ Call stack:
   * 16) Framework.safeRun (framework.js:8)
     17) testFunction (frameworks-steppings.html:11)
     [setTimeout]
-    0) scheduleTestFunction (debugger-test.js:3)
+    0) scheduleTestFunction <omitted>
     <... skipped remaining frames ...>
 
 Executing StepInto...
@@ -125,7 +125,7 @@ Call stack:
   * 13) Framework.safeRun (framework.js:8)
     14) testFunction (frameworks-steppings.html:11)
     [setTimeout]
-    0) scheduleTestFunction (debugger-test.js:3)
+    0) scheduleTestFunction <omitted>
     <... skipped remaining frames ...>
 
 Executing StepInto...
@@ -146,7 +146,7 @@ Call stack:
   * 13) Framework.safeRun (framework.js:8)
     14) testFunction (frameworks-steppings.html:11)
     [setTimeout]
-    0) scheduleTestFunction (debugger-test.js:3)
+    0) scheduleTestFunction <omitted>
     <... skipped remaining frames ...>
 
 Executing StepOut...
@@ -162,7 +162,7 @@ Call stack:
   * 8) Framework.safeRun (framework.js:8)
     9) testFunction (frameworks-steppings.html:11)
     [setTimeout]
-    0) scheduleTestFunction (debugger-test.js:3)
+    0) scheduleTestFunction <omitted>
     <... skipped remaining frames ...>
 
 Executing StepOver...
@@ -174,7 +174,7 @@ Call stack:
   * 4) Framework.safeRun (framework.js:8)
     5) testFunction (frameworks-steppings.html:11)
     [setTimeout]
-    0) scheduleTestFunction (debugger-test.js:3)
+    0) scheduleTestFunction <omitted>
     <... skipped remaining frames ...>
 
 Executing StepInto...
@@ -183,7 +183,7 @@ Call stack:
   * 1) Framework.safeRun (framework.js:8)
     2) testFunction (frameworks-steppings.html:11)
     [setTimeout]
-    0) scheduleTestFunction (debugger-test.js:3)
+    0) scheduleTestFunction <omitted>
     <... skipped remaining frames ...>
 
 
