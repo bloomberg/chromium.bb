@@ -203,8 +203,10 @@ IN_PROC_BROWSER_TEST_P(ChromeContentRendererClientBrowserTest,
   WaitForYouTubeRequest();
 }
 
+// TODO(crbug.com/771338): This test needs to be rewritten to work with
+// preloaded HSTS for youtube.com
 IN_PROC_BROWSER_TEST_P(ChromeContentRendererClientBrowserTest,
-                       RewriteYouTubeFlashEmbedObject) {
+                       DISABLED_RewriteYouTubeFlashEmbedObject) {
   GURL url(embedded_test_server()->GetURL("/flash_embeds.html"));
   ui_test_utils::NavigateToURL(browser(), url);
   content::WebContents* web_contents =
