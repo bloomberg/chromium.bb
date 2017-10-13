@@ -103192,6 +103192,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="LitePage" label="Lite page previews"/>
   <suffix name="LoFi" label="Server LoFi previews"/>
   <suffix name="AMPRedirection" label="AMP Redirection previews"/>
+  <suffix name="NoScript" label="NoScript previews"/>
   <affected-histogram name="Previews.EligibilityReason"/>
   <affected-histogram name="Previews.InfoBarAction"/>
   <affected-histogram name="Previews.OptOut.UserOptedOut"/>

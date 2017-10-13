@@ -74,6 +74,7 @@ void ReloadWithoutPreviews(previews::PreviewsType previews_type,
     case previews::PreviewsType::LITE_PAGE:
     case previews::PreviewsType::OFFLINE:
     case previews::PreviewsType::AMP_REDIRECTION:
+    case previews::PreviewsType::NOSCRIPT:
       // Prevent previews and lite page modes from showing after reload.
       web_contents->GetController().Reload(
           content::ReloadType::DISABLE_PREVIEWS, true);
