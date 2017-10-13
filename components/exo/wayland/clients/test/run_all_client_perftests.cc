@@ -4,6 +4,7 @@
 
 #include "ash/test/ash_test_suite.h"
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/debug/debugger.h"
 #include "base/process/launch.h"
 #include "base/test/launcher/unit_test_launcher.h"
@@ -16,10 +17,15 @@
 namespace exo {
 namespace {
 
+const char kRunWithExternalWaylandServer[] = "run-with-external-wayland-server";
+
 class ExoClientPerfTestSuite : public ash::AshTestSuite {
  public:
   ExoClientPerfTestSuite(int argc, char** argv)
-      : ash::AshTestSuite(argc, argv) {}
+      : ash::AshTestSuite(argc, argv),
+        run_with_external_wayland_server_(
+            base::CommandLine::ForCurrentProcess()->HasSwitch(
+                kRunWithExternalWaylandServer)) {}
 
   int Run() {
     Initialize();
@@ -38,27 +44,44 @@ class ExoClientPerfTestSuite : public ash::AshTestSuite {
     return result_;
   }
 
+ private:
   // Overriden from ash::AshTestSuite:
   void Initialize() override {
-    ash::AshTestSuite::Initialize();
     if (!base::debug::BeingDebugged())
       base::RaiseProcessToHighPriority();
 
-    // Initialize task envrionment here instead of Test::SetUp(), because all
-    // tests and their SetUp() will be running in client thread.
-    scoped_task_environment_ =
-        std::make_unique<base::test::ScopedTaskEnvironment>(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI);
+    if (run_with_external_wayland_server_) {
+      base::TestSuite::Initialize();
 
-    // Set the UI thread message loop to WaylandClientTest, so all tests can
-    // post tasks to UI thread.
-    WaylandClientTest::SetUIMessageLoop(base::MessageLoop::current());
+      scoped_task_environment_ =
+          std::make_unique<base::test::ScopedTaskEnvironment>(
+              base::test::ScopedTaskEnvironment::MainThreadType::UI);
+    } else {
+      // We only need initialized ash related stuff for running wayland server
+      // within the test.
+      ash::AshTestSuite::Initialize();
+
+      // Initialize task envrionment here instead of Test::SetUp(), because all
+      // tests and their SetUp() will be running in client thread.
+      scoped_task_environment_ =
+          std::make_unique<base::test::ScopedTaskEnvironment>(
+              base::test::ScopedTaskEnvironment::MainThreadType::UI);
+
+      // Set the UI thread message loop to WaylandClientTest, so all tests can
+      // post tasks to UI thread.
+      WaylandClientTest::SetUIMessageLoop(base::MessageLoop::current());
+    }
   }
 
   void Shutdown() override {
-    WaylandClientTest::SetUIMessageLoop(nullptr);
-    scoped_task_environment_ = nullptr;
-    ash::AshTestSuite::Shutdown();
+    if (run_with_external_wayland_server_) {
+      scoped_task_environment_ = nullptr;
+      base::TestSuite::Shutdown();
+    } else {
+      WaylandClientTest::SetUIMessageLoop(nullptr);
+      scoped_task_environment_ = nullptr;
+      ash::AshTestSuite::Shutdown();
+    }
   }
 
  private:
@@ -66,6 +89,9 @@ class ExoClientPerfTestSuite : public ash::AshTestSuite {
     result_ = RUN_ALL_TESTS();
     finished_closure.Run();
   }
+
+  // Do not run the wayland server within the test.
+  const bool run_with_external_wayland_server_ = false;
 
   std::unique_ptr<base::test::ScopedTaskEnvironment> scoped_task_environment_;
 
