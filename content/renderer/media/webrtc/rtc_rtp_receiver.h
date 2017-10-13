@@ -8,9 +8,12 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
+#include "content/renderer/media/webrtc/webrtc_media_stream_adapter_map.h"
 #include "content/renderer/media/webrtc/webrtc_media_stream_track_adapter_map.h"
+#include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/platform/WebRTCRtpReceiver.h"
+#include "third_party/webrtc/api/mediastreaminterface.h"
 #include "third_party/webrtc/api/rtpreceiverinterface.h"
 
 namespace content {
@@ -26,15 +29,25 @@ class CONTENT_EXPORT RTCRtpReceiver : public blink::WebRTCRtpReceiver {
   RTCRtpReceiver(
       rtc::scoped_refptr<webrtc::RtpReceiverInterface> webrtc_rtp_receiver,
       std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef>
-          track_adapter);
+          track_adapter,
+      std::vector<std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>>
+          stream_adapter_refs);
   ~RTCRtpReceiver() override;
+
+  // Creates a shallow copy of the receiver, representing the same underlying
+  // webrtc receiver as the original.
+  std::unique_ptr<RTCRtpReceiver> ShallowCopy() const;
 
   uintptr_t Id() const override;
   const blink::WebMediaStreamTrack& Track() const override;
+  blink::WebVector<blink::WebMediaStream> Streams() const override;
   blink::WebVector<std::unique_ptr<blink::WebRTCRtpContributingSource>>
   GetSources() override;
 
   const webrtc::MediaStreamTrackInterface& webrtc_track() const;
+  bool HasStream(const webrtc::MediaStreamInterface* webrtc_stream) const;
+  std::vector<std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>>
+  StreamAdapterRefs() const;
 
  private:
   const rtc::scoped_refptr<webrtc::RtpReceiverInterface> webrtc_rtp_receiver_;
@@ -42,6 +55,10 @@ class CONTENT_EXPORT RTCRtpReceiver : public blink::WebRTCRtpReceiver {
   // Keeping a reference to the adapter ensures it is not disposed, as is
   // required as long as the webrtc layer track is in use by the receiver.
   std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> track_adapter_;
+  // Similarly, references needs to be kept to the stream adapters of streams
+  // associated with the receiver.
+  std::vector<std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>>
+      stream_adapter_refs_;
 
   DISALLOW_COPY_AND_ASSIGN(RTCRtpReceiver);
 };

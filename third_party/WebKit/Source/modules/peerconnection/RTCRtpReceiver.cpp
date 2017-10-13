@@ -28,6 +28,10 @@ RTCRtpReceiver::getContributingSources() {
   return contributing_sources_;
 }
 
+const WebRTCRtpReceiver& RTCRtpReceiver::web_receiver() const {
+  return *receiver_;
+}
+
 void RTCRtpReceiver::UpdateSourcesIfNeeded() {
   if (!contributing_sources_needs_updating_)
     return;
