@@ -39,12 +39,11 @@ class MachPortRelay : public base::PortProvider::Observer {
   // port and gives ownership of the final Mach port to the caller. Any handles
   // that are not Mach ports will remain unchanged, and the number and ordering
   // of handles is preserved.
-  // Returns |false| on failure and there is no guarantee about whether a Mach
-  // port is intermediate or final.
+  // On failure, the Mach port is replaced with MACH_PORT_NULL.
   //
   // See SendPortsToProcess() for the definition of intermediate and final Mach
   // ports.
-  static bool ReceivePorts(PlatformHandleVector* handles);
+  static void ReceivePorts(PlatformHandleVector* handles);
 
   explicit MachPortRelay(base::PortProvider* port_provider);
   ~MachPortRelay() override;
@@ -55,20 +54,15 @@ class MachPortRelay : public base::PortProvider::Observer {
   // this intermediate port and the message is modified to refer to the name of
   // the intermediate port. The Mach port received over the intermediate port in
   // the child is referred to as the final Mach port.
-  // Returns |false| on failure and |message| may contain a mix of actual Mach
-  // ports and names.
-  bool SendPortsToProcess(Channel::Message* message,
+  // Ports that cannot be brokered are replaced with MACH_PORT_NULL.
+  void SendPortsToProcess(Channel::Message* message,
                           base::ProcessHandle process);
 
-  // Extracts the Mach ports attached to |message| from |process|.
-  // Any Mach ports attached to |message| are names and not actual Mach ports
-  // that are valid in this process. For each of those Mach port names, a send
-  // right is extracted from |process| and the port name is replaced with the
-  // send right.
-  // Returns |false| on failure and |message| may contain a mix of actual Mach
-  // ports and names.
-  bool ExtractPortRights(Channel::Message* message,
-                         base::ProcessHandle process);
+  // Given a PlatformHandle of Type::MACH_NAME, extracts the Mach port, and
+  // updates the contents of the PlatformHandle to have Type::MACH and have the
+  // actual Mach port. On failure, replaces the contents with Type::MACH and
+  // MACH_PORT_NULL.
+  void ExtractPort(PlatformHandle* handle, base::ProcessHandle process);
 
   // Observer interface.
   void AddObserver(Observer* observer);
