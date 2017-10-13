@@ -32,6 +32,7 @@
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source_type.h"
 #include "net/ssl/ssl_cert_request_info.h"
+#include "net/url_request/network_error_logging_delegate.h"
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_error_job.h"
@@ -1175,6 +1176,8 @@ void URLRequest::NotifyRequestCompleted() {
   if (network_delegate_)
     network_delegate_->NotifyCompleted(this, job_.get() != NULL,
                                        status_.error());
+
+  MaybeGenerateNetworkErrorLoggingReport();
 }
 
 void URLRequest::OnCallToDelegate() {
@@ -1191,6 +1194,39 @@ void URLRequest::OnCallToDelegateComplete() {
     return;
   calling_delegate_ = false;
   net_log_.EndEvent(NetLogEventType::URL_REQUEST_DELEGATE);
+}
+
+void URLRequest::MaybeGenerateNetworkErrorLoggingReport() {
+  NetworkErrorLoggingDelegate* delegate =
+      context()->network_error_logging_delegate();
+  if (!delegate)
+    return;
+
+  // TODO(juliatuttle): Figure out whether we should be ignoring errors from
+  // non-HTTPS origins.
+
+  // TODO(juliatuttle): Remove this and reconsider interface once there's a
+  // better story for reporting successes.
+  if (status().ToNetError() == OK)
+    return;
+
+  NetworkErrorLoggingDelegate::ErrorDetails details;
+
+  details.uri = url();
+  details.referrer = GURL(referrer());
+  IPEndPoint endpoint;
+  if (GetRemoteEndpoint(&endpoint))
+    details.server_ip = endpoint.address();
+  // TODO(juliatuttle): Plumb this.
+  details.protocol = kProtoUnknown;
+  details.status_code = GetResponseCode();
+  if (details.status_code == -1)
+    details.status_code = 0;
+  details.elapsed_time =
+      base::TimeTicks::Now() - load_timing_info_.request_start;
+  details.type = status().ToNetError();
+
+  delegate->OnNetworkError(details);
 }
 
 void URLRequest::GetConnectionAttempts(ConnectionAttempts* out) const {
