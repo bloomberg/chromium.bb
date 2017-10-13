@@ -384,6 +384,11 @@ TEST_F('CrExtensionsManagerTest', 'UpdateItemData', function() {
 
 var CrExtensionsShortcutTest = class extends CrExtensionsBrowserTest {
   /** @override */
+  get browsePreload() {
+    return 'chrome://extensions/keyboard_shortcuts.html';
+  }
+
+  /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
       'extension_keyboard_shortcuts_test.js',
@@ -454,6 +459,11 @@ TEST_F('CrExtensionsOptionsDialogTest', 'Layout', function() {
 // Extension Error Page Tests
 
 var CrExtensionsErrorPageTest = class extends CrExtensionsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://extensions/error_page.html';
+  }
+
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
