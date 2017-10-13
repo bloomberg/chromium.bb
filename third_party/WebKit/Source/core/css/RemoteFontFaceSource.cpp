@@ -8,6 +8,7 @@
 #include "core/css/CSSFontFace.h"
 #include "core/css/CSSFontSelector.h"
 #include "core/dom/Document.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/LocalFrameClient.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "platform/Histogram.h"
@@ -237,8 +238,12 @@ void RemoteFontFaceSource::BeginLoadIfNeeded() {
     }
     if (font_selector_->GetDocument()->Fetcher()->StartLoad(font_)) {
       // Start timers only when load is actually started asynchronously.
-      if (!font_->IsLoaded())
-        font_->StartLoadLimitTimers();
+      if (!font_->IsLoaded()) {
+        font_->StartLoadLimitTimers(
+            TaskRunnerHelper::Get(TaskType::kUnspecedLoading,
+                                  font_selector_->GetDocument())
+                .get());
+      }
       histograms_.LoadStarted();
     }
     if (is_intervention_triggered_) {
