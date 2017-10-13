@@ -7,8 +7,11 @@
 
 #include "components/download/internal/controller.h"
 #include "components/download/internal/startup_status.h"
+#include "components/download/public/download_params.h"
 
 namespace download {
+
+struct Entry;
 
 // A destination for all interesting events from internal components.
 class LogSink {
@@ -17,6 +20,23 @@ class LogSink {
 
   // To be called whenever the StartupStatus/Controller::State changes.
   virtual void OnServiceStatusChanged() = 0;
+
+  // To be called whenever the list of underlying Entry objects is ready to be
+  // queried by external log entities.
+  virtual void OnServiceDownloadsAvailable() = 0;
+
+  // To be called whenever the state the download represented by |guid| changes.
+  virtual void OnServiceDownloadChanged(const std::string& guid) = 0;
+
+  // To be called whenever a download fails.
+  virtual void OnServiceDownloadFailed(CompletionType completion_type,
+                                       const Entry& entry) = 0;
+
+  // To be called whenever a request has been made of the download service.
+  virtual void OnServiceRequestMade(
+      DownloadClient client,
+      const std::string& guid,
+      DownloadParams::StartResult start_result) = 0;
 };
 
 }  // namespace download

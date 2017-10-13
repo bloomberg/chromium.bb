@@ -21,5 +21,13 @@
       ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
+    {
+      'target_name': 'download_internals_visuals',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
+        'download_internals_browser_proxy',
+      ],
+      'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
   ],
 }

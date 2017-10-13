@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/memory/ptr_util.h"
+#include "base/optional.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/download/internal/client_set.h"
 #include "components/download/internal/config.h"
@@ -445,6 +446,7 @@ void ControllerImpl::OnDownloadUpdated(const DriverEntry& download) {
 
   DCHECK_EQ(download.state, DriverEntry::State::IN_PROGRESS);
 
+  log_sink_->OnServiceDownloadChanged(entry->guid);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&ControllerImpl::SendOnDownloadUpdated,
                             weak_ptr_factory_.GetWeakPtr(), entry->client,
@@ -519,6 +521,8 @@ void ControllerImpl::OnItemUpdated(bool success,
     driver_->Remove(guid);
 
   // TODO(dtrainor): If failed, clean up any download state accordingly.
+
+  log_sink_->OnServiceDownloadChanged(guid);
 }
 
 void ControllerImpl::OnItemRemoved(bool success,
@@ -533,6 +537,31 @@ Controller::State ControllerImpl::GetControllerState() {
 
 const StartupStatus& ControllerImpl::GetStartupStatus() {
   return startup_status_;
+}
+
+LogSource::EntryDetailsList ControllerImpl::GetServiceDownloads() {
+  EntryDetailsList list;
+
+  if (controller_state_ != State::READY)
+    return list;
+
+  auto entries = model_->PeekEntries();
+  for (auto* entry : entries) {
+    list.push_back(std::make_pair(entry, driver_->Find(entry->guid)));
+  }
+  return list;
+}
+
+base::Optional<LogSource::EntryDetails> ControllerImpl::GetServiceDownload(
+    const std::string& guid) {
+  if (controller_state_ != State::READY)
+    return base::nullopt;
+
+  auto* entry = model_->Get(guid);
+  auto driver_entry = driver_->Find(guid);
+
+  return base::Optional<LogSource::EntryDetails>(
+      std::make_pair(entry, driver_entry));
 }
 
 void ControllerImpl::OnDeviceStatusChanged(const DeviceStatus& device_status) {
@@ -578,6 +607,8 @@ void ControllerImpl::AttemptToFinalizeSetup() {
   NotifyClientsOfStartup(in_recovery);
 
   controller_state_ = State::READY;
+
+  log_sink_->OnServiceDownloadsAvailable();
 
   UpdateDriverStates();
 
@@ -882,6 +913,8 @@ void ControllerImpl::UpdateDriverState(Entry* entry) {
           net::NetworkTrafficAnnotationTag(entry->traffic_annotation));
     }
   }
+
+  log_sink_->OnServiceDownloadChanged(entry->guid);
 }
 
 void ControllerImpl::NotifyClientsOfStartup(bool state_lost) {
@@ -928,6 +961,8 @@ void ControllerImpl::HandleStartDownloadResponse(
     model_->Remove(guid);
   }
 
+  log_sink_->OnServiceRequestMade(client, guid, result);
+
   if (callback.is_null())
     return;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -970,6 +1005,8 @@ void ControllerImpl::HandleCompleteDownload(CompletionType type,
         FROM_HERE, base::Bind(&ControllerImpl::SendOnDownloadFailed,
                               weak_ptr_factory_.GetWeakPtr(), entry->client,
                               guid, FailureReasonFromCompletionType(type)));
+    log_sink_->OnServiceDownloadFailed(type, *entry);
+
     // TODO(dtrainor): Handle the case where we crash before the model write
     // happens and we have no driver entry.
     driver_->Remove(entry->guid);

@@ -20,6 +20,7 @@ class EmptyLogger : public Logger {
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
   base::Value GetServiceStatus() override;
+  base::Value GetServiceDownloads() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(EmptyLogger);

@@ -3,12 +3,18 @@
 // found in the LICENSE file.
 
 #include "components/download/internal/client_set.h"
+#include "components/download/internal/debugging_client.h"
 
 namespace download {
 
 ClientSet::ClientSet(std::unique_ptr<DownloadClientMap> clients)
     : clients_(std::move(clients)) {
   DCHECK(clients_->find(DownloadClient::INVALID) == clients_->end());
+  DCHECK(clients_->find(DownloadClient::DEBUGGING) == clients_->end());
+
+  // Add a Client to handle debug downloads automatically.
+  clients_->insert(std::make_pair(DownloadClient::DEBUGGING,
+                                  std::make_unique<DebuggingClient>()));
 }
 
 ClientSet::~ClientSet() = default;

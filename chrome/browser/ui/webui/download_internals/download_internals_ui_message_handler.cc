@@ -26,6 +26,10 @@ void DownloadInternalsUIMessageHandler::RegisterMessages() {
       "getServiceStatus",
       base::Bind(&DownloadInternalsUIMessageHandler::HandleGetServiceStatus,
                  weak_ptr_factory_.GetWeakPtr()));
+  web_ui()->RegisterMessageCallback(
+      "getServiceDownloads",
+      base::Bind(&DownloadInternalsUIMessageHandler::HandleGetServiceDownloads,
+                 weak_ptr_factory_.GetWeakPtr()));
 
   Profile* profile = Profile::FromWebUI(web_ui());
   download_service_ = DownloadServiceFactory::GetForBrowserContext(profile);
@@ -40,6 +44,38 @@ void DownloadInternalsUIMessageHandler::OnServiceStatusChanged(
   FireWebUIListener("service-status-changed", service_status);
 }
 
+void DownloadInternalsUIMessageHandler::OnServiceDownloadsAvailable(
+    const base::Value& service_downloads) {
+  if (!IsJavascriptAllowed())
+    return;
+
+  FireWebUIListener("service-downloads-available", service_downloads);
+}
+
+void DownloadInternalsUIMessageHandler::OnServiceDownloadChanged(
+    const base::Value& service_download) {
+  if (!IsJavascriptAllowed())
+    return;
+
+  FireWebUIListener("service-download-changed", service_download);
+}
+
+void DownloadInternalsUIMessageHandler::OnServiceDownloadFailed(
+    const base::Value& service_download) {
+  if (!IsJavascriptAllowed())
+    return;
+
+  FireWebUIListener("service-download-failed", service_download);
+}
+
+void DownloadInternalsUIMessageHandler::OnServiceRequestMade(
+    const base::Value& service_request) {
+  if (!IsJavascriptAllowed())
+    return;
+
+  FireWebUIListener("service-request-made", service_request);
+}
+
 void DownloadInternalsUIMessageHandler::HandleGetServiceStatus(
     const base::ListValue* args) {
   AllowJavascript();
@@ -48,6 +84,16 @@ void DownloadInternalsUIMessageHandler::HandleGetServiceStatus(
 
   ResolveJavascriptCallback(*callback_id,
                             download_service_->GetLogger()->GetServiceStatus());
+}
+
+void DownloadInternalsUIMessageHandler::HandleGetServiceDownloads(
+    const base::ListValue* args) {
+  AllowJavascript();
+  const base::Value* callback_id;
+  CHECK(args->Get(0, &callback_id));
+
+  ResolveJavascriptCallback(
+      *callback_id, download_service_->GetLogger()->GetServiceDownloads());
 }
 
 }  // namespace download_internals
