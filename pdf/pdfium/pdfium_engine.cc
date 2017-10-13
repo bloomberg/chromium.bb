@@ -774,7 +774,7 @@ PDFiumEngine::PDFiumEngine(PDFEngine::Client* client)
   IPDF_JSPLATFORM::Doc_print = Form_Print;
   IPDF_JSPLATFORM::Doc_submitForm = Form_SubmitForm;
   IPDF_JSPLATFORM::Doc_gotoPage = Form_GotoPage;
-  IPDF_JSPLATFORM::Field_browse = Form_Browse;
+  IPDF_JSPLATFORM::Field_browse = nullptr;
 
   IFSDK_PAUSE::version = 1;
   IFSDK_PAUSE::user = nullptr;
@@ -4219,16 +4219,6 @@ void PDFiumEngine::Form_SubmitForm(IPDF_JSPLATFORM* param,
 void PDFiumEngine::Form_GotoPage(IPDF_JSPLATFORM* param, int page_number) {
   PDFiumEngine* engine = static_cast<PDFiumEngine*>(param);
   engine->ScrollToPage(page_number);
-}
-
-int PDFiumEngine::Form_Browse(IPDF_JSPLATFORM* param,
-                              void* file_path,
-                              int length) {
-  PDFiumEngine* engine = static_cast<PDFiumEngine*>(param);
-  std::string path = engine->client_->ShowFileSelectionDialog();
-  if (path.size() + 1 <= static_cast<size_t>(length))
-    memcpy(file_path, &path[0], path.size() + 1);
-  return path.size() + 1;
 }
 
 FPDF_BOOL PDFiumEngine::Pause_NeedToPauseNow(IFSDK_PAUSE* param) {
