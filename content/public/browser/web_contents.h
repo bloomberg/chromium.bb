@@ -766,24 +766,6 @@ class WebContents : public PageNavigator,
   // as soon as they are ready.
   virtual void ResumeLoadingCreatedWebContents() = 0;
 
-  // Called when the WebContents has displayed a password field on an
-  // HTTP page. This method modifies the appropriate NavigationEntry's
-  // SSLStatus to record the sensitive input field, so that embedders
-  // can adjust the UI if desired.
-  virtual void OnPasswordInputShownOnHttp() = 0;
-
-  // Called when the WebContents has hidden all password fields on an
-  // HTTP page. This method modifies the appropriate NavigationEntry's
-  // SSLStatus to remove the presence of sensitive input fields, so that
-  // embedders can adjust the UI if desired.
-  virtual void OnAllPasswordInputsHiddenOnHttp() = 0;
-
-  // Called when the WebContents has displayed a credit card field on an
-  // HTTP page. This method modifies the appropriate NavigationEntry's
-  // SSLStatus to record the sensitive input field, so that embedders
-  // can adjust the UI if desired.
-  virtual void OnCreditCardInputShownOnHttp() = 0;
-
   // Sets whether the WebContents is for overlaying content on a page.
   virtual void SetIsOverlayContent(bool is_overlay_content) = 0;
 

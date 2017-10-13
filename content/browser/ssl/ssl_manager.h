@@ -84,9 +84,6 @@ class CONTENT_EXPORT SSLManager {
   void DidDisplayMixedContent();
   void DidContainInsecureFormAction();
   void DidDisplayContentWithCertErrors();
-  void DidShowPasswordInputOnHttp();
-  void DidHideAllPasswordInputsOnHttp();
-  void DidShowCreditCardInputOnHttp();
   void DidRunMixedContent(const GURL& security_origin);
   void DidRunContentWithCertErrors(const GURL& security_origin);
 

@@ -180,6 +180,11 @@ class AutofillClient : public RiskDataLoader {
       const base::string16& autofilled_value,
       const base::string16& profile_full_name) = 0;
 
+  // Inform the client that the user interacted with a non-secure credit card
+  // field.
+  virtual void DidInteractWithNonsecureCreditCardInput(
+      content::RenderFrameHost* rfh) = 0;
+
   // If the context is secure.
   virtual bool IsContextSecure() = 0;
 

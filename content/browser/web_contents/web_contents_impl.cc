@@ -4294,18 +4294,6 @@ void WebContentsImpl::OnUpdateFaviconURL(
     observer.DidUpdateFaviconURL(candidates);
 }
 
-void WebContentsImpl::OnPasswordInputShownOnHttp() {
-  controller_.ssl_manager()->DidShowPasswordInputOnHttp();
-}
-
-void WebContentsImpl::OnAllPasswordInputsHiddenOnHttp() {
-  controller_.ssl_manager()->DidHideAllPasswordInputsOnHttp();
-}
-
-void WebContentsImpl::OnCreditCardInputShownOnHttp() {
-  controller_.ssl_manager()->DidShowCreditCardInputOnHttp();
-}
-
 void WebContentsImpl::SetIsOverlayContent(bool is_overlay_content) {
   is_overlay_content_ = is_overlay_content;
 }

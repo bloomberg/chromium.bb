@@ -64,8 +64,8 @@ void ExplainHTTPSecurity(
             l10n_util::GetStringUTF8(IDS_EDITED_NONSECURE),
             l10n_util::GetStringUTF8(IDS_EDITED_NONSECURE_DESCRIPTION)));
   }
-  if (security_info.displayed_password_field_on_http ||
-      security_info.displayed_credit_card_field_on_http) {
+  if (security_info.insecure_input_events.password_field_shown ||
+      security_info.insecure_input_events.credit_card_field_edited) {
     security_style_explanations->neutral_explanations.push_back(
         content::SecurityStyleExplanation(
             l10n_util::GetStringUTF8(IDS_PRIVATE_USER_DATA_INPUT),
@@ -388,12 +388,6 @@ std::unique_ptr<security_state::VisibleSecurityState> GetVisibleSecurityState(
   state->contained_mixed_form =
       !!(ssl.content_status &
          content::SSLStatus::DISPLAYED_FORM_WITH_INSECURE_ACTION);
-  state->displayed_password_field_on_http =
-      !!(ssl.content_status &
-         content::SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP);
-  state->displayed_credit_card_field_on_http =
-      !!(ssl.content_status &
-         content::SSLStatus::DISPLAYED_CREDIT_CARD_FIELD_ON_HTTP);
 
   SSLStatusInputEventData* input_events =
       static_cast<SSLStatusInputEventData*>(ssl.user_data.get());

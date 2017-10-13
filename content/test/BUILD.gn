@@ -1408,7 +1408,6 @@ test("content_unittests") {
     "../browser/shared_worker/shared_worker_service_impl_unittest.cc",
     "../browser/site_instance_impl_unittest.cc",
     "../browser/ssl/ignore_errors_cert_verifier_unittest.cc",
-    "../browser/ssl/ssl_manager_unittest.cc",
     "../browser/startup_task_runner_unittest.cc",
     "../browser/storage_partition_impl_map_unittest.cc",
     "../browser/storage_partition_impl_unittest.cc",

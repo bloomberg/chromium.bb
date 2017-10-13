@@ -56,8 +56,6 @@ class TestSecurityStateHelper {
         contained_mixed_form_(false),
         ran_mixed_content_(false),
         malicious_content_status_(MALICIOUS_CONTENT_STATUS_NONE),
-        displayed_password_field_on_http_(false),
-        displayed_credit_card_field_on_http_(false),
         is_incognito_(false),
         is_error_page_(false) {}
   virtual ~TestSecurityStateHelper() {}
@@ -87,13 +85,11 @@ class TestSecurityStateHelper {
       MaliciousContentStatus malicious_content_status) {
     malicious_content_status_ = malicious_content_status;
   }
-  void set_displayed_password_field_on_http(
-      bool displayed_password_field_on_http) {
-    displayed_password_field_on_http_ = displayed_password_field_on_http;
+  void set_password_field_shown(bool password_field_shown) {
+    insecure_input_events_.password_field_shown = password_field_shown;
   }
-  void set_displayed_credit_card_field_on_http(
-      bool displayed_credit_card_field_on_http) {
-    displayed_credit_card_field_on_http_ = displayed_credit_card_field_on_http;
+  void set_credit_card_field_edited(bool credit_card_field_edited) {
+    insecure_input_events_.credit_card_field_edited = credit_card_field_edited;
   }
   void set_is_incognito(bool is_incognito) { is_incognito_ = is_incognito; }
 
@@ -117,9 +113,6 @@ class TestSecurityStateHelper {
     state->contained_mixed_form = contained_mixed_form_;
     state->ran_mixed_content = ran_mixed_content_;
     state->malicious_content_status = malicious_content_status_;
-    state->displayed_password_field_on_http = displayed_password_field_on_http_;
-    state->displayed_credit_card_field_on_http =
-        displayed_credit_card_field_on_http_;
     state->is_incognito = is_incognito_;
     state->is_error_page = is_error_page_;
     state->insecure_input_events = insecure_input_events_;
@@ -142,8 +135,6 @@ class TestSecurityStateHelper {
   bool contained_mixed_form_;
   bool ran_mixed_content_;
   MaliciousContentStatus malicious_content_status_;
-  bool displayed_password_field_on_http_;
-  bool displayed_credit_card_field_on_http_;
   bool is_incognito_;
   bool is_error_page_;
   InsecureInputEventData insecure_input_events_;
@@ -287,12 +278,12 @@ TEST(SecurityStateTest, MalwareWithoutConnectionState) {
 TEST(SecurityStateTest, AlwaysWarnOnDataUrls) {
   TestSecurityStateHelper helper;
   helper.SetUrl(GURL("data:text/html,<html>test</html>"));
-  helper.set_displayed_password_field_on_http(false);
-  helper.set_displayed_credit_card_field_on_http(false);
+  helper.set_password_field_shown(false);
+  helper.set_credit_card_field_edited(false);
   SecurityInfo security_info;
   helper.GetSecurityInfo(&security_info);
-  EXPECT_FALSE(security_info.displayed_password_field_on_http);
-  EXPECT_FALSE(security_info.displayed_credit_card_field_on_http);
+  EXPECT_FALSE(security_info.insecure_input_events.password_field_shown);
+  EXPECT_FALSE(security_info.insecure_input_events.credit_card_field_edited);
   EXPECT_EQ(HTTP_SHOW_WARNING, security_info.security_level);
 }
 
@@ -301,12 +292,12 @@ TEST(SecurityStateTest, AlwaysWarnOnDataUrls) {
 TEST(SecurityStateTest, AlwaysWarnOnFtpUrls) {
   TestSecurityStateHelper helper;
   helper.SetUrl(GURL("ftp://example.test/"));
-  helper.set_displayed_password_field_on_http(false);
-  helper.set_displayed_credit_card_field_on_http(false);
+  helper.set_password_field_shown(false);
+  helper.set_credit_card_field_edited(false);
   SecurityInfo security_info;
   helper.GetSecurityInfo(&security_info);
-  EXPECT_FALSE(security_info.displayed_password_field_on_http);
-  EXPECT_FALSE(security_info.displayed_credit_card_field_on_http);
+  EXPECT_FALSE(security_info.insecure_input_events.password_field_shown);
+  EXPECT_FALSE(security_info.insecure_input_events.credit_card_field_edited);
   EXPECT_EQ(HTTP_SHOW_WARNING, security_info.security_level);
 }
 
@@ -315,10 +306,10 @@ TEST(SecurityStateTest, AlwaysWarnOnFtpUrls) {
 TEST(SecurityStateTest, PasswordFieldWarning) {
   TestSecurityStateHelper helper;
   helper.SetUrl(GURL(kHttpUrl));
-  helper.set_displayed_password_field_on_http(true);
+  helper.set_password_field_shown(true);
   SecurityInfo security_info;
   helper.GetSecurityInfo(&security_info);
-  EXPECT_TRUE(security_info.displayed_password_field_on_http);
+  EXPECT_TRUE(security_info.insecure_input_events.password_field_shown);
   EXPECT_EQ(HTTP_SHOW_WARNING, security_info.security_level);
 }
 
@@ -328,10 +319,10 @@ TEST(SecurityStateTest, PasswordFieldWarningOnPseudoUrls) {
   for (const char* const url : kPseudoUrls) {
     TestSecurityStateHelper helper;
     helper.SetUrl(GURL(url));
-    helper.set_displayed_password_field_on_http(true);
+    helper.set_password_field_shown(true);
     SecurityInfo security_info;
     helper.GetSecurityInfo(&security_info);
-    EXPECT_TRUE(security_info.displayed_password_field_on_http);
+    EXPECT_TRUE(security_info.insecure_input_events.password_field_shown);
     EXPECT_EQ(HTTP_SHOW_WARNING, security_info.security_level);
   }
 }
@@ -341,10 +332,10 @@ TEST(SecurityStateTest, PasswordFieldWarningOnPseudoUrls) {
 TEST(SecurityStateTest, CreditCardFieldWarning) {
   TestSecurityStateHelper helper;
   helper.SetUrl(GURL(kHttpUrl));
-  helper.set_displayed_credit_card_field_on_http(true);
+  helper.set_credit_card_field_edited(true);
   SecurityInfo security_info;
   helper.GetSecurityInfo(&security_info);
-  EXPECT_TRUE(security_info.displayed_credit_card_field_on_http);
+  EXPECT_TRUE(security_info.insecure_input_events.credit_card_field_edited);
   EXPECT_EQ(HTTP_SHOW_WARNING, security_info.security_level);
 }
 
@@ -354,29 +345,29 @@ TEST(SecurityStateTest, CreditCardFieldWarningOnPseudoUrls) {
   for (const char* const url : kPseudoUrls) {
     TestSecurityStateHelper helper;
     helper.SetUrl(GURL(url));
-    helper.set_displayed_credit_card_field_on_http(true);
+    helper.set_credit_card_field_edited(true);
     SecurityInfo security_info;
     helper.GetSecurityInfo(&security_info);
-    EXPECT_TRUE(security_info.displayed_credit_card_field_on_http);
+    EXPECT_TRUE(security_info.insecure_input_events.credit_card_field_edited);
     EXPECT_EQ(HTTP_SHOW_WARNING, security_info.security_level);
   }
 }
 
-// Tests that neither |displayed_password_field_on_http| nor
-// |displayed_credit_card_field_on_http| is set when the corresponding
+// Tests that neither |password_field_shown| nor
+// |credit_card_field_edited| is set when the corresponding
 // VisibleSecurityState flags are not set.
 TEST(SecurityStateTest, PrivateUserDataNotSet) {
   TestSecurityStateHelper helper;
   helper.SetUrl(GURL(kHttpUrl));
   SecurityInfo security_info;
   helper.GetSecurityInfo(&security_info);
-  EXPECT_FALSE(security_info.displayed_password_field_on_http);
-  EXPECT_FALSE(security_info.displayed_credit_card_field_on_http);
+  EXPECT_FALSE(security_info.insecure_input_events.password_field_shown);
+  EXPECT_FALSE(security_info.insecure_input_events.credit_card_field_edited);
   EXPECT_EQ(NONE, security_info.security_level);
 }
 
-// Tests that neither |displayed_password_field_on_http| nor
-// |displayed_credit_card_field_on_http| is set on pseudo URLs when the
+// Tests that neither |password_field_shown| nor
+// |credit_card_field_edited| is set on pseudo URLs when the
 // corresponding VisibleSecurityState flags are not set.
 TEST(SecurityStateTest, PrivateUserDataNotSetOnPseudoUrls) {
   for (const char* const url : kPseudoUrls) {
@@ -384,8 +375,8 @@ TEST(SecurityStateTest, PrivateUserDataNotSetOnPseudoUrls) {
     helper.SetUrl(GURL(url));
     SecurityInfo security_info;
     helper.GetSecurityInfo(&security_info);
-    EXPECT_FALSE(security_info.displayed_password_field_on_http);
-    EXPECT_FALSE(security_info.displayed_credit_card_field_on_http);
+    EXPECT_FALSE(security_info.insecure_input_events.password_field_shown);
+    EXPECT_FALSE(security_info.insecure_input_events.credit_card_field_edited);
     EXPECT_EQ(NONE, security_info.security_level);
   }
 }
@@ -424,7 +415,7 @@ TEST(SecurityStateTest, MarkHttpAsStatusHistogram) {
 
   // Ensure histogram recorded correctly when a non-secure password input is
   // found on the page.
-  helper.set_displayed_password_field_on_http(true);
+  helper.set_password_field_shown(true);
   SecurityInfo security_info;
   histograms.ExpectTotalCount(kHistogramName, 0);
   helper.GetSecurityInfo(&security_info);
@@ -432,7 +423,7 @@ TEST(SecurityStateTest, MarkHttpAsStatusHistogram) {
       kHistogramName, 2 /* HTTP_SHOW_WARNING_ON_SENSITIVE_FIELDS */, 1);
 
   // Ensure histogram recorded correctly even without a password input.
-  helper.set_displayed_password_field_on_http(false);
+  helper.set_password_field_shown(false);
   helper.GetSecurityInfo(&security_info);
   histograms.ExpectUniqueSample(
       kHistogramName, 2 /* HTTP_SHOW_WARNING_ON_SENSITIVE_FIELDS */, 2);

@@ -20,6 +20,7 @@
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_promo_util.h"
+#include "chrome/browser/ssl/insecure_sensitive_input_driver_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller_impl.h"
 #include "chrome/browser/ui/autofill/create_card_unmask_prompt_view.h"
@@ -346,6 +347,14 @@ void ChromeAutofillClient::DidFillOrPreviewField(
   AutofillLoggerAndroid::DidFillOrPreviewField(autofilled_value,
                                                profile_full_name);
 #endif  // defined(OS_ANDROID)
+}
+
+void ChromeAutofillClient::DidInteractWithNonsecureCreditCardInput(
+    content::RenderFrameHost* rfh) {
+  InsecureSensitiveInputDriverFactory* factory =
+      InsecureSensitiveInputDriverFactory::GetOrCreateForWebContents(
+          web_contents());
+  factory->DidInteractWithNonsecureCreditCardInput();
 }
 
 bool ChromeAutofillClient::IsContextSecure() {

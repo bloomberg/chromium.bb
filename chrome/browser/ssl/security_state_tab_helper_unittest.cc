@@ -4,10 +4,14 @@
 
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 
+#include <string>
+
 #include "base/command_line.h"
 #include "base/test/histogram_tester.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "components/security_state/content/ssl_status_input_event_data.h"
 #include "components/security_state/core/switches.h"
+#include "content/public/browser/navigation_entry.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -16,6 +20,33 @@ const char kHTTPBadNavigationHistogram[] =
     "Security.HTTPBad.NavigationStartedAfterUserWarnedAboutSensitiveInput";
 const char kHTTPBadWebContentsDestroyedHistogram[] =
     "Security.HTTPBad.WebContentsDestroyedAfterUserWarnedAboutSensitiveInput";
+
+// Gets the Insecure Input Events from the entry's SSLStatus user data.
+security_state::InsecureInputEventData GetInputEvents(
+    content::NavigationEntry* entry) {
+  security_state::SSLStatusInputEventData* input_events =
+      static_cast<security_state::SSLStatusInputEventData*>(
+          entry->GetSSL().user_data.get());
+  if (input_events)
+    return *input_events->input_events();
+
+  return security_state::InsecureInputEventData();
+}
+
+// Stores the Insecure Input Events to the entry's SSLStatus user data.
+void SetInputEvents(content::NavigationEntry* entry,
+                    security_state::InsecureInputEventData events) {
+  security_state::SSLStatus& ssl = entry->GetSSL();
+  security_state::SSLStatusInputEventData* input_events =
+      static_cast<security_state::SSLStatusInputEventData*>(
+          ssl.user_data.get());
+  if (!input_events) {
+    ssl.user_data =
+        base::MakeUnique<security_state::SSLStatusInputEventData>(events);
+  } else {
+    *input_events->input_events() = events;
+  }
+}
 
 class SecurityStateTabHelperHistogramTest
     : public ChromeRenderViewHostTestHarness,
@@ -34,10 +65,21 @@ class SecurityStateTabHelperHistogramTest
 
  protected:
   void SignalSensitiveInput() {
+    content::NavigationEntry* entry =
+        web_contents()->GetController().GetVisibleEntry();
+    security_state::InsecureInputEventData input_events = GetInputEvents(entry);
     if (GetParam())
-      web_contents()->OnPasswordInputShownOnHttp();
+      input_events.password_field_shown = true;
     else
-      web_contents()->OnCreditCardInputShownOnHttp();
+      input_events.credit_card_field_edited = true;
+    SetInputEvents(entry, input_events);
+    helper_->VisibleSecurityStateChanged();
+  }
+
+  void ClearInputEvents() {
+    content::NavigationEntry* entry =
+        web_contents()->GetController().GetVisibleEntry();
+    SetInputEvents(entry, security_state::InsecureInputEventData());
     helper_->VisibleSecurityStateChanged();
   }
 
@@ -68,8 +110,9 @@ TEST_P(SecurityStateTabHelperHistogramTest,
   // Make sure that if the omnibox warning gets dynamically hidden, the
   // histogram still gets recorded.
   NavigateToDifferentHTTPPage();
-  if (GetParam())
-    web_contents()->OnAllPasswordInputsHiddenOnHttp();
+  if (GetParam()) {
+    ClearInputEvents();
+  }
   // Destroy the WebContents to simulate the tab being closed after a
   // navigation.
   SetContents(nullptr);
