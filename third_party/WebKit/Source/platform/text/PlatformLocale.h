@@ -42,7 +42,7 @@ class PLATFORM_EXPORT Locale {
  public:
   static std::unique_ptr<Locale> Create(const String& locale_identifier);
   static Locale& DefaultLocale();
-  static void ResetDefautlLocale();
+  static void ResetDefaultLocale();
 
   String QueryString(WebLocalizedString::Name);
   String QueryString(WebLocalizedString::Name, const String& parameter);
