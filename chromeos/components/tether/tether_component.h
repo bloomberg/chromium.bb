@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_COMPONENTS_TETHER_INITIALIZER_H_
-#define CHROMEOS_COMPONENTS_TETHER_INITIALIZER_H_
+#ifndef CHROMEOS_COMPONENTS_TETHER_TETHER_COMPONENT_H_
+#define CHROMEOS_COMPONENTS_TETHER_TETHER_COMPONENT_H_
 
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -13,7 +13,7 @@ namespace chromeos {
 namespace tether {
 
 // Initializes the Tether component.
-class Initializer {
+class TetherComponent {
  public:
   class Observer {
    public:
@@ -25,15 +25,15 @@ class Initializer {
 
   enum class Status { ACTIVE, SHUTTING_DOWN, SHUT_DOWN };
 
-  Initializer();
-  virtual ~Initializer();
+  TetherComponent();
+  virtual ~TetherComponent();
 
   // Requests that the Tether component shuts down. If the component can be shut
-  // down synchronously, this causes Initializer to transition to the SHUT_DOWN
-  // status immediately. However, if the component requires an asynchronous
-  // shutdown, the class transitions to the SHUTTING_DOWN status; once an
-  // asynchronous shutdown completes, Initializer transitions to the SHUT_DOWN
-  // status and notifies observers.
+  // down synchronously, this causes TetherComponent to transition to the
+  // SHUT_DOWN status immediately. However, if the component requires an
+  // asynchronous shutdown, the class transitions to the SHUTTING_DOWN status;
+  // once an asynchronous shutdown completes, TetherComponent transitions to the
+  // SHUT_DOWN status and notifies observers.
   virtual void RequestShutdown() = 0;
 
   void AddObserver(Observer* observer);
@@ -46,11 +46,11 @@ class Initializer {
   Status status_ = Status::ACTIVE;
   base::ObserverList<Observer> observer_list_;
 
-  DISALLOW_COPY_AND_ASSIGN(Initializer);
+  DISALLOW_COPY_AND_ASSIGN(TetherComponent);
 };
 
 }  // namespace tether
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_COMPONENTS_TETHER_INITIALIZER_H_
+#endif  // CHROMEOS_COMPONENTS_TETHER_TETHER_COMPONENT_H_

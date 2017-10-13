@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/components/tether/initializer_impl.h"
+#include "chromeos/components/tether/tether_component_impl.h"
 
 #include <memory>
 
@@ -114,10 +114,10 @@ class TestNetworkConnectionHandler : public NetworkConnectionHandler {
 
 }  // namespace
 
-class InitializerTest : public NetworkStateTest {
+class TetherComponentImplTest : public NetworkStateTest {
  protected:
-  InitializerTest() : NetworkStateTest() {}
-  ~InitializerTest() override {}
+  TetherComponentImplTest() : NetworkStateTest() {}
+  ~TetherComponentImplTest() override {}
 
   void SetUp() override {
     DBusThreadManager::Initialize();
@@ -128,7 +128,7 @@ class InitializerTest : public NetworkStateTest {
         NetworkStateHandler::TECHNOLOGY_ENABLED);
 
     test_pref_service_ = base::MakeUnique<TestingPrefServiceSimple>();
-    InitializerImpl::RegisterProfilePrefs(test_pref_service_->registry());
+    TetherComponentImpl::RegisterProfilePrefs(test_pref_service_->registry());
   }
 
   void TearDown() override {
@@ -146,11 +146,11 @@ class InitializerTest : public NetworkStateTest {
       NetworkConnect* network_connect,
       NetworkConnectionHandler* network_connection_handler,
       scoped_refptr<device::BluetoothAdapter> adapter) {
-    Initializer* initializer = new InitializerImpl(
+    TetherComponent* tether_component = new TetherComponentImpl(
         cryptauth_service, notification_presenter, pref_service,
         network_state_handler, managed_network_configuration_handler,
         network_connect, network_connection_handler, adapter);
-    delete initializer;
+    delete tether_component;
   }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -158,13 +158,13 @@ class InitializerTest : public NetworkStateTest {
   std::unique_ptr<TestingPrefServiceSimple> test_pref_service_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(InitializerTest);
+  DISALLOW_COPY_AND_ASSIGN(TetherComponentImplTest);
 };
 
-// This test ensures that Initializer's destructor runs in the correct order and
-// results in a correct clean-up of all created components. If the destructor
-// were to result in an error being thrown, this test would fail.
-TEST_F(InitializerTest, TestCreateAndDestroy) {
+// This test ensures that TetherComponentImpl's destructor runs in the correct
+// order and results in a correct clean-up of all created components. If the
+// destructor were to result in an error being thrown, this test would fail.
+TEST_F(TetherComponentImplTest, TestCreateAndDestroy) {
   std::unique_ptr<NiceMock<MockCryptAuthDeviceManager>> mock_device_manager =
       base::WrapUnique(new NiceMock<MockCryptAuthDeviceManager>());
 
@@ -205,8 +205,9 @@ TEST_F(InitializerTest, TestCreateAndDestroy) {
       base::MakeRefCounted<NiceMock<device::MockBluetoothAdapter>>();
 
   // Call an instance method of the test instead of initializing and destroying
-  // here because the friend relationship between Initializer and
-  // InitializerTest only applies to the class itself, not these test functions.
+  // here because the friend relationship between TetherComponent and
+  // TetherComponentImplTest only applies to the class itself, not these test
+  // functions.
   InitializeAndDestroy(
       fake_cryptauth_service.get(), fake_notification_presenter.get(),
       test_pref_service_.get(), network_state_handler(),

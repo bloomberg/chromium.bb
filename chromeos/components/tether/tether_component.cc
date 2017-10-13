@@ -2,25 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/components/tether/initializer.h"
+#include "chromeos/components/tether/tether_component.h"
 
 namespace chromeos {
 
 namespace tether {
 
-Initializer::Initializer() {}
+TetherComponent::TetherComponent() {}
 
-Initializer::~Initializer() {}
+TetherComponent::~TetherComponent() {}
 
-void Initializer::AddObserver(Observer* observer) {
+void TetherComponent::AddObserver(Observer* observer) {
   observer_list_.AddObserver(observer);
 }
 
-void Initializer::RemoveObserver(Observer* observer) {
+void TetherComponent::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-void Initializer::TransitionToStatus(Status new_status) {
+void TetherComponent::TransitionToStatus(Status new_status) {
   if (status_ == new_status)
     return;
 

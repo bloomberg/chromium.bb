@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/components/tether/initializer_impl.h"
+#include "chromeos/components/tether/tether_component_impl.h"
 
 #include "base/bind.h"
 #include "chromeos/components/tether/active_host.h"
@@ -59,10 +59,11 @@ void OnDisconnectErrorDuringShutdown(const std::string& error_name) {
 }  // namespace
 
 // static
-InitializerImpl::Factory* InitializerImpl::Factory::factory_instance_ = nullptr;
+TetherComponentImpl::Factory* TetherComponentImpl::Factory::factory_instance_ =
+    nullptr;
 
 // static
-std::unique_ptr<Initializer> InitializerImpl::Factory::NewInstance(
+std::unique_ptr<TetherComponent> TetherComponentImpl::Factory::NewInstance(
     cryptauth::CryptAuthService* cryptauth_service,
     NotificationPresenter* notification_presenter,
     PrefService* pref_service,
@@ -81,19 +82,19 @@ std::unique_ptr<Initializer> InitializerImpl::Factory::NewInstance(
 }
 
 // static
-void InitializerImpl::Factory::SetInstanceForTesting(Factory* factory) {
+void TetherComponentImpl::Factory::SetInstanceForTesting(Factory* factory) {
   factory_instance_ = factory;
 }
 
 // static
-void InitializerImpl::RegisterProfilePrefs(PrefRegistrySimple* registry) {
+void TetherComponentImpl::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   ActiveHost::RegisterPrefs(registry);
   PersistentHostScanCacheImpl::RegisterPrefs(registry);
   TetherHostResponseRecorder::RegisterPrefs(registry);
   WifiHotspotDisconnectorImpl::RegisterPrefs(registry);
 }
 
-std::unique_ptr<Initializer> InitializerImpl::Factory::BuildInstance(
+std::unique_ptr<TetherComponent> TetherComponentImpl::Factory::BuildInstance(
     cryptauth::CryptAuthService* cryptauth_service,
     NotificationPresenter* notification_presenter,
     PrefService* pref_service,
@@ -102,13 +103,13 @@ std::unique_ptr<Initializer> InitializerImpl::Factory::BuildInstance(
     NetworkConnect* network_connect,
     NetworkConnectionHandler* network_connection_handler,
     scoped_refptr<device::BluetoothAdapter> adapter) {
-  return base::WrapUnique(new InitializerImpl(
+  return base::WrapUnique(new TetherComponentImpl(
       cryptauth_service, notification_presenter, pref_service,
       network_state_handler, managed_network_configuration_handler,
       network_connect, network_connection_handler, adapter));
 }
 
-InitializerImpl::InitializerImpl(
+TetherComponentImpl::TetherComponentImpl(
     cryptauth::CryptAuthService* cryptauth_service,
     NotificationPresenter* notification_presenter,
     PrefService* pref_service,
@@ -130,7 +131,7 @@ InitializerImpl::InitializerImpl(
   CreateComponent();
 }
 
-InitializerImpl::~InitializerImpl() {
+TetherComponentImpl::~TetherComponentImpl() {
   network_state_handler_->set_tether_sort_delegate(nullptr);
 
   if (disconnect_tethering_request_sender_)
@@ -140,9 +141,9 @@ InitializerImpl::~InitializerImpl() {
 // Note: The asynchronous shutdown flow does not scale well (see
 // crbug.com/761532).
 // TODO(khorimoto): Refactor this flow.
-void InitializerImpl::RequestShutdown() {
+void TetherComponentImpl::RequestShutdown() {
   // If shutdown has already happened, there is nothing else to do.
-  if (status() != Initializer::Status::ACTIVE)
+  if (status() != TetherComponent::Status::ACTIVE)
     return;
 
   // If there is an active connection, it needs to be disconnected before the
@@ -160,28 +161,28 @@ void InitializerImpl::RequestShutdown() {
   }
 
   if (!IsAsyncShutdownRequired()) {
-    TransitionToStatus(Initializer::Status::SHUT_DOWN);
+    TransitionToStatus(TetherComponent::Status::SHUT_DOWN);
     return;
   }
 
-  TransitionToStatus(Initializer::Status::SHUTTING_DOWN);
+  TransitionToStatus(TetherComponent::Status::SHUTTING_DOWN);
   StartAsynchronousShutdown();
 }
 
-void InitializerImpl::OnAllAdvertisementsUnregistered() {
+void TetherComponentImpl::OnAllAdvertisementsUnregistered() {
   FinishAsynchronousShutdownIfPossible();
 }
 
-void InitializerImpl::OnPendingDisconnectRequestsComplete() {
+void TetherComponentImpl::OnPendingDisconnectRequestsComplete() {
   FinishAsynchronousShutdownIfPossible();
 }
 
-void InitializerImpl::OnDiscoverySessionStateChanged(
+void TetherComponentImpl::OnDiscoverySessionStateChanged(
     bool discovery_session_active) {
   FinishAsynchronousShutdownIfPossible();
 }
 
-void InitializerImpl::CreateComponent() {
+void TetherComponentImpl::CreateComponent() {
   network_list_sorter_ = base::MakeUnique<NetworkListSorter>();
   network_state_handler_->set_tether_sort_delegate(network_list_sorter_.get());
   tether_host_fetcher_ =
@@ -276,11 +277,11 @@ void InitializerImpl::CreateComponent() {
       network_state_handler_, active_host_.get(),
       master_host_scan_cache_.get());
   crash_recovery_manager_->RestorePreCrashStateIfNecessary(
-      base::Bind(&InitializerImpl::OnPreCrashStateRestored,
+      base::Bind(&TetherComponentImpl::OnPreCrashStateRestored,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-bool InitializerImpl::IsAsyncShutdownRequired() {
+bool TetherComponentImpl::IsAsyncShutdownRequired() {
   // All of the asynchronous shutdown procedures depend on Bluetooth. If
   // Bluetooth is off, there is no way to complete these tasks.
   if (!adapter_->IsPowered())
@@ -306,7 +307,7 @@ bool InitializerImpl::IsAsyncShutdownRequired() {
   return false;
 }
 
-void InitializerImpl::OnPreCrashStateRestored() {
+void TetherComponentImpl::OnPreCrashStateRestored() {
   // |crash_recovery_manager_| is no longer needed since it has completed.
   crash_recovery_manager_.reset();
 
@@ -314,8 +315,8 @@ void InitializerImpl::OnPreCrashStateRestored() {
   host_scan_scheduler_->ScheduleScan();
 }
 
-void InitializerImpl::StartAsynchronousShutdown() {
-  DCHECK(status() == Initializer::Status::SHUTTING_DOWN);
+void TetherComponentImpl::StartAsynchronousShutdown() {
+  DCHECK(status() == TetherComponent::Status::SHUTTING_DOWN);
   DCHECK(disconnect_tethering_request_sender_->HasPendingRequests());
 
   // |ble_scanner_| and |disconnect_tethering_request_sender_| require
@@ -352,8 +353,8 @@ void InitializerImpl::StartAsynchronousShutdown() {
   network_list_sorter_.reset();
 }
 
-void InitializerImpl::FinishAsynchronousShutdownIfPossible() {
-  DCHECK(status() == Initializer::Status::SHUTTING_DOWN);
+void TetherComponentImpl::FinishAsynchronousShutdownIfPossible() {
+  DCHECK(status() == TetherComponent::Status::SHUTTING_DOWN);
 
   // If the asynchronous shutdown is not yet complete (i.e., only some of the
   // shutdown requirements are complete), do not shut down yet.
@@ -378,7 +379,7 @@ void InitializerImpl::FinishAsynchronousShutdownIfPossible() {
   local_device_data_provider_.reset();
   tether_host_fetcher_.reset();
 
-  TransitionToStatus(Initializer::Status::SHUT_DOWN);
+  TransitionToStatus(TetherComponent::Status::SHUT_DOWN);
 }
 
 }  // namespace tether

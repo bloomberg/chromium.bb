@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
-#include "chromeos/components/tether/initializer.h"
+#include "chromeos/components/tether/tether_component.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/network/network_state_handler.h"
@@ -41,7 +41,7 @@ class TetherService : public KeyedService,
                       public cryptauth::CryptAuthDeviceManager::Observer,
                       public device::BluetoothAdapter::Observer,
                       public chromeos::NetworkStateHandlerObserver,
-                      public chromeos::tether::Initializer::Observer {
+                      public chromeos::tether::TetherComponent::Observer {
  public:
   TetherService(Profile* profile,
                 chromeos::PowerManagerClient* power_manager_client,
@@ -88,7 +88,7 @@ class TetherService : public KeyedService,
   // chromeos::NetworkStateHandlerObserver:
   void DeviceListChanged() override;
 
-  // chromeos::tether::Initializer::Observer:
+  // chromeos::tether::TetherComponent::Observer:
   void OnShutdownComplete() override;
 
   // Callback when the controlling pref changes.
@@ -227,7 +227,7 @@ class TetherService : public KeyedService,
   chromeos::NetworkStateHandler* network_state_handler_;
   std::unique_ptr<chromeos::tether::NotificationPresenter>
       notification_presenter_;
-  std::unique_ptr<chromeos::tether::Initializer> initializer_;
+  std::unique_ptr<chromeos::tether::TetherComponent> tether_component_;
 
   PrefChangeRegistrar registrar_;
   scoped_refptr<device::BluetoothAdapter> adapter_;
