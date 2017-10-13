@@ -16,11 +16,19 @@ source_set("u2f") {
     "u2f_command_type.h",
     "u2f_device.cc",
     "u2f_device.h",
+    "u2f_discovery.cc",
+    "u2f_discovery.h",
     "u2f_message.cc",
     "u2f_message.h",
     "u2f_packet.cc",
     "u2f_packet.h",
+    "u2f_register.cc",
+    "u2f_register.h",
+    "u2f_request.cc",
+    "u2f_request.h",
     "u2f_return_code.h",
+    "u2f_sign.cc",
+    "u2f_sign.h",
   ]
 
   deps = [
@@ -39,12 +47,8 @@ source_set("u2f") {
     sources += [
       "u2f_hid_device.cc",
       "u2f_hid_device.h",
-      "u2f_register.cc",
-      "u2f_register.h",
-      "u2f_request.cc",
-      "u2f_request.h",
-      "u2f_sign.cc",
-      "u2f_sign.h",
+      "u2f_hid_discovery.cc",
+      "u2f_hid_discovery.h",
     ]
 
     deps += [ "//device/hid" ]
@@ -57,6 +61,8 @@ source_set("mocks") {
   sources = [
     "mock_u2f_device.cc",
     "mock_u2f_device.h",
+    "mock_u2f_discovery.cc",
+    "mock_u2f_discovery.h",
   ]
 
   deps = [

@@ -5,12 +5,14 @@
 #ifndef DEVICE_U2F_MOCK_U2F_DEVICE_H_
 #define DEVICE_U2F_MOCK_U2F_DEVICE_H_
 
+#include <memory>
+#include <string>
 #include <vector>
 
 #include "base/memory/ptr_util.h"
+#include "device/u2f/u2f_apdu_command.h"
+#include "device/u2f/u2f_device.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "u2f_apdu_command.h"
-#include "u2f_device.h"
 
 namespace device {
 
@@ -23,7 +25,7 @@ class MockU2fDevice : public U2fDevice {
   ~MockU2fDevice() override;
 
   MOCK_METHOD1(TryWink, void(const WinkCallback& cb));
-  MOCK_METHOD0(GetId, std::string(void));
+  MOCK_CONST_METHOD0(GetId, std::string(void));
   // GMock cannot mock a method taking a std::unique_ptr<T>
   MOCK_METHOD2(DeviceTransactPtr,
                void(U2fApduCommand* command, const DeviceCallback& cb));

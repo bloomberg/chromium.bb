@@ -5,12 +5,14 @@
 #ifndef DEVICE_U2F_U2F_DEVICE_H_
 #define DEVICE_U2F_U2F_DEVICE_H_
 
+#include <memory>
+#include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
-#include "u2f_apdu_response.h"
-#include "u2f_return_code.h"
+#include "device/u2f/u2f_apdu_response.h"
+#include "device/u2f/u2f_return_code.h"
 
 namespace device {
 
@@ -47,7 +49,7 @@ class U2fDevice {
             const std::vector<uint8_t>& key_handle,
             const MessageCallback& callback);
   virtual void TryWink(const WinkCallback& callback) = 0;
-  virtual std::string GetId() = 0;
+  virtual std::string GetId() const = 0;
 
  protected:
   static constexpr uint8_t kWinkCapability = 0x01;

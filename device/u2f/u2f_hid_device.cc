@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "u2f_hid_device.h"
+#include "device/u2f/u2f_hid_device.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -336,10 +336,14 @@ void U2fHidDevice::OnTimeout(const DeviceCallback& callback) {
   Transition(nullptr, callback);
 }
 
-std::string U2fHidDevice::GetId() {
-  std::ostringstream id("hid:", std::ios::ate);
-  id << device_info_->guid;
-  return id.str();
+std::string U2fHidDevice::GetId() const {
+  return GetIdForDevice(*device_info_);
+}
+
+// static
+std::string U2fHidDevice::GetIdForDevice(
+    const device::mojom::HidDeviceInfo& device_info) {
+  return "hid:" + device_info.guid;
 }
 
 // static
