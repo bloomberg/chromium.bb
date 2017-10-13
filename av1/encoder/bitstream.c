@@ -4154,8 +4154,13 @@ void write_sequence_header(AV1_COMMON *const cm,
 
   aom_wb_write_bit(wb, seq_params->frame_id_numbers_present_flag);
   if (seq_params->frame_id_numbers_present_flag) {
-    aom_wb_write_literal(wb, seq_params->frame_id_length - 7, 4);
+    // We must always have delta_frame_id_length < frame_id_length,
+    // in order for a frame to be referenced with a unique delta.
+    // Avoid wasting bits by using a coding that enforces this restriction.
     aom_wb_write_literal(wb, seq_params->delta_frame_id_length - 2, 4);
+    aom_wb_write_literal(
+        wb, seq_params->frame_id_length - seq_params->delta_frame_id_length - 1,
+        3);
   }
 }
 #endif  // CONFIG_REFERENCE_BUFFER
@@ -5239,8 +5244,13 @@ static uint32_t write_sequence_header_obu(AV1_COMP *cpi, uint8_t *const dst) {
   if (seq_params->frame_id_numbers_present_flag) {
     seq_params->frame_id_length = FRAME_ID_LENGTH_MINUS7 + 7;
     seq_params->delta_frame_id_length = DELTA_FRAME_ID_LENGTH_MINUS2 + 2;
-    aom_wb_write_literal(&wb, seq_params->frame_id_length - 7, 4);
+    // We must always have delta_frame_id_length < frame_id_length,
+    // in order for a frame to be referenced with a unique delta.
+    // Avoid wasting bits by using a coding that enforces this restriction.
     aom_wb_write_literal(&wb, seq_params->delta_frame_id_length - 2, 4);
+    aom_wb_write_literal(
+        &wb,
+        seq_params->frame_id_length - seq_params->delta_frame_id_length - 1, 3);
   }
 
   // color_config

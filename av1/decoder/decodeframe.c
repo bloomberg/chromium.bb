@@ -3367,8 +3367,12 @@ void read_sequence_header(SequenceHeader *seq_params,
   /* Placeholder for actually reading from the bitstream */
   seq_params->frame_id_numbers_present_flag = aom_rb_read_bit(rb);
   if (seq_params->frame_id_numbers_present_flag) {
-    seq_params->frame_id_length = aom_rb_read_literal(rb, 4) + 7;
+    // We must always have delta_frame_id_length < frame_id_length,
+    // in order for a frame to be referenced with a unique delta.
+    // Avoid wasting bits by using a coding that enforces this restriction.
     seq_params->delta_frame_id_length = aom_rb_read_literal(rb, 4) + 2;
+    seq_params->frame_id_length =
+        aom_rb_read_literal(rb, 3) + seq_params->delta_frame_id_length + 1;
   }
 }
 #endif  // CONFIG_REFERENCE_BUFFER
@@ -4753,8 +4757,12 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
 
   seq_params->frame_id_numbers_present_flag = aom_rb_read_bit(rb);
   if (seq_params->frame_id_numbers_present_flag) {
-    seq_params->frame_id_length = aom_rb_read_literal(rb, 4) + 7;
+    // We must always have delta_frame_id_length < frame_id_length,
+    // in order for a frame to be referenced with a unique delta.
+    // Avoid wasting bits by using a coding that enforces this restriction.
     seq_params->delta_frame_id_length = aom_rb_read_literal(rb, 4) + 2;
+    seq_params->frame_id_length =
+        aom_rb_read_literal(rb, 3) + seq_params->delta_frame_id_length + 1;
   }
 
   read_bitdepth_colorspace_sampling(cm, rb, pbi->allow_lowbitdepth);
