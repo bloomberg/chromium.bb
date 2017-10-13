@@ -34,9 +34,6 @@ class ContentServiceManagerMainDelegate : public service_manager::MainDelegate {
   void AdjustServiceProcessCommandLine(
       const service_manager::Identity& identity,
       base::CommandLine* command_line) override;
-  bool ShouldTerminateServiceManagerOnInstanceQuit(
-      const service_manager::Identity& identity,
-      int* exit_code) override;
   void OnServiceManagerInitialized(
       const base::Closure& quit_closure,
       service_manager::BackgroundServiceManager* service_manager) override;

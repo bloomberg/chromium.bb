@@ -48,6 +48,12 @@
 #include "chrome/test/base/search_test_utils.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "ash/public/interfaces/constants.mojom.h"
+#include "content/public/common/service_names.mojom.h"
+#include "services/ui/public/interfaces/constants.mojom.h"
+#endif
+
 using content::BrowsingDataFilterBuilder;
 using testing::_;
 using ChromeContentBrowserClientTest = testing::Test;
@@ -406,3 +412,33 @@ TEST(ChromeContentBrowserClientTest, GetMetricSuffixForURL) {
   EXPECT_EQ("", client.GetMetricSuffixForURL(
                     GURL("https://www.google.com/search?notaquery=nope")));
 }
+
+#if defined(OS_CHROMEOS)
+
+// This behavior only matters on Chrome OS, which is why this isn't wrapped in
+// ENABLE_MASH_PACKAGED_SERVICES (which is used for Linux Ozone).
+TEST(ChromeContentBrowserClientTest, ShouldTerminateOnServiceQuit) {
+  const struct {
+    std::string service_name;
+    bool expect_terminate;
+  } kTestCases[] = {
+      // Don't terminate for invalid service names.
+      {"", false},
+      {"unknown-name", false},
+      // Don't terminate for some well-known browser services.
+      {content::mojom::kBrowserServiceName, false},
+      {content::mojom::kGpuServiceName, false},
+      {content::mojom::kRendererServiceName, false},
+      // Do terminate for some mash-specific cases.
+      {ui::mojom::kServiceName, true},
+      {ash::mojom::kServiceName, true},
+  };
+  ChromeContentBrowserClient client;
+  for (const auto& test : kTestCases) {
+    service_manager::Identity id(test.service_name);
+    EXPECT_EQ(test.expect_terminate, client.ShouldTerminateOnServiceQuit(id))
+        << "for service name " << test.service_name;
+  }
+}
+
+#endif  // defined(OS_CHROMEOS)

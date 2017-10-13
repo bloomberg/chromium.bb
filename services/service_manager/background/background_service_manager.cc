@@ -25,19 +25,6 @@
 #include "services/service_manager/standalone/context.h"
 
 namespace service_manager {
-namespace {
-
-// Calls |callback| on |callback_task_runner|'s thread.
-void CallCallbackWithIdentity(
-    const scoped_refptr<base::TaskRunner> callback_task_runner,
-    const base::Callback<void(const Identity&)>& callback,
-    const Identity& identity) {
-  DCHECK(callback);
-  DCHECK(identity.IsValid());
-  callback_task_runner->PostTask(FROM_HERE, base::Bind(callback, identity));
-}
-
-}  // namespace
 
 BackgroundServiceManager::BackgroundServiceManager(
     service_manager::ServiceProcessLauncherDelegate* launcher_delegate,
@@ -80,29 +67,6 @@ void BackgroundServiceManager::RegisterService(
       base::Bind(&BackgroundServiceManager::RegisterServiceOnBackgroundThread,
                  base::Unretained(this), identity, base::Passed(&service_info),
                  base::Passed(&pid_receiver_request)));
-}
-
-void BackgroundServiceManager::SetInstanceQuitCallback(
-    base::Callback<void(const Identity&)> callback) {
-  DCHECK(callback);
-  // Hop to the background thread. The provided callback will be called on
-  // whichever thread called this function.
-  background_thread_.task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(
-          &BackgroundServiceManager::SetInstanceQuitCallbackOnBackgroundThread,
-          base::Unretained(this), base::ThreadTaskRunnerHandle::Get(),
-          callback));
-}
-
-void BackgroundServiceManager::SetInstanceQuitCallbackOnBackgroundThread(
-    const scoped_refptr<base::SingleThreadTaskRunner>& callback_task_runner,
-    const base::Callback<void(const Identity&)>& callback) {
-  DCHECK(callback_task_runner);
-  DCHECK(callback);
-  // Calls |callback| with the identity of the service that is quitting.
-  context_->service_manager()->SetInstanceQuitCallback(
-      base::Bind(&CallCallbackWithIdentity, callback_task_runner, callback));
 }
 
 void BackgroundServiceManager::InitializeOnBackgroundThread(

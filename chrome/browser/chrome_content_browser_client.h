@@ -311,6 +311,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   void RegisterInProcessServices(StaticServiceMap* services) override;
   void RegisterOutOfProcessServices(
       OutOfProcessServiceMap* services) override;
+  bool ShouldTerminateOnServiceQuit(
+      const service_manager::Identity& id) override;
   std::unique_ptr<base::Value> GetServiceManifestOverlay(
       base::StringPiece name) override;
   std::vector<content::ContentBrowserClient::ServiceManifestInfo>

@@ -85,13 +85,6 @@ class SERVICE_MANAGER_EMBEDDER_EXPORT MainDelegate {
   virtual void AdjustServiceProcessCommandLine(const Identity& identity,
                                                base::CommandLine* command_line);
 
-  // Allows the embedder to terminate its Service Manager if any specific
-  // service instances quit. If this returns |true|, |*exit_code| will be
-  // returned from the Service Manager's process on exit.
-  virtual bool ShouldTerminateServiceManagerOnInstanceQuit(
-      const Identity& identity,
-      int* exit_code);
-
   // Allows the embedder to perform arbitrary initialization within the Service
   // Manager process immediately before the Service Manager runs its main loop.
   //

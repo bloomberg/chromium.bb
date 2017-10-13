@@ -109,14 +109,6 @@ void ContentServiceManagerMainDelegate::AdjustServiceProcessCommandLine(
     command_line->AppendArgNative(arg);
 }
 
-bool ContentServiceManagerMainDelegate::
-    ShouldTerminateServiceManagerOnInstanceQuit(
-        const service_manager::Identity& identity,
-        int* exit_code) {
-  return content_main_params_.delegate
-      ->ShouldTerminateServiceManagerOnInstanceQuit(identity, exit_code);
-}
-
 void ContentServiceManagerMainDelegate::OnServiceManagerInitialized(
     const base::Closure& quit_closure,
     service_manager::BackgroundServiceManager* service_manager) {

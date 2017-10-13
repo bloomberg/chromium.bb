@@ -735,6 +735,11 @@ class CONTENT_EXPORT ContentBrowserClient {
   // to use for the service's host process when launched.
   virtual void RegisterOutOfProcessServices(OutOfProcessServiceMap* services) {}
 
+  // Allows the embedder to terminate the browser if a specific service instance
+  // quits or crashes.
+  virtual bool ShouldTerminateOnServiceQuit(
+      const service_manager::Identity& id);
+
   // Allow the embedder to provide a dictionary loaded from a JSON file
   // resembling a service manifest whose capabilities section will be merged
   // with content's own for |name|. Additional entries will be appended to their
