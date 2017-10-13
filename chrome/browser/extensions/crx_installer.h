@@ -21,6 +21,7 @@
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "components/sync/model/string_ordinal.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/browser/install_flag.h"
 #include "extensions/browser/preload_check.h"
 #include "extensions/browser/sandboxed_unpacker.h"
@@ -71,6 +72,9 @@ class PreloadCheckGroup;
 // and won't safely be able to clean up UI thread notification listeners.
 class CrxInstaller : public SandboxedUnpackerClient {
  public:
+  // A callback to be executed when the install finishes.
+  using InstallerResultCallback = ExtensionSystem::InstallUpdateCallback;
+
   // Used in histograms; do not change order.
   enum OffStoreInstallAllowReason {
     OffStoreInstallDisallowed,
@@ -100,6 +104,13 @@ class CrxInstaller : public SandboxedUnpackerClient {
   // Install the crx in |source_file|.
   void InstallCrx(const base::FilePath& source_file);
   void InstallCrxFile(const CRXFileInfo& source_file);
+
+  // Install the unpacked crx in |unpacked_dir|.
+  // If |delete_source_| is true, |unpacked_dir| will be removed at the end of
+  // the installation.
+  void InstallUnpackedCrx(const std::string& extension_id,
+                          const std::string& public_key,
+                          const base::FilePath& unpacked_dir);
 
   // Convert the specified user script into an extension and install it.
   void InstallUserScript(const base::FilePath& source_file,
@@ -199,6 +210,10 @@ class CrxInstaller : public SandboxedUnpackerClient {
   }
   void set_do_not_sync(bool val) {
     set_install_flag(kInstallFlagDoNotSync, val);
+  }
+
+  void set_installer_callback(InstallerResultCallback callback) {
+    installer_callback_ = std::move(callback);
   }
 
   bool did_handle_successfully() const { return did_handle_successfully_; }
@@ -454,6 +469,9 @@ class CrxInstaller : public SandboxedUnpackerClient {
 
   // Runs the above checks.
   std::unique_ptr<PreloadCheckGroup> check_group_;
+
+  // Invoked when the install is completed.
+  InstallerResultCallback installer_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(CrxInstaller);
 };

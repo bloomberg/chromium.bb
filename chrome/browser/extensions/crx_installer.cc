@@ -163,6 +163,8 @@ CrxInstaller::CrxInstaller(base::WeakPtr<ExtensionService> service_weak,
 }
 
 CrxInstaller::~CrxInstaller() {
+  DCHECK(!service_weak_ || service_weak_->browser_terminating() ||
+         installer_callback_.is_null());
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Ensure |client_| and |install_checker_| data members are destroyed on the
   // UI thread. The |client_| dialog has a weak reference as |this| is its
@@ -183,13 +185,36 @@ void CrxInstaller::InstallCrxFile(const CRXFileInfo& source_file) {
 
   source_file_ = source_file.path;
 
-  scoped_refptr<SandboxedUnpacker> unpacker(new SandboxedUnpacker(
+  auto unpacker = base::MakeRefCounted<SandboxedUnpacker>(
       install_source_, creation_flags_, install_directory_,
-      installer_task_runner_.get(), this));
+      installer_task_runner_.get(), this);
 
   if (!installer_task_runner_->PostTask(
           FROM_HERE, base::BindOnce(&SandboxedUnpacker::StartWithCrx, unpacker,
                                     source_file))) {
+    NOTREACHED();
+  }
+}
+
+void CrxInstaller::InstallUnpackedCrx(const std::string& extension_id,
+                                      const std::string& public_key,
+                                      const base::FilePath& unpacked_dir) {
+  ExtensionService* service = service_weak_.get();
+  if (!service || service->browser_terminating())
+    return;
+
+  NotifyCrxInstallBegin();
+
+  source_file_ = unpacked_dir;
+
+  auto unpacker = base::MakeRefCounted<SandboxedUnpacker>(
+      install_source_, creation_flags_, install_directory_,
+      installer_task_runner_.get(), this);
+
+  if (!installer_task_runner_->PostTask(
+          FROM_HERE,
+          base::BindOnce(&SandboxedUnpacker::StartWithDirectory, unpacker,
+                         extension_id, public_key, unpacked_dir))) {
     NOTREACHED();
   }
 }
@@ -440,11 +465,11 @@ void CrxInstaller::OnUnpackSuccess(
   dnr_ruleset_checksum_ = dnr_ruleset_checksum;
 
   if (!install_icon.empty())
-    install_icon_.reset(new SkBitmap(install_icon));
+    install_icon_ = std::make_unique<SkBitmap>(install_icon);
 
   if (original_manifest) {
-    original_manifest_.reset(
-        new Manifest(Manifest::INVALID_LOCATION, std::move(original_manifest)));
+    original_manifest_ = std::make_unique<Manifest>(
+        Manifest::INVALID_LOCATION, std::move(original_manifest));
   }
 
   // We don't have to delete the unpack dir explicity since it is a child of
@@ -860,6 +885,13 @@ void CrxInstaller::NotifyCrxInstallComplete(bool success) {
 
   if (success)
     ConfirmReEnable();
+
+  if (!installer_callback_.is_null() &&
+      !BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)
+           ->PostTask(FROM_HERE, base::BindOnce(std::move(installer_callback_),
+                                                success))) {
+    NOTREACHED();
+  }
 }
 
 void CrxInstaller::CleanupTempFiles() {
