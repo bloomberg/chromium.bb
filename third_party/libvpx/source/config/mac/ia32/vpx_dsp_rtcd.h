@@ -135,6 +135,17 @@ void vpx_convolve8_avg_ssse3(const uint8_t* src,
                              int y_step_q4,
                              int w,
                              int h);
+void vpx_convolve8_avg_avx2(const uint8_t* src,
+                            ptrdiff_t src_stride,
+                            uint8_t* dst,
+                            ptrdiff_t dst_stride,
+                            const InterpKernel* filter,
+                            int x0_q4,
+                            int x_step_q4,
+                            int y0_q4,
+                            int y_step_q4,
+                            int w,
+                            int h);
 RTCD_EXTERN void (*vpx_convolve8_avg)(const uint8_t* src,
                                       ptrdiff_t src_stride,
                                       uint8_t* dst,
@@ -180,6 +191,17 @@ void vpx_convolve8_avg_horiz_ssse3(const uint8_t* src,
                                    int y_step_q4,
                                    int w,
                                    int h);
+void vpx_convolve8_avg_horiz_avx2(const uint8_t* src,
+                                  ptrdiff_t src_stride,
+                                  uint8_t* dst,
+                                  ptrdiff_t dst_stride,
+                                  const InterpKernel* filter,
+                                  int x0_q4,
+                                  int x_step_q4,
+                                  int y0_q4,
+                                  int y_step_q4,
+                                  int w,
+                                  int h);
 RTCD_EXTERN void (*vpx_convolve8_avg_horiz)(const uint8_t* src,
                                             ptrdiff_t src_stride,
                                             uint8_t* dst,
@@ -225,6 +247,17 @@ void vpx_convolve8_avg_vert_ssse3(const uint8_t* src,
                                   int y_step_q4,
                                   int w,
                                   int h);
+void vpx_convolve8_avg_vert_avx2(const uint8_t* src,
+                                 ptrdiff_t src_stride,
+                                 uint8_t* dst,
+                                 ptrdiff_t dst_stride,
+                                 const InterpKernel* filter,
+                                 int x0_q4,
+                                 int x_step_q4,
+                                 int y0_q4,
+                                 int y_step_q4,
+                                 int w,
+                                 int h);
 RTCD_EXTERN void (*vpx_convolve8_avg_vert)(const uint8_t* src,
                                            ptrdiff_t src_stride,
                                            uint8_t* dst,
@@ -8794,16 +8827,22 @@ static void setup_rtcd_internal(void) {
     vpx_convolve8_avg = vpx_convolve8_avg_sse2;
   if (flags & HAS_SSSE3)
     vpx_convolve8_avg = vpx_convolve8_avg_ssse3;
+  if (flags & HAS_AVX2)
+    vpx_convolve8_avg = vpx_convolve8_avg_avx2;
   vpx_convolve8_avg_horiz = vpx_convolve8_avg_horiz_c;
   if (flags & HAS_SSE2)
     vpx_convolve8_avg_horiz = vpx_convolve8_avg_horiz_sse2;
   if (flags & HAS_SSSE3)
     vpx_convolve8_avg_horiz = vpx_convolve8_avg_horiz_ssse3;
+  if (flags & HAS_AVX2)
+    vpx_convolve8_avg_horiz = vpx_convolve8_avg_horiz_avx2;
   vpx_convolve8_avg_vert = vpx_convolve8_avg_vert_c;
   if (flags & HAS_SSE2)
     vpx_convolve8_avg_vert = vpx_convolve8_avg_vert_sse2;
   if (flags & HAS_SSSE3)
     vpx_convolve8_avg_vert = vpx_convolve8_avg_vert_ssse3;
+  if (flags & HAS_AVX2)
+    vpx_convolve8_avg_vert = vpx_convolve8_avg_vert_avx2;
   vpx_convolve8_horiz = vpx_convolve8_horiz_c;
   if (flags & HAS_SSE2)
     vpx_convolve8_horiz = vpx_convolve8_horiz_sse2;
