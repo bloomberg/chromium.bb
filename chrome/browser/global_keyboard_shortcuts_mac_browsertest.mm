@@ -7,6 +7,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/run_loop.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -58,4 +59,43 @@ IN_PROC_BROWSER_TEST_F(GlobalKeyboardShortcutsTest, SwitchTabsMac) {
                       SynthesizeKeyEvent(ns_window, true, ui::VKEY_OEM_4,
                                          NSShiftKeyMask | NSCommandKeyMask));
   EXPECT_TRUE(tab_strip->IsTabSelected(0));
+}
+
+IN_PROC_BROWSER_TEST_F(GlobalKeyboardShortcutsTest, MenuCommandPriority) {
+  NSWindow* ns_window = browser()->window()->GetNativeWindow();
+  TabStripModel* tab_strip = browser()->tab_strip_model();
+
+  // Set up window with 4 tabs.
+  chrome::NewTab(browser());
+  chrome::NewTab(browser());
+  chrome::NewTab(browser());
+  EXPECT_EQ(4, tab_strip->count());
+  EXPECT_TRUE(tab_strip->IsTabSelected(3));
+
+  // Use the cmd-2 hotkey to switch to the second tab.
+  ActivateAccelerator(ns_window, SynthesizeKeyEvent(ns_window, true, ui::VKEY_2,
+                                                    NSCommandKeyMask));
+  EXPECT_TRUE(tab_strip->IsTabSelected(1));
+
+  // Change the "Select Next Tab" menu item's key equivalent to be cmd-2, to
+  // simulate what would happen if there was a user key equivalent for it. Note
+  // that there is a readonly "userKeyEquivalent" property on NSMenuItem, but
+  // this code can't modify it.
+  NSMenu* main_menu = [NSApp mainMenu];
+  ASSERT_NE(nil, main_menu);
+  NSMenuItem* window_menu = [main_menu itemWithTitle:@"Window"];
+  ASSERT_NE(nil, window_menu);
+  ASSERT_TRUE(window_menu.hasSubmenu);
+  NSMenuItem* next_item = [window_menu.submenu itemWithTag:IDC_SELECT_NEXT_TAB];
+  ASSERT_NE(nil, next_item);
+  [next_item setKeyEquivalent:@"2"];
+  [next_item setKeyEquivalentModifierMask:NSCommandKeyMask];
+
+  // Send cmd-2 again, and ensure the tab switches.
+  ActivateAccelerator(ns_window, SynthesizeKeyEvent(ns_window, true, ui::VKEY_2,
+                                                    NSCommandKeyMask));
+  EXPECT_TRUE(tab_strip->IsTabSelected(2));
+  ActivateAccelerator(ns_window, SynthesizeKeyEvent(ns_window, true, ui::VKEY_2,
+                                                    NSCommandKeyMask));
+  EXPECT_TRUE(tab_strip->IsTabSelected(3));
 }
