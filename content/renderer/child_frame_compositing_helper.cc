@@ -278,7 +278,7 @@ void ChildFrameCompositingHelper::SetPrimarySurfaceInfo(
   viz::SurfaceInfo modified_surface_info(surface_info.id(), scale_factor,
                                          surface_info.size_in_pixels());
   surface_layer_->SetPrimarySurfaceInfo(modified_surface_info);
-  surface_layer_->SetFallbackSurfaceInfo(fallback_surface_info_);
+  surface_layer_->SetFallbackSurfaceId(fallback_surface_id_);
 
   std::unique_ptr<cc_blink::WebLayerImpl> layer(
       new cc_blink::WebLayerImpl(surface_layer_));
@@ -295,17 +295,10 @@ void ChildFrameCompositingHelper::SetPrimarySurfaceInfo(
       static_cast<cc_blink::WebLayerImpl*>(web_layer_.get())->layer());
 }
 
-void ChildFrameCompositingHelper::SetFallbackSurfaceInfo(
-    const viz::SurfaceInfo& surface_info,
+void ChildFrameCompositingHelper::SetFallbackSurfaceId(
+    const viz::SurfaceId& surface_id,
     const viz::SurfaceSequence& sequence) {
-  fallback_surface_info_ = surface_info;
-  float scale_factor = surface_info.device_scale_factor();
-  // TODO(oshima): This is a stopgap fix so that the compositor does not
-  // scaledown the content when 2x frame data is added to 1x parent frame data.
-  // Fix this in cc/.
-  if (IsUseZoomForDSFEnabled())
-    scale_factor = 1.0f;
-
+  fallback_surface_id_ = surface_id;
   // The RWHV creates a destruction dependency on the surface that needs to be
   // satisfied. The reference factory will satisfy it when a new reference has
   // been created.
@@ -321,9 +314,7 @@ void ChildFrameCompositingHelper::SetFallbackSurfaceInfo(
     }
   }
 
-  viz::SurfaceInfo modified_surface_info(surface_info.id(), scale_factor,
-                                         surface_info.size_in_pixels());
-  surface_layer_->SetFallbackSurfaceInfo(modified_surface_info);
+  surface_layer_->SetFallbackSurfaceId(surface_id);
 }
 
 void ChildFrameCompositingHelper::UpdateVisibility(bool visible) {

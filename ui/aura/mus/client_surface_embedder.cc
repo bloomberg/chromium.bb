@@ -43,7 +43,8 @@ void ClientSurfaceEmbedder::SetPrimarySurfaceInfo(
 
 void ClientSurfaceEmbedder::SetFallbackSurfaceInfo(
     const viz::SurfaceInfo& surface_info) {
-  surface_layer_->SetFallbackSurface(surface_info);
+  fallback_surface_info_ = surface_info;
+  surface_layer_->SetFallbackSurfaceId(surface_info.id());
   UpdateSizeAndGutters();
 }
 
@@ -53,13 +54,11 @@ void ClientSurfaceEmbedder::UpdateSizeAndGutters() {
     return;
 
   gfx::Size fallback_surface_size_in_dip;
-  const viz::SurfaceInfo* fallback_surface_info =
-      surface_layer_->GetFallbackSurfaceInfo();
-  if (fallback_surface_info) {
+  if (fallback_surface_info_.is_valid()) {
     float fallback_device_scale_factor =
-        fallback_surface_info->device_scale_factor();
+        fallback_surface_info_.device_scale_factor();
     fallback_surface_size_in_dip = gfx::ConvertSizeToDIP(
-        fallback_device_scale_factor, fallback_surface_info->size_in_pixels());
+        fallback_device_scale_factor, fallback_surface_info_.size_in_pixels());
   }
   gfx::Rect window_bounds(window_->bounds());
   if (!window_->transparent() &&

@@ -126,14 +126,14 @@ bool SurfaceHittest::GetTargetSurfaceAtPointInternal(
 
       gfx::Transform transform_to_child_space;
       if (GetTargetSurfaceAtPointInternal(
-              surface_quad->surface_id, 0, point_in_quad_space,
+              surface_quad->primary_surface_id, 0, point_in_quad_space,
               referenced_passes, out_surface_id, &transform_to_child_space)) {
         *out_transform = transform_to_child_space * target_to_quad_transform *
                          transform_from_root_target;
         return true;
       } else if (delegate_ && delegate_->AcceptHitTarget(surface_quad,
                                                          point_in_quad_space)) {
-        *out_surface_id = surface_quad->surface_id;
+        *out_surface_id = surface_quad->primary_surface_id;
         *out_transform = transform_to_child_space * target_to_quad_transform *
                          transform_from_root_target;
         return true;
@@ -209,7 +209,7 @@ bool SurfaceHittest::GetTransformToTargetSurfaceInternal(
       }
 
       const SurfaceDrawQuad* surface_quad = SurfaceDrawQuad::MaterialCast(quad);
-      if (surface_quad->surface_id == target_surface_id) {
+      if (surface_quad->primary_surface_id == target_surface_id) {
         *out_transform = target_to_quad_transform * transform_from_root_target;
         return true;
       }
@@ -218,8 +218,8 @@ bool SurfaceHittest::GetTransformToTargetSurfaceInternal(
       // find the |target_surface_id| there.
       gfx::Transform transform_to_child_space;
       if (GetTransformToTargetSurfaceInternal(
-              surface_quad->surface_id, target_surface_id, 0, referenced_passes,
-              &transform_to_child_space)) {
+              surface_quad->primary_surface_id, target_surface_id, 0,
+              referenced_passes, &transform_to_child_space)) {
         *out_transform = transform_to_child_space * target_to_quad_transform *
                          transform_from_root_target;
         return true;

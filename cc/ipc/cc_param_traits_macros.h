@@ -44,8 +44,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(viz::ResourceFormat, viz::RESOURCE_FORMAT_MAX)
 IPC_ENUM_TRAITS_MAX_VALUE(SkBlendMode, SkBlendMode::kLastMode)
 IPC_ENUM_TRAITS_MAX_VALUE(viz::YUVVideoDrawQuad::ColorSpace,
                           viz::YUVVideoDrawQuad::COLOR_SPACE_LAST)
-IPC_ENUM_TRAITS_MAX_VALUE(viz::SurfaceDrawQuadType,
-                          viz::SurfaceDrawQuadType::LAST)
 
 IPC_STRUCT_TRAITS_BEGIN(viz::SurfaceSequence)
   IPC_STRUCT_TRAITS_MEMBER(frame_sink_id)
@@ -95,8 +93,8 @@ IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(viz::SurfaceDrawQuad)
   IPC_STRUCT_TRAITS_PARENT(viz::DrawQuad)
-  IPC_STRUCT_TRAITS_MEMBER(surface_id)
-  IPC_STRUCT_TRAITS_MEMBER(surface_draw_quad_type)
+  IPC_STRUCT_TRAITS_MEMBER(primary_surface_id)
+  IPC_STRUCT_TRAITS_MEMBER(fallback_surface_id)
   IPC_STRUCT_TRAITS_MEMBER(default_background_color)
 IPC_STRUCT_TRAITS_END()
 

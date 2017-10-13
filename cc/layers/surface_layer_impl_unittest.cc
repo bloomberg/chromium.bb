@@ -167,8 +167,7 @@ TEST(SurfaceLayerImplTest, SurfaceStretchedToLayerBounds) {
   viz::SurfaceId surface_id2(kArbitraryFrameSinkId, kArbitraryLocalSurfaceId2);
   surface_layer_impl->SetPrimarySurfaceInfo(
       viz::SurfaceInfo(surface_id, surface_scale, surface_size));
-  surface_layer_impl->SetFallbackSurfaceInfo(
-      viz::SurfaceInfo(surface_id2, surface_scale, surface_size));
+  surface_layer_impl->SetFallbackSurfaceId(surface_id2);
   surface_layer_impl->SetStretchContentToFillBounds(true);
 
   impl.CalcDrawProps(viewport_size);
@@ -179,7 +178,7 @@ TEST(SurfaceLayerImplTest, SurfaceStretchedToLayerBounds) {
   EXPECT_THAT(data.activation_dependencies, UnorderedElementsAre(surface_id));
 
   const auto& quads = render_pass->quad_list;
-  ASSERT_EQ(2u, quads.size());
+  ASSERT_EQ(1u, quads.size());
   const viz::SharedQuadState* shared_quad_state =
       quads.front()->shared_quad_state;
 
@@ -208,9 +207,9 @@ TEST(SurfaceLayerImplTest, SurfaceStretchedToLayerBounds) {
   EXPECT_EQ(transformed_quad_rect, transformed_layer_rect);
 }
 
-// This test verifies that two viz::SurfaceDrawQuads are emitted if a
-// SurfaceLayerImpl holds both a primary and fallback viz::SurfaceInfo.
-TEST(SurfaceLayerImplTest, SurfaceLayerImplEmitsTwoDrawQuadsIfUniqueFallback) {
+// This test verifies that activation_dependencies and the fallback_surface_id
+// are populated correctly if primary and fallback surfaces differ.
+TEST(SurfaceLayerImplTest, SurfaceLayerImplWithTwoDifferentSurfaces) {
   LayerTestCommon::LayerImplTest impl;
   SurfaceLayerImpl* surface_layer_impl =
       impl.AddChildToRoot<SurfaceLayerImpl>();
@@ -224,16 +223,10 @@ TEST(SurfaceLayerImplTest, SurfaceLayerImplEmitsTwoDrawQuadsIfUniqueFallback) {
   viz::SurfaceInfo primary_surface_info(surface_id1, surface_scale1,
                                         surface_size1);
 
-  // Populate the fallback viz::SurfaceInfo.
+  // Populate the fallback viz::SurfaceId.
   const viz::LocalSurfaceId kArbitraryLocalSurfaceId2(
       7, base::UnguessableToken::Create());
   viz::SurfaceId surface_id2(kArbitraryFrameSinkId, kArbitraryLocalSurfaceId2);
-  float surface_scale2 = 2.f;
-  gfx::Size surface_size2(400, 400);
-  viz::SurfaceInfo fallback_surface_info(surface_id2, surface_scale2,
-                                         surface_size2);
-  viz::SurfaceInfo fallback_surface_info2(surface_id2, surface_scale1,
-                                          surface_size2);
 
   gfx::Size layer_size(400, 100);
 
@@ -242,7 +235,7 @@ TEST(SurfaceLayerImplTest, SurfaceLayerImplEmitsTwoDrawQuadsIfUniqueFallback) {
   surface_layer_impl->SetBounds(layer_size);
   surface_layer_impl->SetDrawsContent(true);
   surface_layer_impl->SetPrimarySurfaceInfo(primary_surface_info);
-  surface_layer_impl->SetFallbackSurfaceInfo(fallback_surface_info);
+  surface_layer_impl->SetFallbackSurfaceId(surface_id2);
   surface_layer_impl->SetDefaultBackgroundColor(SK_ColorBLUE);
 
   gfx::Size viewport_size(1000, 1000);
@@ -263,7 +256,7 @@ TEST(SurfaceLayerImplTest, SurfaceLayerImplEmitsTwoDrawQuadsIfUniqueFallback) {
   // viz::SurfaceInfo.
   {
     AppendQuadsData data;
-    surface_layer_impl->SetFallbackSurfaceInfo(viz::SurfaceInfo());
+    surface_layer_impl->SetFallbackSurfaceId(viz::SurfaceId());
     surface_layer_impl->AppendQuads(render_pass.get(), &data);
     // The primary viz::SurfaceInfo should not be added to
     // activation_dependencies.
@@ -274,7 +267,7 @@ TEST(SurfaceLayerImplTest, SurfaceLayerImplEmitsTwoDrawQuadsIfUniqueFallback) {
   // Update the fallback viz::SurfaceInfo and re-emit DrawQuads.
   {
     AppendQuadsData data;
-    surface_layer_impl->SetFallbackSurfaceInfo(fallback_surface_info2);
+    surface_layer_impl->SetFallbackSurfaceId(surface_id2);
     surface_layer_impl->AppendQuads(render_pass.get(), &data);
     // The the primary viz::SurfaceInfo will be added to
     // activation_dependencies.
@@ -282,7 +275,7 @@ TEST(SurfaceLayerImplTest, SurfaceLayerImplEmitsTwoDrawQuadsIfUniqueFallback) {
                 UnorderedElementsAre(surface_id1));
   }
 
-  ASSERT_EQ(5u, render_pass->quad_list.size());
+  ASSERT_EQ(3u, render_pass->quad_list.size());
   const viz::SurfaceDrawQuad* surface_draw_quad1 =
       viz::SurfaceDrawQuad::MaterialCast(render_pass->quad_list.ElementAt(0));
   ASSERT_TRUE(surface_draw_quad1);
@@ -292,53 +285,24 @@ TEST(SurfaceLayerImplTest, SurfaceLayerImplEmitsTwoDrawQuadsIfUniqueFallback) {
   const viz::SurfaceDrawQuad* surface_draw_quad3 =
       viz::SurfaceDrawQuad::MaterialCast(render_pass->quad_list.ElementAt(2));
   ASSERT_TRUE(surface_draw_quad3);
-  const viz::SurfaceDrawQuad* surface_draw_quad4 =
-      viz::SurfaceDrawQuad::MaterialCast(render_pass->quad_list.ElementAt(3));
-  ASSERT_TRUE(surface_draw_quad4);
-  const viz::SurfaceDrawQuad* surface_draw_quad5 =
-      viz::SurfaceDrawQuad::MaterialCast(render_pass->quad_list.ElementAt(4));
-  ASSERT_TRUE(surface_draw_quad5);
 
-  EXPECT_EQ(viz::SurfaceDrawQuadType::PRIMARY,
-            surface_draw_quad1->surface_draw_quad_type);
-  EXPECT_EQ(surface_id1, surface_draw_quad1->surface_id);
-  EXPECT_EQ(surface_draw_quad2, surface_draw_quad1->fallback_quad);
+  EXPECT_EQ(surface_id1, surface_draw_quad1->primary_surface_id);
   EXPECT_EQ(SK_ColorBLUE, surface_draw_quad1->default_background_color);
-  EXPECT_EQ(viz::SurfaceDrawQuadType::FALLBACK,
-            surface_draw_quad2->surface_draw_quad_type);
-  EXPECT_EQ(surface_id2, surface_draw_quad2->surface_id);
+  EXPECT_EQ(surface_id2, surface_draw_quad1->fallback_surface_id);
+
+  EXPECT_EQ(surface_id1, surface_draw_quad2->primary_surface_id);
   EXPECT_EQ(SK_ColorBLUE, surface_draw_quad2->default_background_color);
-  // If the device scale factor of the primary and fallback are different then
-  // they do not share a SharedQuadState.
-  EXPECT_NE(surface_draw_quad1->shared_quad_state,
-            surface_draw_quad2->shared_quad_state);
+  EXPECT_EQ(base::nullopt, surface_draw_quad2->fallback_surface_id);
 
-  EXPECT_EQ(viz::SurfaceDrawQuadType::PRIMARY,
-            surface_draw_quad3->surface_draw_quad_type);
-  EXPECT_EQ(surface_id1, surface_draw_quad3->surface_id);
-  EXPECT_EQ(nullptr, surface_draw_quad3->fallback_quad);
+  EXPECT_EQ(surface_id1, surface_draw_quad3->primary_surface_id);
   EXPECT_EQ(SK_ColorBLUE, surface_draw_quad3->default_background_color);
-
-  EXPECT_EQ(viz::SurfaceDrawQuadType::PRIMARY,
-            surface_draw_quad4->surface_draw_quad_type);
-  EXPECT_EQ(surface_id1, surface_draw_quad4->surface_id);
-  EXPECT_EQ(SK_ColorBLUE, surface_draw_quad4->default_background_color);
-  EXPECT_EQ(surface_draw_quad5, surface_draw_quad4->fallback_quad);
-  EXPECT_EQ(viz::SurfaceDrawQuadType::FALLBACK,
-            surface_draw_quad5->surface_draw_quad_type);
-  EXPECT_EQ(surface_id2, surface_draw_quad5->surface_id);
-  EXPECT_EQ(SK_ColorBLUE, surface_draw_quad5->default_background_color);
-  // If the device scale factor of the primary and fallback are the same then
-  // they share a SharedQuadState.
-  EXPECT_EQ(surface_draw_quad4->shared_quad_state,
-            surface_draw_quad5->shared_quad_state);
+  EXPECT_EQ(surface_id2, surface_draw_quad3->fallback_surface_id);
 }
 
 // This test verifies that one viz::SurfaceDrawQuad is emitted if a
 // SurfaceLayerImpl holds the same surface ID for both the primary
 // and fallback viz::SurfaceInfo.
-TEST(SurfaceLayerImplTest,
-     SurfaceLayerImplEmitsOneDrawQuadIfPrimaryMatchesFallback) {
+TEST(SurfaceLayerImplTest, SurfaceLayerImplWithMatchingPrimaryAndFallback) {
   LayerTestCommon::LayerImplTest impl;
   SurfaceLayerImpl* surface_layer_impl =
       impl.AddChildToRoot<SurfaceLayerImpl>();
@@ -359,7 +323,7 @@ TEST(SurfaceLayerImplTest,
   surface_layer_impl->SetBounds(layer_size);
   surface_layer_impl->SetDrawsContent(true);
   surface_layer_impl->SetPrimarySurfaceInfo(primary_surface_info);
-  surface_layer_impl->SetFallbackSurfaceInfo(primary_surface_info);
+  surface_layer_impl->SetFallbackSurfaceId(primary_surface_info.id());
   surface_layer_impl->SetDefaultBackgroundColor(SK_ColorBLUE);
 
   gfx::Size viewport_size(1000, 1000);
@@ -379,11 +343,9 @@ TEST(SurfaceLayerImplTest,
       viz::SurfaceDrawQuad::MaterialCast(render_pass->quad_list.ElementAt(0));
   ASSERT_TRUE(surface_draw_quad1);
 
-  EXPECT_EQ(viz::SurfaceDrawQuadType::PRIMARY,
-            surface_draw_quad1->surface_draw_quad_type);
-  EXPECT_EQ(surface_id1, surface_draw_quad1->surface_id);
+  EXPECT_EQ(surface_id1, surface_draw_quad1->primary_surface_id);
+  EXPECT_EQ(surface_id1, surface_draw_quad1->fallback_surface_id);
   EXPECT_EQ(SK_ColorBLUE, surface_draw_quad1->default_background_color);
-  EXPECT_FALSE(surface_draw_quad1->fallback_quad);
 }
 
 }  // namespace

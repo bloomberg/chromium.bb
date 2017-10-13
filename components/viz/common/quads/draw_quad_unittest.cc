@@ -274,20 +274,26 @@ TEST(DrawQuadTest, CopyStreamVideoDrawQuad) {
 
 TEST(DrawQuadTest, CopySurfaceDrawQuad) {
   gfx::Rect visible_rect(40, 50, 30, 20);
-  SurfaceId surface_id(kArbitraryFrameSinkId,
-                       LocalSurfaceId(1234, base::UnguessableToken::Create()));
+  SurfaceId primary_surface_id(
+      kArbitraryFrameSinkId,
+      LocalSurfaceId(1234, base::UnguessableToken::Create()));
+  SurfaceId fallback_surface_id(
+      kArbitraryFrameSinkId,
+      LocalSurfaceId(5678, base::UnguessableToken::Create()));
   CREATE_SHARED_STATE();
 
-  CREATE_QUAD_NEW(SurfaceDrawQuad, visible_rect, surface_id,
-                  SurfaceDrawQuadType::PRIMARY, SK_ColorWHITE, nullptr);
+  CREATE_QUAD_NEW(SurfaceDrawQuad, visible_rect, primary_surface_id,
+                  fallback_surface_id, SK_ColorWHITE);
   EXPECT_EQ(DrawQuad::SURFACE_CONTENT, copy_quad->material);
   EXPECT_EQ(visible_rect, copy_quad->visible_rect);
-  EXPECT_EQ(surface_id, copy_quad->surface_id);
+  EXPECT_EQ(primary_surface_id, copy_quad->primary_surface_id);
+  EXPECT_EQ(fallback_surface_id, copy_quad->fallback_surface_id);
 
-  CREATE_QUAD_ALL(SurfaceDrawQuad, surface_id, SurfaceDrawQuadType::PRIMARY,
-                  SK_ColorWHITE, nullptr);
+  CREATE_QUAD_ALL(SurfaceDrawQuad, primary_surface_id, fallback_surface_id,
+                  SK_ColorWHITE);
   EXPECT_EQ(DrawQuad::SURFACE_CONTENT, copy_quad->material);
-  EXPECT_EQ(surface_id, copy_quad->surface_id);
+  EXPECT_EQ(primary_surface_id, copy_quad->primary_surface_id);
+  EXPECT_EQ(fallback_surface_id, copy_quad->fallback_surface_id);
 }
 
 TEST(DrawQuadTest, CopyTextureDrawQuad) {
@@ -562,8 +568,8 @@ TEST_F(DrawQuadIteratorTest, SurfaceDrawQuad) {
                        LocalSurfaceId(4321, base::UnguessableToken::Create()));
 
   CREATE_SHARED_STATE();
-  CREATE_QUAD_NEW(SurfaceDrawQuad, visible_rect, surface_id,
-                  SurfaceDrawQuadType::PRIMARY, SK_ColorWHITE, nullptr);
+  CREATE_QUAD_NEW(SurfaceDrawQuad, visible_rect, surface_id, base::nullopt,
+                  SK_ColorWHITE);
   EXPECT_EQ(0, IterateAndCount(quad_new));
 }
 

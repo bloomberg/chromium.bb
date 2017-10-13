@@ -3113,13 +3113,13 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest, SurfaceChanges) {
   ASSERT_TRUE(view_->HasPrimarySurface());
   EXPECT_EQ(gfx::Size(300, 300),
             view_->window_->layer()->GetPrimarySurfaceInfo()->size_in_pixels());
-  EXPECT_FALSE(view_->window_->layer()->GetFallbackSurfaceInfo()->is_valid());
+  EXPECT_FALSE(view_->window_->layer()->GetFallbackSurfaceId()->is_valid());
 
   // Resizing should update the primary SurfaceInfo.
   view_->SetSize(gfx::Size(400, 400));
   EXPECT_EQ(gfx::Size(400, 400),
             view_->window_->layer()->GetPrimarySurfaceInfo()->size_in_pixels());
-  EXPECT_FALSE(view_->window_->layer()->GetFallbackSurfaceInfo()->is_valid());
+  EXPECT_FALSE(view_->window_->layer()->GetFallbackSurfaceId()->is_valid());
 
   // Submitting a CompositorFrame should update the fallback SurfaceInfo
   view_->SubmitCompositorFrame(
@@ -3127,9 +3127,6 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest, SurfaceChanges) {
       MakeDelegatedFrame(1.f, gfx::Size(400, 400), gfx::Rect(400, 400)));
   EXPECT_EQ(gfx::Size(400, 400),
             view_->window_->layer()->GetPrimarySurfaceInfo()->size_in_pixels());
-  EXPECT_EQ(
-      gfx::Size(400, 400),
-      view_->window_->layer()->GetFallbackSurfaceInfo()->size_in_pixels());
 }
 
 // This test verifies that changing the CompositorFrameSink (and thus evicting

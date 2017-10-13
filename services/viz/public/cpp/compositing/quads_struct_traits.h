@@ -237,25 +237,18 @@ struct StructTraits<viz::mojom::StreamVideoQuadStateDataView, viz::DrawQuad> {
 };
 
 template <>
-struct EnumTraits<viz::mojom::SurfaceDrawQuadType, viz::SurfaceDrawQuadType> {
-  static viz::mojom::SurfaceDrawQuadType ToMojom(
-      viz::SurfaceDrawQuadType surface_draw_quad_type);
-  static bool FromMojom(viz::mojom::SurfaceDrawQuadType input,
-                        viz::SurfaceDrawQuadType* out);
-};
-template <>
 struct StructTraits<viz::mojom::SurfaceQuadStateDataView, viz::DrawQuad> {
-  static const viz::SurfaceId& surface(const viz::DrawQuad& input) {
+  static const viz::SurfaceId& primary_surface_id(const viz::DrawQuad& input) {
     const viz::SurfaceDrawQuad* quad =
         viz::SurfaceDrawQuad::MaterialCast(&input);
-    return quad->surface_id;
+    return quad->primary_surface_id;
   }
 
-  static viz::SurfaceDrawQuadType surface_draw_quad_type(
+  static const base::Optional<viz::SurfaceId>& fallback_surface_id(
       const viz::DrawQuad& input) {
     const viz::SurfaceDrawQuad* quad =
         viz::SurfaceDrawQuad::MaterialCast(&input);
-    return quad->surface_draw_quad_type;
+    return quad->fallback_surface_id;
   }
 
   static uint32_t default_background_color(const viz::DrawQuad& input) {

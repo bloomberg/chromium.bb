@@ -56,8 +56,7 @@ void CreateSurfaceDrawQuad(RenderPass* pass,
   SurfaceDrawQuad* surface_quad =
       pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
   surface_quad->SetNew(pass->shared_quad_state_list.back(), quad_rect,
-                       quad_rect, surface_id, SurfaceDrawQuadType::PRIMARY,
-                       SK_ColorWHITE, nullptr);
+                       quad_rect, surface_id, SurfaceId(), SK_ColorWHITE);
 }
 
 void CreateRenderPass(int render_pass_id,
@@ -99,10 +98,10 @@ void TestSurfaceHittestDelegate::AddInsetsForAcceptSurface(
 bool TestSurfaceHittestDelegate::RejectHitTarget(
     const SurfaceDrawQuad* surface_quad,
     const gfx::Point& point_in_quad_space) {
-  if (!insets_for_reject_.count(surface_quad->surface_id))
+  if (!insets_for_reject_.count(surface_quad->primary_surface_id))
     return false;
   gfx::Rect bounds(surface_quad->rect);
-  bounds.Inset(insets_for_reject_[surface_quad->surface_id]);
+  bounds.Inset(insets_for_reject_[surface_quad->primary_surface_id]);
   // If the point provided falls outside the inset, then we skip this surface.
   if (!bounds.Contains(point_in_quad_space)) {
     if (surface_quad->rect.Contains(point_in_quad_space))
@@ -115,10 +114,10 @@ bool TestSurfaceHittestDelegate::RejectHitTarget(
 bool TestSurfaceHittestDelegate::AcceptHitTarget(
     const SurfaceDrawQuad* surface_quad,
     const gfx::Point& point_in_quad_space) {
-  if (!insets_for_accept_.count(surface_quad->surface_id))
+  if (!insets_for_accept_.count(surface_quad->primary_surface_id))
     return false;
   gfx::Rect bounds(surface_quad->rect);
-  bounds.Inset(insets_for_accept_[surface_quad->surface_id]);
+  bounds.Inset(insets_for_accept_[surface_quad->primary_surface_id]);
   // If the point provided falls outside the inset, then we accept this surface.
   if (!bounds.Contains(point_in_quad_space)) {
     ++accept_target_overrides_;

@@ -54,14 +54,9 @@ struct StreamVideoQuadState {
   gfx.mojom.Transform matrix;
 };
 
-enum SurfaceDrawQuadType {
-  PRIMARY,
-  FALLBACK,
-};
-
 struct SurfaceQuadState {
-  SurfaceId surface;
-  SurfaceDrawQuadType surface_draw_quad_type;
+  SurfaceId primary_surface_id;
+  SurfaceId? fallback_surface_id;
   uint32 default_background_color;
 };
 

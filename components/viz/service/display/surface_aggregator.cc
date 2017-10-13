@@ -184,127 +184,97 @@ void SurfaceAggregator::UnrefResources(
 
 void SurfaceAggregator::HandleSurfaceQuad(
     const SurfaceDrawQuad* surface_quad,
-    const gfx::Rect& primary_rect,
     const gfx::Transform& target_transform,
     const ClipData& clip_rect,
     RenderPass* dest_pass,
     bool ignore_undamaged,
     gfx::Rect* damage_rect_in_quad_space,
     bool* damage_rect_in_quad_space_valid) {
-  SurfaceId surface_id = surface_quad->surface_id;
+  SurfaceId primary_surface_id = surface_quad->primary_surface_id;
+  Surface* primary_surface = manager_->GetSurfaceForId(primary_surface_id);
+
+  if (primary_surface && primary_surface->HasActiveFrame()) {
+    EmitSurfaceContent(primary_surface, surface_quad->shared_quad_state,
+                       surface_quad->rect, surface_quad->visible_rect,
+                       target_transform, clip_rect, dest_pass, ignore_undamaged,
+                       damage_rect_in_quad_space,
+                       damage_rect_in_quad_space_valid);
+    return;
+  }
+
+  // If there's no fallback surface ID provided, then simply emit a
+  // SolidColorDrawQuad with the provided default background color.
+  if (!surface_quad->fallback_surface_id) {
+    EmitDefaultBackgroundColorQuad(surface_quad, target_transform, clip_rect,
+                                   dest_pass);
+    return;
+  }
+
+  SurfaceId fallback_surface_id = *surface_quad->fallback_surface_id;
+  Surface* fallback_surface = manager_->GetSurfaceForId(fallback_surface_id);
+
+  // If the fallback is specified and missing then that's an error. Report the
+  // error to console, and log the UMA.
+  if (!fallback_surface || !fallback_surface->HasActiveFrame()) {
+    ReportMissingFallbackSurface(fallback_surface_id, fallback_surface);
+    EmitDefaultBackgroundColorQuad(surface_quad, target_transform, clip_rect,
+                                   dest_pass);
+    return;
+  }
+
+  const CompositorFrame& fallback_frame = fallback_surface->GetActiveFrame();
+
+  gfx::Rect fallback_rect(fallback_surface->GetActiveFrame().size_in_pixels());
+  fallback_rect = gfx::IntersectRects(fallback_rect, surface_quad->rect);
+
+  EmitGutterQuadsIfNecessary(
+      surface_quad->rect, fallback_rect, surface_quad->shared_quad_state,
+      target_transform, clip_rect,
+      fallback_frame.metadata.root_background_color, dest_pass);
+
+  gfx::Rect fallback_visible_rect(surface_quad->visible_rect);
+  fallback_visible_rect =
+      gfx::IntersectRects(fallback_rect, fallback_visible_rect);
+
+  // TODO(fsamuel): We might not be able to use the primary SurfaceDrawQuad's
+  // SharedQuadState if we need to scale the fallback differently. This may be
+  // the case if the device scale factor differs between the primary and
+  // fallback or we need to stretch the content to fill the bounds of the quad.
+  EmitSurfaceContent(fallback_surface, surface_quad->shared_quad_state,
+                     fallback_rect, fallback_visible_rect, target_transform,
+                     clip_rect, dest_pass, ignore_undamaged,
+                     damage_rect_in_quad_space,
+                     damage_rect_in_quad_space_valid);
+}
+
+void SurfaceAggregator::EmitSurfaceContent(
+    Surface* surface,
+    const SharedQuadState* source_sqs,
+    const gfx::Rect& rect,
+    const gfx::Rect& visible_rect,
+    const gfx::Transform& target_transform,
+    const ClipData& clip_rect,
+    RenderPass* dest_pass,
+    bool ignore_undamaged,
+    gfx::Rect* damage_rect_in_quad_space,
+    bool* damage_rect_in_quad_space_valid) {
   // If this surface's id is already in our referenced set then it creates
   // a cycle in the graph and should be dropped.
+  SurfaceId surface_id = surface->surface_id();
   if (referenced_surfaces_.count(surface_id))
     return;
-  Surface* surface = manager_->GetSurfaceForId(surface_id);
-  if (!surface || !surface->HasActiveFrame()) {
-    if (surface_quad->fallback_quad) {
-      HandleSurfaceQuad(surface_quad->fallback_quad, primary_rect,
-                        target_transform, clip_rect, dest_pass,
-                        ignore_undamaged, damage_rect_in_quad_space,
-                        damage_rect_in_quad_space_valid);
-    } else {
-      SkColor background_color = surface_quad->default_background_color;
-      // If this is a fallback SurfaceDrawQuad and it doesn't have a
-      // CompositorFrame then that's an error.
-      if (surface_quad->surface_draw_quad_type ==
-          SurfaceDrawQuadType::FALLBACK) {
-#if DCHECK_IS_ON()
-        // Pick a very bright and obvious color for the SolidColorDrawQuad so
-        // developers notice there's an error when debugging.
-        background_color = SK_ColorMAGENTA;
-#endif
-        std::stringstream error_stream;
-        error_stream << surface_id;
-#if DCHECK_IS_ON()
-        std::string frame_sink_debug_label(
-            manager_->GetFrameSinkDebugLabel(surface_id.frame_sink_id()));
-        if (!frame_sink_debug_label.empty())
-          error_stream << " [" << frame_sink_debug_label << "]";
-#endif
-        if (!surface) {
-          error_stream << " is missing during aggregation";
-          ++uma_stats_.missing_surface;
-        } else {
-          error_stream << " has no active frame during aggregation";
-          ++uma_stats_.no_active_frame;
-        }
-        DLOG(ERROR) << error_stream.str();
-      }
-      // This is a primary SurfaceDrawQuad and there is no fallback
-      // SurfaceDrawQuad so create a SolidColorDrawQuad with the default
-      // background color.
-      auto* shared_quad_state =
-          CopySharedQuadState(surface_quad->shared_quad_state, target_transform,
-                              clip_rect, dest_pass);
-      auto* solid_color_quad =
-          dest_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
-      solid_color_quad->SetNew(shared_quad_state, surface_quad->rect,
-                               surface_quad->visible_rect, background_color,
-                               false);
-    }
 
-    return;
-  }
   ++uma_stats_.valid_surface;
-
   const CompositorFrame& frame = surface->GetActiveFrame();
-  bool has_transparent_background =
-      frame.metadata.root_background_color == SK_ColorTRANSPARENT;
-
-  // If the fallback Surface's active CompositorFrame has a non-transparent
-  // background then compute gutter.
-  // TODO(fsamuel): Note that the fallback SurfaceDrawQuad is assumed to be
-  // positioned to at the same top left corner as the primary SurfaceDrawQuad
-  // but this isn't enforced anywhere. We should eliminate the fallback
-  // SurfaceDrawQuad entirely.
-  if (!has_transparent_background &&
-      surface_quad->surface_draw_quad_type == SurfaceDrawQuadType::FALLBACK) {
-    gfx::Rect fallback_rect(surface_quad->rect);
-    SharedQuadState* shared_quad_state = nullptr;
-    if (fallback_rect.width() < primary_rect.width()) {
-      shared_quad_state =
-          CopySharedQuadState(surface_quad->shared_quad_state, target_transform,
-                              clip_rect, dest_pass);
-
-      // The right gutter also includes the bottom-right corner, if necessary.
-      gfx::Rect right_gutter_rect(fallback_rect.right(), primary_rect.y(),
-                                  primary_rect.width() - fallback_rect.width(),
-                                  primary_rect.height());
-      auto* right_gutter =
-          dest_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
-      right_gutter->SetNew(shared_quad_state, right_gutter_rect,
-                           right_gutter_rect,
-                           frame.metadata.root_background_color, false);
-    }
-
-    if (fallback_rect.height() < primary_rect.height()) {
-      if (!shared_quad_state) {
-        shared_quad_state =
-            CopySharedQuadState(surface_quad->shared_quad_state,
-                                target_transform, clip_rect, dest_pass);
-      }
-
-      gfx::Rect bottom_gutter_rect(
-          primary_rect.x(), fallback_rect.bottom(), fallback_rect.width(),
-          primary_rect.height() - fallback_rect.height());
-      auto* bottom_gutter =
-          dest_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
-      bottom_gutter->SetNew(shared_quad_state, bottom_gutter_rect,
-                            bottom_gutter_rect,
-                            frame.metadata.root_background_color, false);
-    }
-  }
 
   if (ignore_undamaged) {
     gfx::Transform quad_to_target_transform(
-        target_transform,
-        surface_quad->shared_quad_state->quad_to_target_transform);
+        target_transform, source_sqs->quad_to_target_transform);
     *damage_rect_in_quad_space_valid = CalculateQuadSpaceDamageRect(
         quad_to_target_transform, dest_pass->transform_to_root_target,
         root_damage_rect_, damage_rect_in_quad_space);
     if (*damage_rect_in_quad_space_valid &&
-        !damage_rect_in_quad_space->Intersects(surface_quad->visible_rect)) {
+        !damage_rect_in_quad_space->Intersects(visible_rect)) {
       return;
     }
   }
@@ -314,7 +284,7 @@ void SurfaceAggregator::HandleSurfaceQuad(
   surface->TakeCopyOutputRequests(&copy_requests);
 
   const RenderPassList& render_pass_list = frame.render_pass_list;
-  if (!valid_surfaces_.count(surface->surface_id())) {
+  if (!valid_surfaces_.count(surface_id)) {
     // As |copy_requests| goes out-of-scope, all copy requests in that container
     // will auto-send an empty result upon destruction.
     return;
@@ -327,10 +297,10 @@ void SurfaceAggregator::HandleSurfaceQuad(
   const auto& child_to_parent_map =
       provider_ ? provider_->GetChildToParentMap(ChildIdForSurface(surface))
                 : empty_map;
-  bool merge_pass =
-      surface_quad->shared_quad_state->opacity == 1.f && copy_requests.empty();
+  bool merge_pass = source_sqs->opacity == 1.f && copy_requests.empty();
 
   const RenderPassList& referenced_passes = render_pass_list;
+  // TODO(fsamuel): Move this to a separate helper function.
   size_t passes_to_copy =
       merge_pass ? referenced_passes.size() - 1 : referenced_passes.size();
   for (size_t j = 0; j < passes_to_copy; ++j) {
@@ -356,7 +326,7 @@ void SurfaceAggregator::HandleSurfaceQuad(
     // transform of the surface quad into account to update their transform to
     // the root surface.
     copy_pass->transform_to_root_target.ConcatTransform(
-        surface_quad->shared_quad_state->quad_to_target_transform);
+        source_sqs->quad_to_target_transform);
     copy_pass->transform_to_root_target.ConcatTransform(target_transform);
     copy_pass->transform_to_root_target.ConcatTransform(
         dest_pass->transform_to_root_target);
@@ -387,8 +357,7 @@ void SurfaceAggregator::HandleSurfaceQuad(
     dest_pass_list_->push_back(std::move(copy_pass));
   }
 
-  gfx::Transform surface_transform =
-      surface_quad->shared_quad_state->quad_to_target_transform;
+  gfx::Transform surface_transform = source_sqs->quad_to_target_transform;
   surface_transform.ConcatTransform(target_transform);
 
   const auto& last_pass = *render_pass_list.back();
@@ -407,11 +376,9 @@ void SurfaceAggregator::HandleSurfaceQuad(
     // smaller cliprect for the quad.
     ClipData surface_quad_clip_rect(
         true, cc::MathUtil::MapEnclosingClippedRect(
-                  surface_quad->shared_quad_state->quad_to_target_transform,
-                  surface_quad->visible_rect));
-    if (surface_quad->shared_quad_state->is_clipped) {
-      surface_quad_clip_rect.rect.Intersect(
-          surface_quad->shared_quad_state->clip_rect);
+                  source_sqs->quad_to_target_transform, visible_rect));
+    if (source_sqs->is_clipped) {
+      surface_quad_clip_rect.rect.Intersect(source_sqs->clip_rect);
     }
 
     ClipData quads_clip =
@@ -423,20 +390,114 @@ void SurfaceAggregator::HandleSurfaceQuad(
   } else {
     RenderPassId remapped_pass_id = RemapPassId(last_pass.id, surface_id);
 
+    // TODO(fsamuel): It seems like we can reduce the clip rect here as well
+    // as we do above in the merge case.
     auto* shared_quad_state =
-        CopySharedQuadState(surface_quad->shared_quad_state, target_transform,
-                            clip_rect, dest_pass);
+        CopySharedQuadState(source_sqs, target_transform, clip_rect, dest_pass);
 
     auto* quad = dest_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
-    quad->SetNew(shared_quad_state, surface_quad->rect,
-                 surface_quad->visible_rect, remapped_pass_id, 0, gfx::RectF(),
-                 gfx::Size(), gfx::Vector2dF(), gfx::PointF(),
-                 gfx::RectF(surface_quad->rect),
+    quad->SetNew(shared_quad_state, rect, visible_rect, remapped_pass_id, 0,
+                 gfx::RectF(), gfx::Size(), gfx::Vector2dF(), gfx::PointF(),
+                 gfx::RectF(rect),
                  /*force_anti_aliasing_off=*/false);
   }
 
   // Need to re-query since referenced_surfaces_ iterators are not stable.
   referenced_surfaces_.erase(referenced_surfaces_.find(surface_id));
+}
+
+void SurfaceAggregator::EmitDefaultBackgroundColorQuad(
+    const SurfaceDrawQuad* surface_quad,
+    const gfx::Transform& target_transform,
+    const ClipData& clip_rect,
+    RenderPass* dest_pass) {
+  // The primary surface is unavailable and there is no fallback
+  // surface specified so create a SolidColorDrawQuad with the default
+  // background color.
+  SkColor background_color = surface_quad->default_background_color;
+#if DCHECK_IS_ON()
+  // If a fallback surface is specified but unavaialble then pick a very bright
+  // and obvious color for the SolidColorDrawQuad so developers notice there's
+  // an error when debugging.
+  if (surface_quad->fallback_surface_id.has_value() &&
+      surface_quad->fallback_surface_id->is_valid()) {
+    background_color = SK_ColorMAGENTA;
+  }
+#endif
+  auto* shared_quad_state = CopySharedQuadState(
+      surface_quad->shared_quad_state, target_transform, clip_rect, dest_pass);
+  auto* solid_color_quad =
+      dest_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+  solid_color_quad->SetNew(shared_quad_state, surface_quad->rect,
+                           surface_quad->visible_rect, background_color, false);
+}
+
+void SurfaceAggregator::EmitGutterQuadsIfNecessary(
+    const gfx::Rect& primary_rect,
+    const gfx::Rect& fallback_rect,
+    const SharedQuadState* primary_shared_quad_state,
+    const gfx::Transform& target_transform,
+    const ClipData& clip_rect,
+    SkColor background_color,
+    RenderPass* dest_pass) {
+  bool has_transparent_background = background_color == SK_ColorTRANSPARENT;
+
+  // If the fallback Surface's active CompositorFrame has a non-transparent
+  // background then compute gutter.
+  if (has_transparent_background)
+    return;
+
+  SharedQuadState* shared_quad_state = nullptr;
+  if (fallback_rect.width() < primary_rect.width()) {
+    shared_quad_state = CopySharedQuadState(
+        primary_shared_quad_state, target_transform, clip_rect, dest_pass);
+
+    // The right gutter also includes the bottom-right corner, if necessary.
+    gfx::Rect right_gutter_rect(fallback_rect.right(), primary_rect.y(),
+                                primary_rect.width() - fallback_rect.width(),
+                                primary_rect.height());
+    auto* right_gutter =
+        dest_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+    right_gutter->SetNew(shared_quad_state, right_gutter_rect,
+                         right_gutter_rect, background_color, false);
+  }
+
+  if (fallback_rect.height() < primary_rect.height()) {
+    if (!shared_quad_state) {
+      shared_quad_state = CopySharedQuadState(
+          primary_shared_quad_state, target_transform, clip_rect, dest_pass);
+    }
+
+    gfx::Rect bottom_gutter_rect(
+        primary_rect.x(), fallback_rect.bottom(), fallback_rect.width(),
+        primary_rect.height() - fallback_rect.height());
+    auto* bottom_gutter =
+        dest_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+    bottom_gutter->SetNew(shared_quad_state, bottom_gutter_rect,
+                          bottom_gutter_rect, background_color, false);
+  }
+}
+
+void SurfaceAggregator::ReportMissingFallbackSurface(
+    const SurfaceId& fallback_surface_id,
+    const Surface* fallback_surface) {
+  // If the fallback surface is unavailable then that's an error.
+  std::stringstream error_stream;
+  error_stream << fallback_surface_id;
+#if DCHECK_IS_ON()
+  std::string frame_sink_debug_label(
+      manager_->GetFrameSinkDebugLabel(fallback_surface_id.frame_sink_id()));
+  if (!frame_sink_debug_label.empty())
+    error_stream << " [" << frame_sink_debug_label << "]";
+#endif
+  if (!fallback_surface) {
+    error_stream << " is missing during aggregation";
+    ++uma_stats_.missing_surface;
+  } else {
+    error_stream << " has no active frame during aggregation";
+    ++uma_stats_.no_active_frame;
+  }
+  DLOG(ERROR) << error_stream.str();
 }
 
 void SurfaceAggregator::AddColorConversionPass() {
@@ -547,17 +608,11 @@ void SurfaceAggregator::CopyQuadsToPass(
       // current data.
       last_copied_source_shared_quad_state = nullptr;
 
-      // The primary SurfaceDrawQuad should have already dealt with the fallback
-      // DrawQuad.
-      if (!surface_quad->surface_id.is_valid() ||
-          surface_quad->surface_draw_quad_type ==
-              SurfaceDrawQuadType::FALLBACK) {
+      if (!surface_quad->primary_surface_id.is_valid())
         continue;
-      }
 
-      HandleSurfaceQuad(surface_quad, surface_quad->rect, target_transform,
-                        clip_rect, dest_pass, ignore_undamaged,
-                        &damage_rect_in_quad_space,
+      HandleSurfaceQuad(surface_quad, target_transform, clip_rect, dest_pass,
+                        ignore_undamaged, &damage_rect_in_quad_space,
                         &damage_rect_in_quad_space_valid);
     } else {
       if (quad->shared_quad_state != last_copied_source_shared_quad_state) {
@@ -711,7 +766,7 @@ void SurfaceAggregator::ProcessAddedAndRemovedSurfaces() {
 // Walk the Surface tree from surface_id. Validate the resources of the current
 // surface and its descendants, check if there are any copy requests, and
 // return the combined damage rect.
-gfx::Rect SurfaceAggregator::PrewalkTree(const SurfaceId& surface_id,
+gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
                                          bool in_moved_pixel_surface,
                                          int parent_pass_id,
                                          PrewalkResult* result) {
@@ -720,14 +775,10 @@ gfx::Rect SurfaceAggregator::PrewalkTree(const SurfaceId& surface_id,
   // http://crbug.com/560181
   base::WeakPtr<SurfaceAggregator> debug_weak_this = weak_factory_.GetWeakPtr();
 
-  if (referenced_surfaces_.count(surface_id))
+  if (referenced_surfaces_.count(surface->surface_id()))
     return gfx::Rect();
-  Surface* surface = manager_->GetSurfaceForId(surface_id);
-  if (!surface) {
-    contained_surfaces_[surface_id] = 0;
-    return gfx::Rect();
-  }
-  contained_surfaces_[surface_id] = surface->GetActiveFrameIndex();
+
+  contained_surfaces_[surface->surface_id()] = surface->GetActiveFrameIndex();
   if (!surface->HasActiveFrame())
     return gfx::Rect();
   const CompositorFrame& frame = surface->GetActiveFrame();
@@ -751,26 +802,32 @@ gfx::Rect SurfaceAggregator::PrewalkTree(const SurfaceId& surface_id,
 
   CHECK(debug_weak_this.get());
   RenderPassId remapped_pass_id =
-      RemapPassId(frame.render_pass_list.back()->id, surface_id);
+      RemapPassId(frame.render_pass_list.back()->id, surface->surface_id());
   if (in_moved_pixel_surface)
     moved_pixel_passes_.insert(remapped_pass_id);
   if (parent_pass_id)
     render_pass_dependencies_[parent_pass_id].insert(remapped_pass_id);
 
   struct SurfaceInfo {
-    SurfaceInfo(const SurfaceId& id,
+    SurfaceInfo(const SurfaceId& primary_id,
+                const base::Optional<SurfaceId>& fallback_id,
                 bool has_moved_pixels,
                 RenderPassId parent_pass_id,
-                const gfx::Transform& target_to_surface_transform)
-        : id(id),
+                const gfx::Transform& target_to_surface_transform,
+                const gfx::Rect& quad_rect)
+        : primary_id(primary_id),
+          fallback_id(fallback_id),
           has_moved_pixels(has_moved_pixels),
           parent_pass_id(parent_pass_id),
-          target_to_surface_transform(target_to_surface_transform) {}
+          target_to_surface_transform(target_to_surface_transform),
+          quad_rect(quad_rect) {}
 
-    SurfaceId id;
+    SurfaceId primary_id;
+    base::Optional<SurfaceId> fallback_id;
     bool has_moved_pixels;
     RenderPassId parent_pass_id;
     gfx::Transform target_to_surface_transform;
+    gfx::Rect quad_rect;
   };
   std::vector<SurfaceInfo> child_surfaces;
 
@@ -781,7 +838,7 @@ gfx::Rect SurfaceAggregator::PrewalkTree(const SurfaceId& surface_id,
   for (const auto& render_pass : frame.render_pass_list) {
     if (render_pass->background_filters.HasFilterThatMovesPixels()) {
       pixel_moving_background_filter_passes_data.push_back(
-          RemapPassId(render_pass->id, surface_id));
+          RemapPassId(render_pass->id, surface->surface_id()));
       // TODO(wutao): Partial swap does not work with pixel moving background
       // filter. See https://crbug.com/737255. Current solution is to mark the
       // whole output rect as damaged.
@@ -795,7 +852,8 @@ gfx::Rect SurfaceAggregator::PrewalkTree(const SurfaceId& surface_id,
       base::KEEP_FIRST_OF_DUPES);
 
   for (const auto& render_pass : base::Reversed(frame.render_pass_list)) {
-    RenderPassId remapped_pass_id = RemapPassId(render_pass->id, surface_id);
+    RenderPassId remapped_pass_id =
+        RemapPassId(render_pass->id, surface->surface_id());
     bool has_pixel_moving_filter =
         render_pass->filters.HasFilterThatMovesPixels();
     if (has_pixel_moving_filter)
@@ -808,21 +866,22 @@ gfx::Rect SurfaceAggregator::PrewalkTree(const SurfaceId& surface_id,
         gfx::Transform target_to_surface_transform(
             render_pass->transform_to_root_target,
             surface_quad->shared_quad_state->quad_to_target_transform);
-        child_surfaces.emplace_back(surface_quad->surface_id,
-                                    in_moved_pixel_pass, remapped_pass_id,
-                                    target_to_surface_transform);
+        child_surfaces.emplace_back(
+            surface_quad->primary_surface_id, surface_quad->fallback_surface_id,
+            in_moved_pixel_pass, remapped_pass_id, target_to_surface_transform,
+            surface_quad->rect);
       } else if (quad->material == DrawQuad::RENDER_PASS) {
         const auto* render_pass_quad = RenderPassDrawQuad::MaterialCast(quad);
         if (in_moved_pixel_pass) {
-          moved_pixel_passes_.insert(
-              RemapPassId(render_pass_quad->render_pass_id, surface_id));
+          moved_pixel_passes_.insert(RemapPassId(
+              render_pass_quad->render_pass_id, surface->surface_id()));
         }
         if (pixel_moving_background_filter_passes.count(
                 render_pass_quad->render_pass_id)) {
           in_moved_pixel_pass = true;
         }
-        render_pass_dependencies_[remapped_pass_id].insert(
-            RemapPassId(render_pass_quad->render_pass_id, surface_id));
+        render_pass_dependencies_[remapped_pass_id].insert(RemapPassId(
+            render_pass_quad->render_pass_id, surface->surface_id()));
       }
 
       if (!provider_)
@@ -859,11 +918,29 @@ gfx::Rect SurfaceAggregator::PrewalkTree(const SurfaceId& surface_id,
   // referenced_surfaces_.
   referenced_surfaces_.insert(surface->surface_id());
   for (const auto& surface_info : child_surfaces) {
-    gfx::Rect surface_damage =
-        PrewalkTree(surface_info.id, surface_info.has_moved_pixels,
-                    surface_info.parent_pass_id, result);
+    Surface* surface = manager_->GetSurfaceForId(surface_info.primary_id);
+    gfx::Rect surface_damage;
+    if (!surface || !surface->HasActiveFrame()) {
+      // If the primary surface si not available then we assume the damage is
+      // the full size of the SurfaceDrawQuad because we might need to introduce
+      // gutter.
+      surface_damage = surface_info.quad_rect;
+      if (surface_info.fallback_id) {
+        Surface* fallback_surface =
+            manager_->GetSurfaceForId(*surface_info.fallback_id);
+        if (fallback_surface && fallback_surface->HasActiveFrame())
+          surface = fallback_surface;
+      }
+    }
+
+    if (surface) {
+      surface_damage.Union(PrewalkTree(surface, surface_info.has_moved_pixels,
+                                       surface_info.parent_pass_id, result));
+    }
+
     if (surface_damage.IsEmpty())
       continue;
+
     if (surface_info.has_moved_pixels) {
       // Areas outside the rect hit by target_to_surface_transform may be
       // modified if there is a filter that moves pixels.
@@ -879,7 +956,9 @@ gfx::Rect SurfaceAggregator::PrewalkTree(const SurfaceId& surface_id,
   for (const auto& surface_id : frame.metadata.referenced_surfaces) {
     if (!contained_surfaces_.count(surface_id)) {
       result->undrawn_surfaces.insert(surface_id);
-      PrewalkTree(surface_id, false, 0, result);
+      Surface* undrawn_surface = manager_->GetSurfaceForId(surface_id);
+      if (undrawn_surface)
+        PrewalkTree(undrawn_surface, false, 0, result);
     }
   }
 
@@ -894,16 +973,15 @@ gfx::Rect SurfaceAggregator::PrewalkTree(const SurfaceId& surface_id,
   CHECK(debug_weak_this.get());
   for (const auto& render_pass : frame.render_pass_list) {
     if (!render_pass->copy_requests.empty()) {
-      RenderPassId remapped_pass_id = RemapPassId(render_pass->id, surface_id);
+      RenderPassId remapped_pass_id =
+          RemapPassId(render_pass->id, surface->surface_id());
       copy_request_passes_.insert(remapped_pass_id);
     }
     if (render_pass->cache_render_pass)
       has_cached_render_passes_ = true;
   }
 
-  // TODO(jbauman): Remove when https://crbug.com/745684 fixed.
-  CHECK(surface->surface_id() == surface_id);
-  auto it = referenced_surfaces_.find(surface_id);
+  auto it = referenced_surfaces_.find(surface->surface_id());
   // TODO(jbauman): Remove when https://crbug.com/745684 fixed.
   CHECK(referenced_surfaces_.end() != it);
   referenced_surfaces_.erase(it);
@@ -995,7 +1073,7 @@ CompositorFrame SurfaceAggregator::Aggregate(const SurfaceId& surface_id) {
   valid_surfaces_.clear();
   has_cached_render_passes_ = false;
   PrewalkResult prewalk_result;
-  root_damage_rect_ = PrewalkTree(surface_id, false, 0, &prewalk_result);
+  root_damage_rect_ = PrewalkTree(surface, false, 0, &prewalk_result);
   PropagateCopyRequestPasses();
   has_copy_requests_ = !copy_request_passes_.empty();
   frame.metadata.may_contain_video = prewalk_result.may_contain_video;
