@@ -4,10 +4,13 @@
 
 #include "chrome/browser/ui/webui/chromeos/network_element_localized_strings_provider.h"
 
+#include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/browser/chromeos/net/shill_error.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/login/localized_values_builder.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
 namespace network_element {
@@ -233,6 +236,47 @@ void AddConfigLocalizedStrings(content::WebUIDataSource* html_source) {
   };
   for (const auto& entry : localized_strings)
     html_source->AddLocalizedString(entry.name, entry.id);
+}
+
+void AddErrorLocalizedStrings(content::WebUIDataSource* html_source) {
+  struct {
+    const char* name;
+    int id;
+  } localized_strings[] = {
+      {"Error.CannotChangeSharedConfig",
+       IDS_NETWORK_ERROR_CANNOT_CHANGE_SHARED_CONFIG},
+      {"Error.PolicyControlled", IDS_NETWORK_ERROR_POLICY_CONTROLLED},
+      {"networkErrorNoUserCertificate", IDS_NETWORK_ERROR_NO_USER_CERT},
+      {"networkErrorUnknown", IDS_NETWORK_ERROR_UNKNOWN},
+  };
+  for (const auto& entry : localized_strings)
+    html_source->AddLocalizedString(entry.name, entry.id);
+
+  // Include Shill errors.
+  const char* shill_errors[] = {shill::kErrorOutOfRange,
+                                shill::kErrorPinMissing,
+                                shill::kErrorDhcpFailed,
+                                shill::kErrorConnectFailed,
+                                shill::kErrorBadPassphrase,
+                                shill::kErrorBadWEPKey,
+                                shill::kErrorActivationFailed,
+                                shill::kErrorNeedEvdo,
+                                shill::kErrorNeedHomeNetwork,
+                                shill::kErrorOtaspFailed,
+                                shill::kErrorAaaFailed,
+                                shill::kErrorInternal,
+                                shill::kErrorDNSLookupFailed,
+                                shill::kErrorHTTPGetFailed,
+                                shill::kErrorIpsecPskAuthFailed,
+                                shill::kErrorIpsecCertAuthFailed,
+                                shill::kErrorEapAuthenticationFailed,
+                                shill::kErrorEapLocalTlsFailed,
+                                shill::kErrorEapRemoteTlsFailed,
+                                shill::kErrorPppAuthFailed};
+  for (const auto* error : shill_errors) {
+    html_source->AddString(
+        error, base::UTF16ToUTF8(shill_error::GetShillErrorString(error, "")));
+  }
 }
 
 }  // namespace network_element

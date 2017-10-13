@@ -56,8 +56,8 @@
     <div class="section single-column">
       <network-config id="networkConfig" class="flex"
           networking-private="[[networkingPrivate]]"
-          network-properties="[[networkProperties_]]"
-          enable-connect="{{enableConnect_}}" enable-save="{{enableSave_}}"
+          network-properties="{{networkProperties_}}"
+          enable-connect="{{enableConnect_}}" connect-on-save
           on-close="close_">
       </network-config>
     </div>
@@ -66,18 +66,10 @@
       <paper-button class="secondary-button" on-tap="onCancelTap_">
         $i18n{cancel}
       </paper-button>
-      <template is="dom-if" if="[[guid_]]">
-        <paper-button class="primary-button" on-tap="onSaveTap_"
-            disabled="[[!enableSave_]]">
-          $i18n{save}
-        </paper-button>
-      </template>
-      <template is="dom-if" if="[[!guid_]]">
-        <paper-button class="primary-button" on-tap="onConnectTap_"
-            disabled="[[!enableConnect_]]">
-          $i18n{networkButtonConnect}
-        </paper-button>
-      </template>
+      <paper-button class="primary-button" on-tap="onConnectTap_"
+          disabled="[[!enableConnect_]]">
+        $i18n{networkButtonConnect}
+      </paper-button>
     </div>
   </template>
   <script src="internet_config_dialog.js"></script>

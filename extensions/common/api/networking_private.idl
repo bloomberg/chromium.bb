@@ -720,6 +720,10 @@ namespace networkingPrivate {
     boolean? RestrictedConnectivity;
     IPConfigProperties? StaticIPConfig;
     IPConfigProperties? SavedIPConfig;
+    // Indicates whether and how the network is configured.
+    // 'Source' can be Device, DevicePolicy, User, UserPolicy or None.
+    // 'None' conflicts with extension code generation so we must use a string
+    // for 'Source' instead of a SourceType enum.
     DOMString? Source;
     TetherProperties? Tether;
     NetworkType Type;
@@ -745,6 +749,7 @@ namespace networkingPrivate {
     boolean? RestrictedConnectivity;
     ManagedIPConfigProperties? StaticIPConfig;
     IPConfigProperties? SavedIPConfig;
+    // See $(ref:NetworkProperties.Source).
     DOMString? Source;
     TetherProperties? Tether;
     NetworkType Type;
@@ -762,6 +767,7 @@ namespace networkingPrivate {
     DOMString GUID;
     DOMString? Name;
     long? Priority;
+    // See $(ref:NetworkProperties.Source).
     DOMString? Source;
     TetherProperties? Tether;
     NetworkType Type;
@@ -922,7 +928,9 @@ namespace networkingPrivate {
     static void getState(DOMString networkGuid,
                          GetStatePropertiesCallback callback);
 
-    // Sets the properties of the network with id networkGuid.
+    // Sets the properties of the network with id |networkGuid|. This is only
+    // valid for configured networks (Source != None). Unconfigured visible
+    // networks should use createNetwork instead.
     // |networkGuid|: The GUID of the network to set properties for.
     // |properties|: The properties to set.
     // |callback|: Called when the operation has completed.

@@ -30,10 +30,7 @@ Polymer({
     guid_: String,
 
     /** @private */
-    enableConnect_: String,
-
-    /** @private */
-    enableSave_: String,
+    enableConnect_: Boolean,
 
     /**
      * The current properties if an existing network is being configured, or
@@ -79,11 +76,6 @@ Polymer({
   /** @private */
   onCancelTap_: function() {
     this.close_();
-  },
-
-  /** @private */
-  onSaveTap_: function() {
-    this.$.networkConfig.saveOrConnect();
   },
 
   /** @private */

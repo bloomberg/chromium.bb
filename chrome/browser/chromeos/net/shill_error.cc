@@ -75,7 +75,8 @@ base::string16 GetShillErrorString(const std::string& error,
         IDS_CHROMEOS_NETWORK_ERROR_CERT_AUTH_FAILED);
   }
   if (error == shill::kErrorEapAuthenticationFailed) {
-    const NetworkState* network = GetNetworkState(network_id);
+    const NetworkState* network =
+        network_id.empty() ? nullptr : GetNetworkState(network_id);
     // TLS always requires a client certificate, so show a cert auth
     // failed message for TLS. Other EAP methods do not generally require
     // a client certicate.

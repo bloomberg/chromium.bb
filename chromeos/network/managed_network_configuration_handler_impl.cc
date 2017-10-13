@@ -146,8 +146,10 @@ void ManagedNetworkConfigurationHandlerImpl::SendManagedProperties(
       network_state_handler_->GetNetworkState(service_path);
   const NetworkProfile* profile =
       network_profile_handler_->GetProfileForPath(profile_path);
-  if (!profile && !(network_state && network_state->IsNonProfileType()))
-    NET_LOG_ERROR("No profile for service: " + profile_path, service_path);
+  if (!profile && !(network_state && network_state->IsNonProfileType())) {
+    // Visible but unsaved (not known) networks will not have a profile.
+    NET_LOG_DEBUG("No profile for service: " + profile_path, service_path);
+  }
 
   std::unique_ptr<NetworkUIData> ui_data =
       shill_property_util::GetUIDataFromProperties(*shill_properties);
