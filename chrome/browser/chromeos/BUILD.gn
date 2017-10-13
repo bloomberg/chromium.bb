@@ -1164,6 +1164,8 @@ source_set("chromeos") {
     "net/wake_on_wifi_manager.h",
     "night_light/night_light_client.cc",
     "night_light/night_light_client.h",
+    "note_taking_controller_client.cc",
+    "note_taking_controller_client.h",
     "note_taking_helper.cc",
     "note_taking_helper.h",
     "options/cert_library.cc",

@@ -26,6 +26,7 @@ mojom("interfaces_internal") {
     "media.mojom",
     "new_window.mojom",
     "night_light_controller.mojom",
+    "note_taking_controller.mojom",
     "pref_connector.mojom",
     "session_controller.mojom",
     "shelf.mojom",
