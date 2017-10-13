@@ -165,22 +165,37 @@ ArcSessionManager* ArcSessionManager::Get() {
 
 // static
 bool ArcSessionManager::IsOobeOptInActive() {
-  // Check if ARC ToS screen for OOBE or OPA OptIn flow is currently showing.
+  // Check if Chrome OS OOBE or OPA OptIn flow is currently showing.
   // TODO(b/65861628): Rename the method since it is no longer accurate.
   // Redesign the OptIn flow since there is no longer reason to have two
   // different OptIn flows.
   chromeos::LoginDisplayHost* host = chromeos::LoginDisplayHost::default_host();
   if (!host)
     return false;
-  const chromeos::WizardController* wizard_controller =
-      host->GetWizardController();
-  if (!wizard_controller)
+
+  // Make sure the wizard controller is active and have the ARC ToS screen
+  // showing for the voice interaction OptIn flow.
+  if (host->IsVoiceInteractionOobe()) {
+    const chromeos::WizardController* wizard_controller =
+        host->GetWizardController();
+    if (!wizard_controller)
+      return false;
+    const chromeos::BaseScreen* screen = wizard_controller->current_screen();
+    if (!screen)
+      return false;
+    return screen->screen_id() ==
+           chromeos::OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE;
+  }
+
+  // Use the legacy logic for first sign-in OOBE OptIn flow. Make sure the user
+  // is new and the swtich is appended.
+  if (!user_manager::UserManager::Get()->IsCurrentUserNew())
     return false;
-  const chromeos::BaseScreen* screen = wizard_controller->current_screen();
-  if (!screen)
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kEnableArcOOBEOptIn)) {
     return false;
-  return screen->screen_id() ==
-         chromeos::OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE;
+  }
+  return true;
 }
 
 // static
