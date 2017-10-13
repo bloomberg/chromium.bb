@@ -2036,7 +2036,31 @@ static void write_intrabc_info(AV1_COMMON *cm, MACROBLOCKD *xd,
   if (use_intrabc) {
     assert(mbmi->mode == DC_PRED);
     assert(mbmi->uv_mode == UV_DC_PRED);
-    if (enable_tx_size && !mbmi->skip) write_selected_tx_size(cm, xd, w);
+    if ((enable_tx_size && !mbmi->skip)) {
+#if CONFIG_VAR_TX
+      const BLOCK_SIZE bsize = mbmi->sb_type;
+      const TX_SIZE max_tx_size = get_vartx_max_txsize(mbmi, bsize, 0);
+      const int bh = tx_size_high_unit[max_tx_size];
+      const int bw = tx_size_wide_unit[max_tx_size];
+      const int width = block_size_wide[bsize] >> tx_size_wide_log2[0];
+      const int height = block_size_high[bsize] >> tx_size_wide_log2[0];
+      int init_depth =
+          (height != width) ? RECT_VARTX_DEPTH_INIT : SQR_VARTX_DEPTH_INIT;
+      int idx, idy;
+      for (idy = 0; idy < height; idy += bh) {
+        for (idx = 0; idx < width; idx += bw) {
+          write_tx_size_vartx(cm, xd, mbmi, max_tx_size, init_depth, idy, idx,
+                              w);
+        }
+      }
+#else
+      write_selected_tx_size(cm, xd, w);
+#endif
+    } else {
+#if CONFIG_VAR_TX
+      set_txfm_ctxs(mbmi->tx_size, xd->n8_w, xd->n8_h, mbmi->skip, xd);
+#endif  // CONFIG_VAR_TX
+    }
     int_mv dv_ref = mbmi_ext->ref_mvs[INTRA_FRAME][0];
     av1_encode_dv(w, &mbmi->mv[0].as_mv, &dv_ref.as_mv, &ec_ctx->ndvc);
 #if CONFIG_EXT_TX && !CONFIG_TXK_SEL
@@ -2124,6 +2148,10 @@ static void write_mb_modes_kf(AV1_COMMON *cm, MACROBLOCKD *xd,
 #endif  // CONFIG_INTRABC
 
   if (enable_tx_size) write_selected_tx_size(cm, xd, w);
+#if CONFIG_INTRABC && CONFIG_VAR_TX
+  if (cm->allow_screen_content_tools)
+    set_txfm_ctxs(mbmi->tx_size, xd->n8_w, xd->n8_h, mbmi->skip, xd);
+#endif  // CONFIG_INTRABC && CONFIG_VAR_TX
 
   if (bsize >= BLOCK_8X8 || unify_bsize) {
     write_intra_mode_kf(cm, ec_ctx, mi, above_mi, left_mi, 0, mbmi->mode, w);
@@ -2306,6 +2334,14 @@ static void write_mbmi_b(AV1_COMP *cpi, const TileInfo *const tile,
                  cm->mi_rows, cm->mi_cols);
 
   if (frame_is_intra_only(cm)) {
+#if CONFIG_INTRABC && CONFIG_VAR_TX
+    if (cm->allow_screen_content_tools) {
+      xd->above_txfm_context =
+          cm->above_txfm_context + (mi_col << TX_UNIT_WIDE_LOG2);
+      xd->left_txfm_context = xd->left_txfm_context_buffer +
+                              ((mi_row & MAX_MIB_MASK) << TX_UNIT_HIGH_LOG2);
+    }
+#endif  // CONFIG_INTRABC && CONFIG_VAR_TX
     write_mb_modes_kf(cm, xd,
 #if CONFIG_INTRABC
                       cpi->td.mb.mbmi_ext,

@@ -1133,7 +1133,36 @@ static void read_intrabc_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
   mbmi->use_intrabc = aom_read_symbol(r, ec_ctx->intrabc_cdf, 2, ACCT_STR);
   if (mbmi->use_intrabc) {
+#if CONFIG_VAR_TX
+    const BLOCK_SIZE bsize = mbmi->sb_type;
+    const int width = block_size_wide[bsize] >> tx_size_wide_log2[0];
+    const int height = block_size_high[bsize] >> tx_size_high_log2[0];
+    int idx, idy;
+    if ((cm->tx_mode == TX_MODE_SELECT && block_signals_txsize(bsize) &&
+         !xd->lossless[mbmi->segment_id] && !mbmi->skip)) {
+      const TX_SIZE max_tx_size = max_txsize_rect_lookup[bsize];
+      const int bh = tx_size_high_unit[max_tx_size];
+      const int bw = tx_size_wide_unit[max_tx_size];
+      int init_depth =
+          (height != width) ? RECT_VARTX_DEPTH_INIT : SQR_VARTX_DEPTH_INIT;
+      mbmi->min_tx_size = TX_SIZES_ALL;
+      for (idy = 0; idy < height; idy += bh) {
+        for (idx = 0; idx < width; idx += bw) {
+          read_tx_size_vartx(cm, xd, mbmi, xd->counts, max_tx_size, init_depth,
+                             idy, idx, r);
+        }
+      }
+    } else {
+      mbmi->tx_size = read_tx_size(cm, xd, 1, !mbmi->skip, r);
+      for (idy = 0; idy < height; ++idy)
+        for (idx = 0; idx < width; ++idx)
+          mbmi->inter_tx_size[idy >> 1][idx >> 1] = mbmi->tx_size;
+      mbmi->min_tx_size = get_min_tx_size(mbmi->tx_size);
+      set_txfm_ctxs(mbmi->tx_size, xd->n8_w, xd->n8_h, mbmi->skip, xd);
+    }
+#else
     mbmi->tx_size = read_tx_size(cm, xd, 1, !mbmi->skip, r);
+#endif  // CONFIG_VAR_TX
     mbmi->mode = mbmi->uv_mode = UV_DC_PRED;
     mbmi->interp_filters = av1_broadcast_interp_filter(BILINEAR);
 
@@ -1149,19 +1178,8 @@ static void read_intrabc_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
 
     int_mv dv_ref = nearestmv.as_int == 0 ? nearmv : nearestmv;
     if (dv_ref.as_int == 0) av1_find_ref_dv(&dv_ref, mi_row, mi_col);
-    const BLOCK_SIZE bsize = mbmi->sb_type;
     xd->corrupted |=
         !assign_dv(cm, xd, &mbmi->mv[0], &dv_ref, mi_row, mi_col, bsize, r);
-#if CONFIG_VAR_TX
-    // TODO(aconverse@google.com): Evaluate allowing VAR TX on intrabc blocks
-    const int width = block_size_wide[bsize] >> tx_size_wide_log2[0];
-    const int height = block_size_high[bsize] >> tx_size_high_log2[0];
-    int idx, idy;
-    for (idy = 0; idy < height; ++idy)
-      for (idx = 0; idx < width; ++idx)
-        mbmi->inter_tx_size[idy >> 1][idx >> 1] = mbmi->tx_size;
-    mbmi->min_tx_size = get_min_tx_size(mbmi->tx_size);
-#endif  // CONFIG_VAR_TX
 #if CONFIG_EXT_TX && !CONFIG_TXK_SEL
     av1_read_tx_type(cm, xd, r);
 #endif  // CONFIG_EXT_TX && !CONFIG_TXK_SEL
@@ -1232,6 +1250,14 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
   mbmi->ref_frame[1] = NONE_FRAME;
 
 #if CONFIG_INTRABC
+#if CONFIG_VAR_TX
+  if (cm->allow_screen_content_tools) {
+    xd->above_txfm_context =
+        cm->above_txfm_context + (mi_col << TX_UNIT_WIDE_LOG2);
+    xd->left_txfm_context = xd->left_txfm_context_buffer +
+                            ((mi_row & MAX_MIB_MASK) << TX_UNIT_HIGH_LOG2);
+  }
+#endif  // CONFIG_VAR_TX
   if (av1_allow_intrabc(bsize, cm)) {
     read_intrabc_info(cm, xd, mi_row, mi_col, r);
     if (is_intrabc_block(mbmi)) return;
@@ -1239,6 +1265,10 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
 #endif  // CONFIG_INTRABC
 
   mbmi->tx_size = read_tx_size(cm, xd, 0, 1, r);
+#if CONFIG_INTRABC && CONFIG_VAR_TX
+  if (cm->allow_screen_content_tools)
+    set_txfm_ctxs(mbmi->tx_size, xd->n8_w, xd->n8_h, mbmi->skip, xd);
+#endif  // CONFIG_INTRABC && CONFIG_VAR_TX
 
 #if CONFIG_CB4X4
   (void)i;
