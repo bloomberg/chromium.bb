@@ -8,17 +8,17 @@
       "paintInvalidations": [
         {
           "object": "LayoutTextControl INPUT id='target'",
-          "rect": [7, 7, 66, 24],
+          "rect": [5, 5, 54, 25],
           "reason": "subtree"
         },
         {
           "object": "LayoutBlockFlow DIV id='inner-editor'",
-          "rect": [10, 11, 60, 16],
+          "rect": [11, 11, 42, 13],
           "reason": "subtree"
         },
         {
           "object": "LayoutText #text",
-          "rect": [10, 11, 60, 16],
+          "rect": [11, 11, 42, 13],
           "reason": "subtree"
         }
       ]
