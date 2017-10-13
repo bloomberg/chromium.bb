@@ -345,10 +345,9 @@ bool IsEndOfParagraph(const VisiblePosition& pos,
                                                     boundary_crossing_rule);
 }
 
-bool IsEndOfParagraph(const VisiblePositionInFlatTree& pos,
-                      EditingBoundaryCrossingRule boundary_crossing_rule) {
+bool IsEndOfParagraph(const VisiblePositionInFlatTree& pos) {
   return IsEndOfParagraphAlgorithm<EditingInFlatTreeStrategy>(
-      pos, boundary_crossing_rule);
+      pos, kCannotCrossEditingBoundary);
 }
 
 // TODO(editing-dev): We should move |PreviousParagraphPosition()| to

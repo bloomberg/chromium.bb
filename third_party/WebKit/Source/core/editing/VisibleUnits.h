@@ -244,9 +244,7 @@ CORE_EXPORT bool IsStartOfParagraph(
 CORE_EXPORT bool IsEndOfParagraph(
     const VisiblePosition&,
     EditingBoundaryCrossingRule = kCannotCrossEditingBoundary);
-CORE_EXPORT bool IsEndOfParagraph(
-    const VisiblePositionInFlatTree&,
-    EditingBoundaryCrossingRule = kCannotCrossEditingBoundary);
+CORE_EXPORT bool IsEndOfParagraph(const VisiblePositionInFlatTree&);
 bool InSameParagraph(const VisiblePosition&,
                      const VisiblePosition&,
                      EditingBoundaryCrossingRule = kCannotCrossEditingBoundary);
