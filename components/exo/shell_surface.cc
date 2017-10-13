@@ -121,49 +121,8 @@ class CustomWindowTargeter : public aura::WindowTargeter {
     if (component != HTNOWHERE && component != HTCLIENT)
       return true;
 
-    // If there is an underlay, test against it first as it's bounds may be
-    // larger than the surface's bounds.
-    aura::Window* shadow_underlay =
-        static_cast<ShellSurface*>(
-            widget_->widget_delegate()->GetContentsView())
-            ->shadow_underlay();
-    if (shadow_underlay) {
-      gfx::Point local_point_in_shadow_underlay = local_point;
-      aura::Window::ConvertPointToTarget(window, shadow_underlay,
-                                         &local_point_in_shadow_underlay);
-      if (gfx::Rect(shadow_underlay->layer()->size())
-              .Contains(local_point_in_shadow_underlay)) {
-        return true;
-      }
-    }
-
-    // Otherwise, fallback to hit test on the surface.
     aura::Window::ConvertPointToTarget(window, surface->window(), &local_point);
     return surface->HitTestRect(gfx::Rect(local_point, gfx::Size(1, 1)));
-  }
-
-  ui::EventTarget* FindTargetForEvent(ui::EventTarget* root,
-                                      ui::Event* event) override {
-    aura::Window* window = static_cast<aura::Window*>(root);
-    Surface* surface = ShellSurface::GetMainSurface(window);
-
-    // Send events which wouldn't be handled by the surface, to the shadow
-    // underlay.
-    aura::Window* shadow_underlay =
-        static_cast<ShellSurface*>(
-            widget_->widget_delegate()->GetContentsView())
-            ->shadow_underlay();
-    if (surface && event->IsLocatedEvent() && shadow_underlay) {
-      gfx::Point local_point = event->AsLocatedEvent()->location();
-      int component = widget_->non_client_view()->NonClientHitTest(local_point);
-      if (component == HTNOWHERE) {
-        aura::Window::ConvertPointToTarget(window, surface->window(),
-                                           &local_point);
-        if (!surface->HitTestRect(gfx::Rect(local_point, gfx::Size(1, 1))))
-          return shadow_underlay;
-      }
-    }
-    return aura::WindowTargeter::FindTargetForEvent(root, event);
   }
 
  private:
@@ -676,12 +635,6 @@ void ShellSurface::SetShadowBounds(const gfx::Rect& bounds) {
   }
 }
 
-void ShellSurface::SetRectangularShadowBackgroundOpacity(float opacity) {
-  TRACE_EVENT1("exo", "ShellSurface::SetRectangularShadowBackgroundOpacity",
-               "opacity", opacity);
-  shadow_background_opacity_ = opacity;
-}
-
 void ShellSurface::SetScale(double scale) {
   TRACE_EVENT1("exo", "ShellSurface::SetScale", "scale", scale);
 
@@ -747,10 +700,9 @@ std::unique_ptr<base::trace_event::TracedValue> ShellSurface::AsTracedValue()
 // SurfaceDelegate overrides:
 
 void ShellSurface::OnSurfaceCommit() {
-  // When the shadow underlay is in surface coordinate space and the surface's
-  // bounds have changed, shadow API requires that we synchronize the shadow
-  // bounds change with the next frame, so we have to submit the next frame to a
-  // new surface, and let the host_window() use the new surface.
+  // SetShadowBounds requires synchronizing shadow bounds with the next frame,
+  // so submit the next frame to a new surface and let the host window use the
+  // new surface.
   if (shadow_bounds_changed_)
     host_window()->AllocateLocalSurfaceId();
 
@@ -1753,7 +1705,6 @@ void ShellSurface::UpdateShadow() {
 
   if (!shadow_bounds_) {
     wm::SetShadowElevation(window, wm::ShadowElevation::NONE);
-    shadow_underlay_.reset();
   } else {
     wm::SetShadowElevation(window, wm::ShadowElevation::DEFAULT);
 
@@ -1769,42 +1720,6 @@ void ShellSurface::UpdateShadow() {
 
       // Convert from display to window coordinates.
       shadow_bounds -= window->bounds().OffsetFromOrigin();
-    }
-
-    bool needs_shadow_underlay = shadow_background_opacity_ > 0.f;
-    if (needs_shadow_underlay) {
-      if (!shadow_underlay_) {
-        shadow_underlay_ = std::make_unique<aura::Window>(nullptr);
-        shadow_underlay_->set_owned_by_parent(false);
-        DCHECK(!shadow_underlay_->owned_by_parent());
-        // Ensure the background area inside the shadow is solid black.
-        // Clients that provide translucent contents should not be using
-        // rectangular shadows as this method requires opaque contents to
-        // cast a shadow that represent it correctly.
-        shadow_underlay_->Init(ui::LAYER_SOLID_COLOR);
-        shadow_underlay_->layer()->SetColor(SK_ColorBLACK);
-        DCHECK(shadow_underlay_->layer()->fills_bounds_opaquely());
-        window->AddChild(shadow_underlay());
-        window->StackChildAtBottom(shadow_underlay());
-      }
-      gfx::Rect shadow_underlay_bounds(shadow_bounds);
-      // Constrain the underlay bounds to the client area in case shell surface
-      // frame is enabled.
-      if (frame_enabled_) {
-        shadow_underlay_bounds.Intersect(
-            widget_->non_client_view()->frame_view()->GetBoundsForClientView());
-      }
-      shadow_underlay_->SetBounds(shadow_underlay_bounds);
-      if (!shadow_underlay_->IsVisible())
-        shadow_underlay_->Show();
-      // TODO(oshima): Setting to the same value should be no-op.
-      // crbug.com/642223.
-      if (shadow_background_opacity_ !=
-          shadow_underlay_->layer()->GetTargetOpacity()) {
-        shadow_underlay_->layer()->SetOpacity(shadow_background_opacity_);
-      }
-    } else {
-      shadow_underlay_.reset();
     }
 
     wm::Shadow* shadow = wm::ShadowController::GetShadowForWindow(window);
