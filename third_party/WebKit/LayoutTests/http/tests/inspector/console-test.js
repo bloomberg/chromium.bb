@@ -451,4 +451,21 @@ InspectorTest.selectConsoleMessages = function(fromMessage, fromTextOffset, toMe
     }
 }
 
+InspectorTest.wrapListener = function(func)
+{
+    function wrapper()
+    {
+        var wrapArgs = arguments;
+        var wrapThis = this;
+        // Give a chance to other listeners.
+        setTimeout(apply, 0);
+
+        function apply()
+        {
+            func.apply(wrapThis, wrapArgs);
+        }
+    }
+    return wrapper;
+}
+
 }

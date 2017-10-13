@@ -11,6 +11,7 @@ Frames
                 styles-non-unique-url.css
             resource-tree-non-unique-url-iframe.html
         Scripts
+            debugger-test.js
             inspector-test.js
             resource-tree-test.js
             resources-test.js
@@ -19,6 +20,7 @@ Sources:
 -------- Setting mode: [frame]
 top
   resource-tree-non-unique-url.html
+  debugger-test.js
   inspector-test.js
   resource-tree-test.js
   resources-test.js
@@ -30,6 +32,7 @@ Sources:
 top
   127.0.0.1:8000
     resource-tree-non-unique-url.html
+    debugger-test.js
     inspector-test.js
     resource-tree-test.js
     resources-test.js
@@ -46,6 +49,7 @@ top
     inspector
       resource-tree
         resource-tree-test.js
+      debugger-test.js
       inspector-test.js
       resources-test.js
   resource-tree-non-unique-url-iframe.html
@@ -58,6 +62,7 @@ Sources:
 127.0.0.1:8000
   resource-tree-non-unique-url-iframe.html
   resource-tree-non-unique-url.html
+  debugger-test.js
   inspector-test.js
   resource-tree-test.js
   resources-test.js
@@ -73,6 +78,7 @@ Sources:
   inspector
     resource-tree
       resource-tree-test.js
+    debugger-test.js
     inspector-test.js
     resources-test.js
 

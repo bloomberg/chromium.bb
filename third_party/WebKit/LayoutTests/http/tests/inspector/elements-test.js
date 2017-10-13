@@ -425,6 +425,44 @@ InspectorTest.showEventListenersWidget = function()
     return UI.viewManager.showView("elements.eventListeners");
 }
 
+InspectorTest.expandAndDumpEventListeners = function(eventListenersView, callback, force)
+{
+    function listenersArrived()
+    {
+        var listenerTypes = eventListenersView._treeOutline.rootElement().children();
+        for (var i = 0; i < listenerTypes.length; ++i) {
+            listenerTypes[i].expand();
+            var listenerItems = listenerTypes[i].children();
+            for (var j = 0; j < listenerItems.length; ++j)
+                listenerItems[j].expand();
+        }
+        InspectorTest.deprecatedRunAfterPendingDispatches(objectsExpanded);
+    }
+
+    function objectsExpanded()
+    {
+        var listenerTypes = eventListenersView._treeOutline.rootElement().children();
+        for (var i = 0; i < listenerTypes.length; ++i) {
+            if (!listenerTypes[i].children().length)
+                continue;
+            var eventType = listenerTypes[i]._title;
+            InspectorTest.addResult("");
+            InspectorTest.addResult("======== " + eventType + " ========");
+            var listenerItems = listenerTypes[i].children();
+            for (var j = 0; j < listenerItems.length; ++j) {
+                InspectorTest.addResult("== " + listenerItems[j].eventListener().origin());
+                InspectorTest.dumpObjectPropertyTreeElement(listenerItems[j]);
+            }
+        }
+        callback();
+    }
+
+    if (force)
+        listenersArrived();
+    else
+        InspectorTest.addSniffer(EventListeners.EventListenersView.prototype, "_eventListenersArrivedForTest", listenersArrived);
+}
+
 InspectorTest.expandAndDumpSelectedElementEventListeners = function(callback, force)
 {
     InspectorTest.expandAndDumpEventListeners(InspectorTest.eventListenersWidget()._eventListenersView, callback, force);
