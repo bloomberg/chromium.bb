@@ -5,7 +5,7 @@
 #include "modules/media_controls/elements/MediaControlElementsHelper.h"
 
 #include "core/dom/events/Event.h"
-#include "core/html/HTMLMediaElement.h"
+#include "core/html/media/HTMLMediaElement.h"
 #include "core/layout/LayoutSlider.h"
 #include "core/layout/api/LayoutSliderItem.h"
 #include "modules/media_controls/elements/MediaControlDivElement.h"

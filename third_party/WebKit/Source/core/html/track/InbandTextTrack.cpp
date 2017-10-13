@@ -25,7 +25,7 @@
 
 #include "core/html/track/InbandTextTrack.h"
 
-#include "core/html/HTMLMediaElement.h"
+#include "core/html/media/HTMLMediaElement.h"
 #include "core/html/track/vtt/VTTCue.h"
 #include "public/platform/WebInbandTextTrack.h"
 #include "public/platform/WebString.h"

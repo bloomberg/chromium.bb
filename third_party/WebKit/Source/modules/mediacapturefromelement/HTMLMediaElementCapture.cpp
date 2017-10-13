@@ -6,7 +6,7 @@
 
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/events/EventListener.h"
-#include "core/html/HTMLMediaElement.h"
+#include "core/html/media/HTMLMediaElement.h"
 #include "core/html/track/AudioTrackList.h"
 #include "core/html/track/VideoTrackList.h"
 #include "modules/encryptedmedia/HTMLMediaElementEncryptedMedia.h"

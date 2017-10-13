@@ -6,8 +6,8 @@
 
 #include <memory>
 #include "core/html/HTMLCanvasElement.h"
-#include "core/html/HTMLVideoElement.h"
 #include "core/html/ImageData.h"
+#include "core/html/media/HTMLVideoElement.h"
 #include "core/offscreencanvas/OffscreenCanvas.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/graphics/CanvasColorParams.h"

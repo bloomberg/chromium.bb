@@ -31,8 +31,8 @@
 #include "core/dom/Document.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/events/Event.h"
-#include "core/html/HTMLMediaElement.h"
 #include "core/html/HTMLPictureElement.h"
+#include "core/html/media/HTMLMediaElement.h"
 #include "core/html_names.h"
 
 #define SOURCE_LOG_LEVEL 3

@@ -7,7 +7,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/html/HTMLImageElement.h"
-#include "core/html/HTMLVideoElement.h"
+#include "core/html/media/HTMLVideoElement.h"
 #include "core/html/media/MediaRemotingElements.h"
 #include "platform/text/PlatformLocale.h"
 #include "public/platform/WebLocalizedString.h"

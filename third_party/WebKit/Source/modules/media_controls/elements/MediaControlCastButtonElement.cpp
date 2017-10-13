@@ -6,7 +6,7 @@
 
 #include "core/dom/events/Event.h"
 #include "core/geometry/DOMRect.h"
-#include "core/html/HTMLMediaElement.h"
+#include "core/html/media/HTMLMediaElement.h"
 #include "core/input_type_names.h"
 #include "modules/media_controls/MediaControlsImpl.h"
 #include "modules/media_controls/elements/MediaControlElementsHelper.h"

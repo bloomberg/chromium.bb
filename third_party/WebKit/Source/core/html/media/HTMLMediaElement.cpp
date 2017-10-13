@@ -24,7 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/HTMLMediaElement.h"
+#include "core/html/media/HTMLMediaElement.h"
 
 #include <limits>
 #include "bindings/core/v8/ExceptionState.h"
@@ -1372,9 +1372,10 @@ bool HTMLMediaElement::TextTracksAreReady() const {
 void HTMLMediaElement::TextTrackReadyStateChanged(TextTrack* track) {
   if (GetWebMediaPlayer() &&
       text_tracks_when_resource_selection_began_.Contains(track)) {
-    if (track->GetReadinessState() != TextTrack::kLoading)
+    if (track->GetReadinessState() != TextTrack::kLoading) {
       SetReadyState(
           static_cast<ReadyState>(GetWebMediaPlayer()->GetReadyState()));
+    }
   } else {
     // The track readiness state might have changed as a result of the user
     // clicking the captions button. In this case, a check whether all the
@@ -1584,11 +1585,12 @@ void HTMLMediaElement::MediaLoadingFailed(WebMediaPlayer::NetworkState error,
     // Step 9.Otherwise.9 - Failed with elements: Queue a task, using the DOM
     // manipulation task source, to fire a simple event named error at the
     // candidate element.
-    if (current_source_node_)
+    if (current_source_node_) {
       current_source_node_->ScheduleErrorEvent();
-    else
+    } else {
       BLINK_MEDIA_LOG << "mediaLoadingFailed(" << (void*)this
                       << ") - error event not sent, <source> was removed";
+    }
 
     // 9.Otherwise.10 - Asynchronously await a stable state. The synchronous
     // section consists of all the remaining steps of this algorithm until the
@@ -2882,9 +2884,10 @@ KURL HTMLMediaElement::SelectNextSourceChild(
     BLINK_MEDIA_LOG << "selectNextSourceChild(" << (void*)this << ")";
 
   if (!next_child_node_to_consider_) {
-    if (should_log)
+    if (should_log) {
       BLINK_MEDIA_LOG << "selectNextSourceChild(" << (void*)this
                       << ") -> 0x0000, \"\"";
+    }
     return KURL();
   }
 
@@ -2916,9 +2919,10 @@ KURL HTMLMediaElement::SelectNextSourceChild(
     // attribute's value is the empty string ... jump down to the failed
     // step below
     const AtomicString& src_value = source->FastGetAttribute(srcAttr);
-    if (should_log)
+    if (should_log) {
       BLINK_MEDIA_LOG << "selectNextSourceChild(" << (void*)this
                       << ") - 'src' is " << UrlForLoggingMedia(media_url);
+    }
     if (src_value.IsEmpty())
       goto checkAgain;
 
@@ -2940,9 +2944,10 @@ KURL HTMLMediaElement::SelectNextSourceChild(
     if (type.IsEmpty() && media_url.ProtocolIsData())
       type = MimeTypeFromDataURL(media_url);
     if (!type.IsEmpty()) {
-      if (should_log)
+      if (should_log) {
         BLINK_MEDIA_LOG << "selectNextSourceChild(" << (void*)this
                         << ") - 'type' is '" << type << "'";
+      }
       if (!GetSupportsType(ContentType(type)))
         goto checkAgain;
     }
@@ -2965,11 +2970,13 @@ KURL HTMLMediaElement::SelectNextSourceChild(
     next_child_node_to_consider_ = nullptr;
   }
 
-  if (should_log)
+  if (should_log) {
     BLINK_MEDIA_LOG << "selectNextSourceChild(" << (void*)this << ") -> "
                     << current_source_node_.Get() << ", "
                     << (can_use_source_element ? UrlForLoggingMedia(media_url)
                                                : "");
+  }
+
   return can_use_source_element ? media_url : KURL();
 }
 
@@ -3303,9 +3310,10 @@ bool HTMLMediaElement::EndedPlayback(LoopCondition loop_condition) const {
   // direction of playback is forwards, Either the media element does not have a
   // loop attribute specified,
   double now = CurrentPlaybackPosition();
-  if (GetDirectionOfPlayback() == kForward)
+  if (GetDirectionOfPlayback() == kForward) {
     return dur > 0 && now >= dur &&
            (loop_condition == LoopCondition::kIgnored || !Loop());
+  }
 
   // or the current playback position is the earliest possible position and the
   // direction of playback is backwards
@@ -3502,9 +3510,10 @@ void HTMLMediaElement::DidExitFullscreen() {
     GetWebMediaPlayer()->OnDisplayTypeChanged(DisplayType());
   }
 
-  if (in_overlay_fullscreen_video_)
+  if (in_overlay_fullscreen_video_) {
     GetDocument().GetLayoutViewItem().Compositor()->SetNeedsCompositingUpdate(
         kCompositingUpdateRebuildTree);
+  }
   in_overlay_fullscreen_video_ = false;
 }
 
@@ -3599,9 +3608,10 @@ void HTMLMediaElement::MediaControlsDidBecomeVisible() {
   // When the user agent starts exposing a user interface for a video element,
   // the user agent should run the rules for updating the text track rendering
   // of each of the text tracks in the video element's list of text tracks ...
-  if (IsHTMLVideoElement() && TextTracksVisible())
+  if (IsHTMLVideoElement() && TextTracksVisible()) {
     EnsureTextTrackContainer().UpdateDisplay(
         *this, TextTrackContainer::kDidStartExposingControls);
+  }
 }
 
 void HTMLMediaElement::SetTextTrackKindUserPreferenceForAllMediaElements(

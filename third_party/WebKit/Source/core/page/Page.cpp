@@ -41,7 +41,7 @@
 #include "core/frame/Settings.h"
 #include "core/frame/VisualViewport.h"
 #include "core/geometry/DOMRectList.h"
-#include "core/html/HTMLMediaElement.h"
+#include "core/html/media/HTMLMediaElement.h"
 #include "core/inspector/ConsoleMessageStorage.h"
 #include "core/layout/TextAutosizer.h"
 #include "core/page/AutoscrollController.h"

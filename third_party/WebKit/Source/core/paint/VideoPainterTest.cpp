@@ -4,7 +4,7 @@
 
 #include "core/paint/VideoPainter.h"
 
-#include "core/html/HTMLMediaElement.h"
+#include "core/html/media/HTMLMediaElement.h"
 #include "core/paint/PaintControllerPaintTest.h"
 #include "core/paint/StubChromeClientForSPv2.h"
 #include "platform/testing/EmptyWebMediaPlayer.h"

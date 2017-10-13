@@ -29,7 +29,7 @@
 
 #include "core/html/track/TextTrackContainer.h"
 
-#include "core/html/HTMLVideoElement.h"
+#include "core/html/media/HTMLVideoElement.h"
 #include "core/html/track/CueTimeline.h"
 #include "core/html/track/TextTrack.h"
 #include "core/layout/LayoutBlockFlow.h"

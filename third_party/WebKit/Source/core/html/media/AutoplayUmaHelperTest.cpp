@@ -5,9 +5,9 @@
 #include "core/html/media/AutoplayUmaHelper.h"
 
 #include "core/dom/Document.h"
-#include "core/html/HTMLMediaElement.h"
-#include "core/html/HTMLVideoElement.h"
 #include "core/html/media/AutoplayPolicy.h"
+#include "core/html/media/HTMLMediaElement.h"
+#include "core/html/media/HTMLVideoElement.h"
 #include "core/testing/DummyPageHolder.h"
 
 #include "testing/gmock/include/gmock/gmock.h"

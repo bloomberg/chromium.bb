@@ -37,7 +37,7 @@
 #include "core/frame/VisualViewport.h"
 #include "core/fullscreen/Fullscreen.h"
 #include "core/html/HTMLIFrameElement.h"
-#include "core/html/HTMLVideoElement.h"
+#include "core/html/media/HTMLVideoElement.h"
 #include "core/layout/LayoutEmbeddedContent.h"
 #include "core/layout/LayoutVideo.h"
 #include "core/layout/api/LayoutViewItem.h"

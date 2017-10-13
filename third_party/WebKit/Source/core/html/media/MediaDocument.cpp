@@ -42,7 +42,7 @@
 #include "core/html/HTMLHtmlElement.h"
 #include "core/html/HTMLMetaElement.h"
 #include "core/html/HTMLSourceElement.h"
-#include "core/html/HTMLVideoElement.h"
+#include "core/html/media/HTMLVideoElement.h"
 #include "core/html_names.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"

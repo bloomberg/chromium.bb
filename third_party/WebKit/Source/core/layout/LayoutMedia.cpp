@@ -27,7 +27,7 @@
 
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/VisualViewport.h"
-#include "core/html/HTMLMediaElement.h"
+#include "core/html/media/HTMLMediaElement.h"
 #include "core/html/media/MediaControls.h"
 #include "core/layout/LayoutView.h"
 #include "core/page/Page.h"

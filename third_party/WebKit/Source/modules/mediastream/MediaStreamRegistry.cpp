@@ -24,7 +24,7 @@
 
 #include "modules/mediastream/MediaStreamRegistry.h"
 
-#include "core/html/HTMLMediaElement.h"
+#include "core/html/media/HTMLMediaElement.h"
 #include "modules/mediastream/MediaStream.h"
 #include "platform/weborigin/KURL.h"
 

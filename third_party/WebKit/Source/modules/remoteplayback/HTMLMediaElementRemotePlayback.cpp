@@ -7,7 +7,7 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/dom/QualifiedName.h"
-#include "core/html/HTMLMediaElement.h"
+#include "core/html/media/HTMLMediaElement.h"
 #include "modules/remoteplayback/RemotePlayback.h"
 
 namespace blink {

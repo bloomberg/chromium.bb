@@ -30,7 +30,7 @@
 #include "core/dom/events/Event.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/CrossOriginAttribute.h"
-#include "core/html/HTMLMediaElement.h"
+#include "core/html/media/HTMLMediaElement.h"
 #include "core/html/track/LoadableTextTrack.h"
 #include "core/html_names.h"
 
