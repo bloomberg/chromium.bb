@@ -31,31 +31,6 @@ class SafeBrowsingTriggeredPopupBlocker
     : public content::WebContentsObserver,
       public subresource_filter::SubresourceFilterObserver {
  public:
-  // This enum backs a histogram. Please append new entries to the end, and
-  // update enums.xml when making changes.
-  enum class Action : int {
-    // User committed a navigation to a non-error page.
-    kNavigation,
-
-    // Safe Browsing considered this page abusive and the page should be warned.
-    // Logged at navigation commit.
-    kWarningSite,
-
-    // Safe Browsing considered this page abusive and the page should be be
-    // blocked against. Logged at navigation commit.
-    kEnforcedSite,
-
-    // The popup blocker called into this object to ask if the strong blocking
-    // should be applied.
-    kConsidered,
-
-    // This object responded to the popup blocker in the affirmative, and the
-    // popup was blocked.
-    kBlocked,
-
-    // Add new entries before this one
-    kCount
-  };
   explicit SafeBrowsingTriggeredPopupBlocker(
       content::WebContents* web_contents);
   ~SafeBrowsingTriggeredPopupBlocker() override;
