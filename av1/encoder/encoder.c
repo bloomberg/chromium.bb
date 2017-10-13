@@ -5601,6 +5601,8 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
                                num_bwd_ctxs);
     av1_average_tile_intra_cdfs(cpi->common.fc, tile_ctxs, cdf_ptrs,
                                 num_bwd_ctxs);
+    av1_average_tile_loopfilter_cdfs(cpi->common.fc, tile_ctxs, cdf_ptrs,
+                                     num_bwd_ctxs);
 #if CONFIG_PVQ
     av1_average_tile_pvq_cdfs(cpi->common.fc, tile_ctxs, num_bwd_ctxs);
 #endif  // CONFIG_PVQ

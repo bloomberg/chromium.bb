@@ -2268,6 +2268,33 @@ void av1_average_tile_mv_cdfs(FRAME_CONTEXT *fc, FRAME_CONTEXT *ec_ctxs[],
   }
 }
 
+void av1_average_tile_loopfilter_cdfs(FRAME_CONTEXT *fc,
+                                      FRAME_CONTEXT *ec_ctxs[],
+                                      aom_cdf_prob *cdf_ptr[], int num_tiles) {
+  (void)fc;
+  (void)ec_ctxs;
+  (void)num_tiles;
+  (void)cdf_ptr;
+
+#if CONFIG_SIMPLE_BWD_ADAPT
+  assert(num_tiles == 1);
+#endif
+
+  int i, cdf_size;
+  aom_cdf_prob *fc_cdf_ptr;
+  (void)i;
+  (void)cdf_size;
+  (void)fc_cdf_ptr;
+
+#if CONFIG_LOOP_RESTORATION
+  AVERAGE_TILE_CDFS(switchable_restore_cdf)
+#if CONFIG_NEW_MULTISYMBOL
+  AVERAGE_TILE_CDFS(wiener_restore_cdf)
+  AVERAGE_TILE_CDFS(sgrproj_restore_cdf)
+#endif  // CONFIG_NEW_MULTISYMBOL
+#endif  // CONFIG_LOOP_RESTORATION
+}
+
 void av1_average_tile_intra_cdfs(FRAME_CONTEXT *fc, FRAME_CONTEXT *ec_ctxs[],
                                  aom_cdf_prob *cdf_ptr[], int num_tiles) {
   int i, cdf_size;
