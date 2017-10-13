@@ -178,9 +178,6 @@ class TabHistoryContext : public history::Context {
 
   OpenInController* _openInController;
 
-  // Whether or not this tab is currently being displayed.
-  BOOL _visible;
-
   // Holds entries that need to be added to the history DB.  Prerender tabs do
   // not write navigation data to the history DB.  Instead, they cache history
   // data in this vector and add it to the DB when the prerender status is
@@ -1306,8 +1303,9 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 }
 
 - (void)renderProcessGoneForWebState:(web::WebState*)webState {
+  DCHECK(webState == _webStateImpl);
   UIApplicationState state = [UIApplication sharedApplication].applicationState;
-  if (_visible && state == UIApplicationStateActive) {
+  if (webState->IsVisible() && state == UIApplicationStateActive) {
     [_fullScreenController disableFullScreen];
   }
   [self.dialogDelegate cancelDialogForTab:self];
@@ -1389,14 +1387,12 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 }
 
 - (void)wasShown {
-  _visible = YES;
   [self updateFullscreenWithToolbarVisible:YES];
   if (self.webState)
     self.webState->WasShown();
 }
 
 - (void)wasHidden {
-  _visible = NO;
   [self updateFullscreenWithToolbarVisible:YES];
   if (self.webState)
     self.webState->WasHidden();
