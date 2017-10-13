@@ -179,15 +179,20 @@ Length HTMLMetaElement::ParseViewportValueAsLength(Document* document,
   // 1) Non-negative number values are translated to px lengths.
   // 2) Negative number values are translated to auto.
   // 3) device-width and device-height are used as keywords.
-  // 4) Other keywords and unknown values translate to 0.0.
+  // 4) Other keywords and unknown values translate to auto.
 
   if (DeprecatedEqualIgnoringCase(value_string, "device-width"))
     return Length(kDeviceWidth);
   if (DeprecatedEqualIgnoringCase(value_string, "device-height"))
     return Length(kDeviceHeight);
 
-  float value =
-      ParsePositiveNumber(document, report_warnings, key_string, value_string);
+  bool ok;
+
+  float value = ParsePositiveNumber(document, report_warnings, key_string,
+                                    value_string, &ok);
+
+  if (!ok)
+    return Length();  // auto
 
   if (value < 0)
     return Length();  // auto
