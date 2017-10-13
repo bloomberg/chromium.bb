@@ -236,7 +236,8 @@ enum gbm_bo_flags {
     * Buffer is guaranteed to be laid out linearly in memory. That is, the
     * buffer is laid out as an array with 'height' blocks, each block with
     * length 'stride'. Each stride is in the same order as the rows of the
-    * buffer.
+    * buffer. This is intended to be used with buffers that will be accessed
+    * via dma-buf mmap().
     */
    GBM_BO_USE_LINEAR    = (1 << 4),
    /**
@@ -255,6 +256,15 @@ enum gbm_bo_flags {
     * Buffer inaccessible to unprivileged users.
     */
    GBM_BO_USE_PROTECTED = (1 << 8),
+   /**
+    * These flags specify the frequency of software access. These flags do not
+    * guarantee the buffer is linear, but do guarantee gbm_bo_map(..) will
+    * present a linear view.
+    */
+   GBM_BO_USE_SW_READ_OFTEN = (1 << 9),
+   GBM_BO_USE_SW_READ_RARELY = (1 << 10),
+   GBM_BO_USE_SW_WRITE_OFTEN = (1 << 11),
+   GBM_BO_USE_SW_WRITE_RARELY = (1 << 12),
 };
 
 int

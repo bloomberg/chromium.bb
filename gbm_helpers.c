@@ -32,6 +32,14 @@ uint64_t gbm_convert_usage(uint32_t usage)
 		use_flags |= BO_USE_CAMERA_READ;
 	if (usage & GBM_BO_USE_PROTECTED)
 		use_flags |= BO_USE_PROTECTED;
+	if (usage & GBM_BO_USE_SW_READ_OFTEN)
+		use_flags |= BO_USE_SW_READ_OFTEN;
+	if (usage & GBM_BO_USE_SW_READ_RARELY)
+		use_flags |= BO_USE_SW_READ_RARELY;
+	if (usage & GBM_BO_USE_SW_WRITE_OFTEN)
+		use_flags |= BO_USE_SW_WRITE_OFTEN;
+	if (usage & GBM_BO_USE_SW_WRITE_RARELY)
+		use_flags |= BO_USE_SW_WRITE_RARELY;
 
 	return use_flags;
 }
