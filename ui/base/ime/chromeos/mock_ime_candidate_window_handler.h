@@ -37,7 +37,6 @@ class UI_BASE_IME_EXPORT MockIMECandidateWindowHandler
                          bool visible) override;
   void SetCursorBounds(const gfx::Rect& cursor_bounds,
                        const gfx::Rect& composition_head) override;
-  void OnCandidateWindowVisibilityChanged(bool visible) override;
 
   int set_cursor_bounds_call_count() const {
     return set_cursor_bounds_call_count_;
@@ -50,18 +49,12 @@ class UI_BASE_IME_EXPORT MockIMECandidateWindowHandler
   const UpdateLookupTableArg& last_update_lookup_table_arg() {
     return last_update_lookup_table_arg_;
   }
-
-  int is_candidate_window_visible() const {
-    return is_candidate_window_visible_;
-  }
-
   // Resets all call count.
   void Reset();
 
  private:
   int set_cursor_bounds_call_count_;
   int update_lookup_table_call_count_;
-  bool is_candidate_window_visible_ = false;
   UpdateLookupTableArg last_update_lookup_table_arg_;
 };
 

@@ -58,8 +58,4 @@ void TextInputClientImpl::DispatchKeyEventPostIME(
   }
 }
 
-void TextInputClientImpl::SetCandidateWindowVisible(bool visible) {
-  is_candidate_window_visible_ = visible;
-}
-
 }  // namespace aura

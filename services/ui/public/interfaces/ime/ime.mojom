@@ -177,9 +177,6 @@ interface TextInputClient {
   // Dispatch a key event skipping IME. Returns true if event was consumed.
   DispatchKeyEventPostIME(ui.mojom.Event event) => (bool stopped_propagation);
 
-  // Sending visibility status of candidate pop up window to client.
-  SetCandidateWindowVisible(bool visible);
-
   // TODO(moshayedi): Add functions corresponding to ui::TextInputClient for:
   // - Input context information
   // - Document content operations

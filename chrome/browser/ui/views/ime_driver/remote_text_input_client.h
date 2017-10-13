@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_VIEWS_IME_DRIVER_REMOTE_TEXT_INPUT_CLIENT_H_
 
 #include "services/ui/public/interfaces/ime/ime.mojom.h"
-#include "ui/base/ime/chromeos/ime_candidate_window_handler_interface.h"
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/base/ime/text_input_client.h"
 
@@ -14,8 +13,7 @@
 // a remote client. This is intended to be passed to the overrides of
 // ui::InputMethod::SetFocusedTextInputClient().
 class RemoteTextInputClient : public ui::TextInputClient,
-                              public ui::internal::InputMethodDelegate,
-                              chromeos::IMECandidateWindowHandlerInterface {
+                              public ui::internal::InputMethodDelegate {
  public:
   RemoteTextInputClient(ui::mojom::TextInputClientPtr remote_client,
                         ui::TextInputType text_input_type,
@@ -62,16 +60,6 @@ class RemoteTextInputClient : public ui::TextInputClient,
   // ui::internal::InputMethodDelegate:
   ui::EventDispatchDetails DispatchKeyEventPostIME(
       ui::KeyEvent* event) override;
-
-  // chromeos::IMECandidateWindowHandlerInterface:
-  void UpdateLookupTable(const ui::CandidateWindow& candidate_window,
-                         bool visible) override;
-  void UpdatePreeditText(const base::string16& text,
-                         uint32_t cursor_pos,
-                         bool visible) override;
-  void SetCursorBounds(const gfx::Rect& cursor_bounds,
-                       const gfx::Rect& composition_head) override;
-  void OnCandidateWindowVisibilityChanged(bool visible) override;
 
   ui::mojom::TextInputClientPtr remote_client_;
   ui::TextInputType text_input_type_;
