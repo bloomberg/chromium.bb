@@ -268,29 +268,9 @@ TEST(UrlBarTextureTest, MaliciousRTLIsRenderedLTR) {
   }
 }
 
-TEST(UrlBarTexture, ElisionIsAnUnsupportedMode) {
-  TestUrlBarTexture texture;
-  texture.DrawURL(GURL(
-      "https://"
-      "thereisnopossiblewaythatthishostnamecouldbecontainedinthelimitedspacetha"
-      "tweareaffordedtousitsreallynotsomethingweshouldconsiderorplanfororpinour"
-      "hopesonlestwegetdisappointedor.sad.com"));
-  EXPECT_EQ(UiUnsupportedMode::kCouldNotElideURL, texture.unsupported_mode());
-}
-
 TEST(UrlBarTexture, ShortURLAreIndeedSupported) {
   TestUrlBarTexture texture;
   texture.DrawURL(GURL("https://short.com/"));
-  EXPECT_EQ(UiUnsupportedMode::kCount, texture.unsupported_mode());
-}
-
-TEST(UrlBarTexture, LongPathsDoNotRequireElisionAndAreSupported) {
-  TestUrlBarTexture texture;
-  texture.DrawURL(GURL(
-      "https://something.com/"
-      "thereisnopossiblewaythatthishostnamecouldbecontainedinthelimitedspacetha"
-      "tweareaffordedtousitsreallynotsomethingweshouldconsiderorplanfororpinour"
-      "hopesonlestwegetdisappointedorsad.com"));
   EXPECT_EQ(UiUnsupportedMode::kCount, texture.unsupported_mode());
 }
 
