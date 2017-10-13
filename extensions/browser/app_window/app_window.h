@@ -357,10 +357,6 @@ class AppWindow : public content::WebContentsDelegate,
   // the renderer.
   void GetSerializedState(base::DictionaryValue* properties) const;
 
-  // Notifies the window's contents that the render view is ready and it can
-  // unblock resource requests.
-  void NotifyRenderViewReady();
-
   // Whether the app window wants to be alpha enabled.
   bool requested_alpha_enabled() const { return requested_alpha_enabled_; }
 
@@ -442,6 +438,8 @@ class AppWindow : public content::WebContentsDelegate,
   bool TakeFocus(content::WebContents* source, bool reverse) override;
 
   // content::WebContentsObserver implementation.
+  bool OnMessageReceived(const IPC::Message& message,
+                         content::RenderFrameHost* render_frame_host) override;
   void RenderViewCreated(content::RenderViewHost* render_view_host) override;
 
   // ExtensionFunctionDispatcher::Delegate implementation.
@@ -457,6 +455,9 @@ class AppWindow : public content::WebContentsDelegate,
   void SetWebContentsBlocked(content::WebContents* web_contents,
                              bool blocked) override;
   bool IsWebContentsVisible(content::WebContents* web_contents) override;
+
+  // IPC handler for ExtensionHostMsg_AppWindowReady.
+  void OnAppWindowReady();
 
   void ToggleFullscreenModeForTab(content::WebContents* source,
                                   bool enter_fullscreen);
