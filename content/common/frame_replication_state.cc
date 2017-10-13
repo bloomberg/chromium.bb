@@ -10,8 +10,7 @@
 namespace content {
 
 FrameReplicationState::FrameReplicationState()
-    : sandbox_flags(blink::WebSandboxFlags::kNone),
-      scope(blink::WebTreeScopeType::kDocument),
+    : scope(blink::WebTreeScopeType::kDocument),
       insecure_request_policy(blink::kLeaveInsecureRequestsAlone),
       has_potentially_trustworthy_unique_origin(false),
       has_received_user_gesture(false) {}
@@ -20,12 +19,10 @@ FrameReplicationState::FrameReplicationState(
     blink::WebTreeScopeType scope,
     const std::string& name,
     const std::string& unique_name,
-    blink::WebSandboxFlags sandbox_flags,
     blink::WebInsecureRequestPolicy insecure_request_policy,
     bool has_potentially_trustworthy_unique_origin,
     bool has_received_user_gesture)
     : origin(),
-      sandbox_flags(sandbox_flags),
       name(name),
       unique_name(unique_name),
       scope(scope),

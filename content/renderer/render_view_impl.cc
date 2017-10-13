@@ -1398,7 +1398,7 @@ WebView* RenderViewImpl::CreateView(WebLocalFrame* creator,
   view_params.session_storage_namespace_id =
       reply->cloned_session_storage_namespace_id;
   view_params.swapped_out = false;
-  view_params.replicated_frame_state.sandbox_flags = sandbox_flags;
+  view_params.replicated_frame_state.frame_policy.sandbox_flags = sandbox_flags;
   view_params.replicated_frame_state.name = frame_name_utf8;
   // Even if the main frame has a name, the main frame's unique name is always
   // the empty string.

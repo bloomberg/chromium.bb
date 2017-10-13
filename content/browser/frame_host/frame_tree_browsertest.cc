@@ -521,16 +521,17 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, SandboxFlagsSetForChildFrames) {
   // which resets both SandboxFlags::Scripts and
   // SandboxFlags::AutomaticFeatures bits per blink::parseSandboxPolicy(), and
   // third frame has "allow-scripts allow-same-origin".
-  EXPECT_EQ(blink::WebSandboxFlags::kNone, root->effective_sandbox_flags());
+  EXPECT_EQ(blink::WebSandboxFlags::kNone,
+            root->effective_frame_policy().sandbox_flags);
   EXPECT_EQ(blink::WebSandboxFlags::kAll,
-            root->child_at(0)->effective_sandbox_flags());
+            root->child_at(0)->effective_frame_policy().sandbox_flags);
   EXPECT_EQ(blink::WebSandboxFlags::kAll & ~blink::WebSandboxFlags::kScripts &
                 ~blink::WebSandboxFlags::kAutomaticFeatures,
-            root->child_at(1)->effective_sandbox_flags());
+            root->child_at(1)->effective_frame_policy().sandbox_flags);
   EXPECT_EQ(blink::WebSandboxFlags::kAll & ~blink::WebSandboxFlags::kScripts &
                 ~blink::WebSandboxFlags::kAutomaticFeatures &
                 ~blink::WebSandboxFlags::kOrigin,
-            root->child_at(2)->effective_sandbox_flags());
+            root->child_at(2)->effective_frame_policy().sandbox_flags);
 
   // Sandboxed frames should set a unique origin unless they have the
   // "allow-same-origin" directive.
@@ -543,7 +544,7 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, SandboxFlagsSetForChildFrames) {
   GURL frame_url(embedded_test_server()->GetURL("/title1.html"));
   NavigateFrameToURL(root->child_at(0), frame_url);
   EXPECT_EQ(blink::WebSandboxFlags::kAll,
-            root->child_at(0)->effective_sandbox_flags());
+            root->child_at(0)->effective_frame_policy().sandbox_flags);
 }
 
 // Ensure that a popup opened from a subframe sets its opener to the subframe's

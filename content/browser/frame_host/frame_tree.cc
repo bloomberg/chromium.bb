@@ -199,8 +199,7 @@ bool FrameTree::AddFrame(FrameTreeNode* parent,
   // empty document in the frame. This needs to happen before the call to
   // AddChild so that the effective policy is sent to any newly-created
   // RenderFrameProxy objects when the RenderFrameHost is created.
-  new_node->SetPendingSandboxFlags(frame_policy.sandbox_flags);
-  new_node->SetPendingContainerPolicy(frame_policy.container_policy);
+  new_node->SetPendingFramePolicy(frame_policy);
   new_node->CommitPendingFramePolicy();
 
   // Add the new node to the FrameTree, creating the RenderFrameHost.
