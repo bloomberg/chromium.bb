@@ -116,40 +116,6 @@ class TestFocusController : public ui::EventHandler {
   DISALLOW_COPY_AND_ASSIGN(TestFocusController);
 };
 
-class TestKeyboardUI : public KeyboardUI {
- public:
-  TestKeyboardUI(ui::InputMethod* input_method) : input_method_(input_method) {}
-  ~TestKeyboardUI() override {
-    // Destroy the window before the delegate.
-    window_.reset();
-  }
-
-  // Overridden from KeyboardUI:
-  bool HasContentsWindow() const override { return !!window_; }
-  bool ShouldWindowOverscroll(aura::Window* window) const override {
-    return true;
-  }
-  aura::Window* GetContentsWindow() override {
-    if (!window_) {
-      window_.reset(new aura::Window(&delegate_));
-      window_->Init(ui::LAYER_NOT_DRAWN);
-      window_->set_owned_by_parent(false);
-    }
-    return window_.get();
-  }
-  ui::InputMethod* GetInputMethod() override { return input_method_; }
-  void ReloadKeyboardIfNeeded() override {}
-  void InitInsets(const gfx::Rect& keyboard_bounds) override {}
-  void ResetInsets() override {}
-
- private:
-  std::unique_ptr<aura::Window> window_;
-  aura::test::TestWindowDelegate delegate_;
-  ui::InputMethod* input_method_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestKeyboardUI);
-};
-
 // Keeps a count of all the events a window receives.
 class EventObserver : public ui::EventHandler {
  public:
