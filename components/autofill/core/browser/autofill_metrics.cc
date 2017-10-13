@@ -1323,7 +1323,7 @@ void AutofillMetrics::FormEventLogger::OnWillSubmitForm() {
   base::RecordAction(base::UserMetricsAction("Autofill_OnWillSubmitForm"));
 }
 
-void AutofillMetrics::FormEventLogger::OnFormSubmitted(bool force_logging) {
+void AutofillMetrics::FormEventLogger::OnFormSubmitted() {
   // Not logging this kind of form if we haven't logged a user interaction.
   if (!has_logged_interacted_)
     return;
@@ -1344,7 +1344,7 @@ void AutofillMetrics::FormEventLogger::OnFormSubmitted(bool force_logging) {
     Log(AutofillMetrics::FORM_EVENT_LOCAL_SUGGESTION_SUBMITTED_ONCE);
   }
 
-  if (has_logged_suggestions_shown_ || force_logging) {
+  if (has_logged_suggestions_shown_) {
     Log(AutofillMetrics::FORM_EVENT_SUGGESTION_SHOWN_SUBMITTED_ONCE);
     if (is_for_credit_card_ && !has_logged_suggestion_filled_) {
       if (!has_logged_detected_card_in_submitted_form_) {

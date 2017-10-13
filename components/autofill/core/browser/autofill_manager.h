@@ -587,10 +587,6 @@ class AutofillManager : public AutofillHandler,
   // determined to be a CVC field via heuristics has a valid CVC |value|.
   bool found_cvc_value_in_non_cvc_field_;
 
-  // Ablation experiment turns off autofill, but logging still has to be kept
-  // for metrics analysis.
-  bool enable_ablation_logging_;
-
   GURL pending_upload_request_url_;
 
 #ifdef ENABLE_FORM_DEBUG_DUMP
