@@ -4,6 +4,8 @@ include_rules = [
     "+base/containers/flat_set.h",
     "+base/location.h",
     "+base/logging.h",
+    "+base/memory/ref_counted.h",
+    "+base/memory/scoped_refptr.h",
     "+base/metrics",
     "+base/optional.h",
     "+base/strings",

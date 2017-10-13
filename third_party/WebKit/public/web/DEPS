@@ -1,5 +1,7 @@
 include_rules = [
     "+base/optional.h",
+    "+base/memory/ref_counted.h",
+    "+base/memory/scoped_refptr.h",
     "+mojo/public",
     "+public/platform",
     "+public/web",
