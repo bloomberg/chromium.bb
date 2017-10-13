@@ -8,7 +8,7 @@ PaintImage Properties:
         nodeId : <number>
         srcHeight : 21
         srcWidth : 19
-        url : http://127.0.0.1:8000/devtools/tracing/resources/test.png
+        url : .../devtools/tracing/resources/test.png
         width : 40
         x : 0
         y : 100
@@ -24,7 +24,7 @@ PaintImage Properties:
         nodeId : <number>
         srcHeight : 21
         srcWidth : 19
-        url : http://127.0.0.1:8000/devtools/tracing/resources/test.png
+        url : .../devtools/tracing/resources/test.png
         width : 30
         x : 100
         y : 100

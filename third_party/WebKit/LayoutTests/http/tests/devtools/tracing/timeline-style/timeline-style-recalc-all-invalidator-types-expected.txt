@@ -7,7 +7,7 @@ PASS
 Running: testClassName
 [
     {
-        cause : {reason: Element has pending invalidation list, stackTrace: http://127.0.0.1:8000/devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.html:9}
+        cause : {reason: Element has pending invalidation list, stackTrace: .../devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.html:9}
         changedAttribute : undefined
         changedClass : "red"
         changedId : undefined
@@ -18,7 +18,7 @@ Running: testClassName
         type : "StyleRecalcInvalidationTracking"
     }
     {
-        cause : {reason: Element has pending invalidation list, stackTrace: http://127.0.0.1:8000/devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.html:10}
+        cause : {reason: Element has pending invalidation list, stackTrace: .../devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.html:10}
         changedAttribute : undefined
         changedClass : "red"
         changedId : undefined
@@ -35,7 +35,7 @@ Running: testIdWithoutStyleChange
 Running: testId
 [
     {
-        cause : {reason: Element has pending invalidation list, stackTrace: http://127.0.0.1:8000/devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.html:25}
+        cause : {reason: Element has pending invalidation list, stackTrace: .../devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.html:25}
         changedAttribute : undefined
         changedClass : undefined
         changedId : "testElementFour"
@@ -46,7 +46,7 @@ Running: testId
         type : "StyleRecalcInvalidationTracking"
     }
     {
-        cause : {reason: Element has pending invalidation list, stackTrace: http://127.0.0.1:8000/devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.html:26}
+        cause : {reason: Element has pending invalidation list, stackTrace: .../devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.html:26}
         changedAttribute : undefined
         changedClass : undefined
         changedId : "testElementFive"
@@ -61,7 +61,7 @@ Running: testId
 Running: testStyleAttributeChange
 [
     {
-        cause : {reason: StyleSheetChange, stackTrace: http://127.0.0.1:8000/devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.html:33}
+        cause : {reason: StyleSheetChange, stackTrace: .../devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.html:33}
         changedAttribute : undefined
         changedClass : undefined
         changedId : undefined
@@ -72,7 +72,7 @@ Running: testStyleAttributeChange
         type : "StyleRecalcInvalidationTracking"
     }
     {
-        cause : {reason: StyleSheetChange, stackTrace: http://127.0.0.1:8000/devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.html:34}
+        cause : {reason: StyleSheetChange, stackTrace: .../devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.html:34}
         changedAttribute : undefined
         changedClass : undefined
         changedId : undefined
@@ -87,7 +87,7 @@ Running: testStyleAttributeChange
 Running: testAttributeChange
 [
     {
-        cause : {reason: Attribute, stackTrace: http://127.0.0.1:8000/devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.html:41}
+        cause : {reason: Attribute, stackTrace: .../devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.html:41}
         changedAttribute : undefined
         changedClass : undefined
         changedId : undefined
@@ -98,7 +98,7 @@ Running: testAttributeChange
         type : "StyleRecalcInvalidationTracking"
     }
     {
-        cause : {reason: Attribute, stackTrace: http://127.0.0.1:8000/devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.html:42}
+        cause : {reason: Attribute, stackTrace: .../devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.html:42}
         changedAttribute : undefined
         changedClass : undefined
         changedId : undefined
@@ -109,7 +109,7 @@ Running: testAttributeChange
         type : "StyleRecalcInvalidationTracking"
     }
     {
-        cause : {reason: Element has pending invalidation list, stackTrace: http://127.0.0.1:8000/devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.html:41}
+        cause : {reason: Element has pending invalidation list, stackTrace: .../devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.html:41}
         changedAttribute : "dir"
         changedClass : undefined
         changedId : undefined
@@ -120,7 +120,7 @@ Running: testAttributeChange
         type : "StyleRecalcInvalidationTracking"
     }
     {
-        cause : {reason: Element has pending invalidation list, stackTrace: http://127.0.0.1:8000/devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.html:42}
+        cause : {reason: Element has pending invalidation list, stackTrace: .../devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.html:42}
         changedAttribute : "dir"
         changedClass : undefined
         changedId : undefined
@@ -135,7 +135,7 @@ Running: testAttributeChange
 Running: testPseudoChange
 [
     {
-        cause : {reason: PseudoClass, stackTrace: http://127.0.0.1:8000/devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.html:51}
+        cause : {reason: PseudoClass, stackTrace: .../devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.html:51}
         changedAttribute : undefined
         changedClass : undefined
         changedId : undefined

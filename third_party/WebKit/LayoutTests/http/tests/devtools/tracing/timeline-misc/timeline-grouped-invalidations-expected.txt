@@ -6,7 +6,7 @@ S
 S
 paint invalidations[
     {
-        cause : {reason: Inline CSS style declaration was mutated, stackTrace: http://127.0.0.1:8000/devtools/tracing/timeline-misc/timeline-grouped-invalidations.html:14}
+        cause : {reason: Inline CSS style declaration was mutated, stackTrace: .../devtools/tracing/timeline-misc/timeline-grouped-invalidations.html:14}
         changedAttribute : undefined
         changedClass : undefined
         changedId : undefined
@@ -17,7 +17,7 @@ paint invalidations[
         type : "StyleRecalcInvalidationTracking"
     }
     {
-        cause : {reason: Inline CSS style declaration was mutated, stackTrace: http://127.0.0.1:8000/devtools/tracing/timeline-misc/timeline-grouped-invalidations.html:15}
+        cause : {reason: Inline CSS style declaration was mutated, stackTrace: .../devtools/tracing/timeline-misc/timeline-grouped-invalidations.html:15}
         changedAttribute : undefined
         changedClass : undefined
         changedId : undefined
@@ -28,7 +28,7 @@ paint invalidations[
         type : "StyleRecalcInvalidationTracking"
     }
     {
-        cause : {reason: Inline CSS style declaration was mutated, stackTrace: http://127.0.0.1:8000/devtools/tracing/timeline-misc/timeline-grouped-invalidations.html:14}
+        cause : {reason: Inline CSS style declaration was mutated, stackTrace: .../devtools/tracing/timeline-misc/timeline-grouped-invalidations.html:14}
         changedAttribute : undefined
         changedClass : undefined
         changedId : undefined
@@ -39,7 +39,7 @@ paint invalidations[
         type : "StyleRecalcInvalidationTracking"
     }
     {
-        cause : {reason: Inline CSS style declaration was mutated, stackTrace: http://127.0.0.1:8000/devtools/tracing/timeline-misc/timeline-grouped-invalidations.html:15}
+        cause : {reason: Inline CSS style declaration was mutated, stackTrace: .../devtools/tracing/timeline-misc/timeline-grouped-invalidations.html:15}
         changedAttribute : undefined
         changedClass : undefined
         changedId : undefined
@@ -50,7 +50,7 @@ paint invalidations[
         type : "StyleRecalcInvalidationTracking"
     }
     {
-        cause : {reason: Inline CSS style declaration was mutated, stackTrace: http://127.0.0.1:8000/devtools/tracing/timeline-misc/timeline-grouped-invalidations.html:14}
+        cause : {reason: Inline CSS style declaration was mutated, stackTrace: .../devtools/tracing/timeline-misc/timeline-grouped-invalidations.html:14}
         changedAttribute : undefined
         changedClass : undefined
         changedId : undefined
@@ -61,7 +61,7 @@ paint invalidations[
         type : "StyleRecalcInvalidationTracking"
     }
     {
-        cause : {reason: Inline CSS style declaration was mutated, stackTrace: http://127.0.0.1:8000/devtools/tracing/timeline-misc/timeline-grouped-invalidations.html:15}
+        cause : {reason: Inline CSS style declaration was mutated, stackTrace: .../devtools/tracing/timeline-misc/timeline-grouped-invalidations.html:15}
         changedAttribute : undefined
         changedClass : undefined
         changedId : undefined
@@ -72,7 +72,7 @@ paint invalidations[
         type : "StyleRecalcInvalidationTracking"
     }
     {
-        cause : {reason: Inline CSS style declaration was mutated, stackTrace: http://127.0.0.1:8000/devtools/tracing/timeline-misc/timeline-grouped-invalidations.html:14}
+        cause : {reason: Inline CSS style declaration was mutated, stackTrace: .../devtools/tracing/timeline-misc/timeline-grouped-invalidations.html:14}
         changedAttribute : undefined
         changedClass : undefined
         changedId : undefined
@@ -83,7 +83,7 @@ paint invalidations[
         type : "StyleRecalcInvalidationTracking"
     }
     {
-        cause : {reason: Inline CSS style declaration was mutated, stackTrace: http://127.0.0.1:8000/devtools/tracing/timeline-misc/timeline-grouped-invalidations.html:15}
+        cause : {reason: Inline CSS style declaration was mutated, stackTrace: .../devtools/tracing/timeline-misc/timeline-grouped-invalidations.html:15}
         changedAttribute : undefined
         changedClass : undefined
         changedId : undefined

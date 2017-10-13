@@ -1,5 +1,5 @@
 Tests that a line-level CPU profile is shown in the text editor.
-http://127.0.0.1:8000/devtools/tracing/resources/timeline-data.js
+.../devtools/tracing/resources/timeline-data.js
 99 CodeMirror-gutter-performance 10.0 ms rgba(255, 187, 0, 0.263)
 101 CodeMirror-gutter-performance 1900.0 ms rgba(255, 187, 0, 0.718)
 0 CodeMirror-gutter-performance 100.0 ms rgba(255, 187, 0, 0.463)
