@@ -1011,6 +1011,10 @@ a:-webkit-any-link:active {
     color: -webkit-activelink
 }
 
+a:-webkit-any-link:read-write {
+    cursor: text;
+}
+
 /* HTML5 ruby elements */
 
 ruby, rt {
