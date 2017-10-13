@@ -117,6 +117,11 @@ NSButton* EyeIcon(id target, SEL action) {
 
 @implementation SavePendingPasswordViewController
 
+- (void)dealloc {
+  [passwordField_ setDelegate:nil];
+  [super dealloc];
+}
+
 - (NSButton*)defaultButton {
   return saveButton_;
 }
