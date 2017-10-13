@@ -12,21 +12,19 @@
 
 namespace ash {
 
-AnimatedRoundedImageView::AnimatedRoundedImageView(int corner_radius)
-    : corner_radius_(corner_radius) {}
+AnimatedRoundedImageView::AnimatedRoundedImageView(const gfx::Size& size,
+                                                   int corner_radius)
+    : image_size_(size), corner_radius_(corner_radius) {}
 
 AnimatedRoundedImageView::~AnimatedRoundedImageView() {}
 
-void AnimatedRoundedImageView::SetAnimation(const AnimationFrames& animation,
-                                            const gfx::Size& size) {
-  image_size_ = size;
-
+void AnimatedRoundedImageView::SetAnimation(const AnimationFrames& animation) {
   frames_.clear();
   frames_.reserve(animation.size());
   for (AnimationFrame frame : animation) {
     // Try to get the best image quality for the animation.
     frame.image = gfx::ImageSkiaOperations::CreateResizedImage(
-        frame.image, skia::ImageOperations::RESIZE_BEST, size);
+        frame.image, skia::ImageOperations::RESIZE_BEST, image_size_);
     DCHECK(frame.image.bitmap()->isImmutable());
     frames_.emplace_back(frame);
   }
@@ -34,11 +32,10 @@ void AnimatedRoundedImageView::SetAnimation(const AnimationFrames& animation,
   StartOrStopAnimation();
 }
 
-void AnimatedRoundedImageView::SetImage(const gfx::ImageSkia& image,
-                                        const gfx::Size& size) {
+void AnimatedRoundedImageView::SetImage(const gfx::ImageSkia& image) {
   AnimationFrame frame;
   frame.image = image;
-  SetAnimation({frame}, size);
+  SetAnimation({frame});
 }
 
 void AnimatedRoundedImageView::SetAnimationEnabled(bool enabled) {

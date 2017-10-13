@@ -98,7 +98,7 @@ class LoginUserView::UserImage : public NonAccessibleView {
     // TODO(jdufault): We need to render a black border. We will probably have
     // to add support directly to AnimatedRoundedImageView, since the existing
     // views::Border renders based on bounds (ie, a rectangle).
-    image_ = new AnimatedRoundedImageView(size_ / 2);
+    image_ = new AnimatedRoundedImageView(gfx::Size(size_, size_), size_ / 2);
     AddChildView(image_);
   }
   ~UserImage() override = default;
@@ -108,7 +108,7 @@ class LoginUserView::UserImage : public NonAccessibleView {
     // Then, decode the bytes via blink's PNG decoder and play any animated
     // frames if they are available.
     if (!user->basic_user_info->avatar.isNull())
-      image_->SetImage(user->basic_user_info->avatar, gfx::Size(size_, size_));
+      image_->SetImage(user->basic_user_info->avatar);
 
     // Decode the avatar using blink, as blink's PNG decoder supports APNG,
     // which is the format used for the animated avators.
@@ -129,7 +129,7 @@ class LoginUserView::UserImage : public NonAccessibleView {
       return;
     }
 
-    image_->SetAnimation(animation, gfx::Size(size_, size_));
+    image_->SetAnimation(animation);
   }
 
   AnimatedRoundedImageView* image_ = nullptr;
