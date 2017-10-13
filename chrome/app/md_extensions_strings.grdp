@@ -22,6 +22,9 @@
   <message name="IDS_MD_EXTENSIONS_ERROR_STACK_TRACE" desc="The label for the stack trace of an extension's error.">
     Stack Trace
   </message>
+  <message name="IDS_MD_EXTENSIONS_LEARN_MORE" desc="Learn more text">
+    Learn more
+  </message>
   <message name="IDS_MD_EXTENSIONS_ITEM_ERRORS" desc="The label of the button to bring the user to the page showing an extension's errors.">
     Errors
   </message>

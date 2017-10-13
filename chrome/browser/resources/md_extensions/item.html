@@ -100,6 +100,11 @@
         margin: 0 4px;
       }
 
+      #learn-more-link {
+        color: var(--google-blue-700);
+        text-decoration: none;
+      }
+
       #source-indicator {
         -webkit-margin-start: 30px;
         margin-top: 30px;
@@ -201,6 +206,10 @@
             <div id="suspicious-warning"
                  hidden$="[[!data.disableReasons.suspiciousInstall]]">
               $i18n{itemSuspiciousInstall}
+              <a target="_blank" id="learn-more-link"
+                  href="$i18n{suspiciousInstallHelpUrl}">
+                $i18n{learnMore}
+              </a>
             </div>
             <div id="corrupted-warning"
                 hidden$="[[!data.disableReasons.corruptInstall]]">
