@@ -7143,7 +7143,9 @@ TEST_F(URLRequestTestHTTP, DontProcessReportToHeaderInvalidHttps) {
   EXPECT_TRUE(IsCertStatusError(request->ssl_info().cert_status));
   EXPECT_TRUE(reporting_service.headers().empty());
 }
-#endif  // BUILDFLAG(ENABLE_REPORTING)
+
+// Network Error Logging is dependent on the Reporting API, so only run NEL
+// tests if Reporting is enabled in the build.
 
 namespace {
 
@@ -7283,6 +7285,81 @@ TEST_F(URLRequestTestHTTP, DontProcessNelHeaderInvalidHttps) {
   EXPECT_TRUE(IsCertStatusError(request->ssl_info().cert_status));
   EXPECT_TRUE(nel_delegate.headers().empty());
 }
+
+TEST_F(URLRequestTestHTTP, DontForwardErrorToNelNoDelegate) {
+  URLRequestFailedJob::AddUrlHandler();
+
+  GURL request_url =
+      URLRequestFailedJob::GetMockHttpsUrl(ERR_CONNECTION_REFUSED);
+
+  TestNetworkDelegate network_delegate;
+  TestURLRequestContext context(true);
+  context.set_network_delegate(&network_delegate);
+  context.Init();
+
+  TestDelegate d;
+  std::unique_ptr<URLRequest> request(context.CreateRequest(
+      request_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+  request->Start();
+  base::RunLoop().Run();
+
+  URLRequestFilter::GetInstance()->ClearHandlers();
+}
+
+// TODO(juliatuttle): Figure out whether this restriction should be in place,
+// and either implement it or remove this test.
+TEST_F(URLRequestTestHTTP, DISABLED_DontForwardErrorToNelHttp) {
+  URLRequestFailedJob::AddUrlHandler();
+
+  GURL request_url =
+      URLRequestFailedJob::GetMockHttpUrl(ERR_CONNECTION_REFUSED);
+
+  TestNetworkDelegate network_delegate;
+  TestNetworkErrorLoggingDelegate nel_delegate;
+  TestURLRequestContext context(true);
+  context.set_network_delegate(&network_delegate);
+  context.set_network_error_logging_delegate(&nel_delegate);
+  context.Init();
+
+  TestDelegate d;
+  std::unique_ptr<URLRequest> request(context.CreateRequest(
+      request_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+  request->Start();
+  base::RunLoop().Run();
+
+  EXPECT_TRUE(nel_delegate.errors().empty());
+
+  URLRequestFilter::GetInstance()->ClearHandlers();
+}
+
+TEST_F(URLRequestTestHTTP, ForwardErrorToNelHttps) {
+  URLRequestFailedJob::AddUrlHandler();
+
+  GURL request_url =
+      URLRequestFailedJob::GetMockHttpsUrl(ERR_CONNECTION_REFUSED);
+
+  TestNetworkDelegate network_delegate;
+  TestNetworkErrorLoggingDelegate nel_delegate;
+  TestURLRequestContext context(true);
+  context.set_network_delegate(&network_delegate);
+  context.set_network_error_logging_delegate(&nel_delegate);
+  context.Init();
+
+  TestDelegate d;
+  std::unique_ptr<URLRequest> request(context.CreateRequest(
+      request_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+  request->Start();
+  base::RunLoop().Run();
+
+  ASSERT_EQ(1u, nel_delegate.errors().size());
+  EXPECT_EQ(request_url, nel_delegate.errors()[0].uri);
+  EXPECT_EQ(0, nel_delegate.errors()[0].status_code);
+  EXPECT_EQ(ERR_CONNECTION_REFUSED, nel_delegate.errors()[0].type);
+
+  URLRequestFilter::GetInstance()->ClearHandlers();
+}
+
+#endif  // BUILDFLAG(ENABLE_REPORTING)
 
 TEST_F(URLRequestTestHTTP, ContentTypeNormalizationTest) {
   ASSERT_TRUE(http_test_server()->Start());

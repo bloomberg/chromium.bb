@@ -772,6 +772,8 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // cancellation.
   void OnCallToDelegateComplete();
 
+  void MaybeGenerateNetworkErrorLoggingReport();
+
   // Contextual information used for this request. Cannot be NULL. This contains
   // most of the dependencies which are shared between requests (disk cache,
   // cookie store, socket pool, etc.)
