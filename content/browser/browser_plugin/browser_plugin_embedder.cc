@@ -4,6 +4,7 @@
 
 #include "content/browser/browser_plugin/browser_plugin_embedder.h"
 
+#include "content/browser/bad_message.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -73,6 +74,9 @@ bool BrowserPluginEmbedder::CancelDialogs(WebContents* guest_web_contents) {
 }
 
 void BrowserPluginEmbedder::CancelGuestDialogs() {
+  if (!GetBrowserPluginGuestManager())
+    return;
+
   GetBrowserPluginGuestManager()->ForEachGuest(
       web_contents(), base::Bind(&BrowserPluginEmbedder::CancelDialogs));
 }
@@ -110,6 +114,9 @@ bool BrowserPluginEmbedder::DidSendScreenRectsCallback(
 }
 
 void BrowserPluginEmbedder::DidSendScreenRects() {
+  if (!GetBrowserPluginGuestManager())
+    return;
+
   GetBrowserPluginGuestManager()->ForEachGuest(
       web_contents(),
       base::Bind(&BrowserPluginEmbedder::DidSendScreenRectsCallback));
@@ -157,6 +164,12 @@ void BrowserPluginEmbedder::OnAttach(
     RenderFrameHost* render_frame_host,
     int browser_plugin_instance_id,
     const BrowserPluginHostMsg_Attach_Params& params) {
+  if (!GetBrowserPluginGuestManager()) {
+    bad_message::ReceivedBadMessage(
+        render_frame_host->GetProcess(),
+        bad_message::BPE_UNEXPECTED_MESSAGE_BEFORE_BPGM_CREATION);
+    return;
+  }
   WebContents* guest_web_contents =
       GetBrowserPluginGuestManager()->GetGuestByInstanceID(
           render_frame_host->GetProcess()->GetID(),
@@ -200,6 +213,9 @@ bool BrowserPluginEmbedder::GuestRecentlyAudibleCallback(WebContents* guest) {
 }
 
 bool BrowserPluginEmbedder::WereAnyGuestsRecentlyAudible() {
+  if (!GetBrowserPluginGuestManager())
+    return false;
+
   return GetBrowserPluginGuestManager()->ForEachGuest(
       web_contents(),
       base::Bind(&BrowserPluginEmbedder::GuestRecentlyAudibleCallback));
