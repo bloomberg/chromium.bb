@@ -6,7 +6,7 @@
 
 module arc.mojom;
 
-import "screen_rect.mojom";
+import "gfx.mojom";
 
 [Extensible]
 enum VoiceInteractionState {
@@ -64,7 +64,7 @@ interface VoiceInteractionFrameworkInstance {
 
   // Starts the voice interaction session in container, with a screen region
   // selected.
-  [MinVersion=1] StartVoiceInteractionSessionForRegion@2(ScreenRect region);
+  [MinVersion=1] StartVoiceInteractionSessionForRegion@2(Rect region);
 
   // Shows/hides the metalayer in the container.
   [MinVersion=1] SetMetalayerVisibility@3([MinVersion=2] bool visible);

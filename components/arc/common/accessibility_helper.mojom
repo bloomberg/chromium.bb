@@ -6,7 +6,7 @@
 
 module arc.mojom;
 
-import "screen_rect.mojom";
+import "gfx.mojom";
 
 // For future maintainers, each of the below enums were hand picked
 // from their equivalents in the Android source. Keep them in the
@@ -211,7 +211,7 @@ struct AccessibilityRangeInfoData {
 // AccessibilityNodeInfoData is a struct to contain info of
 // AccessibilityNodeInfo in Android.
 struct AccessibilityNodeInfoData {
-  ScreenRect bounds_in_screen;
+  Rect bounds_in_screen;
   [MinVersion=1]int32 id;
   [MinVersion=1]map<AccessibilityBooleanProperty, bool>? boolean_properties;
   [MinVersion=1]map<AccessibilityStringProperty, string>? string_properties;
