@@ -269,6 +269,20 @@ class ServiceManagerContext::InProcessServiceManagerContext
         service_manager::Identity(mojom::kPackagedServicesServiceName,
                                   service_manager::mojom::kRootUserID),
         std::move(packaged_services_service), nullptr);
+    service_manager_->SetInstanceQuitCallback(
+        base::Bind(&OnInstanceQuitOnIOThread));
+  }
+
+  static void OnInstanceQuitOnIOThread(const service_manager::Identity& id) {
+    BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)
+        ->PostTask(FROM_HERE, base::BindOnce(&OnInstanceQuit, id));
+  }
+
+  static void OnInstanceQuit(const service_manager::Identity& id) {
+    if (GetContentClient()->browser()->ShouldTerminateOnServiceQuit(id)) {
+      LOG(FATAL) << "Terminating because service '" << id.name()
+                 << "' quit unexpectedly.";
+    }
   }
 
   void ShutDownOnIOThread() {

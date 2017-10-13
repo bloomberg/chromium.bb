@@ -52,9 +52,6 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
 #endif
   bool ShouldEnableProfilerRecording() override;
   service_manager::ProcessType OverrideProcessType() override;
-  bool ShouldTerminateServiceManagerOnInstanceQuit(
-      const service_manager::Identity& identity,
-      int* exit_code) override;
 
   content::ContentBrowserClient* CreateContentBrowserClient() override;
   content::ContentGpuClient* CreateContentGpuClient() override;

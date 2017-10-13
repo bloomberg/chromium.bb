@@ -5,7 +5,6 @@
 #include "content/public/app/content_main_delegate.h"
 
 #include "build/build_config.h"
-
 #include "content/public/gpu/content_gpu_client.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/utility/content_utility_client.h"
@@ -60,12 +59,6 @@ service_manager::ProcessType ContentMainDelegate::OverrideProcessType() {
 void ContentMainDelegate::AdjustServiceProcessCommandLine(
     const service_manager::Identity& identity,
     base::CommandLine* command_line) {}
-
-bool ContentMainDelegate::ShouldTerminateServiceManagerOnInstanceQuit(
-    const service_manager::Identity& identity,
-    int* exit_code) {
-  return false;
-}
 
 void ContentMainDelegate::OnServiceManagerInitialized(
     const base::Closure& quit_closure,

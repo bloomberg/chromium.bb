@@ -1850,7 +1850,7 @@ void ChromeContentBrowserClient::AdjustUtilityServiceProcessCommandLine(
     base::CommandLine* command_line) {
 #if BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
   // Mash services do their own resource loading.
-  if (IsMashServiceName(identity.name())) {
+  if (mash_service_registry::IsMashServiceName(identity.name())) {
     // This switch is used purely for debugging to make it easier to know what
     // service a process is running.
     command_line->AppendSwitchASCII("mash-service-name", identity.name());
@@ -3102,8 +3102,16 @@ void ChromeContentBrowserClient::RegisterOutOfProcessServices(
 
 #if BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kMash))
-    RegisterOutOfProcessServicesForMash(services);
+    mash_service_registry::RegisterOutOfProcessServices(services);
 #endif
+}
+
+bool ChromeContentBrowserClient::ShouldTerminateOnServiceQuit(
+    const service_manager::Identity& id) {
+#if BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
+  return mash_service_registry::ShouldTerminateOnServiceQuit(id.name());
+#endif
+  return false;
 }
 
 std::unique_ptr<base::Value>

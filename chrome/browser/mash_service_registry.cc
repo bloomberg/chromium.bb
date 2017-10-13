@@ -18,6 +18,7 @@
 #include "components/font_service/public/interfaces/constants.mojom.h"
 #endif  // defined(OS_LINUX) && !defined(OS_ANDROID)
 
+namespace mash_service_registry {
 namespace {
 
 struct Service {
@@ -40,7 +41,7 @@ constexpr Service kServices[] = {
 
 }  // namespace
 
-void RegisterOutOfProcessServicesForMash(
+void RegisterOutOfProcessServices(
     content::ContentBrowserClient::OutOfProcessServiceMap* services) {
   for (size_t i = 0; i < arraysize(kServices); ++i) {
     (*services)[kServices[i].name] =
@@ -55,3 +56,18 @@ bool IsMashServiceName(const std::string& name) {
   }
   return false;
 }
+
+bool ShouldTerminateOnServiceQuit(const std::string& name) {
+  // Some services going down are treated as catastrophic failures, usually
+  // because both the browser and the service cache data about each other's
+  // state that is not rebuilt when the service restarts.
+  if (name == ui::mojom::kServiceName)
+    return true;
+#if defined(OS_CHROMEOS)
+  if (name == ash::mojom::kServiceName)
+    return true;
+#endif
+  return false;
+}
+
+}  // namespace mash_service_registry

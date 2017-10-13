@@ -110,12 +110,6 @@
 #include "components/metrics/leak_detector/leak_detector.h"
 #endif
 
-#if BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
-#include "mash/common/config.h"                                   // nogncheck
-#include "services/ui/public/interfaces/constants.mojom.h"        // nogncheck
-
-#endif  // BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
-
 #if defined(OS_ANDROID)
 #include "base/android/java_exception_reporter.h"
 #include "chrome/browser/android/crash/pure_java_exception_handler.h"
@@ -1119,23 +1113,4 @@ service_manager::ProcessType ChromeMainDelegate::OverrideProcessType() {
     return service_manager::ProcessType::kDefault;
   }
   return service_manager::ProcessType::kDefault;
-}
-
-bool ChromeMainDelegate::ShouldTerminateServiceManagerOnInstanceQuit(
-    const service_manager::Identity& identity,
-    int* exit_code) {
-#if BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
-  if (identity.name() == mash::common::GetWindowManagerServiceName() ||
-      identity.name() == ui::mojom::kServiceName ||
-      identity.name() == content::mojom::kPackagedServicesServiceName) {
-    // Quit the main process if an important child (e.g. window manager) dies.
-    // On Chrome OS the OS-level session_manager will restart the main process.
-    *exit_code = 1;
-    LOG(ERROR) << "Main process exiting because service " << identity.name()
-               << " quit unexpectedly.";
-    return true;
-  }
-#endif  // BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
-
-  return false;
 }

@@ -39,12 +39,6 @@ void MainDelegate::AdjustServiceProcessCommandLine(
     const Identity& identity,
     base::CommandLine* command_line) {}
 
-bool MainDelegate::ShouldTerminateServiceManagerOnInstanceQuit(
-    const Identity& identity,
-    int* exit_code) {
-  return false;
-}
-
 void MainDelegate::OnServiceManagerInitialized(
     const base::Closure& quit_closure,
     BackgroundServiceManager* service_manager) {}
