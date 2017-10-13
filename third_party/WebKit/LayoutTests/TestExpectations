@@ -3754,3 +3754,6 @@ crbug.com/773122 [ Win7 ] virtual/gpu/fast/canvas/canvas-lost-gpu-context.html [
 
 # Sheriff failures 2017-10-11
 crbug.com/772411 [ Mac ] virtual/mojo-loading/http/tests/media/autoplay-crossorigin.html [ Timeout Failure Pass ]
+
+# Sheriff failures 2017-10-13
+crbug.com/774437 [ Win10 ] paint/invalidation/selection-partial-invalidation-between-blocks.html [ Pass Failure ]
