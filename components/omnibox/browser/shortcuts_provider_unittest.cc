@@ -223,26 +223,30 @@ class FakeAutocompleteProviderClient
 // convenient.
 class ClassifyTest {
  public:
-  ClassifyTest(const base::string16& text, ACMatchClassifications matches);
+  ClassifyTest(const base::string16& text,
+               const bool text_is_query,
+               ACMatchClassifications matches);
   ~ClassifyTest();
 
   ACMatchClassifications RunTest(const base::string16& find_text);
 
  private:
   const base::string16 text_;
+  const bool text_is_query_;
   const ACMatchClassifications matches_;
 };
 
 ClassifyTest::ClassifyTest(const base::string16& text,
+                           const bool text_is_query,
                            ACMatchClassifications matches)
-    : text_(text), matches_(matches) {}
+    : text_(text), text_is_query_(text_is_query), matches_(matches) {}
 
 ClassifyTest::~ClassifyTest() {}
 
 ACMatchClassifications ClassifyTest::RunTest(const base::string16& find_text) {
   return ShortcutsProvider::ClassifyAllMatchesInString(
       find_text, ShortcutsProvider::CreateWordMapForString(find_text), text_,
-      matches_);
+      text_is_query_, matches_);
 }
 
 // ShortcutsProviderTest ------------------------------------------------------
@@ -525,7 +529,7 @@ TEST_F(ShortcutsProviderTest, ClassifyAllMatchesInString) {
   ACMatchClassifications matches =
       AutocompleteMatch::ClassificationsFromString("0,0");
   ClassifyTest classify_test(ASCIIToUTF16("A man, a plan, a canal Panama"),
-                             matches);
+                             /*text_is_query=*/false, matches);
 
   ACMatchClassifications spans_a = classify_test.RunTest(ASCIIToUTF16("man"));
   // ACMatch spans should be: '--MMM------------------------'
@@ -545,7 +549,7 @@ TEST_F(ShortcutsProviderTest, ClassifyAllMatchesInString) {
   ClassifyTest classify_test2(
       ASCIIToUTF16("Yahoo! Sports - Sports News, "
                    "Scores, Rumors, Fantasy Games, and more"),
-      matches);
+      /*text_is_query=*/false, matches);
 
   ACMatchClassifications spans_d = classify_test2.RunTest(ASCIIToUTF16("ne"));
   // ACMatch spans should match first two letters of the "news".
@@ -560,7 +564,8 @@ TEST_F(ShortcutsProviderTest, ClassifyAllMatchesInString) {
       AutocompleteMatch::ClassificationsToString(spans_e));
 
   matches = AutocompleteMatch::ClassificationsFromString("0,1");
-  ClassifyTest classify_test3(ASCIIToUTF16("livescore.goal.com"), matches);
+  ClassifyTest classify_test3(ASCIIToUTF16("livescore.goal.com"),
+                              /*text_is_query=*/false, matches);
 
   ACMatchClassifications spans_f = classify_test3.RunTest(ASCIIToUTF16("go"));
   // ACMatch spans should match first two letters of the "goal".
@@ -569,7 +574,7 @@ TEST_F(ShortcutsProviderTest, ClassifyAllMatchesInString) {
 
   matches = AutocompleteMatch::ClassificationsFromString("0,0,13,1");
   ClassifyTest classify_test4(ASCIIToUTF16("Email login: mail.somecorp.com"),
-                              matches);
+                              /*text_is_query=*/false, matches);
 
   ACMatchClassifications spans_g = classify_test4.RunTest(ASCIIToUTF16("ail"));
   EXPECT_EQ("0,0,2,2,5,0,13,1,14,3,17,1",
@@ -589,14 +594,15 @@ TEST_F(ShortcutsProviderTest, ClassifyAllMatchesInString) {
   // Some web sites do not have a description.  If the string being searched is
   // empty, the classifications must also be empty: http://crbug.com/148647
   // Extra parens in the next line hack around C++03's "most vexing parse".
-  class ClassifyTest classify_test5((base::string16()),
+  class ClassifyTest classify_test5((base::string16()), /*text_is_query=*/false,
                                     ACMatchClassifications());
   ACMatchClassifications spans_j = classify_test5.RunTest(ASCIIToUTF16("man"));
   ASSERT_EQ(0U, spans_j.size());
 
   // Matches which end at beginning of classification merge properly.
   matches = AutocompleteMatch::ClassificationsFromString("0,4,9,0");
-  ClassifyTest classify_test6(ASCIIToUTF16("html password example"), matches);
+  ClassifyTest classify_test6(ASCIIToUTF16("html password example"),
+                              /*text_is_query=*/false, matches);
 
   // Extra space in the next string avoids having the string be a prefix of the
   // text above, which would allow for two different valid classification sets,
@@ -612,12 +618,27 @@ TEST_F(ShortcutsProviderTest, ClassifyAllMatchesInString) {
   // Multiple matches with both beginning and end at beginning of
   // classifications merge properly.
   matches = AutocompleteMatch::ClassificationsFromString("0,1,11,0");
-  ClassifyTest classify_test7(ASCIIToUTF16("http://a.co is great"), matches);
+  ClassifyTest classify_test7(ASCIIToUTF16("http://a.co is great"),
+                              /*text_is_query=*/false, matches);
 
   ACMatchClassifications spans_l =
       classify_test7.RunTest(ASCIIToUTF16("ht co"));
   EXPECT_EQ("0,3,2,1,9,3,11,0",
             AutocompleteMatch::ClassificationsToString(spans_l));
+
+  // Queries should be classify the same way as google seach autocomplete
+  // suggestions.
+  matches = AutocompleteMatch::ClassificationsFromString("0,0");
+  ClassifyTest classify_test8(ASCIIToUTF16("panama canal"),
+                              /*text_is_query=*/true, matches);
+
+  ACMatchClassifications spans_m = classify_test8.RunTest(ASCIIToUTF16("pan"));
+  // ACMatch spans should be: "---MMMMMMMMM";
+  EXPECT_EQ("0,0,3,2", AutocompleteMatch::ClassificationsToString(spans_m));
+  ACMatchClassifications spans_n =
+      classify_test8.RunTest(ASCIIToUTF16("canal"));
+  // ACMatch spans should be: "MMMMMM-----";
+  EXPECT_EQ("0,2,7,0", AutocompleteMatch::ClassificationsToString(spans_n));
 }
 
 TEST_F(ShortcutsProviderTest, CalculateScore) {
