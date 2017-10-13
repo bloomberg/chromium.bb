@@ -18,8 +18,10 @@ class CORE_EXPORT NGInlineBreakToken : public NGBreakToken {
   // produce more fragments.
   static RefPtr<NGInlineBreakToken> Create(NGInlineNode node,
                                            unsigned item_index,
-                                           unsigned text_offset) {
-    return WTF::AdoptRef(new NGInlineBreakToken(node, item_index, text_offset));
+                                           unsigned text_offset,
+                                           bool is_forced_break) {
+    return WTF::AdoptRef(
+        new NGInlineBreakToken(node, item_index, text_offset, is_forced_break));
   }
 
   // Creates a break token for a node which cannot produce any more fragments.
@@ -29,16 +31,19 @@ class CORE_EXPORT NGInlineBreakToken : public NGBreakToken {
 
   unsigned ItemIndex() const { return item_index_; }
   unsigned TextOffset() const { return text_offset_; }
+  bool IsForcedBreak() const { return is_forced_break_; }
 
  private:
   NGInlineBreakToken(NGInlineNode node,
                      unsigned item_index,
-                     unsigned text_offset);
+                     unsigned text_offset,
+                     bool is_forced_break);
 
   explicit NGInlineBreakToken(NGLayoutInputNode node);
 
   unsigned item_index_;
   unsigned text_offset_;
+  unsigned is_forced_break_ : 1;
 };
 
 DEFINE_TYPE_CASTS(NGInlineBreakToken,

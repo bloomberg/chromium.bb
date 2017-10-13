@@ -145,6 +145,7 @@ class CORE_EXPORT NGLineBreaker {
   Vector<RefPtr<NGUnpositionedFloat>>* unpositioned_floats_;
   unsigned item_index_ = 0;
   unsigned offset_ = 0;
+  bool previous_line_had_forced_break_ = false;
   NGLogicalOffset content_offset_;
   LazyLineBreakIterator break_iterator_;
   HarfBuzzShaper shaper_;
