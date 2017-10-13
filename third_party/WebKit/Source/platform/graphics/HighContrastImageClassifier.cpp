@@ -30,27 +30,38 @@ bool HighContrastImageClassifier::ShouldApplyHighContrastFilterToImage(
   if (result != HighContrastClassification::kNotClassified)
     return result == HighContrastClassification::kApplyHighContrastFilter;
 
-  SkBitmap bitmap;
-  if (!GetBitmap(image, &bitmap)) {
+  std::vector<float> features;
+  if (!ComputeImageFeatures(image, &features))
     result = HighContrastClassification::kDoNotApplyHighContrastFilter;
-  } else {
-    std::vector<SkColor> sampled_pixels;
-    float transparency_ratio;
-    GetSamples(bitmap, &sampled_pixels, &transparency_ratio);
-
-    std::vector<float> features;
-    GetFeatures(sampled_pixels, transparency_ratio, &features);
-
+  else
     result = ClassifyImage(features);
-  }
 
   image.SetHighContrastClassification(result);
   return result == HighContrastClassification::kApplyHighContrastFilter;
 }
 
-bool HighContrastImageClassifier::GetBitmap(Image& image, SkBitmap* bitmap) {
-  if (!image.IsBitmapImage())
+// This function computes a single feature vector based on a sample set of image
+// pixels. Please refer to |GetSamples| function for description of the sampling
+// method, and |GetFeatures| function for description of the features.
+bool HighContrastImageClassifier::ComputeImageFeatures(
+    Image& image,
+    std::vector<float>* features) {
+  SkBitmap bitmap;
+  if (!GetBitmap(image, &bitmap))
     return false;
+
+  std::vector<SkColor> sampled_pixels;
+  float transparency_ratio;
+  GetSamples(bitmap, &sampled_pixels, &transparency_ratio);
+
+  GetFeatures(sampled_pixels, transparency_ratio, features);
+  return true;
+}
+
+bool HighContrastImageClassifier::GetBitmap(Image& image, SkBitmap* bitmap) {
+  if (!image.IsBitmapImage() || !image.width() || !image.height())
+    return false;
+
   bitmap->allocPixels(
       SkImageInfo::MakeN32(image.width(), image.height(), kPremul_SkAlphaType));
   SkCanvas canvas(*bitmap);
@@ -60,6 +71,9 @@ bool HighContrastImageClassifier::GetBitmap(Image& image, SkBitmap* bitmap) {
   return true;
 }
 
+// This function selects a set of sample pixels from an image, and returns them
+// along with ratio of transparent pixels to all pixels.
+// Sampling is done uniformly along the width and height of the image.
 void HighContrastImageClassifier::GetSamples(
     const SkBitmap& bitmap,
     std::vector<SkColor>* sampled_pixels,
@@ -85,6 +99,11 @@ void HighContrastImageClassifier::GetSamples(
                         (transparent_pixels + sampled_pixels->size());
 }
 
+// This function computes a single feature vector from a sample set of image
+// pixels. The current features are:
+// 0: 1 if color, 0 if grayscale.
+// 1: Ratio of the number of bucketed colors used in the image to all
+//    possiblities. Color buckets are represented with 4 bits per color channel.
 void HighContrastImageClassifier::GetFeatures(
     const std::vector<SkColor>& sampled_pixels,
     const float transparency_ratio,
@@ -100,13 +119,45 @@ void HighContrastImageClassifier::GetFeatures(
   ColorMode color_mode = (color_pixels > samples_count / 100)
                              ? ColorMode::kColor
                              : ColorMode::kGrayscale;
-  features->resize(1);
-  (*features)[0] = (color_mode == ColorMode::kColor ? 1 : 0);
+
+  features->resize(2);
+
+  // Feature 0: Is Colorful?
+  (*features)[0] = color_mode == ColorMode::kColor;
+
+  // Feature 1: Color Buckets Ratio
+  // Using 4 bit per channel representation of each color bucket, there would be
+  // 2^4 buckets for grayscale images and 2^12 for color images.
+  const float max_buckets[] = {16, 4096};
+  (*features)[1] = CountColorBuckets(sampled_pixels) /
+                   max_buckets[color_mode == ColorMode::kColor];
+}
+
+int HighContrastImageClassifier::CountColorBuckets(
+    const std::vector<SkColor>& sampled_pixels) {
+  std::set<unsigned> buckets;
+  for (const SkColor& sample : sampled_pixels) {
+    unsigned bucket = ((SkColorGetR(sample) >> 4) << 8) +
+                      ((SkColorGetG(sample) >> 4) << 4) +
+                      ((SkColorGetB(sample) >> 4));
+    buckets.insert(bucket);
+  }
+
+  return static_cast<int>(buckets.size());
 }
 
 HighContrastClassification HighContrastImageClassifier::ClassifyImage(
     const std::vector<float>& features) {
-  bool result = (features.size() && features[0] < 1);
+  bool result = false;
+
+  // Shallow decision tree trained by C4.5.
+  if (features.size() == 2) {
+    if (features[1] < 0.016)
+      result = true;
+    else
+      result = (features[0] == 0);
+  }
+
   return result ? HighContrastClassification::kApplyHighContrastFilter
                 : HighContrastClassification::kDoNotApplyHighContrastFilter;
 }
