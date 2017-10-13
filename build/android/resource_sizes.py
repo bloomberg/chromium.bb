@@ -827,8 +827,6 @@ def main():
                          dest='dump_sis',
                          help='Run dump-static-initializers.py to get the list'
                               'of static initializers (slow).')
-  argparser.add_argument('-d', '--device',
-                         help='Dummy option for perf runner.')
   argparser.add_argument('--estimate-patch-size',
                          action='store_true',
                          help='Include patch size estimates. Useful for perf '
