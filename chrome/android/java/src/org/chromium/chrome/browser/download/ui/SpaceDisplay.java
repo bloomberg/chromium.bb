@@ -9,9 +9,6 @@ import android.os.AsyncTask;
 import android.os.Environment;
 import android.os.StatFs;
 import android.support.v7.widget.RecyclerView;
-import android.text.Spannable;
-import android.text.SpannableString;
-import android.text.style.ForegroundColorSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -196,21 +193,19 @@ public class SpaceDisplay extends RecyclerView.AdapterDataObserver {
         String spaceFree = DownloadUtils.getStringForBytes(context, FREE_STRINGS, mFreeBytes);
         String spaceUsedByOtherApps =
                 DownloadUtils.getStringForBytes(context, OTHER_STRINGS, bytesUsedByOtherApps);
-        SpannableString spannable = new SpannableString(
+        mSpaceFreeAndOtherAppsTextView.setText(
                 context.getResources().getString(R.string.download_manager_ui_space_free_and_other,
                         spaceFree, spaceUsedByOtherApps));
-        ForegroundColorSpan colorSpan = new ForegroundColorSpan(
-                ApiCompatibilityUtils.getColor(context.getResources(), R.color.black_alpha_54));
-        spannable.setSpan(colorSpan, 0, spaceFree.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-        mSpaceFreeAndOtherAppsTextView.setText(spannable);
 
         // Set a minimum size for the download size so that it shows up in the progress bar.
-        long onePercentOfSystem = fileSystemBytes == 0 ? 0 : fileSystemBytes / 100;
-        long fudgedBytesUsedByDownloads = Math.max(bytesUsedByDownloads, onePercentOfSystem);
+        long threePercentOfSystem = fileSystemBytes == 0 ? 0 : fileSystemBytes / 100 * 3;
+        long fudgedBytesUsedByDownloads = Math.max(bytesUsedByDownloads, threePercentOfSystem);
+        long fudgedBytesUsedByOtherApps = Math.max(bytesUsedByOtherApps, threePercentOfSystem);
 
         // Indicate how much space has been used as a progress bar.  The percentage used by
         // downloads is shown by the non-overlapped area of the primary and secondary progressbar.
-        int percentageUsedTotal = computePercentage(bytesUsedTotal, fileSystemBytes);
+        int percentageUsedTotal = computePercentage(
+                fudgedBytesUsedByDownloads + fudgedBytesUsedByOtherApps, fileSystemBytes);
         int percentageDownloaded = computePercentage(fudgedBytesUsedByDownloads, fileSystemBytes);
         mSpaceBar.setProgress(percentageUsedTotal);
         mSpaceBar.setSecondaryProgress(percentageDownloaded);

@@ -34,9 +34,9 @@
             android:layout_height="2dp"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp"
-            chrome:colorBackground="@color/google_grey_500"
-            chrome:colorProgress="@color/google_grey_300"
-            chrome:colorSecondaryProgress="@color/google_blue_700" />
+            chrome:colorBackground="@color/google_grey_300"
+            chrome:colorProgress="@color/google_blue_500_alpha_38_opaque"
+            chrome:colorSecondaryProgress="@color/google_blue_500" />
 
         <TextView
             android:id="@+id/size_free_and_other_apps"
