@@ -42,8 +42,10 @@ namespace safe_browsing {
 
 const char kSRTPromptTrial[] = "SRTPromptFieldTrial";
 
+// TODO(crbug.com/774623): Delete the code from the old prompt and remove this
+//                         feature.
 const base::Feature kInBrowserCleanerUIFeature{
-    "InBrowserCleanerUI", base::FEATURE_DISABLED_BY_DEFAULT};
+    "InBrowserCleanerUI", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kCleanerDownloadFeature{"DownloadCleanupToolByBitness",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
