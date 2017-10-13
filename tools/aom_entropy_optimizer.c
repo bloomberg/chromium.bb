@@ -751,23 +751,6 @@ int main(int argc, const char **argv) {
                      "[CDF_SIZE(2)]");
 #endif
 
-/* ext_intra experiment */
-#if CONFIG_EXT_INTRA
-#if CONFIG_INTRA_INTERP
-  cts_each_dim[0] = INTRA_FILTERS + 1;
-  cts_each_dim[1] = INTRA_FILTERS;
-  optimize_entropy_table(
-      &fc.intra_filter[0][0], probsfile, 2, cts_each_dim, av1_intra_filter_tree,
-      0,
-      "static const aom_prob\n"
-      "default_intra_filter_probs[INTRA_FILTERS + 1][INTRA_FILTERS - 1]");
-  optimize_cdf_table(&fc.intra_filter[0][0], probsfile, 2, cts_each_dim,
-                     "static const aom_cdf_prob "
-                     "default_intra_filter_cdf[INTRA_FILTERS + "
-                     "1][CDF_SIZE(INTRA_FILTERS)]");
-#endif
-#endif
-
 /* filter_intra experiment */
 #if CONFIG_FILTER_INTRA
   cts_each_dim[0] = PLANE_TYPES;

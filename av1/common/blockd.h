@@ -395,10 +395,6 @@ typedef struct MB_MODE_INFO {
 #if CONFIG_EXT_INTRA
   // The actual prediction angle is the base angle + (angle_delta * step).
   int8_t angle_delta[2];
-#if CONFIG_INTRA_INTERP
-  // To-Do (huisu): this may be replaced by interp_filter
-  INTRA_FILTER intra_filter;
-#endif  // CONFIG_INTRA_INTERP
 #endif  // CONFIG_EXT_INTRA
 
 #if CONFIG_INTERINTRA
@@ -1226,11 +1222,6 @@ static const uint8_t mode_to_angle_map[] = {
   0, 0,
 #endif  // CONFIG_SMOOTH_HV
 };
-#if CONFIG_INTRA_INTERP
-// Returns whether filter selection is needed for a given
-// intra prediction angle.
-int av1_is_intra_filter_switchable(int angle);
-#endif  // CONFIG_INTRA_INTERP
 #endif  // CONFIG_EXT_INTRA
 
 #if CONFIG_DCT_ONLY

@@ -338,11 +338,6 @@ typedef struct frame_contexts {
   aom_prob supertx_prob[PARTITION_SUPERTX_CONTEXTS][TX_SIZES];
 #endif  // CONFIG_SUPERTX
   struct segmentation_probs seg;
-#if CONFIG_EXT_INTRA
-#if CONFIG_INTRA_INTERP
-  aom_prob intra_filter_probs[INTRA_FILTERS + 1][INTRA_FILTERS - 1];
-#endif  // CONFIG_INTRA_INTERP
-#endif  // CONFIG_EXT_INTRA
 #if CONFIG_FILTER_INTRA
   aom_prob filter_intra_probs[PLANE_TYPES];
   aom_cdf_prob filter_intra_mode_cdf[PLANE_TYPES][CDF_SIZE(FILTER_INTRA_MODES)];
@@ -395,9 +390,6 @@ typedef struct frame_contexts {
   aom_prob intra_lgt_prob[LGT_SIZES][INTRA_MODES];
   aom_prob inter_lgt_prob[LGT_SIZES];
 #endif  // CONFIG_LGT_FROM_PRED
-#if CONFIG_EXT_INTRA && CONFIG_INTRA_INTERP
-  aom_cdf_prob intra_filter_cdf[INTRA_FILTERS + 1][CDF_SIZE(INTRA_FILTERS)];
-#endif  // CONFIG_EXT_INTRA && CONFIG_INTRA_INTERP
   aom_prob delta_q_prob[DELTA_Q_PROBS];
 #if CONFIG_EXT_DELTA_Q
 #if CONFIG_LOOPFILTER_LEVEL
@@ -566,11 +558,6 @@ typedef struct FRAME_COUNTS {
   unsigned int supertx_size[TX_SIZES];
 #endif  // CONFIG_SUPERTX
   struct seg_counts seg;
-#if CONFIG_EXT_INTRA
-#if CONFIG_INTRA_INTERP
-  unsigned int intra_filter[INTRA_FILTERS + 1][INTRA_FILTERS];
-#endif  // CONFIG_INTRA_INTERP
-#endif  // CONFIG_EXT_INTRA
 #if CONFIG_FILTER_INTRA
   unsigned int filter_intra[PLANE_TYPES][2];
   unsigned int filter_intra_mode[PLANE_TYPES][FILTER_INTRA_MODES];
@@ -690,9 +677,6 @@ extern const aom_tree_index
 #endif
 extern const aom_tree_index
     av1_palette_color_index_tree[PALETTE_SIZES][TREE_SIZE(PALETTE_COLORS)];
-#if CONFIG_EXT_INTRA && CONFIG_INTRA_INTERP
-extern const aom_tree_index av1_intra_filter_tree[TREE_SIZE(INTRA_FILTERS)];
-#endif  // CONFIG_EXT_INTRA && CONFIG_INTRA_INTERP
 #if CONFIG_EXT_TX
 extern const aom_tree_index av1_ext_tx_tree[EXT_TX_SET_TYPES]
                                            [TREE_SIZE(TX_TYPES)];

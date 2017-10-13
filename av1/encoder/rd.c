@@ -263,13 +263,6 @@ void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
                              av1_ext_tx_inv);
   }
 #endif  // CONFIG_EXT_TX
-#if CONFIG_EXT_INTRA
-#if CONFIG_INTRA_INTERP
-  for (i = 0; i < INTRA_FILTERS + 1; ++i)
-    av1_cost_tokens_from_cdf(x->intra_filter_cost[i], fc->intra_filter_cdf[i],
-                             NULL);
-#endif  // CONFIG_INTRA_INTERP
-#endif  // CONFIG_EXT_INTRA
 #if CONFIG_LOOP_RESTORATION
   av1_cost_tokens_from_cdf(x->switchable_restore_cost,
                            fc->switchable_restore_cdf, NULL);

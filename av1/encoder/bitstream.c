@@ -79,11 +79,6 @@ static INLINE void write_uniform(aom_writer *w, int n, int v) {
 }
 #endif  // !CONFIG_PVQ || CONFIG_EXT_INTRA
 
-#if CONFIG_EXT_INTRA
-#if CONFIG_INTRA_INTERP
-static struct av1_token intra_filter_encodings[INTRA_FILTERS];
-#endif  // CONFIG_INTRA_INTERP
-#endif  // CONFIG_EXT_INTRA
 #if CONFIG_INTERINTRA
 static struct av1_token interintra_mode_encodings[INTERINTRA_MODES];
 #endif
@@ -114,9 +109,6 @@ static int remux_tiles(const AV1_COMMON *const cm, uint8_t *dst,
                        int *const tile_col_size_bytes);
 #endif
 void av1_encode_token_init(void) {
-#if CONFIG_EXT_INTRA && CONFIG_INTRA_INTERP
-  av1_tokens_from_tree(intra_filter_encodings, av1_intra_filter_tree);
-#endif  // CONFIG_EXT_INTRA && CONFIG_INTRA_INTERP
 #if CONFIG_INTERINTRA
   av1_tokens_from_tree(interintra_mode_encodings, av1_interintra_mode_tree);
 #endif  // CONFIG_INTERINTRA
@@ -1261,29 +1253,14 @@ static void write_filter_intra_mode_info(const AV1_COMMON *const cm,
 #endif  // CONFIG_FILTER_INTRA
 
 #if CONFIG_EXT_INTRA
-static void write_intra_angle_info(const MACROBLOCKD *xd,
-                                   FRAME_CONTEXT *const ec_ctx, aom_writer *w) {
+static void write_intra_angle_info(const MACROBLOCKD *xd, aom_writer *w) {
   const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   const BLOCK_SIZE bsize = mbmi->sb_type;
-#if CONFIG_INTRA_INTERP
-  const int intra_filter_ctx = av1_get_pred_context_intra_interp(xd);
-  int p_angle;
-#endif  // CONFIG_INTRA_INTERP
-
-  (void)ec_ctx;
   if (!av1_use_angle_delta(bsize)) return;
 
   if (av1_is_directional_mode(mbmi->mode, bsize)) {
     write_uniform(w, 2 * MAX_ANGLE_DELTA + 1,
                   MAX_ANGLE_DELTA + mbmi->angle_delta[0]);
-#if CONFIG_INTRA_INTERP
-    p_angle = mode_to_angle_map[mbmi->mode] + mbmi->angle_delta[0] * ANGLE_STEP;
-    if (av1_is_intra_filter_switchable(p_angle)) {
-      aom_write_symbol(w, mbmi->intra_filter,
-                       ec_ctx->intra_filter_cdf[intra_filter_ctx],
-                       INTRA_FILTERS);
-    }
-#endif  // CONFIG_INTRA_INTERP
   }
 
   if (av1_is_directional_mode(get_uv_mode(mbmi->uv_mode), bsize)) {
@@ -1871,7 +1848,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
 #endif
 
 #if CONFIG_EXT_INTRA
-    write_intra_angle_info(xd, ec_ctx, w);
+    write_intra_angle_info(xd, w);
 #endif  // CONFIG_EXT_INTRA
     if (av1_allow_palette(cm->allow_screen_content_tools, bsize))
       write_palette_mode_info(cm, xd, mi, w);
@@ -2262,7 +2239,7 @@ static void write_mb_modes_kf(AV1_COMMON *cm, MACROBLOCKD *xd,
   }
 #endif
 #if CONFIG_EXT_INTRA
-  write_intra_angle_info(xd, ec_ctx, w);
+  write_intra_angle_info(xd, w);
 #endif  // CONFIG_EXT_INTRA
   if (av1_allow_palette(cm->allow_screen_content_tools, bsize))
     write_palette_mode_info(cm, xd, mi, w);

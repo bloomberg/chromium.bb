@@ -100,54 +100,6 @@ int av1_get_pred_context_switchable_interp(const MACROBLOCKD *xd) {
 }
 #endif
 
-#if CONFIG_EXT_INTRA
-#if CONFIG_INTRA_INTERP
-// Obtain the reference filter type from the above/left neighbor blocks.
-static INTRA_FILTER get_ref_intra_filter(const MB_MODE_INFO *ref_mbmi) {
-  INTRA_FILTER ref_type = INTRA_FILTERS;
-
-  if (ref_mbmi->sb_type >= BLOCK_8X8) {
-    const PREDICTION_MODE mode = ref_mbmi->mode;
-    if (is_inter_block(ref_mbmi)) {
-      switch (av1_extract_interp_filter(ref_mbmi->interp_filters, 0)) {
-        case EIGHTTAP_REGULAR: ref_type = INTRA_FILTER_8TAP; break;
-        case EIGHTTAP_SMOOTH: ref_type = INTRA_FILTER_8TAP_SMOOTH; break;
-        case MULTITAP_SHARP: ref_type = INTRA_FILTER_8TAP_SHARP; break;
-        case BILINEAR: ref_type = INTRA_FILTERS; break;
-        default: break;
-      }
-    } else {
-      if (av1_is_directional_mode(mode, ref_mbmi->sb_type)) {
-        const int p_angle =
-            mode_to_angle_map[mode] + ref_mbmi->angle_delta[0] * ANGLE_STEP;
-        if (av1_is_intra_filter_switchable(p_angle)) {
-          ref_type = ref_mbmi->intra_filter;
-        }
-      }
-    }
-  }
-  return ref_type;
-}
-
-int av1_get_pred_context_intra_interp(const MACROBLOCKD *xd) {
-  int left_type = INTRA_FILTERS, above_type = INTRA_FILTERS;
-
-  if (xd->left_available) left_type = get_ref_intra_filter(xd->left_mbmi);
-
-  if (xd->up_available) above_type = get_ref_intra_filter(xd->above_mbmi);
-
-  if (left_type == above_type)
-    return left_type;
-  else if (left_type == INTRA_FILTERS && above_type != INTRA_FILTERS)
-    return above_type;
-  else if (left_type != INTRA_FILTERS && above_type == INTRA_FILTERS)
-    return left_type;
-  else
-    return INTRA_FILTERS;
-}
-#endif  // CONFIG_INTRA_INTERP
-#endif  // CONFIG_EXT_INTRA
-
 #if CONFIG_PALETTE_DELTA_ENCODING
 int av1_get_palette_cache(const MACROBLOCKD *const xd, int plane,
                           uint16_t *cache) {

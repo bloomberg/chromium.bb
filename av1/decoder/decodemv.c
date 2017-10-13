@@ -927,38 +927,16 @@ static void read_filter_intra_mode_info(AV1_COMMON *const cm,
 #endif  // CONFIG_FILTER_INTRA
 
 #if CONFIG_EXT_INTRA
-static void read_intra_angle_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
-                                  aom_reader *r) {
+static void read_intra_angle_info(MACROBLOCKD *const xd, aom_reader *r) {
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   const BLOCK_SIZE bsize = mbmi->sb_type;
-#if CONFIG_INTRA_INTERP
-  FRAME_CONTEXT *const ec_ctx = xd->tile_ctx;
-  const int ctx = av1_get_pred_context_intra_interp(xd);
-  int p_angle;
-#endif  // CONFIG_INTRA_INTERP
-
-  (void)cm;
-
   mbmi->angle_delta[0] = 0;
   mbmi->angle_delta[1] = 0;
-#if CONFIG_INTRA_INTERP
-  mbmi->intra_filter = INTRA_FILTER_LINEAR;
-#endif  // CONFIG_INTRA_INTERP
-
   if (!av1_use_angle_delta(bsize)) return;
 
   if (av1_is_directional_mode(mbmi->mode, bsize)) {
     mbmi->angle_delta[0] =
         av1_read_uniform(r, 2 * MAX_ANGLE_DELTA + 1) - MAX_ANGLE_DELTA;
-#if CONFIG_INTRA_INTERP
-    p_angle = mode_to_angle_map[mbmi->mode] + mbmi->angle_delta[0] * ANGLE_STEP;
-    if (av1_is_intra_filter_switchable(p_angle)) {
-      FRAME_COUNTS *counts = xd->counts;
-      mbmi->intra_filter = aom_read_symbol(r, ec_ctx->intra_filter_cdf[ctx],
-                                           INTRA_FILTERS, ACCT_STR);
-      if (counts) ++counts->intra_filter[ctx][mbmi->intra_filter];
-    }
-#endif  // CONFIG_INTRA_INTERP
   }
 
   if (av1_is_directional_mode(get_uv_mode(mbmi->uv_mode), bsize)) {
@@ -1335,7 +1313,7 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
 #endif
 
 #if CONFIG_EXT_INTRA
-  read_intra_angle_info(cm, xd, r);
+  read_intra_angle_info(xd, r);
 #endif  // CONFIG_EXT_INTRA
   mbmi->palette_mode_info.palette_size[0] = 0;
   mbmi->palette_mode_info.palette_size[1] = 0;
@@ -1933,7 +1911,7 @@ static void read_intra_block_mode_info(AV1_COMMON *const cm, const int mi_row,
   (void)cm;
 
 #if CONFIG_EXT_INTRA
-  read_intra_angle_info(cm, xd, r);
+  read_intra_angle_info(xd, r);
 #endif  // CONFIG_EXT_INTRA
   mbmi->palette_mode_info.palette_size[0] = 0;
   mbmi->palette_mode_info.palette_size[1] = 0;
@@ -2773,9 +2751,6 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 #if CONFIG_EXT_INTRA
       mbmi->angle_delta[0] = 0;
       mbmi->angle_delta[1] = 0;
-#if CONFIG_INTRA_INTERP
-      mbmi->intra_filter = INTRA_FILTER_LINEAR;
-#endif  // CONFIG_INTRA_INTERP
 #endif  // CONFIG_EXT_INTRA
 #if CONFIG_FILTER_INTRA
       mbmi->filter_intra_mode_info.use_filter_intra_mode[0] = 0;

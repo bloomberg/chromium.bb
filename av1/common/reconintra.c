@@ -766,43 +766,9 @@ static void av1_init_intra_predictors_internal(void) {
 }
 
 #if CONFIG_EXT_INTRA
-#if CONFIG_INTRA_INTERP
-static int intra_subpel_interp(int base, int shift, const uint8_t *ref,
-                               int ref_start_idx, int ref_end_idx,
-                               INTRA_FILTER filter_type) {
-  int val, k, idx, filter_idx = 0;
-  const int16_t *filter = NULL;
-
-  if (filter_type == INTRA_FILTER_LINEAR) {
-    val = ref[base] * (256 - shift) + ref[base + 1] * shift;
-    val = ROUND_POWER_OF_TWO(val, 8);
-  } else {
-    filter_idx = ROUND_POWER_OF_TWO(shift, 8 - SUBPEL_BITS);
-    filter = av1_intra_filter_kernels[filter_type][filter_idx];
-
-    if (filter_idx < (1 << SUBPEL_BITS)) {
-      val = 0;
-      for (k = 0; k < SUBPEL_TAPS; ++k) {
-        idx = base + 1 - (SUBPEL_TAPS / 2) + k;
-        idx = AOMMAX(AOMMIN(idx, ref_end_idx), ref_start_idx);
-        val += ref[idx] * filter[k];
-      }
-      val = ROUND_POWER_OF_TWO(val, FILTER_BITS);
-    } else {
-      val = ref[base + 1];
-    }
-  }
-
-  return val;
-}
-#endif  // CONFIG_INTRA_INTERP
-
 // Directional prediction, zone 1: 0 < angle < 90
 static void dr_prediction_z1(uint8_t *dst, ptrdiff_t stride, int bw, int bh,
                              const uint8_t *above, const uint8_t *left,
-#if CONFIG_INTRA_INTERP
-                             INTRA_FILTER filter_type,
-#endif  // CONFIG_INTRA_INTERP
 #if CONFIG_INTRA_EDGE_UPSAMPLE
                              int upsample_above,
 #endif  // CONFIG_INTRA_EDGE_UPSAMPLE
@@ -835,13 +801,8 @@ static void dr_prediction_z1(uint8_t *dst, ptrdiff_t stride, int bw, int bh,
 
     for (c = 0; c < bw; ++c, base += base_inc) {
       if (base < max_base_x) {
-#if CONFIG_INTRA_INTERP
-        val = intra_subpel_interp(base, shift, above, 0, bw + bh - 1,
-                                  filter_type);
-#else   // CONFIG_INTRA_INTERP
         val = above[base] * (256 - shift) + above[base + 1] * shift;
         val = ROUND_POWER_OF_TWO(val, 8);
-#endif  // CONFIG_INTRA_INTERP
         dst[c] = clip_pixel(val);
       } else {
         dst[c] = above[max_base_x];
@@ -853,9 +814,6 @@ static void dr_prediction_z1(uint8_t *dst, ptrdiff_t stride, int bw, int bh,
 // Directional prediction, zone 2: 90 < angle < 180
 static void dr_prediction_z2(uint8_t *dst, ptrdiff_t stride, int bw, int bh,
                              const uint8_t *above, const uint8_t *left,
-#if CONFIG_INTRA_INTERP
-                             INTRA_FILTER filter_type,
-#endif  // CONFIG_INTRA_INTERP
 #if CONFIG_INTRA_EDGE_UPSAMPLE
                              int upsample_above, int upsample_left,
 #endif  // CONFIG_INTRA_EDGE_UPSAMPLE
@@ -880,23 +838,14 @@ static void dr_prediction_z2(uint8_t *dst, ptrdiff_t stride, int bw, int bh,
     for (c = 0; c < bw; ++c, base1 += base_inc_x, y -= dy) {
       if (base1 >= min_base_x) {
         shift1 = (x * (1 << upsample_above)) & 0xFF;
-#if CONFIG_INTRA_INTERP
-        val =
-            intra_subpel_interp(base1, shift1, above, -1, bw - 1, filter_type);
-#else
         val = above[base1] * (256 - shift1) + above[base1 + 1] * shift1;
         val = ROUND_POWER_OF_TWO(val, 8);
-#endif  // CONFIG_INTRA_INTERP
       } else {
         base2 = y >> frac_bits_y;
         assert(base2 >= -(1 << upsample_left));
         shift2 = (y * (1 << upsample_left)) & 0xFF;
-#if CONFIG_INTRA_INTERP
-        val = intra_subpel_interp(base2, shift2, left, -1, bh - 1, filter_type);
-#else
         val = left[base2] * (256 - shift2) + left[base2 + 1] * shift2;
         val = ROUND_POWER_OF_TWO(val, 8);
-#endif  // CONFIG_INTRA_INTERP
       }
       dst[c] = clip_pixel(val);
     }
@@ -906,9 +855,6 @@ static void dr_prediction_z2(uint8_t *dst, ptrdiff_t stride, int bw, int bh,
 // Directional prediction, zone 3: 180 < angle < 270
 static void dr_prediction_z3(uint8_t *dst, ptrdiff_t stride, int bw, int bh,
                              const uint8_t *above, const uint8_t *left,
-#if CONFIG_INTRA_INTERP
-                             INTRA_FILTER filter_type,
-#endif  // CONFIG_INTRA_INTERP
 #if CONFIG_INTRA_EDGE_UPSAMPLE
                              int upsample_left,
 #endif  // CONFIG_INTRA_EDGE_UPSAMPLE
@@ -934,13 +880,8 @@ static void dr_prediction_z3(uint8_t *dst, ptrdiff_t stride, int bw, int bh,
 
     for (r = 0; r < bh; ++r, base += base_inc) {
       if (base < max_base_y) {
-#if CONFIG_INTRA_INTERP
-        val =
-            intra_subpel_interp(base, shift, left, 0, bw + bh - 1, filter_type);
-#else   // CONFIG_INTRA_INTERP
         val = left[base] * (256 - shift) + left[base + 1] * shift;
         val = ROUND_POWER_OF_TWO(val, 8);
-#endif  // CONFIG_INTRA_INTERP
         dst[r * stride + c] = clip_pixel(val);
       } else {
         for (; r < bh; ++r) dst[r * stride + c] = left[max_base_y];
@@ -982,9 +923,6 @@ static INLINE int get_dy(int angle) {
 
 static void dr_predictor(uint8_t *dst, ptrdiff_t stride, TX_SIZE tx_size,
                          const uint8_t *above, const uint8_t *left,
-#if CONFIG_INTRA_INTERP
-                         INTRA_FILTER filter_type,
-#endif  // CONFIG_INTRA_INTERP
 #if CONFIG_INTRA_EDGE_UPSAMPLE
                          int upsample_above, int upsample_left,
 #endif  // CONFIG_INTRA_EDGE_UPSAMPLE
@@ -997,27 +935,18 @@ static void dr_predictor(uint8_t *dst, ptrdiff_t stride, TX_SIZE tx_size,
 
   if (angle > 0 && angle < 90) {
     dr_prediction_z1(dst, stride, bw, bh, above, left,
-#if CONFIG_INTRA_INTERP
-                     filter_type,
-#endif  // CONFIG_INTRA_INTERP
 #if CONFIG_INTRA_EDGE_UPSAMPLE
                      upsample_above,
 #endif  // CONFIG_INTRA_EDGE_UPSAMPLE
                      dx, dy);
   } else if (angle > 90 && angle < 180) {
     dr_prediction_z2(dst, stride, bw, bh, above, left,
-#if CONFIG_INTRA_INTERP
-                     filter_type,
-#endif  // CONFIG_INTRA_INTERP
 #if CONFIG_INTRA_EDGE_UPSAMPLE
                      upsample_above, upsample_left,
 #endif  // CONFIG_INTRA_EDGE_UPSAMPLE
                      dx, dy);
   } else if (angle > 180 && angle < 270) {
     dr_prediction_z3(dst, stride, bw, bh, above, left,
-#if CONFIG_INTRA_INTERP
-                     filter_type,
-#endif  // CONFIG_INTRA_INTERP
 #if CONFIG_INTRA_EDGE_UPSAMPLE
                      upsample_left,
 #endif  // CONFIG_INTRA_EDGE_UPSAMPLE
@@ -1030,44 +959,10 @@ static void dr_predictor(uint8_t *dst, ptrdiff_t stride, TX_SIZE tx_size,
 }
 
 #if CONFIG_HIGHBITDEPTH
-#if CONFIG_INTRA_INTERP
-static int highbd_intra_subpel_interp(int base, int shift, const uint16_t *ref,
-                                      int ref_start_idx, int ref_end_idx,
-                                      INTRA_FILTER filter_type) {
-  int val, k, idx, filter_idx = 0;
-  const int16_t *filter = NULL;
-
-  if (filter_type == INTRA_FILTER_LINEAR) {
-    val = ref[base] * (256 - shift) + ref[base + 1] * shift;
-    val = ROUND_POWER_OF_TWO(val, 8);
-  } else {
-    filter_idx = ROUND_POWER_OF_TWO(shift, 8 - SUBPEL_BITS);
-    filter = av1_intra_filter_kernels[filter_type][filter_idx];
-
-    if (filter_idx < (1 << SUBPEL_BITS)) {
-      val = 0;
-      for (k = 0; k < SUBPEL_TAPS; ++k) {
-        idx = base + 1 - (SUBPEL_TAPS / 2) + k;
-        idx = AOMMAX(AOMMIN(idx, ref_end_idx), ref_start_idx);
-        val += ref[idx] * filter[k];
-      }
-      val = ROUND_POWER_OF_TWO(val, FILTER_BITS);
-    } else {
-      val = ref[base + 1];
-    }
-  }
-
-  return val;
-}
-#endif  // CONFIG_INTRA_INTERP
-
 // Directional prediction, zone 1: 0 < angle < 90
 static void highbd_dr_prediction_z1(uint16_t *dst, ptrdiff_t stride, int bw,
                                     int bh, const uint16_t *above,
                                     const uint16_t *left,
-#if CONFIG_INTRA_INTERP
-                                    INTRA_FILTER filter_type,
-#endif  // CONFIG_INTRA_INTERP
 #if CONFIG_INTRA_EDGE_UPSAMPLE
                                     int upsample_above,
 #endif  // CONFIG_INTRA_EDGE_UPSAMPLE
@@ -1100,13 +995,8 @@ static void highbd_dr_prediction_z1(uint16_t *dst, ptrdiff_t stride, int bw,
 
     for (c = 0; c < bw; ++c, base += base_inc) {
       if (base < max_base_x) {
-#if CONFIG_INTRA_INTERP
-        val = highbd_intra_subpel_interp(base, shift, above, 0, bw + bh - 1,
-                                         filter_type);
-#else
         val = above[base] * (256 - shift) + above[base + 1] * shift;
         val = ROUND_POWER_OF_TWO(val, 8);
-#endif  // CONFIG_INTRA_INTERP
         dst[c] = clip_pixel_highbd(val, bd);
       } else {
         dst[c] = above[max_base_x];
@@ -1119,9 +1009,6 @@ static void highbd_dr_prediction_z1(uint16_t *dst, ptrdiff_t stride, int bw,
 static void highbd_dr_prediction_z2(uint16_t *dst, ptrdiff_t stride, int bw,
                                     int bh, const uint16_t *above,
                                     const uint16_t *left,
-#if CONFIG_INTRA_INTERP
-                                    INTRA_FILTER filter_type,
-#endif  // CONFIG_INTRA_INTERP
 #if CONFIG_INTRA_EDGE_UPSAMPLE
                                     int upsample_above, int upsample_left,
 #endif  // CONFIG_INTRA_EDGE_UPSAMPLE
@@ -1145,25 +1032,15 @@ static void highbd_dr_prediction_z2(uint16_t *dst, ptrdiff_t stride, int bw,
       base = x >> frac_bits_x;
       if (base >= min_base_x) {
         shift = (x * (1 << upsample_above)) & 0xFF;
-#if CONFIG_INTRA_INTERP
-        val = highbd_intra_subpel_interp(base, shift, above, -1, bw - 1,
-                                         filter_type);
-#else
         val = above[base] * (256 - shift) + above[base + 1] * shift;
         val = ROUND_POWER_OF_TWO(val, 8);
-#endif  // CONFIG_INTRA_INTERP
       } else {
         x = c + 1;
         y = (r << 8) - x * dy;
         base = y >> frac_bits_y;
         shift = (y * (1 << upsample_left)) & 0xFF;
-#if CONFIG_INTRA_INTERP
-        val = highbd_intra_subpel_interp(base, shift, left, -1, bh - 1,
-                                         filter_type);
-#else
         val = left[base] * (256 - shift) + left[base + 1] * shift;
         val = ROUND_POWER_OF_TWO(val, 8);
-#endif  // CONFIG_INTRA_INTERP
       }
       dst[c] = clip_pixel_highbd(val, bd);
     }
@@ -1175,9 +1052,6 @@ static void highbd_dr_prediction_z2(uint16_t *dst, ptrdiff_t stride, int bw,
 static void highbd_dr_prediction_z3(uint16_t *dst, ptrdiff_t stride, int bw,
                                     int bh, const uint16_t *above,
                                     const uint16_t *left,
-#if CONFIG_INTRA_INTERP
-                                    INTRA_FILTER filter_type,
-#endif  // CONFIG_INTRA_INTERP
 #if CONFIG_INTRA_EDGE_UPSAMPLE
                                     int upsample_left,
 #endif  // CONFIG_INTRA_EDGE_UPSAMPLE
@@ -1202,13 +1076,8 @@ static void highbd_dr_prediction_z3(uint16_t *dst, ptrdiff_t stride, int bw,
 
     for (r = 0; r < bh; ++r, base += base_inc) {
       if (base < max_base_y) {
-#if CONFIG_INTRA_INTERP
-        val = highbd_intra_subpel_interp(base, shift, left, 0, bw + bh - 1,
-                                         filter_type);
-#else
         val = left[base] * (256 - shift) + left[base + 1] * shift;
         val = ROUND_POWER_OF_TWO(val, 8);
-#endif  // CONFIG_INTRA_INTERP
         dst[r * stride + c] = clip_pixel_highbd(val, bd);
       } else {
         for (; r < bh; ++r) dst[r * stride + c] = left[max_base_y];
@@ -1221,9 +1090,6 @@ static void highbd_dr_prediction_z3(uint16_t *dst, ptrdiff_t stride, int bw,
 static void highbd_dr_predictor(uint16_t *dst, ptrdiff_t stride,
                                 TX_SIZE tx_size, const uint16_t *above,
                                 const uint16_t *left,
-#if CONFIG_INTRA_INTERP
-                                INTRA_FILTER filter,
-#endif  // CONFIG_INTRA_INTERP
 #if CONFIG_INTRA_EDGE_UPSAMPLE
                                 int upsample_above, int upsample_left,
 #endif  // CONFIG_INTRA_EDGE_UPSAMPLE
@@ -1236,27 +1102,18 @@ static void highbd_dr_predictor(uint16_t *dst, ptrdiff_t stride,
 
   if (angle > 0 && angle < 90) {
     highbd_dr_prediction_z1(dst, stride, bw, bh, above, left,
-#if CONFIG_INTRA_INTERP
-                            filter,
-#endif  // CONFIG_INTRA_INTERP
 #if CONFIG_INTRA_EDGE_UPSAMPLE
                             upsample_above,
 #endif  // CONFIG_INTRA_EDGE_UPSAMPLE
                             dx, dy, bd);
   } else if (angle > 90 && angle < 180) {
     highbd_dr_prediction_z2(dst, stride, bw, bh, above, left,
-#if CONFIG_INTRA_INTERP
-                            filter,
-#endif  // CONFIG_INTRA_INTERP
 #if CONFIG_INTRA_EDGE_UPSAMPLE
                             upsample_above, upsample_left,
 #endif  // CONFIG_INTRA_EDGE_UPSAMPLE
                             dx, dy, bd);
   } else if (angle > 180 && angle < 270) {
     highbd_dr_prediction_z3(dst, stride, bw, bh, above, left,
-#if CONFIG_INTRA_INTERP
-                            filter,
-#endif  // CONFIG_INTRA_INTERP
 #if CONFIG_INTRA_EDGE_UPSAMPLE
                             upsample_left,
 #endif  // CONFIG_INTRA_EDGE_UPSAMPLE
@@ -2513,11 +2370,6 @@ static void build_intra_predictors_high(
 
 #if CONFIG_EXT_INTRA
   if (is_dr_mode) {
-#if CONFIG_INTRA_INTERP
-    INTRA_FILTER filter = INTRA_FILTER_LINEAR;
-    if (plane == 0 && av1_is_intra_filter_switchable(p_angle))
-      filter = xd->mi[0]->mbmi.intra_filter;
-#endif  // CONFIG_INTRA_INTERP
 #if CONFIG_INTRA_EDGE
     const int need_right = p_angle < 90;
     const int need_bottom = p_angle > 180;
@@ -2549,9 +2401,6 @@ static void build_intra_predictors_high(
 #endif  // CONFIG_INTRA_EDGE_UPSAMPLE
 #endif  // CONFIG_INTRA_EDGE
     highbd_dr_predictor(dst, dst_stride, tx_size, above_row, left_col,
-#if CONFIG_INTRA_INTERP
-                        filter,
-#endif  // CONFIG_INTRA_INTERP
 #if CONFIG_INTRA_EDGE_UPSAMPLE
                         upsample_above, upsample_left,
 #endif  // CONFIG_INTRA_EDGE_UPSAMPLE
@@ -2755,11 +2604,6 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
 
 #if CONFIG_EXT_INTRA
   if (is_dr_mode) {
-#if CONFIG_INTRA_INTERP
-    INTRA_FILTER filter = INTRA_FILTER_LINEAR;
-    if (plane == 0 && av1_is_intra_filter_switchable(p_angle))
-      filter = xd->mi[0]->mbmi.intra_filter;
-#endif  // CONFIG_INTRA_INTERP
 #if CONFIG_INTRA_EDGE
     const int need_right = p_angle < 90;
     const int need_bottom = p_angle > 180;
@@ -2791,9 +2635,6 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
 #endif  // CONFIG_INTRA_EDGE_UPSAMPLE
 #endif  // CONFIG_INTRA_EDGE
     dr_predictor(dst, dst_stride, tx_size, above_row, left_col,
-#if CONFIG_INTRA_INTERP
-                 filter,
-#endif  // CONFIG_INTRA_INTERP
 #if CONFIG_INTRA_EDGE_UPSAMPLE
                  upsample_above, upsample_left,
 #endif  // CONFIG_INTRA_EDGE_UPSAMPLE

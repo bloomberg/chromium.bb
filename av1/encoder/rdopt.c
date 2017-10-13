@@ -3728,11 +3728,6 @@ static int64_t rd_pick_intra_sub_8x8_y_mode(const AV1_COMP *const cpi,
   const TX_SIZE tx_size = TX_4X4;
 #endif  // CONFIG_EXT_TX && CONFIG_RECT_TX
 
-#if CONFIG_EXT_INTRA
-#if CONFIG_INTRA_INTERP
-  mbmi->intra_filter = INTRA_FILTER_LINEAR;
-#endif  // CONFIG_INTRA_INTERP
-#endif  // CONFIG_EXT_INTRA
 #if CONFIG_FILTER_INTRA
   mbmi->filter_intra_mode_info.use_filter_intra_mode[0] = 0;
 #endif  // CONFIG_FILTER_INTRA
@@ -3933,9 +3928,6 @@ static int64_t calc_rd_given_intra_angle(
 #if CONFIG_LGT_FROM_PRED
     int *use_lgt_when_selected,
 #endif
-#if CONFIG_INTRA_INTERP
-    INTRA_FILTER *best_filter,
-#endif  // CONFIG_INTRA_INTERP
     int64_t *best_rd, int64_t *best_model_rd) {
   int this_rate;
   RD_STATS tokenonly_rd_stats;
@@ -3961,9 +3953,6 @@ static int64_t calc_rd_given_intra_angle(
     *best_rd = this_rd;
     *best_angle_delta = mbmi->angle_delta[0];
     *best_tx_size = mbmi->tx_size;
-#if CONFIG_INTRA_INTERP
-    *best_filter = mbmi->intra_filter;
-#endif  // CONFIG_INTRA_INTERP
     *best_tx_type = mbmi->tx_type;
 #if CONFIG_LGT_FROM_PRED
     *use_lgt_when_selected = mbmi->use_lgt;
@@ -3989,11 +3978,6 @@ static int64_t rd_pick_intra_angle_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
   assert(!is_inter_block(mbmi));
   int i, angle_delta, best_angle_delta = 0;
   int first_try = 1;
-#if CONFIG_INTRA_INTERP
-  int p_angle;
-  const int intra_filter_ctx = av1_get_pred_context_intra_interp(xd);
-  INTRA_FILTER filter, best_filter = INTRA_FILTER_LINEAR;
-#endif  // CONFIG_INTRA_INTERP
   int64_t this_rd, best_rd_in, rd_cost[2 * (MAX_ANGLE_DELTA + 2)];
   TX_SIZE best_tx_size = mic->mbmi.tx_size;
   TX_TYPE best_tx_type = mbmi->tx_type;
@@ -4004,107 +3988,52 @@ static int64_t rd_pick_intra_angle_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
   for (i = 0; i < 2 * (MAX_ANGLE_DELTA + 2); ++i) rd_cost[i] = INT64_MAX;
 
   for (angle_delta = 0; angle_delta <= MAX_ANGLE_DELTA; angle_delta += 2) {
-#if CONFIG_INTRA_INTERP
-    for (filter = INTRA_FILTER_LINEAR; filter < INTRA_FILTERS; ++filter) {
-      if (FILTER_FAST_SEARCH && filter != INTRA_FILTER_LINEAR) continue;
-      mic->mbmi.intra_filter = filter;
-#endif  // CONFIG_INTRA_INTERP
-      for (i = 0; i < 2; ++i) {
-        best_rd_in = (best_rd == INT64_MAX)
-                         ? INT64_MAX
-                         : (best_rd + (best_rd >> (first_try ? 3 : 5)));
-        this_rd = calc_rd_given_intra_angle(
-            cpi, x, bsize,
-#if CONFIG_INTRA_INTERP
-            mode_cost + x->intra_filter_cost[intra_filter_ctx][filter],
-#else
-          mode_cost,
-#endif  // CONFIG_INTRA_INTERP
-            best_rd_in, (1 - 2 * i) * angle_delta, MAX_ANGLE_DELTA, rate,
-            rd_stats, &best_angle_delta, &best_tx_size, &best_tx_type,
+    for (i = 0; i < 2; ++i) {
+      best_rd_in = (best_rd == INT64_MAX)
+                       ? INT64_MAX
+                       : (best_rd + (best_rd >> (first_try ? 3 : 5)));
+      this_rd = calc_rd_given_intra_angle(
+          cpi, x, bsize, mode_cost, best_rd_in, (1 - 2 * i) * angle_delta,
+          MAX_ANGLE_DELTA, rate, rd_stats, &best_angle_delta, &best_tx_size,
+          &best_tx_type,
 #if CONFIG_LGT_FROM_PRED
-            &use_lgt_when_selected,
+          &use_lgt_when_selected,
 #endif
-#if CONFIG_INTRA_INTERP
-            &best_filter,
-#endif  // CONFIG_INTRA_INTERP
-            &best_rd, best_model_rd);
-        rd_cost[2 * angle_delta + i] = this_rd;
-        if (first_try && this_rd == INT64_MAX) return best_rd;
-        first_try = 0;
-        if (angle_delta == 0) {
-          rd_cost[1] = this_rd;
-          break;
-        }
+          &best_rd, best_model_rd);
+      rd_cost[2 * angle_delta + i] = this_rd;
+      if (first_try && this_rd == INT64_MAX) return best_rd;
+      first_try = 0;
+      if (angle_delta == 0) {
+        rd_cost[1] = this_rd;
+        break;
       }
-#if CONFIG_INTRA_INTERP
     }
-#endif  // CONFIG_INTRA_INTERP
   }
 
   assert(best_rd != INT64_MAX);
   for (angle_delta = 1; angle_delta <= MAX_ANGLE_DELTA; angle_delta += 2) {
     int64_t rd_thresh;
-#if CONFIG_INTRA_INTERP
-    for (filter = INTRA_FILTER_LINEAR; filter < INTRA_FILTERS; ++filter) {
-      if (FILTER_FAST_SEARCH && filter != INTRA_FILTER_LINEAR) continue;
-      mic->mbmi.intra_filter = filter;
-#endif  // CONFIG_INTRA_INTERP
-      for (i = 0; i < 2; ++i) {
-        int skip_search = 0;
-        rd_thresh = best_rd + (best_rd >> 5);
-        if (rd_cost[2 * (angle_delta + 1) + i] > rd_thresh &&
-            rd_cost[2 * (angle_delta - 1) + i] > rd_thresh)
-          skip_search = 1;
-        if (!skip_search) {
-          calc_rd_given_intra_angle(
-              cpi, x, bsize,
-#if CONFIG_INTRA_INTERP
-              mode_cost + x->intra_filter_cost[intra_filter_ctx][filter],
-#else
-            mode_cost,
-#endif  // CONFIG_INTRA_INTERP
-              best_rd, (1 - 2 * i) * angle_delta, MAX_ANGLE_DELTA, rate,
-              rd_stats, &best_angle_delta, &best_tx_size, &best_tx_type,
+    for (i = 0; i < 2; ++i) {
+      int skip_search = 0;
+      rd_thresh = best_rd + (best_rd >> 5);
+      if (rd_cost[2 * (angle_delta + 1) + i] > rd_thresh &&
+          rd_cost[2 * (angle_delta - 1) + i] > rd_thresh)
+        skip_search = 1;
+      if (!skip_search) {
+        calc_rd_given_intra_angle(cpi, x, bsize, mode_cost, best_rd,
+                                  (1 - 2 * i) * angle_delta, MAX_ANGLE_DELTA,
+                                  rate, rd_stats, &best_angle_delta,
+                                  &best_tx_size, &best_tx_type,
 #if CONFIG_LGT_FROM_PRED
-              &use_lgt_when_selected,
+                                  &use_lgt_when_selected,
 #endif
-#if CONFIG_INTRA_INTERP
-              &best_filter,
-#endif  // CONFIG_INTRA_INTERP
-              &best_rd, best_model_rd);
-        }
-      }
-#if CONFIG_INTRA_INTERP
-    }
-#endif  // CONFIG_INTRA_INTERP
-  }
-
-#if CONFIG_INTRA_INTERP
-  if (FILTER_FAST_SEARCH && rd_stats->rate < INT_MAX) {
-    p_angle = mode_to_angle_map[mbmi->mode] + best_angle_delta * ANGLE_STEP;
-    if (av1_is_intra_filter_switchable(p_angle)) {
-      for (filter = INTRA_FILTER_LINEAR + 1; filter < INTRA_FILTERS; ++filter) {
-        mic->mbmi.intra_filter = filter;
-        this_rd = calc_rd_given_intra_angle(
-            cpi, x, bsize,
-            mode_cost + x->intra_filter_cost[intra_filter_ctx][filter], best_rd,
-            best_angle_delta, MAX_ANGLE_DELTA, rate, rd_stats,
-            &best_angle_delta, &best_tx_size, &best_tx_type,
-#if CONFIG_LGT_FROM_PRED
-            &use_lgt_when_selected,
-#endif
-            &best_filter, &best_rd, best_model_rd);
+                                  &best_rd, best_model_rd);
       }
     }
   }
-#endif  // CONFIG_INTRA_INTERP
 
   mbmi->tx_size = best_tx_size;
   mbmi->angle_delta[0] = best_angle_delta;
-#if CONFIG_INTRA_INTERP
-  mic->mbmi.intra_filter = best_filter;
-#endif  // CONFIG_INTRA_INTERP
   mbmi->tx_type = best_tx_type;
 #if CONFIG_LGT_FROM_PRED
   mbmi->use_lgt = use_lgt_when_selected;
@@ -4267,9 +4196,6 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
 #if CONFIG_EXT_INTRA
   const int rows = block_size_high[bsize];
   const int cols = block_size_wide[bsize];
-#if CONFIG_INTRA_INTERP
-  const int intra_filter_ctx = av1_get_pred_context_intra_interp(xd);
-#endif  // CONFIG_INTRA_INTERP
   int is_directional_mode;
   uint8_t directional_mode_skip_mask[INTRA_MODES];
   const int src_stride = x->plane[0].src.stride;
@@ -4402,12 +4328,6 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
 #endif  // CONFIG_FILTER_INTRA
 #if CONFIG_EXT_INTRA
     if (is_directional_mode) {
-#if CONFIG_INTRA_INTERP
-      const int p_angle =
-          mode_to_angle_map[mbmi->mode] + mbmi->angle_delta[0] * ANGLE_STEP;
-      if (av1_is_intra_filter_switchable(p_angle))
-        this_rate += x->intra_filter_cost[intra_filter_ctx][mbmi->intra_filter];
-#endif  // CONFIG_INTRA_INTERP
       if (av1_use_angle_delta(bsize)) {
         this_rate += write_uniform_cost(2 * MAX_ANGLE_DELTA + 1,
                                         MAX_ANGLE_DELTA + mbmi->angle_delta[0]);
@@ -11123,13 +11043,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
       }
 #if CONFIG_EXT_INTRA
       if (is_directional_mode) {
-#if CONFIG_INTRA_INTERP
-        const int intra_filter_ctx = av1_get_pred_context_intra_interp(xd);
-        const int p_angle =
-            mode_to_angle_map[mbmi->mode] + mbmi->angle_delta[0] * ANGLE_STEP;
-        if (av1_is_intra_filter_switchable(p_angle))
-          rate2 += x->intra_filter_cost[intra_filter_ctx][mbmi->intra_filter];
-#endif  // CONFIG_INTRA_INTERP
         if (av1_use_angle_delta(bsize)) {
           rate2 += write_uniform_cost(2 * MAX_ANGLE_DELTA + 1,
                                       MAX_ANGLE_DELTA + mbmi->angle_delta[0]);
@@ -11182,9 +11095,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
 #if CONFIG_EXT_INTRA
         mbmi->angle_delta[0] = 0;
         mbmi->angle_delta[1] = 0;
-#if CONFIG_INTRA_INTERP
-        mbmi->intra_filter = INTRA_FILTER_LINEAR;
-#endif  // CONFIG_INTRA_INTERP
 #endif  // CONFIG_EXT_INTRA
 #if CONFIG_FILTER_INTRA
         mbmi->filter_intra_mode_info.use_filter_intra_mode[0] = 0;

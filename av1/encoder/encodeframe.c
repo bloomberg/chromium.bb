@@ -5999,15 +5999,6 @@ static void sum_intra_stats(FRAME_COUNTS *counts, MACROBLOCKD *xd,
                  FILTER_INTRA_MODES);
     }
 #endif  // CONFIG_FILTER_INTRA
-#if CONFIG_EXT_INTRA && CONFIG_INTRA_INTERP
-    if (av1_is_directional_mode(mbmi->mode, bsize)) {
-      const int intra_filter_ctx = av1_get_pred_context_intra_interp(xd);
-      const int p_angle =
-          mode_to_angle_map[mbmi->mode] + mbmi->angle_delta[0] * ANGLE_STEP;
-      if (av1_is_intra_filter_switchable(p_angle))
-        ++counts->intra_filter[intra_filter_ctx][mbmi->intra_filter];
-    }
-#endif  // CONFIG_INTRA_INTERP && CONFIG_INTRA_INTERP
   }
 
 #if CONFIG_CB4X4

@@ -113,20 +113,6 @@ static INLINE InterpFilter av1_unswitchable_filter(InterpFilter filter) {
 #define SWITCHABLE_FILTER_CONTEXTS (SWITCHABLE_FILTERS + 1)
 #endif  // CONFIG_DUAL_FILTER
 
-#if CONFIG_EXT_INTRA
-#if CONFIG_INTRA_INTERP
-typedef enum {
-  INTRA_FILTER_LINEAR,
-  INTRA_FILTER_8TAP,
-  INTRA_FILTER_8TAP_SHARP,
-  INTRA_FILTER_8TAP_SMOOTH,
-  INTRA_FILTERS,
-} INTRA_FILTER;
-
-extern const InterpKernel *av1_intra_filter_kernels[INTRA_FILTERS];
-#endif  // CONFIG_INTRA_INTERP
-#endif  // CONFIG_EXT_INTRA
-
 typedef struct InterpFilterParams {
   const int16_t *filter_ptr;
   uint16_t taps;

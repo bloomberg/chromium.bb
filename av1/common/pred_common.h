@@ -80,12 +80,6 @@ int av1_get_pred_context_switchable_interp(const MACROBLOCKD *xd, int dir);
 int av1_get_pred_context_switchable_interp(const MACROBLOCKD *xd);
 #endif
 
-#if CONFIG_EXT_INTRA
-#if CONFIG_INTRA_INTERP
-int av1_get_pred_context_intra_interp(const MACROBLOCKD *xd);
-#endif  // CONFIG_INTRA_INTERP
-#endif  // CONFIG_EXT_INTRA
-
 #if CONFIG_PALETTE_DELTA_ENCODING
 // Get a list of palette base colors that are used in the above and left blocks,
 // referred to as "color cache". The return value is the number of colors in the
