@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_service_manager_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_WIN)
@@ -54,6 +55,10 @@ class BrowserProcessImplTest : public ::testing::Test {
   // managed separately.
   void StartSecondaryThreads() {
     base::TaskScheduler::GetInstance()->StartWithDefaultParams();
+    // TestServiceManagerContext creation requires the task scheduler to be
+    // started.
+    service_manager_context_ =
+        std::make_unique<content::TestServiceManagerContext>();
     io_thread_->StartIOThread();
   }
 
@@ -61,6 +66,8 @@ class BrowserProcessImplTest : public ::testing::Test {
   // The UI thread needs to be alive while BrowserProcessImpl is alive, and is
   // managed separately.
   void DestroySecondaryThreads() {
+    // TestServiceManagerContext must be destroyed before the IO thread.
+    service_manager_context_.reset();
     // Spin the runloop to allow posted tasks to be processed.
     base::RunLoop().RunUntilIdle();
     io_thread_.reset();
@@ -83,6 +90,7 @@ class BrowserProcessImplTest : public ::testing::Test {
 #endif
   std::unique_ptr<content::TestBrowserThread> io_thread_;
   base::CommandLine command_line_;
+  std::unique_ptr<content::TestServiceManagerContext> service_manager_context_;
   std::unique_ptr<BrowserProcessImpl> browser_process_impl_;
 };
 

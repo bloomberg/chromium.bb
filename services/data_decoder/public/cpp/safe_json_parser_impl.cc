@@ -2,38 +2,35 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/safe_json/safe_json_parser_impl.h"
+#include "services/data_decoder/public/cpp/safe_json_parser_impl.h"
 
 #include "base/callback.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
-#include "components/strings/grit/components_strings.h"
-#include "content/public/browser/browser_thread.h"
-#include "ui/base/l10n/l10n_util.h"
+#include "services/data_decoder/public/interfaces/constants.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 
-namespace safe_json {
+namespace data_decoder {
 
-SafeJsonParserImpl::SafeJsonParserImpl(const std::string& unsafe_json,
+SafeJsonParserImpl::SafeJsonParserImpl(service_manager::Connector* connector,
+                                       const std::string& unsafe_json,
                                        const SuccessCallback& success_callback,
                                        const ErrorCallback& error_callback)
     : unsafe_json_(unsafe_json),
       success_callback_(success_callback),
-      error_callback_(error_callback) {}
+      error_callback_(error_callback) {
+  connector->BindInterface(mojom::kServiceName, &json_parser_ptr_);
+}
 
 SafeJsonParserImpl::~SafeJsonParserImpl() = default;
 
 void SafeJsonParserImpl::Start() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  mojo_json_parser_.reset(
-      new content::UtilityProcessMojoClient<mojom::SafeJsonParser>(
-          l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_JSON_PARSER_NAME)));
 
-  mojo_json_parser_->set_error_callback(base::Bind(
+  json_parser_ptr_.set_connection_error_handler(base::Bind(
       &SafeJsonParserImpl::OnConnectionError, base::Unretained(this)));
-  mojo_json_parser_->Start();
-
-  mojo_json_parser_->service()->Parse(
+  json_parser_ptr_->Parse(
       std::move(unsafe_json_),
       base::Bind(&SafeJsonParserImpl::OnParseDone, base::Unretained(this)));
 }
@@ -42,7 +39,7 @@ void SafeJsonParserImpl::OnConnectionError() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Shut down the utility process.
-  mojo_json_parser_.reset();
+  json_parser_ptr_.reset();
 
   ReportResults(nullptr, "Connection error with the json parser process.");
 }
@@ -52,7 +49,7 @@ void SafeJsonParserImpl::OnParseDone(std::unique_ptr<base::Value> result,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Shut down the utility process.
-  mojo_json_parser_.reset();
+  json_parser_ptr_.reset();
 
   ReportResults(std::move(result), error.value_or(""));
 }
@@ -73,4 +70,4 @@ void SafeJsonParserImpl::ReportResults(std::unique_ptr<base::Value> parsed_json,
   delete this;
 }
 
-}  // namespace safe_json
+}  // namespace data_decoder

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.components.safejson;
+package org.chromium.services.data_decoder;
 
 import android.util.JsonReader;
 import android.util.JsonToken;
@@ -21,12 +21,10 @@ import java.io.StringWriter;
  * Sanitizes and normalizes a JSON string by parsing it, checking for wellformedness, and
  * serializing it again. This class is meant to be used from native code.
  */
-@JNINamespace("safe_json")
+@JNINamespace("data_decoder")
 public class JsonSanitizer {
-
     // Disallow instantiating the class.
-    private JsonSanitizer() {
-    }
+    private JsonSanitizer() {}
 
     /**
      * The maximum nesting depth to which the native JSON parser restricts input in order to avoid

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SAFE_JSON_SAFE_JSON_PARSER_IMPL_H_
-#define COMPONENTS_SAFE_JSON_SAFE_JSON_PARSER_IMPL_H_
+#ifndef SERVICES_DATA_DECODER_PUBLIC_CPP_SAFE_JSON_PARSER_IMPL_H_
+#define SERVICES_DATA_DECODER_PUBLIC_CPP_SAFE_JSON_PARSER_IMPL_H_
 
 #include <memory>
 #include <string>
@@ -12,19 +12,23 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
-#include "components/safe_json/public/interfaces/safe_json.mojom.h"
-#include "components/safe_json/safe_json_parser.h"
-#include "content/public/browser/utility_process_mojo_client.h"
+#include "services/data_decoder/public/cpp/safe_json_parser.h"
+#include "services/data_decoder/public/interfaces/json_parser.mojom.h"
 
 namespace base {
 class Value;
 }
 
-namespace safe_json {
+namespace service_manager {
+class Connector;
+}
+
+namespace data_decoder {
 
 class SafeJsonParserImpl : public SafeJsonParser {
  public:
-  SafeJsonParserImpl(const std::string& unsafe_json,
+  SafeJsonParserImpl(service_manager::Connector* connector,
+                     const std::string& unsafe_json,
                      const SuccessCallback& success_callback,
                      const ErrorCallback& error_callback);
 
@@ -50,14 +54,13 @@ class SafeJsonParserImpl : public SafeJsonParser {
   SuccessCallback success_callback_;
   ErrorCallback error_callback_;
 
-  std::unique_ptr<content::UtilityProcessMojoClient<mojom::SafeJsonParser>>
-      mojo_json_parser_;
+  mojom::JsonParserPtr json_parser_ptr_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(SafeJsonParserImpl);
 };
 
-}  // namespace safe_json
+}  // namespace data_decoder
 
-#endif  // COMPONENTS_SAFE_JSON_SAFE_JSON_PARSER_IMPL_H_
+#endif  // SERVICES_DATA_DECODER_PUBLIC_CPP_SAFE_JSON_PARSER_IMPL_H_

@@ -109,7 +109,6 @@ source_set("chromeos") {
     "//components/renderer_context_menu",
     "//components/safe_browsing:csd_proto",
     "//components/safe_browsing/db:metadata_proto",
-    "//components/safe_json",
     "//components/session_manager/core",
     "//components/signin/core/browser",
     "//components/ssl_config",
@@ -150,6 +149,7 @@ source_set("chromeos") {
     "//mojo/common",
     "//net",
     "//ppapi/proxy:ipc",  # For PpapiMsg_LoadPlugin
+    "//services/data_decoder/public/cpp",
     "//services/device/public/interfaces",
     "//services/preferences/public/interfaces",
     "//services/service_manager/public/cpp",

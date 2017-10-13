@@ -10,13 +10,13 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/values.h"
-#include "components/safe_json/testing_json_parser.h"
 #include "content/public/test/test_browser_thread.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
+#include "services/data_decoder/public/cpp/testing_json_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace digital_asset_links {
@@ -74,7 +74,7 @@ class DigitalAssetLinksHandlerTest : public ::testing::Test {
 
  private:
   base::MessageLoop message_loop_;
-  safe_json::TestingJsonParser::ScopedFactoryOverride factory_override_;
+  data_decoder::TestingJsonParser::ScopedFactoryOverride factory_override_;
   content::TestBrowserThread io_thread_;
   net::TestURLFetcherFactory url_fetcher_factory_;
 

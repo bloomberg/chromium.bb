@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/safe_json/json_sanitizer.h"
+#include "services/data_decoder/public/cpp/json_sanitizer.h"
 
 #include "base/android/jni_string.h"
 #include "base/bind.h"
@@ -16,7 +16,7 @@
 
 using base::android::JavaParamRef;
 
-namespace safe_json {
+namespace data_decoder {
 
 namespace {
 
@@ -106,7 +106,8 @@ void OnError(JNIEnv* env,
 }
 
 // static
-void JsonSanitizer::Sanitize(const std::string& unsafe_json,
+void JsonSanitizer::Sanitize(service_manager::Connector* connector,
+                             const std::string& unsafe_json,
                              const StringCallback& success_callback,
                              const StringCallback& error_callback) {
   // JsonSanitizerAndroid does all its work synchronously, but posts any
@@ -116,4 +117,4 @@ void JsonSanitizer::Sanitize(const std::string& unsafe_json,
   sanitizer.Sanitize(unsafe_json);
 }
 
-}  // namespace safe_json
+}  // namespace data_decoder

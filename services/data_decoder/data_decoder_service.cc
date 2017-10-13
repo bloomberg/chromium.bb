@@ -10,6 +10,7 @@
 #include "base/time/time.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/data_decoder/image_decoder_impl.h"
+#include "services/data_decoder/json_parser_impl.h"
 #include "services/data_decoder/public/interfaces/image_decoder.mojom.h"
 #include "services/service_manager/public/cpp/service_context.h"
 
@@ -22,6 +23,13 @@ void OnImageDecoderRequest(
     mojom::ImageDecoderRequest request) {
   mojo::MakeStrongBinding(
       base::MakeUnique<ImageDecoderImpl>(ref_factory->CreateRef()),
+      std::move(request));
+}
+
+void OnJsonParserRequest(service_manager::ServiceContextRefFactory* ref_factory,
+                         mojom::JsonParserRequest request) {
+  mojo::MakeStrongBinding(
+      base::MakeUnique<JsonParserImpl>(ref_factory->CreateRef()),
       std::move(request));
 }
 
@@ -41,6 +49,7 @@ void DataDecoderService::OnStart() {
       &DataDecoderService::MaybeRequestQuitDelayed, base::Unretained(this))));
   registry_.AddInterface(
       base::Bind(&OnImageDecoderRequest, ref_factory_.get()));
+  registry_.AddInterface(base::Bind(&OnJsonParserRequest, ref_factory_.get()));
 }
 
 void DataDecoderService::OnBindInterface(

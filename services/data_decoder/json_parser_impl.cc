@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/safe_json/utility/safe_json_parser_mojo_impl.h"
+#include "services/data_decoder/json_parser_impl.h"
 
 #include <memory>
 #include <utility>
@@ -10,23 +10,16 @@
 #include "base/json/json_reader.h"
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 
-namespace safe_json {
+namespace data_decoder {
 
-SafeJsonParserMojoImpl::SafeJsonParserMojoImpl() = default;
+JsonParserImpl::JsonParserImpl(
+    std::unique_ptr<service_manager::ServiceContextRef> service_ref)
+    : service_ref_(std::move(service_ref)) {}
 
-SafeJsonParserMojoImpl::~SafeJsonParserMojoImpl() = default;
+JsonParserImpl::~JsonParserImpl() = default;
 
-// static
-void SafeJsonParserMojoImpl::Create(
-    mojom::SafeJsonParserRequest request) {
-  mojo::MakeStrongBinding(base::MakeUnique<SafeJsonParserMojoImpl>(),
-                          std::move(request));
-}
-
-void SafeJsonParserMojoImpl::Parse(const std::string& json,
-                                   ParseCallback callback) {
+void JsonParserImpl::Parse(const std::string& json, ParseCallback callback) {
   int error_code;
   std::string error;
   std::unique_ptr<base::Value> value = base::JSONReader::ReadAndReturnError(
@@ -38,4 +31,4 @@ void SafeJsonParserMojoImpl::Parse(const std::string& json,
   }
 }
 
-}  // namespace safe_json
+}  // namespace data_decoder

@@ -9,10 +9,11 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
-#include "components/safe_json/safe_json_parser.h"
+#include "content/public/common/service_manager_connection.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
+#include "services/data_decoder/public/cpp/safe_json_parser.h"
 #include "url/gurl.h"
 
 namespace app_list {
@@ -76,9 +77,11 @@ void JSONResponseFetcher::OnURLFetchComplete(
   fetcher->GetResponseAsString(&json_data);
 
   // The parser will call us back via one of the callbacks.
-  safe_json::SafeJsonParser::Parse(
-      json_data, base::Bind(&JSONResponseFetcher::OnJsonParseSuccess,
-                            weak_factory_.GetWeakPtr()),
+  data_decoder::SafeJsonParser::Parse(
+      content::ServiceManagerConnection::GetForProcess()->GetConnector(),
+      json_data,
+      base::Bind(&JSONResponseFetcher::OnJsonParseSuccess,
+                 weak_factory_.GetWeakPtr()),
       base::Bind(&JSONResponseFetcher::OnJsonParseError,
                  weak_factory_.GetWeakPtr()));
 }

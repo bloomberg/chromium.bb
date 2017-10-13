@@ -5,16 +5,18 @@
 import("//build/config/android/rules.gni")
 
 _jni_sources =
-    [ "java/src/org/chromium/components/safejson/JsonSanitizer.java" ]
+    [ "java/src/org/chromium/services/data_decoder/JsonSanitizer.java" ]
 
 generate_jni("safe_json_jni_headers") {
   sources = _jni_sources
-  jni_package = "safe_json"
+  jni_package = "data_decoder"
 }
 
-android_library("safe_json_java") {
-  deps = [
-    "//base:base_java",
-  ]
-  java_files = [] + _jni_sources
+if (current_toolchain == default_toolchain) {
+  android_library("safe_json_java") {
+    deps = [
+      "//base:base_java",
+    ]
+    java_files = [] + _jni_sources
+  }
 }

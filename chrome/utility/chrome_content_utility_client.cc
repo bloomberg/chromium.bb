@@ -22,7 +22,6 @@
 #include "chrome/utility/printing/pdf_to_pwg_raster_converter_impl.h"
 #include "chrome/utility/utility_message_handler.h"
 #include "components/payments/content/utility/payment_manifest_parser.h"
-#include "components/safe_json/utility/safe_json_parser_mojo_impl.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/simple_connection_filter.h"
@@ -292,9 +291,6 @@ void ChromeContentUtilityClient::UtilityThreadStarted() {
 #endif  // !defined(OS_ANDROID)
     registry->AddInterface(base::Bind(&payments::PaymentManifestParser::Create),
                            base::ThreadTaskRunnerHandle::Get());
-    registry->AddInterface(
-        base::Bind(&safe_json::SafeJsonParserMojoImpl::Create),
-        base::ThreadTaskRunnerHandle::Get());
 #if defined(OS_WIN)
     registry->AddInterface(base::Bind(&ShellHandlerImpl::Create),
                            base::ThreadTaskRunnerHandle::Get());

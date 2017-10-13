@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SAFE_JSON_TESTING_JSON_PARSER_H_
-#define COMPONENTS_SAFE_JSON_TESTING_JSON_PARSER_H_
+#ifndef SERVICES_DATA_DECODER_PUBLIC_CPP_SAFE_JSON_TESTING_JSON_PARSER_H_
+#define SERVICES_DATA_DECODER_PUBLIC_CPP_SAFE_JSON_TESTING_JSON_PARSER_H_
 
 #include "base/macros.h"
-#include "components/safe_json/safe_json_parser.h"
+#include "services/data_decoder/public/cpp/safe_json_parser.h"
 
-namespace safe_json {
+namespace data_decoder {
 
 // An implementation of SafeJsonParser that parses JSON in process. This can be
 // used in unit tests to avoid having to set up the multiprocess infrastructure
@@ -44,6 +44,6 @@ class TestingJsonParser : public SafeJsonParser {
   DISALLOW_COPY_AND_ASSIGN(TestingJsonParser);
 };
 
-}  // namespace
+}  // namespace data_decoder
 
-#endif  // COMPONENTS_SAFE_JSON_TESTING_JSON_PARSER_H_
+#endif  // SERVICES_DATA_DECODER_PUBLIC_CPP_SAFE_JSON_TESTING_JSON_PARSER_H_

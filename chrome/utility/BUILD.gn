@@ -40,7 +40,6 @@ static_library("utility") {
     "//chrome/common/profiling",
     "//chrome/profiling",
     "//components/payments/content/utility",
-    "//components/safe_json/utility",
     "//components/search_engines",
     "//components/strings",
     "//components/url_formatter",

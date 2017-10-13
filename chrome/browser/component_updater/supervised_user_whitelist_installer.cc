@@ -41,9 +41,9 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "components/safe_json/json_sanitizer.h"
-#include "components/update_client/update_client_errors.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/service_manager_connection.h"
+#include "services/data_decoder/public/cpp/json_sanitizer.h"
 
 namespace component_updater {
 
@@ -175,7 +175,8 @@ void CheckForSanitizedWhitelistOnTaskRunner(
     return;
   }
 
-  safe_json::JsonSanitizer::Sanitize(
+  data_decoder::JsonSanitizer::Sanitize(
+      content::ServiceManagerConnection::GetForProcess()->GetConnector(),
       unsafe_json,
       base::Bind(&OnWhitelistSanitizationResult, crx_id, task_runner, callback),
       base::Bind(&OnWhitelistSanitizationError, whitelist_path));

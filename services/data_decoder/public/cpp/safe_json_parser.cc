@@ -2,23 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/safe_json/safe_json_parser.h"
+#include "services/data_decoder/public/cpp/safe_json_parser.h"
 
 #include "build/build_config.h"
 
 #if defined(OS_ANDROID)
-#include "components/safe_json/safe_json_parser_android.h"
+#include "services/data_decoder/public/cpp/safe_json_parser_android.h"
 #else
-#include "components/safe_json/safe_json_parser_impl.h"
+#include "services/data_decoder/public/cpp/safe_json_parser_impl.h"
 #endif
 
-namespace safe_json {
+namespace data_decoder {
 
 namespace {
 
 SafeJsonParser::Factory g_factory = nullptr;
 
-SafeJsonParser* Create(const std::string& unsafe_json,
+SafeJsonParser* Create(service_manager::Connector* connector,
+                       const std::string& unsafe_json,
                        const SafeJsonParser::SuccessCallback& success_callback,
                        const SafeJsonParser::ErrorCallback& error_callback) {
   if (g_factory)
@@ -28,7 +29,8 @@ SafeJsonParser* Create(const std::string& unsafe_json,
   return new SafeJsonParserAndroid(unsafe_json, success_callback,
                                    error_callback);
 #else
-  return new SafeJsonParserImpl(unsafe_json, success_callback, error_callback);
+  return new SafeJsonParserImpl(connector, unsafe_json, success_callback,
+                                error_callback);
 #endif
 }
 
@@ -40,12 +42,13 @@ void SafeJsonParser::SetFactoryForTesting(Factory factory) {
 }
 
 // static
-void SafeJsonParser::Parse(const std::string& unsafe_json,
+void SafeJsonParser::Parse(service_manager::Connector* connector,
+                           const std::string& unsafe_json,
                            const SuccessCallback& success_callback,
                            const ErrorCallback& error_callback) {
   SafeJsonParser* parser =
-      Create(unsafe_json, success_callback, error_callback);
+      Create(connector, unsafe_json, success_callback, error_callback);
   parser->Start();
 }
 
-}  // namespace safe_json
+}  // namespace data_decoder

@@ -17,11 +17,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/version.h"
-#include "components/safe_json/testing_json_parser.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/cert/signed_tree_head.h"
 #include "net/cert/sth_observer.h"
 #include "net/test/ct_test_util.h"
+#include "services/data_decoder/public/cpp/testing_json_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -85,7 +85,7 @@ class STHSetComponentInstallerTest : public PlatformTest {
   // |policy_| should be destroyed before the |observer_| as it holds a pointer
   // to it.
   std::unique_ptr<STHSetComponentInstallerPolicy> policy_;
-  safe_json::TestingJsonParser::ScopedFactoryOverride factory_override_;
+  data_decoder::TestingJsonParser::ScopedFactoryOverride factory_override_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(STHSetComponentInstallerTest);

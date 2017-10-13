@@ -21,8 +21,9 @@
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/policy_constants.h"
-#include "components/safe_json/testing_json_parser.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_service_manager_context.h"
+#include "services/data_decoder/public/cpp/testing_json_parser.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -156,8 +157,9 @@ class ArcPolicyBridgeTest : public testing::Test {
   Profile* profile() { return profile_; }
 
  private:
-  safe_json::TestingJsonParser::ScopedFactoryOverride factory_override_;
   content::TestBrowserThreadBundle thread_bundle_;
+  data_decoder::TestingJsonParser::ScopedFactoryOverride factory_override_;
+  content::TestServiceManagerContext service_manager_context_;
   std::unique_ptr<chromeos::ScopedUserManagerEnabler> user_manager_enabler_;
   std::unique_ptr<TestingProfileManager> testing_profile_manager_;
   base::RunLoop run_loop_;

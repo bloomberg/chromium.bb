@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SAFE_JSON_JSON_SANITIZER_H_
-#define COMPONENTS_SAFE_JSON_JSON_SANITIZER_H_
+#ifndef SERVICES_DATA_DECODER_PUBLIC_CPP_SAFE_JSON_JSON_SANITIZER_H_
+#define SERVICES_DATA_DECODER_PUBLIC_CPP_SAFE_JSON_JSON_SANITIZER_H_
 
 #include <string>
 
@@ -16,7 +16,11 @@
 #include <jni.h>
 #endif
 
-namespace safe_json {
+namespace service_manager {
+class Connector;
+}
+
+namespace data_decoder {
 
 // Sanitizes and normalizes JSON by parsing it in a safe environment and
 // re-serializing it. Parsing the sanitized JSON should result in a value
@@ -32,7 +36,11 @@ class JsonSanitizer {
   // |success_callback| or the |error_callback| will be called with the result
   // of the sanitization or an error message, respectively, but not before the
   // method returns.
-  static void Sanitize(const std::string& unsafe_json,
+  // |connector| is the connector provided by the service manager and is used
+  // to retrieve the JSON decoder service. It's commonly retrieved from a
+  // service manager connection context object that the embedder provides.
+  static void Sanitize(service_manager::Connector* connector,
+                       const std::string& unsafe_json,
                        const StringCallback& success_callback,
                        const StringCallback& error_callback);
 
@@ -44,6 +52,6 @@ class JsonSanitizer {
   DISALLOW_COPY_AND_ASSIGN(JsonSanitizer);
 };
 
-}  // namespace safe_json
+}  // namespace data_decoder
 
-#endif  // COMPONENTS_SAFE_JSON_JSON_SANITIZER_H_
+#endif  // SERVICES_DATA_DECODER_PUBLIC_CPP_SAFE_JSON_JSON_SANITIZER_H_

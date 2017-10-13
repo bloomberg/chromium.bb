@@ -430,7 +430,6 @@ split_static_library("ui") {
     "//components/safe_browsing/db:database_manager",
     "//components/safe_browsing/password_protection",
     "//components/safe_browsing/web_ui",
-    "//components/safe_json",
     "//components/search",
     "//components/search_engines",
     "//components/security_interstitials/core",

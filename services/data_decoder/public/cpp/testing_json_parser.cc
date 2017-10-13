@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/safe_json/testing_json_parser.h"
+#include "services/data_decoder/public/cpp/testing_json_parser.h"
 
 #include <memory>
 
@@ -14,7 +14,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 
-namespace safe_json {
+namespace data_decoder {
 
 namespace {
 
@@ -58,4 +58,4 @@ void TestingJsonParser::Start() {
                        : base::Bind(error_callback_, error));
 }
 
-}  // namespace
+}  // namespace data_decoder

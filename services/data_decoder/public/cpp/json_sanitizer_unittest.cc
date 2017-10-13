@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/safe_json/json_sanitizer.h"
+#include "services/data_decoder/public/cpp/json_sanitizer.h"
 
 #include <memory>
 
@@ -13,14 +13,14 @@
 #include "base/run_loop.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "components/safe_json/safe_json_parser.h"
+#include "services/data_decoder/public/cpp/safe_json_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if !defined(OS_ANDROID)
-#include "components/safe_json/testing_json_parser.h"
+#include "services/data_decoder/public/cpp/testing_json_parser.h"
 #endif
 
-namespace safe_json {
+namespace data_decoder {
 
 class JsonSanitizerTest : public ::testing::Test {
  public:
@@ -49,7 +49,7 @@ class JsonSanitizerTest : public ::testing::Test {
   base::MessageLoop message_loop_;
 
 #if !defined(OS_ANDROID)
-  safe_json::TestingJsonParser::ScopedFactoryOverride factory_override_;
+  TestingJsonParser::ScopedFactoryOverride factory_override_;
 #endif
 
   std::string result_;
@@ -71,8 +71,7 @@ void JsonSanitizerTest::CheckSuccess(const std::string& json) {
   std::string error;
   std::unique_ptr<base::Value> reparsed = base::JSONReader::ReadAndReturnError(
       result_, base::JSON_PARSE_RFC, &error_code, &error);
-  EXPECT_TRUE(reparsed)
-      << "Invalid result: " << error;
+  EXPECT_TRUE(reparsed) << "Invalid result: " << error;
 
   // The parsed values should be equal.
   EXPECT_TRUE(reparsed->Equals(parsed.get()));
@@ -90,7 +89,7 @@ void JsonSanitizerTest::Sanitize(const std::string& json) {
   error_.clear();
   run_loop_.reset(new base::RunLoop);
   JsonSanitizer::Sanitize(
-      json,
+      nullptr, json,
       base::Bind(&JsonSanitizerTest::OnSuccess, base::Unretained(this)),
       base::Bind(&JsonSanitizerTest::OnError, base::Unretained(this)));
 
@@ -184,4 +183,4 @@ TEST_F(JsonSanitizerTest, Unicode) {
   CheckError("[\"\\ud83f\\udffe\"]");
 }
 
-}  // namespace safe_json
+}  // namespace data_decoder
