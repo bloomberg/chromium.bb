@@ -82,7 +82,7 @@ enum AudioParamType {
   kParamTypeAudioListenerUpX,
   kParamTypeAudioListenerUpY,
   kParamTypeAudioListenerUpZ,
-  kParamTypeConstantSourceValue,
+  kParamTypeConstantSourceOffset,
   kParamTypeAudioWorklet,
 };
 
