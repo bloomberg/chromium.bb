@@ -4,6 +4,7 @@
 
 #include "core/layout/ng/ng_base_layout_algorithm_test.h"
 
+#include "core/layout/ng/inline/ng_inline_break_token.h"
 #include "core/layout/ng/inline/ng_inline_node.h"
 #include "core/layout/ng/inline/ng_line_breaker.h"
 #include "core/layout/ng/layout_ng_block_flow.h"
@@ -43,15 +44,23 @@ class NGLineBreakerTest : public NGBaseLayoutAlgorithmTest {
     container_builder.SetBfcOffset(NGBfcOffset{LayoutUnit(), LayoutUnit()});
 
     Vector<RefPtr<NGUnpositionedFloat>> unpositioned_floats;
-    NGLineBreaker line_breaker(node, *space, &container_builder,
-                               &unpositioned_floats);
+
+    RefPtr<NGInlineBreakToken> break_token;
 
     Vector<NGInlineItemResults> lines;
     NGExclusionSpace exclusion_space;
     NGLineInfo line_info;
-    while (
-        line_breaker.NextLine(NGLogicalOffset(), exclusion_space, &line_info))
+    while (!break_token || !break_token->IsFinished()) {
+      NGLineBreaker line_breaker(node, *space, &container_builder,
+                                 &unpositioned_floats, break_token.get());
+      if (!line_breaker.NextLine(NGLogicalOffset(), exclusion_space,
+                                 &line_info))
+        break;
+
+      break_token = line_breaker.CreateBreakToken();
       lines.push_back(std::move(line_info.Results()));
+    }
+
     return lines;
   }
 };
