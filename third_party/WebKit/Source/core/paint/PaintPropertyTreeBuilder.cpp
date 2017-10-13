@@ -163,7 +163,7 @@ void PaintPropertyTreeBuilder::UpdateProperties(
     context.fixed_position.fixed_position_children_fixed_to_root = true;
     return;
   } else {
-    context.current.paint_offset_root = frame_view.GetLayoutView()->Layer();
+    context.current.paint_offset_root = frame_view.GetLayoutView();
   }
 
 #if DCHECK_IS_ON()
@@ -1269,7 +1269,7 @@ void PaintPropertyTreeBuilder::UpdatePaintOffset(
       // above the scroll of the LayoutView. Child content is relative to that
       // transform, and hence the fixed-position element.
       if (context.fixed_position.fixed_position_children_fixed_to_root)
-        context.current.paint_offset_root = object.Layer();
+        context.current.paint_offset_root = &object;
       break;
     default:
       NOTREACHED();
@@ -1296,13 +1296,19 @@ void PaintPropertyTreeBuilder::UpdatePaintOffset(
 static inline LayoutPoint VisualOffsetFromPaintOffsetRoot(
     const PaintPropertyTreeBuilderFragmentContext& context,
     const PaintLayer* child) {
-  PaintLayer* paint_offset_root = context.current.paint_offset_root;
-  LayoutPoint result = child->VisualOffsetFromAncestor(paint_offset_root);
+  const LayoutBoxModelObject* paint_offset_root =
+      context.current.paint_offset_root;
+  PaintLayer* painting_layer = paint_offset_root->PaintingLayer();
+  LayoutPoint result = child->VisualOffsetFromAncestor(painting_layer);
+  if (!paint_offset_root->Layer()) {
+    result.Move(-paint_offset_root->OffsetFromAncestorContainer(
+        &painting_layer->GetLayoutObject()));
+  }
 
   // Don't include scroll offset of paint_offset_root. Any scroll is
   // already included in a separate transform node.
-  if (paint_offset_root->GetLayoutObject().HasOverflowClip())
-    result += paint_offset_root->GetLayoutBox()->ScrolledContentOffset();
+  if (paint_offset_root->HasOverflowClip())
+    result += ToLayoutBox(paint_offset_root)->ScrolledContentOffset();
   return result;
 }
 
@@ -1351,8 +1357,7 @@ void PaintPropertyTreeBuilder::UpdateForObjectLocationAndSize(
     paint_offset.MoveBy(
         VisualOffsetFromPaintOffsetRoot(context, enclosing_pagination_layer));
     // The paint offset root can have a subpixel paint offset adjustment.
-    paint_offset.MoveBy(
-        context.current.paint_offset_root->GetLayoutObject().PaintOffset());
+    paint_offset.MoveBy(context.current.paint_offset_root->PaintOffset());
 
     if (paint_offset_translation) {
       paint_offset_translation =
@@ -1364,7 +1369,7 @@ void PaintPropertyTreeBuilder::UpdateForObjectLocationAndSize(
   }
 
   if (paint_offset_translation)
-    context.current.paint_offset_root = ToLayoutBoxModelObject(object).Layer();
+    context.current.paint_offset_root = &ToLayoutBoxModelObject(object);
 
   if (!object.IsBox())
     return;
@@ -1525,8 +1530,7 @@ void PaintPropertyTreeBuilder::UpdateFragments(
           // component.
           pagination_visual_offset.MoveBy(
               full_context.fragments[0]
-                  .current.paint_offset_root->GetLayoutObject()
-                  .PaintOffset());
+                  .current.paint_offset_root->PaintOffset());
 
           fragment_clip.MoveBy(pagination_visual_offset);
         }

@@ -50,7 +50,7 @@ struct PaintPropertyTreeBuilderFragmentContext {
     // fragmentation offsets. See FragmentContext for the fragmented version.
     LayoutPoint paint_offset;
     // The PaintLayer corresponding to the origin of |paint_offset|.
-    PaintLayer* paint_offset_root = nullptr;
+    const LayoutBoxModelObject* paint_offset_root = nullptr;
     // Whether newly created children should flatten their inherited transform
     // (equivalently, draw into the plane of their parent). Should generally
     // be updated whenever |transform| is; flattening only needs to happen
