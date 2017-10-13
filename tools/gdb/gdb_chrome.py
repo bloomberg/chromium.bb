@@ -217,15 +217,6 @@ class TimePrinter(object):
 pp_set.add_printer('base::Time', '^base::Time$', TimePrinter)
 
 
-class ManualConstructorPrinter(object):
-    def __init__(self, val):
-        self.val = val
-
-    def to_string(self):
-        return self.val['space_'].cast(self.val.type.template_argument(0))
-pp_set.add_printer('base::ManualConstructor', '^base::ManualConstructor<.*>$', ManualConstructorPrinter)
-
-
 class FlatTreePrinter(object):
     def __init__(self, val):
         self.val = val
