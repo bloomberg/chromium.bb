@@ -8,7 +8,7 @@ PASS
 Running: testLocalFrame
 first recalc style invalidations[
     {
-        cause : {reason: Inline CSS style declaration was mutated, stackTrace: http://127.0.0.1:8000/devtools/tracing/timeline-style/timeline-style-recalc-with-invalidations.html:9}
+        cause : {reason: Inline CSS style declaration was mutated, stackTrace: .../devtools/tracing/timeline-style/timeline-style-recalc-with-invalidations.html:9}
         changedAttribute : undefined
         changedClass : undefined
         changedId : undefined
@@ -19,7 +19,7 @@ first recalc style invalidations[
         type : "StyleRecalcInvalidationTracking"
     }
     {
-        cause : {reason: Inline CSS style declaration was mutated, stackTrace: http://127.0.0.1:8000/devtools/tracing/timeline-style/timeline-style-recalc-with-invalidations.html:10}
+        cause : {reason: Inline CSS style declaration was mutated, stackTrace: .../devtools/tracing/timeline-style/timeline-style-recalc-with-invalidations.html:10}
         changedAttribute : undefined
         changedClass : undefined
         changedId : undefined
@@ -34,7 +34,7 @@ first recalc style invalidations[
 Running: multipleStyleRecalcs
 first recalc style invalidations[
     {
-        cause : {reason: Inline CSS style declaration was mutated, stackTrace: http://127.0.0.1:8000/devtools/tracing/timeline-style/timeline-style-recalc-with-invalidations.html:21}
+        cause : {reason: Inline CSS style declaration was mutated, stackTrace: .../devtools/tracing/timeline-style/timeline-style-recalc-with-invalidations.html:21}
         changedAttribute : undefined
         changedClass : undefined
         changedId : undefined
@@ -47,7 +47,7 @@ first recalc style invalidations[
 ]
 second recalc style invalidations[
     {
-        cause : {reason: Inline CSS style declaration was mutated, stackTrace: http://127.0.0.1:8000/devtools/tracing/timeline-style/timeline-style-recalc-with-invalidations.html:23}
+        cause : {reason: Inline CSS style declaration was mutated, stackTrace: .../devtools/tracing/timeline-style/timeline-style-recalc-with-invalidations.html:23}
         changedAttribute : undefined
         changedClass : undefined
         changedId : undefined
@@ -58,7 +58,7 @@ second recalc style invalidations[
         type : "StyleRecalcInvalidationTracking"
     }
     {
-        cause : {reason: Inline CSS style declaration was mutated, stackTrace: http://127.0.0.1:8000/devtools/tracing/timeline-style/timeline-style-recalc-with-invalidations.html:24}
+        cause : {reason: Inline CSS style declaration was mutated, stackTrace: .../devtools/tracing/timeline-style/timeline-style-recalc-with-invalidations.html:24}
         changedAttribute : undefined
         changedClass : undefined
         changedId : undefined
@@ -71,7 +71,7 @@ second recalc style invalidations[
 ]
 third recalc style invalidations[
     {
-        cause : {reason: Inline CSS style declaration was mutated, stackTrace: http://127.0.0.1:8000/devtools/tracing/timeline-style/timeline-style-recalc-with-invalidations.html:26}
+        cause : {reason: Inline CSS style declaration was mutated, stackTrace: .../devtools/tracing/timeline-style/timeline-style-recalc-with-invalidations.html:26}
         changedAttribute : undefined
         changedClass : undefined
         changedId : undefined
@@ -82,7 +82,7 @@ third recalc style invalidations[
         type : "StyleRecalcInvalidationTracking"
     }
     {
-        cause : {reason: Inline CSS style declaration was mutated, stackTrace: http://127.0.0.1:8000/devtools/tracing/timeline-style/timeline-style-recalc-with-invalidations.html:27}
+        cause : {reason: Inline CSS style declaration was mutated, stackTrace: .../devtools/tracing/timeline-style/timeline-style-recalc-with-invalidations.html:27}
         changedAttribute : undefined
         changedClass : undefined
         changedId : undefined
@@ -93,7 +93,7 @@ third recalc style invalidations[
         type : "StyleRecalcInvalidationTracking"
     }
     {
-        cause : {reason: Inline CSS style declaration was mutated, stackTrace: http://127.0.0.1:8000/devtools/tracing/timeline-style/timeline-style-recalc-with-invalidations.html:28}
+        cause : {reason: Inline CSS style declaration was mutated, stackTrace: .../devtools/tracing/timeline-style/timeline-style-recalc-with-invalidations.html:28}
         changedAttribute : undefined
         changedClass : undefined
         changedId : undefined
@@ -108,7 +108,7 @@ third recalc style invalidations[
 Running: testSubframe
 first recalc style invalidations[
     {
-        cause : {reason: Inline CSS style declaration was mutated, stackTrace: http://127.0.0.1:8000/devtools/tracing/timeline-style/timeline-style-recalc-with-invalidations.html:35}
+        cause : {reason: Inline CSS style declaration was mutated, stackTrace: .../devtools/tracing/timeline-style/timeline-style-recalc-with-invalidations.html:35}
         changedAttribute : undefined
         changedClass : undefined
         changedId : undefined
@@ -119,7 +119,7 @@ first recalc style invalidations[
         type : "StyleRecalcInvalidationTracking"
     }
     {
-        cause : {reason: Inline CSS style declaration was mutated, stackTrace: http://127.0.0.1:8000/devtools/tracing/timeline-style/timeline-style-recalc-with-invalidations.html:36}
+        cause : {reason: Inline CSS style declaration was mutated, stackTrace: .../devtools/tracing/timeline-style/timeline-style-recalc-with-invalidations.html:36}
         changedAttribute : undefined
         changedClass : undefined
         changedId : undefined

@@ -89,7 +89,7 @@ FunctionCall Properties:
         functionName : "intervalTimerWork"
         lineNumber : <number>
         scriptId : <string>
-        url : http://127.0.0.1:8000/devtools/tracing/timeline-time/timeline-timer.html
+        url : .../devtools/tracing/timeline-time/timeline-timer.html
     }
     endTime : <number>
     frameId : <string>
@@ -103,7 +103,7 @@ FunctionCall Properties:
         functionName : "intervalTimerWork"
         lineNumber : <number>
         scriptId : <string>
-        url : http://127.0.0.1:8000/devtools/tracing/timeline-time/timeline-timer.html
+        url : .../devtools/tracing/timeline-time/timeline-timer.html
     }
     endTime : <number>
     frameId : <string>

@@ -4,7 +4,7 @@ v8.parseOnBackground Properties:
 {
     data : {
         requestId : <string>
-        url : http://127.0.0.1:8000/devtools/tracing/resources/timeline-script-parse.php
+        url : .../devtools/tracing/resources/timeline-script-parse.php
     }
     endTime : <number>
     startTime : <number>

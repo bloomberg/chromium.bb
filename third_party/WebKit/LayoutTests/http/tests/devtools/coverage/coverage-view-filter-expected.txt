@@ -1,12 +1,12 @@
 Tests the filter is properly applied to coverage list view.
 
 Filter: devtools
-http://127.0.0.1:8000/devtools/coverage/resources/coverage.js JS used: 350 unused: 218 total: 568
-http://127.0.0.1:8000/devtools/coverage/resources/highlight-in-source.css CSS used: 67 unused: 142 total: 209
+.../devtools/coverage/resources/coverage.js JS used: 350 unused: 218 total: 568
+.../devtools/coverage/resources/highlight-in-source.css CSS used: 67 unused: 142 total: 209
 Filter: CES/COV
-http://127.0.0.1:8000/devtools/coverage/resources/coverage.js JS used: 350 unused: 218 total: 568
+.../devtools/coverage/resources/coverage.js JS used: 350 unused: 218 total: 568
 Filter: no pasaran
 Filter: 
-http://127.0.0.1:8000/devtools/coverage/resources/coverage.js JS used: 350 unused: 218 total: 568
-http://127.0.0.1:8000/devtools/coverage/resources/highlight-in-source.css CSS used: 67 unused: 142 total: 209
+.../devtools/coverage/resources/coverage.js JS used: 350 unused: 218 total: 568
+.../devtools/coverage/resources/highlight-in-source.css CSS used: 67 unused: 142 total: 209
 

@@ -64,16 +64,6 @@ window.onerror = function (message, filename, lineno, colno, error)
     InspectorTest.completeTest();
 }
 
-TestRunner.formatters.formatAsURL = function(value)
-{
-    if (!value)
-        return value;
-    var lastIndex = value.lastIndexOf("inspector/");
-    if (lastIndex < 0)
-        return value;
-    return ".../" + value.substr(lastIndex);
-}
-
 InspectorTest.navigate = function(url, callback)
 {
     InspectorTest._pageLoadedCallback = InspectorTest.safeWrap(callback);

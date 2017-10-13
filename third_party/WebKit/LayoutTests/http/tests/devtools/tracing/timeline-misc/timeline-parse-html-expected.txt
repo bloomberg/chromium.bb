@@ -8,7 +8,7 @@ ParseHTML Properties:
             frame : <string>
             stackTrace : <object>
             startLine : 0
-            url : http://127.0.0.1:8000/devtools/tracing/timeline-misc/timeline-parse-html.html
+            url : .../devtools/tracing/timeline-misc/timeline-parse-html.html
         }
         endData : {
             endLine : -1
@@ -28,7 +28,7 @@ ParseHTML Properties:
             frame : <string>
             stackTrace : <object>
             startLine : 0
-            url : http://127.0.0.1:8000/devtools/tracing/timeline-misc/timeline-parse-html.html
+            url : .../devtools/tracing/timeline-misc/timeline-parse-html.html
         }
         endData : {
             endLine : -1

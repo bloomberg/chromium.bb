@@ -6,7 +6,7 @@ XHRReadyStateChange Properties:
         frame : <string>
         readyState : 1
         stackTrace : <object>
-        url : http://127.0.0.1:8000/devtools/tracing/network/resources/resource.php
+        url : .../devtools/tracing/network/resources/resource.php
     }
     endTime : <number>
     frameId : <string>
@@ -19,7 +19,7 @@ XHRReadyStateChange Properties:
     data : {
         frame : <string>
         readyState : 2
-        url : http://127.0.0.1:8000/devtools/tracing/network/resources/resource.php
+        url : .../devtools/tracing/network/resources/resource.php
     }
     endTime : <number>
     frameId : <string>
@@ -31,7 +31,7 @@ XHRReadyStateChange Properties:
     data : {
         frame : <string>
         readyState : 3
-        url : http://127.0.0.1:8000/devtools/tracing/network/resources/resource.php
+        url : .../devtools/tracing/network/resources/resource.php
     }
     endTime : <number>
     frameId : <string>
@@ -43,7 +43,7 @@ XHRReadyStateChange Properties:
     data : {
         frame : <string>
         readyState : 4
-        url : http://127.0.0.1:8000/devtools/tracing/network/resources/resource.php
+        url : .../devtools/tracing/network/resources/resource.php
     }
     endTime : <number>
     frameId : <string>
@@ -54,7 +54,7 @@ XHRLoad Properties:
 {
     data : {
         frame : <string>
-        url : http://127.0.0.1:8000/devtools/tracing/network/resources/resource.php
+        url : .../devtools/tracing/network/resources/resource.php
     }
     endTime : <number>
     frameId : <string>

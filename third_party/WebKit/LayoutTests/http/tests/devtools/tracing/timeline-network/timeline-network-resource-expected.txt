@@ -10,7 +10,7 @@ ResourceSendRequest Properties:
         requestId : <string>
         requestMethod : "GET"
         stackTrace : <object>
-        url : http://127.0.0.1:8000/devtools/tracing/resources/timeline-network-resource.js
+        url : .../devtools/tracing/resources/timeline-network-resource.js
     }
     endTime : <number>
     frameId : <string>

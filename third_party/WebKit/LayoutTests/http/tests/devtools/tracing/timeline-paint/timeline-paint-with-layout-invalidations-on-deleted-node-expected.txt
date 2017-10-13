@@ -5,7 +5,7 @@ Tests the Timeline API instrumentation of layout invalidations on a deleted node
 Running: testLocalFrame
 paint invalidations[
     {
-        cause : {reason: Inline CSS style declaration was mutated, stackTrace: http://127.0.0.1:8000/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations-on-deleted-node.html:9}
+        cause : {reason: Inline CSS style declaration was mutated, stackTrace: .../devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations-on-deleted-node.html:9}
         changedAttribute : undefined
         changedClass : undefined
         changedId : undefined
@@ -16,7 +16,7 @@ paint invalidations[
         type : "StyleRecalcInvalidationTracking"
     }
     {
-        cause : {reason: Inline CSS style declaration was mutated, stackTrace: http://127.0.0.1:8000/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations-on-deleted-node.html:11}
+        cause : {reason: Inline CSS style declaration was mutated, stackTrace: .../devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations-on-deleted-node.html:11}
         changedAttribute : undefined
         changedClass : undefined
         changedId : undefined
@@ -27,7 +27,7 @@ paint invalidations[
         type : "StyleRecalcInvalidationTracking"
     }
     {
-        cause : {reason: Style changed, stackTrace: http://127.0.0.1:8000/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations-on-deleted-node.html:12}
+        cause : {reason: Style changed, stackTrace: .../devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations-on-deleted-node.html:12}
         changedAttribute : undefined
         changedClass : undefined
         changedId : undefined
@@ -38,7 +38,7 @@ paint invalidations[
         type : "LayoutInvalidationTracking"
     }
     {
-        cause : {reason: Removed from layout, stackTrace: http://127.0.0.1:8000/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations-on-deleted-node.html:13}
+        cause : {reason: Removed from layout, stackTrace: .../devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations-on-deleted-node.html:13}
         changedAttribute : undefined
         changedClass : undefined
         changedId : undefined
@@ -49,7 +49,7 @@ paint invalidations[
         type : "LayoutInvalidationTracking"
     }
     {
-        cause : {reason: Removed from layout, stackTrace: http://127.0.0.1:8000/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations-on-deleted-node.html:13}
+        cause : {reason: Removed from layout, stackTrace: .../devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations-on-deleted-node.html:13}
         changedAttribute : undefined
         changedClass : undefined
         changedId : undefined
@@ -64,7 +64,7 @@ paint invalidations[
 Running: testSubframe
 second paint invalidations[
     {
-        cause : {reason: Inline CSS style declaration was mutated, stackTrace: http://127.0.0.1:8000/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations-on-deleted-node.html:20}
+        cause : {reason: Inline CSS style declaration was mutated, stackTrace: .../devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations-on-deleted-node.html:20}
         changedAttribute : undefined
         changedClass : undefined
         changedId : undefined
@@ -75,7 +75,7 @@ second paint invalidations[
         type : "StyleRecalcInvalidationTracking"
     }
     {
-        cause : {reason: Style changed, stackTrace: http://127.0.0.1:8000/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations-on-deleted-node.html:21}
+        cause : {reason: Style changed, stackTrace: .../devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations-on-deleted-node.html:21}
         changedAttribute : undefined
         changedClass : undefined
         changedId : undefined
@@ -86,7 +86,7 @@ second paint invalidations[
         type : "LayoutInvalidationTracking"
     }
     {
-        cause : {reason: Removed from layout, stackTrace: http://127.0.0.1:8000/devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations-on-deleted-node.html:22}
+        cause : {reason: Removed from layout, stackTrace: .../devtools/tracing/timeline-paint/timeline-paint-with-layout-invalidations-on-deleted-node.html:22}
         changedAttribute : undefined
         changedClass : undefined
         changedId : undefined
