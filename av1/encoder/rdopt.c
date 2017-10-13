@@ -1909,8 +1909,10 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
   // (new distortion metric) are different.
   // Exception is: dist-8x8 is enabled but still MSE is used,
   // i.e. "--tune=" encoder option is not used.
+  int bw = block_size_wide[plane_bsize];
+  int bh = block_size_high[plane_bsize];
   int disable_early_skip =
-      x->using_dist_8x8 && plane == 0 && plane_bsize >= BLOCK_8X8 &&
+      x->using_dist_8x8 && plane == 0 && bw >= 8 && bh >= 8 &&
       (tx_size == TX_4X4 || tx_size == TX_4X8 || tx_size == TX_8X4) &&
       x->tune_metric != AOM_TUNE_PSNR;
 #endif  // CONFIG_DIST_8X8
@@ -2159,9 +2161,11 @@ static void txfm_rd_in_plane(MACROBLOCK *x, const AV1_COMP *cpi,
   av1_foreach_transformed_block_in_plane(xd, bsize, plane, block_rd_txfm,
                                          &args);
 #if CONFIG_DIST_8X8
-  if (x->using_dist_8x8 && !args.exit_early && plane == 0 &&
-      bsize >= BLOCK_8X8 &&
-      (tx_size == TX_4X4 || tx_size == TX_4X8 || tx_size == TX_8X4))
+  int bw = block_size_wide[bsize];
+  int bh = block_size_high[bsize];
+
+  if (x->using_dist_8x8 && !args.exit_early && plane == 0 && bw >= 8 &&
+      bh >= 8 && (tx_size == TX_4X4 || tx_size == TX_4X8 || tx_size == TX_8X4))
     dist_8x8_sub8x8_txfm_rd(cpi, x, bsize, &args);
 #endif
 
@@ -4612,8 +4616,10 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
   const int buffer_length = tx_size_2d[tx_size];
   int64_t tmp_dist, tmp_sse;
 #if CONFIG_DIST_8X8
+  int blk_w = block_size_wide[plane_bsize];
+  int blk_h = block_size_high[plane_bsize];
   int disable_early_skip =
-      x->using_dist_8x8 && plane == 0 && plane_bsize >= BLOCK_8X8 &&
+      x->using_dist_8x8 && plane == 0 && blk_w >= 8 && blk_h >= 8 &&
       (tx_size == TX_4X4 || tx_size == TX_4X8 || tx_size == TX_8X4) &&
       x->tune_metric != AOM_TUNE_PSNR;
 #endif  // CONFIG_DIST_8X8
