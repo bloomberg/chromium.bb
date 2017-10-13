@@ -136,8 +136,8 @@ String AudioParamHandler::GetParamName() const {
       return "AudioListener.upY";
     case kParamTypeAudioListenerUpZ:
       return "AudioListener.upZ";
-    case kParamTypeConstantSourceValue:
-      return "ConstantSource.sourceValue";
+    case kParamTypeConstantSourceOffset:
+      return "ConstantSource.offset";
     // TODO(hongchan): We can try to return the actual parameter name here if
     // possible.
     case kParamTypeAudioWorklet:
