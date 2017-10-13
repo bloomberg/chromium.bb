@@ -15,7 +15,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.os.SystemClock;
-import android.support.v4.app.ActivityOptionsCompat;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.View.OnSystemUiVisibilityChangeListener;
@@ -37,6 +36,7 @@ import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.customtabs.CustomTabAppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.customtabs.CustomTabLayoutManager;
+import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.document.DocumentUtils;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -84,7 +84,6 @@ public class WebappActivity extends SingleTabActivity {
     protected WebappInfo mWebappInfo;
 
     private WebappSplashScreenController mSplashController;
-    private TabObserver mTabObserver;
 
     private boolean mIsInitialized;
     private Integer mBrandColor;
@@ -156,8 +155,7 @@ public class WebappActivity extends SingleTabActivity {
             if (NetworkChangeNotifier.isOnline()) getActivityTab().reloadIgnoringCache();
         }
 
-        mTabObserver = createTabObserver();
-        getActivityTab().addObserver(mTabObserver);
+        getActivityTab().addObserver(createTabObserver());
         getActivityTab().getTabWebContentsDelegateAndroid().setDisplayMode(
                 mWebappInfo.displayMode());
     }
@@ -691,23 +689,11 @@ public class WebappActivity extends SingleTabActivity {
             url = IntentHandler.getUrlFromIntent(getIntent());
         }
 
-        tab.removeObserver(mTabObserver);
-        mTabObserver = null;
-
+        // TODO(piotrs): Bring reparenting back once CCT animation is fixed. See crbug/774326
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-
-        Bundle startActivityOptions =
-                ActivityOptionsCompat
-                        .makeCustomAnimation(this, R.anim.abc_fade_in, R.anim.abc_fade_out)
-                        .toBundle();
-
-        tab.detachAndStartReparenting(intent, startActivityOptions, new Runnable() {
-            @Override
-            public void run() {
-                ApiCompatibilityUtils.finishAndRemoveTask(WebappActivity.this);
-            }
-        });
+        intent.setClass(this, ChromeLauncherActivity.class);
+        IntentHandler.startActivityForTrustedIntent(intent);
 
         return true;
     }

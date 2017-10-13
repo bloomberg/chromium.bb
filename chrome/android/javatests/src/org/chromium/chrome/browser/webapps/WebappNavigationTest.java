@@ -42,7 +42,6 @@ import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.PageTransition;
 
 /**
@@ -210,7 +209,6 @@ public class WebappNavigationTest {
         WebappActivity activity =
                 runWebappActivityAndWaitForIdle(mActivityTestRule.createIntent().putExtra(
                         ShortcutHelper.EXTRA_DISPLAY_MODE, WebDisplayMode.MINIMAL_UI));
-        WebContents webAppWebContents = activity.getActivityTab().getWebContents();
 
         MenuUtils.invokeCustomMenuActionSync(
                 InstrumentationRegistry.getInstrumentation(), activity, R.id.open_in_browser_id);
@@ -221,8 +219,6 @@ public class WebappNavigationTest {
         Assert.assertEquals("Tab in tabbed activity should show the Web App page",
                 mActivityTestRule.getUrlFromTestServer(WEB_APP_PATH),
                 tabbedChrome.getActivityTab().getUrl());
-        Assert.assertSame("WebContents should be reparented from Web App to tabbed Chrome",
-                webAppWebContents, tabbedChrome.getActivityTab().getWebContents());
     }
 
     @Test
