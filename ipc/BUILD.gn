@@ -22,7 +22,6 @@ buildflag_header("ipc_features") {
 
 component("ipc") {
   sources = [
-    "export_template.h",
     "ipc_channel.cc",
     "ipc_channel.h",
     "ipc_channel_common.cc",

@@ -294,6 +294,7 @@ component("base") {
     "environment.cc",
     "environment.h",
     "event_types.h",
+    "export_template.h",
     "feature_list.cc",
     "feature_list.h",
     "file_descriptor_posix.h",
