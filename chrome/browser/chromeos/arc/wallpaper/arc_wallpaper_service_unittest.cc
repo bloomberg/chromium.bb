@@ -78,7 +78,7 @@ class ArcWallpaperServiceTest : public ash::AshTestBase {
     auto pref_service = std::make_unique<TestingPrefServiceSimple>();
     ash::Shell::RegisterLocalStatePrefs(pref_service->registry());
     pref_service->registry()->SetDefaultForeignPrefValue(
-        ash::prefs::kWallpaperColors, base::MakeUnique<base::DictionaryValue>(),
+        ash::prefs::kWallpaperColors, std::make_unique<base::DictionaryValue>(),
         0);
     ash::ShellTestApi().OnLocalStatePrefServiceInitialized(
         std::move(pref_service));
