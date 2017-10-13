@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <title>SVGLengthList, appendItem()</title>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
 <script src="resources/SVGLengthList-helper.js"></script>
 <svg width="200" height="200">
     <text id="text1" x="500 50 100 900 1000" y="50">ABC</text>
@@ -47,7 +47,7 @@ test(function() {
   newLength2.value = 150;
   assert_equals(newLength2.value, 150);
   list1.clear();
-  
+
   // Shuffle around items in text1 and text2 list using appendItem, to get x=50,100,150,... in both lists.
   assert_equals(list1.appendItem(list2.getItem(0)).value, 50);
   assert_equals(list1.appendItem(list2.getItem(1)).value, 100);
