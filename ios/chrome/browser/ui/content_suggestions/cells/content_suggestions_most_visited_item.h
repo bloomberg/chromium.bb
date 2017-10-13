@@ -7,7 +7,6 @@
 
 #include "components/ntp_tiles/tile_source.h"
 #include "components/ntp_tiles/tile_title_source.h"
-#include "components/ntp_tiles/tile_visual_type.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/suggested_content.h"
 
@@ -33,8 +32,6 @@ class GURL;
 // Command handler for the accessibility custom actions.
 @property(nonatomic, weak, nullable) id<ContentSuggestionsGestureCommands>
     commandHandler;
-
-- (ntp_tiles::TileVisualType)tileType;
 
 @end
 

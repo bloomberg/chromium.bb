@@ -758,7 +758,8 @@ const CGFloat kShiftTilesDownAnimationDuration = 0.2;
   const NSUInteger visitedIndex = indexPath.row;
   [self blurOmnibox];
   DCHECK(visitedIndex < [self numberOfItems]);
-  [self.dataSource logMostVisitedClick:visitedIndex tileType:cell.tileType];
+  [self.dataSource logMostVisitedClick:visitedIndex
+                     faviconAttributes:cell.faviconAttributes];
   [self.dispatcher loadURL:[self urlForIndex:visitedIndex]
                   referrer:web::Referrer()
                 transition:ui::PAGE_TRANSITION_AUTO_BOOKMARK
@@ -935,7 +936,7 @@ const CGFloat kShiftTilesDownAnimationDuration = 0.2;
         return;
       MostVisitedCell* cell = (MostVisitedCell*)sender.view;
       [[strongSelf dataSource] logMostVisitedClick:index
-                                          tileType:cell.tileType];
+                                 faviconAttributes:cell.faviconAttributes];
       // GoogleLandingViewController is only displayed in non-incognito tabs,
       // so |inIncognito| can be assumed to be NO. If it were displayed in an
       // incognito state, then passing NO to |inIncognito| would open a tab in
@@ -958,7 +959,7 @@ const CGFloat kShiftTilesDownAnimationDuration = 0.2;
         return;
       MostVisitedCell* cell = (MostVisitedCell*)sender.view;
       [[strongSelf dataSource] logMostVisitedClick:index
-                                          tileType:cell.tileType];
+                                 faviconAttributes:cell.faviconAttributes];
       [[strongSelf dispatcher] webPageOrderedOpen:url
                                          referrer:web::Referrer()
                                       inIncognito:YES

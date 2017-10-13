@@ -7,7 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
-#include "components/ntp_tiles/metrics.h"
+#import "ios/chrome/browser/ui/favicon/favicon_attributes.h"
 #include "url/gurl.h"
 
 @protocol GoogleLandingDataSource;
@@ -18,7 +18,7 @@
 // URL of the top site.
 @property(nonatomic, assign) GURL URL;
 // Type of tile (icon, scrabble tile, default)
-@property(nonatomic, readonly) ntp_tiles::TileVisualType tileType;
+@property(nonatomic, readonly) FaviconAttributes* faviconAttributes;
 
 // Set text of top site.
 - (void)setText:(NSString*)text;

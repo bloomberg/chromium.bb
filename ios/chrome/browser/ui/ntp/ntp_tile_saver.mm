@@ -8,6 +8,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/favicon/core/fallback_url_util.h"
 #include "components/ntp_tiles/ntp_tile.h"
+#import "ios/chrome/browser/ui/favicon/favicon_attributes.h"
 #import "ios/chrome/browser/ui/ntp/google_landing_data_source.h"
 #import "ios/chrome/browser/ui/ntp/ntp_tile.h"
 #include "ios/chrome/common/app_group/app_group_constants.h"
@@ -135,38 +136,36 @@ void SaveMostVisitedToDisk(const ntp_tiles::NTPTilesVector& mostVisitedData,
     NSURL* fileURL =
         [tmpFaviconURL URLByAppendingPathComponent:faviconFileName];
 
-    void (^faviconImageBlock)(UIImage*) = ^(UIImage* favicon) {
-      NSData* imageData = UIImagePNGRepresentation(favicon);
-      if ([imageData writeToURL:fileURL atomically:YES]) {
-        // If saving the image is not possible, the best thing to do is to keep
-        // the previous tile.
-        tile.faviconFetched = YES;
-        tile.faviconFileName = faviconFileName;
-        WriteToDiskIfComplete(tiles, faviconsURL);
-      }
-    };
-
-    void (^fallbackBlock)(UIColor*, UIColor*, BOOL) =
-        ^(UIColor* textColor, UIColor* backgroundColor, BOOL isDefaultColor) {
-          tile.faviconFetched = YES;
-          tile.fallbackTextColor = textColor;
-          tile.fallbackBackgroundColor = backgroundColor;
-          tile.fallbackIsDefaultColor = isDefaultColor;
-          tile.fallbackMonogram = base::SysUTF16ToNSString(
-              favicon::GetFallbackIconText(net::GURLWithNSURL(tile.URL)));
-          DCHECK(tile.fallbackMonogram && tile.fallbackTextColor &&
-                 tile.fallbackBackgroundColor);
-          WriteToDiskIfComplete(tiles, faviconsURL);
+    void (^faviconAttributesBlock)(FaviconAttributes*) =
+        ^(FaviconAttributes* attributes) {
+          if (attributes.faviconImage) {
+            NSData* imageData =
+                UIImagePNGRepresentation(attributes.faviconImage);
+            if ([imageData writeToURL:fileURL atomically:YES]) {
+              // If saving the image is not possible, the best thing to do is to
+              // keep the previous tile.
+              tile.faviconFetched = YES;
+              tile.faviconFileName = faviconFileName;
+              WriteToDiskIfComplete(tiles, faviconsURL);
+            }
+          } else {
+            tile.faviconFetched = YES;
+            tile.fallbackTextColor = attributes.textColor;
+            tile.fallbackBackgroundColor = attributes.backgroundColor;
+            tile.fallbackIsDefaultColor = attributes.defaultBackgroundColor;
+            tile.fallbackMonogram = attributes.monogramString;
+            DCHECK(tile.fallbackMonogram && tile.fallbackTextColor &&
+                   tile.fallbackBackgroundColor);
+            WriteToDiskIfComplete(tiles, faviconsURL);
+          }
         };
-
     // The cache is not used here as it is simply a way to have a synchronous
     // immediate return. In this case it is unnecessary.
 
-    [faviconFetcher getFaviconForURL:gurl
-                                size:48
-                            useCache:NO
-                       imageCallback:faviconImageBlock
-                    fallbackCallback:fallbackBlock];
+    [faviconFetcher getFaviconForPageURL:gurl
+                                    size:48
+                                useCache:NO
+                                callback:faviconAttributesBlock];
   }
 }
 
@@ -217,37 +216,34 @@ void UpdateSingleFavicon(const GURL& siteURL,
       previousFaviconFileName
           ? [faviconsURL URLByAppendingPathComponent:previousFaviconFileName]
           : nil;
-  NSString* monogram =
-      base::SysUTF16ToNSString(favicon::GetFallbackIconText(siteURL));
 
-  void (^faviconImageBlock)(UIImage*) = ^(UIImage* favicon) {
-    tile.faviconFetched = YES;
-    NSData* imageData = UIImagePNGRepresentation(favicon);
-    [[NSFileManager defaultManager] removeItemAtURL:previousFileURL error:nil];
-    if ([imageData writeToURL:fileURL atomically:YES]) {
-      tile.faviconFileName = faviconFileName;
-    }
-    WriteSingleUpdatedTileToDisk(tile);
-  };
-
-  void (^fallbackBlock)(UIColor*, UIColor*, BOOL) =
-      ^(UIColor* textColor, UIColor* backgroundColor, BOOL isDefaultColor) {
-        tile.faviconFetched = YES;
-        tile.fallbackTextColor = textColor;
-        tile.fallbackBackgroundColor = backgroundColor;
-        tile.fallbackIsDefaultColor = isDefaultColor;
-        tile.fallbackMonogram = monogram;
-        [[NSFileManager defaultManager] removeItemAtURL:previousFileURL
-                                                  error:nil];
+  void (^faviconAttributesBlock)(FaviconAttributes*) =
+      ^(FaviconAttributes* attributes) {
+        if (attributes.faviconImage) {
+          tile.faviconFetched = YES;
+          NSData* imageData = UIImagePNGRepresentation(attributes.faviconImage);
+          [[NSFileManager defaultManager] removeItemAtURL:previousFileURL
+                                                    error:nil];
+          if ([imageData writeToURL:fileURL atomically:YES]) {
+            tile.faviconFileName = faviconFileName;
+          }
+        } else {
+          tile.faviconFetched = YES;
+          tile.fallbackTextColor = attributes.textColor;
+          tile.fallbackBackgroundColor = attributes.backgroundColor;
+          tile.fallbackIsDefaultColor = attributes.defaultBackgroundColor;
+          tile.fallbackMonogram = attributes.monogramString;
+          [[NSFileManager defaultManager] removeItemAtURL:previousFileURL
+                                                    error:nil];
+        }
         WriteSingleUpdatedTileToDisk(tile);
       };
 
   // The cache is not used here as it is simply a way to have a synchronous
   // immediate return. In this case it is unnecessary.
-  [faviconFetcher getFaviconForURL:siteURL
-                              size:48
-                          useCache:NO
-                     imageCallback:faviconImageBlock
-                  fallbackCallback:fallbackBlock];
+  [faviconFetcher getFaviconForPageURL:siteURL
+                                  size:48
+                              useCache:NO
+                              callback:faviconAttributesBlock];
 }
 }  // namespace ntp_tile_saver

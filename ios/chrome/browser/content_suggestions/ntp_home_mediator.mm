@@ -8,8 +8,6 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
-#include "components/ntp_tiles/metrics.h"
-#include "components/ntp_tiles/ntp_tile_impression.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/content_suggestions/content_suggestions_alert_factory.h"
 #import "ios/chrome/browser/content_suggestions/content_suggestions_mediator.h"
@@ -26,6 +24,8 @@
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller_audience.h"
+#import "ios/chrome/browser/ui/favicon/favicon_attributes.h"
+#include "ios/chrome/browser/ui/ntp/metrics.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
 #import "ios/chrome/browser/ui/ntp/notification_promo_whats_new.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -349,10 +349,9 @@ const char kRateThisAppCommand[] = "ratethisapp";
       recordAction:new_tab_page_uma::ACTION_OPENED_MOST_VISITED_ENTRY];
   base::RecordAction(base::UserMetricsAction("MobileNTPMostVisited"));
 
-  ntp_tiles::metrics::RecordTileClick(ntp_tiles::NTPTileImpression(
-      mostVisitedIndex, item.source, item.titleSource, [item tileType],
-      // TODO(crbug.com/763946): Plumb generation time.
-      base::Time(), GURL()));
+  // TODO(crbug.com/763946): Plumb generation time.
+  RecordNTPTileClick(mostVisitedIndex, item.source, item.titleSource,
+                     item.attributes, base::Time(), GURL());
 }
 
 // Shows a snackbar with an action to undo the removal of the most visited item
