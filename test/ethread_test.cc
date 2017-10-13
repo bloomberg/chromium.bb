@@ -16,7 +16,7 @@
 #include "test/encode_test_driver.h"
 #include "test/md5_helper.h"
 #include "test/util.h"
-#include "test/y4m_video_source.h"
+#include "test/yuv_video_source.h"
 
 namespace {
 class AVxEncoderThreadTest
@@ -118,7 +118,8 @@ class AVxEncoderThreadTest
   }
 
   void DoTest() {
-    ::libaom_test::Y4mVideoSource video("niklas_1280_720_30.y4m", 15, 18);
+    ::libaom_test::YUVVideoSource video(
+        "niklas_640_480_30.yuv", AOM_IMG_FMT_I420, 640, 480, 30, 1, 15, 18);
     cfg_.rc_target_bitrate = 1000;
 
     // Encode using single thread.
