@@ -125,12 +125,14 @@ body.alternate-logo #logo-non-white {
   top: 44px;
 }
 
-#logo-doodle-link {
+#logo-doodle-button {
+  border: 0;
   cursor: pointer;
   margin: 0 auto;
+  padding: 0;
 }
 
-.non-white-bg #logo-doodle-link {
+.non-white-bg #logo-doodle-button {
   display: none;
 }
 
@@ -138,10 +140,13 @@ body.alternate-logo #logo-non-white {
   display: none;
 }
 .non-white-bg #logo-doodle-notifier {
+  background: transparent;
+  border: 0;
   cursor: pointer;
   display: inline-block;
   height: 24px;
   left: 148px;
+  padding: 0;
   position: relative;
   top: 100px;
   width: 24px;
