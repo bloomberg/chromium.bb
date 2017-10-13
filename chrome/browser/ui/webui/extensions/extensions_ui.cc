@@ -205,6 +205,7 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
       l10n_util::GetStringFUTF16(
           IDS_EXTENSIONS_ADDED_WITHOUT_KNOWLEDGE,
           l10n_util::GetStringUTF16(IDS_EXTENSION_WEB_STORE_TITLE)));
+  source->AddLocalizedString("learnMore", IDS_MD_EXTENSIONS_LEARN_MORE);
   source->AddLocalizedString(
       "loadErrorCouldNotLoadManifest",
       IDS_MD_EXTENSIONS_LOAD_ERROR_COULD_NOT_LOAD_MANIFEST);
@@ -251,6 +252,12 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
                              IDS_MD_EXTENSIONS_SHORTCUT_SCOPE_IN_CHROME);
   source->AddLocalizedString("shortcutTypeAShortcut",
                              IDS_MD_EXTENSIONS_TYPE_A_SHORTCUT);
+  source->AddString(
+      "suspiciousInstallHelpUrl",
+      base::ASCIIToUTF16(google_util::AppendGoogleLocaleParam(
+                             GURL(chrome::kRemoveNonCWSExtensionURL),
+                             g_browser_process->GetApplicationLocale())
+                             .spec()));
   source->AddLocalizedString("toolbarDevMode",
                              IDS_MD_EXTENSIONS_DEVELOPER_MODE);
   source->AddLocalizedString("toolbarLoadUnpacked",

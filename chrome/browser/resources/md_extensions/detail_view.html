@@ -80,6 +80,11 @@
         color: var(--paper-grey-900);
       }
 
+      #learn-more-link {
+        color: var(--google-blue-700);
+        text-decoration: none;
+      }
+
       .section {
         @apply(--cr-section);
       }
@@ -185,7 +190,13 @@
               hidden$="[[!data.disableReasons.suspiciousInstall]]">
             <div>
               <iron-icon class="warning-icon" icon="cr:warning"></iron-icon>
-              <span>$i18n{itemSuspiciousInstall}</span>
+              <span>
+                $i18n{itemSuspiciousInstall}
+                <a target="_blank" id="learn-more-link"
+                    href="$i18n{suspiciousInstallHelpUrl}">
+                  $i18n{learnMore}
+                </a>
+              </span>
             </div>
           </div>
           <div class="section continuation warning" id="corrupted-warning"
