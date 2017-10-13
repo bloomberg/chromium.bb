@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CONTENT_BROWSER_MEDIA_SESSION_MOCK_MEDIA_SESSION_PLAYER_OBSERVER_H_
+#define CONTENT_BROWSER_MEDIA_SESSION_MOCK_MEDIA_SESSION_PLAYER_OBSERVER_H_
+
 #include <stddef.h>
 #include <vector>
 
@@ -60,3 +63,5 @@ class MockMediaSessionPlayerObserver : public MediaSessionPlayerObserver {
 };
 
 }  // namespace content
+
+#endif  // CONTENT_BROWSER_MEDIA_SESSION_MOCK_MEDIA_SESSION_PLAYER_OBSERVER_H_
