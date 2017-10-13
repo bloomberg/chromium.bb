@@ -34,3 +34,6 @@
 -WebViewTests/WebViewSizeTest.Shim_TestAutosizeRemoveAttributes/0
 -WebViewTests/WebViewSizeTest.Shim_TestAutosizeRemoveAttributes/1
 -WebViewTests/WebViewTest.InterstitialPageFocusedWidget/1
+
+# content::WaitForChildFrameSurfaceReady unsupported, https://crbug.com/774269.
+-WebViewTests/WebViewTest.ReloadAfterCrash/1
