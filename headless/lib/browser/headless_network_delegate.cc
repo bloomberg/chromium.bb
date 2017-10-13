@@ -8,6 +8,8 @@
 #include "headless/lib/browser/headless_browser_context_impl.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
+#include "net/url_request/url_request_context.h"
+#include "url/url_constants.h"
 
 #include "net/url_request/url_request.h"
 
@@ -38,7 +40,10 @@ int HeadlessNetworkDelegate::OnBeforeURLRequest(
     net::URLRequest* request,
     const net::CompletionCallback& callback,
     GURL* new_url) {
-  request->RemoveRequestHeaderByName(kDevToolsEmulateNetworkConditionsClientId);
+  if (headless_browser_context_->ShouldRemoveHeaders()) {
+    request->RemoveRequestHeaderByName(
+        kDevToolsEmulateNetworkConditionsClientId);
+  }
   return net::OK;
 }
 
