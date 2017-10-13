@@ -89886,6 +89886,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="VRFreNotComplete" enum="BooleanHit">
+  <owner>ymalik@chromium.org</owner>
+  <summary>
+    Whether the user had been through the FRE when Chrome is launched in VR
+    mode.
+  </summary>
+</histogram>
+
 <histogram name="VRRuntimeVersion" units="normalized version">
   <owner>tiborg@chromium.org</owner>
   <summary>The version of the runtime being used for VR.</summary>
@@ -105393,6 +105401,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="Vp9.S2"
       label="Video codec: VP9. QP range: 0-255. Spatial layer 2."/>
   <affected-histogram name="WebRTC.Video.Encoded.Qp"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="VRFreNotCompleteType" separator=".">
+  <suffix name="VrBrowser" label="FRE not complete when starting Chrome"/>
+  <suffix name="WebVRAutopresent"
+      label="FRE not complete when starting WebVR auto-presentation"/>
+  <affected-histogram name="VRFreNotComplete"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="VRRuntimeVersionGVRHeadset" separator=".">
