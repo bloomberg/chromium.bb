@@ -20,6 +20,7 @@
 #include "content/common/shared_worker/shared_worker_factory.mojom.h"
 #include "content/common/shared_worker/shared_worker_host.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/service_manager/public/interfaces/interface_provider.mojom.h"
 
 class GURL;
 
@@ -36,7 +37,8 @@ class SharedWorkerInstance;
 // the browser <-> worker communication channel. This is owned by
 // SharedWorkerServiceImpl and destructed when a worker context or worker's
 // message filter is closed.
-class SharedWorkerHost : public mojom::SharedWorkerHost {
+class SharedWorkerHost : public mojom::SharedWorkerHost,
+                         public service_manager::mojom::InterfaceProvider {
  public:
   SharedWorkerHost(std::unique_ptr<SharedWorkerInstance> instance,
                    int process_id,
@@ -99,6 +101,10 @@ class SharedWorkerHost : public mojom::SharedWorkerHost {
   void OnClientConnectionLost();
   void OnWorkerConnectionLost();
 
+  // service_manager::mojom::InterfaceProvider:
+  void GetInterface(const std::string& interface_name,
+                    mojo::ScopedMessagePipeHandle interface_pipe) override;
+
   mojo::Binding<mojom::SharedWorkerHost> binding_;
   std::unique_ptr<SharedWorkerInstance> instance_;
   ClientList clients_;
@@ -116,6 +122,10 @@ class SharedWorkerHost : public mojom::SharedWorkerHost {
   std::set<blink::mojom::WebFeature> used_features_;
 
   std::unique_ptr<SharedWorkerContentSettingsProxyImpl> content_settings_;
+
+  mojo::Binding<service_manager::mojom::InterfaceProvider>
+      interface_provider_binding_;
+
   base::WeakPtrFactory<SharedWorkerHost> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedWorkerHost);

@@ -58,7 +58,8 @@ class BLINK_EXPORT WebSharedWorker {
       WebContentSecurityPolicyType,
       WebAddressSpace,
       bool data_saver_enabled,
-      mojo::ScopedMessagePipeHandle content_settings_handle) = 0;
+      mojo::ScopedMessagePipeHandle content_settings_handle,
+      mojo::ScopedMessagePipeHandle interface_provider) = 0;
 
   // Sends a connect event to the SharedWorker context.
   virtual void Connect(MessagePortChannel) = 0;

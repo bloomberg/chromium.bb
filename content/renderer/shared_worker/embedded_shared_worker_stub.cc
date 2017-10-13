@@ -131,7 +131,8 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
     int route_id,
     blink::mojom::WorkerContentSettingsProxyPtr content_settings,
     mojom::SharedWorkerHostPtr host,
-    mojom::SharedWorkerRequest request)
+    mojom::SharedWorkerRequest request,
+    service_manager::mojom::InterfaceProviderPtr interface_provider)
     : binding_(this, std::move(request)),
       host_(std::move(host)),
       route_id_(route_id),
@@ -150,7 +151,8 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
       url_, blink::WebString::FromUTF8(name_),
       blink::WebString::FromUTF8(info->content_security_policy),
       info->content_security_policy_type, info->creation_address_space,
-      info->data_saver_enabled, content_settings.PassInterface().PassHandle());
+      info->data_saver_enabled, content_settings.PassInterface().PassHandle(),
+      interface_provider.PassInterface().PassHandle());
 
   // If the host drops its connection, then self-destruct.
   binding_.set_connection_error_handler(base::BindOnce(

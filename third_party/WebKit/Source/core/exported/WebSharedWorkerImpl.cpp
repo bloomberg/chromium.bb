@@ -222,7 +222,8 @@ void WebSharedWorkerImpl::StartWorkerContext(
     WebContentSecurityPolicyType policy_type,
     WebAddressSpace creation_address_space,
     bool data_saver_enabled,
-    mojo::ScopedMessagePipeHandle content_settings_handle) {
+    mojo::ScopedMessagePipeHandle content_settings_handle,
+    mojo::ScopedMessagePipeHandle interface_provider) {
   DCHECK(IsMainThread());
   url_ = url;
   name_ = name;
@@ -230,6 +231,7 @@ void WebSharedWorkerImpl::StartWorkerContext(
   // Chrome doesn't use interface versioning.
   content_settings_info_ = mojom::blink::WorkerContentSettingsProxyPtrInfo(
       std::move(content_settings_handle), 0u);
+  pending_interface_provider_.set_handle(std::move(interface_provider));
 
   shadow_page_ = WTF::MakeUnique<WorkerShadowPage>(this);
   shadow_page_->GetSettings()->SetDataSaverEnabled(data_saver_enabled);
@@ -318,7 +320,7 @@ void WebSharedWorkerImpl::OnScriptLoaderFinished() {
           main_script_loader_->GetReferrerPolicy(), starter_origin,
           worker_clients, main_script_loader_->ResponseAddressSpace(),
           main_script_loader_->OriginTrialTokens(), std::move(worker_settings),
-          kV8CacheOptionsDefault);
+          kV8CacheOptionsDefault, std::move(pending_interface_provider_));
 
   // SharedWorker can sometimes run tasks that are initiated by/associated with
   // a document's frame but these documents can be from a different process. So
