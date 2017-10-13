@@ -74,19 +74,20 @@ RankerModelStatus ValidateModel(const RankerModel& model) {
 
 }  // namespace
 
+#if defined(OS_ANDROID)
+const char kDefaultTranslateRankerModelURL[] =
+    "https://www.gstatic.com/chrome/intelligence/assist/ranker/models/"
+    "translate/android/translate_ranker_model_android_20170918.pb.bin";
+#else
 const char kDefaultTranslateRankerModelURL[] =
     "https://www.gstatic.com/chrome/intelligence/assist/ranker/models/"
     "translate/2017/03/translate_ranker_model_20170329.pb.bin";
+#endif
+
 const base::Feature kTranslateRankerQuery{"TranslateRankerQuery",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
-
-#if defined(OS_ANDROID)
-const base::Feature kTranslateRankerEnforcement{
-    "TranslateRankerEnforcement", base::FEATURE_DISABLED_BY_DEFAULT};
-#else
 const base::Feature kTranslateRankerEnforcement{
     "TranslateRankerEnforcement", base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
 
 const base::Feature kTranslateRankerAutoBlacklistOverride{
     "TranslateRankerAutoBlacklistOverride", base::FEATURE_DISABLED_BY_DEFAULT};
