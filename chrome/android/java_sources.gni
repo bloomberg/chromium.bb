@@ -1575,6 +1575,7 @@ chrome_test_java_sources = [
   "javatests/src/org/chromium/chrome/browser/omaha/RequestGeneratorTest.java",
   "javatests/src/org/chromium/chrome/browser/omaha/StringSanitizerTest.java",
   "javatests/src/org/chromium/chrome/browser/omaha/UpdateMenuItemHelperTest.java",
+  "javatests/src/org/chromium/chrome/browser/omnibox/BottomSheetLocationBarTest.java",
   "javatests/src/org/chromium/chrome/browser/omnibox/OmniboxTest.java",
   "javatests/src/org/chromium/chrome/browser/omnibox/OmniboxUrlEmphasizerTest.java",
   "javatests/src/org/chromium/chrome/browser/omnibox/SuggestionAnswerTest.java",
