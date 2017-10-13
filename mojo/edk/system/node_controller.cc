@@ -1155,20 +1155,22 @@ void NodeController::OnRelayEventMessage(const ports::NodeName& from_node,
   }
   message->SetHandles(std::move(handles));
 #else
-  MachPortRelay* relay = GetMachPortRelay();
-  if (!relay) {
-    LOG(ERROR) << "Receiving Mach ports without a port relay from "
-               << from_node << ". Dropping message.";
-    return;
+  ScopedPlatformHandleVectorPtr handles = message->TakeHandles();
+  for (size_t i = 0; i < handles->size(); ++i) {
+    PlatformHandle* handle = &(*handles)[i];
+    if (handle->type == PlatformHandle::Type::MACH_NAME) {
+      MachPortRelay* relay = GetMachPortRelay();
+      if (!relay) {
+        handle->type = PlatformHandle::Type::MACH;
+        handle->port = MACH_PORT_NULL;
+        DLOG(ERROR) << "Receiving Mach ports without a port relay from "
+                    << from_node << ".";
+        continue;
+      }
+      relay->ExtractPort(handle, from_process);
+    }
   }
-  if (!relay->ExtractPortRights(message.get(), from_process)) {
-    // NodeChannel should ensure that MachPortRelay is ready for the remote
-    // process. At this point, if the port extraction failed, either something
-    // went wrong in the mach stuff, or the remote process died.
-    LOG(ERROR) << "Error on receiving Mach ports " << from_node
-               << ". Dropping message.";
-    return;
-  }
+  message->SetHandles(std::move(handles));
 #endif  // defined(OS_WIN)
 
   if (destination == name_) {

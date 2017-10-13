@@ -172,7 +172,8 @@ MojoResult UnwrapMachPort(ScopedHandle handle, mach_port_t* port) {
   if (result != MOJO_RESULT_OK)
     return result;
 
-  CHECK_EQ(platform_handle.type, MOJO_PLATFORM_HANDLE_TYPE_MACH_PORT);
+  CHECK(platform_handle.type == MOJO_PLATFORM_HANDLE_TYPE_MACH_PORT ||
+        platform_handle.type == MOJO_PLATFORM_HANDLE_TYPE_INVALID);
   *port = static_cast<mach_port_t>(platform_handle.value);
   return MOJO_RESULT_OK;
 }
