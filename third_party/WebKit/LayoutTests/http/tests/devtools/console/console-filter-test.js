@@ -110,42 +110,42 @@
     },
     function checkTextFilter(next) {
       Console.ConsoleView.instance()._filter._textFilterUI.setValue('outer');
-      Console.ConsoleView.instance()._filter._textFilterChanged();
+      Console.ConsoleView.instance()._filter._onFilterChanged();
       dumpVisibleMessages();
       next();
     },
     function checkMultiTextFilter(next)
     {
       Console.ConsoleView.instance()._filter._textFilterUI.setValue("Group /[2-3]top/");
-      Console.ConsoleView.instance()._filter._textFilterChanged();
+      Console.ConsoleView.instance()._filter._onFilterChanged();
       dumpVisibleMessages();
       next();
     },
     function checkTextUrlFilter(next)
     {
       Console.ConsoleView.instance()._filter._textFilterUI.setValue("url:log-source");
-      Console.ConsoleView.instance()._filter._textFilterChanged();
+      Console.ConsoleView.instance()._filter._onFilterChanged();
       dumpVisibleMessages();
       next();
     },
     function checkNegativeTextUrlFilter(next)
     {
       Console.ConsoleView.instance()._filter._textFilterUI.setValue("-url:log-source");
-      Console.ConsoleView.instance()._filter._textFilterChanged();
+      Console.ConsoleView.instance()._filter._onFilterChanged();
       dumpVisibleMessages();
       next();
     },
     function checkSourceFilter(next)
     {
       Console.ConsoleView.instance()._filter._textFilterUI.setValue("source:violation");
-      Console.ConsoleView.instance()._filter._textFilterChanged();
+      Console.ConsoleView.instance()._filter._onFilterChanged();
       dumpVisibleMessages();
       next();
     },
     function checkContextTextFilter(next)
     {
       Console.ConsoleView.instance()._filter._textFilterUI.setValue("context:context");
-      Console.ConsoleView.instance()._filter._textFilterChanged();
+      Console.ConsoleView.instance()._filter._onFilterChanged();
       dumpVisibleMessages();
       next();
     },
