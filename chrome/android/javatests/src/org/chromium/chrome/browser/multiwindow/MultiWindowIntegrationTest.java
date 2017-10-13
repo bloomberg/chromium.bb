@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.multiwindow;
 
-import static org.chromium.chrome.browser.multiwindow.MultiWindowUtilsTest.createSecondChromeTabbedActivity;
 import static org.chromium.chrome.browser.multiwindow.MultiWindowUtilsTest.moveActivityToFront;
 import static org.chromium.chrome.browser.multiwindow.MultiWindowUtilsTest.waitForSecondChromeTabbedActivity;
 
@@ -86,13 +85,11 @@ public class MultiWindowIntegrationTest {
             mActivityTestRule.newIncognitoTabFromMenu();
             Assert.assertTrue(mActivityTestRule.getActivity().getActivityTab().isIncognito());
             final int incognitoTabId = mActivityTestRule.getActivity().getActivityTab().getId();
-            final ChromeTabbedActivity2 cta2 =
-                    createSecondChromeTabbedActivity(mActivityTestRule.getActivity());
-
-            moveActivityToFront(mActivityTestRule.getActivity());
 
             MenuUtils.invokeCustomMenuActionSync(InstrumentationRegistry.getInstrumentation(),
                     mActivityTestRule.getActivity(), R.id.move_to_other_window_menu_id);
+
+            final ChromeTabbedActivity2 cta2 = waitForSecondChromeTabbedActivity();
 
             CriteriaHelper.pollUiThread(Criteria.equals(1,
                     new Callable<Integer>() {
