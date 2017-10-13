@@ -111,13 +111,12 @@ h2 {
   border-radius: 3px;
   box-sizing: border-box;
   font-size: 1em;
-  padding: 12px 12px 12px 36px;
+  padding: 12px 36px;
   width: 100%;
 }
 
 [dir='rtl'] #search {
   background-position: right 50%;
-  padding: 12px 36px 12px 12px;
 }
 
 #search:focus {
@@ -240,12 +239,6 @@ h2 {
   flex: 0 0 auto;
   text-align: right;
   width: 150px;
-}
-
-.experiment .platforms::before {
-  content: '–';
-  display: inline;
-  padding: 0 2px;
 }
 
 .experiment-disable-link,
@@ -441,19 +434,16 @@ h2 {
 
 @media (max-width: 360px) {
   #experiment-reset-all {
-    padding: 8px;
+    font-size: 0.8em;
+    padding: 4px 8px;
   }
 
   .experiment-restart-button {
     padding: 8px;
   }
 
-  .restart-notice {
-    font-size: 1em;
-  }
-
   #search {
-    padding: 8px 4px 8px 36px;
+    padding: 8px 36px;
   }
 }
 
@@ -485,7 +475,7 @@ h2 {
     padding: 0 16px;
   }
 
-  #flagsTemplate > .flex-container:first-child {
+  #flagsTemplate > .flex-container:first-child:not('.version') {
     flex-direction: column;
     text-align: left;
   }
@@ -498,17 +488,35 @@ h2 {
     width: 100%;
   }
 
-  #flagsTemplate > .flex-container #version {
-    padding-bottom: 16px;
-    text-align: left;
-  }
-
   [dir='rtl'] #flagsTemplate > .flex-container #version {
     text-align: right;
   }
 
   #needs-restart {
-    padding: 8px 4px;
+    padding: 8px 12px;
+  }
+
+  .experiment-restart-button {
+    padding: 8px 16px;
+  }
+
+  .restart-notice {
+    font-size: 1em;
+    padding: 4px;
+  }
+
+  /* Hide the overflow description text */
+  .experiment p {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 100%;
+  }
+
+  .searching .experiment p,
+  .experiment .expand p {
+    overflow: visible;
+    white-space: normal;
   }
 }
 
