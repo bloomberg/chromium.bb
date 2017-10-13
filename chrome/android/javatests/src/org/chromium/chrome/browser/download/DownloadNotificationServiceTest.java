@@ -231,6 +231,7 @@ public class DownloadNotificationServiceTest
     @Test
     @SmallTest
     @Feature({"Download"})
+    @RetryOnFailure(message = "crbug.com/773346")
     public void testResumptionNotScheduledWithoutAutoResumableDownload() throws Exception {
         MockDownloadResumptionScheduler scheduler =
                 new MockDownloadResumptionScheduler(getSystemContext().getApplicationContext());
