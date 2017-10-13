@@ -190,22 +190,22 @@
     {
       "name": "yahoo",
       "static_spki_hashes": [
+         "DigiCertAssuredIDRoot",
+         "DigiCertGlobalRoot",
+         "DigiCertGlobalRootG2",
+         "DigiCertGlobalRootG3",
+         "DigiCertTrustedRootG4",
+         "DigiCertEVRoot",
          "VeriSignClass2_G2",
          "VeriSignClass2_G3",
          "VeriSignClass3_G3",
          "VeriSignClass3_G4",
          "VeriSignClass3_G5",
          "VeriSignUniversal",
-         "GeoTrustGlobal",
-         "GeoTrustPrimary",
-         "GeoTrustPrimary_G2",
-         "GeoTrustPrimary_G3",
-         "GeoTrustUniversal",
-         "DigiCertGlobalRoot",
-         "DigiCertEVRoot",
          "YahooBackup1",
          "YahooBackup2"
-      ]
+      ],
+      "report_uri": "http://csp.yahoo.com/beacon/csp?src=yahoocom-hpkp-report-only"
     },
     {
       "name": "swehackCom",
