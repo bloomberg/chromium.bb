@@ -37,7 +37,7 @@ const {{method.name}}Callback& callback
 {%-   if method.response_parameters %}
 {%-     if method.parameters %}, {% endif %}
 {%-     for param in method.response_parameters -%}
-{{param.kind|cpp_wrapper_type}}* {{prefix}}{{param.name}}
+{{param.kind|cpp_wrapper_type}}* out_{{prefix}}{{param.name}}
 {%-       if not loop.last %}, {% endif %}
 {%-     endfor %}
 {%-   endif -%}
