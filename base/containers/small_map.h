@@ -14,7 +14,6 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/logging.h"
-#include "base/memory/manual_constructor.h"
 
 namespace base {
 
@@ -67,13 +66,12 @@ namespace base {
 //            be used by default. If the wrapped map type has a strict weak
 //            ordering "key_compare" (std::map does), that will be used to
 //            implement equality by default.
-// MapInit: A functor that takes a ManualConstructor<NormalMap>* and uses it to
-//          initialize the map. This functor will be called at most once per
-//          small_map, when the map exceeds the threshold of kArraySize and we
-//          are about to copy values from the array to the map. The functor
-//          *must* call one of the Init() methods provided by
-//          ManualConstructor, since after it runs we assume that the NormalMap
-//          has been initialized.
+// MapInit: A functor that takes a NormalMap* and uses it to initialize the map.
+//          This functor will be called at most once per small_map, when the map
+//          exceeds the threshold of kArraySize and we are about to copy values
+//          from the array to the map. The functor *must* initialize the
+//          NormalMap* argument with placement new, since after it runs we
+//          assume that the NormalMap has been initialized.
 //
 // example:
 //   base::small_map<std::map<string, int>> days;
