@@ -807,38 +807,6 @@ TEST_F(ShellSurfaceTest, SurfaceShadow) {
 
   EXPECT_EQ(wm::ShadowElevation::DEFAULT, GetShadowElevation(window));
   EXPECT_TRUE(shadow->layer()->visible());
-
-  // For surface shadow, the underlay is placed at the bottom of shell surfaces.
-  EXPECT_EQ(window, shell_surface->shadow_underlay()->parent());
-
-  auto child_it = window->children().begin();
-  EXPECT_EQ(*child_it++, shell_surface->shadow_underlay());
-  EXPECT_EQ(*child_it++, shell_surface->host_window());
-  EXPECT_EQ(child_it, window->children().end());
-
-  // Set the shadow background to 0, and the shadow_underlay should be
-  // destroyed.
-  shell_surface->SetRectangularShadowBackgroundOpacity(0.f);
-  surface->Commit();
-
-  EXPECT_FALSE(shell_surface->shadow_underlay());
-
-  child_it = window->children().begin();
-  EXPECT_EQ(*child_it++, shell_surface->host_window());
-  EXPECT_EQ(child_it, window->children().end());
-
-  // Set the shadow background to 1, and the shadow_underlay should be
-  // recreated.
-  shell_surface->SetRectangularShadowBackgroundOpacity(1.f);
-  surface->Commit();
-
-  EXPECT_TRUE(shell_surface->shadow_underlay());
-  EXPECT_EQ(window, shell_surface->shadow_underlay()->parent());
-
-  child_it = window->children().begin();
-  EXPECT_EQ(*child_it++, shell_surface->shadow_underlay());
-  EXPECT_EQ(*child_it++, shell_surface->host_window());
-  EXPECT_EQ(child_it, window->children().end());
 }
 
 TEST_F(ShellSurfaceTest, NonSurfaceShadow) {
@@ -909,9 +877,6 @@ TEST_F(ShellSurfaceTest, NonSurfaceShadow) {
 
   EXPECT_EQ(wm::ShadowElevation::DEFAULT, GetShadowElevation(window));
   EXPECT_TRUE(shadow->layer()->visible());
-
-  // For non-surface shadow, the underlay should be below the surface window.
-  EXPECT_EQ(window, shell_surface->shadow_underlay()->parent());
 }
 
 TEST_F(ShellSurfaceTest, ShadowWithStateChange) {
@@ -1020,23 +985,7 @@ TEST_F(ShellSurfaceTest, ShadowStartMaximized) {
   // Sending a shadow bounds in maximized state won't create a shaodw.
   shell_surface->SetShadowBounds(gfx::Rect(10, 10, 100, 100));
   surface->Commit();
-
   EXPECT_FALSE(wm::ShadowController::GetShadowForWindow(window));
-  // Underlay should be created even without shadow.
-  ASSERT_TRUE(shell_surface->shadow_underlay());
-  EXPECT_TRUE(shell_surface->shadow_underlay()->IsVisible());
-  shell_surface->SetShadowBounds(gfx::Rect());
-  // Underlay should be created even without shadow.
-  ASSERT_TRUE(shell_surface->shadow_underlay());
-  EXPECT_TRUE(shell_surface->shadow_underlay()->IsVisible());
-  surface->SetFrame(SurfaceFrameType::NONE);
-  surface->Commit();
-  // No underlay if there is no shadow.
-  EXPECT_FALSE(shell_surface->shadow_underlay());
-
-  surface->SetFrame(SurfaceFrameType::SHADOW);
-  shell_surface->SetShadowBounds(gfx::Rect(10, 10, 100, 100));
-  surface->Commit();
 
   // Restore the window and make sure the shadow is created, visible and
   // has the latest bounds.

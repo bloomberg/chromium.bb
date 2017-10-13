@@ -2000,12 +2000,11 @@ void remote_surface_set_rectangular_shadow_DEPRECATED(wl_client* client,
   NOTIMPLEMENTED();
 }
 
-void remote_surface_set_rectangular_shadow_background_opacity(
+void remote_surface_set_rectangular_shadow_background_opacity_DEPRECATED(
     wl_client* client,
     wl_resource* resource,
     wl_fixed_t opacity) {
-  GetUserDataAs<ShellSurface>(resource)->SetRectangularShadowBackgroundOpacity(
-      wl_fixed_to_double(opacity));
+  NOTIMPLEMENTED();
 }
 
 void remote_surface_set_title(wl_client* client,
@@ -2127,7 +2126,7 @@ const struct zcr_remote_surface_v1_interface remote_surface_implementation = {
     remote_surface_set_window_geometry,
     remote_surface_set_scale,
     remote_surface_set_rectangular_shadow_DEPRECATED,
-    remote_surface_set_rectangular_shadow_background_opacity,
+    remote_surface_set_rectangular_shadow_background_opacity_DEPRECATED,
     remote_surface_set_title,
     remote_surface_set_top_inset,
     remote_surface_activate,

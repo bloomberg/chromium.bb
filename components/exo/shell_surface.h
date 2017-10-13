@@ -188,9 +188,6 @@ class ShellSurface : public SurfaceTreeHost,
   // Set shadow bounds in surface coordinates. Empty bounds disable the shadow.
   void SetShadowBounds(const gfx::Rect& bounds);
 
-  // Set the pacity of the background for the window that has a shadow.
-  void SetRectangularShadowBackgroundOpacity(float opacity);
-
   // Set scale factor for surface. The scale factor will be applied to surface
   // and all descendants.
   void SetScale(double scale);
@@ -288,8 +285,6 @@ class ShellSurface : public SurfaceTreeHost,
   // Overridden from ui::CompositorLockClient:
   void CompositorLockTimedOut() override;
 
-  aura::Window* shadow_underlay() { return shadow_underlay_.get(); }
-
   Surface* surface_for_testing() { return root_surface(); }
 
  private:
@@ -379,10 +374,8 @@ class ShellSurface : public SurfaceTreeHost,
   gfx::Vector2d pending_origin_offset_accumulator_;
   int resize_component_ = HTCAPTION;  // HT constant (see ui/base/hit_test.h)
   int pending_resize_component_ = HTCAPTION;
-  std::unique_ptr<aura::Window> shadow_underlay_;
   base::Optional<gfx::Rect> shadow_bounds_;
   bool shadow_bounds_changed_ = false;
-  float shadow_background_opacity_ = 1.0;
   base::circular_deque<std::unique_ptr<Config>> pending_configs_;
   std::unique_ptr<ash::WindowResizer> resizer_;
   std::unique_ptr<ScopedAnimationsDisabled> scoped_animations_disabled_;

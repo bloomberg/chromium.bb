@@ -291,7 +291,7 @@
 
     <request name="set_rectangular_shadow_background_opacity">
       <description summary="suggests the window's background opacity">
-	Suggests the window's background opacity when the shadow is requested.
+	[Deprecated] Suggests the window's background opacity when the shadow is requested.
       </description>
       <arg name="opacity" type="fixed"/>
     </request>
