@@ -56,11 +56,12 @@ template("android_gcc_toolchain") {
       _prefix = rebase_path("$clang_base_path/bin", root_build_dir)
       cc = "$_prefix/clang"
       cxx = "$_prefix/clang++"
+      ar = "$_prefix/llvm-ar"
     } else {
       cc = "${_tool_prefix}gcc"
       cxx = "${_tool_prefix}g++"
+      ar = _tool_prefix + "ar"
     }
-    ar = _tool_prefix + "ar"
     ld = cxx
     readelf = _tool_prefix + "readelf"
     nm = _tool_prefix + "nm"
