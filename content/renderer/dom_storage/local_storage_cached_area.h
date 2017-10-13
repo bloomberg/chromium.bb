@@ -11,13 +11,13 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/nullable_string16.h"
 #include "content/common/content_export.h"
+#include "content/common/dom_storage/dom_storage_map.h"
 #include "content/common/leveldb_wrapper.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
 namespace content {
-class DOMStorageMap;
 class LocalStorageArea;
 class LocalStorageCachedAreas;
 
@@ -61,6 +61,8 @@ class CONTENT_EXPORT LocalStorageCachedArea
   void AreaDestroyed(LocalStorageArea* area);
 
   const url::Origin& origin() { return origin_; }
+
+  size_t memory_used() const { return map_ ? map_->memory_used() : 0; }
 
  private:
   friend class base::RefCounted<LocalStorageCachedArea>;

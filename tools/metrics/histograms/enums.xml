@@ -23262,6 +23262,12 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="4" label="Success"/>
 </enum>
 
+<enum name="LocalStorageRendererAreaCacheHitEnum">
+  <int value="0" label="Area was not present in cache"/>
+  <int value="1" label="Area with no references loaded from cache"/>
+  <int value="2" label="Area with references loaded"/>
+</enum>
+
 <enum name="LockScreenActionAvailability">
   <int value="0" label="Available"/>
   <int value="1" label="Not available - no action handler app"/>
