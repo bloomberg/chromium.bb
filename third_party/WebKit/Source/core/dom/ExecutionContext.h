@@ -105,6 +105,7 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   ContentSecurityPolicy* GetContentSecurityPolicy();
   const KURL& Url() const;
   KURL CompleteURL(const String& url) const;
+  virtual const KURL& BaseURL() const = 0;
   virtual void DisableEval(const String& error_message) = 0;
   virtual LocalDOMWindow* ExecutingWindow() const { return nullptr; }
   virtual String UserAgent() const = 0;

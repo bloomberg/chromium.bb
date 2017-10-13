@@ -27,6 +27,8 @@ class NullExecutionContext
 
   void SetURL(const KURL& url) { url_ = url; }
 
+  const KURL& BaseURL() const override { return url_; }
+
   void DisableEval(const String&) override {}
   String UserAgent() const override { return String(); }
 

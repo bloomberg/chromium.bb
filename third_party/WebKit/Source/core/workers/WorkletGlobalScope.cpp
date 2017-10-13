@@ -144,7 +144,7 @@ KURL WorkletGlobalScope::VirtualCompleteURL(const String& url) const {
   if (url.IsNull())
     return KURL();
   // Always use UTF-8 in Worklets.
-  return KURL(url_, url);
+  return KURL(BaseURL(), url);
 }
 
 DEFINE_TRACE(WorkletGlobalScope) {

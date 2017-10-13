@@ -67,6 +67,7 @@ class CORE_EXPORT WorkletGlobalScope
   ExecutionContext* GetExecutionContext() const;
 
   // ExecutionContext
+  const KURL& BaseURL() const final { return url_; }
   String UserAgent() const final { return user_agent_; }
   SecurityContext& GetSecurityContext() final { return *this; }
   EventQueue* GetEventQueue() const final {
