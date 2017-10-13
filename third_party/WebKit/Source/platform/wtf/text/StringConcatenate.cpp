@@ -8,12 +8,6 @@
 
 #include "platform/wtf/text/StringImpl.h"
 
-// This macro is helpful for testing how many intermediate Strings are created
-// while evaluating an expression containing operator+.
-#ifndef WTF_STRINGTYPEADAPTER_COPIED_WTF_STRING
-#define WTF_STRINGTYPEADAPTER_COPIED_WTF_STRING() ((void)0)
-#endif
-
 void WTF::StringTypeAdapter<char*>::WriteTo(LChar* destination) const {
   for (unsigned i = 0; i < length_; ++i)
     destination[i] = static_cast<LChar>(buffer_[i]);
@@ -72,7 +66,6 @@ void WTF::StringTypeAdapter<const LChar*>::WriteTo(UChar* destination) const {
 void WTF::StringTypeAdapter<StringView>::WriteTo(LChar* destination) const {
   DCHECK(Is8Bit());
   StringImpl::CopyChars(destination, view_.Characters8(), view_.length());
-  WTF_STRINGTYPEADAPTER_COPIED_WTF_STRING();
 }
 
 void WTF::StringTypeAdapter<StringView>::WriteTo(UChar* destination) const {
@@ -80,5 +73,4 @@ void WTF::StringTypeAdapter<StringView>::WriteTo(UChar* destination) const {
     StringImpl::CopyChars(destination, view_.Characters8(), view_.length());
   else
     StringImpl::CopyChars(destination, view_.Characters16(), view_.length());
-  WTF_STRINGTYPEADAPTER_COPIED_WTF_STRING();
 }

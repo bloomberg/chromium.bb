@@ -357,7 +357,6 @@ test("wtf_unittests") {
     "text/StringBufferTest.cpp",
     "text/StringBuilderTest.cpp",
     "text/StringImplTest.cpp",
-    "text/StringOperatorsTest.cpp",
     "text/StringToNumberTest.cpp",
     "text/StringViewTest.cpp",
     "text/TextCodecICUTest.cpp",
