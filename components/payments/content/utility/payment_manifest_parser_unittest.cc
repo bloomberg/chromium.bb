@@ -22,8 +22,9 @@ void ExpectUnableToParsePaymentMethodManifest(const std::string& input) {
       input, &actual_web_app_urls, &actual_supported_origins,
       &actual_all_origins_supported);
 
-  EXPECT_TRUE(actual_web_app_urls.empty());
-  EXPECT_TRUE(actual_supported_origins.empty());
+  EXPECT_TRUE(actual_web_app_urls.empty()) << actual_web_app_urls.front();
+  EXPECT_TRUE(actual_supported_origins.empty())
+      << actual_supported_origins.front();
   EXPECT_FALSE(actual_all_origins_supported);
 }
 
@@ -88,6 +89,11 @@ TEST(PaymentManifestParserTest, DefaultApplicationsShouldNotHaveNulCharacters) {
       "{\"default_applications\": [\"https://bobpay.com/app\0json\"]}");
 }
 
+TEST(PaymentManifestParserTest, DefaultApplicationsShouldBeUTF8) {
+  ExpectUnableToParsePaymentMethodManifest(
+      "{\"default_applications\":[\"https://b\x0f\x7f\xf0\xff!\"]}");
+}
+
 TEST(PaymentManifestParserTest, DefaultApplicationKeyShouldBeLowercase) {
   ExpectUnableToParsePaymentMethodManifest(
       "{\"Default_Applications\": [\"https://bobpay.com/app.json\"]}");
@@ -130,6 +136,11 @@ TEST(PaymentManifestParserTest, ListOfEmptySupportedOriginsIsMalformed) {
 TEST(PaymentManifestParserTest, SupportedOriginsShouldNotHaveNulCharacters) {
   ExpectUnableToParsePaymentMethodManifest(
       "{\"supported_origins\": [\"https://bob\0pay.com\"]}");
+}
+
+TEST(PaymentManifestParserTest, SupportedOriginsShouldBeUTF8) {
+  ExpectUnableToParsePaymentMethodManifest(
+      "{\"supported_origins\":[\"https://b\x0f\x7f\xf0\xff!\"]}");
 }
 
 TEST(PaymentManifestParserTest, SupportedOriginsShouldBeHttps) {
