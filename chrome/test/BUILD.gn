@@ -1505,6 +1505,7 @@ test("browser_tests") {
       "../browser/ui/search/instant_test_base.h",
       "../browser/ui/search/instant_test_utils.cc",
       "../browser/ui/search/instant_test_utils.h",
+      "../browser/ui/search/instant_theme_browsertest.cc",
       "../browser/ui/search/local_ntp_browsertest.cc",
       "../browser/ui/search/new_tab_page_interceptor_browsertest.cc",
       "../browser/ui/search_engines/search_engine_tab_helper_browsertest.cc",
