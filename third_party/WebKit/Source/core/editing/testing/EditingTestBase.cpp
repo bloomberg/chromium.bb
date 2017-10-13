@@ -35,18 +35,6 @@ EditingTestBase::EditingTestBase() {}
 
 EditingTestBase::~EditingTestBase() {}
 
-Document& EditingTestBase::GetDocument() const {
-  return dummy_page_holder_->GetDocument();
-}
-
-LocalFrame& EditingTestBase::GetFrame() const {
-  return GetDummyPageHolder().GetFrame();
-}
-
-FrameSelection& EditingTestBase::Selection() const {
-  return GetFrame().Selection();
-}
-
 void EditingTestBase::InsertStyleElement(const std::string& style_rules) {
   Element* const head = GetOrCreateElement(&GetDocument(), HTMLNames::headTag);
   DCHECK_EQ(head, GetOrCreateElement(&GetDocument(), HTMLNames::headTag));
@@ -81,15 +69,6 @@ SelectionInDOMTree EditingTestBase::SetSelectionText(
 std::string EditingTestBase::GetSelectionTextFromBody(
     const SelectionInDOMTree& selection) const {
   return SelectionSample::GetSelectionText(*GetDocument().body(), selection);
-}
-
-void EditingTestBase::SetUp() {
-  dummy_page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
-}
-
-void EditingTestBase::SetupPageWithClients(Page::PageClients* clients) {
-  DCHECK(!dummy_page_holder_) << "Page should be set up only once";
-  dummy_page_holder_ = DummyPageHolder::Create(IntSize(800, 600), clients);
 }
 
 ShadowRoot* EditingTestBase::CreateShadowRootForElementWithIDAndSetInnerHTML(
