@@ -46,7 +46,7 @@ class FileSystemContext;
 namespace {
 
 int GetCategoryLabelID(CookieTreeNode::DetailedInfo::NodeType node_type) {
-  const struct {
+  constexpr struct {
     CookieTreeNode::DetailedInfo::NodeType node_type;
     int id;
   } kCategoryLabels[] = {
@@ -423,7 +423,12 @@ void CookiesViewHandler::SendLocalDataList(const CookieTreeNode* parent) {
     std::string description;
     for (int k = 0; k < site->child_count(); ++k) {
       const CookieTreeNode* category = site->GetChild(k);
-      int ids_value = GetCategoryLabelID(category->GetDetailedInfo().node_type);
+      const auto node_type = category->GetDetailedInfo().node_type;
+      if (node_type == CookieTreeNode::DetailedInfo::TYPE_QUOTA) {
+        // TODO(crbug.com/642955): Omit quota values until bug is addressed.
+        continue;
+      }
+      int ids_value = GetCategoryLabelID(node_type);
       if (!ids_value) {
         // If we don't have a label to call it by, don't show it. Please add
         // a label ID if an expected category is not appearing in the UI.
