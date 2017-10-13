@@ -486,32 +486,29 @@ unsigned HTMLImageElement::height() {
   return LayoutBoxHeight();
 }
 
-unsigned HTMLImageElement::naturalWidth() const {
-  if (!GetImageLoader().GetImage())
-    return 0;
+LayoutSize HTMLImageElement::DensityCorrectedIntrinsicDimensions() const {
+  ImageResourceContent* image_resource = GetImageLoader().GetImage();
+  if (!image_resource || !image_resource->HasImage())
+    return LayoutSize();
+  float pixel_density = image_device_pixel_ratio_;
+  if (image_resource->HasDevicePixelRatioHeaderValue() &&
+      image_resource->DevicePixelRatioHeaderValue() > 0)
+    pixel_density = 1 / image_resource->DevicePixelRatioHeaderValue();
 
-  return GetImageLoader()
-      .GetImage()
-      ->ImageSize(
-          LayoutObject::ShouldRespectImageOrientation(GetLayoutObject()),
-          image_device_pixel_ratio_,
-          ImageResourceContent::kIntrinsicCorrectedToDPR)
-      .Width()
-      .ToUnsigned();
+  RespectImageOrientationEnum respect_image_orientation =
+      LayoutObject::ShouldRespectImageOrientation(GetLayoutObject());
+  LayoutSize natural_size =
+      image_resource->ImageSize(respect_image_orientation, 1);
+  natural_size.Scale(pixel_density);
+  return natural_size;
+}
+
+unsigned HTMLImageElement::naturalWidth() const {
+  return DensityCorrectedIntrinsicDimensions().Width().ToUnsigned();
 }
 
 unsigned HTMLImageElement::naturalHeight() const {
-  if (!GetImageLoader().GetImage())
-    return 0;
-
-  return GetImageLoader()
-      .GetImage()
-      ->ImageSize(
-          LayoutObject::ShouldRespectImageOrientation(GetLayoutObject()),
-          image_device_pixel_ratio_,
-          ImageResourceContent::kIntrinsicCorrectedToDPR)
-      .Height()
-      .ToUnsigned();
+  return DensityCorrectedIntrinsicDimensions().Height().ToUnsigned();
 }
 
 unsigned HTMLImageElement::LayoutBoxWidth() const {
