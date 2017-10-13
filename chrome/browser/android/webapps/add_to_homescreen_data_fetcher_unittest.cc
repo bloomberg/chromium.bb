@@ -146,10 +146,10 @@ class TestInstallableManager : public InstallableManager {
 
     InstallableStatusCode code = NO_ERROR_DETECTED;
     bool is_installable = is_installable_;
-    if (params.fetch_valid_primary_icon && !primary_icon_) {
+    if (params.valid_primary_icon && !primary_icon_) {
       code = NO_ACCEPTABLE_ICON;
       is_installable = false;
-    } else if (params.check_installable) {
+    } else if (params.valid_manifest && params.has_worker) {
       if (!IsManifestValidForWebApp(manifest_)) {
         code = valid_manifest_->error;
         is_installable = false;
@@ -160,7 +160,8 @@ class TestInstallableManager : public InstallableManager {
     }
 
     if (should_manifest_time_out_ ||
-        (params.check_installable && should_installable_time_out_)) {
+        (params.valid_manifest && params.has_worker &&
+         should_installable_time_out_)) {
       // Bind the metrics resolution callback. We want to test when this is
       // and isn't called (corresponding to InstallableManager finishing work
       // after the timeout, and when it never finishes at all).
@@ -171,16 +172,16 @@ class TestInstallableManager : public InstallableManager {
     }
 
     // Otherwise, directly call the metrics finalisation.
-    if (params.check_installable && is_installable)
+    if (params.valid_manifest && params.has_worker && is_installable)
       ResolveMetrics(params, is_installable);
 
-    callback.Run(
-        {code, GURL(kDefaultManifestUrl), manifest_,
-         params.fetch_valid_primary_icon ? primary_icon_url_ : GURL(),
-         params.fetch_valid_primary_icon ? primary_icon_.get() : nullptr,
-         params.fetch_valid_badge_icon ? badge_icon_url_ : GURL(),
-         params.fetch_valid_badge_icon ? badge_icon_.get() : nullptr,
-         params.check_installable ? is_installable : false});
+    callback.Run({code, GURL(kDefaultManifestUrl), manifest_,
+                  params.valid_primary_icon ? primary_icon_url_ : GURL(),
+                  params.valid_primary_icon ? primary_icon_.get() : nullptr,
+                  params.valid_badge_icon ? badge_icon_url_ : GURL(),
+                  params.valid_badge_icon ? badge_icon_.get() : nullptr,
+                  params.valid_manifest ? is_installable : false,
+                  params.has_worker ? is_installable : false});
   }
 
   void SetInstallable(bool is_installable) { is_installable_ = is_installable; }

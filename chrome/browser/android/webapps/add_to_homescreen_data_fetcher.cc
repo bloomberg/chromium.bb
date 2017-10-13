@@ -44,16 +44,19 @@ GURL GetShortcutUrl(const content::WebContents* web_contents) {
 InstallableParams ParamsToPerformManifestAndIconFetch(
     bool check_webapk_compatibility) {
   InstallableParams params;
-  params.fetch_valid_primary_icon = true;
-  params.fetch_valid_badge_icon = check_webapk_compatibility;
+  params.valid_primary_icon = true;
+  params.valid_badge_icon = check_webapk_compatibility;
+  params.wait_for_worker = true;
   return params;
 }
 
 InstallableParams ParamsToPerformInstallableCheck(
     bool check_webapk_compatibility) {
   InstallableParams params;
-  params.check_installable = check_webapk_compatibility;
-  params.fetch_valid_primary_icon = check_webapk_compatibility;
+  params.valid_manifest = check_webapk_compatibility;
+  params.has_worker = check_webapk_compatibility;
+  params.valid_primary_icon = check_webapk_compatibility;
+  params.wait_for_worker = true;
   return params;
 }
 
@@ -268,8 +271,8 @@ void AddToHomescreenDataFetcher::OnDidPerformInstallableCheck(
   bool webapk_compatible = false;
   if (check_webapk_compatibility_) {
     webapk_compatible =
-        (data.error_code == NO_ERROR_DETECTED && data.is_installable &&
-         AreWebManifestUrlsWebApkCompatible(data.manifest));
+        (data.error_code == NO_ERROR_DETECTED && data.valid_manifest &&
+         data.has_worker && AreWebManifestUrlsWebApkCompatible(data.manifest));
     observer_->OnDidDetermineWebApkCompatibility(webapk_compatible);
   }
 

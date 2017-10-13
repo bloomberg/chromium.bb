@@ -185,9 +185,9 @@ void AppBannerManager::OnDidGetManifest(const InstallableData& data) {
 
 InstallableParams AppBannerManager::ParamsToPerformInstallableCheck() {
   InstallableParams params;
-  params.check_installable = true;
-  params.fetch_valid_primary_icon = true;
-
+  params.valid_primary_icon = true;
+  params.valid_manifest = true;
+  params.has_worker = true;
   // Don't wait for the service worker if this was triggered from devtools.
   params.wait_for_worker = !triggered_by_devtools_;
 
@@ -208,7 +208,7 @@ void AppBannerManager::PerformInstallableCheck() {
 void AppBannerManager::OnDidPerformInstallableCheck(
     const InstallableData& data) {
   UpdateState(State::ACTIVE);
-  if (data.is_installable)
+  if (data.has_worker && data.valid_manifest)
     TrackDisplayEvent(DISPLAY_EVENT_WEB_APP_BANNER_REQUESTED);
 
   if (data.error_code != NO_ERROR_DETECTED) {
@@ -219,7 +219,7 @@ void AppBannerManager::OnDidPerformInstallableCheck(
     return;
   }
 
-  DCHECK(data.is_installable);
+  DCHECK(data.has_worker && data.valid_manifest);
   DCHECK(!data.primary_icon_url.is_empty());
   DCHECK(data.primary_icon);
 

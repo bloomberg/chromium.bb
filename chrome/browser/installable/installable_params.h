@@ -18,21 +18,25 @@ struct InstallableParams {
 
   // Check whether there is a fetchable, non-empty icon in the manifest
   // conforming to the primary icon size parameters.
-  bool fetch_valid_primary_icon = false;
+  bool valid_primary_icon = false;
 
   // Check whether there is a fetchable, non-empty icon in the manifest
   // conforming to the badge icon size parameters.
-  bool fetch_valid_badge_icon = false;
+  bool valid_badge_icon = false;
 
-  // Check whether the site is installable. That is, it has a manifest valid for
-  // a web app and a service worker controlling the manifest start URL and the
-  // current URL.
-  bool check_installable = false;
+  // Check whether the site has a manifest valid for a web app.
+  bool valid_manifest = false;
+
+  // Check whether the site has a service worker controlling the manifest start
+  // URL and the current URL.
+  bool has_worker = false;
 
   // Whether or not to wait indefinitely for a service worker. If this is set to
   // false, the worker status will not be cached and will be re-checked if
-  // GetData() is called again for the current page.
-  bool wait_for_worker = true;
+  // GetData() is called again for the current page. Setting this to true means
+  // that the callback will not be called for any site that does not install a
+  // service worker.
+  bool wait_for_worker = false;
 };
 
 #endif  // CHROME_BROWSER_INSTALLABLE_INSTALLABLE_PARAMS_H_

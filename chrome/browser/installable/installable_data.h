@@ -30,8 +30,8 @@ struct InstallableData {
   // nullptr if the most appropriate primary icon couldn't be determined or
   // downloaded. The underlying primary icon is owned by the InstallableManager;
   // clients must copy the bitmap if they want to to use it. If
-  // fetch_valid_primary_icon was true and a primary icon could not be
-  // retrieved, the reason will be in error_code.
+  // valid_primary_icon was true and a primary icon could not be retrieved, the
+  // reason will be in error_code.
   const SkBitmap* primary_icon;
 
   // Empty if no badge_icon was requested.
@@ -41,14 +41,18 @@ struct InstallableData {
   // downloaded. The underlying badge icon is owned by the InstallableManager;
   // clients must copy the bitmap if they want to to use it. Since the badge
   // icon is optional, no error code is set if it cannot be fetched, and clients
-  // specifying fetch_valid_badge_icon must check that the bitmap exists before
-  // using it.
+  // specifying valid_badge_icon must check that the bitmap exists before using
+  // it.
   const SkBitmap* badge_icon;
 
-  // true if the site has a service worker with a fetch handler and a viable web
-  // app manifest. If check_installable was true and the site isn't installable,
-  // the reason will be in error_code.
-  const bool is_installable;
+  // true if the site has a viable web app manifest. If valid_manifest or
+  // has_worker was true and the site isn't installable, the reason will be in
+  // error_code.
+  const bool valid_manifest;
+
+  // true if the site has a service worker with a fetch handler. If has_worker
+  // was true and the site isn't installable, the reason will be in error_code.
+  const bool has_worker;
 };
 
 using InstallableCallback = base::Callback<void(const InstallableData&)>;

@@ -161,7 +161,7 @@ bool AppBannerManagerAndroid::IsWebAppInstalled(
 InstallableParams AppBannerManagerAndroid::ParamsToPerformInstallableCheck() {
   InstallableParams params =
       AppBannerManager::ParamsToPerformInstallableCheck();
-  params.fetch_valid_badge_icon = can_install_webapk_;
+  params.valid_badge_icon = can_install_webapk_;
 
   return params;
 }
