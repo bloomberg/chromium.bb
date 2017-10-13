@@ -2790,8 +2790,14 @@ inline double AdjustScrollForAbsoluteZoom(double value,
   return AdjustScrollForAbsoluteZoom(value, layout_object.StyleRef());
 }
 
-CORE_EXPORT const LayoutObject* AssociatedLayoutObjectOf(const Node&,
-                                                         int offset_in_node);
+enum class LayoutObjectSide {
+  kRemainingTextIfOnBoundary,
+  kFirstLetterIfOnBoundary
+};
+CORE_EXPORT const LayoutObject* AssociatedLayoutObjectOf(
+    const Node&,
+    int offset_in_node,
+    LayoutObjectSide = LayoutObjectSide::kRemainingTextIfOnBoundary);
 
 #define DEFINE_LAYOUT_OBJECT_TYPE_CASTS(thisType, predicate)           \
   DEFINE_TYPE_CASTS(thisType, LayoutObject, object, object->predicate, \
