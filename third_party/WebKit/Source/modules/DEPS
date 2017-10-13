@@ -1,4 +1,5 @@
 include_rules = [
+    "+base/memory/scoped_refptr.h",
     "+bindings",
     "+core",
     # We do not want any new dependencies on core/exported or

@@ -1,4 +1,5 @@
 include_rules = [
+    "+base/memory/scoped_refptr.h",
     "+bindings/core",
     "-bindings/modules",
     "+build/mac",
