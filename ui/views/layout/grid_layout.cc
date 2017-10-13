@@ -4,8 +4,8 @@
 
 #include "ui/views/layout/grid_layout.h"
 
-#include "base/logging.h"
-#include "base/macros.h"
+#include <cmath>
+
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "ui/views/border.h"
@@ -14,6 +14,23 @@
 #include "ui/views/window/dialog_delegate.h"
 
 namespace views {
+namespace {
+
+// Used when calculating the minimum size to build up how much each column is
+// shrunk.
+struct ColumnMinResizeData {
+  // The column being resized.
+  Column* column;
+
+  // The remaining amount of space available (the difference between the
+  // preferred and minimum).
+  int available = 0;
+
+  // How much to shrink the preferred by.
+  int delta = 0;
+};
+
+}  // namespace
 
 // LayoutElement ------------------------------------------------------
 
@@ -176,6 +193,7 @@ class Column : public LayoutElement {
   GridLayout::Alignment h_align() { return h_align_; }
   GridLayout::Alignment v_align() { return v_align_; }
 
+  // LayoutElement:
   void ResetSize() override;
 
  private:
@@ -305,9 +323,16 @@ class Row : public LayoutElement {
 // Identifies the location in the grid of a particular view, along with
 // placement information and size information.
 struct ViewState {
-  ViewState(ColumnSet* column_set, View* view, int start_col, int start_row,
-            int col_span, int row_span, GridLayout::Alignment h_align,
-            GridLayout::Alignment v_align, int pref_width, int pref_height)
+  ViewState(ColumnSet* column_set,
+            View* view,
+            int start_col,
+            int start_row,
+            int col_span,
+            int row_span,
+            GridLayout::Alignment h_align,
+            GridLayout::Alignment v_align,
+            int pref_width,
+            int pref_height)
       : column_set(column_set),
         view(view),
         start_col(start_col),
@@ -318,11 +343,8 @@ struct ViewState {
         v_align(v_align),
         pref_width_fixed(pref_width > 0),
         pref_height_fixed(pref_height > 0),
-        pref_width(pref_width),
-        pref_height(pref_height),
-        remaining_width(0),
-        remaining_height(0),
-        baseline(-1) {
+        width(pref_width),
+        height(pref_height) {
     DCHECK(view && start_col >= 0 && start_row >= 0 && col_span > 0 &&
            row_span > 0 && start_col < column_set->num_columns() &&
            (start_col + col_span) <= column_set->num_columns());
@@ -337,23 +359,29 @@ struct ViewState {
   const GridLayout::Alignment h_align;
   const GridLayout::Alignment v_align;
 
-  // If true, the pref_width/pref_height were explicitly set and the view's
-  // preferred size is ignored.
+  // If true, the height/width were explicitly set and the view's preferred and
+  // minimum size is ignored.
   const bool pref_width_fixed;
   const bool pref_height_fixed;
 
-  // The preferred width/height. These are reset during the layout process.
-  int pref_width;
-  int pref_height;
+  // The width/height. This is one of possible three values:
+  // . an explicitly set value (if pref_X_fixed is true). If an explicitly set
+  //   value was provided, then this value never changes.
+  // . the preferred width.
+  // . the minimum width.
+  // If the value wasn't explicitly set, then whether the value is the preferred
+  // or minimum depends upon the pass.
+  int width;
+  int height;
 
   // Used during layout. Gives how much width/height has not yet been
   // distributed to the columns/rows the view is in.
-  int remaining_width;
-  int remaining_height;
+  int remaining_width = 0;
+  int remaining_height = 0;
 
   // The baseline. Only used if the view is vertically aligned along the
   // baseline.
-  int baseline;
+  int baseline = -1;
 };
 
 static bool CompareByColumnSpan(const ViewState* v1, const ViewState* v2) {
@@ -579,22 +607,39 @@ void ColumnSet::ResetColumnXCoordinates() {
   LayoutElement::CalculateLocationsFromSize(&columns_);
 }
 
-void ColumnSet::CalculateSize() {
-  gfx::Size pref;
-  // Reset the preferred and remaining sizes.
+void ColumnSet::CalculateSize(SizeCalculationType type) {
+#if DCHECK_IS_ON()
+  // SizeCalculationType::MINIMUM must be preceeded by a request for
+  // SizeCalculationType::PREFERRED.
+  DCHECK(type == SizeCalculationType::PREFERRED ||
+         last_calculation_type_ == PREFERRED);
+  last_calculation_type_ = type;
+#endif
+  // Reset the size and remaining sizes.
   for (auto* view_state : view_states_) {
     if (!view_state->pref_width_fixed || !view_state->pref_height_fixed) {
-      pref = view_state->view->GetPreferredSize();
+      gfx::Size size;
+      if (type == SizeCalculationType::MINIMUM && CanUseMinimum(*view_state)) {
+        // If the min size is bigger than the preferred, use the preferred.
+        // This relies on MINIMUM being calculated immediately after PREFERRED,
+        // which the rest of this code relies on as well.
+        size = view_state->view->GetMinimumSize();
+        if (size.width() > view_state->width)
+          size.set_width(view_state->width);
+        if (size.height() > view_state->height)
+          size.set_height(view_state->height);
+      } else {
+        size = view_state->view->GetPreferredSize();
+      }
       if (!view_state->pref_width_fixed)
-        view_state->pref_width = pref.width();
+        view_state->width = size.width();
       if (!view_state->pref_height_fixed)
-        view_state->pref_height = pref.height();
+        view_state->height = size.height();
     }
-    view_state->remaining_width = pref.width();
-    view_state->remaining_height = pref.height();
+    view_state->remaining_width = view_state->width;
+    view_state->remaining_height = view_state->height;
   }
 
-  // Let layout element reset the sizes for us.
   LayoutElement::ResetSizes(&columns_);
 
   // Distribute the size of each view with a col span == 1.
@@ -603,7 +648,7 @@ void ColumnSet::CalculateSize() {
          (*view_state_iterator)->col_span == 1; ++view_state_iterator) {
     ViewState* view_state = *view_state_iterator;
     Column* column = columns_[view_state->start_col].get();
-    column->AdjustSize(view_state->pref_width);
+    column->AdjustSize(view_state->width);
     view_state->remaining_width -= column->Size();
   }
 
@@ -626,8 +671,101 @@ void ColumnSet::CalculateSize() {
   }
 }
 
-void ColumnSet::Resize(int delta) {
+void ColumnSet::Resize(int delta, bool honors_min_width) {
+  if (delta < 0 && honors_min_width) {
+    // DistributeDelta() assumes resizable columns can equally be shrunk. That
+    // isn't desired when given a size smaller than the prefered. Instead the
+    // columns need to be resized but bounded by the minimum. ResizeUsingMin()
+    // does this.
+    ResizeUsingMin(delta);
+    return;
+  }
+
   LayoutElement::DistributeDelta(delta, &columns_);
+}
+
+void ColumnSet::ResizeUsingMin(int total_delta) {
+  DCHECK_LE(total_delta, 0);
+
+  // |total_delta| is negative, but easier to do operations when positive.
+  total_delta = std::abs(total_delta);
+
+  std::vector<int> preferred_column_sizes(columns_.size());
+  for (size_t i = 0; i < columns_.size(); ++i)
+    preferred_column_sizes[i] = columns_[i]->Size();
+
+  // Recalculate the sizes using the min.
+  CalculateSize(ColumnSet::SizeCalculationType::MINIMUM);
+
+  // Build up the set of columns that can be shrunk in |resize_data|, this
+  // iteration also resets the size of the column back to the preferred size.
+  std::vector<ColumnMinResizeData> resize_data;
+  float total_percent = 0;
+  for (size_t i = 0; i < columns_.size(); ++i) {
+    Column* column = columns_[i].get();
+    const int available =
+        std::max(0, preferred_column_sizes[i] -
+                        std::max(column->min_width_, column->Size()));
+    DCHECK_GE(available, 0);
+    // Set the size back to preferred. We'll reset the size if necessary later.
+    column->SetSize(preferred_column_sizes[i]);
+    if (column->ResizePercent() <= 0 || available == 0)
+      continue;
+    resize_data.push_back({column, available, 0});
+    total_percent += column->ResizePercent();
+  }
+  if (resize_data.empty())
+    return;
+
+  // Loop through the columns updating the amount available and the amount to
+  // resize. This may take multiple iterations if the column min is hit.
+  // Generally there are not that many columns in a GridLayout, so this code is
+  // not optimized. Any time the column hits the min it is removed from
+  // |resize_data|.
+  while (!resize_data.empty() && total_delta > 0) {
+    float next_iteration_total_percent = total_percent;
+    int next_iteration_delta = total_delta;
+#if DCHECK_IS_ON()
+    const int initial_delta = total_delta;
+#endif
+    for (size_t i = resize_data.size(); i > 0; --i) {
+      ColumnMinResizeData& data = resize_data[i - 1];
+      int delta =
+          std::min(data.available,
+                   static_cast<int>(total_delta * data.column->ResizePercent() /
+                                    total_percent));
+      // Make sure at least one column in resized (rounding errors may prevent
+      // that).
+      if (i == 1 && delta == 0 && next_iteration_delta == total_delta)
+        delta = 1;
+      next_iteration_delta -= delta;
+      data.delta += delta;
+      data.available -= delta;
+      if (data.available == 0) {
+        data.column->SetSize(data.column->Size() - data.delta);
+        next_iteration_total_percent -= data.column->ResizePercent();
+        resize_data.erase(resize_data.begin() + (i - 1));
+      }
+    }
+#if DCHECK_IS_ON()
+    DCHECK(next_iteration_delta < initial_delta);
+#endif
+    total_delta = next_iteration_delta;
+    total_percent = next_iteration_total_percent;
+  }
+
+  for (const ColumnMinResizeData& data : resize_data)
+    data.column->SetSize(data.column->Size() - data.delta);
+}
+
+bool ColumnSet::CanUseMinimum(const ViewState& view_state) const {
+  for (int i = 0; i < view_state.col_span; ++i) {
+    if (columns_[i + view_state.start_col]->ResizePercent() <= 0 ||
+        columns_[i + view_state.start_col]->size_type_ == GridLayout::FIXED) {
+      return false;
+    }
+  }
+  return true;
 }
 
 // GridLayout -------------------------------------------------------------
@@ -766,16 +904,15 @@ void GridLayout::Layout(View* host) {
         column_set->columns_[view_state->start_col]->Location() + insets.left();
     int width = column_set->GetColumnWidth(view_state->start_col,
                                            view_state->col_span);
-    CalculateSize(view_state->pref_width, view_state->h_align,
-                  &x, &width);
+    CalculateSize(view_state->width, view_state->h_align, &x, &width);
     int y = rows_[view_state->start_row]->Location() + insets.top();
     int height = LayoutElement::TotalSize(view_state->start_row,
                                           view_state->row_span, &rows_);
     if (view_state->v_align == BASELINE && view_state->baseline != -1) {
       y += rows_[view_state->start_row]->max_ascent() - view_state->baseline;
-      height = view_state->pref_height;
+      height = view_state->height;
     } else {
-      CalculateSize(view_state->pref_height, view_state->v_align, &y, &height);
+      CalculateSize(view_state->height, view_state->v_align, &y, &height);
     }
     view->SetBounds(x, y, width, height);
   }
@@ -825,7 +962,7 @@ void GridLayout::SizeRowsAndColumns(bool layout, int width, int height,
   // preferred heights are derived from their width, as such we need to
   // calculate the size of the columns first.
   for (const auto& column_set : column_sets_) {
-    column_set->CalculateSize();
+    column_set->CalculateSize(ColumnSet::SizeCalculationType::PREFERRED);
     pref->set_width(std::max(pref->width(), column_set->LayoutWidth()));
   }
   const gfx::Insets& insets = host_->GetInsets();
@@ -835,8 +972,8 @@ void GridLayout::SizeRowsAndColumns(bool layout, int width, int height,
   width = width ? width : pref->width();
   for (const auto& column_set : column_sets_) {
     // We're doing a layout, divvy up any extra space.
-    column_set->Resize(width - column_set->LayoutWidth() - insets.left() -
-                       insets.right());
+    column_set->Resize(width - column_set->LayoutWidth() - insets.width(),
+                       honors_min_width_);
     // And reset the x coordinates.
     column_set->ResetColumnXCoordinates();
   }
@@ -851,7 +988,7 @@ void GridLayout::SizeRowsAndColumns(bool layout, int width, int height,
   // . If the width the view will be given is different than it's pref, ask
   //   for the height given a particularly width.
   for (const auto& view_state : view_states_) {
-    view_state->remaining_height = view_state->pref_height;
+    view_state->remaining_height = view_state->height;
 
     if (view_state->v_align == BASELINE)
       view_state->baseline = view_state->view->GetBaseline();
@@ -862,13 +999,11 @@ void GridLayout::SizeRowsAndColumns(bool layout, int width, int height,
       int actual_width =
           view_state->column_set->GetColumnWidth(view_state->start_col,
                                                  view_state->col_span);
-      if (actual_width != view_state->pref_width &&
-          !view_state->pref_height_fixed) {
+      if (actual_width != view_state->width && !view_state->pref_height_fixed) {
         // The width this view will get differs from its preferred. Some Views
         // pref height varies with its width; ask for the preferred again.
-        view_state->pref_height =
-            view_state->view->GetHeightForWidth(actual_width);
-        view_state->remaining_height = view_state->pref_height;
+        view_state->height = view_state->view->GetHeightForWidth(actual_width);
+        view_state->remaining_height = view_state->height;
       }
     }
   }
@@ -881,9 +1016,9 @@ void GridLayout::SizeRowsAndColumns(bool layout, int width, int height,
     Row* row = rows_[view_state->start_row].get();
     row->AdjustSize(view_state->remaining_height);
     if (view_state->baseline != -1 &&
-        view_state->baseline <= view_state->pref_height) {
+        view_state->baseline <= view_state->height) {
       row->AdjustSizeForBaseline(view_state->baseline,
-          view_state->pref_height - view_state->baseline);
+                                 view_state->height - view_state->baseline);
     }
     view_state->remaining_height = 0;
   }

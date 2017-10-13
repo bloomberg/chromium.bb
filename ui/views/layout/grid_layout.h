@@ -10,6 +10,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/logging.h"
 #include "base/macros.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/layout/layout_manager.h"
@@ -57,8 +58,14 @@
 // GridLayout allows you to force columns to have the same width. This is
 // done using the LinkColumnSizes method.
 //
-// AddView takes care of adding the View to the View the GridLayout was
+// AddView() takes care of adding the View to the View the GridLayout was
 // created with.
+//
+// If the host View is sized smaller than the preferred width and
+// set_honors_min_width(true) is called, GridLayout may use the minimum size.
+// The minimum size is considered only for Views whose preferred width was not
+// explicitly specified and the containing columns are resizable
+// (resize_percent > 0) and don't have a fixed width.
 namespace views {
 
 class Column;
@@ -104,6 +111,11 @@ class VIEWS_EXPORT GridLayout : public LayoutManager {
   static GridLayout* CreateAndInstall(View* host);
 
   ~GridLayout() override;
+
+  // See class description for what this does.
+  // TODO(sky): investigate making this the default, problem is it has subtle
+  // effects on the layout and some code is relying on old behavior.
+  void set_honors_min_width(bool value) { honors_min_width_ = value; }
 
   // Creates a new column set with the specified id and returns it.
   // The id is later used when starting a new row.
@@ -250,6 +262,8 @@ class VIEWS_EXPORT GridLayout : public LayoutManager {
   // Minimum preferred size.
   gfx::Size minimum_size_;
 
+  bool honors_min_width_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(GridLayout);
 };
 
@@ -343,12 +357,26 @@ class VIEWS_EXPORT ColumnSet {
   // NOTE: this doesn't include the insets.
   void ResetColumnXCoordinates();
 
+  enum SizeCalculationType {
+    PREFERRED,
+    MINIMUM,
+  };
+
   // Calculate the preferred width of each view in this column set, as well
   // as updating the remaining_width.
-  void CalculateSize();
+  void CalculateSize(SizeCalculationType type);
 
-  // Distributes delta among the resizable columns.
-  void Resize(int delta);
+  // Distributes delta among the resizable columns. |honors_min_width| matches
+  // that of |GridLayout::honors_min_width_|.
+  void Resize(int delta, bool honors_min_width);
+
+  // Used when GridLayout is given a size smaller than the preferred width.
+  // |total_delta| is negative and the difference between the preferred width
+  // and the target width.
+  void ResizeUsingMin(int total_delta);
+
+  // Only use the minimum size if all the columns the view is in are resizable.
+  bool CanUseMinimum(const ViewState& view_state) const;
 
   // ID for this columnset.
   const int id_;
@@ -367,6 +395,10 @@ class VIEWS_EXPORT ColumnSet {
   // The master column of those columns that are linked. See Column
   // for a description of what the master column is.
   std::vector<Column*> master_columns_;
+
+#if DCHECK_IS_ON()
+  SizeCalculationType last_calculation_type_ = SizeCalculationType::PREFERRED;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(ColumnSet);
 };

@@ -27,6 +27,27 @@ View* CreateSizedView(const gfx::Size& size) {
   return view;
 }
 
+// View that lets you set the minimum size.
+class MinSizeView : public View {
+ public:
+  explicit MinSizeView(const gfx::Size& min_size) : min_size_(min_size) {}
+  ~MinSizeView() override = default;
+
+  // View:
+  gfx::Size GetMinimumSize() const override { return min_size_; }
+
+ private:
+  const gfx::Size min_size_;
+
+  DISALLOW_COPY_AND_ASSIGN(MinSizeView);
+};
+
+View* CreateViewWithMinAndPref(const gfx::Size& min, const gfx::Size& pref) {
+  MinSizeView* view = new MinSizeView(min);
+  view->SetPreferredSize(pref);
+  return view;
+}
+
 // A test view that wants to alter its preferred size and re-layout when it gets
 // added to the View hierarchy.
 class LayoutOnAddView : public View {
@@ -823,6 +844,183 @@ TEST_F(GridLayoutTest, LayoutOnAddDeath) {
   EXPECT_TRUE(view.parent());
 
   RemoveAll();
+}
+
+TEST_F(GridLayoutTest, ColumnMinForcesPreferredWidth) {
+  // Column's min width is greater than views preferred/min width. This should
+  // force the preferred width to the min width of the column.
+  ColumnSet* set = layout()->AddColumnSet(0);
+  set->AddColumn(GridLayout::FILL, GridLayout::FILL, 5, GridLayout::USE_PREF, 0,
+                 100);
+  layout()->StartRow(0, 0);
+  View* view1 = CreateSizedView(gfx::Size(20, 10));
+  layout()->AddView(view1);
+
+  EXPECT_EQ(gfx::Size(100, 10), GetPreferredSize());
+}
+
+TEST_F(GridLayoutTest, HonorsColumnMin) {
+  layout()->set_honors_min_width(true);
+
+  // Verifies that a column with a min width is never shrunk smaller than the
+  // minw width.
+  ColumnSet* set = layout()->AddColumnSet(0);
+  set->AddColumn(GridLayout::FILL, GridLayout::FILL, 5, GridLayout::USE_PREF, 0,
+                 100);
+  set->AddColumn(GridLayout::FILL, GridLayout::FILL, 5, GridLayout::USE_PREF, 0,
+                 0);
+  layout()->StartRow(0, 0);
+  View* view1 = CreateViewWithMinAndPref(gfx::Size(10, 10), gfx::Size(125, 10));
+  layout()->AddView(view1);
+
+  View* view2 = CreateViewWithMinAndPref(gfx::Size(10, 10), gfx::Size(50, 10));
+  layout()->AddView(view2);
+
+  EXPECT_EQ(gfx::Size(175, 10), GetPreferredSize());
+
+  host().SetBounds(0, 0, 175, 0);
+  layout()->Layout(&host());
+  EXPECT_EQ(gfx::Rect(0, 0, 125, 10), view1->bounds());
+  EXPECT_EQ(gfx::Rect(125, 0, 50, 10), view2->bounds());
+
+  host().SetBounds(0, 0, 125, 0);
+  layout()->Layout(&host());
+  EXPECT_EQ(gfx::Rect(0, 0, 100, 10), view1->bounds());
+  EXPECT_EQ(gfx::Rect(100, 0, 25, 10), view2->bounds());
+
+  host().SetBounds(0, 0, 120, 0);
+  layout()->Layout(&host());
+  EXPECT_EQ(gfx::Rect(0, 0, 100, 10), view1->bounds());
+  EXPECT_EQ(gfx::Rect(100, 0, 20, 10), view2->bounds());
+}
+
+TEST_F(GridLayoutTest, TwoViewsOneSizeSmallerThanMinimum) {
+  layout()->set_honors_min_width(true);
+  // Two columns, equally resizable with two views. Only the first view is
+  // resizable.
+  ColumnSet* set = layout()->AddColumnSet(0);
+  set->AddColumn(GridLayout::FILL, GridLayout::FILL, 5, GridLayout::USE_PREF, 0,
+                 0);
+  set->AddColumn(GridLayout::FILL, GridLayout::FILL, 5, GridLayout::USE_PREF, 0,
+                 0);
+  layout()->StartRow(0, 0);
+  View* view1 = CreateViewWithMinAndPref(gfx::Size(20, 10), gfx::Size(100, 10));
+  layout()->AddView(view1);
+
+  View* view2 =
+      CreateViewWithMinAndPref(gfx::Size(100, 10), gfx::Size(100, 10));
+  layout()->AddView(view2);
+
+  host().SetBounds(0, 0, 110, 0);
+  layout()->Layout(&host());
+  EXPECT_EQ(gfx::Rect(0, 0, 20, 10), view1->bounds());
+  EXPECT_EQ(gfx::Rect(20, 0, 100, 10), view2->bounds());
+}
+
+TEST_F(GridLayoutTest, TwoViewsBothSmallerThanMinimumDifferentResizeWeights) {
+  layout()->set_honors_min_width(true);
+  // Two columns, equally resizable with two views. Only the first view is
+  // resizable.
+  ColumnSet* set = layout()->AddColumnSet(0);
+  set->AddColumn(GridLayout::FILL, GridLayout::FILL, 8, GridLayout::USE_PREF, 0,
+                 0);
+  set->AddColumn(GridLayout::FILL, GridLayout::FILL, 2, GridLayout::USE_PREF, 0,
+                 0);
+  layout()->StartRow(0, 0);
+  View* view1 = CreateViewWithMinAndPref(gfx::Size(91, 10), gfx::Size(100, 10));
+  layout()->AddView(view1);
+
+  View* view2 = CreateViewWithMinAndPref(gfx::Size(10, 10), gfx::Size(100, 10));
+  layout()->AddView(view2);
+
+  // 200 is the preferred, each should get their preferred width.
+  host().SetBounds(0, 0, 200, 0);
+  layout()->Layout(&host());
+  EXPECT_EQ(gfx::Rect(0, 0, 100, 10), view1->bounds());
+  EXPECT_EQ(gfx::Rect(100, 0, 100, 10), view2->bounds());
+
+  // 1 pixel smaller than pref.
+  host().SetBounds(0, 0, 199, 0);
+  layout()->Layout(&host());
+  EXPECT_EQ(gfx::Rect(0, 0, 99, 10), view1->bounds());
+  EXPECT_EQ(gfx::Rect(99, 0, 100, 10), view2->bounds());
+
+  // 10 pixels smaller than pref.
+  host().SetBounds(0, 0, 190, 0);
+  layout()->Layout(&host());
+  EXPECT_EQ(gfx::Rect(0, 0, 92, 10), view1->bounds());
+  EXPECT_EQ(gfx::Rect(92, 0, 98, 10), view2->bounds());
+
+  // 11 pixels smaller than pref.
+  host().SetBounds(0, 0, 189, 0);
+  layout()->Layout(&host());
+  EXPECT_EQ(gfx::Rect(0, 0, 91, 10), view1->bounds());
+  EXPECT_EQ(gfx::Rect(91, 0, 98, 10), view2->bounds());
+
+  // 12 pixels smaller than pref.
+  host().SetBounds(0, 0, 188, 0);
+  layout()->Layout(&host());
+  EXPECT_EQ(gfx::Rect(0, 0, 91, 10), view1->bounds());
+  EXPECT_EQ(gfx::Rect(91, 0, 97, 10), view2->bounds());
+
+  host().SetBounds(0, 0, 5, 0);
+  layout()->Layout(&host());
+  EXPECT_EQ(gfx::Rect(0, 0, 91, 10), view1->bounds());
+  EXPECT_EQ(gfx::Rect(91, 0, 10, 10), view2->bounds());
+}
+
+TEST_F(GridLayoutTest, TwoViewsOneColumnUsePrefOtherFixed) {
+  layout()->set_honors_min_width(true);
+  ColumnSet* set = layout()->AddColumnSet(0);
+  set->AddColumn(GridLayout::FILL, GridLayout::FILL, 8, GridLayout::USE_PREF, 0,
+                 0);
+  set->AddColumn(GridLayout::FILL, GridLayout::FILL, 2, GridLayout::FIXED, 100,
+                 0);
+  layout()->StartRow(0, 0);
+  View* view1 = CreateViewWithMinAndPref(gfx::Size(10, 10), gfx::Size(100, 10));
+  layout()->AddView(view1);
+  View* view2 = CreateViewWithMinAndPref(gfx::Size(10, 10), gfx::Size(100, 10));
+  layout()->AddView(view2);
+
+  host().SetBounds(0, 0, 120, 0);
+  layout()->Layout(&host());
+  EXPECT_EQ(gfx::Rect(0, 0, 20, 10), view1->bounds());
+  // Even though column 2 has a resize percent, it's FIXED, so it won't shrink.
+  EXPECT_EQ(gfx::Rect(20, 0, 100, 10), view2->bounds());
+
+  host().SetBounds(0, 0, 10, 0);
+  layout()->Layout(&host());
+  EXPECT_EQ(gfx::Rect(0, 0, 10, 10), view1->bounds());
+  EXPECT_EQ(gfx::Rect(10, 0, 100, 10), view2->bounds());
+}
+
+TEST_F(GridLayoutTest, TwoViewsBothColumnsResizableOneViewFixedWidthMin) {
+  layout()->set_honors_min_width(true);
+  ColumnSet* set = layout()->AddColumnSet(0);
+  set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1, GridLayout::USE_PREF, 0,
+                 0);
+  set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1, GridLayout::USE_PREF, 0,
+                 0);
+  layout()->StartRow(0, 0);
+  View* view1 = CreateViewWithMinAndPref(gfx::Size(10, 10), gfx::Size(100, 10));
+  layout()->AddView(view1);
+  View* view2 = CreateViewWithMinAndPref(gfx::Size(10, 10), gfx::Size(100, 10));
+  layout()->AddView(view2, 1, 1, GridLayout::FILL, GridLayout::FILL, 50, 10);
+
+  host().SetBounds(0, 0, 80, 0);
+  layout()->Layout(&host());
+  EXPECT_EQ(gfx::Rect(0, 0, 30, 10), view1->bounds());
+  EXPECT_EQ(gfx::Rect(30, 0, 50, 10), view2->bounds());
+
+  host().SetBounds(0, 0, 70, 0);
+  layout()->Layout(&host());
+  EXPECT_EQ(gfx::Rect(0, 0, 20, 10), view1->bounds());
+  EXPECT_EQ(gfx::Rect(20, 0, 50, 10), view2->bounds());
+
+  host().SetBounds(0, 0, 10, 0);
+  layout()->Layout(&host());
+  EXPECT_EQ(gfx::Rect(0, 0, 10, 10), view1->bounds());
+  EXPECT_EQ(gfx::Rect(10, 0, 50, 10), view2->bounds());
 }
 
 }  // namespace views
