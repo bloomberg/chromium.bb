@@ -107,6 +107,8 @@ struct GestureData {
   gfx.mojom.PointF screen_position;
   gfx.mojom.PointF widget_position;
   GestureDevice source_device;
+  bool is_source_touch_event_set_non_blocking;
+  PointerType primary_pointer_type;
   int32 unique_touch_event_id;
   int32 resending_plugin_id;
   gfx.mojom.Size? contact_size;
