@@ -106,11 +106,12 @@ void WorkletGlobalScope::FetchAndInvokeScript(
   // Step 2: "Let script by the result of fetch a worklet script given
   // moduleURLRecord, moduleResponsesMap, credentialOptions, outsideSettings,
   // and insideSettings when it asynchronously completes."
-  String nonce = "";
+  String nonce;
   ParserDisposition parser_state = kNotParserInserted;
   Modulator* modulator = Modulator::From(ScriptController()->GetScriptState());
-  ModuleScriptFetchRequest module_request(module_url_record, nonce,
-                                          parser_state, credentials_mode);
+  // TODO(nhiroki, ikilpatrick): Update spec to use #script-fetch-options.
+  ScriptFetchOptions options(nonce, parser_state, credentials_mode);
+  ModuleScriptFetchRequest module_request(module_url_record, options);
 
   // Step 3 to 5 are implemented in
   // WorkletModuleTreeClient::NotifyModuleTreeLoadFinished.

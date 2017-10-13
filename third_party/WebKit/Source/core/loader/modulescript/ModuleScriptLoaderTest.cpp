@@ -193,8 +193,7 @@ void ModuleScriptLoaderTest::TestFetchDataURL(
     TestModuleScriptLoaderClient* client) {
   ModuleScriptLoaderRegistry* registry = ModuleScriptLoaderRegistry::Create();
   KURL url(kParsedURLString, "data:text/javascript,export default 'grapes';");
-  ModuleScriptFetchRequest module_request(
-      url, String(), kParserInserted, WebURLRequest::kFetchCredentialsModeOmit);
+  ModuleScriptFetchRequest module_request(url, ScriptFetchOptions());
   registry->Fetch(module_request, ModuleGraphLevel::kTopLevelModuleFetch,
                   GetModulator(), client);
 }
@@ -242,8 +241,7 @@ void ModuleScriptLoaderTest::TestInvalidSpecifier(
   ModuleScriptLoaderRegistry* registry = ModuleScriptLoaderRegistry::Create();
   KURL url(kParsedURLString,
            "data:text/javascript,import 'invalid';export default 'grapes';");
-  ModuleScriptFetchRequest module_request(
-      url, String(), kParserInserted, WebURLRequest::kFetchCredentialsModeOmit);
+  ModuleScriptFetchRequest module_request(url, ScriptFetchOptions());
   GetModulator()->SetModuleRequests({"invalid"});
   registry->Fetch(module_request, ModuleGraphLevel::kTopLevelModuleFetch,
                   GetModulator(), client);
@@ -279,8 +277,7 @@ void ModuleScriptLoaderTest::TestFetchInvalidURL(
   ModuleScriptLoaderRegistry* registry = ModuleScriptLoaderRegistry::Create();
   KURL url;
   EXPECT_FALSE(url.IsValid());
-  ModuleScriptFetchRequest module_request(
-      url, String(), kParserInserted, WebURLRequest::kFetchCredentialsModeOmit);
+  ModuleScriptFetchRequest module_request(url, ScriptFetchOptions());
   registry->Fetch(module_request, ModuleGraphLevel::kTopLevelModuleFetch,
                   GetModulator(), client);
 }
@@ -315,8 +312,7 @@ void ModuleScriptLoaderTest::TestFetchURL(
       url, testing::CoreTestDataPath("module.js"), "text/javascript");
 
   ModuleScriptLoaderRegistry* registry = ModuleScriptLoaderRegistry::Create();
-  ModuleScriptFetchRequest module_request(
-      url, String(), kParserInserted, WebURLRequest::kFetchCredentialsModeOmit);
+  ModuleScriptFetchRequest module_request(url, ScriptFetchOptions());
   registry->Fetch(module_request, ModuleGraphLevel::kTopLevelModuleFetch,
                   GetModulator(), client);
 }

@@ -70,6 +70,7 @@ jumbo_source_set("loader") {
     "fetch/ResourceStatus.h",
     "fetch/ResourceTimingInfo.cpp",
     "fetch/ResourceTimingInfo.h",
+    "fetch/ScriptFetchOptions.h",
     "fetch/SubstituteData.h",
     "fetch/TextResourceDecoderOptions.cpp",
     "fetch/TextResourceDecoderOptions.h",

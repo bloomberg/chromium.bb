@@ -117,12 +117,13 @@ void ModuleMap::FetchSingleModuleScript(const ModuleScriptFetchRequest& request,
                                         SingleModuleClient* client) {
   // https://html.spec.whatwg.org/#fetch-a-single-module-script
 
-  // Step 1. Let moduleMap be module map settings object's module map.
-  // Note: This is the ModuleMap.
+  // Step 1. "Let moduleMap be module map settings object's module map."
+  // [spec text]
+  // Note: |this| is the ModuleMap.
 
-  // Step 2. If moduleMap[url] is "fetching", wait in parallel until that
+  // Step 2. "If moduleMap[url] is "fetching", wait in parallel until that
   // entry's value changes, then queue a task on the networking task source to
-  // proceed with running the following steps.
+  // proceed with running the following steps." [spec text]
   MapImpl::AddResult result = map_.insert(request.Url(), nullptr);
   TraceWrapperMember<Entry>& entry = result.stored_value->value;
   if (result.is_new_entry) {
@@ -134,10 +135,10 @@ void ModuleMap::FetchSingleModuleScript(const ModuleScriptFetchRequest& request,
   }
   DCHECK(entry);
 
-  // Step 3. If moduleMap[url] exists, asynchronously complete this algorithm
-  // with moduleMap[url], and abort these steps.
-  // Step 10. Set moduleMap[url] to module script, and asynchronously complete
-  // this algorithm with module script.
+  // Step 3. "If moduleMap[url] exists, asynchronously complete this algorithm
+  // with moduleMap[url], and abort these steps." [spec text]
+  // Step 11. "Set moduleMap[url] to module script, and asynchronously complete
+  // this algorithm with module script." [spec text]
   entry->AddClient(client);
 }
 
