@@ -99,9 +99,9 @@ struct ResourceLoaderOptions {
   RequestInitiatorContext request_initiator_context;
   SynchronousPolicy synchronous_policy;
 
-  // When set to true, the ResourceFetcher suppresses part of its CORS handling
-  // logic. Used by DocumentThreadableLoader which does CORS handling by
-  // itself.
+  // When set to kDisableCORSHandlingByResourceFetcher, the ResourceFetcher
+  // suppresses part of its CORS handling logic.
+  // Used by DocumentThreadableLoader which does CORS handling by itself.
   CORSHandlingByResourceFetcher cors_handling_by_resource_fetcher;
 
   // Corresponds to the CORS flag in the Fetch spec.

@@ -208,8 +208,9 @@ bool WebCORSPreflightResultCacheItem::AllowsRequest(
   if (absolute_expiry_time_ < CurrentTime())
     return false;
   if (!credentials_ &&
-      FetchUtils::ShouldTreatCredentialsModeAsInclude(credentials_mode))
+      FetchUtils::ShouldTreatCredentialsModeAsInclude(credentials_mode)) {
     return false;
+  }
   if (!AllowsCrossOriginMethod(method, ignored_explanation))
     return false;
   if (!AllowsCrossOriginHeaders(request_headers, ignored_explanation))
