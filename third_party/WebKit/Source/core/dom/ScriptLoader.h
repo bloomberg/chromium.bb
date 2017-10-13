@@ -30,6 +30,7 @@
 #include "platform/bindings/TraceWrapperMember.h"
 #include "platform/loader/fetch/IntegrityMetadata.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
+#include "platform/loader/fetch/ScriptFetchOptions.h"
 #include "platform/wtf/text/TextEncoding.h"
 #include "platform/wtf/text/TextPosition.h"
 #include "platform/wtf/text/WTFString.h"
@@ -161,9 +162,7 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
   // https://html.spec.whatwg.org/#fetch-a-module-script-tree
   void FetchModuleScriptTree(const KURL&,
                              Modulator*,
-                             const String& nonce,
-                             ParserDisposition,
-                             WebURLRequest::FetchCredentialsMode);
+                             const ScriptFetchOptions&);
 
   enum class ExecuteScriptResult {
     kShouldFireErrorEvent,

@@ -13,7 +13,7 @@
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/bindings/TraceWrapperV8Reference.h"
 #include "platform/heap/Handle.h"
-#include "platform/loader/fetch/ResourceLoaderOptions.h"
+#include "platform/loader/fetch/ScriptFetchOptions.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/text/TextPosition.h"
 #include "public/platform/WebURLRequest.h"
@@ -29,14 +29,13 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
       const String& source_text,
       Modulator*,
       const KURL& base_url,
-      const String& nonce,
-      ParserDisposition,
-      WebURLRequest::FetchCredentialsMode,
+      const ScriptFetchOptions&,
       AccessControlStatus,
       const TextPosition& start_position = TextPosition::MinimumPosition());
 
   // Mostly corresponds to Create() but accepts ScriptModule as the argument
   // and allows null ScriptModule.
+  // TODO(kouhei): Consider making this take ScriptFetchOptions directly.
   static ModuleScript* CreateForTest(Modulator*,
                                      ScriptModule,
                                      const KURL& base_url,
@@ -66,12 +65,7 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
     return preinstantiation_error_.NewLocal(isolate);
   }
 
-  ParserDisposition ParserState() const { return parser_state_; }
-  WebURLRequest::FetchCredentialsMode CredentialsMode() const {
-    return credentials_mode_;
-  }
-  const String& Nonce() const { return nonce_; }
-
+  const ScriptFetchOptions& FetchOptions() const { return fetch_options_; }
   const TextPosition& StartPosition() const { return start_position_; }
 
   DECLARE_TRACE();
@@ -81,9 +75,7 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
   ModuleScript(Modulator* settings_object,
                ScriptModule record,
                const KURL& base_url,
-               const String& nonce,
-               ParserDisposition parser_state,
-               WebURLRequest::FetchCredentialsMode credentials_mode,
+               const ScriptFetchOptions&,
                const String& source_text,
                const TextPosition& start_position);
 
@@ -91,9 +83,7 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
                                       Modulator*,
                                       ScriptModule,
                                       const KURL& base_url,
-                                      const String& nonce,
-                                      ParserDisposition,
-                                      WebURLRequest::FetchCredentialsMode,
+                                      const ScriptFetchOptions&,
                                       const TextPosition&);
 
   ScriptType GetScriptType() const override { return ScriptType::kModule; }
@@ -146,14 +136,9 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
   // TraceWrapperBase/TraceWrapperMember<>/etc.,
   TraceWrapperV8Reference<v8::Value> preinstantiation_error_;
 
-  // https://html.spec.whatwg.org/multipage/webappapis.html#concept-module-script-nonce
-  const String nonce_;
-
-  // https://html.spec.whatwg.org/multipage/webappapis.html#concept-module-script-parser
-  const ParserDisposition parser_state_;
-
-  // https://html.spec.whatwg.org/multipage/webappapis.html#concept-module-script-credentials-mode
-  const WebURLRequest::FetchCredentialsMode credentials_mode_;
+  // https://html.spec.whatwg.org/#concept-script-script-fetch-options
+  // TODO(kouhei): Move this up the hierarchy (should be at Script).
+  const ScriptFetchOptions fetch_options_;
 
   // For CSP check.
   const String source_text_;

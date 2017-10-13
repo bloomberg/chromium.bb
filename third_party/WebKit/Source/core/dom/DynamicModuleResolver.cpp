@@ -191,11 +191,9 @@ void DynamicModuleResolver::ResolveDynamically(
   // options are a new script fetch options whose items all have the same
   // values, except for the integrity metadata, which is instead the empty
   // string." [spec text]
-  WebURLRequest::FetchCredentialsMode credentials_mode =
-      referrer_info.CredentialsMode();
-  const String& nonce = referrer_info.Nonce();
-  ParserDisposition parser_state = referrer_info.ParserState();
-  ModuleScriptFetchRequest request(url, nonce, parser_state, credentials_mode);
+  ScriptFetchOptions options(referrer_info.Nonce(), referrer_info.ParserState(),
+                             referrer_info.CredentialsMode());
+  ModuleScriptFetchRequest request(url, options);
 
   // Step 2.4. "Fetch a module script graph given url, settings object,
   // "script", and options. Wait until the algorithm asynchronously completes

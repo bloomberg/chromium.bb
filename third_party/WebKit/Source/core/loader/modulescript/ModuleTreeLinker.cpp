@@ -350,10 +350,9 @@ void ModuleTreeLinker::FetchDescendants(ModuleScript* module_script) {
   for (size_t i = 0; i < urls.size(); ++i) {
     // [FD] Step 6. ... perform the internal module script graph fetching
     // procedure given ... with the top-level module fetch flag unset. ...
-    ModuleScriptFetchRequest request(
-        urls[i], module_script->Nonce(), module_script->ParserState(),
-        module_script->CredentialsMode(), module_script->BaseURL().GetString(),
-        positions[i]);
+    ModuleScriptFetchRequest request(urls[i], module_script->FetchOptions(),
+                                     module_script->BaseURL().GetString(),
+                                     positions[i]);
     InitiateInternalModuleScriptGraphFetching(
         request, ModuleGraphLevel::kDependentModuleFetch);
   }

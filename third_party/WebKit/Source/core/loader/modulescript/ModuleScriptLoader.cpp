@@ -78,23 +78,35 @@ void ModuleScriptLoader::Fetch(const ModuleScriptFetchRequest& module_request,
                                ModuleGraphLevel level) {
   // https://html.spec.whatwg.org/#fetch-a-single-module-script
 
-  // Step 4. Set moduleMap[url] to "fetching".
+  // Save "options" for its use in Step 8-.
+  options_ = module_request.Options();
+
+  // Step 4. "Set moduleMap[url] to "fetching"." [spec text]
   AdvanceState(State::kFetching);
 
-  // Step 5. Let request be a new request whose url is url, ...
+  // Step 5. "Let request be a new request whose url is url, ..." [spec text]
   ResourceRequest resource_request(module_request.Url());
 #if DCHECK_IS_ON()
   url_ = module_request.Url();
 #endif
 
+  ResourceLoaderOptions options;
+
   // TODO(kouhei): handle "destination is destination,"
 
-  // ... type is "script", ...
-  // -> FetchResourceType is specified by ScriptResource::fetch
+  // Step 6. "Set up the module script request given request and options."
+  // [spec text]
+  // [SMSR]
+  // https://html.spec.whatwg.org/multipage/webappapis.html#set-up-the-module-script-request
 
-  // parser metadata is parser state,
-  ResourceLoaderOptions options;
-  options.parser_disposition = module_request.ParserState();
+  // [SMSR] "... its integrity metadata to options's integrity metadata, ..."
+  // [spec text]
+  // TODO(kouhei): Implement.
+
+  // [SMSR] "... its parser metadata to options's parser metadata, ..."
+  // [spec text]
+  options.parser_disposition = options_.ParserState();
+
   // As initiator for module script fetch is not specified in HTML spec,
   // we specity "" as initiator per:
   // https://fetch.spec.whatwg.org/#concept-request-initiator
@@ -106,25 +118,32 @@ void ModuleScriptLoader::Fetch(const ModuleScriptFetchRequest& module_request,
     options.initiator_info.position = module_request.GetReferrerPosition();
   }
 
-  // referrer is referrer,
+  // Note: |options| should not be modified after here.
+  FetchParameters fetch_params(resource_request, options);
+
+  // [SMSR] "Set request's cryptographic nonce metadata to options's
+  // cryptographic nonce, ..." [spec text]
+  fetch_params.SetContentSecurityPolicyNonce(options_.Nonce());
+
+  // Step 5. "... mode is "cors", ..."
+  // [SMSR] "... and its credentials mode to options's credentials mode."
+  // [spec text]
+  fetch_params.SetCrossOriginAccessControl(modulator_->GetSecurityOrigin(),
+                                           options_.CredentialsMode());
+
+  // Step 5. "... referrer is referrer, ..." [spec text]
   if (!module_request.GetReferrer().IsNull()) {
     resource_request.SetHTTPReferrer(SecurityPolicy::GenerateReferrer(
         modulator_->GetReferrerPolicy(), module_request.Url(),
         module_request.GetReferrer()));
   }
-  // and client is fetch client settings object. -> set by ResourceFetcher
+  // Step 5. "... and client is fetch client settings object." [spec text]
+  // -> set by ResourceFetcher
 
-  FetchParameters fetch_params(resource_request, options);
-  // ... cryptographic nonce metadata is cryptographic nonce, ...
-  fetch_params.SetContentSecurityPolicyNonce(module_request.Nonce());
   // Note: The fetch request's "origin" isn't specified in
   // https://html.spec.whatwg.org/#fetch-a-single-module-script
   // Thus, the "origin" is "client" per
   // https://fetch.spec.whatwg.org/#concept-request-origin
-  // ... mode is "cors", ...
-  // ... credentials mode is credentials mode, ...
-  fetch_params.SetCrossOriginAccessControl(modulator_->GetSecurityOrigin(),
-                                           module_request.CredentialsMode());
 
   // Module scripts are always defer.
   fetch_params.SetDefer(FetchParameters::kLazyLoad);
@@ -132,21 +151,20 @@ void ModuleScriptLoader::Fetch(const ModuleScriptFetchRequest& module_request,
   // High priority.
   fetch_params.MutableResourceRequest().SetPriority(kResourceLoadPriorityHigh);
 
-  // Use UTF-8, according to Step 8:
+  // Use UTF-8, according to Step 9:
   // "Let source text be the result of UTF-8 decoding response's body."
+  // [spec text]
   fetch_params.SetDecoderOptions(
       TextResourceDecoderOptions::CreateAlwaysUseUTF8ForText());
 
-  nonce_ = module_request.Nonce();
-  parser_state_ = module_request.ParserState();
-
-  // Step 6. If the caller specified custom steps to perform the fetch,
+  // Step 7. "If the caller specified custom steps to perform the fetch,
   // perform them on request, setting the is top-level flag if the top-level
   // module fetch flag is set. Return from this algorithm, and when the custom
   // perform the fetch steps complete with response response, run the remaining
   // steps.
   // Otherwise, fetch request. Return from this algorithm, and run the remaining
-  // steps as part of the fetch's process response for the response response.
+  // steps as part of the fetch's process response for the response response."
+  // [spec text]
   module_fetcher_ = modulator_->CreateModuleScriptFetcher();
   module_fetcher_->Fetch(fetch_params, this);
 }
@@ -160,11 +178,11 @@ void ModuleScriptLoader::NotifyFetchFinished(
     return;
   }
 
-  // Note: "conditions" referred in Step 7 is implemented in
+  // Note: "conditions" referred in Step 8 is implemented in
   // WasModuleLoadSuccessful() in ModuleScriptFetcher.cpp.
-  // Step 7. If any of the following conditions are met, set moduleMap[url] to
+  // Step 8. "If any of the following conditions are met, set moduleMap[url] to
   // null, asynchronously complete this algorithm with null, and abort these
-  // steps.
+  // steps." [spec text]
   if (!params.has_value()) {
     if (error_message) {
       ExecutionContext::From(modulator_->GetScriptState())
@@ -174,14 +192,14 @@ void ModuleScriptLoader::NotifyFetchFinished(
     return;
   }
 
-  // Step 8. Let source text be the result of UTF-8 decoding response's body.
-  // Step 9. Let module script be the result of creating a module script given
-  // source text, module map settings object, response's url, cryptographic
-  // nonce, parser state, and credentials mode.
-  module_script_ = ModuleScript::Create(
-      params->GetSourceText(), modulator_, params->GetResponseUrl(), nonce_,
-      parser_state_, params->GetFetchCredentialsMode(),
-      params->GetAccessControlStatus());
+  // Step 9. "Let source text be the result of UTF-8 decoding response's body."
+  // [spec text]
+  // Step 10. "Let module script be the result of creating a module script given
+  // source text, module map settings object, response's url, and options."
+  // [spec text]
+  module_script_ = ModuleScript::Create(params->GetSourceText(), modulator_,
+                                        params->GetResponseUrl(), options_,
+                                        params->GetAccessControlStatus());
 
   AdvanceState(State::kFinished);
 }
