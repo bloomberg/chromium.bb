@@ -794,6 +794,11 @@ struct PROCESS_ACCESS_TOKEN {
 
 const unsigned int NtProcessInformationAccessToken = 9;
 
+typedef NTSTATUS(WINAPI* RtlDeriveCapabilitySidsFromNameFunction)(
+    PCUNICODE_STRING SourceString,
+    PSID CapabilityGroupSid,
+    PSID CapabilitySid);
+
 // -----------------------------------------------------------------------
 // GDI OPM API and Supported Calls
 

@@ -11,13 +11,20 @@
 
 namespace sandbox {
 
+// Known capabilities defined in Windows 8.
 enum WellKnownCapabilities {
   kInternetClient,
   kInternetClientServer,
-  kRegistryRead,
-  kLpacCryptoServices,
-  kEnterpriseAuthentication,
   kPrivateNetworkClientServer,
+  kPicturesLibrary,
+  kVideosLibrary,
+  kMusicLibrary,
+  kDocumentsLibrary,
+  kEnterpriseAuthentication,
+  kSharedUserCertificates,
+  kRemovableStorage,
+  kAppointments,
+  kContacts,
   kMaxWellKnownCapability
 };
 
@@ -34,7 +41,8 @@ class Sid {
   // Create a Sid from an AppContainer capability name. The name can be
   // completely arbitrary.
   static Sid FromNamedCapability(const wchar_t* capability_name);
-  // Create a Sid from a known capability enumeration value.
+  // Create a Sid from a known capability enumeration value. The Sids
+  // match with the list defined in Windows 8.
   static Sid FromKnownCapability(WellKnownCapabilities capability);
   // Create a Sid from a SDDL format string, such as S-1-1-0.
   static Sid FromSddlString(const wchar_t* sddl_sid);
