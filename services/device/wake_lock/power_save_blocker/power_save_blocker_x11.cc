@@ -463,6 +463,7 @@ DBusAPI PowerSaveBlocker::Delegate::SelectAPI() {
   std::unique_ptr<base::Environment> env(base::Environment::Create());
   switch (base::nix::GetDesktopEnvironment(env.get())) {
     case base::nix::DESKTOP_ENVIRONMENT_GNOME:
+    case base::nix::DESKTOP_ENVIRONMENT_PANTHEON:
     case base::nix::DESKTOP_ENVIRONMENT_UNITY:
       if (DPMSEnabled())
         return GNOME_API;

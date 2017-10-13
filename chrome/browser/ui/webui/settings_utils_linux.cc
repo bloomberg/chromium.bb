@@ -95,6 +95,7 @@ void DetectAndStartProxyConfigUtil(int render_process_id,
   bool launched = false;
   switch (base::nix::GetDesktopEnvironment(env.get())) {
     case base::nix::DESKTOP_ENVIRONMENT_GNOME:
+    case base::nix::DESKTOP_ENVIRONMENT_PANTHEON:
     case base::nix::DESKTOP_ENVIRONMENT_UNITY: {
       launched = StartProxyConfigUtil(kGNOME2ProxyConfigCommand);
       if (!launched) {

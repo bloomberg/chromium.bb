@@ -176,8 +176,8 @@ case $CHANNEL in
     ;;
 esac
 
-%{_sbindir}/update-alternatives --install /usr/bin/google-chrome google-chrome \
-  /usr/bin/@@USR_BIN_SYMLINK_NAME@@ $PRIORITY
+%{_sbindir}/update-alternatives --install /usr/bin/@@PACKAGE_ORIG@@ \
+  @@PACKAGE_ORIG@@ /usr/bin/@@USR_BIN_SYMLINK_NAME@@ $PRIORITY
 
 exit 0
 
@@ -204,7 +204,7 @@ if [ "$mode" = "uninstall" ]; then
   remove_nss_symlinks
   remove_udev_symlinks
 
-  %{_sbindir}/update-alternatives --remove google-chrome \
+  %{_sbindir}/update-alternatives --remove @@PACKAGE_ORIG@@ \
     /usr/bin/@@USR_BIN_SYMLINK_NAME@@
 fi
 
