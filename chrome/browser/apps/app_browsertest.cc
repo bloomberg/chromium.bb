@@ -1223,7 +1223,15 @@ class PlatformAppIncognitoBrowserTest : public PlatformAppBrowserTest,
   std::set<std::string> opener_app_ids_;
 };
 
-IN_PROC_BROWSER_TEST_F(PlatformAppIncognitoBrowserTest, IncognitoComponentApp) {
+// Seen to fail repeatedly on CrOS; crbug.com/774011.
+#ifndef OS_CHROMEOS
+#define MAYBE_IncognitoComponentApp IncognitoComponentApp
+#else
+#define MAYBE_IncognitoComponentApp DISABLED_IncognitoComponentApp
+#endif
+
+IN_PROC_BROWSER_TEST_F(PlatformAppIncognitoBrowserTest,
+                       MAYBE_IncognitoComponentApp) {
   // Get the file manager app.
   const Extension* file_manager = extension_service()->GetExtensionById(
       "hhaomjibdihmijegdhdafkllkbggdgoj", false);
