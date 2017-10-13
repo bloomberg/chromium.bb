@@ -266,7 +266,7 @@ function extension_testStatusBarButtons(nextTest)
         });
         // First we click on button2 (that is [1] in array). But it is disabled, so this should be a noop. Then we click on button1.
         // button1 click updates buttons. and clicks button2.
-        evaluateOnFrontend("TestRunner.showPanel('extension').then(function() { InspectorTest.clickButton(1); InspectorTest.clickButton(0); })");
+        evaluateOnFrontend("InspectorTest.showPanel('extension').then(function() { InspectorTest.clickButton(1); InspectorTest.clickButton(0); })");
     }
 
     webInspector.panels.create("Buttons Panel", basePath + "extension-panel.png", basePath + "non-existent.html", onPanelCreated);

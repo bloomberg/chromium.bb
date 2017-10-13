@@ -49,8 +49,8 @@ GURL LayoutTestDevToolsBindings::GetDevToolsPathAsURL(
     dev_tools_path = dir_exe.AppendASCII("resources/inspector/" + folder);
   }
 
-  GURL result =
-      net::FilePathToFileURL(dev_tools_path.AppendASCII("inspector.html"));
+  GURL result = net::FilePathToFileURL(
+      dev_tools_path.AppendASCII("integration_test_runner.html"));
   std::string url_string =
       base::StringPrintf("%s?experiments=true", result.spec().c_str());
   if (is_debug_dev_tools)
@@ -69,10 +69,6 @@ GURL LayoutTestDevToolsBindings::MapTestURLIfNeeded(const GURL& test_url,
   if (!*is_devtools_js_test)
     return test_url;
   std::string url_string = GetDevToolsPathAsURL(std::string()).spec();
-  std::string inspector_file_name = "inspector.html";
-  size_t start_position = url_string.find(inspector_file_name);
-  url_string.replace(start_position, inspector_file_name.length(),
-                     "integration_test_runner.html");
   url_string += "&test=" + spec;
   return GURL(url_string);
 }
