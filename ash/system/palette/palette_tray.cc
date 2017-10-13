@@ -19,6 +19,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/palette/palette_tool_manager.h"
 #include "ash/system/palette/palette_utils.h"
+#include "ash/system/palette/palette_welcome_bubble.h"
 #include "ash/system/tray/system_menu_button.h"
 #include "ash/system/tray/system_tray_controller.h"
 #include "ash/system/tray/tray_bubble_wrapper.h"
@@ -144,7 +145,7 @@ class TitleView : public views::View, public views::ButtonListener {
 // StylusWatcher is used to monitor for stylus events, since we only want to
 // make the palette tray visible for devices without internal styluses once they
 // start using the stylus.
-class PaletteTray::StylusWatcher : views::PointerWatcher {
+class PaletteTray::StylusWatcher : public views::PointerWatcher {
  public:
   explicit StylusWatcher(PrefService* pref_service)
       : local_state_pref_service_(pref_service) {
@@ -174,6 +175,7 @@ class PaletteTray::StylusWatcher : views::PointerWatcher {
 PaletteTray::PaletteTray(Shelf* shelf)
     : TrayBackgroundView(shelf),
       palette_tool_manager_(new PaletteToolManager(this)),
+      welcome_bubble_(std::make_unique<PaletteWelcomeBubble>(this)),
       scoped_session_observer_(this),
       weak_factory_(this) {
   PaletteTool::RegisterToolInstances(palette_tool_manager_.get());
@@ -290,6 +292,11 @@ void PaletteTray::OnStylusStateChanged(ui::StylusState stylus_state) {
     } else if (stylus_state == ui::StylusState::INSERTED && bubble_) {
       HidePalette();
     }
+  } else if (stylus_state == ui::StylusState::REMOVED) {
+    // Show the palette welcome bubble if the auto open palette setting is not
+    // turned on, if the bubble has not been shown before (|welcome_bubble_|
+    // will be nullptr if the bubble has been shown before).
+    welcome_bubble_->ShowIfNeeded();
   }
 
   // Disable any active modes if the stylus has been inserted.
