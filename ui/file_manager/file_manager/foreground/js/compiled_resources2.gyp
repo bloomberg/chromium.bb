@@ -56,6 +56,7 @@
     {
       'target_name': 'dialog_action_controller',
       'dependencies': [
+        '../../common/js/compiled_resources2.gyp:metrics',
         '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:command',
         'dialog_type',
         'directory_contents',
