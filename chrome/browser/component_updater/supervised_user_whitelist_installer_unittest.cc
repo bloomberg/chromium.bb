@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -97,7 +98,7 @@ class MockComponentUpdateService : public ComponentUpdateService,
 
   bool RegisterComponent(const CrxComponent& component) override {
     EXPECT_EQ(nullptr, component_.get());
-    component_.reset(new CrxComponent(component));
+    component_ = std::make_unique<CrxComponent>(component);
     if (!registration_callback_.is_null())
       registration_callback_.Run();
 
@@ -200,8 +201,7 @@ class SupervisedUserWhitelistInstallerTest : public testing::Test {
  public:
   SupervisedUserWhitelistInstallerTest()
       : testing_profile_manager_(TestingBrowserProcess::GetGlobal()),
-        user_data_dir_override_(chrome::DIR_USER_DATA),
-        manifest_(base::MakeUnique<base::DictionaryValue>()) {}
+        user_data_dir_override_(chrome::DIR_USER_DATA) {}
 
   ~SupervisedUserWhitelistInstallerTest() override {}
 
@@ -233,23 +233,12 @@ class SupervisedUserWhitelistInstallerTest : public testing::Test {
     std::string crx_id(kCrxId);
     whitelist_path_ =
         installed_whitelist_directory_.AppendASCII(crx_id + ".json");
-
-    std::unique_ptr<base::DictionaryValue> whitelist_dict(
-        new base::DictionaryValue);
-    whitelist_dict->SetString("sites", kWhitelistFile);
-    manifest_->Set("whitelisted_content", std::move(whitelist_dict));
-
     large_icon_path_ = whitelist_version_directory_.AppendASCII(kLargeIconFile);
-    std::unique_ptr<base::DictionaryValue> icons_dict(
-        new base::DictionaryValue);
-    icons_dict->SetString("128", kLargeIconFile);
-    manifest_->Set("icons", std::move(icons_dict));
 
-    manifest_->SetString("version", kVersion);
-
-    std::unique_ptr<base::DictionaryValue> crx_dict(new base::DictionaryValue);
+    auto crx_dict = std::make_unique<base::DictionaryValue>();
     crx_dict->SetString("name", kName);
-    std::unique_ptr<base::ListValue> clients(new base::ListValue);
+    std::unique_ptr<base::ListValue> clients =
+        std::make_unique<base::ListValue>();
     clients->AppendString(kClientId);
     clients->AppendString(kOtherClientId);
     crx_dict->Set("clients", std::move(clients));
@@ -276,7 +265,20 @@ class SupervisedUserWhitelistInstallerTest : public testing::Test {
     PrepareWhitelistFile(whitelist_directory.AppendASCII(kWhitelistFile));
     base::FilePath manifest_file =
         whitelist_directory.AppendASCII("manifest.json");
-    ASSERT_TRUE(JSONFileValueSerializer(manifest_file).Serialize(*manifest_));
+
+    base::DictionaryValue manifest;
+
+    auto whitelist_dict = std::make_unique<base::DictionaryValue>();
+    whitelist_dict->SetString("sites", kWhitelistFile);
+    manifest.Set("whitelisted_content", std::move(whitelist_dict));
+
+    auto icons_dict = std::make_unique<base::DictionaryValue>();
+    icons_dict->SetString("128", kLargeIconFile);
+    manifest.Set("icons", std::move(icons_dict));
+
+    manifest.SetString("version", kVersion);
+
+    ASSERT_TRUE(JSONFileValueSerializer(manifest_file).Serialize(manifest));
   }
 
   void RegisterExistingComponents() {
@@ -308,7 +310,6 @@ class SupervisedUserWhitelistInstallerTest : public testing::Test {
   base::FilePath installed_whitelist_directory_;
   base::FilePath whitelist_path_;
   base::FilePath large_icon_path_;
-  std::unique_ptr<base::DictionaryValue> manifest_;
   base::DictionaryValue pref_;
   MockComponentUpdateService component_update_service_;
 };
@@ -361,16 +362,15 @@ TEST_F(SupervisedUserWhitelistInstallerTest, InstallNewWhitelist) {
   // installer only calls |ComponentReady| if the install of the component
   // has succeeded.
   component->installer->Install(
-      std::move(manifest_), unpacked_path,
-      base::Bind(
-          [](WhitelistLoadObserver* observer,
-             const update_client::CrxInstaller::Result& result) {
-            EXPECT_EQ(0, result.error);
-            EXPECT_EQ(0, result.extended_error);
-            if (result.error)
-              observer->Quit();
-          },
-          &observer));
+      unpacked_path, base::Bind(
+                         [](WhitelistLoadObserver* observer,
+                            const update_client::CrxInstaller::Result& result) {
+                           EXPECT_EQ(0, result.error);
+                           EXPECT_EQ(0, result.extended_error);
+                           if (result.error)
+                             observer->Quit();
+                         },
+                         &observer));
 
   content::RunAllTasksUntilIdle();
 

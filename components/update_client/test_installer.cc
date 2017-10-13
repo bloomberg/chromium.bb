@@ -12,6 +12,7 @@
 #include "base/task_scheduler/task_traits.h"
 #include "base/values.h"
 #include "components/update_client/update_client_errors.h"
+#include "components/update_client/utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace update_client {
@@ -31,8 +32,7 @@ void TestInstaller::OnUpdateError(int error) {
   error_ = error;
 }
 
-void TestInstaller::Install(std::unique_ptr<base::DictionaryValue> manifest,
-                            const base::FilePath& unpack_path,
+void TestInstaller::Install(const base::FilePath& unpack_path,
                             const Callback& callback) {
   ++install_count_;
   unpack_path_ = unpack_path;
@@ -77,15 +77,15 @@ VersionedTestInstaller::~VersionedTestInstaller() {
 }
 
 void VersionedTestInstaller::Install(
-    std::unique_ptr<base::DictionaryValue> manifest,
     const base::FilePath& unpack_path,
     const Callback& callback) {
+  const auto manifest = update_client::ReadManifest(unpack_path);
   std::string version_string;
   manifest->GetStringASCII("version", &version_string);
-  base::Version version(version_string.c_str());
+  const base::Version version(version_string.c_str());
 
-  base::FilePath path;
-  path = install_directory_.AppendASCII(version.GetString());
+  const base::FilePath path =
+      install_directory_.AppendASCII(version.GetString());
   base::CreateDirectory(path.DirName());
   if (!base::Move(unpack_path, path)) {
     InstallComplete(callback, Result(InstallError::GENERIC_ERROR));
@@ -99,8 +99,8 @@ void VersionedTestInstaller::Install(
 
 bool VersionedTestInstaller::GetInstalledFile(const std::string& file,
                                               base::FilePath* installed_file) {
-  base::FilePath path;
-  path = install_directory_.AppendASCII(current_version_.GetString());
+  const base::FilePath path =
+      install_directory_.AppendASCII(current_version_.GetString());
   *installed_file = path.Append(base::FilePath::FromUTF8Unsafe(file));
   return true;
 }
