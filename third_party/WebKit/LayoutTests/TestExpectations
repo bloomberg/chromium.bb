@@ -3070,6 +3070,15 @@ crbug.com/773013 virtual/gpu-rasterization/images/color-profile-background-image
 crbug.com/773013 virtual/gpu-rasterization/images/color-profile-background-image-cross-fade.html [ NeedsManualRebaseline ]
 crbug.com/773013 virtual/gpu-rasterization/images/color-profile-mask-image-svg.html [ NeedsManualRebaseline ]
 
+crbug.com/774474 virtual/gpu-rasterization/images/imagemap-focus-ring-in-positioned-container.html [ NeedsManualRebaseline ]
+crbug.com/774474 virtual/gpu-rasterization/images/imagemap-focus-ring-outline-color-explicitly-inherited-from-map.html [ NeedsManualRebaseline ]
+crbug.com/774474 virtual/gpu-rasterization/images/imagemap-focus-ring-outline-color-not-inherited-from-map.html [ NeedsManualRebaseline ]
+crbug.com/774474 virtual/gpu-rasterization/images/imagemap-focus-ring-outline-color.html [ NeedsManualRebaseline ]
+crbug.com/774474 virtual/gpu-rasterization/images/imagemap-focus-ring-with-paint-root-offset.html [ NeedsManualRebaseline ]
+crbug.com/774474 virtual/gpu-rasterization/images/imagemap-focus-ring.html [ NeedsManualRebaseline ]
+crbug.com/774474 virtual/gpu-rasterization/images/imagemap-overflowing-polygon-focus-ring.html [ NeedsManualRebaseline ]
+crbug.com/774474 virtual/gpu-rasterization/images/imagemap-polygon-focus-ring.html [ NeedsManualRebaseline ]
+
 # Sheriff failures 2017-07-20
 crbug.com/747163 [ Linux ] imagecapture/MediaStreamTrack-applyConstraints.html [ Pass Crash ]
 crbug.com/747163 [ Linux ] imagecapture/MediaStreamTrack-getSettings.html [ Pass Crash ]
