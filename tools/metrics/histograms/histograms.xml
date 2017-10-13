@@ -84307,16 +84307,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     units="ms">
   <owner>fmeawad@chromium.org</owner>
   <summary>
-    The expected queueing duration of tasks in a foreground tab when the browser
-    is in background tab opening session, which is the duration from the time
-    when the browser starts to open background tabs until the time when browser
-    has finished loading those tabs or paused loading due to memory pressure. A
-    new session starts when the browser resumes loading background tabs when
-    memory pressure returns to normal. The metric reflects the responsiveness of
-    a tab. A lower value means the tab will respond to inputs faster. This
-    metric is equal to RendererScheduler.ExpectedTaskQueueingDuration. It is
-    emitted once for all tasks in each 1000-ms window. The metric is not
-    recorded when the session overlaps with session restore.
+    The expected queueing duration of tasks in a foreground tab during a
+    background tab opening session (the duration of time from when the browser
+    starts to open background tabs until the time the browser has finished
+    loading those tabs or otherwise decided to stop loading them). The metric
+    reflects the responsiveness of a tab. A lower value means the tab will
+    respond to inputs faster. This metric is equivalent to
+    RendererScheduler.ExpectedTaskQueueingDuration. It is emitted once for all
+    tasks in each 1000-ms window. The metric is not recorded when the session
+    overlaps with session restore.
   </summary>
 </histogram>
 
@@ -84324,17 +84323,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     enum="TabLoadingState">
   <owner>zhenw@chromium.org</owner>
   <summary>
-    The loading state of a tab at the time the user switches to it when the
-    browser is in background tab opening session, which is the duration from the
-    time when the browser starts to open background tabs until the time when
-    browser has finished loading those tabs or paused loading due to memory
-    pressure. A new session starts when the browser resumes loading background
-    tabs when memory pressure returns to normal. The metric is only recorded
-    when a tab is switched to from another tab within the same tabstrip. As a
-    result, the case when switching between different windows is not included,
-    either between two tabs in different browser windows, or when switching to a
-    different application and switching back to the browser. The metric is not
-    recorded when the session overlaps with session restore.
+    The loading state of a tab at the time the user switches to it during a
+    background tab opening session (the duration of time from when the browser
+    starts to open background tabs until the time the browser has finished
+    loading those tabs or otherwise decided to stop loading them). The metric is
+    only recorded when a tab is switched to from another tab within the same
+    tabstrip. As a result, the case when switching between different windows is
+    not included, either between two tabs in different browser windows, or when
+    switching to a different application and switching back to the browser. The
+    metric is not recorded when the session overlaps with session restore.
   </summary>
 </histogram>
 
@@ -84342,13 +84339,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>zhenw@chromium.org</owner>
   <summary>
     The max number of background tabs pending or loading when opening background
-    tabs. This is recorded at the end of background tab opening session, which
-    is defined as the duration from the time when the browser starts to open
-    background tabs until the time when browser has finished loading those tabs
-    or paused loading due to memory pressure. A new session starts when the
-    browser resumes loading background tabs when memory pressure returns to
-    normal. The metric is not recorded when the session overlaps with session
-    restore.
+    tabs. This is recorded at the end of the background tab opening session (the
+    duration of time from when the browser starts to open background tabs until
+    the time the browser has finished loading those tabs or otherwise decided to
+    stop loading them). The metric is not recorded when the session overlaps
+    with session restore.
   </summary>
 </histogram>
 
@@ -84358,12 +84353,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The number of background tabs whose loading was triggered by TabManager
     automatically when opening background tabs. This is recorded at the end of
-    background tab opening session, which is defined as the duration from the
-    time when the browser starts to open background tabs until the time when
-    browser has finished loading those tabs or paused loading due to memory
-    pressure. A new session starts when the browser resumes loading background
-    tabs when memory pressure returns to normal. The metric is not recorded when
-    the session overlaps with session restore.
+    the background tab opening session (the duration of time from when the
+    browser starts to open background tabs until the time the browser has
+    finished loading those tabs or otherwise decided to stop loading them). The
+    metric is not recorded when the session overlaps with session restore.
   </summary>
 </histogram>
 
@@ -84374,13 +84367,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     The number of background tabs whose loading was triggered by user action
     when opening background tabs. For example, when the user selects a
     background tab and brings it to foreground, that tab will start to load
-    immediately if not already loading. This is recorded at the end of
-    background tab opening session, which is defined as the duration from the
-    time when the browser starts to open background tabs until the time when
-    browser has finished loading those tabs or paused loading due to memory
-    pressure. A new session starts when the browser resumes loading background
-    tabs when memory pressure returns to normal. The metric is not recorded when
-    the session overlaps with session restore.
+    immediately if not already loading. This is recorded at the end of the
+    background tab opening session (the duration of time from when the browser
+    starts to open background tabs until the time the browser has finished
+    loading those tabs or otherwise decided to stop loading them). The metric is
+    not recorded when the session overlaps with session restore.
   </summary>
 </histogram>
 
@@ -84388,13 +84379,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>zhenw@chromium.org</owner>
   <summary>
     The max number of background tabs paused to load due to memory pressure when
-    opening background tabs. This is recorded at the end of background tab
-    opening session, which is defined as the duration from the time when the
-    browser starts to open background tabs until the time when browser has
-    finished loading those tabs or paused loading them all due to memory
-    pressure. A new session starts when the browser resumes loading background
-    tabs when memory pressure returns to normal. The metric is not recorded when
-    the session overlaps with session restore.
+    opening background tabs. This is recorded at the end of the background tab
+    opening session during a background tab opening session (the duration of
+    time from when the browser starts to open background tabs until the time the
+    browser has finished loading those tabs or otherwise decided to stop loading
+    them). The metric is not recorded when the session overlaps with session
+    restore.
   </summary>
 </histogram>
 
@@ -84492,16 +84482,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>fmeawad@chromium.org</owner>
   <summary>
     The number of pages compressed per second when opening background tabs. This
-    is recorded at the end of background tab opening session as an average over
-    the entire period, which is defined as the duration from the time when the
-    browser starts to open background tabs until the time when browser has
-    finished loading those tabs or paused loading due to memory pressure. A new
-    session starts when the browser resumes loading background tabs when memory
-    pressure returns to normal. The metric is not recorded when the session
-    overlaps with session restore. Only recorded on macOS. Warning: This metric
-    is a ratio and the session interval differs for each session. It is hard to
-    tell if it is average rate for each second in the interval or it has a huge
-    spike.
+    is recorded at the end of the background tab opening session as an average
+    over the entire period (the duration of time from when the browser starts to
+    open background tabs until the time the browser has finished loading those
+    tabs or otherwise decided to stop loading them). The metric is not recorded
+    when the session overlaps with session restore. Only recorded on macOS.
+    Warning: This metric is a ratio and the session interval differs for each
+    session. It is hard to tell if it is average rate for each second in the
+    interval or it has a huge spike.
   </summary>
 </histogram>
 
@@ -84511,16 +84499,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>fmeawad@chromium.org</owner>
   <summary>
     The number of pages decompressed per second when opening background tabs.
-    This is recorded at the end of background tab opening session as an average
-    over the entire period, which is defined as the duration from the time when
-    the browser starts to open background tabs until the time when browser has
-    finished loading those tabs or paused loading due to memory pressure. A new
-    session starts when the browser resumes loading background tabs when memory
-    pressure returns to normal. The metric is not recorded when the session
-    overlaps with session restore. Only recorded on macOS. Warning: This metric
-    is a ratio and the session interval differs for each session. It is hard to
-    tell if it is average rate for each second in the interval or it has a huge
-    spike.
+    This is recorded at the end of the background tab opening session as an
+    average over the entire period (the duration of time from when the browser
+    starts to open background tabs until the time the browser has finished
+    loading those tabs or otherwise decided to stop loading them). The metric is
+    not recorded when the session overlaps with session restore. Only recorded
+    on macOS. Warning: This metric is a ratio and the session interval differs
+    for each session. It is hard to tell if it is average rate for each second
+    in the interval or it has a huge spike.
   </summary>
 </histogram>
 
@@ -84529,15 +84515,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>fmeawad@chromium.org</owner>
   <summary>
     The number of swap-ins per second when opening background tabs. This is
-    recorded at the end of background tab opening session as an average over the
-    entire period, which is defined as the duration from the time when the
-    browser starts to open background tabs until the time when browser has
-    finished loading those tabs or paused loading due to memory pressure. A new
-    session starts when the browser resumes loading background tabs when memory
-    pressure returns to normal. The metric is not recorded when the session
-    overlaps with session restore. Warning: This metric is a ratio and the
-    session interval differs for each session. It is hard to tell if it is
-    average rate for each second in the interval or it has a huge spike.
+    recorded at the end of the background tab opening session as an average over
+    the entire period (the duration of time from when the browser starts to open
+    background tabs until the time the browser has finished loading those tabs
+    or otherwise decided to stop loading them). The metric is not recorded when
+    the session overlaps with session restore. Warning: This metric is a ratio
+    and the session interval differs for each session. It is hard to tell if it
+    is average rate for each second in the interval or it has a huge spike.
   </summary>
 </histogram>
 
@@ -84546,15 +84530,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>fmeawad@chromium.org</owner>
   <summary>
     The number of swap-outs per second when opening background tabs. This is
-    recorded at the end of background tab opening session as an average over the
-    entire period, which is defined as the duration from the time when the
-    browser starts to open background tabs until the time when browser has
-    finished loading those tabs or paused loading due to memory pressure. A new
-    session starts when the browser resumes loading background tabs when memory
-    pressure returns to normal. The metric is not recorded when the session
-    overlaps with session restore. Warning: This metric is a ratio and the
-    session interval differs for each session. It is hard to tell if it is
-    average rate for each second in the interval or it has a huge spike.
+    recorded at the end of the background tab opening session as an average over
+    the entire period (the duration of time from when the browser starts to open
+    background tabs until the time the browser has finished loading those tabs
+    or otherwise decided to stop loading them). The metric is not recorded when
+    the session overlaps with session restore. Warning: This metric is a ratio
+    and the session interval differs for each session. It is hard to tell if it
+    is average rate for each second in the interval or it has a huge spike.
   </summary>
 </histogram>
 
@@ -84567,20 +84549,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </obsolete>
   <owner>zhenw@chromium.org</owner>
   <summary>
-    The tab load time of a tab that is switched to when the browser is in
-    background tab opening session, which is the duration from the time when the
-    browser starts to open background tabs until the time when browser has
-    finished loading those tabs or paused loading due to memory pressure. A new
-    session starts when the browser resumes loading background tabs when memory
-    pressure returns to normal. Tab load time is defined as the time between
-    when the user switches to a backround tab, and the time when that tab
-    finishes loading in the foreground. If the user switches away before the tab
-    finishes loading, a metric will not be recorded unless the user switches
-    back, in which case the tab load time is measured from that point in time.
-    The metric is only recorded when a tab is switched to from another tab
-    within the same tabstrip. As a result, the initial forground tab is not
-    included in this metric since it was not switched to from another tab. The
-    metric is not recorded when the session overlaps with session restore.
+    The tab load time of a tab that is switched to during a background tab
+    opening session (the duration of time from when the browser starts to open
+    background tabs until the time the browser has finished loading those tabs
+    or otherwise decided to stop loading them). Tab load time is defined as the
+    time between when the user switches to a backround tab, and the time when
+    that tab finishes loading in the foreground. If the user switches away
+    before the tab finishes loading, a metric will not be recorded unless the
+    user switches back, in which case the tab load time is measured from that
+    point in time. The metric is only recorded when a tab is switched to from
+    another tab within the same tabstrip. As a result, the initial forground tab
+    is not included in this metric since it was not switched to from another
+    tab. The metric is not recorded when the session overlaps with session
+    restore.
   </summary>
 </histogram>
 
@@ -84589,20 +84570,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     units="ms">
   <owner>zhenw@chromium.org</owner>
   <summary>
-    The tab load time of a tab that is switched to when the browser is in
-    background tab opening session, which is the duration from the time when the
-    browser starts to open background tabs until the time when browser has
-    finished loading those tabs or paused loading due to memory pressure. A new
-    session starts when the browser resumes loading background tabs when memory
-    pressure returns to normal. Tab load time is defined as the time between
-    when the user switches to a backround tab, and the time when that tab
-    finishes loading in the foreground. If the user switches away before the tab
-    finishes loading, a metric will not be recorded unless the user switches
-    back, in which case the tab load time is measured from that point in time.
-    The metric is only recorded when a tab is switched to from another tab
-    within the same tabstrip. As a result, the initial forground tab is not
-    included in this metric since it was not switched to from another tab. The
-    metric is not recorded when the session overlaps with session restore.
+    The tab load time of a tab that is switched to during a background tab
+    opening session (the duration of time from when the browser starts to open
+    background tabs until the time the browser has finished loading those tabs
+    or otherwise decided to stop loading them). Tab load time is defined as the
+    time between when the user switches to a backround tab, and the time when
+    that tab finishes loading in the foreground. If the user switches away
+    before the tab finishes loading, a metric will not be recorded unless the
+    user switches back, in which case the tab load time is measured from that
+    point in time. The metric is only recorded when a tab is switched to from
+    another tab within the same tabstrip. As a result, the initial forground tab
+    is not included in this metric since it was not switched to from another
+    tab. The metric is not recorded when the session overlaps with session
+    restore.
   </summary>
 </histogram>
 
@@ -84817,12 +84797,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Whether background tab opening session is overlapped with other types of
     session, e.g., session restore. Background tab opening session is the
-    duration from the time when the browser starts to open background tabs until
-    the time when browser has finished loading those tabs or paused loading due
-    to memory pressure. A new background tab opening session starts when the
-    browser resumes loading background tabs when memory pressure returns to
-    normal. This metric helps to understand how often background tab opening has
-    overlap with other sessions.
+    duration of time from when the browser starts to open background tabs until
+    the time the browser has finished loading those tabs or otherwise decided to
+    stop loading them. This metric helps to understand how often background tab
+    opening has overlap with other sessions.
   </summary>
 </histogram>
 
