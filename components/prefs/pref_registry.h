@@ -98,6 +98,11 @@ class COMPONENTS_PREFS_EXPORT PrefRegistry
                           std::unique_ptr<base::Value> default_value,
                           uint32_t flags);
 
+  // Allows subclasses to hook into pref registration.
+  virtual void OnPrefRegistered(const std::string& path,
+                                base::Value* default_value,
+                                uint32_t flags);
+
   scoped_refptr<DefaultPrefStore> defaults_;
 
   // A map of pref name to a bitmask of PrefRegistrationFlags.

@@ -74,12 +74,18 @@ void PrefRegistry::RegisterPreference(
   DCHECK(!base::ContainsKey(registration_flags_, path))
       << "Trying to register a previously registered pref: " << path;
 
+  base::Value* default_value_raw = default_value.get();
   defaults_->SetDefaultValue(path, std::move(default_value));
   if (flags != NO_REGISTRATION_FLAGS)
     registration_flags_[path] = flags;
+  OnPrefRegistered(path, default_value_raw, flags);
 }
 
 void PrefRegistry::RegisterForeignPref(const std::string& path) {
   bool inserted = foreign_pref_keys_.insert(path).second;
   DCHECK(inserted);
 }
+
+void PrefRegistry::OnPrefRegistered(const std::string& path,
+                                    base::Value* default_value,
+                                    uint32_t flags) {}
