@@ -8,6 +8,7 @@
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -470,6 +471,98 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest, ProcessLimit) {
   EXPECT_NE(isolated_foo_process,
             new_shell->web_contents()->GetMainFrame()->GetProcess());
   EXPECT_NE(isolated_bar_process,
+            new_shell->web_contents()->GetMainFrame()->GetProcess());
+}
+
+// Verify that a navigation to an non-isolated origin does not reuse a process
+// from a pending navigation to an isolated origin.  See
+// https://crbug.com/738634.
+IN_PROC_BROWSER_TEST_F(IsolatedOriginTest,
+                       ProcessReuseWithResponseStartedFromIsolatedOrigin) {
+  // This test requires PlzNavigate.
+  if (!IsBrowserSideNavigationEnabled())
+    return;
+
+  // Set the process limit to 1.
+  RenderProcessHost::SetMaxRendererProcessCount(1);
+
+  // Start, but don't commit a navigation to an unisolated foo.com URL.
+  GURL slow_url(embedded_test_server()->GetURL("www.foo.com", "/title1.html"));
+  NavigationController::LoadURLParams load_params(slow_url);
+  TestNavigationManager foo_delayer(shell()->web_contents(), slow_url);
+  shell()->web_contents()->GetController().LoadURL(
+      slow_url, Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
+  EXPECT_TRUE(foo_delayer.WaitForRequestStart());
+
+  // Open a new, unrelated tab and navigate it to isolated.foo.com.
+  Shell* new_shell = CreateBrowser();
+  GURL isolated_url(
+      embedded_test_server()->GetURL("isolated.foo.com", "/title2.html"));
+  TestNavigationManager isolated_delayer(new_shell->web_contents(),
+                                         isolated_url);
+  new_shell->web_contents()->GetController().LoadURL(
+      isolated_url, Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
+
+  // Wait for response from the isolated origin.  After this returns,
+  // PlzNavigate has made the final pick for the process to use for this
+  // navigation as part of NavigationRequest::OnResponseStarted.
+  EXPECT_TRUE(isolated_delayer.WaitForResponse());
+
+  // Now, proceed with the response and commit the non-isolated URL.  This
+  // should notice that the process that was picked for this navigation is not
+  // suitable anymore, as it should have been locked to isolated.foo.com.
+  foo_delayer.WaitForNavigationFinished();
+
+  // Commit the isolated origin.
+  isolated_delayer.WaitForNavigationFinished();
+
+  // Ensure that the isolated origin did not share a process with the first
+  // tab.
+  EXPECT_NE(web_contents()->GetMainFrame()->GetProcess(),
+            new_shell->web_contents()->GetMainFrame()->GetProcess());
+}
+
+// Verify that a navigation to an unisolated origin cannot reuse a process from
+// a pending navigation to an isolated origin.  Similar to
+// ProcessReuseWithResponseStartedFromIsolatedOrigin, but here the non-isolated
+// URL is the first to reach OnResponseStarted, which should mark the process
+// as "used", so that the isolated origin can't reuse it. See
+// https://crbug.com/738634.
+IN_PROC_BROWSER_TEST_F(IsolatedOriginTest,
+                       ProcessReuseWithResponseStartedFromUnisolatedOrigin) {
+  // This test requires PlzNavigate.
+  if (!IsBrowserSideNavigationEnabled())
+    return;
+
+  // Set the process limit to 1.
+  RenderProcessHost::SetMaxRendererProcessCount(1);
+
+  // Start a navigation to an unisolated foo.com URL.
+  GURL slow_url(embedded_test_server()->GetURL("www.foo.com", "/title1.html"));
+  NavigationController::LoadURLParams load_params(slow_url);
+  TestNavigationManager foo_delayer(shell()->web_contents(), slow_url);
+  shell()->web_contents()->GetController().LoadURL(
+      slow_url, Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
+
+  // Wait for response for foo.com.  After this returns,
+  // PlzNavigate should have made the final pick for the process to use for
+  // foo.com, so this should mark the process as "used" and ineligible for
+  // reuse by isolated.foo.com below.
+  EXPECT_TRUE(foo_delayer.WaitForResponse());
+
+  // Open a new, unrelated tab, navigate it to isolated.foo.com, and wait for
+  // the navigation to fully load.
+  Shell* new_shell = CreateBrowser();
+  GURL isolated_url(
+      embedded_test_server()->GetURL("isolated.foo.com", "/title2.html"));
+  EXPECT_TRUE(NavigateToURL(new_shell, isolated_url));
+
+  // Finish loading the foo.com URL.
+  foo_delayer.WaitForNavigationFinished();
+
+  // Ensure that the isolated origin did not share a process with the first
+  // tab.
+  EXPECT_NE(web_contents()->GetMainFrame()->GetProcess(),
             new_shell->web_contents()->GetMainFrame()->GetProcess());
 }
 

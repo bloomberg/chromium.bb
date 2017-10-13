@@ -606,7 +606,8 @@ void NavigatorImpl::DidNavigate(
   // error page.  In that case, the SiteInstance can still be considered unused
   // until a navigation to a real page.
   SiteInstanceImpl* site_instance = render_frame_host->GetSiteInstance();
-  if (!site_instance->HasSite() && ShouldAssignSiteForURL(params.url) &&
+  if (!site_instance->HasSite() &&
+      SiteInstanceImpl::ShouldAssignSiteForURL(params.url) &&
       !params.url_is_unreachable) {
     site_instance->SetSite(params.url);
   }
@@ -699,17 +700,6 @@ void NavigatorImpl::DidNavigate(
     delegate_->DidNavigateAnyFramePostCommit(render_frame_host, details,
                                              params);
   }
-}
-
-bool NavigatorImpl::ShouldAssignSiteForURL(const GURL& url) {
-  // about:blank should not "use up" a new SiteInstance.  The SiteInstance can
-  // still be used for a normal web site.
-  if (url == url::kAboutBlankURL)
-    return false;
-
-  // The embedder will then have the opportunity to determine if the URL
-  // should "use up" the SiteInstance.
-  return GetContentClient()->browser()->ShouldAssignSiteForURL(url);
 }
 
 void NavigatorImpl::RequestOpenURL(

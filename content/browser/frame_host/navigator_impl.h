@@ -121,8 +121,6 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
                        bool is_pending_entry,
                        const scoped_refptr<ResourceRequestBody>& post_body);
 
-  bool ShouldAssignSiteForURL(const GURL& url);
-
   // PlzNavigate: if needed, sends a BeforeUnload IPC to the renderer to ask it
   // to execute the beforeUnload event. Otherwise, the navigation request will
   // be started.

@@ -176,6 +176,10 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
                                  RenderProcessHost* host,
                                  GURL site_url);
 
+  // Determine if a URL should "use up" a site.  URLs such as about:blank or
+  // chrome-native:// leave the site unassigned.
+  static bool ShouldAssignSiteForURL(const GURL& url);
+
  private:
   friend class BrowsingInstance;
   friend class SiteInstanceTestBrowserClient;
