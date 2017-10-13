@@ -120,9 +120,6 @@ std::string GetSpdyProxyAuthValue();
 // Google Chrome.
 bool IsGoogleChromeAPIKeyUsed();
 
-// Returns true if client id is overridden.
-bool IsClientIdOverridden();
-
 }  // namespace google_apis
 
 #endif  // GOOGLE_APIS_GOOGLE_API_KEYS_H_

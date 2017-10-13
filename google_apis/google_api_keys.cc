@@ -360,8 +360,4 @@ bool IsGoogleChromeAPIKeyUsed() {
 #endif
 }
 
-bool IsClientIdOverridden() {
-  return GetOAuth2ClientID(CLIENT_MAIN) != GOOGLE_CLIENT_ID_MAIN;
-}
-
 }  // namespace google_apis
