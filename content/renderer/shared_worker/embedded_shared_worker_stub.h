@@ -16,6 +16,7 @@
 #include "content/common/shared_worker/shared_worker_info.mojom.h"
 #include "ipc/ipc_listener.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/service_manager/public/interfaces/interface_provider.mojom.h"
 #include "third_party/WebKit/public/platform/WebAddressSpace.h"
 #include "third_party/WebKit/public/platform/WebContentSecurityPolicy.h"
 #include "third_party/WebKit/public/platform/WebContentSettingsClient.h"
@@ -59,7 +60,8 @@ class EmbeddedSharedWorkerStub : public IPC::Listener,
       int route_id,
       blink::mojom::WorkerContentSettingsProxyPtr content_settings,
       mojom::SharedWorkerHostPtr host,
-      mojom::SharedWorkerRequest request);
+      mojom::SharedWorkerRequest request,
+      service_manager::mojom::InterfaceProviderPtr interface_provider);
   ~EmbeddedSharedWorkerStub() override;
 
   // IPC::Listener implementation.
