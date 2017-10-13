@@ -375,6 +375,8 @@ class CONTENT_EXPORT RenderViewImpl : public RenderWidget,
                         HandledEventCallback callback) override;
   void ScrollFocusedEditableNodeIntoRect(const gfx::Rect& rect);
 
+  void UpdateWebViewWithDeviceScaleFactor();
+
  protected:
   // RenderWidget overrides:
   blink::WebWidget* GetWebWidget() const override;
@@ -437,6 +439,7 @@ class CONTENT_EXPORT RenderViewImpl : public RenderWidget,
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest,
                            GetCompositionCharacterBoundsTest);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, OnNavigationHttpPost);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, UpdateDSFAfterSwapIn);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplScaleFactorTest,
                            ScreenMetricsEmulationWithOriginalDSF1);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplScaleFactorTest,
@@ -602,8 +605,6 @@ class CONTENT_EXPORT RenderViewImpl : public RenderWidget,
 #else
   void UpdateThemePrefs() {}
 #endif
-
-  void UpdateWebViewWithDeviceScaleFactor();
 
   // Send the appropriate ack to be able discard this input event message.
   void OnDiscardInputEvent(
