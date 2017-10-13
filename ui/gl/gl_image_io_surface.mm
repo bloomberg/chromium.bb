@@ -188,6 +188,12 @@ GLenum ConvertRequestedInternalFormat(GLenum internalformat) {
 
 }  // namespace
 
+// static
+GLImageIOSurface* GLImageIOSurface::Create(const gfx::Size& size,
+                                           unsigned internalformat) {
+  return new GLImageIOSurface(size, internalformat);
+}
+
 GLImageIOSurface::GLImageIOSurface(const gfx::Size& size,
                                    unsigned internalformat)
     : size_(size),

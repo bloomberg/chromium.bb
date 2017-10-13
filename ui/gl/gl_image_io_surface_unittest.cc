@@ -23,7 +23,7 @@ template <gfx::BufferFormat format>
 class GLImageIOSurfaceTestDelegate {
  public:
   scoped_refptr<GLImage> CreateImage(const gfx::Size& size) const {
-    scoped_refptr<GLImageIOSurface> image(new GLImageIOSurface(
+    scoped_refptr<GLImageIOSurface> image(GLImageIOSurface::Create(
         size, GLImageIOSurface::GetInternalFormatForTesting(format)));
     IOSurfaceRef surface_ref = gfx::CreateIOSurface(size, format);
     bool rv =
@@ -34,7 +34,7 @@ class GLImageIOSurfaceTestDelegate {
 
   scoped_refptr<GLImage> CreateSolidColorImage(const gfx::Size& size,
                                                const uint8_t color[4]) const {
-    scoped_refptr<GLImageIOSurface> image(new GLImageIOSurface(
+    scoped_refptr<GLImageIOSurface> image(GLImageIOSurface::Create(
         size, GLImageIOSurface::GetInternalFormatForTesting(format)));
     IOSurfaceRef surface_ref = gfx::CreateIOSurface(size, format);
     IOReturn status = IOSurfaceLock(surface_ref, 0, nullptr);

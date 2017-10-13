@@ -482,7 +482,7 @@ int32_t GLManager::CreateImage(ClientBuffer buffer,
     IOSurfaceGpuMemoryBuffer* gpu_memory_buffer =
         IOSurfaceGpuMemoryBuffer::FromClientBuffer(buffer);
     scoped_refptr<gl::GLImageIOSurface> image(
-        new gl::GLImageIOSurface(size, internalformat));
+        gl::GLImageIOSurface::Create(size, internalformat));
     if (!image->Initialize(gpu_memory_buffer->iosurface(),
                            gfx::GenericSharedMemoryId(1),
                            gfx::BufferFormat::BGRA_8888)) {
