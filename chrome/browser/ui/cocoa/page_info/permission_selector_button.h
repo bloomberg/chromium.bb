@@ -34,6 +34,10 @@ class Profile;
                             withDefaultSetting:(ContentSetting)defaultSetting
                                        profile:(Profile*)profile;
 
+// Updates the title of the NSPopUpButton and resizes it to fit the new text.
+- (void)setButtonTitle:(const PageInfoUI::PermissionInfo&)permissionInfo
+               profile:(Profile*)profile;
+
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_PAGE_INFO_PERMISSION_SELECTOR_BUTTON_H_
