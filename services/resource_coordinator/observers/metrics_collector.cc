@@ -193,6 +193,10 @@ void MetricsCollector::OnPageEventReceived(
   }
 }
 
+void MetricsCollector::SetClockForTest(base::TickClock* test_clock) {
+  const_cast<base::TickClock*&>(clock_) = test_clock;
+}
+
 bool MetricsCollector::ShouldReportMetrics(
     const PageCoordinationUnitImpl* page_cu) {
   return page_cu->TimeSinceLastNavigation() > kMetricsReportDelayTimeout;

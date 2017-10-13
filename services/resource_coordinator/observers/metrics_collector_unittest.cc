@@ -17,16 +17,22 @@ const base::TimeDelta kTestMetricsReportDelayTimeout =
 const base::TimeDelta kTestMaxAudioSlientTimeout =
     kMaxAudioSlientTimeout + base::TimeDelta::FromSeconds(1);
 
-class MetricsCollectorTest : public CoordinationUnitTestHarness {
+// TODO(crbug.com/759905) Enable on Windows once this bug is fixed.
+#if defined(OS_WIN)
+#define MAYBE_MetricsCollectorTest DISABLED_MetricsCollectorTest
+#else
+#define MAYBE_MetricsCollectorTest MetricsCollectorTest
+#endif
+class MAYBE_MetricsCollectorTest : public CoordinationUnitTestHarness {
  public:
-  MetricsCollectorTest() : CoordinationUnitTestHarness() {}
+  MAYBE_MetricsCollectorTest() : CoordinationUnitTestHarness() {}
 
   void SetUp() override {
     clock_ = new base::SimpleTestTickClock();
     // Sets a valid starting time.
     clock_->SetNowTicks(base::TimeTicks::Now());
     MetricsCollector* metrics_collector = new MetricsCollector();
-    const_cast<base::TickClock*&>(metrics_collector->clock_) = clock_;
+    metrics_collector->SetClockForTest(clock_);
     coordination_unit_manager().RegisterObserver(
         base::WrapUnique(metrics_collector));
   }
@@ -47,18 +53,10 @@ class MetricsCollectorTest : public CoordinationUnitTestHarness {
   base::SimpleTestTickClock* clock_ = nullptr;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MetricsCollectorTest);
+  DISALLOW_COPY_AND_ASSIGN(MAYBE_MetricsCollectorTest);
 };
 
-// TODO(crbug.com/759905) Enable on Windows once this bug is fixed.
-#if defined(OS_WIN)
-#define MAYBE_FromBackgroundedToFirstAudioStartsUMA \
-  DISABLED_FromBackgroundedToFirstAudioStartsUMA
-#else
-#define MAYBE_FromBackgroundedToFirstAudioStartsUMA \
-  FromBackgroundedToFirstAudioStartsUMA
-#endif
-TEST_F(MetricsCollectorTest, MAYBE_FromBackgroundedToFirstAudioStartsUMA) {
+TEST_F(MAYBE_MetricsCollectorTest, FromBackgroundedToFirstAudioStartsUMA) {
   auto page_cu = CreatePageCoordinationUnitWithClock();
   auto frame_cu = CreateCoordinationUnit(CoordinationUnitType::kFrame);
   coordination_unit_manager().OnCoordinationUnitCreated(page_cu.get());
@@ -109,16 +107,8 @@ TEST_F(MetricsCollectorTest, MAYBE_FromBackgroundedToFirstAudioStartsUMA) {
                                      2);
 }
 
-// TODO(crbug.com/759905) Enable on Windows once this bug is fixed.
-#if defined(OS_WIN)
-#define MAYBE_FromBackgroundedToFirstAudioStartsUMA5MinutesTimeout \
-  DISABLED_FromBackgroundedToFirstAudioStartsUMA5MinutesTimeout
-#else
-#define MAYBE_FromBackgroundedToFirstAudioStartsUMA5MinutesTimeout \
-  FromBackgroundedToFirstAudioStartsUMA5MinutesTimeout
-#endif
-TEST_F(MetricsCollectorTest,
-       MAYBE_FromBackgroundedToFirstAudioStartsUMA5MinutesTimeout) {
+TEST_F(MAYBE_MetricsCollectorTest,
+       FromBackgroundedToFirstAudioStartsUMA5MinutesTimeout) {
   auto page_cu = CreatePageCoordinationUnitWithClock();
   auto frame_cu = CreateCoordinationUnit(CoordinationUnitType::kFrame);
   coordination_unit_manager().OnCoordinationUnitCreated(page_cu.get());
@@ -140,15 +130,7 @@ TEST_F(MetricsCollectorTest,
                                      1);
 }
 
-// TODO(crbug.com/759905) Enable on Windows once this bug is fixed.
-#if defined(OS_WIN)
-#define MAYBE_FromBackgroundedToFirstTitleUpdatedUMA \
-  DISABLED_FromBackgroundedToFirstTitleUpdatedUMA
-#else
-#define MAYBE_FromBackgroundedToFirstTitleUpdatedUMA \
-  FromBackgroundedToFirstTitleUpdatedUMA
-#endif
-TEST_F(MetricsCollectorTest, MAYBE_FromBackgroundedToFirstTitleUpdatedUMA) {
+TEST_F(MAYBE_MetricsCollectorTest, FromBackgroundedToFirstTitleUpdatedUMA) {
   auto page_cu = CreatePageCoordinationUnitWithClock();
   coordination_unit_manager().OnCoordinationUnitCreated(page_cu.get());
 
@@ -180,16 +162,8 @@ TEST_F(MetricsCollectorTest, MAYBE_FromBackgroundedToFirstTitleUpdatedUMA) {
                                      2);
 }
 
-// TODO(crbug.com/759905) Enable on Windows once this bug is fixed.
-#if defined(OS_WIN)
-#define MAYBE_FromBackgroundedToFirstTitleUpdatedUMA5MinutesTimeout \
-  DISABLED_FromBackgroundedToFirstTitleUpdatedUMA5MinutesTimeout
-#else
-#define MAYBE_FromBackgroundedToFirstTitleUpdatedUMA5MinutesTimeout \
-  FromBackgroundedToFirstTitleUpdatedUMA5MinutesTimeout
-#endif
-TEST_F(MetricsCollectorTest,
-       MAYBE_FromBackgroundedToFirstTitleUpdatedUMA5MinutesTimeout) {
+TEST_F(MAYBE_MetricsCollectorTest,
+       FromBackgroundedToFirstTitleUpdatedUMA5MinutesTimeout) {
   auto page_cu = CreatePageCoordinationUnitWithClock();
   coordination_unit_manager().OnCoordinationUnitCreated(page_cu.get());
 
@@ -206,15 +180,7 @@ TEST_F(MetricsCollectorTest,
                                      1);
 }
 
-// TODO(crbug.com/759905) Enable on Windows once this bug is fixed.
-#if defined(OS_WIN)
-#define MAYBE_FromBackgroundedToFirstAlertFiredUMA \
-  DISABLED_FromBackgroundedToFirstAlertFiredUMA
-#else
-#define MAYBE_FromBackgroundedToFirstAlertFiredUMA \
-  FromBackgroundedToFirstAlertFiredUMA
-#endif
-TEST_F(MetricsCollectorTest, MAYBE_FromBackgroundedToFirstAlertFiredUMA) {
+TEST_F(MAYBE_MetricsCollectorTest, FromBackgroundedToFirstAlertFiredUMA) {
   auto page_cu = CreatePageCoordinationUnitWithClock();
   auto frame_cu = CreateCoordinationUnit(CoordinationUnitType::kFrame);
   coordination_unit_manager().OnCoordinationUnitCreated(page_cu.get());
@@ -249,16 +215,8 @@ TEST_F(MetricsCollectorTest, MAYBE_FromBackgroundedToFirstAlertFiredUMA) {
                                      2);
 }
 
-// TODO(crbug.com/759905) Enable on Windows once this bug is fixed.
-#if defined(OS_WIN)
-#define MAYBE_FromBackgroundedToFirstAlertFiredUMA5MinutesTimeout \
-  DISABLED_FromBackgroundedToFirstAlertFiredUMA5MinutesTimeout
-#else
-#define MAYBE_FromBackgroundedToFirstAlertFiredUMA5MinutesTimeout \
-  FromBackgroundedToFirstAlertFiredUMA5MinutesTimeout
-#endif
-TEST_F(MetricsCollectorTest,
-       MAYBE_FromBackgroundedToFirstAlertFiredUMA5MinutesTimeout) {
+TEST_F(MAYBE_MetricsCollectorTest,
+       FromBackgroundedToFirstAlertFiredUMA5MinutesTimeout) {
   auto page_cu = CreatePageCoordinationUnitWithClock();
   auto frame_cu = CreateCoordinationUnit(CoordinationUnitType::kFrame);
   coordination_unit_manager().OnCoordinationUnitCreated(page_cu.get());
@@ -278,16 +236,8 @@ TEST_F(MetricsCollectorTest,
                                      1);
 }
 
-// TODO(crbug.com/759905) Enable on Windows once this bug is fixed.
-#if defined(OS_WIN)
-#define MAYBE_FromBackgroundedToFirstNonPersistentNotificationCreatedUMA \
-  DISABLED_FromBackgroundedToFirstNonPersistentNotificationCreatedUMA
-#else
-#define MAYBE_FromBackgroundedToFirstNonPersistentNotificationCreatedUMA \
-  FromBackgroundedToFirstNonPersistentNotificationCreatedUMA
-#endif
-TEST_F(MetricsCollectorTest,
-       MAYBE_FromBackgroundedToFirstNonPersistentNotificationCreatedUMA) {
+TEST_F(MAYBE_MetricsCollectorTest,
+       FromBackgroundedToFirstNonPersistentNotificationCreatedUMA) {
   auto page_cu = CreatePageCoordinationUnitWithClock();
   auto frame_cu = CreateCoordinationUnit(CoordinationUnitType::kFrame);
   coordination_unit_manager().OnCoordinationUnitCreated(page_cu.get());
@@ -322,17 +272,9 @@ TEST_F(MetricsCollectorTest,
       kTabFromBackgroundedToFirstNonPersistentNotificationCreatedUMA, 2);
 }
 
-// TODO(crbug.com/759905) Enable on Windows once this bug is fixed.
-#if defined(OS_WIN)
-#define MAYBE_FromBackgroundedToFirstNonPersistentNotificationCreatedUMA5MinutesTimeout \
-  DISABLED_FromBackgroundedToFirstNonPersistentNotificationCreatedUMA5MinutesTimeout
-#else
-#define MAYBE_FromBackgroundedToFirstNonPersistentNotificationCreatedUMA5MinutesTimeout \
-  FromBackgroundedToFirstNonPersistentNotificationCreatedUMA5MinutesTimeout
-#endif
 TEST_F(
-    MetricsCollectorTest,
-    MAYBE_FromBackgroundedToFirstNonPersistentNotificationCreatedUMA5MinutesTimeout) {
+    MAYBE_MetricsCollectorTest,
+    FromBackgroundedToFirstNonPersistentNotificationCreatedUMA5MinutesTimeout) {
   auto page_cu = CreatePageCoordinationUnitWithClock();
   auto frame_cu = CreateCoordinationUnit(CoordinationUnitType::kFrame);
   coordination_unit_manager().OnCoordinationUnitCreated(page_cu.get());
@@ -352,15 +294,7 @@ TEST_F(
       kTabFromBackgroundedToFirstNonPersistentNotificationCreatedUMA, 1);
 }
 
-// TODO(crbug.com/759905) Enable on Windows once this bug is fixed.
-#if defined(OS_WIN)
-#define MAYBE_FromBackgroundedToFirstFaviconUpdatedUMA \
-  DISABLED_FromBackgroundedToFirstFaviconUpdatedUMA
-#else
-#define MAYBE_FromBackgroundedToFirstFaviconUpdatedUMA \
-  FromBackgroundedToFirstFaviconUpdatedUMA
-#endif
-TEST_F(MetricsCollectorTest, MAYBE_FromBackgroundedToFirstFaviconUpdatedUMA) {
+TEST_F(MAYBE_MetricsCollectorTest, FromBackgroundedToFirstFaviconUpdatedUMA) {
   auto page_cu = CreatePageCoordinationUnitWithClock();
   coordination_unit_manager().OnCoordinationUnitCreated(page_cu.get());
 
@@ -392,16 +326,8 @@ TEST_F(MetricsCollectorTest, MAYBE_FromBackgroundedToFirstFaviconUpdatedUMA) {
       kTabFromBackgroundedToFirstFaviconUpdatedUMA, 2);
 }
 
-// TODO(crbug.com/759905) Enable on Windows once this bug is fixed.
-#if defined(OS_WIN)
-#define MAYBE_FromBackgroundedToFirstFaviconUpdatedUMA5MinutesTimeout \
-  DISABLED_FromBackgroundedToFirstFaviconUpdatedUMA5MinutesTimeout
-#else
-#define MAYBE_FromBackgroundedToFirstFaviconUpdatedUMA5MinutesTimeout \
-  FromBackgroundedToFirstFaviconUpdatedUMA5MinutesTimeout
-#endif
-TEST_F(MetricsCollectorTest,
-       MAYBE_FromBackgroundedToFirstFaviconUpdatedUMA5MinutesTimeout) {
+TEST_F(MAYBE_MetricsCollectorTest,
+       FromBackgroundedToFirstFaviconUpdatedUMA5MinutesTimeout) {
   auto page_cu = CreatePageCoordinationUnitWithClock();
   coordination_unit_manager().OnCoordinationUnitCreated(page_cu.get());
 
