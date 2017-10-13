@@ -999,8 +999,8 @@ static void set_tile_info(AV1_COMP *cpi) {
     cm->tile_width = AOMMIN(cm->tile_width, cm->mi_cols);
     cm->tile_height = AOMMIN(cm->tile_height, cm->mi_rows);
 
-    assert(cm->tile_width >> MAX_MIB_SIZE <= 32);
-    assert(cm->tile_height >> MAX_MIB_SIZE <= 32);
+    assert(cm->tile_width >> MAX_MIB_SIZE_LOG2 <= 32);
+    assert(cm->tile_height >> MAX_MIB_SIZE_LOG2 <= 32);
 
     // Get the number of tiles
     cm->tile_cols = 1;
