@@ -106,18 +106,29 @@ def _GetTaskHandler(options):
 
 def main(argv):
   options = _ParseArguments(argv)
-  _SetupLogging(options)
   manager = tasks.ProcessPoolTaskManager(options.max_tasks,
                                          _GetTaskHandler(options),
                                          options.interval)
   queue = service.WorkQueueServer(options.spool)
-  logging.info('Work queue service starts')
-  logging.info('  Spool dir is %s', options.spool)
-  logging.info('  Maximum of %d concurrent tasks', options.max_tasks)
-  logging.info('  Time per tick is %.3f seconds', options.interval)
   try:
+    # The ordering for logging setup here matters (alas):
+    # The `ts_mon` setup starts a subprocess that makes logging
+    # calls, and TimedRotatingFileHandler isn't multiprocess safe.
+    # So, we need for the `ts_mon` child and this process to write
+    # to different logs.  The gory details are in crbug.com/774597.
+    #
+    # This is a hack, really.  If you're studying this comment
+    # because you have to clean up my mess, I'm truly and profoundly
+    # sorry.  But still I wouldn't change a thing...
+    #     https://www.youtube.com/watch?v=fFtGfyruroU
+
     with ts_mon_config.SetupTsMonGlobalState(
         'provision_workqueue', indirect=True):
+      _SetupLogging(options)
+      logging.info('Work queue service starts')
+      logging.info('  Spool dir is %s', options.spool)
+      logging.info('  Maximum of %d concurrent tasks', options.max_tasks)
+      logging.info('  Time per tick is %.3f seconds', options.interval)
       queue.ProcessRequests(manager)
   except KeyboardInterrupt:
     pass
