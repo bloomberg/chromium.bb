@@ -69,6 +69,7 @@
 # Timed out tests.
 -ActivityLogApiTest.TriggerEvent
 -AllProcesses/MemlogBrowserTest.EndToEnd/0
+-AllProcesses/MemlogBrowserTest.EndToEndTracing/0
 -AllUrlsApiTest.RegularExtensions
 -AllUrlsApiTest.WhitelistedExtension
 -AppApiTest.ClientRedirectToAppFromExtension
@@ -203,6 +204,7 @@
 -BrowserCloseManagerWithDownloadsBrowserTest/BrowserCloseManagerWithDownloadsBrowserTest.TestWithOffTheRecordWindowAndRegularDownload/0
 -BrowserCloseManagerWithDownloadsBrowserTest/BrowserCloseManagerWithDownloadsBrowserTest.TestWithOffTheRecordWindowAndRegularDownload/1
 -BrowserOnly/MemlogBrowserTest.EndToEnd/0
+-BrowserOnly/MemlogBrowserTest.EndToEndTracing/0
 -BrowserTest.CancelBeforeUnloadResetsURL
 -BrowserTest.InterstitialCancelsGuestViewDialogs
 -BrowsingDataRemoverBrowserTest.Database
