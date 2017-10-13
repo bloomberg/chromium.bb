@@ -78,16 +78,7 @@ class COMPONENTS_PREFS_EXPORT PrefRegistrySimple : public PrefRegistry {
  protected:
   ~PrefRegistrySimple() override;
 
-  // Allows subclasses to hook into pref registration.
-  virtual void OnPrefRegistered(const std::string&,
-                                base::Value* default_value,
-                                uint32_t flags);
-
  private:
-  void RegisterPrefAndNotify(const std::string&,
-                             std::unique_ptr<base::Value> default_value,
-                             uint32_t flags);
-
   DISALLOW_COPY_AND_ASSIGN(PrefRegistrySimple);
 };
 
