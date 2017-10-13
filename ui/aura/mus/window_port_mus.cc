@@ -54,12 +54,12 @@ WindowPortMus* WindowPortMus::Get(Window* window) {
   return static_cast<WindowPortMus*>(WindowPort::Get(window));
 }
 
-void WindowPortMus::SetTextInputState(mojo::TextInputStatePtr state) {
+void WindowPortMus::SetTextInputState(ui::mojom::TextInputStatePtr state) {
   window_tree_client_->SetWindowTextInputState(this, std::move(state));
 }
 
 void WindowPortMus::SetImeVisibility(bool visible,
-                                     mojo::TextInputStatePtr state) {
+                                     ui::mojom::TextInputStatePtr state) {
   window_tree_client_->SetImeVisibility(this, visible, std::move(state));
 }
 

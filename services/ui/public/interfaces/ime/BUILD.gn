@@ -14,6 +14,7 @@ mojom("ime") {
     "//ui/events/mojo:interfaces",
     "//ui/gfx/geometry/mojo",
     "//ui/gfx/range/mojo",
+    "//ui/platform_window/mojo:interfaces",
   ]
 }
 
@@ -24,5 +25,6 @@ mojom("test_interfaces") {
 
   public_deps = [
     ":ime",
+    "//ui/platform_window/mojo:interfaces",
   ]
 }

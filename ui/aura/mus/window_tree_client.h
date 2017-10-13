@@ -137,10 +137,10 @@ class AURA_EXPORT WindowTreeClient
                  const ui::CursorData& old_cursor,
                  const ui::CursorData& new_cursor);
   void SetWindowTextInputState(WindowMus* window,
-                               mojo::TextInputStatePtr state);
+                               ui::mojom::TextInputStatePtr state);
   void SetImeVisibility(WindowMus* window,
                         bool visible,
-                        mojo::TextInputStatePtr state);
+                        ui::mojom::TextInputStatePtr state);
 
   // Embeds a new client in |window|. |flags| is a bitmask of the values defined
   // by kEmbedFlag*; 0 gives default behavior. |callback| is called to indicate

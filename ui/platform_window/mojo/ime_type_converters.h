@@ -13,18 +13,21 @@
 namespace mojo {
 
 template <>
-struct MOJO_IME_EXPORT TypeConverter<TextInputType, ui::TextInputType> {
-  static TextInputType Convert(const ui::TextInputType& input);
+struct MOJO_IME_EXPORT
+    TypeConverter<ui::mojom::TextInputType, ui::TextInputType> {
+  static ui::mojom::TextInputType Convert(const ui::TextInputType& input);
 };
 
 template <>
-struct MOJO_IME_EXPORT TypeConverter<ui::TextInputType, TextInputType> {
-  static ui::TextInputType Convert(const TextInputType& input);
+struct MOJO_IME_EXPORT
+    TypeConverter<ui::TextInputType, ui::mojom::TextInputType> {
+  static ui::TextInputType Convert(const ui::mojom::TextInputType& input);
 };
 
 template <>
-struct MOJO_IME_EXPORT TypeConverter<ui::TextInputState, TextInputStatePtr> {
-  static ui::TextInputState Convert(const TextInputStatePtr& input);
+struct MOJO_IME_EXPORT
+    TypeConverter<ui::TextInputState, ui::mojom::TextInputStatePtr> {
+  static ui::TextInputState Convert(const ui::mojom::TextInputStatePtr& input);
 };
 
 }  // namespace mojo

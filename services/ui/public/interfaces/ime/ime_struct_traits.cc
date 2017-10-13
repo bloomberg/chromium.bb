@@ -187,107 +187,68 @@ bool EnumTraits<ui::mojom::TextInputMode, ui::TextInputMode>::FromMojom(
   return false;
 }
 
+#define UI_TO_MOJO_TYPE_CASE(name) \
+  case ui::TEXT_INPUT_TYPE_##name: \
+    return ui::mojom::TextInputType::name
+
 // static
 ui::mojom::TextInputType
 EnumTraits<ui::mojom::TextInputType, ui::TextInputType>::ToMojom(
     ui::TextInputType text_input_type) {
   switch (text_input_type) {
-    case ui::TEXT_INPUT_TYPE_NONE:
-      return ui::mojom::TextInputType::kNone;
-    case ui::TEXT_INPUT_TYPE_TEXT:
-      return ui::mojom::TextInputType::kText;
-    case ui::TEXT_INPUT_TYPE_PASSWORD:
-      return ui::mojom::TextInputType::kPassword;
-    case ui::TEXT_INPUT_TYPE_SEARCH:
-      return ui::mojom::TextInputType::kSearch;
-    case ui::TEXT_INPUT_TYPE_EMAIL:
-      return ui::mojom::TextInputType::kEmail;
-    case ui::TEXT_INPUT_TYPE_NUMBER:
-      return ui::mojom::TextInputType::kNumber;
-    case ui::TEXT_INPUT_TYPE_TELEPHONE:
-      return ui::mojom::TextInputType::kTelephone;
-    case ui::TEXT_INPUT_TYPE_URL:
-      return ui::mojom::TextInputType::kUrl;
-    case ui::TEXT_INPUT_TYPE_DATE:
-      return ui::mojom::TextInputType::kDate;
-    case ui::TEXT_INPUT_TYPE_DATE_TIME:
-      return ui::mojom::TextInputType::kDateTime;
-    case ui::TEXT_INPUT_TYPE_DATE_TIME_LOCAL:
-      return ui::mojom::TextInputType::kDateTimeLocal;
-    case ui::TEXT_INPUT_TYPE_MONTH:
-      return ui::mojom::TextInputType::kMonth;
-    case ui::TEXT_INPUT_TYPE_TIME:
-      return ui::mojom::TextInputType::kTime;
-    case ui::TEXT_INPUT_TYPE_WEEK:
-      return ui::mojom::TextInputType::kWeek;
-    case ui::TEXT_INPUT_TYPE_TEXT_AREA:
-      return ui::mojom::TextInputType::kTextArea;
-    case ui::TEXT_INPUT_TYPE_CONTENT_EDITABLE:
-      return ui::mojom::TextInputType::kContentEditable;
-    case ui::TEXT_INPUT_TYPE_DATE_TIME_FIELD:
-      return ui::mojom::TextInputType::kDateTimeField;
+    UI_TO_MOJO_TYPE_CASE(NONE);
+    UI_TO_MOJO_TYPE_CASE(TEXT);
+    UI_TO_MOJO_TYPE_CASE(PASSWORD);
+    UI_TO_MOJO_TYPE_CASE(SEARCH);
+    UI_TO_MOJO_TYPE_CASE(EMAIL);
+    UI_TO_MOJO_TYPE_CASE(NUMBER);
+    UI_TO_MOJO_TYPE_CASE(TELEPHONE);
+    UI_TO_MOJO_TYPE_CASE(URL);
+    UI_TO_MOJO_TYPE_CASE(DATE);
+    UI_TO_MOJO_TYPE_CASE(DATE_TIME);
+    UI_TO_MOJO_TYPE_CASE(DATE_TIME_LOCAL);
+    UI_TO_MOJO_TYPE_CASE(MONTH);
+    UI_TO_MOJO_TYPE_CASE(TIME);
+    UI_TO_MOJO_TYPE_CASE(WEEK);
+    UI_TO_MOJO_TYPE_CASE(TEXT_AREA);
+    UI_TO_MOJO_TYPE_CASE(CONTENT_EDITABLE);
+    UI_TO_MOJO_TYPE_CASE(DATE_TIME_FIELD);
   }
   NOTREACHED();
-  return ui::mojom::TextInputType::kNone;
+  return ui::mojom::TextInputType::NONE;
 }
+
+#undef UI_TO_MOJO_TYPE_CASE
+
+#define MOJO_TO_UI_TYPE_CASE(name)     \
+  case ui::mojom::TextInputType::name: \
+    *out = ui::TEXT_INPUT_TYPE_##name; \
+    return true;
 
 // static
 bool EnumTraits<ui::mojom::TextInputType, ui::TextInputType>::FromMojom(
     ui::mojom::TextInputType input,
     ui::TextInputType* out) {
   switch (input) {
-    case ui::mojom::TextInputType::kNone:
-      *out = ui::TEXT_INPUT_TYPE_NONE;
-      return true;
-    case ui::mojom::TextInputType::kText:
-      *out = ui::TEXT_INPUT_TYPE_TEXT;
-      return true;
-    case ui::mojom::TextInputType::kPassword:
-      *out = ui::TEXT_INPUT_TYPE_PASSWORD;
-      return true;
-    case ui::mojom::TextInputType::kSearch:
-      *out = ui::TEXT_INPUT_TYPE_SEARCH;
-      return true;
-    case ui::mojom::TextInputType::kEmail:
-      *out = ui::TEXT_INPUT_TYPE_EMAIL;
-      return true;
-    case ui::mojom::TextInputType::kNumber:
-      *out = ui::TEXT_INPUT_TYPE_NUMBER;
-      return true;
-    case ui::mojom::TextInputType::kTelephone:
-      *out = ui::TEXT_INPUT_TYPE_TELEPHONE;
-      return true;
-    case ui::mojom::TextInputType::kUrl:
-      *out = ui::TEXT_INPUT_TYPE_URL;
-      return true;
-    case ui::mojom::TextInputType::kDate:
-      *out = ui::TEXT_INPUT_TYPE_DATE;
-      return true;
-    case ui::mojom::TextInputType::kDateTime:
-      *out = ui::TEXT_INPUT_TYPE_DATE_TIME;
-      return true;
-    case ui::mojom::TextInputType::kDateTimeLocal:
-      *out = ui::TEXT_INPUT_TYPE_DATE_TIME_LOCAL;
-      return true;
-    case ui::mojom::TextInputType::kMonth:
-      *out = ui::TEXT_INPUT_TYPE_MONTH;
-      return true;
-    case ui::mojom::TextInputType::kTime:
-      *out = ui::TEXT_INPUT_TYPE_TIME;
-      return true;
-    case ui::mojom::TextInputType::kWeek:
-      *out = ui::TEXT_INPUT_TYPE_WEEK;
-      return true;
-    case ui::mojom::TextInputType::kTextArea:
-      *out = ui::TEXT_INPUT_TYPE_TEXT_AREA;
-      return true;
-    case ui::mojom::TextInputType::kContentEditable:
-      *out = ui::TEXT_INPUT_TYPE_CONTENT_EDITABLE;
-      return true;
-    case ui::mojom::TextInputType::kDateTimeField:
-      *out = ui::TEXT_INPUT_TYPE_DATE_TIME_FIELD;
-      return true;
+    MOJO_TO_UI_TYPE_CASE(NONE);
+    MOJO_TO_UI_TYPE_CASE(TEXT);
+    MOJO_TO_UI_TYPE_CASE(PASSWORD);
+    MOJO_TO_UI_TYPE_CASE(SEARCH);
+    MOJO_TO_UI_TYPE_CASE(EMAIL);
+    MOJO_TO_UI_TYPE_CASE(NUMBER);
+    MOJO_TO_UI_TYPE_CASE(TELEPHONE);
+    MOJO_TO_UI_TYPE_CASE(URL);
+    MOJO_TO_UI_TYPE_CASE(DATE);
+    MOJO_TO_UI_TYPE_CASE(DATE_TIME);
+    MOJO_TO_UI_TYPE_CASE(DATE_TIME_LOCAL);
+    MOJO_TO_UI_TYPE_CASE(MONTH);
+    MOJO_TO_UI_TYPE_CASE(TIME);
+    MOJO_TO_UI_TYPE_CASE(WEEK);
+    MOJO_TO_UI_TYPE_CASE(TEXT_AREA);
+    MOJO_TO_UI_TYPE_CASE(CONTENT_EDITABLE);
+    MOJO_TO_UI_TYPE_CASE(DATE_TIME_FIELD);
   }
+#undef MOJO_TO_UI_TYPE_CASE
   return false;
 }
 

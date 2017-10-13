@@ -196,10 +196,10 @@ class TestWindowTree : public ui::mojom::WindowTree {
                  Id transport_window_id,
                  ui::CursorData cursor_data) override;
   void SetWindowTextInputState(uint32_t window_id,
-                               mojo::TextInputStatePtr state) override;
+                               ui::mojom::TextInputStatePtr state) override;
   void SetImeVisibility(uint32_t window_id,
                         bool visible,
-                        mojo::TextInputStatePtr state) override;
+                        ui::mojom::TextInputStatePtr state) override;
   void OnWindowInputEventAck(uint32_t event_id,
                              ui::mojom::EventResult result) override;
   void DeactivateWindow(uint32_t window_id) override;

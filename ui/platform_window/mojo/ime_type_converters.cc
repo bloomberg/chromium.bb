@@ -10,9 +10,9 @@
 
 namespace mojo {
 
-#define TEXT_INPUT_TYPE_ASSERT(NAME)                                  \
-  static_assert(static_cast<int32_t>(TextInputType::NAME) ==          \
-                    static_cast<int32_t>(ui::TEXT_INPUT_TYPE_##NAME), \
+#define TEXT_INPUT_TYPE_ASSERT(NAME)                                    \
+  static_assert(static_cast<int32_t>(ui::mojom::TextInputType::NAME) == \
+                    static_cast<int32_t>(ui::TEXT_INPUT_TYPE_##NAME),   \
                 "TEXT_INPUT_TYPE must match")
 TEXT_INPUT_TYPE_ASSERT(NONE);
 TEXT_INPUT_TYPE_ASSERT(TEXT);
@@ -33,9 +33,9 @@ TEXT_INPUT_TYPE_ASSERT(CONTENT_EDITABLE);
 TEXT_INPUT_TYPE_ASSERT(DATE_TIME_FIELD);
 TEXT_INPUT_TYPE_ASSERT(MAX);
 
-#define TEXT_INPUT_FLAG_ASSERT(NAME)                                  \
-  static_assert(static_cast<int32_t>(TextInputFlag::NAME) ==          \
-                    static_cast<int32_t>(ui::TEXT_INPUT_FLAG_##NAME), \
+#define TEXT_INPUT_FLAG_ASSERT(NAME)                                    \
+  static_assert(static_cast<int32_t>(ui::mojom::TextInputFlag::NAME) == \
+                    static_cast<int32_t>(ui::TEXT_INPUT_FLAG_##NAME),   \
                 "TEXT_INPUT_FLAG must match")
 TEXT_INPUT_FLAG_ASSERT(NONE);
 TEXT_INPUT_FLAG_ASSERT(AUTOCOMPLETE_ON);
@@ -50,21 +50,23 @@ TEXT_INPUT_FLAG_ASSERT(AUTOCAPITALIZE_WORDS);
 TEXT_INPUT_FLAG_ASSERT(AUTOCAPITALIZE_SENTENCES);
 
 // static
-TextInputType TypeConverter<TextInputType, ui::TextInputType>::Convert(
+ui::mojom::TextInputType
+TypeConverter<ui::mojom::TextInputType, ui::TextInputType>::Convert(
     const ui::TextInputType& input) {
-  return static_cast<TextInputType>(input);
+  return static_cast<ui::mojom::TextInputType>(input);
 }
 
 // static
-ui::TextInputType TypeConverter<ui::TextInputType, TextInputType>::Convert(
-    const TextInputType& input) {
+ui::TextInputType
+TypeConverter<ui::TextInputType, ui::mojom::TextInputType>::Convert(
+    const ui::mojom::TextInputType& input) {
   return static_cast<ui::TextInputType>(input);
 }
 
 // static
 ui::TextInputState
-TypeConverter<ui::TextInputState, TextInputStatePtr>::Convert(
-    const TextInputStatePtr& input) {
+TypeConverter<ui::TextInputState, ui::mojom::TextInputStatePtr>::Convert(
+    const ui::mojom::TextInputStatePtr& input) {
   return ui::TextInputState(
       ConvertTo<ui::TextInputType>(input->type), input->flags,
       input->text.has_value() ? input->text.value() : std::string(),

@@ -1842,7 +1842,7 @@ void WindowTree::AttachCompositorFrameSink(
 }
 
 void WindowTree::SetWindowTextInputState(Id transport_window_id,
-                                         mojo::TextInputStatePtr state) {
+                                         ui::mojom::TextInputStatePtr state) {
   ServerWindow* window =
       GetWindowByClientId(MakeClientWindowId(transport_window_id));
   bool success = window && access_policy_->CanSetWindowTextInputState(window);
@@ -1852,7 +1852,7 @@ void WindowTree::SetWindowTextInputState(Id transport_window_id,
 
 void WindowTree::SetImeVisibility(Id transport_window_id,
                                   bool visible,
-                                  mojo::TextInputStatePtr state) {
+                                  ui::mojom::TextInputStatePtr state) {
   ServerWindow* window =
       GetWindowByClientId(MakeClientWindowId(transport_window_id));
   bool success = window && access_policy_->CanSetWindowTextInputState(window);
