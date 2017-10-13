@@ -16,6 +16,7 @@
 #include "content/common/content_switches_internal.h"
 #include "content/common/frame_messages.h"
 #include "content/common/frame_owner_properties.h"
+#include "content/common/frame_policy.h"
 #include "content/common/frame_replication_state.h"
 #include "content/common/input_messages.h"
 #include "content/common/page_messages.h"
@@ -294,12 +295,11 @@ void RenderFrameProxy::SetReplicatedState(const FrameReplicationState& state) {
 // properly if this proxy ever parents a local frame.  The proxy's FrameOwner
 // flags are also updated here with the caveat that the FrameOwner won't learn
 // about updates to its flags until they take effect.
-void RenderFrameProxy::OnDidUpdateFramePolicy(
-    blink::WebSandboxFlags flags,
-    const ParsedFeaturePolicyHeader& container_policy) {
-  web_frame_->SetReplicatedSandboxFlags(flags);
-  web_frame_->SetFrameOwnerPolicy(flags,
-                                  FeaturePolicyHeaderToWeb(container_policy));
+void RenderFrameProxy::OnDidUpdateFramePolicy(const FramePolicy& frame_policy) {
+  web_frame_->SetReplicatedSandboxFlags(frame_policy.sandbox_flags);
+  web_frame_->SetFrameOwnerPolicy(
+      frame_policy.sandbox_flags,
+      FeaturePolicyHeaderToWeb(frame_policy.container_policy));
 }
 
 void RenderFrameProxy::MaybeUpdateCompositingHelper() {

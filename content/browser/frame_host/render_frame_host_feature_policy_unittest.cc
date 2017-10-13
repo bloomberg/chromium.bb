@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "content/common/feature_policy/feature_policy.h"
+#include "content/common/frame_policy.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/navigation_simulator.h"
@@ -66,8 +67,8 @@ class RenderFrameHostFeaturePolicyTest
                           blink::WebFeaturePolicyFeature feature,
                           const std::vector<std::string>& origins) {
     static_cast<TestRenderFrameHost*>(parent)->OnDidChangeFramePolicy(
-        child->GetRoutingID(), blink::WebSandboxFlags(),
-        CreateFPHeader(feature, origins));
+        child->GetRoutingID(),
+        {blink::WebSandboxFlags::kNone, CreateFPHeader(feature, origins)});
   }
 
   void SimulateNavigation(RenderFrameHost** rfh, const GURL& url) {

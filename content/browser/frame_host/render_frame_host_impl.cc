@@ -83,6 +83,7 @@
 #include "content/common/content_security_policy/content_security_policy.h"
 #include "content/common/frame_messages.h"
 #include "content/common/frame_owner_properties.h"
+#include "content/common/frame_policy.h"
 #include "content/common/input/input_handler.mojom.h"
 #include "content/common/input_messages.h"
 #include "content/common/inter_process_time_ticks_converter.h"
@@ -1312,8 +1313,7 @@ void RenderFrameHostImpl::OnCreateChildFrame(
     const std::string& frame_name,
     const std::string& frame_unique_name,
     const base::UnguessableToken& devtools_frame_token,
-    blink::WebSandboxFlags sandbox_flags,
-    const ParsedFeaturePolicyHeader& container_policy,
+    const FramePolicy& frame_policy,
     const FrameOwnerProperties& frame_owner_properties) {
   // TODO(lukasza): Call ReceivedBadMessage when |frame_unique_name| is empty.
   DCHECK(!frame_unique_name.empty());
@@ -1329,7 +1329,7 @@ void RenderFrameHostImpl::OnCreateChildFrame(
   // IO thread and not taken from the renderer process.
   frame_tree_->AddFrame(frame_tree_node_, GetProcess()->GetID(), new_routing_id,
                         scope, frame_name, frame_unique_name,
-                        devtools_frame_token, sandbox_flags, container_policy,
+                        devtools_frame_token, frame_policy,
                         frame_owner_properties);
 }
 
@@ -2236,8 +2236,7 @@ FrameTreeNode* RenderFrameHostImpl::FindAndVerifyChild(
 
 void RenderFrameHostImpl::OnDidChangeFramePolicy(
     int32_t frame_routing_id,
-    blink::WebSandboxFlags flags,
-    const ParsedFeaturePolicyHeader& container_policy) {
+    const FramePolicy& frame_policy) {
   // Ensure that a frame can only update sandbox flags or feature policy for its
   // immediate children.  If this is not the case, the renderer is considered
   // malicious and is killed.
@@ -2247,8 +2246,8 @@ void RenderFrameHostImpl::OnDidChangeFramePolicy(
   if (!child)
     return;
 
-  child->SetPendingSandboxFlags(flags);
-  child->SetPendingContainerPolicy(container_policy);
+  child->SetPendingSandboxFlags(frame_policy.sandbox_flags);
+  child->SetPendingContainerPolicy(frame_policy.container_policy);
 
   // Notify the RenderFrame if it lives in a different process from its parent.
   // The frame's proxies in other processes also need to learn about the updated
@@ -2258,7 +2257,7 @@ void RenderFrameHostImpl::OnDidChangeFramePolicy(
   RenderFrameHost* child_rfh = child->current_frame_host();
   if (child_rfh->GetSiteInstance() != GetSiteInstance()) {
     child_rfh->Send(new FrameMsg_DidUpdateFramePolicy(child_rfh->GetRoutingID(),
-                                                      flags, container_policy));
+                                                      frame_policy));
   }
 }
 
