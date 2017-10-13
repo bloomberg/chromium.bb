@@ -452,8 +452,8 @@ TEST_F(NotificationPlatformBridgeLinuxTest, NotificationAttribution) {
       .WillOnce(OnNotify(
           [](const NotificationRequest& request) {
             EXPECT_EQ(
-                "<a href=\"https%3A//google.com/"
-                "search%3Fq=test&ie=UTF8\">google.com</a>\n\nBody text",
+                "<a href=\"https://google.com/"
+                "search?q=test&amp;ie=UTF8\">google.com</a>\n\nBody text",
                 request.body);
           },
           1));
