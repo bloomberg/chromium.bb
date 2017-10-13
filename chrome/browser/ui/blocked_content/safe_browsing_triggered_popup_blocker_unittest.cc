@@ -5,9 +5,6 @@
 #include "chrome/browser/ui/blocked_content/safe_browsing_triggered_popup_blocker.h"
 
 #include <memory>
-#include <string>
-#include <utility>
-#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -16,7 +13,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
 #include "chrome/browser/subresource_filter/chrome_subresource_filter_client.h"
-#include "chrome/browser/ui/blocked_content/console_logger.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
@@ -27,24 +23,6 @@
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
-
-class TestConsoleLogger : public ConsoleLogger {
- public:
-  TestConsoleLogger() {}
-  ~TestConsoleLogger() override {}
-
-  void LogInFrame(content::RenderFrameHost* render_frame_host,
-                  content::ConsoleMessageLevel level,
-                  const std::string& message) override {
-    messages_.push_back(message);
-  }
-
-  const std::vector<std::string>& messages() { return messages_; }
-
- private:
-  std::vector<std::string> messages_;
-  DISALLOW_COPY_AND_ASSIGN(TestConsoleLogger);
-};
 
 class SafeBrowsingTriggeredPopupBlockerTest
     : public ChromeRenderViewHostTestHarness {
@@ -76,11 +54,8 @@ class SafeBrowsingTriggeredPopupBlockerTest
     ChromeSubresourceFilterClient::CreateForWebContents(web_contents());
 
     scoped_feature_list_ = DefaultFeatureList();
-
-    auto console_logger = base::MakeUnique<TestConsoleLogger>();
-    console_logger_ = console_logger.get();
-    popup_blocker_ = base::MakeUnique<SafeBrowsingTriggeredPopupBlocker>(
-        web_contents(), std::move(console_logger));
+    popup_blocker_ =
+        base::MakeUnique<SafeBrowsingTriggeredPopupBlocker>(web_contents());
   }
 
   void TearDown() override {
@@ -132,15 +107,10 @@ class SafeBrowsingTriggeredPopupBlockerTest
     MarkUrlAsAbusiveWithLevel(url, safe_browsing::SubresourceFilterLevel::WARN);
   }
 
-  TestConsoleLogger* console_logger() { return console_logger_; }
-
  private:
   std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
   scoped_refptr<FakeSafeBrowsingDatabaseManager> fake_safe_browsing_database_;
   std::unique_ptr<SafeBrowsingTriggeredPopupBlocker> popup_blocker_;
-
-  // Owned by the popup blocker.
-  TestConsoleLogger* console_logger_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingTriggeredPopupBlockerTest);
 };
@@ -173,15 +143,11 @@ TEST_F(IgnoreSublistSafeBrowsingTriggeredPopupBlockerTest,
   EXPECT_TRUE(popup_blocker()->ShouldApplyStrongPopupBlocker(nullptr));
 }
 
-TEST_F(SafeBrowsingTriggeredPopupBlockerTest, MatchingURL_BlocksPopupAndLogs) {
+TEST_F(SafeBrowsingTriggeredPopupBlockerTest, MatchingURL_BlocksPopup) {
   const GURL url("https://example.test/");
   MarkUrlAsAbusiveEnforce(url);
   NavigateAndCommit(url);
-  EXPECT_TRUE(console_logger()->messages().empty());
-
   EXPECT_TRUE(popup_blocker()->ShouldApplyStrongPopupBlocker(nullptr));
-  EXPECT_EQ(1u, console_logger()->messages().size());
-  EXPECT_EQ(console_logger()->messages().front(), kAbusiveEnforceMessage);
 }
 
 TEST_F(SafeBrowsingTriggeredPopupBlockerTest,
@@ -208,7 +174,6 @@ TEST_F(SafeBrowsingTriggeredPopupBlockerTest, NoMatch_NoBlocking) {
   const GURL url("https://example.test/");
   NavigateAndCommit(url);
   EXPECT_FALSE(popup_blocker()->ShouldApplyStrongPopupBlocker(nullptr));
-  EXPECT_TRUE(console_logger()->messages().empty());
 }
 
 TEST_F(SafeBrowsingTriggeredPopupBlockerTest, NoFeature_NoBlocking) {
@@ -330,17 +295,4 @@ TEST_F(SafeBrowsingTriggeredPopupBlockerTest, LogActions) {
   EXPECT_FALSE(popup_blocker()->ShouldApplyStrongPopupBlocker(nullptr));
   check_histogram(SafeBrowsingTriggeredPopupBlocker::Action::kConsidered, 4);
   histogram_tester.ExpectTotalCount(kActionHistogram, total_count);
-}
-
-TEST_F(SafeBrowsingTriggeredPopupBlockerTest, WarningMatch_OnlyLogs) {
-  const GURL url("https://example.test/");
-
-  MarkUrlAsAbusiveWarning(url);
-  NavigateAndCommit(url);
-
-  // Warning should come at navigation commit time, not at popup time.
-  EXPECT_EQ(1u, console_logger()->messages().size());
-  EXPECT_EQ(console_logger()->messages().front(), kAbusiveWarnMessage);
-
-  EXPECT_FALSE(popup_blocker()->ShouldApplyStrongPopupBlocker(nullptr));
 }
