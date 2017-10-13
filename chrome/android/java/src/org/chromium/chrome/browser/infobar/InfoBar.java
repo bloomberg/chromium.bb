@@ -103,7 +103,10 @@ public abstract class InfoBar implements InfoBarView {
         return mView;
     }
 
-    /** If this returns true, the infobar contents will be replaced with a one-line layout. */
+    /**
+     * If this returns true, the infobar contents will be replaced with a one-line layout.
+     * When overriding this, also override {@link #getAccessibilityMessage}.
+     */
     protected boolean usesCompactLayout() {
         return false;
     }
@@ -134,6 +137,8 @@ public abstract class InfoBar implements InfoBarView {
 
     /**
      * Returns the accessibility message to announce when this infobar is first shown.
+     * Override this if the InfoBar doesn't have {@link R.id.infobar_message}. It is usually the
+     * case when it is in CompactLayout.
      */
     protected CharSequence getAccessibilityMessage(CharSequence defaultTitle) {
         return defaultTitle == null ? "" : defaultTitle;
@@ -144,14 +149,12 @@ public abstract class InfoBar implements InfoBarView {
         if (mView == null) return "";
 
         CharSequence title = null;
-        if (usesCompactLayout()) {
-            title = getAccessibilityMessage(title);
-        } else {
-            // For normal infobar, make an announcement only when a proper TextView is assigned.
-            TextView messageView = (TextView) mView.findViewById(R.id.infobar_message);
-            if (messageView == null) return "";
-            title = getAccessibilityMessage(messageView.getText());
+        TextView messageView = (TextView) mView.findViewById(R.id.infobar_message);
+        if (messageView != null) {
+            title = messageView.getText();
         }
+        title = getAccessibilityMessage(title);
+        // TODO(crbug/773717): Avoid string concatenation due to i18n.
         return title + mContext.getString(R.string.bottom_bar_screen_position);
     }
 
