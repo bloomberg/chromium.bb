@@ -275,10 +275,6 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
   // sync fails or there's no network, the callback is never invoked.
   virtual void GetServerBackedStateKeys(const StateKeysCallback& callback) = 0;
 
-  // Used for several ARC methods.  Takes a boolean indicating whether the
-  // operation was successful or not.
-  using ArcCallback = base::Callback<void(bool success)>;
-
   // Asynchronously starts the ARC instance for the user whose cryptohome is
   // located by |cryptohome_id|.  Flag |disable_boot_completed_broadcast|
   // blocks Android ACTION_BOOT_COMPLETED broadcast for 3rd party applications.
@@ -317,7 +313,7 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
   // |callback| with the result; true on success, false on failure (either
   // session manager failed to stop an instance or session manager can not be
   // reached).
-  virtual void StopArcInstance(const ArcCallback& callback) = 0;
+  virtual void StopArcInstance(VoidDBusMethodCallback callback) = 0;
 
   // Adjusts the amount of CPU the ARC instance is allowed to use. When
   // |restriction_state| is CONTAINER_CPU_RESTRICTION_FOREGROUND the limit is
@@ -328,11 +324,11 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
   // supported, the function asynchronously runs the |callback| with false.
   virtual void SetArcCpuRestriction(
       login_manager::ContainerCpuRestrictionState restriction_state,
-      const ArcCallback& callback) = 0;
+      VoidDBusMethodCallback callback) = 0;
 
   // Emits the "arc-booted" upstart signal.
   virtual void EmitArcBooted(const cryptohome::Identification& cryptohome_id,
-                             const ArcCallback& callback) = 0;
+                             VoidDBusMethodCallback callback) = 0;
 
   // Asynchronously retrieves the timestamp which ARC instance is invoked.
   // Returns nullopt if there is no ARC instance or ARC is not available.
@@ -344,7 +340,7 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
   // result; true on success, false on failure (either session manager failed
   // to remove user data or session manager can not be reached).
   virtual void RemoveArcData(const cryptohome::Identification& cryptohome_id,
-                             const ArcCallback& callback) = 0;
+                             VoidDBusMethodCallback callback) = 0;
 
   // Creates the instance.
   static SessionManagerClient* Create(DBusClientImplementationType type);

@@ -277,23 +277,24 @@ void FakeSessionManagerClient::StartArcInstance(
                             base::Passed(base::ScopedFD())));
 }
 
-void FakeSessionManagerClient::StopArcInstance(const ArcCallback& callback) {
+void FakeSessionManagerClient::StopArcInstance(
+    VoidDBusMethodCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, arc_available_));
+      FROM_HERE, base::BindOnce(std::move(callback), arc_available_));
 }
 
 void FakeSessionManagerClient::SetArcCpuRestriction(
     login_manager::ContainerCpuRestrictionState restriction_state,
-    const ArcCallback& callback) {
+    VoidDBusMethodCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, arc_available_));
+      FROM_HERE, base::BindOnce(std::move(callback), arc_available_));
 }
 
 void FakeSessionManagerClient::EmitArcBooted(
     const cryptohome::Identification& cryptohome_id,
-    const ArcCallback& callback) {
+    VoidDBusMethodCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, arc_available_));
+      FROM_HERE, base::BindOnce(std::move(callback), arc_available_));
 }
 
 void FakeSessionManagerClient::GetArcStartTime(
@@ -307,10 +308,10 @@ void FakeSessionManagerClient::GetArcStartTime(
 
 void FakeSessionManagerClient::RemoveArcData(
     const cryptohome::Identification& cryptohome_id,
-    const ArcCallback& callback) {
+    VoidDBusMethodCallback callback) {
   if (!callback.is_null()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, arc_available_));
+        FROM_HERE, base::BindOnce(std::move(callback), arc_available_));
   }
 }
 
