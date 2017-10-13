@@ -233,7 +233,6 @@ public abstract class ChromeFeatureList {
     public static final String WEB_PAYMENTS_SINGLE_APP_UI_SKIP = "WebPaymentsSingleAppUiSkip";
     public static final String WEBVR_AUTOPRESENT = "WebVrAutopresent";
     public static final String WEBVR_CARDBOARD_SUPPORT = "WebVRCardboardSupport";
-    public static final String XGEO_VISIBLE_NETWORKS = "XGEOVisibleNetworks";
 
     private static native boolean nativeIsInitialized();
     private static native boolean nativeIsEnabled(String featureName);

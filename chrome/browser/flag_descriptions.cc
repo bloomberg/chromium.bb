@@ -2054,12 +2054,6 @@ const char kThirdPartyDoodlesDescription[] =
     "Enables fetching and displaying Doodles on the NTP for third-party search "
     "engines.";
 
-const char kXGEOVisibleNetworksName[] = "Enable XGEO Visible Networks";
-const char kXGEOVisibleNetworksDescription[] =
-    "If location permissions are granted, include visible networks in the XGEO "
-    "Header for omnibox queries. This will only happen if location is not "
-    "fresh or not available (for example, due to a cold start).";
-
 // Non-Android -----------------------------------------------------------------
 
 #else  // !defined(OS_ANDROID)

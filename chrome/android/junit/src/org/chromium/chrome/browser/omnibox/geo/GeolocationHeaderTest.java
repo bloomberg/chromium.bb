@@ -12,7 +12,6 @@ import android.content.Context;
 import android.location.Location;
 import android.os.Build;
 import android.os.SystemClock;
-import android.util.Base64;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -26,7 +25,6 @@ import org.robolectric.annotation.Implements;
 
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.geo.GeolocationHeaderTest.ShadowRecordHistogram;
 import org.chromium.chrome.browser.omnibox.geo.GeolocationHeaderTest.ShadowUrlUtilities;
 import org.chromium.chrome.browser.omnibox.geo.GeolocationHeaderTest.ShadowWebsitePreferenceBridge;
@@ -40,7 +38,6 @@ import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Locale;
 
 /**
  * Robolectric tests for {@link GeolocationHeader}.
@@ -58,9 +55,6 @@ public class GeolocationHeaderTest {
     private static final long LOCATION_TIME = 400;
     // Encoded location for LOCATION_LAT, LOCATION_LONG, LOCATION_ACCURACY and LOCATION_TIME.
     private static final String ENCODED_PROTO_LOCATION = "CAEQDBiAtRgqCg3AiBkMFYAx3Vw9AECcRg==";
-    private static final String ENCODED_ASCII_LOCATION = "cm9sZToxIHByb2R1Y2VyOjEyIHRpbWVzdGFtcDo0M"
-            + "DAwMDAgbGF0bG5ne2xhdGl0dWRlX2U3OjIwMzAwMDAwMCBsb25naXR1ZGVfZTc6MTU1ODAwMDAwMH0gcmFka"
-            + "XVzOjIwMDAw";
 
     private static final VisibleWifi VISIBLE_WIFI1 =
             VisibleWifi.create("ssid1", "11:11:11:11:11:11", -1, 10L);
@@ -114,13 +108,6 @@ public class GeolocationHeaderTest {
         when(mTab.isIncognito()).thenReturn(false);
         sRefreshVisibleNetworksRequests = 0;
         sRefreshLastKnownLocation = 0;
-    }
-
-    @Test
-    public void testEncodeAsciiLocation() throws ProcessInitException {
-        Location location = generateMockLocation("should_not_matter", LOCATION_TIME);
-        String encodedAsciiLocation = GeolocationHeader.encodeAsciiLocation(location);
-        assertEquals(ENCODED_ASCII_LOCATION, encodedAsciiLocation);
     }
 
     @Test
@@ -182,7 +169,6 @@ public class GeolocationHeaderTest {
     }
 
     @Test
-    @Features({ @Features.Register(ChromeFeatureList.XGEO_VISIBLE_NETWORKS) })
     public void testGetGeoHeaderFreshLocation() throws ProcessInitException {
         VisibleNetworks visibleNetworks = VisibleNetworks.create(VISIBLE_WIFI1, VISIBLE_CELL1,
                 new HashSet(Arrays.asList(VISIBLE_WIFI3)),
@@ -197,7 +183,6 @@ public class GeolocationHeaderTest {
     }
 
     @Test
-    @Features({ @Features.Register(ChromeFeatureList.XGEO_VISIBLE_NETWORKS) })
     public void testGetGeoHeaderLocationMissing() throws ProcessInitException {
         VisibleNetworks visibleNetworks = VisibleNetworks.create(VISIBLE_WIFI1, VISIBLE_CELL1,
                 new HashSet(Arrays.asList(VISIBLE_WIFI3)),
@@ -209,7 +194,6 @@ public class GeolocationHeaderTest {
     }
 
     @Test
-    @Features({ @Features.Register(ChromeFeatureList.XGEO_VISIBLE_NETWORKS) })
     public void testGetGeoHeaderOldLocationHighAccuracy() throws ProcessInitException {
         GeolocationHeader.setLocationSourceForTesting(
                 GeolocationHeader.LOCATION_SOURCE_HIGH_ACCURACY);
@@ -219,7 +203,6 @@ public class GeolocationHeaderTest {
     }
 
     @Test
-    @Features({ @Features.Register(ChromeFeatureList.XGEO_VISIBLE_NETWORKS) })
     public void testGetGeoHeaderOldLocationBatterySaving() throws ProcessInitException {
         GeolocationHeader.setLocationSourceForTesting(
                 GeolocationHeader.LOCATION_SOURCE_BATTERY_SAVING);
@@ -228,7 +211,6 @@ public class GeolocationHeaderTest {
     }
 
     @Test
-    @Features({ @Features.Register(ChromeFeatureList.XGEO_VISIBLE_NETWORKS) })
     public void testGetGeoHeaderOldLocationGpsOnly() throws ProcessInitException {
         GeolocationHeader.setLocationSourceForTesting(GeolocationHeader.LOCATION_SOURCE_GPS_ONLY);
         // In GPS only mode, networks should never be included.
@@ -236,7 +218,6 @@ public class GeolocationHeaderTest {
     }
 
     @Test
-    @Features({ @Features.Register(ChromeFeatureList.XGEO_VISIBLE_NETWORKS) })
     public void testGetGeoHeaderOldLocationLocationOff() throws ProcessInitException {
         GeolocationHeader.setLocationSourceForTesting(GeolocationHeader.LOCATION_SOURCE_MASTER_OFF);
         // If the master switch is off, networks should never be included (old location might).
@@ -244,7 +225,6 @@ public class GeolocationHeaderTest {
     }
 
     @Test
-    @Features({ @Features.Register(ChromeFeatureList.XGEO_VISIBLE_NETWORKS) })
     public void testGetGeoHeaderOldLocationAppPermissionDenied() throws ProcessInitException {
         GeolocationHeader.setLocationSourceForTesting(
                 GeolocationHeader.LOCATION_SOURCE_HIGH_ACCURACY);
@@ -254,36 +234,8 @@ public class GeolocationHeaderTest {
     }
 
     @Test
-    @Features({
-            @Features.Register(value = ChromeFeatureList.XGEO_VISIBLE_NETWORKS, enabled = false)
-    })
-    public void testGetGeoHeaderOldLocationFeatureOff() throws ProcessInitException {
-        long timestamp = LOCATION_TIME * 1000;
-        int latitudeE7 = (int) (LOCATION_LAT * 10000000);
-        int longitudeE7 = (int) (LOCATION_LONG * 10000000);
-        int radius = (int) (LOCATION_ACCURACY * 1000);
-        String locationAscii = String.format(Locale.US,
-                "role:1 producer:12 timestamp:%d latlng{latitude_e7:%d longitude_e7:%d} "
-                        + "radius:%d",
-                timestamp, latitudeE7, longitudeE7, radius);
-        String expectedHeader =
-                "X-Geo: a " + new String(Base64.encode(locationAscii.getBytes(), Base64.NO_WRAP));
-        checkOldLocation(expectedHeader);
-    }
-
-    @Test
     @Config(shadows = {ShadowVisibleNetworksTracker.class, ShadowGeolocationTracker.class})
-    @Features(@Features.Register(value = ChromeFeatureList.XGEO_VISIBLE_NETWORKS, enabled = false))
-    public void testPrimeLocationForGeoHeaderFeatureOff() throws ProcessInitException {
-        GeolocationHeader.primeLocationForGeoHeader();
-        assertEquals(1, sRefreshLastKnownLocation);
-        assertEquals(0, sRefreshVisibleNetworksRequests);
-    }
-
-    @Test
-    @Config(shadows = {ShadowVisibleNetworksTracker.class, ShadowGeolocationTracker.class})
-    @Features(@Features.Register(ChromeFeatureList.XGEO_VISIBLE_NETWORKS))
-    public void testPrimeLocationForGeoHeaderFeatureOn() throws ProcessInitException {
+    public void testPrimeLocationForGeoHeader() throws ProcessInitException {
         GeolocationHeader.primeLocationForGeoHeader();
         assertEquals(1, sRefreshLastKnownLocation);
         assertEquals(1, sRefreshVisibleNetworksRequests);
@@ -291,7 +243,6 @@ public class GeolocationHeaderTest {
 
     @Test
     @Config(shadows = {ShadowVisibleNetworksTracker.class, ShadowGeolocationTracker.class})
-    @Features(@Features.Register(ChromeFeatureList.XGEO_VISIBLE_NETWORKS))
     public void testPrimeLocationForGeoHeaderPermissionOff() throws ProcessInitException {
         GeolocationHeader.setAppPermissionGrantedForTesting(false);
         GeolocationHeader.primeLocationForGeoHeader();

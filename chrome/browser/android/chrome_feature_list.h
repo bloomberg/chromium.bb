@@ -71,7 +71,6 @@ extern const base::Feature kVrCustomTabBrowsing;
 extern const base::Feature kWebPaymentsSingleAppUiSkip;
 extern const base::Feature kWebVrAutopresent;
 extern const base::Feature kWebVRCardboardSupport;
-extern const base::Feature kXGEOVisibleNetworks;
 
 }  // namespace android
 }  // namespace chrome
