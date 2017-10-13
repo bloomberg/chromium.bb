@@ -7,7 +7,6 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/arc/voice_interaction/arc_voice_interaction_framework_service.h"
-#include "chrome/browser/chromeos/note_taking_helper.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -35,21 +34,6 @@ PaletteDelegateChromeOS::AddPaletteEnableListener(
   auto subscription = palette_enabled_callback_list_.Add(on_state_changed);
   OnPaletteEnabledPrefChanged();
   return subscription;
-}
-
-void PaletteDelegateChromeOS::CreateNote() {
-  if (!profile_)
-    return;
-
-  chromeos::NoteTakingHelper::Get()->LaunchAppForNewNote(profile_,
-                                                         base::FilePath());
-}
-
-bool PaletteDelegateChromeOS::HasNoteApp() {
-  if (!profile_)
-    return false;
-
-  return chromeos::NoteTakingHelper::Get()->IsAppAvailable(profile_);
 }
 
 void PaletteDelegateChromeOS::ActiveUserChanged(

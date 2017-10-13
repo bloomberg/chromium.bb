@@ -30,12 +30,6 @@ class PaletteDelegate {
   virtual std::unique_ptr<EnableListenerSubscription> AddPaletteEnableListener(
       const EnableListener& on_state_changed) = 0;
 
-  // Create a new note.
-  virtual void CreateNote() = 0;
-
-  // Returns true if there is a note-taking application available.
-  virtual bool HasNoteApp() = 0;
-
   // Returns true if the palette should be automatically opened on an eject
   // event.
   virtual bool ShouldAutoOpenPalette() = 0;

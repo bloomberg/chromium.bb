@@ -39,8 +39,6 @@ class PaletteDelegateImpl : public PaletteDelegate {
     on_state_changed.Run(false);
     return nullptr;
   }
-  void CreateNote() override {}
-  bool HasNoteApp() override { return false; }
   bool ShouldAutoOpenPalette() override { return false; }
   bool ShouldShowPalette() override { return false; }
 

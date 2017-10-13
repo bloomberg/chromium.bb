@@ -306,6 +306,8 @@ component("ash") {
     "multi_profile_uma.h",
     "new_window_controller.cc",
     "new_window_controller.h",
+    "note_taking_controller.cc",
+    "note_taking_controller.h",
     "palette_delegate.h",
     "pointer_watcher_adapter_classic.cc",
     "pointer_watcher_adapter_classic.h",

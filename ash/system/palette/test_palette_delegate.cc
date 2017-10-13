@@ -18,15 +18,6 @@ TestPaletteDelegate::AddPaletteEnableListener(
   return nullptr;
 }
 
-void TestPaletteDelegate::CreateNote() {
-  ++create_note_count_;
-}
-
-bool TestPaletteDelegate::HasNoteApp() {
-  ++has_note_app_count_;
-  return has_note_app_;
-}
-
 bool TestPaletteDelegate::ShouldAutoOpenPalette() {
   return should_auto_open_palette_;
 }

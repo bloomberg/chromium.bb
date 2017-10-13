@@ -23,6 +23,7 @@
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/lock_screen_apps/state_controller.h"
+#include "chrome/browser/chromeos/note_taking_controller_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
@@ -347,6 +348,8 @@ NoteTakingHelper::NoteTakingHelper()
     : launch_chrome_app_callback_(
           base::Bind(&apps::LaunchPlatformAppWithAction)),
       extension_registry_observer_(this),
+      note_taking_controller_client_(
+          std::make_unique<NoteTakingControllerClient>(this)),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 

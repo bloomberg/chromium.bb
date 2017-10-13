@@ -34,8 +34,6 @@ class PaletteDelegateChromeOS
   // ash::PaletteDelegate:
   std::unique_ptr<EnableListenerSubscription> AddPaletteEnableListener(
       const EnableListener& on_state_changed) override;
-  void CreateNote() override;
-  bool HasNoteApp() override;
   bool ShouldAutoOpenPalette() override;
   bool ShouldShowPalette() override;
 

@@ -13,6 +13,7 @@
           "ash::mojom::LocaleNotificationController",
           "ash::mojom::MediaController",
           "ash::mojom::NewWindowController",
+          "ash::mojom::NoteTakingController",
           "ash::mojom::SessionController",
           "ash::mojom::ShelfController",
           "ash::mojom::ShutdownController",

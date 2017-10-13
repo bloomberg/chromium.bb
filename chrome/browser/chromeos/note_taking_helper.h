@@ -47,6 +47,8 @@ struct ActionData;
 
 namespace chromeos {
 
+class NoteTakingControllerClient;
+
 // Describes an app's level of support for lock screen enabled note taking.
 // IMPORTANT: These constants are used in settings UI, so be careful about
 //     reordering/adding/removing items.
@@ -317,6 +319,8 @@ class NoteTakingHelper : public arc::ArcIntentHelperObserver,
   base::ObserverList<Observer> observers_;
 
   content::NotificationRegistrar registrar_;
+
+  std::unique_ptr<NoteTakingControllerClient> note_taking_controller_client_;
 
   base::WeakPtrFactory<NoteTakingHelper> weak_ptr_factory_;
 
