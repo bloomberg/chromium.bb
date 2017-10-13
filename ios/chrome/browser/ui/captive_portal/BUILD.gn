@@ -12,7 +12,9 @@ source_set("captive_portal") {
     "captive_portal_login_view_controller_delegate.h",
   ]
   deps = [
+    "//base",
     "//components/strings",
+    "//components/url_formatter",
     "//ios/chrome/app/strings",
     "//ios/chrome/app/theme",
     "//ios/chrome/browser",
