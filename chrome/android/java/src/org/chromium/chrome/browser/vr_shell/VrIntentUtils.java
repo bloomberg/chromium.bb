@@ -20,8 +20,13 @@ import org.chromium.chrome.browser.util.IntentUtils;
  */
 public class VrIntentUtils {
     private static final String DAYDREAM_HOME_PACKAGE = "com.google.android.vr.home";
+    // The Daydream Home app adds this extra to auto-present intents.
+    private static final String AUTOPRESENT_WEVBVR_EXTRA = "browser.vr.AUTOPRESENT_WEBVR";
     public static final String DAYDREAM_VR_EXTRA = "android.intent.extra.VR_LAUNCH";
+
     static final String VR_FRE_INTENT_EXTRA = "org.chromium.chrome.browser.vr_shell.VR_FRE";
+    static final String VR_FRE_CALLER_INTENT_EXTRA =
+            "org.chromium.chrome.browser.vr_shell.VR_FRE_CALLER";
 
     private static VrIntentHandler sHandlerInstance;
 
@@ -35,6 +40,14 @@ public class VrIntentUtils {
          * @return Whether the intent is a VR intent and originated from Daydream Home
          */
         boolean isTrustedDaydreamIntent(Intent intent);
+
+        /**
+         * Determines whether the given intent is a VR intent that is allowed to auto-present WebVR
+         * content.
+         * @param intent The intent to check
+         * @return Whether the intent should be allowed to auto-present.
+         */
+        boolean isTrustedAutopresentIntent(Intent intent);
     }
 
     private static VrIntentHandler createInternalVrIntentHandler() {
@@ -43,6 +56,17 @@ public class VrIntentUtils {
             public boolean isTrustedDaydreamIntent(Intent intent) {
                 return isVrIntent(intent)
                         && IntentHandler.isIntentFromTrustedApp(intent, DAYDREAM_HOME_PACKAGE);
+            }
+
+            @Override
+            public boolean isTrustedAutopresentIntent(Intent intent) {
+                // Note that all auto-present intents may not have the intent extra because the user
+                // may have an older version of the Daydream app which doesn't add this extra.
+                // This is probably fine because we mostly use isTrustedDaydreamIntent above to
+                // start auto-presentation. We should switch those calls to use this method when
+                // we're sure that most clients have the change.
+                return isTrustedDaydreamIntent(intent)
+                        && IntentUtils.safeGetBooleanExtra(intent, AUTOPRESENT_WEVBVR_EXTRA, false);
             }
         };
     }
@@ -84,14 +108,21 @@ public class VrIntentUtils {
     }
 
     /**
-     * @return An intent that will launch a VR activity that will prompt the
+     * This function returns an intent that will launch a VR activity that will prompt the
      * user to take off their headset and foward the freIntent to the standard
      * 2D FRE activity.
+     *
+     * @param caller          Activity instance that is checking if first run is necessary.
+     * @param freCallerIntent The intent that is used to launch the caller.
+     * @param freIntent       The intent that will be used to start the first run in 2D mode.
+     * @return The intermediate VR activity intent.
      */
-    public static Intent setupVrFreIntent(Context context, Intent freIntent) {
+    public static Intent setupVrFreIntent(
+            Context context, Intent freCallerIntent, Intent freIntent) {
         if (!VrShellDelegate.isVrEnabled()) return freIntent;
         Intent intent = new Intent();
         intent.setClassName(context, VrFirstRunActivity.class.getName());
+        intent.putExtra(VR_FRE_CALLER_INTENT_EXTRA, new Intent(freCallerIntent));
         intent.putExtra(VR_FRE_INTENT_EXTRA, new Intent(freIntent));
         intent.putExtra(DAYDREAM_VR_EXTRA, true);
         return intent;

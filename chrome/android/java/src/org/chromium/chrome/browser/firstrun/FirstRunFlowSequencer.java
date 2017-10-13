@@ -360,8 +360,10 @@ public abstract class FirstRunFlowSequencer  {
             }
 
             boolean isVrIntent = VrIntentUtils.isVrIntent(intent);
+            Intent freCallerIntent = null;
             if (isVrIntent) {
                 // Modify the caller intent to handle FRE completion correctly for VR.
+                freCallerIntent = new Intent(intent);
                 VrIntentUtils.updateFreCallerIntent(caller, intent);
             }
             // Add a PendingIntent so that the intent used to launch Chrome will be resent when
@@ -369,7 +371,9 @@ public abstract class FirstRunFlowSequencer  {
             addPendingIntent(caller, freIntent, intent, requiresBroadcast);
 
             if (!(caller instanceof Activity)) freIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            if (isVrIntent) freIntent = VrIntentUtils.setupVrFreIntent(caller, freIntent);
+            if (isVrIntent) {
+                freIntent = VrIntentUtils.setupVrFreIntent(caller, freCallerIntent, freIntent);
+            }
             IntentUtils.safeStartActivity(caller, freIntent);
         } else {
             // First Run requires that the Intent contains NEW_TASK so that it doesn't sit on top

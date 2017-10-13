@@ -28,6 +28,11 @@ public class MockVrIntentHandler implements VrIntentUtils.VrIntentHandler {
         return false;
     }
 
+    @Override
+    public boolean isTrustedAutopresentIntent(Intent intent) {
+        return false;
+    }
+
     public void setUseMockImplementation(boolean enabled) {
         mUseMockImplementation = enabled;
     }

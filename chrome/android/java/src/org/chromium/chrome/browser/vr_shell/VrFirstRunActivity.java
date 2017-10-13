@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 
+import org.chromium.base.metrics.CachedMetrics.BooleanHistogramSample;
 import org.chromium.chrome.browser.util.IntentUtils;
 
 /**
@@ -21,12 +22,20 @@ import org.chromium.chrome.browser.util.IntentUtils;
 public class VrFirstRunActivity extends Activity {
     private static final long SHOW_DOFF_TIMEOUT_MS = 500;
 
+    private static final BooleanHistogramSample sFreNotCompleteBrowserHistogram =
+            new BooleanHistogramSample("VRFreNotComplete.Browser");
+    private static final BooleanHistogramSample sFreNotCompleteAutopresentHistogram =
+            new BooleanHistogramSample("VRFreNotComplete.WebVRAutopresent");
+
     private VrDaydreamApi mApi;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         assert VrIntentUtils.isVrIntent(getIntent());
+
+        recordFreHistogram();
+
         VrClassesWrapper wrapper = VrShellDelegate.createVrClassesWrapper();
         if (wrapper == null) {
             showFre();
@@ -70,5 +79,16 @@ public class VrFirstRunActivity extends Activity {
                 getIntent(), VrIntentUtils.VR_FRE_INTENT_EXTRA);
         IntentUtils.safeStartActivity(this, freIntent);
         finish();
+    }
+
+    private void recordFreHistogram() {
+        // This is the intent that started the activity that triggered the FRE.
+        Intent freCallerIntent = (Intent) IntentUtils.safeGetParcelableExtra(
+                getIntent(), VrIntentUtils.VR_FRE_CALLER_INTENT_EXTRA);
+        if (VrIntentUtils.getHandlerInstance().isTrustedAutopresentIntent(freCallerIntent)) {
+            sFreNotCompleteAutopresentHistogram.record(true);
+        } else {
+            sFreNotCompleteBrowserHistogram.record(true);
+        }
     }
 }
