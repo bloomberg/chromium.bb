@@ -229,7 +229,6 @@ void MergeGPUInfoGL(GPUInfo* basic_gpu_info,
   basic_gpu_info->passthrough_cmd_decoder =
       context_gpu_info.passthrough_cmd_decoder;
   basic_gpu_info->supports_overlays = context_gpu_info.supports_overlays;
-  basic_gpu_info->hdr = context_gpu_info.hdr;
   basic_gpu_info->context_info_state = context_gpu_info.context_info_state;
   basic_gpu_info->initialization_time = context_gpu_info.initialization_time;
   basic_gpu_info->video_decode_accelerator_capabilities =

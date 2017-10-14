@@ -87,6 +87,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
                           BufferCreationStatus status)>;
 
   using RequestGPUInfoCallback = base::Callback<void(const gpu::GPUInfo&)>;
+  using RequestHDRStatusCallback = base::Callback<void(bool)>;
 
   static bool gpu_enabled() { return gpu_enabled_; }
   static int gpu_crash_count() { return gpu_crash_count_; }
@@ -149,6 +150,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
                               const gpu::SyncToken& sync_token);
 
   void RequestGPUInfo(RequestGPUInfoCallback request_cb);
+  void RequestHDRStatus(RequestHDRStatusCallback request_cb);
 
 #if defined(OS_ANDROID)
   // Tells the GPU process that the given surface is being destroyed so that it

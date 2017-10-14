@@ -17,7 +17,6 @@
 #include "ui/display/display.h"
 #include "ui/display/display_layout.h"
 #include "ui/display/display_layout_builder.h"
-#include "ui/display/display_switches.h"
 #include "ui/display/win/display_info.h"
 #include "ui/display/win/dpi.h"
 #include "ui/display/win/scaling_util.h"
@@ -223,8 +222,7 @@ gfx::Point ScalePointRelative(const gfx::Point& from_origin,
 ScreenWin::ScreenWin() : ScreenWin(true) {}
 
 ScreenWin::ScreenWin(bool initialize)
-    : color_profile_reader_(new ColorProfileReader(this)),
-      hdr_enabled_(base::FeatureList::IsEnabled(features::kHighDynamicRange)) {
+    : color_profile_reader_(new ColorProfileReader(this)) {
   DCHECK(!g_screen_win_instance);
   g_screen_win_instance = this;
   if (initialize)
@@ -377,6 +375,27 @@ float ScreenWin::GetSystemScaleFactor() {
   return GetUnforcedDeviceScaleFactor();
 }
 
+// static
+void ScreenWin::SetRequestHDRStatusCallback(
+    RequestHDRStatusCallback request_hdr_status_callback) {
+  if (!g_screen_win_instance)
+    return;
+  g_screen_win_instance->request_hdr_status_callback_ =
+      std::move(request_hdr_status_callback);
+  g_screen_win_instance->request_hdr_status_callback_.Run();
+}
+
+// static
+void ScreenWin::SetHDREnabled(bool hdr_enabled) {
+  if (!g_screen_win_instance)
+    return;
+
+  if (g_screen_win_instance->hdr_enabled_ == hdr_enabled)
+    return;
+  g_screen_win_instance->hdr_enabled_ = hdr_enabled;
+  g_screen_win_instance->UpdateAllDisplaysAndNotify();
+}
+
 HWND ScreenWin::GetHWNDFromNativeView(gfx::NativeView window) const {
   NOTREACHED();
   return nullptr;
@@ -518,9 +537,9 @@ void ScreenWin::OnWndProc(HWND hwnd,
     return;
 
   color_profile_reader_->UpdateIfNeeded();
-  std::vector<Display> old_displays = std::move(displays_);
-  UpdateFromDisplayInfos(GetDisplayInfosFromSystem());
-  change_notifier_.NotifyDisplaysChanged(old_displays, displays_);
+  if (request_hdr_status_callback_)
+    request_hdr_status_callback_.Run();
+  UpdateAllDisplaysAndNotify();
 }
 
 void ScreenWin::OnColorProfilesChanged() {
@@ -538,6 +557,10 @@ void ScreenWin::OnColorProfilesChanged() {
   if (!changed)
     return;
 
+  UpdateAllDisplaysAndNotify();
+}
+
+void ScreenWin::UpdateAllDisplaysAndNotify() {
   std::vector<Display> old_displays = std::move(displays_);
   UpdateFromDisplayInfos(GetDisplayInfosFromSystem());
   change_notifier_.NotifyDisplaysChanged(old_displays, displays_);

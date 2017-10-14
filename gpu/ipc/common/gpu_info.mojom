@@ -108,7 +108,6 @@ struct GpuInfo {
   bool in_process_gpu;
   bool passthrough_cmd_decoder;
   bool supports_overlays;
-  bool hdr;
   bool can_support_threaded_texture_mailbox;
   CollectInfoResult basic_info_state;
   CollectInfoResult context_info_state;
