@@ -3,9 +3,10 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/vr/test/gl_test_environment.h"
-
-#include "ui/gl/test/gl_image_test_template.h"
-#include "ui/gl/test/gl_surface_test_support.h"
+#include "ui/gl/gl_version_info.h"
+#include "ui/gl/init/gl_factory.h"
+#include "ui/gl/test/gl_image_test_support.h"
+#include "ui/gl/test/gl_test_helper.h"
 
 namespace vr {
 

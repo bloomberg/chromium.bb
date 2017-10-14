@@ -11,10 +11,18 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/vr/test/paths.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace vr {
+
+// TODO(crbug/770891): Fix GLTF parsing on Windows and reenable the test.
+#if defined(OS_WIN)
+#define MAYBE(x) DISABLED_##x
+#else
+#define MAYBE(x) x
+#endif
 
 class DataDrivenTest : public testing::Test {
  protected:
@@ -44,8 +52,9 @@ std::unique_ptr<base::DictionaryValue> GltfParserTest::Deserialize(
   return std::unique_ptr<base::DictionaryValue>(asset);
 }
 
-TEST_F(GltfParserTest, Parse) {
-  auto asset = Deserialize(data_dir_.Append("sample_inline.gltf"));
+TEST_F(GltfParserTest, MAYBE(Parse)) {
+  auto asset =
+      Deserialize(data_dir_.Append(FILE_PATH_LITERAL("sample_inline.gltf")));
   GltfParser parser;
   std::vector<std::unique_ptr<gltf::Buffer>> buffers;
 
@@ -108,8 +117,9 @@ TEST_F(GltfParserTest, Parse) {
   EXPECT_EQ(scene, gltf_model->GetMainScene());
 }
 
-TEST_F(GltfParserTest, ParseUnknownBuffer) {
-  auto asset = Deserialize(data_dir_.Append("sample_inline.gltf"));
+TEST_F(GltfParserTest, MAYBE(ParseUnknownBuffer)) {
+  auto asset =
+      Deserialize(data_dir_.Append(FILE_PATH_LITERAL("sample_inline.gltf")));
   GltfParser parser;
   std::vector<std::unique_ptr<gltf::Buffer>> buffers;
 
@@ -126,8 +136,9 @@ TEST_F(GltfParserTest, ParseUnknownBuffer) {
   EXPECT_EQ(nullptr, parser.Parse(*asset, &buffers));
 }
 
-TEST_F(GltfParserTest, ParseMissingRequired) {
-  auto asset = Deserialize(data_dir_.Append("sample_inline.gltf"));
+TEST_F(GltfParserTest, MAYBE(ParseMissingRequired)) {
+  auto asset =
+      Deserialize(data_dir_.Append(FILE_PATH_LITERAL("sample_inline.gltf")));
   GltfParser parser;
   std::vector<std::unique_ptr<gltf::Buffer>> buffers;
 
@@ -136,8 +147,8 @@ TEST_F(GltfParserTest, ParseMissingRequired) {
   EXPECT_EQ(nullptr, parser.Parse(*asset, &buffers));
 }
 
-TEST_F(GltfParserTest, ParseExternal) {
-  auto gltf_path = data_dir_.Append("sample_external.gltf");
+TEST_F(GltfParserTest, MAYBE(ParseExternal)) {
+  auto gltf_path = data_dir_.Append(FILE_PATH_LITERAL("sample_external.gltf"));
   GltfParser parser;
   std::vector<std::unique_ptr<gltf::Buffer>> buffers;
 
@@ -150,8 +161,9 @@ TEST_F(GltfParserTest, ParseExternal) {
   EXPECT_EQ(12u, buffer->length());
 }
 
-TEST_F(GltfParserTest, ParseExternalNoPath) {
-  auto asset = Deserialize(data_dir_.Append("sample_external.gltf"));
+TEST_F(GltfParserTest, MAYBE(ParseExternalNoPath)) {
+  auto asset =
+      Deserialize(data_dir_.Append(FILE_PATH_LITERAL("sample_external.gltf")));
   GltfParser parser;
   std::vector<std::unique_ptr<gltf::Buffer>> buffers;
 
@@ -159,9 +171,10 @@ TEST_F(GltfParserTest, ParseExternalNoPath) {
   EXPECT_EQ(nullptr, parser.Parse(*asset, &buffers));
 }
 
-TEST_F(BinaryGltfParserTest, ParseBinary) {
+TEST_F(BinaryGltfParserTest, MAYBE(ParseBinary)) {
   std::string data;
-  EXPECT_TRUE(base::ReadFileToString(data_dir_.Append("sample.glb"), &data));
+  EXPECT_TRUE(base::ReadFileToString(
+      data_dir_.Append(FILE_PATH_LITERAL("sample.glb")), &data));
   base::StringPiece glb_data(data);
   std::vector<std::unique_ptr<gltf::Buffer>> buffers;
   std::unique_ptr<gltf::Asset> asset =

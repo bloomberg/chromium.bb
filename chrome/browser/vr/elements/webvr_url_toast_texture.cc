@@ -19,14 +19,14 @@ namespace vr {
 
 namespace {
 
-static constexpr float kWidth = 0.472;
-static constexpr float kHeight = 0.064;
-static constexpr float kFontHeight = 0.027;
-static constexpr float kSecurityIconOffsetLeft = 0.022;
-static constexpr float kSecurityIconOffsetRight = 0.016;
-static constexpr float kSecurityIconSize = 0.03;
-static constexpr float kUrlRightMargin = 0.02;
-static constexpr float kRadius = 0.004;
+static constexpr float kWidth = 0.472f;
+static constexpr float kHeight = 0.064f;
+static constexpr float kFontHeight = 0.027f;
+static constexpr float kSecurityIconOffsetLeft = 0.022f;
+static constexpr float kSecurityIconOffsetRight = 0.016f;
+static constexpr float kSecurityIconSize = 0.03f;
+static constexpr float kUrlRightMargin = 0.02f;
+static constexpr float kRadius = 0.004f;
 
 }  // namespace
 
