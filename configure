@@ -347,6 +347,7 @@ EXPERIMENT_LIST="
     ext_warped_motion
     horzonly_frame_superres
     simple_bwd_adapt
+    eob_first
 "
 CONFIG_LIST="
     dependency_tracking
@@ -546,6 +547,8 @@ post_process_cmdline() {
 
     # Fix up experiment dependencies
     enabled lv_map && disable_feature mrc_tx
+    enabled eob_first && enable_feature lv_map
+    enabled eob_first && enable_feature ext_tx
     enabled coef_interleave && disable_feature mrc_tx
     enabled mrc_tx && enable_feature ext_tx
     enabled txk_sel && soft_enable lv_map

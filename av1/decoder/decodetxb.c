@@ -267,6 +267,16 @@ static INLINE int read_nz_map_horiz(aom_reader *r, uint8_t *levels, int plane,
 }
 #endif
 
+#if CONFIG_EOB_FIRST
+static INLINE int rec_eob_pos(int16_t eob_token, int16_t extra) {
+  int eob = k_eob_group_start[eob_token];
+  if (eob > 2) {
+    eob += extra;
+  }
+  return eob;
+}
+#endif
+
 uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
                             aom_reader *r, int blk_row, int blk_col, int block,
                             int plane, tran_low_t *tcoeffs, TXB_CTX *txb_ctx,
@@ -327,6 +337,76 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   const SCAN_ORDER *const scan_order = get_scan(cm, tx_size, tx_type, mbmi);
   const int16_t *scan = scan_order->scan;
 
+#if CONFIG_EOB_FIRST
+
+  unsigned int(*nz_map_count)[SIG_COEF_CONTEXTS][2] =
+      (counts) ? &counts->nz_map[txs_ctx][plane_type] : NULL;
+  int16_t dummy;
+  int16_t max_eob_pt = get_eob_pos_token(seg_eob, &dummy);
+
+  int16_t eob_extra = 0;
+  int16_t eob_pt = 0;
+  int is_equal = 0;
+
+  for (int i = 1; i < max_eob_pt; i++) {
+    int eob_pos_ctx = get_eob_pos_ctx(i);
+    is_equal = av1_read_record_bin(
+        counts, r, ec_ctx->eob_flag_cdf[txs_ctx][plane_type][eob_pos_ctx], 2,
+        ACCT_STR);
+
+    // aom_read_symbol(r,
+    // ec_ctx->eob_flag_cdf[AOMMIN(txs_ctx,3)][plane_type][eob_pos_ctx], 2,
+    // ACCT_STR);
+    if (counts) ++counts->eob_flag[txs_ctx][plane_type][eob_pos_ctx][is_equal];
+
+    if (is_equal) {
+      eob_pt = i;
+      break;
+    }
+  }
+  if (is_equal == 0) {
+    eob_pt = max_eob_pt;
+  }
+
+  // printf("Dec: ");
+  if (k_eob_offset_bits[eob_pt] > 0) {
+    for (int i = 0; i < k_eob_offset_bits[eob_pt]; i++) {
+      int eob_shift = k_eob_offset_bits[eob_pt] - 1 - i;
+      int bit = av1_read_record_bit(counts, r, ACCT_STR);
+      if (bit) {
+        eob_extra += (1 << eob_shift);
+      }
+      //  printf("%d ", bit);
+    }
+  }
+  *eob = rec_eob_pos(eob_pt, eob_extra);
+  // printf("=>[%d, %d], (%d, %d)\n", seg_eob, *eob, eob_pt, eob_extra);
+
+  for (int i = 0; i < *eob; ++i) {
+    c = *eob - 1 - i;
+    int is_nz;
+    int coeff_ctx = get_nz_map_ctx(levels, c, scan, bwl, height, tx_type, 1);
+    // int eob_ctx = get_eob_ctx(tcoeffs, scan[c], txs_ctx, tx_type);
+
+    if (c < *eob - 1) {
+#if LV_MAP_PROB
+      is_nz = av1_read_record_bin(
+          counts, r, ec_ctx->nz_map_cdf[txs_ctx][plane_type][coeff_ctx], 2,
+          ACCT_STR);
+#else
+      is_nz = aom_read(r, nz_map[coeff_ctx], ACCT_STR);
+#endif
+    } else {
+      is_nz = 1;
+    }
+
+    // set non-zero coefficient map.
+    levels[scan[c]] = is_nz;
+
+    if (counts) ++(*nz_map_count)[coeff_ctx][is_nz];
+  }
+#else
+
 #if CONFIG_CTX1D
   const int16_t *iscan = scan_order->iscan;
   TX_CLASS tx_class = get_tx_class(tx_type);
@@ -358,6 +438,8 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   }
 #else
   *eob = read_nz_map(r, levels, plane, scan, tx_size, tx_type, ec_ctx, counts);
+#endif
+
 #endif
   *max_scan_line = *eob;
 

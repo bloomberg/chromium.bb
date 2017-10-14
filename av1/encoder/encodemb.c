@@ -165,6 +165,7 @@ static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
       mb->token_head_costs[txsize_sqr_map[tx_size]][plane_type][ref];
   int(*tail_token_costs)[COEFF_CONTEXTS][TAIL_TOKENS] =
       mb->token_tail_costs[txsize_sqr_map[tx_size]][plane_type][ref];
+
   const int64_t rdmult = (mb->rdmult * plane_rd_mult[ref][plane_type]) >> 1;
   int64_t rate0, rate1;
   int64_t eob_cost0, eob_cost1;
