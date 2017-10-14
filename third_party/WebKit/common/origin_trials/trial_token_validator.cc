@@ -4,8 +4,8 @@
 
 #include "third_party/WebKit/common/origin_trials/trial_token_validator.h"
 
+#include <memory>
 #include "base/feature_list.h"
-#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
@@ -87,7 +87,7 @@ TrialTokenValidator::GetValidTokensFromHeaders(
     const net::HttpResponseHeaders* headers,
     base::Time current_time) const {
   std::unique_ptr<FeatureToTokensMap> tokens(
-      base::MakeUnique<FeatureToTokensMap>());
+      std::make_unique<FeatureToTokensMap>());
   if (!IsTrialPossibleOnOrigin(origin))
     return tokens;
 
@@ -109,7 +109,7 @@ TrialTokenValidator::GetValidTokens(const url::Origin& origin,
                                     const FeatureToTokensMap& tokens,
                                     base::Time current_time) const {
   std::unique_ptr<FeatureToTokensMap> out_tokens(
-      base::MakeUnique<FeatureToTokensMap>());
+      std::make_unique<FeatureToTokensMap>());
   if (!IsTrialPossibleOnOrigin(origin))
     return out_tokens;
 
