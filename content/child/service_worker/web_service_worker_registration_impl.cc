@@ -8,6 +8,8 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "content/child/child_process.h"
 #include "content/child/service_worker/service_worker_dispatcher.h"
 #include "content/child/service_worker/web_service_worker_impl.h"
 #include "content/child/service_worker/web_service_worker_provider_impl.h"
@@ -15,7 +17,6 @@
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebNavigationPreloadState.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerError.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerRegistrationProxy.h"
-#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 
 namespace content {
 
@@ -50,16 +51,25 @@ WebServiceWorkerRegistrationImpl::QueuedTask::QueuedTask(
 
 WebServiceWorkerRegistrationImpl::QueuedTask::~QueuedTask() {}
 
-WebServiceWorkerRegistrationImpl::WebServiceWorkerRegistrationImpl(
-    blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info)
-    : info_(std::move(info)), proxy_(nullptr) {
-  DCHECK(info_);
-  DCHECK_NE(blink::mojom::kInvalidServiceWorkerRegistrationHandleId,
-            info_->handle_id);
-  ServiceWorkerDispatcher* dispatcher =
-      ServiceWorkerDispatcher::GetThreadSpecificInstance();
-  DCHECK(dispatcher);
-  dispatcher->AddServiceWorkerRegistration(info_->handle_id, this);
+// static
+scoped_refptr<WebServiceWorkerRegistrationImpl>
+WebServiceWorkerRegistrationImpl::CreateForServiceWorkerGlobalScope(
+    blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info,
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner) {
+  auto* impl = new WebServiceWorkerRegistrationImpl(std::move(info));
+  impl->host_for_global_scope_ =
+      blink::mojom::ThreadSafeServiceWorkerRegistrationObjectHostAssociatedPtr::
+          Create(std::move(impl->info_->host_ptr_info), io_task_runner);
+  return impl;
+}
+
+// static
+scoped_refptr<WebServiceWorkerRegistrationImpl>
+WebServiceWorkerRegistrationImpl::CreateForServiceWorkerClient(
+    blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info) {
+  auto* impl = new WebServiceWorkerRegistrationImpl(std::move(info));
+  impl->host_for_client_.Bind(std::move(impl->info_->host_ptr_info));
+  return impl;
 }
 
 void WebServiceWorkerRegistrationImpl::SetInstalling(
@@ -114,6 +124,16 @@ void WebServiceWorkerRegistrationImpl::RunQueuedTasks() {
   queued_tasks_.clear();
 }
 
+blink::mojom::ServiceWorkerRegistrationObjectHost*
+WebServiceWorkerRegistrationImpl::GetRegistrationObjectHost() {
+  if (host_for_client_)
+    return host_for_client_.get();
+  if (host_for_global_scope_)
+    return host_for_global_scope_->get();
+  NOTREACHED();
+  return nullptr;
+}
+
 blink::WebServiceWorkerRegistrationProxy*
 WebServiceWorkerRegistrationImpl::Proxy() {
   return proxy_;
@@ -126,13 +146,9 @@ blink::WebURL WebServiceWorkerRegistrationImpl::Scope() const {
 void WebServiceWorkerRegistrationImpl::Update(
     blink::WebServiceWorkerProvider* provider,
     std::unique_ptr<WebServiceWorkerUpdateCallbacks> callbacks) {
-  WebServiceWorkerProviderImpl* provider_impl =
-      static_cast<WebServiceWorkerProviderImpl*>(provider);
-  ServiceWorkerDispatcher* dispatcher =
-      ServiceWorkerDispatcher::GetThreadSpecificInstance();
-  DCHECK(dispatcher);
-  dispatcher->UpdateServiceWorker(provider_impl->provider_id(),
-                                  RegistrationId(), std::move(callbacks));
+  GetRegistrationObjectHost()->Update(
+      base::BindOnce(&WebServiceWorkerRegistrationImpl::OnUpdated,
+                     base::Unretained(this), std::move(callbacks)));
 }
 
 void WebServiceWorkerRegistrationImpl::Unregister(
@@ -191,6 +207,21 @@ int64_t WebServiceWorkerRegistrationImpl::RegistrationId() const {
   return info_->registration_id;
 }
 
+void WebServiceWorkerRegistrationImpl::OnUpdated(
+    std::unique_ptr<WebServiceWorkerUpdateCallbacks> callbacks,
+    blink::mojom::ServiceWorkerErrorType error,
+    const base::Optional<std::string>& error_msg) {
+  if (error != blink::mojom::ServiceWorkerErrorType::kNone) {
+    DCHECK(error_msg);
+    callbacks->OnError(blink::WebServiceWorkerError(
+        error, blink::WebString::FromUTF8(*error_msg)));
+    return;
+  }
+
+  DCHECK(!error_msg);
+  callbacks->OnSuccess();
+}
+
 // static
 std::unique_ptr<blink::WebServiceWorkerRegistration::Handle>
 WebServiceWorkerRegistrationImpl::CreateHandle(
@@ -198,6 +229,19 @@ WebServiceWorkerRegistrationImpl::CreateHandle(
   if (!registration)
     return nullptr;
   return std::make_unique<HandleImpl>(registration);
+}
+
+WebServiceWorkerRegistrationImpl::WebServiceWorkerRegistrationImpl(
+    blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info)
+    : info_(std::move(info)), proxy_(nullptr) {
+  DCHECK(info_);
+  DCHECK_NE(blink::mojom::kInvalidServiceWorkerRegistrationHandleId,
+            info_->handle_id);
+
+  ServiceWorkerDispatcher* dispatcher =
+      ServiceWorkerDispatcher::GetThreadSpecificInstance();
+  DCHECK(dispatcher);
+  dispatcher->AddServiceWorkerRegistration(info_->handle_id, this);
 }
 
 WebServiceWorkerRegistrationImpl::~WebServiceWorkerRegistrationImpl() {

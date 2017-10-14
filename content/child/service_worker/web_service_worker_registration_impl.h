@@ -15,7 +15,12 @@
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerRegistration.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_error_type.mojom.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}
 
 namespace blink {
 class WebServiceWorkerRegistrationProxy;
@@ -37,7 +42,15 @@ class CONTENT_EXPORT WebServiceWorkerRegistrationImpl
     : public blink::WebServiceWorkerRegistration,
       public base::RefCounted<WebServiceWorkerRegistrationImpl> {
  public:
-  explicit WebServiceWorkerRegistrationImpl(
+  // |io_task_runner| is used to bind |host_for_global_scope_|, as it's a
+  // Channel-associated interface and needs to be bound on either the main or IO
+  // thread.
+  static scoped_refptr<WebServiceWorkerRegistrationImpl>
+  CreateForServiceWorkerGlobalScope(
+      blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info,
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
+  static scoped_refptr<WebServiceWorkerRegistrationImpl>
+  CreateForServiceWorkerClient(
       blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info);
 
   void SetInstalling(const scoped_refptr<WebServiceWorkerImpl>& service_worker);
@@ -81,6 +94,8 @@ class CONTENT_EXPORT WebServiceWorkerRegistrationImpl
 
  private:
   friend class base::RefCounted<WebServiceWorkerRegistrationImpl>;
+  explicit WebServiceWorkerRegistrationImpl(
+      blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info);
   ~WebServiceWorkerRegistrationImpl() override;
 
   enum QueuedTaskType {
@@ -100,9 +115,33 @@ class CONTENT_EXPORT WebServiceWorkerRegistrationImpl
   };
 
   void RunQueuedTasks();
+  blink::mojom::ServiceWorkerRegistrationObjectHost*
+  GetRegistrationObjectHost();
+
+  void OnUpdated(std::unique_ptr<WebServiceWorkerUpdateCallbacks> callbacks,
+                 blink::mojom::ServiceWorkerErrorType error,
+                 const base::Optional<std::string>& error_msg);
 
   blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info_;
   blink::WebServiceWorkerRegistrationProxy* proxy_;
+
+  // Either |host_for_global_scope_| or |host_for_client_| is non-null.
+  //
+  // |host_for_global_scope_| is for service worker execution contexts. It is
+  // used on the worker thread but bound on the IO thread, because it's a
+  // channel- associated interface which can be bound only on the main or IO
+  // thread.
+  // TODO(leonhsl): Once we can detach this interface out from the legacy IPC
+  // channel-associated interfaces world, we should bind it always on the worker
+  // thread on which |this| lives.
+  // Although it is a scoped_refptr, the only one owner is |this|.
+  scoped_refptr<
+      blink::mojom::ThreadSafeServiceWorkerRegistrationObjectHostAssociatedPtr>
+      host_for_global_scope_;
+  // |host_for_client_| is for service worker clients (document, shared worker).
+  // It is bound and used on the main thread.
+  blink::mojom::ServiceWorkerRegistrationObjectHostAssociatedPtr
+      host_for_client_;
 
   std::vector<QueuedTask> queued_tasks_;
 

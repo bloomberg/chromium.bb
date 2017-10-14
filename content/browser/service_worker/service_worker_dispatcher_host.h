@@ -147,10 +147,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
   void OnProviderCreated(ServiceWorkerProviderHostInfo info) override;
 
   // IPC Message handlers
-  void OnUpdateServiceWorker(int thread_id,
-                             int request_id,
-                             int provider_id,
-                             int64_t registration_id);
   void OnUnregisterServiceWorker(int thread_id,
                                  int request_id,
                                  int provider_id,
@@ -218,13 +214,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
       int provider_id,
       int64_t registration_id);
 
-  // Callbacks from ServiceWorkerContextCore
-  void UpdateComplete(int thread_id,
-                      int provider_id,
-                      int request_id,
-                      ServiceWorkerStatusCode status,
-                      const std::string& status_message,
-                      int64_t registration_id);
   void UnregistrationComplete(int thread_id,
                               int request_id,
                               ServiceWorkerStatusCode status);

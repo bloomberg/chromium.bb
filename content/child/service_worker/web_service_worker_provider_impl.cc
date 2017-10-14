@@ -257,8 +257,8 @@ void WebServiceWorkerProviderImpl::OnRegistered(
   DCHECK_NE(blink::mojom::kInvalidServiceWorkerRegistrationHandleId,
             registration->handle_id);
   callbacks->OnSuccess(WebServiceWorkerRegistrationImpl::CreateHandle(
-      GetDispatcher()->GetOrAdoptRegistration(std::move(registration),
-                                              *attributes)));
+      GetDispatcher()->GetOrCreateRegistrationForServiceWorkerClient(
+          std::move(registration), *attributes)));
 }
 
 void WebServiceWorkerProviderImpl::OnDidGetRegistration(
@@ -288,8 +288,8 @@ void WebServiceWorkerProviderImpl::OnDidGetRegistration(
   // or the found one is uninstalling.
   if (registration->handle_id !=
       blink::mojom::kInvalidServiceWorkerRegistrationHandleId) {
-    impl = GetDispatcher()->GetOrAdoptRegistration(std::move(registration),
-                                                   *attributes);
+    impl = GetDispatcher()->GetOrCreateRegistrationForServiceWorkerClient(
+        std::move(registration), *attributes);
   }
   callbacks->OnSuccess(WebServiceWorkerRegistrationImpl::CreateHandle(impl));
 }
@@ -326,8 +326,8 @@ void WebServiceWorkerProviderImpl::OnDidGetRegistrations(
     DCHECK_NE(blink::mojom::kInvalidServiceWorkerRegistrationHandleId,
               (*infos)[i]->handle_id);
     (*registrations)[i] = WebServiceWorkerRegistrationImpl::CreateHandle(
-        GetDispatcher()->GetOrAdoptRegistration(std::move((*infos)[i]),
-                                                (*attrs)[i]));
+        GetDispatcher()->GetOrCreateRegistrationForServiceWorkerClient(
+            std::move((*infos)[i]), (*attrs)[i]));
   }
   callbacks->OnSuccess(std::move(registrations));
 }
@@ -353,8 +353,8 @@ void WebServiceWorkerProviderImpl::OnDidGetRegistrationForReady(
   DCHECK_NE(blink::mojom::kInvalidServiceWorkerRegistrationHandleId,
             registration->handle_id);
   callbacks->OnSuccess(WebServiceWorkerRegistrationImpl::CreateHandle(
-      GetDispatcher()->GetOrAdoptRegistration(std::move(registration),
-                                              *attributes)));
+      GetDispatcher()->GetOrCreateRegistrationForServiceWorkerClient(
+          std::move(registration), *attributes)));
 }
 
 }  // namespace content
