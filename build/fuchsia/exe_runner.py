@@ -33,13 +33,16 @@ def main():
                       help='Name of the the binary executable.')
   parser.add_argument('-d', '--device', action='store_true', default=False,
                       help='Run on hardware device instead of QEMU.')
+  parser.add_argument('--bootdata', type=os.path.realpath,
+                      help='Path to a bootdata to use instead of the default '
+                           'one from the SDK')
   args, child_args = parser.parse_known_args()
 
   bootfs = BuildBootfs(
       args.output_directory,
       ReadRuntimeDeps(args.runtime_deps_path, args.output_directory),
-      args.exe_name, child_args, args.dry_run, summary_output=None,
-      power_off=False, target_cpu=args.target_cpu)
+      args.exe_name, child_args, args.dry_run, args.bootdata,
+      summary_output=None, power_off=False, target_cpu=args.target_cpu)
   if not bootfs:
     return 2
 
