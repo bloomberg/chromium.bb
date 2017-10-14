@@ -44,7 +44,7 @@ struct StructTraits<skia::mojom::ImageFilterDataView, sk_sp<SkImageFilter>> {
     ImageFilterBuffer buffer;
     if (!data.ReadData(&buffer))
       return false;
-    SkFlattenable* flattenable = SkValidatingDeserializeFlattenable(
+    SkFlattenable* flattenable = skia::ValidatingDeserializeFlattenable(
         buffer.data->bytes(), buffer.data->size(),
         SkImageFilter::GetFlattenableType());
     *out = sk_sp<SkImageFilter>(static_cast<SkImageFilter*>(flattenable));
