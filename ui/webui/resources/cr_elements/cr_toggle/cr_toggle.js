@@ -66,6 +66,9 @@ Polymer({
    */
   handledInPointerMove_: false,
 
+  /** @private {number} */
+  lastPointerUpTime_: 0,
+
   /** @override */
   attached: function() {
     let direction = getComputedStyle(this).direction == 'rtl' ? -1 : 1;
@@ -113,7 +116,8 @@ Polymer({
   },
 
   /** @private */
-  onPointerUp_: function() {
+  onPointerUp_: function(e) {
+    this.lastPointerUpTime_ = e.timeStamp;
     this.removeEventListener('pointermove', this.boundPointerMove_);
   },
 
@@ -126,7 +130,7 @@ Polymer({
     if (e.button != 0)
       return;
 
-    // This is necessary to have follow up events fire on |this|, even
+    // This is necessary to have follow up pointer events fire on |this|, even
     // if they occur outside of its bounds.
     this.setPointerCapture(e.pointerId);
     this.pointerDownX_ = e.clientX;
@@ -136,6 +140,10 @@ Polymer({
 
   /** @private */
   onTap_: function(e) {
+    // Prevent |tap| event from bubbling. It can cause parents of this elements
+    // to erroneously re-toggle this control.
+    e.stopPropagation();
+
     // User gesture has already been taken care of inside |pointermove|
     // handlers, Do nothing here.
     if (this.handledInPointerMove_)
@@ -144,6 +152,21 @@ Polymer({
     // If no pointermove event fired, then user just tapped on the
     // toggle button and therefore it should be toggled.
     this.toggleState_(false);
+  },
+
+  /**
+   * Whether the host of this element should handle a 'tap' event it received,
+   * to be used when tapping on the parent is supposed to toggle the cr-toggle.
+   *
+   * This is necessary to avoid a corner case when pointerdown is initiated
+   * in cr-toggle, but pointerup happens outside the bounds of cr-toggle, which
+   * ends up firing a 'tap' event on the parent (see context at crbug.com/689158
+   * and crbug.com/768555).
+   * @param {!Event} e
+   * @return {boolean}
+   */
+  shouldIgnoreHostTap: function(e) {
+    return e.detail.sourceEvent.timeStamp == this.lastPointerUpTime_;
   },
 
   /**
