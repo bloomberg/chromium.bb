@@ -19,6 +19,7 @@
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerProviderClient.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_error_type.mojom.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 
 namespace content {
@@ -40,6 +41,11 @@ class MockServiceWorkerRegistrationObjectHost
   int GetBindingCount() const { return bindings_.size(); }
 
  private:
+  void Update(UpdateCallback callback) override {
+    std::move(callback).Run(blink::mojom::ServiceWorkerErrorType::kNone,
+                            base::nullopt);
+  }
+
   mojo::AssociatedBindingSet<blink::mojom::ServiceWorkerRegistrationObjectHost>
       bindings_;
 };
@@ -246,7 +252,8 @@ TEST_F(ServiceWorkerDispatcherTest, GetOrCreateRegistration) {
     // Should return a registration object newly created with incrementing
     // the refcounts.
     registration1 =
-        dispatcher()->GetOrCreateRegistration(std::move(info), attrs);
+        dispatcher()->GetOrCreateRegistrationForServiceWorkerGlobalScope(
+            std::move(info), attrs, base::ThreadTaskRunnerHandle::Get());
     EXPECT_TRUE(registration1);
     EXPECT_TRUE(ContainsRegistration(handle_id));
     EXPECT_EQ(registration_id, registration1->RegistrationId());
@@ -271,7 +278,8 @@ TEST_F(ServiceWorkerDispatcherTest, GetOrCreateRegistration) {
     // Should return the same registration object without incrementing the
     // refcounts.
     registration2 =
-        dispatcher()->GetOrCreateRegistration(std::move(info), attrs);
+        dispatcher()->GetOrCreateRegistrationForServiceWorkerGlobalScope(
+            std::move(info), attrs, base::ThreadTaskRunnerHandle::Get());
     EXPECT_TRUE(registration2);
     EXPECT_EQ(registration1, registration2);
     // The 2nd Mojo connection has been dropped.
@@ -313,8 +321,8 @@ TEST_F(ServiceWorkerDispatcherTest, GetOrAdoptRegistration) {
 
     // Should return a registration object newly created with adopting the
     // refcounts.
-    registration1 =
-        dispatcher()->GetOrAdoptRegistration(std::move(info), attrs);
+    registration1 = dispatcher()->GetOrCreateRegistrationForServiceWorkerClient(
+        std::move(info), attrs);
     EXPECT_TRUE(registration1);
     EXPECT_TRUE(ContainsRegistration(handle_id));
     EXPECT_EQ(registration_id, registration1->RegistrationId());
@@ -332,8 +340,8 @@ TEST_F(ServiceWorkerDispatcherTest, GetOrAdoptRegistration) {
     ASSERT_EQ(2, remote_registration_object_host().GetBindingCount());
     // Should return the same registration object without incrementing the
     // refcounts.
-    registration2 =
-        dispatcher()->GetOrAdoptRegistration(std::move(info), attrs);
+    registration2 = dispatcher()->GetOrCreateRegistrationForServiceWorkerClient(
+        std::move(info), attrs);
     EXPECT_TRUE(registration2);
     EXPECT_EQ(registration1, registration2);
     // The 2nd Mojo connection has been dropped.

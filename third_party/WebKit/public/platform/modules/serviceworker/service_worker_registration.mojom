@@ -4,6 +4,7 @@
 
 module blink.mojom;
 
+import "third_party/WebKit/public/platform/modules/serviceworker/service_worker_error_type.mojom";
 import "url/mojo/url.mojom";
 
 const int32 kInvalidServiceWorkerRegistrationHandleId = -1;
@@ -48,7 +49,11 @@ struct ServiceWorkerRegistrationObjectInfo {
 // browser to do operations needed to implement ServiceWorkerRegistration
 // methods.
 interface ServiceWorkerRegistrationObjectHost {
+  // Corresponds to ServiceWorkerRegistration#update().
+  // On success, |error| is kNone without |error_msg| set.
+  // Otherwise, |error| and |error_msg| describe the failure.
+  Update() => (ServiceWorkerErrorType error, string? error_msg);
+
   // TODO(leonhsl): Implement all methods.
-  // Update() => (ServiceWorkerErrorType error, string? error_msg);
   // Unregister() => (ServiceWorkerErrorType error, string? error_msg);
 };

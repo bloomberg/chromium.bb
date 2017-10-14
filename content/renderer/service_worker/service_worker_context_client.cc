@@ -610,6 +610,7 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
       script_url_(script_url),
       sender_(ChildThreadImpl::current()->thread_safe_sender()),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      io_thread_task_runner_(ChildThreadImpl::current()->GetIOTaskRunner()),
       proxy_(nullptr),
       pending_dispatcher_request_(std::move(dispatcher_request)),
       embedded_worker_client_(std::move(embedded_worker_client)) {
@@ -1387,7 +1388,8 @@ void ServiceWorkerContextClient::SetRegistrationInServiceWorkerGlobalScope(
   // Register a registration and its version attributes with the dispatcher
   // living on the worker thread.
   scoped_refptr<WebServiceWorkerRegistrationImpl> registration(
-      dispatcher->GetOrCreateRegistration(std::move(info), attrs));
+      dispatcher->GetOrCreateRegistrationForServiceWorkerGlobalScope(
+          std::move(info), attrs, io_thread_task_runner_));
 
   proxy_->SetRegistration(
       WebServiceWorkerRegistrationImpl::CreateHandle(registration));

@@ -61,6 +61,15 @@ class CONTENT_EXPORT ServiceWorkerRegistrationHandle
   void OnRegistrationFailed(ServiceWorkerRegistration* registration) override;
   void OnUpdateFound(ServiceWorkerRegistration* registration) override;
 
+  // Implements blink::mojom::ServiceWorkerRegistrationObjectHost.
+  void Update(UpdateCallback callback) override;
+
+  // Called back from ServiceWorkerContextCore when an update is complete.
+  void UpdateComplete(UpdateCallback callback,
+                      ServiceWorkerStatusCode status,
+                      const std::string& status_message,
+                      int64_t registration_id);
+
   // Sets the corresponding version field to the given version or if the given
   // version is nullptr, clears the field.
   void SetVersionAttributes(
@@ -75,6 +84,7 @@ class CONTENT_EXPORT ServiceWorkerRegistrationHandle
   // |this|.
   ServiceWorkerDispatcherHost* dispatcher_host_;
   base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
+  base::WeakPtr<ServiceWorkerContextCore> context_;
   const int provider_id_;
   const int handle_id_;
   mojo::AssociatedBindingSet<blink::mojom::ServiceWorkerRegistrationObjectHost>
@@ -82,6 +92,8 @@ class CONTENT_EXPORT ServiceWorkerRegistrationHandle
 
   // This handle is the primary owner of this registration.
   scoped_refptr<ServiceWorkerRegistration> registration_;
+
+  base::WeakPtrFactory<ServiceWorkerRegistrationHandle> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerRegistrationHandle);
 };
