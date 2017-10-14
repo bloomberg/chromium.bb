@@ -58,17 +58,6 @@ Polymer({
     return this.label || this.ariaLabel;
   },
 
-  /**
-   * Handle taps directly on the toggle (see: onLabelWrapperTap_ for non-toggle
-   * taps).
-   * @param {!Event} e
-   * @private
-   */
-  onToggleTap_: function(e) {
-    // Stop the event from propagating to avoid firing two 'changed' events.
-    e.stopPropagation();
-  },
-
   /** @private */
   onDisableOrPrefChange_: function() {
     if (this.controlDisabled_()) {
@@ -79,15 +68,22 @@ Polymer({
   },
 
   /**
-   * Handle non-toggle button taps (see: onToggleTap_ for toggle taps).
+   * Handles non cr-toggle button taps (cr-toggle handles its own tap events
+   * which don't bubble).
    * @param {!Event} e
    * @private
    */
   onHostTap_: function(e) {
-    // Stop the event from propagating to avoid firing two 'changed' events.
     e.stopPropagation();
     if (this.controlDisabled_())
       return;
+
+    // Ignore this |tap| event, if the interaction sequence
+    // (pointerdown+pointerup) began within the cr-toggle itself.
+    if (/** @type {!CrToggleElement} */ (this.$.control)
+            .shouldIgnoreHostTap(e)) {
+      return;
+    }
 
     this.checked = !this.checked;
     this.notifyChangedByUserInteraction();
@@ -95,12 +91,11 @@ Polymer({
   },
 
   /**
-   * TODO(scottchen): temporary fix until polymer gesture bug resolved. See:
-   * https://github.com/PolymerElements/paper-slider/issues/186
+   * @param {!CustomEvent} e
    * @private
    */
-  resetTrackLock_: function() {
-    // Run tap.reset in next run-loop to avoid reversing the current tap event.
-    setTimeout(() => Polymer.Gestures.gestures.tap.reset());
+  onChange_: function(e) {
+    this.checked = /** @type {boolean} */ (e.detail);
+    this.notifyChangedByUserInteraction();
   },
 });
