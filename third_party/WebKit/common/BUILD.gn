@@ -26,12 +26,16 @@ component("blink_common") {
     "common_export.h",
     "device_memory/approximated_device_memory.cc",
     "device_memory/approximated_device_memory.h",
+    "message_port/cloneable_message.cc",
+    "message_port/cloneable_message.h",
+    "message_port/cloneable_message_struct_traits.cc",
+    "message_port/cloneable_message_struct_traits.h",
     "message_port/message_port_channel.cc",
     "message_port/message_port_channel.h",
-    "message_port/message_port_message.cc",
-    "message_port/message_port_message.h",
-    "message_port/message_port_message_struct_traits.cc",
-    "message_port/message_port_message_struct_traits.h",
+    "message_port/transferable_message.cc",
+    "message_port/transferable_message.h",
+    "message_port/transferable_message_struct_traits.cc",
+    "message_port/transferable_message_struct_traits.h",
     "mime_util/mime_util.cc",
     "mime_util/mime_util.h",
     "origin_trials/trial_token.cc",
@@ -84,4 +88,12 @@ mojom("mojo_bindings") {
   sources = [
     "message_port/message_port.mojom",
   ]
+
+  export_class_attribute = "BLINK_COMMON_EXPORT"
+  export_define = "BLINK_COMMON_IMPLEMENTATION=1"
+  export_header = "third_party/WebKit/common/common_export.h"
+
+  export_class_attribute_blink = "CORE_EXPORT"
+  export_define_blink = "BLINK_CORE_IMPLEMENTATION=1"
+  export_header_blink = "third_party/WebKit/Source/core/CoreExport.h"
 }

@@ -57,7 +57,7 @@ class BroadcastChannel final : public EventTargetWithInlineData,
   BroadcastChannel(ExecutionContext*, const String& name);
 
   // mojom::blink::BroadcastChannelClient:
-  void OnMessage(const WTF::Vector<uint8_t>& message) override;
+  void OnMessage(BlinkCloneableMessage) override;
 
   // Called when the mojo binding disconnects.
   void OnError();

@@ -10,7 +10,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "third_party/WebKit/common/message_port/message_port.mojom.h"
-#include "third_party/WebKit/common/message_port/message_port_message_struct_traits.h"
+#include "third_party/WebKit/common/message_port/transferable_message_struct_traits.h"
 
 namespace blink {
 
@@ -60,10 +60,10 @@ std::vector<MessagePortChannel> MessagePortChannel::CreateFromHandles(
 void MessagePortChannel::PostMessage(const uint8_t* encoded_message,
                                      size_t encoded_message_size,
                                      std::vector<MessagePortChannel> ports) {
-  MessagePortMessage msg;
+  TransferableMessage msg;
   msg.encoded_message = base::make_span(encoded_message, encoded_message_size);
-  msg.ports = ReleaseHandles(ports);
-  PostMojoMessage(mojom::MessagePortMessage::SerializeAsMessage(&msg));
+  msg.ports = std::move(ports);
+  PostMojoMessage(mojom::TransferableMessage::SerializeAsMessage(&msg));
 }
 
 void MessagePortChannel::PostMojoMessage(mojo::Message message) {
@@ -82,14 +82,14 @@ bool MessagePortChannel::GetMessage(std::vector<uint8_t>* encoded_message,
   if (!success)
     return false;
 
-  MessagePortMessage msg;
-  success = mojom::MessagePortMessage::DeserializeFromMessage(
+  TransferableMessage msg;
+  success = mojom::TransferableMessage::DeserializeFromMessage(
       std::move(message), &msg);
   if (!success)
     return false;
 
   *encoded_message = std::move(msg.owned_encoded_message);
-  *ports = CreateFromHandles(std::move(msg.ports));
+  *ports = std::move(msg.ports);
 
   return true;
 }
