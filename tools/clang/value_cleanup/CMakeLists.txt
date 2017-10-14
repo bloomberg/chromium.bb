@@ -7,8 +7,8 @@ set(LLVM_LINK_COMPONENTS
   )
 
 add_llvm_executable(value_cleanup
-  ListValueRewriter.cpp
   ValueCleanup.cpp
+  ValueRewriter.cpp
   )
 
 target_link_libraries(value_cleanup

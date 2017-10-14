@@ -20,7 +20,7 @@
 #include "llvm/Support/CommandLine.h"
 #include "llvm/Support/TargetSelect.h"
 
-#include "ListValueRewriter.h"
+#include "ValueRewriter.h"
 
 using namespace clang::ast_matchers;
 using clang::tooling::CommonOptionsParser;
@@ -43,14 +43,17 @@ int main(int argc, const char* argv[]) {
   MatchFinder match_finder;
   std::set<Replacement> replacements;
 
-  ListValueRewriter list_value_rewriter(&replacements);
-  list_value_rewriter.RegisterMatchers(&match_finder);
+  ValueRewriter value_rewriter(&replacements);
+  value_rewriter.RegisterMatchers(&match_finder);
 
   std::unique_ptr<clang::tooling::FrontendActionFactory> factory =
       clang::tooling::newFrontendActionFactory(&match_finder);
   int result = tool.run(factory.get());
   if (result != 0)
     return result;
+
+  if (replacements.empty())
+    return 0;
 
   // Serialization format is documented in tools/clang/scripts/run_tool.py
   llvm::outs() << "==== BEGIN EDITS ====\n";
