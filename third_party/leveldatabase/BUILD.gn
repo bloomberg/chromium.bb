@@ -6,7 +6,8 @@ import("//testing/test.gni")
 
 defines = [ "LEVELDB_PLATFORM_CHROMIUM=1" ]
 
-config("leveldatabase_config") {
+
+config("leveldb_config") {
   include_dirs = [
     ".",
     "src",
@@ -22,103 +23,141 @@ config("leveldatabase_config") {
     # Define the macro everywhere, to avoid reasoning about which headers bring
     # windows.h in.
     defines += [ "DeleteFile=DeleteFileW" ]
+    # OS_WIN is defined in base_export.h, but needs to be defined earlier for
+    # leveldb to use it.
+    defines += [ "OS_WIN" ]
   }
 }
 
-static_library("leveldatabase") {
-  sources = [
-    "env_chromium.cc",
-    "env_chromium.h",
-    "leveldb_chrome.cc",
-    "leveldb_chrome.h",
-    "port/port_chromium.cc",
-    "port/port_chromium.h",
-    "src/db/builder.cc",
-    "src/db/builder.h",
-    "src/db/db_impl.cc",
-    "src/db/db_impl.h",
-    "src/db/db_iter.cc",
-    "src/db/db_iter.h",
-    "src/db/dbformat.cc",
-    "src/db/dbformat.h",
-    "src/db/dumpfile.cc",
-    "src/db/filename.cc",
-    "src/db/filename.h",
-    "src/db/log_format.h",
-    "src/db/log_reader.cc",
-    "src/db/log_reader.h",
-    "src/db/log_writer.cc",
-    "src/db/log_writer.h",
-    "src/db/memtable.cc",
-    "src/db/memtable.h",
-    "src/db/repair.cc",
-    "src/db/skiplist.h",
-    "src/db/snapshot.h",
-    "src/db/table_cache.cc",
-    "src/db/table_cache.h",
-    "src/db/version_edit.cc",
-    "src/db/version_edit.h",
-    "src/db/version_set.cc",
-    "src/db/version_set.h",
-    "src/db/write_batch.cc",
-    "src/db/write_batch_internal.h",
-    "src/helpers/memenv/memenv.cc",
-    "src/helpers/memenv/memenv.h",
-    "src/include/leveldb/cache.h",
-    "src/include/leveldb/comparator.h",
-    "src/include/leveldb/db.h",
-    "src/include/leveldb/dumpfile.h",
-    "src/include/leveldb/env.h",
-    "src/include/leveldb/filter_policy.h",
-    "src/include/leveldb/iterator.h",
-    "src/include/leveldb/options.h",
-    "src/include/leveldb/slice.h",
-    "src/include/leveldb/status.h",
-    "src/include/leveldb/table.h",
-    "src/include/leveldb/table_builder.h",
-    "src/include/leveldb/write_batch.h",
-    "src/port/port.h",
-    "src/table/block.cc",
-    "src/table/block.h",
-    "src/table/block_builder.cc",
-    "src/table/block_builder.h",
-    "src/table/filter_block.cc",
-    "src/table/filter_block.h",
-    "src/table/format.cc",
-    "src/table/format.h",
-    "src/table/iterator.cc",
-    "src/table/iterator_wrapper.h",
-    "src/table/merger.cc",
-    "src/table/merger.h",
-    "src/table/table.cc",
-    "src/table/table_builder.cc",
-    "src/table/two_level_iterator.cc",
-    "src/table/two_level_iterator.h",
-    "src/util/arena.cc",
-    "src/util/arena.h",
-    "src/util/bloom.cc",
-    "src/util/cache.cc",
-    "src/util/coding.cc",
-    "src/util/coding.h",
-    "src/util/comparator.cc",
-    "src/util/crc32c.cc",
-    "src/util/crc32c.h",
-    "src/util/env.cc",
-    "src/util/filter_policy.cc",
-    "src/util/hash.cc",
-    "src/util/hash.h",
-    "src/util/logging.cc",
-    "src/util/logging.h",
-    "src/util/mutexlock.h",
-    "src/util/options.cc",
-    "src/util/random.h",
-    "src/util/status.cc",
-  ]
+leveldb_sources = [
+  "env_chromium.cc",
+  "env_chromium.h",
+  "leveldb_chrome.cc",
+  "leveldb_chrome.h",
+  "port/port_chromium.cc",
+  "port/port_chromium.h",
+  "src/db/builder.cc",
+  "src/db/builder.h",
+  "src/db/db_impl.cc",
+  "src/db/db_impl.h",
+  "src/db/db_iter.cc",
+  "src/db/db_iter.h",
+  "src/db/dbformat.cc",
+  "src/db/dbformat.h",
+  "src/db/dumpfile.cc",
+  "src/db/filename.cc",
+  "src/db/filename.h",
+  "src/db/log_format.h",
+  "src/db/log_reader.cc",
+  "src/db/log_reader.h",
+  "src/db/log_writer.cc",
+  "src/db/log_writer.h",
+  "src/db/memtable.cc",
+  "src/db/memtable.h",
+  "src/db/repair.cc",
+  "src/db/skiplist.h",
+  "src/db/snapshot.h",
+  "src/db/table_cache.cc",
+  "src/db/table_cache.h",
+  "src/db/version_edit.cc",
+  "src/db/version_edit.h",
+  "src/db/version_set.cc",
+  "src/db/version_set.h",
+  "src/db/write_batch.cc",
+  "src/db/write_batch_internal.h",
+  "src/helpers/memenv/memenv.cc",
+  "src/helpers/memenv/memenv.h",
+  "src/include/leveldb/cache.h",
+  "src/include/leveldb/comparator.h",
+  "src/include/leveldb/db.h",
+  "src/include/leveldb/dumpfile.h",
+  "src/include/leveldb/env.h",
+  "src/include/leveldb/filter_policy.h",
+  "src/include/leveldb/iterator.h",
+  "src/include/leveldb/options.h",
+  "src/include/leveldb/slice.h",
+  "src/include/leveldb/status.h",
+  "src/include/leveldb/table.h",
+  "src/include/leveldb/table_builder.h",
+  "src/include/leveldb/write_batch.h",
+  "src/port/port.h",
+  "src/table/block.cc",
+  "src/table/block.h",
+  "src/table/block_builder.cc",
+  "src/table/block_builder.h",
+  "src/table/filter_block.cc",
+  "src/table/filter_block.h",
+  "src/table/format.cc",
+  "src/table/format.h",
+  "src/table/iterator.cc",
+  "src/table/iterator_wrapper.h",
+  "src/table/merger.cc",
+  "src/table/merger.h",
+  "src/table/table.cc",
+  "src/table/table_builder.cc",
+  "src/table/two_level_iterator.cc",
+  "src/table/two_level_iterator.h",
+  "src/util/arena.cc",
+  "src/util/arena.h",
+  "src/util/bloom.cc",
+  "src/util/cache.cc",
+  "src/util/coding.cc",
+  "src/util/coding.h",
+  "src/util/comparator.cc",
+  "src/util/crc32c.cc",
+  "src/util/crc32c.h",
+  "src/util/env.cc",
+  "src/util/filter_policy.cc",
+  "src/util/hash.cc",
+  "src/util/hash.h",
+  "src/util/logging.cc",
+  "src/util/logging.h",
+  "src/util/mutexlock.h",
+  "src/util/options.cc",
+  "src/util/random.h",
+  "src/util/status.cc",
+]
+
+component("leveldatabase") {
+  sources = leveldb_sources
 
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
 
-  public_configs = [ ":leveldatabase_config" ]
+  if (is_component_build) {
+    defines += [ "LEVELDB_SHARED_LIBRARY" ]
+  }
+
+  public_configs = [ ":leveldb_config" ]
+
+  deps = [
+    "//base",
+    "//third_party/crc32c",
+    "//third_party/re2",
+    "//third_party/snappy",
+  ]
+
+  if (is_win) {
+    # leveldb compiles with a limited set of warnings enabled, and is not
+    # likely to accept fixes for other warnings. See crbug.com/698013
+    cflags = [ "/wd4018" ]  # Signed/unsigned mismatch in comparison.
+
+    if (is_official_build) {
+      # Function recursive on all control paths, crbug.com/620018
+      cflags += [ "/wd4717" ]
+    }
+  }
+  defines += [ "LEVELDB_COMPILE_LIBRARY" ]
+}
+
+static_library("leveldb") {
+  visibility = [ ":*" ]
+  sources = leveldb_sources
+
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
+
+  public_configs = [ ":leveldb_config" ]
 
   deps = [
     "//base",
@@ -165,7 +204,7 @@ if (!is_ios && !is_android) {
     configs += [ "//build/config/compiler:no_chromium_code" ]
 
     public_deps = [
-      ":leveldatabase",
+      ":leveldb",
     ]
     deps = [
       "//base",
@@ -310,7 +349,7 @@ if (!is_ios && !is_android) {
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [ "//build/config/compiler:no_chromium_code" ]
     deps = [
-      ":leveldatabase",
+      ":leveldb",
       "//build/config:exe_and_shlib_deps",
     ]
   }

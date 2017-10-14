@@ -20,6 +20,7 @@
 #include "base/metrics/histogram.h"
 #include "leveldb/db.h"
 #include "leveldb/env.h"
+#include "leveldb/export.h"
 #include "port/port_chromium.h"
 #include "util/mutexlock.h"
 
@@ -73,22 +74,23 @@ enum LevelDBStatusValue {
   LEVELDB_STATUS_MAX
 };
 
-LevelDBStatusValue GetLevelDBStatusUMAValue(const leveldb::Status& s);
+LEVELDB_EXPORT LevelDBStatusValue
+GetLevelDBStatusUMAValue(const leveldb::Status& s);
 
 // Create the default leveldb options object suitable for leveldb operations.
-struct Options : public leveldb::Options {
+struct LEVELDB_EXPORT Options : public leveldb::Options {
   Options();
 };
 
-const char* MethodIDToString(MethodID method);
+LEVELDB_EXPORT const char* MethodIDToString(MethodID method);
 
-leveldb::Status MakeIOError(leveldb::Slice filename,
-                            const std::string& message,
-                            MethodID method,
-                            base::File::Error error);
-leveldb::Status MakeIOError(leveldb::Slice filename,
-                            const std::string& message,
-                            MethodID method);
+leveldb::Status LEVELDB_EXPORT MakeIOError(leveldb::Slice filename,
+                                           const std::string& message,
+                                           MethodID method,
+                                           base::File::Error error);
+leveldb::Status LEVELDB_EXPORT MakeIOError(leveldb::Slice filename,
+                                           const std::string& message,
+                                           MethodID method);
 
 enum ErrorParsingResult {
   METHOD_ONLY,
@@ -96,13 +98,14 @@ enum ErrorParsingResult {
   NONE,
 };
 
-ErrorParsingResult ParseMethodAndError(const leveldb::Status& status,
-                                       MethodID* method,
-                                       base::File::Error* error);
-int GetCorruptionCode(const leveldb::Status& status);
-int GetNumCorruptionCodes();
-std::string GetCorruptionMessage(const leveldb::Status& status);
-bool IndicatesDiskFull(const leveldb::Status& status);
+ErrorParsingResult LEVELDB_EXPORT
+ParseMethodAndError(const leveldb::Status& status,
+                    MethodID* method,
+                    base::File::Error* error);
+LEVELDB_EXPORT int GetCorruptionCode(const leveldb::Status& status);
+LEVELDB_EXPORT int GetNumCorruptionCodes();
+LEVELDB_EXPORT std::string GetCorruptionMessage(const leveldb::Status& status);
+LEVELDB_EXPORT bool IndicatesDiskFull(const leveldb::Status& status);
 
 // Determine the appropriate leveldb write buffer size to use. The default size
 // (4MB) may result in a log file too large to be compacted given the available
@@ -111,9 +114,9 @@ bool IndicatesDiskFull(const leveldb::Status& status);
 //
 // |disk_space| is the logical partition size (in bytes), and *not* available
 // space. A value of -1 will return leveldb's default write buffer size.
-extern size_t WriteBufferSize(int64_t disk_space);
+LEVELDB_EXPORT extern size_t WriteBufferSize(int64_t disk_space);
 
-class UMALogger {
+class LEVELDB_EXPORT UMALogger {
  public:
   virtual void RecordErrorAt(MethodID method) const = 0;
   virtual void RecordOSError(MethodID method,
@@ -122,7 +125,7 @@ class UMALogger {
   virtual void RecordBytesWritten(int amount) const = 0;
 };
 
-class RetrierProvider {
+class LEVELDB_EXPORT RetrierProvider {
  public:
   virtual int MaxRetryTimeMillis() const = 0;
   virtual base::HistogramBase* GetRetryTimeHistogram(MethodID method) const = 0;
@@ -132,9 +135,9 @@ class RetrierProvider {
 
 class Semaphore;
 
-class ChromiumEnv : public leveldb::Env,
-                    public UMALogger,
-                    public RetrierProvider {
+class LEVELDB_EXPORT ChromiumEnv : public leveldb::Env,
+                                   public UMALogger,
+                                   public RetrierProvider {
  public:
   ChromiumEnv();
 
@@ -241,7 +244,7 @@ class ChromiumEnv : public leveldb::Env,
 
 // Tracks databases open via OpenDatabase() method and exposes them to
 // memory-infra. The class is thread safe.
-class DBTracker {
+class LEVELDB_EXPORT DBTracker {
  public:
   enum SharedReadCacheUse : int {
     // Use for databases whose access pattern is dictated by browser code.
@@ -335,12 +338,12 @@ class DBTracker {
 // Note: All |options| values are honored, except if options.env is an in-memory
 // Env. In this case the block cache is disabled and a minimum write buffer size
 // is used to conserve memory with all other values honored.
-leveldb::Status OpenDB(const leveldb_env::Options& options,
-                       const std::string& name,
-                       std::unique_ptr<leveldb::DB>* dbptr);
+LEVELDB_EXPORT leveldb::Status OpenDB(const leveldb_env::Options& options,
+                                      const std::string& name,
+                                      std::unique_ptr<leveldb::DB>* dbptr);
 
-base::StringPiece MakeStringPiece(const leveldb::Slice& s);
-leveldb::Slice MakeSlice(const base::StringPiece& s);
+LEVELDB_EXPORT base::StringPiece MakeStringPiece(const leveldb::Slice& s);
+LEVELDB_EXPORT leveldb::Slice MakeSlice(const base::StringPiece& s);
 
 }  // namespace leveldb_env
 
