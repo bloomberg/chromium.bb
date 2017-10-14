@@ -4,12 +4,24 @@
 
 module blink.mojom;
 
-// This struct represents a message as it is sent across a MessagePort. A
-// MessagePort itself is represented as a raw mojo message pipe, and messages
-// on it are (in both directions) serialized versions of this struct.
-struct MessagePortMessage {
-  // The actual message data, as encoded by blink::SerializedScriptValue.
+// A MessagePort is represented as a raw mojo message pipe, as such no interface
+// definition exists for it here. Messages on this pipe are serialized versions
+// of the TransferableMessage struct defined below.
+// TODO(crbug.com/750468): Consider using an actual Mojo interface for message
+// ports.
+
+// This struct represents the cloneable part of messages that are sent across
+// postMessage style APIs. In particular this is used for BroadcastChannel.
+struct CloneableMessage {
   array<uint8> encoded_message;
+};
+
+// This struct combines the cloneable part of a message with the parts of the
+// message that are merely transferable. In particular that includes ports that
+// are transfered. This struct is used for most postMessage style APIs,
+// including messages posted on MessagePorts themselves.
+struct TransferableMessage {
+  CloneableMessage message;
   // Any ports being transfered as part of this message.
   array<handle<message_pipe>> ports;
 };

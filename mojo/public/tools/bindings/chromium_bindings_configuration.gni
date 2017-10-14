@@ -42,6 +42,7 @@ _typemap_imports = [
   "//services/viz/privileged/interfaces/compositing/typemaps.gni",
   "//services/viz/public/cpp/compositing/typemaps.gni",
   "//skia/public/interfaces/typemaps.gni",
+  "//third_party/WebKit/common/typemaps.gni",
   "//third_party/WebKit/public/public_typemaps.gni",
   "//ui/base/mojo/typemaps.gni",
   "//ui/display/mojo/typemaps.gni",

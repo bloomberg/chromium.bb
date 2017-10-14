@@ -8,7 +8,7 @@
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/text/StringHash.h"
-#include "v8-util.h"
+#include "v8/include/v8-util.h"
 #include "v8/include/v8.h"
 
 namespace blink {
