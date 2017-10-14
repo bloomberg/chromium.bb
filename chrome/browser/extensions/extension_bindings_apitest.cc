@@ -331,6 +331,32 @@ IN_PROC_BROWSER_TEST_P(ExtensionBindingsApiTest, UncaughtExceptionLogging) {
       << message_;
 }
 
+// Verify that when a web frame embeds an extension subframe, and that subframe
+// is the only active portion of the extension, the subframe gets proper JS
+// bindings. See https://crbug.com/760341.
+IN_PROC_BROWSER_TEST_P(ExtensionBindingsApiTest,
+                       ExtensionSubframeGetsBindings) {
+  // Load an extension that does not have a background page or popup, so it
+  // won't be activated just yet.
+  const extensions::Extension* extension =
+      LoadExtension(test_data_dir_.AppendASCII("bindings")
+                        .AppendASCII("extension_subframe_gets_bindings"));
+  ASSERT_TRUE(extension);
+
+  // Navigate current tab to a web URL with a subframe.
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL("/iframe.html"));
+
+  // Navigate the subframe to the extension URL, which should activate the
+  // extension.
+  GURL extension_url(extension->GetResourceURL("page.html"));
+  ResultCatcher catcher;
+  content::NavigateIframeToURL(web_contents, "test", extension_url);
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
 // Run core bindings API tests with both native and JS-based bindings. This
 // ensures we have some minimum level of coverage while in the experimental
 // phase, when native bindings may be enabled on trunk but not at 100% stable.

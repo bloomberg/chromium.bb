@@ -930,6 +930,13 @@ void Dispatcher::OnActivateExtension(const std::string& extension_id) {
     LOG(FATAL) << extension_id << " was never loaded: " << error;
   }
 
+  // It's possible that the same extension might generate multiple activation
+  // messages, for example from an extension background page followed by an
+  // extension subframe on a regular tab.  Ensure that any given extension is
+  // only activated once.
+  if (IsExtensionActive(extension_id))
+    return;
+
   active_extension_ids_.insert(extension_id);
 
   // This is called when starting a new extension page, so start the idle
