@@ -1302,6 +1302,8 @@ split_static_library("ui") {
       "views/ime_driver/input_method_bridge_chromeos.h",
       "views/intent_picker_bubble_view.cc",
       "views/intent_picker_bubble_view.h",
+      "views/location_bar/intent_picker_view.cc",
+      "views/location_bar/intent_picker_view.h",
       "views/platform_keys_certificate_selector_chromeos.cc",
       "views/platform_keys_certificate_selector_chromeos.h",
 

@@ -264,10 +264,10 @@ void OnIntentPickerClosed(int render_process_host_id,
 
   if (!instance) {
     close_reason = ArcNavigationThrottle::CloseReason::ERROR;
-  } else if (close_reason ==
-                 ArcNavigationThrottle::CloseReason::JUST_ONCE_PRESSED ||
+  } else if (close_reason == ArcNavigationThrottle::CloseReason::
+                                 OBSOLETE_JUST_ONCE_PRESSED ||
              close_reason ==
-                 ArcNavigationThrottle::CloseReason::ALWAYS_PRESSED) {
+                 ArcNavigationThrottle::CloseReason::OBSOLETE_ALWAYS_PRESSED) {
     if (selected_app_index == handlers.size()) {
       close_reason = ArcNavigationThrottle::CloseReason::ERROR;
     } else {
@@ -278,7 +278,7 @@ void OnIntentPickerClosed(int render_process_host_id,
   }
 
   switch (close_reason) {
-    case ArcNavigationThrottle::CloseReason::ALWAYS_PRESSED: {
+    case ArcNavigationThrottle::CloseReason::ARC_APP_PREFERRED_PRESSED: {
       DCHECK(arc_service_manager);
       if (ARC_GET_INSTANCE_FOR_METHOD(
               arc_service_manager->arc_bridge_service()->intent_helper(),
@@ -288,12 +288,19 @@ void OnIntentPickerClosed(int render_process_host_id,
       }
       // fall through.
     }
-    case ArcNavigationThrottle::CloseReason::JUST_ONCE_PRESSED: {
+    case ArcNavigationThrottle::CloseReason::ARC_APP_PRESSED: {
       // Launch the selected app.
       HandleUrl(render_process_host_id, routing_id, url, false, handlers,
                 selected_app_index, nullptr);
       break;
     }
+    case ArcNavigationThrottle::CloseReason::CHROME_PREFERRED_PRESSED:
+    case ArcNavigationThrottle::CloseReason::CHROME_PRESSED: {
+      LOG(ERROR) << "Chrome is not a valid option for external protocol URLs";
+      // fall through.
+    }
+    case ArcNavigationThrottle::CloseReason::OBSOLETE_ALWAYS_PRESSED:
+    case ArcNavigationThrottle::CloseReason::OBSOLETE_JUST_ONCE_PRESSED:
     case ArcNavigationThrottle::CloseReason::PREFERRED_ACTIVITY_FOUND:
     case ArcNavigationThrottle::CloseReason::INVALID: {
       NOTREACHED();
@@ -344,7 +351,7 @@ void OnAppIconsReceived(
   auto show_bubble_cb = base::Bind(ShowIntentPickerBubble());
   WebContents* web_contents =
       tab_util::GetWebContentsByID(render_process_host_id, routing_id);
-  show_bubble_cb.Run(web_contents, app_info,
+  show_bubble_cb.Run(nullptr /* anchor_view */, web_contents, app_info,
                      base::Bind(OnIntentPickerClosed, render_process_host_id,
                                 routing_id, url, base::Passed(&handlers)));
 }

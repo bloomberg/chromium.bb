@@ -10785,12 +10785,6 @@ For more information, visit our <ph name="BEGIN_LINK">&lt;a target="_blank" href
 
       <!-- Strings for ARC intent picker -->
       <if expr="chromeos">
-        <message name="IDS_INTENT_PICKER_BUBBLE_VIEW_ALWAYS" desc="Message contained in a button shown to the user in order to choose and remember an app selection.">
-          Always
-        </message>
-        <message name="IDS_INTENT_PICKER_BUBBLE_VIEW_JUST_ONCE" desc="Message contained in a button shown to the user in order to choose to open a URL in a given app only once.">
-          Just once
-        </message>
         <message name="IDS_INTENT_PICKER_BUBBLE_VIEW_OPEN_WITH" desc="Message contained in a label used as a header for a list of applications from which the user will pick one.">
           Open with
         </message>

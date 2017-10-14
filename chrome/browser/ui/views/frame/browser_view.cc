@@ -147,9 +147,8 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/ash/ash_util.h"
-#endif  // defined(OS_CHROMEOS)
-
-#if !defined(OS_CHROMEOS)
+#include "chrome/browser/ui/views/location_bar/intent_picker_view.h"
+#else
 #include "chrome/browser/ui/signin_view_controller.h"
 #include "chrome/browser/ui/views/profiles/profile_chooser_view.h"
 #endif  // !defined(OS_CHROMEOS)
@@ -1166,6 +1165,26 @@ bool BrowserView::IsToolbarShowing() const {
 void BrowserView::ShowUpdateChromeDialog() {
   UpdateRecommendedMessageBox::Show(GetNativeWindow());
 }
+
+#if defined(OS_CHROMEOS)
+void BrowserView::ShowIntentPickerBubble(
+    std::vector<IntentPickerBubbleView::AppInfo> app_info,
+    IntentPickerResponse callback) {
+  toolbar_->ShowIntentPickerBubble(app_info, callback);
+}
+
+void BrowserView::SetIntentPickerViewVisibility(bool visible) {
+  LocationBarView* location_bar = GetLocationBarView();
+
+  if (!location_bar->intent_picker_view())
+    return;
+
+  if (location_bar->intent_picker_view()->visible() != visible) {
+    location_bar->intent_picker_view()->SetVisible(visible);
+    location_bar->Layout();
+  }
+}
+#endif  //  defined(OS_CHROMEOS)
 
 void BrowserView::ShowBookmarkBubble(const GURL& url, bool already_bookmarked) {
   toolbar_->ShowBookmarkBubble(url, already_bookmarked,

@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "chrome/browser/chromeos/arc/intent_helper/arc_navigation_throttle.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
+#include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/base_event_utils.h"
@@ -40,8 +41,13 @@ class IntentPickerBubbleViewTest : public BrowserWithTestWindowTest {
  protected:
   void CreateBubbleView(bool use_icons) {
     // Pushing a couple of fake apps just to check they are created on the UI.
-    app_info_.emplace_back(AppInfo(gfx::Image(), "package_1", "dank app 1"));
-    app_info_.emplace_back(AppInfo(gfx::Image(), "package_2", "dank_app_2"));
+    app_info_.emplace_back(gfx::Image(), "package_1", "dank app 1");
+    app_info_.emplace_back(gfx::Image(), "package_2", "dank_app_2");
+    // Also adding the corresponding Chrome's package name on ARC, even if this
+    // is given to the picker UI as input it should be ignored.
+    app_info_.emplace_back(
+        gfx::Image(), arc::ArcIntentHelperBridge::kArcIntentHelperPackageName,
+        "legit_chrome");
 
     if (use_icons)
       FillAppListWithDummyIcons();
@@ -80,7 +86,7 @@ class IntentPickerBubbleViewTest : public BrowserWithTestWindowTest {
 // Verifies that we didn't set up an image for any LabelButton.
 TEST_F(IntentPickerBubbleViewTest, NullIcons) {
   CreateBubbleView(false);
-  size_t size = bubble_->app_info_.size();
+  size_t size = bubble_->GetScrollViewSizeForTesting();
   for (size_t i = 0; i < size; ++i) {
     gfx::ImageSkia image = bubble_->GetAppImageForTesting(i);
     EXPECT_TRUE(image.isNull()) << i;
@@ -90,24 +96,35 @@ TEST_F(IntentPickerBubbleViewTest, NullIcons) {
 // Verifies that all the icons contain a non-null icon.
 TEST_F(IntentPickerBubbleViewTest, NonNullIcons) {
   CreateBubbleView(true);
-  size_t size = bubble_->app_info_.size();
+  size_t size = bubble_->GetScrollViewSizeForTesting();
   for (size_t i = 0; i < size; ++i) {
     gfx::ImageSkia image = bubble_->GetAppImageForTesting(i);
     EXPECT_FALSE(image.isNull()) << i;
   }
 }
 
-// Verifies that the bubble contains as many rows as the input. Populated the
-// bubble with an arbitrary image in every row.
+// Verifies that the bubble contains as many rows as |app_info_| with one
+// exception, if the Chrome package is present on the input list it won't be
+// shown to the user on the picker UI, so there could be a difference
+// represented by |chrome_package_repetitions|.
 TEST_F(IntentPickerBubbleViewTest, LabelsPtrVectorSize) {
   CreateBubbleView(true);
-  EXPECT_EQ(app_info_.size(), bubble_->app_info_.size());
+  size_t size = app_info_.size();
+  size_t chrome_package_repetitions = 0;
+  for (AppInfo app_info : app_info_) {
+    if (arc::ArcIntentHelperBridge::IsIntentHelperPackage(
+            app_info.package_name))
+      ++chrome_package_repetitions;
+  }
+
+  EXPECT_EQ(size, bubble_->GetScrollViewSizeForTesting() +
+                      chrome_package_repetitions);
 }
 
 // Verifies the InkDrop state when creating a new bubble.
 TEST_F(IntentPickerBubbleViewTest, VerifyStartingInkDrop) {
   CreateBubbleView(true);
-  size_t size = bubble_->app_info_.size();
+  size_t size = bubble_->GetScrollViewSizeForTesting();
   for (size_t i = 0; i < size; ++i) {
     EXPECT_EQ(bubble_->GetInkDropStateForTesting(i),
               views::InkDropState::HIDDEN);
@@ -120,7 +137,7 @@ TEST_F(IntentPickerBubbleViewTest, InkDropStateTransition) {
   CreateBubbleView(true);
   const ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                              ui::EventTimeForNow(), 0, 0);
-  size_t size = bubble_->app_info_.size();
+  size_t size = bubble_->GetScrollViewSizeForTesting();
   for (size_t i = 0; i < size; ++i) {
     bubble_->PressButtonForTesting((i + 1) % size, event);
     EXPECT_EQ(bubble_->GetInkDropStateForTesting(i),
@@ -143,4 +160,15 @@ TEST_F(IntentPickerBubbleViewTest, PressButtonTwice) {
   bubble_->PressButtonForTesting(0, event);
   EXPECT_EQ(bubble_->GetInkDropStateForTesting(0),
             views::InkDropState::ACTIVATED);
+}
+
+// Check that none of the app candidates within the picker corresponds to the
+// Chrome browser.
+TEST_F(IntentPickerBubbleViewTest, ChromeNotInCandidates) {
+  CreateBubbleView(false);
+  size_t size = bubble_->GetScrollViewSizeForTesting();
+  for (size_t i = 0; i < size; ++i) {
+    EXPECT_FALSE(arc::ArcIntentHelperBridge::IsIntentHelperPackage(
+        bubble_->GetPackageNameForTesting(i)));
+  }
 }

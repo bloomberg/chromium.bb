@@ -95,7 +95,9 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/widget/widget.h"
 
-#if !defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/views/location_bar/intent_picker_view.h"
+#else
 #include "chrome/browser/ui/views/first_run_bubble.h"
 #endif
 
@@ -240,6 +242,13 @@ void LocationBarView::Init() {
   translate_icon_view_->Init();
   translate_icon_view_->SetVisible(false);
   AddChildView(translate_icon_view_);
+
+#if defined(OS_CHROMEOS)
+  intent_picker_view_ = new IntentPickerView(browser_);
+  intent_picker_view_->Init();
+  intent_picker_view_->SetVisible(false);
+  AddChildView(intent_picker_view_);
+#endif  // defined(OS_CHROMEOS)
 
   star_view_ = new StarView(command_updater(), browser_);
   star_view_->Init();
@@ -452,6 +461,10 @@ gfx::Size LocationBarView::CalculatePreferredSize() const {
                     IncrementalMinimumWidth(save_credit_card_icon_view_) +
                     IncrementalMinimumWidth(manage_passwords_icon_view_) +
                     IncrementalMinimumWidth(zoom_view_);
+#if defined(OS_CHROMEOS)
+  if (intent_picker_view_)
+    trailing_width += IncrementalMinimumWidth(intent_picker_view_);
+#endif  // defined(OS_CHROMEOS)
   for (auto i = content_setting_views_.begin();
        i != content_setting_views_.end(); ++i) {
     trailing_width += IncrementalMinimumWidth((*i));
@@ -519,6 +532,12 @@ void LocationBarView::Layout() {
                                       location_icon_view_);
   }
 
+#if defined(OS_CHROMEOS)
+  if (intent_picker_view_->visible()) {
+    trailing_decorations.AddDecoration(vertical_padding, location_height,
+                                       intent_picker_view_);
+  }
+#endif  // defined(OS_CHROMEOS)
   if (star_view_->visible()) {
     trailing_decorations.AddDecoration(vertical_padding, location_height,
                                        star_view_);
