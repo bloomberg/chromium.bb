@@ -89,9 +89,10 @@ def main():
 
     return_code = return_code or rc
     benchmark_path = os.path.join(isolated_out_dir, benchmark)
-    with open(os.path.join(benchmark_path, 'perf_results.json')) as f:
+    os.makedirs(benchmark_path)
+    with open(os.path.join(benchmark_path, 'perf_results.json'), 'w') as f:
       json.dump(perf_results, f)
-    with open(os.path.join(benchmark_path, 'test_results.json')) as f:
+    with open(os.path.join(benchmark_path, 'test_results.json'), 'w') as f:
       json.dump(json_test_results, f)
 
   return return_code
