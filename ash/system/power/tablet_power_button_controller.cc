@@ -89,41 +89,6 @@ constexpr base::TimeDelta TabletPowerButtonController::kScreenStateChangeDelay;
 constexpr base::TimeDelta
     TabletPowerButtonController::kIgnoreRepeatedButtonUpDelay;
 
-TabletPowerButtonController::TestApi::TestApi(
-    TabletPowerButtonController* controller)
-    : controller_(controller) {}
-
-TabletPowerButtonController::TestApi::~TestApi() = default;
-
-bool TabletPowerButtonController::TestApi::ShutdownTimerIsRunning() const {
-  return controller_->shutdown_timer_.IsRunning();
-}
-
-void TabletPowerButtonController::TestApi::TriggerShutdownTimeout() {
-  DCHECK(ShutdownTimerIsRunning());
-  controller_->OnShutdownTimeout();
-  controller_->shutdown_timer_.Stop();
-}
-
-bool TabletPowerButtonController::TestApi::IsObservingAccelerometerReader(
-    chromeos::AccelerometerReader* reader) const {
-  DCHECK(reader);
-  return controller_->accelerometer_scoped_observer_.IsObserving(reader);
-}
-
-void TabletPowerButtonController::TestApi::ParseSpuriousPowerButtonSwitches(
-    const base::CommandLine& command_line) {
-  controller_->ParseSpuriousPowerButtonSwitches(command_line);
-}
-
-bool TabletPowerButtonController::TestApi::IsSpuriousPowerButtonEvent() const {
-  return controller_->IsSpuriousPowerButtonEvent();
-}
-
-void TabletPowerButtonController::TestApi::SendKeyEvent(ui::KeyEvent* event) {
-  controller_->display_controller_->OnKeyEvent(event);
-}
-
 TabletPowerButtonController::TabletPowerButtonController(
     PowerButtonDisplayController* display_controller,
     base::TickClock* tick_clock)

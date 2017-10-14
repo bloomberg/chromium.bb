@@ -11,6 +11,7 @@
 #include "ash/shell.h"
 #include "ash/shell_test_api.h"
 #include "ash/system/power/power_button_controller.h"
+#include "ash/system/power/tablet_power_button_controller_test_api.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/lock_state_controller_test_api.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -79,7 +80,7 @@ void PowerButtonTestBase::InitPowerButtonControllerMembers(
     SendAccelerometerUpdate(kSidewaysVector, kUpVector);
     tablet_controller_ =
         power_button_controller_->tablet_power_button_controller_for_test();
-    tablet_test_api_ = std::make_unique<TabletPowerButtonController::TestApi>(
+    tablet_test_api_ = std::make_unique<TabletPowerButtonControllerTestApi>(
         tablet_controller_);
   } else {
     tablet_test_api_ = nullptr;

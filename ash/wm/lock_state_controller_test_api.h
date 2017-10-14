@@ -5,15 +5,11 @@
 #ifndef ASH_WM_LOCK_STATE_CONTROLLER_TEST_API_H_
 #define ASH_WM_LOCK_STATE_CONTROLLER_TEST_API_H_
 
-#include <memory>
-
 #include "ash/wm/lock_state_controller.h"
-#include "base/timer/elapsed_timer.h"
-#include "base/timer/timer.h"
 
 namespace ash {
 
-// Helper class used by tests to access internal state.
+// Helper class used by tests to access LockStateController's internal state.
 class LockStateControllerTestApi {
  public:
   explicit LockStateControllerTestApi(LockStateController* controller);
