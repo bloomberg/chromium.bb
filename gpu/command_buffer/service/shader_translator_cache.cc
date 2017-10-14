@@ -6,8 +6,6 @@
 
 #include <GLES2/gl2.h>
 
-#include "gpu/command_buffer/service/gpu_preferences.h"
-
 namespace gpu {
 namespace gles2 {
 
