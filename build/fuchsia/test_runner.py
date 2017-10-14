@@ -191,7 +191,8 @@ def main():
   try:
     bootfs = BuildBootfs(
         args.output_directory, runtime_deps, args.exe_name, child_args,
-        args.dry_run, summary_output=args.test_launcher_summary_output,
+        args.dry_run, bootdata=None,
+        summary_output=args.test_launcher_summary_output,
         power_off=not args.device, target_cpu=args.target_cpu)
     if not bootfs:
       return 2
