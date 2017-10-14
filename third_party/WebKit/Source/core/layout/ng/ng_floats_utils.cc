@@ -50,36 +50,6 @@ NGLayoutOpportunity FindLayoutOpportunityForFloat(
       adjusted_origin_point, unpositioned_float.available_size, float_size);
 }
 
-// Calculates the logical offset for opportunity.
-NGLogicalOffset CalculateLogicalOffsetForOpportunity(
-    const NGConstraintSpace& parent_space,
-    const NGLayoutOpportunity& opportunity,
-    const NGBfcOffset& float_margin_bfc_offset,
-    const LayoutUnit parent_bfc_block_offset,
-    const NGUnpositionedFloat* unpositioned_float,
-    LayoutUnit parent_inline_size,
-    LayoutUnit float_margin_box_inline_size) {
-  DCHECK(unpositioned_float);
-  auto margins = unpositioned_float->margins;
-
-  // We need to respect the current text direction to calculate the logical
-  // offset correctly.
-  LayoutUnit relative_line_offset =
-      float_margin_bfc_offset.line_offset - unpositioned_float->bfc_line_offset;
-
-  LayoutUnit inline_offset = parent_space.Direction() == TextDirection::kLtr
-                                 ? relative_line_offset + margins.inline_start
-                                 : parent_inline_size - relative_line_offset -
-                                       float_margin_box_inline_size +
-                                       margins.inline_start;
-
-  NGLogicalOffset offset = {inline_offset,
-                            float_margin_bfc_offset.block_offset +
-                                margins.block_start - parent_bfc_block_offset};
-
-  return offset;
-}
-
 // Creates an exclusion from the fragment that will be placed in the provided
 // layout opportunity.
 NGExclusion CreateExclusion(const NGFragment& fragment,
@@ -195,7 +165,6 @@ NGPositionedFloat PositionFloat(LayoutUnit origin_block_offset,
                                 LayoutUnit parent_bfc_block_offset,
                                 NGUnpositionedFloat* unpositioned_float,
                                 const NGConstraintSpace& parent_space,
-                                LayoutUnit parent_inline_size,
                                 NGExclusionSpace* exclusion_space) {
   DCHECK(unpositioned_float);
   LayoutUnit inline_size =
@@ -269,12 +238,14 @@ NGPositionedFloat PositionFloat(LayoutUnit origin_block_offset,
                                     : NGExclusion::Type::kFloatLeft);
   exclusion_space->Add(exclusion);
 
-  NGLogicalOffset logical_offset = CalculateLogicalOffsetForOpportunity(
-      parent_space, opportunity, float_margin_bfc_offset,
-      parent_bfc_block_offset, unpositioned_float, parent_inline_size,
-      float_margin_box_inline_size);
+  // Adjust the float's bfc_offset to its border-box (instead of margin-box).
+  NGBfcOffset float_bfc_offset(
+      float_margin_bfc_offset.line_offset +
+          unpositioned_float->margins.LineLeft(parent_space.Direction()),
+      float_margin_bfc_offset.block_offset +
+          unpositioned_float->margins.block_start);
 
-  return NGPositionedFloat(std::move(layout_result), logical_offset);
+  return NGPositionedFloat(std::move(layout_result), float_bfc_offset);
 }
 
 const Vector<NGPositionedFloat> PositionFloats(
@@ -282,15 +253,14 @@ const Vector<NGPositionedFloat> PositionFloats(
     LayoutUnit parent_bfc_block_offset,
     const Vector<RefPtr<NGUnpositionedFloat>>& unpositioned_floats,
     const NGConstraintSpace& space,
-    LayoutUnit parent_inline_size,
     NGExclusionSpace* exclusion_space) {
   Vector<NGPositionedFloat> positioned_floats;
   positioned_floats.ReserveCapacity(unpositioned_floats.size());
 
   for (auto& unpositioned_float : unpositioned_floats) {
-    positioned_floats.push_back(PositionFloat(
-        origin_block_offset, parent_bfc_block_offset, unpositioned_float.get(),
-        space, parent_inline_size, exclusion_space));
+    positioned_floats.push_back(
+        PositionFloat(origin_block_offset, parent_bfc_block_offset,
+                      unpositioned_float.get(), space, exclusion_space));
   }
 
   return positioned_floats;
