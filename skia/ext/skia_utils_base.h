@@ -5,6 +5,7 @@
 #ifndef SKIA_EXT_SKIA_UTILS_BASE_H_
 #define SKIA_EXT_SKIA_UTILS_BASE_H_
 
+#include "third_party/skia/include/core/SkFlattenable.h"
 #include "third_party/skia/include/ports/SkFontConfigInterface.h"
 
 namespace base {
@@ -41,9 +42,16 @@ SK_API void WriteSkFontIdentity(
 // Writes style into the request pickle.
 SK_API void WriteSkFontStyle(base::Pickle* pickle, SkFontStyle style);
 
-// Serializes the SkFlattenable. This method should never be used with an
-// SkFlattenable containing encoded images.
+// Serializes the SkFlattenable. Any encoded images contained in the flattenable
+// will be decoded during serialization.
 SK_API sk_sp<SkData> ValidatingSerializeFlattenable(SkFlattenable* flattenable);
+
+// Deserializes the SkFlattenable. This method must not be called with data
+// containing encoded images.
+SK_API SkFlattenable* ValidatingDeserializeFlattenable(
+    const void* data,
+    size_t size,
+    SkFlattenable::Type type);
 
 }  // namespace skia
 
