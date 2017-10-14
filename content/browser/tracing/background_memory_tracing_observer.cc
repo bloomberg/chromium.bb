@@ -20,13 +20,6 @@ namespace {
 const char kEnableHeapProfilerModeName[] = "enable_heap_profiler_mode";
 const char kBackgroundModeName[] = "background";
 const char kHeapProfilerCategoryFilter[] = "heap_profiler_category_filter";
-
-void GlobalDumpCallback(bool success, uint64_t guid) {
-  // Disable heap profiling after capturing the first memory dump.
-  MemoryDumpManager::GetInstance()->EnableHeapProfiling(
-      base::trace_event::kHeapProfilingModeDisabled);
-  TraceLog::GetInstance()->SetDisabled(TraceLog::FILTERING_MODE);
-}
 }  // namespace
 
 // static
@@ -106,14 +99,12 @@ void BackgroundMemoryTracingObserver::OnTracingEnabled(
       BackgroundTracingConfigImpl::CategoryPreset::BENCHMARK_MEMORY_LIGHT)
     return;
 
-  memory_instrumentation::MemoryInstrumentation::
-      RequestGlobalDumpAndAppendToTraceCallback callback;
-  if (heap_profiling_enabled_)
-    callback = base::Bind(&GlobalDumpCallback);
   memory_instrumentation::MemoryInstrumentation::GetInstance()
       ->RequestGlobalDumpAndAppendToTrace(
           base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED,
-          base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND, callback);
+          base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND,
+          memory_instrumentation::MemoryInstrumentation::
+              RequestGlobalDumpAndAppendToTraceCallback());
 }
 
 }  // namespace content
