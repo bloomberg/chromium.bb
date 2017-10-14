@@ -34475,6 +34475,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="MediaRouter.PresentationRequest.AvailabilityUrlType"
+    enum="PresentationUrlType">
+  <owner>imcheng@chromium.org</owner>
+  <summary>
+    The type of Presentation URL used in a PresentationRequest by a web page.
+  </summary>
+</histogram>
+
 <histogram name="MediaRouter.Provider.CreateRoute.Result"
     enum="MediaRouteProviderResult">
   <owner>imcheng@chromium.org</owner>
