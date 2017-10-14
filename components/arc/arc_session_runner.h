@@ -21,6 +21,25 @@
 
 namespace arc {
 
+// These enums are used to define the buckets for an enumerated UMA histogram
+// and need to be synced with tools/metrics/histograms/enums.xml. This enum
+// class should also be treated as append-only.
+enum class ArcContainerLifetimeEvent {
+  // Note: "container" here means "instance". Outside Chromium, like UMA
+  // dashboard, we use the former term.
+
+  // Chrome asked session_manager to start an ARC instance (of any kind). We
+  // record this as a baseline.
+  CONTAINER_STARTING = 0,
+  // The instance failed to start or exited unexpectedly.
+  CONTAINER_FAILED_TO_START = 1,
+  // The instance crashed before establishing an IPC connection to Chrome.
+  CONTAINER_CRASHED_EARLY = 2,
+  // The instance crashed after establishing the connection.
+  CONTAINER_CRASHED = 3,
+  COUNT
+};
+
 // Accept requests to start/stop ARC instance. Also supports automatic
 // restarting on unexpected ARC instance crash.
 class ArcSessionRunner : public ArcSession::Observer,
@@ -102,6 +121,7 @@ class ArcSessionRunner : public ArcSession::Observer,
   // to finish tearing down in case it is still in the process of stopping.
   base::TimeDelta restart_delay_;
   base::OneShotTimer restart_timer_;
+  size_t restart_after_crash_count_;  // for UMA recording.
 
   // Factory to inject a fake ArcSession instance for testing.
   ArcSessionFactory factory_;

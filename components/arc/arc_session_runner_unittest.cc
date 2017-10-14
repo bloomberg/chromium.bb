@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
@@ -22,6 +23,15 @@
 namespace arc {
 
 namespace {
+
+constexpr int kContainerStarting =
+    static_cast<int>(ArcContainerLifetimeEvent::CONTAINER_STARTING);
+constexpr int kContainerFailedToStart =
+    static_cast<int>(ArcContainerLifetimeEvent::CONTAINER_FAILED_TO_START);
+constexpr int kContainerCrashedEarly =
+    static_cast<int>(ArcContainerLifetimeEvent::CONTAINER_CRASHED_EARLY);
+constexpr int kContainerCrashed =
+    static_cast<int>(ArcContainerLifetimeEvent::CONTAINER_CRASHED);
 
 class DoNothingObserver : public ArcSessionRunner::Observer {
  public:
@@ -343,6 +353,123 @@ TEST_F(ArcSessionRunnerTest, RemoveUnknownObserver) {
 
   DoNothingObserver do_nothing_observer;
   arc_session_runner()->RemoveObserver(&do_nothing_observer);
+}
+
+// Tests UMA recording on mini instance -> full instance -> shutdown case.
+TEST_F(ArcSessionRunnerTest, UmaRecording_StartUpgradeShutdown) {
+  base::HistogramTester tester;
+
+  arc_session_runner()->RequestStart(ArcInstanceMode::MINI_INSTANCE);
+  tester.ExpectUniqueSample("Arc.ContainerLifetimeEvent", kContainerStarting,
+                            1 /* count of the sample */);
+
+  // Boot continue should not increase the count.
+  arc_session_runner()->RequestStart(ArcInstanceMode::FULL_INSTANCE);
+  tester.ExpectUniqueSample("Arc.ContainerLifetimeEvent", kContainerStarting,
+                            1);
+
+  // "0" should be recorded as a restart count on shutdown.
+  arc_session_runner()->OnShutdown();
+  tester.ExpectUniqueSample("Arc.ContainerRestartAfterCrashCount",
+                            0 /* sample */, 1 /* count of the sample */);
+}
+
+// Tests UMA recording on full instance -> shutdown case.
+TEST_F(ArcSessionRunnerTest, UmaRecording_StartShutdown) {
+  base::HistogramTester tester;
+
+  arc_session_runner()->RequestStart(ArcInstanceMode::FULL_INSTANCE);
+  tester.ExpectUniqueSample("Arc.ContainerLifetimeEvent", kContainerStarting,
+                            1);
+  // "0" should be recorded as a restart count on shutdown.
+  arc_session_runner()->OnShutdown();
+  tester.ExpectUniqueSample("Arc.ContainerRestartAfterCrashCount", 0, 1);
+}
+
+// Tests UMA recording on mini instance -> full instance -> crash -> shutdown
+// case.
+TEST_F(ArcSessionRunnerTest, UmaRecording_CrashTwice) {
+  base::HistogramTester tester;
+
+  arc_session_runner()->SetRestartDelayForTesting(base::TimeDelta());
+  EXPECT_FALSE(arc_session());
+
+  arc_session_runner()->RequestStart(ArcInstanceMode::MINI_INSTANCE);
+  tester.ExpectUniqueSample("Arc.ContainerLifetimeEvent", kContainerStarting,
+                            1);
+  arc_session_runner()->RequestStart(ArcInstanceMode::FULL_INSTANCE);
+
+  // Stop the instance with CRASH.
+  arc_session()->StopWithReason(ArcStopReason::CRASH);
+  tester.ExpectBucketCount("Arc.ContainerLifetimeEvent", kContainerCrashed, 1);
+  tester.ExpectTotalCount("Arc.ContainerLifetimeEvent", 2);
+
+  // Restart the instance, then crash the instance again. The second CRASH
+  // should not affect Arc.ContainerLifetimeEvent.
+  base::RunLoop().RunUntilIdle();
+  arc_session()->StopWithReason(ArcStopReason::CRASH);
+  tester.ExpectBucketCount("Arc.ContainerLifetimeEvent", kContainerCrashed, 1);
+  tester.ExpectTotalCount("Arc.ContainerLifetimeEvent", 2);
+
+  // However, "2" should be recorded as a restart count on shutdown.
+  base::RunLoop().RunUntilIdle();
+  arc_session_runner()->OnShutdown();
+  tester.ExpectUniqueSample("Arc.ContainerRestartAfterCrashCount", 2, 1);
+}
+
+// Tests UMA recording on mini instance -> crash -> shutdown case.
+TEST_F(ArcSessionRunnerTest, UmaRecording_CrashMini) {
+  base::HistogramTester tester;
+
+  arc_session_runner()->RequestStart(ArcInstanceMode::MINI_INSTANCE);
+  tester.ExpectUniqueSample("Arc.ContainerLifetimeEvent", kContainerStarting,
+                            1);
+
+  // Stop the instance with CRASH.
+  arc_session()->StopWithReason(ArcStopReason::CRASH);
+  tester.ExpectBucketCount("Arc.ContainerLifetimeEvent", kContainerCrashedEarly,
+                           1);
+  tester.ExpectTotalCount("Arc.ContainerLifetimeEvent", 2);
+
+  // In this case, no restart happened. "0" should be recorded.
+  arc_session_runner()->OnShutdown();
+  tester.ExpectUniqueSample("Arc.ContainerRestartAfterCrashCount", 0, 1);
+}
+
+// Tests UMA recording on mini instance -> boot fail -> shutdown case.
+TEST_F(ArcSessionRunnerTest, UmaRecording_BootFail) {
+  base::HistogramTester tester;
+
+  arc_session_runner()->RequestStart(ArcInstanceMode::MINI_INSTANCE);
+  tester.ExpectUniqueSample("Arc.ContainerLifetimeEvent", kContainerStarting,
+                            1);
+
+  arc_session()->StopWithReason(ArcStopReason::GENERIC_BOOT_FAILURE);
+  tester.ExpectBucketCount("Arc.ContainerLifetimeEvent",
+                           kContainerFailedToStart, 1);
+  tester.ExpectTotalCount("Arc.ContainerLifetimeEvent", 2);
+
+  // No restart happened. "0" should be recorded.
+  arc_session_runner()->OnShutdown();
+  tester.ExpectUniqueSample("Arc.ContainerRestartAfterCrashCount", 0, 1);
+}
+
+// Tests UMA recording on full instance -> low disk -> shutdown case.
+TEST_F(ArcSessionRunnerTest, UmaRecording_LowDisk) {
+  base::HistogramTester tester;
+
+  arc_session_runner()->RequestStart(ArcInstanceMode::FULL_INSTANCE);
+  tester.ExpectUniqueSample("Arc.ContainerLifetimeEvent", kContainerStarting,
+                            1);
+
+  // We don't record UMA for LOW_DISK_SPACE.
+  arc_session()->StopWithReason(ArcStopReason::LOW_DISK_SPACE);
+  tester.ExpectUniqueSample("Arc.ContainerLifetimeEvent", kContainerStarting,
+                            1);
+
+  // No restart happened. "0" should be recorded.
+  arc_session_runner()->OnShutdown();
+  tester.ExpectUniqueSample("Arc.ContainerRestartAfterCrashCount", 0, 1);
 }
 
 }  // namespace arc

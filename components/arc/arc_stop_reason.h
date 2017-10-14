@@ -15,8 +15,9 @@ enum class ArcStopReason {
   SHUTDOWN,
 
   // Errors occurred during the ARC instance boot. This includes any failures
-  // before the instance is actually attempted to be started, and also
-  // failures on bootstrapping IPC channels with Android.
+  // before the instance is actually attempted to be started (e.g.
+  // session_manager failed to fork/exec the instance), and also a "clean"
+  // (non crashy) but unexpected container shutdown.
   GENERIC_BOOT_FAILURE,
 
   // The device is critically low on disk space.
