@@ -9,7 +9,6 @@
 #include "core/paint/PaintPhase.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/geometry/LayoutRect.h"
-#include "platform/graphics/paint/DisplayItemCacheSkipper.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Optional.h"
@@ -26,9 +25,6 @@ class LayoutObjectDrawingRecorder final {
   static bool UseCachedDrawingIfPossible(GraphicsContext& context,
                                          const LayoutObject& layout_object,
                                          DisplayItem::Type display_item_type) {
-    if (layout_object.FullPaintInvalidationReason() ==
-        PaintInvalidationReason::kDelayedFull)
-      return false;
     return DrawingRecorder::UseCachedDrawingIfPossible(context, layout_object,
                                                        display_item_type);
   }
@@ -44,11 +40,6 @@ class LayoutObjectDrawingRecorder final {
                               const LayoutObject& layout_object,
                               DisplayItem::Type display_item_type,
                               const FloatRect& clip) {
-    // We may paint a delayed-invalidation object before it's actually
-    // invalidated.
-    if (layout_object.FullPaintInvalidationReason() ==
-        PaintInvalidationReason::kDelayedFull)
-      cache_skipper_.emplace(context);
     drawing_recorder_.emplace(context, layout_object, display_item_type, clip);
   }
 
@@ -94,7 +85,6 @@ class LayoutObjectDrawingRecorder final {
   }
 
  private:
-  Optional<DisplayItemCacheSkipper> cache_skipper_;
   Optional<DrawingRecorder> drawing_recorder_;
 };
 

@@ -19,6 +19,7 @@
 #include "core/paint/PaintInfo.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/graphics/Path.h"
+#include "platform/graphics/paint/DisplayItemCacheSkipper.h"
 
 namespace blink {
 
@@ -91,44 +92,56 @@ void ImagePainter::PaintReplaced(const PaintInfo& paint_info,
                                  const LayoutPoint& paint_offset) {
   LayoutUnit c_width = layout_image_.ContentWidth();
   LayoutUnit c_height = layout_image_.ContentHeight();
+  bool has_image = layout_image_.ImageResource()->HasImage();
 
-  GraphicsContext& context = paint_info.context;
-
-  if (!layout_image_.ImageResource()->HasImage()) {
+  if (has_image) {
+    if (!c_width || !c_height)
+      return;
+  } else {
     if (paint_info.phase == kPaintPhaseSelection)
       return;
-    if (c_width > 2 && c_height > 2) {
-      if (LayoutObjectDrawingRecorder::UseCachedDrawingIfPossible(
-              context, layout_image_, paint_info.phase))
-        return;
-      // Draw an outline rect where the image should be.
-      IntRect paint_rect = PixelSnappedIntRect(
-          LayoutRect(paint_offset.X() + layout_image_.BorderLeft() +
-                         layout_image_.PaddingLeft(),
-                     paint_offset.Y() + layout_image_.BorderTop() +
-                         layout_image_.PaddingTop(),
-                     c_width, c_height));
-      LayoutObjectDrawingRecorder drawing_recorder(
-          context, layout_image_, paint_info.phase, paint_rect);
-      context.SetStrokeStyle(kSolidStroke);
-      context.SetStrokeColor(Color::kLightGray);
-      context.SetFillColor(Color::kTransparent);
-      context.DrawRect(paint_rect);
-    }
-  } else if (c_width > 0 && c_height > 0) {
-    if (LayoutObjectDrawingRecorder::UseCachedDrawingIfPossible(
-            context, layout_image_, paint_info.phase))
+    if (c_width <= 2 || c_height <= 2)
       return;
-
-    LayoutRect content_rect = layout_image_.ContentBoxRect();
-    content_rect.MoveBy(paint_offset);
-    LayoutRect paint_rect = layout_image_.ReplacedContentRect();
-    paint_rect.MoveBy(paint_offset);
-
-    LayoutObjectDrawingRecorder drawing_recorder(
-        context, layout_image_, paint_info.phase, content_rect);
-    PaintIntoRect(context, paint_rect, content_rect);
   }
+
+  GraphicsContext& context = paint_info.context;
+  if (LayoutObjectDrawingRecorder::UseCachedDrawingIfPossible(
+          context, layout_image_, paint_info.phase))
+    return;
+
+  // Disable cache in under-invalidation checking mode for delayed-invalidation
+  // image because it may change before it's actually invalidated.
+  Optional<DisplayItemCacheSkipper> cache_skipper;
+  if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() &&
+      layout_image_.FullPaintInvalidationReason() ==
+          PaintInvalidationReason::kDelayedFull)
+    cache_skipper.emplace(context);
+
+  if (!has_image) {
+    // Draw an outline rect where the image should be.
+    IntRect paint_rect = PixelSnappedIntRect(
+        LayoutRect(paint_offset.X() + layout_image_.BorderLeft() +
+                       layout_image_.PaddingLeft(),
+                   paint_offset.Y() + layout_image_.BorderTop() +
+                       layout_image_.PaddingTop(),
+                   c_width, c_height));
+    LayoutObjectDrawingRecorder drawing_recorder(context, layout_image_,
+                                                 paint_info.phase, paint_rect);
+    context.SetStrokeStyle(kSolidStroke);
+    context.SetStrokeColor(Color::kLightGray);
+    context.SetFillColor(Color::kTransparent);
+    context.DrawRect(paint_rect);
+    return;
+  }
+
+  LayoutRect content_rect = layout_image_.ContentBoxRect();
+  content_rect.MoveBy(paint_offset);
+  LayoutRect paint_rect = layout_image_.ReplacedContentRect();
+  paint_rect.MoveBy(paint_offset);
+
+  LayoutObjectDrawingRecorder drawing_recorder(context, layout_image_,
+                                               paint_info.phase, content_rect);
+  PaintIntoRect(context, paint_rect, content_rect);
 }
 
 void ImagePainter::PaintIntoRect(GraphicsContext& context,
