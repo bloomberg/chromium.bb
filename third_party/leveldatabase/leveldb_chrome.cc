@@ -163,4 +163,10 @@ void UpdateHistograms() {
   return Globals::GetInstance()->UpdateHistograms();
 }
 
+bool ParseFileName(const std::string& filename,
+                   uint64_t* number,
+                   leveldb::FileType* type) {
+  return leveldb::ParseFileName(filename, number, type);
+}
+
 }  // namespace leveldb_chrome
