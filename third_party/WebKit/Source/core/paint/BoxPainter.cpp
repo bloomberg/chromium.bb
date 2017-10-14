@@ -23,6 +23,7 @@
 #include "platform/LengthFunctions.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
+#include "platform/graphics/paint/DisplayItemCacheSkipper.h"
 #include "platform/wtf/Optional.h"
 
 namespace blink {
@@ -93,15 +94,13 @@ void BoxPainter::PaintBoxDecorationBackgroundWithRect(
   Optional<DisplayItemCacheSkipper> cache_skipper;
   // Disable cache in under-invalidation checking mode for MediaSliderPart
   // because we always paint using the latest data (buffered ranges, current
-  // time and duration) which may be different from the cached data.
-  if ((RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() &&
-       style.Appearance() == kMediaSliderPart)
-      // We may paint a delayed-invalidation object before it's actually
-      // invalidated. Note this would be handled for us by
-      // LayoutObjectDrawingRecorder but we have to use DrawingRecorder as we
-      // may use the scrolling contents layer as DisplayItemClient below.
-      || layout_box_.FullPaintInvalidationReason() ==
-             PaintInvalidationReason::kDelayedFull) {
+  // time and duration) which may be different from the cached data, and for
+  // delayed-invalidation object because it may change before it's actually
+  // invalidated.
+  if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() &&
+      (style.Appearance() == kMediaSliderPart ||
+       layout_box_.FullPaintInvalidationReason() ==
+           PaintInvalidationReason::kDelayedFull)) {
     cache_skipper.emplace(paint_info.context);
   }
 
