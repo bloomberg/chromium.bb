@@ -37,7 +37,6 @@
 #include "storage/browser/quota/quota_client.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
-#include "storage/browser/quota/special_storage_policy.h"
 
 namespace content {
 
@@ -75,9 +74,11 @@ bool DeleteGroupAndRelatedRecords(
   return success;
 }
 
+}  // namespace
+
 // Destroys |database|. If there is appcache data to be deleted
 // (|force_keep_session_state| is false), deletes session-only appcache data.
-void ClearSessionOnlyOrigins(
+void AppCacheStorageImpl::ClearSessionOnlyOrigins(
     AppCacheDatabase* database,
     scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy,
     bool force_keep_session_state) {
@@ -132,8 +133,6 @@ void ClearSessionOnlyOrigins(
     }  // for each group
   }  // for each origin
 }
-
-}  // namespace
 
 // DatabaseTask -----------------------------------------
 
