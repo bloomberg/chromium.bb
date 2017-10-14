@@ -288,6 +288,11 @@ void GpuChannelManager::OnApplicationStateChange(
   return;
 }
 
+void GpuChannelManager::OnApplicationBackgroundedForTesting() {
+  is_backgrounded_for_testing_ = true;
+  OnApplicationBackgrounded();
+}
+
 void GpuChannelManager::OnApplicationBackgrounded() {
   // Check if the app is still in background after the delay.
   auto state = base::android::ApplicationStatusListener::GetState();

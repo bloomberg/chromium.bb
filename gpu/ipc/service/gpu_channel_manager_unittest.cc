@@ -20,8 +20,9 @@ class GpuChannelManagerTest : public GpuChannelTestCommon {
 
 #if defined(OS_ANDROID)
   void TestOnApplicationStateChange(gles2::ContextType type,
-                                    bool should_clear_stub) {
+                                    bool should_destroy_channel) {
     ASSERT_TRUE(channel_manager());
+
     int32_t kClientId = 1;
     GpuChannel* channel = CreateChannel(kClientId, true);
     EXPECT_TRUE(channel);
@@ -47,13 +48,13 @@ class GpuChannelManagerTest : public GpuChannelTestCommon {
     GpuCommandBufferStub* stub = channel->LookupCommandBuffer(kRouteId);
     EXPECT_TRUE(stub);
 
-    channel_manager()->is_backgrounded_for_testing_ = true;
-    channel_manager()->OnApplicationBackgrounded();
-    stub = channel->LookupCommandBuffer(kRouteId);
-    if (should_clear_stub) {
-      EXPECT_FALSE(stub);
+    channel_manager()->OnApplicationBackgroundedForTesting();
+
+    channel = channel_manager()->LookupChannel(kClientId);
+    if (should_destroy_channel) {
+      EXPECT_FALSE(channel);
     } else {
-      EXPECT_TRUE(stub);
+      EXPECT_TRUE(channel);
     }
   }
 #endif
