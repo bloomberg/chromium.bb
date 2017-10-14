@@ -291,7 +291,6 @@ source_set("common") {
     "resource_messages.cc",
     "resource_messages.h",
     "sandbox_init_mac.cc",
-    "sandbox_init_mac.h",
     "sandbox_init_win.cc",
     "sandbox_linux/bpf_cdm_policy_linux.cc",
     "sandbox_linux/bpf_cdm_policy_linux.h",

@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/callback_forward.h"
 #include "base/files/scoped_file.h"
 #include "base/memory/shared_memory.h"
 #include "base/process/launch.h"
@@ -66,6 +67,18 @@ CONTENT_EXPORT sandbox::ResultCode StartSandboxedProcess(
 // taken and true is always returned.
 CONTENT_EXPORT bool InitializeSandbox(service_manager::SandboxType sandbox_type,
                                       const base::FilePath& allowed_path);
+
+// Initialize the sandbox for renderer, gpu, utility, worker, and plugin
+// processes, depending on the command line flags. For the browser process which
+// is not sandboxed, this call is a no-op.
+// Returns true if the sandbox was initialized succesfully, false if an error
+// occurred.  If process_type isn't one that needs sandboxing, true is always
+// returned.
+CONTENT_EXPORT bool InitializeSandbox();
+
+// Initializes the sandbox, as described above, but executes the callback after
+// warmup and before initialization.
+CONTENT_EXPORT bool InitializeSandboxWithPostWarmupHook(base::OnceClosure hook);
 
 #elif defined(OS_LINUX) || defined(OS_NACL_NONSFI)
 

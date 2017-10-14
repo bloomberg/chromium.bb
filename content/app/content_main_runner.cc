@@ -73,7 +73,6 @@
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/power_monitor/power_monitor_device_source.h"
 #include "content/browser/mach_broker_mac.h"
-#include "content/common/sandbox_init_mac.h"
 #endif  // OS_WIN
 
 #if defined(OS_POSIX)
