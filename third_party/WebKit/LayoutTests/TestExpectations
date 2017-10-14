@@ -1497,9 +1497,6 @@ crbug.com/564109 [ Win ]  virtual/mojo-loading/http/tests/webfont/font-display-i
 crbug.com/399951 http/tests/mime/javascript-mimetype-usecounters.html [ Pass Failure ]
 crbug.com/399951 virtual/mojo-loading/http/tests/mime/javascript-mimetype-usecounters.html [ Pass Failure ]
 
-crbug.com/572723 http/tests/devtools/sources/debugger/debugger-uncaught-promise-on-pause.html [ Timeout Pass ]
-crbug.com/667560 virtual/mojo-loading/http/tests/devtools/sources/debugger/debugger-uncaught-promise-on-pause.html [ Timeout Pass ]
-
 crbug.com/594672 fast/events/iframe-object-onload.html [ Failure Pass ]
 crbug.com/594672 fast/events/scale-and-scroll-iframe-body.html [ Failure Pass ]
 crbug.com/594672 fast/events/updateLayoutForHitTest.html [ Failure Pass ]
