@@ -65,6 +65,7 @@ class DeletePageTask : public Task {
   static std::unique_ptr<DeletePageTask>
   CreateTaskMatchingUrlPredicateForCachedPages(
       OfflinePageMetadataStoreSQL* store,
+      ClientPolicyController* policy_controller,
       const UrlPredicate& predicate,
       DeletePageTask::DeletePageTaskCallback callback);
 
@@ -83,7 +84,6 @@ class DeletePageTask : public Task {
                  DeleteFunction func,
                  DeletePageTaskCallback callback);
 
-  void DeletePages();
   void OnDeletePageDone(DeletePageTaskResult result);
   void OnDeleteArchiveFilesDone(
       std::unique_ptr<OfflinePagesUpdateResult> result,
