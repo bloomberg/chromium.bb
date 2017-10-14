@@ -273,6 +273,7 @@ samus-chrome-pre-flight-branch (gce_beefy)
 veyron_tiger-android-mnc-pre-flight-branch (gce_beefy)
 
 == chromiumos ==
+amd64-generic-asan (baremetal)
 amd64-generic-full (baremetal)
 amd64-generic-incremental (gce_beefy)
 amd64-generic-paladin (gce_beefy)
