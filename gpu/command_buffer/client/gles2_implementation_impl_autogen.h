@@ -3574,4 +3574,33 @@ void GLES2Implementation::EndRasterCHROMIUM() {
   CheckGLError();
 }
 
+void GLES2Implementation::TexStorage2DImageCHROMIUM(GLenum target,
+                                                    GLenum internalFormat,
+                                                    GLenum bufferUsage,
+                                                    GLsizei width,
+                                                    GLsizei height) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG(
+      "[" << GetLogPrefix() << "] glTexStorage2DImageCHROMIUM("
+          << GLES2Util::GetStringTextureBindTarget(target) << ", "
+          << GLES2Util::GetStringTextureInternalFormatStorage(internalFormat)
+          << ", " << GLES2Util::GetStringClientBufferUsage(bufferUsage) << ", "
+          << width << ", " << height << ")");
+  if (bufferUsage != GL_SCANOUT_CHROMIUM) {
+    SetGLError(GL_INVALID_ENUM, "glTexStorage2DImageCHROMIUM",
+               "bufferUsage GL_INVALID_ENUM");
+    return;
+  }
+  if (width < 0) {
+    SetGLError(GL_INVALID_VALUE, "glTexStorage2DImageCHROMIUM", "width < 0");
+    return;
+  }
+  if (height < 0) {
+    SetGLError(GL_INVALID_VALUE, "glTexStorage2DImageCHROMIUM", "height < 0");
+    return;
+  }
+  helper_->TexStorage2DImageCHROMIUM(target, internalFormat, width, height);
+  CheckGLError();
+}
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_IMPL_AUTOGEN_H_

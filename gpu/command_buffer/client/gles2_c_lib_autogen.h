@@ -1797,6 +1797,14 @@ void GL_APIENTRY GLES2RasterCHROMIUM(const cc::DisplayItemList* list,
 void GL_APIENTRY GLES2EndRasterCHROMIUM() {
   gles2::GetGLContext()->EndRasterCHROMIUM();
 }
+void GL_APIENTRY GLES2TexStorage2DImageCHROMIUM(GLenum target,
+                                                GLenum internalFormat,
+                                                GLenum bufferUsage,
+                                                GLsizei width,
+                                                GLsizei height) {
+  gles2::GetGLContext()->TexStorage2DImageCHROMIUM(target, internalFormat,
+                                                   bufferUsage, width, height);
+}
 
 namespace gles2 {
 
@@ -3152,6 +3160,10 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
         "glEndRasterCHROMIUM",
         reinterpret_cast<GLES2FunctionPointer>(glEndRasterCHROMIUM),
+    },
+    {
+        "glTexStorage2DImageCHROMIUM",
+        reinterpret_cast<GLES2FunctionPointer>(glTexStorage2DImageCHROMIUM),
     },
     {
         NULL, NULL,

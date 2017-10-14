@@ -934,4 +934,9 @@ virtual void RasterCHROMIUM(const cc::DisplayItemList* list,
                             GLint w,
                             GLint h) = 0;
 virtual void EndRasterCHROMIUM() = 0;
+virtual void TexStorage2DImageCHROMIUM(GLenum target,
+                                       GLenum internalFormat,
+                                       GLenum bufferUsage,
+                                       GLsizei width,
+                                       GLsizei height) = 0;
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_INTERFACE_AUTOGEN_H_

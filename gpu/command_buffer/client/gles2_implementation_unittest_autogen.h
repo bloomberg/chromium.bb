@@ -3103,4 +3103,22 @@ TEST_F(GLES2ImplementationTest, EndRasterCHROMIUM) {
   gl_->EndRasterCHROMIUM();
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
+
+TEST_F(GLES2ImplementationTest, TexStorage2DImageCHROMIUM) {
+  struct Cmds {
+    cmds::TexStorage2DImageCHROMIUM cmd;
+  };
+  Cmds expected;
+  expected.cmd.Init(GL_TEXTURE_2D, GL_RGB565, 4, 5);
+
+  gl_->TexStorage2DImageCHROMIUM(GL_TEXTURE_2D, GL_RGB565, GL_SCANOUT_CHROMIUM,
+                                 4, 5);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
+TEST_F(GLES2ImplementationTest, TexStorage2DImageCHROMIUMInvalidConstantArg2) {
+  gl_->TexStorage2DImageCHROMIUM(GL_TEXTURE_2D, GL_RGB565, GL_NONE, 4, 5);
+  EXPECT_TRUE(NoCommandsWritten());
+  EXPECT_EQ(GL_INVALID_ENUM, CheckError());
+}
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_UNITTEST_AUTOGEN_H_

@@ -3324,4 +3324,15 @@ void EndRasterCHROMIUM() {
   }
 }
 
+void TexStorage2DImageCHROMIUM(GLenum target,
+                               GLenum internalFormat,
+                               GLsizei width,
+                               GLsizei height) {
+  gles2::cmds::TexStorage2DImageCHROMIUM* c =
+      GetCmdSpace<gles2::cmds::TexStorage2DImageCHROMIUM>();
+  if (c) {
+    c->Init(target, internalFormat, width, height);
+  }
+}
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_CMD_HELPER_AUTOGEN_H_

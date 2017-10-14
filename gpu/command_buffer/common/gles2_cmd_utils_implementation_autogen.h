@@ -739,6 +739,9 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x40000000, "GL_MULTISAMPLE_BUFFER_BIT6_QCOM",
     },
     {
+        0x6000, "GL_SCANOUT_CHROMIUM",
+    },
+    {
         0x6003, "GL_GET_ERROR_QUERY_CHROMIUM",
     },
     {
@@ -4421,6 +4424,14 @@ std::string GLES2Util::GetStringCapability(uint32_t value) {
       {GL_STENCIL_TEST, "GL_STENCIL_TEST"},
       {GL_RASTERIZER_DISCARD, "GL_RASTERIZER_DISCARD"},
       {GL_PRIMITIVE_RESTART_FIXED_INDEX, "GL_PRIMITIVE_RESTART_FIXED_INDEX"},
+  };
+  return GLES2Util::GetQualifiedEnumString(string_table,
+                                           arraysize(string_table), value);
+}
+
+std::string GLES2Util::GetStringClientBufferUsage(uint32_t value) {
+  static const EnumToString string_table[] = {
+      {GL_SCANOUT_CHROMIUM, "GL_SCANOUT_CHROMIUM"},
   };
   return GLES2Util::GetQualifiedEnumString(string_table,
                                            arraysize(string_table), value);
