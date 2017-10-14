@@ -132,7 +132,12 @@ Polymer({
       this.cameraStartInProgress_ = false;
     }.bind(this);
 
-    navigator.webkitGetUserMedia({video: true}, successCallback, errorCallback);
+    var videoConstraints = {
+      width: {ideal: CAPTURE_SIZE.width},
+      height: {ideal: CAPTURE_SIZE.height},
+    };
+    navigator.webkitGetUserMedia(
+        {video: videoConstraints}, successCallback, errorCallback);
   },
 
   /** Stops the camera stream capture if it's currently active. */
