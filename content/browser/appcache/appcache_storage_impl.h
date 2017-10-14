@@ -22,6 +22,7 @@
 #include "content/browser/appcache/appcache_disk_cache.h"
 #include "content/browser/appcache/appcache_storage.h"
 #include "content/common/content_export.h"
+#include "storage/browser/quota/special_storage_policy.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -126,6 +127,11 @@ class AppCacheStorageImpl : public AppCacheStorage {
   void CallScheduleReinitialize();
   void LazilyCommitLastAccessTimes();
   void OnLazyCommitTimer();
+
+  static void ClearSessionOnlyOrigins(
+      AppCacheDatabase* database,
+      scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy,
+      bool force_keep_session_state);
 
   // Sometimes we can respond without having to query the database.
   bool FindResponseForMainRequestInGroup(

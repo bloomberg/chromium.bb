@@ -160,6 +160,10 @@ class CONTENT_EXPORT IndexedDBContextImpl : public IndexedDBContext {
 
   class IndexedDBGetUsageAndQuotaCallback;
 
+  static void ClearSessionOnlyOrigins(
+      const base::FilePath& indexeddb_path,
+      scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy);
+
   base::FilePath GetBlobStorePath(const url::Origin& origin) const;
   base::FilePath GetLevelDBPath(const url::Origin& origin) const;
 
