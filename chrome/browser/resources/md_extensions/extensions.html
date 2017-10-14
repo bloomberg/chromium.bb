@@ -1,17 +1,21 @@
 <!doctype html>
-<html dir="$i18n{textdirection}" lang="$i18n{language}">
+<html dir="$i18n{textdirection}" lang="$i18n{language}" class="loading">
 <head>
   <meta charset="utf8">
   <title>$i18n{title}</title>
 <if expr="not optimize_webui">
   <base href="chrome://extensions">
 </if>
-  <link rel="import" href="chrome://resources/html/polymer.html">
-  <link rel="import" href="manager.html">
-  <link rel="stylesheet" href="chrome://resources/css/md_colors.css">
   <style>
     html {
-      background: var(--md-background-color);
+      /* --md-background-color in disguise. Not using the var for increased
+       * performance. */
+      background-color: #f1f1f1;
+    }
+
+    .loading {
+      /* --google-blue-700 in disguise. Replaced when manager.html loads. */
+      border-top: 56px solid rgb(51, 103, 214);
     }
 
     html,
@@ -27,6 +31,7 @@
 <body>
   <extensions-manager></extensions-manager>
   <link rel="stylesheet" href="chrome://resources/css/text_defaults_md.css">
+  <link rel="import" href="manager.html">
   <link rel="import" href="service.html">
   <script src="extensions.js"></script>
 </body>
