@@ -13,13 +13,17 @@ BackgroundFetchResponse::BackgroundFetchResponse(
 
 BackgroundFetchResponse::~BackgroundFetchResponse() {}
 
-BackgroundFetchResult::BackgroundFetchResult(base::Time response_time)
-    : response_time(response_time) {}
+BackgroundFetchResult::BackgroundFetchResult(base::Time response_time,
+                                             FailureReason failure_reason)
+    : response_time(response_time), failure_reason(failure_reason) {}
 
 BackgroundFetchResult::BackgroundFetchResult(base::Time response_time,
                                              const base::FilePath& path,
                                              uint64_t file_size)
-    : response_time(response_time), file_path(path), file_size(file_size) {}
+    : response_time(response_time),
+      file_path(path),
+      file_size(file_size),
+      failure_reason(FailureReason::NONE) {}
 
 BackgroundFetchResult::~BackgroundFetchResult() {}
 

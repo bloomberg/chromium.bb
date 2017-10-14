@@ -59,6 +59,10 @@ void BackgroundFetchContext::StartFetch(
     blink::mojom::BackgroundFetchService::FetchCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
+  delegate_proxy_.CreateDownloadJob(registration_id.unique_id(), options.title,
+                                    registration_id.origin(), 0,
+                                    requests.size(), {});
+
   data_manager_.CreateRegistration(
       registration_id, requests, options,
       base::BindOnce(&BackgroundFetchContext::DidCreateRegistration,

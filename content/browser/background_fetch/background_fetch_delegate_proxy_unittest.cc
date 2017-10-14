@@ -21,7 +21,16 @@ class FakeBackgroundFetchDelegate : public BackgroundFetchDelegate {
  public:
   FakeBackgroundFetchDelegate() {}
 
-  void DownloadUrl(const std::string& guid,
+  // BackgroundFetchDelegate implementation:
+  void CreateDownloadJob(
+      const std::string& job_unique_id,
+      const std::string& title,
+      const url::Origin& origin,
+      int completed_parts,
+      int total_parts,
+      const std::vector<std::string>& current_guids) override {}
+  void DownloadUrl(const std::string& job_unique_id,
+                   const std::string& guid,
                    const std::string& method,
                    const GURL& url,
                    const net::NetworkTrafficAnnotationTag& traffic_annotation,
@@ -101,7 +110,8 @@ TEST_F(BackgroundFetchDelegateProxyTest, StartRequest) {
   EXPECT_FALSE(controller.request_started_);
   EXPECT_FALSE(controller.request_completed_);
 
-  delegate_proxy_.StartRequest(controller.weak_ptr_factory_.GetWeakPtr(),
+  delegate_proxy_.StartRequest("jobid1",
+                               controller.weak_ptr_factory_.GetWeakPtr(),
                                url::Origin(), request);
   base::RunLoop().RunUntilIdle();
 
@@ -119,7 +129,8 @@ TEST_F(BackgroundFetchDelegateProxyTest, StartRequest_NotCompleted) {
   EXPECT_FALSE(controller.request_completed_);
 
   delegate_.set_complete_downloads(false);
-  delegate_proxy_.StartRequest(controller.weak_ptr_factory_.GetWeakPtr(),
+  delegate_proxy_.StartRequest("jobid1",
+                               controller.weak_ptr_factory_.GetWeakPtr(),
                                url::Origin(), request);
   base::RunLoop().RunUntilIdle();
 
