@@ -5,51 +5,27 @@
 #ifndef VALUES_H_
 #define VALUES_H_
 
-#include <vector>
-
-#include "base/strings/string16.h"
-#include "base/strings/string_piece.h"
-
 namespace base {
 
-class Value {};
-
-// FundamentalValue represents the simple fundamental types of values.
-class FundamentalValue : public Value {
+class Value {
  public:
-  explicit FundamentalValue(bool in_value);
-  explicit FundamentalValue(int in_value);
-  explicit FundamentalValue(double in_value);
-};
+  enum class Type {
+    NONE = 0,
+    BOOLEAN,
+    INTEGER,
+    DOUBLE,
+    STRING,
+    BINARY,
+    DICTIONARY,
+    LIST
+  };
 
-class StringValue : public Value {
- public:
-  // Initializes a StringValue with a UTF-8 narrow character string.
-  explicit StringValue(StringPiece in_value);
+  // Returns the type of the value stored by the current Value object.
+  Type GetType() const { return type_; }  // DEPRECATED, use type().
+  Type type() const { return type_; }
 
-  // Initializes a StringValue with a string16.
-  explicit StringValue(const string16& in_value);
-};
-
-// Stub base::ListValue class that supports Append(Value*).
-class ListValue : public Value {
- public:
-  ListValue();
-
-  // Appends a Value to the end of the list.
-  void Append(std::unique_ptr<Value> in_value);
-
-  // Deprecated version of the above.
-  void Append(Value* in_value);
-
-  // Convenience forms of Append.
-  void AppendBoolean(bool in_value);
-  void AppendInteger(int in_value);
-  void AppendDouble(double in_value);
-  void AppendString(StringPiece in_value);
-  void AppendString(const string16& in_value);
-  void AppendStrings(const std::vector<std::string>& in_values);
-  void AppendStrings(const std::vector<string16>& in_values);
+ private:
+  Type type_ = Type::NONE;
 };
 
 }  // namespace base
