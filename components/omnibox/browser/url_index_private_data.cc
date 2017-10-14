@@ -6,13 +6,13 @@
 
 #include <stdint.h>
 
-#include <functional>
-#include <iterator>
+#include <algorithm>
 #include <limits>
+#include <memory>
 #include <numeric>
 #include <set>
 #include <string>
-#include <vector>
+#include <utility>
 
 #include "base/containers/stack.h"
 #include "base/files/file_util.h"
@@ -481,6 +481,36 @@ void URLIndexPrivateData::Clear() {
 
 URLIndexPrivateData::~URLIndexPrivateData() {}
 
+// A helper class for several word ID list set-intersections below. O(n)
+// set-intersection is like a merge of sorted lists, except that it only
+// includes elements which are in the other list.  This class implements the
+// predicate parameter for an erase-if algorithm, managing an iterator into the
+// list to be compared to, advancing it as necessary to keep up with the list to
+// be edited.  Being erase-if oriented, it inverts the intuitive logic for
+// matches and returns false to keep them.
+template <typename Container>
+class is_not_in {
+ public:
+  explicit is_not_in(const Container& container)
+      : i(container.begin()), end_(container.end()) {}
+
+  bool operator()(const typename Container::value_type& x) {
+    while (i != end_ && *i < x)
+      ++i;
+    if (i == end_)
+      return true;
+    if (*i == x) {
+      ++i;
+      return false;
+    }
+    return true;
+  }
+
+ private:
+  typename Container::const_iterator i;
+  const typename Container::const_iterator end_;
+};
+
 HistoryIDVector URLIndexPrivateData::HistoryIDsFromWords(
     const String16Vector& unsorted_words) {
   // This histogram name reflects the historic name of this function.
@@ -507,8 +537,8 @@ HistoryIDVector URLIndexPrivateData::HistoryIDsFromWords(
     if (iter == words.begin()) {
       history_ids = {term_history_set.begin(), term_history_set.end()};
     } else {
-      history_ids = base::STLSetIntersection<HistoryIDVector>(history_ids,
-                                                              term_history_set);
+      // set-intersection
+      base::EraseIf(history_ids, is_not_in<HistoryIDSet>(term_history_set));
     }
   }
   return history_ids;
@@ -596,9 +626,12 @@ HistoryIDSet URLIndexPrivateData::HistoryIDsForTerm(
         return HistoryIDSet();
       }
       // Or there may not have been a prefix from which to start.
-      word_id_set = prefix_chars.empty() ? std::move(leftover_set)
-                                         : base::STLSetIntersection<WordIDSet>(
-                                               word_id_set, leftover_set);
+      if (prefix_chars.empty()) {
+        word_id_set = std::move(leftover_set);
+      } else {
+        // set-intersection
+        base::EraseIf(word_id_set, is_not_in<WordIDSet>(leftover_set));
+      }
     }
 
     // We must filter the word list because the resulting word set surely
@@ -655,8 +688,8 @@ WordIDSet URLIndexPrivateData::WordIDSetForTermChars(
     if (c_iter == term_chars.begin()) {
       word_id_set = char_word_id_set;
     } else {
-      word_id_set =
-          base::STLSetIntersection<WordIDSet>(word_id_set, char_word_id_set);
+      // set-intersection
+      base::EraseIf(word_id_set, is_not_in<WordIDSet>(char_word_id_set));
     }
   }
   return word_id_set;
