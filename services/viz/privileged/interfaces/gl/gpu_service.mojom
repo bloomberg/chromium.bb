@@ -48,6 +48,10 @@ interface GpuService {
 
   RequestCompleteGpuInfo() => (gpu.mojom.GpuInfo gpu_info);
 
+  // Requests that the GPU process query system availability of HDR output and
+  // return it.
+  RequestHDRStatus() => (bool hdr_enabled);
+
   // Notify GPU that a shader program was loaded from disk. Key is an
   // SHA-1 hash, and data a binary blob with serialized program info.
   // Note that this method is used only from a trusted process.

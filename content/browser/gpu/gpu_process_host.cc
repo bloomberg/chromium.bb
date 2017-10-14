@@ -747,6 +747,10 @@ void GpuProcessHost::RequestGPUInfo(RequestGPUInfoCallback request_cb) {
   request_gpu_info_callbacks_.push_back(std::move(request_cb));
 }
 
+void GpuProcessHost::RequestHDRStatus(RequestHDRStatusCallback request_cb) {
+  gpu_service_ptr_->RequestHDRStatus(std::move(request_cb));
+}
+
 #if defined(OS_ANDROID)
 void GpuProcessHost::SendDestroyingVideoSurface(int surface_id,
                                                 const base::Closure& done_cb) {

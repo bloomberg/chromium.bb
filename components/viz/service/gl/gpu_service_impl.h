@@ -150,6 +150,7 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   void GetVideoMemoryUsageStats(
       GetVideoMemoryUsageStatsCallback callback) override;
   void RequestCompleteGpuInfo(RequestCompleteGpuInfoCallback callback) override;
+  void RequestHDRStatus(RequestHDRStatusCallback callback) override;
   void LoadedShader(const std::string& key, const std::string& data) override;
   void DestroyingVideoSurface(int32_t surface_id,
                               DestroyingVideoSurfaceCallback callback) override;
@@ -160,6 +161,8 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   void Hang() override;
   void ThrowJavaException() override;
   void Stop(StopCallback callback) override;
+
+  void RequestHDRStatusOnMainThread(RequestHDRStatusCallback callback);
 
   scoped_refptr<base::SingleThreadTaskRunner> main_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> io_runner_;

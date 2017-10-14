@@ -68,9 +68,6 @@ void CollectGraphicsInfo(GPUInfo* gpu_info) {
       DirectCompositionSurfaceWin::AreOverlaysSupported()) {
     gpu_info->supports_overlays = true;
   }
-  if (DirectCompositionSurfaceWin::IsHDRSupported()) {
-    gpu_info->hdr = true;
-  }
 #endif  // defined(OS_WIN)
 
   if (result != kCollectInfoFatalFailure) {
