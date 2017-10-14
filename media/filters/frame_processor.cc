@@ -542,7 +542,8 @@ bool FrameProcessor::HandlePartialAppendWindowTrimming(
         (audio_preroll_buffer_->timestamp() +
          audio_preroll_buffer_->duration() - buffer->timestamp())
             .InMicroseconds();
-    if (std::abs(delta) < sample_duration_.InMicroseconds()) {
+    if (std::abs(delta) < sample_duration_.InMicroseconds() &&
+        audio_preroll_buffer_->timestamp() <= buffer->timestamp()) {
       DVLOG(1) << "Attaching audio preroll buffer ["
                << audio_preroll_buffer_->timestamp().InMicroseconds() << "us, "
                << (audio_preroll_buffer_->timestamp() +
