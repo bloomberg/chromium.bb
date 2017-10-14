@@ -29,6 +29,7 @@
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/android_theme_resources.h"
 #else
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "components/vector_icons/vector_icons.h"
 #endif
 
@@ -88,11 +89,10 @@ QuotaPermissionRequest::QuotaPermissionRequest(
 QuotaPermissionRequest::~QuotaPermissionRequest() {}
 
 PermissionRequest::IconId QuotaPermissionRequest::GetIconId() const {
-  // TODO(gbillock): get the proper image here
 #if defined(OS_ANDROID)
-  return IDR_ANDROID_INFOBAR_WARNING;
+  return IDR_ANDROID_INFOBAR_FOLDER;
 #else
-  return vector_icons::kWarningIcon;
+  return kFolderIcon;
 #endif
 }
 
