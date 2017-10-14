@@ -6,11 +6,10 @@
 
 #include "ash/media_controller.h"
 #include "ash/public/cpp/ash_switches.h"
-#include "ash/public/cpp/config.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
-#include "ash/system/power/power_button_controller.h"
 #include "ash/system/power/power_button_test_base.h"
+#include "ash/system/power/tablet_power_button_controller_test_api.h"
 #include "ash/test_media_client.h"
 #include "ash/touch/touch_devices_controller.h"
 #include "ash/wm/lock_state_controller_test_api.h"
@@ -131,7 +130,7 @@ TEST_F(TabletPowerButtonControllerTest,
 TEST_F(TabletPowerButtonControllerTest,
        ReleasePowerButtonDuringShutdownAnimation) {
   PressPowerButton();
-  tablet_test_api_->TriggerShutdownTimeout();
+  EXPECT_TRUE(tablet_test_api_->TriggerShutdownTimeout());
   EXPECT_TRUE(lock_state_test_api_->shutdown_timer_is_running());
   ReleasePowerButton();
   EXPECT_FALSE(lock_state_test_api_->shutdown_timer_is_running());
@@ -147,7 +146,7 @@ TEST_F(TabletPowerButtonControllerTest,
   PressPowerButton();
   power_manager_client_->SendBrightnessChanged(kNonZeroBrightness, true);
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
-  tablet_test_api_->TriggerShutdownTimeout();
+  EXPECT_TRUE(tablet_test_api_->TriggerShutdownTimeout());
   EXPECT_TRUE(lock_state_test_api_->shutdown_timer_is_running());
   ReleasePowerButton();
   EXPECT_FALSE(lock_state_test_api_->shutdown_timer_is_running());
@@ -380,7 +379,7 @@ TEST_F(TabletPowerButtonControllerTest,
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
 
   PressPowerButton();
-  tablet_test_api_->TriggerShutdownTimeout();
+  EXPECT_TRUE(tablet_test_api_->TriggerShutdownTimeout());
   EXPECT_TRUE(lock_state_test_api_->shutdown_timer_is_running());
   tablet_controller_->OnTabletModeStarted();
   EXPECT_FALSE(lock_state_test_api_->shutdown_timer_is_running());
@@ -399,7 +398,7 @@ TEST_F(TabletPowerButtonControllerTest,
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
 
   PressPowerButton();
-  tablet_test_api_->TriggerShutdownTimeout();
+  EXPECT_TRUE(tablet_test_api_->TriggerShutdownTimeout());
   EXPECT_TRUE(lock_state_test_api_->shutdown_timer_is_running());
   tablet_controller_->OnTabletModeEnded();
   EXPECT_FALSE(lock_state_test_api_->shutdown_timer_is_running());
