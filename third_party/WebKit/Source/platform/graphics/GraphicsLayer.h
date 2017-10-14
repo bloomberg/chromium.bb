@@ -292,6 +292,7 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
 
   friend class CompositedLayerMappingTest;
   friend class PaintControllerPaintTestBase;
+  friend class GraphicsLayerTest;
 
  private:
   // WebContentLayerClient implementation.

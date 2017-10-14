@@ -349,10 +349,23 @@ const PaintChunkProperties& PaintController::CurrentPaintChunkProperties()
 }
 
 void PaintController::InvalidateAll() {
+  DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
+  InvalidateAllInternal();
+}
+
+void PaintController::InvalidateAllInternal() {
+  // TODO(wangxianzhu): Rename this to InvalidateAllForTesting() for SPv2.
   // Can only be called during layout/paintInvalidation, not during painting.
   DCHECK(new_display_item_list_.IsEmpty());
   current_paint_artifact_.Reset();
   current_cache_generation_.Invalidate();
+}
+
+bool PaintController::CacheIsAllInvalid() const {
+  DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
+  return current_paint_artifact_.IsEmpty() &&
+         current_cache_generation_.GetPaintInvalidationReason() !=
+             PaintInvalidationReason::kNone;
 }
 
 bool PaintController::ClientCacheIsValid(

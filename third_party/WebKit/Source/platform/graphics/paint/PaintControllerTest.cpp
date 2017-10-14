@@ -49,6 +49,8 @@ class PaintControllerTestBase : public ::testing::Test {
   int NumIndexedItems() const { return paint_controller_->num_indexed_items_; }
 #endif
 
+  void InvalidateAll() { paint_controller_->InvalidateAllForTesting(); }
+
   using SubsequenceMarkers = PaintController::SubsequenceMarkers;
   SubsequenceMarkers* GetSubsequenceMarkers(const DisplayItemClient& client) {
     return paint_controller_->GetSubsequenceMarkers(client);
@@ -923,7 +925,7 @@ TEST_P(PaintControllerTest, CachedDisplayItems) {
   EXPECT_TRUE(GetPaintController().ClientCacheIsValid(first));
   EXPECT_TRUE(GetPaintController().ClientCacheIsValid(second));
 
-  GetPaintController().InvalidateAll();
+  InvalidateAll();
   EXPECT_FALSE(GetPaintController().ClientCacheIsValid(first));
   EXPECT_FALSE(GetPaintController().ClientCacheIsValid(second));
 }
@@ -2268,6 +2270,33 @@ TEST_P(PaintControllerTest, PartialInvalidation) {
               UnorderedElementsAre(FloatRect(100, 400, 300, 100),
                                    FloatRect(150, 160, 170, 180)));
   EXPECT_EQ(LayoutRect(), client.PartialInvalidationRect());
+}
+
+TEST_P(PaintControllerTest, InvalidateAll) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    return;
+
+  EXPECT_TRUE(GetPaintController().CacheIsAllInvalid());
+  GetPaintController().CommitNewDisplayItems();
+  EXPECT_TRUE(GetPaintController().GetPaintArtifact().IsEmpty());
+  EXPECT_FALSE(GetPaintController().CacheIsAllInvalid());
+
+  InvalidateAll();
+  EXPECT_TRUE(GetPaintController().CacheIsAllInvalid());
+  GetPaintController().CommitNewDisplayItems();
+  EXPECT_TRUE(GetPaintController().GetPaintArtifact().IsEmpty());
+  EXPECT_FALSE(GetPaintController().CacheIsAllInvalid());
+
+  FakeDisplayItemClient client("client", LayoutRect(1, 2, 3, 4));
+  GraphicsContext context(GetPaintController());
+  DrawRect(context, client, kBackgroundDrawingType, FloatRect(1, 2, 3, 4));
+  GetPaintController().CommitNewDisplayItems();
+  EXPECT_FALSE(GetPaintController().GetPaintArtifact().IsEmpty());
+  EXPECT_FALSE(GetPaintController().CacheIsAllInvalid());
+
+  InvalidateAll();
+  EXPECT_TRUE(GetPaintController().GetPaintArtifact().IsEmpty());
+  EXPECT_TRUE(GetPaintController().CacheIsAllInvalid());
 }
 
 // Death tests don't work properly on Android.

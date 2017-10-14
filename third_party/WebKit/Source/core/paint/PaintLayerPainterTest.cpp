@@ -176,7 +176,7 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnInterestRectChange) {
       "  <div id='content3' style='position: absolute; width: 200px;"
       "      height: 200px; background-color: green'></div>"
       "</div>");
-  RootPaintController().InvalidateAll();
+  InvalidateAll(RootPaintController());
 
   LayoutObject& container1 =
       *GetDocument().getElementById("container1")->GetLayoutObject();
@@ -256,7 +256,7 @@ TEST_P(PaintLayerPainterTest,
       "<div id='target' style='position: relative; z-index: 1'>"
       "  <p></p><p></p><p></p><p></p>"
       "</div>");
-  RootPaintController().InvalidateAll();
+  InvalidateAll(RootPaintController());
 
   // |target| will be fully painted.
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();

@@ -315,7 +315,8 @@ bool GraphicsLayer::PaintWithoutCommit(
   }
 
   if (!GetPaintController().SubsequenceCachingIsDisabled() &&
-      !client_->NeedsRepaint(*this) && !GetPaintController().CacheIsEmpty() &&
+      !client_->NeedsRepaint(*this) &&
+      !GetPaintController().CacheIsAllInvalid() &&
       previous_interest_rect_ == *interest_rect) {
     return false;
   }

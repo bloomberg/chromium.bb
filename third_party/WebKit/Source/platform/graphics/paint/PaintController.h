@@ -65,7 +65,9 @@ class PLATFORM_EXPORT PaintController {
     DCHECK(new_display_item_list_.IsEmpty());
   }
 
+  // For SPv1 only.
   void InvalidateAll();
+  bool CacheIsAllInvalid() const;
 
   // These methods are called during painting.u
 
@@ -156,7 +158,6 @@ class PLATFORM_EXPORT PaintController {
   }
 
   bool ClientCacheIsValid(const DisplayItemClient&) const;
-  bool CacheIsEmpty() const { return current_paint_artifact_.IsEmpty(); }
 
   // For micro benchmarking of record time.
   bool DisplayItemConstructionIsDisabled() const {
@@ -233,6 +234,9 @@ class PLATFORM_EXPORT PaintController {
  private:
   friend class PaintControllerTestBase;
   friend class PaintControllerPaintTestBase;
+
+  void InvalidateAllForTesting() { InvalidateAllInternal(); }
+  void InvalidateAllInternal();
 
   bool LastDisplayItemIsNoopBegin() const;
 
