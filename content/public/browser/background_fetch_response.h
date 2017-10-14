@@ -31,8 +31,31 @@ struct CONTENT_EXPORT BackgroundFetchResponse {
 };
 
 struct CONTENT_EXPORT BackgroundFetchResult {
+  // Failures that happen after the download has already started and are
+  // reported via |BackgroundFetchDelegate::Client::OnDownloadComplete|.
+  enum class FailureReason {
+    // None of below failures occurred, although the fetch could still have
+    // failed with an error code such as 404.
+    NONE,
+
+    // Used when the download has been aborted after reaching a threshold where
+    // it was decided it is not worth attempting to start again. This could be
+    // either due to a specific number of failed retry attempts or a specific
+    // number of wasted bytes due to the download restarting.
+    NETWORK,
+
+    // Used when the download was not completed before the timeout.
+    TIMEDOUT,
+
+    // Used when the download was cancelled by the user.
+    CANCELLED,
+
+    // Used when the failure reason is unknown.
+    UNKNOWN,
+  };
+
   // Constructor for failed downloads.
-  explicit BackgroundFetchResult(base::Time response_time);
+  BackgroundFetchResult(base::Time response_time, FailureReason failure_reason);
 
   // Constructor for successful downloads.
   BackgroundFetchResult(base::Time response_time,
@@ -44,6 +67,7 @@ struct CONTENT_EXPORT BackgroundFetchResult {
   const base::Time response_time;
   const base::FilePath file_path;
   const uint64_t file_size = 0;
+  FailureReason failure_reason;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BackgroundFetchResult);

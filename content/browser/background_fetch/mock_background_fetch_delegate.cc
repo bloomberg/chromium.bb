@@ -55,7 +55,16 @@ MockBackgroundFetchDelegate::MockBackgroundFetchDelegate() {}
 
 MockBackgroundFetchDelegate::~MockBackgroundFetchDelegate() {}
 
+void MockBackgroundFetchDelegate::CreateDownloadJob(
+    const std::string& job_unique_id,
+    const std::string& title,
+    const url::Origin& origin,
+    int completed_parts,
+    int total_parts,
+    const std::vector<std::string>& current_guids) {}
+
 void MockBackgroundFetchDelegate::DownloadUrl(
+    const std::string& job_unique_id,
     const std::string& guid,
     const std::string& method,
     const GURL& url,
@@ -122,9 +131,11 @@ void MockBackgroundFetchDelegate::DownloadUrl(
   } else {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::BindOnce(
-            &BackgroundFetchDelegate::Client::OnDownloadComplete, client(),
-            guid, std::make_unique<BackgroundFetchResult>(base::Time::Now())));
+        base::BindOnce(&BackgroundFetchDelegate::Client::OnDownloadComplete,
+                       client(), guid,
+                       std::make_unique<BackgroundFetchResult>(
+                           base::Time::Now(),
+                           BackgroundFetchResult::FailureReason::UNKNOWN)));
   }
 
   seen_guids_.insert(guid);
