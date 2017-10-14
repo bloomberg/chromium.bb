@@ -45,6 +45,7 @@
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/ptr_util.h"
 #include "base/pickle.h"
@@ -108,9 +109,15 @@ namespace {
 
 bool g_should_download_favicons = false;
 
-std::string g_locale;
+std::string* g_locale() {
+  CR_DEFINE_STATIC_LOCAL(std::string, locale, ());
+  return &locale;
+}
 
-std::string g_locale_list;
+std::string* g_locale_list() {
+  CR_DEFINE_STATIC_LOCAL(std::string, locale_list, ());
+  return &locale_list;
+}
 
 const void* const kAwContentsUserDataKey = &kAwContentsUserDataKey;
 const void* const kComputedRendererPriorityUserDataKey =
@@ -170,18 +177,18 @@ void UpdateDefaultLocale(JNIEnv* env,
                          const JavaParamRef<jclass>&,
                          const JavaParamRef<jstring>& locale,
                          const JavaParamRef<jstring>& locale_list) {
-  g_locale = ConvertJavaStringToUTF8(env, locale);
-  g_locale_list = ConvertJavaStringToUTF8(env, locale_list);
+  *g_locale() = ConvertJavaStringToUTF8(env, locale);
+  *g_locale_list() = ConvertJavaStringToUTF8(env, locale_list);
 }
 
 // static
 std::string AwContents::GetLocale() {
-  return g_locale;
+  return *g_locale();
 }
 
 // static
 std::string AwContents::GetLocaleList() {
-  return g_locale_list;
+  return *g_locale_list();
 }
 
 // static
