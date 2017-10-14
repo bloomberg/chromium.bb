@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/command_buffer/service/shader_translator.h"
 #include "third_party/angle/include/GLSLANG/ShaderLang.h"
 
@@ -83,7 +84,7 @@ class GPU_EXPORT ShaderTranslatorCache
     ShaderTranslatorInitParams& operator=(const ShaderTranslatorInitParams&);
   };
 
-  const GpuPreferences& gpu_preferences_;
+  const GpuPreferences gpu_preferences_;
 
   typedef std::map<ShaderTranslatorInitParams, ShaderTranslator* > Cache;
   Cache cache_;
