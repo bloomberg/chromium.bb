@@ -266,6 +266,12 @@ FFMPEG_TEST_CASE(MP4_16,
                  DEMUXER_ERROR_COULD_NOT_OPEN);
 FFMPEG_TEST_CASE(MP4_17, "security/assert2.mov", PIPELINE_OK, PIPELINE_OK);
 
+// This test is a valid file, so should always pass correctly.
+FFMPEG_TEST_CASE(MP4_18,
+                 "security/negative_timestamp.mp4",
+                 PIPELINE_OK,
+                 PIPELINE_OK);
+
 // General OGV test cases.
 FFMPEG_TEST_CASE(OGV_1,
                  "security/out.163.ogv",
