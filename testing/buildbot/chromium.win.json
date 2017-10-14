@@ -493,21 +493,6 @@
     ],
     "isolated_scripts": [
       {
-        "isolate_name": "webkit_layout_tests_exparchive",
-        "merge": {
-          "args": [
-            "--verbose"
-          ],
-          "script": "//third_party/WebKit/Tools/Scripts/merge-layout-test-results"
-        },
-        "name": "webkit_layout_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "hard_timeout": 900,
-          "shards": 10
-        }
-      },
-      {
         "isolate_name": "metrics_python_tests",
         "name": "metrics_python_tests",
         "swarming": {
@@ -1695,21 +1680,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         }
-      },
-      {
-        "isolate_name": "webkit_layout_tests_exparchive",
-        "merge": {
-          "args": [
-            "--verbose"
-          ],
-          "script": "//third_party/WebKit/Tools/Scripts/merge-layout-test-results"
-        },
-        "name": "webkit_layout_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "hard_timeout": 900,
-          "shards": 10
-        }
       }
     ],
     "scripts": [
@@ -2166,21 +2136,6 @@
       }
     ],
     "isolated_scripts": [
-      {
-        "isolate_name": "webkit_layout_tests_exparchive",
-        "merge": {
-          "args": [
-            "--verbose"
-          ],
-          "script": "//third_party/WebKit/Tools/Scripts/merge-layout-test-results"
-        },
-        "name": "webkit_layout_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "hard_timeout": 900,
-          "shards": 20
-        }
-      },
       {
         "isolate_name": "telemetry_gpu_unittests",
         "name": "telemetry_gpu_unittests",
