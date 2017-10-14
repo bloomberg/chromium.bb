@@ -20,7 +20,6 @@
 #include "ash/system/palette/palette_tray_test_api.h"
 #include "ash/system/palette/palette_utils.h"
 #include "ash/system/palette/palette_welcome_bubble.h"
-#include "ash/system/palette/test_palette_delegate.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/status_area_widget_test_helper.h"
 #include "ash/test/ash_test_base.h"
@@ -33,6 +32,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/session_manager_types.h"
 #include "ui/events/base_event_utils.h"
+#include "ui/events/devices/stylus_state.h"
 #include "ui/events/event.h"
 #include "ui/events/test/device_data_manager_test_api.h"
 #include "ui/events/test/event_generator.h"
@@ -59,6 +59,14 @@ class PaletteTrayTest : public AshTestBase {
         ui::StylusState::REMOVED);
   }
 
+  // Fake a stylus insertion. Note: this will fail in mus or mash because
+  // DeviceDataManager is not created. See crbug.com/734812.
+  void InsertStylus() {
+    ui::test::DeviceDataManagerTestAPI devices_test_api;
+    devices_test_api.NotifyObserversStylusStateChanged(
+        ui::StylusState::INSERTED);
+  }
+
   // AshTestBase:
   void SetUp() override {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -71,21 +79,9 @@ class PaletteTrayTest : public AshTestBase {
     palette_tray_ =
         StatusAreaWidgetTestHelper::GetStatusAreaWidget()->palette_tray();
     test_api_ = std::make_unique<PaletteTrayTestApi>(palette_tray_);
-
-    // Set the test palette delegate here, since this requires an instance of
-    // shell to be available.
-    ShellTestApi().SetPaletteDelegate(std::make_unique<TestPaletteDelegate>());
-    // Initialize the palette tray again since this test requires information
-    // from the palette delegate. (It was initialized without the delegate in
-    // AshTestBase::SetUp()).
-    palette_tray_->Initialize();
   }
 
  protected:
-  TestPaletteDelegate* test_palette_delegate() {
-    return static_cast<TestPaletteDelegate*>(Shell::Get()->palette_delegate());
-  }
-
   PrefService* active_user_pref_service() {
     return Shell::Get()->session_controller()->GetActivePrefService();
   }
@@ -212,6 +208,23 @@ TEST_F(PaletteTrayTest, ModeToolDeactivatedAutomatically) {
 TEST_F(PaletteTrayTest, NoMetalayerToolViewCreated) {
   EXPECT_FALSE(
       test_api_->palette_tool_manager()->HasTool(PaletteToolId::METALAYER));
+}
+
+TEST_F(PaletteTrayTest, EnableStylusPref) {
+  local_state_pref_service()->SetBoolean(prefs::kHasSeenStylus, true);
+
+  // kEnableStylusTools is true by default
+  ASSERT_TRUE(
+      active_user_pref_service()->GetBoolean(prefs::kEnableStylusTools));
+  EXPECT_TRUE(palette_tray_->visible());
+
+  // Resetting the pref hides the palette tray.
+  active_user_pref_service()->SetBoolean(prefs::kEnableStylusTools, false);
+  EXPECT_FALSE(palette_tray_->visible());
+
+  // Setting the pref again shows the palette tray.
+  active_user_pref_service()->SetBoolean(prefs::kEnableStylusTools, true);
+  EXPECT_TRUE(palette_tray_->visible());
 }
 
 // Base class for tests that rely on voice interaction enabled.
@@ -566,7 +579,8 @@ TEST_F(PaletteTrayTestWithInternalStylus, ToolDeactivatesWhenOpeningBubble) {
 // Verify the palette welcome bubble is shown the first time the stylus is
 // removed.
 TEST_F(PaletteTrayTestWithInternalStylus, WelcomeBubbleShownOnEject) {
-  test_palette_delegate()->set_should_show_palette(true);
+  active_user_pref_service()->SetBoolean(prefs::kLaunchPaletteOnEjectEvent,
+                                         false);
   ASSERT_FALSE(active_user_pref_service()->GetBoolean(
       prefs::kShownPaletteWelcomeBubble));
   EXPECT_FALSE(test_api_->welcome_bubble()->BubbleShown());
@@ -578,7 +592,8 @@ TEST_F(PaletteTrayTestWithInternalStylus, WelcomeBubbleShownOnEject) {
 // Verify if the pref which tracks if the welcome bubble has been shown before
 // is true, the welcome bubble is not shown when the stylus is removed.
 TEST_F(PaletteTrayTestWithInternalStylus, WelcomeBubbleNotShownIfShownBefore) {
-  test_palette_delegate()->set_should_show_palette(true);
+  active_user_pref_service()->SetBoolean(prefs::kLaunchPaletteOnEjectEvent,
+                                         false);
   active_user_pref_service()->SetBoolean(prefs::kShownPaletteWelcomeBubble,
                                          true);
   EXPECT_FALSE(test_api_->welcome_bubble()->BubbleShown());
@@ -591,14 +606,58 @@ TEST_F(PaletteTrayTestWithInternalStylus, WelcomeBubbleNotShownIfShownBefore) {
 // true.
 TEST_F(PaletteTrayTestWithInternalStylus,
        WelcomeBubbleNotShownIfAutoOpenPaletteTrue) {
-  test_palette_delegate()->set_should_show_palette(true);
-  test_palette_delegate()->set_should_auto_open_palette(true);
+  ASSERT_TRUE(active_user_pref_service()->GetBoolean(
+      prefs::kLaunchPaletteOnEjectEvent));
   active_user_pref_service()->SetBoolean(prefs::kShownPaletteWelcomeBubble,
                                          false);
   EXPECT_FALSE(test_api_->welcome_bubble()->BubbleShown());
 
   EjectStylus();
   EXPECT_FALSE(test_api_->welcome_bubble()->BubbleShown());
+}
+
+// Verify that palette bubble is shown/hidden on stylus eject/insert iff the
+// auto open palette setting is true.
+TEST_F(PaletteTrayTestWithInternalStylus, PaletteBubbleShownOnEject) {
+  // kLaunchPaletteOnEjectEvent is true by default
+  ASSERT_TRUE(active_user_pref_service()->GetBoolean(
+      prefs::kLaunchPaletteOnEjectEvent));
+
+  // Removing the stylus shows the bubble.
+  EjectStylus();
+  EXPECT_TRUE(palette_tray_->GetBubbleView());
+
+  // Inserting the stylus hides the bubble.
+  InsertStylus();
+  EXPECT_FALSE(palette_tray_->GetBubbleView());
+
+  // Removing the stylus while kLaunchPaletteOnEjectEvent==false does nothing.
+  active_user_pref_service()->SetBoolean(prefs::kLaunchPaletteOnEjectEvent,
+                                         false);
+  EjectStylus();
+  EXPECT_FALSE(palette_tray_->GetBubbleView());
+  InsertStylus();
+
+  // Removing the stylus while kEnableStylusTools==false does nothing.
+  active_user_pref_service()->SetBoolean(prefs::kLaunchPaletteOnEjectEvent,
+                                         true);
+  active_user_pref_service()->SetBoolean(prefs::kEnableStylusTools, false);
+  EjectStylus();
+  EXPECT_FALSE(palette_tray_->GetBubbleView());
+  InsertStylus();
+
+  // Set both prefs to true, removing should work again.
+  active_user_pref_service()->SetBoolean(prefs::kEnableStylusTools, true);
+  EjectStylus();
+  EXPECT_TRUE(palette_tray_->GetBubbleView());
+
+  // Inserting the stylus should disable a currently selected tool.
+  test_api_->palette_tool_manager()->ActivateTool(PaletteToolId::LASER_POINTER);
+  EXPECT_TRUE(test_api_->palette_tool_manager()->IsToolActive(
+      PaletteToolId::LASER_POINTER));
+  InsertStylus();
+  EXPECT_FALSE(test_api_->palette_tool_manager()->IsToolActive(
+      PaletteToolId::LASER_POINTER));
 }
 
 }  // namespace ash

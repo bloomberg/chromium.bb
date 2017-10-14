@@ -350,6 +350,7 @@ void Shell::RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
   LockScreenController::RegisterProfilePrefs(registry, for_test);
   LogoutButtonTray::RegisterProfilePrefs(registry);
   NightLightController::RegisterProfilePrefs(registry);
+  PaletteTray::RegisterProfilePrefs(registry);
   PaletteWelcomeBubble::RegisterProfilePrefs(registry);
   ShelfController::RegisterProfilePrefs(registry);
   TouchDevicesController::RegisterProfilePrefs(registry);

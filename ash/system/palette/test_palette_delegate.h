@@ -16,23 +16,7 @@ class TestPaletteDelegate : public PaletteDelegate {
   TestPaletteDelegate();
   ~TestPaletteDelegate() override;
 
-  void set_should_auto_open_palette(bool should_auto_open_palette) {
-    should_auto_open_palette_ = should_auto_open_palette;
-  }
-
-  void set_should_show_palette(bool should_show_palette) {
-    should_show_palette_ = should_show_palette;
-  }
-
  protected:
-  // PaletteDelegate:
-  std::unique_ptr<EnableListenerSubscription> AddPaletteEnableListener(
-      const EnableListener& on_state_changed) override;
-  bool ShouldAutoOpenPalette() override;
-  bool ShouldShowPalette() override;
-
-  bool should_auto_open_palette_ = false;
-  bool should_show_palette_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestPaletteDelegate);
 };

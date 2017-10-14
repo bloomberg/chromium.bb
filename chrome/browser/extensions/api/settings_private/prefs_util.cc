@@ -337,9 +337,9 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
 
   // Ash settings.
-  (*s_whitelist)[::prefs::kEnableStylusTools] =
+  (*s_whitelist)[ash::prefs::kEnableStylusTools] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_whitelist)[::prefs::kLaunchPaletteOnEjectEvent] =
+  (*s_whitelist)[ash::prefs::kLaunchPaletteOnEjectEvent] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[ash::prefs::kNightLightEnabled] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
