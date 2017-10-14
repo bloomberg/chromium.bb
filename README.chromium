@@ -85,7 +85,7 @@ de_DE_neu:  Added words
         Removed "Information" from dic_delta in favor of "Information/P" to fix
             the spelling of "Informationen"
 
-en_AU:  Is a copy of en_GB.
+en_AU:  Added the same words as en_CA.
 
 en_CA:  Added words
 
@@ -209,3 +209,8 @@ updated en-US, en-CA and en-GB dictionaries from SCOWL. Added several words to
 en*.dic_delta files. Because both aff and dic files changed, we incremented
 major version to 7-0. That's 1 higher than the highest major version of any
 dictionary.
+
+On Oct 13, 2017, we updated the en dictionaries to the latest upstream version.
+Since SCOWL now has an AU dictionary, we changed to using that to generate our
+AU dictionary instead of copying the CA version. Because dic files changed, we
+incremented the major version to 8-0.
