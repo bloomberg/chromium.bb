@@ -1447,9 +1447,6 @@ crbug.com/591500 [ Win10 ] printing/fixed-positioned-headers-and-footers-clipped
 crbug.com/591500 [ Win10 ] virtual/threaded/printing/ellipsis-printing-style.html [ Skip ]
 crbug.com/591500 [ Win10 ] printing/ellipsis-printing-style.html [ Skip ]
 
-crbug.com/750287 http/tests/devtools/sources/debugger/live-edit.html [ NeedsManualRebaseline ]
-crbug.com/667560 virtual/mojo-loading/http/tests/devtools/sources/debugger/live-edit.html [ NeedsManualRebaseline ]
-
 crbug.com/618082 [ Win10 ] printing/thead-repeats-at-top-of-each-page.html [ Failure ]
 crbug.com/618082 [ Win10 ] virtual/threaded/printing/thead-repeats-at-top-of-each-page.html [ Failure ]
 
