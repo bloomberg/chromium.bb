@@ -33,15 +33,6 @@ class PaletteDelegateImpl : public PaletteDelegate {
   PaletteDelegateImpl() {}
   ~PaletteDelegateImpl() override {}
 
-  // PaletteDelegate:
-  std::unique_ptr<EnableListenerSubscription> AddPaletteEnableListener(
-      const EnableListener& on_state_changed) override {
-    on_state_changed.Run(false);
-    return nullptr;
-  }
-  bool ShouldAutoOpenPalette() override { return false; }
-  bool ShouldShowPalette() override { return false; }
-
  private:
   DISALLOW_COPY_AND_ASSIGN(PaletteDelegateImpl);
 };

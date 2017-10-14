@@ -591,14 +591,6 @@ const char kSecondaryDisplays[] = "settings.display.secondary_displays";
 // display orientation, for the internal display.
 const char kDisplayRotationLock[] = "settings.display.rotation_lock";
 
-// A boolean pref that specifies if the stylus tools should be enabled/disabled.
-const char kEnableStylusTools[] = "settings.enable_stylus_tools";
-
-// A boolean pref that specifies if the ash palette should be launched after an
-// eject input event has been received.
-const char kLaunchPaletteOnEjectEvent[] =
-    "settings.launch_palette_on_eject_event";
-
 // A string pref that contains either a Chrome app ID (see
 // extensions::ExtensionId) or an Android package name (using Java package
 // naming conventions) of the preferred note-taking app. An empty value

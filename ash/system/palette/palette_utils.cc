@@ -4,7 +4,6 @@
 
 #include "ash/system/palette/palette_utils.h"
 
-#include "ash/palette_delegate.h"
 #include "ash/public/cpp/stylus_utils.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/shelf.h"
@@ -16,14 +15,6 @@
 
 namespace ash {
 namespace palette_utils {
-
-bool ShouldShowPalette() {
-  return stylus_utils::HasStylusInput() &&
-         (display::Display::HasInternalDisplay() ||
-          stylus_utils::IsPaletteEnabledOnEveryDisplay()) &&
-         Shell::Get()->palette_delegate() &&
-         Shell::Get()->palette_delegate()->ShouldShowPalette();
-}
 
 bool PaletteContainsPointInScreen(const gfx::Point& point) {
   for (aura::Window* window : Shell::GetAllRootWindows()) {
