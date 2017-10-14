@@ -657,7 +657,7 @@ TEST_F(PipelineIntegrationTest, PlaybackTooManyChannels) {
 }
 
 TEST_F(PipelineIntegrationTest, PlaybackWithAudioTrackDisabledThenEnabled) {
-  ASSERT_EQ(PIPELINE_OK, Start("bear-320x240.webm", kHashed));
+  ASSERT_EQ(PIPELINE_OK, Start("bear-320x240.webm", kHashed | kNoClockless));
 
   // Disable audio.
   std::vector<MediaTrack::Id> empty;
@@ -691,7 +691,7 @@ TEST_F(PipelineIntegrationTest, PlaybackWithAudioTrackDisabledThenEnabled) {
 }
 
 TEST_F(PipelineIntegrationTest, PlaybackWithVideoTrackDisabledThenEnabled) {
-  ASSERT_EQ(PIPELINE_OK, Start("bear-320x240.webm", kHashed));
+  ASSERT_EQ(PIPELINE_OK, Start("bear-320x240.webm", kHashed | kNoClockless));
 
   // Disable video.
   pipeline_->OnSelectedVideoTrackChanged(base::nullopt);

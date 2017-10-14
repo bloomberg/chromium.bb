@@ -108,6 +108,12 @@ class MEDIA_EXPORT DecoderStream {
 
   base::TimeDelta AverageDuration() const;
 
+  // Tells decoders that we won't need frames before |start_timestamp| so they
+  // can be dropped post-decode. Causes outgoing DecoderBuffer packets to be
+  // marked for discard so that decoders may apply further optimizations such as
+  // reduced resolution decoding or filter skipping.
+  void DropFramesBefore(base::TimeDelta start_timestamp);
+
   // Allows callers to register for notification of config changes; this is
   // called immediately after receiving the 'kConfigChanged' status from the
   // DemuxerStream, before any action is taken to handle the config change.
@@ -262,6 +268,8 @@ class MEDIA_EXPORT DecoderStream {
   // Used to track read requests; not rolled into |state_| since that is
   // overwritten in many cases.
   bool pending_demuxer_read_;
+
+  base::TimeDelta start_timestamp_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<DecoderStream<StreamType>> weak_factory_;

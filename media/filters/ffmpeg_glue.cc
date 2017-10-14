@@ -136,17 +136,10 @@ bool FFmpegGlue::OpenContext() {
   // destruction path to avoid double frees.
   open_called_ = true;
 
-  // Pass "advanced_editlist=0" in the demuxer options.
-  // TODO(jrummell): Remove this when we support post-decode discard.
-  // https://crbug.com/723537.
-  AVDictionary* dict = nullptr;
-  av_dict_set(&dict, "advanced_editlist", "0", 0);
-
   // By passing nullptr for the filename (second parameter) we are telling
   // FFmpeg to use the AVIO context we setup from the AVFormatContext structure.
   const int ret =
-      avformat_open_input(&format_context_, nullptr, nullptr, &dict);
-  av_dict_free(&dict);
+      avformat_open_input(&format_context_, nullptr, nullptr, nullptr);
 
   // If FFmpeg can't identify the file, read the first 8k and attempt to guess
   // at the container type ourselves. This way we can track emergent formats.
