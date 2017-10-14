@@ -1034,6 +1034,12 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
                       GLsizei height,
                       GLsizei depth);
 
+  void DoTexStorage2DImageCHROMIUM(GLenum target,
+                                   GLenum internal_format,
+                                   GLenum buffer_usage,
+                                   GLsizei width,
+                                   GLsizei height);
+
   void DoProduceTextureCHROMIUM(GLenum target, const volatile GLbyte* key);
   void DoProduceTextureDirectCHROMIUM(GLuint texture,
                                       GLenum target,
@@ -2878,7 +2884,7 @@ bool BackTexture::AllocateNativeGpuMemoryBuffer(const gfx::Size& size,
               gfx::BufferFormat::RGBX_8888
 #endif
               : gfx::BufferFormat::RGBA_8888,
-          format);
+          gfx::BufferUsage::SCANOUT, format);
   if (!image || !image->BindTexImage(Target()))
     return false;
 
@@ -3750,8 +3756,8 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
   Capabilities caps;
   const gl::GLVersionInfo& version_info = gl_version_info();
   caps.VisitPrecisions([&version_info](
-      GLenum shader, GLenum type,
-      Capabilities::ShaderPrecision* shader_precision) {
+                           GLenum shader, GLenum type,
+                           Capabilities::ShaderPrecision* shader_precision) {
     GLint range[2] = {0, 0};
     GLint precision = 0;
     QueryShaderPrecisionFormat(version_info, shader, type, range, &precision);
@@ -3937,6 +3943,8 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
     caps.disable_2d_canvas_copy_on_write = true;
   }
   caps.texture_npot = feature_info_->feature_flags().npot_ok;
+  caps.texture_storage_image =
+      feature_info_->feature_flags().chromium_texture_storage_image;
 
   return caps;
 }
@@ -17808,6 +17816,91 @@ void GLES2DecoderImpl::DoTexStorage3D(GLenum target,
       "widthXheight", width * height, "depth", depth);
   TexStorageImpl(target, levels, internal_format, width, height, depth,
                  ContextState::k3D, "glTexStorage3D");
+}
+
+void GLES2DecoderImpl::DoTexStorage2DImageCHROMIUM(GLenum target,
+                                                   GLenum internal_format,
+                                                   GLenum buffer_usage,
+                                                   GLsizei width,
+                                                   GLsizei height) {
+  TRACE_EVENT2("gpu", "GLES2DecoderImpl::DoTexStorage2DImageCHROMIUM", "width",
+               width, "height", height);
+
+  ScopedGLErrorSuppressor suppressor(
+      "GLES2CmdDecoder::DoTexStorage2DImageCHROMIUM", state_.GetErrorState());
+
+  if (!texture_manager()->ValidForTarget(target, 0, width, height, 1)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glTexStorage2DImageCHROMIUM",
+                       "dimensions out of range");
+    return;
+  }
+
+  TextureRef* texture_ref =
+      texture_manager()->GetTextureInfoForTarget(&state_, target);
+  if (!texture_ref) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glTexStorage2DImageCHROMIUM",
+                       "unknown texture for target");
+    return;
+  }
+
+  Texture* texture = texture_ref->texture();
+  if (texture->IsImmutable()) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glTexStorage2DImageCHROMIUM",
+                       "texture is immutable");
+    return;
+  }
+
+  gfx::BufferFormat buffer_format;
+  GLint untyped_format;
+  switch (internal_format) {
+    case GL_RGBA8_OES:
+      buffer_format = gfx::BufferFormat::RGBA_8888;
+      untyped_format = GL_RGBA;
+      break;
+    case GL_BGRA8_EXT:
+      buffer_format = gfx::BufferFormat::BGRA_8888;
+      untyped_format = GL_BGRA_EXT;
+      break;
+    case GL_RGBA16F_EXT:
+      buffer_format = gfx::BufferFormat::RGBA_F16;
+      untyped_format = GL_RGBA;
+      break;
+    case GL_R8_EXT:
+      buffer_format = gfx::BufferFormat::R_8;
+      untyped_format = GL_RED_EXT;
+      break;
+    default:
+      LOCAL_SET_GL_ERROR(GL_INVALID_ENUM, "glTexStorage2DImageCHROMIUM",
+                         "Invalid buffer format");
+      return;
+  }
+
+  DCHECK_EQ(buffer_usage, static_cast<GLenum>(GL_SCANOUT_CHROMIUM));
+
+  if (!GetContextGroup()->image_factory()) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glTexStorage2DImageCHROMIUM",
+                       "Cannot create GL image");
+    return;
+  }
+
+  scoped_refptr<gl::GLImage> image =
+      GetContextGroup()->image_factory()->CreateAnonymousImage(
+          gfx::Size(width, height), buffer_format, gfx::BufferUsage::SCANOUT,
+          untyped_format);
+  if (!image || !image->BindTexImage(target)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glTexStorage2DImageCHROMIUM",
+                       "Failed to create or bind GL Image");
+    return;
+  }
+
+  texture_manager()->SetLevelInfo(
+      texture_ref, target, 0, image->GetInternalFormat(), width, height, 1, 0,
+      image->GetInternalFormat(), GL_UNSIGNED_BYTE, gfx::Rect(width, height));
+  texture_manager()->SetLevelImage(texture_ref, target, 0, image.get(),
+                                   Texture::BOUND);
+
+  if (texture->IsAttachedToFramebuffer())
+    framebuffer_state_.clear_state_dirty = true;
 }
 
 void GLES2DecoderImpl::DoProduceTextureCHROMIUM(GLenum target,

@@ -402,5 +402,6 @@
 #define glBeginRasterCHROMIUM GLES2_GET_FUN(BeginRasterCHROMIUM)
 #define glRasterCHROMIUM GLES2_GET_FUN(RasterCHROMIUM)
 #define glEndRasterCHROMIUM GLES2_GET_FUN(EndRasterCHROMIUM)
+#define glTexStorage2DImageCHROMIUM GLES2_GET_FUN(TexStorage2DImageCHROMIUM)
 
 #endif  // GPU_GLES2_GL2CHROMIUM_AUTOGEN_H_

@@ -176,6 +176,9 @@
 #define GL_COLOR_SPACE_SRGB_CHROMIUM 0x8AF3
 #define GL_COLOR_SPACE_DISPLAY_P3_CHROMIUM 0x8AF4
 
+// GL_CHROMIUM_texture_storage_image
+#define GL_SCANOUT_CHROMIUM 0x6000
+
 // GL_OES_texure_3D
 #define GL_SAMPLER_3D_OES                                0x8B5F
 

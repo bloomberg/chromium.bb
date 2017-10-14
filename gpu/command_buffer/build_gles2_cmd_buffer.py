@@ -2293,6 +2293,16 @@ _NAMED_TYPE_INFO = {
       'GL_SYNC_FENCE',
     ],
   },
+  'ClientBufferUsage': {
+    'type': 'GLenum',
+    'is_complete': True,
+    'valid': [
+      'GL_SCANOUT_CHROMIUM',
+    ],
+    'invalid': [
+      'GL_NONE',
+    ],
+  }
 }
 
 _ETC_COMPRESSED_TEXTURE_FORMATS = [
@@ -4616,6 +4626,12 @@ _FUNCTION_INFO = {
     'unit_test': False,
     'extension': 'CHROMIUM_raster_transport',
     'extension_flag': 'chromium_raster_transport',
+  },
+  'TexStorage2DImageCHROMIUM': {
+    'decoder_func': 'DoTexStorage2DImageCHROMIUM',
+    'unit_test': False,
+    'extension': 'CHROMIUM_texture_storage_image',
+    'extension_flag': 'chromium_texture_storage_image',
   },
 }
 
@@ -10120,6 +10136,7 @@ class GLGenerator(object):
       # Forward declaration of a few enums used in constant argument
       # to avoid including GL header files.
       enum_defines = {
+          'GL_SCANOUT_CHROMIUM': '0x6000',
           'GL_SYNC_GPU_COMMANDS_COMPLETE': '0x9117',
           'GL_SYNC_FLUSH_COMMANDS_BIT': '0x00000001',
         }

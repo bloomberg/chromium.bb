@@ -1220,4 +1220,9 @@ void GLES2InterfaceStub::RasterCHROMIUM(const cc::DisplayItemList* /* list */,
                                         GLint /* w */,
                                         GLint /* h */) {}
 void GLES2InterfaceStub::EndRasterCHROMIUM() {}
+void GLES2InterfaceStub::TexStorage2DImageCHROMIUM(GLenum /* target */,
+                                                   GLenum /* internalFormat */,
+                                                   GLenum /* bufferUsage */,
+                                                   GLsizei /* width */,
+                                                   GLsizei /* height */) {}
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_INTERFACE_STUB_IMPL_AUTOGEN_H_

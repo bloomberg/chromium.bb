@@ -57,6 +57,7 @@ class GPU_EXPORT GpuMemoryBufferFactoryIOSurface
   scoped_refptr<gl::GLImage> CreateAnonymousImage(
       const gfx::Size& size,
       gfx::BufferFormat format,
+      gfx::BufferUsage usage,
       unsigned internalformat) override;
   unsigned RequiredTextureType() override;
   bool SupportsFormatRGB() override;
@@ -69,6 +70,9 @@ class GPU_EXPORT GpuMemoryBufferFactoryIOSurface
   // used with any GPU process by passing a mach_port to CreateImageCHROMIUM.
   IOSurfaceMap io_surfaces_;
   base::Lock io_surfaces_lock_;
+
+  // Assign unique ids to service side (anonymous) images for memory dumps.
+  int next_service_gmb_id_ = 1;
 
   DISALLOW_COPY_AND_ASSIGN(GpuMemoryBufferFactoryIOSurface);
 };

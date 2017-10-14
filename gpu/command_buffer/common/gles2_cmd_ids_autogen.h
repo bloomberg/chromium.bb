@@ -341,7 +341,8 @@
   OP(LockDiscardableTextureCHROMIUM)                       /* 582 */ \
   OP(BeginRasterCHROMIUM)                                  /* 583 */ \
   OP(RasterCHROMIUM)                                       /* 584 */ \
-  OP(EndRasterCHROMIUM)                                    /* 585 */
+  OP(EndRasterCHROMIUM)                                    /* 585 */ \
+  OP(TexStorage2DImageCHROMIUM)                            /* 586 */
 
 enum CommandId {
   kOneBeforeStartPoint =

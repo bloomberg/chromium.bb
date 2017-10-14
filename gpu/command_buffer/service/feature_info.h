@@ -122,6 +122,7 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool oes_rgb8_rgba8 = false;
     bool angle_robust_resource_initialization = false;
     bool nv_fence = false;
+    bool chromium_texture_storage_image = false;
   };
 
   FeatureInfo();
@@ -205,7 +206,7 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
 
   DisallowedFeatures disallowed_features_;
 
-  ContextType context_type_;
+  ContextType context_type_ = CONTEXT_TYPE_OPENGLES2;
 
   // The extensions string returned by glGetString(GL_EXTENSIONS);
   std::string extensions_;
@@ -216,9 +217,9 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
   // Flags for Workarounds.
   const GpuDriverBugWorkarounds workarounds_;
 
-  bool ext_color_buffer_float_available_;
-  bool oes_texture_float_linear_available_;
-  bool oes_texture_half_float_linear_available_;
+  bool ext_color_buffer_float_available_ = false;
+  bool oes_texture_float_linear_available_ = false;
+  bool oes_texture_half_float_linear_available_ = false;
 
   bool disable_shader_translator_;
   std::unique_ptr<gl::GLVersionInfo> gl_version_info_;
