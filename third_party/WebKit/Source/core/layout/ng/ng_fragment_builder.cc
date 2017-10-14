@@ -8,6 +8,7 @@
 #include "core/layout/ng/ng_block_node.h"
 #include "core/layout/ng/ng_break_token.h"
 #include "core/layout/ng/ng_exclusion_space.h"
+#include "core/layout/ng/ng_fragment.h"
 #include "core/layout/ng/ng_layout_result.h"
 #include "core/layout/ng/ng_physical_box_fragment.h"
 
@@ -47,6 +48,27 @@ NGFragmentBuilder& NGFragmentBuilder::SetIntrinsicBlockSize(
     LayoutUnit intrinsic_block_size) {
   intrinsic_block_size_ = intrinsic_block_size;
   return *this;
+}
+
+// TODO(ikilpatrick): Remove this once line-by-line refactoring is complete.
+// This is temporary code, which is duplicated from NGBlockLayoutAlgorithm.
+NGFragmentBuilder& NGFragmentBuilder::AddChild(
+    RefPtr<NGLayoutResult> child,
+    const NGBfcOffset& child_bfc_offset,
+    const NGBfcOffset& parent_bfc_offset) {
+  NGFragment child_fragment(WritingMode(), *child->PhysicalFragment());
+
+  LayoutUnit relative_line_offset =
+      child_bfc_offset.line_offset - parent_bfc_offset.line_offset;
+
+  LayoutUnit inline_offset = Direction() == TextDirection::kLtr
+                                 ? relative_line_offset
+                                 : size_.inline_size - relative_line_offset -
+                                       child_fragment.InlineSize();
+
+  return AddChild(child, NGLogicalOffset{inline_offset,
+                                         child_bfc_offset.block_offset -
+                                             parent_bfc_offset.block_offset});
 }
 
 NGFragmentBuilder& NGFragmentBuilder::AddChild(

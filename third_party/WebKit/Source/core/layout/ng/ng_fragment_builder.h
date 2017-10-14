@@ -48,6 +48,9 @@ class CORE_EXPORT NGFragmentBuilder final : public NGBaseFragmentBuilder {
 
   NGFragmentBuilder& SetIntrinsicBlockSize(LayoutUnit);
 
+  NGFragmentBuilder& AddChild(RefPtr<NGLayoutResult>,
+                              const NGBfcOffset& child_bfc_offset,
+                              const NGBfcOffset& parent_bfc_offset);
   NGFragmentBuilder& AddChild(RefPtr<NGLayoutResult>, const NGLogicalOffset&);
   NGFragmentBuilder& AddChild(RefPtr<NGPhysicalFragment>,
                               const NGLogicalOffset&);

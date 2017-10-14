@@ -102,20 +102,22 @@ void PositionPendingFloats(
     NGExclusionSpace* exclusion_space) {
   DCHECK(container_builder->BfcOffset() || space.FloatsBfcOffset())
       << "Parent BFC offset should be known here";
-  LayoutUnit from_block_offset =
-      container_builder->BfcOffset()
-          ? container_builder->BfcOffset().value().block_offset
-          : space.FloatsBfcOffset().value().block_offset;
 
-  const auto positioned_floats = PositionFloats(
-      origin_block_offset, from_block_offset, *unpositioned_floats, space,
-      container_builder->Size().inline_size, exclusion_space);
+  NGBfcOffset bfc_offset = container_builder->BfcOffset()
+                               ? container_builder->BfcOffset().value()
+                               : space.FloatsBfcOffset().value();
+
+  LayoutUnit from_block_offset = bfc_offset.block_offset;
+
+  const auto positioned_floats =
+      PositionFloats(origin_block_offset, from_block_offset,
+                     *unpositioned_floats, space, exclusion_space);
 
   // TODO(ikilpatrick): Add DCHECK that any positioned floats are children.
 
   for (const auto& positioned_float : positioned_floats) {
     container_builder->AddChild(positioned_float.layout_result,
-                                positioned_float.logical_offset);
+                                positioned_float.bfc_offset, bfc_offset);
     container_builder->PropagateBreak(positioned_float.layout_result);
   }
 
@@ -643,8 +645,7 @@ NGBlockLayoutAlgorithm::LayoutNewFormattingContext(
   // If we already know our BFC offset, this won't have any affect.
   NGExclusionSpace tmp_exclusion_space(*exclusion_space_);
   PositionFloats(child_origin_block_offset, child_origin_block_offset,
-                 unpositioned_floats_, ConstraintSpace(),
-                 container_builder_.Size().inline_size, &tmp_exclusion_space);
+                 unpositioned_floats_, ConstraintSpace(), &tmp_exclusion_space);
 
   // The origin offset is where we should start looking for layout
   // opportunities. It needs to be adjusted by the child's clearance, in
