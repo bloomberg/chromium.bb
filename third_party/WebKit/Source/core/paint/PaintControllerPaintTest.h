@@ -94,6 +94,10 @@ class PaintControllerPaintTestBase : public RenderingTest {
         ->Selection()
         .CaretDisplayItemClientForTesting();
   }
+
+  void InvalidateAll(PaintController& paint_controller) {
+    paint_controller.InvalidateAllForTesting();
+  }
 };
 
 class PaintControllerPaintTest : public PaintTestConfigurations,

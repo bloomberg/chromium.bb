@@ -125,7 +125,7 @@ static LayoutRect InvalidatePaintOfScrollbarIfNeeded(
     // invalidated.
     needs_paint_invalidation = false;
     DCHECK(!graphics_layer->DrawsContent() ||
-           graphics_layer->GetPaintController().CacheIsEmpty());
+           graphics_layer->GetPaintController().GetPaintArtifact().IsEmpty());
   }
 
   // Invalidate the box's display item client if the box's padding box size is
