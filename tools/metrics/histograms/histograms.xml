@@ -2185,6 +2185,25 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Arc.ContainerLifetimeEvent" enum="ArcContainerLifetimeEvent">
+  <owner>elijahtaylor@google.com</owner>
+  <owner>yusukes@google.com</owner>
+  <summary>
+    The number of ARC container lifetime events. One START event and up to one
+    non-START event are recorded per ARC session, which ends when the user opts
+    out from ARC or signs out.
+  </summary>
+</histogram>
+
+<histogram name="Arc.ContainerRestartAfterCrashCount">
+  <owner>elijahtaylor@google.com</owner>
+  <owner>yusukes@google.com</owner>
+  <summary>
+    The number of times ARC container crashes and automatically restarts in one
+    ARC session, which ends when the user opts out from ARC or signs out.
+  </summary>
+</histogram>
+
 <histogram name="Arc.CumulativeUseTime" units="seconds">
   <owner>elijahtaylor@google.com</owner>
   <owner>mitsuji@google.com</owner>
