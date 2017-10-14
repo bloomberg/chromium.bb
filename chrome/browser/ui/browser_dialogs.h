@@ -19,6 +19,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/arc/intent_helper/arc_navigation_throttle.h"
+#include "url/gurl.h"
 #endif  // OS_CHROMEOS
 
 class Browser;
@@ -60,6 +61,11 @@ class TaskManagerTableModel;
 namespace ui {
 class WebDialogDelegate;
 }
+
+namespace views {
+class View;
+class Widget;
+}  // namespace views
 
 namespace chrome {
 
@@ -287,11 +293,17 @@ using IntentPickerResponse =
     base::Callback<void(const std::string&,
                         arc::ArcNavigationThrottle::CloseReason)>;
 
-// Return a pointer to the IntentPickerBubbleView::ShowBubble method.
+// TODO(djacobo): Decide whether or not refactor as base::RepeatableCallback.
+// Return a pointer to the IntentPickerBubbleView::ShowBubble method, which in
+// turn receives a View to be used as an anchor, the WebContents associated
+// with the current tab, a list of app candidates to be displayed to the user
+// and a callback to report back the user's response respectively. The newly
+// created widget is returned.
 using BubbleShowPtr =
-    void (*)(content::WebContents*,
-             const std::vector<arc::ArcNavigationThrottle::AppInfo>&,
-             const IntentPickerResponse&);
+    views::Widget* (*)(views::View*,
+                       content::WebContents*,
+                       const std::vector<arc::ArcNavigationThrottle::AppInfo>&,
+                       const IntentPickerResponse&);
 
 BubbleShowPtr ShowIntentPickerBubble();
 

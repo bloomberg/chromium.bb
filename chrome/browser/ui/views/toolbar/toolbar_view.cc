@@ -73,7 +73,9 @@
 #include "chrome/browser/ui/views/critical_notification_bubble_view.h"
 #endif
 
-#if !defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/views/location_bar/intent_picker_view.h"
+#else
 #include "chrome/browser/signin/signin_global_error_factory.h"
 #endif
 
@@ -260,6 +262,25 @@ void ToolbarView::SetPaneFocusAndFocusAppMenu() {
 bool ToolbarView::IsAppMenuFocused() {
   return app_menu_button_ && app_menu_button_->HasFocus();
 }
+
+#if defined(OS_CHROMEOS)
+void ToolbarView::ShowIntentPickerBubble(
+    const std::vector<IntentPickerBubbleView::AppInfo>& app_info,
+    IntentPickerResponse callback) {
+  IntentPickerView* intent_picker_view = location_bar()->intent_picker_view();
+  if (intent_picker_view) {
+    if (!intent_picker_view->visible()) {
+      intent_picker_view->SetVisible(true);
+      location_bar()->Layout();
+    }
+
+    views::Widget* bubble_widget = IntentPickerBubbleView::ShowBubble(
+        intent_picker_view, GetWebContents(), app_info, callback);
+    if (bubble_widget && intent_picker_view)
+      bubble_widget->AddObserver(intent_picker_view);
+  }
+}
+#endif  // defined(OS_CHROMEOS)
 
 void ToolbarView::ShowBookmarkBubble(
     const GURL& url,

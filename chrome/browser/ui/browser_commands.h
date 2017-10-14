@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_BROWSER_COMMANDS_H_
 
 #include <string>
+#include <vector>
 
 #include "build/build_config.h"
 #include "chrome/browser/devtools/devtools_toggle_action.h"
@@ -14,6 +15,11 @@
 #include "content/public/common/page_zoom.h"
 #include "printing/features/features.h"
 #include "ui/base/window_open_disposition.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/arc/intent_helper/arc_navigation_throttle.h"
+#include "chrome/browser/ui/browser_dialogs.h"
+#endif
 
 class Browser;
 class CommandObserver;
@@ -144,6 +150,13 @@ void ToggleRequestTabletSite(Browser* browser);
 void ToggleFullscreenMode(Browser* browser);
 void ClearCache(Browser* browser);
 bool IsDebuggerAttachedToCurrentTab(Browser* browser);
+#if defined(OS_CHROMEOS)
+void QueryAndDisplayArcApps(
+    const Browser* browser,
+    const std::vector<arc::ArcNavigationThrottle::AppInfo>& app_info,
+    IntentPickerResponse callback);
+void SetIntentPickerViewVisibility(Browser* browser, bool visible);
+#endif  // defined(OS_CHROMEOS)
 
 // Opens a view-source tab for a given web contents.
 void ViewSource(Browser* browser, content::WebContents* tab);

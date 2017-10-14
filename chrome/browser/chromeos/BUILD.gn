@@ -384,6 +384,8 @@ source_set("chromeos") {
     "arc/intent_helper/arc_navigation_throttle.h",
     "arc/intent_helper/arc_settings_service.cc",
     "arc/intent_helper/arc_settings_service.h",
+    "arc/intent_helper/intent_picker_controller.cc",
+    "arc/intent_helper/intent_picker_controller.h",
     "arc/intent_helper/open_with_menu.cc",
     "arc/intent_helper/open_with_menu.h",
     "arc/kiosk/arc_kiosk_bridge.cc",

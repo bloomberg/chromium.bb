@@ -199,28 +199,30 @@ TEST(ArcNavigationThrottleTest, TestGetDestinationPlatform) {
 
   // Under any other CloseReason, stay in Chrome only if the package is Chrome.
   // Otherwise redirect to ARC.
+  EXPECT_EQ(ArcNavigationThrottle::Platform::CHROME,
+            ArcNavigationThrottle::GetDestinationPlatform(
+                chrome_app,
+                ArcNavigationThrottle::CloseReason::OBSOLETE_ALWAYS_PRESSED));
   EXPECT_EQ(
       ArcNavigationThrottle::Platform::CHROME,
       ArcNavigationThrottle::GetDestinationPlatform(
-          chrome_app, ArcNavigationThrottle::CloseReason::ALWAYS_PRESSED));
-  EXPECT_EQ(
-      ArcNavigationThrottle::Platform::CHROME,
-      ArcNavigationThrottle::GetDestinationPlatform(
-          chrome_app, ArcNavigationThrottle::CloseReason::JUST_ONCE_PRESSED));
+          chrome_app,
+          ArcNavigationThrottle::CloseReason::OBSOLETE_JUST_ONCE_PRESSED));
   EXPECT_EQ(ArcNavigationThrottle::Platform::CHROME,
             ArcNavigationThrottle::GetDestinationPlatform(
                 chrome_app,
                 ArcNavigationThrottle::CloseReason::PREFERRED_ACTIVITY_FOUND));
 
   // Go to ARC on any other case.
-  EXPECT_EQ(
-      ArcNavigationThrottle::Platform::ARC,
-      ArcNavigationThrottle::GetDestinationPlatform(
-          non_chrome_app, ArcNavigationThrottle::CloseReason::ALWAYS_PRESSED));
   EXPECT_EQ(ArcNavigationThrottle::Platform::ARC,
             ArcNavigationThrottle::GetDestinationPlatform(
                 non_chrome_app,
-                ArcNavigationThrottle::CloseReason::JUST_ONCE_PRESSED));
+                ArcNavigationThrottle::CloseReason::OBSOLETE_ALWAYS_PRESSED));
+  EXPECT_EQ(
+      ArcNavigationThrottle::Platform::ARC,
+      ArcNavigationThrottle::GetDestinationPlatform(
+          non_chrome_app,
+          ArcNavigationThrottle::CloseReason::OBSOLETE_JUST_ONCE_PRESSED));
   EXPECT_EQ(ArcNavigationThrottle::Platform::ARC,
             ArcNavigationThrottle::GetDestinationPlatform(
                 non_chrome_app,
