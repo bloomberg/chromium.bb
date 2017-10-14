@@ -31932,6 +31932,17 @@ from previous Chrome versions.
   <int value="12" label="RequestDenied"/>
 </enum>
 
+<enum name="PresentationUrlType">
+  <int value="0" label="Other"/>
+  <int value="1" label="Cast"/>
+  <int value="2" label="CastDial"/>
+  <int value="3" label="CastLegacy"/>
+  <int value="4" label="Dial"/>
+  <int value="5" label="Http"/>
+  <int value="6" label="Https"/>
+  <int value="7" label="RemotePlayback"/>
+</enum>
+
 <enum name="PreTapEvents">
   <int value="0" label="no event"/>
   <int value="1" label="tapdown"/>

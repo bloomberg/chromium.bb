@@ -17,6 +17,7 @@
 #include "chrome/browser/media/router/media_router.h"
 #include "chrome/browser/media/router/media_router_dialog_controller.h"
 #include "chrome/browser/media/router/media_router_factory.h"
+#include "chrome/browser/media/router/media_router_metrics.h"
 #include "chrome/browser/media/router/offscreen_presentation_manager.h"
 #include "chrome/browser/media/router/offscreen_presentation_manager_factory.h"
 #include "chrome/browser/media/router/presentation_media_sinks_observer.h"
@@ -151,14 +152,16 @@ MediaRoute::Id PresentationFrame::GetRouteId(
 
 bool PresentationFrame::SetScreenAvailabilityListener(
     content::PresentationScreenAvailabilityListener* listener) {
-  MediaSource source =
-      MediaSourceForPresentationUrl(listener->GetAvailabilityUrl());
-  if (!IsValidPresentationUrl(source.url())) {
+  GURL url = listener->GetAvailabilityUrl();
+  if (!IsValidPresentationUrl(url)) {
     listener->OnScreenAvailabilityChanged(
         blink::mojom::ScreenAvailability::SOURCE_NOT_SUPPORTED);
     return false;
   }
 
+  MediaRouterMetrics::RecordPresentationUrlType(url);
+
+  MediaSource source = MediaSourceForPresentationUrl(url);
   auto& sinks_observer = url_to_sinks_observer_[source.id()];
   if (sinks_observer && sinks_observer->listener() == listener)
     return false;
