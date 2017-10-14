@@ -6,7 +6,7 @@ import("//build/config/clang/clang.gni")
 import("//build/config/sysroot.gni")  # Imports android/config.gni.
 import("//build/toolchain/gcc_toolchain.gni")
 
-# The Android GCC toolchains share most of the same parameters, so we have this
+# The Android clang toolchains share most of the same parameters, so we have this
 # wrapper around gcc_toolchain to avoid duplication of logic.
 #
 # Parameters:
@@ -18,10 +18,10 @@ import("//build/toolchain/gcc_toolchain.gni")
 #      Subdirectory inside of sysroot where libs go.
 #  - binary_prefix
 #      Prefix of compiler executables.
-template("android_gcc_toolchain") {
+template("android_clang_toolchain") {
   gcc_toolchain(target_name) {
     assert(defined(invoker.toolchain_args),
-           "toolchain_args must be defined for android_gcc_toolchain()")
+           "toolchain_args must be defined for android_clang_toolchain()")
     toolchain_args = invoker.toolchain_args
     toolchain_args.current_os = "android"
 
@@ -44,24 +44,10 @@ template("android_gcc_toolchain") {
     # The tools should be run relative to the build dir.
     _tool_prefix = rebase_path("$_android_tool_prefix", root_build_dir)
 
-    # Use the clang specified by the toolchain if there is one. Otherwise fall
-    # back to the global flag.
-    if (defined(toolchain_args.is_clang)) {
-      toolchain_uses_clang = toolchain_args.is_clang
-    } else {
-      toolchain_uses_clang = is_clang
-    }
-
-    if (toolchain_uses_clang) {
-      _prefix = rebase_path("$clang_base_path/bin", root_build_dir)
-      cc = "$_prefix/clang"
-      cxx = "$_prefix/clang++"
-      ar = "$_prefix/llvm-ar"
-    } else {
-      cc = "${_tool_prefix}gcc"
-      cxx = "${_tool_prefix}g++"
-      ar = _tool_prefix + "ar"
-    }
+    _prefix = rebase_path("$clang_base_path/bin", root_build_dir)
+    cc = "$_prefix/clang"
+    cxx = "$_prefix/clang++"
+    ar = "$_prefix/llvm-ar"
     ld = cxx
     readelf = _tool_prefix + "readelf"
     nm = _tool_prefix + "nm"
@@ -74,19 +60,7 @@ template("android_gcc_toolchain") {
   }
 }
 
-template("android_gcc_toolchains_helper") {
-  android_gcc_toolchain("android_$target_name") {
-    forward_variables_from(invoker, "*")
-    toolchain_args.is_clang = false
-  }
-
-  android_gcc_toolchain("android_clang_$target_name") {
-    forward_variables_from(invoker, "*")
-    toolchain_args.is_clang = true
-  }
-}
-
-android_gcc_toolchains_helper("x86") {
+android_clang_toolchain("android_clang_x86") {
   toolchain_root = x86_android_toolchain_root
   sysroot = "$android_ndk_root/$x86_android_sysroot_subdir"
   lib_dir = "usr/lib"
@@ -96,7 +70,7 @@ android_gcc_toolchains_helper("x86") {
   }
 }
 
-android_gcc_toolchains_helper("arm") {
+android_clang_toolchain("android_clang_arm") {
   toolchain_root = arm_android_toolchain_root
   sysroot = "$android_ndk_root/$arm_android_sysroot_subdir"
   lib_dir = "usr/lib"
@@ -106,7 +80,7 @@ android_gcc_toolchains_helper("arm") {
   }
 }
 
-android_gcc_toolchains_helper("mipsel") {
+android_clang_toolchain("android_clang_mipsel") {
   toolchain_root = mips_android_toolchain_root
   sysroot = "$android_ndk_root/$mips_android_sysroot_subdir"
   lib_dir = "usr/lib"
@@ -116,7 +90,7 @@ android_gcc_toolchains_helper("mipsel") {
   }
 }
 
-android_gcc_toolchains_helper("x64") {
+android_clang_toolchain("android_clang_x64") {
   toolchain_root = x86_64_android_toolchain_root
   sysroot = "$android_ndk_root/$x86_64_android_sysroot_subdir"
   lib_dir = "usr/lib64"
@@ -126,7 +100,7 @@ android_gcc_toolchains_helper("x64") {
   }
 }
 
-android_gcc_toolchains_helper("arm64") {
+android_clang_toolchain("android_clang_arm64") {
   toolchain_root = arm64_android_toolchain_root
   sysroot = "$android_ndk_root/$arm64_android_sysroot_subdir"
   lib_dir = "usr/lib"
@@ -136,7 +110,7 @@ android_gcc_toolchains_helper("arm64") {
   }
 }
 
-android_gcc_toolchains_helper("mips64el") {
+android_clang_toolchain("android_clang_mips64el") {
   toolchain_root = mips64_android_toolchain_root
   sysroot = "$android_ndk_root/$mips64_android_sysroot_subdir"
   lib_dir = "usr/lib64"
