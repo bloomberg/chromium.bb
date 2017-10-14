@@ -152,8 +152,9 @@ class UrlEmphasisTest : public testing::Test {
   MockRenderText mock_;
 };
 
-#if !defined(OS_LINUX)
+#if !defined(OS_LINUX) && !defined(OS_WIN)
 // TODO(crbug/731894): This test does not work on Linux.
+// TODO(crbug/770893): This test does not work on Windows.
 TEST(UrlBarTextureTest, WillNotFailOnNonAsciiURLs) {
   TestUrlBarTexture texture;
   EXPECT_EQ(3lu, texture.GetNumberOfFontFallbacksForURL(

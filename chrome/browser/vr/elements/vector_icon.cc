@@ -16,7 +16,8 @@ void DrawVectorIcon(gfx::Canvas* canvas,
                     const gfx::PointF& corner,
                     SkColor color) {
   gfx::ScopedCanvas scoped(canvas);
-  canvas->Translate({corner.x(), corner.y()});
+  canvas->Translate(
+      {static_cast<int>(corner.x()), static_cast<int>(corner.y())});
 
   // Explicitly cut out the 1x version of the icon, as PaintVectorIcon draws the
   // 1x version if device scale factor isn't set. See crbug.com/749146.

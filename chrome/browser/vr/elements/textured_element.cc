@@ -18,7 +18,7 @@ static bool g_initialized_for_testing_ = false;
 }
 
 TexturedElement::TexturedElement(int maximum_width)
-    : texture_handle_(-1), maximum_width_(maximum_width) {}
+    : texture_handle_(unsigned(-1)), maximum_width_(maximum_width) {}
 
 TexturedElement::~TexturedElement() = default;
 

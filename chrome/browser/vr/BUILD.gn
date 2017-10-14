@@ -13,7 +13,7 @@ if (is_android) {
 
 assert(enable_vr)
 
-static_library("vr_common") {
+source_set("vr_common_source") {
   sources = [
     "animation_player.cc",
     "animation_player.h",
@@ -158,6 +158,35 @@ static_library("vr_common") {
   ]
 }
 
+# TODO(773882) - Temporary workaround since this static library isn't consumed
+# on Windows, and it is causing build errors on the bots.
+if (!is_win) {
+  static_library("vr_common") {
+    public_deps = [
+      ":vr_common_source",
+    ]
+
+    deps = [
+      "//base",
+      "//cc/animation",
+      "//cc/paint",
+      "//chrome/app:generated_resources",
+      "//chrome/browser/resources:vr_shell_resources",
+      "//components/security_state/core",
+      "//components/strings",
+      "//components/toolbar",
+      "//components/url_formatter",
+      "//components/vector_icons",
+      "//components/vector_icons",
+      "//skia",
+      "//ui/base",
+      "//ui/display",
+      "//ui/gl",
+      "//ui/gl/init",
+    ]
+  }
+}
+
 test("vr_common_unittests") {
   sources = [
     "animation_player_unittest.cc",
@@ -200,6 +229,11 @@ test("vr_common_unittests") {
     "vr_gl_util_unittest.cc",
   ]
 
+  # TODO(mthiesse, crbug.com/769373): The dependency on device/vr:fakes requires
+  # some workarounds for tests, since we are static-linking to the fakes instead
+  # of loading them from a dll on Windows.
+  defines = [ "DEVICE_VR_IMPLEMENTATION" ]
+
   deps = [
     ":vr_common",
     ":vr_test_pak",
@@ -226,6 +260,11 @@ test("vr_common_unittests") {
     "//ui/gl",
     "//ui/gl:test_support",
   ]
+
+  if (is_win) {
+    deps -= [ ":vr_common" ]
+    deps += [ ":vr_common_source" ]
+  }
 
   if (is_android) {
     deps += [ "//ui/android:ui_java" ]

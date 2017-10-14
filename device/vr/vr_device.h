@@ -24,7 +24,7 @@ class DEVICE_VR_EXPORT VRDevice {
   VRDevice();
   virtual ~VRDevice();
 
-  unsigned int id() const { return id_; }
+  unsigned int id() const;
 
   virtual mojom::VRDisplayInfoPtr GetVRDisplayInfo() = 0;
   virtual void RequestPresent(

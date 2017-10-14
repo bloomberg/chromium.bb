@@ -14,9 +14,12 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/sys_byteorder.h"
+#include "build/build_config.h"
 #include "net/base/data_url.h"
 #include "net/base/filename_util.h"
 #include "url/gurl.h"
+
+#include <codecvt>
 
 namespace vr {
 
@@ -160,7 +163,17 @@ std::unique_ptr<gltf::Buffer> GltfParser::ProcessUri(
   }
   if (uri.SchemeIsFile()) {
     auto data = base::MakeUnique<gltf::Buffer>();
-    if (!base::ReadFileToString(base::FilePath(uri.path()), data.get()))
+    base::FilePath path;
+#if defined(OS_WIN)
+    // Windows uses UTF-16 for file paths, so we need to convert.
+    path = base::FilePath(
+        // presubmit: allow wstring
+        std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>, wchar_t>{}
+            .from_bytes(uri.path()));
+#else
+    path = base::FilePath(uri.path());
+#endif
+    if (!base::ReadFileToString(path, data.get()))
       return nullptr;
     return data;
   }

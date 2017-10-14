@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/vr/test/constants.h"
 #include "chrome/browser/vr/test/ui_pixel_test.h"
 #include "chrome/browser/vr/toolbar_state.h"
@@ -17,7 +18,15 @@ static const gfx::Transform kIdentity;
 
 }  // namespace
 
-TEST_F(UiPixelTest, DrawVrBrowsingMode) {
+// TODO(crbug/771794): Test temporarily disabled on Windows because it crashes
+// on trybots. Fix before enabling Windows support.
+#if defined(OS_WIN)
+#define MAYBE(x) DISABLED_##x
+#else
+#define MAYBE(x) x
+#endif
+
+TEST_F(UiPixelTest, MAYBE(DrawVrBrowsingMode)) {
   // Set up scene.
   UiInitialState ui_initial_state;
   ui_initial_state.in_cct = false;
