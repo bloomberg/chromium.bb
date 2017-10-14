@@ -68,8 +68,8 @@ inline void ignore_result(const T&) {
 namespace base {
 
 // Use these to declare and define a static local variable (static T;) so that
-// it is leaked so that its destructors are not called at exit. If you need
-// thread-safe initialization, use base/lazy_instance.h instead.
+// it is leaked so that its destructors are not called at exit.  This is
+// thread-safe.
 #define CR_DEFINE_STATIC_LOCAL(type, name, arguments) \
   static type& name = *new type arguments
 
