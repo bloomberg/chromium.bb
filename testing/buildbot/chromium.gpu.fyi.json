@@ -976,6 +976,24 @@
     "isolated_scripts": [
       {
         "args": [
+          "-v",
+          "--one-frame-only"
+        ],
+        "isolate_name": "angle_perftests",
+        "name": "angle_perftests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_os": "M",
+              "device_type": "bullhead",
+              "os": "Android"
+            }
+          ]
+        }
+      },
+      {
+        "args": [
           "context_lost",
           "--show-stdout",
           "--browser=android-chromium",

@@ -2263,8 +2263,8 @@ NON_TELEMETRY_ISOLATED_SCRIPT_TESTS = {
     'tester_configs': [
       {
         'predicate': Predicates.FYI_AND_OPTIONAL,
-        # Run on the Win/Linux Release NVIDIA bots.
-        'build_configs': ['Release'],
+        # Run on the Win/Linux Release NVIDIA bots and Nexus 5X
+        'build_configs': ['Release', 'android-chromium'],
         'swarming_dimension_sets': [
           {
             'gpu': NVIDIA_GEFORCE_610_ALL_DRIVERS,
@@ -2273,6 +2273,11 @@ NON_TELEMETRY_ISOLATED_SCRIPT_TESTS = {
           {
             'gpu': '10de:104a',
             'os': 'Ubuntu'
+          },
+          {
+            'device_type': 'bullhead',
+            'device_os': 'M',
+            'os': 'Android'
           }
         ],
       },
