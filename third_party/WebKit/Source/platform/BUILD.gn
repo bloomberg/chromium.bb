@@ -1650,7 +1650,7 @@ jumbo_component("platform") {
   }
 }
 
-static_library("test_support") {
+jumbo_static_library("test_support") {
   visibility += [ "//third_party/WebKit/*" ]
   testonly = true
 
@@ -1736,8 +1736,15 @@ static_library("test_support") {
 }
 
 test("blink_platform_unittests") {
+  deps = [
+    ":blink_platform_unittests_sources",
+  ]
+}
+
+jumbo_source_set("blink_platform_unittests_sources") {
   visibility = []  # Allow re-assignment of list.
   visibility = [ "*" ]
+  testonly = true
 
   sources = [
     "DecimalTest.cpp",
@@ -2055,7 +2062,7 @@ if (current_cpu == "x86" || current_cpu == "x64") {
 
 # This source set is used for fuzzers that need an environment similar to unit
 # tests.
-source_set("blink_fuzzer_test_support") {
+jumbo_source_set("blink_fuzzer_test_support") {
   testonly = true
   visibility = []  # Allow re-assignment of list.
   visibility = [ "*" ]
@@ -2181,7 +2188,7 @@ blink_text_codec_fuzzer("WINDOWS_1252") {
 # NOTE: These are legacy unit tests and tests that require a Platform
 # object. Do not add more unless the test requires a Platform object.
 # These tests are a part of the webkit_unit_tests binary.
-source_set("unit_tests") {
+jumbo_source_set("unit_tests") {
   testonly = true
   visibility = []
   visibility = [ "//third_party/WebKit/Source/*" ]
