@@ -887,6 +887,8 @@ Bug(none) images/cross-fade-invalidation.html [ Crash Failure Pass ]
 Bug(none) paint/pagination/pagination-change-clip-crash.html [ Failure ]
 Bug(none) paint/selection/text-selection-newline-mixed-ltr-rtl.html [ Failure ]
 
+Bug(none) fast/multicol/input-with-overflow-second-column.html [ Failure ]
+
 # Less invalidations or different invalidations without pixel failures.
 # Some might be good. Some might be under-invalidations for which under-invalidation
 # checking failed.
