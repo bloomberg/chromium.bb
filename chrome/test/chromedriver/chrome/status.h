@@ -22,6 +22,7 @@ enum StatusCode {
   kElementNotInteractable = 15,
   kUnsupportedOperation = 16,
   kJavaScriptError = 17,
+  kMoveTargetOutOfBounds = 18,
   kXPathLookupError = 19,
   kUnableToSetCookie = 20,
   kTimeout = 21,
