@@ -73,12 +73,6 @@ class PixelExpectations(GpuTestExpectations):
         ['android', ('qualcomm', 'Adreno (TM) 418')], bug=774354)
 
     # Failing on Mac Intel HighSierra
-    self.Fail('Pixel_OffscreenCanvas2DResizeOnWorker',
-        ['highsierra', ('intel', 0xa2e)], bug=774809)
-    self.Fail('Pixel_OffscreenCanvasAccelerated2D',
-        ['highsierra', ('intel', 0xa2e)], bug=774809)
-    self.Fail('Pixel_OffscreenCanvasAccelerated2DWorker',
-        ['highsierra', ('intel', 0xa2e)], bug=774809)
     self.Fail('Pixel_Video_MP4',
         ['highsierra', ('intel', 0xa2e)], bug=774809)
     self.Fail('Pixel_Video_VP9',
