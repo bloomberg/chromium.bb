@@ -145,6 +145,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   int64_t version_id() const { return version_id_; }
   int64_t registration_id() const { return registration_id_; }
   const GURL& script_url() const { return script_url_; }
+  const url::Origin& script_origin() const { return script_origin_; }
   const GURL& scope() const { return scope_; }
   EmbeddedWorkerStatus running_status() const {
     return embedded_worker_->status();
@@ -689,6 +690,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   const int64_t version_id_;
   const int64_t registration_id_;
   const GURL script_url_;
+  const url::Origin script_origin_;
   const GURL scope_;
   std::vector<GURL> foreign_fetch_scopes_;
   std::vector<url::Origin> foreign_fetch_origins_;

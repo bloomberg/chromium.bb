@@ -76,25 +76,32 @@ std::unique_ptr<WebEmbeddedWorker> WebEmbeddedWorker::Create(
     std::unique_ptr<WebServiceWorkerContextClient> client,
     std::unique_ptr<WebServiceWorkerInstalledScriptsManager>
         installed_scripts_manager,
-    mojo::ScopedMessagePipeHandle content_settings_handle) {
+    mojo::ScopedMessagePipeHandle content_settings_handle,
+    mojo::ScopedMessagePipeHandle interface_provider) {
   return WTF::MakeUnique<WebEmbeddedWorkerImpl>(
       std::move(client), std::move(installed_scripts_manager),
       WTF::MakeUnique<ServiceWorkerContentSettingsProxy>(
           // Chrome doesn't use interface versioning.
           mojom::blink::WorkerContentSettingsProxyPtrInfo(
-              std::move(content_settings_handle), 0u)));
+              std::move(content_settings_handle), 0u)),
+      service_manager::mojom::blink::InterfaceProviderPtrInfo(
+          std::move(interface_provider),
+          service_manager::mojom::blink::InterfaceProvider::Version_));
 }
 
 WebEmbeddedWorkerImpl::WebEmbeddedWorkerImpl(
     std::unique_ptr<WebServiceWorkerContextClient> client,
     std::unique_ptr<WebServiceWorkerInstalledScriptsManager>
         installed_scripts_manager,
-    std::unique_ptr<ServiceWorkerContentSettingsProxy> content_settings_client)
+    std::unique_ptr<ServiceWorkerContentSettingsProxy> content_settings_client,
+    service_manager::mojom::blink::InterfaceProviderPtrInfo
+        interface_provider_info)
     : worker_context_client_(std::move(client)),
       content_settings_client_(std::move(content_settings_client)),
       worker_inspector_proxy_(WorkerInspectorProxy::Create()),
       pause_after_download_state_(kDontPauseAfterDownload),
-      waiting_for_debugger_state_(kNotWaitingForDebugger) {
+      waiting_for_debugger_state_(kNotWaitingForDebugger),
+      interface_provider_info_(std::move(interface_provider_info)) {
   if (RuntimeEnabledFeatures::ServiceWorkerScriptStreamingEnabled() &&
       installed_scripts_manager) {
     installed_scripts_manager_ =
@@ -398,7 +405,8 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
         main_script_loader_->GetReferrerPolicy(), starter_origin,
         worker_clients, main_script_loader_->ResponseAddressSpace(),
         main_script_loader_->OriginTrialTokens(), std::move(worker_settings),
-        static_cast<V8CacheOptions>(worker_start_data_.v8_cache_options));
+        static_cast<V8CacheOptions>(worker_start_data_.v8_cache_options),
+        std::move(interface_provider_info_));
     main_script_loader_ = nullptr;
   } else {
     // ContentSecurityPolicy and ReferrerPolicy are applied to |document| at
@@ -410,7 +418,8 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
         nullptr /* ContentSecurityPolicy */, "" /* ReferrerPolicy */,
         starter_origin, worker_clients, worker_start_data_.address_space,
         nullptr /* OriginTrialTokens */, std::move(worker_settings),
-        static_cast<V8CacheOptions>(worker_start_data_.v8_cache_options));
+        static_cast<V8CacheOptions>(worker_start_data_.v8_cache_options),
+        std::move(interface_provider_info_));
   }
 
   worker_thread_ = WTF::MakeUnique<ServiceWorkerThread>(

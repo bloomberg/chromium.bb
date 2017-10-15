@@ -29,6 +29,7 @@
 #include "content/public/common/resource_type.h"
 #include "content/public/common/service_worker_modes.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 
 namespace blink {
@@ -82,7 +83,8 @@ class WebContents;
 class CONTENT_EXPORT ServiceWorkerProviderHost
     : public ServiceWorkerRegistration::Listener,
       public base::SupportsWeakPtr<ServiceWorkerProviderHost>,
-      public mojom::ServiceWorkerContainerHost {
+      public mojom::ServiceWorkerContainerHost,
+      public service_manager::mojom::InterfaceProvider {
  public:
   using WebContentsGetter = base::Callback<WebContents*(void)>;
 
@@ -431,6 +433,11 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   bool IsValidGetRegistrationsMessage(std::string* out_error) const;
   bool IsValidGetRegistrationForReadyMessage(std::string* out_error) const;
 
+  // service_manager::mojom::InterfaceProvider:
+  // For provider hosts that are hosting a running service worker.
+  void GetInterface(const std::string& interface_name,
+                    mojo::ScopedMessagePipeHandle interface_pipe) override;
+
   const std::string client_uuid_;
   const base::TimeTicks create_time_;
   int render_process_id_;
@@ -502,6 +509,10 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   mojo::AssociatedBinding<mojom::ServiceWorkerContainerHost> binding_;
 
   std::vector<base::Closure> queued_events_;
+
+  // For provider hosts that are hosting a running service worker.
+  mojo::Binding<service_manager::mojom::InterfaceProvider>
+      interface_provider_binding_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerProviderHost);
 };
