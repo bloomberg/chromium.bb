@@ -12,5 +12,6 @@ include_rules = [
     "+platform",
     "+public/platform",
     "+public/web",
+    "+services/service_manager/public/interfaces/interface_provider.mojom-blink.h",
     "-web",
 ]

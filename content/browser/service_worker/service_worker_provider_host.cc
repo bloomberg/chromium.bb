@@ -29,6 +29,7 @@
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/child_process_host.h"
@@ -124,6 +125,18 @@ WebContents* GetWebContents(int render_process_id, int render_frame_id) {
   return WebContents::FromRenderFrameHost(rfh);
 }
 
+void GetInterfaceImpl(const std::string& interface_name,
+                      mojo::ScopedMessagePipeHandle interface_pipe,
+                      const url::Origin& origin,
+                      int process_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  auto* process = RenderProcessHost::FromID(process_id);
+  if (!process)
+    return;
+
+  // TODO(sammc): Dispatch interface requests.
+}
+
 }  // anonymous namespace
 
 // static
@@ -180,7 +193,8 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
       context_(context),
       dispatcher_host_(dispatcher_host),
       allow_association_(true),
-      binding_(this) {
+      binding_(this),
+      interface_provider_binding_(this) {
   DCHECK_NE(SERVICE_WORKER_PROVIDER_UNKNOWN, info_.type);
 
   if (info_.type == SERVICE_WORKER_PROVIDER_FOR_CONTROLLER) {
@@ -711,6 +725,9 @@ ServiceWorkerProviderHost::CompleteStartWorkerPreparation(
   binding_.Bind(mojo::MakeRequest(&provider_info->host_ptr_info));
   binding_.set_connection_error_handler(
       base::BindOnce(&RemoveProviderHost, context_, process_id, provider_id()));
+
+  interface_provider_binding_.Bind(
+      mojo::MakeRequest(&provider_info->interface_provider));
 
   // Set the document URL to the script url in order to allow
   // register/unregister/getRegistration on ServiceWorkerGlobalScope.
@@ -1298,6 +1315,19 @@ bool ServiceWorkerProviderHost::IsValidGetRegistrationForReadyMessage(
   }
 
   return true;
+}
+
+void ServiceWorkerProviderHost::GetInterface(
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle interface_pipe) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_NE(kDocumentMainThreadId, render_thread_id_);
+  DCHECK(IsHostToRunningServiceWorker());
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(
+          &GetInterfaceImpl, interface_name, std::move(interface_pipe),
+          running_hosted_version_->script_origin(), render_process_id_));
 }
 
 }  // namespace content
