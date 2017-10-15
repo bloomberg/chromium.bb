@@ -529,7 +529,6 @@ void V8Initializer::InitializeMainThread(const intptr_t* reference_table) {
       !RuntimeEnabledFeatures::V8ContextSnapshotEnabled()) {
     v8_context_snapshot_mode =
         V8PerIsolateData::V8ContextSnapshotMode::kDontUseSnapshot;
-    reference_table = nullptr;
   }
   V8ContextSnapshot::SetReferenceTable(reference_table);
 

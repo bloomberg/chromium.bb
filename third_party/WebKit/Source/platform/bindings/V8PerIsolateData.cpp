@@ -69,9 +69,7 @@ V8PerIsolateData::V8PerIsolateData(
           IsMainThread() ? gin::IsolateHolder::kDisallowAtomicsWait
                          : gin::IsolateHolder::kAllowAtomicsWait,
           table,
-          v8_context_snapshot_mode_ == V8ContextSnapshotMode::kUseSnapshot
-              ? &startup_data_
-              : nullptr),
+          &startup_data_),
       interface_template_map_for_v8_context_snapshot_(GetIsolate()),
       string_cache_(WTF::WrapUnique(new StringCache(GetIsolate()))),
       private_property_(V8PrivateProperty::Create()),
