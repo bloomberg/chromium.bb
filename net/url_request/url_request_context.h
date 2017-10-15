@@ -224,10 +224,6 @@ class NET_EXPORT URLRequestContext
   // prior to implicit destruction of subclass-owned state.
   void AssertNoURLRequests() const;
 
-  // CHECKs that the passed URLRequest is present on this context.
-  // Added for http://crbug.com/754704; remove when that bug is resolved.
-  void AssertURLRequestPresent(const URLRequest* request) const;
-
   // Get the underlying |HttpUserAgentSettings| implementation that provides
   // the HTTP Accept-Language and User-Agent header values.
   const HttpUserAgentSettings* http_user_agent_settings() const {

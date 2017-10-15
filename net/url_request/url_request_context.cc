@@ -164,11 +164,6 @@ void URLRequestContext::AssertNoURLRequests() const {
   }
 }
 
-void URLRequestContext::AssertURLRequestPresent(
-    const URLRequest* request) const {
-  CHECK_GE(url_requests_.count(request), 0u);
-}
-
 bool URLRequestContext::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
