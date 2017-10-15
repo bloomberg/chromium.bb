@@ -152,10 +152,6 @@ class ProfileChooserView : public content::WebContentsDelegate,
   // Creates a header for signin and sync error surfacing for the user menu.
   views::View* CreateSyncErrorViewIfNeeded();
 
-  // Create a view that shows various options for an upgrade user who is not
-  // the same person as the currently signed in user.
-  views::View* CreateSwitchUserView();
-
   bool ShouldShowGoIncognito() const;
 
   // Clean-up done after an action was performed in the ProfileChooser.
@@ -203,11 +199,6 @@ class ProfileChooserView : public content::WebContentsDelegate,
   // Links and buttons displayed in the account removal view.
   views::LabelButton* remove_account_button_;
   views::ImageButton* account_removal_cancel_button_;
-
-  // Buttons in the switch user view.
-  views::LabelButton* add_person_button_;
-  views::LabelButton* disconnect_button_;
-  views::ImageButton* switch_user_cancel_button_;
 
   // Records the account id to remove.
   std::string account_id_to_remove_;
