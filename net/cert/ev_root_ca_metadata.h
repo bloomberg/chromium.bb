@@ -50,10 +50,17 @@ class NET_EXPORT_PRIVATE EVRootCAMetadata {
   // Returns true if policy_oid is an EV policy OID of some root CA.
   bool IsEVPolicyOID(PolicyOID policy_oid) const;
 
+  // Same as above but using the the DER-encoded OID (no tag or length).
+  bool IsEVPolicyOIDGivenBytes(const der::Input& policy_oid) const;
+
   // Returns true if the root CA with the given certificate fingerprint has
   // the EV policy OID policy_oid.
   bool HasEVPolicyOID(const SHA256HashValue& fingerprint,
                       PolicyOID policy_oid) const;
+
+  // Same as above but using the the DER-encoded OID (no tag or length).
+  bool HasEVPolicyOIDGivenBytes(const SHA256HashValue& fingerprint,
+                                const der::Input& policy_oid) const;
 
   // Returns true if |policy_oid| is for 2.23.140.1.1 (CA/Browser Forum's
   // Extended Validation Policy).
