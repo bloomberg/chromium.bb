@@ -48,6 +48,7 @@ void av1_set_mb_mi(AV1_COMMON *cm, int width, int height) {
   cm->MBs = cm->mb_rows * cm->mb_cols;
 }
 
+#if !CONFIG_SEGMENT_PRED_LAST
 static int alloc_seg_map(AV1_COMMON *cm, int rows, int cols) {
   int i;
   int seg_map_size = rows * cols;
@@ -94,6 +95,7 @@ static void free_seg_map(AV1_COMMON *cm) {
   }
   cm->seg_map_alloc_size = 0;
 }
+#endif
 
 void av1_free_ref_frame_buffers(BufferPool *pool) {
   int i;
@@ -106,6 +108,10 @@ void av1_free_ref_frame_buffers(BufferPool *pool) {
     }
     aom_free(pool->frame_bufs[i].mvs);
     pool->frame_bufs[i].mvs = NULL;
+#if CONFIG_SEGMENT_PRED_LAST
+    aom_free(pool->frame_bufs[i].seg_map);
+    pool->frame_bufs[i].seg_map = NULL;
+#endif
     aom_free_frame_buffer(&pool->frame_bufs[i].buf);
 #if CONFIG_HASH_ME
     av1_hash_table_destroy(&pool->frame_bufs[i].hash_table);
@@ -203,7 +209,9 @@ void av1_free_restoration_buffers(AV1_COMMON *cm) {
 void av1_free_context_buffers(AV1_COMMON *cm) {
   int i;
   cm->free_mi(cm);
+#if !CONFIG_SEGMENT_PRED_LAST
   free_seg_map(cm);
+#endif
   for (i = 0; i < MAX_MB_PLANE; i++) {
     aom_free(cm->above_context[i]);
     cm->above_context[i] = NULL;
@@ -230,11 +238,13 @@ int av1_alloc_context_buffers(AV1_COMMON *cm, int width, int height) {
     if (cm->alloc_mi(cm, new_mi_size)) goto fail;
   }
 
+#if !CONFIG_SEGMENT_PRED_LAST
   if (cm->seg_map_alloc_size < cm->mi_rows * cm->mi_cols) {
     // Create the segmentation map structure and set to 0.
     free_seg_map(cm);
     if (alloc_seg_map(cm, cm->mi_rows, cm->mi_cols)) goto fail;
   }
+#endif
 
   if (cm->above_context_alloc_cols < cm->mi_cols) {
     // TODO(geza.lore): These are bigger than they need to be.
@@ -293,10 +303,12 @@ void av1_remove_common(AV1_COMMON *cm) {
 
 void av1_init_context_buffers(AV1_COMMON *cm) {
   cm->setup_mi(cm);
+#if !CONFIG_SEGMENT_PRED_LAST
   if (cm->last_frame_seg_map && !cm->frame_parallel_decode)
     memset(cm->last_frame_seg_map, 0, cm->mi_rows * cm->mi_cols);
+#endif
 }
-
+#if !CONFIG_SEGMENT_PRED_LAST
 void av1_swap_current_and_last_seg_map(AV1_COMMON *cm) {
   // Swap indices.
   const int tmp = cm->seg_map_idx;
@@ -306,3 +318,4 @@ void av1_swap_current_and_last_seg_map(AV1_COMMON *cm) {
   cm->current_frame_seg_map = cm->seg_map_array[cm->seg_map_idx];
   cm->last_frame_seg_map = cm->seg_map_array[cm->prev_seg_map_idx];
 }
+#endif

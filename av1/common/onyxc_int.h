@@ -151,6 +151,9 @@ typedef struct {
 #endif  // CONFIG_FRAME_MARKER
 
   MV_REF *mvs;
+#if CONFIG_SEGMENT_PRED_LAST
+  uint8_t *seg_map;
+#endif
   int mi_rows;
   int mi_cols;
   // Width and height give the size of the buffer (before any upscaling, unlike
@@ -391,11 +394,13 @@ typedef struct AV1Common {
 
   int use_ref_frame_mvs;
 
+#if !CONFIG_SEGMENT_PRED_LAST
   // Persistent mb segment id map used in prediction.
   int seg_map_idx;
   int prev_seg_map_idx;
 
   uint8_t *seg_map_array[NUM_PING_PONG_BUFFERS];
+#endif
   uint8_t *last_frame_seg_map;
   uint8_t *current_frame_seg_map;
 #if CONFIG_Q_SEGMENTATION

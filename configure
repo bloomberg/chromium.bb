@@ -336,6 +336,7 @@ EXPERIMENT_LIST="
     eighth_pel_mv_only
     mono_video
     q_segmentation
+    segment_pred_last
 "
 CONFIG_LIST="
     dependency_tracking

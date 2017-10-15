@@ -1401,7 +1401,16 @@ static void setup_superres(AV1_COMMON *const cm, struct aom_read_bit_buffer *rb,
   }
 }
 #endif  // CONFIG_FRAME_SUPERRES
-
+#if CONFIG_SEGMENT_PRED_LAST
+static void resize_segmap_buffer(AV1_COMMON *cm) {
+  aom_free(cm->cur_frame->seg_map);
+  cm->cur_frame->mi_rows = cm->mi_rows;
+  cm->cur_frame->mi_cols = cm->mi_cols;
+  CHECK_MEM_ERROR(cm, cm->cur_frame->seg_map,
+                  (uint8_t *)aom_calloc(cm->mi_rows * cm->mi_cols,
+                                        sizeof(*cm->cur_frame->seg_map)));
+}
+#endif
 static void resize_context_buffers(AV1_COMMON *cm, int width, int height) {
 #if CONFIG_SIZE_LIMIT
   if (width > DECODE_WIDTH_LIMIT || height > DECODE_HEIGHT_LIMIT)
@@ -1430,6 +1439,12 @@ static void resize_context_buffers(AV1_COMMON *cm, int width, int height) {
   }
 
   ensure_mv_buffer(cm->cur_frame, cm);
+#if CONFIG_SEGMENT_PRED_LAST
+  if (cm->cur_frame->seg_map == NULL || cm->mi_rows > cm->cur_frame->mi_rows ||
+      cm->mi_cols > cm->cur_frame->mi_cols) {
+    resize_segmap_buffer(cm);
+  }
+#endif
   cm->cur_frame->width = cm->width;
   cm->cur_frame->height = cm->height;
 }
@@ -3520,6 +3535,15 @@ size_t av1_decode_frame_headers_and_setup(AV1Decoder *pbi, const uint8_t *data,
                            !cm->last_intra_only && cm->last_show_frame &&
                            (cm->last_frame_type != KEY_FRAME);
 #endif  // CONFIG_TEMPMV_SIGNALING
+
+#if CONFIG_SEGMENT_PRED_LAST
+  cm->current_frame_seg_map = cm->cur_frame->seg_map;
+  if (cm->current_frame_seg_map)
+    memset(cm->current_frame_seg_map, 0, (cm->mi_rows * cm->mi_cols));
+  if (cm->seg.temporal_update) {
+    cm->last_frame_seg_map = cm->prev_frame->seg_map;
+  }
+#endif
 
 #if CONFIG_MFMV
   av1_setup_motion_field(cm);
