@@ -3512,6 +3512,11 @@ int Document::ElapsedTime() const {
 }
 
 bool Document::CanCreateHistoryEntry() const {
+  if (!frame_ || frame_->HasReceivedUserGesture())
+    return true;
+  if (ElapsedTime() >= kElapsedTimeForHistoryEntryWithoutUserGestureMS)
+    return true;
+  UseCounter::Count(*this, WebFeature::kSuppressHistoryEntryWithoutUserGesture);
   // TODO(japhet): This flag controls an intervention to require a user gesture
   // or a long time on page in order for a content-initiated navigation to add
   // an entry to the back/forward list. Removing the flag and making this the
@@ -3521,11 +3526,6 @@ bool Document::CanCreateHistoryEntry() const {
   // https://bugs.chromium.org/p/chromium/issues/detail?id=638198
   if (!GetSettings() || !GetSettings()->GetHistoryEntryRequiresUserGesture())
     return true;
-  if (frame_->HasReceivedUserGesture())
-    return true;
-  if (ElapsedTime() >= kElapsedTimeForHistoryEntryWithoutUserGestureMS)
-    return true;
-  UseCounter::Count(*this, WebFeature::kSuppressHistoryEntryWithoutUserGesture);
   return false;
 }
 
