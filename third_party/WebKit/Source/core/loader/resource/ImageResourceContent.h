@@ -113,6 +113,9 @@ class CORE_EXPORT ImageResourceContent final
   bool IsAccessAllowed(SecurityOrigin*);
   const ResourceResponse& GetResponse() const;
   const ResourceError& GetResourceError() const;
+  // DEPRECATED: ImageResourceContents consumers shouldn't need to worry about
+  // whether the underlying Resource is being revalidated.
+  bool IsCacheValidator() const;
 
   // For FrameSerializer.
   bool HasCacheControlNoStoreHeader() const;
