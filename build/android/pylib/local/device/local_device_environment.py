@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import contextlib
 import datetime
 import functools
 import logging
@@ -10,7 +9,6 @@ import os
 import shutil
 import tempfile
 import threading
-import time
 
 import devil_chromium
 from devil import base_error
@@ -22,11 +20,9 @@ from devil.android.sdk import adb_wrapper
 from devil.utils import file_utils
 from devil.utils import parallelizer
 from pylib import constants
-from pylib.android import logdog_logcat_monitor
 from pylib.base import environment
 from pylib.utils import instrumentation_tracing
 from py_trace_event import trace_event
-from py_utils import contextlib_ext
 
 
 LOGCAT_FILTERS = [
@@ -86,43 +82,10 @@ def handle_shard_failures_with(on_failure):
   return decorator
 
 
-# TODO(jbudorick): Reconcile this with the output manager logic in
-# https://codereview.chromium.org/2933993002/ once that lands.
-@contextlib.contextmanager
-def OptionalPerTestLogcat(
-    device, test_name, condition, additional_filter_specs=None,
-    deobfuscate_func=None):
-  """Conditionally capture logcat and stream it to logdog.
-
-  Args:
-    device: (DeviceUtils) the device from which logcat should be captured.
-    test_name: (str) the test name to use in the stream name.
-    condition: (bool) whether or not to capture the logcat.
-    additional_filter_specs: (list) additional logcat filters.
-    deobfuscate_func: (callable) an optional unary function that
-      deobfuscates logcat lines. The callable should take an iterable
-      of logcat lines and return a list of deobfuscated logcat lines.
-  Yields:
-    A LogdogLogcatMonitor instance whether condition is true or not,
-    though it may not be active.
-  """
-  stream_name = 'logcat_%s_%s_%s' % (
-      test_name,
-      time.strftime('%Y%m%dT%H%M%S-UTC', time.gmtime()),
-      device.serial)
-  filter_specs = LOGCAT_FILTERS + (additional_filter_specs or [])
-  logmon = logdog_logcat_monitor.LogdogLogcatMonitor(
-      device.adb, stream_name, filter_specs=filter_specs,
-      deobfuscate_func=deobfuscate_func)
-
-  with contextlib_ext.Optional(logmon, condition):
-    yield logmon
-
-
 class LocalDeviceEnvironment(environment.Environment):
 
-  def __init__(self, args, _error_func):
-    super(LocalDeviceEnvironment, self).__init__()
+  def __init__(self, args, output_manager, _error_func):
+    super(LocalDeviceEnvironment, self).__init__(output_manager)
     self._blacklist = (device_blacklist.Blacklist(args.blacklist_file)
                        if args.blacklist_file
                        else None)

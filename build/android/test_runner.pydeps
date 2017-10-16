@@ -124,12 +124,12 @@ gyp/util/md5_check.py
 incremental_install/__init__.py
 incremental_install/installer.py
 pylib/__init__.py
-pylib/android/__init__.py
-pylib/android/logdog_logcat_monitor.py
 pylib/base/__init__.py
 pylib/base/base_test_result.py
 pylib/base/environment.py
 pylib/base/environment_factory.py
+pylib/base/output_manager.py
+pylib/base/output_manager_factory.py
 pylib/base/test_collection.py
 pylib/base/test_exception.py
 pylib/base/test_instance.py
@@ -165,6 +165,10 @@ pylib/local/machine/local_machine_environment.py
 pylib/local/machine/local_machine_junit_test_run.py
 pylib/monkey/__init__.py
 pylib/monkey/monkey_test_instance.py
+pylib/output/__init__.py
+pylib/output/local_output_manager.py
+pylib/output/noop_output_manager.py
+pylib/output/remote_output_manager.py
 pylib/perf/__init__.py
 pylib/perf/perf_test_instance.py
 pylib/results/__init__.py
@@ -172,6 +176,9 @@ pylib/results/flakiness_dashboard/__init__.py
 pylib/results/flakiness_dashboard/json_results_generator.py
 pylib/results/flakiness_dashboard/results_uploader.py
 pylib/results/json_results.py
+pylib/results/presentation/__init__.py
+pylib/results/presentation/standard_gtest_merge.py
+pylib/results/presentation/test_results_presentation.py
 pylib/results/report_results.py
 pylib/symbols/__init__.py
 pylib/symbols/deobfuscator.py
