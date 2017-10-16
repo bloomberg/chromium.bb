@@ -84,4 +84,34 @@ void ServiceWorkerLoaderHelpers::SaveResponseInfo(
   out_head->did_service_worker_navigation_preload = false;
 }
 
+// static
+base::Optional<net::RedirectInfo>
+ServiceWorkerLoaderHelpers::ComputeRedirectInfo(
+    const ResourceRequest& original_request,
+    const ResourceResponseHead& response_head,
+    bool token_binding_negotiated) {
+  std::string new_location;
+  if (!response_head.headers->IsRedirect(&new_location))
+    return base::nullopt;
+
+  std::string referrer_string;
+  net::URLRequest::ReferrerPolicy referrer_policy;
+  Referrer::ComputeReferrerInfo(
+      &referrer_string, &referrer_policy,
+      Referrer(original_request.referrer, original_request.referrer_policy));
+
+  // If the request is a MAIN_FRAME request, the first-party URL gets
+  // updated on redirects.
+  const net::URLRequest::FirstPartyURLPolicy first_party_url_policy =
+      original_request.resource_type == RESOURCE_TYPE_MAIN_FRAME
+          ? net::URLRequest::UPDATE_FIRST_PARTY_URL_ON_REDIRECT
+          : net::URLRequest::NEVER_CHANGE_FIRST_PARTY_URL;
+  return net::RedirectInfo::ComputeRedirectInfo(
+      original_request.method, original_request.url,
+      original_request.site_for_cookies, first_party_url_policy,
+      referrer_policy, referrer_string, response_head.headers.get(),
+      response_head.headers->response_code(),
+      original_request.url.Resolve(new_location), token_binding_negotiated);
+}
+
 }  // namespace content

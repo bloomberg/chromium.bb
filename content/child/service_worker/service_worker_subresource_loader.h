@@ -7,6 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "content/child/service_worker/controller_service_worker_connector.h"
 #include "content/common/content_export.h"
@@ -15,6 +16,7 @@
 #include "content/public/common/url_loader_factory.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "net/url_request/redirect_info.h"
 #include "storage/public/interfaces/blobs.mojom.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_event_status.mojom.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_stream_handle.mojom.h"
@@ -106,6 +108,8 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
   void OnComplete(const ResourceRequestCompletionStatus& status) override;
 
   ResourceResponseHead response_head_;
+  base::Optional<net::RedirectInfo> redirect_info_;
+  int redirect_limit_;
 
   mojom::URLLoaderClientPtr url_loader_client_;
   mojo::Binding<mojom::URLLoader> url_loader_binding_;
