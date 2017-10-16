@@ -24,6 +24,18 @@ class CrosAmdGpuProcessPolicy : public GpuProcessPolicy {
   DISALLOW_COPY_AND_ASSIGN(CrosAmdGpuProcessPolicy);
 };
 
+class CrosAmdGpuBrokerProcessPolicy : public CrosAmdGpuProcessPolicy {
+ public:
+  CrosAmdGpuBrokerProcessPolicy();
+  ~CrosAmdGpuBrokerProcessPolicy() override;
+
+  sandbox::bpf_dsl::ResultExpr EvaluateSyscall(
+      int system_call_number) const override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CrosAmdGpuBrokerProcessPolicy);
+};
+
 }  // namespace content
 
 #endif  // CONTENT_COMMON_SANDBOX_LINUX_BPF_CROS_AMD_GPU_POLICY_LINUX_H_
