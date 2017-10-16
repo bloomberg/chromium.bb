@@ -152,7 +152,6 @@ class CORE_EXPORT LayoutSVGRoot final : public LayoutReplaced {
       const LayoutBoxModelObject* ancestor_to_stop_at,
       LayoutGeometryMap&) const override;
 
-  bool CanBeSelectionLeaf() const override { return false; }
   bool CanHaveChildren() const override { return true; }
 
   void DescendantIsolationRequirementsChanged(DescendantIsolationState) final;

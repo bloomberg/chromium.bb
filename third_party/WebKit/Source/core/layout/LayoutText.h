@@ -187,7 +187,6 @@ class CORE_EXPORT LayoutText : public LayoutObject {
 
   virtual void TransformText();
 
-  bool CanBeSelectionLeaf() const override { return true; }
   void SetSelectionState(SelectionState) final;
   LayoutRect LocalSelectionRect() const final;
   LayoutRect LocalCaretRect(
@@ -255,6 +254,8 @@ class CORE_EXPORT LayoutText : public LayoutObject {
 
   bool ShouldUseNGAlternatives() const;
   const NGOffsetMappingResult& GetNGOffsetMapping() const;
+
+  bool CanBeSelectionLeafInternal() const final { return true; }
 
  private:
   void ComputePreferredLogicalWidths(float lead_width);
