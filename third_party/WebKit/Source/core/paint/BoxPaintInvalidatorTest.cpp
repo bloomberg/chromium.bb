@@ -259,6 +259,9 @@ TEST_P(BoxPaintInvalidatorTest, ComputePaintInvalidationReasonOtherCases) {
 
   target.setAttribute(HTMLNames::styleAttr, "-webkit-appearance: button");
   ExpectFullPaintInvalidationOnGeometryChange("With appearance");
+
+  target.setAttribute(HTMLNames::styleAttr, "clip-path: circle(50% at 0 50%)");
+  ExpectFullPaintInvalidationOnGeometryChange("With clip-path");
 }
 
 TEST_P(BoxPaintInvalidatorTest, IncrementalInvalidationExpand) {
