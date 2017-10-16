@@ -2530,6 +2530,12 @@ void AppsGridView::OnListItemAdded(size_t index, AppListItem* item) {
   view_model_.Add(view, index);
   AddChildView(view);
 
+  if (is_fullscreen_app_list_enabled_) {
+    // Ensure that AppListItems that are added to the AppListItemList are not
+    // shown while in PEEKING. The visibility of the app icons will be updated
+    // on drag/animation from PEEKING.
+    view->SetVisible(model_->state_fullscreen() != AppListView::PEEKING);
+  }
   UpdatePaging();
   UpdatePulsingBlockViews();
   Layout();
