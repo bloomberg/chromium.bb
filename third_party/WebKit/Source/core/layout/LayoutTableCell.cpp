@@ -514,10 +514,8 @@ bool LayoutTableCell::IsInEndColumn() const {
 
 CSSPropertyID LayoutTableCell::ResolveBorderProperty(
     CSSPropertyID property) const {
-  return CSSPropertyAPI::Get(property)
-      .ResolveDirectionAwareProperty(TableStyle().Direction(),
-                                     TableStyle().GetWritingMode())
-      .PropertyID();
+  return CSSPropertyAPI::Get(property).ResolveDirectionAwareProperty(
+      TableStyle().Direction(), TableStyle().GetWritingMode());
 }
 
 CollapsedBorderValue LayoutTableCell::ComputeCollapsedStartBorder() const {

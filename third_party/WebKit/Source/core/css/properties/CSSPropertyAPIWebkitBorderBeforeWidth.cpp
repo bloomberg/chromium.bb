@@ -19,12 +19,4 @@ const CSSValue* CSSPropertyAPIWebkitBorderBeforeWidth::ParseSingleValue(
   return CSSPropertyWebkitBorderWidthUtils::ConsumeBorderWidth(
       range, context.Mode(), CSSPropertyParserHelpers::UnitlessQuirk::kForbid);
 }
-
-const CSSPropertyAPI&
-CSSPropertyAPIWebkitBorderBeforeWidth::ResolveDirectionAwareProperty(
-    TextDirection direction,
-    WritingMode writing_mode) const {
-  return ResolveToPhysicalPropertyAPI(direction, writing_mode, kBeforeSide,
-                                      borderWidthShorthand());
-}
 }  // namespace blink

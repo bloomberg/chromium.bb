@@ -19,12 +19,4 @@ const CSSValue* CSSPropertyAPIWebkitBorderEndColor::ParseSingleValue(
     const CSSParserLocalContext&) const {
   return CSSPropertyParserHelpers::ConsumeColor(range, context.Mode());
 }
-
-const CSSPropertyAPI&
-CSSPropertyAPIWebkitBorderEndColor::ResolveDirectionAwareProperty(
-    TextDirection direction,
-    WritingMode writing_mode) const {
-  return ResolveToPhysicalPropertyAPI(direction, writing_mode, kEndSide,
-                                      borderColorShorthand());
-}
 }  // namespace blink

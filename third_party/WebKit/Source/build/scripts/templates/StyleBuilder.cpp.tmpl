@@ -52,15 +52,14 @@ void StyleBuilder::ApplyProperty(CSSPropertyID property,
       DCHECK(!isInherit);
       StyleBuilderFunctions::applyValueCSSPropertyVariable(state, value);
       return;
-    {% for property_id, property in properties.items() if property.direction_aware %}
+    {% for property_id, property in properties.items() if property.direction_aware_options %}
     case {{property_id}}:
     {% endfor %}
     {
       CSSPropertyID resolvedProperty =
           CSSPropertyAPI::Get(property)
               .ResolveDirectionAwareProperty(state.Style()->Direction(),
-                                             state.Style()->GetWritingMode())
-              .PropertyID();
+                                             state.Style()->GetWritingMode());
       DCHECK_NE(resolvedProperty, property);
       ApplyProperty(resolvedProperty, state, value);
       return;

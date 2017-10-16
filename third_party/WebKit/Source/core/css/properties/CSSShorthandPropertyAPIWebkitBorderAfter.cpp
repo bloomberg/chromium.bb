@@ -19,12 +19,4 @@ bool CSSShorthandPropertyAPIWebkitBorderAfter::ParseShorthand(
   return CSSPropertyParserHelpers::ConsumeShorthandGreedilyViaLonghandAPIs(
       webkitBorderAfterShorthand(), important, context, range, properties);
 }
-
-const CSSPropertyAPI&
-CSSShorthandPropertyAPIWebkitBorderAfter::ResolveDirectionAwareProperty(
-    TextDirection direction,
-    WritingMode writing_mode) const {
-  return ResolveToPhysicalPropertyAPI(direction, writing_mode, kAfterSide,
-                                      CSSPropertyAPI::BorderDirections());
-}
 }  // namespace blink

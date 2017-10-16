@@ -15,13 +15,4 @@ const CSSValue* CSSPropertyAPIMaxInlineSizeOrMaxLogicalWidth::ParseSingleValue(
     const CSSParserLocalContext&) const {
   return CSSPropertyLengthUtils::ConsumeMaxWidthOrHeight(range, context);
 }
-
-const CSSPropertyAPI&
-CSSPropertyAPIMaxInlineSizeOrMaxLogicalWidth::ResolveDirectionAwareProperty(
-    TextDirection direction,
-    WritingMode writing_mode) const {
-  const CSSPropertyID kProperties[2] = {CSSPropertyMaxWidth,
-                                        CSSPropertyMaxHeight};
-  return ResolveToPhysicalPropertyAPI(writing_mode, kLogicalWidth, kProperties);
-}
 }  // namespace blink

@@ -16,13 +16,4 @@ const CSSValue* CSSPropertyAPIMinInlineSizeOrMinLogicalWidth::ParseSingleValue(
     const CSSParserLocalContext&) const {
   return CSSPropertyLengthUtils::ConsumeWidthOrHeight(range, context);
 }
-
-const CSSPropertyAPI&
-CSSPropertyAPIMinInlineSizeOrMinLogicalWidth::ResolveDirectionAwareProperty(
-    TextDirection direction,
-    WritingMode writing_mode) const {
-  const CSSPropertyID kProperties[2] = {CSSPropertyMinWidth,
-                                        CSSPropertyMinHeight};
-  return ResolveToPhysicalPropertyAPI(writing_mode, kLogicalWidth, kProperties);
-}
 }  // namespace blink

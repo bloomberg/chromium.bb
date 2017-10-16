@@ -79,7 +79,7 @@ def apply_property_naming_defaults(property_):
     property_['should_declare_functions'] = \
         not property_['use_handlers_for'] \
         and not property_['longhands'] \
-        and not property_['direction_aware'] \
+        and not property_['direction_aware_options'] \
         and not property_['builder_skip'] \
         and property_['is_property']
     # Functions should only be used in StyleBuilder if the CSSPropertyAPI

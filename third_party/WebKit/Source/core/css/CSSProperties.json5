@@ -295,12 +295,20 @@
       valid_type: "bool",
     },
 
-    // - direction_aware
-    // This property resolves to a different property based on the current direction
-    // and writing mode.
-    direction_aware: {
-      default: false,
-      valid_type: "bool",
+    // - shorthand_for_physical_side
+    // Shorthand to be used for resolving direction-dependent properties to physical
+    // properties
+    // - logical_side
+    // The logical side represented by a longhand property in a direction-dependent
+    // shorthand
+    direction_aware_options: {
+      logical_side: {
+        valid_type: "str",
+        valid_values: ["after", "before", "end", "start", "width", "height"],
+      },
+      shorthand_for_physical_side: {
+        valid_type: "str",
+      },
     },
 
     // - priority: "High"
@@ -2315,7 +2323,10 @@
       include_paths: ["platform/Length.h"],
       typedom_types: ["Length", "Percent"],
       type_name: "Length",
-      direction_aware: true,
+      direction_aware_options: {
+        logical_side: "before",
+        shorthand_for_physical_side: "scrollPaddingShorthand",
+      },
       runtime_flag: "CSSScrollSnapPoints",
     },
     {
@@ -2327,7 +2338,10 @@
       include_paths: ["platform/Length.h"],
       typedom_types: ["Length", "Percent"],
       type_name: "Length",
-      direction_aware: true,
+      direction_aware_options: {
+        logical_side: "after",
+        shorthand_for_physical_side: "scrollPaddingShorthand",
+      },
       runtime_flag: "CSSScrollSnapPoints",
     },
     {
@@ -2339,7 +2353,10 @@
       include_paths: ["platform/Length.h"],
       typedom_types: ["Length", "Percent"],
       type_name: "Length",
-      direction_aware: true,
+      direction_aware_options: {
+        logical_side: "start",
+        shorthand_for_physical_side: "scrollPaddingShorthand",
+      },
       runtime_flag: "CSSScrollSnapPoints",
     },
     {
@@ -2351,7 +2368,10 @@
       include_paths: ["platform/Length.h"],
       typedom_types: ["Length", "Percent"],
       type_name: "Length",
-      direction_aware: true,
+      direction_aware_options: {
+        logical_side: "end",
+        shorthand_for_physical_side: "scrollPaddingShorthand",
+      },
       runtime_flag: "CSSScrollSnapPoints",
     },
     {
@@ -2400,7 +2420,10 @@
       api_methods: ["ParseSingleValue"],
       converter: "ConvertLength",
       initial: "InitialScrollSnapMargin",
-      direction_aware: true,
+      direction_aware_options: {
+        logical_side: "before",
+        shorthand_for_physical_side: "scrollSnapMarginShorthand",
+      },
       include_paths: ["platform/Length.h"],
       type_name: "Length",
       runtime_flag: "CSSScrollSnapPoints",
@@ -2411,7 +2434,10 @@
       api_methods: ["ParseSingleValue"],
       converter: "ConvertLength",
       initial: "InitialScrollSnapMargin",
-      direction_aware: true,
+      direction_aware_options: {
+        logical_side: "after",
+        shorthand_for_physical_side: "scrollSnapMarginShorthand",
+      },
       include_paths: ["platform/Length.h"],
       type_name: "Length",
       runtime_flag: "CSSScrollSnapPoints",
@@ -2422,7 +2448,10 @@
       api_methods: ["ParseSingleValue"],
       converter: "ConvertLength",
       initial: "InitialScrollSnapMargin",
-      direction_aware: true,
+      direction_aware_options: {
+        logical_side: "start",
+        shorthand_for_physical_side: "scrollSnapMarginShorthand",
+      },
       include_paths: ["platform/Length.h"],
       type_name: "Length",
       runtime_flag: "CSSScrollSnapPoints",
@@ -2433,7 +2462,10 @@
       api_methods: ["ParseSingleValue"],
       converter: "ConvertLength",
       initial: "InitialScrollSnapMargin",
-      direction_aware: true,
+      direction_aware_options: {
+        logical_side: "end",
+        shorthand_for_physical_side: "scrollSnapMarginShorthand",
+      },
       include_paths: ["platform/Length.h"],
       type_name: "Length",
       runtime_flag: "CSSScrollSnapPoints",
@@ -3591,37 +3623,55 @@
       name: "inline-size",
       api_class: "CSSPropertyAPIInlineSizeOrLogicalWidth",
       api_methods: ["ParseSingleValue"],
-      direction_aware: true,
+      direction_aware_options: {
+        logical_side: "width",
+        shorthand_for_physical_side: "CSSProperty",
+      },
     },
     {
       name: "block-size",
       api_class: "CSSPropertyAPIBlockSizeOrLogicalHeight",
       api_methods: ["ParseSingleValue"],
-      direction_aware: true,
+      direction_aware_options: {
+        logical_side: "height",
+        shorthand_for_physical_side: "CSSProperty",
+      },
     },
     {
       name: "min-inline-size",
       api_class: "CSSPropertyAPIMinInlineSizeOrMinLogicalWidth",
       api_methods: ["ParseSingleValue"],
-      direction_aware: true,
+      direction_aware_options: {
+        logical_side: "width",
+        shorthand_for_physical_side: "CSSPropertyMin",
+      },
     },
     {
       name: "min-block-size",
       api_class: "CSSPropertyAPIMinBlockSizeOrMinLogicalHeight",
       api_methods: ["ParseSingleValue"],
-      direction_aware: true,
+      direction_aware_options: {
+        logical_side: "height",
+        shorthand_for_physical_side: "CSSPropertyMin",
+      },
     },
     {
       name: "max-inline-size",
       api_class: "CSSPropertyAPIMaxInlineSizeOrMaxLogicalWidth",
       api_methods: ["ParseSingleValue"],
-      direction_aware: true,
+      direction_aware_options: {
+        logical_side: "width",
+        shorthand_for_physical_side: "CSSPropertyMax",
+      },
     },
     {
       name: "max-block-size",
       api_class: "CSSPropertyAPIMaxBlockSizeOrMaxLogicalHeight",
       api_methods: ["ParseSingleValue"],
-      direction_aware: true,
+      direction_aware_options: {
+        logical_side: "height",
+        shorthand_for_physical_side: "CSSPropertyMax",
+      },
     },
 
     // Non-standard direction aware properties
@@ -3630,149 +3680,227 @@
       name: "-webkit-border-end-color",
       api_class: true,
       api_methods: ["ParseSingleValue"],
-      direction_aware: true,
+      direction_aware_options: {
+        logical_side: "end",
+        shorthand_for_physical_side: "borderColorShorthand",
+      },
     },
     {
       name: "-webkit-border-end-style",
       api_class: true,
-      direction_aware: true,
+      direction_aware_options: {
+        logical_side: "end",
+        shorthand_for_physical_side: "borderStyleShorthand",
+      },
     },
     {
       name: "-webkit-border-end-width",
       api_class: true,
       api_methods: ["ParseSingleValue"],
-      direction_aware: true,
+      direction_aware_options: {
+        logical_side: "end",
+        shorthand_for_physical_side: "borderWidthShorthand",
+      },
     },
     {
       name: "-webkit-border-start-color",
       api_class: true,
       api_methods: ["ParseSingleValue"],
-      direction_aware: true,
+      direction_aware_options: {
+        logical_side: "start",
+        shorthand_for_physical_side: "borderColorShorthand",
+      },
     },
     {
       name: "-webkit-border-start-style",
       api_class: true,
-      direction_aware: true,
+      direction_aware_options: {
+        logical_side: "start",
+        shorthand_for_physical_side: "borderStyleShorthand",
+      },
     },
     {
       name: "-webkit-border-start-width",
       api_class: true,
       api_methods: ["ParseSingleValue"],
-      direction_aware: true,
+      direction_aware_options: {
+        logical_side: "start",
+        shorthand_for_physical_side: "borderWidthShorthand",
+      },
     },
     {
       name: "-webkit-border-before-color",
       api_class: true,
       api_methods: ["ParseSingleValue"],
-      direction_aware: true,
+      direction_aware_options: {
+        logical_side: "before",
+        shorthand_for_physical_side: "borderColorShorthand",
+      },
     },
     {
       name: "-webkit-border-before-style",
       api_class: true,
-      direction_aware: true,
+      direction_aware_options: {
+        logical_side: "before",
+        shorthand_for_physical_side: "borderStyleShorthand",
+      },
     },
     {
       name: "-webkit-border-before-width",
       api_class: true,
       api_methods: ["ParseSingleValue"],
-      direction_aware: true,
+      direction_aware_options: {
+        logical_side: "before",
+        shorthand_for_physical_side: "borderWidthShorthand",
+      },
     },
     {
       name: "-webkit-border-after-color",
       api_class: true,
       api_methods: ["ParseSingleValue"],
-      direction_aware: true,
+      direction_aware_options: {
+        logical_side: "after",
+        shorthand_for_physical_side: "borderColorShorthand",
+      },
     },
     {
       name: "-webkit-border-after-style",
       api_class: true,
-      direction_aware: true,
+      direction_aware_options: {
+        logical_side: "after",
+        shorthand_for_physical_side: "borderStyleShorthand",
+      },
     },
     {
       name: "-webkit-border-after-width",
       api_class: true,
       api_methods: ["ParseSingleValue"],
-      direction_aware: true,
+      direction_aware_options: {
+        logical_side: "after",
+        shorthand_for_physical_side: "borderWidthShorthand",
+      },
     },
     {
       name: "-webkit-margin-end",
       api_class: true,
       api_methods: ["ParseSingleValue"],
-      direction_aware: true,
+      direction_aware_options: {
+        logical_side: "end",
+        shorthand_for_physical_side: "marginShorthand",
+      },
     },
     {
       name: "-webkit-margin-start",
       api_class: true,
       api_methods: ["ParseSingleValue"],
-      direction_aware: true,
+      direction_aware_options: {
+        logical_side: "start",
+        shorthand_for_physical_side: "marginShorthand",
+      },
     },
     {
       name: "-webkit-margin-before",
       api_class: true,
       api_methods: ["ParseSingleValue"],
-      direction_aware: true,
+      direction_aware_options: {
+        logical_side: "before",
+        shorthand_for_physical_side: "marginShorthand",
+      },
     },
     {
       name: "-webkit-margin-after",
       api_class: true,
       api_methods: ["ParseSingleValue"],
-      direction_aware: true,
+      direction_aware_options: {
+        logical_side: "after",
+        shorthand_for_physical_side: "marginShorthand",
+      },
     },
     {
       name: "-webkit-padding-end",
       api_class: true,
       api_methods: ["ParseSingleValue"],
-      direction_aware: true,
+      direction_aware_options: {
+        logical_side: "end",
+        shorthand_for_physical_side: "paddingShorthand",
+      },
     },
     {
       name: "-webkit-padding-start",
       api_class: true,
       api_methods: ["ParseSingleValue"],
-      direction_aware: true,
+      direction_aware_options: {
+        logical_side: "start",
+        shorthand_for_physical_side: "paddingShorthand",
+      },
     },
     {
       name: "-webkit-padding-before",
       api_class: true,
       api_methods: ["ParseSingleValue"],
-      direction_aware: true,
+      direction_aware_options: {
+        logical_side: "before",
+        shorthand_for_physical_side: "paddingShorthand",
+      },
     },
     {
       name: "-webkit-padding-after",
       api_class: true,
       api_methods: ["ParseSingleValue"],
-      direction_aware: true,
+      direction_aware_options: {
+        logical_side: "after",
+        shorthand_for_physical_side: "paddingShorthand",
+      },
     },
     {
       name: "-webkit-logical-width",
       api_class: "CSSPropertyAPIInlineSizeOrLogicalWidth",
-      direction_aware: true,
+      direction_aware_options: {
+        logical_side: "width",
+        shorthand_for_physical_side: "CSSProperty",
+      },
     },
     {
       name: "-webkit-logical-height",
       api_class: "CSSPropertyAPIBlockSizeOrLogicalHeight",
-      direction_aware: true,
+      direction_aware_options: {
+        logical_side: "height",
+        shorthand_for_physical_side: "CSSProperty",
+      },
     },
     {
       name: "-webkit-min-logical-width",
       api_class: "CSSPropertyAPIMinInlineSizeOrMinLogicalWidth",
-      direction_aware: true,
+      direction_aware_options: {
+        logical_side: "width",
+        shorthand_for_physical_side: "CSSPropertyMin",
+      },
     },
     {
       name: "-webkit-min-logical-height",
       api_class: "CSSPropertyAPIMinBlockSizeOrMinLogicalHeight",
-      direction_aware: true,
+      direction_aware_options: {
+        logical_side: "height",
+        shorthand_for_physical_side: "CSSPropertyMin",
+      },
     },
     {
       name: "-webkit-max-logical-width",
       api_class: "CSSPropertyAPIMaxInlineSizeOrMaxLogicalWidth",
       api_methods: ["ParseSingleValue"],
-      direction_aware: true,
+      direction_aware_options: {
+        logical_side: "width",
+        shorthand_for_physical_side: "CSSPropertyMax",
+      },
     },
     {
       name: "-webkit-max-logical-height",
       api_class: "CSSPropertyAPIMaxBlockSizeOrMaxLogicalHeight",
       api_methods: ["ParseSingleValue"],
-      direction_aware: true,
+      direction_aware_options: {
+        logical_side: "height",
+        shorthand_for_physical_side: "CSSPropertyMax",
+      },
     },
 
     // Properties that we ignore in the StyleBuilder.
@@ -4149,28 +4277,40 @@
       longhands: ["-webkit-border-after-width", "-webkit-border-after-style", "-webkit-border-after-color"],
       api_class: true,
       api_methods: ["ParseShorthand"],
-      direction_aware: true,
+      direction_aware_options: {
+        logical_side: "after",
+        shorthand_for_physical_side: "BorderDirections",
+      },
     },
     {
       name: "-webkit-border-before",
       longhands: ["-webkit-border-before-width", "-webkit-border-before-style", "-webkit-border-before-color"],
       api_class: true,
       api_methods: ["ParseShorthand"],
-      direction_aware: true,
+      direction_aware_options: {
+        logical_side: "before",
+        shorthand_for_physical_side: "BorderDirections",
+      },
     },
     {
       name: "-webkit-border-end",
       longhands: ["-webkit-border-end-width", "-webkit-border-end-style", "-webkit-border-end-color"],
       api_class: true,
       api_methods: ["ParseShorthand"],
-      direction_aware: true,
+      direction_aware_options: {
+        logical_side: "end",
+        shorthand_for_physical_side: "BorderDirections",
+      },
     },
     {
       name: "-webkit-border-start",
       longhands: ["-webkit-border-start-width", "-webkit-border-start-style", "-webkit-border-start-color"],
       api_class: true,
       api_methods: ["ParseShorthand"],
-      direction_aware: true,
+      direction_aware_options: {
+        logical_side: "start",
+        shorthand_for_physical_side: "BorderDirections",
+      },
     },
     {
       name: "-webkit-column-break-after",
