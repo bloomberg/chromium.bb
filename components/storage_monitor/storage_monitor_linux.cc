@@ -9,6 +9,8 @@
 #include <mntent.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <sys/stat.h>
+
 #include <limits>
 #include <list>
 #include <utility>
