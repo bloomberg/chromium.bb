@@ -26,10 +26,7 @@ struct SharedMemoryLimits {
             : 0;
 
     // On memory constrained devices, switch to lower limits.
-    // TODO(ericrk): Temporarily disabling this path to check if it was
-    // responsible for a large OOM rate improvement we saw. Will revert this
-    // within 1 week. crbug.com/773067
-    if (false && base::SysInfo::AmountOfPhysicalMemoryMB() <= 512) {
+    if (base::SysInfo::AmountOfPhysicalMemoryMB() <= 512) {
       command_buffer_size = 512 * 1024;
       start_transfer_buffer_size = 256 * 1024;
       min_transfer_buffer_size = 128 * 1024;
