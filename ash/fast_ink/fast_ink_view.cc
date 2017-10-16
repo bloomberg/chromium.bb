@@ -218,7 +218,7 @@ FastInkView::FastInkView(aura::Window* root_window) : weak_ptr_factory_(this) {
   screen_to_buffer_transform_ =
       widget_->GetNativeWindow()->GetHost()->GetRootTransform();
 
-  frame_sink_holder_ = base::MakeUnique<LayerTreeFrameSinkHolder>(
+  frame_sink_holder_ = std::make_unique<LayerTreeFrameSinkHolder>(
       this, widget_->GetNativeView()->CreateLayerTreeFrameSink());
 }
 
