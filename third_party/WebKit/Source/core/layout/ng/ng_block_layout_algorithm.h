@@ -9,6 +9,7 @@
 #include "core/layout/ng/geometry/ng_margin_strut.h"
 #include "core/layout/ng/ng_block_break_token.h"
 #include "core/layout/ng/ng_block_node.h"
+#include "core/layout/ng/ng_fragment_builder.h"
 #include "core/layout/ng/ng_layout_algorithm.h"
 #include "platform/wtf/RefPtr.h"
 
@@ -52,7 +53,9 @@ void PositionPendingFloats(
 // A class for general block layout (e.g. a <div> with no special style).
 // Lays out the children in sequence.
 class CORE_EXPORT NGBlockLayoutAlgorithm
-    : public NGLayoutAlgorithm<NGBlockNode, NGBlockBreakToken> {
+    : public NGLayoutAlgorithm<NGBlockNode,
+                               NGFragmentBuilder,
+                               NGBlockBreakToken> {
  public:
   // Default constructor.
   // @param node The input node to perform layout upon.
