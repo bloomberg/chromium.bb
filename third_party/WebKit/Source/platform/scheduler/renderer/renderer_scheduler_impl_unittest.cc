@@ -3806,6 +3806,31 @@ TEST_F(RendererSchedulerImplTest, EnableVirtualTime) {
             scheduler_->GetVirtualTimeDomain());
 }
 
+TEST_F(RendererSchedulerImplTest, EnableVirtualTimeAfterThrottling) {
+  std::unique_ptr<WebViewSchedulerImpl> web_view_scheduler =
+      base::WrapUnique(new WebViewSchedulerImpl(
+          nullptr, nullptr, scheduler_.get(),
+          false /* disable_background_timer_throttling */));
+  scheduler_->AddWebViewScheduler(web_view_scheduler.get());
+
+  std::unique_ptr<WebFrameSchedulerImpl> web_frame_scheduler =
+      web_view_scheduler->CreateWebFrameSchedulerImpl(
+          nullptr, WebFrameScheduler::FrameType::kSubframe);
+
+  RefPtr<WebTaskRunner> timer_wtr =
+      web_frame_scheduler->ThrottleableTaskRunner();
+  TaskQueue* timer_tq =
+      static_cast<WebTaskRunnerImpl*>(timer_wtr.get())->GetTaskQueue();
+
+  web_frame_scheduler->SetCrossOrigin(true);
+  web_frame_scheduler->SetFrameVisible(false);
+  EXPECT_TRUE(scheduler_->task_queue_throttler()->IsThrottled(timer_tq));
+
+  scheduler_->EnableVirtualTime();
+  EXPECT_EQ(timer_tq->GetTimeDomain(), scheduler_->GetVirtualTimeDomain());
+  EXPECT_FALSE(scheduler_->task_queue_throttler()->IsThrottled(timer_tq));
+}
+
 TEST_F(RendererSchedulerImplTest, DisableVirtualTimeForTesting) {
   scheduler_->EnableVirtualTime();
 
