@@ -43,6 +43,7 @@
 #include "ui/views/native_cursor.h"
 #include "ui/views/view_targeter.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_delegate.h"
 
 namespace message_center {
 
@@ -110,6 +111,25 @@ gfx::FontList GetTextFontList() {
   DCHECK_EQ(kTextFontSize, font.GetFontSize());
   return gfx::FontList(font);
 }
+
+class ClickActivator : public ui::EventHandler {
+ public:
+  explicit ClickActivator(NotificationViewMD* owner) : owner_(owner) {}
+  ~ClickActivator() override = default;
+
+ private:
+  // ui::EventHandler
+  void OnEvent(ui::Event* event) override {
+    if (event->type() == ui::ET_MOUSE_PRESSED ||
+        event->type() == ui::ET_GESTURE_TAP) {
+      owner_->Activate();
+    }
+  }
+
+  NotificationViewMD* const owner_;
+
+  DISALLOW_COPY_AND_ASSIGN(ClickActivator);
+};
 
 }  // anonymous namespace
 
@@ -417,9 +437,19 @@ NotificationViewMD::NotificationViewMD(MessageCenterController* controller,
   SetEventTargeter(
       std::unique_ptr<views::ViewTargeter>(new views::ViewTargeter(this)));
   set_notify_enter_exit_on_child(true);
+
+  click_activator_ = std::make_unique<ClickActivator>(this);
+  // Reasons to use pretarget handler instead of OnMousePressed:
+  // - To make it look similar to ArcNotificationContentView::EventForwarder.
+  // - If we're going to support inline reply feature in native notification,
+  //   then NotificationViewMD::OnMousePresssed would not fire anymore on the
+  //   Textfield click.
+  AddPreTargetHandler(click_activator_.get());
 }
 
-NotificationViewMD::~NotificationViewMD() {}
+NotificationViewMD::~NotificationViewMD() {
+  RemovePreTargetHandler(click_activator_.get());
+}
 
 void NotificationViewMD::Layout() {
   MessageView::Layout();
@@ -895,6 +925,11 @@ void NotificationViewMD::SetExpanded(bool expanded) {
   content_row_->InvalidateLayout();
   if (controller())
     controller()->UpdateNotificationSize(notification_id());
+}
+
+void NotificationViewMD::Activate() {
+  GetWidget()->widget_delegate()->set_can_activate(true);
+  GetWidget()->Activate();
 }
 
 }  // namespace message_center
