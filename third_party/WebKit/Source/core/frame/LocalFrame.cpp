@@ -765,7 +765,8 @@ inline LocalFrame::LocalFrame(LocalFrameClient* client,
       page_zoom_factor_(ParentPageZoomFactor(this)),
       text_zoom_factor_(ParentTextZoomFactor(this)),
       in_view_source_mode_(false),
-      interface_registry_(interface_registry) {
+      interface_registry_(interface_registry),
+      instrumentation_token_(client->GetInstrumentationToken()) {
   if (IsLocalRoot()) {
     probe_sink_ = new CoreProbeSink();
     performance_monitor_ = new PerformanceMonitor(this);

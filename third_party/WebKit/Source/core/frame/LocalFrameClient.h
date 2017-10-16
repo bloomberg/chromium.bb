@@ -361,7 +361,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
 
   virtual void DidBlockFramebust(const KURL&) {}
 
-  virtual String GetDevToolsFrameToken() = 0;
+  virtual String GetInstrumentationToken() = 0;
 };
 
 }  // namespace blink
