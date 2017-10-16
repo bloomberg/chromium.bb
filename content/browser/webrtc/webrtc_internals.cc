@@ -327,9 +327,8 @@ void WebRTCInternals::DisableAudioDebugRecordings() {
   // this object, so it's safe to post unretained to the audio thread.
   media::AudioManager* audio_manager = media::AudioManager::Get();
   audio_manager->GetTaskRunner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&media::AudioManager::DisableOutputDebugRecording,
-                     base::Unretained(audio_manager)));
+      FROM_HERE, base::BindOnce(&media::AudioManager::DisableDebugRecording,
+                                base::Unretained(audio_manager)));
 #endif
 }
 
@@ -508,10 +507,9 @@ void WebRTCInternals::EnableAudioDebugRecordingsOnAllRenderProcessHosts() {
   // this object, so it's safe to post unretained to the audio thread.
   media::AudioManager* audio_manager = media::AudioManager::Get();
   audio_manager->GetTaskRunner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&media::AudioManager::EnableOutputDebugRecording,
-                     base::Unretained(audio_manager),
-                     audio_debug_recordings_file_path_));
+      FROM_HERE, base::BindOnce(&media::AudioManager::EnableDebugRecording,
+                                base::Unretained(audio_manager),
+                                audio_debug_recordings_file_path_));
 }
 
 void WebRTCInternals::EnableEventLogRecordingsOnAllRenderProcessHosts() {

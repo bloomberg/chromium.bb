@@ -53,8 +53,8 @@ class MEDIA_EXPORT AudioManagerBase : public AudioManager {
 
   std::unique_ptr<AudioLog> CreateAudioLog(
       AudioLogFactory::AudioComponent component) override;
-  void EnableOutputDebugRecording(const base::FilePath& base_file_name) final;
-  void DisableOutputDebugRecording() final;
+  void EnableDebugRecording(const base::FilePath& base_file_name) final;
+  void DisableDebugRecording() final;
 
   void SetMaxStreamCountForTesting(int max_input, int max_output) final;
 
@@ -176,7 +176,7 @@ class MEDIA_EXPORT AudioManagerBase : public AudioManager {
   class CompareByParams;
 
   // AudioManager:
-  void InitializeOutputDebugRecording() final;
+  void InitializeDebugRecording() final;
 
   // Max number of open output streams, modified by
   // SetMaxOutputStreamsAllowed().

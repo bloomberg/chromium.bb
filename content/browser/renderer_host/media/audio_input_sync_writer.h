@@ -27,6 +27,10 @@
 #include "base/file_descriptor_posix.h"
 #endif
 
+namespace base {
+class SharedMemory;
+}
+
 namespace content {
 
 // A AudioInputController::SyncWriter implementation using SyncSocket. This

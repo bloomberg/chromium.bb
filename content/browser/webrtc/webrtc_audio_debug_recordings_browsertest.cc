@@ -4,6 +4,8 @@
 
 #include <stdint.h>
 
+#include "base/files/file_enumerator.h"
+#include "base/files/file_path.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -25,14 +27,11 @@
 namespace {
 
 const int kExpectedConsumerId = 1;
-const int kExpectedInputStreamId = 1;
-const int kExpectedFirstOutputStreamId = 1;
 
 const int kWaveHeaderSizeBytes = 44;
 
 const base::FilePath::CharType kBaseFilename[] =
     FILE_PATH_LITERAL("audio_debug");
-const base::FilePath::CharType kWaveExtension[] = FILE_PATH_LITERAL("wav");
 
 // Get the ID for the render process host when there should only be one.
 bool GetRenderProcessHostId(base::ProcessId* id) {
@@ -57,27 +56,24 @@ base::FilePath GetExpectedAecDumpFileName(const base::FilePath& base_file_path,
       .AddExtension(IntToStringType(kExpectedConsumerId));
 }
 
-// Get the expected input audio file name. The name will be
-// <temporary path>.<render process id>.source_input.<stream id>.wav, for
-// example "/tmp/.com.google.Chrome.Z6UC3P.12345.source_input.1.wav".
-base::FilePath GetExpectedInputAudioFileName(
-    const base::FilePath& base_file_path,
-    int render_process_id) {
-  return base_file_path.AddExtension(IntToStringType(render_process_id))
-      .AddExtension(FILE_PATH_LITERAL("source_input"))
-      .AddExtension(IntToStringType(kExpectedInputStreamId))
-      .AddExtension(kWaveExtension);
-}
-
-// Get the expected output audio file name. The name will be
-// <temporary path>.output.<running stream id>.wav, for example
-// "/tmp/.com.google.Chrome.Z6UC3P.output.1.wav".
-base::FilePath GetExpectedOutputAudioFileName(
-    const base::FilePath& base_file_path,
-    int id) {
-  return base_file_path.AddExtension(FILE_PATH_LITERAL("output"))
-      .AddExtension(IntToStringType(id))
-      .AddExtension(kWaveExtension);
+// Get the file names of the recordings. The name will be
+// <temporary path>.<kind>.<running stream id>.wav, for example
+// "/tmp/.com.google.Chrome.Z6UC3P.output.1.wav". |kind| is output or input.
+std::vector<base::FilePath> GetRecordingFileNames(
+    base::FilePath::StringPieceType kind,
+    const base::FilePath& base_file_path) {
+  base::FilePath dir = base_file_path.DirName();
+  base::FilePath file = base_file_path.BaseName();
+  // Assumes single-character id.
+  base::FileEnumerator recording_files(
+      dir, /*recursive*/ false, base::FileEnumerator::FileType::FILES,
+      file.AddExtension(kind).AddExtension(FILE_PATH_LITERAL("?.wav")).value());
+  std::vector<base::FilePath> ret;
+  for (base::FilePath path = recording_files.Next(); !path.empty();
+       path = recording_files.Next()) {
+    ret.push_back(std::move(path));
+  }
+  return ret;
 }
 
 }  // namespace
@@ -154,19 +150,20 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
   EXPECT_TRUE(base::DeleteFile(file_path, false));
 
   // Verify that the expected input audio file exists and contains some data.
-  file_path = GetExpectedInputAudioFileName(base_file_path, render_process_id);
-  EXPECT_TRUE(base::PathExists(file_path));
+  std::vector<base::FilePath> input_files =
+      GetRecordingFileNames(FILE_PATH_LITERAL("input"), base_file_path);
+  EXPECT_EQ(input_files.size(), 1u);
   file_size = 0;
-  EXPECT_TRUE(base::GetFileSize(file_path, &file_size));
+  EXPECT_TRUE(base::GetFileSize(input_files[0], &file_size));
   EXPECT_GT(file_size, kWaveHeaderSizeBytes);
-  EXPECT_TRUE(base::DeleteFile(file_path, false));
+  EXPECT_TRUE(base::DeleteFile(input_files[0], false));
 
   // Verify that the expected output audio files exists and contains some data.
   // Two files are expected, one for each peer in the call.
-  for (int i = 0; i < 2; ++i) {
-    file_path = GetExpectedOutputAudioFileName(
-        base_file_path, kExpectedFirstOutputStreamId + i);
-    EXPECT_TRUE(base::PathExists(file_path));
+  std::vector<base::FilePath> output_files =
+      GetRecordingFileNames(FILE_PATH_LITERAL("output"), base_file_path);
+  EXPECT_EQ(output_files.size(), 2u);
+  for (const base::FilePath& file_path : output_files) {
     file_size = 0;
     EXPECT_TRUE(base::GetFileSize(file_path, &file_size));
     EXPECT_GT(file_size, kWaveHeaderSizeBytes);
@@ -306,11 +303,13 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
     EXPECT_TRUE(base::GetFileSize(file_path, &file_size));
     EXPECT_GT(file_size, 0);
     EXPECT_TRUE(base::DeleteFile(file_path, false));
+  }
 
-    // Verify that the expected input audio file exists and contains some data.
-    file_path =
-        GetExpectedInputAudioFileName(base_file_path, render_process_id);
-    EXPECT_TRUE(base::PathExists(file_path));
+  // Verify that the expected input audio files exist and contains some data.
+  std::vector<base::FilePath> input_files =
+      GetRecordingFileNames(FILE_PATH_LITERAL("input"), base_file_path);
+  EXPECT_EQ(input_files.size(), 2u);
+  for (const base::FilePath& file_path : input_files) {
     file_size = 0;
     EXPECT_TRUE(base::GetFileSize(file_path, &file_size));
     EXPECT_GT(file_size, kWaveHeaderSizeBytes);
@@ -320,10 +319,10 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
   // Verify that the expected output audio files exists and contains some data.
   // Four files are expected, one for each peer in each call. (Two calls * two
   // peers.)
-  for (int i = 0; i < 4; ++i) {
-    file_path = GetExpectedOutputAudioFileName(
-        base_file_path, kExpectedFirstOutputStreamId + i);
-    EXPECT_TRUE(base::PathExists(file_path));
+  std::vector<base::FilePath> output_files =
+      GetRecordingFileNames(FILE_PATH_LITERAL("output"), base_file_path);
+  EXPECT_EQ(output_files.size(), 4u);
+  for (const base::FilePath& file_path : output_files) {
     file_size = 0;
     EXPECT_TRUE(base::GetFileSize(file_path, &file_size));
     EXPECT_GT(file_size, kWaveHeaderSizeBytes);
