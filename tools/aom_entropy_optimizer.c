@@ -722,19 +722,6 @@ int main(int argc, const char **argv) {
 #endif
 
 /* supertx experiment */
-#if CONFIG_SUPERTX
-  cts_each_dim[0] = PARTITION_SUPERTX_CONTEXTS;
-  cts_each_dim[1] = TX_SIZES;
-  cts_each_dim[2] = 2;
-  optimize_entropy_table(
-      &fc.supertx[0][0][0], probsfile, 3, cts_each_dim, NULL, 1,
-      "static const aom_prob\n"
-      "default_supertx_prob[PARTITION_SUPERTX_CONTEXTS][TX_SIZES]");
-  optimize_cdf_table(&fc.supertx[0][0][0], probsfile, 3, cts_each_dim,
-                     "static const aom_cdf_prob "
-                     "default_supertx_cdf[PARTITION_SUPERTX_CONTEXTS][TX_SIZES]"
-                     "[CDF_SIZE(2)]");
-#endif
 
 /* filter_intra experiment */
 #if CONFIG_FILTER_INTRA

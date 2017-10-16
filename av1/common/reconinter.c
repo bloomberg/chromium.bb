@@ -834,64 +834,6 @@ void av1_init_wedge_masks() {
   init_wedge_masks();
 }
 
-#if CONFIG_SUPERTX
-static void build_masked_compound_wedge_extend(
-    uint8_t *dst, int dst_stride, const uint8_t *src0, int src0_stride,
-    const uint8_t *src1, int src1_stride,
-    const INTERINTER_COMPOUND_DATA *const comp_data, BLOCK_SIZE sb_type,
-    int wedge_offset_x, int wedge_offset_y, int h, int w) {
-  const int subh = (2 << b_height_log2_lookup[sb_type]) == h;
-  const int subw = (2 << b_width_log2_lookup[sb_type]) == w;
-  const uint8_t *mask;
-  size_t mask_stride;
-  switch (comp_data->interinter_compound_type) {
-    case COMPOUND_WEDGE:
-      mask = av1_get_soft_mask(comp_data->wedge_index, comp_data->wedge_sign,
-                               sb_type, wedge_offset_x, wedge_offset_y);
-      mask_stride = MASK_MASTER_STRIDE;
-      break;
-#if CONFIG_COMPOUND_SEGMENT
-    case COMPOUND_SEG:
-      mask = comp_data->seg_mask;
-      mask_stride = block_size_wide[sb_type];
-      break;
-#endif
-    default: assert(0); return;
-  }
-  aom_blend_a64_mask(dst, dst_stride, src0, src0_stride, src1, src1_stride,
-                     mask, (int)mask_stride, h, w, subh, subw);
-}
-
-#if CONFIG_HIGHBITDEPTH
-static void build_masked_compound_wedge_extend_highbd(
-    uint8_t *dst_8, int dst_stride, const uint8_t *src0_8, int src0_stride,
-    const uint8_t *src1_8, int src1_stride,
-    const INTERINTER_COMPOUND_DATA *const comp_data, BLOCK_SIZE sb_type,
-    int wedge_offset_x, int wedge_offset_y, int h, int w, int bd) {
-  const int subh = (2 << b_height_log2_lookup[sb_type]) == h;
-  const int subw = (2 << b_width_log2_lookup[sb_type]) == w;
-  const uint8_t *mask;
-  size_t mask_stride;
-  switch (comp_data->interinter_compound_type) {
-    case COMPOUND_WEDGE:
-      mask = av1_get_soft_mask(comp_data->wedge_index, comp_data->wedge_sign,
-                               sb_type, wedge_offset_x, wedge_offset_y);
-      mask_stride = MASK_MASTER_STRIDE;
-      break;
-#if CONFIG_COMPOUND_SEGMENT
-    case COMPOUND_SEG:
-      mask = comp_data->seg_mask;
-      mask_stride = block_size_wide[sb_type];
-      break;
-#endif
-    default: assert(0); return;
-  }
-  aom_highbd_blend_a64_mask(dst_8, dst_stride, src0_8, src0_stride, src1_8,
-                            src1_stride, mask, (int)mask_stride, h, w, subh,
-                            subw, bd);
-}
-#endif  // CONFIG_HIGHBITDEPTH
-#else
 #if CONFIG_CONVOLVE_ROUND
 static void build_masked_compound_no_round(
     CONV_BUF_TYPE *dst, int dst_stride, const CONV_BUF_TYPE *src0,
@@ -939,16 +881,12 @@ static void build_masked_compound_highbd(
                             subh, subw, bd);
 }
 #endif  // CONFIG_HIGHBITDEPTH
-#endif  // CONFIG_SUPERTX
 
 void av1_make_masked_inter_predictor(
     const uint8_t *pre, int pre_stride, uint8_t *dst, int dst_stride,
     const int subpel_x, const int subpel_y, const struct scale_factors *sf,
     int w, int h, ConvolveParams *conv_params, InterpFilters interp_filters,
     int xs, int ys,
-#if CONFIG_SUPERTX
-    int wedge_offset_x, int wedge_offset_y,
-#endif  // CONFIG_SUPERTX
 #if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION || CONFIG_COMPOUND_SEGMENT
     int plane,
 #endif
@@ -1050,18 +988,6 @@ void av1_make_masked_inter_predictor(
   }
 #endif  // CONFIG_COMPOUND_SEGMENT
 
-#if CONFIG_SUPERTX
-#if CONFIG_HIGHBITDEPTH
-  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
-    build_masked_compound_wedge_extend_highbd(
-        dst, dst_stride, dst, dst_stride, tmp_dst, MAX_SB_SIZE, &comp_data,
-        mi->mbmi.sb_type, wedge_offset_x, wedge_offset_y, h, w, xd->bd);
-  else
-#endif  // CONFIG_HIGHBITDEPTH
-    build_masked_compound_wedge_extend(
-        dst, dst_stride, dst, dst_stride, tmp_dst, MAX_SB_SIZE, &comp_data,
-        mi->mbmi.sb_type, wedge_offset_x, wedge_offset_y, h, w);
-#else
 #if CONFIG_CONVOLVE_ROUND
   if (is_conv_no_round) {
     build_masked_compound_no_round(org_dst, org_dst_stride, org_dst,
@@ -1095,7 +1021,6 @@ void av1_make_masked_inter_predictor(
 #if CONFIG_CONVOLVE_ROUND
   }
 #endif  // CONFIG_CONVOLVE_ROUND
-#endif  // CONFIG_SUPERTX
 }
 
 // TODO(sarahparker) av1_highbd_build_inter_predictor and
@@ -1182,11 +1107,7 @@ static INLINE void build_inter_predictors(
 #if CONFIG_MOTION_VAR
     const MODE_INFO *mi, int build_for_obmc,
 #endif  // CONFIG_MOTION_VAR
-    int block, int bw, int bh, int x, int y, int w, int h,
-#if CONFIG_SUPERTX
-    int wedge_offset_x, int wedge_offset_y,
-#endif  // CONFIG_SUPERTX
-    int mi_x, int mi_y) {
+    int block, int bw, int bh, int x, int y, int w, int h, int mi_x, int mi_y) {
   struct macroblockd_plane *const pd = &xd->plane[plane];
 #if !CONFIG_MOTION_VAR
   const MODE_INFO *mi = xd->mi[0];
@@ -1365,19 +1286,11 @@ static INLINE void build_inter_predictors(
           if (is_masked_compound_type(mi->mbmi.interinter_compound_type)) {
             // masked compound type has its own average mechanism
             conv_params.do_average = 0;
-#if CONFIG_CONVOLVE_ROUND && CONFIG_COMPOUND_SEGMENT && CONFIG_SUPERTX
-            // TODO(angiebird): convolve_round does not support compound_segment
-            // when supertx is on
-            conv_params = get_conv_params(ref, 0, plane);
-#endif
           }
           if (ref && is_masked_compound_type(mi->mbmi.interinter_compound_type))
             av1_make_masked_inter_predictor(
                 pre, pre_buf->stride, dst, dst_buf->stride, subpel_x, subpel_y,
                 sf, b4_w, b4_h, &conv_params, mi->mbmi.interp_filters, xs, ys,
-#if CONFIG_SUPERTX
-                wedge_offset_x, wedge_offset_y,
-#endif  // CONFIG_SUPERTX
 #if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION || CONFIG_COMPOUND_SEGMENT
                 plane,
 #endif
@@ -1559,11 +1472,6 @@ static INLINE void build_inter_predictors(
       if (is_masked_compound_type(mi->mbmi.interinter_compound_type)) {
         // masked compound type has its own average mechanism
         conv_params.do_average = 0;
-#if CONFIG_CONVOLVE_ROUND && CONFIG_COMPOUND_SEGMENT && CONFIG_SUPERTX
-        // TODO(angiebird): convolve_round does not support compound_segment
-        // when supertx is on
-        conv_params = get_conv_params(ref, 0, plane);
-#endif
       }
 
       if (ref && is_masked_compound_type(mi->mbmi.interinter_compound_type))
@@ -1572,9 +1480,6 @@ static INLINE void build_inter_predictors(
             subpel_params[ref].subpel_x, subpel_params[ref].subpel_y, sf, w, h,
             &conv_params, mi->mbmi.interp_filters, subpel_params[ref].xs,
             subpel_params[ref].ys,
-#if CONFIG_SUPERTX
-            wedge_offset_x, wedge_offset_y,
-#endif  // CONFIG_SUPERTX
 #if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION || CONFIG_COMPOUND_SEGMENT
             plane,
 #endif
@@ -1665,21 +1570,14 @@ static void build_inter_predictors_for_planes(const AV1_COMMON *cm,
 #if CONFIG_MOTION_VAR
                                  xd->mi[0], 0,
 #endif  // CONFIG_MOTION_VAR
-                                 y * 2 + x, bw, bh, 4 * x, 4 * y, pw, ph,
-#if CONFIG_SUPERTX
-                                 0, 0,
-#endif  // CONFIG_SUPERTX
-                                 mi_x, mi_y);
+                                 y * 2 + x, bw, bh, 4 * x, 4 * y, pw, ph, mi_x,
+                                 mi_y);
     } else {
       build_inter_predictors(cm, xd, plane,
 #if CONFIG_MOTION_VAR
                              xd->mi[0], 0,
 #endif  // CONFIG_MOTION_VAR
-                             0, bw, bh, 0, 0, bw, bh,
-#if CONFIG_SUPERTX
-                             0, 0,
-#endif  // CONFIG_SUPERTX
-                             mi_x, mi_y);
+                             0, bw, bh, 0, 0, bw, bh, mi_x, mi_y);
     }
   }
 }
@@ -1769,193 +1667,6 @@ void av1_setup_pre_planes(MACROBLOCKD *xd, int idx,
     }
   }
 }
-
-#if CONFIG_SUPERTX
-#if CONFIG_CB4X4
-static const uint8_t mask_4[4] = { 64, 52, 12, 0 };
-static const uint8_t mask_4_uv[4] = { 64, 52, 12, 0 };
-#endif  // CONFIG_CB4X4
-static const uint8_t mask_8[8] = { 64, 64, 62, 52, 12, 2, 0, 0 };
-
-static const uint8_t mask_16[16] = { 63, 62, 60, 58, 55, 50, 43, 36,
-                                     28, 21, 14, 9,  6,  4,  2,  1 };
-
-static const uint8_t mask_32[32] = { 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 63,
-                                     61, 57, 52, 45, 36, 28, 19, 12, 7,  3,  1,
-                                     0,  0,  0,  0,  0,  0,  0,  0,  0,  0 };
-
-static const uint8_t mask_8_uv[8] = { 64, 64, 62, 52, 12, 2, 0, 0 };
-
-static const uint8_t mask_16_uv[16] = { 64, 64, 64, 64, 61, 53, 45, 36,
-                                        28, 19, 11, 3,  0,  0,  0,  0 };
-
-static const uint8_t mask_32_uv[32] = { 64, 64, 64, 64, 64, 64, 64, 64,
-                                        64, 64, 64, 64, 60, 54, 46, 36,
-                                        28, 18, 10, 4,  0,  0,  0,  0,
-                                        0,  0,  0,  0,  0,  0,  0,  0 };
-
-static const uint8_t *get_supertx_mask(int length, int plane) {
-  switch (length) {
-#if CONFIG_CB4X4
-    case 4: return plane ? mask_4_uv : mask_4;
-#endif  // CONFIG_CB4X4
-    case 8: return plane ? mask_8_uv : mask_8;
-    case 16: return plane ? mask_16_uv : mask_16;
-    case 32: return plane ? mask_32_uv : mask_32;
-    default: assert(0);
-  }
-  return NULL;
-}
-
-void av1_build_masked_inter_predictor_complex(
-    MACROBLOCKD *xd, uint8_t *dst, int dst_stride, const uint8_t *pre,
-    int pre_stride, int mi_row, int mi_col, int mi_row_ori, int mi_col_ori,
-    BLOCK_SIZE bsize, BLOCK_SIZE top_bsize, PARTITION_TYPE partition,
-    int plane) {
-  const struct macroblockd_plane *pd = &xd->plane[plane];
-  const int ssx = pd->subsampling_x;
-  const int ssy = pd->subsampling_y;
-  const int top_w = block_size_wide[top_bsize] >> ssx;
-  const int top_h = block_size_high[top_bsize] >> ssy;
-  const int w = block_size_wide[bsize] >> ssx;
-  const int h = block_size_high[bsize] >> ssy;
-  const int w_offset = ((mi_col - mi_col_ori) * MI_SIZE) >> ssx;
-  const int h_offset = ((mi_row - mi_row_ori) * MI_SIZE) >> ssy;
-
-  int w_remain, h_remain;
-
-#if CONFIG_HIGHBITDEPTH
-  const int is_hdb = (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) ? 1 : 0;
-#endif  // CONFIG_HIGHBITDEPTH
-
-  assert(bsize <= BLOCK_32X32);
-  assert(IMPLIES(plane == 0, ssx == 0));
-  assert(IMPLIES(plane == 0, ssy == 0));
-
-  switch (partition) {
-    case PARTITION_HORZ: {
-      const uint8_t *const mask = get_supertx_mask(h, ssy);
-
-      w_remain = top_w;
-      h_remain = top_h - h_offset - h;
-      dst += h_offset * dst_stride;
-      pre += h_offset * pre_stride;
-
-#if CONFIG_HIGHBITDEPTH
-      if (is_hdb)
-        aom_highbd_blend_a64_vmask(dst, dst_stride, dst, dst_stride, pre,
-                                   pre_stride, mask, h, top_w, xd->bd);
-      else
-#endif  // CONFIG_HIGHBITDEPTH
-        aom_blend_a64_vmask(dst, dst_stride, dst, dst_stride, pre, pre_stride,
-                            mask, h, top_w);
-
-      dst += h * dst_stride;
-      pre += h * pre_stride;
-      break;
-    }
-    case PARTITION_VERT: {
-      const uint8_t *const mask = get_supertx_mask(w, ssx);
-
-      w_remain = top_w - w_offset - w;
-      h_remain = top_h;
-      dst += w_offset;
-      pre += w_offset;
-
-#if CONFIG_HIGHBITDEPTH
-      if (is_hdb)
-        aom_highbd_blend_a64_hmask(dst, dst_stride, dst, dst_stride, pre,
-                                   pre_stride, mask, top_h, w, xd->bd);
-      else
-#endif  // CONFIG_HIGHBITDEPTH
-        aom_blend_a64_hmask(dst, dst_stride, dst, dst_stride, pre, pre_stride,
-                            mask, top_h, w);
-
-      dst += w;
-      pre += w;
-      break;
-    }
-    default: {
-      assert(0);
-      return;
-    }
-  }
-
-  if (w_remain == 0 || h_remain == 0) {
-    return;
-  }
-
-#if CONFIG_HIGHBITDEPTH
-  if (is_hdb) {
-    dst = (uint8_t *)CONVERT_TO_SHORTPTR(dst);
-    pre = (const uint8_t *)CONVERT_TO_SHORTPTR(pre);
-    dst_stride *= 2;
-    pre_stride *= 2;
-    w_remain *= 2;
-  }
-#endif  // CONFIG_HIGHBITDEPTH
-
-  do {
-    memcpy(dst, pre, w_remain * sizeof(uint8_t));
-    dst += dst_stride;
-    pre += pre_stride;
-  } while (--h_remain);
-}
-
-void av1_build_inter_predictor_sb_sub8x8_extend(const AV1_COMMON *cm,
-                                                MACROBLOCKD *xd, int mi_row_ori,
-                                                int mi_col_ori, int mi_row,
-                                                int mi_col, int plane,
-                                                BLOCK_SIZE bsize, int block) {
-  // Prediction function used in supertx:
-  // Use the mv at current block (which is less than 8x8)
-  // to get prediction of a block located at (mi_row, mi_col) at size of bsize
-  // bsize can be larger than 8x8.
-  // block (0-3): the sub8x8 location of current block
-  const int mi_x = mi_col * MI_SIZE;
-  const int mi_y = mi_row * MI_SIZE;
-  const int wedge_offset_x = (mi_col_ori - mi_col) * MI_SIZE;
-  const int wedge_offset_y = (mi_row_ori - mi_row) * MI_SIZE;
-
-  // For sub8x8 uv:
-  // Skip uv prediction in supertx except the first block (block = 0)
-  int max_plane = block ? 1 : MAX_MB_PLANE;
-  if (plane >= max_plane) return;
-
-  const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, &xd->plane[plane]);
-  const int num_4x4_w = num_4x4_blocks_wide_lookup[plane_bsize];
-  const int num_4x4_h = num_4x4_blocks_high_lookup[plane_bsize];
-  const int bw = 4 * num_4x4_w;
-  const int bh = 4 * num_4x4_h;
-
-  build_inter_predictors(cm, xd, plane,
-#if CONFIG_MOTION_VAR
-                         xd->mi[0], 0,
-#endif  // CONFIG_MOTION_VAR
-                         block, bw, bh, 0, 0, bw, bh, wedge_offset_x,
-                         wedge_offset_y, mi_x, mi_y);
-}
-
-void av1_build_inter_predictor_sb_extend(const AV1_COMMON *cm, MACROBLOCKD *xd,
-                                         int mi_row_ori, int mi_col_ori,
-                                         int mi_row, int mi_col, int plane,
-                                         BLOCK_SIZE bsize) {
-  const int mi_x = mi_col * MI_SIZE;
-  const int mi_y = mi_row * MI_SIZE;
-  const int wedge_offset_x = (mi_col_ori - mi_col) * MI_SIZE;
-  const int wedge_offset_y = (mi_row_ori - mi_row) * MI_SIZE;
-  const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, &xd->plane[plane]);
-  const int bw = block_size_wide[plane_bsize];
-  const int bh = block_size_high[plane_bsize];
-
-  build_inter_predictors(cm, xd, plane,
-#if CONFIG_MOTION_VAR
-                         xd->mi[0], 0,
-#endif  // CONFIG_MOTION_VAR
-                         0, bw, bh, 0, 0, bw, bh, wedge_offset_x,
-                         wedge_offset_y, mi_x, mi_y);
-}
-#endif  // CONFIG_SUPERTX
 
 #if CONFIG_MOTION_VAR
 // obmc_mask_N[overlap_position]
@@ -2294,11 +2005,7 @@ static INLINE void build_prediction_by_above_pred(MACROBLOCKD *xd,
 
     if (skip_u4x4_pred_in_obmc(bsize, pd, 0)) continue;
     build_inter_predictors(ctxt->cm, xd, j, above_mi, 1, 0, bw, bh, 0, 0, bw,
-                           bh,
-#if CONFIG_SUPERTX
-                           0, 0,
-#endif  // CONFIG_SUPERTX
-                           mi_x, mi_y);
+                           bh, mi_x, mi_y);
   }
   *above_mbmi = backup_mbmi;
 }
@@ -2395,9 +2102,6 @@ static INLINE void build_prediction_by_left_pred(MACROBLOCKD *xd,
 
     if (skip_u4x4_pred_in_obmc(bsize, pd, 1)) continue;
     build_inter_predictors(ctxt->cm, xd, j, left_mi, 1, 0, bw, bh, 0, 0, bw, bh,
-#if CONFIG_SUPERTX
-                           0, 0,
-#endif  // CONFIG_SUPERTX
                            mi_x, mi_y);
   }
   *left_mbmi = backup_mbmi;
@@ -2562,20 +2266,12 @@ void av1_build_prediction_by_bottom_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
             build_inter_predictors(cm, xd, j, mi, 1, y * 2 + x, bw, bh,
                                    (4 * x) >> pd->subsampling_x,
                                    xd->n8_h == 1 ? (4 >> pd->subsampling_y) : 0,
-                                   pw, bh,
-#if CONFIG_SUPERTX
-                                   0, 0,
-#endif  // CONFIG_SUPERTX
-                                   mi_x, mi_y);
+                                   pw, bh, mi_x, mi_y);
           }
       } else {
         build_inter_predictors(cm, xd, j, mi, 1, 0, bw, bh, 0,
                                xd->n8_h == 1 ? (4 >> pd->subsampling_y) : 0, bw,
-                               bh,
-#if CONFIG_SUPERTX
-                               0, 0,
-#endif  // CONFIG_SUPERTX
-                               mi_x, mi_y);
+                               bh, mi_x, mi_y);
       }
     }
     *mbmi = backup_mbmi;
@@ -2667,20 +2363,13 @@ void av1_build_prediction_by_right_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
 
             build_inter_predictors(cm, xd, j, mi, 1, y * 2 + x, bw, bh,
                                    xd->n8_w == 1 ? 4 >> pd->subsampling_x : 0,
-                                   (4 * y) >> pd->subsampling_y, bw, ph,
-#if CONFIG_SUPERTX
-                                   0, 0,
-#endif  // CONFIG_SUPERTX
-                                   mi_x, mi_y);
+                                   (4 * y) >> pd->subsampling_y, bw, ph, mi_x,
+                                   mi_y);
           }
       } else {
         build_inter_predictors(cm, xd, j, mi, 1, 0, bw, bh,
                                xd->n8_w == 1 ? 4 >> pd->subsampling_x : 0, 0,
-                               bw, bh,
-#if CONFIG_SUPERTX
-                               0, 0,
-#endif  // CONFIG_SUPERTX
-                               mi_x, mi_y);
+                               bw, bh, mi_x, mi_y);
       }
     }
     *mbmi = backup_mbmi;
@@ -3299,12 +2988,8 @@ void av1_build_inter_predictors_for_planes_single_buf(
 }
 
 static void build_wedge_inter_predictor_from_buf(
-    MACROBLOCKD *xd, int plane, int x, int y, int w, int h,
-#if CONFIG_SUPERTX
-    int wedge_offset_x, int wedge_offset_y,
-#endif  // CONFIG_SUPERTX
-    uint8_t *ext_dst0, int ext_dst_stride0, uint8_t *ext_dst1,
-    int ext_dst_stride1) {
+    MACROBLOCKD *xd, int plane, int x, int y, int w, int h, uint8_t *ext_dst0,
+    int ext_dst_stride0, uint8_t *ext_dst1, int ext_dst_stride1) {
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   const int is_compound = has_second_ref(mbmi);
   MACROBLOCKD_PLANE *const pd = &xd->plane[plane];
@@ -3346,20 +3031,6 @@ static void build_wedge_inter_predictor_from_buf(
     }
 #endif  // CONFIG_COMPOUND_SEGMENT
 
-#if CONFIG_SUPERTX
-#if CONFIG_HIGHBITDEPTH
-    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
-      build_masked_compound_wedge_extend_highbd(
-          dst, dst_buf->stride, CONVERT_TO_BYTEPTR(ext_dst0), ext_dst_stride0,
-          CONVERT_TO_BYTEPTR(ext_dst1), ext_dst_stride1, &comp_data,
-          mbmi->sb_type, wedge_offset_x, wedge_offset_y, h, w, xd->bd);
-    else
-#endif  // CONFIG_HIGHBITDEPTH
-      build_masked_compound_wedge_extend(
-          dst, dst_buf->stride, ext_dst0, ext_dst_stride0, ext_dst1,
-          ext_dst_stride1, &comp_data, mbmi->sb_type, wedge_offset_x,
-          wedge_offset_y, h, w);
-#else  // !CONFIG_SUPERTX
 #if CONFIG_HIGHBITDEPTH
     if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
       build_masked_compound_highbd(
@@ -3371,7 +3042,6 @@ static void build_wedge_inter_predictor_from_buf(
       build_masked_compound(dst, dst_buf->stride, ext_dst0, ext_dst_stride0,
                             ext_dst1, ext_dst_stride1, &comp_data,
                             mbmi->sb_type, h, w);
-#endif  // CONFIG_SUPERTX
   } else {
 #if CONFIG_HIGHBITDEPTH
     if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
@@ -3385,13 +3055,12 @@ static void build_wedge_inter_predictor_from_buf(
   }
 }
 
-void av1_build_wedge_inter_predictor_from_buf(
-    MACROBLOCKD *xd, BLOCK_SIZE bsize, int plane_from, int plane_to,
-#if CONFIG_SUPERTX
-    int wedge_offset_x, int wedge_offset_y,
-#endif  // CONFIG_SUPERTX
-    uint8_t *ext_dst0[3], int ext_dst_stride0[3], uint8_t *ext_dst1[3],
-    int ext_dst_stride1[3]) {
+void av1_build_wedge_inter_predictor_from_buf(MACROBLOCKD *xd, BLOCK_SIZE bsize,
+                                              int plane_from, int plane_to,
+                                              uint8_t *ext_dst0[3],
+                                              int ext_dst_stride0[3],
+                                              uint8_t *ext_dst1[3],
+                                              int ext_dst_stride1[3]) {
   int plane;
   for (plane = plane_from; plane <= plane_to; ++plane) {
     const BLOCK_SIZE plane_bsize =
@@ -3405,22 +3074,14 @@ void av1_build_wedge_inter_predictor_from_buf(
       for (y = 0; y < num_4x4_h; ++y)
         for (x = 0; x < num_4x4_w; ++x)
           build_wedge_inter_predictor_from_buf(
-              xd, plane, 4 * x, 4 * y, 4, 4,
-#if CONFIG_SUPERTX
-              wedge_offset_x, wedge_offset_y,
-#endif  // CONFIG_SUPERTX
-              ext_dst0[plane], ext_dst_stride0[plane], ext_dst1[plane],
-              ext_dst_stride1[plane]);
+              xd, plane, 4 * x, 4 * y, 4, 4, ext_dst0[plane],
+              ext_dst_stride0[plane], ext_dst1[plane], ext_dst_stride1[plane]);
     } else {
       const int bw = block_size_wide[plane_bsize];
       const int bh = block_size_high[plane_bsize];
       build_wedge_inter_predictor_from_buf(
-          xd, plane, 0, 0, bw, bh,
-#if CONFIG_SUPERTX
-          wedge_offset_x, wedge_offset_y,
-#endif  // CONFIG_SUPERTX
-          ext_dst0[plane], ext_dst_stride0[plane], ext_dst1[plane],
-          ext_dst_stride1[plane]);
+          xd, plane, 0, 0, bw, bh, ext_dst0[plane], ext_dst_stride0[plane],
+          ext_dst1[plane], ext_dst_stride1[plane]);
     }
   }
 }
@@ -3635,9 +3296,6 @@ void get_pred_by_horz_neighbor(const AV1_COMMON *cm, MACROBLOCKD *xd, int bsize,
       bh = (mi_step << MI_SIZE_LOG2) >> pd->subsampling_y;
 
       build_inter_predictors(cm, xd, j, left_mi, 1, 0, bw, bh, 0, 0, bw, bh,
-#if CONFIG_SUPERTX
-                             0, 0,
-#endif  // CONFIG_SUPERTX
                              mi_x, mi_y);
     }
     *left_mbmi = backup_mbmi;
@@ -3730,9 +3388,6 @@ void get_pred_by_horz_neighbor(const AV1_COMMON *cm, MACROBLOCKD *xd, int bsize,
       bh = (mi_step << MI_SIZE_LOG2) >> pd->subsampling_y;
 
       build_inter_predictors(cm, xd, j, right_mi, 1, 0, bw, bh, 0, 0, bw, bh,
-#if CONFIG_SUPERTX
-                             0, 0,
-#endif  // CONFIG_SUPERTX
                              mi_x, mi_y);
     }
 
@@ -3849,9 +3504,6 @@ void get_pred_by_vert_neighbor(const AV1_COMMON *cm, MACROBLOCKD *xd, int bsize,
       bw = (mi_step << MI_SIZE_LOG2) >> pd->subsampling_y;
 
       build_inter_predictors(cm, xd, j, above_mi, 1, 0, bw, bh, 0, 0, bw, bh,
-#if CONFIG_SUPERTX
-                             0, 0,
-#endif  // CONFIG_SUPERTX
                              mi_x, mi_y);
     }
 
@@ -3949,9 +3601,6 @@ void get_pred_by_vert_neighbor(const AV1_COMMON *cm, MACROBLOCKD *xd, int bsize,
       bw = (mi_step << MI_SIZE_LOG2) >> pd->subsampling_y;
 
       build_inter_predictors(cm, xd, j, bottom_mi, 1, 0, bw, bh, 0, 0, bw, bh,
-#if CONFIG_SUPERTX
-                             0, 0,
-#endif  // CONFIG_SUPERTX
                              mi_x, mi_y);
     }
 
@@ -4059,9 +3708,6 @@ void get_pred_by_corner_neighbor(const AV1_COMMON *cm, MACROBLOCKD *xd,
       bh = mi_high << MI_SIZE_LOG2 >> (pd->subsampling_x + 1);
       bw = mi_wide << MI_SIZE_LOG2 >> (pd->subsampling_y + 1);
       build_inter_predictors(cm, xd, j, corner_mi, 1, 0, bw, bh, 0, 0, bw, bh,
-#if CONFIG_SUPERTX
-                             0, 0,
-#endif  // CONFIG_SUPERTX
                              mi_x, mi_y);
     }
     *corner_mbmi = backup_mbmi;
@@ -4119,13 +3765,9 @@ void av1_get_ori_blk_pred(const AV1_COMMON *cm, MACROBLOCKD *xd, int bsize,
 
   for (i = 0; i < MAX_MB_PLANE; ++i) {
     const struct macroblockd_plane *pd = &xd->plane[i];
-    build_inter_predictors(cm, xd, i, mi, 1, 0, bw >> pd->subsampling_x,
-                           bh >> pd->subsampling_y, 0, 0,
-                           bw >> pd->subsampling_x, bh >> pd->subsampling_y,
-#if CONFIG_SUPERTX
-                           0, 0,
-#endif  // CONFIG_SUPERTX
-                           mi_x, mi_y);
+    build_inter_predictors(
+        cm, xd, i, mi, 1, 0, bw >> pd->subsampling_x, bh >> pd->subsampling_y,
+        0, 0, bw >> pd->subsampling_x, bh >> pd->subsampling_y, mi_x, mi_y);
   }
 }
 

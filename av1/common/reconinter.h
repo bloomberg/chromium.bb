@@ -286,9 +286,6 @@ void av1_make_masked_inter_predictor(
     const int subpel_x, const int subpel_y, const struct scale_factors *sf,
     int w, int h, ConvolveParams *conv_params, InterpFilters interp_filters,
     int xs, int ys,
-#if CONFIG_SUPERTX
-    int wedge_offset_x, int wedge_offset_y,
-#endif  // CONFIG_SUPERTX
 #if CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION || CONFIG_COMPOUND_SEGMENT
     int plane,
 #endif
@@ -374,25 +371,6 @@ void av1_build_inter_predictors_sbuv(const AV1_COMMON *cm, MACROBLOCKD *xd,
 void av1_build_inter_predictors_sb(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                    int mi_row, int mi_col, BUFFER_SET *ctx,
                                    BLOCK_SIZE bsize);
-
-#if CONFIG_SUPERTX
-void av1_build_inter_predictor_sb_sub8x8_extend(const AV1_COMMON *cm,
-                                                MACROBLOCKD *xd, int mi_row_ori,
-                                                int mi_col_ori, int mi_row,
-                                                int mi_col, int plane,
-                                                BLOCK_SIZE bsize, int block);
-
-void av1_build_inter_predictor_sb_extend(const AV1_COMMON *cm, MACROBLOCKD *xd,
-                                         int mi_row_ori, int mi_col_ori,
-                                         int mi_row, int mi_col, int plane,
-                                         BLOCK_SIZE bsize);
-struct macroblockd_plane;
-void av1_build_masked_inter_predictor_complex(
-    MACROBLOCKD *xd, uint8_t *dst, int dst_stride, const uint8_t *pre,
-    int pre_stride, int mi_row, int mi_col, int mi_row_ori, int mi_col_ori,
-    BLOCK_SIZE bsize, BLOCK_SIZE top_bsize, PARTITION_TYPE partition,
-    int plane);
-#endif  // CONFIG_SUPERTX
 
 void av1_build_inter_predictor(const uint8_t *src, int src_stride, uint8_t *dst,
                                int dst_stride, const MV *src_mv,
@@ -631,13 +609,12 @@ void av1_combine_interintra(MACROBLOCKD *xd, BLOCK_SIZE bsize, int plane,
 void av1_build_inter_predictors_for_planes_single_buf(
     MACROBLOCKD *xd, BLOCK_SIZE bsize, int plane_from, int plane_to, int mi_row,
     int mi_col, int ref, uint8_t *ext_dst[3], int ext_dst_stride[3]);
-void av1_build_wedge_inter_predictor_from_buf(
-    MACROBLOCKD *xd, BLOCK_SIZE bsize, int plane_from, int plane_to,
-#if CONFIG_SUPERTX
-    int wedge_offset_x, int wedge_offset_y,
-#endif  // CONFIG_SUPERTX
-    uint8_t *ext_dst0[3], int ext_dst_stride0[3], uint8_t *ext_dst1[3],
-    int ext_dst_stride1[3]);
+void av1_build_wedge_inter_predictor_from_buf(MACROBLOCKD *xd, BLOCK_SIZE bsize,
+                                              int plane_from, int plane_to,
+                                              uint8_t *ext_dst0[3],
+                                              int ext_dst_stride0[3],
+                                              uint8_t *ext_dst1[3],
+                                              int ext_dst_stride1[3]);
 
 #if CONFIG_NCOBMC_ADAPT_WEIGHT
 #define ASSIGN_ALIGNED_PTRS(p, a, s) \

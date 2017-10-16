@@ -989,34 +989,6 @@ void av1_encode_sb(AV1_COMMON *cm, MACROBLOCK *x, BLOCK_SIZE bsize, int mi_row,
   }
 }
 
-#if CONFIG_SUPERTX
-void av1_encode_sb_supertx(AV1_COMMON *cm, MACROBLOCK *x, BLOCK_SIZE bsize) {
-  MACROBLOCKD *const xd = &x->e_mbd;
-  struct optimize_ctx ctx;
-  MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
-  struct encode_b_args arg = { cm, x, &ctx, &mbmi->skip, NULL, NULL, 1 };
-  int plane;
-
-  mbmi->skip = 1;
-  if (x->skip) return;
-
-  for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
-    const struct macroblockd_plane *const pd = &xd->plane[plane];
-#if CONFIG_VAR_TX
-    const TX_SIZE tx_size = TX_4X4;
-#else
-    const TX_SIZE tx_size = av1_get_tx_size(plane, xd);
-#endif
-    av1_subtract_plane(x, bsize, plane);
-    av1_get_entropy_contexts(bsize, tx_size, pd, ctx.ta[plane], ctx.tl[plane]);
-    arg.ta = ctx.ta[plane];
-    arg.tl = ctx.tl[plane];
-    av1_foreach_transformed_block_in_plane(xd, bsize, plane, encode_block,
-                                           &arg);
-  }
-}
-#endif  // CONFIG_SUPERTX
-
 #if !CONFIG_PVQ
 void av1_set_txb_context(MACROBLOCK *x, int plane, int block, TX_SIZE tx_size,
                          ENTROPY_CONTEXT *a, ENTROPY_CONTEXT *l) {

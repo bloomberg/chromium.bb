@@ -687,9 +687,6 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
 
       // Do intra 16x16 prediction.
       xd->mi[0]->mbmi.segment_id = 0;
-#if CONFIG_SUPERTX
-      xd->mi[0]->mbmi.segment_id_supertx = 0;
-#endif  // CONFIG_SUPERTX
       xd->lossless[xd->mi[0]->mbmi.segment_id] = (qindex == 0);
       xd->mi[0]->mbmi.mode = DC_PRED;
       xd->mi[0]->mbmi.tx_size =

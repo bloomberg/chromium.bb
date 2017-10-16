@@ -130,24 +130,10 @@ static void alloc_tree_contexts(AV1_COMMON *cm, PC_TREE *tree, int num_pix) {
                        &tree->horizontal4[i]);
     alloc_mode_context(cm, num_pix / 4, PARTITION_HORZ_4, &tree->vertical4[i]);
   }
-#if CONFIG_SUPERTX
-  alloc_mode_context(cm, num_pix, PARTITION_HORZ, &tree->horizontal_supertx);
-  alloc_mode_context(cm, num_pix, PARTITION_VERT, &tree->vertical_supertx);
-  alloc_mode_context(cm, num_pix, PARTITION_SPLIT, &tree->split_supertx);
-  alloc_mode_context(cm, num_pix, PARTITION_HORZ_A, &tree->horizontala_supertx);
-  alloc_mode_context(cm, num_pix, PARTITION_HORZ_B, &tree->horizontalb_supertx);
-  alloc_mode_context(cm, num_pix, PARTITION_VERT_A, &tree->verticala_supertx);
-  alloc_mode_context(cm, num_pix, PARTITION_VERT_B, &tree->verticalb_supertx);
-#endif  // CONFIG_SUPERTX
 #else
   alloc_mode_context(cm, num_pix, &tree->none);
   alloc_mode_context(cm, num_pix / 2, &tree->horizontal[0]);
   alloc_mode_context(cm, num_pix / 2, &tree->vertical[0]);
-#if CONFIG_SUPERTX
-  alloc_mode_context(cm, num_pix, &tree->horizontal_supertx);
-  alloc_mode_context(cm, num_pix, &tree->vertical_supertx);
-  alloc_mode_context(cm, num_pix, &tree->split_supertx);
-#endif
 
   if (num_pix > 16) {
     alloc_mode_context(cm, num_pix / 2, &tree->horizontal[1]);
@@ -178,17 +164,6 @@ static void free_tree_contexts(PC_TREE *tree) {
   free_mode_context(&tree->horizontal[1]);
   free_mode_context(&tree->vertical[0]);
   free_mode_context(&tree->vertical[1]);
-#if CONFIG_SUPERTX
-  free_mode_context(&tree->horizontal_supertx);
-  free_mode_context(&tree->vertical_supertx);
-  free_mode_context(&tree->split_supertx);
-#if CONFIG_EXT_PARTITION_TYPES
-  free_mode_context(&tree->horizontala_supertx);
-  free_mode_context(&tree->horizontalb_supertx);
-  free_mode_context(&tree->verticala_supertx);
-  free_mode_context(&tree->verticalb_supertx);
-#endif  // CONFIG_EXT_PARTITION_TYPES
-#endif  // CONFIG_SUPERTX
 }
 
 // This function sets up a tree of contexts such that at each square

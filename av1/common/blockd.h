@@ -360,10 +360,6 @@ typedef struct MB_MODE_INFO {
 #endif
   int8_t skip;
   int8_t segment_id;
-#if CONFIG_SUPERTX
-  // Minimum of all segment IDs under the current supertx block.
-  int8_t segment_id_supertx;
-#endif                      // CONFIG_SUPERTX
   int8_t seg_id_predicted;  // valid only when temporal_update is enabled
 
 #if CONFIG_MRC_TX
@@ -759,9 +755,6 @@ typedef struct macroblockd {
   TXFM_CONTEXT left_txfm_context_buffer[2 * MAX_MIB_SIZE];
 
   TX_SIZE max_tx_size;
-#if CONFIG_SUPERTX
-  TX_SIZE supertx_size;
-#endif
 #endif
 
 #if CONFIG_LOOP_RESTORATION
@@ -876,14 +869,6 @@ static const TX_TYPE intra_mode_to_tx_type_context[INTRA_MODES] = {
 #endif        // CONFIG_SMOOTH_HV
   ADST_ADST,  // PAETH
 };
-
-#if CONFIG_SUPERTX
-static INLINE int supertx_enabled(const MB_MODE_INFO *mbmi) {
-  TX_SIZE max_tx_size = txsize_sqr_map[mbmi->tx_size];
-  return tx_size_wide[max_tx_size] >
-         AOMMIN(block_size_wide[mbmi->sb_type], block_size_high[mbmi->sb_type]);
-}
-#endif  // CONFIG_SUPERTX
 
 #define USE_TXTYPE_SEARCH_FOR_SUB8X8_IN_CB4X4 1
 
@@ -1386,12 +1371,6 @@ static INLINE TX_SIZE av1_get_uv_tx_size(const MB_MODE_INFO *mbmi,
 #if CONFIG_CHROMA_2X2
   assert(mbmi->tx_size > TX_2X2);
 #endif  // CONFIG_CHROMA_2X2
-
-#if CONFIG_SUPERTX
-  if (supertx_enabled(mbmi))
-    return uvsupertx_size_lookup[txsize_sqr_map[mbmi->tx_size]]
-                                [pd->subsampling_x][pd->subsampling_y];
-#endif  // CONFIG_SUPERTX
 
   const TX_SIZE uv_txsize =
       uv_txsize_lookup[mbmi->sb_type][mbmi->tx_size][pd->subsampling_x]

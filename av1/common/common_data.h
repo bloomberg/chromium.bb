@@ -2119,33 +2119,6 @@ static const int intra_mode_context[INTRA_MODES] = {
 };
 #endif
 
-#if CONFIG_SUPERTX
-static const TX_SIZE uvsupertx_size_lookup[TX_SIZES][2][2] = {
-//  ss_x == 0 ss_x == 0   ss_x == 1 ss_x == 1
-//  ss_y == 0 ss_y == 1   ss_y == 0 ss_y == 1
-#if CONFIG_CHROMA_2X2
-  { { TX_4X4, TX_4X4 }, { TX_4X4, TX_4X4 } },
-#endif
-  { { TX_4X4, TX_4X4 }, { TX_4X4, TX_4X4 } },
-  { { TX_8X8, TX_4X4 }, { TX_4X4, TX_4X4 } },
-  { { TX_16X16, TX_8X8 }, { TX_8X8, TX_8X8 } },
-  { { TX_32X32, TX_16X16 }, { TX_16X16, TX_16X16 } },
-#if CONFIG_TX64X64
-  { { TX_64X64, TX_32X32 }, { TX_32X32, TX_32X32 } },
-#endif  // CONFIG_TX64X64
-};
-
-#if CONFIG_EXT_PARTITION_TYPES
-static const int partition_supertx_context_lookup[EXT_PARTITION_TYPES] = {
-  -1, 0, 0, 1, 0, 0, 0, 0, 0, 0
-};
-
-#else
-static const int partition_supertx_context_lookup[PARTITION_TYPES] = { -1, 0, 0,
-                                                                       1 };
-#endif  // CONFIG_EXT_PARTITION_TYPES
-#endif  // CONFIG_SUPERTX
-
 #if CONFIG_NCOBMC_ADAPT_WEIGHT
 // NCOBMC_ADAPT_INTRPL only supports block size >= BLOCK_8X8 and <= BLOCK_64X64
 static const ADAPT_OVERLAP_BLOCK adapt_overlap_block_lookup[BLOCK_SIZES_ALL] = {

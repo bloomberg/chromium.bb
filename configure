@@ -267,7 +267,6 @@ EXPERIMENT_LIST="
     compound_segment
     global_motion
     new_quant
-    supertx
     ans
     loop_restoration
     striped_loop_restoration
@@ -562,7 +561,6 @@ post_process_cmdline() {
     enabled pvq && disable_feature lgt
     enabled pvq && disable_feature mrc_tx
     enabled lv_map && disable_feature mrc_tx
-    enabled supertx && disable_feature mrc_tx
     enabled coef_interleave && disable_feature mrc_tx
     enabled pvq && disable_feature palette_throughput
     enabled mrc_tx && enable_feature ext_tx
@@ -620,11 +618,6 @@ post_process_cmdline() {
         log_echo "ext_partition_types not compatible with fp_mb_stats;"
         log_echo "disabling fp_mb_stats"
         disable_feature fp_mb_stats
-      fi
-      if enabled supertx; then
-        log_echo "ext_partition_types not compatible with supertx;"
-        log_echo "disabling supertx"
-        disable_feature supertx
       fi
       if ! enabled rect_tx; then
         log_echo "ext_partition_types requires rect_tx;"

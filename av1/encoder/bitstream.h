@@ -36,9 +36,6 @@ static INLINE int av1_preserve_existing_gf(AV1_COMP *cpi) {
 }
 
 void av1_write_tx_type(const AV1_COMMON *const cm, const MACROBLOCKD *xd,
-#if CONFIG_SUPERTX
-                       const int supertx_enabled,
-#endif
 #if CONFIG_TXK_SEL
                        int blk_row, int blk_col, int block, int plane,
                        TX_SIZE tx_size,

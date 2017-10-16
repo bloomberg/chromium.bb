@@ -947,9 +947,6 @@ static void read_intra_angle_info(MACROBLOCKD *const xd, aom_reader *r) {
 #endif  // CONFIG_EXT_INTRA
 
 void av1_read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd,
-#if CONFIG_SUPERTX
-                      int supertx_enabled,
-#endif
 #if CONFIG_TXK_SEL
                       int blk_row, int blk_col, int block, int plane,
                       TX_SIZE tx_size,
@@ -986,9 +983,6 @@ void av1_read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd,
         ((!cm->seg.enabled && cm->base_qindex > 0) ||
          (cm->seg.enabled && xd->qindex[mbmi->segment_id] > 0)) &&
         !mbmi->skip &&
-#if CONFIG_SUPERTX
-        !supertx_enabled &&
-#endif  // CONFIG_SUPERTX
         !segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP)) {
       const TxSetType tx_set_type = get_ext_tx_set_type(
           tx_size, mbmi->sb_type, inter_block, cm->reduced_tx_set_used);
@@ -1080,9 +1074,6 @@ void av1_read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd,
         ((!cm->seg.enabled && cm->base_qindex > 0) ||
          (cm->seg.enabled && xd->qindex[mbmi->segment_id] > 0)) &&
         !mbmi->skip &&
-#if CONFIG_SUPERTX
-        !supertx_enabled &&
-#endif  // CONFIG_SUPERTX
         !segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP)) {
 #if CONFIG_ENTROPY_STATS
       FRAME_COUNTS *counts = xd->counts;
@@ -1172,11 +1163,7 @@ static void read_intrabc_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
     mbmi->min_tx_size = get_min_tx_size(mbmi->tx_size);
 #endif  // CONFIG_VAR_TX
 #if CONFIG_EXT_TX && !CONFIG_TXK_SEL
-    av1_read_tx_type(cm, xd,
-#if CONFIG_SUPERTX
-                     0,
-#endif
-                     r);
+    av1_read_tx_type(cm, xd, r);
 #endif  // CONFIG_EXT_TX && !CONFIG_TXK_SEL
   }
 }
@@ -1327,11 +1314,7 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
 #endif  // CONFIG_FILTER_INTRA
 
 #if !CONFIG_TXK_SEL
-  av1_read_tx_type(cm, xd,
-#if CONFIG_SUPERTX
-                   0,
-#endif
-                   r);
+  av1_read_tx_type(cm, xd, r);
 #endif  // !CONFIG_TXK_SEL
 }
 
@@ -2280,13 +2263,8 @@ static void dec_dump_logs(AV1_COMMON *cm, MODE_INFO *const mi, int mi_row,
 
 static void read_inter_block_mode_info(AV1Decoder *const pbi,
                                        MACROBLOCKD *const xd,
-                                       MODE_INFO *const mi,
-#if CONFIG_SUPERTX
-                                       int mi_row, int mi_col, aom_reader *r,
-                                       int supertx_enabled) {
-#else
-                                       int mi_row, int mi_col, aom_reader *r) {
-#endif  // CONFIG_MOTION_VAR && CONFIG_SUPERTX
+                                       MODE_INFO *const mi, int mi_row,
+                                       int mi_col, aom_reader *r) {
   AV1_COMMON *const cm = &pbi->common;
   MB_MODE_INFO *const mbmi = &mi->mbmi;
   const BLOCK_SIZE bsize = mbmi->sb_type;
@@ -2705,9 +2683,6 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 #if CONFIG_INTERINTRA
   mbmi->use_wedge_interintra = 0;
   if (cm->reference_mode != COMPOUND_REFERENCE &&
-#if CONFIG_SUPERTX
-      !supertx_enabled &&
-#endif
       cm->allow_interintra_compound && is_interintra_allowed(mbmi)) {
     const int bsize_group = size_group_lookup[bsize];
 #if CONFIG_NEW_MULTISYMBOL
@@ -2776,39 +2751,33 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   av1_count_overlappable_neighbors(cm, xd, mi_row, mi_col);
 #endif
 
-#if CONFIG_SUPERTX
-  if (!supertx_enabled) {
-#endif  // CONFIG_SUPERTX
-    if (mbmi->ref_frame[1] != INTRA_FRAME)
-      mbmi->motion_mode = read_motion_mode(cm, xd, mi, r);
+  if (mbmi->ref_frame[1] != INTRA_FRAME)
+    mbmi->motion_mode = read_motion_mode(cm, xd, mi, r);
 
 #if CONFIG_NCOBMC_ADAPT_WEIGHT
-    read_ncobmc_mode(xd, mi, mbmi->ncobmc_mode, r);
+  read_ncobmc_mode(xd, mi, mbmi->ncobmc_mode, r);
 #endif
 
 #if CONFIG_COMPOUND_SINGLEREF
-    if (is_singleref_comp_mode) assert(mbmi->motion_mode == SIMPLE_TRANSLATION);
+  if (is_singleref_comp_mode) assert(mbmi->motion_mode == SIMPLE_TRANSLATION);
 #endif  // CONFIG_COMPOUND_SINGLEREF
 #if CONFIG_WARPED_MOTION
-    if (mbmi->motion_mode == WARPED_CAUSAL) {
-      mbmi->wm_params[0].wmtype = DEFAULT_WMTYPE;
+  if (mbmi->motion_mode == WARPED_CAUSAL) {
+    mbmi->wm_params[0].wmtype = DEFAULT_WMTYPE;
 
 #if CONFIG_EXT_WARPED_MOTION
-      if (mbmi->num_proj_ref[0] > 1)
-        mbmi->num_proj_ref[0] = sortSamples(pts_mv, &mbmi->mv[0].as_mv, pts,
-                                            pts_inref, mbmi->num_proj_ref[0]);
+    if (mbmi->num_proj_ref[0] > 1)
+      mbmi->num_proj_ref[0] = sortSamples(pts_mv, &mbmi->mv[0].as_mv, pts,
+                                          pts_inref, mbmi->num_proj_ref[0]);
 #endif  // CONFIG_EXT_WARPED_MOTION
 
-      if (find_projection(mbmi->num_proj_ref[0], pts, pts_inref, bsize,
-                          mbmi->mv[0].as_mv.row, mbmi->mv[0].as_mv.col,
-                          &mbmi->wm_params[0], mi_row, mi_col)) {
-        aom_internal_error(&cm->error, AOM_CODEC_ERROR, "Invalid Warped Model");
-      }
+    if (find_projection(mbmi->num_proj_ref[0], pts, pts_inref, bsize,
+                        mbmi->mv[0].as_mv.row, mbmi->mv[0].as_mv.col,
+                        &mbmi->wm_params[0], mi_row, mi_col)) {
+      aom_internal_error(&cm->error, AOM_CODEC_ERROR, "Invalid Warped Model");
     }
-#endif  // CONFIG_WARPED_MOTION
-#if CONFIG_SUPERTX
   }
-#endif  // CONFIG_SUPERTX
+#endif  // CONFIG_WARPED_MOTION
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
 
   mbmi->interinter_compound_type = COMPOUND_AVERAGE;
@@ -2866,11 +2835,8 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 }
 
 static void read_inter_frame_mode_info(AV1Decoder *const pbi,
-                                       MACROBLOCKD *const xd,
-#if CONFIG_SUPERTX
-                                       int supertx_enabled,
-#endif  // CONFIG_SUPERTX
-                                       int mi_row, int mi_col, aom_reader *r) {
+                                       MACROBLOCKD *const xd, int mi_row,
+                                       int mi_col, aom_reader *r) {
   AV1_COMMON *const cm = &pbi->common;
   MODE_INFO *const mi = xd->mi[0];
   MB_MODE_INFO *const mbmi = &mi->mbmi;
@@ -2882,10 +2848,7 @@ static void read_inter_frame_mode_info(AV1Decoder *const pbi,
   mbmi->mv[0].as_int = 0;
   mbmi->mv[1].as_int = 0;
   mbmi->segment_id = read_inter_segment_id(cm, xd, mi_row, mi_col, r);
-#if CONFIG_SUPERTX
-  if (!supertx_enabled)
-#endif  // CONFIG_SUPERTX
-    mbmi->skip = read_skip(cm, xd, mbmi->segment_id, r);
+  mbmi->skip = read_skip(cm, xd, mbmi->segment_id, r);
 
   if (cm->delta_q_present_flag) {
     xd->current_qindex =
@@ -2925,111 +2888,85 @@ static void read_inter_frame_mode_info(AV1Decoder *const pbi,
 #endif
   }
 
-#if CONFIG_SUPERTX
-  if (!supertx_enabled) {
-#endif  // CONFIG_SUPERTX
-    inter_block = read_is_inter_block(cm, xd, mbmi->segment_id, r);
+  inter_block = read_is_inter_block(cm, xd, mbmi->segment_id, r);
 
 #if CONFIG_VAR_TX
-    xd->above_txfm_context =
-        cm->above_txfm_context + (mi_col << TX_UNIT_WIDE_LOG2);
-    xd->left_txfm_context = xd->left_txfm_context_buffer +
-                            ((mi_row & MAX_MIB_MASK) << TX_UNIT_HIGH_LOG2);
+  xd->above_txfm_context =
+      cm->above_txfm_context + (mi_col << TX_UNIT_WIDE_LOG2);
+  xd->left_txfm_context = xd->left_txfm_context_buffer +
+                          ((mi_row & MAX_MIB_MASK) << TX_UNIT_HIGH_LOG2);
 
-    if (cm->tx_mode == TX_MODE_SELECT &&
+  if (cm->tx_mode == TX_MODE_SELECT &&
 #if CONFIG_CB4X4
-        bsize > BLOCK_4X4 &&
+      bsize > BLOCK_4X4 &&
 #else
-        bsize >= BLOCK_8X8 &&
+      bsize >= BLOCK_8X8 &&
 #endif
-        !mbmi->skip && inter_block && !xd->lossless[mbmi->segment_id]) {
-      const TX_SIZE max_tx_size = max_txsize_rect_lookup[bsize];
-      const int bh = tx_size_high_unit[max_tx_size];
-      const int bw = tx_size_wide_unit[max_tx_size];
-      const int width = block_size_wide[bsize] >> tx_size_wide_log2[0];
-      const int height = block_size_high[bsize] >> tx_size_wide_log2[0];
-      int idx, idy;
-      int init_depth =
-          (height != width) ? RECT_VARTX_DEPTH_INIT : SQR_VARTX_DEPTH_INIT;
+      !mbmi->skip && inter_block && !xd->lossless[mbmi->segment_id]) {
+    const TX_SIZE max_tx_size = max_txsize_rect_lookup[bsize];
+    const int bh = tx_size_high_unit[max_tx_size];
+    const int bw = tx_size_wide_unit[max_tx_size];
+    const int width = block_size_wide[bsize] >> tx_size_wide_log2[0];
+    const int height = block_size_high[bsize] >> tx_size_wide_log2[0];
+    int idx, idy;
+    int init_depth =
+        (height != width) ? RECT_VARTX_DEPTH_INIT : SQR_VARTX_DEPTH_INIT;
 
-      mbmi->min_tx_size = TX_SIZES_ALL;
-      for (idy = 0; idy < height; idy += bh)
-        for (idx = 0; idx < width; idx += bw)
-          read_tx_size_vartx(cm, xd, mbmi, xd->counts, max_tx_size, init_depth,
-                             idy, idx, r);
+    mbmi->min_tx_size = TX_SIZES_ALL;
+    for (idy = 0; idy < height; idy += bh)
+      for (idx = 0; idx < width; idx += bw)
+        read_tx_size_vartx(cm, xd, mbmi, xd->counts, max_tx_size, init_depth,
+                           idy, idx, r);
 #if CONFIG_RECT_TX_EXT
-      if (is_quarter_tx_allowed(xd, mbmi, inter_block) &&
-          mbmi->tx_size == max_tx_size) {
-        int quarter_tx;
+    if (is_quarter_tx_allowed(xd, mbmi, inter_block) &&
+        mbmi->tx_size == max_tx_size) {
+      int quarter_tx;
 
-        if (quarter_txsize_lookup[bsize] != max_tx_size) {
+      if (quarter_txsize_lookup[bsize] != max_tx_size) {
 #if CONFIG_NEW_MULTISYMBOL
-          quarter_tx =
-              aom_read_symbol(r, cm->fc->quarter_tx_size_cdf, 2, ACCT_STR);
+        quarter_tx =
+            aom_read_symbol(r, cm->fc->quarter_tx_size_cdf, 2, ACCT_STR);
 #else
-          quarter_tx = aom_read(r, cm->fc->quarter_tx_size_prob, ACCT_STR);
-          if (xd->counts) ++xd->counts->quarter_tx_size[quarter_tx];
+        quarter_tx = aom_read(r, cm->fc->quarter_tx_size_prob, ACCT_STR);
+        if (xd->counts) ++xd->counts->quarter_tx_size[quarter_tx];
 #endif
-        } else {
-          quarter_tx = 1;
-        }
-        if (quarter_tx) {
-          mbmi->tx_size = quarter_txsize_lookup[bsize];
-          for (idy = 0; idy < tx_size_high_unit[max_tx_size] / 2; ++idy)
-            for (idx = 0; idx < tx_size_wide_unit[max_tx_size] / 2; ++idx)
-              mbmi->inter_tx_size[idy][idx] = mbmi->tx_size;
-          mbmi->min_tx_size = get_min_tx_size(mbmi->tx_size);
-        }
+      } else {
+        quarter_tx = 1;
       }
-#endif
-    } else {
-      mbmi->tx_size = read_tx_size(cm, xd, inter_block, !mbmi->skip, r);
-
-      if (inter_block) {
-        const int width = block_size_wide[bsize] >> tx_size_wide_log2[0];
-        const int height = block_size_high[bsize] >> tx_size_high_log2[0];
-        int idx, idy;
-        for (idy = 0; idy < height; ++idy)
-          for (idx = 0; idx < width; ++idx)
-            mbmi->inter_tx_size[idy >> 1][idx >> 1] = mbmi->tx_size;
+      if (quarter_tx) {
+        mbmi->tx_size = quarter_txsize_lookup[bsize];
+        for (idy = 0; idy < tx_size_high_unit[max_tx_size] / 2; ++idy)
+          for (idx = 0; idx < tx_size_wide_unit[max_tx_size] / 2; ++idx)
+            mbmi->inter_tx_size[idy][idx] = mbmi->tx_size;
+        mbmi->min_tx_size = get_min_tx_size(mbmi->tx_size);
       }
-      mbmi->min_tx_size = get_min_tx_size(mbmi->tx_size);
-      set_txfm_ctxs(mbmi->tx_size, xd->n8_w, xd->n8_h, mbmi->skip, xd);
     }
+#endif
+  } else {
+    mbmi->tx_size = read_tx_size(cm, xd, inter_block, !mbmi->skip, r);
+
+    if (inter_block) {
+      const int width = block_size_wide[bsize] >> tx_size_wide_log2[0];
+      const int height = block_size_high[bsize] >> tx_size_high_log2[0];
+      int idx, idy;
+      for (idy = 0; idy < height; ++idy)
+        for (idx = 0; idx < width; ++idx)
+          mbmi->inter_tx_size[idy >> 1][idx >> 1] = mbmi->tx_size;
+    }
+    mbmi->min_tx_size = get_min_tx_size(mbmi->tx_size);
+    set_txfm_ctxs(mbmi->tx_size, xd->n8_w, xd->n8_h, mbmi->skip, xd);
+  }
 #else
   mbmi->tx_size = read_tx_size(cm, xd, inter_block, !mbmi->skip, r);
 #endif  // CONFIG_VAR_TX
-#if CONFIG_SUPERTX
-  }
-#if CONFIG_VAR_TX
-  else if (inter_block) {
-    const int width = num_4x4_blocks_wide_lookup[bsize];
-    const int height = num_4x4_blocks_high_lookup[bsize];
-    int idx, idy;
-    xd->mi[0]->mbmi.tx_size = xd->supertx_size;
-    for (idy = 0; idy < height; ++idy)
-      for (idx = 0; idx < width; ++idx)
-        xd->mi[0]->mbmi.inter_tx_size[idy >> 1][idx >> 1] = xd->supertx_size;
-  }
-#endif  // CONFIG_VAR_TX
-#endif  // CONFIG_SUPERTX
 
   if (inter_block)
-    read_inter_block_mode_info(pbi, xd,
-#if CONFIG_SUPERTX
-                               mi, mi_row, mi_col, r, supertx_enabled);
-#else
-                               mi, mi_row, mi_col, r);
-#endif  // CONFIG_MOTION_VAR && CONFIG_SUPERTX
+    read_inter_block_mode_info(pbi, xd, mi, mi_row, mi_col, r);
   else
     read_intra_block_mode_info(cm, mi_row, mi_col, xd, mi, r);
 
 #if !CONFIG_TXK_SEL
-  av1_read_tx_type(cm, xd,
-#if CONFIG_SUPERTX
-                   supertx_enabled,
-#endif
-                   r);
+  av1_read_tx_type(cm, xd, r);
 #endif  // !CONFIG_TXK_SEL
 }
 
@@ -3060,12 +2997,8 @@ static void av1_intra_copy_frame_mvs(AV1_COMMON *const cm, int mi_row,
   }
 }
 
-void av1_read_mode_info(AV1Decoder *const pbi, MACROBLOCKD *xd,
-#if CONFIG_SUPERTX
-                        int supertx_enabled,
-#endif  // CONFIG_SUPERTX
-                        int mi_row, int mi_col, aom_reader *r, int x_mis,
-                        int y_mis) {
+void av1_read_mode_info(AV1Decoder *const pbi, MACROBLOCKD *xd, int mi_row,
+                        int mi_col, aom_reader *r, int x_mis, int y_mis) {
   AV1_COMMON *const cm = &pbi->common;
   MODE_INFO *const mi = xd->mi[0];
 #if CONFIG_INTRABC
@@ -3076,11 +3009,7 @@ void av1_read_mode_info(AV1Decoder *const pbi, MACROBLOCKD *xd,
     read_intra_frame_mode_info(cm, xd, mi_row, mi_col, r);
     av1_intra_copy_frame_mvs(cm, mi_row, mi_col, x_mis, y_mis);
   } else {
-    read_inter_frame_mode_info(pbi, xd,
-#if CONFIG_SUPERTX
-                               supertx_enabled,
-#endif  // CONFIG_SUPERTX
-                               mi_row, mi_col, r);
+    read_inter_frame_mode_info(pbi, xd, mi_row, mi_col, r);
     av1_copy_frame_mvs(cm, mi, mi_row, mi_col, x_mis, y_mis);
   }
 }

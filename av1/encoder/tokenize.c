@@ -509,11 +509,7 @@ static void tokenize_b(int plane, int block, int blk_row, int blk_col,
   const int eob = p->eobs[block];
   const PLANE_TYPE type = pd->plane_type;
   const tran_low_t *qcoeff = BLOCK_OFFSET(p->qcoeff, block);
-#if CONFIG_SUPERTX
-  const int segment_id = AOMMIN(mbmi->segment_id, mbmi->segment_id_supertx);
-#else
   const int segment_id = mbmi->segment_id;
-#endif  // CONFIG_SUEPRTX
   const int16_t *scan, *nb;
   const TX_TYPE tx_type =
       av1_get_tx_type(type, xd, blk_row, blk_col, block, tx_size);
@@ -881,48 +877,3 @@ void av1_tokenize_sb(const AV1_COMP *cpi, ThreadData *td, TOKENEXTRA **t,
 
   if (rate) *rate += arg.this_rate;
 }
-
-#if CONFIG_SUPERTX
-void av1_tokenize_sb_supertx(const AV1_COMP *cpi, ThreadData *td,
-                             TOKENEXTRA **t, RUN_TYPE dry_run, int mi_row,
-                             int mi_col, BLOCK_SIZE bsize, int *rate) {
-  const AV1_COMMON *const cm = &cpi->common;
-  MACROBLOCKD *const xd = &td->mb.e_mbd;
-  MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
-  TOKENEXTRA *t_backup = *t;
-  const int ctx = av1_get_skip_context(xd);
-  const int skip_inc =
-      !segfeature_active(&cm->seg, mbmi->segment_id_supertx, SEG_LVL_SKIP);
-  struct tokenize_b_args arg = { cpi, td, t, 0 };
-  if (mbmi->skip) {
-    if (!dry_run) td->counts->skip[ctx][1] += skip_inc;
-    av1_reset_skip_context(xd, mi_row, mi_col, bsize);
-    if (dry_run) *t = t_backup;
-    return;
-  }
-
-  if (!dry_run) {
-    int plane;
-    td->counts->skip[ctx][0] += skip_inc;
-
-    for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
-      av1_foreach_transformed_block_in_plane(xd, bsize, plane, tokenize_b,
-                                             &arg);
-      (*t)->token = EOSB_TOKEN;
-      (*t)++;
-    }
-  } else if (dry_run == DRY_RUN_NORMAL) {
-    int plane;
-    for (plane = 0; plane < MAX_MB_PLANE; ++plane)
-      av1_foreach_transformed_block_in_plane(xd, bsize, plane,
-                                             set_entropy_context_b, &arg);
-    *t = t_backup;
-  } else if (dry_run == DRY_RUN_COSTCOEFFS) {
-    int plane;
-    for (plane = 0; plane < MAX_MB_PLANE; ++plane)
-      av1_foreach_transformed_block_in_plane(xd, bsize, plane, cost_coeffs_b,
-                                             &arg);
-  }
-  if (rate) *rate += arg.this_rate;
-}
-#endif  // CONFIG_SUPERTX

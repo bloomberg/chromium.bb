@@ -2654,25 +2654,6 @@ static const aom_cdf_prob
     };
 #endif  // CONFIG_FILTER_INTRA
 
-#if CONFIG_SUPERTX
-static const aom_prob
-    default_supertx_prob[PARTITION_SUPERTX_CONTEXTS][TX_SIZES] = {
-#if CONFIG_CHROMA_2X2
-#if CONFIG_TX64X64
-      { 1, 1, 160, 160, 170, 180 }, { 1, 1, 200, 200, 210, 220 },
-#else
-      { 1, 1, 160, 160, 170 }, { 1, 1, 200, 200, 210 },
-#endif  // CONFIG_TX64X64
-#else
-#if CONFIG_TX64X64
-      { 1, 160, 160, 170, 180 }, { 1, 200, 200, 210, 220 },
-#else
-      { 1, 160, 160, 170 }, { 1, 200, 200, 210 },
-#endif  // CONFIG_TX64X64
-#endif  // CONFIG_CHROMA_2X2
-    };
-#endif  // CONFIG_SUPERTX
-
 // FIXME(someone) need real defaults here
 static const aom_prob default_segment_tree_probs[SEG_TREE_PROBS] = {
   128, 128, 128, 128, 128, 128, 128
@@ -6565,9 +6546,6 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_copy(fc->interintra_mode_prob, default_interintra_mode_prob);
   av1_copy(fc->interintra_mode_cdf, default_interintra_mode_cdf);
 #endif  // CONFIG_INTERINTRA
-#if CONFIG_SUPERTX
-  av1_copy(fc->supertx_prob, default_supertx_prob);
-#endif  // CONFIG_SUPERTX
   av1_copy(fc->seg.tree_probs, default_segment_tree_probs);
   av1_copy(fc->seg.pred_probs, default_segment_pred_probs);
 #if CONFIG_NEW_MULTISYMBOL
@@ -6703,15 +6681,6 @@ void av1_adapt_inter_frame_probs(AV1_COMMON *cm) {
         av1_mode_mv_merge_probs(pre_fc->obmc_prob[i], counts->obmc[i]);
 #endif  // CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
-
-#if CONFIG_SUPERTX
-  for (i = 0; i < PARTITION_SUPERTX_CONTEXTS; ++i) {
-    for (j = TX_8X8; j < TX_SIZES; ++j) {
-      fc->supertx_prob[i][j] = av1_mode_mv_merge_probs(
-          pre_fc->supertx_prob[i][j], counts->supertx[i][j]);
-    }
-  }
-#endif  // CONFIG_SUPERTX
 
   for (i = 0; i < INTER_MODE_CONTEXTS; i++)
     aom_tree_merge_probs(
