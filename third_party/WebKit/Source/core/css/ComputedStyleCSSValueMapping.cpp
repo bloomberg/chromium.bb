@@ -2229,8 +2229,7 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
   const SVGComputedStyle& svg_style = style.SvgStyle();
   property_id = CSSPropertyAPI::Get(property_id)
                     .ResolveDirectionAwareProperty(style.Direction(),
-                                                   style.GetWritingMode())
-                    .PropertyID();
+                                                   style.GetWritingMode());
   DCHECK_NE(property_id, CSSPropertyInvalid);
   switch (property_id) {
     case CSSPropertyBackgroundColor:

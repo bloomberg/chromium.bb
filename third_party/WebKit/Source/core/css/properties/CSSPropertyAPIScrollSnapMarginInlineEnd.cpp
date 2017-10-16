@@ -19,12 +19,4 @@ const CSSValue* CSSPropertyAPIScrollSnapMarginInlineEnd::ParseSingleValue(
       range, context.Mode(), kValueRangeNonNegative,
       CSSPropertyParserHelpers::UnitlessQuirk::kAllow);
 }
-
-const CSSPropertyAPI&
-CSSPropertyAPIScrollSnapMarginInlineEnd::ResolveDirectionAwareProperty(
-    TextDirection direction,
-    WritingMode writing_mode) const {
-  return ResolveToPhysicalPropertyAPI(direction, writing_mode, kEndSide,
-                                      scrollSnapMarginShorthand());
-}
 }  // namespace blink

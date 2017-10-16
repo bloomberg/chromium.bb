@@ -19,12 +19,4 @@ const CSSValue* CSSPropertyAPIScrollPaddingBlockEnd::ParseSingleValue(
       range, context.Mode(), kValueRangeNonNegative,
       CSSPropertyParserHelpers::UnitlessQuirk::kAllow);
 }
-
-const CSSPropertyAPI&
-CSSPropertyAPIScrollPaddingBlockEnd::ResolveDirectionAwareProperty(
-    TextDirection direction,
-    WritingMode writing_mode) const {
-  return ResolveToPhysicalPropertyAPI(direction, writing_mode, kAfterSide,
-                                      scrollPaddingShorthand());
-}
 }  // namespace blink

@@ -19,13 +19,4 @@ const CSSValue* CSSPropertyAPIWebkitMarginBefore::ParseSingleValue(
   return CSSPropertyMarginUtils::ConsumeMarginOrOffset(
       range, context.Mode(), CSSPropertyParserHelpers::UnitlessQuirk::kForbid);
 }
-
-const CSSPropertyAPI&
-CSSPropertyAPIWebkitMarginBefore::ResolveDirectionAwareProperty(
-    TextDirection direction,
-    WritingMode writing_mode) const {
-  return ResolveToPhysicalPropertyAPI(direction, writing_mode, kBeforeSide,
-                                      marginShorthand());
-}
-
 }  // namespace blink

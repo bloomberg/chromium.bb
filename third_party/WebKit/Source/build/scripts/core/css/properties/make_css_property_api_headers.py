@@ -48,7 +48,7 @@ def apply_computed_style_builder_function_parameters(property_):
         and property_['is_property'] \
         and not property_['use_handlers_for'] \
         and not property_['longhands'] \
-        and not property_['direction_aware'] \
+        and not property_['direction_aware_options'] \
         and not property_['builder_skip']
     if not property_['should_declare_application_functions']:
         return
