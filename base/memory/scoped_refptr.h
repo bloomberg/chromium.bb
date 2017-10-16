@@ -321,4 +321,9 @@ std::ostream& operator<<(std::ostream& out, const scoped_refptr<T>& p) {
   return out << p.get();
 }
 
+template <typename T>
+void swap(scoped_refptr<T>& lhs, scoped_refptr<T>& rhs) {
+  lhs.swap(rhs);
+}
+
 #endif  // BASE_MEMORY_SCOPED_REFPTR_H_
