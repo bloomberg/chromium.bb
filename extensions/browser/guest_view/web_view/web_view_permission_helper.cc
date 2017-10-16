@@ -14,7 +14,6 @@
 #include "base/values.h"
 #include "components/guest_view/browser/guest_view_event.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/guest_view/web_view/web_view_constants.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
@@ -24,7 +23,6 @@
 
 using base::UserMetricsAction;
 using content::BrowserPluginGuestDelegate;
-using content::RenderViewHost;
 using guest_view::GuestViewEvent;
 
 namespace extensions {

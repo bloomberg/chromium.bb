@@ -29,7 +29,6 @@
 #include "extensions/common/extension_messages.h"
 
 using content::BrowserThread;
-using content::RenderViewHost;
 using content::WebContents;
 using extensions::ErrorUtils;
 using extensions::ExtensionAPI;

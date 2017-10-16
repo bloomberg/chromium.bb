@@ -14,11 +14,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "extensions/browser/extension_function_dispatcher.h"
-
-using content::RenderViewHost;
-using content::WebContents;
 
 ChromeUIThreadExtensionFunction::ChromeUIThreadExtensionFunction()
     : chrome_details_(this) {}

@@ -44,7 +44,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
@@ -63,7 +62,6 @@
 
 using content::DevToolsAgentHost;
 using content::RenderProcessHost;
-using content::RenderViewHost;
 using content::RenderWidgetHost;
 using content::WebContents;
 
