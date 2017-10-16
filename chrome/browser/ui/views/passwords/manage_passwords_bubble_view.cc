@@ -474,7 +474,13 @@ ManagePasswordsBubbleView::PendingView::PendingView(
       l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_BUBBLE_BLACKLIST_BUTTON));
 
   CreateAndSetLayout();
-  parent_->set_initially_focused_view(save_button_);
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kEnableUsernameCorrection) &&
+      parent_->model()->pending_password().username_value.empty()) {
+    parent_->set_initially_focused_view(username_field_);
+  } else {
+    parent_->set_initially_focused_view(save_button_);
+  }
 }
 
 ManagePasswordsBubbleView::PendingView::~PendingView() = default;
