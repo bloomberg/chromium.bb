@@ -60,7 +60,7 @@ KeyedService* DomainReliabilityServiceFactory::BuildServiceInstanceFor(
   if (!ShouldCreateService())
     return NULL;
 
-  return DomainReliabilityService::Create(kUploadReporterString);
+  return DomainReliabilityService::Create(kUploadReporterString, context);
 }
 
 bool DomainReliabilityServiceFactory::ShouldCreateService() const {

@@ -1374,6 +1374,7 @@ ProfileImpl::CreateDomainReliabilityMonitor(PrefService* local_state) {
     return std::unique_ptr<domain_reliability::DomainReliabilityMonitor>();
 
   return service->CreateMonitor(
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
 }
 

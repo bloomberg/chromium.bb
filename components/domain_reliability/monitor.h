@@ -56,12 +56,16 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityMonitor
   // on which requests will actually be monitored and reported.
   DomainReliabilityMonitor(
       const std::string& upload_reporter_string,
+      const DomainReliabilityContext::UploadAllowedCallback&
+          upload_allowed_callback,
       const scoped_refptr<base::SingleThreadTaskRunner>& pref_thread,
       const scoped_refptr<base::SingleThreadTaskRunner>& network_thread);
 
   // Same, but specifies a mock interface for time functions for testing.
   DomainReliabilityMonitor(
       const std::string& upload_reporter_string,
+      const DomainReliabilityContext::UploadAllowedCallback&
+          upload_allowed_callback,
       const scoped_refptr<base::SingleThreadTaskRunner>& pref_thread,
       const scoped_refptr<base::SingleThreadTaskRunner>& network_thread,
       std::unique_ptr<MockableTime> time);
@@ -144,6 +148,7 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityMonitor
 
  private:
   friend class DomainReliabilityMonitorTest;
+  friend class DomainReliabilityServiceTest;
   // Allow the Service to call |MakeWeakPtr|.
   friend class DomainReliabilityServiceImpl;
 
@@ -184,6 +189,7 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityMonitor
   std::unique_ptr<MockableTime> time_;
   base::TimeTicks last_network_change_time_;
   const std::string upload_reporter_string_;
+  DomainReliabilityContext::UploadAllowedCallback upload_allowed_callback_;
   DomainReliabilityScheduler::Params scheduler_params_;
   DomainReliabilityDispatcher dispatcher_;
   std::unique_ptr<DomainReliabilityUploader> uploader_;

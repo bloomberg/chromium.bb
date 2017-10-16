@@ -12,6 +12,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/strings/string_piece.h"
 #include "components/domain_reliability/beacon.h"
@@ -101,6 +102,9 @@ class DomainReliabilityContextTest : public testing::Test {
         uploader_(base::Bind(&DomainReliabilityContextTest::OnUploadRequest,
                              base::Unretained(this))),
         upload_reporter_string_("test-reporter"),
+        upload_allowed_callback_(
+            base::Bind(&DomainReliabilityContextTest::UploadAllowedCallback,
+                       base::Unretained(this))),
         upload_pending_(false) {
     // Make sure that the last network change does not overlap requests
     // made in test cases, which start 250ms in the past (see |MakeBeacon|).
@@ -111,13 +115,17 @@ class DomainReliabilityContextTest : public testing::Test {
   void InitContext(std::unique_ptr<const DomainReliabilityConfig> config) {
     context_.reset(new DomainReliabilityContext(
         &time_, params_, upload_reporter_string_, &last_network_change_time_,
-        &dispatcher_, &uploader_, std::move(config)));
+        upload_allowed_callback_, &dispatcher_, &uploader_, std::move(config)));
   }
 
   TimeDelta min_delay() const { return params_.minimum_upload_delay; }
   TimeDelta max_delay() const { return params_.maximum_upload_delay; }
   TimeDelta retry_interval() const { return params_.upload_retry_interval; }
   TimeDelta zero_delta() const { return TimeDelta::FromMicroseconds(0); }
+
+  bool upload_allowed_callback_pending() const {
+    return !upload_allowed_result_callback_.is_null();
+  }
 
   bool upload_pending() const { return upload_pending_; }
 
@@ -148,12 +156,20 @@ class DomainReliabilityContextTest : public testing::Test {
     return beacons.empty();
   }
 
+  const GURL& upload_allowed_origin() { return upload_allowed_origin_; }
+
+  void CallUploadAllowedResultCallback(bool allowed) {
+    DCHECK(!upload_allowed_result_callback_.is_null());
+    base::ResetAndReturn(&upload_allowed_result_callback_).Run(allowed);
+  }
+
   MockTime time_;
   base::TimeTicks last_network_change_time_;
   DomainReliabilityDispatcher dispatcher_;
   DomainReliabilityScheduler::Params params_;
   MockUploader uploader_;
   std::string upload_reporter_string_;
+  DomainReliabilityContext::UploadAllowedCallback upload_allowed_callback_;
   std::unique_ptr<DomainReliabilityContext> context_;
 
  private:
@@ -170,11 +186,20 @@ class DomainReliabilityContextTest : public testing::Test {
     upload_pending_ = true;
   }
 
+  void UploadAllowedCallback(const GURL& origin,
+                             base::OnceCallback<void(bool)> callback) {
+    upload_allowed_origin_ = origin;
+    upload_allowed_result_callback_ = std::move(callback);
+  }
+
   bool upload_pending_;
   std::string upload_report_;
   int upload_max_depth_;
   GURL upload_url_;
   DomainReliabilityUploader::UploadCallback upload_callback_;
+
+  GURL upload_allowed_origin_;
+  base::OnceCallback<void(bool)> upload_allowed_result_callback_;
 };
 
 TEST_F(DomainReliabilityContextTest, Create) {
@@ -203,7 +228,7 @@ TEST_F(DomainReliabilityContextTest, MaxNestedBeaconSchedules) {
   EXPECT_EQ(1u, beacons.size());
 
   time_.Advance(max_delay());
-  EXPECT_TRUE(upload_pending());
+  EXPECT_TRUE(upload_allowed_callback_pending());
 }
 
 TEST_F(DomainReliabilityContextTest, OverlyNestedBeaconDoesNotSchedule) {
@@ -219,7 +244,7 @@ TEST_F(DomainReliabilityContextTest, OverlyNestedBeaconDoesNotSchedule) {
   EXPECT_EQ(1u, beacons.size());
 
   time_.Advance(max_delay());
-  EXPECT_FALSE(upload_pending());
+  EXPECT_FALSE(upload_allowed_callback_pending());
 }
 
 TEST_F(DomainReliabilityContextTest,
@@ -236,7 +261,7 @@ TEST_F(DomainReliabilityContextTest,
   EXPECT_EQ(1u, beacons.size());
 
   time_.Advance(max_delay());
-  EXPECT_FALSE(upload_pending());
+  EXPECT_FALSE(upload_allowed_callback_pending());
 
   // Add a beacon for a report that should schedule a beacon, and make sure it
   // doesn't schedule until the deadline.
@@ -248,6 +273,8 @@ TEST_F(DomainReliabilityContextTest,
   EXPECT_EQ(2u, beacons.size());
 
   time_.Advance(max_delay());
+  EXPECT_TRUE(upload_allowed_callback_pending());
+  CallUploadAllowedResultCallback(true);
   EXPECT_TRUE(upload_pending());
 
   // Check that both beacons were uploaded.
@@ -268,6 +295,8 @@ TEST_F(DomainReliabilityContextTest, ReportUpload) {
   EXPECT_EQ(1u, beacons.size());
 
   time_.Advance(max_delay());
+  EXPECT_TRUE(upload_allowed_callback_pending());
+  CallUploadAllowedResultCallback(true);
   EXPECT_TRUE(upload_pending());
   EXPECT_EQ(0, upload_max_depth());
   EXPECT_EQ(GURL("https://exampleuploader/upload"), upload_url());
@@ -297,6 +326,21 @@ TEST_F(DomainReliabilityContextTest, ReportUpload) {
   EXPECT_TRUE(CheckNoBeacons());
 }
 
+TEST_F(DomainReliabilityContextTest, UploadForbidden) {
+  InitContext(MakeTestConfig());
+  context_->OnBeacon(
+      MakeCustomizedBeacon(&time_, "tcp.connection_reset", "", true));
+
+  BeaconVector beacons;
+  context_->GetQueuedBeaconsForTesting(&beacons);
+  EXPECT_EQ(1u, beacons.size());
+
+  time_.Advance(max_delay());
+  EXPECT_TRUE(upload_allowed_callback_pending());
+  CallUploadAllowedResultCallback(false);
+  EXPECT_FALSE(upload_pending());
+}
+
 TEST_F(DomainReliabilityContextTest, NetworkChanged) {
   InitContext(MakeTestConfig());
   context_->OnBeacon(MakeBeacon(&time_));
@@ -308,6 +352,8 @@ TEST_F(DomainReliabilityContextTest, NetworkChanged) {
   // Simulate a network change after the request but before the upload.
   last_network_change_time_ = time_.NowTicks();
   time_.Advance(max_delay());
+  EXPECT_TRUE(upload_allowed_callback_pending());
+  CallUploadAllowedResultCallback(true);
   EXPECT_TRUE(upload_pending());
   EXPECT_EQ(0, upload_max_depth());
   EXPECT_EQ(GURL("https://exampleuploader/upload"), upload_url());
@@ -336,6 +382,8 @@ TEST_F(DomainReliabilityContextTest,
   EXPECT_EQ(1u, beacons.size());
 
   time_.Advance(max_delay());
+  EXPECT_TRUE(upload_allowed_callback_pending());
+  CallUploadAllowedResultCallback(true);
   EXPECT_TRUE(upload_pending());
   EXPECT_EQ(0, upload_max_depth());
   EXPECT_EQ(GURL("https://exampleuploader/upload"), upload_url());
@@ -367,6 +415,8 @@ TEST_F(DomainReliabilityContextTest,
   EXPECT_EQ(1u, beacons.size());
 
   time_.Advance(max_delay());
+  EXPECT_TRUE(upload_allowed_callback_pending());
+  CallUploadAllowedResultCallback(true);
   EXPECT_TRUE(upload_pending());
   EXPECT_EQ(0, upload_max_depth());
   EXPECT_EQ(GURL("https://exampleuploader/upload"), upload_url());
@@ -399,6 +449,8 @@ TEST_F(DomainReliabilityContextTest,
   EXPECT_EQ(1u, beacons.size());
 
   time_.Advance(max_delay());
+  EXPECT_TRUE(upload_allowed_callback_pending());
+  CallUploadAllowedResultCallback(true);
   EXPECT_TRUE(upload_pending());
   EXPECT_EQ(0, upload_max_depth());
   EXPECT_EQ(GURL("https://exampleuploader/upload"), upload_url());
@@ -442,6 +494,8 @@ TEST_F(DomainReliabilityContextTest, FractionalSampleRate) {
   EXPECT_EQ(1u, beacons.size());
 
   time_.Advance(max_delay());
+  EXPECT_TRUE(upload_allowed_callback_pending());
+  CallUploadAllowedResultCallback(true);
   EXPECT_TRUE(upload_pending());
   EXPECT_EQ(0, upload_max_depth());
   EXPECT_EQ(GURL("https://exampleuploader/upload"), upload_url());
@@ -545,7 +599,7 @@ TEST_F(DomainReliabilityContextTest, ExpiredBeaconDoesNotUpload) {
   context_->OnBeacon(std::move(beacon));
 
   time_.Advance(max_delay());
-  EXPECT_FALSE(upload_pending());
+  EXPECT_FALSE(upload_allowed_callback_pending());
   BeaconVector beacons;
   context_->GetQueuedBeaconsForTesting(&beacons);
   EXPECT_TRUE(beacons.empty());
