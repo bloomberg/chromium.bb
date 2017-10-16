@@ -27,11 +27,6 @@ make_names("font_family_names") {
   output_dir = blink_platform_output_dir
 }
 
-make_names("http_names") {
-  in_files = [ "network/http_names.json5" ]
-  output_dir = blink_platform_output_dir
-}
-
 action("runtime_enabled_features") {
   script = "../build/scripts/make_runtime_features.py"
 
@@ -159,9 +154,9 @@ group("make_platform_generated") {
     ":character_data",
     ":color_data",
     ":font_family_names",
-    ":http_names",
     ":instrumentation_probes",
     ":runtime_enabled_features",
+    "//third_party/WebKit/Source/platform/network:make_generated",
   ]
 }
 
@@ -530,14 +525,6 @@ jumbo_component("platform") {
     "bindings/WrapperCreationSecurityCheck.h",
     "bindings/WrapperTypeInfo.cpp",
     "bindings/WrapperTypeInfo.h",
-    "blob/BlobBytesProvider.cpp",
-    "blob/BlobBytesProvider.h",
-    "blob/BlobData.cpp",
-    "blob/BlobData.h",
-    "blob/BlobRegistry.cpp",
-    "blob/BlobRegistry.h",
-    "blob/BlobURL.cpp",
-    "blob/BlobURL.h",
     "clipboard/ClipboardMimeTypes.cpp",
     "clipboard/ClipboardMimeTypes.h",
     "clipboard/ClipboardUtilities.cpp",
@@ -1246,45 +1233,6 @@ jumbo_component("platform") {
     "mojo/CommonCustomTypesStructTraits.h",
     "mojo/FetchAPIRequestStructTraits.cpp",
     "mojo/MojoHelper.h",
-    "network/ContentSecurityPolicyParsers.cpp",
-    "network/ContentSecurityPolicyParsers.h",
-    "network/ContentSecurityPolicyResponseHeaders.cpp",
-    "network/ContentSecurityPolicyResponseHeaders.h",
-    "network/EncodedFormData.cpp",
-    "network/EncodedFormData.h",
-    "network/FormDataEncoder.cpp",
-    "network/FormDataEncoder.h",
-    "network/HTTPHeaderMap.cpp",
-    "network/HTTPHeaderMap.h",
-    "network/HTTPParsers.cpp",
-    "network/HTTPParsers.h",
-    "network/HeaderFieldTokenizer.cpp",
-    "network/HeaderFieldTokenizer.h",
-    "network/NetworkHints.cpp",
-    "network/NetworkHints.h",
-    "network/NetworkInstrumentation.cpp",
-    "network/NetworkInstrumentation.h",
-    "network/NetworkLog.h",
-    "network/NetworkStateNotifier.cpp",
-    "network/NetworkStateNotifier.h",
-    "network/NetworkUtils.cpp",
-    "network/NetworkUtils.h",
-    "network/ParsedContentDisposition.cpp",
-    "network/ParsedContentDisposition.h",
-    "network/ParsedContentHeaderFieldParameters.cpp",
-    "network/ParsedContentHeaderFieldParameters.h",
-    "network/ParsedContentType.cpp",
-    "network/ParsedContentType.h",
-    "network/WebSocketHandshakeRequest.cpp",
-    "network/WebSocketHandshakeRequest.h",
-    "network/WebSocketHandshakeResponse.cpp",
-    "network/WebSocketHandshakeResponse.h",
-    "network/mime/ContentType.cpp",
-    "network/mime/ContentType.h",
-    "network/mime/MIMETypeFromURL.cpp",
-    "network/mime/MIMETypeFromURL.h",
-    "network/mime/MIMETypeRegistry.cpp",
-    "network/mime/MIMETypeRegistry.h",
     "peerconnection/RTCAnswerOptionsPlatform.h",
     "peerconnection/RTCOfferOptionsPlatform.h",
     "peerconnection/RTCSessionDescriptionRequest.h",
@@ -1463,7 +1411,6 @@ jumbo_component("platform") {
   sources += get_target_outputs(":character_data") +
              get_target_outputs(":color_data") +
              get_target_outputs(":font_family_names") +
-             get_target_outputs(":http_names") +
              get_target_outputs(":instrumentation_probes") +
              get_target_outputs(":runtime_enabled_features")
 
@@ -1503,7 +1450,6 @@ jumbo_component("platform") {
     "//services/resource_coordinator/public/cpp:resource_coordinator_cpp",
     "//services/service_manager/public/interfaces:interfaces_blink",
     "//skia",
-    "//storage/public/interfaces:interfaces_blink",
     "//third_party:jpeg",
     "//third_party/WebKit/Source/platform/wtf",
     "//third_party/WebKit/common:blink_common",
@@ -1523,12 +1469,13 @@ jumbo_component("platform") {
     "//mojo/public/cpp/bindings:wtf_support",
     "//services/service_manager/public/cpp",
     "//third_party:freetype_harfbuzz",
+    "//third_party/WebKit/Source/platform/blob",
     "//third_party/WebKit/Source/platform/heap",
     "//third_party/WebKit/Source/platform/instrumentation",
     "//third_party/WebKit/Source/platform/loader",
     "//third_party/WebKit/Source/platform/media",
+    "//third_party/WebKit/Source/platform/network",
     "//third_party/WebKit/Source/platform/scheduler",
-    "//third_party/WebKit/public:mojo_bindings_blink",
     "//third_party/WebKit/public:offscreen_canvas_mojo_bindings_blink",
     "//third_party/ced",
     "//third_party/icu",
@@ -1656,7 +1603,6 @@ jumbo_static_library("test_support") {
 
   sources = [
     "graphics/gpu/DrawingBufferTestHelpers.h",
-    "network/mime/MockMimeRegistry.h",
     "scroll/ScrollbarTestSuite.h",
     "testing/CompositorTest.cpp",
     "testing/CompositorTest.h",
@@ -1727,6 +1673,7 @@ jumbo_static_library("test_support") {
     "//base/test:test_support",
     "//mojo/edk/system",
     "//third_party/WebKit/Source/platform/loader:test_support",
+    "//third_party/WebKit/Source/platform/network:test_support",
     "//third_party/WebKit/Source/platform/scheduler:test_support",
   ]
 
@@ -1775,8 +1722,6 @@ jumbo_source_set("blink_platform_unittests_sources") {
     "animation/TimingFunctionTest.cpp",
     "audio/PushPullFIFOTest.cpp",
     "bindings/RuntimeCallStatsTest.cpp",
-    "blob/BlobBytesProviderTest.cpp",
-    "blob/BlobDataTest.cpp",
     "exported/FilePathConversionTest.cpp",
     "exported/WebCORSPreflightResultCacheTest.cpp",
     "exported/WebCORSTest.cpp",
@@ -1871,14 +1816,6 @@ jumbo_source_set("blink_platform_unittests_sources") {
     "mojo/CommonCustomTypesStructTraitsTest.cpp",
     "mojo/GeometryStructTraitsTest.cpp",
     "mojo/KURLSecurityOriginTest.cpp",
-    "network/EncodedFormDataTest.cpp",
-    "network/HTTPParsersTest.cpp",
-    "network/NetworkStateNotifierTest.cpp",
-    "network/NetworkUtilsTest.cpp",
-    "network/ParsedContentDispositionTest.cpp",
-    "network/ParsedContentHeaderFieldParametersTest.cpp",
-    "network/ParsedContentTypeTest.cpp",
-    "network/mime/MIMETypeRegistryTest.cpp",
     "scroll/ScrollableAreaTest.cpp",
     "scroll/ScrollbarThemeOverlayTest.cpp",
     "testing/ArenaTestHelpers.h",
@@ -1954,8 +1891,10 @@ jumbo_source_set("blink_platform_unittests_sources") {
     "//testing/gmock",
     "//testing/gtest",
     "//third_party:freetype_harfbuzz",
+    "//third_party/WebKit/Source/platform/blob:unit_tests",
     "//third_party/WebKit/Source/platform/instrumentation:unit_tests",
     "//third_party/WebKit/Source/platform/loader:unit_tests",
+    "//third_party/WebKit/Source/platform/network:unit_tests",
     "//third_party/WebKit/Source/platform/scheduler:unit_tests",
     "//third_party/WebKit/Source/platform/wtf",
     "//ui/gfx",
