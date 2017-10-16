@@ -532,6 +532,7 @@ post_process_cmdline() {
       soft_enable loop_restoration
       soft_enable ext_partition
       soft_enable ext_partition_types
+      soft_enable new_multisymbol
 
       # Provisional adopted
       soft_enable reference_buffer
@@ -550,7 +551,6 @@ post_process_cmdline() {
 
     # Enable LBD/HBD txfm consistency tool
     soft_enable txmg
-    soft_enable new_multisymbol
 
     # Fix up experiment dependencies
     enabled pvq && disable_feature chroma_2x2
