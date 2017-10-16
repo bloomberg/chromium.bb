@@ -300,9 +300,9 @@ Tree link: https://github.com/PolymerElements/paper-toggle-button/tree/v1.3.0
 
 Name: paper-tooltip
 Repository: https://github.com/PolymerElements/paper-tooltip.git
-Tree: v1.1.3
-Revision: 05fe3cfcb0e7e6853fa337344227f74a2ec7e07e
-Tree link: https://github.com/PolymerElements/paper-tooltip/tree/v1.1.3
+Tree: v1.1.4
+Revision: c7c0a4d47e6ce30578f948986e9274d06fa2b94c
+Tree link: https://github.com/PolymerElements/paper-tooltip/tree/v1.1.4
 
 Name: polymer
 Repository: https://github.com/Polymer/polymer.git
