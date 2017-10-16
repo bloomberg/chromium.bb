@@ -1922,7 +1922,7 @@ void Document::SetupFontBuilder(ComputedStyle& document_style) {
   font_builder.CreateFontForDocument(selector, document_style);
 }
 
-void Document::PropagateStyleToViewport(StyleRecalcChange change) {
+void Document::PropagateStyleToViewport() {
   DCHECK(InStyleRecalc());
   DCHECK(documentElement());
 
@@ -2034,48 +2034,42 @@ void Document::PropagateStyleToViewport(StyleRecalcChange change) {
                 scroll_boundary_behavior_y)));
   }
 
-  RefPtr<ComputedStyle> viewport_style;
-  if (change == kForce || !GetLayoutViewItem().Style()) {
-    viewport_style = StyleResolver::StyleForViewport(*this);
-  } else {
-    const ComputedStyle& old_style = GetLayoutViewItem().StyleRef();
-    if (old_style.GetWritingMode() == root_writing_mode &&
-        old_style.Direction() == root_direction &&
-        old_style.VisitedDependentColor(CSSPropertyBackgroundColor) ==
-            background_color &&
-        old_style.BackgroundLayers() == background_layers &&
-        old_style.ImageRendering() == image_rendering &&
-        old_style.OverflowAnchor() == overflow_anchor &&
-        old_style.OverflowX() == overflow_x &&
-        old_style.OverflowY() == overflow_y &&
-        old_style.HasNormalColumnGap() == column_gap_normal &&
-        old_style.ColumnGap() == column_gap &&
-        old_style.GetScrollSnapType() == snap_type &&
-        old_style.GetScrollBehavior() == scroll_behavior &&
-        old_style.ScrollBoundaryBehaviorX() == scroll_boundary_behavior_x &&
-        old_style.ScrollBoundaryBehaviorY() == scroll_boundary_behavior_y) {
-      return;
-    }
-    viewport_style = ComputedStyle::Clone(old_style);
+  RefPtr<ComputedStyle> viewport_style = GetLayoutViewItem().MutableStyle();
+  if (viewport_style->GetWritingMode() != root_writing_mode ||
+      viewport_style->Direction() != root_direction ||
+      viewport_style->VisitedDependentColor(CSSPropertyBackgroundColor) !=
+          background_color ||
+      viewport_style->BackgroundLayers() != background_layers ||
+      viewport_style->ImageRendering() != image_rendering ||
+      viewport_style->OverflowAnchor() != overflow_anchor ||
+      viewport_style->OverflowX() != overflow_x ||
+      viewport_style->OverflowY() != overflow_y ||
+      viewport_style->HasNormalColumnGap() != column_gap_normal ||
+      viewport_style->ColumnGap() != column_gap ||
+      viewport_style->GetScrollSnapType() != snap_type ||
+      viewport_style->GetScrollBehavior() != scroll_behavior ||
+      viewport_style->ScrollBoundaryBehaviorX() != scroll_boundary_behavior_x ||
+      viewport_style->ScrollBoundaryBehaviorY() != scroll_boundary_behavior_y) {
+    RefPtr<ComputedStyle> new_style = ComputedStyle::Clone(*viewport_style);
+    new_style->SetWritingMode(root_writing_mode);
+    new_style->SetDirection(root_direction);
+    new_style->SetBackgroundColor(background_color);
+    new_style->AccessBackgroundLayers() = background_layers;
+    new_style->SetImageRendering(image_rendering);
+    new_style->SetOverflowAnchor(overflow_anchor);
+    new_style->SetOverflowX(overflow_x);
+    new_style->SetOverflowY(overflow_y);
+    if (column_gap_normal)
+      new_style->SetHasNormalColumnGap();
+    else
+      new_style->SetColumnGap(column_gap);
+    new_style->SetScrollSnapType(snap_type);
+    new_style->SetScrollBehavior(scroll_behavior);
+    new_style->SetScrollBoundaryBehaviorX(scroll_boundary_behavior_x);
+    new_style->SetScrollBoundaryBehaviorY(scroll_boundary_behavior_y);
+    GetLayoutViewItem().SetStyle(new_style);
+    SetupFontBuilder(*new_style);
   }
-  viewport_style->SetWritingMode(root_writing_mode);
-  viewport_style->SetDirection(root_direction);
-  viewport_style->SetBackgroundColor(background_color);
-  viewport_style->AccessBackgroundLayers() = background_layers;
-  viewport_style->SetImageRendering(image_rendering);
-  viewport_style->SetOverflowAnchor(overflow_anchor);
-  viewport_style->SetOverflowX(overflow_x);
-  viewport_style->SetOverflowY(overflow_y);
-  if (column_gap_normal)
-    viewport_style->SetHasNormalColumnGap();
-  else
-    viewport_style->SetColumnGap(column_gap);
-  viewport_style->SetScrollSnapType(snap_type);
-  viewport_style->SetScrollBehavior(scroll_behavior);
-  viewport_style->SetScrollBoundaryBehaviorX(scroll_boundary_behavior_x);
-  viewport_style->SetScrollBoundaryBehaviorY(scroll_boundary_behavior_y);
-  GetLayoutViewItem().SetStyle(viewport_style);
-  SetupFontBuilder(*viewport_style);
 }
 
 #if DCHECK_IS_ON()
@@ -2213,12 +2207,27 @@ void Document::UpdateStyle() {
   lifecycle_.AdvanceTo(DocumentLifecycle::kInStyleRecalc);
 
   StyleRecalcChange change = kNoChange;
-  if (GetStyleChangeType() >= kSubtreeStyleChange) {
+  if (GetStyleChangeType() >= kSubtreeStyleChange)
     change = kForce;
-    has_nodes_with_placeholder_style_ = false;
-  }
 
   NthIndexCache nth_index_cache(*this);
+
+  // TODO(rune@opera.com): Cannot access the EnsureStyleResolver() before
+  // calling StyleForViewport() below because apparently the StyleResolver's
+  // constructor has side effects. We should fix it. See
+  // printing/setPrinting.html, printing/width-overflow.html though they only
+  // fail on mac when accessing the resolver by what appears to be a viewport
+  // size difference.
+
+  if (change == kForce) {
+    has_nodes_with_placeholder_style_ = false;
+    RefPtr<ComputedStyle> viewport_style =
+        StyleResolver::StyleForViewport(*this);
+    StyleRecalcChange local_change = ComputedStyle::StylePropagationDiff(
+        viewport_style.get(), GetLayoutViewItem().Style());
+    if (local_change != kNoChange)
+      GetLayoutViewItem().SetStyle(std::move(viewport_style));
+  }
 
   ClearNeedsStyleRecalc();
   ClearNeedsReattachLayoutTree();
@@ -2238,15 +2247,13 @@ void Document::UpdateStyle() {
         ViewportDefiningElementDidChange();
     }
     GetStyleEngine().MarkForWhitespaceReattachment();
-    PropagateStyleToViewport(change);
+    PropagateStyleToViewport();
     if (document_element->NeedsReattachLayoutTree() ||
         document_element->ChildNeedsReattachLayoutTree()) {
       TRACE_EVENT0("blink,blink_style", "Document::rebuildLayoutTree");
       WhitespaceAttacher whitespace_attacher;
       document_element->RebuildLayoutTree(whitespace_attacher);
     }
-  } else if (change == kForce) {
-    GetLayoutViewItem().SetStyle(StyleResolver::StyleForViewport(*this));
   }
   GetStyleEngine().ClearWhitespaceReattachSet();
 

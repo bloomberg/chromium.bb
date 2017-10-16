@@ -7311,7 +7311,6 @@ crbug.com/591099 paint/invalidation/block-selection-gap-stale-cache-2.html [ Fai
 crbug.com/591099 paint/invalidation/block-selection-gap-stale-cache.html [ Failure ]
 crbug.com/591099 paint/invalidation/block-shift-repaint.html [ Failure ]
 crbug.com/591099 paint/invalidation/body-background-image.html [ Failure Pass ]
-crbug.com/591099 paint/invalidation/body-background-not-propagated.html [ Failure ]
 crbug.com/591099 paint/invalidation/border-current-color.html [ Failure Pass ]
 crbug.com/591099 paint/invalidation/border-image-outset-add-repaint.html [ Failure Pass ]
 crbug.com/591099 paint/invalidation/border-image-outset-change-repaint.html [ Failure Pass ]
