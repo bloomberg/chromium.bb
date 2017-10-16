@@ -10,6 +10,12 @@
 #include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 
+class SkCanvas;
+
+namespace cc {
+class PaintCanvas;
+}
+
 namespace gfx {
 class ColorSpace;
 }
@@ -44,15 +50,17 @@ class PLATFORM_EXPORT CanvasColorParams {
   void SetCanvasPixelFormat(CanvasPixelFormat);
   void SetOpacityMode(OpacityMode);
 
-  // Returns true if the canvas does all blending and interpolation in linear
-  // color space. If false, then the canvas does blending and interpolation in
-  // the canvas' output color space.
-  // TODO(ccameron): This currently returns true iff the color space is legacy.
-  bool LinearPixelMath() const;
+  // Indicates whether rendering needs to go through an SkColorSpaceXformCanvas
+  // in order to enforce non-gamma-aware pixel math behaviour.
+  bool NeedsSkColorSpaceXformCanvas() const;
 
   // The SkColorSpace to use in the SkImageInfo for allocated SkSurfaces. This
   // is nullptr in legacy rendering mode.
   sk_sp<SkColorSpace> GetSkColorSpaceForSkSurfaces() const;
+
+  // Wraps an SkCanvas into a PaintCanvas, along with an SkColorSpaceXformCanvas
+  // if necessary.
+  std::unique_ptr<cc::PaintCanvas> WrapCanvas(SkCanvas*) const;
 
   // The pixel format to use for allocating SkSurfaces.
   SkColorType GetSkColorType() const;

@@ -190,7 +190,6 @@ void CanvasRenderingContext2DTest::CreateContext(
     attributes.setColorSpace(color_space);
     if (LinearPixelMath_state == kLinearPixelMathEnabled) {
       attributes.setPixelFormat("float16");
-      attributes.setLinearPixelMath(true);
     }
   }
   canvas_element_->GetCanvasRenderingContext(canvas_type, attributes);

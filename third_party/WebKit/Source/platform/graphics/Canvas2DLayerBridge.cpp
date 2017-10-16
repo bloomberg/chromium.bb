@@ -597,13 +597,7 @@ SkSurface* Canvas2DLayerBridge::GetOrCreateSurface(AccelerationHint hint) {
                              &surface_is_accelerated);
   if (!surface_)
     return nullptr;
-  if (!color_params_.LinearPixelMath()) {
-    surface_paint_canvas_ = WTF::WrapUnique(new SkiaPaintCanvas(
-        surface_->getCanvas(), color_params_.GetSkColorSpace()));
-  } else {
-    surface_paint_canvas_ =
-        WTF::WrapUnique(new SkiaPaintCanvas(surface_->getCanvas()));
-  }
+  surface_paint_canvas_ = color_params_.WrapCanvas(surface_->getCanvas());
 
   if (surface_) {
     // Always save an initial frame, to support resetting the top level matrix
@@ -823,14 +817,14 @@ void Canvas2DLayerBridge::FlushRecordingOnly() {
     // space using a SkCreateColorSpaceXformCanvas. This ensures blending will
     // be done using target space pixel values.
     SkCanvas* canvas = GetOrCreateSurface()->getCanvas();
-    std::unique_ptr<SkCanvas> color_transform_canvas;
-    if (!color_params_.LinearPixelMath()) {
-      color_transform_canvas = SkCreateColorSpaceXformCanvas(
-          canvas, color_params_.GetSkColorSpace());
-      canvas = color_transform_canvas.get();
+    std::unique_ptr<PaintCanvas> color_transform_canvas =
+        color_params_.WrapCanvas(canvas);
+
+    {
+      sk_sp<PaintRecord> recording = recorder_->finishRecordingAsPicture();
+      color_transform_canvas->drawPicture(recording);
     }
 
-    recorder_->finishRecordingAsPicture()->Playback(canvas);
     if (is_deferral_enabled_)
       StartRecording();
     have_recorded_draw_commands_ = false;

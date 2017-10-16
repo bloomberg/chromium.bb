@@ -42,7 +42,6 @@ dictionary CanvasContextCreationAttributes {
     // Must decide before shipping.
     [RuntimeEnabled=ExperimentalCanvasFeatures] CanvasColorSpace colorSpace = "legacy-srgb";
     [RuntimeEnabled=ExperimentalCanvasFeatures] CanvasPixelFormat pixelFormat = "8-8-8-8";
-    [RuntimeEnabled=ExperimentalCanvasFeatures] boolean linearPixelMath = false;
 
     // WebGL attributes
     boolean depth = true;

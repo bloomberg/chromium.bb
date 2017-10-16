@@ -65,18 +65,14 @@ AcceleratedImageBufferSurface::AcceleratedImageBufferSurface(
   if (RuntimeEnabledFeatures::ColorCanvasExtensionsEnabled())
     info = info.makeColorSpace(color_params.GetSkColorSpaceForSkSurfaces());
 
-  SkSurfaceProps disable_lcd_props(0, kUnknown_SkPixelGeometry);
   surface_ = SkSurface::MakeRenderTarget(gr_context, SkBudgeted::kYes, info,
                                          0 /* sampleCount */,
-                                         ColorParams().GetSkSurfaceProps());
+                                         color_params.GetSkSurfaceProps());
   if (!surface_)
     return;
 
   sk_sp<SkColorSpace> xform_canvas_color_space = nullptr;
-  if (!color_params.LinearPixelMath())
-    xform_canvas_color_space = color_params.GetSkColorSpace();
-  canvas_ = WTF::WrapUnique(
-      new SkiaPaintCanvas(surface_->getCanvas(), xform_canvas_color_space));
+  canvas_ = color_params.WrapCanvas(surface_->getCanvas());
   Clear();
 
   // Always save an initial frame, to support resetting the top level matrix
