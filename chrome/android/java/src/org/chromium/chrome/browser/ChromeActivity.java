@@ -1829,6 +1829,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         if ((level >= TRIM_MEMORY_RUNNING_LOW && level < TRIM_MEMORY_UI_HIDDEN)
                 || level >= TRIM_MEMORY_MODERATE) {
             mReferencePool.drain();
+            clearToolbarResourceCache();
         }
     }
 
@@ -2265,5 +2266,10 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     @Deprecated
     public DiscardableReferencePool getReferencePool() {
         return mReferencePool;
+    }
+
+    private void clearToolbarResourceCache() {
+        ControlContainer controlContainer = (ControlContainer) findViewById(R.id.control_container);
+        controlContainer.getToolbarResourceAdapter().dropCachedBitmap();
     }
 }
