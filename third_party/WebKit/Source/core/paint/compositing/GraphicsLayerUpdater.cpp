@@ -107,8 +107,14 @@ void GraphicsLayerUpdater::UpdateRecursive(
     CompositedLayerMapping* mapping = layer.GetCompositedLayerMapping();
 
     if (update_type == kForceUpdate || mapping->NeedsGraphicsLayerUpdate()) {
-      if (mapping->UpdateGraphicsLayerConfiguration())
+      bool had_scrolling_layer = mapping->ScrollingLayer();
+      if (mapping->UpdateGraphicsLayerConfiguration()) {
         needs_rebuild_tree_ = true;
+        // Change of existence of scrolling layer affects visual rect offsets of
+        // descendants via LayoutObject::ScrollAdjustmentForPaintInvalidation().
+        if (had_scrolling_layer != !!mapping->ScrollingLayer())
+          layers_needing_paint_invalidation.push_back(&layer);
+      }
       mapping->UpdateGraphicsLayerGeometry(context.CompositingContainer(layer),
                                            context.CompositingStackingContext(),
                                            layers_needing_paint_invalidation);

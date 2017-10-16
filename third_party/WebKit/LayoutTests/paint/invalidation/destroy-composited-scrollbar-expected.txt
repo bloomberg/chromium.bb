@@ -25,8 +25,13 @@
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV",
-          "rect": [185, 0, 15, 200],
-          "reason": "scroll control"
+          "rect": [0, 0, 200, 200],
+          "reason": "compositing update"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='content'",
+          "rect": [0, 0, 100, 100],
+          "reason": "compositing update"
         }
       ]
     }
@@ -34,7 +39,11 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutBlockFlow (positioned) DIV",
-      "reason": "geometry"
+      "reason": "compositing update"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='content'",
+      "reason": "compositing update"
     }
   ]
 }
