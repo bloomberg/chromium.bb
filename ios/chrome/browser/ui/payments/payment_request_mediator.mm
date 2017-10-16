@@ -14,6 +14,7 @@
 #include "components/autofill/core/browser/field_types.h"
 #include "components/payments/core/autofill_payment_instrument.h"
 #include "components/payments/core/currency_formatter.h"
+#include "components/payments/core/payment_item.h"
 #include "components/payments/core/payment_prefs.h"
 #include "components/payments/core/payment_shipping_option.h"
 #include "components/payments/core/strings_util.h"
@@ -92,7 +93,9 @@ using ::payment_request_util::GetShippingSectionTitle;
 }
 
 - (BOOL)hasPaymentItems {
-  return !self.paymentRequest->payment_details().display_items.empty();
+  return !self.paymentRequest
+              ->GetDisplayItems(self.paymentRequest->selected_payment_method())
+              .empty();
 }
 
 - (BOOL)requestShipping {
@@ -106,16 +109,17 @@ using ::payment_request_util::GetShippingSectionTitle;
 }
 
 - (CollectionViewItem*)paymentSummaryItem {
+  const payments::PaymentItem& total = self.paymentRequest->GetTotal(
+      self.paymentRequest->selected_payment_method());
+
   PriceItem* item = [[PriceItem alloc] init];
-  item.item = base::SysUTF8ToNSString(
-      self.paymentRequest->payment_details().total->label);
+  item.item = base::SysUTF8ToNSString(total.label);
   payments::CurrencyFormatter* currencyFormatter =
       self.paymentRequest->GetOrCreateCurrencyFormatter();
   item.price = base::SysUTF16ToNSString(l10n_util::GetStringFUTF16(
       IDS_PAYMENT_REQUEST_ORDER_SUMMARY_SHEET_TOTAL_FORMAT,
       base::UTF8ToUTF16(currencyFormatter->formatted_currency_code()),
-      currencyFormatter->Format(
-          self.paymentRequest->payment_details().total->amount.value)));
+      currencyFormatter->Format(total.amount.value)));
   item.notification = self.totalValueChanged
                           ? l10n_util::GetNSString(IDS_PAYMENTS_UPDATED_LABEL)
                           : nil;
