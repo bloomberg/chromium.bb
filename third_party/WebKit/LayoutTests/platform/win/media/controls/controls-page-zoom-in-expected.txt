@@ -1,0 +1,51 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x462
+  LayoutBlockFlow {HTML} at (0,0) size 800x462.02
+    LayoutBlockFlow {BODY} at (11.52,11.52) size 776.97x438.98
+      LayoutText {#text} at (0,0) size 0x0
+layer at (12,12) size 576x432
+  LayoutVideo {VIDEO} at (0,0) size 576x431.98
+layer at (12,12) size 576x432
+  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 576x431.98
+    LayoutBlockFlow {DIV} at (0,385.91) size 576x46.08
+layer at (12,12) size 576x372 backgroundClip at (12,12) size 576x371 clip at (12,12) size 576x371
+  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 576x371.52
+layer at (12,397) size 576x46 transparent scrollHeight 58
+  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 576x46.08 [bgcolor=#FAFAFA]
+    LayoutButton {INPUT} at (0,0) size 46.08x46.08
+    LayoutFlexibleBox {DIV} at (46.08,0) size 32x46.08 [color=#5A5A5A]
+      LayoutBlockFlow (anonymous) at (0,0) size 32x46.08
+        LayoutText {#text} at (0,13) size 32x19
+          text run at (0,13) width 32: "0:01"
+    LayoutFlexibleBox {DIV} at (78.08,0) size 47.75x46.08 [color=#5A5A5A]
+      LayoutBlockFlow (anonymous) at (5.75,0) size 42x46.08
+        LayoutText {#text} at (0,13) size 42x19
+          text run at (0,13) width 42: "/ 0:06"
+    LayoutSlider {INPUT} at (151.73,21.59) size 169.92x2.88
+      LayoutFlexibleBox {DIV} at (0,0) size 169.92x2.88
+    LayoutButton {INPUT} at (347.56,0) size 46.08x46.08
+    LayoutSlider {INPUT} at (419.55,21.59) size 84.47x2.88
+      LayoutFlexibleBox {DIV} at (0,0) size 84.47x2.88
+layer at (541,397) size 46x46
+  LayoutButton {INPUT} at (529.92,0) size 46.08x46.08
+layer at (137,420) size 222x0
+  LayoutBlockFlow (relative positioned) {DIV} at (-25.91,1.44) size 221.73x0
+layer at (163,419) size 170x2
+  LayoutBlockFlow (positioned) {DIV} at (25.91,-1.44) size 169.92x2.88 [bgcolor=#DADADA]
+layer at (405,420) size 136x0
+  LayoutBlockFlow (relative positioned) {DIV} at (-25.91,1.44) size 136.28x0
+layer at (431,419) size 84x2
+  LayoutBlockFlow (positioned) {DIV} at (25.91,-1.44) size 84.47x2.88 [bgcolor=#DADADA]
+layer at (191,419) size 141x3
+  LayoutBlockFlow (positioned) zI: 1 {DIV} at (27.36,0) size 141.11x2.88 [bgcolor=#5A5A5A]
+layer at (163,419) size 27x3
+  LayoutBlockFlow (positioned) zI: 1 {DIV} at (0,0) size 27.36x2.88 [bgcolor=#4285F4]
+layer at (431,419) size 0x3
+  LayoutBlockFlow (positioned) zI: 1 {DIV} at (0,0) size 0x2.88 [bgcolor=#5A5A5A]
+layer at (431,419) size 84x3
+  LayoutBlockFlow (positioned) zI: 1 {DIV} at (0,0) size 83.52x2.88 [bgcolor=#4285F4]
+layer at (166,386) size 52x70 backgroundClip at (12,397) size 576x47 clip at (12,397) size 576x47
+  LayoutBlockFlow (positioned) zI: 2 {DIV} at (28.19,-34.55) size 51.83x69.11
+layer at (490,386) size 52x70 backgroundClip at (12,397) size 576x47 clip at (12,397) size 576x47
+  LayoutBlockFlow (positioned) zI: 2 {DIV} at (84.45,-34.55) size 51.83x69.11
