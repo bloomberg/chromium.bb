@@ -2201,7 +2201,7 @@ def CMDconfig(parser, args):
   parser.add_option('--name',
                     help='overrides the default name for the solution')
   parser.add_option('--deps-file', default='DEPS',
-                    help='overrides the default name for the DEPS file for the'
+                    help='overrides the default name for the DEPS file for the '
                          'main solutions and all sub-dependencies')
   parser.add_option('--unmanaged', action='store_true', default=False,
                     help='overrides the default behavior to make it possible '
