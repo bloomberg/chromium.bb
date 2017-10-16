@@ -277,7 +277,8 @@ void NGInlineLayoutStateStack::CreateBoxFragments(
     // was fragmented. Fragmenting a line box in block direction is not
     // supported today.
     box.SetBorderEdges(placeholder.border_edges);
-    box.SetSize(placeholder.size);
+    box.SetInlineSize(placeholder.size.inline_size);
+    box.SetBlockSize(placeholder.size.block_size);
     RefPtr<NGLayoutResult> layout_result = box.ToBoxFragment();
     DCHECK(!children[placeholder.fragment_end]);
     children[placeholder.fragment_end] =

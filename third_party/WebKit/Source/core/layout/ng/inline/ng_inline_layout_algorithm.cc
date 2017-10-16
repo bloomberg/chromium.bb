@@ -657,8 +657,9 @@ RefPtr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
   }
 
   // TODO(kojii): Check if the line box width should be content or available.
-  NGLogicalSize size(max_inline_size_, content_size_);
-  container_builder_.SetSize(size).SetIntrinsicBlockSize(content_size_);
+  container_builder_.SetInlineSize(max_inline_size_);
+  container_builder_.SetBlockSize(content_size_);
+  container_builder_.SetIntrinsicBlockSize(content_size_);
 
   // TODO(crbug.com/716930): We may be an empty LayoutInline due to splitting.
   // Margin struts shouldn't need to be passed through like this once we've

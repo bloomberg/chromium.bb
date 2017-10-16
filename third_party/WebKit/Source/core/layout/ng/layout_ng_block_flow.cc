@@ -108,8 +108,8 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
     containing_block_logical_height = container->LogicalHeight();
   }
 
-  container_builder.SetSize(NGLogicalSize(containing_block_logical_width,
-                                          containing_block_logical_height));
+  container_builder.SetInlineSize(containing_block_logical_width);
+  container_builder.SetBlockSize(containing_block_logical_height);
 
   // Determine static position.
 
