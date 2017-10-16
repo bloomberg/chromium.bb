@@ -15,7 +15,6 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/default_clock.h"
-#include "components/previews/core/previews_black_list.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_opt_out_store.h"
 #include "components/previews/core/previews_ui_service.h"
@@ -96,13 +95,28 @@ void PreviewsIOData::InitializeOnIOThread(
                             weak_factory_.GetWeakPtr()));
 }
 
+void PreviewsIOData::SetTestingPreviewsBlacklistForTesting(
+    std::unique_ptr<PreviewsBlackList> previews_back_list) {
+  previews_black_list_ = std::move(previews_back_list);
+}
+
 void PreviewsIOData::LogPreviewNavigation(const GURL& url,
                                           bool opt_out,
                                           PreviewsType type,
-                                          base::Time time) {
+                                          base::Time time) const {
   ui_task_runner_->PostTask(
       FROM_HERE, base::Bind(&PreviewsUIService::LogPreviewNavigation,
                             previews_ui_service_, url, type, opt_out, time));
+}
+
+void PreviewsIOData::LogPreviewDecisionMade(PreviewsEligibilityReason reason,
+                                            const GURL& url,
+                                            base::Time time,
+                                            PreviewsType type) const {
+  LogPreviewsEligibilityReason(reason, type);
+  ui_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&PreviewsUIService::LogPreviewDecisionMade,
+                            previews_ui_service_, reason, url, time, type));
 }
 
 void PreviewsIOData::AddPreviewNavigation(const GURL& url,
@@ -138,8 +152,8 @@ bool PreviewsIOData::ShouldAllowPreviewAtECT(
     return false;
   }
   if (is_enabled_callback_.is_null() || !previews_black_list_) {
-    LogPreviewsEligibilityReason(
-        PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE, type);
+    LogPreviewDecisionMade(PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE,
+                           request.url(), base::Time::Now(), type);
     return false;
   }
   if (!is_enabled_callback_.Run(type))
@@ -150,7 +164,7 @@ bool PreviewsIOData::ShouldAllowPreviewAtECT(
   PreviewsEligibilityReason status =
       previews_black_list_->IsLoadedAndAllowed(request.url(), type);
   if (status != PreviewsEligibilityReason::ALLOWED) {
-    LogPreviewsEligibilityReason(status, type);
+    LogPreviewDecisionMade(status, request.url(), base::Time::Now(), type);
     return false;
   }
 
@@ -161,15 +175,16 @@ bool PreviewsIOData::ShouldAllowPreviewAtECT(
     if (!network_quality_estimator ||
         network_quality_estimator->GetEffectiveConnectionType() <
             net::EFFECTIVE_CONNECTION_TYPE_OFFLINE) {
-      LogPreviewsEligibilityReason(
-          PreviewsEligibilityReason::NETWORK_QUALITY_UNAVAILABLE, type);
+      LogPreviewDecisionMade(
+          PreviewsEligibilityReason::NETWORK_QUALITY_UNAVAILABLE, request.url(),
+          base::Time::Now(), type);
       return false;
     }
 
     if (network_quality_estimator->GetEffectiveConnectionType() >
         effective_connection_type_threshold) {
-      LogPreviewsEligibilityReason(PreviewsEligibilityReason::NETWORK_NOT_SLOW,
-                                   type);
+      LogPreviewDecisionMade(PreviewsEligibilityReason::NETWORK_NOT_SLOW,
+                             request.url(), base::Time::Now(), type);
       return false;
     }
   }
@@ -179,20 +194,22 @@ bool PreviewsIOData::ShouldAllowPreviewAtECT(
   if (!AllowedOnReload(type) &&
       request.load_flags() &
           (net::LOAD_VALIDATE_CACHE | net::LOAD_BYPASS_CACHE)) {
-    LogPreviewsEligibilityReason(PreviewsEligibilityReason::RELOAD_DISALLOWED,
-                                 type);
+    LogPreviewDecisionMade(PreviewsEligibilityReason::RELOAD_DISALLOWED,
+                           request.url(), base::Time::Now(), type);
     return false;
   }
 
   if (std::find(host_blacklist_from_server.begin(),
                 host_blacklist_from_server.end(), request.url().host_piece()) !=
       host_blacklist_from_server.end()) {
-    LogPreviewsEligibilityReason(
-        PreviewsEligibilityReason::HOST_BLACKLISTED_BY_SERVER, type);
+    LogPreviewDecisionMade(
+        PreviewsEligibilityReason::HOST_BLACKLISTED_BY_SERVER, request.url(),
+        base::Time::Now(), type);
     return false;
   }
 
-  LogPreviewsEligibilityReason(PreviewsEligibilityReason::ALLOWED, type);
+  LogPreviewDecisionMade(PreviewsEligibilityReason::ALLOWED, request.url(),
+                         base::Time::Now(), type);
   return true;
 }
 

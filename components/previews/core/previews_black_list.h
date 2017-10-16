@@ -74,7 +74,7 @@ class PreviewsBlackList {
   // it will be used to load the in-memory map asynchronously.
   PreviewsBlackList(std::unique_ptr<PreviewsOptOutStore> opt_out_store,
                     std::unique_ptr<base::Clock> clock);
-  ~PreviewsBlackList();
+  virtual ~PreviewsBlackList();
 
   // Asynchronously adds a new navigation to to the in-memory black list and
   // backing store. |opt_out| is whether the user opted out of the preview or
@@ -89,9 +89,10 @@ class PreviewsBlackList {
 
   // Synchronously determines if |host_name| should be allowed to show previews.
   // Returns the reason the blacklist disallowed the preview, or
-  // PreviewsEligibilityReason::ALLOWED if the preview is allowed.
-  PreviewsEligibilityReason IsLoadedAndAllowed(const GURL& url,
-                                               PreviewsType type) const;
+  // PreviewsEligibilityReason::ALLOWED if the preview is allowed. Virtualized
+  // in testing.
+  virtual PreviewsEligibilityReason IsLoadedAndAllowed(const GURL& url,
+                                                       PreviewsType type) const;
 
   // Asynchronously deletes all entries in the in-memory black list. Informs
   // the backing store to delete entries between |begin_time| and |end_time|,

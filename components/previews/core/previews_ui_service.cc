@@ -48,8 +48,15 @@ void PreviewsUIService::LogPreviewNavigation(const GURL& url,
                                              bool opt_out,
                                              base::Time time) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  logger_->LogPreviewNavigation(
-      PreviewsLogger::PreviewNavigation(url, type, opt_out, time));
+  logger_->LogPreviewNavigation(url, type, opt_out, time);
+}
+
+void PreviewsUIService::LogPreviewDecisionMade(PreviewsEligibilityReason reason,
+                                               const GURL& url,
+                                               base::Time time,
+                                               PreviewsType type) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  logger_->LogPreviewDecisionMade(reason, url, time, type);
 }
 
 PreviewsLogger* PreviewsUIService::previews_logger() const {
