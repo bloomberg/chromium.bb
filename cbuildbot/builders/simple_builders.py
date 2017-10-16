@@ -94,7 +94,6 @@ class SimpleBuilder(generic_builders.Builder):
       builder_run: BuilderRun object for these background stages.
       board: Board name.
     """
-    parallel_stages = []
 
     if not builder_run.options.archive:
       logging.warning("HWTests were requested but could not be run because "
@@ -107,6 +106,7 @@ class SimpleBuilder(generic_builders.Builder):
     if builder_run.config.models:
       models = builder_run.config.models
 
+    parallel_stages = []
     for suite_config in builder_run.config.hw_tests:
       # Even for blocking stages, all models can still be run in parallel since
       # it will still block the next stage from executing.

@@ -720,12 +720,25 @@ HWTestSuiteResult = collections.namedtuple('HWTestSuiteResult',
 
 @failures_lib.SetFailureType(failures_lib.SuiteTimedOut,
                              timeout_util.TimeoutError)
-def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
-                   wait_for_results=None, priority=None, timeout_mins=None,
-                   max_runtime_mins=None, retry=None, max_retries=None,
-                   minimum_duts=0, suite_min_duts=0,
-                   offload_failures_only=None, debug=True, subsystems=None,
-                   skip_duts_check=False, job_keyvals=None):
+def RunHWTestSuite(
+    build, suite, board,
+    pool=None,
+    num=None,
+    file_bugs=None,
+    wait_for_results=None,
+    priority=None,
+    timeout_mins=None,
+    max_runtime_mins=None,
+    retry=None,
+    max_retries=None,
+    minimum_duts=0,
+    suite_min_duts=0,
+    suite_args=None,
+    offload_failures_only=None,
+    debug=True,
+    subsystems=None,
+    skip_duts_check=False,
+    job_keyvals=None):
   """Run the test suite in the Autotest lab.
 
   Args:
@@ -751,6 +764,9 @@ def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
     suite_min_duts: Preferred minimum duts, lab will prioritize on getting
                     such many duts even if the suite is competing with
                     a suite that has higher priority.
+    suite_args: Arguments passed to the suite.  This should be a dict
+                representing keyword arguments.  The value is marshalled
+                using repr(), so the dict values should be basic types.
     offload_failures_only: Only offload failed tests to Google Storage.
     debug: Whether we are in debug mode.
     subsystems: A set of subsystems that the relevant changes affect, for
@@ -765,11 +781,23 @@ def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
   """
   try:
     cmd = [RUN_SUITE_PATH]
-    cmd += _GetRunSuiteArgs(build, suite, board, pool, num, file_bugs,
-                            priority, timeout_mins, max_runtime_mins, retry,
-                            max_retries, minimum_duts, suite_min_duts,
-                            offload_failures_only, subsystems, skip_duts_check,
-                            job_keyvals)
+    cmd += _GetRunSuiteArgs(
+        build, suite, board,
+        pool=pool,
+        num=num,
+        file_bugs=file_bugs,
+        priority=priority,
+        timeout_mins=timeout_mins,
+        max_runtime_mins=max_runtime_mins,
+        retry=retry,
+        max_retries=max_retries,
+        minimum_duts=minimum_duts,
+        suite_min_duts=suite_min_duts,
+        suite_args=suite_args,
+        offload_failures_only=offload_failures_only,
+        subsystems=subsystems,
+        skip_duts_check=skip_duts_check,
+        job_keyvals=job_keyvals)
     swarming_args = _CreateSwarmingArgs(build, suite, board, priority,
                                         timeout_mins)
     running_json_dump_flag = False
@@ -876,11 +904,23 @@ def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
 
 
 # pylint: disable=docstring-missing-args
-def _GetRunSuiteArgs(build, suite, board, pool=None, num=None, file_bugs=None,
-                     priority=None, timeout_mins=None, max_runtime_mins=None,
-                     retry=None, max_retries=None, minimum_duts=0,
-                     suite_min_duts=0, offload_failures_only=None,
-                     subsystems=None, skip_duts_check=False, job_keyvals=None):
+def _GetRunSuiteArgs(
+    build, suite, board,
+    pool=None,
+    num=None,
+    file_bugs=None,
+    priority=None,
+    timeout_mins=None,
+    max_runtime_mins=None,
+    retry=None,
+    max_retries=None,
+    minimum_duts=0,
+    suite_min_duts=0,
+    suite_args=None,
+    offload_failures_only=None,
+    subsystems=None,
+    skip_duts_check=False,
+    job_keyvals=None):
   """Get a list of args for run_suite.
 
   Args:
@@ -930,6 +970,9 @@ def _GetRunSuiteArgs(build, suite, board, pool=None, num=None, file_bugs=None,
 
   if suite_min_duts != 0:
     args += ['--suite_min_duts', str(suite_min_duts)]
+
+  if suite_args is not None:
+    args += ['--suite_args', repr(suite_args)]
 
   if offload_failures_only is not None:
     args += ['--offload_failures_only', str(offload_failures_only)]

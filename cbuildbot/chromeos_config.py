@@ -3546,6 +3546,24 @@ def ApplyCustomOverrides(site_config, ge_build_config):
           'sign_types': ['recovery', 'factory'],
       },
       # --- end from here ---
+
+      'auron-paladin': {
+          'hw_tests_override': [
+              config_lib.HWTestConfig(
+                  constants.HWTEST_PROVISION_SUITE,
+                  pool=constants.HWTEST_PALADIN_POOL,
+                  blocking=True,
+                  timeout=config_lib.HWTestConfig.PALADIN_HW_TEST_TIMEOUT,
+                  file_bugs=False,
+                  priority=constants.HWTEST_CQ_PRIORITY,
+                  minimum_duts=4,
+                  suite_args={
+                      'num_required': 1,
+                  },
+              ),
+          ] + hw_test_list.DefaultListCQ(),
+      },
+
   }
 
   for config_name, overrides  in overwritten_configs.iteritems():

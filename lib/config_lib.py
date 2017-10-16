@@ -476,6 +476,9 @@ class HWTestConfig(object):
     suite_min_duts: Preferred minimum duts. Lab will prioritize on getting such
                     number of duts even if the suite is competing with
                     other suites that have higher priority.
+    suite_args: Arguments passed to the suite.  This should be a dict
+                representing keyword arguments.  The value is marshalled
+                using repr(), so the dict values should be basic types.
 
   Some combinations of member settings are invalid:
     * A suite config may not specify both blocking and async.
@@ -500,12 +503,22 @@ class HWTestConfig(object):
   # there's a better fix, we'll allow these phases hours to fail.
   ASYNC_HW_TEST_TIMEOUT = int(250.0 * _MINUTE)
 
-  def __init__(self, suite, num=constants.HWTEST_DEFAULT_NUM,
-               pool=constants.HWTEST_MACH_POOL, timeout=SHARED_HW_TEST_TIMEOUT,
-               async=False, warn_only=False, critical=False, blocking=False,
-               file_bugs=False, priority=constants.HWTEST_BUILD_PRIORITY,
-               retry=True, max_retries=constants.HWTEST_MAX_RETRIES,
-               minimum_duts=0, suite_min_duts=0, offload_failures_only=False):
+  def __init__(self, suite,
+               num=constants.HWTEST_DEFAULT_NUM,
+               pool=constants.HWTEST_MACH_POOL,
+               timeout=SHARED_HW_TEST_TIMEOUT,
+               async=False,
+               warn_only=False,
+               critical=False,
+               blocking=False,
+               file_bugs=False,
+               priority=constants.HWTEST_BUILD_PRIORITY,
+               retry=True,
+               max_retries=constants.HWTEST_MAX_RETRIES,
+               minimum_duts=0,
+               suite_min_duts=0,
+               suite_args=None,
+               offload_failures_only=False):
     """Constructor -- see members above."""
     assert not async or not blocking
     assert not warn_only or not critical
@@ -523,6 +536,7 @@ class HWTestConfig(object):
     self.max_retries = max_retries
     self.minimum_duts = minimum_duts
     self.suite_min_duts = suite_min_duts
+    self.suite_args = suite_args
     self.offload_failures_only = offload_failures_only
 
   def SetBranchedValues(self):

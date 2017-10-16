@@ -268,7 +268,8 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
 
     cmd_result = commands.RunHWTestSuite(
         build, self.suite_config.suite, self._model,
-        pool=self.suite_config.pool, num=self.suite_config.num,
+        pool=self.suite_config.pool,
+        num=self.suite_config.num,
         file_bugs=self.suite_config.file_bugs,
         wait_for_results=self.wait_for_results,
         priority=self.suite_config.priority,
@@ -277,9 +278,11 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
         max_retries=self.suite_config.max_retries,
         minimum_duts=self.suite_config.minimum_duts,
         suite_min_duts=self.suite_config.suite_min_duts,
+        suite_args=self.suite_config.suite_args,
         offload_failures_only=self.suite_config.offload_failures_only,
         debug=not self.TestsEnabled(self._run),
-        subsystems=subsystems, skip_duts_check=skip_duts_check,
+        subsystems=subsystems,
+        skip_duts_check=skip_duts_check,
         job_keyvals=self.GetJobKeyvals())
 
     if config_lib.IsCQType(self._run.config.build_type):
