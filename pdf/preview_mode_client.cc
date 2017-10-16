@@ -131,7 +131,8 @@ void PreviewModeClient::DocumentPaintOccurred() {
   NOTREACHED();
 }
 
-void PreviewModeClient::DocumentLoadComplete(int page_count) {
+void PreviewModeClient::DocumentLoadComplete(
+    const PDFEngine::DocumentFeatures& document_features) {
   client_->PreviewDocumentLoadComplete();
 }
 

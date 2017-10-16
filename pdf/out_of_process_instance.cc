@@ -1436,7 +1436,8 @@ void OutOfProcessInstance::SearchString(
 
 void OutOfProcessInstance::DocumentPaintOccurred() {}
 
-void OutOfProcessInstance::DocumentLoadComplete(int page_count) {
+void OutOfProcessInstance::DocumentLoadComplete(
+    const PDFEngine::DocumentFeatures& document_features) {
   // Clear focus state for OSK.
   FormTextFieldFocusChange(false);
 
@@ -1501,7 +1502,8 @@ void OutOfProcessInstance::DocumentLoadComplete(int page_count) {
   }
 
   pp::PDF::SetContentRestriction(this, content_restrictions);
-  HistogramCustomCounts("PDF.PageCount", page_count, 1, 1000000, 50);
+  HistogramCustomCounts("PDF.PageCount", document_features.page_count, 1,
+                        1000000, 50);
 }
 
 void OutOfProcessInstance::RotateClockwise() {
