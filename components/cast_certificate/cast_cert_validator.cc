@@ -34,6 +34,10 @@
 namespace cast_certificate {
 namespace {
 
+#define RETURN_STRING_LITERAL(x) \
+  case x:                        \
+    return #x;
+
 // -------------------------------------------------------------------------
 // Cast trust anchors.
 // -------------------------------------------------------------------------
@@ -330,6 +334,21 @@ std::unique_ptr<CertVerificationContext> CertVerificationContextImplForTest(
   // verification by unittests.
   return base::MakeUnique<CertVerificationContextImpl>(net::der::Input(spki),
                                                        "CommonName");
+}
+
+std::string CastCertErrorToString(CastCertError error) {
+  switch (error) {
+    RETURN_STRING_LITERAL(CastCertError::ERR_CERTS_MISSING);
+    RETURN_STRING_LITERAL(CastCertError::ERR_CERTS_PARSE);
+    RETURN_STRING_LITERAL(CastCertError::ERR_CERTS_DATE_INVALID);
+    RETURN_STRING_LITERAL(CastCertError::ERR_CERTS_VERIFY_GENERIC);
+    RETURN_STRING_LITERAL(CastCertError::ERR_CERTS_RESTRICTIONS);
+    RETURN_STRING_LITERAL(CastCertError::ERR_CRL_INVALID);
+    RETURN_STRING_LITERAL(CastCertError::ERR_CERTS_REVOKED);
+    RETURN_STRING_LITERAL(CastCertError::ERR_UNEXPECTED);
+    RETURN_STRING_LITERAL(CastCertError::OK);
+  }
+  return "CastCertError::UNKNOWN";
 }
 
 }  // namespace cast_certificate

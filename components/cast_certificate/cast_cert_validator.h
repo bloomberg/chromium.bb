@@ -147,6 +147,9 @@ CastCertError VerifyDeviceCertUsingCustomTrustStore(
 std::unique_ptr<CertVerificationContext> CertVerificationContextImplForTest(
     const base::StringPiece& spki);
 
+// Returns a string status messages for the CastCertError provided.
+std::string CastCertErrorToString(CastCertError error);
+
 }  // namespace cast_certificate
 
 #endif  // COMPONENTS_CAST_CERTIFICATE_CAST_CERT_VALIDATOR_H_
