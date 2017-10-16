@@ -762,6 +762,11 @@ static LayoutUnit BoundingBoxLogicalHeight(LayoutObject* o,
   return o->Style()->IsHorizontalWritingMode() ? rect.Height() : rect.Width();
 }
 
+// TODO(editing-dev): The semantics seems wrong when we're in a one-letter block
+// with first-letter style, e.g., <div>F</div>, where the letter is laid-out in
+// an anonymous first-letter LayoutTextFragment instead of the LayoutObject of
+// the text node. It seems weird to return false in this case.
+// TODO(crbug.com/766448): Change parameter type to |const LayoutObject*|.
 bool HasRenderedNonAnonymousDescendantsWithHeight(LayoutObject* layout_object) {
   LayoutObject* stop = layout_object->NextInPreOrderAfterChildren();
   for (LayoutObject* o = layout_object->SlowFirstChild(); o && o != stop;
@@ -860,31 +865,16 @@ bool RendersInDifferentPosition(const Position& position1,
          LocalToAbsoluteQuadOf(caret_rect2);
 }
 
-static bool IsVisuallyEmpty(const LayoutObject* layout) {
-  for (LayoutObject* child = layout->SlowFirstChild(); child;
-       child = child->NextSibling()) {
-    if (child->IsBox()) {
-      if (!ToLayoutBox(child)->Size().IsEmpty())
-        return false;
-    } else if (child->IsLayoutInline()) {
-      if (ToLayoutInline(child)->FirstLineBoxIncludingCulling())
-        return false;
-    } else if (child->IsText()) {
-      if (ToLayoutText(child)->HasNonCollapsedText())
-        return false;
-    } else {
-      return false;
-    }
-  }
-  return true;
-}
-
-// FIXME: Share code with isCandidate, if possible.
+// TODO(editing-dev): Share code with IsVisuallyEquivalentCandidate if possible.
 bool EndsOfNodeAreVisuallyDistinctPositions(const Node* node) {
-  if (!node || !node->GetLayoutObject())
+  if (!node)
     return false;
 
-  if (!node->GetLayoutObject()->IsInline())
+  LayoutObject* layout_object = node->GetLayoutObject();
+  if (!layout_object)
+    return false;
+
+  if (!layout_object->IsInline())
     return true;
 
   // Don't include inline tables.
@@ -897,10 +887,10 @@ bool EndsOfNodeAreVisuallyDistinctPositions(const Node* node) {
     return true;
 
   // There is a VisiblePosition inside an empty inline-block container.
-  return node->GetLayoutObject()->IsAtomicInlineLevel() &&
+  return layout_object->IsAtomicInlineLevel() &&
          CanHaveChildrenForEditing(node) &&
-         !ToLayoutBox(node->GetLayoutObject())->Size().IsEmpty() &&
-         IsVisuallyEmpty(node->GetLayoutObject());
+         !ToLayoutBox(layout_object)->Size().IsEmpty() &&
+         !HasRenderedNonAnonymousDescendantsWithHeight(layout_object);
 }
 
 template <typename Strategy>
@@ -1343,8 +1333,6 @@ static bool IsVisuallyEquivalentCandidateAlgorithm(
       layout_object->IsLayoutGrid()) {
     if (ToLayoutBlock(layout_object)->LogicalHeight() ||
         IsHTMLBodyElement(*anchor_node)) {
-      // TODO(editing-dev): It seems wrong to check physical appearance, e.g.,
-      // height, during position canonicalization. Find an alternative.
       if (!HasRenderedNonAnonymousDescendantsWithHeight(layout_object))
         return position.AtFirstEditingPositionForNode();
       return HasEditableStyle(*anchor_node) && AtEditingBoundary(position);
