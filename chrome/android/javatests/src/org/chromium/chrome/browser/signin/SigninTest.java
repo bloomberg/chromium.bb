@@ -225,38 +225,35 @@ public class SigninTest {
         mContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
         final TestSignInAllowedObserver signinAllowedObserver = new TestSignInAllowedObserver();
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                // This call initializes the ChromeSigninController to use our test context.
-                ChromeSigninController.get();
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            // This call initializes the ChromeSigninController to use our test context.
+            ChromeSigninController.get();
 
-                // Start observing the SigninManager.
-                mTestSignInObserver = new TestSignInObserver();
-                mSigninManager = SigninManager.get(mContext);
-                mSigninManager.addSignInStateObserver(mTestSignInObserver);
+            // Start observing the SigninManager.
+            mTestSignInObserver = new TestSignInObserver();
+            mSigninManager = SigninManager.get(mContext);
+            mSigninManager.addSignInStateObserver(mTestSignInObserver);
 
-                // Get these handles in the UI thread.
-                mPrefService = PrefServiceBridge.getInstance();
-                Profile profile = mActivityTestRule.getActivity().getActivityTab().getProfile();
-                mBookmarks = new BookmarkBridge(profile);
+            // Get these handles in the UI thread.
+            mPrefService = PrefServiceBridge.getInstance();
+            Profile profile = mActivityTestRule.getActivity().getActivityTab().getProfile();
+            mBookmarks = new BookmarkBridge(profile);
 
-                // Add a test bookmark, to verify later if sign out cleared the bookmarks.
-                mTestBookmarkModelObserver = new TestBookmarkModelObserver(mBookmarks);
-                mBookmarks.addObserver(mTestBookmarkModelObserver);
-                mTestBookmarkModelObserver.waitForBookmarkModelToLoad();
-                Assert.assertEquals(0, mBookmarks.getChildCount(mBookmarks.getMobileFolderId()));
-                BookmarkId mTestBookmark = mBookmarks.addBookmark(
-                        mBookmarks.getMobileFolderId(), 0, "Test Bookmark", "http://google.com");
-                mTestBookmarkModelObserver.waitForBookmarkAdded();
-                Assert.assertNotNull(mTestBookmark);
-                Assert.assertEquals(1, mBookmarks.getChildCount(mBookmarks.getMobileFolderId()));
+            // Add a test bookmark, to verify later if sign out cleared the bookmarks.
+            mTestBookmarkModelObserver = new TestBookmarkModelObserver(mBookmarks);
+            mBookmarks.addObserver(mTestBookmarkModelObserver);
+            mTestBookmarkModelObserver.waitForBookmarkModelToLoad();
+            Assert.assertEquals(0, mBookmarks.getChildCount(mBookmarks.getMobileFolderId()));
+            BookmarkId mTestBookmark = mBookmarks.addBookmark(
+                    mBookmarks.getMobileFolderId(), 0, "Test Bookmark", "http://google.com");
+            mTestBookmarkModelObserver.waitForBookmarkAdded();
+            Assert.assertNotNull(mTestBookmark);
+            Assert.assertEquals(1, mBookmarks.getChildCount(mBookmarks.getMobileFolderId()));
 
-                // Start observing if signing in is allowed. This observer must be installed on
-                // the UI thread, but waiting must be done outside the UI thread (otherwise it
-                // won't ever unblock).
-                signinAllowedObserver.startObserving(mSigninManager);
-            }
+            // Start observing if signing in is allowed. This observer must be installed on
+            // the UI thread, but waiting must be done outside the UI thread (otherwise it
+            // won't ever unblock).
+            signinAllowedObserver.startObserving(mSigninManager);
         });
 
         signinAllowedObserver.waitForSignInAllowed();
@@ -265,19 +262,16 @@ public class SigninTest {
 
     @After
     public void tearDown() throws Exception {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mBookmarks.removeObserver(mTestBookmarkModelObserver);
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            mBookmarks.removeObserver(mTestBookmarkModelObserver);
 
-                mSigninManager.removeSignInStateObserver(mTestSignInObserver);
+            mSigninManager.removeSignInStateObserver(mTestSignInObserver);
 
-                if (ChromeSigninController.get().isSignedIn()) {
-                    mSigninManager.signOut(null, null);
-                }
-
-                mBookmarks.destroy();
+            if (ChromeSigninController.get().isSignedIn()) {
+                mSigninManager.signOut(null, null);
             }
+
+            mBookmarks.destroy();
         });
         SigninTestUtil.tearDownAuthForTest();
     }
@@ -289,16 +283,13 @@ public class SigninTest {
         SigninTestUtil.addTestAccount();
         signInToSingleAccount();
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                // Verify that the account isn't managed.
-                Assert.assertNull(mSigninManager.getManagementDomain());
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            // Verify that the account isn't managed.
+            Assert.assertNull(mSigninManager.getManagementDomain());
 
-                // Verify that the password manager is enabled by default.
-                Assert.assertTrue(mPrefService.isRememberPasswordsEnabled());
-                Assert.assertFalse(mPrefService.isRememberPasswordsManaged());
-            }
+            // Verify that the password manager is enabled by default.
+            Assert.assertTrue(mPrefService.isRememberPasswordsEnabled());
+            Assert.assertFalse(mPrefService.isRememberPasswordsManaged());
         });
 
         // Verify that its preference UI is enabled.
@@ -315,13 +306,10 @@ public class SigninTest {
         // Sign out now.
         signOut();
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                // Verify that the profile data hasn't been wiped when signing out of a normal
-                // account. We check that by looking for the test bookmark from setUp().
-                Assert.assertEquals(1, mBookmarks.getChildCount(mBookmarks.getMobileFolderId()));
-            }
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            // Verify that the profile data hasn't been wiped when signing out of a normal
+            // account. We check that by looking for the test bookmark from setUp().
+            Assert.assertEquals(1, mBookmarks.getChildCount(mBookmarks.getMobileFolderId()));
         });
     }
 
@@ -338,12 +326,7 @@ public class SigninTest {
                 AccountSigninActivity.class.getName(), null, false);
 
         // Click sign in.
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                clickSigninPreference(prefActivity);
-            }
-        });
+        ThreadUtils.runOnUiThreadBlocking(() -> clickSigninPreference(prefActivity));
 
         // Pick the mock account.
         AccountSigninActivity signinActivity =
@@ -361,13 +344,10 @@ public class SigninTest {
         // Sync doesn't actually start up until we finish the sync setup. This usually happens
         // in the resume of the Main activity, but we forcefully do this here.
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                ProfileSyncService syncService = ProfileSyncService.get();
-                syncService.setFirstSetupComplete();
-                syncService.setSetupInProgress(false);
-            }
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            ProfileSyncService syncService = ProfileSyncService.get();
+            syncService.setFirstSetupComplete();
+            syncService.setSetupInProgress(false);
         });
         prefActivity.finish();
 
@@ -388,12 +368,7 @@ public class SigninTest {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
 
         // Click on the signout button.
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                clickSignOut(prefActivity);
-            }
-        });
+        ThreadUtils.runOnUiThreadBlocking(() -> clickSignOut(prefActivity));
 
         // Accept the warning dialog.
         acceptAlertDialogWithTag(prefActivity, AccountManagementFragment.SIGN_OUT_DIALOG_TAG);

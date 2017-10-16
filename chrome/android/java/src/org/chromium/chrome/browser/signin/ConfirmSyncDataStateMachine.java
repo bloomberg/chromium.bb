@@ -12,7 +12,6 @@ import android.os.Handler;
 import android.support.annotation.IntDef;
 import android.text.TextUtils;
 
-import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.signin.ConfirmImportSyncDataDialog.ImportSyncType;
 
@@ -189,12 +188,7 @@ public class ConfirmSyncDataStateMachine
     }
 
     private void requestNewAccountManagementStatus() {
-        SigninManager.isUserManaged(mNewAccountName, new Callback<Boolean>() {
-            @Override
-            public void onResult(Boolean result) {
-                setIsNewAccountManaged(result);
-            }
-        });
+        SigninManager.isUserManaged(mNewAccountName, this::setIsNewAccountManaged);
     }
 
     private void setIsNewAccountManaged(Boolean isManaged) {
@@ -224,23 +218,12 @@ public class ConfirmSyncDataStateMachine
     }
 
     private void showProgressDialog() {
-        mDelegate.showFetchManagementPolicyProgressDialog(
-                new ConfirmSyncDataStateMachineDelegate.ProgressDialogListener() {
-                    @Override
-                    public void onCancel() {
-                        ConfirmSyncDataStateMachine.this.onCancel();
-                    }
-                });
+        mDelegate.showFetchManagementPolicyProgressDialog(this::onCancel);
     }
 
     private void scheduleTimeout() {
         if (mCheckTimeoutRunnable == null) {
-            mCheckTimeoutRunnable = new Runnable() {
-                @Override
-                public void run() {
-                    checkTimeout();
-                }
-            };
+            mCheckTimeoutRunnable = this::checkTimeout;
         }
         mHandler.postDelayed(mCheckTimeoutRunnable, ACCOUNT_CHECK_TIMEOUT_MS);
     }
