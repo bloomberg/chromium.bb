@@ -1570,9 +1570,8 @@ static void get_mv_projection(MV *output, MV ref, int num, int den) {
 
 static int get_block_position(AV1_COMMON *cm, int *mi_r, int *mi_c, int blk_row,
                               int blk_col, MV mv, int sign_bias) {
-  if ((abs(mv.row) >> 3) > MAX_OFFSET_HEIGHT ||
-      (abs(mv.col) >> 3) > MAX_OFFSET_WIDTH)
-    return 0;
+  const int base_blk_row = (blk_row >> 3) << 3;
+  const int base_blk_col = (blk_col >> 3) << 3;
 
   int row = (sign_bias == 1) ? blk_row - (mv.row >> (4 + MI_SIZE_LOG2))
                              : blk_row + (mv.row >> (4 + MI_SIZE_LOG2));
@@ -1581,6 +1580,11 @@ static int get_block_position(AV1_COMMON *cm, int *mi_r, int *mi_c, int blk_row,
 
   if (row < 0 || row >= (cm->mi_rows >> 1) || col < 0 ||
       col >= (cm->mi_cols >> 1))
+    return 0;
+
+  if (row < base_blk_row || row > base_blk_row + 7 ||
+      col <= base_blk_col - (MAX_OFFSET_WIDTH >> 3) ||
+      col >= base_blk_col + (MAX_OFFSET_WIDTH >> 3))
     return 0;
 
   *mi_r = row;
