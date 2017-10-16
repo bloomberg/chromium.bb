@@ -12,11 +12,14 @@ const int kMHTMLExtraPartsKey = 0;
 namespace content {
 
 MHTMLExtraDataPart::MHTMLExtraDataPart() = default;
-
-MHTMLExtraDataPart::~MHTMLExtraDataPart() = default;
-
 MHTMLExtraDataPart::MHTMLExtraDataPart(const MHTMLExtraDataPart& other) =
     default;
+MHTMLExtraDataPart::MHTMLExtraDataPart(MHTMLExtraDataPart&& other) = default;
+MHTMLExtraDataPart& MHTMLExtraDataPart::operator=(
+    const MHTMLExtraDataPart& other) = default;
+MHTMLExtraDataPart& MHTMLExtraDataPart::operator=(MHTMLExtraDataPart&& other) =
+    default;
+MHTMLExtraDataPart::~MHTMLExtraDataPart() = default;
 
 MHTMLExtraPartsImpl::MHTMLExtraPartsImpl() = default;
 
@@ -54,7 +57,7 @@ void MHTMLExtraPartsImpl::AddExtraMHTMLPart(const std::string& content_type,
 
   // Add this part to the list of parts to be saved out when the file is
   // written.
-  parts_.push_back(part);
+  parts_.emplace_back(std::move(part));
 }
 
 }  // namespace content
