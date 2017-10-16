@@ -53,8 +53,6 @@ enum AudioParamType {
   kParamTypeAudioBufferSourceDetune,
   kParamTypeBiquadFilterFrequency,
   kParamTypeBiquadFilterQ,
-  kParamTypeBiquadFilterQLowpass,
-  kParamTypeBiquadFilterQHighpass,
   kParamTypeBiquadFilterGain,
   kParamTypeBiquadFilterDetune,
   kParamTypeDelayDelayTime,
@@ -161,9 +159,6 @@ class AudioParamHandler final : public ThreadSafeRefCounted<AudioParamHandler>,
   void Disconnect(AudioNodeOutput&);
 
   float IntrinsicValue() const { return NoBarrierLoad(&intrinsic_value_); }
-
-  // Update any histograms with the given value.
-  void UpdateHistograms(float new_value);
 
  private:
   AudioParamHandler(BaseAudioContext&,
