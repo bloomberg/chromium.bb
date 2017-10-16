@@ -73,6 +73,8 @@ class ScreenlockBridge {
 
     std::string GetIDString() const;
 
+    UserPodCustomIcon icon() const { return icon_; }
+
     const base::string16 tooltip() const { return tooltip_; }
 
     bool autoshow_tooltip() const { return autoshow_tooltip_; }

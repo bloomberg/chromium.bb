@@ -44,7 +44,7 @@ class ASH_EXPORT LockScreenController : public mojom::LockScreen {
                         int32_t help_topic_id) override;
   void ClearErrors() override;
   void ShowUserPodCustomIcon(const AccountId& account_id,
-                             mojom::UserPodCustomIconOptionsPtr icon) override;
+                             mojom::EasyUnlockIconOptionsPtr icon) override;
   void HideUserPodCustomIcon(const AccountId& account_id) override;
   void SetAuthType(const AccountId& account_id,
                    proximity_auth::mojom::AuthType auth_type,

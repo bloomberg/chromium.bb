@@ -123,7 +123,7 @@ void LockScreenClient::ClearErrors() {
 
 void LockScreenClient::ShowUserPodCustomIcon(
     const AccountId& account_id,
-    ash::mojom::UserPodCustomIconOptionsPtr icon) {
+    ash::mojom::EasyUnlockIconOptionsPtr icon) {
   lock_screen_->ShowUserPodCustomIcon(account_id, std::move(icon));
 }
 
