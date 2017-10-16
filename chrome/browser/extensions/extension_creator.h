@@ -82,19 +82,15 @@ class ExtensionCreator {
       const base::FilePath& private_key_path);
 
   // Creates temporary zip file for the extension.
-  bool CreateZip(const base::FilePath& extension_dir, const base::FilePath& temp_path,
+  bool CreateZip(const base::FilePath& extension_dir,
+                 const base::FilePath& temp_path,
                  base::FilePath* zip_path);
 
-  // Signs the temporary zip and returns the signature.
-  bool SignZip(const base::FilePath& zip_path,
-               crypto::RSAPrivateKey* private_key,
-               std::vector<uint8_t>* signature);
-
-  // Export installable .crx to |crx_path|.
-  bool WriteCRX(const base::FilePath& zip_path,
-                crypto::RSAPrivateKey* private_key,
-                const std::vector<uint8_t>& signature,
-                const base::FilePath& crx_path);
+  // Creates a CRX file at |crx_path|, signed with |private_key| and with the
+  // contents of the archive at |zip_path|.
+  bool CreateCrx(const base::FilePath& zip_path,
+                 crypto::RSAPrivateKey* private_key,
+                 const base::FilePath& crx_path);
 
   // Holds a message for any error that is raised during Run(...).
   std::string error_message_;
