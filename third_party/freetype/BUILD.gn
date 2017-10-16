@@ -25,7 +25,7 @@ config("freetype_config") {
   ]
 
   if (!is_android) {
-    # Selects type1cid.c, psaux.c, type1.c modules in
+    # Selects type1cid.c and type1.c modules in
     # freetype-custom-config/ftmodule.h.
     defines += [ "PDFIUM_REQUIRED_MODULES" ]
   } else {
@@ -74,6 +74,7 @@ source_set("freetype_source") {
     "src/src/base/fttype1.c",
     "src/src/cff/cff.c",
     "src/src/gzip/ftgzip.c",
+    "src/src/psaux/psaux.c",
     "src/src/pshinter/pshinter.c",
     "src/src/psnames/psnames.c",
     "src/src/raster/raster.c",
@@ -107,7 +108,6 @@ source_set("freetype_source") {
   if (!is_android) {
     sources += [
       "src/src/cid/type1cid.c",
-      "src/src/psaux/psaux.c",
       "src/src/type1/type1.c",
     ]
   }
