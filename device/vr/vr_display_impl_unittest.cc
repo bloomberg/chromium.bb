@@ -10,8 +10,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "device/vr/test/fake_vr_device.h"
-#include "device/vr/test/fake_vr_device_provider.h"
-#include "device/vr/test/fake_vr_display_impl_client.h"
 #include "device/vr/test/fake_vr_service_client.h"
 #include "device/vr/vr_service.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -54,7 +52,7 @@ class VRDisplayImplTest : public testing::Test {
   void ExitPresent(VRDisplayImpl* display_impl) { display_impl->ExitPresent(); }
 
   bool presenting() { return !!device_->GetPresentingDisplay(); }
-  VRDevice* device() { return device_.get(); }
+  VRDeviceBase* device() { return device_.get(); }
   FakeVRServiceClient* client() { return client_.get(); }
 
   base::MessageLoop message_loop_;
@@ -108,16 +106,14 @@ TEST_F(VRDisplayImplTest, DevicePresentationIsolation) {
   EXPECT_TRUE(device()->IsAccessAllowed(display_2.get()));
 }
 
-// This test case tests VRDevice class default behaviour when it
-// dispatch "vrdevicechanged" event. The expected behaviour is all
-// of the services related with this device will receive "vrdevicechanged"
-// event.
+// This test case tests that VRDisplayImpl dispatches a "vrdevicechanged" event
+// to its client when it's been told the device has changed.
 TEST_F(VRDisplayImplTest, DeviceChangedDispatched) {
-  std::unique_ptr<VRDisplayImpl> display = MakeDisplay();
-  device()->OnChanged();
+  auto display = MakeDisplay();
+  display->OnChanged(device()->GetVRDisplayInfo());
 
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(client()->CheckDeviceId(device()->id()));
+  EXPECT_TRUE(client()->CheckDeviceId(device()->GetId()));
 }
 }

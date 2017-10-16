@@ -279,9 +279,9 @@ void VrShell::OnContentPaused(bool paused) {
   // TODO(mthiesse): The page is no longer visible when in menu mode. We
   // should unfocus or otherwise let it know it's hidden.
   if (paused)
-    device->OnBlur();
+    device->Blur();
   else
-    device->OnFocus();
+    device->Focus();
 }
 
 void VrShell::NavigateBack() {
@@ -309,7 +309,8 @@ void VrShell::ToggleCardboardGamepad(bool enabled) {
       return;
 
     device::GamepadDataFetcherManager::GetInstance()->AddFactory(
-        new device::CardboardGamepadDataFetcher::Factory(this, device->id()));
+        new device::CardboardGamepadDataFetcher::Factory(this,
+                                                         device->GetId()));
     cardboard_gamepad_source_active_ = true;
     if (pending_cardboard_trigger_) {
       OnTriggerEvent(nullptr, JavaParamRef<jobject>(nullptr), true);
@@ -327,7 +328,7 @@ void VrShell::ToggleGvrGamepad(bool enabled) {
       return;
 
     device::GamepadDataFetcherManager::GetInstance()->AddFactory(
-        new device::GvrGamepadDataFetcher::Factory(this, device->id()));
+        new device::GvrGamepadDataFetcher::Factory(this, device->GetId()));
     gvr_gamepad_source_active_ = true;
   } else {
     DCHECK(gvr_gamepad_source_active_);

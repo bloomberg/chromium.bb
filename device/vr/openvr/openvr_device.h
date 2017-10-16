@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "base/threading/simple_thread.h"
-#include "device/vr/vr_device.h"
+#include "device/vr/vr_device_base.h"
 #include "device/vr/vr_service.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
@@ -21,26 +21,17 @@ namespace device {
 
 class OpenVRRenderLoop;
 
-class OpenVRDevice : public VRDevice {
+class OpenVRDevice : public VRDeviceBase {
  public:
   OpenVRDevice(vr::IVRSystem* vr);
   ~OpenVRDevice() override;
 
-  // VRDevice
+  // VRDeviceBase
   mojom::VRDisplayInfoPtr GetVRDisplayInfo() override;
-  void RequestPresent(
-      VRDisplayImpl* display,
-      mojom::VRSubmitFrameClientPtr submit_client,
-      mojom::VRPresentationProviderRequest request,
-      mojom::VRDisplayHost::RequestPresentCallback callback) override;
-  void ExitPresent() override;
-  void GetPose(mojom::VRMagicWindowProvider::GetPoseCallback callback) override;
 
   void OnPollingEvents();
 
  private:
-  void CreateVRDisplayInfo();
-
   // TODO (BillOrr): This should not be a unique_ptr because the render_loop_
   // binds to VRVSyncProvider requests, so its lifetime should be tied to the
   // lifetime of that binding.

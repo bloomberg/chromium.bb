@@ -71,11 +71,11 @@ void VRDeviceManager::AddService(VRServiceImpl* service) {
     provider->GetDevices(&devices);
 
   for (auto* device : devices) {
-    if (device->id() == device::VR_DEVICE_LAST_ID)
+    if (device->GetId() == device::VR_DEVICE_LAST_ID)
       continue;
 
-    if (devices_.find(device->id()) == devices_.end())
-      devices_[device->id()] = device;
+    if (devices_.find(device->GetId()) == devices_.end())
+      devices_[device->GetId()] = device;
 
     service->ConnectDevice(device);
   }

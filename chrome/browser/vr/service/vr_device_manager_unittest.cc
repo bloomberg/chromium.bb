@@ -118,14 +118,14 @@ TEST_F(VRDeviceManagerTest, GetDevicesTest) {
   // VRDeviceManager will query devices as a side effect.
   auto service_1 = BindService();
   // Should have successfully returned one device.
-  EXPECT_EQ(device1, DeviceManager()->GetDevice(device1->id()));
+  EXPECT_EQ(device1, DeviceManager()->GetDevice(device1->GetId()));
 
   device::FakeVRDevice* device2 = new device::FakeVRDevice();
   Provider()->AddDevice(base::WrapUnique(device2));
   auto service_2 = BindService();
   // Querying the WebVRDevice index should return the correct device.
-  EXPECT_EQ(device1, DeviceManager()->GetDevice(device1->id()));
-  EXPECT_EQ(device2, DeviceManager()->GetDevice(device2->id()));
+  EXPECT_EQ(device1, DeviceManager()->GetDevice(device1->GetId()));
+  EXPECT_EQ(device2, DeviceManager()->GetDevice(device2->GetId()));
 }
 
 // Ensure that services are registered with the device manager as they are
