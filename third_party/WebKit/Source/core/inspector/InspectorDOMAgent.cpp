@@ -1516,8 +1516,10 @@ std::unique_ptr<protocol::DOM::Node> InspectorDOMAgent::BuildObjectForNode(
       force_push_children = true;
     }
     if (auto* slot = ToHTMLSlotElementOrNull(*element)) {
-      value->setDistributedNodes(BuildDistributedNodesForSlot(slot));
-      force_push_children = true;
+      if (node->IsInShadowTree()) {
+        value->setDistributedNodes(BuildDistributedNodesForSlot(slot));
+        force_push_children = true;
+      }
     }
   } else if (node->IsDocumentNode()) {
     Document* document = ToDocument(node);

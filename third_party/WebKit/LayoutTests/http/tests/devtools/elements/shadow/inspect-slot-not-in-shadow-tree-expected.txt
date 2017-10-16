@@ -1,0 +1,5 @@
+Tests that slots that are not in a shadow tree can be inspected.
+
+test
+Inspect successful
+
