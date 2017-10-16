@@ -23,16 +23,13 @@ RendererAudioOutputStreamFactoryContextImpl::
         int render_process_id,
         media::AudioSystem* audio_system,
         media::AudioManager* audio_manager,
-        MediaStreamManager* media_stream_manager,
-        const std::string& salt)
-    : salt_(salt),
-      audio_system_(audio_system),
+        MediaStreamManager* media_stream_manager)
+    : audio_system_(audio_system),
       audio_manager_(audio_manager),
       media_stream_manager_(media_stream_manager),
       authorization_handler_(audio_system_,
                              media_stream_manager_,
-                             render_process_id,
-                             salt_),
+                             render_process_id),
       render_process_id_(render_process_id) {}
 
 RendererAudioOutputStreamFactoryContextImpl::

@@ -77,8 +77,7 @@ class CONTENT_EXPORT AudioRendererHost
                     media::AudioManager* audio_manager,
                     media::AudioSystem* audio_system,
                     AudioMirroringManager* mirroring_manager,
-                    MediaStreamManager* media_stream_manager,
-                    const std::string& salt);
+                    MediaStreamManager* media_stream_manager);
 
   // BrowserMessageFilter implementation.
   void OnChannelClosing() override;
@@ -194,9 +193,6 @@ class CONTENT_EXPORT AudioRendererHost
 
   // A list of the current open streams.
   AudioOutputDelegateVector delegates_;
-
-  // Salt required to translate renderer device IDs to raw device unique IDs
-  std::string salt_;
 
   // Map of device authorizations for streams that are not yet created
   // The key is the stream ID, and the value is a pair. The pair's first element
