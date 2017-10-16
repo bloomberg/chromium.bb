@@ -224,6 +224,7 @@ void MediaStreamVideoCapturerSource::StopSourceImpl() {
 }
 
 void MediaStreamVideoCapturerSource::StopSourceForRestartImpl() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (state_ != STARTED) {
     OnStopForRestartDone(false);
     return;
