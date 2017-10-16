@@ -11,7 +11,6 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -102,7 +101,7 @@ class ShillProfileTestClient {
       return;
 
     profile_entries_.SetWithoutPathExpansion(
-        profile_path, base::MakeUnique<base::DictionaryValue>());
+        profile_path, std::make_unique<base::DictionaryValue>());
     profile_to_user_[profile_path] = userhash;
   }
 
@@ -127,7 +126,7 @@ class ShillProfileTestClient {
     ASSERT_TRUE(entries);
 
     std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue);
-    auto entry_paths = base::MakeUnique<base::ListValue>();
+    auto entry_paths = std::make_unique<base::ListValue>();
     for (base::DictionaryValue::Iterator it(*entries); !it.IsAtEnd();
          it.Advance()) {
       entry_paths->AppendString(it.key());

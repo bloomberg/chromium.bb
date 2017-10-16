@@ -828,7 +828,7 @@ void ManagedNetworkConfigurationHandlerImpl::GetDeviceStateProperties(
   }
 
   // Convert IPConfig dictionary to a ListValue.
-  auto ip_configs = base::MakeUnique<base::ListValue>();
+  auto ip_configs = std::make_unique<base::ListValue>();
   for (base::DictionaryValue::Iterator iter(device_state->ip_configs());
        !iter.IsAtEnd(); iter.Advance()) {
     ip_configs->Append(iter.value().CreateDeepCopy());

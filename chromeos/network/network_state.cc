@@ -9,7 +9,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -496,7 +495,7 @@ bool NetworkState::ErrorIsValid(const std::string& error) {
 // static
 std::unique_ptr<NetworkState> NetworkState::CreateDefaultCellular(
     const std::string& device_path) {
-  auto new_state = base::MakeUnique<NetworkState>(kDefaultCellularNetworkPath);
+  auto new_state = std::make_unique<NetworkState>(kDefaultCellularNetworkPath);
   new_state->set_type(shill::kTypeCellular);
   new_state->set_update_received();
   new_state->set_visible(true);

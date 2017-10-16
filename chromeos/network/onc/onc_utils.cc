@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/base64.h"
@@ -972,7 +974,7 @@ std::unique_ptr<base::DictionaryValue> ConvertProxyConfigToOncProxySettings(
     std::unique_ptr<base::DictionaryValue> proxy_config_value) {
   // Create a ProxyConfigDictionary from the DictionaryValue.
   auto proxy_config =
-      base::MakeUnique<ProxyConfigDictionary>(std::move(proxy_config_value));
+      std::make_unique<ProxyConfigDictionary>(std::move(proxy_config_value));
 
   // Create the result DictionaryValue and populate it.
   std::unique_ptr<base::DictionaryValue> proxy_settings(
