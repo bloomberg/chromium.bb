@@ -46,7 +46,7 @@ base::FilePath GetWebRtcEventLogPath(const base::FilePath& base_file,
 }
 
 // Opens a logfile to pass on to the renderer.
-IPC::PlatformFileForTransit CreateFileForProcess(
+IPC::PlatformFileForTransit CreateEventLogFileForChildProcess(
     const base::FilePath& base_path,
     int render_process_id,
     int connection_id) {
@@ -138,8 +138,8 @@ bool WebRTCEventLogHost::StartEventLogForPeerConnection(
     ++number_active_log_files_;
     base::PostTaskWithTraitsAndReplyWithResult(
         FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
-        base::Bind(&CreateFileForProcess, base_file_path_, render_process_id_,
-                   peer_connection_local_id),
+        base::Bind(&CreateEventLogFileForChildProcess, base_file_path_,
+                   render_process_id_, peer_connection_local_id),
         base::Bind(&WebRTCEventLogHost::SendEventLogFileToRenderer,
                    weak_ptr_factory_.GetWeakPtr(), peer_connection_local_id));
   }
