@@ -10,11 +10,12 @@ and produces a c++ header and implementation file exposing builders for those
 entries and metrics.
 """
 
-
 import argparse
+import hashlib
 import logging
 import os
 import re
+import struct
 import sys
 
 import model
@@ -27,6 +28,7 @@ HEADER = """
 #ifndef SERVICES_METRICS_PUBLIC_CPP_UKM_BUILDERS_H
 #define SERVICES_METRICS_PUBLIC_CPP_UKM_BUILDERS_H
 
+#include <cstdint>
 #include <map>
 
 #include "services/metrics/public/cpp/ukm_entry_builder_base.h"
@@ -51,8 +53,6 @@ BODY = """
 
 #include "services/metrics/public/cpp/ukm_builders.h"
 
-#include "base/metrics/metrics_hashes.h"
-
 namespace ukm {{
 namespace builders {{
 
@@ -75,6 +75,7 @@ class {name} : public ::ukm::internal::UkmEntryBuilderBase {{
   ~{name}() override;
 
   static const char kEntryName[];
+  static const uint64_t kEntryNameHash = UINT64_C({hash});
 
 {setters}
 }};
@@ -82,6 +83,7 @@ class {name} : public ::ukm::internal::UkmEntryBuilderBase {{
 
 SETTER_DECL = """
   static const char k{metric}Name[];
+  static const uint64_t k{metric}NameHash = UINT64_C({hash});
   {name}& Set{metric}(int64_t value);
 """
 
@@ -89,9 +91,7 @@ BUILDER_IMPL = """
 const char {name}::kEntryName[] = "{raw}";
 
 {name}::{name}(ukm::SourceId source_id) :
-  ::ukm::internal::UkmEntryBuilderBase(
-      source_id,
-      base::HashMetricName(kEntryName)) {{
+  ::ukm::internal::UkmEntryBuilderBase(source_id, kEntryNameHash) {{
 }}
 
 {name}::~{name}() = default;
@@ -103,18 +103,18 @@ SETTER_IMPL = """
 const char {name}::k{metric}Name[] = "{raw}";
 
 {name}& {name}::Set{metric}(int64_t value) {{
-  AddMetric(base::HashMetricName(k{metric}Name), value);
+  AddMetric(k{metric}NameHash, value);
   return *this;
 }}
 """
 
 ENTRY_DECODE = """
-    {{base::HashMetricName({name}::kEntryName), {name}::kEntryName}},
+    {{{name}::kEntryNameHash, {name}::kEntryName}},
     {metric_decodes}
 """
 
 METRIC_DECODE = """
-    {{base::HashMetricName({name}::k{metric}Name), {name}::k{metric}Name}},
+    {{{name}::k{metric}NameHash, {name}::k{metric}Name}},
 """
 
 parser = argparse.ArgumentParser(description='Generate UKM entry builders')
@@ -125,15 +125,24 @@ def sanitize_name(name):
   s = re.sub('[^0-9a-zA-Z_]', '_', name)
   return s
 
+def HashName(name):
+  # This must match the hash function in base/metrics/metric_hashes.cc
+  # >Q: 8 bytes, big endian.
+  return struct.unpack('>Q', hashlib.md5(name).digest()[:8])[0]
+
 def GetSetterDecl(builder_name, metric):
   metric_name = sanitize_name(metric['name'])
-  return SETTER_DECL.format(name=builder_name, metric=metric_name)
+  return SETTER_DECL.format(name=builder_name,
+                            metric=metric_name,
+                            hash=HashName(metric['name']))
 
 def GetBuilderDecl(event):
   builder_name = sanitize_name(event['name'])
   setters = "".join(GetSetterDecl(builder_name, metric)
                     for metric in event['metrics'])
-  return BUILDER_DECL.format(name=builder_name, setters=setters)
+  return BUILDER_DECL.format(name=builder_name,
+                             hash=HashName(event['name']),
+                             setters=setters)
 
 def GetHeader(data):
   decls = "\n".join(GetBuilderDecl(event) for event in data['events'])
@@ -145,14 +154,16 @@ def WriteHeader(outdir, data):
 
 def GetSetterImpl(builder_name, metric):
   metric_name = sanitize_name(metric['name'])
-  return SETTER_IMPL.format(name=builder_name, metric=metric_name,
+  return SETTER_IMPL.format(name=builder_name,
+                            metric=metric_name,
                             raw=metric['name'])
 
 def GetBuilderImpl(event):
   builder_name = sanitize_name(event['name'])
   setters = "\n".join(GetSetterImpl(builder_name, metric)
                       for metric in event['metrics'])
-  return BUILDER_IMPL.format(name=builder_name, raw=event['name'],
+  return BUILDER_IMPL.format(name=builder_name,
+                             raw=event['name'],
                              setters=setters)
 
 def WriteBody(outdir, data):
