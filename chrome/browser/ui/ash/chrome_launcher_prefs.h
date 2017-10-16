@@ -5,25 +5,14 @@
 #ifndef CHROME_BROWSER_UI_ASH_CHROME_LAUNCHER_PREFS_H_
 #define CHROME_BROWSER_UI_ASH_CHROME_LAUNCHER_PREFS_H_
 
-#include <memory>
-#include <string>
 #include <vector>
 
 #include "ash/public/cpp/shelf_types.h"
-#include "base/macros.h"
-#include "components/sync_preferences/pref_service_syncable_observer.h"
 
 class LauncherControllerHelper;
+class PrefRegistrySimple;
 class PrefService;
 class Profile;
-
-namespace sync_preferences {
-class PrefServiceSyncable;
-}
-
-namespace user_prefs {
-class PrefRegistrySyncable;
-}
 
 // Path within the dictionary entries in the prefs::kPinnedLauncherApps list
 // specifying the extension ID of the app to be pinned by that entry.
@@ -35,8 +24,16 @@ extern const char kPinnedAppsPrefPinnedByPolicy[];
 // This is NOT a valid extension identifier so pre-M31 versions ignore it.
 extern const char kPinnedAppsPlaceholder[];
 
-void RegisterChromeLauncherUserPrefs(
-    user_prefs::PrefRegistrySyncable* registry);
+void RegisterChromeLauncherUserPrefs(PrefRegistrySimple* registry);
+
+// Init a local pref from a synced pref, if the local pref has no user setting.
+// This is used to init shelf alignment and auto-hide on the first user sync.
+// The goal is to apply the last elected shelf alignment and auto-hide values
+// when a user signs in to a new device for the first time. Otherwise, shelf
+// properties are persisted per-display/device. The local prefs are initialized
+// with synced (or default) values when when syncing begins, to avoid syncing
+// shelf prefs across devices after the very start of the user's first session.
+void InitLocalPref(PrefService* prefs, const char* local, const char* synced);
 
 // Get the list of pinned apps from preferences.
 std::vector<ash::ShelfID> GetPinnedAppsFromPrefs(
@@ -56,30 +53,5 @@ void SetPinPosition(Profile* profile,
                     const ash::ShelfID& shelf_id,
                     const ash::ShelfID& shelf_id_before,
                     const std::vector<ash::ShelfID>& shelf_ids_after);
-
-// Used to propagate remote preferences to local during the first run.
-class ChromeLauncherPrefsObserver
-    : public sync_preferences::PrefServiceSyncableObserver {
- public:
-  // Creates and returns an instance of ChromeLauncherPrefsObserver if the
-  // profile prefs do not contain all the necessary local settings for the
-  // shelf. If the local settings are present, returns null.
-  static std::unique_ptr<ChromeLauncherPrefsObserver> CreateIfNecessary(
-      Profile* profile);
-
-  ~ChromeLauncherPrefsObserver() override;
-
- private:
-  explicit ChromeLauncherPrefsObserver(
-      sync_preferences::PrefServiceSyncable* prefs);
-
-  // sync_preferences::PrefServiceSyncableObserver:
-  void OnIsSyncingChanged() override;
-
-  // Profile prefs. Not owned.
-  sync_preferences::PrefServiceSyncable* prefs_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeLauncherPrefsObserver);
-};
 
 #endif  // CHROME_BROWSER_UI_ASH_CHROME_LAUNCHER_PREFS_H_

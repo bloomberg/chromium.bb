@@ -70,16 +70,6 @@ std::vector<std::string> GetActivitiesForPackage(
   return activities;
 }
 
-// If no user-set value exists at |local_path|, the value from |synced_path| is
-// copied to |local_path|.
-void PropagatePrefToLocalIfNotSet(
-    sync_preferences::PrefServiceSyncable* pref_service,
-    const char* local_path,
-    const char* synced_path) {
-  if (!pref_service->FindPreference(local_path)->HasUserSetting())
-    pref_service->SetString(local_path, pref_service->GetString(synced_path));
-}
-
 std::vector<ash::ShelfID> AppIdsToShelfIDs(
     const std::vector<std::string> app_ids) {
   std::vector<ash::ShelfID> shelf_ids(app_ids.size());
@@ -162,8 +152,7 @@ const char kPinnedAppsPrefAppIDPath[] = "id";
 const char kPinnedAppsPrefPinnedByPolicy[] = "pinned_by_policy";
 const char kPinnedAppsPlaceholder[] = "AppShelfIDPlaceholder--------";
 
-void RegisterChromeLauncherUserPrefs(
-    user_prefs::PrefRegistrySyncable* registry) {
+void RegisterChromeLauncherUserPrefs(PrefRegistrySimple* registry) {
   // TODO: If we want to support multiple profiles this will likely need to be
   // pushed to local state and we'll need to track profile per item.
   registry->RegisterIntegerPref(
@@ -173,6 +162,15 @@ void RegisterChromeLauncherUserPrefs(
                              CreateDefaultPinnedAppsList(),
                              user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterListPref(prefs::kPolicyPinnedLauncherApps);
+}
+
+void InitLocalPref(PrefService* prefs, const char* local, const char* synced) {
+  // Ash's prefs *should* have been propagated to Chrome by now, but maybe not.
+  // This belongs in Ash, but it can't observe syncing changes: crbug.com/774657
+  if (prefs->FindPreference(local) && prefs->FindPreference(synced) &&
+      !prefs->FindPreference(local)->HasUserSetting()) {
+    prefs->SetString(local, prefs->GetString(synced));
+  }
 }
 
 // Helper that extracts app list from policy preferences.
@@ -261,47 +259,6 @@ std::vector<std::string> GetPinnedAppsFromPrefsLegacy(
   // If not added yet, the chrome item will be the last item in the list.
   apps.AddApp(extension_misc::kChromeAppId);
   return apps.app_list();
-}
-
-// static
-std::unique_ptr<ChromeLauncherPrefsObserver>
-ChromeLauncherPrefsObserver::CreateIfNecessary(Profile* profile) {
-  sync_preferences::PrefServiceSyncable* prefs =
-      PrefServiceSyncableFromProfile(profile);
-  const PrefService::Preference* alignment_preference =
-      prefs->FindPreference(ash::prefs::kShelfAlignmentLocal);
-  const PrefService::Preference* auto_hide_preference =
-      prefs->FindPreference(ash::prefs::kShelfAutoHideBehaviorLocal);
-  // TODO(crbug.com/753823): Ash prefs may not yet be registered in chrome.
-  if ((alignment_preference && !alignment_preference->HasUserSetting()) ||
-      (auto_hide_preference && !auto_hide_preference->HasUserSetting())) {
-    return base::WrapUnique(new ChromeLauncherPrefsObserver(prefs));
-  }
-  return nullptr;
-}
-
-ChromeLauncherPrefsObserver::~ChromeLauncherPrefsObserver() {
-  prefs_->RemoveObserver(this);
-}
-
-ChromeLauncherPrefsObserver::ChromeLauncherPrefsObserver(
-    sync_preferences::PrefServiceSyncable* prefs)
-    : prefs_(prefs) {
-  // This causes OnIsSyncingChanged to be called when the value of
-  // PrefService::IsSyncing() changes.
-  prefs_->AddObserver(this);
-}
-
-void ChromeLauncherPrefsObserver::OnIsSyncingChanged() {
-  // If prefs have synced, copy the values from |synced_path| to |local_path|
-  // if the local values haven't already been set.
-  if (!prefs_->IsSyncing())
-    return;
-  PropagatePrefToLocalIfNotSet(prefs_, ash::prefs::kShelfAlignmentLocal,
-                               ash::prefs::kShelfAlignment);
-  PropagatePrefToLocalIfNotSet(prefs_, ash::prefs::kShelfAutoHideBehaviorLocal,
-                               ash::prefs::kShelfAutoHideBehavior);
-  prefs_->RemoveObserver(this);
 }
 
 // Helper to create pin position that stays before any synced app, even if

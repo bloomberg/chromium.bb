@@ -35,7 +35,6 @@ class ArcAppDeferredLauncherController;
 class BrowserShortcutLauncherItemController;
 class BrowserStatusMonitor;
 class ChromeLauncherControllerUserSwitchObserver;
-class ChromeLauncherPrefsObserver;
 class GURL;
 class Profile;
 class LauncherControllerHelper;
@@ -437,8 +436,6 @@ class ChromeLauncherController
   // A special observer class to detect user switches.
   std::unique_ptr<ChromeLauncherControllerUserSwitchObserver>
       user_switch_observer_;
-
-  std::unique_ptr<ChromeLauncherPrefsObserver> prefs_observer_;
 
   std::unique_ptr<ArcAppDeferredLauncherController> arc_deferred_launcher_;
 
