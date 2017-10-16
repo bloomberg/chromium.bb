@@ -23,6 +23,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory.h"
+#include "base/message_loop/message_loop.h"
 #include "base/scoped_generic.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -523,6 +524,7 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
+  base::MessageLoopForUI message_loop;
   exo::wayland::clients::RectsClient client;
   return client.Run(params, max_frames_pending, num_rects, num_benchmark_runs,
                     base::TimeDelta::FromMilliseconds(benchmark_interval_ms),
