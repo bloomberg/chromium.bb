@@ -2123,10 +2123,6 @@ TEST_F(ShelfLayoutManagerTest, ShutdownHandlesWindowActivation) {
 }
 
 TEST_F(ShelfLayoutManagerTest, ShelfLayoutInUnifiedDesktop) {
-  // TODO: requires unified desktop mode. http://crbug.com/581462.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
   Shell::Get()->display_manager()->SetUnifiedDesktopEnabled(true);
   UpdateDisplay("500x400, 500x400");
 
