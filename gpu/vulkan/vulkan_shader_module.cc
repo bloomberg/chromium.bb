@@ -58,7 +58,7 @@ class ShaderCCompiler {
       const std::string& name,
       const std::string& entry_point,
       const std::string& source) {
-    return base::MakeUnique<ShaderCCompiler::CompilationResult>(
+    return std::make_unique<ShaderCCompiler::CompilationResult>(
         shaderc_compile_into_spv(
             compiler_, source.c_str(), source.length(),
             (shader_type == gpu::VulkanShaderModule::ShaderType::VERTEX

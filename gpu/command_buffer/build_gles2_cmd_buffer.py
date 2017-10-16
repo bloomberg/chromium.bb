@@ -6080,7 +6080,7 @@ class GENnHandler(TypeHandler):
   def WriteImmediateHandlerImplementation(self, func, f):
     """Overrriden from TypeHandler."""
     param_name = func.GetLastOriginalArg().name
-    f.write("  auto %(name)s_copy = base::MakeUnique<GLuint[]>(n);\n"
+    f.write("  auto %(name)s_copy = std::make_unique<GLuint[]>(n);\n"
             "  GLuint* %(name)s_safe = %(name)s_copy.get();\n"
             "  std::copy(%(name)s, %(name)s + n, %(name)s_safe);\n"
             "  if (!CheckUniqueAndNonNullIds(n, %(name)s_safe) ||\n"

@@ -270,7 +270,7 @@ bool Context::CreateService(gl::GLSurface* gl_surface) {
       &discardable_manager_));
 
   transfer_buffer_manager_ =
-      base::MakeUnique<gpu::TransferBufferManager>(nullptr);
+      std::make_unique<gpu::TransferBufferManager>(nullptr);
   std::unique_ptr<gpu::CommandBufferDirect> command_buffer(
       new gpu::CommandBufferDirect(transfer_buffer_manager_.get()));
 

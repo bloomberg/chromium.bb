@@ -316,7 +316,7 @@ SequenceId Scheduler::CreateSequence(SchedulingPriority priority) {
       sync_point_manager_->CreateSyncPointOrderData();
   SequenceId sequence_id = order_data->sequence_id();
   auto sequence =
-      base::MakeUnique<Sequence>(sequence_id, priority, std::move(order_data));
+      std::make_unique<Sequence>(sequence_id, priority, std::move(order_data));
   sequences_.emplace(sequence_id, std::move(sequence));
   return sequence_id;
 }

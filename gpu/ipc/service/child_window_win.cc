@@ -162,7 +162,7 @@ bool ChildWindowWin::Initialize() {
   if (window_)
     return true;
 
-  shared_data_ = base::MakeUnique<SharedData>();
+  shared_data_ = std::make_unique<SharedData>();
 
   base::Thread::Options options(base::MessageLoop::TYPE_UI, 0);
   shared_data_->thread.StartWithOptions(options);

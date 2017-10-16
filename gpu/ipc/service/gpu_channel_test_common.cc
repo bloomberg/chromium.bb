@@ -48,7 +48,7 @@ class TestGpuChannelManagerDelegate : public GpuChannelManagerDelegate {
 
 class TestSinkFilteredSender : public FilteredSender {
  public:
-  TestSinkFilteredSender() : sink_(base::MakeUnique<IPC::TestSink>()) {}
+  TestSinkFilteredSender() : sink_(std::make_unique<IPC::TestSink>()) {}
   ~TestSinkFilteredSender() override = default;
 
   IPC::TestSink* sink() const { return sink_.get(); }
@@ -106,7 +106,7 @@ GpuChannel* GpuChannelTestCommon::CreateChannel(int32_t client_id,
   uint64_t kClientTracingId = 1;
   GpuChannel* channel = channel_manager()->EstablishChannel(
       client_id, kClientTracingId, is_gpu_host);
-  channel->Init(base::MakeUnique<TestSinkFilteredSender>());
+  channel->Init(std::make_unique<TestSinkFilteredSender>());
   base::ProcessId kProcessId = 1;
   channel->OnChannelConnected(kProcessId);
   return channel;

@@ -21,7 +21,7 @@ const static size_t kBufferSize = 1024;
 class TransferBufferManagerTest : public testing::Test {
  protected:
   void SetUp() override {
-    transfer_buffer_manager_ = base::MakeUnique<TransferBufferManager>(nullptr);
+    transfer_buffer_manager_ = std::make_unique<TransferBufferManager>(nullptr);
   }
 
   std::unique_ptr<TransferBufferManager> transfer_buffer_manager_;

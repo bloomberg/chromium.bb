@@ -668,7 +668,7 @@ void GpuVSyncProviderWin::OnVSync(base::TimeTicks timestamp,
   DCHECK(vsync_worker_->BelongsToWorkerThread());
 
   message_filter_->Send(
-      base::MakeUnique<GpuCommandBufferMsg_UpdateVSyncParameters>(
+      std::make_unique<GpuCommandBufferMsg_UpdateVSyncParameters>(
           message_filter_->route_id(), timestamp, interval));
 }
 

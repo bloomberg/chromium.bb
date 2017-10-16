@@ -43,7 +43,7 @@ const int32_t kUnusedCommandId = 5;  // we use 0 and 2 currently.
 class CommandBufferHelperTest : public testing::Test {
  protected:
   virtual void SetUp() {
-    transfer_buffer_manager_ = base::MakeUnique<TransferBufferManager>(nullptr);
+    transfer_buffer_manager_ = std::make_unique<TransferBufferManager>(nullptr);
     command_buffer_.reset(
         new CommandBufferDirectLocked(transfer_buffer_manager_.get()));
     api_mock_.reset(new AsyncAPIMock(true, command_buffer_->service()));
@@ -100,7 +100,7 @@ class CommandBufferHelperTest : public testing::Test {
 
     // Allocate array for args.
     auto args_ptr =
-        base::MakeUnique<CommandBufferEntry[]>(arg_count ? arg_count : 1);
+        std::make_unique<CommandBufferEntry[]>(arg_count ? arg_count : 1);
 
     for (int32_t ii = 0; ii < arg_count; ++ii) {
       args_ptr[ii].value_uint32 = 0xF00DF00D + ii;

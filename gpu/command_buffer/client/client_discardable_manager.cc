@@ -185,7 +185,7 @@ void ClientDiscardableManager::FindAllocation(CommandBuffer* command_buffer,
   }
 
   // We couldn't find an existing free entry. Allocate more space.
-  auto allocation = base::MakeUnique<Allocation>(elements_per_allocation_);
+  auto allocation = std::make_unique<Allocation>(elements_per_allocation_);
   allocation->buffer = command_buffer->CreateTransferBuffer(
       allocation_size_, &allocation->shm_id);
 

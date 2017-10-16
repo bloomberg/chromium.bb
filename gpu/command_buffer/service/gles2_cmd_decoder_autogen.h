@@ -1119,7 +1119,7 @@ error::Error GLES2DecoderImpl::HandleGenBuffersImmediate(
   if (buffers == NULL) {
     return error::kOutOfBounds;
   }
-  auto buffers_copy = base::MakeUnique<GLuint[]>(n);
+  auto buffers_copy = std::make_unique<GLuint[]>(n);
   GLuint* buffers_safe = buffers_copy.get();
   std::copy(buffers, buffers + n, buffers_safe);
   if (!CheckUniqueAndNonNullIds(n, buffers_safe) ||
@@ -1159,7 +1159,7 @@ error::Error GLES2DecoderImpl::HandleGenFramebuffersImmediate(
   if (framebuffers == NULL) {
     return error::kOutOfBounds;
   }
-  auto framebuffers_copy = base::MakeUnique<GLuint[]>(n);
+  auto framebuffers_copy = std::make_unique<GLuint[]>(n);
   GLuint* framebuffers_safe = framebuffers_copy.get();
   std::copy(framebuffers, framebuffers + n, framebuffers_safe);
   if (!CheckUniqueAndNonNullIds(n, framebuffers_safe) ||
@@ -1185,7 +1185,7 @@ error::Error GLES2DecoderImpl::HandleGenRenderbuffersImmediate(
   if (renderbuffers == NULL) {
     return error::kOutOfBounds;
   }
-  auto renderbuffers_copy = base::MakeUnique<GLuint[]>(n);
+  auto renderbuffers_copy = std::make_unique<GLuint[]>(n);
   GLuint* renderbuffers_safe = renderbuffers_copy.get();
   std::copy(renderbuffers, renderbuffers + n, renderbuffers_safe);
   if (!CheckUniqueAndNonNullIds(n, renderbuffers_safe) ||
@@ -1212,7 +1212,7 @@ error::Error GLES2DecoderImpl::HandleGenSamplersImmediate(
   if (samplers == NULL) {
     return error::kOutOfBounds;
   }
-  auto samplers_copy = base::MakeUnique<GLuint[]>(n);
+  auto samplers_copy = std::make_unique<GLuint[]>(n);
   GLuint* samplers_safe = samplers_copy.get();
   std::copy(samplers, samplers + n, samplers_safe);
   if (!CheckUniqueAndNonNullIds(n, samplers_safe) ||
@@ -1237,7 +1237,7 @@ error::Error GLES2DecoderImpl::HandleGenTexturesImmediate(
   if (textures == NULL) {
     return error::kOutOfBounds;
   }
-  auto textures_copy = base::MakeUnique<GLuint[]>(n);
+  auto textures_copy = std::make_unique<GLuint[]>(n);
   GLuint* textures_safe = textures_copy.get();
   std::copy(textures, textures + n, textures_safe);
   if (!CheckUniqueAndNonNullIds(n, textures_safe) ||
@@ -1265,7 +1265,7 @@ error::Error GLES2DecoderImpl::HandleGenTransformFeedbacksImmediate(
   if (ids == NULL) {
     return error::kOutOfBounds;
   }
-  auto ids_copy = base::MakeUnique<GLuint[]>(n);
+  auto ids_copy = std::make_unique<GLuint[]>(n);
   GLuint* ids_safe = ids_copy.get();
   std::copy(ids, ids + n, ids_safe);
   if (!CheckUniqueAndNonNullIds(n, ids_safe) ||
@@ -4318,7 +4318,7 @@ error::Error GLES2DecoderImpl::HandleGenQueriesEXTImmediate(
   if (queries == NULL) {
     return error::kOutOfBounds;
   }
-  auto queries_copy = base::MakeUnique<GLuint[]>(n);
+  auto queries_copy = std::make_unique<GLuint[]>(n);
   GLuint* queries_safe = queries_copy.get();
   std::copy(queries, queries + n, queries_safe);
   if (!CheckUniqueAndNonNullIds(n, queries_safe) ||
@@ -4436,7 +4436,7 @@ error::Error GLES2DecoderImpl::HandleGenVertexArraysOESImmediate(
   if (arrays == NULL) {
     return error::kOutOfBounds;
   }
-  auto arrays_copy = base::MakeUnique<GLuint[]>(n);
+  auto arrays_copy = std::make_unique<GLuint[]>(n);
   GLuint* arrays_safe = arrays_copy.get();
   std::copy(arrays, arrays + n, arrays_safe);
   if (!CheckUniqueAndNonNullIds(n, arrays_safe) ||

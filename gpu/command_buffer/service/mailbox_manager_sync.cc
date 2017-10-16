@@ -52,7 +52,7 @@ void CreateFenceLocked(const SyncToken& sync_token) {
       sync_points.pop();
     }
     // Need to use EGL fences since we are likely not in a single share group.
-    auto fence = base::MakeUnique<gl::GLFenceEGL>();
+    auto fence = std::make_unique<gl::GLFenceEGL>();
     std::pair<SyncTokenToFenceMap::iterator, bool> result =
         sync_point_to_fence.insert(
             std::make_pair(sync_token, std::move(fence)));

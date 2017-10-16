@@ -168,7 +168,7 @@ void ShaderDiskCacheEntry::Cache() {
 
   // The Entry* passed to the cache must stay alive even if this class is
   // deleted, so store it in the callback.
-  auto entry = base::MakeUnique<disk_cache::Entry*>(nullptr);
+  auto entry = std::make_unique<disk_cache::Entry*>(nullptr);
   disk_cache::Entry** closure_owned_entry_ptr = entry.get();
   auto callback = base::Bind(&OnEntryOpenComplete<ShaderDiskCacheEntry>,
                              weak_ptr_factory_.GetWeakPtr(),
@@ -218,7 +218,7 @@ int ShaderDiskCacheEntry::OpenCallback(int rv) {
 
   // The Entry* passed to the cache must stay alive even if this class is
   // deleted, so store it in the callback.
-  auto entry = base::MakeUnique<disk_cache::Entry*>(nullptr);
+  auto entry = std::make_unique<disk_cache::Entry*>(nullptr);
   disk_cache::Entry** closure_owned_entry_ptr = entry.get();
   auto callback = base::Bind(&OnEntryOpenComplete<ShaderDiskCacheEntry>,
                              weak_ptr_factory_.GetWeakPtr(),
@@ -310,7 +310,7 @@ int ShaderDiskReadHelper::OpenNextEntry() {
 
   // The Entry* passed to the cache must stay alive even if this class is
   // deleted, so store it in the callback.
-  auto entry = base::MakeUnique<disk_cache::Entry*>(nullptr);
+  auto entry = std::make_unique<disk_cache::Entry*>(nullptr);
   disk_cache::Entry** closure_owned_entry_ptr = entry.get();
   auto callback = base::Bind(&OnEntryOpenComplete<ShaderDiskReadHelper>,
                              weak_ptr_factory_.GetWeakPtr(),
@@ -472,7 +472,7 @@ void ShaderCacheFactory::ClearByPath(const base::FilePath& path,
   DCHECK(CalledOnValidThread());
   DCHECK(!callback.is_null());
 
-  auto helper = base::MakeUnique<ShaderClearHelper>(
+  auto helper = std::make_unique<ShaderClearHelper>(
       this, GetByPath(path), path, delete_begin, delete_end, callback);
 
   // We could receive requests to clear the same path with different
@@ -563,7 +563,7 @@ void ShaderDiskCache::Cache(const std::string& key, const std::string& shader) {
   if (!cache_available_)
     return;
 
-  auto shim = base::MakeUnique<ShaderDiskCacheEntry>(this, key, shader);
+  auto shim = std::make_unique<ShaderDiskCacheEntry>(this, key, shader);
   shim->Cache();
   auto* raw_ptr = shim.get();
   entries_.insert(std::make_pair(raw_ptr, std::move(shim)));
@@ -602,7 +602,7 @@ void ShaderDiskCache::CacheCreatedCallback(int rv) {
     return;
   }
   helper_ =
-      base::MakeUnique<ShaderDiskReadHelper>(this, shader_loaded_callback_);
+      std::make_unique<ShaderDiskReadHelper>(this, shader_loaded_callback_);
   helper_->LoadCache();
 }
 

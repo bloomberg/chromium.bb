@@ -168,25 +168,25 @@ TEST_F(GLCompressedCopyTextureCHROMIUMTest, InternalFormat) {
 
   if (GLTestHelper::HasExtension("GL_AMD_compressed_ATC_texture") ||
       GLTestHelper::HasExtension("GL_ATI_texture_compression_atitc")) {
-    supported_formats.push_back(base::MakeUnique<Image>(
+    supported_formats.push_back(std::make_unique<Image>(
         GL_ATC_RGB_AMD, kCompressedImageATC, sizeof(kCompressedImageATC)));
-    supported_formats.push_back(base::MakeUnique<Image>(
+    supported_formats.push_back(std::make_unique<Image>(
         GL_ATC_RGBA_INTERPOLATED_ALPHA_AMD, kCompressedImageATCIA,
         sizeof(kCompressedImageATCIA)));
   }
   if (GLTestHelper::HasExtension("GL_EXT_texture_compression_dxt1")) {
-    supported_formats.push_back(base::MakeUnique<Image>(
+    supported_formats.push_back(std::make_unique<Image>(
         GL_COMPRESSED_RGB_S3TC_DXT1_EXT, kCompressedImageDXT1,
         sizeof(kCompressedImageDXT1)));
   }
   if (GLTestHelper::HasExtension("GL_ANGLE_texture_compression_dxt5") ||
       GLTestHelper::HasExtension("GL_EXT_texture_compression_s3tc")) {
-    supported_formats.push_back(base::MakeUnique<Image>(
+    supported_formats.push_back(std::make_unique<Image>(
         GL_COMPRESSED_RGBA_S3TC_DXT5_EXT, kCompressedImageDXT5,
         sizeof(kCompressedImageDXT5)));
   }
   if (GLTestHelper::HasExtension("GL_OES_compressed_ETC1_RGB8_texture")) {
-    supported_formats.push_back(base::MakeUnique<Image>(
+    supported_formats.push_back(std::make_unique<Image>(
         GL_ETC1_RGB8_OES, kCompressedImageETC1, sizeof(kCompressedImageETC1)));
   }
 

@@ -316,7 +316,7 @@ void GLManager::InitializeWithWorkaroundsImpl(
   attribs.buffer_preserved = options.preserve_backbuffer;
   attribs.bind_generates_resource = options.bind_generates_resource;
   translator_cache_ =
-      base::MakeUnique<gles2::ShaderTranslatorCache>(gpu_preferences_);
+      std::make_unique<gles2::ShaderTranslatorCache>(gpu_preferences_);
 
   if (!context_group) {
     scoped_refptr<gles2::FeatureInfo> feature_info =

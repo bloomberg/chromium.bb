@@ -195,7 +195,7 @@ scoped_refptr<Buffer> CommandBufferService::CreateTransferBufferWithId(
     size_t size,
     int32_t id) {
   if (!RegisterTransferBuffer(id,
-                              base::MakeUnique<MemoryBufferBacking>(size))) {
+                              std::make_unique<MemoryBufferBacking>(size))) {
     SetParseError(gpu::error::kOutOfBounds);
     return nullptr;
   }

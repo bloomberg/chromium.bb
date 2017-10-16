@@ -924,7 +924,7 @@ void GpuCommandBufferStub::OnWaitForTokenInRange(int32_t start,
                                                       command_buffer_id_);
   }
   wait_for_token_ =
-      base::MakeUnique<WaitForCommandState>(start, end, reply_message);
+      std::make_unique<WaitForCommandState>(start, end, reply_message);
   CheckCompleteWaits();
 }
 
@@ -945,7 +945,7 @@ void GpuCommandBufferStub::OnWaitForGetOffsetInRange(
                                                       command_buffer_id_);
   }
   wait_for_get_offset_ =
-      base::MakeUnique<WaitForCommandState>(start, end, reply_message);
+      std::make_unique<WaitForCommandState>(start, end, reply_message);
   wait_set_get_buffer_count_ = set_get_buffer_count;
   CheckCompleteWaits();
 }
