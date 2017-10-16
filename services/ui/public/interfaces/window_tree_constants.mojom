@@ -64,3 +64,10 @@ const uint32 kDropEffectLink = 4;
 // TODO(sad): Provide an API in mus for the embedder to dispatch events to the
 // embedded client. https://crbug.com/621085
 const uint32 kEmbedFlagEmbedderInterceptsEvents = 0x01;
+
+// When passed to Embed() the embedded client can not change the visibility of
+// the window, only the embedder can. Requests by the embedded client to change
+// the visibility fail. This flag only effects the window at the embed point,
+// the embedded client can always change the visibility of any windows the
+// embedded client creates.
+const uint32 kEmbedFlagEmbedderControlsVisibility = 0x02;

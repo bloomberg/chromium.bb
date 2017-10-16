@@ -138,6 +138,9 @@ WindowTree* WindowServer::EmbedAtWindow(
   if (flags & mojom::kEmbedFlagEmbedderInterceptsEvents)
     tree->set_embedder_intercepts_events();
 
+  if (flags & mojom::kEmbedFlagEmbedderControlsVisibility)
+    tree->set_can_change_root_window_visibility(false);
+
   mojom::WindowTreePtr window_tree_ptr;
   auto window_tree_request = mojo::MakeRequest(&window_tree_ptr);
   std::unique_ptr<WindowTreeBinding> binding =
