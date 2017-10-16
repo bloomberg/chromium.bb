@@ -19,12 +19,33 @@ typedef HANDLE MutexHandle;
 #define write(fd, buf, count) _write(fd, buf, static_cast<unsigned int>(count))
 // Windows doesn't define STDERR_FILENO.  Define it here.
 #define STDERR_FILENO 2
+
 #elif defined(OS_MACOSX)
+// In MacOS 10.12 and iOS 10.0 and later ASL (Apple System Log) was deprecated
+// in favor of OS_LOG (Unified Logging).
+#include <AvailabilityMacros.h>
+#if defined(OS_IOS)
+#if !defined(__IPHONE_10_0) || __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_10_0
+#define USE_ASL
+#endif
+#else  // !defined(OS_IOS)
+#if !defined(MAC_OS_X_VERSION_10_12) || \
+    MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_12
+#define USE_ASL
+#endif
+#endif  // defined(OS_IOS)
+
+#if defined(USE_ASL)
 #include <asl.h>
+#else
+#include <os/log.h>
+#endif
+
 #include <CoreFoundation/CoreFoundation.h>
 #include <mach/mach.h>
 #include <mach/mach_time.h>
 #include <mach-o/dyld.h>
+
 #elif defined(OS_POSIX)
 #if defined(OS_NACL)
 #include <sys/time.h>  // timespec doesn't seem to be in <time.h>
@@ -578,10 +599,10 @@ LogMessage::~LogMessage() {
     OutputDebugStringA(str_newline.c_str());
 #elif defined(OS_MACOSX)
     // In LOG_TO_SYSTEM_DEBUG_LOG mode, log messages are always written to
-    // stderr. If stderr is /dev/null, also log via ASL (Apple System Log). If
-    // there's something weird about stderr, assume that log messages are going
-    // nowhere and log via ASL too. Messages logged via ASL show up in
-    // Console.app.
+    // stderr. If stderr is /dev/null, also log via ASL (Apple System Log) or
+    // its successor OS_LOG. If there's something weird about stderr, assume
+    // that log messages are going nowhere and log via ASL/OS_LOG too.
+    // Messages logged via ASL/OS_LOG show up in Console.app.
     //
     // Programs started by launchd, as UI applications normally are, have had
     // stderr connected to /dev/null since OS X 10.8. Prior to that, stderr was
@@ -591,14 +612,14 @@ LogMessage::~LogMessage() {
     // Another alternative would be to determine whether stderr is a pipe to
     // launchd and avoid logging via ASL only in that case. See 10.7.5
     // CF-635.21/CFUtilities.c also_do_stderr(). This would result in logging to
-    // both stderr and ASL even in tests, where it's undesirable to log to the
-    // system log at all.
+    // both stderr and ASL/OS_LOG even in tests, where it's undesirable to log
+    // to the system log at all.
     //
     // Note that the ASL client by default discards messages whose levels are
     // below ASL_LEVEL_NOTICE. It's possible to change that with
     // asl_set_filter(), but this is pointless because syslogd normally applies
     // the same filter.
-    const bool log_via_asl = []() {
+    const bool log_to_system = []() {
       struct stat stderr_stat;
       if (fstat(fileno(stderr), &stderr_stat) == -1) {
         return true;
@@ -616,25 +637,24 @@ LogMessage::~LogMessage() {
              stderr_stat.st_rdev == dev_null_stat.st_rdev;
     }();
 
-    if (log_via_asl) {
+    if (log_to_system) {
       // Log roughly the same way that CFLog() and NSLog() would. See 10.10.5
       // CF-1153.18/CFUtilities.c __CFLogCString().
-      //
-      // The ASL facility is set to the main bundle ID if available. Otherwise,
-      // "com.apple.console" is used.
       CFBundleRef main_bundle = CFBundleGetMainBundle();
       CFStringRef main_bundle_id_cf =
           main_bundle ? CFBundleGetIdentifier(main_bundle) : nullptr;
-      std::string asl_facility =
+      std::string main_bundle_id =
           main_bundle_id_cf ? base::SysCFStringRefToUTF8(main_bundle_id_cf)
-                            : std::string("com.apple.console");
-
-      class ASLClient {
+                            : std::string("");
+#if defined(USE_ASL)
+      // The facility is set to the main bundle ID if available. Otherwise,
+      // "com.apple.console" is used.
+      const class ASLClient {
        public:
-        explicit ASLClient(const std::string& asl_facility)
-            : client_(asl_open(nullptr,
-                               asl_facility.c_str(),
-                               ASL_OPT_NO_DELAY)) {}
+        explicit ASLClient(const std::string& main_bundle_id)
+            : client_(
+                  asl_open(nullptr, main_bundle_id.c_str(), ASL_OPT_NO_DELAY)) {
+        }
         ~ASLClient() { asl_close(client_); }
 
         aslclient get() const { return client_; }
@@ -642,9 +662,10 @@ LogMessage::~LogMessage() {
        private:
         aslclient client_;
         DISALLOW_COPY_AND_ASSIGN(ASLClient);
-      } asl_client(asl_facility);
+      } asl_client(main_bundle_id.empty() ? main_bundle_id
+                                          : "com.apple.console");
 
-      class ASLMessage {
+      const class ASLMessage {
        public:
         ASLMessage() : message_(asl_new(ASL_TYPE_MSG)) {}
         ~ASLMessage() { asl_free(message_); }
@@ -690,6 +711,40 @@ LogMessage::~LogMessage() {
       asl_set(asl_message.get(), ASL_KEY_MSG, str_newline.c_str());
 
       asl_send(asl_client.get(), asl_message.get());
+#else   // !defined(USE_ASL)
+      const class OSLog {
+       public:
+        explicit OSLog(const char* subsystem)
+            : os_log_(subsystem ? os_log_create(subsystem, "chromium_logging")
+                                : OS_LOG_DEFAULT) {}
+        ~OSLog() {
+          if (os_log_ != OS_LOG_DEFAULT) {
+            os_release(os_log_);
+          }
+        }
+        os_log_t get() const { return os_log_; }
+
+       private:
+        os_log_t os_log_;
+        DISALLOW_COPY_AND_ASSIGN(OSLog);
+      } log(main_bundle_id.empty() ? nullptr : main_bundle_id.c_str());
+      const os_log_type_t os_log_type = [](LogSeverity severity) {
+        switch (severity) {
+          case LOG_INFO:
+            return OS_LOG_TYPE_INFO;
+          case LOG_WARNING:
+            return OS_LOG_TYPE_DEFAULT;
+          case LOG_ERROR:
+            return OS_LOG_TYPE_ERROR;
+          case LOG_FATAL:
+            return OS_LOG_TYPE_FAULT;
+          default:
+            return severity < 0 ? OS_LOG_TYPE_DEBUG : OS_LOG_TYPE_DEFAULT;
+        }
+      }(severity_);
+      os_log_with_type(log.get(), os_log_type, "%{public}s",
+                       str_newline.c_str());
+#endif  // defined(USE_ASL)
     }
 #elif defined(OS_ANDROID)
     android_LogPriority priority =
