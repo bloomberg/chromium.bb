@@ -52,6 +52,12 @@ Polymer({
     /** Set by embedder if saveOrConnect should always connect. */
     connectOnSave: Boolean,
 
+    /** True if the user configuring the network can toggle the shared state. */
+    shareAllowEnable: Boolean,
+
+    /** The default shared state. */
+    shareDefault: Boolean,
+
     /** @private */
     enableConnect: {
       type: Boolean,
@@ -233,15 +239,12 @@ Polymer({
     /**
      * Array of values for the EAP Method (Outer) dropdown.
      * @private {!Array<string>}
-     * @const
      */
     eapOuterItems_: {
       type: Array,
       readOnly: true,
-      value: [
-        CrOnc.EAPType.LEAP, CrOnc.EAPType.PEAP, CrOnc.EAPType.EAP_TLS,
-        CrOnc.EAPType.EAP_TTLS
-      ],
+      computed: 'computeEapOuterItems_(' +
+          'guid, shareNetwork_, shareAllowEnable, shareDefault)',
     },
 
     /**
@@ -388,7 +391,7 @@ Polymer({
       this.set('serverCaCerts_', caCerts);
 
       var userCerts = certificateLists.userCertificates.slice();
-      if (userCerts.empty) {
+      if (!userCerts.length) {
         userCerts = [this.getDefaultCert_(
             this.i18n('networkCertificateNoneInstalled'), '')];
       }
@@ -424,9 +427,7 @@ Polymer({
     this.error_ = properties.ErrorState || '';
 
     // Set the current shareNetwork_ value when porperties are received.
-    var source = properties.Source;
-    this.shareNetwork_ =
-        source == CrOnc.Source.DEVICE || source == CrOnc.Source.DEVICE_POLICY;
+    this.setShareNetwork_();
 
     if (properties.Type == CrOnc.Type.VPN) {
       this.vpnSaveCredentials_ =
@@ -448,6 +449,32 @@ Polymer({
       ];
     }
     return [CrOnc.Security.NONE, CrOnc.Security.WPA_EAP];
+  },
+
+  /** @private */
+  setShareNetwork_: function() {
+    if (this.guid) {
+      // Configured networks can not change whether they are shared.
+      var source = this.networkProperties.Source;
+      this.shareNetwork_ =
+          source == CrOnc.Source.DEVICE || source == CrOnc.Source.DEVICE_POLICY;
+      return;
+    }
+    if (this.shareAllowEnable) {
+      // New insecure WiFi networks are always shared.
+      if (this.networkProperties.Type == CrOnc.Type.WI_FI &&
+          this.security_ == CrOnc.Security.NONE) {
+        this.shareNetwork_ = true;
+        return;
+      }
+      // Networks requiring a user certificate cannot be shared.
+      var eap = this.eapProperties_;
+      if (eap && eap.Outer == CrOnc.EAPType.EAP_TLS) {
+        this.shareNetwork_ = false;
+        return;
+      }
+    }
+    this.shareNetwork_ = this.shareDefault;
   },
 
   /**
@@ -485,11 +512,6 @@ Polymer({
           };
         }
         this.security_ = configProperties.WiFi.Security || CrOnc.Security.NONE;
-        if (!this.guid && this.security_ == CrOnc.Security.NONE) {
-          // Insecure WiFi networks are always shared (regardless of policy).
-          // TODO(stevenjb): also check login state.
-          this.shareNetwork_ = true;
-        }
         // updateSecurity_ will ensure that EAP properties are set correctly.
         break;
       case CrOnc.Type.ETHERNET:
@@ -561,9 +583,11 @@ Polymer({
    * @private
    */
   updateSecurity_: function() {
-    if (this.type == CrOnc.Type.WI_FI)
+    if (this.type == CrOnc.Type.WI_FI) {
       this.set('WiFi.Security', this.security_, this.configProperties_);
-
+      // Set the share value to its default when the security type changes.
+      this.setShareNetwork_();
+    }
     if (this.security_ == CrOnc.Security.WPA_EAP) {
       var eap = this.getEap_(this.configProperties_, true);
       eap.Outer = eap.Outer || CrOnc.EAPType.LEAP;
@@ -589,9 +613,8 @@ Polymer({
     } else {
       this.set('eapProperties_.Inner', undefined);
     }
-    // Networks requiring a user certificate cannot be shared.
-    if (eap.Outer == CrOnc.EAPType.EAP_TLS)
-      this.shareNetwork_ = false;
+    // Set the share vaule to its default when the EAP.Outer value changes.
+    this.setShareNetwork_();
   },
 
   /** @private */
@@ -849,6 +872,27 @@ Polymer({
   },
 
   /**
+   * @param {string} guid
+   * @param {boolean} shareNetwork
+   * @param {boolean} shareAllowEnable
+   * @param {boolean} shareDefault
+   * @return {!Array<string>}
+   * @private
+   */
+  computeEapOuterItems_: function(
+      guid, shareNetwork, shareAllowEnable, shareDefault) {
+    if ((guid && shareNetwork) || (!shareAllowEnable && shareDefault)) {
+      // If a network must be shared, hide the TLS option. Otherwise selecting
+      // TLS will turn off and disable the shared state.
+      return [CrOnc.EAPType.LEAP, CrOnc.EAPType.PEAP, CrOnc.EAPType.EAP_TTLS];
+    }
+    return [
+      CrOnc.EAPType.LEAP, CrOnc.EAPType.PEAP, CrOnc.EAPType.EAP_TLS,
+      CrOnc.EAPType.EAP_TTLS
+    ];
+  },
+
+  /**
    * @return {boolean}
    * @private
    */
@@ -878,12 +922,8 @@ Polymer({
    * @private
    */
   shareIsEnabled_: function() {
-    if (this.networkProperties &&
-            this.networkProperties.Source == CrOnc.Source.DEVICE ||
-        this.networkProperties.Source == CrOnc.Source.DEVICE_POLICY) {
+    if (this.guid || !this.shareAllowEnable)
       return false;
-    }
-    // TODO(stevenjb): Check login state.
 
     if (this.security_ == CrOnc.Security.WPA_EAP) {
       var eap = this.getEap_(this.configProperties_);

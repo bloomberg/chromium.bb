@@ -11,10 +11,14 @@ suite('network-config', function() {
   suiteSetup(function() {
     api_ = new chrome.FakeNetworkingPrivate();
     loadTimeData.data = {
-      networkConfigShare: '',
-      networkCAUseDefault: '',
       networkCADoNotCheck: '',
+      networkCAUseDefault: '',
+      networkCertificateName: '',
+      networkCertificateNameHardwareBacked: '',
+      networkCertificateNoneInstalled: '',
       networkConfigSaveCredentials: '',
+      networkConfigShare: '',
+      showPassword: '',
     };
     CrOncStrings.overrideValues();
   });
@@ -27,6 +31,13 @@ suite('network-config', function() {
     document.body.appendChild(networkConfig);
     networkConfig.init();
     Polymer.dom.flush();
+  };
+
+  function flushAsync() {
+    Polymer.dom.flush();
+    return new Promise(resolve => {
+      networkConfig.async(resolve);
+    });
   };
 
   suite('New WiFi Config', function() {
@@ -65,9 +76,7 @@ suite('network-config', function() {
     });
 
     test('Default', function() {
-      return new Promise(resolve => {
-        networkConfig.async(resolve);
-      }).then(() => {
+      return flushAsync().then(() => {
         assertEquals('someguid', networkConfig.networkProperties.GUID);
         assertEquals('somename', networkConfig.networkProperties.Name);
         assertTrue(!!networkConfig.$$('#share'));
@@ -77,4 +86,124 @@ suite('network-config', function() {
       });
     });
   });
+
+  suite('Share', function() {
+    setup(function() {
+      api_.resetForTest();
+    });
+
+    teardown(function() {
+      PolymerTest.clearBody();
+    });
+
+    function setLoginOrGuest() {
+      // Networks must be shared.
+      networkConfig.shareAllowEnable = false;
+      networkConfig.shareDefault = true;
+    };
+
+    function setKiosk() {
+      // New networks can not be shared.
+      networkConfig.shareAllowEnable = false;
+      networkConfig.shareDefault = false;
+    };
+
+    function setAuthenticated() {
+      // Logged in users can share new networks.
+      networkConfig.shareAllowEnable = true;
+      // Authenticated networks default to not shared.
+      networkConfig.shareDefault = false;
+    };
+
+    test('New Config: Login or guest', function() {
+      setNetworkConfig({GUID: '', Name: '', Type: 'WiFi'});
+      setLoginOrGuest();
+      // Insecure networks are always shared so test a secure config.
+      networkConfig.security_ = 'WEP-PSK';
+      return flushAsync().then(() => {
+        let share = networkConfig.$$('#share');
+        assertTrue(!!share);
+        assertTrue(share.disabled);
+        assertTrue(share.checked);
+      });
+    });
+
+    test('New Config: Kiosk', function() {
+      setNetworkConfig({GUID: '', Name: '', Type: 'WiFi'});
+      setKiosk();
+      // Insecure networks are always shared so test a secure config.
+      networkConfig.security_ = 'WEP-PSK';
+      return flushAsync().then(() => {
+        let share = networkConfig.$$('#share');
+        assertTrue(!!share);
+        assertTrue(share.disabled);
+        assertFalse(share.checked);
+      });
+    });
+
+    test('New Config: Authenticated, Not secure', function() {
+      setNetworkConfig({GUID: '', Name: '', Type: 'WiFi'});
+      setAuthenticated();
+      return flushAsync().then(() => {
+        let share = networkConfig.$$('#share');
+        assertTrue(!!share);
+        assertTrue(share.disabled);
+        assertTrue(share.checked);
+      });
+    });
+
+    test('New Config: Authenticated, Secure', function() {
+      setNetworkConfig({GUID: '', Name: '', Type: 'WiFi'});
+      setAuthenticated();
+      networkConfig.security_ = 'WEP-PSK';
+      return flushAsync().then(() => {
+        let share = networkConfig.$$('#share');
+        assertTrue(!!share);
+        assertFalse(share.disabled);
+        assertFalse(share.checked);
+      });
+    });
+
+    // Existing networks can not change their shared state.
+
+    test('Existing Shared', function() {
+      var network = {
+        GUID: 'someguid',
+        Name: 'somename',
+        Source: 'Device',
+        Type: 'WiFi',
+        WiFi: {SSID: 'somessid', Security: 'None'}
+      };
+      api_.addNetworksForTest([network]);
+      setNetworkConfig({GUID: 'someguid', Name: '', Type: 'WiFi'});
+      setAuthenticated();
+      return flushAsync().then(() => {
+        let share = networkConfig.$$('#share');
+        assertTrue(!!share);
+        assertTrue(share.disabled);
+        assertTrue(share.checked);
+      });
+    });
+
+    test('Existing Not Shared', function() {
+      var network = {
+        GUID: 'someguid',
+        Name: 'somename',
+        Source: 'User',
+        Type: 'WiFi',
+        WiFi: {SSID: 'somessid', Security: 'WEP-PSK'}
+      };
+      api_.addNetworksForTest([network]);
+      setNetworkConfig({GUID: 'someguid', Name: '', Type: 'WiFi'});
+      setAuthenticated();
+      return flushAsync().then(() => {
+        let share = networkConfig.$$('#share');
+        assertTrue(!!share);
+        assertTrue(share.disabled);
+        assertFalse(share.checked);
+      });
+    });
+
+  });
+
 });

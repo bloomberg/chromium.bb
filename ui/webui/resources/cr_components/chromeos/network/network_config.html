@@ -28,7 +28,7 @@
         <div id="shareLabel" class="start">[[i18n('networkConfigShare')]]</div>
         <paper-toggle-button id="share" checked="{{shareNetwork_}}"
             disabled="[[!shareIsEnabled_(guid, configProperties_.*,
-                security_, eapProperties_.*)]]"
+                security_, eapProperties_.*, shareAllowEnable)]]"
             aria-label="[[i18n('networkConfigShare')]]">
         </paper-toggle-button>
       </div>
