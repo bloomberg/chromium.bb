@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "ash/app_list/test_app_list_presenter_impl.h"
-#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -201,10 +200,6 @@ TEST_F(ShelfObserverIconTest, AddRemove) {
 // Make sure creating/deleting an window on one displays notifies a
 // shelf on external display as well as one on primary.
 TEST_F(ShelfObserverIconTest, AddRemoveWithMultipleDisplays) {
-  // TODO: investigate failure in mash, http://crbug.com/695751.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
   UpdateDisplay("400x400,400x400");
   observer()->Reset();
 
@@ -1799,10 +1794,6 @@ TEST_F(ShelfViewTest, CheckOverflowStatusPinOpenedAppToShelf) {
 // item is selected.
 TEST_F(ShelfViewTest,
        Launcher_ButtonPressedUserActionsRecordedWhenItemSelected) {
-  // TODO: investigate failure in mash, http://crbug.com/695751.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
   base::UserActionTester user_action_tester;
 
   ShelfItemSelectionTracker* selection_tracker = new ShelfItemSelectionTracker;
@@ -1818,10 +1809,6 @@ TEST_F(ShelfViewTest,
 // Verifies that Launcher_*Task UMA user actions are recorded when an item is
 // selected.
 TEST_F(ShelfViewTest, Launcher_TaskUserActionsRecordedWhenItemSelected) {
-  // TODO: investigate failure in mash, http://crbug.com/695751.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
   base::UserActionTester user_action_tester;
 
   ShelfItemSelectionTracker* selection_tracker = new ShelfItemSelectionTracker;
