@@ -30,7 +30,9 @@
 #include "av1/common/entropymode.h"
 #include "av1/common/idct.h"
 #include "av1/common/mvref_common.h"
+#if CONFIG_MOTION_VAR
 #include "av1/common/obmc.h"
+#endif
 #include "av1/common/pred_common.h"
 #include "av1/common/quant_common.h"
 #include "av1/common/reconinter.h"
