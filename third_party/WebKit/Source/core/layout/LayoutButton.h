@@ -42,10 +42,6 @@ class LayoutButton final : public LayoutFlexibleBox {
            LayoutFlexibleBox::IsOfType(type);
   }
 
-  bool CanBeSelectionLeaf() const override {
-    return GetNode() && HasEditableStyle(*GetNode());
-  }
-
   void AddChild(LayoutObject* new_child,
                 LayoutObject* before_child = nullptr) override;
   void RemoveChild(LayoutObject*) override;

@@ -149,8 +149,6 @@ class CORE_EXPORT LayoutReplaced : public LayoutBox {
  private:
   void ComputePreferredLogicalWidths() final;
 
-  bool CanBeSelectionLeaf() const override { return true; }
-
   void ComputeIntrinsicSizingInfoForReplacedContent(LayoutReplaced*,
                                                     IntrinsicSizingInfo&) const;
   FloatSize ConstrainIntrinsicSizeToMinMax(const IntrinsicSizingInfo&) const;

@@ -79,6 +79,7 @@ USING_LAYOUTOBJECT_FUNC(IsLayoutImage);
 USING_LAYOUTOBJECT_FUNC(IsLayoutButton);
 USING_LAYOUTOBJECT_FUNC(IsSVGRoot);
 USING_LAYOUTOBJECT_FUNC(IsSVGText);
+USING_LAYOUTOBJECT_FUNC(IsLayoutEmbeddedContent);
 
 static IsTypeOf IsLayoutTextFragmentOf(const String& text) {
   return WTF::Bind(
@@ -553,9 +554,9 @@ TEST_F(LayoutSelectionTest, ContentEditableButton) {
                                .Build());
   Selection().CommitAppearanceIfNeeded();
   TEST_NEXT(IsLayoutBlock, kStartAndEnd, NotInvalidate);
-  TEST_NEXT(IsLayoutButton, kStartAndEnd, ShouldInvalidate);
-  TEST_NEXT(IsLayoutBlock, kEnd, NotInvalidate);
-  TEST_NEXT("foo", kEnd, ShouldInvalidate);
+  TEST_NEXT(IsLayoutButton, kStartAndEnd, NotInvalidate);
+  TEST_NEXT(IsLayoutBlock, kStartAndEnd, NotInvalidate);
+  TEST_NEXT("foo", kStartAndEnd, ShouldInvalidate);
   TEST_NO_NEXT_LAYOUT_OBJECT();
 }
 
@@ -618,6 +619,15 @@ TEST_F(LayoutSelectionTest, SVG) {
   TEST_NO_NEXT_LAYOUT_OBJECT();
   EXPECT_EQ(2, Selection().LayoutSelectionStart());
   EXPECT_EQ(4, Selection().LayoutSelectionEnd());
+}
+
+TEST_F(LayoutSelectionTest, Embed) {
+  Selection().SetSelection(
+      SetSelectionTextToBody("^<embed type=foobar></embed>|"));
+  Selection().CommitAppearanceIfNeeded();
+  TEST_NEXT(IsLayoutBlock, kStartAndEnd, NotInvalidate);
+  TEST_NEXT(IsLayoutEmbeddedContent, kStartAndEnd, ShouldInvalidate);
+  TEST_NO_NEXT_LAYOUT_OBJECT();
 }
 
 }  // namespace blink

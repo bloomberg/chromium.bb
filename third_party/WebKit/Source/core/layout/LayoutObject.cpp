@@ -3592,6 +3592,12 @@ const LayoutObject* AssociatedLayoutObjectOf(const Node& node,
   return child;
 }
 
+bool LayoutObject::CanBeSelectionLeaf() const {
+  if (SlowFirstChild() || Style()->Visibility() != EVisibility::kVisible)
+    return false;
+  return CanBeSelectionLeafInternal();
+}
+
 }  // namespace blink
 
 #ifndef NDEBUG

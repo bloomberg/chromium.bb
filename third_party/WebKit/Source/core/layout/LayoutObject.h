@@ -1474,7 +1474,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // View coordinates means the coordinate space of |view()|.
   LayoutRect SelectionRectInViewCoordinates() const;
 
-  virtual bool CanBeSelectionLeaf() const { return false; }
+  bool CanBeSelectionLeaf() const;
   bool HasSelectedChildren() const {
     return GetSelectionState() != SelectionState::kNone;
   }
@@ -2097,6 +2097,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   virtual bool VisualRectRespectsVisibility() const { return true; }
   virtual LayoutRect LocalVisualRectIgnoringVisibility() const;
+
+  virtual bool CanBeSelectionLeafInternal() const { return false; }
 
  private:
   // Used only by applyFirstLineChanges to get a first line style based off of a
