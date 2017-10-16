@@ -58,13 +58,14 @@ bool AshFocusRules::CanActivateWindow(aura::Window* window) const {
   if (!window)
     return true;
 
-  if (!BaseFocusRules::CanActivateWindow(window))
+  if (!BaseFocusRules::CanActivateWindow(window)) {
     return false;
-
-  if (ShellPort::Get()->IsSystemModalWindowOpen()) {
-    return BelongsToContainerWithEqualOrGreaterId(
-        window, kShellWindowId_SystemModalContainer);
   }
+
+  int modal_container_id =
+      ShellPort::Get()->GetOpenSystemModalWindowContainerId();
+  if (modal_container_id >= 0)
+    return BelongsToContainerWithEqualOrGreaterId(window, modal_container_id);
 
   return true;
 }
