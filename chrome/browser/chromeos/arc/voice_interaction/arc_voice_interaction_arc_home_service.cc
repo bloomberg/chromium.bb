@@ -83,14 +83,24 @@ void RequestVoiceInteractionStructureCallback(
         callback,
     const gfx::Rect& bounds,
     const std::string& web_url,
+    const base::string16& title,
     const ui::AXTreeUpdate& update) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  // The assist structure starts with 2 dummy nodes: Url node and title
+  // node. Then we attach all nodes in view hierarchy.
   auto root = mojom::VoiceInteractionStructure::New();
   root->rect = bounds;
   root->class_name = "android.view.dummy.root.WebUrl";
   root->text = base::UTF8ToUTF16(web_url);
-  root->children.push_back(CreateVoiceInteractionStructure(
+
+  auto title_node = mojom::VoiceInteractionStructure::New();
+  title_node->rect = gfx::Rect(bounds.size());
+  title_node->class_name = "android.view.dummy.WebTitle";
+  title_node->text = title;
+  title_node->children.push_back(CreateVoiceInteractionStructure(
       *ui::AXSnapshotNodeAndroid::Create(update, false)));
+  root->children.push_back(std::move(title_node));
   std::move(callback).Run(std::move(root));
 }
 
@@ -307,7 +317,7 @@ void ArcVoiceInteractionArcHomeService::GetVoiceInteractionStructure(
       &RequestVoiceInteractionStructureCallback,
       base::Passed(std::move(callback)),
       gfx::ConvertRectToPixel(scale_factor, browser->window()->GetBounds()),
-      web_contents->GetLastCommittedURL().spec()));
+      web_contents->GetLastCommittedURL().spec(), web_contents->GetTitle()));
 }
 
 void ArcVoiceInteractionArcHomeService::OnVoiceInteractionOobeSetupComplete() {
