@@ -153,8 +153,8 @@ using ::payment_request_util::GetShippingSectionTitle;
   if (self.paymentRequest->shipping_profiles().empty()) {
     item.text = base::SysUTF16ToNSString(
         GetAddShippingAddressButtonLabel(self.paymentRequest->shipping_type()));
-    // TODO(crbug.com/774499): change this to a '+';
-    item.accessoryType = MDCCollectionViewCellAccessoryDisclosureIndicator;
+    item.trailingImage = TintImage([UIImage imageNamed:@"ic_add"],
+                                   [[MDCPalette greyPalette] tint400]);
     item.textColor = [[MDCPalette cr_bluePalette] tint500];
   } else {
     item.text = base::SysUTF16ToNSString(GetChooseShippingAddressButtonLabel(
@@ -230,8 +230,8 @@ using ::payment_request_util::GetShippingSectionTitle;
       l10n_util::GetNSString(IDS_PAYMENT_REQUEST_PAYMENT_METHOD_SECTION_NAME);
   if (self.paymentRequest->payment_methods().empty()) {
     item.text = l10n_util::GetNSString(IDS_ADD_PAYMENT_METHOD);
-    // TODO(crbug.com/774499): change this to a '+';
-    item.accessoryType = MDCCollectionViewCellAccessoryDisclosureIndicator;
+    item.trailingImage = TintImage([UIImage imageNamed:@"ic_add"],
+                                   [[MDCPalette greyPalette] tint400]);
     item.textColor = [[MDCPalette cr_bluePalette] tint500];
   } else {
     item.text = l10n_util::GetNSString(IDS_CHOOSE_PAYMENT_METHOD);
@@ -273,8 +273,8 @@ using ::payment_request_util::GetShippingSectionTitle;
   item.text = l10n_util::GetNSString(IDS_PAYMENTS_CONTACT_DETAILS_LABEL);
   if (self.paymentRequest->contact_profiles().empty()) {
     item.text = l10n_util::GetNSString(IDS_PAYMENT_REQUEST_ADD_CONTACT_INFO);
-    // TODO(crbug.com/774499): change this to a '+';
-    item.accessoryType = MDCCollectionViewCellAccessoryDisclosureIndicator;
+    item.trailingImage = TintImage([UIImage imageNamed:@"ic_add"],
+                                   [[MDCPalette greyPalette] tint400]);
     item.textColor = [[MDCPalette cr_bluePalette] tint500];
   } else {
     item.text = l10n_util::GetNSString(IDS_PAYMENT_REQUEST_CHOOSE_CONTACT_INFO);
