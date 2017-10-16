@@ -250,8 +250,8 @@
       'CrWinGomaStaging': 'release_bot_x86_minimal_symbols',
       'Chromium Linux Goma GCE Staging': 'release_bot',
       'Chromium Mac Goma GCE Staging': 'release_bot',
-      'CrWinGomaGCEStaging': 'release_bot_x86_minimal_symbols',
-      'CrWinClangGomaGCEStaging': 'win_clang_release_bot',
+      'CrWinGomaGCEStaging': 'release_bot_x86_minimal_symbols_disable_nacl',
+      'CrWinClangGomaGCEStaging': 'win_clang_release_bot_disable_nacl',
     },
 
     'chromium.gpu': {
@@ -1524,6 +1524,11 @@
     'release_bot_minimal_symbols': [ 'release_bot', 'minimal_symbols' ],
     'release_bot_x86_minimal_symbols': [ 'release_bot', 'x86', 'minimal_symbols' ],
 
+    # TODO(tikuta): Remove this once gcp goma backend supports all windows nacl compilers.
+    'release_bot_x86_minimal_symbols_disable_nacl': [
+      'release_bot', 'x86', 'minimal_symbols', 'disable_nacl'
+    ],
+
     'release_libfuzzer_asan': [
       'release', 'libfuzzer', 'asan', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
     ],
@@ -1626,6 +1631,11 @@
 
     'win_clang_release_bot': [
       'clang', 'release_bot', 'minimal_symbols',
+    ],
+
+    # TODO(tikuta): Remove this once gcp goma backend supports all windows nacl compilers.
+    'win_clang_release_bot_disable_nacl': [
+      'clang', 'release_bot', 'minimal_symbols', 'disable_nacl',
     ],
 
     'windows_analyze': [
