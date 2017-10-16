@@ -133,6 +133,9 @@ class ElementRuleCollector {
   void AddElementStyleProperties(const StylePropertySet*,
                                  bool is_cacheable = true);
   void FinishAddingUARules() { result_.FinishAddingUARules(); }
+  void FinishAddingUserRules() {
+    result_.FinishAddingUserRules();
+  }
   void FinishAddingAuthorRulesForTreeScope() {
     result_.FinishAddingAuthorRulesForTreeScope();
   }

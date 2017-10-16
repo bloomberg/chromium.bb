@@ -404,6 +404,13 @@ void StyleResolver::MatchAuthorRulesV0(const Element& element,
   collector.SortAndTransferMatchedRules();
 }
 
+void StyleResolver::MatchUserRules(ElementRuleCollector& collector) {
+  collector.ClearMatchedRules();
+  GetDocument().GetStyleEngine().CollectMatchingUserRules(collector);
+  collector.SortAndTransferMatchedRules();
+  collector.FinishAddingUserRules();
+}
+
 void StyleResolver::MatchUARules(ElementRuleCollector& collector) {
   collector.SetMatchingUARules(true);
 
@@ -439,6 +446,7 @@ void StyleResolver::MatchAllRules(StyleResolverState& state,
                                   ElementRuleCollector& collector,
                                   bool include_smil_properties) {
   MatchUARules(collector);
+  MatchUserRules(collector);
 
   // Now check author rules, beginning first with presentational attributes
   // mapped from HTML.
@@ -882,6 +890,7 @@ bool StyleResolver::PseudoStyleForElementInternal(
     collector.SetPseudoStyleRequest(pseudo_style_request);
 
     MatchUARules(collector);
+    MatchUserRules(collector);
     MatchAuthorRules(*state.GetElement(), collector);
     collector.FinishAddingAuthorRulesForTreeScope();
 
@@ -1079,8 +1088,10 @@ void StyleResolver::CollectPseudoRulesForElement(
     unsigned rules_to_include) {
   collector.SetPseudoStyleRequest(PseudoStyleRequest(pseudo_id));
 
-  if (rules_to_include & kUAAndUserCSSRules)
+  if (rules_to_include & kUAAndUserCSSRules) {
     MatchUARules(collector);
+    MatchUserRules(collector);
+  }
 
   if (rules_to_include & kAuthorCSSRules) {
     collector.SetSameOriginOnly(!(rules_to_include & kCrossOriginCSSRules));
@@ -1853,6 +1864,10 @@ void StyleResolver::ApplyMatchedStandardProperties(
     ApplyMatchedProperties<kHighPropertyPriority, kCheckNeedsApplyPass>(
         state, range, true, apply_inherited_only, needs_apply_pass);
   }
+  for (auto range : ImportantUserRanges(match_result)) {
+    ApplyMatchedProperties<kHighPropertyPriority, kCheckNeedsApplyPass>(
+        state, range, true, apply_inherited_only, needs_apply_pass);
+  }
   ApplyMatchedProperties<kHighPropertyPriority, kCheckNeedsApplyPass>(
       state, match_result.UaRules(), true, apply_inherited_only,
       needs_apply_pass);
@@ -1903,9 +1918,16 @@ void StyleResolver::ApplyMatchedStandardProperties(
   // Now do the author and user normal priority properties and all the
   // !important properties.
   ApplyMatchedProperties<kLowPropertyPriority, kCheckNeedsApplyPass>(
+      state, match_result.UserRules(), false, apply_inherited_only,
+      needs_apply_pass);
+  ApplyMatchedProperties<kLowPropertyPriority, kCheckNeedsApplyPass>(
       state, match_result.AuthorRules(), false, apply_inherited_only,
       needs_apply_pass);
   for (auto range : ImportantAuthorRanges(match_result)) {
+    ApplyMatchedProperties<kLowPropertyPriority, kCheckNeedsApplyPass>(
+        state, range, true, apply_inherited_only, needs_apply_pass);
+  }
+  for (auto range : ImportantUserRanges(match_result)) {
     ApplyMatchedProperties<kLowPropertyPriority, kCheckNeedsApplyPass>(
         state, range, true, apply_inherited_only, needs_apply_pass);
   }

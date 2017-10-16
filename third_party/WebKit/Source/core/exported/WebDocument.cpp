@@ -185,11 +185,11 @@ WebStyleSheetId WebDocument::InsertStyleSheet(const WebString& source_code) {
   StyleSheetContents* parsed_sheet =
       StyleSheetContents::Create(CSSParserContext::Create(*document));
   parsed_sheet->ParseString(source_code);
-  return document->GetStyleEngine().InjectAuthorSheet(parsed_sheet);
+  return document->GetStyleEngine().AddUserSheet(parsed_sheet);
 }
 
 void WebDocument::RemoveInsertedStyleSheet(WebStyleSheetId stylesheet_id) {
-  Unwrap<Document>()->GetStyleEngine().RemoveInjectedAuthorSheet(stylesheet_id);
+  Unwrap<Document>()->GetStyleEngine().RemoveUserSheet(stylesheet_id);
 }
 
 void WebDocument::WatchCSSSelectors(const WebVector<WebString>& web_selectors) {
