@@ -31,12 +31,6 @@ DeviceSettingsTestHelper::~DeviceSettingsTestHelper() {}
 
 void DeviceSettingsTestHelper::FlushStore() {
   std::vector<StorePolicyCallback> callbacks;
-  callbacks.swap(device_policy_.store_callbacks_);
-  for (std::vector<StorePolicyCallback>::iterator cb(callbacks.begin());
-       cb != callbacks.end(); ++cb) {
-    cb->Run(device_policy_.store_result_);
-  }
-
   std::map<std::string, PolicyState>::iterator device_local_account_state;
   for (device_local_account_state = device_local_account_policy_.begin();
        device_local_account_state != device_local_account_policy_.end();
@@ -50,13 +44,6 @@ void DeviceSettingsTestHelper::FlushStore() {
 }
 
 void DeviceSettingsTestHelper::FlushRetrieve() {
-  std::vector<RetrievePolicyCallback> callbacks;
-  callbacks.swap(device_policy_.retrieve_callbacks_);
-  for (std::vector<RetrievePolicyCallback>::iterator cb(callbacks.begin());
-       cb != callbacks.end(); ++cb) {
-    cb->Run(device_policy_.policy_blob_, RetrievePolicyResponseType::SUCCESS);
-  }
-
   std::map<std::string, PolicyState>::iterator device_local_account_state;
   for (device_local_account_state = device_local_account_policy_.begin();
        device_local_account_state != device_local_account_policy_.end();
@@ -82,9 +69,6 @@ void DeviceSettingsTestHelper::Flush() {
 }
 
 bool DeviceSettingsTestHelper::HasPendingOperations() const {
-  if (device_policy_.HasPendingOperations())
-    return true;
-
   std::map<std::string, PolicyState>::const_iterator device_local_account_state;
   for (device_local_account_state = device_local_account_policy_.begin();
        device_local_account_state != device_local_account_policy_.end();
@@ -94,18 +78,6 @@ bool DeviceSettingsTestHelper::HasPendingOperations() const {
   }
 
   return false;
-}
-
-void DeviceSettingsTestHelper::RetrieveDevicePolicy(
-    const RetrievePolicyCallback& callback) {
-  device_policy_.retrieve_callbacks_.push_back(callback);
-}
-
-RetrievePolicyResponseType
-DeviceSettingsTestHelper::BlockingRetrieveDevicePolicy(
-    std::string* policy_out) {
-  *policy_out = device_policy_.policy_blob_;
-  return RetrievePolicyResponseType::SUCCESS;
 }
 
 void DeviceSettingsTestHelper::RetrieveDeviceLocalAccountPolicy(
@@ -121,13 +93,6 @@ DeviceSettingsTestHelper::BlockingRetrieveDeviceLocalAccountPolicy(
     std::string* policy_out) {
   *policy_out = "";
   return RetrievePolicyResponseType::SUCCESS;
-}
-
-void DeviceSettingsTestHelper::StoreDevicePolicy(
-    const std::string& policy_blob,
-    const StorePolicyCallback& callback) {
-  device_policy_.policy_blob_ = policy_blob;
-  device_policy_.store_callbacks_.push_back(callback);
 }
 
 void DeviceSettingsTestHelper::StoreDeviceLocalAccountPolicy(
@@ -185,7 +150,7 @@ void DeviceSettingsTestBase::SetUp() {
       false);
   owner_key_util_->SetPublicKeyFromPrivateKey(*device_policy_.GetSigningKey());
   device_policy_.Build();
-  device_settings_test_helper_.set_policy_blob(device_policy_.GetBlob());
+  device_settings_test_helper_.set_device_policy(device_policy_.GetBlob());
   device_settings_service_.SetSessionManager(&device_settings_test_helper_,
                                              owner_key_util_);
   profile_.reset(new TestingProfile());

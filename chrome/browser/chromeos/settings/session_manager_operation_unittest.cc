@@ -39,6 +39,30 @@ using testing::Mock;
 using testing::_;
 
 namespace chromeos {
+namespace {
+
+class ObservableDeviceSettingsTestHelper : public DeviceSettingsTestHelper {
+ public:
+  void SetOnRetrieveDevicePolicyCalled(const base::RepeatingClosure& closure) {
+    on_retrieve_device_policy_called_ = closure;
+  }
+
+  // SessionManagerClient override:
+  void RetrieveDevicePolicy(const RetrievePolicyCallback& callback) override {
+    DeviceSettingsTestHelper::RetrieveDevicePolicy(callback);
+
+    // Run the task just after the |callback| is invoked.
+    if (!on_retrieve_device_policy_called_.is_null()) {
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, on_retrieve_device_policy_called_);
+    }
+  }
+
+ private:
+  base::RepeatingClosure on_retrieve_device_policy_called_;
+};
+
+}  // namespace
 
 class SessionManagerOperationTest : public testing::Test {
  public:
@@ -85,7 +109,7 @@ class SessionManagerOperationTest : public testing::Test {
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
 
   policy::DevicePolicyBuilder policy_;
-  DeviceSettingsTestHelper device_settings_test_helper_;
+  ObservableDeviceSettingsTestHelper device_settings_test_helper_;
   scoped_refptr<ownership::MockOwnerKeyUtil> owner_key_util_;
 
   chromeos::FakeChromeUserManager* user_manager_;
@@ -140,7 +164,7 @@ TEST_F(SessionManagerOperationTest, LoadOwnerKey) {
 
 TEST_F(SessionManagerOperationTest, LoadPolicy) {
   owner_key_util_->SetPublicKeyFromPrivateKey(*policy_.GetSigningKey());
-  device_settings_test_helper_.set_policy_blob(policy_.GetBlob());
+  device_settings_test_helper_.set_device_policy(policy_.GetBlob());
   LoadSettingsOperation op(
       false /* force_key_load */, true /* cloud_validations */,
       false /* force_immediate_load */,
@@ -163,7 +187,7 @@ TEST_F(SessionManagerOperationTest, LoadPolicy) {
 
 TEST_F(SessionManagerOperationTest, LoadImmediately) {
   owner_key_util_->SetPublicKeyFromPrivateKey(*policy_.GetSigningKey());
-  device_settings_test_helper_.set_policy_blob(policy_.GetBlob());
+  device_settings_test_helper_.set_device_policy(policy_.GetBlob());
   LoadSettingsOperation op(
       false /* force_key_load */, true /* cloud_validations */,
       true /* force_immediate_load */,
@@ -187,33 +211,51 @@ TEST_F(SessionManagerOperationTest, LoadImmediately) {
 
 TEST_F(SessionManagerOperationTest, RestartLoad) {
   owner_key_util_->SetPrivateKey(policy_.GetSigningKey());
-  device_settings_test_helper_.set_policy_blob(policy_.GetBlob());
+  device_settings_test_helper_.set_device_policy(policy_.GetBlob());
   LoadSettingsOperation op(
       false /* force_key_load */, true /* cloud_validations */,
       false /* force_immediate_load */,
       base::Bind(&SessionManagerOperationTest::OnOperationCompleted,
                  base::Unretained(this)));
 
+  // Just after the first RetrieveDevicePolicy() completion,
+  // verify the state, install a different key, then RestartLoad().
+  device_settings_test_helper_.SetOnRetrieveDevicePolicyCalled(
+      base::BindRepeating(
+          [](SessionManagerOperationTest* test,
+             policy::DevicePolicyBuilder* policy,
+             ObservableDeviceSettingsTestHelper* device_settings_test_helper,
+             scoped_refptr<ownership::MockOwnerKeyUtil> owner_key_util,
+             LoadSettingsOperation* op) {
+            // Reset this callback to avoid infinite loop.
+            device_settings_test_helper->SetOnRetrieveDevicePolicyCalled(
+                base::RepeatingClosure());
+
+            // Verify the public_key() is properly set, but the callback is
+            // not yet called.
+            EXPECT_TRUE(op->public_key().get());
+            EXPECT_TRUE(op->public_key()->is_loaded());
+            Mock::VerifyAndClearExpectations(test);
+
+            // Now install a different key and policy.
+            policy->SetSigningKey(
+                *policy::PolicyBuilder::CreateTestOtherSigningKey());
+            policy->payload().mutable_metrics_enabled()->set_metrics_enabled(
+                true);
+            policy->Build();
+            device_settings_test_helper->set_device_policy(policy->GetBlob());
+            owner_key_util->SetPrivateKey(policy->GetSigningKey());
+
+            // And restart the operation.
+            EXPECT_CALL(*test, OnOperationCompleted(
+                                   op, DeviceSettingsService::STORE_SUCCESS));
+            op->RestartLoad(true);
+          },
+          this, &policy_, &device_settings_test_helper_, owner_key_util_, &op));
+
   EXPECT_CALL(*this, OnOperationCompleted(&op, _)).Times(0);
   op.Start(&device_settings_test_helper_, owner_key_util_, NULL);
   content::RunAllTasksUntilIdle();
-  device_settings_test_helper_.FlushRetrieve();
-  EXPECT_TRUE(op.public_key().get());
-  EXPECT_TRUE(op.public_key()->is_loaded());
-  Mock::VerifyAndClearExpectations(this);
-
-  // Now install a different key and policy and restart the operation.
-  policy_.SetSigningKey(*policy::PolicyBuilder::CreateTestOtherSigningKey());
-  policy_.payload().mutable_metrics_enabled()->set_metrics_enabled(true);
-  policy_.Build();
-  device_settings_test_helper_.set_policy_blob(policy_.GetBlob());
-  owner_key_util_->SetPrivateKey(policy_.GetSigningKey());
-
-  EXPECT_CALL(*this,
-              OnOperationCompleted(
-                  &op, DeviceSettingsService::STORE_SUCCESS));
-  op.RestartLoad(true);
-  device_settings_test_helper_.Flush();
   Mock::VerifyAndClearExpectations(this);
 
   // Check that the new keys have been loaded.
@@ -242,8 +284,7 @@ TEST_F(SessionManagerOperationTest, StoreSettings) {
   device_settings_test_helper_.Flush();
   Mock::VerifyAndClearExpectations(this);
 
-  EXPECT_EQ(device_settings_test_helper_.policy_blob(),
-            policy_.GetBlob());
+  EXPECT_EQ(device_settings_test_helper_.device_policy(), policy_.GetBlob());
   ASSERT_TRUE(op.policy_data().get());
   EXPECT_EQ(policy_.policy_data().SerializeAsString(),
             op.policy_data()->SerializeAsString());

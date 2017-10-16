@@ -138,7 +138,7 @@ TEST_F(DeviceCloudPolicyStoreChromeOSTest, LoadNoKey) {
 }
 
 TEST_F(DeviceCloudPolicyStoreChromeOSTest, LoadNoPolicy) {
-  device_settings_test_helper_.set_policy_blob(std::string());
+  device_settings_test_helper_.set_device_policy(std::string());
   store_->Load();
   FlushDeviceSettings();
   ExpectFailure(CloudPolicyStore::STATUS_LOAD_ERROR);

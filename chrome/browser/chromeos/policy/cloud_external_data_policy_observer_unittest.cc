@@ -283,7 +283,7 @@ void CloudExternalDataPolicyObserverTest::AddDeviceLocalAccount(
   account->set_type(
       em::DeviceLocalAccountInfoProto::ACCOUNT_TYPE_PUBLIC_SESSION);
   device_policy_.Build();
-  device_settings_test_helper_.set_policy_blob(device_policy_.GetBlob());
+  device_settings_test_helper_.set_device_policy(device_policy_.GetBlob());
   ReloadDeviceSettings();
 }
 
@@ -305,7 +305,7 @@ void CloudExternalDataPolicyObserverTest::RemoveDeviceLocalAccount(
         em::DeviceLocalAccountInfoProto::ACCOUNT_TYPE_PUBLIC_SESSION);
   }
   device_policy_.Build();
-  device_settings_test_helper_.set_policy_blob(device_policy_.GetBlob());
+  device_settings_test_helper_.set_device_policy(device_policy_.GetBlob());
   ReloadDeviceSettings();
 }
 

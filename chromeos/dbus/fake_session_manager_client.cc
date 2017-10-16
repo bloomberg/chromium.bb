@@ -206,6 +206,12 @@ void FakeSessionManagerClient::StoreDevicePolicy(
     return;
   }
 
+  if (!store_device_policy_success_) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(callback, false /* success */));
+    return;
+  }
+
   bool owner_key_store_success = false;
   if (policy.has_new_public_key())
     owner_key_store_success = StoreOwnerKey(policy.new_public_key());

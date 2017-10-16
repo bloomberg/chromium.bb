@@ -329,7 +329,7 @@ void DeviceDisablingManagerTest::SetDisabledMessage(
 
 void DeviceDisablingManagerTest::SimulatePolicyFetch() {
   device_policy_.Build();
-  device_settings_test_helper_.set_policy_blob(device_policy_.GetBlob());
+  device_settings_test_helper_.set_device_policy(device_policy_.GetBlob());
   chromeos::DeviceSettingsService::Get()->OwnerKeySet(true);
   device_settings_test_helper_.Flush();
 }
