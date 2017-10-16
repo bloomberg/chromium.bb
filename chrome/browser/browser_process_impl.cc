@@ -58,7 +58,6 @@
 #include "chrome/browser/metrics/chrome_metrics_services_manager_client.h"
 #include "chrome/browser/metrics/thread_watcher.h"
 #include "chrome/browser/net/chrome_net_log_helper.h"
-#include "chrome/browser/net/crl_set_fetcher.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/notifications/notification_platform_bridge.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
@@ -968,12 +967,6 @@ BrowserProcessImpl::component_updater() {
           g_browser_process->local_state()));
 
   return component_updater_.get();
-}
-
-CRLSetFetcher* BrowserProcessImpl::crl_set_fetcher() {
-  if (!crl_set_fetcher_)
-    crl_set_fetcher_ = base::MakeRefCounted<CRLSetFetcher>();
-  return crl_set_fetcher_.get();
 }
 
 component_updater::SupervisedUserWhitelistInstaller*

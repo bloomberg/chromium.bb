@@ -6,6 +6,7 @@
 #define IOS_CHROME_TEST_TESTING_APPLICATION_CONTEXT_H_
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
@@ -52,7 +53,6 @@ class TestingApplicationContext : public ApplicationContext {
   gcm::GCMDriver* GetGCMDriver() override;
   component_updater::ComponentUpdateService* GetComponentUpdateService()
       override;
-  CRLSetFetcher* GetCRLSetFetcher() override;
   physical_web::PhysicalWebDataSource* GetPhysicalWebDataSource() override;
 
  private:

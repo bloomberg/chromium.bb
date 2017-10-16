@@ -58,7 +58,6 @@ class VariationsService;
 }
 
 class ApplicationContext;
-class CRLSetFetcher;
 class IOSChromeIOThread;
 class PrefService;
 
@@ -133,9 +132,6 @@ class ApplicationContext {
   // Gets the ComponentUpdateService.
   virtual component_updater::ComponentUpdateService*
   GetComponentUpdateService() = 0;
-
-  // Gets the CRLSetFetcher.
-  virtual CRLSetFetcher* GetCRLSetFetcher() = 0;
 
   // Gets the PhysicalWebDataSource.
   virtual physical_web::PhysicalWebDataSource* GetPhysicalWebDataSource() = 0;

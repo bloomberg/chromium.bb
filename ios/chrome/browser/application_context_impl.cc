@@ -41,7 +41,6 @@
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/ios_chrome_io_thread.h"
 #include "ios/chrome/browser/metrics/ios_chrome_metrics_services_manager_client.h"
-#include "ios/chrome/browser/net/crl_set_fetcher.h"
 #include "ios/chrome/browser/physical_web/create_physical_web_data_source.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/prefs/browser_prefs.h"
@@ -294,14 +293,6 @@ ApplicationContextImpl::GetComponentUpdateService() {
             GetSystemURLRequestContext()));
   }
   return component_updater_.get();
-}
-
-CRLSetFetcher* ApplicationContextImpl::GetCRLSetFetcher() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (!crl_set_fetcher_) {
-    crl_set_fetcher_ = new CRLSetFetcher;
-  }
-  return crl_set_fetcher_.get();
 }
 
 physical_web::PhysicalWebDataSource*

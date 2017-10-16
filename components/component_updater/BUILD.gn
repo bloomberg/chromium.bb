@@ -32,6 +32,19 @@ static_library("component_updater") {
   ]
 }
 
+static_library("crl_set_installer") {
+  sources = [
+    "crl_set_component_installer.cc",
+    "crl_set_component_installer.h",
+  ]
+
+  deps = [
+    ":component_updater",
+    "//base",
+    "//net",
+  ]
+}
+
 static_library("test_support") {
   testonly = true
   sources = [

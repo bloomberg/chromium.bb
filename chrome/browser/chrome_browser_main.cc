@@ -76,7 +76,6 @@
 #include "chrome/browser/metrics/renderer_uptime_tracker.h"
 #include "chrome/browser/metrics/thread_watcher.h"
 #include "chrome/browser/nacl_host/nacl_browser_delegate_impl.h"
-#include "chrome/browser/net/crl_set_fetcher.h"
 #include "chrome/browser/performance_monitor/performance_monitor.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/prefs/chrome_command_line_pref_store.h"
@@ -125,6 +124,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "components/component_updater/component_updater_service.h"
+#include "components/component_updater/crl_set_component_installer.h"
 #include "components/device_event_log/device_event_log.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
 #include "components/google/core/browser/google_util.h"
@@ -514,21 +514,23 @@ void RegisterComponentsForUpdate() {
 
   base::FilePath path;
   if (PathService::Get(chrome::DIR_USER_DATA, &path)) {
-#if defined(OS_ANDROID)
-    // The CRLSet component was enabled for some releases. This code attempts to
-    // delete it from the local disk of those how may have downloaded it.
-    g_browser_process->crl_set_fetcher()->DeleteFromDisk(path);
-#elif !defined(OS_CHROMEOS)
+    // The CRLSet component previously resided in a different location: delete
+    // the old file.
+    component_updater::DeleteLegacyCRLSet(path);
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
     // CRLSetFetcher attempts to load a CRL set from either the local disk or
     // network.
     // For Chrome OS this registration is delayed until user login.
-    g_browser_process->crl_set_fetcher()->StartInitialLoad(cus, path);
+    // On Android, we do not register at all.
+    component_updater::RegisterCRLSetComponent(cus, path);
+#endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
     // Registration of the STH set fetcher here is not done for:
     // Android: Because the story around CT on Mobile is not finalized yet.
     // Chrome OS: On Chrome OS this registration is delayed until user login.
     RegisterSTHSetComponent(cus, path);
-#endif  // defined(OS_ANDROID)
+#endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
     RegisterOriginTrialsComponent(cus, path);
 
     RegisterFileTypePoliciesComponent(cus, path);

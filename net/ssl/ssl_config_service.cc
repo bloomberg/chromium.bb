@@ -22,14 +22,18 @@ SSLConfigService::SSLConfigService()
 template <class T>
 class GlobalSSLObject {
  public:
-  void Set(const scoped_refptr<T>& new_ssl_object) {
-    base::AutoLock locked(lock_);
-    ssl_object_ = new_ssl_object;
-  }
-
   scoped_refptr<T> Get() const {
     base::AutoLock locked(lock_);
     return ssl_object_;
+  }
+
+  bool CompareAndSet(const scoped_refptr<T>& new_ssl_object,
+                     const scoped_refptr<T>& old_ssl_object) {
+    base::AutoLock locked(lock_);
+    if (ssl_object_ != old_ssl_object)
+      return false;
+    ssl_object_ = new_ssl_object;
+    return true;
   }
 
  private:
@@ -42,9 +46,18 @@ typedef GlobalSSLObject<CRLSet> GlobalCRLSet;
 base::LazyInstance<GlobalCRLSet>::Leaky g_crl_set = LAZY_INSTANCE_INITIALIZER;
 
 // static
-void SSLConfigService::SetCRLSet(scoped_refptr<CRLSet> crl_set) {
+void SSLConfigService::SetCRLSetIfNewer(scoped_refptr<CRLSet> crl_set) {
   // Note: this can be called concurently with GetCRLSet().
-  g_crl_set.Get().Set(crl_set);
+  while (true) {
+    scoped_refptr<CRLSet> old_crl_set(GetCRLSet());
+    if (old_crl_set.get() && old_crl_set->sequence() >= crl_set->sequence()) {
+      LOG(WARNING) << "Refusing to downgrade CRL set from #"
+                   << old_crl_set->sequence() << " to #" << crl_set->sequence();
+      break;
+    }
+    if (g_crl_set.Get().CompareAndSet(crl_set, old_crl_set))
+      break;
+  }
 }
 
 // static

@@ -25,6 +25,7 @@
 #include "base/task_scheduler/post_task.h"
 #include "base/time/time.h"
 #include "components/component_updater/component_updater_service.h"
+#include "components/component_updater/crl_set_component_installer.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/feature_engagement/public/event_constants.h"
 #include "components/feature_engagement/public/tracker.h"
@@ -82,7 +83,6 @@
 #include "ios/chrome/browser/metrics/first_user_action_recorder.h"
 #import "ios/chrome/browser/metrics/previous_session_info.h"
 #import "ios/chrome/browser/net/cookie_util.h"
-#include "ios/chrome/browser/net/crl_set_fetcher.h"
 #include "ios/chrome/browser/payments/ios_payment_instrument_launcher.h"
 #include "ios/chrome/browser/payments/ios_payment_instrument_launcher_factory.h"
 #import "ios/chrome/browser/payments/payment_request_constants.h"
@@ -219,7 +219,8 @@ void RegisterComponentsForUpdate() {
   DCHECK(success);
   // CRLSetFetcher attempts to load a CRL set from either the local disk or
   // network.
-  GetApplicationContext()->GetCRLSetFetcher()->StartInitialLoad(cus, path);
+  component_updater::DeleteLegacyCRLSet(path);
+  component_updater::RegisterCRLSetComponent(cus, path);
 }
 
 // Used to update the current BVC mode if a new tab is added while the stack
