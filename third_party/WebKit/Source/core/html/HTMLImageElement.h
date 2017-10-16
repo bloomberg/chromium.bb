@@ -79,7 +79,7 @@ class CORE_EXPORT HTMLImageElement final
   String AltText() const final;
 
   ImageResourceContent* CachedImage() const {
-    return GetImageLoader().GetImage();
+    return GetImageLoader().GetContent();
   }
   ImageResource* CachedImageResourceForImageDocument() const {
     return GetImageLoader().ImageResourceForImageDocument();

@@ -182,7 +182,7 @@ void SVGImageElement::AttachLayoutTree(AttachContext& context) {
     LayoutImageResource* layout_image_resource = image_obj->ImageResource();
     if (layout_image_resource->HasImage())
       return;
-    layout_image_resource->SetImageResource(GetImageLoader().GetImage());
+    layout_image_resource->SetImageResource(GetImageLoader().GetContent());
   }
 }
 
@@ -191,7 +191,7 @@ Node::InsertionNotificationRequest SVGImageElement::InsertedInto(
   // A previous loader update may have failed to actually fetch the image if
   // the document was inactive. In that case, force a re-update (but don't
   // clear previous errors).
-  if (root_parent->isConnected() && !GetImageLoader().GetImage())
+  if (root_parent->isConnected() && !GetImageLoader().GetContent())
     GetImageLoader().UpdateFromElement(ImageLoader::kUpdateNormal);
 
   return SVGGraphicsElement::InsertedInto(root_parent);

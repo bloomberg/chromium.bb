@@ -85,7 +85,7 @@ class CORE_EXPORT ImageLoader : public GarbageCollectedFinalized<ImageLoader>,
   Element* GetElement() const { return element_; }
   bool ImageComplete() const { return image_complete_ && !pending_task_; }
 
-  ImageResourceContent* GetImage() const { return image_.Get(); }
+  ImageResourceContent* GetContent() const { return image_content_.Get(); }
 
   // Cancels pending load events, and doesn't dispatch new ones.
   // Note: ClearImage/SetImage.*() are not a simple setter.
@@ -100,7 +100,8 @@ class CORE_EXPORT ImageLoader : public GarbageCollectedFinalized<ImageLoader>,
   //   |image_resource_for_image_document_| points to a ImageResource that is
   //   not associated with a ResourceLoader.
   //   The corresponding ImageDocument is responsible for supplying the response
-  //   and data to |image_resource_for_image_document_| and thus |image_|.
+  //   and data to |image_resource_for_image_document_| and thus
+  //   |image_content_|.
   // Otherwise:
   //   Normal loading via ResourceFetcher/ResourceLoader.
   //   |image_resource_for_image_document_| is null.
@@ -177,7 +178,7 @@ class CORE_EXPORT ImageLoader : public GarbageCollectedFinalized<ImageLoader>,
   void DecodeRequestFinished(uint64_t request_id, bool success);
 
   Member<Element> element_;
-  Member<ImageResourceContent> image_;
+  Member<ImageResourceContent> image_content_;
   Member<ImageResource> image_resource_for_image_document_;
 
   AtomicString failed_load_url_;

@@ -29,7 +29,7 @@ Image::ImageDecodingMode ImageElementBase::ParseImageDecodingMode(
 }
 
 ImageResourceContent* ImageElementBase::CachedImage() const {
-  return GetImageLoader().GetImage();
+  return GetImageLoader().GetContent();
 }
 
 const Element& ImageElementBase::GetElement() const {
