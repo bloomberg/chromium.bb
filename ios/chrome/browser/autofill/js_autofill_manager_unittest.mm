@@ -25,7 +25,7 @@ namespace {
 // with the specification ( https://bugs.webkit.org/show_bug.cgi?id=154906 ).
 // Add support for old and new default maxLength value until we dropped Xcode 7.
 NSNumber* GetDefaultMaxLength() {
-  return base::ios::IsRunningOnIOS10OrLater() ? @-1 : @524288;
+  return @524288;
 }
 
 // Text fixture to test JsAutofillManager.

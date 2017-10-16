@@ -166,7 +166,7 @@ std::string FormStructureBrowserTest::FormStructuresToString(
 IN_PROC_BROWSER_TEST_P(FormStructureBrowserTest, DataDrivenHeuristics) {
   // Prints the path of the test to be executed.
   LOG(INFO) << GetParam().MaybeAsASCII();
-  RunOneDataDrivenTest(GetParam(), GetOutputDirectory(kTestName));
+  RunOneDataDrivenTest(GetParam(), GetOutputDirectory(kTestName), TEST_PASSING);
 }
 
 INSTANTIATE_TEST_CASE_P(AllForms,

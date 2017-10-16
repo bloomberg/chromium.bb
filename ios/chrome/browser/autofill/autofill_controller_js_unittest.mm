@@ -35,10 +35,10 @@ struct ElementByName {
 // ( https://bugs.webkit.org/show_bug.cgi?id=154906 ). Add support for old and
 // new default maxLength value until we drop iOS 9.
 NSString* GetDefaultMaxLengthString() {
-  return base::ios::IsRunningOnIOS10OrLater() ? @"-1" : @"524288";
+  return @"524288";
 }
 NSNumber* GetDefaultMaxLength() {
-  return base::ios::IsRunningOnIOS10OrLater() ? @-1 : @524288;
+  return @524288;
 }
 
 // Generates the JavaScript that gets an element by name.
