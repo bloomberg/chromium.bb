@@ -53,16 +53,14 @@ template("chrome_repack_locales") {
       deps += invoker.deps
     }
 
-    if (use_ash) {
-      source_patterns += [ "${root_gen_dir}/ash/strings/ash_strings_" ]
-      deps += [ "//ash/strings" ]
-    }
     if (is_chromeos) {
       source_patterns += [
+        "${root_gen_dir}/ash/strings/ash_strings_",
         "${root_gen_dir}/remoting/resources/",
         "${root_gen_dir}/ui/chromeos/strings/ui_chromeos_strings_",
       ]
       deps += [
+        "//ash/strings",
         "//remoting/resources",
         "//ui/chromeos/strings",
       ]

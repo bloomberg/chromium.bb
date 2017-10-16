@@ -251,14 +251,6 @@ group("gn_all") {
     ]
   }
 
-  if (use_ash) {
-    deps += [
-      "//ash:ash_content_unittests",
-      "//ash:ash_shell_with_content",
-      "//ash:ash_unittests",
-    ]
-  }
-
   if (use_aura) {
     deps += [
       "//ui/aura:aura_unittests",
@@ -379,6 +371,9 @@ group("gn_all") {
 
   if (is_chromeos) {
     deps += [
+      "//ash:ash_content_unittests",
+      "//ash:ash_shell_with_content",
+      "//ash:ash_unittests",
       "//chromeos:chromeos_unittests",
       "//chromeos/components:chromeos_components_unittests",
       "//components/session_manager/core",

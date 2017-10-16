@@ -20,11 +20,6 @@
 import("//build/config/chromecast_build.gni")
 
 declare_args() {
-  # Indicates if Ash is enabled. Ash is the Aura Shell which provides a
-  # desktop-like environment for Aura. Requires use_aura = true
-  # TODO(jamescook): Remove. The USE_ASH macro is gone. http://crbug.com/673826
-  use_ash = is_chromeos
-
   # Indicates if Ozone is enabled. Ozone is a low-level library layer for Linux
   # that does not require X11. Enabling this feature disables use of glib, x11,
   # Pango, and Cairo.

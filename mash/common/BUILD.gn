@@ -14,7 +14,7 @@ source_set("common") {
     "//base",
   ]
 
-  if (use_ash) {
+  if (is_chromeos) {
     deps += [ "//ash/public/cpp:ash_public_cpp" ]
   }
 }
