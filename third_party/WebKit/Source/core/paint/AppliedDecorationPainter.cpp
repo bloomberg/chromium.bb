@@ -81,12 +81,10 @@ FloatRect AppliedDecorationPainter::Bounds() {
     case ETextDecorationStyle::kDashed: {
       stroke_data.SetStyle(
           TextDecorationStyleToStrokeStyle(decoration_.Style()));
-      return PrepareDottedDashedStrokePath().StrokeBoundingRect(
-          stroke_data, Path::BoundsType::kExact);
+      return PrepareDottedDashedStrokePath().StrokeBoundingRect(stroke_data);
     }
     case ETextDecorationStyle::kWavy:
-      return PrepareWavyStrokePath().StrokeBoundingRect(
-          stroke_data, Path::BoundsType::kExact);
+      return PrepareWavyStrokePath().StrokeBoundingRect(stroke_data);
       break;
     case ETextDecorationStyle::kDouble:
       if (double_offset_ > 0) {
