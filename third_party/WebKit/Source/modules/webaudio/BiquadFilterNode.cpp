@@ -48,8 +48,6 @@ BiquadFilterNode::BiquadFilterNode(BaseAudioContext& context)
           context.sampleRate(), 1, frequency_->Handler(), q_->Handler(),
           gain_->Handler(), detune_->Handler()))));
 
-  // Explicitly set the filter type so that any histograms get updated with the
-  // default value.  Otherwise, the histogram won't ever show it.
   setType("lowpass");
 
   // Initialize the handler so that AudioParams can be processed.
@@ -133,12 +131,8 @@ void BiquadFilterNode::setType(const String& type) {
 
   if (type == "lowpass") {
     setType(BiquadProcessor::kLowPass);
-    q_->SetParamType(kParamTypeBiquadFilterQLowpass);
-    q_->setInitialValue(q_->value());
   } else if (type == "highpass") {
     setType(BiquadProcessor::kHighPass);
-    q_->SetParamType(kParamTypeBiquadFilterQHighpass);
-    q_->setInitialValue(q_->value());
   } else if (type == "bandpass") {
     setType(BiquadProcessor::kBandPass);
   } else if (type == "lowshelf") {
