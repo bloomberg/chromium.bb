@@ -119,6 +119,8 @@ crbug.com/713049 virtual/exotic-color-space/images/color-profile-reflection.html
 # Should make a pixel test to keep coverage.
 crbug.com/713891 virtual/exotic-color-space/images/animated-png.html [ Pass Failure ]
 
+crbug.com/774873 [ Linux Win ] virtual/exotic-color-space/images/color-profile-border-fade.html [ Pass Failure ]
+
 # Flakily timing out or failing.
 # TODO(ccameron): Investigate this.
 crbug.com/730267 virtual/gpu-rasterization/images/color-profile-group.html [ Pass Timeout Failure ]
