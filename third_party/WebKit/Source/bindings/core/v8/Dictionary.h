@@ -142,10 +142,6 @@ struct DictionaryHelper {
       return false;
     return DictionaryHelper::Get(dictionary, key, value);
   }
-  template <template <typename> class PointerType, typename T>
-  static bool Get(const Dictionary&,
-                  const StringView& key,
-                  PointerType<T>& value);
   template <typename T>
   static bool Get(const Dictionary&, const StringView& key, Nullable<T>& value);
 };
