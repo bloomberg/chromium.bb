@@ -2016,6 +2016,10 @@ __gCrWeb.autofill.webFormControlElementToFormField = function(
   if (__gCrWeb.autofill.isAutofillableInputElement(element)) {
     if (__gCrWeb.autofill.isTextInput(element)) {
       field['max_length'] = element.maxLength;
+      if (field['max_length'] == -1) {
+        // Take default value as defined by W3C.
+        field['max_length'] = 524288;
+      }
     }
     field['is_checkable'] = __gCrWeb.autofill.isCheckableElement(element);
   } else if (__gCrWeb.autofill.isTextAreaElement(element)) {

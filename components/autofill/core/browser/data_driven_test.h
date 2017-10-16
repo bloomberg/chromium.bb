@@ -20,6 +20,9 @@ namespace autofill {
 // compared to this gold output.
 class DataDrivenTest {
  public:
+  // Whether a test is passing or failing.
+  enum DataDrivenTestStatus { TEST_PASSING, TEST_FAILING };
+
   // For each file in |input_directory| whose filename matches
   // |file_name_pattern|, slurps in the file contents and calls into
   // |GenerateResults()|. If the corresponding output file already exists in
@@ -31,8 +34,11 @@ class DataDrivenTest {
 
   // As above, but runs a test for a single file, the full path of which is
   // given by |test_file_name|.
+  // |status| describes whether the test is expected to succeed. The purpose is
+  // to track regressions and fixes.
   void RunOneDataDrivenTest(const base::FilePath& test_file_name,
-                            const base::FilePath& output_directory);
+                            const base::FilePath& output_directory,
+                            DataDrivenTestStatus status);
 
   // Given the |input| data, generates the |output| results. The output results
   // must be stable across runs.
