@@ -152,10 +152,11 @@ source_set("internal") {
 
   if (is_win) {
     libs = [
+      "netapi32.lib",
+      "ntdsapi.lib",
+      "secur32.lib",
       "shlwapi.lib",
       "userenv.lib",
-      "ntdsapi.lib",
-      "netapi32.lib",
     ]
   }
 
