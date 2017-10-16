@@ -18,7 +18,7 @@
 #include "core/html/custom/CustomElementDescriptor.h"
 #include "core/html/custom/CustomElementTestHelpers.h"
 #include "core/testing/DummyPageHolder.h"
-#include "platform/ScriptForbiddenScope.h"
+#include "platform/bindings/ScriptForbiddenScope.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/text/AtomicString.h"
 #include "testing/gtest/include/gtest/gtest.h"

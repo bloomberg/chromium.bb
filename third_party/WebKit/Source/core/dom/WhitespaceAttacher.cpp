@@ -8,7 +8,7 @@
 #include "core/dom/LayoutTreeBuilderTraversal.h"
 #include "core/dom/Text.h"
 #include "core/layout/LayoutText.h"
-#include "platform/ScriptForbiddenScope.h"
+#include "platform/bindings/ScriptForbiddenScope.h"
 
 namespace blink {
 

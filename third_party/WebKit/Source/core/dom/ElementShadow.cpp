@@ -34,7 +34,7 @@
 #include "core/frame/Deprecation.h"
 #include "core/probe/CoreProbes.h"
 #include "platform/EventDispatchForbiddenScope.h"
-#include "platform/ScriptForbiddenScope.h"
+#include "platform/bindings/ScriptForbiddenScope.h"
 
 namespace blink {
 

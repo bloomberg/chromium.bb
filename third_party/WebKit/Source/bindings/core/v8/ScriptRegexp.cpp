@@ -30,7 +30,7 @@
 
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
-#include "platform/ScriptForbiddenScope.h"
+#include "platform/bindings/ScriptForbiddenScope.h"
 #include "platform/bindings/V8PerIsolateData.h"
 
 namespace blink {

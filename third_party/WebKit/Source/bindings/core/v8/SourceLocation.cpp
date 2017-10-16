@@ -12,7 +12,7 @@
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/inspector/ThreadDebugger.h"
 #include "core/inspector/V8InspectorString.h"
-#include "platform/ScriptForbiddenScope.h"
+#include "platform/bindings/ScriptForbiddenScope.h"
 #include "platform/bindings/V8BindingMacros.h"
 #include "platform/bindings/V8PerIsolateData.h"
 #include "platform/instrumentation/tracing/TracedValue.h"
