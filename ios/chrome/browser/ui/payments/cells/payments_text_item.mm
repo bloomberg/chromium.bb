@@ -21,7 +21,7 @@ const CGFloat kHorizontalPadding = 16;
 // Padding of the top and bottom edges of the cell.
 const CGFloat kVerticalPadding = 16;
 
-// Spacing between the image and the text labels.
+// Spacing between the images and the text labels.
 const CGFloat kHorizontalSpacingBetweenImageAndLabels = 8;
 
 // Spacing between the labels.
@@ -34,7 +34,8 @@ const CGFloat kVerticalSpacingBetweenLabels = 8;
 @synthesize detailText = _detailText;
 @synthesize textColor = _textColor;
 @synthesize detailTextColor = _detailTextColor;
-@synthesize image = _image;
+@synthesize leadingImage = _leadingImage;
+@synthesize trailingImage = _trailingImage;
 @synthesize accessoryType = _accessoryType;
 @synthesize complete = _complete;
 
@@ -69,14 +70,17 @@ const CGFloat kVerticalSpacingBetweenLabels = 8;
   cell.textLabel.textColor = self.textColor;
   cell.detailTextLabel.text = self.detailText;
   cell.detailTextLabel.textColor = self.detailTextColor;
-  cell.imageView.image = self.image;
+  cell.leadingImageView.image = self.leadingImage;
+  cell.trailingImageView.image = self.trailingImage;
 }
 
 @end
 
 @interface PaymentsTextCell () {
   NSLayoutConstraint* _labelsLeadingAnchorConstraint;
-  NSLayoutConstraint* _imageLeadingAnchorConstraint;
+  NSLayoutConstraint* _leadingImageLeadingAnchorConstraint;
+  NSLayoutConstraint* _trailingImageTrailingAnchorConstraint;
+  NSLayoutConstraint* _labelsTrailingAnchorConstraint;
   UIStackView* _stackView;
 }
 @end
@@ -85,7 +89,8 @@ const CGFloat kVerticalSpacingBetweenLabels = 8;
 
 @synthesize textLabel = _textLabel;
 @synthesize detailTextLabel = _detailTextLabel;
-@synthesize imageView = _imageView;
+@synthesize leadingImageView = _leadingImageView;
+@synthesize trailingImageView = _trailingImageView;
 
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
@@ -119,9 +124,13 @@ const CGFloat kVerticalSpacingBetweenLabels = 8;
   _detailTextLabel = [[UILabel alloc] init];
   [_stackView addArrangedSubview:_detailTextLabel];
 
-  _imageView = [[UIImageView alloc] initWithFrame:CGRectZero];
-  _imageView.translatesAutoresizingMaskIntoConstraints = NO;
-  [contentView addSubview:_imageView];
+  _leadingImageView = [[UIImageView alloc] initWithFrame:CGRectZero];
+  _leadingImageView.translatesAutoresizingMaskIntoConstraints = NO;
+  [contentView addSubview:_leadingImageView];
+
+  _trailingImageView = [[UIImageView alloc] initWithFrame:CGRectZero];
+  _trailingImageView.translatesAutoresizingMaskIntoConstraints = NO;
+  [contentView addSubview:_trailingImageView];
 }
 
 // Set default font and text colors for labels.
@@ -140,17 +149,23 @@ const CGFloat kVerticalSpacingBetweenLabels = 8;
   UIView* contentView = self.contentView;
 
   _labelsLeadingAnchorConstraint = [_stackView.leadingAnchor
-      constraintEqualToAnchor:_imageView.trailingAnchor];
-  _imageLeadingAnchorConstraint = [_imageView.leadingAnchor
+      constraintEqualToAnchor:_leadingImageView.trailingAnchor];
+  _leadingImageLeadingAnchorConstraint = [_leadingImageView.leadingAnchor
       constraintEqualToAnchor:contentView.leadingAnchor];
+  _labelsTrailingAnchorConstraint = [_stackView.trailingAnchor
+      constraintLessThanOrEqualToAnchor:_trailingImageView.leadingAnchor];
+  _trailingImageTrailingAnchorConstraint = [_trailingImageView.trailingAnchor
+      constraintEqualToAnchor:contentView.trailingAnchor];
 
   [NSLayoutConstraint activateConstraints:@[
     [_stackView.topAnchor constraintEqualToAnchor:self.contentView.topAnchor],
     [_stackView.bottomAnchor constraintEqualToAnchor:contentView.bottomAnchor],
-    [_imageView.centerYAnchor
+    [_leadingImageView.centerYAnchor
         constraintEqualToAnchor:contentView.centerYAnchor],
-    _labelsLeadingAnchorConstraint,
-    _imageLeadingAnchorConstraint,
+    [_trailingImageView.centerYAnchor
+        constraintEqualToAnchor:contentView.centerYAnchor],
+    _trailingImageTrailingAnchorConstraint, _labelsTrailingAnchorConstraint,
+    _labelsLeadingAnchorConstraint, _leadingImageLeadingAnchorConstraint
   ]];
 }
 
@@ -168,15 +183,25 @@ const CGFloat kVerticalSpacingBetweenLabels = 8;
   // changes, for instance on screen rotation.
   CGFloat parentWidth = CGRectGetWidth(self.contentView.frame);
   CGFloat preferredMaxLayoutWidth = parentWidth - (2 * kHorizontalPadding);
-  if (_imageView.image) {
-    preferredMaxLayoutWidth -=
-        kHorizontalSpacingBetweenImageAndLabels + _imageView.image.size.width;
-    _imageLeadingAnchorConstraint.constant = kHorizontalPadding;
+  if (_leadingImageView.image) {
+    preferredMaxLayoutWidth -= kHorizontalSpacingBetweenImageAndLabels +
+                               _leadingImageView.image.size.width;
+    _leadingImageLeadingAnchorConstraint.constant = kHorizontalPadding;
     _labelsLeadingAnchorConstraint.constant =
         kHorizontalSpacingBetweenImageAndLabels;
   } else {
-    _imageLeadingAnchorConstraint.constant = 0;
+    _leadingImageLeadingAnchorConstraint.constant = 0;
     _labelsLeadingAnchorConstraint.constant = kHorizontalPadding;
+  }
+  if (_trailingImageView.image) {
+    preferredMaxLayoutWidth -= kHorizontalSpacingBetweenImageAndLabels +
+                               _trailingImageView.image.size.width;
+    _trailingImageTrailingAnchorConstraint.constant = -kHorizontalPadding;
+    _labelsTrailingAnchorConstraint.constant =
+        -kHorizontalSpacingBetweenImageAndLabels;
+  } else {
+    _trailingImageTrailingAnchorConstraint.constant = 0;
+    _labelsTrailingAnchorConstraint.constant = -kHorizontalPadding;
   }
   _textLabel.preferredMaxLayoutWidth = preferredMaxLayoutWidth;
   _detailTextLabel.preferredMaxLayoutWidth = preferredMaxLayoutWidth;
@@ -192,7 +217,8 @@ const CGFloat kVerticalSpacingBetweenLabels = 8;
   [super prepareForReuse];
   self.textLabel.text = nil;
   self.detailTextLabel.text = nil;
-  self.imageView.image = nil;
+  self.leadingImageView.image = nil;
+  self.trailingImageView.image = nil;
 }
 
 #pragma mark - NSObject(Accessibility)

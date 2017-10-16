@@ -87,7 +87,7 @@ using ::payment_request_util::GetPhoneNumberLabelFromAutofillProfile;
 - (CollectionViewItem*)addButtonItem {
   PaymentsTextItem* addButtonItem = [[PaymentsTextItem alloc] init];
   addButtonItem.text = l10n_util::GetNSString(IDS_PAYMENTS_ADD_ADDRESS);
-  addButtonItem.image = NativeImage(IDR_IOS_PAYMENTS_ADD);
+  addButtonItem.leadingImage = NativeImage(IDR_IOS_PAYMENTS_ADD);
   return addButtonItem;
 }
 

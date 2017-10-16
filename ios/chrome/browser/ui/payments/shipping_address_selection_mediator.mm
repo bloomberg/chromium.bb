@@ -91,7 +91,7 @@ using ::payment_request_util::GetShippingAddressLabelFromAutofillProfile;
   PaymentsTextItem* headerItem = [[PaymentsTextItem alloc] init];
   headerItem.text = [self getHeaderText];
   if (self.state == PaymentRequestSelectorStateError)
-    headerItem.image = NativeImage(IDR_IOS_PAYMENTS_WARNING);
+    headerItem.leadingImage = NativeImage(IDR_IOS_PAYMENTS_WARNING);
   return headerItem;
 }
 
@@ -102,7 +102,7 @@ using ::payment_request_util::GetShippingAddressLabelFromAutofillProfile;
 - (CollectionViewItem*)addButtonItem {
   PaymentsTextItem* addButtonItem = [[PaymentsTextItem alloc] init];
   addButtonItem.text = l10n_util::GetNSString(IDS_PAYMENTS_ADD_ADDRESS);
-  addButtonItem.image = NativeImage(IDR_IOS_PAYMENTS_ADD);
+  addButtonItem.leadingImage = NativeImage(IDR_IOS_PAYMENTS_ADD);
   return addButtonItem;
 }
 
