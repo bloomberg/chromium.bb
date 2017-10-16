@@ -137,8 +137,8 @@ PermissionRequest* PermissionDialogTest::MakePermissionRequest(
   auto decided = [](bool, ContentSetting) {};
   auto cleanup = [] {};  // Leave cleanup to test harness destructor.
   owned_requests_.push_back(base::MakeUnique<PermissionRequestImpl>(
-      GetUrl(), permission, browser()->profile(), user_gesture,
-      base::Bind(decided), base::Bind(cleanup)));
+      GetUrl(), permission, user_gesture, base::Bind(decided),
+      base::Bind(cleanup)));
   return owned_requests_.back().get();
 }
 

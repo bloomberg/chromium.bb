@@ -359,24 +359,6 @@ void PermissionUmaUtil::PermissionDismissed(
 #endif
 }
 
-void PermissionUmaUtil::PermissionIgnored(
-    ContentSettingsType permission,
-    PermissionRequestGestureType gesture_type,
-    const GURL& requesting_origin,
-    Profile* profile) {
-  PermissionDecisionAutoBlocker* autoblocker =
-      PermissionDecisionAutoBlocker::GetForProfile(profile);
-  RecordPermissionAction(permission, PermissionAction::IGNORED,
-                         PermissionSourceUI::PROMPT, gesture_type,
-                         requesting_origin, profile);
-  RecordPermissionPromptPriorCount(
-      permission, kPermissionsPromptIgnoredPriorDismissCountPrefix,
-      autoblocker->GetDismissCount(requesting_origin, permission));
-  RecordPermissionPromptPriorCount(
-      permission, kPermissionsPromptIgnoredPriorIgnoreCountPrefix,
-      autoblocker->GetIgnoreCount(requesting_origin, permission));
-}
-
 void PermissionUmaUtil::PermissionRevoked(ContentSettingsType permission,
                                           PermissionSourceUI source_ui,
                                           const GURL& revoked_origin,
@@ -486,6 +468,7 @@ void PermissionUmaUtil::PermissionPromptResolved(
       break;
     case PermissionAction::IGNORED:
       RecordEngagementMetric(requests, web_contents, "Ignored");
+      PermissionIgnored(requests, web_contents);
       break;
     default:
       NOTREACHED();
@@ -813,5 +796,37 @@ void PermissionUmaUtil::RecordPromptDecided(
   } else {
     RecordPermissionPromptDenied(permission_prompt_type,
                                  permission_gesture_type);
+  }
+}
+
+// static
+void PermissionUmaUtil::PermissionIgnored(
+    const std::vector<PermissionRequest*>& requests,
+    const content::WebContents* web_contents) {
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  PermissionDecisionAutoBlocker* autoblocker =
+      PermissionDecisionAutoBlocker::GetForProfile(profile);
+
+  for (PermissionRequest* request : requests) {
+    ContentSettingsType permission = request->GetContentSettingsType();
+    // TODO(timloh): We only record ignore metrics for permissions which use
+    // PermissionRequestImpl as the other subclasses don't support
+    // GetGestureType and GetContentSettingsType.
+    if (permission == CONTENT_SETTINGS_TYPE_DEFAULT)
+      continue;
+
+    PermissionRequestGestureType gesture_type = request->GetGestureType();
+    const GURL& requesting_origin = request->GetOrigin();
+
+    RecordPermissionAction(permission, PermissionAction::IGNORED,
+                           PermissionSourceUI::PROMPT, gesture_type,
+                           requesting_origin, profile);
+    RecordPermissionPromptPriorCount(
+        permission, kPermissionsPromptIgnoredPriorDismissCountPrefix,
+        autoblocker->GetDismissCount(requesting_origin, permission));
+    RecordPermissionPromptPriorCount(
+        permission, kPermissionsPromptIgnoredPriorIgnoreCountPrefix,
+        autoblocker->GetIgnoreCount(requesting_origin, permission));
   }
 }

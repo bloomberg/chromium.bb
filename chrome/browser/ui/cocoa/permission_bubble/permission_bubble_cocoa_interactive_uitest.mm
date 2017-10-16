@@ -107,8 +107,7 @@ class PermissionBubbleInteractiveUITest
     decoration_test_api_ = base::MakeUnique<test::LocationBarDecorationTestApi>(
         GetPageInfoDecoration(browser()->window()->GetNativeWindow()));
 
-    test_api_->AddSimpleRequest(browser()->profile(),
-                                CONTENT_SETTINGS_TYPE_GEOLOCATION);
+    test_api_->AddSimpleRequest(CONTENT_SETTINGS_TYPE_GEOLOCATION);
 
     EXPECT_TRUE([browser()->window()->GetNativeWindow() isKeyWindow]);
     EXPECT_FALSE(decoration_test_api_->active());
