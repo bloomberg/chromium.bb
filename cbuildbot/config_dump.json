@@ -3832,7 +3832,7 @@
     },
     "betty-asan": {
         "_template": "asan",
-        "active_waterfall": "chromiumos",
+        "active_waterfall": "chromeos",
         "boards": [
             "betty"
         ],

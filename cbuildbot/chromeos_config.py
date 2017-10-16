@@ -767,12 +767,12 @@ _waterfall_config_map = {
 
         # ASAN.
         'amd64-generic-asan',
-        'betty-asan',
     ]),
 
     waterfall.WATERFALL_INTERNAL: frozenset([
         # Firmware Builders.
         'link-depthcharge-full-firmware',
+        'betty-asan',
     ]),
 }
 
