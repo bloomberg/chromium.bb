@@ -77,6 +77,11 @@ class ASH_EXPORT ShellPort {
   // the window size.
   bool IsForceMaximizeOnFirstRun();
 
+  // If a system-modal dialog window is currently open, returns the ID of the
+  // system modal window container that contains the window.
+  // If no system-modal dialogs are open it returns -1.
+  int GetOpenSystemModalWindowContainerId();
+
   // Returns true if a system-modal dialog window is currently open.
   bool IsSystemModalWindowOpen();
 

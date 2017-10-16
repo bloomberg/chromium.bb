@@ -74,14 +74,16 @@ bool ShellPort::IsForceMaximizeOnFirstRun() {
   return Shell::Get()->shell_delegate()->IsForceMaximizeOnFirstRun();
 }
 
-bool ShellPort::IsSystemModalWindowOpen() {
+int ShellPort::GetOpenSystemModalWindowContainerId() {
   if (simulate_modal_window_open_for_testing_)
-    return true;
+    return kShellWindowId_SystemModalContainer;
 
   // Traverse all system modal containers, and find its direct child window
   // with "SystemModal" setting, and visible.
-  constexpr int modal_window_ids[] = {kShellWindowId_SystemModalContainer,
-                                      kShellWindowId_LockSystemModalContainer};
+  // Note: LockSystemModalContainer is more restrictive, so make it preferable
+  // to SystemModalCotainer.
+  constexpr int modal_window_ids[] = {kShellWindowId_LockSystemModalContainer,
+                                      kShellWindowId_SystemModalContainer};
   for (aura::Window* root : Shell::GetAllRootWindows()) {
     for (int modal_window_id : modal_window_ids) {
       aura::Window* system_modal = root->GetChildById(modal_window_id);
@@ -91,12 +93,16 @@ bool ShellPort::IsSystemModalWindowOpen() {
         if (child->GetProperty(aura::client::kModalKey) ==
                 ui::MODAL_TYPE_SYSTEM &&
             child->layer()->GetTargetVisibility()) {
-          return true;
+          return modal_window_id;
         }
       }
     }
   }
-  return false;
+  return -1;
+}
+
+bool ShellPort::IsSystemModalWindowOpen() {
+  return GetOpenSystemModalWindowContainerId() >= 0;
 }
 
 void ShellPort::CreateModalBackground(aura::Window* window) {

@@ -16,6 +16,7 @@
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_parenting_client.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -108,6 +109,24 @@ class LockScreenAshFocusRulesTest : public AshTestBase {
     return window;
   }
 
+  aura::Window* CreateWindowInLockContainer() {
+    return CreateWindowInContainer(kShellWindowId_LockScreenContainer);
+  }
+
+  aura::Window* CreateWindowInLockSystemModalContainer() {
+    aura::Window* window =
+        CreateWindowInContainer(kShellWindowId_LockSystemModalContainer);
+    window->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_SYSTEM);
+    return window;
+  }
+
+  aura::Window* CreateWindowInSystemModalContainer() {
+    aura::Window* window =
+        CreateWindowInContainer(kShellWindowId_SystemModalContainer);
+    window->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_SYSTEM);
+    return window;
+  }
+
  private:
   aura::Window* CreateWindowInContainer(int container_id) {
     aura::Window* root_window = Shell::GetPrimaryRootWindow();
@@ -117,14 +136,11 @@ class LockScreenAshFocusRulesTest : public AshTestBase {
     window->SetType(aura::client::WINDOW_TYPE_NORMAL);
     window->Init(ui::LAYER_TEXTURED);
     window->Show();
-
-    aura::client::ParentWindowWithContext(window, container,
-                                          gfx::Rect(0, 0, 400, 400));
-
     window->SetProperty(aura::client::kResizeBehaviorKey,
                         ui::mojom::kResizeBehaviorCanMaximize |
                             ui::mojom::kResizeBehaviorCanMinimize |
                             ui::mojom::kResizeBehaviorCanResize);
+    container->AddChild(window);
     return window;
   }
 
@@ -196,6 +212,45 @@ TEST_F(LockScreenAshFocusRulesTest, PreventFocusChangeWithLockScreenPresent) {
   EXPECT_FALSE(Shell::Get()->session_controller()->IsScreenLocked());
   EXPECT_TRUE(delegate.GetWidget()->IsActive());
   EXPECT_TRUE(delegate.view()->HasFocus());
+}
+
+// Verifies that a window in lock container cannot be activated if a lock
+// system modal window is shown.
+TEST_F(LockScreenAshFocusRulesTest,
+       PreventLockScreenActivationUnderLockSystemModalWindow) {
+  // System modal window - given that it's not lock system modal, it should
+  // have no impact on activation of windows while user session is locked.
+  std::unique_ptr<aura::Window> system_modal_window(
+      CreateWindowInSystemModalContainer());
+  EXPECT_TRUE(wm::IsActiveWindow(system_modal_window.get()));
+
+  BlockUserSession(BLOCKED_BY_LOCK_SCREEN);
+  EXPECT_TRUE(Shell::Get()->session_controller()->IsScreenLocked());
+
+  std::unique_ptr<aura::Window> lock_window(CreateWindowInLockContainer());
+  std::unique_ptr<aura::Window> lock_system_modal_window(
+      CreateWindowInLockSystemModalContainer());
+
+  EXPECT_TRUE(wm::IsActiveWindow(lock_system_modal_window.get()));
+
+  // Try to activate a lock container window - it should not succeed if a lock
+  // system modal dialog is present.
+  wm::ActivateWindow(lock_window.get());
+  EXPECT_TRUE(wm::IsActiveWindow(lock_system_modal_window.get()));
+
+  lock_system_modal_window.reset();
+
+  // Activating lock window should succeed after system modal widnow is closed.
+  wm::ActivateWindow(lock_window.get());
+  EXPECT_TRUE(wm::IsActiveWindow(lock_window.get()));
+
+  lock_window.reset();
+  EXPECT_FALSE(wm::IsActiveWindow(system_modal_window.get()));
+
+  UnblockUserSession();
+
+  // Upon unlocking the session, the system modal window should be reactivated.
+  EXPECT_TRUE(wm::IsActiveWindow(system_modal_window.get()));
 }
 
 }  // namespace ash
