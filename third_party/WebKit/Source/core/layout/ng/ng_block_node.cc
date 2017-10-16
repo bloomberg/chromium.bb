@@ -526,7 +526,8 @@ RefPtr<NGLayoutResult> NGBlockNode::RunOldLayout(
   // TODO(kojii): Implement use_first_line_style.
   NGFragmentBuilder builder(*this, box_->Style(), writing_mode,
                             box_->StyleRef().Direction());
-  builder.SetSize(box_size);
+  builder.SetInlineSize(box_size.inline_size);
+  builder.SetBlockSize(box_size.block_size);
 
   // For now we copy the exclusion space straight through, this is incorrect
   // but needed as not all elements which participate in a BFC are switched

@@ -16,8 +16,9 @@ namespace blink {
 
 class CORE_EXPORT NGBaseFragmentBuilder {
   STACK_ALLOCATED();
-
  public:
+  virtual ~NGBaseFragmentBuilder();
+
   const ComputedStyle& Style() const {
     DCHECK(style_);
     return *style_;

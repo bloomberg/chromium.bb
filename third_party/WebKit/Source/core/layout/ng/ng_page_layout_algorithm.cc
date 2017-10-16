@@ -34,7 +34,7 @@ RefPtr<NGLayoutResult> NGPageLayoutAlgorithm::Layout() {
 
   RefPtr<NGConstraintSpace> child_space =
       CreateConstraintSpaceForPages(page_size);
-  container_builder_.SetSize(border_box_size);
+  container_builder_.SetInlineSize(border_box_size.inline_size);
 
   NGWritingMode writing_mode = ConstraintSpace().WritingMode();
   RefPtr<NGBlockBreakToken> break_token = BreakToken();

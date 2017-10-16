@@ -19,6 +19,8 @@ NGBaseFragmentBuilder::NGBaseFragmentBuilder(NGWritingMode writing_mode,
                                              TextDirection direction)
     : writing_mode_(writing_mode), direction_(direction) {}
 
+NGBaseFragmentBuilder::~NGBaseFragmentBuilder() {}
+
 NGBaseFragmentBuilder& NGBaseFragmentBuilder::SetStyle(
     RefPtr<const ComputedStyle> style) {
   DCHECK(style);

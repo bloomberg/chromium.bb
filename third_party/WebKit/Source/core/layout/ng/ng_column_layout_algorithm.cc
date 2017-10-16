@@ -93,7 +93,8 @@ RefPtr<NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
     border_box_size.block_size =
         column_size.block_size + border_scrollbar_padding.BlockSum();
   }
-  container_builder_.SetSize(border_box_size);
+  container_builder_.SetInlineSize(border_box_size.inline_size);
+  container_builder_.SetBlockSize(border_box_size.block_size);
 
   NGWritingMode writing_mode = ConstraintSpace().WritingMode();
   RefPtr<NGBlockBreakToken> break_token = BreakToken();

@@ -228,7 +228,7 @@ RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
   else
     child_percentage_size_ = adjusted_size;
 
-  container_builder_.SetSize(size);
+  container_builder_.SetInlineSize(size.inline_size);
 
   // If we have a list of unpositioned floats as input to this layout, we'll
   // need to abort once our BFC offset is resolved. Additionally the
