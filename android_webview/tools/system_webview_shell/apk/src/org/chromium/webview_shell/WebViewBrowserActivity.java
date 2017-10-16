@@ -402,6 +402,7 @@ public class WebViewBrowserActivity extends Activity implements PopupMenu.OnMenu
         // takes a list of permissions, grant() is actually all-or-nothing. If there are any
         // requested permissions not included in the granted permissions, all will be denied.
         PermissionRequest request = mPendingRequests.get(requestCode);
+        mPendingRequests.delete(requestCode);
         for (String webkitPermission : request.getResources()) {
             if (!canGrant(webkitPermission)) {
                 request.deny();
@@ -409,7 +410,6 @@ public class WebViewBrowserActivity extends Activity implements PopupMenu.OnMenu
             }
         }
         request.grant(request.getResources());
-        mPendingRequests.delete(requestCode);
     }
 
     public void loadUrlFromUrlBar(View view) {
