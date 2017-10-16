@@ -1613,13 +1613,15 @@ void ShelfView::ShelfItemAdded(int model_index) {
 void ShelfView::ShelfItemRemoved(int model_index, const ShelfItem& old_item) {
   if (old_item.id == context_menu_id_)
     launcher_menu_runner_->Cancel();
+
+  views::View* view = view_model_->view_at(model_index);
+  view_model_->Remove(model_index);
+
   {
     base::AutoReset<bool> cancelling_drag(&cancelling_drag_model_changed_,
                                           true);
-    model_index = CancelDrag(model_index);
+    CancelDrag(-1);
   }
-  views::View* view = view_model_->view_at(model_index);
-  view_model_->Remove(model_index);
 
   // When the overflow bubble is visible, the overflow range needs to be set
   // before CalculateIdealBounds() gets called. Otherwise CalculateIdealBounds()
