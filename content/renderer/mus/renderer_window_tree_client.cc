@@ -12,6 +12,7 @@
 #include "components/viz/client/client_layer_tree_frame_sink.h"
 #include "components/viz/client/hit_test_data_provider.h"
 #include "components/viz/client/local_surface_id_provider.h"
+#include "components/viz/common/surfaces/surface_sequence.h"
 #include "content/renderer/mash_util.h"
 #include "content/renderer/render_frame_proxy.h"
 
@@ -302,7 +303,13 @@ void RendererWindowTreeClient::OnWindowCursorChanged(ui::Id window_id,
 void RendererWindowTreeClient::OnWindowSurfaceChanged(
     ui::Id window_id,
     const viz::SurfaceInfo& surface_info) {
-  NOTIMPLEMENTED();
+  for (MusEmbeddedFrame* embedded_frame : embedded_frames_) {
+    if (embedded_frame->window_id_ == window_id) {
+      embedded_frame->render_frame_proxy_->SetChildFrameSurface(
+          surface_info, viz::SurfaceSequence());
+      return;
+    }
+  }
 }
 
 void RendererWindowTreeClient::OnDragDropStart(

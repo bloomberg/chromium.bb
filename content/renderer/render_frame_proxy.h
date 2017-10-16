@@ -142,6 +142,9 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
       std::unique_ptr<MusEmbeddedFrame> mus_embedded_frame);
 #endif
 
+  void SetChildFrameSurface(const viz::SurfaceInfo& surface_info,
+                            const viz::SurfaceSequence& sequence);
+
   // blink::WebRemoteFrameClient implementation:
   void FrameDetached(DetachType type) override;
   void ForwardPostMessage(blink::WebLocalFrame* sourceFrame,

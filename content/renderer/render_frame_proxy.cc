@@ -375,16 +375,7 @@ void RenderFrameProxy::OnChildFrameProcessGone() {
 void RenderFrameProxy::OnSetChildFrameSurface(
     const viz::SurfaceInfo& surface_info,
     const viz::SurfaceSequence& sequence) {
-  // If this WebFrame has already been detached, its parent will be null. This
-  // can happen when swapping a WebRemoteFrame with a WebLocalFrame, where this
-  // message may arrive after the frame was removed from the frame tree, but
-  // before the frame has been destroyed. http://crbug.com/446575.
-  if (!web_frame()->Parent())
-    return;
-
-  if (!enable_surface_synchronization_)
-    compositing_helper_->SetPrimarySurfaceInfo(surface_info);
-  compositing_helper_->SetFallbackSurfaceId(surface_info.id(), sequence);
+  SetChildFrameSurface(surface_info, sequence);
 }
 
 void RenderFrameProxy::OnUpdateOpener(int opener_routing_id) {
@@ -489,6 +480,21 @@ void RenderFrameProxy::SetMusEmbeddedFrame(
   mus_embedded_frame_ = std::move(mus_embedded_frame);
 }
 #endif
+
+void RenderFrameProxy::SetChildFrameSurface(
+    const viz::SurfaceInfo& surface_info,
+    const viz::SurfaceSequence& sequence) {
+  // If this WebFrame has already been detached, its parent will be null. This
+  // can happen when swapping a WebRemoteFrame with a WebLocalFrame, where this
+  // message may arrive after the frame was removed from the frame tree, but
+  // before the frame has been destroyed. http://crbug.com/446575.
+  if (!web_frame()->Parent())
+    return;
+
+  if (!enable_surface_synchronization_)
+    compositing_helper_->SetPrimarySurfaceInfo(surface_info);
+  compositing_helper_->SetFallbackSurfaceId(surface_info.id(), sequence);
+}
 
 void RenderFrameProxy::FrameDetached(DetachType type) {
 #if defined(USE_AURA)
