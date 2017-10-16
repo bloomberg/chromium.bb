@@ -6,9 +6,9 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -121,20 +121,20 @@ TEST_F(NetworkUtilTest, ParseScanResults) {
 
   // Scan result has no network id.
   list.Clear();
-  auto dict_value = base::MakeUnique<base::DictionaryValue>();
+  auto dict_value = std::make_unique<base::DictionaryValue>();
   dict_value->SetString(shill::kStatusProperty, "available");
   list.Append(std::move(dict_value));
   EXPECT_TRUE(ParseCellularScanResults(list, &scan_results));
   EXPECT_TRUE(scan_results.empty());
 
   // Mixed parse results.
-  dict_value = base::MakeUnique<base::DictionaryValue>();
+  dict_value = std::make_unique<base::DictionaryValue>();
   dict_value->SetString(shill::kNetworkIdProperty, "000001");
   dict_value->SetString(shill::kStatusProperty, "unknown");
   dict_value->SetString(shill::kTechnologyProperty, "GSM");
   list.Append(std::move(dict_value));
 
-  dict_value = base::MakeUnique<base::DictionaryValue>();
+  dict_value = std::make_unique<base::DictionaryValue>();
   dict_value->SetString(shill::kNetworkIdProperty, "000002");
   dict_value->SetString(shill::kStatusProperty, "available");
   dict_value->SetString(shill::kLongNameProperty, "Long Name");

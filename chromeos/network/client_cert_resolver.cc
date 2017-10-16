@@ -9,11 +9,11 @@
 #include <pk11pub.h>
 
 #include <algorithm>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/task_scheduler/post_task.h"
@@ -207,7 +207,7 @@ std::unique_ptr<NetworkCertMatches> FindCertificateMatches(
     std::vector<NetworkAndCertPattern>* networks,
     base::Time now) {
   std::unique_ptr<NetworkCertMatches> matches =
-      base::MakeUnique<NetworkCertMatches>();
+      std::make_unique<NetworkCertMatches>();
 
   std::vector<CertAndIssuer> all_client_certs(
       CreateSortedCertAndIssuerList(std::move(all_certs), now));

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -9,7 +10,6 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chromeos/network/network_profile_handler.h"
@@ -732,7 +732,7 @@ void ShillToONCTranslator::SetNestedOncValue(
   if (!onc_object_->GetDictionaryWithoutPathExpansion(onc_dictionary_name,
                                                       &nested)) {
     nested = onc_object_->SetDictionaryWithoutPathExpansion(
-        onc_dictionary_name, base::MakeUnique<base::DictionaryValue>());
+        onc_dictionary_name, std::make_unique<base::DictionaryValue>());
   }
   nested->SetKey(onc_field_name, value.Clone());
 }

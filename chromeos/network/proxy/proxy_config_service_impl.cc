@@ -4,12 +4,13 @@
 
 #include "chromeos/network/proxy/proxy_config_service_impl.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chromeos/network/network_profile.h"
 #include "chromeos/network/network_profile_handler.h"
@@ -191,7 +192,7 @@ ProxyConfigServiceImpl::GetActiveProxyConfigDictionary(
     bool value_exists = pref->GetValue()->GetAsDictionary(&proxy_config_value);
     DCHECK(value_exists);
 
-    return base::MakeUnique<ProxyConfigDictionary>(
+    return std::make_unique<ProxyConfigDictionary>(
         proxy_config_value->CreateDeepCopy());
   }
 
@@ -210,7 +211,7 @@ ProxyConfigServiceImpl::GetActiveProxyConfigDictionary(
                                            network->profile_path(), onc_source))
     return proxy_config;
 
-  return base::MakeUnique<ProxyConfigDictionary>(
+  return std::make_unique<ProxyConfigDictionary>(
       ProxyConfigDictionary::CreateDirect());
 }
 

@@ -4,10 +4,10 @@
 
 #include "chromeos/network/policy_util.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chromeos/network/network_profile.h"
 #include "chromeos/network/network_ui_data.h"
@@ -166,7 +166,7 @@ base::DictionaryValue* GetOrCreateDictionary(const std::string& key,
   base::DictionaryValue* inner_dict = NULL;
   if (!dict->GetDictionaryWithoutPathExpansion(key, &inner_dict)) {
     inner_dict = dict->SetDictionaryWithoutPathExpansion(
-        key, base::MakeUnique<base::DictionaryValue>());
+        key, std::make_unique<base::DictionaryValue>());
   }
   return inner_dict;
 }

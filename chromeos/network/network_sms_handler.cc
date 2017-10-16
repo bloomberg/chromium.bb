@@ -8,12 +8,12 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <memory>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/gsm_sms_client.h"
@@ -471,11 +471,11 @@ void NetworkSmsHandler::DevicePropertiesCallback(
   dbus::ObjectPath object_path(object_path_string);
   if (service_name == modemmanager::kModemManager1ServiceName) {
     device_handlers_.push_back(
-        base::MakeUnique<ModemManager1NetworkSmsDeviceHandler>(
+        std::make_unique<ModemManager1NetworkSmsDeviceHandler>(
             this, service_name, object_path));
   } else {
     device_handlers_.push_back(
-        base::MakeUnique<ModemManagerNetworkSmsDeviceHandler>(
+        std::make_unique<ModemManagerNetworkSmsDeviceHandler>(
             this, service_name, object_path));
   }
 }
