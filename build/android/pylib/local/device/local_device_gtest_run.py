@@ -13,6 +13,7 @@ import time
 from devil.android import crash_handler
 from devil.android import device_errors
 from devil.android import device_temp_file
+from devil.android import logcat_monitor
 from devil.android import ports
 from devil.utils import reraiser_thread
 from incremental_install import installer
@@ -452,15 +453,24 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
         for f in flags:
           logging.info('  %s', f)
 
-        with local_device_environment.OptionalPerTestLogcat(
-            device, hash(tuple(test)),
-            self._test_instance.should_save_logcat) as logmon:
-          with contextlib_ext.Optional(
-              trace_event.trace(str(test)),
-              self._env.trace_output):
-            output = self._delegate.Run(
-                test, device, flags=' '.join(flags),
-                timeout=timeout, retries=0)
+        stream_name = 'logcat_%s_%s_%s' % (
+            hash(tuple(test)),
+            time.strftime('%Y%m%dT%H%M%S-UTC', time.gmtime()),
+            device.serial)
+
+        with self._env.output_manager.ArchivedTempfile(
+            stream_name, 'logcat') as logcat_file:
+          with logcat_monitor.LogcatMonitor(
+              device.adb,
+              filter_specs=local_device_environment.LOGCAT_FILTERS,
+              output_file=logcat_file.name) as logmon:
+            with contextlib_ext.Optional(
+                trace_event.trace(str(test)),
+                self._env.trace_output):
+              output = self._delegate.Run(
+                  test, device, flags=' '.join(flags),
+                  timeout=timeout, retries=0)
+          logmon.Close()
 
         if self._test_instance.enable_xml_result_parsing:
           try:
@@ -474,7 +484,6 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
                 str(e))
             gtest_xml = None
 
-        logcat_url = logmon.GetLogcatURL()
         test_artifacts_url = self._UploadTestArtifacts(device,
                                                        test_artifacts_dir)
 
@@ -499,8 +508,8 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
 
     tombstones_url = None
     for r in results:
-      if self._test_instance.should_save_logcat:
-        r.SetLink('logcat', logcat_url)
+      if logcat_file:
+        r.SetLink('logcat', logcat_file.Link())
 
       if self._test_instance.gs_test_artifacts_bucket:
         r.SetLink('test_artifacts', test_artifacts_url)
