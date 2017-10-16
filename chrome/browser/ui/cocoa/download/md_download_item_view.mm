@@ -250,8 +250,8 @@ NSTextField* MakeLabel(
         NSMakeRect(kButtonLeadingInset, kButtonYInset,
                    NSWidth(bounds) - kButtonLeadingInset - kButtonTrailingInset,
                    NSHeight(bounds) - kButtonYInset * 2);
-    base::scoped_nsobject<MDHoverButton> button(
-        [[MDHoverButton alloc] initWithFrame:buttonRect]);
+    base::scoped_nsobject<MDHoverButton> button([[MDHoverButton alloc]
+        initWithFrame:[self cr_localizedRect:buttonRect]]);
     button_ = button;
     button_.imagePosition = NSImageOnly;
     [self addSubview:button_];
@@ -282,7 +282,7 @@ NSTextField* MakeLabel(
         NSMidY(bounds) - kMenuButtonSize / 2, kMenuButtonSize, kMenuButtonSize);
     base::scoped_nsobject<MDDownloadItemMenuButton> menuButton(
         [[MDDownloadItemMenuButton alloc]
-            initWithFrame:[button_ cr_localizedRect:menuButtonRect]]);
+            initWithFrame:[self cr_localizedRect:menuButtonRect]]);
     menuButton_ = menuButton;
     menuButton_.autoresizingMask = [NSView
         cr_localizedAutoresizingMask:NSViewMinXMargin | NSViewMinYMargin |
