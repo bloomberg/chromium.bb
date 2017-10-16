@@ -2344,12 +2344,6 @@ const char kDisableLockScreenAppsDescription[] =
     "not be able to launch the preferred note-taking action from the lock "
     "screen, provided that the app supports lock screen note taking.";
 
-const char kDisableNewVirtualKeyboardBehaviorName[] =
-    "New window behavior for the accessibility keyboard";
-const char kDisableNewVirtualKeyboardBehaviorDescription[] =
-    "Disable new window behavior for the accessibility keyboard in non-sticky "
-    "mode (do not change work area in non-sticky mode).";
-
 const char kDisableTabletAutohideTitlebarsName[] =
     "Disable autohide titlebars in tablet mode";
 const char kDisableTabletAutohideTitlebarsDescription[] =

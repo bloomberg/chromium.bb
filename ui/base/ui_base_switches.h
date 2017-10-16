@@ -36,7 +36,6 @@ UI_BASE_EXPORT extern const char kEnableMergeKeyCharEvents[];
 
 UI_BASE_EXPORT extern const char kDisableCompositedAntialiasing[];
 UI_BASE_EXPORT extern const char kDisableDwmComposition[];
-UI_BASE_EXPORT extern const char kDisableNewVirtualKeyboardBehavior[];
 UI_BASE_EXPORT extern const char kDisableTouchAdjustment[];
 UI_BASE_EXPORT extern const char kDisableTouchDragDrop[];
 UI_BASE_EXPORT extern const char kEnableTouchDragDrop[];
