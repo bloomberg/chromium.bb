@@ -237,12 +237,17 @@ enum BeaconType {
 }
 
 - (BOOL)bluetoothEnabled {
+  BOOL bluetoothEnabled = NO;
   if (@available(iOS 10, *)) {
-    return [centralManager_ state] == CBManagerStatePoweredOn;
-  } else {
-    return (CBCentralManagerState)[centralManager_ state] ==
-           CBCentralManagerStatePoweredOn;
+    bluetoothEnabled = [centralManager_ state] == CBManagerStatePoweredOn;
   }
+#if !defined(__IPHONE_10_0) || __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_10_0
+  else {
+    bluetoothEnabled = (CBCentralManagerState)[centralManager_ state] ==
+                       CBCentralManagerStatePoweredOn;
+  }
+#endif
+  return bluetoothEnabled;
 }
 
 - (void)reallyStart {
