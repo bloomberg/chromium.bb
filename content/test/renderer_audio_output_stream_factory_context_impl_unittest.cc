@@ -54,7 +54,6 @@ const int kBuffers = 1000;
 const int kSampleFrequency = 44100;
 const int kBitsPerSample = 16;
 const int kSamplesPerBuffer = kSampleFrequency / 100;
-const char kSalt[] = "salt";
 
 std::unique_ptr<media::AudioOutputStream::AudioSourceCallback>
 GetTestAudioSource() {
@@ -198,7 +197,7 @@ class RendererAudioOutputStreamFactoryIntegrationTest : public Test {
       mojom::RendererAudioOutputStreamFactoryRequest request) {
     factory_context_.reset(new RendererAudioOutputStreamFactoryContextImpl(
         kRenderProcessId, &audio_system_, &audio_manager_,
-        media_stream_manager_.get(), kSalt));
+        media_stream_manager_.get()));
     return RenderFrameAudioOutputStreamFactoryHandle::CreateFactory(
         factory_context_.get(), kRenderFrameId, std::move(request));
   }

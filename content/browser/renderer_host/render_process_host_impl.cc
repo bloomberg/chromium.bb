@@ -1687,8 +1687,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
     AddFilter(base::MakeRefCounted<AudioRendererHost>(
                   GetID(), audio_manager,
                   BrowserMainLoop::GetInstance()->audio_system(),
-                  AudioMirroringManager::GetInstance(), media_stream_manager,
-                  browser_context->GetMediaDeviceIDSalt())
+                  AudioMirroringManager::GetInstance(), media_stream_manager)
                   .get());
   }
   AddFilter(
@@ -2270,10 +2269,9 @@ RenderProcessHostImpl::GetRendererAudioOutputStreamFactoryContext() {
         BrowserMainLoop::GetInstance()->media_stream_manager();
     media::AudioSystem* audio_system =
         BrowserMainLoop::GetInstance()->audio_system();
-    std::string salt = GetBrowserContext()->GetMediaDeviceIDSalt();
     audio_output_stream_factory_context_.reset(
         new RendererAudioOutputStreamFactoryContextImpl(
-            GetID(), audio_system, audio_manager, media_stream_manager, salt));
+            GetID(), audio_system, audio_manager, media_stream_manager));
   }
   return audio_output_stream_factory_context_.get();
 }
