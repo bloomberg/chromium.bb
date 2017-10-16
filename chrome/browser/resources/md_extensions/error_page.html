@@ -29,6 +29,19 @@
         overflow: overlay;
       }
 
+      iron-icon {
+        --iron-icon-fill-color: var(--paper-grey-500);
+        @apply(--cr-icon-height-width);
+      }
+
+      iron-icon[icon=warning] {
+        --iron-icon-fill-color: var(--paper-orange-500);
+      }
+
+      iron-icon[icon=error] {
+        --iron-icon-fill-color: var(--paper-red-700);
+      }
+
       #main {
         background-color: white;
         margin: auto;
@@ -77,19 +90,6 @@
         flex-grow: 1;
       }
 
-      .icon-severity-info {
-        /* TODO(devlin): 1x/2x versions? */
-        content: url(error_severity_info.png);
-      }
-
-      .icon-severity-warning {
-        content: url(error_severity_warning.png);
-      }
-
-      .icon-severity-fatal {
-        content: url(error_severity_fatal.png);
-      }
-
       #devtools-controls {
         padding: 0 var(--cr-section-padding);
       }
@@ -130,20 +130,19 @@
 
       /* TODO(scottchen): extract to shared location from settings. */
       .separator {
+        --separator-gaps: 9px;
         -webkit-border-start: var(--cr-separator-line);
         -webkit-margin-end: var(--cr-section-padding);
-        -webkit-margin-start: var(--cr-section-padding);
-        flex-shrink: 0;
-        --separator-gaps: 9px;
-        height: calc(var(--cr-section-min-height) -
-            var(--separator-gaps));
-
         /**
          * Makes the tappable area fill its parent.
          * TODO(scottchen): This is an explicit reminder to override once
          * .separator styling is extracted from settings.
          */
         -webkit-margin-start: 0;
+        flex-shrink: 0;
+        height: calc(var(--cr-section-min-height) -
+            var(--separator-gaps));
+
       }
 
       /* TODO(scottchen): extract to shared location from settings. */
@@ -169,7 +168,7 @@
                 <div class$="error-item [[computeErrorClass_(selectedError_, item)]]">
                   <div class="start" on-tap="onErrorItemAction_"
                       on-keydown="onErrorItemAction_" tabindex="0">
-                    <img class$="[[computeErrorIconClass_(item)]]">
+                    <iron-icon icon$="[[computeErrorIcon_(item)]]"></iron-icon>
                     <div class="error-message">[[item.message]]</div>
                     <cr-expand-button hidden="[[!computeIsRuntimeError_(item)]]"
                         expanded="[[isEqual_(selectedError_, item)]]"

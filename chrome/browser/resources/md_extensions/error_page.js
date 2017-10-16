@@ -105,20 +105,20 @@ cr.define('extensions', function() {
      * @return {string}
      * @private
      */
-    computeErrorIconClass_: function(error) {
+    computeErrorIcon_: function(error) {
       if (error.type == chrome.developerPrivate.ErrorType.RUNTIME) {
         switch (error.severity) {
           case chrome.developerPrivate.ErrorLevel.LOG:
-            return 'icon-severity-info';
+            return 'info';
           case chrome.developerPrivate.ErrorLevel.WARN:
-            return 'icon-severity-warning';
+            return 'warning';
           case chrome.developerPrivate.ErrorLevel.ERROR:
-            return 'icon-severity-fatal';
+            return 'error';
         }
         assertNotReached();
       }
       assert(error.type == chrome.developerPrivate.ErrorType.MANIFEST);
-      return 'icon-severity-warning';
+      return 'warning';
     },
 
     /**
