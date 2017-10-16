@@ -30,7 +30,6 @@
     <color name="white_alpha_54">#8Affffff</color>
     <color name="white_alpha_90">#E6FFFFFF</color>
     <color name="black_alpha_65">#A6000000</color>
-    <color name="toolbar_light_tint">#A3000000</color>
     <color name="light_grey">#ccc</color>
     <color name="modal_dialog_scrim_color">#7f000000</color>
 
