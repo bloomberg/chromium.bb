@@ -137,7 +137,7 @@ def InstallPackage(cipd_path, package, instance_id, destination,
 
   service_account_flag = []
   if service_account_json:
-    service_account_flag = ['-service_account_json', service_account_json]
+    service_account_flag = ['-service-account-json', service_account_json]
 
   with tempfile.NamedTemporaryFile() as f:
     f.write('%s %s' % (package, instance_id))
@@ -173,7 +173,7 @@ def CreatePackage(cipd_path, package, in_dir, tags, refs,
   for ref in refs:
     args.extend(['-ref', ref])
   if cred_path:
-    args.extend(['-service_account_json', cred_path])
+    args.extend(['-service-account-json', cred_path])
 
   cros_build_lib.RunCommand(args, capture_output=True)
 
@@ -212,5 +212,5 @@ def RegisterPackage(cipd_path, package_file, tags, refs, cred_path=None):
   for ref in refs:
     args.extend(['-ref', ref])
   if cred_path:
-    args.extend(['-service_account_json', cred_path])
+    args.extend(['-service-account-json', cred_path])
   cros_build_lib.RunCommand(args, capture_output=True)
