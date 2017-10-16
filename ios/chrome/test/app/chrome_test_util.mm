@@ -21,7 +21,7 @@
 #import "ios/chrome/browser/metrics/previous_session_info_private.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/ui/browser_view_controller.h"
-#import "ios/chrome/browser/ui/main/main_view_controller.h"
+#import "ios/chrome/browser/ui/main/view_controller_swapping.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher.h"
 #import "ios/web/public/test/native_controller_test_util.h"
@@ -90,8 +90,8 @@ ios::ChromeBrowserState* GetBrowserState(bool incognito) {
 UIViewController* GetActiveViewController() {
   UIWindow* main_window = [[UIApplication sharedApplication] keyWindow];
   DCHECK([main_window isKindOfClass:[ChromeOverlayWindow class]]);
-  MainViewController* main_view_controller =
-      base::mac::ObjCCast<MainViewController>([main_window rootViewController]);
+  id<ViewControllerSwapping> main_view_controller =
+      static_cast<id<ViewControllerSwapping>>([main_window rootViewController]);
   return main_view_controller.activeViewController;
 }
 
