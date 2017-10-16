@@ -36,11 +36,11 @@ class ValueStoreFrontend::Backend : public base::RefCountedThreadSafe<Backend> {
     // Extract the value from the ReadResult and pass ownership of it to the
     // callback.
     std::unique_ptr<base::Value> value;
-    if (result->status().ok()) {
-      result->settings().RemoveWithoutPathExpansion(key, &value);
+    if (result.status().ok()) {
+      result.settings().RemoveWithoutPathExpansion(key, &value);
     } else {
       LOG(WARNING) << "Reading " << key << " from " << db_path_.value()
-                   << " failed: " << result->status().message;
+                   << " failed: " << result.status().message;
     }
 
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
@@ -55,8 +55,8 @@ class ValueStoreFrontend::Backend : public base::RefCountedThreadSafe<Backend> {
     ValueStore::WriteResult result = storage_->Set(
         ValueStore::IGNORE_QUOTA | ValueStore::NO_GENERATE_CHANGES, key,
         *value);
-    LOG_IF(ERROR, !result->status().ok()) << "Error while writing " << key
-                                          << " to " << db_path_.value();
+    LOG_IF(ERROR, !result.status().ok())
+        << "Error while writing " << key << " to " << db_path_.value();
   }
 
   void Remove(const std::string& key) {

@@ -87,16 +87,16 @@ testing::AssertionResult ValuesEq(
 
 // Returns whether the result of a storage operation is an expected value.
 // Logs when different.
-testing::AssertionResult SettingsEq(
-    const char* _1, const char* _2,
-    const base::DictionaryValue& expected,
-    ValueStore::ReadResult actual) {
-  if (!actual->status().ok()) {
+testing::AssertionResult SettingsEq(const char* _1,
+                                    const char* _2,
+                                    const base::DictionaryValue& expected,
+                                    ValueStore::ReadResult actual) {
+  if (!actual.status().ok()) {
     return testing::AssertionFailure()
            << "Expected: " << expected
-           << ", actual has error: " << actual->status().message;
+           << ", actual has error: " << actual.status().message;
   }
-  return ValuesEq(_1, _2, &expected, &actual->settings());
+  return ValuesEq(_1, _2, &expected, &actual.settings());
 }
 
 // SyncChangeProcessor which just records the changes made, accessed after
@@ -1342,7 +1342,7 @@ TEST_F(ExtensionSettingsSyncTest,
 
   PostOnBackendSequenceAndWait(FROM_HERE, [&, this]() {
     EXPECT_FALSE(
-        storage1->Set(DEFAULTS, "large_value", large_value)->status().ok());
+        storage1->Set(DEFAULTS, "large_value", large_value).status().ok());
     EXPECT_EQ(0u, sync_processor_->changes().size());
   });
 
@@ -1392,12 +1392,12 @@ TEST_F(ExtensionSettingsSyncTest, Dots) {
     // Test dots in keys that come from sync.
     {
       ValueStore::ReadResult data = storage->Get();
-      ASSERT_TRUE(data->status().ok());
+      ASSERT_TRUE(data.status().ok());
 
       base::DictionaryValue expected_data;
       expected_data.SetWithoutPathExpansion(
           "key.with.dot", base::MakeUnique<base::Value>("value"));
-      EXPECT_EQ(expected_data, data->settings());
+      EXPECT_EQ(expected_data, data.settings());
     }
 
     // Test dots in keys going to sync.
@@ -1432,7 +1432,8 @@ static void UnlimitedSyncStorageTestCallback(ValueStore* sync_storage) {
   }
 
   EXPECT_FALSE(sync_storage->Set(ValueStore::DEFAULTS, "WillError", *kilobyte)
-                  ->status().ok());
+                   .status()
+                   .ok());
 }
 
 static void UnlimitedLocalStorageTestCallback(ValueStore* local_storage) {
@@ -1443,7 +1444,8 @@ static void UnlimitedLocalStorageTestCallback(ValueStore* local_storage) {
   }
 
   EXPECT_TRUE(local_storage->Set(ValueStore::DEFAULTS, "WontError", *megabyte)
-                   ->status().ok());
+                  .status()
+                  .ok());
 }
 
 }  // namespace

@@ -118,15 +118,15 @@ ValueStore::WriteResult SettingsStorageQuotaEnforcer::Set(
 
   if (!(options & IGNORE_QUOTA)) {
     if (new_used_total > limits_.quota_bytes)
-      return MakeWriteResult(QuotaExceededError(QUOTA_BYTES));
+      return WriteResult(QuotaExceededError(QUOTA_BYTES));
     if (new_used_per_setting[key] > limits_.quota_bytes_per_item)
-      return MakeWriteResult(QuotaExceededError(QUOTA_BYTES_PER_ITEM));
+      return WriteResult(QuotaExceededError(QUOTA_BYTES_PER_ITEM));
     if (new_used_per_setting.size() > limits_.max_items)
-      return MakeWriteResult(QuotaExceededError(MAX_ITEMS));
+      return WriteResult(QuotaExceededError(MAX_ITEMS));
   }
 
   WriteResult result = HandleResult(delegate_->Set(options, key, value));
-  if (!result->status().ok())
+  if (!result.status().ok())
     return result;
 
   if (usage_calculated_) {
@@ -147,19 +147,19 @@ ValueStore::WriteResult SettingsStorageQuotaEnforcer::Set(
 
     if (!(options & IGNORE_QUOTA) &&
         new_used_per_setting[it.key()] > limits_.quota_bytes_per_item) {
-      return MakeWriteResult(QuotaExceededError(QUOTA_BYTES_PER_ITEM));
+      return WriteResult(QuotaExceededError(QUOTA_BYTES_PER_ITEM));
     }
   }
 
   if (!(options & IGNORE_QUOTA)) {
     if (new_used_total > limits_.quota_bytes)
-      return MakeWriteResult(QuotaExceededError(QUOTA_BYTES));
+      return WriteResult(QuotaExceededError(QUOTA_BYTES));
     if (new_used_per_setting.size() > limits_.max_items)
-      return MakeWriteResult(QuotaExceededError(MAX_ITEMS));
+      return WriteResult(QuotaExceededError(MAX_ITEMS));
   }
 
   WriteResult result = HandleResult(delegate_->Set(options, values));
-  if (!result->status().ok())
+  if (!result.status().ok())
     return result;
 
   if (usage_calculated_) {
@@ -174,7 +174,7 @@ ValueStore::WriteResult SettingsStorageQuotaEnforcer::Remove(
     const std::string& key) {
   LazyCalculateUsage();
   WriteResult result = HandleResult(delegate_->Remove(key));
-  if (!result->status().ok())
+  if (!result.status().ok())
     return result;
   Free(key);
 
@@ -184,7 +184,7 @@ ValueStore::WriteResult SettingsStorageQuotaEnforcer::Remove(
 ValueStore::WriteResult SettingsStorageQuotaEnforcer::Remove(
     const std::vector<std::string>& keys) {
   WriteResult result = HandleResult(delegate_->Remove(keys));
-  if (!result->status().ok())
+  if (!result.status().ok())
     return result;
 
   for (const std::string& key : keys)
@@ -196,7 +196,7 @@ ValueStore::WriteResult SettingsStorageQuotaEnforcer::Remove(
 ValueStore::WriteResult SettingsStorageQuotaEnforcer::Clear() {
   LazyCalculateUsage();
   WriteResult result = HandleResult(delegate_->Clear());
-  if (!result->status().ok())
+  if (!result.status().ok())
     return result;
 
   used_per_setting_.clear();
@@ -207,7 +207,7 @@ ValueStore::WriteResult SettingsStorageQuotaEnforcer::Clear() {
 
 template <class T>
 T SettingsStorageQuotaEnforcer::HandleResult(T result) {
-  if (result->status().restore_status != RESTORE_NONE) {
+  if (result.status().restore_status != RESTORE_NONE) {
     // Restoration means that an unknown amount, possibly all, of the data was
     // lost from the database. Reset our counters - they will be lazily
     // recalculated if/when needed.
@@ -226,15 +226,14 @@ void SettingsStorageQuotaEnforcer::LazyCalculateUsage() {
   DCHECK(used_per_setting_.empty());
 
   ReadResult maybe_settings = HandleResult(delegate_->Get());
-  if (!maybe_settings->status().ok()) {
+  if (!maybe_settings.status().ok()) {
     LOG(WARNING) << "Failed to get settings for quota:"
-                 << maybe_settings->status().message;
+                 << maybe_settings.status().message;
     return;
   }
 
-  for (base::DictionaryValue::Iterator it(maybe_settings->settings());
-       !it.IsAtEnd();
-       it.Advance()) {
+  for (base::DictionaryValue::Iterator it(maybe_settings.settings());
+       !it.IsAtEnd(); it.Advance()) {
     Allocate(it.key(), it.value(), &used_total_, &used_per_setting_);
   }
 

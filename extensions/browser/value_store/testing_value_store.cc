@@ -4,6 +4,7 @@
 
 #include "extensions/browser/value_store/testing_value_store.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/logging.h"
@@ -12,6 +13,12 @@
 namespace {
 
 const char kGenericErrorMessage[] = "TestingValueStore configured to error";
+
+// Having this utility function allows ValueStore::Status to not have a copy
+// constructor.
+ValueStore::Status CreateStatusCopy(const ValueStore::Status& status) {
+  return ValueStore::Status(status.code, status.restore_status, status.message);
+}
 
 }  // namespace
 
@@ -50,9 +57,9 @@ ValueStore::ReadResult TestingValueStore::Get(
     const std::vector<std::string>& keys) {
   read_count_++;
   if (!status_.ok())
-    return MakeReadResult(status_);
+    return ReadResult(CreateStatusCopy(status_));
 
-  base::DictionaryValue* settings = new base::DictionaryValue();
+  auto settings = std::make_unique<base::DictionaryValue>();
   for (std::vector<std::string>::const_iterator it = keys.begin();
       it != keys.end(); ++it) {
     base::Value* value = NULL;
@@ -60,14 +67,14 @@ ValueStore::ReadResult TestingValueStore::Get(
       settings->SetWithoutPathExpansion(*it, value->CreateDeepCopy());
     }
   }
-  return MakeReadResult(base::WrapUnique(settings), status_);
+  return ReadResult(std::move(settings), CreateStatusCopy(status_));
 }
 
 ValueStore::ReadResult TestingValueStore::Get() {
   read_count_++;
   if (!status_.ok())
-    return MakeReadResult(status_);
-  return MakeReadResult(storage_.CreateDeepCopy(), status_);
+    return ReadResult(CreateStatusCopy(status_));
+  return ReadResult(storage_.CreateDeepCopy(), CreateStatusCopy(status_));
 }
 
 ValueStore::WriteResult TestingValueStore::Set(
@@ -81,7 +88,7 @@ ValueStore::WriteResult TestingValueStore::Set(
     WriteOptions options, const base::DictionaryValue& settings) {
   write_count_++;
   if (!status_.ok())
-    return MakeWriteResult(status_);
+    return WriteResult(CreateStatusCopy(status_));
 
   std::unique_ptr<ValueStoreChangeList> changes(new ValueStoreChangeList());
   for (base::DictionaryValue::Iterator it(settings);
@@ -95,7 +102,7 @@ ValueStore::WriteResult TestingValueStore::Set(
       storage_.SetWithoutPathExpansion(it.key(), it.value().CreateDeepCopy());
     }
   }
-  return MakeWriteResult(std::move(changes), status_);
+  return WriteResult(std::move(changes), CreateStatusCopy(status_));
 }
 
 ValueStore::WriteResult TestingValueStore::Remove(const std::string& key) {
@@ -106,7 +113,7 @@ ValueStore::WriteResult TestingValueStore::Remove(
     const std::vector<std::string>& keys) {
   write_count_++;
   if (!status_.ok())
-    return MakeWriteResult(status_);
+    return WriteResult(CreateStatusCopy(status_));
 
   std::unique_ptr<ValueStoreChangeList> changes(new ValueStoreChangeList());
   for (std::vector<std::string>::const_iterator it = keys.begin();
@@ -116,7 +123,7 @@ ValueStore::WriteResult TestingValueStore::Remove(
       changes->push_back(ValueStoreChange(*it, std::move(old_value), nullptr));
     }
   }
-  return MakeWriteResult(std::move(changes), status_);
+  return WriteResult(std::move(changes), CreateStatusCopy(status_));
 }
 
 ValueStore::WriteResult TestingValueStore::Clear() {

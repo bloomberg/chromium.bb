@@ -65,7 +65,9 @@ class ValueStore {
            BackingStoreRestoreStatus restore_status,
            const std::string& message);
     Status(StatusCode code, const std::string& message);
+    Status(Status&& other);
     ~Status();
+    Status& operator=(Status&& rhs);
 
     bool ok() const { return code == OK; }
 
@@ -86,12 +88,13 @@ class ValueStore {
   };
 
   // The result of a read operation (Get).
-  class ReadResultType {
+  class ReadResult {
    public:
-    ReadResultType(std::unique_ptr<base::DictionaryValue> settings,
-                   const Status& status);
-    explicit ReadResultType(const Status& status);
-    ~ReadResultType();
+    ReadResult(std::unique_ptr<base::DictionaryValue> settings, Status status);
+    explicit ReadResult(Status status);
+    ReadResult(ReadResult&& other);
+    ~ReadResult();
+    ReadResult& operator=(ReadResult&& rhs);
 
     // Gets the settings read from the storage. Note that this represents
     // the root object. If you request the value for key "foo", that value will
@@ -102,6 +105,7 @@ class ValueStore {
     std::unique_ptr<base::DictionaryValue> PassSettings() {
       return std::move(settings_);
     }
+    Status PassStatus() { return std::move(status_); }
 
     const Status& status() const { return status_; }
 
@@ -109,22 +113,22 @@ class ValueStore {
     std::unique_ptr<base::DictionaryValue> settings_;
     Status status_;
 
-    DISALLOW_COPY_AND_ASSIGN(ReadResultType);
+    DISALLOW_COPY_AND_ASSIGN(ReadResult);
   };
-  typedef std::unique_ptr<ReadResultType> ReadResult;
 
   // The result of a write operation (Set/Remove/Clear).
-  class WriteResultType {
+  class WriteResult {
    public:
-    WriteResultType(std::unique_ptr<ValueStoreChangeList> changes,
-                    const Status& status);
-    explicit WriteResultType(const Status& status);
-    ~WriteResultType();
+    WriteResult(std::unique_ptr<ValueStoreChangeList> changes, Status status);
+    explicit WriteResult(Status status);
+    WriteResult(WriteResult&& other);
+    ~WriteResult();
+    WriteResult& operator=(WriteResult&& rhs);
 
     // Gets the list of changes to the settings which resulted from the write.
     // Won't be present if the NO_GENERATE_CHANGES WriteOptions was given.
     // Only call if no error.
-    ValueStoreChangeList& changes() { return *changes_; }
+    const ValueStoreChangeList& changes() const { return *changes_; }
     std::unique_ptr<ValueStoreChangeList> PassChanges() {
       return std::move(changes_);
     }
@@ -135,9 +139,8 @@ class ValueStore {
     std::unique_ptr<ValueStoreChangeList> changes_;
     Status status_;
 
-    DISALLOW_COPY_AND_ASSIGN(WriteResultType);
+    DISALLOW_COPY_AND_ASSIGN(WriteResult);
   };
-  typedef std::unique_ptr<WriteResultType> WriteResult;
 
   // Options for write operations.
   enum WriteOptionsValues {
@@ -153,25 +156,6 @@ class ValueStore {
   typedef int WriteOptions;
 
   virtual ~ValueStore() {}
-
-  // Helpers for making a Read/WriteResult.
-  template <typename T>
-  static ReadResult MakeReadResult(std::unique_ptr<T> arg,
-                                   const Status& status) {
-    return ReadResult(new ReadResultType(std::move(arg), status));
-  }
-  static ReadResult MakeReadResult(const Status& status) {
-    return ReadResult(new ReadResultType(status));
-  }
-
-  template <typename T>
-  static WriteResult MakeWriteResult(std::unique_ptr<T> arg,
-                                     const Status& status) {
-    return WriteResult(new WriteResultType(std::move(arg), status));
-  }
-  static WriteResult MakeWriteResult(const Status& status) {
-    return WriteResult(new WriteResultType(status));
-  }
 
   // Gets the amount of space being used by a single value, in bytes.
   // Note: The GetBytesInUse methods are only used by extension settings at the

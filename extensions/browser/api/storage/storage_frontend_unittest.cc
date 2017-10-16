@@ -98,13 +98,13 @@ TEST_F(ExtensionSettingsFrontendTest, SettingsPreservedAcrossReconstruction) {
   {
     base::Value bar("bar");
     ValueStore::WriteResult result = storage->Set(DEFAULTS, "foo", bar);
-    ASSERT_TRUE(result->status().ok());
+    ASSERT_TRUE(result.status().ok());
   }
 
   {
     ValueStore::ReadResult result = storage->Get();
-    ASSERT_TRUE(result->status().ok());
-    EXPECT_FALSE(result->settings().empty());
+    ASSERT_TRUE(result.status().ok());
+    EXPECT_FALSE(result.settings().empty());
   }
 
   ResetFrontend();
@@ -112,8 +112,8 @@ TEST_F(ExtensionSettingsFrontendTest, SettingsPreservedAcrossReconstruction) {
 
   {
     ValueStore::ReadResult result = storage->Get();
-    ASSERT_TRUE(result->status().ok());
-    EXPECT_FALSE(result->settings().empty());
+    ASSERT_TRUE(result.status().ok());
+    EXPECT_FALSE(result.settings().empty());
   }
 }
 
@@ -128,7 +128,7 @@ TEST_F(ExtensionSettingsFrontendTest, SettingsClearedOnUninstall) {
   {
     base::Value bar("bar");
     ValueStore::WriteResult result = storage->Set(DEFAULTS, "foo", bar);
-    ASSERT_TRUE(result->status().ok());
+    ASSERT_TRUE(result.status().ok());
   }
 
   // This would be triggered by extension uninstall via a DataDeleter.
@@ -139,8 +139,8 @@ TEST_F(ExtensionSettingsFrontendTest, SettingsClearedOnUninstall) {
   storage = util::GetStorage(extension, settings::LOCAL, frontend_.get());
   {
     ValueStore::ReadResult result = storage->Get();
-    ASSERT_TRUE(result->status().ok());
-    EXPECT_TRUE(result->settings().empty());
+    ASSERT_TRUE(result.status().ok());
+    EXPECT_TRUE(result.settings().empty());
   }
 }
 
@@ -155,7 +155,7 @@ TEST_F(ExtensionSettingsFrontendTest, LeveldbDatabaseDeletedFromDiskOnClear) {
   {
     base::Value bar("bar");
     ValueStore::WriteResult result = storage->Set(DEFAULTS, "foo", bar);
-    ASSERT_TRUE(result->status().ok());
+    ASSERT_TRUE(result.status().ok());
     EXPECT_TRUE(base::PathExists(temp_dir_.GetPath()));
   }
 
@@ -163,7 +163,7 @@ TEST_F(ExtensionSettingsFrontendTest, LeveldbDatabaseDeletedFromDiskOnClear) {
   // leveldb database to be deleted from disk.
   {
     ValueStore::WriteResult result = storage->Clear();
-    ASSERT_TRUE(result->status().ok());
+    ASSERT_TRUE(result.status().ok());
     EXPECT_TRUE(base::PathExists(temp_dir_.GetPath()));
   }
 
@@ -194,7 +194,7 @@ TEST_F(ExtensionSettingsFrontendTest,
   }
 
   EXPECT_FALSE(
-      sync_storage->Set(DEFAULTS, "WillError", *kilobyte)->status().ok());
+      sync_storage->Set(DEFAULTS, "WillError", *kilobyte).status().ok());
 
   // Local storage shouldn't run out after ~100K.
   for (int i = 0; i < 100; ++i) {
@@ -202,7 +202,7 @@ TEST_F(ExtensionSettingsFrontendTest,
   }
 
   EXPECT_TRUE(
-      local_storage->Set(DEFAULTS, "WontError", *kilobyte)->status().ok());
+      local_storage->Set(DEFAULTS, "WontError", *kilobyte).status().ok());
 
   // Local storage should run out after ~5MB.
   std::unique_ptr<base::Value> megabyte = util::CreateMegabyte();
@@ -211,7 +211,7 @@ TEST_F(ExtensionSettingsFrontendTest,
   }
 
   EXPECT_FALSE(
-      local_storage->Set(DEFAULTS, "WillError", *megabyte)->status().ok());
+      local_storage->Set(DEFAULTS, "WillError", *megabyte).status().ok());
 }
 
 }  // namespace extensions

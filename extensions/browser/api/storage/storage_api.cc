@@ -75,23 +75,23 @@ void SettingsFunction::AsyncRunWithStorage(ValueStore* storage) {
 
 ExtensionFunction::ResponseValue SettingsFunction::UseReadResult(
     ValueStore::ReadResult result) {
-  if (!result->status().ok())
-    return Error(result->status().message);
+  if (!result.status().ok())
+    return Error(result.status().message);
 
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->Swap(&result->settings());
+  dict->Swap(&result.settings());
   return OneArgument(std::move(dict));
 }
 
 ExtensionFunction::ResponseValue SettingsFunction::UseWriteResult(
     ValueStore::WriteResult result) {
-  if (!result->status().ok())
-    return Error(result->status().message);
+  if (!result.status().ok())
+    return Error(result.status().message);
 
-  if (!result->changes().empty()) {
+  if (!result.changes().empty()) {
     observers_->Notify(FROM_HERE, &SettingsObserver::OnSettingsChanged,
                        extension_id(), settings_namespace_,
-                       ValueStoreChange::ToJson(result->changes()));
+                       ValueStoreChange::ToJson(result.changes()));
   }
 
   return NoArguments();
@@ -169,14 +169,14 @@ ExtensionFunction::ResponseValue StorageStorageAreaGetFunction::RunWithStorage(
       base::DictionaryValue* as_dict =
           static_cast<base::DictionaryValue*>(input);
       ValueStore::ReadResult result = storage->Get(GetKeys(*as_dict));
-      if (!result->status().ok()) {
+      if (!result.status().ok()) {
         return UseReadResult(std::move(result));
       }
 
       base::DictionaryValue* with_default_values = as_dict->DeepCopy();
-      with_default_values->MergeDictionary(&result->settings());
-      return UseReadResult(ValueStore::MakeReadResult(
-          base::WrapUnique(with_default_values), result->status()));
+      with_default_values->MergeDictionary(&result.settings());
+      return UseReadResult(ValueStore::ReadResult(
+          base::WrapUnique(with_default_values), result.PassStatus()));
     }
 
     default:
