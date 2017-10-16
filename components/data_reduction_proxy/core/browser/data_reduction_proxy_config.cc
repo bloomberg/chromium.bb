@@ -116,15 +116,11 @@ DataReductionProxyConfig::DataReductionProxyConfig(
       configurator_(configurator),
       event_creator_(event_creator),
       connection_type_(net::NetworkChangeNotifier::GetConnectionType()),
-      lofi_off_(false),
       is_captive_portal_(false),
       weak_factory_(this) {
   DCHECK(io_task_runner_);
   DCHECK(configurator);
   DCHECK(event_creator);
-
-  if (params::IsLoFiDisabledViaFlags())
-    SetLoFiModeOff();
   // Constructed on the UI thread, but should be checked on the IO thread.
   thread_checker_.DetachFromThread();
 }
@@ -490,11 +486,6 @@ void DataReductionProxyConfig::FetchWarmupURL() {
   warmup_url_fetcher_->FetchWarmupURL();
 }
 
-void DataReductionProxyConfig::SetLoFiModeOff() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  lofi_off_ = true;
-}
-
 bool DataReductionProxyConfig::ShouldEnableLoFi(
     const net::URLRequest& request,
     const previews::PreviewsDecider& previews_decider) {
@@ -525,19 +516,12 @@ bool DataReductionProxyConfig::IsBlackListedOrDisabled(
     const previews::PreviewsDecider& previews_decider,
     previews::PreviewsType previews_type) const {
   // Make sure request is not locally blacklisted.
-  if (params::IsBlackListEnabledForServerPreviews()) {
-    // Pass in net::EFFECTIVE_CONNECTION_TYPE_4G as the threshold since we
-    // just want to check blacklisting here.
-    // TODO(crbug.com/720102): Consider new method to just check blacklist.
-    return !previews_decider.ShouldAllowPreviewAtECT(
-        request, previews_type, net::EFFECTIVE_CONNECTION_TYPE_4G,
-        std::vector<std::string>());
-  } else {
-    // If Lo-Fi has been turned off, its status can't change. This Lo-Fi bit
-    // will be removed when Lo-Fi and Lite Pages are moved over to using the
-    // PreviewsBlackList.
-    return lofi_off_;
-  }
+  // Pass in net::EFFECTIVE_CONNECTION_TYPE_4G as the threshold since we
+  // just want to check blacklisting here.
+  // TODO(crbug.com/720102): Consider new method to just check blacklist.
+  return !previews_decider.ShouldAllowPreviewAtECT(
+      request, previews_type, net::EFFECTIVE_CONNECTION_TYPE_4G,
+      std::vector<std::string>());
 }
 
 bool DataReductionProxyConfig::ShouldAcceptServerPreview(
@@ -553,8 +537,7 @@ bool DataReductionProxyConfig::ShouldAcceptServerPreview(
   // For the transition to server-driven previews decisions, we will
   // use existing Lo-Fi flags for disabling and cellular-only mode.
   // TODO(dougarnett): Refactor flag names as part of bug 725645.
-  if (params::IsLoFiDisabledViaFlags() ||
-      (!params::IsBlackListEnabledForServerPreviews() && lofi_off())) {
+  if (params::IsLoFiDisabledViaFlags()) {
     UMA_HISTOGRAM_ENUMERATION(
         "DataReductionProxy.Protocol.NotAcceptingTransform",
         NOT_ACCEPTING_TRANSFORM_DISABLED,

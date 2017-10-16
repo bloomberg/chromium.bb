@@ -54,14 +54,7 @@ DataReductionProxySettings::DataReductionProxySettings()
       data_reduction_proxy_enabled_pref_name_(),
       prefs_(NULL),
       config_(nullptr),
-      clock_(new base::DefaultClock()) {
-  lo_fi_user_requests_for_images_per_session_ =
-      params::GetFieldTrialParameterAsInteger(
-          params::GetLoFiFieldTrialName(), "load_images_requests_per_session",
-          3, 0);
-  lo_fi_consecutive_session_disables_ = params::GetFieldTrialParameterAsInteger(
-      params::GetLoFiFieldTrialName(), "consecutive_session_disables", 3, 0);
-}
+      clock_(new base::DefaultClock()) {}
 
 DataReductionProxySettings::~DataReductionProxySettings() {
   spdy_proxy_auth_enabled_.Destroy();
@@ -94,7 +87,6 @@ void DataReductionProxySettings::InitDataReductionProxySettings(
   data_reduction_proxy_service_->AddObserver(this);
   InitPrefMembers();
   RecordDataReductionInit();
-  data_reduction_proxy_service_->InitializeLoFiPrefs();
 
   if (base::FeatureList::IsEnabled(features::kDataReductionSiteBreakdown) &&
       spdy_proxy_auth_enabled_.GetValue()) {
@@ -182,38 +174,6 @@ bool DataReductionProxySettings::IsDataReductionProxyUnreachable() {
 PrefService* DataReductionProxySettings::GetOriginalProfilePrefs() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return prefs_;
-}
-
-void DataReductionProxySettings::SetLoFiUsedThisSession() {
-  // TODO(ryansturm): Remove this method and prefs::kLoFiWasUsedThisSession when
-  // Lo-Fi moves over to using the Previews blacklist completely.
-  if (prefs_)
-    prefs_->SetBoolean(prefs::kLoFiWasUsedThisSession, true);
-}
-
-void DataReductionProxySettings::IncrementLoFiUIShown() {
-  prefs_->SetInteger(prefs::kLoFiUIShownPerSession,
-                     prefs_->GetInteger(prefs::kLoFiUIShownPerSession) + 1);
-}
-
-void DataReductionProxySettings::IncrementLoFiUserRequestsForImages() {
-  if (!prefs_ || params::IsLoFiOnViaFlags())
-    return;
-  prefs_->SetInteger(prefs::kLoFiLoadImagesPerSession,
-                     prefs_->GetInteger(prefs::kLoFiLoadImagesPerSession) + 1);
-  if (prefs_->GetInteger(prefs::kLoFiLoadImagesPerSession) >=
-      lo_fi_user_requests_for_images_per_session_) {
-    data_reduction_proxy_service_->SetLoFiModeOff();
-    prefs_->SetInteger(
-        prefs::kLoFiConsecutiveSessionDisables,
-        prefs_->GetInteger(prefs::kLoFiConsecutiveSessionDisables) + 1);
-    RecordLoFiImplicitOptOutAction(LO_FI_OPT_OUT_ACTION_DISABLED_FOR_SESSION);
-    if (prefs_->GetInteger(prefs::kLoFiConsecutiveSessionDisables) >=
-        lo_fi_consecutive_session_disables_) {
-      RecordLoFiImplicitOptOutAction(
-          LO_FI_OPT_OUT_ACTION_DISABLED_UNTIL_NEXT_EPOCH);
-    }
-  }
 }
 
 void DataReductionProxySettings::RegisterDataReductionProxyFieldTrial() {
@@ -326,58 +286,6 @@ void DataReductionProxySettings::RecordStartupState(
   UMA_HISTOGRAM_ENUMERATION(kUMAProxyStartupStateHistogram,
                             state,
                             PROXY_STARTUP_STATE_COUNT);
-}
-
-void DataReductionProxySettings::RecordLoFiImplicitOptOutAction(
-    LoFiImplicitOptOutAction action) const {
-  net::NetworkChangeNotifier::ConnectionType connection_type =
-      net::NetworkChangeNotifier::GetConnectionType();
-
-  switch (connection_type) {
-    case net::NetworkChangeNotifier::CONNECTION_UNKNOWN:
-      UMA_HISTOGRAM_ENUMERATION(
-          "DataReductionProxy.LoFi.ImplicitOptOutAction.Unknown", action,
-          LO_FI_OPT_OUT_ACTION_INDEX_BOUNDARY);
-      break;
-    case net::NetworkChangeNotifier::CONNECTION_ETHERNET:
-      UMA_HISTOGRAM_ENUMERATION(
-          "DataReductionProxy.LoFi.ImplicitOptOutAction.Ethernet", action,
-          LO_FI_OPT_OUT_ACTION_INDEX_BOUNDARY);
-      break;
-    case net::NetworkChangeNotifier::CONNECTION_WIFI:
-      UMA_HISTOGRAM_ENUMERATION(
-          "DataReductionProxy.LoFi.ImplicitOptOutAction.WiFi", action,
-          LO_FI_OPT_OUT_ACTION_INDEX_BOUNDARY);
-      break;
-    case net::NetworkChangeNotifier::CONNECTION_2G:
-      UMA_HISTOGRAM_ENUMERATION(
-          "DataReductionProxy.LoFi.ImplicitOptOutAction.2G", action,
-          LO_FI_OPT_OUT_ACTION_INDEX_BOUNDARY);
-      break;
-    case net::NetworkChangeNotifier::CONNECTION_3G:
-      UMA_HISTOGRAM_ENUMERATION(
-          "DataReductionProxy.LoFi.ImplicitOptOutAction.3G", action,
-          LO_FI_OPT_OUT_ACTION_INDEX_BOUNDARY);
-      break;
-    case net::NetworkChangeNotifier::CONNECTION_4G:
-      UMA_HISTOGRAM_ENUMERATION(
-          "DataReductionProxy.LoFi.ImplicitOptOutAction.4G", action,
-          LO_FI_OPT_OUT_ACTION_INDEX_BOUNDARY);
-      break;
-    case net::NetworkChangeNotifier::CONNECTION_NONE:
-      UMA_HISTOGRAM_ENUMERATION(
-          "DataReductionProxy.LoFi.ImplicitOptOutAction.None", action,
-          LO_FI_OPT_OUT_ACTION_INDEX_BOUNDARY);
-      break;
-    case net::NetworkChangeNotifier::CONNECTION_BLUETOOTH:
-      UMA_HISTOGRAM_ENUMERATION(
-          "DataReductionProxy.LoFi.ImplicitOptOutAction.Bluetooth", action,
-          LO_FI_OPT_OUT_ACTION_INDEX_BOUNDARY);
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
 }
 
 ContentLengthList

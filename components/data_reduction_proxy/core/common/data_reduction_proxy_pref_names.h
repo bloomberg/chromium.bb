@@ -51,11 +51,6 @@ extern const char kDataReductionProxyLastEnabledTime[];
 extern const char kDataReductionProxySavingsClearedNegativeSystemClock[];
 extern const char kHttpOriginalContentLength[];
 extern const char kHttpReceivedContentLength[];
-extern const char kLoFiImplicitOptOutEpoch[];
-extern const char kLoFiUIShownPerSession[];
-extern const char kLoFiLoadImagesPerSession[];
-extern const char kLoFiConsecutiveSessionDisables[];
-extern const char kLoFiWasUsedThisSession[];
 extern const char kSimulatedConfigRetrieveTime[];
 
 }  // namespace prefs

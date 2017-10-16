@@ -264,8 +264,6 @@ TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestNavigationDismissal) {
   tester_->ExpectBucketCount(
       kUMAPreviewsInfoBarActionLoFi,
       PreviewsInfoBarDelegate::INFOBAR_DISMISSED_BY_NAVIGATION, 1);
-  EXPECT_EQ(0, drp_test_context_->pref_service()->GetInteger(
-                   data_reduction_proxy::prefs::kLoFiLoadImagesPerSession));
 }
 
 TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestReloadDismissal) {
@@ -295,8 +293,6 @@ TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestReloadDismissal) {
   tester_->ExpectBucketCount(
       kUMAPreviewsInfoBarActionLoFi,
       PreviewsInfoBarDelegate::INFOBAR_DISMISSED_BY_RELOAD, 1);
-  EXPECT_EQ(0, drp_test_context_->pref_service()->GetInteger(
-                   data_reduction_proxy::prefs::kLoFiLoadImagesPerSession));
 
   EXPECT_FALSE(opt_out_called_);
 }
@@ -314,8 +310,6 @@ TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestUserDismissal) {
   tester_->ExpectBucketCount(kUMAPreviewsInfoBarActionLoFi,
                              PreviewsInfoBarDelegate::INFOBAR_DISMISSED_BY_USER,
                              1);
-  EXPECT_EQ(0, drp_test_context_->pref_service()->GetInteger(
-                   data_reduction_proxy::prefs::kLoFiLoadImagesPerSession));
   EXPECT_FALSE(user_opt_out_.value());
 }
 
@@ -330,8 +324,6 @@ TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestTabClosedDismissal) {
   tester_->ExpectBucketCount(
       kUMAPreviewsInfoBarActionLoFi,
       PreviewsInfoBarDelegate::INFOBAR_DISMISSED_BY_TAB_CLOSURE, 1);
-  EXPECT_EQ(0, drp_test_context_->pref_service()->GetInteger(
-                   data_reduction_proxy::prefs::kLoFiLoadImagesPerSession));
   EXPECT_FALSE(user_opt_out_.value());
 }
 
@@ -345,7 +337,6 @@ TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestClickLinkLoFi) {
   for (const auto test : tests) {
     opt_out_called_ = false;
     tester_.reset(new base::HistogramTester());
-    drp_test_context_->config()->ResetLoFiStatusForTest();
     field_trial_list_.reset();
     field_trial_list_.reset(new base::FieldTrialList(nullptr));
     if (test.using_previews_blacklist) {
@@ -369,9 +360,6 @@ TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestClickLinkLoFi) {
     tester_->ExpectBucketCount(
         kUMAPreviewsInfoBarActionLoFi,
         PreviewsInfoBarDelegate::INFOBAR_LOAD_ORIGINAL_CLICKED, 1);
-    EXPECT_EQ(test.using_previews_blacklist ? 0 : 1,
-              drp_test_context_->pref_service()->GetInteger(
-                  data_reduction_proxy::prefs::kLoFiLoadImagesPerSession));
     EXPECT_TRUE(user_opt_out_.value());
 
     EXPECT_TRUE(opt_out_called_);
@@ -434,8 +422,6 @@ TEST_F(PreviewsInfoBarDelegateUnitTest, LoFiInfobarTest) {
 
   tester_->ExpectUniqueSample(kUMAPreviewsInfoBarActionLoFi,
                               PreviewsInfoBarDelegate::INFOBAR_SHOWN, 1);
-  EXPECT_EQ(1, drp_test_context_->pref_service()->GetInteger(
-                   data_reduction_proxy::prefs::kLoFiUIShownPerSession));
 
   ASSERT_TRUE(infobar);
   ASSERT_EQ(l10n_util::GetStringUTF16(IDS_PREVIEWS_INFOBAR_SAVED_DATA_TITLE),
@@ -456,8 +442,6 @@ TEST_F(PreviewsInfoBarDelegateUnitTest, PreviewInfobarTest) {
 
   tester_->ExpectUniqueSample(kUMAPreviewsInfoBarActionLitePage,
                               PreviewsInfoBarDelegate::INFOBAR_SHOWN, 1);
-  EXPECT_EQ(1, drp_test_context_->pref_service()->GetInteger(
-                   data_reduction_proxy::prefs::kLoFiUIShownPerSession));
 
   // Check the strings.
   ASSERT_TRUE(infobar);
@@ -480,8 +464,6 @@ TEST_F(PreviewsInfoBarDelegateUnitTest, OfflineInfobarNonDataSaverUserTest) {
 
   tester_->ExpectUniqueSample(kUMAPreviewsInfoBarActionOffline,
                               PreviewsInfoBarDelegate::INFOBAR_SHOWN, 1);
-  EXPECT_EQ(0, drp_test_context_->pref_service()->GetInteger(
-                   data_reduction_proxy::prefs::kLoFiUIShownPerSession));
 
   // Check the strings.
   ASSERT_TRUE(infobar);
@@ -504,8 +486,6 @@ TEST_F(PreviewsInfoBarDelegateUnitTest, OfflineInfobarDataSaverUserTest) {
 
   tester_->ExpectUniqueSample(kUMAPreviewsInfoBarActionOffline,
                               PreviewsInfoBarDelegate::INFOBAR_SHOWN, 1);
-  EXPECT_EQ(0, drp_test_context_->pref_service()->GetInteger(
-                   data_reduction_proxy::prefs::kLoFiUIShownPerSession));
 
   // Check the strings.
   ASSERT_TRUE(infobar);

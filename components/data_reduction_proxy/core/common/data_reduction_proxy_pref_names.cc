@@ -204,33 +204,6 @@ const char kHttpReceivedContentLength[] = "http_received_content_length";
 // received over the network.
 const char kHttpOriginalContentLength[] = "http_original_content_length";
 
-// An integer pref that contains the Lo-Fi epoch for the implicit opt-out rules.
-// Any time this value is incremented via Finch,
-// kLoFiConsecutiveSessionDisables is reset to zero.
-const char kLoFiImplicitOptOutEpoch[] =
-    "data_reduction_lo_fi.implicit_opt_out_epoch";
-
-// An integer pref that contains the number of times that "Load original" Lo-Fi
-// UI has been shown for the current session. Note the naming of the pref is due
-// to the fact that this UI was originally a snackbar, and has since been
-// changed.
-const char kLoFiUIShownPerSession[] =
-    "data_reduction_lo_fi.load_images_snackbars_shown_per_session";
-
-// An integer pref that contains the number of times that loading the images has
-// been requested from the Lo-Fi UI for the current session.
-const char kLoFiLoadImagesPerSession[] =
-    "data_reduction_lo_fi.load_images_requests_per_session";
-
-// An integer pref that contains the number of consecutive sessions that LoFi
-// has been disabled.
-const char kLoFiConsecutiveSessionDisables[] =
-    "data_reduction_lo_fi.consecutive_session_disables";
-
-// A boolean pref specifying whether Lo-Fi was used this session.
-const char kLoFiWasUsedThisSession[] =
-    "data_reduction_lo_fi.was_used_this_session";
-
 // Pref to store the retrieval time of the last simulated Data Reduction Proxy
 // configuration. This is part of an experiment to see how many bytes are lost
 // if the Data Reduction Proxy is not used due to configuration being expired

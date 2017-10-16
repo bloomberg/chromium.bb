@@ -87,11 +87,6 @@ void RegisterSyncableProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
       prefs::kDailyContentLengthViaDataReductionProxyUnknown, 0L);
 
   registry->RegisterInt64Pref(prefs::kDailyHttpContentLengthLastUpdateDate, 0L);
-  registry->RegisterIntegerPref(prefs::kLoFiImplicitOptOutEpoch, 0);
-  registry->RegisterIntegerPref(prefs::kLoFiUIShownPerSession, 0);
-  registry->RegisterIntegerPref(prefs::kLoFiLoadImagesPerSession, 0);
-  registry->RegisterIntegerPref(prefs::kLoFiConsecutiveSessionDisables, 0);
-  registry->RegisterBooleanPref(prefs::kLoFiWasUsedThisSession, false);
   registry->RegisterInt64Pref(prefs::kSimulatedConfigRetrieveTime, 0L);
   registry->RegisterStringPref(prefs::kDataReductionProxyConfig, std::string());
 }
@@ -171,11 +166,6 @@ void RegisterPrefs(PrefRegistrySimple* registry) {
       prefs::kDailyContentLengthViaDataReductionProxyUnknown, 0L);
   registry->RegisterInt64Pref(
       prefs::kDailyHttpContentLengthLastUpdateDate, 0L);
-  registry->RegisterIntegerPref(prefs::kLoFiImplicitOptOutEpoch, 0);
-  registry->RegisterIntegerPref(prefs::kLoFiUIShownPerSession, 0);
-  registry->RegisterIntegerPref(prefs::kLoFiLoadImagesPerSession, 0);
-  registry->RegisterIntegerPref(prefs::kLoFiConsecutiveSessionDisables, 0);
-  registry->RegisterBooleanPref(prefs::kLoFiWasUsedThisSession, false);
   registry->RegisterInt64Pref(prefs::kSimulatedConfigRetrieveTime, 0L);
   registry->RegisterStringPref(prefs::kDataReductionProxyConfig, std::string());
 }

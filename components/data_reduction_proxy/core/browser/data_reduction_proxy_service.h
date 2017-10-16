@@ -99,16 +99,6 @@ class DataReductionProxyService
   // Records whether the Data Reduction Proxy is unreachable or not.
   void SetUnreachable(bool unreachable);
 
-  // Sets that Lo-Fi was active on the last main frame load in
-  // DataReductionProxySettings.
-  void SetLoFiUsedThisSession();
-
-  // Sets Lo-Fi mode off on the IO thread.
-  void SetLoFiModeOff();
-
-  // Initializes the Lo-Fi implicit opt out prefs.
-  void InitializeLoFiPrefs();
-
   // Stores an int64_t value in |prefs_|.
   void SetInt64Pref(const std::string& pref_path, int64_t value);
 
@@ -156,20 +146,6 @@ class DataReductionProxyService
  private:
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxySettingsTest,
                            TestLoFiSessionStateHistograms);
-
-  // Values of the UMA DataReductionProxy.LoFi.SessionState histogram.
-  // This enum must remain synchronized with DataReductionProxyLoFiSessionState
-  // in metrics/histograms/histograms.xml.
-  enum LoFiSessionState {
-    LO_FI_SESSION_STATE_USED = 0,
-    LO_FI_SESSION_STATE_NOT_USED,
-    LO_FI_SESSION_STATE_OPTED_OUT,  // Permanent opt out
-    LO_FI_SESSION_STATE_TEMPORARILY_OPTED_OUT,
-    LO_FI_SESSION_STATE_INDEX_BOUNDARY,
-  };
-
-  // Records UMA for Lo-Fi session state.
-  void RecordLoFiSessionState(LoFiSessionState state);
 
   net::URLRequestContextGetter* url_request_context_getter_;
 

@@ -908,8 +908,6 @@ content::PreviewsState ChromeResourceDispatcherHostDelegate::GetPreviewsState(
     // previews. If the user is not transitioned fully to the blacklist, respect
     // the old prefs rules.
     if (data_reduction_proxy_io_data->IsEnabled() &&
-        (!data_reduction_proxy_io_data->config()->lofi_off() ||
-         data_reduction_proxy::params::IsBlackListEnabledForServerPreviews()) &&
         previews::params::IsClientLoFiEnabled() &&
         previews_io_data->ShouldAllowPreviewAtECT(
             url_request, previews::PreviewsType::LOFI,

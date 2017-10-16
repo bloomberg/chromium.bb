@@ -58,15 +58,6 @@ void RecordStaleness(PreviewsInfoBarDelegate::PreviewsInfoBarTimestamp value) {
                             PreviewsInfoBarDelegate::TIMESTAMP_INDEX_BOUNDARY);
 }
 
-// Increments the prefs-based opt out information for data reduction proxy when
-// the user is not already transitioned to the PreviewsBlackList.
-void IncrementDataReductionProxyPrefs(content::WebContents* web_contents) {
-  auto* data_reduction_proxy_settings =
-      DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
-          web_contents->GetBrowserContext());
-  data_reduction_proxy_settings->IncrementLoFiUserRequestsForImages();
-}
-
 // Reloads the content of the page without previews.
 void ReloadWithoutPreviews(previews::PreviewsType previews_type,
                            content::WebContents* web_contents) {
@@ -140,16 +131,7 @@ void PreviewsInfoBarDelegate::Create(
       infobar_service->CreateConfirmInfoBar(std::move(delegate)));
 #endif
 
-  infobars::InfoBar* infobar =
-      infobar_service->AddInfoBar(std::move(infobar_ptr));
-
-  if (infobar && (previews_type == previews::PreviewsType::LITE_PAGE ||
-                  previews_type == previews::PreviewsType::LOFI)) {
-    auto* data_reduction_proxy_settings =
-        DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
-            web_contents->GetBrowserContext());
-    data_reduction_proxy_settings->IncrementLoFiUIShown();
-  }
+  infobar_service->AddInfoBar(std::move(infobar_ptr));
 
   RecordPreviewsInfoBarAction(previews_type, INFOBAR_SHOWN);
   infobar_tab_helper->set_displayed_preview_infobar(true);
@@ -231,12 +213,6 @@ bool PreviewsInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
       InfoBarService::WebContentsFromInfoBar(infobar());
 
   InformPLMOfOptOut(web_contents);
-
-  if ((previews_type_ == previews::PreviewsType::LITE_PAGE ||
-       previews_type_ == previews::PreviewsType::LOFI) &&
-      !data_reduction_proxy::params::IsBlackListEnabledForServerPreviews()) {
-    IncrementDataReductionProxyPrefs(web_contents);
-  }
 
   ReloadWithoutPreviews(previews_type_, web_contents);
 
