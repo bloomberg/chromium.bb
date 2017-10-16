@@ -87,7 +87,7 @@
 #include <limits>
 #include <string>
 
-#define MAXWORDUTF8LEN (MAXWORDLEN * 3)
+#define MAXWORDUTF8LEN (MAXWORDLEN * 2)
 
 class HunspellImpl
 {
