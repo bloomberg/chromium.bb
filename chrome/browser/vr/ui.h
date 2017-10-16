@@ -30,6 +30,7 @@ struct UiInitialState {
   bool in_cct = false;
   bool in_web_vr = false;
   bool web_vr_autopresentation_expected = false;
+  bool browsing_disabled = false;
 };
 
 // This class manages all GLThread owned objects and GL rendering for VrShell.

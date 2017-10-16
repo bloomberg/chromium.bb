@@ -13,6 +13,7 @@
 #include "base/single_thread_task_runner.h"
 #include "chrome/browser/android/vr_shell/gl_browser_interface.h"
 #include "chrome/browser/vr/browser_ui_interface.h"
+#include "chrome/browser/vr/ui.h"
 #include "chrome/browser/vr/ui_browser_interface.h"
 #include "chrome/browser/vr/ui_interface.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
@@ -31,9 +32,7 @@ class VrGLThread : public base::android::JavaHandlerThread,
       const base::WeakPtr<VrShell>& weak_vr_shell,
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
       gvr_context* gvr_api,
-      bool initially_web_vr,
-      bool web_vr_autopresentation_expected,
-      bool in_cct,
+      const vr::UiInitialState& ui_initial_state,
       bool reprojected_rendering,
       bool daydream_support);
 
@@ -94,9 +93,7 @@ class VrGLThread : public base::android::JavaHandlerThread,
   // This state is used for initializing vr_shell_gl_.
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   gvr_context* gvr_api_;
-  bool initially_web_vr_;
-  bool web_vr_autopresentation_expected_;
-  bool in_cct_;
+  vr::UiInitialState ui_initial_state_;
   bool reprojected_rendering_;
   bool daydream_support_;
 

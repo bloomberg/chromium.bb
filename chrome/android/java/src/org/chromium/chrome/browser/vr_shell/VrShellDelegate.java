@@ -548,7 +548,7 @@ public class VrShellDelegate
     /**
      * @return Whether or not VR Shell is currently enabled.
      */
-    private static boolean isVrShellEnabled(int vrSupportLevel) {
+    /* package */ static boolean isVrShellEnabled(int vrSupportLevel) {
         // Only enable ChromeVR (VrShell) on Daydream devices as it currently needs a Daydream
         // controller.
         if (vrSupportLevel != VR_DAYDREAM) return false;
@@ -707,6 +707,11 @@ public class VrShellDelegate
                 mVrDaydreamApi, mVrCoreVersionChecker, mActivity.getActivityTab());
         if (supportLevel == mVrSupportLevel) return;
         mVrSupportLevel = supportLevel;
+    }
+
+    @VrSupportLevel
+    /* package */ int getVrSupportLevel() {
+        return mVrSupportLevel;
     }
 
     private void onVrServicesMaybeUpdated() {
