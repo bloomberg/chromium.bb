@@ -2845,34 +2845,28 @@
                 "android",
                 "chromeos",
                 "linux",
-                "mac"
+                "mac",
+                "win"
             ],
             "experiments": [
                 {
-                    "name": "Enabled_bg_limit_16",
+                    "name": "Enabled_bg_limit_8_4",
                     "params": {
-                        "bg_limit": "16",
-                        "bg_sub_limit": "16"
+                        "bg_limit": "8",
+                        "bg_sub_limit": "4"
                     },
                     "enable_features": [
                         "ReportRendererPeakMemoryStats",
                         "ResourceLoadScheduler"
                     ]
-                }
-            ]
-        },
-        {
-            "platforms": [
-                "win"
-            ],
-            "experiments": [
+                },
                 {
-                    "name": "Enabled_bg_limit_16",
+                    "name": "Enabled_bg_limit_8",
                     "params": {
-                        "bg_limit": "16",
-                        "bg_sub_limit": "16"
+                        "bg_limit": "8"
                     },
                     "enable_features": [
+                        "ReportRendererPeakMemoryStats",
                         "ResourceLoadScheduler"
                     ]
                 }
