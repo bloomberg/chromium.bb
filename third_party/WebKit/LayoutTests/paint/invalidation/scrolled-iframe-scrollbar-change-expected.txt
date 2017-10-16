@@ -9,6 +9,10 @@
       "reason": "geometry"
     },
     {
+      "object": "LayoutView #document",
+      "reason": "style change"
+    },
+    {
       "object": "LayoutBlockFlow BODY class='noScroll'",
       "reason": "style change"
     },

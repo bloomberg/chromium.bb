@@ -8,6 +8,11 @@
       "paintInvalidations": [
         {
           "object": "LayoutView #document",
+          "rect": [0, 0, 2008, 2096],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutView #document",
           "rect": [0, 585, 785, 15],
           "reason": "scroll control"
         },
@@ -67,6 +72,10 @@
     {
       "object": "LayoutView #document",
       "reason": "geometry"
+    },
+    {
+      "object": "LayoutView #document",
+      "reason": "style change"
     },
     {
       "object": "LayoutBlockFlow BODY",

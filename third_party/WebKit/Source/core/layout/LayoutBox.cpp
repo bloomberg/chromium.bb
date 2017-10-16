@@ -187,6 +187,18 @@ void LayoutBox::StyleWillChange(StyleDifference diff,
     if (flow_thread && flow_thread != this)
       flow_thread->FlowThreadDescendantStyleWillChange(this, diff, new_style);
 
+    // The background of the root element or the body element could propagate up
+    // to the canvas. Just dirty the entire canvas when our style changes
+    // substantially.
+    if ((diff.NeedsFullPaintInvalidation() || diff.NeedsLayout()) &&
+        GetNode() && (IsDocumentElement() || IsHTMLBodyElement(*GetNode()))) {
+      View()->SetShouldDoFullPaintInvalidation();
+
+      if (old_style->HasEntirelyFixedBackground() !=
+          new_style.HasEntirelyFixedBackground())
+        View()->Compositor()->SetNeedsUpdateFixedBackground();
+    }
+
     // When a layout hint happens and an object's position style changes, we
     // have to do a layout to dirty the layout tree using the old position
     // value now.
