@@ -39,6 +39,7 @@ TEST(TupleTest, Basic) {
       std::make_tuple(1, static_cast<const char*>("wee"));
   ALLOW_UNUSED_LOCAL(t2);
   std::tuple<int, int, int> t3(1, 2, 3);
+  ALLOW_UNUSED_LOCAL(t3);
   std::tuple<int, int, int, int*> t4(1, 2, 3, &std::get<0>(t1));
   std::tuple<int, int, int, int, int*> t5(1, 2, 3, 4, &std::get<0>(t4));
   std::tuple<int, int, int, int, int, int*> t6(1, 2, 3, 4, 5, &std::get<0>(t4));
