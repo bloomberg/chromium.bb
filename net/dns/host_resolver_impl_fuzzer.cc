@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/test/fuzzed_data_provider.h"
+#include "base/test/scoped_task_environment.h"
 #include "net/base/address_family.h"
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
@@ -167,7 +168,6 @@ class DnsRequest {
       run_loop_.reset(new base::RunLoop());
       run_loop_->Run();
       run_loop_.reset();
-      DCHECK(request_);
     }
   }
 

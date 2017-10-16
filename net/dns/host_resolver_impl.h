@@ -173,6 +173,9 @@ class NET_EXPORT HostResolverImpl
   // Callback from HaveOnlyLoopbackAddresses probe.
   void SetHaveOnlyLoopbackAddresses(bool result);
 
+  // Sets the task runner used for HostResolverProc tasks.
+  void SetTaskRunnerForTesting(scoped_refptr<base::TaskRunner> task_runner);
+
  private:
   friend class HostResolverImplTest;
   class Job;
@@ -364,6 +367,10 @@ class NET_EXPORT HostResolverImpl
 
   // Allow fallback to ProcTask if DnsTask fails.
   bool fallback_to_proctask_;
+
+  // Task runner used for DNS lookups using the system resolver. Normally a
+  // TaskScheduler task runner, but can be overridden for tests.
+  scoped_refptr<base::TaskRunner> proc_task_runner_;
 
   bool persist_initialized_;
   PersistCallback persist_callback_;
