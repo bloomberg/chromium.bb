@@ -191,7 +191,7 @@ void DeviceLocalAccountPolicyServiceTestBase::AddDeviceLocalAccountToPolicy(
 
 void DeviceLocalAccountPolicyServiceTestBase::InstallDevicePolicy() {
   device_policy_.Build();
-  device_settings_test_helper_.set_policy_blob(device_policy_.GetBlob());
+  device_settings_test_helper_.set_device_policy(device_policy_.GetBlob());
   ReloadDeviceSettings();
 }
 

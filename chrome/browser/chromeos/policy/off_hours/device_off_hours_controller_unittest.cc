@@ -47,7 +47,7 @@ class DeviceOffHoursControllerTest : public DeviceSettingsTestBase {
 
   void SetDeviceSettings() {
     device_policy_.Build();
-    device_settings_test_helper_.set_policy_blob(device_policy_.GetBlob());
+    device_settings_test_helper_.set_device_policy(device_policy_.GetBlob());
     ReloadDeviceSettings();
   }
 

@@ -87,7 +87,7 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
   void SetRobotAccountId(const std::string& account_id) {
     device_policy_.policy_data().set_service_account_identity(account_id);
     device_policy_.Build();
-    device_settings_test_helper_.set_policy_blob(device_policy_.GetBlob());
+    device_settings_test_helper_.set_device_policy(device_policy_.GetBlob());
     DeviceSettingsService::Get()->Load();
     device_settings_test_helper_.Flush();
   }

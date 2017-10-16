@@ -321,7 +321,7 @@ TEST_F(DeviceCloudPolicyManagerChromeOSTest, EnrolledDevice) {
 TEST_F(DeviceCloudPolicyManagerChromeOSTest, UnmanagedDevice) {
   device_policy_.policy_data().set_state(em::PolicyData::UNMANAGED);
   device_policy_.Build();
-  device_settings_test_helper_.set_policy_blob(device_policy_.GetBlob());
+  device_settings_test_helper_.set_device_policy(device_policy_.GetBlob());
 
   LockDevice();
   FlushDeviceSettings();
@@ -352,7 +352,7 @@ TEST_F(DeviceCloudPolicyManagerChromeOSTest, UnmanagedDevice) {
   // Switch back to ACTIVE, service the policy fetch and let it propagate.
   device_policy_.policy_data().set_state(em::PolicyData::ACTIVE);
   device_policy_.Build();
-  device_settings_test_helper_.set_policy_blob(device_policy_.GetBlob());
+  device_settings_test_helper_.set_device_policy(device_policy_.GetBlob());
   em::DeviceManagementResponse policy_fetch_response;
   policy_fetch_response.mutable_policy_response()->add_response()->CopyFrom(
       device_policy_.policy());
@@ -422,7 +422,6 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
       : register_status_(DM_STATUS_SUCCESS),
         policy_fetch_status_(DM_STATUS_SUCCESS),
         robot_auth_fetch_status_(DM_STATUS_SUCCESS),
-        store_result_(true),
         status_(EnrollmentStatus::ForStatus(EnrollmentStatus::SUCCESS)),
         done_(false) {}
 
@@ -597,10 +596,9 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
         token_service->GetRobotAccountId()));
 
     // Process policy store.
-    device_settings_test_helper_.set_store_result(store_result_);
     device_settings_test_helper_.FlushStore();
     EXPECT_EQ(device_policy_.GetBlob(),
-              device_settings_test_helper_.policy_blob());
+              device_settings_test_helper_.device_policy());
 
     if (done_)
       return;
@@ -618,7 +616,7 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
         .Times(AtMost(1));
 
     // Key installation and policy load.
-    device_settings_test_helper_.set_policy_blob(loaded_blob_);
+    device_settings_test_helper_.set_device_policy(loaded_blob_);
     owner_key_util_->SetPublicKeyFromPrivateKey(
         *device_policy_.GetNewSigningKey());
     ReloadDeviceSettings();
@@ -663,7 +661,6 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
   DeviceManagementStatus robot_auth_fetch_status_;
   em::DeviceManagementResponse robot_auth_fetch_response_;
 
-  bool store_result_;
   std::string loaded_blob_;
 
   em::DeviceManagementRequest register_request_;
@@ -749,7 +746,7 @@ TEST_P(DeviceCloudPolicyManagerChromeOSEnrollmentTest, ValidationFailed) {
 }
 
 TEST_P(DeviceCloudPolicyManagerChromeOSEnrollmentTest, StoreError) {
-  store_result_ = false;
+  device_settings_test_helper_.set_store_device_policy_success(false);
   RunTest();
   ExpectFailedEnrollment(EnrollmentStatus::STORE_ERROR);
   EXPECT_EQ(CloudPolicyStore::STATUS_STORE_ERROR,

@@ -86,7 +86,7 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
     proto->set_report_running_kiosk_app(enable_reporting);
     proto->set_device_status_frequency(frequency);
     device_policy_.Build();
-    device_settings_test_helper_.set_policy_blob(device_policy_.GetBlob());
+    device_settings_test_helper_.set_device_policy(device_policy_.GetBlob());
     ReloadDeviceSettings();
     Mock::VerifyAndClearExpectations(this);
   }
@@ -99,7 +99,7 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
     proto->set_heartbeat_enabled(enable_heartbeat);
     proto->set_heartbeat_frequency(frequency);
     device_policy_.Build();
-    device_settings_test_helper_.set_policy_blob(device_policy_.GetBlob());
+    device_settings_test_helper_.set_device_policy(device_policy_.GetBlob());
     ReloadDeviceSettings();
     Mock::VerifyAndClearExpectations(this);
   }
@@ -111,7 +111,7 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
         device_policy_.payload().mutable_device_log_upload_settings();
     proto->set_system_log_upload_enabled(enable_system_log_upload);
     device_policy_.Build();
-    device_settings_test_helper_.set_policy_blob(device_policy_.GetBlob());
+    device_settings_test_helper_.set_device_policy(device_policy_.GetBlob());
     ReloadDeviceSettings();
     Mock::VerifyAndClearExpectations(this);
   }
@@ -131,7 +131,7 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
       proto->set_metrics_enabled(option == ENABLE_METRICS);
     }
     device_policy_.Build();
-    device_settings_test_helper_.set_policy_blob(device_policy_.GetBlob());
+    device_settings_test_helper_.set_device_policy(device_policy_.GetBlob());
     ReloadDeviceSettings();
     Mock::VerifyAndClearExpectations(this);
   }
@@ -189,7 +189,7 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
         device_policy_.payload().mutable_login_screen_domain_auto_complete();
     proto->set_login_screen_domain_auto_complete(domain);
     device_policy_.Build();
-    device_settings_test_helper_.set_policy_blob(device_policy_.GetBlob());
+    device_settings_test_helper_.set_device_policy(device_policy_.GetBlob());
     ReloadDeviceSettings();
     Mock::VerifyAndClearExpectations(this);
   }
@@ -267,9 +267,9 @@ TEST_F(DeviceSettingsProviderTest, InitializationTestUnowned) {
   Mock::VerifyAndClearExpectations(this);
 
   // This shouldn't trigger a write.
-  device_settings_test_helper_.set_policy_blob(std::string());
+  device_settings_test_helper_.set_device_policy(std::string());
   FlushDeviceSettings();
-  EXPECT_EQ(std::string(), device_settings_test_helper_.policy_blob());
+  EXPECT_EQ(std::string(), device_settings_test_helper_.device_policy());
 
   // Verify the change has been applied.
   const base::Value* saved_value = provider_->Get(kReleaseChannel);
@@ -310,9 +310,9 @@ TEST_F(DeviceSettingsProviderTest, SetPrefFailed) {
   Mock::VerifyAndClearExpectations(this);
 
   // This shouldn't trigger a write.
-  device_settings_test_helper_.set_policy_blob(std::string());
+  device_settings_test_helper_.set_device_policy(std::string());
   FlushDeviceSettings();
-  EXPECT_EQ(std::string(), device_settings_test_helper_.policy_blob());
+  EXPECT_EQ(std::string(), device_settings_test_helper_.device_policy());
 
   // Verify the change has not been applied.
   const base::Value* saved_value = provider_->Get(kStatsReportingPref);
@@ -335,7 +335,7 @@ TEST_F(DeviceSettingsProviderTest, SetPrefSucceed) {
   Mock::VerifyAndClearExpectations(this);
 
   // Process the store.
-  device_settings_test_helper_.set_policy_blob(std::string());
+  device_settings_test_helper_.set_device_policy(std::string());
   FlushDeviceSettings();
 
   // Verify that the device policy has been adjusted.
@@ -365,7 +365,7 @@ TEST_F(DeviceSettingsProviderTest, SetPrefTwice) {
   provider_->Set(kReleaseChannel, value2);
 
   // Let the changes propagate through the system.
-  device_settings_test_helper_.set_policy_blob(std::string());
+  device_settings_test_helper_.set_device_policy(std::string());
   FlushDeviceSettings();
 
   // Verify the second change has been applied.
@@ -378,7 +378,7 @@ TEST_F(DeviceSettingsProviderTest, SetPrefTwice) {
 TEST_F(DeviceSettingsProviderTest, PolicyRetrievalFailedBadSignature) {
   owner_key_util_->SetPublicKeyFromPrivateKey(*device_policy_.GetSigningKey());
   device_policy_.policy().set_policy_data_signature("bad signature");
-  device_settings_test_helper_.set_policy_blob(device_policy_.GetBlob());
+  device_settings_test_helper_.set_device_policy(device_policy_.GetBlob());
   ReloadDeviceSettings();
 
   // Verify that the cached settings blob is not "trusted".
@@ -390,7 +390,7 @@ TEST_F(DeviceSettingsProviderTest, PolicyRetrievalFailedBadSignature) {
 
 TEST_F(DeviceSettingsProviderTest, PolicyRetrievalNoPolicy) {
   owner_key_util_->SetPublicKeyFromPrivateKey(*device_policy_.GetSigningKey());
-  device_settings_test_helper_.set_policy_blob(std::string());
+  device_settings_test_helper_.set_device_policy(std::string());
   ReloadDeviceSettings();
 
   // Verify that the cached settings blob is not "trusted".
@@ -401,7 +401,7 @@ TEST_F(DeviceSettingsProviderTest, PolicyRetrievalNoPolicy) {
 }
 
 TEST_F(DeviceSettingsProviderTest, PolicyFailedPermanentlyNotification) {
-  device_settings_test_helper_.set_policy_blob(std::string());
+  device_settings_test_helper_.set_device_policy(std::string());
 
   EXPECT_CALL(*this, GetTrustedCallback());
   EXPECT_EQ(CrosSettingsProvider::TEMPORARILY_UNTRUSTED,
@@ -435,7 +435,7 @@ TEST_F(DeviceSettingsProviderTest, LegacyDeviceLocalAccounts) {
   account->set_deprecated_public_session_id(
       policy::PolicyBuilder::kFakeUsername);
   device_policy_.Build();
-  device_settings_test_helper_.set_policy_blob(device_policy_.GetBlob());
+  device_settings_test_helper_.set_device_policy(device_policy_.GetBlob());
   ReloadDeviceSettings();
   Mock::VerifyAndClearExpectations(this);
 
@@ -460,7 +460,7 @@ TEST_F(DeviceSettingsProviderTest, DecodeDeviceState) {
   device_policy_.policy_data().mutable_device_state()->
       mutable_disabled_state()->set_message(kDisabledMessage);
   device_policy_.Build();
-  device_settings_test_helper_.set_policy_blob(device_policy_.GetBlob());
+  device_settings_test_helper_.set_device_policy(device_policy_.GetBlob());
   ReloadDeviceSettings();
   Mock::VerifyAndClearExpectations(this);
 
@@ -475,7 +475,7 @@ TEST_F(DeviceSettingsProviderTest, DecodeDeviceState) {
   EXPECT_CALL(*this, SettingChanged(_)).Times(AtLeast(1));
   device_policy_.policy_data().mutable_device_state()->clear_device_mode();
   device_policy_.Build();
-  device_settings_test_helper_.set_policy_blob(device_policy_.GetBlob());
+  device_settings_test_helper_.set_device_policy(device_policy_.GetBlob());
   ReloadDeviceSettings();
   Mock::VerifyAndClearExpectations(this);
 

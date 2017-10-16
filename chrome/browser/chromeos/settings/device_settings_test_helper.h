@@ -50,23 +50,6 @@ class DeviceSettingsTestHelper : public FakeSessionManagerClient {
   // Flushes all pending operations.
   void Flush();
 
-  // Checks whether any asynchronous Store/Retrieve operations are pending.
-  bool HasPendingOperations() const;
-
-  bool store_result() {
-    return device_policy_.store_result_;
-  }
-  void set_store_result(bool store_result) {
-    device_policy_.store_result_ = store_result;
-  }
-
-  const std::string& policy_blob() {
-    return device_policy_.policy_blob_;
-  }
-  void set_policy_blob(const std::string& policy_blob) {
-    device_policy_.policy_blob_ = policy_blob;
-  }
-
   const std::string& device_local_account_policy_blob(
       const std::string& id) const {
     const std::map<std::string, PolicyState>::const_iterator entry =
@@ -81,17 +64,12 @@ class DeviceSettingsTestHelper : public FakeSessionManagerClient {
   }
 
   // SessionManagerClient:
-  void RetrieveDevicePolicy(const RetrievePolicyCallback& callback) override;
-  RetrievePolicyResponseType BlockingRetrieveDevicePolicy(
-      std::string* policy_out) override;
   void RetrieveDeviceLocalAccountPolicy(
       const std::string& account_id,
       const RetrievePolicyCallback& callback) override;
   RetrievePolicyResponseType BlockingRetrieveDeviceLocalAccountPolicy(
       const std::string& account_id,
       std::string* policy_out) override;
-  void StoreDevicePolicy(const std::string& policy_blob,
-                         const StorePolicyCallback& callback) override;
   void StoreDeviceLocalAccountPolicy(
       const std::string& account_id,
       const std::string& policy_blob,
@@ -113,7 +91,9 @@ class DeviceSettingsTestHelper : public FakeSessionManagerClient {
     }
   };
 
-  PolicyState device_policy_;
+  // Checks whether any asynchronous Store/Retrieve operations are pending.
+  bool HasPendingOperations() const;
+
   std::map<std::string, PolicyState> device_local_account_policy_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceSettingsTestHelper);
