@@ -140,7 +140,7 @@ void HTMLVideoElement::AttachLayoutTree(AttachContext& context) {
     if (GetLayoutObject()) {
       ToLayoutImage(GetLayoutObject())
           ->ImageResource()
-          ->SetImageResource(image_loader_->GetImage());
+          ->SetImageResource(image_loader_->GetContent());
     }
   }
 }

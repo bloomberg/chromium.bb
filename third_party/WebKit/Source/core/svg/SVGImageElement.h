@@ -62,7 +62,7 @@ class CORE_EXPORT SVGImageElement final
 
   // Exposed for testing.
   ImageResourceContent* CachedImage() const {
-    return GetImageLoader().GetImage();
+    return GetImageLoader().GetContent();
   }
 
   Image::ImageDecodingMode GetDecodingMode() const { return decoding_mode_; }

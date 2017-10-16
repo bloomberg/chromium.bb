@@ -47,10 +47,10 @@ void HTMLImageLoader::DispatchLoadEvent() {
   if (IsHTMLVideoElement(*GetElement()))
     return;
 
-  bool error_occurred = GetImage()->ErrorOccurred();
+  bool error_occurred = GetContent()->ErrorOccurred();
   if (IsHTMLObjectElement(*GetElement()) && !error_occurred) {
     // An <object> considers a 404 to be an error and should fire onerror.
-    error_occurred = (GetImage()->GetResponse().HttpStatusCode() >= 400);
+    error_occurred = (GetContent()->GetResponse().HttpStatusCode() >= 400);
   }
   GetElement()->DispatchEvent(Event::Create(
       error_occurred ? EventTypeNames::error : EventTypeNames::load));
@@ -69,7 +69,7 @@ void HTMLImageLoader::NoImageResourceToLoad() {
 }
 
 void HTMLImageLoader::ImageNotifyFinished(ImageResourceContent*) {
-  ImageResourceContent* cached_image = GetImage();
+  ImageResourceContent* cached_image = GetContent();
   Element* element = this->GetElement();
   ImageLoader::ImageNotifyFinished(cached_image);
 

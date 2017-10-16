@@ -28,7 +28,7 @@ namespace blink {
 SVGImageLoader::SVGImageLoader(SVGImageElement* node) : ImageLoader(node) {}
 
 void SVGImageLoader::DispatchLoadEvent() {
-  if (GetImage()->ErrorOccurred()) {
+  if (GetContent()->ErrorOccurred()) {
     GetElement()->DispatchEvent(Event::Create(EventTypeNames::error));
   } else {
     SVGImageElement* image_element = ToSVGImageElement(GetElement());
