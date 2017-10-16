@@ -78,6 +78,7 @@ target(link_target_type, "ipc_service_sources") {
     "//gpu/ipc/common:ipc_common_sources",
   ]
   libs = []
+  ldflags = []
   if (is_win) {
     sources += [
       "child_window_win.cc",
@@ -88,7 +89,11 @@ target(link_target_type, "ipc_service_sources") {
       "direct_composition_surface_win.h",
       "image_transport_surface_win.cc",
     ]
-    libs += [ "dwmapi.lib" ]
+    libs += [
+      "dxgi.lib",
+      "dwmapi.lib",
+    ]
+    ldflags += [ "/DELAYLOAD:dxgi.dll" ]
   }
   if (is_mac) {
     sources += [
