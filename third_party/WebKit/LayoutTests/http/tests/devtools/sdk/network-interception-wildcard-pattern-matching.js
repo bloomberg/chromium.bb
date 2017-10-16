@@ -3,39 +3,52 @@
 // found in the LICENSE file.
 
 (async function() {
-  TestRunner.addResult("Tests that wild card pattern matching works.\n");
+  TestRunner.addResult("Test to ensure the consistency of front-end patterns vs backend patterns for request interception.\n");
 
-  checkPattern('*a*a*', 'asdfasdf');
-  checkPattern('a*a*', 'asdfasdf');
-  checkPattern('a*a', 'asdfasdf');
-  checkPattern('a*a*f', 'asdfasdf');
-  checkPattern('af', 'asdfasdf');
-  checkPattern('*df', 'asdfasdf');
-  checkPattern('*', 'asdfasdf');
-  checkPattern('*', '');
-  checkPattern('', '');
-  checkPattern('', 'asdfasdf');
-  checkPattern('a*c', 'ac');
-  checkPattern('a**c', 'ac');
-  checkPattern('a**c', 'abc');
-  checkPattern('a*c', 'abc');
-  checkPattern('*ac*', 'ac');
-  checkPattern('ac', 'abc');
-  checkPattern('a\\*c', 'a*c');
-  checkPattern('a\\\\*c', 'a\\c');
-  checkPattern('a\\*c', 'ac');
-  checkPattern('a\\*c', 'a**c');
-  checkPattern('a\\*\\\\*c', 'a*\\*c');
-  checkPattern('a\\*\\\\\\*c', 'a*\\*c');
-  checkPattern('a?c', 'a?c');
-  checkPattern('a?c', 'acc');
+  // Backend supports wildcards, but front-end does not. This test is to ensure the basic stability with wildcard characters.
+  var urlPrefix = SDK.targetManager.mainTarget().inspectedURL().replace(/\/[^\/]*$/, '');
+  var resourceURL = urlPrefix + '/bar.js';
+  await checkPattern('**bar.js');
+  await checkPattern(resourceURL);
+  await checkPattern('*bar.js');
+  await checkPattern('bar.js');
+  await checkPattern('\*bar.js');
+  await checkPattern('*b*');
+  await checkPattern('*');
+  await checkPattern('*bar_js');
+  await checkPattern('*bar?js');
 
   TestRunner.completeTest();
 
-  function checkPattern(pattern, input) {
-    TestRunner.addResult("Checking Pattern: " + pattern);
-    TestRunner.addResult("Input: " + input);
-    TestRunner.addResult("Result: " + SDK.RequestInterceptor.patternMatchedIndex(pattern, input));
+  /**
+   * @param {string} pattern
+   * @return {!Promise}
+   */
+  async function checkPattern(pattern) {
+    await SDK.multitargetNetworkManager.setInterceptionHandlerForPatterns([pattern], interceptionHandler);
+    TestRunner.addResult("Requesting: bar.js");
+    await TestRunner.evaluateInPageAsync(`fetch('` + resourceURL + `')`);
+    TestRunner.addResult("Received: bar.js");
+    await SDK.multitargetNetworkManager.setInterceptionHandlerForPatterns([], interceptionHandler);
     TestRunner.addResult("");
+
+    /**
+     * @param {!SDK.MultitargetNetworkManager.InterceptedRequest} interceptedRequest
+     * @return {!Promise}
+     */
+    function interceptionHandler(interceptedRequest) {
+      TestRunner.addResult("Received File: " + cleanURL(interceptedRequest.request.url));
+      TestRunner.addResult("Pattern: " + cleanURL(pattern));
+      return Promise.resolve();
+    }
+  }
+
+  /**
+   * @param {string} url
+   * @return {string}
+   */
+  function cleanURL(url) {
+    console.assert(url.startsWith(urlPrefix));
+    return '(MASKED_URL_PATH)' + url.substr(urlPrefix.length);
   }
 })();

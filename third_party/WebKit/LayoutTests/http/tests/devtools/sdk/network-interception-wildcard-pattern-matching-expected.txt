@@ -1,99 +1,32 @@
-Tests that wild card pattern matching works.
+Test to ensure the consistency of front-end patterns vs backend patterns for request interception.
 
-Checking Pattern: *a*a*
-Input: asdfasdf
-Result: 5
+Requesting: bar.js
+Received: bar.js
 
-Checking Pattern: a*a*
-Input: asdfasdf
-Result: 5
+Requesting: bar.js
+Received File: (MASKED_URL_PATH)/bar.js
+Pattern: (MASKED_URL_PATH)/bar.js
+Received: bar.js
 
-Checking Pattern: a*a
-Input: asdfasdf
-Result: -1
+Requesting: bar.js
+Received: bar.js
 
-Checking Pattern: a*a*f
-Input: asdfasdf
-Result: 5
+Requesting: bar.js
+Received: bar.js
 
-Checking Pattern: af
-Input: asdfasdf
-Result: -1
+Requesting: bar.js
+Received: bar.js
 
-Checking Pattern: *df
-Input: asdfasdf
-Result: 0
+Requesting: bar.js
+Received: bar.js
 
-Checking Pattern: *
-Input: asdfasdf
-Result: 0
+Requesting: bar.js
+Received: bar.js
 
-Checking Pattern: *
-Input: 
-Result: 0
+Requesting: bar.js
+Received: bar.js
 
-Checking Pattern: 
-Input: 
-Result: -1
-
-Checking Pattern: 
-Input: asdfasdf
-Result: -1
-
-Checking Pattern: a*c
-Input: ac
-Result: 1
-
-Checking Pattern: a**c
-Input: ac
-Result: 1
-
-Checking Pattern: a**c
-Input: abc
-Result: 1
-
-Checking Pattern: a*c
-Input: abc
-Result: 1
-
-Checking Pattern: *ac*
-Input: ac
-Result: 2
-
-Checking Pattern: ac
-Input: abc
-Result: -1
-
-Checking Pattern: a\*c
-Input: a*c
-Result: 3
-
-Checking Pattern: a\\*c
-Input: a\c
-Result: 2
-
-Checking Pattern: a\*c
-Input: ac
-Result: -1
-
-Checking Pattern: a\*c
-Input: a**c
-Result: -1
-
-Checking Pattern: a\*\\*c
-Input: a*\*c
-Result: 3
-
-Checking Pattern: a\*\\\*c
-Input: a*\*c
-Result: 5
-
-Checking Pattern: a?c
-Input: a?c
-Result: 3
-
-Checking Pattern: a?c
-Input: acc
-Result: -1
+Requesting: bar.js
+Received: bar.js
 
 
