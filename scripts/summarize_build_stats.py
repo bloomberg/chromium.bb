@@ -74,9 +74,9 @@ class CLStatsEngine(object):
 
     Returns:
       A list of canonicalized URLs for bugs or CLs that appear in the blame
-      string. Canonicalized form will be 'crbug.com/1234',
-      'crosreview.com/1234', 'b/1234', 't/1234', or 'crosreview.com/i/1234' as
-      applicable.
+      string. Canonicalized form will be 'crbug.com/1234', 'crrev.com/c/1234',
+      'crosreview.com/1234', 'b/1234', 't/1234', 'crrev.com/i/1234', or
+      'crosreview.com/i/1234' as applicable.
     """
     urls = []
     tokens = blame_string.split()
@@ -89,9 +89,9 @@ class CLStatsEngine(object):
 
     crbug = general_regex % r'crbug.com|bugs.chromium.org'
     internal_review = general_regex % (
-        r'chrome-internal-review.googlesource.com|crosreview.com/i')
+        r'crosreview.com/i|chrome-internal-review.googlesource.com|crrev.com/i')
     external_review = general_regex % (
-        r'crosreview.com|chromium-review.googlesource.com')
+        r'crosreview.com|chromium-review.googlesource.com|crrev.com/c')
     guts = general_regex % r't/|gutsv\d.corp.google.com/#ticket/'
     chromium_review = general_regex % r'codereview.chromium.org'
 
