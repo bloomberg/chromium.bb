@@ -288,7 +288,7 @@ deps = {
   },
 
   'src/third_party/dom_distiller_js/dist':
-    Var('chromium_git') + '/chromium/dom-distiller/dist.git' + '@' + '232c293a4d3ebcbc4320f642af017ee054b3be93',
+    Var('chromium_git') + '/chromium/dom-distiller/dist.git' + '@' + '7a530fc00184ee28e79a2b45270906cacaf00d3b',
 
   'src/third_party/elfutils/src': {
       'url': Var('chromium_git') + '/external/elfutils.git' + '@' + '249673729a7e5dbd5de4f3760bdcaa3d23d154d7',
