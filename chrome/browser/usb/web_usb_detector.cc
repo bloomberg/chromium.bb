@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/url_formatter/elide_url.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/origin_util.h"
@@ -221,7 +222,9 @@ void WebUsbDetector::OnDeviceAdded(scoped_refptr<device::UsbDevice> device) {
               IDS_WEBUSB_DEVICE_DETECTED_NOTIFICATION_TITLE, product_name),
           l10n_util::GetStringFUTF16(
               IDS_WEBUSB_DEVICE_DETECTED_NOTIFICATION,
-              base::UTF8ToUTF16(landing_page.GetContent())),
+              url_formatter::FormatUrlForSecurityDisplay(
+                  landing_page,
+                  url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC)),
           gfx::Image(gfx::CreateVectorIcon(vector_icons::kUsbIcon, 64,
                                            gfx::kChromeIconGrey)),
           base::string16(), GURL(),
