@@ -12,13 +12,7 @@ namespace blink {
 
 namespace {
 
-constexpr unsigned kDefaultTestSize = 4 * SharedBuffer::kSegmentSize;
 constexpr unsigned kTooShortForSignature = 5;
-
-void PrepareReferenceData(char* buffer, size_t size) {
-  for (size_t i = 0; i < size; ++i)
-    buffer[i] = static_cast<char>(i);
-}
 
 RefPtr<SegmentReader> CreateSegmentReader(char* reference_data,
                                           size_t data_length) {

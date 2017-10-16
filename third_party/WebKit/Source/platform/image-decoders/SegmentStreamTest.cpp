@@ -29,39 +29,39 @@
 // for example. So let's not add them to every state changing operation and add
 // needless complexity.
 
+namespace blink {
+
 namespace {
 
 constexpr size_t kBufferAllocationSize = 20;
 constexpr size_t kInsideBufferPosition = 10;
 constexpr size_t kPastEndOfBufferPosition = 30;
 
-testing::AssertionResult IsCleared(const blink::SegmentStream&);
-testing::AssertionResult IsAtEnd(const blink::SegmentStream&);
-testing::AssertionResult PositionIsZero(const blink::SegmentStream&);
-testing::AssertionResult PositionIsInsideBuffer(const blink::SegmentStream&);
-testing::AssertionResult PositionIsAtEndOfBuffer(const blink::SegmentStream&);
-testing::AssertionResult LengthIsZero(const blink::SegmentStream&);
-testing::AssertionResult LengthIsAllocationSize(const blink::SegmentStream&);
+::testing::AssertionResult IsCleared(const SegmentStream&);
+::testing::AssertionResult IsAtEnd(const SegmentStream&);
+::testing::AssertionResult PositionIsZero(const SegmentStream&);
+::testing::AssertionResult PositionIsInsideBuffer(const SegmentStream&);
+::testing::AssertionResult PositionIsAtEndOfBuffer(const SegmentStream&);
+::testing::AssertionResult LengthIsZero(const SegmentStream&);
+::testing::AssertionResult LengthIsAllocationSize(const SegmentStream&);
 
 // Many of these tests require a SegmentStream with populated data.
 //
 // This function creates a buffer of size |kBufferAllocationSize| and prepares
 // a SegmentStream with that buffer.
 // This also populates other properties such as the length, cleared state, etc.
-blink::SegmentStream CreatePopulatedSegmentStream();
+SegmentStream CreatePopulatedSegmentStream();
 
 // This function creates a buffer of size |kBufferAllocationSize| to be used
 // when populating a SegmentStream.
 WTF::RefPtr<blink::SegmentReader> CreateSegmentReader();
 
-size_t ReadFromSegmentStream(blink::SegmentStream&,
+size_t ReadFromSegmentStream(SegmentStream&,
                              size_t amount_to_read = kInsideBufferPosition);
-size_t PeekIntoSegmentStream(blink::SegmentStream&,
+size_t PeekIntoSegmentStream(SegmentStream&,
                              size_t amount_to_peek = kInsideBufferPosition);
 
 }  // namespace
-
-namespace blink {
 
 TEST(SegmentStreamTest, DefaultConstructorShouldSetIsCleared) {
   SegmentStream segment_stream;
@@ -510,7 +510,7 @@ TEST(SegmentStreamTest, RewindShouldNotChangeLength) {
 }
 
 TEST(SegmentStreamTest, HasPositionShouldBeSupported) {
-  blink::SegmentStream segment_stream;
+  SegmentStream segment_stream;
 
   ASSERT_TRUE(segment_stream.hasPosition());
 }
@@ -604,73 +604,69 @@ TEST(SegmentStreamTest, MoveShouldNotChangeLength) {
 }
 
 TEST(SegmentStreamTest, HasLengthShouldBeSupported) {
-  blink::SegmentStream segment_stream;
+  SegmentStream segment_stream;
   ASSERT_TRUE(segment_stream.hasLength());
 }
 
-}  // namespace blink
-
 namespace {
 
-testing::AssertionResult IsCleared(const blink::SegmentStream& segment_stream) {
+::testing::AssertionResult IsCleared(const SegmentStream& segment_stream) {
   if (segment_stream.IsCleared())
-    return testing::AssertionSuccess();
+    return ::testing::AssertionSuccess();
 
-  return testing::AssertionFailure() << "SegmentStream is not clear";
+  return ::testing::AssertionFailure() << "SegmentStream is not clear";
 }
 
-testing::AssertionResult IsAtEnd(const blink::SegmentStream& segment_stream) {
+::testing::AssertionResult IsAtEnd(const SegmentStream& segment_stream) {
   if (segment_stream.isAtEnd())
-    return testing::AssertionSuccess();
+    return ::testing::AssertionSuccess();
 
-  return testing::AssertionFailure() << "SegmentStream is not at the end";
+  return ::testing::AssertionFailure() << "SegmentStream is not at the end";
 }
 
-testing::AssertionResult PositionIsZero(
-    const blink::SegmentStream& segment_stream) {
+::testing::AssertionResult PositionIsZero(const SegmentStream& segment_stream) {
   if (segment_stream.getPosition() == 0ul)
-    return testing::AssertionSuccess();
+    return ::testing::AssertionSuccess();
 
-  return testing::AssertionFailure() << "SegmentStream position is not 0";
+  return ::testing::AssertionFailure() << "SegmentStream position is not 0";
 }
 
-testing::AssertionResult PositionIsInsideBuffer(
-    const blink::SegmentStream& segment_stream) {
+::testing::AssertionResult PositionIsInsideBuffer(
+    const SegmentStream& segment_stream) {
   if (segment_stream.getPosition() == kInsideBufferPosition)
-    return testing::AssertionSuccess();
+    return ::testing::AssertionSuccess();
 
-  return testing::AssertionFailure()
+  return ::testing::AssertionFailure()
          << "SegmentStream position is not inside the buffer";
 }
 
-testing::AssertionResult PositionIsAtEndOfBuffer(
-    const blink::SegmentStream& segment_stream) {
+::testing::AssertionResult PositionIsAtEndOfBuffer(
+    const SegmentStream& segment_stream) {
   if (segment_stream.getPosition() == kBufferAllocationSize)
-    return testing::AssertionSuccess();
+    return ::testing::AssertionSuccess();
 
-  return testing::AssertionFailure()
+  return ::testing::AssertionFailure()
          << "SegmentStream position is not at the end of the buffer";
 }
 
-testing::AssertionResult LengthIsZero(
-    const blink::SegmentStream& segment_stream) {
+::testing::AssertionResult LengthIsZero(const SegmentStream& segment_stream) {
   if (segment_stream.getLength() == 0ul)
-    return testing::AssertionSuccess();
+    return ::testing::AssertionSuccess();
 
-  return testing::AssertionFailure() << "SegmentStream length is not 0";
+  return ::testing::AssertionFailure() << "SegmentStream length is not 0";
 }
 
-testing::AssertionResult LengthIsAllocationSize(
-    const blink::SegmentStream& segment_stream) {
+::testing::AssertionResult LengthIsAllocationSize(
+    const SegmentStream& segment_stream) {
   if (segment_stream.getLength() == kBufferAllocationSize)
-    return testing::AssertionSuccess();
+    return ::testing::AssertionSuccess();
 
-  return testing::AssertionFailure()
+  return ::testing::AssertionFailure()
          << "SegmentStream length is not the allocation size";
 }
 
-blink::SegmentStream CreatePopulatedSegmentStream() {
-  blink::SegmentStream segment_stream;
+SegmentStream CreatePopulatedSegmentStream() {
+  SegmentStream segment_stream;
   segment_stream.SetReader(CreateSegmentReader());
   return segment_stream;
 }
@@ -687,16 +683,17 @@ WTF::RefPtr<blink::SegmentReader> CreateSegmentReader() {
   return segment_reader;
 }
 
-size_t ReadFromSegmentStream(blink::SegmentStream& segment_stream,
+size_t ReadFromSegmentStream(SegmentStream& segment_stream,
                              size_t amount_to_read) {
   std::array<char, kBufferAllocationSize> read_buffer;
   return segment_stream.read(read_buffer.data(), amount_to_read);
 }
 
-size_t PeekIntoSegmentStream(blink::SegmentStream& segment_stream,
+size_t PeekIntoSegmentStream(SegmentStream& segment_stream,
                              size_t amount_to_peek) {
   std::array<char, kBufferAllocationSize> peek_buffer;
   return segment_stream.peek(peek_buffer.data(), amount_to_peek);
 }
 
 }  // namespace
+}  // namespace blink
