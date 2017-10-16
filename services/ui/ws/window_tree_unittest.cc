@@ -2029,6 +2029,29 @@ TEST_F(WindowTreeManualDisplayTest, SwapDisplayRoots) {
   EXPECT_EQ(display_root2_parent, display_root1->parent());
 }
 
+TEST_F(WindowTreeTest, EmbedFlagEmbedderControlsVisibility) {
+  const ClientWindowId embed_window_id = BuildClientWindowId(wm_tree(), 1);
+  EXPECT_TRUE(
+      wm_tree()->NewWindow(embed_window_id, ServerWindow::Properties()));
+  ServerWindow* embed_window = wm_tree()->GetWindowByClientId(embed_window_id);
+  ASSERT_TRUE(embed_window);
+  EXPECT_TRUE(wm_tree()->AddWindow(FirstRootId(wm_tree()), embed_window_id));
+  mojom::WindowTreeClientPtr client;
+  wm_client()->Bind(mojo::MakeRequest(&client));
+  const uint32_t embed_flags = mojom::kEmbedFlagEmbedderControlsVisibility;
+  wm_tree()->Embed(embed_window_id, std::move(client), embed_flags);
+  WindowTree* tree1 = window_server()->GetTreeWithRoot(embed_window);
+  ASSERT_TRUE(tree1);
+  // |tree1| should not be able to control the visibility of its root because
+  // |kEmbedFlagEmbedderControlsVisibility| was specified.
+  EXPECT_FALSE(tree1->SetWindowVisibility(
+      ClientWindowIdForWindow(tree1, embed_window), false));
+  const ClientWindowId child_window_id = BuildClientWindowId(tree1, 101);
+  // But |tree1| can control the visibility of any windows it creates.
+  EXPECT_TRUE(tree1->NewWindow(child_window_id, ServerWindow::Properties()));
+  EXPECT_TRUE(tree1->SetWindowVisibility(child_window_id, true));
+}
+
 }  // namespace test
 }  // namespace ws
 }  // namespace ui

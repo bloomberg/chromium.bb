@@ -1917,9 +1917,12 @@ void RenderWidgetHostViewAura::CreateAuraWindow(aura::client::WindowType type) {
     return;
 
   // Embed the renderer into the Window.
+  // Use kEmbedFlagEmbedderControlsVisibility so that the renderer can't change
+  // the visibility of |window_|.
   aura::WindowPortMus::Get(window_)->Embed(
       GetWindowTreeClientFromRenderer(),
-      ui::mojom::kEmbedFlagEmbedderInterceptsEvents,
+      ui::mojom::kEmbedFlagEmbedderInterceptsEvents |
+          ui::mojom::kEmbedFlagEmbedderControlsVisibility,
       base::Bind(&EmbedCallback));
 }
 

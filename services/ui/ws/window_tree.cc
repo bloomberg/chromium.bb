@@ -628,7 +628,8 @@ bool WindowTree::SetWindowVisibility(const ClientWindowId& window_id,
     DVLOG(1) << "SetWindowVisibility failed (no window)";
     return false;
   }
-  if (!access_policy_->CanChangeWindowVisibility(window)) {
+  if (!access_policy_->CanChangeWindowVisibility(window) ||
+      (!can_change_root_window_visibility_ && HasRoot(window))) {
     DVLOG(1) << "SetWindowVisibility failed (access policy denied change)";
     return false;
   }

@@ -78,7 +78,10 @@ void RendererWindowTreeClient::SetVisible(bool visible) {
     return;
 
   visible_ = visible;
-  // TODO(sky): determine when window should be updated.
+  if (tree_) {
+    tree_->SetWindowVisibility(GetAndAdvanceNextChangeId(), root_window_id_,
+                               visible);
+  }
 }
 
 void RendererWindowTreeClient::RequestLayerTreeFrameSink(
@@ -172,7 +175,8 @@ void RendererWindowTreeClient::OnEmbed(
     const base::Optional<viz::LocalSurfaceId>& local_surface_id) {
   root_window_id_ = root->window_id;
   tree_ = std::move(tree);
-  // TODO(sky): determine when window should be updated.
+  tree_->SetWindowVisibility(GetAndAdvanceNextChangeId(), root_window_id_,
+                             visible_);
   for (MusEmbeddedFrame* frame : embedded_frames_)
     frame->OnTreeAvailable();
 
@@ -336,7 +340,9 @@ void RendererWindowTreeClient::OnDragDropDone() {}
 void RendererWindowTreeClient::OnChangeCompleted(uint32_t change_id,
                                                  bool success) {
   // Don't DCHECK success, as it's possible we'll try to do some operations
-  // after unembedded, which means all operations will fail.
+  // after unembedded, which means all operations will fail. Additionally
+  // setting the window visibility may fail for the root frame (the browser
+  // controls the visibility of the root frame).
 }
 
 void RendererWindowTreeClient::RequestClose(uint32_t window_id) {}
