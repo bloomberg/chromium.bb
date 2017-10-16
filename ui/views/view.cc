@@ -834,12 +834,13 @@ void View::Paint(const PaintInfo& parent_paint_info) {
   if (!ShouldPaint())
     return;
 
-  const gfx::Rect& parent_bounds =
-      !parent() ? GetMirroredBounds() : parent()->GetMirroredBounds();
+  const gfx::Rect& parent_bounds = !parent()
+                                       ? GetPaintRecordingBounds()
+                                       : parent()->GetPaintRecordingBounds();
 
   PaintInfo paint_info = PaintInfo::CreateChildPaintInfo(
-      parent_paint_info, GetMirroredBounds(), parent_bounds.size(),
-      GetPaintScaleType(), !!layer());
+      parent_paint_info, GetPaintRecordingBounds(), parent_bounds.size(),
+      GetPaintScaleType());
 
   const ui::PaintContext& context = paint_info.context();
   bool is_invalidated = true;
@@ -2002,6 +2003,14 @@ bool View::ShouldPaint() const {
   return visible_ && !size().IsEmpty();
 }
 
+gfx::Rect View::GetPaintRecordingBounds() const {
+  // If the View has a layer() then it is a paint root and no offset information
+  // is needed. Otherwise, we need bounds that includes an offset from the
+  // parent to add to the total offset from the paint root.
+  DCHECK(layer() || parent() || origin() == gfx::Point());
+  return layer() ? GetLocalBounds() : GetMirroredBounds();
+}
+
 void View::SetupTransformRecorderForPainting(
     const gfx::Vector2d& offset_from_parent,
     ui::TransformRecorder* recorder) const {
@@ -2042,11 +2051,11 @@ void View::PaintDebugRects(const PaintInfo& parent_paint_info) {
     return;
 
   const gfx::Rect& parent_bounds = (layer() || !parent())
-                                       ? GetMirroredBounds()
-                                       : parent()->GetMirroredBounds();
+                                       ? GetPaintRecordingBounds()
+                                       : parent()->GetPaintRecordingBounds();
   PaintInfo paint_info = PaintInfo::CreateChildPaintInfo(
-      parent_paint_info, GetMirroredBounds(), parent_bounds.size(),
-      GetPaintScaleType(), !!layer());
+      parent_paint_info, GetPaintRecordingBounds(), parent_bounds.size(),
+      GetPaintScaleType());
 
   const ui::PaintContext& context = paint_info.context();
 
