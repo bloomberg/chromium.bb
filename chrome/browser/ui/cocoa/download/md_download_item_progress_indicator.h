@@ -7,22 +7,31 @@
 
 #import <AppKit/AppKit.h>
 
+enum class MDDownloadItemProgressIndicatorState {
+  kNotStarted,
+  kInProgress,
+  kComplete,
+  kCanceled,
+};
+
 // MDDownloadItemProgressIndicator is the animated, circular progress bar
 // that's part of each item in the download shelf.
 @interface MDDownloadItemProgressIndicator : NSView
 
-// A number less than or equal to 1 representing current progress. If less than
-// 0, shows an indeterminate progress bar.
-@property(nonatomic) CGFloat progress;
-
-// Is the download paused? If so, any indeterminate animation will freeze.
+// Freezes the indeterminate animation if YES, resumes if NO.
 @property(nonatomic) BOOL paused;
 
-// Sets progress to 0 with an animation representing cancelation.
-- (void)cancel;
-
-// Sets progress to 1 with an animation representing completion.
-- (void)complete;
+// Sets the desired state and progress of the progress indicator. Animated.
+// - state: Currently only expected to advance or stay the same.
+// - progress: A number <= 1. < 0 means "unknown".
+// - animations: A block of animations to run alongside the progress
+//   indicator's animation. May run after a delay if transition is already in
+//   progress.
+// - completion: A block to be run once the animation is complete.
+- (void)setState:(MDDownloadItemProgressIndicatorState)state
+        progress:(CGFloat)progress
+      animations:(void (^)())animations
+      completion:(void (^)())completion;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_DOWNLOAD_MD_DOWNLOAD_ITEM_PROGRESS_INDICATOR_H_
