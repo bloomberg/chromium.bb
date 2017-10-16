@@ -1710,6 +1710,8 @@ crbug.com/762098 compositing/overflow/non-composited-sticky-element-in-main-thre
 
 # Subsequence under-invalidation of scroller related to ScrollHitTest.
 crbug.com/738613 compositing/overflow/overflow-scroll-with-pointer-events-toggle.html [ Failure Crash ]
+# Null pointer in PaintArtifactCompositor::ScrollHitTestLayerForPendingLayer().
+crbug.com/738613 paint/invalidation/compositing/pointer-events-composited-scrolling.html [ Crash ]
 
 # See comment regarding this test in NeverFixTests. It also fails for other
 # reasons, in particular that the composited layerization algorithm provides
