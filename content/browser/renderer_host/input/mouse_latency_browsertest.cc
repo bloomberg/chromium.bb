@@ -121,6 +121,7 @@ class MouseLatencyBrowserTest : public ContentBrowserTest {
     base::RunLoop run_loop;
     ASSERT_TRUE(TracingController::GetInstance()->StartTracing(
         trace_config, run_loop.QuitClosure()));
+    run_loop.Run();
   }
 
   const base::Value& StopTracing() {
@@ -149,8 +150,7 @@ class MouseLatencyBrowserTest : public ContentBrowserTest {
 // MouseDown events in the case where no swap is generated.
 // Disabled on Android because we don't support synthetic mouse input on
 // Android (crbug.com/723618).
-// Flaky on Mac10.10 (crbug.com/774169).
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if defined(OS_ANDROID)
 #define MAYBE_MouseDownAndUpRecordedWithoutSwap \
   DISABLED_MouseDownAndUpRecordedWithoutSwap
 #else
