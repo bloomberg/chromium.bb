@@ -202,6 +202,14 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, Download) {
   VerifyDownloadCount(0u);
 }
 
+// Test that the salt for media device IDs is reset when cookies are cleared.
+IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, MediaDeviceIdSalt) {
+  std::string original_salt = browser()->profile()->GetMediaDeviceIDSalt();
+  RemoveAndWait(content::BrowsingDataRemover::DATA_TYPE_COOKIES);
+  std::string new_salt = browser()->profile()->GetMediaDeviceIDSalt();
+  EXPECT_NE(original_salt, new_salt);
+}
+
 // The call to Remove() should crash in debug (DCHECK), but the browser-test
 // process model prevents using a death test.
 #if defined(NDEBUG) && !defined(DCHECK_ALWAYS_ON)

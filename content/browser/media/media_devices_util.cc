@@ -13,7 +13,9 @@
 #include "base/strings/string_tokenizer.h"
 #include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/common/media_stream_request.h"
 #include "media/base/media_switches.h"
 
@@ -108,6 +110,20 @@ void GetDefaultMediaDeviceID(
       base::Bind(&GetDefaultMediaDeviceIDOnUIThread, device_type,
                  render_process_id, render_frame_id),
       callback);
+}
+
+std::pair<std::string, url::Origin> GetMediaDeviceSaltAndOrigin(
+    int render_process_id,
+    int render_frame_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  RenderFrameHost* frame_host =
+      RenderFrameHost::FromID(render_process_id, render_frame_id);
+  RenderProcessHost* process_host =
+      RenderProcessHost::FromID(render_process_id);
+  return std::make_pair(
+      process_host ? process_host->GetBrowserContext()->GetMediaDeviceIDSalt()
+                   : std::string(),
+      frame_host ? frame_host->GetLastCommittedOrigin() : url::Origin());
 }
 
 }  // namespace content
