@@ -81,9 +81,8 @@ ModuleScript* CreateReferrerModuleScript(Modulator* modulator,
       WebURLRequest::kFetchCredentialsModeOmit, "", kParserInserted,
       TextPosition::MinimumPosition(), ASSERT_NO_EXCEPTION);
   KURL referrer_url(kParsedURLString, "https://example.com/referrer.js");
-  ModuleScript* referrer_module_script = ModuleScript::CreateForTest(
-      modulator, referrer_record, referrer_url, "", kParserInserted,
-      WebURLRequest::kFetchCredentialsModeOmit);
+  auto* referrer_module_script =
+      ModuleScript::CreateForTest(modulator, referrer_record, referrer_url);
   return referrer_module_script;
 }
 
@@ -96,9 +95,7 @@ ModuleScript* CreateTargetModuleScript(
       kSharableCrossOrigin, WebURLRequest::kFetchCredentialsModeOmit, "",
       kParserInserted, TextPosition::MinimumPosition(), ASSERT_NO_EXCEPTION);
   KURL url(kParsedURLString, "https://example.com/target.js");
-  ModuleScript* module_script =
-      ModuleScript::CreateForTest(modulator, record, url, "", kParserInserted,
-                                  WebURLRequest::kFetchCredentialsModeOmit);
+  auto* module_script = ModuleScript::CreateForTest(modulator, record, url);
   if (state != ScriptModuleState::kInstantiated) {
     EXPECT_EQ(ScriptModuleState::kErrored, state);
     v8::Local<v8::Value> error =

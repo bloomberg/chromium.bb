@@ -16,7 +16,6 @@
 #include "platform/loader/fetch/ScriptFetchOptions.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/text/TextPosition.h"
-#include "public/platform/WebURLRequest.h"
 
 namespace blink {
 
@@ -35,13 +34,11 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
 
   // Mostly corresponds to Create() but accepts ScriptModule as the argument
   // and allows null ScriptModule.
-  // TODO(kouhei): Consider making this take ScriptFetchOptions directly.
-  static ModuleScript* CreateForTest(Modulator*,
-                                     ScriptModule,
-                                     const KURL& base_url,
-                                     const String& nonce,
-                                     ParserDisposition,
-                                     WebURLRequest::FetchCredentialsMode);
+  static ModuleScript* CreateForTest(
+      Modulator*,
+      ScriptModule,
+      const KURL& base_url,
+      const ScriptFetchOptions& = ScriptFetchOptions());
 
   ~ModuleScript() override = default;
 

@@ -51,9 +51,8 @@ class DynamicModuleResolverTestModulator final : public DummyModulator {
 
   ModuleScript* GetFetchedModuleScript(const KURL& url) final {
     EXPECT_EQ(TestReferrerURL(), url);
-    ModuleScript* module_script = ModuleScript::CreateForTest(
-        this, ScriptModule(), url, "nonce", kParserInserted,
-        WebURLRequest::kFetchCredentialsModeOmit);
+    ModuleScript* module_script =
+        ModuleScript::CreateForTest(this, ScriptModule(), url);
     return module_script;
   }
 
@@ -212,9 +211,8 @@ TEST(DynamicModuleResolverTest, ResolveSuccess) {
       scope.GetIsolate(), "export const foo = 'hello';", TestReferrerURL(),
       kSharableCrossOrigin, WebURLRequest::kFetchCredentialsModeOmit, "",
       kParserInserted, TextPosition::MinimumPosition(), ASSERT_NO_EXCEPTION);
-  ModuleScript* module_script = ModuleScript::CreateForTest(
-      modulator, record, TestDependencyURL(), "nonce", kNotParserInserted,
-      WebURLRequest::kFetchCredentialsModeOmit);
+  ModuleScript* module_script =
+      ModuleScript::CreateForTest(modulator, record, TestDependencyURL());
   EXPECT_TRUE(record.Instantiate(scope.GetScriptState()).IsEmpty());
   modulator->ResolveTreeFetch(module_script);
 
@@ -293,9 +291,8 @@ TEST(DynamicModuleResolverTest, ExceptionThrown) {
       scope.GetIsolate(), "throw Error('bar')", TestReferrerURL(),
       kSharableCrossOrigin, WebURLRequest::kFetchCredentialsModeOmit, "",
       kParserInserted, TextPosition::MinimumPosition(), ASSERT_NO_EXCEPTION);
-  ModuleScript* module_script = ModuleScript::CreateForTest(
-      modulator, record, TestDependencyURL(), "nonce", kNotParserInserted,
-      WebURLRequest::kFetchCredentialsModeOmit);
+  ModuleScript* module_script =
+      ModuleScript::CreateForTest(modulator, record, TestDependencyURL());
   EXPECT_TRUE(record.Instantiate(scope.GetScriptState()).IsEmpty());
   modulator->ResolveTreeFetch(module_script);
 
@@ -331,9 +328,8 @@ TEST(DynamicModuleResolverTest, ResolveWithNullReferrerScriptSuccess) {
       scope.GetIsolate(), "export const foo = 'hello';", TestDependencyURL(),
       kSharableCrossOrigin, WebURLRequest::kFetchCredentialsModeOmit, "",
       kParserInserted, TextPosition::MinimumPosition(), ASSERT_NO_EXCEPTION);
-  ModuleScript* module_script = ModuleScript::CreateForTest(
-      modulator, record, TestDependencyURL(), "nonce", kNotParserInserted,
-      WebURLRequest::kFetchCredentialsModeOmit);
+  ModuleScript* module_script =
+      ModuleScript::CreateForTest(modulator, record, TestDependencyURL());
   EXPECT_TRUE(record.Instantiate(scope.GetScriptState()).IsEmpty());
   modulator->ResolveTreeFetch(module_script);
 
