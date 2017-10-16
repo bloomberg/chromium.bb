@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/main/main_containing_view_controller.h"
 
 #import "base/logging.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_switcher.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -19,6 +20,7 @@
 - (void)showTabSwitcher:(UIViewController<TabSwitcher>*)tabSwitcher
              completion:(ProceduralBlock)completion {
   [self setActiveViewController:tabSwitcher completion:completion];
+  [tabSwitcher showWithSelectedTabAnimation];
 }
 
 - (void)showTabViewController:(UIViewController*)viewController
