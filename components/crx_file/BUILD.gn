@@ -6,8 +6,7 @@ import("//third_party/protobuf/proto_library.gni")
 
 static_library("crx_file") {
   sources = [
-    "crx2_file.cc",
-    "crx2_file.h",
+    "crx_file.h",
     "crx_verifier.cc",
     "crx_verifier.h",
     "id_util.cc",
@@ -24,10 +23,28 @@ static_library("crx_file") {
   ]
 }
 
+static_library("crx_creator") {
+  sources = [
+    "crx_creator.cc",
+    "crx_creator.h",
+  ]
+
+  deps = [
+    ":crx_file",
+    "//base",
+    "//crypto",
+  ]
+
+  public_deps = [
+    ":crx3_proto",
+  ]
+}
+
 bundle_data("unit_tests_bundle_data") {
   visibility = [ ":unit_tests" ]
   testonly = true
   sources = [
+    "//components/test/data/crx_file/sample.zip",
     "//components/test/data/crx_file/unsigned.crx3",
     "//components/test/data/crx_file/valid.crx2",
     "//components/test/data/crx_file/valid_no_publisher.crx3",
@@ -42,14 +59,17 @@ bundle_data("unit_tests_bundle_data") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "crx_creator_unittest.cc",
     "crx_verifier_unittest.cc",
     "id_util_unittest.cc",
   ]
 
   deps = [
+    ":crx_creator",
     ":crx_file",
     ":unit_tests_bundle_data",
     "//base",
+    "//crypto",
     "//testing/gtest",
   ]
 }

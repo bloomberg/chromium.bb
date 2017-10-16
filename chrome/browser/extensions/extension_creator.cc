@@ -17,7 +17,7 @@
 #include "base/strings/string_util.h"
 #include "chrome/browser/extensions/extension_creator_filter.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/crx_file/crx2_file.h"
+#include "components/crx_file/crx_creator.h"
 #include "components/crx_file/id_util.h"
 #include "crypto/rsa_private_key.h"
 #include "crypto/signature_creator.h"
@@ -209,87 +209,25 @@ bool ExtensionCreator::CreateZip(const base::FilePath& extension_dir,
   return true;
 }
 
-bool ExtensionCreator::SignZip(const base::FilePath& zip_path,
-                               crypto::RSAPrivateKey* private_key,
-                               std::vector<uint8_t>* signature) {
-  std::unique_ptr<crypto::SignatureCreator> signature_creator(
-      crypto::SignatureCreator::Create(private_key,
-                                       crypto::SignatureCreator::SHA1));
-  base::ScopedFILE zip_handle(base::OpenFile(zip_path, "rb"));
-  size_t buffer_size = 1 << 16;
-  std::unique_ptr<uint8_t[]> buffer(new uint8_t[buffer_size]);
-  int bytes_read = -1;
-  while ((bytes_read = fread(buffer.get(), 1, buffer_size,
-       zip_handle.get())) > 0) {
-    if (!signature_creator->Update(buffer.get(), bytes_read)) {
+bool ExtensionCreator::CreateCrx(const base::FilePath& zip_path,
+                                 crypto::RSAPrivateKey* private_key,
+                                 const base::FilePath& crx_path) {
+  switch (crx_file::Create(crx_path, zip_path, private_key)) {
+    case crx_file::CreatorResult::OK:
+      return true;
+    case crx_file::CreatorResult::ERROR_SIGNING_FAILURE:
       error_message_ =
           l10n_util::GetStringUTF8(IDS_EXTENSION_ERROR_WHILE_SIGNING);
       return false;
-    }
-  }
-  zip_handle.reset();
-
-  if (!signature_creator->Final(signature)) {
-    error_message_ =
-        l10n_util::GetStringUTF8(IDS_EXTENSION_ERROR_WHILE_SIGNING);
-    return false;
-  }
-  return true;
-}
-
-bool ExtensionCreator::WriteCRX(const base::FilePath& zip_path,
-                                crypto::RSAPrivateKey* private_key,
-                                const std::vector<uint8_t>& signature,
-                                const base::FilePath& crx_path) {
-  if (base::PathExists(crx_path))
-    base::DeleteFile(crx_path, false);
-  base::ScopedFILE crx_handle(base::OpenFile(crx_path, "wb"));
-  if (!crx_handle.get()) {
-    error_message_ = l10n_util::GetStringUTF8(IDS_EXTENSION_SHARING_VIOLATION);
-    return false;
-  }
-
-  std::vector<uint8_t> public_key;
-  CHECK(private_key->ExportPublicKey(&public_key));
-
-  crx_file::Crx2File::Error error = crx_file::Crx2File::kMaxValue;
-  std::unique_ptr<crx_file::Crx2File> crx(
-      crx_file::Crx2File::Create(public_key.size(), signature.size(), &error));
-  if (!crx) {
-    LOG(ERROR) << "cannot create Crx2FileHeader: " << error;
-    return false;
-  }
-  const crx_file::Crx2File::Header header = crx->header();
-
-  if (fwrite(&header, sizeof(header), 1, crx_handle.get()) != 1) {
-    PLOG(ERROR) << "fwrite failed to write header";
-    return false;
-  }
-  if (fwrite(&public_key.front(), sizeof(uint8_t), public_key.size(),
-             crx_handle.get()) != public_key.size()) {
-    PLOG(ERROR) << "fwrite failed to write public_key.front";
-    return false;
-  }
-  if (fwrite(&signature.front(), sizeof(uint8_t), signature.size(),
-             crx_handle.get()) != signature.size()) {
-    PLOG(ERROR) << "fwrite failed to write signature.front";
-    return false;
-  }
-
-  size_t buffer_size = 1 << 16;
-  std::unique_ptr<uint8_t[]> buffer(new uint8_t[buffer_size]);
-  size_t bytes_read = 0;
-  base::ScopedFILE zip_handle(base::OpenFile(zip_path, "rb"));
-  while ((bytes_read = fread(buffer.get(), 1, buffer_size,
-                             zip_handle.get())) > 0) {
-    if (fwrite(buffer.get(), sizeof(char), bytes_read, crx_handle.get()) !=
-        bytes_read) {
-      PLOG(ERROR) << "fwrite failed to write buffer";
+    case crx_file::CreatorResult::ERROR_FILE_NOT_WRITABLE:
+      error_message_ =
+          l10n_util::GetStringUTF8(IDS_EXTENSION_SHARING_VIOLATION);
       return false;
-    }
+    case crx_file::CreatorResult::ERROR_FILE_NOT_READABLE:
+    case crx_file::CreatorResult::ERROR_FILE_WRITE_FAILURE:
+      return false;
   }
-
-  return true;
+  return false;
 }
 
 bool ExtensionCreator::Run(const base::FilePath& extension_dir,
@@ -324,11 +262,9 @@ bool ExtensionCreator::Run(const base::FilePath& extension_dir,
 
   // Zip up the extension.
   base::FilePath zip_path;
-  std::vector<uint8_t> signature;
   bool result = false;
   if (CreateZip(extension_dir, temp_dir.GetPath(), &zip_path) &&
-      SignZip(zip_path, key_pair.get(), &signature) &&
-      WriteCRX(zip_path, key_pair.get(), signature, crx_path)) {
+      CreateCrx(zip_path, key_pair.get(), crx_path)) {
     result = true;
   }
 
