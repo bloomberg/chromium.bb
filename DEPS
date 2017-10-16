@@ -750,6 +750,15 @@ hooks = [
     'action': ['python', 'src/tools/clang/scripts/update.py'],
   },
   {
+    # Mac doesn't use lld so it's not included in the default clang bundle
+    # there.  lld is however needed in win cross builds, so download it there.
+    # Should run after the clang hook.
+    'name': 'lld/mac',
+    'pattern': '.',
+    'condition': 'host_os == "mac" and checkout_win',
+    'action': ['python', 'src/tools/clang/scripts/download_lld_mac.py'],
+  },
+  {
     # Update LASTCHANGE.
     'name': 'lastchange',
     'pattern': '.',
