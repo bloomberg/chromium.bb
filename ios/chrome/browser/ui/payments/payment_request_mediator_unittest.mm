@@ -208,31 +208,27 @@ TEST_F(PaymentRequestMediatorTest, TestShippingAddressItem) {
   payment_request()->set_selected_shipping_profile(nullptr);
 
   // When there is no selected shipping address, the Shipping Address item
-  // should be of type CollectionViewDetailItem.
+  // should be of type PaymentsTextItem.
   item = [mediator() shippingAddressItem];
-  ASSERT_TRUE([item isMemberOfClass:[CollectionViewDetailItem class]]);
-  CollectionViewDetailItem* add_shipping_address_item =
-      base::mac::ObjCCastStrict<CollectionViewDetailItem>(item);
+  ASSERT_TRUE([item isMemberOfClass:[PaymentsTextItem class]]);
+  PaymentsTextItem* add_shipping_address_item =
+      base::mac::ObjCCastStrict<PaymentsTextItem>(item);
   EXPECT_TRUE([add_shipping_address_item.text
       isEqualToString:l10n_util::GetNSString(
-                          IDS_PAYMENTS_SHIPPING_ADDRESS_LABEL)]);
-  EXPECT_TRUE([add_shipping_address_item.detailText
-      isEqualToString:[l10n_util::GetNSString(IDS_CHOOSE)
-                          uppercaseStringWithLocale:[NSLocale currentLocale]]]);
-  EXPECT_EQ(MDCCollectionViewCellAccessoryNone,
+                          IDS_PAYMENTS_CHOOSE_SHIPPING_ADDRESS_LABEL)]);
+  EXPECT_EQ(MDCCollectionViewCellAccessoryDisclosureIndicator,
             add_shipping_address_item.accessoryType);
 
   // Remove the shipping profiles.
   payment_request()->ClearShippingProfiles();
 
-  // No accessory view indicates there are no shipping profiles to choose from.
+  // No shipping profiles to choose from.
   item = [mediator() shippingAddressItem];
-  add_shipping_address_item =
-      base::mac::ObjCCastStrict<CollectionViewDetailItem>(item);
-  EXPECT_TRUE([add_shipping_address_item.detailText
-      isEqualToString:[l10n_util::GetNSString(IDS_ADD)
-                          uppercaseStringWithLocale:[NSLocale currentLocale]]]);
-  EXPECT_EQ(MDCCollectionViewCellAccessoryNone,
+  add_shipping_address_item = base::mac::ObjCCastStrict<PaymentsTextItem>(item);
+  EXPECT_TRUE([add_shipping_address_item.text
+      isEqualToString:l10n_util::GetNSString(
+                          IDS_PAYMENTS_ADD_SHIPPING_ADDRESS_LABEL)]);
+  EXPECT_EQ(MDCCollectionViewCellAccessoryDisclosureIndicator,
             add_shipping_address_item.accessoryType);
 }
 
@@ -252,18 +248,15 @@ TEST_F(PaymentRequestMediatorTest, TestShippingOptionItem) {
   payment_request()->set_selected_shipping_option(nullptr);
 
   // When there is no selected shipping option, the Shipping Option item should
-  // be of type CollectionViewDetailItem.
+  // be of type PaymentsTextItem.
   item = [mediator() shippingOptionItem];
-  ASSERT_TRUE([item isMemberOfClass:[CollectionViewDetailItem class]]);
-  CollectionViewDetailItem* add_shipping_option_item =
-      base::mac::ObjCCastStrict<CollectionViewDetailItem>(item);
+  ASSERT_TRUE([item isMemberOfClass:[PaymentsTextItem class]]);
+  PaymentsTextItem* add_shipping_option_item =
+      base::mac::ObjCCastStrict<PaymentsTextItem>(item);
   EXPECT_TRUE([add_shipping_option_item.text
       isEqualToString:l10n_util::GetNSString(
-                          IDS_PAYMENTS_SHIPPING_OPTION_LABEL)]);
-  EXPECT_TRUE([add_shipping_option_item.detailText
-      isEqualToString:[l10n_util::GetNSString(IDS_CHOOSE)
-                          uppercaseStringWithLocale:[NSLocale currentLocale]]]);
-  EXPECT_EQ(MDCCollectionViewCellAccessoryNone,
+                          IDS_PAYMENTS_CHOOSE_SHIPPING_OPTION_LABEL)]);
+  EXPECT_EQ(MDCCollectionViewCellAccessoryDisclosureIndicator,
             add_shipping_option_item.accessoryType);
 }
 
@@ -297,31 +290,25 @@ TEST_F(PaymentRequestMediatorTest, TestPaymentMethodItem) {
   payment_request()->set_selected_payment_method(nullptr);
 
   // When there is no selected payment method, the Payment Method item should be
-  // of type CollectionViewDetailItem.
+  // of type PaymentsTextItem.
   item = [mediator() paymentMethodItem];
-  ASSERT_TRUE([item isMemberOfClass:[CollectionViewDetailItem class]]);
-  CollectionViewDetailItem* add_payment_method_item =
-      base::mac::ObjCCastStrict<CollectionViewDetailItem>(item);
+  ASSERT_TRUE([item isMemberOfClass:[PaymentsTextItem class]]);
+  PaymentsTextItem* add_payment_method_item =
+      base::mac::ObjCCastStrict<PaymentsTextItem>(item);
   EXPECT_TRUE([add_payment_method_item.text
-      isEqualToString:l10n_util::GetNSString(
-                          IDS_PAYMENT_REQUEST_PAYMENT_METHOD_SECTION_NAME)]);
-  EXPECT_TRUE([add_payment_method_item.detailText
-      isEqualToString:[l10n_util::GetNSString(IDS_CHOOSE)
-                          uppercaseStringWithLocale:[NSLocale currentLocale]]]);
-  EXPECT_EQ(MDCCollectionViewCellAccessoryNone,
+      isEqualToString:l10n_util::GetNSString(IDS_CHOOSE_PAYMENT_METHOD)]);
+  EXPECT_EQ(MDCCollectionViewCellAccessoryDisclosureIndicator,
             add_payment_method_item.accessoryType);
 
   // Remove the payment methods.
   payment_request()->ClearPaymentMethods();
 
-  // No accessory view indicates there are no payment methods to choose from.
+  // No payment methods to choose from.
   item = [mediator() paymentMethodItem];
-  add_payment_method_item =
-      base::mac::ObjCCastStrict<CollectionViewDetailItem>(item);
-  EXPECT_TRUE([add_payment_method_item.detailText
-      isEqualToString:[l10n_util::GetNSString(IDS_ADD)
-                          uppercaseStringWithLocale:[NSLocale currentLocale]]]);
-  EXPECT_EQ(MDCCollectionViewCellAccessoryNone,
+  add_payment_method_item = base::mac::ObjCCastStrict<PaymentsTextItem>(item);
+  EXPECT_TRUE([add_payment_method_item.text
+      isEqualToString:l10n_util::GetNSString(IDS_ADD_PAYMENT_METHOD)]);
+  EXPECT_EQ(MDCCollectionViewCellAccessoryDisclosureIndicator,
             add_payment_method_item.accessoryType);
 }
 
@@ -388,31 +375,27 @@ TEST_F(PaymentRequestMediatorTest, TestContactInfoItem) {
   payment_request()->set_selected_contact_profile(nullptr);
 
   // When there is no selected contact profile, the Payment Method item should
-  // be of type CollectionViewDetailItem.
+  // be of type PaymentsTextItem.
   item = [mediator() contactInfoItem];
-  ASSERT_TRUE([item isMemberOfClass:[CollectionViewDetailItem class]]);
-  CollectionViewDetailItem* add_contact_info_item =
-      base::mac::ObjCCastStrict<CollectionViewDetailItem>(item);
+  ASSERT_TRUE([item isMemberOfClass:[PaymentsTextItem class]]);
+  PaymentsTextItem* add_contact_info_item =
+      base::mac::ObjCCastStrict<PaymentsTextItem>(item);
   EXPECT_TRUE([add_contact_info_item.text
       isEqualToString:l10n_util::GetNSString(
-                          IDS_PAYMENTS_CONTACT_DETAILS_LABEL)]);
-  EXPECT_TRUE([add_contact_info_item.detailText
-      isEqualToString:[l10n_util::GetNSString(IDS_CHOOSE)
-                          uppercaseStringWithLocale:[NSLocale currentLocale]]]);
-  EXPECT_EQ(MDCCollectionViewCellAccessoryNone,
+                          IDS_PAYMENT_REQUEST_CHOOSE_CONTACT_INFO)]);
+  EXPECT_EQ(MDCCollectionViewCellAccessoryDisclosureIndicator,
             add_contact_info_item.accessoryType);
 
   // Remove the contact profiles.
   payment_request()->ClearContactProfiles();
 
-  // No accessory view indicates there are no contact profiles to choose from.
+  // No contact profiles to choose from.
   item = [mediator() contactInfoItem];
-  add_contact_info_item =
-      base::mac::ObjCCastStrict<CollectionViewDetailItem>(item);
-  EXPECT_TRUE([add_contact_info_item.detailText
-      isEqualToString:[l10n_util::GetNSString(IDS_ADD)
-                          uppercaseStringWithLocale:[NSLocale currentLocale]]]);
-  EXPECT_EQ(MDCCollectionViewCellAccessoryNone,
+  add_contact_info_item = base::mac::ObjCCastStrict<PaymentsTextItem>(item);
+  EXPECT_TRUE([add_contact_info_item.text
+      isEqualToString:l10n_util::GetNSString(
+                          IDS_PAYMENT_REQUEST_ADD_CONTACT_INFO)]);
+  EXPECT_EQ(MDCCollectionViewCellAccessoryDisclosureIndicator,
             add_contact_info_item.accessoryType);
 }
 

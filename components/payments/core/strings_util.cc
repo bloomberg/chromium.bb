@@ -105,6 +105,58 @@ base::string16 GetShippingAddressSectionString(
   }
 }
 
+#if defined(OS_IOS)
+base::string16 GetChooseShippingAddressButtonLabel(
+    PaymentShippingType shipping_type) {
+  switch (shipping_type) {
+    case PaymentShippingType::DELIVERY:
+      return l10n_util::GetStringUTF16(
+          IDS_PAYMENTS_CHOOSE_DELIVERY_ADDRESS_LABEL);
+    case PaymentShippingType::PICKUP:
+      return l10n_util::GetStringUTF16(
+          IDS_PAYMENTS_CHOOSE_PICKUP_ADDRESS_LABEL);
+    case PaymentShippingType::SHIPPING:
+      return l10n_util::GetStringUTF16(
+          IDS_PAYMENTS_CHOOSE_SHIPPING_ADDRESS_LABEL);
+    default:
+      NOTREACHED();
+      return base::string16();
+  }
+}
+
+base::string16 GetAddShippingAddressButtonLabel(
+    PaymentShippingType shipping_type) {
+  switch (shipping_type) {
+    case PaymentShippingType::DELIVERY:
+      return l10n_util::GetStringUTF16(IDS_PAYMENTS_ADD_DELIVERY_ADDRESS_LABEL);
+    case PaymentShippingType::PICKUP:
+      return l10n_util::GetStringUTF16(IDS_PAYMENTS_ADD_PICKUP_ADDRESS_LABEL);
+    case PaymentShippingType::SHIPPING:
+      return l10n_util::GetStringUTF16(IDS_PAYMENTS_ADD_SHIPPING_ADDRESS_LABEL);
+    default:
+      NOTREACHED();
+      return base::string16();
+  }
+}
+
+base::string16 GetChooseShippingOptionButtonLabel(
+    PaymentShippingType shipping_type) {
+  switch (shipping_type) {
+    case PaymentShippingType::DELIVERY:
+      return l10n_util::GetStringUTF16(
+          IDS_PAYMENTS_CHOOSE_DELIVERY_OPTION_LABEL);
+    case PaymentShippingType::PICKUP:
+      return l10n_util::GetStringUTF16(IDS_PAYMENTS_CHOOSE_PICKUP_OPTION_LABEL);
+    case PaymentShippingType::SHIPPING:
+      return l10n_util::GetStringUTF16(
+          IDS_PAYMENTS_CHOOSE_SHIPPING_OPTION_LABEL);
+    default:
+      NOTREACHED();
+      return base::string16();
+  }
+}
+#endif  // defined(OS_IOS)
+
 base::string16 GetShippingOptionSectionString(
     PaymentShippingType shipping_type) {
   switch (shipping_type) {

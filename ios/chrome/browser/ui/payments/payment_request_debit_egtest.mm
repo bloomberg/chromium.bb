@@ -169,7 +169,8 @@ std::unique_ptr<autofill::AutofillProfile> _profile;
       assertWithMatcher:grey_notNil()];
 
   // Select the local card
-  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(@"Payment")]
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                          IDS_CHOOSE_PAYMENT_METHOD)]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:PaymentMethodCellMatcher(card, *_profile)]
       performAction:grey_tap()];

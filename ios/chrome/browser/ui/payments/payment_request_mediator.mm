@@ -26,6 +26,7 @@
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_detail_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_footer_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
+#import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/payments/cells/autofill_profile_item.h"
 #import "ios/chrome/browser/ui/payments/cells/payment_method_item.h"
 #import "ios/chrome/browser/ui/payments/cells/payments_text_item.h"
@@ -148,17 +149,18 @@ using ::payment_request_util::GetShippingSectionTitle;
     return item;
   }
 
-  CollectionViewDetailItem* item = [[CollectionViewDetailItem alloc] init];
-  item.text = base::SysUTF16ToNSString(
-      GetShippingAddressSectionString(self.paymentRequest->shipping_type()));
+  PaymentsTextItem* item = [[PaymentsTextItem alloc] init];
   if (self.paymentRequest->shipping_profiles().empty()) {
-    item.detailText = [l10n_util::GetNSString(IDS_ADD)
-        uppercaseStringWithLocale:[NSLocale currentLocale]];
-  } else if (!profile) {
-    item.detailText = [l10n_util::GetNSString(IDS_CHOOSE)
-        uppercaseStringWithLocale:[NSLocale currentLocale]];
-  } else {
+    item.text = base::SysUTF16ToNSString(
+        GetAddShippingAddressButtonLabel(self.paymentRequest->shipping_type()));
+    // TODO(crbug.com/774499): change this to a '+';
     item.accessoryType = MDCCollectionViewCellAccessoryDisclosureIndicator;
+    item.textColor = [[MDCPalette cr_bluePalette] tint500];
+  } else {
+    item.text = base::SysUTF16ToNSString(GetChooseShippingAddressButtonLabel(
+        self.paymentRequest->shipping_type()));
+    item.accessoryType = MDCCollectionViewCellAccessoryDisclosureIndicator;
+    item.textColor = [[MDCPalette cr_bluePalette] tint500];
   }
   return item;
 }
@@ -177,16 +179,11 @@ using ::payment_request_util::GetShippingSectionTitle;
     return item;
   }
 
-  CollectionViewDetailItem* item = [[CollectionViewDetailItem alloc] init];
+  PaymentsTextItem* item = [[PaymentsTextItem alloc] init];
   item.text = base::SysUTF16ToNSString(
-      GetShippingOptionSectionString(self.paymentRequest->shipping_type()));
-
-  if (!option) {
-    item.detailText = [l10n_util::GetNSString(IDS_CHOOSE)
-        uppercaseStringWithLocale:[NSLocale currentLocale]];
-  } else {
-    item.accessoryType = MDCCollectionViewCellAccessoryDisclosureIndicator;
-  }
+      GetChooseShippingOptionButtonLabel(self.paymentRequest->shipping_type()));
+  item.accessoryType = MDCCollectionViewCellAccessoryDisclosureIndicator;
+  item.textColor = [[MDCPalette cr_bluePalette] tint500];
   return item;
 }
 
@@ -228,17 +225,19 @@ using ::payment_request_util::GetShippingSectionTitle;
     return item;
   }
 
-  CollectionViewDetailItem* item = [[CollectionViewDetailItem alloc] init];
+  PaymentsTextItem* item = [[PaymentsTextItem alloc] init];
   item.text =
       l10n_util::GetNSString(IDS_PAYMENT_REQUEST_PAYMENT_METHOD_SECTION_NAME);
   if (self.paymentRequest->payment_methods().empty()) {
-    item.detailText = [l10n_util::GetNSString(IDS_ADD)
-        uppercaseStringWithLocale:[NSLocale currentLocale]];
-  } else if (!paymentMethod) {
-    item.detailText = [l10n_util::GetNSString(IDS_CHOOSE)
-        uppercaseStringWithLocale:[NSLocale currentLocale]];
-  } else {
+    item.text = l10n_util::GetNSString(IDS_ADD_PAYMENT_METHOD);
+    // TODO(crbug.com/774499): change this to a '+';
     item.accessoryType = MDCCollectionViewCellAccessoryDisclosureIndicator;
+    item.textColor = [[MDCPalette cr_bluePalette] tint500];
+  } else {
+    item.text = l10n_util::GetNSString(IDS_CHOOSE_PAYMENT_METHOD);
+    item.text = @"Choose Payment Method";
+    item.accessoryType = MDCCollectionViewCellAccessoryDisclosureIndicator;
+    item.textColor = [[MDCPalette cr_bluePalette] tint500];
   }
   return item;
 }
@@ -270,16 +269,17 @@ using ::payment_request_util::GetShippingSectionTitle;
     return item;
   }
 
-  CollectionViewDetailItem* item = [[CollectionViewDetailItem alloc] init];
+  PaymentsTextItem* item = [[PaymentsTextItem alloc] init];
   item.text = l10n_util::GetNSString(IDS_PAYMENTS_CONTACT_DETAILS_LABEL);
   if (self.paymentRequest->contact_profiles().empty()) {
-    item.detailText = [l10n_util::GetNSString(IDS_ADD)
-        uppercaseStringWithLocale:[NSLocale currentLocale]];
-  } else if (!profile) {
-    item.detailText = [l10n_util::GetNSString(IDS_CHOOSE)
-        uppercaseStringWithLocale:[NSLocale currentLocale]];
-  } else {
+    item.text = l10n_util::GetNSString(IDS_PAYMENT_REQUEST_ADD_CONTACT_INFO);
+    // TODO(crbug.com/774499): change this to a '+';
     item.accessoryType = MDCCollectionViewCellAccessoryDisclosureIndicator;
+    item.textColor = [[MDCPalette cr_bluePalette] tint500];
+  } else {
+    item.text = l10n_util::GetNSString(IDS_PAYMENT_REQUEST_CHOOSE_CONTACT_INFO);
+    item.accessoryType = MDCCollectionViewCellAccessoryDisclosureIndicator;
+    item.textColor = [[MDCPalette cr_bluePalette] tint500];
   }
   return item;
 }
