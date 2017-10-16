@@ -215,9 +215,10 @@ gfx::Rect AppsContainerView::GetPageBoundsDuringDragging(
     AppListModel::State state) const {
   float app_list_y_position_in_screen =
       contents_view()->app_list_view()->app_list_y_position_in_screen();
+  float work_area_bottom =
+      contents_view()->app_list_view()->GetWorkAreaBottom();
   float drag_amount =
-      std::max(0.f, contents_view()->app_list_view()->GetScreenBottom() -
-                        kShelfSize - app_list_y_position_in_screen);
+      std::max(0.f, work_area_bottom - app_list_y_position_in_screen);
 
   float y = 0;
   float peeking_final_y =
@@ -380,7 +381,7 @@ int AppsContainerView::GetSearchBoxTopPaddingDuringDragging() const {
   float peeking_to_fullscreen_height =
       contents_view()->GetDisplayHeight() - kPeekingAppListHeight;
   float drag_amount = std::max(
-      0, contents_view()->app_list_view()->GetScreenBottom() - kShelfSize -
+      0, contents_view()->app_list_view()->GetWorkAreaBottom() -
              contents_view()->app_list_view()->app_list_y_position_in_screen());
 
   if (drag_amount <= (kPeekingAppListHeight - kShelfSize)) {

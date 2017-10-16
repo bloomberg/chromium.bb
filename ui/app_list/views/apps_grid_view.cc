@@ -1968,7 +1968,7 @@ void AppsGridView::UpdateOpacity() {
   int app_list_y_position_in_screen =
       contents_view_->app_list_view()->app_list_y_position_in_screen();
   AppListView* app_list_view = contents_view_->app_list_view();
-  int screen_bottom = app_list_view->GetScreenBottom();
+  int work_area_bottom = app_list_view->GetWorkAreaBottom();
   bool should_restore_opacity =
       !app_list_view->is_in_drag() &&
       (app_list_view->app_list_state() != AppListView::AppListState::CLOSED);
@@ -1979,8 +1979,7 @@ void AppsGridView::UpdateOpacity() {
   // |kSuggestedAppsOpacityEndFraction|, the opacity of suggested apps changes
   // from 0.f to 1.0f.
   float fraction =
-      std::max<float>(
-          screen_bottom - kShelfSize - app_list_y_position_in_screen, 0) /
+      std::max<float>(work_area_bottom - app_list_y_position_in_screen, 0) /
       (kPeekingAppListHeight - kShelfSize);
   float opacity =
       std::min(std::max((fraction - kSuggestedAppsOpacityStartFraction) /
@@ -2012,8 +2011,8 @@ void AppsGridView::UpdateOpacity() {
   // changes from 0.f to 1.0f.
   float peeking_to_fullscreen_height =
       contents_view_->GetDisplayHeight() - kPeekingAppListHeight;
-  float drag_amount =
-      screen_bottom - app_list_y_position_in_screen - kPeekingAppListHeight;
+  float drag_amount = (work_area_bottom + kShelfSize) -
+                      app_list_y_position_in_screen - kPeekingAppListHeight;
   fraction = std::max(drag_amount / peeking_to_fullscreen_height, 0.f);
   opacity = std::min(std::max((fraction + kAllAppsIndicatorOpacityEndFraction -
                                kAllAppsIndicatorOpacityStartFraction - 1.0f) /
@@ -2038,7 +2037,7 @@ void AppsGridView::UpdateOpacity() {
                1.0f);
   if (expand_arrow_view_) {
     if (app_list_y_position_in_screen <
-        (screen_bottom - kPeekingAppListHeight)) {
+        (work_area_bottom + kShelfSize - kPeekingAppListHeight)) {
       expand_arrow_view_->layer()->SetOpacity(
           should_restore_opacity ? 1.0f : arrow_fullscreen_opacity);
     } else {
@@ -2052,8 +2051,9 @@ void AppsGridView::UpdateOpacity() {
   // of work area and transitioning to 1.0f by the time the centerline reaches
   // |kAllAppsOpacityEndPx| above the work area bottom.
   float centerline_above_work_area = 0.f;
-  const float drag_amount_above_peeking =
-      screen_bottom - app_list_y_position_in_screen - kPeekingAppListHeight;
+  const float drag_amount_above_peeking = work_area_bottom + kShelfSize -
+                                          app_list_y_position_in_screen -
+                                          kPeekingAppListHeight;
   const float opacity_factor = drag_amount_above_peeking / kShelfSize;
   for (int i = 0; i < view_model_.view_size(); ++i) {
     AppListItemView* item_view = GetItemViewAt(i);
@@ -2062,8 +2062,8 @@ void AppsGridView::UpdateOpacity() {
 
     gfx::Rect view_bounds = view_model_.ideal_bounds(i);
     views::View::ConvertRectToScreen(this, &view_bounds);
-    centerline_above_work_area =
-        std::max<float>(screen_bottom - view_bounds.CenterPoint().y(), 0.f);
+    centerline_above_work_area = std::max<float>(
+        work_area_bottom + kShelfSize - view_bounds.CenterPoint().y(), 0.f);
     opacity = std::min(
         std::max((centerline_above_work_area - kAllAppsOpacityStartPx) /
                      (kAllAppsOpacityEndPx - kAllAppsOpacityStartPx),
@@ -2089,8 +2089,8 @@ void AppsGridView::UpdateOpacity() {
   // Updates the opacity of page switcher buttons. The same rule as all apps.
   if (page_switcher_view_) {
     gfx::Rect switcher_bounds = page_switcher_view_->GetBoundsInScreen();
-    centerline_above_work_area =
-        std::max<float>(screen_bottom - switcher_bounds.CenterPoint().y(), 0.f);
+    centerline_above_work_area = std::max<float>(
+        work_area_bottom + kShelfSize - switcher_bounds.CenterPoint().y(), 0.f);
     opacity = std::min(
         std::max((centerline_above_work_area - kAllAppsOpacityStartPx) /
                      (kAllAppsOpacityEndPx - kAllAppsOpacityStartPx),
