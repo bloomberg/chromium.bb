@@ -86,6 +86,11 @@
       <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_63" file="default_user_images/abstract/avatar_onigiri.png" />
       <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_64" file="default_user_images/abstract/avatar_melon.png" />
       <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_65" file="default_user_images/abstract/avatar_avocado.png" />
+      <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_66" file="default_user_images/geo/avatar_geo1.png" />
+      <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_67" file="default_user_images/geo/avatar_geo2.png" />
+      <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_68" file="default_user_images/geo/avatar_geo3.png" />
+      <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_69" file="default_user_images/geo/avatar_geo4.png" />
+      <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_70" file="default_user_images/geo/avatar_geo5.png" />
 
       <!-- Print Job Notification images. -->
       <structure type="chrome_scaled_image" name="IDR_PRINT_NOTIFICATION_CANCEL" file="print_notification/cancel.png" />

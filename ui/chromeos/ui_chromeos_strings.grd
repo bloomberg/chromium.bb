@@ -263,6 +263,21 @@
       <message name="IDS_LOGIN_DEFAULT_USER_DESC_65" desc="Description of the default user icon with a picture of an avocado">
         Avocado
       </message>
+      <message name="IDS_LOGIN_DEFAULT_USER_DESC_66" desc="Description of the default user icon with a picture of geometric figure 1">
+        Geometric figure 1
+      </message>
+      <message name="IDS_LOGIN_DEFAULT_USER_DESC_67" desc="Description of the default user icon with a picture of geometric figure 2">
+        Geometric figure 2
+      </message>
+      <message name="IDS_LOGIN_DEFAULT_USER_DESC_68" desc="Description of the default user icon with a picture of geometric figure 3">
+        Geometric figure 3
+      </message>
+      <message name="IDS_LOGIN_DEFAULT_USER_DESC_69" desc="Description of the default user icon with a picture of geometric figure 4">
+        Geometric figure 4
+      </message>
+      <message name="IDS_LOGIN_DEFAULT_USER_DESC_70" desc="Description of the default user icon with a picture of geometric figure 5">
+        Geometric figure 5
+      </message>
 
       <!-- Attribution strings for stock user images, not translateable. -->
       <message translateable="false" name="IDS_LOGIN_DEFAULT_USER_AUTHOR">
