@@ -29,6 +29,8 @@ class MouseWheelEventManager final
 
   WebInputEventResult HandleWheelEvent(const WebMouseWheelEvent&);
 
+  void ElementRemoved(Node* target);
+
  private:
   Node* FindTargetNode(const WebMouseWheelEvent&,
                        const Document*,

@@ -1261,6 +1261,8 @@ void EventHandler::ProcessPendingPointerCaptureForPointerLock(
 
 void EventHandler::ElementRemoved(EventTarget* target) {
   pointer_event_manager_->ElementRemoved(target);
+  if (target)
+    mouse_wheel_event_manager_->ElementRemoved(target->ToNode());
 }
 
 WebInputEventResult EventHandler::UpdatePointerTargetAndDispatchEvents(
