@@ -1889,10 +1889,9 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
           {base::MayBlock(), base::TaskPriority::USER_VISIBLE}));
 
 #if BUILDFLAG(ENABLE_WEBRTC)
-  registry->AddInterface(base::Bind(
-      &RenderProcessHostImpl::CreateMediaStreamDispatcherHost,
-      base::Unretained(this), GetBrowserContext()->GetMediaDeviceIDSalt(),
-      media_stream_manager));
+  registry->AddInterface(
+      base::Bind(&RenderProcessHostImpl::CreateMediaStreamDispatcherHost,
+                 base::Unretained(this), media_stream_manager));
 #endif
 
   registry->AddInterface(
@@ -3992,13 +3991,12 @@ RenderProcessHost* RenderProcessHostImpl::FindReusableProcessHostForSite(
 
 #if BUILDFLAG(ENABLE_WEBRTC)
 void RenderProcessHostImpl::CreateMediaStreamDispatcherHost(
-    const std::string& salt,
     MediaStreamManager* media_stream_manager,
     mojom::MediaStreamDispatcherHostRequest request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!media_stream_dispatcher_host_) {
     media_stream_dispatcher_host_.reset(
-        new MediaStreamDispatcherHost(GetID(), salt, media_stream_manager));
+        new MediaStreamDispatcherHost(GetID(), media_stream_manager));
   }
   media_stream_dispatcher_host_->BindRequest(std::move(request));
 }

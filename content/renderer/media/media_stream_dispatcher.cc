@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <utility>
+
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "content/child/child_thread_impl.h"
@@ -80,15 +82,13 @@ void MediaStreamDispatcher::GenerateStream(
     int request_id,
     const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
     const StreamControls& controls,
-    const url::Origin& security_origin,
     bool is_processing_user_gesture) {
   DVLOG(1) << __func__ << " request_id= " << request_id;
   DCHECK(thread_checker_.CalledOnValidThread());
 
   requests_.push_back(Request(event_handler, request_id, next_ipc_id_));
-  GetMediaStreamDispatcherHost()->GenerateStream(routing_id(), next_ipc_id_++,
-                                                 controls, security_origin,
-                                                 is_processing_user_gesture);
+  GetMediaStreamDispatcherHost()->GenerateStream(
+      routing_id(), next_ipc_id_++, controls, is_processing_user_gesture);
 }
 
 void MediaStreamDispatcher::CancelGenerateStream(
@@ -138,14 +138,13 @@ void MediaStreamDispatcher::OpenDevice(
     int request_id,
     const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
     const std::string& device_id,
-    MediaStreamType type,
-    const url::Origin& security_origin) {
+    MediaStreamType type) {
   DVLOG(1) << __func__ << " request_id= " << request_id;
   DCHECK(thread_checker_.CalledOnValidThread());
 
   requests_.push_back(Request(event_handler, request_id, next_ipc_id_));
   GetMediaStreamDispatcherHost()->OpenDevice(routing_id(), next_ipc_id_++,
-                                             device_id, type, security_origin);
+                                             device_id, type);
 }
 
 void MediaStreamDispatcher::CancelOpenDevice(
@@ -335,7 +334,7 @@ MediaStreamDispatcher::GetMediaStreamDispatcherHost() {
         mojom::kBrowserServiceName, &dispatcher_host_);
   }
   return dispatcher_host_;
-};
+}
 
 int MediaStreamDispatcher::audio_session_id(const std::string& label,
                                             int index) {

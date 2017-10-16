@@ -4,8 +4,6 @@
 
 module content.mojom;
 
-import "url/mojo/origin.mojom";
-
 // TODO(c.padhi): Add typemapping for MediaStreamDevice,
 // see https://crbug.com/742682.
 // Native struct content::MediaStreamDevice.
@@ -87,8 +85,7 @@ interface MediaStreamDispatcher {
 interface MediaStreamDispatcherHost {
   // Requests a new media stream.
   GenerateStream(int32 render_frame_id, int32 request_id,
-                 StreamControls controls, url.mojom.Origin security_origin,
-                 bool user_gesture);
+                 StreamControls controls, bool user_gesture);
 
   // Cancels the request for a new media stream.
   CancelGenerateStream(int32 render_frame_id, int32 request_id);
@@ -98,7 +95,7 @@ interface MediaStreamDispatcherHost {
 
   // Opens a device identified by |device_id|.
   OpenDevice(int32 render_frame_id, int32 request_id, string device_id,
-             MediaStreamType type, url.mojom.Origin security_origin);
+             MediaStreamType type);
 
   // Cancels an open request identified by |label|.
   CloseDevice(string label);

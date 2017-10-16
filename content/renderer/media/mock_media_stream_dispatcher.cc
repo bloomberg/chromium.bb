@@ -29,7 +29,6 @@ void MockMediaStreamDispatcher::GenerateStream(
     int request_id,
     const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
     const StreamControls& controls,
-    const url::Origin& security_origin,
     bool is_processing_user_gesture) {
   // Audio and video share the same request so we use |audio_input_request_id_|
   // only.

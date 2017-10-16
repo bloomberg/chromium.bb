@@ -7,9 +7,11 @@
 
 #include <map>
 #include <string>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "content/browser/media/media_devices_util.h"
 #include "content/browser/renderer_host/media/media_stream_requester.h"
 #include "content/common/content_export.h"
 #include "content/common/media/media_stream.mojom.h"
@@ -32,7 +34,6 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
       public MediaStreamRequester {
  public:
   MediaStreamDispatcherHost(int render_process_id,
-                            const std::string& salt,
                             MediaStreamManager* media_stream_manager);
   ~MediaStreamDispatcherHost() override;
 
@@ -55,6 +56,10 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
                     const std::string& label,
                     const MediaStreamDevice& device) override;
 
+  void set_salt_and_origin_callback_for_testing(
+      MediaDeviceSaltAndOriginCallback callback) {
+    salt_and_origin_callback_ = std::move(callback);
+  }
   void SetMediaStreamDispatcherForTesting(
       int render_frame_id,
       mojom::MediaStreamDispatcherPtr dispatcher) {
@@ -74,7 +79,6 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
   void GenerateStream(int32_t render_frame_id,
                       int32_t request_id,
                       const StreamControls& controls,
-                      const url::Origin& security_origin,
                       bool user_gesture) override;
   void CancelGenerateStream(int32_t render_frame_id,
                             int32_t request_id) override;
@@ -83,19 +87,30 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
   void OpenDevice(int32_t render_frame_id,
                   int32_t request_id,
                   const std::string& device_id,
-                  MediaStreamType type,
-                  const url::Origin& security_origin) override;
+                  MediaStreamType type) override;
   void CloseDevice(const std::string& label) override;
   void SetCapturingLinkSecured(int32_t session_id,
                                MediaStreamType type,
                                bool is_secure) override;
   void StreamStarted(const std::string& label) override;
 
+  void DoGenerateStream(
+      int32_t render_frame_id,
+      int32_t request_id,
+      const StreamControls& controls,
+      bool user_gesture,
+      const std::pair<std::string, url::Origin>& salt_and_origin);
+  void DoOpenDevice(int32_t render_frame_id,
+                    int32_t request_id,
+                    const std::string& device_id,
+                    MediaStreamType type,
+                    const std::pair<std::string, url::Origin>& salt_and_origin);
+
   const int render_process_id_;
-  std::string salt_;
   MediaStreamManager* media_stream_manager_;
   std::map<int, mojom::MediaStreamDispatcherPtr> dispatchers_;
   mojo::BindingSet<mojom::MediaStreamDispatcherHost> bindings_;
+  MediaDeviceSaltAndOriginCallback salt_and_origin_callback_;
 
   base::WeakPtrFactory<MediaStreamDispatcherHost> weak_factory_;
 

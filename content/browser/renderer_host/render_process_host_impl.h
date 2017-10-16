@@ -507,7 +507,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
 #if BUILDFLAG(ENABLE_WEBRTC)
   void CreateMediaStreamDispatcherHost(
-      const std::string& salt,
       MediaStreamManager* media_stream_manager,
       mojom::MediaStreamDispatcherHostRequest request);
   void OnRegisterAecDumpConsumer(int id);

@@ -14,10 +14,6 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace url {
-class Origin;
-}
-
 namespace content {
 
 class MockMojoMediaStreamDispatcherHost
@@ -28,17 +24,12 @@ class MockMojoMediaStreamDispatcherHost
 
   mojom::MediaStreamDispatcherHostPtr CreateInterfacePtrAndBind();
 
-  MOCK_METHOD5(
-      GenerateStream,
-      void(int32_t, int32_t, const StreamControls&, const url::Origin&, bool));
+  MOCK_METHOD4(GenerateStream,
+               void(int32_t, int32_t, const StreamControls&, bool));
   MOCK_METHOD2(CancelGenerateStream, void(int32_t, int32_t));
   MOCK_METHOD2(StopStreamDevice, void(int32_t, const std::string&));
-  MOCK_METHOD5(OpenDevice,
-               void(int32_t,
-                    int32_t,
-                    const std::string&,
-                    MediaStreamType,
-                    const url::Origin&));
+  MOCK_METHOD4(OpenDevice,
+               void(int32_t, int32_t, const std::string&, MediaStreamType));
   MOCK_METHOD1(CloseDevice, void(const std::string&));
   MOCK_METHOD3(SetCapturingLinkSecured, void(int32_t, MediaStreamType, bool));
   MOCK_METHOD1(StreamStarted, void(const std::string&));
