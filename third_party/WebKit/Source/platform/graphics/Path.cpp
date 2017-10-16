@@ -106,24 +106,12 @@ bool Path::StrokeContains(const FloatPoint& point,
                 WebCoreFloatToSkScalar(point.Y()));
 }
 
-namespace {
-
-FloatRect PathBounds(const SkPath& path, Path::BoundsType bounds_type) {
-  return bounds_type == Path::BoundsType::kConservative
-             ? path.getBounds()
-             : path.computeTightBounds();
+FloatRect Path::BoundingRect() const {
+  return path_.computeTightBounds();
 }
 
-}  // anonymous ns
-
-// TODO(fmalita): evaluate returning exact bounds in all cases.
-FloatRect Path::BoundingRect(BoundsType bounds_type) const {
-  return PathBounds(path_, bounds_type);
-}
-
-FloatRect Path::StrokeBoundingRect(const StrokeData& stroke_data,
-                                   BoundsType bounds_type) const {
-  return PathBounds(StrokePath(stroke_data), bounds_type);
+FloatRect Path::StrokeBoundingRect(const StrokeData& stroke_data) const {
+  return StrokePath(stroke_data).computeTightBounds();
 }
 
 static FloatPoint* ConvertPathPoints(FloatPoint dst[],

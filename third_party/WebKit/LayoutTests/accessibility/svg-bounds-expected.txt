@@ -25,8 +25,8 @@ NoseY: 206
 
 Mouth role: AXRole: AXButton
 Mouth label: smile
-MouthX: 113
-MouthY: 274
+MouthX: 116
+MouthY: 275
 
 
 Text role: AXRole: AXStaticText

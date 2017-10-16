@@ -146,7 +146,7 @@ void SVGPathElement::RemovedFrom(ContainerNode* root_parent) {
 
 FloatRect SVGPathElement::GetBBox() {
   // We want the exact bounds.
-  return SVGPathElement::AsPath().BoundingRect(Path::BoundsType::kExact);
+  return SVGPathElement::AsPath().BoundingRect();
 }
 
 }  // namespace blink
