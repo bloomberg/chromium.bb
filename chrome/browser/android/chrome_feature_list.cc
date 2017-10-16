@@ -280,7 +280,7 @@ const base::Feature kPwaImprovedSplashScreen{"PwaImprovedSplashScreen",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kPwaPersistentNotification{
-    "PwaPersistentNotification", base::FEATURE_ENABLED_BY_DEFAULT};
+    "PwaPersistentNotification", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kReaderModeInCCT{"ReaderModeInCCT",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
