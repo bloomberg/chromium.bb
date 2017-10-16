@@ -674,10 +674,6 @@ static void set_offsets(AV1_COMMON *const cm, MACROBLOCKD *const xd,
   set_plane_n4(xd, bw, bh);
   set_skip_context(xd, mi_row, mi_col);
 
-#if CONFIG_VAR_TX
-  xd->max_tx_size = max_txsize_lookup[bsize];
-#endif
-
   // Distance of Mb to the various image edges. These are specified to 8th pel
   // as they are always compared to values that are in 1/8th pel units
   set_mi_row_col(xd, tile, mi_row, bh, mi_col, bw,

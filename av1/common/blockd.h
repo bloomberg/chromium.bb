@@ -753,8 +753,6 @@ typedef struct macroblockd {
   TXFM_CONTEXT *above_txfm_context;
   TXFM_CONTEXT *left_txfm_context;
   TXFM_CONTEXT left_txfm_context_buffer[2 * MAX_MIB_SIZE];
-
-  TX_SIZE max_tx_size;
 #endif
 
 #if CONFIG_LOOP_RESTORATION

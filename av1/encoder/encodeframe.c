@@ -247,7 +247,6 @@ static void set_offsets_without_segment_id(const AV1_COMP *const cpi,
       cm->above_txfm_context + (mi_col << TX_UNIT_WIDE_LOG2);
   xd->left_txfm_context = xd->left_txfm_context_buffer +
                           ((mi_row & MAX_MIB_MASK) << TX_UNIT_HIGH_LOG2);
-  xd->max_tx_size = max_txsize_lookup[bsize];
 #endif
 
   // Set up destination pointers.
