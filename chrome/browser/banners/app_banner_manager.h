@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_BANNERS_APP_BANNER_MANAGER_H_
 #define CHROME_BROWSER_BANNERS_APP_BANNER_MANAGER_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
@@ -52,6 +53,9 @@ class AppBannerManager : public content::WebContentsObserver,
                          public blink::mojom::AppBannerService,
                          public SiteEngagementObserver {
  public:
+  // A StatusReporter handles the reporting of |InstallableStatusCode|s.
+  class StatusReporter;
+
   enum class State {
     // The pipeline has not yet been triggered for this page load.
     INACTIVE,
@@ -149,10 +153,6 @@ class AppBannerManager : public content::WebContentsObserver,
   // alerting websites that a banner is about to be created.
   virtual std::string GetBannerType();
 
-  // Returns a string parameter for a devtools console message corresponding to
-  // |code|. Returns the empty string if |code| requires no parameter.
-  std::string GetStatusParam(InstallableStatusCode code);
-
   // Returns true if |has_sufficient_engagement_| is true or IsDebugMode()
   // returns true.
   bool HasSufficientEngagement() const;
@@ -189,8 +189,7 @@ class AppBannerManager : public content::WebContentsObserver,
   // metric being recorded.
   void RecordDidShowBanner(const std::string& event_name);
 
-  // Logs an error message corresponding to |code| to the devtools console
-  // attached to |web_contents|. Does nothing if IsDebugMode() returns false.
+  // Reports |code| via a UMA histogram or logs it to the console.
   void ReportStatus(content::WebContents* web_contents,
                     InstallableStatusCode code);
 
@@ -234,7 +233,6 @@ class AppBannerManager : public content::WebContentsObserver,
   InstallableManager* manager() const { return manager_; }
   State state() const { return state_; }
   bool IsRunning() const;
-  bool IsWaitingForData() const;
 
   // The URL for which the banner check is being conducted.
   GURL validated_url_;
@@ -313,8 +311,8 @@ class AppBannerManager : public content::WebContentsObserver,
   // Whether the current flow was begun via devtools.
   bool triggered_by_devtools_;
 
-  // Whether the installable status has been logged for this run.
-  bool need_to_log_status_;
+ private:
+  std::unique_ptr<StatusReporter> status_reporter_;
 
   // The concrete subclasses of this class are expected to have their lifetimes
   // scoped to the WebContents which they are observing. This allows us to use

@@ -59,6 +59,78 @@ void AppBannerManager::SetTotalEngagementToTrigger(double engagement) {
   AppBannerSettingsHelper::SetTotalEngagementToTrigger(engagement);
 }
 
+class AppBannerManager::StatusReporter {
+ public:
+  virtual ~StatusReporter() {}
+
+  // Reports |code| (via a mechanism which depends on the implementation).
+  virtual void ReportStatus(content::WebContents* web_contents,
+                            InstallableStatusCode code) = 0;
+};
+
+}  // namespace banners
+
+namespace {
+
+// Returns a string parameter for a devtools console message corresponding to
+// |code|. Returns the empty string if |code| requires no parameter.
+std::string GetStatusParam(InstallableStatusCode code) {
+  if (code == NO_ACCEPTABLE_ICON || code == MANIFEST_MISSING_SUITABLE_ICON)
+    return base::IntToString(InstallableManager::GetMinimumIconSizeInPx());
+
+  return std::string();
+}
+
+// Logs installable status codes to the console.
+class ConsoleStatusReporter : public banners::AppBannerManager::StatusReporter {
+ public:
+  // Logs an error message corresponding to |code| to the devtools console
+  // attached to |web_contents|.
+  void ReportStatus(content::WebContents* web_contents,
+                    InstallableStatusCode code) override {
+    LogErrorToConsole(web_contents, code, GetStatusParam(code));
+  }
+};
+
+// Tracks installable status codes via an UMA histogram.
+class TrackingStatusReporter
+    : public banners::AppBannerManager::StatusReporter {
+ public:
+  TrackingStatusReporter() : done_(false) {}
+  ~TrackingStatusReporter() override { DCHECK(done_); }
+
+  // Records code via an UMA histogram.
+  void ReportStatus(content::WebContents* web_contents,
+                    InstallableStatusCode code) override {
+    // Ensure that we haven't yet logged a status code for this page.
+    DCHECK(!done_);
+
+    if (code != NO_ERROR_DETECTED)
+      banners::TrackInstallableStatusCode(code);
+
+    done_ = true;
+  }
+
+ private:
+  bool done_;
+};
+
+class NullStatusReporter : public banners::AppBannerManager::StatusReporter {
+ public:
+  void ReportStatus(content::WebContents* web_contents,
+                    InstallableStatusCode code) override {
+    // In general, NullStatusReporter::ReportStatus should not be called.
+    // However, it may be called in cases where Stop is called without a
+    // preceding call to RequestAppBanner e.g. because the WebContents is being
+    // destroyed. In that case, code should always be NO_ERROR_DETECTED.
+    DCHECK(code == NO_ERROR_DETECTED);
+  }
+};
+
+}  // anonymous namespace
+
+namespace banners {
+
 void AppBannerManager::RequestAppBanner(const GURL& validated_url,
                                         bool is_debug_mode) {
   // The only time we should start the pipeline while it is already running is
@@ -71,10 +143,12 @@ void AppBannerManager::RequestAppBanner(const GURL& validated_url,
   UpdateState(State::ACTIVE);
   triggered_by_devtools_ = is_debug_mode;
 
-  // We only need to call ReportStatus if we aren't in debug mode (this avoids
-  // skew from testing).
-  DCHECK(!need_to_log_status_);
-  need_to_log_status_ = !IsDebugMode();
+  // We only need to use TrackingStatusReporter if we aren't in debug mode
+  // (this avoids skew from testing).
+  if (IsDebugMode())
+    status_reporter_ = std::make_unique<ConsoleStatusReporter>();
+  else
+    status_reporter_ = std::make_unique<TrackingStatusReporter>();
 
   if (validated_url_.is_empty())
     validated_url_ = validated_url;
@@ -124,7 +198,7 @@ AppBannerManager::AppBannerManager(content::WebContents* web_contents)
       has_sufficient_engagement_(false),
       load_finished_(false),
       triggered_by_devtools_(false),
-      need_to_log_status_(false),
+      status_reporter_(std::make_unique<NullStatusReporter>()),
       weak_factory_(this) {
   DCHECK(manager_);
 
@@ -142,13 +216,6 @@ std::string AppBannerManager::GetBannerType() {
   return "web";
 }
 
-std::string AppBannerManager::GetStatusParam(InstallableStatusCode code) {
-  if (code == NO_ACCEPTABLE_ICON || code == MANIFEST_MISSING_SUITABLE_ICON) {
-    return base::IntToString(InstallableManager::GetMinimumIconSizeInPx());
-  }
-
-  return std::string();
-}
 
 bool AppBannerManager::HasSufficientEngagement() const {
   return has_sufficient_engagement_ || IsDebugMode();
@@ -253,14 +320,8 @@ void AppBannerManager::RecordDidShowBanner(const std::string& event_name) {
 
 void AppBannerManager::ReportStatus(content::WebContents* web_contents,
                                     InstallableStatusCode code) {
-  if (IsDebugMode()) {
-    LogErrorToConsole(web_contents, code, GetStatusParam(code));
-  } else {
-    // Ensure that we haven't yet logged a status code for this page.
-    DCHECK(need_to_log_status_);
-    TrackInstallableStatusCode(code);
-    need_to_log_status_ = false;
-  }
+  DCHECK(status_reporter_);
+  status_reporter_->ReportStatus(web_contents, code);
 }
 
 void AppBannerManager::ResetCurrentPageData() {
@@ -306,18 +367,11 @@ InstallableStatusCode AppBannerManager::TerminationCode() const {
 }
 
 void AppBannerManager::Stop(InstallableStatusCode code) {
-  if (code != NO_ERROR_DETECTED)
-    ReportStatus(web_contents(), code);
-
-  // In every non-debug run through the banner pipeline, we should have called
-  // ReportStatus() and set need_to_log_status_ to false. The only case where
-  // we don't is if we're still running and aren't blocked on the network. When
-  // running and blocked on the network the state should be logged.
-  DCHECK(!need_to_log_status_ || (IsRunning() && !IsWaitingForData()));
+  ReportStatus(web_contents(), code);
 
   ResetBindings();
   UpdateState(State::COMPLETE);
-  need_to_log_status_ = false;
+  status_reporter_ = std::make_unique<NullStatusReporter>(),
   has_sufficient_engagement_ = false;
 }
 
@@ -442,24 +496,6 @@ bool AppBannerManager::IsRunning() const {
     case State::PENDING_INSTALLABLE_CHECK:
     case State::SENDING_EVENT:
     case State::SENDING_EVENT_GOT_EARLY_PROMPT:
-      return true;
-  }
-  return false;
-}
-
-bool AppBannerManager::IsWaitingForData() const {
-  switch (state_) {
-    case State::INACTIVE:
-    case State::ACTIVE:
-    case State::PENDING_ENGAGEMENT:
-    case State::SENDING_EVENT:
-    case State::SENDING_EVENT_GOT_EARLY_PROMPT:
-    case State::PENDING_PROMPT:
-    case State::COMPLETE:
-      return false;
-    case State::FETCHING_MANIFEST:
-    case State::FETCHING_NATIVE_DATA:
-    case State::PENDING_INSTALLABLE_CHECK:
       return true;
   }
   return false;
