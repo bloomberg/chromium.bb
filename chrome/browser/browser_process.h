@@ -23,7 +23,6 @@
 #include "media/media_features.h"
 
 class BackgroundModeManager;
-class CRLSetFetcher;
 class DownloadRequestLimiter;
 class DownloadStatusUpdater;
 class GpuModeManager;
@@ -271,8 +270,6 @@ class BrowserProcess {
   virtual net_log::ChromeNetLog* net_log() = 0;
 
   virtual component_updater::ComponentUpdateService* component_updater() = 0;
-
-  virtual CRLSetFetcher* crl_set_fetcher() = 0;
 
   virtual component_updater::SupervisedUserWhitelistInstaller*
   supervised_user_whitelist_installer() = 0;

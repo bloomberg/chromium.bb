@@ -46,8 +46,14 @@ class NET_EXPORT SSLConfigService
   // May not be thread-safe, should only be called on the IO thread.
   virtual void GetSSLConfig(SSLConfig* config) = 0;
 
-  // Sets and gets the current, global CRL set.
-  static void SetCRLSet(scoped_refptr<CRLSet> crl_set);
+  // Sets the current global CRL set to |crl_set|, if and only if the passed CRL
+  // set has a higher sequence number (as reported by CRLSet::sequence()) than
+  // the current set (or there is no current set). Can be called concurrently
+  // with itself and with GetCRLSet.
+  static void SetCRLSetIfNewer(scoped_refptr<CRLSet> crl_set);
+
+  // Gets the current global CRL set. In the case that none exists, returns
+  // nullptr.
   static scoped_refptr<CRLSet> GetCRLSet();
 
   // Add an observer of this service.

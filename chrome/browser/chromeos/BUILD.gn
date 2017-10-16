@@ -71,6 +71,7 @@ source_set("chromeos") {
     "//components/browser_sync",
     "//components/captive_portal",
     "//components/certificate_reporting:cert_logger_proto",
+    "//components/component_updater:crl_set_installer",
     "//components/constrained_window",
     "//components/content_settings/core/browser",
     "//components/crash/content/app",

@@ -1,6 +1,7 @@
 include_rules = [
   "+components/update_client",
   "+components/version_info",
+  "+net",
   "+ui",
   "+url",
 ]

@@ -25,7 +25,6 @@
 #include "printing/features/features.h"
 
 class BackgroundModeManager;
-class CRLSetFetcher;
 class IOThread;
 class NotificationPlatformBridge;
 class NotificationUIManager;
@@ -116,7 +115,6 @@ class TestingBrowserProcess : public BrowserProcess {
 
   net_log::ChromeNetLog* net_log() override;
   component_updater::ComponentUpdateService* component_updater() override;
-  CRLSetFetcher* crl_set_fetcher() override;
   component_updater::SupervisedUserWhitelistInstaller*
   supervised_user_whitelist_installer() override;
   MediaFileSystemRegistry* media_file_system_registry() override;

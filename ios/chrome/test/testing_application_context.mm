@@ -168,11 +168,6 @@ TestingApplicationContext::GetComponentUpdateService() {
   return nullptr;
 }
 
-CRLSetFetcher* TestingApplicationContext::GetCRLSetFetcher() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return nullptr;
-}
-
 physical_web::PhysicalWebDataSource*
 TestingApplicationContext::GetPhysicalWebDataSource() {
   DCHECK(thread_checker_.CalledOnValidThread());
