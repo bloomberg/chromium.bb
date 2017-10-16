@@ -32,6 +32,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/service_worker_context.h"
@@ -692,10 +693,7 @@ Response NetworkHandler::Disable() {
   user_agent_ = std::string();
   SetRequestInterceptionEnabled(false, Maybe<protocol::Array<String>>(),
                                 Maybe<protocol::Array<String>>());
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&DevToolsNetworkController::SetNetworkState, host_id_,
-                     nullptr));
+  SetNetworkConditions(nullptr);
   return Response::FallThrough();
 }
 
@@ -867,11 +865,7 @@ Response NetworkHandler::EmulateNetworkConditions(
       new DevToolsNetworkConditions(offline, std::max(latency, 0.0),
                                     std::max(download_throughput, 0.0),
                                     std::max(upload_throughput, 0.0)));
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&DevToolsNetworkController::SetNetworkState, host_id_,
-                     std::move(conditions)));
-
+  SetNetworkConditions(std::move(conditions));
   return Response::FallThrough();
 }
 
@@ -1217,6 +1211,24 @@ bool NetworkHandler::ShouldCancelNavigation(
     return false;
   canceled_navigation_requests_.erase(it);
   return true;
+}
+
+void NetworkHandler::SetNetworkConditions(
+    std::unique_ptr<DevToolsNetworkConditions> conditions) {
+  mojom::NetworkConditionsPtr network_conditions;
+  if (conditions) {
+    network_conditions = mojom::NetworkConditions::New();
+    network_conditions->offline = conditions->offline();
+    network_conditions->latency =
+        base::TimeDelta::FromMilliseconds(conditions->latency());
+    network_conditions->download_throughput = conditions->download_throughput();
+    network_conditions->upload_throughput = conditions->upload_throughput();
+  }
+  if (!process_)
+    return;
+  StoragePartition* partition = process_->GetStoragePartition();
+  mojom::NetworkContext* context = partition->GetNetworkContext();
+  context->SetNetworkConditions(host_id_, std::move(network_conditions));
 }
 
 }  // namespace protocol
