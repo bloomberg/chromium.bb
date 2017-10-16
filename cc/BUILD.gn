@@ -326,6 +326,7 @@ cc_component("cc") {
     "trees/swap_promise_manager.h",
     "trees/swap_promise_monitor.cc",
     "trees/swap_promise_monitor.h",
+    "trees/target_property.cc",
     "trees/target_property.h",
     "trees/task_runner_provider.cc",
     "trees/task_runner_provider.h",
