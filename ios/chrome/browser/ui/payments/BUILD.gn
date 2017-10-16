@@ -62,6 +62,7 @@ source_set("payments") {
   ]
   deps = [
     ":payments_ui",
+    "resources:ic_add",
     "//base",
     "//components/autofill/core/browser",
     "//components/autofill/ios/browser",

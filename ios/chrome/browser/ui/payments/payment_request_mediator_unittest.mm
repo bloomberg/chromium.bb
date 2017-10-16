@@ -228,8 +228,9 @@ TEST_F(PaymentRequestMediatorTest, TestShippingAddressItem) {
   EXPECT_TRUE([add_shipping_address_item.text
       isEqualToString:l10n_util::GetNSString(
                           IDS_PAYMENTS_ADD_SHIPPING_ADDRESS_LABEL)]);
-  EXPECT_EQ(MDCCollectionViewCellAccessoryDisclosureIndicator,
+  EXPECT_EQ(MDCCollectionViewCellAccessoryNone,
             add_shipping_address_item.accessoryType);
+  EXPECT_NE(nil, add_shipping_address_item.trailingImage);
 }
 
 // Tests that the Shipping Option item is created as expected.
@@ -308,8 +309,9 @@ TEST_F(PaymentRequestMediatorTest, TestPaymentMethodItem) {
   add_payment_method_item = base::mac::ObjCCastStrict<PaymentsTextItem>(item);
   EXPECT_TRUE([add_payment_method_item.text
       isEqualToString:l10n_util::GetNSString(IDS_ADD_PAYMENT_METHOD)]);
-  EXPECT_EQ(MDCCollectionViewCellAccessoryDisclosureIndicator,
+  EXPECT_EQ(MDCCollectionViewCellAccessoryNone,
             add_payment_method_item.accessoryType);
+  EXPECT_NE(nil, add_payment_method_item.trailingImage);
 }
 
 // Tests that the Contact Info section header item is created as expected.
@@ -395,8 +397,9 @@ TEST_F(PaymentRequestMediatorTest, TestContactInfoItem) {
   EXPECT_TRUE([add_contact_info_item.text
       isEqualToString:l10n_util::GetNSString(
                           IDS_PAYMENT_REQUEST_ADD_CONTACT_INFO)]);
-  EXPECT_EQ(MDCCollectionViewCellAccessoryDisclosureIndicator,
+  EXPECT_EQ(MDCCollectionViewCellAccessoryNone,
             add_contact_info_item.accessoryType);
+  EXPECT_NE(nil, add_contact_info_item.trailingImage);
 }
 
 // Tests that the Footer item is created as expected.
