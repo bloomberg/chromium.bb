@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
+#include "components/previews/core/previews_black_list.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_io_data.h"
 #include "components/previews/core/previews_logger.h"
@@ -53,6 +54,13 @@ class PreviewsUIService {
                                     PreviewsType type,
                                     bool opt_out,
                                     base::Time time);
+
+  // Log the made decision of previews to PreviewsLogger. Virtualized in
+  // testing.
+  virtual void LogPreviewDecisionMade(PreviewsEligibilityReason reason,
+                                      const GURL& url,
+                                      base::Time time,
+                                      PreviewsType type);
 
   // Expose the pointer to PreviewsLogger to extract logging messages. This
   // pointer's life time is the same as of |this|, and it is guaranteed to not
