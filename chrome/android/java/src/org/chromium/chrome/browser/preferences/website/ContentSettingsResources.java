@@ -185,7 +185,7 @@ public class ContentSettingsResources {
      */
     public static Drawable getTintedIcon(int contentType, Resources resources) {
         Drawable icon = ApiCompatibilityUtils.getDrawable(resources, getIcon(contentType));
-        icon.setColorFilter(ApiCompatibilityUtils.getColor(resources, R.color.toolbar_light_tint),
+        icon.setColorFilter(ApiCompatibilityUtils.getColor(resources, R.color.black_alpha_65),
                 PorterDuff.Mode.SRC_IN);
         return icon;
     }

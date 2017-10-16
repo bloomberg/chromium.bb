@@ -269,7 +269,6 @@ public class BookmarkUtils {
      * @return A {@link TintedDrawable} to use for displaying bookmark folders.
      */
     public static TintedDrawable getFolderIcon(Resources res) {
-        // TODO(twellington): Update tinting to 65% black to match mocks.
         return TintedDrawable.constructTintedDrawable(
                 res, R.drawable.ic_folder_blue_24dp, R.color.dark_mode_tint);
     }
