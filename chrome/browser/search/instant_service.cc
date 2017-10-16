@@ -149,7 +149,8 @@ void InstantService::UpdateMostVisitedItemsInfo() {
   NotifyAboutMostVisitedItems();
 }
 
-void InstantService::SendSearchURLsToRenderer(content::RenderProcessHost* rph) {
+void InstantService::SendNewTabPageURLToRenderer(
+    content::RenderProcessHost* rph) {
   if (auto* channel = rph->GetChannel()) {
     chrome::mojom::SearchBouncerAssociatedPtr client;
     channel->GetRemoteAssociatedInterface(&client);
@@ -179,7 +180,7 @@ void InstantService::Observe(int type,
                              const content::NotificationDetails& details) {
   switch (type) {
     case content::NOTIFICATION_RENDERER_PROCESS_CREATED:
-      SendSearchURLsToRenderer(
+      SendNewTabPageURLToRenderer(
           content::Source<content::RenderProcessHost>(source).ptr());
       break;
     case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED:

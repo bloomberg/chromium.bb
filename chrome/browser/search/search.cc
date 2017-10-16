@@ -5,6 +5,7 @@
 #include "chrome/browser/search/search.h"
 
 #include <stddef.h>
+#include <string>
 
 #include "base/command_line.h"
 #include "base/feature_list.h"
@@ -78,23 +79,18 @@ const TemplateURL* GetDefaultSearchProviderTemplateURL(Profile* profile) {
     if (template_url_service)
       return template_url_service->GetDefaultSearchProvider();
   }
-  return NULL;
+  return nullptr;
 }
 
-// Returns true if |url| can be used as an Instant URL for |profile|.
-bool IsInstantURL(const GURL& url, Profile* profile) {
-  if (!IsInstantExtendedAPIEnabled())
-    return false;
-
+// Returns true if |url| matches the NTP URL or the URL of the NTP's associated
+// service worker.
+bool IsNTPOrServiceWorkerURL(const GURL& url, Profile* profile) {
   if (!url.is_valid())
     return false;
 
   const GURL new_tab_url(GetNewTabPageURL(profile));
-  if (new_tab_url.is_valid() && (MatchesOriginAndPath(url, new_tab_url) ||
-                                 IsMatchingServiceWorker(url, new_tab_url))) {
-    return true;
-  }
-  return false;
+  return new_tab_url.is_valid() && (MatchesOriginAndPath(url, new_tab_url) ||
+                                    IsMatchingServiceWorker(url, new_tab_url));
 }
 
 bool IsURLAllowedForSupervisedUser(const GURL& url, Profile* profile) {
@@ -183,8 +179,8 @@ struct NewTabURLDetails {
     }
   }
 
-  GURL url;
-  NewTabURLState state;
+  const GURL url;
+  const NewTabURLState state;
 };
 
 }  // namespace
@@ -192,7 +188,7 @@ struct NewTabURLDetails {
 bool ShouldAssignURLToInstantRenderer(const GURL& url, Profile* profile) {
   return url.is_valid() && profile && IsInstantExtendedAPIEnabled() &&
          (url.SchemeIs(chrome::kChromeSearchScheme) ||
-          IsInstantURL(url, profile));
+          IsNTPOrServiceWorkerURL(url, profile));
 }
 
 bool IsRenderedInInstantProcess(const content::WebContents* contents,
@@ -242,7 +238,7 @@ bool IsNTPURL(const GURL& url, Profile* profile) {
     return url == chrome::kChromeUINewTabURL;
 
   // TODO(treib,sfiera): Tolerate query params when detecting local NTPs.
-  return profile && (IsInstantURL(url, profile) ||
+  return profile && (IsNTPOrServiceWorkerURL(url, profile) ||
                      url == chrome::kChromeSearchLocalNtpUrl);
 }
 

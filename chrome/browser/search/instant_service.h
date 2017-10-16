@@ -83,8 +83,8 @@ class InstantService : public KeyedService,
   // NTP.
   void UpdateMostVisitedItemsInfo();
 
-  // Sends the current set of search URLs to a renderer process.
-  void SendSearchURLsToRenderer(content::RenderProcessHost* rph);
+  // Sends the current NTP URL to a renderer process.
+  void SendNewTabPageURLToRenderer(content::RenderProcessHost* rph);
 
  private:
   friend class InstantExtendedTest;

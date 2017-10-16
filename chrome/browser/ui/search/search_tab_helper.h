@@ -32,12 +32,8 @@ class OmniboxView;
 class Profile;
 class SearchIPCRouterTest;
 
-// Per-tab search "helper".  Acts as the owner and controller of the tab's
-// search UI model.
-//
-// When a navigation is committed and when the page is finished loading,
-// SearchTabHelper determines the instant support for the page, i.e. whether
-// the page is rendered in the instant process.
+// This is the browser-side, per-tab implementation of the embeddedSearch API
+// (see https://www.chromium.org/embeddedsearch).
 class SearchTabHelper : public content::WebContentsObserver,
                         public content::WebContentsUserData<SearchTabHelper>,
                         public InstantServiceObserver,
@@ -119,8 +115,6 @@ class SearchTabHelper : public content::WebContentsObserver,
   // Returns whether input is in progress, i.e. if the omnibox has focus and the
   // active tab is in mode SEARCH_SUGGESTIONS.
   bool IsInputInProgress() const;
-
-  const bool is_search_enabled_;
 
   content::WebContents* web_contents_;
 
