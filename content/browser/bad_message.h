@@ -204,6 +204,7 @@ enum BadMessageReason {
   RFH_KEEP_ALIVE_HANDLE_REQUESTED_INCORRECTLY = 178,
   BFSI_INVALID_UNIQUE_ID = 179,
   BPE_UNEXPECTED_MESSAGE_BEFORE_BPGM_CREATION = 180,
+  WEBUI_SEND_FROM_UNAUTHORIZED_PROCESS = 181,
 
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. RenderFrameHost becomes RFH) plus a unique description of the

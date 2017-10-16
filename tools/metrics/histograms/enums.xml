@@ -2755,6 +2755,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="178" label="RFH_KEEP_ALIVE_HANDLE_REQUESTED_INCORRECTLY"/>
   <int value="179" label="BFSI_INVALID_UNIQUE_ID"/>
   <int value="180" label="BPE_UNEXPECTED_MESSAGE_BEFORE_BPGM_CREATION"/>
+  <int value="181" label="WEBUI_SEND_FROM_UNAUTHORIZED_PROCESS"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions">
