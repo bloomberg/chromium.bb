@@ -503,22 +503,7 @@ if (!is_ios) {
       deps += [ "//components/printing/test:test_support" ]
     }
 
-    if (is_chromeos) {
-      # TODO(bug 758767): //chromeos depends on a target in //chrome, and this
-      # target indirectly on //chromeos. The //chromeos -> //chrome dependency
-      # should be fixed and all of chrome added to the assert_no_deps. For
-      # now, blacklist large parts of Chrome to prevent the most obvious
-      # regressions.
-      assert_no_deps = [
-        "//chrome:*",  # Catches targets in this file and not subdirs.
-        "//chrome/browser",  # No * due to //chrome/browser/chromeos problem.
-        "//chrome/common/*",
-        "//chrome/renderer/*",
-        "//chrome/test/*",
-      ]
-    } else {
-      assert_no_deps = [ "//chrome/*" ]
-    }
+    assert_no_deps = [ "//chrome/*" ]
   }
 
   test("components_perftests") {
