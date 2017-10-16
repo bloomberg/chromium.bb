@@ -12306,6 +12306,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="DataReductionProxy.LoFi.ImplicitOptOutAction"
     enum="DataReductionProxyLoFiImplicitOptOutAction">
+  <obsolete>
+    Obsolete as of October 2017.
+  </obsolete>
   <owner>bengr@chromium.org</owner>
   <owner>megjablon@chromium.org</owner>
   <summary>
@@ -12320,6 +12323,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="DataReductionProxy.LoFi.SessionState"
     enum="DataReductionProxyLoFiSessionState">
+  <obsolete>
+    Deprecated as of October 2017 per transition to blacklist.
+  </obsolete>
   <owner>bengr@chromium.org</owner>
   <owner>megjablon@chromium.org</owner>
   <summary>

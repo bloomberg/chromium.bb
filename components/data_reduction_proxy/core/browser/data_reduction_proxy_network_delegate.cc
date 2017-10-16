@@ -449,12 +449,6 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendHeadersInternal(
   }
 
   DCHECK(data);
-  if (data_reduction_proxy_io_data_ && lofi_decider &&
-      (request->load_flags() & net::LOAD_MAIN_FRAME_DEPRECATED) &&
-      lofi_decider->IsSlowPagePreviewRequested(*headers)) {
-    data_reduction_proxy_io_data_->SetLoFiUsedThisSession();
-  }
-
   data->set_lofi_requested(
       lofi_decider ? lofi_decider->ShouldRecordLoFiUMA(*request) : false);
   MaybeAddBrotliToAcceptEncodingHeader(proxy_info, headers, *request);

@@ -310,10 +310,6 @@ bool DataReductionProxyIOData::ShouldEnableLitePages(
   return config_->ShouldEnableLitePages(request, *previews_decider);
 }
 
-void DataReductionProxyIOData::SetLoFiModeOff() {
-  config_->SetLoFiModeOff();
-}
-
 void DataReductionProxyIOData::UpdateDataUseForHost(int64_t network_bytes,
                                                     int64_t original_bytes,
                                                     const std::string& host) {
@@ -337,13 +333,6 @@ void DataReductionProxyIOData::UpdateContentLengths(
       base::Bind(&DataReductionProxyService::UpdateContentLengths, service_,
                  data_used, original_size, data_reduction_proxy_enabled,
                  request_type, mime_type));
-}
-
-void DataReductionProxyIOData::SetLoFiUsedThisSession() {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
-  ui_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&DataReductionProxyService::SetLoFiUsedThisSession, service_));
 }
 
 void DataReductionProxyIOData::AddEvent(std::unique_ptr<base::Value> event) {

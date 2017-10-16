@@ -177,12 +177,6 @@ class DataReductionProxyConfig
   virtual bool ContainsDataReductionProxy(
       const net::ProxyConfig::ProxyRules& proxy_rules) const;
 
-  // Sets |lofi_off_| to true.
-  void SetLoFiModeOff();
-
-  // Returns |lofi_off_|.
-  bool lofi_off() const { return lofi_off_; }
-
   // Returns true when Lo-Fi Previews should be activated. Records metrics for
   // Lo-Fi state changes. |request| is used to get the network quality estimator
   // from the URLRequestContext. |previews_decider| is used to check if
@@ -333,10 +327,6 @@ class DataReductionProxyConfig
 
   // The current connection type.
   net::NetworkChangeNotifier::ConnectionType connection_type_;
-
-  // If true, Lo-Fi is turned off for the rest of the session. This is set to
-  // true if Lo-Fi is disabled via flags or if the user implicitly opts out.
-  bool lofi_off_;
 
   // Set to true if the captive portal probe for the current network has been
   // blocked.

@@ -127,10 +127,6 @@ GURL GetConfigServiceURL();
 // command line.
 bool ShouldForceEnableDataReductionProxy();
 
-// Whether the blacklist should be used for server Lo-Fi and server Lite Page
-// instead of the prefs-based rules.
-bool IsBlackListEnabledForServerPreviews();
-
 // Returns whether the proxy should be bypassed for requests that are proxied
 // but missing the via header based on if the connection is cellular.
 bool ShouldBypassMissingViaHeader(bool connection_is_cellular);

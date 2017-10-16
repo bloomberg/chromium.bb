@@ -7597,12 +7597,18 @@ uploading your change for review.  These are checked by presubmit scripts.
 </enum>
 
 <enum name="DataReductionProxyLoFiImplicitOptOutAction">
+  <obsolete>
+    Obsolete as of October 2017.
+  </obsolete>
   <int value="0" label="Lo-Fi disabled for the remainder of the session"/>
   <int value="1" label="Lo-Fi disabled until next opt out epoch"/>
   <int value="2" label="Next implict opt out epoch, Lo-Fi re-enabled"/>
 </enum>
 
 <enum name="DataReductionProxyLoFiSessionState">
+  <obsolete>
+    Deprecated as of October 2017 per transition to blacklist.
+  </obsolete>
   <int value="0" label="Lo-Fi was used"/>
   <int value="1"
       label="Lo-Fi was not used because the network quality was always good"/>
