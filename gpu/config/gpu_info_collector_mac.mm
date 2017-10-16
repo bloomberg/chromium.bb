@@ -23,9 +23,11 @@ CollectInfoResult CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
 
   angle::SystemInfo system_info;
-  if (angle::GetSystemInfo(&system_info)) {
+  bool success = angle::GetSystemInfo(&system_info);
+  FillGPUInfoFromSystemInfo(gpu_info, &system_info);
+
+  if (success) {
     gpu_info->basic_info_state = kCollectInfoSuccess;
-    FillGPUInfoFromSystemInfo(gpu_info, &system_info);
   } else {
     gpu_info->basic_info_state = kCollectInfoNonFatalFailure;
   }
