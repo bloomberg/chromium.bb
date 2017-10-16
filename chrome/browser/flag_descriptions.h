@@ -1444,9 +1444,6 @@ extern const char kCrosRegionsModeHide[];
 extern const char kDisableLockScreenAppsName[];
 extern const char kDisableLockScreenAppsDescription[];
 
-extern const char kDisableNewVirtualKeyboardBehaviorName[];
-extern const char kDisableNewVirtualKeyboardBehaviorDescription[];
-
 extern const char kDisableTabletAutohideTitlebarsName[];
 extern const char kDisableTabletAutohideTitlebarsDescription[];
 
