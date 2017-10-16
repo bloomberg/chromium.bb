@@ -132,6 +132,8 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
                      const Notification& notification);
   ~NotificationViewMD() override;
 
+  void Activate();
+
   // Overridden from views::View:
   void Layout() override;
   void OnFocus() override;
@@ -219,6 +221,8 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
   std::vector<ItemView*> item_views_;
   views::ProgressBar* progress_bar_view_ = nullptr;
   CompactTitleMessageView* compact_title_message_view_ = nullptr;
+
+  std::unique_ptr<ui::EventHandler> click_activator_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationViewMD);
 };
