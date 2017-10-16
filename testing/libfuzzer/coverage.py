@@ -23,9 +23,14 @@ The output is a directory with HTML files that can be inspected via local web
 server (e.g. "python -m SimpleHTTPServer").
 
 In order to generate code coverage report, you need to build the target program
-with "use_clang_coverage=true" GN flag. This flag is not compatible with
-sanitizer flags: "is_asan", "is_msan", etc. It is also incompatible with
-"optimize_for_fuzzing" and with "is_component_build=true".
+with "use_clang_coverage=true" GN flag. You should also explicitly use the flag
+"is_component_build=false" as explained at the end of this paragraph.
+use_component_build is not compatible with sanitizer flags: "is_asan",
+"is_msan", etc. It is also incompatible with "optimize_for_fuzzing" and with
+"is_component_build". Beware that if "is_debug" is true (it defaults to true),
+then "is_component_build" will be set to true unless specified false as an
+argument. So it is best to pass is_component_build=false when using
+"use_clang_coveage".
 
 If you are building a fuzz target, you need to add "use_libfuzzer=true" GN flag
 as well.
@@ -33,7 +38,8 @@ as well.
 Sample workflow for a fuzz target (e.g. pdfium_fuzzer):
 
 cd <chromium_checkout_dir>/src
-gn gen //out/coverage --args='use_clang_coverage=true use_libfuzzer=true'
+gn gen //out/coverage --args='use_clang_coverage=true use_libfuzzer=true \
+is_component_build=false'
 ninja -C out/coverage -j100 pdfium_fuzzer
 ./testing/libfuzzer/coverage.py \\
   --output="coverage_out" \\
