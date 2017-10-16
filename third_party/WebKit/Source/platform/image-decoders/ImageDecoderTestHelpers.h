@@ -6,6 +6,7 @@
 #define ImageDecoderTestHelpers_h
 
 #include <memory>
+#include "platform/SharedBuffer.h"
 #include "platform/image-decoders/ImageDecoder.h"
 #include "platform/wtf/Vector.h"
 
@@ -13,13 +14,18 @@ class SkBitmap;
 
 namespace blink {
 class ImageDecoder;
-class SharedBuffer;
 
 const char kDecodersTestingDir[] = "Source/platform/image-decoders/testing";
+const unsigned kDefaultTestSize = 4 * SharedBuffer::kSegmentSize;
 
 using DecoderCreator = std::unique_ptr<ImageDecoder> (*)();
 using DecoderCreatorWithAlpha =
     std::unique_ptr<ImageDecoder> (*)(ImageDecoder::AlphaOption);
+
+inline void PrepareReferenceData(char* buffer, size_t size) {
+  for (size_t i = 0; i < size; ++i)
+    buffer[i] = static_cast<char>(i);
+}
 
 RefPtr<SharedBuffer> ReadFile(const char* file_name);
 RefPtr<SharedBuffer> ReadFile(const char* dir, const char* file_name);

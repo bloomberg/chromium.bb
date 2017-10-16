@@ -29,6 +29,7 @@
  */
 
 #include "platform/image-decoders/FastSharedBufferReader.h"
+#include "platform/image-decoders/ImageDecoderTestHelpers.h"
 #include "platform/image-decoders/SegmentReader.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkRWBuffer.h"
@@ -38,13 +39,6 @@
 namespace blink {
 
 namespace {
-
-const unsigned kDefaultTestSize = 4 * SharedBuffer::kSegmentSize;
-
-void PrepareReferenceData(char* buffer, size_t size) {
-  for (size_t i = 0; i < size; ++i)
-    buffer[i] = static_cast<char>(i);
-}
 
 RefPtr<SegmentReader> CopyToROBufferSegmentReader(RefPtr<SegmentReader> input) {
   SkRWBuffer rw_buffer;
