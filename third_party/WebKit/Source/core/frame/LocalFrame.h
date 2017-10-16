@@ -230,6 +230,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
   service_manager::InterfaceProvider& GetInterfaceProvider();
   InterfaceRegistry* GetInterfaceRegistry() { return interface_registry_; }
 
+  String GetInstrumentationToken() { return instrumentation_token_; }
+
   LocalFrameClient* Client() const;
 
   ContentSettingsClient* GetContentSettingsClient();
@@ -334,6 +336,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   Member<IdlenessDetector> idleness_detector_;
 
   InterfaceRegistry* const interface_registry_;
+  String instrumentation_token_;
 
   IntRect remote_viewport_intersection_;
   std::unique_ptr<FrameResourceCoordinator> frame_resource_coordinator_;

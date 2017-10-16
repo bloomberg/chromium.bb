@@ -619,7 +619,7 @@ class CONTENT_EXPORT RenderFrameImpl
   bool IsClientLoFiActiveForFrame() override;
   bool ShouldUseClientLoFiForRequest(const blink::WebURLRequest&) override;
   void DidBlockFramebust(const blink::WebURL& url) override;
-  blink::WebString GetDevToolsFrameToken() override;
+  blink::WebString GetInstrumentationToken() override;
   void AbortClientNavigation() override;
   void DidChangeSelection(bool is_empty_selection) override;
   bool HandleCurrentKeyboardEvent() override;

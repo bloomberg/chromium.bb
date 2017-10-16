@@ -243,7 +243,7 @@ class LocalFrameClientImpl final : public LocalFrameClient {
 
   void DidBlockFramebust(const KURL&) override;
 
-  String GetDevToolsFrameToken() override;
+  String GetInstrumentationToken() override;
 
  private:
   explicit LocalFrameClientImpl(WebLocalFrameImpl*);
