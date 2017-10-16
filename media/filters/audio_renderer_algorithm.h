@@ -159,9 +159,6 @@ class MEDIA_EXPORT AudioRendererAlgorithm {
   // Buffered audio data.
   AudioBufferQueue audio_buffer_;
 
-  // If muted, keep track of partial frames that should have been skipped over.
-  double muted_partial_frame_;
-
   // How many frames to have in the queue before we report the queue is full.
   int capacity_;
 
