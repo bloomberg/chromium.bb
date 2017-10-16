@@ -42,7 +42,7 @@ ReferrerPolicy ModulatorImplBase::GetReferrerPolicy() {
   return GetExecutionContext()->GetReferrerPolicy();
 }
 
-SecurityOrigin* ModulatorImplBase::GetSecurityOrigin() {
+SecurityOrigin* ModulatorImplBase::GetSecurityOriginForFetch() {
   return GetExecutionContext()->GetSecurityOrigin();
 }
 
