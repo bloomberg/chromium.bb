@@ -110,6 +110,7 @@ void av1_subtract_plane(MACROBLOCK *x, BLOCK_SIZE bsize, int plane) {
                  pd->dst.buf, pd->dst.stride);
 }
 
+#if !CONFIG_LV_MAP
 // Shifting negative values is undefined behaviour in C99,
 // and could mislead the optimizer, who might assume the shifted is positive.
 // This also avoids ubsan warnings.
@@ -121,7 +122,6 @@ static INLINE int signed_shift_right(int x, int shift) {
     return -((-x) >> shift);
 }
 
-#if !CONFIG_LV_MAP
 // These numbers are empirically obtained.
 static const int plane_rd_mult[REF_TYPES][PLANE_TYPES] = {
   { 10, 7 }, { 8, 5 },
