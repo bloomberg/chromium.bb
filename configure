@@ -326,7 +326,6 @@ EXPERIMENT_LIST="
     var_refs
     lgt
     lgt_from_pred
-    sbl_symbol
     ncobmc_adapt_weight
     bgsprite
     var_tx_no_tx_mode
