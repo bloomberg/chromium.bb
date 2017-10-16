@@ -94,4 +94,7 @@ message AppSpecifics {
 
   // This is the scope of the bookmark app.
   optional string bookmark_app_scope = 10;
+
+  // This is the SkColor used for the browser frame for this bookmark app.
+  optional uint32 bookmark_app_theme_color = 11;
 }

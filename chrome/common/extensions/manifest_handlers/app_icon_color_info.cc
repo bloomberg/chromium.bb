@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/lazy_instance.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "extensions/common/image_util.h"
@@ -20,13 +19,12 @@ namespace errors = manifest_errors;
 
 namespace {
 
-static base::LazyInstance<AppIconColorInfo>::DestructorAtExit
-    g_empty_app_icon_color_info = LAZY_INSTANCE_INITIALIZER;
-
 const AppIconColorInfo& GetInfo(const Extension* extension) {
+  CR_DEFINE_STATIC_LOCAL(const AppIconColorInfo, fallback, ());
+
   AppIconColorInfo* info = static_cast<AppIconColorInfo*>(
       extension->GetManifestData(keys::kAppIconColor));
-  return info ? *info : g_empty_app_icon_color_info.Get();
+  return info ? *info : fallback;
 }
 
 }  // namespace

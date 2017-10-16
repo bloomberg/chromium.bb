@@ -32,6 +32,7 @@ namespace {
 
 // Color for the window title text.
 const SkColor kTitleTextColor = SkColorSetRGB(40, 40, 40);
+const SkColor kLightTitleTextColor = SK_ColorWHITE;
 // Color of the active window header/content separator line.
 const SkColor kHeaderContentSeparatorColor = SkColorSetRGB(150, 150, 152);
 // Color of the inactive window header/content separator line.
@@ -273,7 +274,8 @@ void DefaultHeaderPainter::PaintTitleBar(gfx::Canvas* canvas) {
   title_bounds.set_x(view_->GetMirroredXForRect(title_bounds));
   canvas->DrawStringRectWithFlags(
       frame_->widget_delegate()->GetWindowTitle(), GetTitleFontList(),
-      kTitleTextColor, title_bounds, gfx::Canvas::NO_SUBPIXEL_RENDERING);
+      ShouldUseLightImages() ? kLightTitleTextColor : kTitleTextColor,
+      title_bounds, gfx::Canvas::NO_SUBPIXEL_RENDERING);
 }
 
 void DefaultHeaderPainter::PaintHeaderContentSeparator(gfx::Canvas* canvas) {

@@ -29,6 +29,7 @@
 
 class ExtensionService;
 class Profile;
+struct WebApplicationInfo;
 
 namespace extensions {
 class ExtensionCacheFake;
@@ -124,6 +125,9 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
   // Loads and launches the app from |path|, and returns it.
   const extensions::Extension* LoadAndLaunchApp(const base::FilePath& path);
 
+  // Launches |extension| as a window and returns the browser.
+  Browser* LaunchAppBrowser(const extensions::Extension* extension);
+
   // Pack the extension in |dir_path| into a crx file and return its path.
   // Return an empty FilePath if there were errors.
   base::FilePath PackExtension(const base::FilePath& dir_path);
@@ -171,6 +175,9 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
         extensions::Manifest::INTERNAL, browser(),
         extensions::Extension::NO_FLAGS, false, true);
   }
+
+  // Installs bookmark app for |info|.
+  const extensions::Extension* InstallBookmarkApp(WebApplicationInfo info);
 
   // Installs extension as if it came from the Chrome Webstore.
   const extensions::Extension* InstallExtensionFromWebstore(

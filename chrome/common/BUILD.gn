@@ -336,6 +336,8 @@ static_library("common") {
       "extensions/manifest_handlers/app_icon_color_info.h",
       "extensions/manifest_handlers/app_launch_info.cc",
       "extensions/manifest_handlers/app_launch_info.h",
+      "extensions/manifest_handlers/app_theme_color_info.cc",
+      "extensions/manifest_handlers/app_theme_color_info.h",
       "extensions/manifest_handlers/automation.cc",
       "extensions/manifest_handlers/automation.h",
       "extensions/manifest_handlers/content_scripts_handler.cc",

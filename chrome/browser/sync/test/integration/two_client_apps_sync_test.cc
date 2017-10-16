@@ -18,6 +18,8 @@
 #include "chrome/browser/sync/test/integration/sync_app_helper.h"
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
+#include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
+#include "chrome/common/extensions/manifest_handlers/app_theme_color_info.h"
 #include "components/sync/model/string_ordinal.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
@@ -378,7 +380,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, BookmarkAppBasic) {
       GetExtensionRegistry(GetProfile(0))->enabled_extensions().size();
 
   WebApplicationInfo web_app_info;
-  web_app_info.app_url = GURL("http://www.chromium.org/");
+  web_app_info.app_url = GURL("http://www.chromium.org/path");
   web_app_info.scope = GURL("http://www.chromium.org/");
   web_app_info.title = base::UTF8ToUTF16("Test name");
   web_app_info.description = base::UTF8ToUTF16("Test description");
@@ -432,6 +434,51 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, BookmarkAppMinimal) {
   }
 }
 
+const extensions::Extension* GetAppByLaunchURL(const GURL& url,
+                                               Profile* profile) {
+  for (auto extension_it :
+       GetExtensionRegistry(profile)->enabled_extensions()) {
+    if (extensions::AppLaunchInfo::GetLaunchWebURL(extension_it.get()) == url)
+      return extension_it.get();
+  }
+
+  return nullptr;
+}
+
+IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, BookmarkAppThemeColor) {
+  ASSERT_TRUE(SetupSync());
+  ASSERT_TRUE(AllProfilesHaveSameApps());
+
+  size_t num_extensions =
+      GetExtensionRegistry(GetProfile(0))->enabled_extensions().size();
+
+  WebApplicationInfo web_app_info;
+  web_app_info.app_url = GURL("http://www.chromium.org/");
+  web_app_info.title = base::UTF8ToUTF16("Test name");
+  web_app_info.theme_color = SK_ColorBLUE;
+  ++num_extensions;
+  {
+    content::WindowedNotificationObserver windowed_observer(
+        extensions::NOTIFICATION_CRX_INSTALLER_DONE,
+        content::NotificationService::AllSources());
+    extensions::CreateOrUpdateBookmarkApp(GetExtensionService(GetProfile(0)),
+                                          &web_app_info);
+    windowed_observer.Wait();
+    EXPECT_EQ(num_extensions,
+              GetExtensionRegistry(GetProfile(0))->enabled_extensions().size());
+  }
+  {
+    // Wait for the synced app to install.
+    content::WindowedNotificationObserver windowed_observer(
+        extensions::NOTIFICATION_CRX_INSTALLER_DONE,
+        base::Bind(&AllProfilesHaveSameApps));
+    windowed_observer.Wait();
+  }
+  auto* extension = GetAppByLaunchURL(web_app_info.app_url, GetProfile(1));
+  base::Optional<SkColor> theme_color =
+      extensions::AppThemeColorInfo::GetThemeColor(extension);
+  EXPECT_EQ(SK_ColorBLUE, theme_color.value());
+}
 // TODO(akalin): Add tests exercising:
 //   - Offline installation/uninstallation behavior
 //   - App-specific properties

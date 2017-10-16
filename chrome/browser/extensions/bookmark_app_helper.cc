@@ -356,6 +356,9 @@ void BookmarkAppHelper::UpdateWebAppInfoFromManifest(
   else if (manifest.start_url.is_valid())
     web_app_info->scope = manifest.start_url.Resolve(".");
 
+  if (manifest.theme_color != content::Manifest::kInvalidOrMissingColor)
+    web_app_info->theme_color = static_cast<SkColor>(manifest.theme_color);
+
   // If any icons are specified in the manifest, they take precedence over any
   // we picked up from the web_app stuff.
   if (!manifest.icons.empty()) {

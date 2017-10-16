@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 
+#include "chrome/browser/extensions/convert_web_app.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -15,7 +16,9 @@
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_extension_helper.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/extensions/manifest_handlers/app_icon_color_info.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
+#include "chrome/common/extensions/manifest_handlers/app_theme_color_info.h"
 #include "chrome/common/extensions/sync_helper.h"
 #include "components/crx_file/id_util.h"
 #include "extensions/browser/app_sorting.h"
@@ -40,6 +43,9 @@ struct AppState {
   syncer::StringOrdinal page_ordinal;
   extensions::LaunchType launch_type;
   GURL launch_web_url;
+  GURL bookmark_app_scope;
+  std::string icon_color;
+  base::Optional<SkColor> theme_color;
   std::string description;
   std::string name;
   bool from_bookmark;
@@ -60,6 +66,8 @@ bool AppState::Equals(const AppState& other) const {
   return app_launch_ordinal.Equals(other.app_launch_ordinal) &&
          page_ordinal.Equals(other.page_ordinal) &&
          launch_type == other.launch_type &&
+         bookmark_app_scope == other.bookmark_app_scope &&
+         icon_color == other.icon_color && theme_color == other.theme_color &&
          launch_web_url == other.launch_web_url &&
          description == other.description && name == other.name &&
          from_bookmark == other.from_bookmark;
@@ -81,8 +89,16 @@ void LoadApp(content::BrowserContext* context,
   // In case of running tests against real backend servers, pending apps won't
   // be installed.
   if (extension) {
+    if (extension->from_bookmark()) {
+      app_state->bookmark_app_scope =
+          extensions::GetScopeURLFromBookmarkApp(extension);
+    }
     app_state->launch_web_url =
         extensions::AppLaunchInfo::GetLaunchWebURL(extension);
+    app_state->icon_color =
+        extensions::AppIconColorInfo::GetIconColorString(extension);
+    app_state->theme_color =
+        extensions::AppThemeColorInfo::GetThemeColor(extension);
     app_state->description = extension->description();
     app_state->name = extension->name();
     app_state->from_bookmark = extension->from_bookmark();

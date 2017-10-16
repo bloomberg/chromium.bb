@@ -21,6 +21,7 @@
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
+#include "chrome/browser/extensions/bookmark_app_helper.h"
 #include "chrome/browser/extensions/browsertest_util.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/component_loader.h"
@@ -37,12 +38,15 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/extension_message_bubble_factory.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/web_application_info.h"
 #include "components/sync/model/string_ordinal.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/navigation_controller.h"
@@ -299,6 +303,22 @@ const Extension* ExtensionBrowserTest::LoadAndLaunchApp(
   return app;
 }
 
+Browser* ExtensionBrowserTest::LaunchAppBrowser(
+    const extensions::Extension* extension) {
+  EXPECT_TRUE(OpenApplication(AppLaunchParams(
+      profile(), extension, extensions::LAUNCH_CONTAINER_WINDOW,
+      WindowOpenDisposition::CURRENT_TAB, extensions::SOURCE_CHROME_INTERNAL)));
+
+  const BrowserList& browser_list = *BrowserList::GetInstance();
+  auto iter = std::find_if(
+      browser_list.begin(), browser_list.end(), [extension](Browser* b) {
+        return web_app::GetExtensionIdFromApplicationName(b->app_name()) ==
+               extension->id();
+      });
+  EXPECT_FALSE(iter == browser_list.end());
+  return iter == browser_list.end() ? nullptr : *iter;
+}
+
 base::FilePath ExtensionBrowserTest::PackExtension(
     const base::FilePath& dir_path) {
   base::ThreadRestrictions::ScopedAllowIO allow_io;
@@ -366,6 +386,23 @@ const Extension* ExtensionBrowserTest::UpdateExtensionWaitForIdle(
   return InstallOrUpdateExtension(id, path, INSTALL_UI_TYPE_NONE,
                                   expected_change, Manifest::INTERNAL,
                                   browser(), Extension::NO_FLAGS, false, false);
+}
+
+const Extension* ExtensionBrowserTest::InstallBookmarkApp(
+    WebApplicationInfo info) {
+  size_t num_extensions =
+      ExtensionRegistry::Get(profile())->enabled_extensions().size();
+
+  content::WindowedNotificationObserver windowed_observer(
+      extensions::NOTIFICATION_CRX_INSTALLER_DONE,
+      content::NotificationService::AllSources());
+  extensions::CreateOrUpdateBookmarkApp(extension_service(), &info);
+  windowed_observer.Wait();
+
+  EXPECT_EQ(++num_extensions,
+            ExtensionRegistry::Get(profile())->enabled_extensions().size());
+
+  return content::Details<const Extension>(windowed_observer.details()).ptr();
 }
 
 const Extension* ExtensionBrowserTest::InstallExtensionFromWebstore(

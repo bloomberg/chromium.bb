@@ -15,6 +15,7 @@
 #include "chrome/common/extensions/chrome_manifest_url_handlers.h"
 #include "chrome/common/extensions/manifest_handlers/app_icon_color_info.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
+#include "chrome/common/extensions/manifest_handlers/app_theme_color_info.h"
 #include "chrome/common/extensions/manifest_handlers/automation.h"
 #include "chrome/common/extensions/manifest_handlers/content_scripts_handler.h"
 #include "chrome/common/extensions/manifest_handlers/extension_action_handler.h"
@@ -39,6 +40,7 @@ void RegisterChromeManifestHandlers() {
   DCHECK(!ManifestHandler::IsRegistrationFinalized());
   (new AboutPageHandler)->Register();
   (new AppIconColorHandler)->Register();
+  (new AppThemeColorHandler)->Register();
   (new AppIsolationHandler)->Register();
   (new AppLaunchManifestHandler)->Register();
   (new AutomationHandler)->Register();

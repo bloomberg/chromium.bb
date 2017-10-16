@@ -8,6 +8,8 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/optional.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 class Browser;
 
@@ -43,6 +45,9 @@ class HostedAppBrowserController {
 
   // Returns the icon to be displayed in the window title bar.
   gfx::ImageSkia GetWindowIcon() const;
+
+  // Returns the color of the title bar.
+  base::Optional<SkColor> GetThemeColor() const;
 
  private:
   Browser* browser_;
