@@ -21,11 +21,10 @@
 @synthesize publicKey = _publicKey;
 @synthesize status = _status;
 @synthesize updatedTime = _updatedTime;
-@synthesize isOnline = _isOnline;
+@synthesize offlineReason = _offlineReason;
 
 - (bool)isOnline {
-  _isOnline = (self.status && [self.status isEqualToString:@"ONLINE"]);
-  return _isOnline;
+  return (self.status && [self.status isEqualToString:@"ONLINE"]);
 }
 
 // Parse jsonData into Host list.

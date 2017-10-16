@@ -24,6 +24,30 @@ static const CGFloat kHostCardIconInset = 10.f;
 static const CGFloat kHostCardPadding = 4.f;
 static const CGFloat kHostCardIconSize = 45.f;
 
+// Maps an offline reason enum string to the l10n ID used to retrieve the
+// localized message.
+static NSDictionary<NSString*, NSNumber*>* const kOfflineReasonL10nId = @{
+  @"INITIALIZATION_FAILED" : @(IDS_OFFLINE_REASON_INITIALIZATION_FAILED),
+  @"INVALID_HOST_CONFIGURATION" :
+      @(IDS_OFFLINE_REASON_INVALID_HOST_CONFIGURATION),
+  @"INVALID_HOST_ID" : @(IDS_OFFLINE_REASON_INVALID_HOST_ID),
+  @"INVALID_OAUTH_CREDENTIALS" :
+      @(IDS_OFFLINE_REASON_INVALID_OAUTH_CREDENTIALS),
+  @"INVALID_HOST_DOMAIN" : @(IDS_OFFLINE_REASON_INVALID_HOST_DOMAIN),
+  @"LOGIN_SCREEN_NOT_SUPPORTED" :
+      @(IDS_OFFLINE_REASON_LOGIN_SCREEN_NOT_SUPPORTED),
+  @"POLICY_READ_ERROR" : @(IDS_OFFLINE_REASON_POLICY_READ_ERROR),
+  @"POLICY_CHANGE_REQUIRES_RESTART" :
+      @(IDS_OFFLINE_REASON_POLICY_CHANGE_REQUIRES_RESTART),
+  @"SUCCESS_EXIT" : @(IDS_OFFLINE_REASON_SUCCESS_EXIT),
+  @"USERNAME_MISMATCH" : @(IDS_OFFLINE_REASON_USERNAME_MISMATCH),
+  @"X_SERVER_RETRIES_EXCEEDED" :
+      @(IDS_OFFLINE_REASON_X_SERVER_RETRIES_EXCEEDED),
+  @"SESSION_RETRIES_EXCEEDED" : @(IDS_OFFLINE_REASON_SESSION_RETRIES_EXCEEDED),
+  @"HOST_RETRIES_EXCEEDED" : @(IDS_OFFLINE_REASON_HOST_RETRIES_EXCEEDED),
+  @"UNKNOWN" : @(IDS_OFFLINE_REASON_UNKNOWN),
+};
+
 @interface HostCollectionViewCell () {
   UIImageView* _imageView;
   UILabel* _statusLabel;
@@ -145,13 +169,29 @@ static const CGFloat kHostCardIconSize = 45.f;
     _imageView.backgroundColor = RemotingTheme.hostOnlineColor;
     _statusLabel.text = l10n_util::GetNSString(IDS_HOST_ONLINE_SUBTITLE);
   } else {
-    _imageView.backgroundColor = RemotingTheme.hostOfflineColor;
-    _statusLabel.text =
+    NSString* statusText =
         hostInfo.updatedTime
             ? l10n_util::GetNSStringF(
                   IDS_LAST_ONLINE_SUBTITLE,
                   base::SysNSStringToUTF16(hostInfo.updatedTime))
             : l10n_util::GetNSString(IDS_HOST_OFFLINE_SUBTITLE);
+    NSString* localizedOfflineReason = nil;
+    if (hostInfo.offlineReason.length > 0) {
+      NSNumber* offlineReasonId = kOfflineReasonL10nId[hostInfo.offlineReason];
+      if (offlineReasonId) {
+        localizedOfflineReason =
+            l10n_util::GetNSString(offlineReasonId.intValue);
+      }
+    }
+
+    if (localizedOfflineReason) {
+      _imageView.backgroundColor = RemotingTheme.hostWarningColor;
+      _statusLabel.text = [NSString
+          stringWithFormat:@"%@ %@", localizedOfflineReason, statusText];
+    } else {
+      _imageView.backgroundColor = RemotingTheme.hostOfflineColor;
+      _statusLabel.text = statusText;
+    }
   }
 
   self.accessibilityLabel = [NSString
