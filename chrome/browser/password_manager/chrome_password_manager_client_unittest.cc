@@ -685,3 +685,14 @@ TEST_F(ChromePasswordManagerClientTest, VerifyLogPasswordReuseDetectedEvent) {
 }
 
 #endif
+
+TEST_F(ChromePasswordManagerClientTest, MissingUIDelegate) {
+  // Checks that the saving fallback methods don't crash if there is no UI
+  // delegate. It can happen on ChromeOS login form, for example.
+  GURL kUrl("https://example.com/");
+  NavigateAndCommit(kUrl);
+  std::unique_ptr<password_manager::PasswordFormManager> form_manager;
+  GetClient()->ShowManualFallbackForSaving(std::move(form_manager), false,
+                                           false);
+  GetClient()->HideManualFallbackForSaving();
+}
