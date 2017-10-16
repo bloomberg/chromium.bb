@@ -9,7 +9,7 @@
 #include <set>
 #include <vector>
 
-#include "base/threading/thread_checker.h"
+#include "base/sequence_checker.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/public/interfaces/ukm_interface.mojom.h"
 
@@ -70,7 +70,7 @@ class UkmRecorderImpl : public UkmRecorder {
   // Whitelisted Entry hashes, only the ones in this set will be recorded.
   std::set<uint64_t> whitelisted_entry_hashes_;
 
-  THREAD_CHECKER(thread_checker_);
+  SEQUENCE_CHECKER(sequence_checker_);
 };
 
 }  // namespace ukm

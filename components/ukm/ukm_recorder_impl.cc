@@ -96,11 +96,13 @@ void UkmRecorderImpl::DisableRecording() {
 }
 
 void UkmRecorderImpl::Purge() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   sources_.clear();
   entries_.clear();
 }
 
 void UkmRecorderImpl::StoreRecordingsInReport(Report* report) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (const auto& kv : sources_) {
     Source* proto_source = report->add_sources();
     kv.second->PopulateProto(proto_source);
@@ -120,7 +122,7 @@ void UkmRecorderImpl::StoreRecordingsInReport(Report* report) {
 
 void UkmRecorderImpl::UpdateSourceURL(ukm::SourceId source_id,
                                       const GURL& url) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!recording_enabled_) {
     RecordDroppedSource(DroppedDataReason::RECORDING_DISABLED);
@@ -146,7 +148,7 @@ void UkmRecorderImpl::UpdateSourceURL(ukm::SourceId source_id,
 }
 
 void UkmRecorderImpl::AddEntry(mojom::UkmEntryPtr entry) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!recording_enabled_) {
     RecordDroppedEntry(DroppedDataReason::RECORDING_DISABLED);
@@ -167,6 +169,7 @@ void UkmRecorderImpl::AddEntry(mojom::UkmEntryPtr entry) {
 }
 
 void UkmRecorderImpl::StoreWhitelistedEntries() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const auto entries =
       base::SplitString(GetWhitelistEntries(), ",", base::TRIM_WHITESPACE,
                         base::SPLIT_WANT_NONEMPTY);
