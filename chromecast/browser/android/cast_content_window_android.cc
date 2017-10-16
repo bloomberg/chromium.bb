@@ -45,8 +45,6 @@ CastContentWindowAndroid::~CastContentWindowAndroid() {
   Java_CastContentWindowAndroid_onNativeDestroyed(env, java_window_);
 }
 
-void CastContentWindowAndroid::SetTransparent() {}
-
 void CastContentWindowAndroid::ShowWebContents(
     content::WebContents* web_contents,
     CastWindowManager* window_manager) {

@@ -43,10 +43,6 @@ class CastContentWindow {
 
   virtual ~CastContentWindow() {}
 
-  // Sets the window's background to be transparent (call before
-  // CreateWindowTree).
-  virtual void SetTransparent() = 0;
-
   // Creates a full-screen window for |web_contents| and display it.
   // |web_contents| should outlive this CastContentWindow.
   // |window_manager| should outlive this CastContentWindow.

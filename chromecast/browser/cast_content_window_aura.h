@@ -23,7 +23,6 @@ class CastContentWindowAura : public CastContentWindow {
   ~CastContentWindowAura() override;
 
   // CastContentWindow implementation.
-  void SetTransparent() override;
   void ShowWebContents(content::WebContents* web_contents,
                        CastWindowManager* window_manager) override;
 
