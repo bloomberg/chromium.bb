@@ -1171,11 +1171,9 @@ config("default_warnings") {
       cflags += [ "/wd4702" ]  # Unreachable code.
     }
 
-    # Building with Clang on Windows is a work in progress and very
-    # experimental. See crbug.com/82385.
     if (is_clang) {
       cflags += [
-        # TODO(hans): Make this list shorter eventually, http://crbug.com/504657
+        # TODO(hans): Enable these, http://crbug.com/504657
         "-Wno-unknown-pragmas",  # http://crbug.com/505314
         "-Wno-microsoft-cast",  # http://crbug.com/550065
       ]
