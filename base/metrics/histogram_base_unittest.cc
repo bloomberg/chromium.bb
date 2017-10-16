@@ -22,7 +22,6 @@ class HistogramBaseTest : public testing::Test {
   }
 
   ~HistogramBaseTest() override {
-    HistogramBase::report_histogram_ = nullptr;
   }
 
   void ResetStatisticsRecorder() {
@@ -30,11 +29,6 @@ class HistogramBaseTest : public testing::Test {
     // before creating a new one.
     statistics_recorder_.reset();
     statistics_recorder_ = StatisticsRecorder::CreateTemporaryForTesting();
-  }
-
-  HistogramBase* GetCreationReportHistogram(const std::string& name) {
-    HistogramBase::EnableActivityReportHistogram(name);
-    return HistogramBase::report_histogram_;
   }
 
  private:
@@ -160,63 +154,6 @@ TEST_F(HistogramBaseTest, DeserializeSparseHistogram) {
   EXPECT_NE(histogram, deserialized);
   EXPECT_EQ("TestHistogram", deserialized->histogram_name());
   EXPECT_EQ(0, deserialized->flags());
-}
-
-TEST_F(HistogramBaseTest, CreationReportHistogram) {
-  // Enabled creation report. Itself is not included in the report.
-  HistogramBase* report = GetCreationReportHistogram("CreationReportTest");
-  ASSERT_TRUE(report);
-
-  std::vector<HistogramBase::Sample> ranges;
-  ranges.push_back(1);
-  ranges.push_back(2);
-  ranges.push_back(4);
-  ranges.push_back(8);
-  ranges.push_back(10);
-
-  // Create all histogram types and verify counts.
-  Histogram::FactoryGet("CRH-Histogram", 1, 10, 5, 0);
-  LinearHistogram::FactoryGet("CRH-Linear", 1, 10, 5, 0);
-  BooleanHistogram::FactoryGet("CRH-Boolean", 0);
-  CustomHistogram::FactoryGet("CRH-Custom", ranges, 0);
-  SparseHistogram::FactoryGet("CRH-Sparse", 0);
-
-  std::unique_ptr<HistogramSamples> samples = report->SnapshotSamples();
-  EXPECT_EQ(1, samples->GetCount(HISTOGRAM_REPORT_CREATED));
-  EXPECT_EQ(5, samples->GetCount(HISTOGRAM_REPORT_HISTOGRAM_CREATED));
-  EXPECT_EQ(0, samples->GetCount(HISTOGRAM_REPORT_HISTOGRAM_LOOKUP));
-  EXPECT_EQ(1, samples->GetCount(HISTOGRAM_REPORT_TYPE_LOGARITHMIC));
-  EXPECT_EQ(1, samples->GetCount(HISTOGRAM_REPORT_TYPE_LINEAR));
-  EXPECT_EQ(1, samples->GetCount(HISTOGRAM_REPORT_TYPE_BOOLEAN));
-  EXPECT_EQ(1, samples->GetCount(HISTOGRAM_REPORT_TYPE_CUSTOM));
-  EXPECT_EQ(1, samples->GetCount(HISTOGRAM_REPORT_TYPE_SPARSE));
-
-  // Create all flag types and verify counts.
-  Histogram::FactoryGet("CRH-Histogram-UMA-Targeted", 1, 10, 5,
-                        HistogramBase::kUmaTargetedHistogramFlag);
-  Histogram::FactoryGet("CRH-Histogram-UMA-Stability", 1, 10, 5,
-                        HistogramBase::kUmaStabilityHistogramFlag);
-  SparseHistogram::FactoryGet("CRH-Sparse-UMA-Targeted",
-                              HistogramBase::kUmaTargetedHistogramFlag);
-  SparseHistogram::FactoryGet("CRH-Sparse-UMA-Stability",
-                              HistogramBase::kUmaStabilityHistogramFlag);
-  samples = report->SnapshotSamples();
-  EXPECT_EQ(1, samples->GetCount(HISTOGRAM_REPORT_CREATED));
-  EXPECT_EQ(9, samples->GetCount(HISTOGRAM_REPORT_HISTOGRAM_CREATED));
-  EXPECT_EQ(0, samples->GetCount(HISTOGRAM_REPORT_HISTOGRAM_LOOKUP));
-  EXPECT_EQ(2, samples->GetCount(HISTOGRAM_REPORT_FLAG_UMA_TARGETED));
-  EXPECT_EQ(2, samples->GetCount(HISTOGRAM_REPORT_FLAG_UMA_STABILITY));
-
-  // Do lookup of existing histograms and verify counts.
-  Histogram::FactoryGet("CRH-Histogram", 1, 10, 5, 0);
-  LinearHistogram::FactoryGet("CRH-Linear", 1, 10, 5, 0);
-  BooleanHistogram::FactoryGet("CRH-Boolean", 0);
-  CustomHistogram::FactoryGet("CRH-Custom", ranges, 0);
-  SparseHistogram::FactoryGet("CRH-Sparse", 0);
-  samples = report->SnapshotSamples();
-  EXPECT_EQ(1, samples->GetCount(HISTOGRAM_REPORT_CREATED));
-  EXPECT_EQ(9, samples->GetCount(HISTOGRAM_REPORT_HISTOGRAM_CREATED));
-  EXPECT_EQ(5, samples->GetCount(HISTOGRAM_REPORT_HISTOGRAM_LOOKUP));
 }
 
 }  // namespace base

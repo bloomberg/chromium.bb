@@ -87326,6 +87326,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="UMA.Histograms.Activity" enum="HistogramActivityReport">
+  <obsolete>
+    Deprecated as of October 2017. No longer tracked.
+  </obsolete>
   <owner>asvitkine@chromium.org</owner>
   <owner>bcwhite@chromium.org</owner>
   <summary>

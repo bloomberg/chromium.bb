@@ -219,14 +219,6 @@ class BASE_EXPORT HistogramBase {
   // customize the output.
   void WriteJSON(std::string* output) const;
 
-  // This enables a histogram that reports the what types of histograms are
-  // created and their flags. It must be called while still single-threaded.
-  //
-  // IMPORTANT: Callers must update tools/metrics/histograms/histograms.xml
-  // with the following histogram:
-  //    UMA.Histograms.process_type.Creations
-  static void EnableActivityReportHistogram(const std::string& process_type);
-
  protected:
   enum ReportActivity { HISTOGRAM_CREATED, HISTOGRAM_LOOKUP };
 
@@ -260,13 +252,6 @@ class BASE_EXPORT HistogramBase {
   // Retrieves the callback for this histogram, if one exists, and runs it
   // passing |sample| as the parameter.
   void FindAndRunCallback(Sample sample) const;
-
-  // Update report with an |activity| that occurred for |histogram|.
-  static void ReportHistogramActivity(const HistogramBase& histogram,
-                                      ReportActivity activicty);
-
-  // Retrieves the global histogram reporting what histograms are created.
-  static HistogramBase* report_histogram_;
 
  private:
   friend class HistogramBaseTest;
