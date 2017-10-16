@@ -105,6 +105,15 @@
   return color;
 }
 
++ (UIColor*)hostWarningColor {
+  static UIColor* color;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    color = [UIColor colorWithRed:1.f green:0.60f blue:0.f alpha:1.f];
+  });
+  return color;
+}
+
 + (UIColor*)hostErrorColor {
   static UIColor* color;
   static dispatch_once_t onceToken;

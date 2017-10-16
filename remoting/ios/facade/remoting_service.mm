@@ -143,6 +143,8 @@ NSString* const kUserInfo = @"kUserInfo";
           host.status = base::SysUTF8ToNSString(status);
           host.updatedTime = base::SysUTF16ToNSString(
               base::TimeFormatShortDateAndTime(host_info.updated_time));
+          host.offlineReason =
+              base::SysUTF8ToNSString(host_info.offline_reason);
           [hosts addObject:host];
         }
         _hosts = hosts;
