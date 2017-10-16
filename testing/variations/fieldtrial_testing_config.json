@@ -2861,6 +2861,28 @@
             ]
         }
     ],
+    "SRTExperimentalEngineTrial": [
+        {
+            "platforms": [
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "NewCleaner_Launch",
+                    "params": {
+                        "download_group": "canary/eset",
+                        "experiment_group_for_reporting": "Experiment2",
+                        "tag": "canary_eset"
+                    },
+                    "enable_features": [
+                        "DownloadCleanupToolByBitness",
+                        "ExperimentalSwReporterEngine",
+                        "ExperimentalSwReporterEngineOnAllArchitectures"
+                    ]
+                }
+            ]
+        }
+    ],
     "SRTPromptFieldTrial": [
         {
             "platforms": [
