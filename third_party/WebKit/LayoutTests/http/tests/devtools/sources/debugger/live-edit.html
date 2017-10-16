@@ -122,7 +122,7 @@ function test() {
       function didShowScriptSource(sourceFrame) {
         testSourceFrame = sourceFrame;
         SourcesTestRunner.waitJavaScriptSourceFrameBreakpoints(testSourceFrame).then(breakpointAdded);
-        SourcesTestRunner.setBreakpoint(sourceFrame, 3, '', true);
+        SourcesTestRunner.setBreakpoint(sourceFrame, 2, '', true);
       }
 
       function breakpointAdded() {
