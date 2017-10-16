@@ -24,18 +24,4 @@
 // https://html.spec.whatwg.org/#the-window-object
 
 interface HTMLDocument : Document {
-    // https://html.spec.whatwg.org/#Document-partial
-
-    [CEReactions, CustomElementCallbacks] attribute [TreatNullAs=EmptyString] DOMString fgColor;
-    [CEReactions, CustomElementCallbacks] attribute [TreatNullAs=EmptyString] DOMString linkColor;
-    [CEReactions, CustomElementCallbacks] attribute [TreatNullAs=EmptyString] DOMString vlinkColor;
-    [CEReactions, CustomElementCallbacks] attribute [TreatNullAs=EmptyString] DOMString alinkColor;
-    [CEReactions, CustomElementCallbacks] attribute [TreatNullAs=EmptyString] DOMString bgColor;
-
-    [MeasureAs=DocumentClear] void clear();
-    [MeasureAs=DocumentCaptureEvents] void captureEvents();
-    [MeasureAs=DocumentReleaseEvents] void releaseEvents();
-
-    // FIXME: all should not be [Replaceable].
-    [Replaceable, MeasureAs=DocumentAll] readonly attribute HTMLAllCollection all;
 };

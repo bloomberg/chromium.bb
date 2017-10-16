@@ -29,8 +29,6 @@
 
 namespace blink {
 
-class HTMLBodyElement;
-
 class CORE_EXPORT HTMLDocument : public Document {
   DEFINE_WRAPPERTYPEINFO();
 
@@ -42,22 +40,6 @@ class CORE_EXPORT HTMLDocument : public Document {
     return new HTMLDocument(DocumentInit::Create());
   }
   ~HTMLDocument() override;
-
-  const AtomicString& bgColor() const;
-  void setBgColor(const AtomicString&);
-  const AtomicString& fgColor() const;
-  void setFgColor(const AtomicString&);
-  const AtomicString& alinkColor() const;
-  void setAlinkColor(const AtomicString&);
-  const AtomicString& linkColor() const;
-  void setLinkColor(const AtomicString&);
-  const AtomicString& vlinkColor() const;
-  void setVlinkColor(const AtomicString&);
-
-  void clear() {}
-
-  void captureEvents() {}
-  void releaseEvents() {}
 
   void AddNamedItem(const AtomicString& name);
   void RemoveNamedItem(const AtomicString& name);
@@ -73,11 +55,6 @@ class CORE_EXPORT HTMLDocument : public Document {
       DocumentClassFlags extended_document_classes = kDefaultDocumentClass);
 
  private:
-  HTMLBodyElement* HtmlBodyElement() const;
-
-  const AtomicString& BodyAttributeValue(const QualifiedName&) const;
-  void SetBodyAttribute(const QualifiedName&, const AtomicString&);
-
   HashCountedSet<AtomicString> named_item_counts_;
 };
 

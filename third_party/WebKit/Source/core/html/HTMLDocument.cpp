@@ -56,7 +56,6 @@
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/WindowProxy.h"
 #include "core/frame/LocalFrame.h"
-#include "core/html/HTMLBodyElement.h"
 #include "core/html_names.h"
 
 namespace blink {
@@ -74,69 +73,6 @@ HTMLDocument::HTMLDocument(const DocumentInit& initializer,
 }
 
 HTMLDocument::~HTMLDocument() {}
-
-HTMLBodyElement* HTMLDocument::HtmlBodyElement() const {
-  return ToHTMLBodyElementOrNull(body());
-}
-
-const AtomicString& HTMLDocument::BodyAttributeValue(
-    const QualifiedName& name) const {
-  if (HTMLBodyElement* body = HtmlBodyElement())
-    return body->FastGetAttribute(name);
-  return g_null_atom;
-}
-
-void HTMLDocument::SetBodyAttribute(const QualifiedName& name,
-                                    const AtomicString& value) {
-  if (HTMLBodyElement* body = HtmlBodyElement()) {
-    // FIXME: This check is apparently for benchmarks that set the same value
-    // repeatedly.  It's not clear what benchmarks though, it's also not clear
-    // why we don't avoid causing a style recalc when setting the same value to
-    // a presentational attribute in the common case.
-    if (body->FastGetAttribute(name) != value)
-      body->setAttribute(name, value);
-  }
-}
-
-const AtomicString& HTMLDocument::bgColor() const {
-  return BodyAttributeValue(bgcolorAttr);
-}
-
-void HTMLDocument::setBgColor(const AtomicString& value) {
-  SetBodyAttribute(bgcolorAttr, value);
-}
-
-const AtomicString& HTMLDocument::fgColor() const {
-  return BodyAttributeValue(textAttr);
-}
-
-void HTMLDocument::setFgColor(const AtomicString& value) {
-  SetBodyAttribute(textAttr, value);
-}
-
-const AtomicString& HTMLDocument::alinkColor() const {
-  return BodyAttributeValue(alinkAttr);
-}
-
-void HTMLDocument::setAlinkColor(const AtomicString& value) {
-  SetBodyAttribute(alinkAttr, value);
-}
-
-const AtomicString& HTMLDocument::linkColor() const {
-  return BodyAttributeValue(linkAttr);
-}
-
-void HTMLDocument::setLinkColor(const AtomicString& value) {
-  SetBodyAttribute(linkAttr, value);
-}
-
-const AtomicString& HTMLDocument::vlinkColor() const {
-  return BodyAttributeValue(vlinkAttr);
-}
-
-void HTMLDocument::setVlinkColor(const AtomicString& value) {
-  SetBodyAttribute(vlinkAttr, value);
-}
 
 Document* HTMLDocument::CloneDocumentWithoutChildren() {
   return Create(DocumentInit::Create()

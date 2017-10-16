@@ -6897,6 +6897,65 @@ bool Document::hasFocus() const {
   return GetPage() && GetPage()->GetFocusController().IsDocumentFocused(*this);
 }
 
+const AtomicString& Document::BodyAttributeValue(
+    const QualifiedName& name) const {
+  if (auto* bodyElement = body())
+    return bodyElement->FastGetAttribute(name);
+  return g_null_atom;
+}
+
+void Document::SetBodyAttribute(const QualifiedName& name,
+                                const AtomicString& value) {
+  if (auto* bodyElement = body()) {
+    // FIXME: This check is apparently for benchmarks that set the same value
+    // repeatedly.  It's not clear what benchmarks though, it's also not clear
+    // why we don't avoid causing a style recalc when setting the same value to
+    // a presentational attribute in the common case.
+    if (bodyElement->FastGetAttribute(name) != value)
+      bodyElement->setAttribute(name, value);
+  }
+}
+
+const AtomicString& Document::bgColor() const {
+  return BodyAttributeValue(bgcolorAttr);
+}
+
+void Document::setBgColor(const AtomicString& value) {
+  SetBodyAttribute(bgcolorAttr, value);
+}
+
+const AtomicString& Document::fgColor() const {
+  return BodyAttributeValue(textAttr);
+}
+
+void Document::setFgColor(const AtomicString& value) {
+  SetBodyAttribute(textAttr, value);
+}
+
+const AtomicString& Document::alinkColor() const {
+  return BodyAttributeValue(alinkAttr);
+}
+
+void Document::setAlinkColor(const AtomicString& value) {
+  SetBodyAttribute(alinkAttr, value);
+}
+
+const AtomicString& Document::linkColor() const {
+  return BodyAttributeValue(linkAttr);
+}
+
+void Document::setLinkColor(const AtomicString& value) {
+  SetBodyAttribute(linkAttr, value);
+}
+
+const AtomicString& Document::vlinkColor() const {
+  return BodyAttributeValue(vlinkAttr);
+}
+
+void Document::setVlinkColor(const AtomicString& value) {
+  SetBodyAttribute(vlinkAttr, value);
+}
+
 template <unsigned type>
 bool ShouldInvalidateNodeListCachesForAttr(
     const LiveNodeListRegistry& node_lists,

@@ -979,8 +979,11 @@ interface Document : Node
     attribute @@unscopables
     getter URL
     getter activeElement
+    getter alinkColor
+    getter all
     getter anchors
     getter applets
+    getter bgColor
     getter body
     getter characterSet
     getter charset
@@ -998,6 +1001,7 @@ interface Document : Node
     getter documentURI
     getter domain
     getter embeds
+    getter fgColor
     getter firstElementChild
     getter fonts
     getter forms
@@ -1008,6 +1012,7 @@ interface Document : Node
     getter inputEncoding
     getter lastElementChild
     getter lastModified
+    getter linkColor
     getter links
     getter onabort
     getter onauxclick
@@ -1111,6 +1116,7 @@ interface Document : Node
     getter styleSheets
     getter title
     getter visibilityState
+    getter vlinkColor
     getter webkitCurrentFullScreenElement
     getter webkitFullscreenElement
     getter webkitFullscreenEnabled
@@ -1122,7 +1128,9 @@ interface Document : Node
     getter xmlVersion
     method adoptNode
     method append
+    method captureEvents
     method caretRangeFromPoint
+    method clear
     method close
     method constructor
     method createAttribute
@@ -1165,15 +1173,21 @@ interface Document : Node
     method querySelector
     method querySelectorAll
     method registerElement
+    method releaseEvents
     method webkitCancelFullScreen
     method webkitExitFullscreen
     method write
     method writeln
+    setter alinkColor
+    setter all
+    setter bgColor
     setter body
     setter cookie
     setter designMode
     setter dir
     setter domain
+    setter fgColor
+    setter linkColor
     setter onabort
     setter onauxclick
     setter onbeforecopy
@@ -1265,6 +1279,7 @@ interface Document : Node
     setter onwheel
     setter selectedStylesheetSet
     setter title
+    setter vlinkColor
     setter xmlStandalone
     setter xmlVersion
 interface DocumentFragment : Node
@@ -1853,22 +1868,7 @@ interface HTMLDivElement : HTMLElement
     setter align
 interface HTMLDocument : Document
     attribute @@toStringTag
-    getter alinkColor
-    getter all
-    getter bgColor
-    getter fgColor
-    getter linkColor
-    getter vlinkColor
-    method captureEvents
-    method clear
     method constructor
-    method releaseEvents
-    setter alinkColor
-    setter all
-    setter bgColor
-    setter fgColor
-    setter linkColor
-    setter vlinkColor
 interface HTMLElement : Element
     attribute @@toStringTag
     getter accessKey
