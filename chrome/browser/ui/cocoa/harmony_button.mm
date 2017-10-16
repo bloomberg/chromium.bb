@@ -42,6 +42,8 @@ NSColor* GetShadowColor() {
   return NSColor.blackColor;
 }
 
+constexpr CGFloat kFontSize = 12;
+
 constexpr CGFloat kTextAlpha = 0x8A / (CGFloat)0xFF;
 
 constexpr CGSize kNormalShadowOffset{0, 0};
@@ -53,7 +55,7 @@ constexpr CGFloat kMouseOverShadowOpacity = 0.1;
 constexpr CGFloat kNormalShadowRadius = 0;
 constexpr CGFloat kMouseOverShadowRadius = 2;
 
-constexpr CGFloat kCornerRadius = 2;
+constexpr CGFloat kCornerRadius = 3;
 constexpr CGFloat kXPadding = 16;
 constexpr CGFloat kMinWidth = 64;
 constexpr CGFloat kHeight = 28;
@@ -179,12 +181,11 @@ constexpr NSTimeInterval kTransitionDuration = 0.25;
 
   NSFont* font;
   if (@available(macOS 10.11, *)) {
-    font = [NSFont systemFontOfSize:[NSFont systemFontSize]
-                             weight:NSFontWeightMedium];
+    font = [NSFont systemFontOfSize:kFontSize weight:NSFontWeightMedium];
   } else {
     font = [[NSFontManager sharedFontManager]
         convertWeight:YES
-               ofFont:[NSFont systemFontOfSize:12]];
+               ofFont:[NSFont systemFontOfSize:kFontSize]];
   }
 
   base::scoped_nsobject<NSMutableParagraphStyle> paragraphStyle(
