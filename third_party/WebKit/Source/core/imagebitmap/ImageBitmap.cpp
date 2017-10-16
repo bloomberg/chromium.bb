@@ -428,13 +428,9 @@ ImageBitmap::ImageBitmap(ImageElementBase* image,
   sk_sp<SkImage> sk_image = image_->PaintImageForCurrentFrame().GetSkImage();
   SkPixmap pixmap;
   if (!sk_image->isTextureBacked() && !sk_image->peekPixels(&pixmap)) {
-    sk_sp<SkColorSpace> dst_color_space = nullptr;
-    SkColorType dst_color_type = kN32_SkColorType;
-    if (RuntimeEnabledFeatures::ColorCanvasExtensionsEnabled() ||
-        !parsed_options.color_params.LinearPixelMath()) {
-      dst_color_space = parsed_options.color_params.GetSkColorSpace();
-      dst_color_type = parsed_options.color_params.GetSkColorType();
-    }
+    sk_sp<SkColorSpace> dst_color_space =
+        parsed_options.color_params.GetSkColorSpace();
+    SkColorType dst_color_type = parsed_options.color_params.GetSkColorType();
     SkImageInfo image_info =
         SkImageInfo::Make(sk_image->width(), sk_image->height(), dst_color_type,
                           kPremul_SkAlphaType, dst_color_space);

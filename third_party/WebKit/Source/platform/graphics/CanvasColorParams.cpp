@@ -4,6 +4,7 @@
 
 #include "platform/graphics/CanvasColorParams.h"
 
+#include "cc/paint/skia_paint_canvas.h"
 #include "platform/runtime_enabled_features.h"
 #include "third_party/skia/include/core/SkSurfaceProps.h"
 #include "ui/gfx/color_space.h"
@@ -78,14 +79,27 @@ void CanvasColorParams::SetOpacityMode(OpacityMode opacity_mode) {
   opacity_mode_ = opacity_mode;
 }
 
-bool CanvasColorParams::LinearPixelMath() const {
-  return color_space_ != kLegacyCanvasColorSpace;
+bool CanvasColorParams::NeedsSkColorSpaceXformCanvas() const {
+  // TODO: To unify legacy and srgb spaces, return
+  // color_space_ == kSRGBCanvasColorSpace
+  return color_space_ == kLegacyCanvasColorSpace;
+}
+
+std::unique_ptr<cc::PaintCanvas> CanvasColorParams::WrapCanvas(
+    SkCanvas* canvas) const {
+  if (NeedsSkColorSpaceXformCanvas()) {
+    return std::make_unique<cc::SkiaPaintCanvas>(canvas, GetSkColorSpace());
+  }
+  // |canvas| already does its own color correction.
+  return std::make_unique<cc::SkiaPaintCanvas>(canvas);
 }
 
 sk_sp<SkColorSpace> CanvasColorParams::GetSkColorSpaceForSkSurfaces() const {
+  if (NeedsSkColorSpaceXformCanvas())
+    return nullptr;
   switch (color_space_) {
     case kLegacyCanvasColorSpace:
-      return nullptr;
+      NOTREACHED();
     case kSRGBCanvasColorSpace:
       if (pixel_format_ == kF16CanvasPixelFormat)
         return SkColorSpace::MakeSRGBLinear();

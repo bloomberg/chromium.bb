@@ -931,7 +931,6 @@ void CanvasRenderingContext2D::getContextAttributes(
   settings.setAlpha(CreationAttributes().alpha());
   settings.setColorSpace(ColorSpaceAsString());
   settings.setPixelFormat(PixelFormatAsString());
-  settings.setLinearPixelMath(ColorParams().LinearPixelMath());
 }
 
 void CanvasRenderingContext2D::drawFocusIfNeeded(Element* element) {

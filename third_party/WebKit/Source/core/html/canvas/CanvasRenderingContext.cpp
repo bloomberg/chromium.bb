@@ -68,7 +68,6 @@ CanvasRenderingContext::CanvasRenderingContext(
   // linearPixelMath rather than the requested one.
   creation_attributes_.setColorSpace(ColorSpaceAsString());
   creation_attributes_.setPixelFormat(PixelFormatAsString());
-  creation_attributes_.setLinearPixelMath(color_params_.LinearPixelMath());
 }
 
 WTF::String CanvasRenderingContext::ColorSpaceAsString() const {
