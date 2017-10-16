@@ -58,11 +58,10 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
      */
     private boolean mFirstRunCheckIsPending = true;
 
-    private final ObserverList<SignInStateObserver> mSignInStateObservers =
-            new ObserverList<SignInStateObserver>();
+    private final ObserverList<SignInStateObserver> mSignInStateObservers = new ObserverList<>();
 
     private final ObserverList<SignInAllowedObserver> mSignInAllowedObservers =
-            new ObserverList<SignInAllowedObserver>();
+            new ObserverList<>();
 
     /**
     * Will be set during the sign in process, and nulled out when there is not a pending sign in.
@@ -124,12 +123,12 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
         /**
          * Called before data is wiped.
          */
-        public void preWipeData();
+        void preWipeData();
 
         /**
          * Called after data is wiped.
          */
-        public void postWipeData();
+        void postWipeData();
     }
 
     /**
@@ -287,12 +286,9 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
     }
 
     private void notifySignInAllowedChanged() {
-        new Handler().post(new Runnable() {
-            @Override
-            public void run() {
-                for (SignInAllowedObserver observer : mSignInAllowedObservers) {
-                    observer.onSignInAllowedChanged();
-                }
+        new Handler().post(() -> {
+            for (SignInAllowedObserver observer : mSignInAllowedObservers) {
+                observer.onSignInAllowedChanged();
             }
         });
     }
@@ -368,12 +364,8 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
      */
     public void signIn(String accountName, @Nullable final Activity activity,
             @Nullable final SignInCallback callback) {
-        AccountManagerFacade.get().getAccountFromName(accountName, new Callback<Account>() {
-            @Override
-            public void onResult(Account account) {
-                signIn(account, activity, callback);
-            }
-        });
+        AccountManagerFacade.get().getAccountFromName(
+                accountName, account -> signIn(account, activity, callback));
     }
 
     private void progressSignInFlowSeedSystemAccounts() {
@@ -490,14 +482,8 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
      * fulfills the returned {@link Promise}.
      */
     public Promise<Void> signOutPromise() {
-        final Promise<Void> promise = new Promise<Void>();
-
-        signOut(new Runnable(){
-            @Override
-            public void run() {
-                promise.fulfill(null);
-            }
-        });
+        final Promise<Void> promise = new Promise<>();
+        signOut(() -> promise.fulfill(null));
 
         return promise;
     }

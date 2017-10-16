@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.signin;
 
 import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.support.v7.app.AlertDialog;
 
 import org.chromium.chrome.R;
@@ -60,22 +59,12 @@ public class ConfirmSyncDataStateMachineDelegate {
      */
     public void showFetchManagementPolicyProgressDialog(final ProgressDialogListener listener) {
         dismissAllDialogs();
-        mProgressDialog = new AlertDialog.Builder(mContext, R.style.SigninAlertDialogTheme)
-                                  .setView(R.layout.signin_progress_bar_dialog)
-                                  .setNegativeButton(R.string.cancel,
-                                          new DialogInterface.OnClickListener() {
-                                              @Override
-                                              public void onClick(DialogInterface dialog, int i) {
-                                                  dialog.cancel();
-                                              }
-                                          })
-                                  .setOnCancelListener(new DialogInterface.OnCancelListener() {
-                                      @Override
-                                      public void onCancel(DialogInterface dialog) {
-                                          listener.onCancel();
-                                      }
-                                  })
-                                  .create();
+        mProgressDialog =
+                new AlertDialog.Builder(mContext, R.style.SigninAlertDialogTheme)
+                        .setView(R.layout.signin_progress_bar_dialog)
+                        .setNegativeButton(R.string.cancel, (dialog, i) -> dialog.cancel())
+                        .setOnCancelListener(dialog -> listener.onCancel())
+                        .create();
         mProgressDialog.show();
     }
 
@@ -90,26 +79,9 @@ public class ConfirmSyncDataStateMachineDelegate {
                 new AlertDialog.Builder(mContext, R.style.SigninAlertDialogTheme)
                         .setTitle(R.string.sign_in_timeout_title)
                         .setMessage(R.string.sign_in_timeout_message)
-                        .setNegativeButton(R.string.cancel,
-                                new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        dialog.cancel();
-                                    }
-                                })
-                        .setPositiveButton(R.string.retry,
-                                new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        listener.onRetry();
-                                    }
-                                })
-                        .setOnCancelListener(new DialogInterface.OnCancelListener() {
-                            @Override
-                            public void onCancel(DialogInterface dialog) {
-                                listener.onCancel();
-                            }
-                        })
+                        .setNegativeButton(R.string.cancel, (dialog, which) -> dialog.cancel())
+                        .setPositiveButton(R.string.retry, (dialog, which) -> listener.onRetry())
+                        .setOnCancelListener(dialog -> listener.onCancel())
                         .create();
         mTimeoutAlertDialog.show();
     }
