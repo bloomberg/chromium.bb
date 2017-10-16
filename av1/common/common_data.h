@@ -544,15 +544,12 @@ static const BLOCK_SIZE subsize_lookup[PARTITION_TYPES][BLOCK_SIZES_ALL] =
     BLOCK_INVALID, BLOCK_INVALID
 #endif  // CONFIG_EXT_PARTITION
   }, {  // PARTITION_HORZ_4
-#if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
     // 2X2,        2X4,           4X2,
     BLOCK_INVALID, BLOCK_INVALID, BLOCK_INVALID,
-    //                            4X4
-                                  BLOCK_INVALID,
-#else
-    //                            4X4
-                                  BLOCK_INVALID,
 #endif
+    //                            4X4
+                                  BLOCK_INVALID,
     // 4X8,        8X4,           8X8
     BLOCK_INVALID, BLOCK_INVALID, BLOCK_INVALID,
     // 8X16,       16X8,          16X16
@@ -574,15 +571,12 @@ static const BLOCK_SIZE subsize_lookup[PARTITION_TYPES][BLOCK_SIZES_ALL] =
     BLOCK_INVALID, BLOCK_INVALID
 #endif  // CONFIG_EXT_PARTITION
   }, {  // PARTITION_VERT_4
-#if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
     // 2X2,        2X4,           4X2,
     BLOCK_INVALID, BLOCK_INVALID, BLOCK_INVALID,
-    //                            4X4
-                                  BLOCK_INVALID,
-#else
-    //                            4X4
-                                  BLOCK_INVALID,
 #endif
+    //                            4X4
+                                  BLOCK_INVALID,
     // 4X8,        8X4,           8X8
     BLOCK_INVALID, BLOCK_INVALID, BLOCK_INVALID,
     // 8X16,       16X8,          16X16

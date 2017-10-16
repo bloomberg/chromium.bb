@@ -5284,7 +5284,9 @@ static void set_skip_flag(const AV1_COMP *cpi, MACROBLOCK *x,
 static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
                                RD_STATS *rd_stats, BLOCK_SIZE bsize,
                                int64_t ref_best_rd) {
+#if CONFIG_EXT_TX
   const AV1_COMMON *cm = &cpi->common;
+#endif  // CONFIG_EXT_TX
   const TX_SIZE max_tx_size = max_txsize_lookup[bsize];
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
@@ -5314,13 +5316,13 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
 
   av1_invalid_rd_stats(rd_stats);
 
-#if CONFIG_LGT_FROM_PRED
+#if CONFIG_EXT_TX && CONFIG_LGT_FROM_PRED
   mbmi->use_lgt = 0;
   int search_lgt = is_inter
                        ? LGT_FROM_PRED_INTER &&
                              (!cpi->sf.tx_type_search.prune_mode > NO_PRUNE)
                        : LGT_FROM_PRED_INTRA && ALLOW_INTRA_EXT_TX;
-#endif  // CONFIG_LGT_FROM_PRED
+#endif  // CONFIG_EXT_TX && CONFIG_LGT_FROM_PRED
 
   const uint32_t hash = get_block_residue_hash(x, bsize);
   TX_RD_RECORD *tx_rd_record = &x->tx_rd_record;
@@ -5363,14 +5365,14 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
   for (tx_type = txk_start; tx_type < txk_end; ++tx_type) {
     RD_STATS this_rd_stats;
     av1_init_rd_stats(&this_rd_stats);
-#if CONFIG_MRC_TX
+#if CONFIG_EXT_TX && CONFIG_MRC_TX
     // MRC_DCT only implemented for TX_32X32 so only include this tx in
     // the search for TX_32X32
     if (tx_type == MRC_DCT &&
         (max_tx_size != TX_32X32 || (is_inter && !USE_MRC_INTER) ||
          (!is_inter && !USE_MRC_INTRA)))
       continue;
-#endif  // CONFIG_MRC_TX
+#endif  // CONFIG_EXT_TX && CONFIG_MRC_TX
 #if CONFIG_EXT_TX
     if (!av1_ext_tx_used[tx_set_type][tx_type]) continue;
     if (is_inter) {
@@ -5417,7 +5419,7 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
   assert(IMPLIES(!found, ref_best_rd != INT64_MAX));
   if (!found) return;
 
-#if CONFIG_LGT_FROM_PRED
+#if CONFIG_EXT_TX && CONFIG_LGT_FROM_PRED
   if (search_lgt && is_lgt_allowed(mbmi->mode, max_tx_size) &&
       !cm->reduced_tx_set_used) {
     RD_STATS this_rd_stats;
@@ -5436,7 +5438,7 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
       mbmi->use_lgt = 0;
     }
   }
-#endif  // CONFIG_LGT_FROM_PRED
+#endif  // CONFIG_EXT_TX && CONFIG_LGT_FROM_PRED
   // We found a candidate transform to use. Copy our results from the "best"
   // array into mbmi.
   mbmi->tx_type = best_tx_type;
