@@ -15,11 +15,8 @@
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/test/extension_test_message_listener.h"
-#include "mojo/public/cpp/test_support/waiter.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/l10n/l10n_util.h"
-
-using base::string16;
 
 namespace {
 
@@ -42,23 +39,16 @@ IN_PROC_BROWSER_TEST_F(NetworkingConfigDelegateChromeosTest, SystemTrayItem) {
       ->BindInterface(ash::mojom::kServiceName, &tray_test_api);
 
   // Show the network detail view.
-  base::RunLoop loop;
-  tray_test_api->ShowDetailedView(ash::mojom::TrayItem::kNetwork,
-                                  loop.QuitClosure());
-  loop.Run();
+  ash::mojom::SystemTrayTestApiAsyncWaiter wait_for(tray_test_api.get());
+  wait_for.ShowDetailedView(ash::mojom::TrayItem::kNetwork);
 
   // Expect that the extension-controlled VPN item appears.
-  string16 expected_tooltip = l10n_util::GetStringFUTF16(
+  base::string16 expected_tooltip = l10n_util::GetStringFUTF16(
       IDS_ASH_STATUS_TRAY_EXTENSION_CONTROLLED_WIFI,
       base::UTF8ToUTF16("NetworkingConfigDelegate test extension"));
-  using SystemTrayTestApi = ash::mojom::SystemTrayTestApi;
-  mojo::test::Waiter waiter;
-  string16 tooltip;
-  tray_test_api->GetBubbleViewTooltip(
-      ash::VIEW_ID_EXTENSION_CONTROLLED_WIFI,
-      waiter.CaptureNext<SystemTrayTestApi::GetBubbleViewTooltipCallback>(
-          &tooltip));
-  waiter.Wait();
+  base::string16 tooltip;
+  wait_for.GetBubbleViewTooltip(ash::VIEW_ID_EXTENSION_CONTROLLED_WIFI,
+                                &tooltip);
   EXPECT_EQ(expected_tooltip, tooltip);
 }
 

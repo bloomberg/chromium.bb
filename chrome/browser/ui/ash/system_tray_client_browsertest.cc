@@ -35,7 +35,6 @@
 #include "components/user_manager/user_manager.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/test/test_utils.h"
-#include "mojo/public/cpp/test_support/waiter.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/views/controls/label.h"
 
@@ -153,19 +152,12 @@ IN_PROC_BROWSER_TEST_F(SystemTrayClientEnterpriseTest, TrayEnterprise) {
       ->BindInterface(ash::mojom::kServiceName, &tray_test_api);
 
   // Open the system tray menu.
-  base::RunLoop loop;
-  tray_test_api->ShowBubble(loop.QuitClosure());
-  loop.Run();
+  ash::mojom::SystemTrayTestApiAsyncWaiter wait_for(tray_test_api.get());
+  wait_for.ShowBubble();
 
   // Managed devices show an item in the menu.
-  mojo::test::Waiter waiter;
   bool view_visible = false;
-  tray_test_api->IsBubbleViewVisible(
-      ash::VIEW_ID_TRAY_ENTERPRISE,
-      waiter.CaptureNext<
-          ash::mojom::SystemTrayTestApi::IsBubbleViewVisibleCallback>(
-          &view_visible));
-  waiter.Wait();
+  wait_for.IsBubbleViewVisible(ash::VIEW_ID_TRAY_ENTERPRISE, &view_visible);
   EXPECT_TRUE(view_visible);
 }
 
