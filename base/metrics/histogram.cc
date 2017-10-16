@@ -224,12 +224,6 @@ HistogramBase* Histogram::Factory::Build() {
       allocator->FinalizeHistogram(histogram_ref,
                                    histogram == tentative_histogram_ptr);
     }
-
-    // Update report on created histograms.
-    ReportHistogramActivity(*histogram, HISTOGRAM_CREATED);
-  } else {
-    // Update report on lookup histograms.
-    ReportHistogramActivity(*histogram, HISTOGRAM_LOOKUP);
   }
 
   CHECK_EQ(histogram_type_, histogram->GetHistogramType()) << name_;

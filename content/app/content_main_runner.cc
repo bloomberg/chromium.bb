@@ -692,8 +692,6 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     if (!process_type.empty() && process_type != switches::kZygoteProcess)
       InitializeFieldTrialAndFeatureList(&field_trial_list);
 
-    base::HistogramBase::EnableActivityReportHistogram(process_type);
-
     MainFunctionParams main_params(command_line);
     main_params.ui_task = ui_task_;
 #if defined(OS_WIN)
