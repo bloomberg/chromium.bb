@@ -41,7 +41,7 @@
 #include "media/blink/webmediaplayer_util.h"
 #include "media/filters/pipeline_controller.h"
 #include "media/mojo/interfaces/video_decode_stats_recorder.mojom.h"
-#include "media/renderers/skcanvas_video_renderer.h"
+#include "media/renderers/paint_canvas_video_renderer.h"
 #include "third_party/WebKit/public/platform/WebAudioSourceProvider.h"
 #include "third_party/WebKit/public/platform/WebContentDecryptionModuleResult.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
@@ -659,7 +659,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   scoped_refptr<base::SingleThreadTaskRunner> vfc_task_runner_;
   std::unique_ptr<VideoFrameCompositor>
       compositor_;  // Deleted on |vfc_task_runner_|.
-  SkCanvasVideoRenderer skcanvas_video_renderer_;
+  PaintCanvasVideoRenderer video_renderer_;
 
   // The compositor layer for displaying the video content when using composited
   // playback.

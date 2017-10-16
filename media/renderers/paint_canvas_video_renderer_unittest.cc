@@ -16,7 +16,7 @@
 #include "media/base/timestamp_constants.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
-#include "media/renderers/skcanvas_video_renderer.h"
+#include "media/renderers/paint_canvas_video_renderer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libyuv/include/libyuv/convert.h"
 #include "third_party/skia/include/core/SkImage.h"
@@ -59,7 +59,7 @@ scoped_refptr<VideoFrame> CreateTestY16Frame(const gfx::Size& coded_size,
       static_cast<uint8_t*>(external_memory), byte_size, timestamp);
 }
 
-class SkCanvasVideoRendererTest : public testing::Test {
+class PaintCanvasVideoRendererTest : public testing::Test {
  public:
   enum Color {
     kNone,
@@ -68,8 +68,8 @@ class SkCanvasVideoRendererTest : public testing::Test {
     kBlue,
   };
 
-  SkCanvasVideoRendererTest();
-  ~SkCanvasVideoRendererTest() override;
+  PaintCanvasVideoRendererTest();
+  ~PaintCanvasVideoRendererTest() override;
 
   // Paints to |canvas| using |renderer_| without any frame data.
   void PaintWithoutFrame(cc::PaintCanvas* canvas);
@@ -100,7 +100,7 @@ class SkCanvasVideoRendererTest : public testing::Test {
   SkBitmap* bitmap() { return &bitmap_; }
 
  protected:
-  SkCanvasVideoRenderer renderer_;
+  PaintCanvasVideoRenderer renderer_;
 
   scoped_refptr<VideoFrame> natural_frame_;
   scoped_refptr<VideoFrame> larger_frame_;
@@ -111,7 +111,7 @@ class SkCanvasVideoRendererTest : public testing::Test {
   cc::SkiaPaintCanvas target_canvas_;
   base::MessageLoop message_loop_;
 
-  DISALLOW_COPY_AND_ASSIGN(SkCanvasVideoRendererTest);
+  DISALLOW_COPY_AND_ASSIGN(PaintCanvasVideoRendererTest);
 };
 
 static SkBitmap AllocBitmap(int width, int height) {
@@ -121,7 +121,7 @@ static SkBitmap AllocBitmap(int width, int height) {
   return bitmap;
 }
 
-SkCanvasVideoRendererTest::SkCanvasVideoRendererTest()
+PaintCanvasVideoRendererTest::PaintCanvasVideoRendererTest()
     : natural_frame_(VideoFrame::CreateBlackFrame(gfx::Size(kWidth, kHeight))),
       larger_frame_(
           VideoFrame::CreateBlackFrame(gfx::Size(kWidth * 2, kHeight * 2))),
@@ -219,16 +219,16 @@ SkCanvasVideoRendererTest::SkCanvasVideoRendererTest()
                    cropped_frame()->stride(VideoFrame::kVPlane), 16, 16);
 }
 
-SkCanvasVideoRendererTest::~SkCanvasVideoRendererTest() {}
+PaintCanvasVideoRendererTest::~PaintCanvasVideoRendererTest() {}
 
-void SkCanvasVideoRendererTest::PaintWithoutFrame(cc::PaintCanvas* canvas) {
+void PaintCanvasVideoRendererTest::PaintWithoutFrame(cc::PaintCanvas* canvas) {
   cc::PaintFlags flags;
   flags.setFilterQuality(kLow_SkFilterQuality);
   renderer_.Paint(nullptr, canvas, kNaturalRect, flags, VIDEO_ROTATION_0,
                   Context3D());
 }
 
-void SkCanvasVideoRendererTest::Paint(
+void PaintCanvasVideoRendererTest::Paint(
     const scoped_refptr<VideoFrame>& video_frame,
     cc::PaintCanvas* canvas,
     Color color) {
@@ -236,7 +236,7 @@ void SkCanvasVideoRendererTest::Paint(
                VIDEO_ROTATION_0);
 }
 
-void SkCanvasVideoRendererTest::PaintRotated(
+void PaintCanvasVideoRendererTest::PaintRotated(
     const scoped_refptr<VideoFrame>& video_frame,
     cc::PaintCanvas* canvas,
     const gfx::RectF& dest_rect,
@@ -263,20 +263,20 @@ void SkCanvasVideoRendererTest::PaintRotated(
                   Context3D());
 }
 
-void SkCanvasVideoRendererTest::Copy(
+void PaintCanvasVideoRendererTest::Copy(
     const scoped_refptr<VideoFrame>& video_frame,
     cc::PaintCanvas* canvas) {
   renderer_.Copy(video_frame, canvas, Context3D());
 }
 
-TEST_F(SkCanvasVideoRendererTest, NoFrame) {
+TEST_F(PaintCanvasVideoRendererTest, NoFrame) {
   // Test that black gets painted over canvas.
   target_canvas()->clear(SK_ColorRED);
   PaintWithoutFrame(target_canvas());
   EXPECT_EQ(SK_ColorBLACK, bitmap()->getColor(0, 0));
 }
 
-TEST_F(SkCanvasVideoRendererTest, TransparentFrame) {
+TEST_F(PaintCanvasVideoRendererTest, TransparentFrame) {
   target_canvas()->clear(SK_ColorRED);
   PaintRotated(
       VideoFrame::CreateTransparentFrame(gfx::Size(kWidth, kHeight)).get(),
@@ -285,7 +285,7 @@ TEST_F(SkCanvasVideoRendererTest, TransparentFrame) {
   EXPECT_EQ(static_cast<SkColor>(SK_ColorRED), bitmap()->getColor(0, 0));
 }
 
-TEST_F(SkCanvasVideoRendererTest, TransparentFrameSrcMode) {
+TEST_F(PaintCanvasVideoRendererTest, TransparentFrameSrcMode) {
   target_canvas()->clear(SK_ColorRED);
   // SRC mode completely overwrites the buffer.
   PaintRotated(
@@ -296,7 +296,7 @@ TEST_F(SkCanvasVideoRendererTest, TransparentFrameSrcMode) {
             bitmap()->getColor(0, 0));
 }
 
-TEST_F(SkCanvasVideoRendererTest, CopyTransparentFrame) {
+TEST_F(PaintCanvasVideoRendererTest, CopyTransparentFrame) {
   target_canvas()->clear(SK_ColorRED);
   Copy(VideoFrame::CreateTransparentFrame(gfx::Size(kWidth, kHeight)).get(),
        target_canvas());
@@ -304,12 +304,12 @@ TEST_F(SkCanvasVideoRendererTest, CopyTransparentFrame) {
             bitmap()->getColor(0, 0));
 }
 
-TEST_F(SkCanvasVideoRendererTest, Natural) {
+TEST_F(PaintCanvasVideoRendererTest, Natural) {
   Paint(natural_frame(), target_canvas(), kRed);
   EXPECT_EQ(SK_ColorRED, bitmap()->getColor(0, 0));
 }
 
-TEST_F(SkCanvasVideoRendererTest, Larger) {
+TEST_F(PaintCanvasVideoRendererTest, Larger) {
   Paint(natural_frame(), target_canvas(), kRed);
   EXPECT_EQ(SK_ColorRED, bitmap()->getColor(0, 0));
 
@@ -317,7 +317,7 @@ TEST_F(SkCanvasVideoRendererTest, Larger) {
   EXPECT_EQ(SK_ColorBLUE, bitmap()->getColor(0, 0));
 }
 
-TEST_F(SkCanvasVideoRendererTest, Smaller) {
+TEST_F(PaintCanvasVideoRendererTest, Smaller) {
   Paint(natural_frame(), target_canvas(), kRed);
   EXPECT_EQ(SK_ColorRED, bitmap()->getColor(0, 0));
 
@@ -325,14 +325,14 @@ TEST_F(SkCanvasVideoRendererTest, Smaller) {
   EXPECT_EQ(SK_ColorBLUE, bitmap()->getColor(0, 0));
 }
 
-TEST_F(SkCanvasVideoRendererTest, NoTimestamp) {
+TEST_F(PaintCanvasVideoRendererTest, NoTimestamp) {
   VideoFrame* video_frame = natural_frame().get();
   video_frame->set_timestamp(media::kNoTimestamp);
   Paint(video_frame, target_canvas(), kRed);
   EXPECT_EQ(SK_ColorRED, bitmap()->getColor(0, 0));
 }
 
-TEST_F(SkCanvasVideoRendererTest, CroppedFrame) {
+TEST_F(PaintCanvasVideoRendererTest, CroppedFrame) {
   Paint(cropped_frame(), target_canvas(), kNone);
   // Check the corners.
   EXPECT_EQ(SK_ColorBLACK, bitmap()->getColor(0, 0));
@@ -351,7 +351,7 @@ TEST_F(SkCanvasVideoRendererTest, CroppedFrame) {
   EXPECT_EQ(SK_ColorBLUE, bitmap()->getColor(kWidth * 3 / 8, kHeight * 3 / 6));
 }
 
-TEST_F(SkCanvasVideoRendererTest, CroppedFrame_NoScaling) {
+TEST_F(PaintCanvasVideoRendererTest, CroppedFrame_NoScaling) {
   SkBitmap bitmap = AllocBitmap(kWidth, kHeight);
   cc::SkiaPaintCanvas canvas(bitmap);
   const gfx::Rect crop_rect = cropped_frame()->visible_rect();
@@ -379,7 +379,7 @@ TEST_F(SkCanvasVideoRendererTest, CroppedFrame_NoScaling) {
                                           offset_y + crop_rect.height() - 1));
 }
 
-TEST_F(SkCanvasVideoRendererTest, Video_Rotation_90) {
+TEST_F(PaintCanvasVideoRendererTest, Video_Rotation_90) {
   SkBitmap bitmap = AllocBitmap(kWidth, kHeight);
   cc::SkiaPaintCanvas canvas(bitmap);
   PaintRotated(cropped_frame(), &canvas, kNaturalRect, kNone,
@@ -391,7 +391,7 @@ TEST_F(SkCanvasVideoRendererTest, Video_Rotation_90) {
   EXPECT_EQ(SK_ColorBLUE, bitmap.getColor(0, kHeight - 1));
 }
 
-TEST_F(SkCanvasVideoRendererTest, Video_Rotation_180) {
+TEST_F(PaintCanvasVideoRendererTest, Video_Rotation_180) {
   SkBitmap bitmap = AllocBitmap(kWidth, kHeight);
   cc::SkiaPaintCanvas canvas(bitmap);
   PaintRotated(cropped_frame(), &canvas, kNaturalRect, kNone,
@@ -403,7 +403,7 @@ TEST_F(SkCanvasVideoRendererTest, Video_Rotation_180) {
   EXPECT_EQ(SK_ColorRED, bitmap.getColor(0, kHeight - 1));
 }
 
-TEST_F(SkCanvasVideoRendererTest, Video_Rotation_270) {
+TEST_F(PaintCanvasVideoRendererTest, Video_Rotation_270) {
   SkBitmap bitmap = AllocBitmap(kWidth, kHeight);
   cc::SkiaPaintCanvas canvas(bitmap);
   PaintRotated(cropped_frame(), &canvas, kNaturalRect, kNone,
@@ -415,7 +415,7 @@ TEST_F(SkCanvasVideoRendererTest, Video_Rotation_270) {
   EXPECT_EQ(SK_ColorBLACK, bitmap.getColor(0, kHeight - 1));
 }
 
-TEST_F(SkCanvasVideoRendererTest, Video_Translate) {
+TEST_F(PaintCanvasVideoRendererTest, Video_Translate) {
   SkBitmap bitmap = AllocBitmap(kWidth, kHeight);
   cc::SkiaPaintCanvas canvas(bitmap);
   canvas.clear(SK_ColorMAGENTA);
@@ -435,7 +435,7 @@ TEST_F(SkCanvasVideoRendererTest, Video_Translate) {
   EXPECT_EQ(SK_ColorGREEN, bitmap.getColor(kWidth / 2, kHeight - 1));
 }
 
-TEST_F(SkCanvasVideoRendererTest, Video_Translate_Rotation_90) {
+TEST_F(PaintCanvasVideoRendererTest, Video_Translate_Rotation_90) {
   SkBitmap bitmap = AllocBitmap(kWidth, kHeight);
   cc::SkiaPaintCanvas canvas(bitmap);
   canvas.clear(SK_ColorMAGENTA);
@@ -455,7 +455,7 @@ TEST_F(SkCanvasVideoRendererTest, Video_Translate_Rotation_90) {
   EXPECT_EQ(SK_ColorBLUE, bitmap.getColor(kWidth / 2, kHeight - 1));
 }
 
-TEST_F(SkCanvasVideoRendererTest, Video_Translate_Rotation_180) {
+TEST_F(PaintCanvasVideoRendererTest, Video_Translate_Rotation_180) {
   SkBitmap bitmap = AllocBitmap(kWidth, kHeight);
   cc::SkiaPaintCanvas canvas(bitmap);
   canvas.clear(SK_ColorMAGENTA);
@@ -475,7 +475,7 @@ TEST_F(SkCanvasVideoRendererTest, Video_Translate_Rotation_180) {
   EXPECT_EQ(SK_ColorRED, bitmap.getColor(kWidth / 2, kHeight - 1));
 }
 
-TEST_F(SkCanvasVideoRendererTest, Video_Translate_Rotation_270) {
+TEST_F(PaintCanvasVideoRendererTest, Video_Translate_Rotation_270) {
   SkBitmap bitmap = AllocBitmap(kWidth, kHeight);
   cc::SkiaPaintCanvas canvas(bitmap);
   canvas.clear(SK_ColorMAGENTA);
@@ -495,7 +495,7 @@ TEST_F(SkCanvasVideoRendererTest, Video_Translate_Rotation_270) {
   EXPECT_EQ(SK_ColorBLACK, bitmap.getColor(kWidth / 2, kHeight - 1));
 }
 
-TEST_F(SkCanvasVideoRendererTest, HighBits) {
+TEST_F(PaintCanvasVideoRendererTest, HighBits) {
   // Copy cropped_frame into a highbit frame.
   scoped_refptr<VideoFrame> frame(VideoFrame::CreateFrame(
       PIXEL_FORMAT_YUV420P10, cropped_frame()->coded_size(),
@@ -532,7 +532,7 @@ TEST_F(SkCanvasVideoRendererTest, HighBits) {
   EXPECT_EQ(SK_ColorBLUE, bitmap()->getColor(kWidth * 3 / 8, kHeight * 3 / 6));
 }
 
-TEST_F(SkCanvasVideoRendererTest, Y16) {
+TEST_F(PaintCanvasVideoRendererTest, Y16) {
   SkBitmap bitmap;
   bitmap.allocPixels(SkImageInfo::MakeN32(16, 16, kPremul_SkAlphaType));
 
@@ -626,9 +626,9 @@ class TestGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
 void MailboxHoldersReleased(const gpu::SyncToken& sync_token) {}
 }  // namespace
 
-// Test that SkCanvasVideoRendererTest::Paint doesn't crash when GrContext is
+// Test that PaintCanvasVideoRendererTest::Paint doesn't crash when GrContext is
 // abandoned.
-TEST_F(SkCanvasVideoRendererTest, ContextLost) {
+TEST_F(PaintCanvasVideoRendererTest, ContextLost) {
   sk_sp<const GrGLInterface> null_interface(GrGLCreateNullInterface());
   sk_sp<GrContext> gr_context(GrContext::Create(
       kOpenGL_GrBackend,
@@ -654,7 +654,7 @@ TEST_F(SkCanvasVideoRendererTest, ContextLost) {
 
 void EmptyCallback(const gpu::SyncToken& sync_token) {}
 
-TEST_F(SkCanvasVideoRendererTest, CorrectFrameSizeToVisibleRect) {
+TEST_F(PaintCanvasVideoRendererTest, CorrectFrameSizeToVisibleRect) {
   int fWidth{16}, fHeight{16};
   SkImageInfo imInfo =
       SkImageInfo::MakeN32(fWidth, fHeight, kOpaque_SkAlphaType);
@@ -693,7 +693,7 @@ TEST_F(SkCanvasVideoRendererTest, CorrectFrameSizeToVisibleRect) {
   EXPECT_EQ(fWidth / 2, renderer_.LastImageDimensionsForTesting().height());
 }
 
-TEST_F(SkCanvasVideoRendererTest, TexImage2D_Y16_RGBA32F) {
+TEST_F(PaintCanvasVideoRendererTest, TexImage2D_Y16_RGBA32F) {
   // Create test frame.
   // |offset_x| and |offset_y| define visible rect's offset to coded rect.
   const int offset_x = 3;
@@ -736,12 +736,12 @@ TEST_F(SkCanvasVideoRendererTest, TexImage2D_Y16_RGBA32F) {
           }
         }
       });
-  SkCanvasVideoRenderer::TexImage2D(
+  PaintCanvasVideoRenderer::TexImage2D(
       GL_TEXTURE_2D, 0, &gles2, gpu::Capabilities(), video_frame.get(), 0,
       GL_RGBA, GL_RGBA, GL_FLOAT, true /*flip_y*/, true);
 }
 
-TEST_F(SkCanvasVideoRendererTest, TexSubImage2D_Y16_R32F) {
+TEST_F(PaintCanvasVideoRendererTest, TexSubImage2D_Y16_R32F) {
   // Create test frame.
   // |offset_x| and |offset_y| define visible rect's offset to coded rect.
   const int offset_x = 3;
@@ -760,29 +760,30 @@ TEST_F(SkCanvasVideoRendererTest, TexSubImage2D_Y16_R32F) {
 
   TestGLES2Interface gles2;
   // Bind the texImage2D callback to verify the uint16 to float32 conversion.
-  gles2.texsubimage2d_callback_ = base::Bind([](
-      GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
-      GLsizei height, GLenum format, GLenum type, const void* pixels) {
-    EXPECT_EQ(static_cast<unsigned>(GL_FLOAT), type);
-    EXPECT_EQ(static_cast<unsigned>(GL_RED), format);
-    EXPECT_EQ(2, xoffset);
-    EXPECT_EQ(1, yoffset);
-    EXPECT_EQ(16, width);
-    EXPECT_EQ(16, height);
-    EXPECT_EQ(static_cast<unsigned>(GL_TEXTURE_2D), target);
-    const float* data = static_cast<const float*>(pixels);
-    for (int j = 0; j < height; j++) {
-      for (int i = 0; i < width; i++) {
-        const int value = i + j * width;  // flip_y is false.
-        float expected_value =
-            (((value & 0xFF) << 8) | (~value & 0xFF)) / 65535.f;
-        EXPECT_EQ(expected_value, data[(i + j * width)]);
-      }
-    }
-  });
-  SkCanvasVideoRenderer::TexSubImage2D(GL_TEXTURE_2D, &gles2, video_frame.get(),
-                                       0, GL_RED, GL_FLOAT, 2 /*xoffset*/,
-                                       1 /*yoffset*/, false /*flip_y*/, true);
+  gles2.texsubimage2d_callback_ =
+      base::Bind([](GLenum target, GLint level, GLint xoffset, GLint yoffset,
+                    GLsizei width, GLsizei height, GLenum format, GLenum type,
+                    const void* pixels) {
+        EXPECT_EQ(static_cast<unsigned>(GL_FLOAT), type);
+        EXPECT_EQ(static_cast<unsigned>(GL_RED), format);
+        EXPECT_EQ(2, xoffset);
+        EXPECT_EQ(1, yoffset);
+        EXPECT_EQ(16, width);
+        EXPECT_EQ(16, height);
+        EXPECT_EQ(static_cast<unsigned>(GL_TEXTURE_2D), target);
+        const float* data = static_cast<const float*>(pixels);
+        for (int j = 0; j < height; j++) {
+          for (int i = 0; i < width; i++) {
+            const int value = i + j * width;  // flip_y is false.
+            float expected_value =
+                (((value & 0xFF) << 8) | (~value & 0xFF)) / 65535.f;
+            EXPECT_EQ(expected_value, data[(i + j * width)]);
+          }
+        }
+      });
+  PaintCanvasVideoRenderer::TexSubImage2D(
+      GL_TEXTURE_2D, &gles2, video_frame.get(), 0, GL_RED, GL_FLOAT,
+      2 /*xoffset*/, 1 /*yoffset*/, false /*flip_y*/, true);
 }
 
 }  // namespace media

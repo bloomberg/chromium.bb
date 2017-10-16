@@ -13,10 +13,10 @@ source_set("renderers") {
     "audio_renderer_impl.h",
     "default_renderer_factory.cc",
     "default_renderer_factory.h",
+    "paint_canvas_video_renderer.cc",
+    "paint_canvas_video_renderer.h",
     "renderer_impl.cc",
     "renderer_impl.h",
-    "skcanvas_video_renderer.cc",
-    "skcanvas_video_renderer.h",
     "video_overlay_factory.cc",
     "video_overlay_factory.h",
     "video_renderer_impl.cc",
@@ -52,8 +52,8 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "audio_renderer_impl_unittest.cc",
+    "paint_canvas_video_renderer_unittest.cc",
     "renderer_impl_unittest.cc",
-    "skcanvas_video_renderer_unittest.cc",
     "video_renderer_impl_unittest.cc",
   ]
   configs += [ "//media:media_config" ]

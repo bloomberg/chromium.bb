@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/renderers/skcanvas_video_renderer.h"
+#include "media/renderers/paint_canvas_video_renderer.h"
 
 #include <GLES3/gl3.h>
 #include <limits>
@@ -201,10 +201,9 @@ sk_sp<SkImage> NewSkImageFromVideoFrameNative(VideoFrame* video_frame,
     gl->GenTextures(1, &source_texture);
     DCHECK(source_texture);
     gl->BindTexture(GL_TEXTURE_2D, source_texture);
-    SkCanvasVideoRenderer::CopyVideoFrameSingleTextureToGLTexture(
-        gl, video_frame,
-        GL_TEXTURE_2D, source_texture, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, 0,
-        true, false);
+    PaintCanvasVideoRenderer::CopyVideoFrameSingleTextureToGLTexture(
+        gl, video_frame, GL_TEXTURE_2D, source_texture, GL_RGBA, GL_RGBA,
+        GL_UNSIGNED_BYTE, 0, true, false);
     context_3d.gr_context->resetContext(kTextureBinding_GrGLBackendState);
   } else {
     gl->WaitSyncTokenCHROMIUM(mailbox_holder.sync_token.GetConstData());
@@ -245,8 +244,8 @@ class VideoImageGenerator : public cc::PaintImageGenerator {
     DCHECK_EQ(frame_index, 0u);
 
     // If skia couldn't do the YUV conversion on GPU, we will on CPU.
-    SkCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(frame_.get(), pixels,
-                                                        row_bytes);
+    PaintCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(frame_.get(), pixels,
+                                                           row_bytes);
     return true;
   }
 
@@ -271,9 +270,10 @@ class VideoImageGenerator : public cc::PaintImageGenerator {
 
     for (int plane = VideoFrame::kYPlane; plane <= VideoFrame::kVPlane;
          ++plane) {
-      const gfx::Size size = VideoFrame::PlaneSize(
-          frame_->format(), plane, gfx::Size(frame_->visible_rect().width(),
-                                             frame_->visible_rect().height()));
+      const gfx::Size size =
+          VideoFrame::PlaneSize(frame_->format(), plane,
+                                gfx::Size(frame_->visible_rect().width(),
+                                          frame_->visible_rect().height()));
       sizeInfo->fSizes[plane].set(size.width(), size.height());
       sizeInfo->fWidthBytes[plane] = size.width();
     }
@@ -292,9 +292,10 @@ class VideoImageGenerator : public cc::PaintImageGenerator {
 
     for (int plane = VideoFrame::kYPlane; plane <= VideoFrame::kVPlane;
          ++plane) {
-      const gfx::Size size = VideoFrame::PlaneSize(
-          frame_->format(), plane, gfx::Size(frame_->visible_rect().width(),
-                                             frame_->visible_rect().height()));
+      const gfx::Size size =
+          VideoFrame::PlaneSize(frame_->format(), plane,
+                                gfx::Size(frame_->visible_rect().width(),
+                                          frame_->visible_rect().height()));
       if (size.width() != sizeInfo.fSizes[plane].width() ||
           size.height() != sizeInfo.fSizes[plane].height()) {
         return false;
@@ -342,24 +343,25 @@ class VideoImageGenerator : public cc::PaintImageGenerator {
   DISALLOW_IMPLICIT_CONSTRUCTORS(VideoImageGenerator);
 };
 
-SkCanvasVideoRenderer::SkCanvasVideoRenderer()
+PaintCanvasVideoRenderer::PaintCanvasVideoRenderer()
     : last_image_deleting_timer_(
           FROM_HERE,
           base::TimeDelta::FromSeconds(kTemporaryResourceDeletionDelay),
           this,
-          &SkCanvasVideoRenderer::ResetCache),
+          &PaintCanvasVideoRenderer::ResetCache),
       renderer_stable_id_(cc::PaintImage::GetNextId()) {}
 
-SkCanvasVideoRenderer::~SkCanvasVideoRenderer() {
+PaintCanvasVideoRenderer::~PaintCanvasVideoRenderer() {
   ResetCache();
 }
 
-void SkCanvasVideoRenderer::Paint(const scoped_refptr<VideoFrame>& video_frame,
-                                  cc::PaintCanvas* canvas,
-                                  const gfx::RectF& dest_rect,
-                                  cc::PaintFlags& flags,
-                                  VideoRotation video_rotation,
-                                  const Context3D& context_3d) {
+void PaintCanvasVideoRenderer::Paint(
+    const scoped_refptr<VideoFrame>& video_frame,
+    cc::PaintCanvas* canvas,
+    const gfx::RectF& dest_rect,
+    cc::PaintFlags& flags,
+    VideoRotation video_rotation,
+    const Context3D& context_3d) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (flags.getAlpha() == 0) {
     return;
@@ -457,9 +459,10 @@ void SkCanvasVideoRenderer::Paint(const scoped_refptr<VideoFrame>& video_frame,
   }
 }
 
-void SkCanvasVideoRenderer::Copy(const scoped_refptr<VideoFrame>& video_frame,
-                                 cc::PaintCanvas* canvas,
-                                 const Context3D& context_3d) {
+void PaintCanvasVideoRenderer::Copy(
+    const scoped_refptr<VideoFrame>& video_frame,
+    cc::PaintCanvas* canvas,
+    const Context3D& context_3d) {
   cc::PaintFlags flags;
   flags.setBlendMode(SkBlendMode::kSrc);
   flags.setFilterQuality(kLow_SkFilterQuality);
@@ -600,11 +603,10 @@ void FlipAndConvertY16(const VideoFrame* video_frame,
   }
 }
 
-// Common functionality of SkCanvasVideoRenderer's TexImage2D and TexSubImage2D.
-// Allocates a buffer required for conversion and converts |frame| content to
-// desired |format|.
-// Returns true if calling glTex(Sub)Image is supported for provided |frame|
-// format and parameters.
+// Common functionality of PaintCanvasVideoRenderer's TexImage2D and
+// TexSubImage2D. Allocates a buffer required for conversion and converts
+// |frame| content to desired |format|. Returns true if calling glTex(Sub)Image
+// is supported for provided |frame| format and parameters.
 bool TexImageHelper(VideoFrame* frame,
                     unsigned format,
                     unsigned type,
@@ -679,7 +681,7 @@ void TextureSubImageUsingIntermediate(unsigned target,
 }  // anonymous namespace
 
 // static
-void SkCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
+void PaintCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
     const VideoFrame* video_frame,
     void* rgb_pixels,
     size_t row_bytes) {
@@ -804,7 +806,7 @@ void SkCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
 }
 
 // static
-void SkCanvasVideoRenderer::CopyVideoFrameSingleTextureToGLTexture(
+void PaintCanvasVideoRenderer::CopyVideoFrameSingleTextureToGLTexture(
     gpu::gles2::GLES2Interface* gl,
     VideoFrame* video_frame,
     unsigned int target,
@@ -863,7 +865,7 @@ void SkCanvasVideoRenderer::CopyVideoFrameSingleTextureToGLTexture(
   video_frame->UpdateReleaseSyncToken(&client);
 }
 
-bool SkCanvasVideoRenderer::CopyVideoFrameTexturesToGLTexture(
+bool PaintCanvasVideoRenderer::CopyVideoFrameTexturesToGLTexture(
     const Context3D& context_3d,
     gpu::gles2::GLES2Interface* destination_gl,
     const scoped_refptr<VideoFrame>& video_frame,
@@ -938,7 +940,7 @@ bool SkCanvasVideoRenderer::CopyVideoFrameTexturesToGLTexture(
   return true;
 }
 
-bool SkCanvasVideoRenderer::TexImage2D(
+bool PaintCanvasVideoRenderer::TexImage2D(
     unsigned target,
     unsigned texture,
     gpu::gles2::GLES2Interface* gl,
@@ -987,16 +989,16 @@ bool SkCanvasVideoRenderer::TexImage2D(
   return true;
 }
 
-bool SkCanvasVideoRenderer::TexSubImage2D(unsigned target,
-                                          gpu::gles2::GLES2Interface* gl,
-                                          VideoFrame* frame,
-                                          int level,
-                                          unsigned format,
-                                          unsigned type,
-                                          int xoffset,
-                                          int yoffset,
-                                          bool flip_y,
-                                          bool premultiply_alpha) {
+bool PaintCanvasVideoRenderer::TexSubImage2D(unsigned target,
+                                             gpu::gles2::GLES2Interface* gl,
+                                             VideoFrame* frame,
+                                             int level,
+                                             unsigned format,
+                                             unsigned type,
+                                             int xoffset,
+                                             int yoffset,
+                                             bool flip_y,
+                                             bool premultiply_alpha) {
   DCHECK(frame);
   DCHECK(!frame->HasTextures());
 
@@ -1010,14 +1012,14 @@ bool SkCanvasVideoRenderer::TexSubImage2D(unsigned target,
   return true;
 }
 
-void SkCanvasVideoRenderer::ResetCache() {
+void PaintCanvasVideoRenderer::ResetCache() {
   DCHECK(thread_checker_.CalledOnValidThread());
   // Clear cached values.
   last_image_ = cc::PaintImage();
   last_timestamp_ = kNoTimestamp;
 }
 
-bool SkCanvasVideoRenderer::UpdateLastImage(
+bool PaintCanvasVideoRenderer::UpdateLastImage(
     const scoped_refptr<VideoFrame>& video_frame,
     const Context3D& context_3d) {
   if (!last_image_ || video_frame->timestamp() != last_timestamp_ ||
@@ -1060,7 +1062,7 @@ bool SkCanvasVideoRenderer::UpdateLastImage(
   return true;
 }
 
-void SkCanvasVideoRenderer::CorrectLastImageDimensions(
+void PaintCanvasVideoRenderer::CorrectLastImageDimensions(
     const SkIRect& visible_rect) {
   last_image_dimensions_for_testing_ = visible_rect.size();
   if (!last_image_)
@@ -1073,7 +1075,7 @@ void SkCanvasVideoRenderer::CorrectLastImageDimensions(
   }
 }
 
-SkISize SkCanvasVideoRenderer::LastImageDimensionsForTesting() {
+SkISize PaintCanvasVideoRenderer::LastImageDimensionsForTesting() {
   return last_image_dimensions_for_testing_;
 }
 

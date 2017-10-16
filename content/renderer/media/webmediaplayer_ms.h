@@ -16,7 +16,7 @@
 #include "content/common/content_export.h"
 #include "media/blink/webmediaplayer_delegate.h"
 #include "media/blink/webmediaplayer_util.h"
-#include "media/renderers/skcanvas_video_renderer.h"
+#include "media/renderers/paint_canvas_video_renderer.h"
 #include "media/video/gpu_video_accelerator_factories.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
@@ -111,7 +111,7 @@ class CONTENT_EXPORT WebMediaPlayerMS
              cc::PaintFlags& flags,
              int already_uploaded_id,
              VideoFrameUploadMetadata* out_metadata) override;
-  media::SkCanvasVideoRenderer* GetSkCanvasVideoRenderer();
+  media::PaintCanvasVideoRenderer* GetPaintCanvasVideoRenderer();
   void ResetCanvasCache();
 
   // Methods to trigger resize event.
@@ -249,7 +249,7 @@ class CONTENT_EXPORT WebMediaPlayerMS
   std::unique_ptr<cc_blink::WebLayerImpl> video_weblayer_;
 
   scoped_refptr<MediaStreamAudioRenderer> audio_renderer_; // Weak
-  media::SkCanvasVideoRenderer video_renderer_;
+  media::PaintCanvasVideoRenderer video_renderer_;
 
   bool paused_;
   media::VideoRotation video_rotation_;

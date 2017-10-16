@@ -19,7 +19,7 @@
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "media/base/video_frame.h"
-#include "media/renderers/skcanvas_video_renderer.h"
+#include "media/renderers/paint_canvas_video_renderer.h"
 #include "media/video/half_float_maker.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
@@ -405,7 +405,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
       // We need to transfer data from |video_frame| to the plane resource.
       if (software_compositor) {
         if (!video_renderer_)
-          video_renderer_.reset(new media::SkCanvasVideoRenderer);
+          video_renderer_.reset(new media::PaintCanvasVideoRenderer);
 
         ResourceProvider::ScopedWriteLockSoftware lock(
             resource_provider_, plane_resource.resource_id());
@@ -420,7 +420,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
         if (upload_pixels_.size() < needed_size)
           upload_pixels_.resize(needed_size);
 
-        media::SkCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
+        media::PaintCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
             video_frame.get(), &upload_pixels_[0], bytes_per_row);
 
         resource_provider_->CopyToResource(plane_resource.resource_id(),
