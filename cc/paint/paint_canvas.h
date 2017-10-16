@@ -33,7 +33,7 @@ class CC_PAINT_EXPORT PaintCanvas {
 
   // TODO(enne): It would be nice to get rid of flush() entirely, as it
   // doesn't really make sense for recording.  However, this gets used by
-  // SkCanvasVideoRenderer which takes a PaintCanvas to paint both
+  // PaintCanvasVideoRenderer which takes a PaintCanvas to paint both
   // software and hardware video.  This is super entangled with ImageBuffer
   // and canvas/video painting in Blink where the same paths are used for
   // both recording and gpu work.

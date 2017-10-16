@@ -14,7 +14,7 @@
 #include "content/renderer/render_thread_impl.h"
 #include "media/base/timestamp_constants.h"
 #include "media/base/video_util.h"
-#include "media/renderers/skcanvas_video_renderer.h"
+#include "media/renderers/paint_canvas_video_renderer.h"
 #include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/libyuv/include/libyuv/convert.h"
@@ -55,7 +55,7 @@ class WebRtcVideoCapturerAdapter::TextureFrameCopier
  public:
   TextureFrameCopier()
       : main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-        canvas_video_renderer_(new media::SkCanvasVideoRenderer) {
+        canvas_video_renderer_(new media::PaintCanvasVideoRenderer) {
     RenderThreadImpl* const main_thread = RenderThreadImpl::current();
     if (main_thread)
       provider_ = main_thread->SharedMainThreadContextProvider();
@@ -145,7 +145,7 @@ class WebRtcVideoCapturerAdapter::TextureFrameCopier
 
   const scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   scoped_refptr<ui::ContextProviderCommandBuffer> provider_;
-  std::unique_ptr<media::SkCanvasVideoRenderer> canvas_video_renderer_;
+  std::unique_ptr<media::PaintCanvasVideoRenderer> canvas_video_renderer_;
 };
 
 WebRtcVideoCapturerAdapter::WebRtcVideoCapturerAdapter(

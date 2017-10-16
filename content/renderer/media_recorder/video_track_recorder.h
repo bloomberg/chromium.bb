@@ -27,7 +27,7 @@ class PaintCanvas;
 }  // namespace cc
 
 namespace media {
-class SkCanvasVideoRenderer;
+class PaintCanvasVideoRenderer;
 class VideoFrame;
 }  // namespace media
 
@@ -153,7 +153,7 @@ class CONTENT_EXPORT VideoTrackRecorder : public MediaStreamVideoSink {
 
     // Used to retrieve incoming opaque VideoFrames (i.e. VideoFrames backed by
     // textures). Created on-demand on |main_task_runner_|.
-    std::unique_ptr<media::SkCanvasVideoRenderer> video_renderer_;
+    std::unique_ptr<media::PaintCanvasVideoRenderer> video_renderer_;
     SkBitmap bitmap_;
     std::unique_ptr<cc::PaintCanvas> canvas_;
 

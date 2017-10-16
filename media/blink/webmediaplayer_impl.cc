@@ -1049,7 +1049,7 @@ void WebMediaPlayerImpl::Paint(blink::WebCanvas* canvas,
       return;
     }
   }
-  skcanvas_video_renderer_.Paint(
+  video_renderer_.Paint(
       video_frame, canvas, gfx::RectF(gfx_rect), flags,
       pipeline_metadata_.video_decoder_config.video_rotation(), context_3d);
 }
@@ -1137,7 +1137,7 @@ bool WebMediaPlayerImpl::CopyVideoTextureToPlatformTexture(
     context_3d = Context3D(context_provider_->ContextGL(),
                            context_provider_->GrContext());
   }
-  return skcanvas_video_renderer_.CopyVideoFrameTexturesToGLTexture(
+  return video_renderer_.CopyVideoFrameTexturesToGLTexture(
       context_3d, gl, video_frame.get(), target, texture, internal_format,
       format, type, level, premultiply_alpha, flip_y);
 }

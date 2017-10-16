@@ -19,7 +19,7 @@
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
 #include "media/filters/video_renderer_algorithm.h"
-#include "media/renderers/skcanvas_video_renderer.h"
+#include "media/renderers/paint_canvas_video_renderer.h"
 #include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
@@ -37,7 +37,7 @@ namespace {
 // This function copies |frame| to a new I420 or YV12A media::VideoFrame.
 scoped_refptr<media::VideoFrame> CopyFrame(
     const scoped_refptr<media::VideoFrame>& frame,
-    media::SkCanvasVideoRenderer* video_renderer) {
+    media::PaintCanvasVideoRenderer* video_renderer) {
   scoped_refptr<media::VideoFrame> new_frame;
   if (frame->HasTextures()) {
     DCHECK(frame->format() == media::PIXEL_FORMAT_ARGB ||
@@ -462,7 +462,7 @@ void WebMediaPlayerMSCompositor::ReplaceCurrentFrameWithACopyInternal() {
   // there might be a finite number of available buffers. E.g, video that
   // originates from a video camera, HW decoded frames.
   scoped_refptr<media::VideoFrame> copied_frame =
-      CopyFrame(current_frame_ref, player_->GetSkCanvasVideoRenderer());
+      CopyFrame(current_frame_ref, player_->GetPaintCanvasVideoRenderer());
   // Copying frame can take time, so only set the copied frame if
   // |current_frame_| hasn't been changed.
   {

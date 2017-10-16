@@ -37,7 +37,7 @@
 #include "content/shell/browser/shell.h"
 #include "content/test/did_commit_provisional_load_interceptor.h"
 #include "media/base/video_frame.h"
-#include "media/renderers/skcanvas_video_renderer.h"
+#include "media/renderers/paint_canvas_video_renderer.h"
 #include "net/base/filename_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -565,7 +565,7 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
       return;
     }
 
-    media::SkCanvasVideoRenderer video_renderer;
+    media::PaintCanvasVideoRenderer video_renderer;
 
     SkBitmap bitmap;
     bitmap.allocN32Pixels(video_frame->visible_rect().width(),

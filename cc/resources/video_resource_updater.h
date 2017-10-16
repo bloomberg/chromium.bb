@@ -24,7 +24,7 @@
 #include "ui/gfx/geometry/size.h"
 
 namespace media {
-class SkCanvasVideoRenderer;
+class PaintCanvasVideoRenderer;
 class VideoFrame;
 }
 
@@ -182,7 +182,7 @@ class CC_EXPORT VideoResourceUpdater {
   viz::ContextProvider* context_provider_;
   ResourceProvider* resource_provider_;
   const bool use_stream_video_draw_quad_;
-  std::unique_ptr<media::SkCanvasVideoRenderer> video_renderer_;
+  std::unique_ptr<media::PaintCanvasVideoRenderer> video_renderer_;
   std::vector<uint8_t> upload_pixels_;
   bool use_r16_for_testing_ = false;
 

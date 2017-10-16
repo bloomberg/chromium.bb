@@ -23,7 +23,7 @@
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
 #include "media/filters/context_3d.h"
-#include "media/renderers/skcanvas_video_renderer.h"
+#include "media/renderers/paint_canvas_video_renderer.h"
 #include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/libyuv/include/libyuv.h"
@@ -257,7 +257,7 @@ void VideoTrackRecorder::Encoder::RetrieveFrameOnMainThread(
         video_frame->timestamp());
   } else {
     // Accelerated decoders produce ARGB/ABGR texture-backed frames (see
-    // https://crbug.com/585242), fetch them using a SkCanvasVideoRenderer.
+    // https://crbug.com/585242), fetch them using a PaintCanvasVideoRenderer.
     DCHECK(video_frame->HasTextures());
     DCHECK_EQ(media::PIXEL_FORMAT_ARGB, video_frame->format());
 
@@ -288,7 +288,7 @@ void VideoTrackRecorder::Encoder::RetrieveFrameOnMainThread(
       canvas_ = base::MakeUnique<cc::SkiaPaintCanvas>(bitmap_);
     }
     if (!video_renderer_)
-      video_renderer_.reset(new media::SkCanvasVideoRenderer);
+      video_renderer_.reset(new media::PaintCanvasVideoRenderer);
 
     DCHECK(context_provider->ContextGL());
     video_renderer_->Copy(video_frame.get(), canvas_.get(),
