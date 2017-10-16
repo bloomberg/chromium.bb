@@ -453,10 +453,6 @@ void WorkerGlobalScope::ApplyContentSecurityPolicyFromVector(
   GetContentSecurityPolicy()->BindToExecutionContext(GetExecutionContext());
 }
 
-KURL WorkerGlobalScope::VirtualCompleteURL(const String& url) const {
-  return CompleteURL(url);
-}
-
 DEFINE_TRACE(WorkerGlobalScope) {
   visitor->Trace(location_);
   visitor->Trace(navigator_);

@@ -103,9 +103,9 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
 
   SecurityOrigin* GetSecurityOrigin();
   ContentSecurityPolicy* GetContentSecurityPolicy();
-  const KURL& Url() const;
-  KURL CompleteURL(const String& url) const;
+  virtual const KURL& Url() const = 0;
   virtual const KURL& BaseURL() const = 0;
+  virtual KURL CompleteURL(const String& url) const = 0;
   virtual void DisableEval(const String& error_message) = 0;
   virtual LocalDOMWindow* ExecutingWindow() const { return nullptr; }
   virtual String UserAgent() const = 0;
@@ -197,9 +197,6 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
  protected:
   ExecutionContext();
   virtual ~ExecutionContext();
-
-  virtual const KURL& VirtualURL() const = 0;
-  virtual KURL VirtualCompleteURL(const String&) const = 0;
 
  private:
   bool DispatchErrorEventInternal(ErrorEvent*, AccessControlStatus);

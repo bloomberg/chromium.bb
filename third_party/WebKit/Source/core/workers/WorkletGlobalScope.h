@@ -67,7 +67,9 @@ class CORE_EXPORT WorkletGlobalScope
   ExecutionContext* GetExecutionContext() const;
 
   // ExecutionContext
+  const KURL& Url() const final { return url_; }
   const KURL& BaseURL() const final { return url_; }
+  KURL CompleteURL(const String&) const final;
   String UserAgent() const final { return user_agent_; }
   SecurityContext& GetSecurityContext() final { return *this; }
   EventQueue* GetEventQueue() const final {
@@ -114,9 +116,6 @@ class CORE_EXPORT WorkletGlobalScope
                      WorkerReportingProxy&);
 
  private:
-  const KURL& VirtualURL() const final { return url_; }
-  KURL VirtualCompleteURL(const String&) const final;
-
   EventTarget* ErrorEventTarget() final { return nullptr; }
   void DidUpdateSecurityOrigin() final {}
 
