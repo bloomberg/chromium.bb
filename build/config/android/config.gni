@@ -44,7 +44,7 @@ if (is_android) {
   if (!defined(default_android_sdk_root)) {
     default_android_sdk_root = "//third_party/android_tools/sdk"
     default_android_sdk_version = "26"
-    default_android_sdk_build_tools_version = "26.0.0"
+    default_android_sdk_build_tools_version = "26.0.2"
     default_android_sdk_tools_version_suffix = "-25.3.2"
   }
 
