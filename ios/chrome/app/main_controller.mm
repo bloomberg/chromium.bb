@@ -122,7 +122,7 @@
 #import "ios/chrome/browser/ui/history/history_panel_view_controller.h"
 #import "ios/chrome/browser/ui/main/browser_view_wrangler.h"
 #import "ios/chrome/browser/ui/main/main_coordinator.h"
-#import "ios/chrome/browser/ui/main/main_view_controller.h"
+#import "ios/chrome/browser/ui/main/view_controller_swapping.h"
 #import "ios/chrome/browser/ui/orientation_limiting_navigation_controller.h"
 #import "ios/chrome/browser/ui/promos/signin_promo_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
@@ -341,10 +341,11 @@ const int kExternalFilesCleanupDelaySeconds = 60;
 }
 
 // Pointer to the main view controller, always owned by the main window.
-@property(weak, nonatomic, readonly) MainViewController* mainViewController;
+@property(weak, nonatomic, readonly)
+    UIViewController<ViewControllerSwapping>* mainViewController;
 
 // The main coordinator, lazily created the first time it is accessed. Manages
-// the MainViewController. This property should not be accessed before the
+// the main view controller. This property should not be accessed before the
 // browser has started up to the FOREGROUND stage.
 @property(nonatomic, readonly) MainCoordinator* mainCoordinator;
 
@@ -853,7 +854,7 @@ const int kExternalFilesCleanupDelaySeconds = 60;
   return _browserViewWrangler;
 }
 
-- (MainViewController*)mainViewController {
+- (UIViewController<ViewControllerSwapping>*)mainViewController {
   return self.mainCoordinator.mainViewController;
 }
 
@@ -1759,8 +1760,8 @@ const int kExternalFilesCleanupDelaySeconds = 60;
 }
 
 - (void)displayCurrentBVC {
-  [self.mainViewController setActiveViewController:self.currentBVC
-                                        completion:nil];
+  [self.mainViewController showTabViewController:self.currentBVC
+                                      completion:nil];
 }
 
 - (TabModel*)currentTabModel {
@@ -1824,14 +1825,14 @@ const int kExternalFilesCleanupDelaySeconds = 60;
                                             mainBVC:self.mainBVC
                                              otrBVC:self.otrBVC];
     [_tabSwitcherController setTransitionContext:transitionContext];
-    [self.mainViewController setActiveViewController:_tabSwitcherController
-                                          completion:nil];
+    [self.mainViewController showTabSwitcher:_tabSwitcherController
+                                  completion:nil];
     [_tabSwitcherController showWithSelectedTabAnimation];
   } else {
     // User interaction is disabled when the stack controller is dismissed.
     [[_tabSwitcherController view] setUserInteractionEnabled:YES];
-    [self.mainViewController setActiveViewController:_tabSwitcherController
-                                          completion:nil];
+    [self.mainViewController showTabSwitcher:_tabSwitcherController
+                                  completion:nil];
     [_tabSwitcherController showWithSelectedTabAnimation];
   }
 }

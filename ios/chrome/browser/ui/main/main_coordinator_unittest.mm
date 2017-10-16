@@ -6,7 +6,6 @@
 
 #import <UIKit/UIKit.h>
 
-#include "ios/chrome/browser/ui/main/main_view_controller.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 

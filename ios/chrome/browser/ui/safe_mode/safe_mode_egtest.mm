@@ -8,7 +8,7 @@
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/app/chrome_overlay_window.h"
-#import "ios/chrome/browser/ui/main/main_view_controller.h"
+#import "ios/chrome/browser/ui/main/view_controller_swapping.h"
 #import "ios/chrome/browser/ui/safe_mode/safe_mode_view_controller.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #import "ios/chrome/test/base/scoped_block_swizzler.h"
@@ -24,8 +24,8 @@ namespace {
 UIViewController* GetActiveViewController() {
   UIWindow* mainWindow = [[UIApplication sharedApplication] keyWindow];
   DCHECK([mainWindow isKindOfClass:[ChromeOverlayWindow class]]);
-  MainViewController* main_view_controller =
-      base::mac::ObjCCast<MainViewController>([mainWindow rootViewController]);
+  id<ViewControllerSwapping> main_view_controller =
+      static_cast<id<ViewControllerSwapping>>([mainWindow rootViewController]);
   return main_view_controller.activeViewController;
 }
 

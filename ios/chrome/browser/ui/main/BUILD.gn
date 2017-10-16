@@ -8,10 +8,13 @@ source_set("main") {
     "browser_view_information.h",
     "browser_view_wrangler.h",
     "browser_view_wrangler.mm",
+    "main_containing_view_controller.h",
+    "main_containing_view_controller.mm",
     "main_coordinator.h",
     "main_coordinator.mm",
-    "main_view_controller.h",
-    "main_view_controller.mm",
+    "main_presenting_view_controller.h",
+    "main_presenting_view_controller.mm",
+    "view_controller_swapping.h",
   ]
   deps = [
     ":feature_flags",
@@ -27,6 +30,7 @@ source_set("main") {
     "//ios/chrome/browser/sessions:serialisation",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/tabs:tabs_internal",
+    "//ios/chrome/browser/ui/tab_switcher",
     "//ios/public/provider/chrome/browser",
   ]
   public_deps = [
@@ -51,12 +55,13 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "browser_view_wrangler_unittest.mm",
+    "main_containing_view_controller_unittest.mm",
     "main_coordinator_unittest.mm",
-    "main_view_controller_unittest.mm",
+    "main_presenting_view_controller_unittest.mm",
   ]
   deps = [
-    ":feature_flags",
     ":main",
+    ":test_support",
     "//base",
     "//base/test:test_support",
     "//components/bookmarks/test",
@@ -66,6 +71,22 @@ source_set("unit_tests") {
     "//ios/chrome/browser/ui:ui_internal",
     "//ios/chrome/test:block_cleanup_test",
     "//ios/web/public/test",
+    "//testing/gtest",
+  ]
+}
+
+source_set("test_support") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [
+    "main_view_controller_test.h",
+    "main_view_controller_test.mm",
+  ]
+  deps = [
+    "//base",
+    "//base/test:test_support",
+    "//ios/chrome/browser/ui/tab_switcher",
+    "//ios/chrome/test:block_cleanup_test",
     "//testing/gtest",
   ]
 }
