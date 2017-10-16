@@ -1523,9 +1523,7 @@ static void rd_pick_sb_modes(const AV1_COMP *const cpi, TileDataEnc *tile_data,
   if ((rd_cost->rate != INT_MAX) && (aq_mode == COMPLEXITY_AQ) &&
       (bsize >= BLOCK_16X16) &&
       (cm->frame_type == KEY_FRAME || cpi->refresh_alt_ref_frame ||
-#if CONFIG_EXT_REFS
        cpi->refresh_alt2_ref_frame ||
-#endif  // CONFIG_EXT_REFS
        (cpi->refresh_golden_frame && !cpi->rc.is_src_frame_alt_ref))) {
     av1_caq_select_segment(cpi, x, bsize, mi_row, mi_col, rd_cost->rate);
   }
@@ -1663,9 +1661,7 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
       // the reference frame counts used to work out probabilities.
       if (inter_block) {
         const MV_REFERENCE_FRAME ref0 = mbmi->ref_frame[0];
-#if CONFIG_EXT_REFS
         const MV_REFERENCE_FRAME ref1 = mbmi->ref_frame[1];
-#endif  // CONFIG_EXT_REFS
 
         if (cm->reference_mode == REFERENCE_MODE_SELECT) {
           if (has_second_ref(mbmi))
@@ -1711,7 +1707,6 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
             }
           } else {
 #endif  // CONFIG_EXT_COMP_REFS
-#if CONFIG_EXT_REFS
             const int bit = (ref0 == GOLDEN_FRAME || ref0 == LAST3_FRAME);
 
             counts->comp_ref[av1_get_pred_context_comp_ref_p(cm, xd)][0][bit]++;
@@ -1728,15 +1723,10 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
             if (ref1 != ALTREF_FRAME)
               counts->comp_bwdref[av1_get_pred_context_comp_bwdref_p1(cm, xd)]
                                  [1][ref1 == ALTREF2_FRAME]++;
-#else   // !CONFIG_EXT_REFS
-          counts->comp_ref[av1_get_pred_context_comp_ref_p(cm, xd)][0]
-                          [ref0 == GOLDEN_FRAME]++;
-#endif  // CONFIG_EXT_REFS
 #if CONFIG_EXT_COMP_REFS
           }
 #endif  // CONFIG_EXT_COMP_REFS
         } else {
-#if CONFIG_EXT_REFS
           const int bit = (ref0 >= BWDREF_FRAME);
 
           counts->single_ref[av1_get_pred_context_single_ref_p1(xd)][0][bit]++;
@@ -1759,14 +1749,6 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
                                 [ref0 != LAST3_FRAME]++;
             }
           }
-#else   // !CONFIG_EXT_REFS
-          counts->single_ref[av1_get_pred_context_single_ref_p1(xd)][0]
-                            [ref0 != LAST_FRAME]++;
-          if (ref0 != LAST_FRAME) {
-            counts->single_ref[av1_get_pred_context_single_ref_p2(xd)][1]
-                              [ref0 != GOLDEN_FRAME]++;
-          }
-#endif  // CONFIG_EXT_REFS
         }
 
 #if CONFIG_COMPOUND_SINGLEREF
@@ -4817,10 +4799,8 @@ static int check_dual_ref_flags(AV1_COMP *cpi) {
     return 0;
   } else {
     return (!!(ref_flags & AOM_GOLD_FLAG) + !!(ref_flags & AOM_LAST_FLAG) +
-#if CONFIG_EXT_REFS
             !!(ref_flags & AOM_LAST2_FLAG) + !!(ref_flags & AOM_LAST3_FLAG) +
             !!(ref_flags & AOM_BWD_FLAG) + !!(ref_flags & AOM_ALT2_FLAG) +
-#endif  // CONFIG_EXT_REFS
             !!(ref_flags & AOM_ALT_FLAG)) >= 2;
   }
 }
@@ -4843,18 +4823,11 @@ static void reset_skip_tx_size(AV1_COMMON *cm, TX_SIZE max_tx_size) {
 
 static MV_REFERENCE_FRAME get_frame_type(const AV1_COMP *cpi) {
   if (frame_is_intra_only(&cpi->common)) return INTRA_FRAME;
-#if CONFIG_EXT_REFS
   // We will not update the golden frame with an internal overlay frame
   else if ((cpi->rc.is_src_frame_alt_ref && cpi->refresh_golden_frame) ||
            cpi->rc.is_src_frame_ext_arf)
-#else
-  else if (cpi->rc.is_src_frame_alt_ref && cpi->refresh_golden_frame)
-#endif  // CONFIG_EXT_REFS
     return ALTREF_FRAME;
-  else if (cpi->refresh_golden_frame ||
-#if CONFIG_EXT_REFS
-           cpi->refresh_alt2_ref_frame ||
-#endif  // CONFIG_EXT_REFS
+  else if (cpi->refresh_golden_frame || cpi->refresh_alt2_ref_frame ||
            cpi->refresh_alt_ref_frame)
     return GOLDEN_FRAME;
   else
@@ -5170,11 +5143,7 @@ static int do_gm_search_logic(SPEED_FEATURES *const sf, int num_refs_using_gm,
   switch (sf->gm_search_type) {
     case GM_FULL_SEARCH: return 1;
     case GM_REDUCED_REF_SEARCH:
-#if CONFIG_EXT_REFS
       return !(frame == LAST2_FRAME || frame == LAST3_FRAME);
-#else
-      return (num_refs_using_gm < 2);
-#endif  // CONFIG_EXT_REFS
     case GM_DISABLE_SEARCH: return 0;
     default: assert(0);
   }
@@ -5220,9 +5189,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   MACROBLOCKD *const xd = &x->e_mbd;
   RD_COUNTS *const rdc = &cpi->td.rd_counts;
   int i;
-#if CONFIG_TEMPMV_SIGNALING || CONFIG_EXT_REFS
   const int last_fb_buf_idx = get_ref_frame_buf_idx(cpi, LAST_FRAME);
-#endif  // CONFIG_TEMPMV_SIGNALING || CONFIG_EXT_REFS
 
 #if CONFIG_ADAPT_SCAN
   av1_deliver_eob_threshold(cm, xd);
@@ -5488,7 +5455,6 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   av1_initialize_me_consts(cpi, x, cm->base_qindex);
   init_encode_frame_mb_context(cpi);
 
-#if CONFIG_EXT_REFS || CONFIG_TEMPMV_SIGNALING
   // NOTE(zoeliu): As cm->prev_frame can take neither a frame of
   //               show_exisiting_frame=1, nor can it take a frame not used as
   //               a reference, it is probable that by the time it is being
@@ -5505,7 +5471,6 @@ static void encode_frame_internal(AV1_COMP *cpi) {
                          ? &cm->buffer_pool->frame_bufs[last_fb_buf_idx]
                          : NULL;
   }
-#endif  // CONFIG_EXT_REFS || CONFIG_TEMPMV_SIGNALING
 
 #if CONFIG_TEMPMV_SIGNALING
   cm->use_prev_frame_mvs &= frame_can_use_prev_frame_mvs(cm);
@@ -5609,11 +5574,9 @@ void av1_encode_frame(AV1_COMP *cpi) {
     int arf_offset = AOMMIN(
         (MAX_GF_INTERVAL - 1),
         cpi->twopass.gf_group.arf_src_offset[cpi->twopass.gf_group.index]);
-#if CONFIG_EXT_REFS
     int brf_offset =
         cpi->twopass.gf_group.brf_src_offset[cpi->twopass.gf_group.index];
     arf_offset = AOMMIN((MAX_GF_INTERVAL - 1), arf_offset + brf_offset);
-#endif  // CONFIG_EXT_REFS
     cm->frame_offset = cm->current_video_frame + arf_offset;
   } else {
     cm->frame_offset = cm->current_video_frame;
@@ -5640,7 +5603,6 @@ void av1_encode_frame(AV1_COMP *cpi) {
     } else {
 #endif  // !CONFIG_ONE_SIDED_COMPOUND
       cpi->allow_comp_inter_inter = 1;
-#if CONFIG_EXT_REFS
       cm->comp_fwd_ref[0] = LAST_FRAME;
       cm->comp_fwd_ref[1] = LAST2_FRAME;
       cm->comp_fwd_ref[2] = LAST3_FRAME;
@@ -5648,11 +5610,6 @@ void av1_encode_frame(AV1_COMP *cpi) {
       cm->comp_bwd_ref[0] = BWDREF_FRAME;
       cm->comp_bwd_ref[1] = ALTREF2_FRAME;
       cm->comp_bwd_ref[2] = ALTREF_FRAME;
-#else                           // !CONFIG_EXT_REFS
-    cm->comp_fixed_ref = ALTREF_FRAME;
-    cm->comp_var_ref[0] = LAST_FRAME;
-    cm->comp_var_ref[1] = GOLDEN_FRAME;
-#endif                          // CONFIG_EXT_REFS
 #if !CONFIG_ONE_SIDED_COMPOUND  // Normative in encoder
     }
 #endif  // !CONFIG_ONE_SIDED_COMPOUND

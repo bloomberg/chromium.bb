@@ -309,7 +309,6 @@ static INLINE int8_t av1_ref_frame_type(const MV_REFERENCE_FRAME *const rf) {
 
 // clang-format off
 static MV_REFERENCE_FRAME ref_frame_map[COMP_REFS][2] = {
-#if CONFIG_EXT_REFS
   { LAST_FRAME, BWDREF_FRAME },  { LAST2_FRAME, BWDREF_FRAME },
   { LAST3_FRAME, BWDREF_FRAME }, { GOLDEN_FRAME, BWDREF_FRAME },
 
@@ -326,9 +325,6 @@ static MV_REFERENCE_FRAME ref_frame_map[COMP_REFS][2] = {
   // TODO(zoeliu): When ALTREF2 is enabled, we may add:
   //               {BWDREF_FRAME, ALTREF2_FRAME}
 #endif  // CONFIG_EXT_COMP_REFS
-#else  // !CONFIG_EXT_REFS
-  { LAST_FRAME, ALTREF_FRAME }, { GOLDEN_FRAME, ALTREF_FRAME }
-#endif  // CONFIG_EXT_REFS
 };
 // clang-format on
 

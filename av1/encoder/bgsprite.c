@@ -1136,7 +1136,6 @@ int av1_background_sprite(AV1_COMP *cpi, int distance) {
   if (frames_fwd > distance) frames_fwd = distance;
   frames_bwd = frames_fwd;
 
-#if CONFIG_EXT_REFS
   const GF_GROUP *const gf_group = &cpi->twopass.gf_group;
   if (gf_group->rf_level[gf_group->index] == GF_ARF_LOW) {
     cpi->is_arf_filter_off[gf_group->arf_update_idx[gf_group->index]] = 1;
@@ -1145,7 +1144,6 @@ int av1_background_sprite(AV1_COMP *cpi, int distance) {
   } else {
     cpi->is_arf_filter_off[gf_group->arf_update_idx[gf_group->index]] = 0;
   }
-#endif  // CONFIG_EXT_REFS
 
   const int start_frame = distance + frames_fwd;
   const int frames_to_stitch = frames_bwd + 1 + frames_fwd;

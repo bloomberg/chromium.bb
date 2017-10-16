@@ -120,7 +120,6 @@ static int is_compound_reference_allowed(const AV1_COMMON *cm) {
 }
 
 static void setup_compound_reference_mode(AV1_COMMON *cm) {
-#if CONFIG_EXT_REFS
   cm->comp_fwd_ref[0] = LAST_FRAME;
   cm->comp_fwd_ref[1] = LAST2_FRAME;
   cm->comp_fwd_ref[2] = LAST3_FRAME;
@@ -129,23 +128,6 @@ static void setup_compound_reference_mode(AV1_COMMON *cm) {
   cm->comp_bwd_ref[0] = BWDREF_FRAME;
   cm->comp_bwd_ref[1] = ALTREF2_FRAME;
   cm->comp_bwd_ref[2] = ALTREF_FRAME;
-#else   // !CONFIG_EXT_REFS
-  if (cm->ref_frame_sign_bias[LAST_FRAME] ==
-      cm->ref_frame_sign_bias[GOLDEN_FRAME]) {
-    cm->comp_fixed_ref = ALTREF_FRAME;
-    cm->comp_var_ref[0] = LAST_FRAME;
-    cm->comp_var_ref[1] = GOLDEN_FRAME;
-  } else if (cm->ref_frame_sign_bias[LAST_FRAME] ==
-             cm->ref_frame_sign_bias[ALTREF_FRAME]) {
-    cm->comp_fixed_ref = GOLDEN_FRAME;
-    cm->comp_var_ref[0] = LAST_FRAME;
-    cm->comp_var_ref[1] = ALTREF_FRAME;
-  } else {
-    cm->comp_fixed_ref = LAST_FRAME;
-    cm->comp_var_ref[0] = GOLDEN_FRAME;
-    cm->comp_var_ref[1] = ALTREF_FRAME;
-  }
-#endif  // CONFIG_EXT_REFS
 }
 
 static int read_is_valid(const uint8_t *start, size_t len, const uint8_t *end) {
@@ -237,15 +219,10 @@ static void read_frame_reference_mode_probs(AV1_COMMON *cm, aom_reader *r) {
 
     for (i = 0; i < REF_CONTEXTS; ++i) {
       int j;
-#if CONFIG_EXT_REFS
       for (j = 0; j < (FWD_REFS - 1); ++j)
         av1_diff_update_prob(r, &fc->comp_ref_prob[i][j], ACCT_STR);
       for (j = 0; j < (BWD_REFS - 1); ++j)
         av1_diff_update_prob(r, &fc->comp_bwdref_prob[i][j], ACCT_STR);
-#else
-      for (j = 0; j < (COMP_REFS - 1); ++j)
-        av1_diff_update_prob(r, &fc->comp_ref_prob[i][j], ACCT_STR);
-#endif  // CONFIG_EXT_REFS
     }
   }
 }
@@ -4678,10 +4655,8 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
   cm->last_frame_type = cm->frame_type;
   cm->last_intra_only = cm->intra_only;
 
-#if CONFIG_EXT_REFS
   // NOTE: By default all coded frames to be used as a reference
   cm->is_reference_frame = 1;
-#endif  // CONFIG_EXT_REFS
 
 #if !CONFIG_OBU
   if (aom_rb_read_literal(rb, 2) != AOM_FRAME_MARKER)
@@ -4897,13 +4872,11 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
       pbi->refresh_frame_flags = aom_rb_read_literal(rb, REF_FRAMES);
 #endif
 
-#if CONFIG_EXT_REFS
       if (!pbi->refresh_frame_flags) {
         // NOTE: "pbi->refresh_frame_flags == 0" indicates that the coded frame
         //       will not be used as a reference
         cm->is_reference_frame = 0;
       }
-#endif  // CONFIG_EXT_REFS
 
       for (i = 0; i < INTER_REFS_PER_FRAME; ++i) {
         const int ref = aom_rb_read_literal(rb, REF_FRAMES_LOG2);
@@ -5192,7 +5165,6 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
   if (cm->use_adapt_scan == 0) av1_init_scan_order(cm);
 #endif  // CONFIG_ADAPT_SCAN
 
-#if CONFIG_EXT_REFS || CONFIG_TEMPMV_SIGNALING
   // NOTE(zoeliu): As cm->prev_frame can take neither a frame of
   //               show_exisiting_frame=1, nor can it take a frame not used as
   //               a reference, it is probable that by the time it is being
@@ -5211,7 +5183,6 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
                    ->frame_bufs[cm->frame_refs[LAST_FRAME - LAST_FRAME].idx]
             : NULL;
   }
-#endif  // CONFIG_EXT_REFS || CONFIG_TEMPMV_SIGNALING
 
 #if CONFIG_TEMPMV_SIGNALING
   if (cm->use_prev_frame_mvs && !frame_can_use_prev_frame_mvs(cm)) {
@@ -5424,10 +5395,8 @@ static void debug_check_frame_counts(const AV1_COMMON *const cm) {
                  sizeof(cm->counts.single_ref)));
   assert(!memcmp(cm->counts.comp_ref, zero_counts.comp_ref,
                  sizeof(cm->counts.comp_ref)));
-#if CONFIG_EXT_REFS
   assert(!memcmp(cm->counts.comp_bwdref, zero_counts.comp_bwdref,
                  sizeof(cm->counts.comp_bwdref)));
-#endif  // CONFIG_EXT_REFS
   assert(!memcmp(&cm->counts.tx_size, &zero_counts.tx_size,
                  sizeof(cm->counts.tx_size)));
   assert(!memcmp(cm->counts.skip, zero_counts.skip, sizeof(cm->counts.skip)));
@@ -5522,9 +5491,7 @@ size_t av1_decode_frame_headers_and_setup(AV1Decoder *pbi, const uint8_t *data,
   uint8_t clear_data[MAX_AV1_HEADER_SIZE];
   size_t first_partition_size;
   YV12_BUFFER_CONFIG *new_fb;
-#if CONFIG_EXT_REFS || CONFIG_TEMPMV_SIGNALING
   RefBuffer *last_fb_ref_buf = &cm->frame_refs[LAST_FRAME - LAST_FRAME];
-#endif  // CONFIG_EXT_REFS || CONFIG_TEMPMV_SIGNALING
 
 #if CONFIG_ADAPT_SCAN
   av1_deliver_eob_threshold(cm, xd);
@@ -5586,7 +5553,6 @@ size_t av1_decode_frame_headers_and_setup(AV1Decoder *pbi, const uint8_t *data,
 
   cm->setup_mi(cm);
 
-#if CONFIG_EXT_REFS || CONFIG_TEMPMV_SIGNALING
   // NOTE(zoeliu): As cm->prev_frame can take neither a frame of
   //               show_exisiting_frame=1, nor can it take a frame not used as
   //               a reference, it is probable that by the time it is being
@@ -5603,7 +5569,6 @@ size_t av1_decode_frame_headers_and_setup(AV1Decoder *pbi, const uint8_t *data,
                          ? &cm->buffer_pool->frame_bufs[last_fb_ref_buf->idx]
                          : NULL;
   }
-#endif  // CONFIG_EXT_REFS || CONFIG_TEMPMV_SIGNALING
 
 #if CONFIG_TEMPMV_SIGNALING
   if (cm->use_prev_frame_mvs && !frame_can_use_prev_frame_mvs(cm)) {

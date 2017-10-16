@@ -647,17 +647,14 @@ void av1_temporal_filter(AV1_COMP *cpi,
   int frames_to_blur_forward;
   struct scale_factors sf;
   YV12_BUFFER_CONFIG *frames[MAX_LAG_BUFFERS] = { NULL };
-#if CONFIG_EXT_REFS
   const GF_GROUP *const gf_group = &cpi->twopass.gf_group;
-#endif  // CONFIG_EXT_REFS
 
   // Apply context specific adjustments to the arnr filter parameters.
   adjust_arnr_filter(cpi, distance, rc->gfu_boost, &frames_to_blur, &strength);
-// TODO(weitinglin): Currently, we enforce the filtering strength on
-//                   extra ARFs' to be zeros. We should investigate in which
-//                   case it is more beneficial to use non-zero strength
-//                   filtering.
-#if CONFIG_EXT_REFS
+  // TODO(weitinglin): Currently, we enforce the filtering strength on
+  //                   extra ARFs' to be zeros. We should investigate in which
+  //                   case it is more beneficial to use non-zero strength
+  //                   filtering.
   if (gf_group->update_type[gf_group->index] == INTNL_ARF_UPDATE) {
     strength = 0;
     frames_to_blur = 1;
@@ -685,7 +682,6 @@ void av1_temporal_filter(AV1_COMP *cpi,
     cpi->is_arf_filter_off[which_arf] = 1;
   else
     cpi->is_arf_filter_off[which_arf] = 0;
-#endif  // CONFIG_EXT_REFS
 
   frames_to_blur_backward = (frames_to_blur / 2);
   frames_to_blur_forward = ((frames_to_blur - 1) / 2);

@@ -1595,12 +1595,8 @@ static void read_ref_frames(AV1_COMMON *const cm, MACROBLOCKD *const xd,
 // Normative in decoder (for low delay)
 #if CONFIG_ONE_SIDED_COMPOUND || CONFIG_FRAME_SIGN_BIAS
       const int idx = 1;
-#else  // !(CONFIG_ONE_SIDED_COMPOUND || CONFIG_FRAME_SIGN_BIAS)
-#if CONFIG_EXT_REFS
+#else   // !(CONFIG_ONE_SIDED_COMPOUND || CONFIG_FRAME_SIGN_BIAS)
       const int idx = cm->ref_frame_sign_bias[cm->comp_bwd_ref[0]];
-#else   // !CONFIG_EXT_REFS
-      const int idx = cm->ref_frame_sign_bias[cm->comp_fixed_ref];
-#endif  // CONFIG_EXT_REFS
 #endif  // CONFIG_ONE_SIDED_COMPOUND || CONFIG_FRAME_SIGN_BIAS)
 
       const int ctx = av1_get_pred_context_comp_ref_p(cm, xd);
@@ -1616,7 +1612,6 @@ static void read_ref_frames(AV1_COMMON *const cm, MACROBLOCKD *const xd,
 #endif  // CONFIG_VAR_REFS
       if (counts) ++counts->comp_ref[ctx][0][bit];
 
-#if CONFIG_EXT_REFS
       // Decode forward references.
       if (!bit) {
         const int ctx1 = av1_get_pred_context_comp_ref_p1(cm, xd);
@@ -1678,12 +1673,7 @@ static void read_ref_frames(AV1_COMMON *const cm, MACROBLOCKD *const xd,
       } else {
         ref_frame[idx] = cm->comp_bwd_ref[2];
       }
-#else   // !CONFIG_EXT_REFS
-      ref_frame[!idx] = cm->comp_var_ref[bit];
-      ref_frame[idx] = cm->comp_fixed_ref;
-#endif  // CONFIG_EXT_REFS
     } else if (mode == SINGLE_REFERENCE) {
-#if CONFIG_EXT_REFS
       const int ctx0 = av1_get_pred_context_single_ref_p1(xd);
 #if CONFIG_VAR_REFS
       int bit0;
@@ -1772,20 +1762,6 @@ static void read_ref_frames(AV1_COMMON *const cm, MACROBLOCKD *const xd,
           ref_frame[0] = bit3 ? LAST2_FRAME : LAST_FRAME;
         }
       }
-#else   // !CONFIG_EXT_REFS
-      const int ctx0 = av1_get_pred_context_single_ref_p1(xd);
-      const int bit0 = READ_REF_BIT(single_ref_p1);
-      if (counts) ++counts->single_ref[ctx0][0][bit0];
-
-      if (bit0) {
-        const int ctx1 = av1_get_pred_context_single_ref_p2(xd);
-        const int bit1 = READ_REF_BIT(single_ref_p2);
-        if (counts) ++counts->single_ref[ctx1][1][bit1];
-        ref_frame[0] = bit1 ? ALTREF_FRAME : GOLDEN_FRAME;
-      } else {
-        ref_frame[0] = LAST_FRAME;
-      }
-#endif  // CONFIG_EXT_REFS
 
       ref_frame[1] = NONE_FRAME;
     } else {

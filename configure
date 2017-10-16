@@ -265,7 +265,6 @@ EXPERIMENT_LIST="
     interintra
     wedge
     compound_segment
-    ext_refs
     global_motion
     new_quant
     supertx
@@ -520,7 +519,6 @@ post_process_cmdline() {
       soft_enable ext_intra
       soft_enable intra_edge
       soft_enable mv_compress
-      soft_enable ext_refs
       soft_enable dual_filter
       soft_enable motion_var
       soft_enable warped_motion
@@ -578,7 +576,6 @@ post_process_cmdline() {
     enabled chroma_sub8x8 && enable_feature cb4x4
     enabled ncobmc_adapt_weight && enable_feature motion_var
     enabled bgsprite && enable_feature global_motion
-    enabled ext_comp_refs && enable_feature ext_refs
     enabled ext_comp_refs && enable_feature one_sided_compound
     enabled rect_tx_ext && enable_feature rect_tx
     enabled lgt_from_pred && enable_feature ext_tx
@@ -591,7 +588,6 @@ post_process_cmdline() {
     enabled frame_sign_bias && enable_feature frame_marker
     enabled txmg && enable_feature highbitdepth
     enabled ext_skip && enable_feature frame_marker
-    enabled ext_skip && enable_feature ext_refs
     enabled horzonly_frame_superres && enable_feature frame_superres
     enabled ext_warped_motion && enable_feature warped_motion
 

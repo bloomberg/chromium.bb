@@ -72,11 +72,7 @@ extern "C" {
 #define FRAME_CONTEXT_DEFAULTS (FRAME_CONTEXTS - 1)
 #else
 
-#if CONFIG_EXT_REFS
 #define FRAME_CONTEXTS_LOG2 3
-#else
-#define FRAME_CONTEXTS_LOG2 2
-#endif
 
 #define FRAME_CONTEXTS (1 << FRAME_CONTEXTS_LOG2)
 #endif  // CONFIG_NO_FRAME_CONTEXT_SIGNALING
@@ -133,12 +129,10 @@ typedef struct {
   int lst_frame_offset;
   int alt_frame_offset;
   int gld_frame_offset;
-#if CONFIG_EXT_REFS
   int lst2_frame_offset;
   int lst3_frame_offset;
   int bwd_frame_offset;
   int alt2_frame_offset;
-#endif
 #endif  // CONFIG_FRAME_MARKER
 
   MV_REF *mvs;
@@ -262,10 +256,8 @@ typedef struct AV1Common {
   int show_frame;
   int last_show_frame;
   int show_existing_frame;
-#if CONFIG_EXT_REFS
   // Flag for a frame used as a reference - not written to the bitstream
   int is_reference_frame;
-#endif  // CONFIG_EXT_REFS
 
   // Flag signaling that the frame is encoded using only INTRA modes.
   uint8_t intra_only;
@@ -393,14 +385,9 @@ typedef struct AV1Common {
   int reduced_tx_set_used;
 #endif  // CONFIG_EXT_TX
 
-// Context probabilities for reference frame prediction
-#if CONFIG_EXT_REFS
+  // Context probabilities for reference frame prediction
   MV_REFERENCE_FRAME comp_fwd_ref[FWD_REFS];
   MV_REFERENCE_FRAME comp_bwd_ref[BWD_REFS];
-#else
-  MV_REFERENCE_FRAME comp_fixed_ref;
-  MV_REFERENCE_FRAME comp_var_ref[COMP_REFS];
-#endif  // CONFIG_EXT_REFS
   REFERENCE_MODE reference_mode;
 
   FRAME_CONTEXT *fc;              /* this frame entropy */

@@ -76,12 +76,10 @@ typedef enum {
   OVERLAY_FRAME = 2,
   // golden frame
   GLD_FRAME = 3,
-#if CONFIG_EXT_REFS
   // backward reference frame
   BRF_FRAME = 4,
   // extra alternate reference frame
   EXT_ARF_FRAME = 5
-#endif
 } FRAME_CONTEXT_INDEX;
 #endif
 
@@ -101,13 +99,9 @@ typedef enum {
 typedef enum {
   FRAMEFLAGS_KEY = 1 << 0,
   FRAMEFLAGS_GOLDEN = 1 << 1,
-#if CONFIG_EXT_REFS
   FRAMEFLAGS_BWDREF = 1 << 2,
   // TODO(zoeliu): To determine whether a frame flag is needed for ALTREF2_FRAME
   FRAMEFLAGS_ALTREF = 1 << 3,
-#else   // !CONFIG_EXT_REFS
-  FRAMEFLAGS_ALTREF = 1 << 2,
-#endif  // CONFIG_EXT_REFS
 } FRAMETYPE_FLAGS;
 
 typedef enum {
@@ -241,9 +235,7 @@ typedef struct AV1EncoderConfig {
   // ----------------------------------------------------------------
 
   int enable_auto_arf;
-#if CONFIG_EXT_REFS
   int enable_auto_brf;  // (b)ackward (r)ef (f)rame
-#endif                  // CONFIG_EXT_REFS
 
   /* Bitfield defining the error resiliency features to enable.
    * Can provide decodable frames after losses in previous
@@ -422,30 +414,20 @@ typedef struct AV1_COMP {
 #endif
 
   int scaled_ref_idx[TOTAL_REFS_PER_FRAME];
-#if CONFIG_EXT_REFS
   int lst_fb_idxes[LAST_REF_FRAMES];
-#else
-  int lst_fb_idx;
-#endif  // CONFIG_EXT_REFS
   int gld_fb_idx;
-#if CONFIG_EXT_REFS
   int bwd_fb_idx;   // BWDREF_FRAME
   int alt2_fb_idx;  // ALTREF2_FRAME
-#endif              // CONFIG_EXT_REFS
   int alt_fb_idx;
-#if CONFIG_EXT_REFS
   int ext_fb_idx;      // extra ref frame buffer index
   int refresh_fb_idx;  // ref frame buffer index to refresh
-#endif                 // CONFIG_EXT_REFS
 
   int last_show_frame_buf_idx;  // last show frame buffer index
 
   int refresh_last_frame;
   int refresh_golden_frame;
-#if CONFIG_EXT_REFS
   int refresh_bwd_ref_frame;
   int refresh_alt2_ref_frame;
-#endif  // CONFIG_EXT_REFS
   int refresh_alt_ref_frame;
 
   int ext_refresh_frame_flags_pending;
@@ -607,7 +589,6 @@ typedef struct AV1_COMP {
 #if CONFIG_ANS
   struct BufAnsCoder buf_ans;
 #endif
-#if CONFIG_EXT_REFS
   int refresh_frame_mask;
   int existing_fb_idx_to_show;
   int is_arf_filter_off[MAX_EXT_ARFS + 1];
@@ -615,7 +596,6 @@ typedef struct AV1_COMP {
   int arf_map[MAX_EXT_ARFS + 1];
   int arf_pos_in_gf[MAX_EXT_ARFS + 1];
   int arf_pos_for_ovrly[MAX_EXT_ARFS + 1];
-#endif  // CONFIG_EXT_REFS
 #if CONFIG_GLOBAL_MOTION
   int global_motion_search_done;
 #endif
@@ -623,10 +603,8 @@ typedef struct AV1_COMP {
   tran_low_t *tcoeff_buf[MAX_MB_PLANE];
 #endif
 
-#if CONFIG_EXT_REFS
   int extra_arf_allowed;
   int bwd_ref_allowed;
-#endif  // CONFIG_EXT_REFS
 
 #if CONFIG_BGSPRITE
   int bgsprite_allowed;
@@ -681,20 +659,14 @@ static INLINE int frame_is_kf_gf_arf(const AV1_COMP *cpi) {
 
 static INLINE int get_ref_frame_map_idx(const AV1_COMP *cpi,
                                         MV_REFERENCE_FRAME ref_frame) {
-#if CONFIG_EXT_REFS
   if (ref_frame >= LAST_FRAME && ref_frame <= LAST3_FRAME)
     return cpi->lst_fb_idxes[ref_frame - 1];
-#else
-  if (ref_frame == LAST_FRAME) return cpi->lst_fb_idx;
-#endif  // CONFIG_EXT_REFS
   else if (ref_frame == GOLDEN_FRAME)
     return cpi->gld_fb_idx;
-#if CONFIG_EXT_REFS
   else if (ref_frame == BWDREF_FRAME)
     return cpi->bwd_fb_idx;
   else if (ref_frame == ALTREF2_FRAME)
     return cpi->alt2_fb_idx;
-#endif  // CONFIG_EXT_REFS
   else
     return cpi->alt_fb_idx;
 }
@@ -725,7 +697,6 @@ static INLINE YV12_BUFFER_CONFIG *get_ref_frame_buffer(
                                 : NULL;
 }
 
-#if CONFIG_EXT_REFS || CONFIG_TEMPMV_SIGNALING
 static INLINE int enc_is_ref_frame_buf(AV1_COMP *cpi, RefCntBuffer *frame_buf) {
   MV_REFERENCE_FRAME ref_frame;
   AV1_COMMON *const cm = &cpi->common;
@@ -736,7 +707,6 @@ static INLINE int enc_is_ref_frame_buf(AV1_COMP *cpi, RefCntBuffer *frame_buf) {
   }
   return (ref_frame <= ALTREF_FRAME);
 }
-#endif  // CONFIG_EXT_REFS
 
 static INLINE unsigned int get_token_alloc(int mb_rows, int mb_cols) {
   // We assume 3 planes all at full resolution. We assume up to 1 token per

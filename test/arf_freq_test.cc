@@ -208,7 +208,6 @@ TEST_P(ArfFreqTestLarge, MinArfFreqTest) {
   }
 }
 
-#if CONFIG_HIGHBITDEPTH || CONFIG_EXT_REFS
 #if CONFIG_AV1_ENCODER
 // TODO(angiebird): 25-29 fail in high bitdepth mode.
 // TODO(zoeliu): This ArfFreqTest does not work with BWDREF_FRAME, as
@@ -223,9 +222,4 @@ INSTANTIATE_TEST_CASE_P(
         ::testing::ValuesIn(kTestVectors), ::testing::ValuesIn(kEncodeVectors),
         ::testing::ValuesIn(kMinArfVectors)));
 #endif  // CONFIG_AV1_ENCODER
-#else
-AV1_INSTANTIATE_TEST_CASE(ArfFreqTestLarge, ::testing::ValuesIn(kTestVectors),
-                          ::testing::ValuesIn(kEncodeVectors),
-                          ::testing::ValuesIn(kMinArfVectors));
-#endif  // CONFIG_HIGHBITDEPTH || CONFIG_EXT_REFS
 }  // namespace

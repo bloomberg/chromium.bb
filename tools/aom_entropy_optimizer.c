@@ -609,7 +609,6 @@ int main(int argc, const char **argv) {
       "static const aom_cdf_prob\n"
       "default_single_ref_cdf[REF_CONTEXTS][SINGLE_REFS - 1][CDF_SIZE(2)]");
 
-#if CONFIG_EXT_REFS
   /* ext_refs experiment */
   cts_each_dim[0] = REF_CONTEXTS;
   cts_each_dim[1] = FWD_REFS - 1;
@@ -633,20 +632,6 @@ int main(int argc, const char **argv) {
       &fc.comp_bwdref[0][0][0], probsfile, 3, cts_each_dim,
       "static const aom_cdf_prob\n"
       "default_comp_bwdref_cdf[REF_CONTEXTS][BWD_REFS - 1][CDF_SIZE(2)]");
-#else
-  /* Reference frame (compound refs) */
-  cts_each_dim[0] = REF_CONTEXTS;
-  cts_each_dim[1] = COMP_REFS - 1;
-  cts_each_dim[2] = 2;
-  optimize_entropy_table(
-      &fc.comp_ref[0][0][0], probsfile, 3, cts_each_dim, NULL, 1,
-      "static const aom_prob default_comp_ref_p[REF_CONTEXTS]"
-      "[COMP_REFS - 1]");
-  optimize_cdf_table(
-      &fc.comp_ref[0][0][0], probsfile, 3, cts_each_dim,
-      "static const aom_cdf_prob\n"
-      "default_comp_ref_cdf[REF_CONTEXTS][COMP_REFS - 1][CDF_SIZE(2)]");
-#endif  // CONFIG_EXT_REFS
 
 /* Compound single ref inter mode */
 #if CONFIG_COMPOUND_SINGLEREF

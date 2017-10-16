@@ -128,14 +128,9 @@ typedef struct map_entry {
 } map_entry;
 
 const map_entry refs_map[] = { ENUM(INTRA_FRAME),  ENUM(LAST_FRAME),
-#if CONFIG_EXT_REFS
                                ENUM(LAST2_FRAME),  ENUM(LAST3_FRAME),
                                ENUM(GOLDEN_FRAME), ENUM(BWDREF_FRAME),
-                               ENUM(ALTREF_FRAME),
-#else
-                               ENUM(GOLDEN_FRAME), ENUM(ALTREF_FRAME),
-#endif
-                               LAST_ENUM };
+                               ENUM(ALTREF_FRAME), LAST_ENUM };
 
 const map_entry block_size_map[] = {
 #if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8

@@ -1844,7 +1844,6 @@ static const aom_cdf_prob
 #endif  // CONFIG_NEW_MULTISYMBOL
 #endif  // CONFIG_EXT_COMP_REFS
 
-#if CONFIG_EXT_REFS
 static const aom_prob default_comp_ref_p[REF_CONTEXTS][FWD_REFS - 1] = {
   { 28, 10, 8 },
   { 77, 27, 26 },
@@ -1892,39 +1891,17 @@ static const aom_cdf_prob
     };
 #endif  // CONFIG_NEW_MULTISYMBOL
 
-#else  // !CONFIG_EXT_REFS
-
-static const aom_prob default_comp_ref_p[REF_CONTEXTS][COMP_REFS - 1] = {
-  { 43 }, { 100 }, { 137 }, { 212 }, { 229 },
-};
-#if CONFIG_NEW_MULTISYMBOL
-static const aom_cdf_prob
-    default_comp_ref_cdf[REF_CONTEXTS][COMP_REFS - 1][CDF_SIZE(2)] = {
-      { { AOM_ICDF(43 * 128), AOM_ICDF(32768), 0 } },
-      { { AOM_ICDF(100 * 128), AOM_ICDF(32768), 0 } },
-      { { AOM_ICDF(137 * 128), AOM_ICDF(32768), 0 } },
-      { { AOM_ICDF(212 * 128), AOM_ICDF(32768), 0 } },
-      { { AOM_ICDF(229 * 128), AOM_ICDF(32768), 0 } }
-    };
-#endif  // CONFIG_NEW_MULTISYMBOL
-#endif  // CONFIG_EXT_REFS
-
 static const aom_prob default_single_ref_p[REF_CONTEXTS][SINGLE_REFS - 1] = {
-#if CONFIG_EXT_REFS
   { 36, 16, 32, 57, 11, 14 },
   { 68, 128, 73, 128, 49, 124 },
   { 136, 236, 127, 170, 81, 238 },
   { 128, 128, 191, 211, 115, 128 },
   { 224, 128, 230, 242, 208, 128 }
-#else   // !CONFIG_EXT_REFS
-  { 31, 25 }, { 72, 80 }, { 147, 148 }, { 197, 191 }, { 235, 247 },
-#endif  // CONFIG_EXT_REFS
 };
 
 #if CONFIG_NEW_MULTISYMBOL
 static const aom_cdf_prob
     default_single_ref_cdf[REF_CONTEXTS][SINGLE_REFS - 1][CDF_SIZE(2)] = {
-#if CONFIG_EXT_REFS
       { { AOM_ICDF(4623), AOM_ICDF(32768), 0 },
         { AOM_ICDF(2110), AOM_ICDF(32768), 0 },
         { AOM_ICDF(4132), AOM_ICDF(32768), 0 },
@@ -1955,18 +1932,6 @@ static const aom_cdf_prob
         { AOM_ICDF(30969), AOM_ICDF(32768), 0 },
         { AOM_ICDF(26676), AOM_ICDF(32768), 0 },
         { AOM_ICDF(32768), AOM_ICDF(32768), 0 } }
-#else   // !CONFIG_EXT_REFS
-      { { AOM_ICDF(31 * 128), AOM_ICDF(32768), 0 },
-        { AOM_ICDF(25 * 128), AOM_ICDF(32768), 0 } },
-      { { AOM_ICDF(72 * 128), AOM_ICDF(32768), 0 },
-        { AOM_ICDF(80 * 128), AOM_ICDF(32768), 0 } },
-      { { AOM_ICDF(147 * 128), AOM_ICDF(32768), 0 },
-        { AOM_ICDF(148 * 128), AOM_ICDF(32768), 0 } },
-      { { AOM_ICDF(197 * 128), AOM_ICDF(32768), 0 },
-        { AOM_ICDF(191 * 128), AOM_ICDF(32768), 0 } },
-      { { AOM_ICDF(235 * 128), AOM_ICDF(32768), 0 },
-        { AOM_ICDF(247 * 128), AOM_ICDF(32768), 0 } }
-#endif  // CONFIG_EXT_REFS
     };
 #endif  // CONFIG_NEW_MULTISYMBOL
 
@@ -6526,12 +6491,10 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_init_txb_probs(fc);
 #endif  // LV_MAP_PROB
 #endif
-#if CONFIG_EXT_REFS
   av1_copy(fc->comp_bwdref_prob, default_comp_bwdref_p);
 #if CONFIG_NEW_MULTISYMBOL
   av1_copy(fc->comp_bwdref_cdf, default_comp_bwdref_cdf);
 #endif
-#endif  // CONFIG_EXT_REFS
   av1_copy(fc->single_ref_prob, default_single_ref_p);
 #if CONFIG_NEW_MULTISYMBOL
   av1_copy(fc->single_ref_cdf, default_single_ref_cdf);
@@ -6685,7 +6648,6 @@ void av1_adapt_inter_frame_probs(AV1_COMMON *cm) {
           pre_fc->uni_comp_ref_prob[i][j], counts->uni_comp_ref[i][j]);
 #endif  // CONFIG_EXT_COMP_REFS
 
-#if CONFIG_EXT_REFS
   for (i = 0; i < REF_CONTEXTS; i++)
     for (j = 0; j < (FWD_REFS - 1); j++)
       fc->comp_ref_prob[i][j] = mode_mv_merge_probs(pre_fc->comp_ref_prob[i][j],
@@ -6694,12 +6656,6 @@ void av1_adapt_inter_frame_probs(AV1_COMMON *cm) {
     for (j = 0; j < (BWD_REFS - 1); j++)
       fc->comp_bwdref_prob[i][j] = mode_mv_merge_probs(
           pre_fc->comp_bwdref_prob[i][j], counts->comp_bwdref[i][j]);
-#else
-  for (i = 0; i < REF_CONTEXTS; i++)
-    for (j = 0; j < (COMP_REFS - 1); j++)
-      fc->comp_ref_prob[i][j] = mode_mv_merge_probs(pre_fc->comp_ref_prob[i][j],
-                                                    counts->comp_ref[i][j]);
-#endif  // CONFIG_EXT_REFS
 
   for (i = 0; i < REF_CONTEXTS; i++)
     for (j = 0; j < (SINGLE_REFS - 1); j++)
@@ -6920,15 +6876,11 @@ static void set_default_lf_deltas(struct loopfilter *lf) {
 
   lf->ref_deltas[INTRA_FRAME] = 1;
   lf->ref_deltas[LAST_FRAME] = 0;
-#if CONFIG_EXT_REFS
   lf->ref_deltas[LAST2_FRAME] = lf->ref_deltas[LAST_FRAME];
   lf->ref_deltas[LAST3_FRAME] = lf->ref_deltas[LAST_FRAME];
   lf->ref_deltas[BWDREF_FRAME] = lf->ref_deltas[LAST_FRAME];
-#endif  // CONFIG_EXT_REFS
   lf->ref_deltas[GOLDEN_FRAME] = -1;
-#if CONFIG_EXT_REFS
   lf->ref_deltas[ALTREF2_FRAME] = -1;
-#endif  // CONFIG_EXT_REFS
   lf->ref_deltas[ALTREF_FRAME] = -1;
 
   lf->mode_deltas[0] = 0;

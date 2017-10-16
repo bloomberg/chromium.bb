@@ -294,19 +294,11 @@ typedef struct frame_contexts {
 #endif  // CONFIG_NEW_MULTISYMBOL
 #endif  // CONFIG_EXT_COMP_REFS
   aom_prob single_ref_prob[REF_CONTEXTS][SINGLE_REFS - 1];
-#if CONFIG_EXT_REFS
   aom_prob comp_ref_prob[REF_CONTEXTS][FWD_REFS - 1];
   aom_prob comp_bwdref_prob[REF_CONTEXTS][BWD_REFS - 1];
-#else
-  aom_prob comp_ref_prob[REF_CONTEXTS][COMP_REFS - 1];
-#endif  // CONFIG_EXT_REFS
 #if CONFIG_NEW_MULTISYMBOL
-#if CONFIG_EXT_REFS
   aom_cdf_prob comp_ref_cdf[REF_CONTEXTS][FWD_REFS - 1][CDF_SIZE(2)];
   aom_cdf_prob comp_bwdref_cdf[REF_CONTEXTS][BWD_REFS - 1][CDF_SIZE(2)];
-#else
-  aom_cdf_prob comp_ref_cdf[REF_CONTEXTS][COMP_REFS - 1][CDF_SIZE(2)];
-#endif  // CONFIG_EXT_REFS
 #endif
 #if CONFIG_COMPOUND_SINGLEREF
   aom_prob comp_inter_mode_prob[COMP_INTER_MODE_CONTEXTS];
@@ -505,12 +497,8 @@ typedef struct FRAME_COUNTS {
   unsigned int uni_comp_ref[UNI_COMP_REF_CONTEXTS][UNIDIR_COMP_REFS - 1][2];
 #endif  // CONFIG_EXT_COMP_REFS
   unsigned int single_ref[REF_CONTEXTS][SINGLE_REFS - 1][2];
-#if CONFIG_EXT_REFS
   unsigned int comp_ref[REF_CONTEXTS][FWD_REFS - 1][2];
   unsigned int comp_bwdref[REF_CONTEXTS][BWD_REFS - 1][2];
-#else
-  unsigned int comp_ref[REF_CONTEXTS][COMP_REFS - 1][2];
-#endif  // CONFIG_EXT_REFS
 #if CONFIG_COMPOUND_SINGLEREF
   unsigned int comp_inter_mode[COMP_INTER_MODE_CONTEXTS][2];
 #endif  // CONFIG_COMPOUND_SINGLEREF

@@ -160,9 +160,7 @@ void av1_frameworker_copy_context(AVxWorker *const dst_worker,
 #if CONFIG_HIGHBITDEPTH
   dst_cm->use_highbitdepth = src_cm->use_highbitdepth;
 #endif
-#if CONFIG_EXT_REFS
-// TODO(zoeliu): To handle parallel decoding
-#endif  // CONFIG_EXT_REFS
+  // TODO(zoeliu): To handle parallel decoding
   dst_cm->prev_frame =
       src_cm->show_existing_frame ? src_cm->prev_frame : src_cm->cur_frame;
   dst_cm->last_width =

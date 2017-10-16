@@ -412,7 +412,6 @@ enum aome_enc_control_id {
   /*!\brief Codec control function to enable automatic set and use
    * bwd-pred frames.
    *
-   * Experiment: EXT_REFS
    */
   AOME_SET_ENABLEAUTOBWDREF,
 

@@ -42,7 +42,6 @@ typedef struct {
 } FIRSTPASS_MB_STATS;
 #endif
 
-#if CONFIG_EXT_REFS
 // Length of the bi-predictive frame group (BFG)
 // NOTE: Currently each BFG contains one backward ref (BWF) frame plus a certain
 //       number of bi-predictive frames.
@@ -64,7 +63,6 @@ typedef struct {
 #define MAX_SR_CODED_ERROR 40
 #define MAX_RAW_ERR_VAR 2000
 #define MIN_MV_IN_OUT 0.4
-#endif  // CONFIG_EXT_REFS
 
 #define VLOW_MOTION_THRESHOLD 950
 
@@ -91,10 +89,8 @@ typedef struct {
   double new_mv_count;
   double duration;
   double count;
-#if CONFIG_EXT_REFS || CONFIG_BGSPRITE
   // standard deviation for (0, 0) motion prediction error
   double raw_error_stdev;
-#endif  // CONFIG_EXT_REFS
 } FIRSTPASS_STATS;
 
 typedef enum {
@@ -103,16 +99,12 @@ typedef enum {
   GF_UPDATE = 2,
   ARF_UPDATE = 3,
   OVERLAY_UPDATE = 4,
-#if CONFIG_EXT_REFS
   BRF_UPDATE = 5,            // Backward Reference Frame
   LAST_BIPRED_UPDATE = 6,    // Last Bi-predictive Frame
   BIPRED_UPDATE = 7,         // Bi-predictive Frame, but not the last one
   INTNL_OVERLAY_UPDATE = 8,  // Internal Overlay Frame
   INTNL_ARF_UPDATE = 9,      // Internal Altref Frame (candidate for ALTREF2)
   FRAME_UPDATE_TYPES = 10
-#else   // !CONFIG_EXT_REFS
-  FRAME_UPDATE_TYPES = 5
-#endif  // CONFIG_EXT_REFS
 } FRAME_UPDATE_TYPE;
 
 #define FC_ANIMATION_THRESH 0.15
@@ -129,13 +121,11 @@ typedef struct {
   unsigned char arf_src_offset[(MAX_LAG_BUFFERS * 2) + 1];
   unsigned char arf_update_idx[(MAX_LAG_BUFFERS * 2) + 1];
   unsigned char arf_ref_idx[(MAX_LAG_BUFFERS * 2) + 1];
-#if CONFIG_EXT_REFS
   unsigned char brf_src_offset[(MAX_LAG_BUFFERS * 2) + 1];
   unsigned char bidir_pred_enabled[(MAX_LAG_BUFFERS * 2) + 1];
   unsigned char ref_fb_idx_map[(MAX_LAG_BUFFERS * 2) + 1][REF_FRAMES];
   unsigned char refresh_idx[(MAX_LAG_BUFFERS * 2) + 1];
   unsigned char refresh_flag[(MAX_LAG_BUFFERS * 2) + 1];
-#endif  // CONFIG_EXT_REFS
   int bit_allocation[(MAX_LAG_BUFFERS * 2) + 1];
 } GF_GROUP;
 
@@ -198,7 +188,6 @@ void av1_rc_get_second_pass_params(struct AV1_COMP *cpi);
 // Post encode update of the rate control parameters for 2-pass
 void av1_twopass_postencode_update(struct AV1_COMP *cpi);
 
-#if CONFIG_EXT_REFS
 #if USE_GF16_MULTI_LAYER
 void av1_ref_frame_map_idx_updates(struct AV1_COMP *cpi, int gf_frame_index);
 #endif  // USE_GF16_MULTI_LAYER
@@ -213,7 +202,6 @@ static INLINE int get_number_of_extra_arfs(int interval, int arf_pending) {
   else
     return 0;
 }
-#endif  // CONFIG_EXT_REFS
 
 #ifdef __cplusplus
 }  // extern "C"

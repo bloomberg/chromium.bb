@@ -28,9 +28,7 @@
 struct av1_extracfg {
   int cpu_used;  // available cpu percentage in 1/16
   unsigned int enable_auto_alt_ref;
-#if CONFIG_EXT_REFS
   unsigned int enable_auto_bwd_ref;
-#endif  // CONFIG_EXT_REFS
   unsigned int noise_sensitivity;
   unsigned int sharpness;
   unsigned int static_thresh;
@@ -93,14 +91,12 @@ struct av1_extracfg {
 static struct av1_extracfg default_extra_cfg = {
   0,  // cpu_used
   1,  // enable_auto_alt_ref
-#if CONFIG_EXT_REFS
-  0,    // enable_auto_bwd_ref
-#endif  // CONFIG_EXT_REFS
-  0,    // noise_sensitivity
-  0,    // sharpness
-  0,    // static_thresh
-  0,    // tile_columns
-  0,    // tile_rows
+  0,  // enable_auto_bwd_ref
+  0,  // noise_sensitivity
+  0,  // sharpness
+  0,  // static_thresh
+  0,  // tile_columns
+  0,  // tile_rows
 #if CONFIG_DEPENDENT_HORZTILES
   0,  // Dependent Horizontal tiles
 #endif
@@ -275,9 +271,7 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
 
   RANGE_CHECK_HI(extra_cfg, motion_vector_unit_test, 2);
   RANGE_CHECK_HI(extra_cfg, enable_auto_alt_ref, 2);
-#if CONFIG_EXT_REFS
   RANGE_CHECK_HI(extra_cfg, enable_auto_bwd_ref, 2);
-#endif  // CONFIG_EXT_REFS
   RANGE_CHECK(extra_cfg, cpu_used, 0, 8);
   RANGE_CHECK_HI(extra_cfg, noise_sensitivity, 6);
   RANGE_CHECK(extra_cfg, superblock_size, AOM_SUPERBLOCK_SIZE_64X64,
@@ -561,9 +555,7 @@ static aom_codec_err_t set_encoder_config(
 
   oxcf->speed = extra_cfg->cpu_used;
   oxcf->enable_auto_arf = extra_cfg->enable_auto_alt_ref;
-#if CONFIG_EXT_REFS
   oxcf->enable_auto_brf = extra_cfg->enable_auto_bwd_ref;
-#endif  // CONFIG_EXT_REFS
   oxcf->noise_sensitivity = extra_cfg->noise_sensitivity;
   oxcf->sharpness = extra_cfg->sharpness;
 
@@ -741,14 +733,12 @@ static aom_codec_err_t ctrl_set_enable_auto_alt_ref(aom_codec_alg_priv_t *ctx,
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
-#if CONFIG_EXT_REFS
 static aom_codec_err_t ctrl_set_enable_auto_bwd_ref(aom_codec_alg_priv_t *ctx,
                                                     va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
   extra_cfg.enable_auto_bwd_ref = CAST(AOME_SET_ENABLEAUTOBWDREF, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
-#endif  // CONFIG_EXT_REFS
 
 static aom_codec_err_t ctrl_set_noise_sensitivity(aom_codec_alg_priv_t *ctx,
                                                   va_list args) {
@@ -1163,17 +1153,8 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
     // TODO(jzern) the checks related to cpi's validity should be treated as a
     // failure condition, encoder setup is done fully in init() currently.
     if (res == AOM_CODEC_OK) {
-#if CONFIG_EXT_REFS
       size_t data_sz = ALIGN_POWER_OF_TWO(ctx->cfg.g_w, 5) *
                        ALIGN_POWER_OF_TWO(ctx->cfg.g_h, 5) * get_image_bps(img);
-#else
-      // There's no codec control for multiple alt-refs so check the encoder
-      // instance for its status to determine the compressed data size.
-      size_t data_sz = ALIGN_POWER_OF_TWO(ctx->cfg.g_w, 5) *
-                       ALIGN_POWER_OF_TWO(ctx->cfg.g_h, 5) *
-                       get_image_bps(img) / 8 *
-                       (cpi->multi_arf_allowed ? 8 : 2);
-#endif  // CONFIG_EXT_REFS
       if (data_sz < kMinCompressedSize) data_sz = kMinCompressedSize;
       if (ctx->cx_data == NULL || ctx->cx_data_sz < data_sz) {
         ctx->cx_data_sz = data_sz;
@@ -1558,9 +1539,7 @@ static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
   { AOME_SET_SCALEMODE, ctrl_set_scale_mode },
   { AOME_SET_CPUUSED, ctrl_set_cpuused },
   { AOME_SET_ENABLEAUTOALTREF, ctrl_set_enable_auto_alt_ref },
-#if CONFIG_EXT_REFS
   { AOME_SET_ENABLEAUTOBWDREF, ctrl_set_enable_auto_bwd_ref },
-#endif  // CONFIG_EXT_REFS
   { AOME_SET_SHARPNESS, ctrl_set_sharpness },
   { AOME_SET_STATIC_THRESHOLD, ctrl_set_static_thresh },
   { AV1E_SET_TILE_COLUMNS, ctrl_set_tile_columns },

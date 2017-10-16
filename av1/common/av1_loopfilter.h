@@ -50,8 +50,8 @@ struct loopfilter {
   uint8_t mode_ref_delta_enabled;
   uint8_t mode_ref_delta_update;
 
-  // 0 = Intra, Last, Last2+Last3(CONFIG_EXT_REFS),
-  // GF, BRF(CONFIG_EXT_REFS), ARF2(CONFIG_EXT_REFS), ARF
+  // 0 = Intra, Last, Last2+Last3,
+  // GF, BRF, ARF2, ARF
   int8_t ref_deltas[TOTAL_REFS_PER_FRAME];
   int8_t last_ref_deltas[TOTAL_REFS_PER_FRAME];
 

@@ -404,14 +404,12 @@ static const int rd_boost_factor[16] = { 64, 32, 32, 32, 24, 16, 12, 12,
                                          8,  8,  4,  4,  2,  2,  1,  0 };
 static const int rd_frame_type_factor[FRAME_UPDATE_TYPES] = {
   128, 144, 128, 128, 144,
-#if CONFIG_EXT_REFS
   // TODO(zoeliu): To adjust further following factor values.
   128, 128, 128,
   // TODO(weitinglin): We should investigate if the values should be the same
   //                   as the value used by OVERLAY frame
   144,  // INTNL_OVERLAY_UPDATE
   128   // INTNL_ARF_UPDATE
-#endif  // CONFIG_EXT_REFS
 };
 
 int av1_compute_rd_mult(const AV1_COMP *cpi, int qindex) {
@@ -1273,22 +1271,18 @@ void av1_set_rd_speed_thresholds(AV1_COMP *cpi) {
 
   if (sf->adaptive_rd_thresh) {
     rd->thresh_mult[THR_NEARESTMV] = 300;
-#if CONFIG_EXT_REFS
     rd->thresh_mult[THR_NEARESTL2] = 300;
     rd->thresh_mult[THR_NEARESTL3] = 300;
     rd->thresh_mult[THR_NEARESTB] = 300;
     rd->thresh_mult[THR_NEARESTA2] = 300;
-#endif  // CONFIG_EXT_REFS
     rd->thresh_mult[THR_NEARESTA] = 300;
     rd->thresh_mult[THR_NEARESTG] = 300;
   } else {
     rd->thresh_mult[THR_NEARESTMV] = 0;
-#if CONFIG_EXT_REFS
     rd->thresh_mult[THR_NEARESTL2] = 0;
     rd->thresh_mult[THR_NEARESTL3] = 0;
     rd->thresh_mult[THR_NEARESTB] = 0;
     rd->thresh_mult[THR_NEARESTA2] = 0;
-#endif  // CONFIG_EXT_REFS
     rd->thresh_mult[THR_NEARESTA] = 0;
     rd->thresh_mult[THR_NEARESTG] = 0;
   }
@@ -1296,32 +1290,26 @@ void av1_set_rd_speed_thresholds(AV1_COMP *cpi) {
   rd->thresh_mult[THR_DC] += 1000;
 
   rd->thresh_mult[THR_NEWMV] += 1000;
-#if CONFIG_EXT_REFS
   rd->thresh_mult[THR_NEWL2] += 1000;
   rd->thresh_mult[THR_NEWL3] += 1000;
   rd->thresh_mult[THR_NEWB] += 1000;
   rd->thresh_mult[THR_NEWA2] = 1000;
-#endif  // CONFIG_EXT_REFS
   rd->thresh_mult[THR_NEWA] += 1000;
   rd->thresh_mult[THR_NEWG] += 1000;
 
   rd->thresh_mult[THR_NEARMV] += 1000;
-#if CONFIG_EXT_REFS
   rd->thresh_mult[THR_NEARL2] += 1000;
   rd->thresh_mult[THR_NEARL3] += 1000;
   rd->thresh_mult[THR_NEARB] += 1000;
   rd->thresh_mult[THR_NEARA2] = 1000;
-#endif  // CONFIG_EXT_REFS
   rd->thresh_mult[THR_NEARA] += 1000;
   rd->thresh_mult[THR_NEARG] += 1000;
 
   rd->thresh_mult[THR_ZEROMV] += 2000;
-#if CONFIG_EXT_REFS
   rd->thresh_mult[THR_ZEROL2] += 2000;
   rd->thresh_mult[THR_ZEROL3] += 2000;
   rd->thresh_mult[THR_ZEROB] += 2000;
   rd->thresh_mult[THR_ZEROA2] = 2000;
-#endif  // CONFIG_EXT_REFS
   rd->thresh_mult[THR_ZEROG] += 2000;
   rd->thresh_mult[THR_ZEROA] += 2000;
 
@@ -1329,59 +1317,46 @@ void av1_set_rd_speed_thresholds(AV1_COMP *cpi) {
 
 #if CONFIG_COMPOUND_SINGLEREF
   rd->thresh_mult[THR_SR_NEAREST_NEARMV] += 1200;
-#if CONFIG_EXT_REFS
   rd->thresh_mult[THR_SR_NEAREST_NEARL2] += 1200;
   rd->thresh_mult[THR_SR_NEAREST_NEARL3] += 1200;
   rd->thresh_mult[THR_SR_NEAREST_NEARB] += 1200;
-#endif  // CONFIG_EXT_REFS
   rd->thresh_mult[THR_SR_NEAREST_NEARA] += 1200;
   rd->thresh_mult[THR_SR_NEAREST_NEARG] += 1200;
 
   /*
   rd->thresh_mult[THR_SR_NEAREST_NEWMV] += 1200;
-#if CONFIG_EXT_REFS
   rd->thresh_mult[THR_SR_NEAREST_NEWL2] += 1200;
   rd->thresh_mult[THR_SR_NEAREST_NEWL3] += 1200;
   rd->thresh_mult[THR_SR_NEAREST_NEWB] += 1200;
-#endif  // CONFIG_EXT_REFS
   rd->thresh_mult[THR_SR_NEAREST_NEWA] += 1200;
   rd->thresh_mult[THR_SR_NEAREST_NEWG] += 1200;*/
 
   rd->thresh_mult[THR_SR_NEAR_NEWMV] += 1500;
-#if CONFIG_EXT_REFS
   rd->thresh_mult[THR_SR_NEAR_NEWL2] += 1500;
   rd->thresh_mult[THR_SR_NEAR_NEWL3] += 1500;
   rd->thresh_mult[THR_SR_NEAR_NEWB] += 1500;
-#endif  // CONFIG_EXT_REFS
   rd->thresh_mult[THR_SR_NEAR_NEWA] += 1500;
   rd->thresh_mult[THR_SR_NEAR_NEWG] += 1500;
 
   rd->thresh_mult[THR_SR_ZERO_NEWMV] += 2000;
-#if CONFIG_EXT_REFS
   rd->thresh_mult[THR_SR_ZERO_NEWL2] += 2000;
   rd->thresh_mult[THR_SR_ZERO_NEWL3] += 2000;
   rd->thresh_mult[THR_SR_ZERO_NEWB] += 2000;
-#endif  // CONFIG_EXT_REFS
   rd->thresh_mult[THR_SR_ZERO_NEWA] += 2000;
   rd->thresh_mult[THR_SR_ZERO_NEWG] += 2000;
 
   rd->thresh_mult[THR_SR_NEW_NEWMV] += 1700;
-#if CONFIG_EXT_REFS
   rd->thresh_mult[THR_SR_NEW_NEWL2] += 1700;
   rd->thresh_mult[THR_SR_NEW_NEWL3] += 1700;
   rd->thresh_mult[THR_SR_NEW_NEWB] += 1700;
-#endif  // CONFIG_EXT_REFS
   rd->thresh_mult[THR_SR_NEW_NEWA] += 1700;
   rd->thresh_mult[THR_SR_NEW_NEWG] += 1700;
 #endif  // CONFIG_COMPOUND_SINGLEREF
 
   rd->thresh_mult[THR_COMP_NEAREST_NEARESTLA] += 1000;
-#if CONFIG_EXT_REFS
   rd->thresh_mult[THR_COMP_NEAREST_NEARESTL2A] += 1000;
   rd->thresh_mult[THR_COMP_NEAREST_NEARESTL3A] += 1000;
-#endif  // CONFIG_EXT_REFS
   rd->thresh_mult[THR_COMP_NEAREST_NEARESTGA] += 1000;
-#if CONFIG_EXT_REFS
   rd->thresh_mult[THR_COMP_NEAREST_NEARESTLB] += 1000;
   rd->thresh_mult[THR_COMP_NEAREST_NEARESTL2B] += 1000;
   rd->thresh_mult[THR_COMP_NEAREST_NEARESTL3B] += 1000;
@@ -1397,7 +1372,6 @@ void av1_set_rd_speed_thresholds(AV1_COMP *cpi) {
   rd->thresh_mult[THR_COMP_NEAREST_NEARESTLG] += 1000;
   rd->thresh_mult[THR_COMP_NEAREST_NEARESTBA] += 1000;
 #endif  // CONFIG_EXT_COMP_REFS
-#endif  // CONFIG_EXT_REFS
 
   rd->thresh_mult[THR_COMP_NEAR_NEARLA] += 1200;
   rd->thresh_mult[THR_COMP_NEAREST_NEWLA] += 1500;
@@ -1407,7 +1381,6 @@ void av1_set_rd_speed_thresholds(AV1_COMP *cpi) {
   rd->thresh_mult[THR_COMP_NEW_NEWLA] += 2000;
   rd->thresh_mult[THR_COMP_ZERO_ZEROLA] += 2500;
 
-#if CONFIG_EXT_REFS
   rd->thresh_mult[THR_COMP_NEAR_NEARL2A] += 1200;
   rd->thresh_mult[THR_COMP_NEAREST_NEWL2A] += 1500;
   rd->thresh_mult[THR_COMP_NEW_NEARESTL2A] += 1500;
@@ -1423,7 +1396,6 @@ void av1_set_rd_speed_thresholds(AV1_COMP *cpi) {
   rd->thresh_mult[THR_COMP_NEW_NEARL3A] += 1700;
   rd->thresh_mult[THR_COMP_NEW_NEWL3A] += 2000;
   rd->thresh_mult[THR_COMP_ZERO_ZEROL3A] += 2500;
-#endif  // CONFIG_EXT_REFS
 
   rd->thresh_mult[THR_COMP_NEAR_NEARGA] += 1200;
   rd->thresh_mult[THR_COMP_NEAREST_NEWGA] += 1500;
@@ -1433,7 +1405,6 @@ void av1_set_rd_speed_thresholds(AV1_COMP *cpi) {
   rd->thresh_mult[THR_COMP_NEW_NEWGA] += 2000;
   rd->thresh_mult[THR_COMP_ZERO_ZEROGA] += 2500;
 
-#if CONFIG_EXT_REFS
   rd->thresh_mult[THR_COMP_NEAR_NEARLB] += 1200;
   rd->thresh_mult[THR_COMP_NEAREST_NEWLB] += 1500;
   rd->thresh_mult[THR_COMP_NEW_NEARESTLB] += 1500;
@@ -1531,7 +1502,6 @@ void av1_set_rd_speed_thresholds(AV1_COMP *cpi) {
   rd->thresh_mult[THR_COMP_NEW_NEWBA] += 2000;
   rd->thresh_mult[THR_COMP_ZERO_ZEROBA] += 2500;
 #endif  // CONFIG_EXT_COMP_REFS
-#endif  // CONFIG_EXT_REFS
 
   rd->thresh_mult[THR_H_PRED] += 2000;
   rd->thresh_mult[THR_V_PRED] += 2000;
@@ -1547,7 +1517,6 @@ void av1_set_rd_speed_thresholds(AV1_COMP *cpi) {
   rd->thresh_mult[THR_COMP_INTERINTRA_NEARL] += 1500;
   rd->thresh_mult[THR_COMP_INTERINTRA_NEWL] += 2000;
 
-#if CONFIG_EXT_REFS
   rd->thresh_mult[THR_COMP_INTERINTRA_ZEROL2] += 1500;
   rd->thresh_mult[THR_COMP_INTERINTRA_NEARESTL2] += 1500;
   rd->thresh_mult[THR_COMP_INTERINTRA_NEARL2] += 1500;
@@ -1557,14 +1526,12 @@ void av1_set_rd_speed_thresholds(AV1_COMP *cpi) {
   rd->thresh_mult[THR_COMP_INTERINTRA_NEARESTL3] += 1500;
   rd->thresh_mult[THR_COMP_INTERINTRA_NEARL3] += 1500;
   rd->thresh_mult[THR_COMP_INTERINTRA_NEWL3] += 2000;
-#endif  // CONFIG_EXT_REFS
 
   rd->thresh_mult[THR_COMP_INTERINTRA_ZEROG] += 1500;
   rd->thresh_mult[THR_COMP_INTERINTRA_NEARESTG] += 1500;
   rd->thresh_mult[THR_COMP_INTERINTRA_NEARG] += 1500;
   rd->thresh_mult[THR_COMP_INTERINTRA_NEWG] += 2000;
 
-#if CONFIG_EXT_REFS
   rd->thresh_mult[THR_COMP_INTERINTRA_ZEROB] += 1500;
   rd->thresh_mult[THR_COMP_INTERINTRA_NEARESTB] += 1500;
   rd->thresh_mult[THR_COMP_INTERINTRA_NEARB] += 1500;
@@ -1574,7 +1541,6 @@ void av1_set_rd_speed_thresholds(AV1_COMP *cpi) {
   rd->thresh_mult[THR_COMP_INTERINTRA_NEARESTA2] += 1500;
   rd->thresh_mult[THR_COMP_INTERINTRA_NEARA2] += 1500;
   rd->thresh_mult[THR_COMP_INTERINTRA_NEWA2] += 2000;
-#endif  // CONFIG_EXT_REFS
 
   rd->thresh_mult[THR_COMP_INTERINTRA_ZEROA] += 1500;
   rd->thresh_mult[THR_COMP_INTERINTRA_NEARESTA] += 1500;
@@ -1583,37 +1549,10 @@ void av1_set_rd_speed_thresholds(AV1_COMP *cpi) {
 }
 
 void av1_set_rd_speed_thresholds_sub8x8(AV1_COMP *cpi) {
-  static const int thresh_mult[MAX_REFS] = {
-#if CONFIG_EXT_REFS
-    2500,
-    2500,
-    2500,
-    2500,
-    2500,
-    2500,
-    2500,
-    4500,
-    4500,
-    4500,
-    4500,
-    4500,
-    4500,
-    4500,
-    4500,
-    4500,
-    4500,
-    4500,
-    4500,
-    2500
-#else  // !CONFIG_EXT_REFS
-    2500,
-    2500,
-    2500,
-    4500,
-    4500,
-    2500
-#endif  // CONFIG_EXT_REFS
-  };
+  static const int thresh_mult[MAX_REFS] = { 2500, 2500, 2500, 2500, 2500,
+                                             2500, 2500, 4500, 4500, 4500,
+                                             4500, 4500, 4500, 4500, 4500,
+                                             4500, 4500, 4500, 4500, 2500 };
   RD_OPT *const rd = &cpi->rd;
   memcpy(rd->thresh_mult_sub8x8, thresh_mult, sizeof(thresh_mult));
 }
