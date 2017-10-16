@@ -9,7 +9,6 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
-#include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -17,6 +16,7 @@
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/ownership/mock_owner_key_util.h"
+#include "components/policy/proto/chrome_device_policy.pb.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
 

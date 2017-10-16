@@ -20,7 +20,7 @@ source_set("chromeos") {
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
   public_deps = [
-    ":device_policy_proto",
+    ":install_attributes_proto",
     "//ash/resources",
     "//ash/strings",
     "//chrome:extra_resources",
@@ -29,6 +29,7 @@ source_set("chromeos") {
     "//chrome/app/resources:platform_locale_settings",
     "//chrome/app/theme:theme_resources",
     "//chromeos:power_manager_proto",
+    "//components/policy/proto",
     "//components/wallpaper",
     "//content/app/resources",
     "//ui/accessibility:ax_gen",
@@ -1963,7 +1964,6 @@ source_set("unit_tests") {
   deps = [
     ":arc_test_support",
     ":attestation_proto",
-    ":device_policy_proto",
     ":test_support",
     "//ash",
     "//ash/resources",
@@ -1978,6 +1978,7 @@ source_set("unit_tests") {
     "//components/drive:test_support_chromeos",
     "//components/invalidation/public",
     "//components/policy:generated",
+    "//components/policy/proto",
     "//components/prefs:test_support",
     "//components/resources",
     "//components/sync",
@@ -2002,9 +2003,8 @@ source_set("unit_tests") {
   ]
 }
 
-proto_library("device_policy_proto") {
+proto_library("install_attributes_proto") {
   sources = [
-    "policy/proto/chrome_device_policy.proto",
     "policy/proto/install_attributes.proto",
   ]
 }
@@ -2027,7 +2027,7 @@ action("device_policy_remover_generate") {
   descriptor_pool_path = "//third_party/protobuf/python"
   symbol_database_path = "$root_build_dir/pyproto"
   chrome_device_policy_pb2_path =
-      "$root_build_dir/pyproto/chrome/browser/chromeos/policy/proto"
+      "$root_build_dir/pyproto/components/policy/proto"
 
   outputs = [
     device_policy_remover_path,
@@ -2044,7 +2044,7 @@ action("device_policy_remover_generate") {
   ]
 
   public_deps = [
-    ":device_policy_proto",
+    "//components/policy/proto",
     "//third_party/protobuf:py_proto",
   ]
 }

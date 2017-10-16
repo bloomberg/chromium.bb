@@ -4,8 +4,8 @@
 
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 
-#include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
+#include "components/policy/proto/chrome_device_policy.pb.h"
 
 namespace em = enterprise_management;
 
