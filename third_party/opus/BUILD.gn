@@ -9,7 +9,8 @@ import("//testing/test.gni")
 use_opus_fixed_point = current_cpu == "arm" || current_cpu == "arm64"
 
 # If ARM optimizations shall be used to accelerate performance.
-use_opus_arm_optimization = current_cpu == "arm"
+use_opus_arm_optimization = current_cpu == "arm" ||
+    (current_cpu == "arm64" && !is_android)
 
 # If OPUS Run Time CPU Detections (RTCD) shall be used.
 # Based on the conditions in celt/arm/armcpu.c:
@@ -356,11 +357,13 @@ static_library("opus") {
       "src/silk/arm/macros_armv5e.h",
     ]
 
-    defines += [
-      "OPUS_ARM_ASM",
-      "OPUS_ARM_INLINE_ASM",
-      "OPUS_ARM_INLINE_EDSP",
-    ]
+    if (current_cpu == "arm") {
+      defines += [
+        "OPUS_ARM_ASM",
+        "OPUS_ARM_INLINE_ASM",
+        "OPUS_ARM_INLINE_EDSP",
+      ]
+    }
 
     if (use_opus_rtcd) {
       sources += [
@@ -383,28 +386,36 @@ static_library("opus") {
       deps = [
         ":convert_rtcd_assembler",
       ]
+    }
 
-      if (arm_use_neon) {
-        sources += [
-          "src/celt/arm/celt_neon_intr.c",
-          "src/celt/arm/pitch_neon_intr.c",
-          "src/silk/arm/LPC_inv_pred_gain_arm.h",
-          "src/silk/arm/LPC_inv_pred_gain_neon_intr.c",
-          "src/silk/arm/NSQ_del_dec_arm.h",
-          "src/silk/arm/NSQ_del_dec_neon_intr.c",
-          "src/silk/arm/NSQ_neon.c",
-          "src/silk/arm/NSQ_neon.h",
-          "src/silk/arm/biquad_alt_arm.h",
-          "src/silk/arm/biquad_alt_neon_intr.c",
-          "src/silk/fixed/arm/warped_autocorrelation_FIX_arm.h",
-          "src/silk/fixed/arm/warped_autocorrelation_FIX_neon_intr.c",
-        ]
+    if (arm_use_neon) {
+      sources += [
+        "src/celt/arm/celt_neon_intr.c",
+        "src/celt/arm/pitch_neon_intr.c",
+        "src/silk/arm/LPC_inv_pred_gain_arm.h",
+        "src/silk/arm/LPC_inv_pred_gain_neon_intr.c",
+        "src/silk/arm/NSQ_del_dec_arm.h",
+        "src/silk/arm/NSQ_del_dec_neon_intr.c",
+        "src/silk/arm/NSQ_neon.c",
+        "src/silk/arm/NSQ_neon.h",
+        "src/silk/arm/biquad_alt_arm.h",
+        "src/silk/arm/biquad_alt_neon_intr.c",
+        "src/silk/fixed/arm/warped_autocorrelation_FIX_arm.h",
+        "src/silk/fixed/arm/warped_autocorrelation_FIX_neon_intr.c",
+      ]
 
-        defines += [
-          "OPUS_ARM_MAY_HAVE_NEON",
-          "OPUS_ARM_MAY_HAVE_NEON_INTR",
-        ]
-      }
+      defines += [
+        "OPUS_ARM_MAY_HAVE_NEON",
+        "OPUS_ARM_MAY_HAVE_NEON_INTR",
+      ]
+    }
+
+    if (is_ios && current_cpu == "arm64") {
+      # Runtime detection of CPU features not available on iOS.
+      defines += [
+        "OPUS_ARM_PRESUME_NEON_INTR",
+        "OPUS_ARM_PRESUME_AARCH64_NEON_INTR",
+      ]
     }
   }
 }
