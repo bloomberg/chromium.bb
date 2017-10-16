@@ -21,6 +21,11 @@ proto_library("proto_internal") {
     "device_management_backend.proto",
     "policy_signing_key.proto",
   ]
+
+  if (is_chromeos) {
+    sources += [ "chrome_device_policy.proto" ]
+  }
+
   if (!is_android && !is_ios) {
     sources += [ "chrome_extension_policy.proto" ]
   }

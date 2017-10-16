@@ -16,9 +16,9 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/common/chrome_features.h"
+#include "components/policy/proto/chrome_device_policy.pb.h"
 
 namespace chromeos {
 namespace tpm_firmware_update {

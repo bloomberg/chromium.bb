@@ -19,7 +19,6 @@
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
-#include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -30,6 +29,7 @@
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "components/policy/proto/chrome_device_policy.pb.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/display.h"
@@ -152,7 +152,7 @@ class DisplayRotationDefaultTest
 // * display_rotation_default_handler.cc: Range check in UpdateFromCrosSettings,
 //                                        initialization to ROTATE_0
 // * display_rotation_default_handler.h: initialization to ROTATE_0
-// * chrome/browser/chromeos/policy/proto/chrome_device_policy.proto:
+// * components/policy/proto/chrome_device_policy.proto:
 //       DisplayRotationDefaultProto::Rotation should match one to one
 IN_PROC_BROWSER_TEST_P(DisplayRotationDefaultTest, EnumsInSync) {
   const display::Display::Rotation rotation = GetParam();
