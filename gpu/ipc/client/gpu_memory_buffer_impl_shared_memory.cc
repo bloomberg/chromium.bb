@@ -90,7 +90,7 @@ GpuMemoryBufferImplSharedMemory::CreateFromHandle(
 
   return base::WrapUnique(new GpuMemoryBufferImplSharedMemory(
       handle.id, size, format, callback,
-      base::MakeUnique<base::SharedMemory>(handle.handle, false), handle.offset,
+      std::make_unique<base::SharedMemory>(handle.handle, false), handle.offset,
       handle.stride));
 }
 

@@ -334,7 +334,7 @@ bool InterpretCCData(const base::DictionaryValue& node, CCNode* c) {
 
 std::unique_ptr<RenderNode> InterpretContentLayer(
     const base::DictionaryValue& node) {
-  auto n = base::MakeUnique<ContentLayerNode>();
+  auto n = std::make_unique<ContentLayerNode>();
   if (!InterpretCommonContents(node, n.get()))
     return nullptr;
 
@@ -367,7 +367,7 @@ std::unique_ptr<RenderNode> InterpretContentLayer(
 
 std::unique_ptr<RenderNode> InterpretCanvasLayer(
     const base::DictionaryValue& node) {
-  auto n = base::MakeUnique<CCNode>();
+  auto n = std::make_unique<CCNode>();
   if (!InterpretCommonContents(node, n.get()))
     return nullptr;
 
@@ -386,7 +386,7 @@ std::unique_ptr<RenderNode> InterpretCanvasLayer(
 
 std::unique_ptr<RenderNode> InterpretVideoLayer(
     const base::DictionaryValue& node) {
-  auto n = base::MakeUnique<CCNode>();
+  auto n = std::make_unique<CCNode>();
   if (!InterpretCommonContents(node, n.get()))
     return nullptr;
 
@@ -405,7 +405,7 @@ std::unique_ptr<RenderNode> InterpretVideoLayer(
 
 std::unique_ptr<RenderNode> InterpretImageLayer(
     const base::DictionaryValue& node) {
-  auto n = base::MakeUnique<CCNode>();
+  auto n = std::make_unique<CCNode>();
   if (!InterpretCommonContents(node, n.get()))
     return nullptr;
 

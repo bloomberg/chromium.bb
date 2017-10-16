@@ -32,7 +32,7 @@ std::unique_ptr<RenderModelSimulator> ConstructSimulationModel(
     int window_height) {
   switch (model) {
     case ForwardRenderModel:
-      return base::MakeUnique<ForwardRenderSimulator>(
+      return std::make_unique<ForwardRenderSimulator>(
           std::move(render_tree_root), window_width, window_height);
     default:
       LOG(ERROR) << "Unrecognized render model. "

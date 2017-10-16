@@ -9301,7 +9301,7 @@ void GLES2DecoderImpl::DoUniform1iv(GLint fake_location,
                                    &count)) {
     return;
   }
-  auto values_copy = base::MakeUnique<GLint[]>(count);
+  auto values_copy = std::make_unique<GLint[]>(count);
   GLint* safe_values = values_copy.get();
   std::copy(values, values + count, safe_values);
   if (type == GL_SAMPLER_2D || type == GL_SAMPLER_2D_RECT_ARB ||

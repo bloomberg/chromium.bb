@@ -44,8 +44,8 @@ class CommandBufferServiceTest : public testing::Test,
   // Creates a CommandBufferService, with a buffer of the specified size (in
   // entries).
   void MakeService(unsigned int entry_count) {
-    transfer_buffer_manager_ = base::MakeUnique<TransferBufferManager>(nullptr);
-    command_buffer_service_ = base::MakeUnique<CommandBufferService>(
+    transfer_buffer_manager_ = std::make_unique<TransferBufferManager>(nullptr);
+    command_buffer_service_ = std::make_unique<CommandBufferService>(
         this, transfer_buffer_manager_.get());
     api_mock_.reset(new AsyncAPIMock(false, command_buffer_service_.get()));
     SetNewGetBuffer(entry_count * sizeof(CommandBufferEntry));

@@ -1361,7 +1361,7 @@ class GLES2ReadPixelsAsyncTest : public GLES2DecoderManualInitTest {
     EXPECT_TRUE(decoder_->HasMoreIdleWork());
 
     const size_t kBufferSize = width * height * 4;
-    auto buffer = base::MakeUnique<char[]>(kBufferSize);
+    auto buffer = std::make_unique<char[]>(kBufferSize);
     for (size_t i = 0; i < kBufferSize; ++i)
       buffer[i] = i;
 

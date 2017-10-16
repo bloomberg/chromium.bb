@@ -194,7 +194,7 @@ InProcessCommandBuffer::InProcessCommandBuffer(
           g_next_command_buffer_id.GetNext() + 1)),
       delayed_work_pending_(false),
       image_factory_(nullptr),
-      latency_info_(base::MakeUnique<std::vector<ui::LatencyInfo>>()),
+      latency_info_(std::make_unique<std::vector<ui::LatencyInfo>>()),
       gpu_control_client_(nullptr),
 #if DCHECK_IS_ON()
       context_lost_(false),
@@ -301,7 +301,7 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
   CheckSequencedThread();
   gpu_thread_weak_ptr_ = gpu_thread_weak_ptr_factory_.GetWeakPtr();
 
-  transfer_buffer_manager_ = base::MakeUnique<TransferBufferManager>(nullptr);
+  transfer_buffer_manager_ = std::make_unique<TransferBufferManager>(nullptr);
 
   gl_share_group_ = params.context_group ? params.context_group->gl_share_group_
                                          : service_->share_group();
@@ -325,7 +325,7 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
                 nullptr /* image_factory */, nullptr /* progress_reporter */,
                 GpuFeatureInfo(), service_->discardable_manager());
 
-  command_buffer_ = base::MakeUnique<CommandBufferService>(
+  command_buffer_ = std::make_unique<CommandBufferService>(
       this, transfer_buffer_manager_.get());
   decoder_.reset(gles2::GLES2Decoder::Create(this, command_buffer_.get(),
                                              service_->outputter(),
@@ -524,7 +524,7 @@ void InProcessCommandBuffer::QueueTask(bool out_of_order,
   uint32_t order_num = sync_point_order_data_->GenerateUnprocessedOrderNumber();
   {
     base::AutoLock lock(task_queue_lock_);
-    task_queue_.push(base::MakeUnique<GpuTask>(task, order_num));
+    task_queue_.push(std::make_unique<GpuTask>(task, order_num));
   }
   service_->ScheduleTask(base::Bind(
       &InProcessCommandBuffer::ProcessTasksOnGpuThread, gpu_thread_weak_ptr_));

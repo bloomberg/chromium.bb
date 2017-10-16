@@ -870,7 +870,7 @@ bool DCLayerTree::UpdateVisualForVideo(
   visual_info->surface.Reset();
   if (!visual_info->swap_chain_presenter) {
     visual_info->swap_chain_presenter =
-        base::MakeUnique<SwapChainPresenter>(this, d3d11_device_);
+        std::make_unique<SwapChainPresenter>(this, d3d11_device_);
   }
   visual_info->swap_chain_presenter->PresentToSwapChain(params);
   if (visual_info->swap_chain !=
@@ -991,7 +991,7 @@ bool DCLayerTree::CommitAndClearPendingOverlays() {
                         !pending_overlays_.empty());
   // Add an overlay with z-order 0 representing the main plane.
   gfx::Size surface_size = surface_->GetSize();
-  pending_overlays_.push_back(base::MakeUnique<ui::DCRendererLayerParams>(
+  pending_overlays_.push_back(std::make_unique<ui::DCRendererLayerParams>(
       false, gfx::Rect(), 0, gfx::Transform(),
       std::vector<scoped_refptr<gl::GLImage>>(),
       gfx::RectF(gfx::SizeF(surface_size)), gfx::Rect(surface_size), 0, 0, 1.0,
@@ -1045,7 +1045,7 @@ bool DCLayerTree::CommitAndClearPendingOverlays() {
 
 bool DCLayerTree::ScheduleDCLayer(const ui::DCRendererLayerParams& params) {
   pending_overlays_.push_back(
-      base::MakeUnique<ui::DCRendererLayerParams>(params));
+      std::make_unique<ui::DCRendererLayerParams>(params));
   return true;
 }
 
@@ -1168,7 +1168,7 @@ bool DirectCompositionSurfaceWin::Initialize(gl::GLSurfaceFormat format) {
   }
 
   layer_tree_ =
-      base::MakeUnique<DCLayerTree>(this, d3d11_device_, dcomp_device_);
+      std::make_unique<DCLayerTree>(this, d3d11_device_, dcomp_device_);
   if (!layer_tree_->Initialize(window_))
     return false;
 

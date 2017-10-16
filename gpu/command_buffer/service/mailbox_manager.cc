@@ -17,8 +17,8 @@ namespace gles2 {
 std::unique_ptr<MailboxManager> MailboxManager::Create(
     const GpuPreferences& gpu_preferences) {
   if (gpu_preferences.enable_threaded_texture_mailboxes)
-    return base::MakeUnique<MailboxManagerSync>();
-  return base::MakeUnique<MailboxManagerImpl>();
+    return std::make_unique<MailboxManagerSync>();
+  return std::make_unique<MailboxManagerImpl>();
 }
 
 }  // namespage gles2

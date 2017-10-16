@@ -120,7 +120,7 @@ ContextGroup::ContextGroup(
   DCHECK(feature_info_);
   DCHECK(mailbox_manager_);
   transfer_buffer_manager_ =
-      base::MakeUnique<TransferBufferManager>(memory_tracker_.get());
+      std::make_unique<TransferBufferManager>(memory_tracker_.get());
   use_passthrough_cmd_decoder_ = supports_passthrough_command_decoders &&
                                  gpu_preferences_.use_passthrough_cmd_decoder;
 }

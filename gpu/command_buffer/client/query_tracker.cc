@@ -78,7 +78,7 @@ bool QuerySyncManager::Alloc(QuerySyncManager::QueryInfo* info) {
       return false;
     }
     QuerySync* syncs = static_cast<QuerySync*>(mem);
-    buckets_.push_back(base::MakeUnique<Bucket>(syncs, shm_id, shm_offset));
+    buckets_.push_back(std::make_unique<Bucket>(syncs, shm_id, shm_offset));
     bucket = buckets_.back().get();
   }
 
@@ -275,7 +275,7 @@ QueryTracker::Query* QueryTracker::CreateQuery(GLuint id, GLenum target) {
   if (!query_sync_manager_.Alloc(&info)) {
     return nullptr;
   }
-  auto query = base::MakeUnique<Query>(id, target, info);
+  auto query = std::make_unique<Query>(id, target, info);
   Query* query_ptr = query.get();
   std::pair<QueryIdMap::iterator, bool> result =
       queries_.emplace(id, std::move(query));
