@@ -85,18 +85,13 @@ ModuleScript* ModuleScript::Create(const String& source_text,
   return script;
 }
 
-ModuleScript* ModuleScript::CreateForTest(
-    Modulator* modulator,
-    ScriptModule record,
-    const KURL& base_url,
-    const String& nonce,
-    ParserDisposition parser_state,
-    WebURLRequest::FetchCredentialsMode credentials_mode) {
+ModuleScript* ModuleScript::CreateForTest(Modulator* modulator,
+                                          ScriptModule record,
+                                          const KURL& base_url,
+                                          const ScriptFetchOptions& options) {
   String dummy_source_text = "";
-  return CreateInternal(
-      dummy_source_text, modulator, record, base_url,
-      ScriptFetchOptions(nonce, parser_state, credentials_mode),
-      TextPosition::MinimumPosition());
+  return CreateInternal(dummy_source_text, modulator, record, base_url, options,
+                        TextPosition::MinimumPosition());
 }
 
 ModuleScript* ModuleScript::CreateInternal(const String& source_text,
