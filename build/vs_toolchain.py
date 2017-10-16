@@ -414,7 +414,12 @@ def Update(force=False):
         os.mkdir(toolchain_dir)
       if not os.path.isdir(toolchain_dir + '.ciopfs'):
         os.mkdir(toolchain_dir + '.ciopfs')
-      subprocess.check_call([ciopfs, toolchain_dir + '.ciopfs', toolchain_dir])
+      # Without use_ino, clang's #pragma once and Wnonportable-include-path
+      # both don't work right, see https://llvm.org/PR34931
+      # use_ino doesn't slow down builds, so it seems there's no drawback to
+      # just using it always.
+      subprocess.check_call([
+          ciopfs, '-o', 'use_ino', toolchain_dir + '.ciopfs', toolchain_dir])
 
     # Necessary so that get_toolchain_if_necessary.py will put the VS toolkit
     # in the correct directory.
