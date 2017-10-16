@@ -870,4 +870,187 @@ TEST_F(PaymentRequestTest, RecordUseStats_NoShippingOrContactInfoRequested) {
   payment_request.RecordUseStats();
 }
 
+// Tests that the modifier should not get applied when the card network is not
+// supported.
+TEST_F(PaymentRequestTest, PaymentDetailsModifier_BasicCard_NetworkMismatch) {
+  autofill::TestPersonalDataManager personal_data_manager;
+  autofill::AutofillProfile address = autofill::test::GetFullProfile();
+  personal_data_manager.AddTestingProfile(&address);
+  autofill::CreditCard credit_card = autofill::test::GetCreditCard();  // Visa.
+  personal_data_manager.AddTestingCreditCard(&credit_card);
+  credit_card.set_billing_address_id(address.guid());
+
+  WebPaymentRequest web_payment_request =
+      payment_request_test_util::CreateTestWebPaymentRequest();
+  PaymentDetailsModifier modifier;
+  modifier.method_data.supported_methods.push_back("basic-card");
+  modifier.method_data.supported_networks.push_back("amex");
+  modifier.total = base::MakeUnique<payments::PaymentItem>();
+  modifier.total->label = "Discounted Total";
+  modifier.total->amount.value = "0.99";
+  modifier.total->amount.currency = "USD";
+  payments::PaymentItem additional_display_item;
+  additional_display_item.label = "Amex discount";
+  additional_display_item.amount.value = "-0.01";
+  additional_display_item.amount.currency = "USD";
+  modifier.additional_display_items.push_back(additional_display_item);
+  web_payment_request.details.modifiers.push_back(modifier);
+
+  TestPaymentRequest payment_request(web_payment_request,
+                                     chrome_browser_state_.get(), &web_state_,
+                                     &personal_data_manager);
+  AutofillPaymentInstrument* selected_payment_method =
+      static_cast<AutofillPaymentInstrument*>(
+          payment_request.selected_payment_method());
+  EXPECT_EQ("Total", payment_request.GetTotal(selected_payment_method).label);
+  EXPECT_EQ("1.00",
+            payment_request.GetTotal(selected_payment_method).amount.value);
+  ASSERT_EQ(1U,
+            payment_request.GetDisplayItems(selected_payment_method).size());
+}
+
+// Tests that the modifier should get applied when the card network is a match.
+TEST_F(PaymentRequestTest, PaymentDetailsModifier_BasicCard_NetworkMatch) {
+  autofill::TestPersonalDataManager personal_data_manager;
+  autofill::AutofillProfile address = autofill::test::GetFullProfile();
+  personal_data_manager.AddTestingProfile(&address);
+  autofill::CreditCard credit_card = autofill::test::GetCreditCard2();  // Amex.
+  personal_data_manager.AddTestingCreditCard(&credit_card);
+  credit_card.set_billing_address_id(address.guid());
+
+  WebPaymentRequest web_payment_request =
+      payment_request_test_util::CreateTestWebPaymentRequest();
+  PaymentDetailsModifier modifier;
+  modifier.method_data.supported_methods.push_back("basic-card");
+  modifier.method_data.supported_networks.push_back("amex");
+  modifier.total = base::MakeUnique<payments::PaymentItem>();
+  modifier.total->label = "Discounted Total";
+  modifier.total->amount.value = "0.99";
+  modifier.total->amount.currency = "USD";
+  payments::PaymentItem additional_display_item;
+  additional_display_item.label = "Amex discount";
+  additional_display_item.amount.value = "-0.01";
+  additional_display_item.amount.currency = "USD";
+  modifier.additional_display_items.push_back(additional_display_item);
+  web_payment_request.details.modifiers.push_back(modifier);
+
+  TestPaymentRequest payment_request(web_payment_request,
+                                     chrome_browser_state_.get(), &web_state_,
+                                     &personal_data_manager);
+  AutofillPaymentInstrument* selected_payment_method =
+      static_cast<AutofillPaymentInstrument*>(
+          payment_request.selected_payment_method());
+  EXPECT_EQ("Discounted Total",
+            payment_request.GetTotal(selected_payment_method).label);
+  EXPECT_EQ("0.99",
+            payment_request.GetTotal(selected_payment_method).amount.value);
+  ASSERT_EQ(2U,
+            payment_request.GetDisplayItems(selected_payment_method).size());
+  EXPECT_EQ("Subtotal",
+            payment_request.GetDisplayItems(selected_payment_method)[0].label);
+  EXPECT_EQ(
+      "1.00",
+      payment_request.GetDisplayItems(selected_payment_method)[0].amount.value);
+  EXPECT_EQ("Amex discount",
+            payment_request.GetDisplayItems(selected_payment_method)[1].label);
+  EXPECT_EQ(
+      "-0.01",
+      payment_request.GetDisplayItems(selected_payment_method)[1].amount.value);
+}
+
+// Tests that the modifier should not get applied when the card type is not
+// supported.
+TEST_F(PaymentRequestTest, PaymentDetailsModifier_BasicCard_TypeMismatch) {
+  autofill::TestPersonalDataManager personal_data_manager;
+  autofill::AutofillProfile address = autofill::test::GetFullProfile();
+  personal_data_manager.AddTestingProfile(&address);
+  autofill::CreditCard credit_card = autofill::test::GetCreditCard2();  // Amex.
+  personal_data_manager.AddTestingCreditCard(&credit_card);
+  credit_card.set_billing_address_id(address.guid());
+
+  WebPaymentRequest web_payment_request =
+      payment_request_test_util::CreateTestWebPaymentRequest();
+  PaymentDetailsModifier modifier;
+  modifier.method_data.supported_methods.push_back("basic-card");
+  modifier.method_data.supported_networks.push_back("amex");
+  modifier.method_data.supported_types.insert(
+      autofill::CreditCard::CARD_TYPE_CREDIT);
+  modifier.total = base::MakeUnique<payments::PaymentItem>();
+  modifier.total->label = "Discounted Total";
+  modifier.total->amount.value = "0.99";
+  modifier.total->amount.currency = "USD";
+  payments::PaymentItem additional_display_item;
+  additional_display_item.label = "Amex discount";
+  additional_display_item.amount.value = "-0.01";
+  additional_display_item.amount.currency = "USD";
+  modifier.additional_display_items.push_back(additional_display_item);
+  web_payment_request.details.modifiers.push_back(modifier);
+
+  TestPaymentRequest payment_request(web_payment_request,
+                                     chrome_browser_state_.get(), &web_state_,
+                                     &personal_data_manager);
+  AutofillPaymentInstrument* selected_payment_method =
+      static_cast<AutofillPaymentInstrument*>(
+          payment_request.selected_payment_method());
+  EXPECT_EQ("Total", payment_request.GetTotal(selected_payment_method).label);
+  EXPECT_EQ("1.00",
+            payment_request.GetTotal(selected_payment_method).amount.value);
+  ASSERT_EQ(1U,
+            payment_request.GetDisplayItems(selected_payment_method).size());
+}
+
+// Tests that the modifier should get applied when the card network and the type
+// are both a match.
+TEST_F(PaymentRequestTest,
+       PaymentDetailsModifier_BasicCard_NetworkAndTypeMatch) {
+  autofill::TestPersonalDataManager personal_data_manager;
+  autofill::AutofillProfile address = autofill::test::GetFullProfile();
+  personal_data_manager.AddTestingProfile(&address);
+  autofill::CreditCard credit_card = autofill::test::GetMaskedServerCardAmex();
+  credit_card.set_card_type(autofill::CreditCard::CardType::CARD_TYPE_CREDIT);
+  personal_data_manager.AddTestingCreditCard(&credit_card);
+  credit_card.set_billing_address_id(address.guid());
+
+  WebPaymentRequest web_payment_request =
+      payment_request_test_util::CreateTestWebPaymentRequest();
+  PaymentDetailsModifier modifier;
+  modifier.method_data.supported_methods.push_back("basic-card");
+  modifier.method_data.supported_networks.push_back("amex");
+  modifier.method_data.supported_types.insert(
+      autofill::CreditCard::CARD_TYPE_CREDIT);
+  modifier.total = base::MakeUnique<payments::PaymentItem>();
+  modifier.total->label = "Discounted Total";
+  modifier.total->amount.value = "0.99";
+  modifier.total->amount.currency = "USD";
+  payments::PaymentItem additional_display_item;
+  additional_display_item.label = "Amex discount";
+  additional_display_item.amount.value = "-0.01";
+  additional_display_item.amount.currency = "USD";
+  modifier.additional_display_items.push_back(additional_display_item);
+  web_payment_request.details.modifiers.push_back(modifier);
+
+  TestPaymentRequest payment_request(web_payment_request,
+                                     chrome_browser_state_.get(), &web_state_,
+                                     &personal_data_manager);
+  AutofillPaymentInstrument* selected_payment_method =
+      static_cast<AutofillPaymentInstrument*>(
+          payment_request.selected_payment_method());
+  EXPECT_EQ("Discounted Total",
+            payment_request.GetTotal(selected_payment_method).label);
+  EXPECT_EQ("0.99",
+            payment_request.GetTotal(selected_payment_method).amount.value);
+  ASSERT_EQ(2U,
+            payment_request.GetDisplayItems(selected_payment_method).size());
+  EXPECT_EQ("Subtotal",
+            payment_request.GetDisplayItems(selected_payment_method)[0].label);
+  EXPECT_EQ(
+      "1.00",
+      payment_request.GetDisplayItems(selected_payment_method)[0].amount.value);
+  EXPECT_EQ("Amex discount",
+            payment_request.GetDisplayItems(selected_payment_method)[1].label);
+  EXPECT_EQ(
+      "-0.01",
+      payment_request.GetDisplayItems(selected_payment_method)[1].amount.value);
+}
+
 }  // namespace payments

@@ -56,21 +56,24 @@
 
 - (CollectionViewItem*)totalItem {
   PriceItem* totalItem = [[PriceItem alloc] init];
-  totalItem.item =
-      base::SysUTF8ToNSString(_paymentRequest->payment_details().total->label);
+  totalItem.item = base::SysUTF8ToNSString(
+      _paymentRequest->GetTotal(_paymentRequest->selected_payment_method())
+          .label);
   payments::CurrencyFormatter* currencyFormatter =
       _paymentRequest->GetOrCreateCurrencyFormatter();
   totalItem.price = base::SysUTF16ToNSString(l10n_util::GetStringFUTF16(
       IDS_PAYMENT_REQUEST_ORDER_SUMMARY_SHEET_TOTAL_FORMAT,
       base::UTF8ToUTF16(currencyFormatter->formatted_currency_code()),
       currencyFormatter->Format(
-          _paymentRequest->payment_details().total->amount.value)));
+          _paymentRequest->GetTotal(_paymentRequest->selected_payment_method())
+              .amount.value)));
   return totalItem;
 }
 
 - (NSArray<CollectionViewItem*>*)lineItems {
   const std::vector<payments::PaymentItem>& paymentItems =
-      _paymentRequest->payment_details().display_items;
+      _paymentRequest->GetDisplayItems(
+          _paymentRequest->selected_payment_method());
   NSMutableArray<CollectionViewItem*>* lineItems =
       [NSMutableArray arrayWithCapacity:paymentItems.size()];
 
