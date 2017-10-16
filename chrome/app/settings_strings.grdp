@@ -1381,6 +1381,9 @@
     <message name="IDS_SETTINGS_INTERNET_NETWORK_CELLULAR_SCAN_COMPLETED" desc="Settings > Internet > Network details: Status text when a scan has completed.">
       Scan completed
     </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_CELLULAR_SCAN_CONNECTED_HELP" desc="Settings > Internet > Network details: Help message for scan button when network is connected.">
+      Disconnect to enable scanning
+    </message>
     <message name="IDS_SETTINGS_INTERNET_NETWORK_CELLULAR_SCANNING" desc="Settings > Internet > Network details: Status text when a scan is in progress.">
       Scanning...
     </message>

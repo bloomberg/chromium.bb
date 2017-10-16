@@ -91,45 +91,44 @@ Polymer({
   },
 
   /**
-   * @param {!chrome.networkingPrivate.FoundNetworkProperties} network
+   * @param {!chrome.networkingPrivate.NetworkProperties} properties
    * @return {boolean}
    * @private
    */
-  getShowScanStatus_: function(network) {
-    return !!this.getScanStatus_(network);
+  getEnableScanButton_: function(properties) {
+    return properties.ConnectionState == CrOnc.ConnectionState.NOT_CONNECTED &&
+        !this.get('Cellular.Scanning', properties);
   },
 
   /**
-   * @param {!chrome.networkingPrivate.FoundNetworkProperties} network
+   * @param {!chrome.networkingPrivate.NetworkProperties} properties
    * @return {boolean}
    * @private
    */
-  getShowScanButton_: function(network) {
-    return !!this.get('Cellular.SupportNetworkScan', network);
+  getEnableSelectNetwork_: function(properties) {
+    if (this.get('Cellular.Scanning', properties) ||
+        properties.ConnectionState != CrOnc.ConnectionState.NOT_CONNECTED) {
+      return false;
+    }
+    var found = this.get('Cellular.FoundNetworks', properties);
+    return !!found && found.length > 0;
   },
 
   /**
-   * @param {!chrome.networkingPrivate.FoundNetworkProperties} network
-   * @return {boolean}
-   * @private
-   */
-  getEnableScanButton_: function(network) {
-    return !this.get('Cellular.Scanning', network);
-  },
-
-  /**
-   * @param {!chrome.networkingPrivate.FoundNetworkProperties} network
+   * @param {!chrome.networkingPrivate.NetworkProperties} properties
    * @return {string}
    * @private
    */
-  getScanStatus_: function(network) {
-    if (!network || !network.Cellular)
+  getSecondaryText_: function(properties) {
+    if (!properties || !properties.Cellular)
       return '';
-    var cellular = network.Cellular;
+    var cellular = properties.Cellular;
     if (cellular.Scanning)
       return this.i18n('networkCellularScanning');
     else if (this.scanRequested_)
       return this.i18n('networkCellularScanCompleted');
+    else if (properties.ConnectionState != CrOnc.ConnectionState.NOT_CONNECTED)
+      return this.i18n('networkCellularScanConnectedHelp');
     return '';
   },
 
