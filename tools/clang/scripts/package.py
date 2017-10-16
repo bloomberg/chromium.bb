@@ -363,6 +363,8 @@ def main():
     os.makedirs(os.path.join(llddir, 'bin'))
     shutil.copy(os.path.join(LLVM_RELEASE_DIR, 'bin', 'lld'),
                 os.path.join(llddir, 'bin'))
+    os.symlink('lld', os.path.join(llddir, 'bin', 'lld-link'))
+    os.symlink('lld', os.path.join(llddir, 'bin', 'ld.lld'))
     with tarfile.open(llddir + '.tgz', 'w:gz') as tar:
       tar.add(os.path.join(llddir, 'bin'), arcname='bin',
               filter=PrintTarProgress)
