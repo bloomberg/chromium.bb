@@ -11,7 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/thread_checker.h"
+#include "base/sequence_checker.h"
 #include "build/build_config.h"
 #include "components/metrics/delegating_provider.h"
 #include "components/metrics/metrics_provider.h"
@@ -132,7 +132,7 @@ class UkmService : public UkmRecorderImpl {
   // The scheduler for determining when uploads should happen.
   std::unique_ptr<metrics::MetricsRotationScheduler> scheduler_;
 
-  base::ThreadChecker thread_checker_;
+  SEQUENCE_CHECKER(sequence_checker_);
 
   bool initialize_started_;
   bool initialize_complete_;
