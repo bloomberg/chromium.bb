@@ -58,7 +58,7 @@ typedef void (*restore_func_highbd_type)(uint8_t *data8, int width, int height,
 int av1_alloc_restoration_struct(AV1_COMMON *cm, RestorationInfo *rst_info,
                                  int width, int height) {
   const int ntiles = av1_get_rest_ntiles(
-      width, height, rst_info->restoration_tilesize, NULL, NULL, NULL, NULL);
+      width, height, rst_info->restoration_tilesize, NULL, NULL);
   aom_free(rst_info->restoration_type);
   CHECK_MEM_ERROR(cm, rst_info->restoration_type,
                   (RestorationType *)aom_malloc(
@@ -231,15 +231,10 @@ static void restore_processing_stripe_boundary(int y0, int v_end, int h_start,
 static void loop_copy_tile(uint8_t *data, int tile_idx, int width, int height,
                            int stride, RestorationInternal *rst, uint8_t *dst,
                            int dst_stride) {
-  const int tile_width = rst->tile_width;
-  const int tile_height = rst->tile_height;
-  RestorationTileLimits limits =
-      av1_get_rest_tile_limits(tile_idx, rst->nhtiles, rst->nvtiles, tile_width,
-#if CONFIG_STRIPED_LOOP_RESTORATION
-                               tile_height, width, height, rst->subsampling_y);
-#else
-                               tile_height, width, height);
-#endif
+  RestorationTileLimits limits = av1_get_rest_tile_limits(
+      tile_idx, rst->nhtiles, rst->nvtiles, rst->rsi->restoration_tilesize,
+      width, height, rst->subsampling_y);
+
   for (int i = limits.v_start; i < limits.v_end; ++i)
     memcpy(dst + i * dst_stride + limits.h_start,
            data + i * stride + limits.h_start, limits.h_end - limits.h_start);
@@ -287,20 +282,14 @@ static void loop_wiener_filter_tile(uint8_t *data, int tile_idx, int width,
 #else
   const int procunit_height = rst->rsi->procunit_height;
 #endif
-  const int tile_width = rst->tile_width;
-  const int tile_height = rst->tile_height;
   if (rst->rsi->restoration_type[tile_idx] == RESTORE_NONE) {
     loop_copy_tile(data, tile_idx, width, height, stride, rst, dst, dst_stride);
     return;
   }
   InterpKernel vertical_topbot;
-  RestorationTileLimits limits =
-      av1_get_rest_tile_limits(tile_idx, rst->nhtiles, rst->nvtiles, tile_width,
-#if CONFIG_STRIPED_LOOP_RESTORATION
-                               tile_height, width, height, rst->subsampling_y);
-#else
-                               tile_height, width, height);
-#endif
+  RestorationTileLimits limits = av1_get_rest_tile_limits(
+      tile_idx, rst->nhtiles, rst->nvtiles, rst->rsi->restoration_tilesize,
+      width, height, rst->subsampling_y);
 
   // Convolve the whole tile (done in blocks here to match the requirements
   // of the vectorized convolve functions, but the result is equivalent)
@@ -1113,19 +1102,13 @@ static void loop_sgrproj_filter_tile(uint8_t *data, int tile_idx, int width,
 #else
   const int procunit_height = rst->rsi->procunit_height;
 #endif
-  const int tile_width = rst->tile_width;
-  const int tile_height = rst->tile_height;
   if (rst->rsi->restoration_type[tile_idx] == RESTORE_NONE) {
     loop_copy_tile(data, tile_idx, width, height, stride, rst, dst, dst_stride);
     return;
   }
-  RestorationTileLimits limits =
-      av1_get_rest_tile_limits(tile_idx, rst->nhtiles, rst->nvtiles, tile_width,
-#if CONFIG_STRIPED_LOOP_RESTORATION
-                               tile_height, width, height, rst->subsampling_y);
-#else
-                               tile_height, width, height);
-#endif
+  RestorationTileLimits limits = av1_get_rest_tile_limits(
+      tile_idx, rst->nhtiles, rst->nvtiles, rst->rsi->restoration_tilesize,
+      width, height, rst->subsampling_y);
   for (int i = limits.v_start; i < limits.v_end; i += procunit_height) {
 #if CONFIG_STRIPED_LOOP_RESTORATION
     int h = setup_processing_stripe_boundary(
@@ -1206,15 +1189,9 @@ static void loop_copy_tile_highbd(uint16_t *data, int tile_idx, int width,
                                   int height, int stride,
                                   RestorationInternal *rst, uint16_t *dst,
                                   int dst_stride) {
-  const int tile_width = rst->tile_width;
-  const int tile_height = rst->tile_height;
-  RestorationTileLimits limits =
-      av1_get_rest_tile_limits(tile_idx, rst->nhtiles, rst->nvtiles, tile_width,
-#if CONFIG_STRIPED_LOOP_RESTORATION
-                               tile_height, width, height, rst->subsampling_y);
-#else
-                               tile_height, width, height);
-#endif
+  RestorationTileLimits limits = av1_get_rest_tile_limits(
+      tile_idx, rst->nhtiles, rst->nvtiles, rst->rsi->restoration_tilesize,
+      width, height, rst->subsampling_y);
   for (int i = limits.v_start; i < limits.v_end; ++i)
     memcpy(dst + i * dst_stride + limits.h_start,
            data + i * stride + limits.h_start,
@@ -1232,21 +1209,15 @@ static void loop_wiener_filter_tile_highbd(uint16_t *data, int tile_idx,
 #else
   const int procunit_height = rst->rsi->procunit_height;
 #endif
-  const int tile_width = rst->tile_width;
-  const int tile_height = rst->tile_height;
 
   if (rst->rsi->restoration_type[tile_idx] == RESTORE_NONE) {
     loop_copy_tile_highbd(data, tile_idx, width, height, stride, rst, dst,
                           dst_stride);
     return;
   }
-  RestorationTileLimits limits =
-      av1_get_rest_tile_limits(tile_idx, rst->nhtiles, rst->nvtiles, tile_width,
-#if CONFIG_STRIPED_LOOP_RESTORATION
-                               tile_height, width, height, rst->subsampling_y);
-#else
-                               tile_height, width, height);
-#endif
+  RestorationTileLimits limits = av1_get_rest_tile_limits(
+      tile_idx, rst->nhtiles, rst->nvtiles, rst->rsi->restoration_tilesize,
+      width, height, rst->subsampling_y);
   InterpKernel vertical_topbot;
 
   // Convolve the whole tile (done in blocks here to match the requirements
@@ -1496,21 +1467,14 @@ static void loop_sgrproj_filter_tile_highbd(uint16_t *data, int tile_idx,
 #else
   const int procunit_height = rst->rsi->procunit_height;
 #endif
-  const int tile_width = rst->tile_width;
-  const int tile_height = rst->tile_height;
-
   if (rst->rsi->restoration_type[tile_idx] == RESTORE_NONE) {
     loop_copy_tile_highbd(data, tile_idx, width, height, stride, rst, dst,
                           dst_stride);
     return;
   }
-  RestorationTileLimits limits =
-      av1_get_rest_tile_limits(tile_idx, rst->nhtiles, rst->nvtiles, tile_width,
-#if CONFIG_STRIPED_LOOP_RESTORATION
-                               tile_height, width, height, rst->subsampling_y);
-#else
-                               tile_height, width, height);
-#endif
+  RestorationTileLimits limits = av1_get_rest_tile_limits(
+      tile_idx, rst->nhtiles, rst->nvtiles, rst->rsi->restoration_tilesize,
+      width, height, rst->subsampling_y);
   for (int i = limits.v_start; i < limits.v_end; i += procunit_height) {
 #if CONFIG_STRIPED_LOOP_RESTORATION
     int h = setup_processing_stripe_boundary(i, limits.v_end, limits.h_start,
@@ -1652,12 +1616,11 @@ static void loop_restoration_rows(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
     if (rsi[0].frame_restoration_type != RESTORE_NONE) {
       cm->rst_internal.ntiles = av1_get_rest_ntiles(
           ywidth, yheight, cm->rst_info[AOM_PLANE_Y].restoration_tilesize,
-          &cm->rst_internal.tile_width, &cm->rst_internal.tile_height,
           &cm->rst_internal.nhtiles, &cm->rst_internal.nvtiles);
       cm->rst_internal.rsi = &rsi[0];
+      cm->rst_internal.subsampling_y = 0;
 #if CONFIG_STRIPED_LOOP_RESTORATION
       cm->rst_internal.component = AOM_PLANE_Y;
-      cm->rst_internal.subsampling_y = 0;
 #endif
       restore_func =
           restore_funcs[cm->rst_internal.rsi->frame_restoration_type];
@@ -1683,12 +1646,11 @@ static void loop_restoration_rows(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
     if (rsi[AOM_PLANE_U].frame_restoration_type != RESTORE_NONE) {
       cm->rst_internal.ntiles = av1_get_rest_ntiles(
           uvwidth, uvheight, cm->rst_info[AOM_PLANE_U].restoration_tilesize,
-          &cm->rst_internal.tile_width, &cm->rst_internal.tile_height,
           &cm->rst_internal.nhtiles, &cm->rst_internal.nvtiles);
       cm->rst_internal.rsi = &rsi[AOM_PLANE_U];
+      cm->rst_internal.subsampling_y = cm->subsampling_y;
 #if CONFIG_STRIPED_LOOP_RESTORATION
       cm->rst_internal.component = AOM_PLANE_U;
-      cm->rst_internal.subsampling_y = cm->subsampling_y;
 #endif
       restore_func =
           restore_funcs[cm->rst_internal.rsi->frame_restoration_type];
@@ -1714,12 +1676,11 @@ static void loop_restoration_rows(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
     if (rsi[AOM_PLANE_V].frame_restoration_type != RESTORE_NONE) {
       cm->rst_internal.ntiles = av1_get_rest_ntiles(
           uvwidth, uvheight, cm->rst_info[AOM_PLANE_V].restoration_tilesize,
-          &cm->rst_internal.tile_width, &cm->rst_internal.tile_height,
           &cm->rst_internal.nhtiles, &cm->rst_internal.nvtiles);
       cm->rst_internal.rsi = &rsi[AOM_PLANE_V];
+      cm->rst_internal.subsampling_y = cm->subsampling_y;
 #if CONFIG_STRIPED_LOOP_RESTORATION
       cm->rst_internal.component = AOM_PLANE_V;
-      cm->rst_internal.subsampling_y = cm->subsampling_y;
 #endif
       restore_func =
           restore_funcs[cm->rst_internal.rsi->frame_restoration_type];
@@ -1797,20 +1758,19 @@ int av1_loop_restoration_corners_in_sb(const struct AV1Common *cm, int plane,
   const int ss_frame_w = (frame_w + ss_x) >> ss_x;
   const int ss_frame_h = (frame_h + ss_y) >> ss_y;
 
-  int rtile_w, rtile_h, nvtiles;
-  av1_get_rest_ntiles(ss_frame_w, ss_frame_h,
-                      cm->rst_info[plane].restoration_tilesize, &rtile_w,
-                      &rtile_h, nhtiles, &nvtiles);
+  const int rtile_size = cm->rst_info[plane].restoration_tilesize;
 
-  const int rnd_w = rtile_w * denom - 1;
-  const int rnd_h = rtile_h * denom - 1;
+  int nvtiles;
+  av1_get_rest_ntiles(ss_frame_w, ss_frame_h, rtile_size, nhtiles, &nvtiles);
+
+  const int rnd = rtile_size * denom - 1;
 
   // rcol0/rrow0 should be the first column/row of rtiles that doesn't start
   // left/below of mi_col/mi_row. For this calculation, we need to round up the
   // division (if the sb starts at rtile column 10.1, the first matching rtile
   // has column index 11)
-  *rcol0 = (mi_col * mi_to_px + rnd_w) / (rtile_w * denom);
-  *rrow0 = (mi_row * mi_to_px + rnd_h) / (rtile_h * denom);
+  *rcol0 = (mi_col * mi_to_px + rnd) / (rtile_size * denom);
+  *rrow0 = (mi_row * mi_to_px + rnd) / (rtile_size * denom);
 
   // rcol1/rrow1 is the equivalent calculation, but for the superblock
   // below-right. There are some slightly strange boundary effects. First, we
@@ -1828,12 +1788,13 @@ int av1_loop_restoration_corners_in_sb(const struct AV1Common *cm, int plane,
   if (mi_col1 >= cm->mi_cols)
     *rcol1 = *nhtiles;
   else
-    *rcol1 = AOMMIN(*nhtiles, (mi_col1 * mi_to_px + rnd_w) / (rtile_w * denom));
+    *rcol1 =
+        AOMMIN(*nhtiles, (mi_col1 * mi_to_px + rnd) / (rtile_size * denom));
 
   if (mi_row1 >= cm->mi_rows)
     *rrow1 = nvtiles;
   else
-    *rrow1 = AOMMIN(nvtiles, (mi_row1 * mi_to_px + rnd_h) / (rtile_h * denom));
+    *rrow1 = AOMMIN(nvtiles, (mi_row1 * mi_to_px + rnd) / (rtile_size * denom));
 
   return *rcol0 < *rcol1 && *rrow0 < *rrow1;
 }

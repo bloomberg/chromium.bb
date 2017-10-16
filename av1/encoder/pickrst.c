@@ -127,36 +127,26 @@ static int64_t try_restoration_tile(const YV12_BUFFER_CONFIG *src,
                                     int tile_idx,
                                     YV12_BUFFER_CONFIG *dst_frame) {
   AV1_COMMON *const cm = &cpi->common;
-  int64_t filt_err;
-  int tile_width, tile_height, nhtiles, nvtiles;
-  int ntiles, width, height;
 
   // Y and UV components cannot be mixed
   assert(components_pattern == 1 || components_pattern == 2 ||
          components_pattern == 4 || components_pattern == 6);
 
-  if (components_pattern == 1) {  // Y only
-    width = src->y_crop_width;
-    height = src->y_crop_height;
-  } else {  // Color
-    width = src->uv_crop_width;
-    height = src->uv_crop_height;
-  }
-  ntiles = av1_get_rest_ntiles(
-      width, height, cm->rst_info[components_pattern > 1].restoration_tilesize,
-      &tile_width, &tile_height, &nhtiles, &nvtiles);
-  (void)ntiles;
+  const int is_uv = components_pattern > 1;
+  const int width = src->crop_widths[is_uv];
+  const int height = src->crop_heights[is_uv];
+
+  const int rtile_size = cm->rst_info[is_uv].restoration_tilesize;
+  const int ss_y = is_uv && cm->subsampling_y;
+
+  int nhtiles, nvtiles;
+  av1_get_rest_ntiles(width, height, rtile_size, &nhtiles, &nvtiles);
 
   av1_loop_restoration_frame(cm->frame_to_show, cm, rsi, components_pattern,
                              partial_frame, dst_frame);
   RestorationTileLimits limits = av1_get_rest_tile_limits(
-      tile_idx, nhtiles, nvtiles, tile_width, tile_height, width,
-#if CONFIG_STRIPED_LOOP_RESTORATION
-      height, components_pattern > 1 ? cm->subsampling_y : 0);
-#else
-      height);
-#endif
-  filt_err = sse_restoration_tile(
+      tile_idx, nhtiles, nvtiles, rtile_size, width, height, ss_y);
+  int64_t filt_err = sse_restoration_tile(
       src, dst_frame, cm, limits.h_start, limits.h_end - limits.h_start,
       limits.v_start, limits.v_end - limits.v_start, components_pattern);
 
@@ -488,31 +478,19 @@ static INLINE int init_rest_search_ctxt(
   ctxt->dst_frame = dst_frame;
 
   const YV12_BUFFER_CONFIG *dgd = cm->frame_to_show;
-  if (plane == AOM_PLANE_Y) {
-    ctxt->plane_width = src->y_crop_width;
-    ctxt->plane_height = src->y_crop_height;
-    ctxt->src_buffer = src->y_buffer;
-    ctxt->src_stride = src->y_stride;
-    ctxt->dgd_buffer = dgd->y_buffer;
-    ctxt->dgd_stride = dgd->y_stride;
-    assert(ctxt->plane_width == dgd->y_crop_width);
-    assert(ctxt->plane_height == dgd->y_crop_height);
-    assert(ctxt->plane_width == src->y_crop_width);
-    assert(ctxt->plane_height == src->y_crop_height);
-  } else {
-    ctxt->plane_width = src->uv_crop_width;
-    ctxt->plane_height = src->uv_crop_height;
-    ctxt->src_stride = src->uv_stride;
-    ctxt->dgd_stride = dgd->uv_stride;
-    ctxt->src_buffer = plane == AOM_PLANE_U ? src->u_buffer : src->v_buffer;
-    ctxt->dgd_buffer = plane == AOM_PLANE_U ? dgd->u_buffer : dgd->v_buffer;
-    assert(ctxt->plane_width == dgd->uv_crop_width);
-    assert(ctxt->plane_height == dgd->uv_crop_height);
-  }
+  const int is_uv = plane != AOM_PLANE_Y;
+  ctxt->plane_width = src->crop_widths[is_uv];
+  ctxt->plane_height = src->crop_heights[is_uv];
+  ctxt->src_buffer = src->buffers[plane];
+  ctxt->src_stride = src->strides[is_uv];
+  ctxt->dgd_buffer = dgd->buffers[plane];
+  ctxt->dgd_stride = dgd->strides[is_uv];
+  assert(src->crop_widths[is_uv] == dgd->crop_widths[is_uv]);
+  assert(src->crop_heights[is_uv] == dgd->crop_heights[is_uv]);
 
   return av1_get_rest_ntiles(ctxt->plane_width, ctxt->plane_height,
-                             cm->rst_info[plane].restoration_tilesize, NULL,
-                             NULL, &ctxt->nrtiles_x, &ctxt->nrtiles_y);
+                             cm->rst_info[plane].restoration_tilesize,
+                             &ctxt->nrtiles_x, &ctxt->nrtiles_y);
 }
 
 typedef void (*rtile_visitor_t)(const struct rest_search_ctxt *search_ctxt,
@@ -562,21 +540,14 @@ static void foreach_rtile_in_tile(const struct rest_search_ctxt *ctxt,
   const int rtile_row0 = (tile_row_start + rtile_size - 1) / rtile_size;
   const int rtile_row1 =
       AOMMIN((tile_row_end + rtile_size - 1) / rtile_size, ctxt->nrtiles_y);
-
-  const int rtile_width = AOMMIN(tile_col_end - tile_col_start, rtile_size);
-  const int rtile_height = AOMMIN(tile_row_end - tile_row_start, rtile_size);
+  const int ss_y = ctxt->plane > 0 && cm->subsampling_y;
 
   for (int rtile_row = rtile_row0; rtile_row < rtile_row1; ++rtile_row) {
     for (int rtile_col = rtile_col0; rtile_col < rtile_col1; ++rtile_col) {
       const int rtile_idx = rtile_row * ctxt->nrtiles_x + rtile_col;
       RestorationTileLimits limits = av1_get_rest_tile_limits(
-          rtile_idx, ctxt->nrtiles_x, ctxt->nrtiles_y, rtile_width,
-          rtile_height, ctxt->plane_width,
-#if CONFIG_STRIPED_LOOP_RESTORATION
-          ctxt->plane_height, ctxt->plane > 0 ? cm->subsampling_y : 0);
-#else
-          ctxt->plane_height);
-#endif
+          rtile_idx, ctxt->nrtiles_x, ctxt->nrtiles_y, rtile_size,
+          ctxt->plane_width, ctxt->plane_height, ss_y);
       fun(ctxt, rtile_idx, &limits, arg);
     }
   }
@@ -1334,18 +1305,17 @@ static double search_norestore(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
   int bits;
   MACROBLOCK *x = &cpi->td.mb;
   AV1_COMMON *const cm = &cpi->common;
-  int tile_idx, tile_width, tile_height, nhtiles, nvtiles;
-  int width, height;
-  if (plane == AOM_PLANE_Y) {
-    width = src->y_crop_width;
-    height = src->y_crop_height;
-  } else {
-    width = src->uv_crop_width;
-    height = src->uv_crop_height;
-  }
-  const int ntiles = av1_get_rest_ntiles(
-      width, height, cm->rst_info[plane].restoration_tilesize, &tile_width,
-      &tile_height, &nhtiles, &nvtiles);
+  int tile_idx, nhtiles, nvtiles;
+
+  const int is_uv = plane > 0;
+  const int ss_y = plane > 0 && cm->subsampling_y;
+  const int width = src->crop_widths[is_uv];
+  const int height = src->crop_heights[is_uv];
+
+  const int rtile_size = cm->rst_info[plane].restoration_tilesize;
+
+  const int ntiles =
+      av1_get_rest_ntiles(width, height, rtile_size, &nhtiles, &nvtiles);
   (void)info;
   (void)dst_frame;
   (void)partial_frame;
@@ -1353,12 +1323,7 @@ static double search_norestore(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
   info->frame_restoration_type = RESTORE_NONE;
   for (tile_idx = 0; tile_idx < ntiles; ++tile_idx) {
     RestorationTileLimits limits = av1_get_rest_tile_limits(
-        tile_idx, nhtiles, nvtiles, tile_width, tile_height, width,
-#if CONFIG_STRIPED_LOOP_RESTORATION
-        height, plane != AOM_PLANE_Y ? cm->subsampling_y : 0);
-#else
-        height);
-#endif
+        tile_idx, nhtiles, nvtiles, rtile_size, width, height, ss_y);
     err = sse_restoration_tile(src, cm->frame_to_show, cm, limits.h_start,
                                limits.h_end - limits.h_start, limits.v_start,
                                limits.v_end - limits.v_start, 1 << plane);
@@ -1472,14 +1437,13 @@ void av1_pick_filter_restoration(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
   const int uvwidth = src->uv_crop_width;
   const int uvheight = src->uv_crop_height;
 
-  const int ntiles_y =
-      av1_get_rest_ntiles(ywidth, yheight, cm->rst_info[0].restoration_tilesize,
-                          NULL, NULL, NULL, NULL);
+  const int ntiles_y = av1_get_rest_ntiles(
+      ywidth, yheight, cm->rst_info[0].restoration_tilesize, NULL, NULL);
   const int ntiles_uv = av1_get_rest_ntiles(
-      uvwidth, uvheight, cm->rst_info[1].restoration_tilesize, NULL, NULL, NULL,
-      NULL);
+      uvwidth, uvheight, cm->rst_info[1].restoration_tilesize, NULL, NULL);
 
   // Assume ntiles_uv is never larger that ntiles_y and so the same arrays work.
+  assert(ntiles_uv <= ntiles_y);
   for (r = 0; r < RESTORE_SWITCHABLE_TYPES; r++) {
     tile_cost[r] = (int64_t *)aom_malloc(sizeof(*tile_cost[0]) * ntiles_y);
     restore_types[r] =

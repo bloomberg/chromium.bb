@@ -221,12 +221,11 @@ typedef struct {
   RestorationInfo *rsi;
   int keyframe;
   int ntiles;
-  int tile_width, tile_height;
   int nhtiles, nvtiles;
   int32_t *tmpbuf;
+  int subsampling_y;
 #if CONFIG_STRIPED_LOOP_RESTORATION
   int component;
-  int subsampling_y;
   uint8_t *stripe_boundary_above[MAX_MB_PLANE];
   uint8_t *stripe_boundary_below[MAX_MB_PLANE];
   int stripe_boundary_stride[MAX_MB_PLANE];
@@ -258,18 +257,14 @@ static INLINE void set_default_wiener(WienerInfo *wiener_info) {
 }
 
 static INLINE int av1_get_rest_ntiles(int width, int height, int tilesize,
-                                      int *tile_width, int *tile_height,
                                       int *nhtiles, int *nvtiles) {
   int nhtiles_, nvtiles_;
-  int tile_width_, tile_height_;
-  tile_width_ = (tilesize < 0) ? width : AOMMIN(tilesize, width);
-  tile_height_ = (tilesize < 0) ? height : AOMMIN(tilesize, height);
-  assert(tile_width_ > 0 && tile_height_ > 0);
+  const int tile_width = (tilesize < 0) ? width : AOMMIN(tilesize, width);
+  const int tile_height = (tilesize < 0) ? height : AOMMIN(tilesize, height);
+  assert(tile_width > 0 && tile_height > 0);
 
-  nhtiles_ = (width + (tile_width_ >> 1)) / tile_width_;
-  nvtiles_ = (height + (tile_height_ >> 1)) / tile_height_;
-  if (tile_width) *tile_width = tile_width_;
-  if (tile_height) *tile_height = tile_height_;
+  nhtiles_ = (width + (tile_width >> 1)) / tile_width;
+  nvtiles_ = (height + (tile_height >> 1)) / tile_height;
   if (nhtiles) *nhtiles = nhtiles_;
   if (nvtiles) *nvtiles = nvtiles_;
   return (nhtiles_ * nvtiles_);
@@ -278,28 +273,24 @@ static INLINE int av1_get_rest_ntiles(int width, int height, int tilesize,
 typedef struct { int h_start, h_end, v_start, v_end; } RestorationTileLimits;
 
 static INLINE RestorationTileLimits
-av1_get_rest_tile_limits(int tile_idx, int nhtiles, int nvtiles, int tile_width,
-                         int tile_height, int im_width,
-#if CONFIG_STRIPED_LOOP_RESTORATION
-                         int im_height, int subsampling_y) {
-#else
-                         int im_height) {
-#endif
+av1_get_rest_tile_limits(int tile_idx, int nhtiles, int nvtiles, int rtile_size,
+                         int im_width, int im_height, int subsampling_y) {
   const int htile_idx = tile_idx % nhtiles;
   const int vtile_idx = tile_idx / nhtiles;
   RestorationTileLimits limits;
-  limits.h_start = htile_idx * tile_width;
-  limits.v_start = vtile_idx * tile_height;
+  limits.h_start = htile_idx * rtile_size;
+  limits.v_start = vtile_idx * rtile_size;
   limits.h_end =
-      (htile_idx < nhtiles - 1) ? limits.h_start + tile_width : im_width;
+      (htile_idx < nhtiles - 1) ? limits.h_start + rtile_size : im_width;
   limits.v_end =
-      (vtile_idx < nvtiles - 1) ? limits.v_start + tile_height : im_height;
+      (vtile_idx < nvtiles - 1) ? limits.v_start + rtile_size : im_height;
 #if CONFIG_STRIPED_LOOP_RESTORATION
   // Offset the tile upwards to align with the restoration processing stripe
-  limits.v_start -= RESTORATION_TILE_OFFSET >> subsampling_y;
-  if (limits.v_start < 0) limits.v_start = 0;
-  if (limits.v_end < im_height)
-    limits.v_end -= RESTORATION_TILE_OFFSET >> subsampling_y;
+  const int voffset = RESTORATION_TILE_OFFSET >> subsampling_y;
+  limits.v_start = AOMMAX(0, limits.v_start - voffset);
+  if (limits.v_end < im_height) limits.v_end -= voffset;
+#else
+  (void)subsampling_y;
 #endif
   return limits;
 }
