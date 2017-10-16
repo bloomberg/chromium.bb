@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/pdf/browser/pdf_web_contents_helper_client.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/strings/grit/ui_strings.h"
 
@@ -37,7 +38,8 @@ PDFWebContentsHelper::PDFWebContentsHelper(
       client_(std::move(client)),
       touch_selection_controller_client_manager_(nullptr),
       has_selection_(false),
-      remote_pdf_client_(nullptr) {}
+      remote_pdf_client_(nullptr),
+      web_contents_(web_contents) {}
 
 PDFWebContentsHelper::~PDFWebContentsHelper() {
   if (!touch_selection_controller_client_manager_)
@@ -51,6 +53,29 @@ void PDFWebContentsHelper::SetListener(mojom::PdfListenerPtr listener) {
   remote_pdf_client_ = std::move(listener);
 }
 
+gfx::PointF PDFWebContentsHelper::ConvertHelper(const gfx::PointF& point_f,
+                                                float scale) const {
+  gfx::PointF origin_f;
+  content::RenderWidgetHostView* view =
+      web_contents_->GetRenderWidgetHostView();
+  if (view) {
+    origin_f = view->TransformPointToRootCoordSpaceF(gfx::PointF());
+    origin_f.Scale(scale);
+  }
+
+  return gfx::PointF(point_f.x() + origin_f.x(), point_f.y() + origin_f.y());
+}
+
+gfx::PointF PDFWebContentsHelper::ConvertFromRoot(
+    const gfx::PointF& point_f) const {
+  return ConvertHelper(point_f, -1.f);
+}
+
+gfx::PointF PDFWebContentsHelper::ConvertToRoot(
+    const gfx::PointF& point_f) const {
+  return ConvertHelper(point_f, +1.f);
+}
+
 void PDFWebContentsHelper::SelectionChanged(const gfx::PointF& left,
                                             int32_t left_height,
                                             const gfx::PointF& right,
@@ -61,10 +86,12 @@ void PDFWebContentsHelper::SelectionChanged(const gfx::PointF& left,
   if (touch_selection_controller_client_manager_) {
     gfx::SelectionBound start;
     gfx::SelectionBound end;
-    start.SetEdgeTop(left);
-    start.SetEdgeBottom(gfx::PointF(left.x(), left.y() + left_height));
-    end.SetEdgeTop(right);
-    end.SetEdgeBottom(gfx::PointF(right.x(), right.y() + right_height));
+    start.SetEdgeTop(ConvertToRoot(left));
+    start.SetEdgeBottom(
+        ConvertToRoot(gfx::PointF(left.x(), left.y() + left_height)));
+    end.SetEdgeTop(ConvertToRoot(right));
+    end.SetEdgeBottom(
+        ConvertToRoot(gfx::PointF(right.x(), right.y() + right_height)));
 
     // Don't do left/right comparison after setting type.
     // TODO(wjmaclean): When PDFium supports editing, we'll need to detect
@@ -89,20 +116,21 @@ bool PDFWebContentsHelper::SupportsAnimation() const {
 void PDFWebContentsHelper::MoveCaret(const gfx::PointF& position) {
   if (!remote_pdf_client_)
     return;
-  remote_pdf_client_->SetCaretPosition(position);
+  remote_pdf_client_->SetCaretPosition(ConvertFromRoot(position));
 }
 
 void PDFWebContentsHelper::MoveRangeSelectionExtent(const gfx::PointF& extent) {
   if (!remote_pdf_client_)
     return;
-  remote_pdf_client_->MoveRangeSelectionExtent(extent);
+  remote_pdf_client_->MoveRangeSelectionExtent(ConvertFromRoot(extent));
 }
 
 void PDFWebContentsHelper::SelectBetweenCoordinates(const gfx::PointF& base,
                                                     const gfx::PointF& extent) {
   if (!remote_pdf_client_)
     return;
-  remote_pdf_client_->SetSelectionBounds(base, extent);
+  remote_pdf_client_->SetSelectionBounds(ConvertFromRoot(base),
+                                         ConvertFromRoot(extent));
 }
 
 void PDFWebContentsHelper::OnSelectionEvent(ui::SelectionEventType event) {}
@@ -113,7 +141,10 @@ PDFWebContentsHelper::CreateDrawable() {
   return std::unique_ptr<ui::TouchHandleDrawable>();
 }
 
-void PDFWebContentsHelper::DidScroll() {}
+void PDFWebContentsHelper::DidScroll() {
+  // Nothing to do here, as PDFiumEngine sends a new selection for each scroll
+  // update.
+}
 
 void PDFWebContentsHelper::OnManagerWillDestroy(
     content::TouchSelectionControllerClientManager* manager) {

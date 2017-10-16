@@ -67,6 +67,9 @@ class PDFWebContentsHelper
                        std::unique_ptr<PDFWebContentsHelperClient> client);
 
   void InitTouchSelectionClientManager();
+  gfx::PointF ConvertFromRoot(const gfx::PointF& point_f) const;
+  gfx::PointF ConvertToRoot(const gfx::PointF& point_f) const;
+  gfx::PointF ConvertHelper(const gfx::PointF& point_f, float scale) const;
 
   // mojom::PdfService:
   void SetListener(mojom::PdfListenerPtr listener) override;
@@ -84,6 +87,8 @@ class PDFWebContentsHelper
       touch_selection_controller_client_manager_;
   bool has_selection_;
   mojom::PdfListenerPtr remote_pdf_client_;
+  // Not owned.
+  content::WebContents* web_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(PDFWebContentsHelper);
 };

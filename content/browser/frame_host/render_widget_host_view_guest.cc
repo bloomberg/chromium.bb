@@ -231,6 +231,42 @@ gfx::Rect RenderWidgetHostViewGuest::GetBoundsInRootWindow() {
   return GetViewBounds();
 }
 
+gfx::Point RenderWidgetHostViewGuest::TransformPointToRootCoordSpace(
+    const gfx::Point& point) {
+  if (!guest_ || !last_received_local_surface_id_.is_valid())
+    return point;
+
+  RenderWidgetHostViewBase* rwhv = this;
+  // If we're a pdf in a WebView, we could have nested guest views here.
+  while (rwhv && rwhv->IsRenderWidgetHostViewGuest()) {
+    rwhv = static_cast<RenderWidgetHostViewGuest*>(rwhv)
+               ->GetOwnerRenderWidgetHostView();
+  }
+  if (!rwhv)
+    return point;
+
+  // We could be a guest inside an oopif frame, in which case we're not the
+  // root.
+  if (rwhv->IsRenderWidgetHostViewChildFrame()) {
+    rwhv = static_cast<RenderWidgetHostViewChildFrame*>(rwhv)
+               ->GetRootRenderWidgetHostView();
+    if (!rwhv)
+      return point;
+  }
+
+  gfx::Point transformed_point = point;
+  // TODO(wjmaclean): If we knew that TransformPointToLocalCoordSpace would
+  // guarantee not to change transformed_point on failure, then we could skip
+  // checking the function return value and directly return transformed_point.
+  if (!rwhv->TransformPointToLocalCoordSpace(
+          point,
+          viz::SurfaceId(frame_sink_id_, last_received_local_surface_id_),
+          &transformed_point)) {
+    return point;
+  }
+  return transformed_point;
+}
+
 void RenderWidgetHostViewGuest::RenderProcessGone(
     base::TerminationStatus status,
     int error_code) {

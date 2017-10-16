@@ -1010,6 +1010,12 @@ gfx::Point RenderWidgetHostViewChildFrame::GetViewOriginInRoot() const {
   return gfx::Point();
 }
 
+RenderWidgetHostViewBase*
+RenderWidgetHostViewChildFrame::GetRootRenderWidgetHostView() const {
+  return frame_connector_ ? frame_connector_->GetRootRenderWidgetHostView()
+                          : nullptr;
+}
+
 bool RenderWidgetHostViewChildFrame::CanBecomeVisible() {
   if (!frame_connector_)
     return true;
