@@ -51,13 +51,10 @@
       }
     </style>
     <paper-menu id="section-menu" selected="{{selected_}}">
+      <!-- TODO(scottchen): replace paper-item with a simple div. -->
       <paper-item class="section-item" id="sections-extensions"
           on-tap="onExtensionsTap_">
         <span>$i18n{sidebarExtensions}</span>
-      </paper-item>
-      <paper-item class="section-item" id="sections-apps"
-          on-tap="onAppsTap_">
-        <span>$i18n{sidebarApps}</span>
       </paper-item>
       <paper-item class="section-item" id="sections-shortcuts"
           on-tap="onKeyboardShortcutsTap_">

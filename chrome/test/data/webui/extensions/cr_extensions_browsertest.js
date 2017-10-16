@@ -83,8 +83,8 @@ TEST_F('CrExtensionsSidebarTest', 'LayoutAndClickHandlers', function() {
       .run();
 });
 
-TEST_F('CrExtensionsSidebarTest', 'UpdateSelected', function() {
-  mocha.grep(assert(extension_sidebar_tests.TestNames.UpdateSelected)).run();
+TEST_F('CrExtensionsSidebarTest', 'SetSelected', function() {
+  mocha.grep(assert(extension_sidebar_tests.TestNames.SetSelected)).run();
 });
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -348,22 +348,15 @@ TEST_F(
     });
 
 TEST_F(
-    'CrExtensionsManagerTestWithMultipleExtensionTypesInstalled', 'ShowItems',
+    'CrExtensionsManagerTestWithMultipleExtensionTypesInstalled', 'SplitItems',
     function() {
-      mocha.grep(assert(extension_manager_tests.TestNames.ShowItems)).run();
+      mocha.grep(assert(extension_manager_tests.TestNames.SplitItems)).run();
     });
 
 TEST_F(
     'CrExtensionsManagerTestWithMultipleExtensionTypesInstalled', 'ChangePages',
     function() {
       mocha.grep(assert(extension_manager_tests.TestNames.ChangePages)).run();
-    });
-
-TEST_F(
-    'CrExtensionsManagerTestWithMultipleExtensionTypesInstalled',
-    'SidebarHighlighting', function() {
-      mocha.grep(assert(extension_manager_tests.TestNames.SidebarHighlighting))
-          .run();
     });
 
 TEST_F(

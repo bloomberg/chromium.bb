@@ -26,8 +26,7 @@ cr.define('extensions', function() {
 
     /** @private */
     onCloseButtonTap_: function() {
-      extensions.navigation.navigateTo(
-          {page: Page.LIST, type: extensions.getItemListType(this.data)});
+      extensions.navigation.navigateTo({page: Page.LIST});
     },
 
     /**

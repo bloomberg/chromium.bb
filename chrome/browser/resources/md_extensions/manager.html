@@ -72,10 +72,10 @@
       </div>
     </dialog>
     <extensions-view-manager id="viewManager" role="main">
-      <extensions-item-list id="items-list" items="[[itemsList_]]"
+      <extensions-item-list id="items-list" is-guest="[[isGuest_]]"
           delegate="[[delegate]]" in-dev-mode="[[inDevMode]]"
           filter="[[filter]]" hidden$="[[!didInitPage_]]" slot="view"
-          is-guest="[[isGuest_]]">
+          apps="[[apps]]" extensions="[[extensions]]">
       </extensions-item-list>
       <extensions-detail-view id="details-view" delegate="[[delegate]]"
           in-dev-mode="[[inDevMode]]" data="[[detailViewItem_]]"

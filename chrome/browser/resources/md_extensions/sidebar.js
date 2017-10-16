@@ -17,45 +17,20 @@ cr.define('extensions', function() {
       role: 'navigation',
     },
 
-    /** @private */
-    onExtensionsTap_: function() {
-      extensions.navigation.navigateTo(
-          {page: Page.LIST, type: extensions.ShowingType.EXTENSIONS});
+    /** @override */
+    attached: function() {
+      this.selected_ =
+          extensions.navigation.getCurrentPage().page == Page.SHORTCUTS ? 1 : 0;
     },
 
     /** @private */
-    onAppsTap_: function() {
-      extensions.navigation.navigateTo(
-          {page: Page.LIST, type: extensions.ShowingType.APPS});
+    onExtensionsTap_: function() {
+      extensions.navigation.navigateTo({page: Page.LIST});
     },
 
     /** @private */
     onKeyboardShortcutsTap_: function() {
       extensions.navigation.navigateTo({page: Page.SHORTCUTS});
-    },
-
-    /**
-     * @param {!PageState} state
-     */
-    updateSelected: function(state) {
-      let selected;
-
-      switch (state.page) {
-        case Page.LIST:
-          if (state.type == extensions.ShowingType.APPS)
-            selected = 1;
-          else
-            selected = 0;
-          break;
-        case Page.SHORTCUTS:
-          selected = 2;
-          break;
-        default:
-          selected = -1;
-          break;
-      }
-
-      this.selected_ = selected;
     },
   });
 

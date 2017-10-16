@@ -149,7 +149,7 @@
     Cancel
   </message>
   <message name="IDS_MD_EXTENSIONS_TOOLBAR_TITLE" desc="The text displayed in the toolbar of the chrome://extensions page.">
-    Extensions &amp; Apps
+    Extensions
   </message>
   <message name="IDS_MD_EXTENSIONS_SEARCH" desc="The text displayed in the search box on the chrome://extensions page.">
     Search extensions
@@ -163,7 +163,7 @@
   <message name="IDS_MD_EXTENSIONS_SHORTCUT_SCOPE_GLOBAL" desc="The label to indicate that a shortcut will be triggerable globally (including outside of the Chrome application).">
     Global
   </message>
-  <message name="IDS_MD_EXTENSIONS_SIDEBAR_APPS" desc="The text displayed in the sidebar to go to the apps section of the page.">
+  <message name="IDS_MD_EXTENSIONS_APPS_TITLE" desc="The text displayed in the sidebar to go to the apps section of the page.">
     Chrome Apps
   </message>
   <message name="IDS_MD_EXTENSIONS_SIDEBAR_EXTENSIONS" desc="The text displayed in the sidebar to go to the extensions section of the page.">
