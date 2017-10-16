@@ -1284,12 +1284,11 @@ void RendererSchedulerImpl::ApplyTaskQueuePolicy(
 
   if (old_time_domain_type != new_time_domain_type) {
     if (old_time_domain_type == TimeDomainType::THROTTLED) {
-      task_queue->SetTimeDomain(real_time_domain());
       task_queue_throttler_->DecreaseThrottleRefCount(task_queue);
     } else if (new_time_domain_type == TimeDomainType::THROTTLED) {
-      task_queue->SetTimeDomain(real_time_domain());
       task_queue_throttler_->IncreaseThrottleRefCount(task_queue);
-    } else if (new_time_domain_type == TimeDomainType::VIRTUAL) {
+    }
+    if (new_time_domain_type == TimeDomainType::VIRTUAL) {
       DCHECK(virtual_time_domain_);
       task_queue->SetTimeDomain(virtual_time_domain_.get());
     } else {
