@@ -8,6 +8,10 @@
 
 namespace ui {
 
+Microsoft::WRL::ComPtr<ui::DragSourceWin> DragSourceWin::Create() {
+  return Microsoft::WRL::Make<ui::DragSourceWin>();
+}
+
 DragSourceWin::DragSourceWin() : cancel_drag_(false), data_(nullptr) {
 }
 

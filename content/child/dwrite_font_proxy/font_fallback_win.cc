@@ -43,6 +43,13 @@ void LogFallbackResult(DirectWriteFontFallbackResult fallback_result) {
 
 }  // namespace
 
+HRESULT FontFallback::Create(FontFallback** font_fallback_out,
+                             DWriteFontCollectionProxy* collection,
+                             IPC::Sender* sender) {
+  return Microsoft::WRL::MakeAndInitialize<FontFallback>(font_fallback_out,
+                                                         collection, sender);
+}
+
 FontFallback::FontFallback() = default;
 FontFallback::~FontFallback() = default;
 

@@ -20,11 +20,19 @@ namespace content {
 
 // Implements an  IDWriteFontFallback that uses IPC to proxy the fallback calls
 // to the system fallback in the browser process.
-class CONTENT_EXPORT FontFallback
+class FontFallback
     : public Microsoft::WRL::RuntimeClass<
           Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>,
           IDWriteFontFallback> {
  public:
+  // Factory method to avoid exporting the class and all it derives from.
+  static CONTENT_EXPORT HRESULT Create(FontFallback** font_fallback_out,
+                                       DWriteFontCollectionProxy* collection,
+                                       IPC::Sender* sender);
+
+  // Use Create() to construct these objects. Direct calls to the constructor
+  // are an error - it is only public because a WRL helper function creates the
+  // objects.
   FontFallback();
 
   HRESULT STDMETHODCALLTYPE

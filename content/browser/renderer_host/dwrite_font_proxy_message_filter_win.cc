@@ -395,7 +395,7 @@ void DWriteFontProxyMessageFilter::OnMapCharacters(
     return;
   }
   mswr::ComPtr<IDWriteTextAnalysisSource> analysis_source;
-  if (FAILED(mswr::MakeAndInitialize<gfx::win::TextAnalysisSource>(
+  if (FAILED(gfx::win::TextAnalysisSource::Create(
           &analysis_source, text, locale_name, number_substitution.Get(),
           static_cast<DWRITE_READING_DIRECTION>(reading_direction)))) {
     DCHECK(false);
