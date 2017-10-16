@@ -947,7 +947,7 @@ String InspectorOverlayAgent::EvaluateInOverlayForTest(const String& script) {
       ToLocalFrame(OverlayPage()->MainFrame())
           ->GetScriptController()
           .ExecuteScriptInMainWorldAndReturnValue(
-              ScriptSourceCode(script),
+              ScriptSourceCode(script), ScriptFetchOptions(),
               ScriptController::kExecuteScriptWhenScriptsDisabled);
   return ToCoreStringWithUndefinedOrNullCheck(string);
 }

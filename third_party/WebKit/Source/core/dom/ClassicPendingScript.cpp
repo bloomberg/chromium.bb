@@ -180,18 +180,20 @@ ClassicScript* ClassicPendingScript::GetSource(const KURL& document_url,
   const ParserDisposition parser_state = (loader && loader->IsParserInserted())
                                              ? kParserInserted
                                              : kNotParserInserted;
+  ScriptFetchOptions fetch_options(nonce, parser_state,
+                                   WebURLRequest::kFetchCredentialsModeOmit);
   if (!GetResource()) {
-    return ClassicScript::Create(
-        ScriptSourceCode(GetElement()->TextFromChildren(), document_url, nonce,
-                         parser_state, StartingPosition()));
+    ScriptSourceCode source_code(GetElement()->TextFromChildren(), document_url,
+                                 StartingPosition());
+    return ClassicScript::Create(source_code, fetch_options);
   }
 
   DCHECK(GetResource()->IsLoaded());
   bool streamer_ready = (ready_state_ == kReady) && streamer_ &&
                         !streamer_->StreamingSuppressed();
-  return ClassicScript::Create(
-      ScriptSourceCode(streamer_ready ? streamer_ : nullptr, GetResource(),
-                       nonce, parser_state));
+  ScriptSourceCode source_code(streamer_ready ? streamer_ : nullptr,
+                               GetResource());
+  return ClassicScript::Create(source_code, fetch_options);
 }
 
 void ClassicPendingScript::SetStreamer(ScriptStreamer* streamer) {

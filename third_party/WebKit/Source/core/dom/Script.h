@@ -8,6 +8,7 @@
 #include "core/CoreExport.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
+#include "platform/loader/fetch/ScriptFetchOptions.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {
@@ -38,6 +39,16 @@ class CORE_EXPORT Script : public GarbageCollectedFinalized<Script> {
 
   // For CSP check for inline scripts.
   virtual String InlineSourceTextForCSP() const = 0;
+
+  const ScriptFetchOptions& FetchOptions() const { return fetch_options_; }
+
+ protected:
+  explicit Script(const ScriptFetchOptions& fetch_options)
+      : fetch_options_(fetch_options) {}
+
+ private:
+  // https://html.spec.whatwg.org/#concept-script-script-fetch-options
+  const ScriptFetchOptions fetch_options_;
 };
 
 }  // namespace blink

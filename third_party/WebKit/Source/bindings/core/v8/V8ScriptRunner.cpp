@@ -412,6 +412,7 @@ CompileFn SelectCompileFunction(V8CacheOptions cache_options,
 v8::MaybeLocal<v8::Script> V8ScriptRunner::CompileScript(
     ScriptState* script_state,
     const ScriptSourceCode& source,
+    const ScriptFetchOptions& fetch_options,
     AccessControlStatus access_control_status,
     V8CacheOptions cache_options) {
   v8::Isolate* isolate = script_state->GetIsolate();
@@ -419,13 +420,9 @@ v8::MaybeLocal<v8::Script> V8ScriptRunner::CompileScript(
     V8ThrowException::ThrowError(isolate, "Source file too large.");
     return v8::Local<v8::Script>();
   }
-  // https://html.spec.whatwg.org/multipage/webappapis.html#default-classic-script-fetch-options
-  // The "default classic fetch options" credentials mode is "omit".
-  // TODO(kouhei): Follow html spec proposal to allow different credentials
-  // mode. https://github.com/whatwg/html/pull/3044
-  const ReferrerScriptInfo referrer_info(
-      WebURLRequest::kFetchCredentialsModeOmit, source.Nonce(),
-      source.ParserState());
+  const ReferrerScriptInfo referrer_info(fetch_options.CredentialsMode(),
+                                         fetch_options.Nonce(),
+                                         fetch_options.ParserState());
   return CompileScript(
       script_state, V8String(isolate, source.Source()), source.Url(),
       source.SourceMapUrl(), source.StartPosition(), source.GetResource(),
