@@ -25,22 +25,36 @@ class RequestInit {
   STACK_ALLOCATED();
 
  public:
-  explicit RequestInit(ExecutionContext*, const Dictionary&, ExceptionState&);
+  RequestInit(ExecutionContext*, const Dictionary&, ExceptionState&);
 
-  String method;
-  HeadersInit headers;
-  String content_type;
-  Member<BytesConsumer> body;
-  Referrer referrer;
-  String mode;
-  String credentials;
-  String cache;
-  String redirect;
-  String integrity;
-  RefPtr<EncodedFormData> attached_credential;
+  const String& Method() const { return method_; }
+  const HeadersInit& GetHeaders() const { return headers_; }
+  const String& ContentType() const { return content_type_; }
+  BytesConsumer* GetBody() { return body_; }
+  const Referrer& GetReferrer() const { return referrer_; }
+  const String& Mode() const { return mode_; }
+  const String& Credentials() const { return credentials_; }
+  const String& CacheMode() const { return cache_; }
+  const String& Redirect() const { return redirect_; }
+  const String& Integrity() const { return integrity_; }
+  RefPtr<EncodedFormData> AttachedCredential() { return attached_credential_; }
+  bool AreAnyMembersSet() const { return are_any_members_set_; }
+
+ private:
+  String method_;
+  HeadersInit headers_;
+  String content_type_;
+  Member<BytesConsumer> body_;
+  Referrer referrer_;
+  String mode_;
+  String credentials_;
+  String cache_;
+  String redirect_;
+  String integrity_;
+  RefPtr<EncodedFormData> attached_credential_;
   // True if any members in RequestInit are set and hence the referrer member
   // should be used in the Request constructor.
-  bool are_any_members_set;
+  bool are_any_members_set_ = false;
 };
 
 }  // namespace blink
