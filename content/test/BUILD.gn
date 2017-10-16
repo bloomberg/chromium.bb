@@ -1595,6 +1595,7 @@ test("content_unittests") {
     ":content_unittests_catalog_source",
     ":test_interfaces",
     ":test_support",
+    "//base/allocator:features",
     "//base/test:test_support",
     "//base/third_party/dynamic_annotations",
     "//cc",

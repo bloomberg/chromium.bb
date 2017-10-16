@@ -4,6 +4,7 @@
 
 #include "content/browser/tracing/background_memory_tracing_observer.h"
 
+#include "base/allocator/features.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/message_loop/message_loop.h"
@@ -11,6 +12,7 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/memory_dump_manager_test_utils.h"
 #include "base/trace_event/trace_log.h"
+#include "build/build_config.h"
 #include "content/browser/tracing/background_tracing_config_impl.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -104,8 +106,6 @@ TEST_F(BackgroundMemoryTracingObserverTest, OnlyBackgroundDumpConfig) {
             AllocationContextTracker::capture_mode());
 }
 
-// TODO(ssid): Fix these tests to work with builds without allocator shim
-// (asan).
 TEST_F(BackgroundMemoryTracingObserverTest, DISABLED_HeapProfilingConfig) {
   auto* observer = BackgroundMemoryTracingObserver::GetInstance();
   auto config = ReadFromJSONString(
@@ -119,8 +119,13 @@ TEST_F(BackgroundMemoryTracingObserverTest, DISABLED_HeapProfilingConfig) {
   EXPECT_TRUE(observer->heap_profiling_enabled_for_testing());
   observer->OnTracingEnabled(BackgroundTracingConfigImpl::BENCHMARK);
   EXPECT_EQ(0u, TraceLog::GetInstance()->enabled_modes());
+#if BUILDFLAG(USE_ALLOCATOR_SHIM) && !defined(OS_NACL)
   EXPECT_EQ(AllocationContextTracker::CaptureMode::PSEUDO_STACK,
             AllocationContextTracker::capture_mode());
+#else
+  EXPECT_EQ(AllocationContextTracker::CaptureMode::DISABLED,
+            AllocationContextTracker::capture_mode());
+#endif
 
   observer->OnScenarioAborted();
   EXPECT_FALSE(observer->heap_profiling_enabled_for_testing());
@@ -129,8 +134,6 @@ TEST_F(BackgroundMemoryTracingObserverTest, DISABLED_HeapProfilingConfig) {
             AllocationContextTracker::capture_mode());
 }
 
-// TODO(ssid): Fix these tests to work with builds without allocator shim
-// (asan).
 TEST_F(BackgroundMemoryTracingObserverTest, DISABLED_HeapProfilingWithFilters) {
   auto* observer = BackgroundMemoryTracingObserver::GetInstance();
   auto config = ReadFromJSONString(
@@ -143,6 +146,7 @@ TEST_F(BackgroundMemoryTracingObserverTest, DISABLED_HeapProfilingWithFilters) {
   observer->OnScenarioActivated(config.get());
   EXPECT_TRUE(observer->heap_profiling_enabled_for_testing());
   observer->OnTracingEnabled(BackgroundTracingConfigImpl::BENCHMARK);
+#if BUILDFLAG(USE_ALLOCATOR_SHIM) && !defined(OS_NACL)
   EXPECT_EQ(AllocationContextTracker::CaptureMode::PSEUDO_STACK,
             AllocationContextTracker::capture_mode());
   EXPECT_EQ(TraceLog::FILTERING_MODE, TraceLog::GetInstance()->enabled_modes());
@@ -156,6 +160,11 @@ TEST_F(BackgroundMemoryTracingObserverTest, DISABLED_HeapProfilingWithFilters) {
   std::string filter_str;
   base::JSONWriter::Write(filter_dict, &filter_str);
   EXPECT_EQ(kExpectedConfig, filter_str);
+#else   // BUILDFLAG(USE_ALLOCATOR_SHIM) && !defined(OS_NACL)
+  EXPECT_EQ(0u, TraceLog::GetInstance()->enabled_modes());
+  EXPECT_EQ(AllocationContextTracker::CaptureMode::DISABLED,
+            AllocationContextTracker::capture_mode());
+#endif  // BUILDFLAG(USE_ALLOCATOR_SHIM) && !defined(OS_NACL)
 
   observer->OnScenarioAborted();
   EXPECT_FALSE(observer->heap_profiling_enabled_for_testing());
