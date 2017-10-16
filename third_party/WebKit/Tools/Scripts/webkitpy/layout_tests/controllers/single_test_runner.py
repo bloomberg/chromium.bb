@@ -130,7 +130,7 @@ class SingleTestRunner(object):
     def run(self):
         if self._options.enable_sanitizer:
             return self._run_sanitized_test()
-        if self._options.reset_results:
+        if self._options.reset_results or self._options.copy_baselines:
             if self._reference_files:
                 expected_txt_filename = self._port.expected_filename(self._test_name, '.txt')
                 if not self._filesystem.exists(expected_txt_filename):
@@ -169,9 +169,14 @@ class SingleTestRunner(object):
 
     def _run_rebaseline(self):
         driver_output = self._driver.run_test(self._driver_input(), self._stop_when_done)
-        failures = self._handle_error(driver_output)
+        if self._options.reset_results:
+            expected_driver_output = None
+            failures = self._handle_error(driver_output)
+        else:
+            expected_driver_output = self._expected_driver_output()
+            failures = self._compare_output(expected_driver_output, driver_output).failures
         test_result_writer.write_test_result(self._filesystem, self._port, self._results_directory,
-                                             self._test_name, driver_output, None, failures)
+                                             self._test_name, driver_output, expected_driver_output, failures)
         # FIXME: It the test crashed or timed out, it might be better to avoid
         # to write new baselines.
         self._update_or_add_new_baselines(driver_output)
@@ -192,10 +197,12 @@ class SingleTestRunner(object):
         port = self._port
         fs = self._filesystem
 
-        if self._options.add_platform_exceptions:
-            output_dir = fs.join(port.baseline_version_dir(), fs.dirname(self._test_name))
-        elif self._options.new_flag_specific_baseline:
-            output_dir = fs.join(port.baseline_flag_specific_dir(), fs.dirname(self._test_name))
+        if self._options.copy_baselines:
+            flag_specific_dir = port.baseline_flag_specific_dir()
+            if flag_specific_dir:
+                output_dir = fs.join(flag_specific_dir, fs.dirname(self._test_name))
+            else:
+                output_dir = fs.join(port.baseline_version_dir(), fs.dirname(self._test_name))
         else:
             output_dir = fs.dirname(port.expected_filename(self._test_name, extension))
 
@@ -212,12 +219,20 @@ class SingleTestRunner(object):
 
         current_expected_path = port.expected_filename(self._test_name, extension)
         if fs.exists(current_expected_path) and fs.sha1(current_expected_path) == hashlib.sha1(data).hexdigest():
-            _log.info('Not writing new expected result "%s" because it is the same as the current expected result',
-                      port.relative_test_filename(output_path))
+            if self._options.reset_results:
+                _log.info('Not writing new expected result "%s" because it is the same as the current expected result',
+                          port.relative_test_filename(output_path))
+            else:
+                _log.info('Not copying baseline to "%s" because the actual result is the same as the current expected result',
+                          port.relative_test_filename(output_path))
             return
 
-        _log.info('Writing new expected result "%s"', port.relative_test_filename(output_path))
-        port.update_baseline(output_path, data)
+        if self._options.reset_results:
+            _log.info('Writing new expected result "%s"', port.relative_test_filename(output_path))
+            port.update_baseline(output_path, data)
+        else:
+            _log.info('Copying baseline to "%s"', port.relative_test_filename(output_path))
+            fs.copyfile(current_expected_path, output_path)
 
     def _handle_error(self, driver_output, reference_filename=None):
         """Returns test failures if some unusual errors happen in driver's run.
