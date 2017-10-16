@@ -111,6 +111,7 @@ mr.Init.initProviderManager_ = function() {
 
 
 /**
+ * Exposed for testing.
 
  * @return {!Array<!mr.EventListener>}
  * @private

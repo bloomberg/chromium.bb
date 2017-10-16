@@ -22,8 +22,8 @@ goog.module.declareLegacyNamespace();
  * cancellation propagates both up and down a chain of related promises.
  *
  * For an explanation of how this class is used in practice (in the interaction
- * between ProviderManager and RouteProvider classes), see the diagram at
- * <http://go/cancellablepromise-interaction>.
+ * between ProviderManager and RouteProvider classes), see the diagram in
+ * <route-creation-timeout.svg.gz>.
  *
  * @template T
  */

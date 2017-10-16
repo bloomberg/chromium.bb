@@ -7,8 +7,6 @@
  * The Media Router extension is logically separated into modules. Each module
  * and their corresponding bundle path are registered at startup
  * time. When a module is required, they will be loaded on-demand.
- * Design doc:
- * https://docs.google.com/document/d/1XYdxa411X_LvSE_44WxR948Hm8sWrJU6-GQzIfZAT10
  */
 
 goog.provide('mr.Module');

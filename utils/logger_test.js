@@ -112,7 +112,7 @@ describe('Test mr.Logger', function() {
       logger.info('Reply to nobody@love-spam.net, and see what happens.');
       logger.info(
           'This CL was written by somebody@developers.chromium.org, ' +
-          'or was it somebody@google.com?');
+          'or was it somebody@hooli.com?');
 
       expect(loggedMessages).toEqual([
         'Reply to [Redacted domain/email], and see what happens.',

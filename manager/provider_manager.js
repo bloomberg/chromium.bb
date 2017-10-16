@@ -287,9 +287,7 @@ mr.ProviderManager = class extends mr.Module {
       timerId = window.setTimeout(() => {
         timerId = null;
         // Refer to the CancellablePromise class for more details on the
-        // cancel()
-        // method, and <http://go/cancellablepromise-interaction> for a diagram
-        // of
+        // cancel() method, and <route-creation-timeout.svg.gz> for a diagram of
         // how promise cancellation works with this class.
         routePromise.cancel(new mr.RouteRequestError(
             mr.RouteRequestResultCode.TIMED_OUT,
