@@ -10113,7 +10113,7 @@ static void pick_filter_intra_interframe(
                                 MAX_ANGLE_DELTA + mbmi->angle_delta[1]);
   }
 #endif  // CONFIG_EXT_INTRA
-  if (mbmi->uv_mode == DC_PRED) {
+  if (mbmi->uv_mode == UV_DC_PRED) {
     rate2 +=
         av1_cost_bit(cpi->common.fc->filter_intra_probs[1],
                      mbmi->filter_intra_mode_info.use_filter_intra_mode[1]);
