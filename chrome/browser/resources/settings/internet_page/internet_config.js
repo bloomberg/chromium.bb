@@ -18,6 +18,22 @@ Polymer({
      */
     networkingPrivate: Object,
 
+    /** @private */
+    shareAllowEnable_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('shareNetworkAllowEnable');
+      }
+    },
+
+    /** @private */
+    shareDefault_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('shareNetworkDefault');
+      }
+    },
+
     /**
      * The GUID when an existing network is being configured. This will be
      * empty when configuring a new network.
