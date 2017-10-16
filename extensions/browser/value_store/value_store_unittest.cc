@@ -55,13 +55,13 @@ testing::AssertionResult SettingsEq(
     const char* _1, const char* _2,
     const base::DictionaryValue& expected,
     ValueStore::ReadResult actual_result) {
-  if (!actual_result->status().ok()) {
-    return testing::AssertionFailure() << "Result has error: "
-                                       << actual_result->status().message;
+  if (!actual_result.status().ok()) {
+    return testing::AssertionFailure()
+           << "Result has error: " << actual_result.status().message;
   }
 
   std::string error;
-  if (!ValuesEqual(&expected, &actual_result->settings(), &error)) {
+  if (!ValuesEqual(&expected, &actual_result.settings(), &error)) {
     return testing::AssertionFailure() << error;
   }
 
@@ -74,12 +74,12 @@ testing::AssertionResult ChangesEq(
     const char* _1, const char* _2,
     const ValueStoreChangeList& expected,
     ValueStore::WriteResult actual_result) {
-  if (!actual_result->status().ok()) {
-    return testing::AssertionFailure() << "Result has error: "
-                                       << actual_result->status().message;
+  if (!actual_result.status().ok()) {
+    return testing::AssertionFailure()
+           << "Result has error: " << actual_result.status().message;
   }
 
-  const ValueStoreChangeList& actual = actual_result->changes();
+  const ValueStoreChangeList& actual = actual_result.changes();
   if (expected.size() != actual.size()) {
     return testing::AssertionFailure() <<
         "Actual has wrong size, expecting " << expected.size() <<

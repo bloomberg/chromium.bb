@@ -40,7 +40,7 @@ void GetAllSettingsOnBackendSequence(base::DictionaryValue* out,
                                      base::WaitableEvent* signal,
                                      ValueStore* storage) {
   EXPECT_TRUE(extensions::GetBackendTaskRunner()->RunsTasksInCurrentSequence());
-  out->Swap(&storage->Get()->settings());
+  out->Swap(&storage->Get().settings());
   signal->Signal();
 }
 

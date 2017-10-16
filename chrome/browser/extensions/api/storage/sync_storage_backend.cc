@@ -153,12 +153,12 @@ syncer::SyncDataList SyncStorageBackend::GetAllSyncData(syncer::ModelType type)
        ++it) {
     ValueStore::ReadResult maybe_settings =
         GetOrCreateStorageWithSyncData(*it, EmptyDictionaryValue())->Get();
-    if (!maybe_settings->status().ok()) {
+    if (!maybe_settings.status().ok()) {
       LOG(WARNING) << "Failed to get settings for " << *it << ": "
-                   << maybe_settings->status().message;
+                   << maybe_settings.status().message;
       continue;
     }
-    AddAllSyncData(*it, maybe_settings->settings(), type, &all_sync_data);
+    AddAllSyncData(*it, maybe_settings.settings(), type, &all_sync_data);
   }
 
   return all_sync_data;

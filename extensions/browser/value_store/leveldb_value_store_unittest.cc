@@ -42,7 +42,7 @@ class LeveldbValueStoreUnitTest : public testing::Test {
   void SetUp() override {
     ASSERT_TRUE(database_dir_.CreateUniqueTempDir());
     CreateStore();
-    ASSERT_TRUE(store_->Get()->status().ok());
+    ASSERT_TRUE(store_->Get().status().ok());
   }
 
   void TearDown() override {
@@ -76,9 +76,8 @@ TEST_F(LeveldbValueStoreUnitTest, RestoreKeyTest) {
 
   // Insert a valid pair.
   std::unique_ptr<base::Value> value(new base::Value(kValue));
-  ASSERT_TRUE(store()
-                  ->Set(ValueStore::DEFAULTS, kNotCorruptKey, *value)
-                  ->status().ok());
+  ASSERT_TRUE(
+      store()->Set(ValueStore::DEFAULTS, kNotCorruptKey, *value).status().ok());
 
   // Insert a corrupt pair.
   const char kCorruptKey[] = "corrupt";
@@ -88,21 +87,21 @@ TEST_F(LeveldbValueStoreUnitTest, RestoreKeyTest) {
 
   // Verify corruption (the first Get will return corruption).
   ValueStore::ReadResult result = store()->Get(kCorruptKey);
-  ASSERT_FALSE(result->status().ok());
-  ASSERT_EQ(ValueStore::CORRUPTION, result->status().code);
+  ASSERT_FALSE(result.status().ok());
+  ASSERT_EQ(ValueStore::CORRUPTION, result.status().code);
 
   // Verify restored (was deleted in the first Get).
   result = store()->Get(kCorruptKey);
-  EXPECT_TRUE(result->status().ok()) << "Get result not OK: "
-                                     << result->status().message;
-  EXPECT_TRUE(result->settings().empty());
+  EXPECT_TRUE(result.status().ok())
+      << "Get result not OK: " << result.status().message;
+  EXPECT_TRUE(result.settings().empty());
 
   // Verify that the valid pair is still present.
   result = store()->Get(kNotCorruptKey);
-  EXPECT_TRUE(result->status().ok());
-  EXPECT_TRUE(result->settings().HasKey(kNotCorruptKey));
+  EXPECT_TRUE(result.status().ok());
+  EXPECT_TRUE(result.settings().HasKey(kNotCorruptKey));
   std::string value_string;
-  EXPECT_TRUE(result->settings().GetString(kNotCorruptKey, &value_string));
+  EXPECT_TRUE(result.settings().GetString(kNotCorruptKey, &value_string));
   EXPECT_EQ(kValue, value_string);
 }
 
@@ -121,7 +120,8 @@ TEST_F(LeveldbValueStoreUnitTest, RestoreDoesMinimumNecessary) {
   for (size_t i = 0; i < kNotCorruptKeysSize; ++i) {
     ASSERT_TRUE(store()
                     ->Set(ValueStore::DEFAULTS, kNotCorruptKeys[i], *value)
-                    ->status().ok());
+                    .status()
+                    .ok());
   }
 
   // Insert a few corrupted pairs.
@@ -132,20 +132,19 @@ TEST_F(LeveldbValueStoreUnitTest, RestoreDoesMinimumNecessary) {
 
   // Verify that we broke it and that it was repaired by the value store.
   ValueStore::ReadResult result = store()->Get();
-  ASSERT_FALSE(result->status().ok());
-  ASSERT_EQ(ValueStore::CORRUPTION, result->status().code);
+  ASSERT_FALSE(result.status().ok());
+  ASSERT_EQ(ValueStore::CORRUPTION, result.status().code);
   ASSERT_EQ(ValueStore::VALUE_RESTORE_DELETE_SUCCESS,
-            result->status().restore_status);
+            result.status().restore_status);
 
   // We should still have all valid pairs present in the database.
   std::string value_string;
   for (size_t i = 0; i < kNotCorruptKeysSize; ++i) {
     result = store()->Get(kNotCorruptKeys[i]);
-    EXPECT_TRUE(result->status().ok());
-    ASSERT_EQ(ValueStore::RESTORE_NONE, result->status().restore_status);
-    EXPECT_TRUE(result->settings().HasKey(kNotCorruptKeys[i]));
-    EXPECT_TRUE(
-        result->settings().GetString(kNotCorruptKeys[i], &value_string));
+    EXPECT_TRUE(result.status().ok());
+    ASSERT_EQ(ValueStore::RESTORE_NONE, result.status().restore_status);
+    EXPECT_TRUE(result.settings().HasKey(kNotCorruptKeys[i]));
+    EXPECT_TRUE(result.settings().GetString(kNotCorruptKeys[i], &value_string));
     EXPECT_EQ(kValue, value_string);
   }
 }
@@ -167,7 +166,8 @@ TEST_F(LeveldbValueStoreUnitTest, RestoreFullDatabase) {
   for (size_t i = 0; i < kNotCorruptKeysSize; ++i) {
     ASSERT_TRUE(store()
                     ->Set(ValueStore::DEFAULTS, kNotCorruptKeys[i], *value)
-                    ->status().ok());
+                    .status()
+                    .ok());
   }
 
   // Close it (so we remove the lock), and replace all files with LolCats.
@@ -184,7 +184,7 @@ TEST_F(LeveldbValueStoreUnitTest, RestoreFullDatabase) {
   // We couldn't recover anything, but we should be in a sane state again.
   ValueStore::ReadResult result = store()->Get();
   ASSERT_EQ(ValueStore::DB_RESTORE_REPAIR_SUCCESS,
-            result->status().restore_status);
-  EXPECT_TRUE(result->status().ok());
-  EXPECT_EQ(0u, result->settings().size());
+            result.status().restore_status);
+  EXPECT_TRUE(result.status().ok());
+  EXPECT_EQ(0u, result.settings().size());
 }
