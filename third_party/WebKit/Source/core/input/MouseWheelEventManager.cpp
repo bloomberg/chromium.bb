@@ -66,7 +66,8 @@ WebInputEventResult MouseWheelEventManager::HandleWheelEvent(
       // Synthetic wheel events generated from GesturePinchUpdate don't have
       // phase info. Send these events to the target under the cursor.
       wheel_target_ = FindTargetNode(event, doc, view);
-    } else if (event.phase == WebMouseWheelEvent::kPhaseBegan) {
+    } else if (event.phase == WebMouseWheelEvent::kPhaseBegan ||
+               !wheel_target_) {
       // Find and save the wheel_target_, this target will be used for the rest
       // of the current scrolling sequence.
       wheel_target_ = FindTargetNode(event, doc, view);
@@ -108,6 +109,11 @@ WebInputEventResult MouseWheelEventManager::HandleWheelEvent(
   }
 
   return WebInputEventResult::kNotHandled;
+}
+
+void MouseWheelEventManager::ElementRemoved(Node* target) {
+  if (wheel_target_ == target)
+    wheel_target_ = nullptr;
 }
 
 Node* MouseWheelEventManager::FindTargetNode(const WebMouseWheelEvent& event,
