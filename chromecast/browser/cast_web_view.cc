@@ -79,9 +79,6 @@ CastWebView::CastWebView(Delegate* delegate,
   DCHECK(window_);
   content::WebContentsObserver::Observe(web_contents_.get());
   web_contents_->SetDelegate(this);
-
-  if (transparent_)
-    window_->SetTransparent();
 }
 
 CastWebView::~CastWebView() {}
