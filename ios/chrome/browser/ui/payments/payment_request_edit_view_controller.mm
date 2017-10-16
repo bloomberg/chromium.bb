@@ -87,7 +87,7 @@ PaymentsTextItem* ErrorMessageItemForError(NSString* errorMessage) {
   PaymentsTextItem* errorMessageItem =
       [[PaymentsTextItem alloc] initWithType:ItemTypeErrorMessage];
   errorMessageItem.text = errorMessage;
-  errorMessageItem.image = NativeImage(IDR_IOS_PAYMENTS_WARNING);
+  errorMessageItem.leadingImage = NativeImage(IDR_IOS_PAYMENTS_WARNING);
   errorMessageItem.accessibilityIdentifier = kWarningMessageAccessibilityID;
   return errorMessageItem;
 }

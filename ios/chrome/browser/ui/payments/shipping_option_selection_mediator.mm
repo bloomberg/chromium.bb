@@ -77,7 +77,7 @@ using payments::GetShippingOptionSectionString;
   PaymentsTextItem* headerItem = [[PaymentsTextItem alloc] init];
   headerItem.text = self.headerText;
   if (self.state == PaymentRequestSelectorStateError)
-    headerItem.image = NativeImage(IDR_IOS_PAYMENTS_WARNING);
+    headerItem.leadingImage = NativeImage(IDR_IOS_PAYMENTS_WARNING);
   return headerItem;
 }
 

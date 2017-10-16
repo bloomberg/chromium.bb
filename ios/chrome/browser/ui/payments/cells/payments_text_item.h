@@ -28,8 +28,11 @@
 // palette.
 @property(nonatomic, null_resettable, copy) UIColor* detailTextColor;
 
-// The image to display.
-@property(nonatomic, nullable, strong) UIImage* image;
+// The leading image to display.
+@property(nonatomic, nullable, strong) UIImage* leadingImage;
+
+// The trailing image to display.
+@property(nonatomic, nullable, strong) UIImage* trailingImage;
 
 // The accessory type for the represented cell.
 @property(nonatomic) MDCCollectionViewCellAccessoryType accessoryType;
@@ -37,12 +40,14 @@
 @end
 
 // PaymentsTextCell implements a MDCCollectionViewCell subclass containing
-// a main text label, a secondary text label and an optional image. The labels
-// are laid out to fill the full width of the cell and are wrapped as needed to
-// fit in the cell. The image is laid out on the leading edge of the cell. The
-// text labels are laid out on the the trailing edge of the image, if one
-// exists, or the leading edge of the cell otherwise, up to the trailing edge of
-// the cell.
+// a main text label, a secondary text label and two optional images (one
+// leading and one trailing). The labels are laid out to fill the full width of
+// the cell and are wrapped as needed to fit in the cell. One image is laid out
+// on the leading edge of the cell, and the other on the trailing edge of the
+// cell. The text labels are laid out on the the trailing edge of the leading
+// image, if one exists, or the leading edge of the cell otherwise, up to the
+// leading edge of the trailing image, if one exists, or the trailing edge of
+// the cell otherwise.
 @interface PaymentsTextCell : MDCCollectionViewCell
 
 // UILabel corresponding to |text| from the item.
@@ -51,8 +56,11 @@
 // UILabel corresponding to |detailText| from the item.
 @property(nonatomic, readonly, nullable, strong) UILabel* detailTextLabel;
 
-// UIImageView corresponding to |image| from the item.
-@property(nonatomic, readonly, nullable, strong) UIImageView* imageView;
+// UIImageView corresponding to |leadingImage| from the item.
+@property(nonatomic, readonly, nullable, strong) UIImageView* leadingImageView;
+
+// UIImageView corresponding to |trailingImage| from the item.
+@property(nonatomic, readonly, nullable, strong) UIImageView* trailingImageView;
 
 @end
 
