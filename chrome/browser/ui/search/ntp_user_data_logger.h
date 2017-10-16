@@ -54,9 +54,10 @@ class NTPUserDataLogger
  private:
   friend class content::WebContentsUserData<NTPUserDataLogger>;
 
-  FRIEND_TEST_ALL_PREFIXES(NTPUserDataLoggerTest, TestLoadTime);
-  FRIEND_TEST_ALL_PREFIXES(NTPUserDataLoggerTest, TestLogMostVisitedImpression);
-  FRIEND_TEST_ALL_PREFIXES(NTPUserDataLoggerTest, TestNumberOfTiles);
+  FRIEND_TEST_ALL_PREFIXES(NTPUserDataLoggerTest, ShouldRecordLoadTime);
+  FRIEND_TEST_ALL_PREFIXES(NTPUserDataLoggerTest, ShouldRecordNumberOfTiles);
+  FRIEND_TEST_ALL_PREFIXES(NTPUserDataLoggerTest,
+                           ShouldRecordImpressionsAgainAfterNavigating);
 
   // Number of Most Visited elements on the NTP for logging purposes.
   static const int kNumMostVisited = 8;
