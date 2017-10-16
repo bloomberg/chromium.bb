@@ -1168,6 +1168,40 @@ class DevToolsHeaderStrippingTest : public HeadlessAsyncDevTooledBrowserTest,
 
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(DevToolsHeaderStrippingTest);
 
+class DevToolsNetworkOfflineEmulationTest
+    : public HeadlessAsyncDevTooledBrowserTest,
+      public page::Observer,
+      public network::Observer {
+  void RunDevTooledTest() override {
+    EXPECT_TRUE(embedded_test_server()->Start());
+    base::RunLoop run_loop;
+    devtools_client_->GetPage()->AddObserver(this);
+    devtools_client_->GetPage()->Enable();
+    devtools_client_->GetNetwork()->AddObserver(this);
+    devtools_client_->GetNetwork()->Enable(run_loop.QuitClosure());
+    base::MessageLoop::ScopedNestableTaskAllower nest_loop(
+        base::MessageLoop::current());
+    run_loop.Run();
+    std::unique_ptr<network::EmulateNetworkConditionsParams> params =
+        network::EmulateNetworkConditionsParams::Builder()
+            .SetOffline(true)
+            .SetLatency(0)
+            .SetDownloadThroughput(0)
+            .SetUploadThroughput(0)
+            .Build();
+    devtools_client_->GetNetwork()->EmulateNetworkConditions(std::move(params));
+    devtools_client_->GetPage()->Navigate(
+        embedded_test_server()->GetURL("/hello.html").spec());
+  }
+
+  void OnLoadingFailed(const network::LoadingFailedParams& failed) override {
+    EXPECT_EQ("net::ERR_INTERNET_DISCONNECTED", failed.GetErrorText());
+    FinishAsynchronousTest();
+  }
+};
+
+HEADLESS_ASYNC_DEVTOOLED_TEST_F(DevToolsNetworkOfflineEmulationTest);
+
 class RawDevtoolsProtocolTest
     : public HeadlessAsyncDevTooledBrowserTest,
       public HeadlessDevToolsClient::RawProtocolListener {
