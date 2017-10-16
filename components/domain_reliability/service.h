@@ -14,6 +14,7 @@
 #include "base/single_thread_task_runner.h"
 #include "components/domain_reliability/clear_mode.h"
 #include "components/domain_reliability/config.h"
+#include "components/domain_reliability/context.h"
 #include "components/domain_reliability/domain_reliability_export.h"
 #include "components/keyed_service/core/keyed_service.h"
 
@@ -22,6 +23,10 @@ class GURL;
 namespace base {
 class Value;
 }  // namespace base
+
+namespace content {
+class BrowserContext;
+}  // namespace content
 
 namespace net {
 class URLRequestContextGetter;
@@ -41,7 +46,8 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityService
   // Creates a DomainReliabilityService that will contain a Monitor with the
   // given upload reporter string.
   static DomainReliabilityService* Create(
-      const std::string& upload_reporter_string);
+      const std::string& upload_reporter_string,
+      content::BrowserContext* browser_context);
 
   ~DomainReliabilityService() override;
 
@@ -51,6 +57,7 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityService
   // called. The caller is responsible for destroying the Monitor on the given
   // task runner when it is no longer needed.
   virtual std::unique_ptr<DomainReliabilityMonitor> CreateMonitor(
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> network_task_runner) = 0;
 
   // Clears browsing data on the associated Monitor. |Init()| must have been

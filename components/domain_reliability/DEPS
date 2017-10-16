@@ -5,6 +5,9 @@
 include_rules = [
   "+net",
   "+components/keyed_service/core",
+  "+content/public/browser",
   "+content/public/common",
+  "+content/public/test",
+  "+third_party/WebKit/public",
 ]
 

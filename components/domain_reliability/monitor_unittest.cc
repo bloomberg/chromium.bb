@@ -60,6 +60,7 @@ class DomainReliabilityMonitorTest : public testing::Test {
             new net::TestURLRequestContextGetter(network_task_runner_)),
         time_(new MockTime()),
         monitor_("test-reporter",
+                 DomainReliabilityContext::UploadAllowedCallback(),
                  pref_task_runner_,
                  network_task_runner_,
                  std::unique_ptr<MockableTime>(time_)) {

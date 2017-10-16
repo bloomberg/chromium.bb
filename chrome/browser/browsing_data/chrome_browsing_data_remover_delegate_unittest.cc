@@ -448,6 +448,7 @@ class MockDomainReliabilityService : public DomainReliabilityService {
   ~MockDomainReliabilityService() override {}
 
   std::unique_ptr<DomainReliabilityMonitor> CreateMonitor(
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> network_task_runner)
       override {
     NOTREACHED();

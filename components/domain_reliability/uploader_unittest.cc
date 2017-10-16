@@ -183,7 +183,7 @@ class DomainReliabilityUploaderTest : public testing::Test {
             &time_, url_request_context_getter_)) {
     net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
         GURL(kUploadURL), base::WrapUnique(interceptor_));
-    uploader_->set_discard_uploads(false);
+    uploader_->SetDiscardUploads(false);
   }
 
   ~DomainReliabilityUploaderTest() override {
