@@ -15,7 +15,6 @@ namespace ash {
 class DragDropController;
 class MessageCenterController;
 class NativeCursorManagerAsh;
-class PaletteDelegate;
 class ScreenPositionController;
 class Shell;
 class SystemGestureEventFilter;
@@ -35,8 +34,6 @@ class ShellTestApi {
   NativeCursorManagerAsh* native_cursor_manager_ash();
   DragDropController* drag_drop_controller();
   TabletModeWindowManager* tablet_mode_window_manager();
-
-  void SetPaletteDelegate(std::unique_ptr<PaletteDelegate> palette_delegate);
 
   // Calls the private method.
   void OnLocalStatePrefServiceInitialized(

@@ -10,7 +10,6 @@
 #include "ash/default_wallpaper_delegate.h"
 #include "ash/gpu_support_stub.h"
 #include "ash/keyboard/test_keyboard_ui.h"
-#include "ash/palette_delegate.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
@@ -26,18 +25,6 @@
 
 namespace ash {
 namespace shell {
-namespace {
-
-class PaletteDelegateImpl : public PaletteDelegate {
- public:
-  PaletteDelegateImpl() {}
-  ~PaletteDelegateImpl() override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PaletteDelegateImpl);
-};
-
-}  // namespace
 
 ShellDelegateImpl::ShellDelegateImpl() {}
 
@@ -80,10 +67,6 @@ ShellDelegateImpl::CreateWallpaperDelegate() {
 
 AccessibilityDelegate* ShellDelegateImpl::CreateAccessibilityDelegate() {
   return new DefaultAccessibilityDelegate;
-}
-
-std::unique_ptr<PaletteDelegate> ShellDelegateImpl::CreatePaletteDelegate() {
-  return std::make_unique<PaletteDelegateImpl>();
 }
 
 GPUSupport* ShellDelegateImpl::CreateGPUSupport() {

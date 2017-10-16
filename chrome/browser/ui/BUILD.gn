@@ -1249,8 +1249,6 @@ split_static_library("ui") {
       "ash/multi_user/user_switch_animator_chromeos.h",
       "ash/networking_config_delegate_chromeos.cc",
       "ash/networking_config_delegate_chromeos.h",
-      "ash/palette_delegate_chromeos.cc",
-      "ash/palette_delegate_chromeos.h",
       "ash/session_controller_client.cc",
       "ash/session_controller_client.h",
       "ash/session_util.cc",

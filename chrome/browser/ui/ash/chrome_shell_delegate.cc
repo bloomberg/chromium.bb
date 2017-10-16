@@ -44,7 +44,6 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/networking_config_delegate_chromeos.h"
-#include "chrome/browser/ui/ash/palette_delegate_chromeos.h"
 #include "chrome/browser/ui/ash/session_controller_client.h"
 #include "chrome/browser/ui/ash/session_util.h"
 #include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
@@ -473,11 +472,6 @@ std::unique_ptr<keyboard::KeyboardUI> ChromeShellDelegate::CreateKeyboardUI() {
 
 ash::AccessibilityDelegate* ChromeShellDelegate::CreateAccessibilityDelegate() {
   return new AccessibilityDelegateImpl;
-}
-
-std::unique_ptr<ash::PaletteDelegate>
-ChromeShellDelegate::CreatePaletteDelegate() {
-  return base::MakeUnique<chromeos::PaletteDelegateChromeOS>();
 }
 
 ash::NetworkingConfigDelegate*

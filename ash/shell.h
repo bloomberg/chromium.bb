@@ -124,7 +124,6 @@ class NewWindowController;
 class NightLightController;
 class NoteTakingController;
 class OverlayEventFilter;
-class PaletteDelegate;
 class PartialMagnificationController;
 class PeripheralBatteryNotifier;
 class PowerButtonController;
@@ -386,7 +385,6 @@ class ASH_EXPORT Shell : public SessionObserver,
     return note_taking_controller_.get();
   }
   OverlayEventFilter* overlay_filter() { return overlay_filter_.get(); }
-  PaletteDelegate* palette_delegate() { return palette_delegate_.get(); }
   PartialMagnificationController* partial_magnification_controller() {
     return partial_magnification_controller_.get();
   }
@@ -679,7 +677,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<MediaController> media_controller_;
   std::unique_ptr<MruWindowTracker> mru_window_tracker_;
   std::unique_ptr<NewWindowController> new_window_controller_;
-  std::unique_ptr<PaletteDelegate> palette_delegate_;
   std::unique_ptr<ResizeShadowController> resize_shadow_controller_;
   std::unique_ptr<SessionController> session_controller_;
   std::unique_ptr<NightLightController> night_light_controller_;

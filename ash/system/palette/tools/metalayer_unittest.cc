@@ -11,7 +11,6 @@
 #include "ash/system/palette/mock_palette_tool_delegate.h"
 #include "ash/system/palette/palette_ids.h"
 #include "ash/system/palette/palette_tool.h"
-#include "ash/system/palette/test_palette_delegate.h"
 #include "ash/system/palette/tools/metalayer_mode.h"
 #include "ash/system/tray/hover_highlight_view.h"
 #include "ash/test/ash_test_base.h"
@@ -34,8 +33,6 @@ class MetalayerToolTest : public AshTestBase {
   void SetUp() override {
     AshTestBase::SetUp();
 
-    ShellTestApi().SetPaletteDelegate(std::make_unique<TestPaletteDelegate>());
-
     palette_tool_delegate_ = std::make_unique<MockPaletteToolDelegate>();
     tool_ = std::make_unique<MetalayerMode>(palette_tool_delegate_.get());
     highlighter_test_api_ = std::make_unique<HighlighterControllerTestApi>(
@@ -48,10 +45,6 @@ class MetalayerToolTest : public AshTestBase {
     highlighter_test_api_.reset();
     tool_.reset();
     AshTestBase::TearDown();
-  }
-
-  TestPaletteDelegate* test_palette_delegate() {
-    return static_cast<TestPaletteDelegate*>(Shell::Get()->palette_delegate());
   }
 
  protected:

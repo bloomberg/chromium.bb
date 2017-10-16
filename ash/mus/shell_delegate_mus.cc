@@ -10,7 +10,6 @@
 #include "ash/accessibility/default_accessibility_delegate.h"
 #include "ash/gpu_support_stub.h"
 #include "ash/mus/wallpaper_delegate_mus.h"
-#include "ash/palette_delegate.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "components/user_manager/user_info_impl.h"
@@ -74,12 +73,6 @@ std::unique_ptr<WallpaperDelegate> ShellDelegateMus::CreateWallpaperDelegate() {
 
 AccessibilityDelegate* ShellDelegateMus::CreateAccessibilityDelegate() {
   return new DefaultAccessibilityDelegate;
-}
-
-std::unique_ptr<PaletteDelegate> ShellDelegateMus::CreatePaletteDelegate() {
-  // TODO: http://crbug.com/647417.
-  NOTIMPLEMENTED();
-  return nullptr;
 }
 
 GPUSupport* ShellDelegateMus::CreateGPUSupport() {
