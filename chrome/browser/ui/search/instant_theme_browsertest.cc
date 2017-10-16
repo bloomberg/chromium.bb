@@ -116,9 +116,8 @@ IN_PROC_BROWSER_TEST_F(InstantThemeTest, ThemeBackgroundAccess) {
   EXPECT_TRUE(loaded) << search_url;
 }
 
-// Flaky on all bots. http://crbug.com/335297.
 IN_PROC_BROWSER_TEST_F(InstantThemeTest,
-                       DISABLED_NoThemeBackgroundChangeEventOnTabSwitch) {
+                       NoThemeBackgroundChangeEventOnTabSwitch) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
 
   // Install a theme.
@@ -160,9 +159,7 @@ IN_PROC_BROWSER_TEST_F(InstantThemeTest,
   EXPECT_EQ(0, on_theme_changed_calls);
 }
 
-// Flaky on all bots. http://crbug.com/335297, http://crbug.com/265971.
-IN_PROC_BROWSER_TEST_F(InstantThemeTest,
-                       DISABLED_SendThemeBackgroundChangedEvent) {
+IN_PROC_BROWSER_TEST_F(InstantThemeTest, SendThemeBackgroundChangedEvent) {
   ASSERT_NO_FATAL_FAILURE(SetupInstant(browser()));
 
   // Install a theme.
