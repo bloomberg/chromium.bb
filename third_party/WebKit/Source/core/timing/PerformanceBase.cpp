@@ -168,6 +168,8 @@ PerformanceEntryVector PerformanceBase::getEntriesByType(
         entries.AppendVector(user_timing_->GetMeasures());
       break;
     case PerformanceEntry::kPaint:
+      UseCounter::Count(GetExecutionContext(),
+                        WebFeature::kPaintTimingRequested);
       if (first_paint_timing_)
         entries.push_back(first_paint_timing_);
       if (first_contentful_paint_timing_)
@@ -477,10 +479,15 @@ void PerformanceBase::UpdatePerformanceObserverFilterOptions() {
 }
 
 void PerformanceBase::NotifyObserversOfEntry(PerformanceEntry& entry) const {
+  bool observer_found = false;
   for (auto& observer : observers_) {
-    if (observer->FilterOptions() & entry.EntryTypeEnum())
+    if (observer->FilterOptions() & entry.EntryTypeEnum()) {
       observer->EnqueuePerformanceEntry(entry);
+      observer_found = true;
+    }
   }
+  if (observer_found && entry.EntryTypeEnum() == PerformanceEntry::kPaint)
+    UseCounter::Count(GetExecutionContext(), WebFeature::kPaintTimingObserved);
 }
 
 void PerformanceBase::NotifyObserversOfEntries(

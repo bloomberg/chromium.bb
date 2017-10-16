@@ -16586,6 +16586,8 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2187" label="ImageCaptureSetOptions"/>
   <int value="2188" label="PerformanceObserverForWindow"/>
   <int value="2189" label="PerformanceObserverForWorker"/>
+  <int value="2190" label="PaintTimingObserved"/>
+  <int value="2191" label="PaintTimingRequested"/>
 </enum>
 
 <enum name="FeedbackSource">
