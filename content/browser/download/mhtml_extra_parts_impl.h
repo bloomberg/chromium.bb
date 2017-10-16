@@ -17,8 +17,11 @@ struct MHTMLExtraDataPart {
   std::string body;
 
   MHTMLExtraDataPart();
-  ~MHTMLExtraDataPart();
   MHTMLExtraDataPart(const MHTMLExtraDataPart& other);
+  MHTMLExtraDataPart(MHTMLExtraDataPart&& other);
+  MHTMLExtraDataPart& operator=(const MHTMLExtraDataPart& other);
+  MHTMLExtraDataPart& operator=(MHTMLExtraDataPart&& other);
+  ~MHTMLExtraDataPart();
 };
 
 // Class used as a data object for WebContents UserData to represent an MHTML
