@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/jumbo.gni")
 import("//third_party/WebKit/Source/bindings/bindings.gni")
 import("//third_party/WebKit/Source/core/core.gni")
 import("//third_party/inspector_protocol/inspector_protocol.gni")
@@ -198,7 +199,7 @@ inspector_protocol_generate("protocol_sources") {
 }
 
 # Compiles the sources generated above.
-source_set("generated") {
+jumbo_source_set("generated") {
   sources = get_target_outputs(":protocol_sources")
 
   configs -= core_config_remove
