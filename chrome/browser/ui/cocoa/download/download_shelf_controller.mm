@@ -451,14 +451,17 @@ const CGFloat kMDCloseButtonSize = 24;
   // Start at width 0...
   NSSize size = [controller preferredSize];
   NSRect frame = NSMakeRect(0, 0, 0, size.height);
-  [[controller view] setFrame:[itemContainerView_ cr_localizedRect:frame]];
+  NSView* view = [controller view];
+  [view setFrame:[itemContainerView_ cr_localizedRect:frame]];
 
   // ...then, in MD, animate everything together.
   if (base::FeatureList::IsEnabled(features::kMacMaterialDesignDownloadShelf)) {
+    view.alphaValue = 0;
     [NSAnimationContext runAnimationGroup:^(NSAnimationContext* context) {
       context.duration = kDownloadItemOpenDuration;
       context.timingFunction =
           CAMediaTimingFunction.cr_materialEaseOutTimingFunction;
+      view.animator.alphaValue = 1;
       [self layoutItems];
     }
                         completionHandler:nil];

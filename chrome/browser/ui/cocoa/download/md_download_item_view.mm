@@ -22,7 +22,6 @@
 #import "ui/base/cocoa/a11y_util.h"
 #import "ui/base/cocoa/controls/textfield_utils.h"
 #import "ui/base/cocoa/nsview_additions.h"
-#import "ui/base/cocoa/quartzcore_additions.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #import "ui/base/theme_provider.h"
 #include "ui/gfx/color_palette.h"
@@ -256,14 +255,6 @@ NSTextField* MakeLabel(
     button_.imagePosition = NSImageOnly;
     [self addSubview:button_];
 
-    base::scoped_nsobject<MDDownloadItemProgressIndicator> progressIndicator(
-        [[MDDownloadItemProgressIndicator alloc]
-            initWithFrame:[self cr_localizedRect:kProgressIndicatorFrame]]);
-    progressIndicator_ = progressIndicator;
-    progressIndicator_.autoresizingMask =
-        [NSView cr_localizedAutoresizingMask:NSViewMaxXMargin];
-    [self addSubview:progressIndicator_];
-
     base::scoped_nsobject<NSImageView> imageView([[NSImageView alloc]
         initWithFrame:[self
                           cr_localizedRect:NSMakeRect(kImageXInset,
@@ -275,7 +266,16 @@ NSTextField* MakeLabel(
     imageView_.autoresizingMask =
         [NSView cr_localizedAutoresizingMask:NSViewMaxXMargin];
     ui::a11y_util::HideImageFromAccessibilityOrder(imageView_);
+    imageView_.alphaValue = 0;
     [self addSubview:imageView_];
+
+    base::scoped_nsobject<MDDownloadItemProgressIndicator> progressIndicator(
+        [[MDDownloadItemProgressIndicator alloc]
+            initWithFrame:[self cr_localizedRect:kProgressIndicatorFrame]]);
+    progressIndicator_ = progressIndicator;
+    progressIndicator_.autoresizingMask =
+        [NSView cr_localizedAutoresizingMask:NSViewMaxXMargin];
+    [self addSubview:progressIndicator_];
 
     NSRect menuButtonRect = NSMakeRect(
         NSMaxX(bounds) - kMenuButtonSize - kMenuButtonTrailingMargin,
@@ -306,7 +306,7 @@ NSTextField* MakeLabel(
 
     filenameView_ = MakeLabel([NSFont systemFontOfSize:12]);
     NSRect filenameRect =
-        NSMakeRect(kTextX, kFilenameY,
+        NSMakeRect(kTextX, kFilenameWithStatusY,
                    (NSMinX(menuButtonRect) - kMenuButtonSpacing) - kTextX,
                    NSHeight(filenameView_.bounds));
     filenameView_.frame = [self cr_localizedRect:filenameRect];
@@ -321,7 +321,6 @@ NSTextField* MakeLabel(
     statusTextView_.frame = [self cr_localizedRect:statusTextRect];
     statusTextView_.autoresizingMask =
         [NSView cr_localizedAutoresizingMask:NSViewMaxXMargin];
-    statusTextView_.hidden = YES;
     [self addSubview:statusTextView_];
   }
   return self;
@@ -384,8 +383,23 @@ NSTextField* MakeLabel(
   ];
 }
 
+- (void)finish {
+  dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1 * NSEC_PER_SEC),
+                 dispatch_get_main_queue(), ^{
+                   [NSAnimationContext
+                       runAnimationGroup:^(NSAnimationContext* context) {
+                         context.duration = 0.3;
+                         progressIndicator_.animator.alphaValue = 0;
+                         context.duration = 1;
+                         imageView_.animator.alphaValue = 1;
+                       }
+                       completionHandler:nil];
+                 });
+}
+
 - (void)setStateFromDownload:(DownloadItemModel*)downloadModel {
   const content::DownloadItem& download = *downloadModel->download();
+  const content::DownloadItem::DownloadState state = download.GetState();
   if (download.IsDangerous()) {
     if (!dangerView_) {
       for (NSView* view in [self normalViews]) {
@@ -417,9 +431,7 @@ NSTextField* MakeLabel(
   }
   downloadPath_ = download.GetFullPath();
   button_.dragDelegate =
-      downloadModel->download()->GetState() == content::DownloadItem::COMPLETE
-          ? self
-          : nil;
+      (state == content::DownloadItem::COMPLETE ? self : nil);
 
   [button_
       cr_setAccessibilityLabel:l10n_util::GetNSStringWithFixup(
@@ -431,11 +443,8 @@ NSTextField* MakeLabel(
       cr_setAccessibilityLabel:base::SysUTF8ToNSString(
                                    download.GetFileNameToReportUser().value())];
 
-  progressIndicator_.progress = downloadModel->PercentComplete() / 100.0;
-  progressIndicator_.paused = download.IsPaused();
-
   button_.enabled = ^{
-    switch (download.GetState()) {
+    switch (state) {
       case content::DownloadItem::IN_PROGRESS:
       case content::DownloadItem::COMPLETE:
         return YES;
@@ -444,15 +453,43 @@ NSTextField* MakeLabel(
     }
   }();
 
-  switch (download.GetState()) {
+  switch (state) {
     case content::DownloadItem::COMPLETE:
-      [progressIndicator_ complete];
+      [progressIndicator_
+          setState:MDDownloadItemProgressIndicatorState::kComplete
+          progress:1
+          animations:^{
+            // Explicitly animate position.y so that x position isn't animated
+            // for a new download (which would happen with view.animator).
+            [filenameView_.layer
+                addAnimation:[CABasicAnimation
+                                 animationWithKeyPath:@"position.y"]
+                      forKey:nil];
+            [filenameView_
+                setFrameOrigin:NSMakePoint(NSMinX(filenameView_.frame),
+                                           kFilenameY)];
+            statusTextView_.animator.hidden = YES;
+          }
+          completion:^{
+            [self finish];
+          }];
       break;
     case content::DownloadItem::IN_PROGRESS:
+      [progressIndicator_
+            setState:MDDownloadItemProgressIndicatorState::kInProgress
+            progress:downloadModel->PercentComplete() / 100.0
+          animations:nil
+          completion:nil];
       break;
     case content::DownloadItem::CANCELLED:
     case content::DownloadItem::INTERRUPTED:
-      [progressIndicator_ cancel];
+      [progressIndicator_
+            setState:MDDownloadItemProgressIndicatorState::kCanceled
+            progress:0
+          animations:nil
+          completion:^{
+            [self finish];
+          }];
       break;
     case content::DownloadItem::MAX_DOWNLOAD_STATE:
       NOTREACHED();
@@ -466,26 +503,14 @@ NSTextField* MakeLabel(
 
   NSString* statusString =
       base::SysUTF16ToNSString(downloadModel->GetStatusText());
-  const BOOL hadStatusBefore = statusTextView_.stringValue.length > 0;
-  const BOOL hasStatus = statusString.length > 0;
-  statusTextView_.stringValue = statusString;
-  if (hasStatus != hadStatusBefore) {
-    [NSAnimationContext runAnimationGroup:^(NSAnimationContext* context) {
-      context.duration = 0.25;
-      context.timingFunction =
-          CAMediaTimingFunction.cr_materialEaseInOutTimingFunction;
-      // Explicitly animate position.y so that x position isn't animated for
-      // a new download (which would happen with view.animator).
-      [filenameView_.layer
-          addAnimation:[CABasicAnimation animationWithKeyPath:@"position.y"]
-                forKey:nil];
-      [filenameView_ setFrameOrigin:NSMakePoint(NSMinX(filenameView_.frame),
-                                                hasStatus ? kFilenameWithStatusY
-                                                          : kFilenameY)];
-      statusTextView_.animator.hidden = !hasStatus;
-    }
-                        completionHandler:nil];
-  }
+
+  // Never make the status label blank. For example, GetStatusText() will
+  // return the empty string on completion, but -finish hides the label with an
+  // animation instead.
+  if (statusString.length)
+    statusTextView_.stringValue = statusString;
+
+  progressIndicator_.paused = download.IsPaused();
 }
 
 - (NSView*)hitTest:(NSPoint)aPoint {
