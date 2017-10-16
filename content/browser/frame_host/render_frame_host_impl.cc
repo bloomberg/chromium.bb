@@ -3009,7 +3009,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
     registry_->AddInterface(
         base::Bind(&MediaDevicesDispatcherHost::Create, GetProcess()->GetID(),
                    GetRoutingID(),
-                   GetProcess()->GetBrowserContext()->GetMediaDeviceIDSalt(),
                    base::Unretained(media_stream_manager)),
         BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
   }

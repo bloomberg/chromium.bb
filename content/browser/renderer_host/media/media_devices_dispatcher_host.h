@@ -7,10 +7,12 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
 #include "content/browser/media/media_devices_permission_checker.h"
+#include "content/browser/media/media_devices_util.h"
 #include "content/browser/renderer_host/media/media_devices_manager.h"
 #include "content/common/content_export.h"
 #include "content/common/media/media_devices.mojom.h"
@@ -29,13 +31,11 @@ class CONTENT_EXPORT MediaDevicesDispatcherHost
  public:
   MediaDevicesDispatcherHost(int render_process_id,
                              int render_frame_id,
-                             const std::string& device_id_salt,
                              MediaStreamManager* media_stream_manager);
   ~MediaDevicesDispatcherHost() override;
 
   static void Create(int render_process_id,
                      int render_frame_id,
-                     const std::string& device_id_salt,
                      MediaStreamManager* media_stream_manager,
                      ::mojom::MediaDevicesDispatcherHostRequest request);
 
@@ -69,7 +69,10 @@ class CONTENT_EXPORT MediaDevicesDispatcherHost
   void SetDeviceChangeListenerForTesting(
       ::mojom::MediaDevicesListenerPtr listener);
 
-  void SetSecurityOriginForTesting(const url::Origin& origin);
+  void set_salt_and_origin_callback_for_testing(
+      MediaDeviceSaltAndOriginCallback callback) {
+    salt_and_origin_callback_ = std::move(callback);
+  }
 
  private:
   using GetVideoInputDeviceFormatsCallback =
@@ -78,39 +81,43 @@ class CONTENT_EXPORT MediaDevicesDispatcherHost
   void CheckPermissionsForEnumerateDevices(
       const MediaDevicesManager::BoolDeviceTypes& requested_types,
       EnumerateDevicesCallback client_callback,
-      const url::Origin& security_origin);
+      const std::pair<std::string, url::Origin>& salt_and_origin);
 
   void DoEnumerateDevices(
       const MediaDevicesManager::BoolDeviceTypes& requested_types,
       EnumerateDevicesCallback client_callback,
+      std::string device_id_salt,
       const url::Origin& security_origin,
       const MediaDevicesManager::BoolDeviceTypes& has_permissions);
 
   void DevicesEnumerated(
       const MediaDevicesManager::BoolDeviceTypes& requested_types,
       EnumerateDevicesCallback client_callback,
+      const std::string& device_id_salt,
       const url::Origin& security_origin,
       const MediaDevicesManager::BoolDeviceTypes& has_permissions,
       const MediaDeviceEnumeration& enumeration);
 
   void GetDefaultVideoInputDeviceID(
       GetVideoInputCapabilitiesCallback client_callback,
-      const url::Origin& security_origin);
+      const std::pair<std::string, url::Origin>& salt_and_origin);
 
   void GotDefaultVideoInputDeviceID(
       GetVideoInputCapabilitiesCallback client_callback,
+      std::string device_id_salt,
       const url::Origin& security_origin,
       const std::string& default_device_id);
 
   void FinalizeGetVideoInputCapabilities(
       GetVideoInputCapabilitiesCallback client_callback,
+      const std::string& device_id_salt,
       const url::Origin& security_origin,
       const std::string& default_device_id,
       const media::VideoCaptureDeviceDescriptors& device_descriptors);
 
   void GetDefaultAudioInputDeviceID(
       GetAudioInputCapabilitiesCallback client_callback,
-      const url::Origin& security_origin);
+      const std::pair<std::string, url::Origin>& salt_and_origin);
 
   void GotDefaultAudioInputDeviceID(const std::string& default_device_id);
 
@@ -131,11 +138,12 @@ class CONTENT_EXPORT MediaDevicesDispatcherHost
       GetVideoInputDeviceFormatsCallback client_callback,
       const std::string& device_id,
       bool try_in_use_first,
-      const url::Origin& security_origin);
+      const std::pair<std::string, url::Origin>& salt_and_origin);
   void FinalizeGetVideoInputDeviceFormats(
       GetVideoInputDeviceFormatsCallback client_callback,
       const std::string& device_id,
       bool try_in_use_first,
+      const std::string& device_id_salt,
       const url::Origin& security_origin,
       const media::VideoCaptureDeviceDescriptors& device_descriptors);
 
@@ -150,11 +158,16 @@ class CONTENT_EXPORT MediaDevicesDispatcherHost
                                     MediaDeviceType type,
                                     const MediaDeviceInfoArray& device_infos);
 
+  std::string ComputeGroupIDSalt(const std::string& device_id_salt);
+
   // The following const fields can be accessed on any thread.
   const int render_process_id_;
   const int render_frame_id_;
-  const std::string device_id_salt_;
-  const std::string group_id_salt_;
+  // This value is combined with the device ID salt to produce a salt for group
+  // IDs that, unlike the device ID salt, is not persistent across browsing
+  // sessions, but like the device ID salt, is reset when the user clears
+  // browsing data.
+  const std::string group_id_salt_base_;
 
   // The following fields can only be accessed on the IO thread.
   MediaStreamManager* media_stream_manager_;
@@ -163,7 +176,6 @@ class CONTENT_EXPORT MediaDevicesDispatcherHost
 
   // This field can only be accessed on the UI thread.
   ::mojom::MediaDevicesListenerPtr device_change_listener_;
-  url::Origin security_origin_for_testing_;
 
   struct AudioInputCapabilitiesRequest;
   // Queued requests for audio-input capabilities.
@@ -172,6 +184,9 @@ class CONTENT_EXPORT MediaDevicesDispatcherHost
   size_t num_pending_audio_input_parameters_;
   std::vector<::mojom::AudioInputDeviceCapabilities>
       current_audio_input_capabilities_;
+
+  // Callback used to obtain the current device ID salt and security origin.
+  MediaDeviceSaltAndOriginCallback salt_and_origin_callback_;
 
   base::WeakPtrFactory<MediaDevicesDispatcherHost> weak_factory_;
 
