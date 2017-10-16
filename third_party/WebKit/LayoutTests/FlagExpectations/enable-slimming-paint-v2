@@ -873,7 +873,7 @@ Bug(none) virtual/mojo-loading/fast/table/backgr_simple-table-row.html [ Failure
 Bug(none) fast/table/backgr_simple-table.html [ Failure ]
 Bug(none) virtual/mojo-loading/fast/table/backgr_simple-table.html [ Failure ]
 Bug(none) fast/text/capitalize-boundaries.html [ Failure ]
-Bug(none) fast/text/emphasis.html [ Failure ]
+Bug(none) fast/text/selection/emphasis.html [ Failure ]
 Bug(none) fast/text/font-stretch-variant.html [ Failure ]
 Bug(none) fast/text/font-weight-variant.html [ Failure ]
 Bug(none) fast/text/international/bidi-neutral-run.html [ Failure ]
