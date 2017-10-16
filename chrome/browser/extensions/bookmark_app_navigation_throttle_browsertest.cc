@@ -207,8 +207,6 @@ class BookmarkAppNavigationThrottleBrowserTest : public ExtensionBrowserTest {
 
   void InstallTestBookmarkApp() {
     ASSERT_TRUE(embedded_test_server()->Start());
-    size_t num_extensions =
-        ExtensionRegistry::Get(profile())->enabled_extensions().size();
 
     WebApplicationInfo web_app_info;
     web_app_info.app_url = embedded_test_server()->GetURL(kAppUrlPath);
@@ -216,30 +214,16 @@ class BookmarkAppNavigationThrottleBrowserTest : public ExtensionBrowserTest {
     web_app_info.title = base::UTF8ToUTF16("Test app");
     web_app_info.description = base::UTF8ToUTF16("Test description");
 
-    content::WindowedNotificationObserver windowed_observer(
-        extensions::NOTIFICATION_CRX_INSTALLER_DONE,
-        content::NotificationService::AllSources());
-    extensions::CreateOrUpdateBookmarkApp(extension_service(), &web_app_info);
-    windowed_observer.Wait();
-
-    ASSERT_EQ(++num_extensions,
-              ExtensionRegistry::Get(profile())->enabled_extensions().size());
-
-    test_bookmark_app_ =
-        content::Details<const Extension>(windowed_observer.details()).ptr();
+    test_bookmark_app_ = InstallBookmarkApp(web_app_info);
   }
 
   Browser* OpenTestBookmarkApp() {
     GURL app_url = embedded_test_server()->GetURL(kAppUrlPath);
     auto observer = GetTestNavigationObserver(app_url);
-
-    OpenApplication(AppLaunchParams(
-        profile(), test_bookmark_app_, extensions::LAUNCH_CONTAINER_WINDOW,
-        WindowOpenDisposition::CURRENT_TAB, SOURCE_CHROME_INTERNAL));
-
+    Browser* app_browser = LaunchAppBrowser(test_bookmark_app_);
     observer->WaitForNavigationFinished();
 
-    return chrome::FindLastActive();
+    return app_browser;
   }
 
   // Navigates the active tab in |browser| to the launching page.

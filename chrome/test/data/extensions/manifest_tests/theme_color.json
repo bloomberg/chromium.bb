@@ -1,0 +1,11 @@
+{
+  "name": "Theme Color",
+  "version": "1",
+  "app": {
+    "launch": {
+      "web_url": "http://www.google.com/launch.html"
+    },
+    "theme_color": "rgba(255, 0, 0, 0.5)"
+  }
+}
+

@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
+#include "chrome/common/extensions/manifest_handlers/app_theme_color_info.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
@@ -356,6 +357,7 @@ TEST_F(BookmarkAppHelperExtensionServiceTest, CreateBookmarkAppWithManifest) {
   manifest.start_url = GURL(kAppUrl);
   manifest.name = base::NullableString16(base::UTF8ToUTF16(kAppTitle), false);
   manifest.scope = GURL(kAppScope);
+  manifest.theme_color = SK_ColorBLUE;
   helper.CompleteGetManifest(kManifestUrl, manifest);
 
   std::map<GURL, std::vector<SkBitmap> > icon_map;
@@ -371,6 +373,7 @@ TEST_F(BookmarkAppHelperExtensionServiceTest, CreateBookmarkAppWithManifest) {
   EXPECT_EQ(kAppTitle, extension->name());
   EXPECT_EQ(GURL(kAppUrl), AppLaunchInfo::GetLaunchWebURL(extension));
   EXPECT_EQ(GURL(kAppScope), GetScopeURLFromBookmarkApp(extension));
+  EXPECT_EQ(SK_ColorBLUE, AppThemeColorInfo::GetThemeColor(extension).value());
   EXPECT_FALSE(
       AppBannerSettingsHelper::GetSingleBannerEvent(
           contents.get(), manifest.start_url, manifest.start_url.spec(),
@@ -429,6 +432,7 @@ TEST_F(BookmarkAppHelperExtensionServiceTest,
   EXPECT_EQ(kAppDescription, extension->description());
   EXPECT_EQ(GURL(kAppUrl), AppLaunchInfo::GetLaunchWebURL(extension));
   EXPECT_EQ(GURL(), GetScopeURLFromBookmarkApp(extension));
+  EXPECT_FALSE(AppThemeColorInfo::GetThemeColor(extension));
 }
 
 TEST_F(BookmarkAppHelperExtensionServiceTest, CreateBookmarkAppNoContents) {

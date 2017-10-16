@@ -15,6 +15,7 @@
 #include "extensions/common/disable_reason.h"
 #include "extensions/common/extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "url/gurl.h"
 
 namespace extensions {
@@ -27,6 +28,12 @@ const char kValidUpdateUrl[] =
     "https://clients2.google.com/service/update2/crx";
 const int kValidDisableReasons = disable_reason::DISABLE_USER_ACTION;
 const char kName[] = "MyExtension";
+
+const char kBookmarkAppUrl[] = "https://www.example.com/path";
+const char kBookmarkAppDescription[] = "My bookmark app";
+const char kBookmarkAppScope[] = "https://www.example.com/";
+const char kBookmarkIconColor[] = "#F00FED";
+const SkColor kBookmarkThemeColor = SK_ColorBLUE;
 
 // Serializes a protobuf structure (entity specifics) into an ExtensionSyncData
 // and back again, and confirms that the input is the same as the output.
@@ -227,6 +234,42 @@ TEST_F(AppSyncDataTest, ExtensionSyncDataInvalidOrdinal) {
       ExtensionSyncData::CreateFromSyncData(sync_data);
   ASSERT_TRUE(app_sync_data.get());
   app_sync_data->GetSyncData();
+}
+
+TEST_F(AppSyncDataTest, SyncDataToExtensionSyncDataForBookmarkApp) {
+  sync_pb::EntitySpecifics entity;
+  sync_pb::AppSpecifics* app_specifics = entity.mutable_app();
+  app_specifics->set_bookmark_app_url(kBookmarkAppUrl);
+  app_specifics->set_bookmark_app_description(kBookmarkAppDescription);
+  app_specifics->set_bookmark_app_scope(kBookmarkAppScope);
+  app_specifics->set_bookmark_app_icon_color(kBookmarkIconColor);
+  app_specifics->set_bookmark_app_theme_color(kBookmarkThemeColor);
+
+  SetRequiredExtensionValues(app_specifics->mutable_extension());
+
+  syncer::SyncData sync_data =
+      syncer::SyncData::CreateLocalData("sync_tag", "non_unique_title", entity);
+
+  std::unique_ptr<ExtensionSyncData> app_sync_data =
+      ExtensionSyncData::CreateFromSyncData(sync_data);
+  ASSERT_TRUE(app_sync_data.get());
+  EXPECT_EQ(app_specifics->bookmark_app_url(),
+            app_sync_data->bookmark_app_url());
+  EXPECT_EQ(app_specifics->bookmark_app_description(),
+            app_sync_data->bookmark_app_description());
+  EXPECT_EQ(app_specifics->bookmark_app_scope(),
+            app_sync_data->bookmark_app_scope());
+  EXPECT_EQ(app_specifics->bookmark_app_icon_color(),
+            app_sync_data->bookmark_app_icon_color());
+  EXPECT_EQ(app_specifics->bookmark_app_theme_color(),
+            app_sync_data->bookmark_app_theme_color());
+
+  syncer::SyncData output_sync_data = app_sync_data->GetSyncData();
+  EXPECT_TRUE(sync_data.GetSpecifics().has_app());
+  const sync_pb::AppSpecifics& output_specifics =
+      output_sync_data.GetSpecifics().app();
+  EXPECT_EQ(app_specifics->SerializeAsString(),
+            output_specifics.SerializeAsString());
 }
 
 }  // namespace extensions

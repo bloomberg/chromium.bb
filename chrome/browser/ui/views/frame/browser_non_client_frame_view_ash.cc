@@ -81,6 +81,8 @@ void BrowserNonClientFrameViewAsh::Init() {
   caption_button_container_->UpdateSizeButtonVisibility();
   AddChildView(caption_button_container_);
 
+  Browser* browser = browser_view()->browser();
+
   // Initializing the TabIconView is expensive, so only do it if we need to.
   if (browser_view()->ShouldShowWindowIcon()) {
     window_icon_ = new TabIconView(this, nullptr);
@@ -95,9 +97,21 @@ void BrowserNonClientFrameViewAsh::Init() {
     header_painter->Init(frame(), this, caption_button_container_);
     if (window_icon_)
       header_painter->UpdateLeftHeaderView(window_icon_);
-    // For non app (i.e. WebUI) windows (e.g. Settings) use MD frame color.
-    if (!browser_view()->browser()->is_app())
+
+    extensions::HostedAppBrowserController* app_controller =
+        browser->hosted_app_controller();
+    if (app_controller) {
+      // Hosted apps apply a theme color if specified by the extension.
+      base::Optional<SkColor> theme_color = app_controller->GetThemeColor();
+      if (theme_color) {
+        SkColor opaque_theme_color =
+            SkColorSetA(theme_color.value(), SK_AlphaOPAQUE);
+        header_painter->SetFrameColors(opaque_theme_color, opaque_theme_color);
+      }
+    } else if (!browser->is_app()) {
+      // For non app (i.e. WebUI) windows (e.g. Settings) use MD frame color.
       header_painter->SetFrameColors(kMdWebUIFrameColor, kMdWebUIFrameColor);
+    }
   } else {
     BrowserHeaderPainterAsh* header_painter = new BrowserHeaderPainterAsh;
     header_painter_.reset(header_painter);
@@ -105,7 +119,7 @@ void BrowserNonClientFrameViewAsh::Init() {
                          caption_button_container_);
   }
 
-  if (browser_view()->browser()->is_app()) {
+  if (browser->is_app()) {
     frame()->GetNativeWindow()->SetProperty(
         aura::client::kAppType, static_cast<int>(ash::AppType::CHROME_APP));
   } else {

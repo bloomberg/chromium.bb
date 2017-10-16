@@ -14,6 +14,7 @@ const char kAllFrames[] = "all_frames";
 const char kAltKey[] = "altKey";
 const char kApp[] = "app";
 const char kAppIconColor[] = "app.icon_color";
+const char kAppThemeColor[] = "app.theme_color";
 const char kAutomation[] = "automation";
 const char kBackgroundAllowJsAccess[] = "background.allow_js_access";
 const char kBackgroundPage[] = "background.page";
@@ -310,6 +311,7 @@ const char kInvalidAboutPageExpectRelativePath[] =
 const char kInvalidAllFrames[] =
     "Invalid value for 'content_scripts[*].all_frames'.";
 const char kInvalidAppIconColor[] = "Invalid value for app.icon_color.";
+const char kInvalidAppThemeColor[] = "Invalid value for app.theme_color.";
 const char kInvalidBackground[] =
     "Invalid value for 'background_page'.";
 const char kInvalidBackgroundAllowJsAccess[] =
@@ -639,6 +641,8 @@ const char kInvalidTheme[] =
     "Invalid value for 'theme'.";
 const char kInvalidThemeColors[] =
     "Invalid value for theme colors - colors must be integers";
+const char kInvalidThemeColorAppType[] =
+    "Only bookmark apps are allowed to use app.theme_color";
 const char kInvalidThemeImages[] =
     "Invalid value for theme images - images must be strings.";
 const char kInvalidThemeImagesMissing[] =

@@ -21,12 +21,14 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/api/url_handlers/url_handlers_parser.h"
+#include "chrome/common/extensions/manifest_handlers/app_theme_color_info.h"
 #include "chrome/common/web_application_info.h"
 #include "crypto/sha2.h"
 #include "extensions/common/constants.h"
@@ -36,6 +38,7 @@
 #include "extensions/common/manifest_constants.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "url/gurl.h"
 
@@ -166,6 +169,11 @@ scoped_refptr<Extension> ConvertWebAppToExtension(
   if (web_app.generated_icon_color != SK_ColorTRANSPARENT) {
     root->SetString(keys::kAppIconColor, image_util::GenerateHexColorString(
                                              web_app.generated_icon_color));
+  }
+
+  if (web_app.theme_color) {
+    root->SetString(keys::kAppThemeColor, color_utils::SkColorToRgbaString(
+                                              web_app.theme_color.value()));
   }
 
   if (!web_app.scope.is_empty()) {
