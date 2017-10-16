@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/payments/core/payment_options_provider.h"
 
@@ -37,6 +38,23 @@ base::string16 GetShippingAddressSelectorInfoMessage(
 // given PaymentShippingType.
 base::string16 GetShippingAddressSectionString(
     PaymentShippingType shipping_type);
+
+#if defined(OS_IOS)
+// Gets the appropriate display string for the Choose Shipping Address string
+// for the given PaymentShippingType.
+base::string16 GetChooseShippingAddressButtonLabel(
+    PaymentShippingType shipping_type);
+
+// Gets the appropriate display string for the Add Shipping Address string
+// for the given PaymentShippingType.
+base::string16 GetAddShippingAddressButtonLabel(
+    PaymentShippingType shipping_type);
+
+// Gets the appropriate display string for the Choose Shipping Option string for
+// the given PaymentShippingType.
+base::string16 GetChooseShippingOptionButtonLabel(
+    PaymentShippingType shipping_type);
+#endif  // defined(OS_IOS)
 
 // Gets the appropriate display string for the Shipping Option string for the
 // given PaymentShippingType.
