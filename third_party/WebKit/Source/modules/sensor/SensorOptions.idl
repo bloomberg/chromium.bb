@@ -6,5 +6,5 @@
 // https://w3c.github.io/sensors/#dictdef-sensoroptions
 
 dictionary SensorOptions {
-    double? frequency;
+    double frequency;
 };

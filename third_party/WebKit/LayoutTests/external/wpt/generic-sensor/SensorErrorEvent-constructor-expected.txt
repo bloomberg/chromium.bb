@@ -1,5 +1,0 @@
-This is a testharness.js-based test.
-PASS SensorErrorEvent constructor without init dict
-FAIL SensorErrorEvent constructor with init dict assert_equals: error expected object "Error" but got null
-Harness: the test ran to completion.
-
