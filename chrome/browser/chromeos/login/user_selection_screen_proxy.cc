@@ -12,30 +12,53 @@ namespace chromeos {
 
 namespace {
 
+ash::mojom::EasyUnlockIconId GetEasyUnlockIconIdFromUserPodCustomIconId(
+    proximity_auth::ScreenlockBridge::UserPodCustomIcon icon) {
+  switch (icon) {
+    case proximity_auth::ScreenlockBridge::USER_POD_CUSTOM_ICON_NONE:
+      return ash::mojom::EasyUnlockIconId::NONE;
+    case proximity_auth::ScreenlockBridge::USER_POD_CUSTOM_ICON_HARDLOCKED:
+      return ash::mojom::EasyUnlockIconId::HARDLOCKED;
+    case proximity_auth::ScreenlockBridge::USER_POD_CUSTOM_ICON_LOCKED:
+      return ash::mojom::EasyUnlockIconId::LOCKED;
+    case proximity_auth::ScreenlockBridge::
+        USER_POD_CUSTOM_ICON_LOCKED_TO_BE_ACTIVATED:
+      return ash::mojom::EasyUnlockIconId::LOCKED_TO_BE_ACTIVATED;
+    case proximity_auth::ScreenlockBridge::
+        USER_POD_CUSTOM_ICON_LOCKED_WITH_PROXIMITY_HINT:
+      return ash::mojom::EasyUnlockIconId::LOCKED_WITH_PROXIMITY_HINT;
+    case proximity_auth::ScreenlockBridge::USER_POD_CUSTOM_ICON_UNLOCKED:
+      return ash::mojom::EasyUnlockIconId::UNLOCKED;
+    case proximity_auth::ScreenlockBridge::USER_POD_CUSTOM_ICON_SPINNER:
+      return ash::mojom::EasyUnlockIconId::SPINNER;
+  }
+}
+
 // Converts parameters to a mojo struct that can be sent to the
 // screenlock view-based UI.
-ash::mojom::UserPodCustomIconOptionsPtr ToUserPodCustomIconOptionsPtr(
+ash::mojom::EasyUnlockIconOptionsPtr ToEasyUnlockIconOptionsPtr(
     const proximity_auth::ScreenlockBridge::UserPodCustomIconOptions&
         icon_options) {
-  ash::mojom::UserPodCustomIconOptionsPtr icon =
-      ash::mojom::UserPodCustomIconOptions::New();
-  icon->id = icon_options.GetIDString();
+  ash::mojom::EasyUnlockIconOptionsPtr options =
+      ash::mojom::EasyUnlockIconOptions::New();
+  options->icon =
+      GetEasyUnlockIconIdFromUserPodCustomIconId(icon_options.icon());
 
   if (!icon_options.tooltip().empty()) {
-    icon->tooltip = icon_options.tooltip();
-    icon->autoshow_tooltip = icon_options.autoshow_tooltip();
+    options->tooltip = icon_options.tooltip();
+    options->autoshow_tooltip = icon_options.autoshow_tooltip();
   }
 
   if (!icon_options.aria_label().empty())
-    icon->aria_label = icon_options.aria_label();
+    options->aria_label = icon_options.aria_label();
 
   if (icon_options.hardlock_on_click())
-    icon->hardlock_on_click = true;
+    options->hardlock_on_click = true;
 
   if (icon_options.is_trial_run())
-    icon->is_trial_run = true;
+    options->is_trial_run = true;
 
-  return icon;
+  return options;
 }
 
 }  // namespace
@@ -48,8 +71,8 @@ void UserSelectionScreenProxy::ShowUserPodCustomIcon(
     const AccountId& account_id,
     const proximity_auth::ScreenlockBridge::UserPodCustomIconOptions&
         icon_options) {
-  ash::mojom::UserPodCustomIconOptionsPtr icon =
-      ToUserPodCustomIconOptionsPtr(icon_options);
+  ash::mojom::EasyUnlockIconOptionsPtr icon =
+      ToEasyUnlockIconOptionsPtr(icon_options);
   if (!icon)
     return;
   LockScreenClient::Get()->ShowUserPodCustomIcon(account_id, std::move(icon));

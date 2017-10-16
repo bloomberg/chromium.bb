@@ -73,7 +73,7 @@ void LockScreenController::ClearErrors() {
 
 void LockScreenController::ShowUserPodCustomIcon(
     const AccountId& account_id,
-    mojom::UserPodCustomIconOptionsPtr icon) {
+    mojom::EasyUnlockIconOptionsPtr icon) {
   NOTIMPLEMENTED();
 }
 

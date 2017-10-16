@@ -37,7 +37,7 @@ interface LockScreen {
   // |account_id|:  The account id of the user in the user pod.
   // |icon|:        Information regarding the icon.
   ShowUserPodCustomIcon(signin.mojom.AccountId account_id,
-                        UserPodCustomIconOptions icon);
+                        EasyUnlockIconOptions icon);
 
   // Requests to hide the custom icon in the user pod.
   // |account_id|:  The account id of the user in the user pod.
