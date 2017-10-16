@@ -50,20 +50,21 @@ class FastInkView : public views::View {
   class LayerTreeFrameSinkHolder;
   struct Resource;
 
-  void ReclaimResource(std::unique_ptr<Resource> resource);
-  void DidReceiveCompositorFrameAck();
+  void Redraw();
   void UpdateBuffer();
   void UpdateSurface();
+  void ReclaimResource(std::unique_ptr<Resource> resource);
+  void DidReceiveCompositorFrameAck();
   void OnDidDrawSurface();
 
   std::unique_ptr<views::Widget> widget_;
   gfx::Transform screen_to_buffer_transform_;
   std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer_;
   gfx::Rect buffer_damage_rect_;
-  bool pending_update_buffer_ = false;
+  bool pending_redraw_ = false;
   gfx::Rect surface_damage_rect_;
-  bool needs_update_surface_ = false;
   bool pending_draw_surface_ = false;
+  gfx::Rect pending_draw_surface_rect_;
   int next_resource_id_ = 1;
   std::vector<std::unique_ptr<Resource>> returned_resources_;
   std::unique_ptr<LayerTreeFrameSinkHolder> frame_sink_holder_;
