@@ -1273,8 +1273,11 @@ void PDFiumEngine::FinishLoadingDocument() {
     FORM_DoPageAAction(new_page, form_, FPDFPAGE_AACTION_OPEN);
   }
 
-  if (doc_)  // This can only happen if loading |doc_| fails.
-    client_->DocumentLoadComplete(pages_.size());
+  if (doc_) {
+    DocumentFeatures document_features;
+    document_features.page_count = pages_.size();
+    client_->DocumentLoadComplete(document_features);
+  }
 }
 
 void PDFiumEngine::UnsupportedFeature(int type) {
