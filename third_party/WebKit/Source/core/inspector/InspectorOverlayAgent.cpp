@@ -60,7 +60,7 @@
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "core/page/PageOverlay.h"
-#include "platform/ScriptForbiddenScope.h"
+#include "platform/bindings/ScriptForbiddenScope.h"
 #include "platform/graphics/Color.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/CullRect.h"

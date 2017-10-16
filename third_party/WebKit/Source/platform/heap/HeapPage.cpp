@@ -32,7 +32,7 @@
 
 #include "base/trace_event/process_memory_dump.h"
 #include "platform/MemoryCoordinator.h"
-#include "platform/ScriptForbiddenScope.h"
+#include "platform/bindings/ScriptForbiddenScope.h"
 #include "platform/heap/BlinkGCMemoryDumpProvider.h"
 #include "platform/heap/CallbackStack.h"
 #include "platform/heap/HeapCompact.h"

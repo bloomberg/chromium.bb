@@ -54,8 +54,8 @@
 #include "core/layout/line/RootInlineBox.h"
 #include "core/probe/CoreProbes.h"
 #include "platform/EventDispatchForbiddenScope.h"
-#include "platform/ScriptForbiddenScope.h"
 #include "platform/bindings/RuntimeCallStats.h"
+#include "platform/bindings/ScriptForbiddenScope.h"
 #include "platform/bindings/V8PerIsolateData.h"
 
 namespace blink {

@@ -52,7 +52,7 @@
 #include "core/svg/graphics/SVGImageChromeClient.h"
 #include "platform/EventDispatchForbiddenScope.h"
 #include "platform/LengthFunctions.h"
-#include "platform/ScriptForbiddenScope.h"
+#include "platform/bindings/ScriptForbiddenScope.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/Color.h"
 #include "platform/graphics/GraphicsContext.h"

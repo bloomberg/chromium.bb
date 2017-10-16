@@ -25,7 +25,7 @@
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/inspector/V8InspectorString.h"
 #include "core/probe/CoreProbes.h"
-#include "platform/ScriptForbiddenScope.h"
+#include "platform/bindings/ScriptForbiddenScope.h"
 #include "platform/wtf/CurrentTime.h"
 #include "platform/wtf/PtrUtil.h"
 

@@ -17,9 +17,9 @@
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
 #include "core/paint/PaintLayer.h"
-#include "platform/PluginScriptForbiddenScope.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/loader/fetch/ResourceRequest.h"
+#include "platform/plugins/PluginScriptForbiddenScope.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "public/platform/WebLayer.h"
 

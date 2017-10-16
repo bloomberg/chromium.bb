@@ -4,7 +4,7 @@
 
 #include "public/web/WebPluginScriptForbiddenScope.h"
 
-#include "platform/PluginScriptForbiddenScope.h"
+#include "platform/plugins/PluginScriptForbiddenScope.h"
 
 namespace blink {
 

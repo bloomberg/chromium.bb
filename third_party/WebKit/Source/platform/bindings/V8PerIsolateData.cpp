@@ -27,9 +27,9 @@
 
 #include <memory>
 
-#include "platform/ScriptForbiddenScope.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/bindings/DOMDataStore.h"
+#include "platform/bindings/ScriptForbiddenScope.h"
 #include "platform/bindings/V8Binding.h"
 #include "platform/bindings/V8ObjectConstructor.h"
 #include "platform/bindings/V8PrivateProperty.h"

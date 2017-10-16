@@ -33,7 +33,7 @@
 
 #include <utility>
 
-#include "platform/ScriptForbiddenScope.h"
+#include "platform/bindings/ScriptForbiddenScope.h"
 #include "platform/bindings/WrapperTypeInfo.h"
 #include "platform/wtf/Compiler.h"
 #include "platform/wtf/HashMap.h"

@@ -11,7 +11,7 @@
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectorDOMAgent.h"
 #include "core/inspector/ResolveNode.h"
-#include "third_party/WebKit/Source/platform/ScriptForbiddenScope.h"
+#include "third_party/WebKit/Source/platform/bindings/ScriptForbiddenScope.h"
 
 namespace blink {
 
