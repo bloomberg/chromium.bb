@@ -87,8 +87,8 @@ class ApiUnitTest : public ExtensionsTest {
  private:
   sync_preferences::TestingPrefServiceSyncable testing_pref_service_;
 
-  // The WebContents used to associate a RenderViewHost with API function calls,
-  // or null.
+  // The WebContents used to associate a RenderFrameHost with API function
+  // calls, or null.
   std::unique_ptr<content::WebContents> contents_;
 
   // The Extension used when running API function calls.
