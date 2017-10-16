@@ -296,7 +296,7 @@ void PermissionRequestManager::WasShown() {
 #if defined(OS_ANDROID)
     DCHECK(view_);
 #else
-    ShowBubble();
+    ShowBubble(/*is_reshow=*/true);
 #endif
   }
 }
@@ -390,17 +390,18 @@ void PermissionRequestManager::DequeueRequestsAndShowBubble() {
     queued_requests_.pop_front();
   }
 
-  ShowBubble();
+  ShowBubble(/*is_reshow=*/false);
 }
 
-void PermissionRequestManager::ShowBubble() {
+void PermissionRequestManager::ShowBubble(bool is_reshow) {
   DCHECK(!view_);
   DCHECK(!requests_.empty());
   DCHECK(main_frame_has_fully_loaded_);
   DCHECK(tab_is_visible_);
 
   view_ = view_factory_.Run(web_contents(), this);
-  PermissionUmaUtil::PermissionPromptShown(requests_);
+  if (!is_reshow)
+    PermissionUmaUtil::PermissionPromptShown(requests_);
   NotifyBubbleAdded();
 
   // If in testing mode, automatically respond to the bubble that was shown.

@@ -139,7 +139,7 @@ class PermissionRequestManager
 
   // Shows the bubble for a request that has just been dequeued, or re-show a
   // bubble after switching tabs away and back.
-  void ShowBubble();
+  void ShowBubble(bool is_reshow);
 
   // Delete the view object
   void DeleteBubble();
