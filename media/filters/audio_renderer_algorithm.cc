@@ -44,12 +44,6 @@ namespace media {
 //    |search_block_index_| = |search_block_center_offset_| -
 //        |search_block_center_offset_|.
 
-// Max/min supported playback rates for fast/slow audio. Audio outside of these
-// ranges are muted.
-// Audio at these speeds would sound better under a frequency domain algorithm.
-static const double kMinPlaybackRate = 0.5;
-static const double kMaxPlaybackRate = 4.0;
-
 // Overlap-and-add window size in milliseconds.
 static const int kOlaWindowSizeMs = 20;
 
@@ -78,7 +72,6 @@ AudioRendererAlgorithm::AudioRendererAlgorithm()
     : channels_(0),
       samples_per_second_(0),
       is_bitstream_format_(false),
-      muted_partial_frame_(0),
       capacity_(0),
       output_time_(0.0),
       search_block_center_offset_(0),
@@ -162,34 +155,6 @@ int AudioRendererAlgorithm::FillBuffer(AudioBus* dest,
   // In case of compressed bitstream formats, no post processing is allowed.
   if (is_bitstream_format_)
     return audio_buffer_.ReadFrames(requested_frames, dest_offset, dest);
-
-  // Optimize the muted case to issue a single clear instead of performing
-  // the full crossfade and clearing each crossfaded frame.
-  if (playback_rate < kMinPlaybackRate || playback_rate > kMaxPlaybackRate) {
-    int frames_to_render =
-        std::min(static_cast<int>(audio_buffer_.frames() / playback_rate),
-                 requested_frames);
-
-    // Compute accurate number of frames to actually skip in the source data.
-    // Includes the leftover partial frame from last request. However, we can
-    // only skip over complete frames, so a partial frame may remain for next
-    // time.
-    muted_partial_frame_ += frames_to_render * playback_rate;
-    // Handle the case where muted_partial_frame_ rounds up to
-    // audio_buffer_.frames()+1.
-    int seek_frames = std::min(static_cast<int>(muted_partial_frame_),
-                               audio_buffer_.frames());
-    dest->ZeroFramesPartial(dest_offset, frames_to_render);
-    audio_buffer_.SeekFrames(seek_frames);
-
-    // Determine the partial frame that remains to be skipped for next call. If
-    // the user switches back to playing, it may be off time by this partial
-    // frame, which would be undetectable. If they subsequently switch to
-    // another playback rate that mutes, the code will attempt to line up the
-    // frames again.
-    muted_partial_frame_ -= seek_frames;
-    return frames_to_render;
-  }
 
   int slower_step = ceil(ola_window_size_ * playback_rate);
   int faster_step = ceil(ola_window_size_ / playback_rate);

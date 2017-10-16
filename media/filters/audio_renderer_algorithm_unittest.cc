@@ -208,8 +208,6 @@ class AudioRendererAlgorithmTest : public testing::Test {
       return;
     }
 
-    bool expect_muted = (playback_rate < 0.5 || playback_rate > 4);
-
     int frames_remaining = total_frames_requested;
     bool first_fill_buffer = true;
     while (frames_remaining > 0) {
@@ -225,7 +223,7 @@ class AudioRendererAlgorithmTest : public testing::Test {
       // if at very first buffer-fill only one frame is written, that is zero
       // which might cause exception in CheckFakeData().
       if (!first_fill_buffer || frames_written > 1)
-        ASSERT_EQ(expect_muted, AudioDataIsMuted(bus.get(), frames_written));
+        ASSERT_FALSE(AudioDataIsMuted(bus.get(), frames_written));
       first_fill_buffer = false;
       frames_remaining -= frames_written;
 
@@ -686,14 +684,14 @@ TEST_F(AudioRendererAlgorithmTest, WsolaSpeedup) {
 
 TEST_F(AudioRendererAlgorithmTest, FillBufferOffset) {
   Initialize();
+  algorithm_.IncreaseQueueCapacity();
 
   std::unique_ptr<AudioBus> bus = AudioBus::Create(channels_, kFrameSize);
 
   // Verify that the first half of |bus| remains zero and the last half is
-  // filled appropriately at normal, above normal, below normal, and muted
-  // rates.
+  // filled appropriately at normal, above normal, and below normal.
   const int kHalfSize = kFrameSize / 2;
-  const float kAudibleRates[] = {1.0f, 2.0f, 0.5f};
+  const float kAudibleRates[] = {1.0f, 2.0f, 0.5f, 5.0f, 0.25f};
   for (size_t i = 0; i < arraysize(kAudibleRates); ++i) {
     SCOPED_TRACE(kAudibleRates[i]);
     bus->Zero();
@@ -703,20 +701,6 @@ TEST_F(AudioRendererAlgorithmTest, FillBufferOffset) {
     ASSERT_EQ(kHalfSize, frames_filled);
     ASSERT_TRUE(VerifyAudioData(bus.get(), 0, kHalfSize, 0));
     ASSERT_FALSE(VerifyAudioData(bus.get(), kHalfSize, kHalfSize, 0));
-    FillAlgorithmQueue();
-  }
-
-  const float kMutedRates[] = {5.0f, 0.25f};
-  for (size_t i = 0; i < arraysize(kMutedRates); ++i) {
-    SCOPED_TRACE(kMutedRates[i]);
-    for (int ch = 0; ch < bus->channels(); ++ch)
-      std::fill(bus->channel(ch), bus->channel(ch) + bus->frames(), 1.0f);
-
-    const int frames_filled =
-        algorithm_.FillBuffer(bus.get(), kHalfSize, kHalfSize, kMutedRates[i]);
-    ASSERT_EQ(kHalfSize, frames_filled);
-    ASSERT_FALSE(VerifyAudioData(bus.get(), 0, kHalfSize, 0));
-    ASSERT_TRUE(VerifyAudioData(bus.get(), kHalfSize, kHalfSize, 0));
     FillAlgorithmQueue();
   }
 }
