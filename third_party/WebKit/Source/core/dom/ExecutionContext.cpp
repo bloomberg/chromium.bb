@@ -179,14 +179,6 @@ ContentSecurityPolicy* ExecutionContext::GetContentSecurityPolicy() {
   return GetSecurityContext().GetContentSecurityPolicy();
 }
 
-const KURL& ExecutionContext::Url() const {
-  return VirtualURL();
-}
-
-KURL ExecutionContext::CompleteURL(const String& url) const {
-  return VirtualCompleteURL(url);
-}
-
 void ExecutionContext::AllowWindowInteraction() {
   ++window_interaction_tokens_;
 }

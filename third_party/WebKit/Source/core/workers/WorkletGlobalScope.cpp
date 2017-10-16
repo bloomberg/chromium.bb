@@ -137,7 +137,7 @@ void WorkletGlobalScope::SetModulator(Modulator* modulator) {
   modulator_ = modulator;
 }
 
-KURL WorkletGlobalScope::VirtualCompleteURL(const String& url) const {
+KURL WorkletGlobalScope::CompleteURL(const String& url) const {
   // Always return a null URL when passed a null string.
   // TODO(ikilpatrick): Should we change the KURL constructor to have this
   // behavior?

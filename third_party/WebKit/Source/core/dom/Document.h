@@ -635,7 +635,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   // Return the document URL, or an empty URL if it's unavailable.
   // This is not an implementation of web-exposed Document.prototype.URL.
-  const KURL& Url() const { return url_; }
+  const KURL& Url() const final { return url_; }
   void SetURL(const KURL&);
 
   // Bind the url to document.url, if unavailable bind to about:blank.
@@ -660,7 +660,7 @@ class CORE_EXPORT Document : public ContainerNode,
   // Creates URL based on passed relative url and this documents base URL.
   // Depending on base URL value it is possible that parent document
   // base URL will be used instead. Uses CompleteURLWithOverride internally.
-  KURL CompleteURL(const String&) const;
+  KURL CompleteURL(const String&) const final;
   // Creates URL based on passed relative url and passed base URL override.
   KURL CompleteURLWithOverride(const String&,
                                const KURL& base_url_override) const;
@@ -1443,12 +1443,6 @@ class CORE_EXPORT Document : public ContainerNode,
   bool IsSecureContextImpl() const;
 
   ShadowCascadeOrder shadow_cascade_order_ = kShadowCascadeNone;
-
-  // Same as url(), but needed for ExecutionContext to implement it without a
-  // performance loss for direct calls.
-  const KURL& VirtualURL() const final;
-  // Same as completeURL() for the same reason as above.
-  KURL VirtualCompleteURL(const String&) const final;
 
   void UpdateTitle(const String&);
   void UpdateFocusAppearanceTimerFired(TimerBase*);

@@ -3661,14 +3661,6 @@ void Document::writeln(LocalDOMWindow* calling_window,
   writeln(text->toString(), calling_window->document(), exception_state);
 }
 
-const KURL& Document::VirtualURL() const {
-  return url_;
-}
-
-KURL Document::VirtualCompleteURL(const String& url) const {
-  return CompleteURL(url);
-}
-
 DOMTimerCoordinator* Document::Timers() {
   return &timers_;
 }

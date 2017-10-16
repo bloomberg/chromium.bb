@@ -46,7 +46,7 @@ const char kNotificationActionPlaceholder[] = "Placeholder...";
 const unsigned kNotificationVibrationUnnormalized[] = {10, 1000000, 50, 42};
 const int kNotificationVibrationNormalized[] = {10, 10000, 50};
 
-// Execution context that implements the VirtualCompleteURL method to complete
+// Execution context that implements the CompleteURL method to complete
 // URLs that are assumed to be relative against a given base URL.
 class CompleteUrlExecutionContext final : public NullExecutionContext {
  public:
@@ -56,7 +56,7 @@ class CompleteUrlExecutionContext final : public NullExecutionContext {
  protected:
   ~CompleteUrlExecutionContext() final = default;
 
-  KURL VirtualCompleteURL(const String& url) const override {
+  KURL CompleteURL(const String& url) const override {
     return KURL(base_, url);
   }
 
