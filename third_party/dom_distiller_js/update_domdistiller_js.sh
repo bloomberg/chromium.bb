@@ -36,14 +36,14 @@
   git reset --hard ${new_gitsha}
   git log --oneline ${curr_gitsha}..${new_gitsha} > $changes
 
-  echo -n BUG= > $bugs
+  echo -n Bug: > $bugs
 
   # This extracts BUG= lines from the log, extracts the numbers part, removes
   # whitespace and deletes empty lines. Then, split on ',', sort, uniquify and
   # rejoin. Finally, remove the trailing ',' and concat to $bugs.
   git log ${curr_gitsha}..${new_gitsha} \
-    | grep BUG= \
-    | sed -e 's/.*BUG=\(.*\)/\1/' -e 's/\s*//g' -e '/^$/d' \
+    | grep -E 'BUG=|Bug:' \
+    | sed -e 's/.*\(BUG=\|Bug:\)\(.*\)/\2/' -e 's/\s*//g' -e '/^$/d' \
     | tr ',' '\n' \
     | sort \
     | uniq \
