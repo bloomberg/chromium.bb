@@ -24,38 +24,6 @@
 
 namespace content {
 
-namespace {
-
-base::Optional<net::RedirectInfo> ComputeRedirectInfo(
-    const ResourceRequest& original_request,
-    const ResourceResponseHead& response_head,
-    bool token_binding_negotiated) {
-  std::string new_location;
-  if (!response_head.headers->IsRedirect(&new_location))
-    return base::nullopt;
-
-  std::string referrer_string;
-  net::URLRequest::ReferrerPolicy referrer_policy;
-  Referrer::ComputeReferrerInfo(
-      &referrer_string, &referrer_policy,
-      Referrer(original_request.referrer, original_request.referrer_policy));
-
-  // If the request is a MAIN_FRAME request, the first-party URL gets
-  // updated on redirects.
-  const net::URLRequest::FirstPartyURLPolicy first_party_url_policy =
-      original_request.resource_type == RESOURCE_TYPE_MAIN_FRAME
-          ? net::URLRequest::UPDATE_FIRST_PARTY_URL_ON_REDIRECT
-          : net::URLRequest::NEVER_CHANGE_FIRST_PARTY_URL;
-  return net::RedirectInfo::ComputeRedirectInfo(
-      original_request.method, original_request.url,
-      original_request.site_for_cookies, first_party_url_policy,
-      referrer_policy, referrer_string, response_head.headers.get(),
-      response_head.headers->response_code(),
-      original_request.url.Resolve(new_location), token_binding_negotiated);
-}
-
-}  // namespace
-
 // This class waits for completion of a stream response from the service worker.
 // It calls ServiceWorkerURLLoader::CommitComplete() upon completion of the
 // response.
@@ -343,8 +311,9 @@ void ServiceWorkerURLLoaderJob::StartResponse(
   // Handle a redirect response. ComputeRedirectInfo returns non-null redirect
   // info if the given response is a redirect.
   base::Optional<net::RedirectInfo> redirect_info =
-      ComputeRedirectInfo(resource_request_, response_head_,
-                          ssl_info_ && ssl_info_->token_binding_negotiated);
+      ServiceWorkerLoaderHelpers::ComputeRedirectInfo(
+          resource_request_, response_head_,
+          ssl_info_ && ssl_info_->token_binding_negotiated);
   if (redirect_info) {
     response_head_.encoded_data_length = 0;
     url_loader_client_->OnReceiveRedirect(*redirect_info, response_head_);

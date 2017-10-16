@@ -41,6 +41,7 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_content_disposition.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "net/url_request/redirect_util.h"
 #include "net/url_request/url_request_context.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "third_party/WebKit/common/mime_util/mime_util.h"
@@ -275,60 +276,19 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
     // a. For subframe navigations, the Origin header may need to be modified
     //    differently?
     // b. How should redirect_info_.referred_token_binding_host be handled?
-    // c. Maybe refactor for code reuse.
 
-    if (redirect_info_.new_method != resource_request_->method) {
-      resource_request_->method = redirect_info_.new_method;
-
-      // TODO(davidben): This logic still needs to be replicated at the
-      // consumers.
-      //
-      // The Origin header is sent on anything that is not a GET or HEAD, which
-      // suggests all redirects that change methods (since they always change to
-      // GET) should drop the Origin header.
-      // See https://fetch.spec.whatwg.org/#origin-header
-      // TODO(jww): This is Origin header removal is probably layering
-      // violation and should be refactored into //content.
-      // See https://crbug.com/471397.
-      // See also: https://crbug.com/760487
-      resource_request_->headers.RemoveHeader(net::HttpRequestHeaders::kOrigin);
-
-      // The inclusion of a multipart Content-Type header can cause problems
-      // with some servers:
-      // http://code.google.com/p/chromium/issues/detail?id=843
-      resource_request_->headers.RemoveHeader(
-          net::HttpRequestHeaders::kContentLength);
-      resource_request_->headers.RemoveHeader(
-          net::HttpRequestHeaders::kContentType);
-
+    bool should_clear_upload = false;
+    net::RedirectUtil::UpdateHttpRequest(
+        resource_request_->url, resource_request_->method, redirect_info_,
+        &resource_request_->headers, &should_clear_upload);
+    if (should_clear_upload) {
       // The request body is no longer applicable.
       resource_request_->request_body = nullptr;
       blob_handles_.clear();
     }
 
-    // Cross-origin redirects should not result in an Origin header value that
-    // is equal to the original request's Origin header. This is necessary to
-    // a reflection of POST requests to bypass CSRF protections. If the header
-    // was prevent not set to "null", a POST request from origin A to a
-    // malicious origin M could be redirected by M back to A.
-    //
-    // This behavior is specified in step 10 of the HTTP-redirect fetch
-    // algorithm[1] (which supercedes the behavior outlined in RFC 6454[2].
-    //
-    // [1]: https://fetch.spec.whatwg.org/#http-redirect-fetch
-    // [2]: https://tools.ietf.org/html/rfc6454#section-7
-    //
-    // TODO(jww): This is a layering violation and should be refactored
-    // somewhere up into //net's embedder. https://crbug.com/471397
-    if (!url::Origin(redirect_info_.new_url)
-             .IsSameOriginWith(url::Origin(resource_request_->url)) &&
-        resource_request_->headers.HasHeader(
-            net::HttpRequestHeaders::kOrigin)) {
-      resource_request_->headers.SetHeader(net::HttpRequestHeaders::kOrigin,
-                                           url::Origin().Serialize());
-    }
-
     resource_request_->url = redirect_info_.new_url;
+    resource_request_->method = redirect_info_.new_method;
     resource_request_->site_for_cookies = redirect_info_.new_site_for_cookies;
     resource_request_->referrer = GURL(redirect_info_.new_referrer);
     resource_request_->referrer_policy =
