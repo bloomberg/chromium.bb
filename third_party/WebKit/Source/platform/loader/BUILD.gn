@@ -11,6 +11,8 @@ make_names("make_platform_loader_generated_fetch_initiator_type_names") {
   output_dir = "$blink_platform_output_dir/loader/fetch"
 }
 
+# TODO(toyoshim): Consider to have a blink_core_sources-like template for
+# BUILD.gn files under platform. See code review comments for details.
 jumbo_source_set("loader") {
   # This target is a logical part of the platform and only the platform target
   # should depend on it.
@@ -82,33 +84,20 @@ jumbo_source_set("loader") {
           ":make_platform_loader_generated_fetch_initiator_type_names")
 
   configs += [
-    "//third_party/WebKit/Source:config",
     "//third_party/WebKit/Source:non_test_config",
-    "//third_party/WebKit/Source:inside_blink",
+    "//third_party/WebKit/Source/platform:blink_platform_config",
     "//third_party/WebKit/Source/platform:blink_platform_implementation",
-
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    "//build/config/compiler:no_size_t_to_int_warning",
   ]
 
   deps = [
     ":make_platform_loader_generated_fetch_initiator_type_names",
     "//components/link_header_util:link_header_util",
-    "//mojo/public/cpp/system:system",
-
-    # "//services/network/public/interfaces:interfaces_blink" is included in
-    # "//third_party/WebKit/Source/platform", which will contain this source set
-    "//storage/public/interfaces:interfaces_blink",
-    "//third_party/WebKit/Source/platform:make_platform_generated",
-    "//third_party/WebKit/common:blink_common",
-    "//third_party/WebKit/public:mojo_bindings_blink",
   ]
 
   public_deps = [
-    "//base",
-    "//net",
-    "//third_party/icu",
-    "//v8",
+    "//third_party/WebKit/Source/platform/blob:blob",
+    "//third_party/WebKit/Source/platform/network:network",
+    "//third_party/WebKit/public:mojo_bindings_blink",
   ]
 }
 
@@ -136,17 +125,12 @@ jumbo_source_set("unit_tests") {
     "fetch/ResourceTest.cpp",
   ]
 
-  defines = [ "INSIDE_BLINK" ]
-
-  configs += [
-    "//third_party/WebKit/Source/platform/wtf:wtf_config",
-    "//third_party/WebKit/Source:config",
-  ]
+  configs += [ "//third_party/WebKit/Source/platform:blink_platform_config" ]
 
   deps = [
     "//testing/gmock",
     "//testing/gtest",
-    "//third_party/WebKit/Source/platform",
+    "//third_party/WebKit/Source/platform:platform",
   ]
 }
 
@@ -169,14 +153,11 @@ jumbo_source_set("test_support") {
     "testing/MockResourceClient.h",
   ]
 
-  defines = [ "INSIDE_BLINK" ]
+  configs += [ "//third_party/WebKit/Source/platform:blink_platform_config" ]
 
-  configs += [
-    "//third_party/WebKit/Source/platform/wtf:wtf_config",
-    "//third_party/WebKit/Source:config",
-  ]
-
-  deps = [
-    "//third_party/WebKit/Source/platform",
+  public_deps = [
+    "//net",
+    "//skia",
+    "//third_party/icu",
   ]
 }
