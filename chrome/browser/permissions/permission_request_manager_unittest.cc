@@ -692,3 +692,21 @@ TEST_F(PermissionRequestManagerTest, UMAForIgnores) {
   histograms.ExpectUniqueSample("Permissions.Engagement.Ignored.Geolocation", 0,
                                 1);
 }
+
+TEST_F(PermissionRequestManagerTest, UMAForTabSwitching) {
+  base::HistogramTester histograms;
+
+  manager_->AddRequest(&request1_);
+  WaitForBubbleToBeShown();
+  histograms.ExpectUniqueSample(
+      PermissionUmaUtil::kPermissionsPromptShown,
+      static_cast<base::HistogramBase::Sample>(PermissionRequestType::QUOTA),
+      1);
+
+  MockTabSwitchAway();
+  MockTabSwitchBack();
+  histograms.ExpectUniqueSample(
+      PermissionUmaUtil::kPermissionsPromptShown,
+      static_cast<base::HistogramBase::Sample>(PermissionRequestType::QUOTA),
+      1);
+}
