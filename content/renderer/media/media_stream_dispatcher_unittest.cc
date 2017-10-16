@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_number_conversions.h"
@@ -40,11 +41,11 @@ class MockMediaStreamDispatcherEventHandler
     request_id_ = request_id;
     label_ = label;
     if (audio_devices.size()) {
-      DCHECK(audio_devices.size() == 1);
+      DCHECK_EQ(audio_devices.size(), 1U);
       audio_device_ = audio_devices[0];
     }
     if (video_devices.size()) {
-      DCHECK(video_devices.size() == 1);
+      DCHECK_EQ(video_devices.size(), 1U);
       video_device_ = video_devices[0];
     }
   }
@@ -105,7 +106,7 @@ class MediaStreamDispatcherTest : public ::testing::Test {
   int GenerateStream(int request_id) {
     int next_ipc_id = dispatcher_->next_ipc_id_;
     dispatcher_->GenerateStream(request_id, handler_->AsWeakPtr(), controls_,
-                                security_origin_, true);
+                                true);
     return next_ipc_id;
   }
 
@@ -195,11 +196,11 @@ TEST_F(MediaStreamDispatcherTest, BasicVideoDevice) {
 
   int ipc_request_id1 = dispatcher_->next_ipc_id_;
   dispatcher_->OpenDevice(kRequestId1, handler_->AsWeakPtr(), video_device.id,
-                          MEDIA_DEVICE_VIDEO_CAPTURE, security_origin_);
+                          MEDIA_DEVICE_VIDEO_CAPTURE);
   int ipc_request_id2 = dispatcher_->next_ipc_id_;
   EXPECT_NE(ipc_request_id1, ipc_request_id2);
   dispatcher_->OpenDevice(kRequestId2, handler_->AsWeakPtr(), video_device.id,
-                          MEDIA_DEVICE_VIDEO_CAPTURE, security_origin_);
+                          MEDIA_DEVICE_VIDEO_CAPTURE);
   EXPECT_EQ(dispatcher_->requests_.size(), size_t(2));
 
   // Complete the OpenDevice of request 1.
@@ -334,11 +335,11 @@ TEST_F(MediaStreamDispatcherTest, GetNonScreenCaptureDevices) {
 
   int ipc_request_id1 = dispatcher_->next_ipc_id_;
   dispatcher_->OpenDevice(kRequestId1, handler_->AsWeakPtr(), video_device.id,
-                          MEDIA_DEVICE_VIDEO_CAPTURE, security_origin_);
+                          MEDIA_DEVICE_VIDEO_CAPTURE);
   int ipc_request_id2 = dispatcher_->next_ipc_id_;
   EXPECT_NE(ipc_request_id1, ipc_request_id2);
   dispatcher_->OpenDevice(kRequestId2, handler_->AsWeakPtr(), screen_device.id,
-                          MEDIA_DESKTOP_VIDEO_CAPTURE, security_origin_);
+                          MEDIA_DESKTOP_VIDEO_CAPTURE);
   EXPECT_EQ(dispatcher_->requests_.size(), 2u);
 
   // Complete the OpenDevice of request 1.

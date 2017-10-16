@@ -22,10 +22,6 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 
-namespace url {
-class Origin;
-}
-
 namespace content {
 
 class MediaStreamDispatcherEventHandler;
@@ -49,7 +45,6 @@ class CONTENT_EXPORT MediaStreamDispatcher
       int request_id,
       const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
       const StreamControls& controls,
-      const url::Origin& security_origin,
       bool is_processing_user_gesture);
 
   // Cancel the request for a new media stream to be created.
@@ -65,8 +60,7 @@ class CONTENT_EXPORT MediaStreamDispatcher
       int request_id,
       const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
       const std::string& device_id,
-      MediaStreamType type,
-      const url::Origin& security_origin);
+      MediaStreamType type);
 
   // Cancel the request to open a device.
   virtual void CancelOpenDevice(

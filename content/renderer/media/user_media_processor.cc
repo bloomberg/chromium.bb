@@ -561,7 +561,6 @@ void UserMediaProcessor::GenerateStreamForCurrentRequestInfo() {
   media_stream_dispatcher_->GenerateStream(
       current_request_info_->request_id(), weak_factory_.GetWeakPtr(),
       *current_request_info_->stream_controls(),
-      current_request_info_->security_origin(),
       current_request_info_->is_processing_user_gesture());
 }
 

@@ -158,8 +158,7 @@ int PepperMediaDeviceManager::OpenDevice(PP_DeviceType_Dev type,
 #if BUILDFLAG(ENABLE_WEBRTC)
   GetMediaStreamDispatcher()->OpenDevice(
       request_id, AsWeakPtr(), device_id,
-      PepperMediaDeviceManager::FromPepperDeviceType(type),
-      url::Origin(host->GetDocumentURL(pp_instance).GetOrigin()));
+      PepperMediaDeviceManager::FromPepperDeviceType(type));
 #else
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&PepperMediaDeviceManager::OnDeviceOpenFailed,
