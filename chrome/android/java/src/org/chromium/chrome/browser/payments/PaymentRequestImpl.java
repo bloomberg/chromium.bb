@@ -403,16 +403,6 @@ public class PaymentRequestImpl
         mCurrencyFormatterMap = new HashMap<>();
     }
 
-    @Override
-    protected void finalize() throws Throwable {
-        super.finalize();
-        for (CurrencyFormatter formatter : mCurrencyFormatterMap.values()) {
-            assert formatter != null;
-            // Ensures the native implementation of currency formatter does not leak.
-            formatter.destroy();
-        }
-    }
-
     /**
      * Called by the merchant website to initialize the payment request data.
      */
@@ -1416,7 +1406,7 @@ public class PaymentRequestImpl
         Log.d(TAG, debugMessage);
         if (mClient != null) mClient.onError(reason);
         closeClient();
-        closeUI(true);
+        closeUIAndDestroyNativeObjects(/*immediateClose=*/true);
     }
 
     /**
@@ -1439,8 +1429,8 @@ public class PaymentRequestImpl
         mClient.onAbort(abortSucceeded);
         if (abortSucceeded) {
             closeClient();
-            closeUI(true);
             mJourneyLogger.setAborted(AbortReason.ABORTED_BY_MERCHANT);
+            closeUIAndDestroyNativeObjects(/*immediateClose=*/true);
         } else {
             if (sObserverForTest != null) sObserverForTest.onPaymentRequestServiceUnableToAbort();
         }
@@ -1467,7 +1457,7 @@ public class PaymentRequestImpl
         PaymentPreferencesUtil.setPaymentInstrumentLastUseDate(
                 selectedPaymentMethod.getIdentifier(), System.currentTimeMillis());
 
-        closeUI(PaymentComplete.FAIL != result);
+        closeUIAndDestroyNativeObjects(/*immediateClose=*/PaymentComplete.FAIL != result);
     }
 
     @Override
@@ -1569,8 +1559,8 @@ public class PaymentRequestImpl
     public void close() {
         if (mClient == null) return;
         closeClient();
-        closeUI(true);
         mJourneyLogger.setAborted(AbortReason.MOJO_RENDERER_CLOSING);
+        closeUIAndDestroyNativeObjects(/*immediateClose=*/true);
     }
 
     /**
@@ -1580,8 +1570,8 @@ public class PaymentRequestImpl
     public void onConnectionError(MojoException e) {
         if (mClient == null) return;
         closeClient();
-        closeUI(true);
         mJourneyLogger.setAborted(AbortReason.MOJO_CONNECTION_ERROR);
+        closeUIAndDestroyNativeObjects(/*immediateClose=*/true);
     }
 
     /**
@@ -1825,7 +1815,9 @@ public class PaymentRequestImpl
     }
 
     /**
-     * Closes the UI. If the client is still connected, then it's notified of UI hiding.
+     * Closes the UI and destroys native objects. If the client is still connected, then it's
+     * notified of UI hiding. This PaymentRequestImpl object can't be reused after this function is
+     * called.
      *
      * @param immediateClose If true, then UI immediately closes. If false, the UI shows the error
      *                       message "There was an error processing your order." This message
@@ -1835,7 +1827,7 @@ public class PaymentRequestImpl
      *                       {@link PaymentRequestImpl#complete(int)}. All other callers should
      *                       always pass "true."
      */
-    private void closeUI(boolean immediateClose) {
+    private void closeUIAndDestroyNativeObjects(boolean immediateClose) {
         if (mUI != null) {
             mUI.close(immediateClose, () -> {
                 if (mClient != null) mClient.onComplete();
@@ -1863,6 +1855,14 @@ public class PaymentRequestImpl
             mObservedTabModel.removeObserver(mTabModelObserver);
             mObservedTabModel = null;
         }
+
+        // Destroy native objects.
+        for (CurrencyFormatter formatter : mCurrencyFormatterMap.values()) {
+            assert formatter != null;
+            // Ensures the native implementation of currency formatter does not leak.
+            formatter.destroy();
+        }
+        mJourneyLogger.destroy();
     }
 
     private void closeClient() {
