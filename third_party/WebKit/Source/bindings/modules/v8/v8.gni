@@ -13,7 +13,6 @@ bindings_modules_v8_files =
                     "serialization/V8ScriptValueDeserializerForModules.h",
                     "serialization/V8ScriptValueSerializerForModules.cpp",
                     "serialization/V8ScriptValueSerializerForModules.h",
-                    "DictionaryHelperForModules.cpp",
                     "ModuleBindingsInitializer.cpp",
                     "ModuleBindingsInitializer.h",
                     "ToV8ForModules.h",

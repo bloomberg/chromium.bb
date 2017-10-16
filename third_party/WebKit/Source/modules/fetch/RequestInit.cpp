@@ -42,8 +42,8 @@ RequestInit::RequestInit(ExecutionContext* context,
   //   the same as undefined: a value has been set, even if invalid, and will
   //   throw a TypeError later when it gets converted to a HeadersInit object.
   v8::Local<v8::Value> v8_headers;
-  bool is_header_set = DictionaryHelper::Get(options, "headers", v8_headers) &&
-                       !v8_headers->IsUndefined();
+  bool is_header_set =
+      options.Get("headers", v8_headers) && !v8_headers->IsUndefined();
   are_any_members_set |= is_header_set;
 
   are_any_members_set |= DictionaryHelper::Get(options, "mode", mode);
@@ -62,12 +62,11 @@ RequestInit::RequestInit(ExecutionContext* context,
   are_any_members_set |= is_referrer_policy_set;
 
   v8::Local<v8::Value> v8_body;
-  bool is_body_set = DictionaryHelper::Get(options, "body", v8_body);
+  bool is_body_set = options.Get("body", v8_body);
   are_any_members_set |= is_body_set;
 
   v8::Local<v8::Value> v8_credential;
-  bool is_credential_set =
-      DictionaryHelper::Get(options, "credentials", v8_credential);
+  bool is_credential_set = options.Get("credentials", v8_credential);
   are_any_members_set |= is_credential_set;
 
   if (are_any_members_set) {

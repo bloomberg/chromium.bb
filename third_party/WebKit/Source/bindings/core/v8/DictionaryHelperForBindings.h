@@ -32,19 +32,6 @@
 
 namespace blink {
 
-template <template <typename> class PointerType, typename T>
-bool DictionaryHelper::Get(const Dictionary& dictionary,
-                           const StringView& key,
-                           PointerType<T>& value) {
-  v8::Local<v8::Value> v8_value;
-  if (!dictionary.Get(key, v8_value))
-    return false;
-
-  value =
-      V8TypeOf<T>::Type::ToImplWithTypeCheck(dictionary.GetIsolate(), v8_value);
-  return true;
-}
-
 template <typename T>
 bool DictionaryHelper::Get(const Dictionary& dictionary,
                            const StringView& key,
