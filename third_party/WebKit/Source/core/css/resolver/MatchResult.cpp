@@ -58,10 +58,24 @@ void MatchResult::FinishAddingUARules() {
   ua_range_end_ = matched_properties_.size();
 }
 
+void MatchResult::FinishAddingUserRules() {
+  // Don't add empty ranges.
+  if (user_range_ends_.IsEmpty() &&
+      ua_range_end_ == matched_properties_.size())
+    return;
+  if (!user_range_ends_.IsEmpty() &&
+      user_range_ends_.back() == matched_properties_.size())
+    return;
+  user_range_ends_.push_back(matched_properties_.size());
+}
+
 void MatchResult::FinishAddingAuthorRulesForTreeScope() {
   // Don't add empty ranges.
-  if (author_range_ends_.IsEmpty() &&
+  if (author_range_ends_.IsEmpty() && user_range_ends_.IsEmpty() &&
       ua_range_end_ == matched_properties_.size())
+    return;
+  if (author_range_ends_.IsEmpty() && !user_range_ends_.IsEmpty() &&
+      user_range_ends_.back() == matched_properties_.size())
     return;
   if (!author_range_ends_.IsEmpty() &&
       author_range_ends_.back() == matched_properties_.size())
