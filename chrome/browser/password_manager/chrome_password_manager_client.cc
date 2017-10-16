@@ -324,8 +324,12 @@ void ChromePasswordManagerClient::ShowManualFallbackForSaving(
 #if !defined(OS_ANDROID)
   PasswordsClientUIDelegate* manage_passwords_ui_controller =
       PasswordsClientUIDelegateFromWebContents(web_contents());
-  manage_passwords_ui_controller->OnShowManualFallbackForSaving(
-      std::move(form_to_save), has_generated_password, is_update);
+  // There may be no UI controller for ChromeOS login page
+  // (see crbug.com/774676).
+  if (manage_passwords_ui_controller) {
+    manage_passwords_ui_controller->OnShowManualFallbackForSaving(
+        std::move(form_to_save), has_generated_password, is_update);
+  }
 #endif  // !defined(OS_ANDROID)
 }
 
@@ -336,7 +340,10 @@ void ChromePasswordManagerClient::HideManualFallbackForSaving() {
 #if !defined(OS_ANDROID)
   PasswordsClientUIDelegate* manage_passwords_ui_controller =
       PasswordsClientUIDelegateFromWebContents(web_contents());
-  manage_passwords_ui_controller->OnHideManualFallbackForSaving();
+  // There may be no UI controller for ChromeOS login page
+  // (see crbug.com/774676).
+  if (manage_passwords_ui_controller)
+    manage_passwords_ui_controller->OnHideManualFallbackForSaving();
 #endif  // !defined(OS_ANDROID)
 }
 
