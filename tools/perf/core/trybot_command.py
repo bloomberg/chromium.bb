@@ -20,8 +20,6 @@ import urllib2
 from core import benchmark_finders
 from core import path_util
 
-from telemetry import benchmark
-from telemetry import decorators
 from telemetry.util import command_line
 from telemetry.util import matching
 
@@ -278,8 +276,8 @@ class Trybot(command_line.ArgParseCommand):
     """Return whether benchmark will be disabled on trybot platform.
 
     Note that we cannot tell with certainty whether the benchmark will be
-    disabled on the trybot platform since the disable logic in ShouldDisable()
-    can be very dynamic and can only be verified on the trybot server platform.
+    disabled on the trybot platform since the disable logic can be very dynamic
+    and can only be verified on the trybot server platform.
 
     We are biased on the side of enabling the benchmark, and attempt to
     early discover whether the benchmark will be disabled as our best.
@@ -293,32 +291,11 @@ class Trybot(command_line.ArgParseCommand):
       disabled, and |reason| is a string that shows the reason why we think the
       benchmark is disabled for sure.
     """
-    benchmark_name = benchmark_class.Name()
-    benchmark_disabled_strings = decorators.GetDisabledAttributes(
-        benchmark_class)
-    if 'all' in benchmark_disabled_strings:
-      return True, 'Benchmark %s is disabled on all platform.' % benchmark_name
-    if trybot_name == 'all':
-      return False, ''
-    trybot_platform = _GetBotPlatformFromTrybotName(trybot_name)
-    if trybot_platform in benchmark_disabled_strings:
-      return True, (
-          "Benchmark %s is disabled on %s, and trybot's platform is %s." %
-          (benchmark_name, ', '.join(benchmark_disabled_strings),
-           trybot_platform))
-    benchmark_enabled_strings = decorators.GetEnabledAttributes(benchmark_class)
-    if (benchmark_enabled_strings and
-        trybot_platform not in benchmark_enabled_strings and
-        'all' not in benchmark_enabled_strings):
-      return True, (
-          "Benchmark %s is only enabled on %s, and trybot's platform is %s." %
-          (benchmark_name, ', '.join(benchmark_enabled_strings),
-           trybot_platform))
-    if benchmark_class.ShouldDisable != benchmark.Benchmark.ShouldDisable:
-      logging.warning(
-          'Benchmark %s has ShouldDisable() method defined. If your trybot run '
-          'does not produce any results, it is possible that the benchmark '
-          'is disabled on the target trybot platform.', benchmark_name)
+    # TODO(rnephew): This method has been a noop for awhile now. Decorators and
+    # ShouldDisable() are deprecated in favor of StoryExpectations(). That
+    # is in turn being replaced by 1-click disabling via SoM. Once 1-click
+    # diabling is ready this should be updated to use it.
+    del benchmark_class, trybot_name  # unused until updated.
     return False, ''
 
   @classmethod

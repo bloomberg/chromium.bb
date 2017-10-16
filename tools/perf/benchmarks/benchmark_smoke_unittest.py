@@ -15,7 +15,6 @@ import unittest
 
 from telemetry import benchmark as benchmark_module
 from telemetry import decorators
-from telemetry.internal.browser import browser_finder
 from telemetry.testing import options_for_unittests
 from telemetry.testing import progress_reporter
 
@@ -87,11 +86,6 @@ def SmokeTestGenerator(benchmark, num_pages=1):
 
     benchmark.ProcessCommandLineArgs(None, options)
     benchmark_module.ProcessCommandLineArgs(None, options)
-
-    possible_browser = browser_finder.FindBrowser(options)
-    if SinglePageBenchmark.ShouldDisable(possible_browser):
-      self.skipTest('Benchmark %s has ShouldDisable return True' %
-                    SinglePageBenchmark.Name())
 
     self.assertEqual(0, SinglePageBenchmark().Run(options),
                      msg='Failed: %s' % benchmark)

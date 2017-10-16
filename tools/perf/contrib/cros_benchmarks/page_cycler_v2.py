@@ -25,20 +25,6 @@ class _PageCyclerV2(perf_benchmark.PerfBenchmark):
     loading_metrics_category.AugmentOptionsForLoadingMetrics(tbm_options)
     return tbm_options
 
-  @classmethod
-  def ShouldDisable(cls, possible_browser):
-    # crbug.com/619254
-    if possible_browser.browser_type == 'reference':
-      return True
-
-    # crbug.com/616781
-    if (cls.IsSvelte(possible_browser) or
-        possible_browser.platform.GetDeviceTypeName() == 'Nexus 5X' or
-        possible_browser.platform.GetDeviceTypeName() == 'AOSP on BullHead'):
-      return True
-
-    return False
-
 
 @benchmark.Owner(emails=['kouhei@chromium.org', 'ksakamoto@chromium.org'])
 class PageCyclerV2Typical25(_PageCyclerV2):
