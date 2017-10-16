@@ -123,33 +123,10 @@ cr.define('extensions', function() {
     return label;
   }
 
-  /**
-   * Returns the list type that the item belongs to.
-   * @param {!chrome.developerPrivate.ExtensionInfo} item
-   * @return {extensions.ShowingType}
-   */
-  function getItemListType(item) {
-    const ExtensionType = chrome.developerPrivate.ExtensionType;
-    switch (item.type) {
-      case ExtensionType.HOSTED_APP:
-      case ExtensionType.LEGACY_PACKAGED_APP:
-      case ExtensionType.PLATFORM_APP:
-        return extensions.ShowingType.APPS;
-      case ExtensionType.EXTENSION:
-      case ExtensionType.SHARED_MODULE:
-        return extensions.ShowingType.EXTENSIONS;
-      case ExtensionType.THEME:
-        assertNotReached('Don\'t send themes to the chrome://extensions page');
-        break;
-    }
-    assertNotReached();
-  }
-
   return {
     isControlled: isControlled,
     isEnabled: isEnabled,
     userCanChangeEnablement: userCanChangeEnablement,
-    getItemListType: getItemListType,
     getItemSource: getItemSource,
     getItemSourceString: getItemSourceString,
     computeInspectableViewLabel: computeInspectableViewLabel

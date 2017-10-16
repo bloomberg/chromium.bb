@@ -92,14 +92,6 @@ cr.define('extensions', function() {
         },
       },
 
-      /** @private {extensions.ShowingType} */
-      listType_: Number,
-
-      itemsList_: {
-        type: Array,
-        computed: 'computeList_(listType_)',
-      },
-
       /**
        * Prevents page content from showing before data is first loaded.
        * @private
@@ -213,18 +205,6 @@ cr.define('extensions', function() {
     /** @private */
     onMenuButtonTap_: function() {
       this.$.drawer.openDrawer();
-
-      // Sidebar needs manager to inform it of what to highlight since it
-      // has no access to item-specific page.
-      let page = extensions.navigation.getCurrentPage();
-      if (page.extensionId) {
-        // Find out what type of item we're looking at, and replace page info
-        // with that list type.
-        const data = assert(this.getData_(page.extensionId));
-        page = {page: Page.LIST, type: extensions.getItemListType(data)};
-      }
-
-      this.$.sidebar.updateSelected(page);
     },
 
     /**
@@ -233,12 +213,20 @@ cr.define('extensions', function() {
      * @private
      */
     getListId_: function(item) {
-      const type = extensions.getItemListType(item);
-      if (type == extensions.ShowingType.APPS)
-        return 'apps';
-      else if (type == extensions.ShowingType.EXTENSIONS)
-        return 'extensions';
-
+      const ExtensionType = chrome.developerPrivate.ExtensionType;
+      switch (item.type) {
+        case ExtensionType.HOSTED_APP:
+        case ExtensionType.LEGACY_PACKAGED_APP:
+        case ExtensionType.PLATFORM_APP:
+          return 'apps';
+        case ExtensionType.EXTENSION:
+        case ExtensionType.SHARED_MODULE:
+          return 'extensions';
+        case ExtensionType.THEME:
+          assertNotReached(
+              'Don\'t send themes to the chrome://extensions page');
+          break;
+      }
       assertNotReached();
     },
 
@@ -356,9 +344,6 @@ cr.define('extensions', function() {
       if (newPage.extensionId)
         data = assert(this.getData_(newPage.extensionId));
 
-      if (newPage.hasOwnProperty('type'))
-        this.listType_ = /** @type {extensions.ShowingType} */ (newPage.type);
-
       if (toPage == Page.DETAILS)
         this.detailViewItem_ = assert(data);
       else if (toPage == Page.ERRORS)
@@ -396,24 +381,6 @@ cr.define('extensions', function() {
       this.showKioskDialog_ = false;
     },
     // </if>
-
-    /**
-     * @param {!extensions.ShowingType} listType
-     * @private
-     */
-    computeList_: function(listType) {
-      // TODO(scottchen): the .slice is required to trigger the binding
-      // correctly, otherwise the list won't rerender. Should investigate
-      // the performance implication, or find better ways to trigger change.
-      switch (listType) {
-        case extensions.ShowingType.EXTENSIONS:
-          this.linkPaths('itemsList_', 'extensions');
-          return this.extensions;
-        case extensions.ShowingType.APPS:
-          this.linkPaths('itemsList_', 'apps');
-          return this.apps;
-      }
-    }
   });
 
   return {Manager: Manager};

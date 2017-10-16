@@ -8,7 +8,7 @@
 <dom-module id="extensions-item-list">
   <template>
     <style include="cr-shared-style">
-      #items-container,
+      .items-container,
       extensions-item {
         --extensions-card-width: 400px;
       }
@@ -26,7 +26,7 @@
         text-align: center;
       }
 
-      #items-container {
+      .items-container {
         --grid-gutter: 12px;
         --max-columns: 3;
         display: grid;
@@ -44,26 +44,47 @@
         grid-column-start: auto;
         grid-row-start: auto;
       }
+
+      #app-title {
+        @apply(--cr-title-text);
+        margin-top: 20px;
+      }
     </style>
     <div id="container">
       <div class="empty-list-message" hidden="[[!isGuest]]">
         $i18n{guestModeMessage}
       </div>
       <div id="no-items" class="empty-list-message"
-          hidden$="[[!shouldShowEmptyItemsMessage_(items.length)]]">
+          hidden$="[[!shouldShowEmptyItemsMessage_(
+              apps.length, extensions.length)]]">
         <span>$i18nRaw{noExtensionsOrApps}</span>
       </div>
       <div id="no-search-results" class="empty-list-message"
-          hidden$="[[!shouldShowEmptySearchMessage_(shownItems_.length)]]">
+          hidden$="[[!shouldShowEmptySearchMessage_(
+              shownApps_.length, shownExtensions_.length)]]">
         <span>$i18n{noSearchResults}</span>
       </div>
-      <div id="items-container">
-        <template is="dom-repeat" items="[[shownItems_]]">
-          <extensions-item data="[[item]]" delegate="[[delegate]]"
-              in-dev-mode="[[inDevMode]]">
-          </extensions-item>
-        </template>
-      </div>
+      <template is="dom-if" if="[[shownExtensions_.length]]">
+        <div class="items-container">
+          <template is="dom-repeat" items="[[shownExtensions_]]">
+            <extensions-item data="[[item]]" delegate="[[delegate]]"
+                in-dev-mode="[[inDevMode]]">
+            </extensions-item>
+          </template>
+        </div>
+      </template>
+      <template is="dom-if" if="[[shownApps_.length]]">
+        <!-- app-title needs to left-align with the grid content below, and
+             the easiest way to achieve this is to make it a grid as well. -->
+        <h1 id="app-title" class="items-container">$i18n{appsTitle}</h1>
+        <div class="items-container">
+          <template is="dom-repeat" items="[[shownApps_]]">
+            <extensions-item data="[[item]]" delegate="[[delegate]]"
+                in-dev-mode="[[inDevMode]]">
+            </extensions-item>
+          </template>
+        </div>
+      </template>
     </div>
   </template>
   <script src="item_list.js"></script>

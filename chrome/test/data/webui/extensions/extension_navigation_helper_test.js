@@ -43,9 +43,7 @@ cr.define('extension_navigation_helper_tests', function() {
 
       navigationHelper.addListener(changePage);
 
-      expectDeepEquals(
-          {page: Page.LIST, type: extensions.ShowingType.EXTENSIONS},
-          navigationHelper.getCurrentPage());
+      expectDeepEquals({page: Page.LIST}, navigationHelper.getCurrentPage());
 
       var currentLength = history.length;
       navigationHelper.updateHistory(
@@ -62,8 +60,7 @@ cr.define('extension_navigation_helper_tests', function() {
           .then(() => {
             mock.verifyMock();
 
-            mock.addExpectation(
-                {page: Page.LIST, type: extensions.ShowingType.EXTENSIONS});
+            mock.addExpectation({page: Page.LIST});
             var waitForNextPop = getOnPopState();
             history.back();
             return waitForNextPop;
@@ -78,11 +75,7 @@ cr.define('extension_navigation_helper_tests', function() {
       var stateUrlPairs = {
         extensions: {
           url: 'chrome://extensions/',
-          state: {page: Page.LIST, type: extensions.ShowingType.EXTENSIONS},
-        },
-        apps: {
-          url: 'chrome://extensions/apps',
-          state: {page: Page.LIST, type: extensions.ShowingType.APPS},
+          state: {page: Page.LIST},
         },
         details: {
           url: 'chrome://extensions/?id=' + id,
@@ -127,9 +120,7 @@ cr.define('extension_navigation_helper_tests', function() {
       var id2 = 'b'.repeat(32);
 
       history.pushState({}, '', 'chrome://extensions/');
-      expectDeepEquals(
-          {page: Page.LIST, type: extensions.ShowingType.EXTENSIONS},
-          navigationHelper.getCurrentPage());
+      expectDeepEquals({page: Page.LIST}, navigationHelper.getCurrentPage());
 
       var expectedLength = history.length;
 
@@ -176,7 +167,6 @@ cr.define('extension_navigation_helper_tests', function() {
       loadTimeData.overrideValues({isGuest: false});
       testRedirect('chrome://extensions/', false);
       testRedirect('chrome://extensions/shortcuts', false);
-      testRedirect('chrome://extensions/apps', false);
       testRedirect('chrome://extensions/fake-route', true);
       // Test trailing slash works.
       testRedirect('chrome://extensions/shortcuts/', false);
@@ -184,7 +174,6 @@ cr.define('extension_navigation_helper_tests', function() {
       loadTimeData.overrideValues({isGuest: true});
       testRedirect('chrome://extensions/', false);
       testRedirect('chrome://extensions/shortcuts', true);
-      testRedirect('chrome://extensions/apps', true);
       testRedirect('chrome://extensions/fake-route', true);
     });
   });

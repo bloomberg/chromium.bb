@@ -93,11 +93,7 @@ cr.define('extensions', function() {
 
     /** @private */
     onCloseButtonTap_: function() {
-      extensions.navigation.navigateTo({
-        page: Page.LIST,
-        type: extensions.getItemListType(
-            /** @type {!chrome.developerPrivate.ExtensionInfo} */ (this.data))
-      });
+      extensions.navigation.navigateTo({page: Page.LIST});
     },
 
     /**

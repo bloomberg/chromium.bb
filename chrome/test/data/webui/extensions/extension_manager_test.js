@@ -8,11 +8,10 @@ cr.define('extension_manager_tests', function() {
   var TestNames = {
     ItemOrder: 'item order',
     ItemListVisibility: 'item list visibility',
-    ShowItems: 'show items',
+    SplitItems: 'split items',
     ChangePages: 'change pages',
     UrlNavigationToDetails: 'url navigation to details',
     UpdateItemData: 'update item data',
-    SidebarHighlighting: 'sidebar highlighting',
   };
 
   function getDataByName(list, name) {
@@ -84,13 +83,11 @@ cr.define('extension_manager_tests', function() {
     test(assert(TestNames.ItemListVisibility), function() {
       var extension = getDataByName(manager.extensions, 'My extension 1');
 
-      var listHasItemWithName = function(name) {
-        return !!manager.$['items-list'].items.find(function(el) {
-          return el.name == name;
-        });
-      };
+      var list = manager.$['items-list'];
+      var listHasItemWithName = (name) =>
+          !!list.extensions.find(el => el.name == name);
 
-      expectEquals(manager.extensions, manager.$['items-list'].items);
+      expectEquals(manager.extensions, manager.$['items-list'].extensions);
       expectTrue(listHasItemWithName('My extension 1'));
 
       manager.removeItem(extension);
@@ -102,7 +99,7 @@ cr.define('extension_manager_tests', function() {
       expectTrue(listHasItemWithName('My extension 1'));
     });
 
-    test(assert(TestNames.ShowItems), function() {
+    test(assert(TestNames.SplitItems), function() {
       var sectionHasItemWithName = function(section, name) {
         return !!manager[section].find(function(el) {
           return el.name == name;
@@ -115,59 +112,6 @@ cr.define('extension_manager_tests', function() {
           'apps', 'Platform App Test: minimal platform app'));
       expectTrue(sectionHasItemWithName('apps', 'hosted_app'));
       expectTrue(sectionHasItemWithName('apps', 'Packaged App Test'));
-
-      // Toggle between extensions and apps and back again.
-      expectEquals(manager.extensions, manager.$['items-list'].items);
-      extensions.navigation.navigateTo(
-          {page: Page.LIST, type: extensions.ShowingType.APPS});
-      expectEquals(manager.apps, manager.$['items-list'].items);
-      extensions.navigation.navigateTo(
-          {page: Page.LIST, type: extensions.ShowingType.EXTENSIONS});
-      expectEquals(manager.extensions, manager.$['items-list'].items);
-      // Repeating a selection should have no change.
-      extensions.navigation.navigateTo(
-          {page: Page.LIST, type: extensions.ShowingType.EXTENSIONS});
-      expectEquals(manager.extensions, manager.$['items-list'].items);
-    });
-
-    test(assert(TestNames.SidebarHighlighting), function() {
-      const toolbar = manager.$$('extensions-toolbar');
-
-      // Stub manager.$.sidebar for testing convenience.
-      let pageState;
-      manager.$.sidebar = {
-        updateSelected: function(state) {
-          pageState = state;
-        },
-      };
-
-      // Tests if manager calls sidebar.updateSelected with the right params.
-      function testPassingCorrectState(onPageState, passedPageState) {
-        extensions.navigation.navigateTo(onPageState);
-        toolbar.fire('cr-toolbar-menu-tap');
-        expectDeepEquals(pageState, passedPageState || onPageState);
-        // Reset pageState so that testing order doesn't matter.
-        pageState = null;
-      }
-
-      testPassingCorrectState({page: Page.SHORTCUTS});
-      testPassingCorrectState(
-          {page: Page.LIST, type: extensions.ShowingType.APPS});
-      testPassingCorrectState(
-          {page: Page.LIST, type: extensions.ShowingType.EXTENSIONS});
-
-      testPassingCorrectState(
-          {page: Page.DETAILS, extensionId: manager.apps[0].id},
-          {page: Page.LIST, type: extensions.ShowingType.APPS});
-      testPassingCorrectState(
-          {page: Page.DETAILS, extensionId: manager.extensions[0].id},
-          {page: Page.LIST, type: extensions.ShowingType.EXTENSIONS});
-      testPassingCorrectState(
-          {page: Page.ERRORS, extensionId: manager.apps[0].id},
-          {page: Page.LIST, type: extensions.ShowingType.APPS});
-      testPassingCorrectState(
-          {page: Page.ERRORS, extensionId: manager.extensions[0].id},
-          {page: Page.LIST, type: extensions.ShowingType.EXTENSIONS});
     });
 
     test(assert(TestNames.ChangePages), function() {
@@ -181,11 +125,6 @@ cr.define('extension_manager_tests', function() {
       Polymer.dom.flush();
       isActiveView(Page.SHORTCUTS);
 
-      // Switch: keyboard shortcuts -> item list.
-      MockInteractions.tap(manager.$.sidebar.$['sections-apps']);
-      Polymer.dom.flush();
-      isActiveView(Page.LIST);
-
       // Switch: item list -> detail view.
       var item = manager.$['items-list'].$$('extensions-item');
       assert(item);
@@ -197,6 +136,11 @@ cr.define('extension_manager_tests', function() {
       MockInteractions.tap(manager.$.sidebar.$['sections-shortcuts']);
       Polymer.dom.flush();
       isActiveView(Page.SHORTCUTS);
+
+      // We get back on the item list.
+      MockInteractions.tap(manager.$.sidebar.$['sections-extensions']);
+      Polymer.dom.flush();
+      isActiveView(Page.LIST);
     });
 
     test(assert(TestNames.UrlNavigationToDetails), function() {

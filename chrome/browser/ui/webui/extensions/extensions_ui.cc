@@ -126,9 +126,9 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
   source->AddLocalizedString("search", IDS_MD_EXTENSIONS_SEARCH);
   // TODO(dpapad): Use a single merged string resource for "Clear search".
   source->AddLocalizedString("clearSearch", IDS_DOWNLOAD_CLEAR_SEARCH);
-  source->AddLocalizedString("sidebarApps", IDS_MD_EXTENSIONS_SIDEBAR_APPS);
   source->AddLocalizedString("sidebarExtensions",
                              IDS_MD_EXTENSIONS_SIDEBAR_EXTENSIONS);
+  source->AddLocalizedString("appsTitle", IDS_MD_EXTENSIONS_APPS_TITLE);
   source->AddLocalizedString("noExtensionsOrApps",
                              IDS_MD_EXTENSIONS_NO_INSTALLED_ITEMS);
   source->AddLocalizedString("noSearchResults",
