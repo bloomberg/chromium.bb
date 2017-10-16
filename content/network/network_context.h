@@ -100,6 +100,9 @@ class CONTENT_EXPORT NetworkContext : public mojom::NetworkContext {
   // Disables use of QUIC by the NetworkContext.
   void DisableQuic();
 
+  void SetNetworkConditions(const std::string& profile_id,
+                            mojom::NetworkConditionsPtr conditions) override;
+
  private:
   NetworkContext();
 

@@ -58,6 +58,21 @@ struct NetworkContextParams {
   bool http_09_on_non_default_ports_enabled = false;
 };
 
+struct NetworkConditions {
+  // If set, the offline state is simulated and other fields are ignored.
+  bool offline;
+
+  // Channel round-trip latency, i.e. minimum time between request sent and
+  // response received.
+  mojo.common.mojom.TimeDelta latency;
+
+  // Maximal aggregated download throughput (bytes/sec). 0 disables download throttling.
+  double download_throughput;
+
+  // Maximal aggregated upload throughput (bytes/sec). 0 disables upload throttling.
+  double upload_throughput;
+};
+
 // Represents a distinct context for making network requests, with its own
 // storage (e.g. cookies and cache).
 interface NetworkContext {
@@ -88,6 +103,14 @@ interface NetworkContext {
   //
   // The callback will be invoked once the data has been deleted.
   ClearNetworkingHistorySince(mojo.common.mojom.Time start_time) => ();
+
+  // Configures network conditions for the specified throttling profile.
+  // The throttling will be applied only to requests that have
+  // X-DevTools-Emulate-Network-Conditions-Client-Id: <profile_id>
+  // header with matching <profile_id>.
+  // Passing null NetworkConditions disables the throttling.
+  // TODO(caseq): get rid of header, make profile_id part of ResourceRequest.
+  SetNetworkConditions(string profile_id, NetworkConditions? conditions);
 };
 
 // Browser interface to the network service.
