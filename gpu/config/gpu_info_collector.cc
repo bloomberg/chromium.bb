@@ -305,7 +305,15 @@ void IdentifyActiveGPU(GPUInfo* gpu_info) {
 
 void FillGPUInfoFromSystemInfo(GPUInfo* gpu_info,
                                angle::SystemInfo* system_info) {
-  DCHECK(system_info->primaryGPUIndex >= 0);
+  // We fill gpu_info even when angle::GetSystemInfo failed so that we can see
+  // partial information even when GPU info collection fails. Handle malformed
+  // angle::SystemInfo first.
+  if (system_info->gpus.empty()) {
+    return;
+  }
+  if (system_info->primaryGPUIndex < 0) {
+    system_info->primaryGPUIndex = 0;
+  }
 
   angle::GPUDeviceInfo* primary =
       &system_info->gpus[system_info->primaryGPUIndex];
