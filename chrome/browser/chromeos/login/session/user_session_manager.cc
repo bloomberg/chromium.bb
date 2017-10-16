@@ -1218,12 +1218,21 @@ void UserSessionManager::CompleteProfileCreateAfterAuthTransfer(
 void UserSessionManager::PrepareTpmDeviceAndFinalizeProfile(Profile* profile) {
   BootTimesRecorder::Get()->AddLoginTimeMarker("TPMOwn-Start", false);
 
-  // Own TPM device if, for any reason, it has not been done in EULA screen.
   if (!cryptohome_util::TpmIsEnabled() || cryptohome_util::TpmIsBeingOwned()) {
     FinalizePrepareProfile(profile);
     return;
   }
 
+  // Make sure TPM ownership gets established and the owner password cleared
+  // (if no longer needed) whenever a user logs in. This is so the TPM is in
+  // locked down state after initial setup, which ensures that some decisions
+  // (e.g. NVRAM spaces) are unchangeable until next hardware reset (powerwash,
+  // recovery, etc.).
+  //
+  // Ownership is normally taken when showing the EULA screen, but in case
+  // this gets interrupted TPM ownership might not be established yet. The code
+  // here runs on every login and ensures that the TPM gets into the desired
+  // state eventually.
   auto callback =
       base::BindOnce(&UserSessionManager::OnCryptohomeOperationCompleted,
                      AsWeakPtr(), profile);
