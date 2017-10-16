@@ -194,6 +194,7 @@ class UiSceneManager {
   bool showing_web_vr_splash_screen_ = false;
   bool prompting_to_exit_ = false;
   bool exiting_ = false;
+  bool browsing_disabled_ = false;
 
   bool fullscreen_ = false;
   bool incognito_ = false;

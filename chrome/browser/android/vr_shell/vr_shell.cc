@@ -121,9 +121,7 @@ void SetIsInVR(content::WebContents* contents, bool is_in_vr) {
 VrShell::VrShell(JNIEnv* env,
                  const JavaParamRef<jobject>& obj,
                  ui::WindowAndroid* window,
-                 bool for_web_vr,
-                 bool web_vr_autopresentation_expected,
-                 bool in_cct,
+                 const vr::UiInitialState& ui_initial_state,
                  VrShellDelegate* delegate,
                  gvr_context* gvr_api,
                  bool reprojected_rendering,
@@ -147,15 +145,16 @@ VrShell::VrShell(JNIEnv* env,
 
   gl_thread_ = base::MakeUnique<VrGLThread>(
       weak_ptr_factory_.GetWeakPtr(), main_thread_task_runner_, gvr_api,
-      for_web_vr, web_vr_autopresentation_expected, in_cct,
-      reprojected_rendering_, HasDaydreamSupport(env));
+      ui_initial_state, reprojected_rendering_, HasDaydreamSupport(env));
   ui_ = gl_thread_.get();
   toolbar_ = base::MakeUnique<vr::ToolbarHelper>(ui_, this);
 
   gl_thread_->Start();
 
-  if (for_web_vr || web_vr_autopresentation_expected)
-    UMA_HISTOGRAM_BOOLEAN("VRAutopresentedWebVR", !for_web_vr);
+  if (ui_initial_state.in_web_vr ||
+      ui_initial_state.web_vr_autopresentation_expected) {
+    UMA_HISTOGRAM_BOOLEAN("VRAutopresentedWebVR", !ui_initial_state.in_web_vr);
+  }
 }
 
 void VrShell::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
@@ -868,15 +867,23 @@ jlong Init(JNIEnv* env,
            jboolean for_web_vr,
            jboolean web_vr_autopresentation_expected,
            jboolean in_cct,
+           jboolean browsing_disabled,
            jlong gvr_api,
            jboolean reprojected_rendering,
            jfloat display_width_meters,
            jfloat display_height_meters,
            jint display_width_pixels,
            jint display_pixel_height) {
+  vr::UiInitialState ui_initial_state;
+  ui_initial_state.browsing_disabled = browsing_disabled;
+  ui_initial_state.in_cct = in_cct;
+  ui_initial_state.in_web_vr = for_web_vr;
+  ui_initial_state.web_vr_autopresentation_expected =
+      web_vr_autopresentation_expected;
+
   return reinterpret_cast<intptr_t>(new VrShell(
       env, obj, reinterpret_cast<ui::WindowAndroid*>(window_android),
-      for_web_vr, web_vr_autopresentation_expected, in_cct,
+      ui_initial_state,
       VrShellDelegate::GetNativeVrShellDelegate(env, delegate),
       reinterpret_cast<gvr_context*>(gvr_api), reprojected_rendering,
       display_width_meters, display_height_meters, display_width_pixels,

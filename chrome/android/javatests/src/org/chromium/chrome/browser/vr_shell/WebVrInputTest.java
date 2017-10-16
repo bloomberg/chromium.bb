@@ -35,6 +35,7 @@ import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.vr_shell.util.VrTestRuleUtils;
 import org.chromium.chrome.browser.vr_shell.util.VrTransitionUtils;
@@ -207,6 +208,25 @@ public class WebVrInputTest {
         EmulatedVrController controller = new EmulatedVrController(mVrTestRule.getActivity());
         controller.pressReleaseAppButton();
         Assert.assertTrue("App button exited WebVR presentation",
+                VrTestFramework.pollJavaScriptBoolean("!vrDisplay.isPresenting",
+                        POLL_TIMEOUT_SHORT_MS, mVrTestFramework.getFirstTabWebContents()));
+    }
+
+    /**
+     * Verifies that pressing the Daydream controller's 'app' button does not cause the user to exit
+     * WebVR presentation when VR browsing is disabled.
+     */
+    @Test
+    @MediumTest
+    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
+    @CommandLineFlags.Add({"disable-features=" + ChromeFeatureList.VR_SHELL})
+    public void testAppButtonNoopsWhenBrowsingDisabled() throws InterruptedException {
+        mVrTestFramework.loadUrlAndAwaitInitialization(
+                VrTestFramework.getHtmlTestFile("generic_webvr_page"), PAGE_LOAD_TIMEOUT_S);
+        VrTransitionUtils.enterPresentationOrFail(mVrTestFramework.getFirstTabCvc());
+        EmulatedVrController controller = new EmulatedVrController(mVrTestRule.getActivity());
+        controller.pressReleaseAppButton();
+        Assert.assertFalse("App button exited WebVR presentation",
                 VrTestFramework.pollJavaScriptBoolean("!vrDisplay.isPresenting",
                         POLL_TIMEOUT_SHORT_MS, mVrTestFramework.getFirstTabWebContents()));
     }

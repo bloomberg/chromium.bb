@@ -15,6 +15,7 @@
 #include "base/single_thread_task_runner.h"
 #include "chrome/browser/ui/toolbar/chrome_toolbar_model_delegate.h"
 #include "chrome/browser/vr/exit_vr_prompt_choice.h"
+#include "chrome/browser/vr/ui.h"
 #include "chrome/browser/vr/ui_unsupported_mode.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "device/geolocation/public/interfaces/geolocation_config.mojom.h"
@@ -70,9 +71,7 @@ class VrShell : device::GvrGamepadDataProvider,
   VrShell(JNIEnv* env,
           const base::android::JavaParamRef<jobject>& obj,
           ui::WindowAndroid* window,
-          bool for_web_vr,
-          bool web_vr_autopresentation_expected,
-          bool in_cct,
+          const vr::UiInitialState& ui_initial_state,
           VrShellDelegate* delegate,
           gvr_context* gvr_api,
           bool reprojected_rendering,

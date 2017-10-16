@@ -328,10 +328,11 @@ public class VrShellImpl
         float displayHeightMeters = (dm.heightPixels / dm.ydpi) * INCHES_TO_METERS;
 
         mContentVrWindowAndroid = new VrWindowAndroid(mActivity, mContentVirtualDisplay);
+        boolean browsingDisabled = !VrShellDelegate.isVrShellEnabled(mDelegate.getVrSupportLevel());
         mNativeVrShell = nativeInit(mDelegate, mContentVrWindowAndroid.getNativePointer(), forWebVr,
-                webVrAutopresentationExpected, inCct, getGvrApi().getNativeGvrContext(),
-                mReprojectedRendering, displayWidthMeters, displayHeightMeters, dm.widthPixels,
-                dm.heightPixels);
+                webVrAutopresentationExpected, inCct, browsingDisabled,
+                getGvrApi().getNativeGvrContext(), mReprojectedRendering, displayWidthMeters,
+                displayHeightMeters, dm.widthPixels, dm.heightPixels);
 
         reparentAllTabs(mContentVrWindowAndroid);
         swapToTab(currentTab);
@@ -825,9 +826,10 @@ public class VrShellImpl
     }
 
     private native long nativeInit(VrShellDelegate delegate, long nativeWindowAndroid,
-            boolean forWebVR, boolean webVrAutopresentationExpected, boolean inCct, long gvrApi,
-            boolean reprojectedRendering, float displayWidthMeters, float displayHeightMeters,
-            int displayWidthPixels, int displayHeightPixels);
+            boolean forWebVR, boolean webVrAutopresentationExpected, boolean inCct,
+            boolean browsingDisabled, long gvrApi, boolean reprojectedRendering,
+            float displayWidthMeters, float displayHeightMeters, int displayWidthPixels,
+            int displayHeightPixels);
     private native void nativeSetSurface(long nativeVrShell, Surface surface);
     private native void nativeSwapContents(
             long nativeVrShell, Tab tab, AndroidUiGestureTarget androidUiGestureTarget);

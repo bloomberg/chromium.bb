@@ -83,7 +83,8 @@ UiSceneManager::UiSceneManager(UiBrowserInterface* browser,
       started_for_autopresentation_(
           ui_initial_state.web_vr_autopresentation_expected),
       showing_web_vr_splash_screen_(
-          ui_initial_state.web_vr_autopresentation_expected) {
+          ui_initial_state.web_vr_autopresentation_expected),
+      browsing_disabled_(ui_initial_state.browsing_disabled) {
   Create2dBrowsingSubtreeRoots();
   CreateWebVrRoot();
   CreateBackground();
@@ -793,6 +794,10 @@ void UiSceneManager::OnGlInitialized(
 void UiSceneManager::OnAppButtonClicked() {
   // App button clicks should be a no-op when auto-presenting WebVR.
   if (started_for_autopresentation_)
+    return;
+
+  // If browsing mode is disabled, the app button should no-op.
+  if (browsing_disabled_)
     return;
 
   // App button click exits the WebVR presentation and fullscreen.
