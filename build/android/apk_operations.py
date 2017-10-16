@@ -65,7 +65,7 @@ def _InstallApk(devices, apk, install_dict):
     if install_dict:
       installer.Install(device, install_dict, apk=apk)
     else:
-      device.Install(apk)
+      device.Install(apk, reinstall=True)
 
   logging.info('Installing %sincremental apk.', '' if install_dict else 'non-')
   device_utils.DeviceUtils.parallel(devices).pMap(install)
