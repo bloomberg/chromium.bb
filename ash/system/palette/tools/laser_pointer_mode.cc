@@ -4,7 +4,6 @@
 
 #include "ash/system/palette/tools/laser_pointer_mode.h"
 
-#include "ash/palette_delegate.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
