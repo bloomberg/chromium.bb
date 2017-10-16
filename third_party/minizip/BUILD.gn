@@ -6,7 +6,7 @@ config("minizip_compiler_flags") {
   if (is_clang) {
     cflags = [ "-Wno-unused-function" ]
 
-    if (!is_nacl) {
+    if (!is_nacl && (target_cpu == "x86" || target_cpu == "x64")) {
       cflags += [
         "-maes",
         "-msse3",
