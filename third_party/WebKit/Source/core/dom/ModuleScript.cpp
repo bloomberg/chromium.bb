@@ -125,11 +125,11 @@ ModuleScript::ModuleScript(Modulator* settings_object,
                            const ScriptFetchOptions& fetch_options,
                            const String& source_text,
                            const TextPosition& start_position)
-    : settings_object_(settings_object),
+    : Script(fetch_options),
+      settings_object_(settings_object),
       record_(this),
       base_url_(base_url),
       preinstantiation_error_(this),
-      fetch_options_(fetch_options),
       source_text_(source_text),
       start_position_(start_position) {
   if (record.IsNull()) {

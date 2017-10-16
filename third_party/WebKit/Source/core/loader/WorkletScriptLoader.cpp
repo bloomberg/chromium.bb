@@ -52,8 +52,7 @@ void WorkletScriptLoader::NotifyFinished(Resource* resource) {
   } else {
     was_script_load_successful_ = true;
     client_->NotifyWorkletScriptLoadingFinished(
-        this, ScriptSourceCode(static_cast<ScriptResource*>(resource),
-                               String() /* nonce */, kNotParserInserted));
+        this, ScriptSourceCode(static_cast<ScriptResource*>(resource)));
   }
   fetcher_ = nullptr;
   client_ = nullptr;

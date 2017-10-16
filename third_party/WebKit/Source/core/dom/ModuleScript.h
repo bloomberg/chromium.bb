@@ -13,7 +13,6 @@
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/bindings/TraceWrapperV8Reference.h"
 #include "platform/heap/Handle.h"
-#include "platform/loader/fetch/ScriptFetchOptions.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/text/TextPosition.h"
 
@@ -62,7 +61,6 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
     return preinstantiation_error_.NewLocal(isolate);
   }
 
-  const ScriptFetchOptions& FetchOptions() const { return fetch_options_; }
   const TextPosition& StartPosition() const { return start_position_; }
 
   DECLARE_TRACE();
@@ -132,10 +130,6 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
   // All the classes/references on the graphs above should be
   // TraceWrapperBase/TraceWrapperMember<>/etc.,
   TraceWrapperV8Reference<v8::Value> preinstantiation_error_;
-
-  // https://html.spec.whatwg.org/#concept-script-script-fetch-options
-  // TODO(kouhei): Move this up the hierarchy (should be at Script).
-  const ScriptFetchOptions fetch_options_;
 
   // For CSP check.
   const String source_text_;

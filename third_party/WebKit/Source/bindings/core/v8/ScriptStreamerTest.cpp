@@ -16,6 +16,7 @@
 #include "core/dom/MockScriptElementBase.h"
 #include "core/frame/Settings.h"
 #include "platform/heap/Handle.h"
+#include "platform/loader/fetch/ScriptFetchOptions.h"
 #include "platform/scheduler/child/web_scheduler.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/wtf/text/TextEncoding.h"
@@ -151,9 +152,9 @@ TEST_F(ScriptStreamingTest, CompilingStreamedScript) {
   EXPECT_TRUE(source_code.Streamer());
   v8::TryCatch try_catch(scope.GetIsolate());
   v8::Local<v8::Script> script;
-  EXPECT_TRUE(V8ScriptRunner::CompileScript(scope.GetScriptState(), source_code,
-                                            kSharableCrossOrigin,
-                                            kV8CacheOptionsDefault)
+  EXPECT_TRUE(V8ScriptRunner::CompileScript(
+                  scope.GetScriptState(), source_code, ScriptFetchOptions(),
+                  kSharableCrossOrigin, kV8CacheOptionsDefault)
                   .ToLocal(&script));
   EXPECT_FALSE(try_catch.HasCaught());
 }
@@ -191,9 +192,9 @@ TEST_F(ScriptStreamingTest, CompilingStreamedScriptWithParseError) {
   EXPECT_TRUE(source_code.Streamer());
   v8::TryCatch try_catch(scope.GetIsolate());
   v8::Local<v8::Script> script;
-  EXPECT_FALSE(V8ScriptRunner::CompileScript(scope.GetScriptState(),
-                                             source_code, kSharableCrossOrigin,
-                                             kV8CacheOptionsDefault)
+  EXPECT_FALSE(V8ScriptRunner::CompileScript(
+                   scope.GetScriptState(), source_code, ScriptFetchOptions(),
+                   kSharableCrossOrigin, kV8CacheOptionsDefault)
                    .ToLocal(&script));
   EXPECT_TRUE(try_catch.HasCaught());
 }
@@ -344,9 +345,9 @@ TEST_F(ScriptStreamingTest, ScriptsWithSmallFirstChunk) {
   EXPECT_TRUE(source_code.Streamer());
   v8::TryCatch try_catch(scope.GetIsolate());
   v8::Local<v8::Script> script;
-  EXPECT_TRUE(V8ScriptRunner::CompileScript(scope.GetScriptState(), source_code,
-                                            kSharableCrossOrigin,
-                                            kV8CacheOptionsDefault)
+  EXPECT_TRUE(V8ScriptRunner::CompileScript(
+                  scope.GetScriptState(), source_code, ScriptFetchOptions(),
+                  kSharableCrossOrigin, kV8CacheOptionsDefault)
                   .ToLocal(&script));
   EXPECT_FALSE(try_catch.HasCaught());
 }
@@ -381,9 +382,9 @@ TEST_F(ScriptStreamingTest, EncodingChanges) {
   EXPECT_TRUE(source_code.Streamer());
   v8::TryCatch try_catch(scope.GetIsolate());
   v8::Local<v8::Script> script;
-  EXPECT_TRUE(V8ScriptRunner::CompileScript(scope.GetScriptState(), source_code,
-                                            kSharableCrossOrigin,
-                                            kV8CacheOptionsDefault)
+  EXPECT_TRUE(V8ScriptRunner::CompileScript(
+                  scope.GetScriptState(), source_code, ScriptFetchOptions(),
+                  kSharableCrossOrigin, kV8CacheOptionsDefault)
                   .ToLocal(&script));
   EXPECT_FALSE(try_catch.HasCaught());
 }
@@ -419,9 +420,9 @@ TEST_F(ScriptStreamingTest, EncodingFromBOM) {
   EXPECT_TRUE(source_code.Streamer());
   v8::TryCatch try_catch(scope.GetIsolate());
   v8::Local<v8::Script> script;
-  EXPECT_TRUE(V8ScriptRunner::CompileScript(scope.GetScriptState(), source_code,
-                                            kSharableCrossOrigin,
-                                            kV8CacheOptionsDefault)
+  EXPECT_TRUE(V8ScriptRunner::CompileScript(
+                  scope.GetScriptState(), source_code, ScriptFetchOptions(),
+                  kSharableCrossOrigin, kV8CacheOptionsDefault)
                   .ToLocal(&script));
   EXPECT_FALSE(try_catch.HasCaught());
 }

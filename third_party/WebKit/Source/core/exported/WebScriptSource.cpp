@@ -12,10 +12,7 @@ namespace blink {
 WebScriptSource::operator ScriptSourceCode() const {
   TextPosition position(OrdinalNumber::FromOneBasedInt(start_line),
                         OrdinalNumber::First());
-  // Scripts injected from outside web platform don't carry nonce info, and are
-  // not inserted via parser.
-  return ScriptSourceCode(code, url, String() /* nonce */, kNotParserInserted,
-                          position);
+  return ScriptSourceCode(code, url, position);
 }
 
 }  // namespace blink

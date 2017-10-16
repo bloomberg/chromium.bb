@@ -41,8 +41,8 @@ void ClassicScript::RunScript(LocalFrame* frame,
         GetScriptSourceCode().GetResource()->CalculateAccessControlStatus();
   }
 
-  frame->GetScriptController().ExecuteScriptInMainWorld(GetScriptSourceCode(),
-                                                        access_control_status);
+  frame->GetScriptController().ExecuteScriptInMainWorld(
+      GetScriptSourceCode(), FetchOptions(), access_control_status);
 }
 
 }  // namespace blink
