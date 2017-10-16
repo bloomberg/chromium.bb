@@ -674,6 +674,9 @@ function init() {
       state.notheme = true;
       window.history.replaceState(state, document.title);
       onThemeChange();
+      if (e.detail === 0) {  // Activated by keyboard.
+        $(IDS.LOGO_DOODLE_BUTTON).focus();
+      }
     });
   } else {
     document.body.classList.add(CLASSES.NON_GOOGLE_PAGE);
@@ -701,7 +704,6 @@ function init() {
   // Create the most visited iframe.
   var iframe = document.createElement('iframe');
   iframe.id = IDS.TILES_IFRAME;
-  iframe.tabIndex = 1;
   iframe.src = 'chrome-search://most-visited/single.html?' + args.join('&');
   $(IDS.TILES).appendChild(iframe);
 
