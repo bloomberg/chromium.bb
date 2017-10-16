@@ -15,6 +15,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "build/buildflag.h"
 #include "media/audio/audio_device_description.h"
 #include "media/audio/audio_output_dispatcher_impl.h"
 #include "media/audio/audio_output_proxy.h"
@@ -22,6 +23,10 @@
 #include "media/audio/fake_audio_input_stream.h"
 #include "media/audio/fake_audio_output_stream.h"
 #include "media/base/media_switches.h"
+
+#if BUILDFLAG(ENABLE_WEBRTC)
+#include "media/audio/audio_input_stream_data_interceptor.h"
+#endif  // BUILDFLAG(ENABLE_WEBRTC)
 
 namespace media {
 
@@ -240,6 +245,23 @@ AudioInputStream* AudioManagerBase::MakeAudioInputStream(
 
   if (stream) {
     input_streams_.insert(stream);
+
+#if BUILDFLAG(ENABLE_WEBRTC)
+    if (!params.IsBitstreamFormat() && debug_recording_manager_) {
+      // Using unretained for |debug_recording_manager_| is safe since it
+      // outlives the audio thread, on which streams are operated.
+      // Note: The AudioInputStreamDataInterceptor takes ownership of the
+      // created stream and cleans it up when it is Close()d, transparently to
+      // the user of the stream. I the case where the audio manager closes the
+      // stream (Mac), this will result in a dangling pointer.
+      stream = new AudioInputStreamDataInterceptor(
+          base::BindRepeating(
+              &AudioDebugRecordingManager::RegisterDebugRecordingSource,
+              base::Unretained(debug_recording_manager_.get()),
+              FILE_PATH_LITERAL("input"), params),
+          stream);
+    }
+#endif  // BUILDFLAG(ENABLE_WEBRTC)
   }
 
   return stream;
@@ -481,12 +503,12 @@ std::unique_ptr<AudioLog> AudioManagerBase::CreateAudioLog(
   return audio_log_factory_->CreateAudioLog(component);
 }
 
-void AudioManagerBase::InitializeOutputDebugRecording() {
+void AudioManagerBase::InitializeDebugRecording() {
   if (!GetTaskRunner()->BelongsToCurrentThread()) {
     // AudioManager is deleted on the audio thread, so it's safe to post
     // unretained.
     GetTaskRunner()->PostTask(
-        FROM_HERE, base::Bind(&AudioManagerBase::InitializeOutputDebugRecording,
+        FROM_HERE, base::Bind(&AudioManagerBase::InitializeDebugRecording,
                               base::Unretained(this)));
     return;
   }
@@ -495,15 +517,15 @@ void AudioManagerBase::InitializeOutputDebugRecording() {
   debug_recording_manager_ = CreateAudioDebugRecordingManager(GetTaskRunner());
 }
 
-void AudioManagerBase::EnableOutputDebugRecording(
+void AudioManagerBase::EnableDebugRecording(
     const base::FilePath& base_file_name) {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
   DCHECK(debug_recording_manager_)
-      << "InitializeOutputDebugRecording() must be called before enabling";
+      << "InitializeDebugRecording() must be called before enabling";
   debug_recording_manager_->EnableDebugRecording(base_file_name);
 }
 
-void AudioManagerBase::DisableOutputDebugRecording() {
+void AudioManagerBase::DisableDebugRecording() {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
   if (debug_recording_manager_)
     debug_recording_manager_->DisableDebugRecording();

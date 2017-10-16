@@ -84,6 +84,7 @@ class AudioManagerHelper : public base::PowerObserver {
   base::SingleThreadTaskRunner* monitor_task_runner() const {
     return monitor_task_runner_.get();
   }
+
   AudioLogFactory* fake_log_factory() { return &fake_log_factory_; }
 
 #if defined(OS_WIN)
@@ -286,7 +287,7 @@ std::unique_ptr<AudioManager> AudioManager::Create(
   std::unique_ptr<AudioManager> manager =
       CreateAudioManager(std::move(audio_thread), audio_log_factory);
 #if BUILDFLAG(ENABLE_WEBRTC)
-  manager->InitializeOutputDebugRecording();
+  manager->InitializeDebugRecording();
 #endif
   return manager;
 }

@@ -58,10 +58,9 @@ class MockAudioManager : public AudioManager {
   std::unique_ptr<AudioLog> CreateAudioLog(
       AudioLogFactory::AudioComponent component) override;
 
-  void InitializeOutputDebugRecording() override;
-  void EnableOutputDebugRecording(
-      const base::FilePath& base_file_name) override;
-  void DisableOutputDebugRecording() override;
+  void InitializeDebugRecording() override;
+  void EnableDebugRecording(const base::FilePath& base_file_name) override;
+  void DisableDebugRecording() override;
 
   const char* GetName() override;
 

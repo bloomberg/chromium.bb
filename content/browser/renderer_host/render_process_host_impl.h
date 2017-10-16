@@ -65,7 +65,6 @@ class SharedPersistentMemoryAllocator;
 }
 
 namespace content {
-class AudioInputRendererHost;
 class ChildConnection;
 class GpuClient;
 class IndexedDBDispatcherHost;
@@ -694,8 +693,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   std::unique_ptr<RendererAudioOutputStreamFactoryContextImpl,
                   BrowserThread::DeleteOnIOThread>
       audio_output_stream_factory_context_;
-
-  scoped_refptr<AudioInputRendererHost> audio_input_renderer_host_;
 
 #if BUILDFLAG(ENABLE_WEBRTC)
   scoped_refptr<P2PSocketDispatcherHost> p2p_socket_dispatcher_host_;
