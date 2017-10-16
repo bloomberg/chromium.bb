@@ -71,6 +71,12 @@ class MODULES_EXPORT AnimationWorkletGlobalScope
   AnimatorList animators_;
 };
 
+DEFINE_TYPE_CASTS(AnimationWorkletGlobalScope,
+                  ExecutionContext,
+                  context,
+                  context->IsAnimationWorkletGlobalScope(),
+                  context.IsAnimationWorkletGlobalScope());
+
 }  // namespace blink
 
 #endif  // AnimationWorkletGlobalScope_h
