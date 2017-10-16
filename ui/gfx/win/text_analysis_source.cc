@@ -9,6 +9,17 @@
 namespace gfx {
 namespace win {
 
+HRESULT TextAnalysisSource::Create(
+    IDWriteTextAnalysisSource** text_analysis_out,
+    const base::string16& text,
+    const base::string16& locale_name,
+    IDWriteNumberSubstitution* number_substitution,
+    DWRITE_READING_DIRECTION reading_direction) {
+  return Microsoft::WRL::MakeAndInitialize<gfx::win::TextAnalysisSource>(
+      text_analysis_out, text, locale_name, number_substitution,
+      reading_direction);
+}
+
 TextAnalysisSource::TextAnalysisSource() = default;
 TextAnalysisSource::~TextAnalysisSource() = default;
 

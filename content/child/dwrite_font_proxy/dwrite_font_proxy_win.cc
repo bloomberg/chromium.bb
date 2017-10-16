@@ -75,6 +75,13 @@ void LogFontProxyError(FontProxyError error) {
 
 }  // namespace
 
+HRESULT DWriteFontCollectionProxy::Create(DWriteFontCollectionProxy** proxy_out,
+                                          IDWriteFactory* dwrite_factory,
+                                          IPC::Sender* sender) {
+  return Microsoft::WRL::MakeAndInitialize<DWriteFontCollectionProxy>(
+      proxy_out, dwrite_factory, sender);
+}
+
 DWriteFontCollectionProxy::DWriteFontCollectionProxy() = default;
 
 DWriteFontCollectionProxy::~DWriteFontCollectionProxy() = default;

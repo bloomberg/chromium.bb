@@ -40,7 +40,7 @@ int DesktopDragDropClientWin::StartDragAndDrop(
 
   base::WeakPtr<DesktopDragDropClientWin> alive(weak_factory_.GetWeakPtr());
 
-  drag_source_ = Microsoft::WRL::Make<ui::DragSourceWin>();
+  drag_source_ = ui::DragSourceWin::Create();
   Microsoft::WRL::ComPtr<ui::DragSourceWin> drag_source_copy = drag_source_;
   drag_source_copy->set_data(&data);
   ui::OSExchangeDataProviderWin::GetDataObjectImpl(data)

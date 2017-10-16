@@ -66,15 +66,14 @@ void InitializeDWriteFontProxy() {
     sender = ChildThreadImpl::current()->thread_safe_sender();
 
   if (!g_font_collection) {
-    mswr::MakeAndInitialize<DWriteFontCollectionProxy>(&g_font_collection,
-                                                       factory.Get(), sender);
+    DWriteFontCollectionProxy::Create(&g_font_collection, factory.Get(),
+                                      sender);
   }
 
   mswr::ComPtr<IDWriteFactory2> factory2;
 
   if (SUCCEEDED(factory.As(&factory2)) && factory2.Get()) {
-    mswr::MakeAndInitialize<FontFallback>(&g_font_fallback,
-                                          g_font_collection.Get(), sender);
+    FontFallback::Create(&g_font_fallback, g_font_collection.Get(), sender);
   }
 
   sk_sp<SkFontMgr> skia_font_manager = SkFontMgr_New_DirectWrite(

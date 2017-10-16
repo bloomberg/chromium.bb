@@ -44,8 +44,8 @@ class FontFallbackUnitTest : public testing::Test {
         .AddFamilyName(L"en-us", L"Segoe UI Symbol")
         .AddFilePath(segoe_path);
 
-    mswr::MakeAndInitialize<DWriteFontCollectionProxy>(
-        &collection_, factory_.Get(), fake_collection_->GetSender());
+    DWriteFontCollectionProxy::Create(&collection_, factory_.Get(),
+                                      fake_collection_->GetSender());
   }
 
   scoped_refptr<FakeFontCollection> fake_collection_;
@@ -56,17 +56,17 @@ class FontFallbackUnitTest : public testing::Test {
 
 TEST_F(FontFallbackUnitTest, MapCharacters) {
   mswr::ComPtr<FontFallback> fallback;
-  mswr::MakeAndInitialize<FontFallback>(&fallback, collection_.Get(),
-                                        fake_collection_->GetSender());
+  FontFallback::Create(&fallback, collection_.Get(),
+                       fake_collection_->GetSender());
 
   mswr::ComPtr<IDWriteFont> font;
   UINT32 mapped_length = 0;
   float scale = 0.0;
 
-  mswr::ComPtr<gfx::win::TextAnalysisSource> text;
-  mswr::MakeAndInitialize<gfx::win::TextAnalysisSource>(
-      &text, L"hello", L"en-us", number_substitution_.Get(),
-      DWRITE_READING_DIRECTION_LEFT_TO_RIGHT);
+  mswr::ComPtr<IDWriteTextAnalysisSource> text;
+  gfx::win::TextAnalysisSource::Create(&text, L"hello", L"en-us",
+                                       number_substitution_.Get(),
+                                       DWRITE_READING_DIRECTION_LEFT_TO_RIGHT);
   fallback->MapCharacters(text.Get(), 0, 5, nullptr, nullptr,
                           DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL,
                           DWRITE_FONT_STRETCH_NORMAL, &mapped_length, &font,
@@ -78,17 +78,17 @@ TEST_F(FontFallbackUnitTest, MapCharacters) {
 
 TEST_F(FontFallbackUnitTest, DuplicateCallsShouldNotRepeatIPC) {
   mswr::ComPtr<FontFallback> fallback;
-  mswr::MakeAndInitialize<FontFallback>(&fallback, collection_.Get(),
-                                        fake_collection_->GetTrackingSender());
+  FontFallback::Create(&fallback, collection_.Get(),
+                       fake_collection_->GetTrackingSender());
 
   mswr::ComPtr<IDWriteFont> font;
   UINT32 mapped_length = 0;
   float scale = 0.0;
 
-  mswr::ComPtr<gfx::win::TextAnalysisSource> text;
-  mswr::MakeAndInitialize<gfx::win::TextAnalysisSource>(
-      &text, L"hello", L"en-us", number_substitution_.Get(),
-      DWRITE_READING_DIRECTION_LEFT_TO_RIGHT);
+  mswr::ComPtr<IDWriteTextAnalysisSource> text;
+  gfx::win::TextAnalysisSource::Create(&text, L"hello", L"en-us",
+                                       number_substitution_.Get(),
+                                       DWRITE_READING_DIRECTION_LEFT_TO_RIGHT);
   fallback->MapCharacters(text.Get(), 0, 5, nullptr, nullptr,
                           DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL,
                           DWRITE_FONT_STRETCH_NORMAL, &mapped_length, &font,
@@ -105,17 +105,17 @@ TEST_F(FontFallbackUnitTest, DuplicateCallsShouldNotRepeatIPC) {
 
 TEST_F(FontFallbackUnitTest, DifferentFamilyShouldNotReuseCache) {
   mswr::ComPtr<FontFallback> fallback;
-  mswr::MakeAndInitialize<FontFallback>(&fallback, collection_.Get(),
-                                        fake_collection_->GetTrackingSender());
+  FontFallback::Create(&fallback, collection_.Get(),
+                       fake_collection_->GetTrackingSender());
 
   mswr::ComPtr<IDWriteFont> font;
   UINT32 mapped_length = 0;
   float scale = 0.0;
 
-  mswr::ComPtr<gfx::win::TextAnalysisSource> text;
-  mswr::MakeAndInitialize<gfx::win::TextAnalysisSource>(
-      &text, L"hello", L"en-us", number_substitution_.Get(),
-      DWRITE_READING_DIRECTION_LEFT_TO_RIGHT);
+  mswr::ComPtr<IDWriteTextAnalysisSource> text;
+  gfx::win::TextAnalysisSource::Create(&text, L"hello", L"en-us",
+                                       number_substitution_.Get(),
+                                       DWRITE_READING_DIRECTION_LEFT_TO_RIGHT);
   fallback->MapCharacters(text.Get(), 0, 5, nullptr, L"font1",
                           DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL,
                           DWRITE_FONT_STRETCH_NORMAL, &mapped_length, &font,
@@ -130,21 +130,21 @@ TEST_F(FontFallbackUnitTest, DifferentFamilyShouldNotReuseCache) {
 
 TEST_F(FontFallbackUnitTest, CacheMissShouldRepeatIPC) {
   mswr::ComPtr<FontFallback> fallback;
-  mswr::MakeAndInitialize<FontFallback>(&fallback, collection_.Get(),
-                                        fake_collection_->GetTrackingSender());
+  FontFallback::Create(&fallback, collection_.Get(),
+                       fake_collection_->GetTrackingSender());
 
   mswr::ComPtr<IDWriteFont> font;
   UINT32 mapped_length = 0;
   float scale = 0.0;
 
-  mswr::ComPtr<gfx::win::TextAnalysisSource> text;
-  mswr::MakeAndInitialize<gfx::win::TextAnalysisSource>(
-      &text, L"hello", L"en-us", number_substitution_.Get(),
-      DWRITE_READING_DIRECTION_LEFT_TO_RIGHT);
-  mswr::ComPtr<gfx::win::TextAnalysisSource> unmappable_text;
-  mswr::MakeAndInitialize<gfx::win::TextAnalysisSource>(
-      &unmappable_text, L"\uffff", L"en-us", number_substitution_.Get(),
-      DWRITE_READING_DIRECTION_LEFT_TO_RIGHT);
+  mswr::ComPtr<IDWriteTextAnalysisSource> text;
+  gfx::win::TextAnalysisSource::Create(&text, L"hello", L"en-us",
+                                       number_substitution_.Get(),
+                                       DWRITE_READING_DIRECTION_LEFT_TO_RIGHT);
+  mswr::ComPtr<IDWriteTextAnalysisSource> unmappable_text;
+  gfx::win::TextAnalysisSource::Create(&unmappable_text, L"\uffff", L"en-us",
+                                       number_substitution_.Get(),
+                                       DWRITE_READING_DIRECTION_LEFT_TO_RIGHT);
   fallback->MapCharacters(text.Get(), 0, 5, nullptr, nullptr,
                           DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL,
                           DWRITE_FONT_STRETCH_NORMAL, &mapped_length, &font,
@@ -159,21 +159,21 @@ TEST_F(FontFallbackUnitTest, CacheMissShouldRepeatIPC) {
 
 TEST_F(FontFallbackUnitTest, SurrogatePairCacheHit) {
   mswr::ComPtr<FontFallback> fallback;
-  mswr::MakeAndInitialize<FontFallback>(&fallback, collection_.Get(),
-                                        fake_collection_->GetTrackingSender());
+  FontFallback::Create(&fallback, collection_.Get(),
+                       fake_collection_->GetTrackingSender());
 
   mswr::ComPtr<IDWriteFont> font;
   UINT32 mapped_length = 0;
   float scale = 0.0;
 
-  mswr::ComPtr<gfx::win::TextAnalysisSource> text;
-  mswr::MakeAndInitialize<gfx::win::TextAnalysisSource>(
-      &text, L"hello", L"en-us", number_substitution_.Get(),
-      DWRITE_READING_DIRECTION_LEFT_TO_RIGHT);
-  mswr::ComPtr<gfx::win::TextAnalysisSource> surrogate_pair_text;
-  mswr::MakeAndInitialize<gfx::win::TextAnalysisSource>(
-      &surrogate_pair_text, L"\U0001d300", L"en-us", number_substitution_.Get(),
-      DWRITE_READING_DIRECTION_LEFT_TO_RIGHT);
+  mswr::ComPtr<IDWriteTextAnalysisSource> text;
+  gfx::win::TextAnalysisSource::Create(&text, L"hello", L"en-us",
+                                       number_substitution_.Get(),
+                                       DWRITE_READING_DIRECTION_LEFT_TO_RIGHT);
+  mswr::ComPtr<IDWriteTextAnalysisSource> surrogate_pair_text;
+  gfx::win::TextAnalysisSource::Create(&surrogate_pair_text, L"\U0001d300",
+                                       L"en-us", number_substitution_.Get(),
+                                       DWRITE_READING_DIRECTION_LEFT_TO_RIGHT);
   fallback->MapCharacters(text.Get(), 0, 5, nullptr, nullptr,
                           DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL,
                           DWRITE_FONT_STRETCH_NORMAL, &mapped_length, &font,

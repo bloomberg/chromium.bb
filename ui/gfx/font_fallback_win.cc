@@ -379,7 +379,7 @@ bool GetFallbackFont(const Font& font,
   DWRITE_READING_DIRECTION reading_direction =
       base::i18n::IsRTL() ? DWRITE_READING_DIRECTION_RIGHT_TO_LEFT
                           : DWRITE_READING_DIRECTION_LEFT_TO_RIGHT;
-  if (FAILED(Microsoft::WRL::MakeAndInitialize<gfx::win::TextAnalysisSource>(
+  if (FAILED(gfx::win::TextAnalysisSource::Create(
           text_analysis.GetAddressOf(), text, locale.c_str(),
           number_substitution.Get(), reading_direction))) {
     return false;
