@@ -43,8 +43,7 @@ class VIEWS_EXPORT PaintInfo {
   static PaintInfo CreateChildPaintInfo(const PaintInfo& parent_paint_info,
                                         const gfx::Rect& bounds,
                                         const gfx::Size& parent_size,
-                                        ScaleType scale_type,
-                                        bool is_layer);
+                                        ScaleType scale_type);
 
   PaintInfo(const PaintInfo& other);
   ~PaintInfo();
@@ -78,14 +77,12 @@ class VIEWS_EXPORT PaintInfo {
 
  private:
   friend class PaintInfoTest;
-  FRIEND_TEST_ALL_PREFIXES(PaintInfoTest, LayerPaintInfo);
 
   PaintInfo(const ui::PaintContext& root_context, const gfx::Size& size);
   PaintInfo(const PaintInfo& parent_paint_info,
             const gfx::Rect& bounds,
             const gfx::Size& parent_size,
-            ScaleType scale_type,
-            bool is_layer);
+            ScaleType scale_type);
 
   // Scales the |child_bounds| to its recording bounds based on the
   // |context.device_scale_factor()|. The recording bounds are snapped to the
