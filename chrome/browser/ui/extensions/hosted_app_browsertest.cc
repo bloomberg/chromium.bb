@@ -48,6 +48,17 @@ using extensions::Extension;
 
 namespace {
 
+constexpr const char kAppDotComManifest[] = R"( { "name": "Hosted App",
+  "version": "1",
+  "manifest_version": 2,
+  "app": {
+    "launch": {
+      "web_url": "%s"
+    },
+    "urls": ["*://app.com/"]
+  }
+} )";
+
 // Used by ShouldLocationBarForXXX. Performs a navigation and then checks that
 // the location bar visibility is as expcted.
 void NavigateAndCheckForLocationBar(Browser* browser,
@@ -169,59 +180,36 @@ IN_PROC_BROWSER_TEST_F(HostedAppTest, OpenLinkInNewTab) {
 }
 
 // Tests that Ctrl + Clicking a link opens a foreground tab.
-#if defined(OS_MACOSX)
-#define MAYBE_CtrlClickLink DISABLED_CtrlClickLink
-#else
-#define MAYBE_CtrlClickLink CtrlClickLink
-#endif
-IN_PROC_BROWSER_TEST_F(HostedAppTest, MAYBE_CtrlClickLink) {
+IN_PROC_BROWSER_TEST_F(HostedAppTest, CtrlClickLink) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
+  // Set up an app which covers app.com URLs.
+  GURL app_url =
+      embedded_test_server()->GetURL("app.com", "/click_modifier/href.html");
   ui_test_utils::UrlLoadObserver url_observer(
-      GURL("http://www.example.com/empty.html"),
-      content::NotificationService::AllSources());
-  SetupApp("app", true);
-  // Wait for URL to load so that we can run JS on the page.
+      app_url, content::NotificationService::AllSources());
+  extensions::TestExtensionDir test_app_dir;
+  test_app_dir.WriteManifest(
+      base::StringPrintf(kAppDotComManifest, app_url.spec().c_str()));
+  SetupApp(test_app_dir.UnpackedPath(), false);
+  // Wait for the URL to load so that we can click on the page.
   url_observer.Wait();
 
-  const GURL url("http://www.foo.com/");
+  const GURL url = embedded_test_server()->GetURL(
+      "app.com", "/click_modifier/new_window.html");
   TestAppActionOpensForegroundTab(
       base::BindOnce(
           [](content::WebContents* app_contents, const GURL& target_url) {
             ui_test_utils::UrlLoadObserver url_observer(
                 target_url, content::NotificationService::AllSources());
-            const std::string script = base::StringPrintf(
-                "(() => {"
-                "const link = document.createElement('a');"
-                "link.href = '%s';"
-                "link.textContent = 'test link';"
-                "document.body.appendChild(link);"
-                // Get the coordinates for the center of the link element to
-                // send back.
-                "const bounds = link.getBoundingClientRect();"
-                "window.domAutomationController.send("
-                "JSON.stringify({"
-                "'x': Math.floor(bounds.left + bounds.width / 2),"
-                "'y': Math.floor(bounds.top + bounds.height / 2)}));"
-                "console.log('sending result');"
-                "})();",
-                target_url.spec().c_str());
-            std::string result;
-            ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-                app_contents, script, &result));
-            std::unique_ptr<base::Value> value = base::JSONReader::Read(result);
-            int x = value->FindKey("x")->GetInt();
-            int y = value->FindKey("y")->GetInt();
-
             int ctrl_key;
 #if defined(OS_MACOSX)
             ctrl_key = blink::WebInputEvent::Modifiers::kMetaKey;
 #else
             ctrl_key = blink::WebInputEvent::Modifiers::kControlKey;
 #endif
-            content::SimulateMouseClickAt(app_contents, ctrl_key,
-                                          blink::WebMouseEvent::Button::kLeft,
-                                          gfx::Point(x, y));
+            content::SimulateMouseClick(app_contents, ctrl_key,
+                                        blink::WebMouseEvent::Button::kLeft);
             url_observer.Wait();
           },
           app_browser_->tab_strip_model()->GetActiveWebContents(), url),
@@ -327,18 +315,8 @@ IN_PROC_BROWSER_TEST_F(HostedAppTest, SubframeRedirectsToHostedApp) {
   // Set up an app which covers app.com URLs.
   GURL app_url = embedded_test_server()->GetURL("app.com", "/title1.html");
   extensions::TestExtensionDir test_app_dir;
-  test_app_dir.WriteManifest(base::StringPrintf(
-      R"( { "name": "Hosted App",
-            "version": "1",
-            "manifest_version": 2,
-            "app": {
-              "launch": {
-                "web_url": "%s"
-              },
-              "urls": ["*://app.com/"]
-            }
-          } )",
-      app_url.spec().c_str()));
+  test_app_dir.WriteManifest(
+      base::StringPrintf(kAppDotComManifest, app_url.spec().c_str()));
   SetupApp(test_app_dir.UnpackedPath(), false);
 
   // Navigate a regular tab to a page with a subframe.
