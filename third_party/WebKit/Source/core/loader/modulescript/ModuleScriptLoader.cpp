@@ -128,8 +128,8 @@ void ModuleScriptLoader::Fetch(const ModuleScriptFetchRequest& module_request,
   // Step 5. "... mode is "cors", ..."
   // [SMSR] "... and its credentials mode to options's credentials mode."
   // [spec text]
-  fetch_params.SetCrossOriginAccessControl(modulator_->GetSecurityOrigin(),
-                                           options_.CredentialsMode());
+  fetch_params.SetCrossOriginAccessControl(
+      modulator_->GetSecurityOriginForFetch(), options_.CredentialsMode());
 
   // Step 5. "... referrer is referrer, ..." [spec text]
   if (!module_request.GetReferrer().IsNull()) {

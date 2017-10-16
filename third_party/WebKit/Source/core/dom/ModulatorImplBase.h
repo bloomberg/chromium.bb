@@ -45,7 +45,7 @@ class ModulatorImplBase : public Modulator {
   }
   WebTaskRunner* TaskRunner() override { return task_runner_.get(); }
   ReferrerPolicy GetReferrerPolicy() override;
-  SecurityOrigin* GetSecurityOrigin() override;
+  SecurityOrigin* GetSecurityOriginForFetch() override;
   ScriptState* GetScriptState() override { return script_state_.get(); }
 
   void FetchTree(const ModuleScriptFetchRequest&, ModuleTreeClient*) override;

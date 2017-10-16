@@ -70,7 +70,7 @@ class ModuleScriptLoaderTestModulator final : public DummyModulator {
 
   ~ModuleScriptLoaderTestModulator() override {}
 
-  SecurityOrigin* GetSecurityOrigin() override {
+  SecurityOrigin* GetSecurityOriginForFetch() override {
     return security_origin_.get();
   }
 

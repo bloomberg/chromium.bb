@@ -44,7 +44,7 @@ ReferrerPolicy DummyModulator::GetReferrerPolicy() {
   return kReferrerPolicyDefault;
 }
 
-SecurityOrigin* DummyModulator::GetSecurityOrigin() {
+SecurityOrigin* DummyModulator::GetSecurityOriginForFetch() {
   NOTREACHED();
   return nullptr;
 }
