@@ -603,9 +603,7 @@ class TargetDomainDisposeContextFailsIfInUse
   std::string page_id_;
 };
 
-// TODO(https://crbug.com/774443): Flaky crashes on all platforms.
-DISABLED_HEADLESS_ASYNC_DEVTOOLED_TEST_F(
-    TargetDomainDisposeContextFailsIfInUse);
+HEADLESS_ASYNC_DEVTOOLED_TEST_F(TargetDomainDisposeContextFailsIfInUse);
 
 class TargetDomainCreateTwoContexts : public HeadlessAsyncDevTooledBrowserTest,
                                       public target::ExperimentalObserver,
