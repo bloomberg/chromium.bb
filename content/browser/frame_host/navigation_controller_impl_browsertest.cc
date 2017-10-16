@@ -45,6 +45,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/controllable_http_response.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
@@ -7126,6 +7127,84 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
   // Verify that none of "beforeunload", "unload" events fired.
   EXPECT_THAT(messages, testing::IsEmpty());
+}
+
+// This test reproduces issue 769645. It happens when the user reloads the page
+// and an "unload" event triggers a back navigation. If the reload navigation
+// has reached the ReadyToCommit stage but has not committed, the back
+// navigation may interrupt its load.
+// See https://crbug.com/769645.
+// See https://crbug.com/773683.
+IN_PROC_BROWSER_TEST_F(ContentBrowserTest, HistoryBackInUnloadCancelsReload) {
+  ControllableHttpResponse response_1(embedded_test_server(), "/main_document");
+  ControllableHttpResponse response_2(embedded_test_server(),
+                                      "/main_document?attribute=1");
+
+  EXPECT_TRUE(embedded_test_server()->Start());
+
+  // 1) Navigate to a document that will:
+  //    * Use history.pushState() during page load.
+  //    * Use history.back() on "unload".
+  GURL main_document_url(embedded_test_server()->GetURL("/main_document"));
+  shell()->LoadURL(main_document_url);
+  response_1.WaitForRequest();
+  response_1.Send(
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Type: text/html; charset=utf-8\r\n"
+      "\r\n"
+      "<iframe srcdoc=\""
+      "  <script>"
+      "    parent.history.pushState({},'','?attribute=1');"
+      "    window.addEventListener('unload', function() {"
+      "      parent.history.back();"
+      "    });"
+      "  </script>"
+      "\"></iframe>");
+  response_1.Done();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  // 2) Reload. Due to https://crbug.com/773683, two parallel navigations will
+  //    happen:
+  //    * The reload.
+  //    * The parent.history.back().
+  GURL main_document_url_page_2(main_document_url.spec() + "?attribute=1");
+  TestNavigationManager observer_reload(shell()->web_contents(),
+                                        main_document_url_page_2);
+  TestNavigationManager observer_back(shell()->web_contents(),
+                                      main_document_url);
+
+  shell()->Reload();
+
+  // 2.1) The reload reaches the ReadyToCommitNavigation stage.
+  EXPECT_TRUE(observer_reload.WaitForRequestStart());
+  observer_reload.ResumeNavigation();
+  response_2.WaitForRequest();
+  response_2.Send(
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Type: text/html; charset=utf-8\r\n"
+      "\r\n"
+      "<html><body>First part of the response...");
+  EXPECT_TRUE(observer_reload.WaitForResponse());
+  observer_reload.ResumeNavigation();
+
+  // 2.2) Back navigation starts and commits.
+  observer_back.WaitForNavigationFinished();
+
+  // The server sends the remaining part of the response.
+  response_2.Send(" ...and the second part!</body></html>");
+  response_2.Done();
+
+  observer_reload.WaitForNavigationFinished();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  // Test what is in the loaded document.
+  std::string html_content;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      shell(), "domAutomationController.send(document.body.textContent)",
+      &html_content));
+
+  EXPECT_EQ("First part of the response... ...and the second part!",
+            html_content);
 }
 
 }  // namespace content
