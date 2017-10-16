@@ -95816,6 +95816,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram_suffixes name="BlinkCanvasDrawImageType" separator=".">
   <suffix name="Canvas"/>
   <suffix name="ImageBitmap"/>
+  <suffix name="OffscreenCanvas"/>
   <suffix name="Others"/>
   <suffix name="SVG"/>
   <suffix name="Video"/>
@@ -95828,6 +95829,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="GPU"/>
   <affected-histogram name="Blink.Canvas.DrawImage.Canvas"/>
   <affected-histogram name="Blink.Canvas.DrawImage.ImageBitmap"/>
+  <affected-histogram name="Blink.Canvas.DrawImage.OffscreenCanvas"/>
   <affected-histogram name="Blink.Canvas.DrawImage.Others"/>
   <affected-histogram name="Blink.Canvas.DrawImage.SVG"/>
   <affected-histogram name="Blink.Canvas.DrawImage.Video"/>
