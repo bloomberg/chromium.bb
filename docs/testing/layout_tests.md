@@ -498,7 +498,7 @@ doesn't support rebaselining flag-specific expectations.
 
 ```bash
 cd src/third_party/WebKit
-Tools/Script/run-webkit-tests --additional-driver-flag=--enable-flag --new-flag-specific-baseline foo/bar/test.html
+Tools/Script/run-webkit-tests --additional-driver-flag=--enable-flag --copy-baselines --reset-results foo/bar/test.html
 ```
 
 New baselines will be created in the flag-specific baselines directory, e.g.
@@ -507,25 +507,24 @@ New baselines will be created in the flag-specific baselines directory, e.g.
 Then you can commit the new baselines and upload the patch for review.
 
 However, it's difficult for reviewers to review the patch containing only new
-files. You can follow the steps below for easier review. The steps require a
-try bot already setup for the flag-specific tests (e.g.
-`linux_layout_tests_slimming_paint_v2` for `--enable-slimming-paint-v2`).
+files. You can follow the steps below for easier review.
 
-1. Before the rebaseline, upload a patch for which the tests to be rebaselined
-   will fail. If the tests are expected to fail in
-   `LayoutTests/FlagExpectations/<flag>`, remove the failure expectation lines
-   in the patch.
+1. Copy existing baselines to the flag-specific baselines directory for the
+   tests to be rebaselined:
+   ```bash
+   Tools/Script/run-webkit-tests --additional-driver-flag=--enable-flag --copy-baselines foo/bar/test.html
+   ```
+   Then add the newly created baseline files, commit and upload the patch.
+   Note that the above command won't copy baselines for passing tests.
 
-2. Schedule a try job on the try bot for the flag.
+2. Rebaseline the test locally:
+   ```bash
+   Tools/Script/run-webkit-tests --additional-driver-flag=--enable-flag --reset-results foo/bar/test.html
+   ```
+   Commit the changes and upload the patch.
 
-3. Rebaseline locally, and upload a new version of patch containing the new
-   baselines to the same CL.
-
-4. After the try job finishes, request review of the CL and tell the reviewer
-   the URL of the `layout_test_result` link under the `archive_webkit_tests_results`
-   step of the try job. The reviewer should review the layout test result
-   assuming that the new baselines in the latest version of the CL are the same
-   as the actual results in the linked page.
+3. Request review of the CL and tell the reviewer to compare the patch sets that
+   were uploaded in step 1 and step 2 to see the differences of the rebaselines.
 
 ## web-platform-tests
 
