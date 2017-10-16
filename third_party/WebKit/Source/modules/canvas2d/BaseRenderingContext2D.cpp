@@ -1160,6 +1160,11 @@ void BaseRenderingContext2D::drawImage(ScriptState* script_state,
           CustomCountHistogram, scoped_us_counter_image_bitmap_gpu,
           ("Blink.Canvas.DrawImage.ImageBitmap.GPU", 0, 10000000, 50));
       timer.emplace(scoped_us_counter_image_bitmap_gpu);
+    } else if (image_source->IsOffscreenCanvas()) {
+      DEFINE_THREAD_SAFE_STATIC_LOCAL(
+          CustomCountHistogram, scoped_us_counter_offscreencanvas_gpu,
+          ("Blink.Canvas.DrawImage.OffscreenCanvas.GPU", 0, 10000000, 50));
+      timer.emplace(scoped_us_counter_offscreencanvas_gpu);
     } else {
       DEFINE_THREAD_SAFE_STATIC_LOCAL(
           CustomCountHistogram, scoped_us_counter_others_gpu,
@@ -1214,6 +1219,11 @@ void BaseRenderingContext2D::drawImage(ScriptState* script_state,
           CustomCountHistogram, scoped_us_counter_image_bitmap_cpu,
           ("Blink.Canvas.DrawImage.ImageBitmap.CPU", 0, 10000000, 50));
       timer.emplace(scoped_us_counter_image_bitmap_cpu);
+    } else if (image_source->IsOffscreenCanvas()) {
+      DEFINE_THREAD_SAFE_STATIC_LOCAL(
+          CustomCountHistogram, scoped_us_counter_offscreencanvas_cpu,
+          ("Blink.Canvas.DrawImage.OffscreenCanvas.CPU", 0, 10000000, 50));
+      timer.emplace(scoped_us_counter_offscreencanvas_cpu);
     } else {
       DEFINE_THREAD_SAFE_STATIC_LOCAL(
           CustomCountHistogram, scoped_us_counter_others_cpu,
