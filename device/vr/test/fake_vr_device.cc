@@ -6,25 +6,25 @@
 
 namespace device {
 
-FakeVRDevice::FakeVRDevice() {
-  display_info_ = mojom::VRDisplayInfo::New();
-
-  InitBasicDevice();
+FakeVRDevice::FakeVRDevice() : VRDeviceBase() {
+  SetVRDisplayInfo(InitBasicDevice());
 }
 
 FakeVRDevice::~FakeVRDevice() {}
 
-void FakeVRDevice::InitBasicDevice() {
-  display_info_->index = id();
-  display_info_->displayName = "FakeVRDevice";
+mojom::VRDisplayInfoPtr FakeVRDevice::InitBasicDevice() {
+  mojom::VRDisplayInfoPtr display_info = mojom::VRDisplayInfo::New();
+  display_info->index = GetId();
+  display_info->displayName = "FakeVRDevice";
 
-  display_info_->capabilities = mojom::VRDisplayCapabilities::New();
-  display_info_->capabilities->hasPosition = false;
-  display_info_->capabilities->hasExternalDisplay = false;
-  display_info_->capabilities->canPresent = false;
+  display_info->capabilities = mojom::VRDisplayCapabilities::New();
+  display_info->capabilities->hasPosition = false;
+  display_info->capabilities->hasExternalDisplay = false;
+  display_info->capabilities->canPresent = false;
 
-  display_info_->leftEye = InitEye(45, -0.03f, 1024);
-  display_info_->rightEye = InitEye(45, 0.03f, 1024);
+  display_info->leftEye = InitEye(45, -0.03f, 1024);
+  display_info->rightEye = InitEye(45, 0.03f, 1024);
+  return display_info;
 }
 
 mojom::VREyeParametersPtr FakeVRDevice::InitEye(float fov,
@@ -49,14 +49,6 @@ mojom::VREyeParametersPtr FakeVRDevice::InitEye(float fov,
   return eye;
 }
 
-void FakeVRDevice::SetVRDevice(const mojom::VRDisplayInfoPtr& display_info) {
-  display_info_ = display_info.Clone();
-}
-
-mojom::VRDisplayInfoPtr FakeVRDevice::GetVRDisplayInfo() {
-  return display_info_.Clone();
-}
-
 void FakeVRDevice::RequestPresent(
     VRDisplayImpl* display,
     mojom::VRSubmitFrameClientPtr submit_client,
@@ -68,11 +60,6 @@ void FakeVRDevice::RequestPresent(
 
 void FakeVRDevice::ExitPresent() {
   OnExitPresent();
-}
-
-void FakeVRDevice::GetPose(
-    mojom::VRMagicWindowProvider::GetPoseCallback callback) {
-  std::move(callback).Run(nullptr);
 }
 
 }  // namespace device

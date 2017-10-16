@@ -14,7 +14,7 @@
 #include "chrome/browser/vr/service/vr_service_impl.h"
 #include "content/public/browser/webvr_service_provider.h"
 #include "device/vr/android/gvr/gvr_delegate_provider_factory.h"
-#include "device/vr/vr_device.h"
+#include "device/vr/android/gvr/gvr_device.h"
 #include "jni/VrShellDelegate_jni.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr.h"
 
@@ -133,11 +133,11 @@ void VrShellDelegate::OnPresentResult(
 
 void VrShellDelegate::DisplayActivate(JNIEnv* env,
                                       const JavaParamRef<jobject>& obj) {
-  device::VRDevice* device = GetDevice();
+  device::GvrDevice* device = static_cast<device::GvrDevice*>(GetDevice());
   if (device) {
-    device->OnActivate(device::mojom::VRDisplayEventReason::MOUNTED,
-                       base::Bind(&VrShellDelegate::OnActivateDisplayHandled,
-                                  weak_ptr_factory_.GetWeakPtr()));
+    device->Activate(device::mojom::VRDisplayEventReason::MOUNTED,
+                     base::Bind(&VrShellDelegate::OnActivateDisplayHandled,
+                                weak_ptr_factory_.GetWeakPtr()));
   } else {
     OnActivateDisplayHandled(true /* will_not_present */);
   }

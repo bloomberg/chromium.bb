@@ -22,8 +22,9 @@ if (enable_vr) {
       "features",
     ]
     sources += [
-      "vr_device.cc",
       "vr_device.h",
+      "vr_device_base.cc",
+      "vr_device_base.h",
       "vr_device_provider.h",
       "vr_display_impl.cc",
       "vr_display_impl.h",
@@ -96,6 +97,8 @@ if (enable_vr) {
       "test/fake_vr_display_impl_client.h",
       "test/fake_vr_service_client.cc",
       "test/fake_vr_service_client.h",
+      "test/mock_vr_display_impl.cc",
+      "test/mock_vr_display_impl.h",
       "vr_export.h",
     ]
 
@@ -104,6 +107,7 @@ if (enable_vr) {
       ":vr",
       "//base",
       "//mojo/public/cpp/bindings",
+      "//testing/gmock",
     ]
   }
 } else {

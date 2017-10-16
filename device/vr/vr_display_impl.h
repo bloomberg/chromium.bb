@@ -9,12 +9,14 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "device/vr/vr_device.h"
 #include "device/vr/vr_export.h"
 #include "device/vr/vr_service.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace device {
+
+class VRDevice;
+class VRDeviceBase;
 
 // Browser process representation of a VRDevice within a WebVR site session
 // (see VRServiceImpl). VRDisplayImpl receives/sends VR device events
@@ -24,7 +26,7 @@ namespace device {
 // TODO(mthiesse, crbug.com/769373): Remove DEVICE_VR_EXPORT.
 class DEVICE_VR_EXPORT VRDisplayImpl : public mojom::VRMagicWindowProvider {
  public:
-  VRDisplayImpl(device::VRDevice* device,
+  VRDisplayImpl(VRDevice* device,
                 mojom::VRServiceClient* service_client,
                 mojom::VRDisplayInfoPtr display_info,
                 mojom::VRDisplayHostPtr display_host,
@@ -36,13 +38,13 @@ class DEVICE_VR_EXPORT VRDisplayImpl : public mojom::VRMagicWindowProvider {
   virtual void OnBlur();
   virtual void OnFocus();
   virtual void OnActivate(mojom::VRDisplayEventReason reason,
-                          const base::Callback<void(bool)>& on_handled);
+                          base::Callback<void(bool)> on_handled);
   virtual void OnDeactivate(mojom::VRDisplayEventReason reason);
 
   void SetListeningForActivate(bool listening);
   void SetInFocusedFrame(bool in_focused_frame);
-  bool ListeningForActivate() { return listening_for_activate_; }
-  bool InFocusedFrame() { return in_focused_frame_; }
+  virtual bool ListeningForActivate();
+  virtual bool InFocusedFrame();
 
   void RequestPresent(mojom::VRSubmitFrameClientPtr submit_client,
                       mojom::VRPresentationProviderRequest request,
@@ -50,13 +52,11 @@ class DEVICE_VR_EXPORT VRDisplayImpl : public mojom::VRMagicWindowProvider {
   void ExitPresent();
 
  private:
-  friend class VRDisplayImplTest;
-
   void GetPose(GetPoseCallback callback) override;
 
   mojo::Binding<mojom::VRMagicWindowProvider> binding_;
   mojom::VRDisplayClientPtr client_;
-  device::VRDevice* device_;
+  device::VRDeviceBase* device_;
   bool listening_for_activate_ = false;
   bool in_focused_frame_ = false;
 };

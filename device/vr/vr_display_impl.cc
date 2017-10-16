@@ -7,16 +7,18 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "device/vr/vr_device.h"
+#include "device/vr/vr_device_base.h"
 
 namespace device {
 
-VRDisplayImpl::VRDisplayImpl(device::VRDevice* device,
+VRDisplayImpl::VRDisplayImpl(VRDevice* device,
                              mojom::VRServiceClient* service_client,
                              mojom::VRDisplayInfoPtr display_info,
                              mojom::VRDisplayHostPtr display_host,
                              bool in_focused_frame)
-    : binding_(this), device_(device), in_focused_frame_(in_focused_frame) {
+    : binding_(this),
+      device_(static_cast<VRDeviceBase*>(device)),
+      in_focused_frame_(in_focused_frame) {
   device_->AddDisplay(this);
   mojom::VRMagicWindowProviderPtr magic_window_provider;
   binding_.Bind(mojo::MakeRequest(&magic_window_provider));
@@ -46,8 +48,8 @@ void VRDisplayImpl::OnFocus() {
 }
 
 void VRDisplayImpl::OnActivate(mojom::VRDisplayEventReason reason,
-                               const base::Callback<void(bool)>& on_handled) {
-  client_->OnActivate(reason, on_handled);
+                               base::Callback<void(bool)> on_handled) {
+  client_->OnActivate(reason, std::move(on_handled));
 }
 
 void VRDisplayImpl::OnDeactivate(mojom::VRDisplayEventReason reason) {
@@ -88,6 +90,14 @@ void VRDisplayImpl::SetListeningForActivate(bool listening) {
 void VRDisplayImpl::SetInFocusedFrame(bool in_focused_frame) {
   in_focused_frame_ = in_focused_frame;
   device_->OnFrameFocusChanged(this);
+}
+
+bool VRDisplayImpl::ListeningForActivate() {
+  return listening_for_activate_;
+}
+
+bool VRDisplayImpl::InFocusedFrame() {
+  return in_focused_frame_;
 }
 
 }  // namespace device
