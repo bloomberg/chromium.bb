@@ -36,10 +36,10 @@ namespace {
 // Size of a download item in a non-dangerous state.
 constexpr CGSize kNormalSize = {239, 44};
 
-constexpr CGFloat kDangerousDownloadIconX = 10;
-constexpr CGFloat kDangerousDownloadIconSize = 24;
+constexpr CGFloat kDangerousDownloadIconX = 16;
+constexpr CGFloat kDangerousDownloadIconSize = 16;
 constexpr CGFloat kDangerousDownloadLabelX =
-    kDangerousDownloadIconX + kDangerousDownloadIconSize + 6;
+    kDangerousDownloadIconX * 2 + kDangerousDownloadIconSize;
 constexpr CGFloat kDangerousDownloadLabelButtonSpacing = 6;
 constexpr CGFloat kDangerousDownloadLabelMinWidth = 140;
 constexpr CGFloat kDangerousDownloadLabelYInset = 8;
