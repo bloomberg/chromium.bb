@@ -37,7 +37,7 @@ class CORE_EXPORT IncrementLoadEventDelayCount {
 
  private:
   IncrementLoadEventDelayCount(Document&);
-  Persistent<Document> document_;
+  WeakPersistent<Document> document_;
 };
 }  // namespace blink
 
