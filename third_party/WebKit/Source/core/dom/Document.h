@@ -1369,6 +1369,22 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void SetFeaturePolicy(const String& feature_policy_header);
 
+  const AtomicString& bgColor() const;
+  void setBgColor(const AtomicString&);
+  const AtomicString& fgColor() const;
+  void setFgColor(const AtomicString&);
+  const AtomicString& alinkColor() const;
+  void setAlinkColor(const AtomicString&);
+  const AtomicString& linkColor() const;
+  void setLinkColor(const AtomicString&);
+  const AtomicString& vlinkColor() const;
+  void setVlinkColor(const AtomicString&);
+
+  void clear() {}
+
+  void captureEvents() {}
+  void releaseEvents() {}
+
  protected:
   Document(const DocumentInit&, DocumentClassFlags = kDefaultDocumentClass);
 
@@ -1488,6 +1504,9 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void UpdateActiveState(const HitTestRequest&, Element*);
   void UpdateHoverState(const HitTestRequest&, Element*);
+
+  const AtomicString& BodyAttributeValue(const QualifiedName&) const;
+  void SetBodyAttribute(const QualifiedName&, const AtomicString&);
 
   DocumentLifecycle lifecycle_;
 

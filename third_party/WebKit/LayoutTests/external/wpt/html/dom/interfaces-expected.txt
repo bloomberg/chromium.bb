@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 5298 tests; 5141 PASS, 157 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 5298 tests; 5165 PASS, 133 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Test driver
 PASS Document interface: attribute domain
 PASS Document interface: attribute referrer
@@ -34,17 +34,17 @@ PASS Document interface: operation queryCommandState(DOMString)
 PASS Document interface: operation queryCommandSupported(DOMString)
 PASS Document interface: operation queryCommandValue(DOMString)
 PASS Document interface: attribute onreadystatechange
-FAIL Document interface: attribute fgColor assert_true: The prototype object must have a property "fgColor" expected true got false
-FAIL Document interface: attribute linkColor assert_true: The prototype object must have a property "linkColor" expected true got false
-FAIL Document interface: attribute vlinkColor assert_true: The prototype object must have a property "vlinkColor" expected true got false
-FAIL Document interface: attribute alinkColor assert_true: The prototype object must have a property "alinkColor" expected true got false
-FAIL Document interface: attribute bgColor assert_true: The prototype object must have a property "bgColor" expected true got false
+PASS Document interface: attribute fgColor
+PASS Document interface: attribute linkColor
+PASS Document interface: attribute vlinkColor
+PASS Document interface: attribute alinkColor
+PASS Document interface: attribute bgColor
 PASS Document interface: attribute anchors
 PASS Document interface: attribute applets
-FAIL Document interface: operation clear() assert_own_property: interface prototype object missing non-static operation expected property "clear" missing
-FAIL Document interface: operation captureEvents() assert_own_property: interface prototype object missing non-static operation expected property "captureEvents" missing
-FAIL Document interface: operation releaseEvents() assert_own_property: interface prototype object missing non-static operation expected property "releaseEvents" missing
-FAIL Document interface: attribute all assert_true: The prototype object must have a property "all" expected true got false
+PASS Document interface: operation clear()
+PASS Document interface: operation captureEvents()
+PASS Document interface: operation releaseEvents()
+FAIL Document interface: attribute all assert_equals: setter must be undefined for readonly attributes expected (undefined) undefined but got (function) function "function () { [native code] }"
 PASS Document interface: attribute onabort
 PASS Document interface: attribute onauxclick
 PASS Document interface: attribute onblur
@@ -276,17 +276,17 @@ PASS Document interface: calling queryCommandSupported(DOMString) on new Documen
 PASS Document interface: new Document() must inherit property "queryCommandValue(DOMString)" with the proper type
 PASS Document interface: calling queryCommandValue(DOMString) on new Document() with too few arguments must throw TypeError
 PASS Document interface: new Document() must inherit property "onreadystatechange" with the proper type
-FAIL Document interface: new Document() must inherit property "fgColor" with the proper type assert_inherits: property "fgColor" not found in prototype chain
-FAIL Document interface: new Document() must inherit property "linkColor" with the proper type assert_inherits: property "linkColor" not found in prototype chain
-FAIL Document interface: new Document() must inherit property "vlinkColor" with the proper type assert_inherits: property "vlinkColor" not found in prototype chain
-FAIL Document interface: new Document() must inherit property "alinkColor" with the proper type assert_inherits: property "alinkColor" not found in prototype chain
-FAIL Document interface: new Document() must inherit property "bgColor" with the proper type assert_inherits: property "bgColor" not found in prototype chain
+PASS Document interface: new Document() must inherit property "fgColor" with the proper type
+PASS Document interface: new Document() must inherit property "linkColor" with the proper type
+PASS Document interface: new Document() must inherit property "vlinkColor" with the proper type
+PASS Document interface: new Document() must inherit property "alinkColor" with the proper type
+PASS Document interface: new Document() must inherit property "bgColor" with the proper type
 PASS Document interface: new Document() must inherit property "anchors" with the proper type
 PASS Document interface: new Document() must inherit property "applets" with the proper type
-FAIL Document interface: new Document() must inherit property "clear()" with the proper type assert_inherits: property "clear" not found in prototype chain
-FAIL Document interface: new Document() must inherit property "captureEvents()" with the proper type assert_inherits: property "captureEvents" not found in prototype chain
-FAIL Document interface: new Document() must inherit property "releaseEvents()" with the proper type assert_inherits: property "releaseEvents" not found in prototype chain
-FAIL Document interface: new Document() must inherit property "all" with the proper type assert_inherits: property "all" not found in prototype chain
+PASS Document interface: new Document() must inherit property "clear()" with the proper type
+PASS Document interface: new Document() must inherit property "captureEvents()" with the proper type
+PASS Document interface: new Document() must inherit property "releaseEvents()" with the proper type
+FAIL Document interface: new Document() must inherit property "all" with the proper type assert_in_array: wrong type: not object or function value "undefined" not in array ["object", "function"]
 PASS Document interface: new Document() must inherit property "onabort" with the proper type
 PASS Document interface: new Document() must inherit property "onauxclick" with the proper type
 PASS Document interface: new Document() must inherit property "onblur" with the proper type
@@ -397,17 +397,17 @@ PASS Document interface: calling queryCommandSupported(DOMString) on document.im
 PASS Document interface: document.implementation.createDocument(null, "", null) must inherit property "queryCommandValue(DOMString)" with the proper type
 PASS Document interface: calling queryCommandValue(DOMString) on document.implementation.createDocument(null, "", null) with too few arguments must throw TypeError
 PASS Document interface: document.implementation.createDocument(null, "", null) must inherit property "onreadystatechange" with the proper type
-FAIL Document interface: document.implementation.createDocument(null, "", null) must inherit property "fgColor" with the proper type assert_inherits: property "fgColor" not found in prototype chain
-FAIL Document interface: document.implementation.createDocument(null, "", null) must inherit property "linkColor" with the proper type assert_inherits: property "linkColor" not found in prototype chain
-FAIL Document interface: document.implementation.createDocument(null, "", null) must inherit property "vlinkColor" with the proper type assert_inherits: property "vlinkColor" not found in prototype chain
-FAIL Document interface: document.implementation.createDocument(null, "", null) must inherit property "alinkColor" with the proper type assert_inherits: property "alinkColor" not found in prototype chain
-FAIL Document interface: document.implementation.createDocument(null, "", null) must inherit property "bgColor" with the proper type assert_inherits: property "bgColor" not found in prototype chain
+PASS Document interface: document.implementation.createDocument(null, "", null) must inherit property "fgColor" with the proper type
+PASS Document interface: document.implementation.createDocument(null, "", null) must inherit property "linkColor" with the proper type
+PASS Document interface: document.implementation.createDocument(null, "", null) must inherit property "vlinkColor" with the proper type
+PASS Document interface: document.implementation.createDocument(null, "", null) must inherit property "alinkColor" with the proper type
+PASS Document interface: document.implementation.createDocument(null, "", null) must inherit property "bgColor" with the proper type
 PASS Document interface: document.implementation.createDocument(null, "", null) must inherit property "anchors" with the proper type
 PASS Document interface: document.implementation.createDocument(null, "", null) must inherit property "applets" with the proper type
-FAIL Document interface: document.implementation.createDocument(null, "", null) must inherit property "clear()" with the proper type assert_inherits: property "clear" not found in prototype chain
-FAIL Document interface: document.implementation.createDocument(null, "", null) must inherit property "captureEvents()" with the proper type assert_inherits: property "captureEvents" not found in prototype chain
-FAIL Document interface: document.implementation.createDocument(null, "", null) must inherit property "releaseEvents()" with the proper type assert_inherits: property "releaseEvents" not found in prototype chain
-FAIL Document interface: document.implementation.createDocument(null, "", null) must inherit property "all" with the proper type assert_inherits: property "all" not found in prototype chain
+PASS Document interface: document.implementation.createDocument(null, "", null) must inherit property "clear()" with the proper type
+PASS Document interface: document.implementation.createDocument(null, "", null) must inherit property "captureEvents()" with the proper type
+PASS Document interface: document.implementation.createDocument(null, "", null) must inherit property "releaseEvents()" with the proper type
+FAIL Document interface: document.implementation.createDocument(null, "", null) must inherit property "all" with the proper type assert_in_array: wrong type: not object or function value "undefined" not in array ["object", "function"]
 PASS Document interface: document.implementation.createDocument(null, "", null) must inherit property "onabort" with the proper type
 PASS Document interface: document.implementation.createDocument(null, "", null) must inherit property "onauxclick" with the proper type
 PASS Document interface: document.implementation.createDocument(null, "", null) must inherit property "onblur" with the proper type
