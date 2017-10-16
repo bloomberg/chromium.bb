@@ -204,6 +204,8 @@ void AddDetailsLocalizedStrings(content::WebUIDataSource* html_source) {
       {"networkCellularScan", IDS_SETTINGS_INTERNET_NETWORK_CELLULAR_SCAN},
       {"networkCellularScanCompleted",
        IDS_SETTINGS_INTERNET_NETWORK_CELLULAR_SCAN_COMPLETED},
+      {"networkCellularScanConnectedHelp",
+       IDS_SETTINGS_INTERNET_NETWORK_CELLULAR_SCAN_CONNECTED_HELP},
       {"networkCellularScanning",
        IDS_SETTINGS_INTERNET_NETWORK_CELLULAR_SCANNING},
       {"networkCellularNoNetworks",
