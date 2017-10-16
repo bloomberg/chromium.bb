@@ -37,6 +37,7 @@
 #include "breakpad_googletest_includes.h"
 #include "google_breakpad/processor/basic_source_line_resolver.h"
 #include "google_breakpad/processor/call_stack.h"
+#include "google_breakpad/processor/microdump.h"
 #include "google_breakpad/processor/microdump_processor.h"
 #include "google_breakpad/processor/process_state.h"
 #include "google_breakpad/processor/stack_frame.h"
@@ -47,6 +48,7 @@
 namespace {
 
 using google_breakpad::BasicSourceLineResolver;
+using google_breakpad::Microdump;
 using google_breakpad::MicrodumpProcessor;
 using google_breakpad::ProcessState;
 using google_breakpad::SimpleSymbolSupplier;
@@ -83,7 +85,8 @@ class MicrodumpProcessorTest : public ::testing::Test {
     StackFrameSymbolizer frame_symbolizer(&supplier, &resolver);
     MicrodumpProcessor processor(&frame_symbolizer);
 
-    return processor.Process(microdump_contents, state);
+    Microdump microdump(microdump_contents);
+    return processor.Process(&microdump, state);
   }
 
   void AnalyzeDump(const string& microdump_file_name, bool omit_symbols,
@@ -108,13 +111,6 @@ class MicrodumpProcessorTest : public ::testing::Test {
 
   string files_path_;
 };
-
-TEST_F(MicrodumpProcessorTest, TestProcess_Empty) {
-  ProcessState state;
-  google_breakpad::ProcessResult result =
-      ProcessMicrodump("", "", &state);
-  ASSERT_EQ(google_breakpad::PROCESS_ERROR_MINIDUMP_NOT_FOUND, result);
-}
 
 TEST_F(MicrodumpProcessorTest, TestProcess_Invalid) {
   ProcessState state;

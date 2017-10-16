@@ -133,4 +133,3 @@ class Microdump {
 }  // namespace google_breakpad
 
 #endif  // GOOGLE_BREAKPAD_PROCESSOR_MICRODUMP_H__
-

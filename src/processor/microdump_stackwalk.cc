@@ -41,6 +41,7 @@
 #include "common/scoped_ptr.h"
 #include "common/using_std_string.h"
 #include "google_breakpad/processor/basic_source_line_resolver.h"
+#include "google_breakpad/processor/microdump.h"
 #include "google_breakpad/processor/microdump_processor.h"
 #include "google_breakpad/processor/process_state.h"
 #include "google_breakpad/processor/stack_frame_symbolizer.h"
@@ -53,12 +54,14 @@ namespace {
 
 struct Options {
   bool machine_readable;
+  bool output_stack_contents;
 
   string microdump_file;
   std::vector<string> symbol_paths;
 };
 
 using google_breakpad::BasicSourceLineResolver;
+using google_breakpad::Microdump;
 using google_breakpad::MicrodumpProcessor;
 using google_breakpad::ProcessResult;
 using google_breakpad::ProcessState;
@@ -81,6 +84,10 @@ int PrintMicrodumpProcess(const Options& options) {
   std::vector<char> bytes;
   file_stream.seekg(0, std::ios_base::end);
   bytes.resize(file_stream.tellg());
+  if (bytes.empty()) {
+    BPLOG(ERROR) << "Microdump is empty.";
+    return 1;
+  }
   file_stream.seekg(0, std::ios_base::beg);
   file_stream.read(&bytes[0], bytes.size());
   string microdump_content(&bytes[0], bytes.size());
@@ -94,14 +101,15 @@ int PrintMicrodumpProcess(const Options& options) {
   StackFrameSymbolizer frame_symbolizer(symbol_supplier.get(), &resolver);
   ProcessState process_state;
   MicrodumpProcessor microdump_processor(&frame_symbolizer);
-  ProcessResult res = microdump_processor.Process(microdump_content,
+  Microdump microdump(microdump_content);
+  ProcessResult res = microdump_processor.Process(&microdump,
                                                   &process_state);
 
   if (res == google_breakpad::PROCESS_OK) {
     if (options.machine_readable) {
       PrintProcessStateMachineReadable(process_state);
     } else {
-      PrintProcessState(process_state, false, &resolver);
+      PrintProcessState(process_state, options.output_stack_contents, &resolver);
     }
     return 0;
   }
@@ -120,7 +128,8 @@ static void Usage(int argc, const char *argv[], bool error) {
           "\n"
           "Options:\n"
           "\n"
-          "  -m         Output in machine-readable format\n",
+          "  -m         Output in machine-readable format\n"
+          "  -s         Output stack contents\n",
           basename(argv[0]));
 }
 
@@ -128,8 +137,9 @@ static void SetupOptions(int argc, const char *argv[], Options* options) {
   int ch;
 
   options->machine_readable = false;
+  options->output_stack_contents = false;
 
-  while ((ch = getopt(argc, (char * const *)argv, "hm")) != -1) {
+  while ((ch = getopt(argc, (char * const *)argv, "hms")) != -1) {
     switch (ch) {
       case 'h':
         Usage(argc, argv, false);
@@ -138,6 +148,9 @@ static void SetupOptions(int argc, const char *argv[], Options* options) {
 
       case 'm':
         options->machine_readable = true;
+        break;
+      case 's':
+        options->output_stack_contents = true;
         break;
 
       case '?':

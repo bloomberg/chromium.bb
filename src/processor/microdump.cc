@@ -394,4 +394,3 @@ Microdump::Microdump(const string& contents)
 }
 
 }  // namespace google_breakpad
-
