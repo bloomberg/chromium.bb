@@ -147,17 +147,13 @@ if (UNLIKELY(numArgsPassed <= {{argument.index}})) {
 {% if argument.is_callback_interface %}
 {# FIXME: remove EventListener/NodeFilter special case. crbug.com/630986 #}
 {% if argument.idl_type == 'EventListener' %}
-{% if method.name == 'removeEventListener' or method.name == 'removeListener' %}
 if (!IsUndefinedOrNull(info[{{argument.index}}]) && !info[{{argument.index}}]->IsObject()) {
   {{throw_argument_error(method, argument, "The callback provided as parameter %(index)d is not a function.")}}
   return;
 }
+{% if method.name == 'removeEventListener' or method.name == 'removeListener' %}
 {{argument.name}} = V8EventListenerHelper::GetEventListener(ScriptState::Current(info.GetIsolate()), info[{{argument.index}}], false, kListenerFindOnly);
 {% else %}{# method.name == 'AddEventListener' #}
-if (!IsUndefinedOrNull(info[{{argument.index}}]) && !info[{{argument.index}}]->IsObject()) {
-  {{throw_argument_error(method, argument, "The callback provided as parameter %(index)d is not a function.")}}
-  return;
-}
 {{argument.name}} = V8EventListenerHelper::GetEventListener(ScriptState::Current(info.GetIsolate()), info[{{argument.index}}], false, kListenerFindOrCreate);
 {% endif %}{# method.name #}
 {% elif argument.idl_type == 'NodeFilter' %}
