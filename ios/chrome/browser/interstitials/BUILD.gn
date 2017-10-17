@@ -24,7 +24,7 @@ source_set("interstitials") {
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/history",
     "//ios/web",
-    "//ios/web:reload_type",
+    "//ios/web/public",
     "//ui/base",
     "//url",
   ]

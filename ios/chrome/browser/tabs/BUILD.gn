@@ -28,7 +28,7 @@ source_set("tabs") {
     "//components/sync_sessions",
     "//ios/chrome/browser/web:tab_helper_delegates",
     "//ios/net",
-    "//ios/web:user_agent",
+    "//ios/web/public",
     "//ui/base",
   ]
   libs = [ "UIKit.framework" ]
@@ -130,7 +130,7 @@ source_set("tabs_internal") {
     "//ios/net",
     "//ios/public/provider/chrome/browser",
     "//ios/web",
-    "//ios/web:user_agent",
+    "//ios/web/public",
     "//net",
     "//ui/base",
     "//url",

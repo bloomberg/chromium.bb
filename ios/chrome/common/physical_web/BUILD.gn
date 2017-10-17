@@ -21,7 +21,7 @@ source_set("physical_web") {
     "//components/version_info",
     "//device/bluetooth/uribeacon",
     "//google_apis",
-    "//ios/web:user_agent",
+    "//ios/web/public",
   ]
 
   libs = [

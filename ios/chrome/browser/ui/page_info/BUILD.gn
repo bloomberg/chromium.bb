@@ -51,7 +51,7 @@ source_set("coordinator") {
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/page_info/requirements",
     "//ios/web",
-    "//ios/web:reload_type",
+    "//ios/web/public",
   ]
   libs = [ "UIKit.framework" ]
 }

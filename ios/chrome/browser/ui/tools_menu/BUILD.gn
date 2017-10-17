@@ -42,7 +42,7 @@ source_set("tools_menu") {
     "//ios/public/provider/chrome/browser/user_feedback",
     "//ios/third_party/material_components_ios",
     "//ios/third_party/material_roboto_font_loader_ios",
-    "//ios/web:user_agent",
+    "//ios/web/public",
     "//ui/base",
   ]
   libs = [
@@ -59,7 +59,7 @@ source_set("configuration") {
   ]
   deps = [
     "//base",
-    "//ios/web:user_agent",
+    "//ios/web/public",
   ]
 }
 
@@ -79,7 +79,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/ui/reading_list:reading_list_ui",
     "//ios/chrome/browser/ui/tools_menu",
     "//ios/chrome/browser/ui/tools_menu:configuration",
-    "//ios/web:user_agent",
+    "//ios/web/public",
     "//testing/gtest",
   ]
 }
