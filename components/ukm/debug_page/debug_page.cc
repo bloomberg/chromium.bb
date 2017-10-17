@@ -10,7 +10,7 @@
 #include "base/strings/stringprintf.h"
 #include "components/ukm/ukm_service.h"
 #include "components/ukm/ukm_source.h"
-#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_decode.h"
 #include "url/gurl.h"
 
 namespace ukm {
