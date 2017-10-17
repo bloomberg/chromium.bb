@@ -253,7 +253,7 @@ test("vr_common_unittests") {
 
 test("vr_common_perftests") {
   sources = [
-    "test/run_all_unittests.cc",
+    "test/run_all_perftests.cc",
     "text_perftest.cc",
   ]
   deps = [
@@ -273,6 +273,8 @@ source_set("vr_test_support") {
     "test/constants.h",
     "test/gl_test_environment.cc",
     "test/gl_test_environment.h",
+    "test/vr_common_test_suite.cc",
+    "test/vr_common_test_suite.h",
   ]
 
   public_deps = [

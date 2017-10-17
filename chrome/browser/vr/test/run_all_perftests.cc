@@ -9,7 +9,7 @@
 int main(int argc, char** argv) {
   vr::VrCommonTestSuite test_suite(argc, argv);
 
-  return base::LaunchUnitTests(
+  return base::LaunchUnitTestsSerially(
       argc, argv,
       base::Bind(&vr::VrCommonTestSuite::Run, base::Unretained(&test_suite)));
 }
