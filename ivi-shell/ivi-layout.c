@@ -968,6 +968,21 @@ ivi_layout_add_listener_configure_surface(struct wl_listener *listener)
 	return IVI_SUCCEEDED;
 }
 
+static int32_t
+ivi_layout_add_listener_configure_desktop_surface(struct wl_listener *listener)
+{
+	struct ivi_layout *layout = get_instance();
+
+	if (!listener) {
+		weston_log("ivi_layout_add_listener_configure_desktop_surface: invalid argument\n");
+		return IVI_FAILED;
+	}
+
+	wl_signal_add(&layout->surface_notification.configure_desktop_changed, listener);
+
+	return IVI_SUCCEEDED;
+}
+
 uint32_t
 ivi_layout_get_id_of_surface(struct ivi_layout_surface *ivisurf)
 {
@@ -1969,6 +1984,7 @@ ivi_layout_init_with_compositor(struct weston_compositor *ec)
 	wl_signal_init(&layout->surface_notification.created);
 	wl_signal_init(&layout->surface_notification.removed);
 	wl_signal_init(&layout->surface_notification.configure_changed);
+	wl_signal_init(&layout->surface_notification.configure_desktop_changed);
 
 	/* Add layout_layer at the last of weston_compositor.layer_list */
 	weston_layer_init(&layout->layout_layer, ec);
@@ -1997,6 +2013,7 @@ static struct ivi_layout_interface ivi_layout_interface = {
 	.add_listener_create_surface	= ivi_layout_add_listener_create_surface,
 	.add_listener_remove_surface	= ivi_layout_add_listener_remove_surface,
 	.add_listener_configure_surface	= ivi_layout_add_listener_configure_surface,
+	.add_listener_configure_desktop_surface	= ivi_layout_add_listener_configure_desktop_surface,
 	.get_surface				= shell_get_ivi_layout_surface,
 	.get_surfaces				= ivi_layout_get_surfaces,
 	.get_id_of_surface			= ivi_layout_get_id_of_surface,

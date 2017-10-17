@@ -104,6 +104,7 @@ struct ivi_layout {
 		struct wl_signal created;
 		struct wl_signal removed;
 		struct wl_signal configure_changed;
+		struct wl_signal configure_desktop_changed;
 	} surface_notification;
 
 	struct weston_layer layout_layer;

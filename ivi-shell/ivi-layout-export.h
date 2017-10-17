@@ -191,6 +191,16 @@ struct ivi_layout_interface {
 	int32_t (*add_listener_configure_surface)(struct wl_listener *listener);
 
 	/**
+	 * \brief add a listener for notification when desktop_surface is configured
+	 *
+	 * When an desktop_surface is configured, a signal is emitted
+	 * to the listening controller plugins.
+	 * The pointer of the configured desktop_surface is sent as the void *data argument
+	 * to the wl_listener::notify callback function of the listener.
+	 */
+	int32_t (*add_listener_configure_desktop_surface)(struct wl_listener *listener);
+
+	/**
 	 * \brief Get all ivi_surfaces which are currently registered and managed
 	 * by the services
 	 *
