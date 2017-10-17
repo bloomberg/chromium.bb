@@ -381,8 +381,8 @@ Output.RULES = {
           $restriction $description`
     },
     listBoxOption: {
-      speak: `$name $role @describe_index($posInSet, $setSize)
-          $description $state $restriction`
+      speak: `$state $name $role @describe_index($posInSet, $setSize)
+          $description $restriction`
     },
     listItem: {enter: `$name= $role $state $description`},
     listMarker: {speak: `$name`},
