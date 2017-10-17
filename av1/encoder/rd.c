@@ -152,6 +152,29 @@ void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
                              fc->palette_y_size_cdf[i], NULL);
     av1_cost_tokens_from_cdf(x->palette_uv_size_cost[i],
                              fc->palette_uv_size_cdf[i], NULL);
+    for (j = 0; j < PALETTE_Y_MODE_CONTEXTS; ++j) {
+#if CONFIG_NEW_MULTISYMBOL
+      av1_cost_tokens_from_cdf(x->palette_y_mode_cost[i][j],
+                               fc->palette_y_mode_cdf[i][j], NULL);
+#else
+      x->palette_y_mode_cost[i][j][0] =
+          av1_cost_bit(av1_default_palette_y_mode_prob[i][j], 0);
+      x->palette_y_mode_cost[i][j][1] =
+          av1_cost_bit(av1_default_palette_y_mode_prob[i][j], 1);
+#endif
+    }
+  }
+
+  for (i = 0; i < PALETTE_UV_MODE_CONTEXTS; ++i) {
+#if CONFIG_NEW_MULTISYMBOL
+    av1_cost_tokens_from_cdf(x->palette_uv_mode_cost[i],
+                             fc->palette_uv_mode_cdf[i], NULL);
+#else
+    x->palette_uv_mode_cost[i][0] =
+        av1_cost_bit(av1_default_palette_uv_mode_prob[i], 0);
+    x->palette_uv_mode_cost[i][1] =
+        av1_cost_bit(av1_default_palette_uv_mode_prob[i], 1);
+#endif
   }
 
   for (i = 0; i < PALETTE_SIZES; ++i) {

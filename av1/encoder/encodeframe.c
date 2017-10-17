@@ -4790,6 +4790,43 @@ static void sum_intra_stats(FRAME_COUNTS *counts, MACROBLOCKD *xd,
   update_cdf(fc->uv_mode_cdf[y_mode], uv_mode, UV_INTRA_MODES);
 }
 
+#if CONFIG_NEW_MULTISYMBOL
+// TODO(anybody) We can add stats accumulation here to train entropy models for
+// palette modes
+static void update_palette_cdf(MACROBLOCKD *xd, const MODE_INFO *mi) {
+  FRAME_CONTEXT *fc = xd->tile_ctx;
+  const MB_MODE_INFO *const mbmi = &mi->mbmi;
+  const MODE_INFO *const above_mi = xd->above_mi;
+  const MODE_INFO *const left_mi = xd->left_mi;
+  const BLOCK_SIZE bsize = mbmi->sb_type;
+  const PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
+
+  assert(bsize >= BLOCK_8X8 && bsize <= BLOCK_LARGEST);
+  const int block_palette_idx = bsize - BLOCK_8X8;
+
+  if (mbmi->mode == DC_PRED) {
+    const int n = pmi->palette_size[0];
+    int palette_y_mode_ctx = 0;
+    if (above_mi) {
+      palette_y_mode_ctx +=
+          (above_mi->mbmi.palette_mode_info.palette_size[0] > 0);
+    }
+    if (left_mi) {
+      palette_y_mode_ctx +=
+          (left_mi->mbmi.palette_mode_info.palette_size[0] > 0);
+    }
+    update_cdf(fc->palette_y_mode_cdf[block_palette_idx][palette_y_mode_ctx],
+               n > 0, 2);
+  }
+
+  if (mbmi->uv_mode == UV_DC_PRED) {
+    const int n = pmi->palette_size[1];
+    const int palette_uv_mode_ctx = (pmi->palette_size[0] > 0);
+    update_cdf(fc->palette_uv_mode_cdf[palette_uv_mode_ctx], n > 0, 2);
+  }
+}
+#endif
+
 #if CONFIG_VAR_TX
 static void update_txfm_count(MACROBLOCK *x, MACROBLOCKD *xd,
                               FRAME_COUNTS *counts, TX_SIZE tx_size, int depth,
@@ -5105,6 +5142,10 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
     if (!dry_run) {
       sum_intra_stats(td->counts, xd, mi, xd->above_mi, xd->left_mi,
                       frame_is_intra_only(cm), mi_row, mi_col);
+#if CONFIG_NEW_MULTISYMBOL
+      if (av1_allow_palette(cm->allow_screen_content_tools, bsize))
+        update_palette_cdf(xd, mi);
+#endif
     }
 
 // TODO(anybody) : remove this flag when PVQ supports pallete coding tool
