@@ -7,7 +7,6 @@
 #include <stdlib.h>
 
 #include "base/logging.h"
-#include "device/hid/hid_usage_and_page.h"
 
 namespace device {
 

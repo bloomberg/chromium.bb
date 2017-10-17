@@ -29,7 +29,7 @@ HidReportDescriptor::HidReportDescriptor(const std::vector<uint8_t>& bytes) {
 HidReportDescriptor::~HidReportDescriptor() {}
 
 void HidReportDescriptor::GetDetails(
-    std::vector<HidCollectionInfo>* top_level_collections,
+    std::vector<device::mojom::HidCollectionInfoPtr>* top_level_collections,
     bool* has_report_id,
     size_t* max_input_report_size,
     size_t* max_output_report_size,
@@ -46,7 +46,7 @@ void HidReportDescriptor::GetDetails(
   *max_feature_report_size = 0;
 
   // Global tags data:
-  HidUsageAndPage::Page current_usage_page = HidUsageAndPage::kPageUndefined;
+  auto current_usage_page = device::mojom::kPageUndefined;
   size_t current_report_count = 0;
   size_t cached_report_count = 0;
   size_t current_report_size = 0;
@@ -65,10 +65,11 @@ void HidReportDescriptor::GetDetails(
         if (!current_item->parent() &&
             (current_usage <= std::numeric_limits<uint16_t>::max())) {
           // This is a top-level collection.
-          HidCollectionInfo collection;
-          collection.usage = HidUsageAndPage(
-              static_cast<uint16_t>(current_usage), current_usage_page);
-          top_level_collections->push_back(collection);
+          auto collection = device::mojom::HidCollectionInfo::New();
+          collection->usage = device::mojom::HidUsageAndPage::New(
+              static_cast<uint16_t>(current_usage),
+              static_cast<uint16_t>(current_usage_page));
+          top_level_collections->push_back(std::move(collection));
         }
         break;
       case HidReportDescriptorItem::kTagInput:
@@ -85,13 +86,12 @@ void HidReportDescriptor::GetDetails(
 
       // Global tags:
       case HidReportDescriptorItem::kTagUsagePage:
-        current_usage_page =
-            static_cast<HidUsageAndPage::Page>(current_item->GetShortData());
+        current_usage_page = current_item->GetShortData();
         break;
       case HidReportDescriptorItem::kTagReportId:
         if (top_level_collections->size() > 0) {
           // Store report ID.
-          top_level_collections->back().report_ids.insert(
+          top_level_collections->back()->report_ids.push_back(
               current_item->GetShortData());
           *has_report_id = true;
 

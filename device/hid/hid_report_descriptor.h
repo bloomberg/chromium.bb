@@ -11,8 +11,8 @@
 #include <memory>
 #include <vector>
 
-#include "device/hid/hid_collection_info.h"
 #include "device/hid/hid_report_descriptor_item.h"
+#include "device/hid/public/interfaces/hid.mojom.h"
 
 namespace device {
 
@@ -30,11 +30,12 @@ class HidReportDescriptor {
 
   // Returns top-level collections present in the descriptor,
   // together with max report sizes
-  void GetDetails(std::vector<HidCollectionInfo>* top_level_collections,
-                  bool* has_report_id,
-                  size_t* max_input_report_size,
-                  size_t* max_output_report_size,
-                  size_t* max_feature_report_size);
+  void GetDetails(
+      std::vector<device::mojom::HidCollectionInfoPtr>* top_level_collections,
+      bool* has_report_id,
+      size_t* max_input_report_size,
+      size_t* max_output_report_size,
+      size_t* max_feature_report_size);
 
  private:
   std::vector<std::unique_ptr<HidReportDescriptorItem>> items_;

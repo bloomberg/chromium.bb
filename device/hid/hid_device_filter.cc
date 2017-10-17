@@ -52,11 +52,11 @@ bool HidDeviceFilter::Matches(
 
   if (usage_page_set_) {
     bool found_matching_collection = false;
-    for (const HidCollectionInfo& collection : device_info.collections) {
-      if (collection.usage.usage_page != usage_page_) {
+    for (const auto& collection : device_info.collections) {
+      if (collection->usage->usage_page != usage_page_) {
         continue;
       }
-      if (usage_set_ && collection.usage.usage != usage_) {
+      if (usage_set_ && collection->usage->usage != usage_) {
         continue;
       }
       found_matching_collection = true;

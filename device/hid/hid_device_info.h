@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
-#include "device/hid/hid_collection_info.h"
 #include "device/hid/public/interfaces/hid.mojom.h"
 
 namespace device {
@@ -42,7 +41,7 @@ class HidDeviceInfo : public base::RefCountedThreadSafe<HidDeviceInfo> {
                 const std::string& product_name,
                 const std::string& serial_number,
                 device::mojom::HidBusType bus_type,
-                const HidCollectionInfo& collection,
+                device::mojom::HidCollectionInfoPtr collection,
                 size_t max_input_report_size,
                 size_t max_output_report_size,
                 size_t max_feature_report_size);
@@ -61,7 +60,7 @@ class HidDeviceInfo : public base::RefCountedThreadSafe<HidDeviceInfo> {
   device::mojom::HidBusType bus_type() const { return device_->bus_type; }
 
   // Top-Level Collections information.
-  const std::vector<HidCollectionInfo>& collections() const {
+  const std::vector<device::mojom::HidCollectionInfoPtr>& collections() const {
     return device_->collections;
   }
   bool has_report_id() const { return device_->has_report_id; };

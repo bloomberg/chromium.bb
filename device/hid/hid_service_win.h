@@ -42,14 +42,16 @@ class HidServiceWin : public HidService, public DeviceMonitorWin::Observer {
   static void EnumerateBlocking(
       base::WeakPtr<HidServiceWin> service,
       scoped_refptr<base::SequencedTaskRunner> task_runner);
-  static void CollectInfoFromButtonCaps(PHIDP_PREPARSED_DATA preparsed_data,
-                                        HIDP_REPORT_TYPE report_type,
-                                        USHORT button_caps_length,
-                                        HidCollectionInfo* collection_info);
-  static void CollectInfoFromValueCaps(PHIDP_PREPARSED_DATA preparsed_data,
-                                       HIDP_REPORT_TYPE report_type,
-                                       USHORT value_caps_length,
-                                       HidCollectionInfo* collection_info);
+  static void CollectInfoFromButtonCaps(
+      PHIDP_PREPARSED_DATA preparsed_data,
+      HIDP_REPORT_TYPE report_type,
+      USHORT button_caps_length,
+      device::mojom::HidCollectionInfo* collection_info);
+  static void CollectInfoFromValueCaps(
+      PHIDP_PREPARSED_DATA preparsed_data,
+      HIDP_REPORT_TYPE report_type,
+      USHORT value_caps_length,
+      device::mojom::HidCollectionInfo* collection_info);
   static void AddDeviceBlocking(
       base::WeakPtr<HidServiceWin> service,
       scoped_refptr<base::SequencedTaskRunner> task_runner,

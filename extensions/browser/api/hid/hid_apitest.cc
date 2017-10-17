@@ -10,9 +10,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "device/hid/hid_collection_info.h"
 #include "device/hid/hid_report_descriptor.h"
-#include "device/hid/hid_usage_and_page.h"
 #include "device/hid/public/interfaces/hid.mojom.h"
 #include "extensions/browser/api/device_permissions_prompt.h"
 #include "extensions/shell/browser/shell_extensions_api_client.h"
@@ -25,9 +23,7 @@
 #include "services/service_manager/public/cpp/service_context.h"
 
 using base::ThreadTaskRunnerHandle;
-using device::HidCollectionInfo;
 using device::HidReportDescriptor;
-using device::HidUsageAndPage;
 
 const char* const kTestDeviceGuids[] = {"A", "B", "C", "D", "E"};
 
@@ -288,7 +284,7 @@ class HidApiTest : public ShellApiTest {
                                kReportDescriptor + sizeof(kReportDescriptor));
     }
 
-    std::vector<HidCollectionInfo> collections;
+    std::vector<device::mojom::HidCollectionInfoPtr> collections;
     bool has_report_id;
     size_t max_input_report_size;
     size_t max_output_report_size;
@@ -302,7 +298,7 @@ class HidApiTest : public ShellApiTest {
     auto device = device::mojom::HidDeviceInfo::New(
         device_guid, vendor_id, product_id, "Test Device", serial_number,
         device::mojom::HidBusType::kHIDBusTypeUSB, report_descriptor,
-        collections, has_report_id, max_input_report_size,
+        std::move(collections), has_report_id, max_input_report_size,
         max_output_report_size, max_feature_report_size, "");
 
     fake_hid_manager_->AddDevice(std::move(device));
