@@ -5,12 +5,13 @@
 #include "core/animation/CSSBorderImageLengthBoxInterpolationType.h"
 
 #include <memory>
-#include "core/animation/BorderImageLengthBoxPropertyFunctions.h"
+#include "core/CSSPropertyNames.h"
 #include "core/animation/LengthInterpolationFunctions.h"
 #include "core/animation/SideIndex.h"
 #include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSQuadValue.h"
 #include "core/css/resolver/StyleResolverState.h"
+#include "core/style/ComputedStyle.h"
 #include "platform/wtf/PtrUtil.h"
 
 namespace blink {
@@ -70,6 +71,47 @@ struct SideTypes {
 
   SideType type[kSideIndexCount];
 };
+
+const BorderImageLengthBox& GetBorderImageLengthBox(
+    CSSPropertyID property,
+    const ComputedStyle& style) {
+  switch (property) {
+    case CSSPropertyBorderImageOutset:
+      return style.BorderImageOutset();
+    case CSSPropertyBorderImageWidth:
+      return style.BorderImageWidth();
+    case CSSPropertyWebkitMaskBoxImageOutset:
+      return style.MaskBoxImageOutset();
+    case CSSPropertyWebkitMaskBoxImageWidth:
+      return style.MaskBoxImageWidth();
+    default:
+      NOTREACHED();
+      return GetBorderImageLengthBox(CSSPropertyBorderImageOutset,
+                                     ComputedStyle::InitialStyle());
+  }
+}
+
+void SetBorderImageLengthBox(CSSPropertyID property,
+                             ComputedStyle& style,
+                             const BorderImageLengthBox& box) {
+  switch (property) {
+    case CSSPropertyBorderImageOutset:
+      style.SetBorderImageOutset(box);
+      break;
+    case CSSPropertyWebkitMaskBoxImageOutset:
+      style.SetMaskBoxImageOutset(box);
+      break;
+    case CSSPropertyBorderImageWidth:
+      style.SetBorderImageWidth(box);
+      break;
+    case CSSPropertyWebkitMaskBoxImageWidth:
+      style.SetMaskBoxImageWidth(box);
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+}
 
 }  // namespace
 
@@ -165,9 +207,7 @@ class InheritedSideTypesChecker
   bool IsValid(const StyleResolverState& state,
                const InterpolationValue& underlying) const final {
     return inherited_side_types_ ==
-           SideTypes(
-               BorderImageLengthBoxPropertyFunctions::GetBorderImageLengthBox(
-                   property_, *state.ParentStyle()));
+           SideTypes(GetBorderImageLengthBox(property_, *state.ParentStyle()));
   }
 
   const CSSPropertyID property_;
@@ -228,9 +268,7 @@ CSSBorderImageLengthBoxInterpolationType::MaybeConvertInitial(
     const StyleResolverState&,
     ConversionCheckers&) const {
   return ConvertBorderImageLengthBox(
-      BorderImageLengthBoxPropertyFunctions::GetInitialBorderImageLengthBox(
-          CssProperty()),
-      1);
+      GetBorderImageLengthBox(CssProperty(), ComputedStyle::InitialStyle()), 1);
 }
 
 InterpolationValue
@@ -238,8 +276,7 @@ CSSBorderImageLengthBoxInterpolationType::MaybeConvertInherit(
     const StyleResolverState& state,
     ConversionCheckers& conversion_checkers) const {
   const BorderImageLengthBox& inherited =
-      BorderImageLengthBoxPropertyFunctions::GetBorderImageLengthBox(
-          CssProperty(), *state.ParentStyle());
+      GetBorderImageLengthBox(CssProperty(), *state.ParentStyle());
   conversion_checkers.push_back(
       InheritedSideTypesChecker::Create(CssProperty(), SideTypes(inherited)));
   return ConvertBorderImageLengthBox(inherited,
@@ -292,9 +329,7 @@ InterpolationValue CSSBorderImageLengthBoxInterpolationType::
     MaybeConvertStandardPropertyUnderlyingValue(
         const ComputedStyle& style) const {
   return ConvertBorderImageLengthBox(
-      BorderImageLengthBoxPropertyFunctions::GetBorderImageLengthBox(
-          CssProperty(), style),
-      style.EffectiveZoom());
+      GetBorderImageLengthBox(CssProperty(), style), style.EffectiveZoom());
 }
 
 PairwiseInterpolationValue
@@ -399,8 +434,7 @@ void CSSBorderImageLengthBoxInterpolationType::ApplyStandardPropertyValue(
   };
   BorderImageLengthBox box(convert_side(kSideTop), convert_side(kSideRight),
                            convert_side(kSideBottom), convert_side(kSideLeft));
-  BorderImageLengthBoxPropertyFunctions::SetBorderImageLengthBox(
-      CssProperty(), *state.Style(), box);
+  SetBorderImageLengthBox(CssProperty(), *state.Style(), box);
 }
 
 }  // namespace blink

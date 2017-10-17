@@ -5,17 +5,41 @@
 #include "core/animation/CSSBasicShapeInterpolationType.h"
 
 #include <memory>
+#include "core/CSSPropertyNames.h"
 #include "core/animation/BasicShapeInterpolationFunctions.h"
-#include "core/animation/BasicShapePropertyFunctions.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/style/BasicShapes.h"
+#include "core/style/ComputedStyle.h"
 #include "core/style/DataEquivalency.h"
 #include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 
 namespace {
+
+const BasicShape* GetBasicShape(CSSPropertyID property,
+                                const ComputedStyle& style) {
+  switch (property) {
+    case CSSPropertyShapeOutside:
+      if (!style.ShapeOutside())
+        return nullptr;
+      if (style.ShapeOutside()->GetType() != ShapeValue::kShape)
+        return nullptr;
+      if (style.ShapeOutside()->CssBox() != kBoxMissing)
+        return nullptr;
+      return style.ShapeOutside()->Shape();
+    case CSSPropertyClipPath:
+      if (!style.ClipPath())
+        return nullptr;
+      if (style.ClipPath()->GetType() != ClipPathOperation::SHAPE)
+        return nullptr;
+      return ToShapeClipPathOperation(style.ClipPath())->GetBasicShape();
+    default:
+      NOTREACHED();
+      return nullptr;
+  }
+}
 
 class UnderlyingCompatibilityChecker
     : public CSSInterpolationType::CSSConversionChecker {
@@ -60,8 +84,7 @@ class InheritedShapeChecker
   bool IsValid(const StyleResolverState& state,
                const InterpolationValue&) const final {
     return DataEquivalent(inherited_shape_.get(),
-                          BasicShapePropertyFunctions::GetBasicShape(
-                              property_, *state.ParentStyle()));
+                          GetBasicShape(property_, *state.ParentStyle()));
   }
 
   const CSSPropertyID property_;
@@ -89,14 +112,13 @@ InterpolationValue CSSBasicShapeInterpolationType::MaybeConvertInitial(
     const StyleResolverState&,
     ConversionCheckers&) const {
   return BasicShapeInterpolationFunctions::MaybeConvertBasicShape(
-      BasicShapePropertyFunctions::GetInitialBasicShape(CssProperty()), 1);
+      GetBasicShape(CssProperty(), ComputedStyle::InitialStyle()), 1);
 }
 
 InterpolationValue CSSBasicShapeInterpolationType::MaybeConvertInherit(
     const StyleResolverState& state,
     ConversionCheckers& conversion_checkers) const {
-  const BasicShape* shape = BasicShapePropertyFunctions::GetBasicShape(
-      CssProperty(), *state.ParentStyle());
+  const BasicShape* shape = GetBasicShape(CssProperty(), *state.ParentStyle());
   // const_cast to take a ref.
   conversion_checkers.push_back(InheritedShapeChecker::Create(
       CssProperty(), const_cast<BasicShape*>(shape)));
@@ -132,8 +154,7 @@ InterpolationValue
 CSSBasicShapeInterpolationType::MaybeConvertStandardPropertyUnderlyingValue(
     const ComputedStyle& style) const {
   return BasicShapeInterpolationFunctions::MaybeConvertBasicShape(
-      BasicShapePropertyFunctions::GetBasicShape(CssProperty(), style),
-      style.EffectiveZoom());
+      GetBasicShape(CssProperty(), style), style.EffectiveZoom());
 }
 
 void CSSBasicShapeInterpolationType::Composite(
@@ -156,11 +177,22 @@ void CSSBasicShapeInterpolationType::ApplyStandardPropertyValue(
     const InterpolableValue& interpolable_value,
     const NonInterpolableValue* non_interpolable_value,
     StyleResolverState& state) const {
-  BasicShapePropertyFunctions::SetBasicShape(
-      CssProperty(), *state.Style(),
-      BasicShapeInterpolationFunctions::CreateBasicShape(
-          interpolable_value, *non_interpolable_value,
-          state.CssToLengthConversionData()));
+  RefPtr<BasicShape> shape = BasicShapeInterpolationFunctions::CreateBasicShape(
+      interpolable_value, *non_interpolable_value,
+      state.CssToLengthConversionData());
+  switch (CssProperty()) {
+    case CSSPropertyShapeOutside:
+      state.Style()->SetShapeOutside(
+          ShapeValue::CreateShapeValue(std::move(shape), kBoxMissing));
+      break;
+    case CSSPropertyClipPath:
+      state.Style()->SetClipPath(
+          ShapeClipPathOperation::Create(std::move(shape)));
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
 }
 
 }  // namespace blink

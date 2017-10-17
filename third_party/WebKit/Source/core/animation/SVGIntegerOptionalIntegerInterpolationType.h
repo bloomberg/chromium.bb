@@ -5,7 +5,6 @@
 #ifndef SVGIntegerOptionalIntegerInterpolationType_h
 #define SVGIntegerOptionalIntegerInterpolationType_h
 
-#include "core/animation/NumberAttributeFunctions.h"
 #include "core/animation/SVGInterpolationType.h"
 
 namespace blink {
