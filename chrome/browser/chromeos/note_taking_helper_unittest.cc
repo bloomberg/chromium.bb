@@ -19,6 +19,7 @@
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
+#include "chrome/browser/chromeos/note_taking_controller_client.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/prefs/browser_prefs.h"
@@ -45,6 +46,8 @@
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/extension_id.h"
 #include "extensions/common/value_builder.h"
+#include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "url/gurl.h"
 
 namespace app_runtime = extensions::api::app_runtime;
@@ -143,6 +146,57 @@ class TestObserver : public NoteTakingHelper::Observer {
   DISALLOW_COPY_AND_ASSIGN(TestObserver);
 };
 
+class TestNoteTakingController : public ash::mojom::NoteTakingController,
+                                 public service_manager::Service {
+ public:
+  TestNoteTakingController()
+      : binding_(this),
+        connector_factory_(this),
+        connector_(connector_factory_.CreateConnector()) {}
+
+  ~TestNoteTakingController() override = default;
+
+  service_manager::Connector* connector() const { return connector_.get(); }
+
+  void CallCreateNote() {
+    client_->CreateNote();
+    client_.FlushForTesting();
+  }
+
+  bool client_attached() const { return static_cast<bool>(client_); }
+
+  // ash::mojom::NoteTakingController:
+  void SetClient(ash::mojom::NoteTakingControllerClientPtr client) override {
+    DCHECK(!client_);
+    client_ = std::move(client);
+    client_.set_connection_error_handler(
+        base::Bind(&TestNoteTakingController::OnClientConnectionLost,
+                   base::Unretained(this)));
+  }
+
+  // service_manager::Service:
+  void OnBindInterface(const service_manager::BindSourceInfo& source_info,
+                       const std::string& interface_name,
+                       mojo::ScopedMessagePipeHandle interface_pipe) override {
+    DCHECK(interface_name == ash::mojom::NoteTakingController::Name_);
+    binding_.Bind(
+        ash::mojom::NoteTakingControllerRequest(std::move(interface_pipe)));
+  }
+
+ private:
+  void OnClientConnectionLost() {
+    client_.reset();
+    binding_.Close();
+  }
+
+  mojo::Binding<ash::mojom::NoteTakingController> binding_;
+  service_manager::TestConnectorFactory connector_factory_;
+  std::unique_ptr<service_manager::Connector> connector_;
+  ash::mojom::NoteTakingControllerClientPtr client_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestNoteTakingController);
+};
+
 }  // namespace
 
 class NoteTakingHelperTest : public BrowserWithTestWindowTest,
@@ -197,6 +251,25 @@ class NoteTakingHelperTest : public BrowserWithTestWindowTest,
 
   static NoteTakingHelper* helper() { return NoteTakingHelper::Get(); }
 
+  TestNoteTakingController* test_note_taking_controller() {
+    return test_note_taking_controller_.get();
+  }
+
+  NoteTakingControllerClient* note_taking_client() {
+    return helper()->GetNoteTakingControllerClientForTesting();
+  }
+
+  void SetNoteTakingClientProfile(Profile* profile) {
+    if (note_taking_client())
+      note_taking_client()->SetProfileForTesting(profile);
+    FlushNoteTakingClientMojo();
+  }
+
+  void FlushNoteTakingClientMojo() {
+    if (note_taking_client())
+      note_taking_client()->FlushMojoForTesting();
+  }
+
   // Initializes ARC and NoteTakingHelper. |flags| contains OR-ed together
   // InitFlags values.
   void Init(uint32_t flags) {
@@ -228,6 +301,10 @@ class NoteTakingHelperTest : public BrowserWithTestWindowTest,
     NoteTakingHelper::Get()->SetProfileWithEnabledLockScreenApps(profile());
     NoteTakingHelper::Get()->set_launch_chrome_app_callback_for_test(base::Bind(
         &NoteTakingHelperTest::LaunchChromeApp, base::Unretained(this)));
+
+    test_note_taking_controller_ = std::make_unique<TestNoteTakingController>();
+    note_taking_client()->SetConnectorForTesting(
+        test_note_taking_controller_->connector());
   }
 
   // Creates an extension.
@@ -287,6 +364,7 @@ class NoteTakingHelperTest : public BrowserWithTestWindowTest,
     extensions::ExtensionSystem::Get(profile)
         ->extension_service()
         ->AddExtension(extension);
+    FlushNoteTakingClientMojo();
   }
   void UninstallExtension(const extensions::Extension* extension,
                           Profile* profile) {
@@ -297,6 +375,7 @@ class NoteTakingHelperTest : public BrowserWithTestWindowTest,
             extension->id(),
             extensions::UninstallReason::UNINSTALL_REASON_FOR_TESTING,
             base::Closure(), &error);
+    FlushNoteTakingClientMojo();
   }
 
   scoped_refptr<const extensions::Extension> CreateAndInstallLockScreenApp(
@@ -433,6 +512,7 @@ class NoteTakingHelperTest : public BrowserWithTestWindowTest,
 
   FakeSessionManagerClient* session_manager_client_ = nullptr;  // Not owned.
   ArcAppTest arc_test_;
+  std::unique_ptr<TestNoteTakingController> test_note_taking_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(NoteTakingHelperTest);
 };
@@ -1482,6 +1562,63 @@ TEST_P(NoteTakingHelperTest, LockScreenSupportInSecondaryProfile) {
       second_profile,
       {kProdKeepAppName, NoteTakingHelper::kProdKeepExtensionId,
        true /*preferred*/, NoteTakingLockScreenSupport::kNotSupported}));
+}
+
+TEST_P(NoteTakingHelperTest, NoteTakingControllerClient) {
+  Init(ENABLE_PALETTE);
+
+  auto has_note_taking_apps = [&]() {
+    return test_note_taking_controller()->client_attached();
+  };
+
+  EXPECT_FALSE(has_note_taking_apps());
+
+  SetNoteTakingClientProfile(profile());
+  EXPECT_FALSE(has_note_taking_apps());
+
+  scoped_refptr<const extensions::Extension> extension1 =
+      CreateExtension(NoteTakingHelper::kProdKeepExtensionId, kProdKeepAppName);
+  scoped_refptr<const extensions::Extension> extension2 =
+      CreateExtension(NoteTakingHelper::kDevKeepExtensionId, kDevKeepAppName);
+
+  InstallExtension(extension1.get(), profile());
+  EXPECT_TRUE(has_note_taking_apps());
+
+  InstallExtension(extension2.get(), profile());
+  EXPECT_TRUE(has_note_taking_apps());
+
+  UninstallExtension(extension1.get(), profile());
+  EXPECT_TRUE(has_note_taking_apps());
+
+  UninstallExtension(extension2.get(), profile());
+  EXPECT_FALSE(has_note_taking_apps());
+
+  InstallExtension(extension1.get(), profile());
+  EXPECT_TRUE(has_note_taking_apps());
+
+  const std::string kSecondProfileName = "second-profile";
+  TestingProfile* second_profile =
+      profile_manager_->CreateTestingProfile(kSecondProfileName);
+  InitExtensionService(second_profile);
+
+  SetNoteTakingClientProfile(second_profile);
+  EXPECT_FALSE(has_note_taking_apps());
+
+  InstallExtension(extension2.get(), second_profile);
+  EXPECT_TRUE(has_note_taking_apps());
+
+  SetNoteTakingClientProfile(profile());
+  EXPECT_TRUE(has_note_taking_apps());
+
+  test_note_taking_controller()->CallCreateNote();
+  ASSERT_EQ(1u, launched_chrome_apps_.size());
+  ASSERT_EQ(NoteTakingHelper::kProdKeepExtensionId,
+            launched_chrome_apps_[0].id);
+
+  UninstallExtension(extension2.get(), second_profile);
+  EXPECT_TRUE(has_note_taking_apps());
+
+  profile_manager_->DeleteTestingProfile(kSecondProfileName);
 }
 
 }  // namespace chromeos

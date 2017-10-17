@@ -15,6 +15,10 @@
 
 class Profile;
 
+namespace service_manager {
+class Connector;
+}
+
 namespace chromeos {
 
 class NoteTakingControllerClient
@@ -41,6 +45,17 @@ class NoteTakingControllerClient
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
+  void SetConnectorForTesting(service_manager::Connector* connector) {
+    connector_ = connector;
+  }
+
+  void SetProfileForTesting(Profile* profile) { SetProfile(profile); }
+
+  void FlushMojoForTesting() {
+    if (controller_)
+      controller_.FlushForTesting();
+  }
+
  private:
   void SetProfile(Profile* profile);
 
@@ -56,6 +71,7 @@ class NoteTakingControllerClient
       session_state_observer_;
 
   mojo::Binding<ash::mojom::NoteTakingControllerClient> binding_;
+  service_manager::Connector* connector_ = nullptr;
   ash::mojom::NoteTakingControllerPtr controller_;
 
   DISALLOW_COPY_AND_ASSIGN(NoteTakingControllerClient);
