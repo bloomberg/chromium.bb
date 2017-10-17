@@ -22,11 +22,8 @@
 #ifndef WTF_RefPtr_h
 #define WTF_RefPtr_h
 
-#include <algorithm>
-#include <utility>
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/allocator/PartitionAllocator.h"
 
 namespace WTF {
 
