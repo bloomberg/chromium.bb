@@ -34,6 +34,7 @@
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/blob_handle.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/request_context_frame_type.h"
@@ -206,6 +207,19 @@ class ServiceWorkerURLRequestJobTest
 
   void SetUpWithHelper(std::unique_ptr<EmbeddedWorkerTestHelper> helper) {
     helper_ = std::move(helper);
+    helper_->context()->storage()->LazyInitializeForTest(
+        base::BindOnce(&base::DoNothing));
+    base::RunLoop().RunUntilIdle();
+
+    // Prepare HTTP response info for the version.
+    auto http_info = std::make_unique<net::HttpResponseInfo>();
+    http_info->ssl_info.cert =
+        net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
+    EXPECT_TRUE(http_info->ssl_info.is_valid());
+    http_info->ssl_info.security_bits = 0x100;
+    // SSL3 TLS_DHE_RSA_WITH_AES_256_CBC_SHA
+    http_info->ssl_info.connection_status = 0x300039;
+    http_info->headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
 
     // Create a registration and service worker version.
     registration_ = new ServiceWorkerRegistration(
@@ -215,17 +229,20 @@ class ServiceWorkerURLRequestJobTest
     version_ = new ServiceWorkerVersion(
         registration_.get(), GURL("https://example.com/service_worker.js"), 1L,
         helper_->context()->AsWeakPtr());
+    // If script streaming is not enabled, SetMainScriptHttpResponseInfo()
+    // should be called manually since |http_info| which is stored in disk cache
+    // won't be read during SWVersion::StartWorker() in tests.
+    if (!ServiceWorkerUtils::IsScriptStreamingEnabled())
+      version_->SetMainScriptHttpResponseInfo(*http_info);
     std::vector<ServiceWorkerDatabase::ResourceRecord> records;
-    records.push_back(
-        ServiceWorkerDatabase::ResourceRecord(10, version_->script_url(), 100));
+    records.push_back(WriteToDiskCacheWithCustomResponseInfoSync(
+        helper_->context()->storage(), version_->script_url(), 10,
+        std::move(http_info), "I'm the body", "I'm the meta data"));
     version_->script_cache_map()->SetResources(records);
     version_->set_fetch_handler_existence(
         ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
 
     // Make the registration findable via storage functions.
-    helper_->context()->storage()->LazyInitializeForTest(
-        base::BindOnce(&base::DoNothing));
-    base::RunLoop().RunUntilIdle();
     ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
     helper_->context()->storage()->StoreRegistration(
         registration_.get(),
@@ -233,17 +250,6 @@ class ServiceWorkerURLRequestJobTest
         CreateReceiverOnCurrentThread(&status));
     base::RunLoop().RunUntilIdle();
     ASSERT_EQ(SERVICE_WORKER_OK, status);
-
-    // Set HTTP response info on the version.
-    net::HttpResponseInfo http_info;
-    http_info.ssl_info.cert =
-        net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
-    EXPECT_TRUE(http_info.ssl_info.is_valid());
-    http_info.ssl_info.security_bits = 0x100;
-    // SSL3 TLS_DHE_RSA_WITH_AES_256_CBC_SHA
-    http_info.ssl_info.connection_status = 0x300039;
-    http_info.headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
-    version_->SetMainScriptHttpResponseInfo(http_info);
 
     // Create a controlled client.
     std::unique_ptr<ServiceWorkerProviderHost> provider_host =
@@ -473,7 +479,8 @@ class DelayHelper : public EmbeddedWorkerTestHelper {
     EmbeddedWorkerTestHelper::OnStartWorker(
         embedded_worker_id_, service_worker_version_id_, scope_, script_url_,
         pause_after_download_, std::move(start_worker_request_),
-        std::move(start_worker_instance_host_), std::move(provider_info_));
+        std::move(start_worker_instance_host_), std::move(provider_info_),
+        std::move(installed_scripts_info_));
   }
 
   void Respond() {
@@ -502,7 +509,8 @@ class DelayHelper : public EmbeddedWorkerTestHelper {
       bool pause_after_download,
       mojom::ServiceWorkerEventDispatcherRequest request,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
-      mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info)
+      mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
+      mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info)
       override {
     embedded_worker_id_ = embedded_worker_id;
     service_worker_version_id_ = service_worker_version_id;
@@ -512,6 +520,7 @@ class DelayHelper : public EmbeddedWorkerTestHelper {
     start_worker_request_ = std::move(request);
     start_worker_instance_host_ = std::move(instance_host);
     provider_info_ = std::move(provider_info);
+    installed_scripts_info_ = std::move(installed_scripts_info);
   }
 
   void OnFetchEvent(
@@ -536,6 +545,7 @@ class DelayHelper : public EmbeddedWorkerTestHelper {
   mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo
       start_worker_instance_host_;
   mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info_;
+  mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info_;
   int embedded_worker_id_ = 0;
   mojom::ServiceWorkerFetchResponseCallbackPtr response_callback_;
   mojom::FetchEventPreloadHandlePtr preload_handle_;

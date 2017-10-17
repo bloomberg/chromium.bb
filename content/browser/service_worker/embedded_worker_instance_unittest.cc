@@ -249,7 +249,8 @@ class StalledInStartWorkerHelper : public EmbeddedWorkerTestHelper {
       bool pause_after_download,
       mojom::ServiceWorkerEventDispatcherRequest request,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
-      mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info)
+      mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
+      mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info)
       override {
     if (force_stall_in_start_) {
       // Prepare for OnStopWorker().
@@ -260,7 +261,7 @@ class StalledInStartWorkerHelper : public EmbeddedWorkerTestHelper {
     EmbeddedWorkerTestHelper::OnStartWorker(
         embedded_worker_id, service_worker_version_id, scope, script_url,
         pause_after_download, std::move(request), std::move(instance_host),
-        std::move(provider_info));
+        std::move(provider_info), std::move(installed_scripts_info));
   }
 
   void OnStopWorker(int embedded_worker_id) override {

@@ -5,6 +5,7 @@
 #include "content/browser/service_worker/service_worker_version.h"
 
 #include <stdint.h>
+#include <memory>
 #include <tuple>
 #include <utility>
 
@@ -182,8 +183,9 @@ class ServiceWorkerVersionTest : public testing::Test {
         helper_->context()->AsWeakPtr());
     EXPECT_EQ(url::Origin(pattern_), version_->script_origin());
     std::vector<ServiceWorkerDatabase::ResourceRecord> records;
-    records.push_back(
-        ServiceWorkerDatabase::ResourceRecord(10, version_->script_url(), 100));
+    records.push_back(WriteToDiskCacheSync(
+        helper_->context()->storage(), version_->script_url(), 10,
+        {} /* headers */, "I'm a body", "I'm a meta data"));
     version_->script_cache_map()->SetResources(records);
     version_->SetMainScriptHttpResponseInfo(
         EmbeddedWorkerTestHelper::CreateHttpResponseInfo());
@@ -221,10 +223,9 @@ class ServiceWorkerVersionTest : public testing::Test {
         SERVICE_WORKER_ERROR_MAX_VALUE;  // dummy value
 
     // Make sure worker is running.
-    scoped_refptr<MessageLoopRunner> runner(new MessageLoopRunner);
-    version_->RunAfterStartWorker(event_type, runner->QuitClosure(),
+    version_->RunAfterStartWorker(event_type, base::Bind(&base::DoNothing),
                                   CreateReceiverOnCurrentThread(&status));
-    runner->Run();
+    base::RunLoop().RunUntilIdle();
     EXPECT_EQ(SERVICE_WORKER_ERROR_MAX_VALUE, status);
     EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status());
 
@@ -271,7 +272,8 @@ class MessageReceiverDisallowStart : public MessageReceiver {
       bool pause_after_download,
       mojom::ServiceWorkerEventDispatcherRequest request,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
-      mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info)
+      mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
+      mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info)
       override {
     switch (mode_) {
       case StartMode::STALL:
@@ -292,7 +294,7 @@ class MessageReceiverDisallowStart : public MessageReceiver {
         MessageReceiver::OnStartWorker(
             embedded_worker_id, service_worker_version_id, scope, script_url,
             pause_after_download, std::move(request), std::move(instance_host),
-            std::move(provider_info));
+            std::move(provider_info), std::move(installed_scripts_info));
         break;
     }
     current_mock_instance_index_++;

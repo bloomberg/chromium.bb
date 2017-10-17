@@ -110,9 +110,15 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
     version_ = new ServiceWorkerVersion(
         registration_.get(), script_url_, 1L, context()->AsWeakPtr());
 
+    context()->storage()->LazyInitializeForTest(
+        base::BindOnce(&base::DoNothing));
+    base::RunLoop().RunUntilIdle();
+
     std::vector<ServiceWorkerDatabase::ResourceRecord> records;
-    records.push_back(
-        ServiceWorkerDatabase::ResourceRecord(10, version_->script_url(), 100));
+    records.push_back(WriteToDiskCacheSync(
+        context()->storage(), version_->script_url(),
+        context()->storage()->NewResourceId(), {} /* headers */, "I'm a body",
+        "I'm a meta data"));
     version_->script_cache_map()->SetResources(records);
     version_->SetMainScriptHttpResponseInfo(
         EmbeddedWorkerTestHelper::CreateHttpResponseInfo());
@@ -126,10 +132,6 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
             &remote_endpoints_.back());
     provider_host_ = host->AsWeakPtr();
     context()->AddProviderHost(std::move(host));
-
-    context()->storage()->LazyInitializeForTest(
-        base::BindOnce(&base::DoNothing));
-    base::RunLoop().RunUntilIdle();
   }
 
   void TearDown() override {
