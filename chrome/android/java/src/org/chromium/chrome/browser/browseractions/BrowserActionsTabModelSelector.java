@@ -7,8 +7,10 @@ package org.chromium.chrome.browser.browseractions;
 import android.os.AsyncTask;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.browseractions.BrowserActionsTabCreatorManager.BrowserActionsTabCreator;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModel;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
@@ -20,6 +22,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelImpl;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelOrderController;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorBase;
+import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore.TabPersistentStoreObserver;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -112,12 +115,6 @@ public class BrowserActionsTabModelSelector
                     mTabSaver.addTabToSaveQueue(tab);
                 }
             }
-
-            @Override
-            public void tabRemoved(Tab tab) {
-                // TODO(ltian): save the tab list when all the tabs are removed.
-                mTabSaver.saveTabListAsynchronously();
-            }
         };
         getModel(false).addObserver(tabModelObserver);
         if (mTabCreationRunnable != null) {
@@ -205,5 +202,29 @@ public class BrowserActionsTabModelSelector
         }
         return mTabCreatorManager.getTabCreator(incognito).createNewTab(
                 loadUrlParams, type, parent);
+    }
+
+    /**
+     * Merge tabs from {@link BrowserActionsTabModelSelector} to the selector in a {@link
+     * ChromeActivity}.
+     * @param activity The ChromeActivity all tabs will be merged to.
+     * @param shouldSelectTab Whether the last tab should be set as the active tab.
+     */
+    public void mergeBrowserActionsTabModel(ChromeActivity activity, boolean shouldSelectTab) {
+        assert isInitialized() : "Browser Actions tab model should be initialized at this point";
+        TabModel chromeNormalTabModel = activity.getTabModelSelector().getModel(false);
+        TabModel browserActionsNormlTabModel = getModel(false);
+        while (browserActionsNormlTabModel.getCount() > 0) {
+            Tab tab = browserActionsNormlTabModel.getTabAt(0);
+            browserActionsNormlTabModel.removeTab(tab);
+            tab.attach(activity,
+                    ((ChromeTabCreator) activity.getTabCreator(false))
+                            .createDefaultTabDelegateFactory());
+            chromeNormalTabModel.addTab(tab, -1, TabLaunchType.FROM_BROWSER_ACTIONS);
+        }
+        saveState();
+        if (shouldSelectTab) {
+            TabModelUtils.setIndex(chromeNormalTabModel, chromeNormalTabModel.getCount() - 1);
+        }
     }
 }
