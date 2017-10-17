@@ -491,7 +491,12 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
   MultiDisplayMode multi_display_mode_ = EXTENDED;
   MultiDisplayMode current_default_multi_display_mode_ = EXTENDED;
 
+  // When mirroring is enabled this is the id of the destination display.
   int64_t mirroring_display_id_ = kInvalidDisplayId;
+
+  // This is used in two distinct ways:
+  // 1. when mirroring is enabled this contains the destination display.
+  // 2. when unified mode is enabled this is the set of physical displays.
   Displays software_mirroring_display_list_;
 
   // Cached mirror mode for metrics changed notification.
