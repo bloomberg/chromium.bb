@@ -1173,8 +1173,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 
 - (BOOL)webController:(CRWWebController*)webController
         shouldOpenURL:(const GURL&)url
-      mainDocumentURL:(const GURL&)mainDocumentURL
-          linkClicked:(BOOL)linkClicked {
+      mainDocumentURL:(const GURL&)mainDocumentURL {
   // chrome:// URLs are only allowed if the mainDocumentURL is also a chrome://
   // URL.
   if (url.SchemeIs(kChromeUIScheme) &&
@@ -1194,8 +1193,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
     [[NSNotificationCenter defaultCenter]
         postNotificationName:kTabUrlMayStartLoadingNotificationForCrashReporting
                       object:self
-                    userInfo:[NSDictionary dictionaryWithObject:urlString
-                                                         forKey:kTabUrlKey]];
+                    userInfo:@{kTabUrlKey : urlString}];
   }
 
   return YES;
