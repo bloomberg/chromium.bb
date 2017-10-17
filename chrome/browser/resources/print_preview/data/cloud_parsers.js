@@ -5,15 +5,11 @@
 cr.define('cloudprint', function() {
   'use strict';
 
-  /** Namespace which contains a method to parse cloud destinations directly. */
-  function CloudDestinationParser() {}
-
   /**
    * Enumeration of cloud destination field names.
    * @enum {string}
-   * @private
    */
-  CloudDestinationParser.Field_ = {
+  var CloudDestinationField = {
     CAPABILITIES: 'capabilities',
     CONNECTION_STATUS: 'connectionStatus',
     DESCRIPTION: 'description',
@@ -26,30 +22,43 @@ cr.define('cloudprint', function() {
 
   /**
    * Special tag that denotes whether the destination has been recently used.
-   * @type {string}
-   * @const
-   * @private
+   * @const {string}
    */
-  CloudDestinationParser.RECENT_TAG_ = '^recent';
+  var RECENT_TAG = '^recent';
 
   /**
    * Special tag that denotes whether the destination is owned by the user.
-   * @type {string}
-   * @const
-   * @private
+   * @const {string}
    */
-  CloudDestinationParser.OWNED_TAG_ = '^own';
+  var OWNED_TAG = '^own';
 
   /**
    * Enumeration of cloud destination types that are supported by print preview.
    * @enum {string}
-   * @private
    */
-  CloudDestinationParser.CloudType_ = {
+  var DestinationCloudType = {
     ANDROID: 'ANDROID_CHROME_SNAPSHOT',
     DOCS: 'DOCS',
     IOS: 'IOS_CHROME_SNAPSHOT'
   };
+
+  /**
+   * Parses the destination type.
+   * @param {string} typeStr Destination type given by the Google Cloud Print
+   *     server.
+   * @return {!print_preview.DestinationType} Destination type.
+   * @private
+   */
+  function parseType(typeStr) {
+    if (typeStr == DestinationCloudType.ANDROID ||
+        typeStr == DestinationCloudType.IOS) {
+      return print_preview.DestinationType.MOBILE;
+    }
+    if (typeStr == DestinationCloudType.DOCS) {
+      return print_preview.DestinationType.GOOGLE_PROMOTED;
+    }
+    return print_preview.DestinationType.GOOGLE;
+  }
 
   /**
    * Parses a destination from JSON from a Google Cloud Print search or printer
@@ -62,76 +71,52 @@ cr.define('cloudprint', function() {
    *     empty string, if origin != COOKIES.
    * @return {!print_preview.Destination} Parsed destination.
    */
-  CloudDestinationParser.parse = function(json, origin, account) {
-    if (!json.hasOwnProperty(CloudDestinationParser.Field_.ID) ||
-        !json.hasOwnProperty(CloudDestinationParser.Field_.TYPE) ||
-        !json.hasOwnProperty(CloudDestinationParser.Field_.DISPLAY_NAME)) {
+  var parseCloudDestination = function(json, origin, account) {
+    if (!json.hasOwnProperty(CloudDestinationField.ID) ||
+        !json.hasOwnProperty(CloudDestinationField.TYPE) ||
+        !json.hasOwnProperty(CloudDestinationField.DISPLAY_NAME)) {
       throw Error('Cloud destination does not have an ID or a display name');
     }
-    var id = json[CloudDestinationParser.Field_.ID];
-    var tags = json[CloudDestinationParser.Field_.TAGS] || [];
-    var connectionStatus =
-        json[CloudDestinationParser.Field_.CONNECTION_STATUS] ||
+    var id = json[CloudDestinationField.ID];
+    var tags = json[CloudDestinationField.TAGS] || [];
+    var connectionStatus = json[CloudDestinationField.CONNECTION_STATUS] ||
         print_preview.DestinationConnectionStatus.UNKNOWN;
     var optionalParams = {
       account: account,
       tags: tags,
-      isOwned: arrayContains(tags, CloudDestinationParser.OWNED_TAG_),
+      isOwned: arrayContains(tags, OWNED_TAG),
       lastAccessTime:
-          parseInt(json[CloudDestinationParser.Field_.LAST_ACCESS], 10) ||
-          Date.now(),
+          parseInt(json[CloudDestinationField.LAST_ACCESS], 10) || Date.now(),
       cloudID: id,
-      description: json[CloudDestinationParser.Field_.DESCRIPTION]
+      description: json[CloudDestinationField.DESCRIPTION]
     };
     var cloudDest = new print_preview.Destination(
-        id,
-        CloudDestinationParser.parseType_(
-            json[CloudDestinationParser.Field_.TYPE]),
-        origin, json[CloudDestinationParser.Field_.DISPLAY_NAME],
-        arrayContains(tags, CloudDestinationParser.RECENT_TAG_) /*isRecent*/,
-        connectionStatus, optionalParams);
-    if (json.hasOwnProperty(CloudDestinationParser.Field_.CAPABILITIES)) {
+        id, parseType(json[CloudDestinationField.TYPE]), origin,
+        json[CloudDestinationField.DISPLAY_NAME],
+        arrayContains(tags, RECENT_TAG) /*isRecent*/, connectionStatus,
+        optionalParams);
+    if (json.hasOwnProperty(CloudDestinationField.CAPABILITIES)) {
       cloudDest.capabilities = /** @type {!print_preview.Cdd} */ (
-          json[CloudDestinationParser.Field_.CAPABILITIES]);
+          json[CloudDestinationField.CAPABILITIES]);
     }
     return cloudDest;
   };
 
   /**
-   * Parses the destination type.
-   * @param {string} typeStr Destination type given by the Google Cloud Print
-   *     server.
-   * @return {!print_preview.DestinationType} Destination type.
-   * @private
-   */
-  CloudDestinationParser.parseType_ = function(typeStr) {
-    if (typeStr == CloudDestinationParser.CloudType_.ANDROID ||
-        typeStr == CloudDestinationParser.CloudType_.IOS) {
-      return print_preview.DestinationType.MOBILE;
-    }
-    if (typeStr == CloudDestinationParser.CloudType_.DOCS) {
-      return print_preview.DestinationType.GOOGLE_PROMOTED;
-    }
-    return print_preview.DestinationType.GOOGLE;
-  };
-
-  /** Namespace which contains a method to parse printer sharing invitation. */
-  function InvitationParser() {}
-
-  /**
    * Enumeration of invitation field names.
    * @enum {string}
-   * @private
    */
-  InvitationParser
-      .Field_ = {PRINTER: 'printer', RECEIVER: 'receiver', SENDER: 'sender'};
+  var InvitationField = {
+    PRINTER: 'printer',
+    RECEIVER: 'receiver',
+    SENDER: 'sender'
+  };
 
   /**
    * Enumeration of cloud destination types that are supported by print preview.
    * @enum {string}
-   * @private
    */
-  InvitationParser.AclType_ =
+  var InvitationAclType =
       {DOMAIN: 'DOMAIN', GROUP: 'GROUP', PUBLIC: 'PUBLIC', USER: 'USER'};
 
   /**
@@ -140,10 +125,10 @@ cr.define('cloudprint', function() {
    * @param {string} account The account this invitation is sent for.
    * @return {!print_preview.Invitation} Parsed invitation.
    */
-  InvitationParser.parse = function(json, account) {
-    if (!json.hasOwnProperty(InvitationParser.Field_.SENDER) ||
-        !json.hasOwnProperty(InvitationParser.Field_.RECEIVER) ||
-        !json.hasOwnProperty(InvitationParser.Field_.PRINTER)) {
+  var parseInvitation = function(json, account) {
+    if (!json.hasOwnProperty(InvitationField.SENDER) ||
+        !json.hasOwnProperty(InvitationField.RECEIVER) ||
+        !json.hasOwnProperty(InvitationField.PRINTER)) {
       throw Error('Invitation does not have necessary info.');
     }
 
@@ -151,25 +136,25 @@ cr.define('cloudprint', function() {
       return name && scope ? (name + ' (' + scope + ')') : (name || scope);
     };
 
-    var sender = json[InvitationParser.Field_.SENDER];
+    var sender = json[InvitationField.SENDER];
     var senderName = nameFormatter(sender['name'], sender['email']);
 
-    var receiver = json[InvitationParser.Field_.RECEIVER];
+    var receiver = json[InvitationField.RECEIVER];
     var receiverName = '';
     var receiverType = receiver['type'];
-    if (receiverType == InvitationParser.AclType_.USER) {
+    if (receiverType == InvitationAclType.USER) {
       // It's a personal invitation, empty name indicates just that.
     } else if (
-        receiverType == InvitationParser.AclType_.GROUP ||
-        receiverType == InvitationParser.AclType_.DOMAIN) {
+        receiverType == InvitationAclType.GROUP ||
+        receiverType == InvitationAclType.DOMAIN) {
       receiverName = nameFormatter(receiver['name'], receiver['scope']);
     } else {
       throw Error('Invitation of unsupported receiver type');
     }
 
-    var destination = cloudprint.CloudDestinationParser.parse(
-        json[InvitationParser.Field_.PRINTER],
-        print_preview.DestinationOrigin.COOKIES, account);
+    var destination = cloudprint.parseCloudDestination(
+        json[InvitationField.PRINTER], print_preview.DestinationOrigin.COOKIES,
+        account);
 
     return new print_preview.Invitation(
         senderName, receiverName, destination, receiver, account);
@@ -177,7 +162,7 @@ cr.define('cloudprint', function() {
 
   // Export
   return {
-    CloudDestinationParser: CloudDestinationParser,
-    InvitationParser: InvitationParser
+    parseCloudDestination: parseCloudDestination,
+    parseInvitation: parseInvitation,
   };
 });
