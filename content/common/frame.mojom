@@ -5,6 +5,7 @@
 module content.mojom;
 
 import "content/public/common/window_container_type.mojom";
+import "mojo/common/unguessable_token.mojom";
 import "services/service_manager/public/interfaces/interface_provider.mojom";
 import "third_party/WebKit/public/platform/referrer.mojom";
 import "third_party/WebKit/public/web/window_features.mojom";
@@ -90,6 +91,14 @@ struct CreateNewWindowReply {
 
   // Duplicated from CreateNewWindowParams because legacy code.
   int64 cloned_session_storage_namespace_id;
+
+  // Used for devtools instrumentation and trace-ability. The token is
+  // propagated to Blink's LocalFrame and both Blink and content/
+  // can tag calls and requests with this instrumentation token in order to
+  // attribute them to the context frame.
+  // |devtools_frame_token| is only defined by the browser and is never
+  // sent back from the renderer in the control calls.
+  mojo.common.mojom.UnguessableToken devtools_main_frame_token;
 };
 
 // An opaque handle that keeps alive the associated render process even after

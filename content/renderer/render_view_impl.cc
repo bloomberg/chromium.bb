@@ -1400,6 +1400,7 @@ WebView* RenderViewImpl::CreateView(WebLocalFrame* creator,
   view_params.swapped_out = false;
   view_params.replicated_frame_state.frame_policy.sandbox_flags = sandbox_flags;
   view_params.replicated_frame_state.name = frame_name_utf8;
+  view_params.devtools_main_frame_token = reply->devtools_main_frame_token;
   // Even if the main frame has a name, the main frame's unique name is always
   // the empty string.
   view_params.hidden = is_background_tab;
