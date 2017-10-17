@@ -17,14 +17,11 @@ import sys
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 SRC_DIR = os.path.dirname(os.path.dirname(os.path.dirname(THIS_DIR)))
 
-# Current stable Windows 7 NVIDIA GT 610 device/driver identifier.
-WIN_7_NVIDIA_GEFORCE_610_STABLE_DRIVER = '10de:104a-21.21.13.7254'
+# Current stable Windows NVIDIA GT 610 device/driver identifier.
+WIN_NVIDIA_GEFORCE_610_STABLE_DRIVER = '10de:104a-23.21.13.8792'
 
 # Current experimental Windows NVIDIA GT 610 device/driver identifier.
 WIN_NVIDIA_GEFORCE_610_EXPERIMENTAL_DRIVER = '10de:104a-23.21.13.8792'
-
-# Current stable Windows 10 NVIDIA GT 610 device/driver identifier.
-WIN_10_NVIDIA_GEFORCE_610_STABLE_DRIVER = '10de:104a-21.21.13.7619'
 
 # Use this to match all drivers for the NVIDIA GT 610.
 NVIDIA_GEFORCE_610_ALL_DRIVERS = '10de:104a-*'
@@ -124,7 +121,7 @@ WATERFALL = {
     'Win7 Release (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': WIN_7_NVIDIA_GEFORCE_610_STABLE_DRIVER,
+          'gpu': WIN_NVIDIA_GEFORCE_610_STABLE_DRIVER,
           'os': 'Windows-2008ServerR2-SP1',
           'pool': 'Chrome-GPU',
         },
@@ -136,7 +133,7 @@ WATERFALL = {
     'Win7 Debug (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': WIN_7_NVIDIA_GEFORCE_610_STABLE_DRIVER,
+          'gpu': WIN_NVIDIA_GEFORCE_610_STABLE_DRIVER,
           'os': 'Windows-2008ServerR2-SP1',
           'pool': 'Chrome-GPU',
         },
@@ -240,7 +237,7 @@ FYI_WATERFALL = {
     'Win7 Release (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': WIN_7_NVIDIA_GEFORCE_610_STABLE_DRIVER,
+          'gpu': WIN_NVIDIA_GEFORCE_610_STABLE_DRIVER,
           'os': 'Windows-2008ServerR2-SP1',
           'pool': 'Chrome-GPU',
         },
@@ -252,7 +249,7 @@ FYI_WATERFALL = {
     'Win7 Debug (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': WIN_7_NVIDIA_GEFORCE_610_STABLE_DRIVER,
+          'gpu': WIN_NVIDIA_GEFORCE_610_STABLE_DRIVER,
           'os': 'Windows-2008ServerR2-SP1',
           'pool': 'Chrome-GPU',
         },
@@ -264,7 +261,7 @@ FYI_WATERFALL = {
     'Win7 dEQP Release (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': WIN_7_NVIDIA_GEFORCE_610_STABLE_DRIVER,
+          'gpu': WIN_NVIDIA_GEFORCE_610_STABLE_DRIVER,
           'os': 'Windows-2008ServerR2-SP1',
           'pool': 'Chrome-GPU',
         },
@@ -289,7 +286,7 @@ FYI_WATERFALL = {
     'Win10 Release (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': WIN_10_NVIDIA_GEFORCE_610_STABLE_DRIVER,
+          'gpu': WIN_NVIDIA_GEFORCE_610_STABLE_DRIVER,
           'os': 'Windows-10',
           'pool': 'Chrome-GPU',
         },
@@ -301,7 +298,7 @@ FYI_WATERFALL = {
     'Win10 Debug (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': WIN_10_NVIDIA_GEFORCE_610_STABLE_DRIVER,
+          'gpu': WIN_NVIDIA_GEFORCE_610_STABLE_DRIVER,
           'os': 'Windows-10',
           'pool': 'Chrome-GPU',
         },
@@ -389,7 +386,7 @@ FYI_WATERFALL = {
     'Win7 x64 Release (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': WIN_7_NVIDIA_GEFORCE_610_STABLE_DRIVER,
+          'gpu': WIN_NVIDIA_GEFORCE_610_STABLE_DRIVER,
           'os': 'Windows-2008ServerR2-SP1',
           'pool': 'Chrome-GPU',
         },
@@ -401,7 +398,7 @@ FYI_WATERFALL = {
     'Win7 x64 Debug (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': WIN_7_NVIDIA_GEFORCE_610_STABLE_DRIVER,
+          'gpu': WIN_NVIDIA_GEFORCE_610_STABLE_DRIVER,
           'os': 'Windows-2008ServerR2-SP1',
           'pool': 'Chrome-GPU',
         },
@@ -413,7 +410,7 @@ FYI_WATERFALL = {
     'Win7 x64 dEQP Release (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': WIN_7_NVIDIA_GEFORCE_610_STABLE_DRIVER,
+          'gpu': WIN_NVIDIA_GEFORCE_610_STABLE_DRIVER,
           'os': 'Windows-2008ServerR2-SP1',
           'pool': 'Chrome-GPU',
         },
@@ -819,7 +816,7 @@ FYI_WATERFALL = {
     'Optional Win7 Release (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': WIN_7_NVIDIA_GEFORCE_610_STABLE_DRIVER,
+          'gpu': WIN_NVIDIA_GEFORCE_610_STABLE_DRIVER,
           'os': 'Windows-2008ServerR2-SP1',
           'pool': 'Chrome-GPU',
         },
@@ -973,7 +970,7 @@ V8_FYI_WATERFALL = {
     'Win Release (NVIDIA)': {
       'swarming_dimensions': [
         {
-          'gpu': WIN_7_NVIDIA_GEFORCE_610_STABLE_DRIVER,
+          'gpu': WIN_NVIDIA_GEFORCE_610_STABLE_DRIVER,
           'os': 'Windows-2008ServerR2-SP1',
           'pool': 'Chrome-GPU',
         },
