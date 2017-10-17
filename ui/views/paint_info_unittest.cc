@@ -137,30 +137,30 @@ class PaintInfoTest : public ::testing::Test {
 
     info_list[1].reset(
         new PaintInfo(*info_list[0], r_1, r_0.size(),
-                      PaintInfo::ScaleType::kScaleWithEdgeSnapping));
+                      PaintInfo::ScaleType::kScaleWithEdgeSnapping, false));
 
     info_list[2].reset(
         new PaintInfo(*info_list[0], r_2, r_0.size(),
-                      PaintInfo::ScaleType::kScaleWithEdgeSnapping));
+                      PaintInfo::ScaleType::kScaleWithEdgeSnapping, false));
     info_list[3].reset(
         new PaintInfo(*info_list[2], r_3, r_2.size(),
-                      PaintInfo::ScaleType::kScaleWithEdgeSnapping));
+                      PaintInfo::ScaleType::kScaleWithEdgeSnapping, false));
     info_list[4].reset(
         new PaintInfo(*info_list[2], r_4, r_2.size(),
-                      PaintInfo::ScaleType::kScaleWithEdgeSnapping));
+                      PaintInfo::ScaleType::kScaleWithEdgeSnapping, false));
     info_list[5].reset(
         new PaintInfo(*info_list[2], r_5, r_2.size(),
-                      PaintInfo::ScaleType::kScaleWithEdgeSnapping));
+                      PaintInfo::ScaleType::kScaleWithEdgeSnapping, false));
 
     info_list[6].reset(
         new PaintInfo(*info_list[0], r_6, r_0.size(),
-                      PaintInfo::ScaleType::kScaleWithEdgeSnapping));
+                      PaintInfo::ScaleType::kScaleWithEdgeSnapping, false));
     info_list[7].reset(
         new PaintInfo(*info_list[6], r_7, r_6.size(),
-                      PaintInfo::ScaleType::kScaleWithEdgeSnapping));
+                      PaintInfo::ScaleType::kScaleWithEdgeSnapping, false));
     info_list[8].reset(
         new PaintInfo(*info_list[6], r_8, r_6.size(),
-                      PaintInfo::ScaleType::kScaleWithEdgeSnapping));
+                      PaintInfo::ScaleType::kScaleWithEdgeSnapping, false));
 
     return info_list;
   }
@@ -248,6 +248,33 @@ TEST_F(PaintInfoTest, Invalidation) {
   for (float dsf : kDsfList) {
     VerifyInvalidationRects(dsf, false);
     VerifyInvalidationRects(dsf, true);
+  }
+}
+
+// Make sure the PaintInfo used for view's layer uses the
+// corderedbounds.
+TEST_F(PaintInfoTest, LayerPaintInfo) {
+  const gfx::Rect kViewBounds(15, 20, 7, 13);
+  struct TestData {
+    const float dsf;
+    const gfx::Size size;
+  };
+  const TestData kTestData[6]{
+      {1.0f, {7, 13}},    // rounded    enclosing (if these scaling is appleid)
+      {1.25f, {9, 16}},   // 9x16       10x17
+      {1.5f, {10, 20}},   // 11x20      11x20
+      {1.6f, {11, 21}},   // 11x21      12x21
+      {1.75f, {13, 23}},  // 12x23      13x23
+      {2.f, {14, 26}},    // 14x26      14x26
+  };
+  for (const TestData& data : kTestData) {
+    SCOPED_TRACE(testing::Message() << "dsf:" << data.dsf);
+    ui::PaintContext context(nullptr, data.dsf, gfx::Rect(), true);
+    PaintInfo parent_paint_info(context, gfx::Size());
+    PaintInfo paint_info = PaintInfo::CreateChildPaintInfo(
+        parent_paint_info, kViewBounds, gfx::Size(),
+        PaintInfo::ScaleType::kScaleWithEdgeSnapping, true);
+    EXPECT_EQ(gfx::Rect(data.size), paint_info.paint_recording_bounds());
   }
 }
 
