@@ -89,25 +89,6 @@ namespace media {
 
 namespace {
 
-// Limits the range of playback rate.
-//
-// TODO(kylep): Revisit these.
-//
-// Vista has substantially lower performance than XP or Windows7.  If you speed
-// up a video too much, it can't keep up, and rendering stops updating except on
-// the time bar. For really high speeds, audio becomes a bottleneck and we just
-// use up the data we have, which may not achieve the speed requested, but will
-// not crash the tab.
-//
-// A very slow speed, ie 0.00000001x, causes the machine to lock up. (It seems
-// like a busy loop). It gets unresponsive, although its not completely dead.
-//
-// Also our timers are not very accurate (especially for ogg), which becomes
-// evident at low speeds and on Vista. Since other speeds are risky and outside
-// the norms, we think 1/16x to 16x is a safe and useful range for now.
-const double kMinRate = 0.0625;
-const double kMaxRate = 16.0;
-
 void SetSinkIdOnMediaThread(scoped_refptr<WebAudioSourceProviderImpl> sink,
                             const std::string& device_id,
                             const url::Origin& security_origin,
@@ -717,19 +698,6 @@ void WebMediaPlayerImpl::DoSeek(base::TimeDelta time, bool time_updated) {
 void WebMediaPlayerImpl::SetRate(double rate) {
   DVLOG(1) << __func__ << "(" << rate << ")";
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-
-  // TODO(kylep): Remove when support for negatives is added. Also, modify the
-  // following checks so rewind uses reasonable values also.
-  if (rate < 0.0)
-    return;
-
-  // Limit rates to reasonable values by clamping.
-  if (rate != 0.0) {
-    if (rate < kMinRate)
-      rate = kMinRate;
-    else if (rate > kMaxRate)
-      rate = kMaxRate;
-  }
 
   playback_rate_ = rate;
   if (!paused_) {
