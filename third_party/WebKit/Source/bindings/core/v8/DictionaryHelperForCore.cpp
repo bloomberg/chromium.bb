@@ -81,24 +81,12 @@ CORE_EXPORT bool DictionaryHelper::Get(const Dictionary& dictionary,
 template <>
 CORE_EXPORT bool DictionaryHelper::Get(const Dictionary& dictionary,
                                        const StringView& key,
-                                       double& value,
-                                       bool& has_value) {
+                                       double& value) {
   v8::Local<v8::Value> v8_value;
-  if (!dictionary.Get(key, v8_value)) {
-    has_value = false;
+  if (!dictionary.Get(key, v8_value))
     return false;
-  }
 
-  has_value = true;
   return v8_value->NumberValue(dictionary.V8Context()).To(&value);
-}
-
-template <>
-bool DictionaryHelper::Get(const Dictionary& dictionary,
-                           const StringView& key,
-                           double& value) {
-  bool unused;
-  return DictionaryHelper::Get(dictionary, key, value, unused);
 }
 
 template <typename StringType>
