@@ -80,9 +80,6 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // The screen info has changed.
   virtual void ScreenInfoChanged() {}
 
-  // Sets the device scale factor for frames associated with this WebContents.
-  virtual void UpdateDeviceScaleFactor(double device_scale_factor) {}
-
   // Retrieve screen information.
   virtual void GetScreenInfo(ScreenInfo* web_screen_info);
 

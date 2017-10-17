@@ -2005,15 +2005,6 @@ void RenderWidget::OnRequestCompositionUpdates(bool immediate_request,
   UpdateCompositionInfo(true /* immediate request */);
 }
 
-void RenderWidget::OnSetDeviceScaleFactor(float device_scale_factor) {
-  if (device_scale_factor_ == device_scale_factor)
-    return;
-
-  device_scale_factor_ = device_scale_factor;
-  OnDeviceScaleFactorChanged();
-  physical_backing_size_ = gfx::ScaleToCeiledSize(size_, device_scale_factor_);
-}
-
 void RenderWidget::OnOrientationChange() {
   WebWidget* web_widget = GetWebWidget();
   if (web_widget && web_widget->IsWebFrameWidget()) {

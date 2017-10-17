@@ -578,8 +578,6 @@ class CONTENT_EXPORT RenderWidget
   // go through OnResize.
   void AutoResizeCompositor();
 
-  virtual void OnSetDeviceScaleFactor(float device_scale_factor);
-
   void OnOrientationChange();
 
   // Override points to notify derived classes that a paint has happened.

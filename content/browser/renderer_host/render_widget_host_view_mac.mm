@@ -1774,7 +1774,7 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
     RenderWidgetHostImpl* host =
         RenderWidgetHostImpl::From(GetRenderWidgetHost());
     if (host && host->delegate())
-      host->delegate()->UpdateDeviceScaleFactor(display.device_scale_factor());
+      host->WasResized();
   }
 
   UpdateBackingStoreProperties();

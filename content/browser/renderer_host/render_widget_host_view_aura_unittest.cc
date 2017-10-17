@@ -232,8 +232,10 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
   }
 
   double get_last_device_scale_factor() { return last_device_scale_factor_; }
-  void UpdateDeviceScaleFactor(double device_scale_factor) override {
-    last_device_scale_factor_ = device_scale_factor;
+  void ScreenInfoChanged() override {
+    display::Screen* screen = display::Screen::GetScreen();
+    const display::Display display = screen->GetPrimaryDisplay();
+    last_device_scale_factor_ = display.device_scale_factor();
   }
   void set_pre_handle_keyboard_event_result(
       KeyboardEventProcessingResult result) {
