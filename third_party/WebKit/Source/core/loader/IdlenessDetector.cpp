@@ -19,6 +19,11 @@ void IdlenessDetector::Shutdown() {
   local_frame_ = nullptr;
 }
 
+void IdlenessDetector::WillCommitLoad() {
+  network_2_quiet_start_time_ = 0;
+  network_0_quiet_start_time_ = 0;
+}
+
 void IdlenessDetector::DomContentLoadedEventFired() {
   if (!local_frame_)
     return;
@@ -98,6 +103,14 @@ void IdlenessDetector::OnDidLoadResource() {
     network_quiet_timer_.StartOneShot(kNetworkQuietWatchdogSeconds,
                                       BLINK_FROM_HERE);
   }
+}
+
+double IdlenessDetector::GetNetworkAlmostIdleTime() {
+  return network_2_quiet_start_time_;
+}
+
+double IdlenessDetector::GetNetworkIdleTime() {
+  return network_0_quiet_start_time_;
 }
 
 void IdlenessDetector::WillProcessTask(double start_time) {
