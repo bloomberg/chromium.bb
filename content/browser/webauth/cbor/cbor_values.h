@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 #include <string>
+#include <tuple>
 #include <vector>
 
 #include "base/containers/flat_map.h"
@@ -23,9 +24,41 @@ namespace content {
 //  * Indefinite-length encodings.
 class CONTENT_EXPORT CBORValue {
  public:
+  struct CTAPLess {
+    // Comparison predicate to order keys in a dictionary as required by the
+    // Client-to-Authenticator Protocol (CTAP) spec 2.0.
+    //
+    // The sort order defined in CTAP is:
+    //   • If the major types are different, the one with the lower value in
+    //     numerical order sorts earlier. (Moot in this code because all keys
+    //     are strings.)
+    //   • If two keys have different lengths, the shorter one sorts earlier.
+    //   • If two keys have the same length, the one with the lower value in
+    //     (byte-wise) lexical order sorts earlier.
+    //
+    // See section 6 of https://fidoalliance.org/specs/fido-v2.0-rd-20170927/
+    // fido-client-to-authenticator-protocol-v2.0-rd-20170927.html and
+    // https://tools.ietf.org/html/rfc7049#section-3.9 also.
+    bool operator()(const std::string& a, const std::string& b) const {
+      const size_t a_size = a.size();
+      const size_t b_size = b.size();
+      return std::tie(a_size, a) < std::tie(b_size, b);
+    }
+
+    bool operator()(const char* a, const std::string& b) const {
+      return operator()(std::string(a), b);
+    }
+
+    bool operator()(const std::string& a, const char* b) const {
+      return operator()(a, std::string(b));
+    }
+
+    using is_transparent = void;
+  };
+
   using BinaryValue = std::vector<uint8_t>;
   using ArrayValue = std::vector<CBORValue>;
-  using MapValue = base::flat_map<std::string, CBORValue>;
+  using MapValue = base::flat_map<std::string, CBORValue, CTAPLess>;
 
   enum class Type {
     NONE,
