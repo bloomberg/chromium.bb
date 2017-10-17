@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>
+      Test the invocation order of AudioWorklet.addModule() and BaseAudioContext
+    </title>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script>
+    <script src="../../../webaudio-resources/audit.js"></script>
+    <script src="audio-worklet-common.js"></script>
+  </head>
+  <body>
+    <script id="layout-test-code">
+      // TODO(hongchan): remove this assertion when AudioWorklet shipped.
+      assertAudioWorklet();
+
+      let audit = Audit.createTaskRunner();
+
+      let sampleRate = 48000;
+      let realtimeContext = new AudioContext();
+      let offlineContext = new OfflineAudioContext(1, sampleRate, sampleRate);
+
+      // Test if the browser does not crash upon addModule() call after the
+      // realtime context construction.
+      audit.define(
+          {label: 'module-loading-after-realtime-context-creation'},
+          (task, should) => {
+            let dummyWorkletNode =
+                new AudioWorkletNode(realtimeContext, 'dummy');
+            dummyWorkletNode.connect(realtimeContext.destination);
+            should(dummyWorkletNode instanceof AudioWorkletNode,
+                   '"dummyWorkletNode" is an instance of AudioWorkletNode ' +
+                   'from realtime context')
+                .beTrue();
+            task.done();
+          });
+
+      // Test if the browser does not crash upon addModule() call after the
+      // offline context construction.
+      audit.define(
+          {label: 'module-loading-after-offline-context-creation'},
+          (task, should) => {
+            let dummyWorkletNode =
+                new AudioWorkletNode(offlineContext, 'dummy');
+            dummyWorkletNode.connect(offlineContext.destination);
+            should(dummyWorkletNode instanceof AudioWorkletNode,
+                   '"dummyWorkletNode" is an instance of AudioWorkletNode ' +
+                   'from offline context')
+                .beTrue();
+            task.done();
+          });
+
+      audioWorklet.addModule('dummy-processor.js').then(() => {
+        audit.run();
+      });
+    </script>
+  </body>
+</html>

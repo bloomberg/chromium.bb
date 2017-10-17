@@ -117,6 +117,11 @@ void DefaultAudioDestinationHandler::StopRendering() {
   }
 }
 
+void DefaultAudioDestinationHandler::RestartDestination() {
+  StopDestination();
+  StartDestination();
+}
+
 unsigned long DefaultAudioDestinationHandler::MaxChannelCount() const {
   return AudioDestination::MaxChannelCount();
 }
