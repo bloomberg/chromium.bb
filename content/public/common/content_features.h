@@ -113,11 +113,6 @@ CONTENT_EXPORT extern const base::Feature kWebNfc;
 CONTENT_EXPORT extern const base::Feature kWebVrVsyncAlign;
 #endif  // defined(OS_ANDROID)
 
-#if defined(OS_WIN)
-CONTENT_EXPORT extern const base::Feature kWinSboxDisableExtensionPoints;
-CONTENT_EXPORT extern const base::Feature kWinSboxForceMsSigned;
-#endif  // defined(OS_WIN)
-
 #if defined(OS_MACOSX)
 CONTENT_EXPORT extern const base::Feature kDeviceMonitorMac;
 CONTENT_EXPORT extern const base::Feature kMacV2Sandbox;

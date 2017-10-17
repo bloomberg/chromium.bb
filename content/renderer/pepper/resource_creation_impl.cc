@@ -21,6 +21,7 @@
 #include "ppapi/shared_impl/ppb_image_data_shared.h"
 #include "ppapi/shared_impl/ppb_input_event_shared.h"
 #include "ppapi/shared_impl/var.h"
+#include "services/service_manager/sandbox/switches.h"
 
 #if defined(OS_WIN)
 #include "base/command_line.h"
@@ -155,7 +156,7 @@ PP_Resource ResourceCreationImpl::CreateImageData(PP_Instance instance,
   // TODO(ananta)
   // Look into whether this causes a loss of functionality. From cursory
   // testing things seem to work well.
-  if (IsWin32kLockdownEnabled())
+  if (service_manager::IsWin32kLockdownEnabled())
     return CreateImageDataSimple(instance, format, size, init_to_zero);
 #endif
   return PPB_ImageData_Impl::Create(instance,

@@ -5,6 +5,7 @@
 #ifndef SERVICES_SERVICE_MANAGER_SANDBOX_SWITCHES_H_
 #define SERVICES_SERVICE_MANAGER_SANDBOX_SWITCHES_H_
 
+#include "build/build_config.h"
 #include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/sandbox/export.h"
 
@@ -25,6 +26,12 @@ SERVICE_MANAGER_SANDBOX_EXPORT extern const char kCdmSandbox[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kPdfCompositorSandbox[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kProfilingSandbox[];
 
+// Flags owned by the service manager sandbox.
+SERVICE_MANAGER_SANDBOX_EXPORT extern const char kAllowNoSandboxJob[];
+SERVICE_MANAGER_SANDBOX_EXPORT extern const char kEnableAppContainer[];
+SERVICE_MANAGER_SANDBOX_EXPORT extern const char kDisableAppContainer[];
+SERVICE_MANAGER_SANDBOX_EXPORT extern const char kDisableWin32kLockDown[];
+
 // Flags spied upon from other layers.
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kGpuProcess[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kPpapiBrokerProcess[];
@@ -36,6 +43,13 @@ SERVICE_MANAGER_SANDBOX_EXPORT extern const char kNoSandbox[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kEnableSandboxLogging[];
 
 }  // namespace switches
+
+#if defined(OS_WIN)
+// Returns whether Win32k lockdown is enabled for child processes or not.
+// Not really a switch, but uses one under the covers.
+SERVICE_MANAGER_SANDBOX_EXPORT bool IsWin32kLockdownEnabled();
+#endif
+
 }  // namespace service_manager
 
 #endif  // SERVICES_SERVICE_MANAGER_SANDBOX_SWITCHES_H_

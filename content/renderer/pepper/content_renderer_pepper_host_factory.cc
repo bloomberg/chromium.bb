@@ -39,6 +39,7 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/serialized_structs.h"
 #include "ppapi/shared_impl/ppb_image_data_shared.h"
+#include "services/service_manager/sandbox/switches.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
@@ -166,7 +167,7 @@ ContentRendererPepperHostFactory::CreateResourceHost(
       // TODO(ananta)
       // Look into whether this causes a loss of functionality. From cursory
       // testing things seem to work well.
-      if (IsWin32kLockdownEnabled())
+      if (service_manager::IsWin32kLockdownEnabled())
         image_type = ppapi::PPB_ImageData_Shared::SIMPLE;
 #endif
       scoped_refptr<PPB_ImageData_Impl> image_data(new PPB_ImageData_Impl(

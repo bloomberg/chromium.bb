@@ -21,7 +21,6 @@ CONTENT_EXPORT extern const char kAgcStartupMinVolume[];
 CONTENT_EXPORT extern const char kAllowFileAccessFromFiles[];
 CONTENT_EXPORT extern const char kAllowInsecureLocalhost[];
 CONTENT_EXPORT extern const char kAllowLoopbackInPeerConnection[];
-CONTENT_EXPORT extern const char kAllowNoSandboxJob[];
 CONTENT_EXPORT extern const char kAllowSandboxDebugging[];
 CONTENT_EXPORT extern const char kAndroidFontsPath[];
 CONTENT_EXPORT extern const char kBlinkSettings[];
@@ -301,7 +300,6 @@ CONTENT_EXPORT extern const char kPrefetchArgumentOther[];
 // like renderers, etc.
 CONTENT_EXPORT extern const char kDeviceScaleFactor[];
 CONTENT_EXPORT extern const char kDisableLegacyIntermediateWindow[];
-CONTENT_EXPORT extern const char kDisableWin32kLockDown[];
 CONTENT_EXPORT extern const char kEnableAcceleratedVpxDecode[];
 CONTENT_EXPORT extern const char kEnableWin7WebRtcHWH264Decoding[];
 // Switch to pass the font cache shared memory handle to the renderer.

@@ -105,6 +105,7 @@
 #include "ppapi/features/features.h"
 #include "printing/features/features.h"
 #include "services/device/public/cpp/device_features.h"
+#include "services/service_manager/sandbox/switches.h"
 #include "ui/app_list/app_list_features.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/compositor/compositor_switches.h"
@@ -2364,8 +2365,9 @@ const FeatureEntry kFeatureEntries[] = {
 #if defined(OS_WIN)
     {"enable-appcontainer", flag_descriptions::kEnableAppcontainerName,
      flag_descriptions::kEnableAppcontainerDescription, kOsWin,
-     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableAppContainer,
-                               switches::kDisableAppContainer)},
+     ENABLE_DISABLE_VALUE_TYPE(
+         service_manager::switches::kEnableAppContainer,
+         service_manager::switches::kDisableAppContainer)},
 #endif  // OS_WIN
 #if defined(TOOLKIT_VIEWS) || defined(OS_ANDROID)
     {"enable-autofill-credit-card-upload",
