@@ -27,7 +27,7 @@
 #ifndef LayoutSVGResourceFilterPrimitive_h
 #define LayoutSVGResourceFilterPrimitive_h
 
-#include "core/layout/svg/LayoutSVGResourceFilter.h"
+#include "core/layout/svg/LayoutSVGHiddenContainer.h"
 
 namespace blink {
 
@@ -49,14 +49,6 @@ class LayoutSVGResourceFilterPrimitive final : public LayoutSVGHiddenContainer {
   bool IsOfType(LayoutObjectType type) const override {
     return type == kLayoutObjectSVGResourceFilterPrimitive ||
            LayoutSVGHiddenContainer::IsOfType(type);
-  }
-
-  inline void PrimitiveAttributeChanged(const QualifiedName& attribute) {
-    LayoutObject* filter = Parent();
-    if (!filter || !filter->IsSVGResourceFilter())
-      return;
-    ToLayoutSVGResourceFilter(filter)->PrimitiveAttributeChanged(this,
-                                                                 attribute);
   }
 };
 

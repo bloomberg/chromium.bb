@@ -32,6 +32,7 @@ namespace blink {
 class FilterEffect;
 class SVGFilterElement;
 class SVGFilterGraphNodeMap;
+class SVGFilterPrimitiveStandardAttributes;
 
 class FilterData final : public GarbageCollected<FilterData> {
  public:
@@ -87,7 +88,8 @@ class LayoutSVGResourceFilter final : public LayoutSVGResourceContainer {
   SVGUnitTypes::SVGUnitType FilterUnits() const;
   SVGUnitTypes::SVGUnitType PrimitiveUnits() const;
 
-  void PrimitiveAttributeChanged(LayoutObject*, const QualifiedName&);
+  void PrimitiveAttributeChanged(SVGFilterPrimitiveStandardAttributes&,
+                                 const QualifiedName&);
 
   static const LayoutSVGResourceType kResourceType = kFilterResourceType;
   LayoutSVGResourceType ResourceType() const override { return kResourceType; }
