@@ -80,24 +80,6 @@ TEST(MemoryAllocatorDumpTest, GuidGeneration) {
   std::unique_ptr<MemoryAllocatorDump> mad(new MemoryAllocatorDump(
       "foo", MemoryDumpLevelOfDetail::FIRST, MemoryAllocatorDumpGuid(0x42u)));
   ASSERT_EQ("42", mad->guid().ToString());
-
-  // If the dumper does not provide a Guid, the MAD will make one up on the
-  // flight. Furthermore that Guid will stay stable across across multiple
-  // snapshots if the |absolute_name| of the dump doesn't change
-  mad.reset(new MemoryAllocatorDump("bar", MemoryDumpLevelOfDetail::FIRST));
-  const MemoryAllocatorDumpGuid guid_bar = mad->guid();
-  ASSERT_FALSE(guid_bar.empty());
-  ASSERT_FALSE(guid_bar.ToString().empty());
-  ASSERT_EQ(guid_bar, mad->guid());
-  ASSERT_EQ(guid_bar, MemoryAllocatorDump::GetDumpIdFromName("bar"));
-
-  mad.reset(new MemoryAllocatorDump("bar", MemoryDumpLevelOfDetail::FIRST));
-  const MemoryAllocatorDumpGuid guid_bar_2 = mad->guid();
-  ASSERT_EQ(guid_bar, guid_bar_2);
-
-  mad.reset(new MemoryAllocatorDump("baz", MemoryDumpLevelOfDetail::FIRST));
-  const MemoryAllocatorDumpGuid guid_baz = mad->guid();
-  ASSERT_NE(guid_bar, guid_baz);
 }
 
 TEST(MemoryAllocatorDumpTest, DumpIntoProcessMemoryDump) {

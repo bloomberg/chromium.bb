@@ -235,9 +235,24 @@ class BASE_EXPORT ProcessMemoryDump {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ProcessMemoryDumpTest, BackgroundModeTest);
+  FRIEND_TEST_ALL_PREFIXES(ProcessMemoryDumpTest, SharedMemoryOwnershipTest);
+  FRIEND_TEST_ALL_PREFIXES(ProcessMemoryDumpTest, GuidsTest);
 
   MemoryAllocatorDump* AddAllocatorDumpInternal(
       std::unique_ptr<MemoryAllocatorDump> mad);
+
+  // A per-process token, valid throughout all the lifetime of the current
+  // process, used to disambiguate dumps with the same name generated in
+  // different processes.
+  const UnguessableToken& process_token() const { return process_token_; }
+  void set_process_token_for_testing(UnguessableToken token) {
+    process_token_ = token;
+  };
+
+  // Returns the Guid of the dump for the given |absolute_name| for
+  // for the given process' token. |process_token| is used to disambiguate GUIDs
+  // derived from the same name under different processes.
+  MemoryAllocatorDumpGuid GetDumpId(const std::string& absolute_name);
 
   void CreateSharedMemoryOwnershipEdgeInternal(
       const MemoryAllocatorDumpGuid& client_local_dump_guid,
@@ -247,6 +262,7 @@ class BASE_EXPORT ProcessMemoryDump {
 
   MemoryAllocatorDump* GetBlackHoleMad();
 
+  UnguessableToken process_token_;
   AllocatorDumpsMap allocator_dumps_;
   HeapDumpsMap heap_dumps_;
 

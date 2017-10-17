@@ -13,7 +13,7 @@
 #include "base/trace_event/memory_allocator_dump_guid.h"
 #include "base/trace_event/memory_infra_background_whitelist.h"
 #include "base/trace_event/trace_event_argument.h"
-#include "base/unguessable_token.h"
+#include "base/trace_event/trace_log.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -395,8 +395,7 @@ TEST(ProcessMemoryDumpTest, SharedMemoryOwnershipTest) {
   auto* client_dump2 = pmd->CreateAllocatorDump("discardable/segment2");
   auto shm_token2 = UnguessableToken::Create();
   MemoryAllocatorDumpGuid shm_local_guid2 =
-      MemoryAllocatorDump::GetDumpIdFromName(
-          SharedMemoryTracker::GetDumpNameForTracing(shm_token2));
+      pmd->GetDumpId(SharedMemoryTracker::GetDumpNameForTracing(shm_token2));
   MemoryAllocatorDumpGuid shm_global_guid2 =
       SharedMemoryTracker::GetGlobalDumpIdForTracing(shm_token2);
   pmd->AddOverridableOwnershipEdge(shm_local_guid2, shm_global_guid2,
@@ -472,6 +471,39 @@ TEST(ProcessMemoryDumpTest, BackgroundModeTest) {
 
   // Check hex processing.
   ASSERT_TRUE(IsMemoryAllocatorDumpNameWhitelisted("Whitelisted/0xA1b2"));
+}
+
+TEST(ProcessMemoryDumpTest, GuidsTest) {
+  MemoryDumpArgs dump_args = {MemoryDumpLevelOfDetail::DETAILED};
+
+  const auto process_token_one = UnguessableToken::Create();
+  const auto process_token_two = UnguessableToken::Create();
+
+  ProcessMemoryDump pmd1(nullptr, dump_args);
+  pmd1.set_process_token_for_testing(process_token_one);
+  MemoryAllocatorDump* mad1 = pmd1.CreateAllocatorDump("foo");
+
+  ProcessMemoryDump pmd2(nullptr, dump_args);
+  pmd2.set_process_token_for_testing(process_token_one);
+  MemoryAllocatorDump* mad2 = pmd2.CreateAllocatorDump("foo");
+
+  // If we don't pass the argument we get a random PMD:
+  ProcessMemoryDump pmd3(nullptr, dump_args);
+  MemoryAllocatorDump* mad3 = pmd3.CreateAllocatorDump("foo");
+
+  // PMD's for different processes produce different GUIDs even for the same
+  // names:
+  ProcessMemoryDump pmd4(nullptr, dump_args);
+  pmd4.set_process_token_for_testing(process_token_two);
+  MemoryAllocatorDump* mad4 = pmd4.CreateAllocatorDump("foo");
+
+  ASSERT_EQ(mad1->guid(), mad2->guid());
+
+  ASSERT_NE(mad2->guid(), mad3->guid());
+  ASSERT_NE(mad3->guid(), mad4->guid());
+  ASSERT_NE(mad4->guid(), mad2->guid());
+
+  ASSERT_EQ(mad1->guid(), pmd1.GetDumpId("foo"));
 }
 
 #if defined(COUNT_RESIDENT_BYTES_SUPPORTED)

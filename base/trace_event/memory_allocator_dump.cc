@@ -25,13 +25,6 @@ const char MemoryAllocatorDump::kTypeString[] = "string";
 const char MemoryAllocatorDump::kUnitsBytes[] = "bytes";
 const char MemoryAllocatorDump::kUnitsObjects[] = "objects";
 
-// static
-MemoryAllocatorDumpGuid MemoryAllocatorDump::GetDumpIdFromName(
-    const std::string& absolute_name) {
-  return MemoryAllocatorDumpGuid(StringPrintf(
-      "%d:%s", TraceLog::GetInstance()->process_id(), absolute_name.c_str()));
-}
-
 MemoryAllocatorDump::MemoryAllocatorDump(
     const std::string& absolute_name,
     MemoryDumpLevelOfDetail level_of_detail,
@@ -47,17 +40,6 @@ MemoryAllocatorDump::MemoryAllocatorDump(
   // trailing ones.
   DCHECK(absolute_name[0] != '/' && *absolute_name.rbegin() != '/');
 }
-
-// If the caller didn't provide a guid, make one up by hashing the
-// absolute_name with the current PID.
-// Rationale: |absolute_name| is already supposed to be unique within a
-// process, the pid will make it unique among all processes.
-MemoryAllocatorDump::MemoryAllocatorDump(
-    const std::string& absolute_name,
-    MemoryDumpLevelOfDetail level_of_detail)
-    : MemoryAllocatorDump(absolute_name,
-                          level_of_detail,
-                          GetDumpIdFromName(absolute_name)) {}
 
 MemoryAllocatorDump::~MemoryAllocatorDump() {
 }
