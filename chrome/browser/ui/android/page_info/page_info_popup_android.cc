@@ -52,6 +52,7 @@ PageInfoPopupAndroid::PageInfoPopupAndroid(JNIEnv* env,
     return;
 
   url_ = nav_entry->GetURL();
+  web_contents_ = web_contents;
 
   popup_jobject_.Reset(env, java_page_info_pop);
 
@@ -184,6 +185,11 @@ base::Optional<ContentSetting> PageInfoPopupAndroid::GetSettingToDisplay(
     // setting should show up in Page Info is in ShouldShowPermission in
     // page_info.cc.
     return permission.default_setting;
+  } else if (permission.type == CONTENT_SETTINGS_TYPE_SOUND) {
+    // The sound content setting should always show up when the tab is playing
+    // audio or has recently played audio.
+    if (web_contents_->WasRecentlyAudible())
+      return permission.default_setting;
   }
   return base::Optional<ContentSetting>();
 }

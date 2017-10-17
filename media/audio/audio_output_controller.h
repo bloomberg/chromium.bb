@@ -123,7 +123,7 @@ class MEDIA_EXPORT AudioOutputController
   // Indicates whether audio power level analysis will be performed.  If false,
   // ReadCurrentPowerAndClip() can not be called.
   static bool will_monitor_audio_levels() {
-#if defined(OS_ANDROID) || defined(OS_IOS)
+#if defined(OS_IOS)
     return false;
 #else
     return true;
