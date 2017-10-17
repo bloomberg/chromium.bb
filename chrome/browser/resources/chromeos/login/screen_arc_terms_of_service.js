@@ -108,6 +108,9 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
               }
             });
       };
+
+      // Update the screen size after setup layout.
+      Oobe.getInstance().updateScreenSize(this);
     },
 
     /**
