@@ -80,6 +80,11 @@ Origin::Origin(const GURL& url) : unique_(true), suborigin_(std::string()) {
   unique_ = tuple_.IsInvalid();
 }
 
+Origin::Origin(const Origin&) = default;
+Origin& Origin::operator=(const Origin&) = default;
+Origin::Origin(Origin&&) = default;
+Origin& Origin::operator=(Origin&&) = default;
+
 Origin::Origin(base::StringPiece scheme,
                base::StringPiece host,
                uint16_t port,
