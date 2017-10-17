@@ -45,6 +45,7 @@ QUnit.module('ButterBar', {
     this.percent = 100;
     this.hash = 0;
     this.url = 'https://www.example.com';
+    this.email = 'user@domain.com';
 
     this.fakeSinonXhr = sinon.useFakeXMLHttpRequest();
     this.fakeSinonXhr.onCreate =
@@ -66,7 +67,7 @@ QUnit.module('ButterBar', {
     sinon.stub(remoting.ButterBar, 'now_', () => this.now);
     sinon.stub(remoting.ButterBar, 'hash_', () => this.hash);
     sinon.stub(remoting.Identity.prototype, 'getEmail', () => {
-      return Promise.resolve('user@domain.com');
+      return Promise.resolve(this.email);
     });
     sinon.stub(l10n, 'localizeElementFromTag', (element, id, substitutions) => {
       element.innerHTML = substitutions[0] + 'link' + substitutions[1];
@@ -80,6 +81,15 @@ QUnit.module('ButterBar', {
     remoting.identity.getEmail.restore();
     l10n.localizeElementFromTag.restore();
   }
+});
+
+QUnit.test('should stay hidden for google.com addresses', function(assert) {
+  this.currentMessage = 0;
+  this.percent = 100;
+  this.email = 'uSeR@gOoGlE.cOm';
+  return this.butterBar.init().then(() => {
+    assert.ok(this.butterBar.root_.hidden == true);
+  });
 });
 
 QUnit.test('should stay hidden if XHR fails', function(assert) {
