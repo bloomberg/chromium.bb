@@ -34,7 +34,15 @@ class RemoteSuggestionsDatabase {
   using SnippetsCallback = base::Callback<void(RemoteSuggestion::PtrVector)>;
   using SnippetImageCallback = base::Callback<void(std::string)>;
 
+  // Creates a RemoteSuggestionsDatabase backed by real ProtoDatabaseImpls.
   RemoteSuggestionsDatabase(const base::FilePath& database_dir);
+  // Creates a RemoteSuggestionsDatabase backed by the passed-in ProtoDatabases,
+  // useful for testing.
+  RemoteSuggestionsDatabase(
+      std::unique_ptr<leveldb_proto::ProtoDatabase<SnippetProto>> database,
+      std::unique_ptr<leveldb_proto::ProtoDatabase<SnippetImageProto>>
+          image_database,
+      const base::FilePath& database_dir);
   ~RemoteSuggestionsDatabase();
 
   // Returns whether the database has finished initialization. While this is
@@ -87,6 +95,10 @@ class RemoteSuggestionsDatabase {
 
   using ImageKeyEntryVector =
       leveldb_proto::ProtoDatabase<SnippetImageProto>::KeyEntryVector;
+
+  RemoteSuggestionsDatabase(
+      scoped_refptr<base::SequencedTaskRunner> task_runner,
+      const base::FilePath& database_dir);
 
   // Callbacks for ProtoDatabase<SnippetProto> operations.
   void OnDatabaseInited(bool success);
