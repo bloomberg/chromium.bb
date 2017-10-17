@@ -29,6 +29,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_contents/web_contents_view.h"
+#include "content/common/content_switches_internal.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -703,8 +704,11 @@ void PageHandler::InnerSwapCompositorFrame() {
   // http://crbug.com/73362
   viz::CompositorFrameMetadata& metadata = last_compositor_frame_metadata_;
 
-  gfx::SizeF viewport_size_dip = gfx::ScaleSize(
-      metadata.scrollable_viewport_size, metadata.page_scale_factor);
+  float css_to_dip = metadata.page_scale_factor;
+  if (IsUseZoomForDSFEnabled())
+    css_to_dip /= metadata.device_scale_factor;
+  gfx::SizeF viewport_size_dip =
+      gfx::ScaleSize(metadata.scrollable_viewport_size, css_to_dip);
   gfx::SizeF screen_size_dip =
       gfx::ScaleSize(gfx::SizeF(view->GetPhysicalBackingSize()),
                      1 / metadata.device_scale_factor);
@@ -783,11 +787,17 @@ void PageHandler::ScreencastFrameEncoded(viz::CompositorFrameMetadata metadata,
   gfx::SizeF screen_size_dip =
       gfx::ScaleSize(gfx::SizeF(view->GetPhysicalBackingSize()),
                      1 / metadata.device_scale_factor);
+  float css_to_dip = metadata.page_scale_factor;
+  float top_offset_dip =
+      metadata.top_controls_height * metadata.top_controls_shown_ratio;
+  if (IsUseZoomForDSFEnabled()) {
+    css_to_dip /= metadata.device_scale_factor;
+    top_offset_dip /= metadata.device_scale_factor;
+  }
   std::unique_ptr<Page::ScreencastFrameMetadata> param_metadata =
       Page::ScreencastFrameMetadata::Create()
-          .SetPageScaleFactor(metadata.page_scale_factor)
-          .SetOffsetTop(metadata.top_controls_height *
-                        metadata.top_controls_shown_ratio)
+          .SetPageScaleFactor(css_to_dip)
+          .SetOffsetTop(top_offset_dip)
           .SetDeviceWidth(screen_size_dip.width())
           .SetDeviceHeight(screen_size_dip.height())
           .SetScrollOffsetX(metadata.root_scroll_offset.x())
