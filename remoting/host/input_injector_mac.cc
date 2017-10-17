@@ -313,6 +313,8 @@ void InputInjectorMac::Core::InjectMouseEvent(const MouseEvent& event) {
   // in a way that is consistent with how they would be generated using a local
   // mouse, whereas the new APIs expect us to inject these higher-level events
   // directly.
+  //
+  // See crbug.com/677857 for more details.
   CGPoint position = CGPointMake(mouse_pos_.x(), mouse_pos_.y());
   enum {
     LeftBit = 1 << (MouseEvent::BUTTON_LEFT - 1),
