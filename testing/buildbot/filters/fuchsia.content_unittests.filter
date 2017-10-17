@@ -1,9 +1,5 @@
 # Being ported, https://crbug.com/754861.
 
-
-# Crashes occasionally, possibly related to https://crbug.com/758634.
--IndexedDBFactoryTest.DataFormatVersion
-
 # These rely on chmod() for MakeFileUnread/writable(), https://crbug.com/759853.
 -BaseFileTest.ReadonlyBaseFile
 -BaseFileTest.RenameWithError
