@@ -105698,6 +105698,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="ExperimentGroup1"/>
   <suffix name="ExperimentGroup2"/>
   <suffix name="ExperimentGroup3"/>
+  <suffix name="ExperimentGroup4"/>
   <suffix name="S0"/>
   <suffix name="S1"/>
   <suffix name="S2"/>
