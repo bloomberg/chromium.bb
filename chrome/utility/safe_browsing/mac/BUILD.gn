@@ -62,7 +62,7 @@ executable("crdmg") {
 
 fuzzer_test("safe_browsing_dmg_fuzzer") {
   sources = [
-    "fuzzer.cc",
+    "dmg_fuzzer.cc",
   ]
 
   deps = [
@@ -71,4 +71,18 @@ fuzzer_test("safe_browsing_dmg_fuzzer") {
   ]
 
   libfuzzer_options = [ "close_fd_mask=2" ]
+}
+
+fuzzer_test("safe_browsing_hfs_fuzzer") {
+  sources = [
+    "hfs_fuzzer.cc",
+  ]
+
+  deps = [
+    ":dmg_common",
+    "//base",
+    "//chrome/test:mac_safe_browsing_test_data",
+  ]
+
+  seed_corpus = "$root_out_dir/test_data/chrome/safe_browsing_dmg"
 }
