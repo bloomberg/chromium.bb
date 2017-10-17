@@ -28,6 +28,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.EnormousTest;
 import org.chromium.base.test.util.Feature;
@@ -42,6 +43,10 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.omnibox.AutocompleteController.OnSuggestionsReceivedListener;
 import org.chromium.chrome.browser.omnibox.LocationBarLayout.OmniboxSuggestionsList;
+import org.chromium.chrome.browser.tab.EmptyTabObserver;
+import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabObserver;
+import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
@@ -688,10 +693,19 @@ public class OmniboxTest {
     @Test
     @MediumTest
     @SkipCommandLineParameterization
-    public void testSecurityIconOnHTTPS() throws InterruptedException {
+    public void testSecurityIconOnHTTPS() throws Exception {
         EmbeddedTestServer httpsTestServer = EmbeddedTestServer.createAndStartHTTPSServer(
                 InstrumentationRegistry.getInstrumentation().getContext(),
                 ServerCertificate.CERT_OK);
+        CallbackHelper onSSLStateUpdatedCallbackHelper = new CallbackHelper();
+        TabObserver observer = new EmptyTabObserver() {
+            @Override
+            public void onSSLStateUpdated(Tab tab) {
+                onSSLStateUpdatedCallbackHelper.notifyCalled();
+            }
+        };
+        mActivityTestRule.getActivity().getActivityTab().addObserver(observer);
+
         try {
             final String testHttpsUrl =
                     httpsTestServer.getURL("/chrome/test/data/android/omnibox/one.html");
@@ -700,6 +714,8 @@ public class OmniboxTest {
                     R.id.security_button);
 
             mActivityTestRule.loadUrl(testHttpsUrl);
+            onSSLStateUpdatedCallbackHelper.waitForCallback(0);
+
             final LocationBarLayout locationBar =
                     (LocationBarLayout) mActivityTestRule.getActivity().findViewById(
                             R.id.location_bar);
@@ -712,6 +728,58 @@ public class OmniboxTest {
                     R.drawable.omnibox_https_valid, locationBar.getSecurityIconResourceId());
         } finally {
             httpsTestServer.stopAndDestroyServer();
+        }
+    }
+
+    /**
+     * Test whether the color of the Location bar is correct for HTTPS scheme.
+     */
+    @Test
+    @SmallTest
+    @SkipCommandLineParameterization
+    public void testHttpsLocationBarColor() throws Exception {
+        EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartHTTPSServer(
+                InstrumentationRegistry.getInstrumentation().getContext(),
+                ServerCertificate.CERT_OK);
+        CallbackHelper didThemeColorChangedCallbackHelper = new CallbackHelper();
+        CallbackHelper onSSLStateUpdatedCallbackHelper = new CallbackHelper();
+        new TabModelSelectorTabObserver(mActivityTestRule.getActivity().getTabModelSelector()) {
+            @Override
+            public void onDidChangeThemeColor(Tab tab, int color) {
+                didThemeColorChangedCallbackHelper.notifyCalled();
+            }
+            @Override
+            public void onSSLStateUpdated(Tab tab) {
+                onSSLStateUpdatedCallbackHelper.notifyCalled();
+            }
+        };
+
+        try {
+            final String testHttpsUrl =
+                    testServer.getURL("/chrome/test/data/android/theme_color_test.html");
+
+            mActivityTestRule.loadUrl(testHttpsUrl);
+            didThemeColorChangedCallbackHelper.waitForCallback(0);
+            onSSLStateUpdatedCallbackHelper.waitForCallback(0);
+
+            LocationBarLayout locationBarLayout =
+                    (LocationBarLayout) mActivityTestRule.getActivity().findViewById(
+                            R.id.location_bar);
+            ImageButton securityButton = (ImageButton) mActivityTestRule.getActivity().findViewById(
+                    R.id.security_button);
+
+            boolean securityIcon = locationBarLayout.isSecurityButtonShown();
+            Assert.assertTrue("Omnibox should have a Security icon", securityIcon);
+            Assert.assertEquals("security_button with wrong resource-id", R.id.security_button,
+                    securityButton.getId());
+
+            if (DeviceFormFactor.isTablet()) {
+                Assert.assertTrue(locationBarLayout.shouldEmphasizeHttpsScheme());
+            } else {
+                Assert.assertFalse(locationBarLayout.shouldEmphasizeHttpsScheme());
+            }
+        } finally {
+            testServer.stopAndDestroyServer();
         }
     }
 
