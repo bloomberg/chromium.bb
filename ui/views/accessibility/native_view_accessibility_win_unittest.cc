@@ -3,17 +3,17 @@
 // found in the LICENSE file.
 
 #include <oleacc.h>
+#include <wrl/client.h>
 
 #include "base/win/scoped_bstr.h"
-#include "base/win/scoped_comptr.h"
 #include "base/win/scoped_variant.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
 #include "ui/views/accessibility/native_view_accessibility_base.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/test/views_test_base.h"
 
+using Microsoft::WRL::ComPtr;
 using base::win::ScopedBstr;
-using base::win::ScopedComPtr;
 using base::win::ScopedVariant;
 
 namespace views {
@@ -30,10 +30,10 @@ bool IsSameObject(T* left, U* right) {
   if (!left || !right)
     return false;
 
-  ScopedComPtr<IUnknown> left_unknown;
+  ComPtr<IUnknown> left_unknown;
   left->QueryInterface(IID_PPV_ARGS(&left_unknown));
 
-  ScopedComPtr<IUnknown> right_unknown;
+  ComPtr<IUnknown> right_unknown;
   right->QueryInterface(IID_PPV_ARGS(&right_unknown));
 
   return left_unknown == right_unknown;
@@ -48,9 +48,8 @@ class NativeViewAccessibilityWinTest : public ViewsTestBase {
 
  protected:
   void GetIAccessible2InterfaceForView(View* view, IAccessible2_2** result) {
-    ScopedComPtr<IAccessible> view_accessible(
-        view->GetNativeViewAccessible());
-    ScopedComPtr<IServiceProvider> service_provider;
+    ComPtr<IAccessible> view_accessible(view->GetNativeViewAccessible());
+    ComPtr<IServiceProvider> service_provider;
     ASSERT_EQ(S_OK, view_accessible.CopyTo(service_provider.GetAddressOf()));
     ASSERT_EQ(S_OK,
         service_provider->QueryService(IID_IAccessible2_2, result));
@@ -72,14 +71,13 @@ TEST_F(NativeViewAccessibilityWinTest, TextfieldAccessibility) {
   textfield->SetText(L"Value");
   content->AddChildView(textfield);
 
-  ScopedComPtr<IAccessible> content_accessible(
-      content->GetNativeViewAccessible());
+  ComPtr<IAccessible> content_accessible(content->GetNativeViewAccessible());
   LONG child_count = 0;
   ASSERT_EQ(S_OK, content_accessible->get_accChildCount(&child_count));
   ASSERT_EQ(1L, child_count);
 
-  ScopedComPtr<IDispatch> textfield_dispatch;
-  ScopedComPtr<IAccessible> textfield_accessible;
+  ComPtr<IDispatch> textfield_dispatch;
+  ComPtr<IAccessible> textfield_accessible;
   ScopedVariant child_index(1);
   ASSERT_EQ(S_OK, content_accessible->get_accChild(
                       child_index, textfield_dispatch.GetAddressOf()));
@@ -110,15 +108,15 @@ TEST_F(NativeViewAccessibilityWinTest, AuraOwnedWidgets) {
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   widget.Init(init_params);
 
-  ScopedComPtr<IAccessible> root_view_accessible(
+  ComPtr<IAccessible> root_view_accessible(
       widget.GetRootView()->GetNativeViewAccessible());
 
   LONG child_count = 0;
   ASSERT_EQ(S_OK, root_view_accessible->get_accChildCount(&child_count));
   ASSERT_EQ(1L, child_count);
 
-  ScopedComPtr<IDispatch> child_view_dispatch;
-  ScopedComPtr<IAccessible> child_view_accessible;
+  ComPtr<IDispatch> child_view_dispatch;
+  ComPtr<IAccessible> child_view_accessible;
   ScopedVariant child_index_1(1);
   ASSERT_EQ(S_OK, root_view_accessible->get_accChild(
                       child_index_1, child_view_dispatch.GetAddressOf()));
@@ -136,16 +134,16 @@ TEST_F(NativeViewAccessibilityWinTest, AuraOwnedWidgets) {
   ASSERT_EQ(S_OK, root_view_accessible->get_accChildCount(&child_count));
   ASSERT_EQ(2L, child_count);
 
-  ScopedComPtr<IDispatch> child_widget_dispatch;
-  ScopedComPtr<IAccessible> child_widget_accessible;
+  ComPtr<IDispatch> child_widget_dispatch;
+  ComPtr<IAccessible> child_widget_accessible;
   ScopedVariant child_index_2(2);
   ASSERT_EQ(S_OK, root_view_accessible->get_accChild(
                       child_index_2, child_widget_dispatch.GetAddressOf()));
   ASSERT_EQ(S_OK, child_widget_dispatch.CopyTo(
                       child_widget_accessible.GetAddressOf()));
 
-  ScopedComPtr<IDispatch> child_widget_sibling_dispatch;
-  ScopedComPtr<IAccessible> child_widget_sibling_accessible;
+  ComPtr<IDispatch> child_widget_sibling_dispatch;
+  ComPtr<IAccessible> child_widget_sibling_accessible;
   ScopedVariant childid_self(CHILDID_SELF);
   ScopedVariant result;
   ASSERT_EQ(S_OK, child_widget_accessible->accNavigate(
@@ -156,8 +154,8 @@ TEST_F(NativeViewAccessibilityWinTest, AuraOwnedWidgets) {
                       child_widget_sibling_accessible.GetAddressOf()));
   ASSERT_EQ(child_view_accessible.Get(), child_widget_sibling_accessible.Get());
 
-  ScopedComPtr<IDispatch> child_widget_parent_dispatch;
-  ScopedComPtr<IAccessible> child_widget_parent_accessible;
+  ComPtr<IDispatch> child_widget_parent_dispatch;
+  ComPtr<IAccessible> child_widget_parent_accessible;
   ASSERT_EQ(S_OK, child_widget_accessible->get_accParent(
                       child_widget_parent_dispatch.GetAddressOf()));
   ASSERT_EQ(S_OK, child_widget_parent_dispatch.CopyTo(
@@ -185,14 +183,14 @@ TEST_F(NativeViewAccessibilityWinTest, DISABLED_RetrieveAllAlerts) {
   View* root_view = content->parent();
   ASSERT_EQ(NULL, root_view->parent());
 
-  ScopedComPtr<IAccessible2_2> root_view_accessible;
+  ComPtr<IAccessible2_2> root_view_accessible;
   GetIAccessible2InterfaceForView(root_view,
                                   root_view_accessible.GetAddressOf());
 
-  ScopedComPtr<IAccessible2_2> infobar_accessible;
+  ComPtr<IAccessible2_2> infobar_accessible;
   GetIAccessible2InterfaceForView(infobar, infobar_accessible.GetAddressOf());
 
-  ScopedComPtr<IAccessible2_2> infobar2_accessible;
+  ComPtr<IAccessible2_2> infobar2_accessible;
   GetIAccessible2InterfaceForView(infobar2, infobar2_accessible.GetAddressOf());
 
   // Initially, there are no alerts
@@ -241,7 +239,7 @@ TEST_F(NativeViewAccessibilityWinTest, GetAllOwnedWidgetsCrash) {
   widget.CloseNow();
 
   LONG child_count = 0;
-  ScopedComPtr<IAccessible> content_accessible(
+  ComPtr<IAccessible> content_accessible(
       widget.GetRootView()->GetNativeViewAccessible());
   EXPECT_EQ(S_OK, content_accessible->get_accChildCount(&child_count));
   EXPECT_EQ(1L, child_count);

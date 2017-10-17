@@ -9,11 +9,11 @@
 #include <atlcom.h>
 #include <oleacc.h>
 #include <vector>
+#include <wrl/client.h>
 
 #include "base/compiler_specific.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/observer_list.h"
-#include "base/win/scoped_comptr.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
 #include "ui/accessibility/ax_export.h"
 #include "ui/accessibility/ax_text_utils.h"
@@ -261,7 +261,7 @@ class AXPlatformNodeRelationWin : public CComObjectRootEx<CComMultiThreadModel>,
 
  private:
   base::string16 type_;
-  base::win::ScopedComPtr<AXPlatformNodeWin> owner_;
+  Microsoft::WRL::ComPtr<AXPlatformNodeWin> owner_;
   std::vector<int> target_ids_;
 };
 

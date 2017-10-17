@@ -42,7 +42,7 @@
 #include "ui/views/views_export.h"
 
 #if defined(OS_WIN)
-#include "base/win/scoped_comptr.h"
+#include <wrl/client.h>
 #endif
 
 using ui::OSExchangeData;

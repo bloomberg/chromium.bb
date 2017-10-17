@@ -4,6 +4,8 @@
 
 #include "ui/accessibility/platform/ax_platform_node_win.h"
 
+#include <wrl/client.h>
+
 #include <vector>
 
 #include "base/containers/hash_tables.h"
@@ -12,7 +14,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/enum_variant.h"
-#include "base/win/scoped_comptr.h"
 #include "base/win/scoped_variant.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -310,7 +311,7 @@ AXPlatformNode* AXPlatformNode::FromNativeViewAccessible(
     gfx::NativeViewAccessible accessible) {
   if (!accessible)
     return nullptr;
-  base::win::ScopedComPtr<AXPlatformNodeWin> ax_platform_node;
+  Microsoft::WRL::ComPtr<AXPlatformNodeWin> ax_platform_node;
   accessible->QueryInterface(ax_platform_node.GetAddressOf());
   return ax_platform_node.Get();
 }
@@ -598,8 +599,8 @@ void AXPlatformNodeWin::NotifyAccessibilityEvent(AXEvent event_type) {
 }
 
 int AXPlatformNodeWin::GetIndexInParent() {
-  base::win::ScopedComPtr<IDispatch> parent_dispatch;
-  base::win::ScopedComPtr<IAccessible> parent_accessible;
+  Microsoft::WRL::ComPtr<IDispatch> parent_dispatch;
+  Microsoft::WRL::ComPtr<IAccessible> parent_accessible;
   if (S_OK != get_accParent(parent_dispatch.GetAddressOf()))
     return -1;
   if (S_OK != parent_dispatch.CopyTo(parent_accessible.GetAddressOf()))
@@ -610,8 +611,8 @@ int AXPlatformNodeWin::GetIndexInParent() {
     return -1;
   for (LONG index = 1; index <= child_count; ++index) {
     base::win::ScopedVariant childid_index(index);
-    base::win::ScopedComPtr<IDispatch> child_dispatch;
-    base::win::ScopedComPtr<IAccessible> child_accessible;
+    Microsoft::WRL::ComPtr<IDispatch> child_dispatch;
+    Microsoft::WRL::ComPtr<IAccessible> child_accessible;
     if (S_OK == parent_accessible->get_accChild(
                     childid_index, child_dispatch.GetAddressOf()) &&
         S_OK == child_dispatch.CopyTo(child_accessible.GetAddressOf())) {
@@ -1076,7 +1077,7 @@ STDMETHODIMP AXPlatformNodeWin::put_accValue(VARIANT var_id,
 STDMETHODIMP AXPlatformNodeWin::get_accSelection(VARIANT* selected) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ACC_SELECTION);
   COM_OBJECT_VALIDATE_1_ARG(selected);
-  std::vector<base::win::ScopedComPtr<IDispatch>> selected_nodes;
+  std::vector<Microsoft::WRL::ComPtr<IDispatch>> selected_nodes;
   for (int i = 0; i < delegate_->GetChildCount(); ++i) {
     auto* node = static_cast<AXPlatformNodeWin*>(
         FromNativeViewAccessible(delegate_->ChildAtIndex(i)));

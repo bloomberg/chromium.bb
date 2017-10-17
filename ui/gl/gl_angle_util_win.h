@@ -8,22 +8,21 @@
 #include <d3d11.h>
 #include <d3d9.h>
 #include <dcomp.h>
+#include <wrl/client.h>
 
-#include "base/win/scoped_comptr.h"
 #include "ui/gl/gl_export.h"
 
 namespace gl {
 
-GL_EXPORT base::win::ScopedComPtr<ID3D11Device>
+GL_EXPORT Microsoft::WRL::ComPtr<ID3D11Device>
 QueryD3D11DeviceObjectFromANGLE();
-GL_EXPORT base::win::ScopedComPtr<IDirect3DDevice9>
+GL_EXPORT Microsoft::WRL::ComPtr<IDirect3DDevice9>
 QueryD3D9DeviceObjectFromANGLE();
 
 // Query the DirectComposition device associated with a D3D11 device. May
 // create a new one if none exists.
-GL_EXPORT base::win::ScopedComPtr<IDCompositionDevice2>
-QueryDirectCompositionDevice(
-    base::win::ScopedComPtr<ID3D11Device> d3d11_device);
+GL_EXPORT Microsoft::WRL::ComPtr<IDCompositionDevice2>
+QueryDirectCompositionDevice(Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device);
 
 }  // namespace gl
 
