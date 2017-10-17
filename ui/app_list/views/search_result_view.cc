@@ -424,10 +424,12 @@ void SearchResultView::PaintButtonContents(gfx::Canvas* canvas) {
 
 void SearchResultView::OnFocus() {
   SetSelected(true);
+  Button::OnFocus();
 }
 
 void SearchResultView::OnBlur() {
   SetSelected(false);
+  Button::OnBlur();
 }
 
 void SearchResultView::ButtonPressed(views::Button* sender,
