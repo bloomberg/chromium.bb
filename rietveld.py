@@ -93,7 +93,7 @@ class Rietveld(object):
     url = '/%d/patchset/%d/get_depends_on_patchset' % (issue, patchset)
     resp = None
     try:
-      resp = json.loads(self.post(url, []))
+      resp = json.loads(self.get(url))
     except (urllib2.HTTPError, ValueError):
       # The get_depends_on_patchset endpoint does not exist on this Rietveld
       # instance yet. Ignore the error and proceed.
