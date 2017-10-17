@@ -43,7 +43,8 @@ ChromeAutofillClientIOS::ChromeAutofillClientIOS(
     std::unique_ptr<IdentityProvider> identity_provider)
     : AutofillClientIOS(
           browser_state->GetPrefs(),
-          PersonalDataManagerFactory::GetForBrowserState(browser_state),
+          PersonalDataManagerFactory::GetForBrowserState(
+              browser_state->GetOriginalChromeBrowserState()),
           web_state,
           bridge,
           std::move(identity_provider),
