@@ -1115,6 +1115,11 @@ class AutofillManagerTest : public testing::Test {
         kAutofillUpstreamUseAutofillProfileComparator);
   }
 
+  void DisableCreditCardAutofill() {
+    scoped_feature_list_.InitAndEnableFeature(
+        kAutofillCreditCardAblationExperiment);
+  }
+
   void ExpectUniqueFillableFormParsedUkm() {
     // Check that one source is logged.
     ASSERT_EQ(1U, test_ukm_recorder_.sources_count());
@@ -2100,6 +2105,62 @@ TEST_F(AutofillManagerTest, GetAddressAndCreditCardSuggestionsNonHttps) {
   personal_data_.ClearCreditCards();
   GetAutofillSuggestions(form, field);
   external_delegate_->CheckNoSuggestions(kDefaultPageID);
+}
+
+TEST_F(AutofillManagerTest,
+       ShouldShowAddressSuggestionsIfCreditCardAutofillDisabled) {
+  DisableCreditCardAutofill();
+
+  // Set up our form data.
+  FormData form;
+  test::CreateTestAddressFormData(&form);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  FormFieldData field = form.fields[0];
+  GetAutofillSuggestions(form, field);
+
+  // Check that address suggestions will still be available.
+  external_delegate_->CheckSuggestions(
+      kDefaultPageID, Suggestion("Charles", "123 Apple St.", "", 1),
+      Suggestion("Elvis", "3734 Elvis Presley Blvd.", "", 2));
+}
+
+TEST_F(AutofillManagerTest,
+       ShouldNotShowCreditCardsSuggestionsIfCreditCardAutofillDisabled) {
+  DisableCreditCardAutofill();
+
+  // Set up our form data.
+  FormData form;
+  CreateTestCreditCardFormData(&form, true, false);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  FormFieldData field = form.fields[0];
+  GetAutofillSuggestions(form, field);
+
+  // Check that credit card suggestions will not be available.
+  external_delegate_->CheckNoSuggestions(kDefaultPageID);
+}
+
+TEST_F(AutofillManagerTest,
+       ShouldLogFormSubmitEventIfCreditCardAutofillDisabled) {
+  DisableCreditCardAutofill();
+
+  // Set up our form data.
+  FormData form;
+  CreateTestCreditCardFormData(&form, true, false);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  FormFieldData field = form.fields[0];
+  GetAutofillSuggestions(form, field);
+
+  base::HistogramTester histogram_tester;
+  FormSubmitted(form);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.FormEvents.CreditCard",
+      AutofillMetrics::FORM_EVENT_SUGGESTION_SHOWN_SUBMITTED_ONCE, 1);
 }
 
 // Test that we return autocomplete-like suggestions when trying to autofill
