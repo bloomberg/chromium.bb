@@ -19,15 +19,17 @@ from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.cli.cros import cros_cidbcreds  # TODO: Move into lib???
 from chromite.lib import cros_logging as logging
+from chromite.lib import uri_lib
 
 
-# These are the preferred base URLs we use to canonicalize bugs/CLs.
-BUGANIZER_BASE_URL = 'b/'
-GUTS_BASE_URL = 't/'
-CROS_BUG_BASE_URL = 'crbug.com/'
-INTERNAL_CL_BASE_URL = 'crosreview.com/i/'
-EXTERNAL_CL_BASE_URL = 'crosreview.com/'
-CHROMIUM_CL_BASE_URL = 'codereview.chromium.org/'
+# Short URL bases for CLs that we're merging.
+_CL_URLS = (
+    # Short URIs for Chromium/Chrome Gerrit CLs.
+    re.compile(r'^crrev\.com/'),
+    # All other Gerrit CLs that don't have a shortener.
+    re.compile(r'^[^/]*-review\.googlesource\.com/'),
+)
+
 
 class CLStatsEngine(object):
   """Engine to generate stats about CL actions taken by the Commit Queue."""
@@ -64,64 +66,33 @@ class CLStatsEngine(object):
             a['failure_category'] for a in annotations]
         self.blames[build_number] = []
         for annotation in annotations:
-          self.blames[build_number] += self.ProcessBlameString(
-              annotation['blame_url'])
+          self.blames[build_number] += list(self.ProcessBlameString(
+              annotation['blame_url']))
 
   @staticmethod
   def ProcessBlameString(blame_string):
     """Parse a human-created |blame_string| from the spreadsheet.
 
     Returns:
-      A list of canonicalized URLs for bugs or CLs that appear in the blame
-      string. Canonicalized form will be 'crbug.com/1234', 'crrev.com/c/1234',
-      'crosreview.com/1234', 'b/1234', 't/1234', 'crrev.com/i/1234', or
-      'crosreview.com/i/1234' as applicable.
+      A generator of canonicalized/shortened URLs for bugs or CLs that appear
+      in the blame string. e.g. ['crbug.com/1234', 't/1234', ...].
     """
-    urls = []
-    tokens = blame_string.split()
+    # We only care about some hosts.
+    HOSTS = (
+        r'crbug\.com',
+        r'b',
+        r't',
+        r'crrev\.com',
+        r'.*-review\.googlesource\.com',
+    )
+    matcher = re.compile(r'^(%s)(/|$)' % (r'|'.join(HOSTS),))
 
-    # Format to generate the regex patterns. Matches one of provided domain
-    # names, followed by lazy wildcard, followed by greedy digit wildcard,
-    # followed by optional slash and optional comma and optional (# +
-    # alphanum wildcard).
-    general_regex = r'^.*(%s).*?([0-9]+)/?,?(#\S*)?$'
-
-    crbug = general_regex % r'crbug.com|bugs.chromium.org'
-    internal_review = general_regex % (
-        r'crosreview.com/i|chrome-internal-review.googlesource.com|crrev.com/i')
-    external_review = general_regex % (
-        r'crosreview.com|chromium-review.googlesource.com|crrev.com/c')
-    guts = general_regex % r't/|gutsv\d.corp.google.com/#ticket/'
-    chromium_review = general_regex % r'codereview.chromium.org'
-
-    # Buganizer regex is different, as buganizer urls do not end with the bug
-    # number.
-    buganizer = r'^.*(b/|b.corp.google.com/issue\?id=)([0-9]+).*$'
-
-    # Patterns need to be tried in a specific order -- internal review needs
-    # to be tried before external review, otherwise urls like crosreview.com/i
-    # will be incorrectly parsed as external.
-    patterns = [crbug,
-                internal_review,
-                external_review,
-                buganizer,
-                guts,
-                chromium_review]
-    url_patterns = [CROS_BUG_BASE_URL,
-                    INTERNAL_CL_BASE_URL,
-                    EXTERNAL_CL_BASE_URL,
-                    BUGANIZER_BASE_URL,
-                    GUTS_BASE_URL,
-                    CHROMIUM_CL_BASE_URL]
-
-    for t in tokens:
-      for p, u in zip(patterns, url_patterns):
-        m = re.match(p, t)
-        if m:
-          urls.append(u + m.group(2))
-          break
-
-    return urls
+    for token in blame_string.split():
+      # We strip off trailing commas as we expect this to be used in english
+      # sentences where people might treat the URI as a word.
+      uri = uri_lib.ShortenUri(token.rstrip(','), omit_scheme=True)
+      if matcher.match(uri):
+        yield uri
 
   def Gather(self, start_date, end_date,
              master_config=constants.CQ_MASTER,
@@ -274,8 +245,10 @@ class CLStatsEngine(object):
       unique_blames.update(blames)
       for blame in blames:
         build_blame_counts[blame] = build_blame_counts.get(blame, 0) + 1
-    unique_cl_blames = {blame for blame in unique_blames if
-                        EXTERNAL_CL_BASE_URL in blame}
+    unique_cl_blames = {
+        blame for blame in unique_blames
+        if any(matcher.match(blame) for matcher in _CL_URLS)
+    }
 
     # Shortcuts to some time aggregates about action history.
     patch_handle_times = self.claction_history.GetPatchHandlingTimes().values()

@@ -238,14 +238,14 @@ class TestCLActionLogic(cros_test_lib.TestCase):
                 'crbug.com/4321',
                 'b/2345',
                 'b/5432',
-                'crosreview.com/3456',
-                'crosreview.com/6543',
-                'crosreview.com/i/9876',
-                'crosreview.com/i/6789',
+                'crrev.com/c/3456',
+                'crrev.com/c/6543',
+                'crrev.com/i/9876',
+                'crrev.com/i/6789',
                 't/1234',
                 't/4321',
-                'crbug.com/522555',
-                'codereview.chromium.org/1216423002']
+                'crbug.com/522555#c58',
+                'crrev.com/1216423002']
     self.assertEqual(
-        summarize_build_stats.CLStatsEngine.ProcessBlameString(blame),
+        list(summarize_build_stats.CLStatsEngine.ProcessBlameString(blame)),
         expected)
