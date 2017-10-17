@@ -10,3 +10,6 @@ per-file *_struct_traits*.*=set noparent
 per-file *_struct_traits*.*=file://ipc/SECURITY_OWNERS
 per-file *.typemap=set noparent
 per-file *.typemap=file://ipc/SECURITY_OWNERS
+
+# These files will be moved into services/network.
+per-file simple_url_loader*=file://content/network/OWNERS
