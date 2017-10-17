@@ -4,7 +4,6 @@
 
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "build/build_config.h"
@@ -12,17 +11,10 @@
 #include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/google/google_url_tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search/instant_service.h"
-#include "chrome/browser/search/instant_service_factory.h"
-#include "chrome/browser/search/search.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
 #include "components/google/core/browser/google_url_tracker.h"
 #include "components/google/core/browser/google_util.h"
-#include "components/omnibox/browser/omnibox_field_trial.h"
-#include "components/prefs/pref_service.h"
-#include "components/search/search.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "rlz/features/features.h"
@@ -114,7 +106,7 @@ std::string UIThreadSearchTermsData::GetSuggestClient() const {
   return ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_PHONE ?
       "chrome" : "chrome-omni";
 #else
-  return search::IsInstantExtendedAPIEnabled() ? "chrome-omni" : "chrome";
+  return "chrome-omni";
 #endif
 }
 
