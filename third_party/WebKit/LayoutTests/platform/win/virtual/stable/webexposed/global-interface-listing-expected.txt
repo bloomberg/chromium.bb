@@ -2224,6 +2224,7 @@ interface HTMLImageElement : HTMLElement
     getter x
     getter y
     method constructor
+    method decode
     setter align
     setter alt
     setter border
@@ -3223,6 +3224,7 @@ interface Image
     getter x
     getter y
     method constructor
+    method decode
     setter align
     setter alt
     setter border
@@ -5161,6 +5163,7 @@ interface SVGImageElement : SVGGraphicsElement
     getter x
     getter y
     method constructor
+    method decode
 interface SVGLength
     attribute @@toStringTag
     attribute SVG_LENGTHTYPE_CM
