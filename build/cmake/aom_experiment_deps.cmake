@@ -53,6 +53,12 @@ macro (fix_experiment_configs)
     endif ()
   endif ()
 
+  if (CONFIG_EXT_PARTITION_TYPES)
+    if (CONFIG_FP_MB_STATS)
+      change_config_and_warn(CONFIG_FP_MB_STATS 0 CONFIG_EXT_PARTITION_TYPES)
+    endif ()
+  endif ()
+
   if (CONFIG_TXK_SEL)
     if (NOT CONFIG_LV_MAP)
       change_config_and_warn(CONFIG_LV_MAP 1 CONFIG_TXK_SEL)
