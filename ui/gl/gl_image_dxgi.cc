@@ -76,7 +76,7 @@ bool GLImageDXGI::BindTexImage(unsigned target) {
 }
 
 void GLImageDXGI::SetTexture(
-    const base::win::ScopedComPtr<ID3D11Texture2D>& texture,
+    const Microsoft::WRL::ComPtr<ID3D11Texture2D>& texture,
     size_t level) {
   texture_ = texture;
   level_ = level;
@@ -88,7 +88,7 @@ GLImageDXGI::~GLImageDXGI() {
 }
 
 CopyingGLImageDXGI::CopyingGLImageDXGI(
-    const base::win::ScopedComPtr<ID3D11Device>& d3d11_device,
+    const Microsoft::WRL::ComPtr<ID3D11Device>& d3d11_device,
     const gfx::Size& size,
     EGLStreamKHR stream)
     : GLImageDXGI(size, stream), d3d11_device_(d3d11_device) {}
@@ -126,22 +126,22 @@ bool CopyingGLImageDXGI::Initialize() {
     return false;
 
   d3d11_device_.CopyTo(video_device_.GetAddressOf());
-  base::win::ScopedComPtr<ID3D11DeviceContext> context;
+  Microsoft::WRL::ComPtr<ID3D11DeviceContext> context;
   d3d11_device_->GetImmediateContext(context.GetAddressOf());
   context.CopyTo(video_context_.GetAddressOf());
 
-  base::win::ScopedComPtr<ID3D10Multithread> multithread;
+  Microsoft::WRL::ComPtr<ID3D10Multithread> multithread;
   d3d11_device_.CopyTo(multithread.GetAddressOf());
   CHECK(multithread->GetMultithreadProtected());
   return true;
 }
 
 bool CopyingGLImageDXGI::InitializeVideoProcessor(
-    const base::win::ScopedComPtr<ID3D11VideoProcessor>& video_processor,
-    const base::win::ScopedComPtr<ID3D11VideoProcessorEnumerator>& enumerator) {
+    const Microsoft::WRL::ComPtr<ID3D11VideoProcessor>& video_processor,
+    const Microsoft::WRL::ComPtr<ID3D11VideoProcessorEnumerator>& enumerator) {
   output_view_.Reset();
 
-  base::win::ScopedComPtr<ID3D11Device> processor_device;
+  Microsoft::WRL::ComPtr<ID3D11Device> processor_device;
   video_processor->GetDevice(processor_device.GetAddressOf());
   CHECK_EQ(d3d11_device_.Get(), processor_device.Get());
 
@@ -150,7 +150,7 @@ bool CopyingGLImageDXGI::InitializeVideoProcessor(
   D3D11_VIDEO_PROCESSOR_OUTPUT_VIEW_DESC output_view_desc = {
       D3D11_VPOV_DIMENSION_TEXTURE2D};
   output_view_desc.Texture2D.MipSlice = 0;
-  base::win::ScopedComPtr<ID3D11VideoProcessorOutputView> output_view;
+  Microsoft::WRL::ComPtr<ID3D11VideoProcessorOutputView> output_view;
   HRESULT hr = video_device_->CreateVideoProcessorOutputView(
       decoder_copy_texture_.Get(), enumerator_.Get(), &output_view_desc,
       output_view_.GetAddressOf());
@@ -170,7 +170,7 @@ bool CopyingGLImageDXGI::BindTexImage(unsigned target) {
     return true;
 
   CHECK(video_device_);
-  base::win::ScopedComPtr<ID3D11Device> texture_device;
+  Microsoft::WRL::ComPtr<ID3D11Device> texture_device;
   texture_->GetDevice(texture_device.GetAddressOf());
   CHECK_EQ(d3d11_device_.Get(), texture_device.Get());
 
@@ -178,7 +178,7 @@ bool CopyingGLImageDXGI::BindTexImage(unsigned target) {
   input_view_desc.ViewDimension = D3D11_VPIV_DIMENSION_TEXTURE2D;
   input_view_desc.Texture2D.ArraySlice = (UINT)level_;
   input_view_desc.Texture2D.MipSlice = 0;
-  base::win::ScopedComPtr<ID3D11VideoProcessorInputView> input_view;
+  Microsoft::WRL::ComPtr<ID3D11VideoProcessorInputView> input_view;
   HRESULT hr = video_device_->CreateVideoProcessorInputView(
       texture_.Get(), enumerator_.Get(), &input_view_desc,
       input_view.GetAddressOf());
@@ -211,12 +211,12 @@ GLImageDXGIHandle::GLImageDXGIHandle(const gfx::Size& size,
 }
 
 bool GLImageDXGIHandle::Initialize() {
-  base::win::ScopedComPtr<ID3D11Device> d3d11_device =
+  Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
       QueryD3D11DeviceObjectFromANGLE();
   if (!d3d11_device)
     return false;
 
-  base::win::ScopedComPtr<ID3D11Device1> d3d11_device1;
+  Microsoft::WRL::ComPtr<ID3D11Device1> d3d11_device1;
   if (FAILED(d3d11_device.CopyTo(d3d11_device1.GetAddressOf())))
     return false;
 

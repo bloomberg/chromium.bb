@@ -6,11 +6,11 @@
 #define UI_GFX_WIN_DIRECT_MANIPULATION_H_
 
 #include <directmanipulation.h>
+#include <wrl/client.h>
 
 #include <memory>
 
 #include "base/macros.h"
-#include "base/win/scoped_comptr.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/gfx_export.h"
 
@@ -71,11 +71,11 @@ class GFX_EXPORT DirectManipulationHelper {
  private:
   DirectManipulationHelper();
 
-  base::win::ScopedComPtr<IDirectManipulationManager2> manager_;
-  base::win::ScopedComPtr<IDirectManipulationCompositor> compositor_;
-  base::win::ScopedComPtr<IDirectManipulationUpdateManager> update_manager_;
-  base::win::ScopedComPtr<IDirectManipulationFrameInfoProvider> frame_info_;
-  base::win::ScopedComPtr<IDirectManipulationViewport2> view_port_outer_;
+  Microsoft::WRL::ComPtr<IDirectManipulationManager2> manager_;
+  Microsoft::WRL::ComPtr<IDirectManipulationCompositor> compositor_;
+  Microsoft::WRL::ComPtr<IDirectManipulationUpdateManager> update_manager_;
+  Microsoft::WRL::ComPtr<IDirectManipulationFrameInfoProvider> frame_info_;
+  Microsoft::WRL::ComPtr<IDirectManipulationViewport2> view_port_outer_;
 
   DISALLOW_COPY_AND_ASSIGN(DirectManipulationHelper);
 };

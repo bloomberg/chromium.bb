@@ -10,6 +10,7 @@
 #include <math.h>
 #include <stdint.h>
 #include <wchar.h>
+#include <wrl/client.h>
 
 #include <algorithm>
 
@@ -20,7 +21,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/win/scoped_comptr.h"
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/scoped_hdc.h"
 #include "base/win/scoped_select_object.h"
@@ -80,7 +80,7 @@ gfx::Font::Weight ToGfxFontWeight(int weight) {
 HRESULT FindDirectWriteFontForLOGFONT(IDWriteFactory* factory,
                                       LOGFONT* font_info,
                                       IDWriteFont** dwrite_font) {
-  base::win::ScopedComPtr<IDWriteGdiInterop> gdi_interop;
+  Microsoft::WRL::ComPtr<IDWriteGdiInterop> gdi_interop;
   HRESULT hr = factory->GetGdiInterop(gdi_interop.GetAddressOf());
   if (FAILED(hr)) {
     CHECK(false);
@@ -91,7 +91,7 @@ HRESULT FindDirectWriteFontForLOGFONT(IDWriteFactory* factory,
   if (SUCCEEDED(hr))
     return hr;
 
-  base::win::ScopedComPtr<IDWriteFontCollection> font_collection;
+  Microsoft::WRL::ComPtr<IDWriteFontCollection> font_collection;
   hr = factory->GetSystemFontCollection(font_collection.GetAddressOf());
   if (FAILED(hr)) {
     CHECK(false);
@@ -105,7 +105,7 @@ HRESULT FindDirectWriteFontForLOGFONT(IDWriteFactory* factory,
   base::win::ScopedGetDC screen_dc(NULL);
   base::win::ScopedSelectObject scoped_font(screen_dc, font.get());
 
-  base::win::ScopedComPtr<IDWriteFontFace> font_face;
+  Microsoft::WRL::ComPtr<IDWriteFontFace> font_face;
   hr = gdi_interop->CreateFontFaceFromHdc(screen_dc, font_face.GetAddressOf());
   if (FAILED(hr))
     return hr;
@@ -141,7 +141,7 @@ HRESULT GetMatchingDirectWriteFont(LOGFONT* font_info,
 
   // Get a matching font from the system font collection exposed by
   // DirectWrite.
-  base::win::ScopedComPtr<IDWriteFontCollection> font_collection;
+  Microsoft::WRL::ComPtr<IDWriteFontCollection> font_collection;
   hr = factory->GetSystemFontCollection(font_collection.GetAddressOf());
   if (FAILED(hr)) {
     CHECK(false);
@@ -160,7 +160,7 @@ HRESULT GetMatchingDirectWriteFont(LOGFONT* font_info,
   //    same limitations with the face name as mentioned above.
   // 3. If step 2 fails then return the first family from the collection and
   //    use that.
-  base::win::ScopedComPtr<IDWriteFontFamily> font_family;
+  Microsoft::WRL::ComPtr<IDWriteFontFamily> font_family;
   BOOL exists = FALSE;
   uint32_t index = 0;
   hr = font_collection->FindFamilyName(font_info->lfFaceName, &index, &exists);
@@ -227,7 +227,7 @@ HRESULT GetMatchingDirectWriteFont(LOGFONT* font_info,
   // TODO(ananta)
   // Remove the GetMatchingFonts and related code here once we get to a stable
   // state in canary.
-  base::win::ScopedComPtr<IDWriteFontList> matching_font_list;
+  Microsoft::WRL::ComPtr<IDWriteFontList> matching_font_list;
   hr = font_family->GetMatchingFonts(weight, stretch, style,
                                      matching_font_list.GetAddressOf());
   uint32_t matching_font_count = 0;
@@ -266,12 +266,12 @@ IDWriteFactory* PlatformFontWin::direct_write_factory_ = nullptr;
 // Remove the CHECKs in this function once this stabilizes on the field.
 HRESULT GetFamilyNameFromDirectWriteFont(IDWriteFont* dwrite_font,
                                          base::string16* family_name) {
-  base::win::ScopedComPtr<IDWriteFontFamily> font_family;
+  Microsoft::WRL::ComPtr<IDWriteFontFamily> font_family;
   HRESULT hr = dwrite_font->GetFontFamily(font_family.GetAddressOf());
   if (FAILED(hr))
     CHECK(false);
 
-  base::win::ScopedComPtr<IDWriteLocalizedStrings> family_names;
+  Microsoft::WRL::ComPtr<IDWriteLocalizedStrings> family_names;
   hr = font_family->GetFamilyNames(family_names.GetAddressOf());
   if (FAILED(hr))
     CHECK(false);
@@ -528,7 +528,7 @@ PlatformFontWin::HFontRef* PlatformFontWin::CreateHFontRefFromSkia(
   // Fix SkScalerContext_win_dw.cpp to return all metrics we need from
   // DirectWrite and remove the code here which retrieves metrics from
   // DirectWrite to calculate the cap height.
-  base::win::ScopedComPtr<IDWriteFont> dwrite_font;
+  Microsoft::WRL::ComPtr<IDWriteFont> dwrite_font;
   HRESULT hr = GetMatchingDirectWriteFont(
       &font_info, italic, direct_write_factory_, dwrite_font.GetAddressOf());
   if (FAILED(hr)) {

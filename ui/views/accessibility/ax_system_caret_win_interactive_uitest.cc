@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <oleacc.h>
 #include <windows.h>
+#include <oleacc.h>
+#include <wrl/client.h>
 
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/win/scoped_comptr.h"
 #include "base/win/scoped_variant.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -78,7 +78,7 @@ class AXSystemCaretWinTest : public test::WidgetTest {
 
 TEST_F(AXSystemCaretWinTest, DISABLED_TestOnCaretBoundsChangeInTextField) {
   TextfieldTestApi textfield_test_api(textfield_);
-  base::win::ScopedComPtr<IAccessible> caret_accessible;
+  Microsoft::WRL::ComPtr<IAccessible> caret_accessible;
   gfx::NativeWindow native_window = widget_->GetNativeWindow();
   ASSERT_NE(nullptr, native_window);
   HWND hwnd = native_window->GetHost()->GetAcceleratedWidget();
@@ -108,7 +108,7 @@ TEST_F(AXSystemCaretWinTest, DISABLED_TestOnCaretBoundsChangeInTextField) {
 }
 
 TEST_F(AXSystemCaretWinTest, DISABLED_TestOnInputTypeChangeInTextField) {
-  base::win::ScopedComPtr<IAccessible> caret_accessible;
+  Microsoft::WRL::ComPtr<IAccessible> caret_accessible;
   gfx::NativeWindow native_window = widget_->GetNativeWindow();
   ASSERT_NE(nullptr, native_window);
   HWND hwnd = native_window->GetHost()->GetAcceleratedWidget();
@@ -139,7 +139,7 @@ TEST_F(AXSystemCaretWinTest, DISABLED_TestOnInputTypeChangeInTextField) {
 }
 
 TEST_F(AXSystemCaretWinTest, DISABLED_TestMovingWindow) {
-  base::win::ScopedComPtr<IAccessible> caret_accessible;
+  Microsoft::WRL::ComPtr<IAccessible> caret_accessible;
   gfx::NativeWindow native_window = widget_->GetNativeWindow();
   ASSERT_NE(nullptr, native_window);
   HWND hwnd = native_window->GetHost()->GetAcceleratedWidget();

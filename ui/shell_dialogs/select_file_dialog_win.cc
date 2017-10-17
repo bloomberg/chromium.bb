@@ -6,6 +6,7 @@
 
 #include <shlobj.h>
 #include <stddef.h>
+#include <wrl/client.h>
 
 #include <algorithm>
 #include <set>
@@ -22,7 +23,6 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/win/registry.h"
-#include "base/win/scoped_comptr.h"
 #include "base/win/shortcut.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -548,7 +548,7 @@ bool SelectFileDialogImpl::RunSelectFolderDialog(const std::wstring& title,
     STRRET out_dir_buffer;
     ZeroMemory(&out_dir_buffer, sizeof(out_dir_buffer));
     out_dir_buffer.uType = STRRET_WSTR;
-    base::win::ScopedComPtr<IShellFolder> shell_folder;
+    Microsoft::WRL::ComPtr<IShellFolder> shell_folder;
     if (SHGetDesktopFolder(shell_folder.GetAddressOf()) == NOERROR) {
       HRESULT hr = shell_folder->GetDisplayNameOf(list, SHGDN_FORPARSING,
                                                   &out_dir_buffer);

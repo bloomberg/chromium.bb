@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include <d3d11.h>
+#include <wrl/client.h>
 
-#include "base/win/scoped_comptr.h"
 #include "base/win/scoped_handle.h"
 #include "ui/gl/gl_export.h"
 #include "ui/gl/gl_image.h"
@@ -40,19 +40,17 @@ class GL_EXPORT GLImageDXGIBase : public GLImage {
                     const std::string& dump_name) override;
   Type GetType() const override;
 
-  base::win::ScopedComPtr<ID3D11Texture2D> texture() { return texture_; }
+  Microsoft::WRL::ComPtr<ID3D11Texture2D> texture() { return texture_; }
   size_t level() const { return level_; }
-  base::win::ScopedComPtr<IDXGIKeyedMutex> keyed_mutex() {
-    return keyed_mutex_;
-  }
+  Microsoft::WRL::ComPtr<IDXGIKeyedMutex> keyed_mutex() { return keyed_mutex_; }
 
  protected:
   ~GLImageDXGIBase() override;
 
   gfx::Size size_;
 
-  base::win::ScopedComPtr<ID3D11Texture2D> texture_;
-  base::win::ScopedComPtr<IDXGIKeyedMutex> keyed_mutex_;
+  Microsoft::WRL::ComPtr<ID3D11Texture2D> texture_;
+  Microsoft::WRL::ComPtr<IDXGIKeyedMutex> keyed_mutex_;
   size_t level_ = 0;
 };
 
@@ -63,7 +61,7 @@ class GL_EXPORT GLImageDXGI : public GLImageDXGIBase {
   // GLImage implementation.
   bool BindTexImage(unsigned target) override;
 
-  void SetTexture(const base::win::ScopedComPtr<ID3D11Texture2D>& texture,
+  void SetTexture(const Microsoft::WRL::ComPtr<ID3D11Texture2D>& texture,
                   size_t level);
 
  protected:
@@ -75,15 +73,14 @@ class GL_EXPORT GLImageDXGI : public GLImageDXGIBase {
 // This copies to a new texture on bind.
 class GL_EXPORT CopyingGLImageDXGI : public GLImageDXGI {
  public:
-  CopyingGLImageDXGI(const base::win::ScopedComPtr<ID3D11Device>& d3d11_device,
+  CopyingGLImageDXGI(const Microsoft::WRL::ComPtr<ID3D11Device>& d3d11_device,
                      const gfx::Size& size,
                      EGLStreamKHR stream);
 
   bool Initialize();
   bool InitializeVideoProcessor(
-      const base::win::ScopedComPtr<ID3D11VideoProcessor>& video_processor,
-      const base::win::ScopedComPtr<ID3D11VideoProcessorEnumerator>&
-          enumerator);
+      const Microsoft::WRL::ComPtr<ID3D11VideoProcessor>& video_processor,
+      const Microsoft::WRL::ComPtr<ID3D11VideoProcessorEnumerator>& enumerator);
   void UnbindFromTexture();
 
   // GLImage implementation.
@@ -94,13 +91,13 @@ class GL_EXPORT CopyingGLImageDXGI : public GLImageDXGI {
 
   bool copied_ = false;
 
-  base::win::ScopedComPtr<ID3D11VideoDevice> video_device_;
-  base::win::ScopedComPtr<ID3D11VideoContext> video_context_;
-  base::win::ScopedComPtr<ID3D11VideoProcessor> d3d11_processor_;
-  base::win::ScopedComPtr<ID3D11VideoProcessorEnumerator> enumerator_;
-  base::win::ScopedComPtr<ID3D11Device> d3d11_device_;
-  base::win::ScopedComPtr<ID3D11Texture2D> decoder_copy_texture_;
-  base::win::ScopedComPtr<ID3D11VideoProcessorOutputView> output_view_;
+  Microsoft::WRL::ComPtr<ID3D11VideoDevice> video_device_;
+  Microsoft::WRL::ComPtr<ID3D11VideoContext> video_context_;
+  Microsoft::WRL::ComPtr<ID3D11VideoProcessor> d3d11_processor_;
+  Microsoft::WRL::ComPtr<ID3D11VideoProcessorEnumerator> enumerator_;
+  Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device_;
+  Microsoft::WRL::ComPtr<ID3D11Texture2D> decoder_copy_texture_;
+  Microsoft::WRL::ComPtr<ID3D11VideoProcessorOutputView> output_view_;
 };
 
 class GL_EXPORT GLImageDXGIHandle : public GLImageDXGIBase {
