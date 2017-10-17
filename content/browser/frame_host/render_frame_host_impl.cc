@@ -2907,6 +2907,10 @@ void RenderFrameHostImpl::RunCreateWindowCompleteCallback(
   reply->main_frame_widget_route_id = main_frame_widget_route_id;
   reply->cloned_session_storage_namespace_id =
       cloned_session_storage_namespace_id;
+  RenderFrameHost* rfh =
+      RenderFrameHost::FromID(GetProcess()->GetID(), main_frame_route_id);
+  reply->devtools_main_frame_token =
+      rfh ? rfh->GetDevToolsFrameToken() : base::UnguessableToken::Create();
   std::move(callback).Run(std::move(reply));
 }
 
