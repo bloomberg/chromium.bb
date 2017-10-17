@@ -22,6 +22,25 @@ class HostScanCache;
 // Restores Tether state after a browser crash.
 class CrashRecoveryManager {
  public:
+  class Factory {
+   public:
+    static std::unique_ptr<CrashRecoveryManager> NewInstance(
+        NetworkStateHandler* network_state_handler,
+        ActiveHost* active_host,
+        HostScanCache* host_scan_cache);
+
+    static void SetInstanceForTesting(Factory* factory);
+
+   protected:
+    virtual std::unique_ptr<CrashRecoveryManager> BuildInstance(
+        NetworkStateHandler* network_state_handler,
+        ActiveHost* active_host,
+        HostScanCache* host_scan_cache);
+
+   private:
+    static Factory* factory_instance_;
+  };
+
   CrashRecoveryManager(NetworkStateHandler* network_state_handler,
                        ActiveHost* active_host,
                        HostScanCache* host_scan_cache);
