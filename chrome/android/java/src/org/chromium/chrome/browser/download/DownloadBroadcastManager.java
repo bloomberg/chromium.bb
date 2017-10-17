@@ -217,7 +217,6 @@ public class DownloadBroadcastManager extends Service {
 
         Preconditions.checkNotNull(downloadServiceDelegate);
         Preconditions.checkNotNull(id);
-        Preconditions.checkNotNull(entry);
 
         // Handle all remaining actions.
         switch (action) {
@@ -230,8 +229,14 @@ public class DownloadBroadcastManager extends Service {
                 break;
 
             case ACTION_DOWNLOAD_RESUME:
-                downloadServiceDelegate.resumeDownload(
-                        id, entry.buildDownloadItem(), true /* hasUserGesture */);
+                DownloadItem item = (entry != null)
+                        ? entry.buildDownloadItem()
+                        : new DownloadItem(false,
+                                  new DownloadInfo.Builder()
+                                          .setDownloadGuid(id.id)
+                                          .setIsOffTheRecord(isOffTheRecord)
+                                          .build());
+                downloadServiceDelegate.resumeDownload(id, item, true /* hasUserGesture */);
                 break;
 
             default:
