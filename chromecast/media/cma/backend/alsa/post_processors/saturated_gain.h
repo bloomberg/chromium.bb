@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "chromecast/media/cma/backend/alsa/slew_volume.h"
+#include "chromecast/media/base/slew_volume.h"
 #include "chromecast/public/media/audio_post_processor_shlib.h"
 
 namespace chromecast {

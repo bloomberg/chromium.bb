@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/media/cma/backend/alsa/slew_volume.h"
+#include "chromecast/media/base/slew_volume.h"
 
 #include <algorithm>
 #include <cstring>

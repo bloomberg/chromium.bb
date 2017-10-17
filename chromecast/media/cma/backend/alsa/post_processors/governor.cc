@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "chromecast/base/serializers.h"
-#include "chromecast/media/cma/backend/alsa/slew_volume.h"
+#include "chromecast/media/base/slew_volume.h"
 
 namespace chromecast {
 namespace media {

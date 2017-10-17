@@ -64,7 +64,6 @@ source_set("alsa_cma_backend") {
 
   deps = [
     ":alsa_features",
-    ":slew_volume",
     ":volume_map",
     "//base",
     "//chromecast/base",
@@ -91,17 +90,6 @@ source_set("volume_map") {
   ]
 }
 
-source_set("slew_volume") {
-  sources = [
-    "slew_volume.cc",
-    "slew_volume.h",
-  ]
-  deps = [
-    "//base",
-    "//media:shared_memory_support",
-  ]
-}
-
 alsa_owns_volume = !enable_assistant && chromecast_branding != "google"
 
 buildflag_header("alsa_features") {
@@ -118,7 +106,6 @@ test("cast_alsa_cma_backend_unittests") {
     "filter_group_unittest.cc",
     "post_processors/governor_unittest.cc",
     "post_processors/saturated_gain_unittest.cc",
-    "slew_volume_unittests.cc",
     "stream_mixer_alsa_unittest.cc",
   ]
 
@@ -128,14 +115,12 @@ test("cast_alsa_cma_backend_unittests") {
     ":libcast_saturated_gain_1.0",
     ":post_processor_factory",
     ":post_processor_test_support",
-    ":slew_volume",
     ":test_support",
     "//base",
     "//base/test:run_all_unittests",
     "//chromecast/media",
     "//chromecast/public",
     "//media",
-    "//media:shared_memory_support",
     "//testing/gmock",
     "//testing/gtest",
   ]
@@ -178,9 +163,9 @@ source_set("governor") {
     "post_processors/governor.h",
   ]
   deps = [
-    ":slew_volume",
     "//base",
     "//chromecast/base",
+    "//chromecast/media/base",
     "//chromecast/public/media",
   ]
   public_configs = [ "//chromecast/public:public_config" ]
@@ -192,9 +177,9 @@ cast_shared_library("libcast_saturated_gain_1.0") {
     "post_processors/saturated_gain.h",
   ]
   deps = [
-    ":slew_volume",
     "//base",
     "//chromecast/base",
+    "//chromecast/media/base",
     "//chromecast/public/media",
   ]
 }

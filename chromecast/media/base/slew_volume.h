@@ -4,8 +4,8 @@
 
 // Scale volume with slew rate limiting
 
-#ifndef CHROMECAST_MEDIA_CMA_BACKEND_ALSA_SLEW_VOLUME_H_
-#define CHROMECAST_MEDIA_CMA_BACKEND_ALSA_SLEW_VOLUME_H_
+#ifndef CHROMECAST_MEDIA_BASE_SLEW_VOLUME_H_
+#define CHROMECAST_MEDIA_BASE_SLEW_VOLUME_H_
 
 #include <stdint.h>
 
@@ -17,7 +17,7 @@ namespace media {
 class SlewVolume {
  public:
   SlewVolume();
-  SlewVolume(int max_slew_time_ms);
+  explicit SlewVolume(int max_slew_time_ms);
   ~SlewVolume() = default;
 
   void SetSampleRate(int sample_rate);
@@ -78,4 +78,4 @@ class SlewVolume {
 }  // namespace media
 }  // namespace chromecast
 
-#endif  // CHROMECAST_MEDIA_CMA_BACKEND_ALSA_SLEW_VOLUME_H_
+#endif  // CHROMECAST_MEDIA_BASE_SLEW_VOLUME_H_
