@@ -69,17 +69,6 @@
         @apply(--cr-title-text);
       }
 
-      .control-line {
-        align-items: center;
-        display: flex;
-        justify-content: space-between;
-        width: 100%;
-      }
-
-      .control-line span {
-        color: var(--paper-grey-900);
-      }
-
       #learn-more-link {
         color: var(--google-blue-700);
         text-decoration: none;
@@ -99,6 +88,10 @@
         border-top: none;
       }
 
+      .section.control-line {
+        justify-content: space-between;
+      }
+
       .section.continuation.warning {
         padding-left: 21px;
         padding-right: 8px;
@@ -109,7 +102,6 @@
       }
 
       .section-title {
-        color: var(--paper-grey-900);
         margin-bottom: 12px;
       }
 
@@ -158,6 +150,10 @@
       #remove-extension {
         width: 100%;
       }
+
+      #options-section .control-line:first-child {
+        border-top: var(--cr-separator-line);
+      }
     </style>
     <div id="container">
       <div id="main">
@@ -168,21 +164,19 @@
           <img alt="" id="icon" src="[[data.iconUrl]]">
           <span id="name">[[data.name]]</span>
         </div>
-        <div class="section continuation" id="enable-section">
-          <div class="control-line">
-            <span>[[computeEnabledText_(data.*)]]</span>
-            <div class="layout horizontal">
-              <cr-tooltip-icon hidden$="[[!data.controlledInfo]]"
-                  tooltip-text="[[data.controlledInfo.text]]"
-                  icon-class="[[getIndicatorIcon_(data.controlledInfo.type)]]"
-                  icon-aria-label="[[data.controlledInfo.type]]">
-              </cr-tooltip-icon>
-              <cr-toggle id="enable-toggle"
-                  checked="[[isEnabled_(data.state)]]"
-                  on-change="onEnableChange_"
-                  disabled="[[!isEnableToggleEnabled_(data.*)]]">
-              </cr-toggle>
-            </div>
+        <div class="section continuation control-line" id="enable-section">
+          <span>[[computeEnabledText_(data.*)]]</span>
+          <div class="layout horizontal">
+            <cr-tooltip-icon hidden$="[[!data.controlledInfo]]"
+                tooltip-text="[[data.controlledInfo.text]]"
+                icon-class="[[getIndicatorIcon_(data.controlledInfo.type)]]"
+                icon-aria-label="[[data.controlledInfo.type]]">
+            </cr-tooltip-icon>
+            <cr-toggle id="enable-toggle"
+                checked="[[isEnabled_(data.state)]]"
+                on-change="onEnableChange_"
+                disabled="[[!isEnableToggleEnabled_(data.*)]]">
+            </cr-toggle>
           </div>
         </div>
         <div id="warnings" hidden$="[[!hasWarnings_(data.*)]]">
@@ -237,7 +231,8 @@
           <div class="section-title">$i18n{itemIdHeading}</div>
           <div class="section-content">[[data.id]]</div>
         </div>
-        <div class="section" id="inspectable-views" hidden$="[[!inDevMode]]">
+        <div class="section block" id="inspectable-views"
+            hidden$="[[!inDevMode]]">
           <div class="section-title">$i18n{itemInspectViews}</div>
           <div class="section-content">
             <ul id="inspect-views">
@@ -281,9 +276,9 @@
           </div>
         </template>
         <template is="dom-if" if="[[shouldShowOptionsSection_(data.*)]]">
-          <div class="section">
+          <div id="options-section">
             <template is="dom-if" if="[[data.incognitoAccess.isEnabled]]">
-              <div class="control-line">
+              <div class="section continuation control-line">
                 <span>$i18n{itemAllowIncognito}</span>
                 <cr-toggle id="allow-incognito"
                     checked="[[data.incognitoAccess.isActive]]"
@@ -291,7 +286,7 @@
               </div>
             </template>
             <template is="dom-if" if="[[data.fileAccess.isEnabled]]">
-              <div class="control-line">
+              <div class="section continuation control-line">
                 <span>$i18n{itemAllowOnFileUrls}</span>
                 <cr-toggle id="allow-on-file-urls"
                     checked="[[data.fileAccess.isActive]]"
@@ -299,7 +294,7 @@
               </div>
             </template>
             <template is="dom-if" if="[[data.runOnAllUrls.isEnabled]]">
-              <div class="control-line">
+              <div class="section continuation control-line">
                 <span>$i18n{itemAllowOnAllSites}</span>
                 <cr-toggle id="allow-on-all-sites"
                     checked="[[data.runOnAllUrls.isActive]]"
@@ -307,7 +302,7 @@
               </div>
             </template>
             <template is="dom-if" if="[[data.errorCollection.isEnabled]]">
-              <div class="control-line">
+              <div class="section continuation control-line">
                 <span>$i18n{itemCollectErrors}</span>
                 <cr-toggle id="collect-errors"
                     checked="[[data.errorCollection.isActive]]"
@@ -316,13 +311,12 @@
             </template>
           </div>
         </template>
-        <div class="section"
+        <div class="section control-line actionable" id="extensions-options"
+            on-tap="onOptionsTap_"
             hidden$="[[!shouldShowOptionsLink_(data.*)]]">
-          <div class="control-line actionable" id="extensions-options"
-              on-tap="onOptionsTap_">
-            <span>$i18n{itemOptions}</span>
-            <button class="icon-external" is="paper-icon-button-light"></button>
-          </div>
+          <span>$i18n{itemOptions}</span>
+          <button class="icon-external" is="paper-icon-button-light"
+              actionable></button>
         </div>
         <button class="hr" is="cr-link-row"
             hidden="[[isControlled_(data.controlledInfo)]]"
