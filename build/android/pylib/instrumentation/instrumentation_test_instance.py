@@ -504,8 +504,6 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     self._symbolizer = None
     self._enable_java_deobfuscation = False
     self._deobfuscator = None
-    self._gs_results_bucket = None
-    self._should_save_logcat = None
     self._initializeLogAttributes(args)
 
     self._edit_shared_prefs = []
@@ -701,9 +699,6 @@ class InstrumentationTestInstance(test_instance.TestInstance):
         self.apk_under_test.path if self.apk_under_test else None,
         args.enable_relocation_packing)
 
-    self._gs_results_bucket = args.gs_results_bucket
-    self._should_save_logcat = bool(args.json_results_file)
-
   def _initializeEditPrefsAttributes(self, args):
     if not hasattr(args, 'shared_prefs_file') or not args.shared_prefs_file:
       return
@@ -760,10 +755,6 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     return self._flags
 
   @property
-  def gs_results_bucket(self):
-    return self._gs_results_bucket
-
-  @property
   def junit3_runner_class(self):
     return self._junit3_runner_class
 
@@ -774,10 +765,6 @@ class InstrumentationTestInstance(test_instance.TestInstance):
   @property
   def junit4_runner_supports_listing(self):
     return self._junit4_runner_supports_listing
-
-  @property
-  def should_save_logcat(self):
-    return self._should_save_logcat
 
   @property
   def package_info(self):

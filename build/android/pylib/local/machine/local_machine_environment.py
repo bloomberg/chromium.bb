@@ -9,8 +9,8 @@ from pylib.base import environment
 
 class LocalMachineEnvironment(environment.Environment):
 
-  def __init__(self, _args, _error_func):
-    super(LocalMachineEnvironment, self).__init__()
+  def __init__(self, _args, output_manager, _error_func):
+    super(LocalMachineEnvironment, self).__init__(output_manager)
 
     devil_chromium.Initialize(
         output_directory=constants.GetOutDirectory())
