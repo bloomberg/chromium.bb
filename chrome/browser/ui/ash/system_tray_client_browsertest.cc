@@ -6,16 +6,7 @@
 
 #include "ash/ash_view_ids.h"
 #include "ash/public/interfaces/constants.mojom.h"
-#include "ash/root_window_controller.h"
-#include "ash/shell.h"
-#include "ash/system/date/date_view.h"
-#include "ash/system/date/system_info_default_view.h"
-#include "ash/system/date/tray_system_info.h"
-#include "ash/system/tray/label_tray_view.h"
-#include "ash/system/tray/system_tray.h"
-#include "ash/system/tray/system_tray_test_api.h"
-#include "ash/system/tray/tray_item_view.h"
-#include "ash/system/update/tray_update.h"
+#include "ash/public/interfaces/system_tray_test_api.mojom.h"
 #include "base/i18n/time_formatting.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
@@ -41,15 +32,6 @@
 using chromeos::ProfileHelper;
 using user_manager::UserManager;
 
-namespace {
-
-// TODO(jamescook): Add a test-only mojo API to get system tray details.
-ash::SystemTray* GetSystemTray() {
-  return ash::Shell::GetPrimaryRootWindowController()->GetSystemTray();
-}
-
-}  // namespace
-
 class SystemTrayClientTest : public InProcessBrowserTest {
  public:
   SystemTrayClientTest() = default;
@@ -65,8 +47,17 @@ class SystemTrayClientTest : public InProcessBrowserTest {
     InProcessBrowserTest::SetUp();
   }
 
+  void SetUpOnMainThread() override {
+    InProcessBrowserTest::SetUpOnMainThread();
+    // Connect to the ash test interface.
+    content::ServiceManagerConnection::GetForProcess()
+        ->GetConnector()
+        ->BindInterface(ash::mojom::kServiceName, &tray_test_api_);
+  }
+
  protected:
   chromeos::FakeUpdateEngineClient* fake_update_engine_client_ = nullptr;
+  ash::mojom::SystemTrayTestApiPtr tray_test_api_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SystemTrayClientTest);
@@ -74,17 +65,20 @@ class SystemTrayClientTest : public InProcessBrowserTest {
 
 // Test that a chrome update shows the update icon in the system menu.
 IN_PROC_BROWSER_TEST_F(SystemTrayClientTest, UpdateTrayIcon) {
-  ash::TrayUpdate* tray_update = GetSystemTray()->tray_update();
+  ash::mojom::SystemTrayTestApiAsyncWaiter wait_for(tray_test_api_.get());
 
   // When no update is pending, the icon isn't visible.
-  EXPECT_FALSE(tray_update->tray_view()->visible());
+  bool visible = false;
+  wait_for.IsTrayViewVisible(ash::VIEW_ID_TRAY_UPDATE_ICON, &visible);
+  EXPECT_FALSE(visible);
 
   // Simulate an upgrade. This sends a mojo message to ash.
   UpgradeDetector::GetInstance()->NotifyUpgrade();
   content::RunAllPendingInMessageLoop();
 
   // Tray icon is now visible.
-  EXPECT_TRUE(tray_update->tray_view()->visible());
+  wait_for.IsTrayViewVisible(ash::VIEW_ID_TRAY_UPDATE_ICON, &visible);
+  EXPECT_TRUE(visible);
 }
 
 // Tests that the update icon becomes visible after an update is detected
@@ -92,11 +86,13 @@ IN_PROC_BROWSER_TEST_F(SystemTrayClientTest, UpdateTrayIcon) {
 // after user's one time permission on the update is set successfully in Update
 // Engine.
 IN_PROC_BROWSER_TEST_F(SystemTrayClientTest, UpdateOverCellularTrayIcon) {
-  ash::TrayItemView::DisableAnimationsForTest();
-  ash::TrayUpdate* tray_update = GetSystemTray()->tray_update();
+  ash::mojom::SystemTrayTestApiAsyncWaiter wait_for(tray_test_api_.get());
+  wait_for.DisableAnimations();
 
   // When no update is pending, the icon isn't visible.
-  EXPECT_FALSE(tray_update->tray_view()->visible());
+  bool visible = false;
+  wait_for.IsTrayViewVisible(ash::VIEW_ID_TRAY_UPDATE_ICON, &visible);
+  EXPECT_FALSE(visible);
 
   chromeos::UpdateEngineClient::Status status;
   status.status =
@@ -106,11 +102,12 @@ IN_PROC_BROWSER_TEST_F(SystemTrayClientTest, UpdateOverCellularTrayIcon) {
   content::RunAllPendingInMessageLoop();
 
   // When an update is available over cellular networks, the icon is visible.
-  EXPECT_TRUE(tray_update->tray_view()->visible());
+  wait_for.IsTrayViewVisible(ash::VIEW_ID_TRAY_UPDATE_ICON, &visible);
+  EXPECT_TRUE(visible);
 
-  GetSystemTray()->ShowDefaultView(ash::BUBBLE_CREATE_NEW,
-                                   false /* show_by_click */);
-  base::string16 label = tray_update->GetLabelForTesting()->text();
+  wait_for.ShowBubble();
+  base::string16 label;
+  wait_for.GetBubbleLabelText(ash::VIEW_ID_TRAY_UPDATE_MENU_LABEL, &label);
   EXPECT_EQ("Click to view update details", base::UTF16ToUTF8(label));
 
   // Notifies that the user's one time permission on update over cellular
@@ -120,22 +117,26 @@ IN_PROC_BROWSER_TEST_F(SystemTrayClientTest, UpdateOverCellularTrayIcon) {
   content::RunAllPendingInMessageLoop();
 
   // When user permission is granted, the icon becomes invisible.
-  EXPECT_FALSE(tray_update->tray_view()->visible());
+  wait_for.IsTrayViewVisible(ash::VIEW_ID_TRAY_UPDATE_ICON, &visible);
+  EXPECT_FALSE(visible);
 }
 
 // Test that a flash update causes the update UI to show in the system menu.
 IN_PROC_BROWSER_TEST_F(SystemTrayClientTest, FlashUpdateTrayIcon) {
-  ash::TrayUpdate* tray_update = GetSystemTray()->tray_update();
+  ash::mojom::SystemTrayTestApiAsyncWaiter wait_for(tray_test_api_.get());
 
   // When no update is pending, the icon isn't visible.
-  EXPECT_FALSE(tray_update->tray_view()->visible());
+  bool visible = false;
+  wait_for.IsTrayViewVisible(ash::VIEW_ID_TRAY_UPDATE_ICON, &visible);
+  EXPECT_FALSE(visible);
 
   // Simulate a Flash update. This sends a mojo message to ash.
   SystemTrayClient::Get()->SetFlashUpdateAvailable();
   content::RunAllPendingInMessageLoop();
 
   // Tray icon is now visible.
-  EXPECT_TRUE(tray_update->tray_view()->visible());
+  wait_for.IsTrayViewVisible(ash::VIEW_ID_TRAY_UPDATE_ICON, &visible);
+  EXPECT_TRUE(visible);
 }
 
 using SystemTrayClientEnterpriseTest = policy::DevicePolicyCrosBrowserTest;
@@ -179,22 +180,6 @@ class SystemTrayClientClockTest : public chromeos::LoginManagerTest {
     content::RunAllPendingInMessageLoop();
   }
 
-  static ash::TraySystemInfo* GetTraySystemInfo() {
-    return ash::SystemTrayTestApi(ash::Shell::Get()->GetPrimarySystemTray())
-        .tray_system_info();
-  }
-
-  static base::HourClockType GetHourType() {
-    const ash::SystemInfoDefaultView* system_info_default_view =
-        GetTraySystemInfo()->GetDefaultViewForTesting();
-    return system_info_default_view->GetDateView()->GetHourTypeForTesting();
-  }
-
-  static void CreateDefaultView() {
-    GetTraySystemInfo()->CreateDefaultViewForTesting(
-        ash::LoginStatus::NOT_LOGGED_IN);
-  }
-
  protected:
   const AccountId account_id1_;
   const AccountId account_id2_;
@@ -212,21 +197,32 @@ IN_PROC_BROWSER_TEST_F(SystemTrayClientClockTest,
 
 // Test that clock type is taken from user profile for current active user.
 IN_PROC_BROWSER_TEST_F(SystemTrayClientClockTest, TestMultiProfile24HourClock) {
+  // Connect to ash.
+  ash::mojom::SystemTrayTestApiPtr tray_test_api;
+  content::ServiceManagerConnection::GetForProcess()
+      ->GetConnector()
+      ->BindInterface(ash::mojom::kServiceName, &tray_test_api);
+  ash::mojom::SystemTrayTestApiAsyncWaiter wait_for(tray_test_api.get());
+
+  // Login a user with a 24-hour clock.
   LoginUser(account_id1_.GetUserEmail());
   SetupUserProfile(account_id1_, true /* use_24_hour_clock */);
-  CreateDefaultView();
-  EXPECT_EQ(base::k24HourClock, GetHourType());
+  bool is_24_hour = false;
+  wait_for.Is24HourClock(&is_24_hour);
+  EXPECT_TRUE(is_24_hour);
 
+  // Add a user with a 12-hour clock.
   chromeos::UserAddingScreen::Get()->Start();
   content::RunAllPendingInMessageLoop();
   AddUser(account_id2_.GetUserEmail());
   SetupUserProfile(account_id2_, false /* use_24_hour_clock */);
-  CreateDefaultView();
-  EXPECT_EQ(base::k12HourClock, GetHourType());
+  wait_for.Is24HourClock(&is_24_hour);
+  EXPECT_FALSE(is_24_hour);
 
+  // Switch back to the user with the 24-hour clock.
   UserManager::Get()->SwitchActiveUser(account_id1_);
   // Allow clock setting to be sent to ash over mojo.
   content::RunAllPendingInMessageLoop();
-  CreateDefaultView();
-  EXPECT_EQ(base::k24HourClock, GetHourType());
+  wait_for.Is24HourClock(&is_24_hour);
+  EXPECT_TRUE(is_24_hour);
 }

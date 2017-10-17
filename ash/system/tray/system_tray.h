@@ -45,9 +45,12 @@ enum BubbleCreationType {
   BUBBLE_USE_EXISTING,  // Uses any existing bubble, or creates a new one.
 };
 
+// For historical reasons, SystemTray is both a controller and a view. It
+// manages all the SystemTrayItem controllers, creates icon views that appear in
+// the tray, creates the bubble menu and fills the menu with items. It is also
+// the view that contains the icons in the tray.
 class ASH_EXPORT SystemTray : public TrayBackgroundView {
  public:
-
   explicit SystemTray(Shelf* shelf);
   ~SystemTray() override;
 

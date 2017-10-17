@@ -121,3 +121,6 @@ PolicyCertVerifierTest.VerifyUntrustedCert
 PolicyCertVerifierTest.VerifyUsingAdditionalTrustAnchor
 ScriptContextTest.GetEffectiveDocumentURL
 SiteEngagementUiBrowserTest.Basic
+SystemTrayClientEnterpriseTest.*
+SystemTrayClientClockTest.*
+SystemTrayClientTest.*

@@ -5,9 +5,15 @@
 #ifndef ASH_SYSTEM_TRAY_SYSTEM_TRAY_TEST_API_H_
 #define ASH_SYSTEM_TRAY_SYSTEM_TRAY_TEST_API_H_
 
+#include <memory>
+
 #include "ash/public/interfaces/system_tray_test_api.mojom.h"
 #include "ash/system/tray/system_tray.h"
 #include "base/macros.h"
+
+namespace ui {
+class ScopedAnimationDurationScaleMode;
+}
 
 namespace ash {
 
@@ -36,6 +42,8 @@ class SystemTrayTestApi : public mojom::SystemTrayTestApi {
   TrayTiles* tray_tiles() { return tray_->tray_tiles_; }
 
   // mojom::SystemTrayTestApi:
+  void DisableAnimations(DisableAnimationsCallback cb) override;
+  void IsTrayViewVisible(int view_id, IsTrayViewVisibleCallback cb) override;
   void ShowBubble(ShowBubbleCallback cb) override;
   void ShowDetailedView(mojom::TrayItem item,
                         ShowDetailedViewCallback cb) override;
@@ -43,9 +51,16 @@ class SystemTrayTestApi : public mojom::SystemTrayTestApi {
                            IsBubbleViewVisibleCallback cb) override;
   void GetBubbleViewTooltip(int view_id,
                             GetBubbleViewTooltipCallback cb) override;
+  void GetBubbleLabelText(int view_id, GetBubbleLabelTextCallback cb) override;
+  void Is24HourClock(Is24HourClockCallback cb) override;
 
  private:
+  // Returns a view in the bubble menu (not the tray itself). Returns null if
+  // not found.
+  views::View* GetBubbleView(int view_id) const;
+
   SystemTray* const tray_;
+  std::unique_ptr<ui::ScopedAnimationDurationScaleMode> disable_animations_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemTrayTestApi);
 };

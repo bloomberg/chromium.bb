@@ -15,6 +15,14 @@ enum TrayItem {
 
 // All methods operate on the system tray on the primary display.
 interface SystemTrayTestApi {
+  // Disables animations (e.g. the tray view icon slide-in).
+  DisableAnimations() => ();
+
+  // Returns true if the view exists and is visible in the system tray area
+  // at the bottom of the screen. Usually these views are icons, like the Wi-Fi
+  // or battery icon.
+  IsTrayViewVisible(int32 view_id) => (bool visible);
+
   // Shows the system tray bubble menu.
   ShowBubble() => ();
 
@@ -27,4 +35,11 @@ interface SystemTrayTestApi {
   // Returns the tooltip for a bubble view, or the empty string if the view
   // does not exist.
   GetBubbleViewTooltip(int32 view_id) => (mojo.common.mojom.String16 tooltip);
+
+  // Returns the label for a bubble view, or the empty string if the view does
+  // not exist. The view must be a views::Label.
+  GetBubbleLabelText(int32 view_id) => (mojo.common.mojom.String16 tooltip);
+
+  // Returns true if the clock is using 24 hour time.
+  Is24HourClock() => (bool is_24_hour);
 };
