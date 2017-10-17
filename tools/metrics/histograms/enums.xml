@@ -8121,6 +8121,18 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="3" label="Redirection to the default search engine"/>
 </enum>
 
+<enum name="DetachableBaseROUpdateResult">
+  <int value="1" label="Succeeded"/>
+  <int value="2" label="TransferFailed"/>
+</enum>
+
+<enum name="DetachableBaseRWUpdateResult">
+  <int value="1" label="Succeeded"/>
+  <int value="2" label="TransferFailed"/>
+  <int value="3" label="InvalidKey"/>
+  <int value="4" label="RollbackDisallowed"/>
+</enum>
+
 <enum name="DeviceIdMismatch">
   <int value="0" label="BOTH_NONEMPTY"/>
   <int value="1" label="SYNC_EMPTY"/>
