@@ -37,8 +37,8 @@
       <include name="IDR_FILE_MANAGER_ELEMENTS_FILES_RIPPLE_JS" file="file_manager/foreground/elements/files_ripple.js" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_ELEMENTS_FILES_SAFE_AUDIO_WEBVIEW_CONTENT_CSS" file="file_manager/foreground/elements/files_safe_audio_webview_content.css" flattenhtml="true" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_ELEMENTS_FILES_SAFE_AUDIO_WEBVIEW_CONTENT_HTML" file="file_manager/foreground/elements/files_safe_audio_webview_content.html" type="BINDATA" />
-      <include name="IDR_FILE_MANAGER_ELEMENTS_FILES_SAFE_HTML_WEBVIEW_CONTENT_CSS" file="file_manager/foreground/elements/files_safe_html_webview_content.css" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_FILE_MANAGER_ELEMENTS_FILES_SAFE_HTML_WEBVIEW_CONTENT_HTML" file="file_manager/foreground/elements/files_safe_html_webview_content.html" type="BINDATA" />
+      <include name="IDR_FILE_MANAGER_ELEMENTS_FILES_SAFE_TEXT_WEBVIEW_CONTENT_CSS" file="file_manager/foreground/elements/files_safe_text_webview_content.css" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_FILE_MANAGER_ELEMENTS_FILES_SAFE_TEXT_WEBVIEW_CONTENT_HTML" file="file_manager/foreground/elements/files_safe_text_webview_content.html" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_ELEMENTS_FILES_SAFE_IMG_WEBVIEW_CONTENT_CSS" file="file_manager/foreground/elements/files_safe_img_webview_content.css" flattenhtml="true" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_ELEMENTS_FILES_SAFE_IMG_WEBVIEW_CONTENT_HTML" file="file_manager/foreground/elements/files_safe_img_webview_content.html" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_ELEMENTS_FILES_SAFE_MEDIA_HTML" file="file_manager/foreground/elements/files_safe_media.html" type="BINDATA" />

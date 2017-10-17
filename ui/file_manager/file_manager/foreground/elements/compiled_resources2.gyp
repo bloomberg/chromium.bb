@@ -22,6 +22,8 @@
     {
       'target_name': 'files_quick_view',
       'dependencies': [
+        '../../../externs/compiled_resources2.gyp:webview_tag',
+        '<(EXTERNS_GYP):chrome_extensions',
         'files_metadata_box',
       ],
       'includes': ['../../../compile_js2.gypi'],
