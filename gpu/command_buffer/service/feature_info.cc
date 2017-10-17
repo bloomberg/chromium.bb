@@ -49,7 +49,7 @@ class ScopedPixelUnpackBufferOverride {
       GLuint binding_override)
       : orig_binding_(-1) {
     if (enable_es3) {
-      GLint orig_binding;
+      GLint orig_binding = 0;
       glGetIntegerv(GL_PIXEL_UNPACK_BUFFER_BINDING, &orig_binding);
       if (static_cast<GLuint>(orig_binding) != binding_override) {
         glBindBuffer(GL_PIXEL_UNPACK_BUFFER, binding_override);
