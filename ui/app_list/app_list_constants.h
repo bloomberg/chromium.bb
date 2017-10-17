@@ -66,6 +66,7 @@ APP_LIST_EXPORT extern const SkColor kCardBackgroundColor;
 APP_LIST_EXPORT extern const SkColor kCardBackgroundColorFullscreen;
 
 APP_LIST_EXPORT extern const int kPageTransitionDurationInMs;
+APP_LIST_EXPORT extern const int kPageTransitionDurationDampening;
 APP_LIST_EXPORT extern const int kOverscrollPageTransitionDurationMs;
 APP_LIST_EXPORT extern const int kFolderTransitionInDurationMs;
 APP_LIST_EXPORT extern const int kFolderTransitionOutDurationMs;
