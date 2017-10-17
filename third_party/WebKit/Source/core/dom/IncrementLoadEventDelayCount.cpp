@@ -26,7 +26,8 @@ IncrementLoadEventDelayCount::~IncrementLoadEventDelayCount() {
 }
 
 void IncrementLoadEventDelayCount::ClearAndCheckLoadEvent() {
-  document_->DecrementLoadEventDelayCountAndCheckLoadEvent();
+  if (document_)
+    document_->DecrementLoadEventDelayCountAndCheckLoadEvent();
   document_ = nullptr;
 }
 
