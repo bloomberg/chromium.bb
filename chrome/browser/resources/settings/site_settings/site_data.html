@@ -9,6 +9,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
+<link rel="import" href="../global_scroll_target_behavior.html">
 <link rel="import" href="../settings_page/settings_subpage_search.html">
 <link rel="import" href="../settings_shared_css.html">
 <link rel="import" href="local_data_browser_proxy.html">
@@ -35,7 +36,8 @@
         [[computeRemoveLabel_(filter)]]
       </paper-button>
     </div>
-    <iron-list id="list" items="[[sites]]">
+    <iron-list id="list" items="[[sites]]"
+        scroll-target="[[subpageScrollTarget]]">
       <template>
         <div class="settings-box two-line site-item" first$="[[!index]]"
             on-tap="onSiteTap_" actionable>

@@ -108,6 +108,7 @@
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:web_ui_listener_behavior',
         '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:focus_without_ink',
+        '../compiled_resources2.gyp:global_scroll_target_behavior',
         '../settings_page/compiled_resources2.gyp:settings_subpage_search',
         'cookie_info',
         'local_data_browser_proxy',
