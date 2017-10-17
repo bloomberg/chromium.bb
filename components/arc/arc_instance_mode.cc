@@ -4,14 +4,17 @@
 
 #include "components/arc/arc_instance_mode.h"
 
+#include <string>
+
 #include "base/logging.h"
 
 namespace arc {
+namespace {
 
-std::ostream& operator<<(std::ostream& os, ArcInstanceMode mode) {
+std::string ArcInstanceModeToString(ArcInstanceMode mode) {
 #define MAP_MODE(name)        \
   case ArcInstanceMode::name: \
-    return os << #name
+    return #name
 
   switch (mode) {
     MAP_MODE(MINI_INSTANCE);
@@ -22,7 +25,19 @@ std::ostream& operator<<(std::ostream& os, ArcInstanceMode mode) {
   // Some compilers report an error even if all values of an enum-class are
   // covered exhaustively in a switch statement.
   NOTREACHED() << "Invalid value " << static_cast<int>(mode);
-  return os;
+  return std::string();
+}
+
+}  // namespace
+
+std::ostream& operator<<(std::ostream& os, ArcInstanceMode mode) {
+  return os << ArcInstanceModeToString(mode);
+}
+
+std::ostream& operator<<(std::ostream& os,
+                         base::Optional<ArcInstanceMode> mode) {
+  return os << (mode.has_value() ? ArcInstanceModeToString(mode.value())
+                                 : "(nullopt)");
 }
 
 }  // namespace arc

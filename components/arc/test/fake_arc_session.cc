@@ -14,30 +14,15 @@ FakeArcSession::FakeArcSession() = default;
 
 FakeArcSession::~FakeArcSession() = default;
 
-void FakeArcSession::StartForLoginScreen() {
-  is_for_login_screen_ = true;
+void FakeArcSession::Start(ArcInstanceMode request_mode) {
+  target_mode_ = request_mode;
   if (boot_failure_emulation_enabled_) {
     for (auto& observer : observer_list_)
       observer.OnSessionStopped(boot_failure_reason_, false);
-  }
-}
-
-bool FakeArcSession::IsForLoginScreen() {
-  return is_for_login_screen_;
-}
-
-void FakeArcSession::Start() {
-  is_for_login_screen_ = false;
-  if (boot_failure_emulation_enabled_) {
-    for (auto& observer : observer_list_)
-      observer.OnSessionStopped(boot_failure_reason_, false);
-  } else if (!boot_suspended_) {
+  } else if (!boot_suspended_ &&
+             target_mode_ == ArcInstanceMode::FULL_INSTANCE) {
     running_ = true;
   }
-}
-
-bool FakeArcSession::IsRunning() {
-  return running_;
 }
 
 void FakeArcSession::Stop() {
@@ -45,12 +30,20 @@ void FakeArcSession::Stop() {
   StopWithReason(ArcStopReason::SHUTDOWN);
 }
 
-void FakeArcSession::OnShutdown() {
-  StopWithReason(ArcStopReason::SHUTDOWN);
+base::Optional<ArcInstanceMode> FakeArcSession::GetTargetMode() {
+  return target_mode_;
+}
+
+bool FakeArcSession::IsRunning() {
+  return running_;
 }
 
 bool FakeArcSession::IsStopRequested() {
   return stop_requested_;
+}
+
+void FakeArcSession::OnShutdown() {
+  StopWithReason(ArcStopReason::SHUTDOWN);
 }
 
 void FakeArcSession::StopWithReason(ArcStopReason reason) {
