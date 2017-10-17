@@ -235,6 +235,7 @@ crbug.com/721408 http/tests/devtools/service-workers/service-workers-navigation-
 crbug.com/721408 http/tests/devtools/service-workers/service-workers-redundant.html [ Timeout ]
 crbug.com/721408 http/tests/devtools/service-workers/service-workers-view.html [ Timeout ]
 crbug.com/721408 http/tests/devtools/console/console-uncaught-promise.html [ Failure ]
+crbug.com/721408 http/tests/devtools/sdk/network-interception-wildcard-pattern-matching.js [ Failure ]
 crbug.com/721408 http/tests/devtools/sources/debugger-async/async-callstack-xhrs.js [ Failure Timeout ]
 Bug(none) http/tests/loading/307-after-303-after-post.html [ Failure ]
 Bug(none) http/tests/loading/doc-write-sync-third-party-script-reload.html [ Crash ]
