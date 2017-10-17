@@ -315,6 +315,12 @@ struct ivi_layout_interface {
 					uint32_t duration);
 
 	/**
+	 * \brief set id of ivi_layout_surface
+	 */
+	int32_t (*surface_set_id)(struct ivi_layout_surface *ivisurf,
+				  uint32_t id_surface);
+
+	/**
 	 * layer controller interface
 	 */
 

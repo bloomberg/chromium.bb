@@ -1811,6 +1811,44 @@ ivi_layout_surface_set_transition_duration(struct ivi_layout_surface *ivisurf,
 	return 0;
 }
 
+/*
+ * This interface enables e.g. an id agent to set the id of an ivi-layout
+ * surface, that has been created by a desktop application. This can only be
+ * done once as long as the initial surface id equals IVI_INVALID_ID. Afterwards
+ * two events are emitted, namely surface_created and surface_configured.
+ */
+static int32_t
+ivi_layout_surface_set_id(struct ivi_layout_surface *ivisurf,
+			  uint32_t id_surface)
+{
+	struct ivi_layout *layout = get_instance();
+	struct ivi_layout_surface *search_ivisurf = NULL;
+
+	if (!ivisurf) {
+		weston_log("%s: invalid argument\n", __func__);
+		return IVI_FAILED;
+	}
+
+	if (ivisurf->id_surface != IVI_INVALID_ID) {
+		weston_log("surface id can only be set once\n");
+		return IVI_FAILED;
+	}
+
+	search_ivisurf = get_surface(&layout->surface_list, id_surface);
+	if (search_ivisurf) {
+		weston_log("id_surface(%d) is already created\n", id_surface);
+		return IVI_FAILED;
+	}
+
+	ivisurf->id_surface = id_surface;
+
+	wl_signal_emit(&layout->surface_notification.created, ivisurf);
+	wl_signal_emit(&layout->surface_notification.configure_changed,
+		       ivisurf);
+
+	return IVI_SUCCEEDED;
+}
+
 static int32_t
 ivi_layout_surface_set_transition(struct ivi_layout_surface *ivisurf,
 				  enum ivi_layout_transition_type type,
@@ -1973,6 +2011,7 @@ static struct ivi_layout_interface ivi_layout_interface = {
 	.surface_get_weston_surface		= ivi_layout_surface_get_weston_surface,
 	.surface_set_transition			= ivi_layout_surface_set_transition,
 	.surface_set_transition_duration	= ivi_layout_surface_set_transition_duration,
+	.surface_set_id				= ivi_layout_surface_set_id,
 
 	/**
 	 * layer controller interfaces
