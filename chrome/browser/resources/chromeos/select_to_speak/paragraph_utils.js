@@ -6,14 +6,23 @@ var AutomationNode = chrome.automation.AutomationNode;
 var RoleType = chrome.automation.RoleType;
 
 /**
- * Gets the parent paragraph of a node, or null if it is not in a paragraph.
+ * Gets the first ancestor of a node which is a paragraph, or display:block,
+ * or the root node if none is found.
  * @param { AutomationNode } node The node to get the parent for.
  * @return { ?AutomationNode } the parent paragraph or null if there is none.
  */
-function getParagraphParent(node) {
+function getFirstBlockAncestor(node) {
   let parent = node.parent;
+  let root = node.root;
   while (parent != null) {
+    if (parent == root) {
+      return parent;
+    }
     if (parent.role == RoleType.PARAGRAPH) {
+      return parent;
+    }
+    if ((parent.display == 'block' || parent.display == 'inline-block') &&
+        parent.role != RoleType.STATIC_TEXT) {
       return parent;
     }
     parent = parent.parent;
@@ -22,16 +31,8 @@ function getParagraphParent(node) {
 }
 
 /**
- * Determines whether a node is inside of a paragraph.
- * @param { AutomationNode } node The node to test
- * @return { boolean } whether the node is in a paragraph
- */
-function isInParagraph(node) {
-  return getParagraphParent(node) != null;
-}
-
-/**
- * Determines whether two nodes are in the same paragraph.
+ * Determines whether two nodes are in the same block-like ancestor, i.e.
+ * whether they are in the same paragraph.
  * @param { AutomationNode|undefined } first The first node to compare.
  * @param { AutomationNode|undefined } second The second node to compare.
  * @return { boolean } whether two nodes are in the same paragraph.
@@ -41,17 +42,33 @@ function inSameParagraph(first, second) {
     return false;
   }
   // TODO: Clean up this check after crbug.com/774308 is resolved.
-  // At that point we will only need to check for display:block.
-  if ((first.display == 'block' && first.role != RoleType.STATIC_TEXT &&
+  // At that point we will only need to check for display:block or inline-block.
+  if (((first.display == 'block' || first.display == 'inline-block') &&
+       first.role != RoleType.STATIC_TEXT &&
        first.role != RoleType.INLINE_TEXT_BOX) ||
-      (second.display == 'block' && second.role != RoleType.STATIC_TEXT &&
+      ((second.display == 'block' || second.display == 'inline-block') &&
+       second.role != RoleType.STATIC_TEXT &&
        second.role != RoleType.INLINE_TEXT_BOX)) {
-    // 'block' elements cannot be in the same paragraph.
+    // 'block' or 'inline-block' elements cannot be in the same paragraph.
     return false;
   }
-  let firstParent = getParagraphParent(first);
-  let secondParent = getParagraphParent(second);
-  return firstParent != undefined && firstParent == secondParent;
+  let firstBlock = getFirstBlockAncestor(first);
+  let secondBlock = getFirstBlockAncestor(second);
+  return firstBlock != undefined && firstBlock == secondBlock;
+}
+
+/**
+ * Determines whether a string is only whitespace.
+ * @param { string } name A string to test
+ * @return { boolean } whether the string is only whitespace
+ */
+function isWhitespace(name) {
+  if (name.length == 0) {
+    return true;
+  }
+  // Search for one or more whitespace characters
+  let re = /^\s+$/;
+  return re.exec(name) != null;
 }
 
 /**
@@ -77,7 +94,7 @@ function buildNodeGroup(nodes, index) {
     index += 1;
     node = next;
     next = nodes[index + 1];
-    if (node.name === undefined || node.name == '') {
+    if (node.name === undefined || isWhitespace(node.name)) {
       // Don't bother with unnamed or empty nodes.
       continue;
     }

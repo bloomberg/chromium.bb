@@ -21,31 +21,31 @@ SelectToSpeakParagraphUnitTest.prototype = {
   ]
 };
 
-TEST_F('SelectToSpeakParagraphUnitTest', 'IsInParagraph', function() {
+TEST_F('SelectToSpeakParagraphUnitTest', 'GetFirstBlockAncestor', function() {
   let root = {role: 'rootWebArea'};
-  let paragraph = {role: 'paragraph', parent: 'rootWebArea'};
-  let text1 = {role: 'staticText', parent: paragraph};
-  let text2 = {role: 'staticText', parent: 'rootWebArea'};
-  assertTrue(isInParagraph(text1));
-  assertFalse(isInParagraph(text2));
-});
-
-TEST_F('SelectToSpeakParagraphUnitTest', 'GetParagraphParent', function() {
-  let root = {role: 'rootWebArea'};
-  let paragraph = {role: 'paragraph', parent: 'rootWebArea'};
-  let text1 = {role: 'staticText', parent: paragraph};
-  let text2 = {role: 'staticText', parent: 'rootWebArea'};
-  assertEquals(paragraph, getParagraphParent(text1));
-  assertEquals(null, getParagraphParent(text2));
+  let paragraph = {role: 'paragraph', parent: root, root: root};
+  let text1 = {role: 'staticText', parent: paragraph, display: 'block',
+      root: root};
+  let text2 = {role: 'staticText', parent: root, root: root};
+  let text3 = {role: 'inlineTextBox', parent: text1, root: root};
+  let div = {role: 'genericContainer', parent: paragraph, display: 'block',
+      root: root};
+  let text4 = {role: 'staticText', parent: div, root: root};
+  assertEquals(paragraph, getFirstBlockAncestor(text1));
+  assertEquals(root, getFirstBlockAncestor(text2));
+  assertEquals(paragraph, getFirstBlockAncestor(text3));
+  assertEquals(div, getFirstBlockAncestor(text4));
 });
 
 TEST_F('SelectToSpeakParagraphUnitTest', 'InSameParagraph', function() {
   let root = {role: 'rootWebArea'};
-  let paragraph1 = {role: 'paragraph', parent: 'rootWebArea'};
-  let text1 = {role: 'staticText', parent: paragraph1};
-  let text2 = {role: 'staticText', parent: paragraph1};
-  let paragraph2 = {role: 'paragraph', parent: 'rootWebArea'};
-  let text3 = {role: 'staticText', parent: paragraph2};
+  let paragraph1 = {role: 'paragraph', display: 'block', parent: 'rootWebArea',
+      root: root};
+  let text1 = {role: 'staticText', parent: paragraph1, root: root};
+  let text2 = {role: 'staticText', parent: paragraph1, root: root};
+  let paragraph2 = {role: 'paragraph', display: 'block', parent: 'rootWebArea',
+      root: root};
+  let text3 = {role: 'staticText', parent: paragraph2, root: root};
   assertTrue(inSameParagraph(text1, text2));
   assertFalse(inSameParagraph(text1, text3));
 });
@@ -53,24 +53,38 @@ TEST_F('SelectToSpeakParagraphUnitTest', 'InSameParagraph', function() {
 TEST_F('SelectToSpeakParagraphUnitTest', 'BlockDivBreaksSameParagraph',
     function() {
   let root = {role: 'rootWebArea'};
-  let paragraph1 = {role: 'paragraph', parent: 'rootWebArea'};
-  let text1 = {role: 'staticText', parent: paragraph1};
-  let text2 = {role: 'image', parent: paragraph1, display: 'block'};
-  let text3 = {role: 'image', parent: paragraph1, display: 'inline'};
-  let text4 = {role: 'staticText', parent: paragraph1};
+  let paragraph1 = {role: 'paragraph', display: 'block', parent: 'rootWebArea',
+      root: root};
+  let text1 = {role: 'staticText', parent: paragraph1, root: root};
+  let text2 = {role: 'image', parent: paragraph1, display: 'block', root: root};
+  let text3 = {role: 'image', parent: paragraph1, display: 'inline', root: root};
+  let text4 = {role: 'staticText', parent: paragraph1, root: root};
   assertFalse(inSameParagraph(text1, text2));
   assertFalse(inSameParagraph(text2, text3));
   assertTrue(inSameParagraph(text3, text4));
 });
 
+TEST_F('SelectToSpeakParagraphUnitTest', 'IsWhitespace', function() {
+  assertTrue(isWhitespace(''));
+  assertTrue(isWhitespace(' '));
+  assertTrue(isWhitespace(' \n \t '));
+  assertFalse(isWhitespace('cats'));
+  assertFalse(isWhitespace(' cats '));
+});
+
 TEST_F('SelectToSpeakParagraphUnitTest', 'BuildNodeGroupStopsAtNewParagraph',
     function() {
   let root = {role: 'rootWebArea'};
-  let paragraph1 = {role: 'paragraph', parent: 'rootWebArea'};
-  let text1 = {role: 'staticText', parent: paragraph1, name: 'text1'};
-  let text2 = {role: 'staticText', parent: paragraph1, name: 'text2'};
-  let paragraph2 = {role: 'paragraph', parent: 'rootWebArea'};
-  let text3 = {role: 'staticText', parent: paragraph2, name: 'text3'};
+  let paragraph1 = {role: 'paragraph', display: 'block', parent: root,
+      root: root};
+  let text1 = {role: 'staticText', parent: paragraph1, name: 'text1',
+      root: root};
+  let text2 = {role: 'staticText', parent: paragraph1, name: 'text2',
+      root: root};
+  let paragraph2 = {role: 'paragraph', display: 'block', parent: root,
+      root: root};
+  let text3 = {role: 'staticText', parent: paragraph2, name: 'text3',
+      root: root};
   let result = buildNodeGroup([text1, text2, text3], 0);
   assertEquals('text1 text2', result.text);
   assertEquals(1, result.endIndex);
@@ -84,13 +98,19 @@ TEST_F('SelectToSpeakParagraphUnitTest', 'BuildNodeGroupStopsAtNewParagraph',
 TEST_F('SelectToSpeakParagraphUnitTest', 'BuildNodeGroupIncludesLinks',
     function() {
   let root = {role: 'rootWebArea'};
-  let paragraph1 = {role: 'paragraph', parent: 'rootWebArea'};
-  let text1 = {role: 'staticText', parent: paragraph1, name: 'text1'};
-  let link = {role: 'link', parent: paragraph1};
-  let linkText = {role: 'staticText', parent: link, name: 'linkText'};
-  let result = buildNodeGroup([text1, linkText], 0);
+  let paragraph1 = {role: 'paragraph', display: 'block', parent: root,
+      root: root};
+  let text1 = {role: 'staticText', parent: paragraph1, name: 'text1',
+      root: root};
+  // Whitespace-only nodes should be ignored.
+  let text2 = {role: 'staticText', parent: paragraph1, name: '\n',
+      root: root};
+  let link = {role: 'link', parent: paragraph1, root: root};
+  let linkText = {role: 'staticText', parent: link, name: 'linkText',
+      root: root};
+  let result = buildNodeGroup([text1, text2, linkText], 0);
   assertEquals('text1 linkText', result.text);
-  assertEquals(1, result.endIndex);
+  assertEquals(2, result.endIndex);
   assertEquals(2, result.nodes.length);
   assertEquals(0, result.nodes[0].startChar);
   assertEquals(text1, result.nodes[0].node);
