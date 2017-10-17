@@ -8,7 +8,9 @@
 
 #include "base/callback_helpers.h"
 #include "content/browser/android/scoped_surface_request_manager.h"
+#include "content/browser/media/android/media_player_renderer_web_contents_observer.h"
 #include "content/browser/media/android/media_resource_getter_impl.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
@@ -30,14 +32,36 @@ media::MediaUrlInterceptor* g_media_url_interceptor = nullptr;
 
 }  // namespace
 
-MediaPlayerRenderer::MediaPlayerRenderer(int process_id, int routing_id)
+MediaPlayerRenderer::MediaPlayerRenderer(int process_id,
+                                         int routing_id,
+                                         WebContents* web_contents)
     : render_process_id_(process_id),
       routing_id_(routing_id),
       has_error_(false),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+  DCHECK_EQ(static_cast<RenderFrameHostImpl*>(
+                RenderFrameHost::FromID(process_id, routing_id))
+                ->delegate()
+                ->GetAsWebContents(),
+            web_contents);
+
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(web_contents);
+  web_contents_muted_ = web_contents_impl && web_contents_impl->IsAudioMuted();
+
+  if (web_contents) {
+    MediaPlayerRendererWebContentsObserver::CreateForWebContents(web_contents);
+    web_contents_observer_ =
+        MediaPlayerRendererWebContentsObserver::FromWebContents(web_contents);
+    if (web_contents_observer_)
+      web_contents_observer_->AddMediaPlayerRenderer(this);
+  }
+}
 
 MediaPlayerRenderer::~MediaPlayerRenderer() {
   CancelScopedSurfaceRequest();
+  if (web_contents_observer_)
+    web_contents_observer_->RemoveMediaPlayerRenderer(this);
 }
 
 void MediaPlayerRenderer::Initialize(media::MediaResource* media_resource,
@@ -169,6 +193,12 @@ base::UnguessableToken MediaPlayerRenderer::InitiateScopedSurfaceRequest() {
 }
 
 void MediaPlayerRenderer::SetVolume(float volume) {
+  volume_ = volume;
+  UpdateVolume();
+}
+
+void MediaPlayerRenderer::UpdateVolume() {
+  float volume = web_contents_muted_ ? 0 : volume_;
   media_player_->SetVolume(volume);
 }
 
@@ -275,6 +305,15 @@ bool MediaPlayerRenderer::RequestPlay(int player_id,
                                       base::TimeDelta duration,
                                       bool has_audio) {
   return true;
+}
+
+void MediaPlayerRenderer::OnUpdateAudioMutingState(bool muted) {
+  web_contents_muted_ = muted;
+  UpdateVolume();
+}
+
+void MediaPlayerRenderer::OnWebContentsDestroyed() {
+  web_contents_observer_ = nullptr;
 }
 
 void MediaPlayerRenderer::OnDecoderResourcesReleased(int player_id) {
