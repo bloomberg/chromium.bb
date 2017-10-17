@@ -50,6 +50,24 @@ constexpr const wchar_t* const kMediaFoundationVideoEncoderDLLs[] = {
 // Resolutions that some platforms support, should be listed in ascending order.
 constexpr const gfx::Size kOptionalMaxResolutions[] = {gfx::Size(3840, 2176)};
 
+eAVEncH264VProfile GetH264VProfile(VideoCodecProfile profile) {
+  switch (profile) {
+    case H264PROFILE_BASELINE:
+      return eAVEncH264VProfile_Base;
+    case H264PROFILE_MAIN:
+      return eAVEncH264VProfile_Main;
+    case H264PROFILE_HIGH: {
+      // eAVEncH264VProfile_High requires Windows 8.
+      if (base::win::GetVersion() < base::win::VERSION_WIN8) {
+        return eAVEncH264VProfile_unknown;
+      }
+      return eAVEncH264VProfile_High;
+    }
+    default:
+      return eAVEncH264VProfile_unknown;
+  }
+}
+
 }  // namespace
 
 class MediaFoundationVideoEncodeAccelerator::EncodeOutput {
@@ -109,7 +127,7 @@ MediaFoundationVideoEncodeAccelerator::GetSupportedProfiles() {
   frame_rate_ = kMaxFrameRateNumerator / kMaxFrameRateDenominator;
   input_visible_size_ = gfx::Size(kMaxResolutionWidth, kMaxResolutionHeight);
   if (!CreateHardwareEncoderMFT() || !SetEncoderModes() ||
-      !InitializeInputOutputSamples()) {
+      !InitializeInputOutputSamples(H264PROFILE_BASELINE)) {
     ReleaseEncoderResources();
     DVLOG(1)
         << "Hardware encode acceleration is not available on this platform.";
@@ -133,6 +151,13 @@ MediaFoundationVideoEncodeAccelerator::GetSupportedProfiles() {
   profile.max_framerate_denominator = kMaxFrameRateDenominator;
   profile.max_resolution = highest_supported_resolution;
   profiles.push_back(profile);
+
+  profile.profile = H264PROFILE_MAIN;
+  profiles.push_back(profile);
+
+  profile.profile = H264PROFILE_HIGH;
+  profiles.push_back(profile);
+
   return profiles;
 }
 
@@ -154,7 +179,7 @@ bool MediaFoundationVideoEncodeAccelerator::Initialize(
     return false;
   }
 
-  if (H264PROFILE_BASELINE != output_profile) {
+  if (GetH264VProfile(output_profile) == eAVEncH264VProfile_unknown) {
     DLOG(ERROR) << "Output profile not supported= " << output_profile;
     return false;
   }
@@ -197,7 +222,7 @@ bool MediaFoundationVideoEncodeAccelerator::Initialize(
     return false;
   }
 
-  if (!InitializeInputOutputSamples()) {
+  if (!InitializeInputOutputSamples(output_profile)) {
     DLOG(ERROR) << "Failed initializing input-output samples.";
     return false;
   }
@@ -374,7 +399,8 @@ bool MediaFoundationVideoEncodeAccelerator::CreateHardwareEncoderMFT() {
   return true;
 }
 
-bool MediaFoundationVideoEncodeAccelerator::InitializeInputOutputSamples() {
+bool MediaFoundationVideoEncodeAccelerator::InitializeInputOutputSamples(
+    VideoCodecProfile output_profile) {
   DCHECK(main_client_task_runner_->BelongsToCurrentThread());
 
   DWORD input_count = 0;
@@ -422,7 +448,7 @@ bool MediaFoundationVideoEncodeAccelerator::InitializeInputOutputSamples() {
                                          MFVideoInterlace_Progressive);
   RETURN_ON_HR_FAILURE(hr, "Couldn't set interlace mode", false);
   hr = imf_output_media_type_->SetUINT32(MF_MT_MPEG2_PROFILE,
-                                         eAVEncH264VProfile_Base);
+                                         GetH264VProfile(output_profile));
   RETURN_ON_HR_FAILURE(hr, "Couldn't set codec profile", false);
   hr = encoder_->SetOutputType(output_stream_id_, imf_output_media_type_.Get(),
                                0);

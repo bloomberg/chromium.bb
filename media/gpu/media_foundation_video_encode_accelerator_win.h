@@ -72,7 +72,7 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
   bool CreateHardwareEncoderMFT();
 
   // Initializes and allocates memory for input and output samples.
-  bool InitializeInputOutputSamples();
+  bool InitializeInputOutputSamples(VideoCodecProfile output_profile);
 
   // Initializes encoder parameters for real-time use.
   bool SetEncoderModes();
