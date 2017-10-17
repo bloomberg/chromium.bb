@@ -999,6 +999,16 @@ class GSRetryFilterTest(cros_test_lib.TestCase):
                            error)
     self.assertEqual(self.ctx._RetryFilter(e), True)
 
+  def testRetryAccessDeniedException(self):
+    """Verify retry behavior when transient AccessDeniedException happens."""
+    error = ('AccessDeniedException: 403 XXX@gmail.com does not have '
+             'storage.objects.delete access to XXX'
+             'CommandException: 1 file/object could not be transferred.')
+    e = self._getException(['gsutil', 'cp', self.REMOTE_PATH, self.LOCAL_PATH],
+                           error)
+    self.assertEqual(self.ctx._RetryFilter(e), True)
+
+
 class GSContextTest(AbstractGSContextTest):
   """Tests for GSContext()"""
 
