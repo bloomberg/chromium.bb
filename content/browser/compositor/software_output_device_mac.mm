@@ -8,7 +8,6 @@
 #include "base/trace_event/trace_event.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/accelerated_widget_mac/accelerated_widget_mac.h"
-#include "ui/compositor/compositor.h"
 #include "ui/gfx/mac/io_surface.h"
 #include "ui/gfx/skia_util.h"
 
@@ -17,8 +16,8 @@ namespace content {
 SoftwareOutputDeviceMac::Buffer::Buffer() = default;
 SoftwareOutputDeviceMac::Buffer::~Buffer() = default;
 
-SoftwareOutputDeviceMac::SoftwareOutputDeviceMac(ui::Compositor* compositor)
-    : compositor_(compositor) {}
+SoftwareOutputDeviceMac::SoftwareOutputDeviceMac(gfx::AcceleratedWidget widget)
+    : widget_(widget) {}
 
 SoftwareOutputDeviceMac::~SoftwareOutputDeviceMac() {
 }
@@ -180,9 +179,8 @@ void SoftwareOutputDeviceMac::EndPaint() {
   }
   current_paint_canvas_.reset();
 
-  if (compositor_) {
-    ui::AcceleratedWidgetMac* widget =
-        ui::AcceleratedWidgetMac::Get(compositor_->widget());
+  if (widget_ != gfx::kNullAcceleratedWidget) {
+    ui::AcceleratedWidgetMac* widget = ui::AcceleratedWidgetMac::Get(widget_);
     if (widget) {
       widget->GotIOSurfaceFrame(current_paint_buffer_->io_surface, pixel_size_,
                                 scale_factor_);

@@ -9,24 +9,21 @@
 
 #include "base/macros.h"
 #include "components/viz/service/display/software_output_device.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/x/x11_types.h"
-
-namespace ui {
-class Compositor;
-}
 
 namespace content {
 
 class SoftwareOutputDeviceX11 : public viz::SoftwareOutputDevice {
  public:
-  explicit SoftwareOutputDeviceX11(ui::Compositor* compositor);
+  explicit SoftwareOutputDeviceX11(gfx::AcceleratedWidget widget);
 
   ~SoftwareOutputDeviceX11() override;
 
   void EndPaint() override;
 
  private:
-  ui::Compositor* compositor_;
+  gfx::AcceleratedWidget widget_;
   XDisplay* display_;
   GC gc_;
   XWindowAttributes attributes_;

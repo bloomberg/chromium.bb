@@ -108,7 +108,7 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
 
   PerCompositorData* CreatePerCompositorData(ui::Compositor* compositor);
   std::unique_ptr<viz::SoftwareOutputDevice> CreateSoftwareOutputDevice(
-      ui::Compositor* compositor);
+      gfx::AcceleratedWidget widget);
   void EstablishedGpuChannel(
       base::WeakPtr<ui::Compositor> compositor,
       bool create_gpu_output_surface,

@@ -11,7 +11,6 @@
 #include "skia/ext/platform_canvas.h"
 #include "skia/ext/skia_utils_win.h"
 #include "ui/base/win/internal_constants.h"
-#include "ui/compositor/compositor.h"
 #include "ui/gfx/gdi_util.h"
 #include "ui/gfx/skia_util.h"
 
@@ -87,8 +86,8 @@ size_t OutputDeviceBacking::GetMaxByteSize() {
 }
 
 SoftwareOutputDeviceWin::SoftwareOutputDeviceWin(OutputDeviceBacking* backing,
-                                                 ui::Compositor* compositor)
-    : hwnd_(compositor->widget()),
+                                                 gfx::AcceleratedWidget widget)
+    : hwnd_(widget),
       is_hwnd_composited_(false),
       backing_(backing),
       in_paint_(false) {
