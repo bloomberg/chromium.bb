@@ -24,7 +24,7 @@ def AlreadyUpToDate():
   # lld-link seems to have no flag to query the version; go to ld.lld instead.
   # TODO(thakis): Remove ld.lld workaround if https://llvm.org/PR34955 is fixed.
   lld_rev = subprocess.check_output([LD_LLD_PATH, '--version'])
-  return (re.match(r'LLD.*\(trunk (\d+)\)', lld_rev).group(1) !=
+  return (re.match(r'LLD.*\(trunk (\d+)\)', lld_rev).group(1) ==
              update.CLANG_REVISION)
 
 
