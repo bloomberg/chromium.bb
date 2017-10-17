@@ -3300,9 +3300,8 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
           prerender::PrerenderContents::FromWebContents(
               handle->GetWebContents());
       if (!prerender_contents) {
-        auto intent_picker_cb = base::Bind(ShowIntentPickerBubble());
-        auto url_to_arc_throttle = base::MakeUnique<arc::ArcNavigationThrottle>(
-            handle, intent_picker_cb);
+        auto url_to_arc_throttle =
+            base::MakeUnique<arc::ArcNavigationThrottle>(handle);
         throttles.push_back(std::move(url_to_arc_throttle));
       }
     }
