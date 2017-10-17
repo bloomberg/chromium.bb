@@ -125,8 +125,9 @@ class BASE_EXPORT ScopedVariant {
   // over that.
   const VARIANT* ptr() const { return &var_; }
 
-  // Like other scoped classes (e.g scoped_refptr, ComPtr, ScopedBstr)
-  // we support the assignment operator for the type we wrap.
+  // Like other scoped classes (e.g. scoped_refptr, ScopedBstr,
+  // Microsoft::WRL::ComPtr) we support the assignment operator for the type we
+  // wrap.
   ScopedVariant& operator=(const VARIANT& var);
 
   // A hack to pass a pointer to the variant where the accepting
