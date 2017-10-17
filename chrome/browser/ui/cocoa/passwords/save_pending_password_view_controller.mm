@@ -269,8 +269,13 @@ NSButton* EyeIcon(id target, SEL action) {
                                                 NSWidth([passwordText_ frame]),
                                             curY)];
   CGFloat curX = NSMaxX([passwordText_ frame]) + kItemLabelSpacing;
-  // Password field is top-aligned with the label because it's not editable.
-  curY = NSMaxY([passwordText_ frame]) - NSHeight([passwordField_ frame]);
+  if (base::mac::ObjCCast<NSComboBox>(passwordField_.get())) {
+    // Combobox is center-aligned with the label.
+    curY = (rowHeight - NSHeight([passwordField_ frame])) / 2;
+  } else {
+    // Password field is top-aligned with the label because it's not editable.
+    curY = NSMaxY([passwordText_ frame]) - NSHeight([passwordField_ frame]);
+  }
   [passwordField_ setFrameOrigin:NSMakePoint(curX, curY)];
   CGFloat remainingWidth = kDesiredRowWidth - NSMinX([passwordField_ frame]);
   if (passwordViewButton_) {
