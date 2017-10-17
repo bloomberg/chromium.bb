@@ -452,6 +452,11 @@ void SetPageSizeAndContentRect(bool rotated,
   }
 }
 
+template <class S>
+bool IsAboveOrDirectlyLeftOf(const S& lhs, const S& rhs) {
+  return lhs.y() < rhs.y() || (lhs.y() == rhs.y() && lhs.x() < rhs.x());
+}
+
 // This formats a string with special 0xfffe end-of-line hyphens the same way
 // as Adobe Reader. When a hyphen is encountered, the next non-CR/LF whitespace
 // becomes CR+LF and the hyphen is erased. If there is no whitespace between
@@ -2075,7 +2080,7 @@ bool PDFiumEngine::OnMouseMove(const pp::MouseInputEvent& event) {
 
 bool PDFiumEngine::ExtendSelection(int page_index, int char_index) {
   // Check if the user has decreased their selection area and we need to remove
-  // pages from selection_.
+  // pages from |selection_|.
   for (size_t i = 0; i < selection_.size(); ++i) {
     if (selection_[i].page_index() == page_index) {
       // There should be no other pages after this.
@@ -2086,40 +2091,42 @@ bool PDFiumEngine::ExtendSelection(int page_index, int char_index) {
   if (selection_.empty())
     return false;
 
-  int last = selection_.size() - 1;
-  if (selection_[last].page_index() == page_index) {
+  PDFiumRange& last_selection = selection_.back();
+  const int last_page_index = last_selection.page_index();
+  const int last_char_index = last_selection.char_index();
+  if (last_page_index == page_index) {
     // Selecting within a page.
-    int count;
-    if (char_index >= selection_[last].char_index()) {
+    int count = char_index - last_char_index;
+    if (count >= 0) {
       // Selecting forward.
-      count = char_index - selection_[last].char_index() + 1;
+      ++count;
     } else {
-      count = char_index - selection_[last].char_index() - 1;
+      --count;
     }
-    selection_[last].SetCharCount(count);
-  } else if (selection_[last].page_index() < page_index) {
+    last_selection.SetCharCount(count);
+  } else if (last_page_index < page_index) {
     // Selecting into the next page.
 
     // First make sure that there are no gaps in selection, i.e. if mousedown on
     // page one but we only get mousemove over page three, we want page two.
-    for (int i = selection_[last].page_index() + 1; i < page_index; ++i) {
+    for (int i = last_page_index + 1; i < page_index; ++i) {
       selection_.push_back(
           PDFiumRange(pages_[i].get(), 0, pages_[i]->GetCharCount()));
     }
 
-    int count = pages_[selection_[last].page_index()]->GetCharCount();
-    selection_[last].SetCharCount(count - selection_[last].char_index());
+    int count = pages_[last_page_index]->GetCharCount();
+    last_selection.SetCharCount(count - last_char_index);
     selection_.push_back(PDFiumRange(pages_[page_index].get(), 0, char_index));
   } else {
     // Selecting into the previous page.
     // The selection's char_index is 0-based, so the character count is one
     // more than the index. The character count needs to be negative to
     // indicate a backwards selection.
-    selection_[last].SetCharCount(-(selection_[last].char_index() + 1));
+    last_selection.SetCharCount(-last_char_index - 1);
 
     // First make sure that there are no gaps in selection, i.e. if mousedown on
     // page three but we only get mousemove over page one, we want page two.
-    for (int i = selection_[last].page_index() - 1; i > page_index; --i) {
+    for (int i = last_page_index - 1; i > page_index; --i) {
       selection_.push_back(
           PDFiumRange(pages_[i].get(), 0, pages_[i]->GetCharCount()));
     }
@@ -2494,15 +2501,15 @@ std::string PDFiumEngine::GetSelectedText() {
     return std::string();
 
   base::string16 result;
-  base::string16 new_line_char = base::ASCIIToUTF16("\n");
   for (size_t i = 0; i < selection_.size(); ++i) {
-    if (i > 0 && selection_[i - 1].page_index() > selection_[i].page_index()) {
-      result = selection_[i].GetText() + new_line_char + result;
-    } else {
-      if (i > 0)
-        result.append(new_line_char);
-      result.append(selection_[i].GetText());
+    static constexpr base::char16 kNewLineChar = L'\n';
+    base::string16 current_selection_text = selection_[i].GetText();
+    if (i != 0) {
+      if (selection_[i - 1].page_index() > selection_[i].page_index())
+        std::swap(current_selection_text, result);
+      result.push_back(kNewLineChar);
     }
+    result.append(current_selection_text);
   }
 
   FormatStringWithHyphens(&result);
@@ -3837,16 +3844,13 @@ void PDFiumEngine::OnSelectionChanged() {
                 std::numeric_limits<int32_t>::max(), 0, 0);
   pp::Rect right;
   for (auto& sel : selection_) {
-    for (const auto& rect : sel.GetScreenRects(
-             GetVisibleRect().point(), current_zoom_, current_rotation_)) {
-      if (rect.y() < left.y() ||
-          (rect.y() == left.y() && rect.x() < left.x())) {
+    std::vector<pp::Rect> screen_rects = sel.GetScreenRects(
+        GetVisibleRect().point(), current_zoom_, current_rotation_);
+    for (const auto& rect : screen_rects) {
+      if (IsAboveOrDirectlyLeftOf(rect, left))
         left = rect;
-      }
-      if (rect.y() > right.y() ||
-          (rect.y() == right.y() && rect.right() > right.right())) {
+      if (IsAboveOrDirectlyLeftOf(right, rect))
         right = rect;
-      }
     }
   }
   right.set_x(right.x() + right.width());
@@ -4267,12 +4271,9 @@ void PDFiumEngine::MoveRangeSelectionExtent(const pp::Point& extent) {
 void PDFiumEngine::SetSelectionBounds(const pp::Point& base,
                                       const pp::Point& extent) {
   range_selection_base_ = base;
-  if (base.y() < extent.y() ||
-      (base.y() == extent.y() && base.x() < extent.x())) {
-    range_selection_direction_ = RangeSelectionDirection::Left;
-  } else {
-    range_selection_direction_ = RangeSelectionDirection::Right;
-  }
+  range_selection_direction_ = IsAboveOrDirectlyLeftOf(base, extent)
+                                   ? RangeSelectionDirection::Left
+                                   : RangeSelectionDirection::Right;
 }
 
 ScopedUnsupportedFeature::ScopedUnsupportedFeature(PDFiumEngine* engine)
