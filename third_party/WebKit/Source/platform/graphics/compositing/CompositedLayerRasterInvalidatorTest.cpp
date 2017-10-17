@@ -138,25 +138,57 @@ TEST_F(CompositedLayerRasterInvalidatorTest, ReorderChunks) {
 
   // Swap chunk 1 and 2. All chunks have their own local raster invalidations.
   CHUNKS(new_chunks, Chunk(0, 2), Chunk(2, 4), Chunk(1, 3));
-  new_chunks_array[1].bounds = FloatRect(11, 22, 33, 44);
+  new_chunks_array[2].bounds = FloatRect(11, 22, 33, 44);
   invalidator.Generate(kDefaultLayerBounds, new_chunks,
                        DefaultPropertyTreeState());
   const auto& invalidations = TrackedRasterInvalidations(invalidator);
-  ASSERT_EQ(5u, invalidations.size());
+  ASSERT_EQ(8u, invalidations.size());
   // The first chunk should always match because otherwise we won't reuse the
   // CompositedLayerRasterInvalidator (which is according to the first chunk's
   // id). For matched chunk, we issue raster invalidations if any found by
   // PaintController.
   ExpectDisplayItemInvalidations(invalidations, 0, *new_chunks[0]);
-  // Invalidated new chunk 1's old (as chunks[2]) and new (as new_chunks[1])
+  ExpectDisplayItemInvalidations(invalidations, 2, *new_chunks[1]);
+  // Invalidated new chunk 2's old (as chunks[1]) and new (as new_chunks[2])
   // bounds.
-  ExpectChunkInvalidation(invalidations, 2, *chunks[2],
+  ExpectChunkInvalidation(invalidations, 6, *chunks[1],
                           PaintInvalidationReason::kChunkReordered);
-  ExpectChunkInvalidation(invalidations, 3, *new_chunks[1],
+  ExpectChunkInvalidation(invalidations, 7, *new_chunks[2],
                           PaintInvalidationReason::kChunkReordered);
-  // Invalidated new chunk 2's new bounds. Didn't invalidate old bounds because
+}
+
+TEST_F(CompositedLayerRasterInvalidatorTest, ReorderChunkSubsequences) {
+  CompositedLayerRasterInvalidator invalidator(kNoopRasterInvalidation);
+  CHUNKS(chunks, Chunk(0), Chunk(1), Chunk(2), Chunk(3), Chunk(4));
+  invalidator.SetTracksRasterInvalidations(true);
+  invalidator.Generate(kDefaultLayerBounds, chunks, DefaultPropertyTreeState());
+  EXPECT_TRUE(TrackedRasterInvalidations(invalidator).IsEmpty());
+
+  // Swap chunk (1,2) and (3,4). All chunks have their own local raster
+  // invalidations.
+  CHUNKS(new_chunks, Chunk(0, 2), Chunk(3, 3), Chunk(4, 4), Chunk(1, 1),
+         Chunk(2, 2));
+  new_chunks_array[3].bounds = FloatRect(11, 22, 33, 44);
+  invalidator.Generate(kDefaultLayerBounds, new_chunks,
+                       DefaultPropertyTreeState());
+  const auto& invalidations = TrackedRasterInvalidations(invalidator);
+  ASSERT_EQ(12u, invalidations.size());
+  // The first chunk should always match because otherwise we won't reuse the
+  // CompositedLayerRasterInvalidator (which is according to the first chunk's
+  // id). For matched chunk, we issue raster invalidations if any found by
+  // PaintController.
+  ExpectDisplayItemInvalidations(invalidations, 0, *new_chunks[0]);
+  ExpectDisplayItemInvalidations(invalidations, 2, *new_chunks[1]);
+  ExpectDisplayItemInvalidations(invalidations, 5, *new_chunks[2]);
+  // Invalidated new chunk 3's old (as chunks[1]) and new (as new_chunks[3])
+  // bounds.
+  ExpectChunkInvalidation(invalidations, 9, *chunks[1],
+                          PaintInvalidationReason::kChunkReordered);
+  ExpectChunkInvalidation(invalidations, 10, *new_chunks[3],
+                          PaintInvalidationReason::kChunkReordered);
+  // Invalidated new chunk 4's new bounds. Didn't invalidate old bounds because
   // it's the same as the new bounds.
-  ExpectChunkInvalidation(invalidations, 4, *new_chunks[2],
+  ExpectChunkInvalidation(invalidations, 11, *new_chunks[4],
                           PaintInvalidationReason::kChunkReordered);
 }
 
@@ -217,13 +249,12 @@ TEST_F(CompositedLayerRasterInvalidatorTest, UncacheableChunks) {
   invalidator.Generate(kDefaultLayerBounds, new_chunks,
                        DefaultPropertyTreeState());
   const auto& invalidations = TrackedRasterInvalidations(invalidator);
-  ASSERT_EQ(5u, invalidations.size());
+  ASSERT_EQ(7u, invalidations.size());
   ExpectDisplayItemInvalidations(invalidations, 0, *new_chunks[0]);
-  ExpectChunkInvalidation(invalidations, 2, *new_chunks[1],
-                          PaintInvalidationReason::kChunkReordered);
-  ExpectChunkInvalidation(invalidations, 3, *new_chunks[2],
+  ExpectDisplayItemInvalidations(invalidations, 2, *new_chunks[1]);
+  ExpectChunkInvalidation(invalidations, 5, *new_chunks[2],
                           PaintInvalidationReason::kChunkUncacheable);
-  ExpectChunkInvalidation(invalidations, 4, *chunks[1],
+  ExpectChunkInvalidation(invalidations, 6, *chunks[1],
                           PaintInvalidationReason::kChunkUncacheable);
 }
 

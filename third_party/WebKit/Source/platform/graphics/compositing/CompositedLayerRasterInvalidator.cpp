@@ -71,6 +71,7 @@ void CompositedLayerRasterInvalidator::GenerateRasterInvalidations(
   Vector<bool> old_chunks_matched;
   old_chunks_matched.resize(paint_chunks_info_.size());
   size_t old_index = 0;
+  size_t max_matched_old_index = 0;
   for (size_t new_index = 0; new_index < new_chunks.size(); ++new_index) {
     const auto& new_chunk = *new_chunks[new_index];
     const auto& new_chunk_info = new_chunks_info[new_index];
@@ -81,28 +82,31 @@ void CompositedLayerRasterInvalidator::GenerateRasterInvalidations(
       continue;
     }
 
-    size_t matched = MatchNewChunkToOldChunk(new_chunk, old_index);
-    if (matched == kNotFound) {
+    size_t matched_old_index = MatchNewChunkToOldChunk(new_chunk, old_index);
+    if (matched_old_index == kNotFound) {
       // The new chunk doesn't match any old chunk.
       InvalidateRasterForNewChunk(new_chunk_info,
                                   PaintInvalidationReason::kAppeared);
       continue;
     }
 
-    DCHECK(!old_chunks_matched[matched]);
-    old_chunks_matched[matched] = true;
+    DCHECK(!old_chunks_matched[matched_old_index]);
+    old_chunks_matched[matched_old_index] = true;
+    bool moved_earlier = matched_old_index < max_matched_old_index;
+    max_matched_old_index = std::max(max_matched_old_index, matched_old_index);
 
     bool properties_changed =
-        new_chunk.properties != paint_chunks_info_[matched].properties ||
+        new_chunk.properties !=
+            paint_chunks_info_[matched_old_index].properties ||
         new_chunk.properties.property_tree_state.Changed(layer_state_);
-    if (!properties_changed && matched == old_index) {
+    if (!properties_changed && !moved_earlier) {
       // Add the raster invalidations found by PaintController within the chunk.
       AddDisplayItemRasterInvalidations(new_chunk);
     } else {
       // Invalidate both old and new bounds of the chunk if the chunk's paint
       // properties changed, or is moved backward and may expose area that was
       // previously covered by it.
-      const auto& old_chunks_info = paint_chunks_info_[matched];
+      const auto& old_chunks_info = paint_chunks_info_[matched_old_index];
       PaintInvalidationReason reason =
           properties_changed ? PaintInvalidationReason::kPaintProperty
                              : PaintInvalidationReason::kChunkReordered;
@@ -113,7 +117,7 @@ void CompositedLayerRasterInvalidator::GenerateRasterInvalidations(
       // invalidated the chunk.
     }
 
-    old_index = matched + 1;
+    old_index = matched_old_index + 1;
     if (old_index == paint_chunks_info_.size())
       old_index = 0;
   }

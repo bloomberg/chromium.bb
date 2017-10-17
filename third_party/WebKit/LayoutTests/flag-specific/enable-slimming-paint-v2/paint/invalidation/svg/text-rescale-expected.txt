@@ -12,11 +12,6 @@
           "reason": "appeared"
         },
         {
-          "object": "InlineTextBox 'PASS '",
-          "rect": [0, 64, 302, 46],
-          "reason": "chunk reordered"
-        },
-        {
           "object": "LayoutSVGRoot (positioned) svg",
           "rect": [0, 14, 302, 46],
           "reason": "appeared"

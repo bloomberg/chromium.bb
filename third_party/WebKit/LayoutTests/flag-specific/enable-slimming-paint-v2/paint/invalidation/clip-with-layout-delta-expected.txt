@@ -14,7 +14,7 @@
         {
           "object": "LayoutBlockFlow (relative positioned) DIV",
           "rect": [108, 8, 100, 100],
-          "reason": "chunk reordered"
+          "reason": "disappeared"
         },
         {
           "object": "LayoutBlockFlow DIV",
