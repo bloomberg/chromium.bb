@@ -1061,6 +1061,8 @@ bool ChildProcessSecurityPolicyImpl::CanAccessDataForOrigin(int child_id,
     // keys that will help understand the circumstances of that kill.
     base::debug::SetCrashKeyValue("requested_site_url", site_url.spec());
     base::debug::SetCrashKeyValue("requested_origin", url.GetOrigin().spec());
+    base::debug::SetCrashKeyValue("killed_process_origin_lock",
+                                  state->second->origin_lock().spec());
   }
   return can_access;
 }
