@@ -37,34 +37,6 @@ class IconLabelBubbleView : public views::InkDropObserver,
  public:
   static constexpr int kTrailingPaddingPreMd = 2;
 
-  // A view that draws the separator.
-  class SeparatorView : public views::View,
-                        public ui::ImplicitAnimationObserver {
-   public:
-    explicit SeparatorView(IconLabelBubbleView* owner);
-
-    // views::View:
-    void OnPaint(gfx::Canvas* canvas) override;
-
-    // ui::ImplicitAnimationObserver:
-    void OnImplicitAnimationsCompleted() override;
-
-    // Updates the opacity based on the ink drop's state.
-    void UpdateOpacity();
-
-    void set_disable_animation_for_test(bool disable_animation_for_test) {
-      disable_animation_for_test_ = disable_animation_for_test;
-    }
-
-   private:
-    // Weak.
-    IconLabelBubbleView* owner_;
-
-    bool disable_animation_for_test_;
-
-    DISALLOW_COPY_AND_ASSIGN(SeparatorView);
-  };
-
   IconLabelBubbleView(const gfx::FontList& font_list, bool elide_in_middle);
   ~IconLabelBubbleView() override;
 
@@ -77,9 +49,6 @@ class IconLabelBubbleView : public views::InkDropObserver,
 
   const views::ImageView* GetImageView() const { return image_; }
   views::ImageView* GetImageView() { return image_; }
-
-  // Exposed for testing.
-  SeparatorView* separator_view() const { return separator_view_; }
 
  protected:
   static constexpr int kOpenTimeMS = 150;
@@ -152,6 +121,28 @@ class IconLabelBubbleView : public views::InkDropObserver,
   gfx::Size GetMaxSizeForLabelWidth(int label_width) const;
 
  private:
+  // A view that draws the separator.
+  class SeparatorView : public views::View,
+                        public ui::ImplicitAnimationObserver {
+   public:
+    explicit SeparatorView(IconLabelBubbleView* owner);
+
+    // views::View:
+    void OnPaint(gfx::Canvas* canvas) override;
+
+    // ui::ImplicitAnimationObserver:
+    void OnImplicitAnimationsCompleted() override;
+
+    // Updates the opacity based on the ink drop's state.
+    void UpdateOpacity();
+
+   private:
+    // Weak.
+    IconLabelBubbleView* owner_;
+
+    DISALLOW_COPY_AND_ASSIGN(SeparatorView);
+  };
+
   // Amount of padding from the leading edge of the view to the leading edge of
   // the image, and from the trailing edge of the label (or image, if the label
   // is invisible) to the trailing edge of the view.
