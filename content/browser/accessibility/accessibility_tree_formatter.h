@@ -11,13 +11,11 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/process/process_handle.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/common/content_export.h"
-#include "ui/gfx/native_widget_types.h"
 
 namespace {
 const char kChildrenDictAttr[] = "children";
@@ -77,23 +75,12 @@ class CONTENT_EXPORT AccessibilityTreeFormatter {
   //     "children": [ ]
   //   } ]
   // }
-  // Build an accessibility tree for the current Chrome app.
   virtual std::unique_ptr<base::DictionaryValue> BuildAccessibilityTree(
       BrowserAccessibility* root) = 0;
-
-  // Build an accessibility tree for any process with a window.
-  virtual std::unique_ptr<base::DictionaryValue>
-  BuildAccessibilityTreeForProcess(base::ProcessId pid) = 0;
-
-  // Build an accessibility tree for any window.
-  virtual std::unique_ptr<base::DictionaryValue>
-  BuildAccessibilityTreeForWindow(gfx::AcceleratedWidget widget) = 0;
 
   // Dumps a BrowserAccessibility tree into a string.
   void FormatAccessibilityTree(
       BrowserAccessibility* root, base::string16* contents);
-  void FormatAccessibilityTree(const base::DictionaryValue& tree_node,
-                               base::string16* contents);
 
   // Set regular expression filters that apply to each component of every
   // line before it's output.
