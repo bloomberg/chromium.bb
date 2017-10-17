@@ -40,7 +40,7 @@ Polymer({
 
   behaviors: [
     I18nBehavior,
-    settings.RouteObserverBehavior,
+    settings.GlobalScrollTargetBehavior,
     WebUIListenerBehavior,
   ],
 
@@ -67,6 +67,15 @@ Polymer({
         return [];
       },
     },
+
+    /**
+     * settings.GlobalScrollTargetBehavior
+     * @override
+     */
+    subpageRoute: {
+      type: Object,
+      value: settings.routes.SITE_SETTINGS_SITE_DATA,
+    },
   },
 
   /** @private {settings.LocalDataBrowserProxy} */
@@ -87,6 +96,8 @@ Polymer({
    * @protected
    */
   currentRouteChanged: function(currentRoute) {
+    settings.GlobalScrollTargetBehaviorImpl.currentRouteChanged.call(
+        this, currentRoute);
     if (currentRoute == settings.routes.SITE_SETTINGS_SITE_DATA) {
       this.browserProxy_.reloadCookies().then(this.updateSiteList_.bind(this));
     }
