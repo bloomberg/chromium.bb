@@ -247,8 +247,8 @@
 
     [previewLayer setSession:_captureSession];
     [previewLayer setVideoGravity:AVLayerVideoGravityResizeAspectFill];
-    [self resetVideoOrientation:previewLayer];
     dispatch_async(dispatch_get_main_queue(), ^{
+      [self resetVideoOrientation:previewLayer];
       [_delegate captureSessionIsConnected];
       [self startRecording];
     });
