@@ -2000,46 +2000,6 @@ TEST_P(CrasAudioHandlerTest, SetOutputVolumePercent) {
   EXPECT_EQ(kVolume, audio_pref_handler_->GetOutputVolumeValue(&device));
 }
 
-TEST_P(CrasAudioHandlerTest, SetOutputVolumePercentWithoutNotifyingObservers) {
-  AudioNodeList audio_nodes = GenerateAudioNodeList({kInternalSpeaker});
-  SetUpCrasAudioHandler(audio_nodes);
-  EXPECT_EQ(0, test_observer_->output_volume_changed_count());
-
-  const int kVolume1 = 60;
-  const int kVolume2 = 80;
-  cras_audio_handler_->SetOutputVolumePercentWithoutNotifyingObservers(
-      kVolume1, CrasAudioHandler::VOLUME_CHANGE_MAXIMIZE_MODE_SCREENSHOT);
-  // Verify the output volume is changed to the designated value,
-  // OnOutputNodeVolumeChanged event is not fired, and the device volume value
-  // is saved in the preferences.
-  EXPECT_EQ(kVolume1, cras_audio_handler_->GetOutputVolumePercent());
-  EXPECT_EQ(0, test_observer_->output_volume_changed_count());
-  AudioDevice device;
-  EXPECT_TRUE(cras_audio_handler_->GetPrimaryActiveOutputDevice(&device));
-  EXPECT_EQ(device.id, kInternalSpeaker->id);
-  EXPECT_EQ(kVolume1, audio_pref_handler_->GetOutputVolumeValue(&device));
-
-  // Make another SetOutputVolumePercentWithoutNotifyingObservers call to make
-  // sure everything is right.
-  cras_audio_handler_->SetOutputVolumePercentWithoutNotifyingObservers(
-      kVolume2, CrasAudioHandler::VOLUME_CHANGE_MAXIMIZE_MODE_SCREENSHOT);
-  EXPECT_EQ(kVolume2, cras_audio_handler_->GetOutputVolumePercent());
-  EXPECT_EQ(0, test_observer_->output_volume_changed_count());
-  EXPECT_TRUE(cras_audio_handler_->GetPrimaryActiveOutputDevice(&device));
-  EXPECT_EQ(device.id, kInternalSpeaker->id);
-  EXPECT_EQ(kVolume2, audio_pref_handler_->GetOutputVolumeValue(&device));
-
-  // Make a final SetOutputVolumePercent call to check if
-  // SetOutputVolumePercentWithoutNotifyingObservers may block subsequent
-  // notifying observers.
-  cras_audio_handler_->SetOutputVolumePercent(kVolume1);
-  EXPECT_EQ(kVolume1, cras_audio_handler_->GetOutputVolumePercent());
-  EXPECT_EQ(1, test_observer_->output_volume_changed_count());
-  EXPECT_TRUE(cras_audio_handler_->GetPrimaryActiveOutputDevice(&device));
-  EXPECT_EQ(device.id, kInternalSpeaker->id);
-  EXPECT_EQ(kVolume1, audio_pref_handler_->GetOutputVolumeValue(&device));
-}
-
 TEST_P(CrasAudioHandlerTest, RestartAudioClientWithCrasReady) {
   AudioNodeList audio_nodes = GenerateAudioNodeList({kInternalSpeaker});
   SetUpCrasAudioHandler(audio_nodes);

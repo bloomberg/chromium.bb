@@ -520,13 +520,6 @@ void CrasAudioHandler::SetOutputVolumePercent(int volume_percent) {
   }
 }
 
-void CrasAudioHandler::SetOutputVolumePercentWithoutNotifyingObservers(
-    int volume_percent,
-    AutomatedVolumeChangeReason reason) {
-  automated_volume_change_reasons_.push_back(reason);
-  SetOutputVolumePercent(volume_percent);
-}
-
 // TODO: Rename the 'Percent' to something more meaningful.
 void CrasAudioHandler::SetInputGainPercent(int gain_percent) {
   // TODO(jennyz): Should we set all input devices' gain to the same level?
@@ -751,36 +744,26 @@ void CrasAudioHandler::OutputNodeVolumeChanged(uint64_t node_id, int volume) {
   output_volume_ = volume;
   audio_pref_handler_->SetVolumeGainValue(*device, volume);
 
-  bool should_notify = true;
-  if (!automated_volume_change_reasons_.empty()) {
-    AutomatedVolumeChangeReason reason =
-        automated_volume_change_reasons_.front();
-    if (reason == VOLUME_CHANGE_INITIALIZING_AUDIO_STATE &&
-        (init_node_id_ != node_id || init_volume_ != volume)) {
-      // A SetOutputNodeVolume request may be dropped if cras isn't ready
-      // during initialization. In this case, we clear the pending automated
-      // volume change reasons as they might also be dropped by cras.
-      LOG(WARNING) << "OutputNodeVolumeChanged signal dropped during the "
-                      "initialization.";
-      automated_volume_change_reasons_.clear();
-    } else {
-      // In other cases, sequential AutomatedVolumeChangeReason corresponds to
-      // sequential avoiding notifying observers.
-      should_notify = false;
-      automated_volume_change_reasons_.pop_front();
+  if (initializing_audio_state_) {
+    // Do not notify the observers for volume changed event if CrasAudioHandler
+    // is initializing its state, i.e., the volume change event is in responding
+    // to SetOutputNodeVolume request from initializing audio state, not from
+    // user action, no need to notify UI to pop up the volume slider bar.
+    if (init_node_id_ == node_id && init_volume_ == volume) {
+      --init_volume_count_;
+      if (!init_volume_count_)
+        initializing_audio_state_ = false;
+      return;
     }
-  }
-
-  if (std::find(automated_volume_change_reasons_.begin(),
-                automated_volume_change_reasons_.end(),
-                VOLUME_CHANGE_INITIALIZING_AUDIO_STATE) ==
-      automated_volume_change_reasons_.end())
+    // Reset the initializing_audio_state_ in case SetOutputNodeVolume request
+    // is lost by cras due to cras is not ready when CrasAudioHandler is being
+    // initialized.
     initializing_audio_state_ = false;
-
-  if (should_notify) {
-    for (auto& observer : observers_)
-      observer.OnOutputNodeVolumeChanged(node_id, volume);
+    init_volume_count_ = 0;
   }
+
+  for (auto& observer : observers_)
+    observer.OnOutputNodeVolumeChanged(node_id, volume);
 }
 
 void CrasAudioHandler::ActiveOutputNodeChanged(uint64_t node_id) {
@@ -894,10 +877,9 @@ void CrasAudioHandler::SetupAudioOutputState() {
     // by CrasAudioHandler constructor, then by cras server restarting signal,
     // both sending SetOutputNodeVolume requests, and could lead to two
     // OutputNodeVolumeChanged signals.
+    ++init_volume_count_;
     init_node_id_ = active_output_node_id_;
     init_volume_ = output_volume_;
-    SetOutputVolumePercentWithoutNotifyingObservers(
-        output_volume_, VOLUME_CHANGE_INITIALIZING_AUDIO_STATE);
     return;
   }
   SetOutputNodeVolume(active_output_node_id_, output_volume_);

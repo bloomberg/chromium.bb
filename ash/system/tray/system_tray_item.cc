@@ -54,8 +54,8 @@ void SystemTrayItem::SetDetailedViewCloseDelay(int for_seconds) {
   system_tray()->SetDetailedViewCloseDelay(for_seconds);
 }
 
-void SystemTrayItem::HideDetailedView(bool animate) {
-  system_tray()->HideDetailedView(this, animate);
+void SystemTrayItem::HideDetailedView() {
+  system_tray()->HideDetailedView(this);
 }
 
 bool SystemTrayItem::ShouldShowShelf() const {

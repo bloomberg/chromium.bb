@@ -84,9 +84,8 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView {
   // seconds.
   void SetDetailedViewCloseDelay(int close_delay);
 
-  // Hides the detailed view for |item|. If |animate| is false, disable
-  // the hiding animation for hiding |item|.
-  void HideDetailedView(SystemTrayItem* item, bool animate);
+  // Hides the detailed view for |item|.
+  void HideDetailedView(SystemTrayItem* item);
 
   // Updates the items when the login status of the system changes.
   void UpdateAfterLoginStatusChange(LoginStatus login_status);

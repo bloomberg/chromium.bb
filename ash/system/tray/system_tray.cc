@@ -385,20 +385,9 @@ void SystemTray::SetDetailedViewCloseDelay(int close_delay) {
     system_bubble_->bubble()->StartAutoCloseTimer(close_delay);
 }
 
-void SystemTray::HideDetailedView(SystemTrayItem* item, bool animate) {
+void SystemTray::HideDetailedView(SystemTrayItem* item) {
   if (item != detailed_item_)
     return;
-
-  if (!animate) {
-    // In unittest, GetSystemBubble might return nullptr.
-    if (GetSystemBubble()) {
-      GetSystemBubble()
-          ->bubble_view()
-          ->GetWidget()
-          ->SetVisibilityAnimationTransition(
-              views::Widget::VisibilityTransition::ANIMATE_NONE);
-    }
-  }
 
   DestroySystemBubble();
 }

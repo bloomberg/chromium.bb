@@ -125,9 +125,8 @@ class ASH_EXPORT SystemTrayItem {
   // currently-shown view is for this item.
   void SetDetailedViewCloseDelay(int for_seconds);
 
-  // Hides the detailed view for this item. Disable hiding animation if
-  // |animate| is false.
-  void HideDetailedView(bool animate);
+  // Hides the detailed view for this item.
+  void HideDetailedView();
 
   // Returns true if this item needs to force the shelf to be visible when
   // the shelf is in the auto-hide state. Default is true.

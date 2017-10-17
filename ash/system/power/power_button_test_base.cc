@@ -82,9 +82,12 @@ void PowerButtonTestBase::InitPowerButtonControllerMembers(
         power_button_controller_->tablet_power_button_controller_for_test();
     tablet_test_api_ = std::make_unique<TabletPowerButtonControllerTestApi>(
         tablet_controller_);
+    screenshot_controller_ =
+        power_button_controller_->screenshot_controller_for_test();
   } else {
     tablet_test_api_ = nullptr;
     tablet_controller_ = nullptr;
+    screenshot_controller_ = nullptr;
   }
 }
 
@@ -101,6 +104,8 @@ void PowerButtonTestBase::SendAccelerometerUpdate(
   power_button_controller_->OnAccelerometerUpdated(update);
   tablet_controller_ =
       power_button_controller_->tablet_power_button_controller_for_test();
+  screenshot_controller_ =
+      power_button_controller_->screenshot_controller_for_test();
 
   if (tablet_test_api_ && tablet_test_api_->IsObservingAccelerometerReader(
                               chromeos::AccelerometerReader::GetInstance()))
