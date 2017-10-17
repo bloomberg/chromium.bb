@@ -323,43 +323,38 @@ void TaskQueueThrottler::UpdateQueueThrottlingStateInternal(base::TimeTicks now,
   base::Optional<base::TimeTicks> next_desired_run_time =
       NextTaskRunTime(&lazy_now, queue);
 
-  if (!next_desired_run_time) {
-    // This queue is empty. Given that new task can arrive at any moment,
-    // block the queue completely and update the state upon the notification
-    // about a new task.
-    queue->InsertFence(TaskQueue::InsertFencePosition::NOW);
-    return;
-  }
+  if (CanRunTasksAt(queue, now, is_wake_up)) {
+    // Unblock queue if we can run tasks immediately.
+    base::Optional<base::TimeTicks> unblock_until =
+        GetTimeTasksCanRunUntil(queue, now, is_wake_up);
+    DCHECK(unblock_until);
+    if (!unblock_until || unblock_until.value() > now) {
+      queue->InsertFenceAt(unblock_until.value());
+    } else if (unblock_until.value() == now) {
+      queue->InsertFence(TaskQueue::InsertFencePosition::NOW);
+    } else {
+      DCHECK_GE(unblock_until.value(), now);
+    }
 
-  if (CanRunTasksAt(queue, now, false) &&
-      CanRunTasksAt(queue, next_desired_run_time.value(), false)) {
-    // We can run up until the next task uninterrupted unless something changes.
-    // Remove the fence to allow new tasks to run immediately and handle
-    // the situation change in the notification about the said change.
-    queue->RemoveFence();
-
-    // TaskQueueThrottler does not schedule wake-ups implicitly, we need
-    // to be explicit.
-    if (next_desired_run_time.value() != now) {
+    // Throttled time domain does not schedule wake-ups without explicitly
+    // being told so.
+    if (next_desired_run_time && next_desired_run_time.value() != now &&
+        next_desired_run_time.value() < unblock_until) {
       time_domain_->SetNextTaskRunTime(next_desired_run_time.value());
     }
-    return;
-  }
-
-  if (CanRunTasksAt(queue, now, is_wake_up)) {
-    // We can run task now, but we can't run until the next scheduled task.
-    // Insert a fresh fence to unblock queue and schedule a pump for the
-    // next wake-up.
-    queue->InsertFence(TaskQueue::InsertFencePosition::NOW);
 
     base::Optional<base::TimeTicks> next_wake_up =
         queue->GetNextScheduledWakeUp();
-    if (next_wake_up) {
+    if (next_wake_up && next_wake_up.value() > unblock_until.value()) {
       MaybeSchedulePumpThrottledTasks(
           FROM_HERE, now, GetNextAllowedRunTime(queue, next_wake_up.value()));
     }
+
     return;
   }
+
+  if (!next_desired_run_time)
+    return;
 
   base::TimeTicks next_run_time =
       GetNextAllowedRunTime(queue, next_desired_run_time.value());
@@ -383,7 +378,7 @@ void TaskQueueThrottler::UpdateQueueThrottlingStateInternal(base::TimeTicks now,
       }
       break;
     case QueueBlockType::kNewTasksOnly:
-      if (!queue->HasFence()) {
+      if (!queue->HasActiveFence()) {
         // Insert a new non-fully blocking fence only when there is no fence
         // already in order avoid undesired unblocking of old tasks.
         queue->InsertFence(TaskQueue::InsertFencePosition::NOW);
@@ -504,6 +499,22 @@ bool TaskQueueThrottler::CanRunTasksAt(TaskQueue* queue,
   }
 
   return true;
+}
+
+base::Optional<base::TimeTicks> TaskQueueThrottler::GetTimeTasksCanRunUntil(
+    TaskQueue* queue,
+    base::TimeTicks now,
+    bool is_wake_up) const {
+  base::Optional<base::TimeTicks> result;
+  auto find_it = queue_details_.find(queue);
+  if (find_it == queue_details_.end())
+    return result;
+
+  for (BudgetPool* budget_pool : find_it->second.budget_pools) {
+    result = Min(result, budget_pool->GetTimeTasksCanRunUntil(now, is_wake_up));
+  }
+
+  return result;
 }
 
 void TaskQueueThrottler::MaybeDeleteQueueMetadata(TaskQueueMap::iterator it) {

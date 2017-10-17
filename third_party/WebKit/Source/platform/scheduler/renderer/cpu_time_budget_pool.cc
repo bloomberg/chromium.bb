@@ -76,6 +76,14 @@ bool CPUTimeBudgetPool::CanRunTasksAt(base::TimeTicks moment,
   return moment >= GetNextAllowedRunTime(moment);
 }
 
+base::Optional<base::TimeTicks> CPUTimeBudgetPool::GetTimeTasksCanRunUntil(
+    base::TimeTicks now,
+    bool is_wake_up) const {
+  if (CanRunTasksAt(now, is_wake_up))
+    return base::nullopt;
+  return base::TimeTicks();
+}
+
 base::TimeTicks CPUTimeBudgetPool::GetNextAllowedRunTime(
     base::TimeTicks desired_run_time) const {
   if (!is_enabled_ || current_budget_level_.InMicroseconds() >= 0) {

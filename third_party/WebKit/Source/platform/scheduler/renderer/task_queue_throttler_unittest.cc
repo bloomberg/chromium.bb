@@ -1229,12 +1229,12 @@ TEST_P(TaskQueueThrottlerWithAutoAdvancingTimeTest,
                   base::TimeTicks() + base::TimeDelta::FromMilliseconds(1003),
                   base::TimeTicks() + base::TimeDelta::FromMilliseconds(1006),
                   base::TimeTicks() + base::TimeDelta::FromMilliseconds(1009),
-                  base::TimeTicks() + base::TimeDelta::FromMilliseconds(1012),
                   base::TimeTicks() + base::TimeDelta::FromMilliseconds(2000),
                   base::TimeTicks() + base::TimeDelta::FromMilliseconds(2003),
                   base::TimeTicks() + base::TimeDelta::FromMilliseconds(2006),
                   base::TimeTicks() + base::TimeDelta::FromMilliseconds(2009),
-                  base::TimeTicks() + base::TimeDelta::FromMilliseconds(2012)));
+                  base::TimeTicks() + base::TimeDelta::FromMilliseconds(3000),
+                  base::TimeTicks() + base::TimeDelta::FromMilliseconds(3003)));
 }
 
 TEST_P(TaskQueueThrottlerWithAutoAdvancingTimeTest,

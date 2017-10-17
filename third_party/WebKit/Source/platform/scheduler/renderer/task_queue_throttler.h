@@ -175,7 +175,12 @@ class PLATFORM_EXPORT TaskQueueThrottler : public TaskQueue::Observer,
   base::TimeTicks GetNextAllowedRunTime(TaskQueue* queue,
                                         base::TimeTicks desired_run_time);
 
-  bool CanRunTasksAt(TaskQueue* queue, base::TimeTicks moment, bool is_wakeup);
+  bool CanRunTasksAt(TaskQueue* queue, base::TimeTicks moment, bool is_wake_up);
+
+  base::Optional<base::TimeTicks> GetTimeTasksCanRunUntil(
+      TaskQueue* queue,
+      base::TimeTicks now,
+      bool is_wake_up) const;
 
   void MaybeDeleteQueueMetadata(TaskQueueMap::iterator it);
 
