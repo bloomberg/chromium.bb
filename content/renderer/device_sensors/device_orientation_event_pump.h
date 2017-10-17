@@ -5,55 +5,55 @@
 #ifndef CONTENT_RENDERER_DEVICE_SENSORS_DEVICE_ORIENTATION_EVENT_PUMP_H_
 #define CONTENT_RENDERER_DEVICE_SENSORS_DEVICE_ORIENTATION_EVENT_PUMP_H_
 
-#include <memory>
-
 #include "base/macros.h"
 #include "content/renderer/device_sensors/device_sensor_event_pump.h"
-#include "content/renderer/shared_memory_seqlock_reader.h"
 #include "device/sensors/public/cpp/orientation_data.h"
-#include "device/sensors/public/interfaces/orientation.mojom.h"
-
-namespace blink {
-class WebDeviceOrientationListener;
-}
+#include "third_party/WebKit/public/platform/modules/device_orientation/WebDeviceOrientationListener.h"
 
 namespace content {
 
-typedef SharedMemorySeqLockReader<device::OrientationData>
-    DeviceOrientationSharedMemoryReader;
+class RenderThread;
 
-class CONTENT_EXPORT DeviceOrientationEventPumpBase
+class CONTENT_EXPORT DeviceOrientationEventPump
     : public DeviceSensorEventPump<blink::WebDeviceOrientationListener> {
  public:
   // Angle threshold beyond which two orientation events are considered
   // sufficiently different.
   static const double kOrientationThreshold;
 
-  explicit DeviceOrientationEventPumpBase(RenderThread* thread);
-  ~DeviceOrientationEventPumpBase() override;
+  DeviceOrientationEventPump(RenderThread* thread, bool absolute);
+  ~DeviceOrientationEventPump() override;
 
-  // PlatformEventObserver.
-  void SendFakeDataForTesting(void* data) override;
+  // PlatformEventObserver:
+  void SendStartMessage() override;
+  void SendStopMessage() override;
+  void SendFakeDataForTesting(void* fake_data) override;
 
  protected:
+  // DeviceSensorEventPump:
   void FireEvent() override;
-  bool InitializeReader(base::SharedMemoryHandle handle) override;
+  void DidStartIfPossible() override;
+
+  SensorEntry relative_orientation_sensor_;
+  SensorEntry absolute_orientation_sensor_;
+
+ private:
+  FRIEND_TEST_ALL_PREFIXES(DeviceOrientationEventPumpTest,
+                           SensorInitializedButItsSharedBufferIsNot);
+
+  // DeviceSensorEventPump:
+  bool SensorSharedBuffersReady() const override;
+
+  void GetDataFromSharedMemory(device::OrientationData* data);
 
   bool ShouldFireEvent(const device::OrientationData& data) const;
 
+  bool absolute_;
+  bool fall_back_to_absolute_orientation_sensor_;
   device::OrientationData data_;
-  std::unique_ptr<DeviceOrientationSharedMemoryReader> reader_;
 
-  DISALLOW_COPY_AND_ASSIGN(DeviceOrientationEventPumpBase);
+  DISALLOW_COPY_AND_ASSIGN(DeviceOrientationEventPump);
 };
-
-using DeviceOrientationEventPump =
-    DeviceSensorMojoClientMixin<DeviceOrientationEventPumpBase,
-                                device::mojom::OrientationSensor>;
-
-using DeviceOrientationAbsoluteEventPump =
-    DeviceSensorMojoClientMixin<DeviceOrientationEventPumpBase,
-                                device::mojom::OrientationAbsoluteSensor>;
 
 }  // namespace content
 
