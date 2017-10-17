@@ -114,8 +114,6 @@ TEST_F(CursorWindowControllerTest, MoveToDifferentDisplay) {
   EXPECT_EQ(50, cursor_bounds.y() + hot_point.y());
 }
 
-// Windows doesn't support compositor based cursor.
-#if !defined(OS_WIN)
 // Make sure that composition cursor inherits the visibility state.
 TEST_F(CursorWindowControllerTest, VisibilityTest) {
   ASSERT_TRUE(GetCursorWindow());
@@ -169,6 +167,5 @@ TEST_F(CursorWindowControllerTest, DSF) {
       display::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor());
   EXPECT_TRUE(GetCursorImage().HasRepresentation(2.0f));
 }
-#endif
 
 }  // namespace ash
