@@ -16,8 +16,7 @@ TEST(VrGlUtilTest, CalculateScreenSize) {
   model_matrix.Translate3d(0.0f, -0.25f, -2.5f);
   gfx::SizeF size(2.4f, 1.6f);
 
-  gfx::SizeF screen_size =
-      CalculateScreenSize(kPixelDaydreamProjMatrix, model_matrix, size);
+  gfx::SizeF screen_size = CalculateScreenSize(kProjMatrix, model_matrix, size);
 
   EXPECT_FLOAT_EQ(screen_size.width(), 0.49592164f);
   EXPECT_FLOAT_EQ(screen_size.height(), 0.27598655f);
