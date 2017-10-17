@@ -664,8 +664,7 @@ class CONTENT_EXPORT RenderThreadImpl
   // The number of idle handler calls that skip sending idle notifications.
   int idle_notifications_to_skip_;
 
-  std::unique_ptr<blink::scheduler::RendererScheduler::RendererPauseHandle>
-      webkit_shared_timer_suspended_handle_;
+  bool webkit_shared_timer_suspended_;
 
   // Used to control layout test specific behavior.
   std::unique_ptr<LayoutTestDependencies> layout_test_deps_;

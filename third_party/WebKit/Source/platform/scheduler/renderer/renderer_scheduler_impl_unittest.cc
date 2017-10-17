@@ -14,6 +14,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "build/build_config.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/test/ordered_simple_task_runner.h"
 #include "platform/WebTaskRunner.h"
@@ -4127,6 +4128,26 @@ TEST_F(RendererSchedulerImplTest, LoadingControlTasks) {
                                    std::string("L3"), std::string("L4"),
                                    std::string("L5"), std::string("L6")));
 }
+
+#if defined(OS_ANDROID)
+TEST_F(RendererSchedulerImplTest, PauseTimersForAndroidWebView) {
+  ScopedAutoAdvanceNowEnabler enable_auto_advance_now(mock_task_runner_);
+  // Tasks in some queues don't fire when the timers are paused.
+  std::vector<std::string> run_order;
+  PostTestTasks(&run_order, "D1 C1 L1 I1 T1");
+  scheduler_->PauseTimersForAndroidWebView();
+  EnableIdleTasks();
+  RunUntilIdle();
+  EXPECT_THAT(run_order,
+              ::testing::ElementsAre(std::string("D1"), std::string("C1"),
+                                     std::string("L1"), std::string("I1")));
+  // The rest queued tasks fire when the timers are resumed.
+  run_order.clear();
+  scheduler_->ResumeTimersForAndroidWebView();
+  RunUntilIdle();
+  EXPECT_THAT(run_order, ::testing::ElementsAre(std::string("T1")));
+}
+#endif  // defined(OS_ANDROID)
 
 }  // namespace renderer_scheduler_impl_unittest
 }  // namespace scheduler

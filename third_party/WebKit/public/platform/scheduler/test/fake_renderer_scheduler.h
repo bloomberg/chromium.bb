@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "build/build_config.h"
 #include "public/platform/scheduler/renderer/renderer_scheduler.h"
 
 namespace blink {
@@ -40,6 +41,10 @@ class FakeRendererScheduler : public RendererScheduler {
   void SetRendererHidden(bool hidden) override;
   void SetRendererBackgrounded(bool backgrounded) override;
   std::unique_ptr<RendererPauseHandle> PauseRenderer() override;
+#if defined(OS_ANDROID)
+  void PauseTimersForAndroidWebView() override;
+  void ResumeTimersForAndroidWebView() override;
+#endif
   void AddPendingNavigation(NavigatingFrameType type) override;
   void RemovePendingNavigation(NavigatingFrameType type) override;
   bool IsHighPriorityWorkAnticipated() override;
