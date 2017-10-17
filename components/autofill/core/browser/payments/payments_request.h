@@ -13,8 +13,6 @@ class AutofillClient;
 
 namespace payments {
 
-class PaymentsClientDelegate;
-
 // Interface for the various Payments request types.
 class PaymentsRequest {
  public:
@@ -39,8 +37,7 @@ class PaymentsRequest {
 
   // Invokes the appropriate callback in the delegate based on what type of
   // request this is.
-  virtual void RespondToDelegate(PaymentsClientDelegate* delegate,
-                                 AutofillClient::PaymentsRpcResult result) = 0;
+  virtual void RespondToDelegate(AutofillClient::PaymentsRpcResult result) = 0;
 };
 
 }  // namespace payments

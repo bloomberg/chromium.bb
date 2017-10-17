@@ -76,7 +76,8 @@ extern const int kCreditCardSigninPromoImpressionLimit;
 // forms. One per frame; owned by the AutofillDriver.
 class AutofillManager : public AutofillHandler,
                         public AutofillDownloadManager::Observer,
-                        public payments::PaymentsClientDelegate,
+                        public payments::PaymentsClientUnmaskDelegate,
+                        public payments::PaymentsClientSaveDelegate,
                         public payments::FullCardRequest::ResultDelegate,
                         public payments::FullCardRequest::UIDelegate {
  public:
@@ -269,7 +270,7 @@ class AutofillManager : public AutofillHandler,
     return form_interactions_ukm_logger_.get();
   }
 
-  // payments::PaymentsClientDelegate:
+  // payments::PaymentsClientSaveDelegate:
   // Exposed for testing.
   void OnDidUploadCard(AutofillClient::PaymentsRpcResult result,
                        const std::string& server_id) override;
@@ -295,10 +296,10 @@ class AutofillManager : public AutofillHandler,
       std::string response,
       const std::vector<std::string>& form_signatures) override;
 
-  // payments::PaymentsClientDelegate:
-  IdentityProvider* GetIdentityProvider() override;
+  // payments::PaymentsClientUnmaskDelegate:
   void OnDidGetRealPan(AutofillClient::PaymentsRpcResult result,
                        const std::string& real_pan) override;
+  // payments::PaymentsClientSaveDelegate:
   void OnDidGetUploadDetails(
       AutofillClient::PaymentsRpcResult result,
       const base::string16& context_token,

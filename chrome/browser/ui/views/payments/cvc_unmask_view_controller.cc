@@ -42,6 +42,20 @@
 
 namespace payments {
 
+namespace {
+
+IdentityProvider* CreateIdentityProviderForWebContents(
+    content::WebContents* web_contents) {
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  return new ProfileIdentityProvider(
+      SigninManagerFactory::GetForProfile(profile),
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
+      base::Closure());
+}
+
+}  // namespace
+
 enum class Tags {
   CONFIRM_TAG = static_cast<int>(PaymentRequestCommonTags::PAY_BUTTON_TAG),
 };
@@ -58,12 +72,15 @@ CvcUnmaskViewController::CvcUnmaskViewController(
       year_combobox_model_(credit_card.expiration_year()),
       credit_card_(credit_card),
       web_contents_(web_contents),
+      identity_provider_(CreateIdentityProviderForWebContents(web_contents)),
       payments_client_(
           Profile::FromBrowserContext(web_contents_->GetBrowserContext())
               ->GetRequestContext(),
           Profile::FromBrowserContext(web_contents_->GetBrowserContext())
               ->GetPrefs(),
-          this),
+          identity_provider_.get(),
+          /*unmask_delegate=*/this,
+          /*save_delegate=*/nullptr),
       full_card_request_(this,
                          &payments_client_,
                          state->GetPersonalDataManager()),
@@ -76,37 +93,10 @@ CvcUnmaskViewController::CvcUnmaskViewController(
 
 CvcUnmaskViewController::~CvcUnmaskViewController() {}
 
-IdentityProvider* CvcUnmaskViewController::GetIdentityProvider() {
-  if (!identity_provider_) {
-    Profile* profile =
-        Profile::FromBrowserContext(web_contents_->GetBrowserContext())
-            ->GetOriginalProfile();
-    identity_provider_.reset(new ProfileIdentityProvider(
-        SigninManagerFactory::GetForProfile(profile),
-        ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
-        base::Closure()));
-  }
-
-  return identity_provider_.get();
-}
-
 void CvcUnmaskViewController::OnDidGetRealPan(
     autofill::AutofillClient::PaymentsRpcResult result,
     const std::string& real_pan) {
   full_card_request_.OnDidGetRealPan(result, real_pan);
-}
-
-void CvcUnmaskViewController::OnDidGetUploadDetails(
-    autofill::AutofillClient::PaymentsRpcResult result,
-    const base::string16& context_token,
-    std::unique_ptr<base::DictionaryValue> legal_message) {
-  NOTIMPLEMENTED();
-}
-
-void CvcUnmaskViewController::OnDidUploadCard(
-    autofill::AutofillClient::PaymentsRpcResult result,
-    const std::string& server_id) {
-  NOTIMPLEMENTED();
 }
 
 void CvcUnmaskViewController::LoadRiskData(

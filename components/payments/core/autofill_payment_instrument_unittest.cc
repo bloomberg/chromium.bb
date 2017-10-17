@@ -86,7 +86,7 @@ class FakeAddressNormalizer : public autofill::AddressNormalizer {
 
 class FakePaymentRequestDelegate
     : public PaymentRequestDelegate,
-      public autofill::payments::PaymentsClientDelegate {
+      public autofill::payments::PaymentsClientUnmaskDelegate {
  public:
   FakePaymentRequestDelegate()
       : locale_("en-US"),
@@ -94,7 +94,11 @@ class FakePaymentRequestDelegate
         personal_data_("en-US"),
         request_context_(new net::TestURLRequestContextGetter(
             base::ThreadTaskRunnerHandle::Get())),
-        payments_client_(request_context_.get(), nullptr, this),
+        payments_client_(request_context_.get(),
+                         nullptr,
+                         nullptr,
+                         this,
+                         nullptr),
         full_card_request_(&autofill_client_,
                            &payments_client_,
                            &personal_data_) {}

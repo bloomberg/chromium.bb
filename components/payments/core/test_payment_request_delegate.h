@@ -18,21 +18,15 @@
 namespace payments {
 
 class TestPaymentsClientDelegate
-    : public autofill::payments::PaymentsClientDelegate {
+    : public autofill::payments::PaymentsClientUnmaskDelegate {
  public:
   TestPaymentsClientDelegate();
   ~TestPaymentsClientDelegate();
 
  private:
+  // autofill::payments::PaymentsClientUnmaskDelegate:
   void OnDidGetRealPan(autofill::AutofillClient::PaymentsRpcResult result,
                        const std::string& real_pan) override;
-  IdentityProvider* GetIdentityProvider() override;
-  void OnDidGetUploadDetails(
-      autofill::AutofillClient::PaymentsRpcResult result,
-      const base::string16& context_token,
-      std::unique_ptr<base::DictionaryValue> legal_message) override;
-  void OnDidUploadCard(autofill::AutofillClient::PaymentsRpcResult result,
-                       const std::string& server_id) override;
 };
 
 class TestURLRequestContextGetter : public net::URLRequestContextGetter {

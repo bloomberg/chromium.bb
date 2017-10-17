@@ -191,8 +191,9 @@ void SetActiveExperiments(const std::vector<const char*>& active_experiments,
 
 class UnmaskCardRequest : public PaymentsRequest {
  public:
-  UnmaskCardRequest(const PaymentsClient::UnmaskRequestDetails& request_details)
-      : request_details_(request_details) {
+  UnmaskCardRequest(const PaymentsClient::UnmaskRequestDetails& request_details,
+                    PaymentsClientUnmaskDelegate* delegate)
+      : request_details_(request_details), delegate_(delegate) {
     DCHECK(
         CreditCard::MASKED_SERVER_CARD == request_details.card.record_type() ||
         CreditCard::FULL_SERVER_CARD == request_details.card.record_type());
@@ -245,13 +246,13 @@ class UnmaskCardRequest : public PaymentsRequest {
 
   bool IsResponseComplete() override { return !real_pan_.empty(); }
 
-  void RespondToDelegate(PaymentsClientDelegate* delegate,
-                         AutofillClient::PaymentsRpcResult result) override {
-    delegate->OnDidGetRealPan(result, real_pan_);
+  void RespondToDelegate(AutofillClient::PaymentsRpcResult result) override {
+    delegate_->OnDidGetRealPan(result, real_pan_);
   }
 
  private:
   PaymentsClient::UnmaskRequestDetails request_details_;
+  PaymentsClientUnmaskDelegate* delegate_;
   std::string real_pan_;
 };
 
@@ -259,10 +260,12 @@ class GetUploadDetailsRequest : public PaymentsRequest {
  public:
   GetUploadDetailsRequest(const std::vector<AutofillProfile>& addresses,
                           const std::vector<const char*>& active_experiments,
-                          const std::string& app_locale)
+                          const std::string& app_locale,
+                          PaymentsClientSaveDelegate* delegate)
       : addresses_(addresses),
         active_experiments_(active_experiments),
-        app_locale_(app_locale) {}
+        app_locale_(app_locale),
+        delegate_(delegate) {}
   ~GetUploadDetailsRequest() override {}
 
   std::string GetRequestUrlPath() override {
@@ -308,24 +311,25 @@ class GetUploadDetailsRequest : public PaymentsRequest {
     return !context_token_.empty() && legal_message_;
   }
 
-  void RespondToDelegate(PaymentsClientDelegate* delegate,
-                         AutofillClient::PaymentsRpcResult result) override {
-    delegate->OnDidGetUploadDetails(result, context_token_,
-                                    std::move(legal_message_));
+  void RespondToDelegate(AutofillClient::PaymentsRpcResult result) override {
+    delegate_->OnDidGetUploadDetails(result, context_token_,
+                                     std::move(legal_message_));
   }
 
  private:
   const std::vector<AutofillProfile> addresses_;
   const std::vector<const char*> active_experiments_;
   std::string app_locale_;
+  PaymentsClientSaveDelegate* delegate_;
   base::string16 context_token_;
   std::unique_ptr<base::DictionaryValue> legal_message_;
 };
 
 class UploadCardRequest : public PaymentsRequest {
  public:
-  UploadCardRequest(const PaymentsClient::UploadRequestDetails& request_details)
-      : request_details_(request_details) {}
+  UploadCardRequest(const PaymentsClient::UploadRequestDetails& request_details,
+                    PaymentsClientSaveDelegate* delegate)
+      : request_details_(request_details), delegate_(delegate) {}
   ~UploadCardRequest() override {}
 
   std::string GetRequestUrlPath() override { return kUploadCardRequestPath; }
@@ -397,13 +401,13 @@ class UploadCardRequest : public PaymentsRequest {
 
   bool IsResponseComplete() override { return true; }
 
-  void RespondToDelegate(PaymentsClientDelegate* delegate,
-                         AutofillClient::PaymentsRpcResult result) override {
-    delegate->OnDidUploadCard(result, server_id_);
+  void RespondToDelegate(AutofillClient::PaymentsRpcResult result) override {
+    delegate_->OnDidUploadCard(result, server_id_);
   }
 
  private:
   const PaymentsClient::UploadRequestDetails request_details_;
+  PaymentsClientSaveDelegate* delegate_;
   std::string server_id_;
 };
 
@@ -424,15 +428,17 @@ PaymentsClient::UploadRequestDetails::~UploadRequestDetails() {}
 
 PaymentsClient::PaymentsClient(net::URLRequestContextGetter* context_getter,
                                PrefService* pref_service,
-                               PaymentsClientDelegate* delegate)
+                               IdentityProvider* identity_provider,
+                               PaymentsClientUnmaskDelegate* unmask_delegate,
+                               PaymentsClientSaveDelegate* save_delegate)
     : OAuth2TokenService::Consumer(kTokenServiceConsumerId),
       context_getter_(context_getter),
       pref_service_(pref_service),
-      delegate_(delegate),
+      identity_provider_(identity_provider),
+      unmask_delegate_(unmask_delegate),
+      save_delegate_(save_delegate),
       has_retried_authorization_(false),
-      weak_ptr_factory_(this) {
-  DCHECK(delegate);
-}
+      weak_ptr_factory_(this) {}
 
 PaymentsClient::~PaymentsClient() {}
 
@@ -447,21 +453,28 @@ PrefService* PaymentsClient::GetPrefService() const {
 
 void PaymentsClient::UnmaskCard(
     const PaymentsClient::UnmaskRequestDetails& request_details) {
-  IssueRequest(base::MakeUnique<UnmaskCardRequest>(request_details), true);
+  DCHECK(unmask_delegate_);
+  IssueRequest(
+      base::MakeUnique<UnmaskCardRequest>(request_details, unmask_delegate_),
+      true);
 }
 
 void PaymentsClient::GetUploadDetails(
     const std::vector<AutofillProfile>& addresses,
     const std::vector<const char*>& active_experiments,
     const std::string& app_locale) {
+  DCHECK(save_delegate_);
   IssueRequest(base::MakeUnique<GetUploadDetailsRequest>(
-                   addresses, active_experiments, app_locale),
+                   addresses, active_experiments, app_locale, save_delegate_),
                false);
 }
 
 void PaymentsClient::UploadCard(
     const PaymentsClient::UploadRequestDetails& request_details) {
-  IssueRequest(base::MakeUnique<UploadCardRequest>(request_details), true);
+  DCHECK(save_delegate_);
+  IssueRequest(
+      base::MakeUnique<UploadCardRequest>(request_details, save_delegate_),
+      true);
 }
 
 void PaymentsClient::IssueRequest(std::unique_ptr<PaymentsRequest> request,
@@ -603,7 +616,7 @@ void PaymentsClient::OnURLFetchComplete(const net::URLFetcher* source) {
             << " with data: " << data;
   }
 
-  request_->RespondToDelegate(delegate_, result);
+  request_->RespondToDelegate(result);
 }
 
 void PaymentsClient::OnGetTokenSuccess(
@@ -625,7 +638,7 @@ void PaymentsClient::OnGetTokenFailure(
   VLOG(1) << "Unhandled OAuth2 error: " << error.ToString();
   if (url_fetcher_) {
     url_fetcher_.reset();
-    request_->RespondToDelegate(delegate_, AutofillClient::PERMANENT_FAILURE);
+    request_->RespondToDelegate(AutofillClient::PERMANENT_FAILURE);
   }
   access_token_request_.reset();
 }
@@ -637,15 +650,15 @@ void PaymentsClient::StartTokenFetch(bool invalidate_old) {
 
   OAuth2TokenService::ScopeSet payments_scopes;
   payments_scopes.insert(kPaymentsOAuth2Scope);
-  IdentityProvider* identity = delegate_->GetIdentityProvider();
   if (invalidate_old) {
     DCHECK(!access_token_.empty());
-    identity->GetTokenService()->InvalidateAccessToken(
-        identity->GetActiveAccountId(), payments_scopes, access_token_);
+    identity_provider_->GetTokenService()->InvalidateAccessToken(
+        identity_provider_->GetActiveAccountId(), payments_scopes,
+        access_token_);
   }
   access_token_.clear();
-  access_token_request_ = identity->GetTokenService()->StartRequest(
-      identity->GetActiveAccountId(), payments_scopes, this);
+  access_token_request_ = identity_provider_->GetTokenService()->StartRequest(
+      identity_provider_->GetActiveAccountId(), payments_scopes, this);
 }
 
 void PaymentsClient::SetOAuth2TokenAndStartRequest() {

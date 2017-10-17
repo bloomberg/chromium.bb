@@ -28,7 +28,9 @@
 namespace autofill {
 namespace payments {
 
-class PaymentsClientTest : public testing::Test, public PaymentsClientDelegate {
+class PaymentsClientTest : public testing::Test,
+                           public PaymentsClientUnmaskDelegate,
+                           public PaymentsClientSaveDelegate {
  public:
   PaymentsClientTest() : result_(AutofillClient::NONE) {}
   ~PaymentsClientTest() override {}
@@ -48,29 +50,25 @@ class PaymentsClientTest : public testing::Test, public PaymentsClientDelegate {
     token_service_.reset(new FakeOAuth2TokenService());
     identity_provider_.reset(new FakeIdentityProvider(token_service_.get()));
     TestingPrefServiceSimple pref_service_;
-    client_.reset(
-        new PaymentsClient(request_context_.get(), &pref_service_, this));
+    client_.reset(new PaymentsClient(request_context_.get(), &pref_service_,
+                                     identity_provider_.get(), this, this));
   }
 
   void TearDown() override { client_.reset(); }
-
-  // PaymentsClientDelegate
-
-  IdentityProvider* GetIdentityProvider() override {
-    return identity_provider_.get();
-  }
 
   void DisableAutofillSendBillingCustomerNumberExperiment() {
     scoped_feature_list_.InitAndDisableFeature(
         kAutofillSendBillingCustomerNumber);
   }
 
+  // PaymentsClientUnmaskDelegate:
   void OnDidGetRealPan(AutofillClient::PaymentsRpcResult result,
                        const std::string& real_pan) override {
     result_ = result;
     real_pan_ = real_pan;
   }
 
+  // PaymentsClientSaveDelegate:
   void OnDidGetUploadDetails(
       AutofillClient::PaymentsRpcResult result,
       const base::string16& context_token,
@@ -78,7 +76,6 @@ class PaymentsClientTest : public testing::Test, public PaymentsClientDelegate {
     result_ = result;
     legal_message_ = std::move(legal_message);
   }
-
   void OnDidUploadCard(AutofillClient::PaymentsRpcResult result,
                        const std::string& server_id) override {
     result_ = result;

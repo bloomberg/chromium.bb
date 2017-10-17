@@ -114,9 +114,15 @@ class TestPaymentsClient : public payments::PaymentsClient {
  public:
   TestPaymentsClient(net::URLRequestContextGetter* context_getter,
                      PrefService* pref_service,
-                     payments::PaymentsClientDelegate* delegate)
-      : PaymentsClient(context_getter, pref_service, delegate),
-        delegate_(delegate) {}
+                     IdentityProvider* identity_provider,
+                     payments::PaymentsClientUnmaskDelegate* unmask_delegate,
+                     payments::PaymentsClientSaveDelegate* save_delegate)
+      : PaymentsClient(context_getter,
+                       pref_service,
+                       identity_provider,
+                       unmask_delegate,
+                       save_delegate),
+        save_delegate_(save_delegate) {}
 
   ~TestPaymentsClient() override {}
 
@@ -124,7 +130,7 @@ class TestPaymentsClient : public payments::PaymentsClient {
                         const std::vector<const char*>& active_experiments,
                         const std::string& app_locale) override {
     active_experiments_ = active_experiments;
-    delegate_->OnDidGetUploadDetails(
+    save_delegate_->OnDidGetUploadDetails(
         app_locale == "en-US" ? AutofillClient::SUCCESS
                               : AutofillClient::PERMANENT_FAILURE,
         ASCIIToUTF16("this is a context token"),
@@ -134,14 +140,14 @@ class TestPaymentsClient : public payments::PaymentsClient {
   void UploadCard(const payments::PaymentsClient::UploadRequestDetails&
                       request_details) override {
     active_experiments_ = request_details.active_experiments;
-    delegate_->OnDidUploadCard(AutofillClient::SUCCESS, server_id_);
+    save_delegate_->OnDidUploadCard(AutofillClient::SUCCESS, server_id_);
   }
 
   std::string server_id_;
   std::vector<const char*> active_experiments_;
 
  private:
-  payments::PaymentsClientDelegate* const delegate_;
+  payments::PaymentsClientSaveDelegate* const save_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPaymentsClient);
 };
@@ -573,7 +579,11 @@ class TestAutofillManager : public AutofillManager {
         personal_data_(personal_data),
         context_getter_(driver->GetURLRequestContext()),
         test_payments_client_(
-            new TestPaymentsClient(context_getter_, client->GetPrefs(), this)),
+            new TestPaymentsClient(context_getter_,
+                                   client->GetPrefs(),
+                                   client->GetIdentityProvider(),
+                                   this,
+                                   this)),
         autofill_enabled_(true),
         credit_card_enabled_(true),
         credit_card_upload_enabled_(false),
@@ -720,7 +730,8 @@ class TestAutofillManager : public AutofillManager {
 
   void ResetPaymentsClientForCardUpload(const char* server_id) {
     TestPaymentsClient* payments_client =
-        new TestPaymentsClient(context_getter_, client()->GetPrefs(), this);
+        new TestPaymentsClient(context_getter_, client()->GetPrefs(),
+                               client()->GetIdentityProvider(), this, this);
     payments_client->server_id_ = server_id;
     set_payments_client(payments_client);
   }

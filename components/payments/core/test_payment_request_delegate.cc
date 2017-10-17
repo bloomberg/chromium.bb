@@ -16,7 +16,9 @@ TestPaymentRequestDelegate::TestPaymentRequestDelegate(
       request_context_(new TestURLRequestContextGetter(loop_.task_runner())),
       payments_client_(request_context_.get(),
                        nullptr,
-                       &payments_client_delegate_),
+                       nullptr,
+                       /*unmask_delegate=*/&payments_client_delegate_,
+                       /*save_delegate=*/nullptr),
       full_card_request_(&autofill_client_,
                          &payments_client_,
                          personal_data_manager) {}
@@ -105,19 +107,6 @@ TestPaymentsClientDelegate::~TestPaymentsClientDelegate() {}
 void TestPaymentsClientDelegate::OnDidGetRealPan(
     autofill::AutofillClient::PaymentsRpcResult result,
     const std::string& real_pan) {}
-
-IdentityProvider* TestPaymentsClientDelegate::GetIdentityProvider() {
-  return nullptr;
-}
-
-void TestPaymentsClientDelegate::OnDidGetUploadDetails(
-    autofill::AutofillClient::PaymentsRpcResult result,
-    const base::string16& context_token,
-    std::unique_ptr<base::DictionaryValue> legal_message) {}
-
-void TestPaymentsClientDelegate::OnDidUploadCard(
-    autofill::AutofillClient::PaymentsRpcResult result,
-    const std::string& server_id) {}
 
 TestURLRequestContextGetter::TestURLRequestContextGetter(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
