@@ -110,6 +110,10 @@ OverlayStatusList CreateOverlayStatusListFrom(
 std::vector<OverlayCheckReturn_Params> CreateParamsFromOverlayStatusList(
     const OverlayStatusList& returns);
 
+// Parses |edid| to extract a gfx::ColorSpace which will be IsValid() if both
+// gamma and the color primaries were correctly found.
+gfx::ColorSpace GetColorSpaceFromEdid(const std::vector<uint8_t>& edid);
+
 }  // namespace ui
 
 #endif  // UI_OZONE_PLATFORM_DRM_COMMON_DRM_UTIL_H_

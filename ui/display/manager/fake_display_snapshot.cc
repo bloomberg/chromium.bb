@@ -271,8 +271,9 @@ const DisplayMode* Builder::AddOrFindDisplayMode(
   for (auto& existing : modes_) {
     if (mode->size() == existing->size() &&
         mode->is_interlaced() == existing->is_interlaced() &&
-        mode->refresh_rate() == existing->refresh_rate())
+        mode->refresh_rate() == existing->refresh_rate()) {
       return existing.get();
+    }
   }
 
   // Not found, insert mode and return.
@@ -300,6 +301,7 @@ FakeDisplaySnapshot::FakeDisplaySnapshot(int64_t display_id,
                       is_aspect_preserving_scaling,
                       has_overscan,
                       has_color_correction_matrix,
+                      gfx::ColorSpace(),
                       display_name,
                       base::FilePath(),
                       std::move(modes),
@@ -334,8 +336,9 @@ std::unique_ptr<DisplaySnapshot> FakeDisplaySnapshot::CreateFromSpec(
   builder.SetId(id).SetNativeMode(std::move(native_mode));
 
   if (!HandleModes(&builder, resolutions) || !HandleDPI(&builder, dpi) ||
-      !HandleOptions(&builder, options))
+      !HandleOptions(&builder, options)) {
     return nullptr;
+  }
 
   return builder.Build();
 }

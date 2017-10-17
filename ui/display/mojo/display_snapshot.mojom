@@ -8,6 +8,7 @@ import "mojo/common/file_path.mojom";
 import "ui/display/mojo/display_constants.mojom";
 import "ui/display/mojo/display_mode.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
+import "ui/gfx/mojo/color_space.mojom";
 
 // Corresponds to display::DisplaySnapshot.
 struct DisplaySnapshot {
@@ -18,6 +19,7 @@ struct DisplaySnapshot {
   bool is_aspect_preserving_scaling;
   bool has_overscan;
   bool has_color_correction_matrix;
+  gfx.mojom.ColorSpace color_space;
   string display_name;
   mojo.common.mojom.FilePath sys_path;
   array<display.mojom.DisplayMode> modes;

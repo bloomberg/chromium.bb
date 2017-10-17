@@ -13,6 +13,7 @@
 #include "base/files/file_path.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/buffer_types.h"
+#include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/overlay_transform.h"
@@ -43,6 +44,7 @@ struct DisplaySnapshot_Params {
   bool is_aspect_preserving_scaling = false;
   bool has_overscan = false;
   bool has_color_correction_matrix = false;
+  gfx::ColorSpace color_space;
   std::string display_name;
   base::FilePath sys_path;
   std::vector<DisplayMode_Params> modes;
