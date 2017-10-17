@@ -184,8 +184,10 @@ void WebrtcVideoEncoderGpu::BeginInitialization() {
 
   media::VideoPixelFormat input_format =
       media::VideoPixelFormat::PIXEL_FORMAT_I420;
-  // TODO(gusss): implement some logical way to set an initial bitrate.
-  uint32_t initial_bitrate = 8 * 1024 * 8;
+  // TODO(zijiehe): implement some logical way to set an initial bitrate.
+  // Currently we set the bitrate to 8M bits / 1M bytes per frame, and 30 frames
+  // per second.
+  uint32_t initial_bitrate = 30 * 1024 * 1024 * 8;
   gpu::GpuPreferences gpu_preferences;
 
   video_encode_accelerator_ =
