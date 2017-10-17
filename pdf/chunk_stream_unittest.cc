@@ -6,8 +6,8 @@
 
 #include <array>
 #include <memory>
+#include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chrome_pdf {
@@ -15,7 +15,7 @@ namespace {
 typedef ChunkStream<10> TestChunkStream;
 
 std::unique_ptr<TestChunkStream::ChunkData> CreateChunkData() {
-  return base::MakeUnique<TestChunkStream::ChunkData>();
+  return std::make_unique<TestChunkStream::ChunkData>();
 }
 }  // namespace
 

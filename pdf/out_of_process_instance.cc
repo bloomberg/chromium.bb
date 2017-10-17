@@ -10,9 +10,9 @@
 #include <algorithm>  // for min/max()
 #include <cmath>      // for log() and pow()
 #include <list>
+#include <memory>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -404,7 +404,7 @@ bool OutOfProcessInstance::Init(uint32_t argc,
   // Allow the plugin to handle find requests.
   SetPluginToHandleFindRequests();
 
-  text_input_ = base::MakeUnique<pp::TextInput_Dev>(this);
+  text_input_ = std::make_unique<pp::TextInput_Dev>(this);
 
   const char* stream_url = nullptr;
   const char* original_url = nullptr;
@@ -1096,7 +1096,7 @@ void OutOfProcessInstance::DidOpen(int32_t result) {
 
 void OutOfProcessInstance::DidOpenPreview(int32_t result) {
   if (result == PP_OK) {
-    preview_client_ = base::MakeUnique<PreviewModeClient>(this);
+    preview_client_ = std::make_unique<PreviewModeClient>(this);
     preview_engine_ = PDFEngine::Create(preview_client_.get());
     preview_engine_->HandleDocumentLoad(embed_preview_loader_);
   } else {
@@ -1294,7 +1294,7 @@ void OutOfProcessInstance::GetDocumentPassword(
   }
 
   password_callback_ =
-      base::MakeUnique<pp::CompletionCallbackWithOutput<pp::Var>>(callback);
+      std::make_unique<pp::CompletionCallbackWithOutput<pp::Var>>(callback);
   pp::VarDictionary message;
   message.Set(pp::Var(kType), pp::Var(kJSGetPasswordType));
   PostMessage(message);
