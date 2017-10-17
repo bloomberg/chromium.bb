@@ -3303,20 +3303,8 @@ Battery full
   </message>
 
   <!-- Renaming device notifications -->
-  <message name="IDS_RENAMING_OF_DEVICE_PENDING_TITLE" desc="Title of notification message which is shown when renaming process of some device is in progress">
-    Renaming...
-  </message>
-  <message name="IDS_RENAMING_OF_DEVICE_FINISHED_TITLE" desc="Title of notification message which is shown when renaming process finshes">
-    Renaming finished
-  </message>
   <message name="IDS_RENAMING_OF_DEVICE_FAILED_TITLE" desc="Title of notification message which is shown when renaming process fails">
     Renaming failed
-  </message>
-  <message name="IDS_RENAMING_OF_DEVICE_PENDING_MESSAGE" desc="Text of notification message which is shown when renaming process of some device is in progress">
-    The renaming process can take a couple of seconds. Please wait.
-  </message>
-  <message name="IDS_RENAMING_OF_DEVICE_FINISHED_SUCCESS_MESSAGE" desc="Text of notification message which is shown when renaming finishes without any errors.">
-    Renaming finished successfully!
   </message>
   <message name="IDS_RENAMING_OF_DEVICE_FINISHED_FAILURE_MESSAGE" desc="Text of notification message which is shown when there are some errors while renaming.">
     Aw, Snap! There was an error during renaming.
