@@ -16,13 +16,13 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/message_center_notification_manager.h"
-#include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_tray.h"
+#include "ui/message_center/notification.h"
 #include "ui/message_center/notification_delegate.h"
 #include "ui/message_center/notification_list.h"
 #include "ui/message_center/notification_types.h"
@@ -36,14 +36,14 @@
 namespace message_center {
 namespace {
 
-::Notification MakeNotification(const std::string& id) {
-  return ::Notification(NOTIFICATION_TYPE_SIMPLE, id,
-                        base::ASCIIToUTF16("Test Web Notification"),
-                        base::ASCIIToUTF16("Notification message body."),
-                        gfx::Image(), NotifierId(NotifierId::APPLICATION, id),
-                        base::ASCIIToUTF16("Some Chrome extension"),
-                        GURL("chrome-extension://abbccedd"), id,
-                        RichNotificationData(), new NotificationDelegate());
+Notification MakeNotification(const std::string& id) {
+  return Notification(NOTIFICATION_TYPE_SIMPLE, id,
+                      base::ASCIIToUTF16("Test Web Notification"),
+                      base::ASCIIToUTF16("Notification message body."),
+                      gfx::Image(), base::ASCIIToUTF16("Some Chrome extension"),
+                      GURL("chrome-extension://abbccedd"),
+                      NotifierId(NotifierId::APPLICATION, id),
+                      RichNotificationData(), new NotificationDelegate());
 }
 
 class WebNotificationTrayTest : public InProcessBrowserTest {
@@ -63,13 +63,13 @@ class WebNotificationTrayTest : public InProcessBrowserTest {
   }
 
   void UpdateNotification(const std::string& id) {
-    ::Notification notification(
+    Notification notification(
         NOTIFICATION_TYPE_SIMPLE, id,
         base::ASCIIToUTF16("Updated Test Web Notification"),
         base::ASCIIToUTF16("Notification message body."), gfx::Image(),
-        NotifierId(NotifierId::APPLICATION, id),
         base::ASCIIToUTF16("Some Chrome extension"),
-        GURL("chrome-extension://abbccedd"), id, RichNotificationData(),
+        GURL("chrome-extension://abbccedd"),
+        NotifierId(NotifierId::APPLICATION, id), RichNotificationData(),
         new NotificationDelegate());
     g_browser_process->notification_ui_manager()->Update(notification,
                                                          browser()->profile());

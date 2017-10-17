@@ -7,7 +7,6 @@
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
 #include "chrome/browser/notifications/message_center_notification_manager.h"
-#include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
@@ -26,6 +25,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/message_center/fake_message_center_tray_delegate.h"
 #include "ui/message_center/message_center.h"
+#include "ui/message_center/notification.h"
 
 using testing::_;
 using testing::AtLeast;
@@ -126,7 +126,7 @@ TEST_F(HatsNotificationControllerTest, NewDevice_ShouldNotShowNotification) {
               RemoveObserver(hats_notification_controller.get()))
       .Times(1);
 
-  const Notification* notification =
+  const message_center::Notification* notification =
       g_browser_process->notification_ui_manager()->FindById(
           HatsNotificationController::kNotificationId, &profile_);
   EXPECT_FALSE(notification);
@@ -149,7 +149,7 @@ TEST_F(HatsNotificationControllerTest, OldDevice_ShouldShowNotification) {
   hats_notification_controller->Initialize(false);
 
   // Finally check if notification was launched to confirm initialization.
-  const Notification* notification =
+  const message_center::Notification* notification =
       g_browser_process->notification_ui_manager()->FindById(
           HatsNotificationController::kNotificationId, &profile_);
   EXPECT_TRUE(notification != nullptr);
@@ -182,7 +182,7 @@ TEST_F(HatsNotificationControllerTest, NoInternet_DoNotShowNotification) {
   hats_notification_controller->OnPortalDetectionCompleted(&network_state,
                                                            online_state);
 
-  const Notification* notification =
+  const message_center::Notification* notification =
       g_browser_process->notification_ui_manager()->FindById(
           HatsNotificationController::kNotificationId, &profile_);
   EXPECT_FALSE(notification);

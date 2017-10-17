@@ -15,11 +15,14 @@
 #include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/notifications/notification_platform_bridge.h"
 
-class Notification;
 @class NotificationCenterDelegate;
 @class NSDictionary;
 @class NSUserNotificationCenter;
 @class NSXPCConnection;
+
+namespace message_cener {
+class Notification;
+}
 
 // This class is an implementation of NotificationPlatformBridge that will
 // send platform notifications to the the MacOSX notification center.
@@ -35,7 +38,7 @@ class NotificationPlatformBridgeMac : public NotificationPlatformBridge {
                const std::string& notification_id,
                const std::string& profile_id,
                bool incognito,
-               const Notification& notification,
+               const message_center::Notification& notification,
                std::unique_ptr<NotificationCommon::Metadata> metadata) override;
 
   void Close(const std::string& profile_id,

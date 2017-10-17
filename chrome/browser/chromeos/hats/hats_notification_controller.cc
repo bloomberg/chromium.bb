@@ -27,6 +27,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/message_center/message_center.h"
+#include "ui/message_center/notification.h"
 #include "ui/message_center/notification_types.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/public/cpp/message_center_switches.h"
@@ -196,37 +197,33 @@ void HatsNotificationController::OnPortalDetectionCompleted(
   network_portal_detector::GetInstance()->RemoveObserver(this);
 
   // Create and display the notification for the user.
-  std::unique_ptr<Notification> notification(CreateNotification());
-  g_browser_process->notification_ui_manager()->Add(*notification, profile_);
-}
-
-Notification* HatsNotificationController::CreateNotification() {
   message_center::RichNotificationData optional;
   if (!message_center::IsNewStyleNotificationEnabled()) {
     optional.buttons.push_back(message_center::ButtonInfo(
         l10n_util::GetStringUTF16(IDS_HATS_NOTIFICATION_TAKE_SURVEY_BUTTON)));
   }
 
-  Notification* notification = new Notification(
+  message_center::Notification notification(
       message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId,
       l10n_util::GetStringUTF16(IDS_HATS_NOTIFICATION_TITLE),
       l10n_util::GetStringUTF16(IDS_HATS_NOTIFICATION_BODY),
       gfx::Image(
           gfx::CreateVectorIcon(kGoogleGLogoIcon, gfx::kPlaceholderColor)),
+      l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_NOTIFIER_HATS_NAME),
+      GURL(kNotificationOriginUrl),
       message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
                                  kNotifierHats),
-      l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_NOTIFIER_HATS_NAME),
-      GURL(kNotificationOriginUrl), kNotificationId, optional, this);
+      optional, this);
   if (message_center::IsNewStyleNotificationEnabled()) {
-    notification->set_icon(gfx::Image());
-    notification->set_accent_color(
+    notification.set_icon(gfx::Image());
+    notification.set_accent_color(
         message_center::kSystemNotificationColorNormal);
-    notification->set_small_image(gfx::Image(gfx::CreateVectorIcon(
+    notification.set_small_image(gfx::Image(gfx::CreateVectorIcon(
         kNotificationGoogleIcon, message_center::kSmallImageSizeMD,
         message_center::kSystemNotificationColorNormal)));
-    notification->set_vector_small_image(kNotificationGoogleIcon);
+    notification.set_vector_small_image(kNotificationGoogleIcon);
   }
-  return notification;
+  g_browser_process->notification_ui_manager()->Add(notification, profile_);
 }
 
 void HatsNotificationController::UpdateLastInteractionTime() {

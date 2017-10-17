@@ -8,7 +8,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "chrome/browser/notifications/notification.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/message_center/notification_delegate.h"
@@ -56,7 +55,6 @@ class HatsNotificationController : public message_center::NotificationDelegate,
       const NetworkState* network,
       const NetworkPortalDetector::CaptivePortalState& state) override;
 
-  Notification* CreateNotification();
   void UpdateLastInteractionTime();
 
   Profile* profile_;

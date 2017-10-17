@@ -24,7 +24,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -57,6 +56,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/message_center/message_center.h"
+#include "ui/message_center/notification.h"
 #include "ui/message_center/notification_delegate.h"
 #include "ui/message_center/notification_types.h"
 #include "ui/message_center/notifier_settings.h"
@@ -175,12 +175,11 @@ void NotificationImageReady(const std::string extension_name,
   // conflict. NotificationSystemObserver will cancel all notifications from
   // the same origin when OnExtensionUnloaded() is called.
   std::string id = kNotificationPrefix + extension_id;
-  Notification notification(
+  message_center::Notification notification(
       message_center::NOTIFICATION_TYPE_SIMPLE, id, base::string16(), message,
-      notification_icon,
+      notification_icon, base::string16(), GURL("chrome://extension-crash"),
       message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
                                  kNotifierId),
-      base::string16(), GURL("chrome://extension-crash"), id,
       message_center::RichNotificationData(), delegate.get());
 
   g_browser_process->notification_ui_manager()->Add(notification, profile);

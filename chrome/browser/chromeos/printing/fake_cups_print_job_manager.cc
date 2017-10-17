@@ -13,8 +13,8 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/chromeos/printing/cups_print_job.h"
 #include "chrome/browser/chromeos/printing/cups_print_job_manager.h"
-#include "chrome/browser/notifications/notification.h"
 #include "content/public/browser/browser_context.h"
+#include "ui/message_center/notification.h"
 
 namespace chromeos {
 

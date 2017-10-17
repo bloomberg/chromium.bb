@@ -4,12 +4,12 @@
 
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 
-#include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/notifications/stub_notification_display_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "ui/message_center/notification.h"
 
 NotificationDisplayServiceTester::NotificationDisplayServiceTester(
     Profile* profile)
@@ -31,7 +31,7 @@ void NotificationDisplayServiceTester::SetNotificationAddedClosure(
   display_service_->SetNotificationAddedClosure(std::move(closure));
 }
 
-std::vector<Notification>
+std::vector<message_center::Notification>
 NotificationDisplayServiceTester::GetDisplayedNotificationsForType(
     NotificationCommon::Type type) {
   return display_service_->GetDisplayedNotificationsForType(type);
@@ -39,7 +39,7 @@ NotificationDisplayServiceTester::GetDisplayedNotificationsForType(
 
 const NotificationCommon::Metadata*
 NotificationDisplayServiceTester::GetMetadataForNotification(
-    const Notification& notification) {
+    const message_center::Notification& notification) {
   return display_service_->GetMetadataForNotification(notification);
 }
 

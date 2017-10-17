@@ -26,10 +26,10 @@ void StubNotificationDisplayService::SetNotificationAddedClosure(
   notification_added_closure_ = std::move(closure);
 }
 
-std::vector<Notification>
+std::vector<message_center::Notification>
 StubNotificationDisplayService::GetDisplayedNotificationsForType(
     NotificationCommon::Type type) const {
-  std::vector<Notification> notifications;
+  std::vector<message_center::Notification> notifications;
   for (const auto& data : notifications_) {
     if (data.type != type)
       continue;
@@ -42,7 +42,7 @@ StubNotificationDisplayService::GetDisplayedNotificationsForType(
 
 const NotificationCommon::Metadata*
 StubNotificationDisplayService::GetMetadataForNotification(
-    const Notification& notification) {
+    const message_center::Notification& notification) {
   auto iter = std::find_if(notifications_.begin(), notifications_.end(),
                            [notification](const NotificationData& data) {
                              return data.notification.id() == notification.id();
@@ -99,7 +99,7 @@ void StubNotificationDisplayService::RemoveAllNotifications(
 void StubNotificationDisplayService::Display(
     NotificationCommon::Type notification_type,
     const std::string& notification_id,
-    const Notification& notification,
+    const message_center::Notification& notification,
     std::unique_ptr<NotificationCommon::Metadata> metadata) {
   // This mimics notification replacement behaviour; the Close() method on a
   // notification's delegate is not meant to be invoked in this situation.
@@ -142,7 +142,7 @@ void StubNotificationDisplayService::GetDisplayed(
 
 StubNotificationDisplayService::NotificationData::NotificationData(
     NotificationCommon::Type type,
-    const Notification& notification,
+    const message_center::Notification& notification,
     std::unique_ptr<NotificationCommon::Metadata> metadata)
     : type(type), notification(notification), metadata(std::move(metadata)) {}
 

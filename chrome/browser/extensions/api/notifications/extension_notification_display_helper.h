@@ -14,9 +14,12 @@
 #include "components/keyed_service/core/keyed_service.h"
 
 class GURL;
-class Notification;
 class NotificationDisplayService;
 class Profile;
+
+namespace message_center {
+class Notification;
+}
 
 namespace extensions {
 
@@ -30,11 +33,12 @@ class ExtensionNotificationDisplayHelper : public KeyedService {
   ~ExtensionNotificationDisplayHelper() override;
 
   // Displays the |notification| using the notification display service.
-  void Display(const Notification& notification);
+  void Display(const message_center::Notification& notification);
 
   // Returns the notification identified by |notification_id| if it is currently
   // visible. May return a nullptr.
-  Notification* GetByNotificationId(const std::string& notification_id);
+  message_center::Notification* GetByNotificationId(
+      const std::string& notification_id);
 
   // Returns a set with the IDs of all notifications that are currently being
   // shown on behalf of the |extension_origin|.
@@ -53,7 +57,8 @@ class ExtensionNotificationDisplayHelper : public KeyedService {
   void Shutdown() override;
 
  private:
-  using NotificationVector = std::vector<std::unique_ptr<Notification>>;
+  using NotificationVector =
+      std::vector<std::unique_ptr<message_center::Notification>>;
 
   // Returns the notification display service instance to communicate with.
   NotificationDisplayService* GetDisplayService();

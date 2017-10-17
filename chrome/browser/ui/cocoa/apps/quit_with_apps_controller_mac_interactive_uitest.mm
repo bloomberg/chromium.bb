@@ -60,7 +60,6 @@ class QuitWithAppsControllerInteractiveTest
 IN_PROC_BROWSER_TEST_P(QuitWithAppsControllerInteractiveTest, QuitBehavior) {
   scoped_refptr<QuitWithAppsController> controller =
       new QuitWithAppsController();
-  const Notification* notification;
   message_center::MessageCenter* message_center =
       message_center::MessageCenter::Get();
 
@@ -72,9 +71,10 @@ IN_PROC_BROWSER_TEST_P(QuitWithAppsControllerInteractiveTest, QuitBehavior) {
 
   // With no app windows open, ShouldQuit returns true.
   EXPECT_TRUE(controller->ShouldQuit());
-  notification = g_browser_process->notification_ui_manager()->FindById(
-      QuitWithAppsController::kQuitWithAppsNotificationID,
-      NotificationUIManager::GetProfileID(profiles[0]));
+  const message_center::Notification* notification =
+      g_browser_process->notification_ui_manager()->FindById(
+          QuitWithAppsController::kQuitWithAppsNotificationID,
+          NotificationUIManager::GetProfileID(profiles[0]));
   EXPECT_EQ(NULL, notification);
 
   // Open an app window.

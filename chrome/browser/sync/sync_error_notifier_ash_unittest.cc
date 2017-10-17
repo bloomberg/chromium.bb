@@ -11,7 +11,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
-#include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/ui/browser.h"
@@ -121,8 +120,9 @@ class SyncErrorNotifierTest : public BrowserWithTestWindowTest {
     error_controller_->OnStateChanged(service_.get());
     EXPECT_EQ(is_error, error_controller_->HasError());
 
-    const Notification* notification = notification_ui_manager_->FindById(
-        kNotificationId, NotificationUIManager::GetProfileID(profile_));
+    const message_center::Notification* notification =
+        notification_ui_manager_->FindById(
+            kNotificationId, NotificationUIManager::GetProfileID(profile_));
     if (expected_notification) {
       ASSERT_TRUE(notification);
       ASSERT_FALSE(notification->title().empty());

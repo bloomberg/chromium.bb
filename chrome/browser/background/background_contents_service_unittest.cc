@@ -16,7 +16,6 @@
 #include "chrome/browser/background/background_contents_service_factory.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/notifications/message_center_notification_manager.h"
-#include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/extensions/extension_test_util.h"
 #include "chrome/common/pref_names.h"
@@ -35,6 +34,7 @@
 #include "ui/message_center/fake_message_center_tray_delegate.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_observer.h"
+#include "ui/message_center/notification.h"
 #include "url/gurl.h"
 
 class BackgroundContentsServiceTest : public testing::Test {
@@ -204,7 +204,7 @@ class BackgroundContentsServiceNotificationTest
  protected:
   // Creates crash notification for the specified extension and returns
   // the created one.
-  const Notification* CreateCrashNotification(
+  const message_center::Notification* CreateCrashNotification(
       scoped_refptr<extensions::Extension> extension) {
     std::string notification_id = BackgroundContentsService::
         GetNotificationDelegateIdForExtensionForTesting(extension->id());
@@ -361,7 +361,8 @@ TEST_F(BackgroundContentsServiceNotificationTest, TestShowBalloon) {
   ASSERT_TRUE(extension.get());
   ASSERT_TRUE(extension->GetManifestData("icons"));
 
-  const Notification* notification = CreateCrashNotification(extension);
+  const message_center::Notification* notification =
+      CreateCrashNotification(extension);
   EXPECT_FALSE(notification->icon().IsEmpty());
 }
 
@@ -380,7 +381,7 @@ TEST_F(BackgroundContentsServiceNotificationTest, TestShowBalloonShutdown) {
   static_cast<TestingBrowserProcess*>(g_browser_process)
       ->SetShuttingDown(false);
 
-  const Notification* notification =
+  const message_center::Notification* notification =
       g_browser_process->notification_ui_manager()->FindById(notification_id,
                                                              profile());
 
@@ -396,7 +397,8 @@ TEST_F(BackgroundContentsServiceNotificationTest, TestShowBalloonNoIcon) {
   ASSERT_TRUE(extension.get());
   ASSERT_FALSE(extension->GetManifestData("icons"));
 
-  const Notification* notification = CreateCrashNotification(extension);
+  const message_center::Notification* notification =
+      CreateCrashNotification(extension);
   EXPECT_FALSE(notification->icon().IsEmpty());
 }
 

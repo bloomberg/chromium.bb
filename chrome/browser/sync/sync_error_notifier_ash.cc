@@ -9,7 +9,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/user_flow.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
-#include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
@@ -152,15 +151,14 @@ void SyncErrorNotifier::OnErrorChanged() {
       multi_user_util::GetAccountIdFromProfile(profile_).GetUserEmail();
 
   // Add a new notification.
-  Notification notification(
+  message_center::Notification notification(
       message_center::NOTIFICATION_TYPE_SIMPLE, notification_id_,
       l10n_util::GetStringUTF16(IDS_SYNC_ERROR_BUBBLE_VIEW_TITLE),
       l10n_util::GetStringUTF16(IDS_SYNC_PASSPHRASE_ERROR_BUBBLE_VIEW_MESSAGE),
       ui::ResourceBundle::GetSharedInstance().GetImageNamed(
           IDR_NOTIFICATION_ALERT),
-      notifier_id,
       base::string16(),  // display_source
-      GURL(notification_id_), notification_id_, data,
+      GURL(notification_id_), notifier_id, data,
       new SyncNotificationDelegate(profile_));
 
   notification_ui_manager->Add(notification, profile_);

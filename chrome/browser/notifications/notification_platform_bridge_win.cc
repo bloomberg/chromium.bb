@@ -17,7 +17,6 @@
 #include "base/strings/string16.h"
 #include "base/win/core_winrt_util.h"
 #include "base/win/scoped_hstring.h"
-#include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/notifications/notification_template_builder.h"
 #include "chrome/installer/util/install_util.h"
@@ -126,7 +125,7 @@ void NotificationPlatformBridgeWin::Display(
     const std::string& notification_id,
     const std::string& profile_id,
     bool incognito,
-    const Notification& notification,
+    const message_center::Notification& notification,
     std::unique_ptr<NotificationCommon::Metadata> metadata) {
   // TODO(finnur): Move this to a RoInitialized thread, as per crbug.com/761039.
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
