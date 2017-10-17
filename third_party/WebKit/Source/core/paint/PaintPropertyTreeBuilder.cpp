@@ -941,6 +941,25 @@ static bool NeedsControlClipFragmentationAdjustment(const LayoutBox& box) {
          box.PaintingLayer()->EnclosingPaginationLayer();
 }
 
+static inline LayoutPoint VisualOffsetFromPaintOffsetRoot(
+    const PaintPropertyTreeBuilderFragmentContext& context,
+    const PaintLayer* child) {
+  const LayoutBoxModelObject* paint_offset_root =
+      context.current.paint_offset_root;
+  PaintLayer* painting_layer = paint_offset_root->PaintingLayer();
+  LayoutPoint result = child->VisualOffsetFromAncestor(painting_layer);
+  if (!paint_offset_root->Layer()) {
+    result.Move(-paint_offset_root->OffsetFromAncestorContainer(
+        &painting_layer->GetLayoutObject()));
+  }
+
+  // Don't include scroll offset of paint_offset_root. Any scroll is
+  // already included in a separate transform node.
+  if (paint_offset_root->HasOverflowClip())
+    result += ToLayoutBox(paint_offset_root)->ScrolledContentOffset();
+  return result;
+}
+
 void PaintPropertyTreeBuilder::UpdateOverflowClip(
     const LayoutObject& object,
     ObjectPaintProperties& properties,
@@ -976,9 +995,8 @@ void PaintPropertyTreeBuilder::UpdateOverflowClip(
         if (!iterator.AtEnd()) {
           offset = object_bounding_box_in_flow_thread.Location();
           offset.Move(iterator.PaginationOffset());
-          offset.MoveBy(painting_layer->EnclosingPaginationLayer()
-                            ->VisualOffsetFromAncestor(
-                                context.current.paint_offset_root->Layer()));
+          offset.MoveBy(VisualOffsetFromPaintOffsetRoot(
+              context, painting_layer->EnclosingPaginationLayer()));
           iterator.Advance();
         }
 
@@ -1323,25 +1341,6 @@ void PaintPropertyTreeBuilder::UpdatePaintOffset(
           -ToLayoutBox(parent_row)->PhysicalLocation());
     }
   }
-}
-
-static inline LayoutPoint VisualOffsetFromPaintOffsetRoot(
-    const PaintPropertyTreeBuilderFragmentContext& context,
-    const PaintLayer* child) {
-  const LayoutBoxModelObject* paint_offset_root =
-      context.current.paint_offset_root;
-  PaintLayer* painting_layer = paint_offset_root->PaintingLayer();
-  LayoutPoint result = child->VisualOffsetFromAncestor(painting_layer);
-  if (!paint_offset_root->Layer()) {
-    result.Move(-paint_offset_root->OffsetFromAncestorContainer(
-        &painting_layer->GetLayoutObject()));
-  }
-
-  // Don't include scroll offset of paint_offset_root. Any scroll is
-  // already included in a separate transform node.
-  if (paint_offset_root->HasOverflowClip())
-    result += ToLayoutBox(paint_offset_root)->ScrolledContentOffset();
-  return result;
 }
 
 static void SetNeedsPaintPropertyUpdateIfNeeded(const LayoutObject& object) {
