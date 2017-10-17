@@ -102,15 +102,23 @@ class CORE_EXPORT WorkletGlobalScope
 
   void SetModulator(Modulator*);
 
+  SecurityOrigin* DocumentSecurityOrigin() const {
+    return document_security_origin_.get();
+  }
+
   DECLARE_VIRTUAL_TRACE();
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
  protected:
-  // The url, userAgent and securityOrigin arguments are inherited from the
-  // parent ExecutionContext for Worklets.
+  // Partial implementation of the "set up a worklet environment settings
+  // object" algorithm:
+  // https://drafts.css-houdini.org/worklets/#script-settings-for-worklets
+  //
+  // The url, user_agent and document_security_origin arguments are inherited
+  // from the parent Document.
   WorkletGlobalScope(const KURL&,
                      const String& user_agent,
-                     RefPtr<SecurityOrigin>,
+                     RefPtr<SecurityOrigin> document_security_origin,
                      v8::Isolate*,
                      WorkerClients*,
                      WorkerReportingProxy&);
@@ -121,6 +129,10 @@ class CORE_EXPORT WorkletGlobalScope
 
   const KURL url_;
   const String user_agent_;
+
+  // Used for module fetch.
+  const RefPtr<SecurityOrigin> document_security_origin_;
+
   Member<WorkletModuleResponsesMapProxy> module_responses_map_proxy_;
   // LocalDOMWindow::modulator_ workaround equivalent.
   // TODO(kouhei): Remove this.

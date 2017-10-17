@@ -21,25 +21,25 @@ namespace blink {
 AnimationWorkletGlobalScope* AnimationWorkletGlobalScope::Create(
     const KURL& url,
     const String& user_agent,
-    RefPtr<SecurityOrigin> security_origin,
+    RefPtr<SecurityOrigin> document_security_origin,
     v8::Isolate* isolate,
     WorkerThread* thread,
     WorkerClients* worker_clients) {
   return new AnimationWorkletGlobalScope(url, user_agent,
-                                         std::move(security_origin), isolate,
-                                         thread, worker_clients);
+                                         std::move(document_security_origin),
+                                         isolate, thread, worker_clients);
 }
 
 AnimationWorkletGlobalScope::AnimationWorkletGlobalScope(
     const KURL& url,
     const String& user_agent,
-    RefPtr<SecurityOrigin> security_origin,
+    RefPtr<SecurityOrigin> document_security_origin,
     v8::Isolate* isolate,
     WorkerThread* thread,
     WorkerClients* worker_clients)
     : ThreadedWorkletGlobalScope(url,
                                  user_agent,
-                                 std::move(security_origin),
+                                 std::move(document_security_origin),
                                  isolate,
                                  thread,
                                  worker_clients) {

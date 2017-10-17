@@ -20,13 +20,13 @@ namespace blink {
 ThreadedWorkletGlobalScope::ThreadedWorkletGlobalScope(
     const KURL& url,
     const String& user_agent,
-    RefPtr<SecurityOrigin> security_origin,
+    RefPtr<SecurityOrigin> document_security_origin,
     v8::Isolate* isolate,
     WorkerThread* thread,
     WorkerClients* worker_clients)
     : WorkletGlobalScope(url,
                          user_agent,
-                         std::move(security_origin),
+                         std::move(document_security_origin),
                          isolate,
                          worker_clients,
                          thread->GetWorkerReportingProxy()),

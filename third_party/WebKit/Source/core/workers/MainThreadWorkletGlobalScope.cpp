@@ -17,12 +17,11 @@ MainThreadWorkletGlobalScope::MainThreadWorkletGlobalScope(
     LocalFrame* frame,
     const KURL& url,
     const String& user_agent,
-    RefPtr<SecurityOrigin> security_origin,
     v8::Isolate* isolate,
     WorkerReportingProxy& reporting_proxy)
     : WorkletGlobalScope(url,
                          user_agent,
-                         std::move(security_origin),
+                         frame->GetDocument()->GetSecurityOrigin(),
                          isolate,
                          nullptr /* worker_clients */,
                          reporting_proxy),

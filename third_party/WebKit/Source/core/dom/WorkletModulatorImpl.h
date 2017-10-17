@@ -22,6 +22,7 @@ class WorkletModulatorImpl final : public ModulatorImplBase {
   static ModulatorImplBase* Create(RefPtr<ScriptState>);
 
   // Implements Modulator.
+  SecurityOrigin* GetSecurityOriginForFetch() override;
   ModuleScriptFetcher* CreateModuleScriptFetcher() override;
 
  private:

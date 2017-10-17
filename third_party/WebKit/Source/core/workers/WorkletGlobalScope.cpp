@@ -21,16 +21,28 @@
 
 namespace blink {
 
-WorkletGlobalScope::WorkletGlobalScope(const KURL& url,
-                                       const String& user_agent,
-                                       RefPtr<SecurityOrigin> security_origin,
-                                       v8::Isolate* isolate,
-                                       WorkerClients* worker_clients,
-                                       WorkerReportingProxy& reporting_proxy)
+// Partial implementation of the "set up a worklet environment settings object"
+// algorithm:
+// https://drafts.css-houdini.org/worklets/#script-settings-for-worklets
+WorkletGlobalScope::WorkletGlobalScope(
+    const KURL& url,
+    const String& user_agent,
+    RefPtr<SecurityOrigin> document_security_origin,
+    v8::Isolate* isolate,
+    WorkerClients* worker_clients,
+    WorkerReportingProxy& reporting_proxy)
     : WorkerOrWorkletGlobalScope(isolate, worker_clients, reporting_proxy),
       url_(url),
-      user_agent_(user_agent) {
-  SetSecurityOrigin(std::move(security_origin));
+      user_agent_(user_agent),
+      document_security_origin_(document_security_origin) {
+  // Step 2: "Let inheritedAPIBaseURL be outsideSettings's API base URL."
+  // |url_| is the inheritedAPIBaseURL passed from the parent Document.
+
+  // Step 3: "Let origin be a unique opaque origin."
+  SetSecurityOrigin(SecurityOrigin::CreateUnique());
+
+  // Step 5: "Let inheritedReferrerPolicy be outsideSettings's referrer policy."
+  // TODO(nhiroki): Set the referrer policy (https://crbug.com/773921).
 }
 
 WorkletGlobalScope::~WorkletGlobalScope() = default;

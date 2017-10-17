@@ -17,6 +17,10 @@ ModulatorImplBase* WorkletModulatorImpl::Create(
 WorkletModulatorImpl::WorkletModulatorImpl(RefPtr<ScriptState> script_state)
     : ModulatorImplBase(std::move(script_state)) {}
 
+SecurityOrigin* WorkletModulatorImpl::GetSecurityOriginForFetch() {
+  return ToWorkletGlobalScope(GetExecutionContext())->DocumentSecurityOrigin();
+}
+
 ModuleScriptFetcher* WorkletModulatorImpl::CreateModuleScriptFetcher() {
   auto global_scope = ToWorkletGlobalScope(GetExecutionContext());
   return new WorkletModuleScriptFetcher(

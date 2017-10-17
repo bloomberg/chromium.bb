@@ -67,16 +67,19 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
   String referrer_policy;
   std::unique_ptr<Vector<String>> origin_trial_tokens;
 
-  // The SecurityOrigin of the Document creating a Worker may have
-  // been configured with extra policy privileges when it was created
-  // (e.g., enforce path-based file:// origins.)
-  // To ensure that these are transferred to the origin of a new worker
-  // global scope, supply the Document's SecurityOrigin as the
-  // 'starter origin'.
+  // The SecurityOrigin of the Document creating a Worker/Worklet.
   //
-  // See SecurityOrigin::transferPrivilegesFrom() for details on what
-  // privileges are transferred.
-  std::unique_ptr<SecurityOrigin::PrivilegeData> starter_origin_privilege_data;
+  // For Workers, the origin may have been configured with extra policy
+  // privileges when it was created (e.g., enforce path-based file:// origins.)
+  // To ensure that these are transferred to the origin of a new worker global
+  // scope, supply the Document's SecurityOrigin as the 'starter origin'. See
+  // SecurityOrigin::TransferPrivilegesFrom() for details on what privileges are
+  // transferred.
+  //
+  // For Worklets, the origin is used for fetching module scripts. Worklet
+  // scripts need to be fetched as sub-resources of the Document, and a module
+  // script loader uses Document's SecurityOrigin for security checks.
+  RefPtr<SecurityOrigin> starter_origin;
 
   // This object is created and initialized on the thread creating
   // a new worker context, but ownership of it and this
