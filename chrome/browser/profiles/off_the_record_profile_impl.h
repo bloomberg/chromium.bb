@@ -90,8 +90,6 @@ class OffTheRecordProfileImpl : public Profile {
   PrefProxyConfigTracker* GetProxyConfigTracker() override;
 
   chrome_browser_net::Predictor* GetNetworkPredictor() override;
-  void ClearNetworkingHistorySince(base::Time time,
-                                   const base::Closure& completion) override;
   GURL GetHomePage() override;
 
   // content::BrowserContext implementation:

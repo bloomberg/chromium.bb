@@ -328,16 +328,6 @@ ProfileImplIOData::Handle::GetIsolatedMediaRequestContextGetter(
   return context;
 }
 
-void ProfileImplIOData::Handle::ClearNetworkingHistorySince(
-    base::Time time,
-    const base::Closure& completion) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  content::BrowserContext::GetDefaultStoragePartition(profile_)
-      ->GetNetworkContext()
-      ->ClearNetworkingHistorySince(time, completion);
-}
-
 void ProfileImplIOData::Handle::LazyInitialize() const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (initialized_)

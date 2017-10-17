@@ -218,6 +218,7 @@ class CONTENT_EXPORT BrowsingDataRemoverImpl
   SubTask synchronous_clear_operations_;
   SubTask clear_embedder_data_;
   SubTask clear_cache_;
+  SubTask clear_networking_history_;
   SubTask clear_channel_ids_;
   SubTask clear_http_auth_cache_;
   SubTask clear_storage_partition_data_;

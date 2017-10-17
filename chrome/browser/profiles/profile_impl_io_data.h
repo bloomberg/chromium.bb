@@ -84,18 +84,6 @@ class ProfileImplIOData : public ProfileIOData {
             const base::FilePath& partition_path,
             bool in_memory) const;
 
-    // Deletes all network related data since |time|. It deletes transport
-    // security state since |time| and also deletes HttpServerProperties data.
-    // Works asynchronously, however if the |completion| callback is non-null,
-    // it will be posted on the UI thread once the removal process completes.
-    //
-    // Wraps NetworkContext::ClearNetworkingHistorySince() for the
-    // Profile's main NetworkContext.
-    //
-    // TODO(mmenke): Remove this.
-    void ClearNetworkingHistorySince(base::Time time,
-                                     const base::Closure& completion);
-
    private:
     typedef std::map<StoragePartitionDescriptor,
                      scoped_refptr<ChromeURLRequestContextGetter>,
