@@ -627,6 +627,7 @@ _x86_internal_release_boards = frozenset([
 
 _x86_external_boards = frozenset([
     'amd64-generic',
+    'moblab-generic-vm',
     'tatl',
     'x32-generic',
     'x86-generic',
@@ -718,6 +719,7 @@ _loonix_boards = frozenset([
 
 _moblab_boards = frozenset([
     'guado_moblab',
+    'moblab-generic-vm',
 ])
 
 _termina_boards = frozenset([
@@ -2339,6 +2341,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'lasilla-ground', # contact:jemele@
       'lasilla-sky', # contact:jemele@
       'macchiato-ground', # contact:jemele@
+      'moblab-generic-vm', # contact:pprabhu@
       'octavius', # contact:dpjacques@
       'romer', # contact:michaelho@
       'tatl', # Still volatile - contact:smbarber@ - crbug.com/705598
@@ -3340,6 +3343,8 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
 
     for board in _moblab_boards:
       config_name = GetReleaseConfigName(board)
+      if config_name not in site_config:
+        continue
       # If the board is in _moblab_boards, use moblab_release template
       site_config[config_name].apply(
           site_config.templates.moblab_release,

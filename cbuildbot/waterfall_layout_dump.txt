@@ -290,6 +290,7 @@ chromiumos-sdk (gce_beefy)
 daisy-full (gce_beefy)
 daisy-incremental (gce_beefy)
 lakitu-full (baremetal)
+moblab-generic-vm-paladin (gce_beefy)
 oak-full (gce_beefy)
 tatl-paladin (gce_beefy)
 
@@ -722,6 +723,10 @@ mccloud-unittest-stress (gce_beefy)
   veyron_jerry-wificell-pre-cq
   veyron_speedy-wificell-pre-cq
   winky-wificell-pre-cq
+moblab-generic-vm-compile-only-pre-cq (gce_beefy)
+moblab-generic-vm-no-vmtest-pre-cq (gce_beefy)
+moblab-generic-vm-pre-cq (gce_beefy)
+moblab-generic-vm-unittest-stress (gce_beefy)
 monroe-compile-only-pre-cq (gce_beefy)
 monroe-no-vmtest-pre-cq (gce_beefy)
 monroe-payloads (gce_beefy)

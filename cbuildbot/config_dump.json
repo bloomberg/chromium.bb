@@ -16904,6 +16904,7 @@
             "lumpy-incremental-paladin",
             "lumpy-paladin",
             "macchiato-ground-paladin",
+            "moblab-generic-vm-paladin",
             "monroe-paladin",
             "nyan-full-compile-paladin",
             "nyan_big-paladin",
@@ -17398,6 +17399,78 @@
             "chrome_internal"
         ],
         "vm_tests": []
+    },
+    "moblab-generic-vm-chromium-pfq": {
+        "_template": "chromium_pfq",
+        "boards": [
+            "moblab-generic-vm"
+        ],
+        "important": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "moblab-generic-vm-compile-only-pre-cq": {
+        "_template": "compile_only_pre_cq",
+        "boards": [
+            "moblab-generic-vm"
+        ],
+        "image_test": false
+    },
+    "moblab-generic-vm-full": {
+        "_template": "full",
+        "boards": [
+            "moblab-generic-vm"
+        ],
+        "image_test": false,
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "moblab-generic-vm-no-vmtest-pre-cq": {
+        "_template": "no_vmtest_pre_cq",
+        "boards": [
+            "moblab-generic-vm"
+        ],
+        "image_test": false
+    },
+    "moblab-generic-vm-paladin": {
+        "_template": "paladin",
+        "active_waterfall": "chromiumos",
+        "boards": [
+            "moblab-generic-vm"
+        ],
+        "image_test": false,
+        "important": false,
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
+    "moblab-generic-vm-pre-cq": {
+        "_template": "pre_cq",
+        "boards": [
+            "moblab-generic-vm"
+        ],
+        "image_test": false,
+        "vm_tests": []
+    },
+    "moblab-generic-vm-tot-chromium-pfq-informational": {
+        "_template": "chromium_pfq_informational",
+        "boards": [
+            "moblab-generic-vm"
+        ],
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "moblab-generic-vm-unittest-stress": {
+        "_template": "unittest_stress",
+        "boards": [
+            "moblab-generic-vm"
+        ]
     },
     "monroe-chrome-pfq": {
         "_template": "chrome_pfq",
