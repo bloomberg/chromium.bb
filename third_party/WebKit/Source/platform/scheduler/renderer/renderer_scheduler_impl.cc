@@ -2009,13 +2009,6 @@ void RendererSchedulerImpl::OnQueueingTimeForWindowEstimated(
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                  "estimated_queueing_time_for_window",
                  queueing_time.InMillisecondsF());
-
-  if (BlinkResourceCoordinatorBase::IsEnabled()) {
-    RendererResourceCoordinator::Get().SetProperty(
-        resource_coordinator::mojom::PropertyType::
-            kExpectedTaskQueueingDuration,
-        queueing_time.InMilliseconds());
-  }
 }
 
 AutoAdvancingVirtualTimeDomain* RendererSchedulerImpl::GetVirtualTimeDomain() {
