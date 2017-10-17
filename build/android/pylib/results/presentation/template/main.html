@@ -75,11 +75,9 @@
         {% include 'template/table.html' %}
       {% endfor %}
     </div>
-  {% if feedback_url %}
-    </br>
-      <a href="{{feedback_url}}" target="_blank"><b>Feedback</b></a>
-    </body>
-  {%- endif %}
+  </br>
+    <a href="{{feedback_url}}" target="_blank"><b>Feedback</b></a>
+  </body>
   <script>
     sortSuiteTableByFailedTestCases();
     showSuiteTableOnlyWithReplaceState();

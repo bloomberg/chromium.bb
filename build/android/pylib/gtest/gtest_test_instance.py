@@ -287,6 +287,7 @@ class GtestTestInstance(test_instance.TestInstance):
     self._extract_test_list_from_filter = args.extract_test_list_from_filter
     self._filter_tests_lock = threading.Lock()
     self._shard_timeout = args.shard_timeout
+    self._should_save_logcat = bool(args.json_results_file)
     self._store_tombstones = args.store_tombstones
     self._total_external_shards = args.test_launcher_total_shards
     self._suite = args.suite_name[0]
@@ -444,6 +445,12 @@ class GtestTestInstance(test_instance.TestInstance):
   @property
   def shard_timeout(self):
     return self._shard_timeout
+
+  # TODO(jbudorick): Remove this once mikecase lands
+  # https://codereview.chromium.org/2933993002/
+  @property
+  def should_save_logcat(self):
+    return self._should_save_logcat
 
   @property
   def store_tombstones(self):
