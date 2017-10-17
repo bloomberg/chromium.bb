@@ -38,6 +38,8 @@ import org.chromium.chrome.browser.tab.InterceptNavigationDelegateImpl;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.chrome.test.util.browser.contextmenu.ContextMenuUtils;
+import org.chromium.components.navigation_interception.NavigationParams;
+import org.chromium.content.browser.test.NativeLibraryTestRule;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
@@ -59,6 +61,9 @@ public class WebappNavigationTest {
 
     @Rule
     public final WebappActivityTestRule mActivityTestRule = new WebappActivityTestRule();
+
+    @Rule
+    public final NativeLibraryTestRule mNativeLibraryTestRule = new NativeLibraryTestRule();
 
     @Test
     @SmallTest
@@ -308,6 +313,35 @@ public class WebappNavigationTest {
                 return otherInScopeUrl.equals(activity.getActivityTab().getUrl());
             }
         });
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Webapps"})
+    public void testPostRequestIsNotHandledByCct() throws Exception {
+        mNativeLibraryTestRule.loadNativeLibraryNoBrowserProcess();
+        // Post requests should never be opened in CCT. See crbug/771984
+        // This test is poking at WebappInterceptNavigationDelegate directly,
+        // as it's hard to test WebAPKs as well as to stub responses to POST requests.
+        WebApkInfo info = WebApkInfo.create("", "https://somewebapp.com", "https://somewebapp.com",
+                null, null, null, null, WebDisplayMode.STANDALONE, 0, 0, 0, 0, "", 0, null, "",
+                null, false /* forceNavigation */);
+
+        // Note that isPost is the only field being different between the two calls.
+        Assert.assertFalse(WebappInterceptNavigationDelegate.shouldOpenInCustomTab(
+                NavigationParams.create("https://otherdomain.com",
+                        "https://somewebapp.com" /* referrer */, true /* isPost */,
+                        true /* hasUserGesture */, PageTransition.FORM_SUBMIT,
+                        false /* isRedirect */, false /* isExternalProtocol */,
+                        true /* isMainFrame */, true /* hasUserGestureCarryover */),
+                info, WebappScopePolicy.WEBAPK));
+        Assert.assertTrue(WebappInterceptNavigationDelegate.shouldOpenInCustomTab(
+                NavigationParams.create("https://otherdomain.com",
+                        "https://somewebapp.com" /* referrer */, false /* isPost */,
+                        true /* hasUserGesture */, PageTransition.FORM_SUBMIT,
+                        false /* isRedirect */, false /* isExternalProtocol */,
+                        true /* isMainFrame */, true /* hasUserGestureCarryover */),
+                info, WebappScopePolicy.WEBAPK));
     }
 
     private WebappActivity runWebappActivityAndWaitForIdle(Intent intent) throws Exception {
