@@ -1377,13 +1377,6 @@ void OutOfProcessInstance::FormDidOpen(int32_t result) {
   }
 }
 
-std::string OutOfProcessInstance::ShowFileSelectionDialog() {
-  // Seems like very low priority to implement, since the pdf has no way to get
-  // the file data anyways.  Javascript doesn't let you do this synchronously.
-  NOTREACHED();
-  return std::string();
-}
-
 pp::URLLoader OutOfProcessInstance::CreateURLLoader() {
   if (full_) {
     if (!did_call_start_loading_) {
