@@ -26,7 +26,7 @@ gfx::GpuMemoryBufferType GetNativeGpuMemoryBufferType() {
 bool IsNativeGpuMemoryBufferConfigurationSupported(gfx::BufferFormat format,
                                                    gfx::BufferUsage usage) {
   DCHECK_NE(gfx::SHARED_MEMORY_BUFFER, GetNativeGpuMemoryBufferType());
-  DCHECK_NE(gfx::EMPTY_BUFFER, GetNativeGpuMemoryBufferType());
+
 #if defined(OS_MACOSX)
   switch (usage) {
     case gfx::BufferUsage::GPU_READ:
@@ -66,7 +66,7 @@ bool IsNativeGpuMemoryBufferConfigurationSupported(gfx::BufferFormat format,
       ->IsConfigurationSupported(format, usage);
 #endif
 
-  NOTREACHED();
+  DCHECK_EQ(GetNativeGpuMemoryBufferType(), gfx::EMPTY_BUFFER);
   return false;
 }
 
