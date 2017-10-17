@@ -40,11 +40,6 @@ DrawImage::DrawImage(PaintImage image,
       frame_index_(frame_index),
       target_color_space_(color_space) {
   matrix_is_decomposable_ = ExtractScale(matrix, &scale_);
-
-  // Assert that the frame index used is not greater than the number of
-  // frames available. Debugging crbug.com/768975.
-  if (paint_image_)
-    CHECK_LT(paint_image_.frame_index(), paint_image_.FrameCount());
 }
 
 DrawImage::DrawImage(const DrawImage& other,
@@ -58,12 +53,7 @@ DrawImage::DrawImage(const DrawImage& other,
                           other.scale_.height() * scale_adjustment)),
       matrix_is_decomposable_(other.matrix_is_decomposable_),
       frame_index_(frame_index),
-      target_color_space_(color_space) {
-  // Assert that the frame index used is not greater than the number of
-  // frames available. Debugging crbug.com/768975.
-  if (paint_image_)
-    CHECK_LT(paint_image_.frame_index(), paint_image_.FrameCount());
-}
+      target_color_space_(color_space) {}
 
 DrawImage::DrawImage(const DrawImage& other) = default;
 DrawImage::DrawImage(DrawImage&& other) = default;

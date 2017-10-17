@@ -70,11 +70,6 @@ PaintImage PaintImageBuilder::TakePaintImage() {
   }
 #endif
 
-  // Assert that the frame index on PaintImage is not greater than the number of
-  // frames available. Debugging crbug.com/768975.
-  if (paint_image_)
-    CHECK_LT(paint_image_.frame_index(), paint_image_.FrameCount());
-
   // We may already have a cached_sk_image_ if this builder was created with a
   // copy.
   if (!paint_image_.cached_sk_image_)
