@@ -388,18 +388,42 @@ TEST(SecurityStateTest, IncognitoFlagPropagates) {
   TestSecurityStateHelper helper;
   helper.SetUrl(GURL(kHttpUrl));
   SecurityInfo security_info;
+
+  // Test the default non-secure-while-incognito-or-editing configuration.
+  helper.set_is_incognito(false);
   helper.GetSecurityInfo(&security_info);
   EXPECT_FALSE(security_info.incognito_downgraded_security_level);
 
   helper.set_is_incognito(true);
   helper.GetSecurityInfo(&security_info);
-  EXPECT_FALSE(security_info.incognito_downgraded_security_level);
+  EXPECT_TRUE(security_info.incognito_downgraded_security_level);
+
+  {
+    // Disable the "non-secure-while-incognito" configuration.
+    base::test::ScopedCommandLine scoped_command_line;
+    scoped_command_line.GetProcessCommandLine()->AppendSwitchASCII(
+        security_state::switches::kMarkHttpAs,
+        security_state::switches::kMarkHttpAsNonSecureAfterEditing);
+    helper.set_is_incognito(false);
+    helper.GetSecurityInfo(&security_info);
+    EXPECT_FALSE(security_info.incognito_downgraded_security_level);
+
+    helper.set_is_incognito(true);
+    helper.GetSecurityInfo(&security_info);
+    EXPECT_FALSE(security_info.incognito_downgraded_security_level);
+  }
+
   {
     // Enable the "non-secure-while-incognito" configuration.
     base::test::ScopedCommandLine scoped_command_line;
     scoped_command_line.GetProcessCommandLine()->AppendSwitchASCII(
         security_state::switches::kMarkHttpAs,
         security_state::switches::kMarkHttpAsNonSecureWhileIncognito);
+    helper.set_is_incognito(false);
+    helper.GetSecurityInfo(&security_info);
+    EXPECT_FALSE(security_info.incognito_downgraded_security_level);
+
+    helper.set_is_incognito(true);
     helper.GetSecurityInfo(&security_info);
     EXPECT_TRUE(security_info.incognito_downgraded_security_level);
   }
@@ -420,13 +444,13 @@ TEST(SecurityStateTest, MarkHttpAsStatusHistogram) {
   histograms.ExpectTotalCount(kHistogramName, 0);
   helper.GetSecurityInfo(&security_info);
   histograms.ExpectUniqueSample(
-      kHistogramName, 2 /* HTTP_SHOW_WARNING_ON_SENSITIVE_FIELDS */, 1);
+      kHistogramName, 5 /* NON_SECURE_WHILE_INCOGNITO_OR_EDITING */, 1);
 
   // Ensure histogram recorded correctly even without a password input.
   helper.set_password_field_shown(false);
   helper.GetSecurityInfo(&security_info);
   histograms.ExpectUniqueSample(
-      kHistogramName, 2 /* HTTP_SHOW_WARNING_ON_SENSITIVE_FIELDS */, 2);
+      kHistogramName, 5 /* NON_SECURE_WHILE_INCOGNITO_OR_EDITING */, 2);
 
   {
     // Test the "non-secure-while-incognito" configuration.

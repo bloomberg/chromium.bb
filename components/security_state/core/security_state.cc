@@ -23,7 +23,7 @@ namespace {
 enum MarkHttpStatus {
   NEUTRAL = 0,  // Deprecated
   NON_SECURE = 1,
-  HTTP_SHOW_WARNING_ON_SENSITIVE_FIELDS = 2,
+  HTTP_SHOW_WARNING_ON_SENSITIVE_FIELDS = 2,  // Deprecated as of Chrome 64
   NON_SECURE_AFTER_EDITING = 3,
   NON_SECURE_WHILE_INCOGNITO = 4,
   NON_SECURE_WHILE_INCOGNITO_OR_EDITING = 5,
@@ -97,9 +97,10 @@ SecurityLevel GetSecurityLevelForNonSecureFieldTrial(
     if (!GetSecurityLevelAndHistogramValueForNonSecureFieldTrial(
             group, is_incognito, input_events, &level, mark_http_as)) {
       // No command-line switch or field trial is in effect.
-      // Default to warning on display of sensitive form fields only.
-      *mark_http_as = HTTP_SHOW_WARNING_ON_SENSITIVE_FIELDS;
-      level = (input_events.password_field_shown ||
+      // Default to warning on incognito or editing or sensitive form fields.
+      *mark_http_as = NON_SECURE_WHILE_INCOGNITO_OR_EDITING;
+      level = (is_incognito || input_events.insecure_field_edited ||
+               input_events.password_field_shown ||
                input_events.credit_card_field_edited)
                   ? security_state::HTTP_SHOW_WARNING
                   : NONE;
@@ -228,7 +229,7 @@ void SecurityInfoForRequest(
   // |mark_http_as| will be updated to the value specified by the
   // field trial or command-line in |GetSecurityLevelForNonSecureFieldTrial|
   // if that function is reached.
-  MarkHttpStatus mark_http_as = HTTP_SHOW_WARNING_ON_SENSITIVE_FIELDS;
+  MarkHttpStatus mark_http_as = NON_SECURE_WHILE_INCOGNITO_OR_EDITING;
 
   if (!visible_security_state.connection_info_initialized) {
     *security_info = SecurityInfo();

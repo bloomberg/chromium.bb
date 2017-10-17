@@ -25899,7 +25899,9 @@ from previous Chrome versions.
 <enum name="MarkHttpAsStatus">
   <int value="0" label="Neutral (deprecated February 2017)"/>
   <int value="1" label="Non-Secure"/>
-  <int value="2" label="Neutral with a verbose warning on sensitive fields"/>
+  <int value="2"
+      label="Neutral with a verbose warning on sensitive fields (deprecated
+             October 2017)"/>
   <int value="3" label="Neutral with a verbose warning after editing a form"/>
   <int value="4" label="Neutral with a verbose warning in Incognito mode"/>
   <int value="5"
