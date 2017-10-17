@@ -260,7 +260,7 @@ const base::Feature kMaterialDesignExtensions{
 
 // Sets whether dismissing the new-tab-page override bubble counts as
 // acknowledgement.
-extern const base::Feature kAcknowledgeNtpOverrideOnDeactivate{
+const base::Feature kAcknowledgeNtpOverrideOnDeactivate{
     "AcknowledgeNtpOverrideOnDeactivate", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
