@@ -24,7 +24,6 @@ class WebURL;
 namespace content {
 class BrowserPluginDelegate;
 class RenderFrame;
-class RenderView;
 }
 
 namespace extensions {
@@ -55,7 +54,6 @@ class ChromeExtensionsRendererClient
   void RenderThreadStarted();
   void RenderFrameCreated(content::RenderFrame* render_frame,
                           service_manager::BinderRegistry* registry);
-  void RenderViewCreated(content::RenderView* render_view);
   bool OverrideCreatePlugin(content::RenderFrame* render_frame,
                             const blink::WebPluginParams& params);
   bool AllowPopup();

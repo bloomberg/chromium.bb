@@ -7,19 +7,19 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "content/public/renderer/render_view_observer.h"
+#include "content/public/renderer/render_frame_observer.h"
 
 namespace extensions {
 
 // Renderer-side implementation for chrome.automation API (for the few pieces
 // which aren't built in to the existing accessibility system).
-class AutomationApiHelper : public content::RenderViewObserver {
+class AutomationApiHelper : public content::RenderFrameObserver {
  public:
-  explicit AutomationApiHelper(content::RenderView* render_view);
+  explicit AutomationApiHelper(content::RenderFrame* render_frame);
   ~AutomationApiHelper() override;
 
  private:
-  // RenderViewObserver implementation.
+  // content::RenderFrameObserver:
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnDestruct() override;
 

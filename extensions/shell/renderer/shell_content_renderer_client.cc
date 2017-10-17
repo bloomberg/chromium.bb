@@ -11,7 +11,6 @@
 #include "content/public/renderer/render_frame_observer_tracker.h"
 #include "content/public/renderer/render_thread.h"
 #include "extensions/common/extensions_client.h"
-#include "extensions/renderer/api/automation/automation_api_helper.h"
 #include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/extension_frame_helper.h"
 #include "extensions/renderer/guest_view/extensions_guest_view_container.h"
@@ -68,12 +67,6 @@ void ShellContentRendererClient::RenderFrameCreated(
 #if BUILDFLAG(ENABLE_NACL)
   new nacl::NaClHelper(render_frame);
 #endif
-}
-
-void ShellContentRendererClient::RenderViewCreated(
-    content::RenderView* render_view) {
-  // Manages its own lifetime.
-  new AutomationApiHelper(render_view);
 }
 
 bool ShellContentRendererClient::OverrideCreatePlugin(
