@@ -169,15 +169,23 @@ ScopedOverviewAnimationSettings::ScopedOverviewAnimationSettings(
       GetMetricsReporter(animation_type));
 }
 
-void ScopedOverviewAnimationSettings::DeferPaint() {
-  animation_settings_->DeferPaint();
-}
-
 ScopedOverviewAnimationSettings::~ScopedOverviewAnimationSettings() {}
 
 void ScopedOverviewAnimationSettings::AddObserver(
     ui::ImplicitAnimationObserver* observer) {
   animation_settings_->AddObserver(observer);
+}
+
+void ScopedOverviewAnimationSettings::CacheRenderSurface() {
+  animation_settings_->CacheRenderSurface();
+}
+
+void ScopedOverviewAnimationSettings::DeferPaint() {
+  animation_settings_->DeferPaint();
+}
+
+void ScopedOverviewAnimationSettings::TrilinearFiltering() {
+  animation_settings_->TrilinearFiltering();
 }
 
 }  // namespace ash

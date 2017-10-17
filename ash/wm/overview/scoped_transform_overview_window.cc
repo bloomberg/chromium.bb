@@ -20,6 +20,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
+#include "ui/compositor/layer_observer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/transform_util.h"
@@ -164,6 +165,34 @@ TransientDescendantIteratorRange GetTransientTreeIterator(
 
 }  // namespace
 
+class ScopedTransformOverviewWindow::LayerCachingAndFilteringObserver
+    : public ui::LayerObserver {
+ public:
+  LayerCachingAndFilteringObserver(ui::Layer* layer) : layer_(layer) {
+    layer_->AddObserver(this);
+    layer_->AddCacheRenderSurfaceRequest();
+    layer_->AddTrilinearFilteringRequest();
+  }
+  ~LayerCachingAndFilteringObserver() override {
+    if (layer_) {
+      layer_->RemoveTrilinearFilteringRequest();
+      layer_->RemoveCacheRenderSurfaceRequest();
+      layer_->RemoveObserver(this);
+    }
+  }
+
+  // ui::LayerObserver overrides:
+  void LayerDestroyed(ui::Layer* layer) override {
+    layer_->RemoveObserver(this);
+    layer_ = nullptr;
+  }
+
+ private:
+  ui::Layer* layer_;
+
+  DISALLOW_COPY_AND_ASSIGN(LayerCachingAndFilteringObserver);
+};
+
 ScopedTransformOverviewWindow::ScopedTransformOverviewWindow(
     WindowSelectorItem* selector_item,
     aura::Window* window)
@@ -191,6 +220,14 @@ void ScopedTransformOverviewWindow::RestoreWindow() {
   BeginScopedAnimation(OverviewAnimationType::OVERVIEW_ANIMATION_RESTORE_WINDOW,
                        &animation_settings_list);
   SetTransform(window()->GetRootWindow(), original_transform_);
+  // Add requests to cache render surface and perform trilinear filtering for
+  // the exit animation of overview mode. The requests will be removed when the
+  // exit animation finishes.
+  for (auto& settings : animation_settings_list) {
+    settings->CacheRenderSurface();
+    settings->TrilinearFiltering();
+  }
+
   ScopedOverviewAnimationSettings animation_settings(
       OverviewAnimationType::OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS,
       window_);
@@ -438,6 +475,14 @@ void ScopedTransformOverviewWindow::PrepareForOverview() {
   if (window_->GetProperty(aura::client::kShowStateKey) ==
       ui::SHOW_STATE_MINIMIZED) {
     CreateMirrorWindowForMinimizedState();
+  }
+  // Add requests to cache render surface and perform trilinear filtering. The
+  // requests will be removed in dctor. So the requests will be valid during the
+  // enter animation and the whole time during overview mode. For the exit
+  // animation of overview mode, we need to add those requests again.
+  for (auto* window : GetTransientTreeIterator(GetOverviewWindow())) {
+    cached_and_filtered_layer_observers_.push_back(
+        std::make_unique<LayerCachingAndFilteringObserver>(window->layer()));
   }
 }
 
