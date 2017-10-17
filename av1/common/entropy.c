@@ -138,9 +138,6 @@ const aom_prob av1_cat6_prob[] = {
 };
 
 const uint16_t band_count_table[TX_SIZES_ALL][8] = {
-#if CONFIG_CHROMA_2X2
-  { 1, 2, 2, 3, 0, 0, 0 },
-#endif
   { 1, 2, 3, 4, 3, 16 - 13, 0 },    { 1, 2, 3, 4, 11, 64 - 21, 0 },
   { 1, 2, 3, 4, 11, 256 - 21, 0 },  { 1, 2, 3, 4, 11, 1024 - 21, 0 },
 #if CONFIG_TX64X64
@@ -157,9 +154,6 @@ const uint16_t band_count_table[TX_SIZES_ALL][8] = {
 };
 
 const uint16_t band_cum_count_table[TX_SIZES_ALL][8] = {
-#if CONFIG_CHROMA_2X2
-  { 0, 1, 3, 6, 10, 13, 16, 0 },
-#endif
   { 0, 1, 3, 6, 10, 13, 16, 0 },   { 0, 1, 3, 6, 10, 21, 64, 0 },
   { 0, 1, 3, 6, 10, 21, 256, 0 },  { 0, 1, 3, 6, 10, 21, 1024, 0 },
 #if CONFIG_TX64X64
@@ -2117,9 +2111,6 @@ static void build_tail_cdfs(aom_cdf_prob cdf_tail[CDF_SIZE(ENTROPY_TOKENS)],
 #if !CONFIG_Q_ADAPT_PROBS
 // FIXME. Optimize for TX_2X2 and TX_64X64.
 static void av1_default_coef_cdfs(FRAME_CONTEXT *fc) {
-#if CONFIG_CHROMA_2X2
-  av1_copy(fc->coef_head_cdfs[TX_2X2], default_coef_head_cdf_4x4);
-#endif  // CONFIG_CHROMA_2X2
   av1_copy(fc->coef_head_cdfs[TX_4X4], default_coef_head_cdf_4x4);
   av1_copy(fc->coef_head_cdfs[TX_8X8], default_coef_head_cdf_8x8);
   av1_copy(fc->coef_head_cdfs[TX_16X16], default_coef_head_cdf_16x16);
@@ -2146,10 +2137,6 @@ void av1_coef_pareto_cdfs(FRAME_CONTEXT *fc) {
 void av1_default_coef_probs(AV1_COMMON *cm) {
 #if CONFIG_Q_ADAPT_PROBS
   const int index = AOMMIN(TOKEN_CDF_Q_CTXS - 1, cm->base_qindex / 64);
-#if CONFIG_CHROMA_2X2
-  av1_copy(cm->fc->coef_head_cdfs[TX_2X2],
-           (*av1_default_qctx_coef_cdfs[index])[TX_4X4]);
-#endif  // CONFIG_CHROMA_2X2
   av1_copy(cm->fc->coef_head_cdfs[TX_4X4],
            (*av1_default_qctx_coef_cdfs[index])[TX_4X4]);
   av1_copy(cm->fc->coef_head_cdfs[TX_8X8],

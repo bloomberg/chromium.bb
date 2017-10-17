@@ -157,11 +157,7 @@ static INLINE int av1_get_cat6_extrabits_size(TX_SIZE tx_size,
   // TODO(debargha): Does TX_64X64 require an additional extrabit?
   if (tx_size > TX_32X32) tx_size = TX_32X32;
 #endif
-#if CONFIG_CHROMA_2X2
-  int tx_offset = (tx_size < TX_4X4) ? 0 : (int)(tx_size - TX_4X4);
-#else
   int tx_offset = (int)(tx_size - TX_4X4);
-#endif
   int bits = (int)bit_depth + 3 + tx_offset;
 #if CONFIG_NEW_MULTISYMBOL
   // Round up
@@ -272,93 +268,6 @@ static INLINE int combine_entropy_contexts(ENTROPY_CONTEXT a,
 static INLINE int get_entropy_context(TX_SIZE tx_size, const ENTROPY_CONTEXT *a,
                                       const ENTROPY_CONTEXT *l) {
   ENTROPY_CONTEXT above_ec = 0, left_ec = 0;
-
-#if CONFIG_CHROMA_2X2
-  switch (tx_size) {
-    case TX_2X2:
-      above_ec = a[0] != 0;
-      left_ec = l[0] != 0;
-      break;
-    case TX_4X4:
-      above_ec = !!*(const uint16_t *)a;
-      left_ec = !!*(const uint16_t *)l;
-      break;
-    case TX_4X8:
-      above_ec = !!*(const uint16_t *)a;
-      left_ec = !!*(const uint32_t *)l;
-      break;
-    case TX_8X4:
-      above_ec = !!*(const uint32_t *)a;
-      left_ec = !!*(const uint16_t *)l;
-      break;
-    case TX_8X8:
-      above_ec = !!*(const uint32_t *)a;
-      left_ec = !!*(const uint32_t *)l;
-      break;
-    case TX_8X16:
-      above_ec = !!*(const uint32_t *)a;
-      left_ec = !!*(const uint64_t *)l;
-      break;
-    case TX_16X8:
-      above_ec = !!*(const uint64_t *)a;
-      left_ec = !!*(const uint32_t *)l;
-      break;
-    case TX_16X16:
-      above_ec = !!*(const uint64_t *)a;
-      left_ec = !!*(const uint64_t *)l;
-      break;
-    case TX_16X32:
-      above_ec = !!*(const uint64_t *)a;
-      left_ec = !!(*(const uint64_t *)l | *(const uint64_t *)(l + 8));
-      break;
-    case TX_32X16:
-      above_ec = !!(*(const uint64_t *)a | *(const uint64_t *)(a + 8));
-      left_ec = !!*(const uint64_t *)l;
-      break;
-    case TX_32X32:
-      above_ec = !!(*(const uint64_t *)a | *(const uint64_t *)(a + 8));
-      left_ec = !!(*(const uint64_t *)l | *(const uint64_t *)(l + 8));
-      break;
-#if CONFIG_TX64X64
-    case TX_64X64:
-      above_ec = !!(*(const uint64_t *)a | *(const uint64_t *)(a + 8) |
-                    *(const uint64_t *)(a + 16) | *(const uint64_t *)(a + 24));
-      left_ec = !!(*(const uint64_t *)l | *(const uint64_t *)(l + 8) |
-                   *(const uint64_t *)(l + 16) | *(const uint64_t *)(l + 24));
-      break;
-    case TX_32X64:
-      above_ec = !!(*(const uint64_t *)a | *(const uint64_t *)(a + 8));
-      left_ec = !!(*(const uint64_t *)l | *(const uint64_t *)(l + 8) |
-                   *(const uint64_t *)(l + 16) | *(const uint64_t *)(l + 24));
-      break;
-    case TX_64X32:
-      above_ec = !!(*(const uint64_t *)a | *(const uint64_t *)(a + 8) |
-                    *(const uint64_t *)(a + 16) | *(const uint64_t *)(a + 24));
-      left_ec = !!(*(const uint64_t *)l | *(const uint64_t *)(l + 8));
-      break;
-#endif  // CONFIG_TX64X64
-#if CONFIG_RECT_TX_EXT && (CONFIG_EXT_TX || CONFIG_VAR_TX)
-    case TX_4X16:
-      above_ec = !!*(const uint16_t *)a;
-      left_ec = !!*(const uint64_t *)l;
-      break;
-    case TX_16X4:
-      above_ec = !!*(const uint64_t *)a;
-      left_ec = !!*(const uint16_t *)l;
-      break;
-    case TX_8X32:
-      above_ec = !!*(const uint32_t *)a;
-      left_ec = !!(*(const uint64_t *)l | *(const uint64_t *)(l + 8));
-      break;
-    case TX_32X8:
-      above_ec = !!(*(const uint64_t *)a | *(const uint64_t *)(a + 8));
-      left_ec = !!*(const uint32_t *)l;
-      break;
-#endif
-    default: assert(0 && "Invalid transform size."); break;
-  }
-  return combine_entropy_contexts(above_ec, left_ec);
-#endif  // CONFIG_CHROMA_2X2
 
   switch (tx_size) {
     case TX_4X4:

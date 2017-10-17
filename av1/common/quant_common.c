@@ -351,11 +351,7 @@ qm_val_t *aom_qmatrix(AV1_COMMON *cm, int qmlevel, int is_chroma,
   return &cm->gqmatrix[qmlevel][!!is_chroma][!!is_intra][tx_size][0];
 }
 
-#if CONFIG_CHROMA_2X2
-#define QM_TOTAL_SIZE 3348
-#else
 #define QM_TOTAL_SIZE 3344
-#endif
 static uint16_t wt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE];
 static uint16_t iwt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE];
 
@@ -402,10 +398,6 @@ void aom_qm_init(AV1_COMMON *cm) {
 static uint16_t iwt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
   {
       { /* Luma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        43, 86, 86, 166,
-#endif
         /* Size 4x4 */
         32, 43, 73, 97, 43, 67, 94, 110, 73, 94, 137, 150, 97, 110, 150, 200,
         /* Size 8x8 */
@@ -632,10 +624,6 @@ static uint16_t iwt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
         89, 88, 87, 90, 93, 97, 99, 105, 107, 115, 116, 124, 127, 135, 139, 146,
         152, 159, 166, 171, 182, 186, 191, 193, 201, 203, 204 },
       { /* Chroma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        50, 62, 62, 100,
-#endif
         /* Size 4x4 */
         35, 46, 57, 66, 46, 60, 69, 71, 57, 69, 90, 90, 66, 71, 90, 109,
         /* Size 8x8 */
@@ -848,10 +836,6 @@ static uint16_t iwt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
   },
   {
       { /* Luma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        39, 82, 82, 155,
-#endif
         /* Size 4x4 */
         32, 41, 69, 92, 41, 63, 88, 103, 69, 88, 127, 140, 92, 103, 140, 184,
         /* Size 8x8 */
@@ -1076,10 +1060,6 @@ static uint16_t iwt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
         94, 96, 101, 102, 110, 111, 118, 121, 129, 132, 138, 144, 150, 156, 161,
         171, 174, 179, 181, 188, 188, 190 },
       { /* Chroma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        48, 60, 60, 97,
-#endif
         /* Size 4x4 */
         33, 45, 56, 64, 45, 58, 66, 69, 56, 66, 86, 87, 64, 69, 87, 105,
         /* Size 8x8 */
@@ -1291,10 +1271,6 @@ static uint16_t iwt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
   },
   {
       { /* Luma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        39, 76, 76, 140,
-#endif
         /* Size 4x4 */
         32, 38, 63, 86, 38, 56, 78, 97, 63, 78, 113, 130, 86, 97, 130, 169,
         /* Size 8x8 */
@@ -1515,10 +1491,6 @@ static uint16_t iwt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
         97, 98, 105, 106, 113, 115, 122, 125, 131, 136, 141, 147, 151, 160, 163,
         168, 169, 175, 175, 176 },
       { /* Chroma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        48, 58, 58, 91,
-#endif
         /* Size 4x4 */
         32, 45, 53, 63, 45, 55, 62, 67, 53, 62, 80, 84, 63, 67, 84, 101,
         /* Size 8x8 */
@@ -1730,10 +1702,6 @@ static uint16_t iwt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
   },
   {
       { /* Luma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        36, 71, 71, 134,
-#endif
         /* Size 4x4 */
         32, 37, 58, 81, 37, 54, 72, 91, 58, 72, 102, 121, 81, 91, 121, 156,
         /* Size 8x8 */
@@ -1953,10 +1921,6 @@ static uint16_t iwt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
         108, 110, 116, 119, 124, 129, 134, 139, 142, 150, 153, 157, 157, 163,
         163, 163 },
       { /* Chroma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        47, 55, 55, 89,
-#endif
         /* Size 4x4 */
         32, 45, 51, 61, 45, 54, 59, 65, 51, 59, 75, 81, 61, 65, 81, 97,
         /* Size 8x8 */
@@ -2168,10 +2132,6 @@ static uint16_t iwt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
   },
   {
       { /* Luma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        35, 63, 63, 117,
-#endif
         /* Size 4x4 */
         32, 34, 53, 75, 34, 49, 64, 81, 53, 64, 91, 112, 75, 81, 112, 140,
         /* Size 8x8 */
@@ -2387,10 +2347,6 @@ static uint16_t iwt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
         105, 111, 113, 118, 122, 126, 131, 134, 141, 143, 147, 147, 152, 151,
         152 },
       { /* Chroma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        47, 52, 52, 82,
-#endif
         /* Size 4x4 */
         32, 46, 49, 58, 46, 53, 55, 62, 49, 55, 70, 78, 58, 62, 78, 91,
         /* Size 8x8 */
@@ -2601,10 +2557,6 @@ static uint16_t iwt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
   },
   {
       { /* Luma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        35, 58, 58, 105,
-#endif
         /* Size 4x4 */
         32, 34, 49, 72, 34, 48, 60, 79, 49, 60, 82, 104, 72, 79, 104, 134,
         /* Size 8x8 */
@@ -2817,10 +2769,6 @@ static uint16_t iwt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
         69, 69, 73, 73, 78, 78, 84, 84, 90, 90, 96, 96, 103, 103, 110, 110, 118,
         118, 125, 125, 133, 133, 136, 136, 141 },
       { /* Chroma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        47, 50, 50, 76,
-#endif
         /* Size 4x4 */
         32, 46, 47, 57, 46, 53, 54, 60, 47, 54, 66, 75, 57, 60, 75, 89,
         /* Size 8x8 */
@@ -3031,10 +2979,6 @@ static uint16_t iwt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
   },
   {
       { /* Luma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        34, 52, 52, 89,
-#endif
         /* Size 4x4 */
         32, 33, 45, 62, 33, 39, 51, 64, 45, 51, 71, 87, 62, 64, 87, 108,
         /* Size 8x8 */
@@ -3246,10 +3190,6 @@ static uint16_t iwt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
         65, 64, 64, 69, 69, 73, 74, 77, 79, 81, 85, 86, 91, 91, 98, 99, 103,
         105, 108, 112, 114, 119, 119, 127, 127 },
       { /* Chroma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        41, 48, 48, 69,
-#endif
         /* Size 4x4 */
         31, 42, 47, 53, 42, 48, 50, 54, 47, 50, 61, 67, 53, 54, 67, 78,
         /* Size 8x8 */
@@ -3460,10 +3400,6 @@ static uint16_t iwt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
   },
   {
       { /* Luma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        33, 47, 47, 75,
-#endif
         /* Size 4x4 */
         32, 33, 42, 55, 33, 38, 46, 57, 42, 46, 63, 75, 55, 57, 75, 92,
         /* Size 8x8 */
@@ -3673,10 +3609,6 @@ static uint16_t iwt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
         58, 62, 63, 65, 68, 68, 72, 73, 76, 79, 79, 84, 85, 88, 92, 92, 97, 98,
         100, 105, 105, 109 },
       { /* Chroma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        39, 47, 47, 63,
-#endif
         /* Size 4x4 */
         31, 41, 46, 51, 41, 48, 48, 51, 46, 48, 58, 62, 51, 51, 62, 71,
         /* Size 8x8 */
@@ -3887,10 +3819,6 @@ static uint16_t iwt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
   },
   {
       { /* Luma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        33, 42, 42, 64,
-#endif
         /* Size 4x4 */
         32, 32, 38, 51, 32, 35, 40, 49, 38, 40, 54, 64, 51, 49, 64, 81,
         /* Size 8x8 */
@@ -4099,10 +4027,6 @@ static uint16_t iwt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
         49, 49, 51, 54, 54, 57, 60, 60, 63, 65, 65, 69, 71, 72, 75, 76, 77, 81,
         82, 83, 87, 87 },
       { /* Chroma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        38, 45, 45, 59,
-#endif
         /* Size 4x4 */
         31, 38, 47, 49, 38, 47, 46, 46, 47, 46, 54, 57, 49, 46, 57, 66,
         /* Size 8x8 */
@@ -4313,10 +4237,6 @@ static uint16_t iwt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
   },
   {
       { /* Luma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        32, 38, 38, 54,
-#endif
         /* Size 4x4 */
         32, 32, 35, 43, 32, 34, 37, 43, 35, 37, 48, 54, 43, 43, 54, 65,
         /* Size 8x8 */
@@ -4525,10 +4445,6 @@ static uint16_t iwt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
         45, 45, 45, 45, 47, 50, 50, 51, 55, 56, 56, 58, 60, 60, 62, 66, 66, 67,
         69, 70, 70, 73 },
       { /* Chroma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        33, 45, 45, 54,
-#endif
         /* Size 4x4 */
         31, 37, 47, 47, 37, 44, 47, 45, 47, 47, 53, 53, 47, 45, 53, 59,
         /* Size 8x8 */
@@ -4739,10 +4655,6 @@ static uint16_t iwt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
   },
   {
       { /* Luma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        32, 34, 34, 48,
-#endif
         /* Size 4x4 */
         32, 32, 34, 38, 32, 33, 35, 39, 34, 35, 39, 45, 38, 39, 45, 54,
         /* Size 8x8 */
@@ -4951,10 +4863,6 @@ static uint16_t iwt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
         42, 42, 42, 42, 42, 42, 42, 45, 48, 48, 48, 50, 54, 54, 54, 56, 58, 58,
         58, 60, 63, 63 },
       { /* Chroma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        32, 46, 46, 53,
-#endif
         /* Size 4x4 */
         31, 34, 42, 47, 34, 39, 45, 46, 42, 45, 48, 49, 47, 46, 49, 54,
         /* Size 8x8 */
@@ -5165,10 +5073,6 @@ static uint16_t iwt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
   },
   {
       { /* Luma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        32, 33, 33, 39,
-#endif
         /* Size 4x4 */
         32, 32, 32, 35, 32, 32, 33, 35, 32, 33, 35, 38, 35, 35, 38, 46,
         /* Size 8x8 */
@@ -5377,10 +5281,6 @@ static uint16_t iwt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
         34, 35, 36, 36, 36, 36, 37, 38, 38, 38, 38, 40, 41, 42, 42, 42, 44, 47,
         48, 48, 48, 49 },
       { /* Chroma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        31, 42, 42, 48,
-#endif
         /* Size 4x4 */
         31, 32, 38, 46, 32, 34, 41, 46, 38, 41, 47, 47, 46, 46, 47, 52,
         /* Size 8x8 */
@@ -5591,10 +5491,6 @@ static uint16_t iwt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
   },
   {
       { /* Luma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        32, 32, 32, 35,
-#endif
         /* Size 4x4 */
         31, 32, 32, 32, 32, 32, 32, 33, 32, 32, 33, 34, 32, 33, 34, 35,
         /* Size 8x8 */
@@ -5803,10 +5699,6 @@ static uint16_t iwt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
         33, 33, 33, 33, 33, 34, 34, 34, 34, 34, 34, 35, 35, 36, 36, 36, 36, 36,
         36, 37, 38, 38 },
       { /* Chroma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        31, 38, 38, 46,
-#endif
         /* Size 4x4 */
         31, 31, 34, 38, 31, 32, 35, 40, 34, 35, 39, 43, 38, 40, 43, 47,
         /* Size 8x8 */
@@ -6017,10 +5909,6 @@ static uint16_t iwt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
   },
   {
       { /* Luma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        32, 32, 32, 33,
-#endif
         /* Size 4x4 */
         31, 31, 31, 32, 31, 32, 32, 32, 31, 32, 32, 32, 32, 32, 32, 33,
         /* Size 8x8 */
@@ -6229,10 +6117,6 @@ static uint16_t iwt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
         32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 33, 33, 33, 33, 34, 34, 34,
         34, 34, 34, 34 },
       { /* Chroma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        31, 33, 33, 36,
-#endif
         /* Size 4x4 */
         31, 31, 31, 34, 31, 31, 31, 35, 31, 31, 32, 35, 34, 35, 35, 39,
         /* Size 8x8 */
@@ -6443,10 +6327,6 @@ static uint16_t iwt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
   },
   {
       { /* Luma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        31, 31, 31, 32,
-#endif
         /* Size 4x4 */
         31, 31, 31, 31, 31, 32, 32, 32, 31, 32, 32, 32, 31, 32, 32, 32,
         /* Size 8x8 */
@@ -6655,10 +6535,6 @@ static uint16_t iwt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
         32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32,
         32, 32, 32, 32 },
       { /* Chroma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        31, 31, 31, 31,
-#endif
         /* Size 4x4 */
         31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31,
         /* Size 8x8 */
@@ -6869,10 +6745,6 @@ static uint16_t iwt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
   },
   {
       { /* Luma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        32, 32, 32, 32,
-#endif
         /* Size 4x4 */
         32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32,
         /* Size 8x8 */
@@ -7081,10 +6953,6 @@ static uint16_t iwt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
         32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32,
         32, 32, 32, 32 },
       { /* Chroma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        32, 32, 32, 32,
-#endif
         /* Size 4x4 */
         32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32,
         /* Size 8x8 */
@@ -7298,10 +7166,6 @@ static uint16_t iwt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
 static uint16_t wt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
   {
       { /* Luma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        24, 12, 12, 6,
-#endif
         /* Size 4x4 */
         32, 24, 14, 11, 24, 15, 11, 9, 14, 11, 7, 7, 11, 9, 7, 5,
         /* Size 8x8 */
@@ -7494,10 +7358,6 @@ static uint16_t wt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
         11, 11, 11, 10, 10, 10, 9, 9, 8, 8, 8, 7, 7, 7, 6, 6, 6, 6, 6, 5, 5, 5,
         5, 5 },
       { /* Chroma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        20, 17, 17, 10,
-#endif
         /* Size 4x4 */
         29, 22, 18, 16, 22, 17, 15, 14, 18, 15, 11, 11, 16, 14, 11, 9,
         /* Size 8x8 */
@@ -7708,10 +7568,6 @@ static uint16_t wt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
   },
   {
       { /* Luma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        26, 12, 12, 7,
-#endif
         /* Size 4x4 */
         32, 25, 15, 11, 25, 16, 12, 10, 15, 12, 8, 7, 11, 10, 7, 6,
         /* Size 8x8 */
@@ -7907,10 +7763,6 @@ static uint16_t wt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
         12, 12, 12, 12, 12, 11, 11, 11, 10, 10, 9, 9, 9, 8, 8, 8, 7, 7, 7, 7, 6,
         6, 6, 6, 6, 5, 5, 5 },
       { /* Chroma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        21, 17, 17, 11,
-#endif
         /* Size 4x4 */
         31, 23, 18, 16, 23, 18, 16, 15, 18, 16, 12, 12, 16, 15, 12, 10,
         /* Size 8x8 */
@@ -8121,10 +7973,6 @@ static uint16_t wt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
   },
   {
       { /* Luma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        26, 13, 13, 7,
-#endif
         /* Size 4x4 */
         32, 27, 16, 12, 27, 18, 13, 11, 16, 13, 9, 8, 12, 11, 8, 6,
         /* Size 8x8 */
@@ -8321,10 +8169,6 @@ static uint16_t wt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
         12, 12, 12, 12, 13, 12, 12, 11, 11, 11, 10, 10, 10, 9, 9, 8, 8, 8, 8, 7,
         7, 7, 6, 6, 6, 6, 6, 6, 6 },
       { /* Chroma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        21, 18, 18, 11,
-#endif
         /* Size 4x4 */
         32, 23, 19, 16, 23, 19, 17, 15, 19, 17, 13, 12, 16, 15, 12, 10,
         /* Size 8x8 */
@@ -8535,10 +8379,6 @@ static uint16_t wt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
   },
   {
       { /* Luma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        28, 14, 14, 8,
-#endif
         /* Size 4x4 */
         32, 28, 18, 13, 28, 19, 14, 11, 18, 14, 10, 8, 13, 11, 8, 7,
         /* Size 8x8 */
@@ -8735,10 +8575,6 @@ static uint16_t wt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
         11, 12, 12, 12, 13, 13, 13, 13, 13, 12, 12, 12, 11, 11, 10, 10, 9, 9, 9,
         9, 8, 8, 8, 7, 7, 7, 7, 7, 7, 6, 6, 6 },
       { /* Chroma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        22, 19, 19, 12,
-#endif
         /* Size 4x4 */
         32, 23, 20, 17, 23, 19, 17, 16, 20, 17, 14, 13, 17, 16, 13, 11,
         /* Size 8x8 */
@@ -8949,10 +8785,6 @@ static uint16_t wt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
   },
   {
       { /* Luma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        29, 16, 16, 9,
-#endif
         /* Size 4x4 */
         32, 30, 19, 14, 30, 21, 16, 13, 19, 16, 11, 9, 14, 13, 9, 7,
         /* Size 8x8 */
@@ -9152,10 +8984,6 @@ static uint16_t wt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
         7, 7, 7, 8, 12, 12, 12, 13, 13, 13, 13, 14, 13, 13, 12, 12, 12, 11, 11,
         11, 10, 10, 9, 9, 9, 8, 8, 8, 8, 7, 7, 7, 7, 7, 7, 7 },
       { /* Chroma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        22, 20, 20, 12,
-#endif
         /* Size 4x4 */
         32, 22, 21, 18, 22, 19, 19, 17, 21, 19, 15, 13, 18, 17, 13, 11,
         /* Size 8x8 */
@@ -9366,10 +9194,6 @@ static uint16_t wt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
   },
   {
       { /* Luma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        29, 18, 18, 10,
-#endif
         /* Size 4x4 */
         32, 30, 21, 14, 30, 21, 17, 13, 21, 17, 12, 10, 14, 13, 10, 8,
         /* Size 8x8 */
@@ -9571,10 +9395,6 @@ static uint16_t wt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
         10, 9, 9, 9, 9, 8, 8, 8, 13, 14, 14, 14, 14, 14, 14, 15, 15, 14, 14, 13,
         13, 12, 12, 11, 11, 11, 11, 10, 10, 9, 9, 9, 9, 8, 8, 8, 8, 8, 8, 7 },
       { /* Chroma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        22, 20, 20, 13,
-#endif
         /* Size 4x4 */
         32, 22, 22, 18, 22, 19, 19, 17, 22, 19, 16, 14, 18, 17, 14, 12,
         /* Size 8x8 */
@@ -9785,10 +9605,6 @@ static uint16_t wt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
   },
   {
       { /* Luma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        30, 20, 20, 12,
-#endif
         /* Size 4x4 */
         32, 31, 23, 17, 31, 26, 20, 16, 23, 20, 14, 12, 17, 16, 12, 9,
         /* Size 8x8 */
@@ -9997,10 +9813,6 @@ static uint16_t wt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
         15, 14, 14, 13, 13, 13, 12, 12, 11, 11, 10, 10, 10, 10, 9, 9, 9, 9, 9,
         8, 8 },
       { /* Chroma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        25, 21, 21, 15,
-#endif
         /* Size 4x4 */
         33, 24, 22, 19, 24, 21, 20, 19, 22, 20, 17, 15, 19, 19, 15, 13,
         /* Size 8x8 */
@@ -10211,10 +10023,6 @@ static uint16_t wt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
   },
   {
       { /* Luma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        31, 22, 22, 14,
-#endif
         /* Size 4x4 */
         32, 31, 24, 19, 31, 27, 22, 18, 24, 22, 16, 14, 19, 18, 14, 11,
         /* Size 8x8 */
@@ -10423,10 +10231,6 @@ static uint16_t wt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
         18, 17, 16, 16, 15, 15, 14, 14, 13, 13, 13, 12, 12, 12, 11, 11, 11, 10,
         10, 10, 10, 9 },
       { /* Chroma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        26, 22, 22, 16,
-#endif
         /* Size 4x4 */
         33, 25, 22, 20, 25, 21, 21, 20, 22, 21, 18, 17, 20, 20, 17, 14,
         /* Size 8x8 */
@@ -10637,10 +10441,6 @@ static uint16_t wt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
   },
   {
       { /* Luma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        31, 24, 24, 16,
-#endif
         /* Size 4x4 */
         32, 32, 27, 20, 32, 29, 26, 21, 27, 26, 19, 16, 20, 21, 16, 13,
         /* Size 8x8 */
@@ -10849,10 +10649,6 @@ static uint16_t wt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
         21, 21, 20, 19, 19, 18, 17, 17, 16, 16, 16, 15, 14, 14, 14, 13, 13, 13,
         12, 12, 12, 12 },
       { /* Chroma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        27, 23, 23, 17,
-#endif
         /* Size 4x4 */
         33, 27, 22, 21, 27, 22, 22, 22, 22, 22, 19, 18, 21, 22, 18, 16,
         /* Size 8x8 */
@@ -11063,10 +10859,6 @@ static uint16_t wt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
   },
   {
       { /* Luma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        32, 27, 27, 19,
-#endif
         /* Size 4x4 */
         32, 32, 29, 24, 32, 30, 28, 24, 29, 28, 21, 19, 24, 24, 19, 16,
         /* Size 8x8 */
@@ -11275,10 +11067,6 @@ static uint16_t wt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
         23, 23, 23, 23, 22, 20, 20, 20, 19, 18, 18, 18, 17, 17, 17, 16, 16, 15,
         15, 15, 15, 14 },
       { /* Chroma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        31, 23, 23, 19,
-#endif
         /* Size 4x4 */
         33, 28, 22, 22, 28, 23, 22, 23, 22, 22, 19, 19, 22, 23, 19, 17,
         /* Size 8x8 */
@@ -11489,10 +11277,6 @@ static uint16_t wt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
   },
   {
       { /* Luma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        32, 30, 30, 21,
-#endif
         /* Size 4x4 */
         32, 32, 30, 27, 32, 31, 29, 26, 30, 29, 26, 23, 27, 26, 23, 19,
         /* Size 8x8 */
@@ -11701,10 +11485,6 @@ static uint16_t wt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
         24, 24, 24, 24, 24, 24, 24, 23, 21, 21, 21, 20, 19, 19, 19, 18, 18, 18,
         18, 17, 16, 16 },
       { /* Chroma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        32, 22, 22, 19,
-#endif
         /* Size 4x4 */
         33, 30, 24, 22, 30, 26, 23, 22, 24, 23, 21, 21, 22, 22, 21, 19,
         /* Size 8x8 */
@@ -11915,10 +11695,6 @@ static uint16_t wt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
   },
   {
       { /* Luma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        32, 31, 31, 26,
-#endif
         /* Size 4x4 */
         32, 32, 32, 29, 32, 32, 31, 29, 32, 31, 29, 27, 29, 29, 27, 22,
         /* Size 8x8 */
@@ -12127,10 +11903,6 @@ static uint16_t wt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
         30, 29, 28, 28, 28, 28, 28, 27, 27, 27, 27, 26, 25, 24, 24, 24, 23, 22,
         21, 21, 21, 21 },
       { /* Chroma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        33, 24, 24, 21,
-#endif
         /* Size 4x4 */
         33, 32, 27, 22, 32, 30, 25, 22, 27, 25, 22, 22, 22, 22, 22, 20,
         /* Size 8x8 */
@@ -12341,10 +12113,6 @@ static uint16_t wt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
   },
   {
       { /* Luma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        32, 32, 32, 29,
-#endif
         /* Size 4x4 */
         33, 32, 32, 32, 32, 32, 32, 31, 32, 32, 31, 30, 32, 31, 30, 29,
         /* Size 8x8 */
@@ -12553,10 +12321,6 @@ static uint16_t wt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
         31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 30, 29, 29, 28, 28, 28, 28, 28,
         28, 28, 27, 27 },
       { /* Chroma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        33, 27, 27, 22,
-#endif
         /* Size 4x4 */
         33, 33, 30, 27, 33, 32, 29, 26, 30, 29, 26, 24, 27, 26, 24, 22,
         /* Size 8x8 */
@@ -12767,10 +12531,6 @@ static uint16_t wt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
   },
   {
       { /* Luma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        32, 32, 32, 31,
-#endif
         /* Size 4x4 */
         33, 33, 33, 32, 33, 32, 32, 32, 33, 32, 32, 32, 32, 32, 32, 31,
         /* Size 8x8 */
@@ -12979,10 +12739,6 @@ static uint16_t wt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
         32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 31, 31, 31, 31, 30, 30, 30,
         30, 30, 30, 30 },
       { /* Chroma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        33, 31, 31, 28,
-#endif
         /* Size 4x4 */
         33, 33, 33, 30, 33, 33, 33, 29, 33, 33, 32, 29, 30, 29, 29, 26,
         /* Size 8x8 */
@@ -13193,10 +12949,6 @@ static uint16_t wt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
   },
   {
       { /* Luma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        33, 33, 33, 32,
-#endif
         /* Size 4x4 */
         33, 33, 33, 33, 33, 32, 32, 32, 33, 32, 32, 32, 33, 32, 32, 32,
         /* Size 8x8 */
@@ -13405,10 +13157,6 @@ static uint16_t wt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
         32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32,
         32, 32, 32, 32 },
       { /* Chroma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        33, 33, 33, 33,
-#endif
         /* Size 4x4 */
         33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33,
         /* Size 8x8 */
@@ -13619,10 +13367,6 @@ static uint16_t wt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
   },
   {
       { /* Luma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        32, 32, 32, 32,
-#endif
         /* Size 4x4 */
         32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32,
         /* Size 8x8 */
@@ -13831,10 +13575,6 @@ static uint16_t wt_matrix_ref[NUM_QM_LEVELS][2][QM_TOTAL_SIZE] = {
         32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32,
         32, 32, 32, 32 },
       { /* Chroma */
-#if CONFIG_CHROMA_2X2
-        /* Size 2x2 */
-        32, 32, 32, 32,
-#endif
         /* Size 4x4 */
         32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32,
         /* Size 8x8 */

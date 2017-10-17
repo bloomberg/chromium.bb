@@ -189,9 +189,6 @@ static INLINE void set_flip_cfg(TX_TYPE tx_type, TXFM_2D_FLIP_CFG *cfg) {
 #if CONFIG_TXMG
 static INLINE TX_SIZE av1_rotate_tx_size(TX_SIZE tx_size) {
   switch (tx_size) {
-#if CONFIG_CHROMA_2X2
-    case TX_2X2: return TX_2X2;
-#endif
     case TX_4X4: return TX_4X4;
     case TX_8X8: return TX_8X8;
     case TX_16X16: return TX_16X16;

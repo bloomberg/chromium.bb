@@ -16,33 +16,6 @@
 #include "av1/common/idct.h"
 #include "av1/encoder/hybrid_fwd_txfm.h"
 
-#if CONFIG_CHROMA_2X2
-static void fwd_txfm_2x2(const int16_t *src_diff, tran_low_t *coeff,
-                         int diff_stride, TxfmParam *txfm_param) {
-  tran_high_t a1 = src_diff[0];
-  tran_high_t b1 = src_diff[1];
-  tran_high_t c1 = src_diff[diff_stride];
-  tran_high_t d1 = src_diff[1 + diff_stride];
-
-  tran_high_t a2 = a1 + c1;
-  tran_high_t b2 = b1 + d1;
-  tran_high_t c2 = a1 - c1;
-  tran_high_t d2 = b1 - d1;
-
-  a1 = a2 + b2;
-  b1 = a2 - b2;
-  c1 = c2 + d2;
-  d1 = c2 - d2;
-
-  coeff[0] = (tran_low_t)(4 * a1);
-  coeff[1] = (tran_low_t)(4 * b1);
-  coeff[2] = (tran_low_t)(4 * c1);
-  coeff[3] = (tran_low_t)(4 * d1);
-
-  (void)txfm_param;
-}
-#endif
-
 static void fwd_txfm_4x4(const int16_t *src_diff, tran_low_t *coeff,
                          int diff_stride, TxfmParam *txfm_param) {
   if (txfm_param->lossless) {
@@ -202,33 +175,6 @@ static void fwd_txfm_8x32(const int16_t *src_diff, tran_low_t *coeff,
 #else
   av1_fht8x32(src_diff, coeff, diff_stride, txfm_param);
 #endif
-}
-#endif
-
-#if CONFIG_CHROMA_2X2
-static void highbd_fwd_txfm_2x2(const int16_t *src_diff, tran_low_t *coeff,
-                                int diff_stride, TxfmParam *txfm_param) {
-  tran_high_t a1 = src_diff[0];
-  tran_high_t b1 = src_diff[1];
-  tran_high_t c1 = src_diff[diff_stride];
-  tran_high_t d1 = src_diff[1 + diff_stride];
-
-  tran_high_t a2 = a1 + c1;
-  tran_high_t b2 = b1 + d1;
-  tran_high_t c2 = a1 - c1;
-  tran_high_t d2 = b1 - d1;
-
-  a1 = a2 + b2;
-  b1 = a2 - b2;
-  c1 = c2 + d2;
-  d1 = c2 - d2;
-
-  coeff[0] = (tran_low_t)(4 * a1);
-  coeff[1] = (tran_low_t)(4 * b1);
-  coeff[2] = (tran_low_t)(4 * c1);
-  coeff[3] = (tran_low_t)(4 * d1);
-
-  (void)txfm_param;
 }
 #endif
 
@@ -597,9 +543,6 @@ void av1_fwd_txfm(const int16_t *src_diff, tran_low_t *coeff, int diff_stride,
       fwd_txfm_32x16(src_diff, coeff, diff_stride, txfm_param);
       break;
     case TX_4X4: fwd_txfm_4x4(src_diff, coeff, diff_stride, txfm_param); break;
-#if CONFIG_CHROMA_2X2
-    case TX_2X2: fwd_txfm_2x2(src_diff, coeff, diff_stride, txfm_param); break;
-#endif
 #if CONFIG_RECT_TX_EXT && (CONFIG_EXT_TX || CONFIG_VAR_TX)
     case TX_4X16:
       fwd_txfm_4x16(src_diff, coeff, diff_stride, txfm_param);
@@ -663,11 +606,6 @@ void av1_highbd_fwd_txfm(const int16_t *src_diff, tran_low_t *coeff,
     case TX_4X4:
       highbd_fwd_txfm_4x4(src_diff, coeff, diff_stride, txfm_param);
       break;
-#if CONFIG_CHROMA_2X2
-    case TX_2X2:
-      highbd_fwd_txfm_2x2(src_diff, coeff, diff_stride, txfm_param);
-      break;
-#endif
     default: assert(0); break;
   }
 }

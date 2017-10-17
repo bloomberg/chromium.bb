@@ -54,7 +54,7 @@
 // This table is used to correct for block size.
 // The factors here are << 2 (2 = x0.5, 32 = x8 etc).
 static const uint8_t rd_thresh_block_size_factor[BLOCK_SIZES_ALL] = {
-#if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
+#if CONFIG_CHROMA_SUB8X8
   2,  2,  2,
 #endif
   2,  3,  3,  4, 6,  6,  8, 12, 12, 16, 24, 24, 32,
@@ -70,38 +70,21 @@ static const uint8_t rd_thresh_block_size_factor[BLOCK_SIZES_ALL] = {
 #if CONFIG_EXT_TX
 static const int use_intra_ext_tx_for_txsize[EXT_TX_SETS_INTRA][EXT_TX_SIZES] =
     {
-#if CONFIG_CHROMA_2X2
-      { 1, 1, 1, 1, 1 },  // unused
-      { 0, 1, 1, 0, 0 },
-      { 0, 0, 0, 1, 0 },
-#if CONFIG_MRC_TX
-      { 0, 0, 0, 0, 1 },
-#endif  // CONFIG_MRC_TX
-#else   // CONFIG_CHROMA_2X2
       { 1, 1, 1, 1 },  // unused
       { 1, 1, 0, 0 },
       { 0, 0, 1, 0 },
 #if CONFIG_MRC_TX
       { 0, 0, 0, 1 },
 #endif  // CONFIG_MRC_TX
-#endif  // CONFIG_CHROMA_2X2
     };
 
 static const int use_inter_ext_tx_for_txsize[EXT_TX_SETS_INTER][EXT_TX_SIZES] =
     {
-#if CONFIG_CHROMA_2X2
-      { 1, 1, 1, 1, 1 },  // unused
-      { 0, 1, 1, 0, 0 }, { 0, 0, 0, 1, 0 }, { 0, 0, 0, 0, 1 },
-#if CONFIG_MRC_TX
-      { 0, 0, 0, 0, 1 },
-#endif  // CONFIG_MRC_TX
-#else   // CONFIG_CHROMA_2X2
       { 1, 1, 1, 1 },  // unused
       { 1, 1, 0, 0 }, { 0, 0, 1, 0 }, { 0, 0, 0, 1 },
 #if CONFIG_MRC_TX
       { 0, 0, 0, 1 },
 #endif  // CONFIG_MRC_TX
-#endif  // CONFIG_CHROMA_2X2
     };
 #endif  // CONFIG_EXT_TX
 
@@ -865,144 +848,6 @@ static void get_entropy_contexts_plane(
 #endif  // CONFIG_LV_MAP
 
   int i;
-
-#if CONFIG_CHROMA_2X2
-  switch (tx_size) {
-    case TX_2X2:
-      memcpy(t_above, above, sizeof(ENTROPY_CONTEXT) * num_4x4_w);
-      memcpy(t_left, left, sizeof(ENTROPY_CONTEXT) * num_4x4_h);
-      break;
-    case TX_4X4:
-      for (i = 0; i < num_4x4_w; i += 2)
-        t_above[i] = !!*(const uint16_t *)&above[i];
-      for (i = 0; i < num_4x4_h; i += 2)
-        t_left[i] = !!*(const uint16_t *)&left[i];
-      break;
-    case TX_8X8:
-      for (i = 0; i < num_4x4_w; i += 4)
-        t_above[i] = !!*(const uint32_t *)&above[i];
-      for (i = 0; i < num_4x4_h; i += 4)
-        t_left[i] = !!*(const uint32_t *)&left[i];
-      break;
-    case TX_16X16:
-      for (i = 0; i < num_4x4_w; i += 8)
-        t_above[i] = !!*(const uint64_t *)&above[i];
-      for (i = 0; i < num_4x4_h; i += 8)
-        t_left[i] = !!*(const uint64_t *)&left[i];
-      break;
-    case TX_32X32:
-      for (i = 0; i < num_4x4_w; i += 16)
-        t_above[i] =
-            !!(*(const uint64_t *)&above[i] | *(const uint64_t *)&above[i + 8]);
-      for (i = 0; i < num_4x4_h; i += 16)
-        t_left[i] =
-            !!(*(const uint64_t *)&left[i] | *(const uint64_t *)&left[i + 8]);
-      break;
-#if CONFIG_TX64X64
-    case TX_32X64:
-      for (i = 0; i < num_4x4_w; i += 16)
-        t_above[i] =
-            !!(*(const uint64_t *)&above[i] | *(const uint64_t *)&above[i + 8]);
-      for (i = 0; i < num_4x4_h; i += 32)
-        t_left[i] =
-            !!(*(const uint64_t *)&left[i] | *(const uint64_t *)&left[i + 8] |
-               *(const uint64_t *)&left[i + 16] |
-               *(const uint64_t *)&left[i + 24]);
-      break;
-    case TX_64X32:
-      for (i = 0; i < num_4x4_w; i += 32)
-        t_above[i] =
-            !!(*(const uint64_t *)&above[i] | *(const uint64_t *)&above[i + 8] |
-               *(const uint64_t *)&above[i + 16] |
-               *(const uint64_t *)&above[i + 24]);
-      for (i = 0; i < num_4x4_h; i += 16)
-        t_left[i] =
-            !!(*(const uint64_t *)&left[i] | *(const uint64_t *)&left[i + 8]);
-      break;
-    case TX_64X64:
-      for (i = 0; i < num_4x4_w; i += 32)
-        t_above[i] =
-            !!(*(const uint64_t *)&above[i] | *(const uint64_t *)&above[i + 8] |
-               *(const uint64_t *)&above[i + 16] |
-               *(const uint64_t *)&above[i + 24]);
-      for (i = 0; i < num_4x4_h; i += 32)
-        t_left[i] =
-            !!(*(const uint64_t *)&left[i] | *(const uint64_t *)&left[i + 8] |
-               *(const uint64_t *)&left[i + 16] |
-               *(const uint64_t *)&left[i + 24]);
-      break;
-#endif  // CONFIG_TX64X64
-    case TX_4X8:
-      for (i = 0; i < num_4x4_w; i += 2)
-        t_above[i] = !!*(const uint16_t *)&above[i];
-      for (i = 0; i < num_4x4_h; i += 4)
-        t_left[i] = !!*(const uint32_t *)&left[i];
-      break;
-    case TX_8X4:
-      for (i = 0; i < num_4x4_w; i += 4)
-        t_above[i] = !!*(const uint32_t *)&above[i];
-      for (i = 0; i < num_4x4_h; i += 2)
-        t_left[i] = !!*(const uint16_t *)&left[i];
-      break;
-    case TX_8X16:
-      for (i = 0; i < num_4x4_w; i += 4)
-        t_above[i] = !!*(const uint32_t *)&above[i];
-      for (i = 0; i < num_4x4_h; i += 8)
-        t_left[i] = !!*(const uint64_t *)&left[i];
-      break;
-    case TX_16X8:
-      for (i = 0; i < num_4x4_w; i += 8)
-        t_above[i] = !!*(const uint64_t *)&above[i];
-      for (i = 0; i < num_4x4_h; i += 4)
-        t_left[i] = !!*(const uint32_t *)&left[i];
-      break;
-    case TX_16X32:
-      for (i = 0; i < num_4x4_w; i += 8)
-        t_above[i] = !!*(const uint64_t *)&above[i];
-      for (i = 0; i < num_4x4_h; i += 16)
-        t_left[i] =
-            !!(*(const uint64_t *)&left[i] | *(const uint64_t *)&left[i + 8]);
-      break;
-    case TX_32X16:
-      for (i = 0; i < num_4x4_w; i += 16)
-        t_above[i] =
-            !!(*(const uint64_t *)&above[i] | *(const uint64_t *)&above[i + 8]);
-      for (i = 0; i < num_4x4_h; i += 8)
-        t_left[i] = !!*(const uint64_t *)&left[i];
-      break;
-#if CONFIG_RECT_TX_EXT && (CONFIG_EXT_TX || CONFIG_VAR_TX)
-    case TX_4X16:
-      for (i = 0; i < num_4x4_w; i += 2)
-        t_above[i] = !!*(const uint16_t *)&above[i];
-      for (i = 0; i < num_4x4_h; i += 8)
-        t_left[i] = !!*(const uint64_t *)&left[i];
-      break;
-    case TX_16X4:
-      for (i = 0; i < num_4x4_w; i += 8)
-        t_above[i] = !!*(const uint64_t *)&above[i];
-      for (i = 0; i < num_4x4_h; i += 2)
-        t_left[i] = !!*(const uint16_t *)&left[i];
-      break;
-    case TX_8X32:
-      for (i = 0; i < num_4x4_w; i += 4)
-        t_above[i] = !!*(const uint32_t *)&above[i];
-      for (i = 0; i < num_4x4_h; i += 16)
-        t_left[i] =
-            !!(*(const uint64_t *)&left[i] | *(const uint64_t *)&left[i + 8]);
-      break;
-    case TX_32X8:
-      for (i = 0; i < num_4x4_w; i += 16)
-        t_above[i] =
-            !!(*(const uint64_t *)&above[i] | *(const uint64_t *)&above[i + 8]);
-      for (i = 0; i < num_4x4_h; i += 4)
-        t_left[i] = !!*(const uint32_t *)&left[i];
-      break;
-#endif
-
-    default: assert(0 && "Invalid transform size."); break;
-  }
-  return;
-#endif  // CONFIG_CHROMA_2X2
 
   switch (tx_size) {
     case TX_4X4:

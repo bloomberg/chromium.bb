@@ -3150,15 +3150,8 @@ static int64_t rd_pick_intra_sub_8x8_y_subblock_mode(
   const int dst_stride = pd->dst.stride;
   const uint8_t *src_init = &p->src.buf[row * 4 * src_stride + col * 4];
   uint8_t *dst_init = &pd->dst.buf[row * 4 * dst_stride + col * 4];
-#if CONFIG_CHROMA_2X2
-  // TODO(jingning): This is a temporal change. The whole function should be
-  // out when cb4x4 is enabled.
-  ENTROPY_CONTEXT ta[4], tempa[4];
-  ENTROPY_CONTEXT tl[4], templ[4];
-#else
   ENTROPY_CONTEXT ta[2], tempa[2];
   ENTROPY_CONTEXT tl[2], templ[2];
-#endif  // CONFIG_CHROMA_2X2
 
   const int pred_width_in_4x4_blocks = num_4x4_blocks_wide_lookup[bsize];
   const int pred_height_in_4x4_blocks = num_4x4_blocks_high_lookup[bsize];
@@ -4316,12 +4309,12 @@ static int super_block_uvrd(const AV1_COMP *const cpi, MACROBLOCK *x,
 
   if (ref_best_rd < 0) is_cost_valid = 0;
 
-#if CONFIG_CB4X4 && !CONFIG_CHROMA_2X2
+#if CONFIG_CB4X4
   if (x->skip_chroma_rd) return is_cost_valid;
 
   bsize = scale_chroma_bsize(bsize, xd->plane[1].subsampling_x,
                              xd->plane[1].subsampling_y);
-#endif  // CONFIG_CB4X4 && !CONFIG_CHROMA_2X2
+#endif  // CONFIG_CB4X4
 
 #if !CONFIG_PVQ
   if (is_inter_block(mbmi) && is_cost_valid) {
@@ -5534,11 +5527,11 @@ static int inter_block_uvrd(const AV1_COMP *cpi, MACROBLOCK *x,
 
   av1_init_rd_stats(rd_stats);
 
-#if CONFIG_CB4X4 && !CONFIG_CHROMA_2X2
+#if CONFIG_CB4X4
   if (x->skip_chroma_rd) return is_cost_valid;
   bsize = scale_chroma_bsize(mbmi->sb_type, xd->plane[1].subsampling_x,
                              xd->plane[1].subsampling_y);
-#endif  // CONFIG_CB4X4 && !CONFIG_CHROMA_2X2
+#endif  // CONFIG_CB4X4
 
 #if CONFIG_EXT_TX && CONFIG_RECT_TX
   if (is_rect_tx(mbmi->tx_size)) {
@@ -6243,7 +6236,6 @@ static void choose_intra_uv_mode(const AV1_COMP *const cpi, MACROBLOCK *const x,
   // appropriate speed flag is set.
   init_sbuv_mode(mbmi);
 #if CONFIG_CB4X4
-#if !CONFIG_CHROMA_2X2
   if (x->skip_chroma_rd) {
     *rate_uv = 0;
     *rate_uv_tokenonly = 0;
@@ -6254,7 +6246,6 @@ static void choose_intra_uv_mode(const AV1_COMP *const cpi, MACROBLOCK *const x,
   }
   bsize = scale_chroma_bsize(bsize, xd->plane[AOM_PLANE_U].subsampling_x,
                              xd->plane[AOM_PLANE_U].subsampling_y);
-#endif  // !CONFIG_CHROMA_2X2
 #if CONFIG_CFL
   // Only store reconstructed luma when there's chroma RDO. When there's no
   // chroma RDO, the reconstructed luma will be stored in encode_superblock().
@@ -6354,13 +6345,8 @@ typedef struct {
   int_mv pred_mv[2];
   int_mv ref_mv[2];
 
-#if CONFIG_CHROMA_2X2
-  ENTROPY_CONTEXT ta[4];
-  ENTROPY_CONTEXT tl[4];
-#else
   ENTROPY_CONTEXT ta[2];
   ENTROPY_CONTEXT tl[2];
-#endif  // CONFIG_CHROMA_2X2
 } SEG_RDSTAT;
 
 typedef struct {

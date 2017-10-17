@@ -2241,33 +2241,6 @@ static void idct64x64_add(const tran_low_t *input, uint8_t *dest, int stride,
 }
 #endif  // CONFIG_TX64X64 && !CONFIG_DAALA_DCT64
 
-#if CONFIG_CHROMA_2X2
-static void inv_txfm_add_2x2(const tran_low_t *input, uint8_t *dest, int stride,
-                             const TxfmParam *txfm_param) {
-  tran_high_t a1 = input[0] >> UNIT_QUANT_SHIFT;
-  tran_high_t b1 = input[1] >> UNIT_QUANT_SHIFT;
-  tran_high_t c1 = input[2] >> UNIT_QUANT_SHIFT;
-  tran_high_t d1 = input[3] >> UNIT_QUANT_SHIFT;
-
-  tran_high_t a2 = a1 + c1;
-  tran_high_t b2 = b1 + d1;
-  tran_high_t c2 = a1 - c1;
-  tran_high_t d2 = b1 - d1;
-
-  (void)txfm_param;
-
-  a1 = (a2 + b2) >> 2;
-  b1 = (a2 - b2) >> 2;
-  c1 = (c2 + d2) >> 2;
-  d1 = (c2 - d2) >> 2;
-
-  dest[0] = clip_pixel_add(dest[0], WRAPLOW(a1));
-  dest[1] = clip_pixel_add(dest[1], WRAPLOW(b1));
-  dest[stride] = clip_pixel_add(dest[stride], WRAPLOW(c1));
-  dest[stride + 1] = clip_pixel_add(dest[stride + 1], WRAPLOW(d1));
-}
-#endif
-
 static void inv_txfm_add_4x4(const tran_low_t *input, uint8_t *dest, int stride,
                              const TxfmParam *txfm_param) {
   const TX_TYPE tx_type = txfm_param->tx_type;
@@ -2594,41 +2567,6 @@ void av1_highbd_iwht4x4_add(const tran_low_t *input, uint8_t *dest, int stride,
     aom_highbd_iwht4x4_1_add(input, dest, stride, bd);
 }
 
-#if CONFIG_CHROMA_2X2
-static void highbd_inv_txfm_add_2x2(const tran_low_t *input, uint8_t *dest,
-                                    int stride, const TxfmParam *txfm_param) {
-  int eob = txfm_param->eob;
-  int bd = txfm_param->bd;
-  int lossless = txfm_param->lossless;
-  const TX_TYPE tx_type = txfm_param->tx_type;
-  tran_high_t a1 = input[0] >> UNIT_QUANT_SHIFT;
-  tran_high_t b1 = input[1] >> UNIT_QUANT_SHIFT;
-  tran_high_t c1 = input[2] >> UNIT_QUANT_SHIFT;
-  tran_high_t d1 = input[3] >> UNIT_QUANT_SHIFT;
-
-  tran_high_t a2 = a1 + c1;
-  tran_high_t b2 = b1 + d1;
-  tran_high_t c2 = a1 - c1;
-  tran_high_t d2 = b1 - d1;
-
-  uint16_t *dst = CONVERT_TO_SHORTPTR(dest);
-
-  (void)tx_type;
-  (void)lossless;
-  (void)eob;
-
-  a1 = (a2 + b2) >> 2;
-  b1 = (a2 - b2) >> 2;
-  c1 = (c2 + d2) >> 2;
-  d1 = (c2 - d2) >> 2;
-
-  dst[0] = highbd_clip_pixel_add(dst[0], a1, bd);
-  dst[1] = highbd_clip_pixel_add(dst[1], b1, bd);
-  dst[stride] = highbd_clip_pixel_add(dst[stride], c1, bd);
-  dst[stride + 1] = highbd_clip_pixel_add(dst[stride + 1], d1, bd);
-}
-#endif
-
 static const int32_t *cast_to_int32(const tran_low_t *input) {
   assert(sizeof(int32_t) == sizeof(tran_low_t));
   return (const int32_t *)input;
@@ -2928,9 +2866,6 @@ void av1_inv_txfm_add(const tran_low_t *input, uint8_t *dest, int stride,
       // case.
       inv_txfm_add_4x4(input, dest, stride, txfm_param);
       break;
-#if CONFIG_CHROMA_2X2
-    case TX_2X2: inv_txfm_add_2x2(input, dest, stride, txfm_param); break;
-#endif
 #if CONFIG_RECT_TX_EXT && (CONFIG_EXT_TX || CONFIG_VAR_TX)
     case TX_32X8: inv_txfm_add_32x8(input, dest, stride, txfm_param); break;
     case TX_8X32: inv_txfm_add_8x32(input, dest, stride, txfm_param); break;
@@ -3111,11 +3046,6 @@ void av1_highbd_inv_txfm_add(const tran_low_t *input, uint8_t *dest, int stride,
       // case.
       av1_highbd_inv_txfm_add_4x4(input, dest, stride, txfm_param);
       break;
-#if CONFIG_CHROMA_2X2
-    case TX_2X2:
-      highbd_inv_txfm_add_2x2(input, dest, stride, txfm_param);
-      break;
-#endif
     default: assert(0 && "Invalid transform size"); break;
   }
 }

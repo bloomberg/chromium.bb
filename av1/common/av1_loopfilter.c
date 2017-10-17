@@ -333,9 +333,6 @@ extern void aom_highbd_lpf_vertical_6_c(uint16_t *s, int pitch,
 //
 // A loopfilter should be applied to every other 8x8 horizontally.
 static const uint64_t left_64x64_txform_mask[TX_SIZES] = {
-#if CONFIG_CHROMA_2X2
-  0xffffffffffffffffULL,  // TX_2X2
-#endif
   0xffffffffffffffffULL,  // TX_4X4
   0xffffffffffffffffULL,  // TX_8x8
   0x5555555555555555ULL,  // TX_16x16
@@ -363,9 +360,6 @@ static const uint64_t left_64x64_txform_mask[TX_SIZES] = {
 //
 // A loopfilter should be applied to every other 4 the row vertically.
 static const uint64_t above_64x64_txform_mask[TX_SIZES] = {
-#if CONFIG_CHROMA_2X2
-  0xffffffffffffffffULL,  // TX_4X4
-#endif
   0xffffffffffffffffULL,  // TX_4X4
   0xffffffffffffffffULL,  // TX_8x8
   0x00ff00ff00ff00ffULL,  // TX_16x16
@@ -391,7 +385,7 @@ static const uint64_t above_64x64_txform_mask[TX_SIZES] = {
 //  00000000
 //  00000000
 static const uint64_t left_prediction_mask[BLOCK_SIZES_ALL] = {
-#if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
+#if CONFIG_CHROMA_SUB8X8
   0x0000000000000001ULL,  // BLOCK_2X2,
   0x0000000000000001ULL,  // BLOCK_2X4,
   0x0000000000000001ULL,  // BLOCK_4X2,
@@ -419,7 +413,7 @@ static const uint64_t left_prediction_mask[BLOCK_SIZES_ALL] = {
 
 // 64 bit mask to shift and set for each prediction size.
 static const uint64_t above_prediction_mask[BLOCK_SIZES_ALL] = {
-#if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
+#if CONFIG_CHROMA_SUB8X8
   0x0000000000000001ULL,  // BLOCK_2X2
   0x0000000000000001ULL,  // BLOCK_2X4
   0x0000000000000001ULL,  // BLOCK_4X2
@@ -448,7 +442,7 @@ static const uint64_t above_prediction_mask[BLOCK_SIZES_ALL] = {
 // each 8x8 block that would be in the top left most block of the given block
 // size in the 64x64 block.
 static const uint64_t size_mask[BLOCK_SIZES_ALL] = {
-#if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
+#if CONFIG_CHROMA_SUB8X8
   0x0000000000000001ULL,  // BLOCK_2X2
   0x0000000000000001ULL,  // BLOCK_2X4
   0x0000000000000001ULL,  // BLOCK_4X2
@@ -480,9 +474,6 @@ static const uint64_t above_border = 0x000000ff000000ffULL;
 
 // 16 bit masks for uv transform sizes.
 static const uint16_t left_64x64_txform_mask_uv[TX_SIZES] = {
-#if CONFIG_CHROMA_2X2
-  0xffff,  // TX_2X2
-#endif
   0xffff,  // TX_4X4
   0xffff,  // TX_8x8
   0x5555,  // TX_16x16
@@ -493,9 +484,6 @@ static const uint16_t left_64x64_txform_mask_uv[TX_SIZES] = {
 };
 
 static const uint16_t above_64x64_txform_mask_uv[TX_SIZES] = {
-#if CONFIG_CHROMA_2X2
-  0xffff,  // TX_2X2
-#endif
   0xffff,  // TX_4X4
   0xffff,  // TX_8x8
   0x0f0f,  // TX_16x16
@@ -507,7 +495,7 @@ static const uint16_t above_64x64_txform_mask_uv[TX_SIZES] = {
 
 // 16 bit left mask to shift and set for each uv prediction size.
 static const uint16_t left_prediction_mask_uv[BLOCK_SIZES_ALL] = {
-#if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
+#if CONFIG_CHROMA_SUB8X8
   0x0001,  // BLOCK_2X2,
   0x0001,  // BLOCK_2X4,
   0x0001,  // BLOCK_4X2,
@@ -535,7 +523,7 @@ static const uint16_t left_prediction_mask_uv[BLOCK_SIZES_ALL] = {
 
 // 16 bit above mask to shift and set for uv each prediction size.
 static const uint16_t above_prediction_mask_uv[BLOCK_SIZES_ALL] = {
-#if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
+#if CONFIG_CHROMA_SUB8X8
   0x0001,  // BLOCK_2X2
   0x0001,  // BLOCK_2X4
   0x0001,  // BLOCK_4X2
@@ -563,7 +551,7 @@ static const uint16_t above_prediction_mask_uv[BLOCK_SIZES_ALL] = {
 
 // 64 bit mask to shift and set for each uv prediction size
 static const uint16_t size_mask_uv[BLOCK_SIZES_ALL] = {
-#if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
+#if CONFIG_CHROMA_SUB8X8
   0x0001,  // BLOCK_2X2
   0x0001,  // BLOCK_2X4
   0x0001,  // BLOCK_4X2
@@ -2157,7 +2145,7 @@ static void get_filter_level_and_masks_non420(
           (blk_row * mi_size_high[BLOCK_8X8] << TX_UNIT_HIGH_LOG2) >> 1;
       const int tx_col_idx =
           (blk_col * mi_size_wide[BLOCK_8X8] << TX_UNIT_WIDE_LOG2) >> 1;
-#if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
+#if CONFIG_CHROMA_SUB8X8
       const BLOCK_SIZE bsize =
           AOMMAX(BLOCK_4X4, get_plane_block_size(mbmi->sb_type, plane));
 #else
@@ -2662,11 +2650,11 @@ typedef enum EDGE_DIR { VERT_EDGE = 0, HORZ_EDGE = 1, NUM_EDGE_DIRS } EDGE_DIR;
 static const uint32_t av1_prediction_masks[NUM_EDGE_DIRS][BLOCK_SIZES_ALL] = {
   // mask for vertical edges filtering
   {
-#if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
+#if CONFIG_CHROMA_SUB8X8
       2 - 1,   // BLOCK_2X2
       2 - 1,   // BLOCK_2X4
       4 - 1,   // BLOCK_4X2
-#endif         // CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
+#endif         // CONFIG_CHROMA_SUB8X8
       4 - 1,   // BLOCK_4X4
       4 - 1,   // BLOCK_4X8
       8 - 1,   // BLOCK_8X4
@@ -2698,11 +2686,11 @@ static const uint32_t av1_prediction_masks[NUM_EDGE_DIRS][BLOCK_SIZES_ALL] = {
   },
   // mask for horizontal edges filtering
   {
-#if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
+#if CONFIG_CHROMA_SUB8X8
       2 - 1,   // BLOCK_2X2
       4 - 1,   // BLOCK_2X4
       2 - 1,   // BLOCK_4X2
-#endif         // CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
+#endif         // CONFIG_CHROMA_SUB8X8
       4 - 1,   // BLOCK_4X4
       8 - 1,   // BLOCK_4X8
       4 - 1,   // BLOCK_8X4
@@ -2736,9 +2724,6 @@ static const uint32_t av1_prediction_masks[NUM_EDGE_DIRS][BLOCK_SIZES_ALL] = {
 
 static const uint32_t av1_transform_masks[NUM_EDGE_DIRS][TX_SIZES_ALL] = {
   {
-#if CONFIG_CHROMA_2X2
-      2 - 1,  // TX_2X2
-#endif
       4 - 1,   // TX_4X4
       8 - 1,   // TX_8X8
       16 - 1,  // TX_16X16
@@ -2762,9 +2747,6 @@ static const uint32_t av1_transform_masks[NUM_EDGE_DIRS][TX_SIZES_ALL] = {
       32 - 1   // TX_32X8
   },
   {
-#if CONFIG_CHROMA_2X2
-      2 - 1,  // TX_2X2
-#endif
       4 - 1,   // TX_4X4
       8 - 1,   // TX_8X8
       16 - 1,  // TX_16X16
@@ -2821,7 +2803,7 @@ static TX_SIZE av1_get_transform_size(const MODE_INFO *const mi,
     const int tx_col_idx =
         (blk_col * mi_size_wide[BLOCK_8X8] << TX_UNIT_WIDE_LOG2) >> 1;
 
-#if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
+#if CONFIG_CHROMA_SUB8X8
     const BLOCK_SIZE bsize =
         AOMMAX(BLOCK_4X4, ss_size_lookup[sb_type][scale_horz][scale_vert]);
 #else

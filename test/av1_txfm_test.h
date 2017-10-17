@@ -81,9 +81,6 @@ static const int input_base = (1 << bd);
 #if CONFIG_AV1_ENCODER
 
 static const Fwd_Txfm2d_Func fwd_txfm_func_ls[TX_SIZES_ALL] = {
-#if CONFIG_CHROMA_2X2
-  NULL,
-#endif
   av1_fwd_txfm2d_4x4_c,
   av1_fwd_txfm2d_8x8_c,
   av1_fwd_txfm2d_16x16_c,
@@ -109,9 +106,6 @@ static const Fwd_Txfm2d_Func fwd_txfm_func_ls[TX_SIZES_ALL] = {
 #endif
 
 static const Inv_Txfm2d_Func inv_txfm_func_ls[TX_SIZES_ALL] = {
-#if CONFIG_CHROMA_2X2
-  NULL,
-#endif
   av1_inv_txfm2d_add_4x4_c,
   av1_inv_txfm2d_add_8x8_c,
   av1_inv_txfm2d_add_16x16_c,

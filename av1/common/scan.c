@@ -14,12 +14,6 @@
 #include "av1/common/common_data.h"
 #include "av1/common/scan.h"
 
-#if CONFIG_CHROMA_2X2
-DECLARE_ALIGNED(16, static const int16_t, default_scan_2x2[4]) = {
-  0, 1, 2, 3,
-};
-#endif
-
 DECLARE_ALIGNED(16, static const int16_t, default_scan_4x4[16]) = {
   0, 4, 1, 5, 8, 2, 12, 9, 3, 6, 13, 10, 7, 14, 11, 15,
 };
@@ -1815,13 +1809,6 @@ DECLARE_ALIGNED(16, static const int16_t, default_scan_64x64[4096]) = {
   4095,
 };
 #endif  // CONFIG_TX64X64
-
-#if CONFIG_CHROMA_2X2
-DECLARE_ALIGNED(16, static const int16_t,
-                default_scan_2x2_neighbors[5 * MAX_NEIGHBORS]) = {
-  0, 0, 0, 0, 0, 1, 1, 2, 0, 0,
-};
-#endif
 
 // Neighborhood 2-tuples for various scans and blocksizes,
 // in {top, left} order for each position in corresponding scan order.
@@ -5214,11 +5201,6 @@ DECLARE_ALIGNED(16, static const int16_t,
 };
 #endif  // CONFIG_TX64X64
 
-#if CONFIG_CHROMA_2X2
-DECLARE_ALIGNED(16, static const int16_t, av1_default_iscan_2x2[4]) = { 0, 1, 2,
-                                                                        3 };
-#endif
-
 DECLARE_ALIGNED(16, static const int16_t, av1_default_iscan_4x4[16]) = {
   0, 2, 5, 8, 1, 3, 9, 12, 4, 7, 11, 14, 6, 10, 13, 15,
 };
@@ -7006,9 +6988,6 @@ DECLARE_ALIGNED(16, static const int16_t, av1_default_iscan_64x64[4096]) = {
 #endif  // CONFIG_TX64X64
 
 const SCAN_ORDER av1_default_scan_orders[TX_SIZES] = {
-#if CONFIG_CHROMA_2X2
-  { default_scan_2x2, av1_default_iscan_2x2, default_scan_2x2_neighbors },
-#endif
   { default_scan_4x4, av1_default_iscan_4x4, default_scan_4x4_neighbors },
   { default_scan_8x8, av1_default_iscan_8x8, default_scan_8x8_neighbors },
   { default_scan_16x16, av1_default_iscan_16x16, default_scan_16x16_neighbors },
@@ -7019,29 +6998,6 @@ const SCAN_ORDER av1_default_scan_orders[TX_SIZES] = {
 };
 
 const SCAN_ORDER av1_intra_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
-#if CONFIG_CHROMA_2X2
-  {
-      // TX_2X2
-      { default_scan_2x2, av1_default_iscan_2x2, default_scan_2x2_neighbors },
-      { default_scan_2x2, av1_default_iscan_2x2, default_scan_2x2_neighbors },
-      { default_scan_2x2, av1_default_iscan_2x2, default_scan_2x2_neighbors },
-      { default_scan_2x2, av1_default_iscan_2x2, default_scan_2x2_neighbors },
-#if CONFIG_EXT_TX
-      { default_scan_4x4, av1_default_iscan_4x4, default_scan_4x4_neighbors },
-      { default_scan_4x4, av1_default_iscan_4x4, default_scan_4x4_neighbors },
-      { default_scan_4x4, av1_default_iscan_4x4, default_scan_4x4_neighbors },
-      { default_scan_4x4, av1_default_iscan_4x4, default_scan_4x4_neighbors },
-      { default_scan_4x4, av1_default_iscan_4x4, default_scan_4x4_neighbors },
-      { mrow_scan_4x4, av1_mrow_iscan_4x4, mrow_scan_4x4_neighbors },
-      { row_scan_4x4, av1_row_iscan_4x4, row_scan_4x4_neighbors },
-      { col_scan_4x4, av1_col_iscan_4x4, col_scan_4x4_neighbors },
-      { row_scan_4x4, av1_row_iscan_4x4, row_scan_4x4_neighbors },
-      { col_scan_4x4, av1_col_iscan_4x4, col_scan_4x4_neighbors },
-      { row_scan_4x4, av1_row_iscan_4x4, row_scan_4x4_neighbors },
-      { col_scan_4x4, av1_col_iscan_4x4, col_scan_4x4_neighbors },
-#endif  // CONFIG_EXT_TX
-  },
-#endif
   {
       // TX_4X4
       { default_scan_4x4, av1_default_iscan_4x4, default_scan_4x4_neighbors },
@@ -7406,29 +7362,6 @@ const SCAN_ORDER av1_intra_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
 };
 
 const SCAN_ORDER av1_inter_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
-#if CONFIG_CHROMA_2X2
-  {
-      // TX_2X2
-      { default_scan_2x2, av1_default_iscan_2x2, default_scan_2x2_neighbors },
-      { default_scan_2x2, av1_default_iscan_2x2, default_scan_2x2_neighbors },
-      { default_scan_2x2, av1_default_iscan_2x2, default_scan_2x2_neighbors },
-      { default_scan_2x2, av1_default_iscan_2x2, default_scan_2x2_neighbors },
-#if CONFIG_EXT_TX
-      { default_scan_4x4, av1_default_iscan_4x4, default_scan_4x4_neighbors },
-      { default_scan_4x4, av1_default_iscan_4x4, default_scan_4x4_neighbors },
-      { default_scan_4x4, av1_default_iscan_4x4, default_scan_4x4_neighbors },
-      { default_scan_4x4, av1_default_iscan_4x4, default_scan_4x4_neighbors },
-      { default_scan_4x4, av1_default_iscan_4x4, default_scan_4x4_neighbors },
-      { mrow_scan_4x4, av1_mrow_iscan_4x4, mrow_scan_4x4_neighbors },
-      { mrow_scan_4x4, av1_mrow_iscan_4x4, mrow_scan_4x4_neighbors },
-      { mcol_scan_4x4, av1_mcol_iscan_4x4, mcol_scan_4x4_neighbors },
-      { mrow_scan_4x4, av1_mrow_iscan_4x4, mrow_scan_4x4_neighbors },
-      { mcol_scan_4x4, av1_mcol_iscan_4x4, mcol_scan_4x4_neighbors },
-      { mrow_scan_4x4, av1_mrow_iscan_4x4, mrow_scan_4x4_neighbors },
-      { mcol_scan_4x4, av1_mcol_iscan_4x4, mcol_scan_4x4_neighbors },
-#endif  // CONFIG_EXT_TX
-  },
-#endif
   {
       // TX_4X4
       { default_scan_4x4, av1_default_iscan_4x4, default_scan_4x4_neighbors },
@@ -7932,9 +7865,6 @@ const SCAN_ORDER av1_inter_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
 static uint32_t *get_non_zero_prob(FRAME_CONTEXT *fc, TX_SIZE tx_size,
                                    TX_TYPE tx_type) {
   switch (tx_size) {
-#if CONFIG_CHROMA_2X2
-    case TX_2X2: return fc->non_zero_prob_2x2[tx_type];
-#endif
     case TX_4X4: return fc->non_zero_prob_4X4[tx_type];
     case TX_8X8: return fc->non_zero_prob_8X8[tx_type];
     case TX_16X16: return fc->non_zero_prob_16X16[tx_type];
@@ -7954,9 +7884,6 @@ static uint32_t *get_non_zero_prob(FRAME_CONTEXT *fc, TX_SIZE tx_size,
 static int16_t *get_adapt_scan(FRAME_CONTEXT *fc, TX_SIZE tx_size,
                                TX_TYPE tx_type) {
   switch (tx_size) {
-#if CONFIG_CHROMA_2X2
-    case TX_2X2: return fc->scan_2x2[tx_type];
-#endif
     case TX_4X4: return fc->scan_4X4[tx_type];
     case TX_8X8: return fc->scan_8X8[tx_type];
     case TX_16X16: return fc->scan_16X16[tx_type];
@@ -7976,9 +7903,6 @@ static int16_t *get_adapt_scan(FRAME_CONTEXT *fc, TX_SIZE tx_size,
 static int16_t *get_adapt_iscan(FRAME_CONTEXT *fc, TX_SIZE tx_size,
                                 TX_TYPE tx_type) {
   switch (tx_size) {
-#if CONFIG_CHROMA_2X2
-    case TX_2X2: return fc->iscan_2x2[tx_type];
-#endif
     case TX_4X4: return fc->iscan_4X4[tx_type];
     case TX_8X8: return fc->iscan_8X8[tx_type];
     case TX_16X16: return fc->iscan_16X16[tx_type];
@@ -7998,9 +7922,6 @@ static int16_t *get_adapt_iscan(FRAME_CONTEXT *fc, TX_SIZE tx_size,
 static int16_t *get_adapt_nb(FRAME_CONTEXT *fc, TX_SIZE tx_size,
                              TX_TYPE tx_type) {
   switch (tx_size) {
-#if CONFIG_CHROMA_2X2
-    case TX_2X2: return fc->nb_2x2[tx_type];
-#endif
     case TX_4X4: return fc->nb_4X4[tx_type];
     case TX_8X8: return fc->nb_8X8[tx_type];
     case TX_16X16: return fc->nb_16X16[tx_type];
@@ -8020,9 +7941,6 @@ static int16_t *get_adapt_nb(FRAME_CONTEXT *fc, TX_SIZE tx_size,
 static uint32_t *get_non_zero_counts(FRAME_COUNTS *counts, TX_SIZE tx_size,
                                      TX_TYPE tx_type) {
   switch (tx_size) {
-#if CONFIG_CHROMA_2X2
-    case TX_2X2: return counts->non_zero_count_2x2[tx_type];
-#endif
     case TX_4X4: return counts->non_zero_count_4X4[tx_type];
     case TX_8X8: return counts->non_zero_count_8X8[tx_type];
     case TX_16X16: return counts->non_zero_count_16X16[tx_type];

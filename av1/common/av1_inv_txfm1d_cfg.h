@@ -14,19 +14,11 @@
 #include "av1/common/av1_inv_txfm1d.h"
 
 // sum of fwd_shift_##
-#if CONFIG_CHROMA_2X2
-#if CONFIG_TX64X64
-static const int8_t fwd_shift_sum[TX_SIZES] = { 3, 2, 1, 0, -2, -4 };
-#else   // CONFIG_TX64X64
-static const int8_t fwd_shift_sum[TX_SIZES] = { 3, 2, 1, 0, -2 };
-#endif  // CONFIG_TX64X64
-#else   // CONFIG_CHROMA_2X2
 #if CONFIG_TX64X64
 static const int8_t fwd_shift_sum[TX_SIZES] = { 2, 1, 0, -2, -4 };
 #else  // CONFIG_TX64X64
 static const int8_t fwd_shift_sum[TX_SIZES] = { 2, 1, 0, -2 };
 #endif  // CONFIG_TX64X64
-#endif  // CONFIG_CHROMA_2X2
 
 //  ---------------- 4x4 1D config -----------------------
 // shift

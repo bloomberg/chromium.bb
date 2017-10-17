@@ -97,10 +97,7 @@ typedef struct frame_contexts {
   coeff_cdf_model coef_tail_cdfs[TX_SIZES][PLANE_TYPES];
   coeff_cdf_model coef_head_cdfs[TX_SIZES][PLANE_TYPES];
 #if CONFIG_ADAPT_SCAN
-// TODO(angiebird): try aom_prob
-#if CONFIG_CHROMA_2X2
-  uint32_t non_zero_prob_2x2[TX_TYPES][4];
-#endif
+  // TODO(angiebird): try aom_prob
   uint32_t non_zero_prob_4X4[TX_TYPES][16];
   uint32_t non_zero_prob_8X8[TX_TYPES][64];
   uint32_t non_zero_prob_16X16[TX_TYPES][256];
@@ -113,9 +110,6 @@ typedef struct frame_contexts {
   uint32_t non_zero_prob_32X16[TX_TYPES][512];
   uint32_t non_zero_prob_16X32[TX_TYPES][512];
 
-#if CONFIG_CHROMA_2X2
-  DECLARE_ALIGNED(16, int16_t, scan_2x2[TX_TYPES][4]);
-#endif
   DECLARE_ALIGNED(16, int16_t, scan_4X4[TX_TYPES][16]);
   DECLARE_ALIGNED(16, int16_t, scan_8X8[TX_TYPES][64]);
   DECLARE_ALIGNED(16, int16_t, scan_16X16[TX_TYPES][256]);
@@ -128,9 +122,6 @@ typedef struct frame_contexts {
   DECLARE_ALIGNED(16, int16_t, scan_16X32[TX_TYPES][512]);
   DECLARE_ALIGNED(16, int16_t, scan_32X16[TX_TYPES][512]);
 
-#if CONFIG_CHROMA_2X2
-  DECLARE_ALIGNED(16, int16_t, iscan_2x2[TX_TYPES][4]);
-#endif
   DECLARE_ALIGNED(16, int16_t, iscan_4X4[TX_TYPES][16]);
   DECLARE_ALIGNED(16, int16_t, iscan_8X8[TX_TYPES][64]);
   DECLARE_ALIGNED(16, int16_t, iscan_16X16[TX_TYPES][256]);
@@ -143,9 +134,6 @@ typedef struct frame_contexts {
   DECLARE_ALIGNED(16, int16_t, iscan_16X32[TX_TYPES][512]);
   DECLARE_ALIGNED(16, int16_t, iscan_32X16[TX_TYPES][512]);
 
-#if CONFIG_CHROMA_2X2
-  int16_t nb_2x2[TX_TYPES][(4 + 1) * 2];
-#endif
   int16_t nb_4X4[TX_TYPES][(16 + 1) * 2];
   int16_t nb_8X8[TX_TYPES][(64 + 1) * 2];
   int16_t nb_16X16[TX_TYPES][(256 + 1) * 2];
@@ -418,9 +406,6 @@ typedef struct FRAME_COUNTS {
   unsigned int switchable_interp[SWITCHABLE_FILTER_CONTEXTS]
                                 [SWITCHABLE_FILTERS];
 #if CONFIG_ADAPT_SCAN
-#if CONFIG_CHROMA_2X2
-  unsigned int non_zero_count_2x2[TX_TYPES][4];
-#endif  // CONFIG_CHROMA_2X2
   unsigned int non_zero_count_4X4[TX_TYPES][16];
   unsigned int non_zero_count_8X8[TX_TYPES][64];
   unsigned int non_zero_count_16X16[TX_TYPES][256];

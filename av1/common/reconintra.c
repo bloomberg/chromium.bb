@@ -372,7 +372,7 @@ static const uint16_t orders_4x4[1024] = {
 /* clang-format off */
 static const uint16_t *const orders[BLOCK_SIZES_ALL] = {
 #if CONFIG_CB4X4
-#if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
+#if CONFIG_CHROMA_SUB8X8
   // 2X2,         2X4,            4X2
   orders_4x4,     orders_4x4,     orders_4x4,
 #endif
@@ -380,7 +380,7 @@ static const uint16_t *const orders[BLOCK_SIZES_ALL] = {
                                   orders_4x4,
   // 4X8,         8X4,            8X8
   orders_4x8,     orders_8x4,     orders_8x8,
-#else  // CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
+#else  // CONFIG_CHROMA_SUB8X8
   //                              4X4
                                   orders_8x8,
   // 4X8,         8X4,            8X8
@@ -406,7 +406,7 @@ static const uint16_t *const orders[BLOCK_SIZES_ALL] = {
 /* clang-format off */
 static const uint16_t *const orders[BLOCK_SIZES_ALL] = {
 #if CONFIG_CB4X4
-#if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
+#if CONFIG_CHROMA_SUB8X8
   // 2X2,         2X4,            4X2
   orders_8x8,     orders_8x8,     orders_8x8,
 #endif
@@ -414,7 +414,7 @@ static const uint16_t *const orders[BLOCK_SIZES_ALL] = {
                                   orders_8x8,
   // 4X8,         8X4,            8X8
   orders_8x16,    orders_16x8,    orders_16x16,
-#else  // CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
+#else  // CONFIG_CHROMA_SUB8X8
   //                              4X4
                                   orders_16x16,
   // 4X8,         8X4,            8X8
@@ -473,7 +473,7 @@ static const uint16_t orders_verta_8x8[256] = {
 #if CONFIG_EXT_PARTITION
 /* clang-format off */
 static const uint16_t *const orders_verta[BLOCK_SIZES] = {
-#if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
+#if CONFIG_CHROMA_SUB8X8
   // 2X2,           2X4,              4X2
   orders_4x4,       orders_4x4,       orders_4x4,
 #endif
@@ -496,7 +496,7 @@ static const uint16_t *const orders_verta[BLOCK_SIZES] = {
 /* clang-format off */
 static const uint16_t *const orders_verta[BLOCK_SIZES] = {
 #if CONFIG_CB4X4
-#if CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
+#if CONFIG_CHROMA_SUB8X8
   // 2X2,             2X4,                4X2
   orders_verta_8x8,   orders_verta_8x8,   orders_verta_8x8,
 #endif
@@ -504,7 +504,7 @@ static const uint16_t *const orders_verta[BLOCK_SIZES] = {
                                           orders_verta_8x8,
   // 4X8,             8X4,                8X8
   orders_verta_8x8,   orders_verta_8x8,   orders_verta_16x16,
-#else  // CONFIG_CHROMA_2X2 || CONFIG_CHROMA_SUB8X8
+#else  // CONFIG_CHROMA_SUB8X8
   //                                      4X4
                                           orders_verta_16x16,
   // 4X8,             8X4,                8X8
@@ -707,16 +707,9 @@ static void av1_init_intra_predictors_internal(void) {
   INIT_RECTANGULAR(p, type)
 #endif  // CONFIG_TX64X64
 
-#if CONFIG_CHROMA_2X2
-#define INIT_ALL_SIZES(p, type)           \
-  p[TX_2X2] = aom_##type##_predictor_2x2; \
-  p[TX_4X4] = aom_##type##_predictor_4x4; \
-  INIT_NO_4X4(p, type)
-#else
 #define INIT_ALL_SIZES(p, type)           \
   p[TX_4X4] = aom_##type##_predictor_4x4; \
   INIT_NO_4X4(p, type)
-#endif
 
   INIT_ALL_SIZES(pred[V_PRED], v);
   INIT_ALL_SIZES(pred[H_PRED], h);
@@ -1130,20 +1123,6 @@ static void highbd_dr_predictor(uint16_t *dst, ptrdiff_t stride,
 #if CONFIG_FILTER_INTRA
 #if USE_3TAP_INTRA_FILTER
 static int filter_intra_taps_3[TX_SIZES_ALL][FILTER_INTRA_MODES][3] = {
-#if CONFIG_CHROMA_2X2
-  {
-      { 697, 836, -509 },
-      { 993, 513, -482 },
-      { 381, 984, -341 },
-      { 642, 1169, -787 },
-      { 590, 553, -119 },
-      { 762, 385, -123 },
-      { 358, 687, -21 },
-      { 411, 1083, -470 },
-      { 912, 814, -702 },
-      { 883, 902, -761 },
-  },
-#endif
   {
       { 697, 836, -509 },
       { 993, 513, -482 },
@@ -1329,20 +1308,6 @@ static int filter_intra_taps_3[TX_SIZES_ALL][FILTER_INTRA_MODES][3] = {
 };
 #else
 static int filter_intra_taps_4[TX_SIZES_ALL][FILTER_INTRA_MODES][4] = {
-#if CONFIG_CHROMA_2X2
-  {
-      { 735, 881, -537, -54 },
-      { 1005, 519, -488, -11 },
-      { 383, 990, -343, -6 },
-      { 442, 805, -542, 319 },
-      { 658, 616, -133, -116 },
-      { 875, 442, -141, -151 },
-      { 386, 741, -23, -80 },
-      { 390, 1027, -446, 51 },
-      { 679, 606, -523, 262 },
-      { 903, 922, -778, -23 },
-  },
-#endif
   {
       { 735, 881, -537, -54 },
       { 1005, 519, -488, -11 },
@@ -2680,7 +2645,7 @@ static void predict_intra_block_helper(const AV1_COMMON *cm,
 #if !INTRA_USES_RECT_TRANSFORMS
   assert(txwpx == txhpx);
 #endif  // !INTRA_USES_RECT_TRANSFORMS
-#if CONFIG_CB4X4 && !CONFIG_CHROMA_2X2 && !CONFIG_CHROMA_SUB8X8
+#if CONFIG_CB4X4 && !CONFIG_CHROMA_SUB8X8
   const int xr_chr_offset = (pd->subsampling_x && bsize < BLOCK_8X8) ? 2 : 0;
   const int yd_chr_offset = (pd->subsampling_y && bsize < BLOCK_8X8) ? 2 : 0;
 #else
@@ -2704,7 +2669,7 @@ static void predict_intra_block_helper(const AV1_COMMON *cm,
   const PARTITION_TYPE partition = xd->mi[0]->mbmi.partition;
 #endif
 
-#if CONFIG_CB4X4 && !CONFIG_CHROMA_2X2
+#if CONFIG_CB4X4
   // force 4x4 chroma component block size.
   bsize = scale_chroma_bsize(bsize, pd->subsampling_x, pd->subsampling_y);
 #endif
