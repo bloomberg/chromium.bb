@@ -1346,7 +1346,7 @@ public class LocationBarLayout extends FrameLayout
         if (provider.isIncognito() || needLightIcon) {
             // For a dark theme color, use light icons.
             list = ApiCompatibilityUtils.getColorStateList(resources, R.color.light_mode_tint);
-        } else if (ColorUtils.isUsingDefaultToolbarColor(resources,
+        } else if (!ColorUtils.isUsingDefaultToolbarColor(resources,
                            FeatureUtilities.isChromeHomeEnabled(), provider.isIncognito(), color)
                 && !isOmniboxOpaque) {
             // For theme colors which are not dark and are also not
