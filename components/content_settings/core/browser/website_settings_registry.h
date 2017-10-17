@@ -36,14 +36,16 @@ class WebsiteSettingsRegistry {
     PLATFORM_MAC = 1 << 3,
     PLATFORM_ANDROID = 1 << 4,
     PLATFORM_IOS = 1 << 5,
+    PLATFORM_FUCHSIA = 1 << 6,
 
-    // Settings only applied to win, mac, linux and chromeos.
-    DESKTOP =
-        PLATFORM_WINDOWS | PLATFORM_LINUX | PLATFORM_CHROMEOS | PLATFORM_MAC,
+    // Settings only applied to win, mac, linux, chromeos, and fuchsia.
+    DESKTOP = PLATFORM_WINDOWS | PLATFORM_LINUX | PLATFORM_CHROMEOS |
+              PLATFORM_MAC | PLATFORM_FUCHSIA,
 
     // Settings applied to all platforms, including win, mac, linux, chromeos,
-    // android, ios.
-    ALL_PLATFORMS = DESKTOP | PLATFORM_ANDROID | PLATFORM_IOS,
+    // android, ios, and fuchsia.
+    ALL_PLATFORMS =
+        DESKTOP | PLATFORM_ANDROID | PLATFORM_IOS | PLATFORM_FUCHSIA,
   };
 
   using Map =
