@@ -7556,6 +7556,25 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="BlueZ.AdapterLost" units="losses">
+  <owner>mcchou@chromium.org</owner>
+  <summary>
+    This is specific to Chrome OS. Records an occurance of a Bluetooth adapter
+    being lost. This helps us better understand the Bluetooth controller drop
+    issue in the field.
+  </summary>
+</histogram>
+
+<histogram name="BlueZ.NumberOfExistingAdvertisements" units="advertisements">
+  <owner>mcchou@chromium.org</owner>
+  <summary>
+    This is specific to Chrome OS. Records the number of existing advertisements
+    when registering for a new advertisement. This helps us better understand
+    the common amount of advertisments used and the registration failures due to
+    the limited number of advertisement slots.
+  </summary>
+</histogram>
+
 <histogram name="BlueZ.ReasonOfDisconnection" enum="BlueZReasonOfDisconnection">
   <owner>mcchou@chromium.org</owner>
   <summary>
