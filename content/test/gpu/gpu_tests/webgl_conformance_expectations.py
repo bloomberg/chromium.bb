@@ -420,6 +420,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['mac', ('nvidia', 0xfe9), 'no_passthrough'], bug=635081)
     self.Fail('conformance/textures/misc/tex-input-validation.html',
         ['mac', ('nvidia', 0xfe9)], bug=635081)
+    self.Fail('conformance/canvas/drawingbuffer-static-canvas-test.html',
+        ['highsierra', ('nvidia', 0xfe9)], bug=775202)
 
     # Linux failures
     self.Fail('conformance/extensions/webgl-compressed-texture-astc.html',
