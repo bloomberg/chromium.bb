@@ -37,6 +37,7 @@
 #include "content/public/renderer/navigation_state.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
@@ -425,6 +426,43 @@ void FindMatchesByUsername(const PasswordFormFillData& fill_data,
       }
     }
   }
+}
+
+// TODO(crbug.com/564578): This duplicates code from
+// components/password_manager/core/browser/psl_matching_helper.h. The logic
+// using this code should ultimately end up in
+// components/password_manager/core/browser, at which point it can use the
+// original code directly.
+std::string GetRegistryControlledDomain(const GURL& signon_realm) {
+  return net::registry_controlled_domains::GetDomainAndRegistry(
+      signon_realm,
+      net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+}
+
+// TODO(crbug.com/564578): This duplicates code from
+// components/password_manager/core/browser/psl_matching_helper.h. The logic
+// using this code should ultimately end up in
+// components/password_manager/core/browser, at which point it can use the
+// original code directly.
+bool IsPublicSuffixDomainMatch(const std::string& url1,
+                               const std::string& url2) {
+  GURL gurl1(url1);
+  GURL gurl2(url2);
+
+  if (!gurl1.is_valid() || !gurl2.is_valid())
+    return false;
+
+  if (gurl1 == gurl2)
+    return true;
+
+  std::string domain1(GetRegistryControlledDomain(gurl1));
+  std::string domain2(GetRegistryControlledDomain(gurl2));
+
+  if (domain1.empty() || domain2.empty())
+    return false;
+
+  return gurl1.scheme() == gurl2.scheme() && domain1 == domain2 &&
+         gurl1.port() == gurl2.port();
 }
 
 // Annotate |forms| with form and field signatures as HTML attributes.
@@ -1806,7 +1844,9 @@ bool PasswordAutofillAgent::FillFormOnPasswordReceived(
 
   while (cur_frame->Parent()) {
     cur_frame = cur_frame->Parent();
-    if (!bottom_frame_origin.Equals(cur_frame->GetSecurityOrigin().ToString()))
+    if (!IsPublicSuffixDomainMatch(
+            bottom_frame_origin.Utf8(),
+            cur_frame->GetSecurityOrigin().ToString().Utf8()))
       return false;
   }
 
