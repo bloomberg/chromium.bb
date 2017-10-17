@@ -7,6 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/vr/browser_ui_interface.h"
+#include "chrome/browser/vr/test/constants.h"
 #include "chrome/browser/vr/ui_browser_interface.h"
 #include "chrome/browser/vr/ui_input_manager.h"
 #include "chrome/browser/vr/ui_renderer.h"
@@ -19,13 +20,6 @@
 #include "ui/gl/test/gl_test_helper.h"
 
 namespace vr {
-
-namespace {
-
-// Resolution of Pixel Phone for one eye.
-static const gfx::Size kPixelHalfScreen(960, 1080);
-
-}  // namespace
 
 UiPixelTest::UiPixelTest() : frame_buffer_size_(kPixelHalfScreen) {}
 
