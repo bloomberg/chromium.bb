@@ -184,6 +184,7 @@ bindings_unittest_files =
         [
           "core/v8/ActivityLoggerTest.cpp",
           "core/v8/BindingSecurityTest.cpp",
+          "core/v8/DictionaryTest.cpp",
           "core/v8/DOMWrapperWorldTest.cpp",
           "core/v8/IDLTypesTest.cpp",
           "core/v8/NativeValueTraitsImplTest.cpp",
