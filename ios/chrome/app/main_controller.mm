@@ -147,7 +147,7 @@
 #include "ios/web/net/web_http_protocol_handler_delegate.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/web_capabilities.h"
-#include "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_view_creation_util.h"
 #include "ios/web/public/webui/web_ui_ios_controller_factory.h"
 #include "mojo/edk/embedder/embedder.h"
@@ -2098,7 +2098,8 @@ const int kExternalFilesCleanupDelaySeconds = 60;
       targetMode == ApplicationMode::NORMAL ? self.mainBVC : self.otrBVC;
 
   Tab* currentTabInTargetBVC = [[targetBVC tabModel] currentTab];
-  if (!(currentTabInTargetBVC && IsURLNtp(currentTabInTargetBVC.visibleURL))) {
+  if (!(currentTabInTargetBVC.webState &&
+        IsURLNtp(currentTabInTargetBVC.webState->GetVisibleURL()))) {
     return [targetBVC addSelectedTabWithURL:URL
                                     atIndex:NSNotFound
                                  transition:transition

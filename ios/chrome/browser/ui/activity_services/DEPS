@@ -1,6 +1,0 @@
-specific_include_rules = {
-  # TODO(crbug.com/620489): Remove this exception.
-  "^share_to_data_builder_unittest\.mm$": [
-    "+ios/web/web_state/web_state_impl.h",
-  ],
-}

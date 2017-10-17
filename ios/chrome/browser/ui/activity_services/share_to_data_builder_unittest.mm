@@ -4,12 +4,14 @@
 
 #import "ios/chrome/browser/ui/activity_services/share_to_data_builder.h"
 
+#include <memory>
+
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/ui/activity_services/share_to_data.h"
 #import "ios/testing/ocmock_complex_type_helper.h"
+#import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
-#import "ios/web/web_state/web_state_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -20,32 +22,29 @@
 #error "This file requires ARC support."
 #endif
 
-using web::NavigationManagerImpl;
-using web::WebStateImpl;
-
 @interface ShareToDataBuilderTestTabMock : OCMockComplexTypeHelper {
-  GURL _visibleURL;
-  WebStateImpl* _webState;
+  std::unique_ptr<web::TestWebState> _webState;
 }
 
-@property(nonatomic, assign) const GURL& visibleURL;
-@property(nonatomic, assign) WebStateImpl* webState;
+@property(nonatomic, readonly) web::WebState* webState;
 
 @end
 
 @implementation ShareToDataBuilderTestTabMock
-- (const GURL&)visibleURL {
-  return _visibleURL;
+
+- (web::WebState*)webState {
+  return _webState.get();
 }
-- (void)setVisibleURL:(const GURL&)visibleURL {
-  _visibleURL = visibleURL;
+
+- (instancetype)initWithWebState:(std::unique_ptr<web::TestWebState>)webState {
+  self = [super
+      initWithRepresentedObject:[OCMockObject niceMockForClass:[Tab class]]];
+  if (self) {
+    _webState = std::move(webState);
+  }
+  return self;
 }
-- (WebStateImpl*)webState {
-  return _webState;
-}
-- (void)setWebState:(WebStateImpl*)webState {
-  _webState = webState;
-}
+
 @end
 
 using ShareToDataBuilderTest = PlatformTest;
@@ -59,14 +58,14 @@ TEST_F(ShareToDataBuilderTest, TestSharePageCommandHandling) {
   TestChromeBrowserState::Builder test_cbs_builder;
   std::unique_ptr<ios::ChromeBrowserState> chrome_browser_state =
       test_cbs_builder.Build();
-  web::WebState::CreateParams params(chrome_browser_state.get());
-  std::unique_ptr<web::WebState> webState = web::WebState::Create(params);
+
+  auto web_state = std::make_unique<web::TestWebState>();
+  web_state->SetBrowserState(chrome_browser_state.get());
+  web_state->SetVisibleURL(expected_url);
 
   ShareToDataBuilderTestTabMock* tab = [[ShareToDataBuilderTestTabMock alloc]
-      initWithRepresentedObject:[OCMockObject niceMockForClass:[Tab class]]];
-  [tab setWebState:static_cast<web::WebStateImpl*>(webState.release())];
+      initWithWebState:std::move(web_state)];
 
-  tab.visibleURL = expected_url;
   OCMockObject* tab_mock = static_cast<OCMockObject*>(tab);
 
   ios::ChromeBrowserState* ptr = chrome_browser_state.get();
@@ -98,17 +97,9 @@ TEST_F(ShareToDataBuilderTest, TestSharePageCommandHandling) {
 // Verifies that |ShareToDataForTab()| returns nil if the Tab is in the process
 // of being closed.
 TEST_F(ShareToDataBuilderTest, TestReturnsNilWhenClosing) {
-  GURL expected_url("http://www.testurl.net");
-  NSString* expected_title = @"title";
-
-  // Sets WebState to nil because [tab close] clears the WebState.
-  ShareToDataBuilderTestTabMock* tab = [[ShareToDataBuilderTestTabMock alloc]
-      initWithRepresentedObject:[OCMockObject niceMockForClass:[Tab class]]];
-  tab.webState = nil;
-  tab.visibleURL = expected_url;
-  OCMockObject* tab_mock = static_cast<OCMockObject*>(tab);
-  [[[tab_mock stub] andReturn:expected_title] title];
-  [[[tab_mock stub] andReturn:expected_title] originalTitle];
+  // Sets WebState to nullptr because [tab close] clears the WebState.
+  ShareToDataBuilderTestTabMock* tab =
+      [[ShareToDataBuilderTestTabMock alloc] initWithWebState:nullptr];
 
   EXPECT_EQ(nil, activity_services::ShareToDataForTab(static_cast<Tab*>(tab)));
 }
