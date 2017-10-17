@@ -387,6 +387,12 @@ void WebViewSchedulerImpl::OnConnectionUpdated() {
   }
 }
 
+void WebViewSchedulerImpl::OnTraceLogEnabled() {
+  for (WebFrameSchedulerImpl* frame_scheduler : frame_schedulers_) {
+    frame_scheduler->OnTraceLogEnabled();
+  }
+}
+
 void WebViewSchedulerImpl::AsValueInto(
     base::trace_event::TracedValue* state) const {
   state->SetDouble("pending_loads", pending_loads_.size());
