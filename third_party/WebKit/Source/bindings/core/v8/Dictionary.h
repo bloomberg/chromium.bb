@@ -123,11 +123,6 @@ struct DictionaryHelper {
   template <typename T>
   static bool Get(const Dictionary&, const StringView& key, T& value);
   template <typename T>
-  static bool Get(const Dictionary&,
-                  const StringView& key,
-                  T& value,
-                  ExceptionState&);
-  template <typename T>
   static bool GetWithUndefinedCheck(const Dictionary& dictionary,
                                     const StringView& key,
                                     T& value) {
