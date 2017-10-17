@@ -6,6 +6,7 @@
 
 #include <string.h>
 
+#include <cmath>
 #include <memory>
 
 #include "base/location.h"
@@ -114,7 +115,7 @@ class DeviceMotionEventPumpForTesting : public DeviceMotionEventPump {
         new device::SensorReadingSharedBufferReader(gyroscope_buffer_));
   }
 
-  void StartFireEvent() { DeviceMotionEventPump::DidStartIfPossible(); }
+  void StartFireEvent() { DeviceSensorEventPump::DidStartIfPossible(); }
 
   void SetAccelerometerSensorData(bool active, double x, double y, double z) {
     if (active) {
@@ -281,6 +282,37 @@ TEST_F(DeviceMotionEventPumpTest, TwoSensorsAreActive) {
   EXPECT_EQ(8, received_data.rotation_rate_beta);
   EXPECT_TRUE(received_data.has_rotation_rate_gamma);
   EXPECT_EQ(9, received_data.rotation_rate_gamma);
+}
+
+TEST_F(DeviceMotionEventPumpTest, SomeSensorDataFieldsNotAvailable) {
+  motion_pump()->Start(listener());
+  motion_pump()->SetAccelerometerSensorData(true /* active */, NAN, 2, 3);
+  motion_pump()->SetLinearAccelerationSensorData(true /* active */, 4, NAN, 6);
+  motion_pump()->SetGyroscopeSensorData(true /* active */, 7, 8, NAN);
+  motion_pump()->StartFireEvent();
+
+  base::RunLoop().Run();
+
+  device::MotionData received_data = listener()->data();
+  EXPECT_TRUE(listener()->did_change_device_motion());
+
+  EXPECT_FALSE(received_data.has_acceleration_including_gravity_x);
+  EXPECT_TRUE(received_data.has_acceleration_including_gravity_y);
+  EXPECT_EQ(2, received_data.acceleration_including_gravity_y);
+  EXPECT_TRUE(received_data.has_acceleration_including_gravity_z);
+  EXPECT_EQ(3, received_data.acceleration_including_gravity_z);
+
+  EXPECT_TRUE(received_data.has_acceleration_x);
+  EXPECT_EQ(4, received_data.acceleration_x);
+  EXPECT_FALSE(received_data.has_acceleration_y);
+  EXPECT_TRUE(received_data.has_acceleration_z);
+  EXPECT_EQ(6, received_data.acceleration_z);
+
+  EXPECT_TRUE(received_data.has_rotation_rate_alpha);
+  EXPECT_EQ(7, received_data.rotation_rate_alpha);
+  EXPECT_TRUE(received_data.has_rotation_rate_beta);
+  EXPECT_EQ(8, received_data.rotation_rate_beta);
+  EXPECT_FALSE(received_data.has_rotation_rate_gamma);
 }
 
 TEST_F(DeviceMotionEventPumpTest, NoActiveSensors) {

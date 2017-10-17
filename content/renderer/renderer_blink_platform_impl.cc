@@ -73,6 +73,7 @@
 #include "content/renderer/webgraphicscontext3d_provider_impl.h"
 #include "content/renderer/webpublicsuffixlist_impl.h"
 #include "device/gamepad/public/cpp/gamepads.h"
+#include "device/sensors/public/cpp/motion_data.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
@@ -1209,9 +1210,11 @@ RendererBlinkPlatformImpl::CreatePlatformEventObserverFromType(
     case blink::kWebPlatformEventTypeDeviceMotion:
       return base::MakeUnique<DeviceMotionEventPump>(thread);
     case blink::kWebPlatformEventTypeDeviceOrientation:
-      return base::MakeUnique<DeviceOrientationEventPump>(thread);
+      return base::MakeUnique<DeviceOrientationEventPump>(thread,
+                                                          false /* absolute */);
     case blink::kWebPlatformEventTypeDeviceOrientationAbsolute:
-      return base::MakeUnique<DeviceOrientationAbsoluteEventPump>(thread);
+      return base::MakeUnique<DeviceOrientationEventPump>(thread,
+                                                          true /* absolute */);
     case blink::kWebPlatformEventTypeGamepad:
       return base::MakeUnique<GamepadSharedMemoryReader>(thread);
     default:
