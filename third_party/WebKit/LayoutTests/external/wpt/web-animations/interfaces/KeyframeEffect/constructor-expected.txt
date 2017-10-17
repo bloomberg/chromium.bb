@@ -1,10 +1,7 @@
 This is a testharness.js-based test.
-Found 131 tests; 40 PASS, 91 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 121 tests; 33 PASS, 88 FAIL, 0 TIMEOUT, 0 NOTRUN.
 FAIL a KeyframeEffectReadOnly can be constructed with no frames (intermediate value).getKeyframes is not a function
-FAIL easing values are parsed correctly when passed to the KeyframeEffectReadOnly constructor in a property-indexed keyframe effect.getKeyframes is not a function
-FAIL easing values are parsed correctly when passed to the KeyframeEffectReadOnly constructor in regular keyframes effect.getKeyframes is not a function
 PASS easing values are parsed correctly when passed to the KeyframeEffectReadOnly constructor in KeyframeEffectOptions
-PASS invalid easing values are correctly rejected when passed to the KeyframeEffectReadOnly constructor in regular keyframes
 PASS invalid easing values are correctly rejected when passed to the KeyframeEffectReadOnly constructor in KeyframeEffectOptions
 FAIL composite values are parsed correctly when passed to the KeyframeEffectReadOnly constructor in property-indexed keyframes effect.getKeyframes is not a function
 FAIL composite values are parsed correctly when passed to the KeyframeEffectReadOnly constructor in regular keyframes effect.getKeyframes is not a function
@@ -35,7 +32,6 @@ FAIL a KeyframeEffectReadOnly can be constructed with a one property two value p
 FAIL a KeyframeEffectReadOnly constructed with a one property two value property-indexed keyframes specification where the first value is invalid roundtrips effect.getKeyframes is not a function
 FAIL a KeyframeEffectReadOnly can be constructed with a one property two value property-indexed keyframes specification where the second value is invalid effect.getKeyframes is not a function
 FAIL a KeyframeEffectReadOnly constructed with a one property two value property-indexed keyframes specification where the second value is invalid roundtrips effect.getKeyframes is not a function
-FAIL the KeyframeEffectReadOnly constructor reads keyframe properties in the expected order assert_array_equals: property access order lengths differ, expected 5 got 8
 FAIL a KeyframeEffectReadOnly can be constructed with a one property one keyframe sequence effect.getKeyframes is not a function
 FAIL a KeyframeEffectReadOnly constructed with a one property one keyframe sequence roundtrips effect.getKeyframes is not a function
 FAIL a KeyframeEffectReadOnly can be constructed with a one property two keyframe sequence effect.getKeyframes is not a function
@@ -96,12 +92,6 @@ PASS KeyframeEffectReadOnly constructor throws with keyframes not loosely sorted
 PASS KeyframeEffectReadOnly constructor throws with property-indexed keyframes with an invalid easing value
 PASS KeyframeEffectReadOnly constructor throws with a keyframe sequence with an invalid easing value
 FAIL KeyframeEffectReadOnly constructor throws with keyframes with an invalid composite value assert_throws: function "function () {\n      new KeyframeEffectReadOnly(target, subtest.input);\n    }" did not throw
-PASS Invalid easing [a blank easing] in keyframe sequence should be thrown
-PASS Invalid easing [an unrecognized easing] in keyframe sequence should be thrown
-PASS Invalid easing [an 'initial' easing] in keyframe sequence should be thrown
-PASS Invalid easing [an 'inherit' easing] in keyframe sequence should be thrown
-PASS Invalid easing [a variable easing] in keyframe sequence should be thrown
-PASS Invalid easing [a multi-value easing] in keyframe sequence should be thrown
 FAIL a KeyframeEffectReadOnly constructed without any KeyframeEffectOptions object assert_equals: default composite expected (string) "replace" but got (undefined) undefined
 PASS a KeyframeEffectReadOnly constructed by an empty KeyframeEffectOptions object
 PASS a KeyframeEffectReadOnly constructed by a normal KeyframeEffectOptions object
