@@ -18,6 +18,7 @@
 #import "ui/base/cocoa/touch_bar_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/render_text.h"
 
 namespace {
 
@@ -25,6 +26,8 @@ namespace {
 NSString* const kEditTouchBarId = @"EDIT";
 NSString* const kNeverTouchBarId = @"NEVER";
 NSString* const kSaveTouchBarId = @"SAVE";
+
+constexpr base::char16 kBulletChar = gfx::RenderText::kPasswordReplacementChar;
 
 void InitEditableLabel(NSTextField* textField, const base::string16& text) {
   [textField setStringValue:base::SysUTF16ToNSString(text)];
@@ -51,17 +54,17 @@ void FillPasswordCombobox(const autofill::PasswordForm& form,
   for (const base::string16& possible_password : form.all_possible_passwords) {
     [combobox
         addItemWithObjectValue:base::SysUTF16ToNSString(
-                                   visible
-                                       ? possible_password
-                                       : base::string16(
-                                             possible_password.length(), '*'))];
+                                   visible ? possible_password
+                                           : base::string16(
+                                                 possible_password.length(),
+                                                 kBulletChar))];
   }
   [combobox setEditable:visible];
   [combobox
       setStringValue:base::SysUTF16ToNSString(
                          visible ? form.password_value
                                  : base::string16(form.password_value.length(),
-                                                  '*'))];
+                                                  kBulletChar))];
   size_t index = std::distance(
       form.all_possible_passwords.begin(),
       std::find(form.all_possible_passwords.begin(),
@@ -149,7 +152,7 @@ NSButton* EyeIcon(id target, SEL action) {
       offsetY = NSMidY([passwordText_ frame]) - NSMidY(oldFrame);
     } else {
       InitLabel(passwordField_.get(),
-                base::string16(form.password_value.length(), '*'));
+                base::string16(form.password_value.length(), kBulletChar));
       offsetY = NSMaxY([passwordText_ frame]) - NSMaxY(oldFrame);
     }
     [passwordField_ setFrame:NSOffsetRect(oldFrame, 0, offsetY)];
@@ -221,8 +224,8 @@ NSButton* EyeIcon(id target, SEL action) {
         passwordField_.reset([PasswordCombobox(form) retain]);
         [passwordField_ setDelegate:self];
       } else {
-        passwordField_.reset(
-            [Label(base::string16(form.password_value.length(), '*')) retain]);
+        passwordField_.reset([Label(
+            base::string16(form.password_value.length(), kBulletChar)) retain]);
         // Overwrite the height of the password field because it's higher in the
         // editable mode.
         [passwordField_

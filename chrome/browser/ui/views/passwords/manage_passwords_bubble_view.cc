@@ -65,6 +65,8 @@ int ManagePasswordsBubbleView::auto_signin_toast_timeout_ = 3;
 
 namespace {
 
+constexpr base::char16 kBulletChar = gfx::RenderText::kPasswordReplacementChar;
+
 enum ColumnSetType {
   // | | (FILL, FILL) | |
   // Used for the bubble's header, the credentials list, and for simple
@@ -231,7 +233,7 @@ std::unique_ptr<views::ToggleImageButton> CreatePasswordViewButton(
 }
 
 // Creates a dropdown from the other possible passwords.
-// The items are made of '*'s if not visible.
+// The items are made of kBulletChar if not visible.
 std::unique_ptr<views::Combobox> CreatePasswordDropdownView(
     const autofill::PasswordForm& form,
     bool visible) {
@@ -242,7 +244,8 @@ std::unique_ptr<views::Combobox> CreatePasswordDropdownView(
   } else {
     for (const base::string16& possible_password :
          form.all_possible_passwords) {
-      passwords.push_back(base::string16(possible_password.length(), '*'));
+      passwords.push_back(
+          base::string16(possible_password.length(), kBulletChar));
     }
   }
   std::unique_ptr<views::Combobox> combobox = std::make_unique<views::Combobox>(
