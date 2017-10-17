@@ -5,6 +5,7 @@ PASS Sensor interface object name
 PASS Sensor interface: existence and properties of interface prototype object
 PASS Sensor interface: existence and properties of interface prototype object's "constructor" property
 PASS Sensor interface: attribute activated
+PASS Sensor interface: attribute hasReading
 PASS Sensor interface: attribute timestamp
 PASS Sensor interface: operation start()
 PASS Sensor interface: operation stop()
@@ -25,6 +26,7 @@ PASS Magnetometer interface: new Magnetometer(); must inherit property "x" with 
 PASS Magnetometer interface: new Magnetometer(); must inherit property "y" with the proper type
 PASS Magnetometer interface: new Magnetometer(); must inherit property "z" with the proper type
 PASS Sensor interface: new Magnetometer(); must inherit property "activated" with the proper type
+PASS Sensor interface: new Magnetometer(); must inherit property "hasReading" with the proper type
 PASS Sensor interface: new Magnetometer(); must inherit property "timestamp" with the proper type
 PASS Sensor interface: new Magnetometer(); must inherit property "start()" with the proper type
 PASS Sensor interface: new Magnetometer(); must inherit property "stop()" with the proper type
@@ -51,6 +53,7 @@ FAIL UncalibratedMagnetometer interface: new UncalibratedMagnetometer(); must in
 FAIL UncalibratedMagnetometer interface: new UncalibratedMagnetometer(); must inherit property "yBias" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: UncalibratedMagnetometer is not defined"
 FAIL UncalibratedMagnetometer interface: new UncalibratedMagnetometer(); must inherit property "zBias" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: UncalibratedMagnetometer is not defined"
 FAIL Sensor interface: new UncalibratedMagnetometer(); must inherit property "activated" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: UncalibratedMagnetometer is not defined"
+FAIL Sensor interface: new UncalibratedMagnetometer(); must inherit property "hasReading" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: UncalibratedMagnetometer is not defined"
 FAIL Sensor interface: new UncalibratedMagnetometer(); must inherit property "timestamp" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: UncalibratedMagnetometer is not defined"
 FAIL Sensor interface: new UncalibratedMagnetometer(); must inherit property "start()" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: UncalibratedMagnetometer is not defined"
 FAIL Sensor interface: new UncalibratedMagnetometer(); must inherit property "stop()" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: UncalibratedMagnetometer is not defined"
