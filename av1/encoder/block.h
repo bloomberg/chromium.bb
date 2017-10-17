@@ -143,12 +143,46 @@ typedef struct {
   CRC_CALCULATOR crc_calculator;  // Hash function.
 } TX_RD_RECORD;
 
+typedef struct {
+  int64_t dist;
+  int rate;
+  uint8_t skip;
+  uint8_t entropy_context;
+  uint8_t valid;
+  uint8_t fast;
+} TX_SIZE_RD_INFO;
+
+#define TX_SIZE_RD_RECORD_BUFFER_LEN 256
+typedef struct {
+  uint32_t hash_vals[TX_SIZE_RD_RECORD_BUFFER_LEN];
+  TX_SIZE_RD_INFO tx_rd_info[TX_SIZE_RD_RECORD_BUFFER_LEN][TX_TYPES];
+  int index_start;
+  int num;
+} TX_SIZE_RD_RECORD;
+
+typedef struct tx_size_rd_info_node {
+  TX_SIZE_RD_INFO *rd_info_array;  // Points to array of size TX_TYPES.
+  struct tx_size_rd_info_node *children[4];
+} TX_SIZE_RD_INFO_NODE;
+
 typedef struct macroblock MACROBLOCK;
 struct macroblock {
   struct macroblock_plane plane[MAX_MB_PLANE];
 
   // Save the transform RD search info.
   TX_RD_RECORD tx_rd_record;
+
+  // Also save RD info on the TX size search level for square TX sizes.
+  TX_SIZE_RD_RECORD
+  tx_size_rd_record_8X8[(MAX_MIB_SIZE >> 1) * (MAX_MIB_SIZE >> 1)];
+  TX_SIZE_RD_RECORD
+  tx_size_rd_record_16X16[(MAX_MIB_SIZE >> 2) * (MAX_MIB_SIZE >> 2)];
+  TX_SIZE_RD_RECORD
+  tx_size_rd_record_32X32[(MAX_MIB_SIZE >> 3) * (MAX_MIB_SIZE >> 3)];
+#if CONFIG_TX64X64
+  TX_SIZE_RD_RECORD
+  tx_size_rd_record_64X64[(MAX_MIB_SIZE >> 4) * (MAX_MIB_SIZE >> 4)];
+#endif
 
   MACROBLOCKD e_mbd;
   MB_MODE_INFO_EXT *mbmi_ext;
