@@ -5,13 +5,17 @@
 #include "ash/system/tray/system_tray_test_api.h"
 
 #include "ash/shell.h"
+#include "ash/system/date/date_view.h"
+#include "ash/system/date/tray_system_info.h"
 #include "ash/system/enterprise/tray_enterprise.h"
 #include "ash/system/network/tray_network.h"
 #include "ash/system/tray/system_tray.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/view.h"
 
 namespace ash {
@@ -46,16 +50,26 @@ void SystemTrayTestApi::BindRequest(mojom::SystemTrayTestApiRequest request) {
                           std::move(request));
 }
 
+void SystemTrayTestApi::DisableAnimations(DisableAnimationsCallback cb) {
+  disable_animations_ = std::make_unique<ui::ScopedAnimationDurationScaleMode>(
+      ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
+  std::move(cb).Run();
+}
+
+void SystemTrayTestApi::IsTrayViewVisible(int view_id,
+                                          IsTrayViewVisibleCallback cb) {
+  // Search for the view among the tray icons.
+  views::View* view = tray_->GetViewByID(view_id);
+  std::move(cb).Run(view && view->visible());
+}
+
 void SystemTrayTestApi::ShowBubble(ShowBubbleCallback cb) {
-  SystemTray* tray = Shell::Get()->GetPrimarySystemTray();
-  tray->ShowDefaultView(ash::BUBBLE_CREATE_NEW, false /* show_by_click */);
-  base::RunLoop().RunUntilIdle();  // May animate.
+  tray_->ShowDefaultView(ash::BUBBLE_CREATE_NEW, false /* show_by_click */);
   std::move(cb).Run();
 }
 
 void SystemTrayTestApi::ShowDetailedView(mojom::TrayItem item,
                                          ShowDetailedViewCallback cb) {
-  SystemTray* tray = Shell::Get()->GetPrimarySystemTray();
   SystemTrayItem* tray_item;
   switch (item) {
     case mojom::TrayItem::kEnterprise:
@@ -65,35 +79,42 @@ void SystemTrayTestApi::ShowDetailedView(mojom::TrayItem item,
       tray_item = tray_->tray_network_;
       break;
   }
-  tray->ShowDetailedView(tray_item, 0 /* delay */, BUBBLE_CREATE_NEW);
-  base::RunLoop().RunUntilIdle();  // May animate.
+  tray_->ShowDetailedView(tray_item, 0 /* delay */, BUBBLE_CREATE_NEW);
   std::move(cb).Run();
 }
 
 void SystemTrayTestApi::IsBubbleViewVisible(int view_id,
                                             IsBubbleViewVisibleCallback cb) {
-  SystemTray* tray = Shell::Get()->GetPrimarySystemTray();
-
-  // Find the view in the bubble (not the tray itself).
-  views::View* view =
-      tray->GetSystemBubble()->bubble_view()->GetViewByID(view_id);
+  views::View* view = GetBubbleView(view_id);
   std::move(cb).Run(view && view->visible());
 }
 
 void SystemTrayTestApi::GetBubbleViewTooltip(int view_id,
                                              GetBubbleViewTooltipCallback cb) {
-  SystemTray* tray = Shell::Get()->GetPrimarySystemTray();
-
-  // Find the view in the bubble (not the tray itself).
-  views::View* view =
-      tray->GetSystemBubble()->bubble_view()->GetViewByID(view_id);
-  if (!view) {
-    std::move(cb).Run(base::string16());
-    return;
-  }
   base::string16 tooltip;
-  view->GetTooltipText(gfx::Point(), &tooltip);
+  views::View* view = GetBubbleView(view_id);
+  if (view)
+    view->GetTooltipText(gfx::Point(), &tooltip);
   std::move(cb).Run(tooltip);
+}
+
+void SystemTrayTestApi::GetBubbleLabelText(int view_id,
+                                           GetBubbleLabelTextCallback cb) {
+  base::string16 text;
+  views::View* view = GetBubbleView(view_id);
+  if (view)
+    text = static_cast<views::Label*>(view)->text();
+  std::move(cb).Run(text);
+}
+
+void SystemTrayTestApi::Is24HourClock(Is24HourClockCallback cb) {
+  base::HourClockType type = tray_->tray_system_info_->GetTimeTrayForTesting()
+                                 ->GetHourTypeForTesting();
+  std::move(cb).Run(type == base::k24HourClock);
+}
+
+views::View* SystemTrayTestApi::GetBubbleView(int view_id) const {
+  return tray_->GetSystemBubble()->bubble_view()->GetViewByID(view_id);
 }
 
 }  // namespace ash
