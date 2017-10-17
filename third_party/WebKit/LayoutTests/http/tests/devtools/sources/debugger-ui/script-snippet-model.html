@@ -83,7 +83,7 @@ function test() {
 
       resetSnippetsSettings();
 
-      Snippets.scriptSnippetModel.project().createFile('', null, '', step2.bind(this));
+      Snippets.scriptSnippetModel.project().createFile('', null, '').then(step2.bind(this));
 
       function step2(uiSourceCode) {
         uiSourceCode1 = uiSourceCode;
@@ -100,7 +100,7 @@ function test() {
 
         function contentDumped2() {
           TestRunner.addResult('Snippet1 created.');
-          Snippets.scriptSnippetModel.project().createFile('', null, '', step3.bind(this));
+          Snippets.scriptSnippetModel.project().createFile('', null, '').then(step3.bind(this));
         }
       }
 
@@ -120,7 +120,7 @@ function test() {
         function onContentDumped() {
           Snippets.scriptSnippetModel.project().deleteFile(uiSourceCode1);
           Snippets.scriptSnippetModel.project().deleteFile(uiSourceCode2);
-          Snippets.scriptSnippetModel.project().createFile('', null, '', step4.bind(this));
+          Snippets.scriptSnippetModel.project().createFile('', null, '').then(step4.bind(this));
         }
       }
 
@@ -152,7 +152,7 @@ function test() {
       var snippetScriptMapping =
           Snippets.scriptSnippetModel.snippetScriptMapping(SDK.targetManager.models(SDK.DebuggerModel)[0]);
 
-      Snippets.scriptSnippetModel.project().createFile('', null, '', step2.bind(this));
+      Snippets.scriptSnippetModel.project().createFile('', null, '').then(step2.bind(this));
 
       function step2(uiSourceCode) {
         uiSourceCode1 = uiSourceCode;
@@ -161,7 +161,7 @@ function test() {
         content += '// This snippet does nothing.\n';
         content += 'var i = 2+2;\n';
         uiSourceCode1.setWorkingCopy(content);
-        Snippets.scriptSnippetModel.project().createFile('', null, '', step3.bind(this));
+        Snippets.scriptSnippetModel.project().createFile('', null, '').then(step3.bind(this));
       }
 
       function step3(uiSourceCode) {
@@ -174,7 +174,7 @@ function test() {
         content += '};\n';
         content += 'doesNothing;\n';
         uiSourceCode2.setWorkingCopy(content);
-        Snippets.scriptSnippetModel.project().createFile('', null, '', step4.bind(this));
+        Snippets.scriptSnippetModel.project().createFile('', null, '').then(step4.bind(this));
       }
 
       function step4(uiSourceCode) {
@@ -217,7 +217,7 @@ function test() {
       var snippetScriptMapping =
           Snippets.scriptSnippetModel.snippetScriptMapping(SDK.targetManager.models(SDK.DebuggerModel)[0]);
 
-      Snippets.scriptSnippetModel.project().createFile('', null, '', step3.bind(this));
+      Snippets.scriptSnippetModel.project().createFile('', null, '').then(step3.bind(this));
 
       function step3(uiSourceCode) {
         var uiSourceCode1 = uiSourceCode;
@@ -242,7 +242,7 @@ function test() {
         context = this.executionContexts()[0];
 
         resetSnippetsSettings();
-        Snippets.scriptSnippetModel.project().createFile('', null, '', step2.bind(this));
+        Snippets.scriptSnippetModel.project().createFile('', null, '').then(step2.bind(this));
       }
 
       function step2(uiSourceCode) {
@@ -256,7 +256,7 @@ function test() {
     function testDangerousNames(next) {
       resetSnippetsSettings();
 
-      Snippets.scriptSnippetModel.project().createFile('', null, '', step2.bind(this));
+      Snippets.scriptSnippetModel.project().createFile('', null, '').then(step2.bind(this));
 
       function step2(uiSourceCode) {
         uiSourceCode.rename('toString');
@@ -264,7 +264,7 @@ function test() {
       }
 
       function step3() {
-        Snippets.scriptSnippetModel.project().createFile('', null, '', step4.bind(this));
+        Snippets.scriptSnippetModel.project().createFile('', null, '').then(step4.bind(this));
       }
 
       function step4(uiSourceCode) {
