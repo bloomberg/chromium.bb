@@ -8,6 +8,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/string_split.h"
 #include "base/time/time.h"
 #include "components/previews/core/previews_black_list.h"
 #include "components/previews/core/previews_logger_observer.h"
@@ -60,6 +61,26 @@ class PreviewsLoggerTest : public testing::Test {
   ~PreviewsLoggerTest() override {}
 
   void SetUp() override { logger_ = base::MakeUnique<PreviewsLogger>(); }
+
+  std::string LogPreviewDecisionAndGetReasonDescription(
+      PreviewsEligibilityReason reason) {
+    const base::Time time = base::Time::Now();
+    PreviewsType type = PreviewsType::OFFLINE;
+    const GURL url("http://www.url_a.com/url");
+    TestPreviewsLoggerObserver observer;
+    logger_->AddAndNotifyObserver(&observer);
+    logger_->LogPreviewDecisionMade(reason, url, time, type);
+
+    auto actual = observer.messages();
+
+    const size_t expected_size = 1;
+    EXPECT_EQ(expected_size, actual.size());
+
+    std::vector<std::string> description_parts = base::SplitStringUsingSubstr(
+        actual[0].event_description, "preview decision made - ",
+        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+    return description_parts[1];
+  }
 
  protected:
   std::unique_ptr<PreviewsLogger> logger_;
@@ -263,6 +284,79 @@ TEST_F(PreviewsLoggerTest, RemovedObserverIsNotNotified) {
       EXPECT_EQ(now, observers[i].message()->time);
     }
   }
+}
+
+TEST_F(PreviewsLoggerTest, LogPreviewDecisionDescriptionAllowed) {
+  std::string actual_description = LogPreviewDecisionAndGetReasonDescription(
+      PreviewsEligibilityReason::ALLOWED);
+  std::string expected_description = "Allowed";
+  EXPECT_EQ(expected_description, actual_description);
+}
+
+TEST_F(PreviewsLoggerTest, LogPreviewDecisionDescriptionUnavailabe) {
+  std::string actual_description = LogPreviewDecisionAndGetReasonDescription(
+      PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE);
+  std::string expected_description = "Blacklist failed to be created";
+  EXPECT_EQ(expected_description, actual_description);
+}
+
+TEST_F(PreviewsLoggerTest, LogPreviewDecisionDescriptionNotLoaded) {
+  std::string actual_description = LogPreviewDecisionAndGetReasonDescription(
+      PreviewsEligibilityReason::BLACKLIST_DATA_NOT_LOADED);
+  std::string expected_description = "Blacklist not loaded from disk yet";
+  EXPECT_EQ(expected_description, actual_description);
+}
+
+TEST_F(PreviewsLoggerTest, LogPreviewDecisionDescriptionRecentlyOptedOut) {
+  std::string actual_description = LogPreviewDecisionAndGetReasonDescription(
+      PreviewsEligibilityReason::USER_RECENTLY_OPTED_OUT);
+  std::string expected_description = "User recently opted out";
+  EXPECT_EQ(expected_description, actual_description);
+}
+
+TEST_F(PreviewsLoggerTest, LogPreviewDecisionDescriptionBlacklisted) {
+  std::string actual_description = LogPreviewDecisionAndGetReasonDescription(
+      PreviewsEligibilityReason::USER_BLACKLISTED);
+  std::string expected_description = "All previews are blacklisted";
+  EXPECT_EQ(expected_description, actual_description);
+}
+
+TEST_F(PreviewsLoggerTest, LogPreviewDecisionDescriptionHostBlacklisted) {
+  std::string actual_description = LogPreviewDecisionAndGetReasonDescription(
+      PreviewsEligibilityReason::HOST_BLACKLISTED);
+  std::string expected_description =
+      "All previews on this host are blacklisted";
+  EXPECT_EQ(expected_description, actual_description);
+}
+
+TEST_F(PreviewsLoggerTest, LogPreviewDecisionDescriptionNetworkUnavailable) {
+  std::string actual_description = LogPreviewDecisionAndGetReasonDescription(
+      PreviewsEligibilityReason::NETWORK_QUALITY_UNAVAILABLE);
+  std::string expected_description = "Network quality unavailable";
+  EXPECT_EQ(expected_description, actual_description);
+}
+
+TEST_F(PreviewsLoggerTest, LogPreviewDecisionDescriptionNetworkNotSlow) {
+  std::string actual_description = LogPreviewDecisionAndGetReasonDescription(
+      PreviewsEligibilityReason::NETWORK_NOT_SLOW);
+  std::string expected_description = "Network not slow";
+
+  EXPECT_EQ(expected_description, actual_description);
+}
+
+TEST_F(PreviewsLoggerTest, LogPreviewDecisionDescriptionReloadDisallowed) {
+  std::string actual_description = LogPreviewDecisionAndGetReasonDescription(
+      PreviewsEligibilityReason::RELOAD_DISALLOWED);
+  std::string expected_description =
+      "Page reloads do not show previews for this preview type";
+  EXPECT_EQ(expected_description, actual_description);
+}
+
+TEST_F(PreviewsLoggerTest, LogPreviewDecisionDescriptionServerRules) {
+  std::string actual_description = LogPreviewDecisionAndGetReasonDescription(
+      PreviewsEligibilityReason::HOST_BLACKLISTED_BY_SERVER);
+  std::string expected_description = "Host blacklisted by server rules";
+  EXPECT_EQ(expected_description, actual_description);
 }
 
 }  // namespace
