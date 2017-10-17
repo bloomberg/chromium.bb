@@ -13,6 +13,14 @@ print_preview.MeasurementSystemUnitType = {
   IMPERIAL: 1  // inches
 };
 
+/**
+ * @typedef {{precision: number,
+ *            decimalPlaces: number,
+ *            ptsPerUnit: number,
+ *            unitSymbol: string}}
+ */
+print_preview.MeasurementSystemPrefs;
+
 cr.define('print_preview', function() {
   'use strict';
 
@@ -39,22 +47,17 @@ cr.define('print_preview', function() {
        */
       this.decimalDelimeter_ = decimalDelimeter || '.';
 
+      assert(measurementSystemPrefs.has(unitType));
       /**
-       * The measurement unit type (metric or imperial).
-       * @private {!print_preview.MeasurementSystemUnitType}
+       * The measurement system preferences based on the unit type.
+       * @private {!print_preview.MeasurementSystemPrefs}
        */
-      this.unitType_ = unitType;
+      this.measurementSystemPrefs_ = measurementSystemPrefs.get(unitType);
     }
 
     /** @return {string} The unit type symbol of the measurement system. */
     get unitSymbol() {
-      if (this.unitType_ == print_preview.MeasurementSystemUnitType.METRIC) {
-        return 'mm';
-      }
-      if (this.unitType_ == print_preview.MeasurementSystemUnitType.IMPERIAL) {
-        return '"';
-      }
-      throw Error('Unit type not supported: ' + this.unitType_);
+      return this.measurementSystemPrefs_.unitSymbol;
     }
 
     /**
@@ -73,10 +76,18 @@ cr.define('print_preview', function() {
       return this.decimalDelimeter_;
     }
 
+    /**
+     * Sets the measurement system based on the delimeters and unit type.
+     * @param {string} thousandsDelimeter The thousands delimeter to use
+     * @param {string} decimalDelimeter The decimal delimeter to use
+     * @param {!print_preview.MeasurementSystemUnitType} unitType Measurement
+     *     unit type of the system.
+     */
     setSystem(thousandsDelimeter, decimalDelimeter, unitType) {
       this.thousandsDelimeter_ = thousandsDelimeter;
       this.decimalDelimeter_ = decimalDelimeter;
-      this.unitType_ = unitType;
+      assert(measurementSystemPrefs.has(unitType));
+      this.measurementSystemPrefs_ = measurementSystemPrefs.get(unitType);
     }
 
     /**
@@ -85,10 +96,10 @@ cr.define('print_preview', function() {
      * @return {number} Rounded value.
      */
     roundValue(value) {
-      var precision = Precision_[this.unitType_];
+      var precision = this.measurementSystemPrefs_.precision;
       var roundedValue = Math.round(value / precision) * precision;
       // Truncate
-      return +roundedValue.toFixed(DecimalPlaces_[this.unitType_]);
+      return +roundedValue.toFixed(this.measurementSystemPrefs_.decimalPlaces);
     }
 
     /**
@@ -96,10 +107,7 @@ cr.define('print_preview', function() {
      * @return {number} Value in local units.
      */
     convertFromPoints(pts) {
-      if (this.unitType_ == print_preview.MeasurementSystemUnitType.METRIC) {
-        return pts / PTS_PER_MM_;
-      }
-      return pts / PTS_PER_INCH_;
+      return pts / this.measurementSystemPrefs_.ptsPerUnit;
     }
 
     /**
@@ -107,42 +115,29 @@ cr.define('print_preview', function() {
      * @return {number} Value in points.
      */
     convertToPoints(localUnits) {
-      if (this.unitType_ == print_preview.MeasurementSystemUnitType.METRIC) {
-        return localUnits * PTS_PER_MM_;
-      }
-      return localUnits * PTS_PER_INCH_;
+      return localUnits * this.measurementSystemPrefs_.ptsPerUnit;
     }
   }
 
   /**
-   * Maximum resolution of local unit values.
-   * @private {!Object<!print_preview.MeasurementSystemUnitType, number>}
+   * Maximum resolution and number of decimal places for local unit values.
+   * @private {!Map<!print_preview.MeasurementSystemUnitType,
+   *                !print_preview.MeasurementSystemPrefs>}
    */
-  var Precision_ = {};
-  Precision_[print_preview.MeasurementSystemUnitType.METRIC] = 0.5;
-  Precision_[print_preview.MeasurementSystemUnitType.IMPERIAL] = 0.01;
-
-  /**
-   * Maximum number of decimal places to keep for local unit.
-   * @private {!Object<!print_preview.MeasurementSystemUnitType, number>}
-   */
-  var DecimalPlaces_ = {};
-  DecimalPlaces_[print_preview.MeasurementSystemUnitType.METRIC] = 1;
-  DecimalPlaces_[print_preview.MeasurementSystemUnitType.IMPERIAL] = 2;
-
-  /**
-   * Number of points per inch.
-   * @const {number}
-   * @private
-   */
-  var PTS_PER_INCH_ = 72.0;
-
-  /**
-   * Number of points per millimeter.
-   * @const {number}
-   * @private
-   */
-  var PTS_PER_MM_ = PTS_PER_INCH_ / 25.4;
+  var measurementSystemPrefs = new Map([
+    [
+      print_preview.MeasurementSystemUnitType.METRIC, {
+        precision: 0.5,
+        decimalPlaces: 1,
+        ptsPerUnit: 72.0 / 25.4,
+        unitSymbol: 'mm'
+      }
+    ],
+    [
+      print_preview.MeasurementSystemUnitType.IMPERIAL,
+      {precision: 0.01, decimalPlaces: 2, ptsPerUnit: 72.0, unitSymbol: '"'}
+    ]
+  ]);
 
   // Export
   return {MeasurementSystem: MeasurementSystem};
