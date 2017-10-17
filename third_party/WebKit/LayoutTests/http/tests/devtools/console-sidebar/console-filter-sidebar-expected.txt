@@ -1,0 +1,66 @@
+Tests that console sidebar behaves properly.
+
+
+Running: beforeFilter
+SIDEBAR:
+> message
+> error
+> warning
+> info
+> verbose
+
+Running: addLogsFromMultipleUrls
+SIDEBAR:
+> message
+> > log-source.js
+> > console-filter-sidebar.js
+> error
+> warning
+> info
+> > log-source.js
+> > console-filter-sidebar.js
+> verbose
+
+Running: addLogsFromMultipleLevels
+SIDEBAR:
+> message
+> > log-source.js
+> > console-filter-sidebar.js
+> error
+> > console-filter-sidebar.js
+> warning
+> > log-source.js
+> info
+> > log-source.js
+> > console-filter-sidebar.js
+> verbose
+
+Running: selectingGroup
+Selecting item: log-source.js
+MESSAGES:
+log-source.js:3 Log from log-source
+log-source.js:8 Warning from log-source
+warn2 @ log-source.js:8
+(anonymous) @ console-filter-sidebar.js:48
+
+SIDEBAR:
+> message
+> > log-source.js
+> > console-filter-sidebar.js
+> error
+> > console-filter-sidebar.js
+> warning
+> > log-source.js
+> info
+> > log-source.js
+> > console-filter-sidebar.js
+> verbose
+
+Running: clearConsole
+SIDEBAR:
+> message
+> error
+> warning
+> info
+> verbose
+
