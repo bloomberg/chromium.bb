@@ -75,7 +75,7 @@ FT_BEGIN_HEADER
   /*************************************************************************/
 
 
-  /*************************************************************************/
+  /*#***********************************************************************/
   /*                                                                       */
   /* If you enable this configuration option, FreeType recognizes an       */
   /* environment variable called `FREETYPE_PROPERTIES', which can be used  */
@@ -753,6 +753,16 @@ FT_BEGIN_HEADER
   /* driver.                                                               */
   /*                                                                       */
 #undef T1_CONFIG_OPTION_NO_MM_SUPPORT
+
+
+  /*************************************************************************/
+  /*                                                                       */
+  /* T1_CONFIG_OPTION_OLD_ENGINE controls whether the pre-Adobe Type 1     */
+  /* engine gets compiled into FreeType.  If defined, it is possible to    */
+  /* switch between the two engines using the `hinting-engine' property of */
+  /* the type1 driver module.                                              */
+  /*                                                                       */
+/* #define T1_CONFIG_OPTION_OLD_ENGINE */
 
 
   /*************************************************************************/
