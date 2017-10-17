@@ -27,7 +27,8 @@ class WM_CORE_EXPORT EasyResizeWindowTargeter : public aura::WindowTargeter {
 
  protected:
   // aura::WindowTargeter:
-  void OnSetInsets() override;
+  void OnSetInsets(const gfx::Insets& last_mouse_extend,
+                   const gfx::Insets& last_touch_extend) override;
 
  private:
   // aura::WindowTargeter:

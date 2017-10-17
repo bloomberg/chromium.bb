@@ -2,7 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Only log once.
+#define NOTIMPLEMENTED_POLICY 5
+
 #include "ui/wm/core/easy_resize_window_targeter.h"
+
+#include <algorithm>
 
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "ui/aura/client/aura_constants.h"
@@ -16,6 +21,21 @@
 #include "ui/gfx/geometry/rect.h"
 
 namespace wm {
+namespace {
+
+// Returns an insets whose values are all negative or 0. Any positive value is
+// forced to 0.
+gfx::Insets InsetsWithOnlyNegativeValues(const gfx::Insets& insets) {
+  if (insets.top() > 0 || insets.left() > 0 || insets.right() > 0 ||
+      insets.bottom() > 0) {
+    // See TODO at call site.
+    NOTIMPLEMENTED();
+  }
+  return gfx::Insets(std::min(0, insets.top()), std::min(0, insets.left()),
+                     std::min(0, insets.bottom()), std::min(0, insets.right()));
+}
+
+}  // namespace
 
 EasyResizeWindowTargeter::EasyResizeWindowTargeter(
     aura::Window* container,
@@ -28,12 +48,31 @@ EasyResizeWindowTargeter::EasyResizeWindowTargeter(
 
 EasyResizeWindowTargeter::~EasyResizeWindowTargeter() {}
 
-void EasyResizeWindowTargeter::OnSetInsets() {
+void EasyResizeWindowTargeter::OnSetInsets(
+    const gfx::Insets& last_mouse_extend,
+    const gfx::Insets& last_touch_extend) {
   if (aura::Env::GetInstance()->mode() != aura::Env::Mode::MUS)
     return;
 
+  // Mus only accepts 0 or negative values, force all values to fit that.
+  // TODO: figure out how best to deal with positive values, see
+  // http://crbug.com/775223
+  const gfx::Insets effective_last_mouse_extend =
+      InsetsWithOnlyNegativeValues(last_mouse_extend);
+  const gfx::Insets effective_last_touch_extend =
+      InsetsWithOnlyNegativeValues(last_touch_extend);
+  const gfx::Insets effective_mouse_extend =
+      InsetsWithOnlyNegativeValues(mouse_extend());
+  const gfx::Insets effective_touch_extend =
+      InsetsWithOnlyNegativeValues(touch_extend());
+  if (effective_last_touch_extend == effective_touch_extend &&
+      effective_last_mouse_extend == effective_mouse_extend) {
+    return;
+  }
+
   aura::WindowPortMus::Get(container_)
-      ->SetExtendedHitRegionForChildren(mouse_extend(), touch_extend());
+      ->SetExtendedHitRegionForChildren(effective_mouse_extend,
+                                        effective_touch_extend);
 }
 
 bool EasyResizeWindowTargeter::EventLocationInsideBounds(
