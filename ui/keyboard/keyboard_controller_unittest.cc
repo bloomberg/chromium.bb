@@ -29,6 +29,7 @@
 #include "ui/compositor/test/layer_animator_test_controller.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/keyboard/container_full_width_behavior.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
 #include "ui/keyboard/keyboard_test_util.h"
 #include "ui/keyboard/keyboard_ui.h"
@@ -606,7 +607,7 @@ TEST_F(KeyboardControllerAnimationTest, ContainerAnimation) {
   EXPECT_TRUE(contents_window()->IsVisible());
   float show_start_opacity = layer->opacity();
   gfx::Transform transform;
-  transform.Translate(0, kAnimationDistance);
+  transform.Translate(0, keyboard::kFullWidthKeyboardAnimationDistance);
   EXPECT_EQ(transform, layer->transform());
   // animation occurs in a cloned layer, so the actual final bounds should
   // already be applied to the container.
