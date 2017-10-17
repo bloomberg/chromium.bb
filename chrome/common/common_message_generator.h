@@ -5,6 +5,7 @@
 // Multiply-included file, hence no include guard.
 
 #include "chrome/common/common_param_traits_macros.h"
+#include "chrome/common/instant_struct_traits.h"
 #include "chrome/common/mac/app_shim_messages.h"
 #include "chrome/common/prerender_messages.h"
 #include "chrome/common/render_messages.h"
