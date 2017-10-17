@@ -1354,4 +1354,74 @@ HEADLESS_ASYNC_DEVTOOLED_TEST_F(
 
 #endif  // !defined(OS_MACOSX)
 
+class CookiesEnabled : public HeadlessAsyncDevTooledBrowserTest,
+                       page::Observer {
+ public:
+  void RunDevTooledTest() override {
+    devtools_client_->GetPage()->AddObserver(this);
+    devtools_client_->GetPage()->Enable();
+
+    EXPECT_TRUE(embedded_test_server()->Start());
+    devtools_client_->GetPage()->Navigate(
+        embedded_test_server()->GetURL("/cookie.html").spec());
+  }
+
+  // page::Observer implementation:
+  void OnLoadEventFired(const page::LoadEventFiredParams& params) override {
+    devtools_client_->GetRuntime()->Evaluate(
+        "window.test_result",
+        base::Bind(&CookiesEnabled::OnResult, base::Unretained(this)));
+  }
+
+  void OnResult(std::unique_ptr<runtime::EvaluateResult> result) {
+    std::string value;
+    EXPECT_TRUE(result->GetResult()->HasValue());
+    EXPECT_TRUE(result->GetResult()->GetValue()->GetAsString(&value));
+    EXPECT_EQ("0", value);
+    FinishAsynchronousTest();
+  }
+
+  void CustomizeHeadlessBrowserContext(
+      HeadlessBrowserContext::Builder& builder) override {
+    builder.SetAllowCookies(true);
+  }
+};
+
+HEADLESS_ASYNC_DEVTOOLED_TEST_F(CookiesEnabled);
+
+class CookiesDisabled : public HeadlessAsyncDevTooledBrowserTest,
+                        page::Observer {
+ public:
+  void RunDevTooledTest() override {
+    devtools_client_->GetPage()->AddObserver(this);
+    devtools_client_->GetPage()->Enable();
+
+    EXPECT_TRUE(embedded_test_server()->Start());
+    devtools_client_->GetPage()->Navigate(
+        embedded_test_server()->GetURL("/cookie.html").spec());
+  }
+
+  // page::Observer implementation:
+  void OnLoadEventFired(const page::LoadEventFiredParams& params) override {
+    devtools_client_->GetRuntime()->Evaluate(
+        "window.test_result",
+        base::Bind(&CookiesDisabled::OnResult, base::Unretained(this)));
+  }
+
+  void OnResult(std::unique_ptr<runtime::EvaluateResult> result) {
+    std::string value;
+    EXPECT_TRUE(result->GetResult()->HasValue());
+    EXPECT_TRUE(result->GetResult()->GetValue()->GetAsString(&value));
+    EXPECT_EQ("-1", value);
+    FinishAsynchronousTest();
+  }
+
+  void CustomizeHeadlessBrowserContext(
+      HeadlessBrowserContext::Builder& builder) override {
+    builder.SetAllowCookies(false);
+  }
+};
+
+HEADLESS_ASYNC_DEVTOOLED_TEST_F(CookiesDisabled);
+
 }  // namespace headless

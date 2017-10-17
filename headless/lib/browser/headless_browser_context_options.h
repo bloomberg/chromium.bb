@@ -44,6 +44,8 @@ class HeadlessBrowserContextOptions {
   // Set HeadlessBrowser::Options::incognito_mode.
   bool incognito_mode() const;
 
+  bool allow_cookies() const;
+
   // Custom network protocol handlers. These can be used to override URL
   // fetching for different network schemes.
   const ProtocolHandlerMap& protocol_handlers() const;
@@ -70,6 +72,7 @@ class HeadlessBrowserContextOptions {
   base::Optional<gfx::Size> window_size_;
   base::Optional<base::FilePath> user_data_dir_;
   base::Optional<bool> incognito_mode_;
+  base::Optional<bool> allow_cookies_;
   base::Optional<base::Callback<void(WebPreferences*)>>
       override_web_preferences_callback_;
 

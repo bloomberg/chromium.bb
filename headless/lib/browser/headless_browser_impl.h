@@ -18,6 +18,7 @@
 #include "headless/lib/browser/headless_devtools_manager_delegate.h"
 #include "headless/lib/browser/headless_web_contents_impl.h"
 #include "headless/public/headless_export.h"
+#include "headless/public/util/moveable_auto_lock.h"
 
 namespace ui {
 class Compositor;
@@ -78,6 +79,12 @@ class HEADLESS_EXPORT HeadlessBrowserImpl : public HeadlessBrowser,
 
   base::WeakPtr<HeadlessBrowserImpl> GetWeakPtr();
 
+  // Returns the corresponding HeadlessBrowserContextImpl or null if one can't
+  // be found. Can be called on any thread.
+  LockedPtr<HeadlessBrowserContextImpl> GetBrowserContextForRenderFrame(
+      int render_process_id,
+      int render_frame_id) const;
+
   // All the methods that begin with Platform need to be implemented by the
   // platform specific headless implementation.
   // Helper for one time initialization of application
@@ -93,7 +100,8 @@ class HEADLESS_EXPORT HeadlessBrowserImpl : public HeadlessBrowser,
   HeadlessBrowser::Options options_;
   HeadlessBrowserMainParts* browser_main_parts_;  // Not owned.
 
-  std::unordered_map<std::string, std::unique_ptr<HeadlessBrowserContextImpl>>
+  mutable base::Lock browser_contexts_lock_;  // Protects |browser_contexts_|
+  base::flat_map<std::string, std::unique_ptr<HeadlessBrowserContextImpl>>
       browser_contexts_;
   HeadlessBrowserContext* default_browser_context_;  // Not owned.
 

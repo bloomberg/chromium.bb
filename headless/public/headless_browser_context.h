@@ -132,6 +132,7 @@ class HEADLESS_EXPORT HeadlessBrowserContext::Builder {
   Builder& SetWindowSize(const gfx::Size& window_size);
   Builder& SetUserDataDir(const base::FilePath& user_data_dir);
   Builder& SetIncognitoMode(bool incognito_mode);
+  Builder& SetAllowCookies(bool incognito_mode);
   Builder& SetOverrideWebPreferencesCallback(
       base::Callback<void(WebPreferences*)> callback);
 

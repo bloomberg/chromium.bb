@@ -14,6 +14,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
@@ -298,6 +299,39 @@ void HeadlessContentBrowserClient::ResourceDispatcherHostCreated() {
 
 net::NetLog* HeadlessContentBrowserClient::GetNetLog() {
   return browser_->browser_main_parts()->net_log();
+}
+
+bool HeadlessContentBrowserClient::AllowGetCookie(
+    const GURL& url,
+    const GURL& first_party,
+    const net::CookieList& cookie_list,
+    content::ResourceContext* context,
+    int render_process_id,
+    int render_frame_id) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  LockedPtr<HeadlessBrowserContextImpl> browser_context =
+      browser_->GetBrowserContextForRenderFrame(render_process_id,
+                                                render_frame_id);
+  if (!browser_context)
+    return false;
+  return browser_context->options()->allow_cookies();
+}
+
+bool HeadlessContentBrowserClient::AllowSetCookie(
+    const GURL& url,
+    const GURL& first_party,
+    const std::string& cookie_line,
+    content::ResourceContext* context,
+    int render_process_id,
+    int render_frame_id,
+    const net::CookieOptions& options) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  LockedPtr<HeadlessBrowserContextImpl> browser_context =
+      browser_->GetBrowserContextForRenderFrame(render_process_id,
+                                                render_frame_id);
+  if (!browser_context)
+    return false;
+  return browser_context->options()->allow_cookies();
 }
 
 }  // namespace headless
