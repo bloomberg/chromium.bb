@@ -21,6 +21,7 @@
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/media_stream_requester.h"
+#include "content/browser/renderer_host/media/media_stream_ui_proxy.h"
 #include "content/browser/renderer_host/media/video_capture_host.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
 #include "content/common/media/media_devices.h"
@@ -129,10 +130,10 @@ class VideoCaptureTest : public testing::Test,
 
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kUseFakeDeviceForMediaStream);
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kUseFakeUIForMediaStream);
     media_stream_manager_ = base::MakeUnique<MediaStreamManager>(
         audio_system_.get(), audio_manager_->GetTaskRunner());
+    media_stream_manager_->UseFakeUIFactoryForTests(
+        base::Bind(&VideoCaptureTest::CreateFakeUI, base::Unretained(this)));
 
     // Create a Host and connect it to a simulated IPC channel.
     host_.reset(new VideoCaptureHost(0 /* render_process_id */,
@@ -310,6 +311,11 @@ class VideoCaptureTest : public testing::Test,
   }
 
  private:
+  std::unique_ptr<FakeMediaStreamUIProxy> CreateFakeUI() {
+    return std::make_unique<FakeMediaStreamUIProxy>(
+        /*tests_use_fake_render_frame_hosts=*/true);
+  }
+
   // |media_stream_manager_| needs to outlive |thread_bundle_| because it is a
   // MessageLoop::DestructionObserver.
   StrictMock<MockMediaStreamRequester> stream_requester_;
