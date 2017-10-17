@@ -20,7 +20,7 @@ body {
   font-size: medium;
   /* prevent overflowing to enable scrolling */
   height: calc(100vh - 16px);
-  margin: 8px;
+  margin: 32px;
 }
 
 #content[hidden] {
