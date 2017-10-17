@@ -109,6 +109,8 @@ class AccessibilityEventRecorderWin : public AccessibilityEventRecorder {
 
   HWINEVENTHOOK win_event_hook_handle_;
   static AccessibilityEventRecorderWin* instance_;
+
+  // Initializes COM services when standalone dump events tool is used.
   base::win::ScopedCOMInitializer com_initializer;
 };
 

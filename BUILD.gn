@@ -392,8 +392,10 @@ group("gn_all") {
     ]
   }
 
-  if (is_win || is_mac) {
+  # Accessibility API debugging tools.
+  if (is_win) {
     deps += [ "//tools/accessibility/inspect:ax_dump_events" ]
+    deps += [ "//tools/accessibility/inspect:ax_dump_tree" ]
   }
 
   if (is_linux) {
