@@ -151,6 +151,23 @@ ui::MouseEvent TestLeftMouseAt(const gfx::Point& location, ui::EventType type) {
                         ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
 }
 
+// This view has a large width, but the height always matches the parent's
+// height. This is similar to a TableView that has many columns showing, but
+// very few rows.
+class VerticalResizingView : public View {
+ public:
+  VerticalResizingView() = default;
+  ~VerticalResizingView() override = default;
+  void Layout() override {
+    int width = 10000;
+    int height = parent()->height();
+    SetBounds(x(), y(), width, height);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(VerticalResizingView);
+};
+
 }  // namespace
 
 using test::ScrollViewTestApi;
@@ -329,6 +346,18 @@ TEST_F(ScrollViewTest, BoundedViewportSizedToFit) {
   // Make sure the width of |contents| is set properly not to overflow the
   // viewport.
   EXPECT_EQ(96, contents->width());
+}
+
+// Verifies that the vertical scrollbar does not unnecessarily appear for a
+// contents whose height always matches the height of the viewport.
+TEST_F(ScrollViewTest, VerticalScrollbarDoesNotAppearUnnecessarily) {
+  const gfx::Rect default_outer_bounds(0, 0, 100, 100);
+  View* contents = new VerticalResizingView;
+  scroll_view_.SetContents(contents);
+  scroll_view_.SetBoundsRect(default_outer_bounds);
+  scroll_view_.Layout();
+  EXPECT_FALSE(scroll_view_.vertical_scroll_bar()->visible());
+  EXPECT_TRUE(scroll_view_.horizontal_scroll_bar()->visible());
 }
 
 // Verifies the scrollbars are added as necessary.

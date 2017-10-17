@@ -412,11 +412,21 @@ void ScrollView::Layout() {
   viewport_bounds.set_y(viewport_bounds.y() + header_height);
   // viewport_size is the total client space available.
   gfx::Size viewport_size = viewport_bounds.size();
-  // Assumes a vertical scrollbar since most of the current views are designed
-  // for this.
+
+  // Assume both a vertical and horizontal scrollbar exist before calling
+  // contents_->Layout(). This is because some contents_ will set their own size
+  // to the contents_viewport_'s bounds. Failing to pre-allocate space for
+  // the scrollbars will [non-intuitively] cause scrollbars to appear in
+  // ComputeScrollBarsVisibility. This solution is also not perfect - if
+  // scrollbars turn out *not* to be necessary, the contents will have slightly
+  // less horizontal/vertical space than it otherwise would have had access to.
+  // Unfortunately, there's no way to determine this without introducing a
+  // circular dependency.
   const int horiz_sb_layout_height = GetScrollBarLayoutHeight();
   const int vert_sb_layout_width = GetScrollBarLayoutWidth();
   viewport_bounds.set_width(viewport_bounds.width() - vert_sb_layout_width);
+  viewport_bounds.set_height(viewport_bounds.height() - horiz_sb_layout_height);
+
   // Update the bounds right now so the inner views can fit in it.
   contents_viewport_->SetBoundsRect(viewport_bounds);
 
@@ -443,10 +453,10 @@ void ScrollView::Layout() {
   SetControlVisibility(vert_sb_, vert_sb_required);
   SetControlVisibility(corner_view_, corner_view_required);
 
-  // Non-default.
-  if (horiz_sb_required) {
-    viewport_bounds.set_height(
-        std::max(0, viewport_bounds.height() - horiz_sb_layout_height));
+  // Default.
+  if (!horiz_sb_required) {
+    viewport_bounds.set_height(viewport_bounds.height() +
+                               horiz_sb_layout_height);
     should_layout_contents = true;
   }
   // Default.
