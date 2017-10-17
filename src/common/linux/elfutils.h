@@ -37,7 +37,7 @@
 #include <link.h>
 #include <stdint.h>
 
-#include "common/memory.h"
+#include "common/memory_allocator.h"
 
 namespace google_breakpad {
 
