@@ -113,9 +113,6 @@ def _GenerateSmokeTestCase(benchmark_class, story_to_smoke_test):
     possible_browser = browser_finder.FindBrowser(options)
     if possible_browser is None:
       self.skipTest('Cannot find the browser to run the test.')
-    if (SinglePageBenchmark.ShouldDisable(possible_browser) or
-        not decorators.IsEnabled(benchmark_class, possible_browser)[0]):
-      self.skipTest('Benchmark %s is disabled' % SinglePageBenchmark.Name())
 
     if self.id() in _DISABLED_TESTS:
       self.skipTest('Test is explicitly disabled')
