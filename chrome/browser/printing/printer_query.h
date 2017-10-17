@@ -50,11 +50,11 @@ class PrinterQuery : public PrintJobWorkerOwner {
                    MarginType margin_type,
                    bool is_scripted,
                    bool is_modifiable,
-                   const base::Closure& callback);
+                   base::OnceClosure callback);
 
   // Updates the current settings with |new_settings| dictionary values.
   void SetSettings(std::unique_ptr<base::DictionaryValue> new_settings,
-                   const base::Closure& callback);
+                   base::OnceClosure callback);
 
   // Stops the worker thread since the client is done with this object.
   void StopWorker();
@@ -71,7 +71,7 @@ class PrinterQuery : public PrintJobWorkerOwner {
   ~PrinterQuery() override;
 
   // Lazy create the worker thread. There is one worker thread per print job.
-  void StartWorker(const base::Closure& callback);
+  void StartWorker(base::OnceClosure callback);
 
   // All the UI is done in a worker thread because many Win32 print functions
   // are blocking and enters a message loop without your consent. There is one
@@ -91,7 +91,7 @@ class PrinterQuery : public PrintJobWorkerOwner {
   PrintingContext::Result last_status_;
 
   // Callback waiting to be run.
-  base::Closure callback_;
+  base::OnceClosure callback_;
 
   DISALLOW_COPY_AND_ASSIGN(PrinterQuery);
 };
