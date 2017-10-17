@@ -826,24 +826,15 @@ static bool InRenderedText(const PositionTemplate<Strategy>& position) {
   const LayoutText* text_layout_object = ToLayoutText(layout_object);
   const int text_offset =
       offset_in_node - text_layout_object->TextStartOffset();
-  for (InlineTextBox* box : InlineTextBoxesOf(*text_layout_object)) {
-    if (text_offset < static_cast<int>(box->Start()) &&
-        !text_layout_object->ContainsReversedText()) {
-      // The offset we're looking for is before this node
-      // this means the offset must be in content that is
-      // not laid out. Return false.
-      return false;
-    }
-    if (box->ContainsCaretOffset(text_offset)) {
-      // Return false for offsets inside composed characters.
-      return text_offset == text_layout_object->CaretMinOffset() ||
-             text_offset == NextGraphemeBoundaryOf(
-                                *anchor_node, PreviousGraphemeBoundaryOf(
-                                                  *anchor_node, text_offset));
-    }
-  }
-
-  return false;
+  if (!text_layout_object->ContainsCaretOffset(text_offset))
+    return false;
+  // Return false for offsets inside composed characters.
+  // TODO(editing-dev): Previous/NextGraphemeBoundaryOf() work on DOM offsets,
+  // So they should use |offset_in_node| instead of |text_offset|.
+  return text_offset == text_layout_object->CaretMinOffset() ||
+         text_offset == NextGraphemeBoundaryOf(*anchor_node,
+                                               PreviousGraphemeBoundaryOf(
+                                                   *anchor_node, text_offset));
 }
 
 static FloatQuad LocalToAbsoluteQuadOf(const LocalCaretRect& caret_rect) {

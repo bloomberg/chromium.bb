@@ -1985,6 +1985,22 @@ bool LayoutText::HasNonCollapsedText() const {
   return FirstTextBox();
 }
 
+bool LayoutText::ContainsCaretOffset(int text_offset) const {
+  // TODO(crbug.com/771398): Add LayoutNG alternative.
+  for (InlineTextBox* box : InlineTextBoxesOf(*this)) {
+    if (text_offset < static_cast<int>(box->Start()) &&
+        !ContainsReversedText()) {
+      // The offset we're looking for is before this node
+      // this means the offset must be in content that is
+      // not laid out. Return false.
+      return false;
+    }
+    if (box->ContainsCaretOffset(text_offset))
+      return true;
+  }
+  return false;
+}
+
 void LayoutText::MomentarilyRevealLastTypedCharacter(
     unsigned last_typed_character_offset) {
   if (!g_secure_text_timers)
