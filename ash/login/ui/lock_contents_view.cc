@@ -161,8 +161,16 @@ views::View* LockContentsView::TestApi::note_action() const {
   return view_->note_action_;
 }
 
+LoginBubble* LockContentsView::TestApi::tooltip_bubble() const {
+  return view_->tooltip_bubble_.get();
+}
+
 LockContentsView::UserState::UserState(AccountId account_id)
     : account_id(account_id) {}
+
+LockContentsView::UserState::UserState(UserState&&) = default;
+
+LockContentsView::UserState::~UserState() = default;
 
 LockContentsView::LockContentsView(
     mojom::TrayActionState initial_note_action_state,
@@ -175,6 +183,7 @@ LockContentsView::LockContentsView(
   Shell::Get()->lock_screen_controller()->AddLockScreenAppsFocusObserver(this);
   Shell::Get()->system_tray_notifier()->AddSystemTrayFocusObserver(this);
   error_bubble_ = std::make_unique<LoginBubble>();
+  tooltip_bubble_ = std::make_unique<LoginBubble>();
 
   // We reuse the focusable state on this view as a signal that focus should
   // switch to the system tray. LockContentsView should otherwise not be
@@ -267,11 +276,7 @@ void LockContentsView::OnUsersChanged(
   main_view_->SetLayoutManager(main_layout_);
 
   // Add auth user.
-  primary_auth_ = new LoginAuthUserView(
-      users[0],
-      base::Bind(&LockContentsView::OnAuthenticate, base::Unretained(this)),
-      base::Bind(&LockContentsView::SwapPrimaryAndSecondaryAuth,
-                 base::Unretained(this), true /*is_primary*/));
+  primary_auth_ = AllocateLoginAuthUserView(users[0], true /*is_primary*/);
   main_view_->AddChildView(primary_auth_);
 
   // Build layout for additional users.
@@ -302,18 +307,47 @@ void LockContentsView::OnPinEnabledForUserChanged(const AccountId& user,
 
   state->show_pin = enabled;
 
-  // We need to update the auth display if |user| is currently shown in either
-  // |primary_auth_| or |opt_secondary_auth_|.
-  if (primary_auth_->current_user()->basic_user_info->account_id ==
-          state->account_id &&
-      primary_auth_->auth_methods() != LoginAuthUserView::AUTH_NONE) {
-    LayoutAuth(primary_auth_, nullptr, true /*animate*/);
-  } else if (opt_secondary_auth_ &&
-             opt_secondary_auth_->current_user()->basic_user_info->account_id ==
-                 state->account_id &&
-             opt_secondary_auth_->auth_methods() !=
-                 LoginAuthUserView::AUTH_NONE) {
-    LayoutAuth(opt_secondary_auth_, nullptr, true /*animate*/);
+  LoginAuthUserView* auth_user =
+      TryToFindAuthUser(user, true /*require_auth_active*/);
+  if (auth_user)
+    LayoutAuth(auth_user, nullptr /*opt_to_hide*/, true /*animate*/);
+}
+
+void LockContentsView::OnClickToUnlockEnabledForUserChanged(
+    const AccountId& user,
+    bool enabled) {
+  LockContentsView::UserState* state = FindStateForUser(user);
+  if (!state) {
+    LOG(ERROR) << "Unable to find user enabling click to auth";
+    return;
+  }
+  state->enable_tap_auth = enabled;
+
+  LoginAuthUserView* auth_user =
+      TryToFindAuthUser(user, true /*require_auth_active*/);
+  if (auth_user)
+    LayoutAuth(auth_user, nullptr /*opt_to_hide*/, true /*animate*/);
+}
+
+void LockContentsView::OnShowEasyUnlockIcon(
+    const AccountId& user,
+    const mojom::EasyUnlockIconOptionsPtr& icon) {
+  UserState* state = FindStateForUser(user);
+  if (!state)
+    return;
+
+  state->easy_unlock_state = icon->Clone();
+  UpdateEasyUnlockIconForUser(user);
+
+  // Show tooltip only if the user is actively showing auth.
+  auto* auth_user = TryToFindAuthUser(user, true /*require_auth_active*/);
+  if (auth_user) {
+    tooltip_bubble_->Close();
+    if (icon->autoshow_tooltip) {
+      tooltip_bubble_->ShowTooltip(
+          icon->tooltip,
+          CurrentAuthUserView()->password_view() /*anchor_view*/);
+    }
   }
 }
 
@@ -385,11 +419,8 @@ void LockContentsView::CreateLowDensityLayout(
       kLowDensityDistanceBetweenUsersInPortraitDp));
 
   // Build auth user.
-  opt_secondary_auth_ = new LoginAuthUserView(
-      users[1],
-      base::Bind(&LockContentsView::OnAuthenticate, base::Unretained(this)),
-      base::Bind(&LockContentsView::SwapPrimaryAndSecondaryAuth,
-                 base::Unretained(this), false /*is_primary*/));
+  opt_secondary_auth_ =
+      AllocateLoginAuthUserView(users[1], false /*is_primary*/);
   opt_secondary_auth_->SetAuthMethods(LoginAuthUserView::AUTH_NONE);
   main_view_->AddChildView(opt_secondary_auth_);
 }
@@ -516,7 +547,8 @@ void LockContentsView::AddRotationAction(const OnRotate& on_rotate) {
   rotation_actions_.push_back(on_rotate);
 }
 
-void LockContentsView::SwapPrimaryAndSecondaryAuth(bool is_primary) {
+void LockContentsView::SwapActiveAuthBetweenPrimaryAndSecondary(
+    bool is_primary) {
   if (is_primary &&
       primary_auth_->auth_methods() == LoginAuthUserView::AUTH_NONE) {
     LayoutAuth(primary_auth_, opt_secondary_auth_, true /*animate*/);
@@ -561,9 +593,12 @@ void LockContentsView::LayoutAuth(LoginAuthUserView* to_update,
 
   // Update auth methods for |to_update|. Disable auth on |opt_to_hide|.
   uint32_t to_update_auth = LoginAuthUserView::AUTH_PASSWORD;
-  if (FindStateForUser(to_update->current_user()->basic_user_info->account_id)
-          ->show_pin)
+  UserState* state =
+      FindStateForUser(to_update->current_user()->basic_user_info->account_id);
+  if (state->show_pin)
     to_update_auth |= LoginAuthUserView::AUTH_PIN;
+  if (state->enable_tap_auth)
+    to_update_auth |= LoginAuthUserView::AUTH_TAP;
   to_update->SetAuthMethods(to_update_auth);
   if (opt_to_hide)
     opt_to_hide->SetAuthMethods(LoginAuthUserView::AUTH_NONE);
@@ -591,11 +626,42 @@ void LockContentsView::SwapToAuthUser(int user_index) {
 }
 
 void LockContentsView::OnAuthUserChanged() {
-  Shell::Get()->lock_screen_controller()->OnFocusPod(
-      CurrentAuthUserView()->current_user()->basic_user_info->account_id);
+  const AccountId new_auth_user =
+      CurrentAuthUserView()->current_user()->basic_user_info->account_id;
+
+  Shell::Get()->lock_screen_controller()->OnFocusPod(new_auth_user);
+  UpdateEasyUnlockIconForUser(new_auth_user);
 
   // Reset unlock attempt when the auth user changes.
   unlock_attempt_ = 0;
+}
+
+void LockContentsView::UpdateEasyUnlockIconForUser(const AccountId& user) {
+  // Try to find an auth view for |user|. If there is none, there is no state to
+  // update.
+  LoginAuthUserView* auth_view =
+      TryToFindAuthUser(user, false /*require_auth_active*/);
+  if (!auth_view)
+    return;
+
+  UserState* state = FindStateForUser(user);
+  DCHECK(state);
+
+  // Hide easy unlock icon if there is no data is available.
+  if (!state->easy_unlock_state) {
+    auth_view->SetEasyUnlockIcon(mojom::EasyUnlockIconId::NONE,
+                                 base::string16());
+    return;
+  }
+
+  // TODO(jdufault): Make easy unlock backend always send aria_label, right now
+  // it is only sent if there is no tooltip.
+  base::string16 accessibility_label = state->easy_unlock_state->aria_label;
+  if (accessibility_label.empty())
+    accessibility_label = state->easy_unlock_state->tooltip;
+
+  auth_view->SetEasyUnlockIcon(state->easy_unlock_state->icon,
+                               accessibility_label);
 }
 
 LoginAuthUserView* LockContentsView::CurrentAuthUserView() {
@@ -629,5 +695,72 @@ void LockContentsView::ShowErrorMessage() {
       base::UTF8ToUTF16(error_text),
       CurrentAuthUserView()->password_view() /*anchor_view*/);
 }
+
+void LockContentsView::OnEasyUnlockIconHovered() {
+  UserState* state = FindStateForUser(
+      CurrentAuthUserView()->current_user()->basic_user_info->account_id);
+  DCHECK(state);
+  mojom::EasyUnlockIconOptionsPtr& easy_unlock_state = state->easy_unlock_state;
+  DCHECK(easy_unlock_state);
+
+  if (!easy_unlock_state->tooltip.empty()) {
+    tooltip_bubble_->ShowTooltip(
+        easy_unlock_state->tooltip,
+        CurrentAuthUserView()->password_view() /*anchor_view*/);
+  }
+}
+
+void LockContentsView::OnEasyUnlockIconTapped() {
+  UserState* state = FindStateForUser(
+      CurrentAuthUserView()->current_user()->basic_user_info->account_id);
+  DCHECK(state);
+  mojom::EasyUnlockIconOptionsPtr& easy_unlock_state = state->easy_unlock_state;
+  DCHECK(easy_unlock_state);
+
+  if (easy_unlock_state->hardlock_on_click) {
+    AccountId user =
+        CurrentAuthUserView()->current_user()->basic_user_info->account_id;
+    Shell::Get()->lock_screen_controller()->HardlockPod(user);
+    // TODO(jdufault): This should get called as a result of HardlockPod.
+    OnClickToUnlockEnabledForUserChanged(user, false /*enabled*/);
+  }
+}
+
+LoginAuthUserView* LockContentsView::AllocateLoginAuthUserView(
+    const mojom::LoginUserInfoPtr& user,
+    bool is_primary) {
+  return new LoginAuthUserView(
+      user,
+      base::Bind(&LockContentsView::OnAuthenticate, base::Unretained(this)),
+      base::Bind(&LockContentsView::SwapActiveAuthBetweenPrimaryAndSecondary,
+                 base::Unretained(this), is_primary),
+      base::Bind(&LockContentsView::OnEasyUnlockIconHovered,
+                 base::Unretained(this)),
+      base::Bind(&LockContentsView::OnEasyUnlockIconTapped,
+                 base::Unretained(this)));
+}
+
+LoginAuthUserView* LockContentsView::TryToFindAuthUser(
+    const AccountId& user,
+    bool require_auth_active) {
+  LoginAuthUserView* view = nullptr;
+
+  // Find auth instance.
+  if (primary_auth_->current_user()->basic_user_info->account_id == user) {
+    view = primary_auth_;
+  } else if (opt_secondary_auth_ &&
+             opt_secondary_auth_->current_user()->basic_user_info->account_id ==
+                 user) {
+    view = opt_secondary_auth_;
+  }
+
+  // Make sure auth instance is active if required.
+  if (require_auth_active && view &&
+      view->auth_methods() == LoginAuthUserView::AUTH_NONE) {
+    view = nullptr;
+  }
+
+  return view;
+};
 
 }  // namespace ash

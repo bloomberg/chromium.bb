@@ -74,18 +74,25 @@ void LockScreenController::ClearErrors() {
 void LockScreenController::ShowUserPodCustomIcon(
     const AccountId& account_id,
     mojom::EasyUnlockIconOptionsPtr icon) {
-  NOTIMPLEMENTED();
+  DataDispatcher()->ShowEasyUnlockIcon(account_id, icon);
 }
 
 void LockScreenController::HideUserPodCustomIcon(const AccountId& account_id) {
-  NOTIMPLEMENTED();
+  auto icon_options = mojom::EasyUnlockIconOptions::New();
+  icon_options->icon = mojom::EasyUnlockIconId::NONE;
+  DataDispatcher()->ShowEasyUnlockIcon(account_id, icon_options);
 }
 
 void LockScreenController::SetAuthType(
     const AccountId& account_id,
     proximity_auth::mojom::AuthType auth_type,
     const base::string16& initial_value) {
-  NOTIMPLEMENTED();
+  if (auth_type == proximity_auth::mojom::AuthType::USER_CLICK) {
+    DataDispatcher()->SetClickToUnlockEnabledForUser(account_id,
+                                                     true /*enabled*/);
+  } else {
+    NOTIMPLEMENTED();
+  }
 }
 
 void LockScreenController::LoadUsers(std::vector<mojom::LoginUserInfoPtr> users,

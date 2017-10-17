@@ -7,6 +7,7 @@
 
 #include "ash/login/ui/lock_contents_view.h"
 #include "ash/login/ui/login_auth_user_view.h"
+#include "ash/login/ui/login_bubble.h"
 #include "ash/login/ui/login_display_style.h"
 #include "ash/login/ui/login_test_base.h"
 #include "ash/login/ui/login_user_view.h"
@@ -302,6 +303,120 @@ TEST_F(LockContentsViewUnitTest, NoteActionButtonBoundsInitiallyAvailable) {
   data_dispatcher()->SetLockScreenNoteState(
       mojom::TrayActionState::kNotAvailable);
   EXPECT_FALSE(test_api.note_action()->visible());
+}
+
+// Verifies the easy unlock tooltip is automatically displayed when requested.
+TEST_F(LockContentsViewUnitTest, EasyUnlockForceTooltipCreatesTooltipWidget) {
+  auto* lock = new LockContentsView(mojom::TrayActionState::kNotAvailable,
+                                    data_dispatcher());
+
+  SetUserCount(1);
+  SetWidget(CreateWidgetWithContent(lock));
+
+  LockContentsView::TestApi test_api(lock);
+  // Creating lock screen does not show tooltip bubble.
+  EXPECT_FALSE(test_api.tooltip_bubble()->IsVisible());
+
+  // Show an icon with |autoshow_tooltip| is false. Tooltip bubble is not
+  // activated.
+  auto icon = mojom::EasyUnlockIconOptions::New();
+  icon->icon = mojom::EasyUnlockIconId::LOCKED;
+  icon->autoshow_tooltip = false;
+  data_dispatcher()->ShowEasyUnlockIcon(users()[0]->basic_user_info->account_id,
+                                        icon);
+  EXPECT_FALSE(test_api.tooltip_bubble()->IsVisible());
+
+  // Show icon with |autoshow_tooltip| set to true. Tooltip bubble is shown.
+  icon->autoshow_tooltip = true;
+  data_dispatcher()->ShowEasyUnlockIcon(users()[0]->basic_user_info->account_id,
+                                        icon);
+  EXPECT_TRUE(test_api.tooltip_bubble()->IsVisible());
+}
+
+// Verifies that easy unlock icon state persists when changing auth user.
+TEST_F(LockContentsViewUnitTest, EasyUnlockIconUpdatedDuringUserSwap) {
+  // Build lock screen with two users.
+  auto* contents = new LockContentsView(mojom::TrayActionState::kNotAvailable,
+                                        data_dispatcher());
+  SetUserCount(2);
+  SetWidget(CreateWidgetWithContent(contents));
+
+  LockContentsView::TestApi test_api(contents);
+  LoginAuthUserView* primary = test_api.primary_auth();
+  LoginAuthUserView* secondary = test_api.opt_secondary_auth();
+
+  // Returns true if the easy unlock icon is displayed for |view|.
+  auto showing_easy_unlock_icon = [&](LoginAuthUserView* view) {
+    views::View* icon = LoginPasswordView::TestApi(
+                            LoginAuthUserView::TestApi(view).password_view())
+                            .easy_unlock_icon();
+    return icon->visible();
+  };
+
+  // Enables easy unlock icon for |view|.
+  auto enable_icon = [&](LoginAuthUserView* view) {
+    auto icon = mojom::EasyUnlockIconOptions::New();
+    icon->icon = mojom::EasyUnlockIconId::LOCKED;
+    data_dispatcher()->ShowEasyUnlockIcon(
+        view->current_user()->basic_user_info->account_id, icon);
+  };
+
+  // Disables easy unlock icon for |view|.
+  auto disable_icon = [&](LoginAuthUserView* view) {
+    auto icon = mojom::EasyUnlockIconOptions::New();
+    icon->icon = mojom::EasyUnlockIconId::NONE;
+    data_dispatcher()->ShowEasyUnlockIcon(
+        view->current_user()->basic_user_info->account_id, icon);
+  };
+
+  // Makes |view| the active auth view so it will can show auth methods.
+  auto make_active_auth_view = [&](LoginAuthUserView* view) {
+    // Send event to swap users.
+    ui::test::EventGenerator& generator = GetEventGenerator();
+    LoginUserView* user_view = LoginAuthUserView::TestApi(view).user_view();
+    generator.MoveMouseTo(user_view->GetBoundsInScreen().CenterPoint());
+    generator.ClickLeftButton();
+  };
+
+  // NOTE: we cannot assert on non-active auth views because the easy unlock
+  // icon is lazily updated, ie, if we're not showing the view we will not
+  // update icon state.
+
+  // No easy unlock icons are shown.
+  make_active_auth_view(primary);
+  EXPECT_FALSE(showing_easy_unlock_icon(primary));
+
+  // Activate icon for primary.
+  enable_icon(primary);
+  EXPECT_TRUE(showing_easy_unlock_icon(primary));
+
+  // Secondary does not have easy unlock enabled; swapping auth hides the icon.
+  make_active_auth_view(secondary);
+  EXPECT_FALSE(showing_easy_unlock_icon(secondary));
+
+  // Switching back enables the icon again.
+  make_active_auth_view(primary);
+  EXPECT_TRUE(showing_easy_unlock_icon(primary));
+
+  // Activate icon for secondary. Primary visiblity does not change.
+  enable_icon(secondary);
+  EXPECT_TRUE(showing_easy_unlock_icon(primary));
+
+  // Swap to secondary, icon still visible.
+  make_active_auth_view(secondary);
+  EXPECT_TRUE(showing_easy_unlock_icon(secondary));
+
+  // Deactivate secondary, icon hides.
+  disable_icon(secondary);
+  EXPECT_FALSE(showing_easy_unlock_icon(secondary));
+
+  // Deactivate primary, icon still hidden.
+  disable_icon(primary);
+  EXPECT_FALSE(showing_easy_unlock_icon(secondary));
+
+  // Enable primary, icon still hidden.
+  enable_icon(primary);
+  EXPECT_FALSE(showing_easy_unlock_icon(secondary));
 }
 
 }  // namespace ash

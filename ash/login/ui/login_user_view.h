@@ -18,6 +18,7 @@ class ImageButton;
 
 namespace ash {
 
+class HoverNotifier;
 class LoginBubble;
 
 // Display the user's profile icon, name, and a menu icon in various layout
@@ -71,7 +72,8 @@ class ASH_EXPORT LoginUserView : public views::Button,
   void ButtonPressed(Button* sender, const ui::Event& event) override;
 
  private:
-  class OpacityInputHandler;
+  // Called when hover state changes.
+  void OnHover(bool has_hover);
 
   // Updates UI element values so they reflect the data in |current_user_|.
   void UpdateCurrentUserState();
@@ -92,7 +94,7 @@ class ASH_EXPORT LoginUserView : public views::Button,
   mojom::LoginUserInfoPtr current_user_;
 
   // Used to dispatch opacity update events.
-  std::unique_ptr<OpacityInputHandler> opacity_input_handler_;
+  std::unique_ptr<HoverNotifier> hover_notifier_;
 
   LoginDisplayStyle display_style_;
   UserImage* user_image_ = nullptr;
