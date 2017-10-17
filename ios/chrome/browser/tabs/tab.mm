@@ -395,17 +395,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   return base::SysUTF16ToNSString(title);
 }
 
-- (NSString*)originalTitle {
-  // Do not use self.webState->GetTitle() as it returns the display title,
-  // not the original page title.
-  DCHECK([self navigationManager]);
-  web::NavigationItem* item = [self navigationManager]->GetLastCommittedItem();
-  if (!item)
-    return nil;
-  base::string16 pageTitle = item->GetTitle();
-  return pageTitle.empty() ? nil : base::SysUTF16ToNSString(pageTitle);
-}
-
 - (NSString*)urlDisplayString {
   base::string16 urlText = url_formatter::FormatUrl(
       self.webState->GetVisibleURL(), url_formatter::kFormatUrlOmitNothing,
