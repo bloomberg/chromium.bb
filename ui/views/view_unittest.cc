@@ -4441,7 +4441,10 @@ TEST_F(ViewLayerTest, RecreateLayerMovesNonViewChildren) {
 namespace {
 
 std::string ToString(const gfx::Vector2dF& vector) {
-  return base::StringPrintf("%.2f %0.2f", vector.x(), vector.y());
+  // Explicitly round it because linux uses banker's rounding
+  // while Windows is using "away-from-zero" in printf.
+  return base::StringPrintf("%0.2f %0.2f", std::round(vector.x() * 100) / 100.f,
+                            std::round(vector.y() * 100) / 100.f);
 }
 
 }  // namespace
@@ -4486,6 +4489,29 @@ TEST_F(ViewLayerTest, SnapLayerToPixel) {
   EXPECT_EQ("0.00 0.00", ToString(v11->layer()->subpixel_position_offset()));
 }
 
+namespace {
+
+class PaintLayerView : public View {
+ public:
+  PaintLayerView() = default;
+
+  void PaintChildren(const PaintInfo& info) override {
+    last_paint_info_ = base::MakeUnique<PaintInfo>(info);
+    View::PaintChildren(info);
+  }
+
+  std::unique_ptr<PaintInfo> GetLastPaintInfo() {
+    return std::move(last_paint_info_);
+  }
+
+ private:
+  std::unique_ptr<PaintInfo> last_paint_info_;
+
+  DISALLOW_COPY_AND_ASSIGN(PaintLayerView);
+};
+
+}  // namespace
+
 class ViewLayerPixelCanvasTest : public ViewLayerTest {
  public:
   ViewLayerPixelCanvasTest() {}
@@ -4497,6 +4523,21 @@ class ViewLayerPixelCanvasTest : public ViewLayerTest {
         features::kEnablePixelCanvasRecording);
   }
 
+  // Test if the recording rects are same with and without layer.
+  void PaintRecordingSizeTest(PaintLayerView* v3,
+                              const gfx::Size& expected_size) {
+    v3->DestroyLayer();
+    ui::Compositor* compositor = widget()->GetCompositor();
+    auto list = base::MakeRefCounted<cc::DisplayItemList>();
+    ui::PaintContext context(list.get(), compositor->device_scale_factor(),
+                             gfx::Rect(compositor->size()), true);
+    widget()->GetRootView()->PaintFromPaintRoot(context);
+    EXPECT_EQ(expected_size, v3->GetLastPaintInfo()->paint_recording_size());
+    v3->SetPaintToLayer();
+    v3->OnPaintLayer(context);
+    EXPECT_EQ(expected_size, v3->GetLastPaintInfo()->paint_recording_size());
+  }
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 
@@ -4506,7 +4547,7 @@ class ViewLayerPixelCanvasTest : public ViewLayerTest {
 TEST_F(ViewLayerPixelCanvasTest, SnapLayerToPixel) {
   View* v1 = new View;
   View* v2 = new View;
-  View* v3 = new View;
+  PaintLayerView* v3 = new PaintLayerView;
   v1->AddChildView(v2);
   v2->AddChildView(v3);
 
@@ -4515,34 +4556,42 @@ TEST_F(ViewLayerPixelCanvasTest, SnapLayerToPixel) {
   const gfx::Size& size = GetRootLayer()->GetCompositor()->size();
   GetRootLayer()->GetCompositor()->SetScaleAndSize(1.6f, size);
 
-  v3->SetBoundsRect(gfx::Rect(4, 4, 20, 20));
+  v3->SetBoundsRect(gfx::Rect(14, 13, 13, 5));
   v2->SetBoundsRect(gfx::Rect(7, 7, 50, 50));
   v1->SetBoundsRect(gfx::Rect(9, 9, 100, 100));
-  v3->SetPaintToLayer();
 
-  EXPECT_EQ("-0.63 -0.63", ToString(v3->layer()->subpixel_position_offset()));
+  PaintRecordingSizeTest(v3, gfx::Size(21, 8));  // Enclosing Rect = (21, 8)
+  EXPECT_EQ("-0.63 -0.25", ToString(v3->layer()->subpixel_position_offset()));
 
   // Creating a layer in parent should update the child view's layer offset.
   v1->SetPaintToLayer();
   EXPECT_EQ("-0.25 -0.25", ToString(v1->layer()->subpixel_position_offset()));
-  EXPECT_EQ("-0.37 -0.37", ToString(v3->layer()->subpixel_position_offset()));
+  EXPECT_EQ("-0.37 -0.00", ToString(v3->layer()->subpixel_position_offset()));
 
   // DSF change should get propagated and update offsets.
   GetRootLayer()->GetCompositor()->SetScaleAndSize(1.5f, size);
+
   EXPECT_EQ("0.33 0.33", ToString(v1->layer()->subpixel_position_offset()));
-  EXPECT_EQ("0.33 0.33", ToString(v3->layer()->subpixel_position_offset()));
+  EXPECT_EQ("0.33 0.67", ToString(v3->layer()->subpixel_position_offset()));
+
+  v1->DestroyLayer();
+  PaintRecordingSizeTest(v3, gfx::Size(20, 7));  // Enclosing Rect = (20, 8)
+  v1->SetPaintToLayer();
 
   GetRootLayer()->GetCompositor()->SetScaleAndSize(1.33f, size);
+
   EXPECT_EQ("0.02 0.02", ToString(v1->layer()->subpixel_position_offset()));
-  EXPECT_EQ("-0.47 -0.47", ToString(v3->layer()->subpixel_position_offset()));
+  EXPECT_EQ("0.05 -0.45", ToString(v3->layer()->subpixel_position_offset()));
+
+  v1->DestroyLayer();
+  PaintRecordingSizeTest(v3, gfx::Size(17, 7));  // Enclosing Rect = (18, 7)
 
   // Deleting parent's layer should update the child view's layer's offset.
-  v1->DestroyLayer();
-  EXPECT_EQ("-0.45 -0.45", ToString(v3->layer()->subpixel_position_offset()));
+  EXPECT_EQ("0.08 -0.43", ToString(v3->layer()->subpixel_position_offset()));
 
   // Setting parent view should update the child view's layer's offset.
   v1->SetBoundsRect(gfx::Rect(3, 3, 10, 10));
-  EXPECT_EQ("-0.47 -0.47", ToString(v3->layer()->subpixel_position_offset()));
+  EXPECT_EQ("0.06 -0.44", ToString(v3->layer()->subpixel_position_offset()));
 
   // Setting integral DSF should reset the offset.
   GetRootLayer()->GetCompositor()->SetScaleAndSize(2.0f, size);
