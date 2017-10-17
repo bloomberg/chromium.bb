@@ -14,8 +14,7 @@
 #include "components/prefs/pref_store.h"
 
 PrefRegistry::PrefRegistry()
-    : defaults_(new DefaultPrefStore()) {
-}
+    : defaults_(base::MakeRefCounted<DefaultPrefStore>()) {}
 
 PrefRegistry::~PrefRegistry() {
 }
@@ -23,9 +22,7 @@ PrefRegistry::~PrefRegistry() {
 uint32_t PrefRegistry::GetRegistrationFlags(
     const std::string& pref_name) const {
   const auto& it = registration_flags_.find(pref_name);
-  if (it == registration_flags_.end())
-    return NO_REGISTRATION_FLAGS;
-  return it->second;
+  return it != registration_flags_.end() ? it->second : NO_REGISTRATION_FLAGS;
 }
 
 scoped_refptr<PrefStore> PrefRegistry::defaults() {
