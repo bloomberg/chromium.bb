@@ -317,7 +317,6 @@ IN_PROC_BROWSER_TEST_P(FirstRunMasterPrefsWithTrackedPreferences,
   // true.
   const base::Value* default_homepage_is_ntp_value =
       user_prefs->GetDefaultPrefValue(prefs::kHomePageIsNewTabPage);
-  ASSERT_TRUE(default_homepage_is_ntp_value != NULL);
   bool default_homepage_is_ntp = false;
   EXPECT_TRUE(
       default_homepage_is_ntp_value->GetAsBoolean(&default_homepage_is_ntp));
