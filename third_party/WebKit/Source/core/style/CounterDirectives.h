@@ -27,6 +27,7 @@
 
 #include <memory>
 #include "platform/wtf/Allocator.h"
+#include "platform/wtf/CheckedNumeric.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/MathExtras.h"
 #include "platform/wtf/RefPtr.h"
@@ -83,8 +84,11 @@ class CounterDirectives {
   int CombinedValue() const {
     DCHECK(is_reset_set_ || !reset_value_);
     DCHECK(is_increment_set_ || !increment_value_);
-    // FIXME: Shouldn't allow overflow here.
-    return reset_value_ + increment_value_;
+    // According to the spec, if an increment would overflow or underflow the
+    // counter, we are allowed to ignore the increment.
+    // https://drafts.csswg.org/css-lists-3/#valdef-counter-reset-custom-ident-integer
+    return WTF::CheckAdd(reset_value_, increment_value_)
+        .ValueOrDefault(reset_value_);
   }
 
  private:
