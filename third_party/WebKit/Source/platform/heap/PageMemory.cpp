@@ -17,14 +17,12 @@ void MemoryRegion::Release() {
 }
 
 bool MemoryRegion::Commit() {
-  CHECK(WTF::RecommitSystemPages(base_, size_, WTF::PageReadWrite));
-  return WTF::SetSystemPagesAccess(base_, size_, WTF::PageReadWrite);
+  return WTF::RecommitSystemPages(base_, size_, WTF::PageReadWrite);
 }
 
 void MemoryRegion::Decommit() {
   ASAN_UNPOISON_MEMORY_REGION(base_, size_);
   WTF::DecommitSystemPages(base_, size_);
-  CHECK(WTF::SetSystemPagesAccess(base_, size_, WTF::PageInaccessible));
 }
 
 PageMemoryRegion::PageMemoryRegion(Address base,
