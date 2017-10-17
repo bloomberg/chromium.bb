@@ -22,6 +22,21 @@
 namespace arc {
 namespace {
 
+constexpr char kChromeUIScheme[] = "chrome";
+
+class OpenUrlDelegateImpl : public ArcIntentHelperBridge::OpenUrlDelegate {
+ public:
+  ~OpenUrlDelegateImpl() override = default;
+
+  // ArcIntentHelperBridge::OpenUrlDelegate:
+  void OpenUrl(const GURL& url) override {
+    // TODO(mash): Support this functionality without ash::Shell access in
+    // Chrome.
+    if (ash::Shell::HasInstance())
+      ash::Shell::Get()->shell_delegate()->OpenUrlFromArc(url);
+  }
+};
+
 // Singleton factory for ArcIntentHelperBridge.
 class ArcIntentHelperBridgeFactory
     : public internal::ArcBrowserContextKeyedServiceFactoryBase<
@@ -49,6 +64,10 @@ const char ArcIntentHelperBridge::kArcIntentHelperPackageName[] =
     "org.chromium.arc.intent_helper";
 
 // static
+const char ArcIntentHelperBridge::kMultideviceSettingsUrl[] =
+    "chrome://settings/multidevice";
+
+// static
 ArcIntentHelperBridge* ArcIntentHelperBridge::GetForBrowserContext(
     content::BrowserContext* context) {
   return ArcIntentHelperBridgeFactory::GetForBrowserContext(context);
@@ -61,7 +80,10 @@ KeyedServiceBaseFactory* ArcIntentHelperBridge::GetFactory() {
 
 ArcIntentHelperBridge::ArcIntentHelperBridge(content::BrowserContext* context,
                                              ArcBridgeService* bridge_service)
-    : context_(context), arc_bridge_service_(bridge_service), binding_(this) {
+    : context_(context),
+      arc_bridge_service_(bridge_service),
+      binding_(this),
+      open_url_delegate_(std::make_unique<OpenUrlDelegateImpl>()) {
   arc_bridge_service_->intent_helper()->AddObserver(this);
 }
 
@@ -102,9 +124,16 @@ void ArcIntentHelperBridge::OnOpenDownloads() {
 
 void ArcIntentHelperBridge::OnOpenUrl(const std::string& url) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  // TODO(mash): Support this functionality without ash::Shell access in Chrome.
-  if (ash::Shell::HasInstance())
-    ash::Shell::Get()->shell_delegate()->OpenUrlFromArc(GURL(url));
+  const GURL gurl(url);
+  // Disallow opening chrome:// URLs.
+  if (gurl.SchemeIs(kChromeUIScheme))
+    return;
+  open_url_delegate_->OpenUrl(gurl);
+}
+
+void ArcIntentHelperBridge::OnOpenChromeSettingsMultideviceUrl() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  open_url_delegate_->OpenUrl(GURL(kMultideviceSettingsUrl));
 }
 
 void ArcIntentHelperBridge::OpenWallpaperPicker() {
@@ -187,6 +216,11 @@ void ArcIntentHelperBridge::OnIntentFiltersUpdated(
 
   for (auto& observer : observer_list_)
     observer.OnIntentFiltersUpdated();
+}
+
+void ArcIntentHelperBridge::SetOpenUrlDelegateForTesting(
+    std::unique_ptr<OpenUrlDelegate> open_url_delegate) {
+  open_url_delegate_ = std::move(open_url_delegate);
 }
 
 }  // namespace arc

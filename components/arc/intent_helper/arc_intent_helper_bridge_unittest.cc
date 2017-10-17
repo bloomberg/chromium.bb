@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/common/intent_helper.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,12 +23,27 @@ IntentFilter GetIntentFilter(const std::string& host) {
                       std::vector<IntentFilter::PatternMatcher>());
 }
 
+}  // namespace
+
 class ArcIntentHelperTest : public testing::Test {
- public:
+ protected:
   ArcIntentHelperTest() = default;
 
- protected:
+  class TestOpenUrlDelegate : public ArcIntentHelperBridge::OpenUrlDelegate {
+   public:
+    ~TestOpenUrlDelegate() override = default;
+
+    // ArcIntentHelperBridge::OpenUrlDelegate:
+    void OpenUrl(const GURL& url) override { last_opened_url_ = url; }
+
+    const GURL& last_opened_url() const { return last_opened_url_; }
+
+   private:
+    GURL last_opened_url_;
+  };
+
   std::unique_ptr<ArcBridgeService> arc_bridge_service_;
+  TestOpenUrlDelegate* test_open_url_delegate_;  // owned by |instance_|
   std::unique_ptr<ArcIntentHelperBridge> instance_;
 
  private:
@@ -35,6 +51,9 @@ class ArcIntentHelperTest : public testing::Test {
     arc_bridge_service_ = std::make_unique<ArcBridgeService>();
     instance_ = std::make_unique<ArcIntentHelperBridge>(
         nullptr /* context */, arc_bridge_service_.get());
+    test_open_url_delegate_ = new TestOpenUrlDelegate();
+    instance_->SetOpenUrlDelegateForTesting(
+        base::WrapUnique(test_open_url_delegate_));
   }
 
   void TearDown() override {
@@ -44,8 +63,6 @@ class ArcIntentHelperTest : public testing::Test {
 
   DISALLOW_COPY_AND_ASSIGN(ArcIntentHelperTest);
 };
-
-}  // namespace
 
 // Tests if IsIntentHelperPackage works as expected. Probably too trivial
 // to test but just in case.
@@ -250,6 +267,29 @@ TEST_F(ArcIntentHelperTest, TestMultipleUpdate) {
       instance_->ShouldChromeHandleUrl(GURL("http://www.android.com")));
   EXPECT_FALSE(
       instance_->ShouldChromeHandleUrl(GURL("https://www.android.com")));
+}
+
+// Tests that OnOpenUrl opens the URL in Chrome browser.
+TEST_F(ArcIntentHelperTest, TestOnOpenUrl) {
+  instance_->OnOpenUrl("https://google.com");
+  EXPECT_EQ(GURL("https://google.com"),
+            test_open_url_delegate_->last_opened_url());
+}
+
+// Tests that OnOpenUrl does not open URLs with the 'chrome' scheme.
+TEST_F(ArcIntentHelperTest, TestOnOpenUrl_ChromeScheme) {
+  instance_->OnOpenUrl("chrome://www.google.com");
+  EXPECT_FALSE(test_open_url_delegate_->last_opened_url().is_valid());
+  instance_->OnOpenUrl("chrome://settings");
+  EXPECT_FALSE(test_open_url_delegate_->last_opened_url().is_valid());
+}
+
+// Tests that OnOpenChromeSettingsMultideviceUrl opens the multidevice settings
+// section in the Chrome browser.
+TEST_F(ArcIntentHelperTest, TestOnOpenChromeSettingsMultideviceUrl) {
+  instance_->OnOpenChromeSettingsMultideviceUrl();
+  EXPECT_EQ(GURL(ArcIntentHelperBridge::kMultideviceSettingsUrl),
+            test_open_url_delegate_->last_opened_url());
 }
 
 }  // namespace arc
