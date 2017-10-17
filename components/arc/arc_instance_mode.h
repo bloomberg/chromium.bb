@@ -7,6 +7,8 @@
 
 #include <ostream>
 
+#include "base/optional.h"
+
 namespace arc {
 
 enum class ArcInstanceMode {
@@ -20,6 +22,8 @@ enum class ArcInstanceMode {
 
 // Stringified output for logging purpose.
 std::ostream& operator<<(std::ostream& os, ArcInstanceMode mode);
+std::ostream& operator<<(std::ostream& os,
+                         base::Optional<ArcInstanceMode> mode);
 
 }  // namespace arc
 

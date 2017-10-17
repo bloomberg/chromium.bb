@@ -9,6 +9,8 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
+#include "components/arc/arc_instance_mode.h"
 #include "components/arc/arc_stop_reason.h"
 
 namespace arc {
@@ -18,7 +20,7 @@ class ArcBridgeService;
 // Starts the ARC instance and bootstraps the bridge connection.
 // Clients should implement the Delegate to be notified upon communications
 // being available.
-// The instance can be safely removed 1) before Start*() is called, or 2) after
+// The instance can be safely removed 1) before Start() is called, or 2) after
 // OnSessionStopped() is called.
 // The number of instances must be at most one. Otherwise, ARC instances will
 // conflict.
@@ -42,22 +44,20 @@ class ArcSession {
       ArcBridgeService* arc_bridge_service);
   virtual ~ArcSession();
 
-  // Starts an instance for login screen. The instance is not a fully functional
-  // one.
-  virtual void StartForLoginScreen() = 0;
+  // Starts an instance in the |request_mode|. Start(FULL_INSTANCE) should
+  // not be called twice or more. When Start(MINI_INSTANCE) was called then
+  // Start(FULL_INSTANCE) is called, it upgrades the mini instance to a full
+  // instance.
+  virtual void Start(ArcInstanceMode request_mode) = 0;
 
-  // Returns true if StartForLoginScreen() has been called but Start() hasn't.
-  virtual bool IsForLoginScreen() = 0;
-
-  // Starts and bootstraps a connection with the instance. Start() should not
-  // be called twice or more. When StartForLoginScreen() has already been
-  // called, Start() turns the mini instance to a fully functional one.
-  virtual void Start() = 0;
-
-  // Requests to stop the currently-running instance whether or not it is for
-  // login screen.
+  // Requests to stop the currently-running instance regardless of its mode.
   // The completion is notified via OnSessionStopped() of the Observer.
   virtual void Stop() = 0;
+
+  // Returns the current target mode, in which eventually this instance is
+  // running.
+  // If the instance is not yet started, this returns nullopt.
+  virtual base::Optional<ArcInstanceMode> GetTargetMode() = 0;
 
   // Returns true if this instance is fully set up successfully, and running.
   // Currently, this means, this is a fully functional instance, and

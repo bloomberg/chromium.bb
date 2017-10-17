@@ -8,6 +8,8 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/optional.h"
+#include "components/arc/arc_instance_mode.h"
 #include "components/arc/arc_session.h"
 #include "components/arc/arc_stop_reason.h"
 
@@ -20,11 +22,10 @@ class FakeArcSession : public ArcSession {
   ~FakeArcSession() override;
 
   // ArcSession overrides:
-  void StartForLoginScreen() override;
-  bool IsForLoginScreen() override;
-  void Start() override;
-  bool IsRunning() override;
+  void Start(ArcInstanceMode request_mode) override;
   void Stop() override;
+  base::Optional<ArcInstanceMode> GetTargetMode() override;
+  bool IsRunning() override;
   bool IsStopRequested() override;
   void OnShutdown() override;
 
@@ -49,7 +50,7 @@ class FakeArcSession : public ArcSession {
   ArcStopReason boot_failure_reason_;
 
   bool boot_suspended_ = false;
-  bool is_for_login_screen_ = false;
+  base::Optional<ArcInstanceMode> target_mode_;
   bool running_ = false;
   bool stop_requested_ = false;
 
