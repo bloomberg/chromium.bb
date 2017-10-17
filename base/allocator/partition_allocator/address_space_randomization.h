@@ -11,6 +11,15 @@
 
 namespace base {
 
+// Sets the seed for the random number generator used by GetRandomPageBase in
+// order to generate a predictable sequence of addresses. May be called multiple
+// times. On official Chrome builds this function is disabled and has no effect.
+BASE_EXPORT void SetRandomPageBaseSeed(int64_t seed);
+
+// Calculates a random preferred mapping address. In calculating an address, we
+// balance good ASLR against not fragmenting the address space too badly.
+BASE_EXPORT void* GetRandomPageBase();
+
 namespace internal {
 
 constexpr uintptr_t AslrAddress(uintptr_t mask) {
@@ -128,10 +137,6 @@ constexpr uintptr_t kASLROffset = AslrAddress(0x20000000ULL);
 #endif  // defined(ARCH_CPU_32_BITS)
 
 }  // namespace internal
-
-// Calculates a random preferred mapping address. In calculating an address, we
-// balance good ASLR against not fragmenting the address space too badly.
-BASE_EXPORT void* GetRandomPageBase();
 
 }  // namespace base
 
