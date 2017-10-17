@@ -51,7 +51,7 @@
 #include "core/page/FocusController.h"
 #include "core/page/PluginsChangedObserver.h"
 #include "core/page/PointerLockController.h"
-#include "core/page/ScopedPageSuspender.h"
+#include "core/page/ScopedPagePauser.h"
 #include "core/page/ValidationMessageClient.h"
 #include "core/page/scrolling/OverscrollController.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
@@ -99,7 +99,7 @@ float DeviceScaleFactorDeprecated(LocalFrame* frame) {
 Page* Page::CreateOrdinary(PageClients& page_clients) {
   Page* page = Create(page_clients);
   OrdinaryPages().insert(page);
-  if (ScopedPageSuspender::IsActive())
+  if (ScopedPagePauser::IsActive())
     page->SetPaused(true);
   return page;
 }

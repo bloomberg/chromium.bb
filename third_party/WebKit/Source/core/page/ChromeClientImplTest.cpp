@@ -38,7 +38,7 @@
 #include "core/loader/FrameLoadRequest.h"
 #include "core/page/ChromeClientImpl.h"
 #include "core/page/Page.h"
-#include "core/page/ScopedPageSuspender.h"
+#include "core/page/ScopedPagePauser.h"
 #include "platform/Language.h"
 #include "public/platform/WebInputEvent.h"
 #include "public/web/WebFrameClient.h"
@@ -96,8 +96,8 @@ class CreateWindowTest : public ::testing::Test {
   Persistent<ChromeClientImpl> chrome_client_impl_;
 };
 
-TEST_F(CreateWindowTest, CreateWindowFromSuspendedPage) {
-  ScopedPageSuspender suspender;
+TEST_F(CreateWindowTest, CreateWindowFromPausedPage) {
+  ScopedPagePauser pauser;
   LocalFrame* frame = ToWebLocalFrameImpl(main_frame_)->GetFrame();
   FrameLoadRequest request(frame->GetDocument());
   WebWindowFeatures features;

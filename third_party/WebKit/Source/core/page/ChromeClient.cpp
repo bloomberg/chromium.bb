@@ -31,7 +31,7 @@
 #include "core/layout/HitTestResult.h"
 #include "core/page/FrameTree.h"
 #include "core/page/Page.h"
-#include "core/page/ScopedPageSuspender.h"
+#include "core/page/ScopedPagePauser.h"
 #include "core/probe/CoreProbes.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/network/NetworkHints.h"
@@ -107,7 +107,7 @@ static bool OpenJavaScriptDialog(LocalFrame* frame,
   // Suspend pages in case the client method runs a new event loop that would
   // otherwise cause the load to continue while we're in the middle of
   // executing JavaScript.
-  ScopedPageSuspender suspender;
+  ScopedPagePauser pauser;
   probe::willRunJavaScriptDialog(frame);
   bool result = delegate();
   probe::didRunJavaScriptDialog(frame);
@@ -244,7 +244,7 @@ bool ChromeClient::Print(LocalFrame* frame) {
   // Suspend pages in case the client method runs a new event loop that would
   // otherwise cause the load to continue while we're in the middle of
   // executing JavaScript.
-  ScopedPageSuspender suspender;
+  ScopedPagePauser pauser;
 
   PrintDelegate(frame);
   return true;

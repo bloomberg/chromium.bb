@@ -10,7 +10,7 @@
 #include "core/html/forms/HTMLInputElement.h"
 #include "core/layout/LayoutObject.h"
 #include "core/loader/EmptyClients.h"
-#include "core/page/ScopedPageSuspender.h"
+#include "core/page/ScopedPagePauser.h"
 #include "core/page/ValidationMessageClient.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -139,7 +139,7 @@ TEST_F(HTMLFormControlElementTest, UpdateValidationMessageSkippedIfPrinting) {
 
   HTMLInputElement* input =
       ToHTMLInputElement(GetDocument().getElementById("input"));
-  ScopedPageSuspender suspender;  // print() suspends the page.
+  ScopedPagePauser pauser;  // print() pauses the page.
   input->reportValidity();
   EXPECT_FALSE(validation_message_client->IsValidationMessageVisible(*input));
 }
