@@ -9,11 +9,12 @@
 
 #include <vector>
 
+#include "base/macros.h"
 #include "sandbox/win/src/sid.h"
 
 namespace sandbox {
 
-struct SecurityCapabilities : public SECURITY_CAPABILITIES {
+class SecurityCapabilities final : public SECURITY_CAPABILITIES {
  public:
   explicit SecurityCapabilities(const Sid& package_sid);
   SecurityCapabilities(const Sid& package_sid,
@@ -24,6 +25,8 @@ struct SecurityCapabilities : public SECURITY_CAPABILITIES {
   std::vector<Sid> capabilities_;
   std::vector<SID_AND_ATTRIBUTES> capability_sids_;
   Sid package_sid_;
+
+  DISALLOW_COPY_AND_ASSIGN(SecurityCapabilities);
 };
 
 }  // namespace sandbox
