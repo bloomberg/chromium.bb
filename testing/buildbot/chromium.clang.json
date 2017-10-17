@@ -5091,6 +5091,32 @@
       }
     ]
   },
+  "ToTAndroidCFI": {
+    "gtest_tests": [
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_type": "bullhead"
+            }
+          ]
+        },
+        "test": "base_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_type": "bullhead"
+            }
+          ]
+        },
+        "test": "breakpad_unittests"
+      }
+    ]
+  },
   "ToTLinux": {
     "scripts": [
       {
