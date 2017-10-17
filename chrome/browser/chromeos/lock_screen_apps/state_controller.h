@@ -56,6 +56,7 @@ namespace lock_screen_apps {
 class AppWindowMetricsTracker;
 class FocusCyclerDelegate;
 class StateObserver;
+class FirstAppRunToastManager;
 
 // Manages state of lock screen action handler apps, and notifies
 // interested parties as the state changes.
@@ -159,6 +160,10 @@ class StateController : public ash::mojom::TrayActionClient,
   // Returns whether the focus has been taken from the app window.
   bool HandleTakeFocus(content::WebContents* web_contents, bool reverse);
 
+  FirstAppRunToastManager* first_app_run_toast_manager() {
+    return first_app_run_toast_manager_.get();
+  }
+
  private:
   // Called when profiles needed to run lock screen apps are ready - i.e. when
   // primary user profile was set using |SetPrimaryProfile| and the profile in
@@ -236,6 +241,13 @@ class StateController : public ash::mojom::TrayActionClient,
   // should not be reused for different lock sessions - it tracks number of app
   // launches per lock screen.
   std::unique_ptr<AppWindowMetricsTracker> note_app_window_metrics_;
+
+  // Used to show first lock screen app run (toast) dialog when an app window
+  // is first launched for an app.
+  // NOTE: The manager can be used for every app launch - before showing the
+  // toast dialog, the manager will bail out if it determines that the toast
+  // for the associated app has been previosly seen (and closed) by the user.
+  std::unique_ptr<FirstAppRunToastManager> first_app_run_toast_manager_;
 
   ScopedObserver<extensions::AppWindowRegistry,
                  extensions::AppWindowRegistry::Observer>

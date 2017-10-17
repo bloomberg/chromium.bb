@@ -609,6 +609,12 @@ const char kNoteTakingAppEnabledOnLockScreen[] =
 const char kNoteTakingAppsLockScreenWhitelist[] =
     "settings.note_taking_apps_lock_screen_whitelist";
 
+// Dictionary pref that maps lock screen app ID to a boolean indicating whether
+// the toast dialog has been show and dismissed as the app was being launched
+// on the lock screen.
+const char kNoteTakingAppsLockScreenToastShown[] =
+    "settings.note_taking_apps_lock_screen_toast_shown";
+
 // Whether the preferred note taking app should be requested to restore the last
 // note created on lock screen when launched on lock screen.
 const char kRestoreLastLockScreenNote[] =

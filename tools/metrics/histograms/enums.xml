@@ -8391,6 +8391,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="77" label="Validation Message"/>
   <int value="78" label="Web Share Target Picker"/>
   <int value="79" label="Zoom"/>
+  <int value="80" label="Lock Screen Note App Toast"/>
 </enum>
 
 <enum name="DidNavigateToAd">
