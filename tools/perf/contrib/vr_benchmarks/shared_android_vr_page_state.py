@@ -13,6 +13,10 @@ from telemetry.core import util
 from telemetry.internal.platform import android_device
 
 
+CARDBOARD_PATH = os.path.join('chrome', 'android', 'shared_preference_files',
+                              'test', 'vr_cardboard_skipdon_setupcomplete.json')
+
+
 class SharedAndroidVrPageState(
     screen_state.AndroidScreenRestorationSharedState):
   """SharedPageState for VR Telemetry tests.
@@ -43,7 +47,8 @@ class SharedAndroidVrPageState(
 
   def _PerformAndroidVrSetup(self):
     self._InstallVrCore()
-    self._ConfigureVrCore()
+    self._ConfigureVrCore(os.path.join(path_util.GetChromiumSrcDir(),
+                                       self._finder_options.shared_prefs_file))
     self._InstallNfcApk()
 
   def _InstallVrCore(self):
@@ -55,11 +60,9 @@ class SharedAndroidVrPageState(
                      'gvr-android-sdk', 'test-apks', 'vr_services',
                      'vr_services_current.apk'))
 
-  def _ConfigureVrCore(self):
-    """Configures VrCore using the settings file passed to the benchmark."""
-    settings = shared_preference_utils.ExtractSettingsFromJson(
-        os.path.join(path_util.GetChromiumSrcDir(),
-                     self._finder_options.shared_prefs_file))
+  def _ConfigureVrCore(self, filepath):
+    """Configures VrCore using the provided settings file."""
+    settings = shared_preference_utils.ExtractSettingsFromJson(filepath)
     for setting in settings:
       shared_pref = self._platform.GetSharedPrefs(setting['package'],
                                                   setting['filename'])
@@ -83,6 +86,15 @@ class SharedAndroidVrPageState(
     newest_apk_path = sorted(candidate_apks)[-1][1]
     self._platform.InstallApplication(
         os.path.join(chromium_root, newest_apk_path))
+
+  def TearDownState(self):
+    super(SharedAndroidVrPageState, self).TearDownState()
+    # Re-apply Cardboard as the viewer to leave the device in a consistent
+    # state after a benchmark run
+    # TODO(bsheedy): Remove this after crbug.com/772969 is fixed
+    self._ConfigureVrCore(os.path.join(path_util.GetChromiumSrcDir(),
+                                       CARDBOARD_PATH))
+
 
   @property
   def platform(self):
