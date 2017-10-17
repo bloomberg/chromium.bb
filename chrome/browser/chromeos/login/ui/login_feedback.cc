@@ -237,12 +237,14 @@ void LoginFeedback::Request(const std::string& description,
   finished_callback_ = finished_callback;
   feedback_window_handler_.reset(new FeedbackWindowHandler(this));
 
+  // Do not call EnsureFeedbackUI() immediately. Otherwise, event listener is
+  // possibly registered before extension installation is complete in
+  // EventRouter::DispatchEventWithLazyListener() which possibly causes a race
+  // condition.
+
   FeedbackExtensionLoader::Load(
       profile_,
       base::Bind(&LoginFeedback::EnsureFeedbackUI, weak_factory_.GetWeakPtr()));
-
-  // Triggers the extension background to be loaded.
-  EnsureFeedbackUI();
 }
 
 void LoginFeedback::EnsureFeedbackUI() {
