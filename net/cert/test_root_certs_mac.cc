@@ -46,11 +46,8 @@ OSStatus TestRootCerts::FixupSecTrustRef(SecTrustRef trust_ref) const {
   OSStatus status = SecTrustSetAnchorCertificates(trust_ref, temporary_roots_);
   if (status)
     return status;
-  return SecTrustSetAnchorCertificatesOnly(trust_ref, !allow_system_trust_);
-}
-
-void TestRootCerts::SetAllowSystemTrust(bool allow_system_trust) {
-  allow_system_trust_ = allow_system_trust;
+  // Trust system store in addition to trusting |temporary_roots_|.
+  return SecTrustSetAnchorCertificatesOnly(trust_ref, false);
 }
 
 TestRootCerts::~TestRootCerts() {}
@@ -58,7 +55,6 @@ TestRootCerts::~TestRootCerts() {}
 void TestRootCerts::Init() {
   temporary_roots_.reset(
       CFArrayCreateMutable(kCFAllocatorDefault, 0, &kCFTypeArrayCallBacks));
-  allow_system_trust_ = true;
 }
 
 }  // namespace net
