@@ -288,6 +288,7 @@ GpuProcessTransportFactory::CreateSoftwareOutputDevice(
   }
 #endif
 
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 #if defined(OS_WIN)
   return std::make_unique<SoftwareOutputDeviceWin>(software_backing_.get(),
                                                    widget);

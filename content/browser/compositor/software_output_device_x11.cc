@@ -10,7 +10,6 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
-#include "content/public/browser/browser_thread.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/base/x/x11_util_internal.h"
@@ -21,7 +20,7 @@ namespace content {
 SoftwareOutputDeviceX11::SoftwareOutputDeviceX11(gfx::AcceleratedWidget widget)
     : widget_(widget), display_(gfx::GetXDisplay()), gc_(NULL) {
   // TODO(skaslev) Remove this when crbug.com/180702 is fixed.
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   gc_ = XCreateGC(display_, widget_, 0, NULL);
   if (!XGetWindowAttributes(display_, widget_, &attributes_)) {
@@ -31,13 +30,13 @@ SoftwareOutputDeviceX11::SoftwareOutputDeviceX11(gfx::AcceleratedWidget widget)
 }
 
 SoftwareOutputDeviceX11::~SoftwareOutputDeviceX11() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   XFreeGC(display_, gc_);
 }
 
 void SoftwareOutputDeviceX11::EndPaint() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   SoftwareOutputDevice::EndPaint();
 

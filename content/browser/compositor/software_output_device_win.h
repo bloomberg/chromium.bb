@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/threading/thread_checker.h"
 #include "components/viz/service/display/software_output_device.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -64,6 +65,7 @@ class SoftwareOutputDeviceWin : public viz::SoftwareOutputDevice {
   bool is_hwnd_composited_;
   OutputDeviceBacking* backing_;
   bool in_paint_;
+  THREAD_CHECKER(thread_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(SoftwareOutputDeviceWin);
 };
