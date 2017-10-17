@@ -7,8 +7,6 @@
   await TestRunner.loadModule('sources_test_runner');
   await TestRunner.showPanel('sources');
   await TestRunner.addStylesheetTag('./resources/empty.css');
-  await TestRunner.addScriptTag('../resources/autocomplete-test.js');
-  await TestRunner.addScriptTag('../resources/editor-test.js');
 
   SourcesTestRunner.showScriptSource('empty.css', onSourceFrame);
 

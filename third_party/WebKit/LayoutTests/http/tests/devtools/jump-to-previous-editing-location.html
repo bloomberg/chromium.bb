@@ -5,6 +5,7 @@
 <script src="../inspector/debugger-test.js"></script>
 <script src="resources/example-fileset-for-test.js"></script>
 <script src="resources/editor-test.js"></script>
+<script src="resources/jump-text.js"></script>
 <script>
 function test() {
   var panel = UI.panels.sources;
@@ -128,10 +129,10 @@ function test() {
     },
 
     function testCrossFileJump(next) {
-      SourcesTestRunner.showScriptSource('editor-test.js', onContentLoaded);
+      SourcesTestRunner.showScriptSource('jump-text.js', onContentLoaded);
       function onContentLoaded() {
         var editor = panel.visibleView.textEditor;
-        dumpSelection('Opened editor-test.js');
+        dumpSelection('Opened jump-text.js');
         clickAndDump(editor, [10, 11], [1, 1]);
         for (var i = 0; i < 4; ++i) {
           rollback();
@@ -199,7 +200,7 @@ function test() {
 
     function testShowAnchorLocation(next) {
       dumpSelection('Before switching to other panel');
-      SourcesTestRunner.waitForScriptSource('editor-test.js', onScriptSource);
+      SourcesTestRunner.waitForScriptSource('jump-text.js', onScriptSource);
       function onScriptSource(uiSourceCode) {
         var linkifier = new Components.Linkifier();
         var anchorURI = uiSourceCode.url();
