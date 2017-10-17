@@ -345,7 +345,7 @@ void PaymentRequestState::SetSelectedShippingProfile(
   // Use the country code from the profile if it is set, otherwise infer it
   // from the |app_locale_|.
   std::string country_code = autofill::data_util::GetCountryCodeWithFallback(
-      selected_shipping_profile_, app_locale_);
+      *selected_shipping_profile_, app_locale_);
   payment_request_delegate_->GetAddressNormalizer()->StartAddressNormalization(
       *selected_shipping_profile_, country_code, /*timeout_seconds=*/2, this);
 }

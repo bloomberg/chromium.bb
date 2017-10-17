@@ -219,8 +219,8 @@ PaymentsProfileComparator::ComputeMissingFields(
   // otherwise. Note that international format numbers will always work--this
   // is just the region that will be used to check if the number is
   // potentially in a local format.
-  std::string country =
-      autofill::data_util::GetCountryCodeWithFallback(&profile, app_locale());
+  const std::string country =
+      autofill::data_util::GetCountryCodeWithFallback(profile, app_locale());
 
   base::string16 phone = profile.GetInfo(
       autofill::AutofillType(autofill::PHONE_HOME_WHOLE_NUMBER), app_locale());

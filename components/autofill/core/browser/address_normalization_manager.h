@@ -22,11 +22,11 @@ class AutofillProfile;
 // class is not thread-safe.
 class AddressNormalizationManager {
  public:
-  // Initializes an AddressNormalizationManager. |default_country_code| will be
-  // used if the country code in an AutofillProfile to normalize is not valid.
-  // The AddressNormalizationManager does not own |address_normalizer|.
+  // Initializes an AddressNormalizationManager. |app_locale| will be used to
+  // lookup the default country code in an AutofillProfile to normalize is not
+  // valid. The AddressNormalizationManager does not own |address_normalizer|.
   AddressNormalizationManager(AddressNormalizer* address_normalizer,
-                              const std::string& default_country_code);
+                              const std::string& app_locale);
 
   ~AddressNormalizationManager();
 
@@ -83,8 +83,9 @@ class AddressNormalizationManager {
   // Whether the AddressNormalizationManager is still accepting requests or not.
   bool accepting_requests_ = true;
 
-  // The default country code to use if a profile does not have a valid country.
-  const std::string default_country_code_;
+  // The application locale, which will be used to lookup the default country
+  // code in absence of a country code in the profile.
+  const std::string app_locale_;
 
   // The callback to execute when all addresses have been normalized.
   base::OnceClosure completion_callback_;

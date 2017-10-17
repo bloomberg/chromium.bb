@@ -68,11 +68,8 @@ void AutofillPaymentInstrument::InvokePaymentApp(
   // Start the normalization of the billing address.
   // Use the country code from the profile if it is set, otherwise infer it
   // from the |app_locale_|.
-  std::string country_code = base::UTF16ToUTF8(
-      billing_address_.GetRawInfo(autofill::ADDRESS_HOME_COUNTRY));
-  if (!autofill::data_util::IsValidCountryCode(country_code)) {
-    country_code = autofill::AutofillCountry::CountryCodeForLocale(app_locale_);
-  }
+  std::string country_code = autofill::data_util::GetCountryCodeWithFallback(
+      billing_address_, app_locale_);
   payment_request_delegate_->GetAddressNormalizer()->StartAddressNormalization(
       billing_address_, country_code, /*timeout_seconds=*/5, this);
 
