@@ -120,6 +120,15 @@ void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
 #endif  // CONFIG_UNPOISON_PARTITION_CTX
   }
 
+  for (i = 0; i < SKIP_CONTEXTS; ++i) {
+#if CONFIG_NEW_MULTISYMBOL
+    av1_cost_tokens_from_cdf(x->skip_cost[i], fc->skip_cdfs[i], NULL);
+#else
+    x->skip_cost[i][0] = av1_cost_bit(fc->skip_probs[i], 0);
+    x->skip_cost[i][1] = av1_cost_bit(fc->skip_probs[i], 1);
+#endif  // CONFIG_NEW_MULTISYMBOL
+  }
+
 #if CONFIG_KF_CTX
   for (i = 0; i < KF_MODE_CONTEXTS; ++i)
     for (j = 0; j < KF_MODE_CONTEXTS; ++j)

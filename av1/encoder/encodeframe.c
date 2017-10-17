@@ -1029,6 +1029,17 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
   int super_block_upper_left =
       ((mi_row & MAX_MIB_MASK) == 0) && ((mi_col & MAX_MIB_MASK) == 0);
 
+  const int seg_ref_active =
+      segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_REF_FRAME);
+
+  if (!seg_ref_active) {
+    const int skip_ctx = av1_get_skip_context(xd);
+    td->counts->skip[skip_ctx][mbmi->skip]++;
+#if CONFIG_NEW_MULTISYMBOL
+    update_cdf(fc->skip_cdfs[skip_ctx], mbmi->skip, 2);
+#endif  // CONFIG_NEW_MULTISYMBOL
+  }
+
   if (cm->delta_q_present_flag && (bsize != cm->sb_size || !mbmi->skip) &&
       super_block_upper_left) {
     const int dq = (mbmi->current_q_index - xd->prev_qindex) / cm->delta_q_res;
@@ -1087,8 +1098,6 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
     FRAME_COUNTS *const counts = td->counts;
     RD_COUNTS *rdc = &td->rd_counts;
     const int inter_block = is_inter_block(mbmi);
-    const int seg_ref_active =
-        segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_REF_FRAME);
     if (!seg_ref_active) {
       counts->intra_inter[av1_get_intra_inter_context(xd)][inter_block]++;
 #if CONFIG_NEW_MULTISYMBOL

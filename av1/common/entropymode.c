@@ -2450,14 +2450,15 @@ static const aom_cdf_prob
 #endif  // CONFIG_NEW_MULTISYMBOL
 #endif  // CONFIG_VAR_TX
 
-static const aom_prob default_skip_probs[SKIP_CONTEXTS] = { 192, 128, 64 };
 #if CONFIG_NEW_MULTISYMBOL
 static const aom_cdf_prob default_skip_cdfs[SKIP_CONTEXTS][CDF_SIZE(2)] = {
   { AOM_ICDF(24576), AOM_ICDF(32768), 0 },
   { AOM_ICDF(16384), AOM_ICDF(32768), 0 },
   { AOM_ICDF(8192), AOM_ICDF(32768), 0 }
 };
-#endif
+#else
+static const aom_prob default_skip_probs[SKIP_CONTEXTS] = { 192, 128, 64 };
+#endif  // CONFIG_NEW_MULTISYMBOL
 
 #if CONFIG_LGT_FROM_PRED
 static const aom_prob default_intra_lgt_prob[LGT_SIZES][INTRA_MODES] = {
@@ -6276,7 +6277,6 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_copy(fc->txfm_partition_cdf, default_txfm_partition_cdf);
 #endif
 #endif
-  av1_copy(fc->skip_probs, default_skip_probs);
   av1_copy(fc->newmv_prob, default_newmv_prob);
   av1_copy(fc->zeromv_prob, default_zeromv_prob);
   av1_copy(fc->refmv_prob, default_refmv_prob);
@@ -6356,7 +6356,9 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
 #if CONFIG_NEW_MULTISYMBOL
   av1_copy(fc->skip_cdfs, default_skip_cdfs);
   av1_copy(fc->intra_inter_cdf, default_intra_inter_cdf);
-#endif
+#else
+  av1_copy(fc->skip_probs, default_skip_probs);
+#endif  // CONFIG_NEW_MULTISYMBOL
   av1_copy(fc->seg.tree_cdf, default_seg_tree_cdf);
   av1_copy(fc->tx_size_cdf, default_tx_size_cdf);
   av1_copy(fc->delta_q_prob, default_delta_q_probs);
@@ -6528,9 +6530,11 @@ void av1_adapt_intra_frame_probs(AV1_COMMON *cm) {
   }
 #endif
 
+#if !CONFIG_NEW_MULTISYMBOL
   for (i = 0; i < SKIP_CONTEXTS; ++i)
     fc->skip_probs[i] =
         av1_mode_mv_merge_probs(pre_fc->skip_probs[i], counts->skip[i]);
+#endif  // !CONFIG_NEW_MULTISYMBOL
 
 #if CONFIG_LGT_FROM_PRED
   int j;

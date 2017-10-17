@@ -303,11 +303,12 @@ typedef struct frame_contexts {
   aom_cdf_prob txfm_partition_cdf[TXFM_PARTITION_CONTEXTS][CDF_SIZE(2)];
 #endif
 #endif  // CONFIG_VAR_TX
-  aom_prob skip_probs[SKIP_CONTEXTS];
 #if CONFIG_NEW_MULTISYMBOL
   aom_cdf_prob skip_cdfs[SKIP_CONTEXTS][CDF_SIZE(2)];
   aom_cdf_prob intra_inter_cdf[INTRA_INTER_CONTEXTS][CDF_SIZE(2)];
-#endif
+#else
+  aom_prob skip_probs[SKIP_CONTEXTS];
+#endif  // CONFIG_NEW_MULTISYMBOL
   nmv_context nmvc[NMV_CONTEXTS];
 #if CONFIG_INTRABC
   nmv_context ndvc;

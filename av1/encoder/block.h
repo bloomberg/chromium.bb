@@ -219,6 +219,8 @@ struct macroblock {
   int skip_chroma_rd;
 #endif
 
+  int skip_cost[SKIP_CONTEXTS][2];
+
 #if CONFIG_LV_MAP
   LV_MAP_COEFF_COST coeff_costs[TX_SIZES][PLANE_TYPES];
   uint16_t cb_offset;
