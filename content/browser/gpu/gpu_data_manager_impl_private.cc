@@ -27,6 +27,7 @@
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
+#include "content/public/browser/gpu_utils.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_features.h"
@@ -41,6 +42,7 @@
 #include "gpu/config/gpu_switches.h"
 #include "gpu/config/gpu_util.h"
 #include "gpu/config/software_rendering_list_autogen.h"
+#include "gpu/ipc/common/gpu_preferences_util.h"
 #include "gpu/ipc/common/memory_stats.h"
 #include "gpu/ipc/host/shader_disk_cache.h"
 #include "gpu/ipc/service/switches.h"
@@ -728,6 +730,11 @@ void GpuDataManagerImplPrivate::AppendRendererCommandLine(
 void GpuDataManagerImplPrivate::AppendGpuCommandLine(
     base::CommandLine* command_line) const {
   DCHECK(command_line);
+
+  gpu::GpuPreferences gpu_prefs = GetGpuPreferencesFromCommandLine();
+  UpdateGpuPreferences(&gpu_prefs);
+  command_line->AppendSwitchASCII(switches::kGpuPreferences,
+                                  gpu::GpuPreferencesToSwitchValue(gpu_prefs));
 
   std::string use_gl =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(

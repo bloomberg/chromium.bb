@@ -86,6 +86,7 @@ source_set("browser") {
     "//gpu",
     "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/command_buffer/client:gles2_interface",
+    "//gpu/ipc/common:gpu_preferences_util",
     "//gpu/ipc/host",
     "//gpu/vulkan:features",
     "//media",

@@ -10,6 +10,10 @@ config("gpu_implementation") {
   defines = [ "GPU_IMPLEMENTATION" ]
 }
 
+config("gpu_util_implementation") {
+  defines = [ "GPU_UTIL_IMPLEMENTATION" ]
+}
+
 component("gpu") {
   public_deps = [
     "//gpu/command_buffer/client:client_sources",
@@ -21,6 +25,12 @@ component("gpu") {
     "//gpu/ipc/client:ipc_client_sources",
     "//gpu/ipc/common:ipc_common_sources",
     "//gpu/ipc/service:ipc_service_sources",
+  ]
+}
+
+component("gpu_util") {
+  public_deps = [
+    "//gpu/ipc/common:gpu_preferences_util_sources",
   ]
 }
 
@@ -325,6 +335,7 @@ test("gpu_unittests") {
     "config/gpu_util_unittest.cc",
     "ipc/client/gpu_memory_buffer_impl_shared_memory_unittest.cc",
     "ipc/client/gpu_memory_buffer_impl_test_template.h",
+    "ipc/common/gpu_preferences_util_unittest.cc",
     "ipc/common/struct_traits_unittest.cc",
     "ipc/host/shader_disk_cache_unittest.cc",
   ]
@@ -364,6 +375,7 @@ test("gpu_unittests") {
     "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/command_buffer/common:gles2_utils",
     "//gpu/ipc:gl_in_process_context",
+    "//gpu/ipc/common:gpu_preferences_util",
     "//gpu/ipc/common:test_interfaces",
     "//gpu/ipc/host",
     "//mojo/edk/system",
