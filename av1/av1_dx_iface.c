@@ -125,6 +125,10 @@ static aom_codec_err_t decoder_destroy(aom_codec_alg_priv_t *ctx) {
       FrameWorkerData *const frame_worker_data =
           (FrameWorkerData *)worker->data1;
       aom_get_worker_interface()->end(worker);
+#if CONFIG_MFMV
+      aom_free(frame_worker_data->pbi->common.tpl_mvs);
+      frame_worker_data->pbi->common.tpl_mvs = NULL;
+#endif
       av1_remove_common(&frame_worker_data->pbi->common);
 #if CONFIG_LOOP_RESTORATION
       av1_free_restoration_buffers(&frame_worker_data->pbi->common);
@@ -134,10 +138,6 @@ static aom_codec_err_t decoder_destroy(aom_codec_alg_priv_t *ctx) {
 #if CONFIG_MULTITHREAD
       pthread_mutex_destroy(&frame_worker_data->stats_mutex);
       pthread_cond_destroy(&frame_worker_data->stats_cond);
-#endif
-#if CONFIG_MFMV
-      aom_free(frame_worker_data->pbi->common.tpl_mvs);
-      frame_worker_data->pbi->common.tpl_mvs = NULL;
 #endif
       aom_free(frame_worker_data);
     }
