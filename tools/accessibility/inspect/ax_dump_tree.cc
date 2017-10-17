@@ -7,9 +7,10 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
-#include "tools/accessibility/inspect/ax_event_server.h"
+#include "tools/accessibility/inspect/ax_tree_server.h"
 
 char kPidSwitch[] = "pid";
+char kWindowSwitch[] = "window";
 
 // Convert from string to int, whether in 0x hex format or decimal format.
 bool StringToInt(std::string str, int* result) {
@@ -23,19 +24,30 @@ bool StringToInt(std::string str, int* result) {
 
 int main(int argc, char** argv) {
   base::AtExitManager at_exit_manager;
-  // TODO(aleventhal) Want callback after Ctrl+C or some global keystroke:
-  // base::AtExitManager::RegisterCallback(content::OnExit, nullptr);
 
   base::CommandLine::Init(argc, argv);
-  std::string pid_str =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(kPidSwitch);
-  int pid;
-  if (!pid_str.empty()) {
-    if (StringToInt(pid_str, &pid)) {
-      std::unique_ptr<content::AXEventServer> server(
-          new content::AXEventServer(pid));
+  std::string window_str =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          kWindowSwitch);
+  if (!window_str.empty()) {
+    int window;
+    if (StringToInt(window_str, &window)) {
+      gfx::AcceleratedWidget widget(
+          reinterpret_cast<gfx::AcceleratedWidget>(window));
+      std::unique_ptr<content::AXTreeServer> server(
+          new content::AXTreeServer(widget));
+      return 0;
     }
   }
-
+  std::string pid_str =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(kPidSwitch);
+  if (!pid_str.empty()) {
+    int pid;
+    if (StringToInt(pid_str, &pid)) {
+      base::ProcessId process_id = static_cast<base::ProcessId>(pid);
+      std::unique_ptr<content::AXTreeServer> server(
+          new content::AXTreeServer(process_id));
+    }
+  }
   return 0;
 }

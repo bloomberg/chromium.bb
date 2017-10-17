@@ -2,21 +2,42 @@
 # Copyright 2017 The Chromium Authors. All rights reserved.
 # found in the LICENSE file.
 
-executable("ax_dump_events") {
-  testonly = true
+if (is_win) {
+  executable("ax_dump_events") {
+    testonly = true
 
-  sources = [
-    "ax_dump_events.cc",
-    "ax_event_server.cc",
-  ]
+    sources = [
+      "ax_dump_events.cc",
+      "ax_event_server.cc",
+    ]
 
-  deps = [
-    "//base",
-    "//base/test:test_support",
-    "//content/test:test_support",
-  ]
+    deps = [
+      "//base",
+      "//base/test:test_support",
+      "//content/test:test_support",
+    ]
 
-  if (is_win) {
-    libs = [ "oleacc.lib" ]
+    if (is_win) {
+      libs = [ "oleacc.lib" ]
+    }
+  }
+
+  executable("ax_dump_tree") {
+    testonly = true
+
+    sources = [
+      "ax_dump_tree.cc",
+      "ax_tree_server.cc",
+    ]
+
+    deps = [
+      "//base",
+      "//base/test:test_support",
+      "//content/test:test_support",
+    ]
+
+    if (is_win) {
+      libs = [ "oleacc.lib" ]
+    }
   }
 }
