@@ -11,18 +11,14 @@
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
+#include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class MockBrowserViewLayoutDelegate : public BrowserViewLayoutDelegate {
  public:
   explicit MockBrowserViewLayoutDelegate(views::View* contents_web_view)
-      : contents_web_view_(contents_web_view),
-        tab_strip_visible_(true),
-        toolbar_visible_(true),
-        bookmark_bar_visible_(true),
-        download_shelf_needs_layout_(false) {
-  }
+      : contents_web_view_(contents_web_view) {}
   ~MockBrowserViewLayoutDelegate() override {}
 
   void set_download_shelf_needs_layout(bool layout) {
@@ -60,10 +56,10 @@ class MockBrowserViewLayoutDelegate : public BrowserViewLayoutDelegate {
 
  private:
   views::View* contents_web_view_;
-  bool tab_strip_visible_;
-  bool toolbar_visible_;
-  bool bookmark_bar_visible_;
-  bool download_shelf_needs_layout_;
+  bool tab_strip_visible_ = true;
+  bool toolbar_visible_ = true;
+  bool bookmark_bar_visible_ = true;
+  bool download_shelf_needs_layout_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(MockBrowserViewLayoutDelegate);
 };
@@ -141,7 +137,7 @@ class BrowserViewLayoutTest : public BrowserWithTestWindowTest {
     immersive_mode_controller_.reset(new MockImmersiveModeController);
 
     top_container_ = CreateFixedSizeView(gfx::Size(800, 60));
-    tab_strip_ = new TabStrip(nullptr);
+    tab_strip_ = new TabStrip(std::unique_ptr<TabStripController>());
     top_container_->AddChildView(tab_strip_);
     toolbar_ = CreateFixedSizeView(gfx::Size(800, 30));
     top_container_->AddChildView(toolbar_);

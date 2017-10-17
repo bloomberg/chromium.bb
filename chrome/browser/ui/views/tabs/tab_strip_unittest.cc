@@ -41,13 +41,7 @@ views::View* FindTabView(views::View* view) {
 
 class TestTabStripObserver : public TabStripObserver {
  public:
-  explicit TestTabStripObserver(TabStrip* tab_strip)
-      : tab_strip_(tab_strip),
-        last_tab_added_(-1),
-        last_tab_removed_(-1),
-        last_tab_moved_from_(-1),
-        last_tab_moved_to_(-1),
-        tabstrip_deleted_(false) {
+  explicit TestTabStripObserver(TabStrip* tab_strip) : tab_strip_(tab_strip) {
     tab_strip_->AddObserver(this);
   }
 
@@ -81,25 +75,22 @@ class TestTabStripObserver : public TabStripObserver {
 
   void TabStripDeleted(TabStrip* tab_strip) override {
     tabstrip_deleted_ = true;
-    tab_strip_ = NULL;
+    tab_strip_ = nullptr;
   }
 
   TabStrip* tab_strip_;
-  int last_tab_added_;
-  int last_tab_removed_;
-  int last_tab_moved_from_;
-  int last_tab_moved_to_;
-  bool tabstrip_deleted_;
+  int last_tab_added_ = -1;
+  int last_tab_removed_ = -1;
+  int last_tab_moved_from_ = -1;
+  int last_tab_moved_to_ = -1;
+  bool tabstrip_deleted_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestTabStripObserver);
 };
 
 class TabStripTest : public views::ViewsTestBase {
  public:
-  TabStripTest()
-      : controller_(NULL),
-        tab_strip_(NULL) {
-  }
+  TabStripTest() {}
 
   ~TabStripTest() override {}
 
@@ -107,7 +98,7 @@ class TabStripTest : public views::ViewsTestBase {
     views::ViewsTestBase::SetUp();
 
     controller_ = new FakeBaseTabStripController;
-    tab_strip_ = new TabStrip(controller_);
+    tab_strip_ = new TabStrip(std::unique_ptr<TabStripController>(controller_));
     controller_->set_tab_strip(tab_strip_);
     // Do this to force TabStrip to create the buttons.
     parent_.AddChildView(tab_strip_);
@@ -144,10 +135,10 @@ class TabStripTest : public views::ViewsTestBase {
   void DoLayout() { tab_strip_->DoLayout(); }
 
   // Owned by TabStrip.
-  FakeBaseTabStripController* controller_;
+  FakeBaseTabStripController* controller_ = nullptr;
   // Owns |tab_strip_|.
   views::View parent_;
-  TabStrip* tab_strip_;
+  TabStrip* tab_strip_ = nullptr;
   std::unique_ptr<views::Widget> widget_;
 
  private:
@@ -178,7 +169,8 @@ TEST_F(TabStripTest, AddTabAt) {
 // Confirms that TabStripObserver::TabStripDeleted() is sent.
 TEST_F(TabStripTest, TabStripDeleted) {
   FakeBaseTabStripController* controller = new FakeBaseTabStripController;
-  TabStrip* tab_strip = new TabStrip(controller);
+  TabStrip* tab_strip =
+      new TabStrip(std::unique_ptr<TabStripController>(controller));
   controller->set_tab_strip(tab_strip);
   TestTabStripObserver observer(tab_strip);
   delete tab_strip;
