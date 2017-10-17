@@ -49,7 +49,7 @@ declare_args() {
 # and means its definition can participate in the build graph, only recompiling
 # things when it actually changes.
 #
-# See //build/buildflag_header.gni for inntructions on generating headers.
+# See //build/buildflag_header.gni for instructions on generating headers.
 #
 # This will also allow you to scope your build flag to a BUILD.gn file (or a
 # .gni file if you need it from more than one place) rather than making global
