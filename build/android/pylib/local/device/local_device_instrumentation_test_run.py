@@ -10,6 +10,7 @@ import os
 import posixpath
 import re
 import sys
+import tempfile
 import time
 
 from devil.android import crash_handler
@@ -17,20 +18,19 @@ from devil.android import device_errors
 from devil.android import device_temp_file
 from devil.android import flag_changer
 from devil.android.sdk import shared_prefs
-from devil.android import logcat_monitor
 from devil.android.tools import system_app
 from devil.utils import reraiser_thread
 from incremental_install import installer
 from pylib import valgrind_tools
 from pylib.base import base_test_result
-from pylib.base import output_manager
 from pylib.constants import host_paths
 from pylib.instrumentation import instrumentation_test_instance
 from pylib.local.device import local_device_environment
 from pylib.local.device import local_device_test_run
+from pylib.utils import google_storage_helper
 from pylib.utils import instrumentation_tracing
+from pylib.utils import logdog_helper
 from pylib.utils import shared_preference_utils
-
 from py_trace_event import trace_event
 from py_trace_event import trace_time
 from py_utils import contextlib_ext
@@ -121,8 +121,7 @@ _CURRENT_FOCUS_CRASH_RE = re.compile(
 class LocalDeviceInstrumentationTestRun(
     local_device_test_run.LocalDeviceTestRun):
   def __init__(self, env, test_instance):
-    super(LocalDeviceInstrumentationTestRun, self).__init__(
-        env, test_instance)
+    super(LocalDeviceInstrumentationTestRun, self).__init__(env, test_instance)
     self._flag_changers = {}
     self._ui_capture_dir = dict()
     self._replace_package_contextmanager = None
@@ -361,9 +360,12 @@ class LocalDeviceInstrumentationTestRun(
       extras['coverageFile'] = coverage_device_file
     # Save screenshot if screenshot dir is specified (save locally) or if
     # a GS bucket is passed (save in cloud).
-    screenshot_device_file = device_temp_file.DeviceTempFile(
-        device.adb, suffix='.png', dir=device.GetExternalStoragePath())
-    extras[EXTRA_SCREENSHOT_FILE] = screenshot_device_file.name
+    screenshot_device_file = None
+    if (self._test_instance.screenshot_dir or
+        self._test_instance.gs_results_bucket):
+      screenshot_device_file = device_temp_file.DeviceTempFile(
+          device.adb, suffix='.png', dir=device.GetExternalStoragePath())
+      extras[EXTRA_SCREENSHOT_FILE] = screenshot_device_file.name
 
     extras[EXTRA_UI_CAPTURE_DIR] = self._ui_capture_dir[device]
 
@@ -438,26 +440,19 @@ class LocalDeviceInstrumentationTestRun(
     time_ms = lambda: int(time.time() * 1e3)
     start_ms = time_ms()
 
-    stream_name = 'logcat_%s_%s_%s' % (
-        test_name.replace('#', '.'),
-        time.strftime('%Y%m%dT%H%M%S-UTC', time.gmtime()),
-        device.serial)
+    with local_device_environment.OptionalPerTestLogcat(
+        device, test_name.replace('#', '.'),
+        self._test_instance.should_save_logcat,
+        additional_filter_specs=['%s:I' % _TAG],
+        deobfuscate_func=self._test_instance.MaybeDeobfuscateLines) as logmon:
+      with _LogTestEndpoints(device, test_name):
+        with contextlib_ext.Optional(
+            trace_event.trace(test_name),
+            self._env.trace_output):
+          output = device.StartInstrumentation(
+              target, raw=True, extras=extras, timeout=timeout, retries=0)
 
-    with self._env.output_manager.ArchivedTempfile(
-        stream_name, 'logcat') as logcat_file:
-      with logcat_monitor.LogcatMonitor(
-          device.adb,
-          filter_specs=local_device_environment.LOGCAT_FILTERS,
-          output_file=logcat_file.name,
-          transform_func=self._test_instance.MaybeDeobfuscateLines) as logmon:
-        with _LogTestEndpoints(device, test_name):
-          with contextlib_ext.Optional(
-              trace_event.trace(test_name),
-              self._env.trace_output):
-            output = device.StartInstrumentation(
-                target, raw=True, extras=extras, timeout=timeout, retries=0)
-      logmon.Close()
-
+    logcat_url = logmon.GetLogcatURL()
     duration_ms = time_ms() - start_ms
 
     with contextlib_ext.Optional(
@@ -519,8 +514,8 @@ class LocalDeviceInstrumentationTestRun(
         step()
 
     for result in results:
-      if logcat_file:
-        result.SetLink('logcat', logcat_file.Link())
+      if logcat_url:
+        result.SetLink('logcat', logcat_url)
 
     # Update the result name if the test used flags.
     if flags_to_add:
@@ -549,8 +544,15 @@ class LocalDeviceInstrumentationTestRun(
     if any(r.GetType() not in (base_test_result.ResultType.PASS,
                                base_test_result.ResultType.SKIP)
            for r in results):
-      self._SaveScreenshot(device, screenshot_device_file, test_display_name,
-                           results)
+      with contextlib_ext.Optional(
+          tempfile_ext.NamedTemporaryDirectory(),
+          self._test_instance.screenshot_dir is None and
+              self._test_instance.gs_results_bucket) as screenshot_host_dir:
+        screenshot_host_dir = (
+            self._test_instance.screenshot_dir or screenshot_host_dir)
+        self._SaveScreenshot(device, screenshot_host_dir,
+                             screenshot_device_file, test_display_name,
+                             results)
 
       logging.info('detected failure in %s. raw output:', test_display_name)
       for l in output:
@@ -578,13 +580,13 @@ class LocalDeviceInstrumentationTestRun(
                 include_stack_symbols=False,
                 wipe_tombstones=True,
                 tombstone_symbolizer=self._test_instance.symbolizer)
-            tombstone_filename = 'tombstones_%s_%s' % (
+            stream_name = 'tombstones_%s_%s' % (
                 time.strftime('%Y%m%dT%H%M%S-UTC', time.gmtime()),
                 device.serial)
-            with self._env.output_manager.ArchivedTempfile(
-                tombstone_filename, 'tombstones') as tombstone_file:
-              tombstone_file.write('\n'.join(resolved_tombstones))
-            result.SetLink('tombstones', tombstone_file.Link())
+            tombstones_url = logdog_helper.text(
+                stream_name, '\n'.join(resolved_tombstones))
+          result.SetLink('tombstones', tombstones_url)
+
     if self._env.concurrent_adb:
       post_test_step_thread_group.JoinAll()
     return results, None
@@ -700,23 +702,41 @@ class LocalDeviceInstrumentationTestRun(
       with open(trace_host_file, 'a') as host_handle:
         host_handle.write(java_trace_json)
 
-  def _SaveScreenshot(self, device, screenshot_device_file, test_name, results):
-      screenshot_filename = '%s-%s.png' % (
-          test_name, time.strftime('%Y%m%dT%H%M%S-UTC', time.gmtime()))
+  def _SaveScreenshot(self, device, screenshot_host_dir, screenshot_device_file,
+                      test_name, results):
+    if screenshot_host_dir:
+      screenshot_host_file = os.path.join(
+          screenshot_host_dir,
+          '%s-%s.png' % (
+              test_name,
+              time.strftime('%Y%m%dT%H%M%S-UTC', time.gmtime())))
       if device.FileExists(screenshot_device_file.name):
-        with self._env.output_manager.ArchivedTempfile(
-            screenshot_filename, 'screenshot',
-            output_manager.Datatype.IMAGE) as screenshot_host_file:
-          try:
-            device.PullFile(screenshot_device_file.name,
-                            screenshot_host_file.name)
-          finally:
-            screenshot_device_file.close()
-        for result in results:
-          result.SetLink('post_test_screenshot', screenshot_host_file.Link())
+        try:
+          device.PullFile(screenshot_device_file.name, screenshot_host_file)
+        finally:
+          screenshot_device_file.close()
+
+        logging.info(
+            'Saved screenshot for %s to %s.',
+            test_name, screenshot_host_file)
+        if self._test_instance.gs_results_bucket:
+          link = google_storage_helper.upload(
+              google_storage_helper.unique_name(
+                  'screenshot', device=device),
+              screenshot_host_file,
+              bucket=('%s/screenshots' %
+                      self._test_instance.gs_results_bucket))
+          for result in results:
+            result.SetLink('post_test_screenshot', link)
 
   def _ProcessRenderTestResults(
       self, device, render_tests_device_output_dir, results):
+    # If GS results bucket is specified, will archive render result images.
+    # If render image dir is specified, will pull the render result image from
+    # the device and leave in the directory.
+    if not (bool(self._test_instance.gs_results_bucket) or
+            bool(self._test_instance.render_results_dir)):
+      return
 
     failure_images_device_dir = posixpath.join(
         render_tests_device_output_dir, 'failures')
@@ -729,58 +749,85 @@ class LocalDeviceInstrumentationTestRun(
     golden_images_device_dir = posixpath.join(
         render_tests_device_output_dir, 'goldens')
 
-    for failure_filename in device.ListDirectory(failure_images_device_dir):
+    with contextlib_ext.Optional(
+        tempfile_ext.NamedTemporaryDirectory(),
+        not bool(self._test_instance.render_results_dir)) as render_temp_dir:
+      render_host_dir = (
+          self._test_instance.render_results_dir or render_temp_dir)
 
-      with self._env.output_manager.ArchivedTempfile(
-          'fail_%s' % failure_filename, 'render_tests',
-          output_manager.Datatype.IMAGE) as failure_image_host_file:
-        device.PullFile(
-            posixpath.join(failure_images_device_dir, failure_filename),
-            failure_image_host_file)
-      failure_link = failure_image_host_file.Link()
+      if not os.path.exists(render_host_dir):
+        os.makedirs(render_host_dir)
 
-      golden_image_device_file = posixpath.join(
-          golden_images_device_dir, failure_filename)
-      if device.PathExists(golden_image_device_file):
-        with self._env.output_manager.ArchivedTempfile(
-            'golden_%s' % failure_filename, 'render_tests',
-            output_manager.Datatype.IMAGE) as golden_image_host_file:
-          device.PullFile(
-              golden_image_device_file, golden_image_host_file)
-        golden_link = golden_image_host_file.Link()
+      # Pull all render test results from device.
+      device.PullFile(failure_images_device_dir, render_host_dir)
+
+      if device.FileExists(diff_images_device_dir):
+        device.PullFile(diff_images_device_dir, render_host_dir)
+      else:
+        logging.error('Diff images not found on device.')
+
+      if device.FileExists(golden_images_device_dir):
+        device.PullFile(golden_images_device_dir, render_host_dir)
+      else:
+        logging.error('Golden images not found on device.')
+
+      # Upload results to Google Storage.
+      if self._test_instance.gs_results_bucket:
+        self._UploadRenderTestResults(render_host_dir, results)
+
+  def _UploadRenderTestResults(self, render_host_dir, results):
+    render_tests_bucket = (
+        self._test_instance.gs_results_bucket + '/render_tests')
+
+    for failure_filename in os.listdir(
+        os.path.join(render_host_dir, 'failures')):
+      m = RE_RENDER_IMAGE_NAME.match(failure_filename)
+      if not m:
+        logging.warning('Unexpected file in render test failures: %s',
+                        failure_filename)
+        continue
+
+      failure_filepath = os.path.join(
+          render_host_dir, 'failures', failure_filename)
+      failure_link = google_storage_helper.upload_content_addressed(
+          failure_filepath, bucket=render_tests_bucket)
+
+      golden_filepath = os.path.join(
+          render_host_dir, 'goldens', failure_filename)
+      if os.path.exists(golden_filepath):
+        golden_link = google_storage_helper.upload_content_addressed(
+            golden_filepath, bucket=render_tests_bucket)
       else:
         golden_link = ''
 
-      diff_image_device_file = posixpath.join(
-          diff_images_device_dir, failure_filename)
-      if device.PathExists(diff_image_device_file):
-        with self._env.output_manager.ArchivedTempfile(
-            'diff_%s' % failure_filename, 'render_tests',
-            output_manager.Datatype.IMAGE) as diff_image_host_file:
-          device.PullFile(
-              diff_image_device_file, diff_image_host_file)
-        diff_link = diff_image_host_file.Link()
+      diff_filepath = os.path.join(
+          render_host_dir, 'diffs', failure_filename)
+      if os.path.exists(diff_filepath):
+        diff_link = google_storage_helper.upload_content_addressed(
+            diff_filepath, bucket=render_tests_bucket)
       else:
         diff_link = ''
 
-      jinja2_env = jinja2.Environment(
-          loader=jinja2.FileSystemLoader(_JINJA_TEMPLATE_DIR),
-          trim_blocks=True)
-      template = jinja2_env.get_template(_JINJA_TEMPLATE_FILENAME)
-      # pylint: disable=no-member
-      processed_template_output = template.render(
-          test_name=failure_filename,
-          failure_link=failure_link,
-          golden_link=golden_link,
-          diff_link=diff_link)
+      with tempfile.NamedTemporaryFile(suffix='.html') as temp_html:
+        jinja2_env = jinja2.Environment(
+            loader=jinja2.FileSystemLoader(_JINJA_TEMPLATE_DIR),
+            trim_blocks=True)
+        template = jinja2_env.get_template(_JINJA_TEMPLATE_FILENAME)
+        # pylint: disable=no-member
+        processed_template_output = template.render(
+            test_name=failure_filename,
+            failure_link=failure_link,
+            golden_link=golden_link,
+            diff_link=diff_link)
 
-      with self._env.output_manager.ArchivedTempfile(
-          '%s.html' % failure_filename, 'render_tests',
-          output_manager.Datatype.HTML) as html_results:
-        html_results.write(processed_template_output)
-        html_results.flush()
-      for result in results:
-        result.SetLink(failure_filename, html_results.Link())
+        temp_html.write(processed_template_output)
+        temp_html.flush()
+        html_results_link = google_storage_helper.upload_content_addressed(
+            temp_html.name,
+            bucket=render_tests_bucket,
+            content_type='text/html')
+        for result in results:
+          result.SetLink(failure_filename, html_results_link)
 
   #override
   def _ShouldRetry(self, test, result):

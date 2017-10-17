@@ -9,6 +9,7 @@ Due to logdog not having image or HTML viewer, those instead should be uploaded
 to Google Storage directly using this module.
 """
 
+import hashlib
 import logging
 import os
 import sys
@@ -60,6 +61,21 @@ def upload(name, filepath, bucket, content_type=None, authenticated_link=True):
   return get_url_link(name, bucket, authenticated_link)
 
 
+def upload_content_addressed(
+    filepath, bucket, content_type=None, authenticated_link=True):
+  """Uploads data to Google Storage with filename as sha1 hash.
+
+  If file already exists in bucket with hash name, nothing is uploaded.
+  """
+  sha1 = hashlib.sha1()
+  with open(filepath, 'rb') as f:
+    sha1.update(f.read())
+  sha1_hash = sha1.hexdigest()
+  if not exists(sha1_hash, bucket):
+    upload(sha1_hash, filepath, bucket, content_type, authenticated_link)
+  return get_url_link(sha1_hash, bucket, authenticated_link)
+
+
 @decorators.NoRaiseException(default_return_value=False)
 def exists(name, bucket):
   bucket = _format_bucket_name(bucket)
@@ -73,7 +89,6 @@ def exists(name, bucket):
     return False
 
 
-# TODO(jbudorick): Delete this function. Only one user of it.
 def unique_name(basename, suffix='', timestamp=True, device=None):
   """Helper function for creating a unique name for a file to store in GS.
 

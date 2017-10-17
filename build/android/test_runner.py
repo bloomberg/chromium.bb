@@ -36,13 +36,10 @@ from devil.utils import run_tests_helper
 from pylib import constants
 from pylib.base import base_test_result
 from pylib.base import environment_factory
-from pylib.base import output_manager
-from pylib.base import output_manager_factory
 from pylib.base import test_instance_factory
 from pylib.base import test_run_factory
 from pylib.results import json_results
 from pylib.results import report_results
-from pylib.results.presentation import test_results_presentation
 from pylib.utils import logdog_helper
 from pylib.utils import logging_utils
 
@@ -156,12 +153,6 @@ def AddCommonOptions(parser):
       '-e', '--environment',
       default='local', choices=constants.VALID_ENVIRONMENTS,
       help='Test environment to run in (default: %(default)s).')
-
-  parser.add_argument(
-      '--local-output',
-      action='store_true',
-      help='Whether to archive test output locally and generate '
-           'a local results detail page.')
 
   class FastLocalDevAction(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
@@ -837,85 +828,69 @@ def RunTestsInPlatformMode(args):
 
   ### Set up test objects.
 
-  out_manager = output_manager_factory.CreateOutputManager(args)
-  env = environment_factory.CreateEnvironment(
-      args, out_manager, infra_error)
+  env = environment_factory.CreateEnvironment(args, infra_error)
   test_instance = test_instance_factory.CreateTestInstance(args, infra_error)
   test_run = test_run_factory.CreateTestRun(
       args, env, test_instance, infra_error)
 
   ### Run.
-  with out_manager:
-    with json_writer, logcats_uploader, env, test_instance, test_run:
 
-      repetitions = (xrange(args.repeat + 1) if args.repeat >= 0
-                     else itertools.count())
-      result_counts = collections.defaultdict(
-          lambda: collections.defaultdict(int))
-      iteration_count = 0
-      for _ in repetitions:
-        raw_results = test_run.RunTests()
-        if not raw_results:
-          continue
+  with json_writer, logcats_uploader, env, test_instance, test_run:
 
-        all_raw_results.append(raw_results)
+    repetitions = (xrange(args.repeat + 1) if args.repeat >= 0
+                   else itertools.count())
+    result_counts = collections.defaultdict(
+        lambda: collections.defaultdict(int))
+    iteration_count = 0
+    for _ in repetitions:
+      raw_results = test_run.RunTests()
+      if not raw_results:
+        continue
 
-        iteration_results = base_test_result.TestRunResults()
-        for r in reversed(raw_results):
-          iteration_results.AddTestRunResults(r)
-        all_iteration_results.append(iteration_results)
+      all_raw_results.append(raw_results)
 
-        iteration_count += 1
-        for r in iteration_results.GetAll():
-          result_counts[r.GetName()][r.GetType()] += 1
-        report_results.LogFull(
-            results=iteration_results,
-            test_type=test_instance.TestType(),
-            test_package=test_run.TestPackage(),
-            annotation=getattr(args, 'annotations', None),
-            flakiness_server=getattr(args, 'flakiness_dashboard_server',
-                                     None))
-        if args.break_on_failure and not iteration_results.DidRunPass():
-          break
+      iteration_results = base_test_result.TestRunResults()
+      for r in reversed(raw_results):
+        iteration_results.AddTestRunResults(r)
+      all_iteration_results.append(iteration_results)
 
-      if iteration_count > 1:
-        # display summary results
-        # only display results for a test if at least one test did not pass
-        all_pass = 0
-        tot_tests = 0
-        for test_name in result_counts:
-          tot_tests += 1
-          if any(result_counts[test_name][x] for x in (
-              base_test_result.ResultType.FAIL,
-              base_test_result.ResultType.CRASH,
-              base_test_result.ResultType.TIMEOUT,
-              base_test_result.ResultType.UNKNOWN)):
-            logging.critical(
-                '%s: %s',
-                test_name,
-                ', '.join('%s %s' % (str(result_counts[test_name][i]), i)
-                          for i in base_test_result.ResultType.GetTypes()))
-          else:
-            all_pass += 1
+      iteration_count += 1
+      for r in iteration_results.GetAll():
+        result_counts[r.GetName()][r.GetType()] += 1
+      report_results.LogFull(
+          results=iteration_results,
+          test_type=test_instance.TestType(),
+          test_package=test_run.TestPackage(),
+          annotation=getattr(args, 'annotations', None),
+          flakiness_server=getattr(args, 'flakiness_dashboard_server',
+                                   None))
+      if args.break_on_failure and not iteration_results.DidRunPass():
+        break
 
-        logging.critical('%s of %s tests passed in all %s runs',
-                         str(all_pass),
-                         str(tot_tests),
-                         str(iteration_count))
+    if iteration_count > 1:
+      # display summary results
+      # only display results for a test if at least one test did not pass
+      all_pass = 0
+      tot_tests = 0
+      for test_name in result_counts:
+        tot_tests += 1
+        if any(result_counts[test_name][x] for x in (
+            base_test_result.ResultType.FAIL,
+            base_test_result.ResultType.CRASH,
+            base_test_result.ResultType.TIMEOUT,
+            base_test_result.ResultType.UNKNOWN)):
+          logging.critical(
+              '%s: %s',
+              test_name,
+              ', '.join('%s %s' % (str(result_counts[test_name][i]), i)
+                        for i in base_test_result.ResultType.GetTypes()))
+        else:
+          all_pass += 1
 
-    if args.local_output and args.json_results_file:
-      with out_manager.ArchivedTempfile(
-          'test_results_presentation.html',
-          'test_results_presentation',
-          output_manager.Datatype.HTML) as results_detail_file:
-        result_html_string, _, _ = test_results_presentation.result_details(
-            json_path=args.json_results_file,
-            test_name=args.command,
-            cs_base_url='http://cs.chromium.org',
-            local_output=True)
-        results_detail_file.write(result_html_string)
-        results_detail_file.flush()
-      logging.critical('TEST RESULTS: %s', results_detail_file.Link())
+      logging.critical('%s of %s tests passed in all %s runs',
+                       str(all_pass),
+                       str(tot_tests),
+                       str(iteration_count))
 
   if args.command == 'perf' and (args.steps or args.single_step):
     return 0

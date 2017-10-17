@@ -16,14 +16,8 @@ class Environment(object):
       machine.
   """
 
-  def __init__(self, output_manager):
-    """Environment constructor.
-
-    Args:
-      output_manager: Instance of |output_manager.OutputManager| used to
-          save test output.
-    """
-    self._output_manager = output_manager
+  def __init__(self):
+    pass
 
   def SetUp(self):
     raise NotImplementedError
@@ -38,6 +32,3 @@ class Environment(object):
   def __exit__(self, _exc_type, _exc_val, _exc_tb):
     self.TearDown()
 
-  @property
-  def output_manager(self):
-    return self._output_manager

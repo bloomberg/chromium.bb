@@ -266,27 +266,20 @@ def create_suite_table(results_dict):
 
 
 def feedback_url(result_details_link):
-  url_args = [
+  url_args = urllib.urlencode([
       ('labels', 'Pri-2,Type-Bug,Restrict-View-Google'),
       ('summary', 'Result Details Feedback:'),
       ('components', 'Test>Android'),
-  ]
-  if result_details_link:
-    url_args.append(('comment', 'Please check out: %s' % result_details_link))
-  url_args = urllib.urlencode(url_args)
+      ('comment', 'Please check out: %s' % result_details_link)])
   return 'https://bugs.chromium.org/p/chromium/issues/entry?%s' % url_args
 
 
 def results_to_html(results_dict, cs_base_url, bucket, test_name,
-                    builder_name, build_number, local_output):
-  """Convert list of test results into html format.
+                    builder_name, build_number):
+  """Convert list of test results into html format."""
 
-  Args:
-    local_output: Whether this results file is uploaded to Google Storage or
-        just a local file.
-  """
-  test_rows_header, test_rows = create_test_table(
-      results_dict, cs_base_url, test_name)
+  test_rows_header, test_rows = create_test_table(results_dict, cs_base_url,
+                                                  test_name)
   suite_rows_header, suite_rows, suite_row_footer = create_suite_table(
       results_dict)
 
@@ -305,35 +298,21 @@ def results_to_html(results_dict, cs_base_url, bucket, test_name,
 
   main_template = JINJA_ENVIRONMENT.get_template(
       os.path.join('template', 'main.html'))
+  dest = google_storage_helper.unique_name(
+      '%s_%s_%s' % (test_name, builder_name, build_number))
 
-  if local_output:
-    html_render = main_template.render(  #  pylint: disable=no-member
-        {
-          'tb_values': [suite_table_values, test_table_values],
-          'feedback_url': feedback_url(None),
-        })
-    return (html_render, None, None)
-  else:
-    dest = google_storage_helper.unique_name(
-        '%s_%s_%s' % (test_name, builder_name, build_number))
-    result_details_link = google_storage_helper.get_url_link(
-        dest, '%s/html' % bucket)
-    html_render = main_template.render(  #  pylint: disable=no-member
-        {
-          'tb_values': [suite_table_values, test_table_values],
-          'feedback_url': feedback_url(result_details_link),
-        })
-    return (html_render, dest, result_details_link)
+  result_details_link = google_storage_helper.get_url_link(
+      dest, '%s/html' % bucket)
+
+  return (main_template.render(  #  pylint: disable=no-member
+      {'tb_values': [suite_table_values, test_table_values],
+       'feedback_url': feedback_url(result_details_link)
+      }), dest, result_details_link)
 
 
-def result_details(json_path, test_name, cs_base_url, bucket=None,
-                   builder_name=None, build_number=None, local_output=False):
-  """Get result details from json path and then convert results to html.
-
-  Args:
-    local_output: Whether this results file is uploaded to Google Storage or
-        just a local file.
-  """
+def result_details(json_path, cs_base_url, bucket, test_name,
+                   builder_name, build_number):
+  """Get result details from json path and then convert results to html."""
 
   with open(json_path) as json_file:
     json_object = json.loads(json_file.read())
@@ -345,8 +324,8 @@ def result_details(json_path, test_name, cs_base_url, bucket=None,
   for testsuite_run in json_object['per_iteration_data']:
     for test, test_runs in testsuite_run.iteritems():
       results_dict[test].extend(test_runs)
-  return results_to_html(results_dict, cs_base_url, bucket, test_name,
-                         builder_name, build_number, local_output)
+  return results_to_html(results_dict, cs_base_url, bucket,
+                         test_name, builder_name, build_number)
 
 
 def upload_to_google_bucket(html, bucket, dest):
@@ -373,18 +352,18 @@ def main():
                       required=True)
   parser.add_argument(
       '-o', '--output-json',
-      help='(Swarming Merge Script API) '
-           'Output JSON file to create.')
+      help='(Swarming Merge Script API)'
+           ' Output JSON file to create.')
   parser.add_argument(
       '--build-properties',
       help='(Swarming Merge Script API) '
            'Build property JSON file provided by recipes.')
   parser.add_argument(
       '--summary-json',
-      help='(Swarming Merge Script API) '
-           'Summary of shard state running on swarming. '
-           '(Output of the swarming.py collect '
-           '--task-summary-json=XXX command.)')
+      help='(Swarming Merge Script API)'
+           ' Summary of shard state running on swarming.'
+           ' (Output of the swarming.py collect'
+           ' --task-summary-json=XXX command.)')
   parser.add_argument(
       'positional', nargs='*',
       help='output.json from shards.')
@@ -441,12 +420,13 @@ def main():
 
   # Link to result details presentation page is a part of the page.
   result_html_string, dest, result_details_link = result_details(
-      json_file, args.test_name, args.cs_base_url, args.bucket,
-      builder_name, build_number)
+      json_file, args.cs_base_url, args.bucket,
+      args.test_name, builder_name, build_number)
 
   result_details_link_2 = upload_to_google_bucket(
       result_html_string.encode('UTF-8'),
       args.bucket, dest)
+
   assert result_details_link == result_details_link_2, (
       'Result details link do not match. The link returned by get_url_link'
       ' should be the same as that returned by upload.')
