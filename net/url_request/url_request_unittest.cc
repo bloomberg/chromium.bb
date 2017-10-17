@@ -10463,12 +10463,10 @@ static bool SystemSupportsHardFailRevocationChecking() {
 // several tests are effected because our testing EV certificate won't be
 // recognised as EV.
 static bool SystemUsesChromiumEVMetadata() {
-#if defined(OS_ANDROID)
-  // On Android, we use the system to tell us whether a certificate is EV or not
-  // and the system won't recognise our testing root.
-  return false;
-#else
+#if defined(PLATFORM_USES_CHROMIUM_EV_METADATA)
   return true;
+#else
+  return false;
 #endif
 }
 
