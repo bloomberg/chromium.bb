@@ -135,11 +135,7 @@ DirectoryTreeNamingController.prototype.commitRename_ = function() {
 
   if (this.isRemovableRoot_) {
     // Validate new name.
-    new Promise(entry.getParent.bind(entry))
-        .then(function(parentEntry) {
-          return util.validateExternalDriveName(
-              newName, assert(this.volumeInfo_));
-        }.bind(this))
+    util.validateExternalDriveName(newName, assert(this.volumeInfo_))
         .then(
             this.performExternalDriveRename_.bind(this, entry, newName),
             function(errorMessage) {
