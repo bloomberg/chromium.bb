@@ -117,9 +117,9 @@ std::string GetHostAttributes() {
     }
   }
 
-  if (media::InitializeMediaFoundation() &&
-      media::MediaFoundationVideoEncodeAccelerator
-      ::PreSandboxInitialization()) {
+  if (media::MediaFoundationVideoEncodeAccelerator
+      ::PreSandboxInitialization() &&
+      media::InitializeMediaFoundation()) {
     result.push_back("HWEncoder");
   }
 #elif defined(OS_LINUX)
