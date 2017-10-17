@@ -76,11 +76,6 @@ MockWebRTCPeerConnectionHandler::GetSenders() {
   return WebVector<std::unique_ptr<WebRTCRtpSender>>();
 }
 
-WebVector<std::unique_ptr<WebRTCRtpReceiver>>
-MockWebRTCPeerConnectionHandler::GetReceivers() {
-  return WebVector<std::unique_ptr<WebRTCRtpReceiver>>();
-}
-
 std::unique_ptr<WebRTCRtpSender> MockWebRTCPeerConnectionHandler::AddTrack(
     const WebMediaStreamTrack&,
     const WebVector<WebMediaStream>&) {

@@ -1780,31 +1780,6 @@ RTCPeerConnectionHandler::GetSenders() {
   return web_senders;
 }
 
-// TODO(hbos): Clean-up: use |rtp_receivers_| instead. http://crbug.com/755166
-blink::WebVector<std::unique_ptr<blink::WebRTCRtpReceiver>>
-RTCPeerConnectionHandler::GetReceivers() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::getReceivers");
-
-  std::vector<rtc::scoped_refptr<webrtc::RtpReceiverInterface>>
-      webrtc_receivers = native_peer_connection_->GetReceivers();
-  std::vector<std::unique_ptr<blink::WebRTCRtpReceiver>> web_receivers;
-  for (const auto& webrtc_receiver : webrtc_receivers) {
-    std::unique_ptr<blink::WebRTCRtpReceiver> web_receiver =
-        GetWebRTCRtpReceiver(webrtc_receiver);
-    // |web_receiver| is null if we cannot find an initialized track adapter for
-    // it. This can happen because adding and removing tracks happens
-    // asynchronously.
-    if (web_receiver)
-      web_receivers.push_back(std::move(web_receiver));
-  }
-  blink::WebVector<std::unique_ptr<blink::WebRTCRtpReceiver>> web_vector(
-      web_receivers.size());
-  for (size_t i = 0; i < web_vector.size(); ++i)
-    web_vector[i] = std::move(web_receivers[i]);
-  return web_vector;
-}
-
 std::unique_ptr<blink::WebRTCRtpSender> RTCPeerConnectionHandler::AddTrack(
     const blink::WebMediaStreamTrack& track,
     const blink::WebVector<blink::WebMediaStream>& streams) {
@@ -2229,24 +2204,6 @@ RTCPeerConnectionHandler::FindRemoteStreamAdapter(
         return adapter_ref->adapter().webrtc_stream().get() ==
                webrtc_stream.get();
       });
-}
-
-// TODO(hbos): Clean-up: use |rtp_receivers_| instead. http://crbug.com/755166
-std::unique_ptr<blink::WebRTCRtpReceiver>
-RTCPeerConnectionHandler::GetWebRTCRtpReceiver(
-    rtc::scoped_refptr<webrtc::RtpReceiverInterface> webrtc_receiver) {
-  rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> webrtc_track =
-      webrtc_receiver->track();
-  DCHECK(webrtc_track);
-  std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> track_adapter =
-      track_adapter_map_->GetRemoteTrackAdapter(webrtc_track);
-  if (!track_adapter)
-    return nullptr;
-  // Create a reference to the receiver. Multiple |RTCRtpReceiver|s can
-  // reference the same webrtc track, see |id|.
-  return base::MakeUnique<RTCRtpReceiver>(
-      webrtc_receiver, std::move(track_adapter),
-      std::vector<std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>>());
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>

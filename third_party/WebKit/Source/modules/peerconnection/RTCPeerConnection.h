@@ -252,8 +252,6 @@ class MODULES_EXPORT RTCPeerConnection final
   void ScheduleDispatchEvent(Event*, BoolFunction);
   void DispatchScheduledEvent();
   MediaStreamTrack* GetTrack(const WebMediaStreamTrack&) const;
-  RTCRtpReceiver* GetOrCreateRTCRtpReceiver(
-      std::unique_ptr<WebRTCRtpReceiver> web_rtp_receiver);
 
   // The "Change" methods set the state asynchronously and fire the
   // corresponding event immediately after changing the state (if it was really

@@ -38,7 +38,6 @@ class MockWebRTCPeerConnectionHandler : public WebRTCPeerConnectionHandler {
   void GetStats(const WebRTCStatsRequest&) override;
   void GetStats(std::unique_ptr<WebRTCStatsReportCallback>) override;
   WebVector<std::unique_ptr<WebRTCRtpSender>> GetSenders() override;
-  WebVector<std::unique_ptr<WebRTCRtpReceiver>> GetReceivers() override;
   std::unique_ptr<WebRTCRtpSender> AddTrack(
       const WebMediaStreamTrack&,
       const WebVector<WebMediaStream>&) override;
