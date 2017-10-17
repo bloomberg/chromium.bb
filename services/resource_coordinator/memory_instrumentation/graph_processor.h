@@ -33,6 +33,10 @@ class GraphProcessor {
                        GlobalDumpGraph* global_graph);
 
   static void MarkImplicitWeakParentsRecursively(GlobalDumpGraph::Node* node);
+
+  static void MarkWeakOwnersAndChildrenRecursively(
+      GlobalDumpGraph::Node* node,
+      std::set<const GlobalDumpGraph::Node*>* nodes);
 };
 
 }  // namespace memory_instrumentation
