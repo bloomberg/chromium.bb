@@ -4,7 +4,6 @@
 
 #include "ash/system/toast/toast_manager.h"
 
-#include "ash/public/cpp/config.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
@@ -129,10 +128,6 @@ TEST_F(ToastManagerTest, ShowAndCloseManually) {
 }
 
 TEST_F(ToastManagerTest, ShowAndCloseManuallyDuringAnimation) {
-  // TODO: gets wedged running animator. http://crbug.com/698016.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
   ui::ScopedAnimationDurationScaleMode slow_animation_duration(
       ui::ScopedAnimationDurationScaleMode::SLOW_DURATION);
 
@@ -264,10 +259,6 @@ TEST_F(ToastManagerTest, PositionWithVisibleLeftShelf) {
 }
 
 TEST_F(ToastManagerTest, PositionWithUnifiedDesktop) {
-  // TODO: needs unified mode. http://crbug.com/698024.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
   display_manager()->SetUnifiedDesktopEnabled(true);
   UpdateDisplay("1000x500,0+600-100x500");
 
