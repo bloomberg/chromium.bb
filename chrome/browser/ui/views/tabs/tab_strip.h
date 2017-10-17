@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_TABS_TAB_STRIP_H_
 #define CHROME_BROWSER_UI_VIEWS_TABS_TAB_STRIP_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -58,7 +59,7 @@ class TabStrip : public views::View,
                  public views::ViewTargeterDelegate,
                  public TabController {
  public:
-  explicit TabStrip(TabStripController* controller);
+  explicit TabStrip(std::unique_ptr<TabStripController> controller);
   ~TabStrip() override;
 
   // Add and remove observers to changes within this TabStrip.
