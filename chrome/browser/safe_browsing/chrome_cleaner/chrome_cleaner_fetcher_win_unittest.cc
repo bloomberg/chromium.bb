@@ -14,6 +14,7 @@
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_field_trial_win.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_change_notifier.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -70,6 +71,21 @@ class ChromeCleanerFetcherTest : public ::testing::Test,
   void OnChunkUpload(int fetcher_id) override {}
   void OnRequestEnd(int fetcher_id) override {}
 
+  void SetNetworkSuccess(int response_code) {
+    fetcher_->set_status(net::URLRequestStatus{});
+    fetcher_->set_response_code(response_code);
+    fetcher_->delegate()->OnURLFetchComplete(fetcher_);
+  }
+
+  void SetNetworkError() {
+    // Set up the fetcher to return failure other than HTTP_NOT_FOUND.
+    fetcher_->set_status(net::URLRequestStatus::FromError(net::ERR_FAILED));
+    // For this test, just use any http response code other than net::HTTP_OK
+    // and net::HTTP_NOT_FOUND.
+    fetcher_->set_response_code(net::HTTP_INTERNAL_SERVER_ERROR);
+    fetcher_->delegate()->OnURLFetchComplete(fetcher_);
+  }
+
  protected:
   // TestURLFetcher requires a MessageLoop and an IO thread to release
   // URLRequestContextGetter in URLFetcher::Core.
@@ -92,16 +108,15 @@ class ChromeCleanerFetcherTest : public ::testing::Test,
   base::FilePath downloaded_path_;
   ChromeCleanerFetchStatus fetch_status_ =
       ChromeCleanerFetchStatus::kOtherFailure;
+
+  std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_ =
+      base::WrapUnique(net::NetworkChangeNotifier::CreateMock());
 };
 
 TEST_F(ChromeCleanerFetcherTest, FetchSuccess) {
   EXPECT_EQ(GURL(fetcher_->GetOriginalURL()), GetSRTDownloadURL());
 
-  // Set up the fetcher to return success.
-  fetcher_->set_status(net::URLRequestStatus{});
-  fetcher_->set_response_code(net::HTTP_OK);
-
-  fetcher_->delegate()->OnURLFetchComplete(fetcher_);
+  SetNetworkSuccess(net::HTTP_OK);
 
   EXPECT_TRUE(callback_called_);
   EXPECT_EQ(downloaded_path_, response_path_);
@@ -112,24 +127,61 @@ TEST_F(ChromeCleanerFetcherTest, NotFoundOnServer) {
   // Set up the fetcher to return a HTTP_NOT_FOUND failure. Notice that the
   // net error in this case is OK, since there was no error preventing any
   // response (even 404) from being received.
-  fetcher_->set_status(net::URLRequestStatus{});
-  fetcher_->set_response_code(net::HTTP_NOT_FOUND);
-
-  fetcher_->delegate()->OnURLFetchComplete(fetcher_);
+  SetNetworkSuccess(net::HTTP_NOT_FOUND);
 
   EXPECT_TRUE(callback_called_);
   EXPECT_TRUE(downloaded_path_.empty());
   EXPECT_EQ(fetch_status_, ChromeCleanerFetchStatus::kNotFoundOnServer);
 }
 
-TEST_F(ChromeCleanerFetcherTest, OtherFailure) {
-  // Set up the fetcher to return failure other than HTTP_NOT_FOUND.
-  fetcher_->set_status(net::URLRequestStatus::FromError(net::ERR_FAILED));
-  // For this test, just use any http response code other than net::HTTP_OK and
-  // net::HTTP_NOT_FOUND.
-  fetcher_->set_response_code(net::HTTP_INTERNAL_SERVER_ERROR);
+TEST_F(ChromeCleanerFetcherTest, NetworkError_SucceededAfterRetry) {
+  for (int attempt = 1; attempt < kMaxCleanerDownloadAttempts; ++attempt) {
+    SetNetworkError();
 
-  fetcher_->delegate()->OnURLFetchComplete(fetcher_);
+    EXPECT_FALSE(callback_called_);
+
+    net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+        net::NetworkChangeNotifier::CONNECTION_ETHERNET);
+    base::RunLoop().RunUntilIdle();
+  }
+
+  SetNetworkSuccess(net::HTTP_OK);
+
+  EXPECT_TRUE(callback_called_);
+  EXPECT_EQ(downloaded_path_, response_path_);
+  EXPECT_EQ(fetch_status_, ChromeCleanerFetchStatus::kSuccess);
+}
+
+TEST_F(ChromeCleanerFetcherTest, NetworkError_NotFoundAfterRetry) {
+  for (int attempt = 1; attempt < kMaxCleanerDownloadAttempts; ++attempt) {
+    SetNetworkError();
+
+    EXPECT_FALSE(callback_called_);
+
+    net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+        net::NetworkChangeNotifier::CONNECTION_ETHERNET);
+    base::RunLoop().RunUntilIdle();
+  }
+
+  SetNetworkSuccess(net::HTTP_NOT_FOUND);
+
+  EXPECT_TRUE(callback_called_);
+  EXPECT_TRUE(downloaded_path_.empty());
+  EXPECT_EQ(fetch_status_, ChromeCleanerFetchStatus::kNotFoundOnServer);
+}
+
+TEST_F(ChromeCleanerFetcherTest, NetworkError_AllAttemptsFailed) {
+  for (int attempt = 1; attempt < kMaxCleanerDownloadAttempts; ++attempt) {
+    SetNetworkError();
+
+    EXPECT_FALSE(callback_called_);
+
+    net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+        net::NetworkChangeNotifier::CONNECTION_ETHERNET);
+    base::RunLoop().RunUntilIdle();
+  }
+
+  SetNetworkError();
 
   EXPECT_TRUE(callback_called_);
   EXPECT_TRUE(downloaded_path_.empty());

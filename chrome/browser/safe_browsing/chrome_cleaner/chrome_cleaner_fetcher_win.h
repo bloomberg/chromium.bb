@@ -13,6 +13,10 @@ class FilePath;
 
 namespace safe_browsing {
 
+// The maximum number of attempts to download the cleaner in case of network
+// errors.
+extern const int kMaxCleanerDownloadAttempts;
+
 enum class ChromeCleanerFetchStatus {
   // Fetch succeeded with a net::HTTP_OK response code.
   kSuccess,
