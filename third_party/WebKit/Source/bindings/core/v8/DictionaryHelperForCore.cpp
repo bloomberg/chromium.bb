@@ -246,37 +246,6 @@ CORE_EXPORT bool DictionaryHelper::Get(const Dictionary& dictionary,
 template <>
 CORE_EXPORT bool DictionaryHelper::Get(const Dictionary& dictionary,
                                        const StringView& key,
-                                       Vector<Vector<String>>& value,
-                                       ExceptionState& exception_state) {
-  v8::Local<v8::Value> v8_value;
-  if (!dictionary.Get(key, v8_value))
-    return false;
-
-  if (!v8_value->IsArray())
-    return false;
-
-  v8::Local<v8::Array> v8_array = v8::Local<v8::Array>::Cast(v8_value);
-  for (size_t i = 0; i < v8_array->Length(); ++i) {
-    v8::Local<v8::Value> v8_indexed_value;
-    if (!v8_array
-             ->Get(dictionary.V8Context(),
-                   v8::Uint32::New(dictionary.GetIsolate(), i))
-             .ToLocal(&v8_indexed_value))
-      return false;
-    Vector<String> indexed_value =
-        NativeValueTraits<IDLSequence<IDLString>>::NativeValue(
-            dictionary.GetIsolate(), v8_indexed_value, exception_state);
-    if (exception_state.HadException())
-      return false;
-    value.push_back(indexed_value);
-  }
-
-  return true;
-}
-
-template <>
-CORE_EXPORT bool DictionaryHelper::Get(const Dictionary& dictionary,
-                                       const StringView& key,
                                        ArrayValue& value) {
   v8::Local<v8::Value> v8_value;
   if (!dictionary.Get(key, v8_value))
