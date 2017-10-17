@@ -90,10 +90,10 @@ class URL_EXPORT Origin {
   explicit Origin(const GURL& url);
 
   // Copyable and movable.
-  Origin(const Origin&) = default;
-  Origin& operator=(const Origin&) = default;
-  Origin(Origin&&) = default;
-  Origin& operator=(Origin&&) = default;
+  Origin(const Origin&);
+  Origin& operator=(const Origin&);
+  Origin(Origin&&);
+  Origin& operator=(Origin&&);
 
   // Creates an Origin from a |scheme|, |host|, |port| and |suborigin|. All the
   // parameters must be valid and canonicalized. Do not use this method to
