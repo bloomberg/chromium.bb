@@ -140,7 +140,7 @@ class AppsGridViewTest : public views::ViewsTestBase,
     suggestions_container_ = apps_grid_view_->suggestions_container_for_test();
     expand_arrow_view_ = apps_grid_view_->expand_arrow_view_for_test();
     for (size_t i = 0; i < kNumOfSuggestedApps; ++i)
-      model_->results()->Add(base::MakeUnique<TestSuggestedSearchResult>());
+      model_->results()->Add(std::make_unique<TestSuggestedSearchResult>());
     // Needed to update suggestions from |model_|.
     apps_grid_view_->ResetForShowApps();
 

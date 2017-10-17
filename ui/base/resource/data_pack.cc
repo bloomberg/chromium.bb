@@ -172,14 +172,14 @@ DataPack::~DataPack() {
 
 bool DataPack::LoadFromPath(const base::FilePath& path) {
   std::unique_ptr<base::MemoryMappedFile> mmap =
-      base::MakeUnique<base::MemoryMappedFile>();
+      std::make_unique<base::MemoryMappedFile>();
   if (!mmap->Initialize(path)) {
     DLOG(ERROR) << "Failed to mmap datapack";
     LogDataPackError(INIT_FAILED);
     mmap.reset();
     return false;
   }
-  return LoadImpl(base::MakeUnique<MemoryMappedDataSource>(std::move(mmap)));
+  return LoadImpl(std::make_unique<MemoryMappedDataSource>(std::move(mmap)));
 }
 
 bool DataPack::LoadFromFile(base::File file) {
@@ -191,18 +191,18 @@ bool DataPack::LoadFromFileRegion(
     base::File file,
     const base::MemoryMappedFile::Region& region) {
   std::unique_ptr<base::MemoryMappedFile> mmap =
-      base::MakeUnique<base::MemoryMappedFile>();
+      std::make_unique<base::MemoryMappedFile>();
   if (!mmap->Initialize(std::move(file), region)) {
     DLOG(ERROR) << "Failed to mmap datapack";
     LogDataPackError(INIT_FAILED_FROM_FILE);
     mmap.reset();
     return false;
   }
-  return LoadImpl(base::MakeUnique<MemoryMappedDataSource>(std::move(mmap)));
+  return LoadImpl(std::make_unique<MemoryMappedDataSource>(std::move(mmap)));
 }
 
 bool DataPack::LoadFromBuffer(base::StringPiece buffer) {
-  return LoadImpl(base::MakeUnique<BufferDataSource>(buffer));
+  return LoadImpl(std::make_unique<BufferDataSource>(buffer));
 }
 
 bool DataPack::LoadImpl(std::unique_ptr<DataPack::DataSource> data_source) {

@@ -81,7 +81,7 @@ void EventWithCallback::RunCallbacks(
   std::move(original_events_.front().callback_)
       .Run(disposition, std::move(original_events_.front().event_), latency,
            did_overscroll_params
-               ? base::MakeUnique<DidOverscrollParams>(*did_overscroll_params)
+               ? std::make_unique<DidOverscrollParams>(*did_overscroll_params)
                : nullptr);
   original_events_.pop_front();
 
@@ -92,7 +92,7 @@ void EventWithCallback::RunCallbacks(
     std::move(coalesced_event.callback_)
         .Run(disposition, std::move(coalesced_event.event_), coalesced_latency,
              did_overscroll_params
-                 ? base::MakeUnique<DidOverscrollParams>(*did_overscroll_params)
+                 ? std::make_unique<DidOverscrollParams>(*did_overscroll_params)
                  : nullptr);
   }
 }

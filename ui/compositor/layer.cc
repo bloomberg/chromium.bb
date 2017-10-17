@@ -175,7 +175,7 @@ Layer::~Layer() {
 }
 
 std::unique_ptr<Layer> Layer::Clone() const {
-  auto clone = base::MakeUnique<Layer>(type_);
+  auto clone = std::make_unique<Layer>(type_);
 
   // Background filters.
   clone->SetBackgroundBlur(background_blur_sigma_);
@@ -189,7 +189,7 @@ std::unique_ptr<Layer> Layer::Clone() const {
   clone->SetLayerInverted(layer_inverted_);
   clone->SetLayerBlur(layer_blur_sigma_);
   if (alpha_shape_)
-    clone->SetAlphaShape(base::MakeUnique<ShapeRects>(*alpha_shape_));
+    clone->SetAlphaShape(std::make_unique<ShapeRects>(*alpha_shape_));
 
   // cc::Layer state.
   if (surface_layer_) {
@@ -218,7 +218,7 @@ std::unique_ptr<Layer> Layer::Clone() const {
 
 std::unique_ptr<Layer> Layer::Mirror() {
   auto mirror = Clone();
-  mirrors_.emplace_back(base::MakeUnique<LayerMirror>(this, mirror.get()));
+  mirrors_.emplace_back(std::make_unique<LayerMirror>(this, mirror.get()));
   return mirror;
 }
 

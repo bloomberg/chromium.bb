@@ -250,7 +250,7 @@ void TrayBubbleView::InitializeAndShowBubble() {
   // corresponding tray view, register pre target event handler to reroute key
   // events to the widget for activating the view or closing it.
   if (!CanActivate() && params_.show_by_click) {
-    reroute_event_handler_ = base::MakeUnique<RerouteEventHandler>(this);
+    reroute_event_handler_ = std::make_unique<RerouteEventHandler>(this);
   }
 }
 

@@ -23,7 +23,7 @@ class RadioButtonTest : public ViewsTestBase {
     ViewsTestBase::SetUp();
 
     // Create a Widget so the radio buttons can find their group siblings.
-    widget_ = base::MakeUnique<Widget>();
+    widget_ = std::make_unique<Widget>();
     Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
     params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     widget_->Init(params);

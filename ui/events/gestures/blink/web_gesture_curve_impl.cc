@@ -33,12 +33,12 @@ std::unique_ptr<GestureCurve> CreateDefaultPlatformCurve(
     blink::WebGestureDevice device_source,
     const gfx::Vector2dF& initial_velocity) {
   if (device_source == blink::kWebGestureDeviceSyntheticAutoscroll) {
-    return base::MakeUnique<FixedVelocityCurve>(initial_velocity,
+    return std::make_unique<FixedVelocityCurve>(initial_velocity,
                                                 base::TimeTicks());
   }
 
 #if defined(OS_ANDROID)
-  auto scroller = base::MakeUnique<Scroller>(Scroller::Config());
+  auto scroller = std::make_unique<Scroller>(Scroller::Config());
   scroller->Fling(0,
                   0,
                   initial_velocity.x(),
@@ -50,7 +50,7 @@ std::unique_ptr<GestureCurve> CreateDefaultPlatformCurve(
                   base::TimeTicks());
   return std::move(scroller);
 #else
-  return base::MakeUnique<FlingCurve>(initial_velocity, base::TimeTicks());
+  return std::make_unique<FlingCurve>(initial_velocity, base::TimeTicks());
 #endif
 }
 

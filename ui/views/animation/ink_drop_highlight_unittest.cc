@@ -61,7 +61,7 @@ class InkDropHighlightTest : public testing::Test {
 InkDropHighlightTest::InkDropHighlightTest()
     : animation_mode_reset_(gfx::AnimationTestApi::SetRichAnimationRenderMode(
           gfx::Animation::RichAnimationRenderMode::FORCE_DISABLED)) {
-  InitHighlight(base::MakeUnique<InkDropHighlight>(
+  InitHighlight(std::make_unique<InkDropHighlight>(
       gfx::Size(10, 10), 3, gfx::PointF(), SK_ColorBLACK));
 }
 
@@ -74,7 +74,7 @@ void InkDropHighlightTest::InitHighlight(
     std::unique_ptr<InkDropHighlight> new_highlight) {
   ink_drop_highlight_ = std::move(new_highlight);
   test_api_ =
-      base::MakeUnique<InkDropHighlightTestApi>(ink_drop_highlight_.get());
+      std::make_unique<InkDropHighlightTestApi>(ink_drop_highlight_.get());
   test_api()->SetDisableAnimationTimers(true);
   ink_drop_highlight()->set_observer(&observer_);
 }
@@ -202,7 +202,7 @@ TEST_F(InkDropHighlightTest, AnimationsAbortedDuringDeletion) {
 
 // Confirms a zero sized highlight doesn't crash.
 TEST_F(InkDropHighlightTest, AnimatingAZeroSizeHighlight) {
-  InitHighlight(base::MakeUnique<InkDropHighlight>(
+  InitHighlight(std::make_unique<InkDropHighlight>(
       gfx::Size(0, 0), 3, gfx::PointF(), SK_ColorBLACK));
   ink_drop_highlight()->FadeOut(base::TimeDelta::FromMilliseconds(0),
                                 false /* explode */);
@@ -211,7 +211,7 @@ TEST_F(InkDropHighlightTest, AnimatingAZeroSizeHighlight) {
 TEST_F(InkDropHighlightTest, TransformIsPixelAligned) {
   const float kEpsilon = 0.001f;
   gfx::Size highlight_size(10, 10);
-  InitHighlight(base::MakeUnique<InkDropHighlight>(
+  InitHighlight(std::make_unique<InkDropHighlight>(
       highlight_size, 3, gfx::PointF(3.5f, 3.5f), SK_ColorYELLOW));
   const gfx::PointF layer_origin(
       ink_drop_highlight()->layer()->bounds().origin());

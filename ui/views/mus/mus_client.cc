@@ -81,11 +81,11 @@ MusClient::MusClient(service_manager::Connector* connector,
   // instance. Partially initialize the ozone cursor internals here, like we
   // partially initialize other ozone subsystems in
   // ChromeBrowserMainExtraPartsViews.
-  cursor_factory_ozone_ = base::MakeUnique<ui::CursorDataFactoryOzone>();
+  cursor_factory_ozone_ = std::make_unique<ui::CursorDataFactoryOzone>();
 #endif
 
   if (!io_task_runner) {
-    io_thread_ = base::MakeUnique<base::Thread>("IOThread");
+    io_thread_ = std::make_unique<base::Thread>("IOThread");
     base::Thread::Options thread_options(base::MessageLoop::TYPE_IO, 0);
     thread_options.priority = base::ThreadPriority::NORMAL;
     CHECK(io_thread_->StartWithOptions(thread_options));
@@ -93,14 +93,14 @@ MusClient::MusClient(service_manager::Connector* connector,
   }
 
   // TODO(msw): Avoid this... use some default value? Allow clients to extend?
-  property_converter_ = base::MakeUnique<aura::PropertyConverter>();
+  property_converter_ = std::make_unique<aura::PropertyConverter>();
   property_converter_->RegisterPrimitiveProperty(
       wm::kShadowElevationKey,
       ui::mojom::WindowManager::kShadowElevation_Property,
       base::Bind(&wm::IsValidShadowElevation));
 
   if (create_wm_state)
-    wm_state_ = base::MakeUnique<wm::WMState>();
+    wm_state_ = std::make_unique<wm::WMState>();
 
   if (testing_state == MusClientTestingState::CREATE_TESTING_STATE) {
     connector->BindInterface(ui::mojom::kServiceName, &server_test_ptr_);
@@ -108,19 +108,19 @@ MusClient::MusClient(service_manager::Connector* connector,
                              &remote_event_dispatcher_ptr_);
   }
 
-  window_tree_client_ = base::MakeUnique<aura::WindowTreeClient>(
+  window_tree_client_ = std::make_unique<aura::WindowTreeClient>(
       connector, this, nullptr /* window_manager_delegate */,
       nullptr /* window_tree_client_request */, std::move(io_task_runner));
   aura::Env::GetInstance()->SetWindowTreeClient(window_tree_client_.get());
   window_tree_client_->ConnectViaWindowTreeFactory();
 
   pointer_watcher_event_router_ =
-      base::MakeUnique<PointerWatcherEventRouter>(window_tree_client_.get());
+      std::make_unique<PointerWatcherEventRouter>(window_tree_client_.get());
 
-  screen_ = base::MakeUnique<ScreenMus>(this);
+  screen_ = std::make_unique<ScreenMus>(this);
   screen_->Init(connector);
 
-  std::unique_ptr<ClipboardMus> clipboard = base::MakeUnique<ClipboardMus>();
+  std::unique_ptr<ClipboardMus> clipboard = std::make_unique<ClipboardMus>();
   clipboard->Init(connector);
   ui::Clipboard::SetClipboardForCurrentThread(std::move(clipboard));
 
@@ -291,7 +291,7 @@ std::unique_ptr<DesktopWindowTreeHost> MusClient::CreateDesktopWindowTreeHost(
   aura::WindowTreeHostMusInitParams window_tree_host_init_params =
       aura::CreateInitParamsForTopLevel(MusClient::Get()->window_tree_client(),
                                         std::move(mus_properties));
-  return base::MakeUnique<DesktopWindowTreeHostMus>(
+  return std::make_unique<DesktopWindowTreeHostMus>(
       std::move(window_tree_host_init_params), delegate,
       desktop_native_widget_aura);
 }

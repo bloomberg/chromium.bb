@@ -32,7 +32,7 @@ std::unique_ptr<DisplayMode> MakeDisplayMode(int width,
                                              int height,
                                              bool is_interlaced,
                                              float refresh_rate) {
-  return base::MakeUnique<DisplayMode>(gfx::Size(width, height), is_interlaced,
+  return std::make_unique<DisplayMode>(gfx::Size(width, height), is_interlaced,
                                        refresh_rate);
 }
 

@@ -872,7 +872,7 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
   void StackWindowAtTopOnActivation() override {
     // Create a window, show it and then activate it.
     std::unique_ptr<aura::Window> window1 =
-        base::MakeUnique<aura::Window>(nullptr);
+        std::make_unique<aura::Window>(nullptr);
     window1->SetType(aura::client::WINDOW_TYPE_NORMAL);
     window1->Init(ui::LAYER_TEXTURED);
     root_window()->AddChild(window1.get());
@@ -884,7 +884,7 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
     // Create another window, show it but don't activate it. The window is not
     // the active window but is placed on top of window stack.
     std::unique_ptr<aura::Window> window2 =
-        base::MakeUnique<aura::Window>(nullptr);
+        std::make_unique<aura::Window>(nullptr);
     window2->SetType(aura::client::WINDOW_TYPE_NORMAL);
     window2->Init(ui::LAYER_TEXTURED);
     root_window()->AddChild(window2.get());

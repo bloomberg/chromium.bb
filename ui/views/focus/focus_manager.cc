@@ -32,7 +32,7 @@ FocusManager::FocusManager(Widget* widget,
                            std::unique_ptr<FocusManagerDelegate> delegate)
     : widget_(widget),
       delegate_(std::move(delegate)),
-      view_tracker_for_stored_view_(base::MakeUnique<ViewTracker>()) {
+      view_tracker_for_stored_view_(std::make_unique<ViewTracker>()) {
   DCHECK(widget_);
 }
 

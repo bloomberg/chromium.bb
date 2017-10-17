@@ -71,7 +71,7 @@ class SearchResultListViewTest : public views::ViewsTestBase,
     AppListModel::SearchResults* results = GetResults();
     for (int i = 0; i < kDefaultSearchItems; ++i) {
       std::unique_ptr<TestSearchResult> result =
-          base::MakeUnique<TestSearchResult>();
+          std::make_unique<TestSearchResult>();
       result->set_display_type(SearchResult::DISPLAY_LIST);
       result->set_title(base::UTF8ToUTF16(base::StringPrintf("Result %d", i)));
       if (i < 2)
@@ -98,7 +98,7 @@ class SearchResultListViewTest : public views::ViewsTestBase,
   void ResetSelectedIndex() { view_->SetSelectedIndex(0); }
 
   void AddTestResultAtIndex(int index) {
-    GetResults()->Add(base::MakeUnique<TestSearchResult>());
+    GetResults()->Add(std::make_unique<TestSearchResult>());
   }
 
   void DeleteResultAt(int index) { GetResults()->DeleteAt(index); }

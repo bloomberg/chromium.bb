@@ -55,7 +55,7 @@ class SearchCardView : public views::View {
  public:
   explicit SearchCardView(views::View* content_view) {
     if (!features::IsFullscreenAppListEnabled()) {
-      SetBorder(base::MakeUnique<views::ShadowBorder>(
+      SetBorder(std::make_unique<views::ShadowBorder>(
           GetShadowForZHeight(kSearchResultZHeight)));
       content_view->SetBackground(
           views::CreateSolidBackground(kCardBackgroundColor));
@@ -165,7 +165,7 @@ SearchResultPageView::SearchResultPageView()
     // Hides this view behind the search box by using the same color and
     // background border corner radius. All child views' background should be
     // set transparent so that the rounded corner is not overwritten.
-    SetBackground(base::MakeUnique<SearchResultPageBackground>(
+    SetBackground(std::make_unique<SearchResultPageBackground>(
         kCardBackgroundColorFullscreen,
         kSearchBoxBorderCornerRadiusFullscreen));
   } else {
@@ -475,7 +475,7 @@ void SearchResultPageView::OnAnimationUpdated(double progress,
 
     // Grows this view in the same pace as the search box to make them look
     // like a single view.
-    SetBackground(base::MakeUnique<SearchResultPageBackground>(
+    SetBackground(std::make_unique<SearchResultPageBackground>(
         color,
         gfx::Tween::LinearIntValueBetween(
             progress,

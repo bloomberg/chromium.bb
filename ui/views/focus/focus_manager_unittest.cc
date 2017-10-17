@@ -483,7 +483,7 @@ class FocusManagerDtorTest : public FocusManagerTest {
     std::unique_ptr<FocusManager> CreateFocusManager(
         Widget* widget,
         bool desktop_widget) override {
-      return base::MakeUnique<FocusManagerDtorTracked>(widget, dtor_tracker_);
+      return std::make_unique<FocusManagerDtorTracked>(widget, dtor_tracker_);
     }
 
    private:

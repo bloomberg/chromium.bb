@@ -208,7 +208,7 @@ Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
   host_->SetVisible(true);
 
   if (command_line->HasSwitch(switches::kUISlowAnimations)) {
-    slow_animations_ = base::MakeUnique<ScopedAnimationDurationScaleMode>(
+    slow_animations_ = std::make_unique<ScopedAnimationDurationScaleMode>(
         ScopedAnimationDurationScaleMode::SLOW_DURATION);
   }
 }
@@ -597,7 +597,7 @@ std::unique_ptr<CompositorLock> Compositor::GetCompositorLock(
   // This uses the main WeakPtrFactory to break the connection from the lock to
   // the Compositor when the Compositor is destroyed.
   auto lock =
-      base::MakeUnique<CompositorLock>(client, weak_ptr_factory_.GetWeakPtr());
+      std::make_unique<CompositorLock>(client, weak_ptr_factory_.GetWeakPtr());
   bool was_empty = active_locks_.empty();
   active_locks_.push_back(lock.get());
 

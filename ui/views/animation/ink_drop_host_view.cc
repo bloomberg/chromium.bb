@@ -194,7 +194,7 @@ void InkDropHostView::SetInkDropMode(InkDropMode ink_drop_mode) {
   if (ink_drop_mode_ != InkDropMode::ON)
     gesture_handler_ = nullptr;
   else if (!gesture_handler_)
-    gesture_handler_ = base::MakeUnique<InkDropGestureHandler>(this);
+    gesture_handler_ = std::make_unique<InkDropGestureHandler>(this);
 }
 
 gfx::Point InkDropHostView::GetInkDropCenterBasedOnLastEvent() const {
@@ -279,7 +279,7 @@ bool InkDropHostView::HasInkDrop() const {
 InkDrop* InkDropHostView::GetInkDrop() {
   if (!ink_drop_) {
     if (ink_drop_mode_ == InkDropMode::OFF)
-      ink_drop_ = base::MakeUnique<InkDropStub>();
+      ink_drop_ = std::make_unique<InkDropStub>();
     else
       ink_drop_ = CreateInkDrop();
     OnInkDropCreated();
@@ -302,7 +302,7 @@ void InkDropHostView::ResetInkDropMask() {
 
 std::unique_ptr<InkDropImpl> InkDropHostView::CreateDefaultInkDropImpl() {
   std::unique_ptr<InkDropImpl> ink_drop =
-      base::MakeUnique<InkDropImpl>(this, size());
+      std::make_unique<InkDropImpl>(this, size());
   ink_drop->SetAutoHighlightMode(
       views::InkDropImpl::AutoHighlightMode::HIDE_ON_RIPPLE);
   return ink_drop;

@@ -118,7 +118,7 @@ class OzonePlatformCast : public OzonePlatform {
 #endif  // BUILDFLAG(IS_CAST_AUDIO_ONLY)
 
     KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
-        base::MakeUnique<StubKeyboardLayoutEngine>());
+        std::make_unique<StubKeyboardLayoutEngine>());
     ui::KeyboardLayoutEngineManager::GetKeyboardLayoutEngine()
         ->SetCurrentLayoutByName("us");
     event_factory_ozone_.reset(new EventFactoryEvdev(

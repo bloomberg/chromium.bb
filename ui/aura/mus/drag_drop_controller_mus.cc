@@ -71,8 +71,8 @@ bool DragDropControllerMus::DoesChangeIdMatchDragChangeId(uint32_t id) const {
 
 void DragDropControllerMus::OnDragDropStart(
     std::map<std::string, std::vector<uint8_t>> data) {
-  os_exchange_data_ = base::MakeUnique<ui::OSExchangeData>(
-      base::MakeUnique<aura::OSExchangeDataProviderMus>(std::move(data)));
+  os_exchange_data_ = std::make_unique<ui::OSExchangeData>(
+      std::make_unique<aura::OSExchangeDataProviderMus>(std::move(data)));
 }
 
 uint32_t DragDropControllerMus::OnDragEnter(WindowMus* window,
@@ -231,7 +231,7 @@ DragDropControllerMus::CreateDropTargetEvent(Window* window,
   gfx::Point location = root_location;
   Window::ConvertPointToTarget(window->GetRootWindow(), window, &location);
   std::unique_ptr<ui::DropTargetEvent> event =
-      base::MakeUnique<ui::DropTargetEvent>(
+      std::make_unique<ui::DropTargetEvent>(
           current_drag_state_ ? current_drag_state_->drag_data
                               : *(os_exchange_data_.get()),
           location, root_location, effect_bitmask);

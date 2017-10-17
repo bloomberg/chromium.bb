@@ -220,7 +220,7 @@ class AppListViewFullscreenTest : public AppListViewTest {
 
     // Adds suggestion apps to the start page view and show start page view.
     for (size_t i = 0; i < apps_num; i++)
-      model->results()->Add(base::MakeUnique<TestStartPageSearchResult>());
+      model->results()->Add(std::make_unique<TestStartPageSearchResult>());
     EXPECT_TRUE(SetAppListState(AppListModel::STATE_START));
     start_page_view()->UpdateForTesting();
     EXPECT_EQ(apps_num, GetVisibleViews(start_page_view()->tile_views()));
@@ -337,7 +337,7 @@ class AppListViewFocusTest : public views::ViewsTestBase {
     const int kAppListItemNum = test_api_->TilesPerPage(0) + 1;
     AppListTestModel* model = delegate_->GetTestModel();
     for (size_t i = 0; i < kSuggestionAppNum; i++)
-      model->results()->Add(base::MakeUnique<TestStartPageSearchResult>());
+      model->results()->Add(std::make_unique<TestStartPageSearchResult>());
     AppListFolderItem* folder_item =
         model->CreateAndPopulateFolderWithApps(kItemNumInFolder);
     model->PopulateApps(kAppListItemNum);
@@ -390,7 +390,7 @@ class AppListViewFocusTest : public views::ViewsTestBase {
       relevance -= 0.5;
       for (int i = 0; i < data.second; ++i) {
         std::unique_ptr<TestSearchResult> result =
-            base::MakeUnique<TestSearchResult>();
+            std::make_unique<TestSearchResult>();
         result->set_display_type(data.first);
         result->set_relevance(relevance);
         results->Add(std::move(result));
@@ -1472,7 +1472,7 @@ TEST_F(AppListViewTest, StartPageTest) {
 
   // Check tiles hide and show on deletion and addition.
   EXPECT_TRUE(SetAppListState(AppListModel::STATE_START));
-  model->results()->Add(base::MakeUnique<TestStartPageSearchResult>());
+  model->results()->Add(std::make_unique<TestStartPageSearchResult>());
   start_page_view->UpdateForTesting();
   EXPECT_EQ(1u, GetVisibleViews(start_page_view->tile_views()));
   model->results()->DeleteAll();
@@ -1482,7 +1482,7 @@ TEST_F(AppListViewTest, StartPageTest) {
   // Tiles should not update when the start page is not active but should be
   // correct once the start page is shown.
   EXPECT_TRUE(SetAppListState(AppListModel::STATE_APPS));
-  model->results()->Add(base::MakeUnique<TestStartPageSearchResult>());
+  model->results()->Add(std::make_unique<TestStartPageSearchResult>());
   start_page_view->UpdateForTesting();
   EXPECT_EQ(0u, GetVisibleViews(start_page_view->tile_views()));
   EXPECT_TRUE(SetAppListState(AppListModel::STATE_START));

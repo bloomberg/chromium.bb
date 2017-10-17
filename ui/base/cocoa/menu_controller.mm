@@ -264,7 +264,7 @@ NSString* const kMenuControllerMenuDidCloseNotification =
     NSMenu* menu = menu_;
 
     postedItemSelectedTask_ =
-        base::MakeUnique<base::CancelableClosure>(base::BindBlock(^{
+        std::make_unique<base::CancelableClosure>(base::BindBlock(^{
           id target = [sender target];
           if ([target respondsToSelector:@selector(itemSelected:uiEventFlags:)])
             [target itemSelected:sender uiEventFlags:uiEventFlags];

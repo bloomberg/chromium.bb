@@ -1945,7 +1945,7 @@ void Textfield::UpdateBackgroundColor() {
 }
 
 void Textfield::UpdateBorder() {
-  auto border = base::MakeUnique<views::FocusableBorder>();
+  auto border = std::make_unique<views::FocusableBorder>();
   const LayoutProvider* provider = LayoutProvider::Get();
   border->SetInsets(
       provider->GetDistanceMetric(DISTANCE_CONTROL_VERTICAL_TEXT_PADDING),

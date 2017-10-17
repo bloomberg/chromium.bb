@@ -32,7 +32,7 @@ namespace views {
 // static
 std::unique_ptr<NativeViewAccessibility> NativeViewAccessibility::Create(
     View* view) {
-  return base::MakeUnique<NativeViewAccessibilityWin>(view);
+  return std::make_unique<NativeViewAccessibilityWin>(view);
 }
 
 NativeViewAccessibilityWin::NativeViewAccessibilityWin(View* view)

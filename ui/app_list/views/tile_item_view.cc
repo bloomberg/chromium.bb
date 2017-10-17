@@ -137,7 +137,7 @@ void TileItemView::SetBadgeIcon(const gfx::ImageSkia& badge_icon) {
   }
 
   const int size = kBadgeBackgroundRadius * 2;
-  gfx::ImageSkia background(base::MakeUnique<BadgeBackgroundImageSource>(size),
+  gfx::ImageSkia background(std::make_unique<BadgeBackgroundImageSource>(size),
                             gfx::Size(size, size));
   gfx::ImageSkia icon_with_background =
       gfx::ImageSkiaOperations::CreateSuperimposedImage(background, badge_icon);

@@ -64,7 +64,7 @@ DictionaryDataStore::DictionaryDataStore(const base::FilePath& data_file)
       file_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
       writer_(data_file, file_task_runner_),
-      cached_dict_(base::MakeUnique<base::DictionaryValue>()) {
+      cached_dict_(std::make_unique<base::DictionaryValue>()) {
 #if DCHECK_IS_ON()
   g_file_paths_with_active_dictionary_data_store.Get().AddPath(data_file_);
 #endif

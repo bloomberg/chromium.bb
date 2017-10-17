@@ -98,11 +98,11 @@ void AuraTestHelper::SetUp(ui::ContextFactory* context_factory,
   if (mode_ != Mode::MUS) {
     // Assume if an explicit WindowTreeClient was created then a WmState was
     // already created.
-    wm_state_ = base::MakeUnique<wm::WMState>();
+    wm_state_ = std::make_unique<wm::WMState>();
   }
   // Needs to be before creating WindowTreeClient.
-  focus_client_ = base::MakeUnique<TestFocusClient>();
-  capture_client_ = base::MakeUnique<client::DefaultCaptureClient>();
+  focus_client_ = std::make_unique<TestFocusClient>();
+  capture_client_ = std::make_unique<client::DefaultCaptureClient>();
   const Env::Mode env_mode =
       (mode_ == Mode::LOCAL) ? Env::Mode::LOCAL : Env::Mode::MUS;
   if (mode_ == Mode::MUS_CREATE_WINDOW_TREE_CLIENT)
@@ -203,7 +203,7 @@ client::CaptureClient* AuraTestHelper::capture_client() {
 }
 
 void AuraTestHelper::InitWindowTreeClient() {
-  window_tree_client_setup_ = base::MakeUnique<TestWindowTreeClientSetup>();
+  window_tree_client_setup_ = std::make_unique<TestWindowTreeClientSetup>();
   window_tree_client_setup_->InitForWindowManager(window_tree_delegate_,
                                                   window_manager_delegate_);
   window_tree_client_ = window_tree_client_setup_->window_tree_client();

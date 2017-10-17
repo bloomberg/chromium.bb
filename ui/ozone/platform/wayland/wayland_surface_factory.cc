@@ -187,9 +187,9 @@ bool GLOzoneEGLWayland::LoadGLES2Bindings(gl::GLImplementation impl) {
 
 WaylandSurfaceFactory::WaylandSurfaceFactory(WaylandConnection* connection)
     : connection_(connection),
-      osmesa_implementation_(base::MakeUnique<GLOzoneOSMesa>()) {
+      osmesa_implementation_(std::make_unique<GLOzoneOSMesa>()) {
   if (connection_)
-    egl_implementation_ = base::MakeUnique<GLOzoneEGLWayland>(connection_);
+    egl_implementation_ = std::make_unique<GLOzoneEGLWayland>(connection_);
 }
 
 WaylandSurfaceFactory::~WaylandSurfaceFactory() {}
@@ -200,7 +200,7 @@ WaylandSurfaceFactory::CreateCanvasForWidget(gfx::AcceleratedWidget widget) {
     return nullptr;
   WaylandWindow* window = connection_->GetWindow(widget);
   DCHECK(window);
-  return base::MakeUnique<WaylandCanvasSurface>(connection_, window);
+  return std::make_unique<WaylandCanvasSurface>(connection_, window);
 }
 
 std::vector<gl::GLImplementation>

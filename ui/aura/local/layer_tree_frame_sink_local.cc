@@ -40,12 +40,12 @@ bool LayerTreeFrameSinkLocal::BindToClient(
   if (!cc::LayerTreeFrameSink::BindToClient(client))
     return false;
   DCHECK(!thread_checker_);
-  thread_checker_ = base::MakeUnique<base::ThreadChecker>();
+  thread_checker_ = std::make_unique<base::ThreadChecker>();
 
   support_ = host_frame_sink_manager_->CreateCompositorFrameSinkSupport(
       this, frame_sink_id_, false /* is_root */,
       true /* needs_sync_points */);
-  begin_frame_source_ = base::MakeUnique<viz::ExternalBeginFrameSource>(this);
+  begin_frame_source_ = std::make_unique<viz::ExternalBeginFrameSource>(this);
   client->SetBeginFrameSource(begin_frame_source_.get());
   return true;
 }

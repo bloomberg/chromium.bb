@@ -63,7 +63,7 @@ class TestViewsDelegate : public ViewsDelegate {
   bool use_desktop_native_widgets_;
   bool use_transparent_windows_;
   std::unique_ptr<LayoutProvider> layout_provider_ =
-      base::MakeUnique<LayoutProvider>();
+      std::make_unique<LayoutProvider>();
 
   DISALLOW_COPY_AND_ASSIGN(TestViewsDelegate);
 };

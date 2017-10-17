@@ -53,7 +53,7 @@ IndicatorChipView::IndicatorChipView(const base::string16& text) {
   container_->set_can_process_events_within_subtree(false);
   AddChildView(container_);
 
-  container_->SetBackground(base::MakeUnique<IndicatorBackground>());
+  container_->SetBackground(std::make_unique<IndicatorBackground>());
 
   label_ = new views::Label(text);
   const gfx::FontList& small_font =

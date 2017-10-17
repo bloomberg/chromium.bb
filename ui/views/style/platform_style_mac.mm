@@ -42,7 +42,7 @@ const bool PlatformStyle::kReturnClicksFocusedControl = false;
 
 // static
 std::unique_ptr<ScrollBar> PlatformStyle::CreateScrollBar(bool is_horizontal) {
-  return base::MakeUnique<CocoaScrollBar>(is_horizontal);
+  return std::make_unique<CocoaScrollBar>(is_horizontal);
 }
 
 // static

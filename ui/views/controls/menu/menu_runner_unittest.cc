@@ -262,14 +262,14 @@ class MenuRunnerWidgetTest : public MenuRunnerTest {
 
   std::unique_ptr<ui::test::EventGenerator> EventGeneratorForWidget(
       Widget* widget) {
-    return base::MakeUnique<ui::test::EventGenerator>(
+    return std::make_unique<ui::test::EventGenerator>(
         IsMus() ? widget->GetNativeWindow() : GetContext(),
         widget->GetNativeWindow());
   }
 
   void AddMenuLauncherEventHandler(Widget* widget) {
     consumer_ =
-        base::MakeUnique<MenuLauncherEventHandler>(menu_runner(), widget);
+        std::make_unique<MenuLauncherEventHandler>(menu_runner(), widget);
     event_count_view_->AddPostTargetHandler(consumer_.get());
   }
 

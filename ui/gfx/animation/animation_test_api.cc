@@ -16,7 +16,7 @@ AnimationTestApi::SetRichAnimationRenderMode(
     Animation::RichAnimationRenderMode mode) {
   DCHECK(Animation::rich_animation_rendering_mode_ ==
          Animation::RichAnimationRenderMode::PLATFORM);
-  return base::MakeUnique<base::AutoReset<Animation::RichAnimationRenderMode>>(
+  return std::make_unique<base::AutoReset<Animation::RichAnimationRenderMode>>(
       &Animation::rich_animation_rendering_mode_, mode);
 }
 

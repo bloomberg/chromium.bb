@@ -17,7 +17,7 @@ namespace wm {
 
 WMTestHelper::WMTestHelper(const gfx::Size& default_window_size,
                            ui::ContextFactory* context_factory) {
-  wm_state_ = base::MakeUnique<WMState>();
+  wm_state_ = std::make_unique<WMState>();
   aura::Env::GetInstance()->set_context_factory(context_factory);
   host_.reset(aura::WindowTreeHost::Create(gfx::Rect(default_window_size)));
   host_->InitHost();

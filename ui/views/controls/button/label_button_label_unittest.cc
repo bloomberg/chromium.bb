@@ -60,7 +60,7 @@ class LabelButtonLabelTest : public ViewsTestBase {
 
   void SetUp() override {
     ViewsTestBase::SetUp();
-    label_ = base::MakeUnique<TestLabel>(&last_color_);
+    label_ = std::make_unique<TestLabel>(&last_color_);
   }
 
  protected:

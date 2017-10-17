@@ -122,7 +122,7 @@ BubbleFrameView::~BubbleFrameView() {}
 // static
 std::unique_ptr<Label> BubbleFrameView::CreateDefaultTitleLabel(
     const base::string16& title_text) {
-  auto title = base::MakeUnique<Label>(title_text, style::CONTEXT_DIALOG_TITLE);
+  auto title = std::make_unique<Label>(title_text, style::CONTEXT_DIALOG_TITLE);
   title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title->set_collapse_when_hidden(true);
   title->SetMultiLine(true);
@@ -452,7 +452,7 @@ void BubbleFrameView::SetBubbleBorder(std::unique_ptr<BubbleBorder> border) {
   SetBorder(std::move(border));
 
   // Update the background, which relies on the border.
-  SetBackground(base::MakeUnique<views::BubbleBackground>(bubble_border_));
+  SetBackground(std::make_unique<views::BubbleBackground>(bubble_border_));
 }
 
 void BubbleFrameView::SetFootnoteView(View* view) {

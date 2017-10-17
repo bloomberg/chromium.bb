@@ -1176,7 +1176,7 @@ ui::EventTarget* View::GetParentTarget() {
 }
 
 std::unique_ptr<ui::EventTargetIterator> View::GetChildIterator() const {
-  return base::MakeUnique<ui::EventTargetIteratorPtrImpl<View>>(children_);
+  return std::make_unique<ui::EventTargetIteratorPtrImpl<View>>(children_);
 }
 
 ui::EventTargeter* View::GetEventTargeter() {
@@ -2428,7 +2428,7 @@ void View::CreateLayer(ui::LayerType layer_type) {
       child->UpdateChildLayerVisibility(true);
   }
 
-  SetLayer(base::MakeUnique<ui::Layer>(layer_type));
+  SetLayer(std::make_unique<ui::Layer>(layer_type));
   layer()->set_delegate(this);
   layer()->set_name(GetClassName());
 

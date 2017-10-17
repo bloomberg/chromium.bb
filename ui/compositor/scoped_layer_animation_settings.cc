@@ -133,7 +133,7 @@ class TrilinearFilteringObserver : public ui::ImplicitAnimationObserver,
 void AddDeferredPaintObserverRecursive(
     ui::Layer* layer,
     ui::ScopedLayerAnimationSettings* settings) {
-  auto observer = base::MakeUnique<DeferredPaintObserver>(layer);
+  auto observer = std::make_unique<DeferredPaintObserver>(layer);
   settings->AddObserver(observer.get());
   settings->GetAnimator()->AddOwnedObserver(std::move(observer));
   for (auto* child : layer->children())
@@ -215,7 +215,7 @@ ScopedLayerAnimationSettings::GetPreemptionStrategy() const {
 }
 
 void ScopedLayerAnimationSettings::CacheRenderSurface() {
-  auto observer = base::MakeUnique<CacheRenderSurfaceObserver>(
+  auto observer = std::make_unique<CacheRenderSurfaceObserver>(
       animator_->delegate()->GetLayer());
   AddObserver(observer.get());
   animator_->AddOwnedObserver(std::move(observer));
@@ -226,7 +226,7 @@ void ScopedLayerAnimationSettings::DeferPaint() {
 }
 
 void ScopedLayerAnimationSettings::TrilinearFiltering() {
-  auto observer = base::MakeUnique<TrilinearFilteringObserver>(
+  auto observer = std::make_unique<TrilinearFilteringObserver>(
       animator_->delegate()->GetLayer());
   AddObserver(observer.get());
   animator_->AddOwnedObserver(std::move(observer));

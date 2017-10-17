@@ -60,7 +60,7 @@ std::unique_ptr<ScopedEventDispatcher> PlatformEventSource::OverrideDispatcher(
     PlatformEventDispatcher* dispatcher) {
   CHECK(dispatcher);
   overridden_dispatcher_restored_ = false;
-  return base::MakeUnique<ScopedEventDispatcher>(&overridden_dispatcher_,
+  return std::make_unique<ScopedEventDispatcher>(&overridden_dispatcher_,
                                                  dispatcher);
 }
 

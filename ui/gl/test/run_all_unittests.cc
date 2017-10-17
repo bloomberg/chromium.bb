@@ -79,11 +79,11 @@ class GlTestSuite : public base::TestSuite {
 #endif
 
     scoped_task_environment_ =
-        base::MakeUnique<base::test::ScopedTaskEnvironment>(
+        std::make_unique<base::test::ScopedTaskEnvironment>(
             base::test::ScopedTaskEnvironment::MainThreadType::UI);
 
 #if defined(USE_OZONE)
-    service_ = base::MakeUnique<OzoneDrmTestService>();
+    service_ = std::make_unique<OzoneDrmTestService>();
 
     // Make Ozone run in single-process mode, where it doesn't expect a GPU
     // process and it spawns and starts its own DRM thread. Note that this mode

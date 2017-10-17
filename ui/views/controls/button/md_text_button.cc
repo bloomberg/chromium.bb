@@ -156,7 +156,7 @@ std::unique_ptr<views::InkDropHighlight> MdTextButton::CreateInkDropHighlight()
                                      SkColorSetA(SK_ColorBLACK, shadow_alpha)));
   const SkColor fill_color =
       SkColorSetA(SK_ColorWHITE, is_prominent_ ? 0x0D : 0x05);
-  return base::MakeUnique<InkDropHighlight>(
+  return std::make_unique<InkDropHighlight>(
       gfx::RectF(GetLocalBounds()).CenterPoint(),
       base::WrapUnique(new BorderShadowLayerDelegate(
           shadows, GetLocalBounds(), fill_color, kInkDropSmallCornerRadius)));

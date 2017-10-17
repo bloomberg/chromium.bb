@@ -149,7 +149,7 @@ Combobox* TextExample::AddCombobox(GridLayout* layout,
   layout->StartRow(0, 0);
   layout->AddView(new Label(base::ASCIIToUTF16(name)));
   example_combobox_model_.push_back(
-      base::MakeUnique<ExampleComboboxModel>(strings, count));
+      std::make_unique<ExampleComboboxModel>(strings, count));
   Combobox* combobox = new Combobox(example_combobox_model_.back().get());
   combobox->SetSelectedIndex(0);
   combobox->set_listener(this);

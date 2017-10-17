@@ -697,7 +697,7 @@ void DesktopDragDropClientAuraX11::OnXdndDrop(
         aura::client::GetDragDropDelegate(target_window_);
     if (delegate) {
       ui::OSExchangeData data(
-          base::MakeUnique<ui::OSExchangeDataProviderAuraX11>(
+          std::make_unique<ui::OSExchangeDataProviderAuraX11>(
               xwindow_, target_current_context_->fetched_targets()));
 
       ui::DropTargetEvent event(data,
@@ -1073,8 +1073,8 @@ void DesktopDragDropClientAuraX11::DragTranslate(
   if (!*delegate)
     return;
 
-  data->reset(new OSExchangeData(
-      base::MakeUnique<ui::OSExchangeDataProviderAuraX11>(
+  data->reset(
+      new OSExchangeData(std::make_unique<ui::OSExchangeDataProviderAuraX11>(
           xwindow_, target_current_context_->fetched_targets())));
   gfx::Point location = root_location;
   aura::Window::ConvertPointToTarget(root_window_, target_window_, &location);

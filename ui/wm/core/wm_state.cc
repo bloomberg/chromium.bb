@@ -15,7 +15,7 @@ namespace wm {
 WMState::WMState()
     : window_stacking_client_(new TransientWindowStackingClient),
       transient_window_client_(new TransientWindowController),
-      capture_controller_(base::MakeUnique<CaptureController>()) {
+      capture_controller_(std::make_unique<CaptureController>()) {
   aura::client::SetWindowStackingClient(window_stacking_client_.get());
   aura::client::SetTransientWindowClient(transient_window_client_.get());
 }

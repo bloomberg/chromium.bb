@@ -60,7 +60,7 @@ class TestHoleWindowTargeter : public aura::WindowTargeter {
     int y1 = bounds.height() / 3;
     int y2 = bounds.height() - bounds.height() / 3;
     int y3 = bounds.height();
-    auto shape_rects = base::MakeUnique<aura::WindowTargeter::HitTestRects>();
+    auto shape_rects = std::make_unique<aura::WindowTargeter::HitTestRects>();
     shape_rects->emplace_back(x0, y0, bounds.width(), y1 - y0);
     shape_rects->emplace_back(x0, y1, x1 - x0, y2 - y1);
     shape_rects->emplace_back(x2, y1, x3 - x2, y2 - y1);
@@ -86,9 +86,9 @@ class HitTestDataProviderAuraTest : public test::AuraTestBaseMus {
   void SetUp() override {
     test::AuraTestBaseMus::SetUp();
 
-    root_ = base::MakeUnique<Window>(nullptr);
+    root_ = std::make_unique<Window>(nullptr);
     root_->Init(ui::LAYER_NOT_DRAWN);
-    root_->SetEventTargeter(base::MakeUnique<WindowTargeter>());
+    root_->SetEventTargeter(std::make_unique<WindowTargeter>());
     root_->SetBounds(gfx::Rect(0, 0, 300, 200));
 
     window2_ = new Window(nullptr);
@@ -97,7 +97,7 @@ class HitTestDataProviderAuraTest : public test::AuraTestBaseMus {
 
     window3_ = new Window(nullptr);
     window3_->Init(ui::LAYER_TEXTURED);
-    window3_->SetEventTargeter(base::MakeUnique<WindowTargeter>());
+    window3_->SetEventTargeter(std::make_unique<WindowTargeter>());
     window3_->SetBounds(gfx::Rect(50, 60, 100, 40));
 
     window4_ = new Window(nullptr);
@@ -108,7 +108,7 @@ class HitTestDataProviderAuraTest : public test::AuraTestBaseMus {
     root_->AddChild(window2_);
     root_->AddChild(window3_);
 
-    hit_test_data_provider_ = base::MakeUnique<HitTestDataProviderAura>(root());
+    hit_test_data_provider_ = std::make_unique<HitTestDataProviderAura>(root());
   }
 
  protected:
@@ -175,7 +175,7 @@ TEST_F(HitTestDataProviderAuraTest, Stacking) {
 
 // Tests that the hit-test regions get expanded with a custom event targeter.
 TEST_F(HitTestDataProviderAuraTest, CustomTargeter) {
-  window3()->SetEventTargeter(base::MakeUnique<TestWindowTargeter>());
+  window3()->SetEventTargeter(std::make_unique<TestWindowTargeter>());
   const auto hit_test_data = hit_test_data_provider()->GetHitTestData();
   ASSERT_TRUE(hit_test_data);
   EXPECT_EQ(hit_test_data->flags, viz::mojom::kHitTestMine);
@@ -217,7 +217,7 @@ TEST_F(HitTestDataProviderAuraTest, CustomTargeter) {
 
 // Tests that the complex hit-test shape can be set with a custom targeter.
 TEST_F(HitTestDataProviderAuraTest, HoleTargeter) {
-  window3()->SetEventTargeter(base::MakeUnique<TestHoleWindowTargeter>());
+  window3()->SetEventTargeter(std::make_unique<TestHoleWindowTargeter>());
   const auto hit_test_data = hit_test_data_provider()->GetHitTestData();
   ASSERT_TRUE(hit_test_data);
   EXPECT_EQ(hit_test_data->flags, viz::mojom::kHitTestMine);

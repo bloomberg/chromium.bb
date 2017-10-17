@@ -225,7 +225,7 @@ Combobox* BoxLayoutExample::CreateCombobox(const base::string16& label_text,
   label->SetPosition(gfx::Point(kPadding, vertical_pos));
   label->SizeToPreferredSize();
   Combobox* combo_box =
-      new Combobox(base::MakeUnique<ExampleComboboxModel>(items, count));
+      new Combobox(std::make_unique<ExampleComboboxModel>(items, count));
   combo_box->SetPosition(
       gfx::Point(label->x() + label->width() + kSpacing, vertical_pos));
   combo_box->SizeToPreferredSize();

@@ -57,7 +57,7 @@ TEST_F(NativeWidgetAuraTest, NonActiveWindowRequestImeFocus) {
 
   TestFocusRules* test_focus_rules = new TestFocusRules;
   std::unique_ptr<wm::FocusController> focus_controller =
-      base::MakeUnique<wm::FocusController>(test_focus_rules);
+      std::make_unique<wm::FocusController>(test_focus_rules);
   wm::SetActivationClient(GetContext(), focus_controller.get());
 
   Widget* widget1 = new Widget;

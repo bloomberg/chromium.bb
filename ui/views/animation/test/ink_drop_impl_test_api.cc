@@ -20,7 +20,7 @@ namespace test {
 void InkDropImplTestApi::AccessFactoryOnExitHighlightState::Install(
     InkDropImpl::HighlightStateFactory* state_factory) {
   state_factory->ink_drop()->SetHighlightState(
-      base::MakeUnique<InkDropImplTestApi::AccessFactoryOnExitHighlightState>(
+      std::make_unique<InkDropImplTestApi::AccessFactoryOnExitHighlightState>(
           state_factory));
 }
 
@@ -57,7 +57,7 @@ void InkDropImplTestApi::AccessFactoryOnExitHighlightState::AnimationEnded(
 void InkDropImplTestApi::SetStateOnExitHighlightState::Install(
     InkDropImpl::HighlightStateFactory* state_factory) {
   state_factory->ink_drop()->SetHighlightState(
-      base::MakeUnique<InkDropImplTestApi::SetStateOnExitHighlightState>(
+      std::make_unique<InkDropImplTestApi::SetStateOnExitHighlightState>(
           state_factory));
 }
 

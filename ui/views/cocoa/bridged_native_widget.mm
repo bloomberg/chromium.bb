@@ -1072,7 +1072,7 @@ void BridgedNativeWidget::CreateLayer(ui::LayerType layer_type,
   CreateCompositor();
   DCHECK(compositor_);
 
-  SetLayer(base::MakeUnique<ui::Layer>(layer_type));
+  SetLayer(std::make_unique<ui::Layer>(layer_type));
   // Note, except for controls, this will set the layer to be hidden, since it
   // is only called during Init().
   layer()->SetVisible(window_visible_);

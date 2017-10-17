@@ -90,7 +90,7 @@ MovableDisplaySnapshots DrmGpuDisplayManager::GetDisplays() {
         displays_.push_back(std::move(*it));
         old_displays.erase(it);
       } else {
-        displays_.push_back(base::MakeUnique<DrmDisplay>(screen_manager_, drm));
+        displays_.push_back(std::make_unique<DrmDisplay>(screen_manager_, drm));
       }
       params_list.push_back(
           displays_.back()->Update(display_info.get(), device_index));

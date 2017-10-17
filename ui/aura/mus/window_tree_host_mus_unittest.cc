@@ -15,7 +15,7 @@ using WindowTreeHostMusTest = aura::test::AuraMusClientTestBase;
 
 TEST_F(WindowTreeHostMusTest, UpdateClientArea) {
   std::unique_ptr<WindowTreeHostMus> window_tree_host_mus =
-      base::MakeUnique<WindowTreeHostMus>(
+      std::make_unique<WindowTreeHostMus>(
           aura::CreateInitParamsForTopLevel(window_tree_client_impl()));
 
   gfx::Insets new_insets(10, 11, 12, 13);
@@ -25,7 +25,7 @@ TEST_F(WindowTreeHostMusTest, UpdateClientArea) {
 
 TEST_F(WindowTreeHostMusTest, SetHitTestMask) {
   std::unique_ptr<WindowTreeHostMus> window_tree_host_mus =
-      base::MakeUnique<WindowTreeHostMus>(
+      std::make_unique<WindowTreeHostMus>(
           CreateInitParamsForTopLevel(window_tree_client_impl()));
 
   EXPECT_FALSE(window_tree()->last_hit_test_mask().has_value());

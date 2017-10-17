@@ -86,7 +86,7 @@ class AppListPresenterDelegateFactoryTest
   // AppListPresenterDelegateFactory:
   std::unique_ptr<AppListPresenterDelegate> GetDelegate(
       AppListPresenterImpl* presenter) override {
-    return base::MakeUnique<AppListPresenterDelegateTest>(
+    return std::make_unique<AppListPresenterDelegateTest>(
         container_, &app_list_view_delegate_);
   }
 
@@ -135,10 +135,10 @@ void AppListPresenterImplTest::SetUp() {
   AuraTestBase::SetUp();
   new wm::DefaultActivationClient(root_window());
   container_.reset(CreateNormalWindow(0, root_window(), nullptr));
-  presenter_ = base::MakeUnique<AppListPresenterImpl>(
-      base::MakeUnique<AppListPresenterDelegateFactoryTest>(container_.get()));
+  presenter_ = std::make_unique<AppListPresenterImpl>(
+      std::make_unique<AppListPresenterDelegateFactoryTest>(container_.get()));
   presenter_test_api_ =
-      base::MakeUnique<test::AppListPresenterImplTestApi>(presenter());
+      std::make_unique<test::AppListPresenterImplTestApi>(presenter());
 }
 
 void AppListPresenterImplTest::TearDown() {

@@ -55,7 +55,7 @@ class MusViewsDelegate : public ViewsDelegate {
 
 AuraInit::AuraInit() {
   if (!ViewsDelegate::GetInstance())
-    views_delegate_ = base::MakeUnique<MusViewsDelegate>();
+    views_delegate_ = std::make_unique<MusViewsDelegate>();
 }
 
 AuraInit::~AuraInit() {

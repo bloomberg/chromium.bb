@@ -21,7 +21,7 @@ class DefaultFocusManagerFactory : public FocusManagerFactory {
   std::unique_ptr<FocusManager> CreateFocusManager(
       Widget* widget,
       bool desktop_widget) override {
-    return base::MakeUnique<FocusManager>(widget, nullptr /* delegate */);
+    return std::make_unique<FocusManager>(widget, nullptr /* delegate */);
   }
 
  private:

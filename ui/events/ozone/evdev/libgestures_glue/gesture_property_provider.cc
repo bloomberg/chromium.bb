@@ -923,7 +923,7 @@ void GesturePropertyProvider::RegisterDevice(const DeviceId id,
   // Setup data-structures.
   device_map_[id] = device;
   device_data_map_[id] =
-      base::MakeUnique<internal::GestureDevicePropertyData>();
+      std::make_unique<internal::GestureDevicePropertyData>();
 
   // Gather default property values for the device from the parsed conf files.
   SetupDefaultProperties(id, device);
@@ -1031,7 +1031,7 @@ void GesturePropertyProvider::ParseXorgConfFile(const std::string& content) {
                                     base::SPLIT_WANT_ALL)) {
     // Create a new configuration section.
     configurations_.push_back(
-        base::MakeUnique<internal::ConfigurationSection>());
+        std::make_unique<internal::ConfigurationSection>());
     internal::ConfigurationSection* config = configurations_.back().get();
 
     // Break the section into lines.
@@ -1187,17 +1187,17 @@ GesturePropertyProvider::CreateMatchCriteria(const std::string& match_type,
                                              const std::string& arg) {
   DVLOG(2) << "Creating match criteria: (" << match_type << ", " << arg << ")";
   if (match_type == "MatchProduct")
-    return base::MakeUnique<internal::MatchProduct>(arg);
+    return std::make_unique<internal::MatchProduct>(arg);
   if (match_type == "MatchDevicePath")
-    return base::MakeUnique<internal::MatchDevicePath>(arg);
+    return std::make_unique<internal::MatchDevicePath>(arg);
   if (match_type == "MatchUSBID")
-    return base::MakeUnique<internal::MatchUSBID>(arg);
+    return std::make_unique<internal::MatchUSBID>(arg);
   if (match_type == "MatchIsPointer")
-    return base::MakeUnique<internal::MatchIsPointer>(arg);
+    return std::make_unique<internal::MatchIsPointer>(arg);
   if (match_type == "MatchIsTouchpad")
-    return base::MakeUnique<internal::MatchIsTouchpad>(arg);
+    return std::make_unique<internal::MatchIsTouchpad>(arg);
   if (match_type == "MatchIsTouchscreen")
-    return base::MakeUnique<internal::MatchIsTouchscreen>(arg);
+    return std::make_unique<internal::MatchIsTouchscreen>(arg);
   NOTREACHED();
   return NULL;
 }

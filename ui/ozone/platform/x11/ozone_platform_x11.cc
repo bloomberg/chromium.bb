@@ -66,7 +66,7 @@ class OzonePlatformX11 : public OzonePlatform {
   std::unique_ptr<PlatformWindow> CreatePlatformWindow(
       PlatformWindowDelegate* delegate,
       const gfx::Rect& bounds) override {
-    std::unique_ptr<X11WindowOzone> window = base::MakeUnique<X11WindowOzone>(
+    std::unique_ptr<X11WindowOzone> window = std::make_unique<X11WindowOzone>(
         window_manager_.get(), delegate, bounds);
     window->Create();
     window->SetTitle(base::ASCIIToUTF16("Ozone X11"));
@@ -75,16 +75,16 @@ class OzonePlatformX11 : public OzonePlatform {
 
   std::unique_ptr<display::NativeDisplayDelegate> CreateNativeDisplayDelegate()
       override {
-    return base::MakeUnique<display::FakeDisplayDelegate>();
+    return std::make_unique<display::FakeDisplayDelegate>();
   }
 
   void InitializeUI(const InitParams& params) override {
     InitializeCommon(params);
     CreatePlatformEventSource();
-    window_manager_ = base::MakeUnique<X11WindowManagerOzone>();
-    overlay_manager_ = base::MakeUnique<StubOverlayManager>();
+    window_manager_ = std::make_unique<X11WindowManagerOzone>();
+    overlay_manager_ = std::make_unique<StubOverlayManager>();
     input_controller_ = CreateStubInputController();
-    cursor_factory_ozone_ = base::MakeUnique<X11CursorFactoryOzone>();
+    cursor_factory_ozone_ = std::make_unique<X11CursorFactoryOzone>();
     gpu_platform_support_host_.reset(CreateStubGpuPlatformSupportHost());
 
     TouchFactory::SetTouchDeviceListFromCommandLine();
@@ -98,7 +98,7 @@ class OzonePlatformX11 : public OzonePlatform {
     if (!params.single_process)
       CreatePlatformEventSource();
 
-    surface_factory_ozone_ = base::MakeUnique<X11SurfaceFactory>();
+    surface_factory_ozone_ = std::make_unique<X11SurfaceFactory>();
   }
 
   base::MessageLoop::Type GetMessageLoopTypeForGpu() override {
@@ -130,7 +130,7 @@ class OzonePlatformX11 : public OzonePlatform {
       return;
 
     XDisplay* display = gfx::GetXDisplay();
-    event_source_ = base::MakeUnique<X11EventSourceLibevent>(display);
+    event_source_ = std::make_unique<X11EventSourceLibevent>(display);
   }
 
   bool common_initialized_ = false;

@@ -27,7 +27,7 @@ void TestWindowTreeClientSetup::Init(
 void TestWindowTreeClientSetup::InitForWindowManager(
     WindowTreeClientDelegate* window_tree_delegate,
     WindowManagerDelegate* window_manager_delegate) {
-  test_window_manager_client_ = base::MakeUnique<TestWindowManagerClient>();
+  test_window_manager_client_ = std::make_unique<TestWindowManagerClient>();
   CommonInit(window_tree_delegate, window_manager_delegate);
   WindowTreeClientPrivate window_tree_client_private(window_tree_client_.get());
   window_tree_client_private.SetTree(window_tree_.get());
@@ -49,7 +49,7 @@ void TestWindowTreeClientSetup::CommonInit(
     WindowTreeClientDelegate* window_tree_delegate,
     WindowManagerDelegate* window_manager_delegate) {
   window_tree_.reset(new TestWindowTree);
-  window_tree_client_ = base::MakeUnique<WindowTreeClient>(
+  window_tree_client_ = std::make_unique<WindowTreeClient>(
       nullptr, window_tree_delegate, window_manager_delegate);
   window_tree_->set_client(window_tree_client_.get());
 }

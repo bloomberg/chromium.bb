@@ -41,7 +41,7 @@ class DesktopWindowTreeHostMusTest : public ViewsTestBase,
   // Creates a test widget. Takes ownership of |delegate|.
   std::unique_ptr<Widget> CreateWidget(WidgetDelegate* delegate = nullptr,
                                        aura::Window* parent = nullptr) {
-    std::unique_ptr<Widget> widget = base::MakeUnique<Widget>();
+    std::unique_ptr<Widget> widget = std::make_unique<Widget>();
     Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
     params.delegate = delegate;
     params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;

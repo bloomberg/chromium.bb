@@ -421,12 +421,12 @@ TEST_F(NativeViewHostAuraTest, FocusManagerUpdatedDuringDestruction) {
   toplevel()->Show();
 
   std::unique_ptr<aura::Window> window =
-      base::MakeUnique<aura::Window>(nullptr);
+      std::make_unique<aura::Window>(nullptr);
   window->Init(ui::LAYER_NOT_DRAWN);
   window->set_owned_by_parent(false);
 
   std::unique_ptr<NativeViewHost> native_view_host =
-      base::MakeUnique<NativeViewHost>();
+      std::make_unique<NativeViewHost>();
   toplevel()->GetContentsView()->AddChildView(native_view_host.get());
 
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_CONTROL);
@@ -435,7 +435,7 @@ TEST_F(NativeViewHostAuraTest, FocusManagerUpdatedDuringDestruction) {
   params.child = true;
   params.bounds = gfx::Rect(10, 10, 100, 100);
   params.parent = window.get();
-  std::unique_ptr<Widget> child_widget = base::MakeUnique<Widget>();
+  std::unique_ptr<Widget> child_widget = std::make_unique<Widget>();
   child_widget->Init(params);
 
   native_view_host->Attach(window.get());

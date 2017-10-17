@@ -103,7 +103,7 @@ class TouchSelectionControllerTest : public testing::Test,
   }
 
   std::unique_ptr<TouchHandleDrawable> CreateDrawable() override {
-    return base::MakeUnique<MockTouchHandleDrawable>(&dragging_enabled_);
+    return std::make_unique<MockTouchHandleDrawable>(&dragging_enabled_);
   }
 
   void DidScroll() override {}

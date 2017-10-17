@@ -27,7 +27,7 @@ namespace ui {
 namespace {
 
 std::unique_ptr<PlatformEvent> CreatePlatformEvent() {
-  std::unique_ptr<PlatformEvent> event = base::MakeUnique<PlatformEvent>();
+  std::unique_ptr<PlatformEvent> event = std::make_unique<PlatformEvent>();
   memset(event.get(), 0, sizeof(PlatformEvent));
   return event;
 }
@@ -181,7 +181,7 @@ TEST_F(PlatformEventTest, DispatcherOrder) {
   std::vector<std::unique_ptr<TestPlatformEventDispatcher>> dispatchers;
   for (auto id : sequence) {
     dispatchers.push_back(
-        base::MakeUnique<TestPlatformEventDispatcher>(id, &list_dispatcher));
+        std::make_unique<TestPlatformEventDispatcher>(id, &list_dispatcher));
   }
   std::unique_ptr<PlatformEvent> event = CreatePlatformEvent();
   source()->Dispatch(*event);
@@ -239,7 +239,7 @@ TEST_F(PlatformEventTest, ObserverOrder) {
   std::vector<std::unique_ptr<TestPlatformEventObserver>> observers;
   for (auto id : sequence) {
     observers.push_back(
-        base::MakeUnique<TestPlatformEventObserver>(id, &list_observer));
+        std::make_unique<TestPlatformEventObserver>(id, &list_observer));
   }
   std::unique_ptr<PlatformEvent> event = CreatePlatformEvent();
   source()->Dispatch(*event);

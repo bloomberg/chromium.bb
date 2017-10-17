@@ -330,9 +330,9 @@ void InterpolatedTransformAboutPivot::Init(
   from_pivot.Translate(SkIntToMScalar(pivot.x()), SkIntToMScalar(pivot.y()));
 
   std::unique_ptr<InterpolatedTransform> pre_transform =
-      base::MakeUnique<InterpolatedConstantTransform>(to_pivot);
+      std::make_unique<InterpolatedConstantTransform>(to_pivot);
   std::unique_ptr<InterpolatedTransform> post_transform =
-      base::MakeUnique<InterpolatedConstantTransform>(from_pivot);
+      std::make_unique<InterpolatedConstantTransform>(from_pivot);
 
   xform->SetChild(std::move(post_transform));
   pre_transform->SetChild(std::move(xform));

@@ -69,7 +69,7 @@ int LoadLocalePakFromApk(const std::string& app_locale,
 std::unique_ptr<DataPack> LoadDataPackFromLocalePak(
     int locale_pack_fd,
     const base::MemoryMappedFile::Region& region) {
-  auto data_pack = base::MakeUnique<DataPack>(SCALE_FACTOR_100P);
+  auto data_pack = std::make_unique<DataPack>(SCALE_FACTOR_100P);
   if (!data_pack->LoadFromFileRegion(base::File(locale_pack_fd), region)) {
     LOG(WARNING) << "failed to load locale.pak";
     NOTREACHED();

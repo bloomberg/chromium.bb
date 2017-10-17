@@ -221,7 +221,7 @@ DisplayMode_Params GetDisplayModeParams(const display::DisplayMode& mode) {
 
 std::unique_ptr<display::DisplayMode> CreateDisplayModeFromParams(
     const DisplayMode_Params& pmode) {
-  return base::MakeUnique<display::DisplayMode>(pmode.size, pmode.is_interlaced,
+  return std::make_unique<display::DisplayMode>(pmode.size, pmode.is_interlaced,
                                                 pmode.refresh_rate);
 }
 
@@ -308,7 +308,7 @@ GetAvailableDisplayControllerInfos(int fd) {
     size_t index = std::find(connectors.begin(), connectors.end(), c.get()) -
                    connectors.begin();
     DCHECK_LT(index, connectors.size());
-    displays.push_back(base::MakeUnique<HardwareDisplayControllerInfo>(
+    displays.push_back(std::make_unique<HardwareDisplayControllerInfo>(
         std::move(c), std::move(crtc), index));
   }
 
@@ -327,7 +327,7 @@ bool SameMode(const drmModeModeInfo& lhs, const drmModeModeInfo& rhs) {
 
 std::unique_ptr<display::DisplayMode> CreateDisplayMode(
     const drmModeModeInfo& mode) {
-  return base::MakeUnique<display::DisplayMode>(
+  return std::make_unique<display::DisplayMode>(
       gfx::Size(mode.hdisplay, mode.vdisplay),
       mode.flags & DRM_MODE_FLAG_INTERLACE, GetRefreshRate(mode));
 }
@@ -388,7 +388,7 @@ std::unique_ptr<display::DisplaySnapshot> CreateDisplaySnapshot(
   if (!native_mode && !modes.empty())
     native_mode = modes.front().get();
 
-  return base::MakeUnique<display::DisplaySnapshot>(
+  return std::make_unique<display::DisplaySnapshot>(
       display_id, origin, physical_size, type, is_aspect_preserving_scaling,
       has_overscan, has_color_correction_matrix, display_name, sys_path,
       std::move(modes), edid, current_mode, native_mode, product_id,
@@ -448,7 +448,7 @@ std::unique_ptr<display::DisplaySnapshot> CreateDisplaySnapshot(
       native_mode = modes.back().get();
   }
 
-  return base::MakeUnique<display::DisplaySnapshot>(
+  return std::make_unique<display::DisplaySnapshot>(
       params.display_id, params.origin, params.physical_size, params.type,
       params.is_aspect_preserving_scaling, params.has_overscan,
       params.has_color_correction_matrix, params.display_name, params.sys_path,

@@ -436,7 +436,7 @@ void ColumnSet::AddColumn(GridLayout::Alignment h_align,
                           int fixed_width,
                           int min_width,
                           bool is_padding) {
-  columns_.push_back(base::MakeUnique<Column>(h_align, v_align, resize_percent,
+  columns_.push_back(std::make_unique<Column>(h_align, v_align, resize_percent,
                                               size_type, fixed_width, min_width,
                                               is_padding));
 }
@@ -807,11 +807,11 @@ void GridLayout::StartRow(float vertical_resize,
   DCHECK_GE(height, 0);
   ColumnSet* column_set = GetColumnSet(column_set_id);
   DCHECK(column_set);
-  AddRow(base::MakeUnique<Row>(height, vertical_resize, column_set));
+  AddRow(std::make_unique<Row>(height, vertical_resize, column_set));
 }
 
 void GridLayout::AddPaddingRow(float vertical_resize, int pixel_count) {
-  AddRow(base::MakeUnique<Row>(pixel_count, vertical_resize, nullptr));
+  AddRow(std::make_unique<Row>(pixel_count, vertical_resize, nullptr));
 }
 
 void GridLayout::SkipColumns(int col_count) {
@@ -846,7 +846,7 @@ void GridLayout::AddView(View* view, int col_span, int row_span,
   // We don't support baseline alignment of views spanning rows. Please add if
   // you need it.
   DCHECK(v_align != BASELINE || row_span == 1);
-  AddViewState(base::MakeUnique<ViewState>(
+  AddViewState(std::make_unique<ViewState>(
       current_row_col_set_, view, next_column_, current_row_, col_span,
       row_span, h_align, v_align, pref_width, pref_height));
 }

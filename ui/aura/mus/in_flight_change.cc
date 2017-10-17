@@ -193,7 +193,7 @@ void InFlightPropertyChange::SetRevertValueFrom(const InFlightChange& change) {
       static_cast<const InFlightPropertyChange&>(change);
   if (property_change.revert_value_) {
     revert_value_ =
-        base::MakeUnique<std::vector<uint8_t>>(*property_change.revert_value_);
+        std::make_unique<std::vector<uint8_t>>(*property_change.revert_value_);
   } else {
     revert_value_.reset();
   }

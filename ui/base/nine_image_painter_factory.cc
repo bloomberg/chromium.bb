@@ -29,7 +29,7 @@ std::vector<gfx::ImageSkia> ImageIdsToImages(const int image_ids[]) {
 
 std::unique_ptr<gfx::NineImagePainter> CreateNineImagePainter(
     const int image_ids[]) {
-  return base::MakeUnique<gfx::NineImagePainter>(ImageIdsToImages(image_ids));
+  return std::make_unique<gfx::NineImagePainter>(ImageIdsToImages(image_ids));
 }
 
 }  // namespace ui

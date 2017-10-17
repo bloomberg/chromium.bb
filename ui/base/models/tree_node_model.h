@@ -38,11 +38,11 @@ namespace ui {
 // creates a TreeNodeModel from it:
 //
 // std::unique_ptr<TreeNodeWithValue<int>> root =
-//     base::MakeUnique<TreeNodeWithValue<int>>();
+//     std::make_unique<TreeNodeWithValue<int>>();
 // root->Add(
-//     base::MakeUnique<TreeNodeWithValue<int>>(ASCIIToUTF16("child 1"), 0));
+//     std::make_unique<TreeNodeWithValue<int>>(ASCIIToUTF16("child 1"), 0));
 // root->Add(
-//     base::MakeUnique<TreeNodeWithValue<int>>(ASCIIToUTF16("child 2"), 1));
+//     std::make_unique<TreeNodeWithValue<int>>(ASCIIToUTF16("child 2"), 1));
 // TreeNodeModel<TreeNodeWithValue<int>> model(std::move(root));
 //
 // Two variants of TreeNode are provided here:

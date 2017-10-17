@@ -95,7 +95,7 @@ void LayerOwnerTestWithCompositor::TearDown() {
 
 TEST_F(LayerOwnerTestWithCompositor, RecreateRootLayerWithCompositor) {
   LayerOwner owner;
-  owner.SetLayer(base::MakeUnique<Layer>());
+  owner.SetLayer(std::make_unique<Layer>());
   Layer* layer = owner.layer();
   compositor()->SetRootLayer(layer);
 
@@ -111,7 +111,7 @@ TEST_F(LayerOwnerTestWithCompositor, RecreateRootLayerWithCompositor) {
 // of animations being cancelled.
 TEST_F(LayerOwnerTestWithCompositor, RecreateRootLayerDuringAnimation) {
   LayerOwner owner;
-  owner.SetLayer(base::MakeUnique<Layer>());
+  owner.SetLayer(std::make_unique<Layer>());
   Layer* layer = owner.layer();
   compositor()->SetRootLayer(layer);
 
@@ -146,7 +146,7 @@ TEST_F(LayerOwnerTestWithCompositor, RecreateNonRootLayerDuringAnimation) {
   compositor()->SetRootLayer(root_layer.get());
 
   LayerOwner owner;
-  owner.SetLayer(base::MakeUnique<Layer>());
+  owner.SetLayer(std::make_unique<Layer>());
   Layer* layer = owner.layer();
   root_layer->Add(layer);
 
@@ -180,7 +180,7 @@ TEST_F(LayerOwnerTestWithCompositor, DetachTimelineOnAnimatorDeletion) {
   compositor()->SetRootLayer(root_layer.get());
 
   LayerOwnerForTesting owner;
-  owner.SetLayer(base::MakeUnique<Layer>());
+  owner.SetLayer(std::make_unique<Layer>());
   Layer* layer = owner.layer();
   layer->SetOpacity(0.5f);
   root_layer->Add(layer);
@@ -203,7 +203,7 @@ TEST_F(LayerOwnerTestWithCompositor,
   compositor()->SetRootLayer(root_layer.get());
 
   LayerOwner owner;
-  owner.SetLayer(base::MakeUnique<Layer>());
+  owner.SetLayer(std::make_unique<Layer>());
   Layer* layer = owner.layer();
   root_layer->Add(layer);
 

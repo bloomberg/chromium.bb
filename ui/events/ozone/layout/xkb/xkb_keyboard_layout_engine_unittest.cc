@@ -153,7 +153,7 @@ class XkbLayoutEngineVkTest : public testing::Test {
 
   void SetUp() override {
     KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
-        base::MakeUnique<VkTestXkbKeyboardLayoutEngine>(keycode_converter_));
+        std::make_unique<VkTestXkbKeyboardLayoutEngine>(keycode_converter_));
     layout_engine_ = static_cast<VkTestXkbKeyboardLayoutEngine*>(
         KeyboardLayoutEngineManager::GetKeyboardLayoutEngine());
   }

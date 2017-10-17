@@ -235,7 +235,7 @@ GLContext* GLContext::GetRealCurrent() {
 }
 
 std::unique_ptr<gl::GLVersionInfo> GLContext::GenerateGLVersionInfo() {
-  return base::MakeUnique<GLVersionInfo>(
+  return std::make_unique<GLVersionInfo>(
       GetGLVersion().c_str(), GetGLRenderer().c_str(), GetExtensions());
 }
 

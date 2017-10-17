@@ -94,9 +94,9 @@ class TestNotificationDelegate : public message_center::NotificationDelegate {
   std::unique_ptr<message_center::MessageView> CreateCustomMessageView(
       message_center::MessageCenterController* controller,
       const message_center::Notification& notification) override {
-    return base::MakeUnique<ArcNotificationView>(
-        base::MakeUnique<TestNotificationContentsView>(),
-        base::MakeUnique<TestContentViewDelegate>(), controller, notification);
+    return std::make_unique<ArcNotificationView>(
+        std::make_unique<TestNotificationContentsView>(),
+        std::make_unique<TestContentViewDelegate>(), controller, notification);
   }
 
  private:
@@ -182,7 +182,7 @@ class ArcNotificationViewTest : public views::ViewsTestBase {
 
     notification_delegate_ = new TestNotificationDelegate;
 
-    notification_ = base::MakeUnique<message_center::Notification>(
+    notification_ = std::make_unique<message_center::Notification>(
         message_center::NOTIFICATION_TYPE_CUSTOM,
         std::string("notification id"), base::UTF8ToUTF16("title"),
         base::UTF8ToUTF16("message"), gfx::Image(),

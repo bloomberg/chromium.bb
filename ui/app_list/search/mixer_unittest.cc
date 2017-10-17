@@ -48,7 +48,7 @@ class TestSearchResult : public SearchResult {
   void Open(int event_flags) override {}
   void InvokeAction(int action_index, int event_flags) override {}
   std::unique_ptr<SearchResult> Duplicate() const override {
-    return base::MakeUnique<TestSearchResult>(id(), relevance());
+    return std::make_unique<TestSearchResult>(id(), relevance());
   }
 
   // For reference equality testing. (Addresses cannot be used to test reference
@@ -124,9 +124,9 @@ class MixerTest : public testing::Test {
   void SetUp() override {
     results_.reset(new AppListModel::SearchResults);
 
-    providers_.push_back(base::MakeUnique<TestSearchProvider>("app"));
-    providers_.push_back(base::MakeUnique<TestSearchProvider>("omnibox"));
-    providers_.push_back(base::MakeUnique<TestSearchProvider>("webstore"));
+    providers_.push_back(std::make_unique<TestSearchProvider>("app"));
+    providers_.push_back(std::make_unique<TestSearchProvider>("omnibox"));
+    providers_.push_back(std::make_unique<TestSearchProvider>("webstore"));
 
     is_voice_query_ = false;
 

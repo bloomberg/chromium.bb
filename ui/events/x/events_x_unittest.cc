@@ -563,13 +563,13 @@ TEST_F(EventsXTest, TimestampRolloverAndAdjustWhenDecreasing) {
   InitButtonEvent(&event, true, gfx::Point(5, 10), 1, 0);
 
   ResetTimestampRolloverCountersForTesting(
-      base::MakeUnique<MockTickClock>(0x100000001));
+      std::make_unique<MockTickClock>(0x100000001));
 
   event.xbutton.time = 0xFFFFFFFF;
   EXPECT_EQ(TimeTicksFromMillis(0xFFFFFFFF), ui::EventTimeFromNative(&event));
 
   ResetTimestampRolloverCountersForTesting(
-      base::MakeUnique<MockTickClock>(0x100000007));
+      std::make_unique<MockTickClock>(0x100000007));
 
   event.xbutton.time = 3;
   EXPECT_EQ(TimeTicksFromMillis(0x100000000 + 3),
@@ -580,7 +580,7 @@ TEST_F(EventsXTest, NoTimestampRolloverWhenMonotonicIncreasing) {
   XEvent event;
   InitButtonEvent(&event, true, gfx::Point(5, 10), 1, 0);
 
-  ResetTimestampRolloverCountersForTesting(base::MakeUnique<MockTickClock>(10));
+  ResetTimestampRolloverCountersForTesting(std::make_unique<MockTickClock>(10));
 
   event.xbutton.time = 6;
   EXPECT_EQ(TimeTicksFromMillis(6), ui::EventTimeFromNative(&event));
@@ -588,7 +588,7 @@ TEST_F(EventsXTest, NoTimestampRolloverWhenMonotonicIncreasing) {
   EXPECT_EQ(TimeTicksFromMillis(7), ui::EventTimeFromNative(&event));
 
   ResetTimestampRolloverCountersForTesting(
-      base::MakeUnique<MockTickClock>(0x100000005));
+      std::make_unique<MockTickClock>(0x100000005));
 
   event.xbutton.time = 0xFFFFFFFF;
   EXPECT_EQ(TimeTicksFromMillis(0xFFFFFFFF), ui::EventTimeFromNative(&event));

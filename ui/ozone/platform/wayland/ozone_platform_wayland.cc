@@ -63,7 +63,7 @@ class OzonePlatformWayland : public OzonePlatform {
       PlatformWindowDelegate* delegate,
       const gfx::Rect& bounds) override {
     auto window =
-        base::MakeUnique<WaylandWindow>(delegate, connection_.get(), bounds);
+        std::make_unique<WaylandWindow>(delegate, connection_.get(), bounds);
     if (!window->Initialize())
       return nullptr;
     return std::move(window);
@@ -71,7 +71,7 @@ class OzonePlatformWayland : public OzonePlatform {
 
   std::unique_ptr<display::NativeDisplayDelegate> CreateNativeDisplayDelegate()
       override {
-    return base::MakeUnique<display::FakeDisplayDelegate>();
+    return std::make_unique<display::FakeDisplayDelegate>();
   }
 
   void InitializeUI(const InitParams& args) override {
@@ -81,11 +81,11 @@ class OzonePlatformWayland : public OzonePlatform {
 
 #if BUILDFLAG(USE_XKBCOMMON)
     KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
-        base::MakeUnique<WaylandXkbKeyboardLayoutEngine>(
+        std::make_unique<WaylandXkbKeyboardLayoutEngine>(
             xkb_evdev_code_converter_));
 #else
     KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
-        base::MakeUnique<StubKeyboardLayoutEngine>());
+        std::make_unique<StubKeyboardLayoutEngine>());
 #endif
 
     cursor_factory_.reset(new CursorFactoryOzone);

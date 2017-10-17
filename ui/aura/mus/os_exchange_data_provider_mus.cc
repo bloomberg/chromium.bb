@@ -66,7 +66,7 @@ OSExchangeDataProviderMus::Data OSExchangeDataProviderMus::GetData() const {
 std::unique_ptr<ui::OSExchangeData::Provider> OSExchangeDataProviderMus::Clone()
     const {
   std::unique_ptr<OSExchangeDataProviderMus> r =
-      base::MakeUnique<OSExchangeDataProviderMus>();
+      std::make_unique<OSExchangeDataProviderMus>();
   r->drag_image_ = drag_image_;
   r->drag_image_offset_ = drag_image_offset_;
   r->mime_data_ = mime_data_;

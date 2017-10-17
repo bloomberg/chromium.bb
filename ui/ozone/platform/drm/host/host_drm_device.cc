@@ -81,7 +81,7 @@ void HostDrmDevice::RunObservers() {
   // The cursor is special since it will process input events on the IO thread
   // and can by-pass the UI thread. This means that we need to special case it
   // and notify it after all other observers/handlers are notified.
-  cursor_->SetDrmCursorProxy(base::MakeUnique<HostCursorProxy>(connector_));
+  cursor_->SetDrmCursorProxy(std::make_unique<HostCursorProxy>(connector_));
 
   // TODO(rjkroege): Call ResetDrmCursorProxy when the mojo connection to the
   // DRM thread is broken.

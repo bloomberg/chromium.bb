@@ -90,10 +90,10 @@ SurfaceFactoryCast::SurfaceFactoryCast() : SurfaceFactoryCast(nullptr) {}
 
 SurfaceFactoryCast::SurfaceFactoryCast(
     std::unique_ptr<chromecast::CastEglPlatform> egl_platform)
-    : osmesa_implementation_(base::MakeUnique<GLOzoneOSMesa>()) {
+    : osmesa_implementation_(std::make_unique<GLOzoneOSMesa>()) {
   if (egl_platform) {
     egl_implementation_ =
-        base::MakeUnique<GLOzoneEglCast>(std::move(egl_platform));
+        std::make_unique<GLOzoneEglCast>(std::move(egl_platform));
   }
 }
 

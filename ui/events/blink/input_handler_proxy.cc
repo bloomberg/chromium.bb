@@ -219,7 +219,7 @@ InputHandlerProxy::InputHandlerProxy(
       mouse_wheel_result_(kEventDispositionUndefined),
       current_overscroll_params_(nullptr),
       has_ongoing_compositor_scroll_fling_pinch_(false),
-      tick_clock_(base::MakeUnique<base::DefaultTickClock>()) {
+      tick_clock_(std::make_unique<base::DefaultTickClock>()) {
   DCHECK(client);
   input_handler_->BindToClient(this,
                                touchpad_and_wheel_scroll_latching_enabled_);
@@ -231,7 +231,7 @@ InputHandlerProxy::InputHandlerProxy(
   }
   compositor_event_queue_ =
       base::FeatureList::IsEnabled(features::kVsyncAlignedInputEvents)
-          ? base::MakeUnique<CompositorThreadEventQueue>()
+          ? std::make_unique<CompositorThreadEventQueue>()
           : nullptr;
 }
 
@@ -255,7 +255,7 @@ void InputHandlerProxy::HandleInputEventWithLatencyInfo(
                          "step", "HandleInputEventImpl");
 
   std::unique_ptr<EventWithCallback> event_with_callback =
-      base::MakeUnique<EventWithCallback>(std::move(event), latency_info,
+      std::make_unique<EventWithCallback>(std::move(event), latency_info,
                                           tick_clock_->NowTicks(),
                                           std::move(callback));
 

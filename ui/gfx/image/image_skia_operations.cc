@@ -490,7 +490,7 @@ ImageSkia ImageSkiaOperations::CreateBlendedImage(const ImageSkia& first,
   if (first.isNull() || second.isNull())
     return ImageSkia();
 
-  return ImageSkia(base::MakeUnique<BlendingImageSource>(first, second, alpha),
+  return ImageSkia(std::make_unique<BlendingImageSource>(first, second, alpha),
                    first.size());
 }
 
@@ -501,7 +501,7 @@ ImageSkia ImageSkiaOperations::CreateSuperimposedImage(
   if (first.isNull() || second.isNull())
     return ImageSkia();
 
-  return ImageSkia(base::MakeUnique<SuperimposedImageSource>(first, second),
+  return ImageSkia(std::make_unique<SuperimposedImageSource>(first, second),
                    first.size());
 }
 
@@ -511,7 +511,7 @@ ImageSkia ImageSkiaOperations::CreateTransparentImage(const ImageSkia& image,
   if (image.isNull())
     return ImageSkia();
 
-  return ImageSkia(base::MakeUnique<TransparentImageSource>(image, alpha),
+  return ImageSkia(std::make_unique<TransparentImageSource>(image, alpha),
                    image.size());
 }
 
@@ -521,7 +521,7 @@ ImageSkia ImageSkiaOperations::CreateMaskedImage(const ImageSkia& rgb,
   if (rgb.isNull() || alpha.isNull())
     return ImageSkia();
 
-  return ImageSkia(base::MakeUnique<MaskedImageSource>(rgb, alpha), rgb.size());
+  return ImageSkia(std::make_unique<MaskedImageSource>(rgb, alpha), rgb.size());
 }
 
 // static
@@ -532,7 +532,7 @@ ImageSkia ImageSkiaOperations::CreateTiledImage(const ImageSkia& source,
     return ImageSkia();
 
   return ImageSkia(
-      base::MakeUnique<TiledImageSource>(source, src_x, src_y, dst_w, dst_h),
+      std::make_unique<TiledImageSource>(source, src_x, src_y, dst_w, dst_h),
       gfx::Size(dst_w, dst_h));
 }
 
@@ -543,7 +543,7 @@ ImageSkia ImageSkiaOperations::CreateHSLShiftedImage(
   if (image.isNull())
     return ImageSkia();
 
-  return ImageSkia(base::MakeUnique<HSLImageSource>(image, hsl_shift),
+  return ImageSkia(std::make_unique<HSLImageSource>(image, hsl_shift),
                    image.size());
 }
 
@@ -554,7 +554,7 @@ ImageSkia ImageSkiaOperations::CreateButtonBackground(SkColor color,
   if (image.isNull() || mask.isNull())
     return ImageSkia();
 
-  return ImageSkia(base::MakeUnique<ButtonImageSource>(color, image, mask),
+  return ImageSkia(std::make_unique<ButtonImageSource>(color, image, mask),
                    mask.size());
 }
 
@@ -568,7 +568,7 @@ ImageSkia ImageSkiaOperations::ExtractSubset(const ImageSkia& image,
   }
 
   return ImageSkia(
-      base::MakeUnique<ExtractSubsetImageSource>(image, clipped_bounds),
+      std::make_unique<ExtractSubsetImageSource>(image, clipped_bounds),
       clipped_bounds.size());
 }
 
@@ -581,7 +581,7 @@ ImageSkia ImageSkiaOperations::CreateResizedImage(
     return ImageSkia();
 
   return ImageSkia(
-      base::MakeUnique<ResizeSource>(source, method, target_dip_size),
+      std::make_unique<ResizeSource>(source, method, target_dip_size),
       target_dip_size);
 }
 
@@ -596,7 +596,7 @@ ImageSkia ImageSkiaOperations::CreateImageWithDropShadow(
   gfx::Size shadow_image_size = source.size();
   shadow_image_size.Enlarge(shadow_padding.width(),
                             shadow_padding.height());
-  return ImageSkia(base::MakeUnique<DropShadowSource>(source, shadows),
+  return ImageSkia(std::make_unique<DropShadowSource>(source, shadows),
                    shadow_image_size);
 }
 
@@ -615,7 +615,7 @@ ImageSkia ImageSkiaOperations::CreateRotatedImage(
   if (source.isNull())
     return ImageSkia();
 
-  return ImageSkia(base::MakeUnique<RotatedSource>(source, rotation),
+  return ImageSkia(std::make_unique<RotatedSource>(source, rotation),
                    SkBitmapOperations::ROTATION_180_CW == rotation
                        ? source.size()
                        : gfx::Size(source.height(), source.width()));
@@ -630,7 +630,7 @@ ImageSkia ImageSkiaOperations::CreateIconWithBadge(const ImageSkia& icon,
   if (badge.isNull())
     return icon;
 
-  return ImageSkia(base::MakeUnique<IconWithBadgeSource>(icon, badge),
+  return ImageSkia(std::make_unique<IconWithBadgeSource>(icon, badge),
                    icon.size());
 }
 

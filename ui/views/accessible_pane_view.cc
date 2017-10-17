@@ -50,7 +50,7 @@ AccessiblePaneView::AccessiblePaneView()
       escape_key_(ui::VKEY_ESCAPE, ui::EF_NONE),
       left_key_(ui::VKEY_LEFT, ui::EF_NONE),
       right_key_(ui::VKEY_RIGHT, ui::EF_NONE),
-      last_focused_view_tracker_(base::MakeUnique<ViewTracker>()),
+      last_focused_view_tracker_(std::make_unique<ViewTracker>()),
       method_factory_(this) {
   focus_search_.reset(new AccessiblePaneViewFocusSearch(this));
 }

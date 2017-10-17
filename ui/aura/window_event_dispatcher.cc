@@ -97,7 +97,7 @@ WindowEventDispatcher::WindowEventDispatcher(WindowTreeHost* host)
   ui::GestureRecognizer::Get()->AddGestureEventHelper(this);
   Env::GetInstance()->AddObserver(this);
   if (Env::GetInstance()->mode() == Env::Mode::MUS)
-    mus_mouse_location_updater_ = base::MakeUnique<MusMouseLocationUpdater>();
+    mus_mouse_location_updater_ = std::make_unique<MusMouseLocationUpdater>();
 }
 
 WindowEventDispatcher::~WindowEventDispatcher() {

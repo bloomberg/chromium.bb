@@ -95,13 +95,13 @@ void Background::SetNativeControlColor(SkColor color) {
 }
 
 std::unique_ptr<Background> CreateSolidBackground(SkColor color) {
-  return base::MakeUnique<SolidBackground>(color);
+  return std::make_unique<SolidBackground>(color);
 }
 
 std::unique_ptr<Background> CreateThemedSolidBackground(
     View* view,
     ui::NativeTheme::ColorId color_id) {
-  return base::MakeUnique<ThemedSolidBackground>(view, color_id);
+  return std::make_unique<ThemedSolidBackground>(view, color_id);
 }
 
 std::unique_ptr<Background> CreateStandardPanelBackground() {
@@ -111,7 +111,7 @@ std::unique_ptr<Background> CreateStandardPanelBackground() {
 
 std::unique_ptr<Background> CreateBackgroundFromPainter(
     std::unique_ptr<Painter> painter) {
-  return base::MakeUnique<BackgroundPainter>(std::move(painter));
+  return std::make_unique<BackgroundPainter>(std::move(painter));
 }
 
 }  // namespace views

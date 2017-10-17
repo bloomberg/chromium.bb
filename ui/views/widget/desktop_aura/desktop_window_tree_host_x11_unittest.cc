@@ -267,7 +267,7 @@ TEST_F(DesktopWindowTreeHostX11Test, Shape) {
   }
 
   // 2) Test setting the window shape via Widget::SetShape().
-  auto shape_region = base::MakeUnique<Widget::ShapeRects>();
+  auto shape_region = std::make_unique<Widget::ShapeRects>();
   shape_region->emplace_back(10, 0, 90, 10);
   shape_region->emplace_back(0, 10, 10, 90);
   shape_region->emplace_back(10, 10, 90, 90);

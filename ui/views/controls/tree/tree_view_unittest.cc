@@ -40,7 +40,7 @@ class TestNode : public TreeNode<TestNode> {
 //   'c'
 class TreeViewTest : public ViewsTestBase {
  public:
-  TreeViewTest() : model_(base::MakeUnique<TestNode>()) {
+  TreeViewTest() : model_(std::make_unique<TestNode>()) {
     static_cast<TestNode*>(model_.GetRoot())->SetTitle(ASCIIToUTF16("root"));
     Add(model_.GetRoot(), 0, "a");
     Add(Add(model_.GetRoot(), 1, "b"), 0, "b1");
@@ -80,7 +80,7 @@ class TreeViewTest : public ViewsTestBase {
 TestNode* TreeViewTest::Add(TestNode* parent,
                             int index,
                             const std::string& title) {
-  std::unique_ptr<TestNode> new_node = base::MakeUnique<TestNode>();
+  std::unique_ptr<TestNode> new_node = std::make_unique<TestNode>();
   new_node->SetTitle(ASCIIToUTF16(title));
   return model_.Add(parent, std::move(new_node), index);
 }

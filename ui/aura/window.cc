@@ -143,7 +143,7 @@ void Window::Init(ui::LayerType layer_type) {
     port_owner_ = Env::GetInstance()->CreateWindowPort(this);
     port_ = port_owner_.get();
   }
-  SetLayer(base::MakeUnique<ui::Layer>(layer_type));
+  SetLayer(std::make_unique<ui::Layer>(layer_type));
   port_->OnPreInit(this);
   layer()->SetVisible(false);
   layer()->set_delegate(this);
@@ -1103,7 +1103,7 @@ ui::EventTarget* Window::GetParentTarget() {
 }
 
 std::unique_ptr<ui::EventTargetIterator> Window::GetChildIterator() const {
-  return base::MakeUnique<ui::EventTargetIteratorPtrImpl<Window>>(children());
+  return std::make_unique<ui::EventTargetIteratorPtrImpl<Window>>(children());
 }
 
 ui::EventTargeter* Window::GetEventTargeter() {
