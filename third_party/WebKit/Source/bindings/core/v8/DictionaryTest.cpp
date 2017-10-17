@@ -15,7 +15,7 @@ namespace blink {
 
 namespace {
 
-class DictionaryTest : public ::testing::Test {
+class V8DictionaryTest : public ::testing::Test {
  protected:
   static Dictionary CreateDictionary(ScriptState* script_state, const char* s) {
     v8::Local<v8::String> source =
@@ -35,7 +35,7 @@ class DictionaryTest : public ::testing::Test {
   }
 };
 
-TEST_F(DictionaryTest, Get_Empty) {
+TEST_F(V8DictionaryTest, Get_Empty) {
   V8TestingScope scope;
   Dictionary dictionary = CreateDictionary(scope.GetScriptState(), "({})");
 
@@ -45,7 +45,7 @@ TEST_F(DictionaryTest, Get_Empty) {
   EXPECT_FALSE(r.has_value());
 }
 
-TEST_F(DictionaryTest, Get_NonPresentForNonEmpty) {
+TEST_F(V8DictionaryTest, Get_NonPresentForNonEmpty) {
   V8TestingScope scope;
   Dictionary dictionary =
       CreateDictionary(scope.GetScriptState(), "({foo: 3})");
@@ -56,7 +56,7 @@ TEST_F(DictionaryTest, Get_NonPresentForNonEmpty) {
   EXPECT_FALSE(r.has_value());
 }
 
-TEST_F(DictionaryTest, Get_UndefinedValue) {
+TEST_F(V8DictionaryTest, Get_UndefinedValue) {
   V8TestingScope scope;
   Dictionary dictionary =
       CreateDictionary(scope.GetScriptState(), "({foo: undefined})");
@@ -67,7 +67,7 @@ TEST_F(DictionaryTest, Get_UndefinedValue) {
   EXPECT_FALSE(r.has_value());
 }
 
-TEST_F(DictionaryTest, Get_Found) {
+TEST_F(V8DictionaryTest, Get_Found) {
   V8TestingScope scope;
   Dictionary dictionary =
       CreateDictionary(scope.GetScriptState(), "({foo: 3})");
@@ -79,7 +79,7 @@ TEST_F(DictionaryTest, Get_Found) {
   EXPECT_EQ(*r, "3");
 }
 
-TEST_F(DictionaryTest, Get_Found2) {
+TEST_F(V8DictionaryTest, Get_Found2) {
   V8TestingScope scope;
   Dictionary dictionary =
       CreateDictionary(scope.GetScriptState(), "({foo: '3'})");
@@ -91,7 +91,7 @@ TEST_F(DictionaryTest, Get_Found2) {
   EXPECT_EQ(*r, 3);
 }
 
-TEST_F(DictionaryTest, Get_Getter) {
+TEST_F(V8DictionaryTest, Get_Getter) {
   V8TestingScope scope;
   Dictionary dictionary = CreateDictionary(scope.GetScriptState(),
                                            "({get foo() { return 'xy'; }})");
@@ -103,7 +103,7 @@ TEST_F(DictionaryTest, Get_Getter) {
   EXPECT_EQ(*r, "xy");
 }
 
-TEST_F(DictionaryTest, Get_ExceptionOnAccess) {
+TEST_F(V8DictionaryTest, Get_ExceptionOnAccess) {
   V8TestingScope scope;
   Dictionary dictionary = CreateDictionary(scope.GetScriptState(),
                                            "({get foo() { throw Error(2); }})");
@@ -114,7 +114,7 @@ TEST_F(DictionaryTest, Get_ExceptionOnAccess) {
   ASSERT_FALSE(r.has_value());
 }
 
-TEST_F(DictionaryTest, Get_TypeConversion) {
+TEST_F(V8DictionaryTest, Get_TypeConversion) {
   V8TestingScope scope;
   Dictionary dictionary = CreateDictionary(
       scope.GetScriptState(), "({foo: { toString() { return 'hello'; } } })");
@@ -126,7 +126,7 @@ TEST_F(DictionaryTest, Get_TypeConversion) {
   EXPECT_EQ(*r, "hello");
 }
 
-TEST_F(DictionaryTest, Get_ConversionError) {
+TEST_F(V8DictionaryTest, Get_ConversionError) {
   V8TestingScope scope;
   Dictionary dictionary = CreateDictionary(
       scope.GetScriptState(),
@@ -138,7 +138,7 @@ TEST_F(DictionaryTest, Get_ConversionError) {
   ASSERT_FALSE(r.has_value());
 }
 
-TEST_F(DictionaryTest, Get_ConversionError2) {
+TEST_F(V8DictionaryTest, Get_ConversionError2) {
   V8TestingScope scope;
   Dictionary dictionary =
       CreateDictionary(scope.GetScriptState(), "({foo: NaN})");
