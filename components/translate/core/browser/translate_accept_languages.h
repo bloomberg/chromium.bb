@@ -8,12 +8,16 @@
 #include <set>
 #include <string>
 
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "components/prefs/pref_change_registrar.h"
 
 class PrefService;
 
 namespace translate {
+
+// Feature flag for "Translate Accept Languages Optimization".
+extern const base::Feature kTranslateAcceptLanguagesOptimization;
 
 // TranslateAcceptLanguages tracks the value of the "Accept-Language" HTTP
 // header.

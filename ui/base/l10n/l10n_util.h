@@ -211,6 +211,11 @@ UI_BASE_EXPORT void GetAcceptLanguagesForLocale(
     const std::string& display_locale,
     std::vector<std::string>* locale_codes);
 
+// Returns true if |locale| is in a predefined AcceptLanguageList and
+// a display name for the |locale| is available in the locale |display_locale|.
+UI_BASE_EXPORT bool IsLanguageAccepted(const std::string& display_locale,
+                                       const std::string& locale);
+
 // Returns the preferred size of the contents view of a window based on
 // designer given constraints which might dependent on the language used.
 UI_BASE_EXPORT int GetLocalizedContentsWidthInPixels(int pixel_resource_id);
