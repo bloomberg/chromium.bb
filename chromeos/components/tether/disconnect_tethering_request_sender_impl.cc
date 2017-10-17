@@ -12,6 +12,36 @@ namespace chromeos {
 
 namespace tether {
 
+// static
+DisconnectTetheringRequestSenderImpl::Factory*
+    DisconnectTetheringRequestSenderImpl::Factory::factory_instance_ = nullptr;
+
+// static
+std::unique_ptr<DisconnectTetheringRequestSender>
+DisconnectTetheringRequestSenderImpl::Factory::NewInstance(
+    BleConnectionManager* ble_connection_manager,
+    TetherHostFetcher* tether_host_fetcher) {
+  if (!factory_instance_)
+    factory_instance_ = new Factory();
+
+  return factory_instance_->BuildInstance(ble_connection_manager,
+                                          tether_host_fetcher);
+}
+
+// static
+void DisconnectTetheringRequestSenderImpl::Factory::SetInstanceForTesting(
+    Factory* factory) {
+  factory_instance_ = factory;
+}
+
+std::unique_ptr<DisconnectTetheringRequestSender>
+DisconnectTetheringRequestSenderImpl::Factory::BuildInstance(
+    BleConnectionManager* ble_connection_manager,
+    TetherHostFetcher* tether_host_fetcher) {
+  return base::MakeUnique<DisconnectTetheringRequestSenderImpl>(
+      ble_connection_manager, tether_host_fetcher);
+}
+
 DisconnectTetheringRequestSenderImpl::DisconnectTetheringRequestSenderImpl(
     BleConnectionManager* ble_connection_manager,
     TetherHostFetcher* tether_host_fetcher)

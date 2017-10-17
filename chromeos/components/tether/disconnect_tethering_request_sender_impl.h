@@ -21,6 +21,23 @@ class DisconnectTetheringRequestSenderImpl
     : public DisconnectTetheringRequestSender,
       public DisconnectTetheringOperation::Observer {
  public:
+  class Factory {
+   public:
+    static std::unique_ptr<DisconnectTetheringRequestSender> NewInstance(
+        BleConnectionManager* ble_connection_manager,
+        TetherHostFetcher* tether_host_fetcher);
+
+    static void SetInstanceForTesting(Factory* factory);
+
+   protected:
+    virtual std::unique_ptr<DisconnectTetheringRequestSender> BuildInstance(
+        BleConnectionManager* ble_connection_manager,
+        TetherHostFetcher* tether_host_fetcher);
+
+   private:
+    static Factory* factory_instance_;
+  };
+
   DisconnectTetheringRequestSenderImpl(
       BleConnectionManager* ble_connection_manager,
       TetherHostFetcher* tether_host_fetcher);
