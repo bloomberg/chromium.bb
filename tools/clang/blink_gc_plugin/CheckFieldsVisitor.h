@@ -13,7 +13,7 @@
 class FieldPoint;
 
 // This visitor checks that the fields of a class are "well formed".
-// - OwnPtr and RefPtr must not point to a GC derived type.
+// - unique_ptr and RefPtr must not point to a GC derived type.
 // - Part objects must not be a GC derived type.
 // - An on-heap class must never contain GC roots.
 // - Only stack-allocated types may point to stack-allocated types.
@@ -24,7 +24,6 @@ class CheckFieldsVisitor : public RecursiveEdgeVisitor {
     kRawPtrToGCManaged,
     kRefPtrToGCManaged,
     kReferencePtrToGCManaged,
-    kOwnPtrToGCManaged,
     kUniquePtrToGCManaged,
     kMemberToGCUnmanaged,
     kMemberInUnmanaged,

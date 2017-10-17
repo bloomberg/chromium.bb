@@ -60,9 +60,6 @@ const char kReferencePtrToGCManagedClassNote[] =
     "[blink-gc] Reference pointer field %0 to a GC managed class"
     " declared here:";
 
-const char kOwnPtrToGCManagedClassNote[] =
-    "[blink-gc] OwnPtr field %0 to a GC managed class declared here:";
-
 const char kUniquePtrToGCManagedClassNote[] =
     "[blink-gc] std::unique_ptr field %0 to a GC managed class declared here:";
 
@@ -232,8 +229,6 @@ DiagnosticsReporter::DiagnosticsReporter(
       DiagnosticsEngine::Note, kRefPtrToGCManagedClassNote);
   diag_reference_ptr_to_gc_managed_class_note_ = diagnostic_.getCustomDiagID(
       DiagnosticsEngine::Note, kReferencePtrToGCManagedClassNote);
-  diag_own_ptr_to_gc_managed_class_note_ = diagnostic_.getCustomDiagID(
-      DiagnosticsEngine::Note, kOwnPtrToGCManagedClassNote);
   diag_unique_ptr_to_gc_managed_class_note_ = diagnostic_.getCustomDiagID(
       DiagnosticsEngine::Note, kUniquePtrToGCManagedClassNote);
   diag_member_to_gc_unmanaged_class_note_ = diagnostic_.getCustomDiagID(
@@ -342,8 +337,6 @@ void DiagnosticsReporter::ClassContainsInvalidFields(
       note = diag_ref_ptr_to_gc_managed_class_note_;
     } else if (error.second == CheckFieldsVisitor::kReferencePtrToGCManaged) {
       note = diag_reference_ptr_to_gc_managed_class_note_;
-    } else if (error.second == CheckFieldsVisitor::kOwnPtrToGCManaged) {
-      note = diag_own_ptr_to_gc_managed_class_note_;
     } else if (error.second == CheckFieldsVisitor::kUniquePtrToGCManaged) {
       note = diag_unique_ptr_to_gc_managed_class_note_;
     } else if (error.second == CheckFieldsVisitor::kMemberToGCUnmanaged) {

@@ -97,9 +97,8 @@ void CheckFieldsVisitor::AtValue(Value* edge) {
   if (!Parent() || !edge->value()->IsGCAllocated())
     return;
 
-  // Disallow  OwnPtr<T>, RefPtr<T> and T* to stack-allocated types.
-  if (Parent()->IsOwnPtr() ||
-      Parent()->IsUniquePtr() ||
+  // Disallow  unique_ptr<T>, RefPtr<T> and T* to stack-allocated types.
+  if (Parent()->IsUniquePtr() ||
       Parent()->IsRefPtr() ||
       (stack_allocated_host_ && Parent()->IsRawPtr())) {
     invalid_fields_.push_back(std::make_pair(
@@ -115,8 +114,6 @@ void CheckFieldsVisitor::AtValue(Value* edge) {
 }
 
 void CheckFieldsVisitor::AtCollection(Collection* edge) {
-  if (edge->on_heap() && Parent() && Parent()->IsOwnPtr())
-    invalid_fields_.push_back(std::make_pair(current_, kOwnPtrToGCManaged));
   if (edge->on_heap() && Parent() && Parent()->IsUniquePtr())
     invalid_fields_.push_back(std::make_pair(current_, kUniquePtrToGCManaged));
 }
@@ -130,8 +127,6 @@ CheckFieldsVisitor::Error CheckFieldsVisitor::InvalidSmartPtr(Edge* ptr) {
   }
   if (ptr->IsRefPtr())
     return kRefPtrToGCManaged;
-  if (ptr->IsOwnPtr())
-    return kOwnPtrToGCManaged;
   if (ptr->IsUniquePtr())
     return kUniquePtrToGCManaged;
   assert(false && "Unknown smart pointer kind");

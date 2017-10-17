@@ -7,14 +7,12 @@
 namespace blink {
 
 void PartObject::Trace(Visitor* visitor) {
-    visitor->Trace(m_obj1);
     visitor->Trace(m_obj2);
     visitor->Trace(m_obj3);
     visitor->Trace(m_obj4);
 }
 
 void HeapObject::Trace(Visitor* visitor) {
-    visitor->Trace(m_obj1);
     visitor->Trace(m_obj2);
     visitor->Trace(m_obj3);
     visitor->Trace(m_obj4);

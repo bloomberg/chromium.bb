@@ -36,12 +36,12 @@ private:
 
 class C : public RefCounted<C> {
 private:
-    OwnPtr<D> m_d;
+    std::unique_ptr<D> m_d;
 };
 
 class D {
 private:
-    Vector<OwnPtr<E> > m_es;
+    Vector<std::unique_ptr<E> > m_es;
 };
 
 class E {
