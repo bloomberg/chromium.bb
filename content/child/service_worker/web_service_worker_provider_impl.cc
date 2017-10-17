@@ -39,20 +39,8 @@ WebServiceWorkerProviderImpl::WebServiceWorkerProviderImpl(
       context_(context),
       weak_factory_(this) {
   DCHECK(context_);
-  switch (context_->provider_type()) {
-    case SERVICE_WORKER_PROVIDER_FOR_WINDOW:
-      DCHECK(context_->container_host());
-      context_->SetWebServiceWorkerProvider(weak_factory_.GetWeakPtr());
-      break;
-    case SERVICE_WORKER_PROVIDER_FOR_CONTROLLER:
-      // Do nothing.
-      break;
-    case SERVICE_WORKER_PROVIDER_FOR_WORKER:
-    case SERVICE_WORKER_PROVIDER_FOR_SHARED_WORKER:
-    case SERVICE_WORKER_PROVIDER_UNKNOWN:
-      NOTREACHED() << "Unimplemented type: " << context_->provider_type();
-      break;
-  }
+  DCHECK(context_->provider_type() != SERVICE_WORKER_PROVIDER_FOR_WINDOW ||
+         context_->container_host());
 }
 
 WebServiceWorkerProviderImpl::~WebServiceWorkerProviderImpl() {
@@ -76,8 +64,17 @@ void WebServiceWorkerProviderImpl::SetClient(
 
   if (!context_->controller())
     return;
-  SetController(context_->controller()->info(), context_->used_features(),
-                false /* notify_controllerchange */);
+  scoped_refptr<WebServiceWorkerImpl> controller =
+      GetDispatcher()->GetOrCreateServiceWorker(
+          ServiceWorkerHandleReference::Create(context_->controller()->info(),
+                                               thread_safe_sender_.get()));
+
+  // Sync the controllee's use counter with |context_|'s, which keeps
+  // track of the controller's use counter.
+  for (uint32_t feature : context_->used_features())
+    client->CountFeature(feature);
+  client->SetController(WebServiceWorkerImpl::CreateHandle(controller),
+                        false /* shouldNotifyControllerChange */);
 }
 
 void WebServiceWorkerProviderImpl::RegisterServiceWorker(
@@ -193,26 +190,6 @@ bool WebServiceWorkerProviderImpl::ValidateScopeAndScriptURL(
   if (has_error)
     *error_message = blink::WebString::FromUTF8(error);
   return !has_error;
-}
-
-void WebServiceWorkerProviderImpl::SetController(
-    const ServiceWorkerObjectInfo& info,
-    const std::set<uint32_t>& features,
-    bool should_notify_controller_change) {
-  blink::WebServiceWorkerProviderClient* provider_client =
-      GetDispatcher()->GetProviderClient(context_->provider_id());
-  // The caller should only call this after SetClient() has been called.
-  DCHECK(provider_client);
-  scoped_refptr<WebServiceWorkerImpl> controller =
-      GetDispatcher()->GetOrCreateServiceWorker(
-          ServiceWorkerHandleReference::Create(info,
-                                               thread_safe_sender_.get()));
-
-  for (uint32_t feature : features)
-    provider_client->CountFeature(feature);
-
-  provider_client->SetController(WebServiceWorkerImpl::CreateHandle(controller),
-                                 should_notify_controller_change);
 }
 
 int WebServiceWorkerProviderImpl::provider_id() const {

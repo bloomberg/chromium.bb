@@ -24,7 +24,3 @@ enum ServiceWorkerProviderType {
 // Defined in service_worker_types.h.
 [Native]
 struct ServiceWorkerVersionAttributes;
-
-// Defined in service_worker_types.h.
-[Native]
-struct ServiceWorkerObjectInfo;

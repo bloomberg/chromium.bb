@@ -8,7 +8,6 @@ import "content/common/service_worker/controller_service_worker.mojom";
 import "content/common/service_worker/service_worker_types.mojom";
 import "third_party/WebKit/public/platform/modules/serviceworker/service_worker_error_type.mojom";
 import "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom";
-import "third_party/WebKit/public/platform/web_feature.mojom";
 import "url/mojo/url.mojom";
 
 // mojom::ServiceWorkerContainerHost is a browser-side interface. The renderer
@@ -80,17 +79,8 @@ interface ServiceWorkerContainerHost {
 // that can touch these objects should be a ServiceWorkerContainer, so it’s OK
 // to use this name.
 interface ServiceWorkerContainer {
-  // Corresponds to setting ServiceWorkerContainer#controller.
-  // If |controller| is invalid (its |handle_id| is invalid), then
-  // ServiceWorkerContainer#controller is cleared.
-  // If |controller| is valid, |used_features| is the set of features the
-  // controller has used, for UseCounter purposes.
-  // If |should_notify_controllerchange| is true, dispatch a 'controllerchange'
-  // event.
-  SetController(ServiceWorkerObjectInfo controller,
-                array<blink.mojom.WebFeature> used_features,
-                bool should_notify_controllerchange);
   // TODO(xiaofeng.zhang): implement them.
+  // SetController();
   // ServiceWorkerStateChanged();
   // ServiceWorkerRegistrationUpdateFound();
   // PostMessage();
