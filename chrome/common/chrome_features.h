@@ -66,6 +66,10 @@ extern const base::Feature kDialogTouchBar;
 extern const base::Feature kTabStripKeyboardFocus;
 #endif  // defined(OS_MACOSX)
 
+extern const base::Feature kCaptureThumbnailDependingOnTransitionType;
+
+extern const base::Feature kCaptureThumbnailOnNavigatingAway;
+
 extern const base::Feature kCheckInstallabilityForBannerOnLoad;
 
 extern const base::Feature kClickToOpenPDFPlaceholder;
