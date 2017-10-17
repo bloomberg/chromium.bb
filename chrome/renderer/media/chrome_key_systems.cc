@@ -40,6 +40,8 @@
 #include "base/version.h"
 #endif
 
+using media::EmeFeatureSupport;
+using media::EmeSessionTypeSupport;
 using media::KeySystemProperties;
 using media::SupportedCodecs;
 
@@ -170,6 +172,57 @@ void GetSupportedCodecsForPepperCdm(
   }
 }
 
+// Whether persistent-license session is supported by the CDM.
+bool IsPersistentLicenseSupportedbyCdm(
+    const std::vector<base::string16>& additional_param_names,
+    const std::vector<base::string16>& additional_param_values) {
+  DCHECK_EQ(additional_param_names.size(), additional_param_values.size());
+  const base::string16 expected_param_name =
+      base::ASCIIToUTF16(kCdmPersistentLicenseSupportedParamName);
+  for (size_t i = 0; i < additional_param_names.size(); ++i) {
+    if (additional_param_names[i] == expected_param_name) {
+      return additional_param_values[i] ==
+             base::ASCIIToUTF16(kCdmFeatureSupported);
+    }
+  }
+
+  return false;
+}
+
+// Returns persistent-license session support.
+EmeSessionTypeSupport GetPersistentLicenseSupport(bool supported_by_the_cdm) {
+  if (!supported_by_the_cdm)
+    return EmeSessionTypeSupport::NOT_SUPPORTED;
+
+// On ChromeOS, platform verification is similar to CDM host verification.
+#if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION) || defined(OS_CHROMEOS)
+  bool cdm_host_verification_potentially_supported = true;
+#else
+  bool cdm_host_verification_potentially_supported = false;
+#endif
+
+  // If we are sure CDM host verification is NOT supported, we should not
+  // support persistent-license.
+  if (!cdm_host_verification_potentially_supported)
+    return EmeSessionTypeSupport::NOT_SUPPORTED;
+
+#if defined(OS_CHROMEOS)
+  // On ChromeOS, platform verification (similar to CDM host verification)
+  // requires identifier to be allowed.
+  // TODO(jrummell): Currently the ChromeOS CDM does not require storage ID
+  // to support persistent license. Update this logic when the new CDM requires
+  // storage ID.
+  return EmeSessionTypeSupport::SUPPORTED_WITH_IDENTIFIER;
+#else
+  // TODO(jrummell): Update this to reflect what's implemented.
+  bool cdm_storage_id_supported = false;
+
+  // On other platforms, we require storage ID to support persistent license.
+  return cdm_storage_id_supported ? EmeSessionTypeSupport::SUPPORTED
+                                  : EmeSessionTypeSupport::NOT_SUPPORTED;
+#endif  // defined(OS_CHROMEOS)
+}
+
 static void AddPepperBasedWidevine(
     std::vector<std::unique_ptr<KeySystemProperties>>* concrete_key_systems) {
 #if defined(WIDEVINE_CDM_MIN_GLIBC_VERSION)
@@ -217,27 +270,29 @@ static void AddPepperBasedWidevine(
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
   }
 
+  EmeSessionTypeSupport persistent_license_support =
+      GetPersistentLicenseSupport(IsPersistentLicenseSupportedbyCdm(
+          additional_param_names, additional_param_values));
+
   using Robustness = cdm::WidevineKeySystemProperties::Robustness;
+
   concrete_key_systems->emplace_back(new cdm::WidevineKeySystemProperties(
       supported_codecs,
 #if defined(OS_CHROMEOS)
-      Robustness::HW_SECURE_ALL,  // Maximum audio robustness.
-      Robustness::HW_SECURE_ALL,  // Maximim video robustness.
-      media::EmeSessionTypeSupport::
-          SUPPORTED_WITH_IDENTIFIER,  // Persistent-license.
-      media::EmeSessionTypeSupport::
-          NOT_SUPPORTED,                        // Persistent-release-message.
-      media::EmeFeatureSupport::REQUESTABLE,    // Persistent state.
-      media::EmeFeatureSupport::REQUESTABLE));  // Distinctive identifier.
-#else   // (Desktop)
-      Robustness::SW_SECURE_CRYPTO,                 // Maximum audio robustness.
-      Robustness::SW_SECURE_DECODE,                 // Maximum video robustness.
-      media::EmeSessionTypeSupport::NOT_SUPPORTED,  // persistent-license.
-      media::EmeSessionTypeSupport::
-          NOT_SUPPORTED,                          // persistent-release-message.
-      media::EmeFeatureSupport::REQUESTABLE,      // Persistent state.
-      media::EmeFeatureSupport::NOT_SUPPORTED));  // Distinctive identifier.
-#endif  // defined(OS_CHROMEOS)
+      Robustness::HW_SECURE_ALL,             // Maximum audio robustness.
+      Robustness::HW_SECURE_ALL,             // Maximum video robustness.
+      persistent_license_support,            // Persistent-license.
+      EmeSessionTypeSupport::NOT_SUPPORTED,  // Persistent-release-message.
+      EmeFeatureSupport::REQUESTABLE,        // Persistent state.
+      EmeFeatureSupport::REQUESTABLE));      // Distinctive identifier.
+#else                                        // Desktop
+      Robustness::SW_SECURE_CRYPTO,          // Maximum audio robustness.
+      Robustness::SW_SECURE_DECODE,          // Maximum video robustness.
+      persistent_license_support,            // persistent-license.
+      EmeSessionTypeSupport::NOT_SUPPORTED,  // persistent-release-message.
+      EmeFeatureSupport::REQUESTABLE,        // Persistent state.
+      EmeFeatureSupport::NOT_SUPPORTED));    // Distinctive identifier.
+#endif                                       // defined(OS_CHROMEOS)
 }
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
