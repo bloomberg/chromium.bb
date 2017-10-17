@@ -55,16 +55,18 @@
 
 namespace content {
 
-typedef std::vector<RenderFrameDevToolsAgentHost*> Instances;
+typedef std::vector<RenderFrameDevToolsAgentHost*> RenderFrameDevToolsArray;
 
 namespace {
-base::LazyInstance<Instances>::Leaky g_instances = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<RenderFrameDevToolsArray>::Leaky g_agent_host_instances =
+    LAZY_INSTANCE_INITIALIZER;
 
 RenderFrameDevToolsAgentHost* FindAgentHost(FrameTreeNode* frame_tree_node) {
-  if (g_instances == NULL)
+  if (g_agent_host_instances == NULL)
     return NULL;
-  for (Instances::iterator it = g_instances.Get().begin();
-       it != g_instances.Get().end(); ++it) {
+  for (RenderFrameDevToolsArray::iterator it =
+           g_agent_host_instances.Get().begin();
+       it != g_agent_host_instances.Get().end(); ++it) {
     if ((*it)->frame_tree_node() == frame_tree_node)
       return *it;
   }
@@ -448,7 +450,7 @@ RenderFrameDevToolsAgentHost::RenderFrameDevToolsAgentHost(
     current_frame_crashed_ = true;
   }
 
-  g_instances.Get().push_back(this);
+  g_agent_host_instances.Get().push_back(this);
   AddRef();  // Balanced in RenderFrameHostDestroyed.
 
   NotifyCreated();
@@ -633,11 +635,11 @@ void RenderFrameDevToolsAgentHost::OnClientsDetached() {
 }
 
 RenderFrameDevToolsAgentHost::~RenderFrameDevToolsAgentHost() {
-  Instances::iterator it = std::find(g_instances.Get().begin(),
-                                     g_instances.Get().end(),
-                                     this);
-  if (it != g_instances.Get().end())
-    g_instances.Get().erase(it);
+  RenderFrameDevToolsArray::iterator it =
+      std::find(g_agent_host_instances.Get().begin(),
+                g_agent_host_instances.Get().end(), this);
+  if (it != g_agent_host_instances.Get().end())
+    g_agent_host_instances.Get().erase(it);
 }
 
 void RenderFrameDevToolsAgentHost::ReadyToCommitNavigation(
@@ -773,7 +775,7 @@ void RenderFrameDevToolsAgentHost::RevokePolicy(RenderFrameHostImpl* host) {
 
   bool process_has_agents = false;
   RenderProcessHost* process_host = host->GetProcess();
-  for (RenderFrameDevToolsAgentHost* agent : g_instances.Get()) {
+  for (RenderFrameDevToolsAgentHost* agent : g_agent_host_instances.Get()) {
     if (!agent->IsAttached())
       continue;
     if (IsBrowserSideNavigationEnabled()) {
