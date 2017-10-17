@@ -493,9 +493,9 @@ HttpHandler::HttpHandler(
       CommandMapping(kGet, "session/:sessionId/log/types",
                      WrapToCommand("GetLogTypes",
                                    base::Bind(&ExecuteGetAvailableLogTypes))),
-      CommandMapping(
-          kPost, "session/:sessionId/actions",
-          WrapToCommand("PerformActions", base::Bind(&ExecutePerformActions))),
+      CommandMapping(kPost, "session/:sessionId/actions",
+                     WrapToCommand("PerformActions",
+                                   base::Bind(&ExecuteUnimplementedCommand))),
       CommandMapping(kDelete, "session/:sessionId/actions",
                      WrapToCommand("DeleteActions",
                                    base::Bind(&ExecuteUnimplementedCommand))),
@@ -723,10 +723,6 @@ HttpHandler::PrepareStandardResponse(
       break;
     case kJavaScriptError:
       response.reset(new net::HttpServerResponseInfo(net::HTTP_BAD_REQUEST));
-      break;
-    case kMoveTargetOutOfBounds:
-      response.reset(
-          new net::HttpServerResponseInfo(net::HTTP_INTERNAL_SERVER_ERROR));
       break;
     case kNoSuchCookie:
       response.reset(new net::HttpServerResponseInfo(net::HTTP_NOT_FOUND));
