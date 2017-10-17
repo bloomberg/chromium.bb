@@ -13,7 +13,6 @@
 #include "base/files/file_path.h"
 #include "base/unguessable_token.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/resource_context.h"
 #include "headless/lib/browser/headless_browser_context_options.h"
 #include "headless/lib/browser/headless_network_conditions.h"
