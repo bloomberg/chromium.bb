@@ -41,7 +41,7 @@ class CORE_EXPORT CSSValue : public GarbageCollectedFinalized<CSSValue> {
     ThreadState* state =
         ThreadStateFor<ThreadingTrait<CSSValue>::kAffinity>::GetState();
     const char* type_name = "blink::CSSValue";
-    return ThreadHeap::AllocateOnArenaIndex(
+    return state->Heap().AllocateOnArenaIndex(
         state, size,
         is_eager ? BlinkGC::kEagerSweepArenaIndex
                  : BlinkGC::kCSSValueArenaIndex,

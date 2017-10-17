@@ -36,7 +36,6 @@
 #include "platform/PlatformExport.h"
 #include "platform/heap/GCInfo.h"
 #include "platform/heap/HeapPage.h"
-#include "platform/heap/PageMemory.h"
 #include "platform/heap/StackFrameDepth.h"
 #include "platform/heap/ThreadState.h"
 #include "platform/heap/Visitor.h"
@@ -50,6 +49,7 @@ namespace blink {
 
 class CallbackStack;
 class PagePool;
+class RegionTree;
 
 class PLATFORM_EXPORT HeapAllocHooks {
  public:
@@ -225,10 +225,6 @@ class PLATFORM_EXPORT ThreadHeap {
   bool IsMainThreadHeap() { return this == ThreadHeap::MainThreadHeap(); }
   static ThreadHeap* MainThreadHeap() { return main_thread_heap_; }
 
-#if DCHECK_IS_ON()
-  BasePage* FindPageFromAddress(Address);
-#endif
-
   template <typename T>
   static inline bool IsHeapObjectAlive(const T* object) {
     static_assert(sizeof(T), "T must be fully defined");
@@ -376,11 +372,11 @@ class PLATFORM_EXPORT ThreadHeap {
     allocation_size = (allocation_size + kAllocationMask) & ~kAllocationMask;
     return allocation_size;
   }
-  static Address AllocateOnArenaIndex(ThreadState*,
-                                      size_t,
-                                      int arena_index,
-                                      size_t gc_info_index,
-                                      const char* type_name);
+  Address AllocateOnArenaIndex(ThreadState*,
+                               size_t,
+                               int arena_index,
+                               size_t gc_info_index,
+                               const char* type_name);
   template <typename T>
   static Address Allocate(size_t, bool eagerly_sweep = false);
   template <typename T>
@@ -403,6 +399,9 @@ class PLATFORM_EXPORT ThreadHeap {
   size_t ObjectPayloadSizeForTesting();
 
   void FlushHeapDoesNotContainCache();
+  bool IsAddressInHeapDoesNotContainCache(Address);
+  void FlushHeapDoesNotContainCacheIfNeeded();
+  void ShouldFlushHeapDoesNotContainCache();
 
   PagePool* GetFreePagePool() { return free_page_pool_.get(); }
 
@@ -424,6 +423,102 @@ class PLATFORM_EXPORT ThreadHeap {
   static void ReportMemoryUsageForTracing();
 
   HeapCompact* Compaction();
+
+  // Get one of the heap structures for this thread.
+  // The thread heap is split into multiple heap parts based on object types
+  // and object sizes.
+  BaseArena* Arena(int arena_index) const {
+    DCHECK_LE(0, arena_index);
+    DCHECK_LT(arena_index, BlinkGC::kNumberOfArenas);
+    return arenas_[arena_index];
+  }
+
+  // VectorBackingArena() returns an arena that the vector allocation should
+  // use.  We have four vector arenas and want to choose the best arena here.
+  //
+  // The goal is to improve the succession rate where expand and
+  // promptlyFree happen at an allocation point. This is a key for reusing
+  // the same memory as much as possible and thus improves performance.
+  // To achieve the goal, we use the following heuristics:
+  //
+  // - A vector that has been expanded recently is likely to be expanded
+  //   again soon.
+  // - A vector is likely to be promptly freed if the same type of vector
+  //   has been frequently promptly freed in the past.
+  // - Given the above, when allocating a new vector, look at the four vectors
+  //   that are placed immediately prior to the allocation point of each arena.
+  //   Choose the arena where the vector is least likely to be expanded
+  //   nor promptly freed.
+  //
+  // To implement the heuristics, we add an arenaAge to each arena. The arenaAge
+  // is updated if:
+  //
+  // - a vector on the arena is expanded; or
+  // - a vector that meets the condition (*) is allocated on the arena
+  //
+  //   (*) More than 33% of the same type of vectors have been promptly
+  //       freed since the last GC.
+  //
+  BaseArena* VectorBackingArena(size_t gc_info_index) {
+    DCHECK(thread_state_->CheckThread());
+    size_t entry_index = gc_info_index & kLikelyToBePromptlyFreedArrayMask;
+    --likely_to_be_promptly_freed_[entry_index];
+    int arena_index = vector_backing_arena_index_;
+    // If likely_to_be_promptly_freed_[entryIndex] > 0, that means that
+    // more than 33% of vectors of the type have been promptly freed
+    // since the last GC.
+    if (likely_to_be_promptly_freed_[entry_index] > 0) {
+      arena_ages_[arena_index] = ++current_arena_ages_;
+      vector_backing_arena_index_ =
+          ArenaIndexOfVectorArenaLeastRecentlyExpanded(
+              BlinkGC::kVector1ArenaIndex, BlinkGC::kVector4ArenaIndex);
+    }
+    DCHECK(IsVectorArenaIndex(arena_index));
+    return arenas_[arena_index];
+  }
+  BaseArena* ExpandedVectorBackingArena(size_t gc_info_index);
+  static bool IsVectorArenaIndex(int arena_index) {
+    return BlinkGC::kVector1ArenaIndex <= arena_index &&
+           arena_index <= BlinkGC::kVector4ArenaIndex;
+  }
+  void AllocationPointAdjusted(int arena_index);
+  void PromptlyFreed(size_t gc_info_index);
+  void ClearArenaAges();
+  int ArenaIndexOfVectorArenaLeastRecentlyExpanded(int begin_arena_index,
+                                                   int end_arena_index);
+
+  void MakeConsistentForGC();
+  // MakeConsistentForMutator() drops marks from marked objects and rebuild
+  // free lists. This is called after taking a snapshot and before resuming
+  // the executions of mutators.
+  void MakeConsistentForMutator();
+
+  void Compact();
+
+  bool AdvanceLazySweep(double deadline_seconds);
+
+  void PrepareForSweep();
+  void RemoveAllPages();
+  void CompleteSweep();
+
+  enum SnapshotType { kHeapSnapshot, kFreelistSnapshot };
+  void TakeSnapshot(SnapshotType);
+
+#if defined(ADDRESS_SANITIZER)
+  void PoisonEagerArena();
+  void PoisonAllHeaps();
+#endif
+
+#if DCHECK_IS_ON()
+  // Infrastructure to determine if an address is within one of the
+  // address ranges for the Blink heap. If the address is in the Blink
+  // heap the containing heap page is returned.
+  BasePage* FindPageFromAddress(Address);
+  BasePage* FindPageFromAddress(const void* pointer) {
+    return FindPageFromAddress(
+        reinterpret_cast<Address>(const_cast<void*>(pointer)));
+  }
+#endif
 
  private:
   // Reset counters that track live and allocated-since-last-GC sizes.
@@ -447,6 +542,21 @@ class PLATFORM_EXPORT ThreadHeap {
   StackFrameDepth stack_frame_depth_;
 
   std::unique_ptr<HeapCompact> compaction_;
+
+  BaseArena* arenas_[BlinkGC::kNumberOfArenas];
+  int vector_backing_arena_index_;
+  size_t arena_ages_[BlinkGC::kNumberOfArenas];
+  size_t current_arena_ages_;
+  bool should_flush_heap_does_not_contain_cache_;
+
+  // Ideally we want to allocate an array of size |gcInfoTableMax| but it will
+  // waste memory. Thus we limit the array size to 2^8 and share one entry
+  // with multiple types of vectors. This won't be an issue in practice,
+  // since there will be less than 2^8 types of objects in common cases.
+  static const int kLikelyToBePromptlyFreedArraySize = (1 << 8);
+  static const int kLikelyToBePromptlyFreedArrayMask =
+      kLikelyToBePromptlyFreedArraySize - 1;
+  std::unique_ptr<int[]> likely_to_be_promptly_freed_;
 
   static ThreadHeap* main_thread_heap_;
 
@@ -586,8 +696,7 @@ inline Address ThreadHeap::AllocateOnArenaIndex(ThreadState* state,
                                                 const char* type_name) {
   DCHECK(state->IsAllocationAllowed());
   DCHECK_NE(arena_index, BlinkGC::kLargeObjectArenaIndex);
-  NormalPageArena* arena =
-      static_cast<NormalPageArena*>(state->Arena(arena_index));
+  NormalPageArena* arena = static_cast<NormalPageArena*>(Arena(arena_index));
   Address address =
       arena->AllocateObject(AllocationSizeFromSize(size), gc_info_index);
   HeapAllocHooks::AllocationHookIfEnabled(address, size, type_name);
@@ -598,7 +707,7 @@ template <typename T>
 Address ThreadHeap::Allocate(size_t size, bool eagerly_sweep) {
   ThreadState* state = ThreadStateFor<ThreadingTrait<T>::kAffinity>::GetState();
   const char* type_name = WTF_HEAP_PROFILER_TYPE_NAME(T);
-  return ThreadHeap::AllocateOnArenaIndex(
+  return state->Heap().AllocateOnArenaIndex(
       state, size,
       eagerly_sweep ? BlinkGC::kEagerSweepArenaIndex
                     : ThreadHeap::ArenaIndexForObjectSize(size),
@@ -643,8 +752,8 @@ Address ThreadHeap::Reallocate(void* previous, size_t size) {
                                                  gc_info_index);
   } else {
     const char* type_name = WTF_HEAP_PROFILER_TYPE_NAME(T);
-    address = ThreadHeap::AllocateOnArenaIndex(state, size, arena_index,
-                                               gc_info_index, type_name);
+    address = state->Heap().AllocateOnArenaIndex(state, size, arena_index,
+                                                 gc_info_index, type_name);
   }
   size_t copy_size = previous_header->PayloadSize();
   if (copy_size > size)

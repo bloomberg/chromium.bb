@@ -23,7 +23,7 @@ void HeapAllocator::BackingFree(void* address) {
 
   HeapObjectHeader* header = HeapObjectHeader::FromPayload(address);
   NormalPageArena* arena = static_cast<NormalPage*>(page)->ArenaForNormalPage();
-  state->PromptlyFreed(header->GcInfoIndex());
+  state->Heap().PromptlyFreed(header->GcInfoIndex());
   arena->PromptlyFreeObject(header);
 }
 
@@ -60,7 +60,7 @@ bool HeapAllocator::BackingExpand(void* address, size_t new_size) {
   NormalPageArena* arena = static_cast<NormalPage*>(page)->ArenaForNormalPage();
   bool succeed = arena->ExpandObject(header, new_size);
   if (succeed)
-    state->AllocationPointAdjusted(arena->ArenaIndex());
+    state->Heap().AllocationPointAdjusted(arena->ArenaIndex());
   return succeed;
 }
 
@@ -111,7 +111,7 @@ bool HeapAllocator::BackingShrink(void* address,
   bool succeeded_at_allocation_point =
       arena->ShrinkObject(header, quantized_shrunk_size);
   if (succeeded_at_allocation_point)
-    state->AllocationPointAdjusted(arena->ArenaIndex());
+    state->Heap().AllocationPointAdjusted(arena->ArenaIndex());
   return true;
 }
 
