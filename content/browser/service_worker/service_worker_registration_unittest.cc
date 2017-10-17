@@ -259,10 +259,12 @@ class ServiceWorkerActivationTest : public ServiceWorkerRegistrationTest {
     version_1->SetStatus(ServiceWorkerVersion::ACTIVATED);
 
     // Store the registration.
-    std::vector<ServiceWorkerDatabase::ResourceRecord> records;
-    records.push_back(ServiceWorkerDatabase::ResourceRecord(
-        10, version_1->script_url(), 100));
-    version_1->script_cache_map()->SetResources(records);
+    std::vector<ServiceWorkerDatabase::ResourceRecord> records_1;
+    records_1.push_back(WriteToDiskCacheSync(
+        helper_->context()->storage(), version_1->script_url(),
+        helper_->context()->storage()->NewResourceId(), {} /* headers */,
+        "I'm the body", "I'm the meta data"));
+    version_1->script_cache_map()->SetResources(records_1);
     version_1->SetMainScriptHttpResponseInfo(
         EmbeddedWorkerTestHelper::CreateHttpResponseInfo());
     ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_MAX_VALUE;
@@ -288,6 +290,14 @@ class ServiceWorkerActivationTest : public ServiceWorkerRegistrationTest {
     scoped_refptr<ServiceWorkerVersion> version_2 = new ServiceWorkerVersion(
         registration_.get(), kScript, storage()->NewVersionId(),
         context()->AsWeakPtr());
+    std::vector<ServiceWorkerDatabase::ResourceRecord> records_2;
+    records_2.push_back(WriteToDiskCacheSync(
+        helper_->context()->storage(), version_2->script_url(),
+        helper_->context()->storage()->NewResourceId(), {} /* headers */,
+        "I'm the body", "I'm the meta data"));
+    version_2->script_cache_map()->SetResources(records_2);
+    version_2->SetMainScriptHttpResponseInfo(
+        EmbeddedWorkerTestHelper::CreateHttpResponseInfo());
     version_2->set_fetch_handler_existence(
         ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
     registration_->SetWaitingVersion(version_2);

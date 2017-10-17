@@ -191,7 +191,8 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
       bool pause_after_download,
       mojom::ServiceWorkerEventDispatcherRequest request,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
-      mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info);
+      mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
+      mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info);
   virtual void OnResumeAfterDownload(int embedded_worker_id);
   // StopWorker IPC handler routed through MockEmbeddedWorkerInstanceClient.
   // This calls SimulateWorkerStopped() by default.
@@ -270,7 +271,8 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   // These functions simulate sending an EmbeddedHostMsg message through the
   // legacy IPC system to the browser.
   void SimulateWorkerReadyForInspection(int embedded_worker_id);
-  void SimulateWorkerScriptCached(int embedded_worker_id);
+  void SimulateWorkerScriptCached(int embedded_worker_id,
+                                  base::OnceClosure callback);
   void SimulateWorkerScriptLoaded(int embedded_worker_id);
   void SimulateWorkerThreadStarted(int thread_id, int embedded_worker_id);
   void SimulateWorkerScriptEvaluated(int embedded_worker_id, bool success);
@@ -284,11 +286,15 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   class MockServiceWorkerEventDispatcher;
   class MockRendererInterface;
 
+  void DidSimulateWorkerScriptCached(int embedded_worker_id,
+                                     bool pause_after_download);
+
   void OnStartWorkerStub(
       const EmbeddedWorkerStartParams& params,
       mojom::ServiceWorkerEventDispatcherRequest request,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
-      mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info);
+      mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
+      mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info);
   void OnResumeAfterDownloadStub(int embedded_worker_id);
   void OnStopWorkerStub(int embedded_worker_id);
   void OnMessageToWorkerStub(int thread_id,
@@ -392,6 +398,9 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
       embedded_worker_id_instance_host_ptr_map_;
   std::map<int /* embedded_worker_id */, ServiceWorkerRemoteProviderEndpoint>
       embedded_worker_id_remote_provider_map_;
+  std::map<int /* embedded_worker_id */,
+           mojom::ServiceWorkerInstalledScriptsInfoPtr>
+      embedded_worker_id_installed_scripts_info_map_;
 
   std::vector<Event> events_;
   scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter_;

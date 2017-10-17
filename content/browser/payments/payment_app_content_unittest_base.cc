@@ -66,7 +66,8 @@ class PaymentAppContentUnitTestBase::PaymentAppForWorkerTestHelper
       bool pause_after_download,
       mojom::ServiceWorkerEventDispatcherRequest request,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
-      mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info)
+      mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
+      mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info)
       override {
     ServiceWorkerVersion* version =
         context()->GetLiveVersion(service_worker_version_id);
@@ -75,7 +76,7 @@ class PaymentAppContentUnitTestBase::PaymentAppForWorkerTestHelper
     EmbeddedWorkerTestHelper::OnStartWorker(
         embedded_worker_id, service_worker_version_id, scope, script_url,
         pause_after_download, std::move(request), std::move(instance_host),
-        std::move(provider_info));
+        std::move(provider_info), std::move(installed_scripts_info));
   }
 
   void OnPaymentRequestEvent(

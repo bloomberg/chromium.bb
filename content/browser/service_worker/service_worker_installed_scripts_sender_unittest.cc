@@ -11,6 +11,7 @@
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
+#include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/io_buffer.h"
@@ -21,55 +22,6 @@
 namespace content {
 
 namespace {
-
-void WriteBodyToDiskCache(
-    ServiceWorkerResponseWriter* writer,
-    const std::vector<std::pair<std::string, std::string>>& headers,
-    const std::string& body) {
-  std::unique_ptr<net::HttpResponseInfo> info =
-      base::MakeUnique<net::HttpResponseInfo>();
-  info->request_time = base::Time::Now();
-  info->response_time = base::Time::Now();
-  info->headers =
-      base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/1.0 200 OK\0\0");
-  for (const auto& header : headers)
-    info->headers->AddHeader(header.first + ": " + header.second);
-
-  scoped_refptr<HttpResponseInfoIOBuffer> info_buffer =
-      base::MakeRefCounted<HttpResponseInfoIOBuffer>(info.release());
-  info_buffer->response_data_size = body.size();
-  {
-    net::TestCompletionCallback cb;
-    writer->WriteInfo(info_buffer.get(), cb.callback());
-    int rv = cb.WaitForResult();
-    EXPECT_GE(rv, 0);
-  }
-
-  scoped_refptr<net::IOBuffer> body_buffer =
-      base::MakeRefCounted<net::StringIOBuffer>(body);
-  {
-    net::TestCompletionCallback cb;
-    writer->WriteData(body_buffer.get(), body.size(), cb.callback());
-    int rv = cb.WaitForResult();
-    EXPECT_EQ(body.size(), static_cast<size_t>(rv));
-  }
-}
-
-void WriteMetaDataToDiskCache(ServiceWorkerResponseMetadataWriter* writer,
-                              const std::string& meta_data) {
-  scoped_refptr<net::IOBuffer> meta_data_buffer =
-      base::MakeRefCounted<net::StringIOBuffer>(meta_data);
-  base::RunLoop loop;
-  writer->WriteMetadata(
-      meta_data_buffer.get(), meta_data.size(),
-      base::Bind(
-          [](base::Closure closure, int expected, int result) {
-            EXPECT_EQ(expected, result);
-            closure.Run();
-          },
-          loop.QuitClosure(), meta_data.size()));
-  loop.Run();
-}
 
 void ReadDataPipeInternal(mojo::DataPipeConsumerHandle handle,
                           std::string* result,
@@ -138,12 +90,8 @@ class ExpectedScriptInfo {
 
   ServiceWorkerDatabase::ResourceRecord WriteToDiskCache(
       ServiceWorkerStorage* storage) const {
-    auto body_writer = storage->CreateResponseWriter(resource_id_);
-    WriteBodyToDiskCache(body_writer.get(), headers_, body_);
-    auto metadata_writer = storage->CreateResponseMetadataWriter(resource_id_);
-    WriteMetaDataToDiskCache(metadata_writer.get(), meta_data_);
-    return ServiceWorkerDatabase::ResourceRecord(resource_id_, script_url_,
-                                                 body_.size());
+    return ::content::WriteToDiskCacheSync(storage, script_url_, resource_id_,
+                                           headers_, body_, meta_data_);
   }
 
   void CheckIfIdentical(
