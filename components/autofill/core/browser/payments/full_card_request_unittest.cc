@@ -64,7 +64,7 @@ class MockPersonalDataManager : public PersonalDataManager {
 
 // The test fixture for full card request.
 class FullCardRequestTest : public testing::Test,
-                            public PaymentsClientDelegate {
+                            public PaymentsClientUnmaskDelegate {
  public:
   FullCardRequestTest()
       : request_context_(new net::TestURLRequestContextGetter(
@@ -75,7 +75,8 @@ class FullCardRequestTest : public testing::Test,
         prefs::kAutofillBillingCustomerNumber, 0.0);
     autofill_client_.SetPrefs(std::move(pref_service));
     payments_client_ = std::make_unique<PaymentsClient>(
-        request_context_.get(), autofill_client_.GetPrefs(), this);
+        request_context_.get(), autofill_client_.GetPrefs(),
+        autofill_client_.GetIdentityProvider(), this, nullptr);
     request_ = std::make_unique<FullCardRequest>(
         &autofill_client_, payments_client_.get(), &personal_data_);
     // Silence the warning from PaymentsClient about matching sync and Payments
@@ -98,28 +99,13 @@ class FullCardRequestTest : public testing::Test,
 
   MockUIDelegate* ui_delegate() { return &ui_delegate_; }
 
-  // PaymentsClientDelegate:
+  // PaymentsClientUnmaskDelegate:
   void OnDidGetRealPan(AutofillClient::PaymentsRpcResult result,
                        const std::string& real_pan) override {
     request_->OnDidGetRealPan(result, real_pan);
   }
 
  private:
-  // PaymentsClientDelegate:
-  IdentityProvider* GetIdentityProvider() override {
-    return autofill_client_.GetIdentityProvider();
-  }
-  void OnDidGetUploadDetails(
-      AutofillClient::PaymentsRpcResult result,
-      const base::string16& context_token,
-      std::unique_ptr<base::DictionaryValue> legal_message) override {
-    ASSERT_TRUE(false) << "No upload details in this test";
-  }
-  void OnDidUploadCard(AutofillClient::PaymentsRpcResult result,
-                       const std::string& server_id) override {
-    ASSERT_TRUE(false) << "No card uploads in this test.";
-  }
-
   base::MessageLoop message_loop_;
   MockPersonalDataManager personal_data_;
   MockResultDelegate result_delegate_;
