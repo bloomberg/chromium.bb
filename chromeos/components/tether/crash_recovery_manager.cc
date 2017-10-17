@@ -5,6 +5,7 @@
 #include "chromeos/components/tether/crash_recovery_manager.h"
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/components/tether/host_scan_cache.h"
 #include "chromeos/network/network_state.h"
@@ -15,6 +16,37 @@
 namespace chromeos {
 
 namespace tether {
+
+// static
+CrashRecoveryManager::Factory*
+    CrashRecoveryManager::Factory::factory_instance_ = nullptr;
+
+// static
+std::unique_ptr<CrashRecoveryManager>
+CrashRecoveryManager::Factory::NewInstance(
+    NetworkStateHandler* network_state_handler,
+    ActiveHost* active_host,
+    HostScanCache* host_scan_cache) {
+  if (!factory_instance_)
+    factory_instance_ = new Factory();
+
+  return factory_instance_->BuildInstance(network_state_handler, active_host,
+                                          host_scan_cache);
+}
+
+// static
+void CrashRecoveryManager::Factory::SetInstanceForTesting(Factory* factory) {
+  factory_instance_ = factory;
+}
+
+std::unique_ptr<CrashRecoveryManager>
+CrashRecoveryManager::Factory::BuildInstance(
+    NetworkStateHandler* network_state_handler,
+    ActiveHost* active_host,
+    HostScanCache* host_scan_cache) {
+  return base::MakeUnique<CrashRecoveryManager>(network_state_handler,
+                                                active_host, host_scan_cache);
+}
 
 CrashRecoveryManager::CrashRecoveryManager(
     NetworkStateHandler* network_state_handler,
