@@ -7,26 +7,26 @@
 function test() {
   var instanceCount = 25;
   function createHeapSnapshot() {
-    return ProfilerTestRunner.createHeapSnapshot(instanceCount);
+    return HeapSnapshotTestRunner.createHeapSnapshot(instanceCount);
   }
 
-  ProfilerTestRunner.runHeapSnapshotTestSuite([function testShowAll(next) {
-    ProfilerTestRunner.takeAndOpenSnapshot(createHeapSnapshot, step1);
+  HeapSnapshotTestRunner.runHeapSnapshotTestSuite([function testShowAll(next) {
+    HeapSnapshotTestRunner.takeAndOpenSnapshot(createHeapSnapshot, step1);
 
     function step1() {
-      ProfilerTestRunner.switchToView('Summary', step2);
+      HeapSnapshotTestRunner.switchToView('Summary', step2);
     }
 
     function step2() {
-      var row = ProfilerTestRunner.findRow('A');
+      var row = HeapSnapshotTestRunner.findRow('A');
       TestRunner.assertEquals(true, !!row, '"A" row');
-      ProfilerTestRunner.expandRow(row, step3);
+      HeapSnapshotTestRunner.expandRow(row, step3);
     }
 
     function step3(row) {
       var count = row.data['count'];
       TestRunner.assertEquals(instanceCount.toString(), count);
-      var buttonsNode = ProfilerTestRunner.findButtonsNode(row);
+      var buttonsNode = HeapSnapshotTestRunner.findButtonsNode(row);
       TestRunner.assertEquals(true, !!buttonsNode, 'buttons node');
       var words = buttonsNode.showAll.textContent.split(' ');
       for (var i = 0; i < words.length; ++i) {
@@ -35,13 +35,13 @@ function test() {
           TestRunner.assertEquals(
               instanceCount - row._dataGrid.defaultPopulateCount(), maybeNumber, buttonsNode.showAll.textContent);
       }
-      ProfilerTestRunner.clickShowMoreButton('showAll', buttonsNode, step4);
+      HeapSnapshotTestRunner.clickShowMoreButton('showAll', buttonsNode, step4);
     }
 
     function step4(row) {
-      var rowsShown = ProfilerTestRunner.countDataRows(row);
+      var rowsShown = HeapSnapshotTestRunner.countDataRows(row);
       TestRunner.assertEquals(instanceCount, rowsShown, 'after showAll click');
-      var buttonsNode = ProfilerTestRunner.findButtonsNode(row);
+      var buttonsNode = HeapSnapshotTestRunner.findButtonsNode(row);
       TestRunner.assertEquals(false, !!buttonsNode, 'buttons node found when all instances are shown!');
       setTimeout(next, 0);
     }

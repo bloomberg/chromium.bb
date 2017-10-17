@@ -7,20 +7,20 @@
 function test() {
   var instanceCount = 24;
   function createHeapSnapshotA() {
-    return ProfilerTestRunner.createHeapSnapshot(instanceCount, 5);
+    return HeapSnapshotTestRunner.createHeapSnapshot(instanceCount, 5);
   }
   function createHeapSnapshotB() {
-    return ProfilerTestRunner.createHeapSnapshot(instanceCount + 1, 5 + instanceCount);
+    return HeapSnapshotTestRunner.createHeapSnapshot(instanceCount + 1, 5 + instanceCount);
   }
 
-  ProfilerTestRunner.runHeapSnapshotTestSuite([function testSorting(next) {
-    ProfilerTestRunner.takeAndOpenSnapshot(createHeapSnapshotA, createSnapshotB);
+  HeapSnapshotTestRunner.runHeapSnapshotTestSuite([function testSorting(next) {
+    HeapSnapshotTestRunner.takeAndOpenSnapshot(createHeapSnapshotA, createSnapshotB);
     function createSnapshotB() {
-      ProfilerTestRunner.takeAndOpenSnapshot(createHeapSnapshotB, step1);
+      HeapSnapshotTestRunner.takeAndOpenSnapshot(createHeapSnapshotB, step1);
     }
 
     function step1() {
-      ProfilerTestRunner.switchToView('Comparison', step2);
+      HeapSnapshotTestRunner.switchToView('Comparison', step2);
     }
 
     var columns;
@@ -28,7 +28,7 @@ function test() {
     var currentColumnOrder;
 
     function step2() {
-      columns = ProfilerTestRunner.viewColumns();
+      columns = HeapSnapshotTestRunner.viewColumns();
       currentColumn = 0;
       currentColumnOrder = false;
       setTimeout(step3, 0);
@@ -40,12 +40,12 @@ function test() {
         return;
       }
 
-      ProfilerTestRunner.clickColumn(columns[currentColumn], step4);
+      HeapSnapshotTestRunner.clickColumn(columns[currentColumn], step4);
     }
 
     function step4(newColumnState) {
       columns[currentColumn] = newColumnState;
-      var contents = ProfilerTestRunner.columnContents(columns[currentColumn]);
+      var contents = HeapSnapshotTestRunner.columnContents(columns[currentColumn]);
       TestRunner.assertEquals(true, !!contents.length, 'column contents');
       var sortTypes = {
         object: 'text',
@@ -57,7 +57,7 @@ function test() {
         sizeDelta: 'size'
       };
       TestRunner.assertEquals(true, !!sortTypes[columns[currentColumn].id], 'sort by id');
-      ProfilerTestRunner.checkArrayIsSorted(
+      HeapSnapshotTestRunner.checkArrayIsSorted(
           contents, sortTypes[columns[currentColumn].id], columns[currentColumn].sort);
 
       if (!currentColumnOrder)

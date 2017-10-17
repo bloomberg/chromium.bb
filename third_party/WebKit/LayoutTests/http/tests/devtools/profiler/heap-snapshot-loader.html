@@ -5,7 +5,7 @@
 <script>
 
 function test() {
-  var source = ProfilerTestRunner.createHeapSnapshotMockRaw();
+  var source = HeapSnapshotTestRunner.createHeapSnapshotMockRaw();
   var sourceStringified = JSON.stringify(source);
   var partSize = sourceStringified.length >> 3;
 

@@ -7,58 +7,58 @@
 function test() {
   var instanceCount = 24;
   function createHeapSnapshotA() {
-    return ProfilerTestRunner.createHeapSnapshot(instanceCount, 5);
+    return HeapSnapshotTestRunner.createHeapSnapshot(instanceCount, 5);
   }
   function createHeapSnapshotB() {
-    return ProfilerTestRunner.createHeapSnapshot(instanceCount + 1, 5 + instanceCount);
+    return HeapSnapshotTestRunner.createHeapSnapshot(instanceCount + 1, 5 + instanceCount);
   }
 
-  ProfilerTestRunner.runHeapSnapshotTestSuite([function testShowNext(next) {
-    ProfilerTestRunner.takeAndOpenSnapshot(createHeapSnapshotA, createSnapshotB);
+  HeapSnapshotTestRunner.runHeapSnapshotTestSuite([function testShowNext(next) {
+    HeapSnapshotTestRunner.takeAndOpenSnapshot(createHeapSnapshotA, createSnapshotB);
     function createSnapshotB() {
-      ProfilerTestRunner.takeAndOpenSnapshot(createHeapSnapshotB, step1);
+      HeapSnapshotTestRunner.takeAndOpenSnapshot(createHeapSnapshotB, step1);
     }
 
     function step1() {
-      ProfilerTestRunner.switchToView('Comparison', step2);
+      HeapSnapshotTestRunner.switchToView('Comparison', step2);
     }
 
     function step2() {
-      var row = ProfilerTestRunner.findRow('A');
+      var row = HeapSnapshotTestRunner.findRow('A');
       TestRunner.assertEquals(true, !!row, '"A" row');
-      ProfilerTestRunner.expandRow(row, step3);
+      HeapSnapshotTestRunner.expandRow(row, step3);
     }
 
     function step3(row) {
       var expectedRowCountA = parseInt(row.data['addedCount']);
-      var rowsShown = ProfilerTestRunner.countDataRows(row, function(node) {
+      var rowsShown = HeapSnapshotTestRunner.countDataRows(row, function(node) {
         return node.data.addedCount;
       });
       TestRunner.assertEquals(
           true, rowsShown <= expectedRowCountA,
           'shown more instances than created: ' + rowsShown + ' > ' + expectedRowCountA);
       if (rowsShown < expectedRowCountA) {
-        var buttonsNode = ProfilerTestRunner.findButtonsNode(row);
+        var buttonsNode = HeapSnapshotTestRunner.findButtonsNode(row);
         TestRunner.assertEquals(true, !!buttonsNode, 'buttons node');
-        ProfilerTestRunner.clickShowMoreButton('showNext', buttonsNode, step3);
+        HeapSnapshotTestRunner.clickShowMoreButton('showNext', buttonsNode, step3);
       } else if (rowsShown === expectedRowCountA)
         setTimeout(step4.bind(null, row), 0);
     }
 
     function step4(row) {
       var expectedRowCountB = parseInt(row.data['removedCount']);
-      var rowsShown = ProfilerTestRunner.countDataRows(row, function(node) {
+      var rowsShown = HeapSnapshotTestRunner.countDataRows(row, function(node) {
         return node.data.removedCount;
       });
       TestRunner.assertEquals(
           true, rowsShown <= expectedRowCountB,
           'shown more instances than created: ' + rowsShown + ' > ' + expectedRowCountB);
       if (rowsShown < expectedRowCountB) {
-        var buttonsNode = ProfilerTestRunner.findButtonsNode(row);
+        var buttonsNode = HeapSnapshotTestRunner.findButtonsNode(row);
         TestRunner.assertEquals(true, !!buttonsNode, 'buttons node');
-        ProfilerTestRunner.clickShowMoreButton('showNext', buttonsNode, step4);
+        HeapSnapshotTestRunner.clickShowMoreButton('showNext', buttonsNode, step4);
       } else if (rowsShown === expectedRowCountB) {
-        var buttonsNode = ProfilerTestRunner.findButtonsNode(row);
+        var buttonsNode = HeapSnapshotTestRunner.findButtonsNode(row);
         TestRunner.assertEquals(false, !!buttonsNode, 'buttons node found after all rows shown');
         setTimeout(next, 0);
       }

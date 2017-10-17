@@ -7,14 +7,14 @@
 function test() {
   var instanceCount = 25;
   function createHeapSnapshot() {
-    return ProfilerTestRunner.createHeapSnapshot(instanceCount);
+    return HeapSnapshotTestRunner.createHeapSnapshot(instanceCount);
   }
 
-  ProfilerTestRunner.runHeapSnapshotTestSuite([function testSorting(next) {
-    ProfilerTestRunner.takeAndOpenSnapshot(createHeapSnapshot, step1);
+  HeapSnapshotTestRunner.runHeapSnapshotTestSuite([function testSorting(next) {
+    HeapSnapshotTestRunner.takeAndOpenSnapshot(createHeapSnapshot, step1);
 
     function step1() {
-      ProfilerTestRunner.switchToView('Containment', step2);
+      HeapSnapshotTestRunner.switchToView('Containment', step2);
     }
 
     var gcRoots;
@@ -23,12 +23,12 @@ function test() {
     var currentColumnOrder;
 
     function step2() {
-      ProfilerTestRunner.findAndExpandGCRoots(step3);
+      HeapSnapshotTestRunner.findAndExpandGCRoots(step3);
     }
 
     function step3(gcRootsRow) {
       gcRoots = gcRootsRow;
-      columns = ProfilerTestRunner.viewColumns();
+      columns = HeapSnapshotTestRunner.viewColumns();
       currentColumn = 0;
       currentColumnOrder = false;
       setTimeout(step4, 0);
@@ -40,16 +40,16 @@ function test() {
         return;
       }
 
-      ProfilerTestRunner.clickColumn(columns[currentColumn], step5);
+      HeapSnapshotTestRunner.clickColumn(columns[currentColumn], step5);
     }
 
     function step5(newColumnState) {
       columns[currentColumn] = newColumnState;
-      var contents = ProfilerTestRunner.columnContents(columns[currentColumn], gcRoots);
+      var contents = HeapSnapshotTestRunner.columnContents(columns[currentColumn], gcRoots);
       TestRunner.assertEquals(true, !!contents.length, 'column contents');
       var sortTypes = {object: 'name', distance: 'number', shallowSize: 'size', retainedSize: 'size'};
       TestRunner.assertEquals(true, !!sortTypes[columns[currentColumn].id], 'sort by id');
-      ProfilerTestRunner.checkArrayIsSorted(
+      HeapSnapshotTestRunner.checkArrayIsSorted(
           contents, sortTypes[columns[currentColumn].id], columns[currentColumn].sort);
 
       if (!currentColumnOrder)

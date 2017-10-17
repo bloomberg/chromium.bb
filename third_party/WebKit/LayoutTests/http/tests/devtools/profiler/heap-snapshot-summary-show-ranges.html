@@ -7,11 +7,11 @@
 function test() {
   var instanceCount = 50;
   function createHeapSnapshot() {
-    return ProfilerTestRunner.createHeapSnapshot(instanceCount);
+    return HeapSnapshotTestRunner.createHeapSnapshot(instanceCount);
   }
 
-  ProfilerTestRunner.runHeapSnapshotTestSuite([function testShowAll(next) {
-    ProfilerTestRunner.takeAndOpenSnapshot(createHeapSnapshot, step1);
+  HeapSnapshotTestRunner.runHeapSnapshotTestSuite([function testShowAll(next) {
+    HeapSnapshotTestRunner.takeAndOpenSnapshot(createHeapSnapshot, step1);
     var row;
 
     function dumpAndPopulate(step, from, to) {
@@ -24,13 +24,13 @@ function test() {
     }
 
     function step1() {
-      ProfilerTestRunner.switchToView('Summary', step2);
+      HeapSnapshotTestRunner.switchToView('Summary', step2);
     }
 
     function step2() {
-      row = ProfilerTestRunner.findRow('A');
+      row = HeapSnapshotTestRunner.findRow('A');
       TestRunner.addResult('Row found: ' + !!row);
-      ProfilerTestRunner.expandRow(row, step3);
+      HeapSnapshotTestRunner.expandRow(row, step3);
     }
 
     async function step3() {

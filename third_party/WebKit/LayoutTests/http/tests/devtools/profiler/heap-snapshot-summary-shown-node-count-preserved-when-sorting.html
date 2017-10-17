@@ -7,50 +7,50 @@
 function test() {
   var instanceCount = 25;
   function createHeapSnapshot() {
-    return ProfilerTestRunner.createHeapSnapshot(instanceCount);
+    return HeapSnapshotTestRunner.createHeapSnapshot(instanceCount);
   }
 
-  ProfilerTestRunner.runHeapSnapshotTestSuite([function testExpansionPreservedWhenSorting(next) {
-    ProfilerTestRunner.takeAndOpenSnapshot(createHeapSnapshot, step1);
+  HeapSnapshotTestRunner.runHeapSnapshotTestSuite([function testExpansionPreservedWhenSorting(next) {
+    HeapSnapshotTestRunner.takeAndOpenSnapshot(createHeapSnapshot, step1);
 
     function step1() {
-      ProfilerTestRunner.switchToView('Summary', step2);
+      HeapSnapshotTestRunner.switchToView('Summary', step2);
     }
 
     var columns;
     function step2() {
-      columns = ProfilerTestRunner.viewColumns();
-      ProfilerTestRunner.clickColumn(columns[0], step3);
+      columns = HeapSnapshotTestRunner.viewColumns();
+      HeapSnapshotTestRunner.clickColumn(columns[0], step3);
     }
 
     function step3() {
-      var row = ProfilerTestRunner.findRow('B');
+      var row = HeapSnapshotTestRunner.findRow('B');
       TestRunner.assertEquals(true, !!row, '"B" row');
-      ProfilerTestRunner.expandRow(row, showNext);
+      HeapSnapshotTestRunner.expandRow(row, showNext);
       function showNext(row) {
-        var buttonsNode = ProfilerTestRunner.findButtonsNode(row);
+        var buttonsNode = HeapSnapshotTestRunner.findButtonsNode(row);
         TestRunner.assertEquals(true, !!buttonsNode, 'no buttons node found!');
-        ProfilerTestRunner.clickShowMoreButton('showNext', buttonsNode, step4);
+        HeapSnapshotTestRunner.clickShowMoreButton('showNext', buttonsNode, step4);
       }
     }
 
     var nodeCount;
     function step4(row) {
       // There must be enough nodes to have some unrevealed.
-      var buttonsNode = ProfilerTestRunner.findButtonsNode(row);
+      var buttonsNode = HeapSnapshotTestRunner.findButtonsNode(row);
       TestRunner.assertEquals(true, !!buttonsNode, 'no buttons node found!');
 
-      nodeCount = ProfilerTestRunner.columnContents(columns[0]).length;
+      nodeCount = HeapSnapshotTestRunner.columnContents(columns[0]).length;
       TestRunner.assertEquals(true, nodeCount > 0, 'nodeCount > 0');
 
-      ProfilerTestRunner.clickColumn(columns[0], clickTwice);
+      HeapSnapshotTestRunner.clickColumn(columns[0], clickTwice);
       function clickTwice() {
-        ProfilerTestRunner.clickColumn(columns[0], step6);
+        HeapSnapshotTestRunner.clickColumn(columns[0], step6);
       }
     }
 
     function step6() {
-      var newNodeCount = ProfilerTestRunner.columnContents(columns[0]).length;
+      var newNodeCount = HeapSnapshotTestRunner.columnContents(columns[0]).length;
       TestRunner.assertEquals(nodeCount, newNodeCount);
       setTimeout(next, 0);
     }
