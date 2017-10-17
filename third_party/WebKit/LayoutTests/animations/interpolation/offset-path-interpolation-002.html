@@ -1,29 +1,12 @@
 <!DOCTYPE html>
 <meta charset="UTF-8">
-<style>
-.parent {
-  cx: 100px;
-}
-.target {
-  font-size: 16px;
-  cx: 50px;
-}
-.expected {
-  fill: green;
-}
-</style>
 <body>
-<template id="target-template">
-  <svg width="90" height="90">
-    <path class="target" />
-  </svg>
-</template>
 <script src="resources/interpolation-test.js"></script>
 <script>
 'use strict';
 
 assertInterpolation({
-  property: 'd',
+  property: 'offset-path',
   from: "path('m 0 0 C 32 42 52 62 12 22')",
   to: "path('m 0 0 C 37 47 57 67 17 27')",
 }, [
@@ -36,7 +19,7 @@ assertInterpolation({
 ]);
 
 assertInterpolation({
-  property: 'd',
+  property: 'offset-path',
   from: "path('m 0 0 c 32 42 52 62 12 22')",
   to: "path('m 0 0 c 37 47 57 67 17 27')"
 }, [
@@ -49,7 +32,7 @@ assertInterpolation({
 ]);
 
 assertInterpolation({
-  property: 'd',
+  property: 'offset-path',
   from: "path('m 0 0 Q 32 42 52 62')",
   to: "path('m 0 0 Q 37 47 57 67')"
 }, [
@@ -62,7 +45,7 @@ assertInterpolation({
 ]);
 
 assertInterpolation({
-  property: 'd',
+  property: 'offset-path',
   from: "path('m 0 0 q 32 42 52 62')",
   to: "path('m 0 0 q 37 47 57 67')"
 }, [
@@ -75,7 +58,7 @@ assertInterpolation({
 ]);
 
 assertInterpolation({
-  property: 'd',
+  property: 'offset-path',
   from: "path('m 0 0 A 10 20 30 1 0 40 50')",
   to: "path('m 0 0 A 60 70 80 0 1 90 100')"
 }, [
@@ -88,7 +71,7 @@ assertInterpolation({
 ]);
 
 assertInterpolation({
-  property: 'd',
+  property: 'offset-path',
   from: "path('m 0 0 a 10 20 30 1 0 40 50')",
   to: "path('m 0 0 a 60 70 80 0 1 90 100')"
 }, [

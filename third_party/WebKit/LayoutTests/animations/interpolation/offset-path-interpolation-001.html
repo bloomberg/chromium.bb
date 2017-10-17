@@ -1,56 +1,39 @@
 <!DOCTYPE html>
 <meta charset="UTF-8">
-<style>
-.parent {
-  cx: 100px;
-}
-.target {
-  font-size: 16px;
-  cx: 50px;
-}
-.expected {
-  fill: green;
-}
-</style>
 <body>
-<template id="target-template">
-  <svg width="90" height="90">
-    <path class="target" />
-  </svg>
-</template>
 <script src="resources/interpolation-test.js"></script>
 <script>
 'use strict';
 
 // Distinct number of path segments
 assertNoInterpolation({
-  property: 'd',
+  property: 'offset-path',
   from: "path('m 0 0 h 1 h 2')",
   to: "path('m 0 0 h 3')"
 });
 
 assertNoInterpolation({
-  property: 'd',
+  property: 'offset-path',
   from: "path('M 1 2 L 3 4 Z')",
   to: "none"
 });
 
 // Distinct segment types
 assertNoInterpolation({
-  property: 'd',
+  property: 'offset-path',
   from: "path('m 10 0 h 1')",
   to: "path('m 20 0 v 2')"
 });
 
 assertNoInterpolation({
-  property: 'd',
+  property: 'offset-path',
   from: "path('m 1 2 l 3 4 Z')",
   to: "path('m 1 2 l 3 4')"
 });
 
 // Exercise each segment type
 assertInterpolation({
-  property: 'd',
+  property: 'offset-path',
   from: "path('m 0 0 Z')",
   to: "path('m 0 0 Z')"
 }, [
@@ -63,7 +46,7 @@ assertInterpolation({
 ]);
 
 assertInterpolation({
-  property: 'd',
+  property: 'offset-path',
   from: "path('M 20 50')",
   to: "path('M 30 70')"
 }, [
@@ -76,7 +59,7 @@ assertInterpolation({
 ]);
 
 assertInterpolation({
-  property: 'd',
+  property: 'offset-path',
   from: "path('m 20 50')",
   to: "path('m 30 70')"
 }, [
@@ -89,7 +72,7 @@ assertInterpolation({
 ]);
 
 assertInterpolation({
-  property: 'd',
+  property: 'offset-path',
   from: "path('m 0 0 L 20 50')",
   to: "path('m 0 0 L 30 70')"
 }, [
@@ -102,7 +85,7 @@ assertInterpolation({
 ]);
 
 assertInterpolation({
-  property: 'd',
+  property: 'offset-path',
   from: "path('m 0 0 l 20 50')",
   to: "path('m 0 0 l 30 70')"
 }, [
