@@ -57,6 +57,11 @@ WKWebView* BuildWKWebView(CGRect frame,
   // reasonable value.
   web_view.scrollView.decelerationRate = UIScrollViewDecelerationRateNormal;
 
+  if (@available(iOS 11.0, *)) {
+    web_view.scrollView.contentInsetAdjustmentBehavior =
+        UIScrollViewContentInsetAdjustmentNever;
+  }
+
   if (context_menu_delegate) {
     CRWContextMenuController* context_menu_controller = [
         [CRWContextMenuController alloc] initWithWebView:web_view
