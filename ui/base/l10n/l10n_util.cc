@@ -890,6 +890,17 @@ void GetAcceptLanguagesForLocale(const std::string& display_locale,
   }
 }
 
+bool IsLanguageAccepted(const std::string& display_locale,
+                        const std::string& locale) {
+  for (const char* accept_language : kAcceptLanguageList) {
+    if (accept_language == locale &&
+        l10n_util::IsLocaleNameTranslated(locale.c_str(), display_locale)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 int GetLocalizedContentsWidthInPixels(int pixel_resource_id) {
   int width = 0;
   base::StringToInt(l10n_util::GetStringUTF8(pixel_resource_id), &width);

@@ -86268,6 +86268,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Translate.AcceptLanguages.CanBeAcceptDuration" units="ms">
+  <owner>googleo@chromium.org</owner>
+  <summary>
+    Time taken for the TranslateAcceptLanguages to decide if a given language is
+    available as Accept-Languages.
+  </summary>
+</histogram>
+
 <histogram name="Translate.AlwaysTranslateLang">
   <owner>kenjibaheux@google.com</owner>
   <summary>

@@ -4,6 +4,7 @@
 
 #include "components/translate/core/browser/translate_accept_languages.h"
 
+#include "base/test/scoped_feature_list.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/translate/core/browser/translate_download_manager.h"
@@ -56,7 +57,34 @@ TEST(TranslateAcceptLanguagesTest, TestCanBeAcceptLanguage) {
   EXPECT_TRUE(TranslateAcceptLanguages::CanBeAcceptLanguage("en"));
   EXPECT_TRUE(TranslateAcceptLanguages::CanBeAcceptLanguage("en-US"));
   EXPECT_TRUE(TranslateAcceptLanguages::CanBeAcceptLanguage("es"));
+  EXPECT_TRUE(TranslateAcceptLanguages::CanBeAcceptLanguage("es-419"));
   EXPECT_TRUE(TranslateAcceptLanguages::CanBeAcceptLanguage("zh-CN"));
+
+  // Not valid format.
+  EXPECT_FALSE(TranslateAcceptLanguages::CanBeAcceptLanguage("en-us"));
+  EXPECT_FALSE(TranslateAcceptLanguages::CanBeAcceptLanguage("zh-Hant"));
+
+  // Not valid language.
+  EXPECT_FALSE(TranslateAcceptLanguages::CanBeAcceptLanguage("xx"));
+}
+
+TEST(TranslateAcceptLanguagesTest, TestOptimizedCanBeAcceptLanguage) {
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitAndEnableFeature(
+      translate::kTranslateAcceptLanguagesOptimization);
+
+  TranslateLocaleRestorer locale_restorer("es");
+
+  // Valid accept languages.
+  EXPECT_TRUE(TranslateAcceptLanguages::CanBeAcceptLanguage("en"));
+  EXPECT_TRUE(TranslateAcceptLanguages::CanBeAcceptLanguage("en-US"));
+  EXPECT_TRUE(TranslateAcceptLanguages::CanBeAcceptLanguage("es"));
+  EXPECT_TRUE(TranslateAcceptLanguages::CanBeAcceptLanguage("es-419"));
+  EXPECT_TRUE(TranslateAcceptLanguages::CanBeAcceptLanguage("zh-CN"));
+
+  // Not valid format.
+  EXPECT_FALSE(TranslateAcceptLanguages::CanBeAcceptLanguage("en-us"));
+  EXPECT_FALSE(TranslateAcceptLanguages::CanBeAcceptLanguage("zh-Hant"));
 
   // Not valid language.
   EXPECT_FALSE(TranslateAcceptLanguages::CanBeAcceptLanguage("xx"));
