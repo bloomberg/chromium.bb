@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/bookmarks/bookmark_folder_table_view_cell.h"
 
+#include "ios/chrome/browser/bookmarks/bookmark_new_generation_features.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #import "ios/chrome/browser/ui/rtl_geometry.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -42,7 +43,8 @@ const CGFloat kFolderCellIndentationWidth = 32.0;
       [[[self class] alloc] initWithStyle:UITableViewCellStyleDefault
                           reuseIdentifier:[self folderCellReuseIdentifier]];
   folderCell.indentationWidth = kFolderCellIndentationWidth;
-  folderCell.imageView.image = [UIImage imageNamed:@"bookmark_gray_folder"];
+  folderCell.imageView.image =
+      [UIImage imageNamed:[[self class] bookmarkFolderImageName]];
   return folderCell;
 }
 
@@ -65,7 +67,8 @@ const CGFloat kFolderCellIndentationWidth = 32.0;
     self.textLabel.font = [MDCTypography subheadFont];
     self.textLabel.textColor = bookmark_utils_ios::darkTextColor();
     self.selectionStyle = UITableViewCellSelectionStyleGray;
-    self.imageView.image = [UIImage imageNamed:@"bookmark_gray_folder"];
+    self.imageView.image =
+        [UIImage imageNamed:[[self class] bookmarkFolderImageName]];
     self.accessibilityTraits |= UIAccessibilityTraitButton;
     _enabled = YES;
   }
@@ -111,6 +114,17 @@ const CGFloat kFolderCellIndentationWidth = 32.0;
   [super prepareForReuse];
   self.checked = NO;
   self.enabled = YES;
+}
+
+#pragma mark - Private
+
+// TODO(crbug.com/695749): Remove this function and use bookmark_gray_folder
+// only when the new folder picker (and its folder cell class) is created for
+// the new ui.
++ (NSString*)bookmarkFolderImageName {
+  return (base::FeatureList::IsEnabled(kBookmarkNewGeneration))
+             ? @"bookmark_gray_folder_new"
+             : @"bookmark_gray_folder";
 }
 
 @end
