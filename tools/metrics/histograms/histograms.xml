@@ -88773,6 +88773,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Time spent in V8 compiler (full codegen) for eval.</summary>
 </histogram>
 
+<histogram name="V8.CompileHeuristicsDecision" enum="CompileHeuristicsDecision">
+  <owner>kouhei@chromium.org</owner>
+  <summary>
+    V8 script compile function variant which was picked. This contains
+    information such as {if,why} v8 {code,parser} was
+    {produced,consumed,bypassed}.
+  </summary>
+</histogram>
+
 <histogram name="V8.CompileInlineScriptMicroSeconds" units="microseconds">
   <owner>yangguo@chromium.org</owner>
   <summary>Time spent compiling an inline script.</summary>
