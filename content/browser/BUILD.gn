@@ -1017,6 +1017,8 @@ source_set("browser") {
     "media/android/browser_surface_view_manager.h",
     "media/android/media_player_renderer.cc",
     "media/android/media_player_renderer.h",
+    "media/android/media_player_renderer_web_contents_observer.cc",
+    "media/android/media_player_renderer_web_contents_observer.h",
     "media/android/media_resource_getter_impl.cc",
     "media/android/media_resource_getter_impl.h",
     "media/android/media_web_contents_observer_android.cc",
