@@ -45,7 +45,7 @@ source_set("reading_list") {
     "//ios/chrome/browser/history",
     "//ios/chrome/common",
     "//ios/web",
-    "//ios/web:reload_type",
+    "//ios/web/public",
     "//net",
     "//url",
   ]
@@ -95,7 +95,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/dom_distiller",
     "//ios/testing:ios_test_support",
     "//ios/web",
-    "//ios/web:reload_type",
+    "//ios/web/public",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",
     "//net",

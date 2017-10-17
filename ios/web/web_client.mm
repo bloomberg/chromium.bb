@@ -27,11 +27,9 @@ WebClient* GetWebClient() {
 WebClient::Schemes::Schemes() = default;
 WebClient::Schemes::~Schemes() = default;
 
-WebClient::WebClient() {
-}
+WebClient::WebClient() {}
 
-WebClient::~WebClient() {
-}
+WebClient::~WebClient() {}
 
 std::unique_ptr<WebMainParts> WebClient::CreateWebMainParts() {
   return nullptr;

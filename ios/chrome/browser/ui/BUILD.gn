@@ -352,7 +352,7 @@ source_set("ui_internal") {
     "//ios/public/provider/chrome/browser/voice",
     "//ios/third_party/material_components_ios",
     "//ios/web",
-    "//ios/web:user_agent",
+    "//ios/web/public",
     "//net",
     "//third_party/google_toolbox_for_mac",
     "//ui/base",
