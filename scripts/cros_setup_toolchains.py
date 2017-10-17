@@ -66,6 +66,7 @@ HOST_PACKAGES = (
 # build), so we have to delay their installation.
 HOST_POST_CROSS_PACKAGES = (
     'dev-lang/rust',
+    'virtual/target-sdk-post-cross',
 )
 
 # New packages that we're in the process of adding to the SDK.  Since the SDK
@@ -73,6 +74,7 @@ HOST_POST_CROSS_PACKAGES = (
 # so we have to list them here and wait.  Once it completes, entries here can
 # be removed so they'll end up on bots & dev's systems.
 NEW_PACKAGES = (
+    'virtual/target-sdk-post-cross',
 )
 
 # Enable the Go compiler for these targets.
