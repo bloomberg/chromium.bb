@@ -678,11 +678,6 @@ void ProfileChooserView::ShowView(profiles::BubbleViewMode view_to_display,
       layout = CreateSingleColumnLayout(this, kFixedMenuWidth);
       sub_view = CreateProfileChooserView(avatar_menu);
       break;
-    case profiles::BUBBLE_VIEW_MODE_SWITCH_USER:
-      // This is kept to avoid warnings until http://crrev.com/c/706776 has
-      // landed.
-      NOTREACHED();
-      break;
   }
 
   layout->StartRow(1, 0);

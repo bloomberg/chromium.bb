@@ -677,11 +677,6 @@ Google Chrome is unable to recover your settings.
         You're using <ph name="PROFILE_EMAIL">$1<ex>jessica@gmail.com</ex></ph> to sync your Chrome stuff. To update your sync preference or to use Chrome without a Google account, visit <ph name="SETTINGS_LINK">$2<ex>settings</ex></ph>.
       </message>
 
-      <!-- Switch user view in the avatar menu bubble -->
-      <message name="IDS_PROFILES_NOT_YOU_CONTENT_TEXT" desc="Main text of the switch user view. for an upgrade user">
-        If you share this computer with <ph name="PROFILE_NAME">$1<ex>Claire</ex></ph>, add yourself to Chrome to browse separately. Otherwise disconnect their Google Account.
-      </message>
-
       <!-- One click sign-in infobar -->
       <if expr="not chromeos">
         <!-- New one-click sign-in dialog contents for SAML support -->

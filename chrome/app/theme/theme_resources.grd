@@ -202,11 +202,6 @@
       <structure type="chrome_scaled_image" name="IDR_HOTWORD_NOTIFICATION_ICON" file="common/notification_hotword_icon.png" />
       <if expr="is_macosx">
         <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_ACCOUNT_BUTTON_ERROR" file="legacy/avatar_menu_auth_error.png" />
-        <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_EDIT_CAMERA" file="legacy/edit_camera.png" />
-        <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_EDIT_HOVER" file="legacy/edit_button_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_EDIT_PRESSED" file="legacy/edit_button_pressed.png" />
-        <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_MENU_AVATAR" file="legacy/avatar_menu_profile.png" />
-        <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_MENU_DISCONNECT" file="legacy/avatar_menu_disconnect.png" />
       </if>
       <if expr="not is_android and not chromeos">
         <!-- User Manager tutorial -->

@@ -64882,6 +64882,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Profile.NewAvatarMenu.NotYou"
     enum="ProfileNewAvatarMenuNotYou">
+  <obsolete>
+    Deprecated 2017-10-16. No longer tracked. Feature removed.
+  </obsolete>
   <owner>mlerman@chromium.org</owner>
   <summary>
     Tracks user interactions with the 'Not You?' bubble that users can navigate
@@ -64901,6 +64904,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Profile.NewAvatarMenu.Upgrade"
     enum="ProfileNewAvatarMenuUpgrade">
+  <obsolete>
+    Deprecated 2017-10-16. No longer tracked. Feature removed.
+  </obsolete>
   <owner>mlerman@chromium.org</owner>
   <summary>
     Tracks user interactions with the bubble that appears for users in the new

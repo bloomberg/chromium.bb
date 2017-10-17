@@ -25,8 +25,6 @@ enum BubbleViewMode {
   BUBBLE_VIEW_MODE_GAIA_REAUTH,
   // Shows a view for confirming account removal.
   BUBBLE_VIEW_MODE_ACCOUNT_REMOVAL,
-  // Shows a view for switching user.
-  BUBBLE_VIEW_MODE_SWITCH_USER,
 };
 
 };  // namespace profiles
