@@ -31,6 +31,7 @@ public class WebappInterceptNavigationDelegate extends InterceptNavigationDelega
         }
 
         if (UrlUtilities.isValidForIntentFallbackNavigation(navigationParams.url)
+                && !navigationParams.isPost
                 && !mActivity.scopePolicy().isUrlInScope(
                            mActivity.mWebappInfo, navigationParams.url)
                 && mActivity.scopePolicy().openOffScopeNavsInCct()) {
