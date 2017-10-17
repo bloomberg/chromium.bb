@@ -194,7 +194,7 @@ class PlatformSensorAndProviderTestWin : public ::testing::Test {
     sensor_ = new NiceMock<MockISensor>();
     sensor_collection_ = new NiceMock<MockISensorCollection>();
     sensor_manager_ = new NiceMock<MockISensorManager>();
-    base::win::ScopedComPtr<ISensorManager> manager;
+    Microsoft::WRL::ComPtr<ISensorManager> manager;
     sensor_manager_->QueryInterface(IID_PPV_ARGS(&manager));
 
     // Overrides default ISensorManager with mocked interface.
@@ -203,7 +203,7 @@ class PlatformSensorAndProviderTestWin : public ::testing::Test {
   }
 
   void TearDown() override {
-    base::win::ScopedComPtr<ISensorManager> null_manager;
+    Microsoft::WRL::ComPtr<ISensorManager> null_manager;
     PlatformSensorProviderWin::GetInstance()->SetSensorManagerForTesting(
         null_manager);
   }
@@ -349,10 +349,10 @@ class PlatformSensorAndProviderTestWin : public ::testing::Test {
 
     // MockISensorDataReport implements IUnknown that provides ref counting.
     // IUnknown::QueryInterface increases refcount if an object implements
-    // requested interface. ScopedComPtr wraps received interface and destructs
+    // requested interface. ComPtr wraps received interface and destructs
     // it when there are not more references.
     auto* mock_report = new NiceMock<MockISensorDataReport>();
-    base::win::ScopedComPtr<ISensorDataReport> data_report;
+    Microsoft::WRL::ComPtr<ISensorDataReport> data_report;
     mock_report->QueryInterface(IID_PPV_ARGS(&data_report));
 
     EXPECT_CALL(*mock_report, GetTimestamp(_))
@@ -378,7 +378,7 @@ class PlatformSensorAndProviderTestWin : public ::testing::Test {
   scoped_refptr<MockISensorManager> sensor_manager_;
   scoped_refptr<MockISensorCollection> sensor_collection_;
   scoped_refptr<MockISensor> sensor_;
-  base::win::ScopedComPtr<ISensorEvents> sensor_events_;
+  Microsoft::WRL::ComPtr<ISensorEvents> sensor_events_;
   base::MessageLoop message_loop_;
   scoped_refptr<PlatformSensor> platform_sensor_;
   // Inner run loop used to wait for async sensor creation callback.

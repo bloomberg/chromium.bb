@@ -6,8 +6,8 @@
 #define SERVICES_DEVICE_GENERIC_SENSOR_PLATFORM_SENSOR_PROVIDER_WIN_H_
 
 #include <SensorsApi.h>
+#include <wrl/client.h>
 
-#include "base/win/scoped_comptr.h"
 #include "services/device/generic_sensor/platform_sensor_provider.h"
 
 namespace base {
@@ -31,7 +31,7 @@ class PlatformSensorProviderWin final : public PlatformSensorProvider {
   // Overrides ISensorManager COM interface provided by the system, used
   // only for testing purposes.
   void SetSensorManagerForTesting(
-      base::win::ScopedComPtr<ISensorManager> sensor_manager);
+      Microsoft::WRL::ComPtr<ISensorManager> sensor_manager);
 
  protected:
   ~PlatformSensorProviderWin() override;
