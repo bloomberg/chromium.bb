@@ -23,7 +23,8 @@ import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwGLFunctor;
-import org.chromium.android_webview.test.AwTestBase.TestDependencyFactory;
+import org.chromium.android_webview.test.AwActivityTestRule.TestDependencyFactory;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.Criteria;
@@ -143,11 +144,10 @@ public class AwContentsGarbageCollectionTest {
             // It is difficult to show keyboard and wait until input method window shows up.
             // Instead, we simply emulate Android's behavior by keeping strong references.
             // See crbug.com/595613 for details.
-            resultReceivers[i] =
-                    mActivityTestRule.runTestOnUiThreadAndGetResult(
-                            () -> containerView.getContentViewCore()
-                                    .getImeAdapterForTest()
-                                    .getNewShowKeyboardReceiver());
+            resultReceivers[i] = ThreadUtils.runOnUiThreadBlocking(
+                    () -> containerView.getContentViewCore()
+                                       .getImeAdapterForTest()
+                                       .getNewShowKeyboardReceiver());
         }
 
         for (int i = 0; i < containerViews.length; i++) {
@@ -304,7 +304,7 @@ public class AwContentsGarbageCollectionTest {
             @Override
             public boolean isSatisfied() {
                 try {
-                    return mActivityTestRule.runTestOnUiThreadAndGetResult(() -> {
+                    return ThreadUtils.runOnUiThreadBlocking(() -> {
                         int count_aw_contents = AwContents.getNativeInstanceCount();
                         int count_aw_functor = AwGLFunctor.getNativeInstanceCount();
                         return count_aw_contents <= MAX_IDLE_INSTANCES

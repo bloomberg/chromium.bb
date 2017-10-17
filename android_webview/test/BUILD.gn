@@ -174,8 +174,6 @@ instrumentation_test_apk("webview_instrumentation_test_apk") {
     "../javatests/src/org/chromium/android_webview/test/AwServiceWorkerClientTest.java",
     "../javatests/src/org/chromium/android_webview/test/AwSettingsTest.java",
     "../javatests/src/org/chromium/android_webview/test/AwStrictModeTest.java",
-    "../javatests/src/org/chromium/android_webview/test/AwTestCommon.java",
-    "../javatests/src/org/chromium/android_webview/test/AwTestBase.java",
     "../javatests/src/org/chromium/android_webview/test/AwActivityTestRule.java",
     "../javatests/src/org/chromium/android_webview/test/AwWebContentsObserverTest.java",
     "../javatests/src/org/chromium/android_webview/test/AwZoomTest.java",

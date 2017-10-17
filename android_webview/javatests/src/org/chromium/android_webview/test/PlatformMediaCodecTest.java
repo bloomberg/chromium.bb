@@ -12,6 +12,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.ContentViewCore;
@@ -53,8 +54,7 @@ public class PlatformMediaCodecTest {
 
     private WebContents getWebContentsOnUiThread() {
         try {
-            return mActivityTestRule.runTestOnUiThreadAndGetResult(
-                    () -> mContentViewCore.getWebContents());
+            return ThreadUtils.runOnUiThreadBlocking(() -> mContentViewCore.getWebContents());
         } catch (Exception e) {
             Assert.fail(e.getMessage());
             return null;

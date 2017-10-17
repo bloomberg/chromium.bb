@@ -9,7 +9,7 @@ import android.graphics.Canvas;
 import android.view.View;
 
 import org.chromium.android_webview.AwContents;
-import org.chromium.android_webview.test.AwTestBase;
+import org.chromium.android_webview.test.AwActivityTestRule;
 import org.chromium.android_webview.test.AwTestContainerView;
 import org.chromium.base.ThreadUtils;
 
@@ -80,7 +80,7 @@ public class GraphicsTestUtils {
 
     public static void pollForBackgroundColor(final AwContents awContents, final int c)
             throws Throwable {
-        AwTestBase.pollInstrumentationThread(
+        AwActivityTestRule.pollInstrumentationThread(
                 () -> sampleBackgroundColorOnUiThread(awContents) == c);
     }
 

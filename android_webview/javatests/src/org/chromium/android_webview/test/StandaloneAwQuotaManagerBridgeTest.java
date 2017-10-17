@@ -14,6 +14,7 @@ import org.junit.runner.RunWith;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwQuotaManagerBridge;
 import org.chromium.android_webview.test.util.AwQuotaManagerBridgeTestUtil;
+import org.chromium.base.annotations.SuppressFBWarnings;
 
 /**
  * This class tests AwQuotaManagerBridge runs without AwContents etc. It simulates
@@ -21,6 +22,7 @@ import org.chromium.android_webview.test.util.AwQuotaManagerBridgeTestUtil;
  */
 @RunWith(AwJUnit4ClassRunner.class)
 public class StandaloneAwQuotaManagerBridgeTest {
+    @SuppressFBWarnings("URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD")
     @Rule
     public AwActivityTestRule mActivityTestRule = new AwActivityTestRule();
 
@@ -28,8 +30,7 @@ public class StandaloneAwQuotaManagerBridgeTest {
     @SmallTest
     public void testStartup() throws Exception {
         // AwQuotaManager should run without any issue.
-        AwQuotaManagerBridge.Origins origins =
-                AwQuotaManagerBridgeTestUtil.getOrigins(mActivityTestRule);
+        AwQuotaManagerBridge.Origins origins = AwQuotaManagerBridgeTestUtil.getOrigins();
         Assert.assertEquals(origins.mOrigins.length, 0);
         Assert.assertEquals(AwContents.getNativeInstanceCount(), 0);
     }

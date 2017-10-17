@@ -23,7 +23,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A custom runner for //chrome JUnit4 tests.
+ * A custom runner for //android_webview instrumentation tests. WebView only runs on KitKat and
+ * later, so make sure no one attempts to run the tests on earlier OS releases.
+ * By default, all tests run both in single-process mode, and with sandboxed
+ * renderer. If a test doesn't yet work with sandboxed renderer, an entire
+ * class, or an individual test method can be marked for single-process testing
+ * only by adding @SkipCommandLineParameterization to the test
  */
 public final class AwJUnit4ClassRunner extends BaseJUnit4ClassRunner {
     /**
