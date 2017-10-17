@@ -102,6 +102,9 @@ class TranslateBubbleModel {
   // Returns true if the page is translated in the currently selected source
   // and target language.
   virtual bool IsPageTranslatedInCurrentLanguages() const = 0;
+
+  // True if the site of the current page can be blacklisted.
+  virtual bool CanBlacklistSite() = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_TRANSLATE_TRANSLATE_BUBBLE_MODEL_H_

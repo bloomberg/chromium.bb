@@ -100,6 +100,10 @@ void TranslateBubbleModelImpl::SetNeverTranslateSite(bool value) {
   ui_delegate_->SetSiteBlacklist(value);
 }
 
+bool TranslateBubbleModelImpl::CanBlacklistSite() {
+  return ui_delegate_->CanBlacklistSite();
+}
+
 bool TranslateBubbleModelImpl::ShouldAlwaysTranslate() const {
   return ui_delegate_->ShouldAlwaysTranslate();
 }

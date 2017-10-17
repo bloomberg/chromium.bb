@@ -12,8 +12,10 @@
 #include "chrome/browser/ui/translate/translate_bubble_model.h"
 #include "chrome/browser/ui/translate/translate_bubble_view_state_transition.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/range/range.h"
@@ -43,7 +45,8 @@ class MockTranslateBubbleModel : public TranslateBubbleModel {
         revert_translation_called_(false),
         translation_declined_(false),
         original_language_index_on_translation_(-1),
-        target_language_index_on_translation_(-1) {}
+        target_language_index_on_translation_(-1),
+        can_blacklist_site_(true) {}
 
   TranslateBubbleModel::ViewState GetViewState() const override {
     return view_state_transition_.view_state();
@@ -120,6 +123,10 @@ class MockTranslateBubbleModel : public TranslateBubbleModel {
            target_language_index_on_translation_ == target_language_index_;
   }
 
+  bool CanBlacklistSite() override { return can_blacklist_site_; }
+
+  void SetCanBlacklistSite(bool value) { can_blacklist_site_ = value; }
+
   TranslateBubbleViewStateTransition view_state_transition_;
   translate::TranslateErrors::Type error_type_;
   int original_language_index_;
@@ -134,6 +141,7 @@ class MockTranslateBubbleModel : public TranslateBubbleModel {
   bool translation_declined_;
   int original_language_index_on_translation_;
   int target_language_index_on_translation_;
+  bool can_blacklist_site_;
 };
 
 }  // namespace
@@ -468,4 +476,46 @@ TEST_F(TranslateBubbleViewTest, CancelButtonReturningError) {
   EXPECT_EQ(TranslateBubbleModel::VIEW_STATE_ADVANCED, bubble_->GetViewState());
   bubble_->HandleButtonPressed(TranslateBubbleView::BUTTON_ID_CANCEL);
   EXPECT_EQ(TranslateBubbleModel::VIEW_STATE_ERROR, bubble_->GetViewState());
+}
+
+TEST_F(TranslateBubbleViewTest, ComboboxCanBlacklistSite) {
+  EXPECT_TRUE(mock_model_->CanBlacklistSite());
+  CreateAndShowBubble();
+  views::Combobox* const combobox = denial_combobox();
+  EXPECT_FALSE(denial_button_clicked());
+  EXPECT_FALSE(bubble_->GetWidget()->IsClosed());
+  // Check menu rows are DENY, NEVER_TRANSLATE_LANG, [SEPARATOR], and
+  // NEVER_TRANSLATE_SITE.
+  EXPECT_EQ(4, combobox->GetRowCount());
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_DENY),
+            combobox->GetTextForRow(static_cast<size_t>(
+                TranslateBubbleView::DenialComboboxIndex::DONT_TRANSLATE)));
+  EXPECT_EQ(
+      l10n_util::GetStringFUTF16(IDS_TRANSLATE_BUBBLE_NEVER_TRANSLATE_LANG,
+                                 base::ASCIIToUTF16("English")),
+      combobox->GetTextForRow(static_cast<size_t>(
+          TranslateBubbleView::DenialComboboxIndex::NEVER_TRANSLATE_LANGUAGE)));
+  EXPECT_EQ(
+      l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_NEVER_TRANSLATE_SITE),
+      combobox->GetTextForRow(static_cast<size_t>(
+          TranslateBubbleView::DenialComboboxIndex::NEVER_TRANSLATE_SITE)));
+}
+
+TEST_F(TranslateBubbleViewTest, ComboboxCantBlacklistSite) {
+  mock_model_->SetCanBlacklistSite(false);
+  CreateAndShowBubble();
+  views::Combobox* const combobox = denial_combobox();
+  //  views::test::ComboboxTestApi test_api(combobox);
+  EXPECT_FALSE(denial_button_clicked());
+  EXPECT_FALSE(bubble_->GetWidget()->IsClosed());
+  // Check the menu rows are DENY and NEVER_TRANSLATE_LANG.
+  EXPECT_EQ(2, combobox->GetRowCount());
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_DENY),
+            combobox->GetTextForRow(static_cast<size_t>(
+                TranslateBubbleView::DenialComboboxIndex::DONT_TRANSLATE)));
+  EXPECT_EQ(
+      l10n_util::GetStringFUTF16(IDS_TRANSLATE_BUBBLE_NEVER_TRANSLATE_LANG,
+                                 base::ASCIIToUTF16("English")),
+      combobox->GetTextForRow(static_cast<size_t>(
+          TranslateBubbleView::DenialComboboxIndex::NEVER_TRANSLATE_LANGUAGE)));
 }
