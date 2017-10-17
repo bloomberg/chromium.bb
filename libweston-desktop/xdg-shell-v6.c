@@ -903,20 +903,39 @@ weston_desktop_xdg_surface_send_configure(void *user_data)
 static bool
 weston_desktop_xdg_toplevel_state_compare(struct weston_desktop_xdg_toplevel *toplevel)
 {
+	struct {
+		struct weston_desktop_xdg_toplevel_state state;
+		struct weston_size size;
+	} configured;
+
 	if (!toplevel->base.configured)
 		return false;
 
-	if (toplevel->pending.state.activated != toplevel->current.state.activated)
+	if (wl_list_empty(&toplevel->base.configure_list)) {
+		/* Last configure is actually the current state, just use it */
+		configured.state = toplevel->current.state;
+		configured.size.width = toplevel->base.surface->width;
+		configured.size.height = toplevel->base.surface->height;
+	} else {
+		struct weston_desktop_xdg_toplevel_configure *configure =
+			wl_container_of(toplevel->base.configure_list.prev,
+					configure, base.link);
+
+		configured.state = configure->state;
+		configured.size = configure->size;
+	}
+
+	if (toplevel->pending.state.activated != configured.state.activated)
 		return false;
-	if (toplevel->pending.state.fullscreen != toplevel->current.state.fullscreen)
+	if (toplevel->pending.state.fullscreen != configured.state.fullscreen)
 		return false;
-	if (toplevel->pending.state.maximized != toplevel->current.state.maximized)
+	if (toplevel->pending.state.maximized != configured.state.maximized)
 		return false;
-	if (toplevel->pending.state.resizing != toplevel->current.state.resizing)
+	if (toplevel->pending.state.resizing != configured.state.resizing)
 		return false;
 
-	if (toplevel->base.surface->width == toplevel->pending.size.width &&
-	    toplevel->base.surface->height == toplevel->pending.size.height)
+	if (toplevel->pending.size.width == configured.size.width &&
+	    toplevel->pending.size.height == configured.size.height)
 		return true;
 
 	if (toplevel->pending.size.width == 0 &&
