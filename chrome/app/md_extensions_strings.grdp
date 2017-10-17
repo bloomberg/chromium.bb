@@ -35,7 +35,7 @@
     &lt;span&gt;ID:&lt;/span&gt;<ph name="EXTENSION_ID">$1<ex>cfhdojbkjhnklbpkdaibdccddilifddb</ex></ph>
   </message>
   <message name="IDS_MD_EXTENSIONS_ITEM_INSPECT_VIEWS" desc="The text next to any inspectable views for an extension.">
-    Inspect views:
+    Inspect views
   </message>
   <message name="IDS_MD_EXTENSIONS_ITEM_INSPECT_VIEWS_EXTRA" desc="The text to indicate there are additional inspectable views that aren't listed.">
     <ph name="NUMBER_OF_VIEWS">$1<ex>2</ex></ph> more...
