@@ -1881,7 +1881,6 @@ TEST_F(CALayerOverlayTest, ThreeDTransform) {
   pass->shared_quad_state_list.back()
       ->quad_to_target_transform.RotateAboutXAxis(45.f);
 
-  gfx::Rect damage_rect;
   CALayerOverlayList ca_layer_list;
   cc::OverlayCandidateList overlay_list(BackbufferOverlayList(pass.get()));
   OverlayProcessor::FilterOperationsMap render_pass_filters;
@@ -2850,7 +2849,6 @@ class CALayerOverlayRPDQTest : public CALayerOverlayTest {
   }
 
   void ProcessForOverlays() {
-    gfx::Rect damage_rect;
     overlay_list_ = BackbufferOverlayList(pass_);
     overlay_processor_->ProcessForOverlays(
         resource_provider_.get(), &pass_list_, render_pass_filters_,

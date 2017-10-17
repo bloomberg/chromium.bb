@@ -225,7 +225,6 @@ void TaskQueueThrottler::PumpThrottledTasks() {
   pending_pump_throttled_tasks_runtime_.reset();
 
   LazyNow lazy_now(tick_clock_);
-  base::Optional<base::TimeTicks> next_scheduled_delayed_task;
 
   for (const auto& pair : budget_pools_)
     pair.first->OnWakeUp(lazy_now.Now());

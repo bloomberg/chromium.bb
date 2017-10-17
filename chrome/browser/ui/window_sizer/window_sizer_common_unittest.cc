@@ -287,8 +287,6 @@ TEST(WindowSizerTestCommon,
   }
 
   { // off the top
-    gfx::Rect initial_bounds(50, -370, 500, 400);
-
     gfx::Rect window_bounds;
     GetWindowBounds(p1024x768, p1024x768, gfx::Rect(),
                     gfx::Rect(50, -370, 500, 400), gfx::Rect(), PERSISTED,

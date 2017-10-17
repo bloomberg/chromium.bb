@@ -683,7 +683,6 @@ class GLHelperTest : public testing::Test {
     output_pixels.allocPixels(SkImageInfo::Make(
         scaled_xsize, scaled_ysize, out_color_type, kPremul_SkAlphaType));
     base::RunLoop run_loop;
-    gfx::Size encoded_texture_size;
     helper_->CropScaleReadbackAndCleanTexture(
         src_texture, gfx::Size(xsize, ysize),
         gfx::Size(scaled_xsize, scaled_ysize),

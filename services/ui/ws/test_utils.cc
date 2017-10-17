@@ -32,7 +32,6 @@ namespace test {
 namespace {
 
 ClientWindowId NextUnusedClientWindowId(WindowTree* tree) {
-  ClientWindowId client_id;
   for (ClientSpecificId id = 1;; ++id) {
     // Used the id of the client in the upper bits to simplify things.
     const ClientWindowId client_id = ClientWindowId(tree->id(), id);

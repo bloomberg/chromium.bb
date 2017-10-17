@@ -758,7 +758,7 @@ TEST(LayerAnimatorTest, ScheduleTogether) {
   double start_grayscale(0.0);
   double target_grayscale(1.0);
 
-  gfx::Rect start_bounds, target_bounds, middle_bounds;
+  gfx::Rect start_bounds, target_bounds;
   start_bounds = target_bounds = gfx::Rect(0, 0, 50, 50);
   start_bounds.set_x(-90);
   target_bounds.set_x(90);

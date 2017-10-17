@@ -7317,7 +7317,6 @@ TEST_F(LayerTreeHostImplTest, OverscrollOnMainThread) {
 // Test that scrolling the inner viewport directly works, as can happen when the
 // scroll chains up to it from an sibling of the outer viewport.
 TEST_F(LayerTreeHostImplTest, ScrollFromOuterViewportSibling) {
-  const gfx::Size content_size(200, 200);
   const gfx::Size viewport_size(100, 100);
 
   LayerTreeImpl* layer_tree_impl = host_impl_->active_tree();
@@ -13090,7 +13089,6 @@ TEST_F(LayerTreeHostImplTest, RasterTilePrioritizationForNonDrawingLayers) {
   root->test_properties()->AddChild(std::move(scoped_drawing_layer));
 
   gfx::Rect layer_rect(0, 0, 500, 500);
-  gfx::Rect empty_rect(0, 0, 0, 0);
   host_impl_->pending_tree()->BuildPropertyTreesForTesting();
 
   hidden_layer->tilings()->AddTiling(gfx::AxisTransform2d(), raster_source);

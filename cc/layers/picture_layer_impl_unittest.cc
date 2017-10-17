@@ -1540,7 +1540,6 @@ TEST_F(PictureLayerImplTest, DisallowTileDrawQuads) {
 TEST_F(PictureLayerImplTest, ResourcelessPartialRecording) {
   std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
 
-  gfx::Size tile_size(400, 400);
   gfx::Size layer_bounds(700, 650);
   gfx::Rect layer_rect(layer_bounds);
   SetInitialDeviceScaleFactor(2.f);
@@ -1817,7 +1816,6 @@ TEST_F(NoLowResPictureLayerImplTest, MarkRequiredOffscreenTiles) {
       viewport,
       pending_layer()->viewport_rect_for_tile_priority_in_content_space());
 
-  base::TimeTicks time_ticks;
   host_impl()->AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
   pending_layer()->UpdateTiles();
 
@@ -4550,7 +4548,6 @@ TEST_F(PictureLayerImplTest, DrawTransparentQuads) {
 TEST_F(PictureLayerImplTest, NonSolidToSolidNoTilings) {
   host_impl()->AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
 
-  gfx::Size tile_size(100, 100);
   gfx::Size layer_bounds(200, 200);
   gfx::Rect layer_rect(layer_bounds);
 

@@ -808,8 +808,6 @@ TEST_F(ScrollbarLayerTest, SubPixelCanScrollOrientation) {
 }
 
 TEST_F(ScrollbarLayerTest, LayerChangesAffectingScrollbarGeometries) {
-  gfx::Size viewport_size(980, 980);
-
   LayerTestCommon::LayerImplTest impl;
 
   LayerImpl* clip_layer = impl.AddChildToRoot<LayerImpl>();
@@ -1342,8 +1340,6 @@ class ScaledScrollbarLayerTestScaledRasterization : public ScrollbarLayerTest {
     scrollbar_layer->set_visible_layer_rect(scrollbar_rect);
 
     layer_tree_host_->SetDeviceScaleFactor(test_scale);
-
-    gfx::Rect screen_space_clip_rect;
 
     scrollbar_layer->Update();
 
