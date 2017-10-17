@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/base64.h"
+#include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
