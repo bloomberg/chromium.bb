@@ -17,8 +17,8 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef ScopedPageSuspender_h
-#define ScopedPageSuspender_h
+#ifndef ScopedPagePauser_h
+#define ScopedPagePauser_h
 
 #include "core/CoreExport.h"
 #include "platform/scheduler/child/web_scheduler.h"
@@ -29,13 +29,13 @@ namespace blink {
 
 class Page;
 
-class CORE_EXPORT ScopedPageSuspender final {
-  WTF_MAKE_NONCOPYABLE(ScopedPageSuspender);
-  USING_FAST_MALLOC(ScopedPageSuspender);
+class CORE_EXPORT ScopedPagePauser final {
+  WTF_MAKE_NONCOPYABLE(ScopedPagePauser);
+  USING_FAST_MALLOC(ScopedPagePauser);
 
  public:
-  explicit ScopedPageSuspender();
-  ~ScopedPageSuspender();
+  explicit ScopedPagePauser();
+  ~ScopedPagePauser();
 
  private:
   friend class Page;
@@ -48,4 +48,4 @@ class CORE_EXPORT ScopedPageSuspender final {
 
 }  // namespace blink
 
-#endif  // ScopedPageSuspender_h
+#endif  // ScopedPagePauser_h

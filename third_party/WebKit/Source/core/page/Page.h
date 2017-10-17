@@ -66,7 +66,7 @@ class PageScaleConstraintsSet;
 class PluginData;
 class PluginsChangedObserver;
 class PointerLockController;
-class ScopedPageSuspender;
+class ScopedPagePauser;
 class ScrollingCoordinator;
 class SmoothScrollSequencer;
 class Settings;
@@ -303,7 +303,7 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   void RegisterPluginsChangedObserver(PluginsChangedObserver*);
 
  private:
-  friend class ScopedPageSuspender;
+  friend class ScopedPagePauser;
 
   explicit Page(PageClients&);
 
@@ -312,7 +312,7 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   // SettingsDelegate overrides.
   void SettingsChanged(SettingsDelegate::ChangeType) override;
 
-  // ScopedPageSuspender helpers.
+  // ScopedPagePauser helpers.
   void SetPaused(bool);
 
   // Notify |plugins_changed_observers_| that plugins have changed.

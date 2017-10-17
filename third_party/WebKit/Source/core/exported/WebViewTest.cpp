@@ -66,7 +66,7 @@
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "core/page/PrintContext.h"
-#include "core/page/ScopedPageSuspender.h"
+#include "core/page/ScopedPagePauser.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/PaintLayerPainter.h"
 #include "core/timing/DOMWindowPerformance.h"
@@ -4496,16 +4496,16 @@ TEST_P(WebViewTest, PasswordFieldEditingIsUserGesture) {
   frame->SetAutofillClient(0);
 }
 
-// Verify that a WebView created with a ScopedPageSuspender already on the
+// Verify that a WebView created with a ScopedPagePauser already on the
 // stack defers its loads.
-TEST_P(WebViewTest, CreatedDuringPageSuspension) {
+TEST_P(WebViewTest, CreatedDuringPagePause) {
   {
     WebViewImpl* web_view = web_view_helper_.Initialize();
     EXPECT_FALSE(web_view->GetPage()->Paused());
   }
 
   {
-    ScopedPageSuspender suspender;
+    ScopedPagePauser pauser;
     WebViewImpl* web_view = web_view_helper_.Initialize();
     EXPECT_TRUE(web_view->GetPage()->Paused());
   }
@@ -4558,16 +4558,16 @@ TEST_P(WebViewTest, SubframeBeforeUnloadUseCounter) {
 
 // Verify that page loads are deferred until all ScopedPageLoadDeferrers are
 // destroyed.
-TEST_P(WebViewTest, NestedPageSuspensions) {
+TEST_P(WebViewTest, NestedPagePauses) {
   WebViewImpl* web_view = web_view_helper_.Initialize();
   EXPECT_FALSE(web_view->GetPage()->Paused());
 
   {
-    ScopedPageSuspender suspender;
+    ScopedPagePauser pauser;
     EXPECT_TRUE(web_view->GetPage()->Paused());
 
     {
-      ScopedPageSuspender suspender2;
+      ScopedPagePauser pauser2;
       EXPECT_TRUE(web_view->GetPage()->Paused());
     }
 
@@ -4577,7 +4577,7 @@ TEST_P(WebViewTest, NestedPageSuspensions) {
   EXPECT_FALSE(web_view->GetPage()->Paused());
 }
 
-TEST_P(WebViewTest, ClosingPageIsSuspended) {
+TEST_P(WebViewTest, ClosingPageIsPaused) {
   WebViewImpl* web_view = web_view_helper_.Initialize();
   Page* page = web_view_helper_.WebView()->GetPage();
   EXPECT_FALSE(page->Paused());
@@ -4595,7 +4595,7 @@ TEST_P(WebViewTest, ClosingPageIsSuspended) {
   EXPECT_TRUE(main_frame->GetPage());
 
   {
-    ScopedPageSuspender suspender;
+    ScopedPagePauser pauser;
     EXPECT_TRUE(page->Paused());
   }
 }

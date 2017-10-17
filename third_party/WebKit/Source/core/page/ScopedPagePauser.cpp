@@ -18,7 +18,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/page/ScopedPageSuspender.h"
+#include "core/page/ScopedPagePauser.h"
 
 #include "core/dom/Document.h"
 #include "core/loader/FrameLoader.h"
@@ -37,7 +37,7 @@ unsigned g_suspension_count = 0;
 
 }  // namespace
 
-ScopedPageSuspender::ScopedPageSuspender() {
+ScopedPagePauser::ScopedPagePauser() {
   if (++g_suspension_count > 1)
     return;
 
@@ -46,14 +46,14 @@ ScopedPageSuspender::ScopedPageSuspender() {
       Platform::Current()->CurrentThread()->Scheduler()->PauseScheduler();
 }
 
-ScopedPageSuspender::~ScopedPageSuspender() {
+ScopedPagePauser::~ScopedPagePauser() {
   if (--g_suspension_count > 0)
     return;
 
   SetPaused(false);
 }
 
-void ScopedPageSuspender::SetPaused(bool paused) {
+void ScopedPagePauser::SetPaused(bool paused) {
   // Make a copy of the collection. Undeferring loads can cause script to run,
   // which would mutate ordinaryPages() in the middle of iteration.
   HeapVector<Member<Page>> pages;
@@ -63,7 +63,7 @@ void ScopedPageSuspender::SetPaused(bool paused) {
     page->SetPaused(paused);
 }
 
-bool ScopedPageSuspender::IsActive() {
+bool ScopedPagePauser::IsActive() {
   return g_suspension_count > 0;
 }
 

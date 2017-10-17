@@ -44,7 +44,7 @@
 #include "core/page/EditorClient.h"
 #include "core/page/EventWithHitTestResults.h"
 #include "core/page/PageWidgetDelegate.h"
-#include "core/page/ScopedPageSuspender.h"
+#include "core/page/ScopedPagePauser.h"
 #include "platform/animation/CompositorAnimationTimeline.h"
 #include "platform/geometry/IntPoint.h"
 #include "platform/geometry/IntRect.h"

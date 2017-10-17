@@ -88,7 +88,7 @@
 #include "core/loader/ThreadableLoader.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
-#include "core/page/ScopedPageSuspender.h"
+#include "core/page/ScopedPagePauser.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/compositing/CompositedLayerMapping.h"
 #include "core/paint/compositing/PaintLayerCompositor.h"
@@ -10006,17 +10006,17 @@ TEST_P(ParameterizedWebFrameTest,
 }
 
 // See https://crbug.com/628942.
-TEST_P(ParameterizedWebFrameTest, SuspendedPageLoadWithRemoteMainFrame) {
+TEST_P(ParameterizedWebFrameTest, PausedPageLoadWithRemoteMainFrame) {
   FrameTestHelpers::WebViewHelper helper;
   helper.InitializeRemote();
   WebRemoteFrameImpl* remote_root = helper.RemoteMainFrame();
 
-  // Check that ScopedPageSuspender properly triggers deferred loading for
+  // Check that ScopedPagePauser properly triggers deferred loading for
   // the current Page.
   Page* page = remote_root->GetFrame()->GetPage();
   EXPECT_FALSE(page->Paused());
   {
-    ScopedPageSuspender suspender;
+    ScopedPagePauser pauser;
     EXPECT_TRUE(page->Paused());
   }
   EXPECT_FALSE(page->Paused());
@@ -10032,7 +10032,7 @@ TEST_P(ParameterizedWebFrameTest, SuspendedPageLoadWithRemoteMainFrame) {
   EXPECT_FALSE(
       local_child->GetDocument()->Fetcher()->Context().DefersLoading());
   {
-    ScopedPageSuspender suspender;
+    ScopedPagePauser pauser;
     EXPECT_TRUE(page->Paused());
     EXPECT_TRUE(
         local_child->GetDocument()->Fetcher()->Context().DefersLoading());
