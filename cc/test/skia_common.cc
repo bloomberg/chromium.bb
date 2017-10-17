@@ -80,9 +80,10 @@ DrawImage CreateDiscardableDrawImage(const gfx::Size& size,
 PaintImage CreateAnimatedImage(const gfx::Size& size,
                                std::vector<FrameMetadata> frames,
                                int repetition_count,
-                               size_t frame_index) {
+                               size_t frame_index,
+                               PaintImage::Id id) {
   return PaintImageBuilder::WithDefault()
-      .set_id(PaintImage::GetNextId())
+      .set_id(id)
       .set_paint_image_generator(sk_make_sp<FakePaintImageGenerator>(
           SkImageInfo::MakeN32Premul(size.width(), size.height()),
           std::move(frames)))

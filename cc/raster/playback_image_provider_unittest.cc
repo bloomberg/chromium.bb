@@ -172,5 +172,39 @@ TEST(PlaybackImageProviderTest, SwapsGivenFrames) {
   provider.EndRaster();
 }
 
+TEST(PlaybackImageProviderTest, UsePaintImagesWithDifferentFrames) {
+  MockDecodeCache cache;
+
+  std::vector<FrameMetadata> frames = {
+      FrameMetadata(true, base::TimeDelta::FromMilliseconds(2)),
+      FrameMetadata(true, base::TimeDelta::FromMilliseconds(3))};
+  // First image with 2 frames.
+  auto image1 = CreateAnimatedImage(gfx::Size(10, 10), frames);
+  // Second image with 3 frames.
+  frames.push_back(FrameMetadata(true, base::TimeDelta::FromMilliseconds(4)));
+  auto image2 =
+      CreateAnimatedImage(gfx::Size(10, 10), frames, kAnimationLoopInfinite, 0u,
+                          image1.stable_id());
+
+  // Tell the provider to use the third frame.
+  base::Optional<PlaybackImageProvider::Settings> settings;
+  settings.emplace();
+  settings->image_to_current_frame_index[image1.stable_id()] = 2u;
+
+  PlaybackImageProvider provider(&cache, gfx::ColorSpace(), settings);
+  provider.BeginRaster();
+
+  SkIRect rect = SkIRect::MakeWH(10, 10);
+  SkMatrix matrix = SkMatrix::I();
+  DrawImage draw_image(image1, rect, kMedium_SkFilterQuality, matrix);
+  provider.GetDecodedDrawImage(draw_image);
+  EXPECT_EQ(cache.last_image().frame_index(), 1u);
+  draw_image = DrawImage(image2, rect, kMedium_SkFilterQuality, matrix);
+  provider.GetDecodedDrawImage(draw_image);
+  EXPECT_EQ(cache.last_image().frame_index(), 2u);
+
+  provider.EndRaster();
+}
+
 }  // namespace
 }  // namespace cc
