@@ -61,6 +61,7 @@ HeadlessDevToolsClientImpl::HeadlessDevToolsClientImpl()
       memory_domain_(this),
       network_domain_(this),
       page_domain_(this),
+      performance_domain_(this),
       profiler_domain_(this),
       runtime_domain_(this),
       security_domain_(this),
@@ -338,6 +339,10 @@ network::Domain* HeadlessDevToolsClientImpl::GetNetwork() {
 
 page::Domain* HeadlessDevToolsClientImpl::GetPage() {
   return &page_domain_;
+}
+
+performance::Domain* HeadlessDevToolsClientImpl::GetPerformance() {
+  return &performance_domain_;
 }
 
 profiler::Domain* HeadlessDevToolsClientImpl::GetProfiler() {
