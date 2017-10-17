@@ -83,15 +83,21 @@ BASE_EXPORT WARN_UNUSED_RESULT bool SetSystemPagesAccess(
 // Decommit one or more system pages starting at |address| and continuing for
 // |length| bytes. |length| must be a multiple of |kSystemPageSize|.
 //
-// Decommitted means that the physical memory is released to the system, but the
-// virtual address space remains reserved. System pages are re-committed by
-// calling |RecommitSystemPages|. Touching a decommitted page _may_ fault.
+// Decommitted means that physical resources (RAM or swap) backing the allocated
+// virtual address range are released back to the system, but the address space
+// is still allocated to the process (possibly using up page table entries or
+// other accounting resources). Any access to a decommitted region of memory
+// is an error and will generate a fault.
 //
-// Clients should not make any assumptions about the contents of decommitted
-// system pages, before or after they write to the page. The only guarantee
-// provided is that the contents of the system page will be deterministic again
-// after recommitting and writing to it. In particlar note that system pages are
-// not guaranteed to be zero-filled upon re-commit.
+// This operation is not atomic on all platforms.
+//
+// Note: "Committed memory" is a Windows Memory Subsystem concept that ensures
+// processes will not fault when touching a committed memory region. There is
+// no analogue in the POSIX memory API where virtual memory pages are
+// best-effort allocated resources on the first touch. To create a
+// platform-agnostic abstraction, this API simulates the Windows "decommit"
+// state by both discarding the region (allowing the OS to aviod swap
+// operations) and changing the page protections so accesses fault.
 BASE_EXPORT void DecommitSystemPages(void* address, size_t length);
 
 // Recommit one or more system pages, starting at |address| and continuing for
@@ -99,8 +105,7 @@ BASE_EXPORT void DecommitSystemPages(void* address, size_t length);
 // multiple of |kSystemPageSize|.
 //
 // Decommitted system pages must be recommitted with their original permissions
-// before they are used again. Note that this operation may be a no-op on some
-// platforms.
+// before they are used again.
 //
 // Returns true if the recommit change succeeded. In most cases you must |CHECK|
 // the result.

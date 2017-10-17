@@ -293,6 +293,25 @@ bool SetSystemPagesAccess(void* address,
 void DecommitSystemPages(void* address, size_t length) {
   DCHECK(!(length & kSystemPageOffsetMask));
 #if defined(OS_POSIX)
+  // In POSIX, there is no decommit concept. Discarding is an effective way of
+  // implementing the Windows semantics where the OS is allows to not swap the
+  // pages in the region.
+  DiscardSystemPages(address, length);
+#endif
+  CHECK(SetSystemPagesAccess(address, length, PageInaccessible));
+}
+
+bool RecommitSystemPages(void* address,
+                         size_t length,
+                         PageAccessibilityConfiguration page_accessibility) {
+  DCHECK(!(length & kSystemPageOffsetMask));
+  DCHECK_NE(PageInaccessible, page_accessibility);
+  return SetSystemPagesAccess(address, length, page_accessibility);
+}
+
+void DiscardSystemPages(void* address, size_t length) {
+  DCHECK_EQ(0UL, length & kSystemPageOffsetMask);
+#if defined(OS_POSIX)
 #if defined(OS_MACOSX)
   // On macOS, MADV_FREE_REUSABLE has comparable behavior to MADV_FREE, but also
   // marks the pages with the reusable bit, which allows both Activity Monitor
@@ -308,34 +327,6 @@ void DecommitSystemPages(void* address, size_t length) {
     ret = madvise(address, length, MADV_DONTNEED);
   }
   CHECK(!ret);
-#else
-  CHECK(SetSystemPagesAccess(address, length, PageInaccessible));
-#endif
-}
-
-bool RecommitSystemPages(void* address,
-                         size_t length,
-                         PageAccessibilityConfiguration page_accessibility) {
-  DCHECK(!(length & kSystemPageOffsetMask));
-  DCHECK_NE(PageInaccessible, page_accessibility);
-#if defined(OS_POSIX)
-  // On POSIX systems, read the memory to recommit. This has the correct
-  // behavior because the API requires the permissions to be the same as before
-  // decommitting and all configurations can read.
-  (void)address;
-  return true;
-#endif
-  return SetSystemPagesAccess(address, length, page_accessibility);
-}
-
-void DiscardSystemPages(void* address, size_t length) {
-  DCHECK(!(length & kSystemPageOffsetMask));
-#if defined(OS_POSIX)
-  // On POSIX, the implementation detail is that discard and decommit are the
-  // same, and lead to pages that are returned to the system immediately and
-  // get replaced with zeroed pages when touched. So we just call
-  // DecommitSystemPages() here to avoid code duplication.
-  DecommitSystemPages(address, length);
 #else
   // On Windows discarded pages are not returned to the system immediately and
   // not guaranteed to be zeroed when returned to the application.

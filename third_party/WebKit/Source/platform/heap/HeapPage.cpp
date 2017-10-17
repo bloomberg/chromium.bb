@@ -629,9 +629,11 @@ void NormalPageArena::AllocatePage() {
       // gets a page and add the rest to the page pool.
       if (!page_memory) {
         bool result = memory->Commit();
-        // If you hit the ASSERT, it will mean that you're hitting
-        // the limit of the number of mmapped regions OS can support
-        // (e.g., /proc/sys/vm/max_map_count in Linux).
+        // If you hit the ASSERT, it will mean that you're hitting the limit
+        // of the number of mmapped regions OS can support
+        // (e.g., /proc/sys/vm/max_map_count in Linux) or on that Windows you
+        // have exceeded the max commit charge across all processes for the
+        // system.
         CHECK(result);
         page_memory = memory;
       } else {
