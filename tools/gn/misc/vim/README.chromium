@@ -1,5 +1,5 @@
 You can use this by adding
 
-  set runtimepath^=.../tools/gn/misc/vim
+  set runtimepath+=/path/to/src/tools/gn/misc/vim
 
 to your .vimrc.
