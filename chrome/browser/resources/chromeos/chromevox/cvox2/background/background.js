@@ -217,6 +217,7 @@ Background.GESTURE_NEXT_COMMAND_MAP = {
   'swipeRight1': 'nextObject',
   'swipeUp2': 'jumpToTop',
   'swipeDown2': 'readFromHere',
+  'tap2': 'stopSpeech',
 };
 
 Background.prototype = {
