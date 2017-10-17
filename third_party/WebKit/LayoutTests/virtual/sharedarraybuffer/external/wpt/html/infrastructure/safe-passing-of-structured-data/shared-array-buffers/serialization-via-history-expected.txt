@@ -1,7 +1,0 @@
-This is a testharness.js-based test.
-PASS history.pushState(): simple case
-PASS history.pushState(): is interleaved correctly
-PASS history.replaceState(): simple case
-PASS history.replaceState(): is interleaved correctly
-Harness: the test ran to completion.
-

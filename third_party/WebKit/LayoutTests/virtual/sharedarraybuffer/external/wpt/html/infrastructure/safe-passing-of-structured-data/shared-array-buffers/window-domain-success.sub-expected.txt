@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-PASS postMessaging to a same-origin-domain (but not same-origin) iframe allows them to see each others' modifications
-Harness: the test ran to completion.
-

@@ -309,9 +309,6 @@ extern const char kEnableUseZoomForDsfChoiceDisabled[];
 extern const char kEnableScrollAnchoringName[];
 extern const char kEnableScrollAnchoringDescription[];
 
-extern const char kEnableSharedArrayBufferName[];
-extern const char kEnableSharedArrayBufferDescription[];
-
 extern const char kEnableWasmName[];
 extern const char kEnableWasmDescription[];
 

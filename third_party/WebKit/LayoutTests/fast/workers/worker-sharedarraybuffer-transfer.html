@@ -238,23 +238,18 @@ if (window.testRunner) {
     testRunner.waitUntilDone();
 }
 
-if (window.internals && internals.runtimeFlags.sharedArrayBufferEnabled && window.SharedArrayBuffer) {
-    var worker = new Worker('resources/worker-sharedarraybuffer-transfer.js');
+var worker = new Worker('resources/worker-sharedarraybuffer-transfer.js');
 
-    runNextTest();
+runNextTest();
 
-    worker.onmessage = function(e) {
-        if (e.data != 'DONE') {
-            // The worker sent a pass/fail message.
-            log(e.data);
-        } else {
-            runNextTest();
-        }
-    };
-} else {
-    log("SharedArrayBuffers are not enabled -- skipping test.");
-    testRunner.notifyDone();
-}
+worker.onmessage = function(e) {
+    if (e.data != 'DONE') {
+        // The worker sent a pass/fail message.
+        log(e.data);
+    } else {
+        runNextTest();
+    }
+};
 
 </script>
 </body>
