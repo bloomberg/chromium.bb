@@ -19,6 +19,7 @@
 #include "ash/wm/wm_event.h"
 #include "base/command_line.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_delegate.h"
 #include "ui/compositor/layer.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -84,10 +85,23 @@ bool SplitViewController::ShouldAllowSplitView() {
   return true;
 }
 
-// static
 bool SplitViewController::CanSnap(aura::Window* window) {
-  return wm::CanActivateWindow(window) ? wm::GetWindowState(window)->CanSnap()
-                                       : false;
+  if (!wm::CanActivateWindow(window))
+    return false;
+  if (!wm::GetWindowState(window)->CanSnap())
+    return false;
+  if (window->delegate()) {
+    // If the window's minimum size is larger than half of the display's work
+    // area size, the window can't be snapped in this case.
+    const gfx::Size min_size = window->delegate()->GetMinimumSize();
+    const gfx::Rect display_area = GetDisplayWorkAreaBoundsInScreen(window);
+    bool is_landscape = (display_area.width() > display_area.height());
+    if ((is_landscape && min_size.width() > display_area.width() / 2) ||
+        (!is_landscape && min_size.height() > display_area.height() / 2)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 bool SplitViewController::IsSplitViewModeActive() const {
@@ -439,6 +453,14 @@ void SplitViewController::OnDisplayMetricsChanged(
           GetDefaultSnappedWindow());
   if (display.id() != current_display.id())
     return;
+
+  // If one of the snapped windows becomes unsnappable, end the split view mode
+  // directly.
+  if ((left_window_ && !CanSnap(left_window_)) ||
+      (right_window_ && !CanSnap(right_window_))) {
+    EndSplitView();
+    return;
+  }
 
   blink::WebScreenOrientationLockType previous_screen_orientation =
       screen_orientation_;

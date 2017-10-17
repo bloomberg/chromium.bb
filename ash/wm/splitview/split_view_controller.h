@@ -67,7 +67,7 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   static bool ShouldAllowSplitView();
 
   // Returns true if |window| can be activated and snapped.
-  static bool CanSnap(aura::Window* window);
+  bool CanSnap(aura::Window* window);
 
   // Returns true if split view mode is active.
   bool IsSplitViewModeActive() const;
