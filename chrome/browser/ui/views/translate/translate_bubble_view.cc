@@ -645,15 +645,25 @@ views::View* TranslateBubbleView::CreateViewBeforeTranslate() {
     denial_menu_button_->SetStyleDeprecated(views::Button::STYLE_BUTTON);
     layout->AddView(denial_menu_button_);
   } else {
-    std::vector<base::string16> items(
-        static_cast<size_t>(DenialComboboxIndex::MENU_SIZE));
+    // Can the site of the current page be blacklisted? This will be false for
+    // example for file:///... URLs.
+    const bool can_blacklist_site = model_->CanBlacklistSite();
+
+    // Number of items in the combobox.
+    const size_t menu_size = static_cast<size_t>(
+        can_blacklist_site ? DenialComboboxIndex::MENU_SIZE
+                           : DenialComboboxIndex::MENU_SIZE_NO_BLACKLIST);
+
+    std::vector<base::string16> items(menu_size);
     items[static_cast<size_t>(DenialComboboxIndex::DONT_TRANSLATE)] =
         l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_DENY);
     items[static_cast<size_t>(DenialComboboxIndex::NEVER_TRANSLATE_LANGUAGE)] =
         l10n_util::GetStringFUTF16(IDS_TRANSLATE_BUBBLE_NEVER_TRANSLATE_LANG,
                                    original_language_name);
-    items[static_cast<size_t>(DenialComboboxIndex::NEVER_TRANSLATE_SITE)] =
-        l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_NEVER_TRANSLATE_SITE);
+    if (can_blacklist_site) {
+      items[static_cast<size_t>(DenialComboboxIndex::NEVER_TRANSLATE_SITE)] =
+          l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_NEVER_TRANSLATE_SITE);
+    }
     denial_combobox_model_.reset(new ui::SimpleComboboxModel(items));
     denial_combobox_ = new views::Combobox(denial_combobox_model_.get(),
                                            views::Combobox::STYLE_ACTION);
