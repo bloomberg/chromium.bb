@@ -8926,6 +8926,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ChromeOS.DetachableBase.ROUpdateMetric"
+    enum="DetachableBaseROUpdateResult">
+  <owner>kitching@google.com</owner>
+  <summary>Result of a Chrome OS detachable base RO firmware update.</summary>
+</histogram>
+
+<histogram name="ChromeOS.DetachableBase.RWUpdateMetric"
+    enum="DetachableBaseRWUpdateResult">
+  <owner>kitching@google.com</owner>
+  <summary>Result of a Chrome OS detachable base RW firmware update.</summary>
+</histogram>
+
 <histogram name="ChromeOS.Display.ColorProfile" enum="ChromeOSColorProfile">
   <obsolete>
     Deprecated 8/2017.
