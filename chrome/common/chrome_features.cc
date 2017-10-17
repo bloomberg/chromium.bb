@@ -123,6 +123,18 @@ const base::Feature kTabStripKeyboardFocus{"TabStripKeyboardFocus",
 // Enables Basic/Advanced tabs in ClearBrowsingData.
 const base::Feature kTabsInCbd{"TabsInCBD", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// If enabled, we'll only take thumbnails of unknown URLs (i.e. URLs that are
+// not (yet) part of TopSites) if they have an interesting transition type, i.e.
+// one that qualifies for inclusion in TopSites.
+const base::Feature kCaptureThumbnailDependingOnTransitionType{
+    "CaptureThumbnailDependingOnTransitionType",
+    base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Whether to capture page thumbnails when navigating away from the current page
+// (in addition to any other times this might happen).
+const base::Feature kCaptureThumbnailOnNavigatingAway{
+    "CaptureThumbnailOnNavigatingAway", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Whether to trigger app banner installability checks on page load.
 const base::Feature kCheckInstallabilityForBannerOnLoad{
     "CheckInstallabilityForBannerOnLoad", base::FEATURE_DISABLED_BY_DEFAULT};

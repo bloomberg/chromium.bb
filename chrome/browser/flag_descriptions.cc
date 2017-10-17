@@ -89,6 +89,13 @@ const char kBypassAppBannerEngagementChecksDescription[] =
     "eligibility requirements for showing app banners, such as having a "
     "manifest, are met.";
 
+const char kCaptureThumbnailOnNavigatingAwayName[] =
+    "Capture page thumbnail on navigating away";
+const char kCaptureThumbnailOnNavigatingAwayDescription[] =
+    "Capture a page thumbnail (for use on the New Tab page) when navigating "
+    "away from the current page, in addition to other times a thumbnail may be "
+    "captured.";
+
 const char kCastStreamingHwEncodingName[] =
     "Cast Streaming hardware video encoding";
 const char kCastStreamingHwEncodingDescription[] =

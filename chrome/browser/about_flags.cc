@@ -3330,6 +3330,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAsyncImageDecodingDescription, kOsAll,
      MULTI_VALUE_TYPE(kAsyncImageDecodingChoices)},
 
+    {"capture-thumbnail-on-navigating-away",
+     flag_descriptions::kCaptureThumbnailOnNavigatingAwayName,
+     flag_descriptions::kCaptureThumbnailOnNavigatingAwayDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kCaptureThumbnailOnNavigatingAway)},
+
 #if defined(OS_CHROMEOS)
     {"disable-lock-screen-apps", flag_descriptions::kDisableLockScreenAppsName,
      flag_descriptions::kDisableLockScreenAppsDescription, kOsCrOS,

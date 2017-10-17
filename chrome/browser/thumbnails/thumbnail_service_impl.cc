@@ -4,11 +4,13 @@
 
 #include "chrome/browser/thumbnails/thumbnail_service_impl.h"
 
+#include "base/feature_list.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/time/time.h"
 #include "chrome/browser/history/history_utils.h"
 #include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/thumbnails/thumbnailing_context.h"
+#include "chrome/common/chrome_features.h"
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
 
@@ -81,15 +83,19 @@ bool ThumbnailServiceImpl::ShouldAcquirePageThumbnail(
     if (local_ptr->IsNonForcedFull())
       return false;
 
-    // Skip if the transition type is not interesting:
-    // Only new segments (roughly "initial navigations", e.g. not clicks on a
-    // link) can end up in TopSites (see HistoryBackend::UpdateSegments).
-    // Note that for pages that are already in TopSites, we don't care about
-    // the transition type, since for those we know we'll need the thumbnail.
-    if (!ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_TYPED) &&
-        !ui::PageTransitionCoreTypeIs(transition,
-                                      ui::PAGE_TRANSITION_AUTO_BOOKMARK)) {
-      return false;
+    if (base::FeatureList::IsEnabled(
+            features::kCaptureThumbnailDependingOnTransitionType)) {
+      // Skip if the transition type is not interesting:
+      // Only new segments (roughly "initial navigations", e.g. not clicks on a
+      // link) can end up in TopSites (see HistoryBackend::UpdateSegments).
+      // Note that for pages that are already in TopSites, we don't care about
+      // the transition type, since for those we know we'll need the thumbnail.
+      if (!ui::PageTransitionCoreTypeIs(transition,
+                                        ui::PAGE_TRANSITION_TYPED) &&
+          !ui::PageTransitionCoreTypeIs(transition,
+                                        ui::PAGE_TRANSITION_AUTO_BOOKMARK)) {
+        return false;
+      }
     }
   }
 
