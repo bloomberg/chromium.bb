@@ -12,7 +12,6 @@
 #include "base/run_loop.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
-
 #include "chrome/browser/browsing_data/cache_counter.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -36,10 +35,7 @@
 #include "content/public/test/browsing_data_remover_test_util.h"
 #include "content/public/test/download_test_observer.h"
 #include "net/dns/mock_host_resolver.h"
-#include "net/http/transport_security_state.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
@@ -157,44 +153,6 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
   }
 };
 
-class BrowsingDataRemoverTransportSecurityStateBrowserTest
-    : public BrowsingDataRemoverBrowserTest {
- public:
-  BrowsingDataRemoverTransportSecurityStateBrowserTest() {}
-
-  void SetUpOnMainThread() override {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::BindOnce(
-            &BrowsingDataRemoverTransportSecurityStateBrowserTest::
-                SetUpTransportSecurityState,
-            base::Unretained(this),
-            base::RetainedRef(browser()->profile()->GetRequestContext())));
-  }
-
-  void CheckTransportSecurityState(
-      scoped_refptr<net::URLRequestContextGetter> context_getter,
-      bool should_be_cleared) {
-    net::TransportSecurityState* state =
-        context_getter->GetURLRequestContext()->transport_security_state();
-    if (should_be_cleared)
-      EXPECT_FALSE(state->ShouldUpgradeToSSL("example.test"));
-    else
-      EXPECT_TRUE(state->ShouldUpgradeToSSL("example.test"));
-  }
-
- protected:
-  void SetUpTransportSecurityState(
-      scoped_refptr<net::URLRequestContextGetter> context_getter) {
-    net::TransportSecurityState* state =
-        context_getter->GetURLRequestContext()->transport_security_state();
-    base::Time expiry = base::Time::Now() + base::TimeDelta::FromDays(1000);
-    EXPECT_FALSE(state->ShouldUpgradeToSSL("example.test"));
-    state->AddHSTS("example.test", expiry, false);
-    EXPECT_TRUE(state->ShouldUpgradeToSSL("example.test"));
-  }
-};
-
 // Test BrowsingDataRemover for downloads.
 IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, Download) {
   DownloadAnItem();
@@ -300,37 +258,4 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
   RemoveAndWait(ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_DATA);
   block_state = ExternalProtocolHandler::GetBlockState("tel", profile);
   ASSERT_EQ(ExternalProtocolHandler::UNKNOWN, block_state);
-}
-
-// Verify that TransportSecurityState data is cleared for REMOVE_CACHE.
-IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverTransportSecurityStateBrowserTest,
-                       ClearTransportSecurityState) {
-  RemoveAndWait(content::BrowsingDataRemover::DATA_TYPE_CACHE);
-  base::RunLoop run_loop;
-  BrowserThread::PostTaskAndReply(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(
-          &BrowsingDataRemoverTransportSecurityStateBrowserTest::
-              CheckTransportSecurityState,
-          base::Unretained(this),
-          base::RetainedRef(browser()->profile()->GetRequestContext()),
-          true /* should be cleared */),
-      run_loop.QuitClosure());
-}
-
-// Verify that TransportSecurityState data is not cleared if REMOVE_CACHE is not
-// set.
-IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverTransportSecurityStateBrowserTest,
-                       PreserveTransportSecurityState) {
-  RemoveAndWait(ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_DATA);
-  base::RunLoop run_loop;
-  BrowserThread::PostTaskAndReply(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(
-          &BrowsingDataRemoverTransportSecurityStateBrowserTest::
-              CheckTransportSecurityState,
-          base::Unretained(this),
-          base::RetainedRef(browser()->profile()->GetRequestContext()),
-          false /* should not be cleared */),
-      run_loop.QuitClosure());
 }

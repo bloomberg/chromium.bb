@@ -345,7 +345,6 @@ ChromeBrowsingDataRemoverDelegate::ChromeBrowsingDataRemoverDelegate(
 #endif
       clear_hostname_resolution_cache_(sub_task_forward_callback_),
       clear_network_predictor_(sub_task_forward_callback_),
-      clear_networking_history_(sub_task_forward_callback_),
       clear_passwords_(sub_task_forward_callback_),
       clear_passwords_stats_(sub_task_forward_callback_),
       clear_http_auth_cache_(sub_task_forward_callback_),
@@ -912,13 +911,6 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
           prerender::PrerenderManager::CLEAR_PRERENDER_CONTENTS);
     }
 
-    // When clearing cache, wipe accumulated network related data
-    // (TransportSecurityState and HttpServerPropertiesManager data).
-    clear_networking_history_.Start();
-    profile_->ClearNetworkingHistorySince(
-        delete_begin_,
-        clear_networking_history_.GetCompletionCallback());
-
     ntp_snippets::ContentSuggestionsService* content_suggestions_service =
         ContentSuggestionsServiceFactory::GetForProfileIfExists(profile_);
     if (content_suggestions_service)
@@ -1128,7 +1120,6 @@ bool ChromeBrowsingDataRemoverDelegate::AllDone() {
          !clear_nacl_cache_.is_pending() && !clear_pnacl_cache_.is_pending() &&
 #endif
          !clear_network_predictor_.is_pending() &&
-         !clear_networking_history_.is_pending() &&
          !clear_passwords_.is_pending() &&
          !clear_passwords_stats_.is_pending() &&
          !clear_http_auth_cache_.is_pending() &&

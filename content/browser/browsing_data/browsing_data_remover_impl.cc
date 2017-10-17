@@ -174,6 +174,7 @@ BrowsingDataRemoverImpl::BrowsingDataRemoverImpl(
       synchronous_clear_operations_(sub_task_forward_callback_),
       clear_embedder_data_(sub_task_forward_callback_),
       clear_cache_(sub_task_forward_callback_),
+      clear_networking_history_(sub_task_forward_callback_),
       clear_channel_ids_(sub_task_forward_callback_),
       clear_http_auth_cache_(sub_task_forward_callback_),
       clear_storage_partition_data_(sub_task_forward_callback_),
@@ -490,6 +491,12 @@ void BrowsingDataRemoverImpl::RemoveImpl(
                                           : filter,
         clear_cache_.GetCompletionCallback());
 
+    // When clearing cache, wipe accumulated network related data
+    // (TransportSecurityState and HttpServerPropertiesManager data).
+    clear_networking_history_.Start();
+    storage_partition->GetNetworkContext()->ClearNetworkingHistorySince(
+        delete_begin, clear_networking_history_.GetCompletionCallback());
+
     // Tell the shader disk cache to clear.
     base::RecordAction(UserMetricsAction("ClearBrowsingData_ShaderCache"));
     storage_partition_remove_mask |=
@@ -580,6 +587,7 @@ BrowsingDataRemoverImpl::RemovalTask::~RemovalTask() {}
 bool BrowsingDataRemoverImpl::AllDone() {
   return !synchronous_clear_operations_.is_pending() &&
          !clear_embedder_data_.is_pending() && !clear_cache_.is_pending() &&
+         !clear_networking_history_.is_pending() &&
          !clear_channel_ids_.is_pending() &&
          !clear_http_auth_cache_.is_pending() &&
          !clear_storage_partition_data_.is_pending();

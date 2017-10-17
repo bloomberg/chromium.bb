@@ -526,18 +526,6 @@ chrome_browser_net::Predictor* OffTheRecordProfileImpl::GetNetworkPredictor() {
   return NULL;
 }
 
-void OffTheRecordProfileImpl::ClearNetworkingHistorySince(
-    base::Time time,
-    const base::Closure& completion) {
-  // Nothing to do here, our transport security state is read-only.
-  // Still, fire the callback to indicate we have finished, otherwise the
-  // BrowsingDataRemover will never be destroyed and the dialog will never be
-  // closed. We must do this asynchronously in order to avoid reentrancy issues.
-  if (!completion.is_null()) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, completion);
-  }
-}
-
 GURL OffTheRecordProfileImpl::GetHomePage() {
   return profile_->GetHomePage();
 }
