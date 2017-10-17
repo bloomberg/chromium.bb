@@ -1390,9 +1390,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableWasmStreamingName,
      flag_descriptions::kEnableWasmStreamingDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kWebAssemblyStreaming)},
-    {"shared-array-buffer", flag_descriptions::kEnableSharedArrayBufferName,
-     flag_descriptions::kEnableSharedArrayBufferDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kSharedArrayBuffer)},
     {"disable-software-rasterizer", flag_descriptions::kSoftwareRasterizerName,
      flag_descriptions::kSoftwareRasterizerDescription,
 #if BUILDFLAG(ENABLE_SWIFTSHADER)

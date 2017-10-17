@@ -154,10 +154,6 @@ RenderProcessImpl::RenderProcessImpl(
   SetV8FlagIfNotFeature(features::kAsmJsToWebAssembly, "--no-validate-asm");
   SetV8FlagIfNotFeature(features::kWebAssembly,
                         "--wasm-disable-structured-cloning");
-  SetV8FlagIfFeature(features::kSharedArrayBuffer,
-                     "--harmony-sharedarraybuffer");
-  SetV8FlagIfNotFeature(features::kSharedArrayBuffer,
-                        "--no-harmony-sharedarraybuffer");
 
   SetV8FlagIfFeature(features::kWebAssemblyTrapHandler, "--wasm-trap-handler");
   SetV8FlagIfNotFeature(features::kWebAssemblyTrapHandler,
