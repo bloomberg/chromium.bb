@@ -581,6 +581,7 @@ html element img
     property complete
     property crossOrigin
     property currentSrc
+    property decode
     property height
     property hspace
     property isMap
