@@ -235,9 +235,17 @@ class CIDBAPITest(CIDBIntegrationTest):
                             'message_type', 'message_subtype', str(i), 'board')
 
     master_messages = db.GetBuildMessages(master_build_id)
+    master_messages_right_type = db.GetBuildMessages(
+        master_build_id, message_type='message_type',
+        message_subtype='message_subtype')
+    master_messages_wrong_type = db.GetBuildMessages(
+        master_build_id, message_type='wrong_message_type',
+        message_subtype='wrong_message_subtype')
     slave_messages = db.GetSlaveBuildMessages(master_build_id)
 
     self.assertEqual(2, len(master_messages))
+    self.assertEqual(1, len(master_messages_right_type))
+    self.assertEqual(0, len(master_messages_wrong_type))
     self.assertEqual(10, len(slave_messages))
 
     mm2 = master_messages[1]
@@ -252,6 +260,10 @@ class CIDBAPITest(CIDBIntegrationTest):
                       'message_value': 'message_value',
                       'board': 'board'},
                      mm2)
+    message_right_type = master_messages_right_type[0]
+    message_right_type.pop('timestamp')
+    self.assertEqual(message_right_type, mm2)
+
     sm10 = slave_messages[9]
     sm10.pop('timestamp')
     self.assertEqual({'build_id': slave_build_id,

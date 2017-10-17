@@ -274,17 +274,28 @@ class FakeCIDBConnection(object):
 
     return len(build_reqs)
 
-  def GetBuildMessages(self, build_id):
+  def GetBuildMessages(self, build_id, message_type=None, message_subtype=None):
     """Get the build messages of the given build id.
 
     Args:
       build_id: build id (string) of the build to get messages.
+      message_type: Get messages with the specific message_type (string) if
+        message_type is not None.
+      message_subtype: Get messages with the specific message_subtype (stirng)
+        if message_subtype is not None.
 
     Returns:
       A list of build messages (in the format of dict).
     """
-    return [v for v in  self.buildMessageTable.values()
-            if v['build_id'] == build_id]
+    messages = []
+    for v in self.buildMessageTable.values():
+      if (v['build_id'] == build_id and
+          (message_type is None or v['message_type'] == message_type) and
+          (message_subtype is None or
+           v['message_subtype'] == message_subtype)):
+        messages.append(v)
+
+    return messages
 
   def StartBuildStage(self, build_stage_id):
     if build_stage_id > len(self.buildStageTable):

@@ -13,6 +13,7 @@ from chromite.cbuildbot import build_status_unittest
 from chromite.lib.const import waterfall
 from chromite.lib import buildbucket_lib
 from chromite.lib import builder_status_lib
+from chromite.lib import cidb
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_test_lib
@@ -42,6 +43,43 @@ def ConstructFailureMessages(build_config):
           failure_entries))
 
   return failure_messages
+
+
+class BuilderStatusLibTests(cros_test_lib.MockTestCase):
+  """Tests for builder_status_lib."""
+
+  def testGetSlavesAbortedBySelfDestructedMaster(self):
+    """Test GetSlavesAbortedBySelfDestructedMaster with aborted slaves."""
+    db = fake_cidb.FakeCIDBConnection()
+    cidb.CIDBConnectionFactory.SetupMockCidb(db)
+    master_build_id = db.InsertBuild(
+        'master', waterfall.WATERFALL_INTERNAL, 1, 'master', 'bot_hostname',
+        buildbucket_id='0')
+
+    self.assertEqual(
+        set(),
+        builder_status_lib.GetSlavesAbortedBySelfDestructedMaster(
+            master_build_id, db))
+
+    slave_build_id_1 = db.InsertBuild(
+        'slave_1', waterfall.WATERFALL_INTERNAL, 1, 'slave_1', 'bot_hostname',
+        master_build_id=master_build_id, buildbucket_id='1')
+    slave_build_id_2 = db.InsertBuild(
+        'slave_2', waterfall.WATERFALL_INTERNAL, 2, 'slave_2', 'bot_hostname',
+        master_build_id=master_build_id, buildbucket_id='2')
+    db.InsertBuild(
+        'slave_3', waterfall.WATERFALL_INTERNAL, 3, 'slave_3', 'bot_hostname',
+        master_build_id=master_build_id, buildbucket_id='3')
+    for slave_build_id in (slave_build_id_1, slave_build_id_2):
+      db.InsertBuildMessage(
+          master_build_id,
+          message_type=constants.MESSAGE_TYPE_IGNORED_REASON,
+          message_subtype=constants.MESSAGE_SUBTYPE_SELF_DESTRUCTION,
+          message_value=str(slave_build_id))
+    self.assertEqual(
+        {'slave_1', 'slave_2'},
+        builder_status_lib.GetSlavesAbortedBySelfDestructedMaster(
+            master_build_id, db))
 
 
 # pylint: disable=protected-access

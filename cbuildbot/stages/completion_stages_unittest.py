@@ -288,6 +288,9 @@ class MasterSlaveSyncCompletionStageTestWithMasterPaladin(
 
     self._Prepare()
 
+  def tearDown(self):
+    cidb.CIDBConnectionFactory.ClearMock()
+
   def ConstructStage(self):
     sync_stage = sync_stages.ManifestVersionedSyncStage(self._run)
 
@@ -474,56 +477,6 @@ class MasterSlaveSyncCompletionStageTestWithMasterPaladin(
                                    experimental_statuses, False)
     # Build message should not be printed for the passed builder.
     self.assertEqual(print_build_message_mock.call_count, 2)
-
-  def testPerformStageWithException(self):
-    """Test PerformStage with exception."""
-    stage = self.ConstructStage()
-    stage._run.attrs.manifest_manager = mock.MagicMock()
-    statuses = {
-        'build_1': builder_status_lib.BuilderStatus(
-            constants.BUILDER_STATUS_INFLIGHT, None),
-        'build_2': builder_status_lib.BuilderStatus(
-            constants.BUILDER_STATUS_MISSING, None),
-        'build_3': builder_status_lib.BuilderStatus(
-            constants.BUILDER_STATUS_FAILED, None)
-    }
-    self.PatchObject(builder_status_lib.BuilderStatusesFetcher,
-                     'GetBuilderStatuses', return_value=(statuses, {}))
-
-    # Not self-destructed CQ
-    with self.assertRaises(completion_stages.ImportantBuilderFailedException):
-      stage.PerformStage()
-
-    # Self-destructed and successful CQ, all slaves passed the desired stage.
-    stage._run.attrs.metadata.UpdateWithDict(
-        {constants.SELF_DESTRUCTED_BUILD: True})
-    stage._run.attrs.metadata.UpdateWithDict(
-        {constants.SELF_DESTRUCTED_WITH_SUCCESS_BUILD: True})
-    with self.assertRaises(completion_stages.ImportantBuilderFailedException):
-      stage.PerformStage()
-
-    stage._run.attrs.metadata.UpdateWithDict(
-        {constants.SELF_DESTRUCTED_WITH_SUCCESS_BUILD: False})
-    with self.assertRaises(completion_stages.ImportantBuilderFailedException):
-      stage.PerformStage()
-
-  def testPerformStageWithoutException(self):
-    """Test PerformStage without exception."""
-    stage = self.ConstructStage()
-    stage._run.attrs.manifest_manager = mock.MagicMock()
-    statuses = {
-        'build_1': builder_status_lib.BuilderStatus(
-            constants.BUILDER_STATUS_INFLIGHT, None),
-        'build_2': builder_status_lib.BuilderStatus(
-            constants.BUILDER_STATUS_MISSING, None)
-    }
-    self.PatchObject(builder_status_lib.BuilderStatusesFetcher,
-                     'GetBuilderStatuses', return_value=(statuses, {}))
-    stage._run.attrs.metadata.UpdateWithDict(
-        {constants.SELF_DESTRUCTED_BUILD: True})
-    stage._run.attrs.metadata.UpdateWithDict(
-        {constants.SELF_DESTRUCTED_WITH_SUCCESS_BUILD: True})
-    stage.PerformStage()
 
   def testPerformStageWithFailedExperimentalBuilder(self):
     """Test PerformStage with a failed experimental builder."""
@@ -785,6 +738,41 @@ class MasterCommitQueueCompletionStageTest(BaseCommitQueueCompletionStageTest):
 
     self.assertFalse(stage._IsFailureFatal(set(), set(), set()))
     self.assertFalse(stage._IsFailureFatal(set(['test3']), set(), set()))
+
+  def testIsFailureFatalWithSelfDestruction(self):
+    """test _IsFailureFatal with self-destruction."""
+    mock_cidb = mock.MagicMock()
+    cidb.CIDBConnectionFactory.SetupMockCidb(mock_cidb)
+    self.PatchObject(builder_status_lib,
+                     'GetSlavesAbortedBySelfDestructedMaster',
+                     return_value={'slave-1', 'slave-2', 'slave-3'})
+    stage = self.ConstructStage()
+
+    self.assertFalse(stage._IsFailureFatal(
+        {'slave-1'}, {'slave-2'}, {'slave-3'}, True))
+
+    self.assertFalse(stage._IsFailureFatal(
+        set(self._run.config.sanity_check_slaves), set(), set(), True))
+
+    self.assertTrue(stage._IsFailureFatal(
+        {'slave-1', 'slave-4'}, {'slave-2'}, {'slave-3'}, True))
+
+  def testIsFailureFatalWithSelfDestructionWithSuccess(self):
+    """test _IsFailureFatal with self-destruction-with-success."""
+    mock_cidb = mock.MagicMock()
+    cidb.CIDBConnectionFactory.SetupMockCidb(mock_cidb)
+    self.PatchObject(builder_status_lib,
+                     'GetSlavesAbortedBySelfDestructedMaster',
+                     return_value={'slave-1', 'slave-2', 'slave-3'})
+    stage = self.ConstructStage()
+    stage._run.attrs.metadata.UpdateWithDict(
+        {constants.SELF_DESTRUCTED_WITH_SUCCESS_BUILD: True})
+
+    self.assertFalse(stage._IsFailureFatal(
+        {'slave-1', 'slave-4'}, {'slave-2'}, {'slave-3'}, True))
+
+    self.assertTrue(stage._IsFailureFatal(
+        {stage._run.config.name}, {'slave-2'}, {'slave-3'}, True))
 
   def testSendInfraAlertIfNeededWithAlerts(self):
     """Test SendInfraAlertIfNeeded which sends alerts."""

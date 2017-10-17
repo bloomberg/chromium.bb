@@ -116,6 +116,29 @@ def GetBuildersWithNoneMessages(statuses, failing):
   return [x for x in failing if statuses[x].message is None]
 
 
+def GetSlavesAbortedBySelfDestructedMaster(master_build_id, db):
+  """Get the build configs of the slaves aborted by self-destruction.
+
+  Args:
+    master_build_id: The build id of the master build to fetch information.
+    db: An instance of cidb.CIDBConnection.
+
+  Returns:
+    A set of build configs of the slaves recorded in CIDB. An empty set if no
+    db connection created.
+  """
+  if not db:
+    return set()
+
+  messages = db.GetBuildMessages(
+      master_build_id,
+      message_type=constants.MESSAGE_TYPE_IGNORED_REASON,
+      message_subtype=constants.MESSAGE_SUBTYPE_SELF_DESTRUCTION)
+  slave_build_ids = [int(m['message_value']) for m in messages]
+  build_statuses = db.GetBuildStatuses(slave_build_ids)
+  return set(b['build_config'] for b in build_statuses)
+
+
 class BuilderStatus(object):
   """Object representing the status of a build."""
 

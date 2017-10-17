@@ -249,17 +249,11 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
     inflight = builder_status_lib.BuilderStatusesFetcher.GetInflightBuilds(
         self._slave_statuses)
 
-    # If all the failing, inflight and no_stat builders were sanity checkers
-    # then ignore the failure.
-    self._fatal = self._IsFailureFatal(failing, inflight, no_stat)
-
     self_destructed = self._run.attrs.metadata.GetValueWithDefault(
         constants.SELF_DESTRUCTED_BUILD, False)
-    self_destructed_with_success = self._run.attrs.metadata.GetValueWithDefault(
-        constants.SELF_DESTRUCTED_WITH_SUCCESS_BUILD, False)
-    if self_destructed and self_destructed_with_success:
-      # For a self-destructed and successful CQ, only check the failing slaves
-      self._fatal = self._IsFailureFatal(failing, set(), set())
+
+    self._fatal = self._IsFailureFatal(
+        failing, inflight, no_stat, self_destructed=self_destructed)
 
     # Always annotate unsuccessful builders.
     self._AnnotateFailingBuilders(
@@ -272,22 +266,42 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
     else:
       self.HandleSuccess()
 
-  def _IsFailureFatal(self, failing, inflight, no_stat):
+  def _IsFailureFatal(self, failing, inflight, no_stat, self_destructed=False):
     """Returns a boolean indicating whether the build should fail.
 
     Args:
-      failing: Set of builder names of slave builders that failed.
-      inflight: Set of builder names of slave builders that are inflight
-      no_stat: Set of builder names of slave builders that had status None.
+      failing: Set of build config names of builders that failed.
+      inflight: Set of build config names of builders that are inflight
+      no_stat: Set of build config names of builders that had status None.
+      self_destructed: Boolean indicating whether it's a master build which
+        destructed itself and stopped waiting its slaves to complete.
 
     Returns:
-      True if any of the failing or inflight builders are not sanity check
-      builders for this master, or if there were any non-sanity-check builders
-      with status None.
+      True if any of the failing, inflight or no_stat builders are not sanity
+      checker builders and not ignored by self-destruction; else, False.
     """
-    sanity_builders = self._run.config.sanity_check_slaves or []
-    sanity_builders = set(sanity_builders)
-    return not sanity_builders.issuperset(failing | inflight | no_stat)
+    sanity_builders = set(self._run.config.sanity_check_slaves or [])
+    not_passed_builders = failing | inflight | no_stat
+
+    if self_destructed:
+      # This build must be a master build if self_destructed is True.
+      self_destructed_with_success = (
+          self._run.attrs.metadata.GetValueWithDefault(
+              constants.SELF_DESTRUCTED_WITH_SUCCESS_BUILD, False))
+      if self_destructed_with_success:
+        # If the master build itself didn't pass, report fatal.
+        return self._run.config.name in not_passed_builders
+
+      build_id, db = self._run.GetCIDBHandle()
+      if db:
+        aborted_slaves = (
+            builder_status_lib.GetSlavesAbortedBySelfDestructedMaster(
+                build_id, db))
+        # Ignore the slaves aborted by self-destruction.
+        not_passed_builders -= aborted_slaves
+
+    # Not fatal if all the not passed builders are sanity check builders.
+    return not sanity_builders.issuperset(not_passed_builders)
 
   def _PrintBuildMessage(self, text, url=None):
     """Print the build message.
@@ -560,19 +574,21 @@ class CanaryCompletionStage(MasterSlaveSyncCompletionStage):
 class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
   """Commits or reports errors to CL's that failed to be validated."""
 
-  def _IsFailureFatal(self, failing, inflight, no_stat):
+  def _IsFailureFatal(self, failing, inflight, no_stat, self_destructed=False):
     """Returns a boolean indicating whether the build should fail.
 
     Args:
-      failing: Set of builder names of slave builders that failed.
-      inflight: Set of builder names of slave builders that are inflight
-      no_stat: Set of builder names of slave builders that had status None.
+      failing: Set of build config names of builders that failed.
+      inflight: Set of build config names of builders that are inflight
+      no_stat: Set of build config names of builders that had status None.
+      self_destructed: Boolean indicating whether this is a master which
+        self-destructed and stopped waiting for the running slaves. Default to
+        False.
 
     Returns:
       False if this is a CQ-master and the sync_stage.validation_pool hasn't
-      picked up any chump CLs or new CLs. Else, returns True if any of the
-      failing or inflight builders are not sanity check builders for this
-      master, or if there were any non-sanity-check builders with status None.
+      picked up any chump CLs or new CLs, else see the return type of
+      _IsFailureFatal of the parent class MasterSlaveSyncCompletionStage.
     """
     if (config_lib.IsMasterCQ(self._run.config) and
         not self.sync_stage.pool.HasPickedUpCLs()):
@@ -581,7 +597,7 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
       return False
 
     return super(CommitQueueCompletionStage, self)._IsFailureFatal(
-        failing, inflight, no_stat)
+        failing, inflight, no_stat, self_destructed=self_destructed)
 
   def HandleSuccess(self):
     """Handle a successful Commit Queue."""

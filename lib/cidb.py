@@ -1864,18 +1864,28 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     return dict(results)
 
   @minimum_schema(42)
-  def GetBuildMessages(self, build_id):
+  def GetBuildMessages(self, build_id, message_type=None, message_subtype=None):
     """Gets build messages from buildMessageTable.
 
     Args:
       build_id: The build to get messages for.
+      message_type: Get messages with the specific message_type (string) if
+        message_type is not None.
+      message_subtype: Get messages with the specific message_subtype (stirng)
+        if message_subtype is not None.
 
     Returns:
       A list of build message dictionaries, where each dictionary contains
       keys build_id, build_config, builder_name, build_number, message_type,
       message_subtype, message_value, timestamp, board.
     """
-    return self._GetBuildMessagesWithClause('build_id = %s' % build_id)
+    where_clause = ['build_id = %s' % build_id]
+    if message_type is not None:
+      where_clause.append('message_type = "%s"' % message_type)
+    if message_subtype is not None:
+      where_clause.append('message_subtype = "%s"' % message_subtype)
+
+    return self._GetBuildMessagesWithClause(' AND '.join(where_clause))
 
   @minimum_schema(42)
   def GetSlaveBuildMessages(self, master_build_id):
