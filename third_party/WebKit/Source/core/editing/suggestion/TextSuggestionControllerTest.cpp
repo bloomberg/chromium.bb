@@ -178,6 +178,11 @@ TEST_F(TextSuggestionControllerTest,
           .SetSuggestions(Vector<String>({"misspelled"}))
           .Build());
 
+  // Check the tag for the marker that was just added (the current tag value is
+  // not reset between test cases).
+  int32_t marker_tag =
+      ToSuggestionMarker(GetDocument().Markers().MarkersFor(text)[0])->Tag();
+
   // Select immediately before "mispelled".
   GetDocument().GetFrame()->Selection().SetSelection(
       SelectionInDOMTree::Builder()
@@ -186,7 +191,7 @@ TEST_F(TextSuggestionControllerTest,
 
   // Replace "mispelled" with "misspelled".
   GetDocument().GetFrame()->GetTextSuggestionController().ApplyTextSuggestion(
-      1, 0);
+      marker_tag, 0);
 
   EXPECT_EQ(0u, GetDocument().Markers().MarkersFor(text).size());
   EXPECT_EQ("misspelled", text->textContent());
