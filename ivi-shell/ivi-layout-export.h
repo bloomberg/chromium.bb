@@ -56,6 +56,7 @@ extern "C" {
 #endif /* __cplusplus */
 
 #include <stdint.h>
+#include <limits.h>
 
 #include "stdbool.h"
 #include "compositor.h"
@@ -63,6 +64,7 @@ extern "C" {
 
 #define IVI_SUCCEEDED (0)
 #define IVI_FAILED (-1)
+#define IVI_INVALID_ID UINT_MAX
 
 struct ivi_layout_layer;
 struct ivi_layout_screen;
