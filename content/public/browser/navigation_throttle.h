@@ -19,7 +19,9 @@ class CONTENT_EXPORT NavigationThrottle {
   // Represents what a NavigationThrottle can decide to do to a navigation. Note
   // that this enum is implicitly convertable to ThrottleCheckResult.
   enum ThrottleAction {
-    // The navigation proceeds uninterrupted.
+    // The action proceeds. This can either mean the navigation continues (e.g.
+    // for WillStartRequest) or that the navigation fails (e.g. for
+    // WillFailRequest).
     PROCEED,
 
     // Defers the navigation until the NavigationThrottle calls
@@ -138,6 +140,18 @@ class CONTENT_EXPORT NavigationThrottle {
   // implementer need to destroy the WebContents, it should return CANCEL,
   // CANCEL_AND_IGNORE or DEFER and perform the destruction asynchronously.
   virtual ThrottleCheckResult WillRedirectRequest();
+
+  // Called when a request will fail.
+  //
+  // The implementer is responsible for ensuring that the WebContents this
+  // throttle is associated with remain alive during the duration of this
+  // method. Failing to do so will result in use-after-free bugs. Should the
+  // implementer need to destroy the WebContents, it should return CANCEL,
+  // CANCEL_AND_IGNORE or DEFER and perform the destruction asynchronously.
+  //
+  // TODO(crbug.com/752370): Use this method outside //content, in
+  // SSLErrorNavigationThrottle (crrev.com/c/621236).
+  virtual ThrottleCheckResult WillFailRequest();
 
   // Called when a response's headers and metadata are available.
   //

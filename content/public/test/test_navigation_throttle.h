@@ -25,6 +25,7 @@ class TestNavigationThrottle : public NavigationThrottle {
   enum ThrottleMethod {
     WILL_START_REQUEST,
     WILL_REDIRECT_REQUEST,
+    WILL_FAIL_REQUEST,
     WILL_PROCESS_RESPONSE,
     NUM_THROTTLE_METHODS
   };
@@ -51,6 +52,7 @@ class TestNavigationThrottle : public NavigationThrottle {
   // NavigationThrottle:
   NavigationThrottle::ThrottleCheckResult WillStartRequest() override;
   NavigationThrottle::ThrottleCheckResult WillRedirectRequest() override;
+  NavigationThrottle::ThrottleCheckResult WillFailRequest() override;
   NavigationThrottle::ThrottleCheckResult WillProcessResponse() override;
   const char* GetNameForLogging() override;
 
