@@ -2108,6 +2108,11 @@ void RendererSchedulerImpl::OnTraceLogEnabled() {
   main_thread_only().timer_tasks_seem_expensive.OnTraceLogEnabled();
   main_thread_only().touchstart_expected_soon.OnTraceLogEnabled();
   main_thread_only().is_audio_playing.OnTraceLogEnabled();
+
+  for (WebViewSchedulerImpl* web_view_scheduler :
+       main_thread_only().web_view_schedulers) {
+    web_view_scheduler->OnTraceLogEnabled();
+  }
 }
 
 void RendererSchedulerImpl::OnTraceLogDisabled() {}
