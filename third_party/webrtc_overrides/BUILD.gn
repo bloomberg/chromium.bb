@@ -97,6 +97,9 @@ static_library("init_webrtc") {
   public_deps = [
     ":libjingle_webrtc_common",
   ]
+  deps = [
+    ":task_queue_impl",
+  ]
 }
 
 source_set("libjingle_webrtc_common") {
@@ -121,5 +124,14 @@ source_set("libjingle_webrtc_common") {
     "//third_party/webrtc/pc:rtc_pc",
     "//third_party/webrtc/system_wrappers",
     "//third_party/webrtc/voice_engine",
+  ]
+}
+
+source_set("task_queue_impl") {
+  sources = [
+    "rtc_base/task_queue.cc",
+  ]
+  deps = [
+    "//third_party/webrtc/rtc_base:rtc_task_queue_api",
   ]
 }
