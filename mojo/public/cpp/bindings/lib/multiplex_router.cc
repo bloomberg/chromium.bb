@@ -275,8 +275,13 @@ class MultiplexRouter::MessageWrapper {
   // Returns a null message if it fails to deseralize the associated endpoint
   // handles.
   Message DeserializeEndpointHandlesAndTake() {
-    if (!value_.DeserializeAssociatedEndpointHandles(router_))
+    if (!value_.DeserializeAssociatedEndpointHandles(router_)) {
+      // The previous call may have deserialized part of the associated
+      // interface endpoint handles. They must be destroyed outside of the
+      // router's lock, so we cannot wait until destruction of MessageWrapper.
+      value_.Reset();
       return Message();
+    }
     return std::move(value_);
   }
 
