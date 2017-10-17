@@ -27,34 +27,19 @@ namespace protocol {
 #if defined(USE_H264_ENCODER)
 namespace {
 
-// -- COPIED FROM //content/renderer/media/gpu/rtc_video_encoder.cc --
-// This logic should be shared in //media/video/h264_parser.h.
 // Populates struct webrtc::RTPFragmentationHeader for H264 codec.
 // Each entry specifies the offset and length (excluding start code) of a NALU.
 // Returns true if successful.
-//
-// TODO(zijiehe): Following logic should be placed in
-// //media/video/h264_parser.h. See
-// https://chromium-review.googlesource.com/c/chromium/src/+/703926
 bool GetRTPFragmentationHeaderH264(webrtc::RTPFragmentationHeader* header,
                                    const uint8_t* data, uint32_t length) {
-  media::H264Parser parser;
-  parser.SetStream(data, length);
-
   std::vector<media::H264NALU> nalu_vector;
-  while (true) {
-    media::H264NALU nalu;
-    const media::H264Parser::Result result = parser.AdvanceToNextNALU(&nalu);
-    if (result == media::H264Parser::kOk) {
-      nalu_vector.push_back(nalu);
-    } else if (result == media::H264Parser::kEOStream) {
-      break;
-    } else {
-      DLOG(ERROR) << "Unexpected H264 parser result";
-      return false;
-    }
+  if (!media::H264Parser::ParseNALUs(data, length, &nalu_vector)) {
+    // H264Parser::ParseNALUs() has logged the errors already.
+    return false;
   }
 
+  // TODO(zijiehe): Find a right place to share the following logic between
+  // //content and //remoting.
   header->VerifyAndAllocateFragmentationHeader(nalu_vector.size());
   for (size_t i = 0; i < nalu_vector.size(); ++i) {
     header->fragmentationOffset[i] = nalu_vector[i].data - data;
