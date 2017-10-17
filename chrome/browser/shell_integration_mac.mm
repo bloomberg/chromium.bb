@@ -6,6 +6,7 @@
 
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
+#include "base/mac/mac_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/common/channel_info.h"
 #include "components/version_info/version_info.h"
@@ -63,6 +64,26 @@ bool SetAsDefaultBrowser() {
     return false;
 
   [[NSWorkspace sharedWorkspace] setDefaultBrowserWithIdentifier:identifier];
+
+  // The CoreServicesUIAgent presents a dialog asking the user to confirm their
+  // new default browser choice, but the agent sometimes orders the dialog
+  // behind the Chrome window. The user never sees the dialog, and therefore
+  // never confirms the change. Make the CoreServicesUIAgent active so the
+  // confirmation dialog comes to the front.
+  if (base::mac::IsAtLeastOS10_10()) {
+    NSString* const kCoreServicesUIAgentBundleID =
+        @"com.apple.coreservices.uiagent";
+
+    for (NSRunningApplication* application in
+         [[NSWorkspace sharedWorkspace] runningApplications]) {
+      if ([[application bundleIdentifier]
+              isEqualToString:kCoreServicesUIAgentBundleID]) {
+        [application activateWithOptions:NSApplicationActivateAllWindows];
+        break;
+      }
+    }
+  }
+
   return true;
 }
 
