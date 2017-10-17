@@ -154,7 +154,7 @@ void DumpAccessibilityTreeTest::AddDefaultFilters(
   AddFilter(filters, "DEFAULT");
   AddFilter(filters, "EXPANDED");
   AddFilter(filters, "FLOATING");
-  AddFilter(filters, "FOCUSABLE");
+  AddFilter(filters, "FOCUS*");
   AddFilter(filters, "HASPOPUP");
   AddFilter(filters, "INVISIBLE");
   AddFilter(filters, "MARQUEED");
@@ -181,10 +181,6 @@ void DumpAccessibilityTreeTest::AddDefaultFilters(
   AddFilter(filters, "IA2_STATE_REQUIRED");
   AddFilter(filters, "IA2_STATE_STALE");
   AddFilter(filters, "IA2_STATE_TRANSIENT");
-  // Reduce flakiness.
-  AddFilter(filters, "FOCUSED", Filter::DENY);
-  AddFilter(filters, "HOTTRACKED", Filter::DENY);
-  AddFilter(filters, "OFFSCREEN", Filter::DENY);
 
   //
   // Blink
