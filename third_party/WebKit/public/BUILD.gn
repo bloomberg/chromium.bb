@@ -766,6 +766,7 @@ mojom("mojo_bindings") {
     "//chrome/common:mojo_bindings_blink",
     "//third_party/WebKit/Source/platform",
     "//third_party/WebKit/Source/platform/loader",
+    "//third_party/WebKit/Source/platform/network",
   ]
   sources = [
     "platform/address_space.mojom",
