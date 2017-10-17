@@ -41,24 +41,31 @@ class MainThreadWorkletReportingProxyForTest final
 class MainThreadWorkletTest : public ::testing::Test {
  public:
   void SetUp() override {
-    KURL url(kParsedURLString, "https://example.com/");
     page_ = DummyPageHolder::Create();
-    security_origin_ = SecurityOrigin::Create(url);
-    reporting_proxy_ = WTF::MakeUnique<MainThreadWorkletReportingProxyForTest>(
-        page_->GetFrame().GetDocument());
+    Document* document = page_->GetFrame().GetDocument();
+    document->SetURL(KURL(kParsedURLString, "https://example.com/"));
+    document->UpdateSecurityOrigin(SecurityOrigin::Create(document->Url()));
+    reporting_proxy_ =
+        std::make_unique<MainThreadWorkletReportingProxyForTest>(document);
     global_scope_ = new MainThreadWorkletGlobalScope(
-        &page_->GetFrame(), url, "fake user agent", security_origin_.get(),
-        ToIsolate(page_->GetFrame().GetDocument()), *reporting_proxy_);
+        &page_->GetFrame(), document->Url(), "fake user agent",
+        ToIsolate(document), *reporting_proxy_);
   }
 
   void TearDown() override { global_scope_->Terminate(); }
 
  protected:
-  RefPtr<SecurityOrigin> security_origin_;
   std::unique_ptr<DummyPageHolder> page_;
   std::unique_ptr<MainThreadWorkletReportingProxyForTest> reporting_proxy_;
   Persistent<MainThreadWorkletGlobalScope> global_scope_;
 };
+
+TEST_F(MainThreadWorkletTest, SecurityOrigin) {
+  // The SecurityOrigin for a worklet should be a unique opaque origin, while
+  // the owner Document's SecurityOrigin shouldn't.
+  EXPECT_TRUE(global_scope_->GetSecurityOrigin()->IsUnique());
+  EXPECT_FALSE(global_scope_->DocumentSecurityOrigin()->IsUnique());
+}
 
 TEST_F(MainThreadWorkletTest, UseCounter) {
   Document& document = *page_->GetFrame().GetDocument();

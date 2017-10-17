@@ -81,17 +81,9 @@ WorkerOrWorkletGlobalScope* AnimationWorkletThread::CreateWorkerGlobalScope(
     std::unique_ptr<GlobalScopeCreationParams> creation_params) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("animation-worklet"),
                "AnimationWorkletThread::createWorkerGlobalScope");
-
-  RefPtr<SecurityOrigin> security_origin =
-      SecurityOrigin::Create(creation_params->script_url);
-  if (creation_params->starter_origin_privilege_data) {
-    security_origin->TransferPrivilegesFrom(
-        std::move(creation_params->starter_origin_privilege_data));
-  }
-
   return AnimationWorkletGlobalScope::Create(
       creation_params->script_url, creation_params->user_agent,
-      std::move(security_origin), this->GetIsolate(), this,
+      std::move(creation_params->starter_origin), this->GetIsolate(), this,
       creation_params->worker_clients);
 }
 

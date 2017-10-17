@@ -176,8 +176,7 @@ void ModuleScriptLoaderTest::InitializeForWorklet() {
       WTF::MakeUnique<MainThreadWorkletReportingProxy>(&GetDocument());
   global_scope_ = new MainThreadWorkletGlobalScope(
       &GetFrame(), KURL(kParsedURLString, "https://example.test/worklet.js"),
-      "fake user agent", GetDocument().GetSecurityOrigin(),
-      ToIsolate(&GetDocument()), *reporting_proxy_);
+      "fake user agent", ToIsolate(&GetDocument()), *reporting_proxy_);
   global_scope_->ScriptController()->InitializeContextIfNeeded("Dummy Context");
   modulator_ = new ModuleScriptLoaderTestModulator(
       global_scope_->ScriptController()->GetScriptState(),

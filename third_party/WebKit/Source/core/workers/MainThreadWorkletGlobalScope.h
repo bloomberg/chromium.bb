@@ -25,7 +25,6 @@ class CORE_EXPORT MainThreadWorkletGlobalScope
   MainThreadWorkletGlobalScope(LocalFrame*,
                                const KURL&,
                                const String& user_agent,
-                               RefPtr<SecurityOrigin>,
                                v8::Isolate*,
                                WorkerReportingProxy&);
   ~MainThreadWorkletGlobalScope() override;

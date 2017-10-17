@@ -385,9 +385,9 @@ WorkerGlobalScope::WorkerGlobalScope(
   InstanceCounters::IncrementCounter(
       InstanceCounters::kWorkerGlobalScopeCounter);
   SetSecurityOrigin(SecurityOrigin::Create(url_));
-  if (creation_params->starter_origin_privilege_data) {
+  if (creation_params->starter_origin) {
     GetSecurityOrigin()->TransferPrivilegesFrom(
-        std::move(creation_params->starter_origin_privilege_data));
+        creation_params->starter_origin->CreatePrivilegeData());
   }
   ApplyContentSecurityPolicyFromVector(
       *creation_params->content_security_policy_parsed_headers);

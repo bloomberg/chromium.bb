@@ -31,12 +31,13 @@ class MODULES_EXPORT AnimationWorkletGlobalScope
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static AnimationWorkletGlobalScope* Create(const KURL&,
-                                             const String& user_agent,
-                                             RefPtr<SecurityOrigin>,
-                                             v8::Isolate*,
-                                             WorkerThread*,
-                                             WorkerClients*);
+  static AnimationWorkletGlobalScope* Create(
+      const KURL&,
+      const String& user_agent,
+      RefPtr<SecurityOrigin> document_security_origin,
+      v8::Isolate*,
+      WorkerThread*,
+      WorkerClients*);
   ~AnimationWorkletGlobalScope() override;
   DECLARE_TRACE();
   DECLARE_TRACE_WRAPPERS();
@@ -58,7 +59,7 @@ class MODULES_EXPORT AnimationWorkletGlobalScope
  private:
   AnimationWorkletGlobalScope(const KURL&,
                               const String& user_agent,
-                              RefPtr<SecurityOrigin>,
+                              RefPtr<SecurityOrigin> document_security_origin,
                               v8::Isolate*,
                               WorkerThread*,
                               WorkerClients*);

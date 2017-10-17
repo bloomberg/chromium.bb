@@ -28,12 +28,13 @@ class MODULES_EXPORT AudioWorkletGlobalScope final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static AudioWorkletGlobalScope* Create(const KURL&,
-                                         const String& user_agent,
-                                         RefPtr<SecurityOrigin>,
-                                         v8::Isolate*,
-                                         WorkerThread*,
-                                         WorkerClients*);
+  static AudioWorkletGlobalScope* Create(
+      const KURL&,
+      const String& user_agent,
+      RefPtr<SecurityOrigin> document_security_origin,
+      v8::Isolate*,
+      WorkerThread*,
+      WorkerClients*);
   ~AudioWorkletGlobalScope() override;
   bool IsAudioWorkletGlobalScope() const final { return true; }
   void registerProcessor(const String& name,
@@ -71,7 +72,7 @@ class MODULES_EXPORT AudioWorkletGlobalScope final
  private:
   AudioWorkletGlobalScope(const KURL&,
                           const String& user_agent,
-                          RefPtr<SecurityOrigin>,
+                          RefPtr<SecurityOrigin> document_security_origin,
                           v8::Isolate*,
                           WorkerThread*,
                           WorkerClients*);
