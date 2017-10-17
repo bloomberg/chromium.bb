@@ -43,9 +43,8 @@ void FakeLocationProvider::SetUpdateCallback(
   callback_ = callback;
 }
 
-bool FakeLocationProvider::StartProvider(bool high_accuracy) {
+void FakeLocationProvider::StartProvider(bool high_accuracy) {
   state_ = high_accuracy ? HIGH_ACCURACY : LOW_ACCURACY;
-  return true;
 }
 
 void FakeLocationProvider::StopProvider() {

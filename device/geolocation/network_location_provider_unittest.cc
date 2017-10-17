@@ -290,7 +290,7 @@ TEST_F(GeolocationNetworkProviderTest, CreateDestroy) {
 TEST_F(GeolocationNetworkProviderTest, EmptyApiKey) {
   const std::string api_key = "";
   std::unique_ptr<LocationProvider> provider(CreateProvider(true, api_key));
-  EXPECT_TRUE(provider->StartProvider(false));
+  provider->StartProvider(false);
   net::TestURLFetcher* fetcher = get_url_fetcher_and_advance_id();
   ASSERT_TRUE(fetcher);
   EXPECT_FALSE(fetcher->GetOriginalURL().has_query());
@@ -301,7 +301,7 @@ TEST_F(GeolocationNetworkProviderTest, EmptyApiKey) {
 TEST_F(GeolocationNetworkProviderTest, NonEmptyApiKey) {
   const std::string api_key = "something";
   std::unique_ptr<LocationProvider> provider(CreateProvider(true, api_key));
-  EXPECT_TRUE(provider->StartProvider(false));
+  provider->StartProvider(false);
   net::TestURLFetcher* fetcher = get_url_fetcher_and_advance_id();
   ASSERT_TRUE(fetcher);
   EXPECT_TRUE(fetcher->GetOriginalURL().has_query());
@@ -312,7 +312,7 @@ TEST_F(GeolocationNetworkProviderTest, NonEmptyApiKey) {
 // representing a valid request.
 TEST_F(GeolocationNetworkProviderTest, StartProvider) {
   std::unique_ptr<LocationProvider> provider(CreateProvider(true));
-  EXPECT_TRUE(provider->StartProvider(false));
+  provider->StartProvider(false);
   net::TestURLFetcher* fetcher = get_url_fetcher_and_advance_id();
   ASSERT_TRUE(fetcher);
   CheckRequestIsValid(*fetcher, 0, 0);
@@ -322,7 +322,7 @@ TEST_F(GeolocationNetworkProviderTest, StartProvider) {
 // points represented in the request is truncated to fit within 2048 characters.
 TEST_F(GeolocationNetworkProviderTest, StartProviderLongRequest) {
   std::unique_ptr<LocationProvider> provider(CreateProvider(true));
-  EXPECT_TRUE(provider->StartProvider(false));
+  provider->StartProvider(false);
   // Create Wifi scan data with too many access points.
   const int kFirstScanAps = 20;
   wifi_data_provider_->SetData(CreateReferenceWifiScanData(kFirstScanAps));
@@ -349,7 +349,7 @@ TEST_F(GeolocationNetworkProviderTest, StartProviderLongRequest) {
 // 7. Wifi data changes back to (2.) -> no new request, provide cached position.
 TEST_F(GeolocationNetworkProviderTest, MultipleWifiScansComplete) {
   std::unique_ptr<LocationProvider> provider(CreateProvider(true));
-  EXPECT_TRUE(provider->StartProvider(false));
+  provider->StartProvider(false);
 
   net::TestURLFetcher* fetcher = get_url_fetcher_and_advance_id();
   ASSERT_TRUE(fetcher);
@@ -445,7 +445,7 @@ TEST_F(GeolocationNetworkProviderTest, NoRequestOnStartupUntilWifiData) {
   MessageLoopQuitListener listener;
   wifi_data_provider_->set_got_data(false);  // No initial Wifi data.
   std::unique_ptr<LocationProvider> provider(CreateProvider(true));
-  EXPECT_TRUE(provider->StartProvider(false));
+  provider->StartProvider(false);
 
   provider->SetUpdateCallback(base::Bind(
       &MessageLoopQuitListener::OnLocationUpdate, base::Unretained(&listener)));
@@ -466,7 +466,7 @@ TEST_F(GeolocationNetworkProviderTest, NoRequestOnStartupUntilWifiData) {
 TEST_F(GeolocationNetworkProviderTest, NewDataReplacesExistingNetworkRequest) {
   // Send initial request with empty data
   std::unique_ptr<LocationProvider> provider(CreateProvider(true));
-  EXPECT_TRUE(provider->StartProvider(false));
+  provider->StartProvider(false);
   net::TestURLFetcher* fetcher = get_url_fetcher_and_advance_id();
   EXPECT_TRUE(fetcher);
 
@@ -482,7 +482,7 @@ TEST_F(GeolocationNetworkProviderTest, NewDataReplacesExistingNetworkRequest) {
 // user granting permission.
 TEST_F(GeolocationNetworkProviderTest, NetworkRequestDeferredForPermission) {
   std::unique_ptr<LocationProvider> provider(CreateProvider(false));
-  EXPECT_TRUE(provider->StartProvider(false));
+  provider->StartProvider(false);
   net::TestURLFetcher* fetcher = get_url_fetcher_and_advance_id();
   EXPECT_FALSE(fetcher);
   provider->OnPermissionGranted();
@@ -496,7 +496,7 @@ TEST_F(GeolocationNetworkProviderTest, NetworkRequestDeferredForPermission) {
 TEST_F(GeolocationNetworkProviderTest,
        NetworkRequestWithWifiDataDeferredForPermission) {
   std::unique_ptr<LocationProvider> provider(CreateProvider(false));
-  EXPECT_TRUE(provider->StartProvider(false));
+  provider->StartProvider(false);
   net::TestURLFetcher* fetcher = get_url_fetcher_and_advance_id();
   EXPECT_FALSE(fetcher);
 

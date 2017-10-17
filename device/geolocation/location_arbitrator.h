@@ -52,7 +52,7 @@ class DEVICE_GEOLOCATION_EXPORT LocationArbitrator : public LocationProvider {
   // LocationProvider implementation.
   void SetUpdateCallback(
       const LocationProviderUpdateCallback& callback) override;
-  bool StartProvider(bool enable_high_accuracy) override;
+  void StartProvider(bool enable_high_accuracy) override;
   void StopProvider() override;
   const Geoposition& GetPosition() override;
   void OnPermissionGranted() override;
@@ -77,8 +77,11 @@ class DEVICE_GEOLOCATION_EXPORT LocationArbitrator : public LocationProvider {
   void RegisterProvider(std::unique_ptr<LocationProvider> provider);
   void RegisterSystemProvider();
 
-  // Tell all registered providers to start.
-  bool DoStartProviders();
+  // Tells all registered providers to start.
+  // If |providers_| is empty, immediately provides
+  // Geoposition::ERROR_CODE_POSITION_UNAVAILABLE to the client via
+  // |arbitrator_update_callback_|.
+  void DoStartProviders();
 
   // Response callback for request_context_callback_.
   void OnRequestContextResponse(
