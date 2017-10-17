@@ -173,6 +173,9 @@ struct HEADLESS_EXPORT HeadlessBrowser::Options {
   // Run a browser context in an incognito mode. Enabled by default.
   bool incognito_mode;
 
+  // Whether cookies are allowed. Enabled by default.
+  bool allow_cookies;
+
   // Set a callback that is invoked to override WebPreferences for RenderViews
   // created within the HeadlessBrowser. Called whenever the WebPreferences of a
   // RenderView change. Executed on the browser main thread.
@@ -227,6 +230,7 @@ class HEADLESS_EXPORT HeadlessBrowser::Options::Builder {
   Builder& SetWindowSize(const gfx::Size& window_size);
   Builder& SetUserDataDir(const base::FilePath& user_data_dir);
   Builder& SetIncognitoMode(bool incognito_mode);
+  Builder& SetAllowCookies(bool allow_cookies);
   Builder& SetOverrideWebPreferencesCallback(
       base::Callback<void(WebPreferences*)> callback);
   Builder& SetCrashReporterEnabled(bool enabled);

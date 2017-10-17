@@ -56,6 +56,7 @@ Options::Options(int argc, const char** argv)
       user_agent(content::BuildUserAgentFromProduct(product_name_and_version)),
       window_size(kDefaultWindowSize),
       incognito_mode(true),
+      allow_cookies(true),
       enable_crash_reporter(false) {
 }
 
