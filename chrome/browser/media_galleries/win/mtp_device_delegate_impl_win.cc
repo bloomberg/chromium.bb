@@ -139,7 +139,7 @@ bool OpenDeviceOnBlockingPoolThread(
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(!pnp_device_id.empty());
   DCHECK(!registered_device_path.empty());
-  base::win::ScopedComPtr<IPortableDevice> device =
+  Microsoft::WRL::ComPtr<IPortableDevice> device =
       media_transfer_protocol::OpenDevice(pnp_device_id);
   bool init_succeeded = device.Get() != NULL;
   if (init_succeeded) {
@@ -244,7 +244,7 @@ base::File::Error GetFileStreamOnBlockingPoolThread(
     return error;
 
   DWORD optimal_transfer_size = 0;
-  base::win::ScopedComPtr<IStream> file_stream;
+  Microsoft::WRL::ComPtr<IStream> file_stream;
   if (file_info.size > 0) {
     HRESULT hr = media_transfer_protocol::GetFileStreamForObject(
         device, file_object_id, file_stream.GetAddressOf(),

@@ -5,13 +5,14 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_STATUS_ICONS_STATUS_TRAY_STATE_CHANGER_WIN_H_
 #define CHROME_BROWSER_UI_VIEWS_STATUS_ICONS_STATUS_TRAY_STATE_CHANGER_WIN_H_
 
+#include <wrl/client.h>
+
 #include <memory>
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/threading/thread_checker.h"
 #include "base/win/iunknown_impl.h"
-#include "base/win/scoped_comptr.h"
 
 // The known values for NOTIFYITEM's dwPreference member.
 enum NOTIFYITEM_PREFERENCE {
@@ -108,7 +109,7 @@ class StatusTrayStateChangerWin : public INotificationCB,
 
   // Storing IUnknown since we will need to use different interfaces
   // for different versions of Windows.
-  base::win::ScopedComPtr<IUnknown> tray_notify_;
+  Microsoft::WRL::ComPtr<IUnknown> tray_notify_;
   InterfaceVersion interface_version_;
 
   // The ID assigned to the notification area icon that we want to manipulate.

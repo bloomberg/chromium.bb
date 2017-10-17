@@ -5,8 +5,8 @@
 #include "chrome/browser/ssl/captive_portal_helper.h"
 
 #include <netlistmgr.h>
+#include <wrl/client.h>
 
-#include "base/win/scoped_comptr.h"
 #include "base/win/scoped_variant.h"
 
 namespace {
@@ -19,7 +19,7 @@ bool IsNetworkBehindCaptivePortal(INetwork* network) {
   if (connectivity == NLM_CONNECTIVITY_DISCONNECTED)
     return false;
 
-  base::win::ScopedComPtr<IPropertyBag> property_bag;
+  Microsoft::WRL::ComPtr<IPropertyBag> property_bag;
   if (FAILED(network->QueryInterface(property_bag.GetAddressOf())) ||
       !property_bag) {
     return false;
@@ -62,14 +62,14 @@ namespace chrome {
 bool IsBehindCaptivePortal() {
   // Assume the device is behind a captive portal if there is at least one
   // connected network and all connected networks are behind captive portals.
-  base::win::ScopedComPtr<INetworkListManager> network_list_manager;
+  Microsoft::WRL::ComPtr<INetworkListManager> network_list_manager;
   if (FAILED(CoCreateInstance(CLSID_NetworkListManager, nullptr,
                               CLSCTX_INPROC_SERVER,
                               IID_PPV_ARGS(&network_list_manager)))) {
     return false;
   }
 
-  base::win::ScopedComPtr<IEnumNetworks> enum_networks;
+  Microsoft::WRL::ComPtr<IEnumNetworks> enum_networks;
   if (FAILED(network_list_manager->GetNetworks(NLM_ENUM_NETWORK_CONNECTED,
                                                enum_networks.GetAddressOf()))) {
     return false;
@@ -80,7 +80,7 @@ bool IsBehindCaptivePortal() {
 
   bool found = false;
   while (true) {
-    base::win::ScopedComPtr<INetwork> network;
+    Microsoft::WRL::ComPtr<INetwork> network;
     ULONG items_returned = 0;
     // Note: MSDN documentation at
     // https://msdn.microsoft.com/en-us/library/windows/desktop/aa370740(v=vs.85).aspx

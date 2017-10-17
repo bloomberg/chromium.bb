@@ -31,7 +31,7 @@ namespace {
 // IPortableDeviceValues interface that holds information about the
 // application that communicates with the device.
 bool GetClientInformation(
-    base::win::ScopedComPtr<IPortableDeviceValues>* client_info) {
+    Microsoft::WRL::ComPtr<IPortableDeviceValues>* client_info) {
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(client_info);
   HRESULT hr = ::CoCreateInstance(__uuidof(PortableDeviceValues), NULL,
@@ -56,35 +56,35 @@ bool GetClientInformation(
 
 // Gets the content interface of the portable |device|. On success, returns
 // the IPortableDeviceContent interface. On failure, returns NULL.
-base::win::ScopedComPtr<IPortableDeviceContent> GetDeviceContent(
+Microsoft::WRL::ComPtr<IPortableDeviceContent> GetDeviceContent(
     IPortableDevice* device) {
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(device);
-  base::win::ScopedComPtr<IPortableDeviceContent> content;
+  Microsoft::WRL::ComPtr<IPortableDeviceContent> content;
   if (SUCCEEDED(device->Content(content.GetAddressOf())))
     return content;
-  return base::win::ScopedComPtr<IPortableDeviceContent>();
+  return Microsoft::WRL::ComPtr<IPortableDeviceContent>();
 }
 
 // On success, returns IEnumPortableDeviceObjectIDs interface to enumerate
 // the device objects. On failure, returns NULL.
 // |parent_id| specifies the parent object identifier.
-base::win::ScopedComPtr<IEnumPortableDeviceObjectIDs> GetDeviceObjectEnumerator(
+Microsoft::WRL::ComPtr<IEnumPortableDeviceObjectIDs> GetDeviceObjectEnumerator(
     IPortableDevice* device,
     const base::string16& parent_id) {
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(device);
   DCHECK(!parent_id.empty());
-  base::win::ScopedComPtr<IPortableDeviceContent> content =
+  Microsoft::WRL::ComPtr<IPortableDeviceContent> content =
       GetDeviceContent(device);
   if (!content.Get())
-    return base::win::ScopedComPtr<IEnumPortableDeviceObjectIDs>();
+    return Microsoft::WRL::ComPtr<IEnumPortableDeviceObjectIDs>();
 
-  base::win::ScopedComPtr<IEnumPortableDeviceObjectIDs> enum_object_ids;
+  Microsoft::WRL::ComPtr<IEnumPortableDeviceObjectIDs> enum_object_ids;
   if (SUCCEEDED(content->EnumObjects(0, parent_id.c_str(), NULL,
                                      enum_object_ids.GetAddressOf())))
     return enum_object_ids;
-  return base::win::ScopedComPtr<IEnumPortableDeviceObjectIDs>();
+  return Microsoft::WRL::ComPtr<IEnumPortableDeviceObjectIDs>();
 }
 
 // Returns whether the object is a directory/folder/album. |properties_values|
@@ -182,17 +182,17 @@ bool GetObjectDetails(IPortableDevice* device,
   DCHECK(is_directory);
   DCHECK(size);
   DCHECK(last_modified_time);
-  base::win::ScopedComPtr<IPortableDeviceContent> content =
+  Microsoft::WRL::ComPtr<IPortableDeviceContent> content =
       GetDeviceContent(device);
   if (!content.Get())
     return false;
 
-  base::win::ScopedComPtr<IPortableDeviceProperties> properties;
+  Microsoft::WRL::ComPtr<IPortableDeviceProperties> properties;
   HRESULT hr = content->Properties(properties.GetAddressOf());
   if (FAILED(hr))
     return false;
 
-  base::win::ScopedComPtr<IPortableDeviceKeyCollection> properties_to_read;
+  Microsoft::WRL::ComPtr<IPortableDeviceKeyCollection> properties_to_read;
   hr = ::CoCreateInstance(__uuidof(PortableDeviceKeyCollection), NULL,
                           CLSCTX_INPROC_SERVER,
                           IID_PPV_ARGS(&properties_to_read));
@@ -208,7 +208,7 @@ bool GetObjectDetails(IPortableDevice* device,
       FAILED(properties_to_read->Add(WPD_OBJECT_SIZE)))
     return false;
 
-  base::win::ScopedComPtr<IPortableDeviceValues> properties_values;
+  Microsoft::WRL::ComPtr<IPortableDeviceValues> properties_values;
   hr = properties->GetValues(object_id.c_str(), properties_to_read.Get(),
                              properties_values.GetAddressOf());
   if (FAILED(hr))
@@ -269,7 +269,7 @@ bool GetMTPDeviceObjectEntries(IPortableDevice* device,
   DCHECK(device);
   DCHECK(!directory_object_id.empty());
   DCHECK(object_entries);
-  base::win::ScopedComPtr<IEnumPortableDeviceObjectIDs> enum_object_ids =
+  Microsoft::WRL::ComPtr<IEnumPortableDeviceObjectIDs> enum_object_ids =
       GetDeviceObjectEnumerator(device, directory_object_id);
   if (!enum_object_ids.Get())
     return false;
@@ -304,25 +304,25 @@ bool GetMTPDeviceObjectEntries(IPortableDevice* device,
 
 }  // namespace
 
-base::win::ScopedComPtr<IPortableDevice> OpenDevice(
+Microsoft::WRL::ComPtr<IPortableDevice> OpenDevice(
     const base::string16& pnp_device_id) {
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(!pnp_device_id.empty());
-  base::win::ScopedComPtr<IPortableDeviceValues> client_info;
+  Microsoft::WRL::ComPtr<IPortableDeviceValues> client_info;
   if (!GetClientInformation(&client_info))
-    return base::win::ScopedComPtr<IPortableDevice>();
-  base::win::ScopedComPtr<IPortableDevice> device;
+    return Microsoft::WRL::ComPtr<IPortableDevice>();
+  Microsoft::WRL::ComPtr<IPortableDevice> device;
   HRESULT hr = ::CoCreateInstance(__uuidof(PortableDevice), NULL,
                                   CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&device));
   if (FAILED(hr))
-    return base::win::ScopedComPtr<IPortableDevice>();
+    return Microsoft::WRL::ComPtr<IPortableDevice>();
 
   hr = device->Open(pnp_device_id.c_str(), client_info.Get());
   if (SUCCEEDED(hr))
     return device;
   if (hr == E_ACCESSDENIED)
     DPLOG(ERROR) << "Access denied to open the device";
-  return base::win::ScopedComPtr<IPortableDevice>();
+  return Microsoft::WRL::ComPtr<IPortableDevice>();
 }
 
 base::File::Error GetFileEntryInfo(
@@ -359,12 +359,12 @@ HRESULT GetFileStreamForObject(IPortableDevice* device,
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(device);
   DCHECK(!file_object_id.empty());
-  base::win::ScopedComPtr<IPortableDeviceContent> content =
+  Microsoft::WRL::ComPtr<IPortableDeviceContent> content =
       GetDeviceContent(device);
   if (!content.Get())
     return E_FAIL;
 
-  base::win::ScopedComPtr<IPortableDeviceResources> resources;
+  Microsoft::WRL::ComPtr<IPortableDeviceResources> resources;
   HRESULT hr = content->Transfer(resources.GetAddressOf());
   if (FAILED(hr))
     return hr;

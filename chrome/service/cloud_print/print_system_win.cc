@@ -4,6 +4,8 @@
 
 #include "chrome/service/cloud_print/print_system.h"
 
+#include <wrl/client.h>
+
 #include <memory>
 
 #include "base/command_line.h"
@@ -15,7 +17,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/win/object_watcher.h"
 #include "base/win/scoped_bstr.h"
-#include "base/win/scoped_comptr.h"
 #include "base/win/scoped_hdc.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/cloud_print/cloud_print_cdd_conversion.h"
@@ -386,10 +387,8 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
     // Helper class to allow PrintXPSDocument() to have multiple exits.
     class PrintJobCanceler {
      public:
-      explicit PrintJobCanceler(
-          base::win::ScopedComPtr<IXpsPrintJob>* job_ptr)
-          : job_ptr_(job_ptr) {
-      }
+      explicit PrintJobCanceler(Microsoft::WRL::ComPtr<IXpsPrintJob>* job_ptr)
+          : job_ptr_(job_ptr) {}
       ~PrintJobCanceler() {
         if (job_ptr_ && job_ptr_->Get()) {
           (*job_ptr_)->Cancel();
@@ -400,7 +399,7 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
       void reset() { job_ptr_ = NULL; }
 
      private:
-      base::win::ScopedComPtr<IXpsPrintJob>* job_ptr_;
+      Microsoft::WRL::ComPtr<IXpsPrintJob>* job_ptr_;
 
       DISALLOW_COPY_AND_ASSIGN(PrintJobCanceler);
     };
@@ -471,8 +470,8 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
         return false;
 
       PrintJobCanceler job_canceler(&xps_print_job_);
-      base::win::ScopedComPtr<IXpsPrintJobStream> doc_stream;
-      base::win::ScopedComPtr<IXpsPrintJobStream> print_ticket_stream;
+      Microsoft::WRL::ComPtr<IXpsPrintJobStream> doc_stream;
+      Microsoft::WRL::ComPtr<IXpsPrintJobStream> print_ticket_stream;
       if (FAILED(printing::XPSPrintModule::StartXpsPrintJob(
               base::UTF8ToWide(printer_name).c_str(),
               base::UTF8ToWide(job_title).c_str(), nullptr,
@@ -521,7 +520,7 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
     base::win::ScopedCreateDC printer_dc_;
     base::win::ScopedHandle job_progress_event_;
     base::win::ObjectWatcher job_progress_watcher_;
-    base::win::ScopedComPtr<IXpsPrintJob> xps_print_job_;
+    Microsoft::WRL::ComPtr<IXpsPrintJob> xps_print_job_;
 
     DISALLOW_COPY_AND_ASSIGN(Core);
   };
@@ -728,7 +727,7 @@ bool PrintSystemWin::ValidatePrintTicket(
 
   bool ret;
   {
-    base::win::ScopedComPtr<IStream> print_ticket_stream;
+    Microsoft::WRL::ComPtr<IStream> print_ticket_stream;
     CreateStreamOnHGlobal(nullptr, TRUE, print_ticket_stream.GetAddressOf());
     ULONG bytes_written = 0;
     print_ticket_stream->Write(print_ticket_data.c_str(),
@@ -739,7 +738,7 @@ bool PrintSystemWin::ValidatePrintTicket(
     ULARGE_INTEGER new_pos = {};
     print_ticket_stream->Seek(pos, STREAM_SEEK_SET, &new_pos);
     base::win::ScopedBstr error;
-    base::win::ScopedComPtr<IStream> result_ticket_stream;
+    Microsoft::WRL::ComPtr<IStream> result_ticket_stream;
     CreateStreamOnHGlobal(nullptr, TRUE, result_ticket_stream.GetAddressOf());
     ret = SUCCEEDED(printing::XPSModule::MergeAndValidatePrintTicket(
         provider, print_ticket_stream.Get(), nullptr, kPTJobScope,

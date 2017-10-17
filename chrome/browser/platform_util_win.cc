@@ -9,6 +9,7 @@
 #include <shellapi.h>
 #include <shlobj.h>
 #include <stddef.h>
+#include <wrl/client.h>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -21,7 +22,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_co_mem.h"
-#include "base/win/scoped_comptr.h"
 #include "chrome/browser/platform_util_internal.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/win/shell.h"
@@ -41,7 +41,7 @@ void ShowItemInFolderOnWorkerThread(const base::FilePath& full_path) {
   if (dir.empty())
     return;
 
-  base::win::ScopedComPtr<IShellFolder> desktop;
+  Microsoft::WRL::ComPtr<IShellFolder> desktop;
   HRESULT hr = SHGetDesktopFolder(desktop.GetAddressOf());
   if (FAILED(hr))
     return;

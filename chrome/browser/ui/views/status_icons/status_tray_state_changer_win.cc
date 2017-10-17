@@ -134,14 +134,14 @@ bool StatusTrayStateChangerWin::CreateTrayNotify() {
   if (FAILED(hr))
     return false;
 
-  base::win::ScopedComPtr<ITrayNotifyWin8> tray_notify_win8;
+  Microsoft::WRL::ComPtr<ITrayNotifyWin8> tray_notify_win8;
   hr = tray_notify_.CopyTo(tray_notify_win8.GetAddressOf());
   if (SUCCEEDED(hr)) {
     interface_version_ = INTERFACE_VERSION_WIN8;
     return true;
   }
 
-  base::win::ScopedComPtr<ITrayNotify> tray_notify_legacy;
+  Microsoft::WRL::ComPtr<ITrayNotify> tray_notify_legacy;
   hr = tray_notify_.CopyTo(tray_notify_legacy.GetAddressOf());
   if (SUCCEEDED(hr)) {
     interface_version_ = INTERFACE_VERSION_LEGACY;
@@ -176,7 +176,7 @@ std::unique_ptr<NOTIFYITEM> StatusTrayStateChangerWin::RegisterCallback() {
 }
 
 bool StatusTrayStateChangerWin::RegisterCallbackWin8() {
-  base::win::ScopedComPtr<ITrayNotifyWin8> tray_notify_win8;
+  Microsoft::WRL::ComPtr<ITrayNotifyWin8> tray_notify_win8;
   HRESULT hr = tray_notify_.CopyTo(tray_notify_win8.GetAddressOf());
   if (FAILED(hr))
     return false;
@@ -196,7 +196,7 @@ bool StatusTrayStateChangerWin::RegisterCallbackWin8() {
 }
 
 bool StatusTrayStateChangerWin::RegisterCallbackLegacy() {
-  base::win::ScopedComPtr<ITrayNotify> tray_notify;
+  Microsoft::WRL::ComPtr<ITrayNotify> tray_notify;
   HRESULT hr = tray_notify_.CopyTo(tray_notify.GetAddressOf());
   if (FAILED(hr)) {
     return false;
@@ -223,12 +223,12 @@ bool StatusTrayStateChangerWin::RegisterCallbackLegacy() {
 void StatusTrayStateChangerWin::SendNotifyItemUpdate(
     std::unique_ptr<NOTIFYITEM> notify_item) {
   if (interface_version_ == INTERFACE_VERSION_LEGACY) {
-    base::win::ScopedComPtr<ITrayNotify> tray_notify;
+    Microsoft::WRL::ComPtr<ITrayNotify> tray_notify;
     HRESULT hr = tray_notify_.CopyTo(tray_notify.GetAddressOf());
     if (SUCCEEDED(hr))
       tray_notify->SetPreference(notify_item.get());
   } else if (interface_version_ == INTERFACE_VERSION_WIN8) {
-    base::win::ScopedComPtr<ITrayNotifyWin8> tray_notify;
+    Microsoft::WRL::ComPtr<ITrayNotifyWin8> tray_notify;
     HRESULT hr = tray_notify_.CopyTo(tray_notify.GetAddressOf());
     if (SUCCEEDED(hr))
       tray_notify->SetPreference(notify_item.get());

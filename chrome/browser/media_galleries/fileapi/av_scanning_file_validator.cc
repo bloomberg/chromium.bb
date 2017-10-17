@@ -8,6 +8,7 @@
 #include <windows.h>
 #include <objbase.h>
 #include <shlobj.h>
+#include <wrl/client.h>
 #endif
 
 #include "base/bind.h"
@@ -23,10 +24,6 @@
 #include "chrome/common/chrome_constants.h"
 #include "content/public/browser/browser_thread.h"
 
-#if defined(OS_WIN)
-#include "base/win/scoped_comptr.h"
-#endif
-
 using content::BrowserThread;
 
 namespace {
@@ -35,7 +32,7 @@ namespace {
 base::File::Error ScanFile(const base::FilePath& dest_platform_path) {
   base::ThreadRestrictions::AssertIOAllowed();
 
-  base::win::ScopedComPtr<IAttachmentExecute> attachment_services;
+  Microsoft::WRL::ComPtr<IAttachmentExecute> attachment_services;
   HRESULT hr = ::CoCreateInstance(CLSID_AttachmentServices, nullptr, CLSCTX_ALL,
                                   IID_PPV_ARGS(&attachment_services));
 

@@ -11,6 +11,7 @@
 #include <propkey.h>  // Needs to come after shobjidl.h.
 #include <stddef.h>
 #include <stdint.h>
+#include <wrl/client.h>
 
 #include <memory>
 #include <utility>
@@ -36,7 +37,6 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "base/win/registry.h"
-#include "base/win/scoped_comptr.h"
 #include "base/win/scoped_propvariant.h"
 #include "base/win/shortcut.h"
 #include "base/win/windows_version.h"
@@ -781,8 +781,8 @@ int MigrateShortcutsInPathInternal(const base::FilePath& chrome_exe,
       continue;
 
     // Load the shortcut.
-    base::win::ScopedComPtr<IShellLink> shell_link;
-    base::win::ScopedComPtr<IPersistFile> persist_file;
+    Microsoft::WRL::ComPtr<IShellLink> shell_link;
+    Microsoft::WRL::ComPtr<IPersistFile> persist_file;
     if (FAILED(::CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER,
                                   IID_PPV_ARGS(&shell_link))) ||
         FAILED(shell_link.CopyTo(persist_file.GetAddressOf())) ||
@@ -796,7 +796,7 @@ int MigrateShortcutsInPathInternal(const base::FilePath& chrome_exe,
     base::win::ShortcutProperties updated_properties;
 
     // Validate the existing app id for the shortcut.
-    base::win::ScopedComPtr<IPropertyStore> property_store;
+    Microsoft::WRL::ComPtr<IPropertyStore> property_store;
     propvariant.Reset();
     if (FAILED(shell_link.CopyTo(property_store.GetAddressOf())) ||
         property_store->GetValue(PKEY_AppUserModel_ID, propvariant.Receive()) !=

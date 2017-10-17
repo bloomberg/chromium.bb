@@ -23,11 +23,11 @@ namespace {
 // An IShellLink object is almost the same as an application shortcut, and it
 // requires three items: the absolute path to an application, an argument
 // string, and a title string.
-bool AddShellLink(base::win::ScopedComPtr<IObjectCollection> collection,
+bool AddShellLink(Microsoft::WRL::ComPtr<IObjectCollection> collection,
                   const base::string16& application_path,
                   scoped_refptr<ShellLinkItem> item) {
   // Create an IShellLink object.
-  base::win::ScopedComPtr<IShellLink> link;
+  Microsoft::WRL::ComPtr<IShellLink> link;
   HRESULT result = ::CoCreateInstance(
       CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&link));
   if (FAILED(result))
@@ -62,7 +62,7 @@ bool AddShellLink(base::win::ScopedComPtr<IObjectCollection> collection,
   // title because this interface is originally for creating an application
   // shortcut which doesn't have titles.
   // So, we should use the IPropertyStore interface to set its title.
-  base::win::ScopedComPtr<IPropertyStore> property_store;
+  Microsoft::WRL::ComPtr<IPropertyStore> property_store;
   result = link.CopyTo(property_store.GetAddressOf());
   if (FAILED(result))
     return false;
@@ -139,7 +139,7 @@ bool JumpListUpdater::BeginUpdate() {
   // It seems Windows 7 RC (Build 7100) automatically checks the items in this
   // removed list and prevent us from adding the same item.
   UINT max_slots;
-  base::win::ScopedComPtr<IObjectArray> removed;
+  Microsoft::WRL::ComPtr<IObjectArray> removed;
   result = destination_list_->BeginList(&max_slots, IID_PPV_ARGS(&removed));
   if (FAILED(result))
     return false;
@@ -168,7 +168,7 @@ bool JumpListUpdater::AddTasks(const ShellLinkItemList& link_items) {
 
   // Create an EnumerableObjectCollection object to be added items of the
   // "Task" category.
-  base::win::ScopedComPtr<IObjectCollection> collection;
+  Microsoft::WRL::ComPtr<IObjectCollection> collection;
   HRESULT result =
       ::CoCreateInstance(CLSID_EnumerableObjectCollection, NULL,
                          CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&collection));
@@ -186,7 +186,7 @@ bool JumpListUpdater::AddTasks(const ShellLinkItemList& link_items) {
   // ICustomDestinationList::AddUserTasks() also uses the IObjectArray
   // interface to retrieve each item in the list. So, we retrieve the
   // IObjectArray interface from the EnumerableObjectCollection object.
-  base::win::ScopedComPtr<IObjectArray> object_array;
+  Microsoft::WRL::ComPtr<IObjectArray> object_array;
   result = collection.CopyTo(object_array.GetAddressOf());
   if (FAILED(result))
     return false;
@@ -214,7 +214,7 @@ bool JumpListUpdater::AddCustomCategory(const base::string16& category_name,
   // Create an EnumerableObjectCollection object.
   // We once add the given items to this collection object and add this
   // collection to the JumpList.
-  base::win::ScopedComPtr<IObjectCollection> collection;
+  Microsoft::WRL::ComPtr<IObjectCollection> collection;
   HRESULT result =
       ::CoCreateInstance(CLSID_EnumerableObjectCollection, NULL,
                          CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&collection));
@@ -234,7 +234,7 @@ bool JumpListUpdater::AddCustomCategory(const base::string16& category_name,
   // and use it.
   // It seems the ICustomDestinationList::AppendCategory() function just
   // replaces all items in the given category with the ones in the new list.
-  base::win::ScopedComPtr<IObjectArray> object_array;
+  Microsoft::WRL::ComPtr<IObjectArray> object_array;
   result = collection.CopyTo(object_array.GetAddressOf());
   if (FAILED(result))
     return false;

@@ -7,9 +7,9 @@
 #include <objbase.h>
 #include <shobjidl.h>
 #include <string>
+#include <wrl/client.h>
 
 #include "base/logging.h"
-#include "base/win/scoped_comptr.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -20,7 +20,7 @@ namespace {
 void UpdateTaskbarProgressBar(int download_count,
                               bool progress_known,
                               float progress) {
-  base::win::ScopedComPtr<ITaskbarList3> taskbar;
+  Microsoft::WRL::ComPtr<ITaskbarList3> taskbar;
   HRESULT result = ::CoCreateInstance(
       CLSID_TaskbarList, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&taskbar));
   if (FAILED(result)) {

@@ -13,12 +13,12 @@
 
 #include <portabledeviceapi.h>
 #include <stddef.h>
+#include <wrl/client.h>
 
 #include <string>
 
 #include "base/files/file.h"
 #include "base/strings/string16.h"
-#include "base/win/scoped_comptr.h"
 #include "chrome/browser/media_galleries/win/mtp_device_object_entry.h"
 
 namespace media_transfer_protocol {
@@ -26,7 +26,7 @@ namespace media_transfer_protocol {
 // Opens the device for communication. |pnp_device_id| specifies the plug and
 // play device ID string. On success, returns the IPortableDevice interface.
 // On failure, returns NULL.
-base::win::ScopedComPtr<IPortableDevice> OpenDevice(
+Microsoft::WRL::ComPtr<IPortableDevice> OpenDevice(
     const base::string16& pnp_device_id);
 
 // Gets the details of the object specified by |object_id| from the given MTP

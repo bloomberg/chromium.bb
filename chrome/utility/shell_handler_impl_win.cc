@@ -6,6 +6,7 @@
 
 #include <objbase.h>
 #include <shldisp.h>
+#include <wrl/client.h>
 
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
@@ -15,7 +16,6 @@
 #include "base/strings/string16.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_com_initializer.h"
-#include "base/win/scoped_comptr.h"
 #include "base/win/scoped_variant.h"
 #include "base/win/shortcut.h"
 #include "base/win/win_util.h"
@@ -90,7 +90,7 @@ bool IsPinnedToTaskbarHelper::ShortcutHasUnpinToTaskbarVerb(
     return false;
   }
 
-  base::win::ScopedComPtr<IShellDispatch> shell_dispatch;
+  Microsoft::WRL::ComPtr<IShellDispatch> shell_dispatch;
   HRESULT hresult =
       ::CoCreateInstance(CLSID_Shell, nullptr, CLSCTX_INPROC_SERVER,
                          IID_PPV_ARGS(&shell_dispatch));
@@ -99,7 +99,7 @@ bool IsPinnedToTaskbarHelper::ShortcutHasUnpinToTaskbarVerb(
     return false;
   }
 
-  base::win::ScopedComPtr<Folder> folder;
+  Microsoft::WRL::ComPtr<Folder> folder;
   hresult = shell_dispatch->NameSpace(
       base::win::ScopedVariant(shortcut.DirName().value().c_str()),
       folder.GetAddressOf());
@@ -108,7 +108,7 @@ bool IsPinnedToTaskbarHelper::ShortcutHasUnpinToTaskbarVerb(
     return false;
   }
 
-  base::win::ScopedComPtr<FolderItem> item;
+  Microsoft::WRL::ComPtr<FolderItem> item;
   hresult = folder->ParseName(
       base::win::ScopedBstr(shortcut.BaseName().value().c_str()),
       item.GetAddressOf());
@@ -117,7 +117,7 @@ bool IsPinnedToTaskbarHelper::ShortcutHasUnpinToTaskbarVerb(
     return false;
   }
 
-  base::win::ScopedComPtr<FolderItemVerbs> verbs;
+  Microsoft::WRL::ComPtr<FolderItemVerbs> verbs;
   hresult = item->Verbs(verbs.GetAddressOf());
   if (FAILED(hresult) || !verbs) {
     error_occured_ = true;
@@ -133,7 +133,7 @@ bool IsPinnedToTaskbarHelper::ShortcutHasUnpinToTaskbarVerb(
 
   long error_count = 0;
   for (long i = 0; i < verb_count; ++i) {
-    base::win::ScopedComPtr<FolderItemVerb> verb;
+    Microsoft::WRL::ComPtr<FolderItemVerb> verb;
     hresult =
         verbs->Item(base::win::ScopedVariant(i, VT_I4), verb.GetAddressOf());
     if (FAILED(hresult) || !verb) {

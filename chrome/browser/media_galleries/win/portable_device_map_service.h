@@ -6,13 +6,14 @@
 #define CHROME_BROWSER_MEDIA_GALLERIES_WIN_PORTABLE_DEVICE_MAP_SERVICE_H_
 
 #include <portabledeviceapi.h>
+#include <wrl/client.h>
+
 #include <map>
 
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/synchronization/lock.h"
-#include "base/win/scoped_comptr.h"
 
 // PortableDeviceMapService keeps track of initialized portable device
 // interfaces. PortableDeviceMapService owns the portable device interfaces.
@@ -56,7 +57,7 @@ class PortableDeviceMapService {
     ~PortableDeviceInfo();
 
     // The portable device interface.
-    base::win::ScopedComPtr<IPortableDevice> portable_device;
+    Microsoft::WRL::ComPtr<IPortableDevice> portable_device;
 
     // Set to true if the |portable_device| is marked for deletion.
     bool scheduled_to_delete;

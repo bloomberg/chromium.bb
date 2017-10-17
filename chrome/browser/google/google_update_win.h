@@ -5,11 +5,12 @@
 #ifndef CHROME_BROWSER_GOOGLE_GOOGLE_UPDATE_WIN_H_
 #define CHROME_BROWSER_GOOGLE_GOOGLE_UPDATE_WIN_H_
 
+#include <wrl/client.h>
+
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
-#include "base/win/scoped_comptr.h"
 #include "google_update/google_update_idl.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -101,7 +102,7 @@ void BeginUpdateCheck(
 
 // A type of callback supplied by tests to provide a custom IGoogleUpdate3Web
 // implementation (see src/google_update/google_update_idl.idl).
-typedef base::Callback<HRESULT(base::win::ScopedComPtr<IGoogleUpdate3Web>*)>
+typedef base::Callback<HRESULT(Microsoft::WRL::ComPtr<IGoogleUpdate3Web>*)>
     GoogleUpdate3ClassFactory;
 
 // For use by tests that wish to provide a custom IGoogleUpdate3Web
