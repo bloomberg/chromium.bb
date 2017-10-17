@@ -109,10 +109,10 @@ bool LayoutTableCol::CanHaveChildren() const {
 }
 
 LayoutRect LayoutTableCol::LocalVisualRectIgnoringVisibility() const {
-  // On SPv2, raster invalidation is based on paint result. LayoutTableCol
+  // On SPv175, raster invalidation is based on paint result. LayoutTableCol
   // paints nothing (its background is painted by LayoutTableSection) so should
   // not issue any raster invalidation.
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
     return LayoutRect();
 
   // Entire table gets invalidated, instead of invalidating

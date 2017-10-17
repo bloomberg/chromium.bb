@@ -49,7 +49,7 @@ static LayoutRect ScrollControlVisualRect(
   // transform space than their contained box (the scrollbarPaintOffset
   // transform node).
   if (!visual_rect.IsEmpty() &&
-      !RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+      !RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
     // PaintInvalidatorContext::mapLocalRectToPaintInvalidationBacking() treats
     // the rect as in flipped block direction, but scrollbar controls don't
     // flip for block direction, so flip here to undo the flip in the function.
@@ -68,9 +68,7 @@ static bool InvalidatePaintOfScrollControlIfNeeded(
     const LayoutBoxModelObject& paint_invalidation_container) {
   bool should_invalidate_new_rect = needs_paint_invalidation;
   if (new_visual_rect != previous_visual_rect) {
-    // TODO(crbug.com/732612)): Implement partial raster invalidation for scroll
-    // controls.
-    if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
       ObjectPaintInvalidator(box).InvalidatePaintUsingContainer(
           paint_invalidation_container, previous_visual_rect,
           PaintInvalidationReason::kScrollControl);
@@ -83,9 +81,7 @@ static bool InvalidatePaintOfScrollControlIfNeeded(
   }
 
   if (should_invalidate_new_rect) {
-    // TODO(crbug.com/732612): Implement partial raster invalidation for scroll
-    // controls.
-    if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
       ObjectPaintInvalidator(box).InvalidatePaintUsingContainer(
           paint_invalidation_container, new_visual_rect,
           PaintInvalidationReason::kScrollControl);

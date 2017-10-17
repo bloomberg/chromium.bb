@@ -43,7 +43,7 @@ class GeometryMapperTest : public ::testing::Test,
 
 INSTANTIATE_TEST_CASE_P(All,
                         GeometryMapperTest,
-                        ::testing::Values(0, kSlimmingPaintV2));
+                        ::testing::ValuesIn(kSlimmingPaintVersions));
 
 const static float kTestEpsilon = 1e-6;
 
@@ -655,7 +655,7 @@ TEST_P(GeometryMapperTest, SiblingTransformsWithClip) {
   LocalToAncestorVisualRectInternal(transform1_state, transform2_and_clip_state,
                                     result, success);
   // Fails, because the clip of the destination state is not an ancestor of the
-  // clip of the source state. A known bug in SPv1 would make such query,
+  // clip of the source state. A known bug in SPv1* would make such query,
   // in such case, no clips are applied.
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     EXPECT_FALSE(success);
@@ -746,7 +746,7 @@ TEST_P(GeometryMapperTest, ReflectionWithPaintOffset) {
 }
 
 TEST_P(GeometryMapperTest, InvertedClip) {
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
     return;
 
   RefPtr<ClipPaintPropertyNode> clip = ClipPaintPropertyNode::Create(

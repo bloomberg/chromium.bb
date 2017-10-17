@@ -68,9 +68,12 @@ class PLATFORM_EXPORT RasterInvalidationTracking {
   // the corresponding pixels in UnderInvalidationRecord() will be drawn in
   // dark red. The caller can overlay UnderInvalidationRecord() onto the
   // original drawings to show the under raster invalidations.
+  // |paint_record_offset| is the offset of the space of |new_record| from the
+  // origin of the layer.
   void CheckUnderInvalidations(const String& layer_debug_name,
                                sk_sp<PaintRecord> new_record,
-                               const IntRect& new_interest_rect);
+                               const IntRect& new_interest_rect,
+                               const IntPoint& paint_record_offset);
 
   void AsJSON(JSONObject*);
 

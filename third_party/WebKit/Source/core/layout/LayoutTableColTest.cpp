@@ -12,7 +12,7 @@ namespace blink {
 using LayoutTableColTest = RenderingTest;
 
 TEST_F(LayoutTableColTest, LocalVisualRectSPv1) {
-  ScopedSlimmingPaintV2ForTest spv2(false);
+  ScopedSlimmingPaintV175ForTest spv175(false);
   SetBodyInnerHTML(
       "<table id='table' style='width: 200px; height: 200px'>"
       "  <col id='col1' style='visibility: hidden'>"
@@ -32,8 +32,8 @@ TEST_F(LayoutTableColTest, LocalVisualRectSPv1) {
             GetLayoutObjectByElementId("col3")->LocalVisualRect());
 }
 
-TEST_F(LayoutTableColTest, LocalVisualRectSPv2) {
-  ScopedSlimmingPaintV2ForTest spv2(true);
+TEST_F(LayoutTableColTest, LocalVisualRectSPv175) {
+  ScopedSlimmingPaintV175ForTest spv175(true);
   SetBodyInnerHTML(
       "<table style='width: 200px; height: 200px'>"
       "  <col id='col1' style='visibility: hidden'>"

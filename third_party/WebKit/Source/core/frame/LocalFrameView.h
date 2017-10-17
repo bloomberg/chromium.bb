@@ -728,7 +728,6 @@ class CORE_EXPORT LocalFrameView final
 
   void BeginLifecycleUpdates();
 
-  // Paint properties for SPv2 Only.
   void SetPreTranslation(RefPtr<TransformPaintPropertyNode> pre_translation) {
     pre_translation_ = std::move(pre_translation);
   }
@@ -1197,7 +1196,6 @@ class CORE_EXPORT LocalFrameView final
   bool subtree_throttled_;
   bool lifecycle_updates_throttled_;
 
-  // Paint properties for SPv2 Only.
   // The hierarchy of transform subtree created by a LocalFrameView.
   // [ preTranslation ]               The offset from LocalFrameView::FrameRect.
   //     |                            Establishes viewport.

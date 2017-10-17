@@ -17,9 +17,9 @@ namespace blink {
 namespace {
 
 class PaintChunkerTest : public ::testing::Test,
-                         private ScopedSlimmingPaintV2ForTest {
+                         private ScopedSlimmingPaintV175ForTest {
  public:
-  PaintChunkerTest() : ScopedSlimmingPaintV2ForTest(true) {}
+  PaintChunkerTest() : ScopedSlimmingPaintV175ForTest(true) {}
 
  protected:
   class TestDisplayItemClient : public DisplayItemClient {

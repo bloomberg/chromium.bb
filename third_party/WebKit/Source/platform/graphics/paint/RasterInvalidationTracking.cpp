@@ -123,7 +123,8 @@ static bool PixelsDiffer(SkColor p1, SkColor p2) {
 void RasterInvalidationTracking::CheckUnderInvalidations(
     const String& layer_debug_name,
     sk_sp<PaintRecord> new_record,
-    const IntRect& new_interest_rect) {
+    const IntRect& new_interest_rect,
+    const IntPoint& paint_record_offset) {
   auto old_interest_rect = last_interest_rect_;
   Region invalidation_region;
   if (!g_simulate_raster_under_invalidations)
@@ -143,13 +144,14 @@ void RasterInvalidationTracking::CheckUnderInvalidations(
   if (rect.IsEmpty())
     return;
 
+  IntPoint canvas_offset = rect.Location() + paint_record_offset;
   SkBitmap old_bitmap;
   old_bitmap.allocPixels(
       SkImageInfo::MakeN32Premul(rect.Width(), rect.Height()));
   {
     SkiaPaintCanvas canvas(old_bitmap);
     canvas.clear(SK_ColorTRANSPARENT);
-    canvas.translate(-rect.X(), -rect.Y());
+    canvas.translate(-canvas_offset.X(), -canvas_offset.Y());
     canvas.drawPicture(std::move(old_record));
   }
 
@@ -159,7 +161,7 @@ void RasterInvalidationTracking::CheckUnderInvalidations(
   {
     SkiaPaintCanvas canvas(new_bitmap);
     canvas.clear(SK_ColorTRANSPARENT);
-    canvas.translate(-rect.X(), -rect.Y());
+    canvas.translate(-canvas_offset.X(), -canvas_offset.Y());
     canvas.drawPicture(std::move(new_record));
   }
 
@@ -201,7 +203,7 @@ void RasterInvalidationTracking::CheckUnderInvalidations(
   auto* canvas = recorder.getRecordingCanvas();
   if (under_invalidation_record_)
     canvas->drawPicture(std::move(under_invalidation_record_));
-  canvas->drawBitmap(new_bitmap, rect.X(), rect.Y());
+  canvas->drawBitmap(new_bitmap, canvas_offset.X(), canvas_offset.Y());
   under_invalidation_record_ = recorder.finishRecordingAsPicture();
 }
 

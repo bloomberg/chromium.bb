@@ -206,8 +206,8 @@ void LayoutObjectChildList::InvalidatePaintOnRemoval(LayoutObject& old_child) {
   ObjectPaintInvalidator paint_invalidator(old_child);
   paint_invalidator.SlowSetPaintingLayerNeedsRepaint();
 
-  // For SPv2 raster invalidation will be done in PaintController.
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  // For SPv175 raster invalidation will be done in PaintController.
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
     return;
 
   paint_invalidator.InvalidatePaintOfPreviousVisualRect(
