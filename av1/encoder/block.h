@@ -296,6 +296,9 @@ struct macroblock {
 #if CONFIG_RECT_TX_EXT && (CONFIG_EXT_TX || CONFIG_VAR_TX)
   int quarter_tx_size_cost[2];
 #endif
+#if CONFIG_VAR_TX
+  int txfm_partition_cost[TXFM_PARTITION_CONTEXTS][2];
+#endif
 #if CONFIG_EXT_TX
 #if CONFIG_LGT_FROM_PRED
   int intra_lgt_cost[LGT_SIZES][INTRA_MODES][2];

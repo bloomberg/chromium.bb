@@ -4872,6 +4872,9 @@ static void update_txfm_count(MACROBLOCK *x, MACROBLOCKD *xd,
 #endif
   {
     ++counts->txfm_partition[ctx][0];
+#if CONFIG_NEW_MULTISYMBOL
+    update_cdf(xd->tile_ctx->txfm_partition_cdf[ctx], 0, 2);
+#endif
 #if CONFIG_RECT_TX_EXT
     if (tx_size == plane_tx_size)
 #endif
@@ -4884,6 +4887,9 @@ static void update_txfm_count(MACROBLOCK *x, MACROBLOCKD *xd,
     int i;
 
     ++counts->txfm_partition[ctx][1];
+#if CONFIG_NEW_MULTISYMBOL
+    update_cdf(xd->tile_ctx->txfm_partition_cdf[ctx], 1, 2);
+#endif
     ++x->txb_split_count;
 
     if (sub_txs == TX_4X4) {

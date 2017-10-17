@@ -4924,8 +4924,7 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
     }
 
     if (tx_size > TX_4X4 && depth < MAX_VARTX_DEPTH)
-      rd_stats->rate +=
-          av1_cost_bit(cpi->common.fc->txfm_partition_prob[ctx], 0);
+      rd_stats->rate += x->txfm_partition_cost[ctx][0];
 #if CONFIG_RECT_TX_EXT
     if (check_qttx) {
       assert(blk_row == 0 && blk_col == 0);
@@ -5018,8 +5017,7 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
       av1_merge_rd_stats(&rd_stats_qttx, &rd_stats_tmp);
 
       if (tx_size > TX_4X4 && depth < MAX_VARTX_DEPTH) {
-        rd_stats_qttx.rate +=
-            av1_cost_bit(cpi->common.fc->txfm_partition_prob[ctx], 0);
+        rd_stats_qttx.rate += x->txfm_partition_cost[ctx][0];
       }
       rd_stats_qttx.rate += x->quarter_tx_size_cost[1];
       rd_qttx = RDCOST(x->rdmult, rd_stats_qttx.rate, rd_stats_qttx.dist);
@@ -5060,8 +5058,7 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
 #if CONFIG_DIST_8X8
     int sub8x8_eob[4];
 #endif
-    sum_rd_stats.rate =
-        av1_cost_bit(cpi->common.fc->txfm_partition_prob[ctx], 1);
+    sum_rd_stats.rate = x->txfm_partition_cost[ctx][1];
 
     assert(tx_size < TX_SIZES_ALL);
 
@@ -5516,6 +5513,8 @@ static void set_skip_flag(const AV1_COMP *cpi, MACROBLOCK *x,
   memset(x->blk_skip[0], 1, sizeof(uint8_t) * n4);
   rd_stats->skip = 1;
 
+  (void)cpi;
+
   // Rate.
   const int tx_size_ctx = txsize_sqr_map[tx_size];
   ENTROPY_CONTEXT ctxa[2 * MAX_MIB_SIZE];
@@ -5526,7 +5525,7 @@ static void set_skip_flag(const AV1_COMP *cpi, MACROBLOCK *x,
   if (tx_size > TX_4X4) {
     int ctx = txfm_partition_context(
         xd->above_txfm_context, xd->left_txfm_context, mbmi->sb_type, tx_size);
-    rate += av1_cost_bit(cpi->common.fc->txfm_partition_prob[ctx], 0);
+    rate += x->txfm_partition_cost[ctx][0];
   }
 #if !CONFIG_TXK_SEL
 #if CONFIG_EXT_TX
