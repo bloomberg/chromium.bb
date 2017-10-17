@@ -68,8 +68,8 @@ class CONTENT_EXPORT PeerConnectionTracker
   // UnregisterPeerConnection, otherwise the Track* call has no effect.
   //
 
-  // Sends an update when a PeerConnection has been created in Javascript.  This
-  // should be called once and only once for each PeerConnection.  The
+  // Sends an update when a PeerConnection has been created in Javascript. This
+  // should be called once and only once for each PeerConnection. The
   // |pc_handler| is the handler object associated with the PeerConnection, the
   // |servers| are the server configurations used to establish the connection,
   // the |constraints| are the media constraints used to initialize the
@@ -176,7 +176,7 @@ class CONTENT_EXPORT PeerConnectionTracker
   // The return value will always be positive.
   int GetNextLocalID();
 
-  // Looks up a handler in our map and if found, returns its ID.  If the handler
+  // Looks up a handler in our map and if found, returns its ID. If the handler
   // is not registered, the return value will be -1.
   int GetLocalIDForHandler(RTCPeerConnectionHandler* handler) const;
 
