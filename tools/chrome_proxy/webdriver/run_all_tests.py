@@ -3,6 +3,9 @@
 # found in the LICENSE file.
 
 import common
+import sys
 
 if __name__ == "__main__":
-  common.IntegrationTest.RunAllTests(run_all_tests=True)
+  results = common.IntegrationTest.RunAllTests(run_all_tests=True)
+  if results.errors or results.failures:
+    sys.exit(2)
