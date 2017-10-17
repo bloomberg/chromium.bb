@@ -44,6 +44,8 @@ action("gen_ukm_builders") {
   outputs = [
     outdir + "/ukm_builders.cc",
     outdir + "/ukm_builders.h",
+    outdir + "/ukm_decode.cc",
+    outdir + "/ukm_decode.h",
   ]
 
   args = [
