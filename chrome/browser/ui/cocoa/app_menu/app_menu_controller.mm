@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/mac/bundle_locations.h"
+#include "base/mac/objc_release_properties.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
@@ -610,7 +611,6 @@ class ToolbarActionsBarObserverHelper : public ToolbarActionsBarObserver {
 - (id)initWithController:(AppMenuController*)controller {
   if ((self = [super initWithNibName:@"AppMenu"
                               bundle:base::mac::FrameworkBundle()])) {
-    propertyReleaser_.Init(self, [AppMenuButtonViewController class]);
     controller_ = controller;
     [[NSNotificationCenter defaultCenter]
         addObserver:self
@@ -623,6 +623,7 @@ class ToolbarActionsBarObserverHelper : public ToolbarActionsBarObserver {
 
 - (void)dealloc {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
+  base::mac::ReleaseProperties(self);
   [super dealloc];
 }
 
