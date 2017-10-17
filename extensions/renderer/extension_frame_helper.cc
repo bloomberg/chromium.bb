@@ -14,6 +14,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/manifest_handlers/background_info.h"
+#include "extensions/renderer/api/automation/automation_api_helper.h"
 #include "extensions/renderer/console.h"
 #include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/extension_bindings_system.h"
@@ -104,6 +105,10 @@ ExtensionFrameHelper::ExtensionFrameHelper(content::RenderFrame* render_frame,
       did_create_current_document_element_(false),
       weak_ptr_factory_(this) {
   g_frame_helpers.Get().insert(this);
+  if (render_frame->IsMainFrame()) {
+    // Manages its own lifetime.
+    new AutomationApiHelper(render_frame);
+  }
 }
 
 ExtensionFrameHelper::~ExtensionFrameHelper() {

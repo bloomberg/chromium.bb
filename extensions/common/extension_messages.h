@@ -353,7 +353,7 @@ struct ExtensionMsg_Loaded_Params {
 };
 
 struct ExtensionHostMsg_AutomationQuerySelector_Error {
-  enum Value { kNone, kNoMainFrame, kNoDocument, kNodeDestroyed };
+  enum Value { kNone, kNoDocument, kNodeDestroyed };
 
   ExtensionHostMsg_AutomationQuerySelector_Error() : value(kNone) {}
 

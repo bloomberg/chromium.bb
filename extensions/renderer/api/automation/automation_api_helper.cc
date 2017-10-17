@@ -4,19 +4,19 @@
 
 #include "extensions/renderer/api/automation/automation_api_helper.h"
 
-#include "content/public/renderer/render_view.h"
+#include "content/public/renderer/render_frame.h"
 #include "extensions/common/extension_messages.h"
 #include "third_party/WebKit/public/web/WebAXObject.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebNode.h"
-#include "third_party/WebKit/public/web/WebView.h"
 
 namespace extensions {
 
-AutomationApiHelper::AutomationApiHelper(content::RenderView* render_view)
-    : content::RenderViewObserver(render_view) {
+AutomationApiHelper::AutomationApiHelper(content::RenderFrame* render_frame)
+    : content::RenderFrameObserver(render_frame) {
+  DCHECK(render_frame->IsMainFrame());
 }
 
 AutomationApiHelper::~AutomationApiHelper() {
@@ -38,23 +38,12 @@ void AutomationApiHelper::OnDestruct() {
 void AutomationApiHelper::OnQuerySelector(int request_id,
                                           int acc_obj_id,
                                           const base::string16& selector) {
-  ExtensionHostMsg_AutomationQuerySelector_Error error;
-  if (!render_view() || !render_view()->GetWebView() ||
-      !render_view()->GetWebView()->MainFrame()) {
-    error.value = ExtensionHostMsg_AutomationQuerySelector_Error::kNoMainFrame;
-    Send(new ExtensionHostMsg_AutomationQuerySelector_Result(
-        routing_id(), request_id, error, 0));
-    return;
-  }
-
   // ExtensionMsg_AutomationQuerySelector should only be sent to an active view.
-  DCHECK(render_view()->GetWebView()->MainFrame()->IsWebLocalFrame());
+  DCHECK(render_frame()->IsMainFrame());
 
-  blink::WebDocument document = render_view()
-                                    ->GetWebView()
-                                    ->MainFrame()
-                                    ->ToWebLocalFrame()
-                                    ->GetDocument();
+  ExtensionHostMsg_AutomationQuerySelector_Error error;
+
+  blink::WebDocument document = render_frame()->GetWebFrame()->GetDocument();
   if (document.IsNull()) {
     error.value = ExtensionHostMsg_AutomationQuerySelector_Error::kNoDocument;
     Send(new ExtensionHostMsg_AutomationQuerySelector_Result(

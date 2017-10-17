@@ -636,10 +636,6 @@ void ChromeContentRendererClient::RenderFrameCreated(
 
 void ChromeContentRendererClient::RenderViewCreated(
     content::RenderView* render_view) {
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  ChromeExtensionsRendererClient::GetInstance()->RenderViewCreated(render_view);
-#endif
-
 #if BUILDFLAG(ENABLE_SPELLCHECK)
   // This is a workaround keeping the behavior that, the Blink side spellcheck
   // enabled state is initialized on RenderView creation.
