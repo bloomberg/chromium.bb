@@ -30,11 +30,7 @@ class GameControllerDataFetcherMac : public GamepadDataFetcher {
   void GetGamepadData(bool devices_changed_hint) override;
 
  private:
-  int NextUnusedPlayerIndex();
-
   DISALLOW_COPY_AND_ASSIGN(GameControllerDataFetcherMac);
-
-  bool connected_[Gamepads::kItemsLengthCap];
 };
 
 }  // namespace device
