@@ -539,7 +539,7 @@ void CleanCertificatePolicyCache(
     return referencedFiles;
   // Check the currently open tabs for external files.
   for (Tab* tab in self) {
-    const GURL& lastCommittedURL = tab.lastCommittedURL;
+    const GURL& lastCommittedURL = tab.webState->GetLastCommittedURL();
     if (UrlIsExternalFileReference(lastCommittedURL)) {
       [referencedFiles addObject:base::SysUTF8ToNSString(
                                      lastCommittedURL.ExtractFileName())];
@@ -717,7 +717,8 @@ void CleanCertificatePolicyCache(
     Tab* tab = [self tabAtIndex:0];
     BOOL hasPendingLoad =
         tab.webState->GetNavigationManager()->GetPendingItem() != nullptr;
-    if (!hasPendingLoad && tab.lastCommittedURL == GURL(kChromeUINewTabURL)) {
+    if (!hasPendingLoad &&
+        tab.webState->GetLastCommittedURL() == kChromeUINewTabURL) {
       [self closeTab:tab];
       closedNTPTab = YES;
       oldCount = 0;

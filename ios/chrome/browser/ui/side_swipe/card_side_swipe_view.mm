@@ -229,7 +229,8 @@ const CGFloat kResizeFactor = 4;
   [card setHidden:NO];
 
   Tab* tab = [model_ tabAtIndex:index];
-  BOOL isNTP = tab.lastCommittedURL.host() == kChromeUINewTabHost;
+  BOOL isNTP =
+      tab.webState->GetLastCommittedURL().host_piece() == kChromeUINewTabHost;
   [toolbarController updateToolbarForSideSwipeSnapshot:tab];
   UIImage* toolbarView = CaptureViewWithOption([toolbarController view],
                                                [[UIScreen mainScreen] scale],
