@@ -167,8 +167,6 @@ class AudioParamHandler final : public ThreadSafeRefCounted<AudioParamHandler>,
                     float min,
                     float max);
 
-  void WarnIfOutsideRange(float value, float min_value, float max_value);
-
   // sampleAccurate corresponds to a-rate (audio rate) vs. k-rate in the Web
   // Audio specification.
   void CalculateFinalValues(float* values,
