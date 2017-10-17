@@ -58,6 +58,12 @@ macro (fix_experiment_configs)
     endif ()
   endif ()
 
+  if (CONFIG_EXT_SKIP)
+    if (NOT CONFIG_FRAME_MARKER)
+      change_config_and_warn(CONFIG_FRAME_MARKER 1 CONFIG_EXT_SKIP)
+    endif ()
+  endif ()
+
   if (CONFIG_TXK_SEL)
     if (NOT CONFIG_LV_MAP)
       change_config_and_warn(CONFIG_LV_MAP 1 CONFIG_TXK_SEL)
