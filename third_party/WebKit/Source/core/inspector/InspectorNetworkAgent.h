@@ -124,6 +124,7 @@ class CORE_EXPORT InspectorNetworkAgent final
   void DidReceiveScriptResponse(unsigned long identifier);
   void ShouldForceCORSPreflight(bool* result);
   void ShouldBlockRequest(const KURL&, bool* result);
+  void ShouldBypassServiceWorker(bool* result);
 
   void DocumentThreadableLoaderStartedLoadingForClient(unsigned long identifier,
                                                        ThreadableLoaderClient*);

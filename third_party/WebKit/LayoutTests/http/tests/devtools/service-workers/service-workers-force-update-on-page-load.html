@@ -5,20 +5,9 @@
 <script src="../../inspector/resources-test.js"></script>
 <script>
 
-function loadIframe(url)
-{
-    var callback;
-    var promise = new Promise((fulfill) => callback = fulfill);
-    var frame = document.createElement('iframe');
-    frame.src = url;
-    frame.onload = callback;
-    document.body.appendChild(frame);
-    return promise;
-}
-
 function test() {
-  var scriptURL = 'http://127.0.0.1:8000/devtools/service-workers/resources/force-update-on-page-load-worker.php';
-  var scope = 'http://127.0.0.1:8000/devtools/service-workers/resources/service-worker-force-update-on-page-load/';
+  const scriptURL = 'http://127.0.0.1:8000/devtools/service-workers/resources/force-update-on-page-load-worker.php';
+  const scope = 'http://127.0.0.1:8000/devtools/service-workers/resources/service-worker-force-update-on-page-load/';
 
   function waitForWorkerActivated(scope) {
     return new Promise(function(resolve) {
@@ -55,27 +44,27 @@ function test() {
       .then(() => waitForWorkerActivated(scope))
       .then(function() {
         TestRunner.addResult('The first ServiceWorker is activated.');
-        return TestRunner.callFunctionInPageAsync('loadIframe', [scope]);
+        return TestRunner.addIframe(scope);
       })
       .then(function() {
         TestRunner.addResult('The first frame loaded.');
-        return TestRunner.callFunctionInPageAsync('loadIframe', [scope]);
+        return TestRunner.addIframe(scope);
       })
       .then(function() {
         TestRunner.addResult('The second frame loaded.');
         TestRunner.addResult('Check "Force update on page load" check box');
         Common.settings.settingForTest('serviceWorkerUpdateOnReload').set(true);
-        return TestRunner.callFunctionInPageAsync('loadIframe', [scope]);
+        return TestRunner.addIframe(scope);
       })
       .then(function() {
         TestRunner.addResult('The third frame loaded. The second worker must be activated before here.');
-        return TestRunner.callFunctionInPageAsync('loadIframe', [scope]);
+        return TestRunner.addIframe(scope);
       })
       .then(function() {
         TestRunner.addResult('The fourth frame loaded.  The third worker must be activated before here.');
         TestRunner.addResult('Uncheck "Force update on page load" check box');
         Common.settings.settingForTest('serviceWorkerUpdateOnReload').set(false);
-        return TestRunner.callFunctionInPageAsync('loadIframe', [scope]);
+        return TestRunner.addIframe(scope);
       })
       .then(function() {
         TestRunner.addResult('The fifth frame loaded.');

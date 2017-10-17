@@ -293,6 +293,14 @@ void DocumentThreadableLoader::StartBlinkCORS(const ResourceRequest& request) {
 
   ResourceRequest new_request(request);
 
+  // Set the service worker mode to none if "bypass for network" in DevTools is
+  // enabled.
+  bool should_bypass_service_worker = false;
+  probe::shouldBypassServiceWorker(GetExecutionContext(),
+                                   &should_bypass_service_worker);
+  if (should_bypass_service_worker)
+    new_request.SetServiceWorkerMode(WebURLRequest::ServiceWorkerMode::kNone);
+
   // Process the CORS protocol inside the DocumentThreadableLoader for the
   // following cases:
   //
@@ -316,10 +324,10 @@ void DocumentThreadableLoader::StartBlinkCORS(const ResourceRequest& request) {
   // intercepted since LoadPreflightRequest() sets the flag to kNone in
   // advance.
   if (!async_ ||
-      request.GetServiceWorkerMode() !=
+      new_request.GetServiceWorkerMode() !=
           WebURLRequest::ServiceWorkerMode::kAll ||
       !SchemeRegistry::ShouldTreatURLSchemeAsAllowingServiceWorkers(
-          request.Url().Protocol()) ||
+          new_request.Url().Protocol()) ||
       !loading_context_->GetResourceFetcher()->IsControlledByServiceWorker()) {
     DispatchInitialRequestBlinkCORS(new_request);
     return;

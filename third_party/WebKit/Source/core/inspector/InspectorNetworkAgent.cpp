@@ -576,6 +576,11 @@ void InspectorNetworkAgent::ShouldBlockRequest(const KURL& url, bool* result) {
   return;
 }
 
+void InspectorNetworkAgent::ShouldBypassServiceWorker(bool* result) {
+  *result =
+      state_->booleanProperty(NetworkAgentState::kBypassServiceWorker, false);
+}
+
 void InspectorNetworkAgent::DidBlockRequest(
     ExecutionContext* execution_context,
     const ResourceRequest& request,

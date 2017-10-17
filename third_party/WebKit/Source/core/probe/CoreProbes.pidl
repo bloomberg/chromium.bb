@@ -161,6 +161,7 @@ interface CoreProbes {
   void shouldWaitForDebuggerOnWorkerStart(ExecutionContext* context, bool* result);
   void shouldForceCORSPreflight(ExecutionContext*, bool* result);
   void shouldBlockRequest(ExecutionContext*, const KURL&, bool* result);
+  void shouldBypassServiceWorker(ExecutionContext* context, bool* result);
   void consoleTimeStamp(ExecutionContext*, const String& title);
   void lifecycleEvent([Keep] LocalFrame*, const char* name, double timestamp);
   void paintTiming([Keep] Document*, const char* name, double timestamp);
