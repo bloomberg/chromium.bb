@@ -108,11 +108,8 @@ void HIDDetectionScreen::OnContinueButtonClicked() {
       adapter_.get() && adapter_->IsPresent() && adapter_->IsPowered();
   const bool need_switching_off =
       adapter_initially_powered_ && !(*adapter_initially_powered_);
-  if (adapter_is_powered && need_switching_off) {
-    input_service_proxy_.GetDevices(
-        base::BindOnce(&HIDDetectionScreen::OnGetInputDevicesForPowerOff,
-                       weak_ptr_factory_.GetWeakPtr()));
-  }
+  if (adapter_is_powered && need_switching_off)
+    PowerOff();
 
   Finish(ScreenExitCode::HID_DETECTION_COMPLETED);
 }
@@ -130,21 +127,28 @@ void HIDDetectionScreen::CheckIsScreenRequired(
 }
 
 void HIDDetectionScreen::Show() {
+  if (showing_)
+    return;
+
   showing_ = true;
   GetContextEditor().SetBoolean(kContextKeyNumKeysEnteredExpected, false);
   SendPointingDeviceNotification();
   SendKeyboardDeviceNotification();
 
-  input_service_proxy_.AddObserver(this);
-  UpdateDevices();
+  if (!devices_enumerated_)
+    GetInputDevicesList();
+  else
+    UpdateDevices();
 
   if (view_)
     view_->Show();
 }
 
 void HIDDetectionScreen::Hide() {
+  if (!showing_)
+    return;
+
   showing_ = false;
-  input_service_proxy_.RemoveObserver(this);
   if (discovery_session_.get()) {
     discovery_session_->Stop(base::Bind(&base::DoNothing),
                              base::Bind(&base::DoNothing));
@@ -383,25 +387,33 @@ void HIDDetectionScreen::DeviceRemoved(device::BluetoothAdapter* adapter,
 
 void HIDDetectionScreen::OnInputDeviceAdded(InputDeviceInfoPtr info) {
   VLOG(1) << "Input device added id = " << info->id << " name = " << info->name;
+  const InputDeviceInfoPtr& info_ref = devices_[info->id] = std::move(info);
+  if (!showing_)
+    return;
+
   // TODO(merkulova): deal with all available device types, e.g. joystick.
   if (!keyboard_device_id_.empty() && !pointing_device_id_.empty())
     return;
 
-  if (pointing_device_id_.empty() && DeviceIsPointing(info)) {
-    pointing_device_id_ = info->id;
-    GetContextEditor().SetString(kContextKeyMouseDeviceName, info->name);
-    pointing_device_connect_type_ = info->type;
+  if (pointing_device_id_.empty() && DeviceIsPointing(info_ref)) {
+    pointing_device_id_ = info_ref->id;
+    GetContextEditor().SetString(kContextKeyMouseDeviceName, info_ref->name);
+    pointing_device_connect_type_ = info_ref->type;
     SendPointingDeviceNotification();
   }
-  if (keyboard_device_id_.empty() && info->is_keyboard) {
-    keyboard_device_id_ = info->id;
-    keyboard_device_connect_type_ = info->type;
-    SetKeyboardDeviceName_(info->name);
+  if (keyboard_device_id_.empty() && info_ref->is_keyboard) {
+    keyboard_device_id_ = info_ref->id;
+    keyboard_device_connect_type_ = info_ref->type;
+    SetKeyboardDeviceName_(info_ref->name);
     SendKeyboardDeviceNotification();
   }
 }
 
 void HIDDetectionScreen::OnInputDeviceRemoved(const std::string& id) {
+  devices_.erase(id);
+  if (!showing_)
+    return;
+
   if (id == keyboard_device_id_) {
     keyboard_device_id_.clear();
     keyboard_device_connect_type_ =
@@ -424,7 +436,6 @@ void HIDDetectionScreen::InitializeAdapter(
   CHECK(adapter_.get());
 
   adapter_->AddObserver(this);
-  UpdateDevices();
 }
 
 void HIDDetectionScreen::StartBTDiscoverySession() {
@@ -435,22 +446,22 @@ void HIDDetectionScreen::StartBTDiscoverySession() {
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void HIDDetectionScreen::ProcessConnectedDevicesList(
-    std::vector<InputDeviceInfoPtr> devices) {
-  for (std::vector<InputDeviceInfoPtr>::const_iterator it = devices.begin();
-       it != devices.end() &&
-       (pointing_device_id_.empty() || keyboard_device_id_.empty());
-       ++it) {
-    if (pointing_device_id_.empty() && DeviceIsPointing(*it)) {
-      pointing_device_id_ = (*it)->id;
-      GetContextEditor().SetString(kContextKeyMouseDeviceName, (*it)->name);
-      pointing_device_connect_type_ = (*it)->type;
+void HIDDetectionScreen::ProcessConnectedDevicesList() {
+  for (const auto& map_entry : devices_) {
+    if (!pointing_device_id_.empty() && !keyboard_device_id_.empty())
+      return;
+
+    if (pointing_device_id_.empty() && DeviceIsPointing(map_entry.second)) {
+      pointing_device_id_ = map_entry.second->id;
+      GetContextEditor().SetString(kContextKeyMouseDeviceName,
+                                   map_entry.second->name);
+      pointing_device_connect_type_ = map_entry.second->type;
       SendPointingDeviceNotification();
     }
-    if (keyboard_device_id_.empty() && (*it)->is_keyboard) {
-      keyboard_device_id_ = (*it)->id;
-      SetKeyboardDeviceName_((*it)->name);
-      keyboard_device_connect_type_ = (*it)->type;
+    if (keyboard_device_id_.empty() && (map_entry.second->is_keyboard)) {
+      keyboard_device_id_ = map_entry.second->id;
+      SetKeyboardDeviceName_(map_entry.second->name);
+      keyboard_device_connect_type_ = map_entry.second->type;
       SendKeyboardDeviceNotification();
     }
   }
@@ -480,11 +491,21 @@ void HIDDetectionScreen::TryInitiateBTDevicesUpdate() {
 void HIDDetectionScreen::OnGetInputDevicesListForCheck(
     const base::Callback<void(bool)>& on_check_done,
     std::vector<InputDeviceInfoPtr> devices) {
-  ProcessConnectedDevicesList(std::move(devices));
+  std::string pointing_device_id;
+  std::string keyboard_device_id;
+  for (const auto& device : devices) {
+    if (pointing_device_id.empty() && DeviceIsPointing(device))
+      pointing_device_id = device->id;
 
+    if (keyboard_device_id.empty() && device->is_keyboard)
+      keyboard_device_id = device->id;
+
+    if (!pointing_device_id.empty() && !keyboard_device_id.empty())
+      break;
+  }
   // Screen is not required if both devices are present.
-  bool all_devices_autodetected =
-      !pointing_device_id_.empty() && !keyboard_device_id_.empty();
+  const bool all_devices_autodetected =
+      !pointing_device_id.empty() && !keyboard_device_id.empty();
   UMA_HISTOGRAM_BOOLEAN("HIDDetection.OOBEDialogShown",
                         !all_devices_autodetected);
 
@@ -493,14 +514,23 @@ void HIDDetectionScreen::OnGetInputDevicesListForCheck(
 
 void HIDDetectionScreen::OnGetInputDevicesList(
     std::vector<InputDeviceInfoPtr> devices) {
-  ProcessConnectedDevicesList(std::move(devices));
-  TryInitiateBTDevicesUpdate();
+  devices_enumerated_ = true;
+  for (auto& device : devices) {
+    devices_[device->id] = std::move(device);
+  }
+  UpdateDevices();
 }
 
-void HIDDetectionScreen::UpdateDevices() {
+void HIDDetectionScreen::GetInputDevicesList() {
+  input_service_proxy_.AddObserver(this);
   input_service_proxy_.GetDevices(
       base::Bind(&HIDDetectionScreen::OnGetInputDevicesList,
                  weak_ptr_factory_.GetWeakPtr()));
+}
+
+void HIDDetectionScreen::UpdateDevices() {
+  ProcessConnectedDevicesList();
+  TryInitiateBTDevicesUpdate();
 }
 
 void HIDDetectionScreen::UpdateBTDevices() {
@@ -527,11 +557,11 @@ void HIDDetectionScreen::OnStartDiscoverySession(
   UpdateDevices();
 }
 
-void HIDDetectionScreen::OnGetInputDevicesForPowerOff(
-    std::vector<InputDeviceInfoPtr> devices) {
+void HIDDetectionScreen::PowerOff() {
   bool use_bluetooth = false;
-  for (auto& device : devices) {
-    if (device->type == device::mojom::InputDeviceType::TYPE_BLUETOOTH) {
+  for (const auto& map_entry : devices_) {
+    if (map_entry.second->type ==
+        device::mojom::InputDeviceType::TYPE_BLUETOOTH) {
       use_bluetooth = true;
       break;
     }
