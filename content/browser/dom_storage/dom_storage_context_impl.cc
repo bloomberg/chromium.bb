@@ -43,10 +43,10 @@ namespace {
 // are purged.
 #if defined(OS_ANDROID)
 const unsigned kMaxStorageAreaCount = 20;
-const size_t kMaxCacheSize = 2 * 1024 * 1024;
+const size_t kMaxStorageCacheSize = 2 * 1024 * 1024;
 #else
 const unsigned kMaxStorageAreaCount = 100;
-const size_t kMaxCacheSize = 20 * 1024 * 1024;
+const size_t kMaxStorageCacheSize = 20 * 1024 * 1024;
 #endif
 
 const int kSessionStoraceScavengingSeconds = 60;
@@ -493,7 +493,7 @@ void DOMStorageContextImpl::PurgeMemory(PurgeOption purge_option) {
     // Purging is done based on the cache sizes without including the database
     // size since it can be expensive trying to estimate the sqlite usage for
     // all databases. For low end devices purge all inactive areas.
-    if (initial_stats.total_cache_size > kMaxCacheSize)
+    if (initial_stats.total_cache_size > kMaxStorageCacheSize)
       purge_reason = "SizeLimitExceeded";
     else if (initial_stats.total_area_count > kMaxStorageAreaCount)
       purge_reason = "AreaCountLimitExceeded";
