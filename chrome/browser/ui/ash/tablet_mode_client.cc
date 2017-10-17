@@ -53,7 +53,6 @@ TabletModeClient* TabletModeClient::Get() {
 
 void TabletModeClient::AddObserver(TabletModeClientObserver* observer) {
   observers_.AddObserver(observer);
-  observer->OnTabletModeToggled(tablet_mode_enabled_);
 }
 
 void TabletModeClient::RemoveObserver(TabletModeClientObserver* observer) {

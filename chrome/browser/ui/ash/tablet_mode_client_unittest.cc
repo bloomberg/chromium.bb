@@ -59,16 +59,16 @@ TEST_F(TabletModeClientTest, Observers) {
   TestTabletModeClientObserver observer;
   client.AddObserver(&observer);
 
-  // Observer is notified with state when added.
-  EXPECT_EQ(1, observer.toggle_count_);
+  // Observer is not notified with state when added.
+  EXPECT_EQ(0, observer.toggle_count_);
 
   // Setting state notifies observer.
   client.OnTabletModeToggled(true);
-  EXPECT_EQ(2, observer.toggle_count_);
+  EXPECT_EQ(1, observer.toggle_count_);
   EXPECT_TRUE(observer.last_toggle_);
 
   client.OnTabletModeToggled(false);
-  EXPECT_EQ(3, observer.toggle_count_);
+  EXPECT_EQ(2, observer.toggle_count_);
   EXPECT_FALSE(observer.last_toggle_);
 
   client.RemoveObserver(&observer);
