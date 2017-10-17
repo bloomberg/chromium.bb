@@ -34,11 +34,6 @@ extern NSString* const kSettingsVoiceSearchCellId;
 @interface SettingsCollectionViewController
     : SettingsRootCollectionViewController<SettingsControllerProtocol>
 
-// The controller used to signin on this screen. Returns nil unless a signin is
-// currently occurring.
-@property(weak, nonatomic, readonly)
-    SigninInteractionController* signinInteractionController;
-
 // Dispatcher for SettingsMainPageCommands. Defaults to self if not set.
 // TODO(crbug.com/738881): Unify this with the dispatcher passed into the init.
 @property(weak, nonatomic) id<SettingsMainPageCommands>

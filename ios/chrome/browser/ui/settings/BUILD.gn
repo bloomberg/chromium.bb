@@ -151,6 +151,7 @@ source_set("settings") {
     "//ios/chrome/browser/ui/settings/cells",
     "//ios/chrome/browser/ui/settings/sync_utils",
     "//ios/chrome/browser/ui/settings/utils",
+    "//ios/chrome/browser/ui/signin_interaction",
     "//ios/chrome/browser/voice",
     "//ios/chrome/browser/web:features",
     "//ios/chrome/browser/web:web",
