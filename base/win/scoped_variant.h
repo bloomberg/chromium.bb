@@ -125,7 +125,7 @@ class BASE_EXPORT ScopedVariant {
   // over that.
   const VARIANT* ptr() const { return &var_; }
 
-  // Like other scoped classes (e.g scoped_refptr, ScopedComPtr, ScopedBstr)
+  // Like other scoped classes (e.g scoped_refptr, ComPtr, ScopedBstr)
   // we support the assignment operator for the type we wrap.
   ScopedVariant& operator=(const VARIANT& var);
 
