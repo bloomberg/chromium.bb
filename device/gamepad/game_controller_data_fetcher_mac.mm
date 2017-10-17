@@ -39,15 +39,41 @@ GamepadSource GameControllerDataFetcherMac::source() {
 void GameControllerDataFetcherMac::GetGamepadData(bool) {
   NSArray* controllers = [GCController controllers];
 
+  // In the first pass, record which player indices are still in use so unused
+  // indices can be assigned to newly connected gamepads.
+  bool player_indices[Gamepads::kItemsLengthCap];
+  std::fill(player_indices, player_indices + Gamepads::kItemsLengthCap, false);
+  for (GCController* controller in controllers) {
+    // We only support the extendedGamepad profile, the basic gamepad profile
+    // appears to only be for iOS devices.
+    if (![controller extendedGamepad])
+      continue;
+
+    int player_index = [controller playerIndex];
+    if (player_index != GCControllerPlayerIndexUnset)
+      player_indices[player_index] = true;
+  }
+
+  for (size_t i = 0; i < Gamepads::kItemsLengthCap; ++i) {
+    if (connected_[i] && !player_indices[i])
+      connected_[i] = false;
+  }
+
+  // In the second pass, assign indices to newly connected gamepads and fetch
+  // the gamepad state.
   for (GCController* controller in controllers) {
     auto extended_gamepad = [controller extendedGamepad];
 
-    // We only support the extendedGamepad profile, the basic gamepad profile
-    // appears to only be for iOS devices.
     if (!extended_gamepad)
       continue;
 
     int player_index = [controller playerIndex];
+    if (player_index == GCControllerPlayerIndexUnset) {
+      player_index = NextUnusedPlayerIndex();
+      if (player_index == GCControllerPlayerIndexUnset)
+        continue;
+    }
+
     PadState* state = GetPadState(player_index);
     if (!state)
       continue;
@@ -70,6 +96,9 @@ void GameControllerDataFetcherMac::GetGamepadData(bool) {
       pad.axes_length = AXIS_INDEX_COUNT;
       pad.buttons_length = BUTTON_INDEX_COUNT - 1;
       pad.connected = true;
+      connected_[player_index] = true;
+      [controller
+          setPlayerIndex:static_cast<GCControllerPlayerIndex>(player_index)];
     }
 
     pad.timestamp = base::TimeTicks::Now().ToInternalValue();
@@ -105,6 +134,14 @@ void GameControllerDataFetcherMac::GetGamepadData(bool) {
 
 #undef BUTTON
   }
+}
+
+int GameControllerDataFetcherMac::NextUnusedPlayerIndex() {
+  for (int i = GCControllerPlayerIndex1; i <= GCControllerPlayerIndex4; ++i) {
+    if (!connected_[i])
+      return i;
+  }
+  return GCControllerPlayerIndexUnset;
 }
 
 }  // namespace device
