@@ -34,9 +34,6 @@ class SystemTrayClient : public ash::mojom::SystemTrayClient,
 
   static SystemTrayClient* Get();
 
-  // Returns the login state based on the user type, lock screen status, etc.
-  static ash::LoginStatus GetUserLoginStatus();
-
   // Returns the container id for the parent window for new dialogs. The parent
   // varies based on the current login and lock screen state.
   static int GetDialogParentContainerId();
