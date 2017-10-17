@@ -41,7 +41,7 @@
             },
             {
                 "domain": "Network",
-                "include": ["enable", "disable", "clearBrowserCache", "clearBrowserCookies", "getCookies", "getAllCookies", "deleteCookies", "setCookie", "setCookies", "setUserAgentOverride", "canEmulateNetworkConditions", "emulateNetworkConditions", "setRequestInterceptionEnabled", "continueInterceptedRequest"],
+                "include": ["enable", "disable", "clearBrowserCache", "clearBrowserCookies", "getCookies", "getAllCookies", "deleteCookies", "setCookie", "setCookies", "setUserAgentOverride", "setExtraHTTPHeaders", "canEmulateNetworkConditions", "emulateNetworkConditions", "setRequestInterceptionEnabled", "continueInterceptedRequest"],
                 "include_types": ["CookieSameSite", "Cookie", "CookieParam", "Response", "Headers", "Request", "ResourceTiming", "SecurityDetails", "SignedCertificateTimestamp", "Initiator", "ResourcePriority", "RequestWillBeSentNotification", "ResponseReceivedNotification", "LoadingFinishedNotification", "LoadingFailedNotification", "RequestWillBeSentNotification",
                                   "ErrorReason", "RequestInterceptedNotification", "AuthChallenge", "AuthChallengeResponse", "ConnectionType"],
                 "include_events": ["requestWillBeSent", "responseReceived", "loadingFinished", "loadingFailed", "requestIntercepted"],

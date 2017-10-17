@@ -79,6 +79,8 @@ class NetworkHandler : public DevToolsDomainHandler,
       std::unique_ptr<SetCookiesCallback> callback) override;
 
   Response SetUserAgentOverride(const std::string& user_agent) override;
+  Response SetExtraHTTPHeaders(
+      std::unique_ptr<Network::Headers> headers) override;
   Response CanEmulateNetworkConditions(bool* result) override;
   Response EmulateNetworkConditions(
       bool offline,
@@ -129,7 +131,7 @@ class NetworkHandler : public DevToolsDomainHandler,
                                     const std::string& interception_id);
   void InterceptedNavigationRequestFinished(const std::string& interception_id);
   bool ShouldCancelNavigation(const GlobalRequestID& global_request_id);
-  bool AppendDevToolsHeaders(net::HttpRequestHeaders* headers);
+  void AppendDevToolsHeaders(net::HttpRequestHeaders* headers);
 
  private:
   void SetNetworkConditions(mojom::NetworkConditionsPtr conditions);
@@ -139,8 +141,8 @@ class NetworkHandler : public DevToolsDomainHandler,
   RenderFrameHostImpl* host_;
   bool enabled_;
   bool interception_enabled_;
-  bool throttling_enabled_;
   std::string user_agent_;
+  std::vector<std::pair<std::string, std::string>> extra_headers_;
   base::flat_map<std::string, GlobalRequestID> navigation_requests_;
   base::flat_set<GlobalRequestID> canceled_navigation_requests_;
   std::string host_id_;

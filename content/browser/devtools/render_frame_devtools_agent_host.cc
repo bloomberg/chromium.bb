@@ -411,10 +411,8 @@ void RenderFrameDevToolsAgentHost::AppendDevToolsHeaders(
   RenderFrameDevToolsAgentHost* agent_host = FindAgentHost(frame_tree_node);
   if (!agent_host)
     return;
-  for (auto* network : protocol::NetworkHandler::ForAgentHost(agent_host)) {
-    if (network->AppendDevToolsHeaders(headers))
-      break;
-  }
+  for (auto* network : protocol::NetworkHandler::ForAgentHost(agent_host))
+    network->AppendDevToolsHeaders(headers);
 }
 
 // static
