@@ -282,7 +282,7 @@ void IntersectionObserver::ComputeIntersectionObservations() {
   if (!RootIsValid())
     return;
   Document* delegate_document = ToDocument(delegate_->GetExecutionContext());
-  if (!delegate_document)
+  if (!delegate_document || delegate_document->IsStopped())
     return;
   LocalDOMWindow* delegate_dom_window = delegate_document->domWindow();
   if (!delegate_dom_window)
