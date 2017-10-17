@@ -1,8 +1,7 @@
 include_rules = [
   "+components/pref_registry",
   "+components/prefs",
+  "+third_party/s2cellid",
 
-  # Language is a layered component; subdirectories must explicitly introduce
-  # the ability to use the content layer as appropriate.
   "-components/language/content",
 ]
