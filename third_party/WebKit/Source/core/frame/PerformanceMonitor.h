@@ -134,6 +134,8 @@ class CORE_EXPORT PerformanceMonitor final
   void WillExecuteScript(ExecutionContext*);
   void DidExecuteScript();
 
+  void UpdateTaskAttribution(ExecutionContext*);
+
   std::pair<String, DOMWindow*> SanitizedAttribution(
       const HeapHashSet<Member<Frame>>& frame_contexts,
       Frame* observer_frame);
@@ -153,6 +155,7 @@ class CORE_EXPORT PerformanceMonitor final
   Member<LocalFrame> local_root_;
   Member<ExecutionContext> task_execution_context_;
   bool task_has_multiple_contexts_ = false;
+  bool task_should_be_reported_ = false;
   using ClientThresholds = HeapHashMap<WeakMember<Client>, double>;
   HeapHashMap<Violation,
               Member<ClientThresholds>,

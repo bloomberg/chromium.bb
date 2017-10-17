@@ -43,6 +43,10 @@ class PerformanceMonitorTest : public ::testing::Test {
   void DidProcessTask(double start_time, double end_time) {
     monitor_->DidProcessTask(start_time, end_time);
   }
+  void UpdateTaskAttribution(ExecutionContext* execution_context) {
+    monitor_->UpdateTaskAttribution(execution_context);
+  }
+  bool TaskShouldBeReported() { return monitor_->task_should_be_reported_; }
 
   String FrameContextURL();
   int NumUniqueFrameContextsSeen();
@@ -131,6 +135,25 @@ TEST_F(PerformanceMonitorTest, NoScriptInLongTask) {
   DidProcessTask(3719349.445172, 3719349.5561923);  // Long task
   // Without presence of Script, FrameContext URL is not available
   EXPECT_EQ(0, NumUniqueFrameContextsSeen());
+}
+
+TEST_F(PerformanceMonitorTest, TaskWithoutLocalRoot) {
+  WillProcessTask(1234.5678);
+  UpdateTaskAttribution(AnotherExecutionContext());
+  DidProcessTask(1234.5678, 2345.6789);
+  EXPECT_FALSE(TaskShouldBeReported());
+  EXPECT_EQ(1, NumUniqueFrameContextsSeen());
+}
+
+TEST_F(PerformanceMonitorTest, TaskWithLocalRoot) {
+  WillProcessTask(1234.5678);
+  UpdateTaskAttribution(GetExecutionContext());
+  EXPECT_TRUE(TaskShouldBeReported());
+  EXPECT_EQ(1, NumUniqueFrameContextsSeen());
+  UpdateTaskAttribution(AnotherExecutionContext());
+  DidProcessTask(1234.5678, 2345.6789);
+  EXPECT_TRUE(TaskShouldBeReported());
+  EXPECT_EQ(2, NumUniqueFrameContextsSeen());
 }
 
 }  // namespace blink

@@ -137,17 +137,29 @@ void PerformanceMonitor::WillExecuteScript(ExecutionContext* context) {
   // In V2, timing of script execution along with style & layout updates will be
   // accounted for detailed and more accurate attribution.
   ++script_depth_;
-  if (!task_execution_context_)
-    task_execution_context_ = context;
-  else if (task_execution_context_ != context)
-    task_has_multiple_contexts_ = true;
+  UpdateTaskAttribution(context);
 }
 
 void PerformanceMonitor::DidExecuteScript() {
   --script_depth_;
 }
 
+void PerformanceMonitor::UpdateTaskAttribution(ExecutionContext* context) {
+  // If |context| is not a document, unable to attribute a frame context.
+  if (!context || !context->IsDocument())
+    return;
+
+  LocalFrame* frame_context = ToDocument(context)->GetFrame();
+  if (frame_context && local_root_ == &(frame_context->LocalFrameRoot()))
+    task_should_be_reported_ = true;
+  if (!task_execution_context_)
+    task_execution_context_ = context;
+  else if (task_execution_context_ != context)
+    task_has_multiple_contexts_ = true;
+}
+
 void PerformanceMonitor::Will(const probe::RecalculateStyle& probe) {
+  task_should_be_reported_ = true;
   if (enabled_ && thresholds_[kLongLayout] && script_depth_)
     probe.CaptureStartTime();
 }
@@ -159,6 +171,7 @@ void PerformanceMonitor::Did(const probe::RecalculateStyle& probe) {
 
 void PerformanceMonitor::Will(const probe::UpdateLayout& probe) {
   ++layout_depth_;
+  task_should_be_reported_ = true;
   if (!enabled_)
     return;
   if (layout_depth_ > 1 || !script_depth_ || !thresholds_[kLongLayout])
@@ -226,6 +239,7 @@ void PerformanceMonitor::Did(const probe::CallFunction& probe) {
 }
 
 void PerformanceMonitor::Will(const probe::V8Compile& probe) {
+  UpdateTaskAttribution(probe.context);
   if (!enabled_ || !thresholds_[kLongTask])
     return;
 
@@ -256,7 +270,7 @@ void PerformanceMonitor::Did(const probe::V8Compile& probe) {
 
 void PerformanceMonitor::Will(const probe::UserCallback& probe) {
   ++user_callback_depth_;
-
+  UpdateTaskAttribution(probe.context);
   if (!enabled_ || user_callback_depth_ != 1 ||
       !thresholds_[probe.recurring ? kRecurringHandler : kHandler])
     return;
@@ -284,6 +298,7 @@ void PerformanceMonitor::WillProcessTask(double start_time) {
   // as it is needed in ReportTaskTime which occurs after didProcessTask.
   task_execution_context_ = nullptr;
   task_has_multiple_contexts_ = false;
+  task_should_be_reported_ = false;
 
   if (!enabled_)
     return;
@@ -298,7 +313,7 @@ void PerformanceMonitor::WillProcessTask(double start_time) {
 }
 
 void PerformanceMonitor::DidProcessTask(double start_time, double end_time) {
-  if (!enabled_)
+  if (!enabled_ || !task_should_be_reported_)
     return;
   double layout_threshold = thresholds_[kLongLayout];
   if (layout_threshold && per_task_style_and_layout_time_ > layout_threshold) {
