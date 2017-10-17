@@ -7,12 +7,12 @@
 #include "core/frame/Settings.h"
 #include "core/layout/LayoutEmbeddedObject.h"
 #include "core/layout/LayoutTheme.h"
-#include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/PaintInfo.h"
 #include "platform/fonts/Font.h"
 #include "platform/fonts/FontSelector.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/graphics/Path.h"
+#include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/text/TextRun.h"
 
 namespace blink {
@@ -43,14 +43,14 @@ void EmbeddedObjectPainter::PaintReplaced(const PaintInfo& paint_info,
     return;
 
   GraphicsContext& context = paint_info.context;
-  if (LayoutObjectDrawingRecorder::UseCachedDrawingIfPossible(
+  if (DrawingRecorder::UseCachedDrawingIfPossible(
           context, layout_embedded_object_, paint_info.phase))
     return;
 
   LayoutRect content_rect(layout_embedded_object_.ContentBoxRect());
   content_rect.MoveBy(paint_offset);
-  LayoutObjectDrawingRecorder drawing_recorder(context, layout_embedded_object_,
-                                               paint_info.phase, content_rect);
+  DrawingRecorder recorder(context, layout_embedded_object_, paint_info.phase,
+                           content_rect);
   GraphicsContextStateSaver state_saver(context);
   context.Clip(PixelSnappedIntRect(content_rect));
 

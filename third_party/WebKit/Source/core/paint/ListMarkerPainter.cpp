@@ -9,12 +9,12 @@
 #include "core/layout/ListMarkerText.h"
 #include "core/layout/api/SelectionState.h"
 #include "core/paint/BoxModelObjectPainter.h"
-#include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/SelectionPaintingUtils.h"
 #include "core/paint/TextPainter.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
+#include "platform/graphics/paint/DrawingRecorder.h"
 
 namespace blink {
 
@@ -49,7 +49,7 @@ void ListMarkerPainter::Paint(const PaintInfo& paint_info,
   if (layout_list_marker_.Style()->Visibility() != EVisibility::kVisible)
     return;
 
-  if (LayoutObjectDrawingRecorder::UseCachedDrawingIfPossible(
+  if (DrawingRecorder::UseCachedDrawingIfPossible(
           paint_info.context, layout_list_marker_, paint_info.phase))
     return;
 
@@ -61,9 +61,8 @@ void ListMarkerPainter::Paint(const PaintInfo& paint_info,
   if (!paint_info.GetCullRect().IntersectsCullRect(overflow_rect))
     return;
 
-  LayoutObjectDrawingRecorder recorder(paint_info.context, layout_list_marker_,
-                                       paint_info.phase,
-                                       pixel_snapped_overflow_rect);
+  DrawingRecorder recorder(paint_info.context, layout_list_marker_,
+                           paint_info.phase, pixel_snapped_overflow_rect);
 
   LayoutRect box(box_origin, layout_list_marker_.Size());
 

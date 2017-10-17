@@ -296,8 +296,7 @@ void CaretDisplayItemClient::PaintCaret(
   drawing_rect.MoveBy(paint_offset);
 
   IntRect paint_rect = PixelSnappedIntRect(drawing_rect);
-  DrawingRecorder drawing_recorder(context, *this, display_item_type,
-                                   paint_rect);
+  DrawingRecorder recorder(context, *this, display_item_type, paint_rect);
   context.FillRect(paint_rect, color_);
 }
 

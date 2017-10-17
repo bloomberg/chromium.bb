@@ -10,13 +10,13 @@
 #include "core/layout/svg/LayoutSVGImage.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
-#include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/ObjectPainter.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/SVGPaintContext.h"
 #include "core/svg/SVGImageElement.h"
 #include "core/svg/graphics/SVGImage.h"
 #include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/graphics/paint/PaintRecord.h"
 
 namespace blink {
@@ -41,10 +41,10 @@ void SVGImagePainter::Paint(const PaintInfo& paint_info) {
     SVGPaintContext paint_context(layout_svg_image_,
                                   paint_info_before_filtering);
     if (paint_context.ApplyClipMaskAndFilterIfNecessary() &&
-        !LayoutObjectDrawingRecorder::UseCachedDrawingIfPossible(
+        !DrawingRecorder::UseCachedDrawingIfPossible(
             paint_context.GetPaintInfo().context, layout_svg_image_,
             paint_context.GetPaintInfo().phase)) {
-      LayoutObjectDrawingRecorder recorder(
+      DrawingRecorder recorder(
           paint_context.GetPaintInfo().context, layout_svg_image_,
           paint_context.GetPaintInfo().phase, bounding_box);
       PaintForeground(paint_context.GetPaintInfo());

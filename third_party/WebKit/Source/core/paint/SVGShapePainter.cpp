@@ -10,12 +10,12 @@
 #include "core/layout/svg/SVGMarkerData.h"
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
-#include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/ObjectPainter.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/SVGContainerPainter.h"
 #include "core/paint/SVGPaintContext.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
+#include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/graphics/paint/PaintRecord.h"
 #include "platform/graphics/paint/PaintRecordBuilder.h"
 #include "platform/wtf/Optional.h"
@@ -60,10 +60,10 @@ void SVGShapePainter::Paint(const PaintInfo& paint_info) {
     SVGPaintContext paint_context(layout_svg_shape_,
                                   paint_info_before_filtering);
     if (paint_context.ApplyClipMaskAndFilterIfNecessary() &&
-        !LayoutObjectDrawingRecorder::UseCachedDrawingIfPossible(
+        !DrawingRecorder::UseCachedDrawingIfPossible(
             paint_context.GetPaintInfo().context, layout_svg_shape_,
             paint_context.GetPaintInfo().phase)) {
-      LayoutObjectDrawingRecorder recorder(
+      DrawingRecorder recorder(
           paint_context.GetPaintInfo().context, layout_svg_shape_,
           paint_context.GetPaintInfo().phase, bounding_box);
       const SVGComputedStyle& svg_style = layout_svg_shape_.Style()->SvgStyle();

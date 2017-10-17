@@ -9,13 +9,13 @@
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
-#include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/TransformRecorder.h"
 #include "core/style/ClipPathOperation.h"
 #include "platform/graphics/paint/ClipPathDisplayItem.h"
 #include "platform/graphics/paint/ClipPathRecorder.h"
 #include "platform/graphics/paint/DrawingDisplayItem.h"
+#include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/graphics/paint/PaintController.h"
 #include "platform/graphics/paint/PaintRecordBuilder.h"
 
@@ -178,8 +178,8 @@ bool ClipPathClipper::DrawClipAsMask(const FloatRect& target_bounding_box,
                                      const FloatRect& target_visual_rect,
                                      const AffineTransform& local_transform,
                                      const FloatPoint& layer_position_offset) {
-  if (LayoutObjectDrawingRecorder::UseCachedDrawingIfPossible(
-          context_, layout_object_, DisplayItem::kSVGClip))
+  if (DrawingRecorder::UseCachedDrawingIfPossible(context_, layout_object_,
+                                                  DisplayItem::kSVGClip))
     return true;
 
   PaintRecordBuilder mask_builder(target_visual_rect, nullptr, &context_);
@@ -215,8 +215,8 @@ bool ClipPathClipper::DrawClipAsMask(const FloatRect& target_bounding_box,
     }
   }
 
-  LayoutObjectDrawingRecorder drawing_recorder(
-      context_, layout_object_, DisplayItem::kSVGClip, target_visual_rect);
+  DrawingRecorder recorder(context_, layout_object_, DisplayItem::kSVGClip,
+                           target_visual_rect);
   context_.DrawRecord(mask_builder.EndRecording());
   return true;
 }

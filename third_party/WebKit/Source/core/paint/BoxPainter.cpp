@@ -13,7 +13,6 @@
 #include "core/paint/BoxDecorationData.h"
 #include "core/paint/BoxModelObjectPainter.h"
 #include "core/paint/BoxPainterBase.h"
-#include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/NinePieceImagePainter.h"
 #include "core/paint/ObjectPainter.h"
 #include "core/paint/PaintInfo.h"
@@ -24,6 +23,7 @@
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/graphics/paint/DisplayItemCacheSkipper.h"
+#include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/wtf/Optional.h"
 
 namespace blink {
@@ -211,15 +211,15 @@ void BoxPainter::PaintMask(const PaintInfo& paint_info,
       paint_info.phase != PaintPhase::kMask)
     return;
 
-  if (LayoutObjectDrawingRecorder::UseCachedDrawingIfPossible(
+  if (DrawingRecorder::UseCachedDrawingIfPossible(
           paint_info.context, layout_box_, paint_info.phase))
     return;
 
   LayoutRect visual_overflow_rect(layout_box_.VisualOverflowRect());
   visual_overflow_rect.MoveBy(paint_offset);
 
-  LayoutObjectDrawingRecorder recorder(paint_info.context, layout_box_,
-                                       paint_info.phase, visual_overflow_rect);
+  DrawingRecorder recorder(paint_info.context, layout_box_, paint_info.phase,
+                           visual_overflow_rect);
   LayoutRect paint_rect = LayoutRect(paint_offset, layout_box_.Size());
   PaintMaskImages(paint_info, paint_rect);
 }
@@ -278,14 +278,14 @@ void BoxPainter::PaintClippingMask(const PaintInfo& paint_info,
       layout_box_.Layer()->GetCompositingState() != kPaintsIntoOwnBacking)
     return;
 
-  if (LayoutObjectDrawingRecorder::UseCachedDrawingIfPossible(
+  if (DrawingRecorder::UseCachedDrawingIfPossible(
           paint_info.context, layout_box_, paint_info.phase))
     return;
 
   IntRect paint_rect =
       PixelSnappedIntRect(LayoutRect(paint_offset, layout_box_.Size()));
-  LayoutObjectDrawingRecorder drawing_recorder(paint_info.context, layout_box_,
-                                               paint_info.phase, paint_rect);
+  DrawingRecorder recorder(paint_info.context, layout_box_, paint_info.phase,
+                           paint_rect);
   paint_info.context.FillRect(paint_rect, Color::kBlack);
 }
 

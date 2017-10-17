@@ -94,7 +94,7 @@ static void PaintInternal(Page& page,
       view->PaintWithLifecycleUpdate(paint_context, global_paint_flags,
                                      CullRect(dirty_rect));
     } else {
-      DrawingRecorder drawing_recorder(
+      DrawingRecorder recorder(
           paint_context, builder,
           DisplayItem::kPageWidgetDelegateBackgroundFallback, dirty_rect);
       paint_context.FillRect(dirty_rect, Color::kWhite);

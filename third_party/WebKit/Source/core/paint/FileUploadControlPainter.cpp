@@ -7,9 +7,9 @@
 #include "core/layout/LayoutButton.h"
 #include "core/layout/LayoutFileUploadControl.h"
 #include "core/layout/TextRunConstructor.h"
-#include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/PaintInfo.h"
 #include "platform/graphics/paint/ClipRecorder.h"
+#include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/wtf/Optional.h"
 
 namespace blink {
@@ -40,7 +40,7 @@ void FileUploadControlPainter::PaintObject(const PaintInfo& paint_info,
   }
 
   if (paint_info.phase == PaintPhase::kForeground &&
-      !LayoutObjectDrawingRecorder::UseCachedDrawingIfPossible(
+      !DrawingRecorder::UseCachedDrawingIfPossible(
           paint_info.context, layout_file_upload_control_, paint_info.phase)) {
     const String& displayed_filename =
         layout_file_upload_control_.FileTextValue();
@@ -99,9 +99,8 @@ void FileUploadControlPainter::PaintObject(const PaintInfo& paint_info,
                   text_width, font_data->GetFontMetrics().Height());
 
     // Draw the filename.
-    LayoutObjectDrawingRecorder recorder(
-        paint_info.context, layout_file_upload_control_, paint_info.phase,
-        text_run_paint_info.bounds);
+    DrawingRecorder recorder(paint_info.context, layout_file_upload_control_,
+                             paint_info.phase, text_run_paint_info.bounds);
     paint_info.context.SetFillColor(
         layout_file_upload_control_.ResolveColor(CSSPropertyColor));
     paint_info.context.DrawBidiText(

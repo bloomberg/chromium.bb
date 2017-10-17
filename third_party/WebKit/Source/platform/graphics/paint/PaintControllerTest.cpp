@@ -2,10 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/paint/PaintController.h"
+#include "platform/graphics/paint/PaintControllerTest.h"
 
-#include <memory>
-#include "build/build_config.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/ClipPathDisplayItem.h"
 #include "platform/graphics/paint/ClipPathRecorder.h"
@@ -20,107 +18,12 @@
 #include "platform/testing/PaintPropertyTestHelpers.h"
 #include "platform/testing/PaintTestConfigurations.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 using blink::testing::CreateOpacityOnlyEffect;
 using blink::testing::DefaultPaintChunkProperties;
 using ::testing::UnorderedElementsAre;
 
 namespace blink {
-
-class PaintControllerTestBase : public ::testing::Test {
- public:
-  PaintControllerTestBase() : paint_controller_(PaintController::Create()) {}
-
- protected:
-  PaintController& GetPaintController() { return *paint_controller_; }
-
-  int NumCachedNewItems() const {
-    return paint_controller_->num_cached_new_items_;
-  }
-
-#ifndef NDEBUG
-  int NumSequentialMatches() const {
-    return paint_controller_->num_sequential_matches_;
-  }
-  int NumOutOfOrderMatches() const {
-    return paint_controller_->num_out_of_order_matches_;
-  }
-  int NumIndexedItems() const { return paint_controller_->num_indexed_items_; }
-#endif
-
-  void InvalidateAll() { paint_controller_->InvalidateAllForTesting(); }
-
-  using SubsequenceMarkers = PaintController::SubsequenceMarkers;
-  SubsequenceMarkers* GetSubsequenceMarkers(const DisplayItemClient& client) {
-    return paint_controller_->GetSubsequenceMarkers(client);
-  }
-
- private:
-  std::unique_ptr<PaintController> paint_controller_;
-};
-
-const DisplayItem::Type kForegroundDrawingType =
-    static_cast<DisplayItem::Type>(DisplayItem::kDrawingPaintPhaseFirst + 4);
-const DisplayItem::Type kBackgroundDrawingType =
-    DisplayItem::kDrawingPaintPhaseFirst;
-const DisplayItem::Type kClipType = DisplayItem::kClipFirst;
-
-class TestControllerDisplayItem final : public DisplayItem {
- public:
-  TestControllerDisplayItem(const FakeDisplayItemClient& client, Type type)
-      : DisplayItem(client, type, sizeof(*this)) {}
-
-  void Replay(GraphicsContext&) const final { NOTREACHED(); }
-  void AppendToWebDisplayItemList(const LayoutSize&,
-                                  WebDisplayItemList*) const final {
-    NOTREACHED();
-  }
-};
-
-#ifndef NDEBUG
-#define TRACE_DISPLAY_ITEMS(i, expected, actual)             \
-  String trace = String::Format("%d: ", (int)i) +            \
-                 "Expected: " + (expected).AsDebugString() + \
-                 " Actual: " + (actual).AsDebugString();     \
-  SCOPED_TRACE(trace.Utf8().data());
-#else
-#define TRACE_DISPLAY_ITEMS(i, expected, actual)
-#endif
-
-#define EXPECT_DISPLAY_LIST(actual, expectedSize, ...)                     \
-  do {                                                                     \
-    EXPECT_EQ((size_t)expectedSize, actual.size());                        \
-    if (expectedSize != actual.size())                                     \
-      break;                                                               \
-    const TestControllerDisplayItem expected[] = {__VA_ARGS__};            \
-    for (size_t index = 0;                                                 \
-         index < std::min<size_t>(actual.size(), expectedSize); index++) { \
-      TRACE_DISPLAY_ITEMS(index, expected[index], actual[index]);          \
-      EXPECT_EQ(expected[index].Client(), actual[index].Client());         \
-      EXPECT_EQ(expected[index].GetType(), actual[index].GetType());       \
-    }                                                                      \
-  } while (false);
-
-void DrawRect(GraphicsContext& context,
-              const FakeDisplayItemClient& client,
-              DisplayItem::Type type,
-              const FloatRect& bounds) {
-  if (DrawingRecorder::UseCachedDrawingIfPossible(context, client, type))
-    return;
-  DrawingRecorder drawing_recorder(context, client, type, bounds);
-  IntRect rect(0, 0, 10, 10);
-  context.DrawRect(rect);
-}
-
-void DrawClippedRect(GraphicsContext& context,
-                     const FakeDisplayItemClient& client,
-                     DisplayItem::Type clip_type,
-                     DisplayItem::Type drawing_type,
-                     const FloatRect& bound) {
-  ClipRecorder clip_recorder(context, client, clip_type, IntRect(1, 1, 9, 9));
-  DrawRect(context, client, drawing_type, bound);
-}
 
 // Tests using this class will be tested with under-invalidation-checking
 // enabled and disabled.
@@ -152,14 +55,16 @@ TEST_P(PaintControllerTest, NestedRecorders) {
         &root_paint_chunk_id_, DefaultPaintChunkProperties());
   }
 
-  DrawClippedRect(context, client, kClipType, kBackgroundDrawingType,
-                  FloatRect(100, 100, 200, 200));
+  {
+    ClipRecorder clip_recorder(context, client, kClipType,
+                               IntRect(100, 100, 50, 50));
+    DrawRect(context, client, kBackgroundType, FloatRect(100, 100, 200, 200));
+  }
   GetPaintController().CommitNewDisplayItems();
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-    EXPECT_DISPLAY_LIST(
-        GetPaintController().GetDisplayItemList(), 1,
-        TestControllerDisplayItem(client, kBackgroundDrawingType));
+    EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 1,
+                        TestDisplayItem(client, kBackgroundType));
 
     EXPECT_EQ(1u, GetPaintController().PaintChunks().size());
     // Raster invalidation for the whole chunk will be issued during
@@ -170,10 +75,9 @@ TEST_P(PaintControllerTest, NestedRecorders) {
   } else {
     EXPECT_DISPLAY_LIST(
         GetPaintController().GetDisplayItemList(), 3,
-        TestControllerDisplayItem(client, kClipType),
-        TestControllerDisplayItem(client, kBackgroundDrawingType),
-        TestControllerDisplayItem(
-            client, DisplayItem::ClipTypeToEndClipType(kClipType)));
+        TestDisplayItem(client, kClipType),
+        TestDisplayItem(client, kBackgroundType),
+        TestDisplayItem(client, DisplayItem::ClipTypeToEndClipType(kClipType)));
   }
 }
 
@@ -186,21 +90,18 @@ TEST_P(PaintControllerTest, UpdateBasic) {
         &root_paint_chunk_id_, DefaultPaintChunkProperties());
   }
 
-  DrawRect(context, first, kBackgroundDrawingType,
-           FloatRect(100, 100, 300, 300));
-  DrawRect(context, second, kBackgroundDrawingType,
-           FloatRect(100, 100, 200, 200));
-  DrawRect(context, first, kForegroundDrawingType,
-           FloatRect(100, 100, 300, 300));
+  DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 300, 300));
+  DrawRect(context, second, kBackgroundType, FloatRect(100, 100, 200, 200));
+  DrawRect(context, first, kForegroundType, FloatRect(100, 100, 300, 300));
 
   EXPECT_EQ(0, NumCachedNewItems());
 
   GetPaintController().CommitNewDisplayItems();
 
   EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 3,
-                      TestControllerDisplayItem(first, kBackgroundDrawingType),
-                      TestControllerDisplayItem(second, kBackgroundDrawingType),
-                      TestControllerDisplayItem(first, kForegroundDrawingType));
+                      TestDisplayItem(first, kBackgroundType),
+                      TestDisplayItem(second, kBackgroundType),
+                      TestDisplayItem(first, kForegroundType));
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     EXPECT_EQ(1u, GetPaintController().PaintChunks().size());
@@ -214,10 +115,8 @@ TEST_P(PaintControllerTest, UpdateBasic) {
         &root_paint_chunk_id_, DefaultPaintChunkProperties());
   }
 
-  DrawRect(context, first, kBackgroundDrawingType,
-           FloatRect(100, 100, 300, 300));
-  DrawRect(context, first, kForegroundDrawingType,
-           FloatRect(100, 100, 300, 300));
+  DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 300, 300));
+  DrawRect(context, first, kForegroundType, FloatRect(100, 100, 300, 300));
 
   EXPECT_EQ(2, NumCachedNewItems());
 #ifndef NDEBUG
@@ -229,8 +128,8 @@ TEST_P(PaintControllerTest, UpdateBasic) {
   GetPaintController().CommitNewDisplayItems();
 
   EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 2,
-                      TestControllerDisplayItem(first, kBackgroundDrawingType),
-                      TestControllerDisplayItem(first, kForegroundDrawingType));
+                      TestDisplayItem(first, kBackgroundType),
+                      TestDisplayItem(first, kForegroundType));
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     EXPECT_EQ(1u, GetPaintController().PaintChunks().size());
@@ -250,45 +149,32 @@ TEST_P(PaintControllerTest, UpdateSwapOrder) {
         &root_paint_chunk_id_, DefaultPaintChunkProperties());
   }
 
-  DrawRect(context, first, kBackgroundDrawingType,
-           FloatRect(100, 100, 100, 100));
-  DrawRect(context, first, kForegroundDrawingType,
-           FloatRect(100, 100, 100, 100));
-  DrawRect(context, second, kBackgroundDrawingType,
-           FloatRect(100, 100, 50, 200));
-  DrawRect(context, second, kForegroundDrawingType,
-           FloatRect(100, 100, 50, 200));
-  DrawRect(context, unaffected, kBackgroundDrawingType,
-           FloatRect(300, 300, 10, 10));
-  DrawRect(context, unaffected, kForegroundDrawingType,
-           FloatRect(300, 300, 10, 10));
+  DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 100, 100));
+  DrawRect(context, first, kForegroundType, FloatRect(100, 100, 100, 100));
+  DrawRect(context, second, kBackgroundType, FloatRect(100, 100, 50, 200));
+  DrawRect(context, second, kForegroundType, FloatRect(100, 100, 50, 200));
+  DrawRect(context, unaffected, kBackgroundType, FloatRect(300, 300, 10, 10));
+  DrawRect(context, unaffected, kForegroundType, FloatRect(300, 300, 10, 10));
   GetPaintController().CommitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(
-      GetPaintController().GetDisplayItemList(), 6,
-      TestControllerDisplayItem(first, kBackgroundDrawingType),
-      TestControllerDisplayItem(first, kForegroundDrawingType),
-      TestControllerDisplayItem(second, kBackgroundDrawingType),
-      TestControllerDisplayItem(second, kForegroundDrawingType),
-      TestControllerDisplayItem(unaffected, kBackgroundDrawingType),
-      TestControllerDisplayItem(unaffected, kForegroundDrawingType));
+  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 6,
+                      TestDisplayItem(first, kBackgroundType),
+                      TestDisplayItem(first, kForegroundType),
+                      TestDisplayItem(second, kBackgroundType),
+                      TestDisplayItem(second, kForegroundType),
+                      TestDisplayItem(unaffected, kBackgroundType),
+                      TestDisplayItem(unaffected, kForegroundType));
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     GetPaintController().UpdateCurrentPaintChunkProperties(
         &root_paint_chunk_id_, DefaultPaintChunkProperties());
   }
-  DrawRect(context, second, kBackgroundDrawingType,
-           FloatRect(100, 100, 50, 200));
-  DrawRect(context, second, kForegroundDrawingType,
-           FloatRect(100, 100, 50, 200));
-  DrawRect(context, first, kBackgroundDrawingType,
-           FloatRect(100, 100, 100, 100));
-  DrawRect(context, first, kForegroundDrawingType,
-           FloatRect(100, 100, 100, 100));
-  DrawRect(context, unaffected, kBackgroundDrawingType,
-           FloatRect(300, 300, 10, 10));
-  DrawRect(context, unaffected, kForegroundDrawingType,
-           FloatRect(300, 300, 10, 10));
+  DrawRect(context, second, kBackgroundType, FloatRect(100, 100, 50, 200));
+  DrawRect(context, second, kForegroundType, FloatRect(100, 100, 50, 200));
+  DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 100, 100));
+  DrawRect(context, first, kForegroundType, FloatRect(100, 100, 100, 100));
+  DrawRect(context, unaffected, kBackgroundType, FloatRect(300, 300, 10, 10));
+  DrawRect(context, unaffected, kForegroundType, FloatRect(300, 300, 10, 10));
 
   EXPECT_EQ(6, NumCachedNewItems());
 #ifndef NDEBUG
@@ -299,14 +185,13 @@ TEST_P(PaintControllerTest, UpdateSwapOrder) {
 
   GetPaintController().CommitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(
-      GetPaintController().GetDisplayItemList(), 6,
-      TestControllerDisplayItem(second, kBackgroundDrawingType),
-      TestControllerDisplayItem(second, kForegroundDrawingType),
-      TestControllerDisplayItem(first, kBackgroundDrawingType),
-      TestControllerDisplayItem(first, kForegroundDrawingType),
-      TestControllerDisplayItem(unaffected, kBackgroundDrawingType),
-      TestControllerDisplayItem(unaffected, kForegroundDrawingType));
+  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 6,
+                      TestDisplayItem(second, kBackgroundType),
+                      TestDisplayItem(second, kForegroundType),
+                      TestDisplayItem(first, kBackgroundType),
+                      TestDisplayItem(first, kForegroundType),
+                      TestDisplayItem(unaffected, kBackgroundType),
+                      TestDisplayItem(unaffected, kForegroundType));
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     EXPECT_EQ(1u, GetPaintController().PaintChunks().size());
@@ -326,28 +211,21 @@ TEST_P(PaintControllerTest, UpdateSwapOrderWithInvalidation) {
         &root_paint_chunk_id_, DefaultPaintChunkProperties());
   }
 
-  DrawRect(context, first, kBackgroundDrawingType,
-           FloatRect(100, 100, 100, 100));
-  DrawRect(context, first, kForegroundDrawingType,
-           FloatRect(100, 100, 100, 100));
-  DrawRect(context, second, kBackgroundDrawingType,
-           FloatRect(100, 100, 50, 200));
-  DrawRect(context, second, kForegroundDrawingType,
-           FloatRect(100, 100, 50, 200));
-  DrawRect(context, unaffected, kBackgroundDrawingType,
-           FloatRect(300, 300, 10, 10));
-  DrawRect(context, unaffected, kForegroundDrawingType,
-           FloatRect(300, 300, 10, 10));
+  DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 100, 100));
+  DrawRect(context, first, kForegroundType, FloatRect(100, 100, 100, 100));
+  DrawRect(context, second, kBackgroundType, FloatRect(100, 100, 50, 200));
+  DrawRect(context, second, kForegroundType, FloatRect(100, 100, 50, 200));
+  DrawRect(context, unaffected, kBackgroundType, FloatRect(300, 300, 10, 10));
+  DrawRect(context, unaffected, kForegroundType, FloatRect(300, 300, 10, 10));
   GetPaintController().CommitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(
-      GetPaintController().GetDisplayItemList(), 6,
-      TestControllerDisplayItem(first, kBackgroundDrawingType),
-      TestControllerDisplayItem(first, kForegroundDrawingType),
-      TestControllerDisplayItem(second, kBackgroundDrawingType),
-      TestControllerDisplayItem(second, kForegroundDrawingType),
-      TestControllerDisplayItem(unaffected, kBackgroundDrawingType),
-      TestControllerDisplayItem(unaffected, kForegroundDrawingType));
+  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 6,
+                      TestDisplayItem(first, kBackgroundType),
+                      TestDisplayItem(first, kForegroundType),
+                      TestDisplayItem(second, kBackgroundType),
+                      TestDisplayItem(second, kForegroundType),
+                      TestDisplayItem(unaffected, kBackgroundType),
+                      TestDisplayItem(unaffected, kForegroundType));
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     GetPaintController().UpdateCurrentPaintChunkProperties(
@@ -355,18 +233,12 @@ TEST_P(PaintControllerTest, UpdateSwapOrderWithInvalidation) {
   }
 
   first.SetDisplayItemsUncached();
-  DrawRect(context, second, kBackgroundDrawingType,
-           FloatRect(100, 100, 50, 200));
-  DrawRect(context, second, kForegroundDrawingType,
-           FloatRect(100, 100, 50, 200));
-  DrawRect(context, first, kBackgroundDrawingType,
-           FloatRect(100, 100, 100, 100));
-  DrawRect(context, first, kForegroundDrawingType,
-           FloatRect(100, 100, 100, 100));
-  DrawRect(context, unaffected, kBackgroundDrawingType,
-           FloatRect(300, 300, 10, 10));
-  DrawRect(context, unaffected, kForegroundDrawingType,
-           FloatRect(300, 300, 10, 10));
+  DrawRect(context, second, kBackgroundType, FloatRect(100, 100, 50, 200));
+  DrawRect(context, second, kForegroundType, FloatRect(100, 100, 50, 200));
+  DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 100, 100));
+  DrawRect(context, first, kForegroundType, FloatRect(100, 100, 100, 100));
+  DrawRect(context, unaffected, kBackgroundType, FloatRect(300, 300, 10, 10));
+  DrawRect(context, unaffected, kForegroundType, FloatRect(300, 300, 10, 10));
 
   EXPECT_EQ(4, NumCachedNewItems());
 #ifndef NDEBUG
@@ -377,14 +249,13 @@ TEST_P(PaintControllerTest, UpdateSwapOrderWithInvalidation) {
 
   GetPaintController().CommitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(
-      GetPaintController().GetDisplayItemList(), 6,
-      TestControllerDisplayItem(second, kBackgroundDrawingType),
-      TestControllerDisplayItem(second, kForegroundDrawingType),
-      TestControllerDisplayItem(first, kBackgroundDrawingType),
-      TestControllerDisplayItem(first, kForegroundDrawingType),
-      TestControllerDisplayItem(unaffected, kBackgroundDrawingType),
-      TestControllerDisplayItem(unaffected, kForegroundDrawingType));
+  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 6,
+                      TestDisplayItem(second, kBackgroundType),
+                      TestDisplayItem(second, kForegroundType),
+                      TestDisplayItem(first, kBackgroundType),
+                      TestDisplayItem(first, kForegroundType),
+                      TestDisplayItem(unaffected, kBackgroundType),
+                      TestDisplayItem(unaffected, kForegroundType));
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     EXPECT_EQ(1u, GetPaintController().PaintChunks().size());
@@ -406,28 +277,22 @@ TEST_P(PaintControllerTest, UpdateNewItemInMiddle) {
         &root_paint_chunk_id_, DefaultPaintChunkProperties());
   }
 
-  DrawRect(context, first, kBackgroundDrawingType,
-           FloatRect(100, 100, 100, 100));
-  DrawRect(context, second, kBackgroundDrawingType,
-           FloatRect(100, 100, 50, 200));
+  DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 100, 100));
+  DrawRect(context, second, kBackgroundType, FloatRect(100, 100, 50, 200));
   GetPaintController().CommitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(
-      GetPaintController().GetDisplayItemList(), 2,
-      TestControllerDisplayItem(first, kBackgroundDrawingType),
-      TestControllerDisplayItem(second, kBackgroundDrawingType));
+  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 2,
+                      TestDisplayItem(first, kBackgroundType),
+                      TestDisplayItem(second, kBackgroundType));
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     GetPaintController().UpdateCurrentPaintChunkProperties(
         &root_paint_chunk_id_, DefaultPaintChunkProperties());
   }
 
-  DrawRect(context, first, kBackgroundDrawingType,
-           FloatRect(100, 100, 100, 100));
-  DrawRect(context, third, kBackgroundDrawingType,
-           FloatRect(125, 100, 200, 50));
-  DrawRect(context, second, kBackgroundDrawingType,
-           FloatRect(100, 100, 50, 200));
+  DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 100, 100));
+  DrawRect(context, third, kBackgroundType, FloatRect(125, 100, 200, 50));
+  DrawRect(context, second, kBackgroundType, FloatRect(100, 100, 50, 200));
 
   EXPECT_EQ(2, NumCachedNewItems());
 #ifndef NDEBUG
@@ -438,11 +303,10 @@ TEST_P(PaintControllerTest, UpdateNewItemInMiddle) {
 
   GetPaintController().CommitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(
-      GetPaintController().GetDisplayItemList(), 3,
-      TestControllerDisplayItem(first, kBackgroundDrawingType),
-      TestControllerDisplayItem(third, kBackgroundDrawingType),
-      TestControllerDisplayItem(second, kBackgroundDrawingType));
+  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 3,
+                      TestDisplayItem(first, kBackgroundType),
+                      TestDisplayItem(third, kBackgroundType),
+                      TestDisplayItem(second, kBackgroundType));
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     EXPECT_EQ(1u, GetPaintController().PaintChunks().size());
@@ -462,25 +326,21 @@ TEST_P(PaintControllerTest, UpdateInvalidationWithPhases) {
         &root_paint_chunk_id_, DefaultPaintChunkProperties());
   }
 
-  DrawRect(context, first, kBackgroundDrawingType,
-           FloatRect(100, 100, 100, 100));
-  DrawRect(context, second, kBackgroundDrawingType,
-           FloatRect(100, 100, 50, 200));
-  DrawRect(context, third, kBackgroundDrawingType, FloatRect(300, 100, 50, 50));
-  DrawRect(context, first, kForegroundDrawingType,
-           FloatRect(100, 100, 100, 100));
-  DrawRect(context, second, kForegroundDrawingType,
-           FloatRect(100, 100, 50, 200));
-  DrawRect(context, third, kForegroundDrawingType, FloatRect(300, 100, 50, 50));
+  DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 100, 100));
+  DrawRect(context, second, kBackgroundType, FloatRect(100, 100, 50, 200));
+  DrawRect(context, third, kBackgroundType, FloatRect(300, 100, 50, 50));
+  DrawRect(context, first, kForegroundType, FloatRect(100, 100, 100, 100));
+  DrawRect(context, second, kForegroundType, FloatRect(100, 100, 50, 200));
+  DrawRect(context, third, kForegroundType, FloatRect(300, 100, 50, 50));
   GetPaintController().CommitNewDisplayItems();
 
   EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 6,
-                      TestControllerDisplayItem(first, kBackgroundDrawingType),
-                      TestControllerDisplayItem(second, kBackgroundDrawingType),
-                      TestControllerDisplayItem(third, kBackgroundDrawingType),
-                      TestControllerDisplayItem(first, kForegroundDrawingType),
-                      TestControllerDisplayItem(second, kForegroundDrawingType),
-                      TestControllerDisplayItem(third, kForegroundDrawingType));
+                      TestDisplayItem(first, kBackgroundType),
+                      TestDisplayItem(second, kBackgroundType),
+                      TestDisplayItem(third, kBackgroundType),
+                      TestDisplayItem(first, kForegroundType),
+                      TestDisplayItem(second, kForegroundType),
+                      TestDisplayItem(third, kForegroundType));
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     GetPaintController().UpdateCurrentPaintChunkProperties(
@@ -488,16 +348,12 @@ TEST_P(PaintControllerTest, UpdateInvalidationWithPhases) {
   }
 
   second.SetDisplayItemsUncached();
-  DrawRect(context, first, kBackgroundDrawingType,
-           FloatRect(100, 100, 100, 100));
-  DrawRect(context, second, kBackgroundDrawingType,
-           FloatRect(100, 100, 50, 200));
-  DrawRect(context, third, kBackgroundDrawingType, FloatRect(300, 100, 50, 50));
-  DrawRect(context, first, kForegroundDrawingType,
-           FloatRect(100, 100, 100, 100));
-  DrawRect(context, second, kForegroundDrawingType,
-           FloatRect(100, 100, 50, 200));
-  DrawRect(context, third, kForegroundDrawingType, FloatRect(300, 100, 50, 50));
+  DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 100, 100));
+  DrawRect(context, second, kBackgroundType, FloatRect(100, 100, 50, 200));
+  DrawRect(context, third, kBackgroundType, FloatRect(300, 100, 50, 50));
+  DrawRect(context, first, kForegroundType, FloatRect(100, 100, 100, 100));
+  DrawRect(context, second, kForegroundType, FloatRect(100, 100, 50, 200));
+  DrawRect(context, third, kForegroundType, FloatRect(300, 100, 50, 50));
 
   EXPECT_EQ(4, NumCachedNewItems());
 #ifndef NDEBUG
@@ -509,12 +365,12 @@ TEST_P(PaintControllerTest, UpdateInvalidationWithPhases) {
   GetPaintController().CommitNewDisplayItems();
 
   EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 6,
-                      TestControllerDisplayItem(first, kBackgroundDrawingType),
-                      TestControllerDisplayItem(second, kBackgroundDrawingType),
-                      TestControllerDisplayItem(third, kBackgroundDrawingType),
-                      TestControllerDisplayItem(first, kForegroundDrawingType),
-                      TestControllerDisplayItem(second, kForegroundDrawingType),
-                      TestControllerDisplayItem(third, kForegroundDrawingType));
+                      TestDisplayItem(first, kBackgroundType),
+                      TestDisplayItem(second, kBackgroundType),
+                      TestDisplayItem(third, kBackgroundType),
+                      TestDisplayItem(first, kForegroundType),
+                      TestDisplayItem(second, kForegroundType),
+                      TestDisplayItem(third, kForegroundType));
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     EXPECT_EQ(1u, GetPaintController().PaintChunks().size());
@@ -537,7 +393,7 @@ TEST_P(PaintControllerTest, IncrementalRasterInvalidation) {
   GetPaintController().UpdateCurrentPaintChunkProperties(
       &root_paint_chunk_id_, DefaultPaintChunkProperties());
   for (auto& client : clients)
-    DrawRect(context, *client, kBackgroundDrawingType, FloatRect(initial_rect));
+    DrawRect(context, *client, kBackgroundType, FloatRect(initial_rect));
   GetPaintController().CommitNewDisplayItems();
 
   GetPaintController().UpdateCurrentPaintChunkProperties(
@@ -550,7 +406,7 @@ TEST_P(PaintControllerTest, IncrementalRasterInvalidation) {
   clients[5]->SetVisualRect(LayoutRect(100, 100, 80, 80));
   for (auto& client : clients) {
     client->SetDisplayItemsUncached(PaintInvalidationReason::kIncremental);
-    DrawRect(context, *client, kBackgroundDrawingType,
+    DrawRect(context, *client, kBackgroundType,
              FloatRect(client->VisualRect()));
   }
   GetPaintController().CommitNewDisplayItems();
@@ -581,16 +437,13 @@ TEST_P(PaintControllerTest, UpdateAddFirstOverlap) {
         &root_paint_chunk_id_, DefaultPaintChunkProperties());
   }
 
-  DrawRect(context, second, kBackgroundDrawingType,
-           FloatRect(200, 200, 50, 50));
-  DrawRect(context, second, kForegroundDrawingType,
-           FloatRect(200, 200, 50, 50));
+  DrawRect(context, second, kBackgroundType, FloatRect(200, 200, 50, 50));
+  DrawRect(context, second, kForegroundType, FloatRect(200, 200, 50, 50));
   GetPaintController().CommitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(
-      GetPaintController().GetDisplayItemList(), 2,
-      TestControllerDisplayItem(second, kBackgroundDrawingType),
-      TestControllerDisplayItem(second, kForegroundDrawingType));
+  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 2,
+                      TestDisplayItem(second, kBackgroundType),
+                      TestDisplayItem(second, kForegroundType));
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     GetPaintController().UpdateCurrentPaintChunkProperties(
@@ -600,23 +453,18 @@ TEST_P(PaintControllerTest, UpdateAddFirstOverlap) {
   first.SetDisplayItemsUncached();
   second.SetDisplayItemsUncached();
   second.SetVisualRect(LayoutRect(150, 250, 100, 100));
-  DrawRect(context, first, kBackgroundDrawingType,
-           FloatRect(100, 100, 150, 150));
-  DrawRect(context, first, kForegroundDrawingType,
-           FloatRect(100, 100, 150, 150));
-  DrawRect(context, second, kBackgroundDrawingType,
-           FloatRect(150, 250, 100, 100));
-  DrawRect(context, second, kForegroundDrawingType,
-           FloatRect(150, 250, 100, 100));
+  DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 150, 150));
+  DrawRect(context, first, kForegroundType, FloatRect(100, 100, 150, 150));
+  DrawRect(context, second, kBackgroundType, FloatRect(150, 250, 100, 100));
+  DrawRect(context, second, kForegroundType, FloatRect(150, 250, 100, 100));
   EXPECT_EQ(0, NumCachedNewItems());
   GetPaintController().CommitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(
-      GetPaintController().GetDisplayItemList(), 4,
-      TestControllerDisplayItem(first, kBackgroundDrawingType),
-      TestControllerDisplayItem(first, kForegroundDrawingType),
-      TestControllerDisplayItem(second, kBackgroundDrawingType),
-      TestControllerDisplayItem(second, kForegroundDrawingType));
+  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 4,
+                      TestDisplayItem(first, kBackgroundType),
+                      TestDisplayItem(first, kForegroundType),
+                      TestDisplayItem(second, kBackgroundType),
+                      TestDisplayItem(second, kForegroundType));
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     EXPECT_EQ(1u, GetPaintController().PaintChunks().size());
@@ -632,10 +480,8 @@ TEST_P(PaintControllerTest, UpdateAddFirstOverlap) {
         &root_paint_chunk_id_, DefaultPaintChunkProperties());
   }
 
-  DrawRect(context, second, kBackgroundDrawingType,
-           FloatRect(150, 250, 100, 100));
-  DrawRect(context, second, kForegroundDrawingType,
-           FloatRect(150, 250, 100, 100));
+  DrawRect(context, second, kBackgroundType, FloatRect(150, 250, 100, 100));
+  DrawRect(context, second, kForegroundType, FloatRect(150, 250, 100, 100));
 
   EXPECT_EQ(2, NumCachedNewItems());
 #ifndef NDEBUG
@@ -646,10 +492,9 @@ TEST_P(PaintControllerTest, UpdateAddFirstOverlap) {
 
   GetPaintController().CommitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(
-      GetPaintController().GetDisplayItemList(), 2,
-      TestControllerDisplayItem(second, kBackgroundDrawingType),
-      TestControllerDisplayItem(second, kForegroundDrawingType));
+  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 2,
+                      TestDisplayItem(second, kBackgroundType),
+                      TestDisplayItem(second, kForegroundType));
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     EXPECT_EQ(1u, GetPaintController().PaintChunks().size());
@@ -668,15 +513,13 @@ TEST_P(PaintControllerTest, UpdateAddLastOverlap) {
         &root_paint_chunk_id_, DefaultPaintChunkProperties());
   }
 
-  DrawRect(context, first, kBackgroundDrawingType,
-           FloatRect(100, 100, 150, 150));
-  DrawRect(context, first, kForegroundDrawingType,
-           FloatRect(100, 100, 150, 150));
+  DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 150, 150));
+  DrawRect(context, first, kForegroundType, FloatRect(100, 100, 150, 150));
   GetPaintController().CommitNewDisplayItems();
 
   EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 2,
-                      TestControllerDisplayItem(first, kBackgroundDrawingType),
-                      TestControllerDisplayItem(first, kForegroundDrawingType));
+                      TestDisplayItem(first, kBackgroundType),
+                      TestDisplayItem(first, kForegroundType));
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     GetPaintController().UpdateCurrentPaintChunkProperties(
@@ -686,23 +529,18 @@ TEST_P(PaintControllerTest, UpdateAddLastOverlap) {
   first.SetDisplayItemsUncached();
   first.SetVisualRect(LayoutRect(150, 150, 100, 100));
   second.SetDisplayItemsUncached();
-  DrawRect(context, first, kBackgroundDrawingType,
-           FloatRect(150, 150, 100, 100));
-  DrawRect(context, first, kForegroundDrawingType,
-           FloatRect(150, 150, 100, 100));
-  DrawRect(context, second, kBackgroundDrawingType,
-           FloatRect(200, 200, 50, 50));
-  DrawRect(context, second, kForegroundDrawingType,
-           FloatRect(200, 200, 50, 50));
+  DrawRect(context, first, kBackgroundType, FloatRect(150, 150, 100, 100));
+  DrawRect(context, first, kForegroundType, FloatRect(150, 150, 100, 100));
+  DrawRect(context, second, kBackgroundType, FloatRect(200, 200, 50, 50));
+  DrawRect(context, second, kForegroundType, FloatRect(200, 200, 50, 50));
   EXPECT_EQ(0, NumCachedNewItems());
   GetPaintController().CommitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(
-      GetPaintController().GetDisplayItemList(), 4,
-      TestControllerDisplayItem(first, kBackgroundDrawingType),
-      TestControllerDisplayItem(first, kForegroundDrawingType),
-      TestControllerDisplayItem(second, kBackgroundDrawingType),
-      TestControllerDisplayItem(second, kForegroundDrawingType));
+  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 4,
+                      TestDisplayItem(first, kBackgroundType),
+                      TestDisplayItem(first, kForegroundType),
+                      TestDisplayItem(second, kBackgroundType),
+                      TestDisplayItem(second, kForegroundType));
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     EXPECT_EQ(1u, GetPaintController().PaintChunks().size());
@@ -720,16 +558,14 @@ TEST_P(PaintControllerTest, UpdateAddLastOverlap) {
   first.SetDisplayItemsUncached();
   first.SetVisualRect(LayoutRect(100, 100, 150, 150));
   second.SetDisplayItemsUncached();
-  DrawRect(context, first, kBackgroundDrawingType,
-           FloatRect(100, 100, 150, 150));
-  DrawRect(context, first, kForegroundDrawingType,
-           FloatRect(100, 100, 150, 150));
+  DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 150, 150));
+  DrawRect(context, first, kForegroundType, FloatRect(100, 100, 150, 150));
   EXPECT_EQ(0, NumCachedNewItems());
   GetPaintController().CommitNewDisplayItems();
 
   EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 2,
-                      TestControllerDisplayItem(first, kBackgroundDrawingType),
-                      TestControllerDisplayItem(first, kForegroundDrawingType));
+                      TestDisplayItem(first, kBackgroundType),
+                      TestDisplayItem(first, kForegroundType));
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     EXPECT_EQ(1u, GetPaintController().PaintChunks().size());
@@ -758,36 +594,30 @@ TEST_P(PaintControllerTest, UpdateClip) {
       GetPaintController().UpdateCurrentPaintChunkProperties(&id, properties);
     }
     ClipRecorder clip_recorder(context, first, kClipType, IntRect(1, 1, 2, 2));
-    DrawRect(context, first, kBackgroundDrawingType,
-             FloatRect(100, 100, 150, 150));
-    DrawRect(context, second, kBackgroundDrawingType,
-             FloatRect(100, 100, 200, 200));
+    DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 150, 150));
+    DrawRect(context, second, kBackgroundType, FloatRect(100, 100, 200, 200));
   }
   GetPaintController().CommitNewDisplayItems();
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-    EXPECT_DISPLAY_LIST(
-        GetPaintController().GetDisplayItemList(), 2,
-        TestControllerDisplayItem(first, kBackgroundDrawingType),
-        TestControllerDisplayItem(second, kBackgroundDrawingType));
+    EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 2,
+                        TestDisplayItem(first, kBackgroundType),
+                        TestDisplayItem(second, kBackgroundType));
 
     GetPaintController().UpdateCurrentPaintChunkProperties(
         &root_paint_chunk_id_, DefaultPaintChunkProperties());
   } else {
     EXPECT_DISPLAY_LIST(
         GetPaintController().GetDisplayItemList(), 4,
-        TestControllerDisplayItem(first, kClipType),
-        TestControllerDisplayItem(first, kBackgroundDrawingType),
-        TestControllerDisplayItem(second, kBackgroundDrawingType),
-        TestControllerDisplayItem(
-            first, DisplayItem::ClipTypeToEndClipType(kClipType)));
+        TestDisplayItem(first, kClipType),
+        TestDisplayItem(first, kBackgroundType),
+        TestDisplayItem(second, kBackgroundType),
+        TestDisplayItem(first, DisplayItem::ClipTypeToEndClipType(kClipType)));
   }
 
   first.SetDisplayItemsUncached();
-  DrawRect(context, first, kBackgroundDrawingType,
-           FloatRect(100, 100, 150, 150));
-  DrawRect(context, second, kBackgroundDrawingType,
-           FloatRect(100, 100, 200, 200));
+  DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 150, 150));
+  DrawRect(context, second, kBackgroundType, FloatRect(100, 100, 200, 200));
 
   EXPECT_EQ(1, NumCachedNewItems());
 #ifndef NDEBUG
@@ -798,10 +628,9 @@ TEST_P(PaintControllerTest, UpdateClip) {
 
   GetPaintController().CommitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(
-      GetPaintController().GetDisplayItemList(), 2,
-      TestControllerDisplayItem(first, kBackgroundDrawingType),
-      TestControllerDisplayItem(second, kBackgroundDrawingType));
+  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 2,
+                      TestDisplayItem(first, kBackgroundType),
+                      TestDisplayItem(second, kBackgroundType));
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     EXPECT_EQ(1u, GetPaintController().PaintChunks().size());
@@ -816,8 +645,7 @@ TEST_P(PaintControllerTest, UpdateClip) {
   }
 
   second.SetDisplayItemsUncached();
-  DrawRect(context, first, kBackgroundDrawingType,
-           FloatRect(100, 100, 150, 150));
+  DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 150, 150));
 
   RefPtr<ClipPaintPropertyNode> clip2 = ClipPaintPropertyNode::Create(
       nullptr, nullptr, FloatRoundedRect(1, 1, 2, 2));
@@ -831,16 +659,14 @@ TEST_P(PaintControllerTest, UpdateClip) {
       GetPaintController().UpdateCurrentPaintChunkProperties(&id, properties);
     }
     ClipRecorder clip_recorder(context, second, kClipType, IntRect(1, 1, 2, 2));
-    DrawRect(context, second, kBackgroundDrawingType,
-             FloatRect(100, 100, 200, 200));
+    DrawRect(context, second, kBackgroundType, FloatRect(100, 100, 200, 200));
   }
   GetPaintController().CommitNewDisplayItems();
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-    EXPECT_DISPLAY_LIST(
-        GetPaintController().GetDisplayItemList(), 2,
-        TestControllerDisplayItem(first, kBackgroundDrawingType),
-        TestControllerDisplayItem(second, kBackgroundDrawingType));
+    EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 2,
+                        TestDisplayItem(first, kBackgroundType),
+                        TestDisplayItem(second, kBackgroundType));
 
     EXPECT_EQ(2u, GetPaintController().PaintChunks().size());
     EXPECT_THAT(GetPaintController().PaintChunks()[0].raster_invalidation_rects,
@@ -854,11 +680,10 @@ TEST_P(PaintControllerTest, UpdateClip) {
   } else {
     EXPECT_DISPLAY_LIST(
         GetPaintController().GetDisplayItemList(), 4,
-        TestControllerDisplayItem(first, kBackgroundDrawingType),
-        TestControllerDisplayItem(second, kClipType),
-        TestControllerDisplayItem(second, kBackgroundDrawingType),
-        TestControllerDisplayItem(
-            second, DisplayItem::ClipTypeToEndClipType(kClipType)));
+        TestDisplayItem(first, kBackgroundType),
+        TestDisplayItem(second, kClipType),
+        TestDisplayItem(second, kBackgroundType),
+        TestDisplayItem(second, DisplayItem::ClipTypeToEndClipType(kClipType)));
   }
 }
 
@@ -871,16 +696,13 @@ TEST_P(PaintControllerTest, CachedDisplayItems) {
         &root_paint_chunk_id_, DefaultPaintChunkProperties());
   }
 
-  DrawRect(context, first, kBackgroundDrawingType,
-           FloatRect(100, 100, 150, 150));
-  DrawRect(context, second, kBackgroundDrawingType,
-           FloatRect(100, 100, 150, 150));
+  DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 150, 150));
+  DrawRect(context, second, kBackgroundType, FloatRect(100, 100, 150, 150));
   GetPaintController().CommitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(
-      GetPaintController().GetDisplayItemList(), 2,
-      TestControllerDisplayItem(first, kBackgroundDrawingType),
-      TestControllerDisplayItem(second, kBackgroundDrawingType));
+  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 2,
+                      TestDisplayItem(first, kBackgroundType),
+                      TestDisplayItem(second, kBackgroundType));
   EXPECT_TRUE(GetPaintController().ClientCacheIsValid(first));
   EXPECT_TRUE(GetPaintController().ClientCacheIsValid(second));
   sk_sp<const PaintRecord> first_paint_record =
@@ -900,16 +722,13 @@ TEST_P(PaintControllerTest, CachedDisplayItems) {
     GetPaintController().UpdateCurrentPaintChunkProperties(
         &root_paint_chunk_id_, DefaultPaintChunkProperties());
   }
-  DrawRect(context, first, kBackgroundDrawingType,
-           FloatRect(100, 100, 150, 150));
-  DrawRect(context, second, kBackgroundDrawingType,
-           FloatRect(100, 100, 150, 150));
+  DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 150, 150));
+  DrawRect(context, second, kBackgroundType, FloatRect(100, 100, 150, 150));
   GetPaintController().CommitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(
-      GetPaintController().GetDisplayItemList(), 2,
-      TestControllerDisplayItem(first, kBackgroundDrawingType),
-      TestControllerDisplayItem(second, kBackgroundDrawingType));
+  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 2,
+                      TestDisplayItem(first, kBackgroundType),
+                      TestDisplayItem(second, kBackgroundType));
   // The first display item should be updated.
   EXPECT_NE(first_paint_record,
             static_cast<const DrawingDisplayItem&>(
@@ -943,34 +762,25 @@ TEST_P(PaintControllerTest, UpdateSwapOrderWithChildren) {
         &root_paint_chunk_id_, DefaultPaintChunkProperties());
   }
 
-  DrawRect(context, container1, kBackgroundDrawingType,
-           FloatRect(100, 100, 100, 100));
-  DrawRect(context, content1, kBackgroundDrawingType,
-           FloatRect(100, 100, 50, 200));
-  DrawRect(context, content1, kForegroundDrawingType,
-           FloatRect(100, 100, 50, 200));
-  DrawRect(context, container1, kForegroundDrawingType,
-           FloatRect(100, 100, 100, 100));
-  DrawRect(context, container2, kBackgroundDrawingType,
-           FloatRect(100, 200, 100, 100));
-  DrawRect(context, content2, kBackgroundDrawingType,
-           FloatRect(100, 200, 50, 200));
-  DrawRect(context, content2, kForegroundDrawingType,
-           FloatRect(100, 200, 50, 200));
-  DrawRect(context, container2, kForegroundDrawingType,
-           FloatRect(100, 200, 100, 100));
+  DrawRect(context, container1, kBackgroundType, FloatRect(100, 100, 100, 100));
+  DrawRect(context, content1, kBackgroundType, FloatRect(100, 100, 50, 200));
+  DrawRect(context, content1, kForegroundType, FloatRect(100, 100, 50, 200));
+  DrawRect(context, container1, kForegroundType, FloatRect(100, 100, 100, 100));
+  DrawRect(context, container2, kBackgroundType, FloatRect(100, 200, 100, 100));
+  DrawRect(context, content2, kBackgroundType, FloatRect(100, 200, 50, 200));
+  DrawRect(context, content2, kForegroundType, FloatRect(100, 200, 50, 200));
+  DrawRect(context, container2, kForegroundType, FloatRect(100, 200, 100, 100));
   GetPaintController().CommitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(
-      GetPaintController().GetDisplayItemList(), 8,
-      TestControllerDisplayItem(container1, kBackgroundDrawingType),
-      TestControllerDisplayItem(content1, kBackgroundDrawingType),
-      TestControllerDisplayItem(content1, kForegroundDrawingType),
-      TestControllerDisplayItem(container1, kForegroundDrawingType),
-      TestControllerDisplayItem(container2, kBackgroundDrawingType),
-      TestControllerDisplayItem(content2, kBackgroundDrawingType),
-      TestControllerDisplayItem(content2, kForegroundDrawingType),
-      TestControllerDisplayItem(container2, kForegroundDrawingType));
+  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 8,
+                      TestDisplayItem(container1, kBackgroundType),
+                      TestDisplayItem(content1, kBackgroundType),
+                      TestDisplayItem(content1, kForegroundType),
+                      TestDisplayItem(container1, kForegroundType),
+                      TestDisplayItem(container2, kBackgroundType),
+                      TestDisplayItem(content2, kBackgroundType),
+                      TestDisplayItem(content2, kForegroundType),
+                      TestDisplayItem(container2, kForegroundType));
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     GetPaintController().UpdateCurrentPaintChunkProperties(
@@ -979,34 +789,25 @@ TEST_P(PaintControllerTest, UpdateSwapOrderWithChildren) {
 
   // Simulate the situation when |container1| gets a z-index that is greater
   // than that of |container2|.
-  DrawRect(context, container2, kBackgroundDrawingType,
-           FloatRect(100, 200, 100, 100));
-  DrawRect(context, content2, kBackgroundDrawingType,
-           FloatRect(100, 200, 50, 200));
-  DrawRect(context, content2, kForegroundDrawingType,
-           FloatRect(100, 200, 50, 200));
-  DrawRect(context, container2, kForegroundDrawingType,
-           FloatRect(100, 200, 100, 100));
-  DrawRect(context, container1, kBackgroundDrawingType,
-           FloatRect(100, 100, 100, 100));
-  DrawRect(context, content1, kBackgroundDrawingType,
-           FloatRect(100, 100, 50, 200));
-  DrawRect(context, content1, kForegroundDrawingType,
-           FloatRect(100, 100, 50, 200));
-  DrawRect(context, container1, kForegroundDrawingType,
-           FloatRect(100, 100, 100, 100));
+  DrawRect(context, container2, kBackgroundType, FloatRect(100, 200, 100, 100));
+  DrawRect(context, content2, kBackgroundType, FloatRect(100, 200, 50, 200));
+  DrawRect(context, content2, kForegroundType, FloatRect(100, 200, 50, 200));
+  DrawRect(context, container2, kForegroundType, FloatRect(100, 200, 100, 100));
+  DrawRect(context, container1, kBackgroundType, FloatRect(100, 100, 100, 100));
+  DrawRect(context, content1, kBackgroundType, FloatRect(100, 100, 50, 200));
+  DrawRect(context, content1, kForegroundType, FloatRect(100, 100, 50, 200));
+  DrawRect(context, container1, kForegroundType, FloatRect(100, 100, 100, 100));
   GetPaintController().CommitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(
-      GetPaintController().GetDisplayItemList(), 8,
-      TestControllerDisplayItem(container2, kBackgroundDrawingType),
-      TestControllerDisplayItem(content2, kBackgroundDrawingType),
-      TestControllerDisplayItem(content2, kForegroundDrawingType),
-      TestControllerDisplayItem(container2, kForegroundDrawingType),
-      TestControllerDisplayItem(container1, kBackgroundDrawingType),
-      TestControllerDisplayItem(content1, kBackgroundDrawingType),
-      TestControllerDisplayItem(content1, kForegroundDrawingType),
-      TestControllerDisplayItem(container1, kForegroundDrawingType));
+  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 8,
+                      TestDisplayItem(container2, kBackgroundType),
+                      TestDisplayItem(content2, kBackgroundType),
+                      TestDisplayItem(content2, kForegroundType),
+                      TestDisplayItem(container2, kForegroundType),
+                      TestDisplayItem(container1, kBackgroundType),
+                      TestDisplayItem(content1, kBackgroundType),
+                      TestDisplayItem(content1, kForegroundType),
+                      TestDisplayItem(container1, kForegroundType));
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     EXPECT_EQ(1u, GetPaintController().PaintChunks().size());
@@ -1033,34 +834,25 @@ TEST_P(PaintControllerTest, UpdateSwapOrderWithChildrenAndInvalidation) {
         &root_paint_chunk_id_, DefaultPaintChunkProperties());
   }
 
-  DrawRect(context, container1, kBackgroundDrawingType,
-           FloatRect(100, 100, 100, 100));
-  DrawRect(context, content1, kBackgroundDrawingType,
-           FloatRect(100, 100, 50, 200));
-  DrawRect(context, content1, kForegroundDrawingType,
-           FloatRect(100, 100, 50, 200));
-  DrawRect(context, container1, kForegroundDrawingType,
-           FloatRect(100, 100, 100, 100));
-  DrawRect(context, container2, kBackgroundDrawingType,
-           FloatRect(100, 200, 100, 100));
-  DrawRect(context, content2, kBackgroundDrawingType,
-           FloatRect(100, 200, 50, 200));
-  DrawRect(context, content2, kForegroundDrawingType,
-           FloatRect(100, 200, 50, 200));
-  DrawRect(context, container2, kForegroundDrawingType,
-           FloatRect(100, 200, 100, 100));
+  DrawRect(context, container1, kBackgroundType, FloatRect(100, 100, 100, 100));
+  DrawRect(context, content1, kBackgroundType, FloatRect(100, 100, 50, 200));
+  DrawRect(context, content1, kForegroundType, FloatRect(100, 100, 50, 200));
+  DrawRect(context, container1, kForegroundType, FloatRect(100, 100, 100, 100));
+  DrawRect(context, container2, kBackgroundType, FloatRect(100, 200, 100, 100));
+  DrawRect(context, content2, kBackgroundType, FloatRect(100, 200, 50, 200));
+  DrawRect(context, content2, kForegroundType, FloatRect(100, 200, 50, 200));
+  DrawRect(context, container2, kForegroundType, FloatRect(100, 200, 100, 100));
   GetPaintController().CommitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(
-      GetPaintController().GetDisplayItemList(), 8,
-      TestControllerDisplayItem(container1, kBackgroundDrawingType),
-      TestControllerDisplayItem(content1, kBackgroundDrawingType),
-      TestControllerDisplayItem(content1, kForegroundDrawingType),
-      TestControllerDisplayItem(container1, kForegroundDrawingType),
-      TestControllerDisplayItem(container2, kBackgroundDrawingType),
-      TestControllerDisplayItem(content2, kBackgroundDrawingType),
-      TestControllerDisplayItem(content2, kForegroundDrawingType),
-      TestControllerDisplayItem(container2, kForegroundDrawingType));
+  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 8,
+                      TestDisplayItem(container1, kBackgroundType),
+                      TestDisplayItem(content1, kBackgroundType),
+                      TestDisplayItem(content1, kForegroundType),
+                      TestDisplayItem(container1, kForegroundType),
+                      TestDisplayItem(container2, kBackgroundType),
+                      TestDisplayItem(content2, kBackgroundType),
+                      TestDisplayItem(content2, kForegroundType),
+                      TestDisplayItem(container2, kForegroundType));
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     GetPaintController().UpdateCurrentPaintChunkProperties(
@@ -1070,34 +862,25 @@ TEST_P(PaintControllerTest, UpdateSwapOrderWithChildrenAndInvalidation) {
   // Simulate the situation when |container1| gets a z-index that is greater
   // than that of |container2|, and |container1| is invalidated.
   container1.SetDisplayItemsUncached();
-  DrawRect(context, container2, kBackgroundDrawingType,
-           FloatRect(100, 200, 100, 100));
-  DrawRect(context, content2, kBackgroundDrawingType,
-           FloatRect(100, 200, 50, 200));
-  DrawRect(context, content2, kForegroundDrawingType,
-           FloatRect(100, 200, 50, 200));
-  DrawRect(context, container2, kForegroundDrawingType,
-           FloatRect(100, 200, 100, 100));
-  DrawRect(context, container1, kBackgroundDrawingType,
-           FloatRect(100, 100, 100, 100));
-  DrawRect(context, content1, kBackgroundDrawingType,
-           FloatRect(100, 100, 50, 200));
-  DrawRect(context, content1, kForegroundDrawingType,
-           FloatRect(100, 100, 50, 200));
-  DrawRect(context, container1, kForegroundDrawingType,
-           FloatRect(100, 100, 100, 100));
+  DrawRect(context, container2, kBackgroundType, FloatRect(100, 200, 100, 100));
+  DrawRect(context, content2, kBackgroundType, FloatRect(100, 200, 50, 200));
+  DrawRect(context, content2, kForegroundType, FloatRect(100, 200, 50, 200));
+  DrawRect(context, container2, kForegroundType, FloatRect(100, 200, 100, 100));
+  DrawRect(context, container1, kBackgroundType, FloatRect(100, 100, 100, 100));
+  DrawRect(context, content1, kBackgroundType, FloatRect(100, 100, 50, 200));
+  DrawRect(context, content1, kForegroundType, FloatRect(100, 100, 50, 200));
+  DrawRect(context, container1, kForegroundType, FloatRect(100, 100, 100, 100));
   GetPaintController().CommitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(
-      GetPaintController().GetDisplayItemList(), 8,
-      TestControllerDisplayItem(container2, kBackgroundDrawingType),
-      TestControllerDisplayItem(content2, kBackgroundDrawingType),
-      TestControllerDisplayItem(content2, kForegroundDrawingType),
-      TestControllerDisplayItem(container2, kForegroundDrawingType),
-      TestControllerDisplayItem(container1, kBackgroundDrawingType),
-      TestControllerDisplayItem(content1, kBackgroundDrawingType),
-      TestControllerDisplayItem(content1, kForegroundDrawingType),
-      TestControllerDisplayItem(container1, kForegroundDrawingType));
+  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 8,
+                      TestDisplayItem(container2, kBackgroundType),
+                      TestDisplayItem(content2, kBackgroundType),
+                      TestDisplayItem(content2, kForegroundType),
+                      TestDisplayItem(container2, kForegroundType),
+                      TestDisplayItem(container1, kBackgroundType),
+                      TestDisplayItem(content1, kBackgroundType),
+                      TestDisplayItem(content1, kForegroundType),
+                      TestDisplayItem(container1, kForegroundType));
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     EXPECT_EQ(1u, GetPaintController().PaintChunks().size());
@@ -1126,8 +909,7 @@ TEST_P(PaintControllerTest, CachedSubsequenceForcePaintChunk) {
   // Record a first chunk with backface_hidden == false
   GetPaintController().UpdateCurrentPaintChunkProperties(&root_id,
                                                          root_properties);
-  DrawRect(context, root, kBackgroundDrawingType,
-           FloatRect(100, 100, 100, 100));
+  DrawRect(context, root, kBackgroundType, FloatRect(100, 100, 100, 100));
 
   FakeDisplayItemClient container("container");
   {
@@ -1139,14 +921,13 @@ TEST_P(PaintControllerTest, CachedSubsequenceForcePaintChunk) {
     SubsequenceRecorder r(context, container);
     GetPaintController().UpdateCurrentPaintChunkProperties(
         &container_id, container_properties);
-    DrawRect(context, container, kBackgroundDrawingType,
+    DrawRect(context, container, kBackgroundType,
              FloatRect(100, 100, 100, 100));
-    DrawRect(context, container, kForegroundDrawingType,
+    DrawRect(context, container, kForegroundType,
              FloatRect(100, 100, 100, 100));
   }
 
-  DrawRect(context, root, kForegroundDrawingType,
-           FloatRect(100, 100, 100, 100));
+  DrawRect(context, root, kForegroundType, FloatRect(100, 100, 100, 100));
 
   GetPaintController().CommitNewDisplayItems();
 
@@ -1154,11 +935,9 @@ TEST_P(PaintControllerTest, CachedSubsequenceForcePaintChunk) {
   // This time, record the fist chunk with backface_hidden == true
   GetPaintController().UpdateCurrentPaintChunkProperties(&root_id,
                                                          root_properties);
-  DrawRect(context, root, kBackgroundDrawingType,
-           FloatRect(100, 100, 100, 100));
+  DrawRect(context, root, kBackgroundType, FloatRect(100, 100, 100, 100));
   EXPECT_TRUE(GetPaintController().UseCachedSubsequenceIfPossible(container));
-  DrawRect(context, root, kForegroundDrawingType,
-           FloatRect(100, 100, 100, 100));
+  DrawRect(context, root, kForegroundType, FloatRect(100, 100, 100, 100));
   GetPaintController().CommitNewDisplayItems();
 
   // Even though the paint properties match, |container| should receive its
@@ -1186,53 +965,48 @@ TEST_P(PaintControllerTest, CachedSubsequenceSwapOrder) {
 
   {
     if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-      PaintChunk::Id id(container1, kBackgroundDrawingType);
+      PaintChunk::Id id(container1, kBackgroundType);
       container1_properties.property_tree_state.SetEffect(
           CreateOpacityOnlyEffect(EffectPaintPropertyNode::Root(), 0.5).get());
       GetPaintController().UpdateCurrentPaintChunkProperties(
           &id, container1_properties);
     }
     SubsequenceRecorder r(context, container1);
-    DrawRect(context, container1, kBackgroundDrawingType,
+    DrawRect(context, container1, kBackgroundType,
              FloatRect(100, 100, 100, 100));
-    DrawRect(context, content1, kBackgroundDrawingType,
-             FloatRect(100, 100, 50, 200));
-    DrawRect(context, content1, kForegroundDrawingType,
-             FloatRect(100, 100, 50, 200));
-    DrawRect(context, container1, kForegroundDrawingType,
+    DrawRect(context, content1, kBackgroundType, FloatRect(100, 100, 50, 200));
+    DrawRect(context, content1, kForegroundType, FloatRect(100, 100, 50, 200));
+    DrawRect(context, container1, kForegroundType,
              FloatRect(100, 100, 100, 100));
   }
   {
     if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-      PaintChunk::Id id(container2, kBackgroundDrawingType);
+      PaintChunk::Id id(container2, kBackgroundType);
       container2_properties.property_tree_state.SetEffect(
           CreateOpacityOnlyEffect(EffectPaintPropertyNode::Root(), 0.5).get());
       GetPaintController().UpdateCurrentPaintChunkProperties(
           &id, container2_properties);
     }
     SubsequenceRecorder r(context, container2);
-    DrawRect(context, container2, kBackgroundDrawingType,
+    DrawRect(context, container2, kBackgroundType,
              FloatRect(100, 200, 100, 100));
-    DrawRect(context, content2, kBackgroundDrawingType,
-             FloatRect(100, 200, 50, 200));
-    DrawRect(context, content2, kForegroundDrawingType,
-             FloatRect(100, 200, 50, 200));
-    DrawRect(context, container2, kForegroundDrawingType,
+    DrawRect(context, content2, kBackgroundType, FloatRect(100, 200, 50, 200));
+    DrawRect(context, content2, kForegroundType, FloatRect(100, 200, 50, 200));
+    DrawRect(context, container2, kForegroundType,
              FloatRect(100, 200, 100, 100));
   }
   GetPaintController().CommitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(
-      GetPaintController().GetDisplayItemList(), 8,
-      TestControllerDisplayItem(container1, kBackgroundDrawingType),
-      TestControllerDisplayItem(content1, kBackgroundDrawingType),
-      TestControllerDisplayItem(content1, kForegroundDrawingType),
-      TestControllerDisplayItem(container1, kForegroundDrawingType),
+  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 8,
+                      TestDisplayItem(container1, kBackgroundType),
+                      TestDisplayItem(content1, kBackgroundType),
+                      TestDisplayItem(content1, kForegroundType),
+                      TestDisplayItem(container1, kForegroundType),
 
-      TestControllerDisplayItem(container2, kBackgroundDrawingType),
-      TestControllerDisplayItem(content2, kBackgroundDrawingType),
-      TestControllerDisplayItem(content2, kForegroundDrawingType),
-      TestControllerDisplayItem(container2, kForegroundDrawingType));
+                      TestDisplayItem(container2, kBackgroundType),
+                      TestDisplayItem(content2, kBackgroundType),
+                      TestDisplayItem(content2, kForegroundType),
+                      TestDisplayItem(container2, kForegroundType));
 
   auto* markers = GetSubsequenceMarkers(container1);
   CHECK(markers);
@@ -1246,9 +1020,9 @@ TEST_P(PaintControllerTest, CachedSubsequenceSwapOrder) {
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     EXPECT_EQ(2u, GetPaintController().PaintChunks().size());
-    EXPECT_EQ(PaintChunk::Id(container1, kBackgroundDrawingType),
+    EXPECT_EQ(PaintChunk::Id(container1, kBackgroundType),
               GetPaintController().PaintChunks()[0].id);
-    EXPECT_EQ(PaintChunk::Id(container2, kBackgroundDrawingType),
+    EXPECT_EQ(PaintChunk::Id(container2, kBackgroundType),
               GetPaintController().PaintChunks()[1].id);
     // Raster invalidation for the whole chunks will be issued during
     // PaintArtifactCompositor::Update().
@@ -1270,36 +1044,36 @@ TEST_P(PaintControllerTest, CachedSubsequenceSwapOrder) {
         context, container2));
     {
       if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-        PaintChunk::Id id(container2, kBackgroundDrawingType);
+        PaintChunk::Id id(container2, kBackgroundType);
         GetPaintController().UpdateCurrentPaintChunkProperties(
             &id, container2_properties);
       }
       SubsequenceRecorder r(context, container2);
-      DrawRect(context, container2, kBackgroundDrawingType,
+      DrawRect(context, container2, kBackgroundType,
                FloatRect(100, 200, 100, 100));
-      DrawRect(context, content2, kBackgroundDrawingType,
+      DrawRect(context, content2, kBackgroundType,
                FloatRect(100, 200, 50, 200));
-      DrawRect(context, content2, kForegroundDrawingType,
+      DrawRect(context, content2, kForegroundType,
                FloatRect(100, 200, 50, 200));
-      DrawRect(context, container2, kForegroundDrawingType,
+      DrawRect(context, container2, kForegroundType,
                FloatRect(100, 200, 100, 100));
     }
     EXPECT_FALSE(SubsequenceRecorder::UseCachedSubsequenceIfPossible(
         context, container1));
     {
       if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-        PaintChunk::Id id(container1, kBackgroundDrawingType);
+        PaintChunk::Id id(container1, kBackgroundType);
         GetPaintController().UpdateCurrentPaintChunkProperties(
             &id, container1_properties);
       }
       SubsequenceRecorder r(context, container1);
-      DrawRect(context, container1, kBackgroundDrawingType,
+      DrawRect(context, container1, kBackgroundType,
                FloatRect(100, 100, 100, 100));
-      DrawRect(context, content1, kBackgroundDrawingType,
+      DrawRect(context, content1, kBackgroundType,
                FloatRect(100, 100, 50, 200));
-      DrawRect(context, content1, kForegroundDrawingType,
+      DrawRect(context, content1, kForegroundType,
                FloatRect(100, 100, 50, 200));
-      DrawRect(context, container1, kForegroundDrawingType,
+      DrawRect(context, container1, kForegroundType,
                FloatRect(100, 100, 100, 100));
     }
   } else {
@@ -1318,16 +1092,15 @@ TEST_P(PaintControllerTest, CachedSubsequenceSwapOrder) {
 
   GetPaintController().CommitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(
-      GetPaintController().GetDisplayItemList(), 8,
-      TestControllerDisplayItem(container2, kBackgroundDrawingType),
-      TestControllerDisplayItem(content2, kBackgroundDrawingType),
-      TestControllerDisplayItem(content2, kForegroundDrawingType),
-      TestControllerDisplayItem(container2, kForegroundDrawingType),
-      TestControllerDisplayItem(container1, kBackgroundDrawingType),
-      TestControllerDisplayItem(content1, kBackgroundDrawingType),
-      TestControllerDisplayItem(content1, kForegroundDrawingType),
-      TestControllerDisplayItem(container1, kForegroundDrawingType));
+  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 8,
+                      TestDisplayItem(container2, kBackgroundType),
+                      TestDisplayItem(content2, kBackgroundType),
+                      TestDisplayItem(content2, kForegroundType),
+                      TestDisplayItem(container2, kForegroundType),
+                      TestDisplayItem(container1, kBackgroundType),
+                      TestDisplayItem(content1, kBackgroundType),
+                      TestDisplayItem(content1, kForegroundType),
+                      TestDisplayItem(container1, kForegroundType));
 
   markers = GetSubsequenceMarkers(container2);
   CHECK(markers);
@@ -1341,9 +1114,9 @@ TEST_P(PaintControllerTest, CachedSubsequenceSwapOrder) {
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     EXPECT_EQ(2u, GetPaintController().PaintChunks().size());
-    EXPECT_EQ(PaintChunk::Id(container2, kBackgroundDrawingType),
+    EXPECT_EQ(PaintChunk::Id(container2, kBackgroundType),
               GetPaintController().PaintChunks()[0].id);
-    EXPECT_EQ(PaintChunk::Id(container1, kBackgroundDrawingType),
+    EXPECT_EQ(PaintChunk::Id(container1, kBackgroundType),
               GetPaintController().PaintChunks()[1].id);
     // Swapping order of chunks should not invalidate anything.
     EXPECT_THAT(GetPaintController().PaintChunks()[0].raster_invalidation_rects,
@@ -1366,31 +1139,26 @@ TEST_P(PaintControllerTest, CachedSubsequenceAndDisplayItemsSwapOrder) {
         &root_paint_chunk_id_, DefaultPaintChunkProperties());
   }
 
-  DrawRect(context, content1, kBackgroundDrawingType,
-           FloatRect(100, 100, 50, 200));
+  DrawRect(context, content1, kBackgroundType, FloatRect(100, 100, 50, 200));
   {
     SubsequenceRecorder r(context, container2);
-    DrawRect(context, container2, kBackgroundDrawingType,
+    DrawRect(context, container2, kBackgroundType,
              FloatRect(100, 200, 100, 100));
-    DrawRect(context, content2, kBackgroundDrawingType,
-             FloatRect(100, 200, 50, 200));
-    DrawRect(context, content2, kForegroundDrawingType,
-             FloatRect(100, 200, 50, 200));
-    DrawRect(context, container2, kForegroundDrawingType,
+    DrawRect(context, content2, kBackgroundType, FloatRect(100, 200, 50, 200));
+    DrawRect(context, content2, kForegroundType, FloatRect(100, 200, 50, 200));
+    DrawRect(context, container2, kForegroundType,
              FloatRect(100, 200, 100, 100));
   }
-  DrawRect(context, content1, kForegroundDrawingType,
-           FloatRect(100, 100, 50, 200));
+  DrawRect(context, content1, kForegroundType, FloatRect(100, 100, 50, 200));
   GetPaintController().CommitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(
-      GetPaintController().GetDisplayItemList(), 6,
-      TestControllerDisplayItem(content1, kBackgroundDrawingType),
-      TestControllerDisplayItem(container2, kBackgroundDrawingType),
-      TestControllerDisplayItem(content2, kBackgroundDrawingType),
-      TestControllerDisplayItem(content2, kForegroundDrawingType),
-      TestControllerDisplayItem(container2, kForegroundDrawingType),
-      TestControllerDisplayItem(content1, kForegroundDrawingType));
+  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 6,
+                      TestDisplayItem(content1, kBackgroundType),
+                      TestDisplayItem(container2, kBackgroundType),
+                      TestDisplayItem(content2, kBackgroundType),
+                      TestDisplayItem(content2, kForegroundType),
+                      TestDisplayItem(container2, kForegroundType),
+                      TestDisplayItem(content1, kForegroundType));
 
   auto* markers = GetSubsequenceMarkers(container2);
   CHECK(markers);
@@ -1411,26 +1179,24 @@ TEST_P(PaintControllerTest, CachedSubsequenceAndDisplayItemsSwapOrder) {
         context, container2));
     {
       SubsequenceRecorder r(context, container2);
-      DrawRect(context, container2, kBackgroundDrawingType,
+      DrawRect(context, container2, kBackgroundType,
                FloatRect(100, 200, 100, 100));
-      DrawRect(context, content2, kBackgroundDrawingType,
+      DrawRect(context, content2, kBackgroundType,
                FloatRect(100, 200, 50, 200));
-      DrawRect(context, content2, kForegroundDrawingType,
+      DrawRect(context, content2, kForegroundType,
                FloatRect(100, 200, 50, 200));
-      DrawRect(context, container2, kForegroundDrawingType,
+      DrawRect(context, container2, kForegroundType,
                FloatRect(100, 200, 100, 100));
     }
-    DrawRect(context, content1, kBackgroundDrawingType,
-             FloatRect(100, 100, 50, 200));
-    DrawRect(context, content1, kForegroundDrawingType,
-             FloatRect(100, 100, 50, 200));
+    DrawRect(context, content1, kBackgroundType, FloatRect(100, 100, 50, 200));
+    DrawRect(context, content1, kForegroundType, FloatRect(100, 100, 50, 200));
   } else {
     EXPECT_TRUE(SubsequenceRecorder::UseCachedSubsequenceIfPossible(
         context, container2));
-    EXPECT_TRUE(DrawingRecorder::UseCachedDrawingIfPossible(
-        context, content1, kBackgroundDrawingType));
-    EXPECT_TRUE(DrawingRecorder::UseCachedDrawingIfPossible(
-        context, content1, kForegroundDrawingType));
+    EXPECT_TRUE(DrawingRecorder::UseCachedDrawingIfPossible(context, content1,
+                                                            kBackgroundType));
+    EXPECT_TRUE(DrawingRecorder::UseCachedDrawingIfPossible(context, content1,
+                                                            kForegroundType));
   }
 
   EXPECT_EQ(6, NumCachedNewItems());
@@ -1442,14 +1208,13 @@ TEST_P(PaintControllerTest, CachedSubsequenceAndDisplayItemsSwapOrder) {
 
   GetPaintController().CommitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(
-      GetPaintController().GetDisplayItemList(), 6,
-      TestControllerDisplayItem(container2, kBackgroundDrawingType),
-      TestControllerDisplayItem(content2, kBackgroundDrawingType),
-      TestControllerDisplayItem(content2, kForegroundDrawingType),
-      TestControllerDisplayItem(container2, kForegroundDrawingType),
-      TestControllerDisplayItem(content1, kBackgroundDrawingType),
-      TestControllerDisplayItem(content1, kForegroundDrawingType));
+  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 6,
+                      TestDisplayItem(container2, kBackgroundType),
+                      TestDisplayItem(content2, kBackgroundType),
+                      TestDisplayItem(content2, kForegroundType),
+                      TestDisplayItem(container2, kForegroundType),
+                      TestDisplayItem(content1, kBackgroundType),
+                      TestDisplayItem(content1, kForegroundType));
 
   markers = GetSubsequenceMarkers(container2);
   CHECK(markers);
@@ -1471,44 +1236,41 @@ TEST_P(PaintControllerTest, UpdateSwapOrderCrossingChunks) {
 
   {
     if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-      PaintChunk::Id id(container1, kBackgroundDrawingType);
+      PaintChunk::Id id(container1, kBackgroundType);
       container1_properties.property_tree_state.SetEffect(
           CreateOpacityOnlyEffect(EffectPaintPropertyNode::Root(), 0.5).get());
       GetPaintController().UpdateCurrentPaintChunkProperties(
           &id, container1_properties);
     }
-    DrawRect(context, container1, kBackgroundDrawingType,
+    DrawRect(context, container1, kBackgroundType,
              FloatRect(100, 100, 100, 100));
-    DrawRect(context, content1, kBackgroundDrawingType,
-             FloatRect(100, 100, 50, 200));
+    DrawRect(context, content1, kBackgroundType, FloatRect(100, 100, 50, 200));
   }
   {
     if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-      PaintChunk::Id id(container2, kBackgroundDrawingType);
+      PaintChunk::Id id(container2, kBackgroundType);
       container2_properties.property_tree_state.SetEffect(
           CreateOpacityOnlyEffect(EffectPaintPropertyNode::Root(), 0.5).get());
       GetPaintController().UpdateCurrentPaintChunkProperties(
           &id, container2_properties);
     }
-    DrawRect(context, container2, kBackgroundDrawingType,
+    DrawRect(context, container2, kBackgroundType,
              FloatRect(100, 200, 100, 100));
-    DrawRect(context, content2, kBackgroundDrawingType,
-             FloatRect(100, 200, 50, 200));
+    DrawRect(context, content2, kBackgroundType, FloatRect(100, 200, 50, 200));
   }
   GetPaintController().CommitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(
-      GetPaintController().GetDisplayItemList(), 4,
-      TestControllerDisplayItem(container1, kBackgroundDrawingType),
-      TestControllerDisplayItem(content1, kBackgroundDrawingType),
-      TestControllerDisplayItem(container2, kBackgroundDrawingType),
-      TestControllerDisplayItem(content2, kBackgroundDrawingType));
+  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 4,
+                      TestDisplayItem(container1, kBackgroundType),
+                      TestDisplayItem(content1, kBackgroundType),
+                      TestDisplayItem(container2, kBackgroundType),
+                      TestDisplayItem(content2, kBackgroundType));
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     EXPECT_EQ(2u, GetPaintController().PaintChunks().size());
-    EXPECT_EQ(PaintChunk::Id(container1, kBackgroundDrawingType),
+    EXPECT_EQ(PaintChunk::Id(container1, kBackgroundType),
               GetPaintController().PaintChunks()[0].id);
-    EXPECT_EQ(PaintChunk::Id(container2, kBackgroundDrawingType),
+    EXPECT_EQ(PaintChunk::Id(container2, kBackgroundType),
               GetPaintController().PaintChunks()[1].id);
     // Raster invalidation for the whole chunks will be issued during
     // PaintArtifactCompositor::Update().
@@ -1522,23 +1284,19 @@ TEST_P(PaintControllerTest, UpdateSwapOrderCrossingChunks) {
 
   // Move content2 into container1, without invalidation.
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-    PaintChunk::Id id(container1, kBackgroundDrawingType);
+    PaintChunk::Id id(container1, kBackgroundType);
     GetPaintController().UpdateCurrentPaintChunkProperties(
         &id, container1_properties);
   }
-  DrawRect(context, container1, kBackgroundDrawingType,
-           FloatRect(100, 100, 100, 100));
-  DrawRect(context, content1, kBackgroundDrawingType,
-           FloatRect(100, 100, 50, 200));
-  DrawRect(context, content2, kBackgroundDrawingType,
-           FloatRect(100, 200, 50, 200));
+  DrawRect(context, container1, kBackgroundType, FloatRect(100, 100, 100, 100));
+  DrawRect(context, content1, kBackgroundType, FloatRect(100, 100, 50, 200));
+  DrawRect(context, content2, kBackgroundType, FloatRect(100, 200, 50, 200));
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-    PaintChunk::Id id(container2, kBackgroundDrawingType);
+    PaintChunk::Id id(container2, kBackgroundType);
     GetPaintController().UpdateCurrentPaintChunkProperties(
         &id, container2_properties);
   }
-  DrawRect(context, container2, kBackgroundDrawingType,
-           FloatRect(100, 200, 100, 100));
+  DrawRect(context, container2, kBackgroundType, FloatRect(100, 200, 100, 100));
 
   EXPECT_EQ(4, NumCachedNewItems());
 #ifndef NDEBUG
@@ -1549,18 +1307,17 @@ TEST_P(PaintControllerTest, UpdateSwapOrderCrossingChunks) {
 
   GetPaintController().CommitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(
-      GetPaintController().GetDisplayItemList(), 4,
-      TestControllerDisplayItem(container1, kBackgroundDrawingType),
-      TestControllerDisplayItem(content1, kBackgroundDrawingType),
-      TestControllerDisplayItem(content2, kBackgroundDrawingType),
-      TestControllerDisplayItem(container2, kBackgroundDrawingType));
+  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 4,
+                      TestDisplayItem(container1, kBackgroundType),
+                      TestDisplayItem(content1, kBackgroundType),
+                      TestDisplayItem(content2, kBackgroundType),
+                      TestDisplayItem(container2, kBackgroundType));
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     EXPECT_EQ(2u, GetPaintController().PaintChunks().size());
-    EXPECT_EQ(PaintChunk::Id(container1, kBackgroundDrawingType),
+    EXPECT_EQ(PaintChunk::Id(container1, kBackgroundType),
               GetPaintController().PaintChunks()[0].id);
-    EXPECT_EQ(PaintChunk::Id(container2, kBackgroundDrawingType),
+    EXPECT_EQ(PaintChunk::Id(container2, kBackgroundType),
               GetPaintController().PaintChunks()[1].id);
     // |content2| is invalidated raster on both the old chunk and the new chunk.
     EXPECT_THAT(GetPaintController().PaintChunks()[0].raster_invalidation_rects,
@@ -1625,18 +1382,18 @@ TEST_P(PaintControllerTest, CachedNestedSubsequenceUpdate) {
 
   {
     if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-      PaintChunk::Id id(container1, kBackgroundDrawingType);
+      PaintChunk::Id id(container1, kBackgroundType);
       container1_background_properties.property_tree_state.SetEffect(
           CreateOpacityOnlyEffect(EffectPaintPropertyNode::Root(), 0.5).get());
       GetPaintController().UpdateCurrentPaintChunkProperties(
           &id, container1_background_properties);
     }
     SubsequenceRecorder r(context, container1);
-    DrawRect(context, container1, kBackgroundDrawingType,
+    DrawRect(context, container1, kBackgroundType,
              FloatRect(100, 100, 100, 100));
     {
       if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-        PaintChunk::Id id(content1, kBackgroundDrawingType);
+        PaintChunk::Id id(content1, kBackgroundType);
         content1_properties.property_tree_state.SetEffect(
             CreateOpacityOnlyEffect(EffectPaintPropertyNode::Root(), 0.6)
                 .get());
@@ -1644,35 +1401,35 @@ TEST_P(PaintControllerTest, CachedNestedSubsequenceUpdate) {
             &id, content1_properties);
       }
       SubsequenceRecorder r(context, content1);
-      DrawRect(context, content1, kBackgroundDrawingType,
+      DrawRect(context, content1, kBackgroundType,
                FloatRect(100, 100, 50, 200));
-      DrawRect(context, content1, kForegroundDrawingType,
+      DrawRect(context, content1, kForegroundType,
                FloatRect(100, 100, 50, 200));
     }
     if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-      PaintChunk::Id id(container1, kForegroundDrawingType);
+      PaintChunk::Id id(container1, kForegroundType);
       container1_foreground_properties.property_tree_state.SetEffect(
           CreateOpacityOnlyEffect(EffectPaintPropertyNode::Root(), 0.5).get());
       GetPaintController().UpdateCurrentPaintChunkProperties(
           &id, container1_foreground_properties);
     }
-    DrawRect(context, container1, kForegroundDrawingType,
+    DrawRect(context, container1, kForegroundType,
              FloatRect(100, 100, 100, 100));
   }
   {
     if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-      PaintChunk::Id id(container2, kBackgroundDrawingType);
+      PaintChunk::Id id(container2, kBackgroundType);
       container2_background_properties.property_tree_state.SetEffect(
           CreateOpacityOnlyEffect(EffectPaintPropertyNode::Root(), 0.7).get());
       GetPaintController().UpdateCurrentPaintChunkProperties(
           &id, container2_background_properties);
     }
     SubsequenceRecorder r(context, container2);
-    DrawRect(context, container2, kBackgroundDrawingType,
+    DrawRect(context, container2, kBackgroundType,
              FloatRect(100, 200, 100, 100));
     {
       if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-        PaintChunk::Id id(content2, kBackgroundDrawingType);
+        PaintChunk::Id id(content2, kBackgroundType);
         content2_properties.property_tree_state.SetEffect(
             CreateOpacityOnlyEffect(EffectPaintPropertyNode::Root(), 0.8)
                 .get());
@@ -1680,20 +1437,19 @@ TEST_P(PaintControllerTest, CachedNestedSubsequenceUpdate) {
             &id, content2_properties);
       }
       SubsequenceRecorder r(context, content2);
-      DrawRect(context, content2, kBackgroundDrawingType,
+      DrawRect(context, content2, kBackgroundType,
                FloatRect(100, 200, 50, 200));
     }
   }
   GetPaintController().CommitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(
-      GetPaintController().GetDisplayItemList(), 6,
-      TestControllerDisplayItem(container1, kBackgroundDrawingType),
-      TestControllerDisplayItem(content1, kBackgroundDrawingType),
-      TestControllerDisplayItem(content1, kForegroundDrawingType),
-      TestControllerDisplayItem(container1, kForegroundDrawingType),
-      TestControllerDisplayItem(container2, kBackgroundDrawingType),
-      TestControllerDisplayItem(content2, kBackgroundDrawingType));
+  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 6,
+                      TestDisplayItem(container1, kBackgroundType),
+                      TestDisplayItem(content1, kBackgroundType),
+                      TestDisplayItem(content1, kForegroundType),
+                      TestDisplayItem(container1, kForegroundType),
+                      TestDisplayItem(container2, kBackgroundType),
+                      TestDisplayItem(content2, kBackgroundType));
 
   auto* markers = GetSubsequenceMarkers(container1);
   CHECK(markers);
@@ -1717,15 +1473,15 @@ TEST_P(PaintControllerTest, CachedNestedSubsequenceUpdate) {
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     EXPECT_EQ(5u, GetPaintController().PaintChunks().size());
-    EXPECT_EQ(PaintChunk::Id(container1, kBackgroundDrawingType),
+    EXPECT_EQ(PaintChunk::Id(container1, kBackgroundType),
               GetPaintController().PaintChunks()[0].id);
-    EXPECT_EQ(PaintChunk::Id(content1, kBackgroundDrawingType),
+    EXPECT_EQ(PaintChunk::Id(content1, kBackgroundType),
               GetPaintController().PaintChunks()[1].id);
-    EXPECT_EQ(PaintChunk::Id(container1, kForegroundDrawingType),
+    EXPECT_EQ(PaintChunk::Id(container1, kForegroundType),
               GetPaintController().PaintChunks()[2].id);
-    EXPECT_EQ(PaintChunk::Id(container2, kBackgroundDrawingType),
+    EXPECT_EQ(PaintChunk::Id(container2, kBackgroundType),
               GetPaintController().PaintChunks()[3].id);
-    EXPECT_EQ(PaintChunk::Id(content2, kBackgroundDrawingType),
+    EXPECT_EQ(PaintChunk::Id(content2, kBackgroundType),
               GetPaintController().PaintChunks()[4].id);
     // Raster invalidation for the whole chunks will be issued during
     // PaintArtifactCompositor::Update().
@@ -1761,13 +1517,12 @@ TEST_P(PaintControllerTest, CachedNestedSubsequenceUpdate) {
   // Content2 now outputs foreground only.
   {
     if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-      PaintChunk::Id id(content2, kForegroundDrawingType);
+      PaintChunk::Id id(content2, kForegroundType);
       GetPaintController().UpdateCurrentPaintChunkProperties(
           &id, content2_properties);
     }
     SubsequenceRecorder r(context, content2);
-    DrawRect(context, content2, kForegroundDrawingType,
-             FloatRect(100, 200, 50, 200));
+    DrawRect(context, content2, kForegroundType, FloatRect(100, 200, 50, 200));
   }
   // Repaint container1 with foreground only.
   {
@@ -1782,25 +1537,25 @@ TEST_P(PaintControllerTest, CachedNestedSubsequenceUpdate) {
       EXPECT_FALSE(SubsequenceRecorder::UseCachedSubsequenceIfPossible(
           context, content1));
       if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-        PaintChunk::Id id(content1, kBackgroundDrawingType);
+        PaintChunk::Id id(content1, kBackgroundType);
         GetPaintController().UpdateCurrentPaintChunkProperties(
             &id, content1_properties);
       }
       SubsequenceRecorder r(context, content1);
-      DrawRect(context, content1, kBackgroundDrawingType,
+      DrawRect(context, content1, kBackgroundType,
                FloatRect(100, 100, 50, 200));
-      DrawRect(context, content1, kForegroundDrawingType,
+      DrawRect(context, content1, kForegroundType,
                FloatRect(100, 100, 50, 200));
     } else {
       EXPECT_TRUE(SubsequenceRecorder::UseCachedSubsequenceIfPossible(
           context, content1));
     }
     if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-      PaintChunk::Id id(container1, kForegroundDrawingType);
+      PaintChunk::Id id(container1, kForegroundType);
       GetPaintController().UpdateCurrentPaintChunkProperties(
           &id, container1_foreground_properties);
     }
-    DrawRect(context, container1, kForegroundDrawingType,
+    DrawRect(context, container1, kForegroundType,
              FloatRect(100, 100, 100, 100));
   }
 
@@ -1813,12 +1568,11 @@ TEST_P(PaintControllerTest, CachedNestedSubsequenceUpdate) {
 
   GetPaintController().CommitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(
-      GetPaintController().GetDisplayItemList(), 4,
-      TestControllerDisplayItem(content2, kForegroundDrawingType),
-      TestControllerDisplayItem(content1, kBackgroundDrawingType),
-      TestControllerDisplayItem(content1, kForegroundDrawingType),
-      TestControllerDisplayItem(container1, kForegroundDrawingType));
+  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 4,
+                      TestDisplayItem(content2, kForegroundType),
+                      TestDisplayItem(content1, kBackgroundType),
+                      TestDisplayItem(content1, kForegroundType),
+                      TestDisplayItem(container1, kForegroundType));
 
   markers = GetSubsequenceMarkers(content2);
   CHECK(markers);
@@ -1837,11 +1591,11 @@ TEST_P(PaintControllerTest, CachedNestedSubsequenceUpdate) {
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     EXPECT_EQ(3u, GetPaintController().PaintChunks().size());
-    EXPECT_EQ(PaintChunk::Id(content2, kForegroundDrawingType),
+    EXPECT_EQ(PaintChunk::Id(content2, kForegroundType),
               GetPaintController().PaintChunks()[0].id);
-    EXPECT_EQ(PaintChunk::Id(content1, kBackgroundDrawingType),
+    EXPECT_EQ(PaintChunk::Id(content1, kBackgroundType),
               GetPaintController().PaintChunks()[1].id);
-    EXPECT_EQ(PaintChunk::Id(container1, kForegroundDrawingType),
+    EXPECT_EQ(PaintChunk::Id(container1, kForegroundType),
               GetPaintController().PaintChunks()[2].id);
     // This is a new chunk. Raster invalidation of the whole chunk will be
     // issued during PaintArtifactCompositor::Update().
@@ -1871,21 +1625,19 @@ TEST_P(PaintControllerTest, SkipCache) {
   FloatRect rect2(150, 100, 50, 50);
   FloatRect rect3(200, 100, 50, 50);
 
-  DrawRect(context, multicol, kBackgroundDrawingType,
-           FloatRect(100, 200, 100, 100));
+  DrawRect(context, multicol, kBackgroundType, FloatRect(100, 200, 100, 100));
 
   GetPaintController().BeginSkippingCache();
-  DrawRect(context, content, kForegroundDrawingType, rect1);
-  DrawRect(context, content, kForegroundDrawingType, rect2);
+  DrawRect(context, content, kForegroundType, rect1);
+  DrawRect(context, content, kForegroundType, rect2);
   GetPaintController().EndSkippingCache();
 
   GetPaintController().CommitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(
-      GetPaintController().GetDisplayItemList(), 3,
-      TestControllerDisplayItem(multicol, kBackgroundDrawingType),
-      TestControllerDisplayItem(content, kForegroundDrawingType),
-      TestControllerDisplayItem(content, kForegroundDrawingType));
+  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 3,
+                      TestDisplayItem(multicol, kBackgroundType),
+                      TestDisplayItem(content, kForegroundType),
+                      TestDisplayItem(content, kForegroundType));
   sk_sp<const PaintRecord> record1 =
       static_cast<const DrawingDisplayItem&>(
           GetPaintController().GetDisplayItemList()[1])
@@ -1910,12 +1662,11 @@ TEST_P(PaintControllerTest, SkipCache) {
 
   // Draw again with nothing invalidated.
   EXPECT_TRUE(GetPaintController().ClientCacheIsValid(multicol));
-  DrawRect(context, multicol, kBackgroundDrawingType,
-           FloatRect(100, 200, 100, 100));
+  DrawRect(context, multicol, kBackgroundType, FloatRect(100, 200, 100, 100));
 
   GetPaintController().BeginSkippingCache();
-  DrawRect(context, content, kForegroundDrawingType, rect1);
-  DrawRect(context, content, kForegroundDrawingType, rect2);
+  DrawRect(context, content, kForegroundType, rect1);
+  DrawRect(context, content, kForegroundType, rect2);
   GetPaintController().EndSkippingCache();
 
   EXPECT_EQ(1, NumCachedNewItems());
@@ -1927,11 +1678,10 @@ TEST_P(PaintControllerTest, SkipCache) {
 
   GetPaintController().CommitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(
-      GetPaintController().GetDisplayItemList(), 3,
-      TestControllerDisplayItem(multicol, kBackgroundDrawingType),
-      TestControllerDisplayItem(content, kForegroundDrawingType),
-      TestControllerDisplayItem(content, kForegroundDrawingType));
+  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 3,
+                      TestDisplayItem(multicol, kBackgroundType),
+                      TestDisplayItem(content, kForegroundType),
+                      TestDisplayItem(content, kForegroundType));
   EXPECT_NE(record1, static_cast<const DrawingDisplayItem&>(
                          GetPaintController().GetDisplayItemList()[1])
                          .GetPaintRecord());
@@ -1951,22 +1701,20 @@ TEST_P(PaintControllerTest, SkipCache) {
 
   // Now the multicol becomes 3 columns and repaints.
   multicol.SetDisplayItemsUncached();
-  DrawRect(context, multicol, kBackgroundDrawingType,
-           FloatRect(100, 100, 100, 100));
+  DrawRect(context, multicol, kBackgroundType, FloatRect(100, 100, 100, 100));
 
   GetPaintController().BeginSkippingCache();
-  DrawRect(context, content, kForegroundDrawingType, rect1);
-  DrawRect(context, content, kForegroundDrawingType, rect2);
-  DrawRect(context, content, kForegroundDrawingType, rect3);
+  DrawRect(context, content, kForegroundType, rect1);
+  DrawRect(context, content, kForegroundType, rect2);
+  DrawRect(context, content, kForegroundType, rect3);
   GetPaintController().EndSkippingCache();
 
   // We should repaint everything on invalidation of the scope container.
-  EXPECT_DISPLAY_LIST(
-      GetPaintController().NewDisplayItemList(), 4,
-      TestControllerDisplayItem(multicol, kBackgroundDrawingType),
-      TestControllerDisplayItem(content, kForegroundDrawingType),
-      TestControllerDisplayItem(content, kForegroundDrawingType),
-      TestControllerDisplayItem(content, kForegroundDrawingType));
+  EXPECT_DISPLAY_LIST(GetPaintController().NewDisplayItemList(), 4,
+                      TestDisplayItem(multicol, kBackgroundType),
+                      TestDisplayItem(content, kForegroundType),
+                      TestDisplayItem(content, kForegroundType),
+                      TestDisplayItem(content, kForegroundType));
   EXPECT_NE(record1, static_cast<const DrawingDisplayItem&>(
                          GetPaintController().NewDisplayItemList()[1])
                          .GetPaintRecord());
@@ -1999,19 +1747,18 @@ TEST_P(PaintControllerTest, PartialSkipCache) {
     GetPaintController().UpdateCurrentPaintChunkProperties(
         &root_paint_chunk_id_, DefaultPaintChunkProperties());
   }
-  DrawRect(context, content, kBackgroundDrawingType, rect1);
+  DrawRect(context, content, kBackgroundType, rect1);
   GetPaintController().BeginSkippingCache();
-  DrawRect(context, content, kForegroundDrawingType, rect2);
+  DrawRect(context, content, kForegroundType, rect2);
   GetPaintController().EndSkippingCache();
-  DrawRect(context, content, kForegroundDrawingType, rect3);
+  DrawRect(context, content, kForegroundType, rect3);
 
   GetPaintController().CommitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(
-      GetPaintController().GetDisplayItemList(), 3,
-      TestControllerDisplayItem(content, kBackgroundDrawingType),
-      TestControllerDisplayItem(content, kForegroundDrawingType),
-      TestControllerDisplayItem(content, kForegroundDrawingType));
+  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 3,
+                      TestDisplayItem(content, kBackgroundType),
+                      TestDisplayItem(content, kForegroundType),
+                      TestDisplayItem(content, kForegroundType));
   sk_sp<const PaintRecord> record0 =
       static_cast<const DrawingDisplayItem&>(
           GetPaintController().GetDisplayItemList()[0])
@@ -2036,11 +1783,11 @@ TEST_P(PaintControllerTest, PartialSkipCache) {
         &root_paint_chunk_id_, DefaultPaintChunkProperties());
   }
   // Draw again with nothing invalidated.
-  DrawRect(context, content, kBackgroundDrawingType, rect1);
+  DrawRect(context, content, kBackgroundType, rect1);
   GetPaintController().BeginSkippingCache();
-  DrawRect(context, content, kForegroundDrawingType, rect2);
+  DrawRect(context, content, kForegroundType, rect2);
   GetPaintController().EndSkippingCache();
-  DrawRect(context, content, kForegroundDrawingType, rect3);
+  DrawRect(context, content, kForegroundType, rect3);
 
   EXPECT_EQ(0, NumCachedNewItems());
 #ifndef NDEBUG
@@ -2051,11 +1798,10 @@ TEST_P(PaintControllerTest, PartialSkipCache) {
 
   GetPaintController().CommitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(
-      GetPaintController().GetDisplayItemList(), 3,
-      TestControllerDisplayItem(content, kBackgroundDrawingType),
-      TestControllerDisplayItem(content, kForegroundDrawingType),
-      TestControllerDisplayItem(content, kForegroundDrawingType));
+  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 3,
+                      TestDisplayItem(content, kBackgroundType),
+                      TestDisplayItem(content, kForegroundType),
+                      TestDisplayItem(content, kForegroundType));
   EXPECT_NE(record0, static_cast<const DrawingDisplayItem&>(
                          GetPaintController().GetDisplayItemList()[0])
                          .GetPaintRecord());
@@ -2076,38 +1822,36 @@ TEST_P(PaintControllerTest, OptimizeNoopPairs) {
   FakeDisplayItemClient third("third");
 
   GraphicsContext context(GetPaintController());
-  DrawRect(context, first, kBackgroundDrawingType, FloatRect(0, 0, 100, 100));
+  DrawRect(context, first, kBackgroundType, FloatRect(0, 0, 100, 100));
   {
     ClipPathRecorder clip_recorder(context, second, Path());
-    DrawRect(context, second, kBackgroundDrawingType,
-             FloatRect(0, 0, 100, 100));
+    DrawRect(context, second, kBackgroundType, FloatRect(0, 0, 100, 100));
   }
-  DrawRect(context, third, kBackgroundDrawingType, FloatRect(0, 0, 100, 100));
+  DrawRect(context, third, kBackgroundType, FloatRect(0, 0, 100, 100));
 
   GetPaintController().CommitNewDisplayItems();
-  EXPECT_DISPLAY_LIST(
-      GetPaintController().GetDisplayItemList(), 5,
-      TestControllerDisplayItem(first, kBackgroundDrawingType),
-      TestControllerDisplayItem(second, DisplayItem::kBeginClipPath),
-      TestControllerDisplayItem(second, kBackgroundDrawingType),
-      TestControllerDisplayItem(second, DisplayItem::kEndClipPath),
-      TestControllerDisplayItem(third, kBackgroundDrawingType));
+  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 5,
+                      TestDisplayItem(first, kBackgroundType),
+                      TestDisplayItem(second, DisplayItem::kBeginClipPath),
+                      TestDisplayItem(second, kBackgroundType),
+                      TestDisplayItem(second, DisplayItem::kEndClipPath),
+                      TestDisplayItem(third, kBackgroundType));
 
-  DrawRect(context, first, kBackgroundDrawingType, FloatRect(0, 0, 100, 100));
+  DrawRect(context, first, kBackgroundType, FloatRect(0, 0, 100, 100));
   {
     ClipRecorder clip_recorder(context, second, kClipType, IntRect(1, 1, 2, 2));
     // Do not draw anything for second.
   }
-  DrawRect(context, third, kBackgroundDrawingType, FloatRect(0, 0, 100, 100));
+  DrawRect(context, third, kBackgroundType, FloatRect(0, 0, 100, 100));
   GetPaintController().CommitNewDisplayItems();
 
   // Empty clips should have been optimized out.
   EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 2,
-                      TestControllerDisplayItem(first, kBackgroundDrawingType),
-                      TestControllerDisplayItem(third, kBackgroundDrawingType));
+                      TestDisplayItem(first, kBackgroundType),
+                      TestDisplayItem(third, kBackgroundType));
 
   second.SetDisplayItemsUncached();
-  DrawRect(context, first, kBackgroundDrawingType, FloatRect(0, 0, 100, 100));
+  DrawRect(context, first, kBackgroundType, FloatRect(0, 0, 100, 100));
   {
     ClipRecorder clip_recorder(context, second, kClipType, IntRect(1, 1, 2, 2));
     {
@@ -2115,13 +1859,13 @@ TEST_P(PaintControllerTest, OptimizeNoopPairs) {
       // Do not draw anything for second.
     }
   }
-  DrawRect(context, third, kBackgroundDrawingType, FloatRect(0, 0, 100, 100));
+  DrawRect(context, third, kBackgroundType, FloatRect(0, 0, 100, 100));
   GetPaintController().CommitNewDisplayItems();
 
   // Empty clips should have been optimized out.
   EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 2,
-                      TestControllerDisplayItem(first, kBackgroundDrawingType),
-                      TestControllerDisplayItem(third, kBackgroundDrawingType));
+                      TestDisplayItem(first, kBackgroundType),
+                      TestDisplayItem(third, kBackgroundType));
 }
 
 TEST_P(PaintControllerTest, SmallPaintControllerHasOnePaintChunk) {
@@ -2133,7 +1877,7 @@ TEST_P(PaintControllerTest, SmallPaintControllerHasOnePaintChunk) {
         nullptr, DefaultPaintChunkProperties());
   }
   GraphicsContext context(GetPaintController());
-  DrawRect(context, client, kBackgroundDrawingType, FloatRect(0, 0, 100, 100));
+  DrawRect(context, client, kBackgroundType, FloatRect(0, 0, 100, 100));
 
   GetPaintController().CommitNewDisplayItems();
   const auto& paint_chunks = GetPaintController().PaintChunks();
@@ -2149,8 +1893,7 @@ void DrawPath(GraphicsContext& context,
   if (DrawingRecorder::UseCachedDrawingIfPossible(context, client, type))
     return;
 
-  DrawingRecorder drawing_recorder(context, client, type,
-                                   FloatRect(0, 0, 100, 100));
+  DrawingRecorder recorder(context, client, type, FloatRect(0, 0, 100, 100));
   SkPath path;
   path.moveTo(0, 0);
   path.lineTo(0, 100);
@@ -2218,8 +1961,7 @@ TEST_P(PaintControllerTest, PartialInvalidation) {
   GetPaintController().UpdateCurrentPaintChunkProperties(
       &root_paint_chunk_id_, DefaultPaintChunkProperties());
   client.SetPartialInvalidationRect(LayoutRect(200, 200, 100, 100));
-  DrawRect(context, client, kBackgroundDrawingType,
-           FloatRect(100, 100, 300, 300));
+  DrawRect(context, client, kBackgroundType, FloatRect(100, 100, 300, 300));
   GetPaintController().CommitNewDisplayItems();
   ASSERT_EQ(1u, GetPaintController().PaintChunks().size());
   // Raster invalidation for the whole new chunk will be issued during
@@ -2233,8 +1975,7 @@ TEST_P(PaintControllerTest, PartialInvalidation) {
   GetPaintController().UpdateCurrentPaintChunkProperties(
       &root_paint_chunk_id_, DefaultPaintChunkProperties());
   client.SetPartialInvalidationRect(LayoutRect(150, 160, 170, 180));
-  DrawRect(context, client, kBackgroundDrawingType,
-           FloatRect(100, 100, 300, 300));
+  DrawRect(context, client, kBackgroundType, FloatRect(100, 100, 300, 300));
   GetPaintController().CommitNewDisplayItems();
   ASSERT_EQ(1u, GetPaintController().PaintChunks().size());
   EXPECT_THAT(GetPaintController().PaintChunks()[0].raster_invalidation_rects,
@@ -2247,8 +1988,7 @@ TEST_P(PaintControllerTest, PartialInvalidation) {
       &root_paint_chunk_id_, DefaultPaintChunkProperties());
   client.SetPartialInvalidationRect(LayoutRect(150, 160, 170, 180));
   client.SetDisplayItemsUncached();
-  DrawRect(context, client, kBackgroundDrawingType,
-           FloatRect(100, 100, 300, 300));
+  DrawRect(context, client, kBackgroundType, FloatRect(100, 100, 300, 300));
   GetPaintController().CommitNewDisplayItems();
   ASSERT_EQ(1u, GetPaintController().PaintChunks().size());
   EXPECT_THAT(GetPaintController().PaintChunks()[0].raster_invalidation_rects,
@@ -2261,8 +2001,7 @@ TEST_P(PaintControllerTest, PartialInvalidation) {
       &root_paint_chunk_id_, DefaultPaintChunkProperties());
   client.SetPartialInvalidationRect(LayoutRect(150, 160, 170, 180));
   client.SetVisualRect(LayoutRect(100, 100, 300, 400));
-  DrawRect(context, client, kBackgroundDrawingType,
-           FloatRect(100, 100, 300, 400));
+  DrawRect(context, client, kBackgroundType, FloatRect(100, 100, 300, 400));
   GetPaintController().CommitNewDisplayItems();
   ASSERT_EQ(1u, GetPaintController().PaintChunks().size());
   EXPECT_THAT(GetPaintController().PaintChunks()[0].raster_invalidation_rects,
@@ -2289,7 +2028,7 @@ TEST_P(PaintControllerTest, InvalidateAll) {
 
   FakeDisplayItemClient client("client", LayoutRect(1, 2, 3, 4));
   GraphicsContext context(GetPaintController());
-  DrawRect(context, client, kBackgroundDrawingType, FloatRect(1, 2, 3, 4));
+  DrawRect(context, client, kBackgroundType, FloatRect(1, 2, 3, 4));
   GetPaintController().CommitNewDisplayItems();
   EXPECT_FALSE(GetPaintController().GetPaintArtifact().IsEmpty());
   EXPECT_FALSE(GetPaintController().CacheIsAllInvalid());
@@ -2319,15 +2058,11 @@ class PaintControllerUnderInvalidationTest
     FakeDisplayItemClient first("first");
     GraphicsContext context(GetPaintController());
 
-    DrawRect(context, first, kBackgroundDrawingType,
-             FloatRect(100, 100, 300, 300));
-    DrawRect(context, first, kForegroundDrawingType,
-             FloatRect(100, 100, 300, 300));
+    DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 300, 300));
+    DrawRect(context, first, kForegroundType, FloatRect(100, 100, 300, 300));
     GetPaintController().CommitNewDisplayItems();
-    DrawRect(context, first, kBackgroundDrawingType,
-             FloatRect(200, 200, 300, 300));
-    DrawRect(context, first, kForegroundDrawingType,
-             FloatRect(100, 100, 300, 300));
+    DrawRect(context, first, kBackgroundType, FloatRect(200, 200, 300, 300));
+    DrawRect(context, first, kForegroundType, FloatRect(100, 100, 300, 300));
     GetPaintController().CommitNewDisplayItems();
   }
 
@@ -2335,13 +2070,10 @@ class PaintControllerUnderInvalidationTest
     FakeDisplayItemClient first("first");
     GraphicsContext context(GetPaintController());
 
-    DrawRect(context, first, kBackgroundDrawingType,
-             FloatRect(100, 100, 300, 300));
+    DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 300, 300));
     GetPaintController().CommitNewDisplayItems();
-    DrawRect(context, first, kBackgroundDrawingType,
-             FloatRect(100, 100, 300, 300));
-    DrawRect(context, first, kForegroundDrawingType,
-             FloatRect(100, 100, 300, 300));
+    DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 300, 300));
+    DrawRect(context, first, kForegroundType, FloatRect(100, 100, 300, 300));
     GetPaintController().CommitNewDisplayItems();
   }
 
@@ -2349,13 +2081,10 @@ class PaintControllerUnderInvalidationTest
     FakeDisplayItemClient first("first");
     GraphicsContext context(GetPaintController());
 
-    DrawRect(context, first, kBackgroundDrawingType,
-             FloatRect(100, 100, 300, 300));
-    DrawRect(context, first, kForegroundDrawingType,
-             FloatRect(100, 100, 300, 300));
+    DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 300, 300));
+    DrawRect(context, first, kForegroundType, FloatRect(100, 100, 300, 300));
     GetPaintController().CommitNewDisplayItems();
-    DrawRect(context, first, kBackgroundDrawingType,
-             FloatRect(100, 100, 300, 300));
+    DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 300, 300));
     GetPaintController().CommitNewDisplayItems();
   }
 
@@ -2367,7 +2096,7 @@ class PaintControllerUnderInvalidationTest
 
     {
       SubsequenceRecorder r(context, container);
-      DrawRect(context, container, kBackgroundDrawingType,
+      DrawRect(context, container, kBackgroundType,
                FloatRect(100, 100, 100, 100));
     }
     GetPaintController().CommitNewDisplayItems();
@@ -2386,7 +2115,7 @@ class PaintControllerUnderInvalidationTest
       EXPECT_FALSE(SubsequenceRecorder::UseCachedSubsequenceIfPossible(
           context, container));
       SubsequenceRecorder r(context, container);
-      DrawRect(context, container, kBackgroundDrawingType,
+      DrawRect(context, container, kBackgroundType,
                FloatRect(100, 100, 100, 100));
     }
     EXPECT_TRUE(GetPaintController().LastDisplayItemIsSubsequenceEnd());
@@ -2399,20 +2128,16 @@ class PaintControllerUnderInvalidationTest
     GraphicsContext context(GetPaintController());
     {
       SubsequenceRecorder r(context, first);
-      DrawRect(context, first, kBackgroundDrawingType,
-               FloatRect(100, 100, 300, 300));
-      DrawRect(context, first, kForegroundDrawingType,
-               FloatRect(100, 100, 300, 300));
+      DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 300, 300));
+      DrawRect(context, first, kForegroundType, FloatRect(100, 100, 300, 300));
     }
     GetPaintController().CommitNewDisplayItems();
     {
       EXPECT_FALSE(
           SubsequenceRecorder::UseCachedSubsequenceIfPossible(context, first));
       SubsequenceRecorder r(context, first);
-      DrawRect(context, first, kBackgroundDrawingType,
-               FloatRect(200, 200, 300, 300));
-      DrawRect(context, first, kForegroundDrawingType,
-               FloatRect(100, 100, 300, 300));
+      DrawRect(context, first, kBackgroundType, FloatRect(200, 200, 300, 300));
+      DrawRect(context, first, kForegroundType, FloatRect(100, 100, 300, 300));
     }
     GetPaintController().CommitNewDisplayItems();
   }
@@ -2423,8 +2148,7 @@ class PaintControllerUnderInvalidationTest
 
     {
       SubsequenceRecorder r(context, first);
-      DrawRect(context, first, kBackgroundDrawingType,
-               FloatRect(100, 100, 300, 300));
+      DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 300, 300));
     }
     GetPaintController().CommitNewDisplayItems();
 
@@ -2432,10 +2156,8 @@ class PaintControllerUnderInvalidationTest
       EXPECT_FALSE(
           SubsequenceRecorder::UseCachedSubsequenceIfPossible(context, first));
       SubsequenceRecorder r(context, first);
-      DrawRect(context, first, kBackgroundDrawingType,
-               FloatRect(100, 100, 300, 300));
-      DrawRect(context, first, kForegroundDrawingType,
-               FloatRect(100, 100, 300, 300));
+      DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 300, 300));
+      DrawRect(context, first, kForegroundType, FloatRect(100, 100, 300, 300));
     }
     GetPaintController().CommitNewDisplayItems();
   }
@@ -2446,10 +2168,8 @@ class PaintControllerUnderInvalidationTest
 
     {
       SubsequenceRecorder r(context, first);
-      DrawRect(context, first, kBackgroundDrawingType,
-               FloatRect(100, 100, 300, 300));
-      DrawRect(context, first, kForegroundDrawingType,
-               FloatRect(100, 100, 300, 300));
+      DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 300, 300));
+      DrawRect(context, first, kForegroundType, FloatRect(100, 100, 300, 300));
     }
     GetPaintController().CommitNewDisplayItems();
 
@@ -2457,8 +2177,7 @@ class PaintControllerUnderInvalidationTest
       EXPECT_FALSE(
           SubsequenceRecorder::UseCachedSubsequenceIfPossible(context, first));
       SubsequenceRecorder r(context, first);
-      DrawRect(context, first, kBackgroundDrawingType,
-               FloatRect(100, 100, 300, 300));
+      DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 300, 300));
     }
     GetPaintController().CommitNewDisplayItems();
   }
@@ -2472,7 +2191,7 @@ class PaintControllerUnderInvalidationTest
       SubsequenceRecorder r(context, container);
       { ClipPathRecorder clip_path_recorder(context, container, Path()); }
       ClipRecorder clip(context, container, kClipType, IntRect(1, 1, 9, 9));
-      DrawRect(context, content, kBackgroundDrawingType,
+      DrawRect(context, content, kBackgroundType,
                FloatRect(100, 100, 300, 300));
     }
     GetPaintController().CommitNewDisplayItems();
@@ -2483,7 +2202,7 @@ class PaintControllerUnderInvalidationTest
       SubsequenceRecorder r(context, container);
       { ClipPathRecorder clip_path_recorder(context, container, Path()); }
       ClipRecorder clip(context, container, kClipType, IntRect(1, 1, 30, 30));
-      DrawRect(context, content, kBackgroundDrawingType,
+      DrawRect(context, content, kBackgroundType,
                FloatRect(100, 100, 300, 300));
     }
     GetPaintController().CommitNewDisplayItems();
@@ -2496,7 +2215,7 @@ class PaintControllerUnderInvalidationTest
 
     {
       SubsequenceRecorder r(context, container);
-      DrawRect(context, content, kBackgroundDrawingType,
+      DrawRect(context, content, kBackgroundType,
                FloatRect(100, 100, 300, 300));
     }
     GetPaintController().CommitNewDisplayItems();
@@ -2507,7 +2226,7 @@ class PaintControllerUnderInvalidationTest
       EXPECT_FALSE(SubsequenceRecorder::UseCachedSubsequenceIfPossible(
           context, container));
       SubsequenceRecorder r(context, container);
-      DrawRect(context, content, kBackgroundDrawingType,
+      DrawRect(context, content, kBackgroundType,
                FloatRect(100, 100, 300, 300));
     }
     GetPaintController().CommitNewDisplayItems();
@@ -2519,8 +2238,7 @@ class PaintControllerUnderInvalidationTest
 
     {
       SubsequenceRecorder r(context, target);
-      DrawRect(context, target, kBackgroundDrawingType,
-               FloatRect(100, 100, 300, 300));
+      DrawRect(context, target, kBackgroundType, FloatRect(100, 100, 300, 300));
     }
     GetPaintController().CommitNewDisplayItems();
 
@@ -2593,11 +2311,10 @@ TEST_F(PaintControllerUnderInvalidationTest, SkipCacheInSubsequence) {
     SubsequenceRecorder r(context, container);
     {
       DisplayItemCacheSkipper cache_skipper(context);
-      DrawRect(context, content, kBackgroundDrawingType,
+      DrawRect(context, content, kBackgroundType,
                FloatRect(100, 100, 300, 300));
     }
-    DrawRect(context, content, kForegroundDrawingType,
-             FloatRect(200, 200, 400, 400));
+    DrawRect(context, content, kForegroundType, FloatRect(200, 200, 400, 400));
   }
   GetPaintController().CommitNewDisplayItems();
 
@@ -2607,11 +2324,10 @@ TEST_F(PaintControllerUnderInvalidationTest, SkipCacheInSubsequence) {
     SubsequenceRecorder r(context, container);
     {
       DisplayItemCacheSkipper cache_skipper(context);
-      DrawRect(context, content, kBackgroundDrawingType,
+      DrawRect(context, content, kBackgroundType,
                FloatRect(200, 200, 400, 400));
     }
-    DrawRect(context, content, kForegroundDrawingType,
-             FloatRect(200, 200, 400, 400));
+    DrawRect(context, content, kForegroundType, FloatRect(200, 200, 400, 400));
   }
   GetPaintController().CommitNewDisplayItems();
 }
@@ -2624,10 +2340,10 @@ TEST_F(PaintControllerUnderInvalidationTest,
 
   {
     SubsequenceRecorder r(context, container);
-    DrawRect(context, container, kBackgroundDrawingType,
+    DrawRect(context, container, kBackgroundType,
              FloatRect(100, 100, 300, 300));
     { SubsequenceRecorder r1(context, content); }
-    DrawRect(context, container, kForegroundDrawingType,
+    DrawRect(context, container, kForegroundType,
              FloatRect(100, 100, 300, 300));
   }
   GetPaintController().CommitNewDisplayItems();
@@ -2636,12 +2352,12 @@ TEST_F(PaintControllerUnderInvalidationTest,
     EXPECT_FALSE(SubsequenceRecorder::UseCachedSubsequenceIfPossible(
         context, container));
     SubsequenceRecorder r(context, container);
-    DrawRect(context, container, kBackgroundDrawingType,
+    DrawRect(context, container, kBackgroundType,
              FloatRect(100, 100, 300, 300));
     EXPECT_FALSE(
         SubsequenceRecorder::UseCachedSubsequenceIfPossible(context, content));
     { SubsequenceRecorder r1(context, content); }
-    DrawRect(context, container, kForegroundDrawingType,
+    DrawRect(context, container, kForegroundType,
              FloatRect(100, 100, 300, 300));
   }
   GetPaintController().CommitNewDisplayItems();

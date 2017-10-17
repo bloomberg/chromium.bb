@@ -7,10 +7,10 @@
 #include "core/layout/LayoutMultiColumnSet.h"
 #include "core/paint/BlockPainter.h"
 #include "core/paint/BoxPainter.h"
-#include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/ObjectPainter.h"
 #include "core/paint/PaintInfo.h"
 #include "platform/geometry/LayoutPoint.h"
+#include "platform/graphics/paint/DrawingRecorder.h"
 
 namespace blink {
 
@@ -42,16 +42,15 @@ void MultiColumnSetPainter::PaintColumnRules(const PaintInfo& paint_info,
                                                         column_rule_bounds))
     return;
 
-  if (LayoutObjectDrawingRecorder::UseCachedDrawingIfPossible(
-          paint_info.context, layout_multi_column_set_,
-          DisplayItem::kColumnRules))
+  if (DrawingRecorder::UseCachedDrawingIfPossible(paint_info.context,
+                                                  layout_multi_column_set_,
+                                                  DisplayItem::kColumnRules))
     return;
 
   LayoutRect paint_rect = layout_multi_column_set_.VisualOverflowRect();
   paint_rect.MoveBy(paint_offset);
-  LayoutObjectDrawingRecorder drawing_recorder(
-      paint_info.context, layout_multi_column_set_, DisplayItem::kColumnRules,
-      paint_rect);
+  DrawingRecorder recorder(paint_info.context, layout_multi_column_set_,
+                           DisplayItem::kColumnRules, paint_rect);
 
   const ComputedStyle& block_style =
       layout_multi_column_set_.MultiColumnBlockFlow()->StyleRef();
