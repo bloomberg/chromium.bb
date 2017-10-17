@@ -27,11 +27,11 @@ layer at (8,260) size 320x32 scrollHeight 40
       LayoutBlockFlow (anonymous) at (0,0) size 24x32
         LayoutText {#text} at (0,8) size 24x15
           text run at (0,8) width 24: "0:00"
-    LayoutSlider {INPUT} at (74,15) size 71x2
-      LayoutFlexibleBox {DIV} at (0,0) size 71x2
+    LayoutSlider {INPUT} at (74,1) size 71x30
+      LayoutFlexibleBox {DIV} at (0,14) size 71x2
     LayoutButton {INPUT} at (163,0) size 32x32
-    LayoutSlider {INPUT} at (213,15) size 25x2
-      LayoutFlexibleBox {DIV} at (0,0) size 25x2
+    LayoutSlider {INPUT} at (213,1) size 25x30
+      LayoutFlexibleBox {DIV} at (0,14) size 25x2
     LayoutButton {INPUT} at (288,0) size 32x32
 layer at (264,260) size 32x32
   LayoutButton {INPUT} at (256,0) size 32x32
@@ -67,11 +67,11 @@ layer at (8,505) size 320x32 scrollHeight 40
       LayoutBlockFlow (anonymous) at (0,0) size 24x32
         LayoutText {#text} at (0,8) size 24x15
           text run at (0,8) width 24: "0:00"
-    LayoutSlider {INPUT} at (74,15) size 71x2
-      LayoutFlexibleBox {DIV} at (0,0) size 71x2
+    LayoutSlider {INPUT} at (74,1) size 71x30
+      LayoutFlexibleBox {DIV} at (0,14) size 71x2
     LayoutButton {INPUT} at (163,0) size 32x32
-    LayoutSlider {INPUT} at (213,15) size 25x2
-      LayoutFlexibleBox {DIV} at (0,0) size 25x2
+    LayoutSlider {INPUT} at (213,1) size 25x30
+      LayoutFlexibleBox {DIV} at (0,14) size 25x2
     LayoutButton {INPUT} at (288,0) size 32x32
 layer at (264,505) size 32x32
   LayoutButton {INPUT} at (256,0) size 32x32
@@ -109,11 +109,11 @@ layer at (8,750) size 320x32 backgroundClip at (0,0) size 0x0 clip at (0,0) size
       LayoutBlockFlow (anonymous) at (0,0) size 24x32
         LayoutText {#text} at (0,8) size 24x15
           text run at (0,8) width 24: "0:00"
-    LayoutSlider {INPUT} at (74,15) size 71x2
-      LayoutFlexibleBox {DIV} at (0,0) size 71x2
+    LayoutSlider {INPUT} at (74,1) size 71x30
+      LayoutFlexibleBox {DIV} at (0,14) size 71x2
     LayoutButton {INPUT} at (163,0) size 32x32
-    LayoutSlider {INPUT} at (213,15) size 25x2
-      LayoutFlexibleBox {DIV} at (0,0) size 25x2
+    LayoutSlider {INPUT} at (213,1) size 25x30
+      LayoutFlexibleBox {DIV} at (0,14) size 25x2
     LayoutButton {INPUT} at (288,0) size 32x32
 layer at (264,750) size 32x32 backgroundClip at (0,0) size 0x0 clip at (0,0) size 0x0
   LayoutButton {INPUT} at (256,0) size 32x32

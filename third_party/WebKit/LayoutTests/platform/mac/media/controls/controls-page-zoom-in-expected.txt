@@ -22,11 +22,11 @@ layer at (12,397) size 576x46 transparent scrollHeight 58
       LayoutBlockFlow (anonymous) at (5.75,0) size 44.19x46.08
         LayoutText {#text} at (0,13) size 45x20
           text run at (0,13) width 45: "/ 0:06"
-    LayoutSlider {INPUT} at (155.56,21.59) size 168.03x2.88
-      LayoutFlexibleBox {DIV} at (0,0) size 168.03x2.88
+    LayoutSlider {INPUT} at (155.56,1.44) size 168.03x43.19
+      LayoutFlexibleBox {DIV} at (0,20.16) size 168.03x2.88
     LayoutButton {INPUT} at (349.50,0) size 46.08x46.08
-    LayoutSlider {INPUT} at (421.48,21.59) size 82.53x2.88
-      LayoutFlexibleBox {DIV} at (0,0) size 82.53x2.88
+    LayoutSlider {INPUT} at (421.48,1.44) size 82.53x43.19
+      LayoutFlexibleBox {DIV} at (0,20.16) size 82.53x2.88
 layer at (541,397) size 46x46
   LayoutButton {INPUT} at (529.92,0) size 46.08x46.08
 layer at (141,420) size 220x0

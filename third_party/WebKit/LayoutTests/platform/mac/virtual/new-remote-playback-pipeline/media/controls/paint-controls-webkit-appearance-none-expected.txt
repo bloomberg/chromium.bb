@@ -22,8 +22,8 @@ layer at (8,303) size 400x32 scrollHeight 40
       LayoutBlockFlow (anonymous) at (4,0) size 30.69x32
         LayoutText {#text} at (0,9) size 31x14
           text run at (0,9) width 31: "/ 0:09"
-    LayoutSlider {INPUT} at (108.05,15) size 241.95x2
-      LayoutFlexibleBox {DIV} at (0,0) size 241.95x2
+    LayoutSlider {INPUT} at (108.05,1) size 241.95x30
+      LayoutFlexibleBox {DIV} at (0,14) size 241.95x2
 layer at (376,303) size 32x32
   LayoutButton {INPUT} at (368,0) size 32x32
 layer at (98,319) size 278x0
