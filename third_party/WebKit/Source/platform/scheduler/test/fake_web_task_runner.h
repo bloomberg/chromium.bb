@@ -9,7 +9,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/wtf/RefPtr.h"
 

@@ -6,7 +6,7 @@
 #define SurfaceLayerBridge_h
 
 #include <memory>
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/common/surfaces/surface_reference_factory.h"

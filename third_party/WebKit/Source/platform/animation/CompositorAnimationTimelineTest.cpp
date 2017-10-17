@@ -4,13 +4,13 @@
 
 #include "platform/animation/CompositorAnimationTimeline.h"
 
-#include "base/memory/ref_counted.h"
+#include <memory>
+#include "base/memory/scoped_refptr.h"
 #include "cc/animation/animation_host.h"
 #include "platform/animation/CompositorAnimationHost.h"
 #include "platform/animation/CompositorAnimationPlayer.h"
 #include "platform/testing/CompositorTest.h"
 #include "platform/testing/WebLayerTreeViewImplForTesting.h"
-#include <memory>
 
 namespace blink {
 

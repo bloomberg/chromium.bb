@@ -6,7 +6,6 @@
 #define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_BASE_TEST_TIME_SOURCE_H_
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/tick_clock.h"
 

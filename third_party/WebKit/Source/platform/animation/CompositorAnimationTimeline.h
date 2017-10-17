@@ -6,7 +6,7 @@
 #define CompositorAnimationTimeline_h
 
 #include <memory>
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "cc/animation/animation_timeline.h"
 #include "platform/PlatformExport.h"
 #include "platform/wtf/Noncopyable.h"

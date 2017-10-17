@@ -5,7 +5,7 @@
 #ifndef PaintChunksToCcLayer_h
 #define PaintChunksToCcLayer_h
 
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "cc/paint/display_item_list.h"
 #include "platform/PlatformExport.h"
 #include "platform/geometry/IntRect.h"
