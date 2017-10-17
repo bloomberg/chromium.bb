@@ -6,8 +6,8 @@
 #define SERVICES_DEVICE_GENERIC_SENSOR_PLATFORM_SENSOR_READER_WIN_H_
 
 #include <SensorsApi.h>
+#include <wrl/client.h>
 
-#include "base/win/scoped_comptr.h"
 #include "services/device/public/interfaces/sensor.mojom.h"
 
 namespace device {
@@ -34,7 +34,7 @@ class PlatformSensorReaderWin {
 
   static std::unique_ptr<PlatformSensorReaderWin> Create(
       mojom::SensorType type,
-      base::win::ScopedComPtr<ISensorManager> sensor_manager);
+      Microsoft::WRL::ComPtr<ISensorManager> sensor_manager);
 
   // Following methods are thread safe.
   void SetClient(Client* client);
@@ -46,12 +46,12 @@ class PlatformSensorReaderWin {
   ~PlatformSensorReaderWin();
 
  private:
-  PlatformSensorReaderWin(base::win::ScopedComPtr<ISensor> sensor,
+  PlatformSensorReaderWin(Microsoft::WRL::ComPtr<ISensor> sensor,
                           std::unique_ptr<ReaderInitParams> params);
 
-  static base::win::ScopedComPtr<ISensor> GetSensorForType(
+  static Microsoft::WRL::ComPtr<ISensor> GetSensorForType(
       REFSENSOR_TYPE_ID sensor_type,
-      base::win::ScopedComPtr<ISensorManager> sensor_manager);
+      Microsoft::WRL::ComPtr<ISensorManager> sensor_manager);
 
   bool SetReportingInterval(const PlatformSensorConfiguration& configuration);
   void ListenSensorEvent();
@@ -70,7 +70,7 @@ class PlatformSensorReaderWin {
   base::Lock lock_;
   bool sensor_active_;
   Client* client_;
-  base::win::ScopedComPtr<ISensor> sensor_;
+  Microsoft::WRL::ComPtr<ISensor> sensor_;
   scoped_refptr<EventListener> event_listener_;
   base::WeakPtrFactory<PlatformSensorReaderWin> weak_factory_;
 

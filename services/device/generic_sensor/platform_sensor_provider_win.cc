@@ -21,11 +21,11 @@ class PlatformSensorProviderWin::SensorThread final : public base::Thread {
   SensorThread() : base::Thread("Sensor thread") { init_com_with_mta(true); }
 
   void SetSensorManagerForTesting(
-      base::win::ScopedComPtr<ISensorManager> sensor_manager) {
+      Microsoft::WRL::ComPtr<ISensorManager> sensor_manager) {
     sensor_manager_ = sensor_manager;
   }
 
-  const base::win::ScopedComPtr<ISensorManager>& sensor_manager() const {
+  const Microsoft::WRL::ComPtr<ISensorManager>& sensor_manager() const {
     return sensor_manager_;
   }
 
@@ -40,7 +40,7 @@ class PlatformSensorProviderWin::SensorThread final : public base::Thread {
   void CleanUp() override { sensor_manager_.Reset(); }
 
  private:
-  base::win::ScopedComPtr<ISensorManager> sensor_manager_;
+  Microsoft::WRL::ComPtr<ISensorManager> sensor_manager_;
 };
 
 // static
@@ -51,7 +51,7 @@ PlatformSensorProviderWin* PlatformSensorProviderWin::GetInstance() {
 }
 
 void PlatformSensorProviderWin::SetSensorManagerForTesting(
-    base::win::ScopedComPtr<ISensorManager> sensor_manager) {
+    Microsoft::WRL::ComPtr<ISensorManager> sensor_manager) {
   CreateSensorThread();
   sensor_thread_->SetSensorManagerForTesting(sensor_manager);
 }
