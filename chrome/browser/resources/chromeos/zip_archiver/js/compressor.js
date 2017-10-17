@@ -16,7 +16,7 @@
  */
 unpacker.Compressor = function(naclModule, items) {
   /**
-   * @private {!Object}
+   * @private {Object}
    * @const
    */
   this.naclModule_ = naclModule;
@@ -154,14 +154,24 @@ unpacker.Compressor.prototype.getArchiveName = function() {
  * @param {function(!unpacker.types.CompressorId)} onSuccess
  * @param {function(!unpacker.types.CompressorId)} onError
  * @param {function(!unpacker.types.CompressorId, number)} onProgress
+ * @param {function(!unpacker.types.CompressorId)} onCancel
  */
 unpacker.Compressor.prototype.compress = function(
-    onSuccess, onError, onProgress) {
+    onSuccess, onError, onProgress, onCancel) {
   this.onSuccess_ = onSuccess;
   this.onError_ = onError;
   this.onProgress_ = onProgress;
+  this.onCancel_ = onCancel;
 
   this.getArchiveFile_();
+};
+
+/**
+ * Returns archive file entry.
+ * @return {FileEntry}
+ */
+unpacker.Compressor.prototype.archiveFileEntry = function() {
+  return this.archiveFileEntry_;
 };
 
 /**
@@ -370,6 +380,14 @@ unpacker.Compressor.prototype.sendCloseArchiveRequest = function(hasError) {
 };
 
 /**
+ * Sends a cancel archive request to minizip and interrupts zip process.
+ */
+unpacker.Compressor.prototype.sendCancelArchiveRequest = function() {
+  var request = unpacker.request.createCancelArchiveRequest(this.compressorId_);
+  this.naclModule_.postMessage(request);
+};
+
+/**
  * Sends a read file chunk done response.
  * @param {number} length The number of bytes read from the entry.
  * @param {!ArrayBuffer} buffer A buffer containing the data that was read.
@@ -538,6 +556,16 @@ unpacker.Compressor.prototype.onCloseArchiveDone_ = function() {
 };
 
 /**
+ * A handler of cancel archive response. Receiving this response means that we
+ * do not expect new requests from Zip Archiver.
+ * @private
+ */
+unpacker.Compressor.prototype.onCancelArchiveDone_ = function() {
+  console.warn('Archive for "' + this.compressorId_ + '" has been canceled.');
+  this.onCancel_(this.compressorId_);
+};
+
+/**
  * Processes messages from NaCl module.
  * @param {!Object} data The data contained in the message from NaCl. Its
  *     types depend on the operation of the request.
@@ -571,6 +599,10 @@ unpacker.Compressor.prototype.processMessage = function(data, operation) {
 
     case unpacker.request.Operation.CLOSE_ARCHIVE_DONE:
       this.onCloseArchiveDone_();
+      break;
+
+    case unpacker.request.Operation.CANCEL_ARCHIVE_DONE:
+      this.onCancelArchiveDone_();
       break;
 
     case unpacker.request.Operation.COMPRESSOR_ERROR:

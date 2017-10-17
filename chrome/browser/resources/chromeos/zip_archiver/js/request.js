@@ -93,6 +93,8 @@ unpacker.request = {
     WRITE_CHUNK_DONE: 24,
     CLOSE_ARCHIVE: 25,
     CLOSE_ARCHIVE_DONE: 26,
+    CANCEL_ARCHIVE: 27,
+    CANCEL_ARCHIVE_DONE: 28,
     FILE_SYSTEM_ERROR: -1,
     COMPRESSOR_ERROR: -2
   },
@@ -359,6 +361,19 @@ unpacker.request = {
         unpacker.request.Operation.CLOSE_ARCHIVE;
     request[unpacker.request.Key.COMPRESSOR_ID] = compressorId;
     request[unpacker.request.Key.HAS_ERROR] = hasError;
+    return request;
+  },
+
+  /**
+   * Creates a cancel archive request for compressor.
+   * @param {!unpacker.types.CompressorId} compressorId
+   * @return {!Object} A close archive request.
+   */
+  createCancelArchiveRequest: function(compressorId) {
+    var request = {};
+    request[unpacker.request.Key.OPERATION] =
+        unpacker.request.Operation.CANCEL_ARCHIVE;
+    request[unpacker.request.Key.COMPRESSOR_ID] = compressorId;
     return request;
   }
 };

@@ -46,6 +46,9 @@ class Compressor {
   // Releases all resources obtained by minizip.
   void CloseArchive(const pp::VarDictionary& dictionary);
 
+  // Cancels the compression process.
+  void CancelArchive(const pp::VarDictionary& dictionary);
+
   // A getter function for the message sender.
   JavaScriptMessageSenderInterface* message_sender() { return message_sender_; }
 

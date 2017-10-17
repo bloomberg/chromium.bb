@@ -50,6 +50,9 @@ class CompressorArchiveMinizip : public CompressorArchive {
   // Releases all resources obtained by minizip.
   virtual bool CloseArchive(bool has_error);
 
+  // Cancels the compression process.
+  virtual void CancelArchive();
+
   // Adds an entry to the archive.
   virtual bool AddToArchive(const std::string& filename,
                             int64_t file_size,

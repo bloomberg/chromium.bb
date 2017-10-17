@@ -203,12 +203,15 @@ bool CompressorArchiveMinizip::AddToArchive(const std::string& filename,
 
       int64_t read_bytes =
           compressor_stream_->Read(chunk_size, destination_buffer_);
-
       // Negative read_bytes indicates an error occurred when reading chunks.
       // 0 just means there is no more data available, but here we need positive
       // length of bytes, so this is also an error here.
       if (read_bytes <= 0) {
         has_error = true;
+        break;
+      }
+
+      if (canceled_) {
         break;
       }
 
@@ -230,6 +233,11 @@ bool CompressorArchiveMinizip::AddToArchive(const std::string& filename,
     return false /* Error */;
   }
 
+  if (canceled_) {
+    CloseArchive(true /* has_error */);
+    return false /* Error */;
+  }
+
   return true /* Success */;
 }
 
@@ -245,4 +253,8 @@ bool CompressorArchiveMinizip::CloseArchive(bool has_error) {
     }
   }
   return true /* Success */;
+}
+
+void CompressorArchiveMinizip::CancelArchive() {
+  canceled_ = true;
 }

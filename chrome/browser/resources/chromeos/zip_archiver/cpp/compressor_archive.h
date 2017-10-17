@@ -12,7 +12,7 @@
 class CompressorArchive {
  public:
   explicit CompressorArchive(CompressorStream* compressor_stream)
-      : compressor_stream_(compressor_stream) {}
+      : canceled_(false), compressor_stream_(compressor_stream) {}
 
   virtual ~CompressorArchive() {}
 
@@ -29,6 +29,9 @@ class CompressorArchive {
   // In case of failure the error message can be obtained with
   // CompressorArchive::error_message().
   virtual bool CloseArchive(bool has_error) = 0;
+
+  // Cancels the compression process.
+  virtual void CancelArchive() = 0;
 
   // Adds an entry to the archive. It writes the header of the entry onto the
   // archive first, and then if it is a file(not a directory), requests
@@ -47,9 +50,15 @@ class CompressorArchive {
 
   std::string error_message() const { return error_message_; }
 
+  bool canceled() const { return canceled_; }
+
   void set_error_message(const std::string& error_message) {
     error_message_ = error_message;
   }
+
+ protected:
+  // A flag that determines whether the zip process has been canceled or not.
+  bool canceled_;
 
  private:
   // An instance that takes care of all IO operations.

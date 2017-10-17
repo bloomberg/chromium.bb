@@ -145,6 +145,13 @@ pp::VarDictionary request::CreateCloseArchiveDoneResponse(int compressor_id) {
   return request;
 }
 
+pp::VarDictionary request::CreateCancelArchiveDoneResponse(int compressor_id) {
+  pp::VarDictionary request;
+  request.Set(request::key::kOperation, CANCEL_ARCHIVE_DONE);
+  request.Set(request::key::kCompressorId, compressor_id);
+  return request;
+}
+
 pp::VarDictionary request::CreateFileSystemError(
     const std::string& file_system_id,
     const std::string& request_id,

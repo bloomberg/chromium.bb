@@ -115,6 +115,9 @@ Press any key to continue exploring.
   <message desc="Message shown when packing is in progress." name="IDS_ZIP_ARCHIVER_PACKING_PROGRESS_MESSAGE">
     Please wait, packing...
   </message>
+  <message desc="Label text used to cancel zip operation in progress." name="IDS_ZIP_ARCHIVER_PACKING_CANCEL_BUTTON_LABEL">
+    Cancel
+  </message>
 
 
   <!-- File Manager -->
