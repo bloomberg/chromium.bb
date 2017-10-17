@@ -164,6 +164,12 @@ bool LatencyInfo::Verify(const std::vector<LatencyInfo>& latency_info,
 
 void LatencyInfo::CopyLatencyFrom(const LatencyInfo& other,
                                   LatencyComponentType type) {
+  // Don't clobber an existing trace_id_.
+  if (trace_id_ == -1) {
+    DCHECK(latency_components().empty());
+    trace_id_ = other.trace_id();
+  }
+
   for (const auto& lc : other.latency_components()) {
     if (lc.first.first == type) {
       AddLatencyNumberWithTimestamp(lc.first.first,
@@ -177,15 +183,19 @@ void LatencyInfo::CopyLatencyFrom(const LatencyInfo& other,
   expected_queueing_time_on_dispatch_ =
       other.expected_queueing_time_on_dispatch_;
 
-  trace_id_ = other.trace_id();
   coalesced_ = other.coalesced();
-  // TODO(tdresser): Ideally we'd copy |began_| here as well, but |began_| isn't
-  // very intuitive, and we can actually begin multiple times across copied
-  // events.
+  // TODO(tdresser): Ideally we'd copy |began_| here as well, but |began_|
+  // isn't very intuitive, and we can actually begin multiple times across
+  // copied events.
   terminated_ = other.terminated();
 }
 
 void LatencyInfo::AddNewLatencyFrom(const LatencyInfo& other) {
+  // Don't clobber an existing trace_id_.
+  if (trace_id_ == -1) {
+    trace_id_ = other.trace_id();
+  }
+
   for (const auto& lc : other.latency_components()) {
     if (!FindLatency(lc.first.first, lc.first.second, NULL)) {
       AddLatencyNumberWithTimestamp(lc.first.first,
@@ -199,7 +209,6 @@ void LatencyInfo::AddNewLatencyFrom(const LatencyInfo& other) {
   expected_queueing_time_on_dispatch_ =
       other.expected_queueing_time_on_dispatch_;
 
-  trace_id_ = other.trace_id();
   coalesced_ = other.coalesced();
   // TODO(tdresser): Ideally we'd copy |began_| here as well, but |began_| isn't
   // very intuitive, and we can actually begin multiple times across copied
