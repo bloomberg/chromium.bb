@@ -97,6 +97,19 @@ class LoginUserMenuView : public LoginBaseBubbleView {
   DISALLOW_COPY_AND_ASSIGN(LoginUserMenuView);
 };
 
+class LoginTooltipView : public LoginBaseBubbleView {
+ public:
+  LoginTooltipView(const base::string16& message, views::View* anchor_view)
+      : LoginBaseBubbleView(anchor_view) {
+    views::Label* text = CreateLabel(message, SK_ColorWHITE);
+    text->SetMultiLine(true);
+    AddChildView(text);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(LoginTooltipView);
+};
+
 }  // namespace
 
 LoginBubble::LoginBubble() {
@@ -128,6 +141,15 @@ void LoginBubble::ShowUserMenu(const base::string16& message,
   Show();
 }
 
+void LoginBubble::ShowTooltip(const base::string16& message,
+                              views::View* anchor_view) {
+  if (bubble_view_)
+    Close();
+
+  bubble_view_ = new LoginTooltipView(message, anchor_view);
+  Show();
+}
+
 void LoginBubble::Close() {
   if (bubble_view_)
     bubble_view_->GetWidget()->Close();
@@ -138,13 +160,13 @@ bool LoginBubble::IsVisible() {
 }
 
 void LoginBubble::OnWidgetClosing(views::Widget* widget) {
+  bubble_opener_ = nullptr;
   widget->RemoveObserver(this);
   bubble_view_ = nullptr;
 }
 
 void LoginBubble::OnWidgetDestroying(views::Widget* widget) {
-  widget->RemoveObserver(this);
-  bubble_view_ = nullptr;
+  OnWidgetClosing(widget);
 }
 
 void LoginBubble::OnMouseEvent(ui::MouseEvent* event) {
