@@ -293,6 +293,9 @@ struct macroblock {
   int cfl_cost[CFL_JOINT_SIGNS][CFL_PRED_PLANES][CFL_ALPHABET_SIZE];
 #endif  // CONFIG_CFL
   int tx_size_cost[TX_SIZES - 1][TX_SIZE_CONTEXTS][TX_SIZES];
+#if CONFIG_RECT_TX_EXT && (CONFIG_EXT_TX || CONFIG_VAR_TX)
+  int quarter_tx_size_cost[2];
+#endif
 #if CONFIG_EXT_TX
 #if CONFIG_LGT_FROM_PRED
   int intra_lgt_cost[LGT_SIZES][INTRA_MODES][2];

@@ -2399,9 +2399,8 @@ static void txfm_rd_in_plane(MACROBLOCK *x, const AV1_COMP *cpi,
   }
 }
 
-static int tx_size_cost(const AV1_COMP *const cpi, const MACROBLOCK *const x,
+static int tx_size_cost(const AV1_COMMON *const cm, const MACROBLOCK *const x,
                         BLOCK_SIZE bsize, TX_SIZE tx_size) {
-  const AV1_COMMON *const cm = &cpi->common;
   const MACROBLOCKD *const xd = &x->e_mbd;
   const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
 
@@ -2415,8 +2414,8 @@ static int tx_size_cost(const AV1_COMP *const cpi, const MACROBLOCK *const x,
     int r_tx_size = x->tx_size_cost[tx_size_cat][tx_size_ctx][depth];
 #if CONFIG_RECT_TX_EXT && (CONFIG_EXT_TX || CONFIG_VAR_TX)
     if (is_quarter_tx_allowed(xd, mbmi, is_inter) && tx_size != coded_tx_size)
-      r_tx_size += av1_cost_bit(cm->fc->quarter_tx_size_prob,
-                                tx_size == quarter_txsize_lookup[bsize]);
+      r_tx_size +=
+          x->quarter_tx_size_cost[tx_size == quarter_txsize_lookup[bsize]];
 #endif
     return r_tx_size;
   } else {
@@ -2506,7 +2505,7 @@ static int64_t txfm_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
   const int tx_select =
       cm->tx_mode == TX_MODE_SELECT && mbmi->sb_type >= BLOCK_8X8;
 
-  const int r_tx_size = tx_size_cost(cpi, x, bs, tx_size);
+  const int r_tx_size = tx_size_cost(cm, x, bs, tx_size);
 
 #if CONFIG_PVQ
   assert(tx_size >= TX_4X4);
@@ -3384,7 +3383,8 @@ static int rd_pick_palette_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
       this_rd = RDCOST(x->rdmult, this_rate, tokenonly_rd_stats.dist);
       if (!xd->lossless[mbmi->segment_id] &&
           block_signals_txsize(mbmi->sb_type)) {
-        tokenonly_rd_stats.rate -= tx_size_cost(cpi, x, bsize, mbmi->tx_size);
+        tokenonly_rd_stats.rate -=
+            tx_size_cost(&cpi->common, x, bsize, mbmi->tx_size);
       }
       if (this_rd < *best_rd) {
         *best_rd = this_rd;
@@ -4496,7 +4496,8 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
       // tokenonly rate, but for intra blocks, tx_size is always coded
       // (prediction granularity), so we account for it in the full rate,
       // not the tokenonly rate.
-      this_rate_tokenonly -= tx_size_cost(cpi, x, bsize, mbmi->tx_size);
+      this_rate_tokenonly -=
+          tx_size_cost(&cpi->common, x, bsize, mbmi->tx_size);
     }
     if (try_palette && mbmi->mode == DC_PRED) {
       this_rate +=
@@ -4928,7 +4929,7 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
 #if CONFIG_RECT_TX_EXT
     if (check_qttx) {
       assert(blk_row == 0 && blk_col == 0);
-      rd_stats->rate += av1_cost_bit(cpi->common.fc->quarter_tx_size_prob, 0);
+      rd_stats->rate += x->quarter_tx_size_cost[0];
     }
 #endif
     this_rd = RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist);
@@ -5020,8 +5021,7 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
         rd_stats_qttx.rate +=
             av1_cost_bit(cpi->common.fc->txfm_partition_prob[ctx], 0);
       }
-      rd_stats_qttx.rate +=
-          av1_cost_bit(cpi->common.fc->quarter_tx_size_prob, 1);
+      rd_stats_qttx.rate += x->quarter_tx_size_cost[1];
       rd_qttx = RDCOST(x->rdmult, rd_stats_qttx.rate, rd_stats_qttx.dist);
 #if CONFIG_LV_MAP
       eobs_qttx[0] = p->txb_entropy_ctx[0];
@@ -10367,7 +10367,7 @@ static void pick_filter_intra_interframe(
     // tokenonly rate, but for intra blocks, tx_size is always coded
     // (prediction granularity), so we account for it in the full rate,
     // not the tokenonly rate.
-    rate_y -= tx_size_cost(cpi, x, bsize, mbmi->tx_size);
+    rate_y -= tx_size_cost(cm, x, bsize, mbmi->tx_size);
   }
 
   rate2 += av1_cost_bit(cm->fc->filter_intra_probs[0],
@@ -11151,7 +11151,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
         // tokenonly rate, but for intra blocks, tx_size is always coded
         // (prediction granularity), so we account for it in the full rate,
         // not the tokenonly rate.
-        rate_y -= tx_size_cost(cpi, x, bsize, mbmi->tx_size);
+        rate_y -= tx_size_cost(cm, x, bsize, mbmi->tx_size);
       }
 #if CONFIG_EXT_INTRA
       if (is_directional_mode) {

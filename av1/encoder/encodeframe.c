@@ -5298,8 +5298,11 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
           quarter_txsize_lookup[bsize] != max_txsize_rect_lookup[bsize] &&
           (mbmi->tx_size == quarter_txsize_lookup[bsize] ||
            mbmi->tx_size == max_txsize_rect_lookup[bsize])) {
-        ++td->counts
-              ->quarter_tx_size[mbmi->tx_size == quarter_txsize_lookup[bsize]];
+        const int use_qttx = mbmi->tx_size == quarter_txsize_lookup[bsize];
+        ++td->counts->quarter_tx_size[use_qttx];
+#if CONFIG_NEW_MULTISYMBOL
+        update_cdf(xd->tile_ctx->quarter_tx_size_cdf, use_qttx, 2);
+#endif
       }
 #endif
 #if CONFIG_EXT_TX && CONFIG_RECT_TX
