@@ -47,7 +47,7 @@ class CompressorArchiveMinizip : public CompressorArchive {
   // Creates an archive object.
   virtual bool CreateArchive();
 
-  // Releases all resources obtained by minizip.
+  // Closes the archive.
   virtual bool CloseArchive(bool has_error);
 
   // Cancels the compression process.

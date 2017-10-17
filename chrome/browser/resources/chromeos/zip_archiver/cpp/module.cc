@@ -19,7 +19,8 @@
 namespace {
 
 typedef std::map<std::string, Volume*>::const_iterator volume_iterator;
-typedef std::map<int, Compressor*>::const_iterator compressor_iterator;
+typedef std::map<int, std::unique_ptr<Compressor>>::const_iterator
+    compressor_iterator;
 
 // An internal implementation of JavaScriptMessageSenderInterface. This class
 // handles all communication from the module to the JavaScript code. Thread
@@ -269,6 +270,11 @@ class NaclArchiveInstance : public pp::Instance {
         break;
       }
 
+      case request::RELEASE_COMPRESSOR: {
+        ReleaseCompressor(compressor_id);
+        break;
+      }
+
       default:
         PP_NOTREACHED();
     }
@@ -409,20 +415,19 @@ class NaclArchiveInstance : public pp::Instance {
 
   // Requests minizip to create an archive object for the given compressor_id.
   void CreateArchive(int compressor_id) {
-    Compressor* compressor =
-        new Compressor(instance_handle_, compressor_id, &message_sender_);
+    std::unique_ptr<Compressor> compressor(
+        new Compressor(instance_handle_, compressor_id, &message_sender_));
     if (!compressor->Init()) {
       std::stringstream ss;
       ss << compressor_id;
       message_sender_.SendCompressorError(
           compressor_id,
           "Could not create a compressor for compressor id: " + ss.str() + ".");
-      delete compressor;
       return;
     }
-    compressors_[compressor_id] = compressor;
 
-    compressor->CreateArchive();
+    compressors_[compressor_id] = std::move(compressor);
+    compressors_[compressor_id]->CreateArchive();
   }
 
   void AddToArchive(const pp::VarDictionary& var_dict, int compressor_id) {
@@ -461,12 +466,16 @@ class NaclArchiveInstance : public pp::Instance {
       iterator->second->CancelArchive(var_dict);
   }
 
+  void ReleaseCompressor(int compressor_id) {
+    compressors_.erase(compressor_id);
+  }
+
   // A map that holds for every opened archive its instance. The key is the file
   // system id of the archive.
   std::map<std::string, Volume*> volumes_;
 
   // A map from compressor ids to compressors.
-  std::map<int, Compressor*> compressors_;
+  std::map<int, std::unique_ptr<Compressor>> compressors_;
 
   // An pp::InstanceHandle used to create pp::SimpleThread in Volume.
   pp::InstanceHandle instance_handle_;
