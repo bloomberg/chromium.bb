@@ -9,6 +9,7 @@
 #include "core/layout/ng/inline/ng_inline_break_token.h"
 #include "core/layout/ng/inline/ng_line_height_metrics.h"
 #include "core/layout/ng/ng_container_fragment_builder.h"
+#include "core/layout/ng/ng_positioned_float.h"
 #include "platform/wtf/Allocator.h"
 
 namespace blink {
@@ -16,7 +17,6 @@ namespace blink {
 class ComputedStyle;
 class NGInlineNode;
 class NGPhysicalFragment;
-class NGPhysicalLineBoxFragment;
 
 class CORE_EXPORT NGLineBoxFragmentBuilder final
     : public NGContainerFragmentBuilder {
@@ -39,17 +39,20 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
   void SetMetrics(const NGLineHeightMetrics&);
   const NGLineHeightMetrics& Metrics() const { return metrics_; }
 
+  void AddPositionedFloat(const NGPositionedFloat&);
+
   // Set the break token for the fragment to build.
   // A finished break token will be attached if not set.
   void SetBreakToken(RefPtr<NGInlineBreakToken>);
 
   // Creates the fragment. Can only be called once.
-  RefPtr<NGPhysicalLineBoxFragment> ToLineBoxFragment();
+  RefPtr<NGLayoutResult> ToLineBoxFragment();
 
  private:
   NGInlineNode node_;
 
   NGLineHeightMetrics metrics_;
+  Vector<NGPositionedFloat> positioned_floats_;
 
   RefPtr<NGInlineBreakToken> break_token_;
 };

@@ -16,6 +16,7 @@
 namespace blink {
 
 class NGExclusionSpace;
+struct NGPositionedFloat;
 struct NGUnpositionedFloat;
 
 // The NGLayoutResult stores the resulting data from layout. This includes
@@ -43,9 +44,17 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
     return physical_fragment_;
   }
 
-  const Vector<NGOutOfFlowPositionedDescendant> OutOfFlowPositionedDescendants()
-      const {
+  const Vector<NGOutOfFlowPositionedDescendant>&
+  OutOfFlowPositionedDescendants() const {
     return oof_positioned_descendants_;
+  }
+
+  // A line-box can have a list of positioned floats. These should be added to
+  // the line-box's parent fragment (as floats which occur within a line-box do
+  // not appear a children).
+  const Vector<NGPositionedFloat>& PositionedFloats() const {
+    DCHECK(physical_fragment_->Type() == NGPhysicalFragment::kFragmentLineBox);
+    return positioned_floats_;
   }
 
   // List of floats that need to be positioned by the next in-flow child that
@@ -72,16 +81,21 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
 
   const NGMarginStrut EndMarginStrut() const { return end_margin_strut_; }
 
-  const LayoutUnit IntrinsicBlockSize() const { return intrinsic_block_size_; }
+  const LayoutUnit IntrinsicBlockSize() const {
+    DCHECK(physical_fragment_->Type() == NGPhysicalFragment::kFragmentBox);
+    return intrinsic_block_size_;
+  }
 
   RefPtr<NGLayoutResult> CloneWithoutOffset() const;
 
  private:
   friend class NGFragmentBuilder;
+  friend class NGLineBoxFragmentBuilder;
 
   NGLayoutResult(RefPtr<NGPhysicalFragment> physical_fragment,
-                 Vector<NGOutOfFlowPositionedDescendant>
+                 Vector<NGOutOfFlowPositionedDescendant>&
                      out_of_flow_positioned_descendants,
+                 Vector<NGPositionedFloat>& positioned_floats,
                  Vector<RefPtr<NGUnpositionedFloat>>& unpositioned_floats,
                  std::unique_ptr<const NGExclusionSpace> exclusion_space,
                  const WTF::Optional<NGBfcOffset> bfc_offset,
@@ -90,8 +104,10 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
                  NGLayoutResultStatus status);
 
   RefPtr<NGPhysicalFragment> physical_fragment_;
-  Vector<RefPtr<NGUnpositionedFloat>> unpositioned_floats_;
   Vector<NGOutOfFlowPositionedDescendant> oof_positioned_descendants_;
+
+  Vector<NGPositionedFloat> positioned_floats_;
+  Vector<RefPtr<NGUnpositionedFloat>> unpositioned_floats_;
 
   const std::unique_ptr<const NGExclusionSpace> exclusion_space_;
   const WTF::Optional<NGBfcOffset> bfc_offset_;

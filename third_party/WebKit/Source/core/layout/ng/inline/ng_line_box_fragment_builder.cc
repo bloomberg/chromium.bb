@@ -8,7 +8,9 @@
 #include "core/layout/ng/inline/ng_inline_break_token.h"
 #include "core/layout/ng/inline/ng_inline_node.h"
 #include "core/layout/ng/inline/ng_physical_line_box_fragment.h"
+#include "core/layout/ng/ng_exclusion_space.h"
 #include "core/layout/ng/ng_layout_result.h"
+#include "core/layout/ng/ng_positioned_float.h"
 
 namespace blink {
 
@@ -39,13 +41,17 @@ void NGLineBoxFragmentBuilder::SetMetrics(const NGLineHeightMetrics& metrics) {
   metrics_ = metrics;
 }
 
+void NGLineBoxFragmentBuilder::AddPositionedFloat(
+    const NGPositionedFloat& positioned_float) {
+  positioned_floats_.push_back(positioned_float);
+}
+
 void NGLineBoxFragmentBuilder::SetBreakToken(
     RefPtr<NGInlineBreakToken> break_token) {
   break_token_ = std::move(break_token);
 }
 
-RefPtr<NGPhysicalLineBoxFragment>
-NGLineBoxFragmentBuilder::ToLineBoxFragment() {
+RefPtr<NGLayoutResult> NGLineBoxFragmentBuilder::ToLineBoxFragment() {
   DCHECK_EQ(offsets_.size(), children_.size());
 
   NGWritingMode writing_mode(
@@ -65,7 +71,12 @@ NGLineBoxFragmentBuilder::ToLineBoxFragment() {
           Style(), physical_size, children_, metrics_,
           break_token_ ? std::move(break_token_)
                        : NGInlineBreakToken::Create(node_)));
-  return fragment;
+
+  return WTF::AdoptRef(new NGLayoutResult(
+      std::move(fragment), oof_positioned_descendants_, positioned_floats_,
+      unpositioned_floats_, std::move(exclusion_space_), bfc_offset_,
+      end_margin_strut_,
+      /* intrinsic_block_size */ LayoutUnit(), NGLayoutResult::kSuccess));
 }
 
 }  // namespace blink
