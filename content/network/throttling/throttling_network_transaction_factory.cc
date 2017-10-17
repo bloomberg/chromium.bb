@@ -2,27 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/devtools/devtools_network_transaction_factory.h"
+#include "content/network/throttling/throttling_network_transaction_factory.h"
 
 #include <set>
 #include <string>
 #include <utility>
 
-#include "content/common/devtools/devtools_network_controller.h"
-#include "content/common/devtools/devtools_network_transaction.h"
+#include "content/network/throttling/throttling_controller.h"
+#include "content/network/throttling/throttling_network_transaction.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_network_layer.h"
 #include "net/http/http_network_transaction.h"
 
 namespace content {
 
-DevToolsNetworkTransactionFactory::DevToolsNetworkTransactionFactory(
+ThrottlingNetworkTransactionFactory::ThrottlingNetworkTransactionFactory(
     net::HttpNetworkSession* session)
     : network_layer_(new net::HttpNetworkLayer(session)) {}
 
-DevToolsNetworkTransactionFactory::~DevToolsNetworkTransactionFactory() {}
+ThrottlingNetworkTransactionFactory::~ThrottlingNetworkTransactionFactory() {}
 
-int DevToolsNetworkTransactionFactory::CreateTransaction(
+int ThrottlingNetworkTransactionFactory::CreateTransaction(
     net::RequestPriority priority,
     std::unique_ptr<net::HttpTransaction>* trans) {
   std::unique_ptr<net::HttpTransaction> network_transaction;
@@ -30,15 +30,16 @@ int DevToolsNetworkTransactionFactory::CreateTransaction(
   if (rv != net::OK) {
     return rv;
   }
-  trans->reset(new DevToolsNetworkTransaction(std::move(network_transaction)));
+  trans->reset(
+      new ThrottlingNetworkTransaction(std::move(network_transaction)));
   return net::OK;
 }
 
-net::HttpCache* DevToolsNetworkTransactionFactory::GetCache() {
+net::HttpCache* ThrottlingNetworkTransactionFactory::GetCache() {
   return network_layer_->GetCache();
 }
 
-net::HttpNetworkSession* DevToolsNetworkTransactionFactory::GetSession() {
+net::HttpNetworkSession* ThrottlingNetworkTransactionFactory::GetSession() {
   return network_layer_->GetSession();
 }
 

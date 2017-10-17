@@ -4,7 +4,6 @@ include_rules = [
   "+components/prefs",
   "-content",
   "+content/common/content_export.h",
-  "+content/common/devtools",
   "+content/common/loader_util.h",
   "+content/network",
   "+content/public/common/appcache_info.h",

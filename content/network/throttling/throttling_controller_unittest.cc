@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/devtools/devtools_network_controller.h"
+#include "content/network/throttling/throttling_controller.h"
 
 #include <stdint.h>
 
@@ -14,10 +14,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "content/common/devtools/devtools_network_conditions.h"
-#include "content/common/devtools/devtools_network_interceptor.h"
-#include "content/common/devtools/devtools_network_transaction.h"
-#include "content/common/devtools/devtools_network_upload_data_stream.h"
+#include "content/network/throttling/network_conditions.h"
+#include "content/network/throttling/throttling_network_interceptor.h"
+#include "content/network/throttling/throttling_network_transaction.h"
+#include "content/network/throttling/throttling_upload_data_stream.h"
 #include "net/base/chunked_upload_data_stream.h"
 #include "net/http/http_transaction_test_util.h"
 #include "net/log/net_log_with_source.h"
@@ -52,9 +52,9 @@ class TestCallback {
   int value_;
 };
 
-class DevToolsNetworkControllerHelper {
+class ThrottlingControllerHelper {
  public:
-  DevToolsNetworkControllerHelper()
+  ThrottlingControllerHelper()
       : completion_callback_(
             base::Bind(&TestCallback::Run, base::Unretained(&callback_))),
         mock_transaction_(kSimpleGET_Transaction),
@@ -69,20 +69,19 @@ class DevToolsNetworkControllerHelper {
     network_layer_.CreateTransaction(net::DEFAULT_PRIORITY,
                                      &network_transaction);
     transaction_.reset(
-        new DevToolsNetworkTransaction(std::move(network_transaction)));
+        new ThrottlingNetworkTransaction(std::move(network_transaction)));
   }
 
   void SetNetworkState(bool offline, double download, double upload) {
-    std::unique_ptr<DevToolsNetworkConditions> conditions(
-        new DevToolsNetworkConditions(offline, 0, download, upload));
-    DevToolsNetworkController::SetNetworkState(kClientId,
-                                               std::move(conditions));
+    std::unique_ptr<NetworkConditions> conditions(
+        new NetworkConditions(offline, 0, download, upload));
+    ThrottlingController::SetConditions(kClientId, std::move(conditions));
   }
 
   void SetNetworkState(const std::string& id, bool offline) {
-    std::unique_ptr<DevToolsNetworkConditions> conditions(
-        new DevToolsNetworkConditions(offline));
-    DevToolsNetworkController::SetNetworkState(id, std::move(conditions));
+    std::unique_ptr<NetworkConditions> conditions(
+        new NetworkConditions(offline));
+    ThrottlingController::SetConditions(id, std::move(conditions));
   }
 
   int Start(bool with_upload) {
@@ -109,8 +108,8 @@ class DevToolsNetworkControllerHelper {
   bool ShouldFail() {
     if (transaction_->interceptor_)
       return transaction_->interceptor_->IsOffline();
-    DevToolsNetworkInterceptor* interceptor =
-        DevToolsNetworkController::GetInterceptor(kClientId);
+    ThrottlingNetworkInterceptor* interceptor =
+        ThrottlingController::GetInterceptor(kClientId);
     EXPECT_TRUE(!!interceptor);
     return interceptor->IsOffline();
   }
@@ -128,12 +127,10 @@ class DevToolsNetworkControllerHelper {
                                                           completion_callback_);
   }
 
-  ~DevToolsNetworkControllerHelper() {
-    RemoveMockTransaction(&mock_transaction_);
-  }
+  ~ThrottlingControllerHelper() { RemoveMockTransaction(&mock_transaction_); }
 
   TestCallback* callback() { return &callback_; }
-  DevToolsNetworkTransaction* transaction() { return transaction_.get(); }
+  ThrottlingNetworkTransaction* transaction() { return transaction_.get(); }
 
  private:
   base::MessageLoop message_loop_;
@@ -141,14 +138,14 @@ class DevToolsNetworkControllerHelper {
   TestCallback callback_;
   net::CompletionCallback completion_callback_;
   MockTransaction mock_transaction_;
-  std::unique_ptr<DevToolsNetworkTransaction> transaction_;
+  std::unique_ptr<ThrottlingNetworkTransaction> transaction_;
   scoped_refptr<net::IOBuffer> buffer_;
   std::unique_ptr<net::ChunkedUploadDataStream> upload_data_stream_;
   std::unique_ptr<MockHttpRequest> request_;
 };
 
-TEST(DevToolsNetworkControllerTest, SingleDisableEnable) {
-  DevToolsNetworkControllerHelper helper;
+TEST(ThrottlingControllerTest, SingleDisableEnable) {
+  ThrottlingControllerHelper helper;
   helper.SetNetworkState(false, 0, 0);
   helper.Start(false);
 
@@ -161,8 +158,8 @@ TEST(DevToolsNetworkControllerTest, SingleDisableEnable) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST(DevToolsNetworkControllerTest, InterceptorIsolation) {
-  DevToolsNetworkControllerHelper helper;
+TEST(ThrottlingControllerTest, InterceptorIsolation) {
+  ThrottlingControllerHelper helper;
   helper.SetNetworkState(false, 0, 0);
   helper.Start(false);
 
@@ -177,8 +174,8 @@ TEST(DevToolsNetworkControllerTest, InterceptorIsolation) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST(DevToolsNetworkControllerTest, FailOnStart) {
-  DevToolsNetworkControllerHelper helper;
+TEST(ThrottlingControllerTest, FailOnStart) {
+  ThrottlingControllerHelper helper;
   helper.SetNetworkState(true, 0, 0);
 
   int rv = helper.Start(false);
@@ -188,8 +185,8 @@ TEST(DevToolsNetworkControllerTest, FailOnStart) {
   EXPECT_EQ(helper.callback()->run_count(), 0);
 }
 
-TEST(DevToolsNetworkControllerTest, FailRunningTransaction) {
-  DevToolsNetworkControllerHelper helper;
+TEST(ThrottlingControllerTest, FailRunningTransaction) {
+  ThrottlingControllerHelper helper;
   helper.SetNetworkState(false, 0, 0);
   TestCallback* callback = helper.callback();
 
@@ -204,7 +201,7 @@ TEST(DevToolsNetworkControllerTest, FailRunningTransaction) {
   EXPECT_EQ(callback->run_count(), 0);
 
   // Wait until HttpTrancation completes reading and invokes callback.
-  // DevToolsNetworkTransaction should report error instead.
+  // ThrottlingNetworkTransaction should report error instead.
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(callback->run_count(), 1);
   EXPECT_EQ(callback->value(), net::ERR_INTERNET_DISCONNECTED);
@@ -215,8 +212,8 @@ TEST(DevToolsNetworkControllerTest, FailRunningTransaction) {
   EXPECT_EQ(callback->run_count(), 1);
 }
 
-TEST(DevToolsNetworkControllerTest, ReadAfterFail) {
-  DevToolsNetworkControllerHelper helper;
+TEST(ThrottlingControllerTest, ReadAfterFail) {
+  ThrottlingControllerHelper helper;
   helper.SetNetworkState(false, 0, 0);
 
   int rv = helper.Start(false);
@@ -236,8 +233,8 @@ TEST(DevToolsNetworkControllerTest, ReadAfterFail) {
   EXPECT_EQ(helper.callback()->run_count(), 0);
 }
 
-TEST(DevToolsNetworkControllerTest, CancelTransaction) {
-  DevToolsNetworkControllerHelper helper;
+TEST(ThrottlingControllerTest, CancelTransaction) {
+  ThrottlingControllerHelper helper;
   helper.SetNetworkState(false, 0, 0);
 
   int rv = helper.Start(false);
@@ -251,8 +248,8 @@ TEST(DevToolsNetworkControllerTest, CancelTransaction) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST(DevToolsNetworkControllerTest, CancelFailedTransaction) {
-  DevToolsNetworkControllerHelper helper;
+TEST(ThrottlingControllerTest, CancelFailedTransaction) {
+  ThrottlingControllerHelper helper;
   helper.SetNetworkState(true, 0, 0);
 
   int rv = helper.Start(false);
@@ -266,8 +263,8 @@ TEST(DevToolsNetworkControllerTest, CancelFailedTransaction) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST(DevToolsNetworkControllerTest, UploadDoesNotFail) {
-  DevToolsNetworkControllerHelper helper;
+TEST(ThrottlingControllerTest, UploadDoesNotFail) {
+  ThrottlingControllerHelper helper;
   helper.SetNetworkState(true, 0, 0);
   int rv = helper.Start(true);
   EXPECT_EQ(rv, net::ERR_INTERNET_DISCONNECTED);
@@ -275,8 +272,8 @@ TEST(DevToolsNetworkControllerTest, UploadDoesNotFail) {
   EXPECT_EQ(rv, static_cast<int>(arraysize(kUploadData)));
 }
 
-TEST(DevToolsNetworkControllerTest, DownloadOnly) {
-  DevToolsNetworkControllerHelper helper;
+TEST(ThrottlingControllerTest, DownloadOnly) {
+  ThrottlingControllerHelper helper;
   TestCallback* callback = helper.callback();
 
   helper.SetNetworkState(false, 10000000, 0);
@@ -294,8 +291,8 @@ TEST(DevToolsNetworkControllerTest, DownloadOnly) {
   EXPECT_GE(callback->value(), net::OK);
 }
 
-TEST(DevToolsNetworkControllerTest, UploadOnly) {
-  DevToolsNetworkControllerHelper helper;
+TEST(ThrottlingControllerTest, UploadOnly) {
+  ThrottlingControllerHelper helper;
   TestCallback* callback = helper.callback();
 
   helper.SetNetworkState(false, 0, 1000000);

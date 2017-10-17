@@ -2,31 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_DEVTOOLS_DEVTOOLS_NETWORK_UPLOAD_DATA_STREAM_H_
-#define CONTENT_COMMON_DEVTOOLS_DEVTOOLS_NETWORK_UPLOAD_DATA_STREAM_H_
+#ifndef CONTENT_NETWORK_THROTTLING_THROTTLING_UPLOAD_DATA_STREAM_H_
+#define CONTENT_NETWORK_THROTTLING_THROTTLING_UPLOAD_DATA_STREAM_H_
 
 #include <stdint.h>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "content/common/devtools/devtools_network_interceptor.h"
+#include "content/network/throttling/throttling_network_interceptor.h"
 #include "net/base/completion_callback.h"
 #include "net/base/upload_data_stream.h"
 
 namespace content {
 
-class DevToolsNetworkInterceptor;
+class ThrottlingNetworkInterceptor;
 
-// DevToolsNetworkUploadData is a wrapper for upload data stream, which proxies
+// ThrottlingUploadData is a wrapper for upload data stream, which proxies
 // methods and throttles after the original method succeeds.
-class DevToolsNetworkUploadDataStream : public net::UploadDataStream {
+class ThrottlingUploadDataStream : public net::UploadDataStream {
  public:
   // Supplied |upload_data_stream| must outlive this object.
-  explicit DevToolsNetworkUploadDataStream(
+  explicit ThrottlingUploadDataStream(
       net::UploadDataStream* upload_data_stream);
-  ~DevToolsNetworkUploadDataStream() override;
+  ~ThrottlingUploadDataStream() override;
 
-  void SetInterceptor(DevToolsNetworkInterceptor* interceptor);
+  void SetInterceptor(ThrottlingNetworkInterceptor* interceptor);
 
  private:
   // net::UploadDataStream implementation.
@@ -41,15 +41,15 @@ class DevToolsNetworkUploadDataStream : public net::UploadDataStream {
   int ThrottleRead(int result);
   void ThrottleCallback(int result, int64_t bytes);
 
-  DevToolsNetworkInterceptor::ThrottleCallback throttle_callback_;
+  ThrottlingNetworkInterceptor::ThrottleCallback throttle_callback_;
   int64_t throttled_byte_count_;
 
   net::UploadDataStream* upload_data_stream_;
-  base::WeakPtr<DevToolsNetworkInterceptor> interceptor_;
+  base::WeakPtr<ThrottlingNetworkInterceptor> interceptor_;
 
-  DISALLOW_COPY_AND_ASSIGN(DevToolsNetworkUploadDataStream);
+  DISALLOW_COPY_AND_ASSIGN(ThrottlingUploadDataStream);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_COMMON_DEVTOOLS_DEVTOOLS_NETWORK_UPLOAD_DATA_STREAM_H_
+#endif  // CONTENT_NETWORK_THROTTLING_THROTTLING_UPLOAD_DATA_STREAM_H_

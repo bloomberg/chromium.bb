@@ -20,10 +20,11 @@ class HttpTransaction;
 namespace content {
 
 // NetworkTransactionFactory wraps HttpNetworkTransactions.
-class DevToolsNetworkTransactionFactory : public net::HttpTransactionFactory {
+class ThrottlingNetworkTransactionFactory : public net::HttpTransactionFactory {
  public:
-  explicit DevToolsNetworkTransactionFactory(net::HttpNetworkSession* session);
-  ~DevToolsNetworkTransactionFactory() override;
+  explicit ThrottlingNetworkTransactionFactory(
+      net::HttpNetworkSession* session);
+  ~ThrottlingNetworkTransactionFactory() override;
 
   // net::HttpTransactionFactory methods:
   int CreateTransaction(net::RequestPriority priority,
@@ -34,7 +35,7 @@ class DevToolsNetworkTransactionFactory : public net::HttpTransactionFactory {
  private:
   std::unique_ptr<net::HttpTransactionFactory> network_layer_;
 
-  DISALLOW_COPY_AND_ASSIGN(DevToolsNetworkTransactionFactory);
+  DISALLOW_COPY_AND_ASSIGN(ThrottlingNetworkTransactionFactory);
 };
 
 }  // namespace content
