@@ -146,6 +146,7 @@ public class BookmarkTest {
         // Click star button to bookmark the current tab.
         MenuUtils.invokeCustomMenuActionSync(InstrumentationRegistry.getInstrumentation(),
                 mActivityTestRule.getActivity(), R.id.bookmark_this_page_id);
+        BookmarkTestUtil.waitForBookmarkModelLoaded();
         // All actions with BookmarkModel needs to run on UI thread.
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
