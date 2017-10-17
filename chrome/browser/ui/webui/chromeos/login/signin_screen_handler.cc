@@ -283,7 +283,10 @@ SigninScreenHandler::SigninScreenHandler(
           base::Bind(&SigninScreenHandler::OnAllowedInputMethodsChanged,
                      base::Unretained(this)));
 
-  TabletModeClient::Get()->AddObserver(this);
+  TabletModeClient* tablet_mode_client = TabletModeClient::Get();
+  tablet_mode_client->AddObserver(this);
+  OnTabletModeToggled(tablet_mode_client->tablet_mode_enabled());
+
   if (lock_screen_apps::StateController::IsEnabled())
     lock_screen_apps_observer_.Add(lock_screen_apps::StateController::Get());
   // TODO(wzang): Make this work under mash.
