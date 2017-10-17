@@ -32,8 +32,6 @@ const char* DefaultMessageForStatusCode(StatusCode code) {
       return "unknown error";
     case kInvalidArgument:
       return "invalid argument";
-    case kMoveTargetOutOfBounds:
-      return "move target out of bounds";
     case kElementNotInteractable:
       return "element not interactable";
     case kUnsupportedOperation:
