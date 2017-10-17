@@ -28,7 +28,6 @@
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/account_control_item.h"
 #import "ios/chrome/browser/ui/authentication/resized_avatar_cache.h"
-#import "ios/chrome/browser/ui/authentication/signin_interaction_controller.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_account_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
@@ -40,6 +39,7 @@
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/browser/ui/settings/sync_settings_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/sync_utils/sync_util.h"
+#import "ios/chrome/browser/ui/signin_interaction/signin_interaction_coordinator.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -88,7 +88,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   BOOL _closeSettingsOnAddAccount;
   std::unique_ptr<SyncObserverBridge> _syncObserver;
   std::unique_ptr<OAuth2TokenServiceObserverBridge> _tokenServiceObserver;
-  SigninInteractionController* _signinInteractionController;
   // Modal alert for sign out.
   AlertCoordinator* _alertCoordinator;
   // Whether an authentication operation is in progress (e.g switch accounts,
@@ -105,6 +104,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
   NSDictionary<NSString*, CollectionViewItem*>* _identityMap;
 }
 
+// The SigninInteractionCoordinator that presents Sign In UI for the Accounts
+// Settings page.
+@property(nonatomic, strong)
+    SigninInteractionCoordinator* signinInteractionCoordinator;
+
 // Stops observing browser state services. This is required during the shutdown
 // phase to avoid observing services for a browser state that is being killed.
 - (void)stopBrowserStateServiceObservers;
@@ -114,6 +118,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @implementation AccountsCollectionViewController
 
 @synthesize dispatcher = _dispatcher;
+@synthesize signinInteractionCoordinator = _signinInteractionCoordinator;
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
            closeSettingsOnAddAccount:(BOOL)closeSettingsOnAddAccount {
@@ -164,7 +169,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 #pragma mark - SettingsControllerProtocol
 
 - (void)settingsWillBeDismissed {
-  [_signinInteractionController cancel];
+  [self.signinInteractionCoordinator cancel];
   [_alertCoordinator stop];
   [self stopBrowserStateServiceObservers];
 }
@@ -486,31 +491,29 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)showAddAccount {
   if ([_alertCoordinator isVisible])
     return;
-  if (_signinInteractionController) {
-    // Ignore this user action if there is already an add account operation
-    // in-progress.
-    return;
-  }
-  _signinInteractionController = [[SigninInteractionController alloc]
-          initWithBrowserState:_browserState
-      presentingViewController:self.navigationController
-                   accessPoint:signin_metrics::AccessPoint::
-                                   ACCESS_POINT_SETTINGS
-                   promoAction:signin_metrics::PromoAction::
-                                   PROMO_ACTION_NO_SIGNIN_PROMO
-                    dispatcher:self.dispatcher];
 
-  // |_authenticationOperationInProgress| is reset when the signin interaction
-  // controller is dismissed.
+  if (!self.signinInteractionCoordinator) {
+    self.signinInteractionCoordinator = [[SigninInteractionCoordinator alloc]
+        initWithBrowserState:_browserState
+                  dispatcher:self.dispatcher];
+  }
+
+  // |_authenticationOperationInProgress| is reset when the signin operation is
+  // completed.
   _authenticationOperationInProgress = YES;
   __weak AccountsCollectionViewController* weakSelf = self;
-  [_signinInteractionController addAccountWithCompletion:^(BOOL success) {
-    [weakSelf handleDidAddAccount:success];
-  }];
+  [self.signinInteractionCoordinator
+      addAccountWithAccessPoint:signin_metrics::AccessPoint::
+                                    ACCESS_POINT_SETTINGS
+                    promoAction:signin_metrics::PromoAction::
+                                    PROMO_ACTION_NO_SIGNIN_PROMO
+       presentingViewController:self.navigationController
+                     completion:^(BOOL success) {
+                       [weakSelf handleDidAddAccount:success];
+                     }];
 }
 
 - (void)handleDidAddAccount:(BOOL)success {
-  _signinInteractionController = nil;
   [self handleAuthenticationOperationDidFinish];
   if (success && _closeSettingsOnAddAccount) {
     [self.dispatcher closeSettingsUI];
@@ -618,7 +621,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     return;
   }
   _isBeingDismissed = YES;
-  [_signinInteractionController cancelAndDismiss];
+  [self.signinInteractionCoordinator cancelAndDismiss];
   [_alertCoordinator stop];
   [self.navigationController popToViewController:self animated:NO];
   [base::mac::ObjCCastStrict<SettingsNavigationController>(

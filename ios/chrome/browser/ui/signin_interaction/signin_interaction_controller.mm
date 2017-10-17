@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/authentication/signin_interaction_controller.h"
+#import "ios/chrome/browser/ui/signin_interaction/signin_interaction_controller.h"
 
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
@@ -14,11 +14,10 @@
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 #import "ios/chrome/browser/signin/signin_util.h"
-#import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/authentication_ui_util.h"
 #import "ios/chrome/browser/ui/authentication/chrome_signin_view_controller.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
-#import "ios/chrome/browser/ui/util/top_view_controller.h"
+#import "ios/chrome/browser/ui/signin_interaction/signin_interaction_presenting.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity_interaction_manager.h"
@@ -36,11 +35,9 @@ using signin_ui::CompletionCallback;
   ios::ChromeBrowserState* browserState_;
   signin_metrics::AccessPoint accessPoint_;
   signin_metrics::PromoAction promoAction_;
-  UIViewController* presentingViewController_;
   BOOL isCancelling_;
   BOOL isDismissing_;
   BOOL interactionManagerDismissalIgnored_;
-  AlertCoordinator* alertCoordinator_;
   CompletionCallback completionCallback_;
   ChromeSigninViewController* signinViewController_;
   ChromeIdentityInteractionManager* identityInteractionManager_;
@@ -48,13 +45,18 @@ using signin_ui::CompletionCallback;
   BOOL identityAdded_;
 }
 
+// The dispatcher for this class.
 @property(nonatomic, weak, readonly) id<ApplicationCommands> dispatcher;
+
+// The object responsible for presenting the UI.
+@property(nonatomic, weak, readonly) id<SigninInteractionPresenting> presenter;
 
 @end
 
 @implementation SigninInteractionController
 
 @synthesize dispatcher = dispatcher_;
+@synthesize presenter = presenter_;
 
 - (id)init {
   NOTREACHED();
@@ -62,16 +64,16 @@ using signin_ui::CompletionCallback;
 }
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
-            presentingViewController:(UIViewController*)presentingViewController
+                presentationProvider:(id<SigninInteractionPresenting>)presenter
                          accessPoint:(signin_metrics::AccessPoint)accessPoint
                          promoAction:(signin_metrics::PromoAction)promoAction
                           dispatcher:(id<ApplicationCommands>)dispatcher {
   self = [super init];
   if (self) {
     DCHECK(browserState);
-    DCHECK(presentingViewController);
+    DCHECK(presenter);
     browserState_ = browserState;
-    presentingViewController_ = presentingViewController;
+    presenter_ = presenter;
     accessPoint_ = accessPoint;
     promoAction_ = promoAction;
     dispatcher_ = dispatcher;
@@ -80,9 +82,9 @@ using signin_ui::CompletionCallback;
 }
 
 - (void)cancel {
-  // Cancelling and dismissing the |identityInteractionManager_| may call the
-  // |completionCallback_| which could lead to |self| being released before the
-  // end of this method. |self| is retained here to prevent this from happening.
+// Cancelling and dismissing the |identityInteractionManager_| may call the
+// |completionCallback_| which could lead to |self| being released before the
+// end of this method. |self| is retained here to prevent this from happening.
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-variable"
   // Retain this object through the rest of this method in case this object's
@@ -90,8 +92,7 @@ using signin_ui::CompletionCallback;
   SigninInteractionController* strongSelf = self;
 #pragma clang diagnostic pop
   isCancelling_ = YES;
-  [alertCoordinator_ executeCancelHandler];
-  [alertCoordinator_ stop];
+  [self.presenter dismissError];
   [identityInteractionManager_ cancelAndDismissAnimated:NO];
   [signinViewController_ cancel];
   isCancelling_ = NO;
@@ -205,13 +206,7 @@ using signin_ui::CompletionCallback;
     ProceduralBlock dismissAction = ^{
       [weakSelf runCompletionCallbackWithSuccess:NO showAccountsSettings:NO];
     };
-
-    // TODO(crbug.com/754642): Stop using TopPresentedViewControllerFrom().
-    alertCoordinator_ =
-        ErrorCoordinator(error, dismissAction,
-                         top_view_controller::TopPresentedViewControllerFrom(
-                             presentingViewController_));
-    [alertCoordinator_ start];
+    [self.presenter presentError:error dismissAction:dismissAction];
     return;
   }
   if (shouldSignIn) {
@@ -223,9 +218,9 @@ using signin_ui::CompletionCallback;
 
 - (void)dismissPresentedViewControllersAnimated:(BOOL)animated
                                      completion:(ProceduralBlock)completion {
-  if ([presentingViewController_ presentedViewController]) {
-    [presentingViewController_ dismissViewControllerAnimated:animated
-                                                  completion:completion];
+  if (self.presenter.isPresenting) {
+    [self.presenter dismissViewControllerAnimated:animated
+                                       completion:completion];
   } else if (completion) {
     completion();
   }
@@ -238,9 +233,9 @@ using signin_ui::CompletionCallback;
      presentViewController:(UIViewController*)viewController
                   animated:(BOOL)animated
                 completion:(ProceduralBlock)completion {
-  [presentingViewController_ presentViewController:viewController
-                                          animated:animated
-                                        completion:completion];
+  [self.presenter presentViewController:viewController
+                               animated:animated
+                             completion:completion];
 }
 
 - (void)interactionManager:(ChromeIdentityInteractionManager*)interactionManager
@@ -265,12 +260,12 @@ using signin_ui::CompletionCallback;
 
 - (void)showSigninViewControllerWithIdentity:(ChromeIdentity*)signInIdentity
                                identityAdded:(BOOL)identityAdded {
-  signinViewController_ = [[ChromeSigninViewController alloc]
-       initWithBrowserState:browserState_
-                accessPoint:accessPoint_
-                promoAction:promoAction_
-             signInIdentity:signInIdentity
-                 dispatcher:self.dispatcher];
+  signinViewController_ =
+      [[ChromeSigninViewController alloc] initWithBrowserState:browserState_
+                                                   accessPoint:accessPoint_
+                                                   promoAction:promoAction_
+                                                signInIdentity:signInIdentity
+                                                    dispatcher:self.dispatcher];
   [signinViewController_ setDelegate:self];
   [signinViewController_
       setModalPresentationStyle:UIModalPresentationFormSheet];
@@ -279,29 +274,27 @@ using signin_ui::CompletionCallback;
   signInIdentity_ = signInIdentity;
   identityAdded_ = identityAdded;
 
-  UIViewController* presentingViewController = presentingViewController_;
   if (identityInteractionManager_) {
     // If |identityInteractionManager_| is currently displayed,
     // |signinViewController_| is presented on top of it (instead of on top of
     // |presentingViewController_|), to avoid an awkward transition (dismissing
     // |identityInteractionManager_|, followed by presenting
     // |signinViewController_|).
-    while (presentingViewController.presentedViewController) {
-      presentingViewController =
-          presentingViewController.presentedViewController;
-    }
+    [self.presenter presentTopViewController:signinViewController_
+                                    animated:YES
+                                  completion:nil];
+  } else {
+    [self.presenter presentViewController:signinViewController_
+                                 animated:YES
+                               completion:nil];
   }
-  [presentingViewController presentViewController:signinViewController_
-                                         animated:YES
-                                       completion:nil];
 }
 
 - (void)dismissSigninViewControllerWithSignInSuccess:(BOOL)success
                                 showAccountsSettings:
                                     (BOOL)showAccountsSettings {
   DCHECK(signinViewController_);
-  if ((isCancelling_ && !isDismissing_) ||
-      ![presentingViewController_ presentedViewController]) {
+  if ((isCancelling_ && !isDismissing_) || !self.presenter.isPresenting) {
     [self runCompletionCallbackWithSuccess:success
                       showAccountsSettings:showAccountsSettings];
     return;
