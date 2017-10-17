@@ -277,6 +277,11 @@ using bookmarks::BookmarkNode;
   [self dismissBookmarkEditorAnimated:YES];
 }
 
+- (void)bookmarkEditorWillCommitTitleOrUrlChange:
+    (BookmarkEditViewController*)controller {
+  // Do nothing.
+}
+
 #pragma mark - BookmarkHomeViewControllerDelegate
 
 - (void)

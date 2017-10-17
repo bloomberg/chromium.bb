@@ -558,14 +558,22 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   bookmark_utils_ios::MoveBookmarksWithUndoToast(
       folderPicker.editedNodes, self.bookmarks, folder, self.browserState);
 
-  [self setEditing:NO animated:NO];
+  if (base::FeatureList::IsEnabled(kBookmarkNewGeneration)) {
+    [self setTableViewEditing:NO];
+  } else {
+    [self setEditing:NO animated:NO];
+  }
   [self dismissViewControllerAnimated:YES completion:NULL];
   self.folderSelector.delegate = nil;
   self.folderSelector = nil;
 }
 
 - (void)folderPickerDidCancel:(BookmarkFolderViewController*)folderPicker {
-  [self setEditing:NO animated:NO];
+  if (base::FeatureList::IsEnabled(kBookmarkNewGeneration)) {
+    [self setTableViewEditing:NO];
+  } else {
+    [self setEditing:NO animated:NO];
+  }
   [self dismissViewControllerAnimated:YES completion:NULL];
   self.folderSelector.delegate = nil;
   self.folderSelector = nil;
@@ -595,6 +603,11 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   self.folderEditor = nil;
 }
 
+- (void)bookmarkFolderEditorWillCommitTitleChange:
+    (BookmarkFolderEditorViewController*)controller {
+  [self setTableViewEditing:NO];
+}
+
 #pragma mark - BookmarkEditViewControllerDelegate
 
 - (BOOL)bookmarkEditor:(BookmarkEditViewController*)controller
@@ -611,6 +624,11 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   // edit button in edit mode. Either way, after it's dismissed, edit mode
   // should be off.
   [self setEditing:NO animated:NO];
+}
+
+- (void)bookmarkEditorWillCommitTitleOrUrlChange:
+    (BookmarkEditViewController*)controller {
+  [self setTableViewEditing:NO];
 }
 
 #pragma mark - Edit
@@ -1434,6 +1452,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
     UIPasteboard* pasteboard = [UIPasteboard generalPasteboard];
     std::string urlString = node->url().possibly_invalid_spec();
     pasteboard.string = base::SysUTF8ToNSString(urlString);
+    [self setTableViewEditing:NO];
   };
   UIAlertAction* copyAction = [UIAlertAction
       actionWithTitle:l10n_util::GetNSString(IDS_IOS_CONTENT_CONTEXT_COPY)

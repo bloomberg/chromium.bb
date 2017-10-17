@@ -405,6 +405,11 @@ const NSInteger BookmarkFolderSectionCount = 2;
   self.folderAddController = nil;
 }
 
+- (void)bookmarkFolderEditorWillCommitTitleChange:
+    (BookmarkFolderEditorViewController*)controller {
+  // Do nothing.
+}
+
 #pragma mark - BookmarkModelBridgeObserver
 
 - (void)bookmarkModelLoaded {
