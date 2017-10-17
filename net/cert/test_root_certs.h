@@ -70,11 +70,6 @@ class NET_EXPORT TestRootCerts {
   // certificates stored in |temporary_roots_|. If IsEmpty() is true, this
   // does not modify |trust_ref|.
   OSStatus FixupSecTrustRef(SecTrustRef trust_ref) const;
-
-  // Configures whether or not the default/system root store should also
-  // be trusted. By default, this is true, indicating that the TestRootCerts
-  // are used in addition to OS trust store.
-  void SetAllowSystemTrust(bool allow_system_trust);
 #elif defined(OS_WIN)
   HCERTSTORE temporary_roots() const { return temporary_roots_; }
 
@@ -128,7 +123,6 @@ class NET_EXPORT TestRootCerts {
   HCERTSTORE temporary_roots_;
 #elif defined(OS_MACOSX)
   base::ScopedCFTypeRef<CFMutableArrayRef> temporary_roots_;
-  bool allow_system_trust_;
 #elif defined(OS_FUCHSIA)
   TrustStoreInMemory test_trust_store_;
 #endif
