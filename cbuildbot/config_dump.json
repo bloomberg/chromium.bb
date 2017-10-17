@@ -345,7 +345,6 @@
             "_template": "compile_only_pre_cq",
             "active_waterfall": "chromiumos.tryserver",
             "archive": false,
-            "build_packages_in_background": true,
             "build_type": "pre_cq",
             "chrome_sdk_build_chrome": false,
             "compilecheck": true,
@@ -714,7 +713,6 @@
             "_template": "no_vmtest_pre_cq",
             "active_waterfall": "chromiumos.tryserver",
             "archive": false,
-            "build_packages_in_background": true,
             "build_type": "pre_cq",
             "chrome_sdk_build_chrome": false,
             "cpe_export": false,
@@ -812,7 +810,6 @@
             "_template": "pre_cq",
             "active_waterfall": "chromiumos.tryserver",
             "archive": false,
-            "build_packages_in_background": true,
             "build_type": "pre_cq",
             "chrome_sdk_build_chrome": false,
             "cpe_export": false,
@@ -1159,7 +1156,6 @@
         "wificell_pre_cq": {
             "_template": "wificell_pre_cq",
             "active_waterfall": "chromiumos.tryserver",
-            "build_packages_in_background": true,
             "build_type": "pre_cq",
             "chrome_sdk_build_chrome": false,
             "cpe_export": false,
@@ -4153,7 +4149,6 @@
         "boards": [
             "guado"
         ],
-        "build_packages_in_background": true,
         "build_type": "pre_cq",
         "chrome_sdk_build_chrome": false,
         "cpe_export": false,

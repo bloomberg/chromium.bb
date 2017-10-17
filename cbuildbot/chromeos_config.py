@@ -1895,7 +1895,6 @@ def PreCqBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.paladin,
       active_waterfall=waterfall.WATERFALL_TRYBOT,
       build_type=constants.PRE_CQ_TYPE,
-      build_packages_in_background=True,
       pre_cq=True,
       archive=False,
       chrome_sdk=False,

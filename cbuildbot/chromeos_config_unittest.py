@@ -543,7 +543,7 @@ class CBuildBotTest(ChromeosConfigTestBase):
 
   def testVmTestsOnlyOnVmTestBoards(self):
     """Verify that only VM capable boards run VM tests."""
-    for build_name, config in self.site_config.iteritems():
+    for _, config in self.site_config.iteritems():
       if config['vm_tests'] or config['vm_tests_override']:
         for board in config['boards']:
           self.assertIn(board, chromeos_config._vmtest_boards,
@@ -706,41 +706,30 @@ class CBuildBotTest(ChromeosConfigTestBase):
             'As this is the %s branch, all release configs that are being used '
             'must end in %s.' % (branch, tracking_branch, branch))
 
-  def testAFDOInBackground(self):
-    """Verify that we don't try to build or use AFDO data in the background."""
-    for build_name, config in self.site_config.iteritems():
-      if config.build_packages_in_background:
-        # It is unsupported to use the build_packages_in_background flags with
-        # the afdo_generate or afdo_generate_min config options.
-        msg = 'Config %s uses build_packages_in_background with afdo_%s'
-        self.assertFalse(config.afdo_generate, msg % (build_name, 'generate'))
-        self.assertFalse(config.afdo_generate_min, msg % (build_name,
-                                                          'generate_min'))
+  def testNeverUseBackgroundBuildFlag(self):
+    """build_packages_in_background is deprecated.
 
-  def testReleaseGroupInBackground(self):
-    """Verify build_packages_in_background settings for release groups.
-
-    For each release group, the first builder should be set to run in the
-    foreground (to build binary packages), and the remainder of the builders
-    should be set to run in parallel (to install the binary packages.)
+    Make sure nobody uses it, until we can remove it without breaking
+    builds.
     """
     for build_name, config in self.site_config.iteritems():
-      if build_name.endswith('-release-group'):
-        msg = 'Config %s should not build_packages_in_background'
-        self.assertFalse(config.build_packages_in_background, msg % build_name)
+      self.assertFalse(
+          config.build_packages_in_background,
+          'Deprecated flag build_packages_in_background used: %s' %
+          build_name)
 
-        self.assertTrue(
+  def testNoNewBuildersOnlyGroups(self):
+    """Grouped builders are deprecated.
+
+    Ensure now new users are created. See crbug.com/691810.
+    """
+    for build_name, config in self.site_config.iteritems():
+      # These group builders are whitelisted, for now.
+      if not (build_name in ('test-ap-group', 'mixed-wificell-pre-cq') or
+              build_name.endswith('release-afdo')):
+        self.assertFalse(
             config.child_configs,
-            'Config %s should have child configs' % build_name)
-        first_config = config.child_configs[0]
-        msg = 'Primary config for %s should not build_packages_in_background'
-        self.assertFalse(first_config.build_packages_in_background,
-                         msg % build_name)
-
-        msg = 'Child config %s for %s should build_packages_in_background'
-        for child_config in config.child_configs[1:]:
-          self.assertTrue(child_config.build_packages_in_background,
-                          msg % (child_config.name, build_name))
+            'Unexpected group builder found: %s' % build_name)
 
   def testGroupBuildersHaveMaximumConfigs(self):
     """Verify that release group builders don't exceed a maximum board count.
