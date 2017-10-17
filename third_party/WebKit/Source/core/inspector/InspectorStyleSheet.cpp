@@ -234,6 +234,11 @@ void StyleSheetHandler::StartRuleBody(unsigned offset) {
 }
 
 void StyleSheetHandler::EndRuleBody(unsigned offset) {
+  // Pop off data for a previous invalid rule.
+  if (current_rule_data_) {
+    current_rule_data_ = nullptr;
+    current_rule_data_stack_.pop_back();
+  }
   DCHECK(!current_rule_data_stack_.IsEmpty());
   current_rule_data_stack_.back()->rule_body_range.end = offset;
   AddNewRuleToSourceTree(PopRuleData());

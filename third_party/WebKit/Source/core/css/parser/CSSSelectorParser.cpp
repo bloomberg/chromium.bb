@@ -8,6 +8,9 @@
 #include "core/css/CSSSelectorList.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/css/parser/CSSParserContext.h"
+#include "core/css/parser/CSSParserObserverWrapper.h"
+#include "core/css/parser/CSSParserScopedTokenBuffer.h"
+#include "core/css/parser/CSSParserTokenStream.h"
 #include "core/frame/Deprecation.h"
 #include "core/frame/UseCounter.h"
 #include "platform/runtime_enabled_features.h"
@@ -26,6 +29,19 @@ CSSSelectorList CSSSelectorParser::ParseSelector(
   if (!range.AtEnd())
     return CSSSelectorList();
 
+  parser.RecordUsageAndDeprecations(result);
+  return result;
+}
+
+// static
+CSSSelectorList CSSSelectorParser::ConsumeSelector(
+    CSSParserTokenStream& stream,
+    const CSSParserContext* context,
+    StyleSheetContents* style_sheet,
+    CSSParserObserverWrapper* wrapper) {
+  CSSSelectorParser parser(context, style_sheet);
+  stream.ConsumeWhitespace();
+  CSSSelectorList result = parser.ConsumeComplexSelectorList(stream, wrapper);
   parser.RecordUsageAndDeprecations(result);
   return result;
 }
@@ -51,6 +67,47 @@ CSSSelectorList CSSSelectorParser::ConsumeComplexSelectorList(
 
   if (failed_parsing_)
     return CSSSelectorList();
+
+  return CSSSelectorList::AdoptSelectorVector(selector_list);
+}
+
+CSSSelectorList CSSSelectorParser::ConsumeComplexSelectorList(
+    CSSParserTokenStream& stream,
+    CSSParserObserverWrapper* wrapper) {
+  Vector<std::unique_ptr<CSSParserSelector>> selector_list;
+
+  while (true) {
+    CSSParserScopedTokenBuffer selector_buffer(stream);
+    stream.EnsureLookAhead();
+    const size_t selector_offset_start = stream.LookAheadOffset();
+    while (!stream.UncheckedAtEnd() &&
+           stream.UncheckedPeek().GetType() != kLeftBraceToken &&
+           stream.UncheckedPeek().GetType() != kCommaToken)
+      stream.UncheckedConsumeComponentValue(selector_buffer);
+    const size_t selector_offset_end = stream.LookAheadOffset();
+
+    if (stream.UncheckedAtEnd())
+      return CSSSelectorList();
+
+    CSSParserTokenRange complex_selector = selector_buffer.Range();
+
+    std::unique_ptr<CSSParserSelector> selector =
+        ConsumeComplexSelector(complex_selector);
+    if (!selector || failed_parsing_ || !complex_selector.AtEnd())
+      return CSSSelectorList();
+
+    if (wrapper) {
+      wrapper->Observer().ObserveSelector(selector_offset_start,
+                                          selector_offset_end);
+    }
+
+    selector_list.push_back(std::move(selector));
+    if (stream.Peek().GetType() == kLeftBraceToken)
+      break;
+
+    DCHECK_EQ(stream.Peek().GetType(), kCommaToken);
+    stream.ConsumeIncludingWhitespace();
+  }
 
   return CSSSelectorList::AdoptSelectorVector(selector_list);
 }
@@ -215,6 +272,7 @@ bool IsSimpleSelectorValidAfterPseudoElement(
            (simple_selector.GetPseudoType() == CSSSelector::kPseudoBefore ||
             simple_selector.GetPseudoType() == CSSSelector::kPseudoAfter);
   }
+
   if (simple_selector.Match() != CSSSelector::kPseudoClass)
     return false;
   CSSSelector::PseudoType pseudo = simple_selector.GetPseudoType();

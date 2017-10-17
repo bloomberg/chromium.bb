@@ -46,8 +46,16 @@ class CORE_EXPORT CSSParserTokenStream {
     CSSParserTokenStream& stream_;
   };
 
+  // We found that this value works well empirically by printing out the
+  // maximum buffer size for a few top alexa websites. It should be slightly
+  // above the expected number of tokens in the prelude of an at rule and
+  // the number of tokens in a declaration.
+  // TODO(shend): Can we streamify at rule parsing so that this is only needed
+  // for declarations which are easier to think about?
+  static constexpr size_t InitialBufferSize() { return 128; }
+
   explicit CSSParserTokenStream(CSSTokenizer& tokenizer)
-      : buffer_(512), tokenizer_(tokenizer), next_(kEOFToken) {}
+      : buffer_(InitialBufferSize()), tokenizer_(tokenizer), next_(kEOFToken) {}
 
   CSSParserTokenStream(CSSParserTokenStream&&) = default;
 

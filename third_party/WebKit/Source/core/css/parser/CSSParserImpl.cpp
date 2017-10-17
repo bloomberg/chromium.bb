@@ -336,6 +336,7 @@ ImmutableStylePropertySet* CSSParserImpl::ParseCustomPropertySet(
     return nullptr;
   CSSParserImpl parser(StrictCSSParserContext());
   parser.ConsumeDeclarationListForAtApply(block);
+
   return CreateStylePropertySet(parser.parsed_properties_, kHTMLStandardMode);
 }
 
@@ -592,43 +593,27 @@ StyleRuleBase* CSSParserImpl::ConsumeAtRule(CSSParserTokenStream& stream,
 StyleRuleBase* CSSParserImpl::ConsumeQualifiedRule(
     CSSParserTokenStream& stream,
     AllowedRulesType allowed_rules) {
-  DCHECK(stream.HasLookAhead());
-  const size_t prelude_offset_start = stream.LookAheadOffset();
-  CSSParserScopedTokenBuffer prelude_buffer(stream);
+  if (allowed_rules <= kRegularRules) {
+    return ConsumeStyleRule(stream);
+  }
 
-  if (observer_wrapper_) {
-    // TODO(shend): We need to store token offsets here because ConsumeStyleRule
-    // needs them in ObserveSelectors. We can get rid of this by making
-    // ConsumeStyleRule parse the prelude in a streaming fashion.
-    observer_wrapper_->StartConstruction();
-    while (!stream.UncheckedAtEnd() &&
-           stream.UncheckedPeek().GetType() != kLeftBraceToken) {
-      stream.UncheckedConsumeComponentValueWithOffsets(*observer_wrapper_,
-                                                       prelude_buffer);
-    }
-    // We want the offset of the kLeftBraceToken, which is peeked but not
-    // consumed.
-    observer_wrapper_->AddToken(stream.LookAheadOffset());
-  } else {
+  if (allowed_rules == kKeyframeRules) {
+    CSSParserScopedTokenBuffer prelude_buffer(stream);
+
+    stream.EnsureLookAhead();
+    const size_t prelude_offset_start = stream.LookAheadOffset();
     while (!stream.UncheckedAtEnd() &&
            stream.UncheckedPeek().GetType() != kLeftBraceToken)
       stream.UncheckedConsumeComponentValue(prelude_buffer);
-  }
 
-  if (stream.AtEnd())
-    return nullptr;  // Parse error, EOF instead of qualified rule block
+    const RangeOffset prelude_offset(prelude_offset_start,
+                                     stream.LookAheadOffset());
 
-  const RangeOffset prelude_offset(prelude_offset_start,
-                                   stream.LookAheadOffset());
+    if (stream.AtEnd())
+      return nullptr;  // Parse error, EOF instead of qualified rule block
 
-  if (observer_wrapper_)
-    observer_wrapper_->FinalizeConstruction(prelude_buffer.Range().begin());
+    CSSParserTokenStream::BlockGuard guard(stream);
 
-  CSSParserTokenStream::BlockGuard guard(stream);
-
-  if (allowed_rules <= kRegularRules)
-    return ConsumeStyleRule(std::move(prelude_buffer), prelude_offset, stream);
-  if (allowed_rules == kKeyframeRules) {
     return ConsumeKeyframeStyleRule(std::move(prelude_buffer), prelude_offset,
                                     stream);
   }
@@ -913,52 +898,46 @@ StyleRuleKeyframe* CSSParserImpl::ConsumeKeyframeStyleRule(
       CreateStylePropertySet(parsed_properties_, context_->Mode()));
 }
 
-static void ObserveSelectors(CSSParserObserverWrapper& wrapper,
-                             CSSParserTokenRange selectors) {
-  // This is easier than hooking into the CSSSelectorParser
-  selectors.ConsumeWhitespace();
-  CSSParserTokenRange original_range = selectors;
-  wrapper.Observer().StartRuleHeader(StyleRule::kStyle,
-                                     wrapper.StartOffset(original_range));
-
-  while (!selectors.AtEnd()) {
-    const CSSParserToken* selector_start = &selectors.Peek();
-    while (!selectors.AtEnd() && selectors.Peek().GetType() != kCommaToken)
-      selectors.ConsumeComponentValue();
-    CSSParserTokenRange selector =
-        selectors.MakeSubRange(selector_start, &selectors.Peek());
-    selectors.ConsumeIncludingWhitespace();
-
-    wrapper.Observer().ObserveSelector(wrapper.StartOffset(selector),
-                                       wrapper.EndOffset(selector));
+StyleRule* CSSParserImpl::ConsumeStyleRule(CSSParserTokenStream& stream) {
+  if (observer_wrapper_) {
+    observer_wrapper_->Observer().StartRuleHeader(StyleRule::kStyle,
+                                                  stream.LookAheadOffset());
   }
 
-  wrapper.Observer().EndRuleHeader(wrapper.EndOffset(original_range));
-}
+  // Parse the prelude of the style rule
+  CSSSelectorList selector_list = CSSSelectorParser::ConsumeSelector(
+      stream, context_, style_sheet_, observer_wrapper_);
 
-StyleRule* CSSParserImpl::ConsumeStyleRule(
-    CSSParserScopedTokenBuffer prelude_buffer,
-    const RangeOffset& prelude_offset,
-    CSSParserTokenStream& block) {
-  const CSSParserTokenRange prelude = prelude_buffer.Range();
-  CSSSelectorList selector_list =
-      CSSSelectorParser::ParseSelector(prelude, context_, style_sheet_);
+  if (!selector_list.IsValid()) {
+    // Read the rest of the prelude if there was an error
+    stream.EnsureLookAhead();
+    while (!stream.UncheckedAtEnd() &&
+           stream.UncheckedPeek().GetType() != kLeftBraceToken)
+      stream.UncheckedConsumeComponentValue();
+  }
+
+  if (observer_wrapper_) {
+    observer_wrapper_->Observer().EndRuleHeader(stream.LookAheadOffset());
+  }
+
+  if (stream.AtEnd())
+    return nullptr;  // Parse error, EOF instead of qualified rule block
+
+  DCHECK_EQ(stream.Peek().GetType(), kLeftBraceToken);
+  CSSParserTokenStream::BlockGuard guard(stream);
+
   if (!selector_list.IsValid())
     return nullptr;  // Parse error, invalid selector list
 
   // TODO(csharrison): How should we lazily parse css that needs the observer?
-  if (observer_wrapper_) {
-    ObserveSelectors(*observer_wrapper_, prelude);
-  } else if (lazy_state_) {
+  if (!observer_wrapper_ && lazy_state_) {
     // TODO(shend): Don't lazily parse empty blocks.
     DCHECK(style_sheet_);
     return StyleRule::CreateLazy(
         std::move(selector_list),
-        lazy_state_->CreateLazyParser(block.Offset() - 1));
+        lazy_state_->CreateLazyParser(stream.Offset() - 1));
   }
-
-  prelude_buffer.Release();
-  ConsumeDeclarationList(block, StyleRule::kStyle);
+  ConsumeDeclarationList(stream, StyleRule::kStyle);
 
   return StyleRule::Create(
       std::move(selector_list),
