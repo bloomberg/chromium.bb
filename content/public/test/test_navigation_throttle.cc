@@ -27,6 +27,11 @@ TestNavigationThrottle::WillRedirectRequest() {
 }
 
 NavigationThrottle::ThrottleCheckResult
+TestNavigationThrottle::WillFailRequest() {
+  return ProcessMethod(WILL_FAIL_REQUEST);
+}
+
+NavigationThrottle::ThrottleCheckResult
 TestNavigationThrottle::WillProcessResponse() {
   return ProcessMethod(WILL_PROCESS_RESPONSE);
 }

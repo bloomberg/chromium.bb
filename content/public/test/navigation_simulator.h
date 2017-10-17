@@ -223,6 +223,7 @@ class NavigationSimulator : public WebContentsObserver {
 
   void OnWillStartRequest();
   void OnWillRedirectRequest();
+  void OnWillFailRequest();
   void OnWillProcessResponse();
 
   // Simulates a browser-initiated navigation starting. Returns false if the
@@ -288,6 +289,7 @@ class NavigationSimulator : public WebContentsObserver {
   int num_did_start_navigation_called_ = 0;
   int num_will_start_request_called_ = 0;
   int num_will_redirect_request_called_ = 0;
+  int num_will_fail_request_called_ = 0;
   int num_did_redirect_navigation_called_ = 0;
   int num_will_process_response_called_ = 0;
   int num_ready_to_commit_called_ = 0;
