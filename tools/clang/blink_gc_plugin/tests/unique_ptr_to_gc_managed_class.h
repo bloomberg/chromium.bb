@@ -14,15 +14,15 @@ class HeapObject;
 class PartObject {
     DISALLOW_NEW();
 private:
-    OwnPtr<HeapObject> m_obj;
+    std::unique_ptr<HeapObject> m_obj;
 };
 
 class HeapObject : public GarbageCollectedFinalized<HeapObject> {
 public:
     void Trace(Visitor*);
 private:
-    Vector<OwnPtr<HeapObject> > m_objs;
-    OwnPtr<HeapVector<Member<HeapObject> > > m_objs2;
+    Vector<std::unique_ptr<HeapObject> > m_objs;
+    std::unique_ptr<HeapVector<Member<HeapObject> > > m_objs2;
 };
 
 }

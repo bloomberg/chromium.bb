@@ -625,12 +625,6 @@ Edge* RecordInfo::CreateEdge(const Type* type) {
     return 0;
   }
 
-  if (Config::IsOwnPtr(info->name()) && info->GetTemplateArgs(1, &args)) {
-    if (Edge* ptr = CreateEdge(args[0]))
-      return new OwnPtr(ptr);
-    return 0;
-  }
-
   if (Config::IsUniquePtr(info->name()) && info->GetTemplateArgs(1, &args)) {
     // Check that this is std::unique_ptr
     NamespaceDecl* ns =

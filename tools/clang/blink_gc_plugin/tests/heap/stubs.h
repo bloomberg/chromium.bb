@@ -32,13 +32,6 @@ public:
     T* operator->() { return 0; }
 };
 
-template<typename T> class OwnPtr {
-public:
-    ~OwnPtr() { }
-    operator T*() const { return 0; }
-    T* operator->() { return 0; }
-};
-
 class DefaultAllocator {
 public:
     static const bool isGarbageCollected = false;

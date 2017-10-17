@@ -18,7 +18,6 @@ class Collection;
 class CrossThreadPersistent;
 class Iterator;
 class Member;
-class OwnPtr;
 class Persistent;
 class RawPtr;
 class RefPtr;
@@ -33,7 +32,6 @@ class EdgeVisitor {
   virtual void VisitValue(Value*) {}
   virtual void VisitRawPtr(RawPtr*) {}
   virtual void VisitRefPtr(RefPtr*) {}
-  virtual void VisitOwnPtr(OwnPtr*) {}
   virtual void VisitUniquePtr(UniquePtr*) {}
   virtual void VisitMember(Member*) {}
   virtual void VisitWeakMember(WeakMember*) {}
@@ -50,7 +48,6 @@ class RecursiveEdgeVisitor : public EdgeVisitor {
   void VisitValue(Value*) override;
   void VisitRawPtr(RawPtr*) override;
   void VisitRefPtr(RefPtr*) override;
-  void VisitOwnPtr(OwnPtr*) override;
   void VisitUniquePtr(UniquePtr*) override;
   void VisitMember(Member*) override;
   void VisitWeakMember(WeakMember*) override;
@@ -70,7 +67,6 @@ class RecursiveEdgeVisitor : public EdgeVisitor {
   virtual void AtValue(Value*);
   virtual void AtRawPtr(RawPtr*);
   virtual void AtRefPtr(RefPtr*);
-  virtual void AtOwnPtr(OwnPtr*);
   virtual void AtUniquePtr(UniquePtr*);
   virtual void AtMember(Member*);
   virtual void AtWeakMember(WeakMember*);
@@ -100,7 +96,6 @@ class Edge {
   virtual bool IsValue() { return false; }
   virtual bool IsRawPtr() { return false; }
   virtual bool IsRefPtr() { return false; }
-  virtual bool IsOwnPtr() { return false; }
   virtual bool IsUniquePtr() { return false; }
   virtual bool IsMember() { return false; }
   virtual bool IsWeakMember() { return false; }
@@ -166,18 +161,6 @@ class RefPtr : public PtrEdge {
     return TracingStatus::Illegal();
   }
   void Accept(EdgeVisitor* visitor) override { visitor->VisitRefPtr(this); }
-};
-
-class OwnPtr : public PtrEdge {
- public:
-  explicit OwnPtr(Edge* ptr) : PtrEdge(ptr) { }
-  bool IsOwnPtr() override { return true; }
-  LivenessKind Kind() override { return kStrong; }
-  bool NeedsFinalization() override { return true; }
-  TracingStatus NeedsTracing(NeedsTracingOption) override {
-    return TracingStatus::Illegal();
-  }
-  void Accept(EdgeVisitor* visitor) override { visitor->VisitOwnPtr(this); }
 };
 
 class UniquePtr : public PtrEdge {

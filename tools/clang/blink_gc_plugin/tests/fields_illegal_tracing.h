@@ -34,7 +34,6 @@ class PartObject {
 public:
     void Trace(Visitor*);
 private:
-    OwnPtr<HeapObject> m_obj1;
     RefPtr<HeapObject> m_obj2;
     bar::unique_ptr<HeapObject> m_obj3;
     std::unique_ptr<HeapObject> m_obj4;
@@ -48,7 +47,6 @@ public:
     void Trace(Visitor*);
 private:
     PartObject m_part;
-    OwnPtr<HeapObject> m_obj1;
     RefPtr<HeapObject> m_obj2;
     bar::unique_ptr<HeapObject> m_obj3;
     std::unique_ptr<HeapObject> m_obj4;
