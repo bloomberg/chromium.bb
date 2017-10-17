@@ -388,12 +388,12 @@ static int write_skip(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     return 1;
   } else {
     const int skip = mi->mbmi.skip;
+    const int ctx = av1_get_skip_context(xd);
 #if CONFIG_NEW_MULTISYMBOL
     FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
-    const int ctx = av1_get_skip_context(xd);
     aom_write_symbol(w, skip, ec_ctx->skip_cdfs[ctx], 2);
 #else
-    aom_write(w, skip, av1_get_skip_prob(cm, xd));
+    aom_write(w, skip, cm->fc->skip_probs[ctx]);
 #endif
     return skip;
   }

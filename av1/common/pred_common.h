@@ -69,13 +69,6 @@ static INLINE int av1_get_skip_context(const MACROBLOCKD *xd) {
   return above_skip + left_skip;
 }
 
-#if !CONFIG_NEW_MULTISYMBOL
-static INLINE aom_prob av1_get_skip_prob(const AV1_COMMON *cm,
-                                         const MACROBLOCKD *xd) {
-  return cm->fc->skip_probs[av1_get_skip_context(xd)];
-}
-#endif  // !CONFIG_NEW_MULTISYMBOL
-
 #if CONFIG_DUAL_FILTER
 int av1_get_pred_context_switchable_interp(const MACROBLOCKD *xd, int dir);
 #else
