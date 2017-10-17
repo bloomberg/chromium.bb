@@ -10,18 +10,16 @@
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/shutdown_reason.h"
-#include "ash/system/audio/tray_audio.h"
 #include "ash/system/power/power_button_display_controller.h"
+#include "ash/system/power/power_button_screenshot_controller.h"
 #include "ash/system/power/tablet_power_button_controller.h"
-#include "ash/system/tray/system_tray.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/session_state_animator.h"
-#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/command_line.h"
 #include "base/time/default_tick_clock.h"
-#include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "ui/display/types/display_snapshot.h"
+#include "ui/events/event.h"
 
 namespace ash {
 namespace {
@@ -61,50 +59,11 @@ void PowerButtonController::OnPowerButtonEvent(
   if (down)
     started_lock_animation_for_power_button_down_ = false;
 
-  if (lock_state_controller_->ShutdownRequested())
-    return;
-
-  bool should_take_screenshot = down && volume_down_pressed_ &&
-                                Shell::Get()
-                                    ->tablet_mode_controller()
-                                    ->IsTabletModeWindowManagerEnabled();
-
-  if (button_type_ == ButtonType::NORMAL && !should_take_screenshot &&
-      tablet_controller_ &&
-      tablet_controller_->ShouldHandlePowerButtonEvents()) {
-    tablet_controller_->OnPowerButtonEvent(down, timestamp);
-    return;
-  }
-
-  // PowerButtonDisplayController ignores power button events, so tell it to
-  // stop forcing the display off if TabletPowerButtonController isn't being
-  // used.
-  if (down && force_clamshell_power_button_)
-    display_controller_->SetDisplayForcedOff(false);
-
   // Avoid starting the lock/shutdown sequence if the power button is pressed
   // while the screen is off (http://crbug.com/128451), unless an external
   // display is still on (http://crosbug.com/p/24912).
   if (brightness_is_zero_ && !internal_display_off_and_external_display_on_)
     return;
-
-  // Take screenshot on power button down plus volume down when in touch view.
-  if (should_take_screenshot) {
-    SystemTray* system_tray = Shell::Get()->GetPrimarySystemTray();
-    if (system_tray && system_tray->GetTrayAudio())
-      system_tray->GetTrayAudio()->HideDetailedView(false);
-
-    Shell::Get()->accelerator_controller()->PerformActionIfEnabled(
-        TAKE_SCREENSHOT);
-
-    // Restore volume.
-    chromeos::CrasAudioHandler* audio_handler =
-        chromeos::CrasAudioHandler::Get();
-    audio_handler->SetOutputVolumePercentWithoutNotifyingObservers(
-        volume_percent_before_screenshot_,
-        chromeos::CrasAudioHandler::VOLUME_CHANGE_MAXIMIZE_MODE_SCREENSHOT);
-    return;
-  }
 
   const SessionController* const session_controller =
       Shell::Get()->session_controller();
@@ -183,15 +142,6 @@ void PowerButtonController::OnLockButtonEvent(
 }
 
 void PowerButtonController::OnKeyEvent(ui::KeyEvent* event) {
-  if (event->key_code() == ui::VKEY_VOLUME_DOWN) {
-    volume_down_pressed_ = event->type() == ui::ET_KEY_PRESSED;
-    if (!event->is_repeat()) {
-      chromeos::CrasAudioHandler* audio_handler =
-          chromeos::CrasAudioHandler::Get();
-      volume_percent_before_screenshot_ =
-          audio_handler->GetOutputVolumePercent();
-    }
-  }
   if (event->key_code() != ui::VKEY_POWER)
     display_off_timer_.Stop();
 }
@@ -229,15 +179,47 @@ void PowerButtonController::BrightnessChanged(int level, bool user_initiated) {
 void PowerButtonController::PowerButtonEventReceived(
     bool down,
     const base::TimeTicks& timestamp) {
+  if (lock_state_controller_->ShutdownRequested())
+    return;
+
+  // PowerButtonDisplayController ignores power button events, so tell it to
+  // stop forcing the display off if TabletPowerButtonController isn't being
+  // used.
+  if (down && force_clamshell_power_button_)
+    display_controller_->SetDisplayForcedOff(false);
+
+  // Handle tablet mode power button screenshot accelerator.
+  if (screenshot_controller_ &&
+      screenshot_controller_->OnPowerButtonEvent(down, timestamp)) {
+    return;
+  }
+
+  // Handle tablet power button behavior.
+  if (button_type_ == ButtonType::NORMAL && tablet_controller_ &&
+      tablet_controller_->ShouldHandlePowerButtonEvents()) {
+    tablet_controller_->OnPowerButtonEvent(down, timestamp);
+    return;
+  }
+
+  // Handle clamshell power button behavior.
   OnPowerButtonEvent(down, timestamp);
 }
 
 void PowerButtonController::OnAccelerometerUpdated(
     scoped_refptr<const chromeos::AccelerometerUpdate> update) {
-  if (force_clamshell_power_button_ || tablet_controller_)
-    return;
-  tablet_controller_.reset(new TabletPowerButtonController(
-      display_controller_.get(), tick_clock_.get()));
+  // Tablet power button behavior (excepts |force_clamshell_power_button_|) and
+  // power button screenshot accelerator are enabled on devices that can enter
+  // tablet mode, which must have seen accelerometer data before user actions.
+  if (!force_clamshell_power_button_ && !tablet_controller_) {
+    tablet_controller_ = std::make_unique<TabletPowerButtonController>(
+        display_controller_.get(), tick_clock_.get());
+  }
+
+  if (!screenshot_controller_) {
+    screenshot_controller_ = std::make_unique<PowerButtonScreenshotController>(
+        tablet_controller_.get(), tick_clock_.get(),
+        force_clamshell_power_button_);
+  }
 }
 
 void PowerButtonController::SetTickClockForTesting(

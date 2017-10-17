@@ -40,15 +40,6 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
           AudioDevicePriorityQueue;
   typedef std::vector<uint64_t> NodeIdList;
 
-  // Volume change reasons that are not user-initiated.
-  enum AutomatedVolumeChangeReason {
-    // Indicates it is from initializing audio state.
-    VOLUME_CHANGE_INITIALIZING_AUDIO_STATE,
-
-    // Indicates it is from restoring volume in maximimize mode screenshot.
-    VOLUME_CHANGE_MAXIMIZE_MODE_SCREENSHOT,
-  };
-
   class AudioObserver {
    public:
     // Called when an active output volume changed.
@@ -183,12 +174,6 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   // Sets all active output devices' volume levels to |volume_percent|, whose
   // range is from 0-100%.
   void SetOutputVolumePercent(int volume_percent);
-
-  // Sets all active output devices' volume levels to |volume_percent|, whose
-  // range is from 0-100%, without notifying observers.
-  void SetOutputVolumePercentWithoutNotifyingObservers(
-      int volume_percent,
-      AutomatedVolumeChangeReason reason);
 
   // Sets all active input devices' gain level to |gain_percent|, whose range is
   // from 0-100%.
@@ -522,16 +507,10 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
 
   bool cras_service_available_ = false;
 
-  // FIFO list of reasons passed to
-  // SetOutputVolumePercentWithoutNotifyingObservers() for which we're still
-  // waiting for OutputNodeVolumeChanged() calls. These are used to suppress
-  // notifications for those changes.
-  base::circular_deque<AutomatedVolumeChangeReason>
-      automated_volume_change_reasons_;
-
   bool initializing_audio_state_ = false;
   int init_volume_;
   uint64_t init_node_id_;
+  int init_volume_count_ = 0;
 
   bool front_camera_on_ = false;
   bool rear_camera_on_ = false;

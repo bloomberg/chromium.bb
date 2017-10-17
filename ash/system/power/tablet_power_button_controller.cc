@@ -218,6 +218,13 @@ void TabletPowerButtonController::OnTabletModeEnded() {
     lock_state_controller_->CancelShutdownAnimation();
 }
 
+void TabletPowerButtonController::CancelTabletPowerButton() {
+  if (lock_state_controller_->CanCancelShutdownAnimation())
+    lock_state_controller_->CancelShutdownAnimation();
+  force_off_on_button_up_ = false;
+  shutdown_timer_.Stop();
+}
+
 void TabletPowerButtonController::ParseSpuriousPowerButtonSwitches(
     const base::CommandLine& command_line) {
   // Support being called multiple times from tests.
