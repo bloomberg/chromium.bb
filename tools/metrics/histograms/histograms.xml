@@ -813,6 +813,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Android.DownloadManager.ForegroundServiceLifecycle"
+    enum="DownloadNotificationForegroundLifecycle">
+  <owner>jming@chromium.org</owner>
+  <summary>
+    Records instances where the foreground undergoes a lifecycle change (when
+    the foreground starts, changes pinned notification, or stops).
+  </summary>
+</histogram>
+
 <histogram name="Android.DownloadManager.InitialCount">
   <owner>dfalcantara@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
@@ -837,6 +846,47 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>twellington@chromium.org</owner>
   <owner>ianwen@chromium.org</owner>
   <summary>Recorded when a download is opened.</summary>
+</histogram>
+
+<histogram name="Android.DownloadManager.NotificationInteraction"
+    enum="DownloadNotificationInteractions">
+  <owner>jming@chromium.org</owner>
+  <summary>
+    Records instances where a user interacts with a download notification (ie.
+    clicks on, pauses, resumes, cancels).
+  </summary>
+</histogram>
+
+<histogram name="Android.DownloadManager.NotificationLaunch"
+    enum="DownloadNotificationLaunchType">
+  <owner>jming@chromium.org</owner>
+  <summary>
+    Records instances when a notification is being launched for the first time
+    or relaunched due to the need to dissociate the notification from the
+    foreground (only on API less than 24).
+  </summary>
+</histogram>
+
+<histogram name="Android.DownloadManager.NotificationsCount.ForegroundDisabled"
+    units="notifications">
+  <owner>jming@chromium.org</owner>
+  <summary>
+    Records the number of notifications that are already existing (presumably
+    displayed) when a new notification is being launched to help understand the
+    frequency of multiple downloads with downloads as a foreground service
+    disabled.
+  </summary>
+</histogram>
+
+<histogram name="Android.DownloadManager.NotificationsCount.ForegroundEnabled"
+    units="notifications">
+  <owner>jming@chromium.org</owner>
+  <summary>
+    Records the number of notifications that are already existing (presumably
+    displayed) when a new notification is being launched to help understand the
+    frequency of multiple downloads with downloads as a foreground service
+    enabled.
+  </summary>
 </histogram>
 
 <histogram name="Android.DownloadManager.OtherExtensions.InitialCount"
@@ -876,6 +926,36 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The extension type for downloads that match the &quot;other&quot; filter
     type. Recorded when downloads are shared through the download manager.
+  </summary>
+</histogram>
+
+<histogram name="Android.DownloadManager.ServiceStopped.DownloadForeground"
+    enum="DownloadNotificationServiceStopped">
+  <owner>jming@chromium.org</owner>
+  <summary>
+        Records instances of DownloadForegroundService stops. The number of
+    expected stops (stopped) and unexpected stops (task removed, low memory,
+    etc) can be compared to get a sense of how often the service crashes to see
+    how it handles restarts. For example, the number of times the service is
+    stopped because of low memory can be compared to the number of times the
+    service has been destroyed to see how frequently it occurs. Or, the number
+    of start sticky's will indicate how often the service is able to restart due
+    to an unexpected stop.
+  </summary>
+</histogram>
+
+<histogram name="Android.DownloadManager.ServiceStopped.DownloadNotification"
+    enum="DownloadNotificationServiceStopped">
+  <owner>jming@chromium.org</owner>
+  <summary>
+        Records instances of DownloadNotificationService stops. The number of
+    expected stops (stopped) and unexpected stops (task removed, low memory,
+    etc) can be compared to get a sense of how often the service crashes to see
+    how it handles restarts. For example, the number of times the service is
+    stopped because of low memory can be compared to the number of times the
+    service has been destroyed to see how frequently it occurs. Or, the number
+    of start sticky's will indicate how often the service is able to restart due
+    to an unexpected stop.
   </summary>
 </histogram>
 

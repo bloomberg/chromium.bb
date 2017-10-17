@@ -350,6 +350,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/download/DownloadNotificationService.java",
   "java/src/org/chromium/chrome/browser/download/DownloadNotificationService2.java",
   "java/src/org/chromium/chrome/browser/download/DownloadNotificationServiceObserver.java",
+  "java/src/org/chromium/chrome/browser/download/DownloadNotificationUmaHelper.java",
   "java/src/org/chromium/chrome/browser/download/DownloadNotifier.java",
   "java/src/org/chromium/chrome/browser/download/DownloadPage.java",
   "java/src/org/chromium/chrome/browser/download/DownloadResumptionScheduler.java",
