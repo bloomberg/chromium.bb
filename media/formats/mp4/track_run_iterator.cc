@@ -390,12 +390,24 @@ bool TrackRunIterator::Init(const MovieFragment& moof) {
         tri.aux_info_total_size = 0;
       }
 
-      tri.samples.resize(trun.sample_count);
+      // Attempt to avoid allocating insane sample counts for invalid media.
+      // Check the first two samples to see if they're both zero size. Such
+      // samples may exist as the last sample and potentially elsewhere, but two
+      // should _hopefully_ never be adjacent.
+      tri.samples.resize(std::min(2u, trun.sample_count));
       for (size_t k = 0; k < trun.sample_count; k++) {
         if (!PopulateSampleInfo(*trex, traf.header, trun, edit_list_offset, k,
                                 &tri.samples[k], traf.sdtp.sample_depends_on(k),
                                 tri.is_audio, media_log_)) {
           return false;
+        }
+
+        if (k > 0) {
+          RCHECK_MEDIA_LOGGED(
+              tri.samples[k - 1].size + tri.samples[k].size != 0, media_log_,
+              "Adjacent zero sized samples are forbidden.");
+          if (k == 1 && tri.samples.size() < trun.sample_count)
+            tri.samples.resize(trun.sample_count);
         }
 
         RCHECK(std::numeric_limits<int64_t>::max() - tri.samples[k].duration >
