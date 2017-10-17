@@ -3738,11 +3738,6 @@ crbug.com/770971 [ Win7 ] fast/forms/suggested-value.html [ Pass Failure ]
 crbug.com/771492 [ Win Linux Mac ] external/wpt/css/css-tables-3/table-model-fixup-2.html [ Failure ]
 
 # Suspended WebRTC tests
-crbug.com/771540 fast/peerconnection/RTCPeerConnection-dtmf.html [ Timeout ]
-crbug.com/771540 fast/peerconnection/RTCPeerConnection-ice-promise.html [ Timeout ]
-crbug.com/771540 fast/peerconnection/RTCPeerConnection-ice.html [ Timeout ]
-crbug.com/771540 fast/peerconnection/RTCPeerConnection-lifetime.html [ Timeout ]
-crbug.com/771540 fast/peerconnection/RTCPeerConnection-ontrack.html [ Timeout ]
 # Test fails, and output changes for each run.
 crbug.com/771540 external/wpt/webrtc/RTCPeerConnection-setLocalDescription-answer.html [ Failure ]
 # Test is flaky after removing mock PeerConnectionHandler

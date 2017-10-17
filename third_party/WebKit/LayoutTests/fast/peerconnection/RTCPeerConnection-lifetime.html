@@ -6,8 +6,11 @@
 <body>
 <script>
 description("Tests the RTCPeerConnection lifetime.");
+// This test uses Chrome internals, and is therefore not
+// suitable for migrating to a Web Platform Tests - test.
 
 var dc = null;
+var dc2 = null;
 
 function dataChannelMessage(m)
 {
@@ -18,16 +21,50 @@ function dataChannelMessage(m)
 function dataChannelOpen()
 {
     testPassed("dataChannelOpen");
-    dc.onmessage = dataChannelMessage;
     shouldNotThrow("dc.send('xyzzy');");
+}
+
+function connect_pcs(pc_a, pc_b) {
+  pc_a.onicecandiate = function(event) {
+    if (event.candidate) {
+      pc_b.addIceCandidate(event.candidate);
+    }
+  }
+  pc_b.onicecandidate = function(event) {
+    if (event.candidate) {
+      pc_a.addIceCandidate(event.candidate);
+    }
+  }
+  pc_a.createOffer()
+  .then(function(offer) {
+    return pc_a.setLocalDescription(offer);
+  })
+  .then(function() {
+    return pc_b.setRemoteDescription(pc_a.localDescription);
+  })
+  .then(function() {
+    return pc_b.createAnswer();
+  })
+  .then(function(answer) {
+    return pc_b.setLocalDescription(answer);
+  })
+  .then(function() {
+    return pc_a.setRemoteDescription(pc_b.localDescription);
+  });
 }
 
 function createPeerConnectionAndDataChannel()
 {
     // The Peer Connection object is leaked
     var pc = new RTCPeerConnection();
+    var pc2 = new RTCPeerConnection();
     dc = pc.createDataChannel("label");
     dc.onopen = dataChannelOpen;
+    pc2.ondatachannel = function(e) {
+      dc2 = e.channel;
+      dc2.onmessage = dataChannelMessage;
+    };
+    connect_pcs(pc, pc2);
 }
 
 var pcB = null;

@@ -7,86 +7,86 @@
 </head>
 <body>
 <script>
+
 promise_test(function() {
   let pc = new RTCPeerConnection();
+  let pc2 = new RTCPeerConnection(); 
   let eventSequence = [];
   return createStreams({audio:true, video:false}, 1)
     .then(function(streams) {
       pc.addStream(streams[0]);
       let resolvers = Resolver.createResolvers(2);
-      pc.ontrack = function() {
+      pc2.ontrack = function() {
         eventSequence.push('ontrack');
         resolvers.shift().resolve();
       }
-      setRemoteDescriptionRemoteStreamsMatchLocal(pc).then(function() {
+      createAndSetRemoteDescription(pc, pc2).then(function() {
         eventSequence.push('setRemoteDescription');
         resolvers.shift().resolve();
       });
       return Promise.all(Resolver.promises(resolvers));
     }).then(function() {
-      // TODO(hbos): We might want to change this so that track events fire
-      // before the promise is resolved, see spec discussion
-      // https://github.com/w3c/webrtc-pc/issues/1508.
-      let expectedEventSequence = [ 'setRemoteDescription',
-                                    'ontrack' ];
-      assert_array_equals(eventSequence, expectedEventSequence);
+      let expectedEventSequence = [ 'setRemoteDescription', 'ontrack' ];
+      assert_array_equals(expectedEventSequence, eventSequence);
     });
-}, 'ontrack fires after setRemoteDescription is resolved.');
+}, 'ontrack fires before negotiation done.');
 
 promise_test(function() {
   let pc = new RTCPeerConnection();
+  let pc2 = new RTCPeerConnection();
   let eventSequence = [];
   return createStreams({audio:true, video:false}, 1)
     .then(function(streams) {
       pc.addStream(streams[0]);
       let resolvers = Resolver.createResolvers(2);
-      pc.onaddstream = function() {
+      pc2.onaddstream = function() {
         eventSequence.push('onaddstream');
         resolvers.shift().resolve();
       }
-      setRemoteDescriptionRemoteStreamsMatchLocal(pc).then(function() {
+      createAndSetRemoteDescription(pc, pc2).then(function() {
         eventSequence.push('setRemoteDescription');
         resolvers.shift().resolve();
       });
       return Promise.all(Resolver.promises(resolvers));
     }).then(function() {
-      let expectedEventSequence = [ 'setRemoteDescription',
-                                    'onaddstream' ];
+      let expectedEventSequence = [ 'setRemoteDescription', 'onaddstream' ];
       assert_array_equals(eventSequence, expectedEventSequence);
     });
-}, 'onaddstream fires after setRemoteDescription is resolved.');
+}, 'onaddstream fires before negotation done.');
 
 promise_test(function() {
   let pc = new RTCPeerConnection();
+  let pc2 = new RTCPeerConnection(); 
   let eventSequence = [];
   return createStreams({audio:true, video:false}, 2)
     .then(function(streams) {
       pc.addStream(streams[0]);
       pc.addStream(streams[1]);
       let resolvers = Resolver.createResolvers(4);
-      pc.onaddstream = function(event) {
+      pc2.onaddstream = function(event) {
         eventSequence.push('stream:' + event.stream.id);
         resolvers.shift().resolve();
       };
-      pc.ontrack = function(event) {
+      pc2.ontrack = function(event) {
         eventSequence.push('track:' + event.track.id);
         resolvers.shift().resolve();
       };
       return Promise.all(
           Resolver.promises(resolvers).concat(
-              setRemoteDescriptionRemoteStreamsMatchLocal(pc)));
+              createAndSetRemoteDescription(pc, pc2)));
     }).then(function() {
       let expectedEventSequence =
-          [ 'stream:' + pc.getRemoteStreams()[0].id,
-            'track:' + pc.getRemoteStreams()[0].getAudioTracks()[0].id,
-            'stream:' + pc.getRemoteStreams()[1].id,
-            'track:' + pc.getRemoteStreams()[1].getAudioTracks()[0].id ];
+          [ 'stream:' + pc2.getRemoteStreams()[0].id,
+            'track:' + pc2.getRemoteStreams()[0].getAudioTracks()[0].id,
+            'stream:' + pc2.getRemoteStreams()[1].id,
+            'track:' + pc2.getRemoteStreams()[1].getAudioTracks()[0].id ];
       assert_array_equals(eventSequence, expectedEventSequence);
     });
 }, 'ontrack and onaddstream fires in the expected relative order.');
 
 promise_test(function() {
   let pc = new RTCPeerConnection();
+  let pc2 = new RTCPeerConnection(); 
   let eventSequence = [];
   return createStreams({audio:true, video:false}, 1)
     .then(function(streams) {
@@ -102,76 +102,80 @@ promise_test(function() {
         eventSequence.push('track or stream fired');
         resolvers.shift().resolve();
       }
-      pc.onaddstream = callback;
-      pc.ontrack = callback;
+      pc2.onaddstream = callback;
+      pc2.ontrack = callback;
       return Promise.all(
           Resolver.promises(resolvers).concat(
-              setRemoteDescriptionRemoteStreamsMatchLocal(pc)));
+              createAndSetRemoteDescription(pc, pc2)));
     }).then(function() {
       assert_array_equals(
           eventSequence,
-          [ 'track or stream fired', 'track or stream fired', 'new task' ]);
+        [ 'track or stream fired', 'track or stream fired', 'new task' ]);
     });
 }, 'ontrack and onaddstream fires in the same task.');
 
 promise_test(function() {
   let pc = new RTCPeerConnection();
+  let pc2 = new RTCPeerConnection(); 
   return createStreams({audio:true, video:false}, 1)
     .then(function(streams) {
       pc.addStream(streams[0]);
       let resolver = new Resolver();
-      pc.ontrack = function(event) {
-        let remoteStream = pc.getRemoteStreams()[0];
+      pc2.ontrack = function(event) {
+        let remoteStream = pc2.getRemoteStreams()[0];
         let remoteAudioTrack = remoteStream.getAudioTracks()[0];
         assert_equals(event.track, remoteAudioTrack);
         resolver.resolve();
       };
       return Promise.all([ resolver.promise,
-                           setRemoteDescriptionRemoteStreamsMatchLocal(pc) ]);
+                           createAndSetRemoteDescription(pc, pc2) ]);
     });
 }, 'ontrack event\'s track matches track in getRemoteStreams().');
 
 promise_test(function() {
   let pc = new RTCPeerConnection();
+  let pc2 = new RTCPeerConnection(); 
   return createStreams({audio:true, video:false}, 1)
     .then(function(streams) {
       pc.addStream(streams[0]);
       let resolver = new Resolver();
-      pc.ontrack = function(event) {
-        let receiver = pc.getReceivers()[0];
+      pc2.ontrack = function(event) {
+        let receiver = pc2.getReceivers()[0];
         assert_equals(event.receiver, receiver);
         resolver.resolve();
       };
       return Promise.all([ resolver.promise,
-                           setRemoteDescriptionRemoteStreamsMatchLocal(pc) ]);
+                           createAndSetRemoteDescription(pc, pc2) ]);
     });
 }, 'ontrack event\'s receiver matches getReceivers().');
 
 promise_test(function() {
   let pc = new RTCPeerConnection();
+  let pc2 = new RTCPeerConnection(); 
   return createStreams({audio:true, video:false}, 1)
     .then(function(streams) {
       pc.addStream(streams[0]);
       let resolver = new Resolver();
-      pc.ontrack = function(event) {
-        assert_array_equals(event.streams, pc.getRemoteStreams())
+      pc2.ontrack = function(event) {
+        assert_array_equals(event.streams, pc2.getRemoteStreams())
         resolver.resolve();
       };
       return Promise.all([ resolver.promise,
-                           setRemoteDescriptionRemoteStreamsMatchLocal(pc) ]);
+                           createAndSetRemoteDescription(pc, pc2) ]);
     });
 }, 'ontrack event\'s streams match getRemoteStreams().');
 
 promise_test(function() {
   let pc = new RTCPeerConnection();
+  let pc2 = new RTCPeerConnection(); 
   let firedForAudioTrack = false;
   let firedForVideoTrack = false;
   return createStreams({audio:true, video:true}, 1)
     .then(function(streams) {
       pc.addStream(streams[0]);
       let resolvers = Resolver.createResolvers(2);
-      pc.ontrack = function(event) {
-        let remoteStream = pc.getRemoteStreams()[0];
+      pc2.ontrack = function(event) {
+        let remoteStream = pc2.getRemoteStreams()[0];
         if (event.track == remoteStream.getAudioTracks()[0])
           firedForAudioTrack = true;
         else if (event.track == remoteStream.getVideoTracks()[0])
@@ -180,7 +184,7 @@ promise_test(function() {
       };
       return Promise.all(
           Resolver.promises(resolvers).concat(
-              setRemoteDescriptionRemoteStreamsMatchLocal(pc)));
+              createAndSetRemoteDescription(pc, pc2)));
     }).then(function() {
       assert_true(firedForAudioTrack && firedForVideoTrack);
     });
@@ -203,18 +207,15 @@ function createStreams(constraints, numStreams, streamsSoFar = []) {
 }
 
 /**
- * Makes the peer connection's remote streams match its local streams. New local
- * streams result in cloning, removed local streams result in removing the
- * corresponding remote stream.
- *
- * Returns a promise.
+ * Makes the setup step necessary to cause pc_b to emit events.
+ * Note: This does not set up a connection.
+ * Returns the promise resulting from pc_b.setRemoteDescription.
  */
-function setRemoteDescriptionRemoteStreamsMatchLocal(pc) {
-  // In LayoutTests a |MockWebRTCPeerConnectionHandler| is used and as such we
-  // cannot establish a real call. Instead we rely on the mock making remote
-  // streams match the local streams on |setRemoteDescription|.
-  return pc.setRemoteDescription(
-      new RTCSessionDescription({type:'answer', sdp:'remote'}));
+function createAndSetRemoteDescription(pc_a, pc_b) {
+  return pc_a.createOffer()
+  .then(function(offer) {
+    return pc_b.setRemoteDescription(offer);
+  })
 }
 
 /**
