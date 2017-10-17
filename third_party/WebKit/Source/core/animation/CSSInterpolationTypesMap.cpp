@@ -191,6 +191,13 @@ const InterpolationTypes& CSSInterpolationTypesMap::Get(
       applicable_types->push_back(
           WTF::MakeUnique<CSSPaintInterpolationType>(used_property));
       break;
+    case CSSPropertyOffsetPath:
+      // TODO(ericwilligers): Animate rays using CSSRayInterpolationType
+      // crbug.com/696395
+
+      applicable_types->push_back(
+          WTF::MakeUnique<CSSPathInterpolationType>(used_property));
+      break;
     case CSSPropertyD:
       applicable_types->push_back(
           WTF::MakeUnique<CSSPathInterpolationType>(used_property));

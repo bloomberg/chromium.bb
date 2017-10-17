@@ -34,12 +34,12 @@ assertInterpolation({
   to: 'path("M0 0H 300") 600px 0deg',
   method: 'CSS Transitions',
 }, [
-  {at: -0.3, is: 'path("M0 0H 300") 470px 0deg'},
-  {at: 0, is: 'path("M0 0H 300") 500px 0deg'},
-  {at: 0.3, is: 'path("M0 0H 300") 530px 0deg'},
-  {at: 0.6, is: 'path("M0 0H 300") 560px 0deg'},
+  {at: -0.3, is: 'path("M0 0H 170") 470px 0deg'},
+  {at: 0, is: 'path("M0 0H 200") 500px 0deg'},
+  {at: 0.3, is: 'path("M0 0H 230") 530px 0deg'},
+  {at: 0.6, is: 'path("M0 0H 260") 560px 0deg'},
   {at: 1, is: 'path("M0 0H 300") 600px 0deg'},
-  {at: 1.5, is: 'path("M0 0H 300") 650px 0deg'},
+  {at: 1.5, is: 'path("M0 0H 350") 650px 0deg'},
 ]);
 
 assertInterpolation({
@@ -62,12 +62,12 @@ assertInterpolation({
   to: 'path("M0 0H 300") 600px 0deg',
   method: 'CSS Animations',
 }, [
-  {at: -0.3, is: 'path("M0 0H 200") 470px auto'},
+  {at: -0.3, is: 'path("M0 0H 170") 470px auto'},
   {at: 0, is: 'path("M0 0H 200") 500px auto'},
-  {at: 0.3, is: 'path("M0 0H 200") 530px auto'},
-  {at: 0.6, is: 'path("M0 0H 300") 560px 0deg'},
+  {at: 0.3, is: 'path("M0 0H 230") 530px auto'},
+  {at: 0.6, is: 'path("M0 0H 260") 560px 0deg'},
   {at: 1, is: 'path("M0 0H 300") 600px 0deg'},
-  {at: 1.5, is: 'path("M0 0H 300") 650px 0deg'},
+  {at: 1.5, is: 'path("M0 0H 350") 650px 0deg'},
 ]);
 
 assertInterpolation({
@@ -86,13 +86,13 @@ assertInterpolation({
 
 assertInterpolation({
   property: 'offset',
-  from: 'path("M0 0H 200") 500px auto',
+  from: 'path("M0 0V 200") 500px auto',
   to: 'path("M0 0H 300") 600px 0deg',
   method: 'Web Animations',
 }, [
-  {at: -0.3, is: 'path("M0 0H 200") 470px auto'},
-  {at: 0, is: 'path("M0 0H 200") 500px auto'},
-  {at: 0.3, is: 'path("M0 0H 200") 530px auto'},
+  {at: -0.3, is: 'path("M0 0V 200") 470px auto'},
+  {at: 0, is: 'path("M0 0V 200") 500px auto'},
+  {at: 0.3, is: 'path("M0 0V 200") 530px auto'},
   {at: 0.6, is: 'path("M0 0H 300") 560px 0deg'},
   {at: 1, is: 'path("M0 0H 300") 600px 0deg'},
   {at: 1.5, is: 'path("M0 0H 300") 650px 0deg'},

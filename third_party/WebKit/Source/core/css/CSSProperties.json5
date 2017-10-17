@@ -1908,6 +1908,7 @@
       api_class: true,
       api_methods: ["ParseSingleValue"],
       converter: "ConvertOffsetPath",
+      interpolable: true,
       field_template: "pointer",
       type_name: "BasicShape",
       field_group: "*",
