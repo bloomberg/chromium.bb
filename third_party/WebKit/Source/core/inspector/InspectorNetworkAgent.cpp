@@ -1273,7 +1273,7 @@ Response InspectorNetworkAgent::setUserAgentOverride(const String& user_agent) {
 }
 
 Response InspectorNetworkAgent::setExtraHTTPHeaders(
-    const std::unique_ptr<protocol::Network::Headers> headers) {
+    std::unique_ptr<protocol::Network::Headers> headers) {
   state_->setObject(NetworkAgentState::kExtraRequestHeaders,
                     headers->toValue());
   return Response::OK();
