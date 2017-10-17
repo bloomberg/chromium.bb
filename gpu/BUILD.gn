@@ -414,41 +414,10 @@ test("gpu_perftests") {
   ]
 
   deps = [
-    ":gpu",
     "//base",
     "//base/test:test_support",
-    "//gpu/command_buffer/client:gles2_implementation",
+    "//gpu/command_buffer/service",
     "//testing/gmock",
-    "//testing/gtest",
-    "//testing/perf",
-    "//ui/gfx/geometry",
-    "//ui/gl",
-    "//ui/gl/init",
-  ]
-
-  data = [
-    # Needed for isolate script to execute.
-    "//testing/scripts/common.py",
-    "//testing/xvfb.py",
-    "//testing/scripts/run_gtest_perf_test.py",
-    "//tools/perf/generate_legacy_perf_dashboard_json.py",
-  ]
-
-  # This target should not require the Chrome executable to run.
-  assert_no_deps = [ "//chrome" ]
-}
-
-test("command_buffer_perftests") {
-  sources = [
-    "command_buffer/tests/decoder_perftest.cc",
-    "perftests/run_all_tests.cc",
-  ]
-
-  deps = [
-    ":gpu",
-    "//base",
-    "//base/test:test_support",
-    "//gpu/command_buffer/client:gles2_implementation",
     "//testing/gtest",
     "//testing/perf",
     "//ui/gfx/geometry",
