@@ -23,9 +23,6 @@ using base::TimeDelta;
 namespace safe_browsing {
 const base::FilePath::CharType kStoreSuffix[] = FILE_PATH_LITERAL(".store");
 
-// The Safe Browsing V4 server URL prefix.
-const char kSbV4UrlPrefix[] = "https://safebrowsing.googleapis.com/v4";
-
 namespace {
 
 std::string Unescape(const std::string& url) {
