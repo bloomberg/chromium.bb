@@ -179,10 +179,10 @@ using namespace WTF;
     void* operator new(size_t) = delete;                    \
     void* operator new(size_t, void*) = delete;
 
-#define ALLOW_ONLY_INLINE_ALLOCATION()    \
-    public:                               \
-    void* operator new(size_t, void*);    \
-    private:                              \
+#define DISALLOW_NEW_EXCEPT_PLACEMENT_NEW() \
+    public:                                 \
+    void* operator new(size_t, void*);      \
+    private:                                \
     void* operator new(size_t) = delete;
 
 #define GC_PLUGIN_IGNORE(bug)                           \
