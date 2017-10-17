@@ -276,7 +276,7 @@ const base::Feature kServiceWorkerPaymentApps{
 
 // Streaming installed scripts on starting service workers.
 const base::Feature kServiceWorkerScriptStreaming{
-    "ServiceWorkerScriptStreaming", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ServiceWorkerScriptStreaming", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // http://tc39.github.io/ecmascript_sharedmem/shmem.html
 const base::Feature kSharedArrayBuffer{"SharedArrayBuffer",
