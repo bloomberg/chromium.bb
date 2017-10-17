@@ -55,7 +55,7 @@ U2fBleFrame::ToFragments(size_t max_fragment_size) const {
 
   size_t data_fragment_size = std::min(max_fragment_size - 3, data_.size());
   U2fBleFrameInitializationFragment initial_fragment(
-      command_, static_cast<uint16_t>(data_.size()), &data_[0],
+      command_, static_cast<uint16_t>(data_.size()), data_.data(),
       data_fragment_size);
 
   size_t num_continuation_fragments = 0;
