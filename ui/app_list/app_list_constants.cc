@@ -74,6 +74,9 @@ const SkColor kCardBackgroundColorFullscreen = SkColorSetRGB(0xFA, 0xFA, 0xFC);
 // Duration in milliseconds for page transition.
 const int kPageTransitionDurationInMs = 250;
 
+// Dampening value for PaginationModel's SlideAnimation.
+const int kPageTransitionDurationDampening = 3;
+
 // Duration in milliseconds for over scroll page transition.
 const int kOverscrollPageTransitionDurationMs = 50;
 

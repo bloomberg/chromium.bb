@@ -139,7 +139,6 @@ class APP_LIST_EXPORT PaginationModel : public gfx::AnimationDelegate {
   int transition_duration_ms_;  // Transition duration in millisecond.
   int overscroll_transition_duration_ms_;
 
-  int last_overscroll_target_page_;
   base::TimeTicks last_overscroll_animation_start_time_;
 
   base::ObserverList<PaginationModelObserver> observers_;

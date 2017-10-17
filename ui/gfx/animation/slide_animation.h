@@ -67,6 +67,10 @@ class ANIMATION_EXPORT SlideAnimation : public LinearAnimation {
   int GetSlideDuration() const { return slide_duration_; }
   void SetTweenType(Tween::Type tween_type) { tween_type_ = tween_type; }
 
+  // Dampens the reduction in duration for an animation which starts partway.
+  // The default value of 1 has no effect.
+  void SetDampeningValue(double dampening_value);
+
   double GetCurrentValue() const override;
   // TODO(bruthig): Fix IsShowing() and IsClosing() to be consistent. e.g.
   // IsShowing() will currently return true after the 'show' animation has been
@@ -78,6 +82,10 @@ class ANIMATION_EXPORT SlideAnimation : public LinearAnimation {
   class TestApi;
 
  private:
+  // Gets the duration based on the dampening factor and whether the animation
+  // is showing or hiding.
+  base::TimeDelta GetDuration();
+
   // Overridden from Animation.
   void AnimateToState(double state) override;
 
@@ -97,6 +105,9 @@ class ANIMATION_EXPORT SlideAnimation : public LinearAnimation {
   // How long a hover in/out animation will last for. This defaults to
   // kHoverFadeDurationMS, but can be overridden with SetDuration.
   int slide_duration_;
+
+  // Dampens the reduction in duration for animations which start partway.
+  double dampening_value_;
 
   DISALLOW_COPY_AND_ASSIGN(SlideAnimation);
 };
