@@ -131,10 +131,9 @@ paper-button:focus:not(:active) {
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
-  -webkit-margin-start: 16px;
 }
 
-#buttons {
+.buttons-group {
   display: flex;
 }
 
