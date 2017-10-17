@@ -28,11 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "controller/BlinkInitializer.h"
+
 #include "bindings/core/v8/V8Initializer.h"
 #include "bindings/modules/v8/V8ContextSnapshotExternalReferences.h"
 #include "build/build_config.h"
 #include "core/animation/AnimationClock.h"
-#include "modules/ModulesInitializer.h"
+#include "core/frame/LocalFrame.h"
 #include "platform/bindings/Microtask.h"
 #include "platform/bindings/V8PerIsolateData.h"
 #include "platform/heap/Heap.h"
@@ -61,9 +63,9 @@ class EndOfTaskRunner : public WebThread::TaskObserver {
 
 static WebThread::TaskObserver* g_end_of_task_runner = nullptr;
 
-static ModulesInitializer& GetModulesInitializer() {
-  DEFINE_STATIC_LOCAL(std::unique_ptr<ModulesInitializer>, initializer,
-                      (WTF::WrapUnique(new ModulesInitializer)));
+static BlinkInitializer& GetBlinkInitializer() {
+  DEFINE_STATIC_LOCAL(std::unique_ptr<BlinkInitializer>, initializer,
+                      (WTF::WrapUnique(new BlinkInitializer)));
   return *initializer;
 }
 
@@ -91,7 +93,7 @@ void Initialize(Platform* platform) {
   V8Initializer::InitializeMainThread(
       V8ContextSnapshotExternalReferences::GetTable());
 
-  GetModulesInitializer().Initialize();
+  GetBlinkInitializer().Initialize();
 
   // currentThread is null if we are running on a thread without a message loop.
   if (WebThread* current_thread = platform->CurrentThread()) {
@@ -99,6 +101,10 @@ void Initialize(Platform* platform) {
     g_end_of_task_runner = new EndOfTaskRunner;
     current_thread->AddTaskObserver(g_end_of_task_runner);
   }
+}
+
+void BlinkInitializer::InitLocalFrame(LocalFrame& frame) const {
+  ModulesInitializer::InitLocalFrame(frame);
 }
 
 }  // namespace blink

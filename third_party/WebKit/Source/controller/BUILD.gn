@@ -35,6 +35,7 @@ component("controller") {
 
   sources = [
     "BlinkInitializer.cpp",
+    "BlinkInitializer.h",
     "ControllerExport.h",
   ]
 
