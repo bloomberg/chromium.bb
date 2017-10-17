@@ -38,7 +38,7 @@ case $UNAME in
   ppc64)  # best-effort support for 64-bit PowerPC: crbug.com/773857
     ARCH=ppc64
     ;;
-  ppcle64)  # best-effort support for 64-bit PowerPC/LE: crbug.com/773857
+  ppc64le)  # best-effort support for 64-bit PowerPC/LE: crbug.com/773857
     ARCH=ppc64le
     ;;
   aarch64)
