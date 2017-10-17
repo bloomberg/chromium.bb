@@ -230,6 +230,8 @@ struct macroblock {
   av1_coeff_cost token_tail_costs[TX_SIZES];
 
   // mode costs
+  int intra_inter_cost[INTRA_INTER_CONTEXTS][2];
+
   int mbmode_cost[BLOCK_SIZE_GROUPS][INTRA_MODES];
   int newmv_mode_cost[NEWMV_MODE_CONTEXTS][2];
   int zeromv_mode_cost[ZEROMV_MODE_CONTEXTS][2];

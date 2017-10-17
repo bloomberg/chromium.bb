@@ -298,6 +298,16 @@ void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
 #endif  // CONFIG_INTRABC
 
   if (!frame_is_intra_only(cm)) {
+    for (i = 0; i < INTRA_INTER_CONTEXTS; ++i) {
+#if CONFIG_NEW_MULTISYMBOL
+      av1_cost_tokens_from_cdf(x->intra_inter_cost[i], fc->intra_inter_cdf[i],
+                               NULL);
+#else
+      x->intra_inter_cost[i][0] = av1_cost_bit(fc->intra_inter_prob[i], 0);
+      x->intra_inter_cost[i][1] = av1_cost_bit(fc->intra_inter_prob[i], 1);
+#endif
+    }
+
     for (i = 0; i < NEWMV_MODE_CONTEXTS; ++i) {
 #if CONFIG_NEW_MULTISYMBOL
       av1_cost_tokens_from_cdf(x->newmv_mode_cost[i], fc->newmv_cdf[i], NULL);

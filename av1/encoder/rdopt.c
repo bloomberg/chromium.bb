@@ -7096,8 +7096,8 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
 }
 
 static void estimate_ref_frame_costs(
-    const AV1_COMMON *cm, const MACROBLOCKD *xd, int segment_id,
-    unsigned int *ref_costs_single,
+    const AV1_COMMON *cm, const MACROBLOCKD *xd, const MACROBLOCK *x,
+    int segment_id, unsigned int *ref_costs_single,
 #if CONFIG_EXT_COMP_REFS
     unsigned int (*ref_costs_comp)[TOTAL_REFS_PER_FRAME],
 #else
@@ -7120,7 +7120,7 @@ static void estimate_ref_frame_costs(
 
     *comp_mode_p = 128;
   } else {
-    aom_prob intra_inter_p = av1_get_intra_inter_prob(cm, xd);
+    int intra_inter_ctx = av1_get_intra_inter_context(xd);
     aom_prob comp_inter_p = 128;
 
     if (cm->reference_mode == REFERENCE_MODE_SELECT) {
@@ -7130,7 +7130,7 @@ static void estimate_ref_frame_costs(
       *comp_mode_p = 128;
     }
 
-    ref_costs_single[INTRA_FRAME] = av1_cost_bit(intra_inter_p, 0);
+    ref_costs_single[INTRA_FRAME] = x->intra_inter_cost[intra_inter_ctx][0];
 
     if (cm->reference_mode != COMPOUND_REFERENCE) {
       aom_prob ref_single_p1 = av1_get_pred_prob_single_ref_p1(cm, xd);
@@ -7140,7 +7140,7 @@ static void estimate_ref_frame_costs(
       aom_prob ref_single_p5 = av1_get_pred_prob_single_ref_p5(cm, xd);
       aom_prob ref_single_p6 = av1_get_pred_prob_single_ref_p6(cm, xd);
 
-      unsigned int base_cost = av1_cost_bit(intra_inter_p, 1);
+      unsigned int base_cost = x->intra_inter_cost[intra_inter_ctx][1];
 
       ref_costs_single[LAST_FRAME] = ref_costs_single[LAST2_FRAME] =
           ref_costs_single[LAST3_FRAME] = ref_costs_single[BWDREF_FRAME] =
@@ -7189,7 +7189,7 @@ static void estimate_ref_frame_costs(
       aom_prob bwdref_comp_p = av1_get_pred_prob_comp_bwdref_p(cm, xd);
       aom_prob bwdref_comp_p1 = av1_get_pred_prob_comp_bwdref_p1(cm, xd);
 
-      unsigned int base_cost = av1_cost_bit(intra_inter_p, 1);
+      unsigned int base_cost = x->intra_inter_cost[intra_inter_ctx][1];
 
 #if CONFIG_EXT_COMP_REFS
       aom_prob comp_ref_type_p = av1_get_comp_reference_type_prob(cm, xd);
@@ -10583,8 +10583,8 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
       palette_ctx += (left_mi->mbmi.palette_mode_info.palette_size[0] > 0);
   }
 
-  estimate_ref_frame_costs(cm, xd, segment_id, ref_costs_single, ref_costs_comp,
-                           &comp_mode_p);
+  estimate_ref_frame_costs(cm, xd, x, segment_id, ref_costs_single,
+                           ref_costs_comp, &comp_mode_p);
 
   for (i = 0; i < REFERENCE_MODES; ++i) best_pred_rd[i] = INT64_MAX;
   for (i = 0; i < TX_SIZES_ALL; i++) rate_uv_intra[i] = INT_MAX;
@@ -12163,8 +12163,8 @@ void av1_rd_pick_inter_mode_sb_seg_skip(const AV1_COMP *cpi,
   (void)mi_row;
   (void)mi_col;
 
-  estimate_ref_frame_costs(cm, xd, segment_id, ref_costs_single, ref_costs_comp,
-                           &comp_mode_p);
+  estimate_ref_frame_costs(cm, xd, x, segment_id, ref_costs_single,
+                           ref_costs_comp, &comp_mode_p);
 
   for (i = 0; i < TOTAL_REFS_PER_FRAME; ++i) x->pred_sse[i] = INT_MAX;
   for (i = LAST_FRAME; i < TOTAL_REFS_PER_FRAME; ++i)

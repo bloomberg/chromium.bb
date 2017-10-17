@@ -86,11 +86,6 @@ int av1_get_palette_cache(const MACROBLOCKD *const xd, int plane,
 
 int av1_get_intra_inter_context(const MACROBLOCKD *xd);
 
-static INLINE aom_prob av1_get_intra_inter_prob(const AV1_COMMON *cm,
-                                                const MACROBLOCKD *xd) {
-  return cm->fc->intra_inter_prob[av1_get_intra_inter_context(xd)];
-}
-
 int av1_get_reference_mode_context(const AV1_COMMON *cm, const MACROBLOCKD *xd);
 
 static INLINE aom_prob av1_get_reference_mode_prob(const AV1_COMMON *cm,
