@@ -8,6 +8,10 @@
     "pem2"
   ],
   "OpenVPN.CompLZO":"true",
+  "OpenVPN.ExtraHosts":[
+    "www.abc.com",
+    "1.2.3.4"
+  ],
   "OpenVPN.KeyDirection":"1",
   "OpenVPN.Token":"some OTP",
   "OpenVPN.Port":"443",

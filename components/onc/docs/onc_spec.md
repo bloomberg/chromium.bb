@@ -750,6 +750,11 @@ L2TP over IPsec with pre-shared key:
     * (optional, defaults to *false*) - **boolean**
     * Disables adaptive compression.
 
+* **ExtraHosts**
+    * (optional) - **array of string**
+    * List of hosts to try in order if client is unable to connect to the
+    * primary host.
+
 * **IgnoreDefaultRoute**
     * (optional, defaults to *false*) - **boolean**
     * Omits a default route to the VPN gateway while the connection is active.
