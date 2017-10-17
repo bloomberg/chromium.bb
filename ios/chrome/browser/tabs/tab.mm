@@ -360,8 +360,9 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 }
 
 - (NSString*)description {
-  return [NSString stringWithFormat:@"%p ... %@ - %s", self, self.title,
-                                    self.visibleURL.spec().c_str()];
+  return
+      [NSString stringWithFormat:@"%p ... %@ - %s", self, self.title,
+                                 self.webState->GetVisibleURL().spec().c_str()];
 }
 
 - (id<TabDialogDelegate>)dialogDelegate {
@@ -387,11 +388,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
                               callback:callback];
 }
 
-- (const GURL&)visibleURL {
-  web::NavigationItem* item = self.navigationManager->GetVisibleItem();
-  return item ? item->GetVirtualURL() : GURL::EmptyGURL();
-}
-
 - (NSString*)title {
   base::string16 title = self.webState->GetTitle();
   if (title.empty())
@@ -412,7 +408,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 
 - (NSString*)urlDisplayString {
   base::string16 urlText = url_formatter::FormatUrl(
-      self.visibleURL, url_formatter::kFormatUrlOmitNothing,
+      self.webState->GetVisibleURL(), url_formatter::kFormatUrlOmitNothing,
       net::UnescapeRule::SPACES, nullptr, nullptr, nullptr);
   return base::SysUTF16ToNSString(urlText);
 }

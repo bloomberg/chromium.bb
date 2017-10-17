@@ -259,6 +259,10 @@ void TestWebState::SetCurrentURL(const GURL& url) {
   url_ = url;
 }
 
+void TestWebState::SetVisibleURL(const GURL& url) {
+  url_ = url;
+}
+
 void TestWebState::SetTrustLevel(URLVerificationTrustLevel trust_level) {
   trust_level_ = trust_level;
 }

@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/tabs/tab_model_list.h"
+#import "ios/web/public/web_state/web_state.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -22,8 +23,8 @@ namespace new_tab_page_uma {
 bool IsCurrentlyOnNTP(ios::ChromeBrowserState* browser_state) {
   TabModel* tab_model =
       GetLastActiveTabModelForChromeBrowserState(browser_state);
-  return tab_model.currentTab &&
-         tab_model.currentTab.visibleURL == GURL(kChromeUINewTabURL);
+  return tab_model.currentTab.webState &&
+         tab_model.currentTab.webState->GetVisibleURL() == kChromeUINewTabURL;
 }
 
 void RecordAction(ios::ChromeBrowserState* browserState, ActionType type) {

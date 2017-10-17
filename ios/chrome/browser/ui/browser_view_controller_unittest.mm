@@ -85,11 +85,9 @@ using web::WebStateImpl;
 @end
 
 @interface BVCTestTabMock : OCMockComplexTypeHelper {
-  GURL _visibleURL;
   WebStateImpl* _webState;
 }
 
-@property(nonatomic, assign) const GURL& visibleURL;
 @property(nonatomic, assign) WebStateImpl* webState;
 
 - (web::NavigationManager*)navigationManager;
@@ -98,12 +96,6 @@ using web::WebStateImpl;
 @end
 
 @implementation BVCTestTabMock
-- (const GURL&)visibleURL {
-  return _visibleURL;
-}
-- (void)setVisibleURL:(const GURL&)visibleURL {
-  _visibleURL = visibleURL;
-}
 - (WebStateImpl*)webState {
   return _webState;
 }

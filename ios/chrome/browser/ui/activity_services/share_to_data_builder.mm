@@ -8,6 +8,7 @@
 #include "ios/chrome/browser/tabs/tab.h"
 #include "ios/chrome/browser/ui/activity_services/chrome_activity_item_thumbnail_generator.h"
 #include "ios/chrome/browser/ui/activity_services/share_to_data.h"
+#import "ios/web/public/web_state/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -31,7 +32,7 @@ ShareToData* ShareToDataForTab(Tab* tab) {
   BOOL isPagePrintable = [tab viewForPrinting] != nil;
   ThumbnailGeneratorBlock thumbnailGenerator =
       activity_services::ThumbnailGeneratorForTab(tab);
-  return [[ShareToData alloc] initWithURL:tab.visibleURL
+  return [[ShareToData alloc] initWithURL:tab.webState->GetVisibleURL()
                                     title:tab.title
                           isOriginalTitle:(tab.originalTitle != nil)
                           isPagePrintable:isPagePrintable
