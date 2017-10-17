@@ -18,10 +18,9 @@ namespace net {
 QuicPacketGenerator::QuicPacketGenerator(QuicConnectionId connection_id,
                                          QuicFramer* framer,
                                          QuicRandom* random_generator,
-                                         QuicBufferAllocator* buffer_allocator,
                                          DelegateInterface* delegate)
     : delegate_(delegate),
-      packet_creator_(connection_id, framer, buffer_allocator, delegate),
+      packet_creator_(connection_id, framer, delegate),
       batch_mode_(false),
       should_send_ack_(false),
       should_send_stop_waiting_(false),

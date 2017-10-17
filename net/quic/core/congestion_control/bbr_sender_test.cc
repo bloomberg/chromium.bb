@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 
+#include "build/build_config.h"
 #include "net/quic/core/congestion_control/rtt_stats.h"
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_utils.h"
@@ -21,6 +22,9 @@
 #include "net/quic/test_tools/simulator/quic_endpoint.h"
 #include "net/quic/test_tools/simulator/simulator.h"
 #include "net/quic/test_tools/simulator/switch.h"
+
+// TODO(vasilvv): make this tests not time out on Android.
+#if !defined(OS_ANDROID)
 
 namespace net {
 namespace test {
@@ -827,3 +831,5 @@ TEST_F(BbrSenderTest, ResumeConnectionState) {
 
 }  // namespace test
 }  // namespace net
+
+#endif  // !defined(OS_ANDROID)

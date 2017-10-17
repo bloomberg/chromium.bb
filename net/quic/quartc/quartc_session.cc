@@ -260,6 +260,12 @@ bool QuartcSession::ExportKeyingMaterial(const string& label,
   return success;
 }
 
+void QuartcSession::CloseConnection(const string& details) {
+  connection_->CloseConnection(
+      QuicErrorCode::QUIC_CONNECTION_CANCELLED, details,
+      ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET_WITH_NO_ACK);
+}
+
 QuartcStreamInterface* QuartcSession::CreateOutgoingStream(
     const OutgoingStreamParameters& param) {
   // The |param| is for forward-compatibility. Not used for now.

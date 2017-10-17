@@ -255,10 +255,6 @@ QuicArenaScopedPtr<QuicAlarm> MockAlarmFactory::CreateAlarm(
   }
 }
 
-QuicBufferAllocator* MockQuicConnectionHelper::GetStreamFrameBufferAllocator() {
-  return &buffer_allocator_;
-}
-
 QuicBufferAllocator* MockQuicConnectionHelper::GetStreamSendBufferAllocator() {
   return &buffer_allocator_;
 }

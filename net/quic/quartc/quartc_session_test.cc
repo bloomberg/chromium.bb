@@ -566,10 +566,6 @@ class QuartcSessionTest : public ::testing::Test,
     return QuicRandom::GetInstance();
   }
 
-  QuicBufferAllocator* GetStreamFrameBufferAllocator() override {
-    return &buffer_allocator_;
-  }
-
   QuicBufferAllocator* GetStreamSendBufferAllocator() override {
     return &buffer_allocator_;
   }
@@ -661,8 +657,20 @@ TEST_F(QuartcSessionTest, GetStats) {
   ASSERT_TRUE(client_peer_->IsCryptoHandshakeConfirmed());
   ASSERT_TRUE(server_peer_->IsCryptoHandshakeConfirmed());
 
-  QuartcSessionStats stats = client_peer_->GetStats();
+  QuartcSessionStats stats = server_peer_->GetStats();
   EXPECT_GT(stats.bandwidth_estimate_bits_per_second, 0);
+}
+
+TEST_F(QuartcSessionTest, CloseConnection) {
+  CreateClientAndServerSessions();
+  StartHandshake();
+  ASSERT_TRUE(client_peer_->IsCryptoHandshakeConfirmed());
+  ASSERT_TRUE(server_peer_->IsCryptoHandshakeConfirmed());
+
+  client_peer_->CloseConnection("Connection closed by client");
+  EXPECT_FALSE(client_peer_->session_delegate()->connected());
+  RunTasks();
+  EXPECT_FALSE(server_peer_->session_delegate()->connected());
 }
 
 }  // namespace

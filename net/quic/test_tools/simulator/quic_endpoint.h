@@ -10,6 +10,7 @@
 #include "net/quic/core/quic_connection.h"
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/platform/api/quic_containers.h"
+#include "net/quic/test_tools/simple_data_producer.h"
 #include "net/quic/test_tools/simulator/link.h"
 #include "net/quic/test_tools/simulator/queue.h"
 #include "net/tools/quic/quic_default_packet_writer.h"
@@ -142,6 +143,8 @@ class QuicEndpoint : public Endpoint,
   bool wrong_data_received_;
 
   std::unique_ptr<char[]> transmission_buffer_;
+
+  net::test::SimpleDataProducer producer_;
 };
 
 // Multiplexes multiple connections at the same host on the network.

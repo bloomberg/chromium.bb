@@ -248,7 +248,6 @@ QuicConnection::QuicConnection(
       packet_generator_(connection_id_,
                         &framer_,
                         random_generator_,
-                        helper->GetStreamFrameBufferAllocator(),
                         this),
       idle_network_timeout_(QuicTime::Delta::Infinite()),
       handshake_timeout_(QuicTime::Delta::Infinite()),

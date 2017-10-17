@@ -112,17 +112,14 @@ class StatelessConnectionTerminator {
         collector_(helper->GetStreamSendBufferAllocator()),
         creator_(connection_id,
                  framer,
-                 helper->GetStreamFrameBufferAllocator(),
                  &collector_),
         time_wait_list_manager_(time_wait_list_manager) {
     framer_->set_data_producer(&collector_);
   }
 
   ~StatelessConnectionTerminator() {
-    if (framer_->HasDataProducer()) {
-      // Clear framer's producer.
-      framer_->set_data_producer(nullptr);
-    }
+    // Clear framer's producer.
+    framer_->set_data_producer(nullptr);
   }
 
   // Generates a packet containing a CONNECTION_CLOSE frame specifying
@@ -153,12 +150,9 @@ class StatelessConnectionTerminator {
     iovec.iov_len = reject.length();
     QuicIOVector iov(&iovec, 1, iovec.iov_len);
     QuicStreamOffset offset = 0;
-    if (framer_->HasDataProducer()) {
-      collector_.SaveStatelessRejectFrameData(iov, 0, reject.length());
-    }
+    collector_.SaveStatelessRejectFrameData(iov, 0, reject.length());
     while (offset < iovec.iov_len) {
       QuicFrame frame;
-      UniqueStreamBuffer data;
       if (!creator_.ConsumeData(kCryptoStreamId, iov, offset, offset,
                                 /*fin=*/false,
                                 /*needs_full_padding=*/true, &frame)) {
@@ -994,11 +988,7 @@ void QuicDispatcher::OnStatelessRejectorProcessDone(
   current_server_address_ = current_server_address;
   current_packet_ = current_packet.get();
   current_connection_id_ = rejector->connection_id();
-  if (FLAGS_quic_reloadable_flag_quic_set_version_on_async_get_proof_returns) {
-    QUIC_FLAG_COUNT(
-        quic_reloadable_flag_quic_set_version_on_async_get_proof_returns);
-    framer_.set_version(first_version);
-  }
+  framer_.set_version(first_version);
 
   ProcessStatelessRejectorState(std::move(rejector), first_version);
 }

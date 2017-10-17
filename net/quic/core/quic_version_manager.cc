@@ -11,7 +11,8 @@ namespace net {
 
 QuicVersionManager::QuicVersionManager(
     QuicTransportVersionVector supported_versions)
-    : enable_version_42_(GetQuicFlag(FLAGS_quic_enable_version_42)),
+    : enable_version_43_(GetQuicFlag(FLAGS_quic_enable_version_43)),
+      enable_version_42_(GetQuicFlag(FLAGS_quic_enable_version_42)),
       enable_version_41_(FLAGS_quic_reloadable_flag_quic_enable_version_41),
       enable_version_39_(FLAGS_quic_reloadable_flag_quic_enable_version_39),
       enable_version_38_(FLAGS_quic_reloadable_flag_quic_enable_version_38),
@@ -28,10 +29,12 @@ QuicVersionManager::GetSupportedTransportVersions() {
 }
 
 void QuicVersionManager::MaybeRefilterSupportedTransportVersions() {
-  if (enable_version_42_ != GetQuicFlag(FLAGS_quic_enable_version_42) ||
+  if (enable_version_43_ != GetQuicFlag(FLAGS_quic_enable_version_43) ||
+      enable_version_42_ != GetQuicFlag(FLAGS_quic_enable_version_42) ||
       enable_version_41_ != FLAGS_quic_reloadable_flag_quic_enable_version_41 ||
       enable_version_39_ != FLAGS_quic_reloadable_flag_quic_enable_version_39 ||
       enable_version_38_ != FLAGS_quic_reloadable_flag_quic_enable_version_38) {
+    enable_version_43_ = GetQuicFlag(FLAGS_quic_enable_version_43);
     enable_version_42_ = GetQuicFlag(FLAGS_quic_enable_version_42);
     enable_version_41_ = FLAGS_quic_reloadable_flag_quic_enable_version_41;
     enable_version_39_ = FLAGS_quic_reloadable_flag_quic_enable_version_39;

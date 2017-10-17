@@ -67,6 +67,8 @@ class QUIC_EXPORT_PRIVATE QuartcSession
                             uint8_t* result,
                             size_t result_len) override;
 
+  void CloseConnection(const std::string& details) override;
+
   QuartcStreamInterface* CreateOutgoingStream(
       const OutgoingStreamParameters& param) override;
 

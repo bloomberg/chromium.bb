@@ -139,17 +139,8 @@ QUIC_FLAG(bool, FLAGS_quic_supports_tls_handshake, false)
 // or 1/8 RTT.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_ack_decimation, false)
 
-// If true, in QUIC, set dispatcher framer\'s version to client packet's
-// version in QuicDispatcher::OnStatelessRejectorProcessDone.
-QUIC_FLAG(
-    bool,
-    FLAGS_quic_reloadable_flag_quic_set_version_on_async_get_proof_returns,
-    true)
-
 // If true, check for packet number underflow when reading ack blocks.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_sanitize_framer_addrange_input,
-          false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_sanitize_framer_addrange_input, true)
 
 // If true, QUIC v40 is enabled which includes changes to RST_STREAM, ACK
 // and STREAM frames match IETF format.
@@ -177,3 +168,6 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_send_reset_token_in_shlo, false)
 
 // Default enable all cubic fixes in QUIC Cubic by default.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_cubic_fixes, false)
+
+// If true, enable QUIC v43.
+QUIC_FLAG(bool, FLAGS_quic_enable_version_43, false)

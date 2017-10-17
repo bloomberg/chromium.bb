@@ -8,70 +8,30 @@
 
 namespace net {
 
-void StreamBufferDeleter::operator()(char* buffer) const {
-  if (allocator_ != nullptr && buffer != nullptr) {
-    allocator_->Delete(buffer);
-  }
-}
-
-UniqueStreamBuffer NewStreamBuffer(QuicBufferAllocator* allocator,
-                                   size_t size) {
-  return UniqueStreamBuffer(allocator->New(size),
-                            StreamBufferDeleter(allocator));
-}
-
-QuicStreamFrame::QuicStreamFrame()
-    : QuicStreamFrame(0, false, 0, nullptr, 0, nullptr) {}
+QuicStreamFrame::QuicStreamFrame() : QuicStreamFrame(0, false, 0, nullptr, 0) {}
 
 QuicStreamFrame::QuicStreamFrame(QuicStreamId stream_id,
                                  bool fin,
                                  QuicStreamOffset offset,
                                  QuicStringPiece data)
-    : QuicStreamFrame(stream_id,
-                      fin,
-                      offset,
-                      data.data(),
-                      data.length(),
-                      nullptr) {}
-
-QuicStreamFrame::QuicStreamFrame(QuicStreamId stream_id,
-                                 bool fin,
-                                 QuicStreamOffset offset,
-                                 QuicPacketLength data_length,
-                                 UniqueStreamBuffer buffer)
-    : QuicStreamFrame(stream_id,
-                      fin,
-                      offset,
-                      nullptr,
-                      data_length,
-                      std::move(buffer)) {
-  DCHECK(this->buffer != nullptr);
-  DCHECK_EQ(data_buffer, this->buffer.get());
-}
+    : QuicStreamFrame(stream_id, fin, offset, data.data(), data.length()) {}
 
 QuicStreamFrame::QuicStreamFrame(QuicStreamId stream_id,
                                  bool fin,
                                  QuicStreamOffset offset,
                                  QuicPacketLength data_length)
-    : QuicStreamFrame(stream_id, fin, offset, nullptr, data_length, nullptr) {}
+    : QuicStreamFrame(stream_id, fin, offset, nullptr, data_length) {}
 
 QuicStreamFrame::QuicStreamFrame(QuicStreamId stream_id,
                                  bool fin,
                                  QuicStreamOffset offset,
                                  const char* data_buffer,
-                                 QuicPacketLength data_length,
-                                 UniqueStreamBuffer buffer)
+                                 QuicPacketLength data_length)
     : stream_id(stream_id),
       fin(fin),
       data_length(data_length),
       data_buffer(data_buffer),
-      offset(offset),
-      buffer(std::move(buffer)) {
-  if (this->buffer != nullptr) {
-    DCHECK(data_buffer == nullptr);
-    this->data_buffer = this->buffer.get();
-  }
-}
+      offset(offset) {}
 
 QuicStreamFrame::~QuicStreamFrame() {}
 

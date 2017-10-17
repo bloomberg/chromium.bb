@@ -87,6 +87,7 @@ QuicEndpoint::QuicEndpoint(Simulator* simulator,
   connection_.SetDecrypter(ENCRYPTION_FORWARD_SECURE,
                            new NullDecrypter(perspective));
   connection_.SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
+  connection_.SetDataProducer(&producer_);
 
   // Configure the connection as if it received a handshake.  This is important
   // primarily because
@@ -232,6 +233,8 @@ void QuicEndpoint::WriteStreamData() {
     iov.iov_len = transmission_size;
 
     QuicIOVector io_vector(&iov, 1, transmission_size);
+    producer_.SaveStreamData(kDataStream, io_vector, 0u, bytes_transferred_,
+                             io_vector.total_length);
     QuicConsumedData consumed_data = connection_.SendStreamData(
         kDataStream, io_vector, bytes_transferred_, NO_FIN, nullptr);
 
