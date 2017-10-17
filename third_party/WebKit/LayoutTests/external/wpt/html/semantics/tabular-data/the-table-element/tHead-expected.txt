@@ -1,6 +1,0 @@
-This is a testharness.js-based test.
-FAIL tHead tests assert_throws: function "function (){\n        t.tHead = document.createElement("tbody");\n    }" did not throw
-PASS tHead tests 1
-PASS tHead tests 2
-Harness: the test ran to completion.
-

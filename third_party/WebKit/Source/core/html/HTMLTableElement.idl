@@ -21,7 +21,6 @@
 // https://html.spec.whatwg.org/#the-table-element
 
 interface HTMLTableElement : HTMLElement {
-    // TODO(foolip): The caption, tHead and tFoot setters should never throw.
     [CEReactions, RaisesException=Setter] attribute HTMLTableCaptionElement? caption;
     [CEReactions] HTMLTableCaptionElement createCaption();
     [CEReactions] void deleteCaption();
