@@ -12,6 +12,7 @@ import threading
 from devil import base_error
 from devil.android import crash_handler
 from devil.android import device_errors
+from devil.android.tools import device_recovery
 from devil.utils import signal_handler
 from pylib import valgrind_tools
 from pylib.base import base_test_result
@@ -104,6 +105,10 @@ class LocalDeviceTestRun(test_run.TestRun):
         results = []
         while tries < self._env.max_tries and tests:
           logging.info('STARTING TRY #%d/%d', tries + 1, self._env.max_tries)
+          if tries + 1 == self._env.max_tries:
+            logging.info(
+                'Attempting to recover devices prior to last test attempt.')
+            self._env.parallel_devices.pMap(device_recovery.RecoverDevice, None)
           logging.info('Will run %d tests on %d devices: %s',
                        len(tests), len(self._env.devices),
                        ', '.join(str(d) for d in self._env.devices))
