@@ -90,6 +90,8 @@ enum Operation {
   WRITE_CHUNK_DONE = 24,
   CLOSE_ARCHIVE = 25,
   CLOSE_ARCHIVE_DONE = 26,
+  CANCEL_ARCHIVE = 27,
+  CANCEL_ARCHIVE_DONE = 28,
   FILE_SYSTEM_ERROR = -1,  // Errors specific to a file system.
   COMPRESSOR_ERROR = -2    // Errors specific to a compressor.
 };
@@ -146,6 +148,8 @@ pp::VarDictionary CreateWriteChunkRequest(
 pp::VarDictionary CreateAddToArchiveDoneResponse(int compressor_id);
 
 pp::VarDictionary CreateCloseArchiveDoneResponse(int compressor_id);
+
+pp::VarDictionary CreateCancelArchiveDoneResponse(int compressor_id);
 
 // Creates a file system error.
 pp::VarDictionary CreateFileSystemError(const std::string& file_system_id,

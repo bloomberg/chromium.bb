@@ -96,8 +96,12 @@ void Compressor::AddToArchiveCallback(int32_t,
 
   if (!compressor_archive_->AddToArchive(pathname, file_size, modification_time,
                                          is_directory)) {
-    message_sender_->SendCompressorError(compressor_id_,
-                                         compressor_archive_->error_message());
+    if (compressor_archive_->canceled()) {
+      message_sender_->SendCancelArchiveDone(compressor_id_);
+    } else {
+      message_sender_->SendCompressorError(
+          compressor_id_, compressor_archive_->error_message());
+    }
     return;
   }
   message_sender_->SendAddToArchiveDone(compressor_id_);
@@ -148,4 +152,12 @@ void Compressor::CloseArchiveCallback(int32_t, bool has_error) {
     return;
   }
   message_sender_->SendCloseArchiveDone(compressor_id_);
+}
+
+void Compressor::CancelArchive(const pp::VarDictionary& dictionary) {
+  compressor_archive_->CancelArchive();
+
+  // We will SendCancelArchiveDone in AddToArchiveCallback method because first
+  // we need to wait for all already running operations to finish before we can
+  // proceed with CancelArchive opertaion.
 }

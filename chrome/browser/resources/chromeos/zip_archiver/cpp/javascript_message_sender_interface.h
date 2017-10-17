@@ -65,6 +65,8 @@ class JavaScriptMessageSenderInterface {
   virtual void SendAddToArchiveDone(int compressor_id) = 0;
 
   virtual void SendCloseArchiveDone(int compressor_id) = 0;
+
+  virtual void SendCancelArchiveDone(int compressor_id) = 0;
 };
 
 #define CONSOLE_LOG(fsid, rid, msg) \

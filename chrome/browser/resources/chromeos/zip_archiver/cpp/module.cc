@@ -126,6 +126,11 @@ class JavaScriptMessageSender : public JavaScriptMessageSenderInterface {
         request::CreateCloseArchiveDoneResponse(compressor_id));
   }
 
+  virtual void SendCancelArchiveDone(int compressor_id) {
+    JavaScriptPostMessage(
+        request::CreateCancelArchiveDoneResponse(compressor_id));
+  }
+
  private:
   // Posts a message to JavaScript. This is prone to races in case of using
   // NaCl instead of PNaCl. See crbug.com/413513.
@@ -256,6 +261,11 @@ class NaclArchiveInstance : public pp::Instance {
 
       case request::CLOSE_ARCHIVE: {
         CloseArchive(var_dict, compressor_id);
+        break;
+      }
+
+      case request::CANCEL_ARCHIVE: {
+        CancelArchive(var_dict, compressor_id);
         break;
       }
 
@@ -442,6 +452,13 @@ class NaclArchiveInstance : public pp::Instance {
 
     if (iterator != compressors_.end())
       iterator->second->CloseArchive(var_dict);
+  }
+
+  void CancelArchive(const pp::VarDictionary& var_dict, int compressor_id) {
+    compressor_iterator iterator = compressors_.find(compressor_id);
+
+    if (iterator != compressors_.end())
+      iterator->second->CancelArchive(var_dict);
   }
 
   // A map that holds for every opened archive its instance. The key is the file

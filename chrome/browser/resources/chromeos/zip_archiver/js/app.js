@@ -386,9 +386,10 @@ unpacker.app = {
     // the mounting process ends.
     unpacker.app.mountProcessCounter++;
     // Create a promise to load the NaCL module.
-    if (!unpacker.app.moduleLoadedPromise)
+    if (!unpacker.app.moduleLoadedPromise) {
       unpacker.app.loadNaclModule(
           unpacker.app.DEFAULT_MODULE_NMF, unpacker.app.DEFAULT_MODULE_TYPE);
+    }
 
     return unpacker.app.moduleLoadedPromise.then(function() {
       // In case there is no volume promise for fileSystemId then we
@@ -514,11 +515,12 @@ unpacker.app = {
    * Cleans up the resources for a compressor.
    * @param {!unpacker.types.CompressorId} compressorId
    * @param {boolean} hasError
+   * @param {boolean} canceled
    */
-  cleanupCompressor: function(compressorId, hasError) {
+  cleanupCompressor: function(compressorId, hasError, canceled) {
     var compressor = unpacker.app.compressors[compressorId];
     if (!compressor) {
-      console.error('No compressor for: compressor id' + compressorId + '.');
+      console.error('No compressor for: compressor id: ' + compressorId + '.');
       return;
     }
 
@@ -534,8 +536,8 @@ unpacker.app = {
     }
 
     // Delete the archive file if it exists.
-    if (compressor.archiveFileEntry)
-      compressor.archiveFileEntry.remove();
+    if (compressor.archiveFileEntry() && (hasError || canceled))
+      compressor.archiveFileEntry().remove(function() {});
 
     delete unpacker.app.compressors[compressorId];
   },
@@ -743,11 +745,16 @@ unpacker.app = {
                   message: stringData['ZIP_ARCHIVER_PACKING_ERROR_MESSAGE']
                 },
                 function() {});
-            unpacker.app.cleanupCompressor(compressorId, true /* hasError */);
+            unpacker.app.cleanupCompressor(
+                compressorId, true /* hasError */, false /* canceled */);
           };
 
           var onSuccess = function(compressorId) {
             clearTimeout(deferredNotificationTimer);
+
+            // Hide cancel button and message
+            chrome.notifications.update(
+                compressorId.toString(), {message: '', buttons: []});
 
             // Here we clear the notification with a delay because in case when
             // content of a zip file is small it will flash the notification.
@@ -756,7 +763,15 @@ unpacker.app = {
               chrome.notifications.clear(
                   compressorId.toString(), function() {});
             }, unpacker.app.PACKING_NOTIFICATION_CLEAR_DELAY);
-            unpacker.app.cleanupCompressor(compressorId, false /* hasError */);
+            unpacker.app.cleanupCompressor(
+                compressorId, false /* hasError */, false /* canceled */);
+          };
+
+          var onCancel = function(compressorId) {
+            clearTimeout(deferredNotificationTimer);
+            chrome.notifications.clear(compressorId.toString(), function() {});
+            unpacker.app.cleanupCompressor(
+                compressorId, false /* hasError */, true /* canceled */);
           };
 
           var progressNotificationCreated = false;
@@ -781,7 +796,12 @@ unpacker.app = {
                     title: compressor.getArchiveName(),
                     message:
                         stringData['ZIP_ARCHIVER_PACKING_PROGRESS_MESSAGE'],
-                    progress: progress
+                    progress: progress,
+                    buttons: [{
+                      title:
+                          stringData['ZIP_ARCHIVER_PACKING_CANCEL_BUTTON_LABEL']
+                    }]
+
                   },
                   function() {});
               progressNotificationCreated = true;
@@ -793,12 +813,17 @@ unpacker.app = {
             progressValue = progress;
           };
 
-          compressor.compress(onSuccess, onError, onProgress);
+          compressor.compress(onSuccess, onError, onProgress, onCancel);
 
           // If notification is closed while packing is in progress, flag to
           // create/update is reset.
           chrome.notifications.onClosed.addListener(function() {
             progressNotificationCreated = false;
+          });
+          chrome.notifications.onButtonClicked.addListener(function(
+              notificationId, buttonIndex) {
+            if (notificationId === compressorId.toString())
+              compressor.sendCancelArchiveRequest();
           });
         });
   },
