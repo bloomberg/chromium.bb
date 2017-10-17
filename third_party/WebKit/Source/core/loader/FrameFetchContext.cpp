@@ -463,7 +463,7 @@ void FrameFetchContext::DispatchWillSendRequest(
                          MasterDocumentLoader(), request, redirect_response,
                          initiator_info, resource_type);
   if (IdlenessDetector* idleness_detector = GetFrame()->GetIdlenessDetector())
-    idleness_detector->OnWillSendRequest();
+    idleness_detector->OnWillSendRequest(MasterDocumentLoader()->Fetcher());
   if (GetFrame()->FrameScheduler())
     GetFrame()->FrameScheduler()->DidStartLoading(identifier);
 }

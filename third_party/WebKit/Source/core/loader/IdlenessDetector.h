@@ -14,6 +14,7 @@
 namespace blink {
 
 class LocalFrame;
+class ResourceFetcher;
 
 // IdlenessDetector observes network request count everytime a load is
 // finshed after DOMContentLoadedEventEnd is fired, and emit network almost idle
@@ -30,7 +31,9 @@ class CORE_EXPORT IdlenessDetector
 
   void Shutdown();
   void DomContentLoadedEventFired();
-  void OnWillSendRequest();
+  // TODO(lpy) Don't need to pass in fetcher once the command line of disabling
+  // PlzNavigate is removed.
+  void OnWillSendRequest(ResourceFetcher*);
   void OnDidLoadResource();
 
   DECLARE_TRACE();
