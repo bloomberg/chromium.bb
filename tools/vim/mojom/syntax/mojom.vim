@@ -6,7 +6,7 @@
 " Language: Mojom
 " To get syntax highlighting for .mojom files, add the following to your .vimrc
 " file:
-"     set runtimepath^=/path/to/src/tools/vim/mojom
+"     set runtimepath+=/path/to/src/tools/vim/mojom
 
 if exists("b:current_syntax")
   finish
