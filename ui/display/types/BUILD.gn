@@ -22,6 +22,8 @@ component("types") {
 
   deps = [
     "//base",
+    "//skia",
+    "//ui/gfx:color_space",
     "//ui/gfx:memory_buffer",
     "//ui/gfx/geometry",
   ]

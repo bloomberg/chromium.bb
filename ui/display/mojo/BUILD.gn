@@ -18,6 +18,7 @@ mojom("interfaces") {
   public_deps = [
     "//mojo/common:common_custom_types",
     "//ui/gfx/geometry/mojo",
+    "//ui/gfx/mojo",
   ]
 
   # TODO(crbug.com/714018): Convert the implementation to use OnceCallback.

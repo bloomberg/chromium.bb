@@ -151,9 +151,10 @@ int GetDrmProperty(int fd,
 }
 
 std::string GetNameForEnumValue(drmModePropertyRes* property, uint32_t value) {
-  for (int i = 0; i < property->count_enums; ++i)
+  for (int i = 0; i < property->count_enums; ++i) {
     if (property->enums[i].value == value)
       return property->enums[i].name;
+  }
 
   return std::string();
 }
@@ -196,9 +197,8 @@ bool HasColorCorrectionMatrix(int fd, drmModeCrtc* crtc) {
 
   for (uint32_t i = 0; i < crtc_props->count_props; ++i) {
     ScopedDrmPropertyPtr property(drmModeGetProperty(fd, crtc_props->props[i]));
-    if (property && !strcmp(property->name, "CTM")) {
+    if (property && !strcmp(property->name, "CTM"))
       return true;
-    }
   }
   return false;
 }
@@ -271,8 +271,9 @@ GetAvailableDisplayControllerInfos(int fd) {
     connectors.push_back(connector.get());
 
     if (connector && connector->connection == DRM_MODE_CONNECTED &&
-        connector->count_modes != 0)
+        connector->count_modes != 0) {
       available_connectors.push_back(std::move(connector));
+    }
   }
 
   base::flat_map<ScopedDrmConnectorPtr::element_type*, int> connector_crtcs;
@@ -352,6 +353,7 @@ std::unique_ptr<display::DisplaySnapshot> CreateDisplaySnapshot(
   std::string display_name;
   int64_t product_id = display::DisplaySnapshot::kInvalidProductID;
   bool has_overscan = false;
+  gfx::ColorSpace display_color_space;
 
   ScopedDrmPropertyBlobPtr edid_blob(
       GetDrmPropertyBlob(fd, info->connector(), "EDID"));
@@ -364,6 +366,8 @@ std::unique_ptr<display::DisplaySnapshot> CreateDisplaySnapshot(
     display::ParseOutputDeviceData(edid, nullptr, nullptr, &display_name,
                                    nullptr, nullptr);
     display::ParseOutputOverscanFlag(edid, &has_overscan);
+
+    display_color_space = GetColorSpaceFromEdid(edid);
   } else {
     VLOG(1) << "Failed to get EDID blob for connector "
             << info->connector()->connector_id;
@@ -390,9 +394,9 @@ std::unique_ptr<display::DisplaySnapshot> CreateDisplaySnapshot(
 
   return std::make_unique<display::DisplaySnapshot>(
       display_id, origin, physical_size, type, is_aspect_preserving_scaling,
-      has_overscan, has_color_correction_matrix, display_name, sys_path,
-      std::move(modes), edid, current_mode, native_mode, product_id,
-      maximum_cursor_size);
+      has_overscan, has_color_correction_matrix, display_color_space,
+      display_name, sys_path, std::move(modes), edid, current_mode, native_mode,
+      product_id, maximum_cursor_size);
 }
 
 // TODO(rjkroege): Remove in a subsequent CL once Mojo IPC is used everywhere.
@@ -409,6 +413,7 @@ std::vector<DisplaySnapshot_Params> CreateDisplaySnapshotParams(
     p.is_aspect_preserving_scaling = d->is_aspect_preserving_scaling();
     p.has_overscan = d->has_overscan();
     p.has_color_correction_matrix = d->has_color_correction_matrix();
+    p.color_space = d->color_space();
     p.display_name = d->display_name();
     p.sys_path = d->sys_path();
 
@@ -451,9 +456,9 @@ std::unique_ptr<display::DisplaySnapshot> CreateDisplaySnapshot(
   return std::make_unique<display::DisplaySnapshot>(
       params.display_id, params.origin, params.physical_size, params.type,
       params.is_aspect_preserving_scaling, params.has_overscan,
-      params.has_color_correction_matrix, params.display_name, params.sys_path,
-      std::move(modes), params.edid, current_mode, native_mode,
-      params.product_id, params.maximum_cursor_size);
+      params.has_color_correction_matrix, params.color_space,
+      params.display_name, params.sys_path, std::move(modes), params.edid,
+      current_mode, native_mode, params.product_id, params.maximum_cursor_size);
 }
 
 int GetFourCCFormatFromBufferFormat(gfx::BufferFormat format) {
@@ -586,6 +591,23 @@ std::vector<OverlayCheckReturn_Params> CreateParamsFromOverlayStatusList(
     params.push_back(p);
   }
   return params;
+}
+
+gfx::ColorSpace GetColorSpaceFromEdid(const std::vector<uint8_t>& edid) {
+  SkColorSpacePrimaries primaries = {0};
+  if (!display::ParseChromaticityCoordinates(edid, &primaries))
+    return gfx::ColorSpace();
+
+  SkMatrix44 color_space_as_matrix;
+  if (!primaries.toXYZD50(&color_space_as_matrix))
+    return gfx::ColorSpace();
+
+  double gamma = 0.0;
+  if (!display::ParseGammaValue(edid, &gamma))
+    return gfx::ColorSpace();
+
+  SkColorSpaceTransferFn transfer = {gamma, 1.f, 0.f, 0.f, 0.f, 0.f, 0.f};
+  return gfx::ColorSpace::CreateCustom(color_space_as_matrix, transfer);
 }
 
 }  // namespace ui

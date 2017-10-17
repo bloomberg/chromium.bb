@@ -13,6 +13,62 @@
 
 namespace ui {
 
+namespace {
+
+// HP z32x monitor.
+const unsigned char kHPz32x[] =
+    "\x00\xFF\xFF\xFF\xFF\xFF\xFF\x00\x22\xF0\x75\x32\x01\x01\x01\x01"
+    "\x1B\x1B\x01\x04\xB5\x46\x27\x78\x3A\x8D\x15\xAC\x51\x32\xB8\x26"
+    "\x0B\x50\x54\x21\x08\x00\xD1\xC0\xA9\xC0\x81\xC0\xD1\x00\xB3\x00"
+    "\x95\x00\xA9\x40\x81\x80\x4D\xD0\x00\xA0\xF0\x70\x3E\x80\x30\x20"
+    "\x35\x00\xB9\x88\x21\x00\x00\x1A\x00\x00\x00\xFD\x00\x18\x3C\x1E"
+    "\x87\x3C\x00\x0A\x20\x20\x20\x20\x20\x20\x00\x00\x00\xFC\x00\x48"
+    "\x50\x20\x5A\x33\x32\x78\x0A\x20\x20\x20\x20\x20\x00\x00\x00\xFF"
+    "\x00\x43\x4E\x43\x37\x32\x37\x30\x4D\x57\x30\x0A\x20\x20\x01\x46"
+    "\x02\x03\x18\xF1\x4B\x10\x1F\x04\x13\x03\x12\x02\x11\x01\x05\x14"
+    "\x23\x09\x07\x07\x83\x01\x00\x00\xA3\x66\x00\xA0\xF0\x70\x1F\x80"
+    "\x30\x20\x35\x00\xB9\x88\x21\x00\x00\x1A\x56\x5E\x00\xA0\xA0\xA0"
+    "\x29\x50\x30\x20\x35\x00\xB9\x88\x21\x00\x00\x1A\xEF\x51\x00\xA0"
+    "\xF0\x70\x19\x80\x30\x20\x35\x00\xB9\x88\x21\x00\x00\x1A\xE2\x68"
+    "\x00\xA0\xA0\x40\x2E\x60\x20\x30\x63\x00\xB9\x88\x21\x00\x00\x1C"
+    "\x28\x3C\x80\xA0\x70\xB0\x23\x40\x30\x20\x36\x00\xB9\x88\x21\x00"
+    "\x00\x1A\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x3E";
+
+// Chromebook Samus internal display.
+const unsigned char kSamus[] =
+    "\x00\xff\xff\xff\xff\xff\xff\x00\x30\xe4\x2e\x04\x00\x00\x00\x00"
+    "\x00\x18\x01\x04\xa5\x1b\x12\x96\x02\x4f\xd5\xa2\x59\x52\x93\x26"
+    "\x17\x50\x54\x00\x00\x00\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01"
+    "\x01\x01\x01\x01\x01\x01\x6d\x6f\x00\x9e\xa0\xa4\x31\x60\x30\x20"
+    "\x3a\x00\x10\xb5\x10\x00\x00\x19\x00\x00\x00\x00\x00\x00\x00\x00"
+    "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xfe\x00\x4c"
+    "\x47\x20\x44\x69\x73\x70\x6c\x61\x79\x0a\x20\x20\x00\x00\x00\xfe"
+    "\x00\x4c\x50\x31\x32\x39\x51\x45\x32\x2d\x53\x50\x41\x31\x00\x6c";
+
+// Chromebook Eve internal display.
+const unsigned char kEve[] =
+    "\x00\xff\xff\xff\xff\xff\xff\x00\x4d\x10\x8a\x14\x00\x00\x00\x00"
+    "\x16\x1b\x01\x04\xa5\x1a\x11\x78\x06\xde\x50\xa3\x54\x4c\x99\x26"
+    "\x0f\x50\x54\x00\x00\x00\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01"
+    "\x01\x01\x01\x01\x01\x01\xbb\x62\x60\xa0\x90\x40\x2e\x60\x30\x20"
+    "\x3a\x00\x03\xad\x10\x00\x00\x18\x00\x00\x00\x10\x00\x00\x00\x00"
+    "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x10\x00\x00"
+    "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xfc"
+    "\x00\x4c\x51\x31\x32\x33\x50\x31\x4a\x58\x33\x32\x0a\x20\x00\xb6";
+
+// Partially valid EDID: gamma information is marked as non existent.
+const unsigned char kEdidWithNoGamma[] =
+    "\x00\xFF\xFF\xFF\xFF\xFF\xFF\x00\x22\xF0\x76\x26\x01\x01\x01\x01"
+    "\x02\x12\x01\x03\x80\x34\x21\xFF\xEE\xEF\x95\xA3\x54\x4C\x9B\x26"
+    "\x0F\x50\x54\xA5\x6B\x80\x81\x40\x81\x80\x81\x99\x71\x00\xA9\x00";
+
+// Invalid EDID: too short to contain chromaticity nor gamma information.
+const unsigned char kInvalidEdid[] =
+    "\x00\xFF\xFF\xFF\xFF\xFF\xFF\x00\x22\xF0\x76\x26\x01\x01\x01\x01"
+    "\x02\x12\x01\x03\x80\x34\x21";
+
+}  // anonymous namespace
+
 bool operator==(const ui::DisplayMode_Params& a,
                 const ui::DisplayMode_Params& b) {
   return a.size == b.size && a.is_interlaced == b.is_interlaced &&
@@ -55,6 +111,7 @@ void DetailedCompare(const ui::DisplaySnapshot_Params& a,
   EXPECT_EQ(a.is_aspect_preserving_scaling, b.is_aspect_preserving_scaling);
   EXPECT_EQ(a.has_overscan, b.has_overscan);
   EXPECT_EQ(a.has_color_correction_matrix, b.has_color_correction_matrix);
+  EXPECT_EQ(a.color_space, b.color_space);
   EXPECT_EQ(a.display_name, b.display_name);
   EXPECT_EQ(a.sys_path, b.sys_path);
   EXPECT_EQ(a.modes, b.modes);
@@ -71,7 +128,7 @@ void DetailedCompare(const ui::DisplaySnapshot_Params& a,
 
 class DrmUtilTest : public testing::Test {};
 
-TEST_F(DrmUtilTest, RoundTripEquivalence) {
+TEST_F(DrmUtilTest, RoundTripDisplayMode) {
   DisplayMode_Params orig_params = MakeDisplay(3.14);
 
   auto udm = CreateDisplayModeFromParams(orig_params);
@@ -94,6 +151,7 @@ TEST_F(DrmUtilTest, RoundTripDisplaySnapshot) {
   fp.is_aspect_preserving_scaling = true;
   fp.has_overscan = true;
   fp.has_color_correction_matrix = true;
+  fp.color_space = gfx::ColorSpace::CreateREC709();
   fp.display_name = "bending glass";
   fp.sys_path = base::FilePath("/bending");
   fp.modes =
@@ -113,6 +171,7 @@ TEST_F(DrmUtilTest, RoundTripDisplaySnapshot) {
   sp.is_aspect_preserving_scaling = true;
   sp.has_overscan = true;
   sp.has_color_correction_matrix = true;
+  sp.color_space = gfx::ColorSpace::CreateExtendedSRGB();
   sp.display_name = "rigid glass";
   sp.sys_path = base::FilePath("/bending");
   sp.modes =
@@ -131,6 +190,7 @@ TEST_F(DrmUtilTest, RoundTripDisplaySnapshot) {
   ep.is_aspect_preserving_scaling = false;
   ep.has_overscan = false;
   ep.has_color_correction_matrix = false;
+  ep.color_space = gfx::ColorSpace::CreateDisplayP3D65();
   ep.display_name = "fluted glass";
   ep.sys_path = base::FilePath("/bending");
   ep.modes = std::vector<DisplayMode_Params>(
@@ -200,6 +260,59 @@ TEST_F(DrmUtilTest, OverlaySurfaceCandidate) {
 
   EXPECT_NE(map.end(), iter);
   EXPECT_EQ(42, iter->second);
+}
+
+TEST_F(DrmUtilTest, GetColorSpaceFromEdid) {
+  const std::vector<uint8_t> hpz32x_edid(kHPz32x,
+                                         kHPz32x + arraysize(kHPz32x) - 1);
+  const double hpz32x_toXYZ50_coeffs[] = {0.620465,   0.200003,  0.143752,  0.,
+                                          0.290159,   0.667573,  0.0422682, 0.,
+                                          0.00523514, 0.0673996, 0.752575,  0.};
+  SkMatrix44 hpz32x_toXYZ50_matrix;
+  hpz32x_toXYZ50_matrix.setRowMajord(hpz32x_toXYZ50_coeffs);
+  const gfx::ColorSpace hpz32x_color_space = gfx::ColorSpace::CreateCustom(
+      hpz32x_toXYZ50_matrix, SkColorSpaceTransferFn({2.2, 1, 0, 0, 0, 0, 0}));
+  EXPECT_STREQ(hpz32x_color_space.ToString().c_str(),
+               GetColorSpaceFromEdid(hpz32x_edid).ToString().c_str());
+
+  const std::vector<uint8_t> samus_edid(kSamus, kSamus + arraysize(kSamus) - 1);
+  const double samus_toXYZ50_coeffs[] = {0.41211,    0.39743,  0.15468,  0.,
+                                         0.22317,    0.674029, 0.102801, 0.,
+                                         0.00831561, 0.095953, 0.720941, 0.};
+  SkMatrix44 samus_toXYZ50_matrix;
+  samus_toXYZ50_matrix.setRowMajord(samus_toXYZ50_coeffs);
+  const gfx::ColorSpace samus_color_space = gfx::ColorSpace::CreateCustom(
+      samus_toXYZ50_matrix, SkColorSpaceTransferFn({2.5, 1, 0, 0, 0, 0, 0}));
+  EXPECT_STREQ(samus_color_space.ToString().c_str(),
+               GetColorSpaceFromEdid(samus_edid).ToString().c_str());
+
+  const std::vector<uint8_t> eve_edid(kEve, kEve + arraysize(kEve) - 1);
+  const double eve_toXYZ50_coeffs[] = {0.444601,  0.377972,  0.141646,  0.,
+                                       0.226825,  0.713295,  0.0598808, 0.,
+                                       0.0149676, 0.0972496, 0.712993,  0.};
+  SkMatrix44 eve_toXYZ50_matrix;
+  eve_toXYZ50_matrix.setRowMajord(eve_toXYZ50_coeffs);
+  const gfx::ColorSpace eve_color_space = gfx::ColorSpace::CreateCustom(
+      eve_toXYZ50_matrix, SkColorSpaceTransferFn({2.2, 1, 0, 0, 0, 0, 0}));
+  EXPECT_STREQ(eve_color_space.ToString().c_str(),
+               GetColorSpaceFromEdid(eve_edid).ToString().c_str());
+
+  const std::vector<uint8_t> no_gamma_edid(
+      kEdidWithNoGamma, kEdidWithNoGamma + arraysize(kEdidWithNoGamma) - 1);
+  const gfx::ColorSpace no_gamma_color_space =
+      GetColorSpaceFromEdid(no_gamma_edid);
+  EXPECT_FALSE(no_gamma_color_space.IsValid());
+}
+
+TEST_F(DrmUtilTest, GetInvalidColorSpaceFromEdid) {
+  const std::vector<uint8_t> empty_edid;
+  EXPECT_EQ(gfx::ColorSpace(), GetColorSpaceFromEdid(empty_edid));
+
+  const std::vector<uint8_t> invalid_edid(
+      kInvalidEdid, kInvalidEdid + arraysize(kInvalidEdid) - 1);
+  const gfx::ColorSpace invalid_color_space =
+      GetColorSpaceFromEdid(invalid_edid);
+  EXPECT_FALSE(invalid_color_space.IsValid());
 }
 
 }  // namespace ui

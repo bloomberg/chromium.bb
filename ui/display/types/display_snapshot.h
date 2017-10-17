@@ -16,6 +16,7 @@
 #include "ui/display/types/display_constants.h"
 #include "ui/display/types/display_mode.h"
 #include "ui/gfx/buffer_types.h"
+#include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -35,6 +36,7 @@ class DISPLAY_TYPES_EXPORT DisplaySnapshot {
                   bool is_aspect_preserving_scaling,
                   bool has_overscan,
                   bool has_color_correction_matrix,
+                  const gfx::ColorSpace& color_space,
                   std::string display_name,
                   const base::FilePath& sys_path,
                   DisplayModeList modes,
@@ -57,6 +59,7 @@ class DISPLAY_TYPES_EXPORT DisplaySnapshot {
   bool has_color_correction_matrix() const {
     return has_color_correction_matrix_;
   }
+  const gfx::ColorSpace& color_space() const { return color_space_; }
   const std::string& display_name() const { return display_name_; }
   const base::FilePath& sys_path() const { return sys_path_; }
   const DisplayModeList& modes() const { return modes_; }
@@ -98,6 +101,8 @@ class DISPLAY_TYPES_EXPORT DisplaySnapshot {
 
   // Whether this display has advanced color correction available.
   const bool has_color_correction_matrix_;
+
+  const gfx::ColorSpace color_space_;
 
   const std::string display_name_;
 
