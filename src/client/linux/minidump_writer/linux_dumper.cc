@@ -611,6 +611,7 @@ bool LinuxDumper::EnumerateMappings() {
             }
           }
           MappingInfo* const module = new(allocator_) MappingInfo;
+          mappings_.push_back(module);
           my_memset(module, 0, sizeof(MappingInfo));
           module->system_mapping_info.start_addr = start_addr;
           module->system_mapping_info.end_addr = end_addr;
@@ -623,29 +624,30 @@ bool LinuxDumper::EnumerateMappings() {
             if (l < sizeof(module->name))
               my_memcpy(module->name, name, l);
           }
-          // If this is the entry-point mapping, and it's not already the
-          // first one, then we need to make it be first.  This is because
-          // the minidump format assumes the first module is the one that
-          // corresponds to the main executable (as codified in
-          // processor/minidump.cc:MinidumpModuleList::GetMainModule()).
-          if (entry_point_loc &&
-              (entry_point_loc >=
-                  reinterpret_cast<void*>(module->start_addr)) &&
-              (entry_point_loc <
-                  reinterpret_cast<void*>(module->start_addr+module->size)) &&
-              !mappings_.empty()) {
-            // push the module onto the front of the list.
-            mappings_.resize(mappings_.size() + 1);
-            for (size_t idx = mappings_.size() - 1; idx > 0; idx--)
-              mappings_[idx] = mappings_[idx - 1];
-            mappings_[0] = module;
-          } else {
-            mappings_.push_back(module);
-          }
         }
       }
     }
     line_reader->PopLine(line_len);
+  }
+
+  if (entry_point_loc) {
+    for (size_t i = 0; i < mappings_.size(); ++i) {
+      MappingInfo* module = mappings_[i];
+
+      // If this module contains the entry-point, and it's not already the first
+      // one, then we need to make it be first.  This is because the minidump
+      // format assumes the first module is the one that corresponds to the main
+      // executable (as codified in
+      // processor/minidump.cc:MinidumpModuleList::GetMainModule()).
+      if ((entry_point_loc >= reinterpret_cast<void*>(module->start_addr)) &&
+          (entry_point_loc <
+           reinterpret_cast<void*>(module->start_addr + module->size))) {
+        for (size_t j = i; j > 0; j--)
+          mappings_[j] = mappings_[j - 1];
+        mappings_[0] = module;
+        break;
+      }
+    }
   }
 
   sys_close(fd);
