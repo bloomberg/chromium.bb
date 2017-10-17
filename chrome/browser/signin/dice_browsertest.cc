@@ -6,6 +6,7 @@
 #include <memory>
 #include <string>
 
+#include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -32,12 +33,13 @@
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/dice_header_helper.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/scoped_account_consistency.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/sync/base/sync_prefs.h"
+#include "components/variations/variations_switches.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
 #include "google_apis/gaia/gaia_switches.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -329,23 +331,47 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
     command_line->AppendSwitchASCII(switches::kGaiaUrl, base_url.spec());
     command_line->AppendSwitchASCII(switches::kGoogleApisUrl, base_url.spec());
     command_line->AppendSwitchASCII(switches::kLsoUrl, base_url.spec());
+
+    // Append DICE field trial.
+    std::string dice_method_name = "";
+    switch (account_consistency_method_) {
+      case signin::AccountConsistencyMethod::kDiceFixAuthErrors:
+        dice_method_name = "dice_fix_auth_errors";
+        break;
+      case signin::AccountConsistencyMethod::kDice:
+        dice_method_name = "dice";
+        break;
+      case signin::AccountConsistencyMethod::kDisabled:
+      case signin::AccountConsistencyMethod::kMirror:
+        NOTREACHED();
+        return;
+    }
+    command_line->AppendSwitchASCII(switches::kForceFieldTrials, "Trial/Group");
+    command_line->AppendSwitchASCII(
+        variations::switches::kForceFieldTrialParams,
+        "Trial.Group:method/" + dice_method_name);
+    command_line->AppendSwitchASCII(switches::kEnableFeatures,
+                                    "AccountConsistency<Trial");
   }
 
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
-    scoped_account_consistency_ =
-        base::MakeUnique<signin::ScopedAccountConsistency>(
-            account_consistency_method_);
     https_server_.StartAcceptingConnections();
+
+    // The token service should have loaded all its credentials by the time
+    // |SetUpOnMainThread| is called. Check that here as all tests depend on
+    // the token service being in a stable state.
+    ASSERT_TRUE(GetTokenService()->AreAllCredentialsLoaded());
     GetTokenService()->AddObserver(this);
+
     AccountReconcilor* reconcilor =
         AccountReconcilorFactory::GetForProfile(browser()->profile());
+
+    // Reconcilor starts as soon as the token service finishes loading its
+    // credentials. Abort the reconcilor here to make sure tests start in a
+    // stable state.
+    reconcilor->AbortReconcile();
     reconcilor->AddObserver(this);
-    // Explicitly register, because the AccountReconcilor is created before Dice
-    // is enabled.
-    reconcilor->RegisterWithCookieManagerService();
-    reconcilor->RegisterWithContentSettings();
-    reconcilor->RegisterWithTokenService();
   }
 
   void TearDownOnMainThread() override {
@@ -442,7 +468,6 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
 
   net::EmbeddedTestServer https_server_;
   AccountConsistencyMethod account_consistency_method_;
-  std::unique_ptr<signin::ScopedAccountConsistency> scoped_account_consistency_;
   bool token_requested_;
   bool refresh_token_available_;
   int token_revoked_notification_count_;
