@@ -1,0 +1,6 @@
+This is a testharness.js-based test.
+PASS Valid transition shorthand values.
+PASS Invalid transition shorthand values.
+FAIL Ambiguous shorthand values. assert_equals: expected "all" but got "initial"
+Harness: the test ran to completion.
+
