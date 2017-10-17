@@ -9,5 +9,6 @@ include_rules = [
     "+base/single_thread_task_runner.h",
     "+base/threading/thread.h",
     "+base/time/time.h",
+    "+build/build_config.h",
     "+v8/include/v8.h",
 ]

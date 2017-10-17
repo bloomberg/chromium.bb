@@ -11,6 +11,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
+#include "build/build_config.h"
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebInputEventResult.h"
 #include "public/platform/scheduler/child/child_scheduler.h"
@@ -125,6 +126,19 @@ class BLINK_PLATFORM_EXPORT RendererScheduler : public ChildScheduler {
   // the process is assumed to be foregrounded when the scheduler is
   // constructed. Must be called on the main thread.
   virtual void SetRendererBackgrounded(bool backgrounded) = 0;
+
+#if defined(OS_ANDROID)
+  // Android WebView has very strange WebView.pauseTimers/resumeTimers API.
+  // It's very old and very inconsistent. The API promises that this
+  // "pauses all layout, parsing, and JavaScript timers for all WebViews".
+  // Also CTS tests expect that loading tasks continue to run.
+  // We should change it to something consistent (e.g. stop all javascript)
+  // but changing WebView and CTS is a slow and painful process, so for
+  // the time being we're doing our best.
+  // DO NOT USE FOR ANYTHING EXCEPT ANDROID WEBVIEW API IMPLEMENTATION.
+  virtual void PauseTimersForAndroidWebView() = 0;
+  virtual void ResumeTimersForAndroidWebView() = 0;
+#endif  // defined(OS_ANDROID)
 
   // RAII handle for pausing the renderer. Renderer is paused while
   // at least one pause handle exists.

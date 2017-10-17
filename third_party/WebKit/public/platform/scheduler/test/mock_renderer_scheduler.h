@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "build/build_config.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/scheduler/renderer/renderer_scheduler.h"
@@ -45,6 +46,10 @@ class MockRendererScheduler : public RendererScheduler {
   MOCK_METHOD1(SetRendererHidden, void(bool));
   MOCK_METHOD1(SetRendererBackgrounded, void(bool));
   MOCK_METHOD0(PauseRenderer, std::unique_ptr<RendererPauseHandle>());
+#if defined(OS_ANDROID)
+  MOCK_METHOD0(PauseTimersForAndroidWebView, void());
+  MOCK_METHOD0(ResumeTimersForAndroidWebView, void());
+#endif
   MOCK_METHOD1(AddPendingNavigation, void(NavigatingFrameType));
   MOCK_METHOD1(RemovePendingNavigation, void(NavigatingFrameType));
   MOCK_METHOD0(OnNavigate, void());

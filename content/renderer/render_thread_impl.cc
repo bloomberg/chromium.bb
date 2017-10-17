@@ -678,7 +678,7 @@ void RenderThreadImpl::Init(
   blink_initialized_time_ = base::TimeTicks::Now();
 
   // In single process the single process is all there is.
-  webkit_shared_timer_suspended_handle_ = nullptr;
+  webkit_shared_timer_suspended_ = false;
   widget_count_ = 0;
   hidden_widget_count_ = 0;
   idle_notification_delay_in_ms_ = kInitialIdleHandlerDelayMs;
@@ -1358,7 +1358,7 @@ void RenderThreadImpl::IdleHandler() {
 
   // Continue the idle timer if the webkit shared timer is not suspended or
   // something is left to do.
-  bool continue_timer = !webkit_shared_timer_suspended_handle_;
+  bool continue_timer = !webkit_shared_timer_suspended_;
 
   // Schedule next invocation. When the tab is originally hidden, an invocation
   // is scheduled for kInitialIdleHandlerDelayMs in
@@ -2222,11 +2222,11 @@ void RenderThreadImpl::OnNetworkQualityChanged(
 void RenderThreadImpl::SetWebKitSharedTimersSuspended(bool suspend) {
 #if defined(OS_ANDROID)
   if (suspend) {
-    webkit_shared_timer_suspended_handle_ =
-        renderer_scheduler_->PauseRenderer();
+    renderer_scheduler_->PauseTimersForAndroidWebView();
   } else {
-    webkit_shared_timer_suspended_handle_.reset();
+    renderer_scheduler_->ResumeTimersForAndroidWebView();
   }
+  webkit_shared_timer_suspended_ = suspend;
 #else
   NOTREACHED();
 #endif
