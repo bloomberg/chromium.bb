@@ -94,6 +94,8 @@ EGLBoolean eglGetFrameTimestampsANDROIDFn(EGLDisplay dpy,
 EGLBoolean eglGetFrameTimestampSupportedANDROIDFn(EGLDisplay dpy,
                                                   EGLSurface surface,
                                                   EGLint timestamp) override;
+EGLClientBuffer eglGetNativeClientBufferANDROIDFn(
+    const struct AHardwareBuffer* ahardwarebuffer) override;
 EGLBoolean eglGetNextFrameIdANDROIDFn(EGLDisplay dpy,
                                       EGLSurface surface,
                                       EGLuint64KHR* frameId) override;

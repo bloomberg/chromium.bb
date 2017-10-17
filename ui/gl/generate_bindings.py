@@ -1972,7 +1972,7 @@ EGL_FUNCTIONS = [
 { 'return_type': 'EGLint',
   'names': ['eglGetError'],
   'arguments': 'void', },
-{ 'return_type': 'EGLBoolean',
+ { 'return_type': 'EGLBoolean',
   'versions': [{ 'name': 'eglGetFrameTimestampsANDROID',
                  'extensions': [
                    'EGL_ANDROID_get_frame_timestamps'
@@ -1986,6 +1986,10 @@ EGL_FUNCTIONS = [
                    'EGL_ANDROID_get_frame_timestamps'
                  ] }],
   'arguments': 'EGLDisplay dpy, EGLSurface surface, EGLint timestamp', },
+{ 'return_type': 'EGLClientBuffer',
+  'versions': [{ 'name': 'eglGetNativeClientBufferANDROID',
+                 'extensions': ['EGL_ANDROID_get_native_client_buffer'], }],
+  'arguments': 'const struct AHardwareBuffer* ahardwarebuffer', },
 { 'return_type': 'EGLBoolean',
   'versions': [{ 'name': 'eglGetNextFrameIdANDROID',
                  'extensions': [
