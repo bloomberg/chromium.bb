@@ -4,6 +4,7 @@
 
 #include "content/test/mock_widget_input_handler.h"
 
+#include "base/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::TimeDelta;
@@ -25,73 +26,202 @@ MockWidgetInputHandler::MockWidgetInputHandler(
 
 MockWidgetInputHandler::~MockWidgetInputHandler() {}
 
-void MockWidgetInputHandler::SetFocus(bool focused) {}
+void MockWidgetInputHandler::SetFocus(bool focused) {
+  dispatched_messages_.emplace_back(
+      std::make_unique<DispatchedMessage>("SetFocus"));
+}
 
-void MockWidgetInputHandler::MouseCaptureLost() {}
+void MockWidgetInputHandler::MouseCaptureLost() {
+  dispatched_messages_.emplace_back(
+      std::make_unique<DispatchedMessage>("MouseCaptureLost"));
+}
 
 void MockWidgetInputHandler::SetEditCommandsForNextKeyEvent(
     const std::vector<content::EditCommand>& commands) {
-  edit_commands_ = commands;
+  dispatched_messages_.emplace_back(
+      std::make_unique<DispatchedEditCommandMessage>(commands));
 }
 
-void MockWidgetInputHandler::CursorVisibilityChanged(bool visible) {}
+void MockWidgetInputHandler::CursorVisibilityChanged(bool visible) {
+  dispatched_messages_.emplace_back(
+      std::make_unique<DispatchedMessage>("CursorVisibilityChanged"));
+}
 
 void MockWidgetInputHandler::ImeSetComposition(
     const base::string16& text,
     const std::vector<ui::ImeTextSpan>& ime_text_spans,
     const gfx::Range& range,
     int32_t start,
-    int32_t end) {}
+    int32_t end) {
+  dispatched_messages_.emplace_back(std::make_unique<DispatchedIMEMessage>(
+      "SetComposition", text, ime_text_spans, range, start, end));
+}
 
 void MockWidgetInputHandler::ImeCommitText(
     const base::string16& text,
     const std::vector<ui::ImeTextSpan>& ime_text_spans,
     const gfx::Range& range,
-    int32_t relative_cursor_position) {}
+    int32_t relative_cursor_position) {
+  dispatched_messages_.emplace_back(std::make_unique<DispatchedIMEMessage>(
+      "CommitText", text, ime_text_spans, range, relative_cursor_position,
+      relative_cursor_position));
+}
 
-void MockWidgetInputHandler::ImeFinishComposingText(bool keep_selection) {}
+void MockWidgetInputHandler::ImeFinishComposingText(bool keep_selection) {
+  dispatched_messages_.emplace_back(
+      std::make_unique<DispatchedMessage>("FinishComposingText"));
+}
 
-void MockWidgetInputHandler::RequestTextInputStateUpdate() {}
+void MockWidgetInputHandler::RequestTextInputStateUpdate() {
+  dispatched_messages_.emplace_back(
+      std::make_unique<DispatchedMessage>("RequestTextInputStateUpdate"));
+}
 
 void MockWidgetInputHandler::RequestCompositionUpdates(bool immediate_request,
-                                                       bool monitor_request) {}
+                                                       bool monitor_request) {
+  dispatched_messages_.emplace_back(
+      std::make_unique<DispatchedMessage>("RequestCompositionUpdates"));
+}
 
 void MockWidgetInputHandler::DispatchEvent(
     std::unique_ptr<content::InputEvent> event,
     DispatchEventCallback callback) {
-  dispatched_events_.emplace_back(
-      DispatchedEvent(std::move(event), std::move(callback)));
+  dispatched_messages_.emplace_back(std::make_unique<DispatchedEventMessage>(
+      std::move(event), std::move(callback)));
 }
 
 void MockWidgetInputHandler::DispatchNonBlockingEvent(
     std::unique_ptr<content::InputEvent> event) {
-  dispatched_events_.emplace_back(
-      DispatchedEvent(std::move(event), DispatchEventCallback()));
+  dispatched_messages_.emplace_back(std::make_unique<DispatchedEventMessage>(
+      std::move(event), DispatchEventCallback()));
 }
 
-std::vector<MockWidgetInputHandler::DispatchedEvent>
-MockWidgetInputHandler::GetAndResetDispatchedEvents() {
-  std::vector<DispatchedEvent> dispatched_events;
-  dispatched_events_.swap(dispatched_events);
+MockWidgetInputHandler::MessageVector
+MockWidgetInputHandler::GetAndResetDispatchedMessages() {
+  MessageVector dispatched_events;
+  dispatched_messages_.swap(dispatched_events);
   return dispatched_events;
 }
 
-std::vector<content::EditCommand>
-MockWidgetInputHandler::GetAndResetEditCommands() {
-  std::vector<content::EditCommand> edit_commands;
-  edit_commands_.swap(edit_commands);
-  return edit_commands;
+MockWidgetInputHandler::DispatchedMessage::DispatchedMessage(
+    const std::string& name)
+    : name_(name) {}
+
+MockWidgetInputHandler::DispatchedMessage::~DispatchedMessage() {}
+
+MockWidgetInputHandler::DispatchedEditCommandMessage*
+MockWidgetInputHandler::DispatchedMessage::ToEditCommand() {
+  return nullptr;
+}
+MockWidgetInputHandler::DispatchedEventMessage*
+MockWidgetInputHandler::DispatchedMessage::ToEvent() {
+  return nullptr;
+}
+MockWidgetInputHandler::DispatchedIMEMessage*
+MockWidgetInputHandler::DispatchedMessage::ToIME() {
+  return nullptr;
 }
 
-MockWidgetInputHandler::DispatchedEvent::DispatchedEvent(
-    DispatchedEvent&& other)
-    : event_(std::move(other.event_)), callback_(std::move(other.callback_)) {}
+MockWidgetInputHandler::DispatchedIMEMessage::DispatchedIMEMessage(
+    const std::string& name,
+    const base::string16& text,
+    const std::vector<ui::ImeTextSpan>& text_spans,
+    const gfx::Range& range,
+    int32_t start,
+    int32_t end)
+    : DispatchedMessage(name),
+      text_(text),
+      text_spans_(text_spans),
+      range_(range),
+      start_(start),
+      end_(end) {}
 
-MockWidgetInputHandler::DispatchedEvent::DispatchedEvent(
+MockWidgetInputHandler::DispatchedIMEMessage::~DispatchedIMEMessage() {}
+
+MockWidgetInputHandler::DispatchedIMEMessage*
+MockWidgetInputHandler::DispatchedIMEMessage::ToIME() {
+  return this;
+}
+
+bool MockWidgetInputHandler::DispatchedIMEMessage::Matches(
+    const base::string16& text,
+    const std::vector<ui::ImeTextSpan>& ime_text_spans,
+    const gfx::Range& range,
+    int32_t start,
+    int32_t end) const {
+  return text_ == text && text_spans_ == ime_text_spans && range_ == range &&
+         start_ == start && end_ == end;
+}
+
+MockWidgetInputHandler::DispatchedEditCommandMessage::
+    DispatchedEditCommandMessage(
+        const std::vector<content::EditCommand>& commands)
+    : DispatchedMessage("SetEditComamnds"), commands_(commands) {}
+
+MockWidgetInputHandler::DispatchedEditCommandMessage::
+    ~DispatchedEditCommandMessage() {}
+MockWidgetInputHandler::DispatchedEditCommandMessage*
+MockWidgetInputHandler::DispatchedEditCommandMessage::ToEditCommand() {
+  return this;
+}
+
+const std::vector<content::EditCommand>&
+MockWidgetInputHandler::DispatchedEditCommandMessage::Commands() const {
+  return commands_;
+}
+
+MockWidgetInputHandler::DispatchedEventMessage::DispatchedEventMessage(
     std::unique_ptr<content::InputEvent> event,
     DispatchEventCallback callback)
-    : event_(std::move(event)), callback_(std::move(callback)) {}
+    : DispatchedMessage(
+          blink::WebInputEvent::GetName(event->web_event->GetType())),
+      event_(std::move(event)),
+      callback_(std::move(callback)) {}
 
-MockWidgetInputHandler::DispatchedEvent::~DispatchedEvent() {}
+MockWidgetInputHandler::DispatchedEventMessage::~DispatchedEventMessage() {
+  if (callback_) {
+    std::move(callback_).Run(InputEventAckSource::UNKNOWN, ui::LatencyInfo(),
+                             INPUT_EVENT_ACK_STATE_NOT_CONSUMED, base::nullopt,
+                             base::nullopt);
+    base::RunLoop().RunUntilIdle();
+  }
+}
+
+MockWidgetInputHandler::DispatchedEventMessage*
+MockWidgetInputHandler::DispatchedEventMessage::ToEvent() {
+  return this;
+}
+
+void MockWidgetInputHandler::DispatchedEventMessage::CallCallback(
+    InputEventAckState state) {
+  if (callback_) {
+    std::move(callback_).Run(InputEventAckSource::MAIN_THREAD,
+                             ui::LatencyInfo(), state, base::nullopt,
+                             base::nullopt);
+    base::RunLoop().RunUntilIdle();
+  }
+}
+
+void MockWidgetInputHandler::DispatchedEventMessage::CallCallback(
+    InputEventAckSource source,
+    const ui::LatencyInfo& latency_info,
+    InputEventAckState state,
+    const base::Optional<ui::DidOverscrollParams>& overscroll,
+    const base::Optional<cc::TouchAction>& touch_action) {
+  if (callback_) {
+    std::move(callback_).Run(source, latency_info, state, overscroll,
+                             touch_action);
+    base::RunLoop().RunUntilIdle();
+  }
+}
+
+bool MockWidgetInputHandler::DispatchedEventMessage::HasCallback() const {
+  return !!callback_;
+}
+
+const content::InputEvent*
+MockWidgetInputHandler::DispatchedEventMessage::Event() const {
+  return event_.get();
+}
 
 }  // namespace content
