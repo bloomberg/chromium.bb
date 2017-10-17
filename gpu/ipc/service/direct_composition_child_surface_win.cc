@@ -99,11 +99,11 @@ bool DirectCompositionChildSurfaceWin::InitializeSurface() {
   } else {
     DXGI_ALPHA_MODE alpha_mode =
         has_alpha_ ? DXGI_ALPHA_MODE_PREMULTIPLIED : DXGI_ALPHA_MODE_IGNORE;
-    base::win::ScopedComPtr<IDXGIDevice> dxgi_device;
+    Microsoft::WRL::ComPtr<IDXGIDevice> dxgi_device;
     d3d11_device_.CopyTo(dxgi_device.GetAddressOf());
-    base::win::ScopedComPtr<IDXGIAdapter> dxgi_adapter;
+    Microsoft::WRL::ComPtr<IDXGIAdapter> dxgi_adapter;
     dxgi_device->GetAdapter(dxgi_adapter.GetAddressOf());
-    base::win::ScopedComPtr<IDXGIFactory2> dxgi_factory;
+    Microsoft::WRL::ComPtr<IDXGIFactory2> dxgi_factory;
     dxgi_adapter->GetParent(IID_PPV_ARGS(dxgi_factory.GetAddressOf()));
 
     DXGI_SWAP_CHAIN_DESC1 desc = {};
@@ -148,7 +148,7 @@ void DirectCompositionChildSurfaceWin::ReleaseDrawTexture(bool will_discard) {
         // Wait for the GPU to finish executing its commands before
         // committing the DirectComposition tree, or else the swapchain
         // may flicker black when it's first presented.
-        base::win::ScopedComPtr<IDXGIDevice2> dxgi_device2;
+        Microsoft::WRL::ComPtr<IDXGIDevice2> dxgi_device2;
         HRESULT hr = d3d11_device_.CopyTo(dxgi_device2.GetAddressOf());
         DCHECK(SUCCEEDED(hr));
         base::WaitableEvent event(

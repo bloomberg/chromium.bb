@@ -11,6 +11,7 @@
 #include <windows.h>
 #include <objbase.h>
 #include <shlobj.h>
+#include <wrl/client.h>
 #endif
 
 #include <stdint.h>
@@ -141,7 +142,6 @@
 
 #if defined(OS_WIN)
 #include "base/win/scoped_com_initializer.h"
-#include "base/win/scoped_comptr.h"
 #endif
 
 #if BUILDFLAG(ENABLE_REPORTING)
@@ -1445,10 +1445,10 @@ TEST_F(URLRequestTest, ResolveShortcutTest) {
 
   // Temporarily create a shortcut for test
   {
-    base::win::ScopedComPtr<IShellLink> shell;
+    Microsoft::WRL::ComPtr<IShellLink> shell;
     ASSERT_TRUE(SUCCEEDED(::CoCreateInstance(
         CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&shell))));
-    base::win::ScopedComPtr<IPersistFile> persist;
+    Microsoft::WRL::ComPtr<IPersistFile> persist;
     ASSERT_TRUE(SUCCEEDED(shell.CopyTo(persist.GetAddressOf())));
     EXPECT_TRUE(SUCCEEDED(shell->SetPath(app_path.value().c_str())));
     EXPECT_TRUE(SUCCEEDED(shell->SetDescription(L"ResolveShortcutTest")));
