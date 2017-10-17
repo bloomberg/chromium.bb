@@ -48,6 +48,8 @@ class AgentRegistry : public mojom::AgentRegistry {
     bool supports_explicit_clock_sync() const {
       return supports_explicit_clock_sync_;
     }
+    bool is_tracing() const { return is_tracing_; }
+    void set_is_tracing(bool is_tracing) { is_tracing_ = is_tracing; }
 
    private:
     void OnConnectionError();
@@ -59,6 +61,7 @@ class AgentRegistry : public mojom::AgentRegistry {
     const mojom::TraceDataType type_;
     const bool supports_explicit_clock_sync_;
     std::map<const void*, base::OnceClosure> closures_;
+    bool is_tracing_;
 
     DISALLOW_COPY_AND_ASSIGN(AgentEntry);
   };
