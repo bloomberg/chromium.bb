@@ -2285,10 +2285,6 @@ static void read_tile_info(AV1Decoder *const pbi,
     }
 #endif  // CONFIG_EXT_PARTITION
 
-#if CONFIG_LOOPFILTERING_ACROSS_TILES
-    cm->loop_filter_across_tiles_enabled = aom_rb_read_bit(rb);
-#endif  // CONFIG_LOOPFILTERING_ACROSS_TILES
-
     cm->tile_width <<= cm->mib_size_log2;
     cm->tile_height <<= cm->mib_size_log2;
 
@@ -2302,15 +2298,21 @@ static void read_tile_info(AV1Decoder *const pbi,
     cm->tile_rows = 1;
     while (cm->tile_rows * cm->tile_height < cm->mi_rows) ++cm->tile_rows;
 
+#if CONFIG_DEPENDENT_HORZTILES
+    cm->dependent_horz_tiles = 0;
+#endif
+#if CONFIG_LOOPFILTERING_ACROSS_TILES
+    if (cm->tile_cols * cm->tile_rows > 1)
+      cm->loop_filter_across_tiles_enabled = aom_rb_read_bit(rb);
+    else
+      cm->loop_filter_across_tiles_enabled = 1;
+#endif  // CONFIG_LOOPFILTERING_ACROSS_TILES
+
     if (cm->tile_cols * cm->tile_rows > 1) {
       // Read the number of bytes used to store tile size
       pbi->tile_col_size_bytes = aom_rb_read_literal(rb, 2) + 1;
       pbi->tile_size_bytes = aom_rb_read_literal(rb, 2) + 1;
     }
-
-#if CONFIG_DEPENDENT_HORZTILES
-    cm->dependent_horz_tiles = 0;
-#endif
   } else {
 #endif  // CONFIG_EXT_TILE
 
@@ -2346,7 +2348,10 @@ static void read_tile_info(AV1Decoder *const pbi,
       cm->dependent_horz_tiles = 0;
 #endif
 #if CONFIG_LOOPFILTERING_ACROSS_TILES
-    cm->loop_filter_across_tiles_enabled = aom_rb_read_bit(rb);
+    if (cm->tile_cols * cm->tile_rows > 1)
+      cm->loop_filter_across_tiles_enabled = aom_rb_read_bit(rb);
+    else
+      cm->loop_filter_across_tiles_enabled = 1;
 #endif  // CONFIG_LOOPFILTERING_ACROSS_TILES
 
     // tile size magnitude
