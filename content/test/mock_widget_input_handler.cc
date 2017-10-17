@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/input/mock_widget_input_handler.h"
+#include "content/test/mock_widget_input_handler.h"
 
-#include "content/browser/renderer_host/input/input_router.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::TimeDelta;
@@ -17,7 +16,12 @@ using blink::WebTouchPoint;
 
 namespace content {
 
-MockWidgetInputHandler::MockWidgetInputHandler() {}
+MockWidgetInputHandler::MockWidgetInputHandler() : binding_(this) {}
+
+MockWidgetInputHandler::MockWidgetInputHandler(
+    mojom::WidgetInputHandlerRequest request,
+    mojom::WidgetInputHandlerHostPtr host)
+    : binding_(this, std::move(request)), host_(std::move(host)) {}
 
 MockWidgetInputHandler::~MockWidgetInputHandler() {}
 

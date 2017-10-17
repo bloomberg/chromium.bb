@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_INPUT_MOCK_WIDGET_INPUT_HANDLER_H_
-#define CONTENT_BROWSER_RENDERER_HOST_INPUT_MOCK_WIDGET_INPUT_HANDLER_H_
+#ifndef CONTENT_TEST_MOCK_WIDGET_INPUT_HANDLER_H_
+#define CONTENT_TEST_MOCK_WIDGET_INPUT_HANDLER_H_
 
 #include <stddef.h>
 
@@ -11,12 +11,16 @@
 #include <utility>
 
 #include "content/common/input/input_handler.mojom.h"
+#include "mojo/public/cpp/bindings/binding.h"
 
 namespace content {
 
 class MockWidgetInputHandler : public mojom::WidgetInputHandler {
  public:
   MockWidgetInputHandler();
+  MockWidgetInputHandler(mojom::WidgetInputHandlerRequest request,
+                         mojom::WidgetInputHandlerHostPtr host);
+
   ~MockWidgetInputHandler() override;
 
   class DispatchedEvent {
@@ -59,10 +63,14 @@ class MockWidgetInputHandler : public mojom::WidgetInputHandler {
   std::vector<content::EditCommand> GetAndResetEditCommands();
 
  private:
+  mojo::Binding<mojom::WidgetInputHandler> binding_;
+  mojom::WidgetInputHandlerHostPtr host_ = nullptr;
   std::vector<DispatchedEvent> dispatched_events_;
   std::vector<content::EditCommand> edit_commands_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockWidgetInputHandler);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_INPUT_MOCK_INPUT_ACK_HANDLER_H_
+#endif  // CONTENT_TEST_MOCK_INPUT_ACK_HANDLER_H_
