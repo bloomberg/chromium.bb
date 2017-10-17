@@ -31,8 +31,8 @@ namespace {
 const char kFeaturePolicyBlockedMessage[] =
     "Access to the feature \"vr\" is disallowed by feature policy.";
 
-const char kIframeBlockedOnUserGestureMessage[] =
-    "Access to the method is blocked on a user gesture in cross-origin "
+const char kGetVRDisplaysCrossOriginBlockedMessage[] =
+    "Access to navigator.getVRDisplays requires a user gesture in cross-origin "
     "embedded frames.";
 
 const char kNotAssociatedWithDocumentMessage[] =
@@ -128,8 +128,9 @@ ScriptPromise NavigatorVR::getVRDisplays(ScriptState* script_state) {
     // cross-origin iframes. To be backward compatible, we changed to require a
     // user gesture for cross-origin iframes.
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(kSecurityError,
-                                           kIframeBlockedOnUserGestureMessage));
+        script_state,
+        DOMException::Create(kSecurityError,
+                             kGetVRDisplaysCrossOriginBlockedMessage));
   }
 
   // Similar to the restriciton above, we're going to block developers from
