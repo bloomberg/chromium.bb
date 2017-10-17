@@ -161,7 +161,7 @@ QuickViewController.prototype.init_ = function(quickView) {
   quickView.onOpenInNewButtonTap = this.onOpenInNewButtonTap_.bind(this);
 
   var toolTip = this.quickView_.$$('files-tooltip');
-  var elems = this.quickView_.$.buttons.querySelectorAll('[has-tooltip]');
+  var elems = this.quickView_.$.toolbar.querySelectorAll('[has-tooltip]');
   toolTip.addTargets(elems);
 };
 

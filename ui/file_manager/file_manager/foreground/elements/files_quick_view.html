@@ -17,8 +17,13 @@
   <template>
     <dialog id="dialog">
       <div id="toolbar">
+        <div class="buttons-group">
+           <paper-button on-tap="close" i18n-values="aria-label:QUICK_VIEW_CLOSE_BUTTON_LABEL" tabindex="0" has-tooltip>
+             <iron-icon icon="files:arrow-back"></iron-icon>
+           </paper-button>
+        </div>
         <div id="file-path">[[filePath]]</div>
-        <div id="buttons">
+        <div class="buttons-group">
            <paper-button id="open-button" on-tap="onOpenInNewButtonTap" hidden$="[[!hasTask]]" i18n-values="aria-label:QUICK_VIEW_OPEN_IN_NEW_BUTTON_LABEL" tabindex="0" has-tooltip>
              <iron-icon icon="files:open-in-new"></iron-icon>
            </paper-button>
