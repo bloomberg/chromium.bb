@@ -99,10 +99,8 @@ size_t FindPreferredApp(
 }  // namespace
 
 ArcNavigationThrottle::ArcNavigationThrottle(
-    content::NavigationHandle* navigation_handle,
-    const ShowIntentPickerCallback& show_intent_picker_cb)
+    content::NavigationHandle* navigation_handle)
     : content::NavigationThrottle(navigation_handle),
-      show_intent_picker_callback_(show_intent_picker_cb),
       ui_displayed_(false),
       weak_ptr_factory_(this) {}
 
@@ -253,20 +251,24 @@ void ArcNavigationThrottle::OnAppCandidatesReceived(
 
     if (!instance) {
       close_reason = CloseReason::ERROR;
-    } else if (!ArcIntentHelperBridge::IsIntentHelperPackage(package_name)) {
-      Browser* browser = chrome::FindBrowserWithWebContents(
-          navigation_handle()->GetWebContents());
+    } else {
+      if (!ArcIntentHelperBridge::IsIntentHelperPackage(package_name))
+        instance->HandleUrl(url.spec(), package_name);
+
+      // Make intent picker's icon visible if there are installed apps that can
+      // handle the current URL, this enables the user to still access ARC's
+      // apps even if they marked an app or Chrome as preferred before.
+      Browser* browser =
+          chrome::FindBrowserWithWebContents(handle->GetWebContents());
       if (browser)
         chrome::SetIntentPickerViewVisibility(browser, true);
-
-      instance->HandleUrl(url.spec(), package_name);
     }
 
     Platform platform = GetDestinationPlatform(package_name, close_reason);
     RecordUma(close_reason, platform);
   } else {
     auto* intent_helper_bridge = ArcIntentHelperBridge::GetForBrowserContext(
-        navigation_handle()->GetWebContents()->GetBrowserContext());
+        handle->GetWebContents()->GetBrowserContext());
     if (!intent_helper_bridge) {
       LOG(ERROR) << "Cannot get an instance of ArcIntentHelperBridge";
       return;
@@ -276,10 +278,10 @@ void ArcNavigationThrottle::OnAppCandidatesReceived(
       activities.emplace_back(handler->package_name, handler->activity_name);
 
     intent_helper_bridge->GetActivityIcons(
-        activities, base::Bind(&ArcNavigationThrottle::AsyncOnAppIconsReceived,
-                               chrome::FindBrowserWithWebContents(
-                                   navigation_handle()->GetWebContents()),
-                               base::Passed(&handlers), url));
+        activities,
+        base::Bind(&ArcNavigationThrottle::AsyncOnAppIconsReceived,
+                   chrome::FindBrowserWithWebContents(handle->GetWebContents()),
+                   base::Passed(&handlers), url));
   }
 }
 

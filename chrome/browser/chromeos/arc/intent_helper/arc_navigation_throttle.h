@@ -22,13 +22,7 @@ class Browser;
 
 namespace content {
 class NavigationHandle;
-class WebContents;
 }  // namespace content
-
-namespace views {
-class View;
-class Widget;
-}  // namespace views
 
 namespace arc {
 
@@ -84,17 +78,11 @@ class ArcNavigationThrottle : public content::NavigationThrottle {
     std::string activity_name;
   };
 
-  using ShowIntentPickerCallback = base::Callback<views::Widget*(
-      views::View* anchor_view,
-      content::WebContents* web_contents,
-      const std::vector<AppInfo>& app_info,
-      const base::Callback<void(const std::string&, CloseReason)>& cb)>;
   using QueryAndDisplayArcAppsCallback = base::Callback<void(
       const Browser* browser,
       const std::vector<AppInfo>& app_info,
       const base::Callback<void(const std::string&, CloseReason)>& cb)>;
-  ArcNavigationThrottle(content::NavigationHandle* navigation_handle,
-                        const ShowIntentPickerCallback& show_intent_picker_cb);
+  explicit ArcNavigationThrottle(content::NavigationHandle* navigation_handle);
   ~ArcNavigationThrottle() override;
 
   static bool ShouldOverrideUrlLoadingForTesting(const GURL& previous_url,
@@ -166,11 +154,6 @@ class ArcNavigationThrottle : public content::NavigationThrottle {
       const GURL& url,
       const std::string& package_name,
       arc::ArcNavigationThrottle::CloseReason close_reason);
-
-  // A callback object that allow us to display an IntentPicker when Run() is
-  // executed, it also allow us to report the user's selection back to
-  // OnIntentPickerClosed().
-  ShowIntentPickerCallback show_intent_picker_callback_;
 
   // Keeps a referrence to the starting GURL.
   GURL starting_gurl_;
