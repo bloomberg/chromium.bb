@@ -899,6 +899,35 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReadMessageAndCheckPipe, MessageTest, h) {
 
 #endif  // !defined(OS_IOS)
 
+TEST_F(MessageTest, PartiallySerializedMessagesDontLeakHandles) {
+  MojoMessageHandle message;
+  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateMessage(&message));
+
+  MojoHandle handles[2];
+  CreateMessagePipe(&handles[0], &handles[1]);
+
+  const std::string kTestMessagePart1("hello i am message.");
+  void* buffer;
+  uint32_t buffer_size;
+  EXPECT_EQ(MOJO_RESULT_OK,
+            MojoAttachSerializedMessageBuffer(
+                message, static_cast<uint32_t>(kTestMessagePart1.size()),
+                nullptr, 0, &buffer, &buffer_size));
+  ASSERT_GE(buffer_size, static_cast<uint32_t>(kTestMessagePart1.size()));
+  memcpy(buffer, kTestMessagePart1.data(), kTestMessagePart1.size());
+
+  EXPECT_EQ(MOJO_RESULT_OK,
+            MojoExtendSerializedMessagePayload(
+                message, static_cast<uint32_t>(kTestMessagePart1.size()),
+                handles, 1, &buffer, &buffer_size));
+
+  // This must close |handles[0]|, which we can detect by observing the
+  // signal state of |handles[1].
+  EXPECT_EQ(MOJO_RESULT_OK, MojoDestroyMessage(message));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            WaitForSignals(handles[1], MOJO_HANDLE_SIGNAL_PEER_CLOSED));
+}
+
 }  // namespace
 }  // namespace edk
 }  // namespace mojo
