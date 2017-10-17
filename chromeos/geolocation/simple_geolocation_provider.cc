@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <iterator>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
@@ -40,8 +41,8 @@ void SimpleGeolocationProvider::RequestGeolocation(
     SimpleGeolocationRequest::ResponseCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  auto cell_vector = base::MakeUnique<chromeos::CellTowerVector>();
-  auto wifi_vector = base::MakeUnique<chromeos::WifiAccessPointVector>();
+  auto cell_vector = std::make_unique<chromeos::CellTowerVector>();
+  auto wifi_vector = std::make_unique<chromeos::WifiAccessPointVector>();
 
   // Mostly necessary for testing and rare cases where NetworkHandler is not
   // initialized: in that case, calls to Get() will fail.

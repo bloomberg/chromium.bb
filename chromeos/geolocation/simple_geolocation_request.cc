@@ -7,12 +7,12 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_number_conversions.h"
@@ -306,7 +306,7 @@ void ReportUmaHasCellTowers(bool value) {
 // Helpers to reformat data into dictionaries for conversion to request JSON
 std::unique_ptr<base::DictionaryValue> CreateAccessPointDictionary(
     WifiAccessPoint access_point) {
-  auto access_point_dictionary = base::MakeUnique<base::DictionaryValue>();
+  auto access_point_dictionary = std::make_unique<base::DictionaryValue>();
 
   access_point_dictionary->SetKey(kMacAddress,
                                   base::Value(access_point.mac_address));
@@ -328,7 +328,7 @@ std::unique_ptr<base::DictionaryValue> CreateAccessPointDictionary(
 
 std::unique_ptr<base::DictionaryValue> CreateCellTowerDictionary(
     CellTower cell_tower) {
-  auto cell_tower_dictionary = base::MakeUnique<base::DictionaryValue>();
+  auto cell_tower_dictionary = std::make_unique<base::DictionaryValue>();
   cell_tower_dictionary->SetKey(kCellId, base::Value(cell_tower.ci));
   cell_tower_dictionary->SetKey(kLocationAreaCode, base::Value(cell_tower.lac));
   cell_tower_dictionary->SetKey(kMobileCountryCode,
@@ -391,7 +391,7 @@ std::string SimpleGeolocationRequest::FormatRequestBody() const {
   request->SetKey(kConsiderIp, base::Value(true));
 
   if (wifi_data_) {
-    auto wifi_access_points = base::MakeUnique<base::ListValue>();
+    auto wifi_access_points = std::make_unique<base::ListValue>();
     for (const WifiAccessPoint& access_point : *wifi_data_) {
       wifi_access_points->Append(CreateAccessPointDictionary(access_point));
     }
@@ -400,7 +400,7 @@ std::string SimpleGeolocationRequest::FormatRequestBody() const {
   }
 
   if (cell_tower_data_) {
-    auto cell_towers = base::MakeUnique<base::ListValue>();
+    auto cell_towers = std::make_unique<base::ListValue>();
     for (const CellTower& cell_tower : *cell_tower_data_) {
       cell_towers->Append(CreateCellTowerDictionary(cell_tower));
     }
