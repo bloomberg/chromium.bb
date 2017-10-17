@@ -1456,17 +1456,12 @@
                   '|components/proximity_auth/',
     },
     'textinput': {
-      'filepath': 'content/browser/renderer_host/gtk_im'\
-                  '|content/browser/renderer_host/gtk_key'\
+      'filepath': 'chrome/browser/ui/input_method'\
                   '|content/browser/renderer_host/render_widget_host_view'\
                   '|content/browser/renderer_host/text_input'\
                   '|ui/base/ime/'\
-                  '|ui/base/gtk/event'\
-                  '|ui/base/gtk/gtk_im'\
-                  '|ui/base/keycodes/'\
-                  '|ui/base/win/ime'\
                   '|ui/views/controls/textfield/'\
-                  '|ui/views/ime/'
+                  '|ui/wm/core/ime'
     },
     'textinput_chromeos': {
       'filepath': 'chrome/browser/chromeos/input_method/'\
@@ -2246,9 +2241,11 @@
     'textinput': ['nona+watch@chromium.org',
                   'shuchen+watch@chromium.org',
                   'suzhe@chromium.org',
+                  'yhanada+watch@chromium.org',
                   'yusukes+watch@chromium.org'],
     'textinput_chromeos': ['nona+watch@chromium.org',
                            'shuchen+watch@chromium.org',
+                           'yhanada+watch@chromium.org',
                            'yusukes+watch@chromium.org'],
     'timers': ['chirantan+watch@chromium.org'],
     'tools_win_chromeexts': ['robliao+watch@chromium.org'],
