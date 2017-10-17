@@ -713,7 +713,8 @@
     swipe_left_4,
     swipe_up_4,
     swipe_right_4,
-    swipe_down_4
+    swipe_down_4,
+    tap_2
   };
 
   enum AXTextAffinity {

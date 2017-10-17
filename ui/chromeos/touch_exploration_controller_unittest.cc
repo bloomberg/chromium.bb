@@ -1741,8 +1741,8 @@ TEST_F(TouchExplorationTest, TwoFingerTap) {
   EXPECT_TRUE(IsInTwoFingerTapState());
   generator_->ReleaseTouchId(2);
 
-  // Two key events should have been sent to silence the feedback.
-  EXPECT_EQ(2U, captured_events.size());
+  EXPECT_EQ(0U, captured_events.size());
+  ASSERT_EQ(ui::AX_GESTURE_TAP_2, delegate_.GetLastGesture());
 }
 
 // If the fingers are not released before the tap timer runs out, a control

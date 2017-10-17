@@ -784,13 +784,7 @@ ui::EventRewriteStatus TouchExplorationController::InTwoFingerTap(
     return ui::EVENT_REWRITE_DISCARD;
 
   if (type == ui::ET_TOUCH_RELEASED) {
-    // In ChromeVox, pressing control will stop ChromeVox from speaking.
-    ui::KeyEvent control_down(
-        ui::ET_KEY_PRESSED, ui::VKEY_CONTROL, ui::EF_CONTROL_DOWN);
-    ui::KeyEvent control_up(ui::ET_KEY_RELEASED, ui::VKEY_CONTROL, ui::EF_NONE);
-
-    DispatchEvent(&control_down);
-    DispatchEvent(&control_up);
+    delegate_->HandleAccessibilityGesture(ui::AX_GESTURE_TAP_2);
     SET_STATE(NO_FINGERS_DOWN);
     return ui::EVENT_REWRITE_DISCARD;
   }
