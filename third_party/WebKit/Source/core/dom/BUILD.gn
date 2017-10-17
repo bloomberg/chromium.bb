@@ -361,4 +361,9 @@ blink_core_sources("dom") {
   public_deps = [
     "//third_party/WebKit/common:mojo_bindings_blink",
   ]
+
+  deps = [
+    "//services/metrics/public/cpp:metrics_cpp",
+    "//services/metrics/public/interfaces",
+  ]
 }

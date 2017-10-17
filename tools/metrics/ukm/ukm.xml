@@ -514,6 +514,64 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="Media.Autoplay.Attempt">
+  <owner>mlamouri@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
+  <summary>
+    Event recorded when there is an attempt to autoplay (ie. no user gesture).
+    It will be recorded regardless of the result of this attempt.
+  </summary>
+  <metric name="AudioTrack">
+    <summary>
+      Whether the element had an audio track when autoplay was attempted.
+    </summary>
+  </metric>
+  <metric name="Muted">
+    <summary>
+      Whether the element was muted when autoplay was attempted.
+    </summary>
+  </metric>
+  <metric name="Source">
+    <summary>
+      Source of the autoplay attempt: 0 for attribute; 1 for play().
+    </summary>
+  </metric>
+  <metric name="UserGestureRequirement">
+    <summary>
+      Whether a user gesture was required per autoplay rules at the time of
+      attempt. By definition there is no user gesture on the stack when the
+      attempt is registered.
+    </summary>
+  </metric>
+  <metric name="VideoTrack">
+    <summary>
+      Whether the element had a video track when autoplay was attempted.
+    </summary>
+  </metric>
+</event>
+
+<event name="Media.Autoplay.Muted.UnmuteAction">
+  <owner>mlamouri@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
+  <summary>
+    Event recorded when there is an attempt to unmute an media that was
+    autoplaying following the rules of autoplay muted.
+  </summary>
+  <metric name="Result">
+    <summary>
+      0 means that the unmute failed because it happened without a user gesture.
+      1 means that it succeeded because it had a user gesture.
+    </summary>
+  </metric>
+  <metric name="Source">
+    <summary>
+      Similar to &quot;Source&quot; in &quot;Media.Autoplay.Attempt&quot; with
+      the addition of a value for both sources being used: 0 for attribute; 1
+      for play(); 2 for both attempted.
+    </summary>
+  </metric>
+</event>
+
 <event name="Media.Engagement.SessionFinished">
   <owner>beccahughes@chromium.org</owner>
   <owner>media-dev@chromium.org</owner>

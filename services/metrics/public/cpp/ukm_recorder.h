@@ -26,6 +26,10 @@ class SubresourceFilterMetricsObserver;
 class UkmPageLoadMetricsObserver;
 class LocalNetworkRequestsPageLoadMetricsObserver;
 
+namespace blink {
+class AutoplayUmaHelper;
+}
+
 namespace content {
 class RenderWidgetHostLatencyTracker;
 }  // namespace content
@@ -76,6 +80,7 @@ class METRICS_EXPORT UkmRecorder {
   virtual void UpdateSourceURL(SourceId source_id, const GURL& url) = 0;
 
  private:
+  friend blink::AutoplayUmaHelper;
   friend ContextualSearchRankerLoggerImpl;
   friend PluginInfoMessageFilter;
   friend UkmPageLoadMetricsObserver;

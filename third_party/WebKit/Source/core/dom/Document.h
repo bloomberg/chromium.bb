@@ -75,11 +75,15 @@
 #include "public/platform/WebFocusType.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
 
+namespace ukm {
+class UkmRecorder;
+}  // namespace ukm
+
 namespace blink {
 
 namespace mojom {
 enum class EngagementLevel : int32_t;
-}
+}  // namespace mojom
 
 class AnimationClock;
 class AXObjectCache;
@@ -1385,6 +1389,9 @@ class CORE_EXPORT Document : public ContainerNode,
   void captureEvents() {}
   void releaseEvents() {}
 
+  ukm::UkmRecorder* UkmRecorder();
+  int64_t UkmSourceID() const;
+
  protected:
   Document(const DocumentInit&, DocumentClassFlags = kDefaultDocumentClass);
 
@@ -1757,6 +1764,12 @@ class CORE_EXPORT Document : public ContainerNode,
   bool has_high_media_engagement_;
 
   std::unique_ptr<DocumentOutliveTimeReporter> document_outlive_time_reporter_;
+
+  // |mojo_ukm_recorder_| and |source_id_| will allow objects that are part of
+  // the |ukm_recorder_| and |source_id_| will allow objects that are part of
+  // the document to recorde UKM.
+  std::unique_ptr<ukm::UkmRecorder> ukm_recorder_;
+  int64_t ukm_source_id_;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<Document>;
