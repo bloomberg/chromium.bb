@@ -755,10 +755,6 @@ const char kProxyServer[] = "proxy-server";
 // Defaults to disabled.
 const char kPullToRefresh[] = "pull-to-refresh";
 
-// Enables more web features over insecure connections. Designed to be used
-// for testing purposes only.
-const char kReduceSecurityForTesting[]      = "reduce-security-for-testing";
-
 // Register Pepper plugins (see pepper_plugin_list.cc for its format).
 const char kRegisterPepperPlugins[]         = "register-pepper-plugins";
 

@@ -106,7 +106,6 @@ void ShowBadFlagsPrompt(Browser* browser) {
 #endif
     switches::kIgnoreCertificateErrors,
     switches::kIgnoreCertificateErrorsSPKIList,
-    switches::kReduceSecurityForTesting,
     invalidation::switches::kSyncAllowInsecureXmppConnection,
 
     // These flags change the URLs that handle PII.
