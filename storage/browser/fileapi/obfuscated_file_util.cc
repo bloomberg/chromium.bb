@@ -862,6 +862,9 @@ bool ObfuscatedFileUtil::DeleteDirectoryForOriginAndType(
   DestroyDirectoryDatabase(origin, type_string);
 
   const base::FilePath origin_path = GetDirectoryForOrigin(origin, false, NULL);
+  if (origin_path.empty())
+    return true;
+
   if (!type_string.empty()) {
     // Delete the filesystem type directory.
     base::File::Error error = base::File::FILE_OK;

@@ -334,7 +334,7 @@ SandboxFileSystemBackendDelegate::DeleteOriginDataOnFileTaskRunner(
   usage_cache()->CloseCacheFiles();
   bool result = obfuscated_file_util()->DeleteDirectoryForOriginAndType(
       origin_url, GetTypeString(type));
-  if (result && proxy) {
+  if (result && proxy && usage) {
     proxy->NotifyStorageModified(storage::QuotaClient::kFileSystem,
                                  origin_url,
                                  FileSystemTypeToQuotaStorageType(type),

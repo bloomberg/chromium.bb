@@ -2472,6 +2472,7 @@ TEST_F(ObfuscatedFileUtilTest, CreateDirectory_NotADirectoryInRecursive) {
 TEST_F(ObfuscatedFileUtilTest, DeleteDirectoryForOriginAndType) {
   const GURL origin1("http://www.example.com:12");
   const GURL origin2("http://www.example.com:1234");
+  const GURL origin3("http://nope.example.com");
 
   // Create origin directories.
   std::unique_ptr<SandboxFileSystemTestHelper> fs1(
@@ -2504,8 +2505,8 @@ TEST_F(ObfuscatedFileUtilTest, DeleteDirectoryForOriginAndType) {
   ASSERT_EQ(base::File::FILE_OK, error);
 
   // Delete a directory for origin1's persistent filesystem.
-  ofu()->DeleteDirectoryForOriginAndType(
-      origin1, GetTypeString(kFileSystemTypePersistent));
+  ASSERT_TRUE(ofu()->DeleteDirectoryForOriginAndType(
+      origin1, GetTypeString(kFileSystemTypePersistent)));
 
   // The directory for origin1's temporary filesystem should not be removed.
   error = base::File::FILE_ERROR_FAILED;
@@ -2528,6 +2529,22 @@ TEST_F(ObfuscatedFileUtilTest, DeleteDirectoryForOriginAndType) {
   ofu()->GetDirectoryForOriginAndType(
       origin2, GetTypeString(kFileSystemTypePersistent), false, &error);
   ASSERT_EQ(base::File::FILE_OK, error);
+
+  // Make sure origin3's directories don't exist.
+  error = base::File::FILE_ERROR_FAILED;
+  ofu()->GetDirectoryForOriginAndType(
+      origin3, GetTypeString(kFileSystemTypeTemporary), false, &error);
+  ASSERT_EQ(base::File::FILE_ERROR_NOT_FOUND, error);
+  error = base::File::FILE_ERROR_FAILED;
+  ofu()->GetDirectoryForOriginAndType(
+      origin3, GetTypeString(kFileSystemTypePersistent), false, &error);
+  ASSERT_EQ(base::File::FILE_ERROR_NOT_FOUND, error);
+
+  // Deleting directories which don't exist is not an error.
+  ASSERT_TRUE(ofu()->DeleteDirectoryForOriginAndType(
+      origin3, GetTypeString(kFileSystemTypeTemporary)));
+  ASSERT_TRUE(ofu()->DeleteDirectoryForOriginAndType(
+      origin3, GetTypeString(kFileSystemTypePersistent)));
 }
 
 TEST_F(ObfuscatedFileUtilTest, DeleteDirectoryForOriginAndType_DeleteAll) {
