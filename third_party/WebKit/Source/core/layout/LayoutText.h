@@ -201,6 +201,13 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   // whitespace) output.
   bool HasTextBoxes() const { return FirstTextBox(); }
 
+  // Returns true if the offset (0-based in the |text_| string) is next to a
+  // non-collapsed non-linebreak character, or before a forced linebreak (<br>,
+  // or segment break in node with style white-space: pre/pre-line/pre-wrap).
+  // TODO(editing-dev): The behavior is introduced by crrev.com/e3eb4e in
+  // InlineTextBox::ContainsCaretOffset(). Try to understand it.
+  bool ContainsCaretOffset(int) const;
+
   int CaretMinOffset() const override;
   int CaretMaxOffset() const override;
   virtual unsigned ResolvedTextLength() const;
