@@ -71,8 +71,8 @@ const base::FilePath::CharType kDatabaseName[] =
 const base::FilePath::CharType kDiskCacheName[] =
     FILE_PATH_LITERAL("ScriptCache");
 
-const int kMaxMemDiskCacheSize = 10 * 1024 * 1024;
-const int kMaxDiskCacheSize = 250 * 1024 * 1024;
+const int kMaxServiceWorkerStorageMemDiskCacheSize = 10 * 1024 * 1024;
+const int kMaxServiceWorkerStorageDiskCacheSize = 250 * 1024 * 1024;
 
 ServiceWorkerStatusCode DatabaseStatusToStatusCode(
     ServiceWorkerDatabase::Status status) {
@@ -1488,8 +1488,8 @@ ServiceWorkerDiskCache* ServiceWorkerStorage::disk_cache() {
 
   base::FilePath path = GetDiskCachePath();
   if (path.empty()) {
-    int rv = disk_cache_->InitWithMemBackend(kMaxMemDiskCacheSize,
-                                             net::CompletionCallback());
+    int rv = disk_cache_->InitWithMemBackend(
+        kMaxServiceWorkerStorageMemDiskCacheSize, net::CompletionCallback());
     DCHECK_EQ(net::OK, rv);
     return disk_cache_.get();
   }
@@ -1502,7 +1502,7 @@ void ServiceWorkerStorage::InitializeDiskCache() {
   disk_cache_->set_is_waiting_to_initialize(false);
   expecting_done_with_disk_on_disable_ = true;
   int rv = disk_cache_->InitWithDiskBackend(
-      GetDiskCachePath(), kMaxDiskCacheSize, false,
+      GetDiskCachePath(), kMaxServiceWorkerStorageDiskCacheSize, false,
       base::BindOnce(&ServiceWorkerStorage::DiskCacheImplDoneWithDisk,
                      weak_factory_.GetWeakPtr()),
       base::Bind(&ServiceWorkerStorage::OnDiskCacheInitialized,

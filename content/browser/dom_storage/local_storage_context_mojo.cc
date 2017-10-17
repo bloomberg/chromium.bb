@@ -62,10 +62,10 @@ const int kCommitErrorThreshold = 8;
 // are purged.
 #if defined(OS_ANDROID)
 const unsigned kMaxStorageAreaCount = 10;
-const size_t kMaxCacheSize = 2 * 1024 * 1024;
+const size_t kMaxLocalStorageCacheSize = 2 * 1024 * 1024;
 #else
 const unsigned kMaxStorageAreaCount = 50;
-const size_t kMaxCacheSize = 20 * 1024 * 1024;
+const size_t kMaxLocalStorageCacheSize = 20 * 1024 * 1024;
 #endif
 
 static const uint8_t kUTF16Format = 0;
@@ -498,7 +498,7 @@ void LocalStorageContextMojo::PurgeUnusedWrappersIfNeeded() {
 
   CachePurgeReason purge_reason = CachePurgeReason::NotNeeded;
 
-  if (total_cache_size > kMaxCacheSize)
+  if (total_cache_size > kMaxLocalStorageCacheSize)
     purge_reason = CachePurgeReason::SizeLimitExceeded;
   else if (level_db_wrappers_.size() > kMaxStorageAreaCount)
     purge_reason = CachePurgeReason::AreaCountLimitExceeded;

@@ -43,8 +43,8 @@ namespace content {
 // Hard coded default when not using quota management.
 static const int kDefaultQuota = 5 * 1024 * 1024;
 
-static const int kMaxDiskCacheSize = 250 * 1024 * 1024;
-static const int kMaxMemDiskCacheSize = 10 * 1024 * 1024;
+static const int kMaxAppCacheDiskCacheSize = 250 * 1024 * 1024;
+static const int kMaxAppCacheMemDiskCacheSize = 10 * 1024 * 1024;
 static const base::FilePath::CharType kDiskCacheDirectoryName[] =
     FILE_PATH_LITERAL("Cache");
 
@@ -1887,14 +1887,14 @@ AppCacheDiskCache* AppCacheStorageImpl::disk_cache() {
     disk_cache_.reset(new AppCacheDiskCache);
     if (is_incognito_) {
       rv = disk_cache_->InitWithMemBackend(
-          kMaxMemDiskCacheSize,
+          kMaxAppCacheMemDiskCacheSize,
           base::Bind(&AppCacheStorageImpl::OnDiskCacheInitialized,
                      base::Unretained(this)));
     } else {
       expecting_cleanup_complete_on_disable_ = true;
       rv = disk_cache_->InitWithDiskBackend(
-          cache_directory_.Append(kDiskCacheDirectoryName), kMaxDiskCacheSize,
-          false,
+          cache_directory_.Append(kDiskCacheDirectoryName),
+          kMaxAppCacheDiskCacheSize, false,
           base::BindOnce(&AppCacheStorageImpl::OnDiskCacheCleanupComplete,
                          weak_factory_.GetWeakPtr()),
           base::Bind(&AppCacheStorageImpl::OnDiskCacheInitialized,
