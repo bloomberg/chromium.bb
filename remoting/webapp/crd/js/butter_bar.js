@@ -62,6 +62,10 @@ remoting.ButterBar.prototype.init = function() {
     var response = results[0];
     /** @type {string} */
     var email = results[1];
+    if (email.toLocaleLowerCase().endsWith('@google.com')) {
+      result.resolve();
+      return;
+    }
     try {
       var responseObj = response.getJson();
       /** @type {number} The index of the message to display. */
