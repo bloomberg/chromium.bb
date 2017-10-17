@@ -7527,15 +7527,6 @@ I don't think this site should be blocked!
       <message name="IDS_PROFILES_ERROR_TUTORIAL_TITLE" desc="Title in the tutorial card for showing signin errors">
         Uh-oh!
       </message>
-      <message name="IDS_PROFILES_NOT_YOU" desc="Title or link text in the avatar menu bubble for switching user">
-        Not <ph name="PROFILE_NAME">$1<ex>Claire</ex></ph>?
-      </message>
-      <message name="IDS_PROFILES_DISCONNECT_BUTTON" desc="Button in the avatar menu bubble for disconnecting the current profile">
-        Disconnect Google Account
-      </message>
-      <message name="IDS_PROFILES_ADD_PERSON_BUTTON" desc="Button in the avatar menu bubble for adding a new profile">
-        Add person
-      </message>
       <message name="IDS_PROFILES_TUTORIAL_WHATS_NEW_BUTTON" desc="Button in the avatar menu tutorial card for seeing what is new with the new profile management UI">
         See what's new
       </message>
