@@ -535,7 +535,7 @@ cr.define('cloudprint', function() {
         var printerList = [];
         printerListJson.forEach(function(printerJson) {
           try {
-            printerList.push(cloudprint.CloudDestinationParser.parse(
+            printerList.push(cloudprint.parseCloudDestination(
                 printerJson, request.origin, activeUser));
           } catch (err) {
             console.error('Unable to parse cloud print destination: ' + err);
@@ -575,7 +575,7 @@ cr.define('cloudprint', function() {
         invitationListJson.forEach(function(invitationJson) {
           try {
             invitationList.push(
-                cloudprint.InvitationParser.parse(invitationJson, activeUser));
+                cloudprint.parseInvitation(invitationJson, activeUser));
           } catch (e) {
             console.error('Unable to parse invitation: ' + e);
           }
@@ -608,7 +608,7 @@ cr.define('cloudprint', function() {
         event = new Event(CloudPrintInterfaceEventType.PROCESS_INVITE_DONE);
         if (accept) {
           try {
-            event.printer = cloudprint.CloudDestinationParser.parse(
+            event.printer = cloudprint.parseCloudDestination(
                 request.result['printer'], request.origin, activeUser);
           } catch (e) {
             console.error('Failed to parse cloud print destination: ' + e);
@@ -680,7 +680,7 @@ cr.define('cloudprint', function() {
         var printerJson = request.result['printers'][0];
         var printer;
         try {
-          printer = cloudprint.CloudDestinationParser.parse(
+          printer = cloudprint.parseCloudDestination(
               printerJson, request.origin, activeUser);
         } catch (err) {
           console.error(
